@@ -1,0 +1,10 @@
+Hot Soup Processor (HSP)
+Copyright (C) 1997-2007, Onion Software/onitama, all rights reserved.
+Made with base technology of OpenHSP.
+
+OpenHSP
+Copyright (C) 1997-2007, Onion Software/onitama, all rights reserved.
+
+These softwares are provided by the copyright holders and contributors "as is" and
+any express or implied warranties, including, but not limited to, the implied
+warranties of merchantability and fitness for a particular purpose are disclaimed.
