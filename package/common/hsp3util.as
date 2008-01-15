@@ -44,7 +44,7 @@
 	;	"hh:mm:ss"の形式で時刻を得て変数に代入する
 	;	gettimestr 変数名
 	;
-	_p1 = strf("%02d",gettime(4))+":"+strf("%02d",gettime(5))+":"+strf("%02d",gettime(6))
+	_p1 = strf("%02d:",gettime(4))+strf("%02d:",gettime(5))+strf("%02d",gettime(6))
 	return
 
 #deffunc getdatestr var _p1
@@ -52,7 +52,7 @@
 	;	"yyyy/mm/dd"の形式で日付を得て変数に代入する
 	;	getdatestr 変数名
 	;
-	_p1 = strf("%02d",gettime(0))+"/"+strf("%02d",gettime(1))+"/"+strf("%02d",gettime(3))
+	_p1 = strf("%02d/",gettime(0))+strf("%02d/",gettime(1))+strf("%02d",gettime(3))
 	return
 
 ;--------------------------------------------------------------------------------
@@ -215,8 +215,7 @@
 	;	(posで指定した位置に表示されます)
 	;
 	winobj "STATIC",_p1,0,WS_VISIBLE|WS_CHILD,_p2,_p3
-	id = stat
-	return id
+	return stat
 
 #deffunc statictext_set int _p1, str _p2
 
@@ -235,8 +234,7 @@
 	;	(posで指定した位置に表示されます)
 	;
 	winobj "SCROLLBAR","",0,WS_VISIBLE|WS_CHILD,_p1,_p2
-	id = stat
-	return id
+	return stat
 
 
 #deffunc progbar int _p1, int _p2
@@ -247,8 +245,7 @@
 	;	(posで指定した位置に表示されます)
 	;
 	winobj "msctls_progress32","",0,WS_VISIBLE|WS_CHILD,_p1,_p2
-	id = stat
-	return id
+	return stat
 
 #deffunc progbar_step int _p1
 
@@ -270,7 +267,7 @@
 
 ;--------------------------------------------------------------------------------
 
-#deffunc note2array array _p1, str _p2
+#deffunc note2array array _p1, str _p2, local mestmp
 
 	;
 	;	複数行の文字列を行ごとに配列変数に代入する
@@ -278,14 +275,17 @@
 	;	("文字列"で指定した内容を配列変数に変換します)
 	;	(配列は１次元配列になります)
 	;
+	;	notegetを利用したスクリプトからgetstrを利用した者に変更すると
+	;	より高速になりますが、1行あたりの文字列の長さに制限がかかります。
+	;	どちらが良いでしょうか？
 	mestmp = _p2
 	notesel mestmp
-	if notemax<=1 : _p1=_p2 : return
-	sdim _p1,64,notemax
-	repeat notemax
-	noteget _p1.cnt, cnt
+	_notemax = notemax
+	if _notemax<=1 : _p1 = _p2 : return
+	sdim _p1, 64, _notemax
+	repeat _notemax
+		noteget _p1(cnt), cnt
 	loop
-	sdim mestmp,64			; mestmpをクリアする
 	noteunsel
 	return
 
@@ -297,10 +297,18 @@
 	;	(変数2で指定した１次元の配列変数を変数1(複数行文字列)に変換します)
 	;	(扱える配列は１次元配列のみになります)
 	;
-	if length2(_p2)>0 : dialog "array2note:error" : return
-	_p1 = ""
+	if length2(_p2) > 0 : dialog "array2note:error" : return
+
+	index = 0 : len = 1
 	foreach _p2
-	_p1+=_p2.cnt+"\n"
+		len += strlen(_p2(cnt)) + 2
+	loop
+	sdim _p1, len
+	foreach _p2
+		poke _p1, index, _p2(cnt)
+		index += strsize
+		poke _p1, index, "\n"
+		index += 2
 	loop
 	return
 
