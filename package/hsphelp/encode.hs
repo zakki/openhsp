@@ -68,7 +68,7 @@ jis2sjis
 
 %index
 sjis2utf7n
-シフトJISをJISへ変換
+シフトJISをUTF-7へ変換
 
 %prm
 p1, p2
@@ -89,7 +89,7 @@ sjis2utf8n
 utf7n2sjis
 %index
 sjis2utf8n
-シフトJISをJISへ変換
+シフトJISをUTF-8へ変換
 
 %prm
 p1, p2
