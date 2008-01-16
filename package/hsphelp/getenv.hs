@@ -12,7 +12,7 @@ Cli
 getenv
 
 %note
-getenv.asをインクルードすること。
+mod_getenv.asをインクルードすること。
 
 %author
 onitama
