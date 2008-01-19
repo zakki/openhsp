@@ -89,7 +89,7 @@ HMENU hSubMenu ;
 static HMENU hSubMenu2 ;
 static int EzMenuId;
 CMemBuf *AhtMenuBuf;
-extern ClickID;
+extern int ClickID;
 
 
 // Toolbar functions.

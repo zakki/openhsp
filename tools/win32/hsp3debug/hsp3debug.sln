@@ -1,21 +1,19 @@
-Microsoft Visual Studio Solution File, Format Version 8.00
+Microsoft Visual Studio Solution File, Format Version 9.00
+# Visual C++ Express 2005
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "hsp3debug", "hsp3debug.vcproj", "{08B5A2A3-7CE3-4D17-9AAA-F18A5F82F1AC}"
-	ProjectSection(ProjectDependencies) = postProject
-	EndProjectSection
 EndProject
 Global
-	GlobalSection(SolutionConfiguration) = preSolution
-		Debug = Debug
-		Release = Release
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Win32 = Debug|Win32
+		Release|Win32 = Release|Win32
 	EndGlobalSection
-	GlobalSection(ProjectConfiguration) = postSolution
-		{08B5A2A3-7CE3-4D17-9AAA-F18A5F82F1AC}.Debug.ActiveCfg = Debug|Win32
-		{08B5A2A3-7CE3-4D17-9AAA-F18A5F82F1AC}.Debug.Build.0 = Debug|Win32
-		{08B5A2A3-7CE3-4D17-9AAA-F18A5F82F1AC}.Release.ActiveCfg = Release|Win32
-		{08B5A2A3-7CE3-4D17-9AAA-F18A5F82F1AC}.Release.Build.0 = Release|Win32
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{08B5A2A3-7CE3-4D17-9AAA-F18A5F82F1AC}.Debug|Win32.ActiveCfg = Debug|Win32
+		{08B5A2A3-7CE3-4D17-9AAA-F18A5F82F1AC}.Debug|Win32.Build.0 = Debug|Win32
+		{08B5A2A3-7CE3-4D17-9AAA-F18A5F82F1AC}.Release|Win32.ActiveCfg = Release|Win32
+		{08B5A2A3-7CE3-4D17-9AAA-F18A5F82F1AC}.Release|Win32.Build.0 = Release|Win32
 	EndGlobalSection
-	GlobalSection(ExtensibilityGlobals) = postSolution
-	EndGlobalSection
-	GlobalSection(ExtensibilityAddIns) = postSolution
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
 	EndGlobalSection
 EndGlobal
