@@ -428,5 +428,8 @@ chkbox
 combox
 input
 listbox
+objmode_guifont
+objmode_normal
+objmode_usefont
 
 

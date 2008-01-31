@@ -238,6 +238,9 @@ p4パラメータに「+2」(非表示のウィンドウを作成する)を指定した場合は、
 %href
 screen
 buffer
+screen_hide
+screen_normal
+screen_palette
 %port+
 Let
 %portinfo
@@ -323,6 +326,8 @@ buffer命令で画面を初期化した後はそのウィンドウIDが画面制御命令の描画先
 %href
 screen
 bgscr
+screen_normal
+screen_palette
 %port+
 Let
 %portinfo
@@ -433,6 +438,12 @@ Windows9X環境はサポートされないのでご注意下さい。
 %href
 sysfont
 objmode
+font_antialias
+font_bold
+font_italic
+font_normal
+font_strikeout
+font_underline
 %port+
 Let
 
@@ -555,6 +566,14 @@ gmodeで指定されたサイズの画像を、元画像の右側に用意しておき、 右側の画
 
 %href
 gcopy
+gmode_add
+gmode_alpha
+gmode_gdi
+gmode_mem
+gmode_pixela
+gmode_rgb0
+gmode_rgb0alpha
+gmode_sub
 %port+
 Let
 %portinfo
@@ -752,6 +771,7 @@ picload命令は、screen、buffer、 bgscr命令で初期化
 screen
 buffer
 bgscr
+imgload
 %port+
 Let
 %portinfo
@@ -915,6 +935,12 @@ screen命令で画面を初期化した後はそのウィンドウIDが画面制御命令の描画先
 %href
 bgscr
 buffer
+screen_fixedsize
+screen_frame
+screen_hide
+screen_normal
+screen_palette
+screen_tool
 %port+
 Let
 %portinfo
@@ -1409,6 +1435,9 @@ p1にウィンドウオブジェクトID、p2に取得タイプを指定することで、該当する
 
 %href
 ginfo
+objinfo_bmscr
+objinfo_hwnd
+objinfo_mode
 %port+
 Let
 %portinfo
