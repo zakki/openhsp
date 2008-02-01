@@ -10,22 +10,42 @@
 	;
 	;	送信用にエンコードされたテキストを元の日本語にデコードします。
 	;	文字変数2の内容をデコードして文字変数1に格納します。
-	;	変換スイッチを1にすると'&'を改行に変換。
-	;		     2にすると'+'を空白に変換。
-	;		     3にすると両方とも変換します。
+	;	変換スイッチの効果は以下のとおりです。
+	;		1にすると'&'を改行に変換
+	;		2にすると'+'を空白に変換
+	;		3にすると両方とも変換
 	;
+/*
+	2008/02/01 変更点
+		コードを整理・若干高速化。
+	既知の不具合
+		第1引数（cnvbf）が充分に確保されていないと
+		バッファオーバーフローを引き起こす可能性があります。
+*/
 #deffunc form_decode var cnvbf,var txtbf,int sw
-	sz=strlen(txtbf)
-	i=0 :w=0
-*cnv
-	a=peek(txtbf,i)
-	if a='%' { c=strmid(txtbf,i+1,2)			; 日本語変換
-		 c="$"+c :a=int(c) :i+=2
-	}
-	if (sw&1>0)&(a='&') :poke cnvbf,w,13 :a=10 :w+		; '&'は改行に
-	if (sw&2>0)&(a='+') :a=32				; '+'は空白に
-	poke cnvbf,w,a :i+ :w+
-	if (a!0)&(w<sz) :goto *cnv
+	i = 0                  		// テキストの読み出し位置
+	txtsize = strlen(txtbf)		// テキストの長さ
+	code = -1              		// 読みだした文字コード
+	repeat
+		if (code == 0)|(i >= txtsize) : break
+		code = peek(txtbf, i)
+		i+
+		if code == '%' {
+			// 日本語変換
+			code = int("$" + strmid(txtbf, i, 2))
+			i += 2
+		}
+		if (sw & 1)&(code == '&') {
+			// '&'は改行に
+			wpoke cnvbf, cnt, $0A0D
+			continue cnt + 2
+		}
+		if (sw >> 1 & 1)&(code == '+') {
+			// '+'は空白に
+			code = 32
+		}
+		poke cnvbf, cnt, code
+	loop
 	return
 
 #global
