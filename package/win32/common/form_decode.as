@@ -35,12 +35,12 @@
 			code = int("$" + strmid(txtbf, i, 2))
 			i += 2
 		}
-		if (sw & 1)&(code == '&') {
+		if sw & (code == '&') {
 			// '&'‚Í‰üs‚É
 			wpoke cnvbf, cnt, $0A0D
 			continue cnt + 2
 		}
-		if (sw >> 1 & 1)&(code == '+') {
+		if (sw >> 1) & (code == '+') {
 			// '+'‚Í‹ó”’‚É
 			code = 32
 		}
