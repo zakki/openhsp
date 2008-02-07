@@ -243,7 +243,7 @@ Let
 ^p
 例 :
 	#uselib "test.dll"
-	#func test "_func@16" var,int,int.int
+	#func test "_func@16" var,int,int,int
 	test a,1,2,3    ; test.dllのfunc(&a,1,2,3)が呼び出される
 ^p
 タイプに数値を指定した場合は、ver2.5以降のDLLタイプ指定と互換性のある
@@ -307,7 +307,7 @@ HSPLet時は、関数と同名のメソッドが呼ばれることになります。
 ^p
 例 :
 	#uselib "test.dll"
-	#cfunc test "_func@16" var,int,int.int
+	#cfunc test "_func@16" var,int,int,int
 	res=test(a,1,2,3)  ; test.dllのfunc(&a,1,2,3)が呼び出される
 ^p
 登録された関数の戻り値として外部呼出しの結果取得された整数値(32bit int)
