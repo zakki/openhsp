@@ -178,7 +178,12 @@ void *comget_variant( VARIANT *var, int *restype, BOOL fvariantret /* = FALSE*/ 
 	//
 	int size;
 	BSTR bstr;
-	void *ptr;
+/*
+	rev 43
+	mingw : warning : 定数へのポインタを非定数へのポインタに代入
+	に対処
+*/
+	void const *ptr;
 	if ( fvariantret ) {
 		VariantCopy( &comconv_var, var );
 		*restype = HSPVAR_FLAG_VARIANT;

@@ -11,6 +11,15 @@
 #include <objbase.h>
 #include <commctrl.h>
 
+/*
+	rev 43
+	mingw : error : •s–¾‚ÈŠÖ”tolower
+	‚É‘Îˆ
+*/
+#if defined( __GNUC__ )
+#include <ctype.h>
+#endif
+
 #include "../strbuf.h"
 #include "../hsp3.h"
 #include "../hsp3ext.h"

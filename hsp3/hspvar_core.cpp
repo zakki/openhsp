@@ -8,6 +8,11 @@
 #include "hspvar_core.h"
 #include "hspvar_label.h"
 #include "hsp3debug.h"
+
+/*
+	rev 43
+	たぶんシステムヘッダ。それともカスタムヘッダを使うのか？ (naznyark)
+*/
 #include "string.h"
 #include "strbuf.h"
 #include "supio.h"

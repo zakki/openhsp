@@ -102,7 +102,12 @@ static void ExitFunc( STRUCTDAT *st )
 	pFn = (FARPROC)st->proc;
 	if ( pFn == NULL ) return;
 	p[0] = p[1] = p[2] = p[3] = 0;
-	call_extfunc( pFn, p, st->size / 4 );
+/*
+	rev 43
+	mingw : error : 関数ポインタから非関数ポインタへの変換
+	に対処
+*/
+	call_extfunc( fpconv( pFn ), p, st->size / 4 );
 }
 
 
@@ -228,6 +233,12 @@ void Hsp3ExtLibTerm( void )
 */
 /*------------------------------------------------------------*/
 
+/*
+	rev 43
+	mingw(gcc) 用のコード追加
+*/
+#if defined( _MSC_VER )
+
 __declspec( naked ) int __cdecl call_extfunc( void *proc, int *prm, int prms )
 {
 	// 外部関数呼び出し（VC++ のインラインアセンブラを使用）
@@ -261,6 +272,35 @@ __declspec( naked ) int __cdecl call_extfunc( void *proc, int *prm, int prms )
 	}
 }
 
+#elif defined( __GNUC__ )
+
+int __cdecl call_extfunc( void * proc, int * prm, int prms )
+{
+	// 外部関数呼び出し（GCC の拡張インラインアセンブラを使用）
+    int ret = 0;
+    __asm__ volatile (
+		"pushl  %%ebp;"
+		"movl   %%esp, %%ebp;"
+		"jmp    _push_chk;"
+
+		// パラメータをprms個pushする
+	"_push:"
+		"pushl  ( %2, %3, 4 );"
+
+	"_push_chk:"
+		"decl   %3;"
+		"jge    _push;"
+
+		"calll  *%1;"
+		"leave;"
+
+		: "=a" ( ret )
+        : "r" ( proc ) , "r" ( prm ), "r" ( prms )
+    );
+    return ret;
+}
+
+#endif
 
 
 int cnvwstr( void *out, char *in, int bufsize )

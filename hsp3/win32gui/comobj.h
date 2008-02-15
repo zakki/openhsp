@@ -10,6 +10,15 @@
 
 #ifndef HSP_COM_UNSUPPORTED		//（COM サポートなし版のビルド時はファイル全体を無視）
 
+/*
+	rev 43
+	mingw ; error : IDispatchが宣言されていない、他
+	に対処
+*/
+#if defined( __GNUC__ )
+#define COM_NO_WINDOWS_H
+#include <oaidl.h>
+#endif
 
 // デバッグ用に作成する場合に定義
 // #define HSP_COMOBJ_DEBUG

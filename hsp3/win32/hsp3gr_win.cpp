@@ -191,7 +191,12 @@ static int sysinfo( int p2 )
 		version = GetVersion();
 		if ((version & 0x80000000) == 0) strcat(p1,"NT");
 									else strcat(p1,"9X");
-		sprintf( pp," ver%d.%d",version&0xff,(version&0xff00)>>8 );
+/*
+	rev 43
+	mingw : warning : ‰¼ˆø”int Àˆø”long unsigned
+	‚É‘Îˆ
+*/
+		sprintf( pp," ver%d.%d", static_cast< int >( version&0xff ), static_cast< int >( (version&0xff00)>>8 ) );
 		strcat( p1, pp );
 		fl=HSPVAR_FLAG_STR;
 		break;

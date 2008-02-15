@@ -66,7 +66,12 @@ void fd_ini( HWND hwnd, char *extname, char *extinfo )
 	b=(int)strlen(szFilter);
 	for(a=0;a<b;a++) {
 		a1=szFilter[a];
-		if (a1<0) a++;
+/*
+	rev 43
+	mingw : warning : ”äŠr‚Íí‚É‹U
+	sjis‚Ì‘SŠp”»’è‚Æ”»’f‚µ‚ÄC³B(naznyark)
+*/
+		if ( ( ( a1 >= 0x81 ) && ( a1 <= 0x9F ) ) || ( ( a1 >= 0xE0 ) && ( a1 <= 0xFC ) ) ) a++;
 		else if (a1=='@') szFilter[a]=0;
 	}
 
@@ -119,5 +124,10 @@ DWORD fd_selcolor( HWND hwnd, int mode )
 	 if (res) {
 		return (DWORD)cc.rgbResult;
 	 }
-	 return -1;
+/*
+	rev 43
+	mingw : warning : DWORDŒ^‚Ì–ß‚è’l‚É-1‚ð•Ô‚µ‚Ä‚¢‚é
+	‚É‘Îˆ
+*/
+	 	return static_cast< DWORD >( -1 );
      }

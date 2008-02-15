@@ -179,7 +179,13 @@ int CStrNote::PutLine( char *nstr2, int line, int ovr )
 	//		Pet specified line to note
 	//				result:0=ok/1=no line
 	//
-	int a,ln,la,lw;
+/*
+	rev 43
+	mingw : warning : a は代入前に使われる。
+	に対処
+	if(ovr)が偽で、if(ln>=0)が偽の場合。実際にはおこりえない。
+*/
+	int a = 0,ln,la,lw;
 	char a1;
 	char *pp;
 	char *p1;

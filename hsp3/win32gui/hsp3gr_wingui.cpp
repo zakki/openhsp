@@ -191,7 +191,12 @@ static int sysinfo( int p2 )
 		version = GetVersion();
 		if ((version & 0x80000000) == 0) strcat(p1,"NT");
 									else strcat(p1,"9X");
-		sprintf( pp," ver%d.%d",version&0xff,(version&0xff00)>>8 );
+/*
+	rev 43
+	mingw : warning : 仮引数int 実引数long unsigned
+	に対処
+*/
+		sprintf( pp," ver%d.%d", static_cast< int >( version&0xff ), static_cast< int >( (version&0xff00)>>8 ) );
 		strcat( p1, pp );
 		fl=HSPVAR_FLAG_STR;
 		break;
@@ -237,8 +242,13 @@ static int chgdisp( int mode, int sx, int sy )
 	while(1) {
 		f=EnumDisplaySettings( NULL,a,&dev );
 		if (f==0) break;
-		if (dev.dmPelsWidth == sx )
-		  if (dev.dmPelsHeight == sy ) {
+/*
+	rev 43
+	mingw : warning : 有符号型と無符号型の比較
+	に対処
+*/
+		if ( static_cast< int >( dev.dmPelsWidth ) == sx )
+		  if ( static_cast< int >( dev.dmPelsHeight ) == sy ) {
 				c=(int)dev.dmBitsPerPel;
 				if (sc) {
 					if (c==8) sel=a;
@@ -1508,7 +1518,12 @@ void hsp3typeinit_extcmd( HSP3TYPEINFO *info, int sx, int sy, int wd, int xx, in
 
 	wnd->MakeBmscr( 0,HSPWND_TYPE_MAIN, xx, yy, sx, sy, sx, sy, flag );
 
-	wnd->SetNotifyFunc( mmnfunc );
+/*
+	rev 43
+	mingw : error : 関数ポインタから非関数ポインタへの変換
+	に対処
+*/
+	wnd->SetNotifyFunc( fpconv( mmnfunc ) );
 	wnd->SetEventNoticePtr( &ctx->stat );
 	cur_window = 0;
 	msact = 1;

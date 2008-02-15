@@ -7,6 +7,13 @@
 
 #include "hspvar_core.h"
 
+/*
+	rev 43
+	mingw : error : HSPERROR ‚ª–¢’è‹`
+	‚É‘Îˆ
+*/
+#include "hsp3debug.h"
+
 // command type
 #define TYPE_MARK 0
 #define TYPE_VAR 1

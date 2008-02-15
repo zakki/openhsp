@@ -20,7 +20,15 @@
 
 #define HIMETRIC_INCH	2540
 #define MAP_LOGHIM_TO_PIX(x,ppli)   ( ((ppli)*(x) + HIMETRIC_INCH/2) / HIMETRIC_INCH )
+
+/*
+	rev 43
+	mingw : warning : WM_MOUSEWHEELÇÃçƒíËã`
+	Ç…ëŒèà
+*/
+#if !defined( WM_MOUSEWHEEL )
 #define WM_MOUSEWHEEL 0x020A
+#endif
 
 #define MM_MCINOTIFY    0x03B9
 #define MCI_NOTIFY_SUCCESSFUL   1

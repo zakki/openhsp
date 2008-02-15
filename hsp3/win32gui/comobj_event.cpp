@@ -59,6 +59,15 @@
 
 #include <ocidl.h>
 
+/*
+	rev 43
+	mingw : error : GUIDKIND_DEFAULT_SOURCE_DISP_IIDが未定義
+	に対処
+*/
+#if defined( __GNUC__ )
+#include <olectl.h>
+#endif
+
 #include "../hsp3code.h"
 #include "comobj_event.h"
 #include "hspvar_comobj.h"
@@ -92,6 +101,11 @@ struct ComEventData;
 
 // Enevnt Handler object
 
+/*
+	rev 43
+	mingw : warning : ComEventHandler のデストラクタが仮想でない。
+	問題ないのか？わかりません。(naznyark)
+*/
 class ComEventHandler : public IEventHandler {
 	ULONG m_ref;				// イベントオブジェクト参照カウンタ
 	int m_refInner;				// HSP COMオブジェクト変数からの参照カウンタ
@@ -123,7 +137,16 @@ public:
 	STDMETHOD(Set)(IUnknown*, const IID*, unsigned short* );
 	STDMETHOD_(void,Reset)();
 
+/*
+	rev 43
+	mingw : error : friend static修飾は不正
+	に対処
+*/
+#if defined(__GNUC__)
+	friend ComEventData* SearchEventData( void *iptr );
+#else
 	friend static ComEventData* SearchEventData( void *iptr );
+#endif
 
 };
 
@@ -177,8 +200,13 @@ ComEventData::~ComEventData()
 
 /*-----------------------------------------------------------------------------------*/
 
+/*
+	rev 43
+	mingw : warning : メンバの宣言順と初期化子リストの並び順が異なる
+	に対処
+*/
 ComEventHandler::ComEventHandler()
- : m_ref(0), m_refInner(0), m_cookie(0), m_punkObj(NULL), m_pCP(NULL), m_callback(0), m_CPGuid( IID_NULL )
+ : m_ref(0), m_refInner(0), m_punkObj(NULL), m_pCP(NULL), m_cookie(0), m_CPGuid( IID_NULL ), m_callback(0)
 {
 	// 参照カウンタ 0 の状態で作成
 

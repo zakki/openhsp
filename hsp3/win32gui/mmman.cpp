@@ -11,12 +11,28 @@
 #include <stdio.h>
 #include <string.h>
 
+/*
+	rev 43
+	mingw : error : 不明な関数 tolower
+	に対処
+*/
+#if defined( __GNUC__ )
+#include <ctype.h>
+#endif
+
 #include "../supio.h"
 #include "../dpmread.h"
 #include "../strbuf.h"
 #include "mmman.h"
 
+/*
+	rev 43
+	mingw : warning : #pragma comment を無視する
+	に対処
+*/
+#if defined( _MSC_VER )
 #pragma comment(lib,"winmm.lib")
+#endif
 
 #define sndbank(a) (char *)(mem_snd[a].mempt)
 
@@ -166,12 +182,18 @@ void MMMan::Stop( void )
 }
 
 
+/*
+	rev 43
+	mingw : warning : a は代入前に使われる
+	に対処。
+	実際にはおこりえない。
+*/
 int MMMan::Load( char *fname, int num, int opt )
 {
 	//		Load sound to bank
 	//			opt : 0=normal/1=loop/2=wait/3=continuous
 	//
-	int a,getlen;
+	int a = 1,getlen;
 	char fext[8];
 	char a1,a2,a3;
 	char *pt;

@@ -106,5 +106,11 @@ void code_dbgtrace( void );
 void code_delstruct( PVal *in_pval, APTR in_aptr );
 void code_delstruct_all( PVal *pval );
 
+/*
+	rev 43
+	mingwでのエラーに対処。
+//  関数ポインタ -> void *　への変換用。 
+*/
+#define fpconv( fp )  ( reinterpret_cast< void * >( reinterpret_cast< long >( fp ) ) )
 
 #endif

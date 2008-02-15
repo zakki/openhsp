@@ -1396,7 +1396,13 @@ char *code_getsptr( int *type )
 static int p1,p2,p3,p4,p5,p6;
 static int reffunc_intfunc_ivalue;
 
-#define ETRLOOP (0x80000000)
+/*
+	rev 43
+	mingw : warning : —L•„†Œ^‚Æ–³•„†Œ^‚Ì”äŠr
+	‚É‘Îˆ
+*/
+#define ETRLOOP ((int)0x80000000)
+
 #define GETLOP(num) (&(hspctx->mem_loop[num]))
 
 static int cmdfunc_default( int cmd )

@@ -11,10 +11,25 @@
 #include <objbase.h>
 #include <conio.h>
 #include <commctrl.h>
+
+/*
+	rev 43
+	mingw : warning : #pragma comment ‚ğ–³‹‚·‚é
+	‚É‘Îˆ
+*/
+#if defined( _MSC_VER )
 #pragma comment(lib, "comctl32.lib")
+#endif
 
 #include <stdio.h>
 #include <string.h>
+
+/*
+	rev 43
+	mingw : warning : #pragma comment ‚ğ–³‹‚·‚é
+	‚É‘Îˆ
+*/
+#include "hsp3gr_win.h"
 
 #include "../hsp3config.h"
 

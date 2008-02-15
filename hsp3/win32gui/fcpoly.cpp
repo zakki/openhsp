@@ -1073,13 +1073,19 @@ p4transp:
 */
 /*------------------------------------------------------------*/
 
-static void TexInit( void )
+/*
+	rev 43
+	mingw : error : éŒ¾‚ÆCü‚ªˆÙ‚È‚é
+	‚É‘Îˆ
+*/
+
+void TexInit( void )
 {
 	lpTex = NULL;
 }
 
 
-static void TexTerm( void )
+void TexTerm( void )
 {
 }
 

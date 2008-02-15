@@ -357,7 +357,12 @@ void dpm_getinf( char *inf )
 	long a;
 	a=dpm_ofs;
 	if (dpm_flag==0) a=-1;
-	sprintf(inf,"%s,%d",dpm_file,a);
+/*
+	rev 43
+	mingw : warning : ‰¼ˆø”:int Àˆø”:long
+	‚É‘Îˆ
+*/
+	sprintf(inf,"%s,%d",dpm_file, static_cast< int >( a ) );
 }
 
 
