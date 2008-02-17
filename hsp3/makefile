@@ -1,18 +1,21 @@
 # GNU make 用メイクファイル
 #
 # (使い方)
-#   make ( PLATFORM [ release ] [ all | clean ] ) | cleanall
+#   make ( PLATFORM [ OBJ ... ] [ release ] [ all ] ) | ( PLATFORM clean ) | cleanall
 #
-#   PLATFORMは
+#   PLATFORM は
 #       linux
 #       win32_mingw
 #       win32gui_mingw
-#   のどれか。all, clean を指定する場合もPLATFORMを指定する。
+#   のどれか。all, clean を指定する場合も PLATFORM を指定する。
+#
+#   OBJ に .o ファイルを指定すると指定したオブジェクトファイルのみを対象にする。
+#   指定しなかった場合は PLATFORM に対応した実行ファイルを対象にする。
 #
 #   release を指定するとリリースビルド、それ以外はデバッグビルド。
 #
 #   all を指定するとリビルド。
-#   clean を指定するとPLATFORMに関係したオブジェクトファイルと実行ファイルの削除。
+#   clean を指定すると PLATFORM に関係したオブジェクトファイルと実行ファイルの削除。
 #   cleanall を指定するとそのフォルダ内のすべてのオブジェクトファイルと実行ファイルの削除。
 #
 #   環境に合わせて includedir, libdir を設定する。
@@ -118,7 +121,7 @@ ifeq ($(filter win32_mingw,$(MAKECMDGOALS)),win32_mingw)
     vpath %.h ../hsp3/win32 ../hsp3/win32gui
     vpath %.rc ../hsp3/win32 ../hsp3/win32gui
 
-    CFLAGS = $(includedir) -Wall -Wno-unused -funsigned-char -finput-charset=cp932 -fexec-charset=cp932 -mwindows -mconsole -DWINVER=0x0400 -D_WIN32_IE=0x0500 $(HSP)
+    CFLAGS = $(includedir) -Wall -Wno-unused -fsigned-char -finput-charset=cp932 -fexec-charset=cp932 -mwindows -mconsole -DWINVER=0x0400 -D_WIN32_IE=0x0500 $(HSP)
     CXXFLAGS = $(CFLAGS)
 
     TARGET = hsp3cl.exe
@@ -170,7 +173,7 @@ ifeq ($(filter win32gui_mingw,$(MAKECMDGOALS)),win32gui_mingw)
     vpath %.h ../hsp3/win32gui
     vpath %.rc ../hsp3/win32gui
 
-    CFLAGS = $(includedir) -Wall -Wno-unused -funsigned-char -finput-charset=cp932 -fexec-charset=cp932 -mwindows -DWINVER=0x0400 -D_WIN32_IE=0x0500 $(HSP)
+    CFLAGS = $(includedir) -Wall -Wno-unused -fsigned-char -finput-charset=cp932 -fexec-charset=cp932 -mwindows -DWINVER=0x0400 -D_WIN32_IE=0x0500 $(HSP)
     CXXFLAGS = $(CFLAGS)
 
     TARGET = hsp3.exe
@@ -185,6 +188,14 @@ ifeq ($(filter win32gui_mingw,$(MAKECMDGOALS)),win32gui_mingw)
 endif
 
 #/*<<<<------------------------------*/
+
+ifneq ($(filter %.o,$(MAKECMDGOALS)),)
+    EXECMODE =
+    TARGET =
+    OBJS = $(filter %.o,$(MAKECMDGOALS))
+    RESES =
+    LIBS =
+endif
 
 ifeq ($(filter all,$(MAKECMDGOALS)),all)
     EXECMODE = exec_all
@@ -205,13 +216,13 @@ endif
 
 #/*----------------------------------*/
 
-all clean release: $(EXECMODE) ;
-linux win32_mingw win32gui_mingw: $(EXECMODE) ;
+all clean release: $(EXECMODE) ; @:
+linux win32_mingw win32gui_mingw: $(EXECMODE) ; @:
 
 cleanall:
 	$(RM) *.o *.exe *.out *.res
 
-exec_all: exec_clean $(TARGET) ;
+exec_all: exec_clean $(TARGET) ; @:
 
 exec_clean:
 	$(RM) $(OBJS) $(TARGET)

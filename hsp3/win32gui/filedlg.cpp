@@ -43,7 +43,11 @@ void PopFileInitialize (HWND hwnd)
 void fd_ini( HWND hwnd, char *extname, char *extinfo )
 {
 	int a,b;
-	char a1;
+/*
+	rev 44
+	sjis‚Ì‘SŠp”»’è‚Æ”»’f‚µ‚ÄC³‚QB(naznyark)
+*/
+	unsigned char a1;
 	char fext[1024];
 	char finf[1024];
 	hwbak=hwnd;
@@ -66,11 +70,6 @@ void fd_ini( HWND hwnd, char *extname, char *extinfo )
 	b=(int)strlen(szFilter);
 	for(a=0;a<b;a++) {
 		a1=szFilter[a];
-/*
-	rev 43
-	mingw : warning : ”äŠr‚Íí‚É‹U
-	sjis‚Ì‘SŠp”»’è‚Æ”»’f‚µ‚ÄC³B(naznyark)
-*/
 		if ( ( ( a1 >= 0x81 ) && ( a1 <= 0x9F ) ) || ( ( a1 >= 0xE0 ) && ( a1 <= 0xFC ) ) ) a++;
 		else if (a1=='@') szFilter[a]=0;
 	}

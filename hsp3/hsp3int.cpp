@@ -92,30 +92,40 @@ static int cmdfunc_intcmd( int cmd )
 	case 0x03:								// onclick
 	case 0x04:								// oncmd
 		{
-		int i;
-		int tval;
+
+/*
+	rev 45
+	不具合 : (onxxx系命令) (ラベル型変数)  形式の書式でエラー
+	に対処
+*/
+
+		int tval = *type;
+		int opt = IRQ_OPT_GOTO;
 		int cust;
 		int actid;
 		IRQDAT *irq;
 		unsigned short *sbr;
 
-		tval = *type;
+		if ( tval == TYPE_VAR ) {
+			if ( ( ctx->mem_var + *val )->flag == HSPVAR_FLAG_LABEL )
+				tval = TYPE_LABEL;
+		}
+
 		if (( tval != TYPE_PROGCMD )&&( tval != TYPE_LABEL )) {		// ON/OFF切り替え
-			i = code_geti();
+			int i = code_geti();
 			code_enableirq( cmd, i );
 			break;
 		}
 
-		i = 0;
-		if ( tval == TYPE_PROGCMD ) {
-			i = *val;
-			if ( i >= 2 ) throw HSPERR_SYNTAX;
+		if ( tval == TYPE_PROGCMD ) {	// ジャンプ方法指定
+			opt = *val;
+			if ( opt >= 2 ) throw HSPERR_SYNTAX;
 			code_next();
 		}
 
 		sbr = code_getlb2();
 		if ( cmd != 0x04 ) {
-			code_setirq( cmd, i, -1, sbr );
+			code_setirq( cmd, opt, -1, sbr );
 			break;
 		}
 		cust = code_geti();
@@ -123,7 +133,7 @@ static int cmdfunc_intcmd( int cmd )
 		irq = code_seekirq( actid, cust );
 		if ( irq == NULL ) irq = code_addirq();
 		irq->flag = IRQ_FLAG_ENABLE;
-		irq->opt = i;
+		irq->opt = opt;
 		irq->ptr = sbr;
 		irq->custom = cust;
 		irq->custom2 = actid;

@@ -416,36 +416,50 @@ void HspWnd::MakeBmscr( int id, int type, int xx, int yy, int wx, int wy, int sx
 	par_hwnd = NULL;
 	wndtype = type;
 
-//	style = WS_CAPTION | WS_OVERLAPPED | WS_SYSMENU | WS_MINIMIZEBOX | WS_BORDER | WS_VISIBLE | WS_THICKFRAME | WS_CLIPCHILDREN;
-	style = WS_CAPTION | WS_OVERLAPPED | WS_SYSMENU | WS_MINIMIZEBOX | WS_BORDER | WS_CLIPCHILDREN;
-
 	framesx = 0;
 	framesy = 0;
 	exstyle = 0;
 
+/*
+	rev 45
+	BT#??? : サイズ固定ツールウィンドウに非描画領域がある。
+	に対処。
+*/
+
 	defstyle = palsw>>2;
 	if ( wndtype == HSPWND_TYPE_BGSCR ) {
-		style=WS_POPUP|WS_CLIPCHILDREN;
+		style = WS_POPUP | WS_CLIPCHILDREN | WS_CLIPSIBLINGS;
+
 	} else {
-		framesx = mwfx;
-		framesy = mwfy;
-		if (( id > 0 )&&( (defstyle & 1)==0 )) {
-			style |= WS_THICKFRAME;
-			framesx = wfx;
-			framesy = wfy;
-		}
-		if ( defstyle & 2 ) {
-			exstyle |= WS_EX_TOOLWINDOW;
-			framesy = GetSystemMetrics( SM_CYSMCAPTION )+(GetSystemMetrics( SM_CYFRAME )*2);
-		}
-		if ( defstyle & 4 ) {
-			exstyle |= WS_EX_OVERLAPPEDWINDOW;
-			framesx += 4; framesy += 4;
-		}
 		if ( palsw & 0x100 ) {
-			style = WS_CHILD|WS_CLIPCHILDREN;
+			style = WS_CHILD | WS_CLIPCHILDREN | WS_CLIPSIBLINGS;
 			wndtype = HSPWND_TYPE_SSPREVIEW;
 			par_hwnd = (HWND)wnd_parent;
+
+		} else {
+	//		style = WS_CAPTION | WS_OVERLAPPED | WS_SYSMENU | WS_MINIMIZEBOX | WS_BORDER | WS_VISIBLE | WS_THICKFRAME | WS_CLIPCHILDREN;
+			style = WS_CAPTION | WS_OVERLAPPED | WS_SYSMENU | WS_MINIMIZEBOX | WS_BORDER | WS_CLIPCHILDREN | WS_CLIPSIBLINGS;
+			if ( ( id > 0 ) && ( !( defstyle & 1 ) ) ) {	// サイズ可変
+				style |= WS_THICKFRAME;
+			}
+			if ( defstyle & 2 ) {	// ツールウィンドウ
+				exstyle |= WS_EX_TOOLWINDOW;
+			}
+			if ( defstyle & 4 ) {	// 縁が深い
+				exstyle |= WS_EX_OVERLAPPEDWINDOW;
+			}
+		}
+		RECT rc;
+		rc.left = 0;
+		rc.top = 0;
+		rc.right = scr_x;
+		rc.bottom = scr_y;
+		if ( AdjustWindowRectEx( &rc, style, FALSE, exstyle ) ) {
+			framesx = rc.right - rc.left - scr_x;
+			framesy = rc.bottom - rc.top - scr_y;
+		} else {
+			framesx = wfx;
+			framesy = wfy;
 		}
 	}
 

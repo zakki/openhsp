@@ -306,8 +306,14 @@ int strsp_get( char *srcstr, char *dststr, char splitchr, int len )
 {
 	//		split string with parameters
 	//
-	char a1;
-	char a2;
+
+/*
+	rev 44
+	mingw : warning : ”äŠr‚Íí‚É‹U
+	‚É‘Îˆ
+*/
+	unsigned char a1;
+	unsigned char a2;
 	int a;
 	int sjflg;
 	a=0;sjflg=0;
