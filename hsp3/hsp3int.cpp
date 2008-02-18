@@ -675,10 +675,40 @@ static void *reffunc_intfunc( int *type_res, int arg )
 		*p = 0;
 		break;
 		}
+
+/*
+	rev 47
+	BT#8 : strf関数で%sフォーマットに数値を指定した場合に強制終了
+	に対処。
+
+	変換指定文字に %s を指定するとエラー(サポートされない機能…)になるようにした。
+	加えて変換指定文字がひとつ以外の場合もエラー(パラメータの値が以上…)になるようにした。
+*/
+
 	case 0x103:								// strf
 		{
 		char fbuf[1024];
-		strncpy( fbuf, code_gets(), 1023 );
+		char const * form = code_gets();
+		int i = 0, c = 0;
+		for ( ; i < 1023 && form[ i ] != '\0'; ++i ) {
+			if ( form[ i ] == '%' ) {
+				// 変換指定文字の検索
+				size_t l = strspn( form + i + 1, " #*+-.0123456789Lhl" );
+				if ( i + l >= 1022 ) l = 1022 - i;
+				if ( form[ i + l + 1 ] == '%' )
+					++l;
+				else if ( form[ i + l + 1 ] == 's' )
+					throw HSPERR_UNSUPPORTED_FUNCTION;
+				else
+					++c;
+				memcpy( fbuf + i, form + i, l + 1 );
+				i += l;
+			} else {
+				fbuf[ i ] = form[ i ];
+			}
+		}
+		fbuf[ i ] = '\0';
+		if ( c != 1 ) { throw HSPERR_ILLEGAL_FUNCTION; }
 		chk = code_get();
 		if ( chk <= PARAM_END ) { throw HSPERR_INVALID_FUNCPARAM; }
 		ptr = cnvformat( fbuf, mpval->flag, mpval->pt );
