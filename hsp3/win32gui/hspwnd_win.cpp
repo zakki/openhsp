@@ -422,7 +422,7 @@ void HspWnd::MakeBmscr( int id, int type, int xx, int yy, int wx, int wy, int sx
 
 /*
 	rev 45
-	BT#??? : サイズ固定ツールウィンドウに非描画領域がある。
+	BT#188 : サイズ固定ツールウィンドウに非描画領域がある。
 	に対処。
 */
 
