@@ -3023,27 +3023,42 @@ void code_execirq( IRQDAT *irq, int wparam, int lparam )
 
 static char *dbgbuf;
 
-void code_adddbg2( char *name, char *str )
+/*
+	rev 49
+	BT#190: return命令へ長い文字列を指定するとメモリアクセス違反が起こる
+	に対処。
+
+	実際はデバッグウィンドウで変数内容以外の長い文字列を表示するとバッファオーバーフローが起きていた。
+*/
+
+static void code_adddbg3( char const * s1, char const * sep, char const * s2 )
 {
-	char tmp[2048];
-	sprintf( tmp, "%s:%s\r\n",name,str );
+	char tmp[ 2048 ];
+	strncpy( tmp, s1, 64 );
+	strncat( tmp, sep, 8 );
+	strncat( tmp, s2, 1973 );
+	strcat( tmp, "\r\n" );
 	sbStrAdd( &dbgbuf, tmp );
 }
 
 
-void code_adddbg( char *name, char *str )
+void code_adddbg( char * name, char * str )
 {
-	char tmp[2048];
-	sprintf( tmp, "%s\r\n%s\r\n",name,str );
-	sbStrAdd( &dbgbuf, tmp );
+	code_adddbg3( name, "\r\n", str );
+}
+
+
+void code_adddbg2( char * name, char * str )
+{
+	code_adddbg3( name, ":", str );
 }
 
 
 void code_adddbg( char *name, double val )
 {
-	char tmp[2048];
-	sprintf( tmp, "%s\r\n%f\r\n",name,val );
-	sbStrAdd( &dbgbuf, tmp );
+	char tmp[ 64 ];
+	sprintf( tmp, "%-36.16f", val );
+	code_adddbg( name, tmp );
 }
 
 

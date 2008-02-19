@@ -678,11 +678,15 @@ static void *reffunc_intfunc( int *type_res, int arg )
 
 /*
 	rev 47
-	BT#8 : strf関数で%sフォーマットに数値を指定した場合に強制終了
+	BT#9 : strf関数で%sフォーマットに数値を指定した場合に強制終了
 	に対処。
 
 	変換指定文字に %s を指定するとエラー(サポートされない機能…)になるようにした。
-	加えて変換指定文字がひとつ以外の場合もエラー(パラメータの値が以上…)になるようにした。
+	加えて変換指定文字がひとつ以外の場合もエラー(パラメータの値が異常…)になるようにした。
+*/
+/*
+	rev 49
+	SJIS全角対応を忘れてたのを修正。
 */
 
 	case 0x103:								// strf
@@ -705,6 +709,13 @@ static void *reffunc_intfunc( int *type_res, int arg )
 				i += l;
 			} else {
 				fbuf[ i ] = form[ i ];
+				unsigned char ch = form[ i ];
+				if ( i < 1022 && ( ( ch >= 0x81 && ch <= 0x9F ) ||
+					( ch >= 0xE0 && ch <= 0xFC ) ) )
+				{
+					++i;
+					fbuf[ i ] = form[ i ];
+				}
 			}
 		}
 		fbuf[ i ] = '\0';
