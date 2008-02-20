@@ -3114,30 +3114,27 @@ void code_dbg_global( void )
 }
 
 
-static void code_dbgdump( char *mem, int size )
+/*
+	rev 53
+	‘‚«’¼‚µB
+*/
+
+static void code_dbgdump( char const * mem, int size )
 {
 	//		memory Hex dump
 	//
-	int a,b,v,adr;
-	char t[512];
-	char tline[1024];
-	b=size;a=0;adr=0;
-	while(b>0) {
-		if (a==0) {
-			sprintf( tline,"%04X",adr ); 
+	int adr = 0;
+	char t[ 512 ];
+	char tline[ 1024 ];
+	while ( adr < size ) {
+		sprintf( tline, "%04X", adr );
+		for ( int i = 0; i < 8 && adr < size; ++i, ++adr ) {
+			sprintf( t, " %02X", static_cast< unsigned char >( mem[ adr ] ) );
+			strcat( tline, t );
 		}
-		v=((int)mem[adr]) & 0xff;
-		sprintf( t," %02X",v);
-		strcat( tline, t );
-		adr++;a++;
-		if (a==8) {
-			a=0; strcat( tline, "\r\n" );
-			sbStrAdd( &dbgbuf, tline );
-			tline[0] = 0;
-		}
-		b--;
+		strcat( tline, "\r\n" );
+		sbStrAdd( &dbgbuf, tline );
 	}
-	sbStrAdd( &dbgbuf, tline );
 }
 
 
