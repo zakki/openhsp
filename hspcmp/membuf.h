@@ -6,11 +6,18 @@
 #define __membuf_h
 
 //  growmem class
+
+/*
+	rev 53
+	mingw : warning : クラスは仮想関数を持つのに仮想デストラクタでない。
+	に対処。
+*/
+
 class CMemBuf {
 public:
 	CMemBuf();
 	CMemBuf( int sz );
-	~CMemBuf();
+	virtual ~CMemBuf();
 	void AddIndexBuffer( void );
 	void AddIndexBuffer( int sz );
 

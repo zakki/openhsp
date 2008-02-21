@@ -114,6 +114,12 @@ int CHsc3::PreProcessAht( char *fname, void *ahtoption, int mode )
 }
 
 
+/*
+	rev 54
+	mingw : warning : packbuf は未初期化で使用されうる
+	問題なさそう、一応対処。
+*/
+
 int CHsc3::PreProcess( char *fname, char *outname, int option, char *rname, void *ahtoption )
 {
 	//		Preprocess execute
@@ -127,7 +133,7 @@ int CHsc3::PreProcess( char *fname, char *outname, int option, char *rname, void
 	int res;
 	char mm[512];
 	CToken tk;
-	CMemBuf *packbuf;
+	CMemBuf *packbuf = NULL;
 
 	lb_info = NULL;
 	outbuf = new CMemBuf;
@@ -222,7 +228,7 @@ int CHsc3::Compile( char *fname, char *outname, int mode )
 	int res;
 	char mm[512];
 	CToken tk;
-	if ( lb_info != NULL ) tk.SetLabelInfo( (CLabel *)lb_info );		// プリプロセッサのラベル情報
+	if ( lb_info != NULL ) tk.SetLabelInfo( lb_info );		// プリプロセッサのラベル情報
 
 	tk.SetErrorBuf( errbuf );
 	tk.SetCommonPath( common_path );

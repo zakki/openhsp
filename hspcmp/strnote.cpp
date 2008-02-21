@@ -173,13 +173,18 @@ int CStrNote::GetMaxLine( void )
 	return a;
 }
 
+/*
+	rev 54
+	mingw : warning : a は未初期化で使用されうる
+	問題なさそう、一応対処。
+*/
 
 int CStrNote::PutLine( char *nstr2, int line, int ovr )
 {
 	//		Pet specified line to note
 	//				result:0=ok/1=no line
 	//
-	int a,ln,la,lw;
+	int a = 0,ln,la,lw;
 	char a1;
 	char *pp;
 	char *p1;

@@ -2541,9 +2541,15 @@ char *CToken::GetDS( int ptr )
 }
 
 
+/*
+	rev 54
+	mingw : warning : i ‚Í–¢‰Šú‰»‚ÅŽg—p‚³‚ê‚¤‚é
+	‚É‘ÎˆB
+*/
+
 int CToken::PutLIB( int flag, char *name )
 {
-	int a,i,p;
+	int a,i = -1,p;
 	LIBDAT lib;
 	LIBDAT *l;
 	p = li_buf->GetSize() / sizeof(LIBDAT);

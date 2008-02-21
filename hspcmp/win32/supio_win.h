@@ -31,3 +31,8 @@ void dirinfo( char *p, int id );
 void Alert( char *mes );
 void AlertV( char *mes, int val );
 void Alertf( char *format, ... );
+
+inline int issjisleadbyte( unsigned char c )
+{
+	return ( c >= 0x81 && c <= 0x9F ) || ( c >= 0xE0 && c <= 0xFC );
+}

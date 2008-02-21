@@ -44,7 +44,16 @@ static int ahtbuild_error;		// Error code
 
 extern char *hsp_prestr[];
 
-int WINAPI DllMain (HINSTANCE hInstance, DWORD fdwReason, PVOID pvReserved) {
+/*
+	rev 54
+	gcc でビルドしたときに DllMain が呼ばれるように修正。
+*/
+
+#if defined( __GNUC__ ) && defined( __cplusplus )
+extern "C"
+#endif
+BOOL WINAPI DllMain (HINSTANCE hInstance, DWORD fdwReason, PVOID pvReserved)
+{
 	if ( fdwReason==DLL_PROCESS_ATTACH ) {
 		hsc3 = new CHsc3;
 	}
@@ -76,21 +85,11 @@ static int GetFilePath( char *bname )
 }
 
 
-static void cutext( char *ff )
-{
-	//		拡張子を取り除く
-	//
-	char c1;
-	int a;
-	a=strlen(ff);
-	while(1) {
-		if (a==0) return;
-		a--;c1=ff[a];
-		if (c1=='.') break;
-		if (c1=='\\') return;
-	}
-	ff[a]=0;
-}
+/*
+	rev 54
+	supio_win.cpp と supio_linux.cpp でも cutext が定義されている。
+	そちらを使うようにしてここの cutext は削除。
+*/
 
 
 static void _sendstr( HWND hw, char *p1 )

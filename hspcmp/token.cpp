@@ -1806,6 +1806,12 @@ int CToken::PP_Enum( void )
 }
 
 
+/*
+	rev 54
+	mingw : warning : 比較は常に…
+	に対処。
+*/
+
 char *CToken::CheckValidWord( void )
 {
 	//		行末までにコメントがあるか調べる
@@ -1814,7 +1820,7 @@ char *CToken::CheckValidWord( void )
 	char *res;
 	char *p;
 	char *p2;
-	char a1;
+	unsigned char a1;
 	int qqflg, qqchr;
 	res = (char *)wp;
 	if ( res == NULL ) return res;

@@ -206,34 +206,53 @@ void strcpy2( char *str, char *str2, int max )
 
 /*----------------------------------------------------------*/
 
+
+/*
+	rev 54
+	とりあえず書き直し。
+	sjis全角を含むパスに対応。
+*/
+
+static int findext( char const * st )
+{
+	//	拡張子をさがす。
+	//
+	int r = -1, f = 0;
+	for ( int i = 0; st[ i ] != '\0'; ++i ) {
+		if ( f ) {
+			f = 0;
+		} else {
+			if ( st[ i ] == '.' ) {
+				r = i;
+			} else if ( st[ i ] == '\\' ) {
+				r = -1;
+			}
+			f = issjisleadbyte( st[ i ] );
+		}
+	}
+	return r;
+}
+
+
 void addext( char *st, char *exstr )
 {
 	//	add extension of filename
-
-	int a1;
-	char c1;
-	a1=0;while(1) {
-		c1=st[a1];if (c1==0) break;
-		if (c1=='.') return;
-		a1++;
+	int i = findext( st );
+	if ( i == -1 ) {
+		strcat( st, "." );
+		strcat( st, exstr );
 	}
-	st[a1]='.'; st[a1+1]=0;
-	strcat(st,exstr);
 }
 
-void cutext( char *st )
+
+void cutext( char * st )
 {
-	//	cut extension of filename
-
-	int a1;
-	char c1;
-	a1=0;while(1) {
-		c1=st[a1];if (c1==0) break;
-		if (c1=='.') break;
-		a1++;
-	}
-	st[a1]=0;
+	//		拡張子を取り除く
+	//
+	int i = findext( st );
+	if ( i >= 0 ) st[ i ] = '\0';
 }
+
 
 void cutlast( char *st )
 {

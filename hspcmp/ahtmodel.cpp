@@ -386,6 +386,12 @@ AHTPROP *AHTMODEL::SetProperty( char *propname, char *name, char *value )
 }
 
 
+/*
+	rev 54
+	mingw : warning : ”äŠr‚Íí‚Éc
+	‚É‘ÎˆB
+*/
+
 int AHTMODEL::SetAHTPropertyString( char *propname, char *str )
 {
 	//		AHTİ’è•¶š—ñ‚ğ‰ğÍ‚·‚é
@@ -393,7 +399,7 @@ int AHTMODEL::SetAHTPropertyString( char *propname, char *str )
 	int res;
 	int qmode;
 	int amb;
-	char a1;
+	unsigned char a1;
 	char *vp;
 	char *pname;
 	char *pvalue;
