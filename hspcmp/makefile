@@ -212,7 +212,7 @@ ifneq ($(filter win32dll_mingw,$(PLATFORM)),)
            supio_win.o \
            hspcmp3.o
     LIBS = ole32
-    DEFFILE = win32dll/hspcmp.def
+    DEFFILE = win32dll/hspcmp3.def
 
 endif
 
