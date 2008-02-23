@@ -120,7 +120,7 @@
 			Name="ソース ファイル"
 			Filter="cpp;c;cxx;def;odl;idl;hpj;bat;asm">
 			<File
-				RelativePath="AboutDlg.cpp">
+				RelativePath="aboutdlg.cpp">
 			</File>
 			<File
 				RelativePath="classify.cpp">
@@ -132,40 +132,40 @@
 				RelativePath="exttool.cpp">
 			</File>
 			<File
-				RelativePath="FILEDLG.CPP">
+				RelativePath="filedlg.cpp">
 			</File>
 			<File
 				RelativePath="interface.cpp">
 			</File>
 			<File
-				RelativePath="Main.cpp">
+				RelativePath="main.cpp">
 			</File>
 			<File
-				RelativePath=".\membuf.cpp">
+				RelativePath="membuf.cpp">
 			</File>
 			<File
-				RelativePath="Packlist.cpp">
+				RelativePath="packlist.cpp">
 			</File>
 			<File
-				RelativePath="Popfile.cpp">
+				RelativePath="popfile.cpp">
 			</File>
 			<File
-				RelativePath="Popfind.cpp">
+				RelativePath="popfind.cpp">
 			</File>
 			<File
-				RelativePath="Popfont.cpp">
+				RelativePath="popfont.cpp">
 			</File>
 			<File
-				RelativePath="Poppad.cpp">
+				RelativePath="poppad.cpp">
 			</File>
 			<File
-				RelativePath="Popprnt0.cpp">
+				RelativePath="popprnt0.cpp">
 			</File>
 			<File
-				RelativePath="Statbar.cpp">
+				RelativePath="statbar.cpp">
 			</File>
 			<File
-				RelativePath="SUPIO.CPP">
+				RelativePath="supio.cpp">
 			</File>
 			<File
 				RelativePath="support.cpp">
@@ -174,26 +174,26 @@
 				RelativePath="tabmanager.cpp">
 			</File>
 			<File
-				RelativePath="Toolbar.cpp">
+				RelativePath="toolbar.cpp">
 			</File>
 			<File
-				RelativePath="Tooltip.cpp">
+				RelativePath="tooltip.cpp">
 			</File>
 			<File
-				RelativePath=".\vbsregexp.c">
+				RelativePath="vbsregexp.c">
 			</File>
 		</Filter>
 		<Filter
 			Name="ヘッダー ファイル"
 			Filter="h;hpp;hxx;hm;inl;inc">
 			<File
-				RelativePath="AboutDlg.h">
+				RelativePath="aboutdlg.h">
 			</File>
 			<File
 				RelativePath="classify.h">
 			</File>
 			<File
-				RelativePath="COMCTHLP.H">
+				RelativePath="comcthlp.h">
 			</File>
 			<File
 				RelativePath="config.h">
@@ -202,10 +202,10 @@
 				RelativePath="exttool.h">
 			</File>
 			<File
-				RelativePath="FILEDLG.H">
+				RelativePath="filedlg.h">
 			</File>
 			<File
-				RelativePath="FootyDll.h">
+				RelativePath="footydll.h">
 			</File>
 			<File
 				RelativePath="hsed_config.h">
@@ -214,16 +214,16 @@
 				RelativePath="interface.h">
 			</File>
 			<File
-				RelativePath=".\membuf.h">
+				RelativePath="membuf.h">
 			</File>
 			<File
-				RelativePath="Poppad.h">
+				RelativePath="poppad.h">
 			</File>
 			<File
 				RelativePath="resource.h">
 			</File>
 			<File
-				RelativePath="SUPIO.H">
+				RelativePath="supio.h">
 			</File>
 			<File
 				RelativePath="support.h">
@@ -232,51 +232,36 @@
 				RelativePath="tabmanager.h">
 			</File>
 			<File
-				RelativePath=".\vbsregexp.h">
+				RelativePath="vbsregexp.h">
 			</File>
 		</Filter>
 		<Filter
 			Name="リソース ファイル"
 			Filter="rc;ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe">
 			<File
-				RelativePath="BITMAP1.BMP">
-			</File>
-			<File
-				RelativePath="bitmap2.bmp">
-			</File>
-			<File
-				RelativePath="icon1.ico">
-			</File>
-			<File
-				RelativePath="icon2.ico">
-			</File>
-			<File
 				RelativePath="ln.cur">
 			</File>
 			<File
-				RelativePath="ONIPAD.ICO">
+				RelativePath="onipad.ico">
 			</File>
 			<File
-				RelativePath="Poppad.rc">
+				RelativePath="poppad.rc">
 			</File>
 			<File
-				RelativePath="rt_manif.bin">
-			</File>
-			<File
-				RelativePath="TOOLBAR.BMP">
+				RelativePath="toolbar.bmp">
 			</File>
 			<File
 				RelativePath="url.cur">
+			</File>
+			<File
+				RelativePath="xpstyle.xml">
 			</File>
 		</Filter>
 		<File
 			RelativePath="memo.txt">
 		</File>
 		<File
-			RelativePath="Poppad.aps">
-		</File>
-		<File
-			RelativePath="XPStyle.xml">
+			RelativePath="xpstyle.xml">
 		</File>
 	</Files>
 	<Globals>

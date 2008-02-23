@@ -147,7 +147,7 @@
 #define IDC_STATIC7                     4050
 #define IDC_RADIO8                      4051
 #define IDC_STATIC8                     4052
-#define IDB_BITMAP1                     5000
+#define IDB_TOOLBAR                     5000
 #define IDD_FNAME                       5000
 #define IDB_BITMAP2                     5001
 #define IDD_DIALOG1                     5001

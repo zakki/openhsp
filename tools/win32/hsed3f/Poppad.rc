@@ -671,8 +671,7 @@ END
 // Bitmap
 //
 
-IDB_BITMAP1             BITMAP                  "bitmap1.bmp"
-IDB_BITMAP2             BITMAP                  "bitmap2.bmp"
+IDB_TOOLBAR             BITMAP                  "toolbar.bmp"
 
 /////////////////////////////////////////////////////////////////////////////
 //
@@ -786,7 +785,7 @@ END
 // RT_MANIFEST
 //
 
-1                       RT_MANIFEST             "rt_manif.bin"
+1                       RT_MANIFEST             "xpstyle.xml"
 
 /////////////////////////////////////////////////////////////////////////////
 //

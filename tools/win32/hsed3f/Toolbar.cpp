@@ -187,7 +187,7 @@ HWND InitToolBar (HWND hwndParent, HINSTANCE hInst )
                    dwToolBarStyles,
                    1, 15,
                    hInst,
-                   IDB_BITMAP1,
+                   IDB_TOOLBAR,
                    ptbb,
                    iNumButtons,
                    0, 0, 0, 0,
