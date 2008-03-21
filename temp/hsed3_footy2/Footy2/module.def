@@ -1,0 +1,102 @@
+;module.def
+;このファイルは、Footy2.dllのモジュール定義ファイルです
+;(C)2004-2007 ShinjiWatanabe
+
+LIBRARY	Footy2
+
+EXPORTS      ;エクスポート関数の記述
+
+;システム
+	GetFooty2Ver					@1
+	GetFooty2BetaVer				@2
+
+;ウィンドウ
+	Footy2Create					@10
+	Footy2Delete					@11
+	Footy2Move						@12
+	Footy2ChangeView				@13
+	Footy2SetFocus					@14
+	Footy2GetWnd					@15
+	Footy2GetWndVSplit				@16
+	Footy2GetWndHSplit				@17
+	Footy2GetActiveView				@18
+	Footy2Refresh					@19
+
+;編集系
+	Footy2Copy						@20
+	Footy2Cut						@21
+	Footy2Paste						@22
+	Footy2Undo						@23
+	Footy2Redo						@24
+	Footy2IsEdited					@25
+	Footy2SelectAll					@26
+	Footy2ShiftLock					@27
+	Footy2IsShiftLocked				@28
+
+;文字列処理
+	Footy2SetSelTextA				@30
+	Footy2SetSelTextW				@31
+	Footy2SetTextA					@32
+	Footy2SetTextW					@33
+	Footy2GetTextLengthA			@34
+	Footy2GetTextLengthW			@35
+	Footy2GetTextA					@36
+	Footy2GetTextW					@37
+	Footy2GetLineA					@38
+	Footy2GetLineW					@39
+	Footy2GetLineLengthA			@40
+	Footy2GetLineLengthW			@41
+	Footy2GetLines					@42
+	Footy2SetLineW					@43
+	Footy2SetLineA					@44
+	Footy2GetSelLengthA				@45
+	Footy2GetSelLengthW				@46
+	Footy2GetSelTextA				@47
+	Footy2GetSelTextW				@48
+
+;ファイル関係
+	Footy2TextFromFileA				@50
+	Footy2TextFromFileW				@51
+	Footy2SaveToFileA				@52
+	Footy2SaveToFileW				@53
+	Footy2CreateNew					@54
+	Footy2GetCharSet				@55
+	Footy2GetLineCode				@56
+
+;キャレット関連
+	Footy2GetCaretPosition			@60
+	Footy2SetCaretPosition			@61
+	Footy2GetSel					@62
+	Footy2SetSel					@63
+
+;表示
+	Footy2AddEmphasisA				@70
+	Footy2AddEmphasisW				@71
+	Footy2FlushEmphasis				@72
+	Footy2ClearEmphasis				@73
+	Footy2SetFontSize				@74
+	Footy2SetFontFaceA				@75
+	Footy2SetFontFaceW				@76
+	Footy2SetLineIcon				@77
+	Footy2GetLineIcon				@78
+
+;設定系
+	Footy2SetMetrics				@90
+	Footy2GetMetrics				@91
+	Footy2SetLapel					@92
+	Footy2SetColor					@93
+	Footy2GetVisibleColumns			@94
+	Footy2GetVisibleLines			@95
+
+;検索系
+	Footy2SearchA					@100
+	Footy2SearchW					@101
+
+
+;イベント関係
+	Footy2SetFuncFocus				@110
+	Footy2SetFuncMoveCaret			@111
+	Footy2SetFuncTextModified		@112
+	Footy2SetFuncInsertModeChanged	@113
+
+;[EOF]
