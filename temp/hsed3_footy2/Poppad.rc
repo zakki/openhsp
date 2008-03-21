@@ -244,7 +244,7 @@ BEGIN
     CTEXT           "http://hsp.tv/",IDC_STATICLINK,34,85,90,8,SS_NOTIFY
     LTEXT           "Information available at:",IDC_STATIC,30,77,71,8
     CTEXT           "Modified by LonelyWolf",IDC_STATIC,0,47,159,8
-    CTEXT           "Powered by Footy Lib.",IDC_STATIC,0,56,159,8
+    CTEXT           "Powered by Footy2 Lib.",IDC_STATIC,0,56,159,8
 END
 
 PRINTDLGBOX DIALOG  20, 20, 100, 76

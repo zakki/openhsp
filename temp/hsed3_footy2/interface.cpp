@@ -7,7 +7,7 @@
 #include "hsed_config.h"
 #include "interface.h"
 #include "tabmanager.h"
-#include "footydll.h"
+#include "footy2.h"
 
 //
 // 型の定義
@@ -87,10 +87,10 @@ static LRESULT InterfaceProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 					return GetHspcmpVer((HANDLE)lParam);
 
 				case HGV_FOOTYVER:
-					return GetFootyVer();
+					return GetFooty2Ver();
 
 				case HGV_FOOTYBETAVER:
-					return GetFootyBetaVer();
+					return GetFooty2BetaVer();
 
 				default:
 					return -1;
@@ -108,7 +108,7 @@ static LRESULT InterfaceProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 					return (LRESULT)hwndTab;
 
 				case HGW_FOOTY:
-					return (LRESULT)FootyGetWnd(lParam);
+					return (LRESULT)Footy2GetWnd(lParam, 0);
 
 				case HGW_TOOLBAR:
 					return (LRESULT)hwndToolBar;
@@ -136,46 +136,52 @@ static LRESULT InterfaceProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 			return activeFootyID;
 
 		case HSED_CANCOPY:
-			nRet = FootyGetSelA(wParam, NULL, NULL, NULL, NULL);
-			return (nRet == F_RET_OUTID) ? -1 : (nRet == F_RET_OK);
+			nRet = Footy2GetSel(wParam, NULL, NULL, NULL, NULL);
+			return (nRet == FOOTY2ERR_NOTSELECTED) ? -1 : (nRet == FOOTY2ERR_NONE);
 
 		case HSED_CANPASTE:
 			return IsClipboardFormatAvailable(CF_TEXT) != 0;
 
 		case HSED_CANUNDO:
-			nRet = FootyGetMetrics(wParam, F_GM_UNDOREM);
-			return (nRet == F_RET_OUTID) ? -1 : (nRet > 0);
+			nRet = 0;
+			Footy2GetMetrics(wParam, SM_UNDOREM, &nRet);
+//			return (nRet == F_RET_OUTID) ? -1 : (nRet > 0);
+			return nRet;	// 2008-02-17 Shark++ 代替機能未実装
 
 		case HSED_CANREDO:
-			nRet = FootyGetMetrics(wParam, F_GM_REDOREM);
-			return (nRet == F_RET_OUTID) ? -1 : (nRet > 0);
+			nRet = 0;
+			Footy2GetMetrics(wParam, SM_REDOREM, &nRet);
+//			return (nRet == F_RET_OUTID) ? -1 : (nRet > 0);
+			return nRet;	// 2008-02-17 Shark++ 代替機能未実装
 
 		case HSED_GETMODIFY:
 			return GetModify(wParam);
 
 		case HSED_COPY:
-			return FootyCopy(footy_defid);
+			return Footy2Copy(footy_defid);
 
 		case HSED_CUT:
-			return FootyCut(footy_defid);
+			return Footy2Cut(footy_defid);
 
 		case HSED_PASTE:
-			return FootyPaste(footy_defid);
+			return Footy2Paste(footy_defid);
 
 		case HSED_UNDO:
-			return FootyUndo(footy_defid);
+			return Footy2Undo(footy_defid);
 
 		case HSED_REDO:
-			return FootyRedo(footy_defid);
+			return Footy2Redo(footy_defid);
 
 		case HSED_INDENT:
-			return FootyIndent(footy_defid);
+//			return FootyIndent(footy_defid);
+			return -1;	// 2008-02-17 Shark++ 代替機能未実装
 
 		case HSED_UNINDENT:
-			return FootyUnIndent(footy_defid);
+//			return FootyUnIndent(footy_defid);
+			return -1;	// 2008-02-17 Shark++ 代替機能未実装
 
 		case HSED_SELECTALL:
-			return FootySelectAll(footy_defid);
+			return Footy2SelectAll(footy_defid);
 
 		case HSED_SETTEXT:
 			return SetText((int)wParam, (HANDLE)lParam);
@@ -184,10 +190,10 @@ static LRESULT InterfaceProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 			return GetText((int)wParam, (HANDLE)lParam);
 
 		case HSED_GETTEXTLENGTH:
-			return FootyGetTextLength(footy_defid);
+			return Footy2GetTextLength(footy_defid, LM_CRLF);
 
 		case HSED_GETLINES:
-			return FootyGetLines(footy_defid);
+			return Footy2GetLines(footy_defid);
 /*
 		case HSED_SETSELTEXT:
 			return ;
@@ -199,10 +205,10 @@ static LRESULT InterfaceProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 			return ;
 */
 		case HSED_GETLINELENGTH:
-			return FootyGetLineLen(footy_defid, (int)lParam);
+			return Footy2GetLineLength(footy_defid, (int)lParam);
 
 		case HSED_GETLINECODE:
-			return FootyGetLineCode(footy_defid);
+			return Footy2GetLineCode(footy_defid);	// 2008-02-17 Shark++ SDKを見直す必要あり？
 /*
 		case HSED_SETSELA:
 			return ;
@@ -217,31 +223,41 @@ static LRESULT InterfaceProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 			return ;
 */
 		case HSED_GETCARETLINE:
-			return FootyGetCaretLine(footy_defid);
+			Footy2GetCaretPosition(footy_defid, (size_t*)&nRet, NULL);
+			return nRet;
 
 		case HSED_GETCARETPOS:
-			return FootyGetCaretPos(footy_defid);
+//			return FootyGetCaretPos(footy_defid);
+			return 0;	// 2008-02-17 Shark++ 代替機能未実装
 
 		case HSED_SETCARETLINE:
-			return FootySetCaretLine(footy_defid, (int)lParam);
+			return Footy2SetCaretPosition(footy_defid, (int)lParam, 0);	// 2008-02-17 Shark++ SDKを見直す必要あり？SDKで使用されていない？
 
 		case HSED_SETCARETPOS:
-			return FootySetCaretPos(footy_defid, (int)lParam);
+//			return FootySetCaretPos(footy_defid, (int)lParam);
+			return 0;	// 2008-02-17 Shark++ 代替機能未実装
 
 		case HSED_GETCARETTHROUGH:
-			return FootyGetCaretThrough(footy_defid);
+//			return FootyGetCaretThrough(footy_defid);
+			return 0;	// 2008-02-17 Shark++ 代替機能未実装
 
 		case HSED_SETCARETTHROUGH:
-			return FootySetCaretThrough(footy_defid, (int)lParam);
+//			return FootySetCaretThrough(footy_defid, (int)lParam);
+			return 0;	// 2008-02-17 Shark++ 代替機能未実装
 
 		case HSED_GETCARETVPOS:
-			return FootyGetCaretVPos(footy_defid);
-/*
+//			return FootyGetCaretVPos(footy_defid);
+			return 0;	// 2008-02-17 Shark++ 代替機能未実装
+
 		case HSED_SETMARK:
-			return FootySetMark(footy_defid);
-*/
+		//	return FootySetMark(footy_defid);
+			Footy2GetLineIcon(footy_defid, (size_t)lParam, &nRet);
+			return Footy2SetLineIcon(footy_defid, (size_t)lParam, (nRet & ~LINEICON_BLUE) | (wParam ? LINEICON_BLUE : 0) );	// 2008-02-23 Shark++ SDKを見直す必要あり
+
 		case HSED_GETMARK:
-			return FootyGetMark(footy_defid, (int)lParam);
+//			return FootyGetMark(footy_defid, (int)lParam);
+			Footy2GetLineIcon(footy_defid, (size_t)lParam, &nRet);
+			return (nRet & LINEICON_BLUE) ? 1 : 0;	// 2008-02-23 Shark++ 要動作確認
 /*
 		case HSED_SETHIGHLIGHT:
 			return ;
@@ -309,14 +325,16 @@ static inline LRESULT SetText(int nFootyID, HANDLE hPipe)
 		free(lpBuffer);
 		return -3;
 	}
-	nRet = FootySetText(nFootyID, lpBuffer);
+//	nRet = Footy2SetText(nFootyID, lpBuffer); // 2008-02-21 Shark++ こっちだと強調文字の設定が破棄される
+	Footy2SelectAll(nFootyID, false);
+	nRet = Footy2SetSelText(nFootyID, lpBuffer);
 	free(lpBuffer);
 
 	switch(nRet){
-		case F_RET_OK:     return 0;
-		case F_RET_MEMORY: return -1;
-		case F_RET_OUTID:  return -2;
-		default:           return -4;
+		case FOOTY2ERR_NONE:   return 0;
+		case FOOTY2ERR_MEMORY: return -1;
+		case FOOTY2ERR_NOID:   return -2;
+		default:               return -4;
 	}
 }
 
@@ -328,11 +346,11 @@ static inline LRESULT GetText(int nFootyID, HANDLE hPipe)
 	DWORD dwSize, dwNumberOfBytesWritten;
 	char *lpBuffer;
 
-	dwSize = FootyGetTextLength(nFootyID);
+	dwSize = Footy2GetTextLength(nFootyID, LM_CRLF);
 	lpBuffer = (char *)malloc(dwSize + 1);
 	if(lpBuffer == NULL) return -1;
-	nRet = FootyGetText(nFootyID, lpBuffer, RETLINE_CRLF);
-	if(nRet == F_RET_OK){
+	nRet = Footy2GetText(nFootyID, lpBuffer, LM_CRLF, dwSize);
+	if(nRet == FOOTY2ERR_NONE){
 		if(!WriteFile(hPipe, lpBuffer, dwSize, &dwNumberOfBytesWritten, NULL)){
 			free(lpBuffer);
 			return -3;
@@ -342,9 +360,9 @@ static inline LRESULT GetText(int nFootyID, HANDLE hPipe)
 	}
 
 	switch(nRet){
-		case F_RET_OK:     return 0;
-		case F_RET_MEMORY: return -1;
-		case F_RET_OUTID:  return -2;
-		default:           return -4;
+		case FOOTY2ERR_NONE:   return 0;
+		case FOOTY2ERR_MEMORY: return -1;
+		case FOOTY2ERR_NOID:   return -2;
+		default:               return -4;
 	}
 }

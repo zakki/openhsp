@@ -304,6 +304,8 @@ bool CFooty::SetSelText(const wchar_t *pString){
 	}
 	/*再描画*/
 	m_cView[0].Refresh();
+	/*イベントを通知する*/
+	m_cDoc.SendTextModified(MODIFIED_CAUSE_SETSELTEXT);
 	return true;
 }
 

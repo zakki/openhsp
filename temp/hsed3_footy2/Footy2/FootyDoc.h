@@ -95,6 +95,8 @@ public:
 	inline size_t GetTabLen(){return m_nTabLen;}
 	bool IsEdited();
 	inline bool IsInsertMode(){return m_bInsertMode;}
+	int GetRedoRem();
+	int GetUndoRem();
 
 	// êŠŒn‚Ìæ“¾ƒ‹[ƒ`ƒ“
 	inline CEditPosition *GetCaretPosition(){return &m_cCaretPos;}
@@ -106,10 +108,11 @@ public:
 	inline CEthicLine *GetFirstVisible(int nID){return &m_cFirstVisibleLine[nID];}
 	CEditPosition *GetSelStart();
 	CEditPosition *GetSelEnd();
-	
+
 	// İ’è
 	void SetLapel(size_t nColumn,int nMode);
 	void SetInsertMode(bool bInsertMode);
+	void SetTabLen(size_t nTabLen);
 
 	// ‹­’²•\¦Œn‚ÌŠÖ”
 	bool AddEmphasis(const wchar_t *pString1,const wchar_t *pString2,int nType,

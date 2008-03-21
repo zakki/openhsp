@@ -884,7 +884,7 @@ CFootyView::RendUnderLine
 bool CFootyView::RendUnderLine(HDC hDC,const RECT *rc){
 #ifndef UNDER_CE
 	if (!hDC || !rc)return false;
-	if (m_bIsFocused && !m_pDocuments->IsSelecting())
+	if (m_bUnderlineVisible && m_bIsFocused && !m_pDocuments->IsSelecting())
 		DrawLine(hDC,m_nLineCountWidth,m_cCaret.GetNowY() + m_pFonts->GetHeight() + 1,
 				rc->right,m_cCaret.GetNowY() + m_pFonts->GetHeight() + 1,m_pStatus->m_clUnderLine);
 #endif	/*not defined UNDER_CE*/

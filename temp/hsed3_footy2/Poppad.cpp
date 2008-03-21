@@ -19,8 +19,11 @@
 #include <direct.h>
 #include <winuser.h>
 #include <shlobj.h>
-#include "FootyDLL.h"
+#include "Footy2.h"
 #include <htmlhelp.h>
+#if _MSC_VER >= 1400 // VC++ .NET 2005 or later
+#include <mbctype.h> // for _ismbblead()
+#endif
 
 #include "poppad.h"
 #include "resource.h"
@@ -799,48 +802,55 @@ static void getkw( void )
 {
 	//		Get help keyword
 	//
-	int buflen,ofs,org,a,b;
-	char *strbuf;
+// 2008-02-23 Shark++ 書き直そうとしたけど途中で元のコードを手直しすれば動くことに気が付く
+// 2008-02-25 Shark++ やっぱ書き換える
+	int line = 0, pos = 0, linesize, len;
+	int ofs,org,a,b;
+	wchar_t *linebuff = NULL, *p, *kwstart;
 	char a1;
 
-//	SendMessage ( hwndEdit, EM_GETSEL, 0,(LPARAM) &ofs );
-	ofs = FootyGetCaretThrough(activeFootyID) - 1;
-//	buflen = GetWindowTextLength (hwndEdit);
-	buflen = FootyGetTextLength(activeFootyID);
-	strbuf=(char *)malloc(buflen+16);
-//	GetWindowText (hwndEdit, strbuf, buflen + 1) ;
-	FootyGetText (activeFootyID, strbuf, RETLINE_CRLF);
-	org = ofs;
-//	if ( flag_xpstyle ) ofs = getUnicodeOffset( strbuf, ofs );
-	a=ofs;b=0;
-	while(1) {
-		if (a==0) break;
-		a1=strbuf[a-1];
-		if ((a1>=0x30)&&(a1<=0x39)) { a--; continue; }
-		if (hsp_helpmode!=0) {
-			if ( a1 == '#' ) { a--; break; }	// #を含める
-		}
-		if (a1<65) break;
-		a--;
+	// 動作メモ
+	//  キーワードには、
+	//   数字
+	//   大小英字
+	//   '[','\\',']','^','_','`','{','|','}','~'
+	//   0x7F - 0xFF
+	//  が含まれる
+	//  hsp_helpmode が 非0の場合は、プリプロセッサの'#'もキーワードに含める
+
+	Footy2GetCaretPosition(activeFootyID, (size_t*)&line, (size_t*)&pos);
+	linesize = Footy2GetLineLengthW(activeFootyID, line);
+	linebuff = (wchar_t *)Footy2GetLineW(activeFootyID, line); // Footy2内の行バッファを取得
+	if( !linebuff ) {
+		goto abort;
 	}
-	while(1) {
-		a1=strbuf[a++];
-		if ((a1>=0x30)&&(a1<=0x39)) {
-			kwstr[b++]=a1;
-		}
-		else if (a1=='#') {
-			kwstr[b++]=a1;
-		}
-		else if (a1>=65) {
-			kwstr[b++]=a1;
-		}
-		else {
+
+	kwstart = linebuff + pos;
+
+	for(p = kwstart - 1; linebuff <= p; p--)
+	{
+		if( !(L'0' <= *p && *p <= L'9') &&	// 数字以外 かつ
+			*p < L'A')						// 0x40以下のコード
+		{
+			if( hsp_helpmode && L'#' == *p ) {
+				kwstart = p;
+			}
 			break;
 		}
+		kwstart = p;
 	}
-	kwstr[b++]=0;
-	//MessageBox( NULL,kwstr,"WOW",0 );
-	free(strbuf);
+
+	for(p = kwstart;
+		*p && ( (L'0' <= *p && *p <= L'9') || L'A' <= *p || L'#' == *p );
+		p++);
+
+	len = (int)(p - kwstart);
+	len = WideCharToMultiByte(CP_ACP, 0, kwstart, len, kwstr, 512, NULL, NULL);
+	kwstr[len] = '\0';
+
+abort:
+	;
+//	MessageBox( NULL,kwstr,"WOW",0 );
 }
 
 static void callhelp( void )
@@ -1181,14 +1191,19 @@ static void set_labellist( HWND hDlg, HWND hwndEdit )
 	int lab;
 	int tag;
 	int mytag = -1;
-	int myline;
+	int myline= -2;
+	int ret;
 	SendDlgItemMessage( hDlg,IDC_LIST2,LB_RESETCONTENT, 0, 0L );
 
-	len = FootyGetTextLength(activeFootyID);
+	len = Footy2GetTextLength(activeFootyID, LM_CRLF);
 	if(len >= 0){
 		buffer = (char *) malloc ( len + 1 );
-		FootyGetText(activeFootyID, buffer, RETLINE_CRLF);
-		FootyGetSelA(activeFootyID, &myline, NULL, NULL, NULL);
+		Footy2GetText(activeFootyID, buffer, LM_CRLF, len);
+		ret = Footy2GetSel(activeFootyID, (size_t*)&myline, NULL, NULL, NULL);
+		if(FOOTY2ERR_NOTSELECTED == ret){
+			Footy2GetCaretPosition(activeFootyID, (size_t*)&myline, NULL);
+		}
+		myline++; // Footy2 は行が0ベースなので
 
 		line = 1;
 		wp = buffer;
@@ -1272,17 +1287,20 @@ BOOL CALLBACK LabelDlgProc (HWND hDlg, UINT message, WPARAM wParam, LPARAM lPara
 
 void poppad_setedit(int FootyID)
 {
-	FootySetMarkVisible(FootyID, F_SC_TAB, tabEnabled, false);
-	FootySetMarkVisible(FootyID, F_SC_HALFSPACE, hsEnabled, false);
-	FootySetMarkVisible(FootyID, F_SC_NORMALSPACE, fsEnabled, false);
-	FootySetMarkVisible(FootyID, F_SC_CRLF, nlEnabled, false);
-	FootySetMarkVisible(FootyID, F_SC_EOF, eofEnabled, false);
-	FootySetMarkVisible(FootyID, F_SC_UNDERLINE, ulEnabled, false);
-	FootySetMetrics(FootyID, F_SM_TAB, tabsize, false);
-	FootySetMetrics(FootyID, F_SM_RULER, rulerheight, false);
-	FootySetMetrics(FootyID, F_SM_LINENUM, linewidth, false);
-	FootySetMetrics(FootyID, F_SM_LINESPACE, linespace, false);
-	//FootyRefresh(FootyID);
+	int VisibleStatus = EDM_SHOW_NONE;
+
+	VisibleStatus |= !tabEnabled ? 0 : EDM_TAB;
+	VisibleStatus |= !hsEnabled  ? 0 : EDM_HALF_SPACE;
+	VisibleStatus |= !fsEnabled  ? 0 : EDM_FULL_SPACE;
+	VisibleStatus |= !nlEnabled  ? 0 : EDM_LINE;
+	VisibleStatus |= !eofEnabled ? 0 : EDM_EOF;
+	Footy2SetMetrics(FootyID, SM_UNDERLINE_VISIBLE, ulEnabled, false);
+	Footy2SetMetrics(FootyID, SM_MARK_VISIBLE, VisibleStatus, false);
+	Footy2SetMetrics(FootyID, SM_TAB_WIDTH, tabsize, false);
+	Footy2SetMetrics(FootyID, SM_RULER_HEIGHT, rulerheight, false);
+	Footy2SetMetrics(FootyID, SM_LINENUM_WIDTH, linewidth, false);
+//	FootySetMetrics(FootyID, F_SM_LINESPACE, linespace, false);	// 2008-02-17 Shark++ 代替機能未実装
+	//Footy2Refresh(FootyID);
 }
 
 static void poppad_setalledit()
@@ -1302,7 +1320,8 @@ int poppad_setsb( int flag )
 	if (flag<0) chk=hscroll_flag;
 	else if (flag<2) chk=flag;
 	else chk=hscroll_flag^1;
-	ShowScrollBar( hwndEdit,SB_HORZ,chk );
+//	ShowScrollBar( hwndEdit,SB_HORZ,chk ); // 2008-03-16 Shark++ もともと効いていなかったみたい
+//	ShowScrollBar( Footy2GetWnd(activeFootyID, 0),SB_HORZ,chk );
 
 	hscroll_flag=chk;
 	return chk;
@@ -1440,65 +1459,79 @@ LRESULT CALLBACK MyEditProc( HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam )
 
 	case WM_KEYDOWN:
 	{
-		char *szSpaceBuf;
-		const char *szLine;
-		int nsLine, nsPos, neLine, nePos, nLength, i, j;
+		wchar_t *szSpaceBuf;
+		const wchar_t *szLine;
+		int nsLine, nsPos, neLine, nePos, nLength, i, j, ret;
 
 		if(bAutoIndent && wParam == VK_RETURN && GetKeyState(VK_CONTROL) >= 0){
-			FootyGetSelA(activeFootyID, &nsLine, &nsPos, &neLine, &nePos);
+			/*
+			 * 処理内容
+			 *  
+			 */
+			ret = Footy2GetSel(activeFootyID, (size_t*)&nsLine, (size_t*)&nsPos, (size_t*)&neLine, (size_t*)&nePos);
+			if(FOOTY2ERR_NOTSELECTED == ret){
+				Footy2GetCaretPosition(activeFootyID, (size_t*)&nsLine, (size_t*)&nsPos);
+				neLine = nsLine;
+				nePos  = nsPos;
+			}
 
-			szLine = FootyGetLineData(activeFootyID, neLine);
-			nLength = FootyGetLineLen(activeFootyID, neLine);
-			for(i = nePos - 1; i < nLength && (szLine[i] == ' ' || szLine[i] == '\t'); i++)
+			szLine = Footy2GetLineW(activeFootyID, neLine);
+			nLength = Footy2GetLineLengthW(activeFootyID, neLine);
+			for(i = nePos; i < nLength && (szLine[i] == ' ' || szLine[i] == '\t'); i++)
 				nePos++;
 
-            szLine = FootyGetLineData(activeFootyID, nsLine);
-			nLength = min(FootyGetLineLen(activeFootyID, nsLine), nsPos);
+			nLength = min(nLength, nsPos);
 
-			szSpaceBuf = (char *)malloc(nLength + 3);
-			lstrcpy(szSpaceBuf, "\r\n");
+			szSpaceBuf = (wchar_t *)calloc(nLength + 3, sizeof(wchar_t));
+			lstrcpyW(szSpaceBuf, L"\r\n");
 
 			for(i = nLength - 1, j = 2; i >= 0 && (szLine[i] == ' ' || szLine[i] == '\t'); i--);
 			if(i >= 0 && szLine[i] == '{')
 				szSpaceBuf[j++] = '\t';
 			for(i = 0; i < nLength && (szLine[i] == ' ' || szLine[i] == '\t'); i++, j++)
 				szSpaceBuf[j] = szLine[i];
-			if(szLine[i] == '\0' || i >= nsPos - 1)
+			if(szLine[i] == '\0' || i >= nsPos)
 				nsPos = 1;
 			else if(szLine[i] == '*' && i < nsPos)
 				szSpaceBuf[j++] = '\t';
             szSpaceBuf[j] = '\0';
 
-			FootySetSelA(activeFootyID, nsLine, nsPos, neLine, nePos);
-			FootySetSelText(activeFootyID, szSpaceBuf);
+			Footy2SetSel(activeFootyID, nsLine, nsPos, neLine, nePos, false);
+			Footy2SetSelTextW(activeFootyID, szSpaceBuf);
 			free(szSpaceBuf);
 			return 0;
-
+ 	// 2008-03-17 Shark++ 要動作確認
 		}
 		break;
 	}
 
 	case WM_CHAR:
 	{
-		char szInsBuf[2];
-		const char *szLine;
-		int nsLine, nsPos, neLine, nePos, nLength, i;
+		wchar_t szInsBuf[2];
+		const wchar_t *szLine;
+		int nsLine, nsPos, neLine, nePos, nLength, i, ret;
 		static char chPrevByte;
 
 		if((wParam == '*' || wParam == '}') && !_ismbblead(chPrevByte)){
-			FootyGetSelA(activeFootyID, &nsLine, &nsPos, &neLine, &nePos);
-            szLine = FootyGetLineData(activeFootyID, nsLine);
-			nLength = FootyGetLineLen(activeFootyID, nsLine);
+			ret = Footy2GetSel(activeFootyID, (size_t*)&nsLine, (size_t*)&nsPos, (size_t*)&neLine, (size_t*)&nePos);
+			if(FOOTY2ERR_NOTSELECTED == ret){
+				Footy2GetCaretPosition(activeFootyID, (size_t*)&nsLine, (size_t*)&nsPos);
+				neLine = nsLine;
+				nePos  = nsPos;
+			}
+            szLine  = Footy2GetLineW(activeFootyID, nsLine);
+			nLength = Footy2GetLineLengthW(activeFootyID, nsLine);
 
-			for(i = nsPos - 2; i >= 0 && (szLine[i] == ' ' || szLine[i] == '\t'); i--);
+			for(i = nsPos - 1; i >= 0 && (szLine[i] == ' ' || szLine[i] == '\t'); i--);
 			if(i < 0)
-				FootySetSelA(activeFootyID, nsLine, (wParam == '*' ? 1 : (nsPos > 1 ? nsPos - 1 : 1)), neLine, nePos);
-			szInsBuf[0] = (char)(TCHAR)wParam, szInsBuf[1] = '\0';
-            FootySetSelText(activeFootyID, szInsBuf);
+				Footy2SetSel(activeFootyID, nsLine, (wParam == '*' ? 0 : (nsPos > 0 ? nsPos - 1 : 0)), neLine, nePos, false);
+			szInsBuf[0] = (wchar_t)(TCHAR)wParam, szInsBuf[1] = '\0';
+            Footy2SetSelTextW(activeFootyID, szInsBuf);
 			return 0;
 		} else {
 			chPrevByte = wParam;
 		}
+ 	// 2008-03-17 Shark++ 要動作確認
 		break;
 	}
 
@@ -1508,6 +1541,13 @@ LRESULT CALLBACK MyEditProc( HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam )
 		 PutLineNumber();
 		 break;
 
+	case WM_CONTEXTMENU:
+		{
+			POINT pt;
+			GetCursorPos(&pt);
+			TrackPopupMenu(hSubMenu, TPM_LEFTALIGN | TPM_TOPALIGN | TPM_RIGHTBUTTON, pt.x, pt.y, 0, hwbak, NULL);
+			break;
+		}
 	}
 
 	return (CallWindowProc( Org_EditProc, hwnd, msg, wParam, lParam ));
@@ -1526,104 +1566,120 @@ LRESULT CALLBACK MyTabProc( HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam )
 
 int poppad_menupop( WPARAM wParam, LPARAM lParam )
 {
-    int              iSelBeg, iSelEnd, iEnable ;
+	int				 iSelBeg, iSelEnd, iEnable, iResult;
 	int				 iSelLBeg, iSelLEnd, iLength;
+	int				 iNum;
 	MENUITEMINFO	 mii;
 	HIMC			 hIMC;
 	HWND			 hFooty;
 	//case WM_INITMENUPOPUP :
-			switch (lParam)
-                    {
-					case -1 :		// Popup menu
-						 do{
-                             hFooty = FootyGetWnd(activeFootyID);
-							 if(hFooty == NULL) break;
-							 hIMC = ImmGetContext(hFooty);
-							 if(hIMC == NULL) break;
-							 mii.cbSize = sizeof(MENUITEMINFO);
-							 mii.fMask = MIIM_STRING;
+	switch (lParam)
+	{
+		case -1 :		// Popup menu
+			 do{
+				hFooty = Footy2GetWnd(activeFootyID, 0);
+				if(hFooty == NULL) break;
+				hIMC = ImmGetContext(hFooty);
+				if(hIMC == NULL) break;
+				mii.cbSize = sizeof(MENUITEMINFO);
+				mii.fMask = MIIM_STRING;
 #ifdef JPMSG
-							 mii.dwTypeData = ImmGetOpenStatus(hIMC) ? "IME を閉じる(&L)" : "IME を開く(&O)";
+				mii.dwTypeData = ImmGetOpenStatus(hIMC) ? "IME を閉じる(&L)" : "IME を開く(&O)";
 #else
-							 mii.dwTypeData = ImmGetOpenStatus(hIMC) ? "C&lose IME" : "&Open IME";
+				mii.dwTypeData = ImmGetOpenStatus(hIMC) ? "C&lose IME" : "&Open IME";
 #endif
-							 SetMenuItemInfo((HMENU) wParam, IDM_OPENIME, FALSE, &mii);
-							 ImmReleaseContext(hFooty, hIMC);
-						 }while(0);
+				SetMenuItemInfo((HMENU) wParam, IDM_OPENIME, FALSE, &mii);
+				ImmReleaseContext(hFooty, hIMC);
+			 }while(0);
 
-                    case 0 :        // Edit menu
-                    case 1 :        // Edit menu
-						{
+		case 0 :		// Edit menu
+		case 1 :		// Edit menu
+			{
 
-                              // Enable Undo if edit control can do it
-                        EnableMenuItem ((HMENU) wParam, IDM_UNDO,
-                              FootyGetMetrics(activeFootyID, F_GM_UNDOREM) > 0 ? MF_ENABLED : MF_GRAYED) ;
+			// Enable Undo if edit control can do it
+			iNum = 0;
+			Footy2GetMetrics(activeFootyID, SM_UNDOREM, &iNum);
+			EnableMenuItem ((HMENU) wParam, IDM_UNDO,
+//				FootyGetMetrics(activeFootyID, F_GM_UNDOREM) > 0 ? MF_ENABLED : MF_GRAYED) ;	// 2008-02-17 Shark++ 代替機能未実装
+				iNum > 0 ? MF_ENABLED : MF_GRAYED) ;
 
-						      // Enable Redo if edit control can do it
+			// Enable Redo if edit control can do it
 
-//                         EnableMenuItem ((HMENU) wParam, IDM_REDO, nUndoNum > 0 ?
-//								   MF_ENABLED : MF_GRAYED) ;
-//                         EnableMenuItem ((HMENU) wParam, IDM_REDO,
-//                              SendMessage (hwndEdit, WM_USER + 85/*(EM_CANREDO)*/, 0, 0L) ?
-//                                   MF_ENABLED : MF_GRAYED) ;
-						 EnableMenuItem ((HMENU) wParam, IDM_REDO,
-                              FootyGetMetrics(activeFootyID, F_GM_REDOREM) > 0 ? MF_ENABLED : MF_GRAYED) ;
+//			EnableMenuItem ((HMENU) wParam, IDM_REDO, nUndoNum > 0 ?
+//				MF_ENABLED : MF_GRAYED) ;
+//			EnableMenuItem ((HMENU) wParam, IDM_REDO,
+//			SendMessage (hwndEdit, WM_USER + 85/*(EM_CANREDO)*/, 0, 0L) ?
+//				MF_ENABLED : MF_GRAYED) ;
+			iNum = 0;
+			Footy2GetMetrics(activeFootyID, SM_REDOREM, &iNum);
+			EnableMenuItem ((HMENU) wParam, IDM_REDO,
+//				FootyGetMetrics(activeFootyID, F_GM_REDOREM) > 0 ? MF_ENABLED : MF_GRAYED) ;	// 2008-02-17 Shark++ 代替機能未実装
+				iNum > 0 ? MF_ENABLED : MF_GRAYED) ;
 
 
-                              // Enable Paste if text is in the clipboard
+			// Enable Paste if text is in the clipboard
 
-                         EnableMenuItem ((HMENU) wParam, IDM_PASTE,
-                              IsClipboardFormatAvailable (CF_TEXT) ?
-                                   MF_ENABLED : MF_GRAYED) ;
+			EnableMenuItem ((HMENU) wParam, IDM_PASTE,
+				  IsClipboardFormatAvailable (CF_TEXT) ?
+					   MF_ENABLED : MF_GRAYED) ;
 
-                              // Enable Cut, Copy, and Del if text is selected
+			// Enable Cut, Copy, and Del if text is selected
 
-//                         SendMessage (hwndEdit, EM_GETSEL, (WPARAM) &iSelBeg,
-//                                                           (LPARAM) &iSelEnd) ;
-						 FootyGetSelA(activeFootyID, &iSelLBeg, &iSelBeg, &iSelLEnd, &iSelEnd);
+//			SendMessage (hwndEdit, EM_GETSEL, (WPARAM) &iSelBeg,
+//				(LPARAM) &iSelEnd) ;
+			iSelLBeg = iSelBeg = iSelLEnd = iSelEnd = 0;
+			iResult = Footy2GetSel(activeFootyID, (size_t*)&iSelLBeg, (size_t*)&iSelBeg, (size_t*)&iSelLEnd, (size_t*)&iSelEnd);
+			if( FOOTY2ERR_NOTSELECTED == iResult ) {
+				Footy2GetCaretPosition(activeFootyID, (size_t*)&iSelLBeg, (size_t*)&iSelBeg);
+				iSelLEnd = iSelLBeg;
+				iSelEnd  = iSelBeg;
+			}
 
-                         iEnable = iSelBeg != iSelEnd  || iSelLBeg != iSelLEnd ? MF_ENABLED : MF_GRAYED ;
+			iEnable = iSelBeg != iSelEnd  || iSelLBeg != iSelLEnd ? MF_ENABLED : MF_GRAYED ;
 
-                         EnableMenuItem ((HMENU) wParam, IDM_CUT,    iEnable) ;
-                         EnableMenuItem ((HMENU) wParam, IDM_COPY,   iEnable) ;
-                         EnableMenuItem ((HMENU) wParam, IDM_CLEAR,  iEnable) ;
+			EnableMenuItem ((HMENU) wParam, IDM_CUT,	 iEnable) ;
+			EnableMenuItem ((HMENU) wParam, IDM_COPY,	 iEnable) ;
+			EnableMenuItem ((HMENU) wParam, IDM_CLEAR,	 iEnable) ;
 
-						 iLength = FootyGetTextLength(activeFootyID);
-						 if(FootyGetSelB(activeFootyID, &iSelBeg, &iSelEnd) == F_RET_FAILED)
-							 iSelEnd = 0;
-						 EnableMenuItem ((HMENU) wParam, IDM_SELALL,
-							 (iLength > 0 && iLength != iSelEnd - iSelBeg) ? MF_ENABLED : MF_GRAYED) ;
-                         break ;
-						}
+			EnableMenuItem ((HMENU) wParam, IDM_SELALL,
+				 (0 < iSelLBeg || 0 < iSelBeg || iSelLEnd < Footy2GetLines(activeFootyID) - 1 ||
+					iSelEnd < Footy2GetLineLengthW(activeFootyID, Footy2GetLines(activeFootyID) - 1))
+						? MF_ENABLED : MF_GRAYED) ;
+	int nA, nB;
+	Footy2GetMetrics(activeFootyID, SM_REDOREM, &nA);
+	Footy2GetMetrics(activeFootyID, SM_UNDOREM, &nB);
+	nA = nA;
+			break ;
+			}
 
-                    case 2 :        // Search menu
+		case 2 :		// Search menu
 
-                              // Enable Find, Next, and Replace if modeless
-                              //   dialogs are not already active
+			// Enable Find, Next, and Replace if modeless
+			//   dialogs are not already active
 
-                         iEnable = hDlgModeless == NULL ?
-                                        MF_ENABLED : MF_GRAYED ;
+			 iEnable = hDlgModeless == NULL ?
+							MF_ENABLED : MF_GRAYED ;
 
-                         EnableMenuItem ((HMENU) wParam, IDM_FIND,    iEnable) ;
-                         EnableMenuItem ((HMENU) wParam, IDM_NEXT,    iEnable) ;
-                         EnableMenuItem ((HMENU) wParam, IDM_REPLACE, iEnable) ;
-                         break ;
+			 EnableMenuItem ((HMENU) wParam, IDM_FIND,	  iEnable) ;
+			 EnableMenuItem ((HMENU) wParam, IDM_NEXT,	  iEnable) ;
+			 EnableMenuItem ((HMENU) wParam, IDM_REPLACE, iEnable) ;
+			 break ;
 
-					case 5 :		// HSP menu
+		case 5 :		// HSP menu
 
-                        iEnable = hsp_fullscr ? MF_CHECKED : MF_UNCHECKED ;
-						CheckMenuItem ((HMENU) wParam, IDM_FULLSCR, iEnable) ;
-                        iEnable = hsp_debug ? MF_CHECKED : MF_UNCHECKED ;
-						CheckMenuItem ((HMENU) wParam, IDM_DEBUG, iEnable) ;
-                        iEnable = hsp_extmacro ? MF_CHECKED : MF_UNCHECKED ;
-						CheckMenuItem ((HMENU) wParam, IDM_HSPEXTMACRO, iEnable) ;
-                        iEnable = hsp_clmode ? MF_CHECKED : MF_UNCHECKED ;
-						CheckMenuItem ((HMENU) wParam, IDM_HSPCLMODE, iEnable) ;
-						break;
+			iEnable = hsp_fullscr ? MF_CHECKED : MF_UNCHECKED ;
+			CheckMenuItem ((HMENU) wParam, IDM_FULLSCR, iEnable) ;
+			iEnable = hsp_debug ? MF_CHECKED : MF_UNCHECKED ;
+			CheckMenuItem ((HMENU) wParam, IDM_DEBUG, iEnable) ;
+			iEnable = hsp_extmacro ? MF_CHECKED : MF_UNCHECKED ;
+			CheckMenuItem ((HMENU) wParam, IDM_HSPEXTMACRO, iEnable) ;
+			iEnable = hsp_clmode ? MF_CHECKED : MF_UNCHECKED ;
+			CheckMenuItem ((HMENU) wParam, IDM_HSPCLMODE, iEnable) ;
+			break;
 
-                    }
+	}
 
-               return 0 ;
+	return 0 ;
 }
 
 LRESULT poppad_term( UINT iMsg )
@@ -1658,13 +1714,14 @@ LRESULT poppad_term( UINT iMsg )
 void PutLineNumber( void )
 {
 	char szBuffer[256] ;
-	int ln;
-	ln = FootyGetCaretLine(activeFootyID);
-	wsprintf (szBuffer, "line : %d", ln) ;
+	int ln = 0;
+	Footy2GetCaretPosition(activeFootyID, (size_t*)&ln, NULL);
+	wsprintf (szBuffer, "line : %d", ln + 1) ;
 	Statusbar_mes( szBuffer );
 }
 
-							 
+int Footy2GetSelB(int FootyID, size_t * StartOffset, size_t * EndOffset);
+						 
 LRESULT CALLBACK EditDefProc(HWND hwnd, UINT iMsg, WPARAM wParam, LPARAM lParam)
 {
 	int iOffset, SelStart, SelEnd;
@@ -1675,10 +1732,11 @@ LRESULT CALLBACK EditDefProc(HWND hwnd, UINT iMsg, WPARAM wParam, LPARAM lParam)
 	if (iMsg == iMsgFindReplace)
 	{
 		pfr = (LPFINDREPLACE) lParam ;
-		FootyGetSelB(activeFootyID, &SelStart, &SelEnd);
+	//	FootyGetSelB(activeFootyID, &SelStart, &SelEnd);
+		Footy2GetSelB(activeFootyID, (size_t*)&SelStart, (size_t*)&SelEnd);
 
 		// 新しい検索方式のために調整 (fixed@1.06β1 byLonelyWolf)
-		iOffset = (pfr->Flags & FR_DOWN) ? SelEnd - 1 : SelStart - 1 ;
+		iOffset = (pfr->Flags & FR_DOWN) ? SelEnd : SelStart;
 
 		if (pfr->Flags & FR_DIALOGTERM) hDlgModeless = NULL ;
 
@@ -1702,9 +1760,14 @@ LRESULT CALLBACK EditDefProc(HWND hwnd, UINT iMsg, WPARAM wParam, LPARAM lParam)
 				OkMessage2 ( "Replace finished.", "") ;
 #endif
 
-        if (pfr->Flags & FR_REPLACEALL)
+		if (pfr->Flags & FR_REPLACEALL) {
+			// 2008-03-11 Shark++ 他のエディタに比べると置換がすごく遅い気がする(それでも現行版よりは早いけど)
+		//	::SendMessage(Footy2GetWnd(activeFootyID, 0), WM_SETREDRAW, 0, 0); // 2008-03-11 Shark++ 速度を稼ぐために描画を止めてみたけどあまり変わらない
 			while (PopFindReplaceText (hwndEdit, iOffset, pfr) );
-
+		//	::SendMessage(Footy2GetWnd(activeFootyID, 0), WM_SETREDRAW, 1, 0);
+		//	Footy2Refresh(activeFootyID);
+		}
+	// 2008-02-17 Shark++ 後回し
 		return 0 ;
 	}
 	else if (iMsg == iMsgHelp)
@@ -1788,8 +1851,9 @@ LRESULT CALLBACK EditProc (HWND hwnd, UINT iMsg, WPARAM wParam, LPARAM lParam)
 						nFootyID = activeFootyID;
 						if(lpTabInfo == NULL
 							|| lpTabInfo->FileName[0] != '\0'
-							|| FootyGetMetrics(activeFootyID, F_GM_UNDOREM) > 0
-							|| FootyGetMetrics(activeFootyID, F_GM_REDOREM) > 0){
+//							|| FootyGetMetrics(activeFootyID, F_GM_UNDOREM) > 0
+//							|| FootyGetMetrics(activeFootyID, F_GM_REDOREM) > 0){
+							|| Footy2IsEdited(activeFootyID) ){	// 2008-02-17 Shark++ 代替機能未実装
 								CreateTab(activeID, szTitleName, szFileName, szDirName);
 								bCreated = true;
 							} else {
@@ -1827,7 +1891,8 @@ LRESULT CALLBACK EditProc (HWND hwnd, UINT iMsg, WPARAM wParam, LPARAM lParam)
 					if(szFileName[0] == '\0')
 						return 0;
 
-					bUndo = (FootyGetMetrics(activeID, F_GM_UNDOREM) > 0);
+//					bUndo = (FootyGetMetrics(activeID, F_GM_UNDOREM) > 0);
+					bUndo = Footy2IsEdited(activeID);	// 2008-02-17 Shark++ 要動作確認
 					if((!bNeedSave && !bUndo) || 
 						msgboxf(hwnd, "再読込を行う上で、下記のことが起こります。よろしいですか？\n\n"
 						"・「元に戻す」の情報が破棄され、再読込以前に戻れなくなります。%s",
@@ -1844,7 +1909,8 @@ LRESULT CALLBACK EditProc (HWND hwnd, UINT iMsg, WPARAM wParam, LPARAM lParam)
 					if(lpTabInfo == NULL || lpTabInfo->FileName[0] == '\0')
 						return 0;
 
-					bUndo = (FootyGetMetrics(ClickID, F_GM_UNDOREM) > 0);
+//					bUndo = (FootyGetMetrics(ClickID, F_GM_UNDOREM) > 0);
+					bUndo = Footy2IsEdited(ClickID);	// 2008-02-17 Shark++ 要動作確認
 					if((!lpTabInfo->NeedSave && !bUndo) || 
 						msgboxf(hwnd, "再読込を行う上で、下記のことが起こります。よろしいですか？\n\n"
 						"・「元に戻す」の情報が破棄され、再読込以前に戻れなくなります。%s",
@@ -1857,7 +1923,9 @@ LRESULT CALLBACK EditProc (HWND hwnd, UINT iMsg, WPARAM wParam, LPARAM lParam)
 					if (szFileName[0]){
                         if (PopFileWrite (activeFootyID, szFileName)){
 							SetTabInfo(activeID, NULL, NULL, NULL, (bNeedSave = FALSE));
-							GetTabInfo(activeID)->LatestUndoNum = FootyGetMetrics(activeFootyID, F_GM_UNDOREM);
+//							GetTabInfo(activeID)->LatestUndoNum = FootyGetMetrics(activeFootyID, F_GM_UNDOREM);
+							GetTabInfo(activeID)->LatestUndoNum = 0;	// 2008-02-17 Shark++ 代替機能未実装
+							Footy2GetMetrics(activeFootyID, SM_UNDOREM, &GetTabInfo(activeID)->LatestUndoNum);
 							DoCaption (szTitleName, activeID) ;
 							return 1 ;
 						} else {
@@ -1875,7 +1943,9 @@ LRESULT CALLBACK EditProc (HWND hwnd, UINT iMsg, WPARAM wParam, LPARAM lParam)
 					if (PopFileSaveDlg (hwnd, szFileName, szTitleName)){
 						if (PopFileWrite (activeFootyID, szFileName)){
 							SetTabInfo(activeID, szTitleName, szFileName, szDirName, (bNeedSave = FALSE));
-							GetTabInfo(activeID)->LatestUndoNum = FootyGetMetrics(activeFootyID, F_GM_UNDOREM);
+//							GetTabInfo(activeID)->LatestUndoNum = FootyGetMetrics(activeFootyID, F_GM_UNDOREM);
+							GetTabInfo(activeID)->LatestUndoNum = 0;	// 2008-02-17 Shark++ 代替機能未実装
+							Footy2GetMetrics(activeFootyID, SM_UNDOREM, &GetTabInfo(activeID)->LatestUndoNum);
 							DoCaption (szTitleName, activeID) ;
 							return 1 ;
 						} else {
@@ -1910,31 +1980,31 @@ LRESULT CALLBACK EditProc (HWND hwnd, UINT iMsg, WPARAM wParam, LPARAM lParam)
 					// Messages from Edit menu
 
 				case IDM_UNDO :
-					FootyUndo(activeFootyID);
+					Footy2Undo(activeFootyID);
 					return 0 ;
 
 				case IDM_REDO :
-					FootyRedo(activeFootyID);
+					Footy2Redo(activeFootyID);
 					return 0;
 
 				case IDM_CUT :
-					FootyCut(activeFootyID);
+					Footy2Cut(activeFootyID);
 					return 0 ;
 
 				case IDM_COPY :
-					FootyCopy(activeFootyID);
+					Footy2Copy(activeFootyID);
 					return 0 ;
 
 				case IDM_PASTE :
-					FootyPaste(activeFootyID);
+					Footy2Paste(activeFootyID);
 					return 0 ;
 
 				case IDM_CLEAR :
-					FootySetSelText(activeFootyID, "");
+					Footy2SetSelText(activeFootyID, "");
 					return 0 ;
 
 				case IDM_SELALL :
-					FootySelectAll(activeFootyID);
+					Footy2SelectAll(activeFootyID);
 					return 0 ;
 
 					// Messages from Search menu
@@ -1954,7 +2024,8 @@ LRESULT CALLBACK EditProc (HWND hwnd, UINT iMsg, WPARAM wParam, LPARAM lParam)
 					int SelStart, SelEnd, iOffset;
 					bool down = (LOWORD(wParam) == IDM_NEXT);
 
-					FootyGetSelB(activeFootyID, &SelStart, &SelEnd);
+//					FootyGetSelB(activeFootyID, &SelStart, &SelEnd);
+					SelStart = SelEnd = 0;	// 2008-02-17 Shark++ 代替機能未実装
 					if (PopFindValidFind ()){
 						// 新しい検索方式のために調整 (fixed@1.06β1 byLonelyWolf)
 						iOffset = ((LOWORD(wParam) == IDM_NEXT) ? SelEnd - 1 : SelStart - 1);
@@ -1994,24 +2065,24 @@ LRESULT CALLBACK EditProc (HWND hwnd, UINT iMsg, WPARAM wParam, LPARAM lParam)
 				case IDM_JUMP:
 					DialogBox (hInst, "JumpBox", hwnd, (DLGPROC)JumpDlgProc);
 					if (cln == -1) return 0;
-					FootySetCaretLine(activeFootyID, cln+1);
+					Footy2SetCaretPosition(activeFootyID, cln, 0);
 					PutLineNumber();
 					return 0;
 
 				case IDM_LBTM:
-					FootySetCaretLine(activeFootyID, FootyGetLines(activeFootyID));
+					Footy2SetCaretPosition(activeFootyID, Footy2GetLines(activeFootyID), 0);
 					PutLineNumber();
 					return 0;
 
 				case IDM_LTOP:
-					FootySetCaretLine(activeFootyID, 1);
+					Footy2SetCaretPosition(activeFootyID, 0, 0);
 					PutLineNumber();
 					return 0;
 
 				case IDM_LABEL:
 					DialogBox (hInst, "LabelBox", hwnd, (DLGPROC)LabelDlgProc);
 					if (cln == -1) return 0;
-					FootySetCaretLine(activeFootyID, cln+1);
+					Footy2SetCaretPosition(activeFootyID, cln, 0);
 					PutLineNumber();
 					return 0;
 
@@ -2022,7 +2093,9 @@ LRESULT CALLBACK EditProc (HWND hwnd, UINT iMsg, WPARAM wParam, LPARAM lParam)
 						PopFileWrite (activeFootyID, szFileName);
 
 						SetTabInfo(activeID, NULL, NULL, NULL, (bNeedSave = FALSE));
-						GetTabInfo(activeID)->LatestUndoNum = FootyGetMetrics(activeID, F_GM_UNDOREM);
+//						GetTabInfo(activeID)->LatestUndoNum = FootyGetMetrics(activeID, F_GM_UNDOREM);
+						GetTabInfo(activeID)->LatestUndoNum = 0;	// 2008-02-17 Shark++ 代替機能未実装
+						Footy2GetMetrics(activeFootyID, SM_UNDOREM, &GetTabInfo(activeID)->LatestUndoNum);
 
 						if ( mkobjfile( szFileName ) ){
 							err_prt(hwnd);
@@ -2255,7 +2328,9 @@ LRESULT CALLBACK EditProc (HWND hwnd, UINT iMsg, WPARAM wParam, LPARAM lParam)
 								bNeedSave = FALSE ;
 
 							SetTabInfo(ClickID, NULL, NULL, NULL, FALSE);
-							lpTabInfo->LatestUndoNum = FootyGetMetrics(lpTabInfo->FootyID, F_GM_UNDOREM);
+//							lpTabInfo->LatestUndoNum = FootyGetMetrics(lpTabInfo->FootyID, F_GM_UNDOREM);
+							lpTabInfo->LatestUndoNum = 0;	// 2008-02-17 Shark++ 代替機能未実装
+							Footy2GetMetrics(activeFootyID, SM_UNDOREM, &lpTabInfo->LatestUndoNum);
 							DoCaption (szTitleName, ClickID) ;
 							return 1 ;
 						} else {
@@ -2276,7 +2351,9 @@ LRESULT CALLBACK EditProc (HWND hwnd, UINT iMsg, WPARAM wParam, LPARAM lParam)
 								SetTabInfo(ClickID, szTitleName, szFileName, szDirName, (bNeedSave = FALSE));
 
 								TABINFO *lpTabInfo = GetTabInfo(ClickID);
-								lpTabInfo->LatestUndoNum = FootyGetMetrics(lpTabInfo->FootyID, F_GM_UNDOREM);
+//								lpTabInfo->LatestUndoNum = FootyGetMetrics(lpTabInfo->FootyID, F_GM_UNDOREM);
+								lpTabInfo->LatestUndoNum = 0;	// 2008-02-17 Shark++ 代替機能未実装
+								Footy2GetMetrics(activeFootyID, SM_UNDOREM, &lpTabInfo->LatestUndoNum);
 								DoCaption( szTitleName, ClickID );
 								return 1 ;
 							} else {
@@ -2393,7 +2470,7 @@ LRESULT CALLBACK EditProc (HWND hwnd, UINT iMsg, WPARAM wParam, LPARAM lParam)
 					HIMC hIMC;
 					HWND hFooty;
 
-					hFooty = FootyGetWnd(activeFootyID);
+					hFooty = Footy2GetWnd(activeFootyID, 0);
 					if(hFooty == NULL) return 0;
 					hIMC = ImmGetContext(hFooty);
 
@@ -2728,7 +2805,7 @@ BOOL CALLBACK ConfigDlgProc (HWND hDlg, UINT message, WPARAM wParam, LPARAM lPar
 				case IDCANCEL:
 					EnableWindow(hWndMain, TRUE);
 					SetForegroundWindow(hWndMain);
-					FootySetFocus(activeFootyID);
+					Footy2SetFocus(activeFootyID, 0);
 					DestroyWindow(hDlg);
 					return TRUE;
 
@@ -3677,8 +3754,10 @@ void LoadFromCommandLine(char *lpCmdLine)
 
 		if(SearchResult < 0){
 			lpTabInfo = GetTabInfo(activeID);
-			if(lpTabInfo == NULL || lpTabInfo->FileName[0] != '\0' || FootyGetMetrics(activeFootyID, F_GM_UNDOREM) > 0
-				|| FootyGetMetrics(activeFootyID, F_GM_REDOREM) > 0){
+			if(lpTabInfo == NULL || lpTabInfo->FileName[0] != '\0'
+//				|| FootyGetMetrics(activeFootyID, F_GM_UNDOREM) > 0
+//				|| FootyGetMetrics(activeFootyID, F_GM_REDOREM) > 0){
+				|| Footy2IsEdited(activeFootyID) ){	// 2008-02-17 Shark++ 代替機能未実装
 					CreateTab(activeID, "", argv[i], "");
 					bCreated = true;
 				} else {
@@ -3717,8 +3796,10 @@ LRESULT FileDrop(WPARAM wParam, LPARAM lParam)
 		SearchResult = SearchTab(NULL, NULL, NULL, GetFileIndex(tmpfn));
 		if(SearchResult < 0){
 			lpTabInfo = GetTabInfo(activeID);
-			if(lpTabInfo == NULL || lpTabInfo->FileName[0] != '\0' || FootyGetMetrics(activeFootyID, F_GM_UNDOREM) > 0
-				|| FootyGetMetrics(activeFootyID, F_GM_REDOREM) > 0){
+			if(lpTabInfo == NULL || lpTabInfo->FileName[0] != '\0'
+//				|| FootyGetMetrics(activeFootyID, F_GM_UNDOREM) > 0
+//				|| FootyGetMetrics(activeFootyID, F_GM_REDOREM) > 0){
+				|| Footy2IsEdited(activeFootyID) ) {	// 2008-02-17 Shark++ 代替機能未実装
 					CreateTab(activeID, "", tmpfn, "");
 					bCreated = true;
 				} else {
@@ -3743,7 +3824,7 @@ LRESULT FileDrop(WPARAM wParam, LPARAM lParam)
 	return 0;						// breakだとWin9xで止まる
 }
 
-void __stdcall OnFootyChange(int id, void *pParam, int nStatus)
+void __stdcall OnFooty2TextModified(int id, void *pParam, int nCause)
 {
 	int nTabID = GetTabID(id);
 
@@ -3752,23 +3833,27 @@ void __stdcall OnFootyChange(int id, void *pParam, int nStatus)
 	if(lpTabInfo == NULL)
 		return;
 
-	if(FootyGetMetrics(id, F_GM_UNDOREM) == lpTabInfo->LatestUndoNum && lpTabInfo->NeedSave == TRUE){
-		SetTabInfo(nTabID, NULL, NULL, NULL, (bNeedSave = FALSE));
-		DoCaption(szTitleName, nTabID);
-	} else if(lpTabInfo->NeedSave == FALSE && nStatus != FECH_SETTEXT){
-		SetTabInfo(nTabID, NULL, NULL, NULL, (bNeedSave = TRUE));
-		DoCaption(szTitleName, nTabID);
-	}
+//	if(FootyGetMetrics(id, F_GM_UNDOREM) == lpTabInfo->LatestUndoNum && lpTabInfo->NeedSave == TRUE){
+//		SetTabInfo(nTabID, NULL, NULL, NULL, (bNeedSave = FALSE));
+//		DoCaption(szTitleName, nTabID);
+//	} else if(lpTabInfo->NeedSave == FALSE && nCause != FECH_SETTEXT){
+//		SetTabInfo(nTabID, NULL, NULL, NULL, (bNeedSave = TRUE));
+//		DoCaption(szTitleName, nTabID);
+//	}
+	// 2008-02-17 Shark++ 要動作確認
+	bNeedSave = (BOOL)Footy2IsEdited(id);
+	SetTabInfo(nTabID, NULL, NULL, NULL, (bNeedSave = TRUE));
+	DoCaption(szTitleName, nTabID);
 
 	PutLineNumber();
 	return;
 }
 
-void __stdcall OnFootyContextMenu(void *pParam, int id)
-{
-	POINT pt;
-
-	GetCursorPos(&pt);
-	TrackPopupMenu(hSubMenu, TPM_LEFTALIGN | TPM_TOPALIGN | TPM_RIGHTBUTTON, pt.x, pt.y, 0, hwbak, NULL);
-	return;
-}
+//void __stdcall OnFootyContextMenu(void *pParam, int id)
+//{
+//	POINT pt;
+//
+//	GetCursorPos(&pt);
+//	TrackPopupMenu(hSubMenu, TPM_LEFTALIGN | TPM_TOPALIGN | TPM_RIGHTBUTTON, pt.x, pt.y, 0, hwbak, NULL);
+//	return;
+//}

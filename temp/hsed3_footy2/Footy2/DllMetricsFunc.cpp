@@ -27,6 +27,15 @@ FOOTYEXPORT(int) Footy2SetMetrics(int nID,int nObject,int nValue,bool bRefresh){
 		for (int i=0;i<3;i++)
 			pFooty->m_cView[i].SetRulerHeight(nValue);
 		break;
+	case SM_UNDERLINE_VISIBLE:
+		for (int i=0;i<3;i++)
+			pFooty->m_cView[i].SetUnderlineVisible(nValue);
+		break;
+	case SM_TAB_WIDTH:
+		pFooty->m_cDoc.SetTabLen(nValue);
+		break;
+	default:
+		return FOOTY2ERR_ARGUMENT;
 	}
 
 	/*Ä•`‰æ‚³‚¹‚é*/
@@ -60,6 +69,18 @@ FOOTYEXPORT(int) Footy2GetMetrics(int nID,int nObject,int *pValue){
 		break;
 	case SM_RULER_HEIGHT:
 		*pValue = pFooty->m_cView[0].GetRulerHeight();
+		break;
+	case SM_REDOREM:
+		*pValue = pFooty->m_cDoc.GetRedoRem();
+		break;
+	case SM_UNDOREM:
+		*pValue = pFooty->m_cDoc.GetUndoRem();
+		break;
+	case SM_UNDERLINE_VISIBLE:
+		*pValue = pFooty->m_cView[0].GetUnderlineVisible();
+		break;
+	case SM_TAB_WIDTH:
+		*pValue = pFooty->m_cDoc.GetTabLen();
 		break;
 	default:
 		return FOOTY2ERR_ARGUMENT;

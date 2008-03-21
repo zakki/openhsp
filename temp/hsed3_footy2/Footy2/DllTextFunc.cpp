@@ -108,7 +108,7 @@ FOOTYEXPORT(int) Footy2GetSelLengthA(int nID, int nLineMode){
 	/*ANSI文字列に変換する*/
 	CConvFactory cConv;
 	cConv.GetConv()->ToMulti(strSelText.c_str(),
-		(UINT)strSelText.size() * sizeof(wchar_t));
+		(UINT)(strSelText.size() / sizeof(wchar_t)));
 
 	/*値を返す*/
 	return (int)cConv.GetConv()->GetConvTextSize() - sizeof(char);
@@ -154,7 +154,7 @@ FOOTYEXPORT(int) Footy2GetTextLengthA(int nID, int nLineMode){
 		 iterLastLine = pFooty->m_cDoc.GetLastLine();;iterLine++){
 		 CConvFactory cConv;
 		 cConv.GetConv()->ToMulti(iterLine->GetLineData(),
-			(UINT)iterLine->GetLineLength() * sizeof(wchar_t));
+			(UINT)iterLine->GetLineLength());
 		 nRet += cConv.GetConv()->GetConvTextSize() - sizeof(char);
 		 if (iterLine == iterLastLine)break;
 		 nRet += nLineLen;
@@ -219,7 +219,7 @@ FOOTYEXPORT(int) Footy2GetTextA(int nID,char *pString,int nLineMode,int nSize){
 		 /*行ごとに代入していく*/
 		 CConvFactory cConv;
 		 cConv.GetConv()->ToMulti(iterLine->GetLineData(),
-			(UINT)iterLine->GetLineLength() * sizeof(wchar_t));
+			(UINT)iterLine->GetLineLength());
 		 pTextPos = cConv.GetConv()->GetConvData();
 		 nLineLength = cConv.GetConv()->GetConvTextSize() - sizeof(char);
 		 for (size_t i=0;i<nLineLength;i++){
@@ -348,7 +348,7 @@ FOOTYEXPORT(int) Footy2GetSelTextA(int nID,char *pString,int nLineMode,int nSize
 	// 変換
 	CConvFactory cConv;
 	if (!cConv.GetConv()->ToMulti(strSelText.c_str(),
-		(UINT)pFooty->m_cDoc.GetSelLength((LineMode)nLineMode) * sizeof(wchar_t)))
+		(UINT)pFooty->m_cDoc.GetSelLength((LineMode)nLineMode)))
 		return FOOTY2ERR_MEMORY;
 	
 	// コピー

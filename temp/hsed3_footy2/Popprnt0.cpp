@@ -7,7 +7,7 @@
 #include <string.h>
 #include "poppad.h"
 #include "resource.h"
-#include "FootyDLL.h"
+#include "Footy2.h"
 
 extern int activeFootyID;
 
@@ -84,7 +84,7 @@ BOOL PopPrntPrintFile (HINSTANCE hInst, HWND hwnd, HWND hwndEdit,
           return TRUE ;
 
 //     iTotalLines = (short) SendMessage (hwndEdit, EM_GETLINECOUNT, 0, 0L) ;
-	 iTotalLines = (short)FootyGetLines(activeFootyID);
+	 iTotalLines = (short)Footy2GetLines(activeFootyID);
      
      if (iTotalLines == 0)
           return TRUE ;
@@ -109,7 +109,8 @@ BOOL PopPrntPrintFile (HINSTANCE hInst, HWND hwnd, HWND hwndEdit,
 
      SetAbortProc (pd.hDC, (ABORTPROC)AbortProc) ;
 
-     GetWindowText (hwnd, (PTSTR) di.lpszDocName, sizeof (PTSTR)) ;
+//     GetWindowText (hwnd, (PTSTR) di.lpszDocName, sizeof (PTSTR)) ;
+	 di.lpszDocName = szTitleName;
 
      if (StartDoc (pd.hDC, &di) > 0)
           {
@@ -142,9 +143,12 @@ BOOL PopPrntPrintFile (HINSTANCE hInst, HWND hwnd, HWND hwndEdit,
 //                              TextOut (pd.hDC, 0, yChar * iLine, pstrBuffer,
 //                                   (int) SendMessage (hwndEdit, EM_GETLINE,
 //                                   (WPARAM) iLineNum, (LPARAM) pstrBuffer)) ;
-							  pstrBuffer = FootyGetLineData(activeFootyID, iLineNum+1);
-							  TextOut(pd.hDC, 0, yChar * iLine, pstrBuffer, 
-								  FootyGetLineLen(activeFootyID, iLineNum+1));
+					//		  pstrBuffer = FootyGetLineData(activeFootyID, iLineNum+1);	// 2008-02-17 Shark++ å„âÒÇµ
+					//		  TextOut(pd.hDC, 0, yChar * iLine, pstrBuffer, 
+					//			  FootyGetLineLen(activeFootyID, iLineNum+1));
+							  LPCWSTR pstrBufferW = Footy2GetLineW(activeFootyID, iLineNum);	// 2008-02-28 Shark++ ëSäpï∂éöÇ™ïÖÇÈÅEê‹ÇËï‘ÇµÇ™(å≥Ç©ÇÁ)ñ¢é¿ëï
+							  TextOutW(pd.hDC, 0, yChar * iLine, pstrBufferW, 
+								  Footy2GetLineLengthW(activeFootyID, iLineNum));
                               }
 
                          if (EndPage (pd.hDC) < 0)

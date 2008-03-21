@@ -11,7 +11,7 @@
 #include <wctype.h>
 #include <string>
 #include "vbsregexp.h"
-#include "FootyDLL.h"
+#include "Footy2.h"
 #include "resource.h"
 
 #define MAX_STRING_LEN   512
@@ -162,44 +162,45 @@ HWND PopFindFindDlg (HWND hwnd, int down)
 		}
 	}
 
-	int nStart, nEnd;
-	FootyGetSelB(activeFootyID, &nStart, &nEnd);
-	if(nEnd - nStart > 0){
-		int i, j;
-		char *szTempFindText = (char *)malloc(nEnd - nStart + 1);
-		FootyGetSelText(activeFootyID, szTempFindText);
-		if(frcd.EscSeq){
-			for(i = j = 0; szTempFindText[i] != '\0' && j + 2 < sizeof(szFindText); i++, j++){
-				switch(szTempFindText[i]){
-					case 0x0D:
-						if(FootyGetLineCode(activeFootyID) == RETLINE_CRLF)
-							i++;
-					case 0x0A:
-						if(j + 3 < sizeof(szFindText)){
-							szFindText[j++] = '\\';
-							szFindText[j] = 'n';
-						}
-						break;
-					case '\t':
-						if(j + 3 < sizeof(szFindText)){
-							szFindText[j++] = '\\';
-							szFindText[j] = 't';
-						}
-						break;
-					default:
-						szFindText[j] = szTempFindText[i];
-						break;
+	int nSelLen;
+	nSelLen = Footy2GetSelLength(activeFootyID, LM_CRLF);
+	if( 0 < nSelLen ){
+		int i, j = 0;
+		char *szTempFindText = (char *)malloc(nSelLen + 1);
+		if( szTempFindText ) {
+			Footy2GetSelText(activeFootyID, szTempFindText, LM_CRLF, nSelLen + 1);
+			if(frcd.EscSeq){
+				for(i = 0; szTempFindText[i] != '\0' && j + 2 < sizeof(szFindText); i++, j++){
+					switch(szTempFindText[i]){
+						case 0x0D:
+							if(Footy2GetLineCode(activeFootyID) == LM_CRLF)
+								i++;
+						case 0x0A:
+							if(j + 3 < sizeof(szFindText)){
+								szFindText[j++] = '\\';
+								szFindText[j] = 'n';
+							}
+							break;
+						case '\t':
+							if(j + 3 < sizeof(szFindText)){
+								szFindText[j++] = '\\';
+								szFindText[j] = 't';
+							}
+							break;
+						default:
+							szFindText[j] = szTempFindText[i];
+							break;
+					}
 				}
+			} else {
+				for(i = j = 0; szTempFindText[i] != '\0' && szTempFindText[i] != 0x0D &&
+					szTempFindText[i] != 0x0A && j + 1 < sizeof(szFindText); i++, j++)
+					szFindText[j] = szTempFindText[i];
 			}
-		} else {
-			for(i = j = 0; szTempFindText[i] != '\0' && szTempFindText[i] != 0x0D &&
-				szTempFindText[i] != 0x0A && j + 1 < sizeof(szFindText); i++, j++)
-				szFindText[j] = szTempFindText[i];
+			free(szTempFindText);
 		}
 		szFindText[j] = '\0';
-		free(szTempFindText);
 	}
-
 	return FindText (&fr) ;
 	}
 
@@ -257,11 +258,116 @@ void ConvertOffset(char *pDest, int *pnOffset)
 	return;
 }
 
+// Footy2の先頭からの範囲取得
+int Footy2GetSelB(int FootyID, size_t * StartOffset, size_t * EndOffset)
+{
+	const static size_t LineCodeLenTable[] = {
+		0 /* LM_AUTOMATIC */, 2 /* LM_CRLF */, 1 /* LM_CR */, 1 /* LM_LF */, 0 /* LM_ERROR */, 
+	};
+	int LineCode = Footy2GetLineCode(FootyID);
+	size_t LineCodeLen = LineCodeLenTable[LineCode % (sizeof(LineCodeLenTable) / sizeof(LineCodeLenTable[0]))];
+	size_t CharCount, LineLength, LineNum;
+	size_t LineCount = Footy2GetLines(FootyID);
+	size_t nsLine, nsPos, neLine, nePos;
+	size_t nsOffset, neOffset;
+	int ret;
+
+	ret = Footy2GetSel(FootyID, &nsLine, &nsPos, &neLine, &nePos);
+	if(FOOTY2ERR_NONE != ret && FOOTY2ERR_NOTSELECTED != ret){
+		return ret;
+	}
+	if( FOOTY2ERR_NOTSELECTED == ret ) {
+		Footy2GetCaretPosition(FootyID, &nsLine, &nsPos);
+		neLine = nsLine;
+		nePos  = nsPos;
+	}
+
+	nsOffset = neOffset = (size_t)-1;
+	
+	for(CharCount = 0, LineNum = 0;
+		LineNum < LineCount &&
+			( (size_t)-1 == nsOffset || (size_t)-1 == neOffset );
+		LineNum++)
+	{
+		if((size_t)-1 == nsOffset &&
+			nsLine <= LineNum)
+		{
+			nsOffset = CharCount + nsPos;
+		}
+		if((size_t)-1 == neOffset &&
+			neLine <= LineNum)
+		{
+			neOffset = CharCount + nePos;
+		}
+		CharCount += Footy2GetLineLengthW(FootyID, LineNum) + LineCodeLen;
+	}
+
+	if(StartOffset) {
+		*StartOffset = nsOffset;
+	}
+	if(EndOffset) {
+		*EndOffset = neOffset;
+	}
+
+	return ret;
+}
+
+// Footy2の先頭からの範囲選択
+int Footy2SetSelB(int FootyID, size_t StartOffset, size_t EndOffset, bool bRefresh = true)
+{
+	const static size_t LineCodeLenTable[] = {
+		0 /* LM_AUTOMATIC */, 2 /* LM_CRLF */, 1 /* LM_CR */, 1 /* LM_LF */, 0 /* LM_ERROR */, 
+	};
+	int LineCode = Footy2GetLineCode(FootyID);
+	size_t LineCodeLen = LineCodeLenTable[LineCode % (sizeof(LineCodeLenTable) / sizeof(LineCodeLenTable[0]))];
+	size_t CharCount, LineLength, LineNum;
+	size_t LineCount = Footy2GetLines(FootyID);
+	size_t nsLine, nsPos, neLine, nePos;
+
+	nsLine = neLine = nsPos = nePos = (size_t)-1;
+	
+	for(CharCount = 0, LineNum = 0;
+		LineNum < LineCount &&
+		(	(size_t)-1 == nsLine || (size_t)-1 == nsPos ||
+			(size_t)-1 == neLine || (size_t)-1 == nePos )
+			;
+		LineNum++)
+	{
+		LineLength = Footy2GetLineLengthW(FootyID, LineNum) + LineCodeLen;
+		if((size_t)-1 == nsLine &&
+			StartOffset <= CharCount + LineLength)
+		{
+			nsLine = LineNum;
+			nsPos  = StartOffset - CharCount;
+		}
+		if((size_t)-1 == neLine &&
+			EndOffset <= CharCount + LineLength)
+		{
+			neLine = LineNum;
+			nePos  = EndOffset - CharCount;
+		}
+		CharCount += LineLength;
+	}
+
+	return Footy2SetSel(FootyID, nsLine, nsPos, neLine, nePos, bRefresh);
+}
 
 //
 // 標準の検索を行う
 static void FindTextAsStandard(FRSTRING *dest, FRSTRING *pattern, bool down, bool matchcase, FINDRET *frReturn)
 {
+#if 1
+	int nRet;
+	nRet = Footy2Search(
+				activeFootyID,
+				pattern->ptr,
+				SEARCH_FROMCURSOR
+					| (matchcase ? 0 : SEARCH_IGNORECASE)
+					| (down ? 0 : SEARCH_BACK)
+				);
+	frReturn->success = 0 <= nRet;
+	return;
+#else
 	int nDestSize, nPatternSize, nLength, nOffset;
 	char *pcDest;
 	wchar_t *pwDest, *pwPattern;
@@ -316,7 +422,7 @@ static void FindTextAsStandard(FRSTRING *dest, FRSTRING *pattern, bool down, boo
 	free(pwPattern);
 
 	return;
-	
+#endif
 }
 
 // 正規表現を用いて検索を行う
@@ -327,7 +433,7 @@ static void FindTextAsRegExp(FRSTRING *dest, FRSTRING *pattern, bool down, bool 
 	IDispatch *pDispatch = NULL, *pDispatch2 = NULL;
 	IMatchCollection *pCollection = NULL;
 	IMatch* pMatch = NULL;
-	int nCount = 0, nIndex = 0;
+	int nCount = 0, nIndex = 0, offset;
 	_bstr_t bsDest, bsPattern;
 	char *pDest;
 
@@ -335,9 +441,12 @@ static void FindTextAsRegExp(FRSTRING *dest, FRSTRING *pattern, bool down, bool 
 	frReturn->offset = frReturn->length = 0;
 
 	if(FAILED(pRegExp.CreateInstance(CLSID_RegExp))) return;
+	
+	offset = dest->offset;
+	ConvertOffset(dest->ptr, &offset);
 
-	pDest = dest->ptr + (down ? dest->offset : 0);
-	if(!down) dest->ptr[dest->offset] = '\0';
+	pDest = dest->ptr + (down ? offset/*dest->offset*/ : 0);
+	if(!down) dest->ptr[offset/*dest->offset*/] = '\0';
 	bsDest = pDest;
 	
 	bsPattern = pattern->ptr;
@@ -345,7 +454,7 @@ static void FindTextAsRegExp(FRSTRING *dest, FRSTRING *pattern, bool down, bool 
 	pRegExp->put_Pattern(bsPattern);
 	pRegExp->put_IgnoreCase(-!matchcase);
 	pRegExp->put_Global(-!down);
-
+//2008-03-17 Shark++ 置換時の検索の選択がおかしい
 	if(SUCCEEDED(pRegExp->Execute(bsDest, &pDispatch))){
 		if(SUCCEEDED(pDispatch->QueryInterface(IID_IMatchCollection, (void **)&pCollection))){
 			pDispatch2 = pMatch = NULL;
@@ -357,11 +466,13 @@ static void FindTextAsRegExp(FRSTRING *dest, FRSTRING *pattern, bool down, bool 
 					pMatch->get_Length(&frReturn->length);
 					pMatch->Release();
 
-					ConvertOffset(pDest, &nIndex);
-					ConvertOffset(pDest + nIndex, (int *)&(frReturn->length));
+				//	ConvertOffset(pDest, &nIndex);
+				//	ConvertOffset(pDest + nIndex, (int *)&(frReturn->length));
 
 					frReturn->success = true;
 					frReturn->offset = nIndex + (down ? dest->offset : 0);
+
+					Footy2SetSelB(activeFootyID, frReturn->offset, frReturn->offset + frReturn->length);
 				}
 				pDispatch2->Release();
 
@@ -377,7 +488,7 @@ static void ReplaceEscSeq(char *nstr)
 {
 	char *sstr = nstr, *ostr = nstr;
 	bool esqsw = false;
-	int linecode = FootyGetLineCode(activeFootyID);
+	int linecode = Footy2GetLineCode(activeFootyID);
 
 	do{
 		if(esqsw){
@@ -386,9 +497,9 @@ static void ReplaceEscSeq(char *nstr)
 					*nstr++ = '\\';
 					break;
 				case 'n': case 'N':
-					if(linecode == RETLINE_CRLF || linecode == RETLINE_CR)
+					if(linecode == LM_CRLF || linecode == LM_CR)
 						*nstr++ = '\r';
-					if(linecode == RETLINE_CRLF || linecode == RETLINE_LF)
+					if(linecode == LM_CRLF || linecode == LM_LF)
 						*nstr++ = '\n';
 					break;
 				case 't': case 'T':
@@ -417,11 +528,11 @@ BOOL PopFindFindText (HWND hwndEdit, int iSearchOffset, LPFINDREPLACE pfr)
     
 		// Read in the edit document
 
-	dest.length = FootyGetTextLength(activeFootyID);
+	dest.length = Footy2GetTextLength(activeFootyID, LM_CRLF);
 	dest.ptr = (char *)malloc(dest.length + 1);
 	if(dest.ptr == NULL) return FALSE;
 	dest.offset = iSearchOffset;
-	FootyGetText(activeFootyID, dest.ptr, RETLINE_AUTO);
+	Footy2GetText(activeFootyID, dest.ptr, LM_CRLF, dest.length);
 
 		// Search the document for the find string
 
@@ -448,7 +559,7 @@ BOOL PopFindFindText (HWND hwndEdit, int iSearchOffset, LPFINDREPLACE pfr)
 	if (!frReturn.success) return FALSE;
 
 		// Find the position in the document and the new start offset
-	FootySetSelB(activeFootyID, frReturn.offset + 1, frReturn.offset + frReturn.length + 1);
+//	FootySetSelB(activeFootyID, frReturn.offset + 1, frReturn.offset + frReturn.length + 1);	// 2008-02-17 Shark++ 代替機能未実装
 	frcd.plength = frReturn.length;
 	repl_flag = 1;
 	return TRUE ;
@@ -484,10 +595,11 @@ BOOL PopFindReplaceText (HWND hwndEdit, int iSearchOffset, LPFINDREPLACE pfr)
 
 		// Replace it
 
-	FootySetSelText(activeFootyID, ReplaceWith);
+	Footy2SetSelText(activeFootyID, ReplaceWith);
 	free(ReplaceWith);
 
-	iSearchOffset = FootyGetCaretThrough(activeFootyID) - 1;
+//	iSearchOffset = Footy2GetCaretThrough(activeFootyID) - 1;
+	iSearchOffset = 0;	// 2008-02-17 Shark++ 代替機能不明
 	
 	if (!PopFindFindText (hwndEdit, iSearchOffset, pfr)){
 		repl_flag = 0;

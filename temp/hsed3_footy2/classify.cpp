@@ -5,7 +5,7 @@
 #include <windows.h>
 #include <commctrl.h>
 #include <stdio.h>
-#include "FootyDLL.h"
+#include "Footy2.h"
 #include "tabmanager.h"
 #include "classify.h"
 
@@ -31,20 +31,21 @@ typedef struct tagDefaultClassifyTable{
 	int Status;
 	int Level;
 	int pLevel;
+	int Ind;
 } DEF_CLASSIFY_TABLE;
 
 DEF_CLASSIFY_TABLE DefClassifyTable[] = {
 
 	// Grammer
-	"\\\"",		"\\\"",	EMP_LINE_BETWEEN,	&(color.Character.String.Conf),		NULL,	4,	0,
-	"\"",		"\"",	EMP_LINE_BETWEEN,	&(color.Character.String.Conf),		NULL,	3,	4,
-	":",		NULL,	EMP_LINE_AFTER,		&(color.Character.Default.Conf),	NULL,	2,	1,
-	"/*",		"*/",	EMP_MULTI_BETWEEN,	&(color.Character.Comment.Conf),	NULL,	3,	0,
-	";",		NULL,	EMP_LINE_AFTER,		&(color.Character.Comment.Conf),	NULL,	3,	0,
-	"//",		NULL,	EMP_LINE_AFTER,		&(color.Character.Comment.Conf),	NULL,	3,	0,
+	"\\\"",		"\\\"",	EMP_LINE_BETWEEN,	&(color.Character.String.Conf),		0,	4,	0, EMP_IND_ALLOW_ALL,
+	"\"",		"\"",	EMP_LINE_BETWEEN,	&(color.Character.String.Conf),		0,	3,	4, EMP_IND_ALLOW_ALL,
+	":",		"",		EMP_LINE_AFTER,		&(color.Character.Default.Conf),	0,	2,	1, EMP_IND_ALLOW_ALL,
+	"/*",		"*/",	EMP_MULTI_BETWEEN,	&(color.Character.Comment.Conf),	0,	3,	0, EMP_IND_ALLOW_ALL,
+	";",		"",		EMP_LINE_AFTER,		&(color.Character.Comment.Conf),	0,	3,	0, EMP_IND_ALLOW_ALL,
+	"//",		"",		EMP_LINE_AFTER,		&(color.Character.Comment.Conf),	0,	3,	0, EMP_IND_ALLOW_ALL,
 
 	// Label
-	"*",		NULL,	EMP_LINE_AFTER,		&(color.Character.Label.Conf),	F_SE_HEAD,	0,	2,
+	"*",		"",		EMP_LINE_AFTER,		&(color.Character.Label.Conf),	EMPFLAG_HEAD,	0,	2, EMP_IND_ASCII_LETTER|EMP_IND_UNDERBAR,
 
 	// End of table	
 	NULL
@@ -111,6 +112,7 @@ void InitClassify()
 		ClassifyTable[i].Status = DefClassifyTable[i].Status;
 		ClassifyTable[i].Level  = DefClassifyTable[i].Level;
 		ClassifyTable[i].pLevel = DefClassifyTable[i].pLevel;
+		ClassifyTable[i].Ind    = DefClassifyTable[i].Ind;
 	}
 /*
 	FILE *fp = fopen("hsptmp", "w");
@@ -151,9 +153,10 @@ void InitClassify()
 					lstrcpy(ClassifyTable[nCTSize].Word2, "");
 					ClassifyTable[nCTSize].Type   = EMP_WORD;
 					ClassifyTable[nCTSize].color  = lpTT->color;
-					ClassifyTable[nCTSize].Status = F_SE_NON_BS | F_SE_INDEPENDENCE_B | lpTT->Status;
+					ClassifyTable[nCTSize].Status = EMPFLAG_NON_CS/* | F_SE_INDEPENDENCE_B*/ | lpTT->Status;	// 2008-02-17 Shark++ 代替機能不明
 					ClassifyTable[nCTSize].Level  = 1;
 					ClassifyTable[nCTSize].pLevel = 0;
+					ClassifyTable[nCTSize].Ind    = EMP_IND_BLANKS|EMP_IND_ASCII_SIGN;
 					nCTSize++;
 					break;
 				}
@@ -171,36 +174,40 @@ void InitClassify()
 }
 
 
+// 強調文字の設定
 void SetClassify(int FootyID)
 {
-	FootyResetEmphasis(FootyID, false);
+	// 2008-02-17 Shark++ 要動作確認
 	for(CLASSIFY_TABLE *lpCT = ClassifyTable; lpCT->Word1[0] != '\0'; lpCT++) {
-		FootyAddEmphasis(FootyID, lpCT->Word1, lpCT->Word2, lpCT->Type, (lpCT->color != NULL ? *(lpCT->color) : NULL),
-			lpCT->Status, lpCT->Level, lpCT->pLevel);
+		Footy2AddEmphasis(FootyID, lpCT->Word1, *lpCT->Word2 ? lpCT->Word2 : NULL, lpCT->Type, 
+			lpCT->Status, 1, PERMIT_LEVEL(0), lpCT->Ind,
+		//	lpCT->Status, lpCT->Level, PERMIT_LEVEL(lpCT->pLevel), EMP_IND_ALLOW_ALL,
+			(lpCT->color != NULL ? *(lpCT->color) : RGB(255,0,0)));
 	}	
+	Footy2FlushEmphasis(FootyID);
 
-	FootyRefresh(FootyID);
+//	Footy2Refresh(FootyID); // 2008-02-18 Shark++ 要らない？
 	return;
 }
 
 void SetEditColor(int FootyID)
 {
-	FootySetColor(FootyID, F_SC_TAB, color.NonCharacter.Tab.Conf,  false);
-	FootySetColor(FootyID, F_SC_HALFSPACE, color.NonCharacter.HalfSpace.Conf,  false);
-	FootySetColor(FootyID, F_SC_NORMALSPACE, color.NonCharacter.FullSpace.Conf,  false);
-	FootySetColor(FootyID, F_SC_UNDERLINE, color.Edit.CaretUnderLine.Conf,  false);
-	FootySetColor(FootyID, F_SC_CRLF, color.NonCharacter.NewLine.Conf,  false);
-	FootySetColor(FootyID, F_SC_EOF, color.NonCharacter.EndOfFile.Conf,  false);
-	FootySetColor(FootyID, F_SC_DEFAULT, color.Character.Default.Conf,  false);
-	FootySetColor(FootyID, F_SC_LINENUM, color.LineNumber.Number.Conf,  false);
-	FootySetColor(FootyID, F_SC_LINENUMBORDER, color.Edit.BoundaryLineNumber.Conf,  false);
-	FootySetColor(FootyID, F_SC_CARETLINE, color.LineNumber.CaretLine.Conf,  false);
-	FootySetColor(FootyID, F_SC_RULER_TXT, color.Ruler.Number.Conf,  false);
-	FootySetColor(FootyID, F_SC_RULER_BK, color.Ruler.Background.Conf,  false);
-	FootySetColor(FootyID, F_SC_RULER_LINE, color.Ruler.Division.Conf,  false);
-	FootySetColor(FootyID, F_SC_CARETPOS, color.Ruler.Caret.Conf,  false);
-	FootySetColor(FootyID, F_SC_BACKGROUND, color.Edit.Background.Conf,  false);
-	FootyRefresh(FootyID);
+	Footy2SetColor(FootyID, CP_TAB, color.NonCharacter.Tab.Conf,  false);
+	Footy2SetColor(FootyID, CP_HALFSPACE, color.NonCharacter.HalfSpace.Conf,  false);
+	Footy2SetColor(FootyID, CP_NORMALSPACE, color.NonCharacter.FullSpace.Conf,  false);
+	Footy2SetColor(FootyID, CP_UNDERLINE, color.Edit.CaretUnderLine.Conf,  false);
+	Footy2SetColor(FootyID, CP_CRLF, color.NonCharacter.NewLine.Conf,  false);
+	Footy2SetColor(FootyID, CP_EOF, color.NonCharacter.EndOfFile.Conf,  false);
+	Footy2SetColor(FootyID, CP_TEXT, color.Character.Default.Conf,  false);
+	Footy2SetColor(FootyID, CP_LINENUMTEXT, color.LineNumber.Number.Conf,  false);
+	Footy2SetColor(FootyID, CP_LINENUMBORDER, color.Edit.BoundaryLineNumber.Conf,  false);
+	Footy2SetColor(FootyID, CP_CARETLINE, color.LineNumber.CaretLine.Conf,  false);
+	Footy2SetColor(FootyID, CP_RULERTEXT, color.Ruler.Number.Conf,  false);
+	Footy2SetColor(FootyID, CP_RULERBACKGROUND, color.Ruler.Background.Conf,  false);
+	Footy2SetColor(FootyID, CP_RULERLINE, color.Ruler.Division.Conf,  false);
+	Footy2SetColor(FootyID, CP_CARETPOS, color.Ruler.Caret.Conf,  false);
+	Footy2SetColor(FootyID, CP_BACKGROUND, color.Edit.Background.Conf,  false);
+	Footy2Refresh(FootyID);
 }
 
 void SetAllEditColor()

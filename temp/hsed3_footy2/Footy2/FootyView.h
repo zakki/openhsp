@@ -46,6 +46,7 @@ public:
 	inline void SetShiftLock(bool bLocked){m_bShiftLocked = bLocked;}
 	inline bool IsShiftLocked(){return m_bShiftLocked;}
 	inline int GetMarkVisible(){return m_nMarkVisible;}
+	inline int GetUnderlineVisible(){return m_bUnderlineVisible ? 1 : 0;}
 
 	/*GUI関係の処理*/
 	void SetVisible(bool bVisible);
@@ -60,6 +61,7 @@ public:
 	bool Refresh(HDC hDC,const RECT *rc);
 	void CaretMove();
 	void SetMarkVisible(int nMark){m_nMarkVisible = nMark;}
+	void SetUnderlineVisible(int nUnderline){m_bUnderlineVisible = nUnderline ? true : false;}
 
 	/*キャレット位置から表示位置を調整する処理*/
 	inline void SetFirstColumn(int nFirstColumn){m_nFirstVisibleColumn = nFirstColumn;}
@@ -221,6 +223,7 @@ private:
 	int m_nFirstVisibleColumn;					//!< 最初に表示されている桁
 	int m_nNowMousePosX,m_nNowMousePosY;
 	int m_nMarkVisible;							//!< エディタの描画情報
+	bool m_bUnderlineVisible;					//!< 行下線の描画情報
 	
 	/*一時的な変数*/
 	unsigned long m_nIgnoreKey;					//!< 無視するキー

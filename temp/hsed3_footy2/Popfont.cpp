@@ -4,7 +4,7 @@
 
 #include <windows.h>
 #include <commdlg.h>
-#include "FootyDLL.h"
+#include "Footy2.h"
 
 static LOGFONT editfont ;
 static LOGFONT tabfont ;
@@ -115,7 +115,9 @@ void PopFontSetEditFont()
 {
 	HDC hDC = CreateCompatibleDC(NULL);
 	int FontSize = (MulDiv(abs(editfont.lfHeight), 720, GetDeviceCaps(hDC, LOGPIXELSY)) + 5) / 10;
-	for(int i = 0; FootySetFont(i, editfont.lfFaceName, FontSize, true) != F_RET_OUTID; i++);
+	for(int i = 0; Footy2SetFontFace(i, FFM_ANSI_CHARSET, editfont.lfFaceName) != FOOTY2ERR_NOID; i++) {
+		Footy2SetFontSize(i, FontSize);
+	}
 	DeleteDC(hDC);
 }
 

@@ -44,6 +44,7 @@ CFootyView::CFootyView(){
 	m_pDataFocus = NULL;
 	m_bShiftLocked = false;
 	m_nMarkVisible = EDM_SHOW_ALL;
+	m_bUnderlineVisible = true;
 	/*デフォルト数値を代入*/
 	m_nLineCountWidth = LINEWIDTH_DEFAULT;
 	m_nRulerHeight = 10;

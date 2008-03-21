@@ -83,6 +83,24 @@ bool CFootyDoc::IsEdited(){
 		return m_pNowUndoPos != m_pSavedPos;
 }
 
+int CFootyDoc::GetRedoRem()
+{
+	std::list<CUndoBuffer>::iterator p = m_pNowUndoPos;
+	int nRedoNum;
+	for(nRedoNum = 0; p != m_lsUndoBuffer.end() ; p++, nRedoNum++);
+	return nRedoNum;
+}
+
+int CFootyDoc::GetUndoRem()
+{
+	std::list<CUndoBuffer>::iterator p = m_pNowUndoPos;
+	int nUndoNum = 0;
+	if( p != m_lsUndoBuffer.end() || !m_lsUndoBuffer.empty() ) {
+		for(; p != m_lsUndoBuffer.begin() ; p--, nUndoNum++);
+	}
+	return nUndoNum;
+}
+
 /*-------------------------------------------------------------------
 CFootyDoc::SetText
 全てのテキストをセットします
@@ -167,6 +185,16 @@ void CFootyDoc::SetInsertMode(bool bInsertMode){
 	m_bInsertMode = bInsertMode;
 	if (m_pFuncInsertMode)
 		m_pFuncInsertMode(m_nGlobalID,m_pDataInsertModeChanged,bInsertMode);
+}
+
+/*-------------------------------------------------------------------
+CFootyDoc::SetTabLen
+TAB文字の幅を設定します
+-------------------------------------------------------------------*/
+void CFootyDoc::SetTabLen(size_t nTabLen){
+	if (0 < nTabLen){
+		m_nTabLen = nTabLen;
+	}
 }
 
 

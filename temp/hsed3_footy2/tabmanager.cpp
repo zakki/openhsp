@@ -6,7 +6,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include "tabmanager.h"
-#include "footyDll.h"
+#include "footy2.h"
 #include "classify.h"
 #include "hsed_config.h"
 #include "support.h"
@@ -18,7 +18,7 @@ LRESULT CALLBACK MyEditProc( HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam )
 void poppad_setedit( int );
 void DoCaption ( char *szTitleName, int TabID );
 
-void __stdcall OnFootyChange(int id, void *pParam, int nStatus);
+void __stdcall OnFooty2TextModified(int id, void *pParam, int nStatus);
 void __stdcall OnFootyContextMenu(void *pParam, int id);
 
 
@@ -55,7 +55,8 @@ static HMENU    hMenu = NULL;
 // ありません(Nothing)
 void CreateTab(int nTabNumber, const char *szNewTitleName, const char *szNewFileName, const char *szNewDirName)
 {
-	int i, j, ret;
+	int FootyID;
+	int j, ret;
 	HWND hWnd;
 	TABINFO *lpTabInfo, *lpTopTabInfo;
 	TCITEM tc_item;
@@ -67,30 +68,23 @@ void CreateTab(int nTabNumber, const char *szNewTitleName, const char *szNewFile
 	// Create a Footy window
 	GetClientRect(hwndTab, &rect);
 	TabCtrl_AdjustRect(hwndTab, FALSE, &rect);
-	for(i = 0; ; i++){
-		ret = FootyCreate(i, hwndDummy, rect.left, rect.top, rect.right-rect.left, rect.bottom-rect.top);
-        if(ret == F_RET_OK)
-			break;
-		if(ret == F_RET_OUTID){
-			FootyRedim(i+128);
-			FootyCreate(i, hwndDummy, rect.left, rect.top, rect.right-rect.left, rect.bottom-rect.top);
-			break;
-		}
+	FootyID = Footy2Create(hwndTab, rect.left, rect.top, rect.right-rect.left, rect.bottom-rect.top, VIEWMODE_INVISIBLE);
+	if( FootyID < 0 ) {
+		DebugBreak();	// 2008-02-17 Shark++ 取り敢えずここで落とす
+		return;
 	}
-	FootySetVisible(i, false);
-	SetParent(FootyGetWnd(i), hwndTab);
 
-	FootySetMetrics(i, F_SM_CLICKABLE_MODE, 0);
-	FootySetMetrics(i, F_SM_UNDONUM, -1);
-	FootySetMetrics(i, F_SM_OLEMODE, F_OLE_CTRL);
-	FootyEventChange(i, (pFuncChange)OnFootyChange, NULL);
-	FootyEventContextMenu(i, (pFuncContext)OnFootyContextMenu, NULL);
+//	FootySetMetrics(FootyID, F_SM_CLICKABLE_MODE, 0);	// 2008-02-17 Shark++ 代替手段不明
+//	FootySetMetrics(FootyID, F_SM_UNDONUM, -1);	// 2008-02-17 Shark++ 代替手段不明
+//	FootySetMetrics(FootyID, F_SM_OLEMODE, F_OLE_CTRL);	// 2008-02-17 Shark++ 代替手段不明
+	Footy2SetFuncTextModified(FootyID, (Footy2FuncTextModified)OnFooty2TextModified, NULL);
+//	FootyEventContextMenu(FootyID, (pFuncContext)OnFootyContextMenu, NULL);	// 2008-02-17 Shark++ 代替手段未実装(取り敢えずサブクラス化で対応できないか？)
 
-	SetEditColor(i);
-	poppad_setedit(i);		// 起動直後の設定反映(onitama:050218)
-	SetClassify(i);
+	SetEditColor(FootyID);
+	poppad_setedit(FootyID);		// 起動直後の設定反映(onitama:050218)
+	SetClassify(FootyID);
 
-	hWnd = FootyGetWnd(i);
+	hWnd = Footy2GetWnd(FootyID, 0);
 	Org_EditProc = (WNDPROC)GetWindowLong(hWnd, GWL_WNDPROC);
     SetWindowLong(hWnd, GWL_WNDPROC, (LONG)MyEditProc);
 	DragAcceptFiles(hWnd, TRUE);
@@ -104,7 +98,7 @@ void CreateTab(int nTabNumber, const char *szNewTitleName, const char *szNewFile
 	lstrcpy(lpTabInfo->DirName, szNewDirName);
 	lpTabInfo->LatestUndoNum = 0;
 	lpTabInfo->NeedSave      = FALSE ;
- 	lpTabInfo->FootyID       = i;
+ 	lpTabInfo->FootyID       = FootyID;
 	lpTabInfo->FileIndex     = 0;
 
 	// Z オーダーのリストに加える
@@ -175,8 +169,9 @@ void DeleteTab(int nTabNumber)
 	int n = TabCtrl_GetItemCount(hwndTab), i, nFootyID;
 
 	lpTabInfo = GetTabInfo(nTabNumber);
-	if(lpTabInfo == NULL || (n == 1 && lpTabInfo->FileName[0] == '\0' && FootyGetMetrics(0, F_GM_UNDOREM) <= 0
-		&& FootyGetMetrics(0, F_GM_REDOREM) <= 0))
+//	if(lpTabInfo == NULL || (n == 1 && lpTabInfo->FileName[0] == '\0' && FootyGetMetrics(0, F_GM_UNDOREM) <= 0
+//		&& FootyGetMetrics(0, F_GM_REDOREM) <= 0))
+	if(lpTabInfo == NULL || (n == 1 && lpTabInfo->FileName[0] == '\0' && Footy2IsEdited(activeFootyID)))	// 2008-02-17 Shark++ 代替機能未実装
 		return;
 
 	nFootyID = lpTabInfo->FootyID;
@@ -204,7 +199,7 @@ void DeleteTab(int nTabNumber)
 		SetMenuItemInfo(hMenu, POS_TABBASE + i, TRUE, &mii);
 	}
 
-	FootyDelete(nFootyID);
+	Footy2Delete(nFootyID);
 	return;
 }
 
@@ -334,16 +329,16 @@ void ActivateTab(int nTabNumber1, int nTabNumber2)
 
 		GetClientRect(hwndTab, &rect);
 		TabCtrl_AdjustRect(hwndTab, FALSE, &rect);
-		FootySetPos(activeFootyID, rect.left, rect.top, rect.right-rect.left, rect.bottom-rect.top);
-		FootySetVisible(activeFootyID, true);
-		FootySetFocus(activeFootyID);
-		FootyRefresh(activeFootyID);
+		Footy2Move(activeFootyID, rect.left, rect.top, rect.right-rect.left, rect.bottom-rect.top);
+		Footy2ChangeView(activeFootyID, VIEWMODE_NORMAL);
+		Footy2SetFocus(activeFootyID, 0);
+		Footy2Refresh(activeFootyID);
 
 		CheckMenuRadioItem(hMenu, POS_TABBASE, GetMenuItemCount(hMenu) - 1, POS_TABBASE + nTabNumber2, MF_BYPOSITION);
 	}
 	else activeID = activeFootyID = -1;
 	if(lpTabInfo1 != NULL)
-		FootySetVisible(lpTabInfo1->FootyID, false);
+		Footy2ChangeView(lpTabInfo1->FootyID, VIEWMODE_INVISIBLE);
 
 	return;
 }

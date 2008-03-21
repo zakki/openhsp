@@ -338,7 +338,7 @@ FOOTYEXPORT(int) Footy2GetLineA(int nID,char *pString,size_t nLine,int nSize){
 	/*データを返す*/
 	CConvFactory cConv;
 	cConv.GetConv()->ToMulti(pLine->GetLineData(),
-		(UINT)pLine->GetLineLength()*sizeof(wchar_t));
+		(UINT)pLine->GetLineLength());
 	MYSTRCPY(pString,cConv.GetConv()->GetConvData(),nSize);
 	return FOOTY2ERR_NONE;
 }
@@ -416,7 +416,7 @@ FOOTYEXPORT(int) Footy2GetLineLengthA(int nID,size_t nLine){
 	/*データを返す*/
 	CConvFactory cConv;
 	cConv.GetConv()->ToMulti(pLine->GetLineData(),
-		(UINT)pLine->GetLineLength() * sizeof(wchar_t));
+		(UINT)pLine->GetLineLength());
 	return (int)cConv.GetConv()->GetConvTextSize() - sizeof(char);
 }
 #endif

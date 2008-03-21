@@ -4,6 +4,7 @@
 	Version="8.00"
 	Name="hsed"
 	ProjectGUID="{A599DDBE-AF26-446B-A144-17BF357A4E60}"
+	RootNamespace="hsed"
 	Keyword="Win32Proj"
 	>
 	<Platforms>
@@ -74,6 +75,7 @@
 			/>
 			<Tool
 				Name="VCManifestTool"
+				AdditionalManifestFiles="$(SolutionDir)xpstyle.xml"
 			/>
 			<Tool
 				Name="VCXDCMakeTool"
@@ -157,6 +159,7 @@
 			/>
 			<Tool
 				Name="VCManifestTool"
+				AdditionalManifestFiles="$(SolutionDir)xpstyle.xml"
 			/>
 			<Tool
 				Name="VCXDCMakeTool"
@@ -299,7 +302,7 @@
 				>
 			</File>
 			<File
-				RelativePath="footydll.h"
+				RelativePath="footy2.h"
 				>
 			</File>
 			<File

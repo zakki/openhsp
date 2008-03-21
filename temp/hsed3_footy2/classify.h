@@ -59,6 +59,7 @@ typedef struct tagClassifyTable{
 	int Status;
 	int Level;
 	int pLevel;
+	int Ind;
 } CLASSIFY_TABLE;
 
 // Default color macroes

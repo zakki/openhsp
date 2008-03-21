@@ -28,7 +28,7 @@ bool CFootyDoc::Search(const wchar_t *szText, int nFlags)
 	}
 	else
 	{
-		cSearchText.AddRegExp(new CRegExpLetters(szText));
+		cSearchText.AddRegExp(new CRegExpLetters(szText, FLAG_ON(SEARCH_IGNORECASE)));
 	}
 	
 	// ŒŸõˆ—‚ÌÀs

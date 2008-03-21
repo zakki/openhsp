@@ -10,8 +10,8 @@ CRegExpLettersƒNƒ‰ƒX
 
 class CRegExpLetters : public CRegExpElement{
 public:
-	CRegExpLetters(const wchar_t *pString);
-	CRegExpLetters(std::wstring &strLetters);
+	CRegExpLetters(const wchar_t *pString, bool bIgnoreCase = false);
+	CRegExpLetters(std::wstring &strLetters, bool bIgnoreCase = false);
 	~CRegExpLetters();
 
 protected:
@@ -20,6 +20,7 @@ private:
 public:
 private:
 	std::wstring m_strLetters;
+	bool         m_bIgnoreCase;
 };
 
 /*[EOF]*/

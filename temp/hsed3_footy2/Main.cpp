@@ -34,9 +34,9 @@
 #pragma comment( lib,"comctl32.lib" )
 #pragma comment( lib,"htmlhelp.lib" )
 
-#define FOOTYSTATIC
-#include "FootyDLL.h"
-#pragma comment( lib,"Footy.lib" )
+//#define FOOTYSTATIC
+#include "Footy2.h"
+#pragma comment( lib,"Footy2.lib" )
 #pragma comment( lib,"imm32.lib" )
 
 LRESULT CALLBACK WndProc (HWND, UINT, WPARAM, LPARAM) ;
@@ -415,9 +415,10 @@ int WINAPI WinMain (HINSTANCE hInstance, HINSTANCE hPrevInstance,
 
      InitCommonControls () ;
 	 OleInitialize(NULL);
-	 FootyStart(hInstance);
-	 FootyRedim(128);
-	 FootySetCursor(IDC_ONLINE, IDC_ONURL);
+#ifdef FOOTYSTATIC
+	 Footy2Start(hInstance);
+#endif	/*FOOTYSTATIC*/
+//	 FootySetCursor(IDC_ONLINE, IDC_ONURL);	// 2008-02-17 Shark++ 代替機能不明
 	 //FootySetMetrics(0, F_SM_CREATESHOW, F_CS_HIDE, false);
 
      hInst = hInstance ;
@@ -591,7 +592,9 @@ int WINAPI WinMain (HINSTANCE hInstance, HINSTANCE hPrevInstance,
 	}
 
 	dll_bye();							// DLLを開放
-	FootyEnd();
+#ifdef FOOTYSTATIC
+	Footy2End();
+#endif	/*FOOTYSTATIC*/
 	delete AhtMenuBuf;
 	return msg.wParam ;
 }
@@ -899,7 +902,7 @@ ClientWndProc (HWND hwnd, UINT mMsg, WPARAM wParam, LPARAM lParam)
           case WM_SETFOCUS :
 //               hwndNotify = GetWindow (hwnd, GW_CHILD) ;
 //               SetFocus (hwndNotify) ;
-			   FootySetFocus(activeFootyID);
+			   Footy2SetFocus(activeFootyID, 0);
                return 0 ;
 
           case WM_SIZE :
@@ -916,7 +919,7 @@ ClientWndProc (HWND hwnd, UINT mMsg, WPARAM wParam, LPARAM lParam)
 			   MoveWindow(hwndTab, 0, 0, cx, cy, TRUE);
 			   GetClientRect(hwndTab, &rect);
 			   TabCtrl_AdjustRect(hwndTab, FALSE, &rect);
-			   FootySetPos(activeFootyID, rect.left, rect.top, rect.right-rect.left, rect.bottom-rect.top);
+			   Footy2Move(activeFootyID, rect.left, rect.top, rect.right-rect.left, rect.bottom-rect.top);
 
 			   return 0 ;
                }

@@ -8,8 +8,9 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include "poppad.h"
-#include "FootyDLL.h"
+#include "Footy2.h"
 #include "tabmanager.h"
+#include "classify.h"
 
 static OPENFILENAME ofn, ofn2 ;
 static char szMyDir[_MAX_PATH];
@@ -147,62 +148,79 @@ static long PopFileLength (FILE *file)
 
 BOOL PopFileRead (int nFootyID, PSTR pstrFileName)
      {
-     FILE    *file ;
-     int      iLength ;
-     PSTR     pstrBuffer ;
-
-	 if (NULL == (file = fopen (pstrFileName, "rb")))
-		 return FALSE ;
-
-     iLength = PopFileLength (file) ;
-
-	 if (NULL == (pstrBuffer = (PSTR) malloc (iLength+4))){
-		 fclose (file) ;
-		 return FALSE ;
-	 }
-
-     fread (pstrBuffer, 1, iLength, file) ;
-     fclose (file) ;
-	 pstrBuffer[iLength] = '\0' ;
-
-//     SetWindowText (hwndEdit, pstrBuffer) ;
-	 FootySetText(nFootyID, pstrBuffer);
-     free (pstrBuffer) ;
-
-     return TRUE ;
+//     FILE    *file ;
+//     int      iLength ;
+//     PSTR     pstrBuffer ;
+//
+//	 if (NULL == (file = fopen (pstrFileName, "rb")))
+//		 return FALSE ;
+//
+//     iLength = PopFileLength (file) ;
+//
+//	 if (NULL == (pstrBuffer = (PSTR) malloc (iLength+4))){
+//		 fclose (file) ;
+//		 return FALSE ;
+//	 }
+//
+//     fread (pstrBuffer, 1, iLength, file) ;
+//     fclose (file) ;
+//	 pstrBuffer[iLength] = '\0' ;
+//
+////     SetWindowText (hwndEdit, pstrBuffer) ;
+////	 Footy2SetText(nFootyID, pstrBuffer); // 2008-02-21 Shark++ Ç±Ç¡ÇøÇæÇ∆ã≠í≤ï∂éöÇÃê›íËÇ™îjä¸Ç≥ÇÍÇÈ
+//     Footy2SelectAll(nFootyID, false);
+//     Footy2SetSelText(nFootyID, pstrBuffer);
+//	 Footy2SetCaretPosition(nFootyID, 0, 0);
+//     free (pstrBuffer) ;
+//
+//     return TRUE ;
+		int nRet;
+		nRet = Footy2TextFromFile(nFootyID, pstrFileName, CSM_PLATFORM);
+		if( FOOTY2ERR_NONE != nRet ) {
+			return FALSE;
+		}
+		// ã≠í≤ï∂éöóÒÇçƒê›íË
+		SetClassify(nFootyID);
+		return TRUE;
      }
 
 BOOL PopFileWrite (int FootyID, PSTR pstrFileName)
      {
-     FILE  *file ;
-     int    iLength ;
-     PSTR   pstrBuffer ;
-
-     if (NULL == (file = fopen (pstrFileName, "wb"))){
-		return FALSE ;
-	 }
-
-//     iLength = GetWindowTextLength (hwndEdit) ;
-	 iLength = FootyGetTextLength(FootyID);
-
-     if (NULL == (pstrBuffer = (PSTR) malloc (iLength + 1)))
-          {
-          fclose (file) ;
-          return FALSE ;
-          }
-
-//     GetWindowText (hwndEdit, pstrBuffer, iLength + 1) ;
-	 FootyGetText(FootyID, pstrBuffer, RETLINE_CRLF);
-
-     if (iLength != (int) fwrite (pstrBuffer, 1, iLength, file))
-          {
-          fclose (file) ;
-          free (pstrBuffer) ;
-          return FALSE ;
-          }
-
-     fclose (file) ;
-     free (pstrBuffer) ;
-
-     return TRUE ;
+//     FILE  *file ;
+//     int    iLength ;
+//     PSTR   pstrBuffer ;
+//
+//     if (NULL == (file = fopen (pstrFileName, "wb"))){
+//		return FALSE ;
+//	 }
+//
+////     iLength = GetWindowTextLength (hwndEdit) ;
+//	 iLength = Footy2GetTextLength(FootyID, LM_CRLF);
+//
+//     if (NULL == (pstrBuffer = (PSTR) malloc (iLength + 1)))
+//          {
+//          fclose (file) ;
+//          return FALSE ;
+//          }
+//
+////     GetWindowText (hwndEdit, pstrBuffer, iLength + 1) ;
+//	 Footy2GetText(FootyID, pstrBuffer, LM_CRLF, iLength);
+//
+//     if (iLength != (int) fwrite (pstrBuffer, 1, iLength, file))
+//          {
+//          fclose (file) ;
+//          free (pstrBuffer) ;
+//          return FALSE ;
+//          }
+//
+//     fclose (file) ;
+//     free (pstrBuffer) ;
+//
+//     return TRUE ;
+		int nRet;
+		nRet = Footy2SaveToFile(FootyID, pstrFileName, CSM_AUTOMATIC, LM_AUTOMATIC);
+		if( FOOTY2ERR_NONE != nRet ) {
+			return FALSE;
+		}
+		return TRUE;
      }
