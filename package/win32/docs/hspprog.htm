@@ -1065,8 +1065,8 @@ ftp接続時は、ディレクトリ一覧からftpコマンド送信まで細かい操作を行なうことができ
 
 
 <TABLE BORDER=0 CELLSPACING=0 CELLPADDING=0 BGCOLOR="#20e0f0" WIDTH=100% class="orange">
-							<TH WIDTH=20%>拡張プラグイン</TH>
-							<TH WIDTH=36%>HGIMG3.DLL</TH>
+							<TH WIDTH=20%>拡張ランタイム</TH>
+							<TH WIDTH=36%>HSP3HG.hrt</TH>
 							<TD WIDTH=6%>Ver3.1</TD>
 							<TD WIDTH=24%><FONT SIZE=2>作者:</FONT><B>おにたま</B></TD>
 							<TD WIDTH=14%><FONT SIZE=2><A HREF="http://www.onionsoft.net/">作者のページ</A></FONT></TD>
@@ -1077,7 +1077,7 @@ ftp接続時は、ディレクトリ一覧からftpコマンド送信まで細かい操作を行なうことができ
 								2D・3Dグラフィック表示をサポートしたDirectX専用のプラグインになります。
 スプライトを使用した2Dゲームから、3Dモデルを使った本格的なソフトまで幅広く
 利用することができます。
-HGIMG3.DLLで追加される主な機能は以下の通りです。
+HSP3HG.hrtで追加される主な機能は以下の通りです。
 <BR>
 								<LI>DirectX、フルカラーモードを対象とした高度な描画システム
 
@@ -1575,6 +1575,12 @@ mod_getenv.as
 環境変数の値を変数に取得するためのgetenv命令が追加されます。
 cgiなどで実行時の環境変数を参照したい時に利用することができます。
 詳細については、「mod_getenv.as」ファイル内を参照してください。
+<PRE>
+mod_img.as
+</PRE>
+画像を読み込むためのimgload命令が追加されます。
+BMP,JPEG,GIF,ICO,PNGフォーマットを読み込むことが可能です。
+詳細については、「mod_img.as」ファイル内を参照してください。
 <PRE>
 hspmath.as
 </PRE>
