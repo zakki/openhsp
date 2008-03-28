@@ -9,6 +9,7 @@
 	<meta name="keywords" content="HSP3,HotSoupProcessor3,module,モジュール">
 	<meta name="description" content="HSP3におけるモジュール機能の説明">
 	<link href="../main.css" rel="stylesheet" type="text/css" media="all">
+	<link href="../single.css" rel="stylesheet" type="text/css" media="all">
 	<title>HSP3 モジュール機能ガイド</title>
 </head>
 <body>
@@ -20,13 +21,13 @@
 
 		<!-- 目次 -->
 		<ol>
-			<li><a href="#C1S1">HSPモジュール機能について</a></li>
-			<li><a href="#C1S2">ユーザー定義命令について</a></li>
-			<li><a href="#C1S3">モジュールの使い方(基本)</a></li>
-			<li><a href="#C1S4">モジュールの使い方(応用)</a></li>
-			<li><a href="#C1S5">モジュール定義命令</a></li>
-			<li><a href="#C1S6">モジュールのクリーンアップ機能について</a></li>
-			<li><a href="#C1S7">標準キーワードと「@hsp」モジュール名について</a></li>
+			<li><a href="#ABOUT">HSPモジュール機能について</a></li>
+			<li><a href="#USERDEF">ユーザー定義命令について</a></li>
+			<li><a href="#BASIC">モジュールの使い方(基本)</a></li>
+			<li><a href="#APP">モジュールの使い方(応用)</a></li>
+			<li><a href="#MODDEF">モジュール定義命令</a></li>
+			<li><a href="#CLEANUP">モジュールのクリーンアップ機能について</a></li>
+			<li><a href="#MODNAME">標準キーワードと「@hsp」モジュール名について</a></li>
 		</ol>
 
 		<p>
@@ -46,7 +47,7 @@
 			詳しくは、プログラミングガイドを参照してください。
 		</p>
 
-		<h2 id="C1S1">HSPモジュール機能について</h2>
+		<h2 id="ABOUT">HSPモジュール機能について</h2>
 		<p>
 			モジュール機能は、複数のスクリプトをラベル名や変数名の衝突を気にせず
 			結合するための仕組みです。
@@ -91,7 +92,7 @@
 			1つマスターしていきましょう。
 		</p>
 		
-		<h2 id="C1S2">ユーザー定義命令について</h2>
+		<h2 id="USERDEF">ユーザー定義命令について</h2>
 		<p>
 			ユーザー定義命令は、HSPモジュール機能とともに追加された命令の1つで、
 			新しい名前の命令をユーザーが任意に追加できるというものです。
@@ -101,15 +102,15 @@
 		<p>
 			ユーザー定義命令は、以下のように使います。
 		</p>
-		<pre>	goto *main
+		<pre>    goto *main
 
 #deffunc routine
-	mes "sub-routine"
-	return
+    mes "sub-routine"
+    return
 
 *main
-	routine
-	stop</pre>
+    routine
+    stop</pre>
 		<p>
 			HSPの命令には「routine」はありませんから、いままでならエラーになって
 			しまうところですが、実際にこのスクリプトを実行すると、「sub-routine」
@@ -123,25 +124,25 @@
 			サブルーチンジャンプします。
 			つまり、
 		</p>
-		<pre>	goto *main
+		<pre>    goto *main
 
 *routine
-	mes "sub-routine"
-	return
+    mes "sub-routine"
+    return
 
 *main
-	gosub *routine</pre>
+    gosub *routine</pre>
 		<p>
 			のようなスクリプトでも、
 		</p>
-		<pre>	goto *main
+		<pre>    goto *main
 
 #deffunc routine
-	mes "sub-routine"
-	return
+    mes "sub-routine"
+    return
 
 *main
-	routine</pre>
+    routine</pre>
 		<p>
 			でも同じということです。ただし、「#deffunc」には1つだけ注意点があります。
 			それは<em>「#deffunc」は実際に命令を使う位置よりも前に置く</em>ということです。
@@ -163,15 +164,15 @@
 			またユーザー定義命令は、サブルーチンにパラメータを渡すことを
 			可能にしています。
 		</p>
-		<pre>	goto *main
+		<pre>    goto *main
 
 #deffunc routine int prm1, int prm2
-	mes "パラメータ1は、"+prm1+"です。"
-	mes "パラメータ2は、"+prm2+"です。"
-	return
+    mes "パラメータ1は、"+prm1+"です。"
+    mes "パラメータ2は、"+prm2+"です。"
+    return
 
 *main
-	routine 10,20</pre>
+    routine 10,20</pre>
 		<p>
 			いままでのgosub命令では、値をサブルーチンに渡す時には、あらかじめ
 			決められた変数に値を入れて、呼び出すしかありませんでした。
@@ -200,7 +201,7 @@
 			追加することができます。
 		</p>
 
-		<h2 id="C1S3">モジュールの使い方(基本)</h2>
+		<h2 id="BASIC">モジュールの使い方(基本)</h2>
 		<p>
 			モジュールは、変数名やラベル名が独立して扱えるソースの単位を指します。
 			推奨される最も簡単なモジュールの使い方は、モジュール部分を1つの
@@ -208,12 +209,12 @@
 			モジュールとして呼び出すことです。
 			たとえば、test1.asというファイルにモジュールとなるソースを書きます。
 		</p>
-		<pre>//test1.asの内容
+		<pre>// test1.asの内容
 
 #module
 #deffunc test1
-	mes "test1.asで表示しています。"
-	return
+    mes "test1.asで表示しています。"
+    return
 #global</pre>
 		<p>
 			モジュールは、必ず「#module」で始まり「#global」を最後に書くのが
@@ -225,12 +226,12 @@
 			次に、これを呼び出すためのソースを「test2.as」というファイルに
 			書いてみましょう。
 		</p>
-		<pre>//test2.asの内容
+		<pre>// test2.asの内容
 
 #include "test1.as"
-	mes "test2.asです。"
-	test1
-	stop</pre>
+    mes "test2.asです。"
+    test1
+    stop</pre>
 		<p>
 			「#include」命令でモジュールを登録するためのソース「test1.as」を
 			読み込んでいます。
@@ -253,23 +254,23 @@ test1.asで表示しています。</pre>
 			発揮されていません。
 			では、次の例ではどうでしょうか。
 		</p>
-		<pre>//test1.asの内容
+		<pre>// test1.asの内容
 
 #module
 #deffunc test1
-	a=456
-	mes "test1では、"
-	mes "A="+a+"です。"
-	return
+    a=456
+    mes "test1では、"
+    mes "A="+a+"です。"
+    return
 #global</pre>
-		<pre>//test2.asの内容
+		<pre>// test2.asの内容
 
 #include "test1.as"
-	a=123
-	test1
-	mes "test2では、"
-	mes "A="+a+"です。"
-	stop</pre>
+    a=123
+    test1
+    mes "test2では、"
+    mes "A="+a+"です。"
+    stop</pre>
 		<p>
 			これで「test2.as」を実行してみると、
 		</p>
@@ -296,21 +297,21 @@ A=123です。</pre>
 			実は、このための機能がユーザー定義命令に用意されていて、別なモジ
 			ュールとのパラメータのやり取りに使うことができます。
 		</p>
-		<pre>//test1.asの内容
+		<pre>// test1.asの内容
 
 #module
 #deffunc test1 int prm1
-	mes "パラメータは、"+prm1+"です。"
-	return 1
+    mes "パラメータは、"+prm1+"です。"
+    return 1
 #global</pre>
 
-		<pre>//test2.asの内容
+		<pre>// test2.asの内容
 
 #include "test1.as"
-	a=543
-	test1 a
-	mes "STATは、"+stat+"です。"
-	stop</pre>
+    a=543
+    test1 a
+    mes "STATは、"+stat+"です。"
+    stop</pre>
 		<p>
 			上の例では、ユーザー定義命令test1の呼び出しで、「test1 a」という
 			パラメータ付きの記述で、変数aの内容、543という値を渡しています。
@@ -330,21 +331,21 @@ A=123です。</pre>
 			さらなる応用については、次の項を見てください。
 		</p>
 
-		<h2 id="C1S4">モジュールの使い方(応用)</h2>
+		<h2 id="APP">モジュールの使い方(応用)</h2>
 <p>
 	基本の説明では、1つのモジュールに1つの命令だけを定義していましたが、
 	1つのモジュールの中に、複数のユーザー定義命令を作ることもできます。
 </p>
-<pre>//test1.asの内容
+<pre>// test1.asの内容
 
 #module
 #deffunc test1
-	mes "test1で表示しています。"
-	return
+    mes "test1で表示しています。"
+    return
 
 #deffunc test2
-	mes "test2で表示しています。"
-	return
+    mes "test2で表示しています。"
+    return
 #global</pre>
 <p>
 	上の例では、「test1」と「test2」という命令が新たに追加されます。
@@ -356,14 +357,14 @@ A=123です。</pre>
 </p>
 <pre>#module
 #deffunc test1
-	mes "test1で表示しています。"
-	return
+    mes "test1で表示しています。"
+    return
 #global
 
 #module
 #deffunc test2
-	mes "test2で表示しています。"
-	return
+    mes "test2で表示しています。"
+    return
 #global</pre>
 		<p>
 			このように記述することで実現できます。
@@ -395,7 +396,7 @@ A=123です。</pre>
 			実行コストがかかることも留意しておいてください。)
 		</p>
 		
-		<h2 id="C1S5">モジュール定義命令</h2>
+		<h2 id="MODDEF">モジュール定義命令</h2>
 		<p>
 			HSP3ではモジュール定義命令として、以下のプリプロセッサ命令が用意されています。
 		</p>
@@ -413,9 +414,11 @@ A=123です。</pre>
 				この節のみ大幅な変更を加えています。
 				ほぼすべてhsファイルと同等の内容だったため、そちらを参照するよう誘導しています。
 				2008.01.23 eller
+				説明文の復活を予定しています。
+				2008.03.28 eller
 		-->
 
-		<h2 id="C1S6">モジュールのクリーンアップ機能について</h2>
+		<h2 id="CLEANUP">モジュールのクリーンアップ機能について</h2>
 		<p>
 			クリーンアップ機能は、HSPプログラムが終了する直前にモジュール内のスクリプトが
 			自動的に呼び出されるもので、モジュールによって機能を拡張した場合などにその後始末、
@@ -451,7 +454,7 @@ A=123です。</pre>
 			登録された順番とは逆順に辿って次々に実行されていきます。
 		</p>
 
-		<h2 id="C1S7">標準キーワードと「@hsp」モジュール名について</h2>
+		<h2 id="MODNAME">標準キーワードと「@hsp」モジュール名について</h2>
 		<p>
 			標準キーワードは「@hsp」というモジュール名の空間に割り当てられています。
 			これは、たとえばmes命令であれば、「mes@hsp」という名前が正式な名称であることを意味します。
@@ -470,8 +473,8 @@ A=123です。</pre>
 		</p>
 		<pre>#undef mes
 #define mes(%1) mes@hsp "MES-&gt;"+%1
-	mes "メッセージです。"	// 「MES-&gt;メッセージです。」と表示
-	stop</pre>
+    mes "メッセージです。"  // 「MES-&gt;メッセージです。」と表示
+    stop</pre>
 		<p>
 			「mes」というキーワードを、#undef命令により取り消した後、再定義しています。
 			HSPで使用される標準キーワードすべては、同様に取り消し、再定義することが可能です。
@@ -482,18 +485,18 @@ A=123です。</pre>
 	<pre>#undef mes
 #module
 #deffunc mes str _p1
-	_y = ginfo_cy
+    _y = ginfo_cy
 
-	color 0, 0, 0
-	pos ginfo_cx+1, _y+1
-	mes@hsp _p1
+    color 0, 0, 0
+    pos ginfo_cx+1, _y+1
+    mes@hsp _p1
 
-	color 0, 192, 255
-	pos ginfo_cx, _y
-	mes@hsp _p1
-	return
+    color 0, 192, 255
+    pos ginfo_cx, _y
+    mes@hsp _p1
+    return
 #global
-	mes "mes命令を影文字にしてみました。"</pre>
+    mes "mes命令を影文字にしてみました。"</pre>
 		<p>
 			標準キーワードの再定義は、それ以降のキーワードすべてに影響があるため注意して使用してください。
 		</p>
