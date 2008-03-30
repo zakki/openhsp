@@ -1,0 +1,943 @@
+
+//
+//	HSP3 internal command
+//	(内蔵コマンド・関数処理)
+//	onion software/onitama 2004/6
+//
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+#include <math.h>
+#include <time.h>
+
+#include "hsp3config.h"
+
+#ifdef HSPWIN
+#include <windows.h>
+#include <direct.h>
+#endif
+
+#include "hspwnd.h"
+#include "supio.h"
+#include "dpmread.h"
+#include "strbuf.h"
+#include "strnote.h"
+
+#include "hsp3int.h"
+#include "hsp3code.h"
+
+/*------------------------------------------------------------*/
+/*
+		system data
+*/
+/*------------------------------------------------------------*/
+
+static int *type;
+static int *val;
+static HSPCTX *ctx;			// Current Context
+static HSPEXINFO *exinfo;	// Info for Plugins
+static CStrNote note;
+
+/*------------------------------------------------------------*/
+/*
+		interface
+*/
+/*------------------------------------------------------------*/
+
+static char *note_update( void )
+{
+	char *p;
+	if ( ctx->note_pval == NULL ) throw HSPERR_ILLEGAL_FUNCTION;
+	p = (char *)HspVarCorePtrAPTR( ctx->note_pval, ctx->note_aptr );
+	note.Select( p );
+	return p;
+}
+
+static char *cnvformat()
+{
+	//		フォーマット付き文字列を作成する
+	//
+	enum { 
+		CNVFLG_SHARP = 1,
+		CNVFLG_MINUS = 2,
+		CNVFLG_PLUS = 4,
+		CNVFLG_ZERO = 8,
+		CNVFLG_SPACE = 16,
+	};
+	char *fstr, *p, *fp, tmp[32], *strval;
+	int i, len, size;
+	int width, prec, flags;
+	
+	p = ctx->stmp;
+	size = sbGetSTRINF( ctx->stmp )->size;
+	// フォーマット文字列をコピーして使う
+	fp = code_gets();
+	fstr = sbAlloc( strlen( fp ) + 1 );
+	sbCopy( &fstr, fp, strlen( fp ) + 1 );
+	fp = fstr;
+	len = 0;
+	
+	while (1) {
+		// '%' までをコピー
+		for ( i = 0; fp[i] != '\0'; i ++ ) {
+			if ( fp[i] == '%' ) break;
+			if ( ( fp[i] >= 0x81 && fp[i] <= 0x9F ) || ( fp[i] >= 0xE0 && fp[i] <= 0xFC ) ) {
+				i ++;
+			}
+		}
+		if ( len + i + 1 > size ) { // バッファ拡張
+			size = ( ( len + i + 1 ) + 0xfff ) & 0xfffff000;
+			p = ctx->stmp = sbExpand( p, size );
+		}
+		memcpy( &p[len], fp, i );
+		len += i;
+		fp += i;
+		if ( *fp == '\0' ) break;
+		
+		width = 0;
+		prec = -1;
+		flags = 0;
+		i = 1;
+retry:
+		switch( fp[i] ) {
+		case '#':
+			flags |= CNVFLG_SHARP;
+			i ++;
+			goto retry;
+		case '-':
+			flags |= CNVFLG_MINUS;
+			i ++;
+			goto retry;
+		case '+':
+			flags |= CNVFLG_PLUS;
+			i ++;
+			goto retry;
+		case '0':
+			flags |= CNVFLG_ZERO;
+			i ++;
+			goto retry;
+		case ' ':
+			flags |= CNVFLG_SPACE;
+			i ++;
+			goto retry;
+		case '1': case '2': case '3': case '4': case '5':
+		case '6': case '7': case '8': case '9':
+			width = 0;
+			for( ; isdigit( fp[i] ); i ++ ) {
+				width = width * 10 + fp[i] - '0';
+			}
+			goto retry;
+		case '*':
+			i ++;
+			if ( code_get() <= PARAM_END ) throw HSPERR_INVALID_FUNCPARAM;
+			width = *(int *)HspVarCoreCnvPtr( mpval, HSPVAR_FLAG_INT );
+			if ( width < 0 ) {
+				width = -width;
+				flags |= CNVFLG_MINUS;
+			}
+			goto retry;
+		case '.':
+			i ++;
+			if ( fp[i] == '*' ) {
+				i ++;
+				if ( code_get() <= PARAM_END ) throw HSPERR_INVALID_FUNCPARAM;
+				prec = *(int *)HspVarCoreCnvPtr( mpval, HSPVAR_FLAG_INT );
+				if ( prec < 0 ) prec = -prec;
+				goto retry;
+			}
+			prec = 0;
+			for( ; isdigit( fp[i] ); i ++ ) {
+				prec = prec * 10 + fp[i] - '0';
+			}
+			goto retry;
+		case '%':
+		case 'c': case 'd': case 'E': case 'e': case 'f': case 'G': case 'g':
+		case 'i': case 'o': case 'p': case 's': case 'u': case 'X': case 'x':
+			break;
+		default:
+			throw HSPERR_INVALID_FUNCPARAM;
+		}
+		fp += i;
+		
+		if ( *fp == '\0' ) break;
+		if ( *fp == '%' ) {
+			fp ++;
+			p[len++] = '%';
+			continue;
+		}
+
+		i = 0;
+		tmp[i++] = '%';
+		if ( flags & CNVFLG_SHARP ) tmp[i++] = '#';
+		if ( flags & CNVFLG_MINUS ) tmp[i++] = '-';
+		if ( flags & CNVFLG_PLUS  ) tmp[i++] = '+';
+		if ( flags & CNVFLG_ZERO  ) tmp[i++] = '0';
+		if ( flags & CNVFLG_SPACE ) tmp[i++] = ' ';
+		if ( width > 0 ) {
+			sprintf( &tmp[i], "%d", width );
+			i += strlen( &tmp[i] );
+		}
+		if ( prec >= 0 ) {
+			sprintf( &tmp[i], ".%d", prec );
+			i += strlen( &tmp[i] );
+		}
+		tmp[i++] = *fp;
+		tmp[i] = '\0';
+
+		if ( code_get() <= PARAM_END ) throw HSPERR_INVALID_FUNCPARAM;
+
+		i = 256;
+		if ( *fp == 's' ) {
+			strval = (char *)HspVarCoreCnvPtr( mpval, HSPVAR_FLAG_STR );
+			i = strlen( strval );
+		}
+		if ( width > i )
+			i = width;
+
+		if ( len + i + 1 > size ) { // バッファ拡張
+			size = ( ( len + i + 1 ) + 0xfff ) & 0xfffff000;
+			p = ctx->stmp = sbExpand( p, size );
+		}
+
+		switch (*fp) {
+		case 'd': case 'i': case 'c': case 'o': case 'x': case 'X': case 'u': case 'p':
+			sprintf( &p[len], tmp, *(int *)HspVarCoreCnvPtr( mpval, HSPVAR_FLAG_INT ) );
+			break;
+		case 'f': case 'e': case 'E': case 'g': case 'G':
+			sprintf( &p[len], tmp, *(double *)HspVarCoreCnvPtr( mpval, HSPVAR_FLAG_DOUBLE ) );
+			break;
+		case 's': 
+			sprintf( &p[len], tmp, strval );
+			break;
+		default:
+			throw HSPERR_INVALID_FUNCPARAM;
+		}
+		fp ++;
+		len += strlen( &p[len] );
+	}
+	p[len] = '\0';
+	sbFree( fstr );
+	
+	return p;
+}
+
+
+static int cmdfunc_intcmd( int cmd )
+{
+	//		cmdfunc : TYPE_INTCMD
+	//		(内蔵コマンド)
+	//
+	int p1,p2,p3;
+	//
+	code_next();							// 次のコードを取得(最初に必ず必要です)
+
+	switch( cmd ) {							// サブコマンドごとの分岐
+
+	case 0x00:								// onexit
+	case 0x01:								// onerror
+	case 0x02:								// onkey
+	case 0x03:								// onclick
+	case 0x04:								// oncmd
+		{
+
+/*
+	rev 45
+	不具合 : (onxxx系命令) (ラベル型変数)  形式の書式でエラー
+	に対処
+*/
+
+		int tval = *type;
+		int opt = IRQ_OPT_GOTO;
+		int cust;
+		int actid;
+		IRQDAT *irq;
+		unsigned short *sbr;
+
+		if ( tval == TYPE_VAR ) {
+			if ( ( ctx->mem_var + *val )->flag == HSPVAR_FLAG_LABEL )
+				tval = TYPE_LABEL;
+		}
+
+		if (( tval != TYPE_PROGCMD )&&( tval != TYPE_LABEL )) {		// ON/OFF切り替え
+			int i = code_geti();
+			code_enableirq( cmd, i );
+			break;
+		}
+
+		if ( tval == TYPE_PROGCMD ) {	// ジャンプ方法指定
+			opt = *val;
+			if ( opt >= 2 ) throw HSPERR_SYNTAX;
+			code_next();
+		}
+
+		sbr = code_getlb2();
+		if ( cmd != 0x04 ) {
+			code_setirq( cmd, opt, -1, sbr );
+			break;
+		}
+		cust = code_geti();
+		actid = *(exinfo->actscr);
+		irq = code_seekirq( actid, cust );
+		if ( irq == NULL ) irq = code_addirq();
+		irq->flag = IRQ_FLAG_ENABLE;
+		irq->opt = opt;
+		irq->ptr = sbr;
+		irq->custom = cust;
+		irq->custom2 = actid;
+		break;
+		}
+
+	case 0x11:								// exist
+	case 0x12:								// delete
+	case 0x13:								// mkdir
+	case 0x14:								// chdir
+		code_event( HSPEVENT_FNAME, 0, 0, code_gets() );
+		code_event( HSPEVENT_FEXIST + (cmd - 0x11), 0, 0, NULL );
+		break;
+
+	case 0x15:								// dirlist
+		{
+		PVal *pval;
+		APTR aptr;
+		char *ptr;
+		aptr = code_getva( &pval );
+		code_event( HSPEVENT_FNAME, 0, 0, code_gets() );
+		p1=code_getdi(0);
+		code_event( HSPEVENT_FDIRLIST1, p1, 0, &ptr );
+		code_setva( pval, aptr, TYPE_STRING, ptr );
+		code_event( HSPEVENT_FDIRLIST2, 0, 0, NULL );
+		break;
+		}
+	case 0x16:								// bload
+	case 0x17:								// bsave
+		{
+		PVal *pval;
+		char *ptr;
+		int size;
+		int tmpsize;
+		code_event( HSPEVENT_FNAME, 0, 0, code_gets() );
+		ptr = code_getvptr( &pval, &size );
+		p1 = code_getdi( -1 );
+		p2 = code_getdi( -1 );
+		if (( p1 < 0 )||( p1 > size )) p1 = size;
+		if ( cmd == 0x16 ) {
+			tmpsize = p2;if ( tmpsize<0 ) tmpsize = 0;
+			code_event( HSPEVENT_FREAD, tmpsize, p1, ptr );
+		} else {
+			code_event( HSPEVENT_FWRITE, p2, p1, ptr );
+		}
+		break;
+		}
+	case 0x18:								// bcopy
+		code_event( HSPEVENT_FNAME, 0, 0, code_gets() );
+		code_event( HSPEVENT_FCOPY, 0, 0, code_gets() );
+		break;
+	case 0x19:								// memfile
+		{
+		PVal *pval;
+		char *ptr;
+		int size;
+		ptr = code_getvptr( &pval, &size );
+		p1=code_getdi( 0 );
+		p2=code_getdi( 0 );
+		if ( p2==0 ) p2 = size - p1;
+		dpm_memfile( ptr+p1, p2 );
+		break;
+		}
+
+	case 0x1a:								// poke
+	case 0x1b:								// wpoke
+	case 0x1c:								// lpoke
+		{
+		PVal *pval;
+		char *ptr;
+		int size;
+		int fl;
+		int len;
+		char *bp;
+		ptr = code_getvptr( &pval, &size );
+		p1 = code_getdi( 0 );
+		if ( p1<0 ) throw HSPERR_BUFFER_OVERFLOW;
+		ptr += p1;
+
+		if ( code_get() <= PARAM_END ) {
+			fl = HSPVAR_FLAG_INT;
+			bp = (char *)&p2; p2 = 0;
+		} else {
+			fl = mpval->flag;
+			bp = mpval->pt;
+		}
+
+		if ( cmd == 0x1a ) {
+			switch( fl ) {
+			case HSPVAR_FLAG_INT:
+				if ( p1 >= size ) throw HSPERR_BUFFER_OVERFLOW;
+				*ptr = *bp;
+				break;
+			case HSPVAR_FLAG_STR:
+				len = (int)strlen( bp );
+				ctx->strsize = len;
+				len++;
+				if ( (p1+len)>size ) throw HSPERR_BUFFER_OVERFLOW;
+				strcpy( ptr, bp );
+				break;
+			default:
+				throw HSPERR_TYPE_MISMATCH;
+			}
+			break;
+		}
+
+		if ( fl != HSPVAR_FLAG_INT ) throw HSPERR_TYPE_MISMATCH;
+		if ( cmd == 0x1b ) {
+			if ( (p1+2)>size ) throw HSPERR_BUFFER_OVERFLOW;
+			*(short *)ptr = (short)(*(short *)bp);
+		} else {
+			if ( (p1+4)>size ) throw HSPERR_BUFFER_OVERFLOW;
+			*(int *)ptr = (*(int *)bp);
+		}
+		break;
+		}
+
+	case 0x1d:								// getstr
+		{
+		PVal *pval2;
+		PVal *pval;
+		APTR aptr;
+		char *ptr;
+		char *p;
+		int size;
+		aptr = code_getva( &pval );
+		ptr = code_getvptr( &pval2, &size );
+		p1 = code_getdi( 0 );
+		p2 = code_getdi( 0 );
+		p3 = code_getdi( 1024 );
+		if ( p1 >= size ) throw HSPERR_BUFFER_OVERFLOW;
+		ptr += p1;
+		p = code_stmp( p3 + 1 );
+		strsp_ini();
+		ctx->stat = strsp_get( ptr, p, p2, p3 );
+		ctx->strsize = strsp_getptr();
+		code_setva( pval, aptr, HSPVAR_FLAG_STR, p );
+		break;
+		}
+	case 0x1e:								// chdpm
+		code_event( HSPEVENT_FNAME, 0, 0, code_gets() );
+		p1 = code_getdi( -1 );
+		dpm_bye();
+		p2 = dpm_ini( ctx->fnbuffer, 0, -1, p1 );
+		if ( p2 ) throw HSPERR_FILE_IO;
+#ifndef HSP3IMP
+#ifdef HSPWIN
+		Sleep( 1000 );
+#endif
+#endif
+		break;
+	case 0x1f:								// memexpand
+		{
+		PVal *pval;
+		APTR aptr;
+		PDAT *ptr;
+		aptr = code_getva( &pval );
+		ptr = HspVarCorePtrAPTR( pval, aptr );
+		if (( pval->support & HSPVAR_SUPPORT_FLEXSTORAGE ) == 0 ) throw HSPERR_TYPE_MISMATCH;
+		p1 = code_getdi( 0 );
+		if ( p1 < 64 ) p1 = 64;
+		HspVarCoreAllocBlock( pval, ptr, p1 );
+		break;
+		}
+
+	case 0x20:								// memcpy
+		{
+		PVal *pval;
+		char *sptr;
+		char *tptr;
+		int bufsize_t,bufsize_s;
+
+		tptr = code_getvptr( &pval, &bufsize_t );
+		sptr = code_getvptr( &pval, &bufsize_s );
+		p1 = code_getdi( 0 );
+		p2 = code_getdi( 0 );
+		p3 = code_getdi( 0 );
+
+		tptr += p2;
+		sptr += p3;
+		if ( (p1+p2)>bufsize_t ) throw HSPERR_BUFFER_OVERFLOW;
+		if ( (p1+p3)>bufsize_s ) throw HSPERR_BUFFER_OVERFLOW;
+		if ( p1>0 ) {
+			memmove( tptr, sptr, p1 );
+		}
+		break;
+		}
+	case 0x21:								// memset
+		{
+		PVal *pval;
+		char *ptr;
+		int size;
+		ptr = code_getvptr( &pval, &size );
+		p1 = code_getdi( 0 );
+		p2 = code_getdi( 0 );
+		p3 = code_getdi( 0 );
+		ptr += p3;
+		if ( (p3+p2)>size ) throw HSPERR_BUFFER_OVERFLOW;
+		if ( p2>0 ) {
+			memset( ptr, p1, p2 );
+		}
+		break;
+		}
+
+	case 0x22:								// notesel
+		ctx->notep_aptr = ctx->note_aptr;
+		ctx->notep_pval = ctx->note_pval;
+		ctx->note_aptr = code_getva( &ctx->note_pval );
+		if ( ctx->note_pval->flag != HSPVAR_FLAG_STR ) {
+			code_setva( ctx->note_pval, ctx->note_aptr, TYPE_STRING, "" );
+		}
+		break;
+	case 0x23:								// noteadd
+		{
+		char *np;
+		char *ps;
+		char *tmp;
+		int size;
+		np = note_update();
+		ps = code_gets();
+		size = (int)strlen( ps ) + 8;
+		HspVarCoreAllocBlock( ctx->note_pval, (PDAT *)np, (int)strlen(np) + size );
+
+		tmp = sbAlloc( size );
+		strcpy( tmp, ps );
+
+		p1 = code_getdi( -1 );
+		p2 = code_getdi( 0 );
+		np = note_update();
+		note.PutLine( tmp, p1, p2 );
+		sbFree( tmp );
+		break;
+		}
+	case 0x24:								// notedel
+		p1 = code_getdi( 0 );
+		note_update();
+		note.PutLine( NULL, p1, 1 );
+		break;
+	case 0x25:								// noteload
+		{
+		int size;
+		char *ptr;
+		char *pdat;
+
+		code_event( HSPEVENT_FNAME, 0, 0, code_gets() );
+		p1 = code_getdi( -1 );
+		code_event( HSPEVENT_FEXIST, 0, 0, NULL );
+		size = ctx->strsize;
+		if ( size < 0 ) throw HSPERR_FILE_IO;
+		if ( p1>=0 ) if ( size >= p1 ) { ctx->strsize = size = p1; }
+
+		pdat = note_update();
+		HspVarCoreAllocBlock( ctx->note_pval, (PDAT *)pdat, size+1 );
+		ptr = (char *)note_update();
+		code_event( HSPEVENT_FREAD, 0, size, ptr );
+		ptr[size] = 0;
+		break;
+		}
+	case 0x26:								// notesave
+		{
+		char *pdat;
+		int size;
+		code_event( HSPEVENT_FNAME, 0, 0, code_gets() );
+		pdat = note_update();
+		size = (int)strlen( pdat );
+		code_event( HSPEVENT_FWRITE, -1, size, pdat );
+		break;
+		}
+	case 0x28:								// noteunsel
+		ctx->note_aptr = ctx->notep_aptr;
+		ctx->note_pval = ctx->notep_pval;
+		break;
+	case 0x29:								// noteget
+		{
+		PVal *pval;
+		APTR aptr;
+		char *p;
+		note_update();
+		aptr = code_getva( &pval );
+		p1 = code_getdi( 0 );
+		p = note.GetLineDirect( p1 );
+		code_setva( pval, aptr, TYPE_STRING, p );
+		note.ResumeLineDirect();
+		break;
+		}
+
+	case 0x27:								// randomize
+#ifdef HSPWIN
+		p2 = (int)GetTickCount();	// Windowsの場合はtickをシード値とする
+#else
+		p2 = (int)time(0);			// Windows以外のランダムシード値
+#endif
+		p1 = code_getdi( p2 );
+		srand( p1 );
+		break;
+
+	default:
+		throw HSPERR_UNSUPPORTED_FUNCTION;
+	}
+	return RUNMODE_RUN;
+}
+
+static int reffunc_intfunc_ivalue;
+static double reffunc_intfunc_value;
+
+static void *reffunc_intfunc( int *type_res, int arg )
+{
+	//		reffunc : TYPE_INTFUNC
+	//		(内蔵関数)
+	//
+	void *ptr;
+	int chk;
+	double dval;
+	double dval2;
+	int ival;
+	char *sval;
+	int p1,p2,p3;
+
+	//			'('で始まるかを調べる
+	//
+	if ( *type != TYPE_MARK ) throw HSPERR_INVALID_FUNCPARAM;
+	if ( *val != '(' ) throw HSPERR_INVALID_FUNCPARAM;
+	code_next();
+
+	//		返値のタイプをargをもとに設定する
+	//		0～255   : int
+	//		256～383 : string
+	//		384～511 : double
+	//
+	switch( arg>>7 ) {
+		case 2:										// 返値がstr
+			*type_res = HSPVAR_FLAG_STR;			// 返値のタイプを指定する
+			ptr = NULL;								// 返値のポインタ
+			break;
+		case 3:										// 返値がdouble
+			*type_res = HSPVAR_FLAG_DOUBLE;			// 返値のタイプを指定する
+			ptr = &reffunc_intfunc_value;			// 返値のポインタ
+			break;
+		default:									// 返値がint
+			*type_res = HSPVAR_FLAG_INT;			// 返値のタイプを指定する
+			ptr = &reffunc_intfunc_ivalue;			// 返値のポインタ
+			break;
+	}
+
+	switch( arg ) {
+
+	//	int function
+	case 0x000:								// int
+		{
+		int *ip;
+		chk = code_get();
+		if ( chk <= PARAM_END ) { throw HSPERR_INVALID_FUNCPARAM; }
+		ip = (int *)HspVarCoreCnvPtr( mpval, HSPVAR_FLAG_INT );
+		reffunc_intfunc_ivalue = *ip;
+		break;
+		}
+	case 0x001:								// rnd
+		ival = code_geti();
+		if ( ival == 0 ) throw HSPERR_DIVIDED_BY_ZERO;
+		reffunc_intfunc_ivalue = rand()%ival;
+		break;
+	case 0x002:								// strlen
+		sval = code_gets();
+		reffunc_intfunc_ivalue = (int) strlen( sval );
+		break;
+
+	case 0x003:								// length(3.0)
+	case 0x004:								// length2(3.0)
+	case 0x005:								// length3(3.0)
+	case 0x006:								// length4(3.0)
+		{
+		PVal *pv;
+		pv = code_getpval();
+		reffunc_intfunc_ivalue = pv->len[ arg - 0x002 ];
+		break;
+		}
+
+	case 0x007:								// vartype(3.0)
+		{
+		PVal *pv;
+		HspVarProc *proc;
+		if ( *type == TYPE_STRING ) {
+			sval = code_gets();
+			proc = HspVarCoreSeekProc( sval );
+			if ( proc == NULL ) throw HSPERR_ILLEGAL_FUNCTION;
+			reffunc_intfunc_ivalue = proc->flag;
+		} else {
+			code_getva( &pv );
+			reffunc_intfunc_ivalue = pv->flag;
+		}
+		break;
+		}
+
+	case 0x008:								// gettime
+		ival = code_geti();
+		reffunc_intfunc_ivalue = gettime( ival );
+		break;
+
+	case 0x009:								// peek
+	case 0x00a:								// wpeek
+	case 0x00b:								// lpeek
+		{
+		PVal *pval;
+		char *ptr;
+		int size;
+		ptr = code_getvptr( &pval, &size );
+		p1 = code_getdi( 0 );
+		if ( p1<0 ) throw HSPERR_ILLEGAL_FUNCTION;
+		ptr += p1;
+		if ( arg == 0x09 ) {
+			if ( (p1+1)>size ) throw HSPERR_ILLEGAL_FUNCTION;
+			reffunc_intfunc_ivalue = ((int)(*ptr)) & 0xff;
+		} else if ( arg == 0x0a ) {
+			if ( (p1+2)>size ) throw HSPERR_ILLEGAL_FUNCTION;
+			reffunc_intfunc_ivalue = ((int)(*(short *)ptr)) & 0xffff;
+		} else {
+			if ( (p1+4)>size ) throw HSPERR_ILLEGAL_FUNCTION;
+			reffunc_intfunc_ivalue = *(int *)ptr;
+		}
+		break;
+		}
+	case 0x00c:								// varptr
+		{
+		PVal *pval;
+		APTR aptr;
+		PDAT *pdat;
+		STRUCTDAT *st;
+		if ( *type == TYPE_DLLFUNC ) {
+			st = &(ctx->mem_finfo[ *val ]);
+			reffunc_intfunc_ivalue = (int)(st->proc);
+			code_next();
+			break;
+		}
+		aptr = code_getva( &pval );
+		pdat = HspVarCorePtrAPTR( pval, aptr );
+		reffunc_intfunc_ivalue = (int)(pdat);
+		break;
+		}
+	case 0x00d:								// varuse
+		{
+		PVal *pval;
+		APTR aptr;
+		PDAT *pdat;
+		aptr = code_getva( &pval );
+		if ( pval->support & HSPVAR_SUPPORT_VARUSE ) {
+			pdat = HspVarCorePtrAPTR( pval, aptr );
+			reffunc_intfunc_ivalue = HspVarCoreGetUsing( pval, pdat );
+		} else throw HSPERR_TYPE_MISMATCH;
+		break;
+		}
+	case 0x00e:								// noteinfo
+		ival = code_getdi(0);
+		note_update();
+		switch( ival ) {
+		case 0:
+			reffunc_intfunc_ivalue = note.GetMaxLine();
+			break;
+		case 1:
+			reffunc_intfunc_ivalue = note.GetSize();
+			break;
+		default:
+			throw HSPERR_ILLEGAL_FUNCTION;
+		}
+		break;
+
+	case 0x00f:								// instr
+		{
+		PVal *pval;
+		char *ptr;
+		char *ps;
+		char *ps2;
+		int size;
+		int p1;
+		ptr = code_getvptr( &pval, &size );
+		if ( pval->flag != HSPVAR_FLAG_STR ) throw HSPERR_TYPE_MISMATCH;
+		p1 = code_getdi(0);
+		if ( p1 >= size ) throw HSPERR_BUFFER_OVERFLOW;
+		ps = code_gets();
+		ptr += p1;
+		ps2 = strstr2( ptr, ps );
+		if ( ps2 == NULL ) {
+			reffunc_intfunc_ivalue = -1;
+		} else {
+			reffunc_intfunc_ivalue = (int)(ps2 - ptr);
+		}
+		break;
+		}
+
+	case 0x010:								// abs
+		reffunc_intfunc_ivalue = code_geti();
+		if ( reffunc_intfunc_ivalue < 0 ) reffunc_intfunc_ivalue = -reffunc_intfunc_ivalue;
+		break;
+
+	case 0x011:								// limit
+		p1 = code_geti();
+		p2 = code_geti();
+		p3 = code_geti();
+		reffunc_intfunc_ivalue = GetLimit( p1, p2, p3 );
+		break;
+
+
+	// str function
+	case 0x100:								// str
+		{
+		char *sp;
+		chk = code_get();
+		if ( chk <= PARAM_END ) { throw HSPERR_INVALID_FUNCPARAM; }
+		sp = (char *)HspVarCoreCnvPtr( mpval, HSPVAR_FLAG_STR );
+		ptr = (void *)sp;
+		break;
+		}
+	case 0x101:								// strmid
+		{
+		PVal *pval;
+		char *sptr;
+		char *p;
+		char chrtmp;
+		int size;
+		int i;
+		int slen;
+		sptr = code_getvptr( &pval, &size );
+		if ( pval->flag != HSPVAR_FLAG_STR ) throw HSPERR_TYPE_MISMATCH;
+		p1 = code_geti();
+		p2 = code_geti();
+
+		slen=(int)strlen( sptr );
+		if ( p1 < 0 ) {
+			p1=slen - p2;
+			if ( p1 < 0 ) p1 = 0;
+		}
+		if ( p2 > slen ) p2 = slen;
+		sptr += p1;
+		ptr = p = code_stmp( p2 + 1 );
+		for(i=0;i<p2;i++) {
+			chrtmp = *sptr++;
+			*p++ = chrtmp;
+			if (chrtmp==0) break;
+		}
+		*p = 0;
+		break;
+		}
+
+	case 0x103:								// strf
+		ptr = cnvformat();
+		break;
+	case 0x104:								// getpath
+		{
+		char *p;
+		char pathname[HSP_MAX_PATH];
+		p = ctx->stmp;
+		strncpy( pathname, code_gets(), HSP_MAX_PATH-1 );
+		p1=code_geti();
+		getpath( pathname, p, p1 );
+		ptr = p;
+		break;
+		}
+
+
+	//	double function
+	case 0x180:								// sin
+		dval = code_getd();
+		reffunc_intfunc_value = sin( dval );
+		break;
+	case 0x181:								// cos
+		dval = code_getd();
+		reffunc_intfunc_value = cos( dval );
+		break;
+	case 0x182:								// tan
+		dval = code_getd();
+		reffunc_intfunc_value = tan( dval );
+		break;
+	case 0x183:								// atan
+		dval = code_getd();
+		dval2 = code_getdd( 1.0 );
+		reffunc_intfunc_value = atan2( dval, dval2 );
+		break;
+	case 0x184:								// sqrt
+		dval = code_getd();
+		reffunc_intfunc_value = sqrt( dval );
+		break;
+	case 0x185:								// double
+		{
+		double *dp;
+		chk = code_get();
+		if ( chk <= PARAM_END ) { throw HSPERR_INVALID_FUNCPARAM; }
+		dp = (double *)HspVarCoreCnvPtr( mpval, HSPVAR_FLAG_DOUBLE );
+		reffunc_intfunc_value = *dp;
+		break;
+		}
+	case 0x186:								// absf
+		reffunc_intfunc_value = code_getd();
+		if ( reffunc_intfunc_value < 0 ) reffunc_intfunc_value = -reffunc_intfunc_value;
+		break;
+	case 0x187:								// expf
+		dval = code_getd();
+		reffunc_intfunc_value = exp( dval );
+		break;
+	case 0x188:								// logf
+		dval = code_getd();
+		reffunc_intfunc_value = log( dval );
+		break;
+	case 0x189:								// limitf
+		{
+		double d1,d2,d3;
+		d1 = code_getd();
+		d2 = code_getd();
+		d3 = code_getd();
+		if ( d1 < d2 ) d1 = d2;
+		if ( d1 > d3 ) d1 = d3;
+		reffunc_intfunc_value = d1;
+		break;
+		}
+
+	default:
+		throw HSPERR_UNSUPPORTED_FUNCTION;
+	}
+
+	//			'('で終わるかを調べる
+	//
+	if ( *type != TYPE_MARK ) throw HSPERR_INVALID_FUNCPARAM;
+	if ( *val != ')' ) throw HSPERR_INVALID_FUNCPARAM;
+	code_next();
+
+	return ptr;
+}
+
+
+
+
+/*------------------------------------------------------------*/
+/*
+		controller
+*/
+/*------------------------------------------------------------*/
+
+static int termfunc_intcmd( int option )
+{
+	//		termfunc : TYPE_INTCMD
+	//		(内蔵)
+	//
+	return 0;
+}
+
+void hsp3typeinit_intcmd( HSP3TYPEINFO *info )
+{
+	ctx = info->hspctx;
+	exinfo = info->hspexinfo;
+	type = exinfo->nptype;
+	val = exinfo->npval;
+
+	info->cmdfunc = cmdfunc_intcmd;
+	info->termfunc = termfunc_intcmd;
+}
+
+void hsp3typeinit_intfunc( HSP3TYPEINFO *info )
+{
+	info->reffunc = reffunc_intfunc;
+}
+
+
