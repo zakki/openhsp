@@ -142,7 +142,7 @@ retry:
 				i ++;
 				if ( code_get() <= PARAM_END ) throw HSPERR_INVALID_FUNCPARAM;
 				prec = *(int *)HspVarCoreCnvPtr( mpval, HSPVAR_FLAG_INT );
-				if ( prec < 0 ) prec = -prec;
+				if ( prec < 0 ) prec = 0;
 				goto retry;
 			}
 			prec = 0;
