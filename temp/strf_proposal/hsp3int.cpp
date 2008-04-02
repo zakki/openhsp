@@ -57,23 +57,26 @@ static char *cnvformat()
 {
 	//		フォーマット付き文字列を作成する
 	//
-	enum { 
-		CNVFLG_SHARP = 1,
-		CNVFLG_MINUS = 2,
-		CNVFLG_PLUS = 4,
-		CNVFLG_ZERO = 8,
-		CNVFLG_SPACE = 16,
-	};
-	char *fstr, *p, *fp, tmp[32], *strval;
+#if ( WIN32 || _WIN32 ) && ! __CYGWIN__
+#define snprintf _snprintf
+#endif
+
+	char fstr[1024], *p, *fp, fmt[32];
 	int i, len, size;
-	int width, prec, flags;
+	struct {
+		int type;
+		union {
+			int ival;
+			double dval;
+			char *sval;
+		};
+	} val;
 	
 	p = ctx->stmp;
 	size = sbGetSTRINF( ctx->stmp )->size;
 	// フォーマット文字列をコピーして使う
-	fp = code_gets();
-	fstr = sbAlloc( strlen( fp ) + 1 );
-	sbCopy( &fstr, fp, strlen( fp ) + 1 );
+	strncpy( fstr, code_gets(), 1023 );
+	fstr[1023] = '\0';
 	fp = fstr;
 	len = 0;
 	
@@ -93,124 +96,63 @@ static char *cnvformat()
 		len += i;
 		fp += i;
 		if ( *fp == '\0' ) break;
-		
-		width = 0;
-		prec = -1;
-		flags = 0;
-		i = 1;
-retry:
-		switch( fp[i] ) {
-		case '#':
-			flags |= CNVFLG_SHARP;
-			i ++;
-			goto retry;
-		case '-':
-			flags |= CNVFLG_MINUS;
-			i ++;
-			goto retry;
-		case '+':
-			flags |= CNVFLG_PLUS;
-			i ++;
-			goto retry;
-		case '0':
-			flags |= CNVFLG_ZERO;
-			i ++;
-			goto retry;
-		case ' ':
-			flags |= CNVFLG_SPACE;
-			i ++;
-			goto retry;
-		case '1': case '2': case '3': case '4': case '5':
-		case '6': case '7': case '8': case '9':
-			width = 0;
-			for( ; isdigit( fp[i] ); i ++ ) {
-				width = width * 10 + fp[i] - '0';
-			}
-			goto retry;
-		case '*':
-			i ++;
-			if ( code_get() <= PARAM_END ) throw HSPERR_INVALID_FUNCPARAM;
-			width = *(int *)HspVarCoreCnvPtr( mpval, HSPVAR_FLAG_INT );
-			if ( width < 0 ) {
-				width = -width;
-				flags |= CNVFLG_MINUS;
-			}
-			goto retry;
-		case '.':
-			i ++;
-			if ( fp[i] == '*' ) {
-				i ++;
-				if ( code_get() <= PARAM_END ) throw HSPERR_INVALID_FUNCPARAM;
-				prec = *(int *)HspVarCoreCnvPtr( mpval, HSPVAR_FLAG_INT );
-				if ( prec < 0 ) prec = 0;
-				goto retry;
-			}
-			prec = 0;
-			for( ; isdigit( fp[i] ); i ++ ) {
-				prec = prec * 10 + fp[i] - '0';
-			}
-			goto retry;
-		case '%':
-		case 'c': case 'd': case 'E': case 'e': case 'f': case 'G': case 'g':
-		case 'i': case 'o': case 'p': case 's': case 'u': case 'X': case 'x':
-			break;
-		default:
-			throw HSPERR_INVALID_FUNCPARAM;
-		}
+
+		i = strspn( &fp[1], " #+-.0123456789" ) + 1;
+		strncpy( fmt, fp, 31 );
+		fmt[31] = '\0';
+		if ( i + 1 < 32 ) fmt[i+1] = '\0';
 		fp += i;
 		
 		if ( *fp == '\0' ) break;
 		if ( *fp == '%' ) {
 			fp ++;
+			if ( len + 1 + 1 > size ) { // バッファ拡張
+				size = ( ( len + 1 + 1 ) + 0xfff ) & 0xfffff000;
+				p = ctx->stmp = sbExpand( p, size );
+			}
 			p[len++] = '%';
 			continue;
 		}
 
-		i = 0;
-		tmp[i++] = '%';
-		if ( flags & CNVFLG_SHARP ) tmp[i++] = '#';
-		if ( flags & CNVFLG_MINUS ) tmp[i++] = '-';
-		if ( flags & CNVFLG_PLUS  ) tmp[i++] = '+';
-		if ( flags & CNVFLG_ZERO  ) tmp[i++] = '0';
-		if ( flags & CNVFLG_SPACE ) tmp[i++] = ' ';
-		if ( width > 0 ) {
-			sprintf( &tmp[i], "%d", width );
-			i += strlen( &tmp[i] );
-		}
-		if ( prec >= 0 ) {
-			sprintf( &tmp[i], ".%d", prec );
-			i += strlen( &tmp[i] );
-		}
-		tmp[i++] = *fp;
-		tmp[i] = '\0';
-
 		if ( code_get() <= PARAM_END ) throw HSPERR_INVALID_FUNCPARAM;
-
-		i = 256;
-		if ( *fp == 's' ) {
-			strval = (char *)HspVarCoreCnvPtr( mpval, HSPVAR_FLAG_STR );
-			i = strlen( strval );
-		}
-		if ( width > i )
-			i = width;
-
-		if ( len + i + 1 > size ) { // バッファ拡張
-			size = ( ( len + i + 1 ) + 0xfff ) & 0xfffff000;
-			p = ctx->stmp = sbExpand( p, size );
-		}
-
 		switch (*fp) {
 		case 'd': case 'i': case 'c': case 'o': case 'x': case 'X': case 'u': case 'p':
-			sprintf( &p[len], tmp, *(int *)HspVarCoreCnvPtr( mpval, HSPVAR_FLAG_INT ) );
+			val.type = HSPVAR_FLAG_INT;
+			val.ival = *(int *)HspVarCoreCnvPtr( mpval, HSPVAR_FLAG_INT );
 			break;
 		case 'f': case 'e': case 'E': case 'g': case 'G':
-			sprintf( &p[len], tmp, *(double *)HspVarCoreCnvPtr( mpval, HSPVAR_FLAG_DOUBLE ) );
+			val.type = HSPVAR_FLAG_DOUBLE;
+			val.dval = *(double *)HspVarCoreCnvPtr( mpval, HSPVAR_FLAG_DOUBLE );
 			break;
-		case 's': 
-			sprintf( &p[len], tmp, strval );
+		case 's':
+			val.type = HSPVAR_FLAG_STR;
+			val.sval = (char *)HspVarCoreCnvPtr( mpval, HSPVAR_FLAG_STR );
 			break;
 		default:
 			throw HSPERR_INVALID_FUNCPARAM;
+		}
+
+		while (1) {
+			int n;
+			i = size - len - 1;
+			printf( "i = %d\n", i );
+			if ( val.type == HSPVAR_FLAG_INT )
+				n = snprintf( &p[len], i, fmt, val.ival );
+			else if ( val.type == HSPVAR_FLAG_DOUBLE )
+				n = snprintf( &p[len], i, fmt, val.dval );
+			else
+				n = snprintf( &p[len], i, fmt, val.sval );
+
+			if ( n >= 0 && n < i )
+				break;
+			if ( n >= 0 )
+				i = n + 1;
+			else {
+				i *= 2;
+				if ( i < 32 ) i = 32;
+			}
+			size = ( ( len + i + 1 ) + 0xfff ) & 0xfffff000;
+			p = ctx->stmp = sbExpand( p, size );
 		}
 		fp ++;
 		len += strlen( &p[len] );
