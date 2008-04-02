@@ -158,7 +158,6 @@ static char *cnvformat()
 		len += strlen( &p[len] );
 	}
 	p[len] = '\0';
-	sbFree( fstr );
 	
 	return p;
 }
