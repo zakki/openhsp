@@ -135,7 +135,6 @@ static char *cnvformat()
 		while (1) {
 			int n;
 			i = size - len - 1;
-			printf( "i = %d\n", i );
 			if ( val.type == HSPVAR_FLAG_INT )
 				n = snprintf( &p[len], i, fmt, val.ival );
 			else if ( val.type == HSPVAR_FLAG_DOUBLE )
