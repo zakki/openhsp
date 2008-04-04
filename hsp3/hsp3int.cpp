@@ -53,24 +53,111 @@ static char *note_update( void )
 	return p;
 }
 
-static char *cnvformat( char *fstr, int t, void *ptr )
+static char *cnvformat()
 {
 	//		フォーマット付き文字列を作成する
 	//
-	char *p;
+#if ( WIN32 || _WIN32 ) && ! __CYGWIN__
+#define snprintf _snprintf
+#endif
+
+	char fstr[1024], *p, *fp, fmt[32];
+	int i, len, size;
+	struct {
+		int type;
+		union {
+			int ival;
+			double dval;
+			char *sval;
+		};
+	} val;
+	
 	p = ctx->stmp;
-	switch( t ) {
-	case HSPVAR_FLAG_INT:
-		sprintf( p, fstr, *(int *)ptr );
-		break;
-	case HSPVAR_FLAG_DOUBLE:
-		sprintf( p, fstr, *(double *)ptr );
-		break;
-	case HSPVAR_FLAG_STR:
-		return (char *)ptr;
-	default:
-		throw HSPERR_INVALID_TYPE;
+	size = sbGetSTRINF( ctx->stmp )->size;
+	// フォーマット文字列をコピーして使う
+	strncpy( fstr, code_gets(), 1023 );
+	fstr[1023] = '\0';
+	fp = fstr;
+	len = 0;
+	
+	while (1) {
+		// '%' までをコピー
+		for ( i = 0; fp[i] != '\0'; i ++ ) {
+			if ( fp[i] == '%' ) break;
+			if ( ( fp[i] >= 0x81 && fp[i] <= 0x9F ) || ( fp[i] >= 0xE0 && fp[i] <= 0xFC ) ) {
+				i ++;
+			}
+		}
+		if ( len + i + 1 > size ) { // バッファ拡張
+			size = ( ( len + i + 1 ) + 0xfff ) & 0xfffff000;
+			p = ctx->stmp = sbExpand( p, size );
+		}
+		memcpy( &p[len], fp, i );
+		len += i;
+		fp += i;
+		if ( *fp == '\0' ) break;
+
+		i = strspn( &fp[1], " #+-.0123456789" ) + 1;
+		strncpy( fmt, fp, 31 );
+		fmt[31] = '\0';
+		if ( i + 1 < 32 ) fmt[i+1] = '\0';
+		fp += i;
+		
+		if ( *fp == '\0' ) break;
+		if ( *fp == '%' ) {
+			fp ++;
+			if ( len + 1 + 1 > size ) { // バッファ拡張
+				size = ( ( len + 1 + 1 ) + 0xfff ) & 0xfffff000;
+				p = ctx->stmp = sbExpand( p, size );
+			}
+			p[len++] = '%';
+			continue;
+		}
+
+		if ( code_get() <= PARAM_END ) throw HSPERR_INVALID_FUNCPARAM;
+		switch (*fp) {
+		case 'd': case 'i': case 'c': case 'o': case 'x': case 'X': case 'u': case 'p':
+			val.type = HSPVAR_FLAG_INT;
+			val.ival = *(int *)HspVarCoreCnvPtr( mpval, HSPVAR_FLAG_INT );
+			break;
+		case 'f': case 'e': case 'E': case 'g': case 'G':
+			val.type = HSPVAR_FLAG_DOUBLE;
+			val.dval = *(double *)HspVarCoreCnvPtr( mpval, HSPVAR_FLAG_DOUBLE );
+			break;
+		case 's':
+			val.type = HSPVAR_FLAG_STR;
+			val.sval = (char *)HspVarCoreCnvPtr( mpval, HSPVAR_FLAG_STR );
+			break;
+		default:
+			throw HSPERR_INVALID_FUNCPARAM;
+		}
+
+		while (1) {
+			int n;
+			i = size - len - 1;
+			if ( val.type == HSPVAR_FLAG_INT )
+				n = snprintf( &p[len], i, fmt, val.ival );
+			else if ( val.type == HSPVAR_FLAG_DOUBLE )
+				n = snprintf( &p[len], i, fmt, val.dval );
+			else
+				n = snprintf( &p[len], i, fmt, val.sval );
+
+			if ( n >= 0 && n < i )
+				break;
+			if ( n >= 0 )
+				i = n + 1;
+			else {
+				i *= 2;
+				if ( i < 32 ) i = 32;
+			}
+			size = ( ( len + i + 1 ) + 0xfff ) & 0xfffff000;
+			p = ctx->stmp = sbExpand( p, size );
+		}
+		fp ++;
+		len += strlen( &p[len] );
 	}
+	p[len] = '\0';
+	
 	return p;
 }
 
@@ -676,55 +763,9 @@ static void *reffunc_intfunc( int *type_res, int arg )
 		break;
 		}
 
-/*
-	rev 47
-	BT#9 : strf関数で%sフォーマットに数値を指定した場合に強制終了
-	に対処。
-
-	変換指定文字に %s を指定するとエラー(サポートされない機能…)になるようにした。
-	加えて変換指定文字がひとつ以外の場合もエラー(パラメータの値が異常…)になるようにした。
-*/
-/*
-	rev 49
-	SJIS全角対応を忘れてたのを修正。
-*/
-
 	case 0x103:								// strf
-		{
-		char fbuf[1024];
-		char const * form = code_gets();
-		int i = 0, c = 0;
-		for ( ; i < 1023 && form[ i ] != '\0'; ++i ) {
-			if ( form[ i ] == '%' ) {
-				// 変換指定文字の検索
-				size_t l = strspn( form + i + 1, " #*+-.0123456789Lhl" );
-				if ( i + l >= 1022 ) l = 1022 - i;
-				if ( form[ i + l + 1 ] == '%' )
-					++l;
-				else if ( form[ i + l + 1 ] == 's' )
-					throw HSPERR_UNSUPPORTED_FUNCTION;
-				else
-					++c;
-				memcpy( fbuf + i, form + i, l + 1 );
-				i += l;
-			} else {
-				fbuf[ i ] = form[ i ];
-				unsigned char ch = form[ i ];
-				if ( i < 1022 && ( ( ch >= 0x81 && ch <= 0x9F ) ||
-					( ch >= 0xE0 && ch <= 0xFC ) ) )
-				{
-					++i;
-					fbuf[ i ] = form[ i ];
-				}
-			}
-		}
-		fbuf[ i ] = '\0';
-		if ( c != 1 ) { throw HSPERR_ILLEGAL_FUNCTION; }
-		chk = code_get();
-		if ( chk <= PARAM_END ) { throw HSPERR_INVALID_FUNCPARAM; }
-		ptr = cnvformat( fbuf, mpval->flag, mpval->pt );
+		ptr = cnvformat();
 		break;
-		}
 	case 0x104:								// getpath
 		{
 		char *p;
