@@ -756,6 +756,8 @@ static void *reffunc_intfunc( int *type_res, int arg )
 			p1=slen - p2;
 			if ( p1 < 0 ) p1 = 0;
 		}
+		if ( p1 >= slen )
+			p2 = 0;
 		if ( p2 > slen ) p2 = slen;
 		sptr += p1;
 		ptr = p = code_stmp( p2 + 1 );
