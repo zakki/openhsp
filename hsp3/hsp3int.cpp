@@ -58,7 +58,9 @@ static char *cnvformat()
 	//		フォーマット付き文字列を作成する
 	//
 #if ( WIN32 || _WIN32 ) && ! __CYGWIN__
-#define snprintf _snprintf
+#define SNPRINTF _snprintf
+#else
+#define SNPRINTF snprintf
 #endif
 
 	char fstr[1024], *p, *fp, fmt[32];
@@ -138,14 +140,16 @@ static char *cnvformat()
 			int n;
 			i = size - len - 1;
 			if ( val.type == HSPVAR_FLAG_INT )
-				n = snprintf( &p[len], i, fmt, val.ival );
+				n = SNPRINTF( &p[len], i, fmt, val.ival );
 			else if ( val.type == HSPVAR_FLAG_DOUBLE )
-				n = snprintf( &p[len], i, fmt, val.dval );
+				n = SNPRINTF( &p[len], i, fmt, val.dval );
 			else
-				n = snprintf( &p[len], i, fmt, val.sval );
+				n = SNPRINTF( &p[len], i, fmt, val.sval );
 
-			if ( n >= 0 && n < i )
+			if ( n >= 0 && n < i ) {
+				len += n;
 				break;
+			}
 			if ( n >= 0 )
 				i = n + 1;
 			else {
@@ -156,7 +160,6 @@ static char *cnvformat()
 			p = ctx->stmp = sbExpand( p, size );
 		}
 		fp ++;
-		len += strlen( &p[len] );
 	}
 	p[len] = '\0';
 	
