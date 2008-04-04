@@ -20,7 +20,7 @@
 
 #define GetPtr(pval) ((char *)pval)
 
-static char conv[64];
+static char conv[400];
 static HspVarProc *myproc;
 
 static char **GetFlexBufPtr( PVal *pval, int num )
