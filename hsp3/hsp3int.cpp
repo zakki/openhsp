@@ -83,8 +83,10 @@ static char *cnvformat()
 	while (1) {
 		// '%' ‚Ü‚Å‚ðƒRƒs[
 		for ( i = 0; fp[i] != '\0'; i ++ ) {
-			if ( fp[i] == '%' ) break;
-			if ( ( fp[i] >= 0x81 && fp[i] <= 0x9F ) || ( fp[i] >= 0xE0 && fp[i] <= 0xFC ) ) {
+			unsigned char ch;
+			ch = fp[i];
+			if ( ch == '%' ) break;
+			if ( ( ch >= 0x81 && ch <= 0x9F ) || ( ch >= 0xE0 && ch <= 0xFC ) ) {
 				i ++;
 			}
 		}
