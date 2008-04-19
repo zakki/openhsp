@@ -2482,7 +2482,7 @@ void CToken::PutDI( void )
 	int ofs;
 	ofs=(int)( GetCS() - cg_lastcs );
 	if ( ofs <= 250 ) {
-		di_buf->Put( ofs );
+		di_buf->Put( (unsigned char)ofs );
 	} else {
 		di_buf->Put( (unsigned char)252 );
 		di_buf->Put( (unsigned char)(ofs) );
