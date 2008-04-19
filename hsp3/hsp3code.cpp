@@ -3056,7 +3056,7 @@ void code_adddbg2( char * name, char * str )
 
 void code_adddbg( char *name, double val )
 {
-	char tmp[ 64 ];
+	char tmp[ 400 ];
 	sprintf( tmp, "%-36.16f", val );
 	code_adddbg( name, tmp );
 }
