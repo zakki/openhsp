@@ -65,7 +65,14 @@ print
 font
 %port+
 Let
+%sample
+	mes "mes命令は文字列を表示します"
 
+	mes {"複数行の文字列も
+表示できます"}
+
+	font msmincho, 20, font_bold
+	mes "font命令によって文字の大きさなどを変えられます"
 
 %index
 print
@@ -108,14 +115,8 @@ title
 %inst
 p1の指定が省略されている場合には、ウィンドウのタイトルバーキャプション
 を、"strings"の内容に設定します。
-(タイトルバーキャプションは、「Hot Soup Processor ver3.x」と通常は表示
+(タイトルバーキャプションは、通常「Hot Soup Processor ver3.x」と表示
 されている部分のことです)
-^p
-例 ：
-	title "Window Title"
-^p
-上の例では、「Window Title」という文字をウィンドウのタイトルバーに表示
-します。
 
 %href
 objprm
@@ -124,7 +125,9 @@ Let
 %portinfo
 HSPLetアプレットの場合はステータスバーのテキストが変化します。
 
-
+%sample
+	// 「Window Title」という文字をウィンドウのタイトルバーに表示
+	title "Window Title"
 
 %index
 dialog
@@ -245,9 +248,12 @@ screen_palette
 Let
 %portinfo
 HSPLet使用時は、パレットモードを使用できません。
+%sample
+	mes "プログラムを終了するにはこのウィンドウを閉じてください"
 
-
-
+	// 枠のないウィンドウを作成
+	bgscr 2, 320, 240
+	boxf
 
 %index
 bmpsave
@@ -293,8 +299,12 @@ line
 circle
 %port+
 Let
+%sample
+	// 全パラメータを省略すると全体塗りつぶし
+	boxf
 
-
+	color 255, 128, 0
+	boxf 80, 80, 150, 130
 
 %index
 buffer
@@ -860,7 +870,24 @@ mes,print,gcopy,gzoom などの画面制御命令が実行されても仮想画面を書き換
 可能です。通常は省略すれば、全画面の更新を行ないます。
 %port+
 Let
+%sample
+// redraw命令のサンプル
+// redraw命令を消すとちらつきが確認できます
 
+*main_loop
+	redraw 0
+
+	color 255, 255, 255
+	boxf
+
+	pos 0, 0
+	color 0, 0, 0
+	mes "描画と消去を繰り返しても文字がちらつきません"
+
+	redraw 1
+
+	wait 1
+	goto *main_loop
 
 
 %index
