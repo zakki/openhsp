@@ -172,7 +172,7 @@ HSPSOCK ver3.1   REFERENCE MANUAL                   HSP : Hot Soup Processor
 		サイズ(byte)が代入されます。システム変数statの内容が0だった
 		場合は、通信エラー、もしくはタイムアウトでまったく送信されて
 		いないことを示しています。
-		(変数バッファの内容は、peek命令、poke命令などで操作することが
+		(変数バッファの内容は、peek関数、poke命令などで操作することが
 		可能です。)
 
 	sockget p1,p2,p3			データを受信
