@@ -1,11 +1,12 @@
 
 ;============================================================
-;                                                 2006/12/24
-;	S.Programs d3module 1.66
-;	Simple, Stupid 3D module for HSP 3.0
+;                                                 2008/05/01
+;	S.Programs d3module 1.67
+;	Simple, Stupid 3D module for HSP3
 ;                               http://sprocket.babyblue.jp/
 ;============================================================
 
+#ifndef d3setcam
 #module "d3m"
 
 ;===========================================================
@@ -338,17 +339,16 @@
 ;	パーティクル描画モジュール
 ;===========================================================
 
-#const	PTS_D	160		; パーティクルバッファ 直径 (86KB/ID)
-#const	PTS_DM1	(PTS_D - 1)	;  PTS_D - 1
-#const	SCMAX_R	12		; 縮小キャッシュ 最大半径
-#const	SCMAX_D	SCMAX_R * 2	;  同 直径
-#const	TMP_R	200		; パーティクル画像作成スクリーン 半径
-#const	TMP_D	TMP_R * 2	;  同 直径 // ↑d3mkparticle の画質/速度の設定に相当
+#const	PCACHE_D	18				; 縮小キャッシュ 最大直径
+#const	PTS_D		(PCACHE_D + 1) * PCACHE_D / 2	; パーティクルバッファ 直径
+#const	PTS_DM1		(PTS_D - 1)			;  PTS_D - 1
+#const	TMP_R		PTS_D				; パーティクル画像作成スクリーン 半径
+#const	TMP_D		TMP_R * 2			;  同 直径 // ↑d3mkparticle の画質/速度バランスに相当
 
-; 縮小キャッシュ最大径はパーティクルバッファ径で制限される
-;  PTS_D == (SCMAX_R + 1) * SCMAX_R
-; SCMAX_R : 1  2  3  4  5  6  7  8  9  10  11  12  13  14  15  16
-;  PTS_D  : 2  6 12 20 30 42 56 72 90 110 132 156 182 210 240 272
+; 縮小キャッシュ最大径はパーティクルバッファ径に制限を受ける
+; PTS_D[MIN] == (PCACHE_D + 1) * PCACHE_D / 2
+;  PCACHE_D  10, 11, 12, 13,  14,  15,  16,  17,  18,  19,  20,  21,  22,  23,  24
+;  PTS_D     55, 66, 78, 91, 105, 120, 136, 153, 171, 190, 210, 231, 253, 276, 300
 
 
 ; d3mkparticle 球状パーティクル作成 (pid,  r, g, b,  pseq)
@@ -369,7 +369,6 @@
 	b = ginfo_sel
 	x = PTS_D * ppi
 
-
 	; パーティクル用スクリーン作成 (wid スワップで自動拡張)
 	if ppi >= ppi_max {
 		a = ppi + 4 ; 拡張後の ppi_max (最大 pid)
@@ -384,10 +383,10 @@
 		}
 
 		; 新 パーティクルバッファ
-		buffer SCR_PTC, PTS_D * a, PTS_D + SCMAX_D
+		buffer SCR_PTC, PTS_D * a, PTS_D + PCACHE_D
 
 		; 従来使用していたバッファがあれば内容引継ぎ
-		if ppi_max : gcopy SCR_TMP, 0, 0, PTS_D * ppi_max, PTS_D + SCMAX_D
+		if ppi_max : gcopy SCR_TMP, 0, 0, PTS_D * ppi_max, PTS_D + PCACHE_D
 
 		; 新 TEMP バッファ
 		buffer SCR_TMP, TMP_D, TMP_D
@@ -395,21 +394,17 @@
 		ppi_max = a
 	}
 
-
 	; (パラメータによって動作分け)
 	if v06 {
-
-		; パーティクル画像ロード
+		; パーティクル画像ロード (d3ldparticle)
 		gsel SCR_PTC
 		pos x, 0
 		gzoom PTS_D, PTS_D, v02, v03, v04, v05, v06, 1
 
 	} else {
-
-		; パーティクル画像作成
+		; パーティクル画像作成 (d3mkparticle)
 		gsel SCR_TMP
 		color : boxf
-
 
 		; Poly Particle Processor (d3m 1.65)
 		; pseq : n_repeat, l_seq, seq[0], seq[1], ... , seq[l-1]
@@ -432,10 +427,8 @@
 			line TMP_R + sin(f)*r, TMP_R - cos(f)*r
 		loop
 
-
 		; patch
 		pos 0, 0 : gmode 2, TMP_D, TMP_D : gcopy SCR_TMP, 1
-
 
 		; パーティクル画像ロード
 		gsel SCR_PTC
@@ -443,17 +436,19 @@
 		gzoom PTS_D, PTS_D,  SCR_TMP,  0, 0,  TMP_D, TMP_D,  1
 	}
 
-
 	; 高速化用 縮小済みキャッシュ作成
-	repeat SCMAX_R, 1
-		pos (cnt-1)*cnt + x, PTS_D
-		gzoom cnt*2, cnt*2,  SCR_PTC,  x, 0,  PTS_D, PTS_D,  1
-	loop
+	repeat PCACHE_D, 1
+		pos (cnt-1)*cnt/2 + x, PTS_D
+		gzoom cnt, cnt,  SCR_PTC,  x, 0,  PTS_D, PTS_D,  1
 
+		; sharp patch
+		gmode 3, , , 56
+		pos cnt*cnt/2 + x, PTS_D + cnt/2
+		gcopy SCR_PTC, PTS_D/2 + x, PTS_D/2, 1, 1
+	loop
 
 	; 固定パラメータ (コピー元 ar-y)
 	pfy = 0, 0, PTS_DM1, PTS_DM1
-
 
 	; 描画先を戻す
 	gsel b
@@ -471,17 +466,17 @@
 #deffunc d3particlem int ppi, double ppr
 
 	if df {
-		r = int(ppr / dz)
-		if r >= 1 {
-			if r <= SCMAX_R {
+		d = int(ppr * 2 / dz)
+		if d >= 1 {
+			if d <= PCACHE_D {
 				; 高速版 : 縮小済みキャッシュからコピー
-				pos dx-r, dy-r
-				gcopy SCR_PTC,  ppi*PTS_D + (r-1)*r, PTS_D,  r*2, r*2
+				pos dx - d/2, dy - d/2
+				gcopy SCR_PTC,  ppi*PTS_D + (d-1)*d/2, PTS_D,  d, d
 			} else {
 				; 標準版 : パーティクルソースから倍変コピー
+				r = d / 2
 				pdx = dx - r, dx + r, dx + r, pdx
 				pdy = dy - r, pdy, dy + r, dy + r
-
 				x = ppi*PTS_D
 				psx = x, x+PTS_DM1, x+PTS_DM1, x
 				gsquare SCR_PTC, pdx, pdy, psx, pfy
@@ -715,4 +710,4 @@
 	ptcdef@d3m = 20, 1, 100 ; default particle code
 
 
-
+#endif
