@@ -1635,7 +1635,10 @@ int CToken::ReplaceLineBuf( char *str1, char *str2, char *repl, int opt, MACDEF 
 		*w++ = a1;
 	}
 	*w = 0;
-	if ( last!=NULL ) { strcpy( w, last ); }
+	if ( last!=NULL ) {
+		if ( w + strlen(last) + 1 >= linetmp ) { SetError("macro buffer overflow"); return 4; }
+		strcpy( w, last );
+	}
 	return 0;
 }
 
