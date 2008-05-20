@@ -845,7 +845,7 @@ static void *reffunc_intfunc( int *type_res, int arg )
 		throw HSPERR_UNSUPPORTED_FUNCTION;
 	}
 
-	//			'('‚ÅI‚í‚é‚©‚ğ’²‚×‚é
+	//			')'‚ÅI‚í‚é‚©‚ğ’²‚×‚é
 	//
 	if ( *type != TYPE_MARK ) throw HSPERR_INVALID_FUNCPARAM;
 	if ( *val != ')' ) throw HSPERR_INVALID_FUNCPARAM;

@@ -288,7 +288,7 @@ static void *reffunc_function( int *type_res, int arg )
 		throw HSPERR_UNSUPPORTED_FUNCTION;
 	}
 
-	//			'('‚ÅI‚í‚é‚©‚ð’²‚×‚é
+	//			')'‚ÅI‚í‚é‚©‚ð’²‚×‚é
 	//
 	if ( *type != TYPE_MARK ) throw HSPERR_INVALID_FUNCPARAM;
 	if ( *val != ')' ) throw HSPERR_INVALID_FUNCPARAM;
