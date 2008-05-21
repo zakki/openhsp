@@ -105,9 +105,9 @@
 
 #ifndef _DEBUG
 #undef assert
-#define assert(%1) :
+#define global assert(%1) :
 #undef logmes
-#define logmes(%1) :
+#define global logmes(%1) :
 #endif
 
 #endif
