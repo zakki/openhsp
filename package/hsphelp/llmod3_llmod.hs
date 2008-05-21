@@ -52,8 +52,7 @@ n4 : dllのインスタンス
 %inst
 n4に指定したdll内のs1の関数を使用します。
 関数の返り値はシステム変数statに代入されます。
-llmod3内では主用なdllがロードされていて、そのdllを使用する場合は
-n4に以下の数値を使用できます。
+llmod3内では主用なdllがロードされていて、そのdllを使用する場合はn4に以下の数値を使用できます。
 ^p
 DLL名          数値(defineされている名前)
 kernel32.dll   0 (D_KERNEL)
@@ -100,12 +99,10 @@ v1 : CreateWindowに渡すパラメータが代入された変数
 s2 : ウィンドウのクラス名
 %inst
 v1に代入されたパラメータを使用してCreateWindowAを呼び出します。
-v1にはx座標, y座標, 幅, 高さ, スタイル, 親ウィンドウのハンドル, dwExStyle
-の順にパラメータを代入します。
+v1にはx座標, y座標, 幅, 高さ, スタイル, 親ウィンドウのハンドル, dwExStyleの順にパラメータを代入します。
 s2は作成するウィンドウのクラス名です。
 作成したウィンドウのハンドルはv1に代入されます。
-親ウィンドウのハンドルを0にすると_makewndが呼ばれたとき操作対象になっている
-ウィンドウのハンドルが使用されます。
+親ウィンドウのハンドルを0にすると_makewndが呼ばれたとき操作対象になっているウィンドウのハンドルが使用されます。
 %sample
 	prm = csrx, csry, 200, 30, $50000000, 0, $200
 	_makewnd prm,"msctls_trackbar32"
@@ -139,8 +136,7 @@ n1
 n1 : 消去するオブジェクトのID
 
 %inst
-llmod3のモジュールで作成したlistview,progbox,trackbox,treebox,udbtn
-などのオブジェクトを消去します。
+llmod3のモジュールで作成したlistview,progbox,trackbox,treebox,udbtnなどのオブジェクトを消去します。
 ^
 ※llmod3で作成したオブジェクトはHSP標準命令のcls、screenなどで消去されません。
 これらの命令を使用したときは_cls、_clrobjを使用してください。
@@ -165,8 +161,7 @@ n1
 n1 : clsに渡すパラメータ
 
 %inst
-llmod3のモジュールで作成したlistview,progbox,trackbox,treebox,udbtn
-などのオブジェクトとHSP標準命令で作成したオブジェクトを全て消去します。
+llmod3のモジュールで作成したlistview,progbox,trackbox,treebox,udbtnなどのオブジェクトとHSP標準命令で作成したオブジェクトを全て消去します。
 n1は_clsの内部で呼び出されているHSP標準命令のclsに渡すパラメータとして使用されます。
 ^
 ※llmod3で作成したオブジェクトはHSP標準命令のcls、screenなどで消去されません。

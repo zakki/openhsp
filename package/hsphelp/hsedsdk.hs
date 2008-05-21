@@ -25,8 +25,6 @@ Win
 %group
 HSPスクリプトエディタ 外部ツール作成用
 
-%sample
-サンプルスクリプトは用意されていません。
 %index
 hsed_exist
 HSPスクリプトエディタの起動状態を取得
