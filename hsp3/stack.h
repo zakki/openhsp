@@ -5,7 +5,7 @@
 #ifndef __stack_h
 #define __stack_h
 
-#define STM_MAX_DEFAULT 128
+#define STM_MAX_DEFAULT 256
 #define STM_STRSIZE_DEFAULT 64
 
 #define STMMODE_SELF 0
@@ -21,7 +21,7 @@ typedef struct
 	short mode;
 	char *ptr;
 	int ival;
-	int ival2;
+	char itemp[STM_STRSIZE_DEFAULT-4];		// data area peding
 } STMDATA;
 
 void StackInit( void );
