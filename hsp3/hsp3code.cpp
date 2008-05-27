@@ -48,6 +48,7 @@ static int dbgmode;
 
 PVal *plugin_pval;								// プラグインに渡される変数ポインタの実態
 PVal *mpval;									// code_getで使用されたテンポラリ変数
+static PVal *mpval_int;							// code_getで使用されたテンポラリ変数(int用)
 static PVal prmvar;								// パラメーターテンポラリ変数の実態
 
 static	unsigned char *mem_di_val;				// Debug VALS info ptr
@@ -642,16 +643,21 @@ int code_get( void )
 	stm = StackPeek;
 	tflag = stm->type;
 
-	varproc = HspVarCoreGetProc( tflag );
-	mpval = HspVarCoreGetPVal( tflag );
+	if ( tflag == HSPVAR_FLAG_INT ) {				// int型の場合は直接値を設定する(高速化)
+		mpval = mpval_int;
+		*(int *)mpval->pt = stm->ival;
+	} else {
+		varproc = HspVarCoreGetProc( tflag );
+		mpval = HspVarCoreGetPVal( tflag );
 
-	if ( mpval->mode == HSPVAR_MODE_NONE ) {					// 型に合わせたテンポラリ変数を初期化
-		if ( varproc->flag == 0 ) {
-			throw HSPERR_TYPE_INITALIZATION_FAILED;
+		if ( mpval->mode == HSPVAR_MODE_NONE ) {					// 型に合わせたテンポラリ変数を初期化
+			if ( varproc->flag == 0 ) {
+				throw HSPERR_TYPE_INITALIZATION_FAILED;
+			}
+			HspVarCoreClearTemp( mpval, tflag );									// 最小サイズのメモリを確保
 		}
-		HspVarCoreClearTemp( mpval, tflag );									// 最小サイズのメモリを確保
+		varproc->Set( mpval, (PDAT *)(mpval->pt), STM_GETPTR(stm) );				// テンポラリ変数に初期値を設定
 	}
-	varproc->Set( mpval, (PDAT *)(mpval->pt), STM_GETPTR(stm) );				// テンポラリ変数に初期値を設定
 
 	StackPop();
 	if ( stack_def != StackGetLevel )					{		// スタックが正常に復帰していない
@@ -2416,6 +2422,7 @@ void code_init( void )
 	StackInit();
 	HspVarCoreInit();			// ストレージコア初期化
 	mpval = HspVarCoreGetPVal(0);
+	mpval_int = HspVarCoreGetPVal(HSPVAR_FLAG_INT);
 	hspevent_opt = 0;			// イベントオプションを初期化
 
 	//		exinfoの初期化
@@ -2619,6 +2626,7 @@ rerun:
 	hspctx->looplev = 0;
 	hspctx->sublev = 0;
 	StackReset();
+	HspVarCoreClearTemp( mpval_int, HSPVAR_FLAG_INT );	// int型のテンポラリを初期化
 
 #ifdef HSPERR_HANDLE
 	try {
