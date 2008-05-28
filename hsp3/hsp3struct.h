@@ -483,8 +483,10 @@ typedef struct HSPCTX
 #define HSPSTAT_DEBUG 1
 #define HSPSTAT_SSAVER 2
 
-#define TYPE_EX_SUBROUTINE 0x100
-#define TYPE_EX_CUSTOMFUNC 0x101
+#define TYPE_EX_SUBROUTINE 0x100		// gosub用のスタックタイプ
+#define TYPE_EX_CUSTOMFUNC 0x101		// deffunc呼び出し用のスタックタイプ
+#define TYPE_EX_ENDOFPARAM 0x200		// パラメーター終端(HSPtoC)
+#define TYPE_EX_ARRAY_VARS 0x201		// 配列要素付き変数用スタックタイプ(HSPtoC)
 
 typedef struct
 {

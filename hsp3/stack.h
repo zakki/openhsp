@@ -31,6 +31,8 @@ void StackPush( int type, char *data, int size );
 void StackPush( int type, char *str );
 void *StackPushSize( int type, int size );
 void StackPushi( int val );
+void StackPushStr( char *str );
+void StackPushType( int type );
 void StackPop( void );
 
 extern int stm_max;
