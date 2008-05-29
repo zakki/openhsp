@@ -10,6 +10,11 @@
 #include <windows.h>
 #endif
 
+#ifdef HSPLINUX
+#include <sys/time.h>
+#include <time.h>
+#endif
+
 #include <stdio.h>
 #include <string.h>
 #include "localinfo.h"
@@ -52,9 +57,37 @@ int CLocalInfo::GetTime( int index )
 	GetLocalTime( &st );
 	a=(short *)&st;
 	return (int)(a[index]);
-#else
-	return 0;
 #endif
+#ifdef HSPLINUX
+	struct timeval tv;
+	struct tm *lt;
+
+	gettimeofday( &tv, NULL );	// MinGW‚¾‚ÆVer‚É‚æ‚Á‚Ä’Ê‚è‚Ü‚¹‚ñ
+	lt = localtime( &tv.tv_sec );
+
+	switch( index ) {
+	case 0:
+		return lt->tm_year+1900;
+	case 1:
+		return lt->tm_mon+1;
+	case 2:
+		return lt->tm_wday;
+	case 3:
+		return lt->tm_mday;
+	case 4:
+		return lt->tm_hour;
+	case 5:
+		return lt->tm_min;
+	case 6:
+		return lt->tm_sec;
+	case 7:
+		return (int)tv.tv_usec/10000;
+	case 8:
+		/*	ˆê‰ƒ}ƒCƒNƒ•b‚Ü‚Åæ‚ê‚é	*/
+		return (int)tv.tv_usec%10000;
+	}
+#endif
+	return 0;
 }
 
 
