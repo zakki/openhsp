@@ -38,13 +38,13 @@ DEF_CLASSIFY_TABLE DefClassifyTable[] = {
 	// Grammer
 	"\\\"",		"\\\"",	EMP_LINE_BETWEEN,	&(color.Character.String.Conf),		NULL,	4,	0,
 	"\"",		"\"",	EMP_LINE_BETWEEN,	&(color.Character.String.Conf),		NULL,	3,	4,
-	":",		NULL,	EMP_LINE_AFTER,		&(color.Character.Default.Conf),	NULL,	2,	1,
+	":",		"",		EMP_LINE_AFTER,		&(color.Character.Default.Conf),	NULL,	2,	1,
 	"/*",		"*/",	EMP_MULTI_BETWEEN,	&(color.Character.Comment.Conf),	NULL,	3,	0,
-	";",		NULL,	EMP_LINE_AFTER,		&(color.Character.Comment.Conf),	NULL,	3,	0,
-	"//",		NULL,	EMP_LINE_AFTER,		&(color.Character.Comment.Conf),	NULL,	3,	0,
+	";",		"",		EMP_LINE_AFTER,		&(color.Character.Comment.Conf),	NULL,	3,	0,
+	"//",		"",		EMP_LINE_AFTER,		&(color.Character.Comment.Conf),	NULL,	3,	0,
 
 	// Label
-	"*",		NULL,	EMP_LINE_AFTER,		&(color.Character.Label.Conf),	F_SE_HEAD,	0,	2,
+	"*",		"",		EMP_LINE_AFTER,		&(color.Character.Label.Conf),	F_SE_HEAD,	0,	2,
 
 	// End of table	
 	NULL
@@ -175,7 +175,7 @@ void SetClassify(int FootyID)
 {
 	FootyResetEmphasis(FootyID, false);
 	for(CLASSIFY_TABLE *lpCT = ClassifyTable; lpCT->Word1[0] != '\0'; lpCT++) {
-		FootyAddEmphasis(FootyID, lpCT->Word1, lpCT->Word2, lpCT->Type, (lpCT->color != NULL ? *(lpCT->color) : NULL),
+		FootyAddEmphasis(FootyID, lpCT->Word1, *lpCT->Word2 ? lpCT->Word2 : NULL, lpCT->Type, (lpCT->color != NULL ? *(lpCT->color) : NULL),
 			lpCT->Status, lpCT->Level, lpCT->pLevel);
 	}	
 

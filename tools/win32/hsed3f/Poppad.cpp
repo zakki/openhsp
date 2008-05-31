@@ -3769,6 +3769,6 @@ void __stdcall OnFootyContextMenu(void *pParam, int id)
 	POINT pt;
 
 	GetCursorPos(&pt);
-	TrackPopupMenu(hSubMenu, TPM_LEFTALIGN | TPM_TOPALIGN | TPM_RIGHTBUTTON, pt.x, pt.y, 0, hwbak, NULL);
+	TrackPopupMenu(hSubMenu, TPM_LEFTALIGN | TPM_TOPALIGN | TPM_RIGHTBUTTON, pt.x, pt.y, 0, hwndClient, NULL);
 	return;
 }

@@ -1545,7 +1545,7 @@ LRESULT CALLBACK MyEditProc( HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam )
 		{
 			POINT pt;
 			GetCursorPos(&pt);
-			TrackPopupMenu(hSubMenu, TPM_LEFTALIGN | TPM_TOPALIGN | TPM_RIGHTBUTTON, pt.x, pt.y, 0, hwbak, NULL);
+			TrackPopupMenu(hSubMenu, TPM_LEFTALIGN | TPM_TOPALIGN | TPM_RIGHTBUTTON, pt.x, pt.y, 0, hwndClient, NULL);
 			break;
 		}
 	}
@@ -3854,6 +3854,6 @@ void __stdcall OnFooty2TextModified(int id, void *pParam, int nCause)
 //	POINT pt;
 //
 //	GetCursorPos(&pt);
-//	TrackPopupMenu(hSubMenu, TPM_LEFTALIGN | TPM_TOPALIGN | TPM_RIGHTBUTTON, pt.x, pt.y, 0, hwbak, NULL);
+//	TrackPopupMenu(hSubMenu, TPM_LEFTALIGN | TPM_TOPALIGN | TPM_RIGHTBUTTON, pt.x, pt.y, 0, hwndClient, NULL);
 //	return;
 //}
