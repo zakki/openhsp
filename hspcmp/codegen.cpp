@@ -554,7 +554,7 @@ char *CToken::GetTokenCG( char *str, int option )
 		vs++; cg_str = (char *)vs;
 		p = PickStringCG( (char *)vs, 0x27 );
 		ttype = TK_NUM; 
-		val = cg_str[0];
+		val = ((unsigned char *)cg_str)[0];
 		return p;
 	}
 
