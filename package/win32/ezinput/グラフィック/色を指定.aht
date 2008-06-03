@@ -1,0 +1,13 @@
+
+#aht class "hsp3.std"
+#aht author "onitama"
+#aht ver "1.0"
+#aht icon "deficon.bmp"
+#aht iconid 0
+
+#define 指定する色コード	$ffffff	;;color,opt="rgb"
+#const R成分 255	;;help="赤色の輝度"
+#const G成分 255	;;help="緑色の輝度"
+#const B成分 255	;;help="青色の輝度"
+
+#ahtmes	"	color "+R成分+" , "+G成分+" , "+B成分+"\t\t; 色を設定"

@@ -1,0 +1,13 @@
+
+#aht class "hsp3.std"
+#aht author "onitama"
+#aht ver "1.0"
+#aht icon "deficon.bmp"
+#aht iconid 0
+
+#define タイプ "goto"	;;combox,pure,prm="goto\ngosub",opt="goto\ngosub"
+#define ボタンの文字 "?"	;;help="ボタンの上に表示されます"
+#define ジャンプ先ラベル "*label"	;;pure,help="*に続けてラベル名を指定"
+
+#ahtmes	"	button "+タイプ+" "+ボタンの文字+" , "+ジャンプ先ラベル+"\t\t; ボタンを配置"
+

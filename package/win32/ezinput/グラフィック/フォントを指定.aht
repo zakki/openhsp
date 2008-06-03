@@ -1,0 +1,12 @@
+
+#aht class "hsp3.std"
+#aht author "onitama"
+#aht ver "1.0"
+#aht icon "deficon.bmp"
+#aht iconid 0
+
+#define フォント名	""	;;font,help="ボタンを押して選択。"
+#const 文字サイズ 13	;;help="ポイント"
+#const 文字モード 0	;;help="スタイルを指定します"
+
+#ahtmes	"	font "+フォント名+" , "+文字サイズ+" , "+文字モード+"\t\t; フォントを設定"

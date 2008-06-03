@@ -1,0 +1,14 @@
+
+#aht class "hsp3.std"
+#aht author "onitama"
+#aht ver "1.0"
+#aht icon "deficon.bmp"
+#aht iconid 0
+
+#define 変数	a	;;str,help="入力結果が代入されます"
+#define Xサイズ	""	;;str,pure,help="入力枠の横サイズ"
+#define Yサイズ	""	;;str,pure,help="入力枠の縦サイズ"
+#define 文字数	""	;;str,pure,help="最大入力文字数(byte)"
+
+#ahtmes	"	input "+変数+","+Xサイズ+","+Yサイズ+","+文字数+"\t\t; 入力ボックスを配置"
+
