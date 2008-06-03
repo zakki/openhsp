@@ -44,7 +44,7 @@
 	;	"hh:mm:ss"‚ÌŒ`®‚Å‚ğ“¾‚Ä•Ï”‚É‘ã“ü‚·‚é
 	;	gettimestr •Ï”–¼
 	;
-	_p1 = strf("%02d:",gettime(4))+strf("%02d:",gettime(5))+strf("%02d",gettime(6))
+	_p1 = strf("%02d:%02d:%02d",gettime(4),gettime(5),gettime(6))
 	return
 
 #deffunc getdatestr var _p1
@@ -52,7 +52,7 @@
 	;	"yyyy/mm/dd"‚ÌŒ`®‚Å“ú•t‚ğ“¾‚Ä•Ï”‚É‘ã“ü‚·‚é
 	;	getdatestr •Ï”–¼
 	;
-	_p1 = strf("%02d/",gettime(0))+strf("%02d/",gettime(1))+strf("%02d",gettime(3))
+	_p1 = strf("%02d/%02d/%02d",gettime(0),gettime(1),gettime(3))
 	return
 
 ;--------------------------------------------------------------------------------
