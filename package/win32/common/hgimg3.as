@@ -5,25 +5,34 @@
 #define __hgimg3__
 #runtime "hsp3hg"
 
-#define global FLAG_NONE 0
-#define global FLAG_ENTRY 1
-#define global FLAG_VISIBLE 2
-#define global FLAG_MOVING 4
+#const global FLAG_NONE 0
+#const global FLAG_ENTRY 1
+#const global FLAG_VISIBLE 2
+#const global FLAG_MOVING 4
 
-#define global OBJ_HIDE 1
-#define global OBJ_TREE 2
-#define global OBJ_XFRONT 4
-#define global OBJ_MOVE 32
-#define global OBJ_FLIP 64
-#define global OBJ_BORDER 0x80
-#define global OBJ_2D 0x100
-#define global OBJ_LATE 0x4000
-#define global OBJ_LAND 0x40000
-#define global OBJ_LOOKAT 0x80000
+#const global OBJ_HIDE 1
+#const global OBJ_TREE 2
+#const global OBJ_XFRONT 4
+#const global OBJ_MOVE 32
+#const global OBJ_FLIP 64
+#const global OBJ_BORDER 0x80
+#const global OBJ_2D 0x100
+#const global OBJ_STATIC 0x800
+#const global OBJ_GRAVITY 0x1000
+#const global OBJ_LATE 0x4000
 
-#define global SHADE_LINES	0x80
-#define global SHADE_NOLIGHT	0x100
-#define global SHADE_TOON	0x200
+#const global OBJ_STAND 0x10000
+#const global OBJ_GROUND 0x20000
+#const global OBJ_LAND 0x40000
+#const global OBJ_LOOKAT 0x80000
+
+#const global OBJ_BOUND 0x100000
+#const global OBJ_ALIEN 0x200000
+#const global OBJ_WALKCLIP 0x400000
+
+#const global SHADE_LINES	0x80
+#const global SHADE_NOLIGHT	0x100
+#const global SHADE_TOON	0x200
 
 #enum global PRMSET_MODE = 0
 #enum global PRMSET_FLAG
@@ -32,26 +41,28 @@
 #enum global PRMSET_MYGROUP
 #enum global PRMSET_COLGROUP
 
-#define global HGOBJ_CAMERA 0
-#define global HGOBJ_LIGHT 1
+#const global HGOBJ_CAMERA 0
+#const global HGOBJ_LIGHT 1
 
-#define global CAM_MODE_NORMAL 0
-#define global CAM_MODE_LOOKAT 1
+#const global CAM_MODE_NORMAL 0
+#const global CAM_MODE_LOOKAT 1
+#const global CAM_MODE_LOOKOBJ 2
+#const global CAM_MODE_AUTOMOVE 3
 
-#define global HGMODEL_ROTORDER_ZYX 0
-#define global HGMODEL_ROTORDER_XYZ 1
-#define global HGMODEL_ROTORDER_YXZ 2
+#const global HGMODEL_ROTORDER_ZYX 0
+#const global HGMODEL_ROTORDER_XYZ 1
+#const global HGMODEL_ROTORDER_YXZ 2
 
-#define global EPRIM_CIRCLE 0
-#define global EPRIM_CIRCLE2 1
-#define global EPRIM_SQUARE 2
-#define global EPRIM_LINE 3
+#const global EPRIM_CIRCLE 0
+#const global EPRIM_CIRCLE2 1
+#const global EPRIM_SQUARE 2
+#const global EPRIM_LINE 3
 
-#define global MOVEMODE_LINEAR 0
-#define global MOVEMODE_SPLINE 1
-#define global MOVEMODE_LINEAR_REL 2
-#define global MOVEMODE_SPLINE_REL 3
-#define global MOVEMODE_FROMWORK 16
+#const global MOVEMODE_LINEAR 0
+#const global MOVEMODE_SPLINE 1
+#const global MOVEMODE_LINEAR_REL 2
+#const global MOVEMODE_SPLINE_REL 3
+#const global MOVEMODE_FROMWORK 16
 
 ;
 ;	system request
@@ -81,8 +92,9 @@
 #define global SYSREQ_DEFTIMER 23
 #define global SYSREQ_NOMIPMAP 24
 #define global SYSREQ_DEVLOST 25
+#define global SYSREQ_DEBUG $10000
 
-#define global event_delobj(%1) event_prmset %1,PRMSET_FLAG,0
+#define event_delobj(%1) event_prmset %1,PRMSET_FLAG,0
 
 #regcmd 18
 #cmd _hgini $00
@@ -203,6 +215,7 @@
 #cmd event_adddir $73
 #cmd event_addefx $74
 #cmd event_addwork $75
+#cmd event_addtarget $76
 #cmd event_addangr $77
 #cmd event_setpos $78
 #cmd event_setang $79
@@ -294,6 +307,7 @@
 #cmd setxinfo $c3
 #cmd getobjcoli $c4
 #cmd getobjmodel $c5
+#cmd setcolvec $c6
 #cmd setcolscale $c6
 #cmd modelcols $c7
 #cmd objexist $c8
@@ -313,6 +327,12 @@
 #cmd hgview $d6
 #cmd hggettime $d7
 #cmd hgsettime $d8
+#cmd meshmap $d9
+#cmd getvarmap $da
+#cmd objwalk $db
+#cmd objfloor $dc
+#cmd getcolvec $dd
+#cmd getnearobj $de
 
 #cmd dmmini $e0
 #cmd dmmbye $e1
