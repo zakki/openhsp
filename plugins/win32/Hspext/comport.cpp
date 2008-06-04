@@ -10,7 +10,7 @@
 #include <winbase.h>
 #include <winuser.h>
 #include <shlobj.h>
-
+#include <stdio.h>
 
 #include "hspdll.h"
 
@@ -32,20 +32,19 @@ EXPORT BOOL WINAPI comopen( int p1, char *p2, int p3, int p4 )
 	DCB dcb;
 	BOOL success;
 	COMMTIMEOUTS timeouts;
-	char ppstr[10];
+	char ppstr[16];
 
 	// ポートを開く
 	//
 	if (p1>0) {
-		strcpy(ppstr,"COM0");
-		ppstr[3]+=p1;
+		sprintf(ppstr,"\\\\.\\COM%d", p1);
 	}
 	else strcpy(ppstr,"LPT1");
 
 	comHandle = CreateFile( ppstr, 
 		GENERIC_READ|GENERIC_WRITE, 
-		0, 0, OPEN_EXISTING,
-		FILE_ATTRIBUTE_NORMAL, 0);
+		0, NULL, OPEN_EXISTING,
+		FILE_ATTRIBUTE_NORMAL, NULL);
 	if (comHandle == INVALID_HANDLE_VALUE) return -1;
 
 	success = GetCommState(comHandle, &dcb);
