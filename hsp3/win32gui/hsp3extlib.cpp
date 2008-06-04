@@ -24,7 +24,8 @@ static HSPCTX *hspctx;		// Current Context
 static HSPEXINFO *exinfo;	// Info for Plugins
 static PVal **pmpval;
 
-static int libmax, prmmax;
+static int libmax, prmmax, hpimax;
+static HPIDAT *hpidat;
 
 #define GetPRM(id) (&hspctx->mem_finfo[id])
 #define GetLIB(id) (&hspctx->mem_linfo[id])
@@ -115,7 +116,7 @@ static int Hsp3ExtAddPlugin( void )
 {
 	//		ƒvƒ‰ƒOƒCƒ“‚Ì“o˜^
 	//
-	int i,hpimax;
+	int i;
 	HSPHED *hed;
 	char *ptr;
 	char *libname;
@@ -126,7 +127,7 @@ static int Hsp3ExtAddPlugin( void )
 	char tmp[512];
 
 	hed = hspctx->hsphed; ptr = (char *)hed;
-	hpi = (HPIDAT *)( ptr + hed->pt_hpidat );
+	hpi = hpidat = (HPIDAT *)( ptr + hed->pt_hpidat );
 	hpimax = hed->max_hpi / sizeof( HPIDAT );
 	for ( i=0;i<hpimax;i++ ) {
 		libname = strp(hpi->libname);
@@ -206,6 +207,7 @@ void Hsp3ExtLibTerm( void )
 	int i;
 	LIBDAT *lib;
 	STRUCTDAT *st;
+	HPIDAT *hpi;
 
 	for(i=0;i<prmmax;i++) {
 		st = GetPRM(i);
@@ -223,6 +225,15 @@ void Hsp3ExtLibTerm( void )
 			lib->hlib = NULL;
 			lib->flag = LIBDAT_FLAG_DLL;
 		}
+	}
+	
+	hpi = hpidat;
+	for ( i=0;i<hpimax;i++ ) {
+		if ( hpi->libptr ) {
+			FreeLibrary( (HINSTANCE)hpi->libptr );
+			hpi->libptr = NULL;
+		}
+		hpi++;
 	}
 }
 
