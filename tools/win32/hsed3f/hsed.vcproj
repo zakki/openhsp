@@ -61,7 +61,7 @@
 			<Tool
 				Name="VCLinkerTool"
 				AdditionalDependencies="comsuppw.lib"
-				OutputFile="$(OutDir)/hsed.exe"
+				OutputFile="$(OutDir)/hsed3.exe"
 				LinkIncremental="2"
 				IgnoreDefaultLibraryNames="libc.lib"
 				GenerateDebugInformation="true"
