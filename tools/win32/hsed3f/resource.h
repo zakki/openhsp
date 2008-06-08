@@ -147,6 +147,8 @@
 #define IDC_STATIC7                     4050
 #define IDC_RADIO8                      4051
 #define IDC_STATIC8                     4052
+#define IDC_REF_CMDLINE                 4053
+#define IDC_REF_WORKDIR                 4054
 #define IDB_TOOLBAR                     5000
 #define IDD_FNAME                       5000
 #define IDB_BITMAP2                     5001
@@ -172,7 +174,7 @@
 #define _APS_NO_MFC                     1
 #define _APS_NEXT_RESOURCE_VALUE        5010
 #define _APS_NEXT_COMMAND_VALUE         2927
-#define _APS_NEXT_CONTROL_VALUE         4053
+#define _APS_NEXT_CONTROL_VALUE         4055
 #define _APS_NEXT_SYMED_VALUE           6003
 #endif
 #endif

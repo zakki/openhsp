@@ -172,6 +172,24 @@ BEGIN
     END
 END
 
+CONTEXTMENU3 MENU 
+BEGIN
+    POPUP ""
+    BEGIN
+        MENUITEM "%F\t編集中のファイル名",	1
+        MENUITEM "%D\t現在のディレクトリ",	2
+    END
+END
+
+CONTEXTMENU4 MENU 
+BEGIN
+    POPUP ""
+    BEGIN
+        MENUITEM "%F\t編集中のファイルのディレクトリ",	1
+        MENUITEM "%D\t現在のディレクトリ",	2
+    END
+END
+
 
 /////////////////////////////////////////////////////////////////////////////
 //
@@ -615,10 +633,16 @@ BEGIN
     LTEXT           "ツール名:",IDC_STATIC,4,5,222,12,SS_CENTERIMAGE
     EDITTEXT        IDC_EDIT1,4,17,222,12,ES_AUTOHSCROLL
     LTEXT           "ファイル パス:",IDC_STATIC,4,35,222,12,SS_CENTERIMAGE
-    EDITTEXT        IDC_EDIT2,4,47,190,12,ES_AUTOHSCROLL
-    LTEXT           "コマンドライン: (%F,%fはファイル名に置き換えられます)",
+    EDITTEXT        IDC_EDIT2,4,47,205,12,ES_AUTOHSCROLL
+    PUSHBUTTON      "...",IDC_BUTTON1,212,47,15,12
+    LTEXT           "コマンドライン:",
                     IDC_STATIC,4,65,222,12,SS_CENTERIMAGE
-    EDITTEXT        IDC_EDIT3,4,77,222,12,ES_AUTOHSCROLL
+    EDITTEXT        IDC_EDIT3,4,77,205,12,ES_AUTOHSCROLL
+    PUSHBUTTON      ">",IDC_REF_CMDLINE,212,77,15,12
+    LTEXT           "作業ディレクトリ:",IDC_STATIC,4,95,222,12,
+                    SS_CENTERIMAGE
+    EDITTEXT        IDC_EDIT4,4,107,205,12,ES_AUTOHSCROLL
+    PUSHBUTTON      ">",IDC_REF_WORKDIR,212,107,15,12
     GROUPBOX        "表示",IDC_STATIC,4,125,222,38
     CONTROL         "メイン メニューに表示",IDC_CHECK1,"Button",
                     BS_AUTOCHECKBOX | WS_TABSTOP,10,135,209,12
@@ -630,10 +654,6 @@ BEGIN
     CONTROL         "実行時に編集中のファイルを上書き保存する(起動時の実行を除く)",
                     IDC_CHECK4,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,10,191,
                     209,12
-    PUSHBUTTON      "参照...",IDC_BUTTON1,194,47,32,12
-    LTEXT           "作業ディレクトリ:",IDC_STATIC,4,95,222,12,
-                    SS_CENTERIMAGE
-    EDITTEXT        IDC_EDIT4,4,107,222,12,ES_AUTOHSCROLL
 END
 
 

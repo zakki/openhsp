@@ -3160,6 +3160,60 @@ static BOOL CALLBACK SelectExtToolProc(HWND hDlg, UINT message, WPARAM wParam, L
 					return TRUE;
 				}
 				
+				case IDC_REF_CMDLINE:
+				case IDC_REF_WORKDIR:
+				{
+					HMENU hMenuPopup;
+					HWND hCtrl = GetDlgItem(hDlg, LOWORD(wParam));
+					RECT rcCtrl;
+					UINT uID;
+					UINT uEditID;
+					TCHAR szInsertText[64] = "";
+
+					switch( LOWORD(wParam) ) {
+						case IDC_REF_CMDLINE:
+							hMenuPopup = LoadMenu(hInst, "CONTEXTMENU3");
+							uEditID = IDC_EDIT3;
+							break;
+						case IDC_REF_WORKDIR:
+							hMenuPopup = LoadMenu(hInst, "CONTEXTMENU4");
+							uEditID = IDC_EDIT4;
+							break;
+					}
+
+					GetWindowRect(hCtrl, &rcCtrl);
+					uID = (UINT)TrackPopupMenu(
+									  GetSubMenu(hMenuPopup, 0)
+									, TPM_NONOTIFY|TPM_RETURNCMD
+									, rcCtrl.right, rcCtrl.top
+									, 0, hDlg, NULL);
+
+					switch( LOWORD(wParam) ) {
+						case IDC_REF_CMDLINE:
+							switch( uID ) {
+								case 1: lstrcpyn(szInsertText, "%F", 64); break;
+								case 2: lstrcpyn(szInsertText, "%D", 64); break;
+							}
+							break;
+						case IDC_REF_WORKDIR:
+							switch( uID ) {
+								case 1: lstrcpyn(szInsertText, "%F", 64); break;
+								case 2: lstrcpyn(szInsertText, "%D", 64); break;
+							}
+							break;
+					}
+					if( *szInsertText ) {
+						SendMessage(
+							  GetDlgItem(hDlg, uEditID)
+							, EM_REPLACESEL
+							, (WPARAM)TRUE, (LPARAM)szInsertText);
+					}
+
+					DestroyMenu(hMenuPopup);
+
+					return TRUE;
+				}
+
 				case IDOK:
 					if(GetWindowTextLength(GetDlgItem(hDlg, IDC_EDIT2)) == 0){
 						MessageBox(hDlg, "ファイル名を省略することはできません。", "error", MB_OK | MB_ICONERROR);

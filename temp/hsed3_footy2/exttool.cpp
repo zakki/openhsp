@@ -3,6 +3,7 @@
 ------------------------------------------------------------------------------*/
 
 #include <windows.h>
+#include <tchar.h>
 
 #include "resource.h"
 #include "poppad.h"
@@ -110,7 +111,7 @@ bool AddExtTool(unsigned int nToolID, EXTTOOLINFO *lpAddExtToolInfo)
 bool ExecExtTool(HWND hWnd, unsigned int nToolID, bool bStartup)
 {
 	int i, j, nLength;
-	char szCmdLine[SIZE_OF_CMDLINE], szCurDir[_MAX_PATH + 1];
+	char szCmdLine[SIZE_OF_CMDLINE], szCurDir[_MAX_PATH + 1], szWorkDir[_MAX_PATH + 1];
 	bool bEscSeq = false;
 	HINSTANCE hRet;
 	const char *lpErrMsg[] = {
@@ -178,10 +179,50 @@ bool ExecExtTool(HWND hWnd, unsigned int nToolID, bool bStartup)
 	}
 	szCmdLine[j] = '\0';
 
+	bEscSeq = false;
+	for(i = 0, j = 0; lpExtToolInfo[nToolID].WorkDir[i] != '\0' && j + 1 < MAX_PATH + 1; i++){
+		switch(lpExtToolInfo[nToolID].WorkDir[i]){
+			case '%':
+				if(bEscSeq)
+					szWorkDir[j++] = '%';
+				else
+					bEscSeq = true;
+				break;
+
+			case 'f': case 'F':
+				if(bEscSeq){
+					TCHAR *pLastDirSep = _tcsrchr(szFileName, '\\');
+					nLength = pLastDirSep ? (int)(pLastDirSep - szFileName) : lstrlen(szFileName);
+					strlcpy(szWorkDir + j, szFileName, min(MAX_PATH + 1 - j, nLength + 1));
+					j += nLength;
+					bEscSeq = false;
+					break;
+				}
+
+			case 'd': case 'D':
+				if(bEscSeq){
+					GetCurrentDirectory(sizeof(szCurDir), szCurDir);
+					strlcpy(szWorkDir + j, szCurDir, MAX_PATH + 1 - j);
+					j += lstrlen(szCurDir);
+					bEscSeq = false;
+					break;
+				}
+
+			default:
+				if(bEscSeq){
+					szWorkDir[j++] = '%';
+					bEscSeq = false;
+				}
+				szWorkDir[j++] = lpExtToolInfo[nToolID].WorkDir[i];
+				break;
+		}
+	}
+	szWorkDir[j] = '\0';
+
 	if(lpExtToolInfo[nToolID].ExecWithOverwrite && !bStartup)
 		SendMessage(hWnd, WM_COMMAND, MAKEWPARAM(IDM_SAVE, 0), NULL);
 
-	hRet = ShellExecute(hWnd, NULL, lpExtToolInfo[nToolID].FileName, szCmdLine, lpExtToolInfo[nToolID].WorkDir,
+	hRet = ShellExecute(hWnd, NULL, lpExtToolInfo[nToolID].FileName, szCmdLine, szWorkDir,
 		SW_SHOWNORMAL);
 	if((int)hRet <= 32){
 		msgboxf(hWnd, "外部ツールの起動に失敗しました。\n失敗原因は下記の通りです。\n\n%s",

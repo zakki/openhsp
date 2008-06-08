@@ -3083,6 +3083,60 @@ static BOOL CALLBACK SelectExtToolProc(HWND hDlg, UINT message, WPARAM wParam, L
 					return TRUE;
 				}
 				
+				case IDC_REF_CMDLINE:
+				case IDC_REF_WORKDIR:
+				{
+					HMENU hMenuPopup;
+					HWND hCtrl = GetDlgItem(hDlg, LOWORD(wParam));
+					RECT rcCtrl;
+					UINT uID;
+					UINT uEditID;
+					TCHAR szInsertText[64] = "";
+
+					switch( LOWORD(wParam) ) {
+						case IDC_REF_CMDLINE:
+							hMenuPopup = LoadMenu(hInst, "CONTEXTMENU3");
+							uEditID = IDC_EDIT3;
+							break;
+						case IDC_REF_WORKDIR:
+							hMenuPopup = LoadMenu(hInst, "CONTEXTMENU4");
+							uEditID = IDC_EDIT4;
+							break;
+					}
+
+					GetWindowRect(hCtrl, &rcCtrl);
+					uID = (UINT)TrackPopupMenu(
+									  GetSubMenu(hMenuPopup, 0)
+									, TPM_NONOTIFY|TPM_RETURNCMD
+									, rcCtrl.right, rcCtrl.top
+									, 0, hDlg, NULL);
+
+					switch( LOWORD(wParam) ) {
+						case IDC_REF_CMDLINE:
+							switch( uID ) {
+								case 1: lstrcpyn(szInsertText, "%F", 64); break;
+								case 2: lstrcpyn(szInsertText, "%D", 64); break;
+							}
+							break;
+						case IDC_REF_WORKDIR:
+							switch( uID ) {
+								case 1: lstrcpyn(szInsertText, "%F", 64); break;
+								case 2: lstrcpyn(szInsertText, "%D", 64); break;
+							}
+							break;
+					}
+					if( *szInsertText ) {
+						SendMessage(
+							  GetDlgItem(hDlg, uEditID)
+							, EM_REPLACESEL
+							, (WPARAM)TRUE, (LPARAM)szInsertText);
+					}
+
+					DestroyMenu(hMenuPopup);
+
+					return TRUE;
+				}
+
 				case IDOK:
 					if(GetWindowTextLength(GetDlgItem(hDlg, IDC_EDIT2)) == 0){
 						MessageBox(hDlg, "ファイル名を省略することはできません。", "error", MB_OK | MB_ICONERROR);
@@ -3408,6 +3462,7 @@ BOOL CALLBACK ConfigFontPageProc (HWND hDlg, UINT message, WPARAM wParam, LPARAM
 					}
 				}
                 return TRUE;
+
 			}
 			return FALSE;
 
@@ -3752,13 +3807,24 @@ void __stdcall OnFootyChange(int id, void *pParam, int nStatus)
 	if(lpTabInfo == NULL)
 		return;
 
-	if(FootyGetMetrics(id, F_GM_UNDOREM) == lpTabInfo->LatestUndoNum && lpTabInfo->NeedSave == TRUE){
+//TCHAR buff[256];
+//wsprintf(buff, ">>nStatus=%2d\n  F_GM_UNDOREM=%d,lpTabInfo->LatestUndoNum=%d,lpTabInfo->NeedSave=%d,bNeedSave=%d\n"
+//		 , nStatus, FootyGetMetrics(id, F_GM_UNDOREM), lpTabInfo->LatestUndoNum, lpTabInfo->NeedSave, bNeedSave);
+//OutputDebugString(buff);
+
+	if(FootyGetMetrics(id, F_GM_UNDOREM) == lpTabInfo->LatestUndoNum && lpTabInfo->NeedSave == TRUE &&
+		(nStatus == FECH_UNDO || nStatus == FECH_REDO)){
 		SetTabInfo(nTabID, NULL, NULL, NULL, (bNeedSave = FALSE));
 		DoCaption(szTitleName, nTabID);
 	} else if(lpTabInfo->NeedSave == FALSE && nStatus != FECH_SETTEXT){
 		SetTabInfo(nTabID, NULL, NULL, NULL, (bNeedSave = TRUE));
 		DoCaption(szTitleName, nTabID);
 	}
+//	lpTabInfo->LatestUndoNum = FootyGetMetrics(id, F_GM_UNDOREM);
+
+//wsprintf(buff, "  F_GM_UNDOREM=%d,lpTabInfo->LatestUndoNum=%d,lpTabInfo->NeedSave=%d,bNeedSave=%d\n\n"
+//		 , FootyGetMetrics(id, F_GM_UNDOREM), lpTabInfo->LatestUndoNum, lpTabInfo->NeedSave, bNeedSave);
+//OutputDebugString(buff);
 
 	PutLineNumber();
 	return;
