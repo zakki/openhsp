@@ -3324,6 +3324,74 @@ BOOL CALLBACK ConfigExtToolsPageProc (HWND hDlg, UINT message, WPARAM wParam, LP
 					ListView_DeleteItem(hListView, nCurSel);
 					return TRUE;
 				}
+
+				case IDC_MOVE_UP:
+				{
+					HWND hListView;
+					int nCurSel;
+					LVITEM lvi;
+
+					hListView = GetDlgItem(hDlg, IDC_LIST1);
+					nCurSel = ListView_GetNextItem(hListView, -1, LVNI_ALL | LVNI_SELECTED);
+					if(nCurSel < 1) return TRUE;
+
+					lvi.mask     = LVIF_PARAM;
+					lvi.iItem    = nCurSel;
+					lvi.iSubItem = 0;
+					ListView_GetItem(hListView, &lvi);
+
+					ListView_DeleteItem(hListView, nCurSel);
+					
+					lvi.iItem--;
+					lvi.mask     = LVIF_TEXT | LVIF_PARAM | LVIF_STATE;
+					lvi.pszText  = ((EXTTOOLINFO*)lvi.lParam)->ToolName;
+					lvi.state    = LVIS_SELECTED|LVIS_FOCUSED;
+					lvi.stateMask= LVIS_SELECTED|LVIS_FOCUSED;
+					ListView_InsertItem(hListView, &lvi);
+					
+					lvi.mask     = LVIF_TEXT;
+					lvi.iSubItem = 1;
+					lvi.pszText  = ((EXTTOOLINFO*)lvi.lParam)->FileName;
+					ListView_SetItem(hListView, &lvi);
+
+					SetFocus(hListView);
+
+					return TRUE;
+				}
+
+				case IDC_MOVE_DOWN:
+				{
+					HWND hListView;
+					int nCurSel;
+					LVITEM lvi;
+
+					hListView = GetDlgItem(hDlg, IDC_LIST1);
+					nCurSel = ListView_GetNextItem(hListView, -1, LVNI_ALL | LVNI_SELECTED);
+					if(nCurSel < 0 || ListView_GetItemCount(hListView) <= nCurSel + 1) return TRUE;
+
+					lvi.mask     = LVIF_PARAM;
+					lvi.iItem    = nCurSel;
+					lvi.iSubItem = 0;
+					ListView_GetItem(hListView, &lvi);
+
+					ListView_DeleteItem(hListView, nCurSel);
+					
+					lvi.iItem++;
+					lvi.mask     = LVIF_TEXT | LVIF_PARAM | LVIF_STATE;
+					lvi.pszText  = ((EXTTOOLINFO*)lvi.lParam)->ToolName;
+					lvi.state    = LVIS_SELECTED|LVIS_FOCUSED;
+					lvi.stateMask= LVIS_SELECTED|LVIS_FOCUSED;
+					ListView_InsertItem(hListView, &lvi);
+					
+					lvi.mask     = LVIF_TEXT;
+					lvi.iSubItem = 1;
+					lvi.pszText  = ((EXTTOOLINFO*)lvi.lParam)->FileName;
+					ListView_SetItem(hListView, &lvi);
+
+					SetFocus(hListView);
+
+					return TRUE;
+				}
 			}
 			break;
 
@@ -3807,24 +3875,13 @@ void __stdcall OnFootyChange(int id, void *pParam, int nStatus)
 	if(lpTabInfo == NULL)
 		return;
 
-//TCHAR buff[256];
-//wsprintf(buff, ">>nStatus=%2d\n  F_GM_UNDOREM=%d,lpTabInfo->LatestUndoNum=%d,lpTabInfo->NeedSave=%d,bNeedSave=%d\n"
-//		 , nStatus, FootyGetMetrics(id, F_GM_UNDOREM), lpTabInfo->LatestUndoNum, lpTabInfo->NeedSave, bNeedSave);
-//OutputDebugString(buff);
-
-	if(FootyGetMetrics(id, F_GM_UNDOREM) == lpTabInfo->LatestUndoNum && lpTabInfo->NeedSave == TRUE &&
-		(nStatus == FECH_UNDO || nStatus == FECH_REDO)){
+	if(FootyGetMetrics(id, F_GM_UNDOREM) == lpTabInfo->LatestUndoNum && lpTabInfo->NeedSave == TRUE){
 		SetTabInfo(nTabID, NULL, NULL, NULL, (bNeedSave = FALSE));
 		DoCaption(szTitleName, nTabID);
 	} else if(lpTabInfo->NeedSave == FALSE && nStatus != FECH_SETTEXT){
 		SetTabInfo(nTabID, NULL, NULL, NULL, (bNeedSave = TRUE));
 		DoCaption(szTitleName, nTabID);
 	}
-//	lpTabInfo->LatestUndoNum = FootyGetMetrics(id, F_GM_UNDOREM);
-
-//wsprintf(buff, "  F_GM_UNDOREM=%d,lpTabInfo->LatestUndoNum=%d,lpTabInfo->NeedSave=%d,bNeedSave=%d\n\n"
-//		 , FootyGetMetrics(id, F_GM_UNDOREM), lpTabInfo->LatestUndoNum, lpTabInfo->NeedSave, bNeedSave);
-//OutputDebugString(buff);
 
 	PutLineNumber();
 	return;

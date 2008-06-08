@@ -3401,6 +3401,74 @@ BOOL CALLBACK ConfigExtToolsPageProc (HWND hDlg, UINT message, WPARAM wParam, LP
 					ListView_DeleteItem(hListView, nCurSel);
 					return TRUE;
 				}
+
+				case IDC_MOVE_UP:
+				{
+					HWND hListView;
+					int nCurSel;
+					LVITEM lvi;
+
+					hListView = GetDlgItem(hDlg, IDC_LIST1);
+					nCurSel = ListView_GetNextItem(hListView, -1, LVNI_ALL | LVNI_SELECTED);
+					if(nCurSel < 1) return TRUE;
+
+					lvi.mask     = LVIF_PARAM;
+					lvi.iItem    = nCurSel;
+					lvi.iSubItem = 0;
+					ListView_GetItem(hListView, &lvi);
+
+					ListView_DeleteItem(hListView, nCurSel);
+					
+					lvi.iItem--;
+					lvi.mask     = LVIF_TEXT | LVIF_PARAM | LVIF_STATE;
+					lvi.pszText  = ((EXTTOOLINFO*)lvi.lParam)->ToolName;
+					lvi.state    = LVIS_SELECTED|LVIS_FOCUSED;
+					lvi.stateMask= LVIS_SELECTED|LVIS_FOCUSED;
+					ListView_InsertItem(hListView, &lvi);
+					
+					lvi.mask     = LVIF_TEXT;
+					lvi.iSubItem = 1;
+					lvi.pszText  = ((EXTTOOLINFO*)lvi.lParam)->FileName;
+					ListView_SetItem(hListView, &lvi);
+
+					SetFocus(hListView);
+
+					return TRUE;
+				}
+
+				case IDC_MOVE_DOWN:
+				{
+					HWND hListView;
+					int nCurSel;
+					LVITEM lvi;
+
+					hListView = GetDlgItem(hDlg, IDC_LIST1);
+					nCurSel = ListView_GetNextItem(hListView, -1, LVNI_ALL | LVNI_SELECTED);
+					if(nCurSel < 0 || ListView_GetItemCount(hListView) <= nCurSel + 1) return TRUE;
+
+					lvi.mask     = LVIF_PARAM;
+					lvi.iItem    = nCurSel;
+					lvi.iSubItem = 0;
+					ListView_GetItem(hListView, &lvi);
+
+					ListView_DeleteItem(hListView, nCurSel);
+					
+					lvi.iItem++;
+					lvi.mask     = LVIF_TEXT | LVIF_PARAM | LVIF_STATE;
+					lvi.pszText  = ((EXTTOOLINFO*)lvi.lParam)->ToolName;
+					lvi.state    = LVIS_SELECTED|LVIS_FOCUSED;
+					lvi.stateMask= LVIS_SELECTED|LVIS_FOCUSED;
+					ListView_InsertItem(hListView, &lvi);
+					
+					lvi.mask     = LVIF_TEXT;
+					lvi.iSubItem = 1;
+					lvi.pszText  = ((EXTTOOLINFO*)lvi.lParam)->FileName;
+					ListView_SetItem(hListView, &lvi);
+
+					SetFocus(hListView);
+
+					return TRUE;
+				}
 			}
 			break;
 
