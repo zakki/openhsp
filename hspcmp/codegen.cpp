@@ -1605,7 +1605,7 @@ void CToken::GenerateCodePP_func( int deftype )
 		}
 	}
 
-	if ( ref == 0 ) {
+	if ( ref == 0 && (otflag & STRUCTDAT_OT_CLEANUP) == 0 ) {
 		if ( hed_cmpmode & CMPMODE_OPTINFO ) Mesf( "#Delete func %s", fbase );
 		return;
 	}
