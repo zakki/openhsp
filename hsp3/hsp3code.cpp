@@ -2626,6 +2626,10 @@ rerun:
 	hspctx->looplev = 0;
 	hspctx->sublev = 0;
 	StackReset();
+	// HspVarCoreResetVartype() で変数領域か拡張されると変数が変なアドレスをさしてしまうので初期化
+	//   本当は hspvar_core.cpp:HspVarCoreResetVartype() の中か
+	//   もしくは hsp3.cpp:HspVarCoreResetVartype() の直後に行った方が良いはず...
+	mpval_int = HspVarCoreGetPVal(HSPVAR_FLAG_INT);
 	HspVarCoreClearTemp( mpval_int, HSPVAR_FLAG_INT );	// int型のテンポラリを初期化
 
 #ifdef HSPERR_HANDLE
