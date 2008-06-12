@@ -124,14 +124,23 @@ void StackPushStr( char *str )
 	StackPush( HSPVAR_FLAG_STR, str, (int)strlen(str)+1 );
 }
 
-void StackPushType( int type )
+void StackPushTypeVal( int type, int val, int val2 )
 {
 	STMDATA *stm;
+	int *iptr;
 	if ( stm_cur >= stm_max ) throw HSPERR_STACK_OVERFLOW;
 	stm = &mem_stm[ stm_cur ];
 	stm->type = type;
 	stm->mode = STMMODE_SELF;
+	stm->ival = val;
+	iptr = (int *)stm->itemp;
+	*iptr = val2;
 	stm_cur++;
+}
+
+void StackPushType( int type )
+{
+	StackPushTypeVal( type, 0, 0 );
 }
 
 void StackPop( void )
