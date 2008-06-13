@@ -209,6 +209,7 @@ void Hsp3ExtLibTerm( void )
 	STRUCTDAT *st;
 	HPIDAT *hpi;
 
+	// クリーンアップ登録されているユーザー定義関数・命令呼び出し
 	for(i=0;i<prmmax;i++) {
 		st = GetPRM(i);
 		if ( st->index >= 0 ) {
@@ -218,6 +219,7 @@ void Hsp3ExtLibTerm( void )
 		}
 	}
 
+	// 旧形式プラグイン・DLLの開放
 	for(i=0;i<libmax;i++) {
 		lib = GetLIB( i );
 		if ( lib->flag == LIBDAT_FLAG_DLLINIT ) {
@@ -226,7 +228,22 @@ void Hsp3ExtLibTerm( void )
 			lib->flag = LIBDAT_FLAG_DLL;
 		}
 	}
-	
+
+	// 変数型拡張プラグインで追加された型に使用されているメモリを開放
+	//  ※プラグインの解放前に行わないと開放用の関数がDLL内に
+	//    存在している場合にアクセス違反で落ちる場合がある
+	for(i=0;i<hspctx->hsphed->max_val;i++) {
+		if( HSPVAR_FLAG_USERDEF <= hspctx->mem_var[i].flag ) {
+			HspVarCoreDispose( &hspctx->mem_var[i] );
+			// 解放後はint型に変更して別の箇所の変数領域開放に備える
+			PVal *pval = &hspctx->mem_var[i];
+			pval->mode = HSPVAR_MODE_NONE;
+			pval->flag = HSPVAR_FLAG_INT;				// 仮の型
+			HspVarCoreClear( pval, HSPVAR_FLAG_INT );	// グローバル変数を0にリセット(念のため)
+		}
+	}
+
+	// HSP3形式プラグインの開放(通常プラグイン/変数型拡張プラグイン)
 	hpi = hpidat;
 	for ( i=0;i<hpimax;i++ ) {
 		if ( hpi->libptr ) {
