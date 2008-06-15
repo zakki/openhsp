@@ -1230,7 +1230,7 @@ static void set_labellist( HWND hDlg, HWND hwndEdit )
 					}
 				}
 				// コメント読み飛ばし
-				if( ';' == *wp ) {
+				if( ';' == *wp || ('/' == *wp && '/' == *(wp + 1)) ) {
 					// 行末まで読み飛ばし
 					for(wp++; *wp && 0x0d != *wp ; wp++);
 					break;
@@ -1249,7 +1249,8 @@ static void set_labellist( HWND hDlg, HWND hwndEdit )
 				}
 				// 次のステートメントまで読み飛ばし
 				for(bool bEscape = false;
-					*wp && 0x0d != *wp && ';' != *wp && ':' != *wp && ('/' != *wp || '*' != *(wp + 1)); wp++)
+					*wp && 0x0d != *wp && ':' != *wp &&
+					';' != *wp && ('/' != *wp || '*' != *(wp + 1)) && ('/' != *wp || '/' != *(wp + 1)); wp++)
 				{
 					if( '\"' == *wp && !bEscape ) {
 						// 文字列読み飛ばし

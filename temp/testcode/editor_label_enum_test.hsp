@@ -11,13 +11,15 @@
 ; *no_label
 * no_label : *b : *c
 a *no_label : *d : ; *no_label
-* *no_label : *e : /* *no_label
+a *no_label : *e : // *no_label
+// *no_label
+* *no_label : *f : /* *no_label
 *no_label
 */
-*f/* *no_label
+*g/* *no_label
 *no_label
 */
-*g; *no_label
+*h; *no_label
 
 pos 0,0/*Å`*/
 mes " : *no_label"
@@ -32,7 +34,7 @@ test = {" Å`
 
 mes "ï\\" *no_label "
 
-*h:x
-*i
-*j:*k
-*l;x
+*i:x
+*j
+*k:*l
+*m;x
