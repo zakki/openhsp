@@ -1188,7 +1188,6 @@ static void set_labellist( HWND hDlg, HWND hwndEdit )
 	char a1;
 	int len;
 	int line;
-	int lab;
 	int tag;
 	int mytag = -1;
 	int myline= -2;
@@ -1197,7 +1196,7 @@ static void set_labellist( HWND hDlg, HWND hwndEdit )
 
 	len = Footy2GetTextLength(activeFootyID, LM_CRLF);
 	if(len >= 0){
-		buffer = (char *) malloc ( len + 1 );
+		buffer = (char *) calloc( len + 2 /* 文字列終端と番兵 */, sizeof(char) );
 		Footy2GetText(activeFootyID, buffer, LM_CRLF, len);
 		ret = Footy2GetSel(activeFootyID, (size_t*)&myline, NULL, NULL, NULL);
 		if(FOOTY2ERR_NOTSELECTED == ret){
@@ -1208,38 +1207,99 @@ static void set_labellist( HWND hDlg, HWND hwndEdit )
 		line = 1;
 		wp = buffer;
 		tag	= -1;
-		while(1) {
-			a1=*wp;
-			if ( a1=='*' ) {
-				wp++;lab=0;
-			} else lab=-1;
-
-			while(1) {
-				a1=*wp++;
-				if ( a1==0 ) break;
-				if ( a1==13){
-					if ( *wp==10 ) wp++;
+		for(; *wp; line++, wp++) {
+			// 1行読み込み
+			for(; *wp && 0x0d != *wp; wp++) {
+				// 先頭の空白を無視
+				if( ' ' == *wp || '\t' == *wp ) {
+					continue;
+				}
+				// プリプロセッサ読み飛ばし
+				if( '#' == *wp ) {
+					do {
+						for(wp++; *wp && 0x0d != *wp ; wp++);
+						line++;
+					} while ( '\\' == *(wp - 1) && *wp );
+					line--;
 					break;
 				}
-				if (lab>=0) {
-					if (( a1==':' )||( a1==';' )) {
-						if(*wp != 13)
-							while(((a1 = *wp++) != 0) && (*wp != 13));
+				// ラベル読み込み
+				if( '*' == *wp ) {
+					char *pa = wp;
+					int len;
+					for(;	*pa &&
+							':' != *pa && ';' != *pa && '/' != *pa &&
+							' ' != *pa && '\t' != *pa && 
+							0x0d != *pa; pa++) { }
+					len = (int)(pa - wp);
+					if( 1 < len) {
+						strncpy(lname, wp, len);
+						lname[len] = '\0';
+						wsprintf(st, "%5d : %s",line, lname);
+						SendDlgItemMessage( hDlg,IDC_LIST2,LB_ADDSTRING,-1,(LPARAM)st );
+						tag++;
 					}
-					else {
-						lname[lab++]=a1;
+					wp = pa;
+					if( 0x0d == *wp ) {
+						break;
 					}
 				}
+				// コメント読み飛ばし
+				if( ';' == *wp ) {
+					// 行末まで読み飛ばし
+					for(wp++; *wp && 0x0d != *wp ; wp++);
+					break;
+				}
+				if( '/' == *wp && '*' == *(wp + 1) ) {
+					for(wp++; *wp ; wp++) {
+						if( '*' == *wp && '/' == *(wp + 1) ) {
+							wp++;
+							break;
+						}
+						if( 0x0d == *wp ) {
+							line++;
+						}
+					}
+					continue;
+				}
+				// 次のステートメントまで読み飛ばし
+				for(bool bEscape = false;
+					*wp && 0x0d != *wp && ';' != *wp && ':' != *wp && ('/' != *wp || '*' != *(wp + 1)); wp++)
+				{
+					if( '\"' == *wp && !bEscape ) {
+						// 文字列読み飛ばし
+						if( '{' == *(wp - 1) ) { // 複数行文字列
+							wp += 2;
+							for(bool bEscape = false; *wp && ('\"' != *wp || '}' != *(wp + 1) || bEscape); ) {
+								if( '\\' == *wp ) {
+									bEscape = !bEscape;
+								}
+								wp += IsDBCSLeadByte(*wp) ? 2 : 1;
+							}
+						} else {
+							wp++;
+							for(bool bEscape = false; *wp && ('\"' != *wp || bEscape) && 0x0d != *wp; ) {
+								if( '\\' == *wp ) {
+									bEscape = !bEscape;
+								}
+								wp += IsDBCSLeadByte(*wp) ? 2 : 1;
+							}
+						}
+						wp--;
+						continue;
+					}
+				}
+				if( 0x0d == *wp ) {
+					break;
+				}
+				if( ':' != *wp ) {
+					wp--;
+				}
 			}
-			if (lab>=0) {
-				lname[lab++]=0;
-				wsprintf( st,"%5d : %s",line,lname );
-				SendDlgItemMessage( hDlg,IDC_LIST2,LB_ADDSTRING,-1,(LPARAM)st );
-				tag++;
+			if( 0x0d == *wp && 0x0a == *(wp + 1) ) {
+				wp++;
 			}
-			if ( a1==0 ) break;
 			if ( line<=myline) mytag=tag;
-			line++;
 		}
 
 		if ( mytag>=0 ) {
