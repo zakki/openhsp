@@ -13,7 +13,7 @@
 #include "DoubleBuffering.h"
 #include "FootyDoc.h"
 #include "Caret.h"
-#ifndef WM_MOUSEWHEEL
+#if !defined(WM_MOUSEWHEEL) || !defined(MSH_MOUSEWHEEL)
 #	include "zmouse.h"						/*マウスホイールメッセージ*/
 #endif	/*WM_MOUSEWHEEL*/
 
