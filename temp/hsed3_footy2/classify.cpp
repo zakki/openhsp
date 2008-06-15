@@ -37,15 +37,17 @@ typedef struct tagDefaultClassifyTable{
 DEF_CLASSIFY_TABLE DefClassifyTable[] = {
 
 	// Grammer
-	"\\\"",		"\\\"",	EMP_LINE_BETWEEN,	&(color.Character.String.Conf),		0,	4,	0, EMP_IND_ALLOW_ALL,
-	"\"",		"\"",	EMP_LINE_BETWEEN,	&(color.Character.String.Conf),		0,	3,	4, EMP_IND_ALLOW_ALL,
-	":",		"",		EMP_LINE_AFTER,		&(color.Character.Default.Conf),	0,	2,	1, EMP_IND_ALLOW_ALL,
-	"/*",		"*/",	EMP_MULTI_BETWEEN,	&(color.Character.Comment.Conf),	0,	3,	0, EMP_IND_ALLOW_ALL,
-	";",		"",		EMP_LINE_AFTER,		&(color.Character.Comment.Conf),	0,	3,	0, EMP_IND_ALLOW_ALL,
-	"//",		"",		EMP_LINE_AFTER,		&(color.Character.Comment.Conf),	0,	3,	0, EMP_IND_ALLOW_ALL,
+	"\\\\",		"",		EMP_LINE_BETWEEN,	&(color.Character.String.Conf),		0,	4,	PERMIT_LEVEL(1), EMP_IND_ALLOW_ALL,
+	"\\\"",		"",		EMP_LINE_BETWEEN,	&(color.Character.String.Conf),		0,	4,	PERMIT_LEVEL(1), EMP_IND_ALLOW_ALL,
+	"\"",		"\"",	EMP_LINE_BETWEEN,	&(color.Character.String.Conf),		0,	1,	PERMIT_LEVEL(0), EMP_IND_ALLOW_ALL,
+	"{\"",		"\"}",	EMP_MULTI_BETWEEN,	&(color.Character.String.Conf),		0,	1,	PERMIT_LEVEL(0), EMP_IND_ALLOW_ALL,
+//	":",		"",		EMP_LINE_AFTER,		&(color.Character.Default.Conf),	0,	2,	PERMIT_LEVEL(0), EMP_IND_ALLOW_ALL,
+	"/*",		"*/",	EMP_MULTI_BETWEEN,	&(color.Character.Comment.Conf),	0,	3,	PERMIT_LEVEL(0)|PERMIT_LEVEL(5), EMP_IND_ALLOW_ALL,
+	";",		"",		EMP_LINE_AFTER,		&(color.Character.Comment.Conf),	0,	3,	PERMIT_LEVEL(0)|PERMIT_LEVEL(5), EMP_IND_ALLOW_ALL,
+	"//",		"",		EMP_LINE_AFTER,		&(color.Character.Comment.Conf),	0,	3,	PERMIT_LEVEL(0)|PERMIT_LEVEL(5), EMP_IND_ALLOW_ALL,
 
 	// Label
-	"*",		"",		EMP_LINE_AFTER,		&(color.Character.Label.Conf),	EMPFLAG_HEAD,	0,	2, EMP_IND_ASCII_LETTER|EMP_IND_UNDERBAR,
+	"*",		"",		EMP_LINE_AFTER,		&(color.Character.Label.Conf),	EMPFLAG_HEAD,	5,	PERMIT_LEVEL(0), EMP_IND_ASCII_LETTER|EMP_IND_UNDERBAR,
 
 	// End of table	
 	NULL
@@ -155,7 +157,7 @@ void InitClassify()
 					ClassifyTable[nCTSize].color  = lpTT->color;
 					ClassifyTable[nCTSize].Status = EMPFLAG_NON_CS/* | F_SE_INDEPENDENCE_B*/ | lpTT->Status;	// 2008-02-17 Shark++ 代替機能不明
 					ClassifyTable[nCTSize].Level  = 1;
-					ClassifyTable[nCTSize].pLevel = 0;
+					ClassifyTable[nCTSize].pLevel = PERMIT_LEVEL(0);
 					ClassifyTable[nCTSize].Ind    = EMP_IND_BLANKS|EMP_IND_ASCII_SIGN;
 					nCTSize++;
 					break;
@@ -180,7 +182,7 @@ void SetClassify(int FootyID)
 	// 2008-02-17 Shark++ 要動作確認
 	for(CLASSIFY_TABLE *lpCT = ClassifyTable; lpCT->Word1[0] != '\0'; lpCT++) {
 		Footy2AddEmphasis(FootyID, lpCT->Word1, *lpCT->Word2 ? lpCT->Word2 : NULL, lpCT->Type, 
-			lpCT->Status, 1, PERMIT_LEVEL(0), lpCT->Ind,
+			lpCT->Status, lpCT->Level, lpCT->pLevel, lpCT->Ind,
 		//	lpCT->Status, lpCT->Level, PERMIT_LEVEL(lpCT->pLevel), EMP_IND_ALLOW_ALL,
 			(lpCT->color != NULL ? *(lpCT->color) : RGB(255,0,0)));
 	}	
