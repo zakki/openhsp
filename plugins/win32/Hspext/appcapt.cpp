@@ -444,6 +444,7 @@ EXPORT BOOL WINAPI pipeget( PVAL2 *p1, int p2, int p3, int p4 )
 	int bsize;
 	Buf = p1->pt;
 	bsize = (p1->len[1])<<2;
+	BOOL bRetStdOut, bRetStdErr;
 
 	switch( dosp_mode ) {
 	case 0:
@@ -455,19 +456,31 @@ EXPORT BOOL WINAPI pipeget( PVAL2 *p1, int p2, int p3, int p4 )
 		dosp_mode++;
 		return -1;
 	case 1:
-		// StdOut‚ð“Ç‚Þ
-		ReadFile(hPipe1Read, Buf, bsize-1, &ReadCount, NULL) ;
-		Buf[ReadCount] = 0;
-		strcat( dosp_buf, Buf );
-		if ( ReadCount == 0 ) dosp_mode++;
-		return -2;
 	case 2:
-		// StdErr‚ð“Ç‚Þ
-		ReadFile(hPipe3Read, Buf, bsize-1, &ReadError, NULL) ;
-		Buf[ReadError] = 0;
-		strcat( dosp_buf, Buf );
-		if ( ReadError == 0 ) dosp_mode++;
-		return -3;
+		bRetStdOut = PeekNamedPipe(hPipe1Read, NULL, 0, NULL, &ReadCount, NULL);
+		bRetStdErr = PeekNamedPipe(hPipe3Read, NULL, 0, NULL, &ReadError, NULL);
+		if( !bRetStdOut && !bRetStdErr ) {
+			dosp_mode += 2;
+		} else {
+			if( 0 < ReadCount ) {
+				// StdOut‚ð“Ç‚Þ
+				ReadFile(hPipe1Read, Buf, min(bsize-1, ReadCount), &ReadCount, NULL) ;
+				Buf[ReadCount] = 0;
+				strcat( dosp_buf, Buf );
+				return -2;
+			} else if( 0 < ReadError ) {
+				// StdErr‚ð“Ç‚Þ
+				ReadFile(hPipe3Read, Buf, min(bsize-1, ReadError), &ReadError, NULL) ;
+				Buf[ReadError] = 0;
+				strcat( dosp_buf, Buf );
+				return -3;
+			} else if( 0 == ReadCount && 0 == ReadError ) {
+				if( WAIT_OBJECT_0 == WaitForSingleObject(pi.hProcess, 0) ) {
+					dosp_mode += 2;
+				}
+			}
+		}
+		return -2;
 	case 3:
 		// StdInPut‚ð‘—‚é
 		WriteFile(hPipe2Write, StdIn, strlen( StdIn ), NULL, NULL);
