@@ -505,9 +505,10 @@ EXPORT BOOL WINAPI pipeput( int p1, int p2, int p3, int p4 )
 	//		send character to pipe (type0)
 	//			pipeput code
 	//
+	DWORD dwWrite;
 	char buf[16];
 	buf[0] = p1;
 	buf[1] = 0;
-	WriteFile( hPipe2Write, buf, 1, NULL, NULL);
+	WriteFile( hPipe2Write, buf, 1, &dwWrite, NULL);
 	return 0;
 }
