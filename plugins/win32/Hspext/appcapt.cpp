@@ -439,7 +439,8 @@ EXPORT BOOL WINAPI pipeget( PVAL2 *p1, int p2, int p3, int p4 )
 	//		get process status (type$83)
 	//			pipeget var
 	//
-	DWORD ReadCount, ReadError;
+	DWORD ReadCount = 0, ReadError = 0;
+	DWORD WriteSize = 0;
 	char *Buf;
 	int bsize;
 	Buf = p1->pt;
@@ -483,7 +484,7 @@ EXPORT BOOL WINAPI pipeget( PVAL2 *p1, int p2, int p3, int p4 )
 		return -2;
 	case 3:
 		// StdInPut‚ð‘—‚é
-		WriteFile(hPipe2Write, StdIn, strlen( StdIn ), NULL, NULL);
+		WriteFile(hPipe2Write, StdIn, strlen( StdIn ), &WriteSize, NULL); // EOF‚ð‘—‚é
 
 		// ‚ ‚Æ‚µ‚Ü‚Â
 		WaitForSingleObject(pi.hProcess, INFINITE);
