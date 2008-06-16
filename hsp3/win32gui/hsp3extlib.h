@@ -5,7 +5,52 @@
 #ifndef __hsp3extlib_h
 #define __hsp3extlib_h
 
+#include <vector>
+#include <windows.h>
+
 #include "../hsp3code.h"
+
+//------------------------------------------------------------//
+
+namespace hsp3 {
+
+//------------------------------------------------------------//
+/*
+	拡張プラグイン・ｄｌｌの管理クラス。
+*/
+//------------------------------------------------------------//
+
+class CDllManager
+{
+	typedef std::vector< HMODULE > holder_type;
+
+	//............................//
+
+public:
+	CDllManager();
+	~CDllManager();
+
+	HMODULE load_library( LPCTSTR lpFileName );
+	BOOL free_library( HMODULE hModule );
+	HMODULE get_error() const;
+
+private:
+	// uncopyable;
+	CDllManager( CDllManager const & );
+	CDllManager const & operator =( CDllManager const & );
+
+	//............................//
+
+private:
+	holder_type mModules;
+	HMODULE mError;
+};
+
+//------------------------------------------------------------//
+
+};	//namespace hsp3 {
+
+//------------------------------------------------------------//
 
 int Hsp3ExtLibInit( HSP3TYPEINFO *info );
 void Hsp3ExtLibTerm( void );

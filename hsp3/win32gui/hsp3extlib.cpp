@@ -11,6 +11,8 @@
 #include <string.h>
 #include <objbase.h>
 
+#include <algorithm>
+
 #include "../supio.h"
 #include "../dpmread.h"
 #include "../hsp3ext.h"
@@ -34,6 +36,77 @@ static HPIDAT *hpidat;
 typedef void (CALLBACK *DLLFUNC)(HSP3TYPEINFO *);
 static DLLFUNC func;
 
+
+namespace hsp3 {
+
+//------------------------------------------------------------//
+/*
+	CDllManager
+*/
+//------------------------------------------------------------//
+
+CDllManager::CDllManager()
+ : mModules(), mError( NULL )
+{}
+
+
+CDllManager::~CDllManager()
+{
+	typedef holder_type::reverse_iterator RI;
+	for ( RI i = mModules.rbegin(); i != mModules.rend(); ++i ) {
+		FreeLibrary( *i );
+	}
+}
+
+
+HMODULE CDllManager::load_library( LPCTSTR lpFileName )
+{
+	mError = NULL;
+	HMODULE h = LoadLibrary( lpFileName );
+	try {
+		if ( h != NULL ) mModules.push_back( h );
+	}
+	catch ( ... ) {
+		if ( !FreeLibrary( h ) ) mError = h;
+		h = NULL;
+	}
+	return h;
+}
+
+
+BOOL CDllManager::free_library( HMODULE hModule )
+{
+	typedef holder_type::reverse_iterator RI;
+	mError = NULL;
+	RI i = std::find( mModules.rbegin(), mModules.rend(), hModule );
+	if ( i == mModules.rend() ) return FALSE;
+	BOOL res = FreeLibrary( hModule );
+	if ( res ) {
+		mModules.erase( ( ++i ).base() );
+	} else {
+		mError = hModule;
+	}
+	return res;
+}
+
+
+HMODULE CDllManager::get_error() const
+{
+	return mError;
+}
+
+//------------------------------------------------------------//
+
+};	//namespace hsp3 {
+
+//------------------------------------------------------------//
+
+static hsp3::CDllManager & DllManager()
+{
+	static hsp3::CDllManager dm;
+	return dm;
+}
+
 /*------------------------------------------------------------*/
 /*
 		routines
@@ -56,7 +129,7 @@ static void BindLIB( LIBDAT *lib, char *name )
 	} else {
 		n = strp(i);
 	}
- 	hd = LoadLibrary( n );
+ 	hd = DllManager().load_library( n );
 	if ( hd == NULL ) return;
 	lib->hlib = (void *)hd;
 	lib->flag = LIBDAT_FLAG_DLLINIT;
@@ -134,7 +207,7 @@ static int Hsp3ExtAddPlugin( void )
 		funcname = strp(hpi->funcname);
 		info = code_gettypeinfo(-1);
 
-	 	hd = LoadLibrary( libname );
+	 	hd = DllManager().load_library( libname );
 		if ( hd == NULL ) {
 			sprintf( tmp,"No DLL:%s",libname );
 			hsp3win_dialog( tmp );
@@ -207,7 +280,6 @@ void Hsp3ExtLibTerm( void )
 	int i;
 	LIBDAT *lib;
 	STRUCTDAT *st;
-	HPIDAT *hpi;
 
 	// クリーンアップ登録されているユーザー定義関数・命令呼び出し
 	for(i=0;i<prmmax;i++) {
@@ -217,40 +289,6 @@ void Hsp3ExtLibTerm( void )
 				ExitFunc( st );			// クリーンアップ関数を呼び出す
 			}
 		}
-	}
-
-	// 旧形式プラグイン・DLLの開放
-	for(i=0;i<libmax;i++) {
-		lib = GetLIB( i );
-		if ( lib->flag == LIBDAT_FLAG_DLLINIT ) {
-			FreeLibrary( (HINSTANCE)lib->hlib );
-			lib->hlib = NULL;
-			lib->flag = LIBDAT_FLAG_DLL;
-		}
-	}
-
-	// 変数型拡張プラグインで追加された型に使用されているメモリを開放
-	//  ※プラグインの解放前に行わないと開放用の関数がDLL内に
-	//    存在している場合にアクセス違反で落ちる場合がある
-	for(i=0;i<hspctx->hsphed->max_val;i++) {
-		if( HSPVAR_FLAG_USERDEF <= hspctx->mem_var[i].flag ) {
-			HspVarCoreDispose( &hspctx->mem_var[i] );
-			// 解放後はint型に変更して別の箇所の変数領域開放に備える
-			PVal *pval = &hspctx->mem_var[i];
-			pval->mode = HSPVAR_MODE_NONE;
-			pval->flag = HSPVAR_FLAG_INT;				// 仮の型
-			HspVarCoreClear( pval, HSPVAR_FLAG_INT );	// グローバル変数を0にリセット(念のため)
-		}
-	}
-
-	// HSP3形式プラグインの開放(通常プラグイン/変数型拡張プラグイン)
-	hpi = hpidat;
-	for ( i=0;i<hpimax;i++ ) {
-		if ( hpi->libptr ) {
-			FreeLibrary( (HINSTANCE)hpi->libptr );
-			hpi->libptr = NULL;
-		}
-		hpi++;
 	}
 }
 
