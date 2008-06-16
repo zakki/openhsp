@@ -2249,6 +2249,8 @@ int code_getdebug_line( void )
 		switch( ofs ) {
 		case 252:
 			debpt+=(mem_di[a+1]<<8)+mem_di[a];
+			if (curpt<=debpt) return cl;
+			cl++;
 			a+=2;
 			break;
 		case 253:
