@@ -376,6 +376,16 @@ static int cmdfunc_extcmd( int cmd )
 				strsize++;
 			}
 			break;
+		case 2:
+			while(1) {
+				if ( p2<=0 ) break;
+				a = getchar();
+				if (( a==EOF )||( a=='\n' )||( a=='\r' )) break;
+				*pp2++ = a;
+				p2--;
+				strsize++;
+			}
+			break;
 		}
 
 		*pp2 = 0;
