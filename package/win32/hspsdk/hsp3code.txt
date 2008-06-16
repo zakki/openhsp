@@ -628,6 +628,7 @@ warranties of merchantability and fitness for a particular purpose are disclaime
 	*1
 	  次の24bit値がソースファイル名を示すDSオフセット値となる。
 	  さらに続く16bit値が参照される行番号の値となる。
+	  DSオフセット値が0の場合は行番号のみの指定となる。
 	*2
 	  次の24bit値が変数名へのDSオフセット値となる。
 	  さらに続く16bit値はダミー値として0が格納されている。
