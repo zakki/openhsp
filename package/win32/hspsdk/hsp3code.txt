@@ -330,11 +330,11 @@ warranties of merchantability and fitness for a particular purpose are disclaime
 
 	//	enhanced command (ver2.6)
 
-	"$000 8 onexit",
-	"$001 8 onerror",
-	"$002 8 onkey",
-	"$003 8 onclick",
-	"$004 8 oncmd",
+	"$10000 8 onexit",
+	"$10001 8 onerror",
+	"$10002 8 onkey",
+	"$10003 8 onclick",
+	"$10004 8 oncmd",
 
 	"$011 8 exist",
 	"$012 8 delete",
@@ -454,10 +454,10 @@ warranties of merchantability and fitness for a particular purpose are disclaime
 	"$009 17 comevarg",
 	"$00a 17 sarrayconv",
 
-	"$000 17 callfunc",
-	"$001 17 cnvwtos",
-	"$002 17 comevdisp",
-	"$003 17 libptr",
+	"$100 17 callfunc",
+	"$101 17 cnvwtos",
+	"$102 17 comevdisp",
+	"$103 17 libptr",
 
 	//	3.0 system vals
 
