@@ -11,8 +11,6 @@
 #include <string.h>
 #include <objbase.h>
 
-#include <algorithm>
-
 #include "../supio.h"
 #include "../dpmread.h"
 #include "../hsp3ext.h"
@@ -35,77 +33,6 @@ static HPIDAT *hpidat;
 
 typedef void (CALLBACK *DLLFUNC)(HSP3TYPEINFO *);
 static DLLFUNC func;
-
-
-namespace hsp3 {
-
-//------------------------------------------------------------//
-/*
-	CDllManager
-*/
-//------------------------------------------------------------//
-
-CDllManager::CDllManager()
- : mModules(), mError( NULL )
-{}
-
-
-CDllManager::~CDllManager()
-{
-	typedef holder_type::reverse_iterator RI;
-	for ( RI i = mModules.rbegin(); i != mModules.rend(); ++i ) {
-		FreeLibrary( *i );
-	}
-}
-
-
-HMODULE CDllManager::load_library( LPCTSTR lpFileName )
-{
-	mError = NULL;
-	HMODULE h = LoadLibrary( lpFileName );
-	try {
-		if ( h != NULL ) mModules.push_back( h );
-	}
-	catch ( ... ) {
-		if ( !FreeLibrary( h ) ) mError = h;
-		h = NULL;
-	}
-	return h;
-}
-
-
-BOOL CDllManager::free_library( HMODULE hModule )
-{
-	typedef holder_type::reverse_iterator RI;
-	mError = NULL;
-	RI i = std::find( mModules.rbegin(), mModules.rend(), hModule );
-	if ( i == mModules.rend() ) return FALSE;
-	BOOL res = FreeLibrary( hModule );
-	if ( res ) {
-		mModules.erase( ( ++i ).base() );
-	} else {
-		mError = hModule;
-	}
-	return res;
-}
-
-
-HMODULE CDllManager::get_error() const
-{
-	return mError;
-}
-
-//------------------------------------------------------------//
-
-};	//namespace hsp3 {
-
-//------------------------------------------------------------//
-
-static hsp3::CDllManager & DllManager()
-{
-	static hsp3::CDllManager dm;
-	return dm;
-}
 
 /*------------------------------------------------------------*/
 /*
