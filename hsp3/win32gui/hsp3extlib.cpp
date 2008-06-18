@@ -99,7 +99,7 @@ BOOL CDllManager::free_all_library()
 	}
 	mModules.erase( std::remove( mModules.begin(), mModules.end(),
 	 static_cast< HMODULE >( NULL ) ), mModules.end() );
-	return ( mModules.empty(), TRUE, FALSE );
+	return ( mModules.empty() ? TRUE : FALSE );
 }
 
 
