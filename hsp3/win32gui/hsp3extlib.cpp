@@ -11,6 +11,8 @@
 #include <string.h>
 #include <objbase.h>
 
+#include <algorithm>
+
 #include "../supio.h"
 #include "../dpmread.h"
 #include "../hsp3ext.h"
@@ -33,6 +35,90 @@ static HPIDAT *hpidat;
 
 typedef void (CALLBACK *DLLFUNC)(HSP3TYPEINFO *);
 static DLLFUNC func;
+
+//------------------------------------------------------------//
+
+namespace hsp3 {
+
+//------------------------------------------------------------//
+/*
+	CDllManager
+*/
+//------------------------------------------------------------//
+
+CDllManager::CDllManager()
+ : mModules(), mError( NULL )
+{}
+
+
+CDllManager::~CDllManager()
+{
+	typedef holder_type::iterator Iter;
+	for ( Iter i = mModules.begin(); i != mModules.end(); ++i ) {
+		FreeLibrary( *i );
+	}
+}
+
+
+HMODULE CDllManager::load_library( LPCTSTR lpFileName )
+{
+	mError = NULL;
+	HMODULE h = LoadLibrary( lpFileName );
+	try {
+		if ( h != NULL ) mModules.push_front( h );
+	}
+	catch ( ... ) {
+		if ( !FreeLibrary( h ) ) mError = h;
+		h = NULL;
+	}
+	return h;
+}
+
+
+BOOL CDllManager::free_library( HMODULE hModule )
+{
+	typedef holder_type::iterator Iter;
+	mError = NULL;
+	Iter i = std::find( mModules.begin(), mModules.end(), hModule );
+	if ( i == mModules.end() ) return FALSE;
+	BOOL res = FreeLibrary( hModule );
+	if ( res ) {
+		mModules.erase( i );
+	} else {
+		mError = hModule;
+	}
+	return res;
+}
+
+
+BOOL CDllManager::free_all_library()
+{
+	typedef holder_type::iterator Iter;
+	for ( Iter i = mModules.begin(); i != mModules.end(); ++i ) {
+		if ( FreeLibrary( *i ) ) *i = NULL;
+	}
+	mModules.erase( std::remove( mModules.begin(), mModules.end(),
+	 static_cast< HMODULE >( NULL ) ), mModules.end() );
+	return ( mModules.empty(), TRUE, FALSE );
+}
+
+
+HMODULE CDllManager::get_error() const
+{
+	return mError;
+}
+
+//------------------------------------------------------------//
+
+};	//namespace hsp3 {
+
+//------------------------------------------------------------//
+
+hsp3::CDllManager & DllManager()
+{
+	static hsp3::CDllManager dm;
+	return dm;
+}
 
 /*------------------------------------------------------------*/
 /*

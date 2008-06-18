@@ -15,14 +15,13 @@
 #include <ctype.h>
 #endif
 
-#include <algorithm>
-
 #include "hsp3win.h"
 #include "../strbuf.h"
 #include "../hsp3.h"
 #include "../hsp3ext.h"
 #include "../hsp3gr.h"
 
+#include "hsp3extlib.h"
 #include "hspvar_comobj.h"
 #include "hspvar_variant.h"
 #include "../supio.h"
@@ -51,94 +50,6 @@ static HINSTANCE h_dbgwin;
 static HWND dbgwnd;
 static HSP3DEBUG *dbginfo;
 #endif
-
-//------------------------------------------------------------//
-
-namespace hsp3 {
-
-//------------------------------------------------------------//
-/*
-	CDllManager
-*/
-//------------------------------------------------------------//
-
-CDllManager::CDllManager()
- : mModules(), mError( NULL )
-{}
-
-
-CDllManager::~CDllManager()
-{
-	typedef holder_type::iterator Iter;
-	for ( Iter i = mModules.begin(); i != mModules.end(); ++i ) {
-		FreeLibrary( *i );
-	}
-}
-
-
-HMODULE CDllManager::load_library( LPCTSTR lpFileName )
-{
-	mError = NULL;
-	HMODULE h = LoadLibrary( lpFileName );
-	try {
-		if ( h != NULL ) mModules.push_front( h );
-	}
-	catch ( ... ) {
-		if ( !FreeLibrary( h ) ) mError = h;
-		h = NULL;
-	}
-	return h;
-}
-
-
-BOOL CDllManager::free_library( HMODULE hModule )
-{
-	typedef holder_type::iterator Iter;
-	mError = NULL;
-	Iter i = std::find( mModules.begin(), mModules.end(), hModule );
-	if ( i == mModules.end() ) return FALSE;
-	BOOL res = FreeLibrary( hModule );
-	if ( res ) {
-		mModules.erase( i );
-	} else {
-		mError = hModule;
-	}
-	return res;
-}
-
-
-BOOL CDllManager::free_all_library()
-{
-	typedef holder_type::iterator Iter;
-	BOOL res = TRUE;
-	for ( Iter i = mModules.begin(); i != mModules.end(); ) {
-		if ( FreeLibrary( *i ) ) {
-			i = mModules.erase( i );
-		} else {
-			res = FALSE;
-			++i;
-		}
-	}
-	return res;
-}
-
-
-HMODULE CDllManager::get_error() const
-{
-	return mError;
-}
-
-//------------------------------------------------------------//
-
-};	//namespace hsp3 {
-
-//------------------------------------------------------------//
-
-hsp3::CDllManager & DllManager()
-{
-	static hsp3::CDllManager dm;
-	return dm;
-}
 
 /*----------------------------------------------------------*/
 

@@ -354,6 +354,8 @@ static void hsp3cl_bye( void )
 	//
 	delete hsp;
 
+	DllManager().free_all_library();
+
 	//		システム関連の解放
 	//
 #ifdef HSPCL_WIN

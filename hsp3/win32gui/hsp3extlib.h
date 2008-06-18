@@ -7,6 +7,54 @@
 
 #include "../hsp3code.h"
 
+#include <deque>
+#include <windows.h>
+
+//------------------------------------------------------------//
+
+namespace hsp3 {
+
+//------------------------------------------------------------//
+/*
+	拡張プラグイン・dllの管理クラス。
+*/
+//------------------------------------------------------------//
+
+class CDllManager
+{
+	typedef std::deque< HMODULE > holder_type;
+
+	//............................//
+
+public:
+	CDllManager();
+	~CDllManager();
+
+	HMODULE load_library( LPCTSTR lpFileName );
+	BOOL free_library( HMODULE hModule );
+	BOOL free_all_library();
+	HMODULE get_error() const;
+
+private:
+	// uncopyable;
+	CDllManager( CDllManager const & );
+	CDllManager const & operator =( CDllManager const & );
+
+	//............................//
+
+private:
+	holder_type mModules;
+	HMODULE mError;
+};
+
+//------------------------------------------------------------//
+
+};	//namespace hsp3 {
+
+//------------------------------------------------------------//
+
+hsp3::CDllManager & DllManager();
+
 int Hsp3ExtLibInit( HSP3TYPEINFO *info );
 void Hsp3ExtLibTerm( void );
 
