@@ -85,8 +85,8 @@
 #define global msmincho "‚l‚r –¾’©"
 
 #define global do  %tbreak %i0 %tcontinue %i0 %tdo *%i
-#define global until(%1=1) %tcontinue *%o : %tdo if %1=0 { goto *%o } %tbreak *%o
-#define global while(%1=1) %tcontinue %i0 %twhile *%i :%tbreak if %1=0 { goto *%i }
+#define global until(%1=1) %tcontinue *%o : %tdo if (%1)=0 { goto *%o } %tbreak *%o
+#define global while(%1=1) %tcontinue %i0 %twhile *%i :%tbreak if (%1)=0 { goto *%i }
 #define global wend %tcontinue *%o : %twhile goto *%o: %tbreak *%o
 #define global for(%1,%2=0,%3=0,%4=1) %tcontinue %i0 %tfor %1=%2:*%i %s4 %s1 :%tbreak exgoto %1,%4,%3,*%i
 #define global next %tcontinue *%o :%tfor %o +=%o :goto *%o :%tbreak *%o
