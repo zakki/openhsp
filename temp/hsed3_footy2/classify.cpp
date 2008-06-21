@@ -55,11 +55,11 @@ DEF_CLASSIFY_TABLE DefClassifyTable[] = {
 
 // Table of type returned from hspcmp.dll 
 static TYPE_TABLE TypeTable[] = {
-	"sys|macro",	&(color.Character.Macro.Conf),			NULL,
-	"sys|func",		&(color.Character.Function.Conf),		NULL,
-	"sys|func|1",	&(color.Character.Function.Conf),		NULL,
-	"sys|func|2",	&(color.Character.Function.Conf),		NULL,
-	"pre|func",		&(color.Character.Preprocessor.Conf),	NULL,
+	"sys|macro",	&(color.Character.Macro.Conf),			EMPFLAG_NON_CS,
+	"sys|func",		&(color.Character.Function.Conf),		EMPFLAG_NON_CS,
+	"sys|func|1",	&(color.Character.Function.Conf),		EMPFLAG_NON_CS,
+	"sys|func|2",	&(color.Character.Function.Conf),		EMPFLAG_NON_CS,
+	"pre|func",		&(color.Character.Preprocessor.Conf),	0,
 	NULL
 };
 
@@ -155,7 +155,7 @@ void InitClassify()
 					lstrcpy(ClassifyTable[nCTSize].Word2, "");
 					ClassifyTable[nCTSize].Type   = EMP_WORD;
 					ClassifyTable[nCTSize].color  = lpTT->color;
-					ClassifyTable[nCTSize].Status = EMPFLAG_NON_CS/* | F_SE_INDEPENDENCE_B*/ | lpTT->Status;	// 2008-02-17 Shark++ 代替機能不明
+					ClassifyTable[nCTSize].Status = /* | F_SE_INDEPENDENCE_B*/lpTT->Status;	// 2008-02-17 Shark++ 代替機能不明
 					ClassifyTable[nCTSize].Level  = 1;
 					ClassifyTable[nCTSize].pLevel = PERMIT_LEVEL(0);
 					ClassifyTable[nCTSize].Ind    = EMP_IND_BLANKS|EMP_IND_ASCII_SIGN;
