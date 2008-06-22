@@ -2501,7 +2501,7 @@ HGIMG ver3.2   REFERENCE MANUAL        High Performance Graphic Image Plugin
 	MX形式での入出力、アニメーションをMA、X形式で出力することが可能です。
 
 	[Mizno Lab.]
-	http://www21.ocn.ne.jp/~mizno/
+	http://www.metaseq.net/
 
 	Metasequoiaは、O.Miznoさんが作られた3Dモデリングツールです。
 	フリー版のMetasequoiaLEは、オンラインですぐに入手することができ、
@@ -2517,12 +2517,12 @@ HGIMG ver3.2   REFERENCE MANUAL        High Performance Graphic Image Plugin
 	フリー版も用意されています。x形式での出力に対応しています。
 
 	[SOFTIMAGE|XSI Mod Tool]
-	http://www.softimage.jp/mod/index.html
+	http://www.softimage.jp/modtool/
 
 	これは、かなり本格的なツールです。
 	もともとプロ用3Dソフトである、SOFTIMAGE|XSIの機能を制限
 	して無料版として配布しているものですが、ほとんどの機能は
-	そのまま利用することができます。
+	そのまま利用することができます。(ただし商用利用禁止)
 	モデルやアニメーション作成も非常に高機能ですが、そのぶん
 	使い方を覚えるのに時間がかかるのが難点かもしれません。
 
