@@ -12,6 +12,7 @@
 ---------------------------------------*/
 
 #include <windows.h>
+#include <windowsx.h>
 #include <commdlg.h>
 #include <stdlib.h>
 #include <stdio.h>
@@ -1179,7 +1180,7 @@ BOOL CALLBACK ErrDlgProc (HWND hDlg, UINT message, WPARAM wParam, LPARAM lParam)
 	2006/09/06 コメントが存在するときとEOF付近のときのラベルが無視される不具合を修正(LonelyWolf)
 */
 
-static void set_labellist( HWND hDlg, HWND hwndEdit )
+static void set_labellist( HWND hList, HWND hwndEdit )
 {
 	char st[128];
 	char lname[256];
@@ -1192,7 +1193,8 @@ static void set_labellist( HWND hDlg, HWND hwndEdit )
 	int mytag = -1;
 	int myline= -2;
 	int ret;
-	SendDlgItemMessage( hDlg,IDC_LIST2,LB_RESETCONTENT, 0, 0L );
+
+	ListView_DeleteAllItems(hList);
 
 	len = Footy2GetTextLength(activeFootyID, LM_CRLF);
 	if(len >= 0){
@@ -1216,28 +1218,86 @@ static void set_labellist( HWND hDlg, HWND hwndEdit )
 				}
 				// プリプロセッサ読み飛ばし
 				if( '#' == *wp ) {
+					static const char * func_define_pp[] = {
+						"deffunc", "defcfunc",
+						"modinit", "modterm", "modfunc", //"modcfunc",
+					};
+				//	static const char * func_define_pp_type[] = {
+				//		"命令", "関数",
+				//		"module初期化", "module破棄", "module命令", //"module関数",
+				//	};
+					int namelen = 0;
 					do {
-						for(wp++; *wp && 0x0d != *wp ; wp++);
+						for(wp++; *wp && 0x0d != *wp ; wp++) {
+							if( (0 < namelen || (' ' != *wp && '\t' != *wp)) &&
+								('\\' != *wp || (0x0a != wp[1] && 0x0d != wp[1])) &&
+								0x0a != *wp && 0x0d != *wp &&
+								namelen < sizeof(lname)/sizeof(lname[0]) - 1 ) {
+								lname[namelen++] = *wp;
+							}
+						}
 						line++;
 					} while ( '\\' == *(wp - 1) && *wp );
 					line--;
+					lname[namelen] = '\0';
+					//
+					for(int i = 0; i < sizeof(func_define_pp)/sizeof(func_define_pp[0]); i++) {
+						int comp_len = min(strlen(func_define_pp[i]), namelen);
+						if( !strncmp(lname, func_define_pp[i], comp_len) ) {
+							char *pa, *pb;
+							pb = lname + comp_len;
+							int n = sizeof(bool);
+							do {
+								pa = pb;
+								for(; '\t' == *pa || ' ' == *pa; pa++, pb++);	// '#'の直後の空白をスキップ
+								for(; '\t' != *pb && ' ' != *pb && ',' != *pb && *pb; pb++);	// 空白までを取得
+								namelen = (int)(pb - pa);
+								if( sizeof(lname) <= (int)(pa - lname) + namelen ) { DebugBreak(); }
+								memcpy(lname, pa, namelen);
+								lname[namelen] = '\0';
+							} while( !strcmpi(lname, "local") );
+							//
+							if( *lname ) {
+								tag++;
+								LV_ITEM lvi = { LVIF_TEXT, tag, 0, 0, 0, st, };
+								wsprintf(st, "%d",line);
+								ListView_InsertItem(hList, &lvi);
+								lvi.iSubItem++;
+								wsprintf(st, "#%s", func_define_pp[i]);
+							//	wsprintf(st, "%s", func_define_pp_type[i]);
+								ListView_SetItem(hList, &lvi);
+								lvi.iSubItem++;
+								wsprintf(st, "%s", lname);
+							//	wsprintf(st, "#%s %s", func_define_pp[i], lname);
+								ListView_SetItem(hList, &lvi);
+							}
+							break;
+						}
+					}
 					break;
 				}
 				// ラベル読み込み
 				if( '*' == *wp ) {
 					char *pa = wp;
-					int len;
+					int namelen;
 					for(;	*pa &&
 							':' != *pa && ';' != *pa && '/' != *pa &&
 							' ' != *pa && '\t' != *pa && 
 							0x0d != *pa; pa++) { }
-					len = (int)(pa - wp);
+					namelen = (int)(pa - wp);
 					if( 1 < len) {
-						strncpy(lname, wp, len);
-						lname[len] = '\0';
-						wsprintf(st, "%5d : %s",line, lname);
-						SendDlgItemMessage( hDlg,IDC_LIST2,LB_ADDSTRING,-1,(LPARAM)st );
+						strncpy(lname, wp, namelen);
+						lname[namelen] = '\0';
 						tag++;
+						LV_ITEM lvi = { LVIF_TEXT, tag, 0, 0, 0, st, };
+						wsprintf(st, "%d",line);
+						ListView_InsertItem(hList, &lvi);
+						lvi.iSubItem++;
+						wsprintf(st, "ラベル");
+						ListView_SetItem(hList, &lvi);
+						lvi.iSubItem++;
+						wsprintf(st, "%s", lname);
+						ListView_SetItem(hList, &lvi);
 					}
 					wp = pa;
 					if( 0x0d == *wp ) {
@@ -1245,14 +1305,14 @@ static void set_labellist( HWND hDlg, HWND hwndEdit )
 					}
 				}
 				// コメント読み飛ばし
-				if( ';' == *wp || ('/' == *wp && '/' == *(wp + 1)) ) {
+				if( ';' == *wp || ('/' == *wp && '/' == wp[1]) ) {
 					// 行末まで読み飛ばし
 					for(wp++; *wp && 0x0d != *wp ; wp++);
 					break;
 				}
-				if( '/' == *wp && '*' == *(wp + 1) ) {
+				if( '/' == *wp && '*' == wp[1] ) {
 					for(wp++; *wp ; wp++) {
-						if( '*' == *wp && '/' == *(wp + 1) ) {
+						if( '*' == *wp && '/' == wp[1] ) {
 							wp++;
 							break;
 						}
@@ -1265,13 +1325,13 @@ static void set_labellist( HWND hDlg, HWND hwndEdit )
 				// 次のステートメントまで読み飛ばし
 				for(bool bEscape = false;
 					*wp && 0x0d != *wp && ':' != *wp &&
-					';' != *wp && ('/' != *wp || '*' != *(wp + 1)) && ('/' != *wp || '/' != *(wp + 1)); wp++)
+					';' != *wp && ('/' != *wp || '*' != wp[1]) && ('/' != *wp || '/' != wp[1]); wp++)
 				{
 					if( '\"' == *wp && !bEscape ) {
 						// 文字列読み飛ばし
 						if( '{' == *(wp - 1) ) { // 複数行文字列
 							wp += 2;
-							for(bool bEscape = false; *wp && ('\"' != *wp || '}' != *(wp + 1) || bEscape); ) {
+							for(bool bEscape = false; *wp && ('\"' != *wp || '}' != wp[1] || bEscape); ) {
 								if( '\\' == *wp ) {
 									bEscape = !bEscape;
 								}
@@ -1297,15 +1357,19 @@ static void set_labellist( HWND hDlg, HWND hwndEdit )
 					wp--;
 				}
 			}
-			if( 0x0d == *wp && 0x0a == *(wp + 1) ) {
+			if( 0x0d == *wp && 0x0a == wp[1] ) {
 				wp++;
 			}
 			if ( line<=myline) mytag=tag;
 		}
 
 		if ( mytag>=0 ) {
-			SendDlgItemMessage( hDlg, IDC_LIST2, LB_SETCURSEL, mytag, 0L );
+			ListView_SetItemState(hList, mytag, LVIS_SELECTED, LVIS_SELECTED);
+			ListView_EnsureVisible(hList, mytag, FALSE);
 		}
+		ListView_SetColumnWidth(hList, 0, LVSCW_AUTOSIZE_USEHEADER);
+		ListView_SetColumnWidth(hList, 1, LVSCW_AUTOSIZE_USEHEADER);
+		ListView_SetColumnWidth(hList, 2, LVSCW_AUTOSIZE_USEHEADER);
         free (buffer) ;
 	}
 }
@@ -1317,18 +1381,33 @@ BOOL CALLBACK LabelDlgProc (HWND hDlg, UINT message, WPARAM wParam, LPARAM lPara
 	 char s1[128];
      switch (message)
           {
-          case WM_INITDIALOG:
-               set_labellist( hDlg, hwndEdit );
+          case WM_INITDIALOG: {
+               HWND hList = GetDlgItem(hDlg, IDC_LIST1);
+			   LV_COLUMN lvc = { LVCF_FMT, LVCFMT_LEFT, };
+			   // 一行全てを反転表示するスタイルに変更
+               ListView_SetExtendedListViewStyle(hList, ListView_GetExtendedListViewStyle(hList) | LVS_EX_FULLROWSELECT);
+			   // カラム追加
+			   lvc.fmt = LVCFMT_RIGHT;
+			   ListView_InsertColumn(hList, 0, &lvc);
+			   ListView_SetColumn(hList, 0, &lvc); // LVCFMT_RIGHTを反映させるため
+			   lvc.fmt = LVCFMT_LEFT;
+			   ListView_InsertColumn(hList, 1, &lvc);
+			   lvc.fmt = LVCFMT_LEFT;
+			   ListView_InsertColumn(hList, 2, &lvc);
+			   // ラベル列挙
+               set_labellist( hList, hwndEdit );
                SetFocus( GetDlgItem( hDlg,IDC_LIST2 ) );
-               return TRUE;
+               return TRUE; }
 
-          case WM_COMMAND:
-               switch (wParam)
+		  case WM_COMMAND: {
+               HWND hList = GetDlgItem(hDlg, IDC_LIST1);
+               switch (LOWORD(wParam))
                     {
                     case IDOK:
-						i=(int)SendDlgItemMessage( hDlg,IDC_LIST2, LB_GETCURSEL,0,0L );
+						i = ListView_GetNextItem(hList, -1, LVNI_SELECTED);
 						if ( i != LB_ERR ) {
-							SendDlgItemMessage( hDlg,IDC_LIST2, LB_GETTEXT,i,(LPARAM)s1 );
+							LV_ITEM lvi = { LVIF_TEXT, i, 0, 0, 0, s1, sizeof(s1)/sizeof(s1[0])-1 };
+							ListView_GetItem(hList, &lvi);
 							cln=atoi(s1)-1;
 						}
 						else {
@@ -1341,7 +1420,14 @@ BOOL CALLBACK LabelDlgProc (HWND hDlg, UINT message, WPARAM wParam, LPARAM lPara
 						 cln=-1;
 						 return TRUE;
                     }
-               break ;
+			   break ; }
+		  case WM_NOTIFY: {
+			   // ダブルクリックでOKを送りジャンプ
+			   LPNMHDR pnmh = (LPNMHDR) lParam; 
+			   if( NM_DBLCLK == pnmh->code ) {
+					FORWARD_WM_COMMAND(hDlg, IDOK, NULL, BN_CLICKED, PostMessage);
+			   }
+			   break ; }
           }
      return FALSE ;
 }
