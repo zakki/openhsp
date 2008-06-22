@@ -151,7 +151,7 @@ void CzCrypt::SetGUID( OURGUID *guid )
 	this->initrnd(seed1);
 	for (int i = 0; i < 64; i++) this->randtable[i] = this->makerndi()&0xff;
 	this->initrnd(seed2);
-	for (; i < 128; i++) this->randtable[i] = this->makerndi()&0xff;
+	for (int i = 0; i < 128; i++) this->randtable[i] = this->makerndi()&0xff;
 }
 
 void CzCrypt::SetSeed( int seed1, int seed2 )
@@ -163,7 +163,7 @@ void CzCrypt::SetSeed( int seed1, int seed2 )
 	this->initrnd(seed1);
 	for (int i = 0; i < 64; i++) this->randtable[i] = this->makerndi()&0xff;
 	this->initrnd(seed2);
-	for (; i < 128; i++) this->randtable[i] = this->makerndi()&0xff;
+	for (int i = 0; i < 128; i++) this->randtable[i] = this->makerndi()&0xff;
 }
 
 void CzCrypt::MakeGUID( OURGUID *guid )
