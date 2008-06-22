@@ -1151,7 +1151,7 @@ HSPEXT ver3.1  REFERENCE MANUAL                     HSP : Hot Soup Processor
 		(エクスプローラーでは表示されませんが、自動的に拡張子が.lnkに
 		なります)
 		p2には、ショートカット先の場所をフルパスで指定してください。
-		また、p2に「http://www.at-m.or.jp/~onitama/」などのURLを指定する
+		また、p2に「http://www.onionsoft.net/hsp/」などのURLを指定する
 		と、インターネット・ショートカットが作成されます。
 
 		指定に誤りがあったり、エラーが発生するとシステム変数statに

@@ -91,7 +91,7 @@ HSP HELP Browser II のウィンドウに hs ファイルをドロップすると、hs フ
 ネントの更新が必要となります。
 
 インストールするコンポーネント
-・DCOM98 (http://www.microsoft.com/JAPAN/com/dcom/dcom98/dcom13.asp)
+・DCOM98 (http://www.microsoft.com/japan/com/dcom/dcom98/dcom13.aspx)
 ・atl.dll (http://activex.microsoft.com/controls/vc/atl.cab)
 
 Windows 95, Windows NT 4.0 およびそれ以前のバージョンの OS は、サポー

@@ -2365,7 +2365,7 @@ HGIMG.DLL ver2.61   REFERENCE MANUAL   High Performance Graphic Image Plugin
 	されます。
 
 	[よし～ふ ゲーム開発部屋]
-	http://member.nifty.ne.jp/Yoshirf/
+	http://homepage3.nifty.com/YJ/
 
 	「YJ Studio 2001　モデリング編集」ツールで、ポリゴンのモデリング編集
 	およびテクスチャの設定、MXフォーマットの読み書きをサポートしています。
@@ -2374,7 +2374,7 @@ HGIMG.DLL ver2.61   REFERENCE MANUAL   High Performance Graphic Image Plugin
 	データ変換を行なうことが可能です。
 
 	[MIA's HomePage]
-	http://www.diry.net/mia/
+	http://taillove.jp/mia/
 
 	MQO -> MX コンバータを公開しています。MQO形式は、3Dモデリングツール
 	Metasequoia が出力するファイル形式です。テクスチャやUV情報なども含めて
@@ -2387,8 +2387,8 @@ HGIMG.DLL ver2.61   REFERENCE MANUAL   High Performance Graphic Image Plugin
 	対応しているため既存の3Dファイルからの変換の可能性がぐんと広がります。
 	詳しくは、以下のページへどうぞ。
 
-		[Mizno Lab.]
-		http://www1.sphere.ne.jp/mizno/
+		[metaseq.net]
+		http://www.metaseq.net/
 
 	[3DACE の部屋]
 	http://hp.vector.co.jp/authors/VA017881/
