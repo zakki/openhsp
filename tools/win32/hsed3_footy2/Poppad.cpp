@@ -1199,7 +1199,7 @@ static void set_labellist( HWND hList, HWND hwndEdit )
 	len = Footy2GetTextLength(activeFootyID, LM_CRLF);
 	if(len >= 0){
 		buffer = (char *) calloc( len + 2 /* •¶Žš—ñI’[‚Æ”Ô•º */, sizeof(char) );
-		Footy2GetText(activeFootyID, buffer, LM_CRLF, len);
+		Footy2GetText(activeFootyID, buffer, LM_CRLF, len + 1);
 		ret = Footy2GetSel(activeFootyID, (size_t*)&myline, NULL, NULL, NULL);
 		if(FOOTY2ERR_NOTSELECTED == ret){
 			Footy2GetCaretPosition(activeFootyID, (size_t*)&myline, NULL);
@@ -1280,12 +1280,13 @@ static void set_labellist( HWND hList, HWND hwndEdit )
 				if( '*' == *wp ) {
 					char *pa = wp;
 					int namelen;
-					for(;	*pa &&
-							':' != *pa && ';' != *pa && '/' != *pa &&
+					for(pa++;*pa &&
+							(':' > (unsigned char)*pa || '>' < (unsigned char)*pa) &&
+							'/' < (unsigned char)*pa &&
 							' ' != *pa && '\t' != *pa && 
 							0x0d != *pa; pa++) { }
 					namelen = (int)(pa - wp);
-					if( 1 < len) {
+					if( 1 < namelen) {
 						strncpy(lname, wp, namelen);
 						lname[namelen] = '\0';
 						tag++;

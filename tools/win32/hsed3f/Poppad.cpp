@@ -1211,15 +1211,16 @@ static void set_labellist( HWND hDlg, HWND hwndEdit )
 				// ƒ‰ƒxƒ‹“Ç‚Ýž‚Ý
 				if( '*' == *wp ) {
 					char *pa = wp;
-					int len;
-					for(;	*pa &&
-							':' != *pa && ';' != *pa && '/' != *pa &&
+					int namelen;
+					for(pa++;*pa &&
+							(':' > (unsigned char)*pa || '>' < (unsigned char)*pa) &&
+							'/' < (unsigned char)*pa &&
 							' ' != *pa && '\t' != *pa && 
 							0x0d != *pa; pa++) { }
-					len = (int)(pa - wp);
-					if( 1 < len) {
-						strncpy(lname, wp, len);
-						lname[len] = '\0';
+					namelen = (int)(pa - wp);
+					if( 1 < namelen) {
+						strncpy(lname, wp, namelen);
+						lname[namelen] = '\0';
 						wsprintf(st, "%5d : %s",line, lname);
 						SendDlgItemMessage( hDlg,IDC_LIST2,LB_ADDSTRING,-1,(LPARAM)st );
 						tag++;
