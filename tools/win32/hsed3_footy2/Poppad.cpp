@@ -1655,7 +1655,7 @@ LRESULT CALLBACK MyEditProc( HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam )
 
 	case WM_CHAR:
 	{
-		wchar_t szInsBuf[2];
+		wchar_t szInsBuf[2] = { '\0' };
 		const wchar_t *szLine;
 		int nsLine, nsPos, neLine, nePos, nLength, i, ret;
 		static char chPrevByte;
@@ -1667,14 +1667,16 @@ LRESULT CALLBACK MyEditProc( HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam )
 				neLine = nsLine;
 				nePos  = nsPos;
 			}
-            szLine  = Footy2GetLineW(activeFootyID, nsLine);
+			szLine  = Footy2GetLineW(activeFootyID, nsLine);
 			nLength = Footy2GetLineLengthW(activeFootyID, nsLine);
 
 			for(i = nsPos - 1; i >= 0 && (szLine[i] == ' ' || szLine[i] == '\t'); i--);
 			if(i < 0)
 				Footy2SetSel(activeFootyID, nsLine, (wParam == '*' ? 0 : (nsPos > 0 ? nsPos - 1 : 0)), neLine, nePos, false);
-			szInsBuf[0] = (wchar_t)(TCHAR)wParam, szInsBuf[1] = '\0';
-            Footy2SetSelTextW(activeFootyID, szInsBuf);
+			if( lParam & 0xFF0000 ) { // ’¼Ú“ü—Í‚Ìê‡‚Éˆ—
+				szInsBuf[0] = (wchar_t)(TCHAR)wParam;
+			}
+			Footy2SetSelTextW(activeFootyID, szInsBuf);
 			return 0;
 		} else {
 			chPrevByte = wParam;

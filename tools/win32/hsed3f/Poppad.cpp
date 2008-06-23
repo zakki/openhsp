@@ -1542,7 +1542,7 @@ LRESULT CALLBACK MyEditProc( HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam )
 
 	case WM_CHAR:
 	{
-		char szInsBuf[2];
+		char szInsBuf[2] = { '\0' };
 		const char *szLine;
 		int nsLine, nsPos, neLine, nePos, nLength, i;
 		static char chPrevByte;
@@ -1555,7 +1555,9 @@ LRESULT CALLBACK MyEditProc( HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam )
 			for(i = nsPos - 2; i >= 0 && (szLine[i] == ' ' || szLine[i] == '\t'); i--);
 			if(i < 0)
 				FootySetSelA(activeFootyID, nsLine, (wParam == '*' ? 1 : (nsPos > 1 ? nsPos - 1 : 1)), neLine, nePos);
-			szInsBuf[0] = (char)(TCHAR)wParam, szInsBuf[1] = '\0';
+			if( lParam & 0xFF0000 ) { // ’¼Ú“ü—Í‚Ìê‡‚Éˆ—
+				szInsBuf[0] = (char)(TCHAR)wParam;
+			}
             FootySetSelText(activeFootyID, szInsBuf);
 			return 0;
 		} else {
