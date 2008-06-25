@@ -45,8 +45,13 @@
 
 //		デフォルトの文字列
 //
+#ifdef JPMSG
+#define UNTITLED "(無題)"
+#define TABUNTITLED "無題"
+#else
 #define UNTITLED "(untitled)"
 #define TABUNTITLED "untitled"
+#endif
 
 //		デフォルトの値
 #define TMPSIZE 2048
