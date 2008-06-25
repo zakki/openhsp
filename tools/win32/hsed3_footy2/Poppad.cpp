@@ -4114,8 +4114,10 @@ void __stdcall OnFooty2TextModified(int id, void *pParam, int nCause)
 //	}
 	// 2008-02-17 Shark++ —v“®ìŠm”F
 	bNeedSave = (BOOL)Footy2IsEdited(id);
-	SetTabInfo(nTabID, NULL, NULL, NULL, (bNeedSave = TRUE));
-	DoCaption(szTitleName, nTabID);
+	if( lpTabInfo->NeedSave != bNeedSave ) {
+		SetTabInfo(nTabID, NULL, NULL, NULL, bNeedSave);
+		DoCaption(szTitleName, nTabID);
+	}
 
 	PutLineNumber();
 	return;
