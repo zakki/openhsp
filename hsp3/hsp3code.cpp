@@ -1992,7 +1992,7 @@ static int cmdfunc_prog( int cmd )
 		break;
 		}
 	case 0x1c:								// logmes
-		strcpy( hspctx->stmp, code_gets() );
+		code_stmpstr( code_gets() );
 		hspctx->runmode = RUNMODE_LOGMES;
 		return RUNMODE_LOGMES;
 
