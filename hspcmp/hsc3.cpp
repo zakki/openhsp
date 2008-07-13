@@ -43,7 +43,7 @@ void CHsc3::ResetError( void )
 {
 	//		エラーメッセージ消去
 	//
-	if ( errbuf == NULL ) { delete errbuf; errbuf=NULL; }
+	if ( errbuf != NULL ) { delete errbuf; errbuf=NULL; }
 	errbuf = new CMemBuf( 0x1000 );
 	hed_option = 0;
 	hed_runtime[0] = 0;
@@ -65,8 +65,8 @@ CHsc3::CHsc3( void )
 
 CHsc3::~CHsc3( void )
 {
-	if ( addkw == NULL ) { delete addkw; addkw=NULL; }
-	if ( errbuf == NULL ) { delete errbuf; errbuf=NULL; }
+	if ( addkw != NULL ) { delete addkw; addkw=NULL; }
+	if ( errbuf != NULL ) { delete errbuf; errbuf=NULL; }
 }
 
 
@@ -174,7 +174,7 @@ int CHsc3::PreProcess( char *fname, char *outname, int option, char *rname, void
 
 #if 0
 	//		ソースのラベルを追加(停止中)
-	if ( addkw == NULL ) { delete addkw; addkw=NULL; }
+	if ( addkw != NULL ) { delete addkw; addkw=NULL; }
 	addkw = new CMemBuf( 0x1000 );
 	tk.LabelDump( addkw, DUMPMODE_DLLCMD );
 #endif
