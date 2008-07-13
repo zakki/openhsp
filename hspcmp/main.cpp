@@ -103,7 +103,8 @@ int main( int argc, char *argv[] )
 		st = hsc3->Compile( fname2, oname, cmpopt );
 	}
 	puts( hsc3->GetError() );
-	if ( hsc3 == NULL ) { delete hsc3; hsc3=NULL; }
+	hsc3->PreProcessEnd();
+	if ( hsc3 != NULL ) { delete hsc3; hsc3=NULL; }
 	return st;
 }
 
