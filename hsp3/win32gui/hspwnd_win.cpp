@@ -353,182 +353,171 @@ void HspWnd::SetNotifyFunc( void *func )
 }
 
 
-void HspWnd::MakeBmscrOff( int id, int sx, int sy, int palsw )
+void HspWnd::MakeBmscrOff( int id, int sx, int sy, int mode )
 {
-	//		Bmscr生成(オフスクリーン)
+	//		Bmscr(オフスクリーン)生成
 	//
-	Bmscr		*bm;
-	HWND		hwnd;
-
 	ExpandScreen( id );
-	hwnd = NULL;
-	bm = mem_bm[id];
-	if ( bm != NULL ) {
-		hwnd = bm->hwnd;
+
+	HWND hwnd = NULL;
+
+	if ( mem_bm[ id ] != NULL ) {
+		hwnd = mem_bm[ id ]->hwnd;
+		delete mem_bm[ id ];
+		mem_bm[ id ] = NULL;
+
 		ShowWindow( hwnd, SW_HIDE );
-		delete bm;
 	}
-		
-	bm = new Bmscr;
-	mem_bm[id] = bm;
+
+	Bmscr * bm = new Bmscr;
+	mem_bm[ id ] = bm;
+
+	bm->Init( hInst, hwnd, sx, sy,
+	 ( mode & 0x01 ? BMSCR_PALMODE_PALETTECOLOR : BMSCR_PALMODE_FULLCOLOR ) );
 
 	bm->wid = id;
-	bm->master_hspwnd = (void *)this;
+	bm->master_hspwnd = static_cast< void * >( this );
 	bm->type = HSPWND_TYPE_BUFFER;
-
-	bm->Init( hInst, hwnd, sx, sy, palsw );
-
-	bm->wx = 0; bm->wy = 0;
+	bm->wx = 0;
+	bm->wy = 0;
 	bm->wchg = 0;
-	bm->viewx=0; bm->viewy=0;
+	bm->viewx=0;
+	bm->viewy=0;
 }
 
 
-void HspWnd::MakeBmscr( int id, int type, int xx, int yy, int wx, int wy, int sx, int sy, int palsw )
+void HspWnd::MakeBmscrWnd
+( int id, int type, int xx, int yy, int wx, int wy, int sx, int sy, int mode )
 {
-	//		Bmscr生成
+	//		Bmscr(ウィンドウ)生成
 	//
-	HWND		hwnd;
-	HWND		par_hwnd;
-	DWORD		style;
-	int			wndtype;
-	int			scr_x,scr_y;
-	int			winx,winy;
-	int			palmode;
-	int			exstyle;
-	int			defstyle;
-	int			framesx,framesy;
-	int			swtype;
-	Bmscr		*bm;
-
-	if ( type == HSPWND_TYPE_BUFFER ) {
-		MakeBmscrOff( id, sx, sy, palsw );
-		return;
-	}
-
 	ExpandScreen( id );
-	palmode = palsw & 1;
-	scr_x=wx; scr_y=wy;
-	winx=CW_USEDEFAULT; winy=CW_USEDEFAULT;
-	if (xx!=-1) winx=xx;
-	if (yy!=-1) winy=yy;
 
-	par_hwnd = NULL;
-	wndtype = type;
+	int wndtype = type, style = 0, exstyle = 0;
+	HWND par_hwnd = NULL;
 
-	framesx = 0;
-	framesy = 0;
-	exstyle = 0;
-
-/*
-	rev 45
-	BT#188 : サイズ固定ツールウィンドウに非描画領域がある。
-	に対処。
-*/
-
-	defstyle = palsw>>2;
+	// スクリーンタイプごとのウィンドウスタイルの設定。
 	if ( wndtype == HSPWND_TYPE_BGSCR ) {
 		style = WS_POPUP | WS_CLIPCHILDREN | WS_CLIPSIBLINGS;
 
 	} else {
-		if ( palsw & 0x100 ) {
-			style = WS_CHILD | WS_CLIPCHILDREN | WS_CLIPSIBLINGS;
+		if ( mode & 0x100 ) {
 			wndtype = HSPWND_TYPE_SSPREVIEW;
-			par_hwnd = (HWND)wnd_parent;
+			style = WS_CHILD | WS_CLIPCHILDREN | WS_CLIPSIBLINGS;
+			par_hwnd = static_cast< HWND >( wnd_parent );
 
 		} else {
-	//		style = WS_CAPTION | WS_OVERLAPPED | WS_SYSMENU | WS_MINIMIZEBOX | WS_BORDER | WS_VISIBLE | WS_THICKFRAME | WS_CLIPCHILDREN;
-			style = WS_CAPTION | WS_OVERLAPPED | WS_SYSMENU | WS_MINIMIZEBOX | WS_BORDER | WS_CLIPCHILDREN | WS_CLIPSIBLINGS;
-			if ( ( id > 0 ) && ( !( defstyle & 1 ) ) ) {	// サイズ可変
+			style = WS_CAPTION | WS_OVERLAPPED | WS_SYSMENU | WS_MINIMIZEBOX
+			 | WS_BORDER | WS_CLIPCHILDREN | WS_CLIPSIBLINGS;
+			if ( id > 0 && !( mode & 0x04 ) ) {	// サイズ可変。
 				style |= WS_THICKFRAME;
 			}
-			if ( defstyle & 2 ) {	// ツールウィンドウ
+			if ( mode & 0x08 ) {	// ツールウィンドウ。
 				exstyle |= WS_EX_TOOLWINDOW;
 			}
-			if ( defstyle & 4 ) {	// 縁が深い
+			if ( mode & 0x10 ) {	// 縁が深い。
 				exstyle |= WS_EX_OVERLAPPEDWINDOW;
 			}
 		}
-		RECT rc;
-		rc.left = 0;
-		rc.top = 0;
-		rc.right = scr_x;
-		rc.bottom = scr_y;
-		if ( AdjustWindowRectEx( &rc, style, FALSE, exstyle ) ) {
-			framesx = rc.right - rc.left - scr_x;
-			framesy = rc.bottom - rc.top - scr_y;
-		} else {
-			framesx = wfx;
-			framesy = wfy;
-		}
 	}
 
-	bm = mem_bm[id];
-	if ( bm == NULL ) {
+	HWND hwnd = NULL;
 
-//		if ( !(palsw & 2 ) ) { style |= WS_VISIBLE; }
-
-		hwnd = CreateWindowEx (
-				exstyle,								// extra window style
-				defcls,									// window class name
+	// ウィンドウの生成・再設定。
+	if ( mem_bm[ id ] == NULL ) {
 
 #ifdef HSPDEBUG
-				HSPTITLE hspver,						// window caption
+		char const * const pc = HSPTITLE hspver;
 #else
-				NULL,									// window caption
+		char const * const pc = NULL;
 #endif
 
-				style,									// window style
-	            winx,									// initial x position
-	            winy,									// initial y position
-	            scr_x,									// initial x size
-	            scr_y,									// initial y size
-	            par_hwnd,								// parent window handle
-	            NULL,									// window menu handle
-	            hInst,									// program instance handle
-			NULL) ;										// creation parameters
+		hwnd = CreateWindowEx( exstyle,				// extra window style
+		                       defcls,				// window class name
+		                       pc,					// window caption
+		                       style,				// window style
+		                       ( xx != -1 ? xx : CW_USEDEFAULT ),
+		                       		// initial x position
+		                       ( yy != -1 ? yy : CW_USEDEFAULT ),
+		                       		// initial y position
+		                       wx,					// initial x size
+		                       wy,					// initial y size
+		                       par_hwnd,			// parent window handle
+		                       NULL,				// window menu handle
+		                       hInst,				// program instance handle
+		                       NULL );				// creation parameters
 
 	} else {
-		hwnd = bm->hwnd;
-		wndtype = bm->type;
-		delete bm;
-		if ( wndtype != HSPWND_TYPE_BUFFER ) {
-			swtype = SWP_FRAMECHANGED | SWP_NOMOVE | SWP_NOSIZE;
-//			if ( !(palsw & 2 ) ) { style |= WS_VISIBLE; } else {
-//				swtype |= SWP_HIDEWINDOW;
-//			}
-			if ( IsWindowVisible( hwnd ) ) { style |= WS_VISIBLE; }
-			//style |= WS_VISIBLE;
-			SetWindowLong( hwnd, GWL_EXSTYLE, exstyle );
-			SetWindowLong( hwnd, GWL_STYLE, style );
-			SetWindowPos( hwnd,HWND_TOP,0,0,0,0, swtype );
-		}
+		hwnd = mem_bm[ id ]->hwnd;
+		delete mem_bm[ id ];
+		mem_bm[ id ] = NULL;
+
+		RECT rc;
+		GetWindowRect( hwnd, &rc );
+		SetWindowPos( hwnd, NULL,
+		 ( xx != -1 ? xx : rc.left ), ( yy != -1 ? yy : rc.top ), wx, wy,
+		 SWP_HIDEWINDOW | SWP_NOACTIVATE | SWP_NOZORDER );
+		SetWindowLong( hwnd, GWL_STYLE, style );
+		SetWindowLong( hwnd, GWL_EXSTYLE, exstyle );
 	}
-
-	bm = new Bmscr;
-	mem_bm[id] = bm;
-
-	bm->wid = id;
-	bm->master_hspwnd = (void *)this;
-	bm->type = wndtype;
-
-	bm->Init( hInst, hwnd, sx, sy, palmode );
-	bm->framesx = framesx;
-	bm->framesy = framesy;
-
-	swtype = SW_SHOWDEFAULT;
-	if ( palsw & 2 ) {
-		swtype = SW_HIDE;
-	}
-
-	bm->Width( wx, wy, -1, -1, 1 );
-	bm->wchg=0;
-	bm->viewx=0; bm->viewy=0;
 
 	SetWindowLong( hwnd, GWL_USERDATA, id );
 
-	ShowWindow( hwnd, swtype );
+	Bmscr * bm = new Bmscr;
+	mem_bm[ id ] = bm;
+
+	bm->Init( hInst, hwnd, sx, sy,
+	 ( mode & 0x01 ? BMSCR_PALMODE_PALETTECOLOR : BMSCR_PALMODE_FULLCOLOR ) );
+
+	bm->wid = id;
+	bm->master_hspwnd = static_cast< void * >( this );
+	bm->type = wndtype;
+	bm->wchg = 0;
+	bm->viewx = 0;
+	bm->viewy = 0;
+
+	RECT rc;
+	rc.left = 0;
+	rc.top = 0;
+	rc.right = wx;
+	rc.bottom = wy;
+	if ( AdjustWindowRectEx( &rc, style, FALSE, exstyle ) ) {
+		bm->framesx = rc.right - rc.left - wx;
+		bm->framesy = rc.bottom - rc.top - wy;
+	} else {
+		bm->framesx = wfx;
+		bm->framesy = wfy;
+	}
+
+	bm->Width( wx, wy, -1, -1, 1 );
+
+	SetWindowPos( hwnd, HWND_TOP, 0, 0, 0, 0,
+	 ( mode & 2 ? SWP_NOACTIVATE | SWP_NOZORDER : SWP_SHOWWINDOW ) |
+	 SWP_FRAMECHANGED | SWP_NOMOVE | SWP_NOSIZE );
+
 	bm->Update();
+}
+
+
+void HspWnd::MakeBmscr
+( int id, int type, int xx, int yy, int wx, int wy, int sx, int sy, int mode )
+{
+	//		Bmscr生成
+	//
+	if ( id < 0 ) throw HSPERR_ILLEGAL_FUNCTION;
+
+	Bmscr const * const pbm = ( id < bmscr_max ? mem_bm[ id ] : NULL );
+
+	if ( type == HSPWND_TYPE_BUFFER ) {
+		MakeBmscrOff( id, sx, sy, mode );
+
+	} else if ( pbm == NULL || pbm->type != HSPWND_TYPE_BUFFER ) {
+		MakeBmscrWnd( id, type, xx, yy, wx, wy, sx, sy, mode );
+
+	} else {
+		MakeBmscrOff( id, sx, sy, mode );
+		//throw HSPERR_UNSUPPORTED_FUNCTION;
+	}
 }
 
 
