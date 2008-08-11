@@ -687,17 +687,14 @@ STRUCTDAT構造体は、HSPSDK内で以下のように定義されています。
 	typedef struct STRUCTDAT {
 	short	index;           // base LIBDAT index
 	short	subid;           // struct index
-	int	prmindex;            // STRUCTPRM
-	index(MINFO)
+	int	prmindex;            // STRUCTPRM index(MINFO)
 	int	prmmax;              // number of STRUCTPRM
 	int	nameidx;             // name index (DS)
 	int	size;                // struct size (stack)
-	int	otindex;             // OT index(Module)  /
-	cleanup flag(Dll)
+	int	otindex;             // OT index(Module)  / cleanup flag(Dll)
 	union {
 		void	*proc;       // proc address
-		int	funcflag;        // function
-		flags(Module)
+		int	funcflag;        // function flags(Module)
 	};
 	} STRUCTDAT;
 ^p
