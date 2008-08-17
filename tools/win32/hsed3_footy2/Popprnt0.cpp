@@ -14,7 +14,7 @@ extern int activeFootyID;
 BOOL bUserAbort ;
 HWND hDlgPrint ;
 
-BOOL CALLBACK PrintDlgProc (HWND hDlg, UINT msg, WPARAM wParam, LPARAM lParam)
+BOOL CALLBACK PrintDlgProc (HWND hDlg, UINT msg, WPARAM /*wParam*/, LPARAM /*lParam*/)
      {
      switch (msg)
           {
@@ -33,7 +33,7 @@ BOOL CALLBACK PrintDlgProc (HWND hDlg, UINT msg, WPARAM wParam, LPARAM lParam)
      return FALSE ;
      }          
 
-BOOL CALLBACK AbortProc (HDC hPrinterDC, int iCode)
+BOOL CALLBACK AbortProc (HDC /*hPrinterDC*/, int /*iCode*/)
      {
      MSG msg ;
 
@@ -48,7 +48,7 @@ BOOL CALLBACK AbortProc (HDC hPrinterDC, int iCode)
      return !bUserAbort ;
      }
 
-BOOL PopPrntPrintFile (HINSTANCE hInst, HWND hwnd, HWND hwndEdit, 
+BOOL PopPrntPrintFile (HINSTANCE hInst, HWND hwnd, HWND /*hwndEdit*/, 
                                                    LPSTR szTitleName)
      {
      static DOCINFO  di = { sizeof (DOCINFO), "", NULL } ;

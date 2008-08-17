@@ -56,7 +56,7 @@ static HMENU    hMenu = NULL;
 void CreateTab(int nTabNumber, const char *szNewTitleName, const char *szNewFileName, const char *szNewDirName)
 {
 	int FootyID;
-	int j, ret;
+	int j/*, ret*/;
 	HWND hWnd;
 	TABINFO *lpTabInfo, *lpTopTabInfo;
 	TCITEM tc_item;

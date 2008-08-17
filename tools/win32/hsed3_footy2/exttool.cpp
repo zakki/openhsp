@@ -20,7 +20,7 @@ extern HWND hwbak;
 
 bool InitExtTool(int nNewSize)
 {
-	MENUITEMINFO mii;
+//	MENUITEMINFO mii;
 	if(nSize < nNewSize){
 		lpExtToolInfo = (EXTTOOLINFO *)realloc(lpExtToolInfo, nNewSize * sizeof(EXTTOOLINFO));
 		if(lpExtToolInfo == NULL){
@@ -98,7 +98,7 @@ void SetMenuExtTool()
 
 bool AddExtTool(unsigned int nToolID, EXTTOOLINFO *lpAddExtToolInfo)
 {
-	if(nToolID >= nSize){
+	if(nToolID >= (unsigned int)nSize){
 		msgboxf(NULL, "追加するツールIDが範囲を超えました。\n"
 			"このエラーはバグの可能性があります。", "error", MB_OK | MB_ICONERROR);
 		return false;
@@ -130,7 +130,7 @@ bool ExecExtTool(HWND hWnd, unsigned int nToolID, bool bStartup)
 		"指定されたダイナミックリンクライブラリ（DLL）が見つかりませんでした。",
 	};
 
-	if(nToolID >= nSize || lpExtToolInfo[nToolID].Used == false){
+	if(nToolID >= (unsigned int)nSize || lpExtToolInfo[nToolID].Used == false){
 		msgboxf(hWnd, "ツールIDが範囲を超えているため、\"%s\"を開くことができませんでした。\n"
 			"このエラーはバグの可能性が大きいです。", "error", MB_OK | MB_ICONERROR);
 		return false;
@@ -249,6 +249,6 @@ int GetExtToolSize()
 
 EXTTOOLINFO *GetExtTool(unsigned int nToolID)
 {
-	if(nToolID >= nSize) return NULL;
+	if(nToolID >= (unsigned int)nSize) return NULL;
 	return lpExtToolInfo + nToolID;
 }

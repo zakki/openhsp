@@ -131,20 +131,20 @@ BOOL PopFileSaveDlg (HWND hwnd, PSTR pstrFileName, PSTR pstrTitleName)
 	 return GetSaveFileName (&ofn) ;
      }
 
-static long PopFileLength (FILE *file)
-     {
-     int iCurrentPos, iFileLength ;
-
-     iCurrentPos = ftell (file) ;
-
-     fseek (file, 0, SEEK_END) ;
-
-     iFileLength = ftell (file) ;
-
-     fseek (file, iCurrentPos, SEEK_SET) ;
-
-     return iFileLength ;
-     }
+//static long PopFileLength (FILE *file)
+//     {
+//     int iCurrentPos, iFileLength ;
+//
+//     iCurrentPos = ftell (file) ;
+//
+//     fseek (file, 0, SEEK_END) ;
+//
+//     iFileLength = ftell (file) ;
+//
+//     fseek (file, iCurrentPos, SEEK_SET) ;
+//
+//     return iFileLength ;
+//     }
 
 BOOL PopFileRead (int nFootyID, PSTR pstrFileName)
      {

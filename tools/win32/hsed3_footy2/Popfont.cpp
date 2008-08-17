@@ -43,7 +43,7 @@ DWORD PopFontChooseColor(HWND hwnd, COLORREF crInitColor)
 	 if (res) {
 		return (DWORD)cc.rgbResult;
 	 }
-	 return -1;
+	 return (DWORD)-1;
 }
 
 

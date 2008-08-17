@@ -128,10 +128,10 @@ LPSTR GetString (int iString)
      }
 
 //-------------------------------------------------------------------
-LRESULT ToolBarNotify (HWND hwnd, WPARAM wParam, LPARAM lParam)
+LRESULT ToolBarNotify (HWND /*hwnd*/, WPARAM /*wParam*/, LPARAM lParam)
      {
      LPNMHDR pnmh = (LPNMHDR) lParam ;
-     int idCtrl = (int) wParam ;
+//     int idCtrl = (int) wParam ;
 
      // Allow toolbar to be customized
      if ((pnmh->code == TBN_QUERYDELETE) ||

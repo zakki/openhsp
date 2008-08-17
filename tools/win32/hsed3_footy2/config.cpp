@@ -315,9 +315,9 @@ static void reg_save( void )
 	//		ÉåÉWÉXÉgÉäÇ…èëÇ´çûÇﬁ
 	//
 	HKEY	hKey;
-	int		RVSize = 4, nSize, i;
-	DWORD	dw = REG_DWORD;
-	DWORD	sz = REG_SZ;
+	int		/*RVSize = 4, */nSize, i;
+//	DWORD	dw = REG_DWORD;
+//	DWORD	sz = REG_SZ;
 	EXTTOOLINFO *lpExtToolInfo;
 	char szKeyName[256];
 
@@ -631,19 +631,19 @@ static void reg_load( void )
 
 				wsprintf(szKeyName, "mainmenu%d", i);
 				reg_getkey( hKey, szKeyName,  &nTemp);
-				ExtToolInfo.ShowOnMainMenu = nTemp;
+				ExtToolInfo.ShowOnMainMenu = (0 != nTemp);
 
 				wsprintf(szKeyName, "popupmenu%d", i);
 				reg_getkey( hKey, szKeyName, &nTemp );
-				ExtToolInfo.ShowOnPopupMenu = nTemp;
+				ExtToolInfo.ShowOnPopupMenu = (0 != nTemp);
 
 				wsprintf(szKeyName, "startup%d", i);
 				reg_getkey( hKey, szKeyName, &nTemp );
-				ExtToolInfo.ExecOnStartup = nTemp;
+				ExtToolInfo.ExecOnStartup = (0 != nTemp);
 
 				wsprintf(szKeyName, "overwrite%d", i);
 				reg_getkey( hKey, szKeyName, &nTemp);
-				ExtToolInfo.ExecWithOverwrite = nTemp;
+				ExtToolInfo.ExecWithOverwrite = (0 != nTemp);
 
 				AddExtTool(i - 1, &ExtToolInfo);
 			}
@@ -777,7 +777,7 @@ static void ini_save( void )
 	wsprintf(filename, "%s\\%s", szExeDir, INI_FILE);
 
 	int i;
-	int nSize, nTemp;
+	int nSize/*, nTemp*/;
 	EXTTOOLINFO *lpExtToolInfo;
 	char szKeyName[256];
 
@@ -1046,19 +1046,19 @@ static void ini_load()
 
 			wsprintf(szKeyName, "mainmenu%d", i);
 			ini_getkey( filename, "ExtTools", szKeyName,  &nTemp);
-			ExtToolInfo.ShowOnMainMenu = nTemp;
+			ExtToolInfo.ShowOnMainMenu = (0 != nTemp);
 
 			wsprintf(szKeyName, "popupmenu%d", i);
 			ini_getkey( filename, "ExtTools", szKeyName, &nTemp );
-			ExtToolInfo.ShowOnPopupMenu = nTemp;
+			ExtToolInfo.ShowOnPopupMenu = (0 != nTemp);
 
 			wsprintf(szKeyName, "startup%d", i);
 			ini_getkey( filename, "ExtTools", szKeyName, &nTemp );
-			ExtToolInfo.ExecOnStartup = nTemp;
+			ExtToolInfo.ExecOnStartup = (0 != nTemp);
 
 			wsprintf(szKeyName, "overwrite%d", i);
 			ini_getkey( filename, "ExtTools", szKeyName, &nTemp);
-			ExtToolInfo.ExecWithOverwrite = nTemp;
+			ExtToolInfo.ExecWithOverwrite = (0 != nTemp);
 
 			AddExtTool(i - 1, &ExtToolInfo);
 		}

@@ -89,7 +89,7 @@ void pf_add( HWND hDlg, char *fname, char *pname )
 	else {
 		strcpy( nam,"+" );strcat( nam, fname );
 	}
-	SendDlgItemMessage( hDlg,IDC_LIST3, LB_ADDSTRING,-1,(LPARAM)nam );
+	SendDlgItemMessage( hDlg,IDC_LIST3, LB_ADDSTRING,(WPARAM)-1,(LPARAM)nam );
 }
 
 int pf_find( char *fname )
@@ -111,7 +111,7 @@ void pf_del( int id )
 	int a,i;
 	i=id;
 	if ( pid<=0 ) return;
-	while(1) {
+	for(;;) {
 		a=i+1;
 		mem_pf[i].flag = mem_pf[a].flag;
 		strcpy( mem_pf[i].fname, mem_pf[a].fname );
@@ -145,7 +145,7 @@ int pf_save( void )
 		for(a=0;a<pid;a++) {
 			pf=&mem_pf[a];
 			if ( pf->flag ) {
-				strcpy(szDir,pf->pname);l=strlen(szNow);
+				strcpy(szDir,pf->pname);l=(int)strlen(szNow);
 				if (strncmp(szNow,szDir,l)==0) {
 					strcpy(szDir,szDir+l);
 				}
@@ -176,7 +176,7 @@ int pf_load( HWND hDlg )
 	enc_bak = enc_mode;
 	fp=fopen("packfile","rb");
 	if (fp==NULL) return -1;
-	while(1) {
+	for(;;) {
 		if ( fgets(s0,256,fp)==NULL ) break;
 		a1=*s0;
 		if ((a1!=';')&&(a1!=0)) {
@@ -226,7 +226,7 @@ void set_dirlist( HWND hDlg )
 		LB_DIR,DDL_DIRECTORY|DDL_DRIVES|DDL_EXCLUSIVE,(LPARAM)"*.*" );
 }
 
-BOOL CALLBACK PlistDlgProc (HWND hDlg, UINT message, WPARAM wParam, LPARAM lParam)
+BOOL CALLBACK PlistDlgProc (HWND hDlg, UINT message, WPARAM wParam, LPARAM /*lParam*/)
 {
 	HWND h;
 	char szText[128];
@@ -251,9 +251,9 @@ BOOL CALLBACK PlistDlgProc (HWND hDlg, UINT message, WPARAM wParam, LPARAM lPara
 		return TRUE;
 
 	case WM_COMMAND:
-		ctrl_id=LOWORD (wParam);
-		if (HIWORD (wParam) == LBN_DBLCLK ) {
-			i=SendDlgItemMessage( hDlg,ctrl_id, LB_GETCURSEL,0,0L );
+		ctrl_id = GET_WM_COMMAND_ID(wParam, lParam);
+		if (GET_WM_COMMAND_CMD(wParam, lParam) == LBN_DBLCLK ) {
+			i = (int)SendDlgItemMessage( hDlg,ctrl_id, LB_GETCURSEL,0,0L );
 			SendDlgItemMessage( hDlg,ctrl_id, LB_GETTEXT,i,(LPARAM)szText );
 			if ( ctrl_id==IDC_LIST2 ) {
 				szText[strlen(szText)-1]=0;
@@ -278,11 +278,11 @@ BOOL CALLBACK PlistDlgProc (HWND hDlg, UINT message, WPARAM wParam, LPARAM lPara
 			if ( IsDlgButtonChecked( hDlg,IDC_CHECK1 )==BST_CHECKED ) enc_mode=2;
 			break;
 		}
-		switch (wParam)
+		switch (ctrl_id)
 		{
 		case IDCM_ADD:
 			h=GetDlgItem( hDlg,IDC_LIST1 );
-			j=SendMessage( h,LB_GETCOUNT,0,0L );
+			j=(int)SendMessage( h,LB_GETCOUNT,0,0L );
 			if (j==0) break;
 			for(i=0;i<j;i++) {
 				if ( SendMessage( h,LB_GETSEL,i,0L ) ) {
@@ -294,7 +294,7 @@ BOOL CALLBACK PlistDlgProc (HWND hDlg, UINT message, WPARAM wParam, LPARAM lPara
 
 		case IDCM_ALLSEL:
 			h=GetDlgItem( hDlg,IDC_LIST1 );
-			j=SendMessage( h,LB_GETCOUNT,0,0L );
+			j=(int)SendMessage( h,LB_GETCOUNT,0,0L );
 			if (j==0) break;
 			for(i=0;i<j;i++) {
 				SendMessage( h, LB_GETTEXT,i,(LPARAM)szText );
@@ -303,7 +303,7 @@ BOOL CALLBACK PlistDlgProc (HWND hDlg, UINT message, WPARAM wParam, LPARAM lPara
 			break;
 
 		case IDCM_DEL:
-			i=SendDlgItemMessage( hDlg,IDC_LIST3, LB_GETCURSEL,0,0L );
+			i=(int)SendDlgItemMessage( hDlg,IDC_LIST3, LB_GETCURSEL,0,0L );
 			if (i>=0) {
 				SendDlgItemMessage( hDlg,IDC_LIST3, LB_GETTEXT,i,(LPARAM)szText );
 				SendDlgItemMessage( hDlg,IDC_LIST3, LB_DELETESTRING,i,0L );

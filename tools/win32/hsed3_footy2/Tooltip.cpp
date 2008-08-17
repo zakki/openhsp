@@ -57,7 +57,7 @@ BOOL InitToolTip (HWND hwndToolBar, HWND hwndComboBox)
 void CopyToolTipText (LPTOOLTIPTEXT lpttt)
      {
      int i ;
-     int iButton = lpttt->hdr.idFrom ;
+     int iButton = (int)lpttt->hdr.idFrom ;
      int cb ;
      int cMax ;
      LPSTR pString ;

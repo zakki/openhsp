@@ -3,6 +3,7 @@
   --------------------------------------------------------*/
 
 #include <windows.h>
+#include <windowsx.h>
 #include <commdlg.h>
 #include <comdef.h>
 #include <string.h>
@@ -84,7 +85,7 @@ char *strfind( char *srcstr, char *findstr )
 
 // 検索と置換ダイアログのフック プロシージャ
 // Hook procedure for find and replace dialog
-int CALLBACK FRHookProc(HWND hDlg, UINT uiMsg, WPARAM wParam, LPARAM lParam)
+int CALLBACK FRHookProc(HWND hDlg, UINT uiMsg, WPARAM wParam, LPARAM /*lParam*/)
 {
 	switch(uiMsg){
 		case WM_INITDIALOG:
@@ -98,12 +99,12 @@ int CALLBACK FRHookProc(HWND hDlg, UINT uiMsg, WPARAM wParam, LPARAM lParam)
 
 		case WM_COMMAND:
 		{
-			switch(LOWORD(wParam)){
+			switch( GET_WM_COMMAND_ID(wParam, lParam) ){
 				case IDC_ESCSEQ:
 					frcd.EscSeq = (IsDlgButtonChecked(hDlg, IDC_ESCSEQ) == BST_CHECKED);
 					break;
 				case IDC_FINDMODE:
-					if(HIWORD(wParam) == CBN_SELCHANGE){
+					if(GET_WM_COMMAND_CMD(wParam, lParam) == CBN_SELCHANGE){
 						frcd.Mode = (int)SendDlgItemMessage(hDlg, IDC_FINDMODE, CB_GETCURSEL, 0L, 0L);
 						if(frcd.Mode == -1) frcd.Mode = 0;
 						CheckDlgButton(hDlg, IDC_ESCSEQ, (frcd.Mode ? BST_CHECKED : frcd.EscSeq));
@@ -266,7 +267,7 @@ int Footy2GetSelB(int FootyID, size_t * StartOffset, size_t * EndOffset)
 	};
 	int LineCode = Footy2GetLineCode(FootyID);
 	size_t LineCodeLen = LineCodeLenTable[LineCode % (sizeof(LineCodeLenTable) / sizeof(LineCodeLenTable[0]))];
-	size_t CharCount, LineLength, LineNum;
+	size_t CharCount, /*LineLength, */LineNum;
 	size_t LineCount = Footy2GetLines(FootyID);
 	size_t nsLine, nsPos, neLine, nePos;
 	size_t nsOffset, neOffset;
@@ -354,7 +355,7 @@ int Footy2SetSelB(int FootyID, size_t StartOffset, size_t EndOffset, bool bRefre
 
 //
 // 標準の検索を行う
-static void FindTextAsStandard(FRSTRING *dest, FRSTRING *pattern, bool down, bool matchcase, FINDRET *frReturn)
+static void FindTextAsStandard(FRSTRING * /*dest*/, FRSTRING *pattern, bool down, bool matchcase, FINDRET *frReturn)
 {
 #if 1
 	int nRet;
@@ -521,10 +522,10 @@ static void ReplaceEscSeq(char *nstr)
 	return;
 }
 
-BOOL PopFindFindText (HWND hwndEdit, int iSearchOffset, LPFINDREPLACE pfr)
+BOOL PopFindFindText (HWND /*hwndEdit*/, int iSearchOffset, LPFINDREPLACE pfr)
 	{
 	FRSTRING dest, pattern;
-	FINDRET frReturn;
+	FINDRET frReturn = { 0,0,0 };
     
 		// Read in the edit document
 

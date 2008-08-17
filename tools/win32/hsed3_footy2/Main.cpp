@@ -52,7 +52,7 @@ char szExeDir[_MAX_PATH];
 char szDllDir[_MAX_PATH];
 char szAppName[]  = "onipad" ;
 int	 winflg,winx,winy,posx,posy,flg_toolbar,flg_statbar;
-int  flag_xpstyle;
+//int  flag_xpstyle;
 HWND hWndMain;
 HWND hwndConfigDlg = NULL;
 
@@ -127,7 +127,7 @@ int getUnicodeOffset( char *text, int offset )
 
 	p = (unsigned char *)text;
 	res = offset;
-	while(1) {
+	for(;;) {
 		a1 = *p;
 		if ( a1 == 0 ) break;
 		if ( res == 0 ) break;
@@ -154,7 +154,7 @@ int getUnicodeOffset2( char *text, int offset )
 	p = (unsigned char *)text;
 	p2 = p + offset;
 	res = 0;
-	while(1) {
+	for(;;) {
 		if ( p>=p2 ) break;
 		a1 = *p++;
 		if ( a1 == 0 ) break;
@@ -176,69 +176,69 @@ struct DLLVERSIONINFO{
     DWORD dwPlatformID;
 };
 
-typedef HRESULT ( CALLBACK* ProcDllGetVersion)( DLLVERSIONINFO *pdvi );
-static int GetDllVersion( char *DllName )
-{
-HINSTANCE hInst;
-DLLVERSIONINFO dvi;
-ProcDllGetVersion DllGetVersion;
-HRESULT hRes;
-bool bRes;
-DWORD Major;   // メジャーバージョン
-DWORD Minor;   // マイナーバージョン
-DWORD Build;   // ビルド番号
+//typedef HRESULT ( CALLBACK* ProcDllGetVersion)( DLLVERSIONINFO *pdvi );
+//static int GetDllVersion( char *DllName )
+//{
+//HINSTANCE hInst;
+//DLLVERSIONINFO dvi;
+//ProcDllGetVersion DllGetVersion;
+//HRESULT hRes;
+//bool bRes;
+//DWORD Major = 0;   // メジャーバージョン
+//DWORD Minor;   // マイナーバージョン
+//DWORD Build;   // ビルド番号
+//
+//    hInst = LoadLibrary(DllName);
+//	bRes=false;
+//    if(hInst){
+//        DllGetVersion = (ProcDllGetVersion) GetProcAddress(hInst, "DllGetVersion" );
+//
+//        if(DllGetVersion){
+//            ZeroMemory(&dvi, sizeof(dvi));
+//            dvi.cbSize = sizeof(dvi);
+//			hRes = (*DllGetVersion)(&dvi);
+//            if(SUCCEEDED(hRes)){
+//                Major = dvi.dwMajorVersion;
+//                Minor = dvi.dwMinorVersion;
+//                Build = dvi.dwBuildNumber;
+//                bRes = true;
+//            }
+//		}
+//        FreeLibrary(hInst);
+//    }
+//	if (bRes) return Major;
+//	return -1;
+//}
 
-    hInst = LoadLibrary(DllName);
-	bRes=false;
-    if(hInst){
-        DllGetVersion = (ProcDllGetVersion) GetProcAddress(hInst, "DllGetVersion" );
 
-        if(DllGetVersion){
-            ZeroMemory(&dvi, sizeof(dvi));
-            dvi.cbSize = sizeof(dvi);
-			hRes = (*DllGetVersion)(&dvi);
-            if(SUCCEEDED(hRes)){
-                Major = dvi.dwMajorVersion;
-                Minor = dvi.dwMinorVersion;
-                Build = dvi.dwBuildNumber;
-                bRes = true;
-            }
-		}
-        FreeLibrary(hInst);
-    }
-	if (bRes) return Major;
-	return -1;
-}
-
-
-static int CheckXPEditBox( HINSTANCE hInstance )
-{
-	//		EditがXP仕様になっているかをチェックする
-	//
-	int result;
-	result = 0;
-	if ( GetDllVersion("ComCtl32.dll") > 5 ) { result = 1; }
-	
-/*	
-	//		これだとダメみたい
-	DWORD lP,wP;
-    HWND hWnd;
-	int result;
-	hWnd = CreateWindowA("EDIT","漢字",0,0,0,0,0,NULL,NULL,hInstance,0);
-    ShowWindow(hWnd,SW_HIDE);
-
-    SendMessageA(hWnd,EM_SETSEL,(WPARAM)0,(LPARAM)-1);
-    SendMessageA(hWnd,EM_GETSEL,(WPARAM)&wP,(LPARAM)&lP);
-    if ( (int)GetWindowTextLengthA(hWnd) > (int)(lP - wP) ){
-        result = 1;
-    }else{
-        result = 0;
-    }
-    PostMessage(hWnd,WM_CLOSE,0,0);
-    return result;
-*/
-    return result;
-}
+//static int CheckXPEditBox( HINSTANCE /*hInstance*/ )
+//{
+//	//		EditがXP仕様になっているかをチェックする
+//	//
+//	int result;
+//	result = 0;
+//	if ( GetDllVersion("ComCtl32.dll") > 5 ) { result = 1; }
+//	
+///*	
+//	//		これだとダメみたい
+//	DWORD lP,wP;
+//    HWND hWnd;
+//	int result;
+//	hWnd = CreateWindowA("EDIT","漢字",0,0,0,0,0,NULL,NULL,hInstance,0);
+//    ShowWindow(hWnd,SW_HIDE);
+//
+//    SendMessageA(hWnd,EM_SETSEL,(WPARAM)0,(LPARAM)-1);
+//    SendMessageA(hWnd,EM_GETSEL,(WPARAM)&wP,(LPARAM)&lP);
+//    if ( (int)GetWindowTextLengthA(hWnd) > (int)(lP - wP) ){
+//        result = 1;
+//    }else{
+//        result = 0;
+//    }
+//    PostMessage(hWnd,WM_CLOSE,0,0);
+//    return result;
+//*/
+//    return result;
+//}
 
 
 /*
@@ -283,7 +283,7 @@ static BOOL GetSpecialFolderPath( HWND hWnd, int nFolder, char *Path )
 }//GetSpecialFolder
 
 //-------------------------------------------------------------------
-int CALLBACK EnumWindowsProc(HWND hWnd, LPARAM lParam)
+int CALLBACK EnumWindowsProc(HWND hWnd, LPARAM /*lParam*/)
 {
 	COPYDATASTRUCT cds;
 	char *lpCmdLine;
@@ -341,7 +341,7 @@ int BuildEzInputMenu( HMENU menu, char *fname, char *dirname )
 	popmenu = CreatePopupMenu();
 	AppendMenu( menu, MF_POPUP, (UINT_PTR)popmenu, dirname );
 
-	while(1) {
+	for(;;) {
 		ff = fd.dwFileAttributes;
 		p = fd.cFileName; fl = 1;
 		if ( *p==0 ) fl=0;			// 空行を除外
@@ -394,8 +394,8 @@ int ExecEzInputMenu( int id )
 
 //-------------------------------------------------------------------
 
-int WINAPI WinMain (HINSTANCE hInstance, HINSTANCE hPrevInstance, 
-                    LPSTR lpszCmdLine, int cmdShow)       
+int WINAPI WinMain (HINSTANCE hInstance, HINSTANCE /*hPrevInstance*/, 
+                    LPSTR /*lpszCmdLine*/, int /*cmdShow*/)       
      {
 	 HWND        hwnd ;
      MSG         msg ;
@@ -469,7 +469,7 @@ int WINAPI WinMain (HINSTANCE hInstance, HINSTANCE hPrevInstance,
 
 	GetModuleFileName( NULL,szExeDir, _MAX_PATH );
 	a=(int)strlen(szExeDir)-1;
-	while(1) {
+	for(;;) {
 		a1=szExeDir[a];if (a1=='\\') break;
 		a--;
 	}
@@ -493,7 +493,7 @@ int WINAPI WinMain (HINSTANCE hInstance, HINSTANCE hPrevInstance,
 
 	//		XPのチェック
 
-	flag_xpstyle = CheckXPEditBox( hInstance );
+//	flag_xpstyle = CheckXPEditBox( hInstance );
 
 	//		Window設定
 
@@ -596,7 +596,7 @@ int WINAPI WinMain (HINSTANCE hInstance, HINSTANCE hPrevInstance,
 	Footy2End();
 #endif	/*FOOTYSTATIC*/
 	delete AhtMenuBuf;
-	return msg.wParam ;
+	return (int)msg.wParam ;
 }
 
 //-------------------------------------------------------------------
@@ -749,7 +749,7 @@ WndProc (HWND hwnd, UINT mMsg, WPARAM wParam, LPARAM lParam)
           case WM_NOTIFY :
                {
                LPNMHDR pnmh = (LPNMHDR) lParam ;
-               int idCtrl = (int) wParam ;
+//               int idCtrl = (int) wParam ;
 
                // Display notification details in notify window
                //DisplayNotificationDetails (wParam, lParam) ;

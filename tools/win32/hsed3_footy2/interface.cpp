@@ -108,7 +108,7 @@ static LRESULT InterfaceProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 					return (LRESULT)hwndTab;
 
 				case HGW_FOOTY:
-					return (LRESULT)Footy2GetWnd(lParam, 0);
+					return (LRESULT)Footy2GetWnd((int)lParam, 0);
 
 				case HGW_TOOLBAR:
 					return (LRESULT)hwndToolBar;
@@ -124,10 +124,10 @@ static LRESULT InterfaceProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 			return TabCtrl_GetItemCount(hwndTab);
 
 		case HSED_GETTABID:
-			return GetTabID(wParam);
+			return GetTabID((int)wParam);
 
 		case HSED_GETFOOTYID:
-			return GetFootyID(wParam);
+			return GetFootyID((int)wParam);
 
 		case HSED_GETACTTABID:
 			return activeID;
@@ -136,7 +136,7 @@ static LRESULT InterfaceProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 			return activeFootyID;
 
 		case HSED_CANCOPY:
-			nRet = Footy2GetSel(wParam, NULL, NULL, NULL, NULL);
+			nRet = Footy2GetSel((int)wParam, NULL, NULL, NULL, NULL);
 			return (nRet == FOOTY2ERR_NOTSELECTED) ? -1 : (nRet == FOOTY2ERR_NONE);
 
 		case HSED_CANPASTE:
@@ -144,18 +144,18 @@ static LRESULT InterfaceProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 
 		case HSED_CANUNDO:
 			nRet = 0;
-			Footy2GetMetrics(wParam, SM_UNDOREM, &nRet);
+			Footy2GetMetrics((int)wParam, SM_UNDOREM, &nRet);
 //			return (nRet == F_RET_OUTID) ? -1 : (nRet > 0);
 			return nRet;	// 2008-02-17 Shark++ 代替機能未実装
 
 		case HSED_CANREDO:
 			nRet = 0;
-			Footy2GetMetrics(wParam, SM_REDOREM, &nRet);
+			Footy2GetMetrics((int)wParam, SM_REDOREM, &nRet);
 //			return (nRet == F_RET_OUTID) ? -1 : (nRet > 0);
 			return nRet;	// 2008-02-17 Shark++ 代替機能未実装
 
 		case HSED_GETMODIFY:
-			return GetModify(wParam);
+			return GetModify((int)wParam);
 
 		case HSED_COPY:
 			return Footy2Copy(footy_defid);
@@ -301,7 +301,7 @@ static inline LRESULT GetModify(int nFootyID)
 // Footy IDを取得
 static inline LRESULT GetFootyID(int nTabID)
 {
-	int nFootyID;
+//	int nFootyID;
 	TABINFO *lpTabInfo;
 
 	lpTabInfo = GetTabInfo(nTabID);

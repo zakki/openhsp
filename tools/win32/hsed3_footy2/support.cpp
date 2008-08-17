@@ -188,7 +188,7 @@ const char *FileList::getlist()
 	char *pbuf, *pbuf2;
 
 	pbuf2 = buf2 = (char *)realloc(buf2, bufsize);
-	for(int i = 0; i < num(); i++){
+	for(int i = 0; i < (int)num(); i++){
 		pbuf = index[i];
 		while(*pbuf != '\0')
 			*pbuf2++ = *pbuf++;

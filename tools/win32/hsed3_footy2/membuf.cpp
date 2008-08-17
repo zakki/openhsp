@@ -146,7 +146,7 @@ void CMemBuf::Put( double data )
 void CMemBuf::PutStr( char *data )
 {
 	char *p;
-	p = PreparePtr( strlen(data) );
+	p = PreparePtr( (int)strlen(data) );
 	strcpy( p, data );
 }
 
@@ -154,7 +154,7 @@ void CMemBuf::PutStr( char *data )
 void CMemBuf::PutStrBlock( char *data )
 {
 	char *p;
-	p = PreparePtr( strlen(data)+1 );
+	p = PreparePtr( (int)strlen(data)+1 );
 	strcpy( p, data );
 }
 
@@ -307,7 +307,7 @@ int CMemBuf::SaveFile( char *fname )
 	int flen;
 	fp=fopen(fname,"wb");
 	if (fp==NULL) return -1;
-	flen = fwrite( mem_buf, 1, cur, fp );
+	flen = (int)fwrite( mem_buf, 1, cur, fp );
 	fclose(fp);
 	strcpy( name,fname );
 	return flen;

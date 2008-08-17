@@ -51,19 +51,19 @@ HWND InitStatusBar (HWND hwndParent)
      }
 
 //-------------------------------------------------------------------
-void static FlipStyleFlag (LPDWORD dwStyle, DWORD flag)
-     {
-     if (*dwStyle & flag)  // Flag on -- turn off
-          {
-          *dwStyle &= (~flag) ;
-          }
-     else                  // Flag off -- turn on
-          {
-          *dwStyle |= flag ;
-          }
-     }
+//void static FlipStyleFlag (LPDWORD dwStyle, DWORD flag)
+//     {
+//     if (*dwStyle & flag)  // Flag on -- turn off
+//          {
+//          *dwStyle &= (~flag) ;
+//          }
+//     else                  // Flag off -- turn on
+//          {
+//          *dwStyle |= flag ;
+//          }
+//     }
 //-------------------------------------------------------------------
-HWND RebuildStatusBar (HWND hwndParent, WORD wFlag)
+HWND RebuildStatusBar (HWND hwndParent, WORD /*wFlag*/)
      {
      HWND hwndSB ;
      RECT r ;
@@ -134,7 +134,7 @@ void Statusbar_mes( char *mes )
 
 //-------------------------------------------------------------------
 LRESULT 
-Statusbar_MenuSelect (HWND hwnd, WPARAM wParam, LPARAM lParam)
+Statusbar_MenuSelect (HWND /*hwnd*/, WPARAM wParam, LPARAM lParam)
      {
      UINT fuFlags = (UINT) HIWORD (wParam) ;
      HMENU hMainMenu = NULL ;

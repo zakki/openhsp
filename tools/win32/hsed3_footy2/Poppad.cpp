@@ -39,7 +39,7 @@
 /*
 		XP support routines
 */
-extern int  flag_xpstyle;
+//extern int  flag_xpstyle;
 int getUnicodeOffset( char *text, int offset );
 
 
@@ -433,17 +433,17 @@ static char *myfile( void )
 }
 
 
-static int fileexe( char *appname, char *fname )
-{
-	//		Execute application
-	//
-	if ( filechk(fname) ) return 1;
-	strcpy( execmd,appname );
-	strcat( execmd," " );
-	strcat( execmd,fname );
-	WinExec( execmd,SW_SHOW );
-	return 0;
-}
+//static int fileexe( char *appname, char *fname )
+//{
+//	//		Execute application
+//	//
+//	if ( filechk(fname) ) return 1;
+//	strcpy( execmd,appname );
+//	strcat( execmd," " );
+//	strcat( execmd,fname );
+//	WinExec( execmd,SW_SHOW );
+//	return 0;
+//}
 
 
 static int GetFileTitle2( char *bname, char *tname )
@@ -454,7 +454,7 @@ static int GetFileTitle2( char *bname, char *tname )
 	int a,b,len;
 	unsigned char a1;
 	b=-1;
-	len=strlen(bname);
+	len=(int)strlen(bname);
 	for(a=0;a<len;a++) {
 		a1=(unsigned char)bname[a];
 		if (a1=='\\' || a1=='/') b=a;
@@ -574,7 +574,7 @@ static void chklstr( char *laststr )
 	int a;
 	char a1;
 	a=0;
-	while(1) {
+	for(;;) {
 		a1=laststr[a];
 		if (a1==0) return;
 		if (a1=='.') break;
@@ -703,15 +703,15 @@ static int mkobjfile( char *fname )
 	char a1;
 	char tmpst[_MAX_PATH];
 	char srcfn[_MAX_PATH];
-	a=strlen(fname)-1;
-	while(1) {
+	a=(int)strlen(fname)-1;
+	for(;;) {
 		a1=fname[a];
 		if (a1==0x5c) { a++;break; }
 		a--;if (a==0) break;
 	}
 	strcpy(srcfn,&(fname[a]));
 	strcpy(tmpst,srcfn);
-	a=0;while(1) {
+	for(a=0;;) {
 		a1=tmpst[a];
 		if ((a1==0)||(a1=='.')) break;
 		a++;
@@ -789,7 +789,7 @@ void gethdir( void )
 		return;
 	}
 	b=0;ls=ss;
-	while(1) {
+	for(;;) {
 		a1=*ss++;hdir[b++]=a1;
 		if (a1==0) break;
 		if (a1=='\\') ls=ss;
@@ -806,9 +806,7 @@ static void getkw( void )
 // 2008-02-23 Shark++ 書き直そうとしたけど途中で元のコードを手直しすれば動くことに気が付く
 // 2008-02-25 Shark++ やっぱ書き換える
 	int line = 0, pos = 0, linesize, len;
-	int ofs,org,a,b;
 	wchar_t *linebuff = NULL, *p, *kwstart;
-	char a1;
 
 	// 動作メモ
 	//  キーワードには、
@@ -862,7 +860,7 @@ static void callhelp( void )
 	char mesb[512];
 
 	if (hsp_helpmode==0) {
-		a=strlen(kwstr);
+		a=(int)strlen(kwstr);
 
 		// 最初の6文字キー検索を廃止
 		//if (a>6) kwstr[6]=0;							// 始めの6文字
@@ -893,7 +891,7 @@ static void callhelp( void )
 #endif
 			return;
 		}
-		WinHelp( hwndEdit, helpopt, HELP_KEY, (DWORD)kwstr );
+		WinHelp( hwndEdit, helpopt, HELP_KEY, (ULONG_PTR)kwstr );
 		return;
 	}
 
@@ -1011,11 +1009,11 @@ short AskAboutSave (HWND hwnd, char *szTitleName)
           if (!SendMessage (hwnd, WM_COMMAND, IDM_SAVE, 0L))
                iReturn = IDCANCEL ;
 
-     return iReturn ;
+     return (short)iReturn ;
      }
 
 
-BOOL CALLBACK JumpDlgProc (HWND hDlg, UINT message, WPARAM wParam, LPARAM lParam)
+BOOL CALLBACK JumpDlgProc (HWND hDlg, UINT message, WPARAM wParam, LPARAM /*lParam*/)
      {
 	 char s1[10];
 
@@ -1025,7 +1023,7 @@ BOOL CALLBACK JumpDlgProc (HWND hDlg, UINT message, WPARAM wParam, LPARAM lParam
                return TRUE ;
 
           case WM_COMMAND:
-               switch (wParam)
+               switch (GET_WM_COMMAND_ID(wParam, lParam))
                     {
                     case IDOK:
 						 GetDlgItemText( hDlg,IDC_EDIT1,s1,8 );
@@ -1043,7 +1041,7 @@ BOOL CALLBACK JumpDlgProc (HWND hDlg, UINT message, WPARAM wParam, LPARAM lParam
      }
 
 
-BOOL CALLBACK OptDlgProc (HWND hDlg, UINT message, WPARAM wParam, LPARAM lParam)
+BOOL CALLBACK OptDlgProc (HWND hDlg, UINT message, WPARAM wParam, LPARAM /*lParam*/)
      {
      switch (message)
           {
@@ -1052,7 +1050,7 @@ BOOL CALLBACK OptDlgProc (HWND hDlg, UINT message, WPARAM wParam, LPARAM lParam)
 				return TRUE ;
 
           case WM_COMMAND:
-               switch (wParam)
+               switch (GET_WM_COMMAND_ID(wParam, lParam))
                     {
                     case IDOK:
 						 GetDlgItemText( hDlg,IDC_EDIT1,hsp_cmdopt,TMPSIZE );
@@ -1068,7 +1066,7 @@ BOOL CALLBACK OptDlgProc (HWND hDlg, UINT message, WPARAM wParam, LPARAM lParam)
      }
 
 
-BOOL CALLBACK FnameDlgProc (HWND hDlg, UINT message, WPARAM wParam, LPARAM lParam)
+BOOL CALLBACK FnameDlgProc (HWND hDlg, UINT message, WPARAM wParam, LPARAM /*lParam*/)
      {
 	 int flg;
      switch (message)
@@ -1085,7 +1083,7 @@ BOOL CALLBACK FnameDlgProc (HWND hDlg, UINT message, WPARAM wParam, LPARAM lPara
 				return TRUE ;
 
           case WM_COMMAND:
-               switch (wParam)
+               switch (GET_WM_COMMAND_ID(wParam, lParam))
                     {
                     case IDOK:
 						 GetDlgItemText( hDlg,IDC_EDIT1,hsp_laststr,TMPSIZE );
@@ -1111,7 +1109,7 @@ BOOL CALLBACK FnameDlgProc (HWND hDlg, UINT message, WPARAM wParam, LPARAM lPara
      }
 
 
-BOOL CALLBACK ExtcmpDlgProc (HWND hDlg, UINT message, WPARAM wParam, LPARAM lParam)
+BOOL CALLBACK ExtcmpDlgProc (HWND hDlg, UINT message, WPARAM wParam, LPARAM /*lParam*/)
      {
      switch (message)
           {
@@ -1121,7 +1119,7 @@ BOOL CALLBACK ExtcmpDlgProc (HWND hDlg, UINT message, WPARAM wParam, LPARAM lPar
 				return TRUE ;
 
           case WM_COMMAND:
-               switch (wParam)
+               switch (GET_WM_COMMAND_ID(wParam, lParam))
                     {
                     case IDOK:
 						 GetDlgItemText( hDlg,IDC_EDIT1,hsp_extstr,TMPSIZE );
@@ -1151,7 +1149,7 @@ int CheckRadio( HWND hDlg, int idc, int num )
 	return i;
 }
 
-BOOL CALLBACK ErrDlgProc (HWND hDlg, UINT message, WPARAM wParam, LPARAM lParam)
+BOOL CALLBACK ErrDlgProc (HWND hDlg, UINT message, WPARAM wParam, LPARAM /*lParam*/)
      {
      switch (message)
           {
@@ -1162,7 +1160,7 @@ BOOL CALLBACK ErrDlgProc (HWND hDlg, UINT message, WPARAM wParam, LPARAM lParam)
 				return TRUE ;
 
           case WM_COMMAND:
-               switch (wParam)
+               switch (GET_WM_COMMAND_ID(wParam, lParam))
                     {
                     case IDOK:
 					case IDCANCEL:
@@ -1180,13 +1178,12 @@ BOOL CALLBACK ErrDlgProc (HWND hDlg, UINT message, WPARAM wParam, LPARAM lParam)
 	2006/09/06 コメントが存在するときとEOF付近のときのラベルが無視される不具合を修正(LonelyWolf)
 */
 
-static void set_labellist( HWND hList, HWND hwndEdit )
+static void set_labellist( HWND hList, HWND /*hwndEdit*/ )
 {
 	char st[128];
 	char lname[256];
 	char *buffer;
 	char *wp;
-	char a1;
 	int len;
 	int line;
 	int tag;
@@ -1242,11 +1239,10 @@ static void set_labellist( HWND hList, HWND hwndEdit )
 					lname[namelen] = '\0';
 					//
 					for(int i = 0; i < sizeof(func_define_pp)/sizeof(func_define_pp[0]); i++) {
-						int comp_len = min(strlen(func_define_pp[i]), namelen);
+						int comp_len = min((int)strlen(func_define_pp[i]), namelen);
 						if( !strncmp(lname, func_define_pp[i], comp_len) ) {
 							char *pa, *pb;
 							pb = lname + comp_len;
-							int n = sizeof(bool);
 							do {
 								pa = pb;
 								for(; '\t' == *pa || ' ' == *pa; pa++, pb++);	// '#'の直後の空白をスキップ
@@ -1679,7 +1675,7 @@ LRESULT CALLBACK MyEditProc( HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam )
 			Footy2SetSelTextW(activeFootyID, szInsBuf);
 			return 0;
 		} else {
-			chPrevByte = wParam;
+			chPrevByte = (char)wParam;
 		}
  	// 2008-03-17 Shark++ 要動作確認
 		break;
@@ -1717,7 +1713,7 @@ LRESULT CALLBACK MyTabProc( HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam )
 int poppad_menupop( WPARAM wParam, LPARAM lParam )
 {
 	int				 iSelBeg, iSelEnd, iEnable, iResult;
-	int				 iSelLBeg, iSelLEnd, iLength;
+	int				 iSelLBeg, iSelLEnd/*, iLength*/;
 	int				 iNum;
 	MENUITEMINFO	 mii;
 	HIMC			 hIMC;
@@ -2755,14 +2751,14 @@ BOOL CALLBACK AboutDlgProc (HWND hDlg, UINT iMsg, WPARAM wParam, LPARAM lParam)
 			if(GetDlgItem(hDlg, IDC_STATICLINK) == (HWND)lParam){
 				SetTextColor((HDC)wParam, crStaticFont);
 				SetBkMode((HDC)wParam, TRANSPARENT);
-				return (BOOL)(HBRUSH)GetStockObject(NULL_BRUSH);
+				return (BOOL)/*(HBRUSH)*/GetStockObject(NULL_BRUSH);
 			}
 			break;
 	}
     return FALSE ;
 }
 
-BOOL CALLBACK LogcompDlgProc (HWND hDlg, UINT message, WPARAM wParam, LPARAM lParam)
+BOOL CALLBACK LogcompDlgProc (HWND hDlg, UINT message, WPARAM wParam, LPARAM /*lParam*/)
      {
      switch (message)
           {
@@ -2775,7 +2771,7 @@ BOOL CALLBACK LogcompDlgProc (HWND hDlg, UINT message, WPARAM wParam, LPARAM lPa
 				return TRUE ;
 
           case WM_COMMAND:
-               switch (wParam)
+               switch (GET_WM_COMMAND_ID(wParam, lParam))
                     {
                     case IDOK:
 						hsp_logmode = 0;
@@ -3003,7 +2999,7 @@ BOOL CALLBACK ConfigDlgProc (HWND hDlg, UINT message, WPARAM wParam, LPARAM lPar
 	return FALSE;
 }
 
-BOOL CALLBACK ConfigBehaviorPageProc (HWND hDlg, UINT message, WPARAM wParam, LPARAM lParam)
+BOOL CALLBACK ConfigBehaviorPageProc (HWND hDlg, UINT message, WPARAM /*wParam*/, LPARAM /*lParam*/)
 {
 	switch(message){
 		case WM_INITDIALOG:
@@ -3018,9 +3014,9 @@ BOOL CALLBACK ConfigBehaviorPageProc (HWND hDlg, UINT message, WPARAM wParam, LP
 			return TRUE;
 
 		case PM_APPLY:
-			bUseIni = (bool)IsDlgButtonChecked(hDlg, IDC_RADIO2);
-			bAutoIndent = (bool)IsDlgButtonChecked(hDlg, IDC_CHECK1);
-			hsp_helpmode=CheckRadio(hDlg, IDC_RADIO3, 4);
+			bUseIni     = BST_CHECKED == IsDlgButtonChecked(hDlg, IDC_RADIO2);
+			bAutoIndent = BST_CHECKED == IsDlgButtonChecked(hDlg, IDC_CHECK1);
+			hsp_helpmode= CheckRadio(hDlg, IDC_RADIO3, 4);
 			return TRUE;
 
 		case PM_SETDEFAULT:
@@ -3035,7 +3031,7 @@ BOOL CALLBACK ConfigBehaviorPageProc (HWND hDlg, UINT message, WPARAM wParam, LP
 	}
 	return FALSE;
 }
-BOOL CALLBACK ConfigAddinPageProc (HWND hDlg, UINT message, WPARAM wParam, LPARAM lParam)
+BOOL CALLBACK ConfigAddinPageProc (HWND hDlg, UINT message, WPARAM /*wParam*/, LPARAM /*lParam*/)
 {
 	switch(message){
 		case PM_ISAPPLICABLE:
@@ -3213,7 +3209,7 @@ BOOL CALLBACK ConfigColorPageProc (HWND hDlg, UINT message, WPARAM wParam, LPARA
 	}
 	return FALSE;
 }
-BOOL CALLBACK ConfigDirectoryPageProc (HWND hDlg, UINT message, WPARAM wParam, LPARAM lParam)
+BOOL CALLBACK ConfigDirectoryPageProc (HWND hDlg, UINT message, WPARAM wParam, LPARAM /*lParam*/)
 {
 	switch(message){
 		case WM_INITDIALOG:
@@ -3230,7 +3226,7 @@ BOOL CALLBACK ConfigDirectoryPageProc (HWND hDlg, UINT message, WPARAM wParam, L
 		}
 
 		case WM_COMMAND:
-			switch(LOWORD(wParam)){
+			switch(GET_WM_COMMAND_ID(wParam, lParam)){
 				case IDC_BUTTON1:
 					if(selfolder(hdir) == 0)
 						SetDlgItemText(hDlg, IDC_EDIT1, hdir);
@@ -3374,10 +3370,10 @@ static BOOL CALLBACK SelectExtToolProc(HWND hDlg, UINT message, WPARAM wParam, L
 					GetDlgItemText(hDlg, IDC_EDIT2, lpExtToolInfo->FileName, SIZE_OF_FILENAME);
 					GetDlgItemText(hDlg, IDC_EDIT3, lpExtToolInfo->CmdLine,  SIZE_OF_CMDLINE);
 					GetDlgItemText(hDlg, IDC_EDIT4, lpExtToolInfo->WorkDir,  SIZE_OF_WORKDIR);
-					lpExtToolInfo->ShowOnMainMenu    = IsDlgButtonChecked(hDlg, IDC_CHECK1);
-					lpExtToolInfo->ShowOnPopupMenu   = IsDlgButtonChecked(hDlg, IDC_CHECK2);
-					lpExtToolInfo->ExecOnStartup     = IsDlgButtonChecked(hDlg, IDC_CHECK3);
-					lpExtToolInfo->ExecWithOverwrite = IsDlgButtonChecked(hDlg, IDC_CHECK4);
+					lpExtToolInfo->ShowOnMainMenu    = BST_CHECKED == IsDlgButtonChecked(hDlg, IDC_CHECK1);
+					lpExtToolInfo->ShowOnPopupMenu   = BST_CHECKED == IsDlgButtonChecked(hDlg, IDC_CHECK2);
+					lpExtToolInfo->ExecOnStartup     = BST_CHECKED == IsDlgButtonChecked(hDlg, IDC_CHECK3);
+					lpExtToolInfo->ExecWithOverwrite = BST_CHECKED == IsDlgButtonChecked(hDlg, IDC_CHECK4);
 
 				case IDCANCEL:
 					EndDialog(hDlg, LOWORD(wParam));
@@ -3679,7 +3675,7 @@ static void GetExStyleStr(char *buf, LOGFONT *logfont)
 	if(lstrlen(buf) == 0) lstrcpy(buf, "無し");
 	return;
 }
-BOOL CALLBACK ConfigFontPageProc (HWND hDlg, UINT message, WPARAM wParam, LPARAM lParam)
+BOOL CALLBACK ConfigFontPageProc (HWND hDlg, UINT message, WPARAM wParam, LPARAM /*lParam*/)
 {
 	static HFONT hEditFont, hTabFont, hOrgEditFont, hOrgTabFont;
 	switch(message){
@@ -3715,7 +3711,7 @@ BOOL CALLBACK ConfigFontPageProc (HWND hDlg, UINT message, WPARAM wParam, LPARAM
 			return TRUE;
 
 		case WM_COMMAND:
-			switch(LOWORD(wParam)){
+			switch(GET_WM_COMMAND_ID(wParam, lParam)){
 				case IDC_BUTTON1:
 				{
 					LOGFONT *logfont;
@@ -3837,7 +3833,7 @@ BOOL CALLBACK SelectSourceProc(HWND hDlg, UINT message, WPARAM wParam, LPARAM lP
 	return FALSE;
 }
 
-BOOL CALLBACK ConfigKeywordPageProc (HWND hDlg, UINT message, WPARAM wParam, LPARAM lParam)
+BOOL CALLBACK ConfigKeywordPageProc (HWND hDlg, UINT message, WPARAM wParam, LPARAM /*lParam*/)
 {
 	switch(message){
 		case WM_INITDIALOG:
@@ -3846,8 +3842,8 @@ BOOL CALLBACK ConfigKeywordPageProc (HWND hDlg, UINT message, WPARAM wParam, LPA
 			const char *szFileName;
 
 			for(size_t i = 0; i < filelist.num(); i++){
-				szFileName = filelist.get(i);
-				if(SendMessage(hListBox, LB_FINDSTRINGEXACT, -1, (LPARAM)szFileName) == LB_ERR)
+				szFileName = filelist.get((int)i);
+				if(SendMessage(hListBox, LB_FINDSTRINGEXACT, (WPARAM)-1, (LPARAM)szFileName) == LB_ERR)
 					SendMessage(hListBox, LB_ADDSTRING, 0, (LPARAM)szFileName);
 			}
 			
@@ -3855,7 +3851,7 @@ BOOL CALLBACK ConfigKeywordPageProc (HWND hDlg, UINT message, WPARAM wParam, LPA
 		}
 
 		case WM_COMMAND:
-			switch(LOWORD(wParam)){
+			switch(GET_WM_COMMAND_ID(wParam, lParam)){
 				case IDC_BUTTON1:
 				{
 					char szFileName[_MAX_PATH + 1] = "";
@@ -3864,7 +3860,7 @@ BOOL CALLBACK ConfigKeywordPageProc (HWND hDlg, UINT message, WPARAM wParam, LPA
 
 					if(DialogBoxParam(hInst, "SELSRC", hDlg, SelectSourceProc, (LPARAM)szFileName) == IDOK
 						&& szFileName[0] != '\0'){
-							nFoundSel = (int)SendMessage(hListBox, LB_FINDSTRINGEXACT, -1, (LPARAM)szFileName);
+							nFoundSel = (int)SendMessage(hListBox, LB_FINDSTRINGEXACT, (WPARAM)-1, (LPARAM)szFileName);
 							if(nFoundSel == LB_ERR)
 								SendMessage(hListBox, LB_SETCURSEL, SendMessage(hListBox, LB_ADDSTRING, 0,
 									(LPARAM)szFileName), 0L);
@@ -3886,7 +3882,7 @@ BOOL CALLBACK ConfigKeywordPageProc (HWND hDlg, UINT message, WPARAM wParam, LPA
 						if(DialogBoxParam(hInst, "SELSRC", hDlg, SelectSourceProc, (LPARAM)szFileName) == IDOK
 							&& szFileName[0] != '\0'){
 								SendMessage(hListBox, LB_DELETESTRING, nCurSel, 0L);
-								nFoundSel = (int)SendMessage(hListBox, LB_FINDSTRINGEXACT, -1, (LPARAM)szFileName);
+								nFoundSel = (int)SendMessage(hListBox, LB_FINDSTRINGEXACT, (WPARAM)-1, (LPARAM)szFileName);
 								if(nFoundSel == LB_ERR){
 									SendMessage(hListBox, LB_INSERTSTRING, nCurSel, (LPARAM)szFileName);
 									SendMessage(hListBox, LB_SETCURSEL, nCurSel, 0L); 
@@ -3942,7 +3938,7 @@ BOOL CALLBACK ConfigKeywordPageProc (HWND hDlg, UINT message, WPARAM wParam, LPA
 	return FALSE;
 }
 
-BOOL CALLBACK ConfigVisualPageProc (HWND hDlg, UINT message, WPARAM wParam, LPARAM lParam)
+BOOL CALLBACK ConfigVisualPageProc (HWND hDlg, UINT message, WPARAM /*wParam*/, LPARAM /*lParam*/)
 {
 	switch(message){
 		case WM_INITDIALOG:
@@ -4011,7 +4007,6 @@ void LoadFromCommandLine(char *lpCmdLine)
 {
 	TABINFO *lpTabInfo;
 	int SearchResult, ActivateID;
-	BOOL bFileLoad = FALSE;
 	bool bActivate = false, bCreated;
 	char szOldDir[_MAX_PATH + 1];
 
@@ -4054,7 +4049,7 @@ void LoadFromCommandLine(char *lpCmdLine)
 	return;
 }
 
-LRESULT FileDrop(WPARAM wParam, LPARAM lParam)
+LRESULT FileDrop(WPARAM wParam, LPARAM /*lParam*/)
 {
 	char tmpfn[_MAX_PATH];
 	HDROP hDrop = (HDROP)wParam;
@@ -4096,7 +4091,7 @@ LRESULT FileDrop(WPARAM wParam, LPARAM lParam)
 	return 0;						// breakだとWin9xで止まる
 }
 
-void __stdcall OnFooty2TextModified(int id, void *pParam, int nCause)
+void __stdcall OnFooty2TextModified(int id, void * /*pParam*/, int /*nCause*/)
 {
 	int nTabID = GetTabID(id);
 
