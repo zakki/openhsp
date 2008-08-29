@@ -2457,7 +2457,7 @@ int CToken::PP_Module( void )
 	//
 	int rval,res,i,id,fl;
 	char *word;
-	char tagname[256];
+	char tagname[MODNAME_MAX+1];
 	char tmp[0x4000];
 
 	rval = -1;
@@ -2470,7 +2470,7 @@ int CToken::PP_Module( void )
 	if ( CheckModuleName( word ) ) {
 		SetError("bad module name"); return 7;
 	}
-	strcpy( tagname, word );
+	sprintf( tagname, "%.*s", MODNAME_MAX, word );
 	res = lb->Search( tagname );if ( res != -1 ) {
 		sprintf( tmp,"symbol in use [%s]", tagname );
 		SetError( tmp ); return 5;
@@ -3392,9 +3392,7 @@ void CToken::SetModuleName( char *name )
 	if ( *name==0 ) {
 		modname[0] = 0; return;
 	}
-	modname[0] = '@';
-	modname[1] = 0;
-	strncpy( modname+1, name, MODNAME_MAX );
+	sprintf( modname, "@%.*s", MODNAME_MAX, name );
 	strcase( modname+1 );
 }
 
