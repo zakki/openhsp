@@ -35,10 +35,12 @@
 #define PRM_FLAG_CTYPE 0x1000
 
 
-typedef struct LABREL {
-	void	*link;				// link to next (NULL=end)
+typedef struct LABREL LABREL;
+
+struct LABREL {
+	LABREL	*link;				// link to next (NULL=end)
 	int		rel_id;				// related id
-} LABREL;
+};
 
 typedef struct LABOBJ {
 	int		flag;				// exist flag

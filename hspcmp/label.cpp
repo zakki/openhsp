@@ -687,7 +687,7 @@ int CLabel::GetReference( int id )
 		while(1) {
 			total += GetReference( rel->rel_id );
 			if ( rel->link == NULL ) break;
-			rel = (LABREL *)rel->link;
+			rel = rel->link;
 		}
 	}
 	return total;
@@ -706,7 +706,7 @@ int CLabel::SearchRelation( int id, int rel_id )
 	while(1) {
 		if ( tmp->link == NULL ) break;
 		if ( tmp->rel_id == rel_id ) return 1;
-		tmp = (LABREL *)tmp->link;
+		tmp = tmp->link;
 	}
 	return 0;
 }
@@ -733,7 +733,7 @@ void CLabel::AddRelation( int id, int rel_id )
 	tmp = lab->rel;
 	while(1) {
 		if ( tmp->link == NULL ) break;
-		tmp = (LABREL *)tmp->link;
+		tmp = tmp->link;
 	}
 	tmp->link = rel;
 }
