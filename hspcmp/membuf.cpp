@@ -6,6 +6,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <stdarg.h>
 #include "membuf.h"
 
 //-------------------------------------------------------------
@@ -214,6 +215,38 @@ void CMemBuf::PutData( void *data, int sz )
 	char *p;
 	p = PreparePtr( sz );
 	memcpy( p, (char *)data, sz );
+}
+
+
+#if ( WIN32 || _WIN32 ) && ! __CYGWIN__
+# define VSNPRINTF _vsnprintf
+#else
+# define VSNPRINTF vsnprintf
+#endif
+
+void CMemBuf::PutStrf( char *format, ... )
+{
+	va_list args;
+	int c = cur;
+	int space = size - cur;
+	while(1) {
+		char *p = PreparePtr(space - 1);
+		cur = c;
+		space = size - cur;
+		int n;
+		va_start(args, format);
+		n = VSNPRINTF(p, space, format, args);
+		va_end(args);
+		if ( 0 <= n && n < space ) {
+			cur += n;
+			return;
+		}
+		if ( 0 <= n ) {
+			space = n + 1;
+		} else {
+			space *= 2;
+		}
+	}
 }
 
 

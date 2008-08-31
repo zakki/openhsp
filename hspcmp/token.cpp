@@ -2062,7 +2062,6 @@ int CToken::PP_Defcfunc( int mode )
 	int i,id;
 	char *word;
 	char *mod;
-	char tmp[512];
 	char fixname[128];
 	int glmode, premode;
 
@@ -2096,11 +2095,9 @@ int CToken::PP_Defcfunc( int mode )
 	if ( glmode ) AddModuleName( fixname );
 
 	if ( premode == LAB_TYPE_PP_PREMODFUNC ) {
-		sprintf( tmp,"#defcfunc prep %s ",fixname );
-		wrtbuf->PutStr( tmp );
+		wrtbuf->PutStrf( "#defcfunc prep %s ",fixname );
 	} else {
-		sprintf( tmp,"#defcfunc %s ",fixname );
-		wrtbuf->PutStr( tmp );
+		wrtbuf->PutStrf( "#defcfunc %s ",fixname );
 	}
 
 	if ( id == -1 ) {
@@ -2173,7 +2170,6 @@ int CToken::PP_Deffunc( int mode )
 	int i,id;
 	char *word;
 	char *mod;
-	char tmp[512];
 	char fixname[128];
 	int glmode, premode;
 
@@ -2208,11 +2204,9 @@ int CToken::PP_Deffunc( int mode )
 		if ( glmode ) AddModuleName( fixname );
 
 		if ( premode == LAB_TYPE_PP_PREMODFUNC ) {
-			sprintf( tmp,"#deffunc prep %s ",fixname );
-			wrtbuf->PutStr( tmp );
+			wrtbuf->PutStrf( "#deffunc prep %s ",fixname );
 		} else {
-			sprintf( tmp,"#deffunc %s ",fixname );
-			wrtbuf->PutStr( tmp );
+			wrtbuf->PutStrf( "#deffunc %s ",fixname );
 		}
 
 		if ( id == -1 ) {
@@ -2315,8 +2309,7 @@ int CToken::PP_Struct( void )
 	id = lb->Regist( tagname, LAB_TYPE_PPDLLFUNC, 0 );
 	if ( glmode ) lb->SetEternal( id );
 
-	sprintf( strtmp,"#struct %s ",tagname );
-	wrtbuf->PutStr( strtmp );
+	wrtbuf->PutStrf( "#struct %s ",tagname );
 
 	while(1) {
 
@@ -2360,7 +2353,6 @@ int CToken::PP_Func( char *name )
 	int i, id;
 	int glmode;
 	char *word;
-	char tmp[512];
 	word = (char *)s3;
 	i = GetToken();
 	if ( i != TK_OBJ ) { SetError("invalid func name"); return 8; }
@@ -2380,8 +2372,7 @@ int CToken::PP_Func( char *name )
 	id = lb->Regist( word, LAB_TYPE_PPDLLFUNC, 0 );
 	if ( glmode ) lb->SetEternal( id );
 	//
-	sprintf( tmp,"#%s %s%s",name, word, (char *)wp );
-	wrtbuf->PutStr( tmp );
+	wrtbuf->PutStrf( "#%s %s%s",name, word, (char *)wp );
 	wrtbuf->PutCR();
 	//
 	return -1;
@@ -2394,7 +2385,6 @@ int CToken::PP_Cmd( char *name )
 	//
 	int i, id;
 	char *word;
-	char tmp[512];
 	word = (char *)s3;
 	i = GetToken();
 	if ( i != TK_OBJ ) { SetError("invalid func name"); return 8; }
@@ -2409,8 +2399,7 @@ int CToken::PP_Cmd( char *name )
 	//id = lb->Regist( word, LAB_TYPE_PPDLLFUNC, 0 );
 	//lb->SetEternal( id );
 	//
-	sprintf( tmp,"#%s %s%s",name, word, (char *)wp );
-	wrtbuf->PutStr( tmp );
+	wrtbuf->PutStrf( "#%s %s%s",name, word, (char *)wp );
 	wrtbuf->PutCR();
 	//
 	return -1;
@@ -2424,7 +2413,6 @@ int CToken::PP_Usecom( void )
 	int i, id;
 	int glmode;
 	char *word;
-	char tmp[512];
 	word = (char *)s3;
 	i = GetToken();
 	if ( i != TK_OBJ ) { SetError("invalid COM symbol name"); return 8; }
@@ -2443,8 +2431,7 @@ int CToken::PP_Usecom( void )
 	id = lb->Regist( word, LAB_TYPE_COMVAR, 0 );
 	if ( glmode ) lb->SetEternal( id );
 	//
-	sprintf( tmp,"#usecom %s%s",word, (char *)wp );
-	wrtbuf->PutStr( tmp );
+	wrtbuf->PutStrf( "#usecom %s%s",word, (char *)wp );
 	wrtbuf->PutCR();
 	//
 	return -1;
@@ -2479,16 +2466,13 @@ int CToken::PP_Module( void )
 	lb->SetEternal( id );
 	SetModuleName( tagname );
 
-	sprintf( tmp,"#module %s",tagname );
-	wrtbuf->PutStr( tmp );
+	wrtbuf->PutStrf( "#module %s",tagname );
 	wrtbuf->PutCR();
-	sprintf( tmp,"goto@hsp *_%s_exit",tagname );
-	wrtbuf->PutStr( tmp );
+	wrtbuf->PutStrf( "goto@hsp *_%s_exit",tagname );
 	wrtbuf->PutCR();
 
 	if ( wp != NULL ) {
-	  sprintf( tmp,"#struct %s ",tagname );
-	  wrtbuf->PutStr( tmp );
+	  wrtbuf->PutStrf( "#struct %s ",tagname );
 	  while(1) {
 
 		i = GetToken();
@@ -2521,13 +2505,11 @@ int CToken::PP_Global( void )
 {
 	//		#global解析
 	//
-	char tmp[512];
 	if ( IsGlobalMode() ) { SetError("already in global mode"); return 8; }
 	//
 	wrtbuf->PutStr( "#global" );
 	wrtbuf->PutCR();
-	sprintf( tmp,"*_%s_exit",GetModuleName() );
-	wrtbuf->PutStr( tmp );
+	wrtbuf->PutStrf( "*_%s_exit",GetModuleName() );
 	wrtbuf->PutCR();
 	SetModuleName( "" );
 	return 0x1001;
@@ -3160,14 +3142,12 @@ int CToken::ExpandLine( CMemBuf *buf, CMemBuf *src )
 				sprintf( mestmp,"\"%s\"",src->GetFileName() );
 				RegistExtMacroPath( "__file__", mestmp );			// ファイル名マクロを更新
 
-				sprintf( mestmp,"##%d \"%s\"\r\n", pline-1, src->GetFileName() );
 				wrtbuf = buf;
-				wrtbuf->PutStr( mestmp ); res = 0;
+				wrtbuf->PutStrf( "##%d \"%s\"\r\n", pline-1, src->GetFileName() ); res = 0;
 				continue;
 			}
 			if ( res==0x1001 ) {			// プリプロセスで行が増えた後の処理
-				sprintf( mestmp,"##%d\r\n", pline );
-				wrtbuf->PutStr( mestmp ); res = 0;
+				wrtbuf->PutStrf( "##%d\r\n", pline ); res = 0;
 				pline++;
 				continue;
 			}
@@ -3181,8 +3161,7 @@ int CToken::ExpandLine( CMemBuf *buf, CMemBuf *src )
 		//		マクロ展開後に行数が変わった場合の処理
 		pline += 1+mline;
 		if ( lineext != mline ) {
-			sprintf( mestmp,"##%d\r\n", pline );
-			wrtbuf->PutStr( mestmp );
+			wrtbuf->PutStrf( "##%d\r\n", pline );
 		}
 	}
 	return 0;
@@ -3228,8 +3207,7 @@ int CToken::ExpandFile( CMemBuf *buf, char *fname, char *refname )
 	sprintf( mm,"\"%s\"",refname );
 	RegistExtMacroPath( "__file__", mm );			// ファイル名マクロを更新
 
-	sprintf( mm,"##0 \"%s\"\r\n",refname );
-	buf->PutStr( mm );
+	buf->PutStrf( "##0 \"%s\"\r\n",refname );
 
 	res = ExpandLine( buf, &fbuf );
 
