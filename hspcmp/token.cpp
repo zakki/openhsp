@@ -2686,7 +2686,8 @@ int CToken::PP_RuntimeOpt( void )
 	if ( i != TK_STRING ) {
 		SetError("illegal runtime name"); return 1;
 	}
-	strncpy( hed_runtime, (char *)s3, 128 );
+	strncpy( hed_runtime, (char *)s3, sizeof hed_runtime );
+	hed_runtime[sizeof hed_runtime - 1] = '\0';
 
 	if ( packbuf!=NULL ) {
 		sprintf( tmp, ";!runtime=%s.hrt", hed_runtime );
