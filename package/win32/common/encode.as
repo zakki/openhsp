@@ -35,7 +35,7 @@
 	src		= _src
 	sdim dest
 	MuLang_ConvertString ml, pdwMode, srcCodepage, destCodepage, src, srcSize, dest, destSize
-	sdim dest, destSize
+	sdim dest, destSize + 1
 	MuLang_ConvertString ml, pdwMode, srcCodepage, destCodepage, src, srcSize, dest, destSize
 	return destSize
 
