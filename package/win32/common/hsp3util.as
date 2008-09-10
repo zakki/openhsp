@@ -6,8 +6,8 @@
 
 #module "hsp3util"
 
-#define WS_VISIBLE 0x10000000 
-#define WS_CHILD 0x40000000 
+#define WS_VISIBLE 0x10000000
+#define WS_CHILD 0x40000000
 
 #define PBM_SETSTEP	1028
 #define PBM_STEPIT	1029
@@ -267,7 +267,7 @@
 
 ;--------------------------------------------------------------------------------
 
-#deffunc note2array array _p1, str _p2, local mestmp
+#deffunc note2array array _p1, str _p2;, local mestmp
 
 	;
 	;	•¡”s‚Ì•¶š—ñ‚ğs‚²‚Æ‚É”z—ñ•Ï”‚É‘ã“ü‚·‚é
