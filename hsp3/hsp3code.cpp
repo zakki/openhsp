@@ -1541,15 +1541,13 @@ static int cmdfunc_var( int cmd )
 	dst = HspVarCorePtrAPTR( pval, aptr );
 	ptr = mpval->pt;
 	if ( exp == CALCCODE_EQ ) {							// '='‚É‚æ‚é‘ã“ü
-		if ( pval->flag != mpval->flag ) {
-
-			if ( pval->support & HSPVAR_SUPPORT_NOCONVERT ) {	// Œ^•ÏŠ·‚È‚µ‚Ìê‡
-				if ( arrayobj_flag ) {
-					proc->ObjectWrite( pval, ptr, mpval->flag );
-					return RUNMODE_RUN;
-				}
+		if ( pval->support & HSPVAR_SUPPORT_NOCONVERT ) {	// Œ^•ÏŠ·‚È‚µ‚Ìê‡
+			if ( arrayobj_flag ) {
+				proc->ObjectWrite( pval, ptr, mpval->flag );
+				return RUNMODE_RUN;
 			}
-
+		}
+		if ( pval->flag != mpval->flag ) {
 			if ( aptr != 0 ) throw HSPERR_INVALID_ARRAYSTORE;	// Œ^•ÏX‚Ìê‡‚Í”z—ñ—v‘f0‚Ì‚Ý
 			HspVarCoreClear( pval, mpval->flag );		// Å¬ƒTƒCƒY‚Ìƒƒ‚ƒŠ‚ðŠm•Û
 			proc = HspVarCoreGetProc( pval->flag );
