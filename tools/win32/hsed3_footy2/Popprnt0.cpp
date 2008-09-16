@@ -54,7 +54,6 @@ BOOL PopPrntPrintFile (HINSTANCE hInst, HWND hwnd, HWND /*hwndEdit*/,
      static DOCINFO  di = { sizeof (DOCINFO), "", NULL } ;
      static PRINTDLG pd ;
      BOOL            bSuccess ;
-     LPCTSTR         pstrBuffer ;
      int             yChar, iCharsPerLine, iLinesPerPage, iTotalLines,
                      iTotalPages, iPage, iLine, iLineNum ;
      TEXTMETRIC      tm ;
@@ -96,9 +95,6 @@ BOOL PopPrntPrintFile (HINSTANCE hInst, HWND hwnd, HWND /*hwndEdit*/,
      iLinesPerPage = GetDeviceCaps (pd.hDC, VERTRES) / yChar ;
      iTotalPages   = (iTotalLines + iLinesPerPage - 1) / iLinesPerPage ;
 
-     pstrBuffer = (LPCTSTR) HeapAlloc (GetProcessHeap (), 
-		                               HEAP_NO_SERIALIZE, iCharsPerLine + 1) ;
-
      EnableWindow (hwnd, FALSE) ;
 
      bSuccess   = TRUE ;
@@ -109,7 +105,6 @@ BOOL PopPrntPrintFile (HINSTANCE hInst, HWND hwnd, HWND /*hwndEdit*/,
 
      SetAbortProc (pd.hDC, (ABORTPROC)AbortProc) ;
 
-//     GetWindowText (hwnd, (PTSTR) di.lpszDocName, sizeof (PTSTR)) ;
 	 di.lpszDocName = szTitleName;
 
      if (StartDoc (pd.hDC, &di) > 0)
@@ -135,10 +130,8 @@ BOOL PopPrntPrintFile (HINSTANCE hInst, HWND hwnd, HWND /*hwndEdit*/,
                               {
                               iLineNum = iLinesPerPage * iPage + iLine ;
 
-                              if (iLineNum > iTotalLines)
+                              if (iLineNum >= iTotalLines)
                                    break ;
-
-                              *(int *) pstrBuffer = iCharsPerLine ;
 
 //                              TextOut (pd.hDC, 0, yChar * iLine, pstrBuffer,
 //                                   (int) SendMessage (hwndEdit, EM_GETLINE,
@@ -181,7 +174,6 @@ BOOL PopPrntPrintFile (HINSTANCE hInst, HWND hwnd, HWND /*hwndEdit*/,
           DestroyWindow (hDlgPrint) ;
           }
 
-     HeapFree (GetProcessHeap (), 0, (LPVOID) pstrBuffer) ;
      DeleteDC (pd.hDC) ;
 
      return bSuccess && !bUserAbort ;
