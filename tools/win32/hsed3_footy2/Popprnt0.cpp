@@ -5,6 +5,8 @@
 #include <windows.h>
 #include <commdlg.h>
 #include <string.h>
+#include <tchar.h>
+#include <stdio.h>
 #include "poppad.h"
 #include "resource.h"
 #include "Footy2.h"
@@ -88,11 +90,32 @@ BOOL PopPrntPrintFile (HINSTANCE hInst, HWND hwnd, HWND /*hwndEdit*/,
      if (iTotalLines == 0)
           return TRUE ;
 
+	 TCHAR szLineNumber[64];
+	 int nLineNumberCharWidth = 1;
+	 _stprintf(szLineNumber, "%d:", iTotalLines);
+	 nLineNumberCharWidth = lstrlen(szLineNumber) - 1;
+
+//	 DEVMODE dm;
+//	 GetDeviceCaps(
+
+	 HFONT hFont = CreateFont(-MulDiv(10, GetDeviceCaps(pd.hDC, LOGPIXELSY), 72), 0, 0, 0, FW_DONTCARE, FALSE, FALSE, FALSE, DEFAULT_CHARSET,
+				OUT_CHARACTER_PRECIS, CLIP_DEFAULT_PRECIS, DEFAULT_QUALITY, DEFAULT_PITCH, "ＭＳ ゴシック");
+	 HFONT hFoltOld = (HFONT)SelectObject(pd.hDC, hFont);
+
+	 RECT rc = {0};
+	 DrawText(pd.hDC, szLineNumber, -1, &rc, DT_CALCRECT);
+	 int nLineNumberWidth = rc.right - rc.left;
+
+	 DRAWTEXTPARAMS dtp = { sizeof(DRAWTEXTPARAMS), 4, };
+
      GetTextMetrics (pd.hDC, &tm) ;
      yChar = tm.tmHeight + tm.tmExternalLeading ;
 
-     iCharsPerLine = GetDeviceCaps (pd.hDC, HORZRES) / tm.tmAveCharWidth ;
-     iLinesPerPage = GetDeviceCaps (pd.hDC, VERTRES) / yChar ;
+	 SIZE sizePage;
+	 sizePage.cx = GetDeviceCaps (pd.hDC, HORZRES);
+	 sizePage.cy = GetDeviceCaps (pd.hDC, VERTRES);
+     iCharsPerLine = sizePage.cx / tm.tmAveCharWidth ;
+     iLinesPerPage = sizePage.cy / yChar ;
      iTotalPages   = (iTotalLines + iLinesPerPage - 1) / iLinesPerPage ;
 
      EnableWindow (hwnd, FALSE) ;
@@ -139,9 +162,15 @@ BOOL PopPrntPrintFile (HINSTANCE hInst, HWND hwnd, HWND /*hwndEdit*/,
 					//		  pstrBuffer = FootyGetLineData(activeFootyID, iLineNum+1);	// 2008-02-17 Shark++ 後回し
 					//		  TextOut(pd.hDC, 0, yChar * iLine, pstrBuffer, 
 					//			  FootyGetLineLen(activeFootyID, iLineNum+1));
+							  // 行番号
+							  _stprintf(szLineNumber, "%*d ", nLineNumberCharWidth, iLineNum + 1);
+							  TextOut(pd.hDC, 0, yChar * iLine, szLineNumber, lstrlen(szLineNumber));
+							  // 行内容
 							  LPCWSTR pstrBufferW = Footy2GetLineW(activeFootyID, iLineNum);	// 2008-02-28 Shark++ 全角文字が腐る・折り返しが(元から)未実装
-							  TextOutW(pd.hDC, 0, yChar * iLine, pstrBufferW, 
-								  Footy2GetLineLengthW(activeFootyID, iLineNum));
+							  SetRect(&rc, nLineNumberWidth, yChar * iLine, nLineNumberWidth + sizePage.cx, yChar * iLine + yChar);
+							  DrawTextExW(pd.hDC, (LPWSTR)pstrBufferW, 
+								  Footy2GetLineLengthW(activeFootyID, iLineNum)
+								  , &rc, DT_SINGLELINE|DT_EXPANDTABS|DT_NOPREFIX|DT_TABSTOP, &dtp);
                               }
 
                          if (EndPage (pd.hDC) < 0)
@@ -174,7 +203,9 @@ BOOL PopPrntPrintFile (HINSTANCE hInst, HWND hwnd, HWND /*hwndEdit*/,
           DestroyWindow (hDlgPrint) ;
           }
 
-     DeleteDC (pd.hDC) ;
+	 DeleteObject( SelectObject(pd.hDC, hFoltOld) );
+
+	 DeleteDC (pd.hDC) ;
 
      return bSuccess && !bUserAbort ;
      }
