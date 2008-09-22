@@ -25,6 +25,7 @@ static 	char *p[] = {
 	"       -d    add debug information",
 	"       -p    preprocessor only",
 	"       -c    HSP2.55 compatible mode",
+	"       --compath=??? set common path to ???",
 	NULL };
 	int i;
 	for(i=0; p[i]; i++)
@@ -52,6 +53,12 @@ int main( int argc, char *argv[] )
 	fname[0]=0;
 	fname2[0]=0;
 	oname[0]=0;
+	
+#ifdef HSPLINUX
+	strcpy( compath,"common/" );
+#else
+	strcpy( compath,"common\\" );
+#endif
 
 	for (b=1;b<argc;b++) {
 		a1=*argv[b];a2=tolower(*(argv[b]+1));
@@ -62,6 +69,10 @@ int main( int argc, char *argv[] )
 #endif
 			strcpy(fname,argv[b]);
 		} else {
+			if (strncmp(argv[b], "--compath=", 10) == 0) {
+				strcpy( compath, argv[b] + 10 );
+				continue;
+			}
 			switch (a2) {
 			case 'c':
 				ppopt=1;break;
@@ -91,11 +102,7 @@ int main( int argc, char *argv[] )
 	//		call main
 
 	hsc3 = new CHsc3;
-#ifdef HSPLINUX
-	strcpy( compath,"common/" );
-#else
-	strcpy( compath,"common\\" );
-#endif
+
 	hsc3->SetCommonPath( compath );
 
 	st = hsc3->PreProcess( fname, fname2, ppopt, fname );
