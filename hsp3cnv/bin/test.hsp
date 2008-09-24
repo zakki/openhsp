@@ -1,0 +1,23 @@
+#cmpopt varname 1
+
+	test = (123+456)/2
+	mes "OKOK!!!"
+	mes test
+	;a=rnd(123)
+	a=123
+	b=456
+	if a!=b {
+		mes "OKOK="+a
+	}
+
+	;color 100,,200
+
+	i=10+20*40
+	i++
+	b--
+	i*=10
+
+	a(1)=5
+	a(2+5)*=7-a(1)
+	stop
+

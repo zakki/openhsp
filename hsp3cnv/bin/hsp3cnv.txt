@@ -1,0 +1,97 @@
+------------------------------------------------------------------------------
+HSP3CNV : HSP3ソースコンバーター ver0.1             HSP : Hot Soup Processor  
+ホットスーププロセッサ                     copyright 2008 (c) onion software  
+------------------------------------------------------------------------------
+
+・はじめに
+
+HSP3ソースコンバーターは、HSP3のコードを他のソースに変換するためのツール、
+及びライブラリで構成されています。
+このバージョンは、テスト版のため多くの機能が実装されていません。
+実際に変換できるものは少ないため、変換の流れや、システムの概要を知るための
+参考程度にお使い下さい。
+
+
+・hsp3cnv.exeについて
+
+HSP3のオブジェクトファイル(ax)をCソースに変換するプログラムです。
+
+	hsp3cnv ファイル名
+
+のように、コマンドライン上で実行します。
+たとえば、test.axを変換する場合は、
+
+	hsp3cnv test
+
+のように指定すればOKです。
+成功すると、test.axファイルをもとにtest.cppファイルを出力します。
+
+出力されたファイルは、テスト用のプロジェクト(hsp3rtest)上でコンパイル
+することが可能です。
+
+
+・テスト用のプロジェクトについて
+
+hsp3cnvが出力したソースとリンクするためのライブラリを含んでいます。
+hsp3rtestプロジェクトのフォルダは、OpenHSPが提供するhsp3、hspcmpフォルダと
+同じ階層に置いて下さい。
+現状では、コマンドライン上で動作するexeファイルを作成します。
+このバージョンは、プレビュー版であり、動作は以下の内容に制限されています。
+
+	・基本的な変数の代入
+	・パラメーター計算式の評価
+	・条件分岐(if)
+	・print、mes命令
+
+これ以外の機能は、サポートしていません。
+既存のソースを変換するのではなく、あくまでもテスト用のソースを変換する
+ためにご使用ください。
+
+
+・将来の予定
+
+HSP3ソースコンバーターは、HSP3のソースコードを他のプラットフォーム及び
+他言語ソースに変換するためのシステムです。
+まずは、Cソースコードへの変換を目指していますが、ActionScriptなど他の
+環境も視野に入れて、汎用的に使用可能なライブラリを用意しています。
+
+
+・ライセンス
+
+HSP3ソースコンバーターに関するライセンスは、OpenHSPの派生物として扱い、
+ライセンスもOpenHSPに準拠します。
+
+Copyright (C) 1997-2008, Onion Software/onitama.
+All rights reserved.
+
+Redistribution and use in source and binary forms, with or without modification, are permitted provided that the following conditions are met:
+
+Redistributions of source code must retain the above copyright notice, this list of conditions and the following disclaimer. 
+Redistributions in binary form must reproduce the above copyright notice, this list of conditions and the following disclaimer in the documentation and/or other materials provided with the distribution. 
+Neither the name of the Onion Software nor the names of its contributors may be used to endorse or promote products derived from this software without specific prior written permission. 
+
+THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+
+
+・更新履歴
+
+	2008/9/24 0.1
+
+		最初のバージョン。
+		パラメーターや変数などの基本機能をサポートしたプレビュー版です
+
+
+・連絡先
+
+何か問題や、ご意見、提案などありましたらメールかMLの方でお願いします。
+メールの返信につきましては、時間がかかる場合がありますので予めご了承下さい。
+hsp3cnvは、Microsoft Visual Studio 2005によってコンパイルされています。 
+
+        Homepage: http://www.onionsoft.net/openhsp/
+                  http://hsp.tv/
+        e-mail  : onitama@onionsoft.net
+
+
+------------------------------------------------------------------------------
+                                                     README.TXT / end of file 
+------------------------------------------------------------------------------
