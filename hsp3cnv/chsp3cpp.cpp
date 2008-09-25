@@ -596,7 +596,7 @@ int CHsp3Cpp::MakeSource( int option, void *ref )
 		OutMes( "(CHSP3_TASK) L%04x,\n", labindex );
 		labindex++;
 	}
-	//OutMes( "(CHSP3_TASK) NULL\n};\n" );
+	OutMes( "\n};\n" );
 	OutMes( "\n/*-----------------------------------------------------------*/\n\n" );
 
 	return 0;
