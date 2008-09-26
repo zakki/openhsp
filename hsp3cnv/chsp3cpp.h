@@ -31,11 +31,14 @@ private:
 	//		Internal Function
 	//
 	int MakeCPPMain( void );
+	void MakeCPPSub( int cmdtype, int cmdval );
 	void MakeCPPLabel( void );
 	void MakeCPPTask( int nexttask );
+	void MakeCPPTask2( int nexttask, int newtask );
 	void MakeCPPTask( char *funcdef, int nexttask=-1 );
-	int MakeCPPParam( void );
+	int MakeCPPParam( int addprm=0 );
 	int GetCPPExpression( CMemBuf *eout, int *result );
+	void GetCPPExpressionSub( CMemBuf *eout );
 	int MakeCPPVarForHSP( void );
 	void MakeCPPVarName( char *outbuf, int varid );
 	int MakeCPPVarExpression( CMemBuf *arname );

@@ -84,6 +84,16 @@ void CHsp3Cpp::MakeCPPTask( int nexttask )
 }
 
 
+void CHsp3Cpp::MakeCPPTask2( int nexttask, int newtask )
+{
+	//		単純タスクの生成
+	//
+	char mes[256];
+	sprintf( mes,"static void L%04x( void )", newtask );
+	MakeCPPTask( mes, nexttask );
+}
+
+
 void CHsp3Cpp::MakeCPPLabel( void )
 {
 	//		ラベルを生成
@@ -111,58 +121,19 @@ void CHsp3Cpp::MakeCPPLabel( void )
 }
 
 
-int CHsp3Cpp::GetCPPExpression( CMemBuf *eout, int *result )
+void CHsp3Cpp::GetCPPExpressionSub( CMemBuf *eout )
 {
-	//		C/C++の計算式フォーマットでパラメーターを展開する
+	//		C/C++の計算式フォーマットでパラメーターを展開する(短項目)
 	//		eout : 出力先
-	//		result : 結果の格納先(-2=解析なし/-1=複数項の計算式/other=単一のパラメーターtype)
 	//
-	int op;
-	int res;
-	int tres;
 	char mes[8192];								// 展開される式の最大文字数
-
-	*result = -2;
-
-	if (exflag&EXFLG_1) return 1;				// パラメーター終端
-	if (exflag&EXFLG_2) {						// パラメーター区切り(デフォルト時)
-		exflag^=EXFLG_2;
-		return -1;
-	}
-	if ( cstype == TYPE_MARK ) {
-		if ( csval == 63 ) {					// パラメーター省略時('?')
-			getCS();
-			exflag&=~EXFLG_2;
-			return -1;
-		}
-		if ( csval == ')' ) {					// 関数内のパラメーター省略時
-			exflag&=~EXFLG_2;
-			return 2;
-		}
-	}
+	int op;
 
 	*mes = 0;
-	res = 0;
-	tres = cstype;
-
-	while(1) {
-		if ( mcs > mcs_end ) {
-			res = 1;			// データ終端チェック
-			break;
-		}
-		if ( tres >= 0 ) {
-			if ( tres != cstype ) { tres = -1; }
-		}
-
-		switch(cstype) {
+	switch(cstype) {
 		case TYPE_MARK:
 			//		記号(スタックから取り出して演算)
 			//
-			if ( csval == ')' ) {					// 引数の終了マーク
-				exflag |= EXFLG_2;
-				res = 2;
-				break;
-			}
 			op = csval;
 			sprintf( mes,"Calc%s(); ", GetHSPOperator2(op) );
 			eout->PutStr( mes );
@@ -184,8 +155,16 @@ int CHsp3Cpp::GetCPPExpression( CMemBuf *eout, int *result )
 			eout->PutStr( mes );
 			break;
 			}
-		case TYPE_INUM:
 		case TYPE_DNUM:
+			{
+			//		直実数値をスタックに積む
+			//
+			sprintf( mes,"Push%s(%f); ", GetHSPCmdTypeName(cstype), GetDSf(csval) );
+			eout->PutStr( mes );
+			getCS();
+			break;
+			}
+		case TYPE_INUM:
 		case TYPE_STRUCT:
 		case TYPE_LABEL:
 			//		直値をスタックに積む
@@ -220,6 +199,62 @@ int CHsp3Cpp::GetCPPExpression( CMemBuf *eout, int *result )
 			eout->PutStr( mes );
 			break;
 			}
+	}
+}
+
+
+int CHsp3Cpp::GetCPPExpression( CMemBuf *eout, int *result )
+{
+	//		C/C++の計算式フォーマットでパラメーターを展開する
+	//		eout : 出力先
+	//		result : 結果の格納先(-2=解析なし/-1=複数項の計算式/other=単一のパラメーターtype)
+	//
+	int res;
+	int tres;
+
+	*result = -2;
+
+	if (exflag&EXFLG_1) return 1;				// パラメーター終端
+	if (exflag&EXFLG_2) {						// パラメーター区切り(デフォルト時)
+		exflag^=EXFLG_2;
+		return -1;
+	}
+	if ( cstype == TYPE_MARK ) {
+		if ( csval == 63 ) {					// パラメーター省略時('?')
+			getCS();
+			exflag&=~EXFLG_2;
+			return -1;
+		}
+		if ( csval == ')' ) {					// 関数内のパラメーター省略時
+			exflag&=~EXFLG_2;
+			return 2;
+		}
+	}
+
+	res = 0;
+	tres = cstype;
+
+	while(1) {
+		if ( mcs > mcs_end ) {
+			res = 1;			// データ終端チェック
+			break;
+		}
+		if ( tres >= 0 ) {
+			if ( tres != cstype ) { tres = -1; }
+		}
+
+		switch(cstype) {
+		case TYPE_MARK:
+			//		記号(スタックから取り出して演算)
+			//
+			if ( csval == ')' ) {					// 引数の終了マーク
+				exflag |= EXFLG_2;
+				res = 2;
+				break;
+			}
+		default:
+			GetCPPExpressionSub( eout );
+			break;
 		}
 
 		if ( exflag ) {								// パラメーター終端チェック
@@ -232,7 +267,7 @@ int CHsp3Cpp::GetCPPExpression( CMemBuf *eout, int *result )
 }
 
 
-int CHsp3Cpp::MakeCPPParam( void )
+int CHsp3Cpp::MakeCPPParam( int addprm )
 {
 	//		パラメーターのトレース
 	//
@@ -245,6 +280,18 @@ int CHsp3Cpp::MakeCPPParam( void )
 
 	prm = 0;
 	tmpbuf.AddIndexBuffer();
+
+	int j;
+	for(j=0;j<addprm;j++) {
+		if ( exflag & EXFLG_1) break;		// パラメーター列終端
+		if ( mcs > mcs_end ) break;			// データ終端チェック
+		if ( prm ) {
+			tmpbuf.Put(0);
+		}
+		tmpbuf.RegistIndex( tmpbuf.GetSize() );
+		GetCPPExpressionSub( &tmpbuf );
+		prm++;
+	}
 
 	while(1) {
 		if ( exflag & EXFLG_1) break;		// パラメーター列終端
@@ -390,6 +437,23 @@ int CHsp3Cpp::MakeCPPVarExpression( CMemBuf *arname )
 
 /*------------------------------------------------------------*/
 
+void CHsp3Cpp::MakeCPPSub( int cmdtype, int cmdval )
+{
+	//		通常命令とパラメーターを展開
+	//
+	int pnum;
+	MCSCONTEXT ctxbak;
+
+	OutLine( "// %s ", GetHSPName( cmdtype, cmdval ) );
+	getCS();
+	GetContext( &ctxbak );
+	MakeProgramInfoParam2();
+	SetContext( &ctxbak );
+	pnum = MakeCPPParam();
+	OutLine( "%s(%d,%d);\r\n", GetHSPCmdTypeName(cmdtype), cmdval, pnum );
+}
+
+
 int CHsp3Cpp::MakeCPPMain( void )
 {
 	//		プログラムのトレース
@@ -399,11 +463,19 @@ int CHsp3Cpp::MakeCPPMain( void )
 	int cmdtype, cmdval;
 	char mes[4096];
 	MCSCONTEXT ctxbak;
+	int maxvar;
 
 	//		初期化
 	//
 	tasknum = 0;
 	MakeCPPTask( "void __HspEntry( void )" );
+
+	OutMes( "\t// Var initalize\r\n" );
+	maxvar = hsphed->max_val;
+	for(i=0;i<maxvar;i++) {
+		OutMes( "\t%s%s = &mem_var[%d];\r\n", CPPHED_HSPVAR, GetHSPVarName(i), i );
+	}
+	OutMes( "\r\n" );
 
 	//		コードの変換
 	//
@@ -412,15 +484,15 @@ int CHsp3Cpp::MakeCPPMain( void )
 
 		//		endifのチェック
 		//
-		if ( ifmode[iflevel]==2 ) {		// if end
+		if ( ifmode[iflevel]>=2 ) {		// if end
 			if ( mcs_last>=ifptr[iflevel] ) {
 				ifmode[iflevel] = 0;
 				if ( iflevel == 0 ) { Alert( "Invalid endif." ); return -1; }
 				i = iftaskid[iflevel];
 				iflevel--;
-				SetIndent( iflevel );
-				OutLine( "}\n" );
-				//MakeCPPTask( i );
+				//SetIndent( iflevel );
+				//OutLine( "}\n" );
+				MakeCPPTask( i );
 				continue;
 			}
 		}
@@ -434,7 +506,7 @@ int CHsp3Cpp::MakeCPPMain( void )
 		cmdtype = cstype;
 		cmdval = csval;
 		//MakeProgramInfoHSPName();
-		//sprintf( mes,"#%06x:CSTYPE%d VAL%d\n", mcs_last - mcs_start, cstype, csval );
+		//printf( "#%06x:CSTYPE%d VAL%d\n", mcs_last - mcs_start, cstype, csval );
 		//Alert( mes );
 		//out->PutStr( mes );
 
@@ -496,49 +568,104 @@ int CHsp3Cpp::MakeCPPMain( void )
 			// C形式の出力
 			if ( cmdval == 0 ) {
 				iflevel++;
-				strcpy( mes, "if (HspIf()) {\r\n" );
+				sprintf( mes, "if (HspIf()) { TaskSwitch(%d); return; }\r\n", curot );
 				if ( iflevel >= MAX_IFLEVEL ) {
 					Alert( "Stack(If) overflow." );
 					return -2;
 				}
 				ifmode[iflevel] = 1;
-				//iftaskid[iflevel] = curot;
+				iftaskid[iflevel] = curot;
 				i = (int)*mcs;
 				ifptr[iflevel] = mcs + i + 1;
 				ifmode[iflevel]++;
-				//curot++;
+				curot++;
 			} else {
-				strcpy( mes, "} else {\r\n" );
+				strcpy( mes, "// else\r\n" );
 				ifmode[iflevel] = 3;
 				i = (int)*mcs;
 				ifptr[iflevel] = mcs + i + 1;
-				SetIndent( iflevel-1 );
+				//SetIndent( iflevel-1 );
+				i = iftaskid[iflevel];
+				MakeCPPTask2( curot, i );
+				iftaskid[iflevel] = curot;
+				curot++;
 			}
 			mcs++;
 			getCS();
 			MakeCPPParam();
 			OutLine( mes );
-			SetIndent( iflevel );
+			//SetIndent( iflevel );
+			break;
+		case TYPE_PROGCMD:						// プログラム制御命令
+			switch( cmdval ) {
+			case 0x00:								// goto
+			case 0x02:								// return
+			case 0x03:								// break
+			case 0x05:								// loop
+			case 0x06:								// continue
+			case 0x0b:								// foreach
+			case 0x0c:								// (hidden)foreach check
+			case 0x10:								// end
+			case 0x1b:								// assert
+			case 0x11:								// stop
+			case 0x18:								// exgoto
+			case 0x19:								// on
+				//		後にreturnを付ける
+				//
+				MakeCPPSub( cmdtype, cmdval );
+				OutLine( "return;\r\n" );
+				break;
+			case 0x01:								// gosub
+				//		gosubの展開
+				//
+				{
+				int pnum;
+				OutLine( "// gosub\r\n" );
+				getCS();
+				pnum = MakeCPPParam();
+				OutLine( "PushLabel(%d); %s(%d,%d); return;\r\n", curot, GetHSPCmdTypeName(cmdtype), cmdval, pnum+1 );
+				MakeCPPTask( curot );
+				curot++;
+				break;
+				}
+			case 0x04:								// repeat
+				//		repeatの展開
+				//
+				{
+				int pnum;
+				OutLine( "// repeat\r\n" );
+				getCS();
+				pnum = MakeCPPParam(1);
+				OutLine( "PushLabel(%d); %s(%d,%d); return;\r\n", curot, GetHSPCmdTypeName(cmdtype), cmdval, pnum+1 );
+				MakeCPPTask( curot );
+				curot++;
+				break;
+				}
+
+			case 0x07:								// wait
+			case 0x08:								// await
+			case 0x17:								// run
+				//		タスクを区切る
+				//
+				MakeCPPSub( cmdtype, cmdval );
+				MakeCPPTask( curot );
+				curot++;
+				break;
+			default:
+				MakeCPPSub( cmdtype, cmdval );
+				break;
+			}
 			break;
 		default:
 			//		通常命令
 			//
-			{
-			int pnum;
-			OutLine( "// %s ", GetHSPName( cmdtype, cmdval ) );
-			getCS();
-			GetContext( &ctxbak );
-			MakeProgramInfoParam2();
-			SetContext( &ctxbak );
-			pnum = MakeCPPParam();
-			OutLine( "%s(%d,%d);\r\n", GetHSPCmdTypeName(cmdtype), cmdval, pnum );
+			MakeCPPSub( cmdtype, cmdval );
 			break;
-			}
 		}
 	}
 
 	OutMes( "}\r\n\r\n" );
-	OutMes( "//-End of Source-------------------------------------------\n" );
+	OutMes( "//-End of Source-------------------------------------------\r\n" );
 	return 0;
 }
 
@@ -555,21 +682,21 @@ int CHsp3Cpp::MakeSource( int option, void *ref )
 	int maxvar;
 	makeoption = option;
 
-	OutMes( "//\n//\thsp3cnv generated source\n//\t[%s]\n//\n", orgname );
-	OutMes( "#include \"hsp3r.h\"\n" );
-	OutMes( "\n#define _HSP3CNV_DATE %s\n#define _HSP3CNV_TIME %s\n", localinfo.CurrentDate(), localinfo.CurrentTime() );
-	OutMes( "#define _HSP3CNV_MAXVAR %d\n", hsphed->max_val );
-	OutMes( "#define _HSP3CNV_MAXHPI %d\n", hsphed->max_hpi );
-	OutMes( "#define _HSP3CNV_VERSION 0x%x\n", hsphed->version );
-	OutMes( "#define _HSP3CNV_BOOTOPT %d\n", hsphed->bootoption );
-	OutMes( "\n/*-----------------------------------------------------------*/\n\n" );
+	OutMes( "//\r\n//\thsp3cnv generated source\r\n//\t[%s]\r\n//\r\n", orgname );
+	OutMes( "#include \"hsp3r.h\"\r\n" );
+	OutMes( "\r\n#define _HSP3CNV_DATE %s\n#define _HSP3CNV_TIME %s\r\n", localinfo.CurrentDate(), localinfo.CurrentTime() );
+	OutMes( "#define _HSP3CNV_MAXVAR %d\r\n", hsphed->max_val );
+	OutMes( "#define _HSP3CNV_MAXHPI %d\r\n", hsphed->max_hpi );
+	OutMes( "#define _HSP3CNV_VERSION 0x%x\r\n", hsphed->version );
+	OutMes( "#define _HSP3CNV_BOOTOPT %d\r\n", hsphed->bootoption );
+	OutMes( "\r\n/*-----------------------------------------------------------*/\r\n\r\n" );
 
 	maxvar = hsphed->max_val;
 	for(i=0;i<maxvar;i++) {
-		OutMes( "#define %s%s (&mem_var[%d])\n", CPPHED_HSPVAR, GetHSPVarName(i), i );
+		OutMes( "static PVal *%s%s;\r\n", CPPHED_HSPVAR, GetHSPVarName(i), i );
 	}
 
-	OutMes( "\n/*-----------------------------------------------------------*/\n\n" );
+	OutMes( "\n/*-----------------------------------------------------------*/\r\n\r\n" );
 
 	otmax = GetOTCount();
 	curot = otmax;
@@ -579,25 +706,25 @@ int CHsp3Cpp::MakeSource( int option, void *ref )
 
 	//		タスク(ラベル)テーブルを作成する
 	//
-	OutMes( "\nCHSP3_TASK __HspTaskFunc[]={\n" );
+	OutMes( "\r\nCHSP3_TASK __HspTaskFunc[]={\r\n" );
 
 	labindex = 0;
 	while(1) {
 		if ( labindex>=otmax ) break;
 		if ( GetOTInfo( labindex ) == -1 ) {
-			OutMes( "(CHSP3_TASK) L%04x,\n", labindex );
+			OutMes( "(CHSP3_TASK) L%04x,\r\n", labindex );
 		} else {
-			OutMes( "(CHSP3_TASK) NULL,\n" );
+			OutMes( "(CHSP3_TASK) 0,\r\n" );
 		}
 		labindex++;
 	}
 	while(1) {
 		if ( labindex>=curot ) break;
-		OutMes( "(CHSP3_TASK) L%04x,\n", labindex );
+		OutMes( "(CHSP3_TASK) L%04x,\r\n", labindex );
 		labindex++;
 	}
-	OutMes( "\n};\n" );
-	OutMes( "\n/*-----------------------------------------------------------*/\n\n" );
+	OutMes( "\r\n};\r\n" );
+	OutMes( "\r\n/*-----------------------------------------------------------*/\r\n\r\n" );
 
 	return 0;
 }

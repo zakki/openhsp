@@ -1,23 +1,28 @@
 #cmpopt varname 1
 
-	test = (123+456)/2
-	mes "OKOK!!!"
-	mes test
-	;a=rnd(123)
-	a=123
-	b=456
-	if a!=b {
-		mes "OKOK="+a
-	}
+	gosub *subr
 
-	;color 100,,200
+	a=hspver
+	mes "START"+strf("%x",a)
+	mes "SIN="+sin(0.5+sqrt(1.0))
 
-	i=10+20*40
-	i++
-	b--
-	i*=10
+	a=0:b=0:c=0
 
-	a(1)=5
-	a(2+5)*=7-a(1)
+	repeat 10
+	a++
+	b=rnd(5)+1
+	mes "A="+a+"/B="+b
+	c+=a/b
+	loop
+
+	mes "C="+c
+	mes "END"
 	stop
 
+*subr
+	repeat 10
+	if cnt=3 : continue
+	mes "OK"+cnt
+	if cnt=5 : break
+	loop
+	return

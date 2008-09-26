@@ -14,6 +14,7 @@ typedef void (* CHSP3_TASK) (void);
 #define HSPVAR_FLAG_MARK 0
 #define HSPVAR_FLAG_VAR -1
 
+
 //	Utility
 //
 void VarUtilInit( HSPCTX *ctx );

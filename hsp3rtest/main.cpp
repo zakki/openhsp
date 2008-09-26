@@ -21,6 +21,30 @@ void hsp3win_dialog( char *mes )
 	printf( "%s\n", mes );
 }
 
+void hsp3cl_error( void )
+{
+	char errmsg[1024];
+	char *msg;
+	char *fname;
+	HSPERROR err;
+	int ln;
+	err = code_geterror();
+	ln = code_getdebug_line();
+	msg = hspd_geterror(err);
+	fname = code_getdebug_name();
+
+	if ( ln < 0 ) {
+		sprintf( errmsg, "#Error %d\n-->%s\n",(int)err,msg );
+		fname = NULL;
+	} else {
+		sprintf( errmsg, "#Error %d in line %d (%s)\n-->%s\n",(int)err, ln, fname, msg );
+	}
+
+	hsp3win_dialog( errmsg );
+	hsp3win_dialog( "[ERROR] Press any key..." );
+}
+
+
 void hsp3cl_msgfunc( HSPCTX *hspctx )
 {
 	while(1) {
@@ -90,6 +114,14 @@ int main( int argc, char *argv[] )
 	//		実行の開始
 	//
 	runmode = code_execcmd();
+	if ( runmode == RUNMODE_ERROR ) {
+		try {
+			hsp3cl_error();
+		}
+		catch( ... ) {
+		}
+		return -1;
+	}
 
 	//		HSP関連の解放
 	//

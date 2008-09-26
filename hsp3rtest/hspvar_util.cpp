@@ -14,6 +14,12 @@
 
 /*------------------------------------------------------------*/
 /*
+		extra header
+*/
+/*------------------------------------------------------------*/
+
+/*------------------------------------------------------------*/
+/*
 		system data
 */
 /*------------------------------------------------------------*/
@@ -23,6 +29,9 @@ void __HspEntry( void );				// hsp3cnvで生成されるエントリーポイント
 
 static	HSPCTX *hspctx;					// HSPのコンテキスト
 static	CHSP3_TASK curtask;				// 次に実行されるタスク関数
+static int *c_type;
+static int *c_val;
+static HSPEXINFO *exinfo;				// Info for Plugins
 
 PVal *mem_var;							// 変数用のメモリ
 
@@ -31,6 +40,7 @@ static	HSP3TYPEINFO *extcmd_info;
 static	HSP3TYPEINFO *extsysvar_info;
 static	HSP3TYPEINFO *intfunc_info;
 static	HSP3TYPEINFO *sysvar_info;
+static	HSP3TYPEINFO *progfunc_info;
 
 /*------------------------------------------------------------*/
 
@@ -158,6 +168,9 @@ void VarUtilInit( HSPCTX *ctx )
 	//
 	hspctx = ctx;
 	mem_var = hspctx->mem_var;
+	exinfo = hspctx->exinfo2;
+	c_type = exinfo->nptype;
+	c_val = exinfo->npval;
 
 	//		typeinfoを取得しておく
 	intcmd_info = code_gettypeinfo( TYPE_INTCMD );
@@ -165,6 +178,7 @@ void VarUtilInit( HSPCTX *ctx )
 	extsysvar_info = code_gettypeinfo( TYPE_EXTSYSVAR );
 	intfunc_info = code_gettypeinfo( TYPE_INTFUNC );
 	sysvar_info = code_gettypeinfo( TYPE_SYSVAR );
+	progfunc_info = code_gettypeinfo( TYPE_PROGCMD );
 
 	//		最初のタスク実行関数をセット
 	curtask = (CHSP3_TASK)__HspEntry;
@@ -245,6 +259,7 @@ void PushDefault( void )
 
 void PushFuncEnd( void )
 {
+	StackPushTypeVal( HSPVAR_FLAG_MARK, (int)')', 0 );
 }
 
 
@@ -255,11 +270,31 @@ void PushExtvar( int val, int pnum )
 
 void PushIntfunc( int val, int pnum )
 {
+	char *ptr;
+	int resflag;
+	int basesize;
+
+	*c_type = TYPE_MARK;
+	*c_val = '(';
+	ptr = (char *)intfunc_info->reffunc( &resflag, val );						// タイプごとの関数振り分け
+	code_next();
+	basesize = HspVarCoreGetProc( resflag )->GetSize( (PDAT *)ptr );
+	StackPush( resflag, ptr, basesize );
 }
 
 
 void PushSysvar( int val, int pnum )
 {
+	char *ptr;
+	int resflag;
+	int basesize;
+
+	*c_type = TYPE_MARK;
+	*c_val = '(';
+	ptr = (char *)sysvar_info->reffunc( &resflag, val );						// タイプごとの関数振り分け
+	code_next();
+	basesize = HspVarCoreGetProc( resflag )->GetSize( (PDAT *)ptr );
+	StackPush( resflag, ptr, basesize );
 }
 
 
@@ -429,7 +464,6 @@ void VarSet( PVal *pval, int aval, int pnum )
 	int baseaptr;
 
 	aptr = CheckArray( pval, aval );
-
 	proc = HspVarCoreGetProc( pval->flag );
 	dst = HspVarCorePtrAPTR( pval, aptr );
 
@@ -643,17 +677,31 @@ void TaskExec( void )
 */
 /*------------------------------------------------------------*/
 
+static void HspPostExec( void )
+{
+	//		コマンド実行後の処理
+	//
+	if ( hspctx->runmode == RUNMODE_RETURN ) {
+		//cmdfunc_return();
+	} else {
+		hspctx->msgfunc( hspctx );
+	}
+}
+
 bool HspIf( void )
 {
 	//		スタックから値を取り出して真偽を返す
+	//		(真偽が逆になっているので注意)
 	//
-	return code_geti()!=0;
+	int i;
+	i = code_geti();
+	return (i==0);
 }
 
 
 void Extcmd( int cmd, int pnum )
 {
-	extcmd_info->cmdfunc( cmd );
+	if ( extcmd_info->cmdfunc( cmd ) ) HspPostExec();
 }
 
 
@@ -669,5 +717,6 @@ void Dllcmd( int cmd, int pnum )
 
 void Prgcmd( int cmd, int pnum )
 {
+	if ( progfunc_info->cmdfunc( cmd ) ) HspPostExec();
 }
 
