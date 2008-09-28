@@ -62,13 +62,12 @@ void fd_ini( HWND hwnd, char *extname, char *extinfo )
 	pszFilter = pszFilterPtr
 
 	// 区切り文字
-#if 1
-	static const char DELIMITER[]       = "|";
-	static const int  DELIMITER_LEN     = 1;
-#else  // こっちにするなら\r\nで処理しないとだめ
-	static const char DELIMITER[]       = "\r";
-	static const int  DELIMITER_LEN     = 2;
-#endif
+	// "|"区切り
+	static const char DELIMITER_PIPE[]  = "|";
+	static const int  DELIMITER_PIPE_LEN= 1;
+	// "\n"区切り
+	static const char DELIMITER_CR[]    = "\r";
+	static const int  DELIMITER_CR_LEN  = 2;
 	static const char DEFAULT_DESC[]    = "ファイル";
 	static const char ALL_FILE_FILTER[] = "すべてのファイル (*.*)";
 
@@ -92,17 +91,21 @@ void fd_ini( HWND hwnd, char *extname, char *extinfo )
 	nFilterSeek = 0;
 
 	for(nFilterIndex = 0;;
-		fext = fext_next + DELIMITER_LEN,
-		finf = finf_next + DELIMITER_LEN,
+		fext = fext_next + (*DELIMITER_PIPE == *fext_next ? DELIMITER_PIPE_LEN : DELIMITER_CR_LEN),
+		finf = finf_next + (*DELIMITER_PIPE == *finf_next ? DELIMITER_PIPE_LEN : DELIMITER_CR_LEN),
 		nFilterIndex++)
 	{
 		// 区切り文字で分割
-		for(fext_next = fext; *fext_next && *DELIMITER != *fext_next; fext_next++) {
+		for(fext_next = fext; *fext_next &&
+			*DELIMITER_PIPE != *fext_next && *DELIMITER_CR != *fext_next;
+			fext_next++) {
 			// SJISの1バイト目チェック＆2文字目を飛ばすときの'\0'チェック
 			if( is_sjis1(*fext_next) && fext_next[1] )
 				fext_next++;
 		}
-		for(finf_next = finf; *finf_next && *DELIMITER != *finf_next; finf_next++) {
+		for(finf_next = finf; *finf_next &&
+			*DELIMITER_PIPE != *finf_next && *DELIMITER_CR != *finf_next;
+			finf_next++) {
 			// SJISの1バイト目チェック＆2文字目を飛ばすときの'\0'チェック
 			if( is_sjis1(*finf_next) && finf_next[1] )
 				finf_next++;
@@ -115,9 +118,9 @@ void fd_ini( HWND hwnd, char *extname, char *extinfo )
 		finf_len = (int)(finf_next - finf);
 
 		if( !*fext_next )
-			fext_next -= DELIMITER_LEN;
+			fext_next -= DELIMITER_CR_LEN;
 		if( !*finf_next )
-			finf_next -= DELIMITER_LEN;
+			finf_next -= DELIMITER_CR_LEN;
 
 		// 拡張子の先頭に';'があった場合は"*."を先頭につけないモードにする
 		no_aster = (';' == *fext);
@@ -164,13 +167,13 @@ void fd_ini( HWND hwnd, char *extname, char *extinfo )
 		strcat(pszFilterPtr,  no_aster ? "(" : "(*.");
 		strncat(pszFilterPtr, fext, (size_t)fext_len);
 		strcat(pszFilterPtr,  ")");
-		strcat(pszFilterPtr,  DELIMITER);
+		strcat(pszFilterPtr,  DELIMITER_PIPE);
 
 		// フィルタ拡張子
 		if( !no_aster )
 			strcat(pszFilterPtr, "*.");
 		strncat(pszFilterPtr, fext, (size_t)fext_len);
-		strcat(pszFilterPtr,  DELIMITER);
+		strcat(pszFilterPtr,  DELIMITER_PIPE);
 	}
 
 	// "すべてのファイル (*.*)" + "\0" + "*.*" + "\0" + "\0"
@@ -183,12 +186,12 @@ void fd_ini( HWND hwnd, char *extname, char *extinfo )
 
 	// フィルタ説明
 	strcat(pszFilterPtr, ALL_FILE_FILTER); // ※
-	strcat(pszFilterPtr, DELIMITER);
+	strcat(pszFilterPtr, DELIMITER_PIPE);
 
 	// フィルタ拡張子
 	strcat(pszFilterPtr, "*.*");
-	strcat(pszFilterPtr, DELIMITER);
-	strcat(pszFilterPtr, DELIMITER);
+	strcat(pszFilterPtr, DELIMITER_PIPE);
+	strcat(pszFilterPtr, DELIMITER_PIPE);
 
 //	for(int i = 0; i < nFilterLen-1; i++) if('\0'==pszFilter[i]) pszFilter[i] = '|';
 //	MessageBox(NULL,pszFilter,"",0);
@@ -198,7 +201,7 @@ void fd_ini( HWND hwnd, char *extname, char *extinfo )
 	for(nFilterSeek = 0; nFilterSeek < nFilterLen; pszFilterPtr++, nFilterSeek++) {
 		if( is_sjis1(*pszFilterPtr) )
 			pszFilterPtr++;
-		else if( *DELIMITER == *pszFilterPtr )
+		else if( *DELIMITER_PIPE == *pszFilterPtr )
 			*pszFilterPtr = '\0';
 	}
 	
