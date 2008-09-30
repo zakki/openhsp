@@ -275,6 +275,7 @@ int CHsp3Cpp::MakeCPPParam( int addprm )
 	int prm;
 	int len;
 	int result;
+	int curidx;
 	CMemBuf tmpbuf;
 	char *p;
 
@@ -299,6 +300,7 @@ int CHsp3Cpp::MakeCPPParam( int addprm )
 		if ( prm ) {
 			tmpbuf.Put(0);
 		}
+		curidx = tmpbuf.GetIndexBufferSize();
 		tmpbuf.RegistIndex( tmpbuf.GetSize() );
 		i = GetCPPExpression( &tmpbuf, &result );
 		if ( i > 0 ) break;
@@ -307,7 +309,8 @@ int CHsp3Cpp::MakeCPPParam( int addprm )
 			tmpbuf.PutStr( "PushDefault();" );
 		}
 		if ( result == TYPE_VAR ) {			// 単一項で変数が指定されていた場合
-			p = tmpbuf.GetBuffer() + tmpbuf.GetIndex( tmpbuf.GetIndexBufferSize() - 1 );
+			p = tmpbuf.GetBuffer() + tmpbuf.GetIndex( curidx );
+			p = strstr2( p, "PushVar" );
 			p[5] = 'A'; p[6] = 'P';			// PushVar -> PushVAPに直す
 		}
 		prm++;
@@ -386,6 +389,7 @@ int CHsp3Cpp::MakeCPPVarExpression( CMemBuf *arname )
 	int prm;
 	int len;
 	int result;
+	int curidx;
 	CMemBuf tmpbuf;
 	char *p;
 	tmpbuf.AddIndexBuffer();
@@ -400,6 +404,7 @@ int CHsp3Cpp::MakeCPPVarExpression( CMemBuf *arname )
 				if ( prm > 1 ) {
 					tmpbuf.Put(0);
 				}
+				curidx = tmpbuf.GetIndexBufferSize();
 				tmpbuf.RegistIndex( tmpbuf.GetSize() );
 				i = GetCPPExpression( &tmpbuf, &result );
 				if ( i > 0 ) break;
@@ -407,10 +412,10 @@ int CHsp3Cpp::MakeCPPVarExpression( CMemBuf *arname )
 				if ( i == -1 ) {
 					tmpbuf.PutStr( "PushDefault();" );
 				}
-				if ( result == TYPE_VAR ) {			// 単一項で変数が指定されていた場合
-					p = tmpbuf.GetBuffer() + tmpbuf.GetIndex( tmpbuf.GetIndexBufferSize() - 1 );
-					p[5] = 'A'; p[6] = 'P';			// PushVar -> PushVAPに直す
-				}
+				//if ( result == TYPE_VAR ) {			// 単一項で変数が指定されていた場合
+				//	p = tmpbuf.GetBuffer() + tmpbuf.GetIndex( curidx );
+				//	p[5] = 'A'; p[6] = 'P';			// PushVar -> PushVAPに直す
+				//}
 				prm++;
 			}
 			getCS();

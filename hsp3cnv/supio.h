@@ -23,6 +23,7 @@ void strsp_ini( void );
 int strsp_getptr( void );
 int strsp_get( char *srcstr, char *dststr, char splitchr, int len );
 
+char *strstr2( char *target, char *src );
 
 void Alert( char *mes );
 void AlertV( char *mes, int val );
