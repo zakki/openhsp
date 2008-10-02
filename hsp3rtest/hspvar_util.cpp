@@ -247,7 +247,7 @@ void PushVAP( PVal *pval, int aval )
 	//PDAT *ptr;
 	aptr = CheckArray( pval, aval );
 	//ptr = HspVarCorePtrAPTR( pval, aptr );
-	StackPushTypeVal( HSPVAR_FLAG_VAR, (int)aptr, (int)pval );
+	StackPushTypeVal( HSPVAR_FLAG_VAR, (int)pval, (int)aptr );
 }
 
 
@@ -720,3 +720,8 @@ void Prgcmd( int cmd, int pnum )
 	if ( progfunc_info->cmdfunc( cmd ) ) HspPostExec();
 }
 
+
+void Intcmd( int cmd, int pnum )
+{
+	if ( intcmd_info->cmdfunc( cmd ) ) HspPostExec();
+}

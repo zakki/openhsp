@@ -613,7 +613,6 @@ int CHsp3Cpp::MakeCPPMain( void )
 			case 0x10:								// end
 			case 0x1b:								// assert
 			case 0x11:								// stop
-			case 0x18:								// exgoto
 			case 0x19:								// on
 				//		後にreturnを付ける
 				//
@@ -621,11 +620,12 @@ int CHsp3Cpp::MakeCPPMain( void )
 				OutLine( "return;\r\n" );
 				break;
 			case 0x01:								// gosub
+			case 0x18:								// exgoto
 				//		gosubの展開
 				//
 				{
 				int pnum;
-				OutLine( "// gosub\r\n" );
+				OutLine( "// %s\r\n", GetHSPName(cmdtype,cmdval) );
 				getCS();
 				pnum = MakeCPPParam();
 				OutLine( "PushLabel(%d); %s(%d,%d); return;\r\n", curot, GetHSPCmdTypeName(cmdtype), cmdval, pnum+1 );
@@ -701,7 +701,15 @@ int CHsp3Cpp::MakeSource( int option, void *ref )
 		OutMes( "static PVal *%s%s;\r\n", CPPHED_HSPVAR, GetHSPVarName(i), i );
 	}
 
-	OutMes( "\n/*-----------------------------------------------------------*/\r\n\r\n" );
+	OutMes( "\r\n/*-----------------------------------------------------------*/\r\n\r\n" );
+
+	//		初期化ファンクションを作成する
+	//
+	OutMes( "void __HspInit( Hsp3r *hsp3 ) {\r\n" );
+	OutMes( "\thsp3->Reset( _HSP3CNV_MAXVAR, _HSP3CNV_MAXHPI );\r\n" );
+	OutMes( "}\r\n" );
+
+	OutMes( "\r\n/*-----------------------------------------------------------*/\r\n\r\n" );
 
 	otmax = GetOTCount();
 	curot = otmax;

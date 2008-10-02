@@ -29,6 +29,7 @@ void Extcmd( int cmd, int pnum );
 void Modcmd( int cmd, int pnum );
 void Dllcmd( int cmd, int pnum );
 void Prgcmd( int cmd, int pnum );
+void Intcmd( int cmd, int pnum );
 
 //  HSPVAR support functions
 //

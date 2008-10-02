@@ -3,7 +3,7 @@
 	ProjectType="Visual C++"
 	Version="8.00"
 	Name="hsp3rtest"
-	ProjectGUID="{6299D8DE-9AA2-4F79-A005-0518D38407C2}"
+	ProjectGUID="{AB53B722-71BB-4A74-BA03-F5D99049F182}"
 	RootNamespace="hsp3rtest"
 	Keyword="Win32Proj"
 	>
@@ -40,10 +40,10 @@
 			<Tool
 				Name="VCCLCompilerTool"
 				Optimization="0"
-				PreprocessorDefinitions="WIN32;_DEBUG;_CONSOLE;_CRT_SECURE_NO_WARNINGS;HSPWIN"
+				PreprocessorDefinitions="WIN32;_DEBUG;_WINDOWS;HSPWIN;HSPWINGUI;_CRT_SECURE_NO_WARNINGS"
 				MinimalRebuild="true"
 				BasicRuntimeChecks="3"
-				RuntimeLibrary="1"
+				RuntimeLibrary="0"
 				UsePrecompiledHeader="0"
 				WarningLevel="3"
 				Detect64BitPortabilityProblems="true"
@@ -54,15 +54,18 @@
 			/>
 			<Tool
 				Name="VCResourceCompilerTool"
+				PreprocessorDefinitions="_VC80_UPGRADE=0x0710"
+				ResourceOutputFileName="$(IntDir)/$(InputName).res"
 			/>
 			<Tool
 				Name="VCPreLinkEventTool"
 			/>
 			<Tool
 				Name="VCLinkerTool"
+				AdditionalDependencies="comctl32.lib"
 				LinkIncremental="2"
 				GenerateDebugInformation="true"
-				SubSystem="1"
+				SubSystem="2"
 				TargetMachine="1"
 			/>
 			<Tool
@@ -70,6 +73,7 @@
 			/>
 			<Tool
 				Name="VCManifestTool"
+				EmbedManifest="false"
 			/>
 			<Tool
 				Name="VCXDCMakeTool"
@@ -115,7 +119,7 @@
 			/>
 			<Tool
 				Name="VCCLCompilerTool"
-				PreprocessorDefinitions="WIN32;NDEBUG;_CONSOLE;_CRT_SECURE_NO_WARNINGS;HSPWIN"
+				PreprocessorDefinitions="WIN32;NDEBUG;_WINDOWS;HSPWIN;HSPWINGUI;_CRT_SECURE_NO_WARNINGS"
 				RuntimeLibrary="0"
 				UsePrecompiledHeader="0"
 				WarningLevel="3"
@@ -127,15 +131,17 @@
 			/>
 			<Tool
 				Name="VCResourceCompilerTool"
+				PreprocessorDefinitions="_VC80_UPGRADE=0x0710"
 			/>
 			<Tool
 				Name="VCPreLinkEventTool"
 			/>
 			<Tool
 				Name="VCLinkerTool"
+				AdditionalDependencies="comctl32.lib"
 				LinkIncremental="1"
 				GenerateDebugInformation="true"
-				SubSystem="1"
+				SubSystem="2"
 				OptimizeReferences="2"
 				EnableCOMDATFolding="2"
 				TargetMachine="1"
@@ -145,6 +151,7 @@
 			/>
 			<Tool
 				Name="VCManifestTool"
+				EmbedManifest="false"
 			/>
 			<Tool
 				Name="VCXDCMakeTool"
@@ -175,7 +182,23 @@
 			UniqueIdentifier="{4FC737F1-C7A5-4376-A066-2A32D752A2FF}"
 			>
 			<File
+				RelativePath="..\hsp3\win32gui\comobj.cpp"
+				>
+			</File>
+			<File
+				RelativePath="..\hsp3\win32gui\comobj_event.cpp"
+				>
+			</File>
+			<File
 				RelativePath="..\hsp3\dpmread.cpp"
+				>
+			</File>
+			<File
+				RelativePath="..\hsp3\win32gui\fcpoly.cpp"
+				>
+			</File>
+			<File
+				RelativePath="..\hsp3\win32gui\filedlg.cpp"
 				>
 			</File>
 			<File
@@ -187,7 +210,15 @@
 				>
 			</File>
 			<File
-				RelativePath=".\hsp3gr_win.cpp"
+				RelativePath="..\hsp3\win32gui\hsp3ext_win.cpp"
+				>
+			</File>
+			<File
+				RelativePath="..\hsp3\win32gui\hsp3extlib.cpp"
+				>
+			</File>
+			<File
+				RelativePath="..\hsp3\win32gui\hsp3gr_wingui.cpp"
 				>
 			</File>
 			<File
@@ -196,6 +227,14 @@
 			</File>
 			<File
 				RelativePath=".\hsp3r.cpp"
+				>
+			</File>
+			<File
+				RelativePath=".\hsp3win.cpp"
+				>
+			</File>
+			<File
+				RelativePath="..\hsp3\win32gui\hspvar_comobj.cpp"
 				>
 			</File>
 			<File
@@ -227,7 +266,23 @@
 				>
 			</File>
 			<File
-				RelativePath=".\main.cpp"
+				RelativePath="..\hsp3\win32gui\hspvar_variant.cpp"
+				>
+			</File>
+			<File
+				RelativePath="..\hsp3\win32gui\hspwnd_obj.cpp"
+				>
+			</File>
+			<File
+				RelativePath="..\hsp3\win32gui\hspwnd_win.cpp"
+				>
+			</File>
+			<File
+				RelativePath="..\hsp3\win32gui\main.cpp"
+				>
+			</File>
+			<File
+				RelativePath="..\hsp3\win32gui\mmman.cpp"
 				>
 			</File>
 			<File
@@ -243,7 +298,7 @@
 				>
 			</File>
 			<File
-				RelativePath=".\supio_win.cpp"
+				RelativePath="..\hsp3\win32gui\supio_win.cpp"
 				>
 			</File>
 			<File
@@ -257,7 +312,23 @@
 			UniqueIdentifier="{93995380-89BD-4b04-88EB-625FBE52EBFB}"
 			>
 			<File
+				RelativePath="..\hsp3\win32gui\comobj.h"
+				>
+			</File>
+			<File
+				RelativePath="..\hsp3\win32gui\comobj_event.h"
+				>
+			</File>
+			<File
 				RelativePath="..\hsp3\dpmread.h"
+				>
+			</File>
+			<File
+				RelativePath="..\hsp3\win32gui\fcpoly.h"
+				>
+			</File>
+			<File
+				RelativePath="..\hsp3\win32gui\filedlg.h"
 				>
 			</File>
 			<File
@@ -265,11 +336,31 @@
 				>
 			</File>
 			<File
+				RelativePath="..\hsp3\hsp3config.h"
+				>
+			</File>
+			<File
 				RelativePath="..\hsp3\hsp3debug.h"
 				>
 			</File>
 			<File
-				RelativePath=".\hsp3gr_win.h"
+				RelativePath="..\hsp3\hsp3ext.h"
+				>
+			</File>
+			<File
+				RelativePath="..\hsp3\win32gui\hsp3ext_win.h"
+				>
+			</File>
+			<File
+				RelativePath="..\hsp3\win32gui\hsp3extlib.h"
+				>
+			</File>
+			<File
+				RelativePath="..\hsp3\hsp3gr.h"
+				>
+			</File>
+			<File
+				RelativePath="..\hsp3\win32gui\hsp3gr_wingui.h"
 				>
 			</File>
 			<File
@@ -278,6 +369,18 @@
 			</File>
 			<File
 				RelativePath=".\hsp3r.h"
+				>
+			</File>
+			<File
+				RelativePath="..\hsp3\hsp3struct.h"
+				>
+			</File>
+			<File
+				RelativePath="..\hsp3\win32gui\hsp3win.h"
+				>
+			</File>
+			<File
+				RelativePath="..\hsp3\win32gui\hspvar_comobj.h"
 				>
 			</File>
 			<File
@@ -293,6 +396,22 @@
 				>
 			</File>
 			<File
+				RelativePath="..\hsp3\win32gui\hspvar_variant.h"
+				>
+			</File>
+			<File
+				RelativePath="..\hsp3\hspwnd.h"
+				>
+			</File>
+			<File
+				RelativePath="..\hsp3\win32gui\hspwnd_win.h"
+				>
+			</File>
+			<File
+				RelativePath="..\hsp3\win32gui\mmman.h"
+				>
+			</File>
+			<File
 				RelativePath="..\hsp3\stack.h"
 				>
 			</File>
@@ -305,7 +424,11 @@
 				>
 			</File>
 			<File
-				RelativePath=".\supio_win.h"
+				RelativePath="..\hsp3\supio.h"
+				>
+			</File>
+			<File
+				RelativePath="..\hsp3\win32gui\supio_win.h"
 				>
 			</File>
 		</Filter>
@@ -314,6 +437,14 @@
 			Filter="rc;ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe;resx;tiff;tif;png;wav"
 			UniqueIdentifier="{67DA6AB6-F800-4c08-8B7A-83BB121AAD01}"
 			>
+			<File
+				RelativePath="..\hsp3\win32gui\hsp3.ico"
+				>
+			</File>
+			<File
+				RelativePath="..\hsp3\win32gui\hsp3.rc"
+				>
+			</File>
 		</Filter>
 	</Files>
 	<Globals>

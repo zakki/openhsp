@@ -10,7 +10,7 @@
 #include "../hsp3/hsp3config.h"
 #include "../hsp3/hsp3debug.h"
 #include "../hsp3/dpmread.h"
-#include "supio_win.h"
+#include "../hsp3/supio.h"
 
 /*------------------------------------------------------------*/
 /*

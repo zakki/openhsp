@@ -10,7 +10,7 @@
 #include <string.h>
 #include <math.h>
 
-#include "supio_win.h"
+#include "../hsp3/supio.h"
 
 #include "../hsp3/hspwnd.h"
 #include "../hsp3/dpmread.h"
@@ -547,11 +547,11 @@ int code_get( void )
 	}
 	if ( tflag == HSPVAR_FLAG_VAR ) {
 		PVal *pval;
-		int *p;
-		p = (int *)stm->itemp;
-		pval = (PVal *)*p;
+		int *iptr;
+		iptr = (int *)stm->itemp;
+		pval = (PVal *)stm->ival;
 		tflag = pval->flag;
-		ptr = (char *)HspVarCorePtrAPTR( pval, stm->ival );
+		ptr = (char *)HspVarCorePtrAPTR( pval, *iptr );
 	}
 
 	varproc = HspVarCoreGetProc( tflag );
@@ -912,38 +912,23 @@ APTR code_getva( PVal **pval )
 	STMDATA *stm;
 	int *iptr;
 	int tflag;
-	int chk, i, num_array;
+	int chk, i;
 	PVal temp;
+	APTR aptr;
 
 	if ( StackGetLevel <= 0 ) { throw HSPERR_VARIABLE_REQUIRED; }
 	stm = StackPeek;
 	tflag = stm->type;
-	if ( tflag != TYPE_VAR ) { throw HSPERR_VARIABLE_REQUIRED; }
+	if ( tflag != HSPVAR_FLAG_VAR ) { throw HSPERR_VARIABLE_REQUIRED; }
 
 	iptr = (int *)stm->itemp;
-	num_array = *iptr;									// 配列用スタックの数
-	getv_pval = &hspctx->mem_var[ stm->ival ];
+	aptr = *iptr;										// aptrを得る
+	getv_pval = (PVal *)stm->ival;
 	StackPop();
 	*pval = getv_pval;
 
-	HspVarCoreReset( getv_pval );						// 配列ポインタをリセットする
-
-	for(i=0;i<num_array;i++) {
-		//		Check PVal Array information
-		//		(配列要素(int)の取り出し)(配列の拡張に対応)
-		//
-
-		//			整数値のみサポート
-		HspVarCoreCopyArrayInfo( &temp, getv_pval );			// 状態を保存
-		chk = code_get();								// パラメーターを取り出す
-		if ( chk<=PARAM_END ) { throw HSPERR_BAD_ARRAY_EXPRESSION; }
-		if ( mpval->flag != HSPVAR_FLAG_INT ) { throw HSPERR_TYPE_MISMATCH; }
-		HspVarCoreCopyArrayInfo( getv_pval, &temp );			// 状態を復帰
-		i = *(int *)(mpval->pt);
-		//code_arrayint2( getv_pval, i );
-	}
-
-	return HspVarCoreGetAPTR( getv_pval );
+	getv_pval->offset = aptr;
+	return aptr;
 
 #if 0
 	if ( exflg ) { throw HSPERR_VARIABLE_REQUIRED; }			// パラメーターなし(デフォルト時)
@@ -2031,6 +2016,8 @@ static int cmdfunc_prog( int cmd )
 		int *ival;
 		int i;
 		unsigned short *label;
+		unsigned short *label2;
+		label2 = code_getlb();
 		aptr = code_getva( &pval );
 		if ( pval->flag != HSPVAR_FLAG_INT ) throw HSPERR_TYPE_MISMATCH;
 		ival = (int *)HspVarCorePtrAPTR( pval, aptr );
@@ -2043,7 +2030,11 @@ static int cmdfunc_prog( int cmd )
 		} else {
 			if ( (*ival) <= p2 ) i++;
 		}
-		if ( i ) code_setpc( label);
+		if ( i ) {
+			code_setpc( label);
+		} else {
+			code_setpc( label2);
+		}
 		break;
 		}
 
