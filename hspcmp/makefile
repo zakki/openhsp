@@ -92,7 +92,7 @@ ifneq ($(filter linux,$(PLATFORM)),)
     CC = gcc
     CFLAGS_B = -Wall -finput-charset=cp932 -fexec-charset=cp932 \
                -DHSPLINUX $(addprefix -I,$(includedir))
-    CFLAGS_D = $(CFLAGS_B) -DHSPDEBUG
+    CFLAGS_D = $(CFLAGS_B) -DHSPDEBUG -g
     CFLAGS_R = $(CFLAGS_B) -O3 -DNDEBUG
 
     CXX = $(CC)

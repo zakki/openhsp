@@ -1471,12 +1471,12 @@ int CToken::ReplaceLineBuf( char *str1, char *str2, char *repl, int opt, MACDEF 
 						wp++; type = TK_SEPARATE;
 					}
 				}
+				if ( flg ) { prm[i]=p; flg=0; }
 				if ( type==TK_SEPARATE ) {
 					wp = (unsigned char *)p;
 					prme[i++]=(char *)wp;
 					break;
 				}
-				if ( flg ) { prm[i]=p; flg=0; }
 				if ( wp==NULL ) {
 					prme[i++]=NULL; break;
 				}
@@ -3169,6 +3169,18 @@ int CToken::ExpandLine( CMemBuf *buf, CMemBuf *src )
 }		
 
 
+#include <unistd.h>
+#include <limits.h>
+
+static int putfile( CMemBuf &fbuf, char *path, char *dir, char *dir2 ) {
+	char real[PATH_MAX];
+	realpath( path, real );
+	if ( strncmp( real, dir, strlen(dir) ) && strncmp( real, dir2, strlen(dir2) ) ) {
+		return 0;
+	}
+	return fbuf.PutFile( path ) >= 0;
+}
+
 int CToken::ExpandFile( CMemBuf *buf, char *fname, char *refname )
 {
 	//		ソースファイルをmembufへ展開する
@@ -3176,29 +3188,47 @@ int CToken::ExpandFile( CMemBuf *buf, char *fname, char *refname )
 	int res;
 	char mm[1024];
 	char cname[HSP_MAX_PATH];
+	char ext[HSP_MAX_PATH];
 	char purename[HSP_MAX_PATH];
 	char foldername[HSP_MAX_PATH];
+	char cwd[HSP_MAX_PATH];
 	CMemBuf fbuf;
 
+	getpath( fname, ext, 2 );
 	getpath( fname, purename, 8 );
 	getpath( fname, foldername, 32 );
-	if ( *foldername != 0 ) strcpy( search_path, foldername );
-
-	if ( fbuf.PutFile( fname ) < 0 ) {
-		strcpy( cname, common_path );strcat( cname, purename );
-		if ( fbuf.PutFile( cname ) < 0 ) {
-			strcpy( cname, search_path );strcat( cname, purename );
-			if ( fbuf.PutFile( cname ) < 0 ) {
-				strcpy( cname, common_path );strcat( cname, search_path );strcat( cname, purename );
-				if ( fbuf.PutFile( cname ) < 0 ) {
-					if ( fileadd == 0 ) {
-						Mesf( "#Source file not found.[%s]",purename );
-					}
-					return -1;
-				}
-			}
-		}
+	
+	if ( strcmp(ext, ".hsp") && strcmp(ext, ".as") ) {
+		goto notfound;
 	}
+	
+	getcwd( cwd, HSP_MAX_PATH-1 );
+	strcat( cwd, "/" );
+	
+	if ( *foldername != 0 ) strcpy( search_path, foldername );
+	
+	if ( putfile( fbuf, fname, cwd, common_path ) ) { goto success; }
+
+	strcpy( cname, common_path );
+	strcat( cname, purename );
+
+	if ( putfile( fbuf, cname, cwd, common_path ) ) { goto success; }
+
+	strcpy( cname, search_path );
+	strcat( cname, purename );
+
+	if ( putfile( fbuf, cname, cwd, common_path ) ) { goto success; }
+
+	strcpy( cname, common_path );
+	strcat( cname, search_path );
+	strcat( cname, purename );
+
+	if ( putfile( fbuf, cname, cwd, common_path ) ) { goto success; }
+
+	goto notfound;
+
+success:
+	
 	fbuf.Put( (char)0 );
 
 	if ( fileadd ) {
@@ -3208,7 +3238,8 @@ int CToken::ExpandFile( CMemBuf *buf, char *fname, char *refname )
 	sprintf( mm,"\"%s\"",refname );
 	RegistExtMacroPath( "__file__", mm );			// ファイル名マクロを更新
 
-	buf->PutStrf( "##0 \"%s\"\r\n",refname );
+	sprintf( mm,"##0 \"%s\"\r\n",refname );
+	buf->PutStr( mm );
 
 	res = ExpandLine( buf, &fbuf );
 
@@ -3228,6 +3259,11 @@ int CToken::ExpandFile( CMemBuf *buf, char *fname, char *refname )
 		return -2;
 	}
 	return 0;
+notfound:
+	if ( fileadd == 0 ) {
+		Mesf( "#Source file not found.[%s]",purename );
+	}
+	return -1;
 }
 
 
