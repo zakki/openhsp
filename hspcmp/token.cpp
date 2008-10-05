@@ -1555,8 +1555,7 @@ int CToken::ReplaceLineBuf( char *str1, char *str2, char *repl, int opt, MACDEF 
 					w2 = mactmp;
 					p = prm[val]; endp = prme[val];
 					if ( p==endp ) {				// 値省略時
-						macbuf2 = (char *)macdef;
-						macbuf2 += macdef->index[val] + 0x80;
+						macbuf2 = macdef->data + macdef->index[val];
 						while(1) {
 							a1=*macbuf2++;if (a1==0) break;
 							*w2++ = a1;
@@ -1614,8 +1613,7 @@ int CToken::ReplaceLineBuf( char *str1, char *str2, char *repl, int opt, MACDEF 
 			}
 			p = prm[val]; endp = prme[val];
 			if ( p==endp ) {				// 値省略時
-				macbuf = (char *)macdef;
-				macbuf += macdef->index[val] + 0x80;
+				macbuf = macdef->data + macdef->index[val];
 				if ( *macbuf == 0 ) {
 					SetError("no default parameter"); return 5;
 				}
@@ -1955,7 +1953,7 @@ int CToken::PP_Define( void )
 	//
 	macdef = (MACDEF *)linetmp;
 	macdef->data[0] = 0;
-	macptr = 0x81;				// デフォルトマクロデータ参照オフセット
+	macptr = 1;				// デフォルトマクロデータ参照オフセット
 	wp++;
 	prms=0; flg=0;
 	while(1) {
@@ -1980,7 +1978,7 @@ int CToken::PP_Define( void )
 			if ( type != TK_NUM ) return 6;
 			if ( val != (prms+1) ) return 6;
 			flg = 1;
-			macdef->index[prms] = 0x80;			// デフォルト(初期値なし)
+			macdef->index[prms] = 0;			// デフォルト(初期値なし)
 			break;
 		case '=':
 			if ( flg!=1 ) return 6;
@@ -2047,7 +2045,7 @@ int CToken::PP_Define( void )
 	id = lb->Regist( keyword, LAB_TYPE_PPMAC, prms );
 	wdata = CheckValidWord();
 	lb->SetData( id, wdata );
-	lb->SetData2( id, (char *)macdef, macptr+0x80 );
+	lb->SetData2( id, (char *)macdef, macptr+sizeof(macdef->index) );
 	if ( glmode ) lb->SetEternal( id );
 
 	//sprintf( keyword,"[%d]-[%s]",id,wdata );Alert( keyword );
