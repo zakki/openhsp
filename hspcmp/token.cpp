@@ -1471,7 +1471,14 @@ int CToken::ReplaceLineBuf( char *str1, char *str2, char *repl, int opt, MACDEF 
 						wp++; type = TK_SEPARATE;
 					}
 				}
-				if ( flg ) { prm[i]=p; flg=0; }
+				if ( flg ) {
+					flg=0;
+					prm[i]=p;
+					if ( type == TK_NONE ) {
+						prme[i++]=p;
+						break;
+					}
+				}
 				if ( type==TK_SEPARATE ) {
 					wp = (unsigned char *)p;
 					prme[i++]=(char *)wp;
