@@ -403,6 +403,7 @@ static int cmdfunc_intcmd( int cmd )
 		p1 = code_getdi( 0 );
 		p2 = code_getdi( 0 );
 		p3 = code_getdi( 0 );
+		if( p2 < 0 || p3 < 0 ) throw HSPERR_BUFFER_OVERFLOW;
 
 		tptr += p2;
 		sptr += p3;
@@ -422,6 +423,7 @@ static int cmdfunc_intcmd( int cmd )
 		p1 = code_getdi( 0 );
 		p2 = code_getdi( 0 );
 		p3 = code_getdi( 0 );
+		if ( p3 < 0 ) throw HSPERR_BUFFER_OVERFLOW;
 		ptr += p3;
 		if ( (p3+p2)>size ) throw HSPERR_BUFFER_OVERFLOW;
 		if ( p2>0 ) {
