@@ -135,7 +135,8 @@
 
 	prm = 0xfffffff6,0xfffffff5,0xfffffff4
 	repeat 3
-		ll_callfunc prm(cnt),1,func
+		prm = prm(cnt)
+		ll_callfunc prm,1,func
 		std(cnt) = dllret
 	loop
 
@@ -217,10 +218,16 @@
 	;Console‚É•¶Žš—ñ‚ð‘‚«ž‚Þ
 	;................................................................................
 	#deffunc putz str v1
-	goto *@f
+	s = v1
+	prm = std.S_OUTPUT
+	getptr prm.1,s
+	prm.2 = strlen(s)
+	getptr prm.3,a
+	prm.4 = 0
+	dllproc "WriteConsoleA",prm,5,D_KERNEL
+	return prm(3)
 
 	#deffunc puts var v1
-*@
 	l = strlen(v1) : if(l >= 64) : sdim s,l + 1
 	s = v1
 	prm = std.S_OUTPUT
