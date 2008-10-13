@@ -228,7 +228,8 @@
 	if(_v2 == 0) : _v2 = 1
 	dll_getfunc a,"ImageList_Destroy",D_COMCTL
 	repeat _v2
-		ll_callfunc v1(cnt),1,a
+		prm = v1(cnt)
+		ll_callfunc prm,1,a
 	loop
 	return
 
