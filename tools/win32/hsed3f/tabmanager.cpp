@@ -89,6 +89,7 @@ void CreateTab(int nTabNumber, const char *szNewTitleName, const char *szNewFile
 	SetEditColor(i);
 	poppad_setedit(i);		// ‹N“®’¼Œã‚Ìİ’è”½‰f(onitama:050218)
 	SetClassify(i);
+	poppad_setsb_current(i);
 
 	hWnd = FootyGetWnd(i);
 	Org_EditProc = (WNDPROC)GetWindowLong(hWnd, GWL_WNDPROC);

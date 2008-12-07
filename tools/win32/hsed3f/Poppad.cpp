@@ -1358,16 +1358,34 @@ static void poppad_setalledit()
 	}
 }
 
+static void poppad_setsb0( int chk, int FootyID )
+{
+	HWND hWnd = FootyGetWnd(FootyID);
+	ShowScrollBar(hWnd, SB_HORZ, chk);
+}
+
 int poppad_setsb( int flag )
 {
 	int chk;
 	if (flag<0) chk=hscroll_flag;
 	else if (flag<2) chk=flag;
 	else chk=hscroll_flag^1;
-	ShowScrollBar( hwndEdit,SB_HORZ,chk );
+
+	int num = TabCtrl_GetItemCount(hwndTab);
+	TABINFO *lpTabInfo;
+	for(int i = 0; i < num; i++){
+		lpTabInfo = GetTabInfo(i);
+		if(lpTabInfo != NULL)
+			poppad_setsb0(chk, lpTabInfo->FootyID);
+	}
 
 	hscroll_flag=chk;
 	return chk;
+}
+
+void poppad_setsb_current( int FootyID )
+{
+	poppad_setsb0(hscroll_flag, FootyID);
 }
 
 int poppad_ini( HWND hwnd, LPARAM lParam )
@@ -1418,8 +1436,6 @@ int poppad_ini( HWND hwnd, LPARAM lParam )
 				   strcpy( szFileName, szCmdline );
 			   }
 */
-
-               poppad_setsb( hscroll_flag );
 
 			   PopFontSetELG( chg_font );
 			   PopFontSetEditFont();

@@ -332,6 +332,7 @@ void ActivateTab(int nTabNumber1, int nTabNumber2)
 		Footy2Move(activeFootyID, rect.left, rect.top, rect.right-rect.left, rect.bottom-rect.top);
 		Footy2ChangeView(activeFootyID, VIEWMODE_NORMAL);
 		Footy2SetFocus(activeFootyID, 0);
+		poppad_setsb_current(activeFootyID);
 		Footy2Refresh(activeFootyID);
 
 		CheckMenuRadioItem(hMenu, POS_TABBASE, GetMenuItemCount(hMenu) - 1, POS_TABBASE + nTabNumber2, MF_BYPOSITION);

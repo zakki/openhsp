@@ -917,6 +917,7 @@ ClientWndProc (HWND hwnd, UINT mMsg, WPARAM wParam, LPARAM lParam)
 			   GetClientRect(hwndTab, &rect);
 			   TabCtrl_AdjustRect(hwndTab, FALSE, &rect);
 			   FootySetPos(activeFootyID, rect.left, rect.top, rect.right-rect.left, rect.bottom-rect.top);
+			   poppad_setsb_current(activeFootyID);
 
 			   return 0 ;
                }

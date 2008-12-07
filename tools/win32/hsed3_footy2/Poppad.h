@@ -82,6 +82,7 @@ LRESULT CALLBACK EditDefProc(HWND hwnd, UINT iMsg, WPARAM wParam, LPARAM lParam)
 void pophwnd( HWND hwnd );
 LRESULT poppad_term( UINT iMsg );
 int poppad_setsb( int flag );
+void poppad_setsb_current( int FootyID );
 void PutLineNumber( void );
 
 // DLL functions
