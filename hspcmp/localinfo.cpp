@@ -3,7 +3,9 @@
 //		local info related routines
 /*----------------------------------------------------------------*/
 
-//#define USE_WINDOWS_API		// WINDOWS APIを使用する
+#ifdef HSPWIN
+#define USE_WINDOWS_API		// WINDOWS APIを使用する
+#endif
 
 
 #ifdef USE_WINDOWS_API
