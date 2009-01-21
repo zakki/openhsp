@@ -20,7 +20,7 @@ void addext( char *st, char *exstr );
 void cutext( char *st );
 void cutlast( char *st );
 void cutlast2( char *st );
-void strcpy2( char *str, char *str2, int max );
+void strcpy2( char *dest, const char *src, size_t size );
 char *strchr2( char *target, char code );
 
 void getpath( char *stmp, char *outbuf, int p2 );

@@ -182,24 +182,21 @@ void getpath( char *src, char *outbuf, int p2 )
 }
 
 
-void strcpy2( char *str, char *str2, int max )
+void strcpy2( char *dest, const char *src, size_t size )
 {
-	//	string case to lower and copy
-	//
-	int i;
-	unsigned char a1;
-	unsigned char *ss;
-	unsigned char *ss2;
-	ss=(unsigned char *)str;
-	ss2=(unsigned char *)str2;
-	i = 1;
-	while(1) {
-		if ( i >= max ) break;
-		a1=*ss2++;
-		if (a1==0) break;
-		*ss++=a1;
+	if(size == 0) {
+		return;
 	}
-	*ss=0;
+	char *d = dest;
+	const char *s = src;
+	size_t n = size;
+	while (--n) {
+		if((*d++ = *s++) == '\0') {
+			return;
+		}
+	}
+	*d = '\0';
+	return;
 }
 
 
