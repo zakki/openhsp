@@ -3047,17 +3047,14 @@ int CToken::ExpandLine( CMemBuf *buf, CMemBuf *src )
 		ahtkeyword = NULL;					// AHTキーワードをリセットする
 
 		//		行データをlinebufに展開
-		if (( a1=='#' )&&( mulstr != LMODE_STR )) {
+		if (( a1=='#' )&&( mulstr != LMODE_STR )&&( mulstr != LMODE_COMMENT )) {
 			vp++;
 			p = SendLineBufPP( vp, &mline );// 行末までを取り出す('\'継続)
 			wrtbuf = NULL;
-			if ( mulstr == LMODE_COMMENT ) {
-				mline++;for(i=0;i<mline;i++) { buf->PutCR(); }
-				pline += mline;
-				p = ExpandStrComment( vp, 0 );		// /*～*/の処理
-				continue;
-			}
 		} else {
+			if ( mulstr == LMODE_COMMENT && a1 == '#' ) {
+				a1 = 1;
+			}
 			p = SendLineBuf( vp );			// 行末までを取り出す
 			mline=0;
 			wrtbuf = buf;
