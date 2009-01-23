@@ -355,6 +355,16 @@ char *strchr2( char *target, char code )
 	return res;
 }
 
+int is_sjis_char_head( const unsigned char *str, int pos )
+{
+	//		Shift_JIS文字列のposバイト目が文字の先頭バイトであるか
+	//		マルチバイト文字の後続バイトなら0、それ以外なら1を返す
+	int result = 1;
+	while(pos != 0 && issjisleadbyte(str[--pos])) {
+		result = ! result;
+	}
+	return result;
+}
 
 void CutLastChr( char *p, char code )
 {
