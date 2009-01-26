@@ -1379,6 +1379,8 @@ char *CToken::SendLineBuf( char *str )
 }
 
 
+#define IS_CHAR_HEAD(pos) is_sjis_char_head((unsigned char *)str, (pos) - (unsigned char *)str)
+
 char *CToken::SendLineBufPP( char *str, int *lines )
 {
 	//		１行分のデータをlinebufに転送
@@ -1386,37 +1388,36 @@ char *CToken::SendLineBufPP( char *str, int *lines )
 	//
 	unsigned char *p;
 	unsigned char *w;
-	unsigned char a1,a2,a3;
+	unsigned char a1,a2;
 	int ln;
 	p = (unsigned char *)str;
 	w = (unsigned char *)linebuf;
-	a2 = 0; a3 = 0; ln =0;
+	a2 = 0; ln =0;
 	while(1) {
 		a1 = *p;if ( a1==0 ) break;
 		p++;
 		if ( a1 == 10 ) {
-			if ( a2==0x5c ) {
-				if ((a3<129)||((a3>159)&&(a3<224))) {					// 全角文字チェック
-					ln++; w--; a2=0; a3=0; continue;
-				}
+			if ( a2==0x5c && IS_CHAR_HEAD(p - 2) ) {
+				ln++; w--; a2=0; continue;
 			}
 			break;
 		}
 		if ( a1 == 13 ) {
-			if ( *p==10 ) p++;
-			if ( a2==0x5c ) {
-				if ((a3<129)||((a3>159)&&(a3<224))) {					// 全角文字チェック
-					ln++; w--; a2=0; a3=0; continue;
-				}
+			if ( a2==0x5c && IS_CHAR_HEAD(p - 2) ) {
+				if ( *p==10 ) p++;
+				ln++; w--; a2=0; continue;
 			}
+			if ( *p==10 ) p++;
 			break;
 		}
-		*w++=a1; a3=a2; a2=a1;
+		*w++=a1; a2=a1;
 	}
 	*w=0;
 	*lines = ln;
 	return (char *)p;
 }
+
+#undef IS_CHAR_HEAD
 
 
 int CToken::ReplaceLineBuf( char *str1, char *str2, char *repl, int opt, MACDEF *macdef )
