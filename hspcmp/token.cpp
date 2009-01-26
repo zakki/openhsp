@@ -1379,8 +1379,6 @@ char *CToken::SendLineBuf( char *str )
 }
 
 
-#define IS_CHAR_HEAD(pos) is_sjis_char_head((unsigned char *)str, (pos) - (unsigned char *)str)
-
 char *CToken::SendLineBufPP( char *str, int *lines )
 {
 	//		１行分のデータをlinebufに転送
@@ -1388,36 +1386,37 @@ char *CToken::SendLineBufPP( char *str, int *lines )
 	//
 	unsigned char *p;
 	unsigned char *w;
-	unsigned char a1,a2;
+	unsigned char a1,a2,a3;
 	int ln;
 	p = (unsigned char *)str;
 	w = (unsigned char *)linebuf;
-	a2 = 0; ln =0;
+	a2 = 0; a3 = 0; ln =0;
 	while(1) {
 		a1 = *p;if ( a1==0 ) break;
 		p++;
 		if ( a1 == 10 ) {
-			if ( a2==0x5c && IS_CHAR_HEAD(p - 2) ) {
-				ln++; w--; a2=0; continue;
+			if ( a2==0x5c ) {
+				if ((a3<129)||((a3>159)&&(a3<224))) {					// 全角文字チェック
+					ln++; w--; a2=0; a3=0; continue;
+				}
 			}
 			break;
 		}
 		if ( a1 == 13 ) {
-			if ( a2==0x5c && IS_CHAR_HEAD(p - 2) ) {
-				if ( *p==10 ) p++;
-				ln++; w--; a2=0; continue;
-			}
 			if ( *p==10 ) p++;
+			if ( a2==0x5c ) {
+				if ((a3<129)||((a3>159)&&(a3<224))) {					// 全角文字チェック
+					ln++; w--; a2=0; a3=0; continue;
+				}
+			}
 			break;
 		}
-		*w++=a1; a2=a1;
+		*w++=a1; a3=a2; a2=a1;
 	}
 	*w=0;
 	*lines = ln;
 	return (char *)p;
 }
-
-#undef IS_CHAR_HEAD
 
 
 int CToken::ReplaceLineBuf( char *str1, char *str2, char *repl, int opt, MACDEF *macdef )
@@ -3008,29 +3007,68 @@ int CToken::Preprocess( char *str )
 }
 
 
+int CToken::ExpandTokens( char *vp, CMemBuf *buf, int *lineext, int is_preprocess_line )
+{
+	//		マクロを展開
+	//
+	*lineext = 0;				// 1行->複数行にマクロ展開されたか?
+	int macloop = 0;			// マクロ展開無限ループチェック用カウンタ
+	while(1) {
+		if ( mulstr == LMODE_OFF ) {				// １行無視
+			if ( wrtbuf!=NULL ) wrtbuf->PutCR();	// 行末CR/LFを追加
+			break;
+		}
+
+		// {"～"}の処理
+		//
+		if ( mulstr == LMODE_STR ) {
+			wrtbuf = buf;
+			vp = ExpandStrEx( vp );
+			if ( *vp!=0 ) continue;
+		}
+
+		// /*～*/の処理
+		//
+		if ( mulstr == LMODE_COMMENT ) {
+			vp = ExpandStrComment( vp, 0 );
+			if ( *vp!=0 ) continue;
+		}
+
+		char *vp_bak = vp;
+		int type;
+		vp = ExpandToken( vp, &type, is_preprocess_line );
+		if ( type < 0 ) {
+			return type;
+		}
+		if ( type == TK_EOL ) { (*lineext)++; }
+		if ( type == TK_EOF ) {
+			if ( wrtbuf!=NULL ) wrtbuf->PutCR();	// 行末CR/LFを追加
+			break;
+		}
+		if ( vp_bak == vp ) {
+			macloop++;
+			if ( macloop > 999 ) {
+				SetError("Endless macro loop");
+				return -1;
+			}
+		}
+	}
+	return 0;
+}
+
+
 int CToken::ExpandLine( CMemBuf *buf, CMemBuf *src )
 {
 	//		stringデータをmembufへ展開する
 	//
-	int i,res;
-	int type;
-	int pline, mline;		// pre-processソースの行count
-	int lineext;			// 1行->複数行にマクロ展開されたか?
-	int macloop;			// マクロ展開無限ループチェック用カウンタ
-	int ppmode;				// プリプロセッサ時のフラグ
-	char *p;
-	char *vp;
-	char *vp_bak;
-	char a1;
-	char ln_str[16];
-	p = src->GetBuffer();
+	char *p = src->GetBuffer();
+	int pline = 1;
 	enumgc = 0;
-	pline = 1;
-	mulstr = 0;
+	mulstr = LMODE_ON;
 	*errtmp = 0;
 
 	while(1) {
-
+		char ln_str[16];
 #ifdef HSPWIN
 		_itoa( pline, ln_str, 10 );
 #else
@@ -3038,26 +3076,24 @@ int CToken::ExpandLine( CMemBuf *buf, CMemBuf *src )
 #endif
 		RegistExtMacro( "__line__", ln_str );			// 行番号マクロを更新
 
-		vp = p;
-		while(1) {
-			a1=*vp;if ((a1!=32)&&(a1!=9)) break;
-			vp++;
+		while( *p == ' ' || *p == '\t' ) {
+			p++;
 		}
-		a1 = *vp;							// 行頭のトークン
-		if ( a1==0 ) break;					// 終了(EOF)
+		if ( *p==0 ) break;					// 終了(EOF)
 		ahtkeyword = NULL;					// AHTキーワードをリセットする
 
+		int is_preprocess_line = *p == '#' &&
+		                         mulstr != LMODE_STR &&
+		                         mulstr != LMODE_COMMENT;
+
 		//		行データをlinebufに展開
-		if (( a1=='#' )&&( mulstr != LMODE_STR )&&( mulstr != LMODE_COMMENT )) {
-			vp++;
-			p = SendLineBufPP( vp, &mline );// 行末までを取り出す('\'継続)
+		int mline;
+		if ( is_preprocess_line ) {
+			p = SendLineBufPP( p + 1, &mline );// 行末までを取り出す('\'継続)
 			wrtbuf = NULL;
 		} else {
-			if ( mulstr == LMODE_COMMENT && a1 == '#' ) {
-				a1 = 1;
-			}
-			p = SendLineBuf( vp );			// 行末までを取り出す
-			mline=0;
+			p = SendLineBuf( p );			// 行末までを取り出す
+			mline = 0;
 			wrtbuf = buf;
 		}
 
@@ -3067,19 +3103,20 @@ int CToken::ExpandLine( CMemBuf *buf, CMemBuf *src )
 		//buf->PutStr( mestmp );
 
 		//		マクロ展開前に処理されるプリプロセッサ
-		ppmode = 0;
-		if ( a1=='#' ) {
-			res = PreprocessNM( linebuf );
-			if ( res>0 ) { LineError( errtmp, pline, src->GetFileName() );return res; }
+		if ( is_preprocess_line ) {
+			int res = PreprocessNM( linebuf );
+			if ( res > 0 ) {
+				LineError( errtmp, pline, src->GetFileName() );
+				return res;
+			}
 			if ( res == 0 ) {			// プリプロセッサで処理された時
 				mline++;
 				pline += mline;
-				if ( res==0 ) {
-					for(i=0;i<mline;i++) { buf->PutCR(); }
+				for (int i = 0; i < mline; i++) {
+					buf->PutCR();
 				}
 				continue;
 			}
-			ppmode = 1;
 		}
 
 //		if ( wrtbuf!=NULL ) {
@@ -3089,76 +3126,43 @@ int CToken::ExpandLine( CMemBuf *buf, CMemBuf *src )
 //		}
 
 		//		マクロを展開
-		vp = linebuf;
-		lineext = 0;
-		macloop = 0;
-		while(1) {
-			if ( mulstr == LMODE_OFF ) {				// １行無視
-				if ( wrtbuf!=NULL ) wrtbuf->PutCR();	// 行末CR/LFを追加
-				break;
-			}
-
-			// {"～"}の処理
-			//
-			if ( mulstr == LMODE_STR ) {
-				wrtbuf = buf;
-				vp = ExpandStrEx( vp );
-				if ( *vp!=0 ) continue;
-				a1 = 1; 
-			}
-
-			if (( a1 != '#' )&&( mulstr )) {
-//				if ( mulstr == LMODE_OFF ) {				// １行無視
-//					if ( wrtbuf!=NULL ) wrtbuf->PutCR();	// 行末CR/LFを追加
-//					break;
-//				}
-				if ( mulstr == LMODE_COMMENT ) vp = ExpandStrComment( vp, 0 );		// /*～*/の処理
-//				if ( mulstr == LMODE_STR ) vp = ExpandStrEx( vp );				// {"～"}の処理
-				if ( *vp!=0 ) continue;
-			}
-			vp_bak = vp;
-			vp = ExpandToken( vp, &type, ppmode );
-			if ( type < 0 ) {
-				LineError( errtmp, pline, src->GetFileName() );
-				return type;
-			}
-			if ( type == TK_EOL ) { lineext++; }
-			if ( type == TK_EOF ) {
-				if ( wrtbuf!=NULL ) wrtbuf->PutCR();	// 行末CR/LFを追加
-				break;
-			}
-			if ( vp_bak == vp ) {
-				macloop++;if ( macloop > 999 ) {
-					LineError( "Endless macro loop", pline, src->GetFileName() );
-					return -1;
-				}
-			}
+		int lineext;			// 1行->複数行にマクロ展開されたか?
+		int res = ExpandTokens( linebuf, buf, &lineext, is_preprocess_line );
+		if ( res ) {
+			LineError( errtmp, pline, src->GetFileName() );
+			return res;
 		}
 
-
 		//		プリプロセッサ処理
-		if ( a1=='#' ) {
+		if ( is_preprocess_line ) {
 			wrtbuf = buf;
-			res = Preprocess( linebuf );
-			if ( res==0x1000 ) {			// include後の処理
+			int res = Preprocess( linebuf );
+			if ( res == 0x1000 ) {			// include後の処理
 				pline += 1+mline;
 
 				sprintf( mestmp,"\"%s\"",src->GetFileName() );
 				RegistExtMacroPath( "__file__", mestmp );			// ファイル名マクロを更新
 
 				wrtbuf = buf;
-				wrtbuf->PutStrf( "##%d \"%s\"\r\n", pline-1, src->GetFileName() ); res = 0;
+				wrtbuf->PutStrf( "##%d \"%s\"\r\n", pline-1, src->GetFileName() );
 				continue;
 			}
-			if ( res==0x1001 ) {			// プリプロセスで行が増えた後の処理
-				wrtbuf->PutStrf( "##%d\r\n", pline ); res = 0;
+			if ( res == 0x1001 ) {			// プリプロセスで行が増えた後の処理
+				wrtbuf->PutStrf( "##%d\r\n", pline );
 				pline++;
 				continue;
 			}
-			if ( res>0 ) { LineError( errtmp, pline, src->GetFileName() );return res; }
+			if ( res > 0 ) {
+				LineError( errtmp, pline, src->GetFileName() );
+				return res;
+			}
 			mline++;
 			pline += mline;
-			if ( res==0 ) for(i=0;i<mline;i++) { buf->PutCR(); }
+			if ( res == 0 ) {
+				for (int i = 0; i < mline; i++) {
+					buf->PutCR();
+				}
+			}
 			continue;
 		}
 
@@ -3169,7 +3173,7 @@ int CToken::ExpandLine( CMemBuf *buf, CMemBuf *src )
 		}
 	}
 	return 0;
-}		
+}
 
 
 int CToken::ExpandFile( CMemBuf *buf, char *fname, char *refname )
