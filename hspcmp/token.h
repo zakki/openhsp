@@ -95,6 +95,8 @@ typedef struct MACDEF {
 
 #define HEDINFO_RUNTIME 0x1000		// runtime指定用のヘッダ情報
 
+#define SWSTACK_MAX 32
+
 class CLabel;
 class CMemBuf;
 class CTagStack;
@@ -332,9 +334,9 @@ private:
 	char mestmp[128];				// meseage temp
 	int incinf;						// include level
 	int mulstr;						// multiline string flag
-	short swstack[32];				// generator sw stack (flag)
-	short swstack2[32];				// generator sw stack (mode)
-	short swstack3[32];				// generator sw stack (sw)
+	short swstack[SWSTACK_MAX];		// generator sw stack (flag)
+	short swstack2[SWSTACK_MAX];	// generator sw stack (mode)
+	short swstack3[SWSTACK_MAX];	// generator sw stack (sw)
 	int swsp;						// generator sw stack pointer
 	int swmode;						// generator sw mode (0=if/1=else)
 	int swlevel;					// first stack level ( when off )

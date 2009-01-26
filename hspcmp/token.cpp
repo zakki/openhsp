@@ -1652,6 +1652,10 @@ int CToken::ReplaceLineBuf( char *str1, char *str2, char *repl, int opt, MACDEF 
 int CToken::PP_SwitchStart( int sw )
 {
 	if ( swsp==0 ) { swflag = 1; swlevel = LMODE_ON; }
+	if ( swsp >= SWSTACK_MAX ) {
+		SetError("#if nested too deeply");
+		return -1;
+	}
 	swstack[swsp] = swflag;				// 有効フラグ
 	swstack2[swsp] = swmode;			// elseモード
 	swstack3[swsp] = swlevel;			// ON/OFF
@@ -1668,7 +1672,10 @@ int CToken::PP_SwitchStart( int sw )
 
 int CToken::PP_SwitchEnd( void )
 {
-	if ( swsp == 0 ) return -1;
+	if ( swsp == 0 ) {
+		SetError("#endif without #if");
+		return -1;
+	}
 	swsp--;
 	swflag = swstack[swsp];
 	swmode = swstack2[swsp];
@@ -1680,8 +1687,14 @@ int CToken::PP_SwitchEnd( void )
 
 int CToken::PP_SwitchReverse( void )
 {
-	if ( swsp == 0 ) return -1;
-	if ( swmode != 0 ) return -1;
+	if ( swsp == 0 ) {
+		SetError("#else without #if");
+		return -1;
+	}
+	if ( swmode != 0 ) {
+		SetError("#else after #else");
+		return -1;
+	}
 	if ( swstack[swsp-1] == 0 ) return 0;	// 上のスタックが無効なら無視
 	swmode = 1;
 	if ( swlevel == LMODE_ON ) { swlevel = LMODE_OFF; } else { swlevel = LMODE_ON; }
@@ -2766,7 +2779,7 @@ int CToken::PreprocessNM( char *str )
 				res = PP_SwitchStart( (id!=-1) );
 			}
 		}
-		if (res) { SetError("bad ifdef syntax"); return 6; }
+		if (res) { return 6; }
 		return 0;
 	}
 	if (tstrcmp(word,"ifndef")) {		// generate control
@@ -2783,19 +2796,17 @@ int CToken::PreprocessNM( char *str )
 				res = PP_SwitchStart( (id==-1) );
 			}
 		}
-		if (res) { SetError("bad ifdef syntax"); return 6; }
+		if (res) { return 6; }
 		return 0;
 	}
 	if (tstrcmp(word,"else")) {			// generate control
 		if ( PP_SwitchReverse() ) {
-			SetError("bad else syntax");
 			return 6;
 		}
 		return 0;
 	}
 	if (tstrcmp(word,"endif")) {		// generate control
 		if ( PP_SwitchEnd() ) {
-			SetError("bad endif syntax");
 			return 6;
 		}
 		return 0;
@@ -2854,7 +2865,7 @@ int CToken::Preprocess( char *str )
 				res = PP_SwitchStart(a);
 			} else res=1;
 		}
-		if (res) { SetError("bad if syntax"); return 6; }
+		if (res) { return 6; }
 		return 0;
 	}
 
