@@ -23,6 +23,7 @@ void cutlast2( char *st );
 void strcpy2( char *dest, const char *src, size_t size );
 char *strchr2( char *target, char code );
 int is_sjis_char_head( const unsigned char *str, int pos );
+char *to_hsp_string_literal( const char *src );
 
 void getpath( char *stmp, char *outbuf, int p2 );
 

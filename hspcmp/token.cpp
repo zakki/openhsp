@@ -3152,11 +3152,12 @@ int CToken::ExpandLine( CMemBuf *buf, CMemBuf *src )
 			if ( res == 0x1000 ) {			// include後の処理
 				pline += 1+mline;
 
-				sprintf( mestmp,"\"%s\"",src->GetFileName() );
-				RegistExtMacroPath( "__file__", mestmp );			// ファイル名マクロを更新
+				char *fname_literal = to_hsp_string_literal( src->GetFileName() );
+				RegistExtMacro( "__file__", fname_literal );			// ファイル名マクロを更新
 
 				wrtbuf = buf;
-				wrtbuf->PutStrf( "##%d \"%s\"\r\n", pline-1, src->GetFileName() );
+				wrtbuf->PutStrf( "##%d %s\r\n", pline-1, fname_literal );
+				free( fname_literal );
 				continue;
 			}
 			if ( res == 0x1001 ) {			// プリプロセスで行が増えた後の処理
@@ -3224,10 +3225,11 @@ int CToken::ExpandFile( CMemBuf *buf, char *fname, char *refname )
 		Mesf( "#Use file [%s]",purename );
 	}
 
-	sprintf( mm,"\"%s\"",refname );
-	RegistExtMacroPath( "__file__", mm );			// ファイル名マクロを更新
+	char *fname_literal = to_hsp_string_literal( refname );
+	RegistExtMacro( "__file__", fname_literal );			// ファイル名マクロを更新
 
-	buf->PutStrf( "##0 \"%s\"\r\n",refname );
+	buf->PutStrf( "##0 %s\r\n", fname_literal );
+	free( fname_literal );
 
 	res = ExpandLine( buf, &fbuf );
 
