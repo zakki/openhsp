@@ -132,7 +132,7 @@ public:
 	int PreprocessNM( char *str );
 	void PreprocessCommentCheck( char *str );
 
-	int ExpandLine( CMemBuf *buf, CMemBuf *src );
+	int ExpandLine( CMemBuf *buf, CMemBuf *src, char *refname );
 	int ExpandFile( CMemBuf *buf, char *fname, char *refname );
 	void SetCommonPath( char *path );
 	int SetAdditionMode( int mode );

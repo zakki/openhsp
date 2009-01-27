@@ -3069,7 +3069,7 @@ int CToken::ExpandTokens( char *vp, CMemBuf *buf, int *lineext, int is_preproces
 }
 
 
-int CToken::ExpandLine( CMemBuf *buf, CMemBuf *src )
+int CToken::ExpandLine( CMemBuf *buf, CMemBuf *src, char *refname )
 {
 	//		stringデータをmembufへ展開する
 	//
@@ -3152,7 +3152,7 @@ int CToken::ExpandLine( CMemBuf *buf, CMemBuf *src )
 			if ( res == 0x1000 ) {			// include後の処理
 				pline += 1+mline;
 
-				char *fname_literal = to_hsp_string_literal( src->GetFileName() );
+				char *fname_literal = to_hsp_string_literal( refname );
 				RegistExtMacro( "__file__", fname_literal );			// ファイル名マクロを更新
 
 				wrtbuf = buf;
@@ -3198,6 +3198,7 @@ int CToken::ExpandFile( CMemBuf *buf, char *fname, char *refname )
 	char cname[HSP_MAX_PATH];
 	char purename[HSP_MAX_PATH];
 	char foldername[HSP_MAX_PATH];
+	char refname_copy[HSP_MAX_PATH];
 	CMemBuf fbuf;
 
 	getpath( fname, purename, 8 );
@@ -3231,7 +3232,8 @@ int CToken::ExpandFile( CMemBuf *buf, char *fname, char *refname )
 	buf->PutStrf( "##0 %s\r\n", fname_literal );
 	free( fname_literal );
 
-	res = ExpandLine( buf, &fbuf );
+	strcpy2( refname_copy, refname, sizeof refname_copy );
+	res = ExpandLine( buf, &fbuf, refname_copy );
 
 	if ( res == 0 ) {
 		//		プリプロセス後チェック
