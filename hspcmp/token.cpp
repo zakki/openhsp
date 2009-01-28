@@ -3118,7 +3118,7 @@ int CToken::ExpandLine( CMemBuf *buf, CMemBuf *src, char *refname )
 		if ( is_preprocess_line ) {
 			int res = PreprocessNM( linebuf );
 			if ( res > 0 ) {
-				LineError( errtmp, pline, src->GetFileName() );
+				LineError( errtmp, pline, refname );
 				return res;
 			}
 			if ( res == 0 ) {			// プリプロセッサで処理された時
@@ -3141,7 +3141,7 @@ int CToken::ExpandLine( CMemBuf *buf, CMemBuf *src, char *refname )
 		int lineext;			// 1行->複数行にマクロ展開されたか?
 		int res = ExpandTokens( linebuf, buf, &lineext, is_preprocess_line );
 		if ( res ) {
-			LineError( errtmp, pline, src->GetFileName() );
+			LineError( errtmp, pline, refname );
 			return res;
 		}
 
@@ -3166,7 +3166,7 @@ int CToken::ExpandLine( CMemBuf *buf, CMemBuf *src, char *refname )
 				continue;
 			}
 			if ( res > 0 ) {
-				LineError( errtmp, pline, src->GetFileName() );
+				LineError( errtmp, pline, refname );
 				return res;
 			}
 			mline++;
