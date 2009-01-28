@@ -3161,6 +3161,7 @@ int CToken::ExpandLine( CMemBuf *buf, CMemBuf *src, char *refname )
 				continue;
 			}
 			if ( res == 0x1001 ) {			// プリプロセスで行が増えた後の処理
+				pline += mline;
 				wrtbuf->PutStrf( "##%d\r\n", pline );
 				pline++;
 				continue;
@@ -3169,12 +3170,10 @@ int CToken::ExpandLine( CMemBuf *buf, CMemBuf *src, char *refname )
 				LineError( errtmp, pline, refname );
 				return res;
 			}
-			mline++;
-			pline += mline;
-			if ( res == 0 ) {
-				for (int i = 0; i < mline; i++) {
-					buf->PutCR();
-				}
+			pline += 1+mline;
+			if ( res == 0 ) mline++;
+			for (int i = 0; i < mline; i++) {
+				buf->PutCR();
 			}
 			continue;
 		}
