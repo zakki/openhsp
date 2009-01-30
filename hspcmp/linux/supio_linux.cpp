@@ -43,7 +43,7 @@
 //
 //		Internal function support (without Windows API)
 //
-static void _splitpath( char *path, char *p_drive, char *dir, char *fname, char *ext )
+static void _splitpath( const char *path, char *p_drive, char *dir, char *fname, char *ext )
 {
 	//		Linux用ファイルパス切り出し
 	//
@@ -111,7 +111,7 @@ void mem_bye( void *ptr ) {
 	free(ptr);
 }
 
-int mem_load( char *fname, void *mem, int msize )
+int mem_load( const char *fname, void *mem, int msize )
 {
 	FILE *fp;
 	int flen;
@@ -122,7 +122,7 @@ int mem_load( char *fname, void *mem, int msize )
 	return flen;
 }
 
-int mem_save( char *fname, void *mem, int msize, int seekofs )
+int mem_save( const char *fname, const void *mem, int msize, int seekofs )
 {
 	FILE *fp;
 	int flen;
@@ -192,7 +192,7 @@ void strcase2( char *str, char *str2 )
 }
 
 
-int tstrcmp( char *str1, char *str2 )
+int tstrcmp( const char *str1, const char *str2 )
 {
 	//	string compare (0=not same/-1=same)
 	//
@@ -209,37 +209,35 @@ int tstrcmp( char *str1, char *str2 )
 }
 
 
-void getpath( char *stmp, char *outbuf, int p2 )
+void getpath( const char *src, char *outbuf, int p2 )
 {
 	char *p;
-	char tmp[_MAX_PATH];
+	char stmp[_MAX_PATH];
 	char p_drive[_MAX_PATH];
 	char p_dir[_MAX_DIR];
 	char p_fname[_MAX_FNAME];
 	char p_ext[_MAX_EXT];
 
 	p = outbuf;
+	strcpy( stmp, src );
 	if (p2&16) strcase( stmp );
 	_splitpath( stmp, p_drive, p_dir, p_fname, p_ext );
-
 	strcat( p_drive, p_dir );
 	if ( p2&8 ) {
-		strcpy( tmp, p_fname ); strcat( tmp, p_ext );
+		strcpy( stmp, p_fname ); strcat( stmp, p_ext );
 	} else if ( p2&32 ) {
-		strcpy( tmp, p_drive );
-	} else {
-		strcpy( tmp, stmp );
+		strcpy( stmp, p_drive );
 	}
 	switch( p2&7 ) {
 	case 1:			// Name only ( without ext )
-		stmp[ strlen(tmp)-strlen(p_ext) ] = 0;
-		strcpy( p, tmp );
+		stmp[ strlen(stmp)-strlen(p_ext) ] = 0;
+		strcpy( p, stmp );
 		break;
 	case 2:			// Ext only
 		strcpy( p, p_ext );
 		break;
 	default:		// Direct Copy
-		strcpy( p, tmp );
+		strcpy( p, stmp );
 		break;
 	}
 }
@@ -265,7 +263,7 @@ void strcpy2( char *dest, const char *src, size_t size )
 
 /*----------------------------------------------------------*/
 
-void addext( char *st, char *exstr )
+void addext( char *st, const char *exstr )
 {
 	//	add extension of filename
 
