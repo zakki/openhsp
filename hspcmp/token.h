@@ -97,6 +97,15 @@ typedef struct MACDEF {
 
 #define SWSTACK_MAX 32
 
+enum ppresult_t {
+	PPRESULT_SUCCESS,				// 成功
+	PPRESULT_ERROR,					// エラー
+	PPRESULT_UNKNOWN_DIRECTIVE,		// 不明なプリプロセッサ命令（PreprocessNM）
+	PPRESULT_INCLUDED,				// #include された
+	PPRESULT_WROTE_LINE,			// 1行書き込まれた
+	PPRESULT_WROTE_LINES,			// 2行以上書き込まれた
+};
+
 class CLabel;
 class CMemBuf;
 class CTagStack;
@@ -128,8 +137,8 @@ public:
 
 	//		For preprocess
 	//
-	int Preprocess( char *str );
-	int PreprocessNM( char *str );
+	ppresult_t Preprocess( char *str );
+	ppresult_t PreprocessNM( char *str );
 	void PreprocessCommentCheck( char *str );
 
 	int ExpandLine( CMemBuf *buf, CMemBuf *src, char *refname );
@@ -200,27 +209,28 @@ private:
 	void Calc_compare( CALCVAR &v );
 	void Calc_start( CALCVAR &v );
 
-	int PP_Define( void );
-	int PP_Const( void );
-	int PP_Enum( void );
-	int PP_SwitchStart( int sw );
-	int PP_SwitchEnd( void );
-	int PP_SwitchReverse( void );
-	int PP_Module( void );
-	int PP_Global( void );
-	int PP_Deffunc( int mode );
-	int PP_Defcfunc( int mode );
-	int PP_Struct( void );
-	int PP_Func( char *name );
-	int PP_Cmd( char *name );
-	int PP_Pack( int mode );
-	int PP_PackOpt( void );
-	int PP_RuntimeOpt( void );
-	int PP_CmpOpt( void );
-	int PP_Usecom( void );
-	int PP_Aht( void );
-	int PP_Ahtout( void );
-	int PP_Ahtmes( void );
+	ppresult_t PP_Define( void );
+	ppresult_t PP_Const( void );
+	ppresult_t PP_Enum( void );
+	ppresult_t PP_SwitchStart( int sw );
+	ppresult_t PP_SwitchEnd( void );
+	ppresult_t PP_SwitchReverse( void );
+	ppresult_t PP_Include( int is_addition );
+	ppresult_t PP_Module( void );
+	ppresult_t PP_Global( void );
+	ppresult_t PP_Deffunc( int mode );
+	ppresult_t PP_Defcfunc( int mode );
+	ppresult_t PP_Struct( void );
+	ppresult_t PP_Func( char *name );
+	ppresult_t PP_Cmd( char *name );
+	ppresult_t PP_Pack( int mode );
+	ppresult_t PP_PackOpt( void );
+	ppresult_t PP_RuntimeOpt( void );
+	ppresult_t PP_CmpOpt( void );
+	ppresult_t PP_Usecom( void );
+	ppresult_t PP_Aht( void );
+	ppresult_t PP_Ahtout( void );
+	ppresult_t PP_Ahtmes( void );
 
 	void SetModuleName( char *name );
 	char *GetModuleName( void );
