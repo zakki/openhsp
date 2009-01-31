@@ -1380,7 +1380,8 @@ char *CToken::SendLineBuf( char *str )
 }
 
 
-#define IS_CHAR_HEAD(pos) is_sjis_char_head((unsigned char *)str, (pos) - (unsigned char *)str)
+#define IS_CHAR_HEAD(str, pos) \
+	is_sjis_char_head((unsigned char *)(str), (int)((pos) - (unsigned char *)(str)))
 
 char *CToken::SendLineBufPP( char *str, int *lines )
 {
@@ -1398,13 +1399,13 @@ char *CToken::SendLineBufPP( char *str, int *lines )
 		a1 = *p;if ( a1==0 ) break;
 		p++;
 		if ( a1 == 10 ) {
-			if ( a2==0x5c && IS_CHAR_HEAD(p - 2) ) {
+			if ( a2==0x5c && IS_CHAR_HEAD(str, p - 2) ) {
 				ln++; w--; a2=0; continue;
 			}
 			break;
 		}
 		if ( a1 == 13 ) {
-			if ( a2==0x5c && IS_CHAR_HEAD(p - 2) ) {
+			if ( a2==0x5c && IS_CHAR_HEAD(str, p - 2) ) {
 				if ( *p==10 ) p++;
 				ln++; w--; a2=0; continue;
 			}
