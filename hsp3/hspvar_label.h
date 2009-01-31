@@ -11,7 +11,7 @@
 extern "C" {
 #endif
 
-typedef void *HSPVAR_LABEL;
+typedef unsigned short *HSPVAR_LABEL;
 void HspVarLabel_Init( HspVarProc *p );
 
 #ifdef __cplusplus

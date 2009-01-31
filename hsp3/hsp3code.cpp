@@ -614,11 +614,12 @@ int code_get( void )
 			if ( basesize < 0 ) { basesize = varproc->GetSize( (PDAT *)ptr ); }
 			StackPush( tflag, ptr, basesize );
 			break;
-		case TYPE_LABEL:
-			tmpval = (int)hspctx->mem_ot[val];
-			StackPush( HSPVAR_FLAG_LABEL, (char *)&tmpval, sizeof(int)  );
+		case TYPE_LABEL: {
+			unsigned short *tmpval = hspctx->mem_mcs + hspctx->mem_ot[val];
+			StackPush( HSPVAR_FLAG_LABEL, (char *)&tmpval, sizeof(unsigned short *)  );
 			code_next();
 			break;
+		}
 		default:
 			//		リダイレクト(reffunc)使用チェック
 			//
@@ -920,13 +921,16 @@ unsigned short *code_getlb( void )
 	//
 	if ( type != TYPE_LABEL ) {
 		int chk;
-		int p;
+		unsigned short *p;
 		chk = code_get();
 		if ( chk<=PARAM_END ) { throw HSPERR_LABEL_REQUIRED; }
 		if ( mpval->flag != HSPVAR_FLAG_LABEL ) { throw HSPERR_LABEL_REQUIRED; }
-		p = *(int *)mpval->pt;
+		p = *(unsigned short **)mpval->pt;
+		if ( p == NULL ) { // ラベル型変数の初期値はエラーに
+			throw HSPERR_LABEL_REQUIRED;
+		}
 		mcs = mcsbak;
-		return (unsigned short *)( hspctx->mem_mcs + p );
+		return p;
 	}
 	return (unsigned short *)( hspctx->mem_mcs + (hspctx->mem_ot[val]) );
 }
