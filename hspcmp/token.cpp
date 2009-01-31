@@ -3205,7 +3205,6 @@ int CToken::ExpandFile( CMemBuf *buf, char *fname, char *refname )
 	//		ソースファイルをmembufへ展開する
 	//
 	int res;
-	char mm[1024];
 	char cname[HSP_MAX_PATH];
 	char purename[HSP_MAX_PATH];
 	char foldername[HSP_MAX_PATH];
@@ -3251,8 +3250,7 @@ int CToken::ExpandFile( CMemBuf *buf, char *fname, char *refname )
 		//
 		res = tstack->StackCheck( linebuf );
 		if ( res ) {
-			sprintf( mm,"#%d unresolved macro(s).[%s]", res, refname );
-			Mes( mm );
+			Mesf( "#%d unresolved macro(s).[%s]", res, refname_copy );
 			Mes( linebuf );
 		}
 	}
