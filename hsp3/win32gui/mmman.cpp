@@ -217,6 +217,10 @@ int MMMan::Load( char *fname, int num, int opt )
 		flag = MMDATA_MCIVIDEO;
 	}
 
+	if (!strcmp(fext,".wmv")) {				// when "WMV"
+		flag = MMDATA_MCIVIDEO;
+	}
+
 	if (!strcmp(fext,".mpg")) {				// when "MPG"
 		flag = MMDATA_MPEGVIDEO;
 	}
@@ -277,13 +281,13 @@ int MMMan::Play( int num )
 			if ( GetShortPathName( mmm->fname, fpath, MAX_PATH ) == 0 ) {
 				return 1;
 			}
-			if ( flg!=5 ) {
+			if ( flg!=MMDATA_MPEGVIDEO ) {
 				sprintf( ss,"open %s alias myid",fpath );
 			} else {
 				sprintf( ss,"open %s type MPEGVIDEO alias myid",fpath );
 			}
 			SendMCI( ss );
-			if (flg>=4) {
+			if (flg!=MMDATA_MCIVOICE) {
 				if ( SendMCI( "where myid source" )==0 ) strcpy( avi_wh,res+4 );
 				if ( a&16 ) {
 					sprintf( avi_wh,"%d %d",avi_sx,avi_sy );

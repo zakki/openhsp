@@ -270,7 +270,7 @@ int hsp3cl_init( char *startfile )
 	hsp->SetFileName( fname );
 
 	if ( i == 0 ) {
-		printf( "OpenHSP CL ver%s / onion software 1997-2008\n", hspver );
+		printf( "OpenHSP CL ver%s / onion software 1997-2009\n", hspver );
 		return -1;
 	}
 #else

@@ -20,8 +20,14 @@
 	oDom->"load" _p1
 	oRoot = oDom("documentElement")
 	if varuse(oRoot)=0 : return 1
-	if oRoot("tagName")!="rdf:RDF" : return 2
+	rsstag = getpath(""+oRoot("tagName"),16)
+	if rsstag="rdf:rdf" : goto *rsspick
+	if rsstag="rss" : goto *rsspick
 
+	delcom oRoot
+	delcom oDom
+	return
+*rsspick
 	maxnum=_p2
 	if maxnum<=0 : maxnum=5
 
