@@ -6,6 +6,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <math.h>
 #include "hspvar_core.h"
 #include "hsp3debug.h"
 #include "strbuf.h"
@@ -157,10 +158,22 @@ static void HspVarDouble_MulI( PDAT *pval, const void *val )
 static void HspVarDouble_DivI( PDAT *pval, const void *val )
 {
 	double p = *((double *)(val));
-	if ( p == 0 ) throw( HSPVAR_ERROR_DIVZERO );
+	if ( p == 0.0 ) throw( HSPVAR_ERROR_DIVZERO );
 	*GetPtr(pval) /= p;
 	*aftertype = HSPVAR_FLAG_DOUBLE;
 }
+
+// Mod
+static void HspVarDouble_ModI( PDAT *pval, const void *val )
+{
+	double p = *((double *)(val));
+	double dval;
+	if ( p == 0.0 ) throw( HSPVAR_ERROR_DIVZERO );
+	dval = *GetPtr(pval);
+	*GetPtr(pval) = fmod( dval, p );
+	*aftertype = HSPVAR_FLAG_DOUBLE;
+}
+
 
 // Eq
 static void HspVarDouble_EqI( PDAT *pval, const void *val )
@@ -245,7 +258,7 @@ void HspVarDouble_Init( HspVarProc *p )
 	p->SubI = HspVarDouble_SubI;
 	p->MulI = HspVarDouble_MulI;
 	p->DivI = HspVarDouble_DivI;
-//	p->ModI = HspVarDouble_Invalid;
+	p->ModI = HspVarDouble_ModI;
 
 //	p->AndI = HspVarDouble_Invalid;
 //	p->OrI  = HspVarDouble_Invalid;
