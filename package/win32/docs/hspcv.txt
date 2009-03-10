@@ -1,11 +1,11 @@
 ------------------------------------------------------------------------------
-HSPCV ver3.1 REFERENCE MANUAL                       HSP : Hot Soup Processor  
-ＨＳＰ拡張拡張DLLリファレンス              copyright 2007 (c) onion software  
+HSPCV ver3.2 REFERENCE MANUAL                       HSP : Hot Soup Processor  
+ＨＳＰ拡張拡張DLLリファレンス         Copyright 2007-2009 (c) onion software  
 ------------------------------------------------------------------------------
 
 ・はじめに
 
-	このDLLは、Hot Soup Processor ver3.1以降とともに使用することで、
+	このDLLは、Hot Soup Processor ver3.2以降とともに使用することで、
 	OpenCV(Intel Open Source Computer Vision Library)が持つ機能を手軽に
 	利用することができるプラグインです。
 	HSPCVは、プラグインDLL内にすべての機能を内包しており、基本的に
@@ -60,7 +60,12 @@ HSPCV ver3.1 REFERENCE MANUAL                       HSP : Hot Soup Processor
 
 ・更新履歴
 
-	2007/4/1 ver1.0
+	2009/3/9 ver3.2beta2
+
+		cvfacedetect命令でメモリリークが発生する不具合を修正
+
+
+	2007/4/1 ver3.1
 
 		最初のバージョン。
 

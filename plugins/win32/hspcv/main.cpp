@@ -762,6 +762,7 @@ EXPORT BOOL WINAPI cvfacedetect( HSPEXINFO *hei, int p1, int p2, int p3 )
 
     cvReleaseImage( &gray );
     cvReleaseImage( &small_img );
+	cvReleaseMemStorage( &storage );
 
 	return -cvface_total;
 }
@@ -873,7 +874,12 @@ EXPORT BOOL WINAPI cvcapture( HSPEXINFO *hei, int p1, int p2, int p3 )
 	cvideo_id = ep2;
 	cvideo = cvCaptureFromCAM( ep1 );
 	if ( cvideo == NULL ) return -1;
-
+/*
+	int width = (int)cvGetCaptureProperty(cvideo,CV_CAP_PROP_FRAME_WIDTH);
+	int height = (int)cvGetCaptureProperty(cvideo,CV_CAP_PROP_FRAME_HEIGHT);
+	int fps = (int)cvGetCaptureProperty(cvideo,CV_CAP_PROP_FPS);
+	Alertf( "%dx%d fps%d", width, height, fps );
+*/
 	return 0;
 }
 
