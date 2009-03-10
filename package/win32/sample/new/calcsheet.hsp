@@ -1,0 +1,29 @@
+;	簡単な表計算を行なうサンプル
+;	「合計」ボタンを押すと、枠の中に入力した数値を合計し表示します
+;	また、値に応じた棒グラフを表示します
+;
+
+	cls 1
+
+	dim kazu,10
+	objsize 100,24
+	repeat 10
+	input kazu(cnt)
+	loop
+	button "合計",*sum
+	input total
+	obj_total=stat
+
+	objsel 0
+	stop
+*sum
+	color 255,255,255:boxf
+	a=0
+	repeat 10
+	x=110:y=24*cnt
+	color 255,0,0
+	boxf x,y,x+kazu(cnt),y+20
+	a=a+kazu(cnt)
+	loop
+	objprm obj_total,a
+	stop

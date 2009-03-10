@@ -1,0 +1,95 @@
+
+	;
+	;	簡易マップ編集ツール
+	;
+	cx=64:cy=64	; チップXYサイズ
+	csrc=3		; チップのあるウィンドウID
+
+	mapsx=32	; マップ全体Xサイズ
+	mapsy=32	; マップ全体Yサイズ
+
+*start
+	dim map,mapsx,mapsy
+	mapvx=9:mapvy=7	; 表示XYチップ数
+	mapx=0:mapy=0
+
+	mapcode=0
+
+	buffer csrc
+	picload "testchr.bmp"				; 画像ファイル
+	screen 0,mapvx*cx,mapvy*cy+24
+
+	ox=60:x=0:y=mapvy*cy
+	objsize ox,24
+	pos x,y:button "セーブ",*cmd_save:x+=ox
+	pos x,y:button "ロード",*cmd_load:x+=ox
+	pos x,y:button "クリア",*start:x+=ox
+	pos x,y:input mapcode:obj_mapcode=stat:x+=ox
+
+*main
+	redraw 0					; 描画始め
+
+	color 0,0,64
+	boxf						; 背景を消す
+
+	gosub *putmap					; マップ表示
+	gosub *putmes					; メッセージ表示
+
+	redraw 1					; 描画終わり
+	await 20
+
+	stick key,$10f					; キー入力
+	if key&$100 : goto *cmd_put
+	if key&$200 : goto *cmd_get
+
+	if key&1 : mapx-
+	if key&4 : mapx+
+	if key&2 : mapy-
+	if key&8 : mapy+
+	mapx=limit(mapx,0,mapsx-mapvx)
+	mapy=limit(mapy,0,mapsy-mapvy)
+
+	goto *main
+
+*cmd_put
+	x=mousex/cx:y=mousey/cy
+	if y>=mapvy or x>=mapvx : goto *main
+	map(mapx+x,mapy+y)=mapcode
+	goto *main
+*cmd_get
+	x=mousex/cx:y=mousey/cy
+	if y>=mapvy : goto *main
+	mapcode=map(mapx+x,mapy+y)
+	objprm obj_mapcode,mapcode
+	goto *main
+*cmd_save
+	dialog "map",17,"マップファイル"
+	if stat=0 : goto *main
+	fname = refstr
+	exname=getpath(fname,2)		; ファイル名の拡張子を取得
+	if exname="" : fname+=".map"	; 拡張子がなければ.mapを追加
+	bsave fname,map			; ファイルをセーブ
+	goto *main
+*cmd_load
+	dialog "map",16,"マップファイル"
+	if stat=0 : goto *main
+	fname = refstr
+	bload fname,map			; ファイルをロード
+	goto *main
+*putmap
+	gmode 0,cx,cy
+	repeat mapvy
+	i=mapy+cnt:y=cnt*cy
+	repeat mapvx
+		pos cnt*cx,y
+		gcopy csrc,map(mapx+cnt,i)*cx,0
+	loop
+	loop
+	return
+
+*putmes
+	sysfont 17
+	pos 0,0:color 255,255,255
+	mes "カーソルキーでマップを移動させてください。"
+	return
+

@@ -1,0 +1,66 @@
+
+	;
+	;	マップ表示(2)
+	;	(マップデータはmapedit.hspで作成します)
+	;
+	cx=64:cy=64	; チップXYサイズ
+	csrc=3		; チップのあるウィンドウID
+
+	mapsx=32	; マップ全体Xサイズ
+	mapsy=32	; マップ全体Yサイズ
+
+	dim map,mapsx,mapsy
+	mapvx=9:mapvy=7	; 表示XYチップ数
+	mapx=0:mapy=0
+	mapex=(mapsx-mapvx)*cx
+	mapey=(mapsy-mapvy)*cy
+
+	bload "test.map",map				; マップ読み込み
+
+	buffer csrc
+	picload "testchr.bmp"				; 画像ファイル
+	screen 0,mapvx*cx,mapvy*cy
+
+*main
+	redraw 0					; 描画始め
+
+	color 0,0,64
+	boxf						; 背景を消す
+
+	gosub *putmap					; マップ表示
+	gosub *putmes					; メッセージ表示
+
+	redraw 1					; 描画終わり
+	await 20
+
+	stick key,15					; キー入力
+	if key&1 : mapx-=2
+	if key&4 : mapx+=2
+	if key&2 : mapy-=2
+	if key&8 : mapy+=2
+	mapx=limit(mapx,0,mapex)
+	mapy=limit(mapy,0,mapey)
+
+	goto *main
+
+*putmap
+	ix=mapx/cx:ipx=mapx\cx
+	iy=mapy/cy:ipy=mapy\cy
+	lx=mapvx:if ipx>0 : lx+ 
+	ly=mapvy:if ipy>0 : ly+ 
+	gmode 0,cx,cy
+	repeat ly
+	i=iy+cnt:y=cnt*cy-ipy
+	repeat lx
+		pos cnt*cx-ipx,y
+		gcopy csrc,map(ix+cnt,i)*cx,0
+	loop
+	loop
+	return
+
+*putmes
+	sysfont 17
+	pos 0,0:color 255,255,255
+	mes "カーソルキーでマップを移動させてください。"
+	return
+
