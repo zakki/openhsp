@@ -40,6 +40,7 @@ DEF_CLASSIFY_TABLE DefClassifyTable[] = {
 	"\\\\",		"",		EMP_LINE_BETWEEN,	&(color.Character.String.Conf),		0,	4,	PERMIT_LEVEL(1), EMP_IND_ALLOW_ALL,
 	"\\\"",		"",		EMP_LINE_BETWEEN,	&(color.Character.String.Conf),		0,	4,	PERMIT_LEVEL(1), EMP_IND_ALLOW_ALL,
 	"\"",		"\"",	EMP_LINE_BETWEEN,	&(color.Character.String.Conf),		0,	1,	PERMIT_LEVEL(0), EMP_IND_ALLOW_ALL,
+	"'",		"'",	EMP_LINE_BETWEEN,	&(color.Character.String.Conf),		0,	1,	PERMIT_LEVEL(0), EMP_IND_ALLOW_ALL, // Å¶TODO:êVÇΩÇ»êFéÌï Çí«â¡Ç∑ÇÈ
 	"{\"",		"\"}",	EMP_MULTI_BETWEEN,	&(color.Character.String.Conf),		0,	1,	PERMIT_LEVEL(0), EMP_IND_ALLOW_ALL,
 //	":",		"",		EMP_LINE_AFTER,		&(color.Character.Default.Conf),	0,	2,	PERMIT_LEVEL(0), EMP_IND_ALLOW_ALL,
 	"/*",		"*/",	EMP_MULTI_BETWEEN,	&(color.Character.Comment.Conf),	0,	3,	PERMIT_LEVEL(0)|PERMIT_LEVEL(5), EMP_IND_ALLOW_ALL,
