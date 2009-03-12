@@ -27,7 +27,7 @@
 #func objmov1 objmov1 0
 #func objsetf1 objsetf1 int,float,int,int
 #func objaddf1 objaddf1 int,float,int,int
-#func objmovf1 objmovf1 int,float,int,int
+#func objmovf1 objmovf1 int,int,float,int
 #func objcheck objcheck 1
 #func objmovmode objmovmode 0
 #func objmovopt objmovopt 0
@@ -37,14 +37,14 @@
 #func objmov2 objmov2 0
 #func objsetf2 objsetf2 int,float,float,int
 #func objaddf2 objaddf2 int,float,float,int
-#func objmovf2 objmovf2 int,float,float,int
+#func objmovf2 objmovf2 int,int,float,float
 
 #func objset3 objset3 0
 #func objadd3 objadd3 0
 #func objmov3 objmov3 0
 #func objsetf3 objsetf3 float,float,float,int
 #func objaddf3 objaddf3 float,float,float,int
-#func objmovf3 objmovf3 float,float,float,int
+#func objmovf3 objmovf3 int,float,float,float
 
 #func selmoc selmoc 0
 #func selpos selpos 0
@@ -107,7 +107,7 @@
 #func settimer settimer 0
 #func setobjmode setobjmode 0
 #func setcoli setcoli 0
-#func getcoli getcoli 1
+#func getcoli getcoli var,int,float,int
 #func findobj findobj 0
 #func nextobj nextobj 1
 

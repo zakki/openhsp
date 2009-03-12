@@ -1,11 +1,11 @@
 ------------------------------------------------------------------------------
-HGIMG.DLL ver2.61   REFERENCE MANUAL   High Performance Graphic Image Plugin  
-ＨＳＰ拡張DLLリファレンス             copyright 2001-2004 (c) onion software  
+HGIMG.DLL ver3.2    REFERENCE MANUAL   High Performance Graphic Image Plugin  
+ＨＳＰ拡張DLLリファレンス             copyright 2001-2009 (c) onion software  
 ------------------------------------------------------------------------------
 
 ・はじめに
 
-	このDLLは、Hot Soup Processor ver2.61以降とともに使用することで、様々な
+	このDLLは、Hot Soup Processor ver3.2以降とともに使用することで、様々な
 	機能拡張を行なうことのできるプラグインモジュールです。
 	この拡張DLLを使用することにより、新規命令が多数追加され、フルカラー、
 	パレットモードでの2D・3Dグラフィック表示をサポートします。
@@ -32,14 +32,14 @@ HGIMG.DLL ver2.61   REFERENCE MANUAL   High Performance Graphic Image Plugin
 
 ・注意点
 
-	HGIMG.DLLは、HSP2.EXE、HSP3.EXEと同時に使用されるプラグインファイルです。
+	HGIMG.DLLは、HSP3.EXEと同時に使用されるプラグインファイルです。
 	EXEファイルを作成した場合でも、HGIMG.DLLをEXEファイルと同じディレクトリ
 	に置かないと動作しません。また、packfileにDLLを追加することはできません。
 
 
 ・著作権および連絡先
 
-	著作権および、使用の規定についてはHot Soup Processor ver2.61と同様です。
+	著作権および、使用の規定についてはHot Soup Processor ver3.2と同様です。
 	HSPによって作成したEXEファイルと同様にHGIMG.DLLを自由に配布してかまいません。
 	また、付属のサンプルスクリプトは自由に改変、公開していただいて構いません。
 	また、sampleディレクトリに含まれているmx形式モデルデータは、ライセンスフリーです。
@@ -90,6 +90,12 @@ HGIMG.DLL ver2.61   REFERENCE MANUAL   High Performance Graphic Image Plugin
 
 
 ・更新履歴
+
+	2009/2/3 ( Ver3.2 )
+
+		HSP3から利用できなくなっていた一部の命令が動作するように修正。
+		(この修正により、HSP2からは利用できなくなっているのでご注意ください)
+		HSP3でもfv値の格納、参照を可能にしました。(ただし変数型はdoubleでなければなりません)
 
 	2004/5/19 ( Ver2.61RC2 )
 
