@@ -717,7 +717,7 @@ static int mkobjfile( char *fname )
 	hsc_ini( 0,(int)srcfn, 0,0 );
 	hsc_refname( 0,(int)myfile(), 0,0 );
 	hsc_objname( 0,(int)tmpst, 0,0 );
-	a=hsc_comp( 0,hsp_extmacro^1,0,0 );
+	a=hsc_comp( 0,0,0,0 );
 	//a=tcomp_main( myfile(), srcfn, tmpst, errbuf, 0 );
 	return a;
 }
@@ -736,7 +736,7 @@ static int mkobjfile2( char *fname )
 	hsc_ini( 0,(int)srcfn, 0,0 );
 	hsc_refname( 0,(int)myfile(), 0,0 );
 	hsc_objname( 0,(int)tmpst, 0,0 );
-	a=hsc_comp( 0,hsp_extmacro^1,0,0 );
+	a=hsc_comp( 0,0,0,0 );
 	//a=tcomp_main( myfile(), srcfn, tmpst, errbuf, 0 );
 	return a;
 }
@@ -756,7 +756,7 @@ static int mkexefile2( char *fname )
 	hsc_ini( 0,(int)srcfn, 0,0 );
 	hsc_refname( 0,(int)myfile(), 0,0 );
 	hsc_objname( 0,(int)tmpst, 0,0 );
-	a=hsc_comp( 0,hsp_extmacro^1 | 4,0,0 );
+	a=hsc_comp( 0,4,0,0 );
 	if ( a ) return a;
 
 	sprintf( ftmp, "%s\\%s.dpm", szExeDir, srcfn );
@@ -1695,8 +1695,8 @@ int poppad_menupop( WPARAM wParam, LPARAM lParam )
 						CheckMenuItem ((HMENU) wParam, IDM_FULLSCR, iEnable) ;
                         iEnable = hsp_debug ? MF_CHECKED : MF_UNCHECKED ;
 						CheckMenuItem ((HMENU) wParam, IDM_DEBUG, iEnable) ;
-                        iEnable = hsp_extmacro ? MF_CHECKED : MF_UNCHECKED ;
-						CheckMenuItem ((HMENU) wParam, IDM_HSPEXTMACRO, iEnable) ;
+//                      iEnable = hsp_extmacro ? MF_CHECKED : MF_UNCHECKED ;
+//						CheckMenuItem ((HMENU) wParam, IDM_HSPEXTMACRO, iEnable) ;
                         iEnable = hsp_clmode ? MF_CHECKED : MF_UNCHECKED ;
 						CheckMenuItem ((HMENU) wParam, IDM_HSPCLMODE, iEnable) ;
 						break;
@@ -2152,7 +2152,7 @@ LRESULT CALLBACK EditProc (HWND hwnd, UINT iMsg, WPARAM wParam, LPARAM lParam)
 					hsc_refname( 0,(int)compfile, 0,0 );
 					strcpy( objname,"obj" );
 					hsc_objname( 0,(int)objname, 0,0 );
-					a=hsc_comp( 1, hsp_extmacro^1, hsp_debug, 0 );
+					a=hsc_comp( 1, 0, hsp_debug, 0 );
 					if (a) {
 						err_prt(hwnd);
 						return 0;
@@ -2183,7 +2183,7 @@ LRESULT CALLBACK EditProc (HWND hwnd, UINT iMsg, WPARAM wParam, LPARAM lParam)
 						strcat( hsp_extstr,".hsp" );
 						hsc_ini( 0,(int)hsp_extstr, 0,0 );
 						hsc_objname( 0,(int)objname, 0,0 );
-						a=hsc_comp( 0,hsp_extmacro^1,0,0 );
+						a=hsc_comp( 0,0,0,0 );
 						//a=tcomp_main( hsp_extstr, hsp_extstr, objname, errbuf,0 );
 						if (a) { err_prt(hwnd);return 0; }
 #ifdef JPMSG
@@ -2197,7 +2197,7 @@ LRESULT CALLBACK EditProc (HWND hwnd, UINT iMsg, WPARAM wParam, LPARAM lParam)
 					strcat( hsp_extstr,".hsp" );
 					hsc_ini( 0,(int)hsp_extstr, 0,0 );
 					hsc_objname( 0,(int)objname, 0,0 );
-					a=hsc_comp( 1, hsp_extmacro^1, hsp_debug, 0 );
+					a=hsc_comp( 1, 0, hsp_debug, 0 );
 					//a=tcomp_main( hsp_extstr, hsp_extstr, objname, errbuf,1 );
 					if (a) { err_prt(hwnd);return 0; }
 					if (hsp_clmode==0) { hsprun(objname); } else { hsprun_cl(objname); }
@@ -2214,7 +2214,7 @@ LRESULT CALLBACK EditProc (HWND hwnd, UINT iMsg, WPARAM wParam, LPARAM lParam)
 					hsc_refname( 0,(int)compfile, 0,0 );
 					strcpy( objname,"obj" );
 					hsc_objname( 0,(int)objname, 0,0 );
-					a=hsc3_getsym( hsp_extmacro^1,0,0,0 );
+					a=hsc3_getsym( 0,0,0,0 );
 					if (a) {
 #ifdef JPMSG
 						TMes("キーワードの取得に失敗しました");
@@ -2229,11 +2229,11 @@ LRESULT CALLBACK EditProc (HWND hwnd, UINT iMsg, WPARAM wParam, LPARAM lParam)
 				case IDM_FULLSCR:
 					hsp_fullscr^=1;
 					return 0;
-
+/*
 				case IDM_HSPEXTMACRO:
 					hsp_extmacro^=1;
 					return 0;
-
+*/
 				case IDM_HSPCLMODE:
 					hsp_clmode^=1;
 					return 0;
@@ -2269,7 +2269,6 @@ LRESULT CALLBACK EditProc (HWND hwnd, UINT iMsg, WPARAM wParam, LPARAM lParam)
 					return 0;
 
 				case IDM_START_RUNTIMEMAN:
-					//wsprintf( tmpfn, "%s\\hsperun", szExeDir );
 					wsprintf( tmpfn, "%s\\sampview", szExeDir );
 					WinExec( tmpfn, SW_SHOW );
 					return 0;
@@ -2283,20 +2282,12 @@ LRESULT CALLBACK EditProc (HWND hwnd, UINT iMsg, WPARAM wParam, LPARAM lParam)
 					wsprintf( tmpfn, "%s\\ahtman", szExeDir );
 					WinExec( tmpfn, SW_SHOW );
 					return 0;
-/*
-				case IDM_AHT_RND:
-					wsprintf( tmpfn, "%s\\ahtman 乱数発生.aht", szExeDir );
+
+                case IDM_HSPTV:
+					wsprintf( tmpfn, "%s\\hsptv.exe", szExeDir );
 					WinExec( tmpfn, SW_SHOW );
-					return 0;
-				case IDM_AHTFONT:
-					wsprintf( tmpfn, "%s\\ahtman フォントを指定.aht", szExeDir );
-					WinExec( tmpfn, SW_SHOW );
-					return 0;
-				case IDM_AHTCOLOR:
-					wsprintf( tmpfn, "%s\\ahtman 色を指定.aht", szExeDir );
-					WinExec( tmpfn, SW_SHOW );
-					return 0;
-*/
+					return 0 ;
+
 				// Messages from Help menu
 
 				case IDM_KWHELP:
@@ -2307,7 +2298,6 @@ LRESULT CALLBACK EditProc (HWND hwnd, UINT iMsg, WPARAM wParam, LPARAM lParam)
                 case IDM_HSPMAN1 :
 					wsprintf( helpopt,"%s\\docs\\hspprog.htm", szExeDir );
 					ShellExecute( NULL, NULL, helpopt, NULL, NULL, SW_SHOW );
-					//fileexe("start","hspprog.htm");
 					return 0 ;
 
                 case IDM_HSPMAN2 :
@@ -2318,7 +2308,6 @@ LRESULT CALLBACK EditProc (HWND hwnd, UINT iMsg, WPARAM wParam, LPARAM lParam)
                 case IDM_HSPMAN3 :
 					wsprintf( helpopt,"%s\\index.htm", szExeDir );
 					ShellExecute( NULL, NULL, helpopt, NULL, NULL, SW_SHOW );
-					//fileexe("start","hsppidx.htm");
 					return 0 ;
 
                 case IDM_ABOUT :
