@@ -1,11 +1,11 @@
 ------------------------------------------------------------------------------
 HGIMG ver3.2   REFERENCE MANUAL        High Performance Graphic Image Plugin  
-ＨＳＰ拡張DLLリファレンス             copyright 2001-2008 (c) onion software  
+ＨＳＰ拡張DLLリファレンス             copyright 2001-2009 (c) onion software  
 ------------------------------------------------------------------------------
 
 ・はじめに
 
-	HGIMG3は、Hot Soup Processor ver3.1以降とともに使用することで、
+	HGIMG3は、Hot Soup Processor ver3.2以降とともに使用することで、
 	画面の描画に関する様々な機能拡張を提供します。
 	HGIMG3は、Windows98、Me、2000、XP、Vista以降のDirectX8以上が
 	インストールされた環境で動作します。
@@ -61,11 +61,16 @@ HGIMG ver3.2   REFERENCE MANUAL        High Performance Graphic Image Plugin
 	ソフトウェア(実行ファイル)を、自由に通信、即売会、店頭などで展示、配布、販売
 	することができます。ライセンス料は必要ありません。
 
-	HGIMG3の著作権はonion softwareにあります。
+	HGIMG3は、HSP及びOpenHSPによる技術を基本にして作成されています。
+
+	OpenHSP
+	Copyright (C) 1997-2009, Onion Software/onitama.
+	All rights reserved.
+
+	HGIMG3ランタイムの著作権はonion softwareにあります。
 	onion softwareは本プログラムによって生じた、いかなる損害についても保証いたしません。
 	自己の責任の範囲で使用してください。
 	また、付属のサンプルスクリプトも自由に改変、公開していただいて構いません。
-
 	HGIMG3ランタイムとそれに付随するデータは、基本的にBSDライセンスのもと
 	有償・無償を問わず添付、複製、改編、再配布することができます。
 	ただし、その際には必ずライセンス表記も含めるようにしてください。
@@ -132,6 +137,11 @@ HGIMG ver3.2   REFERENCE MANUAL        High Performance Graphic Image Plugin
 
 
 ・更新履歴
+
+	2008/03/11 ( Ver3.2β2 )
+
+		hgprm命令のパラメーター説明を追加。
+		delmodel命令を追加。
 
 	2008/03/28 ( Ver3.2βtest1 )
 
