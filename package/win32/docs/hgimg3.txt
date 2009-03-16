@@ -138,10 +138,12 @@ HGIMG ver3.2   REFERENCE MANUAL        High Performance Graphic Image Plugin
 
 ・更新履歴
 
-	2008/03/11 ( Ver3.2β2 )
+	2009/03/11 ( Ver3.2β2 )
 
 		hgprm命令のパラメーター説明を追加。
 		delmodel命令を追加。
+		マクロ、EPRIM_FANの定義を追加。
+		event_pos等のパラメーター変更イベントとevent_jumpによるループを併用すると固まることがあった不具合を修正。
 
 	2008/03/28 ( Ver3.2βtest1 )
 

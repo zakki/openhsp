@@ -56,7 +56,8 @@
 #const global EPRIM_CIRCLE 0
 #const global EPRIM_CIRCLE2 1
 #const global EPRIM_SQUARE 2
-#const global EPRIM_LINE 3
+#const global EPRIM_FAN 3
+#const global EPRIM_LINE 4
 
 #const global MOVEMODE_LINEAR 0
 #const global MOVEMODE_SPLINE 1
@@ -333,6 +334,7 @@
 #cmd objfloor $dc
 #cmd getcolvec $dd
 #cmd getnearobj $de
+#cmd delmodel $df
 
 #cmd dmmini $e0
 #cmd dmmbye $e1
