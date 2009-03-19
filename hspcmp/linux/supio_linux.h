@@ -30,6 +30,11 @@ void getpath( const char *src, char *outbuf, int p2 );
 void ExecFile( char *stmp, char *ps, int mode );
 void dirinfo( char *p, int id );
 
+char *strchr3( char *target, int code, int sw, char **findptr );
+void TrimCode( char *p, int code );
+void TrimCodeL( char *p, int code );
+void TrimCodeR( char *p, int code );
+
 void Alert( const char *mes );
 void AlertV( const char *mes, int val );
 void Alertf( const char *format, ... );

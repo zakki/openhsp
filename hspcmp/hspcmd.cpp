@@ -97,6 +97,7 @@ char 	s_rec[1]= "", *hsp_prestr[] =
 	"$027 8 randomize",				// (changed on ver3.0)
 	"$028 8 noteunsel",				// (changed on ver3.0)
 	"$029 8 noteget",				// (changed on ver2.55)
+	"$02a 8 split",					// (ver3.2)
 
 	//	enhanced command (ver2.2)
 
@@ -171,6 +172,10 @@ char 	s_rec[1]= "", *hsp_prestr[] =
 	"$035 9 grect",					// (ver3.0)
 	"$036 9 grotate",				// (ver3.0)
 	"$037 9 gsquare",				// (ver3.0)
+	"$038 9 gradf",					// (ver3.2)
+	"$039 9 objimage",				// (ver3.2)
+	"$03a 9 objskip",				// (ver3.2)
+	"$03b 9 objenable",				// (ver3.2)
 
 	//	enhanced command (ver3.0)
 
@@ -234,6 +239,7 @@ char 	s_rec[1]= "", *hsp_prestr[] =
 	"$101 13 strmid",
 	"$103 13 strf",
 	"$104 13 getpath",
+	"$105 13 strtrim",					// (3.2)
 
 	//	3.0 math function
 	"$180 13 sin",

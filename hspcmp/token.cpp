@@ -357,6 +357,8 @@ int CToken::CheckModuleName( char *name )
 	int a;
 	unsigned char *p;
 	unsigned char a1;
+
+	TrimCode( name, ' ' );					// 両端のスペースを削除
 	a = 0;
 	p = (unsigned char *)name;
 	while(1) {								// normal object name

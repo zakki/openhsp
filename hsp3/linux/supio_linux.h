@@ -27,6 +27,12 @@ int htoi( char *str );
 
 int SecurityCheck( char *name );
 
+char *strchr3( char *target, int code, int sw, char **findptr );
+void TrimCode( char *p, int code );
+void TrimCodeL( char *p, int code );
+void TrimCodeR( char *p, int code );
+
+
 void Alert( char *mes );
 void AlertV( char *mes, int val );
 void Alertf( char *format, ... );

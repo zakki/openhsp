@@ -1,11 +1,19 @@
 
 //
-//	supio.cpp functions
+//	Basic I/O and Message buffer support
+//	For both console and Windows application development
+//	"supio.cpp"
+//	onion software/onitama 1997
 //
-#include "../hsp3config.h"
+#include "../../hsp3/hsp3config.h"
 
 #ifdef HSPWIN
+#define USE_WINDOWS_API		// WINDOWS APIを使用する
+#endif
+
+#ifdef USE_WINDOWS_API
 #include <windows.h>
+#include <shlobj.h>
 #endif
 
 #include <stdio.h>
@@ -16,122 +24,271 @@
 #include <ctype.h>
 
 #include "supio_win.h"
-#include "../dpmread.h"
-#include "../strbuf.h"
 
 //
 //		basic C I/O support
 //
-static FILE *fp;
 
-char *mem_ini( int size ) {
-	return (char *)calloc(size,1);
-}
-
-void mem_bye( void *ptr ) {
-	free(ptr);
-}
-
-
-int mem_save( char *fname, void *mem, int msize, int seekofs )
+char *mem_ini( int size ) { return (char *)malloc(size); }
+void mem_bye( void *ptr ) { free(ptr); }
+int mem_load( const char *fname, void *mem, int msize )
 {
 	FILE *fp;
 	int flen;
-
-	if (seekofs<0) {
-		fp=fopen(fname,"wb");
-	}
-	else {
-		fp=fopen(fname,"r+b");
-	}
+	fp=fopen(fname,"rb");
 	if (fp==NULL) return -1;
-	if ( seekofs>=0 ) fseek( fp, seekofs, SEEK_SET );
-	flen = (int)fwrite( mem, 1, msize, fp );
+	flen = fread( mem, 1, msize, fp );
+	fclose(fp);
+	return flen;
+}
+int mem_save( const char *fname, const void *mem, int msize )
+{
+	FILE *fp;
+	int flen;
+	fp=fopen(fname,"wb");
+	if (fp==NULL) return -1;
+	flen = fwrite( mem, 1, msize, fp );
 	fclose(fp);
 	return flen;
 }
 
-
-void strcase( char *target )
+int filecopy( const char *fname, const char *sname )
 {
-	//		strをすべて小文字に(全角対応版)
-	//
-	unsigned char *p;
-	unsigned char a1;
-	p=(unsigned char *)target;
+	FILE *fp;
+	FILE *fp2;
+	int flen, rval;
+	int max=0x8000;
+	char *mem;
+	rval=1;
+	mem=mem_ini(max);
+	fp=fopen(fname,"rb");if (fp==NULL) goto jobov;
+	fp2=fopen(sname,"wb");if (fp2==NULL) goto jobov;
 	while(1) {
-		a1=*p;if ( a1==0 ) break;
-		*p=tolower(a1);
-		p++;							// 検索位置を移動
-		if (a1>=129) {					// 全角文字チェック
-			if ((a1<=159)||(a1>=224)) p++;
+		flen = fread( mem, 1, max, fp );
+		if (flen==0) break;
+		fwrite( mem, 1, flen, fp2 );
+		if (flen<max) break;
+	}
+	fclose(fp2);fclose(fp);
+	rval=0;
+jobov:
+	mem_bye(mem);
+	return rval;
+}
+
+void strcase( char *str )
+{
+	//	string case to lower
+	//
+	unsigned char a1;
+	unsigned char *ss;
+	ss=(unsigned char *)str;
+	while(1) {
+		a1=*ss;
+		if (a1==0) break;
+		if (a1>=0x80) {
+			*ss++;
+			a1=*ss++;
+			if (a1==0) break;
+		}
+		else {
+			*ss++=tolower(a1);
 		}
 	}
 }
 
 
-int strcpy2( char *str1, char *str2 )
+void strcase2( char *str, char *str2 )
 {
-	//	string copy (ret:length)
+	//	string case to lower and copy
 	//
+	unsigned char a1;
+	unsigned char *ss;
+	unsigned char *ss2;
+	ss=(unsigned char *)str;
+	ss2=(unsigned char *)str2;
+	while(1) {
+		a1=*ss;
+		if (a1==0) break;
+		if (a1>=0x80) {
+			*ss++;
+			*ss2++=a1;
+			a1=*ss++;
+			if (a1==0) break;
+			*ss2++=a1;
+		}
+		else {
+			a1=tolower(a1);
+			*ss++=a1;
+			*ss2++=a1;
+		}
+	}
+	*ss2=0;
+}
+
+
+int tstrcmp( const char *str1, const char *str2 )
+{
+	//	string compare (0=not same/-1=same)
+	//
+	int ap;
+	char as;
+	ap=0;
+	while(1) {
+		as=str1[ap];
+		if (as!=str2[ap]) return 0;
+		if (as==0) break;
+		ap++;
+	}
+	return -1;
+}
+
+
+void getpath( const char *src, char *outbuf, int p2 )
+{
 	char *p;
-	char *src;
-	char a1;
-	src = str2;
-	p = str1;
-	while(1) {
-		a1=*src++;if (a1==0) break;
-		*p++=a1;
+	char stmp[_MAX_PATH];
+	char p_drive[_MAX_PATH];
+	char p_dir[_MAX_DIR];
+	char p_fname[_MAX_FNAME];
+	char p_ext[_MAX_EXT];
+
+#ifdef USE_WINDOWS_API
+	p = outbuf;
+	strcpy( stmp, src );
+	if (p2&16) strcase( stmp );
+	_splitpath( stmp, p_drive, p_dir, p_fname, p_ext );
+	strcat( p_drive, p_dir );
+	if ( p2&8 ) {
+		strcpy( stmp, p_fname ); strcat( stmp, p_ext );
+	} else if ( p2&32 ) {
+		strcpy( stmp, p_drive );
 	}
-	*p++=0;
-	return (int)(p-str1);
+	switch( p2&7 ) {
+	case 1:			// Name only ( without ext )
+		stmp[ strlen(stmp)-strlen(p_ext) ] = 0;
+		strcpy( p, stmp );
+		break;
+	case 2:			// Ext only
+		strcpy( p, p_ext );
+		break;
+	default:		// Direct Copy
+		strcpy( p, stmp );
+		break;
+	}
+#else
+	*outbuf = 0;
+#endif
 }
 
 
-int strcat2( char *str1, char *str2 )
+void strcpy2( char *dest, const char *src, size_t size )
 {
-	//	string cat (ret:length)
-	//
-	char *src;
-	char a1;
-	int i;
-	src = str1;
-	while(1) {
-		a1=*src;if (a1==0) break;
-		src++;
+	if(size == 0) {
+		return;
 	}
-	i = (int)(src-str1);
-	return (strcpy2(src,str2)+i);
+	char *d = dest;
+	const char *s = src;
+	size_t n = size;
+	while (--n) {
+		if((*d++ = *s++) == '\0') {
+			return;
+		}
+	}
+	*d = '\0';
+	return;
 }
 
 
-char *strstr2( char *target, char *src )
+
+/*----------------------------------------------------------*/
+
+
+/*
+	rev 54
+	とりあえず書き直し。
+	sjis全角を含むパスに対応。
+*/
+
+static int findext( char const * st )
 {
-	//		strstr関数の全角対応版
+	//	拡張子をさがす。
 	//
-	unsigned char *p;
-	unsigned char *s;
-	unsigned char *p2;
-	unsigned char a1;
-	unsigned char a2;
-	unsigned char a3;
-	p=(unsigned char *)target;
-	if (( *src==0 )||( *target==0 )) return NULL;
-	while(1) {
-		a1=*p;if ( a1==0 ) break;
-		p2 = p;
-		s=(unsigned char *)src;
-		while(1) {
-			a2=*s++;if (a2==0) return (char *)p;
-			a3=*p2++;if (a3==0) break;
-			if (a2!=a3) break;
-		}
-		p++;							// 検索位置を移動
-		if (a1>=129) {					// 全角文字チェック
-			if ((a1<=159)||(a1>=224)) p++;
+	int r = -1, f = 0;
+	for ( int i = 0; st[ i ] != '\0'; ++i ) {
+		if ( f ) {
+			f = 0;
+		} else {
+			if ( st[ i ] == '.' ) {
+				r = i;
+			} else if ( st[ i ] == '\\' ) {
+				r = -1;
+			}
+			f = issjisleadbyte( st[ i ] );
 		}
 	}
-	return NULL;
+	return r;
+}
+
+
+void addext( char *st, const char *exstr )
+{
+	//	add extension of filename
+	int i = findext( st );
+	if ( i == -1 ) {
+		strcat( st, "." );
+		strcat( st, exstr );
+	}
+}
+
+
+void cutext( char * st )
+{
+	//		拡張子を取り除く
+	//
+	int i = findext( st );
+	if ( i >= 0 ) st[ i ] = '\0';
+}
+
+
+void cutlast( char *st )
+{
+	//	cut last characters
+
+	int a1;
+	unsigned char c1;
+	a1=0;while(1) {
+		c1=st[a1];if (c1<33) break;
+		st[a1]=tolower(c1);
+		a1++;
+	}
+	st[a1]=0;
+}
+
+
+void cutlast2( char *st )
+{
+	//	cut last characters
+
+	int a1;
+	char c1;
+	char ts[256];
+
+	strcpy(ts,st);
+	a1=0;
+	while(1) {
+		c1=ts[a1];if (c1<33) break;
+		ts[a1]=tolower(c1);
+		a1++;
+	}
+	ts[a1]=0;
+
+	while(1) {
+		a1--;c1=ts[a1];
+		if (c1==0x5c) { a1++;break; }
+		if (a1==0) break;
+	}
+	strcpy(st,ts+a1);
 }
 
 
@@ -155,220 +312,91 @@ char *strchr2( char *target, char code )
 	return res;
 }
 
-
-void getpath( char *stmp, char *outbuf, int p2 )
+int is_sjis_char_head( const unsigned char *str, int pos )
 {
-	char *p;
-	char p_drive[_MAX_PATH];
-	char p_dir[_MAX_DIR];
-	char p_fname[_MAX_FNAME];
-	char p_ext[_MAX_EXT];
-
-	p = outbuf;
-	if (p2&16) strcase( stmp );
-	_splitpath( stmp, p_drive, p_dir, p_fname, p_ext );
-	strcat( p_drive, p_dir );
-	if ( p2&8 ) {
-		strcpy( stmp, p_fname ); strcat( stmp, p_ext );
-	} else if ( p2&32 ) {
-		strcpy( stmp, p_drive );
+	//		Shift_JIS文字列のposバイト目が文字の先頭バイトであるか
+	//		マルチバイト文字の後続バイトなら0、それ以外なら1を返す
+	int result = 1;
+	while(pos != 0 && issjisleadbyte(str[--pos])) {
+		result = ! result;
 	}
-	switch( p2&7 ) {
-	case 1:			// Name only ( without ext )
-		stmp[ strlen(stmp)-strlen(p_ext) ] = 0;
-		strcpy( p, stmp );
-		break;
-	case 2:			// Ext only
-		strcpy( p, p_ext );
-		break;
-	default:		// Direct Copy
-		strcpy( p, stmp );
-		break;
-	}
+	return result;
 }
 
-
-int makedir( char *name )
-{
-#ifdef HSPWIN
-	return _mkdir( name );
-#else
-	return 0;
-#endif
-}
-
-
-int changedir( char *name )
-{
-#ifdef HSPWIN
-	return _chdir( name );
-#else
-	return 0;
-#endif
-}
-
-
-int delfile( char *name )
-{
-#ifdef HSPWIN
-	return DeleteFile( name );
-#else
-	return 0;
-#endif
-}
-
-
-int dirlist( char *fname, char **target, int p3 )
-{
-#ifdef HSPWIN
-	char *p;
-	int fl;
-	int stat_main;
-	HANDLE sh;
-	WIN32_FIND_DATA fd;
-	DWORD fmask;
-	BOOL ff;
-
-	fmask=0;
-	if (p3&1) fmask|=FILE_ATTRIBUTE_DIRECTORY;
-	if (p3&2) fmask|=FILE_ATTRIBUTE_HIDDEN | FILE_ATTRIBUTE_SYSTEM;
-
-	stat_main=0;
-
-	sh=FindFirstFile( fname, &fd );
-	if (sh==INVALID_HANDLE_VALUE) return 0;
-
-	while(1) {
-		ff=( fd.dwFileAttributes & fmask )>0;
-		if ((p3&4)==0) ff=!ff;
-		if (ff) {
-			p = fd.cFileName; fl = 1;
-			if ( *p==0 ) fl=0;			// 空行を除外
-			if ( *p=='.') {				// '.','..'を除外
-				if ( p[1]==0 ) fl=0;
-				if ((p[1]=='.')&&(p[2]==0)) fl=0;
-			}
-			if (fl) {
-				stat_main++;
-				sbStrAdd( target, p );
-				sbStrAdd( target,"\r\n" );
-			}
-		}
-		if ( !FindNextFile(sh,&fd) ) break;
-	}
-	FindClose(sh);
-	return stat_main;
-#else
-	return 0;
-#endif
-}
-
-
-int gettime( int index )
-{
-/*
-	Get system time entries
-	index :
-	    0 wYear
-	    1 wMonth
-	    2 wDayOfWeek
-	    3 wDay
-	    4 wHour
-	    5 wMinute
-	    6 wSecond
-	    7 wMilliseconds
-*/
-#ifdef HSPWIN
-	SYSTEMTIME st;
-	short *a;
-	GetLocalTime( &st );
-	a=(short *)&st;
-	return (int)(a[index]);
-#else
-	return 0;
-#endif
-}
-
-
-static	int splc;	// split pointer
-
-void strsp_ini( void )
-{
-	splc=0;
-}
-
-int strsp_getptr( void )
-{
-	return splc;
-}
-
-int strsp_get( char *srcstr, char *dststr, char splitchr, int len )
-{
-	//		split string with parameters
+char *to_hsp_string_literal( const char *src ) {
+	//		文字列をHSPの文字列リテラル形式に
+	//		戻り値のメモリは呼び出し側がfreeする必要がある。
+	//		HSPの文字列リテラルで表せない文字は
+	//		そのまま出力されるので注意。（'\n'など）
 	//
-
-/*
-	rev 44
-	mingw : warning : 比較は常に偽
-	に対処
-*/
-	unsigned char a1;
-	unsigned char a2;
-	int a;
-	int sjflg;
-	a=0;sjflg=0;
-	while(1) {
-		sjflg=0;
-		a1=srcstr[splc];
-		if (a1==0) break;
-		splc++;
-		if (a1>=0x81) if (a1<0xa0) sjflg++;
-		if (a1>=0xe0) sjflg++;
-
-		if (a1==splitchr) break;
-		if (a1==13) {
-			a2=srcstr[splc];
-			if (a2==10) splc++;
+	size_t length = 2;
+	const unsigned char *s = (unsigned char *)src;
+	while (1) {
+		unsigned char c = *s;
+		if ( c == '\0' ) break;
+		switch (c) {
+		case '\r':
+			if ( *(s+1) == '\n' ) {
+				s ++;
+			}
+			// FALL THROUGH
+		case '\t':
+		case '"':
+		case '\\':
+			length += 2;
 			break;
+		default:
+			length ++;
 		}
-		dststr[a++]=a1;
-		if (sjflg) {
-			dststr[a++]=srcstr[splc++];
+		if ( issjisleadbyte(c) && *(s+1) != '\0' ) {
+			length ++;
+			s += 2;
+		} else {
+			s ++;
 		}
-		if ( a>=len ) break;
 	}
-	dststr[a]=0;
-	return (int)a1;
-}
-
-
-char *strsp_cmds( char *srcstr )
-{
-	//		Skip 1parameter from command line
-	//
-	int spmode;
-	char a1;
-	char *cmdchk;
-	cmdchk = srcstr;
-	spmode=0;
-	while(1) {
-		a1=*cmdchk;
-		if (a1==0) break;
-		cmdchk++;
-		if (a1==32) if (spmode==0) break;
-		if (a1==0x22) spmode^=1;
+	char *dest = (char *)malloc(length + 1);
+	if ( dest == NULL ) return dest;
+	s = (unsigned char *)src;
+	unsigned char *d = (unsigned char *)dest;
+	*d++ = '"';
+	while (1) {
+		unsigned char c = *s;
+		if ( c == '\0' ) break;
+		switch (c) {
+		case '\t':
+			*d++ = '\\';
+			*d++ = 't';
+			break;
+		case '\r':
+			*d++ = '\\';
+			if ( *(s+1) == '\n') {
+				*d++ = 'n';
+				s ++;
+			} else {
+				*d++ = 'r';
+			}
+			break;
+		case '"':
+			*d++ = '\\';
+			*d++ = '"';
+			break;
+		case '\\':
+			*d++ = '\\';
+			*d++ = '\\';
+			break;
+		default:
+			*d++ = c;
+			if( issjisleadbyte(c) && *(s+1) != '\0' ) {
+				*d++ = *++s;
+			}
+		}
+		s ++;
 	}
-	return cmdchk;
+	*d++ = '"';
+	*d = '\0';
+	return dest;
 }
-
-
-int GetLimit( int num, int min, int max )
-{
-	if ( num > max ) return max;
-	if ( num < min ) return min;
-	return num;
-}
-
 
 void CutLastChr( char *p, char code )
 {
@@ -384,31 +412,95 @@ void CutLastChr( char *p, char code )
 	}
 }
 
+/*----------------------------------------------------------*/
+//					HSP system support
+/*----------------------------------------------------------*/
 
-static int htoi_sub( char hstr )
+void dirinfo( char *p, int id )
 {
-	//	exchange hex to int
+	//		dirinfo命令の内容をstmpに設定する
+	//
+#ifdef USE_WINDOWS_API
+	char fname[_MAX_PATH+1];
 
-	char a1;
-	a1=tolower(hstr);
-	if ((a1>='0')&&(a1<='9')) return a1-'0';
-	if ((a1>='a')&&(a1<='f')) return a1-'a'+10;
-	return 0;
-}
-
-
-int htoi( char *str )
-{
-	char a1;
-	int d;
-	int conv;
-	conv = 0;
-	d = 0;
-	while(1) {
-		a1=str[d++];if ( a1 == 0 ) break;
-		conv=(conv<<4) + htoi_sub(a1);
+	switch( id ) {
+	case 0:				//    カレント(現在の)ディレクトリ
+		_getcwd( p, _MAX_PATH );
+		break;
+	case 1:				//    実行ファイルがあるディレクトリ
+		GetModuleFileName( NULL,fname,_MAX_PATH );
+		getpath( fname, p, 32 );
+		break;
+	case 2:				//    Windowsディレクトリ
+		GetWindowsDirectory( p, _MAX_PATH );
+		break;
+	case 3:				//    Windowsのシステムディレクトリ
+		GetSystemDirectory( p, _MAX_PATH );
+		break;
+	default:
+		if ( id & 0x10000 ) {
+			SHGetSpecialFolderPath( NULL, p, id & 0xffff, FALSE );
+			break;
+		}
+		*p = 0;
+		return;
 	}
-	return conv;
+
+	//		最後の'\\'を取り除く
+	//
+	CutLastChr( p, '\\' );
+#else
+	*p = 0;
+#endif
 }
 
+
+/*----------------------------------------------------------*/
+
+//
+//		Memory Manager
+//
+char *mem_alloc( void *base, int newsize, int oldsize )
+{
+	char *p;
+	if ( base == NULL ) {
+		p = (char *)calloc( newsize, 1 );
+		return p;
+	}
+	if ( newsize <= oldsize ) return (char *)base;
+	p = (char *)calloc( newsize, 1 );
+	memcpy( p, base, oldsize );
+	free( base );
+	return p;
+}
+
+
+//
+//		windows debug support
+//
+#ifdef USE_WINDOWS_API
+
+void Alert( const char *mes )
+{
+	MessageBox( NULL, mes, "error",MB_ICONINFORMATION | MB_OK );
+}
+
+void AlertV( const char *mes, int val )
+{
+	char ss[128];
+	sprintf( ss, "%s%d",mes,val );
+	MessageBox( NULL, ss, "error",MB_ICONINFORMATION | MB_OK );
+}
+
+void Alertf( const char *format, ... )
+{
+	char textbf[1024];
+	va_list args;
+	va_start(args, format);
+	vsprintf(textbf, format, args);
+	va_end(args);
+	MessageBox( NULL, textbf, "error",MB_ICONINFORMATION | MB_OK );
+}
+
+#endif
 

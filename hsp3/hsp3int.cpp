@@ -496,6 +496,15 @@ static int cmdfunc_intcmd( int cmd )
 		code_event( HSPEVENT_FWRITE, -1, size, pdat );
 		break;
 		}
+	case 0x27:								// randomize
+#ifdef HSPWIN
+		p2 = (int)GetTickCount();	// Windows‚Ìê‡‚Ítick‚ðƒV[ƒh’l‚Æ‚·‚é
+#else
+		p2 = (int)time(0);			// WindowsˆÈŠO‚Ìƒ‰ƒ“ƒ_ƒ€ƒV[ƒh’l
+#endif
+		p1 = code_getdi( p2 );
+		srand( p1 );
+		break;
 	case 0x28:								// noteunsel
 		ctx->note_aptr = ctx->notep_aptr;
 		ctx->note_pval = ctx->notep_pval;
@@ -513,16 +522,65 @@ static int cmdfunc_intcmd( int cmd )
 		note.ResumeLineDirect();
 		break;
 		}
-
-	case 0x27:								// randomize
-#ifdef HSPWIN
-		p2 = (int)GetTickCount();	// Windows‚Ìê‡‚Ítick‚ðƒV[ƒh’l‚Æ‚·‚é
-#else
-		p2 = (int)time(0);			// WindowsˆÈŠO‚Ìƒ‰ƒ“ƒ_ƒ€ƒV[ƒh’l
-#endif
-		p1 = code_getdi( p2 );
-		srand( p1 );
+	case 0x2a:								// split
+		{
+		//	Žw’è‚µ‚½•¶Žš—ñ‚Å•ªŠ„‚³‚ê‚½—v‘f‚ð‘ã“ü‚·‚é(fujidig)
+		PVal *pval;
+		int aptr;
+		char *sptr;
+		char *sep;
+		char *newsptr;
+		int size;
+		int sep_len;
+		int n;
+		int is_last = 0;
+		
+		sptr = code_getvptr( &pval, &size );
+		if ( pval->flag != HSPVAR_FLAG_STR ) throw HSPERR_TYPE_MISMATCH;		sep = code_gets();
+		sep_len = strlen( sep );
+		
+		pval = NULL;
+		n = 0;
+		while (1) {
+			n ++;
+			newsptr = strstr2( sptr, sep );
+			if ( !is_last && *exinfo->npexflg & EXFLG_1 ) {
+				// •ªŠ„Œ‹‰Ê‚Ì”‚ªŠi”[‚·‚é•Ï”‚æ‚è‘½‚¯‚ê‚ÎÅŒã‚Ì•Ï”‚É”z—ñ‚ÅŠi”[‚µ‚Ä‚¢‚­
+				// ‚½‚¾‚µÅŒã‚Ì—v‘f‚ª a.2 ‚Ì‚æ‚¤‚É—v‘fŽw’è‚ª‚ ‚ê‚Î‚»‚êˆÈ~‚Í‘S‚­Ši”[‚µ‚È‚¢
+				if ( aptr != 0 ) pval = NULL;
+				is_last = 1;
+				aptr = 0;
+			}
+			if ( is_last ) {
+				aptr ++;
+				if ( pval != NULL && aptr >= pval->len[1] ) {
+					if ( pval->len[2] != 0 ) throw HSPVAR_ERROR_ARRAYOVER;
+					HspVarCoreReDim( pval, 1, aptr+1 );
+				}
+			} else {
+				aptr = code_getva( &pval );
+			}
+			if ( pval != NULL ) {
+				code_setva( pval, aptr, HSPVAR_FLAG_STR, sptr );
+			}
+			if ( newsptr == NULL ) {
+				// Ši”[‚·‚é•Ï”‚Ì”‚ª•ªŠ„‚Å‚«‚½”‚æ‚è‘½‚¯‚ê‚ÎŽc‚Á‚½•Ï”‚»‚ê‚¼‚ê‚É‹ó•¶Žš—ñ‚ðŠi”[‚·‚é
+				while( ( *exinfo->npexflg & EXFLG_1 ) == 0 ) {
+					aptr = code_getva( &pval );
+					code_setva( pval, aptr, HSPVAR_FLAG_STR, "" );
+				}
+				break;
+			}
+			if ( pval != NULL ) {
+				pval->offset = aptr;
+				((char *)HspVarCorePtr(pval))[newsptr - sptr] = '\0';
+			}
+			sptr = newsptr + sep_len;
+		}
+		ctx->stat = n;
 		break;
+		}
+
 
 	default:
 		throw HSPERR_UNSUPPORTED_FUNCTION;
@@ -786,7 +844,35 @@ static void *reffunc_intfunc( int *type_res, int arg )
 		ptr = p;
 		break;
 		}
-
+	case 0x105:								// strtrim
+		{
+		PVal *pval;
+		char *sptr;
+		char *p;
+		int size;
+		sptr = code_getvptr( &pval, &size );
+		if ( pval->flag != HSPVAR_FLAG_STR ) throw HSPERR_TYPE_MISMATCH;
+		p1 = code_getdi(0);
+		p2 = code_getdi(32);
+		ptr = p = code_stmp( size + 1 );
+		strcpy( p, sptr );
+		switch( p1 ) {
+		case 0:
+			TrimCodeL( p, p2 );
+			TrimCodeR( p, p2 );
+			break;
+		case 1:
+			TrimCodeL( p, p2 );
+			break;
+		case 2:
+			TrimCodeR( p, p2 );
+			break;
+		case 3:
+			TrimCode( p, p2 );
+			break;
+		}
+		break;
+		}
 
 	//	double function
 	case 0x180:								// sin

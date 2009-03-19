@@ -37,7 +37,7 @@ int mem_load( const char *fname, void *mem, int msize )
 	int flen;
 	fp=fopen(fname,"rb");
 	if (fp==NULL) return -1;
-	flen = fread( mem, 1, msize, fp );
+	flen = (int)fread( mem, 1, msize, fp );
 	fclose(fp);
 	return flen;
 }
@@ -47,7 +47,7 @@ int mem_save( const char *fname, const void *mem, int msize )
 	int flen;
 	fp=fopen(fname,"wb");
 	if (fp==NULL) return -1;
-	flen = fwrite( mem, 1, msize, fp );
+	flen = (int)fwrite( mem, 1, msize, fp );
 	fclose(fp);
 	return flen;
 }
@@ -64,7 +64,7 @@ int filecopy( const char *fname, const char *sname )
 	fp=fopen(fname,"rb");if (fp==NULL) goto jobov;
 	fp2=fopen(sname,"wb");if (fp2==NULL) goto jobov;
 	while(1) {
-		flen = fread( mem, 1, max, fp );
+		flen = (int)fread( mem, 1, max, fp );
 		if (flen==0) break;
 		fwrite( mem, 1, flen, fp2 );
 		if (flen<max) break;
@@ -411,6 +411,115 @@ void CutLastChr( char *p, char code )
 		if (( i > 3 )&&( ss == ss2 )) *ss = 0;
 	}
 }
+
+
+/*----------------------------------------------------------*/
+//					HSP string trim support
+/*----------------------------------------------------------*/
+
+char *strchr3( char *target, int code, int sw, char **findptr )
+{
+	//		文字列中のcode位置を探す(2バイトコード、全角対応版)
+	//		sw = 0 : findptr = 最後に見つかったcode位置
+	//		sw = 1 : findptr = 最初に見つかったcode位置
+	//		sw = 2 : findptr = 最初に見つかったcode位置(最初の文字のみ検索)
+	//		戻り値 : 次の文字にあたる位置
+	//
+	unsigned char *p;
+	unsigned char a1;
+	unsigned char code1;
+	unsigned char code2;
+	char *res;
+	char *pres;
+
+	p=(unsigned char *)target;
+	code1 = (unsigned char)(code&0xff);
+	code2 = (unsigned char)(code>>8);
+
+	res = NULL;
+	pres = NULL;
+	*findptr = NULL;
+
+	while(1) {
+		a1=*p;if ( a1==0 ) break;
+		if ( a1==code1 ) {
+			if ( a1 <129 ) {
+				res=(char *)p;
+			} else {
+				if ((a1<=159)||(a1>=224)) {
+					if ( p[1]==code2 ) {
+						res=(char *)p;
+					}
+				} else {
+					res=(char *)p;
+				}
+			}
+		}
+		p++;							// 検索位置を移動
+		if (a1>=129) {					// 全角文字チェック
+			if ((a1<=159)||(a1>=224)) p++;
+		}
+		if ( res != NULL ) { *findptr = res; pres = (char *)p; res = NULL; }
+
+		switch( sw ) {
+		case 1:
+			if ( *findptr != NULL ) return (char *)p;
+			break;
+		case 2:
+			return (char *)p;
+		}
+	}
+	return pres;
+}
+
+
+void TrimCodeR( char *p, int code )
+{
+	//		最後のcodeを取り除く
+	//
+	char *ss;
+	char *ss2;
+	char *sslast;
+	int i;
+	while(1) {
+		i = (int)strlen( p );
+		sslast = p + i;
+		ss = strchr3( p, code, 0, &ss2 );
+		if ( ss2 == NULL ) break;
+		if ( ss != sslast ) break;
+		*ss2 = 0;
+	}
+}
+
+
+void TrimCode( char *p, int code )
+{
+	//		すべてのcodeを取り除く
+	//
+	char *ss;
+	char *ss2;
+	while(1) {
+		ss = strchr3( p, code, 1, &ss2 );
+		if ( ss2 == NULL ) break;
+		strcpy( ss2, ss );
+	}
+}
+
+
+void TrimCodeL( char *p, int code )
+{
+	//		最初のcodeを取り除く
+	//
+	char *ss;
+	char *ss2;
+	while(1) {
+		ss = strchr3( p, code, 2, &ss2 );
+		if ( ss2 == NULL ) break;
+		strcpy( ss2, ss );
+	}
+}
+
+
 
 /*----------------------------------------------------------*/
 //					HSP system support
