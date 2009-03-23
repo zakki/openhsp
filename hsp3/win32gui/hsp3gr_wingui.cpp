@@ -962,20 +962,20 @@ static int cmdfunc_extcmd( int cmd )
 			break;
 		}
 #endif
+		t = HSPWND_TYPE_MAIN;
+		if ( cmd == 0x2b ) t = HSPWND_TYPE_BGSCR;
 		if ( cmd == 0x29 ) {
 			t = HSPWND_TYPE_BUFFER;
-		} else if ( cmd == 0x2b ) {
-			t = HSPWND_TYPE_BGSCR;
+			wnd->MakeBmscrOff( p1, p2, p3, p4 );
 		} else {
-			t = HSPWND_TYPE_MAIN;
+			wnd->MakeBmscr( p1, t, p5, p6, p7, p8, p2, p3, p4 );
 		}
-		wnd->MakeBmscr( p1, t, p5, p6, p7, p8, p2, p3, p4 );
 		bmscr = wnd->GetBmscr( p1 );
 		bmscr->Width( p7, p8, p5, p6, 1 );
 
 		cur_window = p1;
 
-		if ( bmscr->type == HSPWND_TYPE_BUFFER ) break;
+		if ( t == HSPWND_TYPE_BUFFER ) break;
 
 		ctx->waitcount = 0;
 		ctx->waittick = -1;
@@ -1190,6 +1190,30 @@ static int cmdfunc_extcmd( int cmd )
 		}
 		break;
 		}
+
+	case 0x38:								// gradf
+		break;
+
+	case 0x39:								// objimage
+		break;
+
+	case 0x3a:								// objskip
+		{
+		p1=code_getdi(0);
+		p2=code_getdi(2);
+		bmscr->SetObjectMode( p1, p2 );
+		break;
+		}
+
+	case 0x3b:								// objenable
+		{
+		p1=code_getdi(0);
+		p2=code_getdi(1);
+		bmscr->EnableObject( p1, p2 );
+		break;
+		}
+
+
 #endif
 
 	default:

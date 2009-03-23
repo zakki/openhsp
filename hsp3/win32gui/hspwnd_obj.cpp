@@ -220,19 +220,18 @@ static void Object_SetInputBox( HSPOBJINFO *info, int type, void *ptr )
 
 static void Object_SetCheckBox( HSPOBJINFO *info, int type, void *ptr )
 {
-	HWND const hw = info->hCld;
-	switch ( type ) {
-	case HSPVAR_FLAG_STR:
-		SetWindowText( hw, static_cast< char * >( ptr ) );
-		break;
-	case HSPVAR_FLAG_INT:
-		SendMessage( hw, BM_SETCHECK,
-		 ( *static_cast< int * >( ptr ) ? 1 : 0 ), 0 );
-		Object_CheckBox( info, 0 );
-		break;
-	default:
-		throw HSPERR_TYPE_MISMATCH;
-	}
+	int a;
+	HWND hw;
+	hw = info->hCld;
+	if ( type != TYPE_INUM ) throw HSPERR_TYPE_MISMATCH;
+	a=0;if ( *((int *)ptr) ) a++;
+	SendMessage( hw, BM_SETCHECK,a,0 );
+/*
+	rev 43
+	mingw : warning : int型仮引数にポインタ型実引数(NULL)を渡している
+	に対処
+*/
+	Object_CheckBox( info, 0 );
 }
 
 
@@ -264,9 +263,13 @@ int Bmscr::ActivateHSPObject( int id )
 	HSPOBJINFO *obj;
 
 	if (id>=0) {
-		obj = &mem_obj[ id ];
+		obj = GetHSPObjectSafe( id );
 		ow = obj->hCld;
 		if ( ow == NULL ) return -2;
+
+		if ( obj->owmode & HSPOBJ_TAB_SELALLTEXT ) {
+			SendMessage( ow, EM_SETSEL, 0, -1);
+		}
 		SetFocus( ow );
 		return 0;
 	}
@@ -280,6 +283,26 @@ int Bmscr::ActivateHSPObject( int id )
 	return cid;
 }
 
+
+
+void Bmscr::EnableObject( int id, int sw )
+{
+	HWND ow;
+	HSPOBJINFO *obj;
+	obj = GetHSPObjectSafe( id );
+	if ( obj->owmode == HSPOBJ_NONE ) throw HSPERR_ILLEGAL_FUNCTION;
+	EnableWindow( obj->hCld, sw!=0 );
+}
+
+
+void Bmscr::SetObjectMode( int id, int owmode )
+{
+	HSPOBJINFO *obj;
+	obj = GetHSPObjectSafe( id );
+	if ( obj->owmode == HSPOBJ_NONE ) throw HSPERR_ILLEGAL_FUNCTION;
+	if ( owmode <= 0 ) throw HSPERR_ILLEGAL_FUNCTION;
+	obj->owmode = owmode;
+}
 
 
 void Bmscr::NextObject( int plus )
@@ -388,13 +411,21 @@ HSPOBJINFO *Bmscr::GetHSPObject( int id )
 }
 
 
+HSPOBJINFO *Bmscr::GetHSPObjectSafe( int id )
+{
+	if (( id < 0 )||( id >= objmax )) throw HSPERR_ILLEGAL_FUNCTION;
+	return &mem_obj[id];
+}
+
+
 void Bmscr::DeleteHSPObject( int id )
 {
 	//		オブジェクト削除
 	//
 	HFONT hf;
 	HSPOBJINFO *obj;
-	obj = &mem_obj[id];
+
+	obj = GetHSPObjectSafe( id );
 
 	if ( obj->owmode == HSPOBJ_NONE ) return;
 	if ( obj->hCld != NULL ) {
@@ -413,7 +444,7 @@ void Bmscr::UpdateHSPObject( int id, int type, void *ptr )
 	//		オブジェクトに値を設定する
 	//
 	HSPOBJINFO *obj;
-	obj = &mem_obj[id];
+	obj = GetHSPObjectSafe( id );
 	if ( obj->func_objprm != NULL ) {
 		obj->func_objprm( obj, type, ptr );
 	} else {
@@ -430,7 +461,7 @@ void Bmscr::SetHSPObjectFont( int id )
 	PLOGFONT plf;
 	HSPOBJINFO *obj;
 
-	obj = &mem_obj[id];
+	obj = GetHSPObjectSafe( id );
 	if ( obj->owmode == HSPOBJ_NONE ) return;
 	if (( obj->owmode & HSPOBJ_OPTION_SETFONT ) == 0 ) return;
 
@@ -454,7 +485,7 @@ void Bmscr::SendHSPObjectNotice( int wparam )
 	HWND hw;
 	HSPOBJINFO *obj;
 	id = wparam & (MESSAGE_HSPOBJ-1);
-	obj = &mem_obj[id];
+	obj = GetHSPObjectSafe( id );
 	if ( obj->owmode == HSPOBJ_NONE ) return;
 	hw = obj->hCld;
 	if ( hw == NULL ) return;
@@ -589,7 +620,9 @@ int Bmscr::AddHSPObjectInput( PVal *pval, APTR aptr, int sizex, int sizey, char 
 
 	SendMessage( hwedit, EM_LIMITTEXT, limit, 0L );
 	SetWindowText( hwedit,defval );
-	if ( focflg == 0 ) SetFocus( hwedit );
+	if ( focflg == 0 ) {
+		ActivateHSPObject( id );
+	}
 	focflg++;
 
 	return id;

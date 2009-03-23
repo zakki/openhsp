@@ -130,6 +130,7 @@ public:
 	HSPOBJINFO *AddHSPJumpEventObject( int id, HWND handle, int mode, int val, void *ptr );
 	HSPOBJINFO *AddHSPVarEventObject( int id, HWND handle, int mode, PVal *pval, APTR aptr, int type, void *ptr );
 	HSPOBJINFO *GetHSPObject( int id );
+	HSPOBJINFO *GetHSPObjectSafe( int id );
 
 	void DeleteHSPObject( int id );
 	void SetHSPObjectFont( int id );
@@ -139,6 +140,9 @@ public:
 	int AddHSPObjectCheckBox( char *name, PVal *pval, APTR aptr );
 	int AddHSPObjectInput( PVal *pval, APTR aptr, int sizex, int sizey, char *defval, int limit, int mode );
 	int AddHSPObjectMultiBox( PVal *pval, APTR aptr, int psize, char *defval, int mode );
+
+	void EnableObject( int id, int sw );
+	void SetObjectMode( int id, int owmode );
 
 	//
 	//		Window data structure
@@ -221,10 +225,7 @@ public:
 	HspWnd( void );
 	HspWnd( HANDLE instance, char *wndcls );
 	~HspWnd( void );
-	void MakeBmscr( int id, int type, int xx, int yy, int wx, int wy,
-	 int sx, int sy, int mode );
-	void MakeBmscrWnd( int id, int type, int xx, int yy, int wx, int wy,
-	 int sx, int sy, int mode );
+	void MakeBmscr( int id, int type, int xx, int yy, int wx, int wy, int sx, int sy, int palsw );
 	void MakeBmscrOff( int id, int sx, int sy, int palsw );
 	inline Bmscr *GetBmscr( int id ) { return mem_bm[id]; };
 	int Picload( int id, char *fname, int mode );

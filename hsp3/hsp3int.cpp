@@ -536,7 +536,8 @@ static int cmdfunc_intcmd( int cmd )
 		int is_last = 0;
 		
 		sptr = code_getvptr( &pval, &size );
-		if ( pval->flag != HSPVAR_FLAG_STR ) throw HSPERR_TYPE_MISMATCH;		sep = code_gets();
+		if ( pval->flag != HSPVAR_FLAG_STR ) throw HSPERR_TYPE_MISMATCH;
+		sep = code_gets();
 		sep_len = strlen( sep );
 		
 		pval = NULL;
