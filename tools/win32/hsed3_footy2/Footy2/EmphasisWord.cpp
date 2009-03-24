@@ -48,15 +48,20 @@ bool CEmphasisWord::SetValues(const wchar_t *pString1,const wchar_t *pString2,
 CEmphasisWord::SetLower
 •¶š—ñ‚ğ‘S‚Ä¬•¶š‰»‚·‚é
 ----------------------------------------------------------------*/
-void CEmphasisWord::SetLower(wchar_t *szStr,size_t nLen){
-	for (size_t i=0;i<nLen;i++,szStr++){
-		if (CFootyLine::IsSurrogateLead(*szStr)){		/*ƒTƒƒQ[ƒgƒyƒA*/
+void CEmphasisWord::SetLower(wchar_t *szStr,size_t nLen)
+{
+	for (size_t i=0;i<nLen;i++,szStr++)
+	{
+		if (CFootyLine::IsSurrogateLead(*szStr))		// ƒTƒƒQ[ƒgƒyƒA
+		{
 			szStr++;i++;
 		}
-		else if (L'A' <= *szStr && *szStr <= L'Z'){		/*”¼Šp‘å•¶š*/
+		else if (L'A' <= *szStr && *szStr <= L'Z')		// ”¼Šp‘å•¶š
+		{
 			(*szStr) += (L'a' - L'A');
 		}
-		else if (L'‚`' <= *szStr && *szStr <= L'‚y'){	/*‘SŠp‘å•¶š*/
+		else if (L'‚`' <= *szStr && *szStr <= L'‚y')	// ‘SŠp‘å•¶š
+		{
 			(*szStr) += (L'‚' - L'‚`');
 		}
 	}

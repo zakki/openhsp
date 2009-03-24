@@ -6,12 +6,12 @@ CRegExpContainerƒNƒ‰ƒX
 #pragma once
 
 #include "RegExpElement.h"
-#include <vector>
 
-class CRegExpContainer : public CRegExpElement{
+class CRegExpContainer : public CRegExpElement
+{
 public:
 	CRegExpContainer();
-	~CRegExpContainer();
+	virtual ~CRegExpContainer();
 
 	inline void AddRegExp(CRegExpElement *pElement){
 		m_vecChildElements.push_back(pElement);

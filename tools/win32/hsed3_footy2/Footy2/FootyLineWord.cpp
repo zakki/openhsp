@@ -10,7 +10,8 @@ CFootyLine::GetWordInfo
 nPosの位置に存在する単語の情報を取得します。
 bIsBackModeの時に後ろ側へ。デフォルトはtrueです。
 -------------------------------------------------------------------*/
-CFootyLine::WordInfo CFootyLine::GetWordInfo(size_t nPos,bool bIsBackMode){
+CFootyLine::WordInfo CFootyLine::GetWordInfo(size_t nPos,bool bIsBackMode) const
+{
 	WordInfo wiReturn;
 	CharSets nKind;								/*種類*/
 	CharSets nKindBefore = CHARSETS_UNKNOWN;	/*前の種類*/
@@ -291,26 +292,28 @@ bool CFootyLine::IsDualChar(CFootyLine::CharSets c){
 		   c == CHARSETS_KOREA;
 }
 
-/*-------------------------------------------------------------------
-CFootyLine::IsGoNext
-次の行に行くかどうかを取得します。
-<引数>
-nPos		文字のインデックス番号
-nNowCol		nPosの位置のカラム位置
-nColumns	表示可能カラム数
--------------------------------------------------------------------*/
-bool CFootyLine::IsGoNext(const wchar_t *pChar,size_t nPos,size_t nNowCol,
-						  size_t nColumns,int nMode){
-	/*宣言*/
+//-----------------------------------------------------------------------------
+/**
+ * @brief 次の行に行くかどうかを取得します。
+ * @param	nPos	[in] 文字のインデックス番号
+ * @param	nNowCol	[in] nPosの位置のカラム位置
+ * @param	nColumns[in] 表示可能カラム数
+ */
+bool CFootyLine::IsGoNext(const wchar_t *pChar,size_t nPos,size_t nNowCol, size_t nColumns,int nMode) const
+{
+	// 宣言
 	wchar_t wcNext = *(pChar + 1);
-	/*処理を続行する*/
+	// 処理を続行する
 	if (nNowCol >= nColumns - 1 &&
-		(IsDualChar(*pChar) || (IsSurrogateTail(*pChar) && IsDualChar(*(pChar-1),*pChar)))){
-		if ((nMode & LAPELFLAG_JPN_PERIOD) != 0){		/*句読点を先頭に来させない*/
+		(IsDualChar(*pChar) || (IsSurrogateTail(*pChar) && IsDualChar(*(pChar-1),*pChar))))
+	{
+		if ((nMode & LAPELFLAG_JPN_PERIOD) != 0)		// 句読点を先頭に来させない
+		{
 			if (wcNext == L'、' || wcNext == L'。')
 				return false;
 		}
-		if ((nMode & LAPELFLAG_JPN_QUOTATION) != 0){	/*カギ括弧閉じを先頭に来させない*/
+		if ((nMode & LAPELFLAG_JPN_QUOTATION) != 0)		// カギ括弧閉じを先頭に来させない
+		{
 			if (wcNext == L'）' || wcNext == L'」' || wcNext == L'｝' ||
 				wcNext == L'】' || wcNext == L'』' || wcNext == L'〕' ||
 				wcNext == L'〉' || wcNext == L'》')
@@ -319,7 +322,9 @@ bool CFootyLine::IsGoNext(const wchar_t *pChar,size_t nPos,size_t nNowCol,
 		return true;
 	}
 	else if (nNowCol >= nColumns)
+	{
 		return true;
+	}
 	return false;
 }
 

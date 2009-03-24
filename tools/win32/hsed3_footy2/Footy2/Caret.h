@@ -5,8 +5,6 @@ CCaretクラス
 
 #pragma once
 
-#include <windows.h>
-
 class CCaret{
 public:
 	/*コンストラクタ*/

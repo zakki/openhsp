@@ -45,10 +45,12 @@
 				MinimalRebuild="true"
 				BasicRuntimeChecks="3"
 				RuntimeLibrary="1"
-				UsePrecompiledHeader="0"
+				UsePrecompiledHeader="2"
+				PrecompiledHeaderThrough="Global.h"
 				WarningLevel="3"
 				Detect64BitPortabilityProblems="true"
 				DebugInformationFormat="4"
+				ForcedIncludeFiles="Global.h"
 			/>
 			<Tool
 				Name="VCManagedResourceCompilerTool"
@@ -118,10 +120,12 @@
 				Name="VCCLCompilerTool"
 				PreprocessorDefinitions="WIN32;NDEBUG;_WINDOWS;_USRDLL;FOOTY2_EXPORTS"
 				RuntimeLibrary="0"
-				UsePrecompiledHeader="0"
+				UsePrecompiledHeader="2"
+				PrecompiledHeaderThrough="Global.h"
 				WarningLevel="3"
 				Detect64BitPortabilityProblems="true"
 				DebugInformationFormat="3"
+				ForcedIncludeFiles="Global.h"
 			/>
 			<Tool
 				Name="VCManagedResourceCompilerTool"
@@ -378,10 +382,6 @@
 				>
 			</File>
 			<File
-				RelativePath=".\ReleaseNotes.txt"
-				>
-			</File>
-			<File
 				RelativePath=".\Resource\tick.bmp"
 				>
 			</File>
@@ -416,10 +416,6 @@
 				>
 			</File>
 			<File
-				RelativePath=".\DllDefnition.h"
-				>
-			</File>
-			<File
 				RelativePath=".\DoubleBuffering.h"
 				>
 			</File>
@@ -448,15 +444,15 @@
 				>
 			</File>
 			<File
+				RelativePath=".\Global.h"
+				>
+			</File>
+			<File
 				RelativePath=".\HSplitter.h"
 				>
 			</File>
 			<File
 				RelativePath=".\KeyBoardState.h"
-				>
-			</File>
-			<File
-				RelativePath=".\Macros.h"
 				>
 			</File>
 			<File
@@ -518,6 +514,22 @@
 			<File
 				RelativePath=".\DllMain.cpp"
 				>
+				<FileConfiguration
+					Name="Debug|Win32"
+					>
+					<Tool
+						Name="VCCLCompilerTool"
+						UsePrecompiledHeader="1"
+					/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Release|Win32"
+					>
+					<Tool
+						Name="VCCLCompilerTool"
+						UsePrecompiledHeader="1"
+					/>
+				</FileConfiguration>
 			</File>
 			<File
 				RelativePath=".\DllMetricsFunc.cpp"
@@ -732,6 +744,10 @@
 				>
 			</File>
 		</Filter>
+		<File
+			RelativePath=".\ReleaseNote_Footy.txt"
+			>
+		</File>
 	</Files>
 	<Globals>
 	</Globals>

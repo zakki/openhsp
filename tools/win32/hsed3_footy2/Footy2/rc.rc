@@ -53,8 +53,8 @@ END
 //
 
 VS_VERSION_INFO VERSIONINFO
- FILEVERSION 2,0,1,4
- PRODUCTVERSION 2,0,1,4
+ FILEVERSION 2,0,1,7
+ PRODUCTVERSION 2,0,1,7
  FILEFLAGSMASK 0x17L
 #ifdef _DEBUG
  FILEFLAGS 0x1L
@@ -67,22 +67,21 @@ VS_VERSION_INFO VERSIONINFO
 BEGIN
     BLOCK "StringFileInfo"
     BEGIN
-        BLOCK "041104b0"
+        BLOCK "000004b0"
         BEGIN
-            VALUE "Comments", "高機能テキストエディタコントロール"
-            VALUE "CompanyName", "渡部晋司"
-            VALUE "FileDescription", "Footy2 ダイナミック リンク ライブラリ"
-            VALUE "FileVersion", "2, 0, 1, 4"
+            VALUE "Comments", "High-performance text editor control"
+            VALUE "FileDescription", "Footy2 Dynamic Link Library"
+            VALUE "FileVersion", "2, 0, 1, 7"
             VALUE "InternalName", "Footy2"
-            VALUE "LegalCopyright", "Copyright (C) 2002 - 2008 ShinjiWatanabe"
+            VALUE "LegalCopyright", "Copyright (C) 2002 - 2009 Shinji Watanabe"
             VALUE "OriginalFilename", "Footy2.dll"
-            VALUE "ProductName", "Footy2 ダイナミック リンク ライブラリ"
-            VALUE "ProductVersion", "2, 0, 1, 4"
+            VALUE "ProductName", "Footy2 Dynamic Link Library"
+            VALUE "ProductVersion", "2, 0, 1, 7"
         END
     END
     BLOCK "VarFileInfo"
     BEGIN
-        VALUE "Translation", 0x411, 1200
+        VALUE "Translation", 0x0, 1200
     END
 END
 

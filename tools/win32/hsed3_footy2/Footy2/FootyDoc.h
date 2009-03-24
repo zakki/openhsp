@@ -7,7 +7,6 @@
 
 #pragma once
 
-#include "Footy2.h"
 #include "EditPosition.h"
 #include "UndoBuffer.h"
 #include "EthicLine.h"
@@ -19,7 +18,7 @@ class CFootyDoc
 public:
 	// コンストラクタ
 	CFootyDoc();
-	~CFootyDoc();
+	virtual ~CFootyDoc();
 
 	//! 新規作成
 	void CreateNew(int nGlobalID);
@@ -40,9 +39,9 @@ public:
 	void SetText(const wchar_t *pString);
 	RedrawType InsertString(const wchar_t *pString,bool bRecUndo = true,bool bOverwritable = false,bool bMemLineMode = false);
 	RedrawType InsertChar(wchar_t wChar);
-	RedrawType InsertReturn();
-	RedrawType InsertReturnUp();
-	RedrawType InsertReturnDown();
+	RedrawType InsertReturn( bool bIndentMode );
+	RedrawType InsertReturnUp( bool bIndentMode );
+	RedrawType InsertReturnDown( bool bIndentMode );
 	RedrawType Indent();
 	RedrawType Unindent();
 	RedrawType OnBackSpace();
@@ -88,13 +87,13 @@ public:
 	inline LinePt GetTopLine(){return m_lsLines.begin();}	//!< 先頭行を取得する
 	LinePt GetLastLine();									//!< 「本当の」最終行を取得する
 	inline LinePt GetEndLine(){return m_lsLines.end();}		//!< 末尾のダミー行を取得する
-	inline int GetLineMode(){return m_nLineMode;}
-	inline LineSize GetLineNum(){return m_lsLines.size();}	//!< 行の数を取得する
-	inline size_t GetLapelColumn(){return m_nLapelColumns;}
-	inline int GetLapelMode(){return m_nLapelMode;}
-	inline size_t GetTabLen(){return m_nTabLen;}
+	inline int GetLineMode() const {return m_nLineMode;}
+	inline LineSize GetLineNum() const {return m_lsLines.size();}	//!< 行の数を取得する
+	inline size_t GetLapelColumn() const {return m_nLapelColumns;}
+	inline int GetLapelMode() const {return m_nLapelMode;}
+	inline size_t GetTabLen() const {return m_nTabLen;}
 	bool IsEdited();
-	inline bool IsInsertMode(){return m_bInsertMode;}
+	inline bool IsInsertMode() const {return m_bInsertMode;}
 	int GetRedoRem();
 	int GetUndoRem();
 
@@ -108,10 +107,12 @@ public:
 	inline CEthicLine *GetFirstVisible(int nID){return &m_cFirstVisibleLine[nID];}
 	CEditPosition *GetSelStart();
 	CEditPosition *GetSelEnd();
-
+	
 	// 設定
 	void SetLapel(size_t nColumn,int nMode);
 	void SetInsertMode(bool bInsertMode);
+	inline void SetReadOnly( bool bReadOnly ){ m_bReadOnly = bReadOnly; }
+	inline bool IsReadOnly() const { return m_bReadOnly; }
 	void SetTabLen(size_t nTabLen);
 
 	// 強調表示系の関数
@@ -162,9 +163,6 @@ public:
 		SELECT_BOX_REV,								//!< 上下逆の矩形選択
 	};
 	
-	// 状態
-	bool m_bEnabled;								//!< 編集可能状態
-
 	// 関数ポインタ
 	Footy2FuncMoveCaret m_pFuncMoveCaret;			//!< キャレット移動イベント
 	void *m_pDataMoveCaret;							//!< それのデータ
@@ -201,6 +199,7 @@ private:
 	bool m_bCannotReachSavedPos;					//!< セーブポイントまでたどり着けない(削除された)
 	
 	// そのほかデータ
+	bool m_bReadOnly;								//!< 編集可能状態
 	int m_nGlobalID;								//!< 親のID番号
 };
 

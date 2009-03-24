@@ -5,7 +5,6 @@ CUndoBufferƒNƒ‰ƒX
 
 #pragma once
 
-#include <string>
 #include "EditPosition.h"
 
 class CUndoBuffer{

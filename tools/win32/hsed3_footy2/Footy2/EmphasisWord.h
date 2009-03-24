@@ -5,12 +5,8 @@ CEmphasisWordƒNƒ‰ƒX
 
 #pragma once
 
-#include <list>
-#include <string>
-
-#include "Footy2.h"
-
-class CEmphasisWord{
+class CEmphasisWord
+{
 public:
 	CEmphasisWord();
 
@@ -21,10 +17,10 @@ public:
 	inline bool IsPermitted(int nLevel){return (m_nPermission & (1 << nLevel)) != 0;}
 	bool CheckIndependence(const wchar_t *pChar,bool bCheckAfter);
 	inline int GetLevel(){return m_nLevel;}
-	inline const wchar_t *GetString1(){return &m_strWord1[0];}
-	inline const wchar_t *GetString2(){return &m_strWord2[0];}
-	inline size_t GetLen1(){return m_strWord1.size();}
-	inline size_t GetLen2(){return m_strWord2.size();}
+	inline const wchar_t *GetString1() const { return m_strWord1.c_str(); }
+	inline const wchar_t *GetString2() const { return m_strWord2.c_str(); }
+	inline size_t GetLen1() const { return m_strWord1.size(); }
+	inline size_t GetLen2() const { return m_strWord2.size(); }
 	inline COLORREF GetColor(){return m_nColor;}
 	inline int GetType(){return m_nType;}
 	inline bool IsOnlyHead(){return (m_nEmpFlag & EMPFLAG_HEAD) != 0;}

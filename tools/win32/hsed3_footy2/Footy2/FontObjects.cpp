@@ -1,10 +1,10 @@
-/*===================================================================
-CFontObjectsクラス
-フォントのオブジェクト管理クラスです。
-===================================================================*/
+/**
+ * @file	FontObjects.cpp
+ * @brief	フォントのオブジェクト管理クラスです。
+ * @author	Shinji Watanabe
+ * @date	2009/03/16
+ */
 
-#include <math.h>
-#include "Footy2.h"
 #include "FontObjects.h"
 #pragma warning (disable : 4996)
 
@@ -26,20 +26,24 @@ const int CFontObjects::m_nCharSets[FFM_NUM_FONTS] =
 	THAI_CHARSET
 };
 
-/*-------------------------------------------------------------------------
-CFontObjects::GetFontHandle
-コンストラクタです。
--------------------------------------------------------------------------*/
-CFontObjects::CFontObjects(){
-	/*全てNULL化*/
+//-----------------------------------------------------------------------------
+/**
+ * @brief コンストラクタです
+ */
+CFontObjects::CFontObjects()
+{
+	// 全てNULL化
 	for (int i=0;i<FFM_NUM_FONTS;i++)
+	{
 		m_hFont[i] = NULL;
+	}
 	m_hRulerFont = NULL;
 	m_fnWeight = FW_BOLD;
 	m_nFontHeight = 0;
 	m_nFontWidth = 0;
 	m_nRulerHeight = 0;
-	/*デフォルトフォント名を入れておく*/
+	
+	// デフォルトフォント名を入れておく
 	m_strFace[FFM_ANSI_CHARSET]			= L"Courier New";
 	m_strFace[FFM_BALTIC_CHARSET]		= L"Courier New";
 	m_strFace[FFM_BIG5_CHARSET]			= L"MingLiU";
@@ -57,24 +61,28 @@ CFontObjects::CFontObjects(){
 	m_nFontPoint	=	FONTNORMAL_DEFAULT;
 }
 
-/*-------------------------------------------------------------------------
-CFontObjects::~CFontObjects
-デストラクタです。
--------------------------------------------------------------------------*/
-CFontObjects::~CFontObjects(){
-	for (int i=0;i<FFM_NUM_FONTS;i++){
-		if (m_hFont[i]){
+//-----------------------------------------------------------------------------
+/**
+ * @brief デストラクタです。
+ */
+CFontObjects::~CFontObjects()
+{
+	for (int i=0;i<FFM_NUM_FONTS;i++)
+	{
+		if (m_hFont[i])
+		{
 			DeleteObject(m_hFont[i]);
 			m_hFont[i] = NULL;
 		}
 	}
 }
 
-/*-------------------------------------------------------------------------
-CFontObjects::CreateFontObject
-一つ分のフォントを作り直す処理
--------------------------------------------------------------------------*/
-bool CFontObjects::CreateFontObject(int nType,HDC hDC){
+//-----------------------------------------------------------------------------
+/**
+ * @brief 一つ分のフォントを作り直す処理
+ */
+bool CFontObjects::CreateFontObject(int nType,HDC hDC)
+{
 	m_hFont[nType] = GetFontHandle(m_strFace[nType].c_str(),
 			HeightFromPoint(hDC,m_nFontPoint),
 			false,m_nCharSets[nType]);
@@ -82,51 +90,62 @@ bool CFontObjects::CreateFontObject(int nType,HDC hDC){
 	return true;
 }
 
-/*-------------------------------------------------------------------------
-CFontObjects::RecreateAll
-全てのフォントを作り直す処理
--------------------------------------------------------------------------*/
-bool CFontObjects::RecreateAll(HDC hDC){
-	for (int i=0;i<FFM_NUM_FONTS;i++){
+//-----------------------------------------------------------------------------
+/**
+ * @brief 全てのフォントを作り直す処理です
+ */
+bool CFontObjects::CreateAll( HDC hDC )
+{
+	for (int i=0;i<FFM_NUM_FONTS;i++)
+	{
 		if (!CreateFontObject(i,hDC))return false;
 	}
 	SetFontPixels(hDC);
 	return true;
 }
 
-/*-------------------------------------------------------------------------
-CFontObjects::SetFontFace
-フォントをセットする処理
--------------------------------------------------------------------------*/
-bool CFontObjects::SetFontFace(int nType,const wchar_t *pFontFace,HDC hDC){
+//-----------------------------------------------------------------------------
+/**
+ * @brief フォントをセットする処理
+ */
+bool CFontObjects::SetFontFace(int nType,const wchar_t *pFontFace,HDC hDC)
+{
 	m_strFace[nType] = pFontFace;
 	if (!CreateFontObject(nType,hDC))return false;
 	SetFontPixels(hDC);
 	return true;
 }
 
-/*-------------------------------------------------------------------------
-CFontObjects::SetFontPixels
-
--------------------------------------------------------------------------*/
-void CFontObjects::SetFontPixels(HDC hDC){
-	HFONT hFontOld;					/*フォントハンドル*/
-	SIZE wSize;						/*wの大きさ*/
-	hFontOld = (HFONT)SelectObject(hDC,GetKanjiFont());
-	GetTextExtentPoint32W(hDC,L"abcdefghijklmnopqrstuvwxyz",26,&wSize);
-	SelectObject(hDC,hFontOld);
-	m_nFontWidth = wSize.cx / 26;
-	m_nFontHeight = wSize.cy;
+//-----------------------------------------------------------------------------
+/**
+ * @brief フォントの大きさ調べてセットする処理
+ * @param	hDC	[in] 調べる対象のデバイスコンテキスト
+ */
+void CFontObjects::SetFontPixels( HDC hDC )
+{
+	SIZE wSize;						// 描画したサイズ
+	
+	m_nFontWidth = 0;
+	m_nFontHeight = 0;
+	
+	for ( int i = 0; i < FFM_NUM_FONTS ; i++ )
+	{
+		SelectObject( hDC, m_hFont[ i ] );
+		GetTextExtentPoint32W(hDC,L"abcdefghijklmnopqrstuvwxyz",26,&wSize);
+		m_nFontWidth = max( wSize.cx / 26, m_nFontWidth );
+		m_nFontHeight = max( wSize.cy, m_nFontHeight );
+	}
 }
 
-/*-------------------------------------------------------------------------
-CFontObjects::SetRuler
-ルーラー用フォントの作成
--------------------------------------------------------------------------*/
-bool CFontObjects::SetRuler(HDC hDC,int nRulerHeight){
-	/*宣言*/
+//-----------------------------------------------------------------------------
+/**
+ * @brief ルーラー用フォントの作成
+ */
+bool CFontObjects::SetRuler(HDC hDC,int nRulerHeight)
+{
+	// 宣言
 	HFONT hTemp;
-	/*フォントを作成*/
+	// フォントを作成
 	hTemp = GetFontHandle(m_strFace[FFM_ANSI_CHARSET].c_str(),nRulerHeight,false,ANSI_CHARSET);
 	if (!hTemp)return false;
 	m_hRulerFont = hTemp;
@@ -134,17 +153,15 @@ bool CFontObjects::SetRuler(HDC hDC,int nRulerHeight){
 	return true;
 }
 
-/*-------------------------------------------------------------------------
-CFontObjects::GetFontHandle
-<引数>
-szFontName	フォントの名前
-nPoint		フォントの大きさ
-hDC			デバイスコンテキストハンドル
-<解説>
-フォントを作成して、それを返します。
--------------------------------------------------------------------------*/
-HFONT CFontObjects::GetFontHandle(const wchar_t *szFontName,int nHeight,bool bBold,int nCharSets){
-	/*フォントを作成(CreateFontはCEで使えない)*/
+//-----------------------------------------------------------------------------
+/**
+ * @brief フォントを作成して、それを返します。
+ * @param	szFontName	フォントの名前
+ * @param	nPoint		フォントの大きさ
+ * @param	hDC			デバイスコンテキストハンドル
+ */
+HFONT CFontObjects::GetFontHandle(const wchar_t *szFontName,int nHeight,bool bBold,int nCharSets)
+{
 	LOGFONTW fontStruct;
 	memset(&fontStruct,0,sizeof(LOGFONTW));
 	fontStruct.lfHeight = nHeight;
@@ -158,11 +175,12 @@ HFONT CFontObjects::GetFontHandle(const wchar_t *szFontName,int nHeight,bool bBo
 	return CreateFontIndirectW(&fontStruct);
 }
 
-/*-------------------------------------------------------------------------
-CFontObjects::GetMulDiv
-nNumber * nNumerator / nDenominator を四捨五入して返す
--------------------------------------------------------------------------*/
-int CFontObjects::GetMulDiv(int nNumber,int nNumerator,int nDenominator){
+//-----------------------------------------------------------------------------
+/**
+ * @brief nNumber * nNumerator / nDenominator を四捨五入して返す
+ */
+int CFontObjects::GetMulDiv(int nNumber,int nNumerator,int nDenominator)
+{
 	long long nTemp = nNumber * nNumerator;
 	double fReturn = ((double)nTemp / nDenominator);
 	fReturn += 0.5f;

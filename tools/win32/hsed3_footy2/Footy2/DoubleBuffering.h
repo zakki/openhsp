@@ -5,7 +5,6 @@ CDoubleBufferingƒNƒ‰ƒX
 
 #pragma once
 
-#include <windows.h>
 #include "EthicLine.h"
 
 class CDoubleBuffering{

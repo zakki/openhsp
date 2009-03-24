@@ -7,10 +7,11 @@ CRegExpElementƒNƒ‰ƒX
 
 #include "EditPosition.h"
 
-class CRegExpElement{
+class CRegExpElement
+{
 public:
 	CRegExpElement();
-	~CRegExpElement();
+	virtual ~CRegExpElement();
 
 	bool Search(LinePt pStartLine,size_t nStartPos,CEditPosition *pEnd,LinePt pEndLine);
 	virtual void ResetSearch(){}

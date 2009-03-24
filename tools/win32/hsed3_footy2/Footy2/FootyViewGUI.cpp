@@ -6,7 +6,6 @@
  */
 
 #include "FootyView.h"
-#include "Macros.h"
 #include "StaticStack.h"
 
 #ifndef UNDER_CE
@@ -88,27 +87,44 @@ void CFootyView::SetRulerHeight(int nHeight){
 	MoveWin(m_x,m_y,m_nWidth,m_nHeight,false);
 }
 
-/*-------------------------------------------------------------------
-CFootyView::Refresh
-子ウィンドウの再描画処理
--------------------------------------------------------------------*/
-bool CFootyView::Refresh(bool bSendOther){
-	if (m_bVisible){					/*再描画は表示しているときのみ*/
-		/*雑多処理*/
+//-----------------------------------------------------------------------------
+/**
+ * @brief ウィンドウの強制再描画処理です
+ * @param	bSendOther	[in] 異なるビューに対しても情報を送信するかどうかを選択します
+ */
+bool CFootyView::Refresh(bool bSendOther)
+{
+	if (m_bVisible)						// 再描画は表示しているときのみ
+	{
+		// 雑多処理
 		CaretMove();
 		SetBars();
 
-		/*再描画処理をかける*/
-		HDC hDC = GetDC(m_hWnd);		/*デバイスコンテキストを取得*/
-		RECT rc;
-		if (!hDC)return false;
-		GetClientRect(m_hWnd,&rc);
-		if (!Refresh(hDC,&rc))return false;
-		ReleaseDC(m_hWnd,hDC);			/*デバイスコンテキストを解放*/
+		// 再描画処理をかける
+		HDC hDC = GetDC(m_hWnd);		// デバイスコンテキストを取得
+		FOOTY2_PRINTF( L"GetDC %d\n", m_nFootyID );
+		if ( !hDC )
+		{
+			FOOTY2_PRINTF( L"But failed...\n", m_nFootyID );
+			return false;
+		}
 
-		/*他のビューへ送信する*/
-		if (bSendOther){
-			for (int i=0;i<4;i++){
+		RECT rc;
+		GetClientRect( m_hWnd, &rc );
+		if (!Refresh(hDC,&rc))
+		{
+			ReleaseDC( m_hWnd, hDC );
+			FOOTY2_PRINTF( L"ReleaseDC %d\n", m_nFootyID );
+			return false;
+		}
+		ReleaseDC(m_hWnd,hDC);			// デバイスコンテキストを解放
+		FOOTY2_PRINTF( L"ReleaseDC %d\n", m_nFootyID );
+
+		// 他のビューへ送信する
+		if (bSendOther)
+		{
+			for ( int i = 0; i < 4; i++ )
+			{
 				if (i != m_nViewID)
 					m_pView[i].Refresh(false);
 			}
@@ -117,8 +133,8 @@ bool CFootyView::Refresh(bool bSendOther){
 	return true;
 }
 
+//-----------------------------------------------------------------------------
 /**
- * CFootyView::Refresh
  * @brief 指定されたデバイスコンテキストへの描画処理
  * @param hDC 描画先デバイスコンテキスト
  * @param rc 描画先矩形
@@ -194,110 +210,124 @@ bool CFootyView::Refresh(HDC hDC,const RECT *rc){
 	return true;
 }
 
+//-----------------------------------------------------------------------------
 /** 
- * CFootyView::CaretRefresh
  * @brief キャレットが動かされただけのときに呼び出す再描画ルーチンです。
  * @return 成功したときtrue、失敗したときfalse
  * @note 他のビューは再描画しません。
  */
-bool CFootyView::CaretRefresh(){
-	if (m_bVisible){				/*再描画は表示しているときのみ*/
+bool CFootyView::CaretRefresh()
+{
+	if (m_bVisible)					// 再描画は表示しているときのみ
+	{
 		if (!m_cDoubleBuffering.IsRendered())
+		{
 			return Refresh(false);
-		else{
-			/*雑多処理*/
+		}
+		else
+		{
+			// 雑多処理
 			CaretMove();
-
-			/*再描画処理*/
-			/*宣言*/
+			
+			// 宣言
 			HDC hDC;
 			HDC hDcBuffer = m_cDoubleBuffering.GetDC();
 			RECT rc;
 			
-			/*初期化*/
-			hDC = GetDC(m_hWnd);		/*デバイスコンテキストを取得*/
+			// 初期化
+			hDC = GetDC(m_hWnd);		// デバイスコンテキストを取得
 			if (!hDC)return false;
-			GetClientRect(m_hWnd,&rc);	/*描画エリア取得*/
-			m_cCaret.Hide();			/*キャレット非表示*/
+			FOOTY2_PRINTF( L"GetDC %d\n", m_nFootyID );
+			GetClientRect( m_hWnd,&rc );// 描画エリア取得
+			m_cCaret.Hide();			// キャレット非表示
 			
-			/*描画開始*/
+			// 描画開始
 			RendLineCount(hDcBuffer,&rc);
 			RendRuler(hDcBuffer,&rc);
 			RendBorderLine(hDcBuffer,&rc);
 			BitBlt(hDC,0,0,m_nWidth,m_nHeight,hDcBuffer,0,0,SRCCOPY);
 			RendUnderLine(hDC,&rc);
 			
-			/*デバイスコンテキストを解放*/
-			m_cCaret.Show();			/*キャレット表示*/
+			// デバイスコンテキストを解放
+			m_cCaret.Show();			// キャレット表示
 			ReleaseDC(m_hWnd,hDC);
+			FOOTY2_PRINTF( L"ReleaseDC %d\n", m_nFootyID );
 		}
 	}
 	return true;
 }
 
+//-----------------------------------------------------------------------------
 /**
- * CFootyView::ScrollRefresh
  * @brief 上下スクロールされたときに高速再描画を行います。
  * @return 成功したときtrue、失敗したときfalse
  * @note 他のビューは再描画しません
  */
-bool CFootyView::ScrollRefresh(){
-	if (m_bVisible){				/*再描画は表示しているときのみ*/
-		/*高速化が不可能でないかチェックする*/
+bool CFootyView::ScrollRefresh()
+{
+	if (m_bVisible)					// 再描画は表示しているときのみ
+	{
+		// 高速化が不可能でないかチェックする
 		if (!m_cDoubleBuffering.IsRendered())
 			return Refresh(false);
 		
-		/*どのくらいスクロールされたか調べる*/
+		// どのくらいスクロールされたか調べる
 		CEthicLine lnBeforeLast = *m_cDoubleBuffering.GetFirstVisible();
 		lnBeforeLast.MoveEthicNext(m_pDocuments->GetLineList(),m_nVisibleLines);
 		CEthicLine lnAfterLast = *m_pDocuments->GetFirstVisible(m_nViewID);
 		lnAfterLast.MoveEthicNext(m_pDocuments->GetLineList(),m_nVisibleLines);
 
-		int nScrolledNum = m_cDoubleBuffering.GetFirstVisible()->GetDifference(
+		int nScrolledNum = m_cDoubleBuffering.GetFirstVisible()->GetDifference
+		(
 			*m_pDocuments->GetFirstVisible(m_nViewID),
 			m_pDocuments->GetLineList()
 		);
 		
 		HDC hDC = m_cDoubleBuffering.GetDC();
 		
-		/*全くスクロールされてませんよ？*/
-		if (nScrolledNum == 0){
-			OutputDebugStringW(L"not scrolled\n");
+		// 全くスクロールされてません
+		if (nScrolledNum == 0)
+		{
+			FOOTY2_PRINTF( L"not scrolled\n" );
 			return true;
 		}
-		/*下へスクロールされたとき*/
-		else if (0 < nScrolledNum && nScrolledNum < (int)m_nVisibleLines){
-			OutputDebugStringW(L"scroll down\n");
+		// 下へスクロールされたとき
+		else if (0 < nScrolledNum && nScrolledNum < (int)m_nVisibleLines)
+		{
+			FOOTY2_PRINTF( L"scroll down\n" );
 			CaretMove();
 			SetBars();
 			BitBlt(hDC,0,0,m_nWidth,m_nHeight,hDC,0,nScrolledNum * (m_pFonts->GetHeight() + m_nHeightMargin),SRCCOPY);
 			RenderLines(lnBeforeLast.GetLinePointer(),lnAfterLast.GetLinePointer());
 		}
-		/*上へスクロールされたとき*/
-		else if ((-(int)m_nVisibleLines) < nScrolledNum && nScrolledNum < 0){
-			OutputDebugStringW(L"scroll up\n");
+		// 上へスクロールされたとき
+		else if ((-(int)m_nVisibleLines) < nScrolledNum && nScrolledNum < 0)
+		{
+			FOOTY2_PRINTF( L"scroll up\n" );
 			CaretMove();
 			SetBars();
 			BitBlt(hDC,0,0,m_nWidth,m_nHeight,hDC,0,nScrolledNum * (m_pFonts->GetHeight() + m_nHeightMargin),SRCCOPY);
 			RenderLines(m_pDocuments->GetFirstVisible(m_nViewID)->GetLinePointer(),m_cDoubleBuffering.GetFirstVisible()->GetLinePointer());
 		}
-		/*ちょっと大杉…。*/
-		else{
-			OutputDebugStringW(L"scroll too much\n");
+		// 大量すぎる
+		else
+		{
+			FOOTY2_PRINTF( L"scroll too much\n" );
 			return Refresh(false);
 		}
 	}
 	return true;
 }
 
+//-----------------------------------------------------------------------------
 /**
- * CFootyView::LineChangedRefresh
  * @brief 指定された行間のみを再描画する処理。指定された行はどちらが上でどちらが下でもかまいません。
  * @param pLine1 行1
  * @param pLine2 行2
  * @note 他のビューも再描画します。
  */
-bool CFootyView::LineChangedRefresh(LinePt pLine1, LinePt pLine2){
+bool CFootyView::LineChangedRefresh(LinePt pLine1, LinePt pLine2)
+{
 	// 開始行と終了行を調べる
 	LinePt pStartLine = pLine1->GetRealLineNum() <  pLine2->GetRealLineNum() ? pLine1 : pLine2;
 	LinePt pEndLine   = pLine1->GetRealLineNum() >= pLine2->GetRealLineNum() ? pLine1 : pLine2;
@@ -316,14 +346,15 @@ bool CFootyView::LineChangedRefresh(LinePt pLine1, LinePt pLine2){
 }
 
 
+//-----------------------------------------------------------------------------
 /**
- * CFootyView::RenderLines
  * @brief 指定された行間のみを再描画する処理
  * @param pStartLine 開始行
  * @param pEndLine 終了行
  * @note 他のビューは再描画しません。
  */
-bool CFootyView::RenderLines(LinePt pStartLine,LinePt pEndLine){
+bool CFootyView::RenderLines(LinePt pStartLine,LinePt pEndLine)
+{
 	// 宣言
 	int yNowPos;									//!< 現在描画中のy座標位置
 	CEthicLine cNowLine;							//!< 現在描画中の行を表す
@@ -392,11 +423,13 @@ bool CFootyView::RenderLines(LinePt pStartLine,LinePt pEndLine){
 	RendBorderLine(hDcBuffer,&rc);
 
 	// ワーキングサーフィスからコピーする
-	HDC hDC = GetDC(m_hWnd);
+	HDC hDC = GetDC( m_hWnd );
+	FOOTY2_PRINTF( L"GetDC %d\n", m_nFootyID );
 	BitBlt(hDC,0,0,m_nWidth,m_nHeight,hDcBuffer,0,0,SRCCOPY);
 	m_cDoubleBuffering.SetRendInfo(m_pDocuments->GetFirstVisible(m_nViewID));
 	RendUnderLine(hDC,&rc);
-	ReleaseDC(m_hWnd,hDC);
+	ReleaseDC( m_hWnd, hDC );
+	FOOTY2_PRINTF( L"ReleaseDC %d\n", m_nFootyID );
 
 	// 終了処理
 	m_cCaret.Show();
@@ -404,8 +437,8 @@ bool CFootyView::RenderLines(LinePt pStartLine,LinePt pEndLine){
 }
 
 
+//-----------------------------------------------------------------------------
 /**
- * CFootyView::RendLine
  * @brief 指定された一行分のデータをレンダリングします。
  * @param hDC 描画先デバイスコンテキスト
  * @param pLine 描画する行データ
@@ -413,11 +446,13 @@ bool CFootyView::RenderLines(LinePt pStartLine,LinePt pEndLine){
  * @param y 描画先y座標
  * @param bEnd この行が最終行であるか？
  */
-bool CFootyView::RendLine(HDC hDC,LinePt pLine,int y,bool bEnd){
+bool CFootyView::RendLine(HDC hDC,LinePt pLine,int y,bool bEnd)
+{
 	if (!hDC)return false;
 
 	//! 描画モード
-	enum RendMode{
+	enum RendMode
+	{
 		RM_NORMAL,										//!< 通常文字列のレンダリング中
 		RM_URL,											//!< URLのレンダリング中
 		RM_MAIL,										//!< メールのレンダリング中
@@ -798,8 +833,8 @@ bool CFootyView::RendSelected(HDC hDC,CEthicLine *pLine,int y){
 	return true;
 }
 
+//-----------------------------------------------------------------------------
 /**
- * CFootyView::RendLineCount
  * @brief 行番号表示領域を描画する処理です。
  * @param hDC 描画先デバイスコンテキスト
  * @param rc 描画先矩形
@@ -838,7 +873,7 @@ bool CFootyView::RendLineCount(HDC hDC,const RECT *rc){
 		// レンダリング処理を行う
 		if (!cNowLine.GetEthicNum()){				// 行番号は最初の論理行のときのみ表示
 			// 行番号を表示させる
-			MYSPRINTF(szTempBuf, TEMP_BUFFER, L"%d", cNowLine.GetLineNum()+1);
+			FOOTY2SPRINTF(szTempBuf, TEMP_BUFFER, L"%d", cNowLine.GetLineNum()+1);
 			nTextLen = (int)wcslen(szTempBuf);
 			GetTextExtentPoint32W(hDC, szTempBuf, nTextLen, &sizTextRender);
 			nPosX = m_nLineCountWidth - m_nLineCountMargin - 2 - sizTextRender.cx;
@@ -881,41 +916,47 @@ bool CFootyView::RendBorderLine(HDC hDC,const RECT *rc){
 CFootyView::RendUnderLine
 キャレット下のアンダーラインを描画するルーチン
 ----------------------------------------------------------------*/
-bool CFootyView::RendUnderLine(HDC hDC,const RECT *rc){
+bool CFootyView::RendUnderLine(HDC hDC,const RECT *rc)
+{
 #ifndef UNDER_CE
 	if (!hDC || !rc)return false;
 	if (m_bUnderlineVisible && m_bIsFocused && !m_pDocuments->IsSelecting())
+	{
 		DrawLine(hDC,m_nLineCountWidth,m_cCaret.GetNowY() + m_pFonts->GetHeight() + 1,
 				rc->right,m_cCaret.GetNowY() + m_pFonts->GetHeight() + 1,m_pStatus->m_clUnderLine);
+	}
 #endif	/*not defined UNDER_CE*/
 	return true;
 }
 
+//-----------------------------------------------------------------------------
 /**
- * CFootyView::RendRuler
  * @brief 行番号表示領域を描画する処理です。
  * @param hDC 描画先デバイスコンテキスト
  * @param rc 描画先矩形
  * @return 成功したときtrueが返る
  */
-bool CFootyView::RendRuler(HDC hDC,const RECT *rc){
-	if (!hDC || !rc)return false;					/*デバイスコンテキストが不正*/
-	/*宣言*/
+bool CFootyView::RendRuler(HDC hDC,const RECT *rc)
+{
+	FOOTY2_ASSERT( hDC );
+	FOOTY2_ASSERT( rc );
+	
+	// 宣言
 	size_t i;
 	const size_t TEMP_BUFFER = 20;
 	wchar_t szWork[TEMP_BUFFER + 1];
 	int nPosX;
 
-	/*ベースを描画*/
-	DrawRectangle(hDC,0,0,rc->right,m_nRulerHeight,m_pStatus->m_clRulerBk);	/*ルーラー背景を描写*/
+	// ベースを描画
+	DrawRectangle(hDC,0,0,rc->right,m_nRulerHeight,m_pStatus->m_clRulerBk);	// ルーラー背景を描写
 	
-	/*ルーラーを書くためのオブジェクト生成*/
+	// ルーラーを書くためのオブジェクト生成
 	HPEN hPen, hOldPen;
-	hPen=CreatePen(PS_SOLID,1,m_pStatus->m_clRulerLine);	/*ルーラーの罫線を引くためのペン*/
-	SetTextColor(hDC,m_pStatus->m_clRulerText);				/*ルーラーのテキストの色*/
-	SetBkMode(hDC,TRANSPARENT);								/*背景を透けさせるよう文字描写*/
+	hPen=CreatePen(PS_SOLID,1,m_pStatus->m_clRulerLine);	// ルーラーの罫線を引くためのペン
+	SetTextColor(hDC,m_pStatus->m_clRulerText);				// ルーラーのテキストの色
+	SetBkMode(hDC,TRANSPARENT);								// 背景を透けさせるよう文字描写
 	m_pFonts->UseRulerFont(hDC);
-	hOldPen=(HPEN)SelectObject(hDC,hPen);					/*ペンをセット*/
+	hOldPen=(HPEN)SelectObject(hDC,hPen);					// ペンをセット
     
 	/*ルーラーのキャレットのある箇所を強調*/
 	if (m_bIsFocused && m_nLineCountWidth <= m_cCaret.GetNowX() && m_cCaret.GetNowX() < m_nWidth)
@@ -923,36 +964,40 @@ bool CFootyView::RendRuler(HDC hDC,const RECT *rc){
 			m_nRulerHeight,m_pStatus->m_clCaretPos);
 
 	/*ラインの描写をする*/
-	int nFontWidth = m_pFonts->GetWidth();				/*高速化用*/
-	int nRulerHeight = m_nRulerHeight;					/*高速化用*/
-	int nOtherStartY = nRulerHeight*8/9;				/*高速化用*/
-	int nHalfStartY = nRulerHeight >> 1;				/*高速化用*/
-	int nFirstVisibleCol = m_nFirstVisibleColumn;		/*高速化用*/
-	size_t nLapelCol = m_pDocuments->GetLapelColumn();	/*高速化用*/
-	size_t nVisibleCol = m_nVisibleColumns;				/*高速化用*/
-	for (i=m_nFirstVisibleColumn,nPosX=m_nLineCountWidth;;i++,nPosX+=nFontWidth){
-		/*ラインの描画*/
-		if (i % 10 == 0){         /*10で割り切れる*/
+	int nFontWidth = m_pFonts->GetWidth();				// 高速化用
+	int nRulerHeight = m_nRulerHeight;					// 高速化用
+	int nOtherStartY = nRulerHeight*8/9;				// 高速化用
+	int nHalfStartY = nRulerHeight >> 1;				// 高速化用
+	int nFirstVisibleCol = m_nFirstVisibleColumn;		// 高速化用
+	size_t nLapelCol = m_pDocuments->GetLapelColumn();	// 高速化用
+	size_t nVisibleCol = m_nVisibleColumns;				// 高速化用
+	for (i=m_nFirstVisibleColumn,nPosX=m_nLineCountWidth;;i++,nPosX+=nFontWidth)
+	{
+		// ラインの描画
+		if (i % 10 == 0)			// 10の倍数(大きなバー)
+		{
 			MoveToEx(hDC,nPosX,0,NULL);
 			LineTo(hDC,nPosX,nRulerHeight);
-			MYSPRINTF(szWork, TEMP_BUFFER, L"%d", i);
+			FOOTY2SPRINTF(szWork, TEMP_BUFFER, L"%d", i);
 			ExtTextOutW(hDC,nPosX+2,nRulerHeight-
 				m_pFonts->GetRulerHeight(),0,NULL,szWork,(int)wcslen(szWork),NULL);
 		}
-		else if (i % 5 == 0){     /*5で割り切れる*/
+		else if (i % 5 == 0)		// 5の倍数(中ぐらいのバー)
+		{
 			MoveToEx(hDC,nPosX,nHalfStartY,NULL);
 			LineTo(hDC,nPosX,nRulerHeight);
 		}
-		else{                     /*その他*/
+		else						// 小さなバー
+		{
 			MoveToEx(hDC,nPosX,nOtherStartY,NULL);
 			LineTo(hDC,nPosX,nRulerHeight);
 		}
-		/*ループを抜ける*/
+		// ループを抜ける
 		if (i >= nFirstVisibleCol + nVisibleCol + 2)break;
 		if (i == nLapelCol)break;
 	}
 
-	/*ルーラー用オブジェクトの開放*/
+	// ルーラー用オブジェクトの開放
 	SelectObject(hDC,hOldPen);
 	DeleteObject(hPen);
 	return true;
@@ -964,7 +1009,8 @@ CFootyView::DrawRectangle
 指定されたデバイスコンテキストハンドルに、長方形を描写します。
 この長方形は、中身を塗りつぶします。
 ----------------------------------------------------------------*/
-void CFootyView::DrawRectangle(HDC hDC,int x1,int y1,int x2,int y2,COLORREF color){
+void CFootyView::DrawRectangle(HDC hDC,int x1,int y1,int x2,int y2,COLORREF color)
+{
 	HPEN hPen, hOldPen;
 	HBRUSH hBrush, hOldBrush;
 	
@@ -991,7 +1037,8 @@ color       色
 指定されたデバイスコンテキストハンドルに、線を引きます。
 線は実線になります。
 ----------------------------------------------------------------*/
-void CFootyView::DrawLine(HDC hDC,int x1,int y1,int x2,int y2,COLORREF color,int penType){
+void CFootyView::DrawLine(HDC hDC,int x1,int y1,int x2,int y2,COLORREF color,int penType)
+{
 	HPEN hPen,hOldPen;
 	hPen = (HPEN)CreatePen(penType,1,color);
 	hOldPen = (HPEN)SelectObject(hDC, hPen);

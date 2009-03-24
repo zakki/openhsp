@@ -1,8 +1,8 @@
 /**
- * @file FootyLineEmpSearch
+ * @file FootyLineEmpSearch.cpp
  * @brief Footyの強調表示を検索するための処理です
  * @author Shinji Watanabe
- * @version 1.0
+ * @date Oct.30.2008
  */
 
 #include "FootyLine.h"
@@ -10,14 +10,15 @@
 
 #define MATCH_STR(s,n)	(pNowWord->IsNonCsWord() ? IsMatched(s,pNowLower,n) : IsMatched(s,pNowChar,n))
 
+//-----------------------------------------------------------------------------
 /**
- * CFootyLine::SearchEmphasis
  * @brief 強調表示文字列の検索
  * @param pBeforeBetween 前の行の持ち越し色分け
  * @param plsWords 強調表示文字列リスト
  * @return 変更に変化があった場合trueが返る
  */
-bool CFootyLine::SearchEmphasis(TakeOver *pBeforeBetween, LsWords *plsWords){
+bool CFootyLine::SearchEmphasis(TakeOver *pBeforeBetween, LsWords *plsWords)
+{
 	if (!plsWords)return false;
 	// 宣言
 	WordPt pNowWord;								//!< 現在走査中の強調表示文字列
@@ -51,27 +52,35 @@ bool CFootyLine::SearchEmphasis(TakeOver *pBeforeBetween, LsWords *plsWords){
 	CEmphasisWord::SetLower(&strLower[0], nStringLen);
 
 	// 検索していく
-	for (size_t i=0;i<nStringLen;i++,pNowChar++,pNowLower++){
+	for (size_t i=0;i<nStringLen;i++,pNowChar++,pNowLower++)
+	{
 		bool bWordSkipped = false;
 		// 文字列を走査していく
-		for (pNowWord=plsWords->begin();pNowWord!=plsWords->end();pNowWord++){
+		for (pNowWord=plsWords->begin();pNowWord!=plsWords->end();pNowWord++)
+		{
 			// この文字が無効であるかチェックする
 			if (pNowWord->m_bDuplix)continue;						// 重複チェック
-			if (i != 0){
+			if (i != 0)
+			{
 				if (pNowWord->IsOnlyHead())continue;				// 先頭に限る
 				if (!pNowWord->CheckIndependence(pNowChar-1,false))	// 独立性チェック(前)
 					continue;
 			}
-			if (cEmpStack.size() == 0){
+			if (cEmpStack.size() == 0)
+			{
 				if (!pNowWord->IsPermitted(0))continue;
 			}
-			else{
+			else
+			{
 				if (!pNowWord->IsPermitted(cEmpStack.top()->GetLevel()))continue;
 			}
 			if (nStringLen - i < pNowWord->GetLen1())				// 文字の長さは十分か？
+			{
 				continue;
+			}
 
-			if (nStringLen - i != pNowWord->GetLen1()){
+			if (nStringLen - i != pNowWord->GetLen1())
+			{
 				if (!pNowWord->CheckIndependence
 					(pNowChar+pNowWord->GetLen1(),true))			// 独立性チェック(後)
 					continue;

@@ -50,41 +50,63 @@ void CDoubleBuffering::SetRendInfo(CEthicLine *pFirstVisible){
  * CDoubleBuffering::ChangeSize
  * @brief サイズの変更処理
  */
-bool CDoubleBuffering::ChangeSize(HWND hWnd,int nWidth,int nHeight){
-	// 宣言
-	HDC hDC = ::GetDC(hWnd);
-
+bool CDoubleBuffering::ChangeSize(HWND hWnd,int nWidth,int nHeight)
+{
 	// 今までと同じサイズなら確保しない
 	if (m_nWidth == nWidth && m_nHeight == nHeight)
+	{
 		return true;
+	}
+
+	HDC hDC = ::GetDC(hWnd);
+	FOOTY2_PRINTF( L"GetDC\n" );
+	if ( !hDC )
+	{
+		FOOTY2_PRINTF( L"But failed...\n" );
+	}
 
 	// 互換デバイスコンテキストがあるかどうか
-	if (!m_MainSurfaceDC){
-		m_MainSurfaceDC=CreateCompatibleDC(hDC);
-		if (!m_MainSurfaceDC){
+	if (!m_MainSurfaceDC)
+	{
+		m_MainSurfaceDC = CreateCompatibleDC(hDC);
+		if (!m_MainSurfaceDC)
+		{
+			FOOTY2_PRINTF( L"failed to create compatibleDC\n" );
 			ReleaseDC(hWnd,hDC);
+			FOOTY2_PRINTF( L"ReleaseDC\n" );
 			return false;
 		}
 	}
 	
 	// ダブルバッファリングがあれば破棄する
-	if (m_MainSurface){
+	if (m_MainSurface)
+	{
 		DeleteObject(m_MainSurface);
 		m_MainSurface = NULL;
 	}
 	
 	// 新しくバッファを生成する
 	m_MainSurface=CreateCompatibleBitmap(hDC,nWidth,nHeight);		// それに関連するビットマップを作成
-	if (!m_MainSurface){
-		ReleaseDC(hWnd,hDC);
+	if (!m_MainSurface)
+	{
+		ReleaseDC( hWnd, hDC );
+		FOOTY2_PRINTF( L"ReleaseDC\n" );
 		return false;
 	}
 	if (!m_MainSurfaceOld)
+	{
 		m_MainSurfaceOld = (HBITMAP)SelectObject(m_MainSurfaceDC,m_MainSurface);	
-	else SelectObject(m_MainSurfaceDC,m_MainSurface);
+	}
+	else
+	{
+		SelectObject(m_MainSurfaceDC,m_MainSurface);
+	}
 	if (m_nWidth > nWidth || m_nHeight > nHeight)					// 小さくされたとき
+	{
 		BitBlt(m_MainSurfaceDC,0,0,nWidth,nHeight,hDC,0,0,SRCCOPY);	// コンバチブルDCにコピー
+	}
 	ReleaseDC(hWnd,hDC);											// デバイスコンテキスト開放
+	FOOTY2_PRINTF( L"ReleaseDC\n" );
 
 	// メンバ変数に格納
 	m_nHeight = nHeight;

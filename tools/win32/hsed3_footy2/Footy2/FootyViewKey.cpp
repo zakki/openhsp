@@ -2,19 +2,21 @@
  * @file FootyViewKey.cpp
  * @brief このファイルでキーボードメッセージからの処理を行います。
  * @author Shinji Watanabe
- * @version 1.0
+ * @date Nov.08.2008
  */
 
 #include "FootyView.h"
 #include "KeyboardState.h"
 
+//-----------------------------------------------------------------------------
 /**
  * CFootyView::OnChar
  * @brief 文字が打たれたとき、ドキュメントを更新して再描画する
  * @param c 入力された文字一文字
  * @note WM_CHARから呼ばれます。
  */
-void CFootyView::OnChar(wchar_t c){
+void CFootyView::OnChar(wchar_t c)
+{
 	// WM_IME_COMPOSITIONの分だけ、キャンセル
 	if (m_nIgnoreKey > 0){
 		m_nIgnoreKey -= sizeof(wchar_t);
@@ -52,13 +54,16 @@ void CFootyView::OnChar(wchar_t c){
 	
 }
 
+//-----------------------------------------------------------------------------
 /**
  * CFootyView::OnImeComposition
  * @brief IMEのメッセージが送られてきたときの処理
  * @param lParam メッセージのLPARAMをそのまま引き継ぐ
  */
-void CFootyView::OnImeComposition(LPARAM lParam){
-	if (lParam & GCS_RESULTSTR) {										// 変換候補が確定されたとき
+void CFootyView::OnImeComposition(LPARAM lParam)
+{
+	if (lParam & GCS_RESULTSTR) 										// 変換候補が確定されたとき
+	{
 		// 宣言
 		unsigned long dwSize;											// IMEの変換文字列長さ
 		HIMC hImc = ImmGetContext(m_hWnd);								// IMEのハンドル
@@ -99,14 +104,15 @@ void CFootyView::OnImeComposition(LPARAM lParam){
 	}
 }
 
+//-----------------------------------------------------------------------------
 /**
- * CFootyView::OnImeRequest
  * @brief IMEリクエストがあったときの処理
  * @param wParam メッセージのWPARAMを引き継ぐ
  * @param lParam メッセージのLPARAMを引き継ぐ
  * @return メッセージが返すべきLRESULT値
  */
-LRESULT CFootyView::OnImeRequest(WPARAM wParam,LPARAM lParam){
+LRESULT CFootyView::OnImeRequest(WPARAM wParam,LPARAM lParam)
+{
 	LRESULT lReturn = false;
 	static int nTextLength = 0;
 	if (wParam == IMR_RECONVERTSTRING && m_pDocuments->IsSelecting()){		// 再変換要求
@@ -156,14 +162,15 @@ LRESULT CFootyView::OnImeRequest(WPARAM wParam,LPARAM lParam){
 
 	
 
+//-----------------------------------------------------------------------------
 /**
- * CFootyView::OnKeyDown
  * @brief キーが押されたときに呼ばれます。
  * @param nKeyCode メッセージから呼び出されたときのキーコードが入ります
  * @return この関数が処理を行うときにはtrueが、そうでないときはfalseが返ります
  */
-bool CFootyView::OnKeyDown(int nKeyCode){
-	/*宣言*/
+bool CFootyView::OnKeyDown(int nKeyCode)
+{
+	// 宣言
 	size_t i;
 	bool bDontAdjustLine = false;
 	CFootyDoc::RedrawType nNeedRedraw = CFootyDoc::REDRAW_FAILED;
@@ -171,11 +178,13 @@ bool CFootyView::OnKeyDown(int nKeyCode){
 	size_t nPosition;
 	CKeyBoardState cKeyStates(m_bShiftLocked);
 	LinePt pLineBefore = m_pDocuments->GetCaretPosition()->GetLinePointer();
+	size_t nPosBefore = m_pDocuments->GetCaretPosition()->GetPosition();
 	size_t nBeforeFirstVisibleColumn = m_nFirstVisibleColumn;
 	CEthicLine cBeforeFirstVisibleLine = *m_pDocuments->GetFirstVisible(m_nViewID);
 	
-	/*キーによって場合わけ*/
-	switch(nKeyCode){
+	// キーによって場合わけ
+	switch(nKeyCode)
+	{
 
 //上のキー
 	case VK_UP:
@@ -183,16 +192,18 @@ bool CFootyView::OnKeyDown(int nKeyCode){
 			m_pDocuments->GetFirstVisible(m_nViewID)->MoveEthicBack(1);
 			bDontAdjustLine = true;
 		}
-		else{
+		else
+		{
 			START_MOVEKEY
-			/*表示位置を更新する*/
-			if (*m_pDocuments->GetFirstVisible(m_nViewID) == *m_pDocuments->GetCaretPosition()){
+			// 表示位置を更新する
+			if (*m_pDocuments->GetFirstVisible(m_nViewID) == *m_pDocuments->GetCaretPosition())
+			{
 				stEthicInfo = m_pDocuments->GetCaretPosition()->GetLinePointer()->CalcEthicLine
 					(m_pDocuments->GetCaretPosition()->GetPosition(),m_pDocuments->GetLapelColumn(),
 					m_pDocuments->GetTabLen(),m_pDocuments->GetLapelMode());
 				m_pDocuments->GetFirstVisible(m_nViewID)->MoveEthicBack(1);
 			}
-			/*キャレットを移動させる*/
+			// キャレットを移動させる
 			m_pDocuments->GetCaretPosition()->MoveLineBackwardEthic(m_pDocuments->GetLineList(),1,
 				m_pDocuments->GetLapelColumn(),
 				m_pDocuments->GetTabLen(),
@@ -312,21 +323,32 @@ bool CFootyView::OnKeyDown(int nKeyCode){
 //Homeキーが押されたとき
 	case VK_HOME:
 		START_MOVEKEY
-		if (cKeyStates.IsControlPushed()){
-			m_pDocuments->GetCaretPosition()->SetPosition(
-				m_pDocuments->GetLineList(),
-				0, 0
-			);
+		if (cKeyStates.IsControlPushed())	// Ctrlキー押しているので最初へ
+		{
+			m_pDocuments->GetCaretPosition()->SetPosition(m_pDocuments->GetLineList(), 0, 0 );
 		}
-		else{
-			stEthicInfo = m_pDocuments->GetCaretPosition()->GetLinePointer()->CalcEthicLine
-				(m_pDocuments->GetCaretPosition()->GetPosition(),m_pDocuments->GetLapelColumn(),
-				 m_pDocuments->GetTabLen(),m_pDocuments->GetLapelMode());
-			nPosition = m_pDocuments->GetCaretPosition()->GetLinePointer()->CalcRealPosition
-				(stEthicInfo.m_nEthicLine,0,m_pDocuments->GetLapelColumn(),
-				 m_pDocuments->GetTabLen(),
-				 m_pDocuments->GetLapelMode());
-			m_pDocuments->GetCaretPosition()->SetPosition(m_pDocuments->GetCaretPosition()->GetLinePointer(),nPosition);
+		else								// Ctrlキーを押していない
+		{
+			stEthicInfo = pLineBefore->CalcEthicLine( nPosBefore, m_pDocuments->GetLapelColumn(), m_pDocuments->GetTabLen(),m_pDocuments->GetLapelMode() );
+
+			if ( m_bAutoIndentMode && stEthicInfo.m_nEthicLine == 0)
+			{
+				size_t nIndentPos = pLineBefore->CalcAutoIndentPos( pLineBefore->GetLineLength() );
+				if ( nIndentPos == nPosBefore )
+				{
+					nPosition = 0;
+				}
+				else
+				{
+					nPosition = nIndentPos;
+				}
+			}
+			else
+			{
+				nPosition = pLineBefore->CalcRealPosition(stEthicInfo.m_nEthicLine,0,m_pDocuments->GetLapelColumn(), m_pDocuments->GetTabLen(), m_pDocuments->GetLapelMode() );
+			}
+
+			m_pDocuments->GetCaretPosition()->SetPosition( pLineBefore, nPosition);
 		}
 		END_MOVEKEY
 		break;
@@ -334,22 +356,16 @@ bool CFootyView::OnKeyDown(int nKeyCode){
 //Endキーが押されたとき
 	case VK_END:
 		START_MOVEKEY
-		if (cKeyStates.IsControlPushed()){
+		if (cKeyStates.IsControlPushed())	// Ctrlキーを押しているので最後へ
+		{
 			LinePt pLastLine = m_pDocuments->GetLastLine();
-			m_pDocuments->GetCaretPosition()->SetPosition(
-				pLastLine,
-				pLastLine->GetLineLength()
-			);
+			m_pDocuments->GetCaretPosition()->SetPosition( pLastLine, pLastLine->GetLineLength() );
 		}
-		else{
-			stEthicInfo = m_pDocuments->GetCaretPosition()->GetLinePointer()->CalcEthicLine
-				(m_pDocuments->GetCaretPosition()->GetPosition(),m_pDocuments->GetLapelColumn(),
-				 m_pDocuments->GetTabLen(),m_pDocuments->GetLapelMode());
-			nPosition = m_pDocuments->GetCaretPosition()->GetLinePointer()->CalcRealPosition
-				(stEthicInfo.m_nEthicLine,m_pDocuments->GetLapelColumn(),
-				 m_pDocuments->GetLapelColumn(),m_pDocuments->GetTabLen(),
-				 m_pDocuments->GetLapelMode());
-			m_pDocuments->GetCaretPosition()->SetPosition(m_pDocuments->GetCaretPosition()->GetLinePointer(),nPosition);
+		else								// Ctrlキーを押していない
+		{
+			stEthicInfo = pLineBefore->CalcEthicLine( nPosBefore, m_pDocuments->GetLapelColumn(), m_pDocuments->GetTabLen(),m_pDocuments->GetLapelMode() );
+			nPosition = pLineBefore->CalcRealPosition( stEthicInfo.m_nEthicLine, m_pDocuments->GetLapelColumn(), m_pDocuments->GetLapelColumn(), m_pDocuments->GetTabLen(), m_pDocuments->GetLapelMode() );
+			m_pDocuments->GetCaretPosition()->SetPosition( pLineBefore, nPosition );
 		}
 		END_MOVEKEY
 		break;
@@ -393,20 +409,30 @@ bool CFootyView::OnKeyDown(int nKeyCode){
 
 //Enterキーが押されたとき
 	case VK_RETURN:
-		if (cKeyStates.IsControlPushed()){
+		if (cKeyStates.IsControlPushed())
+		{
 			if (cKeyStates.IsShiftPushed())
-				m_pDocuments->InsertReturnDown();
+			{
+				m_pDocuments->InsertReturnDown( m_bAutoIndentMode );
+			}
 			else
-				m_pDocuments->InsertReturnUp();
+			{
+				m_pDocuments->InsertReturnUp( m_bAutoIndentMode );
+			}
 		}
-		else m_pDocuments->InsertReturn();
-		/*表示位置を更新する*/
+		else m_pDocuments->InsertReturn( m_bAutoIndentMode );
+		// 表示位置を更新する
 		if (m_pDocuments->GetFirstVisible(m_nViewID)->GetLinePointer()->GetOffset() + m_nVisibleLines ==
 			m_pDocuments->GetCaretPosition()->GetLinePointer()->GetOffset())
 			m_pDocuments->GetFirstVisible(m_nViewID)->MoveEthicNext(m_pDocuments->GetLineList(),1);
 		nNeedRedraw = CFootyDoc::REDRAW_ALL;
-		/*イベントの通知*/
+		// イベントの通知
 		m_pDocuments->SendTextModified(MODIFIED_CAUSE_ENTER);		
+		break;
+
+// ESCキーで選択をキャンセルします
+	case VK_ESCAPE:
+		m_pDocuments->UnSelect();
 		break;
 
 //それ以外のとき
@@ -434,23 +460,23 @@ bool CFootyView::OnKeyDown(int nKeyCode){
 	switch(nNeedRedraw){
 	case CFootyDoc::REDRAW_SCROLLED:		// スクロールされた
 		ScrollRefresh();
-		OutputDebugStringW(L"Scroll redraw\n");
+		FOOTY2_PRINTF( L"Scroll redraw\n" );
 		break;
 	case CFootyDoc::REDRAW_CURMOVE:			// キャレット移動のみ
 		CaretRefresh();
-		OutputDebugStringW(L"cursor redraw\n");
+		FOOTY2_PRINTF( L"cursor redraw\n" );
 		break;
 	case CFootyDoc::REDRAW_SELCHANGED:
 		LineChangedRefresh(pLineBefore, m_pDocuments->GetCaretPosition()->GetLinePointer());
-		OutputDebugStringW(L"sel redraw\n");
+		FOOTY2_PRINTF( L"sel redraw\n" );
 		break;
 	case CFootyDoc::REDRAW_LINE:			// 一行のみ再描画
 		LineChangedRefresh();
-		OutputDebugStringW(L"line redraw\n");
+		FOOTY2_PRINTF( L"line redraw\n" );
 		break;
 	case CFootyDoc::REDRAW_ALL:				// 完全再描画
 		Refresh();
-		OutputDebugStringW(L"all redraw\n");
+		FOOTY2_PRINTF( L"all redraw\n" );
 		break;
 	}
 

@@ -3,15 +3,15 @@ CCharsetDetectorクラス
 文字コードの判別処理を行うクラス
 ===================================================================*/
 
-#ifndef _CHARSET_DETECTOR_CLASS_H_
-#define _CHARSET_DETECTOR_CLASS_H_
+#pragma once
 
 #include "CharsetDetective.h"
 
-class  CCharsetDetector{
+class  CCharsetDetector
+{
 public:
 	CCharsetDetector();
-	~CCharsetDetector();
+	virtual ~CCharsetDetector();
 
 	void Detect(const char *pRawStr,unsigned int nSize);
 	inline CharSetMode GetCodepage(){return m_nCodePage;}
@@ -32,10 +32,9 @@ private:
 		unsigned int nStartPos,unsigned int nTextSize);
 	tGuessRet Guess(CCharsetDetective** ppArray,CCharsetDetective **ppTop);
 
-public:
 private:
 	CharSetMode m_nCodePage;
 	int m_nStartIndex;
 };
 
-#endif	/*_CHARSET_DETECTOR_CLASS_H_*/
+/*[EOF]*/

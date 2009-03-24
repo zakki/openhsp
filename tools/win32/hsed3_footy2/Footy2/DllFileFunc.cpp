@@ -7,7 +7,6 @@
  * @date Oct.01.2007
  */
 
-#include "DllDefnition.h"
 #include "ConvFactory.h"
 #include "CharsetDetector.h"
 

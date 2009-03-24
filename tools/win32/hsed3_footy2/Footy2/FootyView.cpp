@@ -1,7 +1,9 @@
-/*===================================================================
-CFootyViewクラス
-Footyのビュー管理を行います。
-===================================================================*/
+/**
+ * @file FootyView.cpp
+ * @brief ビューの管理を行います。
+ * @author Shinji Watanabe
+ * @date Dec. 28, 2008
+ */
 
 #include "FootyView.h"
 #include "resource.h"
@@ -15,74 +17,108 @@ Footyのビュー管理を行います。
 
 HBITMAP CFootyView::m_bmpIcons[sizeof(int) * 8];
 
-/*-------------------------------------------------------------------
-CFootyView::CFootyView
-コンストラクタです。
--------------------------------------------------------------------*/
-CFootyView::CFootyView(){
-	/*変数の初期化*/
-	m_hWnd = NULL;
-	m_hOwner = NULL;
-	m_nIgnoreKey = 0;
-	m_x = m_y = 0;
-	m_nWidth = m_nHeight = 0;
-	m_nRop2 = R2_XORPEN;
-	m_bIsFocused = false;
-	m_bVisible = false;
-	m_pFonts = NULL;
-	m_pDocuments = NULL;
-	m_nWidthMargin = 0;
-	m_nHeightMargin = 0;
-	m_nVisibleLines = 0;
-	m_nVisibleColumns = 0;
-	m_nDragMode = DRAGMODE_NONE;
-	m_nAutoScrollNum = 0;
-	m_bIsAutoScrolling = false;
-	m_nFootyID = -1;
-	m_nViewID = -1;
-	m_pFuncFocus = NULL;
-	m_pDataFocus = NULL;
-	m_bShiftLocked = false;
-	m_nMarkVisible = EDM_SHOW_ALL;
-	m_bUnderlineVisible = true;
-	/*デフォルト数値を代入*/
-	m_nLineCountWidth = LINEWIDTH_DEFAULT;
-	m_nRulerHeight = 10;
-	m_nLineCountMargin = 2;
-	m_nCaretWidth = 2;
+//-----------------------------------------------------------------------------
+/**
+ * @brief コンストラクタです
+ */
+CFootyView::CFootyView() : 
+	m_hWnd( NULL ),
+	m_hOwner( NULL ),
+	m_nIgnoreKey( 0 ),
+	m_x( 0 ), m_y( 0 ),
+	m_nWidth( 0 ), m_nHeight( 0 ),
+	m_nRop2( R2_XORPEN ),
+	m_bIsFocused( false ),
+	m_bVisible( false ),
+	m_pFonts( NULL ),
+	m_pDocuments( NULL ),
+	m_nWidthMargin( 0 ),
+	m_nHeightMargin( 0 ),
+	m_nVisibleLines( 0 ),
+	m_nVisibleColumns( 0 ),
+	m_nDragMode( DRAGMODE_NONE ),
+	m_bAutoScrollVertical( false ),
+	m_bAutoScrollHorizontal( false ),
+	m_nAutoScrollNumVertical( 0 ),
+	m_nAutoScrollNumHorizontal( 0 ),
+	m_bAutoIndentMode( true ),
+	m_nFootyID( -1 ),
+	m_nViewID( -1 ),
+	m_pFuncFocus( NULL ),
+	m_pDataFocus( NULL ),
+	m_bShiftLocked( false ),
+	m_nMarkVisible( EDM_SHOW_ALL ),
+	m_bUnderlineVisible( true ),
+	m_nLineCountWidth( LINEWIDTH_DEFAULT ),
+	m_nRulerHeight( 10 ),
+	m_nLineCountMargin( 2 ),
+	m_nCaretWidth( 2 )
+{
 }
 
-/*-------------------------------------------------------------------
-CFootyView::~CFootyView
-デストラクタです。
--------------------------------------------------------------------*/
-CFootyView::~CFootyView(){
-	/*ウィンドウを削除する*/
-	RemoveProp(m_hWnd,FOOTY_PROPNAME);
-	DestroyWindow(m_hWnd);
+//-----------------------------------------------------------------------------
+/**
+ * @brief デストラクタです。
+ */
+CFootyView::~CFootyView()
+{
+	DestroyFootyView();
 }
 
-/*-------------------------------------------------------------------
-CFootyView::Create
-FootyViewを構築します。bVisibleがtrueのときにのみ表示します。
--------------------------------------------------------------------*/
-bool CFootyView::Create(HWND hWnd,HINSTANCE hInstance,CFontObjects *pFonts,
-	CFootyView *pView,CFootyDoc *pDocuments,CFootyStatus *pStatus,int nFootyID,int nViewID){
-	
-	if (!hWnd || !pFonts || !pDocuments || !pStatus || !pView)
+//-----------------------------------------------------------------------------
+/**
+ * @brief 情報の初期化を行います
+ * @param	pFonts		[in] 利用するフォント情報
+ * @param	pView		[in] 他のビュー情報
+ * @param	pDocument	[in] ドキュメントオブジェクト
+ * @param	pStatus		[in] 現在のステータスオブジェクト
+ * @param	nFootyID	[in] 親のID
+ * @param	nViewID		[in] ビューのID
+ */
+void CFootyView::Initialize(CFontObjects *pFonts,CFootyView *pView,
+							CFootyDoc *pDocuments,CFootyStatus *pStatus,int nFootyID,int nViewID)
+{
+	m_pDocuments= pDocuments;
+	m_pView		= pView;
+	m_pFonts	= pFonts;
+	m_pStatus	= pStatus;
+	m_nViewID	= nViewID;
+	m_nFootyID	= nFootyID;
+}
+
+//-----------------------------------------------------------------------------
+/**
+ * @brief ビューウィンドウを作成する処理です
+ * @param	hWndParent	[in] 親ウィンドウ
+ * @param	hInstance	[in] DLLの実行インスタンス
+ */
+bool CFootyView::CreateFootyView( HWND hWndParent, HINSTANCE hInstance )
+{
+	if (!hWndParent || !hInstance )
+	{
+		FOOTY2_PRINTF( L"invalid window handle\n" );
 		return false;
+	}
 	
-	/*メンバ変数を設定*/
-	m_pDocuments = pDocuments;
-	m_pView = pView;
-	m_pFonts = pFonts;
-	m_pStatus = pStatus;
-	m_nViewID = nViewID;
-	m_nFootyID = nFootyID;
-	m_hOwner = hWnd;
+	FOOTY2_ASSERT( m_pDocuments );
+	FOOTY2_ASSERT( m_pView );
+	FOOTY2_ASSERT( m_pFonts );
+	FOOTY2_ASSERT( m_pStatus );
 	
-	/*Footyメインウィンドウの形成*/
-	WNDCLASSW wc;												/*ウィンドウクラス*/
+	// すでに生成済みの場合はいったん破棄
+	if ( m_hWnd )
+	{
+		DestroyFootyView();
+	}
+	
+	// メンバ変数を設定
+	m_hOwner	= hWndParent;
+	
+	FOOTY2_PRINTF( L"CFootyView::Create()\n" );
+	FOOTY2_PRINTF( L"m_hOwner = %d, m_nFootyID = %d\n", m_hOwner, m_nFootyID );
+	
+	// Footyメインウィンドウの形成
+	WNDCLASSW wc;												// ウィンドウクラス
 	wc.style			= CS_DBLCLKS
 #ifndef UNDER_CE
 		 | CS_BYTEALIGNCLIENT | CS_BYTEALIGNWINDOW
@@ -91,32 +127,62 @@ bool CFootyView::Create(HWND hWnd,HINSTANCE hInstance,CFontObjects *pFonts,
 	wc.lpfnWndProc		= FootyWinProc;
 	wc.hInstance		= hInstance;
 	wc.hIcon			= NULL;
-	wc.hCursor			= NULL;									/*状態によって適宜変更する*/
+	wc.hCursor			= NULL;									// 状態によって適宜変更する
 	wc.hbrBackground	= (HBRUSH)NULL;
 	wc.lpszMenuName		= NULL;
 	wc.lpszClassName	= FOOTY_WNDCLASSNAME;
-	wc.cbClsExtra		= 0;									/*使用しない。0を指定*/
-	wc.cbWndExtra		= 0;									/*使用しない。0を指定*/
-	RegisterClass(&wc);											/*ウィンドウクラスの登録*/
+	wc.cbClsExtra		= 0;									// 使用しない。0を指定
+	wc.cbWndExtra		= 0;									// 使用しない。0を指定
+	RegisterClass(&wc);											// ウィンドウクラスの登録
 
-	m_hWnd=CreateWindowEx(WS_EX_CLIENTEDGE,FOOTY_WNDCLASSNAME,FOOTY_WNDCLASSNAME,
-						 WS_CHILD | WS_VSCROLL | WS_HSCROLL,
-						 0,0,0,0,hWnd,NULL,hInstance,NULL);
-	if (!m_hWnd)return false;									/*ウィンドウが作成できなかった*/
-	SetProp(m_hWnd,FOOTY_PROPNAME,(HANDLE)this);				/*クラスを登録*/
+	m_hWnd = CreateWindowEx
+	(
+		WS_EX_CLIENTEDGE,FOOTY_WNDCLASSNAME,FOOTY_WNDCLASSNAME,
+		WS_CHILD | WS_VSCROLL | WS_HSCROLL,
+		0,0,0,0,hWndParent,NULL,hInstance,NULL
+	);
 	
-	/*メンバ変数の初期化*/
+	if ( !m_hWnd )
+	{
+		// ウィンドウが作成できなかった
+		return false;
+	}
+	SetProp( m_hWnd, FOOTY_PROPNAME, (HANDLE)this );			// クラスを登録
+	
+	// メンバ変数の初期化
 	m_nFirstVisibleColumn = 0;
-	m_pDocuments->GetFirstVisible(m_nViewID)->SetPosition(pDocuments->GetLineList(),0,0);
-	m_cCaret.SetParam(m_hWnd);
+	m_pDocuments->GetFirstVisible( m_nViewID )->SetPosition( m_pDocuments->GetLineList(), 0, 0 );
+	m_cCaret.SetParam( m_hWnd );
 	return true;
 }
 
-/*-------------------------------------------------------------------
-CFootyView::LoadLineIcons
-行アイコンの読み込み処理
--------------------------------------------------------------------*/
-void CFootyView::LoadLineIcons(HINSTANCE hInstance){
+//-----------------------------------------------------------------------------
+/**
+ * @brief ウィンドウの破棄
+ */
+void CFootyView::DestroyFootyView()
+{
+	if ( m_hWnd )
+	{
+		RemoveProp( m_hWnd, FOOTY_PROPNAME );
+		DestroyWindow( m_hWnd );
+		m_hWnd = NULL;
+	}
+}
+
+//-----------------------------------------------------------------------------
+/**
+ * @brief 行アイコンの読み込み処理
+ */
+void CFootyView::LoadLineIcons( HINSTANCE hInstance )
+{
+	// 一度初期化しておきます
+	for ( int i = 0; i < sizeof( int ) * 8; i++ )
+	{
+		m_bmpIcons[ i ] = NULL;
+	}
+	
+	// 一気に読み込みます
 	m_bmpIcons[ 0] = LoadBitmap(hInstance,MAKEINTRESOURCE(IDB_LI_ATTACH));
 	m_bmpIcons[ 1] = LoadBitmap(hInstance,MAKEINTRESOURCE(IDB_LI_BACK));
 	m_bmpIcons[ 2] = LoadBitmap(hInstance,MAKEINTRESOURCE(IDB_LI_CHECKED));
@@ -151,15 +217,18 @@ void CFootyView::LoadLineIcons(HINSTANCE hInstance){
 	m_bmpIcons[31] = LoadBitmap(hInstance,MAKEINTRESOURCE(IDB_LI_WARNING));
 }
 
-/*-------------------------------------------------------------------
-CFootyView::ReleaseLineIcons
-行アイコンの解放処理
--------------------------------------------------------------------*/
-void CFootyView::ReleaseLineIcons(){
-	for (int i=0;i<sizeof(int)*8;i++){
-		if (m_bmpIcons[i]){
-			DeleteObject(m_bmpIcons[i]);
-			m_bmpIcons[i] = NULL;
+//-----------------------------------------------------------------------------
+/**
+ * @brief 行アイコンの解放処理
+ */
+void CFootyView::ReleaseLineIcons()
+{
+	for ( int i = 0; i < NUM_LINEICONS; i++ )
+	{
+		if ( m_bmpIcons[ i ] )
+		{
+			DeleteObject( m_bmpIcons[ i ] );
+			m_bmpIcons[ i ] = NULL;
 		}
 	}
 }
@@ -191,6 +260,7 @@ bool CFootyView::AdjustVisiblePos(){
 	return false;
 }
 
+//-----------------------------------------------------------------------------
 /**
  * CFootyView::AdjustVisibleLine
  * @brief 見える位置をキャレット位置から調整する処理
@@ -223,7 +293,7 @@ bool CFootyView::AdjustVisibleLine(){
 	return false;
 }
 
-
+//-----------------------------------------------------------------------------
 /**
  * CFootyView::CaretMove
  * @brief キャレットの位置とIMEポジションの位置を設定する
@@ -278,16 +348,19 @@ void CFootyView::CaretMove(){
 		if (m_bIsFocused)m_cCaret.Show();
 	}
 
-	/*IMEを設定する*/
-	if (m_bIsFocused){
+	// IMEを設定する
+	if (m_bIsFocused)
+	{
 		LOGFONT lFont;
 		COMPOSITIONFORM cf;
 		HIMC hImc=ImmGetContext(m_hWnd);
-		if (hImc){
-			/*フォントを設定する*/
+		if (hImc)
+		{
+			// フォントを設定する
 			GetObject(m_pFonts->GetKanjiFont(),sizeof(LOGFONT),&lFont);
 			ImmSetCompositionFont(hImc,&lFont);
-			/*IME表示領域を設定する*/
+			
+			// IME表示領域を設定する
 			cf.dwStyle = CFS_POINT;
 			cf.ptCurrentPos.x = (long)nCaretX;
 			cf.ptCurrentPos.y = (long)nCaretY;
@@ -296,32 +369,39 @@ void CFootyView::CaretMove(){
 			cf.rcArea.right = m_nWidth;
 			cf.rcArea.bottom = m_nHeight;
 			ImmSetCompositionWindow(hImc, &cf);
-			/*ハンドルの解放*/
+			
+			// ハンドルの解放
 			ImmReleaseContext(m_hWnd,hImc);
 		}
 	}
 }
 
 #ifndef UNDER_CE
-/*-------------------------------------------------------------------
-CFootyView::GetWheelMsg
-ホイールメッセージを返します。
--------------------------------------------------------------------*/
-unsigned int CFootyView::GetWheelMsg(){
+//-----------------------------------------------------------------------------
+/**
+ * @brief ホイールメッセージを返します。
+ */
+unsigned int CFootyView::GetWheelMsg()
+{
 	if (((GetVersion() & 0x80000000) &&
 		LOBYTE(LOWORD(GetVersion()) == 4)) ||
 		(!(GetVersion() & 0x80000000) && LOBYTE(LOWORD(GetVersion()) == 3)))
+	{
 		return RegisterWindowMessage(MSH_MOUSEWHEEL);
+	}
 	else
+	{
 		return 0;
+	}
 }
 #endif	/*not defined UNDER_CE*/
 
-/*-------------------------------------------------------------------
-CFootyView::FootyWinProc
-ウィンドウプロシージャです。
--------------------------------------------------------------------*/
-LRESULT CALLBACK CFootyView::FootyWinProc(HWND hWnd,UINT msg,WPARAM wParam,LPARAM lParam){
+//-----------------------------------------------------------------------------
+/**
+ * @brief ウィンドウプロシージャです。
+ */
+LRESULT CALLBACK CFootyView::FootyWinProc(HWND hWnd,UINT msg,WPARAM wParam,LPARAM lParam)
+{
 	CFootyView *pFootyView=NULL;	/*そのクラスへのポインタ*/
 	pFootyView=(CFootyView*)GetProp(hWnd,FOOTY_PROPNAME);
 	if (pFootyView)

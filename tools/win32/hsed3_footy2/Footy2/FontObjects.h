@@ -1,48 +1,53 @@
-/*===================================================================
-CFontObjectsクラス
-フォントのオブジェクト管理クラスです。
-===================================================================*/
+/**
+ * @file	FontObjects.cpp
+ * @brief	フォントのオブジェクト管理クラスです。
+ * @author	Shinji Watanabe
+ * @date	2009/03/16
+ */
 
 #pragma once
 
-#include <windows.h>
-#include <string>
-#include "Footy2.h"
-
-class CFontObjects{
+class CFontObjects
+{
 public:
-	/*コンストラクタ*/
+	// コンストラクタ
 	CFontObjects();
-	~CFontObjects();
+	virtual ~CFontObjects();
 
-	bool RecreateAll(HDC);
+	bool CreateAll( HDC hDC );
+	
 
-	/*フォントを作成するためのルーチン*/
+	// フォントを作成するためのルーチン
 	bool SetRuler(HDC hDC,int nRulerHeight);
 
-	inline HFONT UseFont(HDC hDC,FontMode nMode){
+	inline HFONT UseFont(HDC hDC,FontMode nMode)
+	{
 		return (HFONT)SelectObject(hDC,m_hFont[nMode]);
 	}
-	inline HFONT UseKanjiFont(HDC hDC){
+	inline HFONT UseKanjiFont(HDC hDC)
+	{
 		return (HFONT)SelectObject(hDC,GetKanjiFont());
 	}
-	inline HFONT GetKanjiFont(){
+	inline HFONT GetKanjiFont()
+	{
 		return m_hFont[FFM_SHIFTJIS_CHARSET];
 	}
-	inline HFONT UseRulerFont(HDC hDC){
+	inline HFONT UseRulerFont(HDC hDC)
+	{
 		return (HFONT)SelectObject(hDC,m_hRulerFont);
 	}
 
-	/*取得*/
-	inline int GetWidth(){return m_nFontWidth;}
-	inline int GetHeight(){return m_nFontHeight;}
-	inline int GetRulerHeight(){return m_nRulerHeight;}
-	inline int GetFontSize(){return m_nFontPoint;}
+	// 取得
+	inline int GetWidth()		const {return m_nFontWidth;}
+	inline int GetHeight()		const { return m_nFontHeight; }
+	inline int GetRulerHeight() const { return m_nRulerHeight; }
+	inline int GetFontSize()	const { return m_nFontPoint; }
 	
 	/*設定*/
-	void SetFontSize(int nPoint,HDC hDC){
+	void SetFontSize( int nPoint, HDC hDC )
+	{
 		m_nFontPoint = nPoint;
-		RecreateAll(hDC);
+		CreateAll( hDC );
 	}
 	bool SetFontFace(int nType,const wchar_t *pFontFace,HDC hDC);
 
@@ -55,9 +60,9 @@ private:
 		return -GetMulDiv(nPoint, GetDeviceCaps(hDC, LOGPIXELSY), 72);
 	}
 	
-public:
 private:
-	enum fixed_num{
+	enum fixed_num
+	{
 #ifdef UNDER_CE
 		FONTNORMAL_DEFAULT = 9,
 #else	/*UNDER_CE*/

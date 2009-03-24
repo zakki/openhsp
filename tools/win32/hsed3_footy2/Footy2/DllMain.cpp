@@ -2,20 +2,18 @@
  * @file DllMain.cpp
  * @brief DLL関数の実装
  * @author Shinji Watanabe
- * @version 1.0
+ * @date 2009/01/10
  */
 
-#include "DllDefnition.h"
 #include "Cursor.h"
 #include "CharsetDetector.h"
 #include "ConvFactory.h"
-#include "Macros.h"
 
 #ifndef UNDER_CE
 #	pragma comment (lib,"imm32.lib")		//!< IME関連のライブラリ
 #endif
 
-#define FOOTY_VER			2014			//!< Footyのバージョン×1000
+#define FOOTY_VER			2017			//!< Footyのバージョン×1000
 #define FOOTY_BETA			0				//!< Footyのβバージョン番号
 
 /*グローバル変数の定義*/
@@ -23,55 +21,90 @@ static CRITICAL_SECTION g_CriticalSection;	//!< クリティカルセクション
 static std::list<CFooty*> *g_plsFooty = NULL;
 static HINSTANCE g_hInstance = NULL;
 
-/*----------------------------------------------------------------
-GetFooty
-Footyポインタを取得します。
-----------------------------------------------------------------*/
-CFooty *GetFooty(int nID){
+//-----------------------------------------------------------------------------
+/**
+ * @brief 指定されたIDのFootyコントロールポインタを取得します。
+ */
+CFooty *GetFooty(int nID)
+{
 	EnterCriticalSection(&g_CriticalSection);
-		if (!g_plsFooty){
+	{
+		if (!g_plsFooty)
+		{
 			LeaveCriticalSection(&g_CriticalSection);
 			return NULL;
 		}
-		/*回していく*/
+		// 回していく
 		for (FootyPt pRetFooty = g_plsFooty->begin();
 			pRetFooty != g_plsFooty->end();
-			pRetFooty++){
-			if ((*pRetFooty)->GetID() == nID){
+			pRetFooty++)
+		{
+			if ((*pRetFooty)->GetID() == nID)
+			{
 				LeaveCriticalSection(&g_CriticalSection);
 				return *pRetFooty;
 			}
 		}
+	}
 	LeaveCriticalSection(&g_CriticalSection);
 	return NULL;
 }
 
-/*----------------------------------------------------------------
-Footy2Start
-開始時に呼び出します
-----------------------------------------------------------------*/
-FOOTYEXPORT(void) Footy2Start(HINSTANCE hInstance){
+//-----------------------------------------------------------------------------
+/**
+ * @brief 情報を出力します
+ */
+#ifdef PRINT_ENABLED
+void FormatPrint( const wchar_t* filename, int nLine, const wchar_t* fmt, ... )
+{
+	const int MaxLogBuffer = 1024;
+	wchar_t szText[ MaxLogBuffer + 1 ];
+	
+	swprintf( szText, MaxLogBuffer, L"%s(%d):", filename, nLine );
+	OutputDebugStringW( szText );
+
+	va_list vaList;
+	va_start( vaList, fmt );
+	vswprintf_s( szText, MaxLogBuffer, fmt, vaList );
+	va_end( vaList );
+
+	OutputDebugStringW( szText );
+}
+#endif
+
+
+//-----------------------------------------------------------------------------
+/**
+ * @brief 開始時に呼び出します。Footy2ライブラリを初期化します
+ */
+FOOTYEXPORT(void) Footy2Start(HINSTANCE hInstance)
+{
 	InitializeCriticalSection(&g_CriticalSection);
 	EnterCriticalSection(&g_CriticalSection);
+	{
 		g_hInstance = hInstance;
 		g_plsFooty = new std::list<CFooty*>;
+	}
 	LeaveCriticalSection(&g_CriticalSection);
 	CCursor::LoadCursors(hInstance);
 	CFootyView::LoadLineIcons(hInstance);
 }
 
-
-/*----------------------------------------------------------------
-Footy2End
-終了時に呼び出します
-----------------------------------------------------------------*/
-FOOTYEXPORT(void) Footy2End(){
+//-----------------------------------------------------------------------------
+/**
+ * @brief 終了時に呼び出します
+ */
+FOOTYEXPORT(void) Footy2End()
+{
 	FootyPt iterFooty;
-	/*Footyのポインタを削除していく*/
+	// Footyのポインタを削除していく
 	EnterCriticalSection(&g_CriticalSection);
-	if (g_plsFooty){
-		for (iterFooty = g_plsFooty->begin();iterFooty != g_plsFooty->end();iterFooty++){
-			if (*iterFooty){
+	if (g_plsFooty)
+	{
+		for (iterFooty = g_plsFooty->begin();iterFooty != g_plsFooty->end();iterFooty++)
+		{
+			if (*iterFooty)
+			{
 				delete (*iterFooty);
 				*iterFooty = NULL;
 			}
@@ -80,25 +113,27 @@ FOOTYEXPORT(void) Footy2End(){
 		g_plsFooty = NULL;
 	}
 	LeaveCriticalSection(&g_CriticalSection);
-	/*カーソルを破棄*/
+	// カーソルを破棄
 	CCursor::DestroyCursors();
 	CFootyView::ReleaseLineIcons();
 }
 
 #if !defined FOOTYSTATIC
-/*----------------------------------------------------------------
-DllMain関数
-メイン関数です。
-----------------------------------------------------------------*/
-BOOL APIENTRY DllMain(HANDLE hInst, DWORD  fdwReason, LPVOID lpReserved){
-	switch(fdwReason){
-	case DLL_PROCESS_ATTACH:		/*プロセスがアタッチされた。*/
+//-----------------------------------------------------------------------------
+/**
+ * @brief DLLのメイン関数です。
+ */
+BOOL APIENTRY DllMain(HANDLE hInst, DWORD  fdwReason, LPVOID lpReserved)
+{
+	switch(fdwReason)
+	{
+	case DLL_PROCESS_ATTACH:		// プロセスにアタッチされた。
 		Footy2Start((HINSTANCE)hInst);
 		break;
-	case DLL_PROCESS_DETACH:		/*プロセスがデタッチされた。*/
+	case DLL_PROCESS_DETACH:		// プロセスにデタッチされた。
 		Footy2End();
 #if defined _DEBUG && !defined UNDER_CE
-	_CrtDumpMemoryLeaks();			/*メモリリーク検出*/
+	_CrtDumpMemoryLeaks();			// メモリリーク検出
 #endif	/*_DEBUG*/
 		break;
 	}
@@ -106,51 +141,75 @@ BOOL APIENTRY DllMain(HANDLE hInst, DWORD  fdwReason, LPVOID lpReserved){
 }
 #endif	/*!defined FOOTYSTATIC*/
 
-/*----------------------------------------------------------------
-GetFootyVer
-メイン関数です。
-----------------------------------------------------------------*/
-FOOTYEXPORT(int) GetFooty2Ver(){
+//-----------------------------------------------------------------------------
+/**
+ * @brief バージョン情報を取得します
+ */
+FOOTYEXPORT(int) GetFooty2Ver()
+{
 	return FOOTY_VER;
 }
 
-/*----------------------------------------------------------------
-GetFootyBetaVer
-βバージョンを取得します。
-----------------------------------------------------------------*/
-FOOTYEXPORT(int) GetFooty2BetaVer(){
+//-----------------------------------------------------------------------------
+/**
+ * @brief βバージョンを取得します
+ */
+FOOTYEXPORT(int) GetFooty2BetaVer()
+{
 	return FOOTY_BETA;
 }
 
-/*----------------------------------------------------------------
-Footy2Create
-Footyを構築します。
-----------------------------------------------------------------*/
-FOOTYEXPORT(int) Footy2Create(HWND hWnd,int x,int y,int dx,int dy,int nMode){
-	/*エラーチェック*/
+//-----------------------------------------------------------------------------
+/**
+ * @brief Footyを構築します
+ */
+FOOTYEXPORT(int) Footy2Create(HWND hWnd,int x,int y,int dx,int dy,int nMode)
+{
+	// エラーチェック
 	if (!hWnd || dx < 0 || dy < 0)
+	{
 		return FOOTY2ERR_ARGUMENT;
+	}
 
-	/*Footyを確保する*/
+	// Footyを確保する
 	int nID;
-	/*リストへ代入*/
+	// リストへ代入
 	EnterCriticalSection(&g_CriticalSection);
 		FootyPt iterFooty = g_plsFooty->begin();
-		for (nID = 0;iterFooty != g_plsFooty->end();iterFooty++,nID++){
-			if ((*iterFooty)->GetID() != nID)	/*途中へ*/
+		for (nID = 0;iterFooty != g_plsFooty->end();iterFooty++,nID++)
+		{
+			if ((*iterFooty)->GetID() != nID)		//途中へ
+			{
 				break;
+			}
 		}
-		CFooty *pFooty = new CFooty(nID);			/*メモリを確保する*/
-		if (!pFooty){
+		// Footyオブジェクトを構築します
+		CFooty *pFooty = new CFooty( nID, g_hInstance, nMode );
+		if (!pFooty)
+		{
 			LeaveCriticalSection(&g_CriticalSection);
 			return FOOTY2ERR_MEMORY;
 		}
 		g_plsFooty->insert(iterFooty,pFooty);
 	LeaveCriticalSection(&g_CriticalSection);
-	/*構築する*/
-	pFooty->Create(hWnd,g_hInstance,x,y,dx,dy,nMode);
-	/*IDを返す*/
+	
+	// 構築する
+	pFooty->Create( hWnd, x, y, dx, dy );
+	
+	// IDを返す
 	return nID;
+}
+
+//-----------------------------------------------------------------------------
+/**
+ * @brief 親ウィンドウを変更します
+ */
+FOOTYEXPORT(int) Footy2ChangeParent(int nID, HWND hWnd, int x,int y, int dx,int dy)
+{
+	CFooty *pFooty = GetFooty(nID);
+	if (!pFooty)return FOOTY2ERR_NOID;
+	pFooty->Create( hWnd, x, y, dx, dy );
+	return FOOTY2ERR_NONE;
 }
 
 /*----------------------------------------------------------------
@@ -337,9 +396,8 @@ FOOTYEXPORT(int) Footy2GetLineA(int nID,char *pString,size_t nLine,int nSize){
 	LinePt pLine = pFooty->m_cDoc.GetLine(nLine);
 	/*データを返す*/
 	CConvFactory cConv;
-	cConv.GetConv()->ToMulti(pLine->GetLineData(),
-		(UINT)pLine->GetLineLength());
-	MYSTRCPY(pString,cConv.GetConv()->GetConvData(),nSize);
+	cConv.GetConv()->ToMulti(pLine->GetLineData(), (UINT)pLine->GetLineLength());
+	FOOTY2STRCPY(pString,cConv.GetConv()->GetConvData(),nSize);
 	return FOOTY2ERR_NONE;
 }
 #endif	/*UNDER_CE*/
@@ -415,8 +473,7 @@ FOOTYEXPORT(int) Footy2GetLineLengthA(int nID,size_t nLine){
 	LinePt pLine = pFooty->m_cDoc.GetLine(nLine);
 	/*データを返す*/
 	CConvFactory cConv;
-	cConv.GetConv()->ToMulti(pLine->GetLineData(),
-		(UINT)pLine->GetLineLength());
+	cConv.GetConv()->ToMulti(pLine->GetLineData(), (UINT)pLine->GetLineLength());
 	return (int)cConv.GetConv()->GetConvTextSize() - sizeof(char);
 }
 #endif

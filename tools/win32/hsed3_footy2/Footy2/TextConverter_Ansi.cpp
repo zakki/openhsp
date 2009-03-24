@@ -3,7 +3,6 @@ CTextConverter_Unicodeクラス
 テキストの変換処理が可能なクラスです。
 ===================================================================*/
 
-#include <windows.h>
 #include "TextConverter_Ansi.h"
 
 #ifndef UNDER_CE

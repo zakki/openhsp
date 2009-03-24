@@ -5,8 +5,6 @@
  * @author ShinjiWatanabe
  */
 
-#include <string.h>
-#include "Macros.h"
 #include "TextConverter_Unicode.h"
 
 /**

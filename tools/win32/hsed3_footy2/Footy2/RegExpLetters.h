@@ -6,18 +6,17 @@ CRegExpLettersƒNƒ‰ƒX
 #pragma once
 
 #include "RegExpElement.h"
-#include <string>
 
-class CRegExpLetters : public CRegExpElement{
+class CRegExpLetters : public CRegExpElement
+{
 public:
 	CRegExpLetters(const wchar_t *pString, bool bIgnoreCase = false);
 	CRegExpLetters(std::wstring &strLetters, bool bIgnoreCase = false);
-	~CRegExpLetters();
+	virtual ~CRegExpLetters();
 
 protected:
-virtual bool SearchInner(LinePt pStartLine,size_t nStartPos,CEditPosition *pEnd,LinePt pEndLine);
-private:
-public:
+	virtual bool SearchInner(LinePt pStartLine,size_t nStartPos,CEditPosition *pEnd,LinePt pEndLine);
+
 private:
 	std::wstring m_strLetters;
 	bool         m_bIgnoreCase;

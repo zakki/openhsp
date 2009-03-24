@@ -1,15 +1,18 @@
-/*===================================================================
-CSplitBase
-スプリットバーのベースクラスです。
-===================================================================*/
+/**
+ * @file SplitBase.cpp
+ * @brief スプリットバーの基底クラスです。
+ * @author Shinji Watanabe
+ * @date Dec. 28, 2008
+ */
 
 #include "SplitBase.h"
 
-/*-------------------------------------------------------------------
-CSplitBase::CSplitBase
-コンストラクタ
--------------------------------------------------------------------*/
-CSplitBase::CSplitBase(){
+//-----------------------------------------------------------------------------
+/**
+ * @brief コンストラクタ
+ */
+CSplitBase::CSplitBase()
+{
 	m_hWnd = NULL;
 	m_nMode = SPLIT_DUAL;
 	m_pViews = NULL;
@@ -18,47 +21,52 @@ CSplitBase::CSplitBase(){
 }
 
 
-/*-------------------------------------------------------------------
-CSplitBase::CSplitBase
-デストラクタ
--------------------------------------------------------------------*/
-CSplitBase::~CSplitBase(){
-	if (m_hWnd){
-		RemoveProp(m_hWnd,SPLIT_PROPNAME);
-		DestroyWindow(m_hWnd);
-		m_hWnd = NULL;
-	}
+//-----------------------------------------------------------------------------
+/**
+ * @brief デストラクタ
+ *
+ */
+CSplitBase::~CSplitBase()
+{
+	DestroySplitBar();
 }
 
-/*-------------------------------------------------------------------
-CSplitBase::Create
-構築する
--------------------------------------------------------------------*/
-bool CSplitBase::Create(HWND hWnd,HINSTANCE hInstance){
-	if (!hWnd || !hInstance)return false;
+//-----------------------------------------------------------------------------
+/**
+ * @brief 構築する
+ */
+ bool CSplitBase::Create(HWND hWndParent, HINSTANCE hInstance)
+{
+	if (!hWndParent || !hInstance)return false;
 	
-	/*クラスを登録する*/
-	WNDCLASS wc;												/*ウィンドウクラス*/
-	wc.style			= 
+	// すでに生成済みの場合はいったん破棄
+	if ( m_hWnd )
+	{
+		DestroySplitBar();
+	}
+	
+	// クラスを登録する
+	WNDCLASS wc;
+	
 #ifdef UNDER_CE
-		0;
+	wc.style			= 0;
 #else	/*UNDER_CE*/
-		CS_BYTEALIGNCLIENT | CS_BYTEALIGNWINDOW;
+	wc.style			= CS_BYTEALIGNCLIENT | CS_BYTEALIGNWINDOW;
 #endif	/*UNDER_CE*/
 	wc.lpfnWndProc		= SplitWinProc;
 	wc.hInstance		= hInstance;
 	wc.hIcon			= NULL;
-	wc.hCursor			= NULL;									/*状態によって適宜変更する*/
+	wc.hCursor			= NULL;						// 状態によって適宜変更する
 	wc.hbrBackground	= (HBRUSH)GetSysColorBrush(COLOR_BTNFACE);
 	wc.lpszMenuName		= NULL;
 	wc.lpszClassName	= SPLIT_WNDCLASSNAME;
-	wc.cbClsExtra		= 0;									/*使用しない。0を指定*/
-	wc.cbWndExtra		= 0;									/*使用しない。0を指定*/
-	RegisterClass(&wc);											/*ウィンドウクラスの登録*/
+	wc.cbClsExtra		= 0;						// 使用しない。0を指定
+	wc.cbWndExtra		= 0;						// 使用しない。0を指定
+	RegisterClass(&wc);								// ウィンドウクラスの登録
 
 	/*ウィンドウの作成*/
 	m_hWnd = CreateWindowEx(0,SPLIT_WNDCLASSNAME,SPLIT_WNDCLASSNAME,
-							WS_CHILD,0,0,0,0,hWnd,NULL,hInstance,NULL);
+							WS_CHILD,0,0,0,0,hWndParent,NULL,hInstance,NULL);
 	if (!m_hWnd)return false;
 	
 	/*プロパティの設定*/
@@ -66,12 +74,27 @@ bool CSplitBase::Create(HWND hWnd,HINSTANCE hInstance){
 	return true;
 }
 
-/*-------------------------------------------------------------------
-CSplitBase::SplitWinProc
-ウィンドウプロシージャです。
--------------------------------------------------------------------*/
-LRESULT CALLBACK CSplitBase::SplitWinProc(HWND hWnd,UINT msg,WPARAM wParam,LPARAM lParam){
-	CSplitBase *pSplitClass=NULL;	/*そのクラスへのポインタ*/
+//-----------------------------------------------------------------------------
+/**
+ * @brief スプリットバーを削除します
+ */
+void CSplitBase::DestroySplitBar()
+{
+	if (m_hWnd)
+	{
+		RemoveProp( m_hWnd, SPLIT_PROPNAME );
+		DestroyWindow( m_hWnd );
+		m_hWnd = NULL;
+	}
+}
+
+//-----------------------------------------------------------------------------
+/**
+ * @brief ウィンドウプロシージャです。
+ */
+LRESULT CALLBACK CSplitBase::SplitWinProc(HWND hWnd,UINT msg,WPARAM wParam,LPARAM lParam)
+{
+	CSplitBase *pSplitClass=NULL;	// そのクラスへのポインタ
 	pSplitClass=(CSplitBase*)GetProp(hWnd,SPLIT_PROPNAME);
 	if (pSplitClass)
 		return pSplitClass->MainProc(msg,wParam,lParam);
@@ -80,12 +103,15 @@ LRESULT CALLBACK CSplitBase::SplitWinProc(HWND hWnd,UINT msg,WPARAM wParam,LPARA
 }
 
 
-/*-------------------------------------------------------------------
-CSplitBase::MainProc
-ウィンドウプロシージャです。
--------------------------------------------------------------------*/
-LRESULT CSplitBase::MainProc(UINT msg,WPARAM wParam,LPARAM lParam){
-	switch(msg){
+//-----------------------------------------------------------------------------
+/**
+ * @brief ウィンドウに関連づけられてるクラスインスタンスが生成できた場合に行う
+ *		  実際のウィンドウプロシージャ処理です
+ */
+LRESULT CSplitBase::MainProc(UINT msg,WPARAM wParam,LPARAM lParam)
+{
+	switch(msg)
+	{
 	case WM_LBUTTONDOWN:
 		OnMouseDown((int)(short)LOWORD(lParam),(int)(short)HIWORD(lParam));
 		break;
@@ -101,37 +127,44 @@ LRESULT CSplitBase::MainProc(UINT msg,WPARAM wParam,LPARAM lParam){
 	return false;
 }
 
-/*-------------------------------------------------------------------
-CSplitBase::OnMouseDown
-マウスが動かされたときの処理
--------------------------------------------------------------------*/
-void CSplitBase::OnMouseDown(int x,int y){
+//-----------------------------------------------------------------------------
+/**
+ * @brief マウスが動いたときの処理です
+ * @param	x	[in] マウスx座標
+ * @param	y	[in] マウスy座標
+ */
+void CSplitBase::OnMouseDown(int x,int y)
+{
 	SetCapture(m_hWnd);
 	m_bDrag = true;
 }
 
-/*-------------------------------------------------------------------
-CSplitBase::OnMouseUp
-マウスが動かされたときの処理
--------------------------------------------------------------------*/
-void CSplitBase::OnMouseUp(int x,int y){
+//-----------------------------------------------------------------------------
+/**
+ * @brief マウスの左ボタンがあがったときの処理
+ */
+void CSplitBase::OnMouseUp(int x,int y)
+{
 	ReleaseCapture();
 	m_bDrag = false;
 }
 
-/*-------------------------------------------------------------------
-CSplitBase::SetVisible
-表示／非表示状態を切替えます。
--------------------------------------------------------------------*/
-void CSplitBase::SetVisible(bool bVisible){
+//-----------------------------------------------------------------------------
+/**
+ * @brief 表示状態を設定できます
+ */
+void CSplitBase::SetVisible(bool bVisible)
+{
 	ShowWindow(m_hWnd,bVisible ? SW_SHOWNORMAL : SW_HIDE);
 }
 
-/*-------------------------------------------------------------------
-CSplitBase::OnBaseWindowMove
-ベースウィンドウが動いたとき
--------------------------------------------------------------------*/
-void CSplitBase::OnBaseWindowMove(int x,int y,int nWidth,int nHeight){
+
+//-----------------------------------------------------------------------------
+/**
+ * @brief 親ウィンドウが動いたときに呼び出してください
+ */
+void CSplitBase::OnBaseWindowMove(int x,int y,int nWidth,int nHeight)
+{
 	m_nBaseX = x;
 	m_nBaseY = y;
 	m_nBaseWidth = nWidth;

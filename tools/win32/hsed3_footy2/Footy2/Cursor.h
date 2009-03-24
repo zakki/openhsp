@@ -5,8 +5,6 @@ CCursorƒNƒ‰ƒX
 
 #pragma once
 
-#include <windows.h>
-
 class CCursor{
 public:
 	/*\’z*/

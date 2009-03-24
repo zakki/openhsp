@@ -3,13 +3,13 @@ CTextConverterクラス
 UNICODEを基点にしたテキストの変換処理が可能なベースクラスです。
 ===================================================================*/
 
-#ifndef _TEXT_CONVERTER_CLASS_H_
-#define _TEXT_CONVERTER_CLASS_H_
+#pragma once
 
-class  CTextConverter{
+class  CTextConverter
+{
 public:
 	CTextConverter();
-	~CTextConverter();
+	virtual ~CTextConverter();
 	
 	/*コンバートメソッド*/
 	virtual bool ToUnicode(const char*,size_t nSize) = 0;
@@ -28,7 +28,5 @@ protected:
 	char *m_pOutputText;					//!< 出力テキスト
 	size_t m_nTextSize;						//!< 保持しているテキストのサイズ(NULL含む)
 };
-
-#endif	/*_TEXT_CONVERTER_CLASS_H_*/
 
 /*[EOF]*/

@@ -5,7 +5,6 @@
  * @version 1.0
  */
 
-#include <string.h>
 #include "TextConverter_Unicode.h"
 
 /*----------------------------------------------------------------

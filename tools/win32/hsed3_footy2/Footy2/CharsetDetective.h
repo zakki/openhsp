@@ -5,8 +5,6 @@ CCharsetDetectiveƒNƒ‰ƒX
 
 #pragma once
 
-#include "Footy2.h"
-
 class  CCharsetDetective{
 public:
 	CCharsetDetective();

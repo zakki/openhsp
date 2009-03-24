@@ -5,8 +5,6 @@ CFootyViewクラスの見え方を管理するクラスです。
 
 #pragma once
 
-#include <windows.h>
-
 class CFootyStatus{
 public:
 	CFootyStatus();

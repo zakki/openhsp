@@ -1,57 +1,23 @@
-/*===================================================================
+/*=============================================================================
 Footy2.h
 FootyƒeƒLƒXƒgƒGƒfƒBƒ^ƒRƒ“ƒgƒ[ƒ‹‚Q
 
 Footy‚ÌŠÖ”‚ğg—p‚·‚é‚½‚ß‚Ì’è‹`‚ğ’Ç‰Á‚·‚éƒwƒbƒ_ƒtƒ@ƒCƒ‹‚Å‚·B
-‚Ü‚½AManaged C++‚©‚çg‚¤‚½‚ß‚ÌƒNƒ‰ƒXManagedFooty2.dll—p‚Ì’è‹`‚µ‚Ü‚·‚ª
-‚»‚Ìê‡‚ÍƒRƒ“ƒpƒCƒ‹‚ÉManagedFooty2.cpp‚ª•K—v‚Å‚·B
+# Windows Mobile—p‚ÉƒRƒ“ƒpƒCƒ‹‚·‚é‚Æ‚«‚ÍUNDER_CE‚ğƒvƒŠƒvƒƒZƒXéŒ¾‚µ‚Ü‚·B
 
-# Unmanaged C++‚ÅƒRƒ“ƒpƒCƒ‹‚·‚é‚Æ‚«‚Í_WINDOWS‚ğƒvƒŠƒvƒƒZƒXéŒ¾
-# Managed C++‚ÅƒRƒ“ƒpƒCƒ‹‚·‚é‚Æ‚«‚Í_WINDOWS‚ğéŒ¾‚µ‚È‚¢
-# Windows Mobile—p‚ÉƒRƒ“ƒpƒCƒ‹‚·‚é‚Æ‚«‚ÍUNDER_CE‚ğƒvƒŠƒvƒƒZƒXéŒ¾
-
-(C)2004-2007 ShinjiWatanabe
-===================================================================*/
+(C)2004-2009 ShinjiWatanabe
+=============================================================================*/
 
 #ifndef _FOOTY2_DLL_H_
 #define _FOOTY2_DLL_H_
 
-//•K—v‚Èƒtƒ@ƒCƒ‹‚ÌƒCƒ“ƒNƒ‹[ƒhAƒGƒNƒXƒ|[ƒgéŒ¾///////////////////////
-#undef FOOTYEXPORT
-
+//•K—v‚Èƒtƒ@ƒCƒ‹‚ÌƒCƒ“ƒNƒ‹[ƒhAƒGƒNƒXƒ|[ƒgéŒ¾///////////////////////////////
 #include <windows.h>
 
-#ifdef _WINDOWS						/*Windows—p Unmanaged C++Œü‚¯*/
-#	define FOOTYEXPORT(x)	extern "C" __declspec(dllexport) x __stdcall
-#else	/*! _WINDOWS*/				/*.NET—p Managed C++*/
-#	using <mscorlib.dll>
-	using namespace System;
-	using namespace System::ComponentModel;
-	using namespace System::Collections;
-	using namespace System::Windows::Forms;
-	using namespace System::Data;
-	using namespace System::Drawing;
-	using namespace System::Runtime::InteropServices;
-#ifdef UNDER_CE
-#	define MANAGECLS_NAME	ManagedFooty2CE
-#	define FOOTYEXPORT(x)	[DllImport("Footy2CE.dll",CharSet=CharSet::Unicode, \
-							 CallingConvention=CallingConvention::StdCall)] extern "C" x
-#else
-#	define MANAGECLS_NAME	ManagedFooty2
-#	define FOOTYEXPORT(x)	[DllImport("Footy2.dll",CharSet=CharSet::Unicode, \
-							 CallingConvention=CallingConvention::StdCall)] extern "C" x
-#endif	/*UNDER_CE*/
-#endif	/* _WINDOWS*/
+#undef FOOTYEXPORT
+#define FOOTYEXPORT(x)	extern "C" __declspec(dllexport) x __stdcall
 
-//Ä•`‰æ—p‚ÌéŒ¾//////////////////////////////////////////////////////
-#undef MYREFRESH
-#ifdef __cplusplus
-#	define MYREFRESH	bool bRefresh = true
-#else	/*__cplusplus*/
-#	define MYREFRESH	bool bRefresh
-#endif	/*__cplusplus*/
-
-//Unicode—p‚ÌéŒ¾/////////////////////////////////////////////////////
+//Unicode—p‚ÌéŒ¾//////////////////////////////////////////////////////////////
 #ifdef _UNICODE
 #	define Footy2AddEmphasis	Footy2AddEmphasisW
 #	define Footy2SetText		Footy2SetTextW
@@ -84,214 +50,31 @@ Footy‚ÌŠÖ”‚ğg—p‚·‚é‚½‚ß‚Ì’è‹`‚ğ’Ç‰Á‚·‚éƒwƒbƒ_ƒtƒ@ƒCƒ‹‚Å‚·B
 #	define Footy2GetSelLength	Footy2GetSelLengthA
 #endif	/*_UNICODE*/
 
-//ŠÖ”ƒ|ƒCƒ“ƒ^‚ÆƒfƒŠƒQ[ƒg///////////////////////////////////////////////
-#if defined _WINDOWS						/*Windows—p Unmanaged C++Œü‚¯*/
-	typedef void (__stdcall *Footy2FuncFocus)(int nID,void* pData,int nViewID,bool bFocused);
-	typedef void (__stdcall *Footy2FuncMoveCaret)(int nID,void* pData,size_t nCaretLine,size_t nCaretColumn);
-	typedef void (__stdcall *Footy2FuncTextModified)(int nID,void* pData,int nCause);
-	typedef void (__stdcall *Footy2FuncInsertModeChanged)(int nID,void* pData,bool bInsertMode);
-	FOOTYEXPORT(int) Footy2SetFuncFocus(int nID,Footy2FuncFocus pFunc,void *pData);
-	FOOTYEXPORT(int) Footy2SetFuncMoveCaret(int nID,Footy2FuncMoveCaret pFunc,void *pData);
-	FOOTYEXPORT(int) Footy2SetFuncTextModified(int nID,Footy2FuncTextModified pFunc,void *pData);
-	FOOTYEXPORT(int) Footy2SetFuncInsertModeChanged(int nID,Footy2FuncInsertModeChanged pFunc,void *pData);
-#else		/*! _WINDOWS*/					/*Managed C++*/
-	__delegate void Footy2FuncFocus(int nID,System::IntPtr pData,int nView,bool bGotFocus);
-	__delegate void Footy2FuncMoveCaret(int nID,System::IntPtr pData,size_t nCaretLine,size_t nCaretColumn);
-	__delegate void Footy2FuncTextModified(int nID,System::IntPtr pData,int nCause);
-	__delegate void Footy2FuncInsertModeChanged(int nID,System::IntPtr pData,bool bInsertMode);
-	FOOTYEXPORT(int) Footy2SetFuncFocus(int nID,Footy2FuncFocus *pFunc,System::IntPtr pData);
-	FOOTYEXPORT(int) Footy2SetFuncMoveCaret(int nId,Footy2FuncMoveCaret *pFunc,System::IntPtr pData);
-	FOOTYEXPORT(int) Footy2SetFuncTextModified(int nId,Footy2FuncTextModified *pFunc,System::IntPtr pData);
-	FOOTYEXPORT(int) Footy2SetFuncInsertModeChanged(int nID,Footy2FuncInsertModeChanged *pFunc,System::IntPtr pData);
-#endif	/*_WINDOWS*/
+//ŠÖ”ƒ|ƒCƒ“ƒ^‚ÆƒR[ƒ‹ƒoƒbƒNİ’è///////////////////////////////////////////////
+typedef void (__stdcall *Footy2FuncFocus)(int nID,void* pData,int nViewID,bool bFocused);
+typedef void (__stdcall *Footy2FuncMoveCaret)(int nID,void* pData,size_t nCaretLine,size_t nCaretColumn);
+typedef void (__stdcall *Footy2FuncTextModified)(int nID,void* pData,int nCause);
+typedef void (__stdcall *Footy2FuncInsertModeChanged)(int nID,void* pData,bool bInsertMode);
+FOOTYEXPORT(int) Footy2SetFuncFocus(int nID,Footy2FuncFocus pFunc,void *pData);
+FOOTYEXPORT(int) Footy2SetFuncMoveCaret(int nID,Footy2FuncMoveCaret pFunc,void *pData);
+FOOTYEXPORT(int) Footy2SetFuncTextModified(int nID,Footy2FuncTextModified pFunc,void *pData);
+FOOTYEXPORT(int) Footy2SetFuncInsertModeChanged(int nID,Footy2FuncInsertModeChanged pFunc,void *pData);
 
-//’è‹`’è‹`—p‚Ìƒ}ƒNƒ//////////////////////////////////////////////////
-#undef MYENUM
-#undef MYSTRING
-#undef MYCSTRING
-
-#ifdef _WINDOWS							/*Unmanaged C++*/
-#	define MYENUM enum
-#	define MYSTRING wchar_t*
-#	define MYCSTRING const wchar_t*
-#else	/*_WINDOWS*/					/*Managed C++*/
-#	define MYENUM __value enum
-#	define MYSTRING System::Text::StringBuilder*
-#	define MYCSTRING System::String*
-#endif	/*_WINDOWS*/
-
-//.net—pƒfƒŠƒQ[ƒgƒNƒ‰ƒX///////////////////////////////////////////////
-#ifndef _WINDOWS
-	namespace MANAGECLS_NAME{
-	
-	
-	//! PermitLevelƒNƒ‰ƒX‚Ì‘OéŒ¾
-	__gc public class PermitLevel;
-	
-	/**
-	 * EditorPos
-	 * @brief ƒGƒfƒBƒ^[ã‚ÌˆÊ’u‚ğ•\‚·\‘¢‘Ì
-	 */
-	public struct EditorPos{
-		UINT m_nLine;				//!< s”Ô†0‚©‚çŠJn
-		UINT m_nPos;				//!< Œ…”0‚©‚çŠJn
-	};
-
-	/**
-	 * TextModifiedEventArgs
-	 * @brief ƒeƒLƒXƒg‚ª•ÏX‚³‚ê‚½‚Æ‚«‚ÌƒCƒxƒ“ƒgˆø”
-	 */
-	__gc public class TextModifiedEventArgs{
-	public:
-#endif	/*not defiend _WINDOWS*/
-
-MYENUM TextModifiedCause{						//!< ƒeƒLƒXƒg‚ª•ÒW‚³‚ê‚½Œ´ˆö
-	MODIFIED_CAUSE_CHAR,						//!< •¶š‚ª“ü—Í‚³‚ê‚½(IMEƒIƒt)
-	MODIFIED_CAUSE_IME,							//!< •¶š‚ª“ü—Í‚³‚ê‚½(IMEƒIƒ“)
-	MODIFIED_CAUSE_DELETE,						//!< DeleteƒL[‚ª‰Ÿ‰º‚³‚ê‚½
-	MODIFIED_CAUSE_BACKSPACE,					//!< BackSpace‚ª‰Ÿ‰º‚³‚ê‚½
-	MODIFIED_CAUSE_ENTER,						//!< EnterƒL[‚ª‰Ÿ‰º‚³‚ê‚½
-	MODIFIED_CAUSE_UNDO,						//!< Œ³‚É–ß‚·ˆ—‚ªÀs‚³‚ê‚½
-	MODIFIED_CAUSE_REDO,						//!< ‚â‚è’¼‚µˆ—‚ªÀs‚³‚ê‚½
-	MODIFIED_CAUSE_CUT,							//!< Ø‚èæ‚èˆ—‚ªÀs‚³‚ê‚½
-	MODIFIED_CAUSE_PASTE,						//!< “\‚è•t‚¯ˆ—‚ªÀs‚³‚ê‚½
-	MODIFIED_CAUSE_INDENT,						//!< ƒCƒ“ƒfƒ“ƒg‚³‚ê‚½
-	MODIFIED_CAUSE_UNINDENT,					//!< ‹tƒCƒ“ƒfƒ“ƒg‚³‚ê‚½
-	MODIFIED_CAUSE_TAB,							//!< ƒ^ƒuƒL[‚ª‰Ÿ‚³‚ê‚ÄAƒ^ƒu•¶š‚ª‘}“ü‚³‚ê‚½
-	MODIFIED_CAUSE_SETSELTEXT,					//!< Footy2SetSelText()‚ªÀs‚³‚ê‚½
-};
-
-#ifndef _WINDOWS
-
-	protected:
-		TextModifiedCause m_nCause;	
-
-	public:
-		TextModifiedEventArgs(TextModifiedCause nCause){
-			m_nCause = nCause;
-		}
-
-		__property TextModifiedCause get_Cause(){return m_nCause;}
-	};
-	//! ƒeƒLƒXƒg•ÏX‚ÌƒfƒŠƒQ[ƒg
-	public __delegate void TextModifiedEventHandler(TextModifiedEventArgs* e);
-	
-	/**
-	 * MoveCaretEventArgs
-	 * @brief ƒLƒƒƒŒƒbƒgˆÚ“®ƒCƒxƒ“ƒg‚Ìˆø”ƒNƒ‰ƒX
-	 */
-	__gc public class MoveCaretEventArgs : public EventArgs{
-	protected:
-		size_t m_nLine,m_nColumn;
-	public:
-		MoveCaretEventArgs(size_t nLine,size_t nColumn){
-			m_nLine = nLine;
-			m_nColumn = nColumn;
-		}
-
-		__property size_t get_Line(){return m_nLine;}
-		__property size_t get_Column(){return m_nColumn;}
-	};
-	//! ƒLƒƒƒŒƒbƒgˆÚ“®‚ÌƒfƒŠƒQ[ƒg
-	public __delegate void MoveCaretEventHandler(MoveCaretEventArgs* e);
-
-	/**
-	 * InsertModeChangedEventArgs
-	 * @brief ‘}“üó‘Ô•Ï‰»‚ÌƒCƒxƒ“ƒgˆø”
-	 */
-	__gc public class InsertModeChangedEventArgs : public EventArgs{
-	protected:
-		bool m_bIsInsertMode;
-	public:
-		InsertModeChangedEventArgs(bool bIsInsertMode){
-			m_bIsInsertMode = bIsInsertMode;
-		}
-
-		__property size_t get_IsInsertMode(){return m_bIsInsertMode;}
-	};
-
-	//! ‘}“ü•Ï‰»‚ÌƒfƒŠƒQ[ƒg
-	public __delegate void InsertModeChangedEventHandler(InsertModeChangedEventArgs* e);
-	
-	/**
-	 * FocusEventArgs
-	 * @brief ƒtƒH[ƒJƒX‚ª‚ ‚½‚Á‚½‚Æ‚«‚ÌƒCƒxƒ“ƒgˆø”
-	 */
-	__gc public class FocusEventArgs : public EventArgs{
-	public:
-		FocusEventArgs(int nView,bool bGotFocus){
-			m_bGotFocus = bGotFocus;
-			m_nView = nView;
-		}
-
-		__property int get_ViewID(){return m_nView;}
-		__property bool get_GotFocus(){return m_bGotFocus;}
-
-	protected:
-		int m_nView;
-		bool m_bGotFocus;
-	};
-	
-	//! ƒtƒH[ƒJƒXæ“¾‚ÌƒfƒŠƒQ[ƒg
-	public __delegate void FocusEventHandler(FocusEventArgs* e);
-
-#endif	/*not defined _WINDOWS*/
-
-//.net—p—áŠOˆ—//////////////////////////////////////////////////////
-#ifndef _WINDOWS
-	public __gc class Footy2Exception : public System::ApplicationException{
-	public:
-#endif	/*not defined _WINDOWS*/
-
-//! ƒGƒ‰[ƒR[ƒh
-MYENUM ErrCode{
-	FOOTY2ERR_NONE				=	0,			//!< ŠÖ”‚ª¬Œ÷‚µ‚½
-	FOOTY2ERR_ARGUMENT			=	-1,			//!< ˆø”‚¨‚©‚µ‚¢
-	FOOTY2ERR_NOID				=	-2,			//!< ID‚ªŒ©‚Â‚©‚ç‚È‚¢
-	FOOTY2ERR_MEMORY			=	-3,			//!< ƒƒ‚ƒŠ[•s‘«
-	FOOTY2ERR_NOUNDO			=	-4,			//!< ƒAƒ“ƒhƒDî•ñ‚ª‚±‚êˆÈ‘O‚ÉŒ©‚Â‚©‚ç‚È‚¢
-	FOOTY2ERR_NOTSELECTED		=	-5,			//!< ‘I‘ğ‚³‚ê‚Ä‚¢‚È‚¢
-	FOOTY2ERR_UNKNOWN			=	-6,			//!< •s–¾‚ÈƒGƒ‰[
-	FOOTY2ERR_NOTYET			=	-7,			//!< –¢À‘•(‚²‚ß‚ñ‚È‚³‚¢)
-	FOOTY2ERR_404				=	-8,			//!< ƒtƒ@ƒCƒ‹‚ªŒ©‚Â‚©‚ç‚È‚¢AŒŸõ•¶š—ñ‚ªŒ©‚Â‚©‚ç‚È‚¢
-	FOOTY2ERR_NOACTIVE			=	-9,			//!< ƒAƒNƒeƒBƒu‚Èƒrƒ…[‚Í‘¶İ‚µ‚Ü‚¹‚ñ
-	FOOTY2ERR_ENCODER			=	-10,		//!< •¶šƒR[ƒh‚ÌƒGƒ“ƒR[ƒ_‚ªŒ©‚Â‚©‚è‚Ü‚¹‚ñ(ƒtƒ@ƒCƒ‹‚ÌƒGƒ“ƒR[ƒhŒ`®‚ª•s³‚Å‚·AƒoƒCƒiƒŠ‚Æ‚©)
-};
-
-#ifndef _WINDOWS
-	public:
-		Footy2Exception(ErrCode nCode){
-			m_nErrCode = nCode;
-		}
-		
-		__property ErrCode get_Code(){return m_nErrCode;}
-		__property System::String* get_Message();
-	protected:
-		ErrCode m_nErrCode;
-	};
-#endif	/*not defined _WINDOWS*/
-
-//•Ö—˜‚Èƒ}ƒNƒ////////////////////////////////////////////////////////
+//•Ö—˜‚Èƒ}ƒNƒ/////////////////////////////////////////////////////////////////
 #define PERMIT_LEVEL(x)		(1 << (x))
 
-//.net—p‚ÌƒƒCƒ“ƒNƒ‰ƒX‚ÌéŒ¾////////////////////////////////////////////////////////
-#ifndef _WINDOWS
-		public __gc class Footy2Control : public System::Windows::Forms::UserControl{
-		public:
-			/*ƒRƒ“ƒXƒgƒ‰ƒNƒ^*/
-			Footy2Control();
-#endif	/*_WINDOWS*/
+//’è”‚ÌéŒ¾///////////////////////////////////////////////////////////////////
 
-//’è”‚ÌéŒ¾//////////////////////////////////////////////////////////
-
-MYENUM UrlType{									//!< URLƒ^ƒCƒv
+enum UrlType									//!< URLƒ^ƒCƒv
+{
 	URLTYPE_HTTP,								//!< http
 	URLTYPE_HTTPS,								//!< https
 	URLTYPE_FTP,								//!< ftp
 	URLTYPE_MAIL,								//!< ƒ[ƒ‹ƒAƒhƒŒƒX
 };
 
-MYENUM ViewMode{
+enum ViewMode
+{
 	VIEWMODE_NORMAL,							//!< ƒVƒ“ƒOƒ‹ƒ‚[ƒh
 	VIEWMODE_VERTICAL,							//!< c•ªŠ„
 	VIEWMODE_HORIZONTAL,						//!< ‰¡•ªŠ„
@@ -299,7 +82,8 @@ MYENUM ViewMode{
 	VIEWMODE_INVISIBLE,							//!< ”ñ•\¦
 };
 
-MYENUM EmpMode{
+enum EmpMode
+{
 	EMP_INVALIDITY,								//!< –³Œø
 	EMP_WORD,									//!< ’PŒê‚ğ‹­’²
 	EMP_LINE_AFTER,								//!< ‚»‚êˆÈ~`s––
@@ -307,7 +91,8 @@ MYENUM EmpMode{
 	EMP_MULTI_BETWEEN,							//!< “ñ‚Â‚Ì•¶š‚ÌŠÔi•¡”s‚É‚í‚½‚éE“ñ‚Â‚Ì•¶š—ñ‚ğw’èj
 };
 
-MYENUM ColorPos{
+enum ColorPos
+{
 	CP_TEXT,									//!< ’Êí‚Ì•¶š
 	CP_BACKGROUND,								//!< ”wŒiF
 	CP_CRLF,									//!< ‰üsƒ}[ƒN
@@ -331,7 +116,9 @@ MYENUM ColorPos{
 	CP_HIGHLIGHTBACKGROUND,						//!< ƒnƒCƒ‰ƒCƒg”wŒiF
 };
 
-MYENUM LineMode{								//!< ‰üsƒR[ƒh
+//! ‰üsƒR[ƒh
+enum LineMode
+{
 	LM_AUTOMATIC,								//!< ©“®
 	LM_CRLF,									//!< CrLfƒR[ƒh
 	LM_CR,										//!< CrƒR[ƒh
@@ -340,7 +127,8 @@ MYENUM LineMode{								//!< ‰üsƒR[ƒh
 };
 
 //! ƒLƒƒƒ‰ƒNƒ^ƒZƒbƒg
-MYENUM CharSetMode{
+enum CharSetMode
+{
 	CSM_AUTOMATIC,								//!< ©“®ƒ‚[ƒh(’Êí‚Í‚±‚ê‚ğg—p‚·‚é)
 #ifndef UNDER_CE
 	CSM_PLATFORM,								//!< ƒvƒ‰ƒbƒgƒtƒH[ƒ€ˆË‘¶
@@ -386,7 +174,8 @@ MYENUM CharSetMode{
 };
 
 //! ƒtƒHƒ“ƒg
-MYENUM FontMode{
+enum FontMode
+{
 	FFM_ANSI_CHARSET,							//!< ANSI•¶š
 	FFM_BALTIC_CHARSET,							//!< ƒoƒ‹ƒg•¶š
 	FFM_BIG5_CHARSET,							//!< ”É‘Ìš’†‘Œê•¶š
@@ -407,7 +196,8 @@ MYENUM FontMode{
 };
 
 //! sƒAƒCƒRƒ“
-MYENUM LineIcons{
+enum LineIcons
+{
 	LINEICON_NONE				=	0x00000000,
 
 	LINEICON_ATTACH				=	0x00000001,
@@ -446,14 +236,16 @@ MYENUM LineIcons{
 
 
 //! ‹­’²•\¦ƒ‚[ƒh
-MYENUM EmpType{
+enum EmpType
+{
 	EMPFLAG_BOLD				=	0x00000001,	//!< ‘¾š‚É‚·‚é
 	EMPFLAG_NON_CS				=	0x00000002,	//!< ‘å•¶š‚Æ¬•¶š‚ğ‹æ•Ê‚µ‚È‚¢
 	EMPFLAG_HEAD				=	0x00000004,	//!< “ª‚É‚ ‚é‚Æ‚«‚Ì‚İ
 };
 
 //! ƒGƒfƒBƒ^ƒ}[ƒN•\¦A”ñ•\¦‚Ìİ’è
-MYENUM EditorMarks{
+enum EditorMarks
+{
 	EDM_HALF_SPACE				=	0x00000001,	//!< ”¼ŠpƒXƒy[ƒX‚ğ•\¦‚·‚é‚©
 	EDM_FULL_SPACE				=	0x00000002,	//!< ‘SŠpƒXƒy[ƒX‚ğ•\¦‚·‚é‚©
 	EDM_TAB						=	0x00000004,	//!< ƒ^ƒuƒ}[ƒN‚ğ•\¦‚·‚é‚©
@@ -466,18 +258,21 @@ MYENUM EditorMarks{
 
 
 //! ŒŸõƒtƒ‰ƒO
-MYENUM SearchFlags{
+enum SearchFlags
+{
 	SEARCH_FROMCURSOR			=	0x00000001,	//!< Œ»İ‚ÌƒJ[ƒ\ƒ‹ˆÊ’u‚©‚çŒŸõ‚·‚é
 	SEARCH_BACK					=	0x00000002,	//!< Œã‚ë•ûŒü‚ÉŒŸõˆ—‚ğÀs‚·‚é
-	SEARCH_REGEXP				=	0x00000004,	//!< ³‹K•\Œ»‚ğ—˜—p‚·‚é
+	SEARCH_REGEXP				=	0x00000004,	//!< ³‹K•\Œ»‚ğ—˜—p‚·‚é(–¢À‘•)
 	SEARCH_NOT_REFRESH			=	0x00000008,	//!< ŒŸõŒ‹‰Ê‚ğÄ•`‰æ‚µ‚È‚¢
 	SEARCH_BEEP_ON_404			=	0x00000010,	//!< Œ©‚Â‚©‚ç‚È‚©‚Á‚½‚Æ‚«‚Éƒr[ƒv‰¹‚ğ‚È‚ç‚·
 	SEARCH_NOT_ADJUST_VIEW		=	0x00000020,	//!< Œ©‚Â‚©‚Á‚½‚Æ‚«‚ÉƒLƒƒƒŒƒbƒgˆÊ’u‚ÖƒXƒNƒ[ƒ‹ƒo[‚ğ’Ç‚³‚¹‚È‚¢
+	SEARCH_HIGHLIGHT			=	0x00000040,	//!< Œ©‚Â‚©‚Á‚½•¶š—ñ‚ğƒnƒCƒ‰ƒCƒg•\¦‚µ‚Ü‚·(–¢À‘•)
 	SEARCH_IGNORECASE			=	0x00000040,	//!< ‘å•¶š¬•¶š‚ğ‹æ•Ê‚µ‚È‚¢
 };
 
 //! “Æ—§ƒŒƒxƒ‹
-MYENUM IndependentFlags{
+enum IndependentFlags
+{
 	// ASCII‹L†—pƒtƒ‰ƒO
 	EMP_IND_PARENTHESIS			=	0x00000001,	//!< ‘OŒã‚ÉŠÛŠ‡ŒÊ()‚ª‚ ‚é‚±‚Æ‚ğ‹–‰Â‚·‚é
 	EMP_IND_BRACE				=	0x00000002,	//!< ‘OŒã‚É’†Š‡ŒÊ{}‚ª‚ ‚é‚±‚Æ‚ğ‹–‰Â‚·‚é
@@ -514,7 +309,8 @@ MYENUM IndependentFlags{
 };
 
 //! Ü‚è•Ô‚µƒ‚[ƒh
-MYENUM LapelMode{
+enum LapelMode
+{
 	LAPELFLAG_ALL				=	0xFFFFFFFF,	//!< ˆÈ‰º‚Ìƒtƒ‰ƒO‘S‚Ä‚ğ‘I‘ğ‚·‚é
 	LAPELFLAG_NONE				=	0x00000000,	//!< ‰½‚à—LŒø‚É‚µ‚È‚¢
 	LAPELFLAG_WORDBREAK			=	0x00000001,	//!< ‰p•¶ƒ[ƒhƒ‰ƒbƒv
@@ -523,135 +319,55 @@ MYENUM LapelMode{
 };
 
 //! ”’læ“¾
-MYENUM SetMetricsCode{
+enum SetMetricsCode
+{
 	SM_LAPEL_COLUMN,							//!< Ü‚è•Ô‚µˆÊ’u(Œ…”)
 	SM_LAPEL_MODE,								//!< Ü‚è•Ô‚µƒ‚[ƒh
 	SM_MARK_VISIBLE,							//!< ƒ}[ƒN‚Ì•\¦ó‘Ô
 	SM_LINENUM_WIDTH,							//!< ¶’[‚Ìs”Ô†‚Ì•(ƒsƒNƒZƒ‹A-1‚ÅƒfƒtƒHƒ‹ƒg)
 	SM_RULER_HEIGHT,							//!< ã‚Ìƒ‹[ƒ‰[‚Ì‚‚³(ƒsƒNƒZƒ‹A-1‚ÅƒfƒtƒHƒ‹ƒg)
-	SM_REDOREM,									//!< REDO‰Â”\‚È‰ñ”(æ“¾‚Ì‚İ)
-	SM_UNDOREM,									//!< UNDO‰Â”\‚È‰ñ”(æ“¾‚Ì‚İ)
 	SM_UNDERLINE_VISIBLE,						//!< s‰ºü‚Ì•\¦ó‘Ô
 	SM_TAB_WIDTH,								//!< ƒ^ƒu‚Ì‰¡•
+	SM_REDOREM,									//!< REDO‰Â”\‚È‰ñ”(æ“¾‚Ì‚İ)
+	SM_UNDOREM,									//!< UNDO‰Â”\‚È‰ñ”(æ“¾‚Ì‚İ)
 };
 
-//.NETŒü‚¯ƒNƒ‰ƒX‚Ì’è‹`///////////////////////////////////////////////
-#ifndef _WINDOWS
-		public:
-			// staticƒƒ\ƒbƒh‚ÌéŒ¾
-			static int GetVersion();
-			static int GetBetaVersion();
+//! ƒeƒLƒXƒg‚ª•ÒW‚³‚ê‚½Œ´ˆö
+enum TextModifiedCause
+{
+	MODIFIED_CAUSE_CHAR,						//!< •¶š‚ª“ü—Í‚³‚ê‚½(IMEƒIƒt)
+	MODIFIED_CAUSE_IME,							//!< •¶š‚ª“ü—Í‚³‚ê‚½(IMEƒIƒ“)
+	MODIFIED_CAUSE_DELETE,						//!< DeleteƒL[‚ª‰Ÿ‰º‚³‚ê‚½
+	MODIFIED_CAUSE_BACKSPACE,					//!< BackSpace‚ª‰Ÿ‰º‚³‚ê‚½
+	MODIFIED_CAUSE_ENTER,						//!< EnterƒL[‚ª‰Ÿ‰º‚³‚ê‚½
+	MODIFIED_CAUSE_UNDO,						//!< Œ³‚É–ß‚·ˆ—‚ªÀs‚³‚ê‚½
+	MODIFIED_CAUSE_REDO,						//!< ‚â‚è’¼‚µˆ—‚ªÀs‚³‚ê‚½
+	MODIFIED_CAUSE_CUT,							//!< Ø‚èæ‚èˆ—‚ªÀs‚³‚ê‚½
+	MODIFIED_CAUSE_PASTE,						//!< “\‚è•t‚¯ˆ—‚ªÀs‚³‚ê‚½
+	MODIFIED_CAUSE_INDENT,						//!< ƒCƒ“ƒfƒ“ƒg‚³‚ê‚½
+	MODIFIED_CAUSE_UNINDENT,					//!< ‹tƒCƒ“ƒfƒ“ƒg‚³‚ê‚½
+	MODIFIED_CAUSE_TAB,							//!< ƒ^ƒuƒL[‚ª‰Ÿ‚³‚ê‚ÄAƒ^ƒu•¶š‚ª‘}“ü‚³‚ê‚½
+	MODIFIED_CAUSE_SETSELTEXT,					//!< Footy2SetSelText()‚ªÀs‚³‚ê‚½
+};
 
-			// ƒtƒ@ƒCƒ‹Œnƒƒ\ƒbƒh
-			void CreateNew();
-			void ReadFile(System::String* strFileName,CharSetMode nCharSet);
-			void SaveFile(System::String* strFileName,CharSetMode nCharSet,LineMode nLineMode);
+//! ƒGƒ‰[ƒR[ƒh
+enum ErrCode
+{
+	FOOTY2ERR_NONE				=	0,			//!< ŠÖ”‚ª¬Œ÷‚µ‚½
+	FOOTY2ERR_ARGUMENT			=	-1,			//!< ˆø”‚¨‚©‚µ‚¢
+	FOOTY2ERR_NOID				=	-2,			//!< ID‚ªŒ©‚Â‚©‚ç‚È‚¢
+	FOOTY2ERR_MEMORY			=	-3,			//!< ƒƒ‚ƒŠ[•s‘«
+	FOOTY2ERR_NOUNDO			=	-4,			//!< ƒAƒ“ƒhƒDî•ñ‚ª‚±‚êˆÈ‘O‚ÉŒ©‚Â‚©‚ç‚È‚¢
+	FOOTY2ERR_NOTSELECTED		=	-5,			//!< ‘I‘ğ‚³‚ê‚Ä‚¢‚È‚¢
+	FOOTY2ERR_UNKNOWN			=	-6,			//!< •s–¾‚ÈƒGƒ‰[
+	FOOTY2ERR_NOTYET			=	-7,			//!< –¢À‘•(‚²‚ß‚ñ‚È‚³‚¢)
+	FOOTY2ERR_404				=	-8,			//!< ƒtƒ@ƒCƒ‹‚ªŒ©‚Â‚©‚ç‚È‚¢AŒŸõ•¶š—ñ‚ªŒ©‚Â‚©‚ç‚È‚¢
+	FOOTY2ERR_NOACTIVE			=	-9,			//!< ƒAƒNƒeƒBƒu‚Èƒrƒ…[‚Í‘¶İ‚µ‚Ü‚¹‚ñ
+	FOOTY2ERR_ENCODER			=	-10,		//!< •¶šƒR[ƒh‚ÌƒGƒ“ƒR[ƒ_‚ªŒ©‚Â‚©‚è‚Ü‚¹‚ñ(ƒtƒ@ƒCƒ‹‚ÌƒGƒ“ƒR[ƒhŒ`®‚ª•s³‚Å‚·AƒoƒCƒiƒŠ‚Æ‚©)
+};
 
-			// •ÒWŒnƒƒ\ƒbƒh
-			void Refresh();
-			void Undo();
-			void Redo();
-			void Copy();
-			void Paste();
-			void Cut();
-			void SelectAll();
 
-			// ‹­’²•\¦Œn‚Ìƒƒ\ƒbƒh
-			void AddEmphasis(System::String* pString1,System::String* pString2,
-				EmpMode nType,EmpType nFlags,int nLevel,PermitLevel *objOnLevel,
-				IndependentFlags nIndependence,System::Drawing::Color nColor);
-			void FlushEmphasis();
-			void ClearEmphasis();
-
-			// ‘I‘ğŒn
-			void GetSel(EditorPos *pStart, EditorPos *pEnd);
-			void SetSel(EditorPos sStart, EditorPos sEnd);
-
-			// •\¦Œn
-			void SetLapel(int nColumns, LapelMode nMode);
-			void SetColor(ColorPos nPos, System::Drawing::Color nColor);
-			void SetFontFace(FontMode nMode, System::String *strFace);
-			void SetFontSize(int nSize);
-			
-			// ŒŸõ
-			void SearchText(System::String *strText,SearchFlags nFlags);
-
-			// ƒvƒƒpƒeƒB
-			__property CharSetMode get_CharSets();
-			__property LineMode get_LineCode();
-
-			__property void set_ViewState(ViewMode nMode);
-			__property ViewMode get_ViewState();
-			__property bool get_IsEdited();
-			__property int get_TextLength();
-			__property void set_Text(System::String* strValue);
-			__property System::String* get_Text();
-			__property int get_LineLength(UINT nLine);
-			__property void set_LineText(UINT nLine,System::String* pString);
-			__property System::String* get_LineText(UINT nLine);
-			__property int get_LineNum();
-			__property void set_SelText(System::String* strValue);
-			__property System::String* get_SelText();
-			__property int get_SelLength();
-			__property bool get_AutoRedraw();
-			__property void set_AutoRedraw(bool bRedraw);
-			__property void set_ShiftLocked(bool bLock);
-			__property bool get_ShiftLocked();
-			__property LineIcons get_LineIcon(UINT nLine);
-			__property void set_LineIcon(UINT nLine,LineIcons nIcons);
-
-			__property void set_CaretPos(EditorPos pos);
-			__property EditorPos get_CaretPos();
-			
-			__property int get_VisibleLines(int nViewID);
-			__property int get_VisibleColumns(int nViewID);
-
-			__property int get_Metrics(SetMetricsCode nCode);
-			__property void set_Metrics(SetMetricsCode nCode, int nValue);
-
-			// ƒCƒxƒ“ƒg
-			__event MoveCaretEventHandler* MoveCaret;
-			__event InsertModeChangedEventHandler* InsertModeChanged;
-			__event TextModifiedEventHandler* TextModified;
-			__event FocusEventHandler *FocusEvent;
-
-		protected:
-			// ƒI[ƒo[ƒ‰ƒCƒh
-			bool IsInputKey(Keys keyData);
-			void Dispose(bool bDisposing);
-
-		private:
-			void InitializeComponent();
-			COLORREF Color2Colorref(System::Drawing::Color nColor);
-
-			// ƒCƒxƒ“ƒgˆ—(.netƒRƒ“ƒgƒ[ƒ‹‚Æ‚µ‚Ä‚ÌƒCƒxƒ“ƒg‚ğó‚¯æ‚éˆ—)
-			void Footy2Control_Load(System::Object* sender, System::EventArgs* e);
-			void Footy2Control_Paint(System::Object* sender,System::Windows::Forms::PaintEventArgs* e);
-			void Footy2Control_SizeChanged(System::Object* sender, System::EventArgs* e);
-			
-			// ƒfƒŠƒQ[ƒg(Footy2‚©‚ç‚ÌƒR[ƒ‹ƒoƒbƒNˆ—)
-			void OnFocusChanged(int nID,System::IntPtr pData,int nView,bool bGotFocus);
-			void OnCaretMove(int nID,System::IntPtr pData,size_t nLine,size_t nColumn);
-			void OnInsertModeChanged(int nID,System::IntPtr pData,bool bInsertMode);
-			void OnTextModified(int nID,System::IntPtr pData,int nCause);
-
-		private:
-			System::ComponentModel::Container* components;		//!< ƒRƒ“ƒ|[ƒlƒ“ƒgƒRƒ“ƒeƒi[
-			int m_nID;											//!< •Û‚µ‚Ä‚¢‚éID
-			bool m_bAutoRedraw;									//!< ©“®Ä•`‰æ
-			ViewMode m_nViewMode;								//!< ƒrƒ…[ó‘Ô
-
-			// ƒfƒŠƒQ[ƒgƒIƒuƒWƒFƒNƒg‚ÌéŒ¾
-			Footy2FuncFocus *m_pFocusDelegate;					//!< ƒtƒH[ƒJƒXƒCƒxƒ“ƒg
-			Footy2FuncMoveCaret *m_pMoveCaretDelegate;			//!< ƒLƒƒƒŒƒbƒgˆÚ“®ƒCƒxƒ“ƒg
-			Footy2FuncInsertModeChanged *m_pInsertModeDelegate;	//!< ‘}“üó‘Ô•Ï‰»‚ÌƒfƒŠƒQ[ƒg
-			Footy2FuncTextModified *m_pTextModifiedDelegate;	//!< ƒeƒLƒXƒg•ÒW‚ÌƒfƒŠƒQ[ƒg
-
-		};	/*Footy2Wrapper*/
-	}		/*namespace MANAGECLS_NAME*/
-#endif		/*! _WINDOWS*/
-
-//ŠÖ”‚ÌéŒ¾/////////////////////////////////////////////////////////
+//ŠÖ”‚ÌéŒ¾///////////////////////////////////////////////////////////////////
 
 /*ŠJnEI—¹ŠÖ”(DLL‚ğg—p‚µ‚Ä‚¢‚é‚Æ‚«‚ÍŒÄ‚Ño‚·•K—v‚Í‚ ‚è‚Ü‚¹‚ñI)*/
 #ifdef FOOTYSTATIC
@@ -666,6 +382,8 @@ FOOTYEXPORT(int) GetFooty2BetaVer();							//!< Footy‚ÌƒÀƒo[ƒWƒ‡ƒ“‚ğæ“¾‚µ‚Ü‚·
 //ƒEƒBƒ“ƒhƒEŠÖ˜A
 FOOTYEXPORT(int) Footy2Create(HWND hWnd,int x,int y,
 							  int dx,int dy,int nMode);			//!< Footy‚ğì¬‚µ‚Ü‚·B
+FOOTYEXPORT(int) Footy2ChangeParent(int nID, HWND hWnd,
+							  int x,int y, int dx,int dy);		//!< eƒEƒBƒ“ƒhƒE‚ğ•ÏX‚µ‚Ü‚·
 FOOTYEXPORT(int) Footy2Delete(int nID);							//!< Šm•Û‚³‚ê‚½ID‚Ìƒf[ƒ^‚ğÁ‹‚µ‚Äƒƒ‚ƒŠ—Ìˆæ‚ğŠm•Û‚µ‚Ü‚·B
 FOOTYEXPORT(int) Footy2Move(int nID,int x,int y,int dx,int dy);	//!< FootyƒEƒBƒ“ƒhƒE‚ğˆÚ“®‚µ‚Ü‚·B
 FOOTYEXPORT(int) Footy2ChangeView(int nID,int nView);			//!< ƒrƒ…[ƒ‚[ƒh‚Ì•ÏX
@@ -682,27 +400,29 @@ FOOTYEXPORT(int) Footy2Cut(int nID);							//!< ƒNƒŠƒbƒvƒ{[ƒh‚ÖƒJƒbƒg
 FOOTYEXPORT(int) Footy2Paste(int nID);							//!< ƒNƒŠƒbƒvƒ{[ƒh‚©‚çƒy[ƒXƒg
 FOOTYEXPORT(int) Footy2Undo(int nID);							//!< ƒAƒ“ƒhƒD
 FOOTYEXPORT(int) Footy2Redo(int nID);							//!< ƒŠƒhƒD
-FOOTYEXPORT(bool) Footy2IsEdited(int nID);						//!< ƒŠƒhƒD
-FOOTYEXPORT(int) Footy2SelectAll(int nID,MYREFRESH);			//!< ‘S‚Ä‘I‘ğ
+FOOTYEXPORT(bool) Footy2IsEdited(int nID);						//!< ‘I‘ğ‚³‚ê‚Ä‚¢‚é‚©‚Ç‚¤‚©‚ğæ“¾‚µ‚Ü‚·
+FOOTYEXPORT(int) Footy2SelectAll(int nID,bool bRefresh = true);	//!< ‘S‚Ä‘I‘ğ
 FOOTYEXPORT(int) Footy2ShiftLock(int nID,bool bLocked);			//!< ƒVƒtƒgƒƒbƒN‚ğs‚¤‚©‚Ç‚¤‚©
 FOOTYEXPORT(bool) Footy2IsShiftLocked(int nID);					//!< ƒVƒtƒgƒƒbƒN‚ªs‚í‚ê‚Ä‚¢‚é‚©‚Ç‚¤‚©æ“¾‚·‚é
+FOOTYEXPORT(int) Footy2SetReadOnly( int nID, bool bReadOnly );	//!< •ÒW‹Ö~ó‘Ô‚É‚µ‚Ü‚·
+FOOTYEXPORT(bool) Footy2IsReadOnly( int nID );					//!< •ÒW‹Ö~ó‘Ô‚È‚Ì‚©‚Ç‚¤‚©‚ğæ“¾‚µ‚Ü‚·
 
 //ŒŸõŒn
 #ifndef UNDER_CE
 	FOOTYEXPORT(int) Footy2SearchA(int nID,const char *szText,int nFlags);
 #endif	/*not defined UNDER_CE*/
-FOOTYEXPORT(int) Footy2SearchW(int nID,MYCSTRING szText,int nFlags);
+FOOTYEXPORT(int) Footy2SearchW(int nID,const wchar_t* szText,int nFlags);
 
 // ƒtƒ@ƒCƒ‹•ÒW
 FOOTYEXPORT(int) Footy2CreateNew(int nID);
 #ifndef UNDER_CE
 	FOOTYEXPORT(int) Footy2TextFromFileA(int nID,const char* szPath,int nCharSets);
 #endif	/*not defined UNDER_CE*/
-FOOTYEXPORT(int) Footy2TextFromFileW(int nID,MYCSTRING szPath,int nCharSets);
+FOOTYEXPORT(int) Footy2TextFromFileW(int nID,const wchar_t* szPath,int nCharSets);
 #ifndef UNDER_CE
 	FOOTYEXPORT(int) Footy2SaveToFileA(int nID,const char* szPath,int nCharSets,int nLineMode);
 #endif	/*not defined UNDER_CE*/
-FOOTYEXPORT(int) Footy2SaveToFileW(int nID,MYCSTRING szPath,int nCharSets,int nLineMode);
+FOOTYEXPORT(int) Footy2SaveToFileW(int nID,const wchar_t* szPath,int nCharSets,int nLineMode);
 FOOTYEXPORT(int) Footy2GetCharSet(int nID);
 FOOTYEXPORT(int) Footy2GetLineCode(int nID);
 
@@ -710,17 +430,17 @@ FOOTYEXPORT(int) Footy2GetLineCode(int nID);
 #ifndef UNDER_CE
 	FOOTYEXPORT(int) Footy2SetSelTextA(int nID,const char *pString);//!< ‘I‘ğ•¶š—ñ‚ğƒZƒbƒg
 #endif	/*not defined UNDER_CE*/
-FOOTYEXPORT(int) Footy2SetSelTextW(int nID,MYCSTRING pString);
+FOOTYEXPORT(int) Footy2SetSelTextW(int nID,const wchar_t* pString);
 
 #ifndef UNDER_CE
 	FOOTYEXPORT(int) Footy2GetSelTextA(int nID, char *pString, int nLineMode, int nSize);
 #endif	/*not defined UNDER_CE*/
-FOOTYEXPORT(int) Footy2GetSelTextW(int nID, MYSTRING pString, int nLineMode, int nSize);
+FOOTYEXPORT(int) Footy2GetSelTextW(int nID, wchar_t* pString, int nLineMode, int nSize);
 
 #ifndef UNDER_CE
 	FOOTYEXPORT(int) Footy2SetTextA(int nID,const char *pString);	//!< •¶š—ñƒZƒbƒg
 #endif	/*not defined UNDER_CE*/
-FOOTYEXPORT(int) Footy2SetTextW(int nID,MYCSTRING pString);
+FOOTYEXPORT(int) Footy2SetTextW(int nID,const wchar_t* pString);
 
 #ifndef UNDER_CE
 	FOOTYEXPORT(int) Footy2GetTextLengthA(int nID,int nLineMode);	//!< •¶š—ñ’·‚³æ“¾
@@ -737,17 +457,17 @@ FOOTYEXPORT(int) Footy2GetSelLengthW(int nID, int nLineMode);		//!< ‘I‘ğ•¶š—ñ’·
 #ifndef UNDER_CE
 	FOOTYEXPORT(int) Footy2GetTextA(int nID,char *pString,int nLineMode,int nSize);/*•¶š—ñæ“¾*/
 #endif	/*not defined UNDER_CE*/
-FOOTYEXPORT(int) Footy2GetTextW(int nID,MYSTRING pString,int nLineMode,int nSize);
+FOOTYEXPORT(int) Footy2GetTextW(int nID,wchar_t* pString,int nLineMode,int nSize);
 
 #ifndef UNDER_CE
 	FOOTYEXPORT(int) Footy2GetLineA(int nID,char *pString,size_t nLine,int nSize);
 #endif	/*not defined UNDER_CE*/
-FOOTYEXPORT(MYCSTRING) Footy2GetLineW(int nID,size_t nLine);
+FOOTYEXPORT(const wchar_t*) Footy2GetLineW(int nID,size_t nLine);
 
 #ifndef UNDER_CE
 	FOOTYEXPORT(int) Footy2SetLineA(int nID,size_t nLine,const char *pString,bool bRedraw);
 #endif	/*not defined UNDER_CE*/
-FOOTYEXPORT(int) Footy2SetLineW(int nID,size_t nLine,MYCSTRING pString,bool bRedraw);
+FOOTYEXPORT(int) Footy2SetLineW(int nID,size_t nLine,const wchar_t* pString,bool bRedraw);
 
 #ifndef UNDER_CE
 	FOOTYEXPORT(int) Footy2GetLineLengthA(int nID,size_t nLine);	/*s‚²‚Æ‚Ì’·‚³æ“¾*/
@@ -758,40 +478,34 @@ FOOTYEXPORT(int) Footy2GetLines(int nID);
 
 //ƒLƒƒƒŒƒbƒgE‘I‘ğŒn
 FOOTYEXPORT(int) Footy2GetCaretPosition(int nID,size_t *pCaretLine,size_t *pCaretPos);
-FOOTYEXPORT(int) Footy2SetCaretPosition(int nID,size_t nCaretLine,size_t nCaretPos,MYREFRESH);
+FOOTYEXPORT(int) Footy2SetCaretPosition(int nID,size_t nCaretLine,size_t nCaretPos,bool bRefresh = true);
 FOOTYEXPORT(int) Footy2GetSel(int nID,size_t *pStartLine,size_t *pStartPos,size_t *pEndLine,size_t *pEndPos);
-FOOTYEXPORT(int) Footy2SetSel(int nID,size_t nStartLine,size_t nStartPos,size_t nEndLine,size_t nEndPos,MYREFRESH);
+FOOTYEXPORT(int) Footy2SetSel(int nID,size_t nStartLine,size_t nStartPos,size_t nEndLine,size_t nEndPos,bool bRefresh = true);
 
 //•\¦
 #ifndef UNDER_CE
 	FOOTYEXPORT(int) Footy2AddEmphasisA(int nID,const char *pString1,const char *pString2,
 		int nType,int nFlags,int nLevel,int nPermission,int nIndependence,COLORREF nColor);
 #endif	/*not defined UNDER_CE*/
-FOOTYEXPORT(int) Footy2AddEmphasisW(int nID,MYCSTRING pString1,MYCSTRING pString2,
+FOOTYEXPORT(int) Footy2AddEmphasisW(int nID,const wchar_t* pString1,const wchar_t* pString2,
 	int nType,int nFlags,int nLevel,int nPermission,int nIndependence,COLORREF nColor);
 FOOTYEXPORT(int) Footy2FlushEmphasis(int nID);
 FOOTYEXPORT(int) Footy2ClearEmphasis(int nID);
-FOOTYEXPORT(int) Footy2SetFontSize(int nID,int nPoint,MYREFRESH);
+FOOTYEXPORT(int) Footy2SetFontSize(int nID,int nPoint,bool bRefresh = true);
 #ifndef UNDER_CE
-	FOOTYEXPORT(int) Footy2SetFontFaceA(int nID,int nFontMode,const char *pString,MYREFRESH);
+	FOOTYEXPORT(int) Footy2SetFontFaceA(int nID,int nFontMode,const char *pString,bool bRefresh = true);
 #endif	/*not defined UNDER_CE*/
-FOOTYEXPORT(int) Footy2SetFontFaceW(int nID,int nFontMode,MYCSTRING pString,MYREFRESH);
-FOOTYEXPORT(int) Footy2SetLineIcon(int nID,size_t nLine,int nIcons,MYREFRESH);
+FOOTYEXPORT(int) Footy2SetFontFaceW(int nID,int nFontMode,const wchar_t* pString,bool bRefresh = true);
+FOOTYEXPORT(int) Footy2SetLineIcon(int nID,size_t nLine,int nIcons,bool bRefresh = true);
 FOOTYEXPORT(int) Footy2GetLineIcon(int nID,size_t nLine,int *pIcons);
 
 //İ’èŠÖ˜A
-FOOTYEXPORT(int) Footy2SetLapel(int nID,int nColumns,int nMode,MYREFRESH);
-FOOTYEXPORT(int) Footy2SetMetrics(int nID,int nObject,int nValue,MYREFRESH);
+FOOTYEXPORT(int) Footy2SetLapel(int nID,int nColumns,int nMode,bool bRefresh = true);
+FOOTYEXPORT(int) Footy2SetMetrics(int nID,int nObject,int nValue,bool bRefresh = true);
 FOOTYEXPORT(int) Footy2GetMetrics(int nID,int nObject,int *pValue);
-FOOTYEXPORT(int) Footy2SetColor(int nID,int nPosition,COLORREF nColor,MYREFRESH);
+FOOTYEXPORT(int) Footy2SetColor(int nID,int nPosition,COLORREF nColor,bool bRefresh = true);
 FOOTYEXPORT(int) Footy2GetVisibleColumns(int nID,int nViewID);	//!< Œ»İƒrƒ…[‚Å•\¦‚µ‚Ä‚¢‚éŒ…”‚ğæ“¾
 FOOTYEXPORT(int) Footy2GetVisibleLines(int nID,int nViewID);	//!< Œ»İƒrƒ…[‚Å•\¦‚µ‚Ä‚¢‚és”‚ğæ“¾
-
-//Œãn––////////////////////////////////////////////////////////////////
-#undef MYENUM
-#undef MYSTRING
-#undef MYCSTRING
-#undef MYREFRESH
 
 #endif	/*_FOOTY2_DLL_H_*/
 

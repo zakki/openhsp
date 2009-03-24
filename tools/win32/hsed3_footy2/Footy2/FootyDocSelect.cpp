@@ -6,8 +6,8 @@
  */
 
 #include "FootyDoc.h"
-#include "Macros.h"
 
+//-----------------------------------------------------------------------------
 /**
  * CFootyDoc::SetSelectStart
  * @brief 選択開始位置を設定します。
@@ -21,6 +21,7 @@ bool CFootyDoc::SetSelectStart(CEditPosition *pStart)
 	return true;
 }
 
+//-----------------------------------------------------------------------------
 /**
  * CFootyDoc::SetSelectStart
  * @brief 選択開始位置を設定します。
@@ -34,6 +35,7 @@ bool CFootyDoc::SetSelectStart(CUndoBuffer::CPosInfo *pStart)
 	return true;
 }
 
+//-----------------------------------------------------------------------------
 /**
  * CFootyDoc::SetSelectEndNormal
  * @brief 選択終了位置を設定する
@@ -51,6 +53,7 @@ bool CFootyDoc::SetSelectEndNormal(CEditPosition *pEnd){
 	return true;
 }
 
+//-----------------------------------------------------------------------------
 /**
  * CFootyDoc::SetSelectEndNormal
  * @brief 選択終了位置を設定する

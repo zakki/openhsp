@@ -5,7 +5,6 @@ CCursorƒNƒ‰ƒX
 
 #include "Cursor.h"
 #include "resource.h"
-#include "Macros.h"
 
 HCURSOR CCursor::m_hOnUrlCursor = NULL;
 HCURSOR CCursor::m_hLineCountCursor = NULL;

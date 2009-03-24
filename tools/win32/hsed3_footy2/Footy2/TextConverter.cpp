@@ -6,7 +6,6 @@
  * @date Jan.07.2008
  */
 
-#include <windows.h>
 #include "TextConverter.h"
 
 /*----------------------------------------------------------------

@@ -1,86 +1,103 @@
-/*===================================================================
-CFootyLineクラス
-Footyの行数を一行単位で管理するクラスです。
-===================================================================*/
+/**
+ * @brief FootyLine.h
+ * @brief Footyの行数を一行単位で管理するクラスです。
+ * @author Shinji Watanabe
+ * @date Nov.09.2008
+ */
 
 #pragma once
 
-#include <vector>
-#include <list>
 #include "StaticVector.h"
 #include "EmphasisWord.h"
 
-class CUrlInfo{							/*URLごとの情報*/
+// URLごとの情報
+class CUrlInfo
+{
 public:
-	CUrlInfo(){
+	CUrlInfo()
+	{
 		m_nStartPos = 0;
 		m_nEndPos = 0;
 	}
 	
-	/*ポジションが含まれるかチェックする*/
-	inline bool IsInPosition(size_t nPosition){
+	// ポジションが含まれるかチェックする
+	inline bool IsInPosition(size_t nPosition)
+	{
 		return m_nStartPos <= nPosition &&
 			nPosition < m_nEndPos;
 	}
-	inline size_t GetLength(){return m_nEndPos - m_nStartPos;}
+	inline size_t GetLength() const
+	{
+		return m_nEndPos - m_nStartPos;
+	}
 
 public:
-	size_t m_nStartPos;					/*URLの開始位置0ベース*/
-	size_t m_nEndPos;					/*URLの終了位置0ベース*/
+	size_t m_nStartPos;					//!< URLの開始位置0ベース
+	size_t m_nEndPos;					//!< URLの終了位置0ベース
 };
 
 typedef std::vector<CUrlInfo>::iterator UrlIterator;
 
-class CFootyLine{						/*行ごとの情報*/
+class CFootyLine
+{
 public:
-	/*構造体を定義する*/
-	struct EmpPos{						/*GUI部分に送るコマンド構造体*/
-		size_t m_nPosition;				/*コマンドの位置*/
-		bool m_bIsStart;				/*trueのとき、ここが色を変えるポイント*/
-		COLORREF m_Color;				/*設定する色*/
-	};
-	struct EthicInfo{					/*論理計測ルーチンの戻り*/
-		size_t m_nEthicLine;			/*論理行*/
-		size_t m_nEthicColumn;			/*論理桁位置*/
-	};
-	struct WordInfo{					/*単語の情報*/
-		size_t m_nBeginPos;				/*開始位置(0ベース)*/
-		size_t m_nEndPos;				/*終了位置(0ベース)*/
+	//! GUI部分に送るコマンド構造体
+	struct EmpPos
+	{
+		size_t m_nPosition;				//!< コマンドの位置
+		bool m_bIsStart;				//!< trueのとき、ここが色を変えるポイント
+		COLORREF m_Color;				//!< 設定する色
 	};
 	
-	/*コンストラクタ*/
+	//! 論理計測ルーチンの戻り
+	struct EthicInfo
+	{
+		size_t m_nEthicLine;			//!< 論理行
+		size_t m_nEthicColumn;			//!< 論理桁位置
+	};
+	
+	//! 単語の情報
+	struct WordInfo
+	{
+		size_t m_nBeginPos;				//!< 開始位置(0ベース)
+		size_t m_nEndPos;				//!< 終了位置(0ベース)
+	};
+	
+	// コンストラクタ
 	CFootyLine();
 	
-	/*文字列操作終了後に呼び出す*/
+	// 文字列操作終了後に呼び出す
 	typedef CStaticVector<WordPt,sizeof(int)*8> TakeOver;
 	bool SearchEmphasis(TakeOver *pBeforeBetween,LsWords *plsWords);
 	bool FlushString(size_t nTabLen,size_t nColumn,int nMode);
 	bool SetPrevLineInfo(std::list<CFootyLine>::iterator pPrevLine);
 	inline void SetEmphasisChached(bool bChached){m_bEmphasisChached = bChached;}
 
-	/*取得ルーチン*/
-	inline const wchar_t *GetLineData(){return &m_strLineData[0];}
-	inline size_t GetLineLength(){return m_strLineData.size();}
-	inline size_t GetEthicLine(){return m_nEthicLine;}
-	inline size_t GetOffset(){return m_nLineOffset;}
-	inline size_t GetRealLineNum(){return m_nRealLineNum;}
+	// 取得ルーチン
+	const wchar_t *GetLineData() const {return m_strLineData.c_str();}
+	size_t GetLineLength() const {return m_strLineData.size();}
+	inline size_t GetEthicLine() const { return m_nEthicLine; }
+	inline size_t GetOffset() const {return m_nLineOffset;}
+	inline size_t GetRealLineNum() const {return m_nRealLineNum;}
 	inline CStaticVector<WordPt,sizeof(int)*8> *GetBetweenNext()
 		{return &m_vecLineBetweenAfter;}
 	inline std::vector<EmpPos> *GetColorInfo(){return &m_vecColorInfo;}
 	inline std::vector<CUrlInfo> *GetUrlInfo(){return &m_vecUrlInfo;}
 	inline std::vector<CUrlInfo> *GetMailInfo(){return &m_vecMailInfo;}
-	inline bool EmphasisChached(){return m_bEmphasisChached;}
-	inline int GetLineIcons(){return m_nLineIcons;}
+	inline bool EmphasisChached() const {return m_bEmphasisChached;}
+	inline int GetLineIcons() const {return m_nLineIcons;}
 	inline void SetLineIcons(int nLineIcons){m_nLineIcons = nLineIcons;}
 
-	/*文字情報を元に計算を行うルーチン*/
-	EthicInfo CalcEthicLine(size_t nPos,size_t nColumn,size_t nTab,int nMode);
-	size_t CalcRealPosition(size_t nEthicLine,size_t nEthicPos,size_t nColumn,size_t nTab,int nMode);
-	bool IsGoNext(const wchar_t *pChar,size_t nPos,size_t nNowCol,size_t nColumns,int nMode);
-	WordInfo GetWordInfo(size_t nPos,bool bIsBackMode = true);
+	// 文字情報を元に計算を行うルーチン
+	EthicInfo CalcEthicLine(size_t nPos,size_t nColumn,size_t nTab,int nMode) const;
+	size_t CalcRealPosition(size_t nEthicLine,size_t nEthicPos,size_t nColumn,size_t nTab,int nMode) const;
+	bool IsGoNext(const wchar_t *pChar,size_t nPos,size_t nNowCol,size_t nColumns,int nMode) const;
+	WordInfo GetWordInfo( size_t nPos, bool bIsBackMode = true ) const;
+	size_t CalcAutoIndentPos( size_t nPos ) const;
 
-	/*文字関連*/
-	enum CharSets{
+	// 文字関連
+	enum CharSets
+	{
 		CHARSETS_ANSI_ALPHABET,				//!< ANSI(アルファベット)
 		CHARSETS_ANSI_NUMBER,				//!< ANSI(数字)
 		CHARSETS_ANSI_SYMBOL,				//!< ANSI(アンダーバーを除く記号)
@@ -117,10 +134,10 @@ public:
 	static inline bool IsSurrogateTail(wchar_t w){return 0xDC00 <= w && w <= 0xDFFF;}
 
 private:
-	/*内部ルーチン*/
+	// 内部ルーチン
 	bool IsMatched(const wchar_t *pStr1,const wchar_t *pStr2,size_t nLen);
 	
-	/*クリッカブル関連の処理*/
+	// クリッカブル関連の処理
 	bool FindMail(size_t start,size_t *pBegin,size_t *pEnd);
 	bool FindURL(size_t start,size_t *pBegin,size_t *pEnd);
 	bool IsMailChar(wchar_t wc);
@@ -141,7 +158,7 @@ private:
 	int m_nLineIcons;						//!< 行ごとのアイコン
 };
 
-/*長いタイプの宣言*/
+// 長いタイプの宣言
 typedef std::list<CFootyLine>::iterator LinePt;
 typedef std::list<CFootyLine>::size_type LineSize;
 typedef std::list<CFootyLine> LsLines;

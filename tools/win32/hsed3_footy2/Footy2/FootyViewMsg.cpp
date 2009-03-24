@@ -60,30 +60,34 @@ LRESULT CFootyView::MainProc(UINT msg,WPARAM wParam,LPARAM lParam){
 		break;
 //タイマーイベント
 	case WM_TIMER:
-		switch(wParam){
-		case TIMER_AUTO_SCROLL:
-			OnScrollTimer();
+		switch(wParam)
+		{
+		case eTimer_AutoVertical:
+			FOOTY2_PRINTF( L"On Auto Vertical Scroll Timer\n" );
+			OnAutoVerticalTimer();
+			break;
+		case eTimer_AutoHorizontal:
+			FOOTY2_PRINTF( L"On Auto Horizontal Scroll Timer\n" );
+			OnAutoHorizontalTimer();
 			break;
 		}
 		break;
 //フォーカス関連
 	case WM_SETFOCUS:
 		OnGotFocus();
-#ifdef _DEBUG
-		OutputDebugStringW(L"On got focus\n");
-#endif	/*_DEBUG*/
+		FOOTY2_PRINTF(L"On got focus\n");
 		break;
 	case WM_KILLFOCUS:
 		OnLostFocus();
-#ifdef _DEBUG
-		OutputDebugStringW(L"On lost focus\n");
-#endif	/*_DEBUG*/
+		FOOTY2_PRINTF(L"On lost focus\n");
 		break;
 	case WM_PAINT:
 		PAINTSTRUCT ps;
 		BeginPaint(m_hWnd,&ps);
+		FOOTY2_PRINTF( L"BeginPaint %d\n", m_nFootyID );
 		Refresh(ps.hdc,&ps.rcPaint);
 		EndPaint(m_hWnd,&ps);
+		FOOTY2_PRINTF( L"EndPaint %d\n", m_nFootyID );
 		break;
 	default:
 		return DefWindowProc(m_hWnd,msg,wParam,lParam);

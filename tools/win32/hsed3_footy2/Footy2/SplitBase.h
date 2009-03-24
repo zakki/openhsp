@@ -1,30 +1,36 @@
-/*===================================================================
-CSplitBase
-スプリットバーのベースクラスです。
-===================================================================*/
+/**
+ * @file SplitBase.h
+ * @brief スプリットバーの基底クラスです。
+ * @author Shinji Watanabe
+ * @date Dec. 28, 2008
+ */
 
 #pragma once
 
-#include <windows.h>
 #include "FootyView.h"
+
 #define SPLIT_WNDCLASSNAME	L"Splitter"
 #define SPLIT_PROPNAME		L"SplitterClass"
 
-class CSplitBase{
+class CSplitBase
+{
 public:
 	CSplitBase();
 	virtual ~CSplitBase();
 
-	bool Create(HWND hWnd,HINSTANCE hInstance);
+	bool Create( HWND hWndParent, HINSTANCE hInstance );
+	void DestroySplitBar();
 	void OnBaseWindowMove(int x,int y,int nWidth,int nHeight);
 	inline HWND GetWnd(){return m_hWnd;}
-	inline int GetX(){return m_x;}
-	inline int GetY(){return m_y;}
-	void SetViews(CFootyView *pTopView){
+	inline int GetX() const { return m_x; }
+	inline int GetY() const { return m_y; }
+	void SetViews(CFootyView *pTopView)
+	{
 		m_pViews = pTopView;
 		m_nMode = SPLIT_DUAL;
 	}
-	void SetViews(CFootyView *pTopView,CSplitBase *pSplit){
+	void SetViews(CFootyView *pTopView,CSplitBase *pSplit)
+	{
 		m_pViews = pTopView;
 		m_pOtherSplit = pSplit;
 		m_nMode = SPLIT_QUAD;
@@ -32,7 +38,8 @@ public:
 
 	void SetVisible(bool bVisible);
 
-	enum fixed_num{
+	enum fixed_num
+	{
 		SPLIT_SIZE = 4,
 	};
 
@@ -47,7 +54,8 @@ private:
 
 public:
 protected:
-	enum SplitMode{
+	enum SplitMode
+	{
 		SPLIT_DUAL,						//!< デュアルビュー
 		SPLIT_QUAD,						//!< クアッドビュー
 	};

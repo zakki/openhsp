@@ -7,82 +7,94 @@
 
 #include "FootyDoc.h"
 
-/*-------------------------------------------------------------------
-CFootyDoc::CFootyDoc
-コンストラクタです。
--------------------------------------------------------------------*/
-CFootyDoc::CFootyDoc(){
-	m_nTabLen = 4;
-	m_nLapelMode = 0;
-	m_nLapelColumns = 1024;
-	m_nSelectType = SELECT_NONE;
-	m_nLineMode = LM_CRLF;
-	m_bEnabled = true;
-	m_bInsertMode = true;
-	
-	/*イベント関係*/
-	m_pFuncMoveCaret = NULL;
-	m_pDataMoveCaret = NULL;
-	m_pFuncTextModified = NULL;
-	m_pDataTextModified = NULL;
-	m_pFuncInsertMode = NULL;
-	m_pDataInsertModeChanged = NULL;
+//-----------------------------------------------------------------------------
+/**
+ * @brief コンストラクタです。
+ */
+CFootyDoc::CFootyDoc()	:
+	m_nTabLen( 4 ),
+	m_nLapelMode( 0 ),
+	m_nLapelColumns( 1024 ),
+	m_nSelectType( SELECT_NONE ),
+	m_nLineMode( LM_CRLF ),
+	m_bReadOnly( false ),
+	m_bInsertMode( true ),
+	m_pFuncMoveCaret( NULL ),
+	m_pDataMoveCaret( NULL ),
+	m_pFuncTextModified( NULL ),
+	m_pDataTextModified( NULL ),
+	m_pFuncInsertMode( NULL ),
+	m_pDataInsertModeChanged( NULL )
+{
 }
 
-/*-------------------------------------------------------------------
-CFootyDoc::~CFootyDoc
-デストラクタです。
--------------------------------------------------------------------*/
-CFootyDoc::~CFootyDoc(){
+//-----------------------------------------------------------------------------
+/**
+ * @brief デストラクタです。
+ */
+CFootyDoc::~CFootyDoc()
+{
 }
 
-/*-------------------------------------------------------------------
-CFootyDoc::CreateNew
-新規作成
--------------------------------------------------------------------*/
-void CFootyDoc::CreateNew(int nGlobalID){
-	/*今までの情報を全て破棄する*/
+//-----------------------------------------------------------------------------
+/**
+ * @brief 文書の新規作成
+ */
+void CFootyDoc::CreateNew(int nGlobalID)
+{
+	// 今までの情報を全て破棄する
 	m_lsLines.clear();
 	m_lsUndoBuffer.clear();
 	m_lsEmphasisWord.clear();
 	m_pNowUndoPos = m_lsUndoBuffer.end();
 	SetSavePoint();
-	/*最初の１行を挿入する*/
+	SetReadOnly( false );
+	
+	// 最初の１行を挿入する
 	CFootyLine cFirstLine;
 	cFirstLine.m_strLineData = L"";
 	m_lsLines.push_back(cFirstLine);
-	/*エディタ上の位置を設定する*/
+	
+	// エディタ上の位置を設定する
 	m_cCaretPos.SetPosition(&m_lsLines,0,0);
 	SendMoveCaretCallBack();
 	for (int i=0;i<4;i++)
+	{
 		m_cFirstVisibleLine[i].SetPosition(m_lsLines.begin());
-	/*変数初期化*/
+	}
+	
+	// 変数初期化
 	m_nSelectType = SELECT_NONE;
 	m_nLineMode = LM_CRLF;
 	m_nGlobalID = nGlobalID;
 }
 
-/*-------------------------------------------------------------------
-CFootyDoc::SetSavePoint
-編集されているかどうかのセーブポイントとして登録する処理
--------------------------------------------------------------------*/
-void CFootyDoc::SetSavePoint(){
+//-----------------------------------------------------------------------------
+/**
+ * @brief 編集されているかどうかのセーブポイントとして登録する処理
+ */
+void CFootyDoc::SetSavePoint()
+{
 	m_pSavedPos = m_pNowUndoPos;
 	m_bCannotReachSavedPos = false;
 }
 
-
-/*-------------------------------------------------------------------
-CFootyDoc::IsEdited
-編集されているか取得する処理
--------------------------------------------------------------------*/
-bool CFootyDoc::IsEdited(){
-	if (m_bCannotReachSavedPos)		/*セーブポイントにたどり着けないときは*/
-		return true;				/*編集されている状態*/
-	else							/*たどりつけるときは*/
+//-----------------------------------------------------------------------------
+/**
+ * @brief 編集されているか取得する処理
+ */
+bool CFootyDoc::IsEdited()
+{
+	if (m_bCannotReachSavedPos)		// セーブポイントにたどり着けないときは
+		return true;				// 編集されている状態
+	else							// たどりつけるときは
 		return m_pNowUndoPos != m_pSavedPos;
 }
 
+//-----------------------------------------------------------------------------
+/**
+ * @brief やり直し回数を取得する処理
+ */
 int CFootyDoc::GetRedoRem()
 {
 	std::list<CUndoBuffer>::iterator p = m_pNowUndoPos;
@@ -91,6 +103,10 @@ int CFootyDoc::GetRedoRem()
 	return nRedoNum;
 }
 
+//-----------------------------------------------------------------------------
+/**
+ * @brief 元に戻す回数を取得する処理
+ */
 int CFootyDoc::GetUndoRem()
 {
 	std::list<CUndoBuffer>::iterator p = m_pNowUndoPos;
@@ -101,52 +117,57 @@ int CFootyDoc::GetUndoRem()
 	return nUndoNum;
 }
 
-/*-------------------------------------------------------------------
-CFootyDoc::SetText
-全てのテキストをセットします
--------------------------------------------------------------------*/
-void CFootyDoc::SetText(const wchar_t *pString){
-	/*データをセットする*/
+//-----------------------------------------------------------------------------
+/**
+ * @brief 全てのテキストをセットします
+ */
+void CFootyDoc::SetText( const wchar_t *pString )
+{
+	// データをセットする
 	CreateNew(m_nGlobalID);
-	InsertString(pString,false,false,true);
-	/*変数の初期化*/
+	InsertString( pString, false, false, true );
+	
+	// 変数の初期化
 	m_cCaretPos.SetPosition(&m_lsLines,0,0);
 	SendMoveCaretCallBack();
 }
 
-/*-------------------------------------------------------------------
-CFootyDoc::GetLine
-指定された行番号の行クラスへのイテレータを取得します(0ベース)。
--------------------------------------------------------------------*/
-LinePt CFootyDoc::GetLine(size_t nLine){
-	/*宣言*/
-	size_t i;				/*番号走査用*/
-	LinePt iterNowLine;		/*作業用のイテレータ*/
-	/*エラーチェック*/
+//-----------------------------------------------------------------------------
+/**
+ * @brief 指定された行番号の行クラスへのイテレータを取得します(0ベース)。
+ */
+LinePt CFootyDoc::GetLine(size_t nLine)
+{
+	// 宣言
+	size_t i;				// 番号走査用
+	LinePt iterNowLine;		// 作業用のイテレータ
+	// エラーチェック
 	if (GetLineNum() <= nLine)return m_lsLines.end();
-	/*走査開始*/
+	// 走査開始
 	iterNowLine=m_lsLines.begin();
 	for (i=0;i<nLine;i++)iterNowLine++;
-	/*値を返却する*/
+	// 値を返却する
 	return iterNowLine;
 }
 
-/*-------------------------------------------------------------------
-CFootyDoc::GetLastLine
-本当の最終行を取得するルーチンです。
--------------------------------------------------------------------*/
-LinePt CFootyDoc::GetLastLine(){
+//-----------------------------------------------------------------------------
+/**
+ * @brief 本当の最終行を取得するルーチンです。
+ */
+LinePt CFootyDoc::GetLastLine()
+{
 	LinePt pLast = m_lsLines.end();
 	pLast -- ;
 	return pLast;
 }
 
-/*-------------------------------------------------------------------
-CFootyDoc::AddEmphasis
-強調表示文字列を設定します。
--------------------------------------------------------------------*/
+//-----------------------------------------------------------------------------
+/**
+ * @brief 強調表示文字列を設定します。
+ */
 bool CFootyDoc::AddEmphasis(const wchar_t *pString1,const wchar_t *pString2,
-	int nType,int nFlags,int nLevel,int nOnLevel,int nIndependence,COLORREF nColor){
+	int nType,int nFlags,int nLevel,int nOnLevel,int nIndependence,COLORREF nColor)
+{
 	/*エラーチェック*/
 	if (!pString1)return false;
 	if (nLevel < 1 || sizeof(int)*8 - 1 < nLevel)return false;
@@ -159,45 +180,51 @@ bool CFootyDoc::AddEmphasis(const wchar_t *pString1,const wchar_t *pString2,
 	return true;
 }
 
-/*-------------------------------------------------------------------
-CFootyDoc::FlushEmphasis
-強調表示を確定します。
--------------------------------------------------------------------*/
-void CFootyDoc::FlushEmphasis(){
-	for (LinePt pLine = m_lsLines.begin();pLine != m_lsLines.end();pLine++){
+//-----------------------------------------------------------------------------
+/**
+ * @brief 強調表示を確定します。
+ */
+void CFootyDoc::FlushEmphasis()
+{
+	for (LinePt pLine = m_lsLines.begin();pLine != m_lsLines.end();pLine++)
+	{
 		pLine->SetEmphasisChached(false);
 	}
 }
 
-/*-------------------------------------------------------------------
-CFootyDoc::ClearEmphasis
-強調表示文字列を登録されているのを全て削除する
--------------------------------------------------------------------*/
-void CFootyDoc::ClearEmphasis(){
+//-----------------------------------------------------------------------------
+/**
+ * @brief 強調表示文字列を登録されているのを全て削除する
+ */
+void CFootyDoc::ClearEmphasis()
+{
 	m_lsEmphasisWord.clear();
 }
 
-/*-------------------------------------------------------------------
-CFootyDoc::SetInsertMode
-挿入状態を変化させる処理です
--------------------------------------------------------------------*/
-void CFootyDoc::SetInsertMode(bool bInsertMode){
+//-----------------------------------------------------------------------------
+/** * @brief 挿入状態を変化させる処理です
+
+ */
+void CFootyDoc::SetInsertMode(bool bInsertMode)
+{
 	m_bInsertMode = bInsertMode;
 	if (m_pFuncInsertMode)
+	{
 		m_pFuncInsertMode(m_nGlobalID,m_pDataInsertModeChanged,bInsertMode);
+	}
 }
 
-/*-------------------------------------------------------------------
-CFootyDoc::SetTabLen
-TAB文字の幅を設定します
--------------------------------------------------------------------*/
+//-----------------------------------------------------------------------------
+/**
+ * @brief TAB文字の幅を設定します
+ */
 void CFootyDoc::SetTabLen(size_t nTabLen){
 	if (0 < nTabLen){
 		m_nTabLen = nTabLen;
 	}
 }
 
-
+//-----------------------------------------------------------------------------
 /**
  * CFootyDoc::InsertString
  * @brief 現在のキャレット位置に文字を挿入します。
@@ -207,7 +234,8 @@ void CFootyDoc::SetTabLen(size_t nTabLen){
  * @param bMemLineMode 改行コードをこの文章のコードとして保存する
  */
 CFootyDoc::RedrawType CFootyDoc::InsertString
-		(const wchar_t *pString,bool bRecUndo,bool bOverwritable,bool bMemLineMode){
+		(const wchar_t *pString,bool bRecUndo,bool bOverwritable,bool bMemLineMode)
+{
 	// 宣言
 	const wchar_t *pWork;			//!< 改行位置検索用
 	std::wstring strRestLine;		//!< 挿入位置以降のデータ
@@ -217,10 +245,12 @@ CFootyDoc::RedrawType CFootyDoc::InsertString
 	CUndoBuffer cUndo;
 
 	// エラーチェック
-	if (!pString)return REDRAW_FAILED;
+	if ( !pString )return REDRAW_FAILED;
+	if ( IsReadOnly() ) return REDRAW_FAILED;
 	
 	// 上書きの場合は
-	if (bOverwritable && !m_bInsertMode && !IsSelecting()){
+	if (bOverwritable && !m_bInsertMode && !IsSelecting())
+	{
 		// 長さを計測する
 		size_t nStrLen = wcslen(pString);
 		size_t nLineLeft = m_cCaretPos.GetLinePointer()->GetLineLength()
@@ -234,8 +264,10 @@ CFootyDoc::RedrawType CFootyDoc::InsertString
 	}
 
 	// 選択位置情報を削除してアンドゥ情報を代入
-	if (bRecUndo){
-		if (IsSelecting()){
+	if (bRecUndo)
+	{
+		if (IsSelecting())
+		{
 			DeleteSelected(&cUndo);
 			cUndo.m_nUndoType = CUndoBuffer::UNDOTYPE_REPLACE;
 		}
@@ -251,37 +283,45 @@ CFootyDoc::RedrawType CFootyDoc::InsertString
 	nPos = m_cCaretPos.GetPosition();
 
 	// 文字を走査していく
-	for (pWork=pString;;pWork++){
-		if (*pWork == L'\r'){
-			if (*(pWork+1) == L'\n'){	// CRLF
+	for (pWork=pString;;pWork++)
+	{
+		if (*pWork == L'\r')
+		{
+			if (*(pWork+1) == L'\n')	// CRLF
+			{
 				ReturnLine(&pLine,&pString,pWork,
 							nPos,&strRestLine,2,nNumLines==0);
 				nNumLines++;
 				pWork++;
 				if (bMemLineMode)m_nLineMode = LM_CRLF;
 			}
-			else{						// キャリッジリターンのみ
+			else						// キャリッジリターンのみ
+			{
 				ReturnLine(&pLine,&pString,pWork,
 							nPos,&strRestLine,1,nNumLines==0);
 				nNumLines++;
 				if (bMemLineMode)m_nLineMode = LM_CR;
 			}
 		}
-		else if (*pWork == L'\n'){		// ラインフィード
+		else if (*pWork == L'\n')		// ラインフィード
+		{
 			ReturnLine(&pLine,&pString,pWork,
 						nPos,&strRestLine,1,nNumLines==0);
 			nNumLines++;
 			if (bMemLineMode)m_nLineMode = LM_LF;
 		}
-		else if (*pWork == L'\0'){		// 終端文字
-			if (!nNumLines){			// 今までに改行が無かったとき
+		else if (*pWork == L'\0')		// 終端文字
+		{
+			if (!nNumLines)				// 今までに改行が無かったとき
+			{
 				// その位置に全ての文字列を挿入する
 				pLine->m_strLineData.insert(nPos,pString);
 				SetLineInfo(pBeginLine);
 				// キャレット位置を移動させる
 				m_cCaretPos.MoveColumnForward(&m_lsLines,(size_t)(pWork-pString));
 			}
-			else{						// 改行があったとき
+			else						// 改行があったとき
+			{
 				// バックアップ文字列を代入する
 				pLine->m_strLineData = pString + strRestLine;
 				// 変更を確定する
@@ -291,7 +331,8 @@ CFootyDoc::RedrawType CFootyDoc::InsertString
 				m_cCaretPos.MoveColumnForward(&m_lsLines,(size_t)(pWork-pString));
 			}
 			// アンドゥ情報を挿入する
-			if (bRecUndo){
+			if (bRecUndo)
+			{
 				cUndo.m_cAfterEnd = m_cCaretPos;
 				PushBackUndo(&cUndo);
 			}
@@ -302,58 +343,73 @@ CFootyDoc::RedrawType CFootyDoc::InsertString
 	return REDRAW_ALL;
 }
 
+//-----------------------------------------------------------------------------
 /**
  * CFootyDoc::ReturnLine
  * @brief InsertStringのサブルーチンで、改行処理を行います。
  */
 void CFootyDoc::ReturnLine(LinePt *pNowLine,const wchar_t **pString,const wchar_t *pWork,
-						   size_t nPos,std::wstring *pRestStr,int n,bool bFirst){
-	/*宣言*/
+						   size_t nPos,std::wstring *pRestStr,int n,bool bFirst)
+{
+	// 宣言
 	LinePt pLine = *pNowLine;
 	CFootyLine cInsertLine;
-	/*データ挿入*/
-	if (!bFirst)	/*最初でないときはコピーする*/
+	
+	// データ挿入
+	if (!bFirst)	// 最初でないときはコピーする
 		pLine->m_strLineData = std::wstring(*pString,(size_t)(pWork - *pString));
-	else{			/*最初の位置の時はバックアップ*/
+	else			// 最初の位置の時はバックアップ
+	{
 		if (nPos == pLine->GetLineLength())
+		{
 			*pRestStr = L"";
-		else{
+		}
+		else
+		{
 			*pRestStr = pLine->m_strLineData.substr(nPos);
 			pLine->m_strLineData.erase(nPos,pLine->GetLineLength()-nPos);
 		}
 		pLine->m_strLineData += std::wstring(*pString,(size_t)(pWork - *pString));
 	}
-	/*次の行を生成する*/
+	//次の行を生成する
 	pLine++;
 	m_lsLines.insert(pLine,cInsertLine);
-	/*ポインタ操作*/
+	// ポインタ操作
 	*pString = pWork + n;
 	(*pNowLine)++;
 }
 
+//-----------------------------------------------------------------------------
 /**
  * CFootyDoc::InsertChar
  * @brief ワイド文字一つを挿入します
  * @param wChar 挿入する文字
  * @return 描画範囲
  */
-CFootyDoc::RedrawType CFootyDoc::InsertChar(wchar_t wChar){
-	/*宣言*/
+CFootyDoc::RedrawType CFootyDoc::InsertChar(wchar_t wChar)
+{
+	// 宣言
 	LinePt pLine;
 	size_t nPos;
 	CUndoBuffer cUndo;
 	CEditPosition cEditPosition = m_cCaretPos;
 	RedrawType nRetRedraw = REDRAW_LINE;
 	
-	/*選択文字列を削除、アンドゥ情報を格納*/
-	if (IsSelecting()){
+	if ( IsReadOnly() ) return REDRAW_FAILED;
+	
+	// 選択文字列を削除、アンドゥ情報を格納
+	if ( IsSelecting() )
+	{
 		DeleteSelected(&cUndo);
 		cUndo.m_nUndoType = CUndoBuffer::UNDOTYPE_REPLACE;
 		nRetRedraw = REDRAW_ALL;
 	}
 	else if (m_bInsertMode || m_cCaretPos.GetPosition() == m_cCaretPos.GetLinePointer()->GetLineLength())
+	{
 		cUndo.m_nUndoType = CUndoBuffer::UNDOTYPE_INSERT;
-	else{
+	}
+	else
+	{
 		// 上書きされるときは、アンドゥ情報を書き換える必要がある
 		cUndo.m_cBeforeStart = cEditPosition;
 		cEditPosition.MoveColumnForward(&m_lsLines,1);
@@ -364,7 +420,7 @@ CFootyDoc::RedrawType CFootyDoc::InsertChar(wchar_t wChar){
 	}
 	cUndo.m_strAfter += wChar;
 	
-	/*文字を入れる*/
+	// 文字を入れる
 	pLine = m_cCaretPos.GetLinePointer();
 	nPos = m_cCaretPos.GetPosition();
 	if (m_bInsertMode || nPos == pLine->GetLineLength())
@@ -390,44 +446,79 @@ CFootyDoc::RedrawType CFootyDoc::InsertChar(wchar_t wChar){
 	return nRetRedraw;
 }
 
+//-----------------------------------------------------------------------------
 /**
- * CFootyDoc::InsertReturn
  * @brief 現在のキャレット位置で改行処理を行います。
+ * @param	bIndentMode [in] オートインデントを行うかどうか
  */
-CFootyDoc::RedrawType CFootyDoc::InsertReturn(){
+CFootyDoc::RedrawType CFootyDoc::InsertReturn( bool bIndentMode )
+{
 	// 宣言
 	CUndoBuffer cUndo;
 	CFootyLine cNewLine;
-	LinePt pLine,pInsertPos;
+	LinePt pLine, pInsertPos;
 	size_t nPos;
-
+	
+	if ( IsReadOnly() ) return REDRAW_FAILED;
+	
 	// 選択位置を削除します
-	if (IsSelecting()){
+	if (IsSelecting())
+	{
 		DeleteSelected(&cUndo);
 		cUndo.m_nUndoType = CUndoBuffer::UNDOTYPE_REPLACE;
 	}
-	else cUndo.m_nUndoType = CUndoBuffer::UNDOTYPE_INSERT;
+	else
+	{
+		cUndo.m_nUndoType = CUndoBuffer::UNDOTYPE_INSERT;
+	}
 	cUndo.m_cAfterStart = m_cCaretPos;
-	cUndo.m_strAfter = L"\r\n";
-
-	// 改行を挿入する
+	
+	// 改行を挿入する位置を取得します
 	pLine = m_cCaretPos.GetLinePointer();
 	nPos = m_cCaretPos.GetPosition();
 
-	// 行末で改行してないときは次の行に回す
-	if (pLine->GetLineLength() != nPos){
-		cNewLine.m_strLineData = &pLine->GetLineData()[nPos];
+	// オートインデントとして挿入できる文字数をカウントします
+	size_t nIndentChars = 0;
+	if ( bIndentMode )
+	{
+		nIndentChars = pLine->CalcAutoIndentPos( nPos );
+	}
+
+	// 挿入後、となるテキストを作成します
+	cUndo.m_strAfter = L"\r\n";
+	if  ( nIndentChars != 0 )
+	{
+		cUndo.m_strAfter.append( pLine->GetLineData(), nIndentChars );
+	}
+
+	// 行末で改行してないときは次の行に回します
+	if (pLine->GetLineLength() != nPos)
+	{
+		if ( nIndentChars == 0 )
+		{
+			cNewLine.m_strLineData = &pLine->GetLineData()[nPos];
+		}
+		else
+		{
+			cNewLine.m_strLineData.append( pLine->GetLineData(), nIndentChars );
+			cNewLine.m_strLineData += &pLine->GetLineData()[nPos];
+		}
 		pLine->m_strLineData.erase(nPos);
+	}
+	else if  ( nIndentChars != 0 )
+	{
+		cNewLine.m_strLineData.append( pLine->GetLineData(), nIndentChars );
 	}
 
 	// 次の行をリストに追加
 	pInsertPos = pLine;
 	pInsertPos++;
-	pInsertPos = m_lsLines.insert(pInsertPos,cNewLine);
-	SetLineInfo(pLine,pInsertPos);
+	pInsertPos = m_lsLines.insert( pInsertPos, cNewLine );
+	SetLineInfo( pLine, pInsertPos );
 
 	// キャレット位置を移動させる
-	m_cCaretPos.MoveRealNext(&m_lsLines,1);
+	m_cCaretPos.SetPosition( pInsertPos, nIndentChars );
+
 	// アンドゥー情報を格納
 	cUndo.m_cAfterEnd = m_cCaretPos;
 	PushBackUndo(&cUndo);
@@ -435,44 +526,57 @@ CFootyDoc::RedrawType CFootyDoc::InsertReturn(){
 	return REDRAW_ALL;
 }
 
+//-----------------------------------------------------------------------------
 /**
- * CFootyDoc::InsertReturnUp
  * @brief 現在のキャレット位置の一行上に空行を挿入します。
+ * @param	bIndentMode [in] オートインデント処理を行うかどうか
  */
-CFootyDoc::RedrawType CFootyDoc::InsertReturnUp(){
+CFootyDoc::RedrawType CFootyDoc::InsertReturnUp( bool bIndentMode )
+{
+	if ( IsReadOnly() ) return REDRAW_FAILED;
+	
 	// 選択状態の解除
 	m_nSelectType = SELECT_NONE;
+	
 	// 状況によって処理を分ける
-	if (m_cCaretPos.GetLineNum() == 0){
+	if (m_cCaretPos.GetLineNum() == 0)
+	{
 		// 一番上の行の時は、その位置の先頭で改行したことにする
 		m_cCaretPos.SetPosition(m_cCaretPos.GetLinePointer(),0);
-		InsertReturn();
+		InsertReturn( bIndentMode );
 		m_cCaretPos.SetPosition(m_lsLines.begin(),0);
 	}
-	else{
+	else
+	{
 		// それ以外の時は、その位置の一つ上で改行したことにする
 		LinePt pLine = m_cCaretPos.GetLinePointer();
 		pLine--;
 		m_cCaretPos.SetPosition(pLine,pLine->GetLineLength());
-		InsertReturn();
+		InsertReturn( bIndentMode );
 	}
 	return REDRAW_ALL;
 }
 
+//-----------------------------------------------------------------------------
 /**
- * CFootyDoc::InsertReturnDown
  * @brief 現在のキャレット位置の一行下に空行を挿入します。
+ * @param bIndent [in] インデント処理を行うかどうか
  */
-CFootyDoc::RedrawType CFootyDoc::InsertReturnDown(){
+CFootyDoc::RedrawType CFootyDoc::InsertReturnDown( bool bIndent )
+{
+	if ( IsReadOnly() ) return REDRAW_FAILED;
+	
 	// 選択状態の解除
 	m_nSelectType = SELECT_NONE;
+	
 	// それ以外の時は、その位置の一つ上で改行したことにする
 	m_cCaretPos.SetPosition(m_cCaretPos.GetLinePointer(),
 		m_cCaretPos.GetLinePointer()->GetLineLength());
-	InsertReturn();
+	InsertReturn( bIndent );
 	return REDRAW_ALL;
 }
 
+//-----------------------------------------------------------------------------
 /**
  * CFootyDoc::OnBackSpace
  * @brief BackSpaceキーが押されたときの処理を行います。
@@ -486,6 +590,9 @@ CFootyDoc::RedrawType CFootyDoc::OnBackSpace()
 	size_t nPos = m_cCaretPos.GetPosition();
 	CUndoBuffer cUndo;
 	RedrawType nType;
+	
+	if ( IsReadOnly() ) return REDRAW_FAILED;
+	
 	// 場合分け
 	if (IsSelecting())
 	{
@@ -566,16 +673,20 @@ CFootyDoc::RedrawType CFootyDoc::OnBackSpace()
 	}
 }
 
+//-----------------------------------------------------------------------------
 /**
  * CFootyDoc::OnDelete
  * @brief Deleteキーが押されたときの処理を行います。
  * @return どのように再描画するのか
  */
-CFootyDoc::RedrawType CFootyDoc::OnDelete(){
+CFootyDoc::RedrawType CFootyDoc::OnDelete()
+{
 	// 宣言
 	CUndoBuffer cUndo;
 	RedrawType nType;
-
+	
+	if ( IsReadOnly() ) return REDRAW_FAILED;
+	
 	// 選択しているかどうかで場合分け
 	if (IsSelecting()){
 		nType = DeleteSelected(&cUndo);
@@ -593,19 +704,20 @@ CFootyDoc::RedrawType CFootyDoc::OnDelete(){
 	}
 }
 
+//-----------------------------------------------------------------------------
 /**
- * CFootyDoc::SetLineInfo
  * @brief 指定した行以降のオフセット値と実際の行番号を設定するルーチン
  * @param pBegin 設定するための開始位置
  * @return 全ての再描画を要求するときtrue
  * @note pBeginは文字列が変更されているのでURLとメールアドレスを再検索。
  *       以降の行は強調表示文字列を全て検索します。
  */
-bool CFootyDoc::SetLineInfo(LinePt pBegin){
+bool CFootyDoc::SetLineInfo(LinePt pBegin)
+{
 	bool bAllRedraw = false;
 	bool bPrevLineInfoChanged = false;
 	bool bEmphasisChanged = false;
-
+	
 	// 最初の行だけを確定させる
 	bPrevLineInfoChanged = pBegin->FlushString(m_nTabLen,m_nLapelColumns,m_nLapelMode);
 	if (pBegin == m_lsLines.begin())
@@ -639,8 +751,8 @@ bool CFootyDoc::SetLineInfo(LinePt pBegin){
 	return bAllRedraw;
 }
 
+//-----------------------------------------------------------------------------
 /**
- * CFootyDoc::SetLineInfo
  * @brief 行の内容が変更されたとき、その情報を収集していく処理です。
  * @param pBegin 変更領域最初の行
  * @param pEnd 変更領域の最後の行
@@ -697,44 +809,52 @@ bool CFootyDoc::SetLineInfo(LinePt pBegin, LinePt pEnd)
 	return bAllRedraw;
 }
 
+//-----------------------------------------------------------------------------
 /**
- * CFootyDoc::ChacheLine
  * @brief 強調表示のキャッシュを作成する処理
  * @param pLine キャッシュ計算を開始する位置
  */
-void CFootyDoc::SetChacheCommand(LinePt pLine){
-	if (pLine == m_lsLines.begin()){
+void CFootyDoc::SetChacheCommand(LinePt pLine)
+{
+	if (pLine == m_lsLines.begin())
+	{
 		pLine->SearchEmphasis(NULL,&m_lsEmphasisWord);
 	}
-	else{
+	else
+	{
 		// キャッシュされている行を取得する
 		LinePt pStartLine;
-		for (pStartLine = pLine;pStartLine != m_lsLines.begin();pStartLine--){
+		for (pStartLine = pLine;pStartLine != m_lsLines.begin();pStartLine--)
+		{
 			if (pStartLine->EmphasisChached())break;
 		}
 
 		// 一行もキャッシュされていないとき
-		if (pStartLine == m_lsLines.begin() && !pStartLine->EmphasisChached()){
+		if (pStartLine == m_lsLines.begin() && !pStartLine->EmphasisChached())
+		{
 			pStartLine->SearchEmphasis(NULL,&m_lsEmphasisWord);
 		}
 
 		// 開始行から基準点までキャッシュする
 		LinePt pPrevLine = pStartLine;
 		LinePt pNowLine = pStartLine;
-		for (pNowLine++;;pNowLine++,pPrevLine++){
+		for (pNowLine++;;pNowLine++,pPrevLine++)
+		{
 			pNowLine->SearchEmphasis(pPrevLine->GetBetweenNext(),&m_lsEmphasisWord);
 			if (pNowLine == pLine)break;
 		}
 	}
 }
 
+//-----------------------------------------------------------------------------
 /**
- * CFootyDoc::DeleteLine
  * @brief 一行だけ削除する処理です。 
  * @param pLine 削除する行
  */
 void CFootyDoc::DeleteLine(LinePt pLine)
 {
+	if ( IsReadOnly() ) return;
+	
 	for (int i=0;i<4;i++)
 	{
 		if (m_cFirstVisibleLine[i].GetLineNum() == pLine->GetRealLineNum()){
@@ -744,14 +864,16 @@ void CFootyDoc::DeleteLine(LinePt pLine)
 	m_lsLines.erase(pLine);
 }
 
+//-----------------------------------------------------------------------------
 /**
- * CFootyDoc::DeleteLine
  * @brief 指定された間の行を一気に削除する処理
  * @param pStart 開始行(これも削除される)
  * @param pEnd 終了行(これは削除されない)
  */
 void CFootyDoc::DeleteLine(LinePt pStart,LinePt pEnd)
 {
+	if ( IsReadOnly() ) return;
+	
 	// 削除するデータの行番号を取得する
 	size_t nRealStart = pStart->GetRealLineNum();
 	LinePt pDelEnd = pEnd;
@@ -773,16 +895,17 @@ void CFootyDoc::DeleteLine(LinePt pStart,LinePt pEnd)
 	m_lsLines.erase(pStart,pEnd);
 }
 
-
+//-----------------------------------------------------------------------------
 /**
- * CFootyDoc::MoveWordForward
  * @brief キャレット位置を単語すっ飛ばして前に
  */
-void CFootyDoc::MoveWordForward(){
+void CFootyDoc::MoveWordForward()
+{
 	LinePt pLine = m_cCaretPos.GetLinePointer();
 	size_t nPos = m_cCaretPos.GetPosition();
 	
-	if (m_cCaretPos.GetPosition() != pLine->GetLineLength()){
+	if (m_cCaretPos.GetPosition() != pLine->GetLineLength())
+	{
 		CFootyLine::WordInfo wiWord = pLine->GetWordInfo(nPos,false);
 		m_cCaretPos.MoveColumnForward(&m_lsLines,wiWord.m_nEndPos - nPos);
 	}
@@ -790,15 +913,17 @@ void CFootyDoc::MoveWordForward(){
 	SendMoveCaretCallBack();
 }
 
+//-----------------------------------------------------------------------------
 /**
- * CFootyDoc::MoveWordBack
  * @brief キャレット位置を単語すっ飛ばして後に
  */
-void CFootyDoc::MoveWordBack(){
+void CFootyDoc::MoveWordBack()
+{
 	LinePt pLine = m_cCaretPos.GetLinePointer();
 	size_t nPos = m_cCaretPos.GetPosition();
 	
-	if (m_cCaretPos.GetPosition() != 0){
+	if (m_cCaretPos.GetPosition() != 0)
+	{
 		CFootyLine::WordInfo wiWord = pLine->GetWordInfo(nPos);
 		m_cCaretPos.MoveColumnBackward(&m_lsLines,nPos - wiWord.m_nBeginPos);
 	}
@@ -806,24 +931,25 @@ void CFootyDoc::MoveWordBack(){
 	SendMoveCaretCallBack();
 }
 
-
+//-----------------------------------------------------------------------------
 /**
- * CFootyDoc::SetLapel
  * @brief 折り返し設定
  * @param nColumn 桁数
  * @param nMode 折り返しモード
  */
-void CFootyDoc::SetLapel(size_t nColumn,int nMode){
-	/*状態を設定する*/
+void CFootyDoc::SetLapel(size_t nColumn,int nMode)
+{
+	// 状態を設定する
 	m_nLapelColumns = nColumn;
 	m_nLapelMode = nMode;
 
-	/*ループさせて収集*/
+	// ループさせて収集
 	LinePt pLine = m_lsLines.begin();
 	LinePt pPrevLine = m_lsLines.begin();
 	pLine->FlushString(m_nTabLen,m_nLapelColumns,m_nLapelMode);
 	
-	for (pLine++;pLine != m_lsLines.end();pLine++,pPrevLine++){
+	for (pLine++;pLine != m_lsLines.end();pLine++,pPrevLine++)
+	{
 		pLine->FlushString(m_nTabLen,m_nLapelColumns,m_nLapelMode);
 		pLine->SetPrevLineInfo(pPrevLine);
 	}	
