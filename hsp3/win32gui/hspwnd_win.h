@@ -225,7 +225,10 @@ public:
 	HspWnd( void );
 	HspWnd( HANDLE instance, char *wndcls );
 	~HspWnd( void );
-	void MakeBmscr( int id, int type, int xx, int yy, int wx, int wy, int sx, int sy, int palsw );
+	void MakeBmscr( int id, int type, int xx, int yy, int wx, int wy,
+	 int sx, int sy, int mode );
+	void MakeBmscrWnd( int id, int type, int xx, int yy, int wx, int wy,
+	 int sx, int sy, int mode );
 	void MakeBmscrOff( int id, int sx, int sy, int palsw );
 	inline Bmscr *GetBmscr( int id ) { return mem_bm[id]; };
 	int Picload( int id, char *fname, int mode );

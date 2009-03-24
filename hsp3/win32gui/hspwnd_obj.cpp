@@ -220,18 +220,19 @@ static void Object_SetInputBox( HSPOBJINFO *info, int type, void *ptr )
 
 static void Object_SetCheckBox( HSPOBJINFO *info, int type, void *ptr )
 {
-	int a;
-	HWND hw;
-	hw = info->hCld;
-	if ( type != TYPE_INUM ) throw HSPERR_TYPE_MISMATCH;
-	a=0;if ( *((int *)ptr) ) a++;
-	SendMessage( hw, BM_SETCHECK,a,0 );
-/*
-	rev 43
-	mingw : warning : intŒ^‰¼ˆø”‚Éƒ|ƒCƒ“ƒ^Œ^ŽÀˆø”(NULL)‚ð“n‚µ‚Ä‚¢‚é
-	‚É‘Îˆ
-*/
-	Object_CheckBox( info, 0 );
+	HWND const hw = info->hCld;
+	switch ( type ) {
+	case HSPVAR_FLAG_STR:
+		SetWindowText( hw, static_cast< char * >( ptr ) );
+		break;
+	case HSPVAR_FLAG_INT:
+		SendMessage( hw, BM_SETCHECK,
+		 ( *static_cast< int * >( ptr ) ? 1 : 0 ), 0 );
+		Object_CheckBox( info, 0 );
+		break;
+	default:
+		throw HSPERR_TYPE_MISMATCH;
+	}
 }
 
 
