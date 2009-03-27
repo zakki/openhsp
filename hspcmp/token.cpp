@@ -647,7 +647,7 @@ void CToken::Calc_factor( CALCVAR &v )
 	}
 	if ( ttype==TK_OBJ ) {
 		id = lb->Search( (char *)s3 );
-		if ( id = -1 ) { ttype=TK_CALCERROR; return; }
+		if ( id == -1 ) { ttype=TK_CALCERROR; return; }
 		type = lb->GetType( id );
 		if ( type != LAB_TYPE_PPVAL ) { ttype=TK_CALCERROR; return; }
 			ptr_dval = lb->GetData2( id );
@@ -805,7 +805,7 @@ int CToken::Calc( CALCVAR &val )
 		return -1;
 	}
 	if ( wp==NULL ) { val = v; return 0; }
-	if ( *wp=0 ) { val = v; return 0; }
+	if ( *wp==0 ) { val = v; return 0; }
 	SetError("expression syntax error");
 	return -1;
 }
@@ -2529,7 +2529,7 @@ ppresult_t CToken::PP_Module( void )
 	i = GetToken();
 	if (( i == TK_OBJ )||( i == TK_STRING )) fl=1;
 	if ( i == TK_NONE ) { sprintf( word, "M%d", modgc ); modgc++; fl=1; }
-	if ( fl = 0 ) { SetError("invalid module name"); return PPRESULT_ERROR; }
+	if ( fl == 0 ) { SetError("invalid module name"); return PPRESULT_ERROR; }
 	if ( !IsGlobalMode() ) { SetError("not in global mode"); return PPRESULT_ERROR; }
 	if ( CheckModuleName( word ) ) {
 		SetError("bad module name"); return PPRESULT_ERROR;
