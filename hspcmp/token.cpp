@@ -1019,6 +1019,7 @@ char *CToken::ExpandToken( char *str, int *type, int ppmode )
 	//			ppmode : 0=通常、1=プリプロセッサ時
 	//
 	int a,chk,id,ltype,opt;
+	int flcnt;
 	unsigned char *vs;
 	unsigned char *vs_bak;
 	unsigned char a1;
@@ -1127,13 +1128,31 @@ char *CToken::ExpandToken( char *str, int *type, int ppmode )
 	}
 
 	if ((a1>=0x30)&&(a1<=0x39)) {			// when 0-9 numerical
-		a=0;
+		a=0; flcnt=0;
 		while(1) {
 			a1=*vs;
-			if ((a1<0x30)||(a1>0x39)) break;
+			if ( a1 == '.' ) {
+				flcnt++;if ( flcnt>1 ) break;
+			} else {
+				if ((a1<0x30)||(a1>0x39)) break;
+			}
 			s2[a++]=a1;vs++;
 		}
 		if (( a1=='k' )||( a1=='f' )||( a1=='d' )) { s2[a++]=a1; vs++; }
+		if ( a1 == 'e' ) {
+			s2[a++]=a1; vs++;
+			a1=*vs;
+			if (( a1=='-' )||( a1=='+' )) {
+				s2[a++] = a1;
+				vs++;
+			}
+			while(1) {
+				a1=*vs;
+				if ((a1<0x30)||(a1>0x39)) break;
+				s2[a++]=a1;vs++;
+			}
+		}
+
 		s2[a]=0;
 		if (wrtbuf!=NULL) wrtbuf->PutData( s2, a );
 		*type = TK_OBJ;
