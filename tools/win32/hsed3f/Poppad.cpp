@@ -590,7 +590,7 @@ static void hsprun( char *objname )
 		hsc3_getruntime( (int)cfname, (int)objname, 0, 0 );
 	}
 	if ( *cfname == 0 ) {
-		wsprintf( execmd,"%s\\%s ",szExeDir, DEFAULT_RUNTIME );
+		wsprintf( execmd,"%s\\%s ",szExeDir, FILE_HSP );
 	} else {
 		wsprintf( execmd,"%s\\%s ",szExeDir, cfname );
 	}
