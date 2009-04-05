@@ -85,6 +85,8 @@
 #define IDM_AHTTOOL                     2923
 #define ID__DART                        2925
 #define ID__DAAK                        2926
+#define ID_2927                         2927
+#define IDM_HSPTV                       2928
 #define IDCM_ADD                        3000
 #define IDCM_ALLSEL                     3001
 #define IDCM_BYE                        3002
@@ -175,7 +177,7 @@
 #ifndef APSTUDIO_READONLY_SYMBOLS
 #define _APS_NO_MFC                     1
 #define _APS_NEXT_RESOURCE_VALUE        5010
-#define _APS_NEXT_COMMAND_VALUE         2927
+#define _APS_NEXT_COMMAND_VALUE         2929
 #define _APS_NEXT_CONTROL_VALUE         4057
 #define _APS_NEXT_SYMED_VALUE           6003
 #endif

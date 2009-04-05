@@ -99,7 +99,6 @@ BEGIN
         MENUITEM SEPARATOR
         MENUITEM "起動オプション(&O)...",       IDM_CMDOPT
         MENUITEM "Debugウインドゥ表示(&D)",     IDM_DEBUG
-        MENUITEM "HSP拡張マクロを使用する(&M)", IDM_HSPEXTMACRO
     END
     POPUP "ツール(&T)"
     BEGIN
@@ -110,6 +109,7 @@ BEGIN
         MENUITEM "ソースフォルダを開く(&O)...", IDM_OPEN_SRCFOLDER
         MENUITEM "サンプルスクリプト参照(&F)...", IDM_START_RUNTIMEMAN
         MENUITEM "スクリプト自動作成(&T)...",   IDM_AHTTOOL
+        MENUITEM "HSPTVブラウザ起動(&H)...",    IDM_HSPTV
         MENUITEM SEPARATOR
         MENUITEM "オプション(&O)...",           IDM_OPTION
     END
@@ -967,7 +967,7 @@ BEGIN
     IDM_PACKGO              "複数ファイルを結合しDATA.DPMを作成します"
     IDM_MKEXE1              "実行可能なEXEファイルを作成"
     IDM_MKEXE2              "スクリーンセーバーモジュールを作成"
-    IDM_START_RUNTIMEMAN    "ランタイムマネージャを起動"
+    IDM_START_RUNTIMEMAN    "サンプルビューアーを起動"
     IDM_OPEN_SRCFOLDER      "スクリプトのあるフォルダを開く"
     IDM_OPTION              "スクリプトエディタの設定"
 END
@@ -988,6 +988,16 @@ END
 STRINGTABLE 
 BEGIN
     IDM_RELOAD              "スクリプトをファイルから再び読み込む"
+END
+
+STRINGTABLE 
+BEGIN
+    IDM_HSPTV               "HSPTVブラウザを起動"
+END
+
+STRINGTABLE 
+BEGIN
+    IDM_AHTTOOL             "Peasエディタを起動"
 END
 
 #endif    // 日本語 resources
