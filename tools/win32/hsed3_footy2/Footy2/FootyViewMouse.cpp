@@ -538,11 +538,11 @@ bool CFootyView::CalcLineCount(int y,CEditPosition *pStart,CEditPosition *pEnd)
 			m_pDocuments->GetLapelColumn(),
 			m_pDocuments->GetTabLen(),
 			m_pDocuments->GetLapelMode());
-	if (nPosition == pLine->GetLineLength())
-	{
-		if (cMouseLine.MoveRealNext(m_pDocuments->GetLineList(),1))
-			nPosition = 0;
-	}
+	//if (nPosition == pLine->GetLineLength())
+	//{
+	//	if (cMouseLine.MoveRealNext(m_pDocuments->GetLineList(),1))
+	//		nPosition = 0;
+	//}
 	pEnd->SetPosition(cMouseLine.GetLinePointer(),nPosition);
 	return true;
 }
