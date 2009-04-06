@@ -45,6 +45,10 @@ static int dispflg;
 
 extern int resY0, resY1;
 
+#define GSQUARE_MODE_TEXTURE 0
+#define GSQUARE_MODE_COLORFILL 1
+#define GSQUARE_MODE_GRADFILL 2
+
 /*----------------------------------------------------------*/
 //					HSP system support
 /*----------------------------------------------------------*/
@@ -1148,10 +1152,14 @@ static int cmdfunc_extcmd( int cmd )
 		int *py;
 		int *ptx;
 		int *pty;
+		int sqmode;
+
 		bm2 = NULL;
 		ep1 = code_getdi(0);				// パラメータ1:数値
 		px = code_getiv();
 		py = code_getiv();
+
+		sqmode = GSQUARE_MODE_TEXTURE;
 
 		if ( ep1 >= 0 ) {
 			bm2 = wnd->GetBmscr( ep1 );	// 転送元のBMSCRを取得
@@ -1162,20 +1170,30 @@ static int cmdfunc_extcmd( int cmd )
 			ptx = code_getiv();
 			pty = code_getiv();
 		} else {
-			color = CnvRGB( bmscr->color );
-			if ( bmscr->palmode ) color = (- ep1 ) - 1;
+			if ( ep1 <= -257 ) {			// グラデーションモード
+				ptx = code_getiv();
+				bmscr->GradFillEx( px, py, ptx );
+				break;
+			} else {
+				if ( bmscr->palmode ) { color = (- ep1 ) - 1; } else { color = CnvRGB( bmscr->color ); }
+				sqmode = GSQUARE_MODE_COLORFILL;
+			}
 		}
+
 		SetPolyDest( bmscr->pBit, bmscr->sx, bmscr->sy );
 
 		for(i=0;i<4;i++) {
 			tmp_x[i] = px[i];
 			tmp_y[i] = py[i];
-			if ( ep1 >= 0 ) {
+			switch( sqmode ) {
+			case GSQUARE_MODE_TEXTURE:
 				tmp_tx[i] = GetLimit( ptx[i], 0, bm2->sx );
 				tmp_ty[i] = bm2->sy - 1 - GetLimit( pty[i], 0, bm2->sy );	// UVの上下逆にする
-			} else {
+				break;
+			case GSQUARE_MODE_COLORFILL:
 				tmp_tx[i] = 0;
 				tmp_ty[i] = 0;
+				break;
 			}
 		}
 
@@ -1192,7 +1210,20 @@ static int cmdfunc_extcmd( int cmd )
 		}
 
 	case 0x38:								// gradf
+		{
+		int gradmode;
+		int col;
+		p1 = code_getdi( 0 );
+		p2 = code_getdi( 0 );
+		p3 = code_getdi( bmscr->sx );
+		p4 = code_getdi( bmscr->sy );
+		gradmode = code_getdi( 0 );
+		col = CnvRGB( bmscr->color );
+		p5 = code_getdi( col );
+		p6 = code_getdi( col );
+		bmscr->GradFill( p1, p2, p3, p4, gradmode, p5, p6 );
 		break;
+		}
 
 	case 0x39:								// objimage
 		break;

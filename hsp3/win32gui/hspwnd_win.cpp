@@ -1559,3 +1559,62 @@ void Bmscr::SetScroll( int xbase, int ybase )
 }
 
 
+void Bmscr::CnvRGB16( PTRIVERTEX target, DWORD src )
+{
+	//		RGBAコードをTRIVERTEXのRGB16コードに変換して設定する
+	//
+	target->Alpha = (src>>16) & 0xff00;
+	target->Red   = (src>>8) & 0xff00;
+	target->Green = (src) & 0xff00;
+	target->Blue  = (src<<8) & 0xff00;
+}
+
+
+void Bmscr::GradFill( int x, int y, int sx, int sy, int mode, DWORD col1, DWORD col2 )
+{
+	//		グラデーション塗りつぶし
+	//
+	TRIVERTEX axis[2];
+	PTRIVERTEX vtx;
+	static int grad_rect[2] = { 0, 1 };
+
+	vtx = &axis[1];
+	vtx->x = x + sx; vtx->y = y + sy;
+	CnvRGB16( vtx, col2 );
+
+	vtx = &axis[0];
+	vtx->x = x; vtx->y = y;
+	CnvRGB16( vtx, col1 );
+
+	GradientFill( hdc, axis, 2, &grad_rect, 1, mode );
+	Send( x,y,sx,sy );
+}
+
+
+void Bmscr::GradFillEx( int *vx, int *vy, int *vcol )
+{
+	//		グラデーション塗りつぶし(gsquare用)
+	//
+	TRIVERTEX axis[4];
+	PTRIVERTEX vtx;
+	int i;
+	int minx,miny,maxx,maxy, ax,ay;
+	static int grad_square[6] = { 0, 1, 2, 0, 2, 3 };
+	minx = sx;
+	miny = sy;
+	maxx = maxy = 0;
+	for(i=0;i<4;i++) {
+		vtx = &axis[i];
+		vtx->x = vx[i];
+		if ( vtx->x < minx ) { minx = vtx->x; }
+		if ( vtx->x > maxx ) { maxx = vtx->x; }
+		vtx->y = vy[i];
+		if ( vtx->y < miny ) { miny = vtx->y; }
+		if ( vtx->y > maxy ) { maxy = vtx->y; }
+		CnvRGB16( vtx, (DWORD)vcol[i] );
+	}
+	GradientFill( hdc, axis, 4, &grad_square, 2, GRADIENT_FILL_TRIANGLE );
+	ax = maxx - minx + 1; ay = maxy - miny + 1;
+	if (( ax > 0 )&&( ay > 0 )) { Send( minx,miny,ax,ay ); }
+}
+

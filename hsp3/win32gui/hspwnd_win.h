@@ -143,6 +143,8 @@ public:
 
 	void EnableObject( int id, int sw );
 	void SetObjectMode( int id, int owmode );
+	void GradFill( int x, int y, int sx, int sy, int mode, DWORD col1, DWORD col2 );
+	void GradFillEx( int *vx, int *vy, int *vcol );
 
 	//
 	//		Window data structure
@@ -210,6 +212,7 @@ public:
 
 private:
 	void Blt( int mode, Bmscr *src, int xx, int yy, int asx, int asy );
+	void CnvRGB16( PTRIVERTEX target, DWORD src );
 
 };
 
