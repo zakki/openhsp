@@ -358,7 +358,6 @@ int CToken::CheckModuleName( char *name )
 	unsigned char *p;
 	unsigned char a1;
 
-	TrimCode( name, ' ' );					// 両端のスペースを削除
 	a = 0;
 	p = (unsigned char *)name;
 	while(1) {								// normal object name
@@ -604,6 +603,17 @@ int CToken::GetToken( void )
 	}
 	s3[a]=0;
 	return TK_OBJ;
+}
+
+
+int CToken::PeekToken( void )
+{
+	// 戻すのは wp のみ。
+	// s3, val, val_f, val_d などは戻されない
+	unsigned char *wp_bak = wp;
+	int result = GetToken();
+	wp = wp_bak;
+	return result;
 }
 
 //-----------------------------------------------------------------------------
@@ -2548,7 +2558,7 @@ ppresult_t CToken::PP_Module( void )
 	wrtbuf->PutStrf( "goto@hsp *_%s_exit",tagname );
 	wrtbuf->PutCR();
 
-	if ( wp != NULL ) {
+	if ( PeekToken() != TK_NONE ) {
 	  wrtbuf->PutStrf( "#struct %s ",tagname );
 	  while(1) {
 

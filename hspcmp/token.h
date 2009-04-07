@@ -132,6 +132,7 @@ public:
 
 	void ResetCompiler( void );
 	int GetToken( void );
+	int PeekToken( void );
 	int Calc( CALCVAR &val );
 	char *CheckValidWord( void );
 
