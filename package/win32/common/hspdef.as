@@ -11,21 +11,21 @@
 #define global xor ^
 #define global not !
 
-#define global screen_normal 0
-#define global screen_palette 1
-#define global screen_hide 2
-#define global screen_fixedsize 4
-#define global screen_tool 8
-#define global screen_frame 16
+#define global screen_normal (0)
+#define global screen_palette (1)
+#define global screen_hide (2)
+#define global screen_fixedsize (4)
+#define global screen_tool (8)
+#define global screen_frame (16)
 
-#define global gmode_gdi 0
-#define global gmode_mem 1
-#define global gmode_rgb0 2
-#define global gmode_alpha 3
-#define global gmode_rgb0alpha 4
-#define global gmode_add 5
-#define global gmode_sub 6
-#define global gmode_pixela 7
+#define global gmode_gdi (0)
+#define global gmode_mem (1)
+#define global gmode_rgb0 (2)
+#define global gmode_alpha (3)
+#define global gmode_rgb0alpha (4)
+#define global gmode_add (5)
+#define global gmode_sub (6)
+#define global gmode_pixela (7)
 
 #define global ginfo_mx ginfo(0)
 #define global ginfo_my ginfo(1)
@@ -70,16 +70,18 @@
 #define global dir_desktop dirinfo($10000)
 #define global dir_mydoc dirinfo($10005)
 
-#define global font_normal 0
-#define global font_bold 1
-#define global font_italic 2
-#define global font_underline 4
-#define global font_strikeout 8
-#define global font_antialias 16
+#define global font_normal (0)
+#define global font_bold (1)
+#define global font_italic (2)
+#define global font_underline (4)
+#define global font_strikeout (8)
+#define global font_antialias (16)
 
-#define global objmode_normal 0
-#define global objmode_guifont 1
-#define global objmode_usefont 2
+#define global objmode_normal (0)
+#define global objmode_guifont (1)
+#define global objmode_usefont (2)
+
+#define global gsquare_grad (-257)
 
 #define global msgothic "‚l‚r ƒSƒVƒbƒN"
 #define global msmincho "‚l‚r –¾’©"
