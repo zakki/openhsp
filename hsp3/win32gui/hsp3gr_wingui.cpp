@@ -1226,7 +1226,19 @@ static int cmdfunc_extcmd( int cmd )
 		}
 
 	case 0x39:								// objimage
+		{
+		int objid, srcid;
+		objid = code_getdi( 0 );
+		srcid = code_geti();
+		p1 = code_getdi( 0 );
+		p2 = code_getdi( 0 );
+		p3 = code_getdi( 0 );
+		p4 = code_getdi( 0 );
+		p5 = code_getdi( 0 );
+		p6 = code_getdi( 0 );
+		bmscr->SetButtonImage( objid, srcid, p1, p2, p3, p4, p5, p6 );
 		break;
+		}
 
 	case 0x3a:								// objskip
 		{

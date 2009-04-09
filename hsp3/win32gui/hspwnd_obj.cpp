@@ -15,6 +15,8 @@
 #include "../strnote.h"
 #include "../supio.h"
 
+#include <Commctrl.h>
+
 /*------------------------------------------------------------*/
 /*
 		Object callback interface
@@ -25,7 +27,9 @@ static int *notice_ptr;
 static int bmscr_obj_ival;
 static double bmscr_obj_dval;
 static WNDPROC DefEditProc;
+static WNDPROC DefButtonProc;
 
+extern HspWnd *curwnd;
 
 LRESULT CALLBACK MyEditProc( HWND hwnd , UINT msg , WPARAM wp , LPARAM lp ) {
 	if ( msg==WM_CHAR ) {
@@ -34,6 +38,55 @@ LRESULT CALLBACK MyEditProc( HWND hwnd , UINT msg , WPARAM wp , LPARAM lp ) {
 		}
 	}
 	return CallWindowProc( DefEditProc , hwnd , msg , wp , lp);
+}
+
+static UpdateCustomButton( HWND hwnd, int flag )
+{
+	int id;
+	HDC disthdc;
+	HWND hw;
+	Bmscr *bm;
+	HSPOBJINFO *obj;
+
+	hw = (HWND)GetWindowLong( hwnd , GWL_HWNDPARENT );
+	id = GetWindowLong( hw, GWL_USERDATA );
+	bm = curwnd->GetBmscr( id );
+
+	id = GetWindowLong( hwnd, GWL_USERDATA );
+	obj = bm->GetHSPObjectSafe( id );
+	if ( obj->owmode == HSPOBJ_NONE ) return;
+	if ( hwnd != obj->hCld ) return;
+
+	if ( flag ) {
+		if ( obj->option & 0x100 ) return;
+
+		TRACKMOUSEEVENT tme;
+		tme.cbSize = sizeof(tme);
+		tme.dwFlags = TME_LEAVE;
+		tme.hwndTrack = hwnd;
+		_TrackMouseEvent(&tme);
+
+		obj->option |= 0x100;
+	} else {
+		if ( !obj->option & 0x100 ) return;
+		obj->option &= ~0x100;
+	}
+
+	disthdc=GetDC( hwnd );
+	bm->DrawHSPCustomButton( obj, disthdc, flag );
+	ReleaseDC( hwnd, disthdc );
+}
+
+LRESULT CALLBACK MyButtonProc( HWND hwnd , UINT msg , WPARAM wp , LPARAM lp ) {
+	switch( msg ) {
+	case WM_MOUSEMOVE:
+		UpdateCustomButton( hwnd, 1 );
+		break;
+	case WM_MOUSELEAVE:
+		UpdateCustomButton( hwnd, 0 );
+		break;
+	}
+	return CallWindowProc( DefButtonProc , hwnd , msg , wp , lp);
 }
 
 void SetObjectEventNoticePtr( int *ptr )
@@ -52,10 +105,10 @@ static void Object_WindowDelete( HSPOBJINFO *info )
 static void Object_JumpEvent( HSPOBJINFO *info, int wparam )
 {
 	*notice_ptr = info->owsize;
-	if ( info->owid == 0 ) {
-		code_setpci( (unsigned short *)info->varset.ptr );
-	} else {
+	if ( info->option & 1 ) {
 		code_call( (unsigned short *)info->varset.ptr );
+	} else {
+		code_setpci( (unsigned short *)info->varset.ptr );
 	}
 }
 
@@ -288,7 +341,6 @@ int Bmscr::ActivateHSPObject( int id )
 
 void Bmscr::EnableObject( int id, int sw )
 {
-	HWND ow;
 	HSPOBJINFO *obj;
 	obj = GetHSPObjectSafe( id );
 	if ( obj->owmode == HSPOBJ_NONE ) throw HSPERR_ILLEGAL_FUNCTION;
@@ -386,11 +438,43 @@ HSPOBJINFO *Bmscr::AddHSPJumpEventObject( int id, HWND handle, int mode, int val
 {
 	HSPOBJINFO *obj;
 	obj = AddHSPObject( id, handle, mode );
-	obj->owid = val;
+	obj->owid = -1;
 	obj->owsize = id;
+	obj->option = val;
 	obj->varset.ptr = ptr;
 	obj->func_notice = Object_JumpEvent;
+
+	SetWindowLong( handle, GWL_USERDATA, id );
+
 	return obj;
+}
+
+
+void Bmscr::SetButtonImage( int id, int bufid, int x1, int y1, int x2, int y2, int x3, int y3 )
+{
+	HWND handle;
+	HSPOBJINFO *obj;
+	HSP3BTNSET *bset;
+
+	obj = GetHSPObjectSafe( id );
+
+	if ( obj->func_notice != Object_JumpEvent ) throw HSPERR_UNSUPPORTED_FUNCTION;
+
+	obj->owid = bufid;
+	SetWindowLong( obj->hCld, GWL_STYLE, GetWindowLong( obj->hCld, GWL_STYLE ) | BS_OWNERDRAW );
+
+	DefButtonProc = (WNDPROC)GetWindowLong( obj->hCld , GWL_WNDPROC );
+	if ( DefButtonProc != MyButtonProc ) {
+		SetWindowLong( obj->hCld , GWL_WNDPROC , (LONG)MyButtonProc );
+	}
+
+	bset = (HSP3BTNSET *)(&obj->varset);
+	bset->normal_x = x1;
+	bset->normal_y = y1;
+	bset->focus_x = x2;
+	bset->focus_y = y2;
+	bset->push_x = x3;
+	bset->push_y = y3;
 }
 
 
@@ -482,6 +566,8 @@ void Bmscr::SetHSPObjectFont( int id )
 
 void Bmscr::SendHSPObjectNotice( int wparam )
 {
+	//		オブジェクトの通知処理
+	//
 	int id;
 	HWND hw;
 	HSPOBJINFO *obj;
@@ -494,6 +580,75 @@ void Bmscr::SendHSPObjectNotice( int wparam )
 	if ( obj->func_notice != NULL ) {
 		obj->func_notice( obj, wparam );
 	}
+}
+
+
+void Bmscr::DrawHSPCustomButton( HSPOBJINFO *obj, HDC drawhdc, int flag )
+{
+	//		オーナードローの描画処理
+	//		(flag:0=通常、1=フォーカス、2=押下)
+	//
+	int xx,yy;
+	Bmscr *src;
+	HspWnd *wnd;
+	HSP3BTNSET *bset;
+	RECT rect;
+	HFONT hFont;
+	COLORREF col;
+
+	char msgtmp[256];
+
+	GetClientRect( obj->hCld, &rect );
+	if ( obj->owid < 0 ) {
+
+	} else {
+		bset = (HSP3BTNSET *)(&obj->varset);
+		wnd = (HspWnd *)master_hspwnd;
+		src = wnd->GetBmscr( obj->owid );
+		switch( flag ) {
+		case 1:
+			xx = bset->focus_x;
+			yy = bset->focus_y;
+			break;
+		case 2:
+			xx = bset->push_x;
+			yy = bset->push_y;
+			break;
+		default:
+			xx = bset->normal_x;
+			yy = bset->normal_y;
+			break;
+		}
+		BitBlt( drawhdc, rect.left, rect.top, rect.right, rect.bottom, src->hdc, xx, yy, SRCCOPY );
+	}
+
+	SendMessage( obj->hCld, WM_GETTEXT, 255, (LPARAM)msgtmp );
+	hFont = (HFONT)SelectObject(drawhdc, (HGDIOBJ)SendMessage( obj->hCld, WM_GETFONT, 0, 0));
+	col = RGB(0,0,0);
+	SetBkMode( drawhdc,TRANSPARENT );
+	SetTextColor( drawhdc, col );
+	DrawText( drawhdc, msgtmp, -1, &rect, DT_CENTER|DT_VCENTER|DT_SINGLELINE );
+	SelectObject( drawhdc, hFont );
+}
+
+
+void Bmscr::SendHSPObjectDraw( int wparam, LPDRAWITEMSTRUCT lparam )
+{
+	//		オーナードローの描画処理を呼び出す(wparam,lparam処理)
+	//
+	int id,flag;
+	HWND hw;
+	HSPOBJINFO *obj;
+	id = wparam & (MESSAGE_HSPOBJ-1);
+	obj = GetHSPObjectSafe( id );
+	if ( obj->owmode == HSPOBJ_NONE ) return;
+	hw = obj->hCld;
+	if ( hw != lparam->hwndItem ) return;
+
+	flag = 0;
+	if ( obj->option & 0x100 ) flag = 1;
+	if ( lparam->itemState & ODS_SELECTED ) flag = 2;
+	DrawHSPCustomButton( obj, lparam->hDC, flag );
 }
 
 

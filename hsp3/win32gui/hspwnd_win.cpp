@@ -33,7 +33,7 @@
 #define MM_MCINOTIFY    0x03B9
 #define MCI_NOTIFY_SUCCESSFUL   1
 
-static HspWnd *curwnd;
+HspWnd *curwnd;
 static MM_NOTIFY_FUNC notifyfunc;
 
 /*------------------------------------------------------------*/
@@ -208,7 +208,17 @@ LRESULT CALLBACK WndProc( HWND hwnd, UINT uMessage, WPARAM wParam, LPARAM lParam
 		}
 		code_puterror( HSPERR_NONE );
 		break;
+
+	case WM_DRAWITEM:
+		if ( wParam & MESSAGE_HSPOBJ ) {
+			id = GetWindowLong( hwnd, GWL_USERDATA );
+			bm =curwnd->GetBmscr( id );
+			bm->SendHSPObjectDraw( (int)wParam, (LPDRAWITEMSTRUCT)lParam );
+		}
+		break;
+
 	}
+
 	return DefWindowProc (hwnd, uMessage, wParam, lParam) ;
 }
 

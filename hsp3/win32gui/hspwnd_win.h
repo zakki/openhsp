@@ -31,13 +31,24 @@
 
 typedef struct HSP3VARSET
 {
-	//	PVal entry structure
+	//	HSP3VARSET structure
 	//
 	int type;
 	PVal *pval;
 	APTR aptr;
 	void *ptr;
 } HSP3VARSET;
+
+typedef struct HSP3BTNSET
+{
+	//	HSP3BTNSET structure
+	//	(HSP3VARSETと同サイズにすること)
+	//
+	short normal_x, normal_y;	// 通常時
+	short push_x, push_y;		// 押下時
+	short focus_x, focus_y;		// フォーカス時
+	void *ptr;	// 呼び出し先
+} HSP3BTNSET;
 
 typedef struct HSPOBJINFO
 {
@@ -136,16 +147,20 @@ public:
 	void SetHSPObjectFont( int id );
 	void SendHSPObjectNotice( int wparam );
 	void UpdateHSPObject( int id, int type, void *ptr );
+
 	int AddHSPObjectButton( char *name, int eventid, void *callptr );
 	int AddHSPObjectCheckBox( char *name, PVal *pval, APTR aptr );
 	int AddHSPObjectInput( PVal *pval, APTR aptr, int sizex, int sizey, char *defval, int limit, int mode );
 	int AddHSPObjectMultiBox( PVal *pval, APTR aptr, int psize, char *defval, int mode );
+	void SetButtonImage( int id, int bufid, int x1, int y1, int x2, int y2, int x3, int y3 );
+	void DrawHSPCustomButton( HSPOBJINFO *obj, HDC drawhdc, int flag );
+	void SendHSPObjectDraw( int wparam, LPDRAWITEMSTRUCT lparam );
 
 	void EnableObject( int id, int sw );
 	void SetObjectMode( int id, int owmode );
 	void GradFill( int x, int y, int sx, int sy, int mode, DWORD col1, DWORD col2 );
 	void GradFillEx( int *vx, int *vy, int *vcol );
-
+	
 	//
 	//		Window data structure
 	//
