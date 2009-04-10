@@ -52,6 +52,7 @@
 #define global ginfo_cx ginfo(22)
 #define global ginfo_cy ginfo(23)
 #define global ginfo_intid ginfo(24)
+#define global ginfo_newid ginfo(25)
 #define global ginfo_sx ginfo(26)
 #define global ginfo_sy ginfo(27)
 

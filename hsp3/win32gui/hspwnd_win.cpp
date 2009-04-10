@@ -396,8 +396,7 @@ void HspWnd::MakeBmscrOff( int id, int sx, int sy, int mode )
 }
 
 
-void HspWnd::MakeBmscrWnd
-( int id, int type, int xx, int yy, int wx, int wy, int sx, int sy, int mode )
+void HspWnd::MakeBmscrWnd( int id, int type, int xx, int yy, int wx, int wy, int sx, int sy, int mode )
 {
 	//		Bmscr(ウィンドウ)生成
 	//
@@ -509,8 +508,7 @@ void HspWnd::MakeBmscrWnd
 }
 
 
-void HspWnd::MakeBmscr
-( int id, int type, int xx, int yy, int wx, int wy, int sx, int sy, int mode )
+void HspWnd::MakeBmscr( int id, int type, int xx, int yy, int wx, int wy, int sx, int sy, int mode )
 {
 	//		Bmscr生成
 	//
@@ -597,6 +595,34 @@ int HspWnd::Picload( int id, char *fname, int mode )
 
 	gpPicture->Release();
 	return 0;
+}
+
+
+Bmscr *HspWnd::GetBmscrSafe( int id )
+{
+	//		安全なbmscr取得
+	//
+	Bmscr *bm;
+	if (( id < 0 )||( id >= bmscr_max )) throw HSPERR_ILLEGAL_FUNCTION;
+	bm = GetBmscr( id );
+	if ( bm == NULL ) throw HSPERR_ILLEGAL_FUNCTION;
+	if ( bm->flag == BMSCR_FLAG_NOUSE ) throw HSPERR_ILLEGAL_FUNCTION;
+	return bm;
+}
+
+
+int HspWnd::GetEmptyBufferId( void )
+{
+	//		空きIDを取得
+	//
+	int i;
+	Bmscr *bm;
+	for(i=0;i<bmscr_max;i++) {
+		bm = GetBmscr(i);
+		if ( bm == NULL ) return i;
+		if ( bm->flag == BMSCR_FLAG_NOUSE ) return i;
+	}
+	return bmscr_max;
 }
 
 
@@ -718,6 +744,7 @@ void Bmscr::Init( HANDLE instance, HWND p_hwnd, int p_sx, int p_sy, int palsw )
 	tabmove = 1;
 	hfont=NULL;
 	fl_dispw = 0;
+	imgbtn = -1;
 
 	Cls( 0 );
 

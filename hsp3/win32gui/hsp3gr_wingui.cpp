@@ -585,6 +585,7 @@ static int cmdfunc_extcmd( int cmd )
 		int i;
 		char btnname[256];
 		unsigned short *sbr;
+		Bmscr *bmsrc;
 
 		i = 0;
 		if ( *type == TYPE_PROGCMD ) {
@@ -596,6 +597,11 @@ static int cmdfunc_extcmd( int cmd )
 		sbr = code_getlb();
 		code_next();
 		ctx->stat = bmscr->AddHSPObjectButton( btnname, i, (void *)sbr );
+		p1 = bmscr->imgbtn;
+		if ( p1 >= 0 ) {
+			bmsrc = wnd->GetBmscrSafe( p1 );
+			bmscr->SetButtonImage( ctx->stat, p1, bmscr->btn_x1, bmscr->btn_y1, bmscr->btn_x2, bmscr->btn_y2, bmscr->btn_x3, bmscr->btn_y3 );
+		}
 		break;
 		}
 
@@ -789,8 +795,7 @@ static int cmdfunc_extcmd( int cmd )
 		p1 = code_getdi( 0 );
 		p2 = code_getdi( 0 );
 
-		bmscr = wnd->GetBmscr( p1 );
-		if ( bmscr == NULL ) throw HSPERR_ILLEGAL_FUNCTION;
+		bmscr = wnd->GetBmscrSafe( p1 );
 		cur_window = p1;
 
 		if (p2<0) {
@@ -813,8 +818,7 @@ static int cmdfunc_extcmd( int cmd )
 		p3 = code_getdi( 0 );
 		p4 = code_getdi( bmscr->gx );
 		p5 = code_getdi( bmscr->gy );
-		src = wnd->GetBmscr( p1 );
-		if ( src == NULL ) throw HSPERR_ILLEGAL_FUNCTION;
+		src = wnd->GetBmscrSafe( p1 );
 		if ( bmscr->Copy( src, p2, p3, p4, p5 ) ) throw HSPERR_UNSUPPORTED_FUNCTION;
 		break;
 		}
@@ -831,8 +835,7 @@ static int cmdfunc_extcmd( int cmd )
 		p6 = code_getdi( bmscr->gx );
 		p7 = code_getdi( bmscr->gy );
 		p8 = code_getdi( 0 );
-		src = wnd->GetBmscr( p3 );
-		if ( src == NULL ) throw HSPERR_ILLEGAL_FUNCTION;
+		src = wnd->GetBmscrSafe( p3 );
 		if ( bmscr->Zoom( p1, p2, src, p4, p5, p6, p7, p8 ) ) throw HSPERR_UNSUPPORTED_FUNCTION;
 		break;
 		}
@@ -1118,8 +1121,7 @@ static int cmdfunc_extcmd( int cmd )
 		p4 = code_getdi(bmscr->gx);	// ƒpƒ‰ƒ[ƒ^4:”’l
 		p5 = code_getdi(bmscr->gy);	// ƒpƒ‰ƒ[ƒ^5:”’l
 
-		bm2 = wnd->GetBmscr( p1 );	// “]‘—Œ³‚ÌBMSCR‚ðŽæ“¾
-		if ( bm2 == NULL ) throw HSPERR_ILLEGAL_FUNCTION;
+		bm2 = wnd->GetBmscrSafe( p1 );	// “]‘—Œ³‚ÌBMSCR‚ðŽæ“¾
 		if ( bmscr->palmode != bm2->palmode ) throw HSPERR_ILLEGAL_FUNCTION;
 
 		SetPolyDest( bmscr->pBit, bmscr->sx, bmscr->sy );
@@ -1162,8 +1164,7 @@ static int cmdfunc_extcmd( int cmd )
 		sqmode = GSQUARE_MODE_TEXTURE;
 
 		if ( ep1 >= 0 ) {
-			bm2 = wnd->GetBmscr( ep1 );	// “]‘—Œ³‚ÌBMSCR‚ðŽæ“¾
-			if ( bm2 == NULL ) throw HSPERR_ILLEGAL_FUNCTION;
+			bm2 = wnd->GetBmscrSafe( ep1 );	// “]‘—Œ³‚ÌBMSCR‚ðŽæ“¾
 			if ( bmscr->palmode != bm2->palmode ) throw HSPERR_ILLEGAL_FUNCTION;
 			SetPolySource( bm2->pBit, bm2->sx, bm2->sy );
 			color = -1;
@@ -1226,19 +1227,15 @@ static int cmdfunc_extcmd( int cmd )
 		}
 
 	case 0x39:								// objimage
-		{
-		int objid, srcid;
-		objid = code_getdi( 0 );
-		srcid = code_geti();
-		p1 = code_getdi( 0 );
-		p2 = code_getdi( 0 );
-		p3 = code_getdi( 0 );
-		p4 = code_getdi( 0 );
-		p5 = code_getdi( 0 );
-		p6 = code_getdi( 0 );
-		bmscr->SetButtonImage( objid, srcid, p1, p2, p3, p4, p5, p6 );
+		p1 = code_getdi( -1 );
+		bmscr->imgbtn = p1;
+		bmscr->btn_x1 = (short)code_getdi( 0 );
+		bmscr->btn_y1 = (short)code_getdi( 0 );
+		bmscr->btn_x2 = (short)code_getdi( 0 );
+		bmscr->btn_y2 = (short)code_getdi( 0 );
+		bmscr->btn_x3 = (short)code_getdi( bmscr->btn_x1 );
+		bmscr->btn_y3 = (short)code_getdi( bmscr->btn_y1 );
 		break;
-		}
 
 	case 0x3a:								// objskip
 		{
@@ -1342,6 +1339,8 @@ static int get_ginfo( int arg )
 		return bmscr->cy;
 	case 24:
 		return ctx->intwnd_id;
+	case 25:
+		return wnd->GetEmptyBufferId();
 
 	default:
 		throw HSPERR_UNSUPPORTED_FUNCTION;
@@ -1479,7 +1478,7 @@ int ex_getobj( int wid, int id, void *inf )
 {
 	Bmscr *bm;
 	HSPOBJINFO *obj;
-	bm = wnd->GetBmscr( wid );
+	bm = wnd->GetBmscrSafe( wid );
 	obj = bm->GetHSPObject( id );
 	memcpy( inf, obj, sizeof(HSPOBJINFO) );
 	return 0;
@@ -1489,7 +1488,7 @@ int ex_setobj( int wid, int id, const void *inf )
 {
 	Bmscr *bm;
 	HSPOBJINFO *obj;
-	bm = wnd->GetBmscr( wid );
+	bm = wnd->GetBmscrSafe( wid );
 	obj = bm->GetHSPObject( id );
 	memcpy( obj, inf, sizeof(HSPOBJINFO) );
 	return 0;
@@ -1498,7 +1497,7 @@ int ex_setobj( int wid, int id, const void *inf )
 int ex_addobj( int wid )
 {
 	Bmscr *bm;
-	bm = wnd->GetBmscr( wid );
+	bm = wnd->GetBmscrSafe( wid );
 	return bm->NewHSPObject();
 }
 

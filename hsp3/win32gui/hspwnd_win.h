@@ -225,6 +225,10 @@ public:
 	short	textstyle;					// Extra text style
 	short	framesx, framesy;			// Window frame xy-size
 
+	int		imgbtn;						// Custom Button Flag (-1=none)
+	short	btn_x1, btn_y1;				// Custom Button Image X,Y
+	short	btn_x2, btn_y2;				// Custom Button Image X,Y (press)
+	short	btn_x3, btn_y3;				// Custom Button Image X,Y (mouse over)
 private:
 	void Blt( int mode, Bmscr *src, int xx, int yy, int asx, int asy );
 	void CnvRGB16( PTRIVERTEX target, DWORD src );
@@ -249,12 +253,14 @@ public:
 	 int sx, int sy, int mode );
 	void MakeBmscrOff( int id, int sx, int sy, int palsw );
 	inline Bmscr *GetBmscr( int id ) { return mem_bm[id]; };
+	Bmscr *GetBmscrSafe( int id );
 	int Picload( int id, char *fname, int mode );
 	int GetActive( void );
 	void SetNotifyFunc( void *func );
 	int GetBmscrMax( void ) { return bmscr_max; };
 	void SetEventNoticePtr( int *ptr );
 	void SetParentWindow( void *hwnd ) { wnd_parent = hwnd; };
+	int GetEmptyBufferId( void );
 
 	//	Data
 	//

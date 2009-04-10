@@ -10,7 +10,7 @@
 %note
 ver3.2•W€–½—ß
 %date
-2009/03/23
+2009/04/10
 %author
 onitama
 %url
@@ -43,10 +43,15 @@ button goto‚Æ‹Lq‚µ‚½ê‡‚ÍAƒ‰ƒxƒ‹‚ÉƒWƒƒƒ“ƒvBbutton  gosub‚Æ‹Lq‚µ‚½ê‡‚ÍA ƒ
 ƒIƒuƒWƒFƒNƒg‚Ì‘å‚«‚³‚Íobjsize–½—ß‚ÅŽw’è‚·‚é‚±‚Æ‚ª‚Å‚«‚Ü‚·B ƒ{ƒ^ƒ“‚ð”z’u‚·‚é‚ÆAƒJƒŒƒ“ƒgƒ|ƒWƒVƒ‡ƒ“‚ÍŽŸ‚Ìs‚ÉŽ©“®“I‚ÉˆÚ“®‚µ‚Ü‚·B
 ^
 ƒ{ƒ^ƒ“‚ª‰Ÿ‚³‚ê‚½Žž‚ÉƒWƒƒƒ“ƒv‚µ‚ÄŽÀs‚³‚ê‚éƒvƒƒOƒ‰ƒ€‚Å‚ÍAƒVƒXƒeƒ€•Ï”stat‚Ì‰Šú’l‚Æ‚µ‚ÄƒIƒuƒWƒFƒNƒgID‚ª‘ã“ü‚³‚ê‚Ü‚·B
+^
+’Êí‚ÍAƒ{ƒ^ƒ“‚ÌŒ`ó‚Æ‚µ‚ÄWindowsƒVƒXƒeƒ€‚Å—pˆÓ‚³‚ê‚½‚à‚Ì‚ªŽg—p‚³‚ê‚Ü‚·B
+‚½‚¾‚µAobjimage–½—ß‚É‚æ‚Á‚Ä‰æ‘œ‚ðŽg—p‚µ‚½ƒJƒXƒ^ƒ€ƒ{ƒ^ƒ“‚ÌÝ’è‚ªs‚È‚í‚ê‚Ä‚¢‚éê‡‚ÍAŽ©—R‚ÈŠOŠÏ‚É‚·‚é‚±‚Æ‚ª‚Å‚«‚Ü‚·B
+ƒJƒXƒ^ƒ€ƒ{ƒ^ƒ“‚ÌÝ’è‚É‚Â‚¢‚Ä‚ÍAobjimage–½—ß‚Ì€‚ðŽQÆ‚µ‚Ä‚­‚¾‚³‚¢B
+
 
 %href
 objsize
-
+objimage
 
 
 
@@ -415,5 +420,44 @@ objmode–½—ß‚É‚æ‚èAƒtƒH[ƒJƒXˆÚ“®ƒ‚[ƒh‚Ì‹@”\‚ªOFF‚É‚³‚ê‚Ä‚¢‚éê‡‚ÍA[TAB]ƒL[‚
 %href
 winobj
 objmode
+
+%port-
+Let
+
+
+%index
+objimage
+ƒJƒXƒ^ƒ€ƒ{ƒ^ƒ“‚ÌÝ’è
+%group
+ƒIƒuƒWƒFƒNƒg§Œä–½—ß
+%prm
+id,x1,y1,x2,y2,x3,y3
+id    : ƒJƒXƒ^ƒ€ƒ{ƒ^ƒ“‚ÌŽQÆƒoƒbƒtƒ@ID
+x1,y1 : ƒJƒXƒ^ƒ€ƒ{ƒ^ƒ“‚ÌŽQÆÀ•W1(’ÊíŽž)
+x2,y2 : ƒJƒXƒ^ƒ€ƒ{ƒ^ƒ“‚ÌŽQÆÀ•W2(‰Ÿ‚µ‰º‚°Žž)
+x3,y3 : ƒJƒXƒ^ƒ€ƒ{ƒ^ƒ“‚ÌŽQÆÀ•W3(ƒ}ƒEƒXƒI[ƒo[Žž)
+
+%inst
+ƒJƒXƒ^ƒ€ƒ{ƒ^ƒ“‚ð”z’u‚·‚é‚½‚ß‚ÌÝ’è‚ðs‚È‚¢‚Ü‚·B
+ƒJƒXƒ^ƒ€ƒ{ƒ^ƒ“‚ÍAbutton–½—ß‚Åì¬‚³‚ê‚é‰Ÿ‚µƒ{ƒ^ƒ“‚ÌƒIƒuƒWƒFƒNƒgŠOŠÏ‚ð”CˆÓ‚Ì‰æ‘œ‚É’u‚«Š·‚¦‚é‚±‚Æ‚ª‚Å‚«‚Ü‚·B
+ƒJƒXƒ^ƒ€ƒ{ƒ^ƒ“‚ðì¬‚·‚é‚½‚ß‚É‚ÍA‚ ‚ç‚©‚¶‚ßƒ{ƒ^ƒ“‚Æ‚µ‚Ä•\Ž¦‚·‚é‚½‚ß‚Ì‰æ‘œ‚ð—pˆÓ‚µ‚È‚¯‚ê‚Î‚È‚è‚Ü‚¹‚ñB
+^
+idƒpƒ‰ƒ[ƒ^[‚ÅAƒJƒXƒ^ƒ€ƒ{ƒ^ƒ“‚Ì‰æ‘œ‚ªŠi”[‚³‚ê‚Ä‚¢‚é‰æ–Êƒoƒbƒtƒ@ID‚ðŽw’è‚µ‚Ü‚·B
+idƒpƒ‰ƒ[ƒ^[‚ðÈ—ª‚·‚é‚©A‚Ü‚½‚Í-1‚ðŽw’è‚·‚é‚ÆƒJƒXƒ^ƒ€ƒ{ƒ^ƒ“‚ÌÝ’è‚Í–³Œø‚Æ‚È‚èA’Êí‚ÌWindowsƒVƒXƒeƒ€‚ª—pˆÓ‚·‚éƒ{ƒ^ƒ“‚ªŽg—p‚³‚ê‚Ü‚·B
+(x1,y1)‚ÉA’Êí‚Ìƒ{ƒ^ƒ“‚Æ‚µ‚Ä•\Ž¦‚·‚é‰æ‘œ‚Ì¶ãÀ•W‚ðŽw’è‚µ‚Ü‚·B(ƒpƒ‰ƒ[ƒ^[È—ªŽž‚ÍA(0,0)‚ªŽw’è‚³‚ê‚Ü‚·)
+(x2,y2)‚Å‚ÍAƒ{ƒ^ƒ“‚ª‰Ÿ‚³‚ê‚½Žž‚ÉAƒ{ƒ^ƒ“‚É•\Ž¦‚·‚é‰æ‘œ‚Ì¶ãÀ•W‚ðŽw’è‚µ‚Ü‚·B(ƒpƒ‰ƒ[ƒ^[È—ªŽž‚ÍA(0,0)‚ªŽw’è‚³‚ê‚Ü‚·)
+(x3,y3)‚Å‚ÍAƒ}ƒEƒX‚ªƒ{ƒ^ƒ“ã‚Éæ‚Á‚½(ƒ}ƒEƒXƒI[ƒo[)ŽžAƒ{ƒ^ƒ“‚É•\Ž¦‚·‚é‰æ‘œ‚Ì¶ãÀ•W‚ðŽw’è‚µ‚Ü‚·B(ƒpƒ‰ƒ[ƒ^[È—ªŽž‚ÍAx1,y1‚Æ“¯—l‚Ì’l‚ªŽg—p‚³‚ê‚Ü‚·)
+^
+objimage–½—ß‚É‚æ‚Á‚ÄƒJƒXƒ^ƒ€ƒ{ƒ^ƒ“‚ÌÝ’è‚ªs‚È‚í‚ê‚½Œã‚ÍAbutton–½—ß‚Å”z’u‚³‚ê‚éƒ{ƒ^ƒ“‚·‚×‚Ä‚ÉÝ’è‚ª“K—p‚³‚ê‚Ü‚·B
+ƒJƒXƒ^ƒ€ƒ{ƒ^ƒ“‚ÍAŽw’è‚³‚ê‚½‰æ‘œ‚ðƒ{ƒ^ƒ“‚ª”z’u‚³‚ê‚Ä‚¢‚éêŠ‚ÉƒRƒs[‚·‚é‚±‚Æ‚ÅŠOŠÏ‚ð•ÏX‚µ‚Ä‚¢‚Ü‚·B
+ƒRƒs[‚³‚ê‚é”ÍˆÍ‚ÍAƒ{ƒ^ƒ“‚Æ“¯‚¶(objsize–½—ß‚ÅÝ’è‚³‚ê‚½)ƒTƒCƒY‚Æ‚È‚è‚Ü‚·B
+ŠOŠÏˆÈŠO‚Ì‹““®‚ÍA’Êí‚Ìƒ{ƒ^ƒ“‚Æ•Ï‚í‚è‚ ‚è‚Ü‚¹‚ñBƒ{ƒ^ƒ“ã‚Ì•¶Žš•\Ž¦‚âAƒtƒH[ƒJƒXˆÚ“®“™‚à“¯—l‚ÉƒTƒ|[ƒg‚³‚ê‚Ü‚·B
+ƒJƒXƒ^ƒ€ƒ{ƒ^ƒ“‚ÌÝ’è‚ÍA‰æ–Ê‚Ì‰Šú‰»Žž(cls–½—ß‚âscreen–½—ßŽÀsŽž)‚ÉƒNƒŠƒA‚³‚ê‚Ü‚·B
+
+%href
+button
+
+%port-
+Let
 
 

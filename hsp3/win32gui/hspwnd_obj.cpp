@@ -40,7 +40,7 @@ LRESULT CALLBACK MyEditProc( HWND hwnd , UINT msg , WPARAM wp , LPARAM lp ) {
 	return CallWindowProc( DefEditProc , hwnd , msg , wp , lp);
 }
 
-static UpdateCustomButton( HWND hwnd, int flag )
+static void UpdateCustomButton( HWND hwnd, int flag )
 {
 	int id;
 	HDC disthdc;
@@ -50,7 +50,7 @@ static UpdateCustomButton( HWND hwnd, int flag )
 
 	hw = (HWND)GetWindowLong( hwnd , GWL_HWNDPARENT );
 	id = GetWindowLong( hw, GWL_USERDATA );
-	bm = curwnd->GetBmscr( id );
+	bm = curwnd->GetBmscrSafe( id );
 
 	id = GetWindowLong( hwnd, GWL_USERDATA );
 	obj = bm->GetHSPObjectSafe( id );
@@ -68,7 +68,7 @@ static UpdateCustomButton( HWND hwnd, int flag )
 
 		obj->option |= 0x100;
 	} else {
-		if ( !obj->option & 0x100 ) return;
+		if (( obj->option & 0x100 ) == 0 ) return;
 		obj->option &= ~0x100;
 	}
 
@@ -452,7 +452,6 @@ HSPOBJINFO *Bmscr::AddHSPJumpEventObject( int id, HWND handle, int mode, int val
 
 void Bmscr::SetButtonImage( int id, int bufid, int x1, int y1, int x2, int y2, int x3, int y3 )
 {
-	HWND handle;
 	HSPOBJINFO *obj;
 	HSP3BTNSET *bset;
 
@@ -471,10 +470,10 @@ void Bmscr::SetButtonImage( int id, int bufid, int x1, int y1, int x2, int y2, i
 	bset = (HSP3BTNSET *)(&obj->varset);
 	bset->normal_x = x1;
 	bset->normal_y = y1;
-	bset->focus_x = x2;
-	bset->focus_y = y2;
-	bset->push_x = x3;
-	bset->push_y = y3;
+	bset->push_x = x2;
+	bset->push_y = y2;
+	bset->focus_x = x3;
+	bset->focus_y = y3;
 }
 
 
@@ -604,7 +603,7 @@ void Bmscr::DrawHSPCustomButton( HSPOBJINFO *obj, HDC drawhdc, int flag )
 	} else {
 		bset = (HSP3BTNSET *)(&obj->varset);
 		wnd = (HspWnd *)master_hspwnd;
-		src = wnd->GetBmscr( obj->owid );
+		src = wnd->GetBmscrSafe( obj->owid );
 		switch( flag ) {
 		case 1:
 			xx = bset->focus_x;
@@ -620,6 +619,12 @@ void Bmscr::DrawHSPCustomButton( HSPOBJINFO *obj, HDC drawhdc, int flag )
 			break;
 		}
 		BitBlt( drawhdc, rect.left, rect.top, rect.right, rect.bottom, src->hdc, xx, yy, SRCCOPY );
+	}
+
+	if ( obj->option & 0x200 ) {			// キーボードフォーカスあり
+		InflateRect( &rect, -3, -3 );
+		DrawFocusRect( drawhdc, &rect );
+		GetClientRect( obj->hCld, &rect );
 	}
 
 	SendMessage( obj->hCld, WM_GETTEXT, 255, (LPARAM)msgtmp );
@@ -644,6 +649,12 @@ void Bmscr::SendHSPObjectDraw( int wparam, LPDRAWITEMSTRUCT lparam )
 	if ( obj->owmode == HSPOBJ_NONE ) return;
 	hw = obj->hCld;
 	if ( hw != lparam->hwndItem ) return;
+
+	if ( lparam->itemState & ODS_FOCUS ) {
+		obj->option |= 0x200;
+	} else {
+		obj->option &= ~0x200;
+	}
 
 	flag = 0;
 	if ( obj->option & 0x100 ) flag = 1;
@@ -671,6 +682,9 @@ int Bmscr::AddHSPObjectButton( char *name, int flag, void *callptr )
 	hw = CreateWindow( "button", name, ws,
 				cx, cy, ox, oy, hwnd,
 				reinterpret_cast< HMENU >( static_cast< WORD >( MESSAGE_HSPOBJ + id ) ), hInst, NULL );
+
+	// ダブルクリックの受付を抑制 
+	SetClassLong( hw, GCL_STYLE, GetClassLong(hw, GCL_STYLE) & ~CS_DBLCLKS );
 
 	obj = AddHSPJumpEventObject( id, hw, HSPOBJ_TAB_ENABLE|HSPOBJ_OPTION_SETFONT, flag, callptr );
 	obj->func_delete = Object_WindowDelete;
