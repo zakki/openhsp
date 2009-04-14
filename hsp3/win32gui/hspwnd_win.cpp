@@ -33,6 +33,10 @@
 #define MM_MCINOTIFY    0x03B9
 #define MCI_NOTIFY_SUCCESSFUL   1
 
+#if defined( _MSC_VER )
+#pragma comment(lib,"msimg32.lib")
+#endif
+
 HspWnd *curwnd;
 static MM_NOTIFY_FUNC notifyfunc;
 
