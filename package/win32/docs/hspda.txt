@@ -571,8 +571,8 @@ HSPDA ver3.1 REFERENCE MANUAL                       HSP : Hot Soup Processor
 		・説明
 
 		定義されているすべての変数をファイルから読み込みます。
-		"filename"で指定されるファイルは、vload命令または
-		vload_start命令により変数データ保存されている必要があります。
+		"filename"で指定されるファイルは、vsave命令または
+		vsave_start命令により変数データ保存されている必要があります。
 		vload命令は、現在定義されているすべての変数名をファイルに
 		保存されているデータから検索して、名前が一致したものを
 		読み込みます。
