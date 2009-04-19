@@ -479,12 +479,13 @@ void HspWnd::MakeBmscrWnd( int id, int type, int xx, int yy, int wx, int wy, int
 	Bmscr * bm = new Bmscr;
 	mem_bm[ id ] = bm;
 
-	bm->Init( hInst, hwnd, sx, sy,
-	 ( mode & 0x01 ? BMSCR_PALMODE_PALETTECOLOR : BMSCR_PALMODE_FULLCOLOR ) );
-
 	bm->wid = id;
 	bm->master_hspwnd = static_cast< void * >( this );
 	bm->type = wndtype;
+
+	bm->Init( hInst, hwnd, sx, sy,
+	 ( mode & 0x01 ? BMSCR_PALMODE_PALETTECOLOR : BMSCR_PALMODE_FULLCOLOR ) );
+
 	bm->wchg = 0;
 	bm->viewx = 0;
 	bm->viewy = 0;
