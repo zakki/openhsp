@@ -20,6 +20,7 @@
 #const global OBJ_STATIC 0x800
 #const global OBJ_GRAVITY 0x1000
 #const global OBJ_LATE 0x4000
+#const global OBJ_FIRST 0x8000
 
 #const global OBJ_STAND 0x10000
 #const global OBJ_GROUND 0x20000

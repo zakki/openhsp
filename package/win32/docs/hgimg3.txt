@@ -138,6 +138,11 @@ HGIMG ver3.2   REFERENCE MANUAL        High Performance Graphic Image Plugin
 
 ・更新履歴
 
+	2009/05/01 ( Ver3.2β3 )
+
+		2D Elements Editor(elm2d)ツール及びサンプルを追加
+		オブジェクトのモードにOBJ_FIRSTを追加
+
 	2009/03/11 ( Ver3.2β2 )
 
 		hgprm命令のパラメーター説明を追加。
@@ -707,7 +712,13 @@ HGIMG ver3.2   REFERENCE MANUAL        High Performance Graphic Image Plugin
 		OBJ_FLIP             ボーダー領域で反転する
 		OBJ_BORDER           ボーダー領域を有効にする
 		OBJ_LATE             常に後から描かれる(半透明オブジェクト用)
+		OBJ_FIRST            常に最初に描かれる
 		OBJ_LOOKAT           特定オブジェクトの方向を常に向く
+		OBJ_LAND             Y座標を常に一定に保つ
+		OBJ_GROUND           地面として認識される
+		OBJ_STAND            地面の上に配置する
+		OBJ_GRAVITY          重力計算を有効にする
+		OBJ_STATIC           障害物として認識される
 
 	複数の項目を同時に選択する場合は、「OBJ_LATE|OBJ_MOVE」のように
 	「|」で区切って指定してください。何も指定しない場合は、0にするか
