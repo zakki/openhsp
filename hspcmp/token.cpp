@@ -1453,6 +1453,21 @@ char *CToken::SendLineBufPP( char *str, int *lines )
 #undef IS_CHAR_HEAD
 
 
+char *CToken::ExpandStrComment2( char *str )
+{
+	//		"*/" で終端していない場合は NULL を返す
+	//
+	int mulstr_bak = mulstr;
+	mulstr = LMODE_COMMENT;
+	char *result = ExpandStrComment( str, 1 );
+	if ( mulstr == LMODE_COMMENT ) {
+		result = NULL;
+	}
+	mulstr = mulstr_bak;
+	return result;
+}
+
+
 int CToken::ReplaceLineBuf( char *str1, char *str2, char *repl, int opt, MACDEF *macdef )
 {
 	//		linebufのキーワードを置き換え
@@ -1499,10 +1514,15 @@ int CToken::ReplaceLineBuf( char *str1, char *str2, char *repl, int opt, MACDEF 
 				if ( type==';' ) type = TK_SEPARATE;
 				if ( type=='}' ) type = TK_SEPARATE;
 				if ( type=='/' ) {		// Cコメント??
-					if (*wp=='/') { wp++; type = TK_SEPARATE; }
+					if (*wp=='/') { type = TK_SEPARATE; }
 					if (*wp=='*') {
-						mulstr = LMODE_COMMENT;
-						wp++; type = TK_SEPARATE;
+						char *start = (char *)wp-1;
+						char *end = ExpandStrComment2( start+2 );
+						if ( end == NULL ) {	// 範囲コメントが次の行まで続いている
+							type = TK_SEPARATE;
+						} else {
+							wp = (unsigned char *)end;
+						}
 					}
 				}
 				if ( flg ) {
