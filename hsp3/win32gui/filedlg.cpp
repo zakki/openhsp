@@ -41,7 +41,7 @@ void PopFileInitialize (HWND hwnd)
      }
 
 // SJIS‚Ì1ƒoƒCƒg–Ú‚©’²‚×‚é
-#define is_sjis1(c)	 ( ( (c) >= 0x81 && (c) <= 0x9F ) || ( (c) >= 0xE0 && (c) <= 0xFC ) )
+#define is_sjis1(c)	 ( ( (unsigned char)(c) >= 0x81 && (unsigned char)(c) <= 0x9F ) || ( (unsigned char)(c) >= 0xE0 && (unsigned char)(c) <= 0xFC ) )
 
 void fd_ini( HWND hwnd, char *extname, char *extinfo )
 {
