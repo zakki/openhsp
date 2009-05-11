@@ -176,6 +176,9 @@ char 	s_rec[1]= "", *hsp_prestr[] =
 	"$039 9 objimage",				// (ver3.2)
 	"$03a 9 objskip",				// (ver3.2)
 	"$03b 9 objenable",				// (ver3.2)
+	"$03c 9 celload",				// (ver3.2)
+	"$03d 9 celdiv",				// (ver3.2)
+	"$03e 9 celput",				// (ver3.2)
 
 	//	enhanced command (ver3.0)
 

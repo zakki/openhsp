@@ -14,6 +14,7 @@
 #include "../strbuf.h"
 #include "../strnote.h"
 #include "../supio.h"
+#include "fcpoly.h"
 
 #include <ocidl.h>
 #include <olectl.h>
@@ -33,12 +34,9 @@
 #define MM_MCINOTIFY    0x03B9
 #define MCI_NOTIFY_SUCCESSFUL   1
 
-#if defined( _MSC_VER )
-#pragma comment(lib,"msimg32.lib")
-#endif
-
 HspWnd *curwnd;
 static MM_NOTIFY_FUNC notifyfunc;
+extern int resY0, resY1;				// "fcpoly.h"のパラメーター
 
 /*------------------------------------------------------------*/
 /*
@@ -479,13 +477,12 @@ void HspWnd::MakeBmscrWnd( int id, int type, int xx, int yy, int wx, int wy, int
 	Bmscr * bm = new Bmscr;
 	mem_bm[ id ] = bm;
 
-	bm->wid = id;
-	bm->master_hspwnd = static_cast< void * >( this );
-	bm->type = wndtype;
-
 	bm->Init( hInst, hwnd, sx, sy,
 	 ( mode & 0x01 ? BMSCR_PALMODE_PALETTECOLOR : BMSCR_PALMODE_FULLCOLOR ) );
 
+	bm->wid = id;
+	bm->master_hspwnd = static_cast< void * >( this );
+	bm->type = wndtype;
 	bm->wchg = 0;
 	bm->viewx = 0;
 	bm->viewy = 0;
@@ -797,6 +794,10 @@ void Bmscr::Cls( int mode )
 	objstyle = WS_CHILD|WS_VISIBLE;
 	for(i=0;i<BMSCR_SAVEPOS_MAX;i++) { savepos[i] = 0; }
 	palcolor = 0;
+
+	//		CEL initalize
+	//
+	SetCelDivide( 1, 1 );
 
 	//		all update
 	//
@@ -1605,10 +1606,10 @@ void Bmscr::CnvRGB16( PTRIVERTEX target, DWORD src )
 {
 	//		RGBAコードをTRIVERTEXのRGB16コードに変換して設定する
 	//
-	target->Alpha = (src>>16) & 0xff00;
-	target->Red   = (src>>8) & 0xff00;
-	target->Green = (src) & 0xff00;
-	target->Blue  = (src<<8) & 0xff00;
+	target->Alpha = (COLOR16)((src>>16) & 0xff00);
+	target->Red   = (COLOR16)((src>>8) & 0xff00);
+	target->Green = (COLOR16)((src) & 0xff00);
+	target->Blue  = (COLOR16)((src<<8) & 0xff00);
 }
 
 
@@ -1630,6 +1631,36 @@ void Bmscr::GradFill( int x, int y, int sx, int sy, int mode, DWORD col1, DWORD 
 
 	GradientFill( hdc, axis, 2, &grad_rect, 1, mode );
 	Send( x,y,sx,sy );
+}
+
+
+int Bmscr::GetAlphaOperation( void )
+{
+	//		gmodeのモードをHGIMG互換のAlphaOperationに変換する
+	//
+	int alpha;
+	alpha = gfrate;
+	if ( alpha < 0 ) alpha = 0;
+	if ( alpha > 255 ) {
+		alpha = 256;
+		if ( gmode >= 4 ) alpha = 255;
+	}
+	switch( gmode ) {
+	case 3:					// 半透明blend
+		break;
+	case 4:					// 半透明blend+透明色
+		break;
+	case 5:					// 色加算
+		alpha |= 0x200;
+		break;
+	case 6:					// 色減算
+		alpha |= 0x300;
+		break;
+	default:
+		alpha = 0x100;		// 標準
+		break;
+	}
+	return alpha;
 }
 
 
@@ -1659,4 +1690,38 @@ void Bmscr::GradFillEx( int *vx, int *vy, int *vcol )
 	ax = maxx - minx + 1; ay = maxy - miny + 1;
 	if (( ax > 0 )&&( ay > 0 )) { Send( minx,miny,ax,ay ); }
 }
+
+
+void Bmscr::SetCelDivide( int new_divx, int new_divy )
+{
+	//		セル分割数を設定
+	//
+	if (( new_divx < 1 )||( new_divy < 1 )) throw HSPERR_ILLEGAL_FUNCTION;
+	divx = new_divx;
+	divy = new_divy;
+	divsx = sx / divx;
+	divsy = sy / divy;
+}
+
+
+int Bmscr::CelPut( Bmscr *src, int id )
+{
+	//		セルをコピー
+	//
+	int x,y,srcsx,srcsy;
+	int bak_cx, bak_cy, res;
+	srcsx = src->divsx;
+	srcsy = src->divsy;
+	x = ( id % src->divx ) * srcsx;
+	y = ( id / src->divx ) * srcsy;
+	bak_cx = cx + srcsx;
+	bak_cy = cy + srcsy;
+	cx -= srcsx/2;
+	cy -= srcsy/2;
+	res = Copy( src, x, y, srcsx, srcsy );
+	cx = bak_cx;
+	cy = bak_cy;
+	return res;
+}
+
 

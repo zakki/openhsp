@@ -90,6 +90,7 @@ BMSCR_SAVEPOS_MOSUEW,
 BMSCR_SAVEPOS_MAX,
 };
 
+
 //	Bmscr class
 //
 class Bmscr {
@@ -160,7 +161,11 @@ public:
 	void SetObjectMode( int id, int owmode );
 	void GradFill( int x, int y, int sx, int sy, int mode, DWORD col1, DWORD col2 );
 	void GradFillEx( int *vx, int *vy, int *vcol );
-	
+	int GetAlphaOperation( void );
+
+	void SetCelDivide( int new_divx, int new_divy );
+	int CelPut( Bmscr *src, int id );
+
 	//
 	//		Window data structure
 	//
@@ -229,6 +234,8 @@ public:
 	short	btn_x1, btn_y1;				// Custom Button Image X,Y
 	short	btn_x2, btn_y2;				// Custom Button Image X,Y (press)
 	short	btn_x3, btn_y3;				// Custom Button Image X,Y (mouse over)
+	short	divx, divy;					// Divide value for CEL
+	short	divsx, divsy;				// CEL size
 private:
 	void Blt( int mode, Bmscr *src, int xx, int yy, int asx, int asy );
 	void CnvRGB16( PTRIVERTEX target, DWORD src );

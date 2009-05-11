@@ -43,7 +43,7 @@ static int ckey,cklast,cktrg;
 static int msact;
 static int dispflg;
 
-extern int resY0, resY1;
+extern int resY0, resY1;				// "fcpoly.h"のパラメーター
 
 #define GSQUARE_MODE_TEXTURE 0
 #define GSQUARE_MODE_COLORFILL 1
@@ -475,35 +475,6 @@ static void DrawRectEx( int mode, int color, int alpha, int x, int y, int sx, in
 }
 
 
-static int GetAlphaOperation( Bmscr *bm )
-{
-	//		gmodeのモードをAlphaOperationに変換する
-	//
-	int alpha;
-	alpha = bm->gfrate;
-	if ( alpha < 0 ) alpha = 0;
-	if ( alpha > 255 ) {
-		alpha = 256;
-		if ( bm->gmode >= 4 ) alpha = 255;
-	}
-	switch( bm->gmode ) {
-	case 3:					// 半透明blend
-		break;
-	case 4:					// 半透明blend+透明色
-		break;
-	case 5:					// 色加算
-		alpha |= 0x200;
-		break;
-	case 6:					// 色減算
-		alpha |= 0x300;
-		break;
-	default:
-		alpha = 0x100;		// 標準
-		break;
-	}
-	return alpha;
-}
-
 static int CnvRGB( int color )
 {
 	int res=0;
@@ -511,6 +482,40 @@ static int CnvRGB( int color )
 	res |= (color>>16) & 0xff;
 	res |= (color & 0xff)<<16;
 	return res;
+}
+
+
+static int GetAttrOperation( void )
+{
+	//		gmodeのモードをHGIMG互換のattr値に変換する
+	//
+	int attr;
+	attr = 0;
+	if ( bmscr->gmode == 2 ) { attr = NODE_ATTR_COLKEY; }
+	if ( bmscr->gmode == 4 ) { attr = NODE_ATTR_COLKEY; SetPolyColorKey( bmscr->color ); }
+	return attr;
+}
+
+
+static void GRotateSub( Bmscr *bm2, int x, int y, int sx, int sy, int sizex, int sizey, double rot )
+{
+	int tx0,ty0,tx1,ty1;
+	int attr;
+
+	SetPolyDest( bmscr->pBit, bmscr->sx, bmscr->sy );
+	SetPolySource( bm2->pBit, bm2->sx, bm2->sy );
+
+	tx0 = GetLimit( x, 0, bm2->sx );
+	ty0 = GetLimit( y, 0, bm2->sy );
+	tx1 = GetLimit( tx0 + sx - 1, 0, bm2->sx );
+	ty1 = GetLimit( ty0 + sy - 1, 0, bm2->sy );
+	ty0 = bm2->sy - 1 - ty0;
+	ty1 = bm2->sy - 1 - ty1;
+	attr = GetAttrOperation();
+	DrawSpriteEx( bmscr->palmode, attr, bmscr->GetAlphaOperation(), bmscr->cx, bmscr->cy, sizex, sizey, rot, tx0, ty1, tx1, ty0 );
+	if ( resY0 >= 0 ) {
+		bmscr->Send( 0, resY0, bmscr->sx, resY1-resY0+1 );
+	}
 }
 
 
@@ -1101,7 +1106,7 @@ static int cmdfunc_extcmd( int cmd )
 		p4 = code_getdi(bmscr->gy);		// パラメータ4:数値
 		SetPolyDest( bmscr->pBit, bmscr->sx, bmscr->sy );
 		if ( bmscr->palmode ) p6 = bmscr->palcolor; else p6 = CnvRGB( bmscr->color );
-		DrawRectEx( bmscr->palmode, p6, GetAlphaOperation( bmscr ), p1, p2, p3, p4, rot );
+		DrawRectEx( bmscr->palmode, p6, bmscr->GetAlphaOperation(), p1, p2, p3, p4, rot );
 		if ( resY0 >= 0 ) {
 			bmscr->Send( 0, resY0, bmscr->sx, resY1-resY0+1 );
 		}
@@ -1110,8 +1115,6 @@ static int cmdfunc_extcmd( int cmd )
 	case 0x36:								// grotate
 		{
 		Bmscr *bm2;
-		int tx0,ty0,tx1,ty1;
-		int attr;
 		double rot;
 
 		p1 = code_getdi(0);			// パラメータ1:数値
@@ -1123,7 +1126,9 @@ static int cmdfunc_extcmd( int cmd )
 
 		bm2 = wnd->GetBmscrSafe( p1 );	// 転送元のBMSCRを取得
 		if ( bmscr->palmode != bm2->palmode ) throw HSPERR_ILLEGAL_FUNCTION;
-
+#if 0
+		int tx0,ty0,tx1,ty1;
+		int attr;
 		SetPolyDest( bmscr->pBit, bmscr->sx, bmscr->sy );
 		SetPolySource( bm2->pBit, bm2->sx, bm2->sy );
 
@@ -1133,14 +1138,14 @@ static int cmdfunc_extcmd( int cmd )
 		ty1 = GetLimit( ty0+bmscr->gy-1, 0, bm2->sy );
 		ty0 = bm2->sy - 1 - ty0;
 		ty1 = bm2->sy - 1 - ty1;
-		attr = 0;
-		if ( bmscr->gmode == 2 ) { attr = NODE_ATTR_COLKEY; }
-		if ( bmscr->gmode == 4 ) { attr = NODE_ATTR_COLKEY; SetPolyColorKey( bmscr->color ); }
-
-		DrawSpriteEx( bmscr->palmode, attr, GetAlphaOperation(bmscr), bmscr->cx, bmscr->cy, p4, p5, rot, tx0, ty1, tx1, ty0 );
+		attr = GetAttrOperation();
+		DrawSpriteEx( bmscr->palmode, attr, bmscr->GetAlphaOperation(), bmscr->cx, bmscr->cy, p4, p5, rot, tx0, ty1, tx1, ty0 );
 		if ( resY0 >= 0 ) {
 			bmscr->Send( 0, resY0, bmscr->sx, resY1-resY0+1 );
 		}
+#else
+		GRotateSub( bm2, p2, p3, bmscr->gx, bmscr->gy, p4, p5, rot );
+#endif
 		break;
 		}
 	case 0x37:								// gsquare
@@ -1198,11 +1203,8 @@ static int cmdfunc_extcmd( int cmd )
 			}
 		}
 
-		attr = 0;
-		if ( bmscr->gmode == 2 ) { attr = NODE_ATTR_COLKEY; }
-		if ( bmscr->gmode == 4 ) { attr = NODE_ATTR_COLKEY; SetPolyColorKey( bmscr->color ); }
-
-		DrawSquareEx( bmscr->palmode, color, attr, GetAlphaOperation(bmscr), tmp_x, tmp_y, tmp_tx, tmp_ty );
+		attr = GetAttrOperation();
+		DrawSquareEx( bmscr->palmode, color, attr, bmscr->GetAlphaOperation(), tmp_x, tmp_y, tmp_tx, tmp_ty );
 
 		if ( resY0 >= 0 ) {
 			bmscr->Send( 0, resY0, bmscr->sx, resY1-resY0+1 );
@@ -1253,6 +1255,64 @@ static int cmdfunc_extcmd( int cmd )
 		break;
 		}
 
+	case 0x3c:								// celload
+		{
+		int i;
+		char fname[_MAX_PATH];
+		strncpy( fname, code_gets(), _MAX_PATH-1 );
+		p1 = code_getdi( -1 );
+		p2 = code_getdi( 0 );
+		if ( p1 < 0 ) p1 = wnd->GetEmptyBufferId();
+
+		wnd->MakeBmscrOff( p1, 32, 32, p2 );
+		i = wnd->Picload( p1, fname, 0 );
+		if ( i ) throw HSPERR_PICTURE_MISSING;
+
+		ctx->stat = p1;
+		break;
+		}
+	case 0x3d:								// celdiv
+		{
+		Bmscr *bm2;
+		p1=code_getdi(1);
+		p2=code_getdi(1);
+		p3=code_getdi(1);
+		bm2 = wnd->GetBmscrSafe( p1 );
+		bm2->SetCelDivide( p2, p3 );
+		break;
+		}
+	case 0x3e:								// celput
+		{
+		Bmscr *bm2;
+		double zx,zy,rot;
+		int x,y,srcsx,srcsy,putsx,putsy;
+
+		p1=code_getdi(1);
+		p2=code_getdi(0);
+		zx = code_getdd(1.0);
+		zy = code_getdd(1.0);
+		rot = code_getdd(0.0);
+		bm2 = wnd->GetBmscrSafe( p1 );	// 転送元のBMSCRを取得
+
+		if (( rot == 0.0 )&&( zx == 1.0 )&&( zy == 1.0 )) {
+			//		変形なし
+			if ( bmscr->CelPut( bm2, p2 ) ) throw HSPERR_UNSUPPORTED_FUNCTION;
+			break;
+		}
+
+		//	変形あり
+		if ( bmscr->palmode != bm2->palmode ) throw HSPERR_ILLEGAL_FUNCTION;
+
+		srcsx = bm2->divsx;
+		srcsy = bm2->divsy;
+		x = ( p2 % bm2->divx ) * srcsx;
+		y = ( p2 / bm2->divx ) * srcsy;
+		putsx = (int)((double)srcsx * zx );
+		putsy = (int)((double)srcsy * zy );
+		GRotateSub( bm2, x, y, srcsx, srcsy, putsx, putsy, rot );
+		bmscr->cx += putsx;
+		break;
+		}
 
 #endif
 
