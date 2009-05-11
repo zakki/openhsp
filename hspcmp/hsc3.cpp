@@ -141,7 +141,7 @@ int CHsc3::PreProcess( char *fname, char *outname, int option, char *rname, void
 
 	tk.SetErrorBuf( errbuf );
 	tk.SetCommonPath( common_path );
-	tk.LabelRegist2( (char *)hsp_prestr );
+	tk.LabelRegist2( hsp_prestr );
 	AddSystemMacros( &tk, option );
 
 	if ( option & HSC3_OPT_MAKEPACK ) {
@@ -232,7 +232,7 @@ int CHsc3::Compile( char *fname, char *outname, int mode )
 
 	tk.SetErrorBuf( errbuf );
 	tk.SetCommonPath( common_path );
-	tk.LabelRegist( (char *)hsp_prestr, 1 );
+	tk.LabelRegist( hsp_prestr, 1 );
 	tk.SetHeaderOption( hed_option, hed_runtime );
 	tk.SetCmpOption( cmpopt );
 
@@ -264,8 +264,8 @@ int CHsc3::GetCmdList( int option )
 
 	tk.SetErrorBuf( errbuf );
 	tk.SetCommonPath( common_path );
-	tk.LabelRegist3( (char *)hsp_prestr );			// 標準キーワード
-	tk.LabelRegist3( (char *)hsp_prepp );			// プリプロセッサキーワード
+	tk.LabelRegist3( hsp_prestr );			// 標準キーワード
+	tk.LabelRegist3( hsp_prepp );			// プリプロセッサキーワード
 	AddSystemMacros( &tk, option );
 
 //	res = tk.ExpandFile( &outbuf, "hspdef.as", "hspdef.as" );

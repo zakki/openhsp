@@ -444,7 +444,7 @@ char *CLabel::GetListToken( char *str )
 }
 
 
-int CLabel::RegistList( void *list, char *modname )
+int CLabel::RegistList( char **list, char *modname )
 {
 	//		キーワードリストを登録する
 	//
@@ -453,8 +453,7 @@ int CLabel::RegistList( void *list, char *modname )
 	char tmp[256];
 	int id,i,type,opt;
 	i = 1;
-	plist = (char **)list;
-	p = (char *)list;
+	plist = list;
 	while(1) {
 		p = tmp;
 		strcpy( p, plist[i++] );
@@ -473,7 +472,7 @@ int CLabel::RegistList( void *list, char *modname )
 }
 
 
-int CLabel::RegistList2( void *list, char *modname )
+int CLabel::RegistList2( char **list, char *modname )
 {
 	//		キーワードリストをword@modnameの代替マクロとして登録する
 	//
@@ -482,8 +481,7 @@ int CLabel::RegistList2( void *list, char *modname )
 	char tmp[256];
 	int id,i,type,opt;
 	i = 1;
-	plist = (char **)list;
-	p = (char *)list;
+	plist = list;
 	while(1) {
 		p = tmp;
 		strcpy( p, plist[i++] );
@@ -505,7 +503,7 @@ int CLabel::RegistList2( void *list, char *modname )
 }
 
 
-int CLabel::RegistList3( void *list )
+int CLabel::RegistList3( char **list )
 {
 	//		キーワードリストを色分けテーブル用に登録する
 	//
@@ -538,8 +536,7 @@ int CLabel::RegistList3( void *list )
 	};
 
 	i = 1;
-	plist = (char **)list;
-	p = (char *)list;
+	plist = list;
 	while(1) {
 		p = tmp;
 		strcpy( p, plist[i++] );

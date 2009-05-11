@@ -151,9 +151,9 @@ public:
 	char *GetLook( void );
 	char *GetLookResult( void );
 	int GetLookResultInt( void );
-	int LabelRegist( char *list, int mode );
-	int LabelRegist2( char *list );
-	int LabelRegist3( char *list );
+	int LabelRegist( char **list, int mode );
+	int LabelRegist2( char **list );
+	int LabelRegist3( char **list );
 	int LabelDump( CMemBuf *out, int option );
 	int GetLabelBufferSize( void );
 	int RegistExtMacroPath( char *name, char *str );

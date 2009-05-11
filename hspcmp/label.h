@@ -82,9 +82,9 @@ public:
 	LABOBJ *GetLabel( int id );
 	void DumpLabel( char *str );
 	void DumpHSPLabel( char *str, int option );
-	int RegistList( void *list, char *modname );
-	int RegistList2( void *list, char *modname );
-	int RegistList3( void *list );
+	int RegistList( char **list, char *modname );
+	int RegistList2( char **list, char *modname );
+	int RegistList3( char **list );
 	int GetNumEntry( void ) { return cur; };
 	void AddReference( int id );
 	int GetReference( int id );

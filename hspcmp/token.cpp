@@ -3332,7 +3332,7 @@ void CToken::SetCommonPath( char *path )
 }
 
 
-int CToken::LabelRegist( char *list, int mode )
+int CToken::LabelRegist( char **list, int mode )
 {
 	//		ƒ‰ƒxƒ‹î•ñ‚ğ“o˜^
 	//
@@ -3343,7 +3343,7 @@ int CToken::LabelRegist( char *list, int mode )
 }
 
 
-int CToken::LabelRegist2( char *list )
+int CToken::LabelRegist2( char **list )
 {
 	//		ƒ‰ƒxƒ‹î•ñ‚ğ“o˜^(ƒ}ƒNƒ)
 	//
@@ -3351,7 +3351,7 @@ int CToken::LabelRegist2( char *list )
 }
 
 
-int CToken::LabelRegist3( char *list )
+int CToken::LabelRegist3( char **list )
 {
 	//		ƒ‰ƒxƒ‹î•ñ‚ğ“o˜^(F•ª‚¯—p)
 	//
