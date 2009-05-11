@@ -110,7 +110,6 @@ private:
 	//	data
 	char *symbol;						// Symbol Table
 	LABOBJ *mem_lab;					// Label object
-	LABOBJ *lab;						// work
 
 	char *symblock[def_maxblock];		// Symbol Table Block
 	int	curblock;						// Current Block

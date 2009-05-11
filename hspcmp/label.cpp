@@ -105,7 +105,7 @@ int CLabel::Regist( char *name, int type, int opt )
 	}
 
 	a = cur;
-	lab=&mem_lab[cur++];
+	LABOBJ *lab=&mem_lab[cur++];
 	lab->flag = 1;
 	lab->type = type;
 	lab->opt  = opt;
@@ -156,7 +156,7 @@ void CLabel::SetData( int id, char *str )
 {
 	//		set data
 	//
-	lab=&mem_lab[id];
+	LABOBJ *lab=&mem_lab[id];
 	if ( str == NULL ) {
 		lab->data = NULL;
 		return;
@@ -169,7 +169,7 @@ void CLabel::SetData2( int id, char *str, int size )
 {
 	//		set data
 	//
-	lab=&mem_lab[id];
+	LABOBJ *lab=&mem_lab[id];
 	if ( str == NULL ) {
 		lab->data2 = NULL;
 		return;
@@ -189,7 +189,7 @@ int CLabel::Search( char *oname )
 	if (cur==0) return -1;
 
 	hash = StrCase( oname );
-	lab = mem_lab;
+	LABOBJ *lab = mem_lab;
 	for(a=0;a<cur;a++) {
 		if ( lab->flag >= 0 ) {
 			if ( hash == lab->hash ) {
@@ -221,7 +221,7 @@ int CLabel::SearchLocal( char *oname, char *loname )
 
 	hash = StrCase( oname );
 	hash2 = GetHash( loname );
-	lab = mem_lab;
+	LABOBJ *lab = mem_lab;
 	for(a=0;a<cur;a++) {
 		if ( lab->flag >= 0 ) {
 			if (lab->eternal) {
@@ -605,7 +605,7 @@ void CLabel::DumpLabel( char *str )
 	sprintf( tmp,"#Labels:%d",cur );
 	p=Prt( p,tmp );
 	for(a=0;a<cur;a++) {
-		lab=&mem_lab[a];
+		LABOBJ *lab=&mem_lab[a];
 		sprintf( tmp,"#ID:%d (%s) flag:%d  type:%d  opt:%x",a,lab->name,lab->flag,lab->type,lab->opt );
 		p=Prt( p,tmp );
 //		lab = GetLabel( Search( lab->name) );
@@ -625,7 +625,7 @@ void CLabel::DumpHSPLabel( char *str, int option )
 	int a;
 	p = str;
 	for(a=0;a<cur;a++) {
-		lab=&mem_lab[a]; typem = NULL;
+		LABOBJ *lab=&mem_lab[a]; typem = NULL;
 		switch( lab->type ) {
 		case LAB_TYPE_PPEX_PRECMD:
 			if ( option & LAB_DUMPMODE_RESCMD ) typem = "pre|func";
@@ -669,7 +669,7 @@ void CLabel::AddReference( int id )
 {
 	//		ŽQÆ‰ñ”‚ð+1‚·‚é
 	//
-	lab=&mem_lab[id];
+	LABOBJ *lab=&mem_lab[id];
 	lab->ref++;
 }
 
@@ -680,7 +680,7 @@ int CLabel::GetReference( int id )
 	//
 	int total;
 	LABREL *rel;
-	lab=&mem_lab[id];
+	LABOBJ *lab=&mem_lab[id];
 	total = lab->ref;
 	rel = lab->rel;
 	if ( rel != NULL ) {
@@ -700,7 +700,7 @@ int CLabel::SearchRelation( int id, int rel_id )
 	//		(0=‚È‚µ/1=‚ ‚è)
 	//
 	LABREL *tmp;
-	lab=&mem_lab[id];
+	LABOBJ *lab=&mem_lab[id];
 	tmp = lab->rel;
 	if ( tmp == NULL ) return 0;
 	while(1) {
@@ -725,7 +725,7 @@ void CLabel::AddRelation( int id, int rel_id )
 	rel->link = NULL;
 	rel->rel_id = rel_id;
 
-	lab=&mem_lab[id];
+	LABOBJ *lab=&mem_lab[id];
 	if ( lab->rel == NULL ) {
 		lab->rel = rel;
 		return;
