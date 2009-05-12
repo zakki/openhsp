@@ -1998,6 +1998,36 @@ static int cmdfunc_prog( int cmd )
 		hspctx->runmode = RUNMODE_LOGMES;
 		return RUNMODE_LOGMES;
 
+	case 0x1d:								// newlab
+		{
+		PVal *pval;
+		APTR aptr;
+		unsigned short *label;
+		int i;
+		aptr = code_getva( &pval );
+		label = NULL;
+		switch( type ) {
+		case TYPE_INUM:
+			i = code_geti();
+			if ( i == 0 ) label = mcsbak;
+			if ( i == 1 ) label = mcs;
+			break;
+		case TYPE_LABEL:
+			label = code_getlb2();
+			break;
+		default:
+			throw HSPERR_TYPE_MISMATCH;
+		}
+		code_setva( pval, aptr, HSPVAR_FLAG_LABEL, &label );
+		break;
+		}
+
+	case 0x1e:								// resume
+		break;
+
+	case 0x1f:								// yield
+		break;
+
 	default:
 		throw HSPERR_UNSUPPORTED_FUNCTION;
 	}

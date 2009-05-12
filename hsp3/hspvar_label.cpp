@@ -70,7 +70,10 @@ static void HspVarLabel_Alloc( PVal *pval, const PVal *pval2 )
 	pval->mode = HSPVAR_MODE_MALLOC;
 	pt = sbAlloc( size );
 	fv = (HSPVAR_LABEL *)pt;
+#if 0
+	//	sbAlloc領域は0クリアされるので不要です(onitama)
 	for(i=0;i<(int)(size/sizeof(HSPVAR_LABEL));i++) { fv[i]=NULL; }
+#endif
 	if ( pval2 != NULL ) {
 		memcpy( pt, pval->pt, pval->size );
 		sbFree( pval->pt );
