@@ -406,7 +406,6 @@ Let
 #modinit
 newmod
 delmod
-setmod
 %port+
 Let
 
