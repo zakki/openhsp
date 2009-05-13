@@ -174,6 +174,10 @@ void AHTMODEL::SetAHTOption( char *name, char *value )
 		exp->PutCR();
 		return;
 	}
+	if (tstrcmp(name,"helpkw")) {
+		SetHelpKeyword( value );
+		return;
+	}
 }
 
 
@@ -207,6 +211,9 @@ char *AHTMODEL::GetAHTOption( char *name )
 	}
 	if (tstrcmp(name,"source")) {
 		return fname;
+	}
+	if (tstrcmp(name,"helpkw")) {
+		return GetHelpKeyword();
 	}
 	return (char *)&dummy;
 }
@@ -697,6 +704,13 @@ char *AHTMODEL::GetName( void )
 	}
 	return name;
 }
+
+
+void AHTMODEL::SetHelpKeyword( char *name )
+{
+	strcpy2( helpkw, name, 256 );
+}
+
 
 //-------------------------------------------------------------
 //		AHTProperty Interfaces

@@ -128,6 +128,7 @@ public:
 	void SetIconId( int id );
 	void SetStdBuffer( CMemBuf *buf );
 	void TerminateExp( void ) { exp->Put(0); };
+	void SetHelpKeyword( char *name );
 
 	char *GetName( void );
 	char *GetClass( void ) { return classname; }
@@ -136,6 +137,7 @@ public:
 	char *GetIconFile( void ) { return icon; }
 	char *GetSource( void ) { return fname; }
 	char *GetSourcePath( void ) { return fpath; }
+	char *GetHelpKeyword( void ) { return helpkw; }
 
 	int GetId( void ) { return id; }
 	int GetFlag( void ) { return flag; }
@@ -192,6 +194,7 @@ private:
 	char ver[32];			// version
 	char fpath[AHTMODEL_FNMAX];		// data path name
 	char fname[AHTMODEL_FNMAX];		// data file name
+	char helpkw[128];		// keyword for help
 	AHTPROP	*refprop;		// reference prop for name
 
 	char icon[32];			// icon filename (opt)

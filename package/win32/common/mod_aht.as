@@ -4,7 +4,7 @@
 #include "mod_fontdlg.as"
 
 #module ahtmod
-#define APPNAME "Peas ver1.0"
+#define APPNAME "Peas ver1.1"
 #include "hspcmp.as"
 
 #enum AHTTYPE_EDIT_INT = 0	// 入力枠(結果=int,sub=最小,sub2=最大)
@@ -37,6 +37,8 @@
 	sdim mflag, 64
 	sdim glid, 64
 	sdim exp, 1024
+	sdim helpkw, 256
+
 	dim maxis, 8
 	dim maxis2, 8
 
@@ -137,10 +139,10 @@
 	pscr=1
 	mymodel = _p1
 	ox=160:oy=22:py=oy+4
-	sx=320:sy=plmax*py+48
+	sx=320:sy=plmax*py+48+24
 	screen pscr,sx,sy,8,ginfo_wx2,ginfo_wy1
 	aht_getopt fname,"name",_p1,256
-	title "プロパティ - "+fname
+	title "プロパティ - "+getpath(fname,9)
 	syscolor 15:boxf
 	sysfont 17:color 0,0,0
 	x=4:y=4
@@ -174,7 +176,9 @@
 	aht_getopt glid,"glid",_p1,64
 	aht_getopt fname,"source",_p1,260
 	aht_getopt exp,"exp",_p1,1024
+	aht_getopt helpkw,"helpkw",_p1,256
 	;
+	y+=24
 	pos x,y
 	mes "Class:"+class
 	mes "Author:"+author+" Ver:"+ver
