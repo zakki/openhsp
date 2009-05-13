@@ -417,6 +417,7 @@ int hsp3win_exec( void )
 	//		ŽÀsƒƒCƒ“‚ðŒÄ‚Ño‚·
 	//
 	int runmode;
+	int endcode;
 rerun:
 	hsp3win_msgfunc( ctx );
 
@@ -455,7 +456,8 @@ rerun:
 		strncpy( ctx->cmdline, cmd, 1023 );
 		goto rerun;
 	}
+	endcode = ctx->endcode;
 	hsp3win_bye();
-	return ctx->endcode;
+	return endcode;
 }
 

@@ -407,6 +407,7 @@ int hsp3cl_exec( void )
 	//		実行メインを呼び出す
 	//
 	int runmode;
+	int endcode;
 rerun:
 
 	//		デバッグウインドゥ用
@@ -443,6 +444,7 @@ rerun:
 		ctx->runmode = RUNMODE_RUN;
 		goto rerun;
 	}
-	hsp3cl_bye();
-	return ctx->endcode;
+	endcode = ctx->endcode;
+	hsp3win_bye();
+	return endcode;
 }
