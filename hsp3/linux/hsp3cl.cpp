@@ -222,6 +222,6 @@ rerun:
 		goto rerun;
 	}
 	endcode = ctx->endcode;
-	hsp3win_bye();
+	hsp3cl_bye();
 	return endcode;
 }
