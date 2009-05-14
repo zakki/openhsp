@@ -1,11 +1,11 @@
 ------------------------------------------------------------------------------
-HSPINET ver3.1 REFERENCE MANUAL                     HSP : Hot Soup Processor  
-ＨＳＰ拡張拡張DLLリファレンス              copyright 2005 (c) onion software  
+HSPINET ver3.2 REFERENCE MANUAL                     HSP : Hot Soup Processor  
+ＨＳＰ拡張拡張DLLリファレンス         copyright 2005-2009 (c) onion software  
 ------------------------------------------------------------------------------
 
 ・はじめに
 
-	このDLLは、Hot Soup Processor ver3.1以降とともに使用することで、
+	このDLLは、Hot Soup Processor ver3.2以降とともに使用することで、
 	WindowsのWininet.dllモジュールが持つインターネットアクセス機能を
 	利用可能にします。
 	HSPINETを使用することにより、httpによるネット上のファイル取得、

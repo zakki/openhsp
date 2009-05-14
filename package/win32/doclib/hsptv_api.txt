@@ -1,11 +1,11 @@
 ------------------------------------------------------------------------------
-HSPTV API ver3.1 REFERENCE MANUAL                   HSP : Hot Soup Processor  
-ＨＳＰ拡張モジュールリファレンス           copyright 2007 (c) onion software  
+HSPTV API ver3.2 REFERENCE MANUAL                   HSP : Hot Soup Processor  
+ＨＳＰ拡張モジュールリファレンス           copyright 2009 (c) onion software  
 ------------------------------------------------------------------------------
 
 ・はじめに
 
-	ここでは、Hot Soup Processor ver3.1以降でサポートされている、
+	ここでは、Hot Soup Processor ver3.2以降でサポートされている、
 	HSPTVブラウザに対応したプログラム作成についての解説と、付属の
 	モジュールについての説明を行ないます。
 	HSPTV APIを使用することにより、HSPTV上で動作するプログラムの

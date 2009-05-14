@@ -1,6 +1,6 @@
 ------------------------------------------------------------------------------
 hspdx.dll REFERENCE MANUAL for HSP2.6x&3.x           HSP : Hot Soup Processor 
-ＨＳＰ拡張DLLリファレンス     copyright 1998-2007 (c) onion software/Sinagawa 
+ＨＳＰ拡張DLLリファレンス     copyright 1998-2009 (c) onion software/Sinagawa 
 ------------------------------------------------------------------------------
 
 ・はじめに

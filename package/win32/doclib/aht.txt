@@ -1,6 +1,6 @@
 ------------------------------------------------------------------------------
-Hot Soup Processor ver3.1                           HSP : Hot Soup Processor  
-Additional HSP Template & Tools       copyright 1997-2007 (c) onion software  
+Hot Soup Processor ver3.2                           HSP : Hot Soup Processor  
+Additional HSP Template & Tools       copyright 1997-2009 (c) onion software  
 ------------------------------------------------------------------------------
 
 ■はじめに
@@ -156,6 +156,12 @@ Additional HSP Template & Tools       copyright 1997-2007 (c) onion software
 		AHTファイル固有のアイコンIDを指定します。
 		この定義は省略することが可能です。
 		この項目は、HSPテンプレートマネージャーで使用されます。
+
+	#aht helpkw "ヘルプキーワード"
+
+		ヘルプキーワードを指定します。
+		このキーワードは、かんたん入力時にヘルプボタンでHDL
+		に渡される文字列を指定します。
 
 
 ■AHTコメント
@@ -359,6 +365,10 @@ Additional HSP Template & Tools       copyright 1997-2007 (c) onion software
 
 
 ■更新履歴
+
+	2009/05/14 3.2β3
+
+		ファイルヘッダのオプションにhelpkw項目を追加。
 
 	2007/07/15 3.1RC1
 
