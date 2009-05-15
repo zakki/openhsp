@@ -6,11 +6,11 @@
 %type
 内蔵命令
 %ver
-3.1
+3.2
 %note
-ver3.1標準命令
+ver3.2標準命令
 %date
-2004/10/12
+2009/05/15
 %author
 onitama
 %url
@@ -303,7 +303,7 @@ Let
 
 %index
 #addition
-別ファイルを結合
+別ファイルを結合2
 %group
 プリプロセッサ命令
 %prm
@@ -544,7 +544,7 @@ PACKFILE追加ファイル指定
 
 %index
 #epack
-PACKFILE追加ファイル指定
+PACKFILE暗号化ファイル指定
 %group
 プリプロセッサ命令
 %prm
@@ -754,7 +754,7 @@ Let
 
 %index
 #ifndef
-マクロ定義からコンパイル制御
+マクロ定義からコンパイル制御2
 %group
 プリプロセッサ命令
 %prm

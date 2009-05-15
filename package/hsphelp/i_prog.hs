@@ -6,11 +6,11 @@
 %type
 内蔵命令
 %ver
-3.1
+3.2
 %note
-ver3.1標準命令
+ver3.2標準命令
 %date
-2004/10/12
+2009/05/15
 %author
 onitama
 %url
@@ -24,7 +24,7 @@ Let
 
 %index
 await
-一定時間待つ(ACTIVE)
+一定の時間で待つ
 %group
 プログラム制御命令
 %prm
@@ -440,7 +440,7 @@ end
 
 %index
 wait
-一定時間待つ
+実行を一定時間中断する
 %group
 プログラム制御命令
 %prm
@@ -774,7 +774,7 @@ gosub
 
 %index
 while
-条件付き繰り返し開始
+while繰り返し開始
 %group
 プログラム制御マクロ
 %prm
@@ -802,7 +802,7 @@ wend
 
 %index
 wend
-条件付き繰り返し終了
+while繰り返し終了
 %group
 プログラム制御マクロ
 %inst
@@ -814,7 +814,7 @@ while
 
 %index
 until
-条件付き繰り返し終了
+do繰り返し終了
 %group
 プログラム制御マクロ
 %prm
@@ -842,7 +842,7 @@ do
 
 %index
 do
-条件付き繰り返し開始
+do繰り返し開始
 %group
 プログラム制御マクロ
 %inst
