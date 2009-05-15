@@ -20,14 +20,15 @@ AHTTYPE_EDIT_INT = 0,		// 入力枠(結果=int,sub=最小,sub2=最大)
 AHTTYPE_EDIT_DOUBLE,		// 入力枠(結果=double,sub=最小,sub2=最大)
 AHTTYPE_EDIT_STRING,		// 入力枠(結果=str,sub=文字数,sub2=option 'w' or 'm')
 AHTTYPE_CBOX_STRING,		// コンボボックス(結果=str,sub=選択肢,sub2=選択肢テキスト)
-AHTTYPE_CHKB_INT,		// チェックボックス(0or1、sub=テキスト)
-AHTTYPE_COLS_INT,		// 色選択(結果=int)
+AHTTYPE_CHKB_INT,			// チェックボックス(0or1、sub=テキスト)
+AHTTYPE_COLS_INT,			// 色選択(結果=int)
 AHTTYPE_FONT_STRING,		// フォント選択(結果=str)
 AHTTYPE_FILE_STRING,		// ファイル選択(sub=拡張子,sub2=選択名)
 AHTTYPE_EXTF_STRING,		// 外部ツール起動(sub=拡張子,sub2=ツール名)
 AHTTYPE_PARTS_INT,			// パーツID(sub=クラス名,sub2=参照名)
 AHTTYPE_PARTS_PROP_STRING,	// パーツIDのプロパティ(sub=プロパティ名,sub2=option 'm')
 AHTTYPE_PARTS_OPT_STRING,	// パーツIDのオプション(sub=オプション名,sub2=option 'm')
+AHTTYPE_EDIT_STRING2,		// 入力枠(結果=str,sub=文字数,sub2=option 'w' or 'm')
 AHTTYPE_MAX
 };
 
@@ -35,6 +36,7 @@ AHTTYPE_MAX
 #define AHTMODE_OUTPUT_PURE 2	// ahtout出力用クォート処理
 #define AHTMODE_READ_ONLY 4		// 修正不可
 #define AHTMODE_WITH_ID 8		// デフォルトでIDを付加する
+#define AHTMODE_OUTPUT_RAW 16	// 出力用データを処理しない
 
 // AHT Object Data
 typedef struct AHTOBJ

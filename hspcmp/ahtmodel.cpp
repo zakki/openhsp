@@ -251,6 +251,7 @@ AHTPROP *AHTMODEL::SetPropertyDefault( char *propname, char *value )
 		a1=*vp;if ((a1!=32)&&(a1!=9)) break;
 		vp++;
 	}
+
 	if ( a1 == 0x22 ) {
 		qmode = 1;
 		vp++;
@@ -484,6 +485,10 @@ int AHTMODEL::SetAHTPropertyString( char *propname, char *str )
 			}
 			if (tstrcmp(pname,"pure")) {
 				p->SetMode( AHTMODE_OUTPUT_PURE );
+				amb = 0;
+			}
+			if (tstrcmp(pname,"raw")) {
+				p->SetMode( AHTMODE_OUTPUT_RAW );
 				amb = 0;
 			}
 			if (tstrcmp(pname,"mes")) {
@@ -786,6 +791,10 @@ void AHTPROP::SetOutValue( char *data )
 			if ( *src == 10 ) src++;
 			a1 = 'n';
 		}
+		if ( a1 == 0x22 ) {
+			*p++ = '\\';
+			a1 = 0x22;
+		}
 		if (a1>=129) {						// 全角文字チェック
 			if (a1<=159) { *p++=a1;a1=*src++; }
 			else if (a1>=224) { *p++=a1;a1=*src++; }
@@ -804,6 +813,9 @@ void AHTPROP::SetOutValue( char *data )
 
 char *AHTPROP::GetOutValue( void )
 {
+	if ( ahtmode & AHTMODE_OUTPUT_RAW ) {
+		return GetValue();
+	}
 	if ( ahtmode & AHTMODE_QUOTATION ) {
 		SetOutValue( GetValue() );
 		return outname;

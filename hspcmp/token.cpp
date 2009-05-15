@@ -2041,9 +2041,13 @@ ppresult_t CToken::PP_Define( void )
 				prop = ahtmodel->GetProperty( keyword );
 				if ( prop != NULL ) wdata = prop->GetOutValue();
 			} else {									// AHT“Ç‚Ýž‚ÝŽž
-				ahtmodel->SetPropertyDefault( keyword, wdata );
+				AHTPROP *prop;
+				prop = ahtmodel->SetPropertyDefault( keyword, wdata );
 				if ( ahtmodel->SetAHTPropertyString( keyword, ahtkeyword ) ) {
 					SetError( "AHT parameter syntax error" ); return PPRESULT_ERROR;
+				}
+				if ( prop->ahtmode & AHTMODE_OUTPUT_RAW ) {
+					ahtmodel->SetPropertyDefaultStr( keyword, wdata );
 				}
 			}
 		}
@@ -2665,28 +2669,32 @@ ppresult_t CToken::PP_Ahtmes( void )
 	//		#ahtmes‰ðÍ
 	//
 	int i;
+	int addprm;
 
 	if ( ahtmodel == NULL ) return PPRESULT_SUCCESS;
 	if ( ahtbuf == NULL ) return PPRESULT_SUCCESS;
 	if ( wp == NULL ) return PPRESULT_SUCCESS;
+	addprm = 0;
 
 	while(1) {
 
 		if ( wp == NULL ) break;
 
 		i = GetToken();
+		if ( i == TK_NONE ) break;
 		if (( i != TK_OBJ )&&( i != TK_NUM )&&( i != TK_STRING )) {
 			SetError("illegal ahtmes parameter"); return PPRESULT_ERROR;
 		}
 		ahtbuf->PutStr( (char *)s3 );
 
-		if ( wp == NULL ) break;
+		if ( wp == NULL ) {	addprm = 0; break; }
 
 		i = GetToken();
 		if ( i != '+' ) { SetError("invalid ahtmes format"); return PPRESULT_ERROR; }
+		addprm++;
 
 	}
-	ahtbuf->PutCR();
+	if ( addprm == 0 ) ahtbuf->PutCR();
 	return PPRESULT_SUCCESS;
 }
 
