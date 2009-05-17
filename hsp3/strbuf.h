@@ -16,26 +16,29 @@
 
 //	STRBUF structure
 //
+
+typedef struct STRBUF STRBUF;
+
 typedef struct
 {
 	//	String Data structure
 	//
 	short flag;						// 使用フラグ(0=none/other=busy)
 	short exflag;					// 拡張フラグ(未使用)
-	int myblock;					// 自分のブロックID
+	STRBUF *intptr;					// 自身のアドレス
 	int size;						// 確保サイズ
 	char *ptr;						// バッファポインタ
-	void *extptr;					// 外部バッファポインタ(STRINF)
+	STRBUF *extptr;					// 外部バッファポインタ(STRINF)
 	void *opt;						// オプション(ユーザー定義用)
 } STRINF;
 
-typedef struct
+struct STRBUF
 {
 	//	String Data structure
 	//
 	STRINF inf;						// バッファ情報
 	char data[STRBUF_BLOCKSIZE];	// 内部バッファ
-} STRBUF;
+};
 
 void sbInit( void );
 void sbBye( void );
