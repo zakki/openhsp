@@ -232,7 +232,14 @@ static int cmdfunc_extcmd( int cmd )
 			while(1) {
 				if ( p2<=0 ) break;
 				a = getchar();
-				if (( a==EOF )||( a=='\n' )||( a=='\r' )) break;
+				if ( a == '\r' ) {
+					int c = getchar();
+					if( c != '\n' ) {
+						ungetc(c, stdin);
+					}
+					break;
+				}
+				if (( a==EOF )||( a=='\n' )) break;
 				*pp2++ = a;
 				p2--;
 				strsize++;
