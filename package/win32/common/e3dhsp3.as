@@ -396,46 +396,163 @@
 #cmd E3DSetParticleUVTile $178
 #cmd E3DInitParticle $179
 
+#cmd E3DClone $17A
+#cmd E3DPickFace2 $17B
+#cmd E3DChkConfWall3 $17C
+#cmd E3DGetMotionIDByName $17D
+#cmd E3DDot2 $17E
+#cmd E3DGetMotionNum $17F
+
+#cmd E3DChkConfParticle $180
+
+#cmd E3DLoadSigFileAsGround $181
+#cmd E3DLoadSigFileAsGroundFromBuf $182
+
+#cmd E3DGetCenterPos $183
+
+#cmd E3DGetFaceNum $184
+#cmd E3DGetFaceNormal $185
+#cmd E3DCreateEmptyMotion $186
+#cmd E3DSetTextureMinMagFilter $187
+#cmd E3DGetMotionName $188
+#cmd E3DSetMotionName $189
+
+
+#cmd E3DGetMaterialNoByName $18A
+#cmd E3DGetMaterialAlpha $18B
+#cmd E3DGetMaterialDiffuse $18C
+#cmd E3DGetMaterialSpecular $18D
+#cmd E3DGetMaterialAmbient $18E
+#cmd E3DGetMaterialEmissive $18F
+#cmd E3DSetMaterialAlpha $190
+#cmd E3DSetMaterialDiffuse $191
+#cmd E3DSetMaterialSpecular $192
+#cmd E3DSetMaterialAmbient $193
+#cmd E3DSetMaterialEmissive $194
+#cmd E3DGetTextureFromMaterial $195
+#cmd E3DSetTextureToMaterial $196
+#cmd E3DGetMaterialPower $197
+#cmd E3DSetMaterialPower $198
+#cmd E3DGetMaterialBlendingMode $199
+#cmd E3DSetMaterialBlendingMode $19A
+
+#cmd E3DGetMaterialNo $19B
+
+#cmd E3DSetMotionKindML $19C
+#cmd E3DSetMotionFrameNoML $19D
+#cmd E3DSetNewPoseML $19E
+#cmd E3DSetMOAEventNoML $19F
+#cmd E3DSetNextMotionFrameNoML $1A0
+#cmd E3DGetMotionFrameNoML $1A1
+#cmd E3DGetNextMotionFrameNoML $1A2
+
+#cmd E3DGetCurrentBonePos $1A3
+#cmd E3DGetCurrentBoneQ $1A4
+
+#cmd E3DChkBumpMapEnable $1A5
+#cmd E3DEnableBumpMap $1A6
+#cmd E3DConvHeight2NormalMap $1A7
+#cmd E3DSetBumpMapToMaterial $1A8
+
+#cmd E3DDumpQ $1A9
+#cmd E3DSetDbgQ $1AA
+
+#cmd E3DGetMOATrunkInfo $1AB
+#cmd E3DGetMOABranchInfo $1AC
+#cmd E3DSetMOABranchFrame1 $1AD
+#cmd E3DSetMOABranchFrame2 $1AE
+
+#cmd E3DSetDispSwitch2 $1AF
+
+#cmd E3DQtoEuler $1B0
+#cmd E3DEnablePhongEdge $1B1
+#cmd E3DSetPhongEdge0Params $1B2
+
+#cmd E3DGetDispSwitch2 $1B3
+#cmd E3DFreeThread $1B4
+#cmd E3DLoadSigFileAsGroundThread $1B5
+#cmd E3DLoadSigFileAsGroundFromBufThread $1B6
+#cmd E3DSetLightIdOfBumpMap $1B7
+#cmd E3DSetSpriteUV $1B8
+
+#cmd E3DCreateRenderTargetTexture $1B9
+#cmd E3DDestroyRenderTargetTexture $1BA
+#cmd E3DSetDSFillUpMode $1BB
+#cmd E3DSetTexFillUpMode $1BC
+
+#cmd E3DSetShadowMapCamera $1BD
+#cmd E3DSetShadowMapProjOrtho $1BE
+#cmd E3DRenderWithShadow $1BF
+#cmd E3DSetShadowBias $1C0
+#cmd E3DCheckRTFormat $1C1
+#cmd E3DChkShadowEnable $1C2
+#cmd E3DEnableShadow $1C3
+
+#cmd E3DRenderBatch $1C4
+#cmd E3DSetVertPosBatch $1C5
+
+#cmd E3DSetShadowDarkness $1C6
+#cmd E3DSetShadowMapLightDir $1C7
+#cmd E3DRenderBatchMode $1C8
+#cmd E3DGlobalToLocal $1C9
+#cmd E3DLocalToGlobal $1CA
+#cmd E3DSetVertPosBatchAOrder $1CB
+#cmd E3DSetShadowMapMode $1CC
+
+#cmd E3DLoadTextureFromBuf $1CD
+#cmd E3DLoadSpriteFromBMSCR $1CE
+
+#cmd E3DSetShadowMapInterFlag $1CF
+#cmd E3DTransformBillboard $1D0
+#cmd E3DSetMaterialAlphaTest $1D1
+#cmd E3DCalcMLMotion $1D2
+
+#cmd E3DCreateSkinMat $1D3
+#cmd E3DSetSymInfElem $1D4
+#cmd E3DUpdateSymInfElem $1D5
+#cmd E3DGetVersion $1D6
+#cmd E3DSetJointInitialPos $1D7
+
 ;////////////////////////////////////////////////////////////
 ; E3DGetInfElem, E3DSetInfElemで使用する定数
 ;////////////////////////////////////////////////////////////
-#define CALCMODE_NOSKIN0	0
-#define CALCMODE_ONESKIN0	1
-#define CALCMODE_ONESKIN1	2
-#define CALCMODE_DIRECT0	3
-#define CALCMODE_SYM		4
+#define global CALCMODE_NOSKIN0	0
+#define global CALCMODE_ONESKIN0	1
+#define global CALCMODE_ONESKIN1	2
+#define global CALCMODE_DIRECT0	3
+#define global CALCMODE_SYM		4
 
-#define PAINT_NOR	0
-#define PAINT_EXC	1
-#define PAINT_ADD	2
-#define PAINT_SUB	3
-#define PAINT_ERA	4
+#define global PAINT_NOR	0
+#define global PAINT_EXC	1
+#define global PAINT_ADD	2
+#define global PAINT_SUB	3
+#define global PAINT_ERA	4
 
 
 ;////////////////////////////////////////////////////////////
 ; E3DSetLightBlendMode, E3DGetLightBlendMode で使用する定数
 ;////////////////////////////////////////////////////////////
-#define LBLEND_MULT 		0
-#define LBLEND_SCREEN 		1
-#define LBLEND_OVERLAY		2
-#define LBLEND_HARDLIGHT	3
-#define LBLEND_DODGE		4
+#define global LBLEND_MULT 		0
+#define global LBLEND_SCREEN 		1
+#define global LBLEND_OVERLAY		2
+#define global LBLEND_HARDLIGHT	3
+#define global LBLEND_DODGE		4
 
 ;//////////////////////////////////////////////////////
 ; E3DSetShaderType, E3DGetShaderTypeで使用する定数
 ;//////////////////////////////////////////////////////
 
-#define COL_OLD 0
-#define COL_PHONG 1
-#define COL_BLINN 2
-#define COL_SCHLICK 3
-#define COL_MQCLASSIC 4
-#define COL_TOON0	5
-#define COL_TOON1	6
+#define global COL_OLD 0
+#define global COL_PHONG 1
+#define global COL_BLINN 2
+#define global COL_SCHLICK 3
+#define global COL_MQCLASSIC 4
+#define global COL_TOON0	5
+#define global COL_TOON1	6
 
-#define OVERFLOW_CLAMP 0
-#define OVERFLOW_SCALE 1
-#define OVERFLOW_ORG 2
+#define global OVERFLOW_CLAMP 0
+#define global OVERFLOW_SCALE 1
+#define global OVERFLOW_ORG 2
 
 
 ;///////////////////////////////////////////////
@@ -838,4 +955,117 @@
 #define global D3DX_FILTER_MIRROR_W        (4 << 16)
 #define global D3DX_FILTER_MIRROR          (7 << 16)
 #define global D3DX_FILTER_DITHER          (8 << 16)
+
+
+;/////////////////////////////////////////////////////
+;
+;　　以下は、moaのイベント番号用の２の乗数の値
+;
+;/////////////////////////////////////////////////////
+dim POW2X, 30
+POW2X = 1,2,4,8,16,32,64,128,256,512,1024,2048,4096,8192,16384,32768,65536,131072,262144,524288,1048576,2097152,4194304,8388608,16777216,33554432,67108864,134217728,268435456,536870912
+
+
+;/////////////////////////////////////////
+; E3DSetTextureMinMagFilter 用の　テクスチャーフィルターモード 
+;/////////////////////////////////////////
+
+#define global D3DTEXF_NONE	0
+#define global D3DTEXF_POINT	1
+#define global D3DTEXF_LINEAR	2
+#define global D3DTEXF_ANISOTROPIC	3
+#define global D3DTEXF_PYRAMIDALQUAD	6
+#define global D3DTEXF_GAUSSIANQUAD	7
+
+;//////////////////////////////////////////
+#define global D3DCMP_NEVER	1
+#define global D3DCMP_LESS	2
+#define global D3DCMP_EQUAL	3
+#define global D3DCMP_LESSEQUAL	4
+#define global D3DCMP_GREATER	5
+#define global D3DCMP_NOTEQUAL	6
+#define global D3DCMP_GREATEREQUAL	7
+#define global D3DCMP_ALWAYS	8
+
+;/////////////////////////////////////////
+; E3DLoadMQOFileAsGround 用のボーンタイプ
+;/////////////////////////////////////////
+
+#define global BONETYPE_RDB2	0
+#define global BONETYPE_MIKO	1
+
+
+;//////////////////////////////////////////
+; E3DGetMOATrunkInfoで使用するデータタイプ
+;//////////////////////////////////////////
+
+#define global MOAT_IDLING		0
+#define global MOAT_EV0IDLE		1
+#define global MOAT_COMID		2
+#define global MOAT_NOTCOMID	3
+#define global MOAT_BRANCHNUM	4
+#define global MOAT_MAX			5
+
+;//////////////////////////////////////////
+; E3DGetMOABranchInfoで使用するデータタイプ
+;//////////////////////////////////////////
+
+#define global MOAB_MOTID	0
+#define global MOAB_EVENTID	1
+#define global MOAB_FRAME1	2
+#define global MOAB_FRAME2	3
+#define global MOAB_NOTFU	4
+#define global MOAB_MAX		5
+
+;//////////////////////////////////////////
+; E3DSetMaterialMode用
+://////////////////////////////////////////
+
+#define global MMODE_VERTEX	0
+#define global MMODE_FACE	1
+
+;//////////////////////////////////////////
+; E3DGetDispSwitch2用
+;//////////////////////////////////////////
+
+#define global DISPSWITCHNUM	100
+
+;////////////////////////////////////////
+; E3DCheckRTFormat用
+;////////////////////////////////////////
+
+#define global D3DFMT_R8G8B8 20
+#define global D3DFMT_A8R8G8B8 21
+#define global D3DFMT_X8R8G8B8 22
+#define global D3DFMT_R5G6B5 23
+#define global D3DFMT_X1R5G5B5 24
+#define global D3DFMT_A1R5G5B5 25
+#define global D3DFMT_A4R4G4B4 26
+#define global D3DFMT_A16B16G16R16F 113
+#define global D3DFMT_R32F 114 
+#define global D3DFMT_A32B32G32R32F 116
+
+;//////////////////////////////////////////
+; E3DSetShadowMapInterFlag用
+;//////////////////////////////////////////
+
+#define global SHADOWIN_PROJ	0
+#define global SHADOWIN_ALWAYS	1
+#define global SHADOWIN_NOT		2
+
+;//////////////////////////////////////////
+; E3DSetSymInfElemで使用
+;//////////////////////////////////////////
+#define global SYMAXIS_X	1
+#define global SYMAXIS_Y	2
+#define global SYMAXIS_Z	3
+
+;//////////////////////////////////////////
+; quaファイル書き出し命令で使用
+;//////////////////////////////////////////
+#define global QUATYPE_NUM	0
+#define global QUATYPE_NAME	1
+
+
+
 
