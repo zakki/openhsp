@@ -1,5 +1,11 @@
 #ifndef __MOD_PICFONT
 #define __MOD_PICFONT
+
+;0～9、A～Zなどの基本的な文字フォントを画像で持ち、
+;それを表示するためのモジュールです。
+;自作の文字フォントを利用する際に使用することができます。
+;既存のフォントを画像に変換するサンプル(mkfont.hsp)も用意しています。
+
 #module mod_picfont
 #deffunc picfont int _p1, int _p2, int _p3, int _p4, int _p5
 
