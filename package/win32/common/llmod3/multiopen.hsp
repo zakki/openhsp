@@ -81,7 +81,7 @@
 	;^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 	;multiopen
 	;................................................................................
-	#deffunc multiopen var buf,var info,int filt_idx,int read_only
+	#deffunc multiopen array buf,var info,int filt_idx,int read_only
 	mref stt,64
 
 	if(first_call == 0) : ttle = "" : inidir = "" : first_call = 1
@@ -109,7 +109,8 @@
 ;	loop
 
 
-	alloc prm,76
+;	alloc prm,76
+	dim prm,16
 	prm.0 = 76
 
 	;@@@@ Instanceの取得 @@@@
@@ -121,12 +122,16 @@
 	getptr prm.3,lcl_info
 	prm.4 = 0,0,filt_idx
 
-	getptr prm.7,buf
 	prm.8 = buf.0
-	getptr prm.9,info
 	prm.10 = buf.1
 
-	buf = ""
+	sdim buf,prm.8	;1024*4
+	;buf = ""
+	sdim buf,prm.10	;1024*4
+	;info = ""
+
+	getptr prm.7,buf
+	getptr prm.9,info
 
 	getptr prm.11,inidir
 	getptr prm.12,ttle
@@ -187,10 +192,11 @@
 	if(ret) {
 		a = (prm.14 >> 16) & $ffff
 		if(a) {			;シングルセレクト
-			info = peek(buf,a)
+			;info = peek(buf,a)
+			getstr info,buf,a
 		} else {			;マルチセレクト
-			info = ""
-			info = peek(buf,0)
+			getstr info,buf,0
+/*
 			repeat -1
 				a = peek(buf,cnt)
 				if(a == 0) {
@@ -204,6 +210,7 @@
 			defext = strlen(info)
 			dupptr clone,a + defext + 1,1,4
 			buf = peek(clone,prm + 1)
+*/
 			repeat -1
 				a = peek(buf,cnt)
 				if(a == 0) {
@@ -212,6 +219,8 @@
 					if(a == 0) : break
 				}
 			loop
+			a=strlen(info)+1
+			memcpy buf,buf,strlen(buf)-a+1,0,a
 		}
 	}
 
