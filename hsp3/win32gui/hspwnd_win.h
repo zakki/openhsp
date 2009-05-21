@@ -163,7 +163,7 @@ public:
 	void GradFillEx( int *vx, int *vy, int *vcol );
 	int GetAlphaOperation( void );
 
-	void SetCelDivide( int new_divx, int new_divy );
+	void SetCelDivideSize( int new_divsx, int new_divsy, int new_ofsx, int new_ofsy );
 	int CelPut( Bmscr *src, int id );
 
 	//
@@ -236,6 +236,7 @@ public:
 	short	btn_x3, btn_y3;				// Custom Button Image X,Y (mouse over)
 	short	divx, divy;					// Divide value for CEL
 	short	divsx, divsy;				// CEL size
+	short	celofsx, celofsy;			// CEL center offset
 private:
 	void Blt( int mode, Bmscr *src, int xx, int yy, int asx, int asy );
 	void CnvRGB16( PTRIVERTEX target, DWORD src );

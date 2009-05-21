@@ -802,7 +802,7 @@ void Bmscr::Cls( int mode )
 
 	//		CEL initalize
 	//
-	SetCelDivide( 1, 1 );
+	SetCelDivideSize( 0, 0, 0, 0 );
 
 	//		all update
 	//
@@ -1697,15 +1697,16 @@ void Bmscr::GradFillEx( int *vx, int *vy, int *vcol )
 }
 
 
-void Bmscr::SetCelDivide( int new_divx, int new_divy )
+void Bmscr::SetCelDivideSize( int new_divsx, int new_divsy, int new_ofsx, int new_ofsy )
 {
-	//		セル分割数を設定
+	//		セル分割サイズを設定
 	//
-	if (( new_divx < 1 )||( new_divy < 1 )) throw HSPERR_ILLEGAL_FUNCTION;
-	divx = new_divx;
-	divy = new_divy;
-	divsx = sx / divx;
-	divsy = sy / divy;
+	if ( new_divsx > 0 ) divsx = new_divsx; else divsx = sx;
+	if ( new_divsy > 0 ) divsy = new_divsy; else divsy = sy;
+	divx = sx / divsx;
+	divy = sy / divsy;
+	celofsx = new_ofsx;
+	celofsy = new_ofsy;
 }
 
 
@@ -1720,9 +1721,9 @@ int Bmscr::CelPut( Bmscr *src, int id )
 	x = ( id % src->divx ) * srcsx;
 	y = ( id / src->divx ) * srcsy;
 	bak_cx = cx + srcsx;
-	bak_cy = cy + srcsy;
-	cx -= srcsx/2;
-	cy -= srcsy/2;
+	bak_cy = cy;
+	cx -= src->celofsx;
+	cy -= src->celofsy;
 	res = Copy( src, x, y, srcsx, srcsy );
 	cx = bak_cx;
 	cy = bak_cy;

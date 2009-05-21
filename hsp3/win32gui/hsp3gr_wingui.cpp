@@ -337,58 +337,77 @@ static void DrawSquareEx( int mode, int color, int attr, int alpha, int *x, int 
 }
 
 
-static void DrawSpriteEx( int mode, int attr, int alpha, int x, int y, int sx, int sy, double ang, int tx0, int ty0, int tx1, int ty1 )
+static void DrawSpriteEx( int mode, int attr, int alpha, int x, int y, int sx, int sy, double ang, int tx0, int ty0, int tx1, int ty1, int opx, int opy )
 {
 	//		拡大回転スプライト
 	//		mode : 0=fullcolor/1=palette
-	//		(x,y)中心座標 / (sx,sy)サイズ / ang=角度
+	//		(x,y)基点座標 / (sx,sy)サイズ / (opx,opy)オフセット / ang=角度
 	//
 	POLY4 *poly;
 	IAXIS2 *iv;
-	float x0,y0,x1,y1,ofsx,ofsy;
-	short xx,yy;
+	double xx,yy,x0,y0,x1,y1,ofsx,ofsy,mx0,mx1,my0,my1;
 
 	poly = (POLY4 *)&mem_poly4;
-	xx = (short)x;
-	yy = (short)y;
 
-	ofsx = (float)sx;
-	ofsy = (float)sy;
-	x0=-(float)sin( ang );
-	y0=(float)cos( ang );
-	x1 = -y0;
-	y1 = x0;
+	mx0=-(double)sin( ang );
+	my0=(double)cos( ang );
+	mx1 = -my0;
+	my1 = mx0;
 
-	ofsx *= -0.5f;
-	ofsy *= -0.5f;
-	x0 *= ofsy;
-	y0 *= ofsy;
-	x1 *= ofsx;
-	y1 *= ofsx;
+	ofsx = (double)-opx;
+	ofsy = (double)-opy;
+	x0 = mx0 * ofsy;
+	y0 = my0 * ofsy;
+	x1 = mx1 * ofsx;
+	y1 = my1 * ofsx;
+
+	//		基点の算出
+	xx = ( (double)x - (-x0+x1) );
+	yy = ( (double)y - (-y0+y1) );
+
+	/*-------------------------------*/
+
+	//		回転座標の算出
+	ofsx = (double)-sx;
+	ofsy = (double)-sy;
+	x0 = mx0 * ofsy;
+	y0 = my0 * ofsy;
+	x1 = mx1 * ofsx;
+	y1 = my1 * ofsx;
+
+	/*-------------------------------*/
 
 	iv = &poly->v[0];
-	iv->x = (short)(-x0+x1) + xx;
-	iv->y = (short)(-y0+y1) + yy;
+	iv->x = (short)((-x0+x1) + xx);
+	iv->y = (short)((-y0+y1) + yy);
 	iv->tx = tx1;
 	iv->ty = ty0;
+
+	/*-------------------------------*/
 
 	iv = &poly->v[1];
-	iv->x = (short)(x0+x1) + xx;
-	iv->y = (short)(y0+y1) + yy;
+	iv->x = (short)((x1) + xx);
+	iv->y = (short)((y1) + yy);
 	iv->tx = tx1;
 	iv->ty = ty1;
 
+	/*-------------------------------*/
+
 	iv = &poly->v[2];
-	iv->x = (short)(x0-x1) + xx;
-	iv->y = (short)(y0-y1) + yy;
+	iv->x = (short)(xx);
+	iv->y = (short)(yy);
 	iv->tx = tx0;
 	iv->ty = ty1;
 
+	/*-------------------------------*/
+
 	iv = &poly->v[3];
-	iv->x = (short)(-x0-x1) + xx;
-	iv->y = (short)(-y0-y1) + yy;
+	iv->x = (short)((-x0) + xx);
+	iv->y = (short)((-y0) + yy);
 	iv->tx = tx0;
 	iv->ty = ty0;
+
+	/*-------------------------------*/
 
 	poly->tex = 0;
 	poly->attr = attr;
@@ -412,7 +431,7 @@ static void DrawRectEx( int mode, int color, int alpha, int x, int y, int sx, in
 	//
 	POLY4 *poly;
 	IAXIS2 *iv;
-	float x0,y0,x1,y1,ofsx,ofsy;
+	double x0,y0,x1,y1,ofsx,ofsy;
 	short xx,yy,tx0,ty0,tx1,ty1;
 
 	poly = (POLY4 *)&mem_poly4;
@@ -423,10 +442,10 @@ static void DrawRectEx( int mode, int color, int alpha, int x, int y, int sx, in
 	ty0 = 0;
 	tx1 = sx-1; if ( tx1 < 0 ) tx1=0;
 	ty1 = sy-1; if ( ty1 < 0 ) ty1=0;
-	ofsx = (float)( tx1 - tx0 + 1 );
-	ofsy = (float)( ty1 - ty0 + 1 );
-	x0=-(float)sin( ang );
-	y0=(float)cos( ang );
+	ofsx = (double)( tx1 - tx0 + 1 );
+	ofsy = (double)( ty1 - ty0 + 1 );
+	x0=-(double)sin( ang );
+	y0=(double)cos( ang );
 	x1 = -y0;
 	y1 = x0;
 
@@ -497,7 +516,7 @@ static int GetAttrOperation( void )
 }
 
 
-static void GRotateSub( Bmscr *bm2, int x, int y, int sx, int sy, int sizex, int sizey, double rot )
+static void GRotateSub( Bmscr *bm2, int x, int y, int sx, int sy, int sizex, int sizey, double rot, int opx, int opy )
 {
 	int tx0,ty0,tx1,ty1;
 	int attr;
@@ -512,7 +531,7 @@ static void GRotateSub( Bmscr *bm2, int x, int y, int sx, int sy, int sizex, int
 	ty0 = bm2->sy - 1 - ty0;
 	ty1 = bm2->sy - 1 - ty1;
 	attr = GetAttrOperation();
-	DrawSpriteEx( bmscr->palmode, attr, bmscr->GetAlphaOperation(), bmscr->cx, bmscr->cy, sizex, sizey, rot, tx0, ty1, tx1, ty0 );
+	DrawSpriteEx( bmscr->palmode, attr, bmscr->GetAlphaOperation(), bmscr->cx, bmscr->cy, sizex, sizey, rot, tx0, ty1, tx1, ty0, opx, opy );
 	if ( resY0 >= 0 ) {
 		bmscr->Send( 0, resY0, bmscr->sx, resY1-resY0+1 );
 	}
@@ -1139,12 +1158,12 @@ static int cmdfunc_extcmd( int cmd )
 		ty0 = bm2->sy - 1 - ty0;
 		ty1 = bm2->sy - 1 - ty1;
 		attr = GetAttrOperation();
-		DrawSpriteEx( bmscr->palmode, attr, bmscr->GetAlphaOperation(), bmscr->cx, bmscr->cy, p4, p5, rot, tx0, ty1, tx1, ty0 );
+		DrawSpriteEx( bmscr->palmode, attr, bmscr->GetAlphaOperation(), bmscr->cx, bmscr->cy, p4, p5, rot, tx0, ty1, tx1, ty0, p4, p5 );
 		if ( resY0 >= 0 ) {
 			bmscr->Send( 0, resY0, bmscr->sx, resY1-resY0+1 );
 		}
 #else
-		GRotateSub( bm2, p2, p3, bmscr->gx, bmscr->gy, p4, p5, rot );
+		GRotateSub( bm2, p2, p3, bmscr->gx, bmscr->gy, p4, p5, rot, p4/2, p5/2 );
 #endif
 		break;
 		}
@@ -1275,17 +1294,19 @@ static int cmdfunc_extcmd( int cmd )
 		{
 		Bmscr *bm2;
 		p1=code_getdi(1);
-		p2=code_getdi(1);
-		p3=code_getdi(1);
+		p2=code_getdi(0);
+		p3=code_getdi(0);
+		p4=code_getdi(0);
+		p5=code_getdi(0);
 		bm2 = wnd->GetBmscrSafe( p1 );
-		bm2->SetCelDivide( p2, p3 );
+		bm2->SetCelDivideSize( p2, p3, p4, p5 );
 		break;
 		}
 	case 0x3e:								// celput
 		{
 		Bmscr *bm2;
 		double zx,zy,rot;
-		int x,y,srcsx,srcsy,putsx,putsy;
+		int x,y,srcsx,srcsy,putsx,putsy,centerx,centery;
 
 		p1=code_getdi(1);
 		p2=code_getdi(0);
@@ -1309,7 +1330,9 @@ static int cmdfunc_extcmd( int cmd )
 		y = ( p2 / bm2->divx ) * srcsy;
 		putsx = (int)((double)srcsx * zx );
 		putsy = (int)((double)srcsy * zy );
-		GRotateSub( bm2, x, y, srcsx, srcsy, putsx, putsy, rot );
+		centerx = (int)((double)bm2->celofsx * zx );
+		centery = (int)((double)bm2->celofsy * zy );
+		GRotateSub( bm2, x, y, srcsx, srcsy, putsx, putsy, rot, centerx, centery );
 		bmscr->cx += putsx;
 		break;
 		}

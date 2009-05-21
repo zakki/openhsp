@@ -1629,26 +1629,38 @@ celput
 
 %index
 celdiv
-‰æ‘œ‘fÞ‚Ì•ªŠ„”‚ðÝ’è
+‰æ‘œ‘fÞ‚Ì•ªŠ„ƒTƒCƒY‚ðÝ’è
 %group
 ‰æ–Ê§Œä–½—ß
 %prm
-p1=0`(1) : ƒEƒCƒ“ƒhƒDID
-p2=1`(1) : ‰¡(X)•ûŒü‚Ì•ªŠ„”
-p3=1`(1) : c(Y)•ûŒü‚Ì•ªŠ„”
+p1,p2,p3,p4,p5
+p1=0`(1)  : ƒEƒCƒ“ƒhƒDID
+p2=1`(0)  : ‰¡•ûŒü‚Ì•ªŠ„ƒTƒCƒY
+p3=1`(0)  : c•ûŒü‚Ì•ªŠ„ƒTƒCƒY
+p4=0`(0)  : ‰¡•ûŒü‚Ì’†SÀ•W
+p5=0`(0)  : c•ûŒü‚Ì’†SÀ•W
 
 %inst
-Žw’è‚µ‚½ƒEƒBƒ“ƒhƒEID‚ªŽ‚Â‰æ‘œ‘fÞ‚Ì•ªŠ„”‚ðÝ’è‚µ‚Ü‚·B
-‰æ‘œ‘fÞ‚Ì•ªŠ„”‚ÍAcelput–½—ß‚É‚æ‚è‰æ‘œ‚ð•`‰æ‚·‚éÛ‚ÉŽQÆ‚³‚ê‚Ü‚·B
-‚½‚Æ‚¦‚ÎA256~256ƒhƒbƒg‚Ì‰æ‘œ‚ð2~4‚É•ªŠ„‚·‚éÝ’è‚É‚µ‚½ê‡A
+Žw’è‚µ‚½ƒEƒBƒ“ƒhƒEID‚ªŽ‚Â‰æ‘œ‘fÞ‚Ì•ªŠ„ƒTƒCƒY‚ðÝ’è‚µ‚Ü‚·B
+•ªŠ„‚³‚ê‚½‰æ‘œ‘fÞ‚ÍAcelput–½—ß‚É‚æ‚è‰æ‘œ‚ð•`‰æ‚·‚éÛ‚ÉŽQÆ‚³‚ê‚Ü‚·B
+‚½‚Æ‚¦‚ÎA256~256ƒhƒbƒg‚Ì‰æ‘œ‚ð128~64ƒhƒbƒg‚Å•ªŠ„‚·‚éÝ’è‚É‚µ‚½ê‡A
 celput–½—ß‚É‚æ‚è128~64ƒhƒbƒg‚Ì‰æ‘œ8–‡•ª‚Æ‚µ‚Äˆµ‚¤‚±‚Æ‚ª‚Å‚«‚é‚æ‚¤‚É‚È‚è‚Ü‚·B
 ^
 p1‚ÅA‰æ‘œ‘fÞ‚ðŽ‚ÂƒEƒCƒ“ƒhƒDID‚ðŽw’è‚µ‚Ü‚·B
-p2,p3‚ÅA‰¡(X)Ec(Y)•ûŒü‚Ì•ªŠ„”‚ðŽw’è‚·‚é‚±‚Æ‚ª‚Å‚«‚Ü‚·B
-•ªŠ„”‚Í‚PˆÈã‚Ì®”’l‚Æ‚È‚è‚Ü‚·B‹K’èŠO‚Ì’l‚ðŽw’è‚µ‚½ê‡‚ÍAƒGƒ‰[‚Æ‚È‚è‚Ü‚·B
+(p2,p3)‚ÅA‰¡(X)Ec(Y)•ûŒü‚Ì•ªŠ„ƒTƒCƒY(•ªŠ„‚³‚ê‚½—Ìˆæ‚P‚Â‚ ‚½‚è‚Ìƒhƒbƒg”)‚ðŽw’è‚µ‚Ü‚·B
+•ªŠ„ƒTƒCƒY‚ðÈ—ªA‚Ü‚½‚Í0ˆÈ‰º‚Ì’l‚É‚µ‚½ê‡‚ÍA‘fÞ‚ÌƒTƒCƒY‚ª‚»‚Ì‚Ü‚ÜŽg—p‚³‚ê‚Ü‚·B
 ^
-‰æ‘œ‘fÞ‚Ì•ªŠ„”‚ÍAƒEƒBƒ“ƒhƒEID‚²‚Æ‚É•Û‘¶‚³‚ê‚Ä‚¨‚èAcls–½—ß‚È‚Ç‚Å‰Šú‰»‚³‚ê‚½
-Žž“_‚Å‚ÍA1~1(•ªŠ„‚È‚µ)‚ÌÝ’è‚É‚È‚Á‚Ä‚¢‚Ü‚·B
+(p4,p5)‚ÅA•`‰æ‚Ì’†SÀ•W‚ðÝ’è‚·‚é‚±‚Æ‚ª‚Å‚«‚Ü‚·B
+‚±‚ê‚ÍAcelput–½—ß‚Å•`‰æ‚ðs‚È‚Á‚½Û‚ÉA•`‰æ‚ÌŠî“_ˆÊ’u‚É‚È‚è‚Ü‚·B
+‚½‚Æ‚¦‚ÎA(0,0)‚ð’†SÀ•W‚Æ‚µ‚ÄŽw’è‚µ‚½ê‡‚ÍAcelput–½—ß‚Å•`‰æ‚³‚ê‚éˆÊ’u(pos–½—ß‚ÅŽw’è‚µ‚½À•W)‚ÉA‰æ‘œ‘fÞ‚Ì(0,0)‚ªŽQÆ‚³‚ê‚é‚±‚Æ‚É‚È‚è‚Ü‚·B
+‚Ü‚½A‰ñ“]‚µ‚½‰æ‘œ‚Ì•`‰æ‚ðs‚È‚¤Û‚É‚àA‰ñ“]‚Ì’†S‚Æ‚È‚è‚Ü‚·B
+’Êí‚ÍA(0,0)‚ÌˆÊ’uA‚Â‚Ü‚è¶ã‚ªŠî“_ˆÊ’u‚Æ‚È‚Á‚Ä‚¢‚Ü‚·B‚±‚ê‚ÍAgcopy–½—ß‚Å‚ÌŠî“_ˆÊ’u‚Æ“¯—l‚Å‚·B
+
+^
+‰æ‘œ‘fÞ‚Ì•ªŠ„Ý’è‚ÍAƒEƒBƒ“ƒhƒEID‚²‚Æ‚É•Û‘¶‚³‚ê‚Ä‚¨‚èAcls–½—ß‚È‚Ç‚Å‰Šú‰»‚³‚ê‚½
+Žž“_‚Å‚ÍA•ªŠ„‚È‚µ(‰æ–Ê‘S‘Ì‚ðƒTƒCƒY‚Æ‚µ‚ÄŽw’è)‚ÌÝ’è‚É‚È‚Á‚Ä‚¢‚Ü‚·B
+•ªŠ„‚ÌÝ’è‚ÍA•K‚¸Žw’è‚³‚ê‚½ƒEƒBƒ“ƒhƒEID‚É‰æ‘œ‘fÞ‚ª“Ç‚Ýž‚Ü‚ê‚½ó‘Ô‚Ås‚È‚Á‚Ä‚­‚¾‚³‚¢B
+•ªŠ„‚ÌÝ’è‚ðs‚È‚Á‚½Œã‚ÉA‰æ‘œ‘fÞ‚Ì“Ç‚Ýž‚Ý‚ðs‚È‚Á‚½ê‡‚ÍA•ªŠ„Ý’è‚ÍƒŠƒZƒbƒg‚³‚ê‚Ü‚·B
 Ú‚µ‚­‚ÍAƒvƒƒOƒ‰ƒ~ƒ“ƒOƒ}ƒjƒ…ƒAƒ‹(hspprog.htm)‚ÌCELŠÖ˜A–½—ß‚É‚Â‚¢‚Ä‚ðŽQÆ‚µ‚Ä‚­‚¾‚³‚¢B
 
 %href
@@ -1681,8 +1693,9 @@ angle‚ÉŽw’è‚³‚ê‚é’l‚ÍAŽÀ”‚Å’PˆÊ‚Íƒ‰ƒWƒAƒ“(0‚©‚çŽn‚Ü‚Á‚ÄA2ƒÎ‚ÅˆêŽü)‚Æ‚È‚è‚Ü‚·
 ^
 celput–½—ß‚ÍAgcopy–½—ß‚Æ“¯—l‚ÉŽw’è‚³‚ê‚½ƒEƒCƒ“ƒhƒDID‚Ì‰æ‘œ‚ðƒRƒs[‚µ‚Ä•`‰æ‚µ‚Ü‚·B
 gcopy–½—ß‚Æ“¯—l‚ÉAgmode–½—ß‚É‚æ‚èŽw’è‚³‚ê‚½ƒRƒs[ƒ‚[ƒhAƒuƒŒƒ“ƒh—¦‚ª”½‰f‚³‚ê‚Ü‚·B
-‚½‚¾‚µA•`‰æˆÊ’u‚ÍAŒ»Ý‚ÌƒJƒŒƒ“ƒgƒ|ƒWƒVƒ‡ƒ“(pos–½—ß‚ÅŽw’è‚³‚ê‚½’l)‚ª’†S‚Æ‚È‚è‚Ü‚·B
-‚Ü‚½A•`‰æ‚³‚ê‚é‰æ‘œ‚ÌƒTƒCƒY‚ÍA‰æ‘œ‘fÞ‚Æ‚È‚éƒEƒBƒ“ƒhƒEID‚ÌƒTƒCƒY‹y‚Ñ•ªŠ„”‚ÅŒˆ’è‚³‚ê‚Ü‚·B
+•`‰æˆÊ’u‚ÍAŒ»Ý‚ÌƒJƒŒƒ“ƒgƒ|ƒWƒVƒ‡ƒ“(pos–½—ß‚ÅŽw’è‚³‚ê‚½’l)‚ªŠî“_‚Æ‚È‚è‚Ü‚·B
+•`‰æ‚³‚ê‚é‰æ‘œ‚ÌƒTƒCƒY‚ÍA’Êí‚Í(Žw’è‚³‚ê‚½ƒEƒBƒ“ƒhƒEID‚É‚ ‚é)Œ³‰æ‘œ‚Æ“¯‚¶‚à‚Ì‚É‚È‚è‚Ü‚·B
+•`‰æ‚³‚ê‚é‰æ‘œ‚ÌƒTƒCƒY‹y‚ÑA•`‰æ‚â‰ñ“]‚Ì’†SˆÊ’u‚ÍAceldiv–½—ß‚É‚æ‚Á‚Ä•ÏX‚·‚é‚±‚Æ‚ª‰Â”\‚Å‚·B
 ^
 zoomx,zoomy,angle‚ÌŽw’è‚ðÈ—ª‚·‚é‚©A“™”{‚ÌÝ’è(1,1,0)‚É‚È‚Á‚Ä‚¢‚éê‡‚ÍA
 Ž©“®“I‚É‚‘¬‚ÈƒRƒs[‚ª“à•”‚ÅŽÀs‚³‚ê‚Ü‚·B‹t‚ÉA“™”{‚Å‚È‚¢•`‰æ‚ðs‚È‚¤ê‡‚ÍA
@@ -1696,6 +1709,8 @@ celput–½—ß‚Æ‚»‚ÌŠÖ˜A–½—ß‚É‚æ‚èA‰æ‘œ‘fÞ‚ðŒø—¦“I‚ÉŠÇ—‚·‚é‚±‚Æ‚ª‚Å‚«‚Ü‚·B
 %href
 celload
 celdiv
+gcopy
+grotate
 
 
 
