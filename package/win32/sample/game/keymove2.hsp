@@ -2,12 +2,12 @@
 	;
 	;	カーソルキーで画像を動かす(2)
 	;
-	buffer 3
-	picload "face.bmp"			; 画像ファイル
-	screen 0,640,480
+	celload "face.bmp"			; 元画像ファイル
+	face=stat				; 元画像のIDを保存
+	celdiv face,64,64,32,32			; パーツのサイズと中心位置
 
 	x1=0 : y1=0					; 左上XY
-	x2=640 : y2=480				; 右下XY
+	x2=640 : y2=480					; 右下XY
 
 	;	角度のリスト(90度単位)
 	rotdir=0.0, 1.57079632, 3.14159264, 4.71238896
@@ -22,9 +22,9 @@
 	color 0,0,64
 	boxf						; 背景を消す
 
-	gmode 2,64,64				; 画像サイズ
-	pos mx,my
-	grotate 3,0,0,rotdir(mr)	; 画像コピー
+	gmode 2						; 透明色ありの指定
+	pos mx,my					; 表示位置の設定
+	celput face,0,1,1,rotdir(mr)			; 画像コピー
 
 	redraw 1					; 描画終わり
 	await 20

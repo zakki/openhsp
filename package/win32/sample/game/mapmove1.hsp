@@ -1,23 +1,25 @@
 
 	;
 	;	マップ表示(1)
-	;	(マップデータはmapedit.hspで作成します)
+	;	(test.mapを表示してカーソルキーでスクロールさせます)
+	;	(マップデータはmapedit.hspで作成)
+	;	(ただし、マップ付加情報(.txt)は反映されません)
 	;
-	cx=64:cy=64	; チップXYサイズ
-	csrc=3		; チップのあるウィンドウID
+	cx=64:cy=64					; パーツXYサイズ
+	celload "mapbg.bmp"				; 元画像ファイル
+	csrc=stat					; 元画像のIDを保存
+	celdiv csrc,cx,cy				; パーツのサイズ設定
 
-	mapsx=32	; マップ全体Xサイズ
-	mapsy=32	; マップ全体Yサイズ
+	mapsx=32					; マップ全体Xサイズ
+	mapsy=32					; マップ全体Yサイズ
 
-	dim map,mapsx,mapsy
-	mapvx=9:mapvy=7	; 表示XYチップ数
-	mapx=0:mapy=0
+	mapvx=9:mapvy=7					; 表示XYパーツ数
+	mapx=0:mapy=0					; マップ参照位置
 
+	dim map,mapsx,mapsy				; マップ配列の初期化
 	bload "test.map",map				; マップ読み込み
 
-	buffer csrc
-	picload "testchr.bmp"				; 画像ファイル
-	screen 0,mapvx*cx,mapvy*cy
+	screen 0,mapvx*cx,mapvy*cy			; 表示画面を初期化
 
 *main
 	redraw 0					; 描画始め
@@ -25,8 +27,18 @@
 	color 0,0,64
 	boxf						; 背景を消す
 
-	gosub *putmap					; マップ表示
-	gosub *putmes					; メッセージ表示
+	gmode 0
+
+	;	mapを参照しながらマップを描く
+	;	(mapx,mapyは参照する右上の配列要素になります)
+	repeat mapvy
+	y=cnt
+	pos 0,y*cy
+	repeat mapvx
+		x=cnt
+		celput csrc,map(mapx+x,mapy+y)
+	loop
+	loop
 
 	redraw 1					; 描画終わり
 	await 20
@@ -36,25 +48,7 @@
 	if key&4 : mapx+
 	if key&2 : mapy-
 	if key&8 : mapy+
-	mapx=limit(mapx,0,mapsx-mapvx)
-	mapy=limit(mapy,0,mapsy-mapvy)
+	mapx=limit(mapx,0,mapsx-mapvx)			; X範囲チェック
+	mapy=limit(mapy,0,mapsy-mapvy)			; Y範囲チェック
 
 	goto *main
-
-*putmap
-	gmode 0,cx,cy
-	repeat mapvy
-	i=mapy+cnt:y=cnt*cy
-	repeat mapvx
-		pos cnt*cx,y
-		gcopy csrc,map(mapx+cnt,i)*cx,0
-	loop
-	loop
-	return
-
-*putmes
-	sysfont 17
-	pos 0,0:color 255,255,255
-	mes "カーソルキーでマップを移動させてください。"
-	return
-

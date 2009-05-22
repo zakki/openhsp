@@ -3,8 +3,10 @@
 	;	複数の物体を動かす(1)
 	;
 	randomize
-	buffer 3
-	picload "face.bmp"			; 画像ファイル
+	celload "face.bmp"				; 画像ファイル
+	face_id=stat
+	celdiv face_id,64,64,32,32			; パーツのサイズと中心位置
+
 	screen 0,640,480
 
 	facemax=30					; 物体の最大数
@@ -48,10 +50,10 @@
 *facedraw
 	;	物体を描画
 	;
-	gmode 2,64,64				; 画像サイズ
+	gmode 2					; 画像モード
 	repeat facemax
 		pos facex(cnt),facey(cnt)
-		gcopy 3						; 画像コピー
+		celput face_id			; 画像の描画
 	loop
 	return
 

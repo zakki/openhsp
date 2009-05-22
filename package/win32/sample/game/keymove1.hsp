@@ -2,15 +2,11 @@
 	;
 	;	カーソルキーで画像を動かす(1)
 	;
-	buffer 3
-	picload "face.bmp"			; 画像ファイル
-	screen 0,640,480
+	celload "face.bmp"				; 元画像ファイル
+	face=stat					; 元画像のIDを保存
 
-	x1=0 : y1=0					; 左上XY
-	x2=640-64 : y2=480-64		; 右下XY
-
-	mx=304						; X座標
-	my=204						; Y座標
+	mx=320						; X座標
+	my=240						; Y座標
 	msp=4						; スピード
 *main
 	redraw 0					; 描画始め
@@ -18,19 +14,19 @@
 	color 0,0,64
 	boxf						; 背景を消す
 
-	gmode 2,64,64				; 画像サイズ
-	pos mx,my
-	gcopy 3						; 画像コピー
+	gmode 2						; 透明色ありの指定
+	pos mx,my					; 表示位置の設定
+	celput face					; 画像コピー
 
 	redraw 1					; 描画終わり
 	await 20
 
-	stick key,15				; キー入力
+	stick key,15					; キー入力
 
-	if key&1 : mx=limit( mx-msp, x1, x2 )
-	if key&4 : mx=limit( mx+msp, x1, x2 )
-	if key&2 : my=limit( my-msp, y1, y2 )
-	if key&8 : my=limit( my+msp, y1, y2 )
+	if key&1 : mx=mx-msp
+	if key&4 : mx=mx+msp
+	if key&2 : my=my-msp
+	if key&8 : my=my+msp
 
 	goto *main
 
