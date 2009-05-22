@@ -1246,6 +1246,7 @@ static int cmdfunc_extcmd( int cmd )
 		bmscr->GradFill( p1, p2, p3, p4, gradmode, p5, p6 );
 		break;
 		}
+#endif
 
 	case 0x39:								// objimage
 		p1 = code_getdi( -1 );
@@ -1274,6 +1275,7 @@ static int cmdfunc_extcmd( int cmd )
 		break;
 		}
 
+#ifndef HSP_COMPACT
 	case 0x3c:								// celload
 		{
 		int i;
