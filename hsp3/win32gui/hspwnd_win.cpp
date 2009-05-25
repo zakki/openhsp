@@ -388,12 +388,13 @@ void HspWnd::MakeBmscrOff( int id, int sx, int sy, int mode )
 	Bmscr * bm = new Bmscr;
 	mem_bm[ id ] = bm;
 
-	bm->Init( hInst, hwnd, sx, sy,
-	 ( mode & 0x01 ? BMSCR_PALMODE_PALETTECOLOR : BMSCR_PALMODE_FULLCOLOR ) );
-
 	bm->wid = id;
 	bm->master_hspwnd = static_cast< void * >( this );
 	bm->type = HSPWND_TYPE_BUFFER;
+
+	bm->Init( hInst, hwnd, sx, sy,
+	 ( mode & 0x01 ? BMSCR_PALMODE_PALETTECOLOR : BMSCR_PALMODE_FULLCOLOR ) );
+
 	bm->wx = 0;
 	bm->wy = 0;
 	bm->wchg = 0;
