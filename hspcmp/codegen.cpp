@@ -703,7 +703,7 @@ char *CToken::GetTokenCG( char *str, int option )
 			ttype = TK_DNUM;
 			break;
 		default:
-			val=atoi( (char *)s2 );
+			val=atoi_allow_overflow( (char *)s2 );
 			ttype = TK_NUM;
 			break;
 		}

@@ -398,6 +398,18 @@ char *to_hsp_string_literal( const char *src ) {
 	return dest;
 }
 
+int atoi_allow_overflow( const char *s )
+{
+	//		オーバーフローチェックをしないatoi
+	//
+	int result = 0;
+	while (isdigit(*s)) {
+		result = result * 10 + (*s - '0');
+		s ++;
+	}
+	return result;
+}
+
 void CutLastChr( char *p, char code )
 {
 	//		最後の'\\'を取り除く

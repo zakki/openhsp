@@ -510,7 +510,7 @@ int CToken::GetToken( void )
 
 		switch( fpflag ) {
 		case 0:					// ’Êí‚Ì®”
-			val=atoi((char *)s3);
+			val=atoi_allow_overflow((char *)s3);
 			if ( minmode ) val=-val;
 			break;
 		case 1:					// intŒÅ’è¬”
