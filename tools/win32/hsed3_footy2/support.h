@@ -10,6 +10,7 @@ void ShowLastError();
 LPSTR *CommandLineToArgvA(LPSTR, int *);
 size_t strlcpy(char *, char *, size_t);
 ULONGLONG GetFileIndex(const char *);
+int getStrLinesSize(const char *);
 
 class FileList{
 private:

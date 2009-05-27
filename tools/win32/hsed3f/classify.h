@@ -111,6 +111,7 @@ typedef struct tagClassifyTable{
 void InitClassify();
 void SetClassify(int);
 void ResetClassify();
+void ByeClassify();
 
 void SetEditColor(int);
 void SetAllEditColor();

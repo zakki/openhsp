@@ -11,8 +11,6 @@
 
 #include "support.h"
 
-#define CLASSIFY_MAX 255
-
 // Type table
 typedef struct tagTypeTable{
 	char *Type;
@@ -54,6 +52,8 @@ DEF_CLASSIFY_TABLE DefClassifyTable[] = {
 	NULL
 };
 
+#define DefClassifyTableSize() ((sizeof(DefClassifyTable)/sizeof(*DefClassifyTable))-1)
+
 // Table of type returned from hspcmp.dll 
 static TYPE_TABLE TypeTable[] = {
 	"sys|macro",	&(color.Character.Macro.Conf),			EMPFLAG_NON_CS,
@@ -91,8 +91,7 @@ char *filebuf;
 
 FileList filelist;
 
-static CLASSIFY_TABLE ClassifyTable[CLASSIFY_MAX + 1];
-static int nCTSize;
+static CLASSIFY_TABLE *ClassifyTable = NULL;
 
 int TableCompare(const void *pTable1, const void *pTable2)
 {
@@ -105,18 +104,7 @@ void InitClassify()
 	int bufsize;
 	char *buf, *line, name[256], type[256];
 
-	nCTSize = 0;
-
-	for(int i = 0; DefClassifyTable[i].Word1 != NULL; i++, nCTSize++){
-		lstrcpy(ClassifyTable[i].Word1, DefClassifyTable[i].Word1);
-		lstrcpy(ClassifyTable[i].Word2, DefClassifyTable[i].Word2);
-		ClassifyTable[i].Type   = DefClassifyTable[i].Type;
-		ClassifyTable[i].color  = DefClassifyTable[i].color;
-		ClassifyTable[i].Status = DefClassifyTable[i].Status;
-		ClassifyTable[i].Level  = DefClassifyTable[i].Level;
-		ClassifyTable[i].pLevel = DefClassifyTable[i].pLevel;
-		ClassifyTable[i].Ind    = DefClassifyTable[i].Ind;
-	}
+	int nCTSize = 0;
 /*
 	FILE *fp = fopen("hsptmp", "w");
 	char last;
@@ -141,11 +129,26 @@ void InitClassify()
 	hsc3_messize((int)&bufsize, 0, 0, 0);
 	buf = (char *)malloc(bufsize+1);
 	hsc_getmes((int)buf, 0, 0, 0);
+
+	int tableCapacity = DefClassifyTableSize() + getStrLinesSize(buf) + 1;
+	free(ClassifyTable);
+	ClassifyTable = (CLASSIFY_TABLE *)malloc(tableCapacity * sizeof(CLASSIFY_TABLE));
+
+	for(int i = 0; DefClassifyTable[i].Word1 != NULL; i++, nCTSize++){
+		lstrcpy(ClassifyTable[i].Word1, DefClassifyTable[i].Word1);
+		lstrcpy(ClassifyTable[i].Word2, DefClassifyTable[i].Word2);
+		ClassifyTable[i].Type   = DefClassifyTable[i].Type;
+		ClassifyTable[i].color  = DefClassifyTable[i].color;
+		ClassifyTable[i].Status = DefClassifyTable[i].Status;
+		ClassifyTable[i].Level  = DefClassifyTable[i].Level;
+		ClassifyTable[i].pLevel = DefClassifyTable[i].pLevel;
+		ClassifyTable[i].Ind    = DefClassifyTable[i].Ind;
+	}
     
 	line = buf;
 	for(;;){
 		if(sscanf(line, "%s\t,%s", name, type) == 2){
-			if(nCTSize >= CLASSIFY_MAX){
+			if(nCTSize >= tableCapacity){
 				msgboxf(0, "色分けの個数が制限に達しました。\n\"%s\"以降は色分けされません。"
 					, "エラー", MB_OK | MB_ICONERROR, name);
 				break;
@@ -229,4 +232,10 @@ void ResetClassify()
 	for(i = 0; (lpTabInfo = GetTabInfo(i)) != NULL; i++)
 		SetClassify(lpTabInfo->FootyID);
 	return;
+}
+
+void ByeClassify()
+{
+	free(ClassifyTable);
+	ClassifyTable = NULL;
 }

@@ -1457,7 +1457,7 @@ void poppad_bye( void )
     //case WM_DESTROY :
 	err_bye();
 	PopFontDeinitialize () ;
-
+	ByeClassify();
 	DeleteObject((HGDIOBJ)(HFONT)SendMessage(hwndTab, WM_GETFONT, 0, 0));
 }
 

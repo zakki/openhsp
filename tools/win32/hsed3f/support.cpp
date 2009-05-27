@@ -228,3 +228,16 @@ ULONGLONG GetFileIndex(const char *szFileName)
 		return 0;
 	}
 }
+
+int getStrLinesSize(const char *s)
+{
+	int result = 0;
+	while (*s != '\0') {
+		while (*s != '\0') {
+			char c = *s++;
+			if(c == '\n') break;
+		}
+		result ++;
+	}
+	return result;
+}
