@@ -32,6 +32,31 @@ void CToken::CalcCG_token( void )
 	if ( ttype == TK_NONE ) ttype = val;
 }
 
+void CToken::CalcCG_token_exprbeg( void )
+{
+	GetTokenCG( GETTOKEN_EXPRBEG );
+	if ( ttype == TK_NONE ) ttype = val;
+}
+
+void CToken::CalcCG_token_exprbeg_redo( void )
+{
+	//		GETTOKEN_EXPRBEG でトークンを取得し直す
+	//
+	//		GetTokenCG は 文字列リテラルや文字コードリテラルの場合、
+	//		cg_ptr のバッファを破壊するので常に取得し直すわけにはいかない
+	//
+	if ( ttype == TK_NONE ) ttype = val;
+	if ( ttype == '-' || ttype == '*' ) {
+		cg_ptr = cg_ptr_bak;
+		CalcCG_token_exprbeg();
+	}
+}
+
+static int is_statement_end( int type )
+{
+	return ( type == TK_SEPARATE )||( type == TK_EOL )||( type == TK_EOF );
+}
+
 
 void CToken::CalcCG_regmark( int mark )
 {
@@ -97,101 +122,40 @@ void CToken::CalcCG_regmark( int mark )
 	PutCS( TK_NONE, op, texflag );
 }
 
-
-void CToken::CalcCG_optimize( CGVAR &org, CGVAR &v, int mark )
+void CToken::CalcCG_factor( void )
 {
-	//		「演算+オブジェクト」コードを最適化する
-	//		org = 被演算オブジェクト(最適化のために参照される)
-	//		v   = リファレンスオブジェクト / mark=演算子コード
-	//		(mark=0の場合は演算子なし)
-	//
-	//Mesf( "#->%c",mark );
-	CalcCG_regmark( mark );
-}
-
-void CToken::CalcCG_factor( CGVAR &v )
-{
-	CGVAR v1;
 	int id;
-
-	v.minflag = 0;
-	if ( ttype=='-' ) {
-		CalcCG_token();
-		v.minflag = 1;
-	}
 
 	switch( ttype ) {
 	case TK_NUM:
-		v.curtype = TYPE_INUM;
-		v.ival = val;
-		if ( v.minflag ) {
-			v.ival = -val;
-			v.minflag = 0;
-		}
-		if ( v.cnt++ == 0 ) v.ptr = cs_buf->GetSize();
-		PutCS( ttype, v.ival, texflag );
-		//Mesf( "#i%d (%x)",v.ival,texflag );
+		PutCS( TYPE_INUM, val, texflag );
 		texflag = 0;
 		CalcCG_token();
 		return;
 	case TK_DNUM:
-		v.curtype = TYPE_DNUM;
-		v.dval = val_d;
-		if ( v.minflag ) {
-			v.dval = -val_d;
-			v.minflag = 0;
-		}
-		if ( v.cnt++ == 0 ) v.ptr = cs_buf->GetSize();
-		PutCS( ttype, v.dval, texflag );
-		//Mesf( "#f%f (%x)",v.dval,texflag );
+		PutCS( TYPE_DNUM, val_d, texflag );
 		texflag = 0;
 		CalcCG_token();
 		return;
 	case TK_STRING:
-		if ( v.minflag ) {
-			ttype=TK_CALCERROR; return;
-		}
-		v.curtype = TYPE_STRING;
-		v.ival = PutDS( cg_str );
-		if ( v.cnt++ == 0 ) v.ptr = cs_buf->GetSize();
-		PutCS( ttype, v.ival, texflag );
-		//Mesf( "#s[%s] (%x)",cg_str,texflag );
+		PutCS( TYPE_STRING, PutDS( cg_str ), texflag );
+		texflag = 0;
+		CalcCG_token();
+		return;
+	case TK_LABEL:
+		GenerateCodeLabel( cg_str, texflag );
 		texflag = 0;
 		CalcCG_token();
 		return;
 	case TK_OBJ:
 		id = lb->Search( cg_str );
 		if ( id < 0 ) {
-			//Mesf( "[%s][%d]",cg_str, cg_valcnt );
 			id = lb->Regist( cg_str, TYPE_VAR, cg_valcnt );
-			v.curtype = TYPE_VAR;
-			v.ival = cg_valcnt;
 			cg_valcnt++;
-		} else {
-			v.curtype = lb->GetType( id );
-			v.ival = lb->GetOpt(id);
 		}
-		if ( v.minflag ) {
-			if ( v.cnt > 0 ) {
-				ttype=TK_CALCERROR; return;
-			}
-			GenerateCodeVAR( id, texflag );
-			texflag = 0;
-			v.cnt++;
-			v.minflag = 0;
-			PutCS( TYPE_INUM, -1, texflag );
-			//
-			CalcCG_regmark( '*' );
-			//PutCS( TK_NONE, '-', texflag );
-		} else {
-			v.cnt++;
-			GenerateCodeVAR( id, texflag );
-			texflag = 0;
-		}
+		GenerateCodeVAR( id, texflag );
+		texflag = 0;
 		if ( ttype == TK_NONE ) ttype = val;		// CalcCG_token()に合わせるため
-		//PutCS( ttype, v.ival, texflag );
-		//Mesf( "#o%d (%d)",v.ival,v.curtype );
-		//CalcCG_token();
 		return;
 	case TK_SEPARATE:
 	case TK_EOL:
@@ -209,112 +173,105 @@ void CToken::CalcCG_factor( CGVAR &v )
 
 	//		カッコの処理
 	//
-	CalcCG_token();
-	v1.cnt = 0;
-	v1.curtype = 0;
-	CalcCG_start(v1); 
+	CalcCG_token_exprbeg();
+	CalcCG_start();
 	if( ttype!=')' ) { ttype=TK_CALCERROR; return; }
 
-	if ( v.minflag ) {
+	CalcCG_token();
+}
+
+void CToken::CalcCG_unary( void )
+{
+	//		単項演算子
+	//
+	int op;
+	if ( ttype=='-' ) {
+		op=ttype; CalcCG_token_exprbeg();
+		if ( is_statement_end(ttype) ) throw CGERROR_CALCEXP;
+		CalcCG_unary();
 		texflag = 0;
 		PutCS( TYPE_INUM, -1, texflag );
 		CalcCG_regmark( '*' );
+	} else {
+		CalcCG_factor();
 	}
-
-	CalcCG_token();
-	v=v1;
 }
 
-void CToken::CalcCG_muldiv( CGVAR &v )
+void CToken::CalcCG_muldiv( void )
 {
-	CGVAR v1,v2;
 	int op;
-	v2.cnt = v1.cnt = v.cnt;
-	CalcCG_factor(v1);
+	CalcCG_unary();
 
 	while( (ttype=='*')||(ttype=='/')||(ttype=='\\')) {
-		op=ttype; CalcCG_token();
-		if (( ttype == TK_SEPARATE )||( ttype == TK_EOL )||( ttype == TK_EOF )) throw CGERROR_CALCEXP;
-		CalcCG_factor(v2);
-		CalcCG_optimize( v1, v2, op );
+		op=ttype; CalcCG_token_exprbeg();
+		if ( is_statement_end(ttype) ) throw CGERROR_CALCEXP;
+		CalcCG_unary();
+		CalcCG_regmark( op );
 	}
-	v=v1;
 }
 
-void CToken::CalcCG_addsub( CGVAR &v )
+void CToken::CalcCG_addsub( void )
 {
-	CGVAR v1,v2;
 	int op;
-	v2.cnt = v1.cnt = v.cnt;
-	CalcCG_muldiv(v1);
+	CalcCG_muldiv();
 
 	while( (ttype=='+')||(ttype=='-')) {
-		op=ttype; CalcCG_token();
-		if (( ttype == TK_SEPARATE )||( ttype == TK_EOL )||( ttype == TK_EOF )) throw CGERROR_CALCEXP;
-		CalcCG_muldiv(v2);
-		CalcCG_optimize( v1, v2, op );
+		op=ttype; CalcCG_token_exprbeg();
+		if ( is_statement_end(ttype) ) throw CGERROR_CALCEXP;
+		CalcCG_muldiv();
+		CalcCG_regmark( op );
 	}
-	v=v1;
 }
 
 
-void CToken::CalcCG_shift( CGVAR &v )
+void CToken::CalcCG_shift( void )
 {
-	CGVAR v1,v2;
 	int op;
-	v2.cnt = v1.cnt = v.cnt;
-	CalcCG_addsub(v1);
+	CalcCG_addsub();
 
 	while( (ttype==0x63)||(ttype==0x64)) {
-		op=ttype; CalcCG_token();
-		if (( ttype == TK_SEPARATE )||( ttype == TK_EOL )||( ttype == TK_EOF )) throw CGERROR_CALCEXP;
-		CalcCG_addsub(v2);
-		CalcCG_optimize( v1, v2, op );
+		op=ttype; CalcCG_token_exprbeg();
+		if ( is_statement_end(ttype) ) throw CGERROR_CALCEXP;
+		CalcCG_addsub();
+		CalcCG_regmark( op );
 	}
-	v=v1;
 }
 
 
-void CToken::CalcCG_compare( CGVAR &v )
+void CToken::CalcCG_compare( void )
 {
-	CGVAR v1,v2;
 	int op;
-	v2.cnt = v1.cnt = v.cnt;
-	CalcCG_shift(v1);
+	CalcCG_shift();
 
 	while( 
 		(ttype=='<')||(ttype=='>')||(ttype=='=')||(ttype=='!')||
 		(ttype==0x61)||(ttype==0x62)) {
-		op=ttype; CalcCG_token();
-		if (( ttype == TK_SEPARATE )||( ttype == TK_EOL )||( ttype == TK_EOF )) throw CGERROR_CALCEXP;
-		CalcCG_shift(v2);
-		CalcCG_optimize( v1, v2, op );
+		op=ttype; CalcCG_token_exprbeg();
+		if ( is_statement_end(ttype) ) throw CGERROR_CALCEXP;
+		CalcCG_shift();
+		CalcCG_regmark( op );
 	}
-	v=v1;
 }
 
 
-void CToken::CalcCG_bool( CGVAR &v )
+void CToken::CalcCG_bool( void )
 {
-	CGVAR v1,v2;
 	int op;
-	v2.cnt = v1.cnt = v.cnt;
-	CalcCG_compare(v1);
+	CalcCG_compare();
 
 	while( (ttype=='&')||(ttype=='|')||(ttype=='^')) {
-		op=ttype; CalcCG_token();
-		if (( ttype == TK_SEPARATE )||( ttype == TK_EOL )||( ttype == TK_EOF )) throw CGERROR_CALCEXP;
-		CalcCG_compare(v2);
-		CalcCG_optimize( v1, v2, op );
+		op=ttype; CalcCG_token_exprbeg();
+		if ( is_statement_end(ttype) ) throw CGERROR_CALCEXP;
+		CalcCG_compare();
+		CalcCG_regmark( op );
 	}
-	v=v1;
 }
 
 
-void CToken::CalcCG_start( CGVAR &v )
+void CToken::CalcCG_start( void )
 {
 	//		entry point
-	CalcCG_bool(v);
+	CalcCG_bool();
 }
 
 void CToken::CalcCG( int ex )
@@ -322,14 +279,11 @@ void CToken::CalcCG( int ex )
 	//		パラメーターの式を評価する
 	//		(結果は逆ポーランドでコードを出力する)
 	//
-	CGVAR v;
-	v.cnt = 0;
-	v.curtype = 0;
 	texflag = ex;
 
-	if ( ttype == TK_NONE ) ttype = val;		// CalcCG_token()の代わり
+	CalcCG_token_exprbeg_redo();
 
-	CalcCG_start( v );
+	CalcCG_start();
 
 	if ( ttype == TK_CALCERROR ) {
 		throw CGERROR_CALCEXP;
@@ -474,6 +428,7 @@ char *CToken::PickStringCG2( char *str, char **strsrc )
 
 char *CToken::GetTokenCG( int option )
 {
+	cg_ptr_bak = cg_ptr;
 	cg_ptr = GetTokenCG( cg_ptr, option );
 	return cg_ptr;
 }
@@ -612,7 +567,7 @@ char *CToken::GetTokenCG( char *str, int option )
 	if ((a1>=0x5b)&&(a1<=0x5e)) chk++;
 	if ((a1>=0x7b)&&(a1<=0x7f)) chk++;
 
-	if ( option & GETTOKEN_LABEL ) {
+	if ( option & (GETTOKEN_EXPRBEG|GETTOKEN_LABEL) ) {
 		if ( a1 == '*' ) {					// ラベル
 			a2 = vs[1]; b = 0;
 			if (a2<0x30) b++;
@@ -627,40 +582,16 @@ char *CToken::GetTokenCG( char *str, int option )
 		}
 	}
 
-	if (chk) {								// 記号
-		vs++;a2=*vs;
-		switch( a1 ) {
-		case '-':
-			if (a2=='>') { vs++;a1=0x65; }	// '->'
-			break;
-		case '!':
-			if (a2=='=') vs++;
-			break;
-		case '<':
-			if (a2=='<') { vs++;a1=0x63; }	// '<<'
-			if (a2=='=') { vs++;a1=0x61; }	// '<='
-			break;
-		case '>':
-			if (a2=='>') { vs++;a1=0x64; }	// '>>'
-			if (a2=='=') { vs++;a1=0x62; }	// '>='
-			break;
-		case '=':
-			if (a2=='=') { vs++; }			// '=='
-			break;
-		case '|':
-			if (a2=='|') { vs++; }			// '||'
-			break;
-		case '&':
-			if (a2=='&') { vs++; }			// '&&'
-			break;
-		}
-		ttype = TK_NONE;
-		val = (int)a1;
-		return (char *)vs;
+	int is_negative_number = 0;
+	if ( option & GETTOKEN_EXPRBEG && a1 == '-' ) {
+		is_negative_number = isdigit(vs[1]);
 	}
 
-	if ((a1>=0x30)&&(a1<=0x39)) {				// when 0-9 numerical
+	if ( is_negative_number || isdigit(a1) ) {				// when 0-9 numerical
 		a=0;chk=0;
+		if ( is_negative_number ) {
+			vs ++;
+		}
 		while(1) {
 			a1=*vs;
 			if ( option & GETTOKEN_NOFLOAT ) {
@@ -700,13 +631,47 @@ char *CToken::GetTokenCG( char *str, int option )
 		switch( chk ) {
 		case 1:
 			val_d = atof( (char *)s2 );
+			if ( is_negative_number ) { val_d = - val_d; }
 			ttype = TK_DNUM;
 			break;
 		default:
 			val=atoi_allow_overflow( (char *)s2 );
+			if ( is_negative_number ) { val = - val; }
 			ttype = TK_NUM;
 			break;
 		}
+		return (char *)vs;
+	}
+
+	if (chk) {								// 記号
+		vs++;a2=*vs;
+		switch( a1 ) {
+		case '-':
+			if (a2=='>') { vs++;a1=0x65; }	// '->'
+			break;
+		case '!':
+			if (a2=='=') vs++;
+			break;
+		case '<':
+			if (a2=='<') { vs++;a1=0x63; }	// '<<'
+			if (a2=='=') { vs++;a1=0x61; }	// '<='
+			break;
+		case '>':
+			if (a2=='>') { vs++;a1=0x64; }	// '>>'
+			if (a2=='=') { vs++;a1=0x62; }	// '>='
+			break;
+		case '=':
+			if (a2=='=') { vs++; }			// '=='
+			break;
+		case '|':
+			if (a2=='|') { vs++; }			// '||'
+			break;
+		case '&':
+			if (a2=='&') { vs++; }			// '&&'
+			break;
+		}
+		ttype = TK_NONE;
+		val = (int)a1;
 		return (char *)vs;
 	}
 
@@ -832,19 +797,10 @@ void CToken::GenerateCodePRM( void )
 				ex |= EXFLG_2;
 				continue;
 			}
-			if ( val == '*' ) {						// 先頭が'*'の場合はラベル
-				GetTokenCG( GETTOKEN_DEFAULT );
-				if ( ttype != TK_OBJ ) throw CGERROR_CALCEXP;
-				GenerateCodeLabel( cg_str, ex );
-				ex |= EXFLG_2;
-				CalcCG_token();
-				goto PRM_skip;
-			}
 		}
 
 		CalcCG( ex );								// 式の評価
 
-PRM_skip:
 		if ( ttype >= TK_SEPARATE ) break;
 		if ( ttype != ',' ) {
 			throw CGERROR_CALCEXP;
@@ -1073,19 +1029,10 @@ void CToken::GenerateCodeMethod( void )
 				ex |= EXFLG_2;
 				continue;
 			}
-			if ( val == '*' ) {						// 先頭が'*'の場合はラベル
-				GetTokenCG( GETTOKEN_DEFAULT );
-				if ( ttype != TK_OBJ ) throw CGERROR_CALCEXP;
-				GenerateCodeLabel( cg_str, ex );
-				ex |= EXFLG_2;
-				CalcCG_token();
-				goto PRM_skip;
-			}
 		}
 
 		CalcCG( ex );								// 式の評価
 
-PRM_skip:
 		if ( ttype >= TK_SEPARATE ) break;
 		if ( ttype != ',' ) {
 			throw CGERROR_CALCEXP;

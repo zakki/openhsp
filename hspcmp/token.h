@@ -49,6 +49,7 @@
 #define GETTOKEN_DEFAULT 0
 #define GETTOKEN_NOFLOAT 1		// '.'Çè¨êîì_Ç∆å©Ç»Ç≥Ç»Ç¢(êÆêîÇÃÇ›éÊìæ)
 #define GETTOKEN_LABEL 2		// '*'Ç…ë±Ç≠ñºëOÇÉâÉxÉãÇ∆ÇµÇƒéÊìæ
+#define GETTOKEN_EXPRBEG 4		// éÆÇÃêÊì™
 
 #define CG_LOCALSTRUCT_MAX 256
 
@@ -62,17 +63,6 @@
 #define CG_LIBMODE_COMNEW 3
 
 #define	CALCVAR double
-
-
-// structure for CG calculation
-struct CGVAR {
-	int curtype;
-	int minflag;
-	int ival;
-	double dval;
-	int cnt;
-	int ptr;
-};
 
 // line mode type
 #define LMODE_ON 0
@@ -203,6 +193,7 @@ private:
 	char *Pickstr2( char *str );
 	void Calc_token( void );
 	void Calc_factor( CALCVAR &v );
+	void Calc_unary( CALCVAR &v );
 	void Calc_muldiv( CALCVAR &v );
 	void Calc_addsub( CALCVAR &v );
 	void Calc_bool( CALCVAR &v );
@@ -304,15 +295,17 @@ private:
 	void CheckCMDIF_Fin( int mode );
 
 	void CalcCG_token( void );
-	void CalcCG_optimize( CGVAR &org, CGVAR &v, int mark );
+	void CalcCG_token_exprbeg( void );
+	void CalcCG_token_exprbeg_redo( void );
 	void CalcCG_regmark( int mark );
-	void CalcCG_factor( CGVAR &v );
-	void CalcCG_muldiv( CGVAR &v );
-	void CalcCG_addsub( CGVAR &v );
-	void CalcCG_shift( CGVAR &v );
-	void CalcCG_bool( CGVAR &v );
-	void CalcCG_compare( CGVAR &v );
-	void CalcCG_start( CGVAR &v );
+	void CalcCG_factor( void );
+	void CalcCG_unary( void );
+	void CalcCG_muldiv( void );
+	void CalcCG_addsub( void );
+	void CalcCG_shift( void );
+	void CalcCG_bool( void );
+	void CalcCG_compare( void );
+	void CalcCG_start( void );
 
 
 	//		Data
@@ -372,6 +365,7 @@ private:
 	int cg_varhpi;
 	int cg_putvars;
 	char *cg_ptr;
+	char *cg_ptr_bak;
 	char *cg_str;
 	unsigned char *cg_wp;
 	char cg_libname[1024];

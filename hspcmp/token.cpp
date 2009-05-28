@@ -629,22 +629,6 @@ void CToken::Calc_factor( CALCVAR &v )
 	CALCVAR v1;
 	int id,type;
 	char *ptr_dval;
-	if ( ttype=='-' ) {
-		Calc_token();
-		switch( ttype ) {
-		case TK_NUM:
-			v=-(CALCVAR)val;
-			break;
-		case TK_DNUM:
-			v=-(CALCVAR)val_d;
-			break;
-		default:
-			ttype=TK_CALCERROR;
-			return;
-		}
-		Calc_token();
-		return;
-	}
 	if ( ttype==TK_NUM ) {
 		v=(CALCVAR)val;
 		Calc_token();
@@ -677,14 +661,28 @@ void CToken::Calc_factor( CALCVAR &v )
 	v=v1;
 }
 
+void CToken::Calc_unary( CALCVAR &v )
+{
+	CALCVAR v1;
+	int op;
+	if ( ttype=='-' ) {
+		op=ttype; Calc_token();
+		Calc_unary(v1);
+		v1 = -v1;
+	} else {
+		Calc_factor(v1);
+	}
+	v=v1;
+}
+
 void CToken::Calc_muldiv( CALCVAR &v )
 {
 	CALCVAR v1,v2;
 	int op;
-	Calc_factor(v1);
+	Calc_unary(v1);
 	while( (ttype=='*')||(ttype=='/')||(ttype==0x5c)) {
 		op=ttype; Calc_token();
-		Calc_factor(v2);
+		Calc_unary(v2);
 		if (op=='*') v1*=v2;
 		else if (op=='/') {
 			if ( (int)v2==0 ) { ttype=TK_CALCERROR; return; }
