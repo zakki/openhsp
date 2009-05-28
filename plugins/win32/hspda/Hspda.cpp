@@ -971,6 +971,22 @@ static int varsave_put_storage( HSPEXINFO *hei, PVal *pv, int encode, int opt )
 	//
 	if ( pv->mode != HSPVAR_MODE_MALLOC ) return -1;
 	switch ( pv->flag ) {
+	case HSPVAR_FLAG_LABEL:
+		{
+		unsigned short **labels = (unsigned short **)pv->pt;
+		int len = pv->size / sizeof(unsigned short *);
+		unsigned short *mem_mcs = ((HSPCTX *)hei->hspctx)->mem_mcs;
+		int i;
+		for ( i = 0; i < len; i ++ ) {
+			unsigned short *label = labels[i];
+			if ( label == NULL ) {
+				vardata->Put( -1 );
+			} else {
+				vardata->Put( (int)(label - mem_mcs) );
+			}
+		}
+		}
+		break;
 	case HSPVAR_FLAG_STRUCT:
 		{
 		int i,j,max,vmax;
@@ -1195,6 +1211,33 @@ static int varload_get_storage_struct( HSPEXINFO *hei, char *vdata, PVal *pv, PV
 }
 
 
+static int varload_get_storage_label( HSPEXINFO *hei, char *vdata, PVal *pv, PVal *pv2, int encode, int opt )
+{
+	//		固定長ストレージ(LABEL)の取得
+	//
+	int *offsets;
+	int len;
+	int i;
+	unsigned short **p;
+	unsigned short *mem_mcs = ((HSPCTX *)hei->hspctx)->mem_mcs;
+	pv_dispose( hei,pv );								// 変数を破棄
+	*pv = *pv2;
+	pv_alloc( hei, pv, NULL );							// 変数を再確保
+	offsets = (int *)vdata;
+	p = (unsigned short **)pv->pt;
+	len = pv->size / sizeof(unsigned short *);
+	for ( i = 0; i < len; i ++ ) {
+		int offset = offsets[i];
+		if ( offset == -1 ) {
+			p[i] = NULL;
+		} else {
+			p[i] = mem_mcs + offset;
+		}
+	}
+	return 0;
+}
+
+
 static int varload_get_storage( HSPEXINFO *hei, char *vdata, PVal *pv, PVal *pv2, int encode, int opt )
 {
 	//		固定長ストレージの取得
@@ -1246,6 +1289,9 @@ static int varload_getvar( HSPEXINFO *hei, char *vdata, PVal *pv, PVal *pv2, int
 	res = -1;
 	if ( support & HSPVAR_SUPPORT_STORAGE ) {
 		switch( pv2->flag ) {
+		case HSPVAR_FLAG_LABEL:
+			res = varload_get_storage_label( hei, vdata, pv, pv2, encode, opt );
+			break;
 		case HSPVAR_FLAG_STRUCT:
 			res = varload_get_storage_struct( hei, vdata, pv, pv2, encode, opt );
 			break;
