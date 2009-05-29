@@ -35,6 +35,7 @@ static inline LRESULT GetHspcmpVer(HANDLE hPipe);
 static inline LRESULT GetModify(int nFootyID);
 static inline LRESULT GetFootyID(int nTabID);
 static inline LRESULT SetText(int nFootyID, HANDLE hPipe);
+static inline LRESULT InsertText(int nFootyID, HANDLE hPipe);
 static inline LRESULT GetText(int nFootyID, HANDLE hPipe);
 
 //
@@ -203,6 +204,9 @@ static LRESULT InterfaceProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 
 		case HSED_GETLINECODE:
 			return FootyGetLineCode(footy_defid);
+
+		case HSED_INSERTTEXT:
+			return InsertText((int)wParam, (HANDLE)lParam);
 /*
 		case HSED_SETSELA:
 			return ;
@@ -294,22 +298,54 @@ static inline LRESULT GetFootyID(int nTabID)
 	return lpTabInfo->FootyID;
 }
 
-//
-// Footy‚É•¶š—ñ‚ğ‘‚«‚Ş
-static inline LRESULT SetText(int nFootyID, HANDLE hPipe)
+static inline int ReadPipe(HANDLE hPipe, char **pbuffer)
 {
-	int nRet;
 	DWORD dwSize, dwNumberOfBytesRead;
 	char *lpBuffer;
 
 	dwSize = GetFileSize(hPipe, NULL);
 	lpBuffer = (char *)malloc(dwSize + 1);
-	if(lpBuffer == NULL) return -1;
+	*pbuffer = lpBuffer;
+	if(lpBuffer == NULL) return 1;
 	if(!ReadFile(hPipe, lpBuffer, dwSize, &dwNumberOfBytesRead, NULL)){
 		free(lpBuffer);
+		return 1;
+	}
+	return 0;
+}
+
+//
+// Footy‚É•¶š—ñ‚ğ‘‚«‚Ş
+static inline LRESULT SetText(int nFootyID, HANDLE hPipe)
+{
+	int nRet;
+	char *lpBuffer;
+
+	if(ReadPipe(hPipe, &lpBuffer)){
 		return -3;
 	}
 	nRet = FootySetText(nFootyID, lpBuffer);
+	free(lpBuffer);
+
+	switch(nRet){
+		case F_RET_OK:     return 0;
+		case F_RET_MEMORY: return -1;
+		case F_RET_OUTID:  return -2;
+		default:           return -4;
+	}
+}
+
+//
+// Footy‚É•¶š—ñ‚ğ‘}“ü‚·‚é
+static inline LRESULT InsertText(int nFootyID, HANDLE hPipe)
+{
+	int nRet;
+	char *lpBuffer;
+
+	if(ReadPipe(hPipe, &lpBuffer)){
+		return -3;
+	}
+	nRet = FootySetSelText(nFootyID, lpBuffer);
 	free(lpBuffer);
 
 	switch(nRet){

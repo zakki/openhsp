@@ -23,7 +23,7 @@
 #func CloseHandle@hsedsdk "CloseHandle" int
 #func CreatePipe@hsedsdk "CreatePipe" var, var, int, int
 #func ReadFile@hsedsdk "ReadFile" int, var, int, var, int
-#func WriteFile@hsedsdk "WriteFile" int, str, int, var, int
+#func WriteFile@hsedsdk "WriteFile" int, var, int, var, int
 
 #cfunc  GlobalLock@hsedsdk "GlobalLock" int
 #cfunc  GlobalSize@hsedsdk "GlobalSize" int
@@ -76,6 +76,7 @@
 #const _HSED_GETLINETEXT     (WM_APP + 0x326)
 #const _HSED_GETLINELENGTH   (WM_APP + 0x327)
 #const _HSED_GETLINECODE     (WM_APP + 0x328)
+#const _HSED_INSERTTEXT      (WM_APP + 0x329)
 
 #const _HSED_SETSELA         (WM_APP + 0x330)
 #const _HSED_SETSELB         (WM_APP + 0x331)
@@ -432,7 +433,7 @@
 	hsed_uninitduppipe
 	return 0
 
-#deffunc hsed_settext int nFootyID, str sText
+#deffunc hsed_sendtext_msg int nFootyID, int msg, var sText
 	hsed_capture
 	if stat: return 1
 
@@ -443,12 +444,17 @@
 
 	WriteFile hWritePipe, sText, nLength + 1, dwNumberOfBytesWritten, 0
 
-	sendmsg hIF, _HSED_SETTEXT, nFootyID, hDupReadPipe
+	sendmsg hIF, msg, nFootyID, hDupReadPipe
 	if stat < 0: hsed_uninitduppipe: return 4
 	
 	hsed_uninitduppipe
 	return 0
 
+#deffunc hsed_settext int nFootyID, str sText
+	vText = sText
+	hsed_sendtext_msg nFootyID, _HSED_SETTEXT, vText
+	sdim vText
+	return
 
 //
 // アクティブなFootyのIDの取得
@@ -473,29 +479,11 @@
 
 
 //
-// クリップボード経由で指定された文字列をエディタに送る
+// 指定された文字列をエディタに送る
 #deffunc hsed_sendstr var _p1
-	hsed_capture
-	if stat: ret = 0: return 1
-
-	;クリップボードにテキストデータを設定
-	OpenClipboard
-	ret=stat : if ret!0 : EmptyClipboard
-
-	ls=strlen(_p1)+1
-	lngHwnd=GlobalAlloc(2,ls)
-	if lngHwnd!0 {
-		lngMem=GlobalLock(lngHwnd)
-		if lngMem!0 {
-			ret=lstrcpy(lngMem,varptr(_p1))
-			if ret!0 {
-				SetClipboardData CF_OEMTEXT,lngHwnd
-			}
-			GlobalUnlock lngHwnd : lngRet=stat
-		}
-	}
-	CloseClipboard
-	sendmsg hIF, _HSED_PASTE,-1, 0
+	hsed_getactfootyid actid
+	if stat : return 1
+	hsed_sendtext_msg actid, _HSED_INSERTTEXT, _p1
 	return
 
 
