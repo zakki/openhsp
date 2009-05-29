@@ -65,8 +65,8 @@ HSPDA ver3.2 REFERENCE MANUAL                       HSP : Hot Soup Processor
 	これを読み込む場合は、以下のようになります。
 
 		vload_start "ファイル名"
-		vload_put 変数名
-		vload_put 変数名
+		vload_get 変数名
+		vload_get 変数名
 		vload_end
 
 	ただし、読み込みに関しては特に変数名を指定しなくても、
