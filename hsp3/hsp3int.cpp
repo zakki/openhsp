@@ -53,7 +53,43 @@ static char *note_update( void )
 	return p;
 }
 
-static char *cnvformat()
+// デストラクタで自動的に sbFree を呼ぶ
+class CAutoSbFree {
+public:
+	CAutoSbFree(char **pptr);
+	~CAutoSbFree();
+	
+private:
+	// uncopyable;
+	CAutoSbFree( CAutoSbFree const & );
+	CAutoSbFree const & operator =( CAutoSbFree const & );
+
+private:
+	char **pptr_;
+};
+
+CAutoSbFree::CAutoSbFree(char **pptr)
+ : pptr_(pptr)
+{}
+
+CAutoSbFree::~CAutoSbFree() {
+	sbFree(*pptr_);
+}
+
+static void cnvformat_expand( char **p, int *capacity, int len, int n )
+{
+	int needed_size = len + n + 1;
+	int capa = *capacity;
+	if ( needed_size > capa ) {
+		while ( needed_size > capa ) {
+			capa *= 2;
+		}
+		*p = sbExpand( *p, capa );
+		*capacity = capa;
+	}
+}
+
+static char *cnvformat( void )
 {
 	//		フォーマット付き文字列を作成する
 	//
@@ -63,107 +99,104 @@ static char *cnvformat()
 #define SNPRINTF snprintf
 #endif
 
-	char fstr[1024], *p, *fp, fmt[32];
-	int i, len, size;
-	struct {
-		int type;
-		union {
-			int ival;
-			double dval;
-			char *sval;
-		};
-	} val;
+	char fstr[1024];
+	char *fp;
+	int capacity;
+	int len;
+	char *p;
 	
-	p = ctx->stmp;
-	size = sbGetSTRINF( ctx->stmp )->size;
-	// フォーマット文字列をコピーして使う
-	strncpy( fstr, code_gets(), 1023 );
-	fstr[1023] = '\0';
+	strncpy( fstr, code_gets(), sizeof fstr );
+	fstr[sizeof(fstr)-1] = '\0';
 	fp = fstr;
+	capacity = 1024;
+	p = sbAlloc(capacity);
 	len = 0;
 	
+	CAutoSbFree autofree(&p);
+	
 	while (1) {
+		char fmt[32];
+		int i;
+		int val_type;
+		void *val_ptr;
+
 		// '%' までをコピー
-		for ( i = 0; fp[i] != '\0'; i ++ ) {
-			unsigned char ch;
-			ch = fp[i];
-			if ( ch == '%' ) break;
-			if ( ( ch >= 0x81 && ch <= 0x9F ) || ( ch >= 0xE0 && ch <= 0xFC ) ) {
-				i ++;
-			}
+		i = 0;
+		while( fp[i] != '\0' && fp[i] != '%' ) {
+			i ++;
 		}
-		if ( len + i + 1 > size ) { // バッファ拡張
-			size = ( ( len + i + 1 ) + 0xfff ) & 0xfffff000;
-			p = ctx->stmp = sbExpand( p, size );
-		}
-		memcpy( &p[len], fp, i );
+		cnvformat_expand( &p, &capacity, len, i );
+		memcpy( p + len, fp, i );
 		len += i;
 		fp += i;
 		if ( *fp == '\0' ) break;
 
-		i = strspn( &fp[1], " #+-.0123456789" ) + 1;
-		strncpy( fmt, fp, 31 );
-		fmt[31] = '\0';
-		if ( i + 1 < 32 ) fmt[i+1] = '\0';
+		// 変換指定を読み fmt にコピー
+		i = (int)strspn( fp + 1, " #+-.0123456789" ) + 1;
+		strncpy( fmt, fp, sizeof fmt );
+		fmt[sizeof(fmt)-1] = '\0';
+		if ( i + 1 < (int)(sizeof fmt) ) fmt[i+1] = '\0';
 		fp += i;
 		
-		if ( *fp == '\0' ) break;
-		if ( *fp == '%' ) {
-			fp ++;
-			if ( len + 1 + 1 > size ) { // バッファ拡張
-				size = ( ( len + 1 + 1 ) + 0xfff ) & 0xfffff000;
-				p = ctx->stmp = sbExpand( p, size );
-			}
+		char specifier = *fp;
+		fp ++;
+		
+		if ( specifier == '\0' ) break;
+		if ( specifier == '%' ) {
+			cnvformat_expand( &p, &capacity, len, i );
 			p[len++] = '%';
 			continue;
 		}
 
+		// 引数を取得
 		if ( code_get() <= PARAM_END ) throw HSPERR_INVALID_FUNCPARAM;
-		switch (*fp) {
+		switch (specifier) {
 		case 'd': case 'i': case 'c': case 'o': case 'x': case 'X': case 'u': case 'p':
-			val.type = HSPVAR_FLAG_INT;
-			val.ival = *(int *)HspVarCoreCnvPtr( mpval, HSPVAR_FLAG_INT );
+			val_type = HSPVAR_FLAG_INT;
+			val_ptr = HspVarCoreCnvPtr( mpval, HSPVAR_FLAG_INT );
 			break;
 		case 'f': case 'e': case 'E': case 'g': case 'G':
-			val.type = HSPVAR_FLAG_DOUBLE;
-			val.dval = *(double *)HspVarCoreCnvPtr( mpval, HSPVAR_FLAG_DOUBLE );
+			val_type = HSPVAR_FLAG_DOUBLE;
+			val_ptr = HspVarCoreCnvPtr( mpval, HSPVAR_FLAG_DOUBLE );
 			break;
 		case 's':
-			val.type = HSPVAR_FLAG_STR;
-			val.sval = (char *)HspVarCoreCnvPtr( mpval, HSPVAR_FLAG_STR );
+			val_type = HSPVAR_FLAG_STR;
+			val_ptr = HspVarCoreCnvPtr( mpval, HSPVAR_FLAG_STR );
 			break;
 		default:
 			throw HSPERR_INVALID_FUNCPARAM;
 		}
 
+		// snprintf が成功するまでバッファを広げていき、変換を行う
 		while (1) {
 			int n;
-			i = size - len - 1;
-			if ( val.type == HSPVAR_FLAG_INT )
-				n = SNPRINTF( &p[len], i, fmt, val.ival );
-			else if ( val.type == HSPVAR_FLAG_DOUBLE )
-				n = SNPRINTF( &p[len], i, fmt, val.dval );
-			else
-				n = SNPRINTF( &p[len], i, fmt, val.sval );
+			int space = capacity - len - 1;
+			if ( val_type == HSPVAR_FLAG_INT ) {
+				n = SNPRINTF( p + len, space, fmt, *(int *)val_ptr );
+			} else if ( val_type == HSPVAR_FLAG_DOUBLE ) {
+				n = SNPRINTF( p + len, space, fmt, *(double *)val_ptr );
+			} else {
+				n = SNPRINTF( p + len, space, fmt, (char *)val_ptr );
+			}
 
-			if ( n >= 0 && n < i ) {
+			if ( n >= 0 && n < space ) {
 				len += n;
 				break;
 			}
-			if ( n >= 0 )
-				i = n + 1;
-			else {
-				i *= 2;
-				if ( i < 32 ) i = 32;
+			if ( n >= 0 ) {
+				space = n + 1;
+			} else {
+				space *= 2;
+				if ( space < 32 ) space = 32;
 			}
-			size = ( ( len + i + 1 ) + 0xfff ) & 0xfffff000;
-			p = ctx->stmp = sbExpand( p, size );
+			cnvformat_expand( &p, &capacity, len, i );
 		}
-		fp ++;
 	}
 	p[len] = '\0';
 	
-	return p;
+	char *result = code_stmp(len + 1);
+	strcpy(result, p);
+	return result;
 }
 
 
@@ -556,7 +589,7 @@ static int cmdfunc_intcmd( int cmd )
 		sptr = code_getvptr( &pval, &size );
 		if ( pval->flag != HSPVAR_FLAG_STR ) throw HSPERR_TYPE_MISMATCH;
 		sep = code_gets();
-		sep_len = strlen( sep );
+		sep_len = (int)strlen( sep );
 		
 		while (1) {
 			newsptr = strstr2( sptr, sep );
@@ -580,7 +613,7 @@ static int cmdfunc_intcmd( int cmd )
 				if ( newsptr == NULL ) {
 					code_setva( pval, aptr, HSPVAR_FLAG_STR, sptr );
 				} else {
-					var_set_str_len( pval, aptr, sptr, newsptr - sptr );
+					var_set_str_len( pval, aptr, sptr, (int)(newsptr - sptr) );
 				}
 			}
 			n ++;
