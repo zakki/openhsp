@@ -143,7 +143,7 @@ static char *cnvformat( void )
 		
 		if ( specifier == '\0' ) break;
 		if ( specifier == '%' ) {
-			cnvformat_expand( &p, &capacity, len, i );
+			cnvformat_expand( &p, &capacity, len, 1 );
 			p[len++] = '%';
 			continue;
 		}
@@ -189,7 +189,7 @@ static char *cnvformat( void )
 				space *= 2;
 				if ( space < 32 ) space = 32;
 			}
-			cnvformat_expand( &p, &capacity, len, i );
+			cnvformat_expand( &p, &capacity, len, space );
 		}
 	}
 	p[len] = '\0';
