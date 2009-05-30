@@ -167,6 +167,24 @@ static char *cnvformat()
 }
 
 
+static void var_set_str_len( PVal *pval, APTR aptr, char *str, int len )
+{
+	//		•Ï”‚Éstr‚©‚çlenƒoƒCƒg‚Ì•¶Žš—ñ‚ð‘ã“ü‚·‚é
+	//
+	HspVarProc *proc = HspVarCoreGetProc( HSPVAR_FLAG_STR );
+	if ( pval->flag != HSPVAR_FLAG_STR ) {
+		if ( aptr != 0 ) throw HSPERR_INVALID_ARRAYSTORE;
+		HspVarCoreClear( pval, HSPVAR_FLAG_STR );
+	}
+	pval->offset = aptr;
+	HspVarCoreAllocBlock( pval, proc->GetPtr( pval ), len + 1 );
+	char *ptr = (char *)proc->GetPtr( pval );
+	memcpy( ptr, str, len );
+	ptr[len] = '\0';
+}
+
+
+
 static int cmdfunc_intcmd( int cmd )
 {
 	//		cmdfunc : TYPE_INTCMD
@@ -525,14 +543,14 @@ static int cmdfunc_intcmd( int cmd )
 	case 0x2a:								// split
 		{
 		//	Žw’è‚µ‚½•¶Žš—ñ‚Å•ªŠ„‚³‚ê‚½—v‘f‚ð‘ã“ü‚·‚é(fujidig)
-		PVal *pval;
-		int aptr;
+		PVal *pval = NULL;
+		int aptr = 0;
 		char *sptr;
 		char *sep;
 		char *newsptr;
 		int size;
 		int sep_len;
-		int n;
+		int n = 0;
 		int is_last = 0;
 		
 		sptr = code_getvptr( &pval, &size );
@@ -540,10 +558,7 @@ static int cmdfunc_intcmd( int cmd )
 		sep = code_gets();
 		sep_len = strlen( sep );
 		
-		pval = NULL;
-		n = 0;
 		while (1) {
-			n ++;
 			newsptr = strstr2( sptr, sep );
 			if ( !is_last && *exinfo->npexflg & EXFLG_1 ) {
 				// •ªŠ„Œ‹‰Ê‚Ì”‚ªŠi”[‚·‚é•Ï”‚æ‚è‘½‚¯‚ê‚ÎÅŒã‚Ì•Ï”‚É”z—ñ‚ÅŠi”[‚µ‚Ä‚¢‚­
@@ -562,8 +577,13 @@ static int cmdfunc_intcmd( int cmd )
 				aptr = code_getva( &pval );
 			}
 			if ( pval != NULL ) {
-				code_setva( pval, aptr, HSPVAR_FLAG_STR, sptr );
+				if ( newsptr == NULL ) {
+					code_setva( pval, aptr, HSPVAR_FLAG_STR, sptr );
+				} else {
+					var_set_str_len( pval, aptr, sptr, newsptr - sptr );
+				}
 			}
+			n ++;
 			if ( newsptr == NULL ) {
 				// Ši”[‚·‚é•Ï”‚Ì”‚ª•ªŠ„‚Å‚«‚½”‚æ‚è‘½‚¯‚ê‚ÎŽc‚Á‚½•Ï”‚»‚ê‚¼‚ê‚É‹ó•¶Žš—ñ‚ðŠi”[‚·‚é
 				while( ( *exinfo->npexflg & EXFLG_1 ) == 0 ) {
@@ -571,10 +591,6 @@ static int cmdfunc_intcmd( int cmd )
 					code_setva( pval, aptr, HSPVAR_FLAG_STR, "" );
 				}
 				break;
-			}
-			if ( pval != NULL ) {
-				pval->offset = aptr;
-				((char *)HspVarCorePtr(pval))[newsptr - sptr] = '\0';
 			}
 			sptr = newsptr + sep_len;
 		}
