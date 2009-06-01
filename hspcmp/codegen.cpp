@@ -869,7 +869,8 @@ void CToken::GenerateCodePRMF2( void )
 		case TK_NONE:
 			if ( val == '(' ) {
 				GetTokenCG( GETTOKEN_DEFAULT );
-				GenerateCodePRMF();
+				CalcCG(ex);
+				if ( ttype != ')' ) throw CGERROR_CALCEXP;
 			} else {
 				throw CGERROR_ARRAYEXP;
 			}
@@ -909,7 +910,7 @@ void CToken::GenerateCodePRMF2( void )
 		}
 
 		if ( ttype >= TK_SEPARATE ) return;
-		if ( ttype != TK_NONE ) throw CGERROR_ARRAYEXP;
+		if ( ttype != TK_NONE && ttype != '.' ) throw CGERROR_ARRAYEXP;
 		if ( val != '.' ) return;
 
 		GetTokenCG( GETTOKEN_NOFLOAT );
