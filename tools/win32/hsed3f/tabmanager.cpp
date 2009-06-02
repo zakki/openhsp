@@ -89,7 +89,6 @@ void CreateTab(int nTabNumber, const char *szNewTitleName, const char *szNewFile
 	SetEditColor(i);
 	poppad_setedit(i);		// ãNìÆíºå„ÇÃê›íËîΩâf(onitama:050218)
 	SetClassify(i);
-	poppad_setsb_current(i);
 
 	hWnd = FootyGetWnd(i);
 	Org_EditProc = (WNDPROC)GetWindowLong(hWnd, GWL_WNDPROC);
@@ -338,6 +337,7 @@ void ActivateTab(int nTabNumber1, int nTabNumber2)
 		FootySetPos(activeFootyID, rect.left, rect.top, rect.right-rect.left, rect.bottom-rect.top);
 		FootySetVisible(activeFootyID, true);
 		FootySetFocus(activeFootyID);
+		poppad_setsb_current(activeFootyID);
 		FootyRefresh(activeFootyID);
 
 		CheckMenuRadioItem(hMenu, POS_TABBASE, GetMenuItemCount(hMenu) - 1, POS_TABBASE + nTabNumber2, MF_BYPOSITION);
