@@ -1938,6 +1938,7 @@ LRESULT CALLBACK EditProc (HWND hwnd, UINT iMsg, WPARAM wParam, LPARAM lParam)
                         if (PopFileWrite (activeFootyID, szFileName)){
 							SetTabInfo(activeID, NULL, NULL, NULL, (bNeedSave = FALSE));
 							GetTabInfo(activeID)->LatestUndoNum = FootyGetMetrics(activeFootyID, F_GM_UNDOREM);
+							GetTabInfo(activeID)->FileIndex = GetFileIndex(szFileName);
 							DoCaption (szTitleName, activeID) ;
 							return 1 ;
 						} else {
@@ -1956,6 +1957,7 @@ LRESULT CALLBACK EditProc (HWND hwnd, UINT iMsg, WPARAM wParam, LPARAM lParam)
 						if (PopFileWrite (activeFootyID, szFileName)){
 							SetTabInfo(activeID, szTitleName, szFileName, szDirName, (bNeedSave = FALSE));
 							GetTabInfo(activeID)->LatestUndoNum = FootyGetMetrics(activeFootyID, F_GM_UNDOREM);
+							GetTabInfo(activeID)->FileIndex = GetFileIndex(szFileName);
 							DoCaption (szTitleName, activeID) ;
 							return 1 ;
 						} else {
@@ -2103,6 +2105,7 @@ LRESULT CALLBACK EditProc (HWND hwnd, UINT iMsg, WPARAM wParam, LPARAM lParam)
 
 						SetTabInfo(activeID, NULL, NULL, NULL, (bNeedSave = FALSE));
 						GetTabInfo(activeID)->LatestUndoNum = FootyGetMetrics(activeID, F_GM_UNDOREM);
+						GetTabInfo(activeID)->FileIndex = GetFileIndex(szFileName);
 
 						if ( mkobjfile( szFileName ) ){
 							err_prt(hwnd);
@@ -2325,6 +2328,7 @@ LRESULT CALLBACK EditProc (HWND hwnd, UINT iMsg, WPARAM wParam, LPARAM lParam)
 
 							SetTabInfo(ClickID, NULL, NULL, NULL, FALSE);
 							lpTabInfo->LatestUndoNum = FootyGetMetrics(lpTabInfo->FootyID, F_GM_UNDOREM);
+							lpTabInfo->FileIndex = GetFileIndex(szFileName);
 							DoCaption (szTitleName, ClickID) ;
 							return 1 ;
 						} else {
@@ -2346,6 +2350,7 @@ LRESULT CALLBACK EditProc (HWND hwnd, UINT iMsg, WPARAM wParam, LPARAM lParam)
 
 								TABINFO *lpTabInfo = GetTabInfo(ClickID);
 								lpTabInfo->LatestUndoNum = FootyGetMetrics(lpTabInfo->FootyID, F_GM_UNDOREM);
+								lpTabInfo->FileIndex = GetFileIndex(szFileName);
 								DoCaption( szTitleName, ClickID );
 								return 1 ;
 							} else {

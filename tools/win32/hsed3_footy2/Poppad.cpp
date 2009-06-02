@@ -2089,6 +2089,7 @@ LRESULT CALLBACK EditProc (HWND hwnd, UINT iMsg, WPARAM wParam, LPARAM lParam)
 //							GetTabInfo(activeID)->LatestUndoNum = FootyGetMetrics(activeFootyID, F_GM_UNDOREM);
 							GetTabInfo(activeID)->LatestUndoNum = 0;	// 2008-02-17 Shark++ 代替機能未実装
 							Footy2GetMetrics(activeFootyID, SM_UNDOREM, &GetTabInfo(activeID)->LatestUndoNum);
+							GetTabInfo(activeID)->FileIndex = GetFileIndex(szFileName);
 							DoCaption (szTitleName, activeID) ;
 							return 1 ;
 						} else {
@@ -2109,6 +2110,7 @@ LRESULT CALLBACK EditProc (HWND hwnd, UINT iMsg, WPARAM wParam, LPARAM lParam)
 //							GetTabInfo(activeID)->LatestUndoNum = FootyGetMetrics(activeFootyID, F_GM_UNDOREM);
 							GetTabInfo(activeID)->LatestUndoNum = 0;	// 2008-02-17 Shark++ 代替機能未実装
 							Footy2GetMetrics(activeFootyID, SM_UNDOREM, &GetTabInfo(activeID)->LatestUndoNum);
+							GetTabInfo(activeID)->FileIndex = GetFileIndex(szFileName);
 							DoCaption (szTitleName, activeID) ;
 							return 1 ;
 						} else {
@@ -2259,6 +2261,7 @@ LRESULT CALLBACK EditProc (HWND hwnd, UINT iMsg, WPARAM wParam, LPARAM lParam)
 //						GetTabInfo(activeID)->LatestUndoNum = FootyGetMetrics(activeID, F_GM_UNDOREM);
 						GetTabInfo(activeID)->LatestUndoNum = 0;	// 2008-02-17 Shark++ 代替機能未実装
 						Footy2GetMetrics(activeFootyID, SM_UNDOREM, &GetTabInfo(activeID)->LatestUndoNum);
+						GetTabInfo(activeID)->FileIndex = GetFileIndex(szFileName);
 
 						if ( mkobjfile( szFileName ) ){
 							err_prt(hwnd);
@@ -2483,6 +2486,7 @@ LRESULT CALLBACK EditProc (HWND hwnd, UINT iMsg, WPARAM wParam, LPARAM lParam)
 //							lpTabInfo->LatestUndoNum = FootyGetMetrics(lpTabInfo->FootyID, F_GM_UNDOREM);
 							lpTabInfo->LatestUndoNum = 0;	// 2008-02-17 Shark++ 代替機能未実装
 							Footy2GetMetrics(activeFootyID, SM_UNDOREM, &lpTabInfo->LatestUndoNum);
+							lpTabInfo->FileIndex = GetFileIndex(szFileName);
 							DoCaption (szTitleName, ClickID) ;
 							return 1 ;
 						} else {
@@ -2506,6 +2510,7 @@ LRESULT CALLBACK EditProc (HWND hwnd, UINT iMsg, WPARAM wParam, LPARAM lParam)
 //								lpTabInfo->LatestUndoNum = FootyGetMetrics(lpTabInfo->FootyID, F_GM_UNDOREM);
 								lpTabInfo->LatestUndoNum = 0;	// 2008-02-17 Shark++ 代替機能未実装
 								Footy2GetMetrics(activeFootyID, SM_UNDOREM, &lpTabInfo->LatestUndoNum);
+								lpTabInfo->FileIndex = GetFileIndex(szFileName);
 								DoCaption( szTitleName, ClickID );
 								return 1 ;
 							} else {
