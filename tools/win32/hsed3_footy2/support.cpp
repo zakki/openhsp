@@ -241,3 +241,17 @@ int getStrLinesSize(const char *s)
 	}
 	return result;
 }
+
+void GetDirName(char *dirName, const char *path)
+{
+	int i = 0;
+	int pos = -1;
+	while (1) {
+		char c = path[i];
+		if (c=='\0') break;
+		if (c=='\\' || c=='/') pos = i;
+		i += IsDBCSLeadByte(c) ? 2 : 1;
+	}
+	memcpy(dirName, path, pos + 1);
+	dirName[pos + 1] = '\0';
+}

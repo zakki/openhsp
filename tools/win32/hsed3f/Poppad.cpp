@@ -1465,7 +1465,7 @@ void poppad_bye( void )
 int poppad_reload( int nTabID )
 {
 	TABINFO *lpTabInfo;
-	char szOldDir[_MAX_PATH + 1], a1;
+	char a1;
 	int len;
 
 	lpTabInfo = GetTabInfo(nTabID);
@@ -1476,35 +1476,38 @@ int poppad_reload( int nTabID )
 		a1 = lpTabInfo->FileName[len-1];
 		if(a1 == '"') lpTabInfo->FileName[len-1]=0;
 
-		GetCurrentDirectory(sizeof(szOldDir), szOldDir);
-
-		SetCurrentDirectory(szExeDir);
 		if(GetFileTitle2(lpTabInfo->FileName, lpTabInfo->TitleName)){
 			lstrcpy(lpTabInfo->TitleName, lpTabInfo->FileName );
-			SetCurrentDirectory(szExeDir);
-		} else {
-			lstrcpy(lpTabInfo->DirName, lpTabInfo->FileName);
-			len = lstrlen(lpTabInfo->TitleName);
-			lpTabInfo->DirName[lstrlen(lpTabInfo->DirName)-len]=0;
-			SetCurrentDirectory(lpTabInfo->DirName);
 		}
-		if (!PopFileRead(lpTabInfo->FootyID, lpTabInfo->TitleName)){
+		GetDirName(lpTabInfo->DirName, lpTabInfo->FileName);
+		if (!PopFileRead(lpTabInfo->FootyID, lpTabInfo->FileName)){
 #ifdef JPMSG
 			OkMessage ( "%s ‚ª“Ç‚Ýž‚ß‚Ü‚¹‚ñ‚Å‚µ‚½", lpTabInfo->TitleName ) ;
 #else
 			OkMessage ( "%s not found.", lpTabInfo->TitleName ) ;
 #endif
-			SetCurrentDirectory(szOldDir);
 			return 1;
 		}
 		SetTabInfo(nTabID, NULL, NULL, NULL, (lpTabInfo->NeedSave = FALSE));
 		lpTabInfo->LatestUndoNum = 0;
-		lpTabInfo->FileIndex     = GetFileIndex(lpTabInfo->TitleName);
-		lstrcpy(szFileName,  lpTabInfo->FileName);
-		lstrcpy(szTitleName, lpTabInfo->TitleName);
+		lpTabInfo->FileIndex     = GetFileIndex(lpTabInfo->FileName);
+		if(nTabID == activeID) {
+			lstrcpy(szTitleName, lpTabInfo->TitleName);
+			lstrcpy(szFileName, lpTabInfo->FileName);
+			lstrcpy(szDirName, lpTabInfo->DirName);
+			SetCurrentDirectory(szDirName);
+		}
     }
 	DoCaption (lpTabInfo->TitleName, nTabID) ;
 	return 0;
+}
+
+
+static void SetFileName(char *titleName, char *fileName, char *dirName) {
+	if ( titleName != NULL ) lstrcpy(szTitleName, titleName);
+	if ( fileName != NULL ) lstrcpy(szFileName, fileName);
+	if ( dirName != NULL ) lstrcpy(szDirName, fileName);
+	SetTabInfo(activeID, titleName, fileName, dirName, -1);
 }
 
 
@@ -1840,6 +1843,7 @@ LRESULT CALLBACK EditProc (HWND hwnd, UINT iMsg, WPARAM wParam, LPARAM lParam)
 					CreateTab(activeID, "", "", "");
 					szFileName[0]  = '\0' ;
 					szTitleName[0] = '\0' ;
+					szDirName[0]   = '\0' ;
 					bNeedSave = FALSE ;
 					DoCaption (szTitleName, activeID) ;
 					return 0 ;
@@ -1849,14 +1853,11 @@ LRESULT CALLBACK EditProc (HWND hwnd, UINT iMsg, WPARAM wParam, LPARAM lParam)
 					int nTabNumber, nFootyID;
 					TABINFO *lpTabInfo;
 					bool bCreated;
-					char szOldDir[_MAX_PATH + 1];
 					ULONGLONG ullFileIndex;
 
-					strcpy( tmpfn, szFileName );
-					//szFileName[0]  = '\0' ;
-
-					GetCurrentDirectory(sizeof(szOldDir), szOldDir);
 					if (PopFileOpenDlg (hwnd, szFileName, szTitleName)){
+						GetDirName(szDirName, szFileName);
+						SetCurrentDirectory(szDirName);
 						ullFileIndex = GetFileIndex(szFileName);
 						if((nTabNumber = SearchTab(NULL, NULL, NULL, ullFileIndex)) >= 0){
 							ActivateTab(activeID, nTabNumber);
@@ -1882,15 +1883,14 @@ LRESULT CALLBACK EditProc (HWND hwnd, UINT iMsg, WPARAM wParam, LPARAM lParam)
 #else
                             OkMessage ( "Loading %s fault.", szTitleName) ;
 #endif
-							//szFileName[0]  = '\0' ;
-							//szTitleName[0] = '\0' ;
-							strcpy( szFileName, tmpfn );
-							if(bCreated)
+							if(bCreated) {
 								DeleteTab(activeID);
+							} else {
+								SetFileName( "", "", "" );
+							}
 							break;
 						}
 
-						SetTabInfo(nTabNumber, NULL, NULL, szOldDir, -1);
 						GetTabInfo(activeID)->FileIndex = ullFileIndex;
 
 						bNeedSave = FALSE ;
@@ -1954,6 +1954,8 @@ LRESULT CALLBACK EditProc (HWND hwnd, UINT iMsg, WPARAM wParam, LPARAM lParam)
 				// fall through
 				case IDM_SAVEAS :
 					if (PopFileSaveDlg (hwnd, szFileName, szTitleName)){
+						GetDirName(szDirName, szFileName);
+						SetCurrentDirectory(szDirName);
 						if (PopFileWrite (activeFootyID, szFileName)){
 							SetTabInfo(activeID, szTitleName, szFileName, szDirName, (bNeedSave = FALSE));
 							GetTabInfo(activeID)->LatestUndoNum = FootyGetMetrics(activeFootyID, F_GM_UNDOREM);
@@ -2345,6 +2347,8 @@ LRESULT CALLBACK EditProc (HWND hwnd, UINT iMsg, WPARAM wParam, LPARAM lParam)
 					// fall through
                 case IDM_SAVETABAS :
                         if (PopFileSaveDlg (hwnd, szFileName, szTitleName)){
+							GetDirName(szDirName, szFileName);
+							SetCurrentDirectory(szDirName);
 							if (PopFileWrite (GetTabInfo(ClickID)->FootyID, szFileName)){
 								SetTabInfo(ClickID, szTitleName, szFileName, szDirName, (bNeedSave = FALSE));
 
@@ -3862,24 +3866,31 @@ void LoadFromCommandLine(char *lpCmdLine)
 	BOOL bFileLoad = FALSE;
 	bool bActivate = false, bCreated;
 	char szOldDir[_MAX_PATH + 1];
+	char fullpathbuf[_MAX_PATH];
 
 	int argc;
 	char **argv = CommandLineToArgvA(lpCmdLine, &argc);
 
 	for(int i = 1; i < argc; i++){
+		char *path;
 		GetCurrentDirectory(sizeof(szOldDir), szOldDir);
 		SetCurrentDirectory(szExeDir);
-		SearchResult = SearchTab(NULL, NULL, NULL, GetFileIndex(argv[i]));
+		if(GetFullPathName(argv[i], sizeof(fullpathbuf), fullpathbuf, NULL)) {
+			path = fullpathbuf;
+		} else {
+			path = argv[i];
+		}
+		SearchResult = SearchTab(NULL, NULL, NULL, GetFileIndex(path));
 		SetCurrentDirectory(szOldDir);
 
 		if(SearchResult < 0){
 			lpTabInfo = GetTabInfo(activeID);
 			if(lpTabInfo == NULL || lpTabInfo->FileName[0] != '\0' || FootyGetMetrics(activeFootyID, F_GM_UNDOREM) > 0
 				|| FootyGetMetrics(activeFootyID, F_GM_REDOREM) > 0){
-					CreateTab(activeID, "", argv[i], "");
+					CreateTab(activeID, "", path, "");
 					bCreated = true;
 				} else {
-					SetTabInfo(activeID, NULL, argv[i], NULL, -1);
+					SetTabInfo(activeID, NULL, path, NULL, -1);
                     bCreated = false;
 				}
 			if(poppad_reload(activeID))

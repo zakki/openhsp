@@ -317,8 +317,6 @@ void ActivateTab(int nTabNumber1, int nTabNumber2)
 
 	lpTabInfo1 = GetTabInfo(nTabNumber1);
 	lpTabInfo2 = GetTabInfo(nTabNumber2);
-	if(lpTabInfo1 != NULL)
-		GetCurrentDirectory(sizeof(szDirName), lpTabInfo1->DirName);
 	if(lpTabInfo2 != NULL){
 		activeID = nTabNumber2;
 		activeFootyID = lpTabInfo2->FootyID;
@@ -326,6 +324,7 @@ void ActivateTab(int nTabNumber1, int nTabNumber2)
 		bNeedSave = lpTabInfo2->NeedSave;
 		strcpy(szTitleName, lpTabInfo2->TitleName);
 		strcpy(szFileName, lpTabInfo2->FileName);
+		strcpy(szDirName, lpTabInfo2->DirName);
 		DoCaption (szTitleName, activeID);
 
 		SetCurrentDirectory(lpTabInfo2->DirName);
