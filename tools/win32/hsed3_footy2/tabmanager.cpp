@@ -63,12 +63,15 @@ void CreateTab(int nTabNumber, const char *szNewTitleName, const char *szNewFile
 	RECT rect;
 	char szCaption[_MAX_PATH+128];
 	MENUITEMINFO mii;
+	LONG dx, dy;
 
 	// Footyのウィンドウを作成
 	// Create a Footy window
 	GetClientRect(hwndTab, &rect);
 	TabCtrl_AdjustRect(hwndTab, FALSE, &rect);
-	FootyID = Footy2Create(hwndTab, rect.left, rect.top, rect.right-rect.left, rect.bottom-rect.top, VIEWMODE_INVISIBLE);
+	dx = max(rect.right-rect.left, 1);
+	dy = max(rect.bottom-rect.top, 1);
+	FootyID = Footy2Create(hwndTab, rect.left, rect.top, dx, dy, VIEWMODE_INVISIBLE);
 	if( FootyID < 0 ) {
 		DebugBreak();	// 2008-02-17 Shark++ 取り敢えずここで落とす
 		return;
