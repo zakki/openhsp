@@ -356,8 +356,11 @@ int CHsc3::GetRuntimeFromHeader( char *fname, char *res )
 	fclose(fp);
 	ires = 0;
 	if ( hsphed.bootoption & HSPHED_BOOTOPT_RUNTIME ) {
-		i = hsphed.runtime - hedsize;
-		strcpy( res, data + i );
+		char runtime[HSP_MAX_PATH];
+		strcpy( runtime, data + (hsphed.runtime - hedsize) );
+		cutext( runtime );
+		addext( runtime, "exe" );
+		strcpy( res, runtime );
 		ires = 1;
 	}
 	free( data );
