@@ -83,6 +83,10 @@ CFontObjects::~CFontObjects()
  */
 bool CFontObjects::CreateFontObject(int nType,HDC hDC)
 {
+	if( m_hFont[nType] )
+	{
+		DeleteObject(m_hFont[nType]);
+	}
 	m_hFont[nType] = GetFontHandle(m_strFace[nType].c_str(),
 			HeightFromPoint(hDC,m_nFontPoint),
 			false,m_nCharSets[nType]);
