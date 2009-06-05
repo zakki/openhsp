@@ -7,6 +7,7 @@
 #define JPMSG
 
 #define DEFAULT_RUNTIME "hsp3"			// HSP3 runtime
+#define FILE_HSP "hsp3.exe"
 #define DEFAULT_DLL "\\hspcmp.dll"			// compiler DLL
 //#define DEFAULT_RUNTIME "hsp2"			// HSP2 runtime
 
