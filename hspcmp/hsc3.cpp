@@ -337,7 +337,6 @@ int CHsc3::GetRuntimeFromHeader( char *fname, char *res )
 	int hedsize;
 	int exsize;
 	int ires;
-	int i;
 	char *data;
 
 	fp=fopen( fname, "rb" );
