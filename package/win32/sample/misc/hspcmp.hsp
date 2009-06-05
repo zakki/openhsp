@@ -20,7 +20,7 @@
 	if rtname="" : rtname="hsp3.exe"
 	debug_mode=0 ; デバッグウィンドウ表示フラグ
 
-	cmdexe = dir_exe+"\\"+rtname+" "+objname
+	cmdexe = "\""+dir_exe+"\\"+rtname+"\" "+objname
 	hsc3_run cmdexe, debug_mode ; ランタイムを実行する
 *goerror
 	hsc_getmes mesbuf

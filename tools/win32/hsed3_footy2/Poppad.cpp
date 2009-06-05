@@ -594,9 +594,9 @@ static void hsprun( char *objname )
 		hsc3_getruntime( (int)cfname, (int)objname, 0, 0 );
 	}
 	if ( *cfname == 0 ) {
-		wsprintf( execmd,"%s\\%s ",szExeDir, FILE_HSP );
+		wsprintf( execmd,"\"%s\\%s\" ",szExeDir, FILE_HSP );
 	} else {
-		wsprintf( execmd,"%s\\%s ",szExeDir, cfname );
+		wsprintf( execmd,"\"%s\\%s\" ",szExeDir, cfname );
 	}
 
 	strcat( execmd,objname );
@@ -624,7 +624,7 @@ static void hsprun_log( char *objname )
 	//		execute HSP2 process (with LOG)
 	//
 	char dbopt[64];
-	wsprintf( execmd,"%s\\%s ",szExeDir,FILE_HSP );
+	wsprintf( execmd,"\"%s\\%s\" ",szExeDir,FILE_HSP );
 	wsprintf( dbopt, "%03d",hsp_logmode );
 	strcat( execmd, "%" );
 	strcat( execmd, dbopt );
@@ -941,7 +941,7 @@ static void callhelp( void )
 		TMes( mesb );
 		return;
 	}
-	wsprintf( helpopt,"%shelpman %s",hdir,kwstr );
+	wsprintf( helpopt,"\"%shelpman.exe\" %s",hdir,kwstr );
 	WinExec( helpopt, SW_SHOW );
 	return;
 }
@@ -2430,7 +2430,7 @@ LRESULT CALLBACK EditProc (HWND hwnd, UINT iMsg, WPARAM wParam, LPARAM lParam)
 					return 0;
 
 				case IDM_START_RUNTIMEMAN:
-					wsprintf( tmpfn, "%s\\sampview", szExeDir );
+					wsprintf( tmpfn, "\"%s\\sampview.exe\"", szExeDir );
 					WinExec( tmpfn, SW_SHOW );
 					return 0;
 
@@ -2440,12 +2440,12 @@ LRESULT CALLBACK EditProc (HWND hwnd, UINT iMsg, WPARAM wParam, LPARAM lParam)
 					return 0;
 
 				case IDM_AHTTOOL:
-					wsprintf( tmpfn, "%s\\ahtman", szExeDir );
+					wsprintf( tmpfn, "\"%s\\ahtman.exe\"", szExeDir );
 					WinExec( tmpfn, SW_SHOW );
 					return 0;
 
                 case IDM_HSPTV:
-					wsprintf( tmpfn, "%s\\hsptv.exe", szExeDir );
+					wsprintf( tmpfn, "\"%s\\hsptv.exe\"", szExeDir );
 					WinExec( tmpfn, SW_SHOW );
 					return 0;
 
@@ -2462,7 +2462,7 @@ LRESULT CALLBACK EditProc (HWND hwnd, UINT iMsg, WPARAM wParam, LPARAM lParam)
 					return 0 ;
 
                 case IDM_HSPMAN2 :
-					wsprintf( tmpfn, "%s\\hsphelp\\helpman", szExeDir );
+					wsprintf( tmpfn, "\"%s\\hsphelp\\helpman.exe\"", szExeDir );
 					WinExec( tmpfn, SW_SHOW );
 					return 0 ;
 

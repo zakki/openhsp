@@ -264,7 +264,7 @@ Appendix : HSPからスクリプトのコンパイルを行なう方法
 	hsc3_getruntime rtname, objname
 	if rtname="" : rtname="hsp3.exe"
 
-	cmdexe = dir_exe+"\\"+rtname+" "+objname
+	cmdexe = "\""+dir_exe+"\\"+rtname+"\" "+objname
 	hsc3_run cmdexe
 
 *goerror
@@ -424,7 +424,7 @@ void dll_bye( void )
 	*cfname = 0;
 	hsc3_getruntime( (int)cfname, (int)objname, 0, 0 );	// ランタイムを取得
 	if ( *cfname == 0 ) {
-		wsprintf( execmd,"%s ", "hsp3" );
+		wsprintf( execmd,"%s ", "hsp3.exe" );
 	} else {
 		wsprintf( execmd,"%s ", cfname );
 	}

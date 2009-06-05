@@ -385,7 +385,7 @@ int ExecEzInputMenu( int id )
 	p = AhtMenuBuf->GetBuffer() + i;
 	//msgboxf(NULL, "%s"	, "EXEC", MB_OK | MB_ICONEXCLAMATION, p);
 
-	wsprintf( tmpfn, "%s\\ahtman %s", szExeDir,p );
+	wsprintf( tmpfn, "\"%s\\ahtman.exe\" %s", szExeDir,p );
 	WinExec( tmpfn, SW_SHOW );
 
 	return 0;
