@@ -121,11 +121,11 @@ void BubbleSortStr( DATA *data, int nmem, int asdes )
 	for (i = 0; i < nmem - 1; i++) {
 	  for (j = nmem - 1; j >= i + 1; j--) {
 	    if (asdes == 0) {
-		  if ( lstrcmp( (char *)data[j].key, (char *)data[j-1].key)<=0 )
+		  if ( strcmp( (char *)data[j].key, (char *)data[j-1].key)<0 )
 				swap(&data[j], &data[j-1]);
 		}
 		else {
-		  if ( lstrcmp( (char *)data[j].key, (char *)data[j-1].key)>=0 )
+		  if ( strcmp( (char *)data[j].key, (char *)data[j-1].key)>0 )
 				swap(&data[j], &data[j-1]);
 		}
 	  }
