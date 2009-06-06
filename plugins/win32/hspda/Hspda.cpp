@@ -151,50 +151,57 @@ void BubbleSortDouble( DATA *data, int nmem, int asdes )
 
 int NoteToData( char *adr, DATA *data )
 {
-	int line;
-	char *p;
-	char a1;
-	p=adr;
-	line=0;
-	data[line].key=(int)p;
-	data[line].info=line;
-
-	while(1) {
-		a1=*p;
-		if (a1==0) break;
-		if ((a1==13)||(a1==10)) {
-			*p++=0;					// Remove CR/LF
-			if (*p==10) p++;
-			line++;
-			data[line].key=(int)p;
-			data[line].info=line;
+	char *p = adr;
+	int line = 0;
+	while (*p != '\0') {
+		data[line].key=(int)p;
+		data[line].info=line;
+		while (*p != '\0') {
+			char c = *p;
+			if (c == '\n' || c == '\r') {
+				*p = '\0';
+			}
+			p ++;
+			if (c == '\n') break;
+			if (c == '\r') {
+				if (*p == '\n') p++;
+				break;
+			}
 		}
-		else p++;
+		line ++;
 	}
-	line++;
 	return line;
 }
 
 
 int GetNoteLines( char *adr )
 {
-	int line;
-	char *p;
-	char a1;
-	p=adr;
-	line=0;
-
-	while(1) {
-		a1=*p++;
-		if (a1==0) break;
-		if (a1==10) line++;
-		if (a1==13) {
-			if (*p==10) p++;
-			line++;
+	int line = 0;
+	char *p = adr;
+	while (*p != '\0') {
+		while (*p != '\0') {
+			char c = *p++;
+			if (c == '\n') break;
+			if (c == '\r') {
+				if (*p == '\n') p ++;
+				break;
+			}
 		}
+		line ++;
 	}
-	line++;
 	return line;
+}
+
+
+size_t DataToNoteLen( DATA *data, int num )
+{
+	size_t len = 0;
+	int i;
+	for (i = 0; i < num; i++) {
+		char *s = (char *)data[i].key;
+		len += lstrlen(s) + 2;	// lstrlen("\r\n")
+	}
+	return len;
 }
 
 
@@ -426,10 +433,10 @@ EXPORT BOOL WINAPI sortnote( HSPEXINFO *hei, int p1, int p2, int p3 )
 	//Alertf( "%d[%s]", size,p );
 
 	DataIni( i );
-	stmp = (char *)malloc( size );
 
 	NoteToData( p, dtmp );
 	BubbleSortStr( dtmp, i, sflag );
+	stmp = (char *)malloc( DataToNoteLen( dtmp, i ) + 1 );
 	DataToNote( dtmp, stmp, i );
 
 	hei->HspFunc_prm_setva( pv, ap, TYPE_STRING, stmp );	// •Ï”‚É’l‚ğ‘ã“ü
