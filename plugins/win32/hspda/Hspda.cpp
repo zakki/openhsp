@@ -49,9 +49,12 @@ int WINAPI hspda_DllMain (HINSTANCE hInstance, DWORD fdwReason, PVOID pvReserved
 /*------------------------------------------------------------*/
 
 typedef struct {
-	int key;
+	union {
+		int ikey;
+		double dkey;
+		char *skey;
+	} as;
 	int info;
-	double dkey;
 } DATA;
 
 static void swap(DATA *a, DATA *b)
@@ -70,17 +73,17 @@ static void rquickSort(DATA *data, int asdes, int first, int last)
 
     i = first;
     j = last;
-    x = (data[i].key + data[j].key)/2;
+    x = (data[i].as.ikey + data[j].as.ikey)/2;
 
 //  while (i < j) {
 
     while (1) {
         if (asdes == 0) {
-            while (data[i].key < x) i++;
-            while (data[j].key > x) j--;
+            while (data[i].as.ikey < x) i++;
+            while (data[j].as.ikey > x) j--;
         } else {
-            while (data[i].key > x) i++;
-            while (data[j].key < x) j--;
+            while (data[i].as.ikey > x) i++;
+            while (data[j].as.ikey < x) j--;
         }
 
         if (i >= j) break;
@@ -112,11 +115,11 @@ void BubbleSortStr( DATA *data, int nmem, int asdes )
 	for (i = 0; i < nmem - 1; i++) {
 	  for (j = nmem - 1; j >= i + 1; j--) {
 	    if (asdes == 0) {
-		  if ( strcmp( (char *)data[j].key, (char *)data[j-1].key)<0 )
+		  if ( strcmp( data[j].as.skey, data[j-1].as.skey)<0 )
 				swap(&data[j], &data[j-1]);
 		}
 		else {
-		  if ( strcmp( (char *)data[j].key, (char *)data[j-1].key)>0 )
+		  if ( strcmp( data[j].as.skey, data[j-1].as.skey)>0 )
 				swap(&data[j], &data[j-1]);
 		}
 	  }
@@ -130,10 +133,10 @@ void BubbleSortDouble( DATA *data, int nmem, int asdes )
 	for (i = 0; i < nmem - 1; i++) {
 	  for (j = nmem - 1; j >= i + 1; j--) {
 	    if (asdes == 0) {
-			if ( data[j].dkey < data[j-1].dkey ) swap(&data[j], &data[j-1]);
+			if ( data[j].as.dkey < data[j-1].as.dkey ) swap(&data[j], &data[j-1]);
 		}
 		else {
-			if ( data[j].dkey > data[j-1].dkey ) swap(&data[j], &data[j-1]);
+			if ( data[j].as.dkey > data[j-1].as.dkey ) swap(&data[j], &data[j-1]);
 		}
 	  }
 	}
@@ -145,7 +148,7 @@ int NoteToData( char *adr, DATA *data )
 	char *p = adr;
 	int line = 0;
 	while (*p != '\0') {
-		data[line].key=(int)p;
+		data[line].as.skey=p;
 		data[line].info=line;
 		while (*p != '\0') {
 			char c = *p;
@@ -189,7 +192,7 @@ size_t DataToNoteLen( DATA *data, int num )
 	size_t len = 0;
 	int i;
 	for (i = 0; i < num; i++) {
-		char *s = (char *)data[i].key;
+		char *s = data[i].as.skey;
 		len += lstrlen(s) + 2;	// lstrlen("\r\n")
 	}
 	return len;
@@ -203,7 +206,7 @@ void DataToNote( DATA *data, char *adr, int num )
 	char *s;
 	p=adr;
 	for(a=0;a<num;a++) {
-		s=(char *)data[a].key;
+		s=data[a].as.skey;
 		lstrcpy( p, s );
 		p+=lstrlen( s );
 		*p++=13; *p++=10;			// Add CR/LF
@@ -218,7 +221,7 @@ void StrToData( char *adr, int num, int len, DATA *data )
 	char *p;
 	p=adr;
 	for(a=0;a<num;a++) {
-		data[a].key=(int)p;
+		data[a].as.skey=p;
 		data[a].info=a;
 		p+=len;
 	}
@@ -232,7 +235,7 @@ void DataToStr( DATA *data, char *adr, int num, int len )
 	char *s;
 	p=adr;
 	for(a=0;a<num;a++) {
-		s=(char *)data[a].key;
+		s=data[a].as.skey;
 		lstrcpyn( p, s, len );
 		p+=len;
 	}
@@ -297,25 +300,25 @@ EXPORT BOOL WINAPI sortval( HSPEXINFO *hei, int p2, int p3, int p4 )
 		dp=(double *)p1->pt;
 		DataIni( i );
 		for(a=0;a<i;a++) {
-			dtmp[a].dkey=dp[a];
+			dtmp[a].as.dkey=dp[a];
 			dtmp[a].info=a;
 		}
 		BubbleSortDouble( dtmp, i, p2 );
 		for(a=0;a<i;a++) {
-			//dp[a]=dtmp[a].dkey;
-			hei->HspFunc_prm_setva( p1, a, TYPE_DNUM, &(dtmp[a].dkey) );	// ïœêîÇ…ílÇë„ì¸
+			//dp[a]=dtmp[a].as.dkey;
+			hei->HspFunc_prm_setva( p1, a, TYPE_DNUM, &(dtmp[a].as.dkey) );	// ïœêîÇ…ílÇë„ì¸
 		}
 		break;
 	case 4:						// int
 		p=(int *)p1->pt;
 		DataIni( i );
 		for(a=0;a<i;a++) {
-			dtmp[a].key=p[a];
+			dtmp[a].as.ikey=p[a];
 			dtmp[a].info=a;
 		}
 		QuickSort( dtmp, i, p2 );
 		for(a=0;a<i;a++) {
-			p[a]=dtmp[a].key;
+			p[a]=dtmp[a].as.ikey;
 		}
 		break;
 	default:
@@ -350,17 +353,17 @@ EXPORT BOOL WINAPI sortstr( HSPEXINFO *hei, int p1, int p2, int p3 )
 		p = (char *)Hsp3GetBlockSize( hei, pv, i, &size );
 		buf.PutStrBlock( p );
 
-		dtmp[i].key = pos;
+		dtmp[i].as.ikey = pos;
 		dtmp[i].info = i;
 	}
 	for(i=0;i<len;i++) {
-		dtmp[i].key += (int)buf.GetBuffer();
+		dtmp[i].as.skey = buf.GetBuffer() + dtmp[i].as.ikey;
 	}
 
 	BubbleSortStr( dtmp, len, sflag );
 
 	for(i=0;i<len;i++) {
-		psrc = (char *)dtmp[i].key;
+		psrc = dtmp[i].as.skey;
 		hei->HspFunc_prm_setva( pv, i, TYPE_STRING, psrc );	// ïœêîÇ…ílÇë„ì¸
 	}
 
@@ -614,7 +617,7 @@ EXPORT BOOL WINAPI xnotesel( PVal *p1, int p2, int p3, int p4 )
 
 	DataIni( i );
 	for(a=0;a<i;a++) {
-		dtmp[a].key=0;
+		dtmp[a].as.ikey=0;
 		dtmp[a].info=0;
 	}
 	xn_base=p1;
