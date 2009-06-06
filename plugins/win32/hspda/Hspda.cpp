@@ -57,18 +57,9 @@ typedef struct {
 static void swap(DATA *a, DATA *b)
 {
     DATA t;
-
-    t.key   = a->key;
-    t.info  = a->info;
-	t.dkey	= a->dkey;
-
-	a->key  = b->key;
-	a->dkey	= b->dkey;
-    a->info = b->info;
-
-	b->key  = t.key;
-	b->dkey	= t.dkey;
-    b->info = t.info;
+    t = *a;
+    *a = *b;
+    *b = t;
 }
 
 static void rquickSort(DATA *data, int asdes, int first, int last)
@@ -355,12 +346,15 @@ EXPORT BOOL WINAPI sortstr( HSPEXINFO *hei, int p1, int p2, int p3 )
 	DataIni( len );
 
 	for(i=0;i<len;i++) {
+		int pos = buf.GetSize();
 		p = (char *)Hsp3GetBlockSize( hei, pv, i, &size );
-		psrc = buf.GetCurrentPtr();
 		buf.PutStrBlock( p );
 
-		dtmp[i].key = (int)psrc;
+		dtmp[i].key = pos;
 		dtmp[i].info = i;
+	}
+	for(i=0;i<len;i++) {
+		dtmp[i].key += (int)buf.GetBuffer();
 	}
 
 	BubbleSortStr( dtmp, len, sflag );
@@ -1036,12 +1030,14 @@ static int varsave_put_storage( HSPEXINFO *hei, PVal *pv, int encode, int opt )
 			//		実データを記録する
 			if ( fv->type == FLEXVAL_TYPE_ALLOC ) {
 				for(j=0;j<max;j++) {
+					int pos;
 					vardata->PutData( fvbase, sizeof(PVal) );
-					cntbak = (int *)vardata->GetCurrentPtr();
+					pos = vardata->GetSize();
 					vardata->Put( (int)0 );
 					prevcnt = vardata->GetSize();
 					varsave_putvar( hei, fvbase, encode, opt );
 					nowcnt = vardata->GetSize();
+					cntbak = (int *)(vardata->GetBuffer() + pos);
 					*cntbak = nowcnt - prevcnt;			// 実データサイズを記録する
 					fvbase++;
 				}
