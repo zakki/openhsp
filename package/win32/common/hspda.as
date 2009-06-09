@@ -7,14 +7,14 @@
 #func sortval sortval $202
 #func sortstr sortstr $202
 #func sortnote sortnote $202
-#func sortget sortget $83
+#func sortget sortget $202
 #func sortbye sortbye $100
 
 #func csvstr csvstr $202
 #func csvnote csvnote $87
 
-#func xnotesel xnotesel $83
-#func xnoteadd xnoteadd 6
+#func xnotesel xnotesel $202
+#func xnoteadd xnoteadd $202
 
 #func rndf_ini rndf_ini $202
 #func rndf_get rndf_get $202

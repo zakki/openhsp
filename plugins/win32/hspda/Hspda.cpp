@@ -249,6 +249,7 @@ void DataToStr( DATA *data, char *adr, int num, int len )
 /*------------------------------------------------------------*/
 
 static	DATA *dtmp = NULL;
+static	int dtmp_size;
 
 static void DataBye( void )
 {
@@ -261,6 +262,27 @@ static void DataIni( int size )
 {
 	DataBye();
 	dtmp=(DATA *)malloc( sizeof(DATA)*size );
+	dtmp_size = size;
+}
+
+static void DataExpand( int size )
+{
+	if (size <= dtmp_size) return;
+	int new_size = dtmp_size;
+	if (new_size < 16) new_size = 16;
+	while (size > new_size) {
+		new_size *= 2;
+	}
+	dtmp = (DATA *)realloc( dtmp, sizeof(DATA)*new_size );
+	memset( dtmp + dtmp_size, 0, sizeof(DATA)*(new_size - dtmp_size) );
+	dtmp_size = new_size;
+}
+
+
+static void DataInc( int n )
+{
+	DataExpand( n + 1 );
+	dtmp[n].info ++;
 }
 
 
@@ -462,17 +484,28 @@ EXPORT BOOL WINAPI sortnote( HSPEXINFO *hei, int p1, int p2, int p3 )
 }
 
 
-EXPORT BOOL WINAPI sortget( PVal *p1, int p2, int p3, int p4 )
+EXPORT BOOL WINAPI sortget( HSPEXINFO *hei, int p1, int p2, int p3 )
 {
 	//
-	//		sortget val,index  (type$83)
+	//		sortget val,index  (type$202)
 	//
-	int *p;
+	PVal *pv;
+	APTR ap;
+	int result;
+	int n;
 
-	p=(int *)(p1->pt);
-	//p1->flag = 4;
+	ap = hei->HspFunc_prm_getva( &pv );
+	n = hei->HspFunc_prm_getdi( 0 );
 
-	*p=dtmp[p2].info;
+	if ( dtmp == NULL ) {
+		return -1;
+	}
+	if (0 <= n && n < dtmp_size ) {
+		result=dtmp[n].info;
+	} else {
+		result=0;
+	}
+	hei->HspFunc_prm_setva( pv, ap, HSPVAR_FLAG_INT, &result );
 	return 0;
 }
 
@@ -598,70 +631,111 @@ EXPORT BOOL WINAPI sortbye( int p1, int p2, int p3, int p4 )
 */
 /*------------------------------------------------------------*/
 
-static	PVal	*xn_base;
+static	PVal	*xn_pval;
+static	APTR	xn_aptr;
 static	int		xn_count;
-static	int		xn_max;
-static	char	*xn_ptr;
 
-EXPORT BOOL WINAPI xnotesel( PVal *p1, int p2, int p3, int p4 )
+EXPORT BOOL WINAPI xnotesel( HSPEXINFO *hei, int p1, int p2, int p3 )
 {
 	//
-	//		xnotesel notedat, maxnum  (type$83)
+	//		xnotesel notedat, maxnum  (type$202)
 	//
+	PVal *pv;
+	APTR ap;
 	int a,i;
 
-	i=p2;if (i==0) i=256;			// default value
-	xn_max=i;
-	xn_ptr=p1->pt;
-	if (p1->flag!=2) return -1;
+	ap = hei->HspFunc_prm_getva( &pv );
+	i = hei->HspFunc_prm_getdi( 0 );
+	if (i==0) i=256;			// default value
+	if (pv->flag!=HSPVAR_FLAG_STR) return -1;
+	xn_pval = pv;
+	xn_aptr = ap;
 
 	DataIni( i );
 	for(a=0;a<i;a++) {
 		dtmp[a].as.ikey=0;
 		dtmp[a].info=0;
 	}
-	xn_base=p1;
 	xn_count=0;
 	return 0;
 }
 
 
-EXPORT BOOL WINAPI xnoteadd( BMSCR *bm, char *p1, int p2, int p3 )
+static char *skipline( char *s )
 {
-	//
-	//		xnoteadd "strings" (type$6)
-	//
-	char *s1;
-	char *s3;
-	char s2[4096];
-	int line;
-	unsigned char a1;
-
-	s1=xn_ptr;
-	line=0;
-	while(1) {
-		if (*s1==0) break;
-		s3=s2;
-		while(1) {
-			a1=(unsigned char)*s1;
-			if ((a1==13)||(a1==0)) break;
-			*s3++=a1; s1++;
-		}
-		*s3=0;
-		if (strcmp(p1,s2)==0) {				// compare
-			dtmp[line].info++;
-			return -line;
-		}
-		if (a1==13) {						// CR/LF check
-			s1++;if (*s1==10) s1++;
-			line++;
+	while (*s != '\0') {
+		char c = *s++;
+		if(c == '\n') break;
+		if(c == '\r') {
+			if(*s == '\n') s ++;
+			break;
 		}
 	}
+	return s;
+}
 
-	strcpy( s2,p1 );
-	strcat( s2,"\r\n" );
-	strcpy( s1,s2 );
-	dtmp[line].info++;
+
+static int lineeq( char *a, char *b )
+{
+	while (1) {
+		char ca = *a++;
+		char cb = *b++;
+		if (ca == '\n' || ca == '\r') ca = '\0';
+		if (ca != cb) {
+			return 0;
+		}
+		if (ca == '\0') {
+			return 1;
+		}
+	}
+}
+
+static void pv_allocblock( HSPEXINFO *hei, PVal *pv, int offset, int size );
+
+static void addline( HSPEXINFO *hei, PVal *pval, APTR aptr, size_t len, char *str_to_add )
+{
+	size_t len_add = strlen(str_to_add);
+	int size;
+	char *buf, *p;
+	pv_allocblock( hei, pval, aptr, (int)(len + len_add + 8) );
+	buf = (char *)Hsp3GetBlockSize( hei, pval, aptr, &size );
+	p = buf + len;
+	if (len > 0 && buf[len-1] != '\r' && buf[len-1] != '\n') {
+		strcpy(p, "\r\n");
+		p += 2;
+	}
+	strcpy(p, str_to_add);
+	p += len_add;
+	strcpy(p, "\r\n");
+	p += 2;
+}
+
+
+EXPORT BOOL WINAPI xnoteadd( HSPEXINFO *hei, int p1, int p2, int p3 )
+{
+	//
+	//		xnoteadd "strings" (type$202)
+	//
+	char *buf, *p, *str_to_add;
+	int size;
+	int line;
+
+	str_to_add = hei->HspFunc_prm_gets();
+	if (xn_pval->flag!=HSPVAR_FLAG_STR) return -1;
+	buf = (char *)Hsp3GetBlockSize( hei, xn_pval, xn_aptr, &size );
+	p = buf;
+	line=0;
+	while (*p != '\0') {
+		if (lineeq(p, str_to_add) ) {
+			DataInc(line);
+			return -line;
+		}
+		p = skipline(p);
+		line ++;
+	}
+
+	addline( hei, xn_pval, xn_aptr, p - buf, str_to_add );
+	DataInc(line);
 	return -line;
 }
 
