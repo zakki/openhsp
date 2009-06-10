@@ -360,8 +360,6 @@ p1 : バージョンを表す整数値
 %inst
 p1で指定されたバージョンからメジャー バージョンのみを抽出します。
 ここで指定できる値は、hsed_getverにHGV_PUBLICVERもしくはHGV_PRIVATEVERを指定して取得したバージョンのみです。
-^
-（以上hsed/hsp3.txtより抜粋）
 
 %href
 hsed_getver
@@ -382,8 +380,6 @@ p1 : バージョンを表す整数値
 %inst
 p1で指定されたバージョンからマイナー バージョンのみを抽出します。
 ここで指定できる値は、hsed_getverにHGV_PUBLICVERもしくはHGV_PRIVATEVERを指定して取得したバージョンのみです。
-^
-（以上hsed/hsp3.txtより抜粋）
 
 %href
 hsed_getver
@@ -404,8 +400,6 @@ p1 : バージョンを表す整数値
 %inst
 p1で指定されたバージョンからベータ バージョンのみを抽出します。
 ここで指定できる値は、hsed_getverにHGV_PUBLICVERもしくはHGV_PRIVATEVERを指定して取得したバージョンのみです。
-^
-（以上hsed/hsp3.txtより抜粋）
 
 %href
 hsed_getmajorver
@@ -455,8 +449,6 @@ hsed_getmajorver(), hsed_getminorver(), hsed_getbetaver()で各値を取得できます。<
 ベータ バージョンではない場合は0が代入されます。</td></tr>
 </table>
 }html
-^
-（以上hsed/hsp3.txtより抜粋・加筆）
 
 
 %href
@@ -474,7 +466,22 @@ hsed_getwnd
 p1, p2, p3
 
 %inst
-; 解説文 を記入
+p2で指定された種類のエディタのウィンドウ ハンドルを取得し、p1に代入します。
+p2でHGW_EDITを指定した場合は、p3でFootyのIDを指定する必要があります。
+取得に失敗した場合は、p1に0を代入します。
+
+statに代入される値は以下の通りです。
+0: 取得に成功
+1: エディタが見つからなかった
+2: エディタが正しい値を返せなかった(p2が正しくない場合含む)
+
+p2に指定する値は以下の通りです。HGW_で始まる定数を用いても、括弧内の数字を用いても構いません。
+HGW_MAIN(0): メイン ウィンドウ
+HGW_CLIENT(1): クライアント ウィンドウ
+HGW_TAB(2): タブ ウィンドウ
+HGW_EDIT(3): Footy ウィンドウ
+HGW_TOOLBAR(4): ツールバー
+HGW_STATUSBAR(5): ステータスバー
 
 %href
 hsed_capture
@@ -492,8 +499,6 @@ p1 : バージョンを表す整数値
 %inst
 p1で指定されたバージョンを文字列に変換し、refstrに代入します。"(メジャーバージョン).(マイナーバージョン)"の形式です。ただし、ベータバージョンの場合は末尾に"b(ベータバージョン)"が加えられます。
 ここで指定できる値は、hsed_getverにHGV_PUBLICVERもしくはHGV_PRIVATEVERを指定して取得したバージョンのみです。
-^
-（以上hsed/hsp3.txtより抜粋）
 
 %group
 バージョン変換命令
