@@ -319,14 +319,16 @@ static inline int ReadPipe(HANDLE hPipe, char **pbuffer)
 	DWORD dwSize, dwNumberOfBytesRead;
 	char *lpBuffer;
 
-	dwSize = GetFileSize(hPipe, NULL);
+	if(!PeekNamedPipe(hPipe, NULL, 0, NULL, &dwSize, NULL)) {
+		return 1;
+	}
 	lpBuffer = (char *)malloc(dwSize + 1);
 	*pbuffer = lpBuffer;
 	if(lpBuffer == NULL) return 1;
-	if(!ReadFile(hPipe, lpBuffer, dwSize, &dwNumberOfBytesRead, NULL)){
-		free(lpBuffer);
-		return 1;
+	if(dwSize > 0) {
+		ReadFile(hPipe, lpBuffer, dwSize, &dwNumberOfBytesRead, NULL);
 	}
+	lpBuffer[dwSize] = '\0';
 	return 0;
 }
 

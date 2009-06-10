@@ -9,13 +9,6 @@
 #func FindWindow@hsedsdk "FindWindowA" sptr, sptr
 #func GetWindowThreadProcessId@hsedsdk "GetWindowThreadProcessId" int, var
 
-#func OpenClipboard@hsedsdk "OpenClipboard" int
-#cfunc IsClipboardFormatAvailable@hsedsdk "IsClipboardFormatAvailable" int
-#func  CloseClipboard@hsedsdk "CloseClipboard"
-#cfunc GetClipboardData@hsedsdk "GetClipboardData" int
-#func  EmptyClipboard@hsedsdk "EmptyClipboard"
-#func  SetClipboardData@hsedsdk "SetClipboardData" int,int
-
 #uselib "kernel32.dll"
 #func OpenProcess@hsedsdk "OpenProcess" int, int, int
 #func GetCurrentProcess@hsedsdk "GetCurrentProcess"
@@ -24,12 +17,7 @@
 #func CreatePipe@hsedsdk "CreatePipe" var, var, int, int
 #func ReadFile@hsedsdk "ReadFile" int, var, int, var, int
 #func WriteFile@hsedsdk "WriteFile" int, var, int, var, int
-
-#cfunc  GlobalLock@hsedsdk "GlobalLock" int
-#cfunc  GlobalSize@hsedsdk "GlobalSize" int
-#func   GlobalUnlock@hsedsdk "GlobalUnlock" int
-#cfunc  GlobalAlloc@hsedsdk "GlobalAlloc" int,int
-#cfunc  lstrcpy@hsedsdk "lstrcpy" int,int
+#func PeekNamedPipe@hsedsdk "PeekNamedPipe" int, int, int, int, var, int
 
 // Win32API 定数(ウィンドウ メッセージを除く)
 #const PROCESS_ALL_ACCESS@hsedsdk    0x001F0FFF
@@ -169,7 +157,6 @@
 	if stat: ret = 0: return 1
 
 	if(nType == HGV_HSPCMPVER){
-		sdim ret, 4096
 
 		hsed_initduppipe 4096
 		if stat: return 2
@@ -177,7 +164,13 @@
 		sendmsg hIF, _HSED_GETVER, nType, hDupWritePipe
 		if stat < 0: ret = "Error": hsed_uninitduppipe: return 3
 		
-		ReadFile hReadPipe, ret, 4096, dwNumberOfBytesRead, 0
+		PeekNamedPipe hReadPipe, 0, 0, 0, dwTotalBytesAvail, 0
+		if stat == 0: hsed_uninitduppipe: return 4
+		
+		sdim ret, dwTotalBytesAvail + 1
+		if dwTotalBytesAvail > 0 {
+			ReadFile hReadPipe, ret, dwTotalBytesAvail, dwNumberOfBytesRead, 0
+		}
 		hsed_uninitduppipe
 
 	} else {
@@ -423,6 +416,7 @@
 	if stat: return 2
 
 	sdim ret, nLength + 1
+	if nLength == 0 : return 0
 	hsed_initduppipe nLength + 1
 	if stat: return 3
 
