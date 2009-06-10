@@ -912,7 +912,7 @@ STRINGTABLE
 BEGIN
     IDM_KWHELP              "カーソル位置のキーワードのヘルプを表示"
     IDM_HELPDIR             "HSPヘルプ表示の設定"
-    IDM_HSPMAN1             "HSPプログラムガイドをブラウザで開く"
+    IDM_HSPMAN1             "HSPプログラミング・マニュアルをブラウザで開く"
     IDM_HSPMAN2             "HSP命令リファレンスをブラウザで開く"
     IDM_HSPMAN3             "HSPマニュアル目次をブラウザで開く"
     IDM_ABOUT               "スクリプトエディタのバージョン情報を表示"
