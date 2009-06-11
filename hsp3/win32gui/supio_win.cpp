@@ -519,3 +519,27 @@ void TrimCodeL( char *p, int code )
 }
 
 
+//
+//		windows security support
+//
+
+#ifdef HSP3IMP
+//
+//	HSP3IMP用セキュリティ対応
+//
+int SecurityCheck( char *name )
+{
+	char *p;
+	char fname[_MAX_PATH+1];
+	GetWindowsDirectory( fname, _MAX_PATH );
+	strcase( fname );
+	CutLastChr( fname, '\\' );
+	strcase( name );
+	p = strstr( name, fname+2 );
+	if ( p == NULL ) return 0;
+	return -1;
+}
+
+#endif
+
+

@@ -24,7 +24,6 @@
 //
 #ifdef HSPVER3
 #define FILE_HSPCMP "hspcmp.dll"
-#define FILE_HSP "hsp3.exe"
 #define DEFAULT_RUNTIME "hsp3"   // HSP3 runtime
 #define HSP_VERSION 3
 #define REG_SUFFIX "3"                        // Suffix of registry section name 

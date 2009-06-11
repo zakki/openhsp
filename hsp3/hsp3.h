@@ -10,6 +10,9 @@
 #include "hsp3ext.h"
 #include "hsp3code.h"
 
+#define HSP3_AXTYPE_NONE 0
+#define HSP3_AXTYPE_ENCRYPT 1
+
 //	HSP3 class
 //
 class Hsp3 {
@@ -30,6 +33,7 @@ public:
 	char *axfile;
 	int	maxvar;
 	int hsp_sum, hsp_dec;
+	int axtype;									// axファイルの設定(hsp3imp用)
 
 private:
 };
