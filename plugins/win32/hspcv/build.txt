@@ -9,4 +9,6 @@
 	otherlibsにある外部ライブラリもすべてスタティックでビルドし直し。
 	jasperは含まれていないので、jasper-1.701.0.zipをダウンロードして、
 	やっぱりビルドし直して下さい。
+	jasperは以下のURLからダウンロードしてください。
+	http://www.ece.uvic.ca/~mdadams/jasper/
 

@@ -5,6 +5,6 @@
 
 #define EXPORT extern "C" __declspec (dllexport)
 
-#include "../hsp3/hsp3debug.h"
-#include "../hsp3/hsp3struct.h"
+#include "../../../hsp3/hsp3debug.h"
+#include "../../../hsp3/hsp3struct.h"
 

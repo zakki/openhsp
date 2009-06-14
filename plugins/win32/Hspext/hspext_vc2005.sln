@@ -1,6 +1,6 @@
 Microsoft Visual Studio Solution File, Format Version 9.00
 # Visual C++ Express 2005
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "hspext", "hspext.vc80.vcproj", "{EF067DA5-DEEF-4A92-8A28-7EFAD3899DA9}"
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "hspext", "hspext_vc2005.vcproj", "{EF067DA5-DEEF-4A92-8A28-7EFAD3899DA9}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
