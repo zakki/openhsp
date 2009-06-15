@@ -581,9 +581,9 @@ static void hsprun( char *objname )
 		hsc3_getruntime( (int)cfname, (int)objname, 0, 0 );
 	}
 	if ( *cfname == 0 ) {
-		wsprintf( execmd,"\"%s\\%s.exe\" ",szExeDir, DEFAULT_RUNTIME );
+		wsprintf( execmd,"\"%s\\%s\" ",szExeDir, DEFAULT_RUNTIME );
 	} else {
-		wsprintf( execmd,"\"%s\\%s.exe\" ",szExeDir, cfname );
+		wsprintf( execmd,"\"%s\\%s\" ",szExeDir, cfname );
 	}
 	strcat( execmd,objname );
 	if (hsp_cmdopt[0]!=0) {
@@ -608,7 +608,7 @@ static void hsprun_log( char *objname )
 	//		execute HSP3 process (with LOG)
 	//
 	char dbopt[64];
-	wsprintf( execmd,"\"%s\\%s.exe\" ",szExeDir, DEFAULT_RUNTIME );
+	wsprintf( execmd,"\"%s\\%s\" ",szExeDir, DEFAULT_RUNTIME );
 	wsprintf( dbopt, "%03d",hsp_logmode );
 	strcat( execmd, "%" );
 	strcat( execmd, dbopt );

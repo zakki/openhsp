@@ -6,7 +6,7 @@
 //		when Japanese mode
 #define JPMSG
 
-#define DEFAULT_RUNTIME "hsp3"			// HSP3 runtime
+#define DEFAULT_RUNTIME "hsp3.exe"			// HSP3 runtime
 #define DEFAULT_DLL "\\hspcmp.dll"			// compiler DLL
 
 

@@ -24,7 +24,7 @@
 //
 #ifdef HSPVER3
 #define FILE_HSPCMP "hspcmp.dll"
-#define DEFAULT_RUNTIME "hsp3"   // HSP3 runtime
+#define DEFAULT_RUNTIME "hsp3.exe"   // HSP3 runtime
 #define HSP_VERSION 3
 #define REG_SUFFIX "3"                        // Suffix of registry section name 
 #define INI_FILE "hsp3config.ini"             // INI section name
@@ -34,8 +34,7 @@
 #else
 
 #define FILE_HSPCMP "hspcmp.dll"
-#define FILE_HSP "hsp2.exe"
-#define DEFAULT_RUNTIME "hsp2"   // HSP2 runtime
+#define DEFAULT_RUNTIME "hsp2.exe"   // HSP2 runtime
 #define REG_SUFFIX                            // Suffix of registry section name
 #define INI_FILE "hsp2config.ini"             // INI file name
 #define MUTEX_NAME  "HSPEditor2_Mutex"        // Name of Mutex object
