@@ -19,6 +19,10 @@
 #func netrequest netrequest 6
 #func netfileinfo netfileinfo $202
 
+#func netgetv netgetv $202
+#func netrequest_get netrequest_get $202
+#func netrequest_post netrequest_post $202
+
 #func filecrc filecrc $202
 #func filemd5 filemd5 $202
 

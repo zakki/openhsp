@@ -54,6 +54,12 @@ HSPINET ver3.2 REFERENCE MANUAL                     HSP : Hot Soup Processor
 
 ・更新履歴
 
+	2009/6/14  ver3.2β4
+
+		ダウンロードしたデータをファイルでなく、メモリ上に展開する
+		netgetv、netrequest_get、netrequest_post命令を追加。
+		POST形式によるcgi呼び出しに対応しました。
+
 	2007/3/9  ver1.2
 
 		ftpopenの第4パラメーターが指定できなかった不具合を修正。
@@ -88,7 +94,7 @@ HSPINET ver3.2 REFERENCE MANUAL                     HSP : Hot Soup Processor
 	HSPINETプラグインは、onion softwareの著作物です。
 	onion softwareは本プログラムによって生じた、いかなる損害についても
 	保証いたしません。自己の責任の範囲で使用してください。
-	HSPINET.DLLは、Microsoft Visual C++ 7.1でコンパイルされて います。 
+	HSPINET.DLLは、Microsoft Visual Studio 2005でコンパイルされて います。 
 
 
 ・命令一覧
@@ -122,6 +128,10 @@ HSPINET ver3.2 REFERENCE MANUAL                     HSP : Hot Soup Processor
 	ftpput                                          FTPファイル送信
 	ftprename                                       FTPファイル名前変更
 	ftpdelete                                       FTPファイル削除
+
+	netrequest_get					httpリクエスト発行(GET)
+	netrequest_post					httpリクエスト発行(POST)
+	netgetv						httpリクエストの結果を取得
 
 
 ・http関連命令
@@ -341,6 +351,73 @@ HSPINET ver3.2 REFERENCE MANUAL                     HSP : Hot Soup Processor
 		ファイル受信サイズは、netexec命令で受信が行なわれた内容を
 		調べるためのものです。あらかじめ、ファイル情報取得で
 		ファイルサイズを調べておけば、進行の割合を計ることが可能です。
+
+
+	netrequest_get "FileName"			httpリクエスト発行(GET)
+
+		"FileName" : リクエストを行なうファイル名
+
+		httpリクエストを行ないます。
+		netrequest命令と同様ですが、ダウンロードしたデータイメージを
+		ファイルではなく、メモリ上のデータとして取得できます。
+
+		"FileName"で、リクエストを行なうファイル名を指定します。
+		先に、neturl命令によりファイル名を除いたURLを指定しておく
+		必要があります。
+
+		netrequest命令でhttpリクエストを発行した後は、netexec命令
+		により受信処理をスクリプト側で行なう必要があります。
+		処理が完了した後は、netgetv命令により任意の変数でデータを
+		受け取ることができます。
+
+
+	netrequest_post "FileName",p1			httpリクエスト発行(POST)
+		"FileName" : リクエストを行なうファイル名
+		p1         : POST用のデータを格納した文字列型変数名
+
+		httpリクエストを行ないます。
+		netrequest命令と同様ですが、ダウンロードしたデータイメージを
+		ファイルではなく、メモリ上のデータとして取得できます。
+		また、POST形式によるCGIパラメーター受け渡しに対応しています。
+
+		"FileName"で、リクエストを行なうファイル名を指定します。
+		先に、neturl命令によりファイル名を除いたURLを指定しておく
+		必要があります。
+		p1に、POST用のデータを格納した変数名を指定します。
+		あらかじめ、変数は文字列型でPOST形式のデータを格納しておく
+		必要があります。POST形式のデータは、GET形式のURLで指定される
+		「&」で区切られたパラメーターと同様のものになります。
+		ただし、バイナリデータを送付する場合は、データを文字列に
+		エンコードする必要があります。netrequest_post命令は、渡された
+		文字列をそのままPOSTデータとして発行するため、このエンコードは
+		事前に行なっておいてください。
+
+			例:
+			;	URLを指定
+			neturl "http://www.onionsoft.net/hsp/beta/"
+
+			;	POST形式でCGIにパラメーターを渡す
+			prm = "mode=find&cond=and&log=0&word=script"
+			netrequest_post "betabbs.cgi",prm
+
+		netrequest命令でhttpリクエストを発行した後は、netexec命令
+		により受信処理をスクリプト側で行なう必要があります。
+		処理が完了した後は、netgetv命令により任意の変数でデータを
+		受け取ることができます。
+
+
+	netgetv p1					httpリクエストの結果を取得
+
+		p1 : データが代入される変数
+
+		netrequest_get、netrequest_post命令によるhttpリクエストの
+		結果を取得します。
+		必ず、netexec命令による受信処理で、ダウンロードが完了した
+		ことを確認してから、データを取得するようにしてください。
+		p1で指定された変数は、自動的に必要なサイズを確保した
+		文字列型として初期化されます。(あらかじめ変数を初期化したり、
+		メモリを確保しておく必要はありません。)
+		命令実行後に、システム変数statにデータサイズが代入されます。
 
 
 ・ファイル関連命令

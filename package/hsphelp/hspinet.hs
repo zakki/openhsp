@@ -6,12 +6,12 @@
 %type
 拡張命令
 %ver
-3.1
+3.2
 %note
 hspinet.asをインクルードすること。
 
 %date
-2005/06/28
+2009/06/14
 %author
 onitama
 %dll
@@ -652,5 +652,96 @@ ftpサーバー上のファイルを削除します。
 %href
 ftpopen
 ftprename
+
+
+%index
+netrequest_get
+httpリクエスト発行(GET)
+%group
+拡張入出力制御命令
+%prm
+"FileName"
+"FileName" : リクエストを行なうファイル名
+
+%inst
+httpリクエストを行ないます。
+netrequest命令と同様ですが、ダウンロードしたデータイメージをファイルではなく、メモリ上のデータとして取得できます。
+^
+"FileName"で、リクエストを行なうファイル名を指定します。
+先に、neturl命令によりファイル名を除いたURLを指定しておく必要があります。
+^
+netrequest命令でhttpリクエストを発行した後は、netexec命令により受信処理を
+スクリプト側で行なう必要があります。
+処理が完了した後は、netgetv命令により任意の変数でデータを受け取ることができます。
+POST形式でCGIにデータをリクエストする場合は、netrequest_post命令を使用してください。
+
+%href
+netgetv
+netrequest
+netrequest_post
+neturl
+
+
+%index
+netrequest_post
+httpリクエスト発行(POST)
+%group
+拡張入出力制御命令
+%prm
+"FileName",p1
+"FileName" : リクエストを行なうファイル名
+p1         : POST用のデータを格納した文字列型変数名
+
+%inst
+httpリクエストを行ないます。
+netrequest命令と同様ですが、ダウンロードしたデータイメージをファイルではなく、メモリ上のデータとして取得できます。
+また、POST形式によるCGIパラメーター受け渡しに対応しています。
+^
+"FileName"で、リクエストを行なうファイル名を指定します。
+先に、neturl命令によりファイル名を除いたURLを指定しておく必要があります。
+p1に、POST用のデータを格納した変数名を指定します。
+あらかじめ、変数は文字列型でPOST形式のデータを格納しておく必要があります。
+POST形式のデータは、GET形式のURLで指定される「&」で区切られたパラメーターと同様のものになります。
+ただし、バイナリデータを送付する場合は、データを文字列にエンコードする必要があります。
+netrequest_post命令は、渡された文字列をそのままPOSTデータとして発行するため、このエンコードは事前に行なっておいてください。
+^p
+例:
+;	URLを指定
+neturl "http://www.onionsoft.net/hsp/beta/"
+
+;	POST形式でCGIにパラメーターを渡す
+prm = "mode=find&cond=and&log=0&word=script"
+netrequest_post "betabbs.cgi",prm
+^p
+netrequest命令でhttpリクエストを発行した後は、netexec命令により受信処理をスクリプト側で行なう必要があります。
+処理が完了した後は、netgetv命令により任意の変数でデータを受け取ることができます。
+GET形式でCGIにデータをリクエストする場合は、netrequest_get命令を使用してください。
+
+%href
+netgetv
+netrequest
+netrequest_get
+neturl
+
+
+%index
+netgetv
+httpリクエストの結果を取得
+%group
+拡張入出力制御命令
+%prm
+p1
+p1 : データが代入される変数
+
+%inst
+netrequest_get、netrequest_post命令によるhttpリクエストの結果を取得します。
+必ず、netexec命令による受信処理で、ダウンロードが完了したことを確認してから、データを取得するようにしてください。
+p1で指定された変数は、自動的に必要なサイズを確保した文字列型として初期化されます。
+(あらかじめ変数を初期化したり、メモリを確保しておく必要はありません。)
+命令実行後に、システム変数statにデータサイズが代入されます。
+
+%href
+netrequest_get
+netrequest_post
 
 

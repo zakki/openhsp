@@ -2,6 +2,8 @@
 #include <windows.h>
 #include <process.h>
 #include <stdio.h>
+//#include <tchar.h>
+
 #include "czhttp.h"
 
 #pragma comment( lib,"Wininet.lib" )
@@ -23,6 +25,8 @@ void CzHttp::Terminate( void )
 
 	//	Clear headers
 	if ( req_header != NULL ) { free( req_header ); req_header = NULL; }
+
+	ClearVarData();
 }
 
 
@@ -34,7 +38,7 @@ void CzHttp::Reset( void )
 	Terminate();
 
 	agent = str_agent;
-	if ( agent == NULL ) agent = "HSPInet(HSP3.0; Windows)";
+	if ( agent == NULL ) agent = "HSPInet(HSP3.1; Windows)";
 
 	if ( proxy_url[0] != 0 ) {
 		char *local_prm = NULL;
@@ -68,6 +72,7 @@ CzHttp::CzHttp( void )
 	proxy_local = 0;
 	proxy_url[0] = 0;
 	req_header = NULL;
+	vardata = NULL;
 
 	//	接続可能か?
 	if( InternetAttemptConnect(0) ){
@@ -96,8 +101,10 @@ int CzHttp::Exec( void )
 {
 	//	毎フレーム実行
 	//
+	static char hdr[] = "Content-Type: application/x-www-form-urlencoded";
 	char req_name[1024];
 	char *name;
+	BOOL res;
 
 	switch( mode ) {
 	case CZHTTP_MODE_REQUEST:			// httpに接続
@@ -141,6 +148,91 @@ int CzHttp::Exec( void )
 		InternetCloseHandle( hService );
 		mode = CZHTTP_MODE_READY;
 		break;
+
+
+
+	case CZHTTP_MODE_VARREQUEST:
+
+		strcpy( req_name, req_url2 );
+		strcat( req_name, req_path );
+
+		// HTTPに接続
+		hHttpSession = ::InternetConnectA( hSession, varserver, INTERNET_DEFAULT_HTTP_PORT, NULL, NULL, INTERNET_SERVICE_HTTP, 0, 0 );
+		if ( hHttpSession == NULL ) {
+			SetError( "無効なサーバーが指定されました" );
+			break;
+		}
+
+		// HTTP要求の作成
+		hHttpRequest = ::HttpOpenRequestA( hHttpSession, varstr, req_name, HTTP_VERSION, NULL, NULL, INTERNET_FLAG_RELOAD|INTERNET_FLAG_NO_UI, 0 );
+		if ( hHttpSession == NULL ) {
+			SetError( "無効なURLが指定されました" );
+			break;
+		}
+		mode = CZHTTP_MODE_VARREQSEND;
+	case CZHTTP_MODE_VARREQSEND:
+
+		// 作成したHTTP要求の発行
+		if ( postdata != NULL ) {
+			res = ::HttpSendRequestA( hHttpRequest, hdr, (int)strlen(hdr), postdata, (int)strlen(postdata) );
+		} else {
+			res = ::HttpSendRequestA( hHttpRequest, NULL, 0, NULL, 0 );
+		}
+		if ( res == false ) {
+			InternetCloseHandle( hHttpSession );
+			SetError( "リクエストができませんでした" );
+			break;
+		}
+/*
+		{
+		// 返されたコンテンツの長さを取得
+		DWORD dwSize = INETBUF_MAX;
+		*buf = 0;
+		res = HttpQueryInfo( hHttpRequest, HTTP_QUERY_CONTENT_LENGTH, buf, &dwSize, 0 );
+		if ( res == false ) {
+			InternetCloseHandle( hHttpRequest );
+			InternetCloseHandle( hHttpSession );
+			SetError( "データサイズ取得ができませんでした" );
+			break;
+		}
+		varsize = atoi(buf);
+		if ( varsize == 0 ) {
+			InternetCloseHandle( hHttpRequest );
+			InternetCloseHandle( hHttpSession );
+			SetError( "ダウンロードできませんでした" );
+			break;
+		}
+		}
+*/
+		varsize = 0x40000;
+		ClearVarData();
+		vardata = (char *)malloc( varsize );
+		size = 0;
+		mode = CZHTTP_MODE_VARDATAWAIT;
+	case CZHTTP_MODE_VARDATAWAIT:
+		{
+		DWORD dwBytesRead;
+		if ( InternetReadFile( hHttpRequest, vardata+size, varsize, &dwBytesRead ) == 0 ) {
+			InternetCloseHandle( hHttpRequest );
+			InternetCloseHandle( hHttpSession );
+			SetError( "ダウンロード中にエラーが発生しました" );
+			break;
+		}
+		size += dwBytesRead;
+		if( dwBytesRead == 0 ) {
+			mode = CZHTTP_MODE_VARDATAEND;
+			vardata[size] = 0;
+			break;
+		}
+		break;
+		}
+	case CZHTTP_MODE_VARDATAEND:
+		InternetCloseHandle( hHttpRequest );
+		InternetCloseHandle( hHttpSession );
+		mode = CZHTTP_MODE_READY;
+		break;
+
+
 
 	case CZHTTP_MODE_INFOREQ:
 		strcpy( req_name, req_url );
@@ -215,6 +307,14 @@ int CzHttp::Exec( void )
 		return 1;
 	}
 	return 0;
+}
+
+
+void CzHttp::ClearVarData( void )
+{
+	if ( vardata == NULL ) return;
+	free( vardata );
+	vardata = NULL;
 }
 
 
@@ -393,6 +493,76 @@ void CzHttp::AddFlexBuf( char *data, int size )
 	memcpy( pt + pt_cur, data, size );
 	pt_cur += size;
 	pt[ pt_cur ] = 0;									// Terminate
+}
+
+
+
+void CzHttp::SetVarServerFromURL( void )
+{
+	char *p;
+	char *wr;
+	char a1;
+	p = req_url;
+	wr = varserver;
+	*wr = 0;
+
+	while(1)				// '//'を探す
+	{
+		a1 = *p++;
+		if ( a1 == 0 ) return;
+		if ( a1 == '/' ) {
+			if ( *p == '/' ) { p++; break; }
+		}
+	}
+	while(1) {				// '/'までを取り出す
+		a1 = *p;
+		if ( a1 == 0 ) break;
+		p++;
+		if ( a1 == '/' ) break;
+		*wr++ = a1;
+	}
+	*wr = 0;
+
+	wr = req_url2;
+	*wr++ = '/';
+
+	while(1) {				// 最後まで取り出す
+		a1 = *p++;
+		if ( a1 == 0 ) break;
+		*wr++ = a1;
+	}
+	*wr = 0;
+
+}
+
+
+void CzHttp::SetVarRequestGet( char *path )
+{
+	// サーバーにファイルを要求(GET)
+	//
+	if ( mode != CZHTTP_MODE_READY ) {
+		return;
+	}
+	SetVarServerFromURL();
+	strcpy( varstr, "GET" );
+	strcpy( req_path, path );
+	postdata = NULL;
+	mode = CZHTTP_MODE_VARREQUEST;
+}
+
+
+void CzHttp::SetVarRequestPost( char *path, char *post )
+{
+	// サーバーにファイルを要求(POST)
+	//
+	if ( mode != CZHTTP_MODE_READY ) {
+		return;
+	}
+	SetVarServerFromURL();
+	strcpy( varstr, "POST" );
+	strcpy( req_path, path );
+	postdata = post;
+	mode = CZHTTP_MODE_VARREQUEST;
 }
 
 

@@ -273,17 +273,19 @@ EXPORT BOOL WINAPI ftpopen( HSPEXINFO *hei, int p1, int p2, int p3 )
 {
 	//	(type$202)
 	//		FTP接続
-	//		ftpopen "アドレス","ユーザー","パスワード"
+	//		ftpopen "アドレス","ユーザー","パスワード",port
 	//
 	int i;
 	char *ss;
-
+	int _p1;
 	ss = hei->HspFunc_prm_gets();			// パラメータ1:文字列
 	http->SetURL( ss );
 	ss = hei->HspFunc_prm_gets();			// パラメータ2:文字列
 	http->SetUserName( ss );
 	ss = hei->HspFunc_prm_gets();			// パラメータ3:文字列
 	http->SetUserPassword( ss );
+	_p1 = hei->HspFunc_prm_getdi(INTERNET_DEFAULT_FTP_PORT);		// パラメータ4:整数値
+	http->SetFtpPort( _p1 );
 	i = http->FtpConnect();
 	return i;
 }
@@ -455,3 +457,132 @@ EXPORT BOOL WINAPI ftpdelete( HSPEXINFO *hei, int p1, int p2, int p3 )
 }
 
 
+EXPORT BOOL WINAPI fencode( HSPEXINFO *hei, int p1, int p2, int p3 )
+{
+	//	(type$202)
+	//		ファイル暗号化
+	//		fencode "srcfile","newfile",seed1,seed2
+	//
+	int i;
+	CzCrypt crypt;
+	HSPCTX *ctx;
+	char *ss;
+	char fname1[_MAX_PATH];
+	char fname2[_MAX_PATH];
+	int seed1,seed2;
+
+	ss = hei->HspFunc_prm_gets();				// パラメータ1:文字列
+	strncpy( fname1, ss, _MAX_PATH -1 );
+	ss = hei->HspFunc_prm_gets();				// パラメータ2:文字列
+	strncpy( fname2, ss, _MAX_PATH -1 );
+	seed1 = hei->HspFunc_prm_getdi(0);			// パラメータ3:整数値
+	seed2 = hei->HspFunc_prm_getdi(0);			// パラメータ4:整数値
+
+	ctx = (HSPCTX *)hei->hspctx;
+	i = crypt.DataLoad( fname1 );
+	if ( i ) return -1;
+
+	crypt.SetSeed( seed1, seed2 );
+	crypt.Encrypt();
+	i = crypt.DataSave( fname2 );
+	if ( i ) return -1;
+
+	ctx->strsize = crypt.GetSize();
+	return 0;
+}
+
+
+EXPORT BOOL WINAPI fdecode( HSPEXINFO *hei, int p1, int p2, int p3 )
+{
+	//	(type$202)
+	//		ファイル復号化
+	//		fdecode "srcfile","newfile",seed1,seed2
+	//
+	int i;
+	CzCrypt crypt;
+	HSPCTX *ctx;
+	char *ss;
+	char fname1[_MAX_PATH];
+	char fname2[_MAX_PATH];
+	int seed1,seed2;
+
+	ss = hei->HspFunc_prm_gets();				// パラメータ1:文字列
+	strncpy( fname1, ss, _MAX_PATH -1 );
+	ss = hei->HspFunc_prm_gets();				// パラメータ2:文字列
+	strncpy( fname2, ss, _MAX_PATH -1 );
+	seed1 = hei->HspFunc_prm_getdi(0);			// パラメータ3:整数値
+	seed2 = hei->HspFunc_prm_getdi(0);			// パラメータ4:整数値
+
+	ctx = (HSPCTX *)hei->hspctx;
+	i = crypt.DataLoad( fname1 );
+	if ( i ) return -1;
+
+	crypt.SetSeed( seed1, seed2 );
+	crypt.Decrypt();
+	i = crypt.DataSave( fname2 );
+	if ( i ) return -1;
+
+	ctx->strsize = crypt.GetSize();
+	return 0;
+}
+
+
+/*------------------------------------------------------------------------------------*/
+
+
+EXPORT BOOL WINAPI netgetv( HSPEXINFO *hei, int p1, int p2, int p3 )
+{
+	//	(type$202)
+	//		取得データを文字列として変数に代入する
+	//		netgetv 変数
+	//
+	PVal *pv;
+	APTR ap;
+	char *ss;
+	ap = hei->HspFunc_prm_getva( &pv );		// パラメータ1:変数
+
+	if ( http == NULL ) return -1;
+
+	//http->SetVarRequestGet( ss );
+	ss = http->getVarData();
+	hei->HspFunc_prm_setva( pv, ap, TYPE_STRING, ss );	// 変数に値を代入
+	return -http->getVarSize();
+}
+
+
+EXPORT BOOL WINAPI netrequest_get( HSPEXINFO *hei, int p1, int p2, int p3 )
+{
+	//	(type$202)
+	//		ファイルデータをメモリに取得する(netgetvで取得)
+	//		netrequest_get "path"
+	//
+	char *ss;
+
+	ss = hei->HspFunc_prm_gets();				// パラメータ1:文字列
+
+	if ( http == NULL ) return -1;
+
+	http->SetVarRequestGet( ss );
+	return 0;
+}
+
+
+EXPORT BOOL WINAPI netrequest_post( HSPEXINFO *hei, int p1, int p2, int p3 )
+{
+	//	(type$202)
+	//		ファイルデータをメモリに取得する(netgetvで取得)
+	//		netrequest_post "path",var"
+	//
+	char *ss;
+	char *ap;
+	ss = hei->HspFunc_prm_gets();					// パラメータ1:文字列
+	ap = (char *)hei->HspFunc_prm_getv();			// パラメータ2:変数
+
+	if ( http == NULL ) return -1;
+
+	http->SetVarRequestPost( ss, ap );
+	return 0;
+}
+
+
+/*------------------------------------------------------------------------------------*/
