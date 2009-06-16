@@ -33,6 +33,7 @@ extern int activeFootyID;
 static LRESULT InterfaceProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam);
 static inline LRESULT GetHspcmpVer(HANDLE hPipe);
 static inline LRESULT GetModify(int nFootyID);
+static inline LRESULT GetFilePath(int nTabID, HANDLE hPipe);
 static inline LRESULT GetFootyID(int nTabID);
 static inline LRESULT SetText(int nFootyID, HANDLE hPipe);
 static inline LRESULT SetSelText(int nFootyID, HANDLE hPipe);
@@ -120,6 +121,9 @@ static LRESULT InterfaceProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 				default:
 					return NULL;
 			}
+
+		case HSED_GETPATH:
+			return GetFilePath(wParam, (HANDLE)lParam);
 
 		case HSED_GETTABCOUNT:
 			return TabCtrl_GetItemCount(hwndTab);
@@ -280,6 +284,18 @@ static inline LRESULT GetModify(int nFootyID)
 	if(lpTabInfo == NULL) return -1;
 
 	return lpTabInfo->NeedSave != FALSE;
+}
+
+//
+// ファイルのパスを取得
+static inline LRESULT GetFilePath(int nTabID, HANDLE hPipe)
+{
+	TABINFO *lpTabInfo = GetTabInfo(nTabID);
+	DWORD dwNumberOfBytesWritten;
+	BOOL bRet;
+	if(lpTabInfo == NULL) return -1;
+	bRet = WriteFile(hPipe, lpTabInfo->FileName, lstrlen(lpTabInfo->FileName), &dwNumberOfBytesWritten, NULL);
+	return bRet ? 0 : -1;
 }
 
 //

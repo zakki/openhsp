@@ -33,6 +33,7 @@
 #const WM_APP@hsedsdk 0x00008000
 #const _HSED_GETVER          (WM_APP + 0x000)
 #const _HSED_GETWND          (WM_APP + 0x100)
+#const _HSED_GETPATH         (WM_APP + 0x101)
 
 #const _HSED_GETTABCOUNT     (WM_APP + 0x200)
 #const _HSED_GETTABID        (WM_APP + 0x201)
@@ -192,6 +193,28 @@
 	}
 	ret = stat
 	if ret = 0: return 2: else: return 0
+
+//
+// ファイルパスを取得
+#deffunc hsed_getpath var ret, int nTabID
+	hsed_capture
+	if stat: return 1
+
+	hsed_initduppipe 260
+	if stat: return 2
+
+	sendmsg hIF, _HSED_GETPATH, nTabID, hDupWritePipe
+	if stat < 0: ret = "Error": hsed_uninitduppipe: return 3
+
+	PeekNamedPipe hReadPipe, 0, 0, 0, dwTotalBytesAvail, 0
+	if stat == 0: hsed_uninitduppipe: return 4
+
+	sdim ret, dwTotalBytesAvail + 1
+	if dwTotalBytesAvail > 0 {
+		ReadFile hReadPipe, ret, dwTotalBytesAvail, dwNumberOfBytesRead, 0
+	}
+	hsed_uninitduppipe
+	return 0
 
 //
 // バージョンの数値を文字列に変換

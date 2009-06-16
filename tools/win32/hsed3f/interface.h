@@ -13,6 +13,7 @@ bool InitInterface(HINSTANCE hInstance);
 // Messages
 #define HSED_GETVER          (WM_APP + 0x000)
 #define HSED_GETWND          (WM_APP + 0x100)
+#define HSED_GETPATH         (WM_APP + 0x101)
 
 #define HSED_GETTABCOUNT     (WM_APP + 0x200)
 #define HSED_GETTABID        (WM_APP + 0x201)

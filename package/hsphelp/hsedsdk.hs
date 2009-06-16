@@ -1014,3 +1014,34 @@ hsed_gettabid
 %group
 情報取得命令
 
+%index
+hsed_getpath
+タブIDからファイルパスを取得
+
+%prm
+p1, p2
+p1 : ファイルパスを代入する変数
+p2 : タブのID
+
+%inst
+HSPスクリプトエディタで開いているファイルのパス名を取得し、p1に代入します。
+^
+取得に成功した場合はシステム変数statに0が代入されます。
+
+%sample
+#include "hsedsdk.as"
+	hsed_gettabcount nTabs
+	if ( stat ) {
+		dialog "HSPエディタが見つかりません。", 1
+		end
+	}
+	repeat nTabs
+		hsed_getpath path, cnt
+		if stat == 0 {
+			mes "ID" + cnt + "のタブのファイルパスは\""+path+"\"です。"
+		}
+	loop
+	stop
+
+%group
+情報取得命令
