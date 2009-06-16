@@ -44,7 +44,6 @@ bool InitInterface(HINSTANCE hInstance);
 #define HSED_GETLINETEXT     (WM_APP + 0x326)
 #define HSED_GETLINELENGTH   (WM_APP + 0x327)
 #define HSED_GETLINECODE     (WM_APP + 0x328)
-#define HSED_INSERTTEXT      (WM_APP + 0x329)
 
 #define HSED_SETSELA         (WM_APP + 0x330)
 #define HSED_SETSELB         (WM_APP + 0x331)

@@ -35,7 +35,7 @@ static inline LRESULT GetHspcmpVer(HANDLE hPipe);
 static inline LRESULT GetModify(int nFootyID);
 static inline LRESULT GetFootyID(int nTabID);
 static inline LRESULT SetText(int nFootyID, HANDLE hPipe);
-static inline LRESULT InsertText(int nFootyID, HANDLE hPipe);
+static inline LRESULT SetSelText(int nFootyID, HANDLE hPipe);
 static inline LRESULT GetText(int nFootyID, HANDLE hPipe);
 
 //
@@ -189,10 +189,10 @@ static LRESULT InterfaceProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 
 		case HSED_GETLINES:
 			return FootyGetLines(footy_defid);
-/*
-		case HSED_SETSELTEXT:
-			return ;
 
+		case HSED_SETSELTEXT:
+			return SetSelText(footy_defid, (HANDLE)lParam);
+/*
 		case HSED_GETSELTEXT:
 			return ;
 
@@ -204,9 +204,6 @@ static LRESULT InterfaceProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 
 		case HSED_GETLINECODE:
 			return FootyGetLineCode(footy_defid);
-
-		case HSED_INSERTTEXT:
-			return InsertText((int)wParam, (HANDLE)lParam);
 /*
 		case HSED_SETSELA:
 			return ;
@@ -338,7 +335,7 @@ static inline LRESULT SetText(int nFootyID, HANDLE hPipe)
 
 //
 // Footy‚É•¶Žš—ñ‚ð‘}“ü‚·‚é
-static inline LRESULT InsertText(int nFootyID, HANDLE hPipe)
+static inline LRESULT SetSelText(int nFootyID, HANDLE hPipe)
 {
 	int nRet;
 	char *lpBuffer;

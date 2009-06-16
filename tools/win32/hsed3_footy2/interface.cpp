@@ -35,7 +35,7 @@ static inline LRESULT GetHspcmpVer(HANDLE hPipe);
 static inline LRESULT GetModify(int nFootyID);
 static inline LRESULT GetFootyID(int nTabID);
 static inline LRESULT SetText(int nFootyID, HANDLE hPipe);
-static inline LRESULT InsertText(int nFootyID, HANDLE hPipe);
+static inline LRESULT SetSelText(int nFootyID, HANDLE hPipe);
 static inline LRESULT GetText(int nFootyID, HANDLE hPipe);
 
 //
@@ -195,10 +195,10 @@ static LRESULT InterfaceProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 
 		case HSED_GETLINES:
 			return Footy2GetLines(footy_defid);
-/*
-		case HSED_SETSELTEXT:
-			return ;
 
+		case HSED_SETSELTEXT:
+			return SetSelText((int)wParam, (HANDLE)lParam);
+/*
 		case HSED_GETSELTEXT:
 			return ;
 
@@ -210,9 +210,6 @@ static LRESULT InterfaceProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 
 		case HSED_GETLINECODE:
 			return Footy2GetLineCode(footy_defid);	// 2008-02-17 Shark++ SDKÇå©íºÇ∑ïKóvÇ†ÇËÅH
-
-		case HSED_INSERTTEXT:
-			return InsertText((int)wParam, (HANDLE)lParam);
 /*
 		case HSED_SETSELA:
 			return ;
@@ -357,7 +354,7 @@ static inline LRESULT SetText(int nFootyID, HANDLE hPipe)
 
 //
 // FootyÇ…ï∂éöóÒÇë}ì¸Ç∑ÇÈ
-static inline LRESULT InsertText(int nFootyID, HANDLE hPipe)
+static inline LRESULT SetSelText(int nFootyID, HANDLE hPipe)
 {
 	int nRet;
 	char *lpBuffer;

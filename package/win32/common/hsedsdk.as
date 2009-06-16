@@ -64,7 +64,6 @@
 #const _HSED_GETLINETEXT     (WM_APP + 0x326)
 #const _HSED_GETLINELENGTH   (WM_APP + 0x327)
 #const _HSED_GETLINECODE     (WM_APP + 0x328)
-#const _HSED_INSERTTEXT      (WM_APP + 0x329)
 
 #const _HSED_SETSELA         (WM_APP + 0x330)
 #const _HSED_SETSELB         (WM_APP + 0x331)
@@ -477,7 +476,7 @@
 #deffunc hsed_sendstr var _p1
 	hsed_getactfootyid actid
 	if stat : return 1
-	hsed_sendtext_msg actid, _HSED_INSERTTEXT, _p1
+	hsed_sendtext_msg actid, _HSED_SETSELTEXT, _p1
 	return
 
 
