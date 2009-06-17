@@ -250,6 +250,7 @@ typedef struct IRQDAT {
 	void	(*callback)(struct IRQDAT *,int,int);		// IRQ callback function
 } IRQDAT;
 
+typedef struct HSPCTX HSPCTX;
 
 //	Plugin info data (3.0 compatible)
 typedef struct HSPEXINFO30
@@ -285,7 +286,7 @@ typedef struct HSPEXINFO30
 	//		HSP internal info data (3.0)
 	//
 	int *npexflg;	// Next Parameter ExFlg
-	void *hspctx;	// HSP context ptr
+	HSPCTX *hspctx;	// HSP context ptr
 
 	//		Enhanced data (3.0)
 	//
@@ -354,7 +355,7 @@ typedef struct HSPEXINFO
 	//		HSP internal info data (3.0)
 	//
 	int *npexflg;	// Next Parameter ExFlg
-	void *hspctx;	// HSP context ptr
+	HSPCTX *hspctx;	// HSP context ptr
 
 	//		Enhanced data (3.0)
 	//
@@ -420,7 +421,7 @@ RUNMODE_MAX
 };
 
 
-typedef struct HSPCTX
+struct HSPCTX
 {
 	//	HSP Context
 	//
@@ -474,7 +475,7 @@ typedef struct HSPCTX
 
 	HSPEXINFO *exinfo2;					// HSP function data(3.1)
 
-} HSPCTX;
+};
 
 #define HSPCTX_REFSTR_MAX 4096
 #define HSPCTX_CMDLINE_MAX 1024

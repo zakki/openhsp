@@ -389,7 +389,7 @@ EXPORT BOOL WINAPI debugini ( HSP3DEBUG *p1, int p2, int p3, int p4 )
 	WNDCLASS wndclass;
 
 	g_debug = p1;
-	ctx = (HSPCTX *)p1->hspctx;
+	ctx = p1->hspctx;
 	dispx = GetSystemMetrics( SM_CXSCREEN );
 	dispy = GetSystemMetrics( SM_CYSCREEN );
 
@@ -439,7 +439,7 @@ EXPORT BOOL WINAPI debug_notice ( HSP3DEBUG *p1, int p2, int p3, int p4 )
 	HSPCTX *ctx;
 
 	if ( p2 == 1 ) {
-		ctx = (HSPCTX *)p1->hspctx;
+		ctx = p1->hspctx;
 		strcat( ctx->stmp, "\r\n" );
 		TabLogAdd( ctx->stmp );
 		return 0;

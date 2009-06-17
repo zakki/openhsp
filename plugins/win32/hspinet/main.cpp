@@ -207,7 +207,7 @@ EXPORT BOOL WINAPI filecrc( HSPEXINFO *hei, int p1, int p2, int p3 )
 	i = crypt.DataLoad( fname );
 	if ( i ) return -1;
 
-	ctx = (HSPCTX *)hei->hspctx;
+	ctx = hei->hspctx;
 
 	num = crypt.GetCRC32();
 	hei->HspFunc_prm_setva( pv, ap, HSPVAR_FLAG_INT, &num );	// 変数に値を代入
@@ -239,7 +239,7 @@ EXPORT BOOL WINAPI filemd5( HSPEXINFO *hei, int p1, int p2, int p3 )
 	i = crypt.DataLoad( fname );
 	if ( i ) return -1;
 
-	ctx = (HSPCTX *)hei->hspctx;
+	ctx = hei->hspctx;
 
 	crypt.GetMD5( md5str );
 	hei->HspFunc_prm_setva( pv, ap, HSPVAR_FLAG_STR, md5str );	// 変数に値を代入
@@ -478,7 +478,7 @@ EXPORT BOOL WINAPI fencode( HSPEXINFO *hei, int p1, int p2, int p3 )
 	seed1 = hei->HspFunc_prm_getdi(0);			// パラメータ3:整数値
 	seed2 = hei->HspFunc_prm_getdi(0);			// パラメータ4:整数値
 
-	ctx = (HSPCTX *)hei->hspctx;
+	ctx = hei->hspctx;
 	i = crypt.DataLoad( fname1 );
 	if ( i ) return -1;
 
@@ -513,7 +513,7 @@ EXPORT BOOL WINAPI fdecode( HSPEXINFO *hei, int p1, int p2, int p3 )
 	seed1 = hei->HspFunc_prm_getdi(0);			// パラメータ3:整数値
 	seed2 = hei->HspFunc_prm_getdi(0);			// パラメータ4:整数値
 
-	ctx = (HSPCTX *)hei->hspctx;
+	ctx = hei->hspctx;
 	i = crypt.DataLoad( fname1 );
 	if ( i ) return -1;
 

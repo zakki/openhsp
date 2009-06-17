@@ -953,7 +953,7 @@ static int pv_seekstruct( HSPEXINFO *hei, char *name )
 	char *p;
 	int i,max;
 
-	hspctx = (HSPCTX *)hei->hspctx;
+	hspctx = hei->hspctx;
 	max = hspctx->hsphed->max_finfo / sizeof(STRUCTDAT);
 
 	for(i=0;i<max;i++) {
@@ -1053,7 +1053,7 @@ static int varsave_put_storage( HSPEXINFO *hei, PVal *pv, int encode, int opt )
 		{
 		unsigned short **labels = (unsigned short **)pv->pt;
 		int len = pv->size / sizeof(unsigned short *);
-		unsigned short *mem_mcs = ((HSPCTX *)hei->hspctx)->mem_mcs;
+		unsigned short *mem_mcs = hei->hspctx->mem_mcs;
 		int i;
 		for ( i = 0; i < len; i ++ ) {
 			unsigned short *label = labels[i];
@@ -1077,7 +1077,7 @@ static int varsave_put_storage( HSPEXINFO *hei, PVal *pv, int encode, int opt )
 		int prevcnt,nowcnt;
 		int *cntbak;
 
-		hspctx = (HSPCTX *)hei->hspctx;
+		hspctx = hei->hspctx;
 		fv = pv_getfv( hei, pv, 0 );
 		prm = &hspctx->mem_minfo[ fv->customid ];
 		st = &hspctx->mem_finfo[ prm->subid ];
@@ -1176,7 +1176,7 @@ static int varsave_put( HSPEXINFO *hei, int varid, int encode, int opt )
 	char tmp[64];
 	int res;
 
-	hspctx = (HSPCTX *)hei->hspctx;
+	hspctx = hei->hspctx;
 	if (( varid < 0 )||( varid >= hspctx->hsphed->max_val )) return -1;
 	mem_var = hspctx->mem_var + varid;
 
@@ -1252,7 +1252,7 @@ static int varload_get_storage_struct( HSPEXINFO *hei, char *vdata, PVal *pv, PV
 	custid = pv_seekstruct( hei, modname );
 	if ( custid < 0 ) return -1;
 
-	hspctx = (HSPCTX *)hei->hspctx;
+	hspctx = hei->hspctx;
 	st = &hspctx->mem_finfo[ custid ];
 	orgname = hspctx->mem_mds + st->nameidx;
 	orgmax = st->prmmax - 1;
@@ -1299,7 +1299,7 @@ static int varload_get_storage_label( HSPEXINFO *hei, char *vdata, PVal *pv, PVa
 	int len;
 	int i;
 	unsigned short **p;
-	unsigned short *mem_mcs = ((HSPCTX *)hei->hspctx)->mem_mcs;
+	unsigned short *mem_mcs = hei->hspctx->mem_mcs;
 	pv_dispose( hei,pv );								// 変数を破棄
 	*pv = *pv2;
 	pv_alloc( hei, pv, NULL );							// 変数を再確保
@@ -1400,7 +1400,7 @@ static int varload_get( HSPEXINFO *hei, int varid, char *getname, int encode, in
 	int i,max;
 	int res;
 
-	hspctx = (HSPCTX *)hei->hspctx;
+	hspctx = hei->hspctx;
 	if (( varid < 0 )||( varid >= hspctx->hsphed->max_val )) return -1;
 	mem_var = hspctx->mem_var + varid;
 
@@ -1477,7 +1477,7 @@ EXPORT BOOL WINAPI getmaxvar( HSPEXINFO *hei, int _p1, int _p2, int _p3 )
 	HSPCTX *hspctx;
 	int p2;
 	ap = hei->HspFunc_prm_getva( &pv );		// パラメータ1:変数
-	hspctx = (HSPCTX *)hei->hspctx;
+	hspctx = hei->hspctx;
 	p2 = hspctx->hsphed->max_val;
 	hei->HspFunc_prm_setva( pv, ap, HSPVAR_FLAG_INT, &p2 );	// 変数に値を代入
 	return 0;
@@ -1495,7 +1495,7 @@ EXPORT BOOL WINAPI vsave( HSPEXINFO *hei, int _p1, int _p2, int _p3 )
 
 	p1 = hei->HspFunc_prm_gets();			// パラメータ1:文字列
 
-	hspctx = (HSPCTX *)hei->hspctx;
+	hspctx = hei->hspctx;
 	max = hspctx->hsphed->max_val;
 
 	varsave_init();
@@ -1519,7 +1519,7 @@ EXPORT BOOL WINAPI vload( HSPEXINFO *hei, int _p1, int _p2, int _p3 )
 
 	p1 = hei->HspFunc_prm_gets();			// パラメータ1:文字列
 
-	hspctx = (HSPCTX *)hei->hspctx;
+	hspctx = hei->hspctx;
 	max = hspctx->hsphed->max_val;
 
 	res = hei->HspFunc_fsize( p1 );
