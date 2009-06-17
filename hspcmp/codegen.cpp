@@ -1384,12 +1384,8 @@ void CToken::GenerateCodeLET( int id )
 		break;
 	}
 	
-	if ( ttype == TK_NONE ) {
-		if ( val == '=' ) {
-			GetTokenCG( GETTOKEN_DEFAULT );
-		} else {
-			throw CGERROR_SYNTAX;
-		}
+	if (( ttype == TK_NONE )&&( val == '=' )) {
+		GetTokenCG( GETTOKEN_DEFAULT );
 	}
 	GenerateCodePRM();
 }
