@@ -355,11 +355,24 @@ typedef struct BMSCR
 
 	//		Class depend data
 	//
-	int		objstyle;			// objects style
-	HSPOBJINFO *mem_obj;		// Window objects
-	int objmax;					// Max number of obj
-	int objlimit;				// Limit number of obj
-	void *master_hspwnd;		// Parent hspwnd class
+	int		objstyle;					// objects style
+	HSPOBJINFO *mem_obj;				// Window objects
+	int objmax;							// Max number of obj
+	int objlimit;						// Limit number of obj
+	short savepos[BMSCR_SAVEPOS_MAX];	// saved position
+	void *master_hspwnd;				// Parent hspwnd class
+	short	palcolor;					// Palette color code
+	short	textstyle;					// Extra text style
+	short	framesx, framesy;			// Window frame xy-size
+
+	int		imgbtn;						// Custom Button Flag (-1=none)
+	short	btn_x1, btn_y1;				// Custom Button Image X,Y
+	short	btn_x2, btn_y2;				// Custom Button Image X,Y (press)
+	short	btn_x3, btn_y3;				// Custom Button Image X,Y (mouse over)
+	short	divx, divy;					// Divide value for CEL
+	short	divsx, divsy;				// CEL size
+	short	celofsx, celofsy;			// CEL center offset
+
 } BMSCR;
 
 void SetObjectEventNoticePtr( int *ptr );
