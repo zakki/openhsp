@@ -214,7 +214,14 @@ int CzHttp::Exec( void )
 	case CZHTTP_MODE_VARDATAWAIT:
 		{
 		DWORD dwBytesRead;
-		if ( InternetReadFile( hHttpRequest, vardata+size, varsize, &dwBytesRead ) == 0 ) {
+		int needed_size = size + INETBUF_MAX + 1;
+		if ( needed_size > varsize ) {
+			while ( needed_size > varsize ) {
+				varsize *= 2;
+			}
+			vardata = (char *)realloc( vardata, varsize );
+		}
+		if ( InternetReadFile( hHttpRequest, vardata+size, INETBUF_MAX, &dwBytesRead ) == 0 ) {
 			InternetCloseHandle( hHttpRequest );
 			InternetCloseHandle( hHttpSession );
 			SetError( "ダウンロード中にエラーが発生しました" );
