@@ -162,7 +162,7 @@ EXPORT BOOL WINAPI netfileinfo( HSPEXINFO *hei, int p1, int p2, int p3 )
 	res = http->RequestFileInfo( ss );
 	if ( res == NULL ) return -1;
 
-	hei->HspFunc_prm_setva( pv, ap, TYPE_STRING, res );	// 変数に値を代入
+	hei->HspFunc_prm_setva( pv, ap, HSPVAR_FLAG_STR, res );	// 変数に値を代入
 	return 0;
 }
 
@@ -180,7 +180,7 @@ EXPORT BOOL WINAPI neterror( HSPEXINFO *hei, int p1, int p2, int p3 )
 	ap = hei->HspFunc_prm_getva( &pv );		// パラメータ1:変数
 	if ( http == NULL ) return -1;
 	ss = http->GetError();
-	hei->HspFunc_prm_setva( pv, ap, TYPE_STRING, ss );	// 変数に値を代入
+	hei->HspFunc_prm_setva( pv, ap, HSPVAR_FLAG_STR, ss );	// 変数に値を代入
 	return 0;
 }
 
@@ -210,7 +210,7 @@ EXPORT BOOL WINAPI filecrc( HSPEXINFO *hei, int p1, int p2, int p3 )
 	ctx = (HSPCTX *)hei->hspctx;
 
 	num = crypt.GetCRC32();
-	hei->HspFunc_prm_setva( pv, ap, TYPE_INUM, &num );	// 変数に値を代入
+	hei->HspFunc_prm_setva( pv, ap, HSPVAR_FLAG_INT, &num );	// 変数に値を代入
 	ctx->strsize = crypt.GetSize();
 
 	return 0;
@@ -242,7 +242,7 @@ EXPORT BOOL WINAPI filemd5( HSPEXINFO *hei, int p1, int p2, int p3 )
 	ctx = (HSPCTX *)hei->hspctx;
 
 	crypt.GetMD5( md5str );
-	hei->HspFunc_prm_setva( pv, ap, TYPE_STRING, md5str );	// 変数に値を代入
+	hei->HspFunc_prm_setva( pv, ap, HSPVAR_FLAG_STR, md5str );	// 変数に値を代入
 	ctx->strsize = crypt.GetSize();
 
 	return 0;
@@ -264,7 +264,7 @@ EXPORT BOOL WINAPI ftpresult( HSPEXINFO *hei, int p1, int p2, int p3 )
 	ap = hei->HspFunc_prm_getva( &pv );		// パラメータ1:変数
 	if ( http == NULL ) return -1;
 	ss = http->GetTempBuffer();
-	hei->HspFunc_prm_setva( pv, ap, TYPE_STRING, ss );	// 変数に値を代入
+	hei->HspFunc_prm_setva( pv, ap, HSPVAR_FLAG_STR, ss );	// 変数に値を代入
 	return 0;
 }
 
@@ -321,7 +321,7 @@ EXPORT BOOL WINAPI ftpdir( HSPEXINFO *hei, int p1, int p2, int p3 )
 		http->SetFtpDir( n );
 	}
 	ss = http->GetFtpCurrentDir();
-	hei->HspFunc_prm_setva( pv, ap, TYPE_STRING, ss );	// 変数に値を代入
+	hei->HspFunc_prm_setva( pv, ap, HSPVAR_FLAG_STR, ss );	// 変数に値を代入
 	return 0;
 }
 
@@ -355,7 +355,7 @@ EXPORT BOOL WINAPI ftpdirlist2( HSPEXINFO *hei, int p1, int p2, int p3 )
 	if ( i != CZHTTP_MODE_FTPREADY ) return -2;
 
 	ss = http->GetFlexBuffer();
-	hei->HspFunc_prm_setva( pv, ap, TYPE_STRING, ss );	// 変数に値を代入
+	hei->HspFunc_prm_setva( pv, ap, HSPVAR_FLAG_STR, ss );	// 変数に値を代入
 	return 0;
 }
 
@@ -545,7 +545,7 @@ EXPORT BOOL WINAPI netgetv( HSPEXINFO *hei, int p1, int p2, int p3 )
 
 	//http->SetVarRequestGet( ss );
 	ss = http->getVarData();
-	hei->HspFunc_prm_setva( pv, ap, TYPE_STRING, ss );	// 変数に値を代入
+	hei->HspFunc_prm_setva( pv, ap, HSPVAR_FLAG_STR, ss );	// 変数に値を代入
 	return -http->getVarSize();
 }
 

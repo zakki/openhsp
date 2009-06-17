@@ -32,7 +32,7 @@ static void newcmd2( void )
 	p1=code_getdi(100);								// 整数値を取得(デフォルト100)
 	if (p1==0) puterror( HSPERR_DIVIDED_BY_ZERO );	// 0ならばエラー
 	p2 = rand()%p1;									// 乱数を発生させる
-	code_setva( pval, aptr, TYPE_INUM, &p2 );		// 変数に値を代入(整数値)
+	code_setva( pval, aptr, HSPVAR_FLAG_INT, &p2 );		// 変数に値を代入(整数値)
 }
 
 
@@ -59,19 +59,19 @@ static void newcmd3( void )
 
 	int type = mpval->flag;							// パラメーターの型を取得
 	switch( type ) {
-	case TYPE_STRING:								// パラメーターが文字列だった時
+	case HSPVAR_FLAG_STR:								// パラメーターが文字列だった時
 		{
 		char *str = (char *)mpval->pt;
 		sprintf( out,"%s\n",str );
 		break;
 		}
-	case TYPE_DNUM:									// パラメーターが実数だった時
+	case HSPVAR_FLAG_DOUBLE:									// パラメーターが実数だった時
 		{
 		double *ptr = (double *)mpval->pt;
 		sprintf( out,"%f\n",*ptr );
 		break;
 		}
-	case TYPE_INUM:									// パラメーターが整数だった時
+	case HSPVAR_FLAG_INT:									// パラメーターが整数だった時
 		{
 		int *ptr = (int *)mpval->pt;
 		sprintf( out,"%d\n",*ptr );

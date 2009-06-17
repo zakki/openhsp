@@ -328,7 +328,7 @@ EXPORT BOOL WINAPI sortval( HSPEXINFO *hei, int p2, int p3, int p4 )
 		BubbleSortDouble( dtmp, i, p2 );
 		for(a=0;a<i;a++) {
 			//dp[a]=dtmp[a].as.dkey;
-			hei->HspFunc_prm_setva( p1, a, TYPE_DNUM, &(dtmp[a].as.dkey) );	// 変数に値を代入
+			hei->HspFunc_prm_setva( p1, a, HSPVAR_FLAG_DOUBLE, &(dtmp[a].as.dkey) );	// 変数に値を代入
 		}
 		break;
 	case 4:						// int
@@ -386,7 +386,7 @@ EXPORT BOOL WINAPI sortstr( HSPEXINFO *hei, int p1, int p2, int p3 )
 
 	for(i=0;i<len;i++) {
 		psrc = dtmp[i].as.skey;
-		hei->HspFunc_prm_setva( pv, i, TYPE_STRING, psrc );	// 変数に値を代入
+		hei->HspFunc_prm_setva( pv, i, HSPVAR_FLAG_STR, psrc );	// 変数に値を代入
 	}
 
 	return 0;
@@ -458,7 +458,7 @@ EXPORT BOOL WINAPI sortnote( HSPEXINFO *hei, int p1, int p2, int p3 )
 	stmp = (char *)malloc( DataToNoteLen( dtmp, i ) + 1 );
 	DataToNote( dtmp, stmp, i );
 
-	hei->HspFunc_prm_setva( pv, ap, TYPE_STRING, stmp );	// 変数に値を代入
+	hei->HspFunc_prm_setva( pv, ap, HSPVAR_FLAG_STR, stmp );	// 変数に値を代入
 
 	free( stmp );
 
@@ -835,7 +835,7 @@ EXPORT BOOL WINAPI rndf_get( HSPEXINFO *hei, int _p1, int _p2, int _p3 )
 	double dval;
 	ap = hei->HspFunc_prm_getva( &pv );		// パラメータ1:変数
 	dval = MTRandGet();
-	hei->HspFunc_prm_setva( pv, ap, TYPE_DNUM, &dval );	// 変数に値を代入
+	hei->HspFunc_prm_setva( pv, ap, HSPVAR_FLAG_DOUBLE, &dval );	// 変数に値を代入
 	return 0;
 }
 
@@ -851,7 +851,7 @@ EXPORT BOOL WINAPI rndf_geti( HSPEXINFO *hei, int _p1, int _p2, int _p3 )
 	ap = hei->HspFunc_prm_getva( &pv );		// パラメータ1:変数
 	p1 = hei->HspFunc_prm_getdi( 100 );		// パラメータ2:数値
 	p2 = MTRandGetInt( p1 );
-	hei->HspFunc_prm_setva( pv, ap, TYPE_INUM, &p2 );	// 変数に値を代入
+	hei->HspFunc_prm_setva( pv, ap, HSPVAR_FLAG_INT, &p2 );	// 変数に値を代入
 	return 0;
 }
 
@@ -1445,7 +1445,7 @@ EXPORT BOOL WINAPI getvarid( HSPEXINFO *hei, int _p1, int _p2, int _p3 )
 	ap = hei->HspFunc_prm_getva( &pv );		// パラメータ1:変数
 	p1 = hei->HspFunc_prm_gets();			// パラメータ2:文字列
 	p2 = hei->HspFunc_seekvar( p1 );
-	hei->HspFunc_prm_setva( pv, ap, TYPE_INUM, &p2 );	// 変数に値を代入
+	hei->HspFunc_prm_setva( pv, ap, HSPVAR_FLAG_INT, &p2 );	// 変数に値を代入
 	return 0;
 }
 
@@ -1462,7 +1462,7 @@ EXPORT BOOL WINAPI getvarname( HSPEXINFO *hei, int _p1, int _p2, int _p3 )
 	ap = hei->HspFunc_prm_getva( &pv );		// パラメータ1:変数
 	p1 = hei->HspFunc_prm_getdi( 0 );		// パラメータ2:数値
 	p2 = hei->HspFunc_varname( p1 );
-	hei->HspFunc_prm_setva( pv, ap, TYPE_STRING, p2 );	// 変数に値を代入
+	hei->HspFunc_prm_setva( pv, ap, HSPVAR_FLAG_STR, p2 );	// 変数に値を代入
 	return 0;
 }
 
@@ -1479,7 +1479,7 @@ EXPORT BOOL WINAPI getmaxvar( HSPEXINFO *hei, int _p1, int _p2, int _p3 )
 	ap = hei->HspFunc_prm_getva( &pv );		// パラメータ1:変数
 	hspctx = (HSPCTX *)hei->hspctx;
 	p2 = hspctx->hsphed->max_val;
-	hei->HspFunc_prm_setva( pv, ap, TYPE_INUM, &p2 );	// 変数に値を代入
+	hei->HspFunc_prm_setva( pv, ap, HSPVAR_FLAG_INT, &p2 );	// 変数に値を代入
 	return 0;
 }
 

@@ -458,7 +458,7 @@ EXPORT BOOL WINAPI cvgetinfo( HSPEXINFO *hei, int p1, int p2, int p3 )
 	ep1 = hei->HspFunc_prm_getdi(0);		// パラメータ2:数値
 	ep2 = hei->HspFunc_prm_getdi(curid);	// パラメータ3:数値
 	res = hspcv_getinfo( ep1, ep2 );
-	hei->HspFunc_prm_setva( pv, ap, TYPE_INUM, &res );	// 変数に値を代入
+	hei->HspFunc_prm_setva( pv, ap, HSPVAR_FLAG_INT, &res );	// 変数に値を代入
 	return 0;
 }
 
@@ -800,10 +800,10 @@ EXPORT BOOL WINAPI cvgetface( HSPEXINFO *hei, int p1, int p2, int p3 )
 	sx = cvRound( r->width * cvface_scale );
 	sy = cvRound( r->height * cvface_scale );
 
-	hei->HspFunc_prm_setva( pv,  ap,  TYPE_INUM, &x );	// 変数に値を代入
-	hei->HspFunc_prm_setva( pv2, ap2, TYPE_INUM, &y );	// 変数に値を代入
-	hei->HspFunc_prm_setva( pv3, ap3, TYPE_INUM, &sx );	// 変数に値を代入
-	hei->HspFunc_prm_setva( pv4, ap4, TYPE_INUM, &sy );	// 変数に値を代入
+	hei->HspFunc_prm_setva( pv,  ap,  HSPVAR_FLAG_INT, &x );	// 変数に値を代入
+	hei->HspFunc_prm_setva( pv2, ap2, HSPVAR_FLAG_INT, &y );	// 変数に値を代入
+	hei->HspFunc_prm_setva( pv3, ap3, HSPVAR_FLAG_INT, &sx );	// 変数に値を代入
+	hei->HspFunc_prm_setva( pv4, ap4, HSPVAR_FLAG_INT, &sy );	// 変数に値を代入
 
 	cvface_id++;
 	return 0;
@@ -844,8 +844,8 @@ EXPORT BOOL WINAPI cvmatch( HSPEXINFO *hei, int p1, int p2, int p3 )
 
 	x = min_loc.x;
 	y = min_loc.y;
-	hei->HspFunc_prm_setva( pv,  ap,  TYPE_INUM, &x );	// 変数に値を代入
-	hei->HspFunc_prm_setva( pv2, ap2, TYPE_INUM, &y );	// 変数に値を代入
+	hei->HspFunc_prm_setva( pv,  ap,  HSPVAR_FLAG_INT, &x );	// 変数に値を代入
+	hei->HspFunc_prm_setva( pv2, ap2, HSPVAR_FLAG_INT, &y );	// 変数に値を代入
 
 	cvReleaseImage( &result );
 	return 0;
