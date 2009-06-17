@@ -522,14 +522,14 @@ void CzHttp::SetVarServerFromURL( void )
 		if ( a1 == 0 ) break;
 		p++;
 		if ( a1 == '/' ) break;
-		if ( a1 == ':' && isdigit(*p) ) {
+		if ( a1 == ':' ) {
 			//	ポート番号を取り出す
 			int i = 0;
 			while(isdigit(p[i])) {
 				i ++;
 			}
 			if (p[i] == '/' || p[i] == 0) {
-				varport = atoi(p);
+				if (i != 0) varport = atoi(p);
 				p += i;
 				if (*p == '/') p ++;
 				break;
