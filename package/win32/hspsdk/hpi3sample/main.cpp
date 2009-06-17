@@ -71,7 +71,7 @@ static void newcmd3( void )
 		sprintf( out,"%f\n",*ptr );
 		break;
 		}
-	case HSPVAR_FLAG_INTx:									// パラメーターが整数だった時
+	case HSPVAR_FLAG_INT:									// パラメーターが整数だった時
 		{
 		int *ptr = (int *)mpval->pt;
 		sprintf( out,"%d\n",*ptr );
