@@ -1570,7 +1570,7 @@ int CToken::ReplaceLineBuf( char *str1, char *str2, char *repl, int opt, MACDEF 
 
 		if ( i>macopt ) {
 			noprm=1;
-			if (( ctype )&&( i==1 )&&( macopt==0 )) noprm=0;
+			if (( ctype )&&( i==1 )&&( macopt==0 )&&( prm[0] == prme[0] )) noprm=0;
 			if ( noprm ) { SetError("too many macro parameter"); return 3; }
 		}
 		while(1) {					// È—ªƒpƒ‰ƒ[ƒ^‚ğ•âŠ®
