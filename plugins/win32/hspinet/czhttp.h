@@ -117,6 +117,7 @@ private:
 
 	char varserver[256];	// VarRequest server name
 	char varstr[256];		// VarRequest request token
+	INTERNET_PORT varport;	// VarRequest server port
 	char *postdata;			// Post data
 	char *vardata;			// Transfer destination
 	int varsize;			// Transfer max size

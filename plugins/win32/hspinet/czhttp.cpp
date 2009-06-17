@@ -2,6 +2,8 @@
 #include <windows.h>
 #include <process.h>
 #include <stdio.h>
+#include <stdlib.h>
+#include <ctype.h>
 //#include <tchar.h>
 
 #include "czhttp.h"
@@ -157,7 +159,7 @@ int CzHttp::Exec( void )
 		strcat( req_name, req_path );
 
 		// HTTPに接続
-		hHttpSession = ::InternetConnectA( hSession, varserver, INTERNET_DEFAULT_HTTP_PORT, NULL, NULL, INTERNET_SERVICE_HTTP, 0, 0 );
+		hHttpSession = ::InternetConnectA( hSession, varserver, varport, NULL, NULL, INTERNET_SERVICE_HTTP, 0, 0 );
 		if ( hHttpSession == NULL ) {
 			SetError( "無効なサーバーが指定されました" );
 			break;
@@ -505,6 +507,7 @@ void CzHttp::SetVarServerFromURL( void )
 	p = req_url;
 	wr = varserver;
 	*wr = 0;
+	varport = INTERNET_DEFAULT_HTTP_PORT;
 
 	while(1)				// '//'を探す
 	{
@@ -519,6 +522,19 @@ void CzHttp::SetVarServerFromURL( void )
 		if ( a1 == 0 ) break;
 		p++;
 		if ( a1 == '/' ) break;
+		if ( a1 == ':' && isdigit(*p) ) {
+			//	ポート番号を取り出す
+			int i = 0;
+			while(isdigit(p[i])) {
+				i ++;
+			}
+			if (p[i] == '/' || p[i] == 0) {
+				varport = atoi(p);
+				p += i;
+				if (*p == '/') p ++;
+				break;
+			}
+		}
 		*wr++ = a1;
 	}
 	*wr = 0;
