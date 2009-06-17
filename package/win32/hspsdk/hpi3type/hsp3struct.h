@@ -7,6 +7,13 @@
 
 #include "hspvar_core.h"
 
+/*
+	rev 43
+	mingw : error : HSPERROR が未定義
+	に対処
+*/
+#include "hsp3debug.h"
+
 // command type
 #define TYPE_MARK 0
 #define TYPE_VAR 1
@@ -244,9 +251,76 @@ typedef struct IRQDAT {
 } IRQDAT;
 
 
+//	Plugin info data (3.0 compatible)
+typedef struct HSPEXINFO30
+{
+	//		HSP internal info data (2.6)
+	//
+	short ver;		// Version Code
+	short min;		// Minor Version
+	//
+	int *er;		// Not Use
+	char *pstr;		// String Buffer (master)
+	char *stmp;		// String Buffer (sub)
+	PVal **mpval;		// Master PVAL
+	//
+	int *actscr;		// Active Window ID
+	int *nptype;		// Next Parameter Type
+	int *npval;			// Next Parameter Value
+	int *strsize;		// StrSize Buffer
+	char *refstr;		// RefStr Buffer
+	//
+	void *(*HspFunc_prm_getv)( void );
+	int (*HspFunc_prm_geti)( void );
+	int (*HspFunc_prm_getdi)( const int defval );
+	char *(*HspFunc_prm_gets)( void );
+	char *(*HspFunc_prm_getds)( const char *defstr );
+	int (*HspFunc_val_realloc)( PVal *pv, int size, int mode );
+	int (*HspFunc_fread)( char *fname, void *readmem, int rlen, int seekofs );
+	int (*HspFunc_fsize)( char *fname );
+	void *(*HspFunc_getbmscr)( int wid );
+	int (*HspFunc_getobj)( int wid, int id, void *inf );
+	int (*HspFunc_setobj)( int wid, int id, const void *inf );
+
+	//		HSP internal info data (3.0)
+	//
+	int *npexflg;	// Next Parameter ExFlg
+	void *hspctx;	// HSP context ptr
+
+	//		Enhanced data (3.0)
+	//
+	int (*HspFunc_addobj)( int wid );
+	void (*HspFunc_puterror)( HSPERROR error );
+	HspVarProc *(*HspFunc_getproc)( int type );
+	HspVarProc *(*HspFunc_seekproc)( const char *name );
+
+	void (*HspFunc_prm_next)( void );
+	int (*HspFunc_prm_get)( void );
+	double (*HspFunc_prm_getd)( void );
+	double (*HspFunc_prm_getdd)( double defval );
+	unsigned short *(*HspFunc_prm_getlb)( void );
+	PVal *(*HspFunc_prm_getpval)( void );
+	APTR (*HspFunc_prm_getva)( PVal **pval );
+	void (*HspFunc_prm_setva)( PVal *pval, APTR aptr, int type, const void *ptr );
+	char *(*HspFunc_malloc)( int size );
+	void (*HspFunc_free)( void *ptr );
+	char *(*HspFunc_expand)( char *ptr, int size );
+	IRQDAT *(*HspFunc_addirq)( void );
+	int (*HspFunc_hspevent)( int event, int prm1, int prm2, void *prm3 );
+	void (*HspFunc_registvar)( int flag, HSPVAR_COREFUNC func );
+	void (*HspFunc_setpc)( const unsigned short *pc );
+	void (*HspFunc_call)( const unsigned short *pc );
+	void (*HspFunc_mref)( PVal *pval, int prm );
+
+	void (*HspFunc_dim)( PVal *pval, int flag, int len0, int len1, int len2, int len3, int len4 );
+	void (*HspFunc_redim)( PVal *pval, int lenid, int len );
+	void (*HspFunc_array)( PVal *pval, int offset );
+
+} HSPEXINFO30;
 
 
 
+//	Plugin info data (3.1 or later)
 typedef struct HSPEXINFO
 {
 	//		HSP internal info data (2.6)
@@ -311,6 +385,11 @@ typedef struct HSPEXINFO
 	void (*HspFunc_redim)( PVal *pval, int lenid, int len );
 	void (*HspFunc_array)( PVal *pval, int offset );
 
+	//		Enhanced data (3.1)
+	//
+	char *(*HspFunc_varname)( int id );
+	int (*HspFunc_seekvar)( const char *name );
+
 } HSPEXINFO;
 
 
@@ -337,7 +416,7 @@ RUNMODE_INTJUMP,
 RUNMODE_ASSERT,
 RUNMODE_LOGMES,
 RUNMODE_EXITRUN,
-RUNMODE_MAX,
+RUNMODE_MAX
 };
 
 
@@ -359,7 +438,7 @@ typedef struct HSPCTX
 	int lparam;							// IRQ Info data3
 
 	PVal *mem_var;						// var storage index
-	HSPEXINFO exinfo;					// HSP function data
+	HSPEXINFO30 exinfo;					// HSP function data(3.0)
 	int runmode;						// HSP execute mode
 	int waitcount;						// counter for wait
 	int waitbase;						// wait sleep base
@@ -393,6 +472,8 @@ typedef struct HSPCTX
 	double refdval;						// sysvar 'refdval'
 	char *cmdline;						// Command Line Parameters
 
+	HSPEXINFO *exinfo2;					// HSP function data(3.1)
+
 } HSPCTX;
 
 #define HSPCTX_REFSTR_MAX 4096
@@ -402,8 +483,10 @@ typedef struct HSPCTX
 #define HSPSTAT_DEBUG 1
 #define HSPSTAT_SSAVER 2
 
-#define TYPE_EX_SUBROUTINE 0x100
-#define TYPE_EX_CUSTOMFUNC 0x101
+#define TYPE_EX_SUBROUTINE 0x100		// gosub用のスタックタイプ
+#define TYPE_EX_CUSTOMFUNC 0x101		// deffunc呼び出し用のスタックタイプ
+#define TYPE_EX_ENDOFPARAM 0x200		// パラメーター終端(HSPtoC)
+#define TYPE_EX_ARRAY_VARS 0x201		// 配列要素付き変数用スタックタイプ(HSPtoC)
 
 typedef struct
 {
@@ -451,11 +534,16 @@ typedef struct {
 } HSP3TYPEINFO;
 
 
-#define HSPIRQ_ONEXIT 0
-#define HSPIRQ_ONERROR 1
-#define HSPIRQ_ONKEY 2
-#define HSPIRQ_ONCLICK 3
-#define HSPIRQ_USERDEF 4
+// HSP割り込みID
+enum
+{
+HSPIRQ_ONEXIT = 0,
+HSPIRQ_ONERROR,
+HSPIRQ_ONKEY,
+HSPIRQ_ONCLICK,
+HSPIRQ_USERDEF,
+HSPIRQ_MAX
+};
 
 // HSPイベントID
 enum
@@ -477,6 +565,7 @@ HSPEVENT_FDIRLIST1,
 HSPEVENT_FDIRLIST2,
 HSPEVENT_GETPICSIZE,
 HSPEVENT_PICLOAD,
+HSPEVENT_MAX
 };
 
 
