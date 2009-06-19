@@ -103,7 +103,7 @@ int CzHttp::Exec( void )
 {
 	//	毎フレーム実行
 	//
-	static char hdr[] = "Content-Type: application/x-www-form-urlencoded";
+	static char hdr[] = "Content-Type: application/x-www-form-urlencoded\r\n";
 	char req_name[1024];
 	char *name;
 	BOOL res;
@@ -112,7 +112,7 @@ int CzHttp::Exec( void )
 	case CZHTTP_MODE_REQUEST:			// httpに接続
 		strcpy( req_name, req_url );
 		strcat( req_name, req_path );
-		hService = InternetOpenUrl( hSession, req_name, req_header, 0, 0, INTERNET_FLAG_RELOAD );
+		hService = InternetOpenUrl( hSession, req_name, req_header, -1L, 0, INTERNET_FLAG_RELOAD );
 		if ( hService == NULL ) {
 			SetError( "無効なURLが指定されました" );
 			break;
@@ -172,13 +172,18 @@ int CzHttp::Exec( void )
 			break;
 		}
 		mode = CZHTTP_MODE_VARREQSEND;
+		// FALL THROUGH
 	case CZHTTP_MODE_VARREQSEND:
 
 		// 作成したHTTP要求の発行
 		if ( postdata != NULL ) {
-			res = ::HttpSendRequestA( hHttpRequest, hdr, (int)strlen(hdr), postdata, (int)strlen(postdata) );
+			char *header = (char *)malloc( strlen(hdr) + strlen(req_header) + 1 );
+			strcpy(header, hdr);
+			strcat(header, req_header);
+			res = ::HttpSendRequestA( hHttpRequest, header, -1L, postdata, (int)strlen(postdata) );
+			free(header);
 		} else {
-			res = ::HttpSendRequestA( hHttpRequest, NULL, 0, NULL, 0 );
+			res = ::HttpSendRequestA( hHttpRequest, req_header, -1L, NULL, 0 );
 		}
 		if ( res == false ) {
 			InternetCloseHandle( hHttpSession );
@@ -211,6 +216,7 @@ int CzHttp::Exec( void )
 		vardata = (char *)malloc( varsize );
 		size = 0;
 		mode = CZHTTP_MODE_VARDATAWAIT;
+		// FALL THROUGH
 	case CZHTTP_MODE_VARDATAWAIT:
 		{
 		DWORD dwBytesRead;
@@ -246,7 +252,7 @@ int CzHttp::Exec( void )
 	case CZHTTP_MODE_INFOREQ:
 		strcpy( req_name, req_url );
 		strcat( req_name, req_path );
-		hService = InternetOpenUrl( hSession, req_name, req_header, 0, 0, 0 );
+		hService = InternetOpenUrl( hSession, req_name, req_header, -1L, 0, 0 );
 		if ( hService == NULL ) {
 			SetError( "無効なURLが指定されました" );
 			break;
@@ -361,7 +367,7 @@ char *CzHttp::RequestFileInfo( char *path )
 	strcpy( req_name, req_url );
 	strcat( req_name, path );
 
-	hService = InternetOpenUrl( hSession, req_name, req_header, 0, 0, 0 );
+	hService = InternetOpenUrl( hSession, req_name, req_header, -1L, 0, 0 );
 	if ( hService == NULL ) return NULL;
 
 	buf[0] = 0;
