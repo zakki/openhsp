@@ -177,9 +177,10 @@ int CzHttp::Exec( void )
 
 		// ì¬‚µ‚½HTTP—v‹‚Ì”­s
 		if ( postdata != NULL ) {
-			char *header = (char *)malloc( strlen(hdr) + strlen(req_header) + 1 );
+			char *additional_header = req_header != NULL ? req_header : "";
+			char *header = (char *)malloc( strlen(hdr) + strlen(additional_header) + 1 );
 			strcpy(header, hdr);
-			strcat(header, req_header);
+			strcat(header, additional_header);
 			res = ::HttpSendRequestA( hHttpRequest, header, -1L, postdata, (int)strlen(postdata) );
 			free(header);
 		} else {
