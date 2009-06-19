@@ -82,6 +82,8 @@ HSPDEBUG_STEPOVER,
 HSPDEBUG_MAX
 };
 
+typedef struct HSPCTX HSPCTX;
+
 typedef struct HSP3DEBUG
 {
 	//	[in/out] tranfer value
@@ -96,7 +98,7 @@ typedef struct HSP3DEBUG
 	//	[in] system value
 	//	(初期化後に設定されます)
 	//
-	void 	*hspctx;
+	HSPCTX 	*hspctx;
 	//
 	char *	(* get_value) (int);			// debug情報取得コールバック
 	char *	(* get_varinf) (char *,int);	// 変数情報取得コールバック
