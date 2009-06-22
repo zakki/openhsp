@@ -1345,6 +1345,15 @@ char *CToken::ExpandToken( char *str, int *type, int ppmode )
 	//
 	if (wrtbuf!=NULL) {
 //		AddModuleName( (char *)s2 );
+		if ( strcmp( (char *)s2, fixname ) ) {
+			//	後ろで定義されている関数の呼び出しのために
+			//	モジュール内で@をつけていない識別子の位置を記録する
+			undefined_symbol_t sym;
+			sym.pos = wrtbuf->GetSize();
+			sym.len_include_modname = (int)strlen( fixname );
+			sym.len = (int)strlen( (char *)s2 );
+			undefined_symbols.push_back( sym );
+		}
 		wrtbuf->PutStr( fixname );
 //		wrtbuf->Put( '?' );
 	}
@@ -3335,6 +3344,41 @@ void CToken::SetCommonPath( char *path )
 {
 	if ( path==NULL ) { common_path[0]=0; return; }
 	strcpy( common_path, path );
+}
+
+
+void CToken::FinishPreprocess( CMemBuf *buf )
+{
+	//	後ろで定義された関数がある場合、それに書き換える
+	//
+	//	この関数では foo@modname を foo に書き換えるなどバッファサイズが小さくなる変更しか行わない
+	//
+	int read_pos = 0;
+	int write_pos = 0;
+	size_t i;
+	size_t len = undefined_symbols.size();
+	char *p = buf->GetBuffer();
+	for ( i = 0; i < len; i ++ ) {
+		undefined_symbol_t sym = undefined_symbols[i];
+		int pos = sym.pos;
+		int len_include_modname = sym.len_include_modname;
+		int len = sym.len;
+		int id;
+		memmove( p + write_pos, p + read_pos, pos - read_pos );
+		write_pos += pos - read_pos;
+		read_pos = pos;
+		// @modname を消した名前の関数が存在したらそれに書き換え
+		p[pos+len] = '\0';
+		id = lb->Search( p + pos );
+		if ( id >= 0 && lb->GetType(id) == LAB_TYPE_PPMODFUNC ) {
+			memmove( p + write_pos, p + pos, len );
+			write_pos += len;
+			read_pos += len_include_modname;
+		}
+		p[pos+len] = '@';
+	}
+	memmove( p + write_pos, p + read_pos, buf->GetSize() - read_pos );
+	buf->ReduceSize( buf->GetSize() - (read_pos - write_pos) );
 }
 
 

@@ -5,6 +5,8 @@
 #ifndef __token_h
 #define __token_h
 
+#include <vector>
+
 // token type
 #define TK_NONE 0
 #define TK_OBJ 1
@@ -134,6 +136,7 @@ public:
 
 	int ExpandLine( CMemBuf *buf, CMemBuf *src, char *refname );
 	int ExpandFile( CMemBuf *buf, char *fname, char *refname );
+	void FinishPreprocess( CMemBuf *buf );
 	void SetCommonPath( char *path );
 	int SetAdditionMode( int mode );
 
@@ -159,6 +162,7 @@ public:
 	int GenerateCode( CMemBuf *srcbuf, char *oname, int mode );
 
 	void PutCS( int type, int value, int exflg );
+	void PutCSSymbol( int label_id, int exflag );
 	int GetCS( void );
 	void PutCS( int type, double value, int exflg );
 	int PutOT( int value );
@@ -176,6 +180,7 @@ public:
 	int PutStructParamTag( void );
 	void PutStructStart( void );
 	int PutStructEnd( char *name, int libindex, int otindex, int funcflag );
+	int PutStructEnd( int i, char *name, int libindex, int otindex, int funcflag );
 	int PutStructEndDll( char *name, int libindex, int subid, int otindex );
 
 	void CalcCG( int ex );
@@ -249,6 +254,7 @@ private:
 	//		For Code Generate
 	//
 	int GenerateCodeMain( CMemBuf *src );
+	void RegisterFuncLabels( void );
 	int GenerateCodeBlock( void );
 	int GenerateCodeSub( void );
 	void GenerateCodePP( char *buf );
@@ -266,6 +272,7 @@ private:
 
 	void GenerateCodePP_regcmd( void );
 	void GenerateCodePP_cmd( void );
+	void GenerateCodePP_deffunc0( int is_command );
 	void GenerateCodePP_deffunc( void );
 	void GenerateCodePP_defcfunc( void );
 	void GenerateCodePP_uselib( void );
@@ -352,6 +359,12 @@ private:
 	char modname[MODNAME_MAX+2];	// Module Name Prefix
 	int	modgc;						// Global counter for Module
 	int enumgc;						// Global counter for Enum
+	typedef struct undefined_symbol_t {
+		int pos;
+		int len_include_modname;
+		int len;
+	} undefined_symbol_t;
+	std::vector<undefined_symbol_t> undefined_symbols;
 
 	//		for CodeGenerator
 	//

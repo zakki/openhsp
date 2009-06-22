@@ -7,6 +7,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <stdarg.h>
+#include <assert.h>
 #include "membuf.h"
 
 //-------------------------------------------------------------
@@ -273,6 +274,13 @@ int CMemBuf::PutFile( char *fname )
 	
 	strcpy( name,fname );
 	return length;
+}
+
+
+void CMemBuf::ReduceSize( int new_cur )
+{
+	assert( new_cur >= 0 && new_cur <= cur );
+	cur = new_cur;
 }
 
 

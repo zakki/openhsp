@@ -161,6 +161,7 @@ int CHsc3::PreProcess( char *fname, char *outname, int option, char *rname, void
 	if ( res<-1 ) return -1;
 	res = tk.ExpandFile( outbuf, fname, rname );
 	if ( res<0 ) return -1;
+	tk.FinishPreprocess( outbuf );
 
 	cmpopt = tk.GetCmpOption();
 	if ( cmpopt & CMPMODE_PPOUT	 ) {

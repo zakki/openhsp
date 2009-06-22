@@ -889,7 +889,7 @@ void CToken::GenerateCodePRMF2( void )
 
 			t = lb->GetType(id);
 			if (( t == TYPE_XLABEL )||( t == TYPE_LABEL )) throw CGERROR_LABELNAME;
-			PutCS( t, lb->GetOpt(id), ex );
+			PutCSSymbol( id, ex );
 			GetTokenCG( GETTOKEN_DEFAULT );
 
 			if ( ttype == TK_NONE ) {
@@ -1148,7 +1148,7 @@ void CToken::GenerateCodeVAR( int id, int ex )
 	t = lb->GetType(id);
 	if (( t == TYPE_XLABEL )||( t == TYPE_LABEL )) throw CGERROR_LABELNAME;
 	//
-	PutCS( t, lb->GetOpt(id), ex );
+	PutCSSymbol( id, ex );
 	GetTokenCG( GETTOKEN_DEFAULT );
 
 	if ( t == TYPE_SYSVAR ) return;
@@ -1313,7 +1313,7 @@ void CToken::GenerateCodeCMD( int id )
 	t = lb->GetType(id);
 	opt = lb->GetOpt(id);
 	orgcs = GetCS();
-	PutCS( t, opt & 0xffff, EXFLG_1 );
+	PutCSSymbol( id, EXFLG_1 );
 	if ( t == TYPE_PROGCMD ) CheckInternalProgCMD( opt, orgcs );
 	if ( t == TYPE_CMPCMD ) CheckInternalIF( opt );
 	GetTokenCG( GETTOKEN_DEFAULT );
@@ -1771,12 +1771,18 @@ int CToken::GetParameterResTypeCG( char *name )
 }
 
 
-void CToken::GenerateCodePP_deffunc( void )
+#define GET_FI_SIZE() ((int)(fi_buf->GetSize() / sizeof(STRUCTDAT)))
+#define GET_FI(n) (((STRUCTDAT *)fi_buf->GetBuffer()) + (n))
+#define STRUCTDAT_INDEX_DUMMY ((short)0x8000)
+
+
+void CToken::GenerateCodePP_deffunc0( int is_command )
 {
-	//		HSP3Codeを展開する(deffunc)
+	//		HSP3Codeを展開する(deffunc / defcfunc)
 	//
 	int i,t,ot,prmid,subid;
-	int clean;
+	int index;
+	int funcflag;
 	int regflag;
 	int prep;
 	char funcname[1024];
@@ -1787,7 +1793,7 @@ void CToken::GenerateCodePP_deffunc( void )
 	GetTokenCG( GETTOKEN_DEFAULT );
 	if ( ttype != TK_OBJ ) throw CGERROR_PP_NAMEREQUIRED;
 
-	if ( !strcmp( cg_str,"prep" ) ) {				// プロトタイプ宣言
+	if ( is_command && !strcmp( cg_str,"prep" ) ) {				// プロトタイプ宣言
 		prep = 1;
 		GetTokenCG( GETTOKEN_DEFAULT );
 		if ( ttype != TK_OBJ ) throw CGERROR_PP_NAMEREQUIRED;
@@ -1799,12 +1805,17 @@ void CToken::GenerateCodePP_deffunc( void )
 		lb->SetFlag( cg_localstruct[i], -1 );		// 以前に指定されたパラメーター名を削除する
 	}
 	cg_localcur = 0;
-	clean = 0;
+	funcflag = 0;
 	regflag = 1;
 
-	i = lb->Search( funcname );
-	if ( i >= 0 ) {
-		throw CGERROR_PP_ALREADY_USE_FUNC;
+	index = -1;
+	int label_id = lb->Search( funcname );
+	if ( label_id >= 0 ) {
+		if ( lb->GetType(label_id) != TYPE_MODCMD ) throw CGERROR_PP_ALREADY_USE_FUNC;
+		index = lb->GetOpt(label_id);
+		if ( index >= 0 && GET_FI(index)->index != STRUCTDAT_INDEX_DUMMY ) {
+			throw CGERROR_PP_ALREADY_USE_FUNC;
+		}
 	}
 
 	PutStructStart();
@@ -1813,8 +1824,8 @@ void CToken::GenerateCodePP_deffunc( void )
 		if ( ttype >= TK_EOL ) break;
 		if ( ttype != TK_OBJ ) throw CGERROR_PP_WRONG_PARAM_NAME;
 
-		if ( !strcmp( cg_str,"onexit" ) ) {
-			clean |= STRUCTDAT_FUNCFLAG_CLEANUP;
+		if ( is_command && !strcmp( cg_str,"onexit" ) ) {
+			funcflag |= STRUCTDAT_FUNCFLAG_CLEANUP;
 			break;
 		}
 
@@ -1832,13 +1843,13 @@ void CToken::GenerateCodePP_deffunc( void )
 			//Mesf( "%s:struct%d",cg_str,subid );
 			if ( t == MPTYPE_IMODULEVAR ) {
 				if ( prm[ lb->GetOpt(i) ].offset != -1 ) throw CGERROR_PP_MODINIT_USED;
-				prm[ lb->GetOpt(i) ].offset = fi_buf->GetSize() / sizeof(STRUCTDAT);
+				prm[ lb->GetOpt(i) ].offset = GET_FI_SIZE();
 				regflag = 0;
 			}
 			if ( t == MPTYPE_TMODULEVAR ) {
 				st = (STRUCTDAT *)fi_buf->GetBuffer();
 				if ( st[ subid ].otindex != 0 ) throw CGERROR_PP_MODTERM_USED;
-				st[ subid ].otindex = fi_buf->GetSize() / sizeof(STRUCTDAT);
+				st[ subid ].otindex = GET_FI_SIZE();
 				regflag = 0;
 			}
 			prmid = PutStructParam( t, subid );
@@ -1867,91 +1878,30 @@ void CToken::GenerateCodePP_deffunc( void )
 	}
 
 	ot = PutOT( GetCS() );
-	i = PutStructEnd( funcname, STRUCTDAT_INDEX_FUNC, ot, clean );
-	if ( regflag ) {
-		lb->Regist( funcname, TYPE_MODCMD, i );
+	if ( index == -1 ) {
+		index = GET_FI_SIZE();
+		fi_buf->PreparePtr( sizeof(STRUCTDAT) );
+		if ( regflag ) {
+			lb->Regist( funcname, TYPE_MODCMD, index );
+		}
 	}
+	if ( label_id >= 0 ) {
+		lb->SetOpt( label_id, index );
+	}
+	int dat_index = is_command ? STRUCTDAT_INDEX_FUNC : STRUCTDAT_INDEX_CFUNC;
+	PutStructEnd( index, funcname, dat_index, ot, funcflag );
+}
+
+
+void CToken::GenerateCodePP_deffunc( void )
+{
+	GenerateCodePP_deffunc0( 1 );
 }
 
 
 void CToken::GenerateCodePP_defcfunc( void )
 {
-	//		HSP3Codeを展開する(defcfunc)
-	//
-	int i,t,ot,prmid,subid;
-	int funcflag;
-	char funcname[1024];
-	STRUCTPRM *prm;
-
-	/*
-	GetTokenCG( GETTOKEN_DEFAULT );
-	t = GetParameterResTypeCG( cg_str );
-	if ( t <= MPTYPE_NONE ) {
-		throw CGERROR_PP_WRONG_PARAM_NAME;
-	}
-	funcflag = t;
-	*/
-	funcflag = 0;
-
-	GetTokenCG( GETTOKEN_DEFAULT );
-	if ( ttype != TK_OBJ ) throw CGERROR_PP_NAMEREQUIRED;
-	strncpy( funcname, cg_str, 1023 );
-
-	for(i=0;i<cg_localcur;i++) {
-		lb->SetFlag( cg_localstruct[i], -1 );		// 以前に指定されたパラメーター名を削除する
-	}
-	cg_localcur = 0;
-
-
-	PutStructStart();
-	while(1) {
-		GetTokenCG( GETTOKEN_DEFAULT );
-		if ( ttype >= TK_EOL ) break;
-		if ( ttype != TK_OBJ ) throw CGERROR_PP_WRONG_PARAM_NAME;
-		t = GetParameterTypeCG( cg_str );
-		if ( t == MPTYPE_NONE ) throw CGERROR_PP_WRONG_PARAM_NAME;
-		if ( t == MPTYPE_MODULEVAR ) {
-			//	モジュール名指定
-			GetTokenCG( GETTOKEN_DEFAULT );
-			if ( ttype != TK_OBJ ) throw CGERROR_PP_WRONG_PARAM_NAME;
-			i = lb->Search( cg_str );
-			if ( i < 0 ) throw CGERROR_PP_BAD_STRUCT;
-			if ( lb->GetType(i) != TYPE_STRUCT ) throw CGERROR_PP_BAD_STRUCT;
-			prm = (STRUCTPRM *)mi_buf->GetBuffer();
-			subid = prm[ lb->GetOpt(i) ].subid;
-			//Mesf( "%s:struct%d",cg_str,subid );
-			prmid = PutStructParam( t, subid );
-			GetTokenCG( GETTOKEN_DEFAULT );
-
-		} else {
-			prmid = PutStructParam( t, STRUCTPRM_SUBID_STACK );
-			//Mesf( "%d:type%d",prmid,t );
-
-			GetTokenCG( GETTOKEN_DEFAULT );
-			if ( ttype == TK_OBJ ) {
-				//	引数のエイリアス
-				i = lb->Search( cg_str );
-				if ( i >= 0 ) {
-					throw CGERROR_PP_ALREADY_USE_PARAM;
-				}
-				i = lb->Regist( cg_str, TYPE_STRUCT, prmid );
-				cg_localstruct[ cg_localcur++ ] = i;
-				GetTokenCG( GETTOKEN_DEFAULT );
-			}
-		}
-
-		if ( ttype >= TK_EOL ) break;
-		if ( ttype != TK_NONE ) throw CGERROR_PP_WRONG_PARAM_NAME;
-		if ( val != ',' ) throw CGERROR_PP_WRONG_PARAM_NAME;
-	}
-
-	i = lb->Search( funcname );
-	if ( i >= 0 ) {
-		throw CGERROR_PP_ALREADY_USE_FUNC;
-	}
-	ot = PutOT( GetCS() );
-	i = PutStructEnd( funcname, STRUCTDAT_INDEX_CFUNC, ot, funcflag );
-	lb->Regist( funcname, TYPE_MODCMD, i );
+	GenerateCodePP_deffunc0( 0 );
 }
 
 
@@ -2270,6 +2220,25 @@ int CToken::GenerateCodeBlock( void )
 }
 
 
+void CToken::RegisterFuncLabels( void )
+{
+	//		プリプロセス時のラベル情報から関数を定義
+	//
+	if ( tmp_lb == NULL ) return;
+	int len = tmp_lb->GetCount();
+	for( int i = 0; i < len; i ++ ) {
+		if ( tmp_lb->GetType(i) == LAB_TYPE_PPMODFUNC && tmp_lb->GetFlag(i) >= 0 ) {
+			char *name = tmp_lb->GetName(i);
+			if ( lb->Search(name) >= 0 ) {
+				throw CGERROR_PP_ALREADY_USE_FUNC;
+			}
+			int id = lb->Regist( name, TYPE_MODCMD, -1 );
+			lb->SetData2( id, (char *)&i, sizeof i );
+		}
+	}
+}
+
+
 int CToken::GenerateCodeMain( CMemBuf *buf )
 {
 	//		ソースをHSP3Codeに展開する
@@ -2298,6 +2267,8 @@ int CToken::GenerateCodeMain( CMemBuf *buf )
 	for( a=0; a<CG_REPLEV_MAX; a++) { repend[a] = -1; }
 
 	try {
+		RegisterFuncLabels();
+
 		while(1) {
 			if ( GenerateCodeBlock() == TK_EOF ) break;
 		}
@@ -2316,6 +2287,15 @@ int CToken::GenerateCodeMain( CMemBuf *buf )
 				errend++;
 			}
 		}
+		
+		//		関数未処理チェック
+		for( a=0; a<GET_FI_SIZE(); a++ ) {
+			if ( GET_FI(a)->index == STRUCTDAT_INDEX_DUMMY ) {
+				Mesf( "#関数が存在しません [%s]", lb->GetName(GET_FI(a)->otindex) );
+				errend++;
+			}
+		}
+		
 		if ( errend ) throw CGERROR_FATAL;
 	}
 	catch ( CGERROR code ) {
@@ -2357,6 +2337,29 @@ void CToken::PutCS( int type, double value, int exflg )
 	i = ds_buf->GetSize();
 	ds_buf->Put( value );
 	PutCS( type, i, exflg );
+}
+
+
+void CToken::PutCSSymbol( int label_id, int exflag )
+{
+	//		まだ定義されていない関数の呼び出しがあったら仮登録する
+	//
+	int type = lb->GetType(label_id);
+	int value = lb->GetOpt(label_id);
+	if ( type == TYPE_MODCMD && value == -1 ) {
+		int id = *(int *)lb->GetData2(label_id);
+		tmp_lb->AddReference( id );
+		
+		STRUCTDAT st = { STRUCTDAT_INDEX_DUMMY };
+		st.otindex = label_id;
+		value = GET_FI_SIZE();
+		fi_buf->PutData( &st, sizeof(STRUCTDAT) );
+		lb->SetOpt( label_id, value );
+	}
+	if ( exflag & EXFLG_1 && type != TYPE_VAR && type != TYPE_STRUCT ) {
+		value &= 0xffff;
+	}
+	PutCS( type, value, exflag );
 }
 
 
@@ -2553,7 +2556,7 @@ int CToken::PutStructParam( short mptype, int extype )
 
 	prm.mptype = mptype;
 	if ( extype == STRUCTPRM_SUBID_STID ) {
-		prm.subid  = fi_buf->GetSize() / sizeof(STRUCTDAT);
+		prm.subid  = (short)GET_FI_SIZE();
 	} else {
 		prm.subid = extype;
 	}
@@ -2617,7 +2620,7 @@ int CToken::PutStructParamTag( void )
 	i = mi_buf->GetSize() / sizeof(STRUCTPRM);
 
 	prm.mptype = MPTYPE_STRUCTTAG;
-	prm.subid  = fi_buf->GetSize() / sizeof(STRUCTDAT);
+	prm.subid  = (short)GET_FI_SIZE();
 	prm.offset = -1;
 
 	cg_stnum++;
@@ -2634,13 +2637,11 @@ void CToken::PutStructStart( void )
 }
 
 
-int CToken::PutStructEnd( char *name, int libindex, int otindex, int funcflag )
+int CToken::PutStructEnd( int i, char *name, int libindex, int otindex, int funcflag )
 {
 	//		STRUCTDATを登録する(モジュール用)
 	//
-	int i;
 	STRUCTDAT st;
-	i = fi_buf->GetSize() / sizeof(STRUCTDAT);
 	st.index = libindex;
 	st.nameidx = PutDS( name );
 	st.subid = i;
@@ -2654,11 +2655,18 @@ int CToken::PutStructEnd( char *name, int libindex, int otindex, int funcflag )
 	} else {
 		st.otindex = otindex;
 	}
-	fi_buf->PutData( &st, sizeof(STRUCTDAT) );
+	*GET_FI(i) = st;
 	//Mesf( "#%d : %s(LIB%d) prm%d size%d ot%d", i, name, libindex, cg_stnum, cg_stsize, otindex );
 	return i;
 }
 
+
+int CToken::PutStructEnd( char *name, int libindex, int otindex, int funcflag )
+{
+	int i = GET_FI_SIZE();
+	fi_buf->PreparePtr( sizeof(STRUCTDAT) );
+	return PutStructEnd( i, name, libindex, otindex, funcflag );
+}
 
 int CToken::PutStructEndDll( char *name, int libindex, int subid, int otindex )
 {
@@ -2666,7 +2674,7 @@ int CToken::PutStructEndDll( char *name, int libindex, int subid, int otindex )
 	//
 	int i;
 	STRUCTDAT st;
-	i = fi_buf->GetSize() / sizeof(STRUCTDAT);
+	i = GET_FI_SIZE();
 	st.index = libindex;
 	if ( name[0] == '*' ) {
 		st.nameidx = -1;

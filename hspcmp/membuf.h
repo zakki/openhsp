@@ -47,6 +47,7 @@ public:
 	int SaveFile( char *fname );
 	char *GetFileName( void );
 	int GetSize( void ) { return cur; }
+	void ReduceSize( int new_cur );
 	char *PreparePtr( int sz );
 
 private:
