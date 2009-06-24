@@ -145,7 +145,11 @@ IplImage *hspcv_temp( int id )
 
 	sx = cv->img->width;
 	sy = cv->img->height;
-	return hspcv_temp( sx, sy );
+
+	if(cv->img->nChannels==1){
+		return hspcv_tempgray( sx, sy );
+	}else{
+		return hspcv_temp( sx, sy );
 }
 
 
