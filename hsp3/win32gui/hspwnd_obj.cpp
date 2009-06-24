@@ -245,7 +245,9 @@ static void Object_SetMultiBox( HSPOBJINFO *info, int type, void *ptr )
 		} else {
 			m_ini=LB_SETCURSEL;
 		}
-		SendMessage( hw, m_ini, *(int *)ptr, 0L );
+		bmscr_obj_ival = *(int *)ptr;
+		SendMessage( hw, m_ini, bmscr_obj_ival, 0L );
+		Object_SendSetVar( info );
 		break;
 	default:
 		throw HSPERR_TYPE_MISMATCH;

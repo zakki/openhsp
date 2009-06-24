@@ -1,5 +1,7 @@
 #include "hspcv.as"
 
+orgdir=dir_cur
+
 dialog "bmp;*.dib;*.sr;*.ras;*.jpeg;*.jpg;*.jpe;*.pbm;*.ppm;*.pgm;*.tiff;*.tif;*.png;*.exr;*.jp2",16,"‰æ‘œƒtƒ@ƒCƒ‹"
 if stat=0 : end
 fname=refstr
@@ -7,13 +9,14 @@ fname=refstr
 cvload fname,0
 cvgetimg 0,1
 
-cvloadxml "haarcascade_frontalface_alt2.xml"
+cvloadxml orgdir+"\\haarcascade_frontalface_alt2.xml"
 cvfacedetect 0
 num=stat
 
 color 255,0,0
 
 title "Face Detect ("+num+")"
+
 
 repeat num
 	cvgetface x,y,sx,sy

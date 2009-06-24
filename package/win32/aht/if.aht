@@ -8,7 +8,7 @@
 
 #const obj_id	0	;;parts,prm="hsp3.std.rsrc.var",help="”äŠrŒ³‚Ì•Ï”"
 #define __refvar	;;pprop,prm="•Ï”–¼",help="•Ï”–¼",read
-#const ”äŠr•û–@	;;combox,prm="=\n!\n<\n>\n>=\n<=\n",opt="”äŠr’l‚Æ“¯‚¶\n”äŠr’l‚Æˆá‚¤\n”äŠr’l‚æ‚è¬‚³‚¢\n”äŠr’l‚æ‚è‘å‚«‚¢\n”äŠr’lˆÈ‰º\n”äŠr’lˆÈã\n"
+#define ”äŠr•û–@	;;combox,prm="=\n!\n<\n>\n>=\n<=\n",opt="”äŠr’l‚Æ“¯‚¶\n”äŠr’l‚Æˆá‚¤\n”äŠr’l‚æ‚è¬‚³‚¢\n”äŠr’l‚æ‚è‘å‚«‚¢\n”äŠr’lˆÈ‰º\n”äŠr’lˆÈã\n"
 #define ”äŠr’l	0	;;help="”äŠr‚Ì‘ÎÛ‚Æ‚È‚é’l",str
 
 #const obj_id2	0	;;parts,prm="hsp3.std.system.label",help="³‚µ‚¢‚ÌƒWƒƒƒ“ƒvæ"

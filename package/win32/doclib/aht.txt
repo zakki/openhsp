@@ -241,7 +241,7 @@ Additional HSP Template & Tools       copyright 1997-2009 (c) onion software
 		prm、optオプションによりコンボボックスの内容を指定します。
 
 		例:
-			#const モード 0	;;combox,prm="0\n1\n",opt="時間待ち\nキー入力待ち"
+			#define モード 0	;;combox,prm="0\n1\n",opt="時間待ち\nキー入力待ち"
 
 	・chkbox
 
@@ -365,6 +365,11 @@ Additional HSP Template & Tools       copyright 1997-2009 (c) onion software
 
 
 ■更新履歴
+
+	2009/06/24 3.2β4
+
+		comboxオプションの例を修正。
+		Peas用のif.ahtを修正。
 
 	2009/05/14 3.2β3
 

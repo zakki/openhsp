@@ -150,6 +150,7 @@ IplImage *hspcv_temp( int id )
 		return hspcv_tempgray( sx, sy );
 	}else{
 		return hspcv_temp( sx, sy );
+	}
 }
 
 
@@ -194,10 +195,9 @@ void hspcv_init( void )
 	curid = 0;
 	area_x = area_y = area_sx = area_sy = 0;
 
-#ifdef HSPCV_USE_VIDEO
 	storage = NULL;
 	cascade = NULL;
-
+#ifdef HSPCV_USE_VIDEO
 	wvideo = NULL;
 	cvideo = NULL;
 #endif
@@ -462,7 +462,7 @@ EXPORT BOOL WINAPI cvgetinfo( HSPEXINFO *hei, int p1, int p2, int p3 )
 	ep1 = hei->HspFunc_prm_getdi(0);		// パラメータ2:数値
 	ep2 = hei->HspFunc_prm_getdi(curid);	// パラメータ3:数値
 	res = hspcv_getinfo( ep1, ep2 );
-	hei->HspFunc_prm_setva( pv, ap, HSPVAR_FLAG_INT, &res );	// 変数に値を代入
+	hei->HspFunc_prm_setva( pv, ap, TYPE_INUM, &res );	// 変数に値を代入
 	return 0;
 }
 
@@ -506,7 +506,9 @@ EXPORT BOOL WINAPI cvsmooth( HSPEXINFO *hei, int p1, int p2, int p3 )
 	if ( cv->flag == CVOBJ_FLAG_NONE ) return -1;
 	img = hspcv_temp( ep5 );
 	cvSmooth( cv->img, img, ep1, ep2, ep3, ep4 );
-	hspcv_exchange( ep5, img );
+	cvCopy( img, cv->img );
+
+	//hspcv_exchange( ep5, img );
 
 	return 0;
 }
@@ -743,6 +745,9 @@ EXPORT BOOL WINAPI cvfacedetect( HSPEXINFO *hei, int p1, int p2, int p3 )
 	img = cv->img;
 
 	if ( cascade == NULL ) return 0;
+	if ( storage == NULL ) {
+		cvReleaseMemStorage( &storage );
+	}
     storage = cvCreateMemStorage(0);
 
 	IplImage* gray = cvCreateImage( cvSize(img->width,img->height), 8, 1 );
@@ -766,7 +771,6 @@ EXPORT BOOL WINAPI cvfacedetect( HSPEXINFO *hei, int p1, int p2, int p3 )
 
     cvReleaseImage( &gray );
     cvReleaseImage( &small_img );
-	cvReleaseMemStorage( &storage );
 
 	return -cvface_total;
 }
@@ -804,12 +808,18 @@ EXPORT BOOL WINAPI cvgetface( HSPEXINFO *hei, int p1, int p2, int p3 )
 	sx = cvRound( r->width * cvface_scale );
 	sy = cvRound( r->height * cvface_scale );
 
-	hei->HspFunc_prm_setva( pv,  ap,  HSPVAR_FLAG_INT, &x );	// 変数に値を代入
-	hei->HspFunc_prm_setva( pv2, ap2, HSPVAR_FLAG_INT, &y );	// 変数に値を代入
-	hei->HspFunc_prm_setva( pv3, ap3, HSPVAR_FLAG_INT, &sx );	// 変数に値を代入
-	hei->HspFunc_prm_setva( pv4, ap4, HSPVAR_FLAG_INT, &sy );	// 変数に値を代入
+	hei->HspFunc_prm_setva( pv,  ap,  TYPE_INUM, &x );	// 変数に値を代入
+	hei->HspFunc_prm_setva( pv2, ap2, TYPE_INUM, &y );	// 変数に値を代入
+	hei->HspFunc_prm_setva( pv3, ap3, TYPE_INUM, &sx );	// 変数に値を代入
+	hei->HspFunc_prm_setva( pv4, ap4, TYPE_INUM, &sy );	// 変数に値を代入
 
 	cvface_id++;
+	if ( cvface_id >= cvface_total ) {
+		//		データを最後まで取ったらメモリを解放する
+		cvReleaseMemStorage( &storage );
+		storage = NULL;
+	}
+
 	return 0;
 }
 
@@ -848,8 +858,8 @@ EXPORT BOOL WINAPI cvmatch( HSPEXINFO *hei, int p1, int p2, int p3 )
 
 	x = min_loc.x;
 	y = min_loc.y;
-	hei->HspFunc_prm_setva( pv,  ap,  HSPVAR_FLAG_INT, &x );	// 変数に値を代入
-	hei->HspFunc_prm_setva( pv2, ap2, HSPVAR_FLAG_INT, &y );	// 変数に値を代入
+	hei->HspFunc_prm_setva( pv,  ap,  TYPE_INUM, &x );	// 変数に値を代入
+	hei->HspFunc_prm_setva( pv2, ap2, TYPE_INUM, &y );	// 変数に値を代入
 
 	cvReleaseImage( &result );
 	return 0;
