@@ -55,6 +55,7 @@
 #func global cvputimg cvputimg $202
 #func global cvload cvload $202
 #func global cvsave cvsave $202
+#func global cvj2opt cvj2opt $202
 #func global cvgetinfo cvgetinfo $202
 #func global cvsmooth cvsmooth $202
 #func global cvthreshold cvthreshold $202

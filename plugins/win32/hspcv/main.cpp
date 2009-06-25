@@ -54,6 +54,8 @@ int WINAPI DllMain_CX(HINSTANCE hInstance, DWORD fdwReason, PVOID pvReserved );
 */
 /*------------------------------------------------------------*/
 
+#define OPTSTR_MAX 2048
+
 static	CVOBJ cvobj[CVOBJ_MAX];
 static	int area_x, area_y, area_sx, area_sy;
 static	int curid;
@@ -64,6 +66,8 @@ static	CvHaarClassifierCascade* cascade;
 static	int cvface_id;
 static	int cvface_total;
 static	double cvface_scale;
+static	char fmtstr[16];
+static	char optstr[OPTSTR_MAX];
 
 
 #ifdef HSPCV_USE_VIDEO
@@ -76,6 +80,10 @@ static	int cvideo_id;
 
 CVOBJ *getcvobj( int id )
 {
+	if (( id < 0 )||( id >= CVOBJ_MAX )) {
+		Alertf( "Illegal cvobj ID(%d)", id );
+		return NULL;
+	}
 	return &cvobj[id];
 }
 
@@ -194,6 +202,7 @@ void hspcv_init( void )
 	}
 	curid = 0;
 	area_x = area_y = area_sx = area_sy = 0;
+	cvSaveSetJasperFormat( "jp2", "" );
 
 	storage = NULL;
 	cascade = NULL;
@@ -212,8 +221,9 @@ void hspcv_term( void )
 	if ( wvideo != NULL ) { cvReleaseVideoWriter( &wvideo ); }
 	if ( cvideo != NULL ) { cvReleaseCapture( &cvideo ); }
 #endif
-	if ( storage == NULL ) {
+	if ( storage != NULL ) {
 		cvReleaseMemStorage( &storage );
+		storage = NULL;
 	}
 	for(i=0;i<CVOBJ_MAX;i++) {
 		hspcv_release( i );
@@ -445,6 +455,24 @@ EXPORT BOOL WINAPI cvsave( HSPEXINFO *hei, int p1, int p2, int p3 )
 	ep3 = hei->HspFunc_prm_getdi(0);		// パラメータ3:数値
 	i = hspcv_picsave( ep2, ep1, ep3 );
 	return i;
+}
+
+
+EXPORT BOOL WINAPI cvj2opt( HSPEXINFO *hei, int p1, int p2, int p3 )
+{
+	//	(type$202)
+	//		cvj2opt "format", "option"
+	//
+	char *ep1;
+	char *ep2;
+	ep1 = hei->HspFunc_prm_gets();			// パラメータ1:文字列
+	strncpy( fmtstr, ep1, 15 );
+	ep2 = hei->HspFunc_prm_gets();			// パラメータ2:文字列
+	strncpy( optstr, ep2, OPTSTR_MAX-1 );
+
+	//cvSaveSetJasperFormat( "jp2", "rate=0.1" );
+	cvSaveSetJasperFormat( fmtstr, optstr );
+	return 0;
 }
 
 
@@ -745,8 +773,9 @@ EXPORT BOOL WINAPI cvfacedetect( HSPEXINFO *hei, int p1, int p2, int p3 )
 	img = cv->img;
 
 	if ( cascade == NULL ) return 0;
-	if ( storage == NULL ) {
+	if ( storage != NULL ) {
 		cvReleaseMemStorage( &storage );
+		storage = NULL;
 	}
     storage = cvCreateMemStorage(0);
 

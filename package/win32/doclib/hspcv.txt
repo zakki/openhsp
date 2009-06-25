@@ -60,6 +60,14 @@ HSPCV ver3.2 REFERENCE MANUAL                       HSP : Hot Soup Processor
 
 ・更新履歴
 
+	2009/6/24 ver3.2beta4
+
+		cvfacedetect命令のメモリリークをさらに修正
+		cvgetimgのデフォルトパラメーターのヘルプを修正
+		グレースケールバッファでcvthresholdを実行すると失敗する不具合に対応 
+		JPEG-2000保存オプションを設定するcvj2opt命令を追加
+
+
 	2009/3/9 ver3.2beta2
 
 		cvfacedetect命令でメモリリークが発生する不具合を修正
@@ -156,6 +164,7 @@ HSPCV ver3.2 REFERENCE MANUAL                       HSP : Hot Soup Processor
 	cvputimg				CVバッファに書き込み
 	cvload					画像ファイル読み込み
 	cvsave					画像ファイル書き込み
+	cvj2opt					JPEG-2000保存オプション設定
 	cvgetinfo				CVバッファ情報を取得
 	cvsmooth				画像のスムージング
 	cvthreshold				画像を閾値で取得
@@ -370,6 +379,39 @@ HSPCV ver3.2 REFERENCE MANUAL                       HSP : Hot Soup Processor
 		値となります。
 
 
+	cvj2opt	"format","option"		JPEG-2000保存オプション設定
+
+		"format" : フォーマット文字列
+		"option" : オプション文字列
+
+		cvsave命令でJPEG-2000形式(.jp2)を指定した際の詳細設定を
+		行ないます。フォーマット文字列には、以下のいずれかを
+		指定することができます。(JPEG以外のフォーマットを指定した
+		場合でも、拡張子はjp2のままになるので注意してください)
+
+		フォーマット文字列     形式
+		----------------------------------------
+			mif	    My Image Format
+			pnm	    Portable Graymap/Pixmap
+			bmp	    Microsoft Bitmap
+			ras	    Sun Rasterfile
+			jp2	    JPEG2000 JP2 File Format Syntax
+			jpc	    JPEG2000 Code Stream Syntax
+			jpg	    JPEG
+			pgx	    JPEG2000 VM Format
+
+		オプション文字列により、付加設定を行なうことができます。
+
+			例:
+				cvj2opt "jp2","rate=0.1"
+				cvsave "test2000.jp2"
+
+		オプション文字列は、フォーマットごとに設定方法が異なります。
+		詳しくは、jasperライブラリに含まれる、コマンドラインツール
+		jasperのオプションを参照してください。
+		http://www.ece.uvic.ca/~mdadams/jasper/
+
+
 	cvgetinfo p1,p2,p3			CVバッファ情報を取得
 
 		p1 : CVバッファ情報が取得される変数
@@ -421,6 +463,9 @@ HSPCV ver3.2 REFERENCE MANUAL                       HSP : Hot Soup Processor
 		CV_BILATERAL
 		(3×3バイラテラルフィルタ(param1=色分散, param2=空間分散))
 		http://www.dai.ed.ac.uk/CVonline/LOCAL_COPIES/MANDUCHI1/Bilateral_Filtering.html 
+
+		「param1×param2」のパラメーターは、1以上の奇数を指定する
+		必要があります。
 
 
 	cvthreshold p1,p2,p3,p4			画像を閾値で取得
