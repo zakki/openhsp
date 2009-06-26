@@ -10,7 +10,7 @@
 %note
 ver3.2標準命令
 %date
-2009/06/24
+2009/06/26
 %author
 onitama
 %url
@@ -1151,4 +1151,22 @@ onclick
 onexit
 onerror
 
+
+%index
+else
+条件を満たしていなければその行の命令を実行
+
+%inst
+if命令と組み合わせて使用します。
+詳しくはif命令の解説を参照してください。
+
+%sample
+if a == 0 {
+	mes "aは0です。"
+} else {
+	mes "aは0ではありません。"
+}
+
+%href
+if
 

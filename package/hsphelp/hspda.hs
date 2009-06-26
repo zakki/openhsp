@@ -6,7 +6,7 @@
 %type
 拡張命令
 %ver
-3.1
+3.2
 %note
 hspda.asをインクルードすること。
 %date

@@ -6,9 +6,9 @@
 %type
 “à‘ –½—ß
 %ver
-3.1
+3.2
 %note
-ver3.1•W€–½—ß
+ver3.2•W€–½—ß
 %date
 2005/03/12
 %author

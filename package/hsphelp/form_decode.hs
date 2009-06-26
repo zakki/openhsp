@@ -2,7 +2,7 @@
 form_decode
 
 %ver
-3.1
+3.2
 
 %date
 2007/12/27

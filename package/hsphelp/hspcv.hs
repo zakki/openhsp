@@ -6,12 +6,12 @@
 %type
 拡張命令
 %ver
-3.1
+3.2
 %note
 hspcv.asをインクルードすること。
 
 %date
-2007/03/01
+2009/06/26
 %author
 onitama
 %dll
@@ -737,6 +737,46 @@ cvmakeavi命令によって開始されたaviファイル出力を終了します。
 cvmakeavi
 
 
+
+%index
+cvj2opt
+JPEG-2000保存オプション設定
+%group
+拡張画面制御命令
+%prm
+"format","option"
+"format" : フォーマット文字列
+"option" : オプション文字列
+%inst
+cvsave命令でJPEG-2000形式(.jp2)を指定した際の詳細設定を行ないます。
+フォーマット文字列には、以下のいずれかを指定することができます。
+(JPEG以外のフォーマットを指定した場合でも、拡張子はjp2のままになるので注意してください)
+^p
+	フォーマット文字列     形式
+	----------------------------------------
+		mif	    My Image Format
+		pnm	    Portable Graymap/Pixmap
+		bmp	    Microsoft Bitmap
+		ras	    Sun Rasterfile
+		jp2	    JPEG2000 JP2 File Format Syntax
+		jpc	    JPEG2000 Code Stream Syntax
+		jpg	    JPEG
+		pgx	    JPEG2000 VM Format
+^p
+オプション文字列により、付加設定を行なうことができます。
+^p
+	例:
+		cvj2opt "jp2","rate=0.1"
+		cvsave "test2000.jp2"
+^p
+オプション文字列は、フォーマットごとに設定方法が異なります。
+詳しくは、jasperライブラリに含まれる、コマンドラインツール
+jasperのオプションを参照してください。
+^p
+http://www.ece.uvic.ca/~mdadams/jasper/
+^p
+%href
+cvsave
 
 
 
