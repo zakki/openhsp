@@ -137,10 +137,21 @@ static char *cnvformat( void )
 		fmt[sizeof(fmt)-1] = '\0';
 		if ( i + 1 < (int)(sizeof fmt) ) fmt[i+1] = '\0';
 		fp += i;
-		
+
 		char specifier = *fp;
 		fp ++;
-		
+
+#if ( WIN32 || _WIN32 ) && ! __CYGWIN__
+		if ( specifier == 'I' ) {				// I64 prefix‘Î‰ž(VC++‚Ì‚Ý)
+			if ((fp[0]=='6')&&(fp[1]='4')) {
+				memcpy( fmt+i+1, fp, 3 );
+				fmt[i+4] = 0;
+				specifier = 'f';
+				fp += 3;
+			}
+		}
+#endif
+
 		if ( specifier == '\0' ) break;
 		if ( specifier == '%' ) {
 			cnvformat_expand( &p, &capacity, len, 1 );
