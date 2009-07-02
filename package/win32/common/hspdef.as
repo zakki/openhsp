@@ -107,6 +107,12 @@
 #define global ldim(%1,%2,%3=0,%4=0,%5=0) dimtype %1,1,%2,%3,%4,%5
 #define global alloc sdim
 
+#define global M_PI	3.14159265358979323846
+#define global ctype rad2deg(%1)       (57.295779513082320877*(%1))
+#define global ctype deg2rad(%1)       (0.017453292519943295769*(%1))
+#define global ctype powf(%1,%2)        expf(logf(%1)*(%2))
+
+
 #ifndef _DEBUG
 #undef assert
 #define global assert(%1) :

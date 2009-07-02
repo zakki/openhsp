@@ -4,9 +4,6 @@ hspmath
 %note
 hspmath.as
 
-%type
-ユーザー拡張関数
-
 %group
 数学関数
 
@@ -15,27 +12,10 @@ Win
 Mac
 Cli
 Let
-
 %author
 HSPWiki
-%index
-M_PI
-円周率
 
-%inst
-円周率を表す定数です。
 
-%group
-数学定数
-
-%href
-M_E
-M_SQRTPI
-rad2deg
-deg2rad
-
-%url
-http://ja.wikipedia.org/wiki/%E5%86%86%E5%91%A8%E7%8E%87
 
 %type
 ユーザー定義マクロ
@@ -416,50 +396,8 @@ INT_MAX
 intの限度
 
 
-%type
-ユーザー定義マクロ
-%index
-rad2deg
-ラジアンを度に変換
 
-%prm
-(p1)
-p1 : 度に変換する角度（ラジアン）
 
-%inst
-角度の単位をラジアンから度へ変換します。
-弧度法で表された角度を度数法での角度に変換するとも言えます。
-
-%sample
-#include "hspmath.as"
-	tmp = M_PI
-	mes str(tmp) + "ラジアンは" + rad2deg(tmp) + "°です。"
-	stop
-
-%href
-M_PI
-deg2rad
-%index
-deg2rad
-度をラジアンに変換
-
-%prm
-(p1)
-p1 : ラジアンに変換する角度（度）
-
-%inst
-角度の単位を度からラジアンへ変換します。
-度数法で表された角度を弧度法での角度に変換するとも言えます。
-
-%sample
-#include "hspmath.as"
-	tmp = 90
-	mes str(tmp) + "°は" + deg2rad(tmp) + "ラジアンです。"
-	stop
-
-%href
-M_PI
-rad2deg
 
 %index
 pow
@@ -483,6 +421,11 @@ p2は正負どちらでも構いません。また、実数を指定することも可能です。
 		mes "10の" + cnt + "乗は" + pow(10, cnt) + "です。"
 	loop
 	stop
+%href
+powf
+logf
+
+
 %index
 log10
 10を底とした対数（常用対数）

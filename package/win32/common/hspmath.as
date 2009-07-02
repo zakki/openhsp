@@ -7,7 +7,6 @@
 #define M_LOG10E        0.43429448190325182765          ; log_10(e)
 #define M_LN2           0.69314718055994530942          ; log_e(2)
 #define M_LN10          2.30258509299404568402          ; log_e(10)
-#define M_PI            3.14159265358979323846          ; π
 #define M_SQRTPI        1.77245385090551602792981       ; √π
 #define M_SQRT2         1.41421356237309504880          ; √2
 #define M_SQRT3         1.73205080756887719000          ; √3
@@ -29,10 +28,7 @@
 #const  INT_MAX                 2147483647                              ; 最大値
 #const  INT_MIN                 -INT_MAX-1                              ; 最小値
 
-#define ctype rad2deg(%1)       (57.295779513082320877*(%1))    ; ラジアンを度に変換
-#define ctype deg2rad(%1)       (0.017453292519943295769*(%1))  ; 度をラジアンに変換
-
-#define ctype pow(%1,%2)        expf(logf(%1)*(%2))     ; x^y
+#define ctype pow(%1,%2)        expf(logf(%1)*(%2))	; x^y
 #define ctype log10(%1)         (logf(%1)/logf(10))     ; log_10(x)
 #define ctype log2(%1)          (logf(%1)/logf(2))      ; log_2(x)
 
@@ -55,7 +51,7 @@
 #define ctype intf(%1)          round((-0.5)*sgn(%1)+(%1))              ; 0の方向へ丸め
 #define ctype floor(%1)         ((intf(%1)-((%1)<intf(%1))))    ; 負の方向へ丸め
 #define ctype ceil(%1)          (-floor(-(%1)))                                 ; 正の方向へ丸め
-#define ctype fmod(%1,%2)       (double(%1)-(%2)*intf(double(%1)/(%2)))         ; モジュロ
+#define ctype fmod(%1,%2)       ((%1)\(%2))         ; モジュロ
 
 #define ctype distance2(%1,%2)  sqrt((double(%1)-%2)*(double(%1)-%2)+(double(%1(1))-%2(1))*(double(%1(1))-%2(1)))       ; 2次元距離
 
