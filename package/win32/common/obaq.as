@@ -17,6 +17,7 @@
 #func qborder qborder $202
 #func qgravity qgravity $202
 #func qcnvaxis qcnvaxis $202
+#func qgetaxis qgetaxis $202
 
 #func qdel qdel $202
 #func qfind qfind $202
@@ -52,6 +53,10 @@
 #func qgetuser2 qgetuser2 $202
 #func qdamper qdamper $202
 #func qgetdamper qgetdamper $202
+#func qinertia qinertia $202
+#func qgetinertia qgetinertia $202
+#func qgetversion qgetversion $202
+
 #func qpush qpush $202
 #func qblast qblast $202
 
@@ -86,9 +91,11 @@
 ;	material type
 ;
 #const global mat_none 0
-#const global mat_sprite 1
-#const global mat_sprite2 2
+#const global mat_spr 1
+#const global mat_spr2 2
 #const global mat_wire 3
+#const global mat_wire2 4
+#const global mat_delay 0x1000
 
 ;
 ;	system request
@@ -99,7 +106,7 @@
 #define global REQ_MAXLOG 3
 #define global REQ_DEFAULT_WEIGHT 4
 #define global REQ_DEFAULT_MOMENT 5
-#define global REQ_DEFAULT_BUOYANCY 6
+#define global REQ_DEFAULT_DAMPER 6
 #define global REQ_DEFAULT_FRICTION 7
 
 
