@@ -59,6 +59,7 @@
 
 #func qpush qpush $202
 #func qblast qblast $202
+#func qinner qinner $202
 
 
 ;

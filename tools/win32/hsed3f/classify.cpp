@@ -144,8 +144,10 @@ void InitClassify()
 	for(;;){
 		if(sscanf(line, "%s\t,%s", name, type) == 2){
 			if(nCTSize >= tableCapacity){
+				/* HSP3.2で表示されるためとりあえずカット
 				msgboxf(0, "色分けの個数が制限に達しました。\n\"%s\"以降は色分けされません。"
 					, "エラー", MB_OK | MB_ICONERROR, name);
+				*/
 				break;
 			}
 			for(TYPE_TABLE *lpTT = TypeTable; lpTT->Type; lpTT++){

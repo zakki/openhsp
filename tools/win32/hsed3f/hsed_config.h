@@ -5,19 +5,24 @@
 #ifndef __hsed_config_h
 #define __hsed_config_h
 
+#ifdef HSPVER3
+#include "../hsp3/hsp3config.h"
+#else
+#define vercode 0x0206		// HSP2 version code
+#endif
+
 //		移植用のラベル
 //
 #define HSPWIN		// Windows version flag
 //#define HSPMAC		// Macintosh version flag
 //#define HSPLINUX	// Linux version flag
-#define JPMSG		// japanese message flag
 
 #define HSPVER3		// HSP version3.0 flag
 
 #define HSED_VER 0x0300 // HSP version3.0 for registry
 //#define HSED_VER 0x0261 // HSP version2.61 for registry
 
-#define HSED_PUBLIC_VER 0x30000 // hsed public version
+#define HSED_PUBLIC_VER vercode // hsed public version
 #define HSED_PRIVATE_VER 0x10404 // hsed private version
 
 //		システム関連ラベル
