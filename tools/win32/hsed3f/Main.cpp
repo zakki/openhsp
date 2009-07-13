@@ -481,7 +481,7 @@ int WINAPI WinMain (HINSTANCE hInstance, HINSTANCE hPrevInstance,
 	a=dll_ini( szDllDir );
 	if (a!=1) {
 		msgboxf(NULL,
-#ifdef JPMSG
+#ifdef JPNMSG
 		"%sが見つかりませんでした。"
 #else
 		"%s not found."
@@ -565,7 +565,7 @@ int WINAPI WinMain (HINSTANCE hInstance, HINSTANCE hPrevInstance,
 
 	if(!InitInterface(hInstance))
 		MessageBox(hwnd, 
-#ifdef JPMSG
+#ifdef JPNMSG
 			"外部ツール用のウィンドウの初期化に失敗しました。\n"
 			"一部の外部ツールを使用することはできません。"
 #else

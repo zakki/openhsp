@@ -29,7 +29,7 @@ DWORD dwToolBarStyles = WS_CHILD | WS_VISIBLE | WS_CLIPSIBLINGS |
 
 extern HINSTANCE hInst ;
 
-#ifdef JPMSG
+#ifdef JPNMSG
 char szTbStrings[] = "新規\0ロード\0セーブ\0"
                      "切り取り\0コピー\0貼り付け\0元に戻す\0やり直し\0"
 					 "検索\0ＨＳＰ実行\0オブジェクト作成\0外部ファイル実行\0";

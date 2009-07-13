@@ -93,6 +93,7 @@ int Hsp3::Reset( int mode )
 
 	//		load HSP execute object
 	//
+	axtype = HSP3_AXTYPE_NONE;
 	if ( mode ) {									// "start.ax"ÇåƒÇ—èoÇ∑
 		i = dpm_ini( "", mode, hsp_sum, hsp_dec );	// customized EXE mode
 		//axname = NULL;
@@ -113,6 +114,7 @@ int Hsp3::Reset( int mode )
 			sz = crypt.GetSize();
 			ptr = mem_ini( sz );
 			memcpy( ptr, crypt.GetData(), sz );
+			axtype |= HSP3_AXTYPE_ENCRYPT;
 		}
 	} else {
 		ptr = dpm_readalloc( axname );

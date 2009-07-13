@@ -68,7 +68,7 @@ void pf_add( HWND hDlg, char *fname, char *pname )
 		}
 	}
 	if (a) {
-#ifdef JPMSG
+#ifdef JPNMSG
 		MessageBox ( hDlg, "すでに登録されているファイル名です。",
 						   "packfile warning", MB_OK | MB_ICONEXCLAMATION);
 #else

@@ -129,6 +129,8 @@ HSPDA ver3.2 REFERENCE MANUAL                       HSP : Hot Soup Processor
 	2009/6/9
 
 		xnoteadd でバッファオーバーフローするのを修正。
+		sortnote,sortstrで一部の文字列がASCIIコード順にソートされない不具合を修正
+		sortnote で空行が増えてしまう不具合を修正
 
 	2009/5/14
 

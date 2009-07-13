@@ -5,12 +5,6 @@
 #ifndef __hsed_config_h
 #define __hsed_config_h
 
-#ifdef HSPVER3
-#include "../hsp3/hsp3config.h"
-#else
-#define vercode 0x0206		// HSP2 version code
-#endif
-
 //		ˆÚA—p‚Ìƒ‰ƒxƒ‹
 //
 #define HSPWIN		// Windows version flag
@@ -18,6 +12,12 @@
 //#define HSPLINUX	// Linux version flag
 
 #define HSPVER3		// HSP version3.0 flag
+
+#ifdef HSPVER3
+#include "../hsp3/hsp3config.h"
+#else
+#define vercode 0x0206		// HSP2 version code
+#endif
 
 #define HSED_VER 0x0300 // HSP version3.0 for registry
 //#define HSED_VER 0x0261 // HSP version2.61 for registry
