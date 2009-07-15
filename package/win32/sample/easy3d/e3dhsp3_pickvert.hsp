@@ -1,0 +1,297 @@
+
+;	e3dhsp.dll test script
+
+; ピックサンプル
+; マウスでクリックした頂点を、検出し、その頂点の色を変化させます。
+; また、頂点の位置に、２Ｄスプライトを表示します。
+;
+;　頂点検出処理は、PickVert関数で行っています。
+;　PickVert関数は、onclick関数により、マウスをクリックするごとに、呼び出されます。
+
+;　頂点の2D位置取得処理とスプライトの表示は、DrawSpriteで、行っています。
+;　視野外の頂点や、背面カリングされている頂点は、処理をスキップするように、しています。
+;　ただし、両面表示設定されているオブジェクトは、カリング処理されません。
+
+;　ChangeFillMode関数で、fillmodeの変更をしています。
+;　1キーを押すと、球が「点」で、表示されます。
+;　2キーを押すと、球が「線」で、表示されます。
+;　3キーを押すと、球が「面」で、表示されます。
+;
+;　線や、点で表示する場合にも、裏面の点や線は、表示されない仕様になっています。
+;
+
+;　左右矢印キーで、球が回転します。
+
+
+#include "e3dhsp3.as"
+
+
+#module
+#deffunc waitbyfps int p1, var fps
+	E3DWaitbyFPS@ p1, fps
+	await 0
+	return
+#global
+	
+
+
+	dim keybuf, 256
+	
+
+	;file のpath 用のバッファーの作成
+	pathlen = 2048
+	sdim mediadir, pathlen
+	mediadir = dir_cur + "\\Media"
+	sdim pathbuf, pathlen, 2
+
+
+	chgdegx = 0.0 : chkdegy = 0.0 : chkdegz = 0.0
+
+	screenw = 640 : screenh = 480
+	screen 0, screenw, screenh, 1
+	pointmax = 100
+
+	title "Easy3D for HSP3 sample"
+
+	;開発中は下の行のコメントアウトを外すことを推奨します。
+	;E3DEnableDbgFile
+
+	;初期化
+	E3DInit 0, -1, 0, 16, 0, scid1
+
+	;カメラの初期化
+	camposx = 0.0 : camposy = 1500.0 : camposz = -2000.0
+	E3DSetCameraPos camposx, camposy, camposz	
+	camdegxz = 180.0 : camdegy = 0.0
+	E3DSetCameraDeg camdegxz, camdegy
+
+	;projectionの変更をしたいときは、以下の２行を有効にしてください。
+	proj_near = 100.0 : proj_far = 30000.0 : proj_fov = 60.0
+	E3DSetProjection proj_near, proj_far, proj_fov
+
+
+	E3DCreateProgressBar
+	E3DSetProgressBar 0
+
+	;地面データのロード
+	pathbuf.0 = mediadir + "\\whiteplane.sig"
+	E3DSigLoad pathbuf.0, hsid0
+	
+	posx0 = 0.0 : posy0 = 0.0 : posz0 = 0.0
+	degx0 = 0.0 : degy0 = 0.0 : degz0 = 0.0
+	E3DSetPos hsid0, posx0, posy0, posz0
+	E3DSetDir hsid0, degx0, degy0, degz0
+	frameno0 = 0
+
+	
+	E3DSetProgressBar 30
+	
+	E3DSetProgressBar 60	
+
+	partno1 = -1
+	vertnum1 = 0
+	vertno = 0
+
+
+	; 球データの読み込み
+
+	pathbuf.0 = mediadir + "\\sphere2.sig"
+	E3DSigLoad pathbuf.0, hsid1
+	E3DGetPartNoByName hsid1, "\"obj1\"", partno1
+	E3DGetVertNumOfPart hsid1, partno1, vertnum1
+	E3DSetPos hsid1, 0.0, 1500.0, 0.0
+
+
+	;球データの色を初期化(全ての点を、(255, 255, 255)にする)
+	E3DSetDiffuse hsid1, -1, 255, 255, 255, 0, -1
+	E3DSetAmbient hsid1, -1, 64, 64, 64, 0, -1
+
+	; E3DPickVert用のデータの作成
+	pickmax = 5
+	dim pickpartno, pickmax
+	dim pickvertno, pickmax
+
+
+	; スプライトデータの読み込み
+	pathbuf.0 = mediadir + "\\circle.bmp"
+	E3DCreateSprite pathbuf.0, 1, spid1
+	E3DGetSpriteSize spid1, spw1, sph1
+
+
+	lightdirx1 = 0
+	lightdiry1 = -1
+	lightdirz1 = 1
+	lightr1 = 255
+	lightg1 = 255
+	lightb1 = 255
+
+	E3DCreateLight lid1
+	E3DSetDirectionalLight lid1, lightdirx1, lightdiry1, lightdirz1, lightr1, lightg1, lightb1
+
+	chkfps1 = 0
+
+	E3DDestroyProgressBar
+
+	onclick gosub *PickVert
+
+*main
+	; keybuf変数は、メインループの外で、dim keybuf, 256 として、確保しておいてください。
+	E3DGetKeyboardState keybuf
+
+	if keybuf.VK_ESCAPE = 1 : goto *bye ; [ESC]で終了
+	clickflag = 0
+
+
+	gosub *ChangeFillMode
+
+	gosub *MoveChara
+
+	E3DBeginScene scid1
+	
+
+	E3DChkInView scid1, hsid0
+	E3DChkInView scid1, hsid1
+
+
+		;不透明部分の描画をする
+	E3DRender scid1, hsid0, 0, frameno0, 0
+	E3DRender scid1, hsid1, 0, frameno1, 0
+
+		;半透明部分の描画をする
+	E3DRender scid1, hsid0, 1, frameno1, 0
+	E3DRender scid1, hsid1, 1, frameno2, 0
+
+	gosub *DrawSprite
+	gosub *DrawText
+
+	E3DEndScene
+
+	E3DPresent scid1
+	
+	
+	waitbyfps 100, chkfps1
+
+	
+	goto *main
+
+
+*bye
+	E3DBye
+	end
+
+*MoveChara
+		
+	; VK_　が頭につく、定数の詳細は、e3dhsp_vk.as をご覧ください。
+	; keybuf は、GetKeyboardState 命令で、セットされます。
+
+	if( keybuf.VK_LEFT ){
+		E3DRotateY hsid1, -5
+	}
+	if( keybuf.VK_RIGHT ){
+		E3DRotateY hsid1, 5
+	}				
+
+	return
+
+*DrawText
+
+	textr = 255 : textg = 255 : textb = 255
+	textscale = 1
+	textposx = 10 : textposy = 60
+	strchk7 = "chkfps1 " + chkfps1
+	E3DDrawText textposx, textposy, textscale, textr, textg, textb, strchk7
+
+	textposx = 10 : textposy = 80
+	strchk7 = "partno1 " + partno1 + "  vertnum1 " + vertnum1
+	E3DDrawText textposx, textposy, textscale, textr, textg, textb, strchk7
+
+	textposx = 10 : textposy = 100
+	strchk7 = "clickx " + clickx + "  clicky " + clicky
+	E3DDrawText textposx, textposy, textscale, textr, textg, textb, strchk7
+	
+
+	textposy += 20		
+	strchk7 = " pickgetnum " + pickgetnum
+	E3DDrawText textposx, textposy, textscale, textr, textg, textb, strchk7
+
+	pickno = 0
+	repeat pickgetnum
+		textposy += 20		
+		strchk7 = " pickno " + pickno + "  pickpartno " + pickpartno.pickno + "  pickvertno " + pickvertno.pickno
+		E3DDrawText textposx, textposy, textscale, textr, textg, textb, strchk7
+		pickno++
+	loop
+
+	return
+
+*DrawSprite
+
+	E3DBeginSprite
+
+	; 球の、それぞれの頂点の位置に、小さい丸印を表示する。
+
+
+	vertno = 0
+	repeat vertnum1
+		
+		ddim posz1, 1
+		E3DGetScreenPos3 scid1, hsid1, partno1, posx1, posy1, posz1, vertno, 1
+			
+		scale = 0.1
+		sizediv = 1.0 / scale
+		scx1 = posx1 - (spw1 / sizediv / 2)
+		scy1 = posy1 - (spw1 / sizediv / 2)
+		if ( (posx1 != -1) & (posy1 != -1) ) {
+			E3DRenderSprite spid1, scale, scale, scx1, scy1, posz1 - 0.001
+		}
+		vertno++
+	loop
+
+
+	E3DEndSprite
+
+	return
+
+*PickVert
+	clickx=lparam & 0xffff
+	clicky=lparam>>16
+	
+	E3DPickVert scid1, hsid1, clickx, clicky, 5, 5, pickpartno, pickvertno, pickmax, pickgetnum
+
+	if( pickgetnum > 0 ){
+		pickno = 0
+		repeat pickgetnum
+			E3DGetDiffuse hsid1, pickpartno.pickno, pickvertno.pickno, curr, curg, curb
+		
+			if( (curr == 255) & (curg == 255) & (curb == 255) ){
+				E3DSetDiffuse hsid1, pickpartno.pickno, 255, 0, 255, 0, pickvertno.pickno
+			}
+			if( (curr == 255) & (curg == 0) & (curb == 255) ){
+				E3DSetDiffuse hsid1, pickpartno.pickno, 0, 0, 255, 0, pickvertno.pickno
+			}
+			if( (curr == 0) & (curg == 0) & (curb == 255) ){
+				E3DSetDiffuse hsid1, pickpartno.pickno, 255, 255, 255, 0, pickvertno.pickno
+			}
+	
+			pickno++
+		loop
+	}
+
+	
+	return
+
+*ChangeFillMode
+
+	if( keybuf.'1' == 1 ){
+		E3DSetRenderState hsid1, -1, D3DRS_FILLMODE, 1
+	}
+	if( keybuf.'2' == 1 ){
+		E3DSetRenderState hsid1, -1, D3DRS_FILLMODE, 2
+	}
+	if( keybuf.'3' == 1 ){
+		E3DSetRenderState hsid1, -1, D3DRS_FILLMODE, 3
+	}
+
+	return
+
+

@@ -1,0 +1,136 @@
+;/////////////////////////////////////////////////////////
+;//
+;//　パーティクルのサンプル その２です。
+;//
+;//  パーティクルの生成時間からの経過にしたがって、透明度とテクスチャを変化させます。
+;//  UpdateParticleの部分で、この処理を行います。
+;//
+;//////////////////////////////////////////////////////////
+
+
+;	e3dhsp.dll test script
+
+#include "e3dhsp3.as"
+
+
+#module
+#deffunc waitbyfps int p1, var fps
+	E3DWaitbyFPS@ p1, fps
+	await 0
+	return
+#global
+	
+	dim keybuf, 256
+	
+	;file のpath 用のバッファーの作成
+	pathlen = 2048
+	sdim mediadir, pathlen
+	mediadir = dir_cur + "\\Media"
+	sdim pathbuf, pathlen, 2
+
+
+	screenw = 640 : screenh = 480
+	screen 0, screenw, screenh, 1
+	pointmax = 100
+
+	title "Easy3D for HSP3 sample"
+
+	;開発中は下の行のコメントアウトを外すことを推奨します。
+	;E3DEnableDbgFile
+
+	;初期化
+	E3DInit 0, -1, 0, 16, 0, scid1
+
+	;カメラの初期化
+	eye_y = 1500.0
+	camposx = 0.0 : camposy = eye_y : camposz = -5000.0
+	E3DSetCameraPos camposx, camposy, camposz	
+	camdegxz = 180.0 : camdegy = 0.0
+	E3DSetCameraDeg camdegxz, camdegy
+	targetx = 0.0
+	targety = eye_y
+	targetz = 0.0
+	cameradist = 5000.0
+
+
+	;projectionの変更をしたいときは、以下の２行を有効にしてください。
+	proj_near = 100.0 : proj_far = 30000.0 : proj_fov = 60.0
+	E3DSetProjection proj_near, proj_far, proj_fov
+
+
+	E3DCreateProgressBar
+	E3DSetProgressBar 0
+
+	
+	lightdirx1 = 0.0
+	lightdiry1 = 0.0
+	lightdirz1 = 1.0
+	lightr1 = 255
+	lightg1 = 255
+	lightb1 = 255
+
+	E3DCreateLight lid1
+	E3DSetDirectionalLight lid1, lightdirx1, lightdiry1, lightdirz1, lightr1, lightg1, lightb1
+
+
+///////////////////////
+	E3DCreateQ camq
+	E3DCreateQ invcamq
+
+	chkfps1 = 0
+
+
+	E3DDestroyProgressBar
+
+///////////////////////
+	pathbuf.0 = mediadir + "\\num0_11.bmp"
+	E3DCreateParticle 200, pathbuf.0, 300.0, 300.0, 2, ptlid1
+	E3DSetParticlePos ptlid1, 0.0, 1000.0, 0.0
+	E3DSetParticleGravity ptlid1, 0.0
+	E3DSetParticleLife ptlid1, 1.5
+	E3DSetParticleEmitNum ptlid1, 1
+	E3DSetParticleVel0 ptlid1, -2000, -2000, -2000, 2000, 2000, 2000
+	E3DSetParticleRotation ptlid1, 0
+	E3DSetParticleDiffuse ptlid1, 255, 255, 255
+
+
+*main
+	; keybuf変数は、メインループの外で、dim keybuf, 256 として、確保しておいてください。
+	E3DGetKeyboardState keybuf
+
+	if keybuf.VK_ESCAPE = 1 : goto *bye ; [ESC]で終了
+
+	gosub *UpdateParticle
+
+	E3DBeginScene scid1
+
+	E3DRenderParticle ptlid1, chkfps1
+
+	E3DEndScene
+
+	E3DPresent scid1
+	
+	
+	waitbyfps 60, chkfps1
+
+	goto *main
+
+
+*bye
+	E3DBye
+	end
+
+*UpdateParticle
+
+	E3DSetParticleAlpha ptlid1, 0.0, 0.5, 1.0
+	E3DSetParticleUVTile ptlid1, 0.0, 0.5, 4, 3, 0
+
+	E3DSetParticleAlpha ptlid1, 0.6, 1.0, 0.8
+	E3DSetParticleUVTile ptlid1, 0.6, 1.0, 4, 3, 1
+
+	E3DSetParticleAlpha ptlid1, 1.1, 1.6, 0.4
+	E3DSetParticleUVTile ptlid1, 1.1, 1.6, 4, 3, 2
+	
+
+	return
+

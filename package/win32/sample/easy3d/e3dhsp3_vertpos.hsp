@@ -1,0 +1,259 @@
+
+;	e3dhsp.dll test script
+
+#include "e3dhsp3.as"
+
+
+#module
+#deffunc waitbyfps int p1, var fps
+	E3DWaitbyFPS@ p1, fps
+	await 0
+	return
+#global
+	
+
+
+	dim keybuf, 256
+	
+
+	;file のpath 用のバッファーの作成
+	pathlen = 2048
+	sdim mediadir, pathlen
+	mediadir = dir_cur + "\\Media"
+	sdim pathbuf, pathlen, 2
+
+
+	screenw = 640 : screenh = 480
+	screen 0, screenw, screenh, 1
+	pointmax = 100
+
+	title "Easy3D for HSP3 sample"
+
+	;開発中は下の行のコメントアウトを外すことを推奨します。
+	;E3DEnableDbgFile
+
+	;初期化
+	E3DInit 0, -1, 0, 16, 0, scid1
+
+	;カメラの初期化
+	camposx = 0.0 : camposy = 1500.0 : camposz = -2000.0
+	E3DSetCameraPos camposx, camposy, camposz	
+	camdegxz = 180.0 : camdegy = 0.0
+	E3DSetCameraDeg camdegxz, camdegy
+
+	;projectionの変更をしたいときは、以下の２行を有効にしてください。
+	proj_near = 100.0 : proj_far = 30000.0 : proj_fov = 60.0
+	E3DSetProjection proj_near, proj_far, proj_fov
+
+
+	E3DCreateProgressBar
+	E3DSetProgressBar 0
+
+	;地面データのロード
+	pathbuf.0 = mediadir + "\\whiteplane.sig"
+	E3DSigLoad pathbuf.0, hsid0
+	
+	posx0 = 0.0 : posy0 = 0.0 : posz0 = 0.0
+	degx0 = 0.0 : degy0 = 0.0 : degz0 = 0.0
+	E3DSetPos hsid0, posx0, posy0, posz0
+	E3DSetDir hsid0, degx0, degy0, degz0
+	frameno0 = 0
+
+	
+	E3DSetProgressBar 30
+	
+	E3DSetProgressBar 60	
+
+	partno1 = -1
+	vertnum1 = 0
+	vertno = 0
+	pathbuf.0 = mediadir + "\\verttest7_2.sig"
+	E3DSigLoad pathbuf.0, hsid1
+	E3DGetPartNoByName hsid1, "\"obj1\"", partno1
+	E3DGetVertNumOfPart hsid1, partno1, vertnum1
+
+	vx0 = 0.0 : vy0 = 0.0 : vz0 = 0.0
+	vx1 = 0.0 : vy1 = 0.0 : vz1 = 0.0
+	vx2 = 0.0 : vy2 = 0.0 : vz2 = 0.0
+	vx3 = 0.0 : vy3 = 0.0 : vz3 = 0.0
+	vx4 = 0.0 : vy4 = 0.0 : vz4 = 0.0
+
+	E3DGetVertPos hsid1, partno1, 0, vx0, vy0, vz0
+	E3DGetVertPos hsid1, partno1, 1, vx1, vy1, vz1
+	E3DGetVertPos hsid1, partno1, 2, vx2, vy2, vz2
+	E3DGetVertPos hsid1, partno1, 3, vx3, vy3, vz3
+	E3DGetVertPos hsid1, partno1, 4, vx4, vy4, vz4
+	
+
+	lightdirx1 = 0.0
+	lightdiry1 = -1.0
+	lightdirz1 = 1.0
+	lightr1 = 255
+	lightg1 = 255
+	lightb1 = 255
+
+	E3DCreateLight lid1
+	E3DSetDirectionalLight lid1, lightdirx1, lightdiry1, lightdirz1, lightr1, lightg1, lightb1
+
+	chkfps1 = 0
+
+	pathbuf.0 = mediadir + "\\lake.bmp"
+	pathbuf.1 = mediadir + "\\cloud3.bmp"
+	E3DCreateBG scid1, pathbuf.0, pathbuf.1, 0.001, 0.0, 1
+	;E3DCreateBG pathbuf.0, "dummy", 1, 0, 1
+
+
+	E3DDestroyProgressBar
+
+*main
+	; keybuf変数は、メインループの外で、dim keybuf, 256 として、確保しておいてください。
+	E3DGetKeyboardState keybuf
+
+	if keybuf.VK_ESCAPE = 1 : goto *bye ; [ESC]で終了
+
+
+	gosub *MoveCamera
+	gosub *MoveVert
+
+	E3DBeginScene scid1
+	
+
+	E3DChkInView scid1, hsid0
+	E3DChkInView scid1, hsid1
+
+
+		;不透明部分の描画をする
+	E3DRender scid1, hsid0, 0, frameno0, 0
+	E3DRender scid1, hsid1, 0, frameno1, 0
+
+		;半透明部分の描画をする
+	E3DRender scid1, hsid0, 1, frameno1, 0
+	E3DRender scid1, hsid1, 1, frameno2, 0
+
+	gosub *DrawText
+
+	E3DEndScene
+
+	E3DPresent scid1
+	
+
+	waitbyfps 100, chkfps1
+
+	goto *main
+
+
+*bye
+	E3DBye
+	end
+
+*MoveCamera
+
+	k=0
+	posstep = 100.0
+		
+
+	; VK_　が頭につく、定数の詳細は、e3dhsp_vk.as をご覧ください。
+	; keybuf は、GetKeyboardState 命令で、セットされます。
+
+	if keybuf.VK_LEFT = 1 : k+=1 ; 矢印左
+	if keybuf.VK_UP = 1 : k+=2 ; 矢印上
+	if keybuf.VK_RIGHT = 1 : k+=4 ; 矢印右
+	if keybuf.VK_DOWN = 1 : k+=8 ; 矢印下
+
+	if keybuf.'Z' = 1 : k+= 16
+		
+	E3DGetCameraPos camposx, camposy, camposz
+	E3DGetCameraDeg camdegxz, camdegy
+
+	forwardflag = 0
+
+	if ( k&16 ) {
+		if k&2 : E3DCameraPosForward 100.0 : forwardflag = 1
+		if k&8 : E3DCameraPosForward -100.0 : forwardflag = 1
+	}
+	else { 
+		if k&2 : camposy += 100.0
+		if k&8 : camposy -= 100.0
+	}
+
+	if k&1 : camdegxz += 2.0
+	if k&4 : camdegxz -= 2.0
+
+	if forwardflag = 0 : E3DSetCameraPos camposx, camposy, camposz	
+	E3DSetCameraDeg camdegxz, camdegy
+
+	return
+
+*DrawText
+
+	textr = 255 : textg = 255 : textb = 255
+	textscale = 1
+	textposx = 10 : textposy = 60
+	strchk7 = "chkfps1 " + chkfps1
+	E3DDrawText textposx, textposy, textscale, textr, textg, textb, strchk7
+
+	textposx = 10 : textposy = 100
+	strchk10 = "partno1 " + partno1 + "  vertnum1 " + vertnum1
+	E3DDrawText textposx, textposy, textscale, textr, textg, textb, strchk10
+
+	textposx = 10 : textposy = 125
+	strchk20 = "vert0 " + vx0 + "  " + vy0 + "  " + vz0
+	E3DDrawText textposx, textposy, textscale, textr, textg, textb, strchk20
+
+	textposx = 10 : textposy = 150
+	strchk21 = "vert1 " + vx1 + "  " + vy1 + "  " + vz1
+	E3DDrawText textposx, textposy, textscale, textr, textg, textb, strchk21
+
+	textposx = 10 : textposy = 175
+	strchk22 = "vert2 " + vx2 + "  " + vy2 + "  " + vz2
+	E3DDrawText textposx, textposy, textscale, textr, textg, textb, strchk22
+
+	textposx = 10 : textposy = 200
+	strchk23 = "vert3 " + vx3 + "  " + vy3 + "  " + vz3
+	E3DDrawText textposx, textposy, textscale, textr, textg, textb, strchk23
+
+	textposx = 10 : textposy = 225
+	strchk24 = "vert4 " + vx4 + "  " + vy4 + "  " + vz4
+	E3DDrawText textposx, textposy, textscale, textr, textg, textb, strchk24
+
+	textposx = 10 : textposy = 270
+	strchk25 = "PRESS   V key  +  O, P, K, L, N, M key"
+	E3DDrawText textposx, textposy, textscale, textr, textg, textb, strchk25
+	
+
+	return
+
+*MoveVert
+	k=0
+	vstep = 10.0
+		
+	; VK_　が頭につく、定数の詳細は、e3dhsp_vk.as をご覧ください。
+	; keybuf は、GetKeyboardState 命令で、セットされます。
+
+	if keybuf.'O' = 1 : k+=1 ; x plus
+	if keybuf.'P' = 1 : k+=2 ; x minus
+	if keybuf.'K' = 1 : k+=4 ; y plus
+	if keybuf.'L' = 1 : k+=8 ; y minus
+	if keybuf.'N' = 1 : k+=16 ; z plus
+	if keybuf.'M' = 1 : k+=32 ; z minus
+
+	if keybuf.'V' = 1 : k+=64
+
+	E3DGetVertPos hsid1, partno1, 3, vx3, vy3, vz3
+
+	if ( k&64 ) {
+		if k&1 : vx3 += vstep
+		if k&2 : vx3 -= vstep
+
+		if k&4 : vy3 += vstep
+ 		if k&8 : vy3 -= vstep
+
+		if k&16 : vz3 += vstep
+		if k&32 : vz3 -= vstep	
+	}
+
+	E3DSetVertPos hsid1, partno1, 3, vx3, vy3, vz3
+
+	return
+
+

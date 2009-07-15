@@ -31,7 +31,7 @@ http://www5d.biglobe.ne.jp/~ochikko/
 MOAで使用しているモデルデータとモーションデータはぼおんさんの作です。
 http://www2.odn.ne.jp/hanakabu/
 
-はだか猫の著作権は、ほしさんにあります。
+猫姉妹の著作権は、ほしさんにあります。
 http://ww5.et.tiki.ne.jp/~hoshi_k/cypher/
 
 タコとタコの走行の地面データはShinobuさんの作です。

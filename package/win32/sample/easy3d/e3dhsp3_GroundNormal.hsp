@@ -1,0 +1,358 @@
+;  e3dhsp_GroundNormal.as
+;  
+;　キャラクターの上方向を、徐々に、地面の法線ベクトル方向に向けるためのサンプル。
+;
+;　矢印キーで、モロ星人が動きます。
+;　地面の法線ベクトルにあわせて、徐々に、キャラクターの上方向を修正します。
+
+;  画面に、地面の法線ベクトルと、キャラクターの上方向の角度が、deg として表示されます。
+;　小数点を整数にする部分や、multの大きさの制限などにより、多少、誤差が生じますが、
+;　徐々に、角度は小さくなり、ほぼ、一致します。
+;
+
+;
+;　３つのクォータニオンを使います。
+;　　　１，キャラクター全体の姿勢情報を格納するためのクォータニオン（qid）
+;　　　２，キャタクターのＸＺ平面での回転情報を格納するためのクォータニオン(qidxz)
+;　　　３，キャラクターの上方向の回転情報を格納するためのクォータニオン（qidup）
+;
+;　qidxzのセットは、キー入力に応じて、MoveCharaで行います。
+;　qidup, qidのセットは、SetCharaDirQで行います。
+;
+;  60FPS以上は、出ないようにしてあります。
+
+
+;	e3dhsp.dll test script
+
+#include "e3dhsp3.as"
+
+#module
+#deffunc waitbyfps int p1, var fps
+	E3DWaitbyFPS@ p1, fps
+	await 0
+	return
+#global
+	
+	dim keybuf, 256	
+
+	;file のpath 用のバッファーの作成
+	
+	pathlen = 2048
+	sdim mediadir, pathlen
+	mediadir = dir_cur + "\\Media"
+	sdim pathbuf, pathlen, 4
+	
+
+	mapsize = 80000.0	
+	mapdiv = 50.0
+	mapheight = 10000.0
+
+	chgdegx = 0 : chkdegy = 0 : chkdegz = 0
+
+	screenw = 640 : screenh = 480
+	screen 0, screenw, screenh, 1
+	pointmax = 100
+
+	title "Easy3D for HSP3 sample"
+
+	;開発中は下の行のコメントアウトを外すことを推奨します。
+	;E3DEnableDbgFile
+
+	;初期化
+	E3DInit 0, -1, 0, 16, 0, scid1
+
+
+	;カメラの初期化
+	camposx = 0.0 : camposy = 2500.0 : camposz = 0.0
+	E3DSetCameraPos camposx, camposy, camposz	
+	camdegxz = 180.0 : camdegy = 0.0
+	E3DSetCameraDeg camdegxz, camdegy
+
+	confflag = 0
+	endflag = 0
+
+
+	;projectionの変更をしたいときは、以下の２行を有効にしてください。
+	proj_near = 100.0 : proj_far = 50000.0 : proj_fov = 60.0
+	E3DSetProjection proj_near, proj_far, proj_fov
+
+
+	E3DCreateProgressBar
+	E3DSetProgressBar 0
+
+	pathbuf.0 = mediadir + "\\g2.bmp"
+	pathbuf.1 = mediadir + "\\g_road_6_20_1.bmp"
+	pathbuf.2 = mediadir + "\\g_river_6_20_1.bmp"
+	pathbuf.3 = mediadir + "\\BG43.bmp"
+
+	E3DLoadGroundBMP pathbuf.0, pathbuf.1, pathbuf.2, pathbuf.3, mapsize, mapsize, mapdiv, mapdiv, mapheight, hsid0
+	posx0 = 0.0 : posy0 = 0.0 : posz0 = 0.0
+	degx0 = 0.0 : degy0 = 0.0 : degz0 = 0.0
+	E3DSetPos hsid0, posx0, posy0, posz0
+	E3DSetDir hsid0, degx0, degy0, degz0
+	frameno0 = 0
+
+	
+	E3DSetProgressBar 25
+	
+	pathbuf.0 = mediadir + "\\morob_6_26_r3.sig"
+	pathbuf.1 = mediadir + "\\morob_6_26_r3.qua"
+	E3DSigLoad pathbuf.0, hsid4
+	E3DAddMotion hsid4, pathbuf.1, mk4_idling, max4_idling				
+
+	E3DSetMotionKind hsid4, mk4_idling
+	posx4 = 39690.0 : posy4 = 10000.0 : posz4 = 42115.0
+	E3DSetPos hsid4, posx4, posy4, posz4
+
+
+	E3DCreateQ qidxz ;ＸＺ平面上での回転情報を保持するためのクォータニオン
+	E3DCreateQ qidup ;キャラクターの上方向の情報を保持するためのクォータニオン
+	E3DCreateQ qid ;キャラクター全体の姿勢情報を保持するためのクォータニオン
+	E3DInitQ qidxz
+	E3DInitQ qidup
+	E3DInitQ qid
+	
+	E3DSetDirQ2 hsid4, qid
+
+
+	frameno4 = 0
+	newmk4 = 0
+	E3DSetBeforePos hsid4
+
+	;/////////////////	
+	
+	testfps = 0
+
+	lightdirx1 = 0.0
+	lightdiry1 = -1.0
+	lightdirz1 = 1.0
+	lightr1 = 255
+	lightg1 = 255
+	lightb1 = 255
+
+	E3DCreateLight lid1
+	E3DSetDirectionalLight lid1, lightdirx1, lightdiry1, lightdirz1, lightr1, lightg1, lightb1
+
+	E3DSetLightAmbient lid1, 77, 77, 77
+	E3DSetLightSpecular lid1, 0, 0, 0
+
+	chkfps1 = 0
+
+	pathbuf.0 = mediadir + "\\lake.bmp"
+	pathbuf.1 = mediadir + "\\cloud3.bmp"
+	E3DCreateBG scid1, pathbuf.0, pathbuf.1, 0.001, 0.0, 0
+
+
+	E3DDestroyProgressBar
+
+	pbflag = 0;
+
+	result0 = 0
+	adjustx0 = 0.0 : adjusty0 = 0.0 : adjustz0 = 0.0
+
+	befposx = posx4 : befposy = posy4 : befposz = posz4
+
+	dim arfps, 50
+
+*main
+	; keybuf変数は、メインループの外で、dim keybuf, 256 として、確保しておいてください。
+	E3DGetKeyboardState keybuf
+
+	if keybuf.VK_ESCAPE = 1 : goto *bye ; [ESC]で終了
+
+	gosub *MoveChara
+	gosub *MoveCamera
+
+
+	E3DSetNewPose hsid4, frameno4
+
+
+	E3DBeginScene scid1
+	
+
+	E3DChkInView scid1, hsid0
+	E3DChkInView scid1, hsid4
+
+	gosub *ChkConf ; !!! E3DChkInViewより後で呼んでください。
+
+	gosub *SetCharaDirQ
+
+
+		;不透明部分の描画をする
+	E3DRender scid1, hsid0, 0, frameno0, 0
+	E3DRender scid1, hsid4, 0, frameno4, 0
+
+	gosub *DrawText
+
+
+	E3DEndScene
+
+	E3DPresent scid1
+		
+	waitbyfps 60, chkfps1
+
+	arno = 0
+	repeat 49
+		befno = 48 - arno
+		aftno = 49 - arno
+		arfps.aftno = arfps.befno
+		arno++
+	loop	
+	arfps.0 = chkfps1
+
+
+	E3DGetPos hsid4, posx4, posy4, posz4
+	E3DSetBeforePos hsid4
+	befposx = posx4 : befposy = posy4 : befposz = posz4
+	
+	goto *main
+
+
+*bye
+	E3DBye
+	end
+
+*MoveChara
+	posstep = 50.0
+	degstep = 1.0
+
+		
+	; VK_　が頭につく、定数の詳細は、e3dhsp_vk.as をご覧ください。
+	; keybuf は、GetKeyboardState 命令で、セットされます。
+
+	if( keybuf.VK_UP == 1 ){
+		E3DGetPos hsid4, saveposx4, saveposy4, saveposz4
+		E3DPosForward hsid4, posstep
+		E3DGetPos hsid4, posx4, posy4, posz4
+		posy4 = saveposy4
+		E3DSetPos hsid4, posx4, posy4, posz4
+	}
+
+	if( keybuf.VK_DOWN == 1 ){
+		E3DGetPos hsid4, saveposx4, saveposy4, saveposz4
+		E3DPosForward hsid4, -posstep
+		E3DGetPos hsid4, posx4, posy4, posz4
+		posy4 = saveposy4
+		E3DSetPos hsid4, posx4, posy4, posz4
+	}
+
+	if ( keybuf.VK_LEFT == 1 ){
+		E3DRotateQY qidxz, -degstep
+	}
+	if ( keybuf.VK_RIGHT == 1 ){
+		E3DRotateQY qidxz, degstep
+	}
+
+	return
+*ChkConf
+	result0 = 0
+
+	; 地面と、キャラクタのあたり判定	
+	E3DChkConfGround hsid4, hsid0, 1, 200.0, -100.0, result0, adjustx0, adjusty0, adjustz0, nx0, ny0, nz0
+	if ( result0 != 0 ) {
+		E3DSetPos hsid4, adjustx0, adjusty0, adjustz0
+	}
+
+	return
+
+*SetCharaDirQ
+
+	E3DGetPos hsid4, posx4, posy4, posz4
+
+	;aft*に、キャラクターの下の座標を求める。（地面より下の座標）
+	aftposx = posx4
+	aftposy = posy4 - 10000.0
+	aftposz = posz4
+	E3DChkConfGround2 posx4, posy4, posz4, aftposx, aftposy, aftposz, hsid0, 1, 200.0, -100.0, result1, adjustx1, adjusty1, adjustz1, nx1, ny1, nz1
+	if( result1 != 0 ) {
+
+		;resutl1が０でないとき、(nx1, ny1, nz1)には、キャラクターの真下の地面の法線ベクトルが、入っている。
+
+
+		E3DMultQVec qidup, 0.0, 1.0, 0.0, upx, upy, upz
+			;現在のキャラクターの上向きベクトルを求める。
+
+		E3DDot nx1, ny1, nz1, upx, upy, upz, chkdot
+			;現在のキャラクターの上ベクトルと、地面の法線ベクトルが、どのくらいの角度をなしているかを知るため、内積を計算する。
+			;DrawTextで使用する。
+
+
+		E3DLookAtQ qidup, nx1, ny1, nz1, 0.0, 1.0, 0.0, 3, 30
+			;キャラクターの上向き姿勢を、徐々に、法線ベクトルに近づける。
+
+		E3DMultQ qid, qidxz, qidup
+			;キャラクター全体の姿勢情報を計算する。
+
+		E3DSetDirQ2 hsid4, qid
+			;計算したクォータニオンを、キャラクターの姿勢として、セットする。
+
+
+	} else {
+
+		;キャラクターの真下に、地面がない場合は、qidxzを、キャラクター全体の姿勢とする。（qidupは計算しない（出来ない））
+		E3DSetDirQ2 hsid4, qidxz
+	}
+
+	return
+
+*MoveCamera
+
+	;キャラクターより後ろに４０００程下がった場所の、地面より1500高い場所にカメラを設定する。
+	;カメラの注視点は、キャラクターより８００上の場所にする。
+
+
+	E3DGetPos hsid4, saveposx4, saveposy4, saveposz4
+	E3DPosForward hsid4, -4000.0
+	E3DGetPos hsid4, backposx, backposy, backposz
+	E3DSetPos hsid4, saveposx4, saveposy4, saveposz4
+
+	
+	E3DChkConfGround2 backposx, 10000.0, backposz, backposx, -100.0, backposz, hsid0, 1, 200.0, -100.0, result2, adjustx2, adjusty2, adjustz2, nx2, ny2, nz2
+	if( result2 != 0 ){		
+		E3DSetCameraPos adjustx2, adjusty2 + 1500.0, adjustz2
+	} else {
+		E3DSetCameraPos backposx, saveposy4 + 1500.0, backposz
+	}
+	E3DSetCameraTarget saveposx4, saveposy4 + 800.0, saveposz4, 0.0, 1.0, 0.0
+
+	return
+
+
+*DrawText
+
+	textr = 255 : textg = 255 : textb = 255
+	textscale = 1
+
+	lcnt = 0
+	avfps = 0
+	repeat 50
+		avfps += arfps.lcnt
+		lcnt++
+	loop
+	avfps = avfps / 50
+	textposx = 10 : textposy = 80
+	strchk2 = "avfps   " + avfps
+	E3DDrawText textposx, textposy, textscale, textr, textg, textb, strchk2
+
+
+	;地面の法線ベクトルを出力	
+	textposy += 20
+	strchk2 = "nx1 " + nx1 + "  ny1 " + ny1 + "  nz1 " + nz1
+	E3DDrawText textposx, textposy, textscale, textr, textg, textb, strchk2
+
+
+	;キャラクターの上方向ベクトルを出力
+	textposy += 20
+	E3DMultQVec qid, 0, 10000, 0, charaupx, charaupy, charaupz
+	strchk2 = "charaupx " + charaupx + "  charaupy " + charaupy + "  charaupz " + charaupz
+	E3DDrawText textposx, textposy, textscale, textr, textg, textb, strchk2
+
+
+	;地面の法線ベクトルと、キャラクターの上方向のなす角度を、出力する。
+	textposy += 20
+	E3DACos chkdot, chkdeg
+	strchk2 = "chkdot : " + chkdot + "    deg : " + chkdeg
+	E3DDrawText textposx, textposy, textscale, textr, textg, textb, strchk2
+
+	return
+

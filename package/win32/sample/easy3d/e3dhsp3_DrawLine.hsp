@@ -1,0 +1,242 @@
+;　マウスでクリックして、線を描くサンプルです。
+
+;　線を描きながら、左右矢印キーを押すと、分かるように、
+;　２Ｄの線ではなく、３Ｄの線です。
+
+;　E3DConvScreenTo3Dという関数で、マウスの位置に対応する３Ｄ座標を取得し、
+;　その位置に、線を引きます。
+;　E3DConvScreenTo3D関数の３番目の引数に、いつも決まった値を指定することで、
+;　カメラから等距離な平面上の３Ｄ座標を取得することが出来ます。
+
+;　マウスをクリックすると、AddPoint2Lineのラベルにジャンプし、線に点を追加します。
+;
+	
+
+#include "e3dhsp3.as"
+
+#module
+#deffunc waitbyfps int p1, var fps
+	E3DWaitbyFPS@ p1, fps
+	await 0
+	return
+#global
+
+	MAXPOINTNUM = 10000
+	Z = 0.5
+	
+	dim keybuf, 256	
+
+	;file のpath 用のバッファーの作成
+	pathlen = 2048
+	sdim mediadir, pathlen
+	mediadir = dir_cur + "\\Media"
+	sdim pathbuf, pathlen, 4
+	
+
+	screenw = 640 : screenh = 480
+	;screenw = 420 : screenh = 340
+	screen 0, screenw, screenh, 1
+
+
+	title "Draw Line!!"
+
+	;開発中は下の行のコメントアウトを外すことを推奨します。
+	;E3DEnableDbgFile
+
+	;初期化
+	E3DInit 0, -1, 0, 16, 0, scid1
+
+	;カメラの初期化
+	cameradist = 200.0
+	cameraheight = 2000.0
+	camdegxz = 180.0
+	camposx = 0.0
+	camposy = cameraheight
+	camposz = 0.0
+	gosub *MoveCamera ; E3DConvScreenTo3Dを呼ぶ前に、カメラのセットが必要！！
+
+	confflag = 0
+	endflag = 0
+
+
+	;projectionの変更をしたいときは、以下の２行を有効にしてください。
+	proj_near = 100.0 : proj_far = 50000.0 : proj_fov = 60.0
+	E3DSetProjection proj_near, proj_far, proj_fov
+
+; マウスで２点をクリックしたときに、E3DCreateLineをしてもいいですが、
+;このサンプルでは、最初に、ラインを作成しておきます。
+;点が一つもないラインは作成できないので、画面中央の点を２点、ラインにセットします。
+
+	E3DConvScreenTo3D scid1, screenw / 2, screenh / 2, Z, firstx, firsty, firstz
+	ddim pointpos, 2, 3
+	pointpos.0.0 = firstx
+	pointpos.0.1 = firsty
+	pointpos.0.2 = firstz
+
+	pointpos.1.0 = firstx
+	pointpos.1.1 = firsty
+	pointpos.1.2 = firstz
+
+	pointnum = 2
+	E3DCreateLine pointpos, pointnum, MAXPOINTNUM, 3, lineid
+
+
+	; lineに色を付ける
+	E3DSetLineColor lineid, 255, 255, 255, 0
+
+	ddim newpos, 3
+	ddim chkpos, 3	
+
+
+;マウスをクリックしたら、AddPoint2Lineで、線に点を足します。
+	onclick gosub *AddPoint2Line
+
+
+;/////////////////	
+	
+	testfps = 0
+
+	lightdirx1 = 0.0
+	lightdiry1 = -1.0
+	lightdirz1 = 2.0
+	lightr1 = 255
+	lightg1 = 255
+	lightb1 = 255
+
+	E3DCreateLight lid1
+	E3DSetDirectionalLight lid1, lightdirx1, lightdiry1, lightdirz1, lightr1, lightg1, lightb1
+
+	chkfps1 = 0
+
+
+*main
+	; keybuf変数は、メインループの外で、dim keybuf, 256 として、確保しておいてください。
+	E3DGetKeyboardState keybuf
+
+	if keybuf.VK_ESCAPE = 1 : goto *bye ; [ESC]で終了
+
+	gosub *MoveCamera
+
+	E3DBeginScene scid1
+	
+	E3DRender scid1, lineid, 0, 0, 0
+	gosub *DrawText
+
+	E3DEndScene
+
+	E3DPresent scid1
+		
+	waitbyfps 100, chkfps1
+
+	goto *main
+
+*bye
+	E3DDestroyBG
+
+	E3DDestroyLight lid1
+
+	E3DBye
+	end
+
+
+*DrawText
+
+	textr = 0 : textg = 255 : textb = 0
+	textscale = 1
+	sdim strchk2, 1024
+
+
+	textposx = 10 : textposy = 20
+	strchk2 = "chkfps1   " + chkfps1
+	E3DDrawText textposx, textposy, textscale, textr, textg, textb, strchk2
+
+	textposy += 20
+	strchk2 = "lineid " + lineid + "  pointnum " + pointnum
+	E3DDrawText textposx, textposy, textscale, textr, textg, textb, strchk2
+
+	textposy += 20
+	strchk2 = "newpos  x : " + newpos.0 + "  y : " + newpos.1 + "  z : " + newpos.2
+	E3DDrawText textposx, textposy, textscale, textr, textg, textb, strchk2
+	
+	textposy += 20
+	strchk2 = "clickx " + clickx + "  clicky " + clicky
+	E3DDrawText textposx, textposy, textscale, textr, textg, textb, strchk2
+
+
+	debugflag = 0
+	if( debugflag == 1 ) {
+		textposy += 20
+		strchk2 = "firstx " + firstx + "  firsty " + firsty + "  firstz " + firstz
+		E3DDrawText textposx, textposy, textscale, textr, textg, textb, strchk2
+
+
+		previd = -1
+		repeat pointnum
+			textposy += 20
+			E3DGetNextPointOfLine lineid, previd, curid
+			E3DGetPointPosOfLine lineid, curid, chkpos
+
+			strchk2 = "chkpos.x " + chkpos.0 + "  chkpos.y " + chkpos.1 + "  chkpos.z " + chkpos.2
+			E3DDrawText textposx, textposy, textscale, textr, textg, textb, strchk2
+
+			previd = curid
+		loop
+	}
+
+	return
+
+*AddPoint2Line
+
+	clickx=lparam & 0xffff
+	clicky=lparam>>16
+
+	if( pointnum < MAXPOINTNUM ) {
+		;マウス位置の３Ｄ座標を求める
+		E3DConvScreenTo3D scid1, clickx, clicky, Z, newpos.0, newpos.1, newpos.2
+		
+		;上で求めた点を、線に足す。
+		E3DAddPoint2Line lineid, -1, newpid
+		E3DSetPointPosOfLine lineid, newpid, newpos
+
+		pointnum++
+	}
+
+	return
+
+*MoveCamera
+	
+	cameraupdate = 0
+
+	if ( keybuf.VK_LEFT == 1 ) {
+		camdegxz += 1.0
+		if camdegxz > 360.0 : camdegxz -= 360.0
+		cameraupdate = 1
+	}
+
+	if ( keybuf.VK_RIGHT == 1 ) {
+		camdegxz -= 1.0
+		if camdegxz < 0.0 : camdegxz += 360.0
+		cameraupdate = 1
+	}
+	
+	if ( keybuf.VK_UP == 1 ) {
+		camposy += 10.0
+		cameraupdate = 1		
+	}
+
+	if ( keybuf.VK_DOWN == 1 ) {
+		camposy -= 10.0
+		cameraupdate = 1
+	}
+
+	E3DSin camdegxz, camposx
+	E3DCos camdegxz, camposz
+
+	camposx *= cameradist
+	camposz *= cameradist
+	
+	E3DSetCameraPos camposx, camposy, camposz
+	E3DSetCameraTarget 0.0, camposy, 0.0, 0.0, 1.0, 0.0
+
+	return
+

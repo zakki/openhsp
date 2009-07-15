@@ -1,0 +1,412 @@
+	
+;	たこ自動走行　サンプル
+
+#include "e3dhsp3.as"
+
+#module
+#deffunc waitbyfps int p1, var fps
+	E3DWaitbyFPS@ p1, fps
+	await 0
+	return
+#global
+
+	
+	dim keybuf, 256	
+
+	;file のpath 用のバッファーの作成
+	pathlen = 2048
+	sdim mediadir, pathlen
+	mediadir = dir_cur + "\\Media"
+	sdim pathbuf, pathlen, 4
+	
+
+	mapsize = 150000.0
+	mapdiv = 50
+
+	mapheight = 10000.0
+
+	chgdegx = 0.0 : chkdegy = 0.0 : chkdegz = 0.0
+
+	screenw = 640 : screenh = 480
+	;screenw = 420 : screenh = 340
+	screen 0, screenw, screenh, 1
+	pointmax = 100
+
+	title "Tako AutoRun"
+
+	;開発中は下の行のコメントアウトを外すことを推奨します。
+	;E3DEnableDbgFile
+
+	;初期化
+	E3DInit 0, -1, 0, 16, 0, scid1
+
+	;カメラの初期化
+	camposx = 0.0 : camposy = 2500.0 : camposz = 0.0
+	E3DSetCameraPos camposx, camposy, camposz	
+	camdegxz = 180.0 : camdegy = 0.0
+	E3DSetCameraDeg camdegxz, camdegy
+
+	confflag = 0
+	endflag = 0
+
+
+	;projectionの変更をしたいときは、以下の２行を有効にしてください。
+	proj_near = 100.0 : proj_far = 50000.0 : proj_fov = 60.0
+	E3DSetProjection proj_near, proj_far, proj_fov
+
+
+	E3DCreateProgressBar
+	E3DSetProgressBar 30
+
+	
+	; 地面データのロード
+
+	pathbuf.0 = mediadir + "\\test_course_01.mqo"
+	E3DLoadMQOFileAsGround pathbuf.0, 100.0, hsid0
+	E3DSetPos hsid0, 0.0, 0.0, 0.0	
+	frameno0 = 0
+
+	E3DSetProgressBar 60
+	
+	
+	; たこの読み込み	
+	pathbuf.0 = mediadir + "\\tako.sig"
+	pathbuf.1 = mediadir + "\\tako_idling.qua"
+	pathbuf.2 = mediadir + "\\tako_run.qua"
+	E3DSigLoad pathbuf.0, hsid4
+	E3DAddMotion hsid4, pathbuf.1, mk4_idling, max4_idling				
+	E3DAddMotion hsid4, pathbuf.2, mk4_run, max4_run
+
+	E3DSetMotionKind hsid4, mk4_run
+
+	posx4 = 117424.0 : posy4 = 7000.0 : posz4 = 44745.0	
+	degx4 = 0.0 : degy4 = 162.0 : degz4 = 0.0
+	E3DSetPos hsid4, posx4, posy4, posz4
+	E3DSetDir hsid4, degx4, degy4, degz4
+	frameno4 = 0
+	newmk4 = 0
+	curposx4 = posx4 : curposy4 = posy4 : curposz4 = posz4
+	E3DSetBeforePos hsid4
+
+
+
+	; 走行ラインの読み込み
+	gosub *LoadNaviLine ;　別ファイル、naviline0.as の関数です。
+
+
+; 表示用のラインの作成とセット
+	pointnum = 117
+	maxpointnum = pointnum + 10
+	ddim pointpos, pointnum, 3
+
+		; ナビポイントの座標を、ライン中のポイントの座標にコピーする。
+	curnpno = -1
+	nextnpno = 0
+	setno = 0
+	firstpno = 0
+	while nextnpno >= 0
+		E3DGetNextNaviPoint nlid0, curnpno, nextnpno
+		if ( nextnpno >= 0 ) {
+			E3DGetNaviPointPos nlid0, nextnpno, npx, npy, npz
+			pointpos.setno.0 = npx
+			pointpos.setno.1 = npy + 500.0 ; 地面に線がもぐらないように、上にずらす
+			pointpos.setno.2 = npz
+
+			if setno == 0 : firstpno = nextnpno
+			setno++
+		}
+		curnpno = nextnpno
+	wend
+
+	E3DCreateLine pointpos, pointnum, maxpointnum, 3, lineid
+
+
+	; lineにpointを追加するテスト（最終ポイントから最初のポイントの間に線を引いてみる）
+	ddim firstpos, 3
+	E3DGetPointPosOfLine lineid, firstpno, firstpos	
+	E3DAddPoint2Line lineid, -1, newpid
+	E3DSetPointPosOfLine lineid, newpid, firstpos
+
+
+	; pointを削除するテスト
+	;E3DDeletePointOfLine lineid, firstpno
+
+
+
+	; lineに色を付ける
+	E3DSetLineColor lineid, 255, 0, 255, 0
+
+
+
+;/////////////////	
+	
+	testfps = 0
+
+	lightdirx1 = 0.0
+	lightdiry1 = -1.0
+	lightdirz1 = 2.0
+	lightr1 = 255
+	lightg1 = 255
+	lightb1 = 255
+
+	E3DCreateLight lid1
+	E3DSetDirectionalLight lid1, lightdirx1, lightdiry1, lightdirz1, lightr1, lightg1, lightb1
+
+	E3DSetLightAmbient lid1, 77, 77, 77
+	E3DSetLightSpecular lid1, 0, 0, 0
+
+
+	chkfps1 = 0
+
+	pathbuf.0 = mediadir + "\\lake.bmp"
+	pathbuf.1 = mediadir + "\\cloud3.bmp"
+	E3DCreateBG scid1, pathbuf.0, pathbuf.1, 0.001, 0.0, 0
+
+	E3DDestroyProgressBar
+
+	pbflag = 0;
+
+	result0 = 0 : result1 = 0 : result2 = 0 : result3 = 0
+	adjustx0 = 0.0 : adjusty0 = 0.0 : adjustz0 = 0.0
+	adjustx1 = 0.0 : adjusty1 = 0.0 : adjustz1 = 0.0
+	adjustx2 = 0.0 : adjusty2 = 0.0 : adjustz2 = 0.0
+	adjustx3 = 0.0 : adjusty3 = 0.0 : adjustz3 = 0.0
+
+	befposx = posx4 : befposy = posy4 : befposz = posz4
+
+	ccw = 0
+	newdeg = 0.0
+	nx1 = 0.0 : ny1 = 0.0 : nz1 = 0.0
+	dot1 = 0.0 : dot2 = 0.0 : dot = 0.0
+
+	dim arfps, 50
+
+	maxfps = 60
+	befshiftF = 0
+	curshiftF = 0
+
+	turboflag = 0
+
+	targetpid4 = 0
+	movestep = 200
+
+
+*main
+	; keybuf変数は、メインループの外で、dim keybuf, 256 として、確保しておいてください。
+	E3DGetKeyboardState keybuf
+
+	if keybuf.VK_ESCAPE = 1 : goto *bye ; [ESC]で終了
+
+	gosub *CheckTurbo
+	gosub *ChangeFPS
+
+	gosub *MoveChara2
+	gosub *MoveCamera2
+
+
+	E3DSetNewPose hsid4, frameno4
+
+
+	E3DBeginScene scid1
+	
+
+	E3DChkInView scid1, hsid0
+	E3DChkInView scid1, hsid4
+
+	gosub *ChkConf ; !!! E3DChkInViewより後で呼んでください。
+
+
+		;不透明部分の描画をする
+	E3DRender scid1, hsid0, 0, frameno0, 0
+	E3DRender scid1, hsid4, 0, frameno4, 0
+	E3DRender scid1, lineid, 0, 0, 0
+
+		;半透明部分の描画をする
+	E3DRender scid1, hsid0, 1, frameno0, 0, 0, 0, 1
+	E3DRender scid1, hsid4, 1, frameno4, 0, 0, 0, 1
+
+
+	gosub *DrawText
+
+
+	E3DEndScene
+
+	E3DPresent scid1
+		
+	waitbyfps maxfps, chkfps1
+
+	arno = 0
+	repeat 49
+		befno = 48 - arno
+		aftno = 49 - arno
+		arfps.aftno = arfps.befno
+		arno++
+	loop	
+	arfps.0 = chkfps1
+
+	
+	E3DGetPos hsid4, posx4, posy4, posz4
+	E3DSetBeforePos hsid4
+	befposx = posx4 : befposy = posy4 : befposz = posz4
+	
+	goto *main
+
+#include "naviline0.as"
+
+*bye
+	E3DDestroyBG
+
+	E3DDestroyLight lid1
+
+	E3DBye
+	end
+
+*MoveChara2
+	dummytpid = -1
+
+	
+	E3DControlByNaviLine hsid4, nlid0, 5, 1, 0, 1000.0, movestep, 200.0, ctrlx4, ctrly4, ctrlz4, ctrlqx4, ctrlqy4, ctrlqz4, ctrlqw4, targetpid4
+	;E3DControlByNaviLine hsid4, nlid0, 5, 1, 0, 1000, movestep, 200, ctrlx4, ctrly4, ctrlz4, ctrlqx4, ctrlqy4, ctrlqz4, ctrlqw4, dummytpid
+	
+	;E3DControlByNaviLine hsid4, nlid0, 4, 1, 0, 4000, movestep, 100, ctrlx4, ctrly4, ctrlz4, ctrlqx4, ctrlqy4, ctrlqz4, ctrlqw4, targetpid4
+	;E3DControlByNaviLine hsid4, nlid0, 4, 1, 0, 4000, movestep, 40, ctrlx4, ctrly4, ctrlz4, ctrlqx4, ctrlqy4, ctrlqz4, ctrlqw4, dummytpid
+
+	posx4 = ctrlx4 : posy4 = ctrly4 : posz4 = ctrlz4
+	E3DSetPos hsid4, posx4, posy4, posz4
+	E3DSetDirQ hsid4, ctrlqx4, ctrlqy4, ctrlqz4, ctrlqw4
+
+	
+	return
+
+*ChkConf
+	result0 = 0
+
+	; 地面その１と、キャラクタのあたり判定	
+	E3DChkConfGround hsid4, hsid0, 1, 200.0, -100.0, result0, adjustx0, adjusty0, adjustz0, nx0, ny0, nz0
+	if ( result0 != 0 ) {
+		posx4 = adjustx0 : posy4 = adjusty0 : posz4 = adjustz0
+		E3DSetPos hsid4, posx4, posy4, posz4		
+	}	
+
+	return
+
+
+*MoveCamera2
+	E3DGetPos hsid4, saveposx4, saveposy4, saveposz4
+	E3DGetDirQ hsid4, saveqx4, saveqy4, saveqz4, saveqw4
+
+	E3DRotateInit hsid4
+	E3DRotateY hsid4, 180.0
+
+	E3DPosForward hsid4, -2500.0
+	E3DGetPos hsid4, backposx, backposy, backposz
+
+	E3DSetPos hsid4, saveposx4, saveposy4, saveposz4
+	E3DSetDirQ hsid4, saveqx4, saveqy4, saveqz4, saveqw4			
+
+
+	E3DChkConfGround2 backposx, mapheight, backposz, backposx, -100.0, backposz, hsid0, 0, 200.0, 0.0, resultc, adjustxc, adjustyc, adjustzc, nxc, nyc, nzc
+	if ( resultc = 0 ) {
+		backposy = 1500.0
+	}
+	else {
+		backposy = adjustyc + 1500.0
+	} 	
+	E3DSetCameraPos backposx, backposy, backposz
+	E3DSetCameraTarget saveposx4, saveposy4 + 800, saveposz4, 0, 1, 0
+
+	return
+
+
+*CheckTurbo
+	if ( keybuf.'T' = 1 ) {
+		if ( turboflag = 0 ) {
+			E3DSetMotionStep hsid4, mk4_idling, 2
+			E3DSetMotionStep hsid4, mk4_run, 2		
+			turboflag = 1
+			movestep = 400.0
+		}
+	}
+	else {
+		if( turboflag = 1 ) {
+			E3DSetMotionStep hsid4, mk4_idling, 1
+			E3DSetMotionStep hsid4, mk4_run, 1		
+			turboflag = 0
+			movestep = 200.0
+		}
+	}
+
+	return
+
+*ChangeFPS
+
+	curshiftF = 0
+	if ( (keybuf.VK_SHIFT = 1) & (keybuf.'F' = 1) ) {
+		curshiftF = 1
+	}
+
+	if ( ( curshiftF = 0 ) & ( befshiftF = 1 ) ) {
+		if ( maxfps = 60 ) {
+			maxfps = 500
+		}
+		else {
+			maxfps = 60
+		} 
+	}
+
+	befshiftF = curshiftF
+
+	return
+
+*DrawText
+
+	textr = 0 : textg = 255 : textb = 0
+	textscale = 1
+
+	lcnt = 0
+	avfps = 0
+	repeat 50
+		avfps += arfps.lcnt
+		lcnt++
+	loop
+	avfps = avfps / 50
+
+	textposx = 10 : textposy = 20
+	strchk2 = "avfps   " + avfps
+	E3DDrawText textposx, textposy, textscale, textr, textg, textb, strchk2
+
+	
+	E3DGetPos hsid4, chkposx, chkposy, chkposz
+	textposx = 10 : textposy = 40
+	sdim strchk3, 1024, 1	
+	strchk3.0 = "chara position   X : " + chkposx + "  Y : " + chkposy + "  Z : " + chkposz
+	E3DDrawText textposx, textposy, textscale, textr, textg, textb, strchk3.0
+
+	E3DGetNaviPointPos nlid0, targetpid4, tpx, tpy, tpz
+	textposx = 10 : textposy = 60
+	strchk4 = "targetpid4 " + targetpid4 + " x " + tpx + " y " + tpy + " z " + tpz
+	E3DDrawText textposx, textposy, textscale, textr, textg, textb, strchk4
+
+
+
+	textposx = 10 : textposy = 100
+	strchk5 = "ctrlqx4 " + ctrlqx4 + " ctrlqy4 " + ctrlqy4 + " ctrlqz4 " + ctrlqz4 + " ctrlqw4 " + ctrlqw4
+	E3DDrawText textposx, textposy, textscale, textr, textg, textb, strchk5
+
+	textposx = 10 : textposy = 120
+	strchk6 = "dummytpid " + dummytpid
+	E3DDrawText textposx, textposy, textscale, textr, textg, textb, strchk6
+
+	if( dummytpid >= 0 ) {
+		E3DGetNaviPointPos nlid0, dummytpid, dtpx, dtpy, dtpz
+		textposx = 10 : textposy = 140
+		strchk7 = " dtpx " + dtpx + " dtpy " + dtpy + " dptz " + dtpz
+		E3DDrawText textposx, textposy, textscale, textr, textg, textb, strchk7
+	}
+
+	textposx = 10 : textposy = 160
+	strchk8 = "setno " + setno + "  checkno " + checkno + "  errorcnt " + errorcnt
+	E3DDrawText textposx, textposy, textscale, textr, textg, textb, strchk8
+
+	
+	return

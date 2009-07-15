@@ -1,0 +1,241 @@
+
+;	e3dhsp.dll test script
+
+#include "e3dhsp3.as"
+
+#module
+#deffunc waitbyfps int p1, var fps
+	E3DWaitbyFPS@ p1, fps
+	await 0
+	return
+#global
+	dim keybuf, 256 
+
+	pointmax = 100 ;点数の最大値
+
+	screenw = 640 : screenh = 480
+	screen 0, screenw, screenh, 1
+	title "Easy3D for HSP3 sample"
+
+	;開発中は下の行のコメントアウトを外すことを推奨します。
+	;E3DEnableDbgFile
+
+	;初期化
+	E3DInit 0, -1, 0, 16, 0, scid1
+
+	;カメラの初期化
+	camposx = 0.0 : camposy = 1500.0 : camposz = -6000.0
+	E3DSetCameraPos camposx, camposy, camposz	
+	camdegxz = 180.0 : camdegy = 0.0
+	E3DSetCameraDeg camdegxz, camdegy
+
+	;file のpath 用のバッファーの作成
+	
+	pathlen = 2048
+	sdim mediadir, pathlen
+	mediadir = dir_cur + "\\Media"
+	sdim pathbuf, pathlen, 2
+
+
+	;projectionの変更をしたいときは、以下の２行を有効にしてください。
+	;proj_near = 100 : proj_far = 20000 : proj_fov = 45
+	;E3DSetProjection proj_near, proj_far, proj_fov
+
+
+	E3DCreateProgressBar
+	E3DSetProgressBar 0
+
+
+	;地面データのロード
+	pathbuf.0 = mediadir + "\\groundplane1_p_small.sig"
+	E3DSigLoad pathbuf.0, hsid0
+	posx0 = 0.0 : posy0 = 0.0 : posz0 = 0.0
+	degx0 = 0.0 : degy0 = 0.0 : degz0 = 0.0
+	E3DSetPos hsid0, posx0, posy0, posz0
+	E3DSetDir hsid0, degx0, degy0, degz0
+	frameno0 = 0
+
+	E3DSetProgressBar 30
+
+	
+	;猫妹データのロード
+	pathbuf.0 = mediadir + "\\ni_parts_6_bone.sig"
+	E3DSigLoad pathbuf.0, hsid1
+	
+	pathbuf.0 = mediadir + "\\ni_parts4_idling.qua"
+	E3DAddMotion hsid1, pathbuf.0, mk1_idling, max1_idling
+
+	E3DSetProgressBar 60
+
+	E3DSetMotionKind hsid1, mk1_idling
+	posx1 = 1000.0 : posy1 = 0.0 : posz1 = 0.0
+	degx1 = 0.0 : degy1 = 90.0 : degz1 = 0.0
+	E3DSetPos hsid1, posx1, posy1, posz1
+	E3DSetDir hsid1, degx1, degy1, degz1
+
+	frameno1 = 0
+	newmk1 = 0
+
+
+	;5角形の読み込み
+	pathbuf.0 = mediadir + "\\verttest7_2.sig"
+	E3DSigLoad pathbuf.0, hsid2
+	E3DGetPartNoByName hsid2, "\"obj1\"", partno2
+	E3DGetVertNumOfPart hsid2, partno2, vertnum2
+
+
+	;以下、ライトの設定
+	lightdirx1 = 1.0
+	lightdiry1 = -0.5
+	lightdirz1 = 1.0
+	lightr1 = 255
+	lightg1 = 255
+	lightb1 = 255
+
+	;平行光源
+	E3DCreateLight lid1
+	E3DSetDirectionalLight lid1, lightdirx1, lightdiry1, lightdirz1, lightr1, lightg1, lightb1
+
+
+	lightposx2 = 0.0
+	lightposy2 = 500.0
+	lightposz2 = 0.0
+	lightdist2 = 2000.0
+	lightr2 = 255
+	lightg2 = 0
+	lightb2 = 0
+
+	pathbuf.0 = mediadir + "\\lake.bmp"
+	pathbuf.1 = mediadir + "\\cloud3.bmp"
+	E3DCreateBG scid1, pathbuf.0, pathbuf.1, 0.001, 0.0, 0
+	switchflag1 = 0
+
+
+	; スプライトデータの読み込み
+	pathbuf.0 = mediadir + "\\circle.bmp"
+	E3DCreateSprite pathbuf.0, 1, spid1
+	E3DGetSpriteSize spid1, spw1, sph1
+
+	cenx1 = 0
+	ceny1 = 0
+
+
+	chkfps1 = 0
+
+	confstat = 0
+
+	E3DDestroyProgressBar
+
+	
+*main
+
+	; keybuf変数は、メインループの外で、dim keybuf, 256 として、確保しておいてください。
+	E3DGetKeyboardState keybuf
+
+	if keybuf.VK_ESCAPE = 1 : goto *bye ; [ESC]で終了
+
+	
+	if endflag = 0 {
+		gosub *MoveChara1
+	}
+
+	E3DSetNewPose hsid1, frameno1
+
+	E3DChkInView scid1, hsid0
+	E3DChkInView scid1, hsid1
+	E3DChkInView scid1, hsid2
+
+	E3DBeginScene scid1
+
+		;不透明部分の描画をする
+	E3DRender scid1, hsid0, 0, frameno0, 0
+	E3DRender scid1, hsid1, 0, frameno1, 0
+	E3DRender scid1, hsid2, 0, 0, 0
+
+		;半透明部分の描画をする
+	E3DRender scid1, hsid1, 1, frameno1, 0
+
+	gosub *DrawText
+	gosub *DrawIndicator
+
+	E3DEndScene
+	
+	E3DPresent scid1
+
+	waitbyfps 100, chkfps1
+
+	goto *main
+
+
+*bye
+	E3DBye
+	end
+
+*MoveChara1
+	movecnt++
+	mvr = 2000.0
+
+	E3DCos movecnt, newx
+	E3DSin movecnt, newz
+	newx *= mvr
+	newz *= mvr
+ 
+	diffx = posx4 - newx
+	diffz = posz4 - newz
+	
+	E3DDot diffx, 0.0, diffz, 0.0, 0.0, 1.0, dot
+	E3DACos dot, newdeg
+	E3DVec2CCW diffx, diffz, 0.0, 1.0, ccw
+
+	rotdegy = ccw * newdeg
+
+	posx4 = newx
+	posz4 = newz
+	E3DSetPos hsid1, posx4, posy4, posz4
+	E3DSetDir hsid1, 0.0, rotdegy, 0.0
+	
+	return
+
+
+*DrawText
+
+	textposx = 10 : textposy = 10
+	textr = 255 : textg = 255 : textb = 255
+	textscale = 1
+
+	textposx = 10 : textposy = 300
+	str5 = "chkfps1  " + chkfps1
+	E3DDrawText textposx, textposy, textscale, textr, textg, textb, str5
+
+	textposx = 10 : textposy = 340
+	str8 = "cenx1  " + cenx1 + "  ceny1  " + ceny1
+	E3DDrawText textposx, textposy, textscale, textr, textg, textb, str8
+
+	return
+
+*DrawIndicator
+
+	E3DBeginSprite
+
+	; 猫のモデルの中心に、丸印のスプライトを表示する
+	E3DGetScreenPos scid1, hsid1, -1, cenx1, ceny1
+	x1 = cenx1 - (spw1 / 2)
+	y1 = ceny1 - (sph1 / 2)	
+	if ( (cenx1 != -1) & (ceny1 != -1) ) {
+		E3DRenderSprite spid1, 1.0, 1.0, x1, y1
+	}
+
+
+	; 5角形の、vertno番目の頂点の位置に、小さい丸印を表示する。
+	vertno = 2	
+	E3DGetScreenPos scid1, hsid2, partno2, posx2, posy2, vertno, 0
+	scale = 0.1
+	x2 = posx2 - (double(spw1) * scale / 2)
+	y2 = posy2 - (double(spw1) * scale / 2)
+	if ( (posx2 != -1) & (posy2 != -1) ) {
+		E3DRenderSprite spid1, scale, scale, x2, y2
+	}
+
+	E3DEndSprite
+	return
+

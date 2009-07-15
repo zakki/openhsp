@@ -1,0 +1,205 @@
+
+;	e3dhsp.dll test script
+
+#include "e3dhsp3.as"
+
+#module
+#deffunc waitbyfps int p1, var fps
+	E3DWaitbyFPS@ p1, fps
+	await 0
+	return
+#global
+	
+	dim keybuf, 256		
+
+	screenw = 640 : screenh = 480
+	screen 0, screenw, screenh, 1
+	pointmax = 100
+
+	title "Easy3D for HSP3 sample"
+
+	;開発中は下の行のコメントアウトを外すことを推奨します。
+	;E3DEnableDbgFile
+
+	;初期化
+	E3DInit 0, -1, 0, 16, 0, scid1
+
+
+	;file のpath 用のバッファーの作成	
+	pathlen = 2048
+	sdim mediadir, pathlen
+	mediadir = dir_cur + "\\Media"
+	sdim pathbuf, pathlen, 4
+
+
+	; 音ファイルの読み込み
+	pathbuf.0 = mediadir + "\\canyon.mid"
+	pathbuf.1 = mediadir + "\\sbounce.wav"
+	pathbuf.2 = mediadir + "\\score.wav"
+
+	E3DLoadSound pathbuf.0, soundid0, 0
+	E3DLoadSound pathbuf.1, soundid1, 1
+	E3DLoadSound pathbuf.2, soundid2, 1
+
+	;ループの設定
+	E3DSetSoundLoop soundid0, 1
+	E3DSetSoundLoop soundid1, 1
+	E3DSetSoundLoop soundid2, 1
+
+
+	;3Dサウンドの設定
+	E3DSet3DSoundListener 0, 0
+	E3DSet3DSoundDistance soundid1, 5.0, 10.0
+	E3DSet3DSoundDistance soundid2, 5.0, 10.0
+
+
+	;再生
+	E3DPlaySound soundid0, 1, 0
+	E3DPlaySound soundid1, 0, 0
+	E3DPlaySound soundid2, 0, 0
+
+	;周波数
+;	E3DGetSoundFrequency soundid0, bgmfreq
+
+
+	;日本語フォント
+	E3DCreateFont 20, 0, 400, 0, 0, 0, "ＭＳ ゴシック", fontid1
+
+	volume = 0
+	tempo = 1.0
+
+	counter = 0
+
+	;視点
+	E3DSetCameraPos 0, 0, 0
+	E3DSetCameraTarget 0, 0, 1, 0, 1, 0
+
+*main
+	; keybuf変数は、メインループの外で、dim keybuf, 256 として、確保しておいてください。
+	E3DGetKeyboardState keybuf
+
+	if keybuf.VK_ESCAPE = 1 : goto *bye ; [ESC]で終了
+
+	gosub *KeyIn
+	gosub *Move3DSound
+
+	E3DBeginScene scid1
+	gosub *DrawText
+	E3DEndScene
+		
+	E3DPresent scid1
+
+	waitbyfps 60, chkfps1
+	
+	goto *main
+
+
+*bye
+	E3DDestroyBG
+
+	E3DDestroyLight lid1
+
+	E3DBye
+	end
+
+*Move3DSound
+
+	;環境によってはリスナーの後ろ側の音は聞こえないので注意。
+	;このサンプルではposz <= 0.0 の音は聞こえない可能性がある。
+	
+	counter++
+
+	E3DSin counter, posx
+	posx *= 5.0
+	posy = 0.0
+	E3DCos counter, posz
+	posz = posz * posz * 5.0
+	
+	E3DSin counter + 3, vx
+	vx *= 5.0
+	vy = 0.0
+	E3DCos counter + 3, vz
+	vz *= 5.0
+
+	E3DSet3DSoundMovement soundid1, posx, posy, posz, vx, vy, vz
+
+;///////////
+	E3DSin counter + 180, posx
+	posx *= 5.0
+	posy = 0.0
+	E3DCos counter + 180, posz
+	posz = posz * posz * 5.0
+	
+	E3DSin counter + 180 + 3, vx
+	vx *= 5.0
+	vy = 0
+	E3DCos counter + 180 + 3, vz
+	vz *= 5.0
+
+	E3DSet3DSoundMovement soundid2, posx, posy, posz, vx, vy, vz
+;///////////
+	
+	E3DSet3DSoundListenerMovement -1
+
+	return
+	
+*KeyIn
+	; 音量の変更
+	volumeflag = 0
+	if ( keybuf.'O' = 1 ) {
+		volume += 10
+		if volume > 0 : volume = 0
+		volumeflag = 1		
+	}
+	if ( keybuf.'P' = 1 ) {
+		volume -= 10
+ 		if volume < -10000 : volume = -10000
+		volumeflag = 1
+	}
+	if volumeflag = 1 : E3DSetSoundVolume volume, -1
+
+	; テンポの変更
+	tempoflag = 0
+	if ( keybuf.'K' = 1 ) {
+		tempo += 0.05
+		if tempo > 100.0 : tempo = 100.0
+		tempoflag = 1	
+	}
+	if ( keybuf.'L' = 1 ) {
+		tempo -= 0.05
+		if tempo < 0.01 : tempo = 0.01
+		tempoflag = 1	
+	}
+	if tempoflag = 1 : E3DSetSoundTempo tempo
+
+	return
+
+*DrawText
+
+	textr = 0 : textg = 255 : textb = 0
+	textscale = 1
+
+	sdim strj, 1024
+
+	textposx = 10 : textposy = 40
+	strj = "3Dサウンドを体感するには、２つ以上のスピーカーが必要です。\nヘッドフォンでもＯＫです。"
+	E3DDrawTextByFontID scid1, fontid1, textposx, textposy, strj, 255, 255, 255, 255
+
+	textposy += 50
+	strchk1 = "chkFPS1   " + chkfps1
+	E3DDrawText textposx, textposy, textscale, textr, textg, textb, strchk1
+
+	textposy += 20
+	strchk2 = "volume " + volume + "  tempo " + tempo
+	E3DDrawText textposx, textposy, textscale, textr, textg, textb, strchk2
+
+	textposy += 20
+	strchk6 = " volume UP <--- Push O key    volume DOWN <--- Push P key"
+	E3DDrawText textposx, textposy, textscale, textr, textg, textb, strchk6
+
+	textposy += 20
+	strchk7 = " tempo UP <--- Push K key    tempo DOWN <--- Push L key"
+	E3DDrawText textposx, textposy, textscale, textr, textg, textb, strchk7
+
+	return
+

@@ -1,0 +1,175 @@
+
+;	e3dhsp.dll test script
+
+#include "e3dhsp3.as"
+
+#module
+#deffunc waitbyfps int p1, var fps
+	E3DWaitbyFPS@ p1, fps
+	await 0
+	return
+#global
+	dim keybuf, 256 
+
+	pointmax = 100 ;点数の最大値
+
+	screenw = 800 : screenh = 640
+	screen 0, screenw, screenh, 1
+	title "Easy3D for HSP3 sample"
+
+	;開発中は下の行のコメントアウトを外すことを推奨します。
+	;E3DEnableDbgFile
+
+	;初期化
+	E3DInit 0, -1, 0, 16, 0, scid1
+
+	;カメラの初期化
+	camposx = 5220.0 : camposy = 1500.0 : camposz = 0.0
+	E3DSetCameraPos camposx, camposy, camposz	
+	camdegxz = 270.0 : camdegy = 0.0
+	E3DSetCameraDeg camdegxz, camdegy
+
+	afterimagenum = 5
+	confflag = 0
+	endflag = 0
+
+
+	;file のpath 用のバッファーの作成
+	
+	pathlen = 2048
+	sdim mediadir, pathlen
+	mediadir = dir_cur + "\\Media"
+	sdim pathbuf, pathlen, 2
+
+
+	;projectionの変更をしたいときは、以下の２行を有効にしてください。
+	;proj_near = 100 : proj_far = 20000 : proj_fov = 45
+	;E3DSetProjection proj_near, proj_far, proj_fov
+
+
+	E3DCreateProgressBar
+	E3DSetProgressBar 0
+
+
+	E3DSetProgressBar 30
+
+	
+	;moroデータのロード
+	pathbuf.0 = mediadir + "\\morob_6_26_r3.sig"
+	E3DSigLoad pathbuf.0, hsid1
+
+
+	E3DSetProgressBar 60
+
+	;以下、ライトの設定
+	lightdirx1 = 0.0
+	lightdiry1 = 0.0
+	lightdirz1 = 1.0
+	lightr1 = 128
+	lightg1 = 128
+	lightb1 = 128
+
+	;平行光源
+	E3DCreateLight lid1
+	E3DSetDirectionalLight lid1, lightdirx1, lightdiry1, lightdirz1, lightr1, lightg1, lightb1
+
+
+	;日本語表示のためにゴシックフォントを使用します。
+	E3DCreateFont 15, 0, 400, 0, 0, 0, "ＭＳ ゴシック", fontid1
+
+	
+	; ジョイントの情報を取得
+	E3DGetJointNum hsid1, jointnum	
+	E3DGetFirstJointNo hsid1, firstjointno
+
+	sdim jnamebuf, 256, jointnum
+	dim infobuf, JI_MAX, jointnum
+	jigetnum = 0
+	E3DGetJointInfo hsid1, jointnum, jnamebuf, infobuf, jigetnum
+
+
+	; 表示オブジェクトの情報を取得
+	E3DGetDispObjNum hsid1, dispobjnum
+	sdim donamebuf, 256, dispobjnum
+	dim doinfobuf, DOI_MAX, dispobjnum
+	doigetnum = 0
+	E3DGetDispObjInfo hsid1, dispobjnum, donamebuf, doinfobuf, doigetnum
+
+
+	chkfps1 = 0
+
+	E3DDestroyProgressBar
+	
+	
+*main
+
+	; keybuf変数は、メインループの外で、dim keybuf, 256 として、確保しておいてください。
+	E3DGetKeyboardState keybuf
+
+	if keybuf.VK_ESCAPE = 1 : goto *bye ; [ESC]で終了
+
+	E3DChkInView scid1, hsid1
+
+	E3DBeginScene scid1
+
+		;不透明部分の描画をする
+	E3DRender scid1, hsid1, 0, frameno1, 0
+
+		;半透明部分の描画をする
+	E3DRender scid1, hsid1, 1, frameno1, 0
+
+	gosub *DrawText
+
+	E3DEndScene
+
+	E3DPresent scid1
+
+
+	waitbyfps 100, chkfps1
+
+	goto *main
+
+
+*bye
+	E3DBye
+	end
+
+*DrawText
+
+	textposx = 10 : textposy = 10
+	textr = 255 : textg = 255 : textb = 255
+	textscale = 1
+
+	textposx = 10 : textposy = 10
+	str5 = "jointnum  " + jointnum + "  firstjointno " + firstjointno
+	E3DDrawText textposx, textposy, textscale, textr, textg, textb, str5
+
+	textposx = 10
+	textposy = 20
+
+	sdim str6, 2048
+
+	getno = 0
+	repeat jigetnum
+		textposy += 15
+		str6 = "joint name " + jnamebuf.getno + " serial " + infobuf.JI_SERIAL.getno + " notuse " + infobuf.JI_NOTUSE.getno + " parent " + infobuf.JI_PARENT.getno + " child " + infobuf.JI_CHILD.getno + " brother " + infobuf.JI_BROTHER.getno + " sister " + infobuf.JI_SISTER.getno
+		E3DDrawTextByFontID scid1, fontid1, textposx, textposy, str6, 255, 0, 255, 255
+		getno++
+	loop
+
+	textposy += 20	
+	str5 = "dispobjnum " + dispobjnum 
+	E3DDrawText textposx, textposy, textscale, textr, textg, textb, str5
+
+	getno = 0
+	repeat doigetnum
+		textposy += 15
+		str6 = "dispobj name" + donamebuf.getno + " serial " + doinfobuf.DOI_SERIAL.getno + " notuse " + doinfobuf.DOI_NOTUSE.getno + " dispswitch " + doinfobuf.DOI_DISPSWITCH.getno + " invisible " + doinfobuf.DOI_INVISIBLE.getno
+		E3DDrawTextByFontID scid1, fontid1, textposx, textposy, str6, 255, 255, 0, 255		
+		getno++
+	loop
+
+
+	return
+
+

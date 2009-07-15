@@ -1,0 +1,216 @@
+
+//　アンチエイリアスをオンにするサンプルです。
+//　E3DGetMaxMultiSampleNum で、マルチサンプルの最大数を取得します。
+//　取得したmultisamplenumを、E3DInitに渡します。
+//　multisamplenumが大きいほど、画像の境界部分が、なめらかになります。
+//
+//　E3DSetRenderStateで、全てのhsidに対して、アンチエイリアスをオンにする命令を、お忘れ無く！！
+//
+//  画像を見ても、ぴんと来ない方は、E3DInitのmultisamplenumのところに０を入れたりして、見比べてみてください。
+//
+//　E3DGetMaxMultiSampleNum で取得した値が０のときは、ビデオカードが、アンチエイリアスに対応してないので、
+//  画像はなめらかになりません。
+
+
+;	e3dhsp.dll test script
+
+#include "e3dhsp3.as"
+
+
+#module
+#deffunc waitbyfps int p1, var fps
+	E3DWaitbyFPS@ p1, fps
+	await 0
+	return
+#global
+	dim keybuf, 256 
+
+
+	;開発中は下の行のコメントアウトを外すことを推奨します。
+	;E3DEnableDbgFile
+
+
+	fullscreenflag = 1 //フルスクリーンにする場合に１を指定する。ウインドウモードの時は０を指定する
+
+	//６４０×４８０の３２ビットをチェックする。
+	screenw = 640 : screenh = 480 : bits = 32
+	E3DCheckFullScreenParams screenw, screenh, bits, validflag, validw, validh, validbits
+
+	if( validflag == 0 ){
+		//失敗した場合は、６４０×４８０の１６ビットをチェックする。
+		bits = 16
+		E3DCheckFullScreenParams screenw, screenh, bits, validflag, validw, validh, validbits
+				
+		if( validflag == 0 ){
+			//失敗した場合は、フルスクリーンをやめる。
+			fullscreenflag = 0
+		}
+	}
+	if( validflag == 1 ){
+		screenw = validw
+		screenh = validh
+		bits = validbits
+	}else{
+		bits = 16
+	}	
+	screen 0, screenw, screenh, 1
+
+
+	; アンチエイリアスの度合いを決める、マルチサンプルの最大値 multisamplenum を取得する。
+	if( fullscreenflag == 1 ){
+		winmode = 0
+	}else{
+		winmode = 1
+	}
+	E3DGetMaxMultiSampleNum bits, winmode, multisamplenum
+
+
+	;初期化
+	E3DInit 0, -1, fullscreenflag, validbits, multisamplenum, scid1
+
+
+	;file のpath 用のバッファーの作成	
+	pathlen = 2048
+	sdim mediadir, pathlen
+	mediadir = dir_cur + "\\Media"
+	sdim pathbuf, pathlen, 2
+
+	;projectionの変更をしたいときは、以下の２行を有効にしてください。
+	;proj_near = 100 : proj_far = 20000 : proj_fov = 45
+	;E3DSetProjection proj_near, proj_far, proj_fov
+
+
+	E3DCreateProgressBar
+	E3DSetProgressBar 0
+
+
+	;地面データのロード
+	pathbuf.0 = mediadir + "\\whiteplane.sig"
+	E3DSigLoad pathbuf.0, hsid0
+	posx0 = 0.0 : posy0 = 0.0 : posz0 = 0.0
+	degx0 = 0.0 : degy0 = 0.0 : degz0 = 0.0
+	E3DSetPos hsid0, posx0, posy0, posz0
+	E3DSetDir hsid0, degx0, degy0, degz0
+	frameno0 = 0
+
+	E3DSetProgressBar 30
+
+	
+	;猫妹データのロード
+	pathbuf.0 = mediadir + "\\ni_parts_6_bone.sig"
+	E3DSigLoad pathbuf.0, hsid1
+	pathbuf.0 = mediadir + "\\ni_parts4_idling.qua"
+	E3DAddMotion hsid1, pathbuf.0, mk1_idling, max1_idling
+	E3DSetProgressBar 60
+
+	stepfast = 2
+	;遅いマシンで使用する方は、以下の行を有効にしてください。
+	;(モーションが荒くなりますが、速く見えます)
+	;E3DSetMotionStep hsid1, mk1_idling, stepfast
+
+	E3DSetMotionKind hsid1, mk1_idling
+	posx1 = 0.0 : posy1 = 0.0 : posz1 = 0.0
+	degx1 = 0.0 : degy1 = 90.0 : degz1 = 0.0
+	E3DSetPos hsid1, posx1, posy1, posz1
+	E3DSetDir hsid1, degx1, degy1, degz1
+
+	frameno1 = 0
+	E3DSetProgressBar 90
+
+
+	;  全てのモデルの、アンチエイリアスをオンにする。！！！！！！！！！！！！！！！！
+	E3DSetRenderState hsid0, -1, D3DRS_MULTISAMPLEANTIALIAS, 1
+	E3DSetRenderState hsid1, -1, D3DRS_MULTISAMPLEANTIALIAS, 1
+
+
+
+	;以下、ライトの設定
+	lightdirx1 = 1
+	lightdiry1 = 0.5
+	lightdirz1 = 0
+	lightr1 = 255
+	lightg1 = 255
+	lightb1 = 255
+
+	;平行光源
+	E3DCreateLight lid1
+	E3DSetDirectionalLight lid1, lightdirx1, lightdiry1, lightdirz1, lightr1, lightg1, lightb1
+
+	pathbuf.0 = mediadir + "\\lake.bmp"
+	pathbuf.1 = mediadir + "\\cloud3.bmp"
+	E3DCreateBG scid1, pathbuf.0, pathbuf.1, 0.001, 0.0, 0
+	switchflag1 = 0
+
+	chkfps1 = 0
+
+
+	E3DDestroyProgressBar
+
+*main
+
+	; keybuf変数は、メインループの外で、dim keybuf, 256 として、確保しておいてください。
+	E3DGetKeyboardState keybuf
+
+	if keybuf.VK_ESCAPE = 1 : goto *bye ; [ESC]で終了
+
+	
+	gosub *MoveCamera
+
+
+	E3DSetNewPose hsid1, frameno1
+
+
+	E3DChkInView scid1, hsid0
+	E3DChkInView scid1, hsid1
+
+
+	E3DBeginScene scid1
+
+		;不透明部分の描画をする
+	E3DRender scid1, hsid0, 0, frameno0, 0
+	E3DRender scid1, hsid1, 0, frameno1, 0
+
+		;半透明部分の描画をする
+	E3DRender scid1, hsid1, 1, frameno1, 0, 0, 0, 1
+
+	gosub *DrawText
+
+	E3DEndScene
+
+	E3DPresent scid1
+
+	waitbyfps 60, chkfps1
+
+	goto *main
+
+
+*bye
+	E3DBye
+	end
+
+*MoveCamera
+
+	E3DGetPos hsid1, posx1, posy1, posz1
+	
+	E3DSetCameraPos 0.0, 1500.0, -3000.0		
+	E3DSetCameraTarget posx1, 1500.0, posz1, 0.0, 1.0, 0.0
+
+	return
+
+
+*DrawText
+
+	textposx = 10 : textposy = 10
+	textr = 255 : textg = 255 : textb = 255
+	textscale = 1
+
+	str5 = "chkfps1  " + chkfps1
+	E3DDrawText textposx, textposy, textscale, textr, textg, textb, str5
+
+	textposy += 20
+	str5 = "multisamplenum  " + multisamplenum
+	E3DDrawText textposx, textposy, textscale, textr, textg, textb, str5
+
+
+	return
+

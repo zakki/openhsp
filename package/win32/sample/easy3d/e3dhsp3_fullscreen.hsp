@@ -1,0 +1,184 @@
+
+
+;	e3dhsp.dll test script
+
+#include "e3dhsp3.as"
+	
+#module
+#deffunc waitbyfps int p1, var fps
+	E3DWaitbyFPS@ p1, fps
+	await 0
+	return
+#global
+
+	;ŠJ”­’†‚Í‰º‚Ìs‚ÌƒRƒƒ“ƒgƒAƒEƒg‚ðŠO‚·‚±‚Æ‚ð„§‚µ‚Ü‚·B
+	;E3DEnableDbgFile
+
+
+	dim keybuf, 256 
+
+	fullscreenflag = 1 //ƒtƒ‹ƒXƒNƒŠ[ƒ“‚É‚·‚éê‡‚É‚P‚ðŽw’è‚·‚éBƒEƒCƒ“ƒhƒEƒ‚[ƒh‚ÌŽž‚Í‚O‚ðŽw’è‚·‚é
+
+	screenw = 800 : screenh = 600
+	//‚Ü‚¸A‚W‚O‚O~‚U‚O‚O‚Ì‚R‚Qƒrƒbƒg‚ðƒ`ƒFƒbƒN‚·‚éB
+	E3DCheckFullScreenParams screenw, screenh, 32, validflag, validw, validh, validbits
+	if( validflag == 0 ){
+		//Ž¸”s‚µ‚½ê‡‚ÍA‚W‚O‚O~‚U‚O‚O‚Ì‚P‚Uƒrƒbƒg‚ðƒ`ƒFƒbƒN‚·‚é
+		screenw = 800 : screenh = 600
+		E3DCheckFullScreenParams screenw, screenh, 16, validflag, validw, validh, validbits
+
+		if( validflag == 0 ){
+			//Ž¸”s‚µ‚½ê‡‚ÍA‚U‚S‚O~‚S‚W‚O‚Ì‚R‚Qƒrƒbƒg‚ðƒ`ƒFƒbƒN‚·‚éB
+			screenw = 640 : screenh = 480
+			E3DCheckFullScreenParams screenw, screenh, 32, validflag, validw, validh, validbits
+
+			if( validflag == 0 ){
+				//Ž¸”s‚µ‚½ê‡‚ÍA‚U‚S‚O~‚S‚W‚O‚Ì‚P‚Uƒrƒbƒg‚ðƒ`ƒFƒbƒN‚·‚éB
+				screenw = 640 : screenh = 480
+				E3DCheckFullScreenParams screenw, screenh, 16, validflag, validw, validh, validbits
+				
+				if( validflag == 0 ){
+					//Ž¸”s‚µ‚½ê‡‚ÍAƒtƒ‹ƒXƒNƒŠ[ƒ“‚ð‚â‚ß‚éB
+					fullscreenflag = 0
+				}
+			}
+		}
+
+	}
+
+	if( validflag == 1 ){
+		screenw = validw
+		screenh = validh
+	}	
+	screen 0, screenw, screenh, 1
+
+	;‰Šú‰»
+	E3DInit 0, -1, fullscreenflag, validbits, 0, scid1
+	
+
+	;ƒJƒƒ‰•Ï”‚Ì‰Šú‰»
+	cameradist = 6000.0
+	cameraheight = 2000.0
+	camdegxz = 180.0
+	camposx = 0.0
+	camposy = cameraheight
+	camposz = 0.0
+
+
+	;file ‚Ìpath —p‚Ìƒoƒbƒtƒ@[‚Ìì¬
+	
+	pathlen = 2048
+	sdim mediadir, pathlen
+	mediadir = dir_cur + "\\Media"
+	sdim pathbuf, pathlen, 2
+
+
+	;projection‚Ì•ÏX‚ð‚µ‚½‚¢‚Æ‚«‚ÍAˆÈ‰º‚Ì‚Qs‚ð—LŒø‚É‚µ‚Ä‚­‚¾‚³‚¢B
+	;proj_near = 100 : proj_far = 20000 : proj_fov = 45
+	;E3DSetProjection proj_near, proj_far, proj_fov
+
+
+	;ˆÈ‰ºAƒ‰ƒCƒg‚ÌÝ’è
+	lightdirx1 = 0.0
+	lightdiry1 = 0.0
+	lightdirz1 = 1.0
+	lightr1 = 255
+	lightg1 = 255
+	lightb1 = 255
+
+	;•½sŒõŒ¹
+	E3DCreateLight lid1
+	E3DSetDirectionalLight lid1, lightdirx1, lightdiry1, lightdirz1, lightr1, lightg1, lightb1
+
+	pathbuf.0 = mediadir + "\\lake.bmp"
+	pathbuf.1 = "dummy"
+	E3DCreateBG scid1, pathbuf.0, pathbuf.1, 0.0, 0.0, 0
+
+	chkfps1 = 0
+
+*main
+
+	; keybuf•Ï”‚ÍAƒƒCƒ“ƒ‹[ƒv‚ÌŠO‚ÅAdim keybuf, 256 ‚Æ‚µ‚ÄAŠm•Û‚µ‚Ä‚¨‚¢‚Ä‚­‚¾‚³‚¢B
+	E3DGetKeyboardState keybuf
+
+	if keybuf.VK_ESCAPE = 1 : goto *bye ; [ESC]‚ÅI—¹
+
+	gosub *MoveCamera
+
+
+	E3DBeginScene scid1
+
+	gosub *DrawText
+
+	E3DEndScene
+	E3DPresent scid1
+
+	waitbyfps 60, chkfps1
+
+	goto *main
+
+
+*bye
+	E3DBye
+	end
+
+
+
+*MoveCamera
+	
+	cameraupdate = 0
+
+	if ( keybuf.VK_LEFT == 1 ) {
+		camdegxz += 1
+		if camdegxz > 360.0 : camdegxz -= 360.0
+		cameraupdate = 1
+	}
+
+	if ( keybuf.VK_RIGHT == 1 ) {
+		camdegxz -= 1
+		if camdegxz < 0.0 : camdegxz += 360.0
+		cameraupdate = 1
+	}
+	
+	if ( keybuf.VK_UP == 1 ) {
+		camposy += 10.0
+		cameraupdate = 1		
+	}
+
+	if ( keybuf.VK_DOWN == 1 ) {
+		camposy -= 10.0
+		cameraupdate = 1
+	}
+
+	E3DSin camdegxz, camposx
+	camposx *= cameradist
+	E3DCos camdegxz, camposz
+	camposz *= cameradist
+	
+	E3DSetCameraPos camposx, camposy, camposz
+	E3DSetCameraTarget 0.0, camposy, 0.0, 0.0, 1.0, 0.0
+
+	return
+
+
+*DrawText
+
+	textposx = 10 : textposy = 10
+	textr = 255 : textg = 255 : textb = 255
+	textscale = 1
+
+	textposx = 10 : textposy = 300
+	str5 = "chkfps1  " + chkfps1
+	E3DDrawText textposx, textposy, textscale, textr, textg, textb, str5
+
+	textposy += 30
+	sdim str6, 1024
+	str6 = "screen Width " + screenw + "  screen Height " + screenh + "  bits " + validbits + "  fullscreenflag " + fullscreenflag
+	E3DDrawText textposx, textposy, textscale, textr, textg, textb, str6
+
+	textposy += 30
+	str5 = "Esc key ---> Exit application"
+	E3DDrawText textposx, textposy, textscale, textr, textg, textb, str5
+	
+	return
+

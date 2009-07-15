@@ -1,0 +1,157 @@
+;	e3dhsp.dll test script
+;　マルチレイヤーモーションのテストスクリプト
+;　ボーンごとに異なるモーションを再生させることが可能です。
+;　このサンプルでは上半身と下半身とで別々の動きをさせます。
+;　モーションアクセラレータとの共用が可能です。
+
+#include "e3dhsp3.as"
+
+
+#module
+#deffunc waitbyfps int p1, var fps
+	E3DWaitbyFPS@ p1, fps
+	await 0
+	return
+#global
+	
+
+
+	dim keybuf, 256
+	dim savekeybuf, 256
+
+	;file のpath 用のバッファーの作成
+	pathlen = 2048
+	sdim mediadir, pathlen
+	mediadir = dir_cur + "\\Media"
+	sdim pathbuf, pathlen, 2
+
+
+	screenw = 640 : screenh = 480
+	screen 0, screenw, screenh, 1
+
+	title "Easy3D for HSP3 sample"
+
+	;開発中は下の行のコメントアウトを外すことを推奨します。
+	;E3DEnableDbgFile
+
+	;初期化
+	E3DInit 0, -1, 0, 16, 0, scid1
+
+	;カメラの初期化
+	camposx = 0.0 : camposy = 800.0 : camposz = -2000.0
+	E3DSetCameraPos camposx, camposy, camposz	
+	camdegxz = 180.0 : camdegy = 0.0
+	E3DSetCameraDeg camdegxz, camdegy
+
+	;projectionの変更をしたいときは、以下の２行を有効にしてください。
+	proj_near = 100.0 : proj_far = 30000.0 : proj_fov = 60.0
+	E3DSetProjection proj_near, proj_far, proj_fov
+
+
+	//モデルデータ読み込み
+	pathbuf.0 = mediadir + "\\my\\my.sig"
+	E3DSigLoad pathbuf.0, hsid1
+	E3DSetPos hsid1, 0.0, 0.0, 0.0
+
+
+	//moa
+	pathbuf.0 = mediadir + "\\MLtest\\MLtest.moa"
+	E3DLoadMOAFile hsid1, pathbuf.0, 10
+	
+	//
+	E3DGetPartNoByName hsid1, "原点_X", kahansin
+	E3DGetPartNoByName hsid1, "胸骨_X", jouhansin
+
+	jou_list(0) = jouhansin
+	jou_list(1) = 0
+	jou_notlist(0) = 0
+
+	ka_list(0) = kahansin
+	ka_list(1) = 0
+	ka_notlist(0) = jouhansin
+	ka_notlist(1) = 0
+
+	//ライトの作成
+	lightdirx1 = 0.0
+	lightdiry1 = 0.0
+	lightdirz1 = 1.0
+	lightr1 = 255
+	lightg1 = 255
+	lightb1 = 255
+
+	E3DCreateLight lid1
+	E3DSetDirectionalLight lid1, lightdirx1, lightdiry1, lightdirz1, lightr1, lightg1, lightb1
+
+	chkfps1 = 0
+
+*main
+	; keybuf変数は、メインループの外で、dim keybuf, 256 として、確保しておいてください。
+	E3DGetKeyboardCnt keybuf
+
+	if keybuf.VK_ESCAPE != 0 : goto *bye ; [ESC]で終了
+
+	jou_eventno = 0
+	ka_eventno = 0
+	if( keybuf.'1' == 1 ){
+		jou_eventno = 1
+	}
+	if( keybuf.'2' == 1 ){
+		jou_eventno = 2
+	}
+	if( keybuf.'3' == 1 ){
+		ka_eventno = 4
+	}
+	if( keybuf.'4' == 1 ){
+		ka_eventno = 8
+	}
+
+	E3DSetMOAEventNoML hsid1, jou_eventno, jou_list, jou_notlist
+	E3DSetMOAEventNoML hsid1, ka_eventno, ka_list, ka_notlist
+
+	E3DSetNewPoseML hsid1
+
+	E3DBeginScene scid1
+		E3DChkInView scid1, hsid1
+
+		;不透明部分の描画をする
+		E3DRender scid1, hsid1, 0, frameno1, 0
+
+		;半透明部分の描画をする
+		E3DRender scid1, hsid1, 1, frameno1, 0, 0, 0, 1
+
+		gosub *DrawText
+		
+	E3DEndScene
+	E3DPresent scid1
+	
+	waitbyfps 60, chkfps1
+
+	goto *main
+
+
+*bye
+	E3DBye
+	end
+
+*DrawText
+	sdim strchk0, 1024
+
+	textr = 255 : textg = 255 : textb = 255
+	textscale = 1
+	textposx = 10 : textposy = 0
+
+	strchk0 = "Press 1, 2, 3, 4 key !!!"
+	E3DDrawText textposx, textposy, textscale, textr, 0, 0, strchk0
+
+	textposy += 40
+	E3DGetMotionFrameNoML hsid1, jouhansin, joumotid, jouframeno
+	strchk0 = "jouhansin " + "motionid " + joumotid + "  frameno " + jouframeno
+	E3DDrawText textposx, textposy, textscale, textr, textg, textb, strchk0
+
+	textposy += 20
+	E3DGetMotionFrameNoML hsid1, kahansin, kamotid, kaframeno
+	strchk0 = "kahansin " + "motionid " + kamotid + "  frameno " + kaframeno
+	E3DDrawText textposx, textposy, textscale, textr, textg, textb, strchk0
+	
+	return
+

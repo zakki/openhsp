@@ -1,0 +1,412 @@
+		
+;	e3dhsp.dll test script
+
+#include "e3dhsp3.as"
+
+
+;/////////////////////////////////////////////////////////
+;/////////////////////////////////////////////////////////
+
+;向きたい方向を、向くためのサンプルです。
+;E3DLookAtQ 命令を使えば、簡単に、向きたい向きを向くことが出来ます。
+
+;キーを押すと、スライムが、球面上を移動します。
+;左右矢印キーで、スライムのＸＺ平面上での角度が変化し、
+;上下矢印キーで、スライムのＹ軸との角度が変化します。
+
+;スライムの位置を追うようにして、矢印オブジェクトが、向きを変えます。
+;MoveAxisという関数で、矢印オブジェクトに、スライムの方向を向くように設定しています。
+
+
+;このサンプルでは、モードを2種類用意しています。
+;upflag == 2 のときは、宙返りが可能なモードで、Ｙ軸の角度にも制限がありません。
+;upflag == 2 は、飛行機などの向きの制御に向いています。
+
+;upflag == 0 のときは、宙返りせずに、上向きベクトルが、常に、Ｙ軸上方に向くようになります。
+;upflag == 0 のときは、Ｙ軸の角度に -89～89 度という制限があります。
+;upflag == 0 は、人型キャラクターなどの制御に向いています。
+
+
+;ツイスト機能も備わっています。
+; O, Pキーを押すと、矢印オブジェクトが、向いている方向を軸に、ねじれるように回転します。
+
+
+
+;/////////////////////////////////////////////////////////
+;/////////////////////////////////////////////////////////
+
+	
+#module
+#deffunc waitbyfps int p1, var fps
+	E3DWaitbyFPS@ p1, fps
+	await 0
+	return
+
+#global
+
+	dim keybuf, 256 
+
+	screenw = 640 : screenh = 480
+	screen 0, screenw, screenh, 1
+	title "Easy3D for HSP3 sample"
+
+	;開発中は下の行のコメントアウトを外すことを推奨します。
+	;E3DEnableDbgFile
+
+	;初期化
+	E3DInit 0, -1, 0, 16, 0, scid1
+
+	;カメラ変数の初期化
+	cameradist = 3500.0
+	cameraheight = 400.0
+	camdegxz = 180.0
+	camposx = 0.0
+	camposy = cameraheight
+	camposz = 0.0
+
+
+	;file のpath 用のバッファーの作成
+	
+	pathlen = 2048
+	sdim mediadir, pathlen
+	mediadir = dir_cur + "\\Media"
+	sdim pathbuf, pathlen, 2
+
+
+	;projectionの変更をしたいときは、以下の２行を有効にしてください。
+	;proj_near = 100 : proj_far = 20000 : proj_fov = 45
+	;E3DSetProjection proj_near, proj_far, proj_fov
+
+
+	E3DCreateProgressBar
+	E3DSetProgressBar 0
+
+
+	;地面データのロード
+	pathbuf.0 = mediadir + "\\groundplane1_p_small.sig"
+	E3DSigLoad pathbuf.0, hsid0
+	posx0 = 0.0 : posy0 = 0.0 : posz0 = 0.0
+	degx0 = 0.0 : degy0 = 0.0 : degz0 = 0.0
+	E3DSetPos hsid0, posx0, posy0, posz0
+	E3DSetDir hsid0, degx0, degy0, degz0
+	frameno0 = 0
+
+	E3DSetProgressBar 50
+
+	
+	;slimeデータのロード
+	pathbuf.0 = mediadir + "\\slime25.sig"
+	E3DSigLoad pathbuf.0, hsid1
+	E3DSetPos hsid1, 0.0, 0.0, 0.0
+
+	pathbuf.0 = mediadir + "\\slime_paku.qua"
+	E3DAddMotion hsid1, pathbuf.0, motid1, framemax1
+	E3DSetMotionKind hsid1, motid1
+
+	slimedist = 1000.0
+	slimedegy = 0.0
+	slimedegxz = 0.0
+	slimetwist = 0.0
+
+	;矢印データのロード
+	pathbuf.0 = mediadir + "\\axis_invz.sig"
+	E3DSigLoad pathbuf.0, hsid2
+	E3DSetPos hsid2, 0.0, 0.0, 0.0
+	E3DRotateY hsid2, -90.0
+
+	;半透明球のロード
+	pathbuf.0 = mediadir + "\\sphere.sig"
+	E3DSigLoad pathbuf.0, hsid3
+	E3DSetPos hsid3, 0.0, 0.0, 0.0
+	
+	
+	E3DSetProgressBar 80
+
+	;以下、ライトの設定
+	lightdirx1 = 0.0
+	lightdiry1 = 0.0
+	lightdirz1 = 1.0
+	lightr1 = 128
+	lightg1 = 128
+	lightb1 = 128
+
+	;平行光源
+	E3DCreateLight lid1
+	E3DSetDirectionalLight lid1, lightdirx1, lightdiry1, lightdirz1, lightr1, lightg1, lightb1
+
+
+
+	;矢印オブジェクトの向きを操作するための、クォータニオンを作成。
+	E3DCreateQ axisqid
+
+	;２のときは、宙返り可能モード。０のときは、常に上方向がＹ軸の上方を指す。
+	upflag = 2
+
+
+	chkfps1 = 0
+
+
+	; スライムは、degstep / degmult 度ずつ移動する。
+	degstep = 2.0
+	degmult = 1.0
+
+	dispcnt = 0
+	
+	E3DDestroyProgressBar
+
+*main
+
+	; keybuf変数は、メインループの外で、dim keybuf, 256 として、確保しておいてください。
+	E3DGetKeyboardState keybuf
+
+	if keybuf.VK_ESCAPE = 1 : goto *bye ; [ESC]で終了
+
+	gosub *MoveCamera
+	gosub *MoveSlime
+	gosub *MoveAxis
+
+	E3DSetNewPose hsid1, frameno1
+
+	E3DChkInView scid1, hsid0
+	E3DChkInView scid1, hsid1
+	E3DChkInView scid1, hsid2
+	E3DChkInView scid1, hsid3
+
+
+	E3DBeginScene scid1
+
+		;不透明部分の描画をする
+	E3DRender scid1, hsid0, 0, 0, 0
+	E3DRender scid1, hsid1, 0, 0, 0
+	E3DRender scid1, hsid2, 0, 0, 0
+
+		;半透明部分の描画をする
+	E3DRender scid1, hsid3, 1, 0, 0
+
+
+	gosub *DrawText
+
+	E3DEndScene
+	E3DPresent scid1
+
+	waitbyfps 100, chkfps1
+
+	
+	goto *main
+
+	
+*bye
+	E3DBye
+	end
+
+
+*MoveCamera
+	
+	cameraupdate = 0
+
+	if ( (keybuf.VK_SHIFT == 1) && (keybuf.VK_LEFT == 1) ) {
+		camdegxz += 1.0
+		if camdegxz > 360.0 : camdegxz -= 360.0
+		cameraupdate = 1
+	}
+
+	if ( (keybuf.VK_SHIFT == 1) && (keybuf.VK_RIGHT == 1) ) {
+		camdegxz -= 1.0
+		if camdegxz < 0.0 : camdegxz += 360.0
+		cameraupdate = 1
+	}
+	
+	if ( (keybuf.VK_SHIFT == 1) && (keybuf.VK_UP == 1) ) {
+		camposy += 10.0
+		cameraupdate = 1		
+	}
+
+	if ( (keybuf.VK_SHIFT == 1) && (keybuf.VK_DOWN == 1) ) {
+		camposy -= 10.0
+		cameraupdate = 1
+	}
+
+	E3DSin camdegxz, camposx
+	E3DCos camdegxz, camposz
+	camposx *= cameradist
+	camposz *= cameradist
+
+	E3DSetCameraPos camposx, camposy, camposz
+	E3DSetCameraTarget 0.0, camposy, 0.0, 0.0, 1.0, 0.0
+
+
+	return
+
+*MoveSlime
+
+	;hsid1のキャラクタの動作制御
+	;キーに応じて、slimeが球面上を動くようにする。
+
+	slimetwist = 0
+
+	if ( (keybuf.VK_SHIFT == 0) & (keybuf.VK_LEFT == 1) ) {
+		
+		if ( (slimedegy == ( 90.0 * degmult ) ) ) {
+			slimetwist = -1.0
+		}
+		else {
+			if ((slimedegy == ( 270.0 * degmult ) ) | (slimedegy == ( -90.0 * degmult ) )) {
+				slimetwist = 1.0
+			}
+			else {
+				slimedegxz += degstep
+				if ( slimedegxz > ( 360.0 * degmult ) ) {
+					slimedegxz -= ( 360.0 * degmult )
+				}
+			}
+		}
+
+	}
+	if ( (keybuf.VK_SHIFT == 0) & (keybuf.VK_RIGHT == 1) ) {
+
+		if ( (slimedegy == (90.0 * degmult)) ) {
+			slimetwist = 1.0
+		}
+		else {
+			if ((slimedegy == (270.0 * degmult))  | (slimedegy == (-90.0 * degmult))) {
+				slimetwist = -1.0
+			} 
+			else {
+				slimedegxz -= degstep
+				if ( slimedegxz < 0.0 ) {
+					slimedegxz += ( 360.0 * degmult )
+				}
+			}
+		}
+	}
+
+	
+	if ( (keybuf.VK_SHIFT == 0) & (keybuf.'O' == 1) ) {
+		slimetwist = 1.0
+	}
+
+	if ( (keybuf.VK_SHIFT == 0) & (keybuf.'P' == 1) ) {
+		slimetwist = -1.0
+	}
+
+	if ( (upflag == 2) | (upflag == 3) ) {
+		if ( (keybuf.VK_SHIFT == 0) & (keybuf.VK_UP == 1) ){
+			slimedegy += degstep
+			if ( slimedegy > ( 360.0 * degmult ) ) {
+				slimedegy -= ( 360.0 * degmult )
+			}
+		}
+		if ( (keybuf.VK_SHIFT == 0) & (keybuf.VK_DOWN == 1) ){
+			slimedegy -= degstep
+			if ( slimedegy < 0.0 ) {
+				slimedegy += ( 360.0 * degmult )
+			}
+		}
+	}
+	else {
+		if ( (keybuf.VK_SHIFT == 0) & (keybuf.VK_UP == 1) ){
+			slimedegy += degstep
+			if ( slimedegy > (89.0 * degmult) ) {
+				slimedegy = ( 89.0 * degmult )
+			}
+		}
+		if ( (keybuf.VK_SHIFT == 0) & (keybuf.VK_DOWN == 1) ){
+			slimedegy -= degstep
+			if ( slimedegy < ( -89.0 * degmult ) ) {
+				slimedegy = (-89.0 * degmult)
+			}
+		}
+	}
+
+	if ( keybuf.'1' == 1 ) {
+		slimedegy = 90.0
+	}
+	if ( keybuf.'2' == 1 ) {
+		slimedegy = 270.0
+	}
+
+	
+	E3DCos slimedegxz / degmult, cosxz
+	E3DSin slimedegxz / degmult, sinxz
+	E3DCos slimedegy / degmult, cosy
+	E3DSin slimedegy / degmult, siny
+
+	slimeposx = cosxz * cosy * slimedist
+	slimeposy = siny * slimedist
+	slimeposz = sinxz * cosy * slimedist
+
+	E3DSetPos hsid1, slimeposx, slimeposy, slimeposz
+
+	return
+
+*MoveAxis
+	;//////////////////////////////////////////
+	;矢印（hsid2）が、徐々に、slime(hsid1) の方向を向くようにする。
+	;//////////////////////////////////////////
+	
+	E3DGetPos hsid1, slimeposx, slimeposy, slimeposz
+	E3DGetPos hsid2, axisposx, axisposy, axisposz
+
+	dirx = slimeposx - axisposx
+	diry = slimeposy - axisposy
+	dirz = slimeposz - axisposz
+
+	E3DGetDirQ2 hsid2, axisqid
+
+
+;axisqid で識別されるクォータニオンに、スライムの方向を向くような姿勢情報をセットします。
+	
+	
+	divnum = 40
+	E3DLookAtQ axisqid, dirx, diry, dirz, 0.0, 0.0, -1.0, upflag, divnum
+	;E3DLookAtQ axisqid, dirx, diry, dirz, 0, -1, 0, upflag, divnum
+
+
+	if ( (keybuf.VK_SHIFT == 0) & (keybuf.'I' == 1) ) {
+		;Ｉキーを押すと、ツイストを初期化します。
+
+		slimetwist = 0.0
+		E3DInitTwistQ axisqid
+	}
+	else {
+		; ねじりを加えます。
+
+		E3DTwistQ axisqid, slimetwist, 0.0, 0.0, -1.0	
+		;E3DTwistQ axisqid, slimetwist, 0, -1, 0	
+	}
+
+;axisqidのクォータニオンの姿勢情報を、矢印オブジェクトの姿勢にセットします。
+
+	E3DSetDirQ2 hsid2, axisqid	
+
+	return
+
+*DrawText
+
+	textposx = 10 : textposy = 10
+	textr = 255 : textg = 255 : textb = 255
+	textscale = 1
+
+	textposx = 10 : textposy = 10
+	str5 = "chkfps1  " + chkfps1
+	E3DDrawText textposx, textposy, textscale, textr, textg, textb, str5
+
+	textposx = 10 : textposy = 20
+	str6 = "slimedegy  " + slimedegy + "  slimedegxz " + slimedegxz + "  slimetwist " + slimetwist
+	E3DDrawText textposx, textposy, textscale, textr, textg, textb, str6
+
+	if ( upflag != 2 ) {
+		if ( (slimedegy == 89) | (slimedegy = -89)) {
+			if ( dispcnt < 10 ) {
+				textposx = 10 : textposy = 40
+				str7 = "!!! degy limitter working : -89 <= slimedegy <= 89 !!!!"
+				E3DDrawText textposx, textposy, textscale, textr, textg, textb, str7
+			}
+			dispcnt++
+			if dispcnt > 20 : dispcnt = 0
+		}	
+	}
+
+
+	return
+

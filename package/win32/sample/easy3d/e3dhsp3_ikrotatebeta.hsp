@@ -1,0 +1,301 @@
+		
+;	e3dhsp.dll test script
+
+#include "e3dhsp3.as"
+
+
+;/////////////////////////////////////////////////////////
+;/////////////////////////////////////////////////////////
+;
+;　IK機能のテストバージョンです。
+;　矢印キーで、スライムが、球面上を動きます。
+;　スライムの位置を追いかけるように、命令一つで、多関節のアームが、くねくね動きます。
+;
+;　スライムの移動は、MoveSlimeで、アームのＩＫは、MoveArmで行っています。
+;
+;
+;
+
+;/////////////////////////////////////////////////////////
+;/////////////////////////////////////////////////////////
+
+	
+#module
+#deffunc waitbyfps int p1, var fps
+	E3DWaitbyFPS@ p1, fps
+	await 0
+	return
+
+#global
+
+	dim keybuf, 256 
+
+	screenw = 640 : screenh = 480
+	screen 0, screenw, screenh, 1
+	title "Easy3D for HSP3 sample"
+
+	;開発中は下の行のコメントアウトを外すことを推奨します。
+	;E3DEnableDbgFile
+
+	;初期化
+	E3DInit 0, -1, 0, 16, 0, scid1
+
+	;カメラ変数の初期化
+	cameradist = 8000.0
+	cameraheight = 500.0
+	camdegxz = 180.0
+	camposx = 0.0
+	camposy = cameraheight
+	camposz = 0.0
+
+
+	;file のpath 用のバッファーの作成
+	
+	pathlen = 2048
+	sdim mediadir, pathlen
+	mediadir = dir_cur + "\\Media"
+	sdim pathbuf, pathlen, 2
+
+
+	;projectionの変更をしたいときは、以下の２行を有効にしてください。
+	proj_near = 100.0 : proj_far = 20000.0 : proj_fov = 45.0
+	E3DSetProjection proj_near, proj_far, proj_fov
+
+
+	E3DCreateProgressBar
+	E3DSetProgressBar 0
+
+
+	;地面データのロード
+	pathbuf.0 = mediadir + "\\groundplane1_p_small.sig"
+	E3DSigLoad pathbuf.0, hsid0
+	posx0 = 0.0 : posy0 = 0.0 : posz0 = 0.0
+	degx0 = 0.0 : degy0 = 0.0 : degz0 = 0.0
+	E3DSetPos hsid0, posx0, posy0, posz0
+	E3DSetDir hsid0, degx0, degy0, degz0
+	frameno0 = 0
+
+	E3DSetProgressBar 50
+
+	
+	;slimeデータのロード
+	pathbuf.0 = mediadir + "\\slime25.sig"
+	E3DSigLoad pathbuf.0, hsid1
+	E3DSetPos hsid1, 0.0, 0.0, 0.0
+
+	pathbuf.0 = mediadir + "\\slime_paku.qua"
+	E3DAddMotion hsid1, pathbuf.0, motid1, framemax1
+	E3DSetMotionKind hsid1, motid1
+
+	slimedist = 2800.0
+	slimedegy = 0.0
+	slimedegxz = 0.0
+
+	;アームデータのロード
+	pathbuf.0 = mediadir + "\\arm6_bone.sig"
+	E3DSigLoad pathbuf.0, hsid2
+	E3DSetPos hsid2, 0.0, 0.0, 0.0
+
+	pathbuf.0 = mediadir + "\\arm6_bone.qua"
+	E3DAddMotion hsid2, pathbuf.0, motid2, framemax2
+	E3DSetMotionKind hsid2, motid2	
+
+	E3DGetPartNoByName hsid2, "J1", jointno
+	
+	E3DSetProgressBar 80
+
+	;以下、ライトの設定
+	lightdirx1 = 0.0
+	lightdiry1 = 0.0
+	lightdirz1 = 1.0
+	lightr1 = 128
+	lightg1 = 128
+	lightb1 = 128
+
+	;平行光源
+	E3DCreateLight lid1
+	E3DSetDirectionalLight lid1, lightdirx1, lightdiry1, lightdirz1, lightr1, lightg1, lightb1
+
+
+	chkfps1 = 0
+
+	; スライムは、degstep / degmult 度ずつ移動する。
+	degstep = 2.0	
+	degmult = 1.0
+	
+	E3DDestroyProgressBar
+
+*main
+
+	; keybuf変数は、メインループの外で、dim keybuf, 256 として、確保しておいてください。
+	E3DGetKeyboardState keybuf
+
+	if keybuf.VK_ESCAPE = 1 : goto *bye ; [ESC]で終了
+
+	E3DSetNewPose hsid1, frameno1
+	
+
+	E3DSetMotionFrameNo hsid2, motid2, 0 ;この2命令で、常にフレーム番号0を再生するようにします。
+	E3DSetNewPose hsid2, frameno2
+
+
+	gosub *MoveCamera
+	gosub *MoveSlime
+	gosub *MoveArm
+
+
+	E3DChkInView scid1, hsid0
+	E3DChkInView scid1, hsid1
+	E3DChkInView scid1, hsid2
+
+
+
+	E3DBeginScene scid1
+
+		;不透明部分の描画をする
+	E3DRender scid1, hsid0, 0, 0, 0
+	E3DRender scid1, hsid1, 0, 0, 0
+	E3DRender scid1, hsid2, 0, 0, 0
+
+	rendercnt++	
+
+
+	gosub *DrawText
+
+	E3DEndScene
+	E3DPresent scid1
+
+	waitbyfps 100, chkfps1
+
+	goto *main
+
+	
+*bye
+	E3DBye
+	end
+
+
+*MoveCamera
+	
+	cameraupdate = 0
+
+	if ( (keybuf.VK_SHIFT == 1) && (keybuf.VK_LEFT == 1) ) {
+		camdegxz += 1
+		if camdegxz > 360.0 : camdegxz -= 360.0
+		cameraupdate = 1
+	}
+
+	if ( (keybuf.VK_SHIFT == 1) && (keybuf.VK_RIGHT == 1) ) {
+		camdegxz -= 1
+		if camdegxz < 0.0 : camdegxz += 360.0
+		cameraupdate = 1
+	}
+	
+	if ( (keybuf.VK_SHIFT == 1) && (keybuf.VK_UP == 1) ) {
+		camposy += 10.0
+		cameraupdate = 1		
+	}
+
+	if ( (keybuf.VK_SHIFT == 1) && (keybuf.VK_DOWN == 1) ) {
+		camposy -= 10.0
+		cameraupdate = 1
+	}
+
+	E3DSin camdegxz, camposx
+	E3DCos camdegxz, camposz
+	camposx *= cameradist
+	camposz *= cameradist
+	
+	E3DSetCameraPos camposx, camposy, camposz
+	E3DSetCameraTarget 0.0, camposy, 0.0, 0.0, 1.0, 0.0
+
+
+	return
+
+*MoveSlime
+
+	;hsid1のキャラクタの動作制御
+	;キーに応じて、slimeが球面上を動くようにする。
+
+
+	if ( (keybuf.VK_SHIFT == 0) & (keybuf.VK_LEFT == 1) ) {
+		
+		slimedegxz += degstep
+		if ( slimedegxz > ( 360.0 * degmult ) ) {
+			slimedegxz -= ( 360.0 * degmult )
+		}
+	}
+	if ( (keybuf.VK_SHIFT == 0) & (keybuf.VK_RIGHT == 1) ) {
+
+		slimedegxz -= degstep
+		if ( slimedegxz < 0 ) {
+			slimedegxz += ( 360.0 * degmult )
+		}
+	}
+
+	if ( (keybuf.VK_SHIFT == 0) & (keybuf.VK_UP == 1) ){
+		slimedegy += degstep
+		if ( slimedegy > ( 360.0 * degmult ) ) {
+			slimedegy -= ( 360.0 * degmult )
+		}
+	}
+	if ( (keybuf.VK_SHIFT == 0) & (keybuf.VK_DOWN == 1) ){
+		slimedegy -= degstep
+		if ( slimedegy < 0.0 ) {
+			slimedegy += ( 360.0 * degmult )
+		}
+	}
+
+	
+	E3DCos slimedegxz / degmult, cosxz
+	E3DSin slimedegxz / degmult, sinxz
+	E3DCos slimedegy / degmult, cosy
+	E3DSin slimedegy / degmult, siny
+
+	slimeposx = cosxz * cosy * slimedist
+	slimeposy = siny * slimedist
+	slimeposz = sinxz * cosy * slimedist
+
+	E3DSetPos hsid1, slimeposx, slimeposy, slimeposz
+
+	return
+
+*MoveArm
+	; アームをＩＫで、スライムの方向に向かせます。
+	; E3DIKRotateBetaを呼び出すだけです。	
+
+	iklevel = 7 ;アームは7個の関節を持つので、7を指定。
+	calclevel = 3
+
+	E3DIKRotateBeta scid1, hsid2, jointno, motid2, 0, iklevel, 3, 0.0, 0.0, 0.0, calclevel, slimeposx, slimeposy, slimeposz, jointposx, jointposy, jointposz, lastparent
+
+	return
+
+*DrawText
+
+	textposx = 10 : textposy = 10
+	textr = 255 : textg = 255 : textb = 255
+	textscale = 1
+
+	textposx = 10 : textposy = 10
+	str5 = "chkfps1  " + chkfps1
+	E3DDrawText textposx, textposy, textscale, textr, textg, textb, str5
+
+	textposx = 10 : textposy = 20
+	str6 = "slimedegy  " + slimedegy + "  slimedegxz " + slimedegxz
+	E3DDrawText textposx, textposy, textscale, textr, textg, textb, str6
+
+	textposy += 20
+	str6 = "slimeposx  " + slimeposx + "  slimeposy " + slimeposy + "  slimeposz " + slimeposz
+	E3DDrawText textposx, textposy, textscale, textr, textg, textb, str6
+
+	textposy += 20
+	str6 = "jointposx  " + jointposx + "  jointposy " + jointposy + "  jointposz " + jointposz
+	E3DDrawText textposx, textposy, textscale, textr, textg, textb, str6
+
+	textposy += 20
+	str6 = "lastparent  " + lastparent
+	E3DDrawText textposx, textposy, textscale, textr, textg, textb, str6
+
+	return
+

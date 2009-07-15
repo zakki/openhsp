@@ -1,0 +1,284 @@
+
+
+; /////////////////////////////////////////////////////////////////////////////////
+; ///////////// このプログラムでしていることの、大まかな説明 //////////////////////
+; /////////////////////////////////////////////////////////////////////////////////
+;
+;　今までのサンプルでは、キーを押した時点で、新しいモーション番号をセットする、というものでした。
+;　この方法だと、キーを押す直前のポーズと、次に表示される、新しいモーションの間で、
+;　急激にポーズが変わってしまうという問題点があります。
+;
+;　また、あるモーションが完全に終了するまで、次のモーションに移行しないという方法もありますが、
+;　キー入力が、長時間、反映されないという問題点があります。
+;
+;
+;　そこで、キーを押した時点でのポーズから、次の新しいモーションの最初のポーズまでの間をリアルタイムで計算し、
+;　１０フレーム使って、なめらかに変化するようにしてみよう、というのが、このサンプルの目的です。
+;　キー入力の禁止時間も、補間モーション再生中の短い時間のみにしました。
+;
+;　このサンプルでは、全ての読み込むモーションの、先頭１０フレームを、補間モーション用にとってあります。
+;　つまり、各モーションの、最初の１０フレームは、プログラムでモーションを計算するので、
+;　RokDeBone2では、特に、設定ぜず、１０フレーム以降に、モーションを作っておけば良いのです。
+;　（一応、フレーム０にモーションポイントは、作ってありますが。）
+;
+;
+;　具体的な方法としては、
+;　　１，キーが押された時点のポーズを、次に表示するモーションのフレーム０にコピーする。(E3DCopyMotion)
+;　　　　[ 補間モーション再生中は、キーを受け付けないようにしています。]
+;　　２，次に表示するモーションのフレーム０からフレーム１０までを補間計算する。(E3DFillUpMotion)
+;　　３，次に表示するモーションの番号をセットする。(E3DSetMotionKind)
+;　となります。
+;
+;　この方法ですと、キーが押された瞬間だけ、計算量が増えます。
+;　負荷が瞬間的に、かかることになります。
+;　負荷を分散したい場合は、フレーム０からフレーム１０までを補間する際に、必要なフレームだけを（表示直前の１フレーム分だけを）、
+;　そのつど補間計算するという方法もあります。
+;　この方法を使うと、負荷が１０分の１ずつに、分散できることになります。
+;　現在、何フレーム目を再生しているのかは、E3DSetNewPose実行後の、stat変数に格納されるので、これを使うと可能です。
+;　( このサンプルでは、curframeno という変数に代入しています。)
+;
+;
+;
+;　補間計算したモーションを再生中は、"!!! Now, Playing Filled Up Motion !!!!"　と画面に表示されます。
+;
+;　６０ＦＰＳより速くは、表示されないようにしていますが、
+;　速くて効果が、分かりずらいというかたは、
+;　waitbyfps 60 という命令を、　waitbyfps 10 とかに置き換えて試してみてください。
+;
+;
+;　モーションは、Ｗ，Ｘ，Ｃ，Ｖキーに、それぞれ、割り当てています。
+;　キーを素早く押して、効果をご確認ください。
+;
+;
+
+
+;	e3dhsp.dll test script
+
+#include "e3dhsp3.as"
+	
+#module
+#deffunc waitbyfps int p1, var fps
+	E3DWaitbyFPS@ p1, fps
+	await 0
+	return
+#global
+
+	dim keybuf, 256 
+
+	screenw = 640 : screenh = 480
+	screen 0, screenw, screenh, 1
+	title "Easy3D for HSP3 sample"
+
+	;開発中は下の行のコメントアウトを外すことを推奨します。
+	;E3DEnableDbgFile
+
+	;初期化
+	E3DInit 0, -1, 0, 16, 0, scid1
+
+	;カメラ変数の初期化
+	cameradist = 2400.0
+	cameraheight = 800.0
+	camdegxz = 180.0
+	camposx = 0.0
+	camposy = cameraheight
+	camposz = 0.0
+
+
+	;file のpath 用のバッファーの作成
+	
+	pathlen = 2048
+	sdim mediadir, pathlen
+	mediadir = dir_cur + "\\Media"
+	sdim pathbuf, pathlen, 2
+
+
+	;projectionの変更をしたいときは、以下の２行を有効にしてください。
+	;proj_near = 100 : proj_far = 20000 : proj_fov = 45
+	;E3DSetProjection proj_near, proj_far, proj_fov
+
+
+	E3DCreateProgressBar
+	E3DSetProgressBar 0
+
+	E3DSetProgressBar 50
+
+	
+	;midoriデータのロード
+	pathbuf.0 = mediadir + "\\hayame.sig"
+	E3DSigLoad pathbuf.0, hsid1
+
+	pathbuf.0 = mediadir + "\\hayame_boot.qua"
+	E3DAddMotion hsid1, pathbuf.0, motid1, framemax1 ;<---- motid1を取得！！
+	pathbuf.0 = mediadir + "\\hayame_punch.qua"
+	E3DAddMotion hsid1, pathbuf.0, motid2, framemax2 ;<---- motid2を取得！！
+	pathbuf.0 = mediadir + "\\hayame_kick.qua"
+	E3DAddMotion hsid1, pathbuf.0, motid3, framemax3 ;<---- motid3を取得！！
+	pathbuf.0 = mediadir + "\\hayame_crouch.qua"
+	E3DAddMotion hsid1, pathbuf.0, motid4, framemax4 ;<---- motid4を取得！！
+
+	curmotid = motid1
+	nextmotid = motid1
+
+	E3DSetMotionKind hsid1, curmotid
+
+	E3DSetPos hsid1, 0.0, 0.0, 0.0
+
+	E3DSetProgressBar 80
+
+	;以下、ライトの設定
+	lightdirx1 = 0.0
+	lightdiry1 = 0.0
+	lightdirz1 = 1.0
+	lightr1 = 128
+	lightg1 = 128
+	lightb1 = 128
+
+	;平行光源
+	E3DCreateLight lid1
+	E3DSetDirectionalLight lid1, lightdirx1, lightdiry1, lightdirz1, lightr1, lightg1, lightb1
+
+	pathbuf.0 = mediadir + "\\lake.bmp"
+	pathbuf.1 = mediadir + "\\cloud3.bmp"
+	E3DCreateBG scid1, pathbuf.0, pathbuf.1, 0.001, 0.0, 0
+	switchflag1 = 0
+
+	chkfps1 = 0
+
+	E3DDestroyProgressBar
+
+	curframeno = 0
+	fillupflag = 0
+*main
+
+	; keybuf変数は、メインループの外で、dim keybuf, 256 として、確保しておいてください。
+	E3DGetKeyboardState keybuf
+
+	if keybuf.VK_ESCAPE = 1 : goto *bye ; [ESC]で終了
+
+	gosub *MoveCamera
+	gosub *MoveChara1
+
+	E3DSetNewPose hsid1, curframeno
+
+
+	E3DChkInView scid1, hsid1
+
+
+	E3DBeginScene scid1
+
+		;不透明部分の描画をする
+	E3DRender scid1, hsid1, 0, frameno1, 0
+
+		;半透明部分の描画をする
+	E3DRender scid1, hsid1, 1, frameno1, 0
+
+	gosub *DrawText
+
+	E3DEndScene
+	E3DPresent scid1
+
+	waitbyfps 60, chkfps1
+
+	goto *main
+
+
+*bye
+	E3DBye
+	end
+
+
+*MoveChara1
+
+	;hsid1のキャラクタの動作制御
+	fillupflag = 0
+
+	if ( curframeno > 10 ) {
+		if ( keybuf.'Z' == 1 ){
+			nextmotid = motid1
+			fillupflag = 1
+		}
+		if ( keybuf.'X' == 1 ){
+			nextmotid = motid2
+			fillupflag = 1
+		}
+		if ( keybuf.'C' == 1 ){
+			nextmotid = motid3
+			fillupflag = 1
+		}
+		if ( keybuf.'V' == 1 ){
+			nextmotid = motid4
+			fillupflag = 1
+		}
+	
+		if ( fillupflag == 1 ) {
+			; 現在のモーションのポーズを、次のモーションのフレーム０にコピーする。
+			E3DCopyMotionFrame hsid1, curmotid, curframeno, nextmotid, 0
+
+			; 次のモーションのフレーム０からフレーム１０までを、補間する。
+			E3DFillUpMotion hsid1, nextmotid, -1, 0, 10, 0
+
+			; 次のモーションのidをセットする。
+			E3DSetMotionKind hsid1, nextmotid				
+		}
+	}
+
+	curmotid = nextmotid
+
+	return
+
+*MoveCamera
+	
+	cameraupdate = 0
+
+	if ( keybuf.VK_LEFT == 1 ) {
+		camdegxz += 1
+		if camdegxz > 360.0 : camdegxz -= 360.0
+		cameraupdate = 1
+	}
+
+	if ( keybuf.VK_RIGHT == 1 ) {
+		camdegxz -= 1
+		if camdegxz < 0.0 : camdegxz += 360.0
+		cameraupdate = 1
+	}
+	
+	if ( keybuf.VK_UP == 1 ) {
+		camposy += 10.0
+		cameraupdate = 1		
+	}
+
+	if ( keybuf.VK_DOWN == 1 ) {
+		camposy -= 10.0
+		cameraupdate = 1
+	}
+
+	E3DSin camdegxz, camposx
+	camposx *= cameradist
+	E3DCos camdegxz, camposz
+	camposz *= cameradist
+	
+	E3DSetCameraPos camposx, camposy, camposz
+	E3DSetCameraTarget 0.0, camposy, 0.0, 0.0, 1.0, 0.0
+
+	return
+
+
+*DrawText
+
+	textposx = 10 : textposy = 10
+	textr = 255 : textg = 255 : textb = 255
+	textscale = 1
+
+	textposx = 10 : textposy = 300
+	str5 = "chkfps1  " + chkfps1
+	E3DDrawText textposx, textposy, textscale, textr, textg, textb, str5
+
+
+	textposx = 10 : textposy = 400
+	if ( curframeno <= 10 ) {
+		str6 = "!!! Now, Playing Filled Up Motion !!!!"
+		E3DDrawBigText textposx, textposy, 2, textr, textg, textb, str6
+	}
+
+	return
+

@@ -1,0 +1,10 @@
+Motion Accelerator File ver2.0 type01
+
+#TRUNK {
+	"アイドル正面", "アイドル正面.qua", "Idling0", 0, 0, 0
+	"te_hira", "te_hira.qua", "Normal0", 0, 1, 0
+	"te_hidari", "te_hidari.qua", "Normal0", 0, 2, 0
+	"asi_aruki", "asi_aruki.qua", "Normal0", 0, 4, 0
+	"asi_shagami", "asi_shagami.qua", "Normal0", 0, 8, 0
+}
+

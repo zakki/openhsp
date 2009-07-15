@@ -1,0 +1,335 @@
+
+;	e3dhsp.dll test script
+;
+;　　マウスで地面をクリックしてください。
+;　　クリックした場所に、バナナが移動し、それを追うようにして、サルが移動します。
+;　　６０ＦＰＳより多く描画をしないようになっています。
+;
+;　　マウスのクリックは、PickFace関数
+;　　サルの移動は、MoveChara関数で行います。
+;
+;　　サルはhsid4, バナナはhsid5、地面はhsid0です。
+
+
+#include "e3dhsp3.as"
+
+#module
+#deffunc waitbyfps int p1, var fps
+	E3DWaitbyFPS@ p1, fps
+	await 0
+	return
+#global
+	
+	dim keybuf, 256	
+
+	;file のpath 用のバッファーの作成
+	
+	pathlen = 2048
+	sdim mediadir, pathlen
+	mediadir = dir_cur + "\\Media"
+	sdim pathbuf, pathlen, 4
+	
+
+	mapsize = 300000.0	
+	mapdiv = 60
+	mapheight = 20000.0
+
+	chgdegx = 0.0 : chkdegy = 0.0 : chkdegz = 0.0
+
+	screenw = 640 : screenh = 480
+	screen 0, screenw, screenh, 1
+	pointmax = 100
+
+	title "Easy3D for HSP3 sample"
+
+	;開発中は下の行のコメントアウトを外すことを推奨します。
+	;E3DEnableDbgFile
+
+	;初期化
+	E3DInit 0, -1, 0, 16, 0, scid1
+
+
+	;カメラの初期化
+	camposx = 0.0 : camposy = 2500.0 : camposz = 0.0
+	E3DSetCameraPos camposx, camposy, camposz	
+	camdegxz = 180.0 : camdegy = 0.0
+	E3DSetCameraDeg camdegxz, camdegy
+
+	confflag = 0
+	endflag = 0
+
+
+	;projectionの変更をしたいときは、以下の２行を有効にしてください。
+	proj_near = 100.0 : proj_far = 50000.0 : proj_fov = 60.0
+	E3DSetProjection proj_near, proj_far, proj_fov
+
+
+	E3DCreateProgressBar
+	E3DSetProgressBar 0
+
+	pathbuf.0 = mediadir + "\\g_6_20_1.bmp"
+	pathbuf.1 = mediadir + "\\g_road_6_20_1.bmp"
+	pathbuf.2 = mediadir + "\\g_river_6_20_1.bmp"
+	pathbuf.3 = mediadir + "\\BG43.bmp"
+
+	E3DLoadGroundBMP pathbuf.0, pathbuf.1, pathbuf.2, pathbuf.3, mapsize, mapsize, mapdiv, mapdiv, mapheight, hsid0
+	posx0 = 0.0 : posy0 = 0.0 : posz0 = 0.0
+	degx0 = 0.0 : degy0 = 0.0 : degz0 = 0.0
+	E3DSetPos hsid0, posx0, posy0, posz0
+	E3DSetDir hsid0, degx0, degy0, degz0
+	frameno0 = 0
+
+	
+	E3DSetProgressBar 50
+	
+	pathbuf.0 = mediadir + "\\saru_bone.sig"
+	pathbuf.1 = mediadir + "\\saru_idling.qua"
+	pathbuf.2 = mediadir + "\\saru_walk.qua"
+	E3DSigLoad pathbuf.0, hsid4
+	E3DAddMotion hsid4, pathbuf.1, mk4_idling, max4_idling				
+	E3DAddMotion hsid4, pathbuf.2, mk4_walk, max4_walk				
+
+	E3DSetMotionKind hsid4, mk4_idling
+	posx4 = 146000.0 : posy4 = mapheight + 1000.0 : posz4 = 185000.0
+	degx4 = 0.0 : degy4 = 0.0 : degz4 = 0.0
+	E3DSetPos hsid4, posx4, posy4, posz4
+	frameno4 = 0
+	newmk4 = 0
+	E3DSetBeforePos hsid4
+
+	E3DCreateQ qid4 ; サルの向きを制御するためのクォータニオン
+	E3DLookAtQ qid4, 0.0, 0.0, 1.0, 0.0, 0.0, -1.0, 0, 1
+	E3DSetDirQ2 hsid4, qid4
+
+
+	E3DSetProgressBar 75
+
+	pathbuf.0 = mediadir + "\\banana.sig"
+	E3DSigLoad pathbuf.0, hsid5
+	posx5 = posx4
+	posy5 = posy4
+	posz5 = posz4
+	frameno5 = 0
+
+	
+	lightdirx1 = 0.0
+	lightdiry1 = -1.0
+	lightdirz1 = 1.0
+	lightr1 = 255
+	lightg1 = 255
+	lightb1 = 255
+
+	E3DCreateLight lid1
+	E3DSetDirectionalLight lid1, lightdirx1, lightdiry1, lightdirz1, lightr1, lightg1, lightb1
+
+	E3DSetLightAmbient lid1, 77, 77, 77
+	E3DSetLightSpecular lid1, 0, 0, 0
+
+	chkfps1 = 0
+
+	pathbuf.0 = mediadir + "\\lake.bmp"
+	pathbuf.1 = mediadir + "\\cloud3.bmp"
+	E3DCreateBG scid1, pathbuf.0, pathbuf.1, 0.001, 0.0, 0
+
+
+	E3DDestroyProgressBar
+
+
+	result0 = 0
+	adjustx0 = 0.0 : adjusty0 = 0.0 : adjustz0 = 0.0
+	befposx = posx4 : befposy = posy4 : befposz = posz4
+
+
+	dim arfps, 50
+
+	onclick gosub *PickFace
+
+*main
+	; keybuf変数は、メインループの外で、dim keybuf, 256 として、確保しておいてください。
+	E3DGetKeyboardState keybuf
+
+	if keybuf.VK_ESCAPE = 1 : goto *bye ; [ESC]で終了
+
+	gosub *SetBananaPos
+	gosub *MoveChara
+	gosub *MoveCamera
+
+
+	E3DBeginScene scid1
+	
+
+	E3DChkInView scid1, hsid0
+	E3DChkInView scid1, hsid4
+	E3DChkInView scid1, hsid5
+
+	gosub *ChkConf ; !!! E3DChkInViewより後で呼んでください。
+
+
+		;不透明部分の描画をする
+	E3DRender scid1, hsid0, 0, frameno0, 0
+	E3DRender scid1, hsid4, 0, frameno4, 0
+	E3DRender scid1, hsid5, 0, frameno5, 0
+
+		;半透明部分の描画をする
+	E3DRender scid1, hsid0, 1, frameno0, 0
+	E3DRender scid1, hsid4, 1, frameno4, 0
+	E3DRender scid1, hsid5, 1, frameno5, 0
+
+	gosub *DrawText
+
+	E3DEndScene
+
+	E3DPresent scid1
+		
+	waitbyfps 60, chkfps1
+
+	arno = 0
+	repeat 49
+		befno = 48 - arno
+		aftno = 49 - arno
+		arfps.aftno = arfps.befno
+		arno++
+	loop	
+	arfps.0 = chkfps1
+
+
+	E3DGetPos hsid4, posx4, posy4, posz4
+	E3DSetBeforePos hsid4
+	befposx = posx4 : befposy = posy4 : befposz = posz4
+	
+	goto *main
+
+
+*bye
+	E3DBye
+	end
+
+*MoveChara
+	;バナナの位置とサルの位置の距離を調べて、離れていたら、さるをバナナに近づける。
+
+	forwardstep = 100
+
+	diffx = posx5 - posx4
+	diffz = posz5 - posz4
+
+	mag = (diffx * diffx) + (diffz * diffz) ;距離の２乗
+	E3DGetMotionKind hsid4, curmk4
+
+	if( mag > ( forwardstep * forwardstep ) ){ ;距離が離れていたとき
+		if( curmk4 == mk4_idling ){
+			;現在のモーションがアイドリングの場合は、歩きモーションに変更する
+			E3DSetMotionKind hsid4, mk4_walk
+			
+		}
+
+		E3DLookAtQ qid4, diffx, 0.0, diffz, 0.0, 0.0, -1.0, 0, 15 ;サルをバナナの方向に、徐々に向ける
+		E3DSetDirQ2 hsid4, qid4
+
+		E3DVec3Normalize diffx, 0.0, diffz, movex, movey, movez ;サルの移動ベクトルを求める
+		posx4 += (movex * forwardstep)
+		posy4 += (movey * forwardstep)
+		posz4 += (movez * forwardstep)
+		E3DSetPos hsid4, posx4, posy4, posz4 ;サルを移動する
+
+	}else{
+		if( curmk4 == mk4_walk ){
+			;現在のモーションが歩きだった場合は、アイドリング戻す。
+			E3DSetMotionKind hsid4, mk4_idling
+		}
+	}	
+
+	E3DSetNewPose hsid4, frameno4
+
+	
+	return
+*ChkConf
+	result0 = 0
+
+
+	; 地面その１と、キャラクタのあたり判定	
+	E3DChkConfGround hsid4, hsid0, 1, 200.0, -100.0, result0, adjustx0, adjusty0, adjustz0, nx0, ny0, nz0
+
+	if ( result0 != 0 ) : E3DSetPos hsid4, adjustx0, adjusty0, adjustz0
+	
+	return
+
+*MoveCamera
+
+	;カメラは、サルの後ろ側で、地面から１５００の高さの所に置く。
+
+	E3DGetPos hsid4, saveposx4, saveposy4, saveposz4
+	E3DPosForward hsid4, -2500.0
+	E3DGetPos hsid4, backposx, backposy, backposz
+	E3DSetPos hsid4, saveposx4, saveposy4, saveposz4
+
+
+	E3DChkConfGround2 backposx, -100.0, backposz, backposx, mapheight + 1000.0, backposz, hsid0, 1, 200.0, -100.0, result0, adjustx0, adjusty0, adjustz0, nx0, ny0, nz0
+	camposx = adjustx0
+	camposy = adjusty0 + 1500.0
+	camposz = adjustz0
+
+	E3DSetCameraPos camposx, camposy, camposz
+	E3DSetCameraTarget saveposx4, saveposy4 + 800.0, saveposz4, 0.0, 1.0, 0.0
+
+	return
+
+*SetBananaPos
+
+	;バナナを地面の高さに置く
+
+	E3DChkConfGround2 posx5, -100.0, posz5, posx5, mapheight + 1000.0, posz5, hsid0, 1, 200.0, -100.0, result5, adjustx5, adjusty5, adjustz5, nx5, ny5, nz5
+	posx5 = adjustx5
+	posy5 = adjusty5 + 400.0
+	posz5 = adjustz5
+
+	E3DSetPos hsid5, posx5, posy5, posz5
+	E3DRotateY hsid5, 3
+	return
+
+
+*DrawText
+
+	textr = 255 : textg = 255 : textb = 255
+	textscale = 1
+
+	lcnt = 0
+	avfps = 0
+	repeat 50
+		avfps += arfps.lcnt
+		lcnt++
+	loop
+	avfps = avfps / 50
+	textposx = 10 : textposy = 80
+	strchk2 = "avfps   " + avfps
+	E3DDrawText textposx, textposy, textscale, textr, textg, textb, strchk2
+
+
+	E3DGetPos hsid4, chkposx, chkposy, chkposz
+	textposx = 10 : textposy = 140
+	strchk3 = "chara position   X : " + chkposx + "  Y : " + chkposy + "  Z : " + chkposz
+	E3DDrawText textposx, textposy, textscale, textr, textg, textb, strchk3
+
+	textposy += 40
+	strchk3 = "Click Ground !!!"
+	E3DDrawText textposx, textposy, textscale, textr, textg, textb, strchk3
+	
+	return
+
+*PickFace
+	
+	;マウスでクリックした地面の位置を調べて、その位置をバナナの位置に設定する。
+
+	clickx=lparam & 0xffff
+	clicky=lparam>>16
+
+	maxdist = proj_far + 10000.0
+	E3DPickFace scid1, hsid0, clickx, clicky, maxdist, partno0, faceno, x0, y0, z0, nx, ny, nz, dist0
+
+	if( partno0 >= 0 ){
+		posx5 = x0
+		posy5 = y0
+		posz5 = z0
+
+	}
+
+	return

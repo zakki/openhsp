@@ -1,0 +1,521 @@
+
+;	e3dhsp.dll test script
+
+#include "e3dhsp3.as"
+
+
+#module
+#deffunc waitbyfps int p1, var fps
+	E3DWaitbyFPS@ p1, fps
+	await 0
+	return
+#global
+	dim keybuf, 256 
+	dim arfps, 50
+
+	pointmax = 100 ;点数の最大値
+
+	screenw = 640 : screenh = 480
+	screen 0, screenw, screenh, 1
+	title "Easy3D for HSP3 sample"
+
+	;開発中は下の行のコメントアウトを外すことを推奨します。
+	;E3DEnableDbgFile
+
+	;初期化
+	E3DInit 0, -1, 0, 16, 0, scid1
+
+
+	;カメラの初期化
+	camposx = 0.0 : camposy = 1500.0 : camposz = -6000.0
+	E3DSetCameraPos camposx, camposy, camposz	
+	;camdegxz = 180.0 : camdegy = 0.0
+	;E3DSetCameraDeg camdegxz, camdegy
+
+	afterimagenum = 5
+	confflag = 0
+	endflag = 0
+
+
+	;file のpath 用のバッファーの作成
+	
+	pathlen = 2048
+	sdim mediadir, pathlen
+	mediadir = dir_cur + "\\Media"
+	sdim pathbuf, pathlen, 2
+
+
+	;projectionの変更をしたいときは、以下の２行を有効にしてください。
+	;proj_near = 100 : proj_far = 20000 : proj_fov = 45
+	;E3DSetProjection proj_near, proj_far, proj_fov
+
+
+	E3DCreateProgressBar
+	E3DSetProgressBar 0
+
+
+	;地面データのロード
+	pathbuf.0 = mediadir + "\\whiteplane.sig"
+	E3DSigLoad pathbuf.0, hsid0
+	posx0 = 0.0 : posy0 = 0.0 : posz0 = 0.0
+	degx0 = 0.0 : degy0 = 0.0 : degz0 = 0.0
+	E3DSetPos hsid0, posx0, posy0, posz0
+	E3DSetDir hsid0, degx0, degy0, degz0
+	frameno0 = 0
+
+	E3DSetProgressBar 30
+
+	
+	;猫妹データのロード
+	pathbuf.0 = mediadir + "\\ni_parts_6_bone.sig"
+	E3DSigLoad pathbuf.0, hsid1
+	pathbuf.0 = mediadir + "\\ni_parts4_idling.qua"
+	E3DAddMotion hsid1, pathbuf.0, mk1_idling, max1_idling
+	pathbuf.0 = mediadir + "\\ni_parts4_punch.qua"				
+	E3DAddMotion hsid1, pathbuf.0, mk1_punch, max1_punch
+	pathbuf.0 = mediadir + "\\ni_parts4_kick.qua"				
+	E3DAddMotion hsid1, pathbuf.0, mk1_kick, max1_kick
+	pathbuf.0 = mediadir + "\\ni_parts4_act1.qua"				
+	E3DAddMotion hsid1, pathbuf.0, mk1_act1, max1_act1
+	pathbuf.0 = mediadir + "\\ni_parts4_defense.qua"				
+	E3DAddMotion hsid1, pathbuf.0, mk1_defense, max1_defense
+	pathbuf.0 = mediadir + "\\ni_parts4_win.qua"				
+	E3DAddMotion hsid1, pathbuf.0, mk1_win, max1_win
+	pathbuf.0 = mediadir + "\\ni_parts4_final.qua"				
+	E3DAddMotion hsid1, pathbuf.0, mk1_final, max1_final				
+
+	E3DSetProgressBar 60
+
+	stepfast = 2
+	;遅いマシンで使用する方は、以下の行を有効にしてください。
+	;(モーションが荒くなりますが、速く見えます)
+	;E3DSetMotionStep hsid1, mk1_idling, stepfast
+	;E3DSetMotionStep hsid1, mk1_punch, stepfast
+	;E3DSetMotionStep hsid1, mk1_kick, stepfast
+	;E3DSetMotionStep hsid1, mk1_act1, stepfast	
+
+	E3DSetMotionKind hsid1, mk1_idling
+	posx1 = 1000.0 : posy1 = 0.0 : posz1 = 0.0
+	degx1 = 0.0 : degy1 = 90.0 : degz1 = 0.0
+	E3DSetPos hsid1, posx1, posy1, posz1
+	E3DSetDir hsid1, degx1, degy1, degz1
+
+	frameno1 = 0
+	newmk1 = 0
+	point1 = pointmax
+	
+	;猫姉データのロード
+	pathbuf.0 = mediadir + "\\na_parts_1_bone.sig"
+	E3DSigLoad pathbuf.0, hsid2
+	pathbuf.0 = mediadir + "\\na_parts1_idling.qua"
+	E3DAddMotion hsid2, pathbuf.0, mk2_idling, max2_idling
+	pathbuf.0 = mediadir + "\\na_parts1_punch.qua"				
+	E3DAddMotion hsid2, pathbuf.0, mk2_punch, max2_punch
+	pathbuf.0 = mediadir + "\\na_parts1_kick.qua"				
+	E3DAddMotion hsid2, pathbuf.0, mk2_kick, max2_kick
+	pathbuf.0 = mediadir + "\\na_parts1_act1.qua"				
+	E3DAddMotion hsid2, pathbuf.0, mk2_act1, max2_act1
+	pathbuf.0 = mediadir + "\\na_parts1_defense.qua"				
+	E3DAddMotion hsid2, pathbuf.0, mk2_defense, max2_defense
+	pathbuf.0 = mediadir + "\\na_parts1_win.qua"				
+	E3DAddMotion hsid2, pathbuf.0, mk2_win, max2_win
+	pathbuf.0 = mediadir + "\\na_parts1_final.qua"				
+	E3DAddMotion hsid2, pathbuf.0, mk2_final, max2_final				
+
+	;遅いマシンで使用する方は、以下の行を有効にしてください。
+	;(モーションが荒くなりますが、速く見えます)
+	;E3DSetMotionStep hsid2, mk2_idling, stepfast
+	;E3DSetMotionStep hsid2, mk2_punch, stepfast
+	;E3DSetMotionStep hsid2, mk2_kick, stepfast
+	;E3DSetMotionStep hsid2, mk2_act1, stepfast	
+
+	E3DSetProgressBar 90
+
+
+	E3DSetMotionKind hsid2, mk2_idling
+	posx2 = -1000.0 : posy2 = 0.0 : posz2 = 0.0
+	degx2 = 0.0 : degy2 = -90.0 : degz2 = 0.0
+	E3DSetPos hsid2, posx2, posy2, posz2
+	E3DSetDir hsid2, degx2, degy2, degz2
+
+	frameno2 = 0
+	newmk2 = 0
+	point2 = pointmax
+
+
+	;乱数のテスト
+	;seed = 65536
+	;E3DSeed seed	
+
+
+	;以下、ライトの設定
+	lightdirx1 = 1.0
+	lightdiry1 = -0.5
+	lightdirz1 = 1.0
+	lightr1 = 255
+	lightg1 = 255
+	lightb1 = 255
+
+	;平行光源その１
+	E3DCreateLight lid1
+	E3DSetDirectionalLight lid1, lightdirx1, lightdiry1, lightdirz1, lightr1, lightg1, lightb1
+
+	lightdirx1 = -1.0
+	lightdiry1 = -0.5
+	lightdirz1 = -1.0
+	lightr1 = 255
+	lightg1 = 255
+	lightb1 = 255
+
+	;平行光源その２
+	E3DCreateLight lid2
+	E3DSetDirectionalLight lid2, lightdirx1, lightdiry1, lightdirz1, lightr1, lightg1, lightb1
+
+
+	pathbuf.0 = mediadir + "\\lake.bmp"
+	pathbuf.1 = mediadir + "\\cloud3.bmp"
+	E3DCreateBG scid1, pathbuf.0, pathbuf.1, 0.001, 0.0, 0
+	switchflag1 = 0
+
+	pathbuf.0 = mediadir + "\\physicalbar.bmp"
+	E3DCreateSprite pathbuf.0, 0, spriteid0
+	E3DGetSpriteSize spriteid0, spritew0, spriteh0
+
+	chkfps1 = 0
+
+	confstat = 0
+
+	E3DDestroyProgressBar
+
+	
+*main
+
+	; keybuf変数は、メインループの外で、dim keybuf, 256 として、確保しておいてください。
+	E3DGetKeyboardState keybuf
+
+	if keybuf.VK_ESCAPE = 1 : goto *bye ; [ESC]で終了
+
+
+	;乱数のテスト
+	;range = 15
+	;E3DRand range, rand
+	
+	gosub *MoveCamera
+
+	if endflag = 0 {
+		gosub *MoveChara1
+		gosub *MoveChara2	
+	}
+
+	E3DSetNewPose hsid1, frameno1
+	E3DSetNewPose hsid2, frameno2
+
+
+	E3DChkInView scid1, hsid0
+	E3DChkInView scid1, hsid1
+	E3DChkInView scid1, hsid2
+
+
+	E3DBeginScene scid1
+
+		;不透明部分の描画をする
+	E3DRender scid1, hsid0, 0, frameno0, 0
+	E3DRender scid1, hsid1, 0, frameno1, 0
+	E3DRender scid1, hsid2, 0, frameno2, 0
+
+		;半透明部分の描画をする
+	E3DRender scid1, hsid1, 1, frameno1, 0
+	E3DRender scid1, hsid2, 1, frameno2, 0
+
+	gosub *DrawText
+	gosub *DrawIndicator
+
+	E3DEndScene
+
+	E3DPresent scid1
+
+
+
+	E3DChkConflict2 hsid1, -1, hsid2, -1, confflag, confstat
+
+;	E3DChkConflict hsid1, hsid2, confflag, confstat
+;	E3DChkConfBySphere hsid1, hsid2, 2, confflag
+
+
+	gosub *ChangePhysicalPoint
+
+	waitbyfps 60, chkfps1
+
+	arno = 0
+	repeat 49
+		befno = 48 - arno
+		aftno = 49 - arno
+		arfps.aftno = arfps.befno
+		arno++
+	loop	
+	arfps.0 = chkfps1
+
+
+	goto *main
+
+
+*bye
+	E3DBye
+	end
+
+*MoveCamera
+
+	;*** cameraの注視点を、２体の中心にセットする
+	E3DGetPos hsid1, posx1, posy1, posz1
+	E3DGetPos hsid2, posx2, posy2, posz2
+
+	targetposx = ( posx1 + posx2 ) / 2.0
+	targetposy = camposy
+	targetposz = ( posz1 + posz2 ) / 2.0
+	
+	upvecx = 0.0 : upvecy = 1.0 : upvecz = 0.0
+
+	E3DSetCameraTarget targetposx, targetposy, targetposz, upvecx, upvecy, upvecz
+
+
+	;*** 外積を使って、cameraの位置をセットする	
+	vecx1 = posx2 - posx1
+	vecy1 = posy2 - posy1
+	vecz1 = posz2 - posz1
+	
+	cameradist = 6000.0
+	
+	E3DCross vecx1, vecy1, vecz1, upvecx, upvecy, upvecz, crossx, crossy, crossz
+	crossx *= cameradist
+	crossy *= cameradist
+	crossz *= cameradist
+	camposx = targetposx + crossx
+	camposz = targetposz + crossz
+
+	E3DSetCameraPos camposx, camposy, camposz		
+
+
+	return
+
+*MoveChara1
+
+	;hsid1のキャラクタの動作制御
+	
+	k=0
+	forwardstep = 100.0
+	backstep = -100.0
+	degstep = 5.0
+	mdegstep = -degstep
+
+
+	; VK_　が頭につく、定数の詳細は、e3dhsp_vk.as をご覧ください。
+	; keybuf は、GetKeyboardState 命令で、セットされます。
+
+	if keybuf.VK_UP = 1 : k+= 1 ;矢印上
+	if keybuf.VK_DOWN = 1 : k+= 2 ;矢印下
+	if keybuf.VK_LEFT = 1 : k+= 4 ;矢印左
+	if keybuf.VK_RIGHT = 1 : k+= 8 ;矢印右
+
+	if keybuf.'B' = 1 : k+= 16 ;パンチ
+	if keybuf.'N' = 1 : k+= 32 ;キック
+	if keybuf.'M' = 1 : k+= 64 ;防御
+	
+	E3DGetMotionKind hsid1, curmk1
+	newmk1 = curmk1
+
+	;モーションのフレーム番号が、最大値に到達したら、モーションをidlingに戻す。
+	if (curmk1 = mk1_punch)&(frameno1 >= max1_punch) : newmk1 = mk1_idling
+	if (curmk1 = mk1_kick)&(frameno1 >= max1_kick) : newmk1 = mk1_idling
+	if (curmk1 = mk1_defense)&((k&64) = 0)&(frameno1 >= max1_defense) : newmk1 = mk1_idling
+	if (curmk1 = mk1_act1)&(frameno1 >= max1_act1) : newmk1 = mk1_idling; : E3DDestroyAfterImage hsid1 : E3DSetAlpha hsid1, 0
+
+	;キーに応じて、新しいアクションをセットする。相手方向を向くようにする。
+	if (curmk1 = mk1_idling) & ((k&16) != 0) : newmk1 = mk1_punch : E3DDirToTheOtherXZ hsid1, hsid2
+	if (curmk1 = mk1_idling) & ((k&32) != 0) : newmk1 = mk1_kick : E3DDirToTheOtherXZ hsid1, hsid2
+	if (curmk1 = mk1_idling) & ((k&64) != 0) : newmk1 = mk1_defense : E3DDirToTheOtherXZ hsid1, hsid2
+	if (curmk1 = mk1_idling) & ((k&16) != 0) & ((k&32) != 0) : newmk1 = mk1_act1 : E3DDirToTheOtherXZ hsid1, hsid2
+	
+	if newmk1 != curmk1 : E3DSetMotionKind hsid1, newmk1
+	;if (newmk1 != curmk1) & (newmk1 = mk1_act1) : E3DCreateAfterImage hsid1, afterimagenum : E3DSetAlpha hsid1, 1		
+
+
+	;キーに応じて、移動、回転をする。
+	if newmk1 = mk1_idling {
+		if k&1 : E3DPosForward hsid1, forwardstep
+		if k&2 : E3DPosForward hsid1, backstep
+
+		if k&4 : E3DRotateY hsid1, mdegstep
+		if k&8 : E3DRotateY hsid1, degstep
+	}
+
+	;confflagが０で無い場合、２体が重なりすぎないように、離す。
+	if (confflag != 0) & ( (newmk1 = mk1_idling) | (newmk1 = mk1_defense) ) : E3DSeparateFrom hsid1, hsid2
+
+	return
+
+*MoveChara2
+
+	;hsid2のキャラクタの動作制御
+	
+	k=0
+	forwardstep = 100.0
+	backstep = -100.0
+	degstep = 5.0
+	mdegstep = -degstep
+
+
+	; VK_　が頭につく、定数の詳細は、e3dhsp_vk.as をご覧ください。
+	; keybuf は、GetKeyboardState 命令で、セットされます。
+
+	if keybuf.'W' = 1 : k+=1 ;前進
+	if keybuf.'Z' = 1 : k+=2  ;後退
+	if keybuf.'A' = 1 : k+=4  ;左
+	if keybuf.'S' = 1 : k+=8  ;右
+
+	if keybuf.'X' = 1 : k+=16  ;ぱんち
+	if keybuf.'C' = 1 : k+=32  ;キック
+	if keybuf.'V' = 1 : k+=64  ;防御
+
+	
+	E3DGetMotionKind hsid2, curmk2
+	newmk2 = curmk2
+
+	;モーションのフレーム番号が、最大値に到達したら、モーションをidlingに戻す。
+	if (curmk2 = mk2_punch)&(frameno2 >= max2_punch) : newmk2 = mk2_idling
+	if (curmk2 = mk2_kick)&(frameno2 >= max2_kick) : newmk2 = mk2_idling
+	if (curmk2 = mk2_defense)&((k&64) = 0)&(frameno2 >= max2_defense) : newmk2 = mk2_idling
+	if (curmk2 = mk2_act1)&(frameno2 >= max2_act1) : newmk2 = mk2_idling; : E3DDestroyAfterImage hsid2 : E3DSetAlpha hsid2, 0
+
+	;キーに応じて、新しいアクションをセットする。相手方向を向くようにする。
+	if (curmk2 = mk2_idling) & ((k&16) != 0) : newmk2 = mk2_punch : E3DDirToTheOtherXZ hsid2, hsid1
+	if (curmk2 = mk2_idling) & ((k&32) != 0) : newmk2 = mk2_kick : E3DDirToTheOtherXZ hsid2, hsid1
+	if (curmk2 = mk2_idling) & ((k&64) != 0) : newmk2 = mk2_defense : E3DDirToTheOtherXZ hsid2, hsid1
+	if (curmk2 = mk2_idling) & ((k&16) != 0) & ((k&32) != 0) : newmk2 = mk2_act1 : E3DDirToTheOtherXZ hsid2, hsid1
+	
+	if newmk2 != curmk2 : E3DSetMotionKind hsid2, newmk2
+	;if (newmk2 != curmk2) & (newmk2 = mk2_act1) : E3DCreateAfterImage hsid2, afterimagenum : E3DSetAlpha hsid2, 1		
+
+
+	;キーに応じて、移動、回転をする。
+	if newmk2 = mk2_idling {
+		if k&1 : E3DPosForward hsid2, forwardstep
+		if k&2 : E3DPosForward hsid2, backstep
+
+		if k&4 : E3DRotateY hsid2, mdegstep
+		if k&8 : E3DRotateY hsid2, degstep
+	}
+
+	;confflagが０で無い場合、２体が重なりすぎないように、離す。
+	if (confflag != 0) & ( (newmk2 = mk2_idling) | (newmk2 = mk2_defense) ) : E3DSeparateFrom hsid2, hsid1
+
+	return
+
+*ChangePhysicalPoint
+	
+	;confflag と、それぞれのモーションの種類を元に、pointの減算をする。
+	;defense中は、ダメージを受けないようにする。
+	if confflag != 0 {
+		if (newmk1 != mk1_defense) & ( (newmk2 = mk2_punch) | (newmk2 = mk2_kick) | (newmk2 = mk2_act1) ) : point1 -= 2
+		
+		if (newmk2 != mk2_defense) & ( (newmk1 = mk1_punch) | (newmk1 = mk1_kick) | (newmk1 = mk1_act1) ) : point2 -= 2		
+	}
+
+	;どちらかのpointがゼロになったら、ゲームを終了する。
+	if endflag = 0 {
+		if point1 <= 0 {
+			;E3DDestroyAfterImage hsid1
+			E3DSetAlpha hsid1, 0
+			newmk1 = mk1_final
+			E3DSetMotionKind hsid1, newmk1		
+		
+
+			;E3DDestroyAfterImage hsid2
+			E3DSetAlpha hsid2, 0
+			newmk2 = mk2_win
+			E3DSetMotionKind hsid2, newmk2		
+		
+			endflag = 1
+		}else{ 
+			if point2 <= 0 {
+				;E3DDestroyAfterImage hsid1
+				E3DSetAlpha hsid1, 0
+				newmk1 = mk1_win
+				E3DSetMotionKind hsid1, newmk1		
+		
+
+				;E3DDestroyAfterImage hsid2
+				E3DSetAlpha hsid2, 0
+				newmk2 = mk2_final
+				E3DSetMotionKind hsid2, newmk2		
+
+				endflag = 1
+			}
+		}
+	}
+	return
+
+*DrawText
+
+	textposx = 10 : textposy = 10
+	textr = 255 : textg = 255 : textb = 255
+	textscale = 1
+	str1 = "point of player2 : " + point2
+	E3DDrawText textposx, textposy, textscale, textr, textg, textb, str1
+	textposx = 320
+	str2 = "point of player1 : " + point1
+	E3DDrawText textposx, textposy, textscale, textr, textg, textb, str2
+
+	if endflag = 1 {
+		textposx = 300 : textposy = 250
+		textr = 255 : textg = 0 : textb = 0
+		E3DDrawBigText textposx, textposy, textscale, textr, textg, textb, "K.O."
+	}
+
+	textposx = 10 : textposy = 300
+	str5 = "chkfps1  " + chkfps1
+	E3DDrawText textposx, textposy, textscale, textr, textg, textb, str5
+
+	lcnt = 0
+	avfps = 0
+	repeat 50
+		avfps += arfps.lcnt
+		lcnt++
+	loop
+	avfps = avfps / 50
+	textposx = 10 : textposy = 320
+	strchk2 = "avfps   " + avfps
+	E3DDrawText textposx, textposy, textscale, textr, textg, textb, strchk2
+
+	;textposx = 10 : textposy = 340
+	;str6 = "confstat  " + confstat
+	;E3DDrawText textposx, textposy, textscale, textr, textg, textb, str6
+
+	return
+
+*DrawIndicator
+	wstep = double(screenw) / 7.0
+	hstep = double(screenh) / 15.0
+
+	hpos = hstep
+	wpos1 = wstep
+	wpos2 = wstep * 4.0
+
+	scale = 0.0
+	scale = wstep * 2.0 / spritew0
+
+	scale1 = scale * point2 / pointmax
+	scale2 = scale * point1 / pointmax
+
+	scaley = 0.0
+	scaley = hstep / spriteh0
+	
+
+	
+	E3DBeginSprite
+
+	E3DRenderSprite spriteid0, scale1, scaley, wpos1, hpos
+	E3DRenderSprite spriteid0, scale2, scaley, wpos2, hpos			
+
+	E3DEndSprite
+	return
+
