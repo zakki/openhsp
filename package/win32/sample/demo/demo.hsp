@@ -25,19 +25,16 @@
 	m_fade=0
 
 	dmmload "theme.ogg",0
-	dmmloop 0,899783		; ループポイント設定
+	dmmloop 0,268435		; ループポイント設定
 	dmmload "se_tyuiin.wav",1
 	dmmload "oot06.ogg",2
 	dmmloop 2,671328		; ループポイント設定
 #endif
-	buffer 5
-	picload "bgpeas.bmp"
-	buffer 6
-	picload "logop.bmp"
-	buffer 7
-	picload "btn_hsptv.bmp"
-	buffer 8
-	picload "bgsmoke.bmp"
+	celload "bgpeas.bmp",5
+	celload "logop.bmp",6
+	celload "btn_hsptv.bmp",7
+	celload "bgsmoke.bmp",8
+	celload "btn_hard.bmp",9
 	gsel 0
 
 	return
@@ -194,6 +191,31 @@
 	mx+:loop
 	return
 
+#deffunc gblur int p1, int p2
+
+	;
+	;	簡易ぼかしモジュール
+	;	gblur ぼかし強度 , 方向フラグ
+	;
+	;	現在の操作先バッファに簡易ぼかしを適用します。
+	;	ぼかし強度は、大きい値ほど強くなります(処理も重くなります)。
+	;	方向フラグは、0=XY、1=Y、2=Xの方向を選択します(通常は0)。
+	;
+	gmode 3, ginfo_sx, ginfo_sy, 128
+	if (p2&1)=0 {
+		repeat p1
+		pos 1,0:gcopy ginfo(3)
+		pos 0,0:gcopy ginfo(3),2,0
+		loop
+	}
+	if (p2&2)=0 {
+		repeat p1
+		pos 0,1:gcopy ginfo(3)
+		pos 0,0:gcopy ginfo(3),0,2
+		loop
+	}
+	return
+
 #global
 
 ;------------------------------------------------------
@@ -231,14 +253,8 @@
 	sx=640:sy=200:blur=128
 	rate=0.0:fa=0.05:fb=0.001
 	;
-	color 178,208,227:boxf
-
-	;y=(480-sy)/2
-	;repeat y
-	;color 170,245,40+cnt
-	;i=cnt*2+sy
-	;boxf 0,i, sx,i+2
-	;loop
+	;color 178,208,227:boxf
+	gradf 0,sy,640,480, 1, $b2d0e3,$f8fbfd
 
 	pos 32,400:gcopy 7,0,0,200,26
 	objsize 200,28:pos 32,426
@@ -255,17 +271,19 @@
 	font "ＭＳ ゴシック",16,1
 	x=294:y=280:pos x,y
 	objsize 80,24,30
+	objimage 9, 0,0, 0,48, 0,24
 	button "readme",*see_readme
 	button "demo",*demomain
 	button "manual",*see_man
-	button "sample",*see_sample
+	button "assist",*see_sample
 	button "editor",*see_edit
 	button "quit",*owari
+	objimage -1
 	x=390:y=282:pos x,y
 	mes "はじめにお読みください"
 	mes "HSPデモンストレーション"
 	mes "HSP総合マニュアルを開く"
-	mes "サンプルスクリプトを見る"
+	mes "HSPアシスタントを開く"
 	mes "スクリプトを編集する"
 	mes "終了"
 
@@ -291,6 +309,7 @@
 	goto *main1
 
 *see_readme
+	snd 1
 	;sndoff
 	mkwall "・はじめに"
 
@@ -307,10 +326,12 @@
 "}
 	;
 	font msgothic,16,1
-	pos 290,360:objsize 64,24,28
-	button "menu",*mainmenu
+	pos 270,360:objsize 80,24,28
+	objimage 9, 0,0, 0,48, 0,24
+	button "menu",*go_main
 	button "begin",*see_begin
 	button "home",*see_home
+	objimage -1
 	pos 360,362
 	mes "メインメニューに戻る"
 	mes "初心者のためのHSP入門を見る"
@@ -318,18 +339,22 @@
 	redraw 1
 	stop
 
+*go_main
+	snd 1
+	goto *mainmenu
+
 *see_home
 	snd 1
 	exec "http://hsp.tv/",16
 	stop
 *see_begin
 	snd 1
-	exec2 dir_exe+"\\docs\\beginner\\start.htm",16
+	exec2 dir_exe+"\\doclib\\beginner\\start.htm",16
 	stop
 
 *see_sample
 	snd 1
-	exec2 dir_exe+"\\sampview.exe"
+	exec2 dir_exe+"\\hspat.exe"
 	wait 100
 	goto *owari
 *see_edit
@@ -364,7 +389,7 @@
 	gsel 0
 	cls 4
 	snd 1
-	max=40
+	max=100
 
 	init_sprite 80,50,max
 	opt_sprite 3,2
@@ -375,6 +400,7 @@
 	repeat
 	redraw 0
 	color 0,0,0:boxf
+	gradf 0,300,640,480,1,0,128
 
 	move_sprite1
 	draw_sprite
@@ -400,8 +426,19 @@
 	redraw 1
 	sndexec
 	await 15
-	if z>340 : break
 
+	if z>300 : break
+
+	loop
+
+	;	ブラークリア
+	;
+	repeat 16
+	redraw 0
+	gblur 2
+	redraw 1
+	sndexec
+	await 12
 	loop
 
 *demomain2
@@ -437,6 +474,7 @@
 	;	HSPデモ(配置オブジェクト表示)
 	;
 	cls 4:color 0,0,64:boxf
+	gradf 0,300,640,480,1,64,255
 	objmode 1,1
 	font msgothic,20,3
 	x=16:y=20:color 192,255,128
@@ -453,7 +491,7 @@
 	pos 40,270:mes "・メッセージ"
 	;
 	objsize 48,24:color 192,192,192
-	cal1=123:cal2=456
+	cal1="123":cal2="456"
 	caltype=0:calmark="+\n-\n*\n/"
 	pos 60,160:input cal1
 	pos 160,160:input cal2
@@ -461,7 +499,7 @@
 	pos 114,159:combox caltype,150,calmark
 	;
 	objsize 64,24
-	grph=10:x=280
+	grph=10:x=310
 	pos 60,230:input grph
 	pos 138,230:button "GO",*idgrph
 	pos 138+64,230:button "RND",*idrnd
@@ -474,13 +512,14 @@
 	pos 480,400:button "テスト終了",*idover
 	z=300
 *idmain
-	color 0,0,64:boxf 210,162,276,180
+	color 0,0,64:boxf 210,162,369,179
 	color 192,192,192
 	cal1b=cal1:cal2b=cal2:caltb=caltype
-	if caltb=0 : ans=cal1+cal2
-	if caltb=1 : ans=cal1-cal2
-	if caltb=2 : ans=cal1*cal2
-	if caltb=3 : if cal2!0 : ans=cal1/cal2 : else : ans=0
+	cal1a=0.0+cal1:cal2a=0.0+cal2
+	if caltb=0 : ans=cal1a+cal2a
+	if caltb=1 : ans=cal1a-cal2a
+	if caltb=2 : ans=cal1a*cal2a
+	if caltb=3 : if cal2a!0.0 : ans=cal1a/cal2a : else : ans=0.0
 	pos 210,162:mes "= "+ans
 *idloop
 	if cal1!cal1b : goto *idmain
@@ -495,9 +534,9 @@
 	a=(rnd(20)+1)*5:objprm 3,a
 	goto *idgrph
 *idgrph
-	if x>580 : x=580:pos 280,100:gcopy 0,300,100,320,150
-	a=250-grph:if a>250 : a=250
-	if a<100 : a=100
+	if x>580 : x=580:pos 310,180:gcopy 0,330,180,320,70
+	a=250-grph/2:if a>250 : a=250
+	if a<180 : a=180
 	color 255,0,0:boxf x,a,x+18,250
 	x+=20
 	goto *idloop
@@ -629,14 +668,14 @@
 
 	tex={"
 ●高機能なタブエディタ
+●開発支援アシスタンス機能
 ●検索機能付きヘルプブラウザ
 ●HSPLetによるWEB上での動作
 ●高機能な3D表示とゲーム機能
 ●各種画像フォーマット入出力
 ●WEBカメラ、画像認識等の利用
 ●http,ftp,rss,xml等のサポート
-●Windows COM、ActiveXの利用
-●動画、音声ストリーミング"}
+●Windows COM、ActiveXの利用"}
 
 	z=0
 	repeat
