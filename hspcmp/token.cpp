@@ -2177,6 +2177,8 @@ bad_macro_param_expr:
 ppresult_t CToken::PP_Defcfunc( int mode )
 {
 	//		#defcfuncâêÕ
+	//			mode : 0 = í èÌcfunc
+	//			       1 = modcfunc
 	//
 	int i,id;
 	char *word;
@@ -3006,12 +3008,16 @@ ppresult_t CToken::Preprocess( char *str )
 		res = PP_Deffunc(0);
 		return res;
 	}
-	if (tstrcmp(word,"defcfunc")) {		// module function (2)
+	if (tstrcmp(word,"defcfunc")) {		// module function (1)
 		res = PP_Defcfunc(0);
 		return res;
 	}
 	if (tstrcmp(word,"modfunc")) {		// module function (2)
 		res = PP_Deffunc(1);
+		return res;
+	}
+	if (tstrcmp(word,"modcfunc")) {		// module function (2+)
+		res = PP_Defcfunc(1);
 		return res;
 	}
 	if (tstrcmp(word,"modinit")) {		// module function (3)

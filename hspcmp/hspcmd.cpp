@@ -275,26 +275,6 @@ char 	s_rec[1]= "", *hsp_prestr[] =
 
 	"$ffffffff 5 thismod",
 
-//	"$042 7 csrx",
-//	"$043 7 csry",
-//	"$044 7 paluse",
-//	"$045 7 dispx",
-//	"$046 7 dispy",
-//	"$047 7 rval",
-//	"$048 7 gval",
-//	"$049 7 bval",
-//	"$04b 7 winx",
-//	"$04c 7 winy",
-//	"$04d 7 prmx",
-//	"$04e 7 prmy",
-
-
-/*
-	"$060 7 cmdline",
-	"$061 7 windir",
-	"$062 7 curdir",
-	"$064 7 exedir",
-*/	
 	"*"
 };
 
@@ -322,6 +302,7 @@ char 	*hsp_prepp[] =
 	"$000 0 #ifndef",
 	"$000 0 #include",
 	"$000 0 #modfunc",
+	"$000 0 #modcfunc",					// (3.2)
 	"$000 0 #modinit",
 	"$000 0 #modterm",
 	"$000 0 #module",
@@ -343,6 +324,7 @@ char 	*hsp_prepp[] =
 	"$000 1 wend",
 	"$000 1 for",
 	"$000 1 next",
+
 	"$000 1 _break",
 	"$000 1 _continue",
 	"$000 1 switch",
@@ -351,8 +333,10 @@ char 	*hsp_prepp[] =
 	"$000 1 swbreak",
 	"$000 1 swend",
 
+
 	"$000 1 alloc",
 	"$000 1 ddim",
+	"$000 1 ldim",					// (3.2)
 
 	"*"
 };

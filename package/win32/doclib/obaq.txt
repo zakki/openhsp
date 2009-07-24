@@ -362,6 +362,12 @@ OBAQ for HSP ver3.2 REFERENCE MANUAL                HSP : Hot Soup Processor
 
 ・更新履歴
 
+	2009/7/24 ver3.2rc1
+
+		qtypeでtype_innerを正しく設定できなかった不具合を修正。
+		qaddployでloggroupが反映されていなかった不具合を修正。
+		qmatで指定する色コードが$RRGGBBになっていなかった不具合を修正。
+
 	2009/7/9 ver3.2beta4
 
 		最初のバージョン。

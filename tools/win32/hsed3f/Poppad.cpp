@@ -2274,7 +2274,7 @@ LRESULT CALLBACK EditProc (HWND hwnd, UINT iMsg, WPARAM wParam, LPARAM lParam)
 					return 0;
 
 				case IDM_START_RUNTIMEMAN:
-					wsprintf( tmpfn, "\"%s\\sampview.exe\"", szExeDir );
+					wsprintf( tmpfn, "\"%s\\hspat.exe\"", szExeDir );
 					WinExec( tmpfn, SW_SHOW );
 					return 0;
 

@@ -121,7 +121,7 @@ void InitClassify()
 	hsc_refname( 0,(int)(szTitleName[0] == '\0' ? "???" : szTitleName), 0,0 );
 	hsc_objname( 0,(int)"obj", 0,0 );
 	//hsc_comp( 1,1,0,0 );
-	hsc3_getsym(hsp_extmacro^1, 0, 0, 0);
+	hsc3_getsym(0, 0, 0, 0);
 	hsc3_messize((int)&bufsize, 0, 0, 0);
 	buf = (char *)malloc(bufsize+1);
 	hsc_getmes((int)buf, 0, 0, 0);
@@ -144,10 +144,8 @@ void InitClassify()
 	for(;;){
 		if(sscanf(line, "%s\t,%s", name, type) == 2){
 			if(nCTSize >= tableCapacity){
-				/* HSP3.2で表示されるためとりあえずカット
 				msgboxf(0, "色分けの個数が制限に達しました。\n\"%s\"以降は色分けされません。"
 					, "エラー", MB_OK | MB_ICONERROR, name);
-				*/
 				break;
 			}
 			for(TYPE_TABLE *lpTT = TypeTable; lpTT->Type; lpTT++){

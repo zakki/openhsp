@@ -107,7 +107,7 @@ BEGIN
         MENUITEM "EXEファイル作成(&M)...",            IDM_MKEXE1
         MENUITEM "スクリーンセーバー作成(&S)",             IDM_MKEXE2
         MENUITEM "ソースフォルダを開く(&O)...",           IDM_OPEN_SRCFOLDER
-        MENUITEM "サンプルスクリプト参照(&F)...",          IDM_START_RUNTIMEMAN
+        MENUITEM "HSPアシスタント起動(&F)...",          IDM_START_RUNTIMEMAN
         MENUITEM "スクリプト自動作成(&T)...",            IDM_AHTTOOL
         MENUITEM "HSPTVブラウザ起動(&H)...",          IDM_HSPTV
         MENUITEM SEPARATOR
@@ -894,7 +894,7 @@ BEGIN
     IDM_PACKGO              "複数ファイルを結合しDATA.DPMを作成します"
     IDM_MKEXE1              "実行可能なEXEファイルを作成"
     IDM_MKEXE2              "スクリーンセーバーモジュールを作成"
-    IDM_START_RUNTIMEMAN    "サンプルビューアーを起動"
+    IDM_START_RUNTIMEMAN    "HSPアシスタントを起動します"
     IDM_OPEN_SRCFOLDER      "スクリプトのあるフォルダを開く"
     IDM_OPTION              "スクリプトエディタの設定"
 END

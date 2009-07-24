@@ -1056,7 +1056,7 @@ void reg_load( void )
 		reg_getkey( hKey,"helpmode", &hsp_helpmode );
 		reg_getkey( hKey,"logmode", &hsp_logmode );
 		reg_getkey( hKey,"logadd", &hsp_logadd );
-		reg_getkey( hKey,"extmacro", &hsp_extmacro );
+		//reg_getkey( hKey,"extmacro", &hsp_extmacro );
 		reg_getkey( hKey,"clmode", &hsp_clmode );
 		reg_getkey( hKey,"orgpath", &hsp_orgpath );
 
@@ -1612,8 +1612,8 @@ int poppad_menupop( WPARAM wParam, LPARAM lParam )
 						CheckMenuItem ((HMENU) wParam, IDM_FULLSCR, iEnable) ;
                         iEnable = hsp_debug ? MF_CHECKED : MF_UNCHECKED ;
 						CheckMenuItem ((HMENU) wParam, IDM_DEBUG, iEnable) ;
-                        iEnable = hsp_extmacro ? MF_CHECKED : MF_UNCHECKED ;
-						CheckMenuItem ((HMENU) wParam, IDM_HSPEXTMACRO, iEnable) ;
+                        //iEnable = hsp_extmacro ? MF_CHECKED : MF_UNCHECKED ;
+						//CheckMenuItem ((HMENU) wParam, IDM_HSPEXTMACRO, iEnable) ;
                         iEnable = hsp_clmode ? MF_CHECKED : MF_UNCHECKED ;
 						CheckMenuItem ((HMENU) wParam, IDM_HSPCLMODE, iEnable) ;
 						break;
@@ -2069,9 +2069,9 @@ LRESULT CALLBACK EditProc (HWND hwnd, UINT iMsg, WPARAM wParam, LPARAM lParam)
 						hsp_fullscr^=1;
 						return 0;
 
-					case IDM_HSPEXTMACRO:
-						hsp_extmacro^=1;
-						return 0;
+//					case IDM_HSPEXTMACRO:
+//						hsp_extmacro^=1;
+//						return 0;
 
 					case IDM_HSPCLMODE:
 						hsp_clmode^=1;
@@ -2109,7 +2109,7 @@ LRESULT CALLBACK EditProc (HWND hwnd, UINT iMsg, WPARAM wParam, LPARAM lParam)
 
 					case IDM_START_RUNTIMEMAN:
 						//wsprintf( tmpfn,"%s\\hsperun", szExeDir );
-						wsprintf( tmpfn,"\"%s\\sampview.exe\"", szExeDir );
+						wsprintf( tmpfn,"\"%s\\hspat.exe\"", szExeDir );
 						WinExec( tmpfn, SW_SHOW );
 						return 0;
 
