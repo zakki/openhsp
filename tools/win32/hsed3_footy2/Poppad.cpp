@@ -407,7 +407,7 @@ static int filechk( char *fname )
 	int er=0;
 	er=fileok( fname );
 	if (er) {
-#ifdef JPMSG
+#ifdef JPNMSG
 		OkMessage ( "カレントディレクトリに、[%s]が見つかりませんでした。\nコマンドは実行できません。",
 					fname ) ;
 #else
@@ -471,7 +471,7 @@ static void packgo( void )
 {
 	int a;
 	if (filechk("packfile")) {
-#ifdef JPMSG
+#ifdef JPNMSG
 		TMes( "DPMファイルを作るためにはパックするファイル名一覧(PACKFILE)を\n作成しておく必要があります。" );
 #else
 		TMes( "[PACKFILE] needed." );
@@ -484,7 +484,7 @@ static void packgo( void )
 	//dpmc_ini(errbuf,"data");
 	//a=dpmc_pack();
 	if (a) { err_prt(hwbak);return; }
-#ifdef JPMSG
+#ifdef JPNMSG
 	TMes("[DATA.DPM]ファイルを作成しました。");
 #else
 	TMes("Create [DATA.DPM] Successfully.");
@@ -526,14 +526,14 @@ static void expack( int mode, char *exname, char *finmes )
 static void mkexe( char *exname )
 {
 	if (filechk("packfile")) {
-#ifdef JPMSG
+#ifdef JPNMSG
 		TMes( "EXEファイルを作るためにはパックするファイル名一覧(PACKFILE)を\n作成しておく必要があります。" );
 #else
 		TMes( "[PACKFILE] needed." );
 #endif
 		return;
 	}
-#ifdef JPMSG
+#ifdef JPNMSG
 	expack( hsp_fullscr, exname, "EXEファイルを作成しました。" );
 #else
 	expack( hsp_fullscr, exname, "Create EXE file successfully." );
@@ -544,7 +544,7 @@ static void mkexe( char *exname )
 static void mkscr( char *exname )
 {
 	if (hsp_clmode) {
-#ifdef JPMSG
+#ifdef JPNMSG
 		TMes( "コンソールモードでスクリーンセーバーの作成はできません。" );
 #else
 		TMes( "No operation for console mode." );
@@ -552,14 +552,14 @@ static void mkscr( char *exname )
 		return;
 	}
 	if (filechk("packfile")) {
-#ifdef JPMSG
+#ifdef JPNMSG
 		TMes( "スクリーンセーバーを作るためにはパックするファイル名一覧(PACKFILE)を\n作成しておく必要があります。" );
 #else
 		TMes( "[PACKFILE] needed." );
 #endif
 		return;
 	}
-#ifdef JPMSG
+#ifdef JPNMSG
 	expack( 2, exname, "SCRファイルを作成しました。" );
 #else
 	expack( 2, exname, "Create SCR file successfully." );
@@ -607,7 +607,7 @@ static void hsprun( char *objname )
 
 	i = hsc3_run( (int)execmd, hsp_debug, 0, 0 );
 	if (i) {
-#ifdef JPMSG
+#ifdef JPNMSG
 		TMes("実行用ランタイムファイルが見つかりません。");
 #else
 		TMes("Runtime executable file missing.");
@@ -870,7 +870,7 @@ static void callhelp( void )
 			wsprintf(helpopt,"%shsppidx.htm",hdir);
 		}
 		if (fileok(helpopt)) {
-#ifdef JPMSG
+#ifdef JPNMSG
 			TMes("ヘルプのためのHTMLファイルが見つかりません。\nディレクトリ設定を確認してください。");
 #else
 			TMes("Help data missing.Check help preference.");
@@ -884,7 +884,7 @@ static void callhelp( void )
 	if (hsp_helpmode==1) {
 		wsprintf(helpopt,"%shsp.hlp",hdir);
 		if (fileok(helpopt)) {
-#ifdef JPMSG
+#ifdef JPNMSG
 			TMes("HSP.HLPファイルが見つかりません。\nWinHelp形式のファイルを確認してください。");
 #else
 			TMes("Help data missing.Check help preference.");
@@ -900,7 +900,7 @@ static void callhelp( void )
 		//		"S_" + keyword先頭６文字 +".htm" のファイルを開く。
 		wsprintf( helpopt,"%shsp.chm",hdir );
 		if (fileok(helpopt)) {
-#ifdef JPMSG
+#ifdef JPNMSG
 			TMes("ヘルプのためのchmファイルが見つかりません。\nディレクトリ設定を確認してください。");
 #else
 			TMes("Help data missing.Check help preference.");
@@ -920,7 +920,7 @@ static void callhelp( void )
 		link.fIndexOnFail = TRUE;
 		rhw=HtmlHelp( GetDesktopWindow(), helpopt, HH_KEYWORD_LOOKUP, (DWORD)&link);
 		if (rhw==NULL) {
-#ifdef JPMSG
+#ifdef JPNMSG
 			TMes("HtmlHelpがインストールされていません。");
 #else
 			TMes("HtmlHelp not installed.");
@@ -933,7 +933,7 @@ static void callhelp( void )
 
 	wsprintf( helpopt,"%shelpman.exe",hdir );
 	if (fileok(helpopt)) {
-#ifdef JPMSG
+#ifdef JPNMSG
 		wsprintf( mesb, "HSPヘルプマネージャが見つかりません。\n%sを確認してください。",helpopt );
 #else
 		wsprintf( mesb, "HSP help manager not found.\nCheck %s.",helpopt );
@@ -957,13 +957,13 @@ void DoCaption ( char *szTitleName, int TabID )
      char szCaption[_MAX_PATH+128] ;
 
 	 if(GetTabInfo(0) == NULL){
-#ifdef JPMSG
+#ifdef JPNMSG
 	     lstrcpy (szCaption, "ＨＳＰスクリプトエディタ") ;
 #else
 	     lstrcpy (szCaption, "HSP Script Editor") ;
 #endif
 	 } else {
-#ifdef JPMSG
+#ifdef JPNMSG
 	     wsprintf (szCaption, "ＨＳＰスクリプトエディタ - %s%s",
 			 szTitleName[0] ? szTitleName : UNTITLED, bNeedSave ? " *": "") ;
 #else
@@ -994,7 +994,7 @@ short AskAboutSave (HWND hwnd, char *szTitleName)
      char szBuffer[64 + _MAX_FNAME + _MAX_EXT] ;
      int  iReturn ;
 
-#ifdef JPMSG
+#ifdef JPNMSG
      wsprintf (szBuffer, "%sは変更されています。セーブしますか？",
                szTitleName[0] ? szTitleName : UNTITLED) ;
 #else
@@ -1583,7 +1583,7 @@ int poppad_reload( int nTabID )
 		}
 		GetDirName(lpTabInfo->DirName, lpTabInfo->FileName);
 		if (!PopFileRead(lpTabInfo->FootyID, lpTabInfo->FileName)){
-#ifdef JPMSG
+#ifdef JPNMSG
 			OkMessage ( "%s が読み込めませんでした", lpTabInfo->TitleName ) ;
 #else
 			OkMessage ( "%s not found.", lpTabInfo->TitleName ) ;
@@ -1749,7 +1749,7 @@ int poppad_menupop( WPARAM wParam, LPARAM lParam )
 				if(hIMC == NULL) break;
 				mii.cbSize = sizeof(MENUITEMINFO);
 				mii.fMask = MIIM_STRING;
-#ifdef JPMSG
+#ifdef JPNMSG
 				mii.dwTypeData = ImmGetOpenStatus(hIMC) ? "IME を閉じる(&L)" : "IME を開く(&O)";
 #else
 				mii.dwTypeData = ImmGetOpenStatus(hIMC) ? "C&lose IME" : "&Open IME";
@@ -1908,7 +1908,7 @@ LRESULT CALLBACK EditDefProc(HWND hwnd, UINT iMsg, WPARAM wParam, LPARAM lParam)
 
 		if (pfr->Flags & FR_FINDNEXT)
 			if (!PopFindFindText (hwndEdit, iOffset, pfr)){
-#ifdef JPMSG
+#ifdef JPNMSG
                 OkMessage2 ( "終わりまで検索しました", "") ;
 #else
                 OkMessage2 ( "Not found.", "") ;
@@ -1920,7 +1920,7 @@ LRESULT CALLBACK EditDefProc(HWND hwnd, UINT iMsg, WPARAM wParam, LPARAM lParam)
 
         if (pfr->Flags & FR_REPLACE || pfr->Flags & FR_REPLACEALL)
 			if (!PopFindReplaceText (hwndEdit, iOffset, pfr))
-#ifdef JPMSG
+#ifdef JPNMSG
 				OkMessage2 ( "終わりまで置換しました", "") ;
 #else
 				OkMessage2 ( "Replace finished.", "") ;
@@ -2025,7 +2025,7 @@ LRESULT CALLBACK EditProc (HWND hwnd, UINT iMsg, WPARAM wParam, LPARAM lParam)
 								bCreated = false;
 							}
 						if (!PopFileRead (activeFootyID, szFileName)){
-#ifdef JPMSG
+#ifdef JPNMSG
                             OkMessage ( "%s をロードできませんでした。", szTitleName) ;
 #else
                             OkMessage ( "Loading %s fault.", szTitleName) ;
@@ -2093,7 +2093,7 @@ LRESULT CALLBACK EditProc (HWND hwnd, UINT iMsg, WPARAM wParam, LPARAM lParam)
 							DoCaption (szTitleName, activeID) ;
 							return 1 ;
 						} else {
-#ifdef JPMSG
+#ifdef JPNMSG
                             OkMessage ( "セーブに失敗しました。\n[%s]", szFileName ) ;
 #else
                             OkMessage ( "Error happened in saving.\n[%s]", szFileName ) ;
@@ -2116,7 +2116,7 @@ LRESULT CALLBACK EditProc (HWND hwnd, UINT iMsg, WPARAM wParam, LPARAM lParam)
 							DoCaption (szTitleName, activeID) ;
 							return 1 ;
 						} else {
-#ifdef JPMSG
+#ifdef JPNMSG
 							OkMessage ( "%s のセーブに失敗しました。", szTitleName) ;
 #else
 							OkMessage ( "Error happened in saving.\n[%s]", szFileName ) ;
@@ -2132,7 +2132,7 @@ LRESULT CALLBACK EditProc (HWND hwnd, UINT iMsg, WPARAM wParam, LPARAM lParam)
 
 				case IDM_PRINT :
 					if (!PopPrntPrintFile (hInst, hwnd, hwndEdit, szTitleName)){
-#ifdef JPMSG
+#ifdef JPNMSG
 						OkMessage ( "%s をプリントアウトできません。", szTitleName) ;
 #else
 						OkMessage ( "Error happened in printing.\n[%s]", szFileName ) ;
@@ -2269,7 +2269,7 @@ LRESULT CALLBACK EditProc (HWND hwnd, UINT iMsg, WPARAM wParam, LPARAM lParam)
 							err_prt(hwnd);
 							return 0;
 						}
-#ifdef JPMSG
+#ifdef JPNMSG
                         TMes("オブジェクトファイルを作成しました");
 #else
                         TMes("Object file generated.");
@@ -2283,7 +2283,7 @@ LRESULT CALLBACK EditProc (HWND hwnd, UINT iMsg, WPARAM wParam, LPARAM lParam)
 						err_prt(hwnd);
 						return 0;
 					}
-#ifdef JPMSG
+#ifdef JPNMSG
                     TMes("START.AXを作成しました");
 #else
 					TMes("START.AX generated.");
@@ -2296,7 +2296,7 @@ LRESULT CALLBACK EditProc (HWND hwnd, UINT iMsg, WPARAM wParam, LPARAM lParam)
 						err_prt(hwnd);
 						return 0;
 					}
-#ifdef JPMSG
+#ifdef JPNMSG
 					TMes("実行ファイルを作成しました");
 #else
 					TMes("Executable file generated.");
@@ -2347,7 +2347,7 @@ LRESULT CALLBACK EditProc (HWND hwnd, UINT iMsg, WPARAM wParam, LPARAM lParam)
 						a=hsc_comp( 0,0,0,0 );
 						//a=tcomp_main( hsp_extstr, hsp_extstr, objname, errbuf,0 );
 						if (a) { err_prt(hwnd);return 0; }
-#ifdef JPMSG
+#ifdef JPNMSG
 						TMes("オブジェクトファイルが作成されました");
 #else
 						TMes("Object file generated.");
@@ -2377,7 +2377,7 @@ LRESULT CALLBACK EditProc (HWND hwnd, UINT iMsg, WPARAM wParam, LPARAM lParam)
 					hsc_objname( 0,(int)objname, 0,0 );
 					a=hsc3_getsym( 0,0,0,0 );
 					if (a) {
-#ifdef JPMSG
+#ifdef JPNMSG
 						TMes("キーワードの取得に失敗しました");
 #else
 						TMes("Keyword analysis failed.");
@@ -2430,7 +2430,7 @@ LRESULT CALLBACK EditProc (HWND hwnd, UINT iMsg, WPARAM wParam, LPARAM lParam)
 					return 0;
 
 				case IDM_START_RUNTIMEMAN:
-					wsprintf( tmpfn, "\"%s\\sampview.exe\"", szExeDir );
+					wsprintf( tmpfn, "\"%s\\hspat.exe\"", szExeDir );
 					WinExec( tmpfn, SW_SHOW );
 					return 0;
 
@@ -2492,7 +2492,7 @@ LRESULT CALLBACK EditProc (HWND hwnd, UINT iMsg, WPARAM wParam, LPARAM lParam)
 							DoCaption (szTitleName, ClickID) ;
 							return 1 ;
 						} else {
-#ifdef JPMSG
+#ifdef JPNMSG
 							OkMessage ( "セーブに失敗しました。\n[%s]", GetTabInfo(ClickID)->FileName ) ;
 #else
                             OkMessage ( "Error happened in saving.\n[%s]", GetTabInfo(ClickID)->FileName ) ;
@@ -2518,7 +2518,7 @@ LRESULT CALLBACK EditProc (HWND hwnd, UINT iMsg, WPARAM wParam, LPARAM lParam)
 								DoCaption( szTitleName, ClickID );
 								return 1 ;
 							} else {
-#ifdef JPMSG
+#ifdef JPNMSG
                                 OkMessage ( "%s のセーブに失敗しました。", szTitleName) ;
 #else
                                 OkMessage ( "Error happened in saving.\n[%s]", szFileName ) ;

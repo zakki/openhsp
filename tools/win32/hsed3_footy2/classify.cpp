@@ -125,7 +125,7 @@ void InitClassify()
 	hsc_refname( 0,(int)(szTitleName[0] == '\0' ? "???" : szTitleName), 0,0 );
 	hsc_objname( 0,(int)"obj", 0,0 );
 	//hsc_comp( 1,1,0,0 );
-	hsc3_getsym(hsp_extmacro^1, 0, 0, 0);
+	hsc3_getsym(0, 0, 0, 0);
 	hsc3_messize((int)&bufsize, 0, 0, 0);
 	buf = (char *)malloc(bufsize+1);
 	hsc_getmes((int)buf, 0, 0, 0);
