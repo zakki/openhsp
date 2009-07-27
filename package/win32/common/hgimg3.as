@@ -17,6 +17,7 @@
 #const global OBJ_FLIP 64
 #const global OBJ_BORDER 0x80
 #const global OBJ_2D 0x100
+#const global OBJ_SORT 0x400
 #const global OBJ_STATIC 0x800
 #const global OBJ_GRAVITY 0x1000
 #const global OBJ_LATE 0x4000
@@ -249,7 +250,7 @@
 #cmd addtexanim $93
 #cmd settexanimfile $94
 #cmd settexanimmode $95
-
+#cmd hgcnvaxis $96
 
 
 #cmd event_wpos $98
