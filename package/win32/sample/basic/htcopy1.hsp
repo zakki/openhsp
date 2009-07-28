@@ -13,7 +13,7 @@
 	boxf 0,100,320,200
 
 	buffer 3,640,200,0
-	picload dir_exe+"\\docs\\hsp3ttl.jpg"
+	picload dir_exe+"\\doclib\\hsp3ttl.jpg"
 
 	gsel 0
 

@@ -1,9 +1,11 @@
-
+	;
+	;	grect–½—ß‚É‚æ‚é‹éŒ`“h‚è‚Â‚Ô‚µƒTƒ“ƒvƒ‹
+	;
 	title "grect"
 	screen 0,640,480,0
 	cls 2
 	font "Arial",14
-	m="HSP3.0 Sample 2005"
+	m="HSP3 Sample Image"
 
 	x=160:y=160:px=4:py=4
 	repeat

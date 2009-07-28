@@ -7,6 +7,6 @@
 #aht helpkw "objenable"
 
 #define オブジェクトID指定	"0"	;;str
-#define 0ならば無効、0以外は有効	"1"	;;str
+#define フラグ	"1"	;;str
 
-#ahtmes "objenable "+オブジェクトID指定+" , "+0ならば無効、0以外は有効+
+#ahtmes "objenable "+オブジェクトID指定+" , "+フラグ+

@@ -1,3 +1,5 @@
+;	このスクリプト単体では実行させることができません
+;
 ;generated from elm2d
 #ifndef __atk01__
 #define __atk01__

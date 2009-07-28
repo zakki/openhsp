@@ -146,6 +146,7 @@
 	syscolor 15:boxf
 	sysfont 17:color 0,0,0
 	x=4:y=4
+
 	aht_propupdate mymodel	; 動的プロパティの更新
 	repeat pmax
 		curprop=cnt
@@ -166,7 +167,7 @@
 		y+=py
 	loop
 	;
-	objsel 0
+	if pmax>0 : objsel 0
 	;
 	aht_getopt class,"class",_p1,128
 	aht_getopt author,"author",_p1,64

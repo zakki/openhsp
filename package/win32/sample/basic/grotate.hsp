@@ -1,14 +1,16 @@
-
+	;
+	;	grotate–½—ß‚É‚æ‚é‰æ‘œ‰ñ“]ƒTƒ“ƒvƒ‹
+	;
 	randomize
 
 	title "grotate"
 	buffer 3,256,256,0
-	picload "face.bmp"
+	picload "../game/face.bmp"
 
 	screen 0,640,480,0
 	cls 4
 	font "Arial",14
-	m="HSP3.0 grotate sample"
+	m="HSP3 grotate sample"
 
 	max=20
 	dim xx,max

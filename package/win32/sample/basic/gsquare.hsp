@@ -1,9 +1,10 @@
-
+;	gsquare–½—ß‚É‚æ‚é‰æ‘œ‚Ì•ÏŒ`ƒTƒ“ƒvƒ‹
+;
 title "gsquare"
 randomize
 
 buffer 3
-picload dir_exe+"\\docs\\hsp3ttl.jpg"
+picload dir_exe+"\\doclib\\hsp3ttl.jpg"
 
 screen 0,640,480,0
 

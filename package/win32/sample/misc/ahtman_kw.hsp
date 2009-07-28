@@ -11,7 +11,7 @@
 	;gsel 0,-1
 	tminit
 
-	ahtfile = dir_exe + "\\ezinput\\グラフィック\\色を指定.aht"
+	ahtfile = dir_exe + "\\ezinput\\画面の操作\\カラー設定.aht"
 /*
 	ahtfile = dir_cmdline
 	if ahtfile="" {
