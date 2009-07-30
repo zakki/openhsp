@@ -126,6 +126,10 @@ HSPDA ver3.2 REFERENCE MANUAL                       HSP : Hot Soup Processor
 
 ・更新履歴
 
+	2009/7/30
+
+		sortvalの昇順・降順が正しく反映されない不具合を修正。
+
 	2009/6/9
 
 		xnoteadd でバッファオーバーフローするのを修正。

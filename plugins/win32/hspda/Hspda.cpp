@@ -325,7 +325,7 @@ EXPORT BOOL WINAPI sortval( HSPEXINFO *hei, int p2, int p3, int p4 )
 			dtmp[a].as.dkey=dp[a];
 			dtmp[a].info=a;
 		}
-		BubbleSortDouble( dtmp, i, p2 );
+		BubbleSortDouble( dtmp, i, order );
 		for(a=0;a<i;a++) {
 			//dp[a]=dtmp[a].as.dkey;
 			hei->HspFunc_prm_setva( p1, a, HSPVAR_FLAG_DOUBLE, &(dtmp[a].as.dkey) );	// ïœêîÇ…ílÇë„ì¸
@@ -338,7 +338,7 @@ EXPORT BOOL WINAPI sortval( HSPEXINFO *hei, int p2, int p3, int p4 )
 			dtmp[a].as.ikey=p[a];
 			dtmp[a].info=a;
 		}
-		QuickSort( dtmp, i, p2 );
+		QuickSort( dtmp, i, order );
 		for(a=0;a<i;a++) {
 			p[a]=dtmp[a].as.ikey;
 		}
