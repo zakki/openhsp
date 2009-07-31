@@ -11,7 +11,7 @@
 hspinet.asをインクルードすること。
 
 %date
-2009/06/14
+2009/08/01
 %author
 onitama
 %dll

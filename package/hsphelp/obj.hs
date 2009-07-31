@@ -15,9 +15,10 @@ obj
 
 %port
 Win
-
+%ver
+3.2
 %date
-2007/12/03
+2009/08/01
 %index
 getobjsize
 オブジェクトのサイズと位置取得

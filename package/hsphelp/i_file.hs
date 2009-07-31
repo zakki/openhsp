@@ -11,7 +11,7 @@
 ver3.2•W€–½—ß
 
 %date
-2004/10/12
+2009/08/01
 %author
 onitama
 %url

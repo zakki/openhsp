@@ -11,7 +11,7 @@
 hspcmp.asをインクルードすること。
 
 %date
-2005/07/01
+2009/08/01
 %author
 onitama
 %dll

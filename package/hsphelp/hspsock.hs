@@ -10,7 +10,7 @@
 %note
 hspsock.asをインクルードすること。
 %date
-2002/12/01
+2009/08/01
 %author
 onitama
 %dll

@@ -11,7 +11,7 @@
 hspcv.asをインクルードすること。
 
 %date
-2009/06/26
+2009/08/01
 %author
 onitama
 %dll

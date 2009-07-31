@@ -5,7 +5,7 @@ hsedsdk
 3.2
 
 %date
-2007/08/05
+2009/08/01
 
 %author
 onitama

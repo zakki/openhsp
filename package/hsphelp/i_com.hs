@@ -10,7 +10,7 @@
 %note
 ver3.2•W€–½—ß
 %date
-2005/03/12
+2009/08/01
 %author
 onitama
 %url

@@ -10,7 +10,7 @@
 %note
 hspda.asをインクルードすること。
 %date
-2007/04/04
+2009/08/01
 %author
 onitama
 %dll

@@ -5,7 +5,7 @@ mod_picfont
 3.2
 
 %date
-2009/03/20
+2009/08/01
 
 %author
 onitama

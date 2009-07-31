@@ -10,7 +10,7 @@
 %note
 hgimg3.asをインクルードすること。
 %date
-2009/07/27
+2009/08/01
 %author
 onitama
 %dll

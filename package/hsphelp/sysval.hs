@@ -10,7 +10,7 @@ HSPシステム変数
 %note
 ver3.2標準
 %date
-2009/05/15
+2009/08/01
 %author
 onitama
 %url

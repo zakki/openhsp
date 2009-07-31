@@ -5,7 +5,7 @@ hsptv
 3.2
 
 %date
-2009/07/13
+2009/08/01
 
 %author
 onitama

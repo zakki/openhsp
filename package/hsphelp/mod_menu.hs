@@ -1,3 +1,7 @@
+%ver
+3.2
+%date
+2009/08/01
 %author
 onitamaithanks ‚¿‚å‚­‚Æ ‚³‚ñj
 

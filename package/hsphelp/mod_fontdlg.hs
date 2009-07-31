@@ -16,9 +16,10 @@ mod_fontdlg.asをインクルードすること。
 %port
 Win
 Cli
-
+%ver
+3.2
 %date
-2007/12/03
+2009/08/01
 %index
 fontdlg
 フォント選択ダイアログを開く

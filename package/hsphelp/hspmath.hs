@@ -1,12 +1,11 @@
 %dll
 hspmath
-
+%date
+2009/08/01
 %note
 hspmath.as
-
 %group
 ”ŠwŠÖ”
-
 %port
 Win
 Mac

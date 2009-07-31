@@ -11,7 +11,7 @@
 obaq.asをインクルードすること。
 
 %date
-2009/07/09
+2009/08/01
 %author
 onitama
 %dll

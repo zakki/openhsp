@@ -11,7 +11,7 @@
 hspdb.asをインクルードすること。
 
 %date
-2004/04/01
+2009/08/01
 %author
 onitama
 %dll

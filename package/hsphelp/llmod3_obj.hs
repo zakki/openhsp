@@ -6,12 +6,12 @@
 %type
 拡張命令
 %ver
-3.0
+3.2
 %note
 llmod3.hsp,obj.hspをインクルードする
 
 %date
-2003/07/20
+2009/08/01
 %author
 tom
 %dll

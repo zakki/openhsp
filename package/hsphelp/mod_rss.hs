@@ -5,7 +5,7 @@ mod_rss
 3.2
 
 %date
-2008/01/05
+2009/08/01
 
 %author
 onitama

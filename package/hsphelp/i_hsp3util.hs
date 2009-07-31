@@ -10,7 +10,7 @@
 %note
 hsp3util.asをインクルードすること。
 %date
-2006/04/20
+2009/08/01
 %author
 onitama
 %dll

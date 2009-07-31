@@ -6,13 +6,13 @@
 %type
 拡張命令
 %ver
-3.0
+3.2
 %note
 llmod3.hsp,scrsvr.hspをインクルードする
 (Windows9xのみ利用可能です)
 
 %date
-2003/07/20
+2009/08/01
 %author
 tom
 %dll
