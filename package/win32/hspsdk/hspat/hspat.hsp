@@ -5,6 +5,7 @@
 #define APP_CACHE ".hat"
 #define APP_INDEX "index.hat"
 #packopt name "hspat"
+#packopt hide 1
 #pack "hspat_info.bmp"
 #pack "hspat_icon.bmp"
 
@@ -645,6 +646,11 @@
 
 	netgethed = strtrim( app_downdir, 2, '\\' )+"\\"
 	cfname=netgethed+s2
+	exist cfname
+	if strsize>=0 {
+		dialog "同じ名前のファイルが存在します("+s2+")\n上書きしてよろしいですか？",2
+		if stat!=6 : return
+	}
 
 	neturl cururl
 	netdlname cfname
