@@ -9,6 +9,13 @@
 #func FindWindow@hsedsdk "FindWindowA" sptr, sptr
 #func GetWindowThreadProcessId@hsedsdk "GetWindowThreadProcessId" int, var
 
+#func OpenClipboard@hsedsdk "OpenClipboard" int
+#cfunc IsClipboardFormatAvailable@hsedsdk "IsClipboardFormatAvailable" int
+#func  CloseClipboard@hsedsdk "CloseClipboard"
+#cfunc GetClipboardData@hsedsdk "GetClipboardData" int
+#func  EmptyClipboard@hsedsdk "EmptyClipboard"
+#func  SetClipboardData@hsedsdk "SetClipboardData" int,int
+
 #uselib "kernel32.dll"
 #func OpenProcess@hsedsdk "OpenProcess" int, int, int
 #func GetCurrentProcess@hsedsdk "GetCurrentProcess"
@@ -18,6 +25,12 @@
 #func ReadFile@hsedsdk "ReadFile" int, var, int, var, int
 #func WriteFile@hsedsdk "WriteFile" int, var, int, var, int
 #func PeekNamedPipe@hsedsdk "PeekNamedPipe" int, int, int, int, var, int
+
+#cfunc  GlobalLock@hsedsdk "GlobalLock" int
+#cfunc  GlobalSize@hsedsdk "GlobalSize" int
+#func   GlobalUnlock@hsedsdk "GlobalUnlock" int
+#cfunc  GlobalAlloc@hsedsdk "GlobalAlloc" int,int
+#cfunc  lstrcpy@hsedsdk "lstrcpy" int,int
 
 // Win32API 定数(ウィンドウ メッセージを除く)
 #const PROCESS_ALL_ACCESS@hsedsdk    0x001F0FFF
@@ -499,9 +512,37 @@
 #deffunc hsed_sendstr var _p1
 	hsed_getactfootyid actid
 	if stat : return 1
+
+	vinfo=sysinfo(0)
+	if instr(vinfo,0,"WindowsNT")<0 : goto *sendbyclip
+	vdbl=0.0+strmid(vinfo,13,8)
+	if vdbl<5.1 : goto *sendbyclip
+
+	;	直接文字列データを送信する
 	hsed_sendtext_msg actid, _HSED_SETSELTEXT, _p1
 	return
+*sendbyclip
+	;	クリップボード経由で文字列を送信する
+	;	(WindowsXPより前の環境用)
+	OpenClipboard
+	ret=stat : if ret!0 : EmptyClipboard
 
+	;クリップボードにテキストデータを設定
+	ls=strlen(_p1)+1
+	lngHwnd=GlobalAlloc(2,ls)
+	if lngHwnd!0 {
+		lngMem=GlobalLock(lngHwnd)
+		if lngMem!0 {
+			ret=lstrcpy(lngMem,varptr(_p1))
+			if ret!0 {
+				SetClipboardData CF_OEMTEXT,lngHwnd
+			}
+			GlobalUnlock lngHwnd : lngRet=stat
+		}
+	}
+	CloseClipboard
+	sendmsg hIF, _HSED_PASTE,-1, 0
+	return
 
 
 #global
