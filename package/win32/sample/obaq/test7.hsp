@@ -10,6 +10,8 @@
 	sx=wx/4/divx:sy=wy/4/divy
 
 	screen 0,wx,wy
+	celload "obaqlogo.bmp"	; OBAQÉçÉSì«Ç›çûÇ›
+	logoid=stat		; ÉçÉSÇÃID
 
 *start
 	qreset
@@ -56,6 +58,9 @@
 
 	qexec
 	qdraw
+
+	gmode 2:pos wx-160,40	; ÉçÉSï\é¶
+	celput logoid
 
 	redraw 1
 	await 12

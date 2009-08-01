@@ -7,6 +7,8 @@
 	;
 	randomize		; 乱数の初期化
 	screen 0,640,480	; ウィンドウ初期化
+	celload "obaqlogo.bmp"	; OBAQロゴ読み込み
+	logoid=stat		; ロゴのID
 
 	qreset			; OBAQの初期化
 	kazu=25			; 出現数
@@ -44,6 +46,9 @@
 
 	color 255,255,255
 	pos 0,0:mes "Frame:"+frame	; フレーム数を表示
+
+	gmode 2:pos 470,40	; ロゴ表示
+	celput logoid
 
 	redraw 1		; 画面の更新を終了
 	await 12		; 一定時間待つ
