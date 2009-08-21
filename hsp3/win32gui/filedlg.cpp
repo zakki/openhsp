@@ -66,7 +66,7 @@ void fd_ini( HWND hwnd, char *extname, char *extinfo )
 	static const char DELIMITER_PIPE[]  = "|";
 	static const int  DELIMITER_PIPE_LEN= 1;
 	// "\n"区切り
-	static const char DELIMITER_CR[]    = "\r";
+	static const char DELIMITER_CR[]    = "\r\n";
 	static const int  DELIMITER_CR_LEN  = 2;
 	static const char DEFAULT_DESC[]    = "ファイル";
 	static const char ALL_FILE_FILTER[] = "すべてのファイル (*.*)";
@@ -91,8 +91,8 @@ void fd_ini( HWND hwnd, char *extname, char *extinfo )
 	nFilterSeek = 0;
 
 	for(nFilterIndex = 0;;
-		fext = fext_next + (*DELIMITER_PIPE == *fext_next ? DELIMITER_PIPE_LEN : DELIMITER_CR_LEN),
-		finf = finf_next + (*DELIMITER_PIPE == *finf_next ? DELIMITER_PIPE_LEN : DELIMITER_CR_LEN),
+		fext = fext_next + (*DELIMITER_CR == *fext_next && DELIMITER_CR[1] == fext_next[1] ? DELIMITER_CR_LEN : DELIMITER_PIPE_LEN),
+		finf = finf_next + (*DELIMITER_CR == *finf_next && DELIMITER_CR[1] == finf_next[1] ? DELIMITER_CR_LEN : DELIMITER_PIPE_LEN),
 		nFilterIndex++)
 	{
 		// 区切り文字で分割
@@ -118,9 +118,9 @@ void fd_ini( HWND hwnd, char *extname, char *extinfo )
 		finf_len = (int)(finf_next - finf);
 
 		if( !*fext_next )
-			fext_next -= DELIMITER_CR_LEN;
+			fext_next -= DELIMITER_PIPE_LEN;
 		if( !*finf_next )
-			finf_next -= DELIMITER_CR_LEN;
+			finf_next -= DELIMITER_PIPE_LEN;
 
 		// 拡張子の先頭に';'があった場合は"*."を先頭につけないモードにする
 		no_aster = (';' == *fext);
