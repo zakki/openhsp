@@ -11,8 +11,8 @@
 
 static HWND hwbak;
 static OPENFILENAME ofn ;
-static char szFileName[_MAX_PATH] ;
-static char szTitleName[_MAX_FNAME + _MAX_EXT] ;
+static char szFileName[_MAX_PATH + 1] ;
+static char szTitleName[_MAX_PATH + 1] ;
 //static char szFilter[128];
 
 
@@ -27,7 +27,7 @@ void PopFileInitialize (HWND hwnd)
      ofn.nFilterIndex      = 1 ;
      ofn.nMaxFile          = _MAX_PATH ;
      ofn.lpstrFile         = szFileName ;
-     ofn.nMaxFileTitle     = _MAX_FNAME + _MAX_EXT ;
+     ofn.nMaxFileTitle     = _MAX_PATH ;
      ofn.lpstrFileTitle    = szTitleName ;
      ofn.lpstrInitialDir   = NULL ;
      ofn.lpstrTitle        = NULL ;
@@ -140,7 +140,7 @@ void fd_ini( HWND hwnd, char *extname, char *extinfo )
 		if( 0 == nFilterIndex ) {
 			if( !no_aster )
 				strcat(szFileName, "*.");
-			strncat(szFileName, fext, min((size_t)fext_len, _MAX_PATH - 3/* strlen("*.")+sizeof('\0') */));
+			strncat(szFileName, fext, min((size_t)fext_len, sizeof(szFileName)/sizeof(szFileName[0]) - 3/* strlen("*.")+sizeof('\0') */));
 		}
 
 		// finf + "(" + "*." + fext + ")" + "\0" + "*." + fext + "\0"
