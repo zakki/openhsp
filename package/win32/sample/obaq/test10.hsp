@@ -19,7 +19,7 @@
 	hako=10
 	repeat 100
 		if hako=0 : break
-		qaddpoly my, 20, cenx+rnd(60)-30,ceny+rnd(100)-50,0,5,5		; 多角形を追加
+		qaddpoly my, 16, cenx+rnd(60)-30,ceny+rnd(100)-50,0,5,5		; 多角形を追加
 		if my>=0 {
 			hako--
 		}
@@ -37,19 +37,19 @@
 	if key&128 : end	; [ESC]キーで終了
 
 	qgetpos my, xx,yy,mr
-	if key&1 : mr+=0.05
-	if key&4 : mr-=0.05
+	if key&1 : mr-=0.05
+	if key&4 : mr+=0.05
 	qpos my, xx,yy,mr
 
 	if key&16 {
-		qspeed my, sin(mr), cos(mr)
+		qspeed my, cos(mr), sin(mr)
 	}
 
 	qdraw			; オブジェクトの描画
 
 	color 255,255,255
 	qcnvaxis x,y,xx,yy
-	pos x,y:line x+sin(mr)*32,y+cos(mr)*32
+	pos x,y:line x+cos(mr)*32,y+sin(mr)*32
 
 	gmode 2:pos 500,404	; ロゴ表示
 	celput logoid

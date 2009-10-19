@@ -2,15 +2,17 @@
 	;	ブロック崩し(3)
 	;	(ボール・バー・ブロック表示します)
 	;
-
 	x1=0:y1=0		; 画面左上の座標
 	x2=480:y2=640		; 画面右下の座標
 
+	clrflag=0		; クリアフラグ
+
 	blsize=16		; ボールのサイズ
-	blspd=12		; ボールのスピード
+	blspd=10		; ボールのスピード
 	blx=240:bly=300		; ボールの座標
 	bpx=4:bpy=4		; XY方向のボール座標加算値
 	bk=0			; ブロックを崩すフラグ(1=崩す)
+	mblsize=-blsize
 
 	barsize=64		; バーのサイズ
 	barx=240:bary=540	; バーの座標
@@ -25,7 +27,8 @@
 	dim wall,wsx,wsy	; ブロックを表示するフラグ
 				; 0=表示、1=表示しない
 	screen 0,x2,y2
-
+	title "ブロック崩し"
+	cls 4
 *main
 	redraw 0
 	gradf 0,0,x2,y2,1,0,128	; 画面クリア
@@ -42,8 +45,8 @@
 
 	; ボール : Y方向の移動
 	bly=bly+bpy
-	if bly<=y1 : bly=y1 : bpy=-bpy : bk=1
-	if bly>=(y2-blsize) : goto *owari
+	if bly<=y1 : bly=y1 : bpy=blspd : bk=1 : blspd=16
+	if bly>=(y2-blsize) : goto *gameover
 
 	; ボールとバーがぶつかったかどうか調べます
 	coly=bly+blsize
@@ -56,12 +59,16 @@
 			i=(colx-x)/4
 			if i!=0 : bpx=i
 			bk=1
+			if clrflag {
+				dim wall,wsx,wsy	; ブロックを復活させる
+				clrflag=0
+			}
 		}
 	}
 
 	; ブロックの処理
-	colx=blx+blsize
-	coly=bly+blsize
+	colx=wpx+bsize
+	coly=wpy+bsize
 	left=0
 	repeat wsy
 	cy=cnt
@@ -75,7 +82,7 @@
 			left++
 			boxf x,y,x+wpx-2,y+wpy-2
 			i=blx-x:j=bly-y
-			if (i>=0)&(i<wpx)&(j>=0)&(j<wpy)&(bk) {
+			if (i>=mblsize)&(i<colx)&(j>=mblsize)&(j<coly)&(bk) {
 				wall(cx,cy)=1
 				bpy=-bpy
 				bk=0
@@ -92,13 +99,13 @@
 	redraw 1
 	await 16
 
-	if left=0 : goto *clear
+	if left=0 : clrflag=1
 	goto *main
 
-*clear
-	dialog "Clear!"
-	end
+*gameover
+	objsize 180,32
+	pos 150,330:button "終わり",*owari
+	stop
 
 *owari
-	dialog "Out!"
 	end
