@@ -4,6 +4,8 @@
 #include <windows.h>
 #include "czcrypt.h"
 #include "md5.h"
+#include "czbase64.h"
+
 
 static const unsigned long crc_table[256] =
 { // ‚b‚q‚bŒvZ—pƒe[ƒuƒ‹
@@ -249,5 +251,82 @@ void CzCrypt::GetMD5( char *res )
 	strcpy( res, hex_output );
 }
 
+void CzCrypt::GetMD5ext( char *res, char *buf, int sz )
+{
+	int di;
+	md5_state_t state;
+	md5_byte_t digest[16];
+	char hex_output[16*2 + 1];
+
+	md5_init( &state );
+	md5_append( &state, (const md5_byte_t *)buf, sz );
+	md5_finish( &state, digest );
+
+	for ( di = 0; di < 16; ++di ) {
+	    sprintf( hex_output + di * 2, "%02x", digest[di] );
+	}
+	strcpy( res, hex_output );
+}
+
+
 #endif
+
+
+int	CzCrypt::EncodeBASE64( char *dstptr, char *srcptr, int sz )
+{
+#if 0
+	CBase64 base64;
+	base64.Encrypt( srcptr, sz, dstptr );
+#else
+	CzBase64 base64;
+	base64.Encode( dstptr, srcptr, sz );
+#endif
+	return 0;
+}
+
+
+int	CzCrypt::DecodeBASE64( char *dstptr, char *srcptr, int sz )
+{
+#if 0
+	CBase64 base64;
+	base64.Decrypt( srcptr, sz, dstptr );
+#else
+	CzBase64 base64;
+	base64.Decode( dstptr, srcptr, sz );
+#endif
+	return 0;
+}
+
+
+int	CzCrypt::GetBASE64Size( int sz )
+{
+#if 0
+	CBase64 base64;
+	return (int)base64.B64_length( sz );
+#else
+	CzBase64 base64;
+	return base64.GetSize( sz );
+#endif
+}
+
+
+int	CzCrypt::EncodeRC4( char *ptr, char *key, int size )
+{
+#if 0
+	CRC4 rc4;
+	rc4.Encrypt( ptr, key );
+#else
+
+	CzRC4 rc4;
+	rc4.SetKey( key );
+	rc4.Encode( ptr, size );
+#endif
+	return 0;
+}
+
+
+int	CzCrypt::DecodeRC4( char *ptr, char *key, int size )
+{
+	return EncodeRC4( ptr, key, size );
+}
 

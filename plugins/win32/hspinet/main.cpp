@@ -586,3 +586,98 @@ EXPORT BOOL WINAPI netrequest_post( HSPEXINFO *hei, int p1, int p2, int p3 )
 
 
 /*------------------------------------------------------------------------------------*/
+
+EXPORT BOOL WINAPI varmd5( HSPEXINFO *hei, int p1, int p2, int p3 )
+{
+	//	(type$202)
+	//	変数バッファの内容からMD5を求める
+	//	(変数にMD5文字列を代入)
+	//		varmd5 変数, バッファ変数, サイズ
+	//
+	PVal *pv;
+	APTR ap;
+	int size;
+	char md5str[ 128 ];
+	CzCrypt crypt;
+	char *vptr;
+
+	ap = hei->HspFunc_prm_getva( &pv );			// パラメータ1:変数
+	vptr = (char *)hei->HspFunc_prm_getv();		// パラメータ2:変数
+	size = hei->HspFunc_prm_getdi(0);			// パラメータ3:整数値
+
+	crypt.GetMD5ext( md5str, vptr, size );
+	hei->HspFunc_prm_setva( pv, ap, HSPVAR_FLAG_STR, md5str );	// 変数に値を代入
+
+	return 0;
+}
+
+
+EXPORT BOOL WINAPI b64encode( HSPEXINFO *hei, int p1, int p2, int p3 )
+{
+	//	(type$202)
+	//	変数バッファの内容をBASE64にエンコードする
+	//	(変数にBASE64文字列を代入)
+	//		b64encode 変数, バッファ変数, サイズ
+	//
+	PVal *pv;
+	APTR ap;
+	int size;
+	CzCrypt crypt;
+	char *dst;
+	char *vptr;
+
+	ap = hei->HspFunc_prm_getva( &pv );			// パラメータ1:変数
+	vptr = (char *)hei->HspFunc_prm_getv();		// パラメータ2:変数
+	size = hei->HspFunc_prm_getdi(-1);			// パラメータ3:整数値
+
+	if ( size < 0 ) size = (int)strlen(vptr);
+	dst = (char*)malloc( crypt.GetBASE64Size( size ) + 1 );
+	crypt.EncodeBASE64( dst, vptr, size );
+
+	hei->HspFunc_prm_setva( pv, ap, HSPVAR_FLAG_STR, dst );	// 変数に値を代入
+	free( dst );
+
+	return 0;
+}
+
+
+EXPORT BOOL WINAPI b64decode( HSPEXINFO *hei, int p1, int p2, int p3 )
+{
+	//	(type$202)
+	//	変数バッファのBASE64文字列をデコードする
+	//	(変数に変換後文字列を代入)
+	//		b64decode 変数, バッファ変数, サイズ
+	//
+	int size;
+	CzCrypt crypt;
+	char *vptr;
+	char *dstptr;
+
+	dstptr = (char *)hei->HspFunc_prm_getv();	// パラメータ1:変数
+	vptr = (char *)hei->HspFunc_prm_getv();		// パラメータ2:変数
+	size = hei->HspFunc_prm_getdi(-1);			// パラメータ3:整数値
+
+	if ( size < 0 ) size = (int)strlen(vptr);
+	crypt.DecodeBASE64( dstptr, vptr, size );
+	return 0;
+}
+
+
+EXPORT BOOL WINAPI rc4encode( HSPEXINFO *hei, int p1, int p2, int p3 )
+{
+	//	(type$202)
+	//	変数バッファのBASE64文字列をデコードする
+	//	(変数に変換後文字列を代入)
+	//		rc4encode バッファ変数, キー
+	//
+	CzCrypt crypt;
+	char *dstptr;
+	char *ss;
+	int size;
+
+	dstptr = (char *)hei->HspFunc_prm_getv();	// パラメータ1:変数
+	ss = hei->HspFunc_prm_gets();				// パラメータ2:文字列
+	size = hei->HspFunc_prm_getdi(-1);			// パラメータ3:整数値
+	crypt.EncodeRC4( dstptr, ss, size );
+	return 0;
+}

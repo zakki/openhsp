@@ -4,6 +4,7 @@
 	Version="8.00"
 	Name="hspinet"
 	ProjectGUID="{105EC53A-0067-442A-9BD0-EBD9DBC02C84}"
+	RootNamespace="hspinet"
 	Keyword="Win32Proj"
 	>
 	<Platforms>
@@ -181,6 +182,10 @@
 			UniqueIdentifier="{4FC737F1-C7A5-4376-A066-2A32D752A2FF}"
 			>
 			<File
+				RelativePath=".\czbase64.cpp"
+				>
+			</File>
+			<File
 				RelativePath=".\czcrypt.cpp"
 				>
 			</File>
@@ -202,6 +207,10 @@
 			Filter="h;hpp;hxx;hm;inl;inc;xsd"
 			UniqueIdentifier="{93995380-89BD-4b04-88EB-625FBE52EBFB}"
 			>
+			<File
+				RelativePath=".\czbase64.h"
+				>
+			</File>
 			<File
 				RelativePath=".\czcrypt.h"
 				>

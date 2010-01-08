@@ -36,6 +36,13 @@ public:
 
 	int				GetCRC32( void );						// CRC32’l‚ðŽæ“¾
 	void			GetMD5( char *res );					// MD5’l‚ðŽæ“¾
+	void			GetMD5ext( char *res, char *buf, int size );	// MD5’l‚ðŽæ“¾
+
+	int				EncodeBASE64( char *dstptr, char *srcptr, int size );
+	int				DecodeBASE64( char *dstptr, char *srcptr, int size );
+	int				GetBASE64Size( int size );
+	int				EncodeRC4( char *ptr, char *key, int size );
+	int				DecodeRC4( char *ptr, char *key, int size );
 
 
 private:
