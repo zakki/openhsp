@@ -1,6 +1,6 @@
 ------------------------------------------------------------------------------
-OBAQ for HSP ver3.2 REFERENCE MANUAL                HSP : Hot Soup Processor  
-ＨＳＰ拡張拡張DLLリファレンス    Copyright 2009 (c) Zener Works/kuni/onitama  
+OBAQ for HSP ver3.21 REFERENCE MANUAL               HSP : Hot Soup Processor  
+ＨＳＰ拡張拡張DLLリファレンス    Copyright 2010 (c) Zener Works/kuni/onitama  
 ------------------------------------------------------------------------------
 
 ・はじめに
@@ -27,7 +27,7 @@ OBAQ for HSP ver3.2 REFERENCE MANUAL                HSP : Hot Soup Processor
 
 ・使用のための準備
 
-	OBAQ.DLLは、HSP3.2フルセットに同梱されています。
+	OBAQ.DLLは、最新のHSP3フルセットに同梱されています。
 	DLLが動作しない場合は、実行に使われているHSP3.EXEと同じディレクトリに、
 	OBAQ.DLLがあるかどうかを確認してください。
 	OBAQを使用する場合は、スクリプトの先頭に必ず「#include "obaq.as"」
@@ -188,6 +188,7 @@ OBAQ for HSP ver3.2 REFERENCE MANUAL                HSP : Hot Soup Processor
 		type_bindY	0x80	Y軸を背景に固定
 		type_bindR	0x100	回転を固定
 		type_bind	0x1c0	背景に完全固定(物理挙動なし)
+		type_autowipe	0x100000  ボーダー範囲を越えたら自動的に消去
 
 	通常のオブジェクトは、type_normalが設定されており、物理挙動を反映した
 	動作を行ないます。
@@ -294,6 +295,15 @@ OBAQ for HSP ver3.2 REFERENCE MANUAL                HSP : Hot Soup Processor
 	などの対処を行なうようにしてください。
 
 
+・HGIMG3でのサポート
+
+	HGIMG3のver3.21から、OBAQオブジェクトをDirectXにより表示させるための
+	機能が搭載されています。ユーザーがOBAQプラグインに対して記述する
+	スクリプトはそのままで、DirectX表示に変更することが可能です。
+	これにより、大量のオブジェクト表示、高画質なスプライトの回転縮小などに
+	加えて描画速度の向上も実現することができます。
+
+
 ・命令一覧
 
 	OBAQ.DLLは、HSPに以下の命令を追加して利用可能にします。
@@ -307,6 +317,7 @@ OBAQ for HSP ver3.2 REFERENCE MANUAL                HSP : Hot Soup Processor
 	qview				ビュー設定
 	qsetreq				システムリクエスト設定
 	qgetreq				システムリクエスト取得
+	qgetptr				システムポインタ値取得
 	qborder				外壁を設定
 	qgravity			重力を設定
 	qcnvaxis			内部座標を表示座標に変換
@@ -361,6 +372,16 @@ OBAQ for HSP ver3.2 REFERENCE MANUAL                HSP : Hot Soup Processor
 
 
 ・更新履歴
+
+	2010/01/15 ver3.21
+
+		タイプ値、type_autowipeを追加。
+		HGIMG3でのOBAQサポート用にqgetptr命令を追加。
+		サンプルとツール(obaqme)を追加。
+
+	2009/10/19 ver3.2a
+
+		サンプルスクリプトを一部修正。
 
 	2009/8/1 ver3.2
 

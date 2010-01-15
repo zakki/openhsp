@@ -13,6 +13,7 @@
 #func qview qview $202
 #func qsetreq qsetreq $202
 #func qgetreq qgetreq $202
+#func qgetptr qgetptr $202
 
 #func qborder qborder $202
 #func qgravity qgravity $202
@@ -72,6 +73,7 @@
 #const global type_bindR 0x100
 #const global type_bind 0x1c0
 #const global type_nest 0x20000
+#const global type_autowipe 0x100000
 
 ;
 ;	stat define

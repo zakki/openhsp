@@ -31,6 +31,7 @@
 #const global OBJ_BOUND 0x100000
 #const global OBJ_ALIEN 0x200000
 #const global OBJ_WALKCLIP 0x400000
+#const global OBJ_EMITTER 0x800000
 
 #const global SHADE_LINES	0x80
 #const global SHADE_NOLIGHT	0x100
@@ -95,6 +96,8 @@
 #define global SYSREQ_DEFTIMER 23
 #define global SYSREQ_NOMIPMAP 24
 #define global SYSREQ_DEVLOST 25
+#define global SYSREQ_MAXEMITTER 26
+#define global SYSREQ_THROUGHFLAG 27
 #define global SYSREQ_DEBUG $10000
 
 #define event_delobj(%1) event_prmset %1,PRMSET_FLAG,0
@@ -359,6 +362,36 @@
 #cmd mosaic_draw $106
 #cmd mosaic_set $107
 
+#cmd hgobaq $108
+#cmd hgceldiv $109
+#const global mat_wire3 5
+#const global mat_spr3 6
+
+#define global EMITMODE_NONE	0
+#define global EMITMODE_STATIC	1
+#define global EMITMODE_CIRCLE	2
+#define global EMITMODE_RANDOM	3
+#define global EMITMODE_LOOKAT	16
+
+#cmd newemit $10a
+#cmd delemit $10b
+#cmd emit_size $10c
+#cmd emit_speed $10d
+#cmd emit_angmul $10e
+#cmd emit_angopt $10f
+#cmd emit_model $110
+#cmd emit_event $111
+#cmd emit_num $112
+#cmd emit_group $113
+#cmd hgemit $114
+#cmd setobjemit $115
+#cmd groupmod $116
+#cmd addobaq3d $117
+#cmd obaqmat $118
+#cmd hgqview $119
+#cmd hgqcnvaxis $11a
+#cmd addline $11b
+#cmd hgcnvline $11c
 
 #module "HGIMG"
 #define global WORKSCR 3
