@@ -64,7 +64,7 @@ HGIMG ver3.21   REFERENCE MANUAL       High Performance Graphic Image Plugin
 	HGIMG3は、HSP及びOpenHSPによる技術を基本にして作成されています。
 
 	OpenHSP
-	Copyright (C) 1997-2009, Onion Software/onitama.
+	Copyright (C) 1997-2010, Onion Software/onitama.
 	All rights reserved.
 
 	HGIMG3ランタイムの著作権はonion softwareにあります。
@@ -1302,6 +1302,36 @@ HGIMG ver3.21   REFERENCE MANUAL       High Performance Graphic Image Plugin
 	ここで挙げた命令以外にも、モードやフラグなどのパラメーターを
 	操作するためのイベントなど様々な応用が可能です。
 	それぞれの命令の詳細は、ヘルプを参照してください。
+
+
+・エミッターについて
+
+	エミッターとは、複数のオブジェクトを一度に発生させることのできる
+	特別な仕組みです。ランダムなパラメーターなど自由な組み合わせで
+	生成することのできる、オブジェクト発生器と考えてください。
+	新しくエミッターを作成する場合には、必ずnewemit命令でエミッターIDを
+	取得しておく必要があります。
+	その後、「emit_」で始まるエミッター設定命令によって多彩な動作を
+	登録しておくことができます。
+	エミッターが作成されてすぐにオブジェクトが発生するわけではありません。
+	あらかじめ、発生条件を色々と設定した上で必要な時に発生させます。
+	エミッターを実際に利用する場合は、hgemit命令によっていつでも
+	発生させることができるほか、setobjemit命令によりオブジェクトに対して
+	適用することも可能です。
+	詳しくは、以下のエミッター関連命令のヘルプを参照してください。
+
+	newemit				エミッターを作成
+	delemit				エミッターを削除
+	emit_size			エミッターの発生範囲を設定
+	emit_speed			エミッターのスピード設定
+	emit_angmul			エミッターの角度係数を設定
+	emit_angopt			エミッターの角度加算値を設定
+	emit_model			エミッターの発生モデルを設定
+	emit_event			エミッターのイベント設定
+	emit_num			エミッターの発生数設定
+	emit_group			エミッターのグループ設定
+	hgemit				エミッター発生実行
+	setobjemit			オブジェクトにエミッター適用
 
 
 ・MOC設定命令について
