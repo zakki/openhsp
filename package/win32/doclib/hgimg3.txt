@@ -1304,7 +1304,7 @@ HGIMG ver3.21   REFERENCE MANUAL       High Performance Graphic Image Plugin
 	それぞれの命令の詳細は、ヘルプを参照してください。
 
 
-・エミッターについて
+・エミッターについて(new)
 
 	エミッターとは、複数のオブジェクトを一度に発生させることのできる
 	特別な仕組みです。ランダムなパラメーターなど自由な組み合わせで
@@ -2012,7 +2012,7 @@ HGIMG ver3.21   REFERENCE MANUAL       High Performance Graphic Image Plugin
 	の状態になっています。
 
 
-・エフェクトモデルについて(new)
+・エフェクトモデルについて
 
 	HGIMG3では、特殊効果や表現を補助するためのエフェクトモデル生成を
 	サポートしています。
@@ -2145,7 +2145,7 @@ HGIMG ver3.21   REFERENCE MANUAL       High Performance Graphic Image Plugin
 	エフェクトモデルを登録することができます。
 
 
-・メッシュマップについて(new)
+・メッシュマップについて
 
 	HGIMG3.2から、メッシュマップによる地形生成及びコリジョン検知の
 	機能がサポートされています。
@@ -2419,7 +2419,7 @@ HGIMG ver3.21   REFERENCE MANUAL       High Performance Graphic Image Plugin
 	しているため、実際には１０分の１になった値が設定されます。
 
 
-・オブジェクト汎用ユーザー情報について(new)
+・オブジェクト汎用ユーザー情報について
 
 	HGIMG3.2から、すべてのオブジェクトに汎用的なユーザー情報を付加する
 	ことができるようになりました。
@@ -2483,18 +2483,29 @@ HGIMG ver3.21   REFERENCE MANUAL       High Performance Graphic Image Plugin
 
 		マクロ名          内容(デフォルト値)
 		-----------------------------------------------------
-		SYSREQ_MAXMODEL   モデル最大数(4096)
-		SYSREQ_MAXOBJ     オブジェクト最大数(512)
-		SYSREQ_MAXTEX     テクスチャ最大数(512)
-		SYSREQ_DXMODE     フルスクリーンモードスイッチ(0)
+		SYSREQ_MAXMODEL   モデル最大数
+		SYSREQ_MAXOBJ     オブジェクト最大数
+		SYSREQ_MAXTEX     テクスチャ最大数
+		SYSREQ_DXMODE     フルスクリーンモードスイッチ
 		SYSREQ_DXHWND     ウィンドウハンドル(参照のみ)
-		SYSREQ_DXWIDTH    フルスクリーンモード時の横サイズ(640)
-		SYSREQ_DXHEIGHT   フルスクリーンモード時の縦サイズ(480)
-		SYSREQ_COLORKEY   テクスチャ登録時の透明色コード(0)
-		SYSREQ_MAXEVENT   イベント最大数(512)
-		SYSREQ_MAXEVENT   イベント最大数(512)
-		SYSREQ_MDLANIM    モデルあたりのアニメーション最大数(16)
-		SYSREQ_CALCNORMAL Xファイルモデル法線再計算スイッチ(0)
+		SYSREQ_DXWIDTH    フルスクリーンモード時の横サイズ
+		SYSREQ_DXHEIGHT   フルスクリーンモード時の縦サイズ
+		SYSREQ_COLORKEY   テクスチャ登録時の透明色コード
+		SYSREQ_RESVMODE   エラー発生時の原因コード(参照のみ)
+		SYSREQ_MAXEVENT   イベント最大数
+		SYSREQ_MDLANIM    モデルあたりのアニメーション最大数
+		SYSREQ_CALCNORMAL Xファイルモデル法線再計算スイッチ
+		SYSREQ_2DFILTER   2D描画時のテクスチャ補間モード
+		SYSREQ_3DFILTER   3D描画時のテクスチャ補間モード
+		SYSREQ_OLDCAM     カメラ注視モードの動作
+		SYSREQ_QUATALG    Xファイルモデルアニメーション補間モード
+		SYSREQ_DXVSYNC    フルスクリーンモード時のVSYNC待ちモード
+		SYSREQ_DEFTIMER   hgsyncの時間待ちモード(0=HGIMG3/1=await)
+		SYSREQ_NOMIPMAP   テクスチャのMIPMAP生成モード(0=自動/1=MIPMAPな	し)
+		SYSREQ_DEVLOST    DirectXデバイスの存在フラグ(0=存在/-1=ロスト)
+		SYSREQ_MAXEMITTER エミッター最大数
+		SYSREQ_THROUGHFLAG　X方向のボーダー処理フラグ(0=通常/1=スルー)
+		SYSREQ_OBAQMATBUF OBAQ用マテリアルバッファ数
 
 	HGIMG2.61までに存在したパケットサイズは廃止されています。
 
@@ -2549,6 +2560,95 @@ HGIMG ver3.21   REFERENCE MANUAL       High Performance Graphic Image Plugin
 	できるようになっています。
 	OggVorbis形式ファイルの作成やエンコードの詳細については、サポートを
 	行なっていませんので、別途資料やツールをご用意下さい。
+
+
+・OBAQサポート機能について(new)
+
+	OBAQ(物理エンジン)プラグインと連携して、表示のサポートを行なう機能が
+	追加されています。
+	OBAQプラグインでは、通常HSPのウィンドウ上に描画を行ないますが、
+	OBAQが管理するオブジェクトはそのままで、描画のみHGIMG3がDirectXで
+	行なう形になります。
+	OBAQプラグイン単体で描画した場合に比べて、非常に高速で精度の高い表示
+	を実現することができます。
+	HGIMG3からOBAQを利用する場合は、必ず以下の順番でヘッダを読み込んで
+	ください。
+
+		#include "hgimg3.as"
+		#include "obaq.as"
+
+	次に、以下の順番で初期化を行なってください。
+	HGIMG3にOBAQ側のデータポインタを渡すことで、連携させます。
+
+		;	初期設定
+		;
+		hgini
+		qreset			; OBAQの初期化
+		qgetptr obaq_ptr
+		hgobaq obaq_ptr, 0
+
+	描画のメインループは以下のような形になります。
+
+	*main
+		;	描画メイン
+		;
+		qexec			; OBAQによるオブジェクトの更新
+		hgdraw			; 描画処理
+		hgsync 10		; 時間待ち
+		goto *main
+
+	OBAQプラグイン側の描画命令(qdraw)は必要ありません。
+	物理動作を行なうためのqexecは必ず含めるようにしてください。
+	後は、OBAQ側の命令でオブジェクトの設定を行なえば、自動的にHGIMG3
+	の描画プロセスで表示されます。
+
+	OBAQプラグインは、2Dベースの処理を行なっているため平面への
+	描画だけしか行なうことができません。
+	ただし、HGIMG3上の3Dポリゴン板にOBAQの画面を貼り付けて描画する
+	ための3Dモードが用意されています。
+	その場合は、以下のように初期化を行なってください。
+
+		;	初期設定
+		;
+		hgini
+		qreset			; OBAQの初期化
+		qgetptr obaq_ptr
+		hgobaq obaq_ptr, 0, 1	; 3Dモード
+
+		;	OBAQモデル
+		;
+		addobaq3d m_obaq
+		regobj obj, m_obaq
+		setscale obj, 0.25,0.25,0.25
+
+	addobaq3d命令により、OBAQを描画するモデルが追加されます。
+	これをオブジェクトとして登録することで、3D上の任意の位置、角度で
+	描画することができます。
+	OBAQ3Dモード時は、OBAQオブジェクトのデバッグ表示が無効になりますので、
+	必ずqmat命令でmat_wire等のマテリアルを設定するようにしてください。
+
+	HGIMG3上では、OBAQプラグインの持つ描画方法(マテリアル)に加えて、
+	テクスチャを使用して線を描画するモード(mat_wire3)が追加されています。
+	これにより、単純な線だけでなく装飾された線や太い線などを描画することが
+	可能になっています。この場合は、
+
+		qmat OBAQオブジェクトID, mat_wire3, テクスチャID, セルID
+		qmat2 OBAQオブジェクトID, 0,0, 0, 線の太さ
+
+	のような指定になります。qmat2に指定するzoomyパラメーターにより線の
+	太さを可変させることができます。以下は「line.tga」というテクスチャを
+	使って線を描画するスクリプトの例です。
+
+
+		;	線テクスチャの準備
+		;
+		texload2 "line.tga"
+		lntex = stat
+
+		;	OBAQ枠線
+		;
+		qmat 0,mat_wire3,lntex
+		qmat2 0, 0,0, 0,16	; 線の太さ(zoomy)
 
 
 ・HGIMG3対応ツールについて
