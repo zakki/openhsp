@@ -106,7 +106,7 @@ int CHsc3::PreProcessAht( char *fname, void *ahtoption, int mode )
 		tk.SetAHTBuffer( ahtbuf );
 	}
 
-	sprintf( mm,"#AHT processor ver%s / onion software 1997-2009(c)", hspver );
+	sprintf( mm,"#AHT processor ver%s / onion software 1997-2010(c)", hspver );
 	tk.Mes( mm );
 	res = tk.ExpandFile( outbuf, fname, fname );
 	if ( res < 0 ) return -1;
@@ -152,7 +152,7 @@ int CHsc3::PreProcess( char *fname, char *outname, int option, char *rname, void
 		tk.SetAHT( (AHTMODEL *)ahtoption );
 	}
 
-	sprintf( mm,"#%s ver%s / onion software 1997-2009(c)", HSC3TITLE, hspver );
+	sprintf( mm,"#%s ver%s / onion software 1997-2010(c)", HSC3TITLE, hspver );
 	tk.Mes( mm );
 	tk.SetAdditionMode( 1 );
 
@@ -237,7 +237,7 @@ int CHsc3::Compile( char *fname, char *outname, int mode )
 	tk.SetHeaderOption( hed_option, hed_runtime );
 	tk.SetCmpOption( cmpopt );
 
-	sprintf( mm,"#%s ver%s / onion software 1997-2009(c)", HSC3TITLE2, hspver );
+	sprintf( mm,"#%s ver%s / onion software 1997-2010(c)", HSC3TITLE2, hspver );
 	tk.Mes( mm );
 
 	if ( outbuf != NULL ) {

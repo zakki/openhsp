@@ -1617,7 +1617,7 @@ int CToken::ReplaceLineBuf( char *str1, char *str2, char *repl, int opt, MACDEF 
 					break;
 				case 's':
 					val = (int)(s3[1]-48);val--;
-					if (( val<0 )||( val>=i )) {
+					if ( !( 0 <= val && val <= macopt - 1 ) ) {
 						SetError("illegal macro parameter %s"); return 2;
 					}
 					w2 = mactmp;
@@ -1676,7 +1676,7 @@ int CToken::ReplaceLineBuf( char *str1, char *str2, char *repl, int opt, MACDEF 
 			}
 			if ( type!=TK_NUM ) { SetError("macro parameter invalid"); return 1; }
 			val--;
-			if (( val<0 )||( val>=i )) {
+			if ( !( 0 <= val && val <= macopt - 1 ) ) {
 				SetError("illegal macro parameter"); return 2;
 			}
 			p = prm[val]; endp = prme[val];
