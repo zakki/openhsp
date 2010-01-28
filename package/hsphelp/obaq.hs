@@ -310,7 +310,7 @@ qaddmodel
 qaddmodel
 自由設定オブジェクト追加
 %prm
-var,shape_var,x,y,r,sx,sy,colsw,mygroup,exgroup,loggroup
+var,shape_var,nvertex,x,y,r,sx,sy,colsw,mygroup,exgroup,loggroup
 var      : オブジェクトIDを取得する変数
 shape_var: 形状データを代入した配列変数
 nvertex(-1) : 形状データの個数

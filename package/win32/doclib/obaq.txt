@@ -295,6 +295,15 @@ OBAQ for HSP ver3.21 REFERENCE MANUAL               HSP : Hot Soup Processor
 	などの対処を行なうようにしてください。
 
 
+・OBAQ Model Editorについて
+
+	OBAQ Model Editorは、qaddmodel命令で使用可能な自由形状を編集するための
+	簡易的なツールです。
+	sample/obaqフォルダ内にある、obaqme.hspをスクリプトエディタで
+	読み込み、実行することができます。
+	詳しい使用方法は、マニュアル(obaqme.txt)を参照してください。
+
+
 ・HGIMG3でのサポート
 
 	HGIMG3のver3.21から、OBAQオブジェクトをDirectXにより表示させるための
@@ -373,11 +382,12 @@ OBAQ for HSP ver3.21 REFERENCE MANUAL               HSP : Hot Soup Processor
 
 ・更新履歴
 
-	2010/01/15 ver3.21
+	2010/01/28 ver3.21
 
+		obaqme(簡易モデル作成ツール)とサンプルを追加。
 		タイプ値、type_autowipeを追加。
 		HGIMG3でのOBAQサポート用にqgetptr命令を追加。
-		サンプルとツール(obaqme)を追加。
+		著作権とライセンス文書を一部修正。
 
 	2009/10/19 ver3.2a
 
@@ -426,6 +436,7 @@ OBAQ for HSP ver3.21 REFERENCE MANUAL               HSP : Hot Soup Processor
 
 	OBAQ.DLLを自由に添付してお使い頂けます。
 	使用する際の報告や問い合わせの必要なく、ライセンスされます。
+	DLLの著作権表示、及びOBAQロゴの明示は、してもしなくても構いません。
 
 	・有償(市販、シェアウエア)として配布する場合
 
@@ -437,11 +448,13 @@ OBAQ for HSP ver3.21 REFERENCE MANUAL               HSP : Hot Soup Processor
 	販売数に応じて、定められたライセンス契約を個別に締結させて頂きます。
 	詳しくは、info@hsp.tvまでメールにてお問い合わせください。
 
+	・無償/有償の共通事項
+
 	本プログラムによって生じた、いかなる損害についても保証いたしません。
 	自己の責任の範囲で使用してください。
 	また、付属のサンプルスクリプトは自由に改変、公開していただいて構いません。
-	OBAQロゴ(obaqlogo.bmp)も自由に組み込んで頂いて結構です。
-
+	尚、ライセンス形態に関わりなく、サンプルに付属するOBAQロゴ
+	(obaqlogo.bmp)は自由に組み込んで頂いて結構です。
 
 -------------------------------------------------------------------------------
                                                 HSP users manual / end of file 

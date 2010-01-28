@@ -1,9 +1,14 @@
 ------------------------------------------------------------------------------
-Hot Soup Processor ver3.2                           HSP : Hot Soup Processor  
-更新履歴                              copyright 1997-2009 (c) onion software  
+Hot Soup Processor ver3.21                          HSP : Hot Soup Processor  
+更新履歴                              copyright 1997-2010 (c) onion software  
 ------------------------------------------------------------------------------
 
 ・hsp3関連 更新履歴
+
+	2010/01/28 3.21
+
+	HGIMG3で発生するいくつかの不具合を修正(hgimg3.txt参照)。
+	obaqプラグインサンプル、及びツールを追加。
 
 	2009/10/19 3.2a
 
