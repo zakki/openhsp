@@ -40,6 +40,11 @@
 #func ftprename ftprename $202
 #func ftpdelete ftpdelete $202
 
+#func varmd5 varmd5 $202
+#func b64encode b64encode $202
+#func b64decode b64decode $202
+#func rc4encode rc4encode $202
+
 #enum INET_MODE_NONE = 0
 #enum INET_MODE_READY
 #enum INET_MODE_REQUEST

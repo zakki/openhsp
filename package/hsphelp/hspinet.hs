@@ -6,12 +6,12 @@
 %type
 Šg’£–½—ß
 %ver
-3.2
+3.21
 %note
 hspinet.as‚ðƒCƒ“ƒNƒ‹[ƒh‚·‚é‚±‚ÆB
 
 %date
-2009/08/01
+2010/01/29
 %author
 onitama
 %dll
@@ -375,6 +375,7 @@ MD5’l‚ÍA•¶Žš—ñŒ^‚Åuf96b697d7cb7938d525a2f31aaf161d0v‚Ì‚æ‚¤‚È32•¶Žš‚Ì16i”‚Æ‚
 MD5’l‚ÍAƒtƒ@ƒCƒ‹‚Ì“à—e‚ðˆêˆÓ‚É•\‚í‚·ƒnƒbƒVƒ…’l‚Æ‚µ‚ÄŽg—p‚·‚é‚±‚Æ‚ª‚Å‚«‚Ü‚·BÚ‚µ‚­‚ÍAMD5‚É‚Â‚¢‚Ä‚ÌŽ‘—¿‚È‚Ç‚ðŽQÆ‚µ‚Ä‚­‚¾‚³‚¢B
 ƒtƒ@ƒCƒ‹“à—e‚Ìƒ`ƒFƒbƒN‚È‚Ç‚ÉŽg—p‚·‚é‚±‚Æ‚ª‚Å‚«‚Ü‚·B
 %href
+varmd5
 filecrc
 
 
@@ -744,4 +745,85 @@ p1‚ÅŽw’è‚³‚ê‚½•Ï”‚ÍAŽ©“®“I‚É•K—v‚ÈƒTƒCƒY‚ðŠm•Û‚µ‚½•¶Žš—ñŒ^‚Æ‚µ‚Ä‰Šú‰»‚³‚ê‚Ü‚·
 netrequest_get
 netrequest_post
 
+
+
+%index
+varmd5
+•Ï”ƒoƒbƒtƒ@‚ÌMD5‚ðŽæ“¾
+%group
+Šg’£“üo—Í§Œä–½—ß
+%prm
+p1,p2,p3
+p1    : MD5’l‚ª‘ã“ü‚³‚ê‚é•Ï”–¼
+p2    : ŽQÆ‚³‚ê‚é•Ï”–¼
+p3(0) : ƒoƒbƒtƒ@ƒTƒCƒY
+
+%inst
+Žw’è‚³‚ê‚½•Ï”ƒoƒbƒtƒ@‚Ì“à—e‚©‚çMD5‚ð‹‚ß‚Äp1‚Ì•Ï”‚É‘ã“ü‚µ‚Ü‚·B
+MD5’l‚ÍA•¶Žš—ñŒ^‚Åuf96b697d7cb7938d525a2f31aaf161d0v‚Ì‚æ‚¤‚È32•¶Žš‚Ì16i”‚Æ‚µ‚Ä•\Œ»‚³‚ê‚Ü‚·B
+MD5’l‚ÍAƒƒ‚ƒŠ‚Ì“à—e‚ðˆêˆÓ‚É•\‚í‚·ƒnƒbƒVƒ…’l‚Æ‚µ‚ÄŽg—p‚·‚é‚±‚Æ‚ª‚Å‚«‚Ü‚·BÚ‚µ‚­‚ÍAMD5‚É‚Â‚¢‚Ä‚ÌŽ‘—¿‚È‚Ç‚ðŽQÆ‚µ‚Ä‚­‚¾‚³‚¢B
+ƒtƒ@ƒCƒ‹‚Ì“à—e‚©‚çMD5‚ð‹‚ß‚éê‡‚ÍAfilemd5–½—ß‚ðŽg—p‚µ‚Ä‚­‚¾‚³‚¢B
+%href
+filemd5
+
+
+%index
+b64encode
+BASE64ƒGƒ“ƒR[ƒh
+%group
+Šg’£“üo—Í§Œä–½—ß
+%prm
+p1,p2,p3
+p1     : BASE64•ÏŠ·‚³‚ê‚½•¶Žš—ñ‚ª‘ã“ü‚³‚ê‚é•Ï”–¼
+p2     : •ÏŠ·Œ³ƒf[ƒ^‚ðŽ‚Â•Ï”–¼
+p3(-1) : ƒoƒbƒtƒ@ƒTƒCƒY
+
+%inst
+p2‚ÅŽw’è‚³‚ê‚½•Ï”ƒoƒbƒtƒ@‚Ì“à—e‚ðBASE64ƒGƒ“ƒR[ƒh(•ÏŠ·)‚µ‚Äp1‚Ì•Ï”‚É‘ã“ü‚µ‚Ü‚·B
+p3‚Ì’l‚ðÈ—ª‚Ü‚½‚Íƒ}ƒCƒiƒX’l‚É‚µ‚½ê‡‚ÍAp2‚ÉŠÜ‚Ü‚ê‚éƒf[ƒ^‚ð•¶Žš—ñ‚Æ‚µ‚ÄŽ©“®“I‚ÉƒTƒCƒY‚ªŒˆ’è‚³‚ê‚Ü‚·B
+BASE64‚ÍA•¶Žš—ñŒ^‚Æ‚µ‚ÄŠi”[‚³‚ê‚Ü‚·BƒoƒCƒiƒŠƒf[ƒ^‚È‚Ç‚ðˆêŽž“I‚É•¶Žš—ñ‚É•ÏŠ·‚·‚éê‡‚È‚Ç‚ÉŽg—p‚³‚ê‚Ü‚·B
+BASE64Œ`Ž®‚Ì•¶Žš—ñ‚ð‚à‚Æ‚Ìƒf[ƒ^‚ÉƒfƒR[ƒh(–ß‚·)ê‡‚ÍAb64decode–½—ß‚ðŽg—p‚µ‚Ä‚­‚¾‚³‚¢B
+%href
+b64decode
+
+
+%index
+b64decode
+BASE64ƒfƒR[ƒh
+%group
+Šg’£“üo—Í§Œä–½—ß
+%prm
+p1,p2,p3
+p1     : ƒfƒR[ƒh‚³‚ê‚½ƒf[ƒ^‚ª‘ã“ü‚³‚ê‚é•Ï”–¼
+p2     : BASE64Œ`Ž®‚Ìƒf[ƒ^‚ðŽ‚Â•Ï”–¼
+p3(-1) : ƒoƒbƒtƒ@ƒTƒCƒY
+
+%inst
+p2‚ÅŽw’è‚³‚ê‚½•Ï”ƒoƒbƒtƒ@‚Ì“à—e‚ðBASE64ƒfƒR[ƒh‚µ‚Äp1‚Ì•Ï”‚É‘ã“ü‚µ‚Ü‚·B
+p2‚Ì•Ï”‚É‚ÍABASE64ƒGƒ“ƒR[ƒh‚³‚ê‚½•¶Žš—ñ‚ª‘ã“ü‚³‚ê‚Ä‚¢‚é•K—v‚ª‚ ‚è‚Ü‚·B
+%href
+b64encode
+
+
+%index
+rc4encode
+RC4ƒGƒ“ƒR[ƒh
+%group
+Šg’£“üo—Í§Œä–½—ß
+%prm
+p1,p2,p3
+p1     : •Ï”–¼
+p2     : ƒpƒXƒ[ƒh•¶Žš—ñ
+p3(-1) : ƒoƒbƒtƒ@ƒTƒCƒY
+
+%inst
+p1‚ÅŽw’è‚³‚ê‚½•Ï”ƒoƒbƒtƒ@‚Ì“à—e‚ðRC4ŒÝŠ·(ARCFOUR)ƒAƒ‹ƒSƒŠƒYƒ€‚ÅˆÃ†‰»‚µ‚Ü‚·B
+ˆÃ†‰»‚ÌÛ‚ÉAp2‚ÅŽw’è‚³‚ê‚½ƒpƒXƒ[ƒh•¶Žš—ñ‚ðƒL[‚Æ‚µ‚ÄŽg—p‚µ‚Ü‚·B
+p3‚Åƒoƒbƒtƒ@ƒTƒCƒY‚ðŽw’è‚µ‚Ü‚·Bp3‚ðÈ—ª‚Ü‚½‚Íƒ}ƒCƒiƒX’l‚Æ‚µ‚½ê‡‚É‚ÍA•Ï”ƒoƒbƒtƒ@‚Ì“à—e‚ð•¶Žš—ñ‚Æ‚µ‚ÄŽ©“®“I‚ÉƒTƒCƒY‚ðŒˆ’è‚µ‚Ü‚·B
+RC4ˆÃ†‚Å‚ÍAˆÃ†‰»‚·‚é‘O‚ÆŒã‚Åƒf[ƒ^ƒTƒCƒY‚É•ÏX‚Í‚ ‚è‚Ü‚¹‚ñB
+‚Ü‚½AƒGƒ“ƒR[ƒh‚ÆƒfƒR[ƒh‚Í“¯‚¶ƒvƒƒZƒX‚Ås‚í‚ê‚é‚½‚ßAƒGƒ“ƒR[ƒh‚ðs‚Á‚½ƒf[ƒ^‚É‘Î‚µ‚ÄAÄ“x“¯‚¶ƒL[‚ÅˆÃ†‰»‚·‚é‚±‚Æ‚Å‚à‚Æ‚Ìƒf[ƒ^‚É•œ†‚³‚ê‚Ü‚·B
+
+%href
+b64encode
+b64decode
 

@@ -708,6 +708,14 @@ HGIMG ver3.21   REFERENCE MANUAL       High Performance Graphic Image Plugin
 		モデルとして登録します。また、テクスチャも同時に読み込まれます。
 		終了すると指定された変数名にモデルIDが代入されます。
 
+	・線分
+
+		addline model,-1,$ffffffff		;線(LINE)モデルを作成
+
+		白色の線を引くためのモデルを作成します。
+		変数modelにモデルIDが代入されます。
+		線を引くベクトルは、workグループに設定されたものが使用されます。
+
 	モデル追加のための命令は、これ以外にもadddxf等の補助命令が存在します。
 	詳しくはリファレンスを参照してください。
 
