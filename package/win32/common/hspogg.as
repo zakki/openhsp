@@ -6,7 +6,7 @@
 
 #uselib "hspogg.dll"
 #func global dmmini dmmini 2
-#func global dmmbye dmmbye $100
+#func global dmmbye onexit dmmbye 0
 #func global dmmreset dmmreset 0
 #func global dmmdel dmmdel $202
 #func global dmmvol dmmvol $202
