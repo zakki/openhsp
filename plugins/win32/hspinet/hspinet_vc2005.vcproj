@@ -64,6 +64,7 @@
 				Name="VCLinkerTool"
 				OutputFile="$(OutDir)/hspinet.dll"
 				LinkIncremental="2"
+				ModuleDefinitionFile="$(InputDir)nkf\dll.def"
 				GenerateDebugInformation="true"
 				ProgramDatabaseFile="$(OutDir)/hspinet.pdb"
 				SubSystem="2"
@@ -140,6 +141,7 @@
 				Name="VCLinkerTool"
 				OutputFile="$(OutDir)/hspinet.dll"
 				LinkIncremental="1"
+				ModuleDefinitionFile="$(InputDir)nkf\dll.def"
 				GenerateDebugInformation="true"
 				SubSystem="2"
 				OptimizeReferences="2"
@@ -182,6 +184,10 @@
 			UniqueIdentifier="{4FC737F1-C7A5-4376-A066-2A32D752A2FF}"
 			>
 			<File
+				RelativePath=".\cJSON.c"
+				>
+			</File>
+			<File
 				RelativePath=".\czbase64.cpp"
 				>
 			</File>
@@ -201,12 +207,28 @@
 				RelativePath=".\md5.c"
 				>
 			</File>
+			<Filter
+				Name="nkf"
+				>
+				<File
+					RelativePath=".\nkf\nkf.c"
+					>
+				</File>
+				<File
+					RelativePath=".\nkf\utf8tbl.c"
+					>
+				</File>
+			</Filter>
 		</Filter>
 		<Filter
 			Name="ヘッダー ファイル"
 			Filter="h;hpp;hxx;hm;inl;inc;xsd"
 			UniqueIdentifier="{93995380-89BD-4b04-88EB-625FBE52EBFB}"
 			>
+			<File
+				RelativePath=".\cJSON.h"
+				>
+			</File>
 			<File
 				RelativePath=".\czbase64.h"
 				>
@@ -223,6 +245,30 @@
 				RelativePath=".\md5.h"
 				>
 			</File>
+			<Filter
+				Name="nkf"
+				>
+				<File
+					RelativePath=".\nkf\addlabel.h"
+					>
+				</File>
+				<File
+					RelativePath=".\nkf\config.h"
+					>
+				</File>
+				<File
+					RelativePath=".\nkf\nkf.h"
+					>
+				</File>
+				<File
+					RelativePath=".\nkf\nkf32.h"
+					>
+				</File>
+				<File
+					RelativePath=".\nkf\utf8tbl.h"
+					>
+				</File>
+			</Filter>
 		</Filter>
 		<Filter
 			Name="リソース ファイル"

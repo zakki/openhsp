@@ -1,17 +1,24 @@
 ------------------------------------------------------------------------------
-HSPINET ver3.2 REFERENCE MANUAL                     HSP : Hot Soup Processor  
+HSPINET ver3.21 REFERENCE MANUAL                    HSP : Hot Soup Processor  
 ＨＳＰ拡張拡張DLLリファレンス         copyright 2005-2009 (c) onion software  
 ------------------------------------------------------------------------------
 
 ・はじめに
 
-	このDLLは、Hot Soup Processor ver3.2以降とともに使用することで、
-	WindowsのWininet.dllモジュールが持つインターネットアクセス機能を
-	利用可能にします。
-	HSPINETを使用することにより、httpによるネット上のファイル取得、
-	proxyを用いたアクセス、各種ヘッダの設定などを行なうことができます。
-	また、CRC32、MD5といったファイル内容をチェックするための命令も
-	用意されています。
+	このDLLは、Hot Soup Processor ver3以降とともに使用することで、
+	WindowsのWininet.dllモジュールが持つインターネットアクセス機能及び
+	ネットワークに関連するデータ交換(文字コード変換、各種プロトコル
+	エンコード・デコード)、暗号化などの機能を利用可能にします。
+	HSPINETを使用することにより、以下の機能がサポートされます。
+
+		http、ftpプロトコルによるインターネットアクセス
+		CGI、WebAPIとの通信(GET,POST形式サポート)
+		各種文字コード(sjis,jis,euc,unicode)の相互変換
+		BASE64、及びURLエンコード・デコード
+		RC4(Arc Four)形式による暗号化・復号化
+		MD5,CRC32形式によるハッシュ値の取得
+		JSON形式によるデータ入出力
+
 	HSPINETを使用するためには、Internet Explorer 3.0以降がインストール
 	されている必要があります。
 
@@ -21,14 +28,13 @@ HSPINET ver3.2 REFERENCE MANUAL                     HSP : Hot Soup Processor
 	HSPINETを使用する場合は、スクリプトの先頭に必ず「#include "hspinet.as"」
 	という行を追加してください。以上で、HSPの機能が拡張され、このリファレンスで
 	説明をしている命令を使用することができるようになります。
-	まず最初に、試しに付属のサンプルスクリプト(test??.as)を実行してみてください。
+	まず最初に、試しに付属のサンプルスクリプトを実行してみてください。
 	拡張された機能の簡単な使用例を見ることができるはずです。
 
-	HSPINET.DLLは、大きく「http関連命令」「ftp関連命令」「ファイル関連命令」に
+	HSPINET.DLLは、大きく「http関連命令」「ftp関連命令」「データ処理関連命令」に
 	分かれています。
-	「ファイル関連命令」は、ローカルなファイルに対して処理を行なうためのもので、
-	MD5、CRC32といったファイルのハッシュ値となる値を取得することができます。
-
+	「データ処理関連命令」は、ファイルやメモリ内のデータに対して処理を行なうためのもので、
+	MD5、CRC32といったハッシュ値を扱ったり、文字コードや各種形式への変換を行ないます。
 	「http関連命令」は、netinit命令によって初期化を行なってから、各種命令で
 	httpサーバーとの通信を行なっていきます。
 	http関連命令は、基本的にサーバーからローカルマシンにファイルをダウンロード
@@ -53,6 +59,16 @@ HSPINET ver3.2 REFERENCE MANUAL                     HSP : Hot Soup Processor
 
 
 ・更新履歴
+
+	2010/2/5  ver3.21RC2
+
+		hspinet.dllにnkf.dllの全機能を内包しました。
+		JSON形式サポートを追加。
+
+	2010/1/28 ver3.21RC1
+
+		RC4/BASE64サポートを追加。
+		サンプルにメール送信スクリプトを追加。
 
 	2009/6/14  ver3.2β4
 
@@ -82,19 +98,47 @@ HSPINET ver3.2 REFERENCE MANUAL                     HSP : Hot Soup Processor
 	に置かないと動作しません。また、packfileにDLLを追加することはできません。
 
 
-・著作権および連絡先
+・ライセンスおよび連絡先
 
 	ユーザーがHSPを使って作成したオリジナルのソフトウェア(実行ファイル)の
 	権利は、それを作成したユーザーに属します。
-	有償・無償を問わずHSPINET.DLLを自由に配布することができ、onion softwareの
-	著作権表示義務もありません。
+	ライセンスはHSPと同様にBSDライセンスになります。
+	有償・無償を問わずHSPINET.DLLを自由に配布することができます。
+	ただし、OpenHSP及びcJSON派生物として以下の表記をドキュメント等に
+	表記してください。(ソースの公開義務はありません)
+
+-hspinetライセンス表記(ここから)--------------------------------------------
+
+  OpenHSP Copyright (c) 1997-2010, Onion Software/onitama.
+  NKF Copyright (C) 1987, FUJITSU LTD. (I.Ichikawa).
+  NKF Copyright (C) 1996-2009, The nkf Project.
+  cJSON Copyright (c) 2009 Dave Gamble
+ 
+  Permission is hereby granted, free of charge, to any person obtaining a copy
+  of this software and associated documentation files (the "Software"), to deal
+  in the Software without restriction, including without limitation the rights
+  to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+  copies of the Software, and to permit persons to whom the Software is
+  furnished to do so, subject to the following conditions:
+ 
+  The above copyright notice and this permission notice shall be included in
+  all copies or substantial portions of the Software.
+ 
+  THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+  IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+  FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+  AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+  LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+  OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+  THE SOFTWARE.
+
+-hspinetライセンス表記(ここまで)--------------------------------------------
+
 	ユーザーが作成したオリジナルのソフトウェアに対してonion softwareが著作権を
 	主張することはありません。
-
-	HSPINETプラグインは、onion softwareの著作物です。
 	onion softwareは本プログラムによって生じた、いかなる損害についても
 	保証いたしません。自己の責任の範囲で使用してください。
-	HSPINET.DLLは、Microsoft Visual Studio 2005でコンパイルされて います。 
+	HSPINET.DLLは、Microsoft Visual Studio 2008でコンパイルされて います。 
 
 
 ・命令一覧

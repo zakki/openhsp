@@ -13,6 +13,8 @@
 #include "czhttp.h"
 #include "czcrypt.h"
 
+#include "cJSON.h"
+
 /*----------------------------------------------------------------*/
 
 static CzHttp *http;
@@ -60,12 +62,21 @@ EXPORT BOOL WINAPI netterm( int p1, int p2, int p3, int p4 )
 }
 
 
-EXPORT BOOL WINAPI netexec( int *p1, int p2, int p3, int p4 )
+EXPORT BOOL WINAPI netexec( HSPEXINFO *hei, int p1, int p2, int p3 )
 {
-	//	(type$01)
-	*p1 = -1;
-	if ( http == NULL ) return -1;
-	*p1 = http->Exec();
+	//	(type$202)
+	PVal *pv;
+	APTR ap;
+	int res;
+
+	res = -1;
+	ap = hei->HspFunc_prm_getva( &pv );		// パラメータ1:変数
+
+	if ( http != NULL ) {
+		res = http->Exec();
+	}
+
+	hei->HspFunc_prm_setva( pv, ap, HSPVAR_FLAG_INT, &res );	// 変数に値を代入
 	return 0;
 }
 
@@ -681,3 +692,407 @@ EXPORT BOOL WINAPI rc4encode( HSPEXINFO *hei, int p1, int p2, int p3 )
 	crypt.EncodeRC4( dstptr, ss, size );
 	return 0;
 }
+
+
+EXPORT BOOL WINAPI urlencode( HSPEXINFO *hei, int p1, int p2, int p3 )
+{
+	//	(type$202)
+	//	文字列をURLエンコードする
+	//	(変数に変換後文字列を代入)
+	//		urlencode 変数, "文字列"
+	//
+	char *ss;
+	PVal *pv;
+	APTR ap;
+	char urltmp[4096];
+
+	ap = hei->HspFunc_prm_getva( &pv );			// パラメータ1:変数
+	ss = hei->HspFunc_prm_gets();				// パラメータ2:文字列
+	http->UrlEncode( urltmp, 4096, ss );
+	hei->HspFunc_prm_setva( pv, ap, HSPVAR_FLAG_STR, urltmp );	// 変数に値を代入
+	return 0;
+}
+
+
+EXPORT BOOL WINAPI urldecode( HSPEXINFO *hei, int p1, int p2, int p3 )
+{
+	//	(type$202)
+	//	文字列をURLデコードする
+	//	(変数に変換後文字列を代入)
+	//		urldecode 変数, "文字列"
+	//
+	char *ss;
+	PVal *pv;
+	APTR ap;
+	char urltmp[4096];
+
+	ap = hei->HspFunc_prm_getva( &pv );			// パラメータ1:変数
+	ss = hei->HspFunc_prm_gets();				// パラメータ2:文字列
+	http->UrlDecode( urltmp, 4096, ss );
+	hei->HspFunc_prm_setva( pv, ap, HSPVAR_FLAG_STR, urltmp );	// 変数に値を代入
+	return 0;
+}
+
+
+/*------------------------------------------------------------------------------------*/
+
+static	cJSON *json = NULL;
+
+
+EXPORT BOOL WINAPI jsonopen( HSPEXINFO *hei, int p1, int p2, int p3 )
+{
+	//	(type$202)
+	//		JSON形式を開く
+	//		jsonopen 変数,バッファ変数
+	//
+	char *ptr;
+	PVal *pv;
+	APTR ap;
+	ap = hei->HspFunc_prm_getva( &pv );		// パラメータ1:変数
+	ptr = (char *)hei->HspFunc_prm_getv();	// パラメータ2:変数
+
+	if ( json != NULL ) {
+		cJSON_Delete( json );
+	}
+	json = cJSON_Parse(ptr);
+	hei->HspFunc_prm_setva( pv, ap, HSPVAR_FLAG_INT, &json );	// 変数に値を代入
+	return 0;
+}
+
+
+EXPORT BOOL WINAPI jsonclose( HSPEXINFO *hei, int p1, int p2, int p3 )
+{
+	//	(type$202)
+	//		JSON形式を閉じる
+	//		jsonclose
+	//
+	cJSON_Delete( json );
+	json = NULL;
+	return 0;
+}
+
+
+EXPORT BOOL WINAPI jsonout( HSPEXINFO *hei, int p1, int p2, int p3 )
+{
+	//	(type$202)
+	//		JSON形式データを変数に出力する
+	//		jsonout 変数, JSONポインタ
+	//
+	PVal *pv;
+	APTR ap;
+	char *out;
+	int _p3;
+	cJSON *root;
+
+	ap = hei->HspFunc_prm_getva( &pv );		// パラメータ1:変数
+	_p3 = hei->HspFunc_prm_getdi(-1);		// パラメータ2:整数値
+
+	if ( _p3 == 0 ) return -1;
+	if ( _p3 < 0 ) {
+		root = json;
+	} else {
+		root = (cJSON *)_p3;
+	}
+	out = cJSON_Print(root);
+	hei->HspFunc_prm_setva( pv, ap, HSPVAR_FLAG_STR, out );	// 変数に値を代入
+	free(out);	
+	return 0;
+}
+
+
+EXPORT BOOL WINAPI jsongetobj( HSPEXINFO *hei, int p1, int p2, int p3 )
+{
+	//	(type$202)
+	//	JSONオブジェクトを得る
+	//		jsongetobj 変数, "名称", JSONポインタ
+	//
+	PVal *pv;
+	APTR ap;
+	char *ss;
+	int _p3;
+	char name[1024];
+	cJSON *root;
+
+	ap = hei->HspFunc_prm_getva( &pv );		// パラメータ1:変数
+	ss = hei->HspFunc_prm_gets();			// パラメータ2:文字列
+	strncpy( name, ss, 1024 );
+	_p3 = hei->HspFunc_prm_getdi(-1);		// パラメータ3:整数値
+
+	if ( _p3 == 0 ) return -1;
+	if ( _p3 < 0 ) {
+		root = json;
+	} else {
+		root = (cJSON *)_p3;
+	}
+	cJSON *cjobj = cJSON_GetObjectItem( root, name );
+	hei->HspFunc_prm_setva( pv, ap, HSPVAR_FLAG_INT, &cjobj );	// 変数に値を代入
+
+	return 0;
+}
+
+
+EXPORT BOOL WINAPI jsonnext( HSPEXINFO *hei, int p1, int p2, int p3 )
+{
+	//	(type$202)
+	//	JSONオブジェクトを得る
+	//		jsonnext 変数, JSONポインタ, option
+	//
+	PVal *pv;
+	APTR ap;
+	int _p3;
+	int _p4;
+	cJSON *root;
+	cJSON *cjobj;
+
+	ap = hei->HspFunc_prm_getva( &pv );		// パラメータ1:変数
+	_p3 = hei->HspFunc_prm_getdi(-1);		// パラメータ2:整数値
+	_p4 = hei->HspFunc_prm_getdi(0);		// パラメータ3:整数値
+
+	if ( _p3 == 0 ) return -1;
+	if ( _p3 < 0 ) {
+		root = json;
+	} else {
+		root = (cJSON *)_p3;
+	}
+
+	switch( _p4 ) {
+	case 1:
+		cjobj = root->prev;
+		break;
+	case 2:
+		cjobj = root->child;
+		break;
+	case 3:
+		hei->HspFunc_prm_setva( pv, ap, HSPVAR_FLAG_INT, &root->type );	// 変数に値を代入
+		return 0;
+	default:
+		cjobj = root->next;
+		break;
+	}
+	hei->HspFunc_prm_setva( pv, ap, HSPVAR_FLAG_INT, &cjobj );	// 変数に値を代入
+	return 0;
+}
+
+
+EXPORT BOOL WINAPI jsongets( HSPEXINFO *hei, int p1, int p2, int p3 )
+{
+	//	(type$202)
+	//	JSONオブジェクトから文字列を得る
+	//		jsongets 変数, "名称", JSONポインタ
+	//
+	PVal *pv;
+	APTR ap;
+	char *ss;
+	int _p3;
+	char name[1024];
+	cJSON *root;
+
+	ap = hei->HspFunc_prm_getva( &pv );		// パラメータ1:変数
+	ss = hei->HspFunc_prm_getds( "" );		// パラメータ2:文字列
+	strncpy( name, ss, 1024 );
+	_p3 = hei->HspFunc_prm_getdi(-1);		// パラメータ3:整数値
+
+	if ( _p3 == 0 ) return -1;
+	if ( _p3 < 0 ) {
+		root = json;
+	} else {
+		root = (cJSON *)_p3;
+	}
+	if ( *ss != 0 ) {
+		root = cJSON_GetObjectItem( root, name );
+		if ( root == NULL ) return -1;
+	}
+	hei->HspFunc_prm_setva( pv, ap, HSPVAR_FLAG_STR, root->valuestring );	// 変数に値を代入
+
+	return 0;
+}
+
+
+EXPORT BOOL WINAPI jsongeti( HSPEXINFO *hei, int p1, int p2, int p3 )
+{
+	//	(type$202)
+	//	JSONオブジェクトから整数値を得る
+	//		jsongeti 変数, "名称", JSONポインタ
+	//
+	PVal *pv;
+	APTR ap;
+	char *ss;
+	int _p3;
+	char name[1024];
+	cJSON *root;
+
+	ap = hei->HspFunc_prm_getva( &pv );		// パラメータ1:変数
+	ss = hei->HspFunc_prm_getds( "" );		// パラメータ2:文字列
+	strncpy( name, ss, 1024 );
+	_p3 = hei->HspFunc_prm_getdi(-1);		// パラメータ3:整数値
+
+	if ( _p3 == 0 ) return -1;
+	if ( _p3 < 0 ) {
+		root = json;
+	} else {
+		root = (cJSON *)_p3;
+	}
+	if ( *ss != 0 ) {
+		root = cJSON_GetObjectItem( root, name );
+		if ( root == NULL ) return -1;
+	}
+	hei->HspFunc_prm_setva( pv, ap, HSPVAR_FLAG_INT, &root->valueint );	// 変数に値を代入
+
+	return 0;
+}
+
+
+EXPORT BOOL WINAPI jsonnewobj( HSPEXINFO *hei, int p1, int p2, int p3 )
+{
+	//	(type$202)
+	//	JSONオブジェクトを新規作成
+	//		jsonnewobj 変数, "名称", JSONポインタ
+	//
+	PVal *pv;
+	APTR ap;
+	char *ss;
+	int _p3;
+	char name[1024];
+	cJSON *root;
+	cJSON *cjobj;
+
+	ap = hei->HspFunc_prm_getva( &pv );		// パラメータ1:変数
+	_p3 = hei->HspFunc_prm_getdi(-1);		// パラメータ2:整数値
+	ss = hei->HspFunc_prm_getds( "" );		// パラメータ3:文字列
+	strncpy( name, ss, 1024 );
+
+	root = cJSON_CreateObject();
+	if ( _p3 == 0 ) return -1;
+	if ( _p3 < 0 ) {
+		cjobj = root;
+	} else {
+		cjobj = (cJSON *)_p3;
+		cJSON_AddItemToObject( cjobj, name, root );
+	}
+
+	hei->HspFunc_prm_setva( pv, ap, HSPVAR_FLAG_INT, &cjobj );	// 変数に値を代入
+	return 0;
+}
+
+
+EXPORT BOOL WINAPI jsonputs( HSPEXINFO *hei, int p1, int p2, int p3 )
+{
+	//	(type$202)
+	//	JSONオブジェクトの文字列エントリ更新
+	//		jsonputs JSONポインタ, "名称", "文字列"
+	//
+	char *ss;
+	int _p3;
+	char name[1024];
+	cJSON *cjobj;
+
+	_p3 = hei->HspFunc_prm_getdi(0);		// パラメータ1:整数値
+	ss = hei->HspFunc_prm_gets();			// パラメータ2:文字列
+	strncpy( name, ss, 1024 );
+	ss = hei->HspFunc_prm_gets();			// パラメータ3:文字列
+
+	if ( _p3 <= 0 ) return -1;
+
+	cjobj = (cJSON *)_p3;
+	cJSON_AddStringToObject( cjobj, name, ss );
+
+	return 0;
+}
+
+
+EXPORT BOOL WINAPI jsonputi( HSPEXINFO *hei, int p1, int p2, int p3 )
+{
+	//	(type$202)
+	//	JSONオブジェクトの数値エントリ更新
+	//		jsonputi JSONポインタ, "名称", 整数値, モード
+	//
+	char *ss;
+	int _p3;
+	int _p4;
+	int _p5;
+	char name[1024];
+	cJSON *cjobj;
+
+	_p3 = hei->HspFunc_prm_getdi(0);		// パラメータ1:整数値
+	ss = hei->HspFunc_prm_gets();			// パラメータ2:文字列
+	strncpy( name, ss, 1024 );
+	_p4 = hei->HspFunc_prm_getdi(0);		// パラメータ3:整数値
+	_p5 = hei->HspFunc_prm_getdi(0);		// パラメータ4:整数値
+
+	if ( _p3 <= 0 ) return -1;
+
+	cjobj = (cJSON *)_p3;
+	switch( _p5 ) {
+	case 1:
+		if ( _p4 ) {
+			cJSON_AddTrueToObject (cjobj, name );
+		} else {
+			cJSON_AddFalseToObject (cjobj, name );
+		}
+		break;
+	default:
+		cJSON_AddNumberToObject( cjobj, name, _p4 );
+		break;
+	}
+	return 0;
+}
+
+
+EXPORT BOOL WINAPI jsonsetprm( HSPEXINFO *hei, int p1, int p2, int p3 )
+{
+	//	(type$202)
+	//	JSONオブジェクトのパラメーター設定
+	//		jsonsetprm JSONポインタ, 設定値, モード
+	//
+	int _p3;
+	int _p4;
+	int _p5;
+	cJSON *cjobj;
+
+	_p3 = hei->HspFunc_prm_getdi(0);		// パラメータ1:整数値
+	_p4 = hei->HspFunc_prm_getdi(0);		// パラメータ2:整数値
+	_p5 = hei->HspFunc_prm_getdi(0);		// パラメータ3:整数値
+
+	if ( _p3 <= 0 ) return -1;
+
+	cjobj = (cJSON *)_p3;
+	switch( _p5 ) {
+	case 1:
+		cjobj->prev = (cJSON *)_p4;
+		break;
+	case 2:
+		cjobj->child = (cJSON *)_p4;
+		break;
+	case 3:
+		cjobj->type = _p4;
+		break;
+	case 4:
+		cjobj->valueint = _p4;
+		break;
+	default:
+		cjobj->next = (cJSON *)_p4;
+		break;
+	}
+	return 0;
+}
+
+
+EXPORT BOOL WINAPI jsondelobj( HSPEXINFO *hei, int p1, int p2, int p3 )
+{
+	//	(type$202)
+	//	JSONオブジェクトを削除
+	//		jsondelobj JSONポインタ
+	//
+	int _p3;
+	cJSON *cjobj;
+
+	_p3 = hei->HspFunc_prm_getdi(0);		// パラメータ1:整数値
+
+	if ( _p3 <= 0 ) return -1;
+	cjobj = (cJSON *)_p3;
+	cJSON_Delete( cjobj );
+	return 0;
+}
+
+
+/*------------------------------------------------------------------------------------*/
