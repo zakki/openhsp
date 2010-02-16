@@ -7,7 +7,7 @@
 #uselib "hspinet.dll"
 #func netinit netinit 0
 #func netterm netterm $100
-#func netexec netexec 1
+#func netexec netexec $202
 #func netmode netmode 1
 #func netsize netsize 1
 #func neterror neterror $202
@@ -44,6 +44,31 @@
 #func b64encode b64encode $202
 #func b64decode b64decode $202
 #func rc4encode rc4encode $202
+#func urlencode urlencode $202
+#func urldecode urldecode $202
+
+#func jsonopen jsonopen $202
+#func jsonclose jsonclose $202
+#func jsonout jsonout $202
+#func jsongetobj jsongetobj $202
+#func jsongeti jsongeti $202
+#func jsongets jsongets $202
+#func jsonnext jsonnext $202
+#func jsonnewobj jsonnewobj $202
+#func jsonputs jsonputs $202
+#func jsonputi jsonputi $202
+#func jsonsetprm jsonsetprm $202
+#func jsondelobj jsondelobj $202
+#func jsonnkf jsonnkf $202
+
+#func nkfcnv nkfcnv $202
+#func nkfguess nkfguess $202
+#func GetNkfVersion "GetNkfVersion" var
+#func SetNkfOption "SetNkfOption" sptr
+#func NkfConvert "NkfConvert" var,sptr
+#func ToHankaku "ToHankaku" var
+#func ToZenkakuKana "ToZenkakuKana" var,sptr
+#func EncodeSubject "EncodeSubject" var,sptr
 
 #enum INET_MODE_NONE = 0
 #enum INET_MODE_READY

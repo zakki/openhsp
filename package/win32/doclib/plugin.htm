@@ -12,6 +12,8 @@
 	<title>拡張プラグイン・モジュール一覧</title>
 </head>
 <!--
+	2010/02/16
+		・ 同梱モジュールの説明を追加
 	2009/05/19
 		・ 同梱モジュールの説明を追加
 	2008/02/01
@@ -49,7 +51,8 @@
 			<li><a href="#MODULE">モジュール</a>
 				<ol>
 					<li><a href="#D3MODULE">d3module</a></li>
-
+					<li><a href="#Artlet2D">Artlet2D</a></li>
+					<li><a href="#SQLele">SQLele</a></li>
 					<li><a href="#llmod3">llmod3</a></li>
 					<li><a href="#hsp3util">hsp3util.as</a></li>
 					<li><a href="#hsp261cmp">hsp261cmp.as</a></li>
@@ -564,11 +567,86 @@
 						S.Programs氏にフィードバックされるようお願いします。
 					</p>
 					<p>
-						詳しくは、別途ドキュメント「<a href="d3module.txt">d3module.txt</a>」を参照してください。
+						詳しくは、別途ドキュメント「<a href="d3module/d3module.txt">d3module.txt</a>」を参照してください。
 					</p>
 				</td>
 			</tr>
 		</table>
+
+
+		<h3 id="Artlet2D">Artlet2D</h3>
+		<table summary="拡張モジュールArtlet2Dの紹介です。" class="pluginlist">
+			<caption>Artlet2Dの紹介</caption>
+			<tr>
+				<th width="20%">拡張モジュール</th>
+				<th width="30%">Artlet2D</th>
+				<th width="5%">Ver1.01 R2</th>
+				<th width="25%">作者:S.Programs</th>
+				<th width="20%"><a href="http://sprocket.babyblue.jp/">作者のページ</a></th>
+			</tr>
+			<tr>
+				<td colspan="5">
+					<p>
+					Artlet2D は、GDI+ を利用して、HSP でアルファチャネル (透明度成分) 付きの画像データを扱うためのモジュールです。
+					HSP 標準の描画命令とは別に、以下のような機能が使えるようになります。
+					<li>ピクセルフォーマット 32bit ARGB の仮想イメージバッファ</li>
+					<li>HSP スクリーンと Artlet2D 仮想イメージ間の相互画像コピー</li>
+					<li>線分、楕円、矩形などの基礎図形、自由曲線の描画機能</li>
+					<li>アンチエイリアシングされた滑らかなエッジの描画</li>
+					<li>アルファ値付き color 命令</li>
+					<li>グラデーションブラシ、テクスチャブラシ</li>
+					<li>自由なペン幅、さまざまなペンスタイル</li>
+					<li>矩形領域内で自動折り返し可能・縦横アラインメント可能なテキスト表示</li>
+					<li>スムーズな画像拡大・縮小コピー</li>
+					<li>指定カラー範囲の透明化、ガンマ調整、カラーマトリックスによる明度調整、</li>
+					<li> 半透明、セピア変換などのコピーモード</li>
+					<li>座標変換マトリクスによる描画位置や回転角度の変更</li>
+					<li>アルファチャネル付き png ファイルの読み書き</li>
+					</p>
+					<p>
+						このモジュールは、S.Programs氏が製作したものをHSP本体に同梱しています。
+						モジュールについてのご意見や感想などは、onion softwareではなく、
+						S.Programs氏にフィードバックされるようお願いします。
+					</p>
+					<p>
+						詳しくは、別途ドキュメント「<a href="Artlet2D/Artlet2D.txt">Artlet2D.txt</a>」を参照してください。
+					</p>
+				</td>
+			</tr>
+		</table>
+
+		<h3 id="SQLele">SQLele</h3>
+		<table summary="拡張モジュールSQLeleの紹介です。" class="pluginlist">
+			<caption>SQLeleの紹介</caption>
+			<tr>
+				<th width="20%">拡張モジュール</th>
+				<th width="30%">SQLele</th>
+				<th width="5%">Ver1.14 R2</th>
+				<th width="25%">作者:S.Programs</th>
+				<th width="20%"><a href="http://sprocket.babyblue.jp/">作者のページ</a></th>
+			</tr>
+			<tr>
+				<td colspan="5">
+					<p>
+					SQLele (ｽｸﾚﾚ) は、HSP で SQLite を簡単に扱うためのモジュールです。<br>
+					たとえば、メディアプレイヤーのファイルリストや、アドレス帳やカレンダーのデータ、画像処理ソフトの Undo/Redo 管理、ゲームの中のキャラの台詞、セーブデータやハイスコア．．．<br>
+					そういったアプリケーション内部のデータを管理するために、データ構造を設計して文字列操作命令やメモリ操作命令で操作したり、ソートや抽出のためのルーチンを書いた経験を、HSP をある程度使ったことがあるほとんどのユーザーが持っているのではないでしょうか。<br>
+					多くのアプリでは機能・性能ともそれで十分と思いますが、もし複雑なデータを扱うアプリを効率的に開発したいならば、SQLite というフリーの SQL データベースエンジンを使ってみてはどうでしょう?<br>
+					SQLite を使えば、HSP アプリに DLL ひとつ追加するだけで、アプリケーション内で SQL データベースを利用できるようになります。DB サーバーをインストールしたり、ODBC 設定を行う必要はありません。
+					</p>
+					<p>
+						このモジュールは、S.Programs氏が製作したものをHSP本体に同梱しています。
+						モジュールについてのご意見や感想などは、onion softwareではなく、
+						S.Programs氏にフィードバックされるようお願いします。
+					</p>
+					<p>
+						詳しくは、別途ドキュメント「<a href="SQLele/SQLele.txt">SQLele.txt</a>」を参照してください。
+					</p>
+				</td>
+			</tr>
+		</table>
+
+
 		<h3 id="llmod3">llmod3</h3>
 		<table summary="拡張モジュールの紹介です。" class="pluginlist">
 			<caption>llmod3の紹介</caption>

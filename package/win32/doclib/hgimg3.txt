@@ -138,7 +138,11 @@ HGIMG ver3.21   REFERENCE MANUAL       High Performance Graphic Image Plugin
 
 ・更新履歴
 
-	2010/01/28 ( Ver3.21 )
+	2010/02/16 ( Ver3.21RC2 )
+
+		HGIMG3でサウンド機能使用時にスレッドが解放されないことがある不具合を修正
+
+	2010/01/28 ( Ver3.21RC1 )
 
 		外積の計算(fvouter)が間違っていた問題を修正
 		hgresetで正しく初期化されないメモリがある不具合を修正

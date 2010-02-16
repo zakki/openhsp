@@ -14,10 +14,55 @@
 #include "czcrypt.h"
 
 #include "cJSON.h"
+#include "nkf/nkf32.h"
 
 /*----------------------------------------------------------------*/
 
 static CzHttp *http;
+
+#define NKFBUF_DEFAULTSIZE 0x8000
+
+static	char *nkfbuf = NULL;	// nkf変換バッファ
+static	int	nkfsize;			// nkf変換バッファサイズ
+static	char json_nkfopt[128];	// 取得時のnkf変換
+static	char json_nkfopt2[128];	// 設定時のnkf変換
+
+/*------------------------------------------------------------*/
+/*
+		nkf related interface
+*/
+/*------------------------------------------------------------*/
+
+static void termNkfBuf( void )
+{
+	if ( nkfbuf != NULL ) {
+		free( nkfbuf );
+		nkfbuf = NULL;
+		nkfsize = 0;
+	}
+}
+
+static void initNkfBuf( int size )
+{
+	termNkfBuf();
+	nkfbuf = (char *)malloc( size );
+	nkfsize = size;
+}
+
+static int cnvNkf( char *srcbuf, int insize, int outsize, char *opt )
+{
+	int size, bufsize, ressize;
+	bufsize = outsize;
+	if ( bufsize <= 0 ) bufsize = NKFBUF_DEFAULTSIZE;
+	if ( bufsize > nkfsize ) {
+		initNkfBuf( bufsize );
+	}
+	SetNkfOption( opt );
+	size = insize;
+	if ( size < 0 ) size = strlen( srcbuf );
+	NkfConvertSafe( nkfbuf, bufsize, (LPDWORD)&ressize, srcbuf, size );
+	return ressize;
+}
 
 /*------------------------------------------------------------*/
 /*
@@ -29,8 +74,12 @@ int WINAPI DllMain (HINSTANCE hInstance, DWORD fdwReason, PVOID pvReserved)
 {
 	if ( fdwReason==DLL_PROCESS_ATTACH ) {
 		http = NULL;
+		json_nkfopt[0] = 0;
+		json_nkfopt2[0] = 0;
+		initNkfBuf( NKFBUF_DEFAULTSIZE );
 	}
 	if ( fdwReason==DLL_PROCESS_DETACH ) {
+		termNkfBuf();
 		if ( http != NULL ) { delete http; http = NULL; }
 	}
 	return TRUE ;
@@ -738,7 +787,6 @@ EXPORT BOOL WINAPI urldecode( HSPEXINFO *hei, int p1, int p2, int p3 )
 
 static	cJSON *json = NULL;
 
-
 EXPORT BOOL WINAPI jsonopen( HSPEXINFO *hei, int p1, int p2, int p3 )
 {
 	//	(type$202)
@@ -754,6 +802,7 @@ EXPORT BOOL WINAPI jsonopen( HSPEXINFO *hei, int p1, int p2, int p3 )
 	if ( json != NULL ) {
 		cJSON_Delete( json );
 	}
+
 	json = cJSON_Parse(ptr);
 	hei->HspFunc_prm_setva( pv, ap, HSPVAR_FLAG_INT, &json );	// 変数に値を代入
 	return 0;
@@ -886,6 +935,7 @@ EXPORT BOOL WINAPI jsongets( HSPEXINFO *hei, int p1, int p2, int p3 )
 	int _p3;
 	char name[1024];
 	cJSON *root;
+	char *resbuf;
 
 	ap = hei->HspFunc_prm_getva( &pv );		// パラメータ1:変数
 	ss = hei->HspFunc_prm_getds( "" );		// パラメータ2:文字列
@@ -902,7 +952,13 @@ EXPORT BOOL WINAPI jsongets( HSPEXINFO *hei, int p1, int p2, int p3 )
 		root = cJSON_GetObjectItem( root, name );
 		if ( root == NULL ) return -1;
 	}
-	hei->HspFunc_prm_setva( pv, ap, HSPVAR_FLAG_STR, root->valuestring );	// 変数に値を代入
+
+	resbuf = root->valuestring;
+	if ( *json_nkfopt != 0 ) {
+		cnvNkf( resbuf, -1, -1, json_nkfopt );
+		resbuf = nkfbuf;
+	}
+	hei->HspFunc_prm_setva( pv, ap, HSPVAR_FLAG_STR, resbuf );	// 変数に値を代入
 
 	return 0;
 }
@@ -946,7 +1002,7 @@ EXPORT BOOL WINAPI jsonnewobj( HSPEXINFO *hei, int p1, int p2, int p3 )
 {
 	//	(type$202)
 	//	JSONオブジェクトを新規作成
-	//		jsonnewobj 変数, "名称", JSONポインタ
+	//		jsonnewobj 変数, JSONポインタ, "名称"
 	//
 	PVal *pv;
 	APTR ap;
@@ -994,7 +1050,13 @@ EXPORT BOOL WINAPI jsonputs( HSPEXINFO *hei, int p1, int p2, int p3 )
 	if ( _p3 <= 0 ) return -1;
 
 	cjobj = (cJSON *)_p3;
-	cJSON_AddStringToObject( cjobj, name, ss );
+
+	if ( *json_nkfopt2 != 0 ) {
+		cnvNkf( ss, -1, -1, json_nkfopt2 );
+		cJSON_AddStringToObject( cjobj, name, nkfbuf );
+	} else {
+		cJSON_AddStringToObject( cjobj, name, ss );
+	}
 
 	return 0;
 }
@@ -1095,4 +1157,72 @@ EXPORT BOOL WINAPI jsondelobj( HSPEXINFO *hei, int p1, int p2, int p3 )
 }
 
 
+EXPORT BOOL WINAPI jsonnkf( HSPEXINFO *hei, int p1, int p2, int p3 )
+{
+	//	(type$202)
+	//	JSONデータ変換オプション指定
+	//		jsonnkf "取得時変換オプション", "設定時変換オプション"
+	//
+	char *ss;
+
+	ss = hei->HspFunc_prm_getds( "" );		// パラメータ1:文字列
+	strncpy( json_nkfopt, ss, 127 );
+	ss = hei->HspFunc_prm_getds( "" );		// パラメータ2:文字列
+	strncpy( json_nkfopt2, ss, 127 );
+
+	return 0;
+}
+
+
 /*------------------------------------------------------------------------------------*/
+
+EXPORT BOOL WINAPI nkfcnv( HSPEXINFO *hei, int p1, int p2, int p3 )
+{
+	//	(type$202)
+	//	NKFによる文字コード変換を行なう
+	//		nkfcnv 変数, 変数, "オプション", insize, outsize
+	//
+	PVal *pv;
+	APTR ap;
+	char *ss;
+	char *vptr;
+	int outsize, insize;
+	char opt[1024];
+	cJSON *root;
+
+	ap = hei->HspFunc_prm_getva( &pv );		// パラメータ1:変数
+	vptr = (char *)hei->HspFunc_prm_getv();	// パラメータ2:変数
+	ss = hei->HspFunc_prm_getds( "s" );		// パラメータ3:文字列
+	strncpy( opt, ss, 1024 );
+	insize = hei->HspFunc_prm_getdi(-1);	// パラメータ3:整数値
+	outsize = hei->HspFunc_prm_getdi(-1);	// パラメータ3:整数値
+
+	cnvNkf( vptr, insize, outsize, opt );
+	hei->HspFunc_prm_setva( pv, ap, HSPVAR_FLAG_STR, nkfbuf );	// 変数に値を代入
+
+	return 0;
+}
+
+
+EXPORT BOOL WINAPI nkfguess( HSPEXINFO *hei, int p1, int p2, int p3 )
+{
+	//	(type$202)
+	//	NKFによる文字コード認識結果を取得する
+	//		nkfguess 変数
+	//
+	PVal *pv;
+	APTR ap;
+	int ressize;
+
+	ap = hei->HspFunc_prm_getva( &pv );		// パラメータ1:変数
+	GetNkfGuessA( nkfbuf, nkfsize, (LPDWORD)&ressize );
+	hei->HspFunc_prm_setva( pv, ap, HSPVAR_FLAG_STR, nkfbuf );	// 変数に値を代入
+
+	return 0;
+}
+
+
+
+
+/*------------------------------------------------------------------------------------*/
+

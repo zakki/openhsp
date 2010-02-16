@@ -26,23 +26,11 @@
 
 <h2>HSP Document Library の概要</h2>
 
-<p>HSP Document Library (HDL) は、HSP のドキュメントをすべてまとめて
- 検索・閲覧 するためのブラウザです。</p>
-
-<p>従来の HSP ドキュメントは、hs ヘルプファイル, txt/HTML ドキュメント, サンプルスクリプト
- の 3 種類に分断されており、総合的なマニュアル検索やデータの相互参照ができませんでした。
-HDL では、これらのファイルすべてを網羅して検索することができます。
-</p>
-
 <div align='center'><img src="img_hdl.png"></div>
 
-<p>ハイライト</p>
+<p>HSP Document Library (HDL) は、HSP のドキュメントをすべてまとめて 検索・閲覧 するためのブラウザです。</p>
 
-<ul>
-<li>プラグイン・モジュールごとにドキュメントをカテゴリ化できる仮想ドキュメントツリー
-<li>リファレンス、ドキュメント、サンプルをまとめて検索する クロスサーチ
-<li>hs ドキュメンテーションコメントつきの HSP ヘッダファイルのサポート
-</ul>
+<p>hs ヘルプファイル、txt/HTML ドキュメント、サンプルスクリプトについて、横断検索や相互的な参照をすることができます。</p>
 
 
 
@@ -167,6 +155,8 @@ HDL では、これらのファイルすべてを網羅して検索することができます。
 
 <p>hs ファイルの書式については、<a href="HS_BIBLE.txt">HS_BIBLE.txt</a> を参照してください。
 
+<p>なお、HDL の表示上、命令数が 5 個未満のプラグイン/モジュールは、「その他」として区分されます。</p>
+
 
 
 
@@ -193,11 +183,24 @@ HDL では、これらのファイルすべてを網羅して検索することができます。
 
 <p>HDL は、目的のドキュメントやサンプルスクリプトを一覧から見つけやすくするために、サムネイル画像の表示をサポートしています。
 
-<p>ドキュメントファイル (.hsp .htm .html .txt) のディレクトリ下に thumbs ディレクトリを作成し、対象のドキュメントファイル名 + 画像ファイルの拡張子 の画像ファイルを置くと、
+<p>ドキュメントファイル (.hsp .htm .html .txt) のディレクトリより配下に thumbs ディレクトリを作成し、対象のドキュメントファイル名 + 画像ファイルの拡張子 の画像ファイルを置くと、
 ドキュメントファイルのサムネイル画像として認識されます。サムネイル画像として利用可能なファイルの種類は、BMP, PNG, JPG, GIF です。
-画像のスタンダードサイズは 160 x 120 です。</p>
+推奨画像サイズは、256 x 256 ピクセル以内です。</p>
 
 <p><img src="img_thumbs.png"></p>
+
+<div class="sankou">
+
+<h3>(メモ) サンプルスクリプト サムネイル作成用ルーチン</h3>
+
+<pre class="script">
+#module ; スクリプト終了時にスクリーンショット bmp を保存
+#deffunc hoge onexit
+	bmpsave __FILE__ + ".bmp" ; この画像をあとで縮小
+	return
+#global
+</pre>
+</div>
 
 
 
@@ -346,7 +349,7 @@ stickf 関数は、以下のような複数のキーの状態の OR 値を返します。
 
 <div class='para'><table border="1">
 <tr><th><th colspan=4>プログラム (新 ←→ 旧)</tr>
-<tr><th width="25%">機能<th width="25%">HSP Document Library 1.3<th width="25%">HSP HELP Browser II 2.1<th width="25%">HSP HELP Browser 1.5</tr>
+<tr><th width="25%">機能<th width="25%">HSP Document Library 1.3 (HSP 3.2 添付)<th width="25%">HSP HELP Browser II 2.1 (HSP 3.1 添付)<th width="25%">HSP HELP Browser 1.5 (HSP 3.0 添付)</tr>
 <tr><th>旧仕様 hs ファイル<td align="center">○利用可能<td align="center">○利用可能<td align="center">○利用可能</tr>
 <tr><th>hs ファイル仕様 2.0<td align="center">○利用可能<td align="center">○利用可能<td align="center">×</tr>
 <tr><th>インライン HTML<td align="center">○利用可能<td align="center">○利用可能<td align="center">×</tr>

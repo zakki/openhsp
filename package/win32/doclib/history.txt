@@ -5,7 +5,14 @@ Hot Soup Processor ver3.21                          HSP : Hot Soup Processor
 
 ・hsp3関連 更新履歴
 
-	2010/01/29 3.21
+	2010/02/16 3.21RC2
+
+	sprocketさん製作のArtlet2D,SQLeleモジュール及びサンプルを同梱。
+	hspinetプラグインに文字コード変換(nkf)、JSONサポートを追加。
+	hspinetプラグインサンプルにTwitter API操作スクリプトを追加。
+	mod_regexpモジュールを追加。
+
+	2010/01/29 3.21RC1
 
 	HGIMG3で発生するいくつかの不具合修正と機能追加(hgimg3.txt参照)。
 	obaqプラグインサンプル、及びツールを追加。
