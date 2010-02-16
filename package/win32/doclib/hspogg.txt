@@ -50,6 +50,10 @@ HSPOGG ver3.2 REFERENCE MANUAL                      HSP : Hot Soup Processor
 
 ・更新履歴
 
+	2010/02/16 ( Ver3.21RC2 )
+
+		HSPOGGでサウンド機能使用時にスレッドが解放されないことがある不具合を修正
+
 	2007/6/1 ver3.1
 
 		最初のバージョン。
