@@ -9,7 +9,7 @@
 %note
 hgimg3.asをインクルードすること。
 %date
-2010/01/29
+2010/02/17
 %author
 onitama
 %dll
@@ -547,6 +547,7 @@ type値で指定できるのは以下のシンボルです。
 	SYSREQ_MAXEMITTER エミッター最大数
 	SYSREQ_THROUGHFLAG　X方向のボーダー処理フラグ(0=通常/1=スルー)
 	SYSREQ_OBAQMATBUF OBAQ用マテリアルバッファ数
+	SYSREQ_2DFILTER2   2D直接描画時のテクスチャ補間モード
 ^p
 %href
 hgini

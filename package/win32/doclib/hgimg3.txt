@@ -138,6 +138,10 @@ HGIMG ver3.21   REFERENCE MANUAL       High Performance Graphic Image Plugin
 
 ・更新履歴
 
+	2010/02/17 ( Ver3.21RC2 )
+
+		直接描画命令(fprt等)のテクスチャフィルター指定をSYSREQ_2DFILTER2に分離
+
 	2010/01/28 ( Ver3.21RC1 )
 
 		外積の計算(fvouter)が間違っていた問題を修正
@@ -1917,13 +1921,15 @@ HGIMG ver3.21   REFERENCE MANUAL       High Performance Graphic Image Plugin
 		マクロ名          内容(デフォルト値)
 		-----------------------------------------------------
 		SYSREQ_2DFILTER   2D描画時のテクスチャ補間モード(1)
+		SYSREQ_2DFILTER2  2D直接描画時のテクスチャ補間モード(1)
 		SYSREQ_3DFILTER   3D描画時のテクスチャ補間モード(2)
 
 	例:
 	hgsetreq SYSREQ_2DFILTER,2	; 2D描画時のテクスチャ補間モードを設定
 
 	テクスチャ補間モードは、2D、3D別々に設定が可能です。
-	描画中に切り替えることも可能ですが、オブジェクト単位での設定はできません。
+	(SYSREQ_2DFILTER2は、直接描画命令(fprt等)に適用される補完モードを設定します。)
+	フレーム単位に切り替えることも可能ですが、オブジェクト単位での設定はできません。
 	設定するモード値は、以下の意味を持っています。
 
 		モード値          内容(DirectXマクロ名)

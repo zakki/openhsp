@@ -99,7 +99,7 @@
 #define global SYSREQ_MAXEMITTER 26
 #define global SYSREQ_THROUGHFLAG 27
 #define global SYSREQ_OBAQMATBUF 28
-
+#define global SYSREQ_2DFILTER2 29
 #define global SYSREQ_DEBUG $10000
 
 #define event_delobj(%1) event_prmset %1,PRMSET_FLAG,0

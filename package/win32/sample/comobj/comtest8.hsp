@@ -1,21 +1,17 @@
 
 	;	正規表現(RegExp)を使った検索
 	;
+	#include "mod_regexp.as"
+
 	teststr="012 3456 78 9"
 	testptn="\\d+"
 	mes "対象文字 \""+teststr+"\""
 	mes "パターン \""+testptn+"\""
-	newcom oReg,"VBScript.RegExp"
-	comres result
-	oReg("Pattern")=testptn
-	oReg("Global")=1
-	oReg->"Execute" teststr
-	oMatches=result
-	repeat oMatches("Count")
-		oMatch=oMatches("Item",cnt)
-		mes "Match("+cnt+")="+oMatch("Value")
+
+	matches result, teststr, testptn, 0, 0, 0
+	repeat stat
+		mes "#"+cnt+"="+result(cnt)
 	loop
-	delcom oMatch
-	delcom oMatches
-	delcom oReg
-	delcom result
+
+	stop
+

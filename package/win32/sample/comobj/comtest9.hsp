@@ -1,15 +1,14 @@
 
 	;	正規表現(RegExp)を使った置換
 	;
+	#include "mod_regexp.as"
+
 	teststr="This is a pen."
 	testptn="This"
 	repstr="That"
 	mes "対象文字 \""+teststr+"\""
 	mes "検索文字 \""+testptn+"\""
 	mes "置換文字 \""+repstr+"\""
-	newcom oReg,"VBScript.RegExp"
-	comres result
-	oReg("Pattern")=testptn
-	oReg->"Replace" teststr,repstr
+
+	result = replace( teststr, testptn, repstr, 0, 0, 0 )
 	mes "置換結果 \""+result+"\""
-	delcom oReg
