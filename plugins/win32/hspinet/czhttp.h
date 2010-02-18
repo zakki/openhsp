@@ -75,6 +75,10 @@ public:
 	char *GetTempBuffer( void );						// 内部バッファへのポインタを返す
 	char *GetFlexBuffer( void ) { return pt; };			// 可変バッファへのポインタを返す
 
+	int UrlEncode( char *dst, int dstsize, char *src );	// URLエンコード
+	int UrlDecode( char *dst, int dstsize, char *src );	// URLデコード
+
+
 private:
 	void SetError( char *mes );	
 
@@ -82,6 +86,7 @@ private:
 	void AllocFlexBuf( int size );
 	void AddFlexBuf( char *data, int size );
 	int GetFlexBufSize( void ) { return pt_cur; };
+	int CheckHexCode( int code );
 
 	HINTERNET hSession;
 	HINTERNET hService;

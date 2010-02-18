@@ -3,6 +3,7 @@
 #include <process.h>
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
 #include <ctype.h>
 //#include <tchar.h>
 
@@ -805,8 +806,95 @@ int CzHttp::FtpSendCommand( char *cmd )
 
 
 //--------------------------------------------------------------//
+//				Utility functions
+//--------------------------------------------------------------//
+
+int CzHttp::UrlEncode( char *dst, int dstsize, char *src )
+{
+	//	URLエンコード
+	//
+	int len;
+	unsigned char *p;
+	unsigned char *wrt;
+	int a1;
+	p = (unsigned char *)src;
+	wrt = (unsigned char *)dst;
+	len =0;
+	while(1) {
+		if ( len >= (dstsize-1) ) break;
+		a1 = *p++;
+		if ( a1 == 0 ) break;
+		if(isalnum(a1) || a1 == ',' ||a1 == '-' || a1 == '_') {
+			wrt[len++] = a1;
+		} else if (a1 == ' ') {
+			wrt[len++] = '+';
+		} else {
+			wrt[len++] = '%';
+			sprintf( (char *)&wrt[len], "%02X",a1 );
+			len+=2;
+		}
+	}
+	wrt[len] = 0;
+	return len;
+}
+
+
+int CzHttp::UrlDecode( char *dst, int dstsize, char *src )
+{
+	//	URLデコード
+	//
+	int len,val1,val2;
+	unsigned char *p;
+	unsigned char *wrt;
+	int a1,a2;
+	p = (unsigned char *)src;
+	wrt = (unsigned char *)dst;
+	len =0;
+	while(1) {
+		if ( len >= (dstsize-1) ) break;
+		a1 = *p++;
+		if ( a1 == 0 ) break;
+		if( a1 == '%' ) {
+			a1 = *p++;
+			a2 = *p++;
+			val1 = CheckHexCode( a1 );
+			val2 = CheckHexCode( a2 );
+			if (( val1 >= 0 )&&( val2 >= 0 )) {
+				wrt[len++] = (val1<<4)+val2;
+			} else {
+				wrt[len++] = '%';
+				wrt[len++] = a1;
+				wrt[len++] = a2;
+			}
+		} else if (a1 == '+') {
+			wrt[len++] = ' ';
+		} else {
+			wrt[len++] = a1;
+		}
+	}
+	wrt[len] = 0;
+	return len;
+}
+
+
+//--------------------------------------------------------------//
 //				Internal functions
 //--------------------------------------------------------------//
+
+int CzHttp::CheckHexCode( int code )
+{
+	if (( code >= '0' )&&( code <='9' )) {
+		return (code-'0');
+	}
+	if (( code >= 'a' )&&( code <='f' )) {
+		return (code-'a'+10);
+	}
+	if (( code >= 'A' )&&( code <='F' )) {
+		return (code-'A'+10);
+	}
+	return -1;
+}
+
 
 void CzHttp::SetError( char *mes )
 {
