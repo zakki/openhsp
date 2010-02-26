@@ -5,6 +5,10 @@ Hot Soup Processor ver3.21                          HSP : Hot Soup Processor
 
 ・hsp3関連 更新履歴
 
+	2010/02/26 3.21RC3
+
+	K-Kさん製作のhspusbioプラグイン及びモジュールを同梱。
+
 	2010/02/18 3.21RC2
 
 	sprocketさん製作のArtlet2D,SQLeleモジュール及びサンプルを同梱。
