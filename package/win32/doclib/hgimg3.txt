@@ -138,6 +138,14 @@ HGIMG ver3.21   REFERENCE MANUAL       High Performance Graphic Image Plugin
 
 ・更新履歴
 
+	2010/03/11 ( Ver3.21RC3 )
+
+		hgcnvaxisの座標変換でY軸の値が正負逆になる不具合を修正
+		自然な音量を設定するサンプル、volsamp.hspを追加
+		addline命令による線分が正しく表示されない不具合を修正
+		テクスチャ補間方法によってはfprt命令によるフォント描画がぼけて表示される不具合を修正
+		setxinfo命令により階層の回転成分を変更する際に移動成分を保存するように修正
+
 	2010/02/17 ( Ver3.21RC2 )
 
 		直接描画命令(fprt等)のテクスチャフィルター指定をSYSREQ_2DFILTER2に分離
@@ -948,6 +956,10 @@ HGIMG ver3.21   REFERENCE MANUAL       High Performance Graphic Image Plugin
 	現バージョンでは無視されます。
 	(ライトのdir,scaleグループパラメーターは、HGIMG2.61のものと互換性が
 	ありませんので注意してください。)
+
+	現在のバージョンでは、X形式のモデルに対しシェーディングモード１では
+	ライトのscale(カラー)パラメータは反映されない仕様となっていますので
+	ご了承ください。
 
 	以下は、オブジェクトパラメーターの値を取得するための命令です。
 
