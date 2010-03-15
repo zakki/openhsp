@@ -1,5 +1,5 @@
 ;
-; HGIMG3.1 define and macros
+; HGIMG3.21 define and macros
 ;
 #ifndef __hgimg3__
 #define __hgimg3__
@@ -100,6 +100,7 @@
 #define global SYSREQ_THROUGHFLAG 27
 #define global SYSREQ_OBAQMATBUF 28
 #define global SYSREQ_2DFILTER2 29
+#define global SYSREQ_FPUPRESERVE 30
 #define global SYSREQ_DEBUG $10000
 
 #define event_delobj(%1) event_prmset %1,PRMSET_FLAG,0

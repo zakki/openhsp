@@ -8,6 +8,10 @@ Hot Soup Processor ver3.21                          HSP : Hot Soup Processor
 	2010/02/26 3.21RC3
 
 	K-Kさん製作のhspusbioプラグイン及びモジュールを同梱。
+	HGIMG3に関する不具合のいくつかを修正(hgimg3.txt参照)。
+	hspoggプラグインの動作が不安定なためhsp3.2同梱版に戻しました。
+
+	RC1から、HSP3及び標準的なランタイムに変更はありません。マイナーバージョンコードも変更していません。
 
 	2010/02/18 3.21RC2
 
@@ -17,8 +21,6 @@ Hot Soup Processor ver3.21                          HSP : Hot Soup Processor
 	mod_regexpモジュールを追加。
 	Windows7用のマルチタッチサンプルスクリプトを追加。
 	HGIMG3で直接描画のテクスチャ補間方法に関する設定を追加(hgimg3.txt参照)。
-	RC1から、HSP3及び標準的なランタイムに変更はありません。マイナーバージョンコードも変更していません。
-
 	2010/01/29 3.21RC1
 
 	HGIMG3で発生するいくつかの不具合修正と機能追加(hgimg3.txt参照)。

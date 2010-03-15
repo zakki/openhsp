@@ -138,13 +138,14 @@ HGIMG ver3.21   REFERENCE MANUAL       High Performance Graphic Image Plugin
 
 ・更新履歴
 
-	2010/03/11 ( Ver3.21RC3 )
+	2010/03/15 ( Ver3.21RC3 )
 
 		hgcnvaxisの座標変換でY軸の値が正負逆になる不具合を修正
 		自然な音量を設定するサンプル、volsamp.hspを追加
 		addline命令による線分が正しく表示されない不具合を修正
 		テクスチャ補間方法によってはfprt命令によるフォント描画がぼけて表示される不具合を修正
 		setxinfo命令により階層の回転成分を変更する際に移動成分を保存するように修正
+		システムリクエストにSYSREQ_FPUPRESERVEオプションを追加
 
 	2010/02/17 ( Ver3.21RC2 )
 
@@ -1940,7 +1941,8 @@ HGIMG ver3.21   REFERENCE MANUAL       High Performance Graphic Image Plugin
 	hgsetreq SYSREQ_2DFILTER,2	; 2D描画時のテクスチャ補間モードを設定
 
 	テクスチャ補間モードは、2D、3D別々に設定が可能です。
-	(SYSREQ_2DFILTER2は、直接描画命令(fprt等)に適用される補完モードを設定します。)
+	SYSREQ_2DFILTERは、addspr命令等で登録された2Dオブジェクトに適用されます。
+	また、SYSREQ_2DFILTER2は、直接描画命令(fprt等)に適用されます。
 	フレーム単位に切り替えることも可能ですが、オブジェクト単位での設定はできません。
 	設定するモード値は、以下の意味を持っています。
 
@@ -2016,6 +2018,7 @@ HGIMG ver3.21   REFERENCE MANUAL       High Performance Graphic Image Plugin
 	きめの細かい陰影を表現することができます。
 	現在のバージョンでは、x形式のモデルにのみ半球ライティングを適用する
 	ことができます。
+	また、シェーディングモード１ではライトのscale(カラー)パラメータは現在反映されない仕様となっていますのでご了承ください。
 
 
 ・アニメーション補間モードについて
@@ -2678,6 +2681,23 @@ HGIMG ver3.21   REFERENCE MANUAL       High Performance Graphic Image Plugin
 		qmat2 0, 0,0, 0,16	; 線の太さ(zoomy)
 
 
+・FPU精度設定オプションについて(new)
+
+	DirectX初期化時に、浮動小数演算ユニット(FPU)の精度がfloat(32bit)に
+	設定されます。これにより、通常double(64bit)で演算されていたものも
+	32bit精度に落とされてしまいます。これは、多数のデータを高速に扱う
+	ためのもので、多くのアプリケーションでも同様の設定になっています。
+	ただし、HSP上で精度の高い計算を行ないたい場合や、物理エンジンOBAQを
+	通常のHSP3上で動作させた時と同じ精度で結果を得たい時には、
+	FPU精度設定オプションの設定をそのままにしておくことが可能です。
+	hgsetreq命令によりシステムリクエストで、SYSREQ_FPUPRESERVEに1を設定
+	することで、通常の精度で計算が実行されます。(ただし、処理速度が低下
+	します)
+
+		hgsetreq　SYSREQ_FPUPRESERVE,1
+		hgini
+
+
 ・HGIMG3対応ツールについて
 
 	HGIMG3に対応した3Dツールとして以下のものを推奨しています。
@@ -2696,12 +2716,6 @@ HGIMG ver3.21   REFERENCE MANUAL       High Performance Graphic Image Plugin
 	Metasequoiaと六角大王のデータを利用することができ、IKにも対応しています。
 	フリーでワンスキンモーションの作成が可能になります。
 	データは、X形式(DirectX)で出力することが可能です。
-
-	[Cyberdelia.net]
-	http://www.cyberdelia.net/
-
-	高機能モーション編集ソフトCyberdeliaを公開しています。
-	MX形式での入出力、アニメーションをMA、X形式で出力することが可能です。
 
 	[metaseq.net]
 	http://www.metaseq.net/
