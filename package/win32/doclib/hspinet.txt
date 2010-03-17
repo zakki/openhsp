@@ -60,6 +60,11 @@ HSPINET ver3.21 REFERENCE MANUAL                    HSP : Hot Soup Processor
 
 ・更新履歴
 
+	2010/3/16  ver3.21RC3
+
+		netexec命令のHSP呼び出し規約を以前と同様に戻しました。
+		dllの生成をVisual Studio 2005に戻しました。
+
 	2010/2/16  ver3.21RC2
 
 		hspinet.dllにnkf.dllの全機能を内包しました。
@@ -140,7 +145,7 @@ HSPINET ver3.21 REFERENCE MANUAL                    HSP : Hot Soup Processor
 	主張することはありません。
 	onion softwareは本プログラムによって生じた、いかなる損害についても
 	保証いたしません。自己の責任の範囲で使用してください。
-	HSPINET.DLLは、Microsoft Visual Studio 2008でコンパイルされて います。 
+	HSPINET.DLLは、Microsoft Visual Studio 2005でコンパイルされて います。 
 
 
 ・命令一覧

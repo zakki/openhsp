@@ -7,7 +7,7 @@
 #uselib "hspinet.dll"
 #func netinit netinit 0
 #func netterm netterm $100
-#func netexec netexec $202
+#func netexec netexec 1
 #func netmode netmode 1
 #func netsize netsize 1
 #func neterror neterror $202

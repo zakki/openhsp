@@ -111,6 +111,16 @@ EXPORT BOOL WINAPI netterm( int p1, int p2, int p3, int p4 )
 }
 
 
+EXPORT BOOL WINAPI netexec( int *p1, int p2, int p3, int p4 )
+{
+	//	(type$01)
+	*p1 = -1;
+	if ( http == NULL ) return -1;
+	*p1 = http->Exec();
+	return 0;
+}
+
+#if 0
 EXPORT BOOL WINAPI netexec( HSPEXINFO *hei, int p1, int p2, int p3 )
 {
 	//	(type$202)
@@ -128,6 +138,7 @@ EXPORT BOOL WINAPI netexec( HSPEXINFO *hei, int p1, int p2, int p3 )
 	hei->HspFunc_prm_setva( pv, ap, HSPVAR_FLAG_INT, &res );	// •Ï”‚É’l‚ğ‘ã“ü
 	return 0;
 }
+#endif
 
 
 EXPORT BOOL WINAPI netmode( int *p1, int p2, int p3, int p4 )
