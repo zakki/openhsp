@@ -50,6 +50,11 @@ HSPOGG ver3.2 REFERENCE MANUAL                      HSP : Hot Soup Processor
 
 ・更新履歴
 
+	2010/03/17 ( Ver3.21RC4 )
+
+		一部のOSでoggストリームの再生直後にdmmstatで再生時間を取るとフリーズする不具合を修正
+		dmmloadのファイル名に全角文字があった際に無効となる不具合を修正
+
 	2010/02/16 ( Ver3.21RC2 )
 
 		HSPOGGでサウンド機能使用時にスレッドが解放されないことがある不具合を修正

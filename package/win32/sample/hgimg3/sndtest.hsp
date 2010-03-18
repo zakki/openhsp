@@ -9,7 +9,7 @@
 	dmmini
 
 	dmmload "se_break.wav",0	; wavファイル読み込み
-	dmmload "oot06.ogg",1		; oggファイル読み込み
+	dmmload dir_exe+"\\sample\\demo\\oot06.ogg",1		; oggファイル読み込み
 	dmmloop 1,671328		; ループポイント設定
 
 	button "WAV",*aaa
