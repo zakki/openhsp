@@ -138,7 +138,7 @@ HGIMG ver3.21   REFERENCE MANUAL       High Performance Graphic Image Plugin
 
 ・更新履歴
 
-	2010/03/17 ( Ver3.21RC4 )
+	2010/03/17 ( Ver3.21 )
 
 		一部のOSでoggストリームの再生直後にdmmstatで再生時間を取るとフリーズする不具合を修正
 

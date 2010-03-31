@@ -5,6 +5,8 @@
 mod_regexp
 %group
 正規表現検索命令
+%note
+Internet Explorer 5.5 以上が必要
 %********************************************************************/
 #module
 #deffunc _endregexp onexit
@@ -42,16 +44,16 @@ html{
 <tr valign="top"><td align="center" nowrap>*</td><td>直前のパターンの0回以上の繰り返しに一致します。たとえば、HSP!* は "HSP" と "HSP!" と "HSP!!" いずれにも一致します。</td></tr>
 <tr valign="top"><td align="center" nowrap>+</td><td>直前のパターンの1回以上の繰り返しに一致します。たとえば、HSP!+ は "HSP!" と "HSP!!" には一致しますが、"HSP" には一致しません。</td></tr>
 <tr valign="top"><td align="center" nowrap>?</td><td>直前のパターンの0回または 1 回の繰り返しに一致します。たとえば、HSP!? は "HSP" と "HSP!" に一致します。</td></tr>
-<tr valign="top"><td align="center" nowrap>{<em>n</em>,<em>m</em>}</td><td>直前のパターンの <em>n</em> 回以上 <em>m</em> 回以下の繰り返しに一致します。たとえば、\d{3,4} は "123" や "4567" に一致しますが "10" には一致しません。<em>m</em>を省略すると<em>n</em> 回以上の繰り返しに一致し、カンマと<em>m</em>を省略すると<em>n</em> 回ちょうどの繰り返しに一致します。{0,1} は ? と同じ意味になり、{1,} は + と、{0,} は * と同じ意味になります。{ }の間にはカンマと数字以外を入れてはいけません。</td></tr>
+<tr valign="top"><td align="center" nowrap>{<em>n</em>,<em>m</em>}</td><td>直前のパターンの <em>n</em> 回以上 <em>m</em> 回以下の繰り返しに一致します。たとえば、\d{3,4} は 3桁または4桁の数字に一致しますが 2桁の数字には一致せず、5桁の数字には最初の4桁だけが一致します。<em>m</em>を省略すると<em>n</em> 回以上の繰り返しに一致し、カンマと<em>m</em>を省略すると<em>n</em> 回ちょうどの繰り返しに一致します。{0,1} は ? と同じ意味になり、{1,} は + と、{0,} は * と同じ意味になります。{ }の間には余分な空白などを入れてはいけません。</td></tr>
 <tr valign="top"><td align="center">*? +? ?? {<em>n</em>,<em>m</em>}?</td><td>* + ? {<em>n</em>,<em>m</em>} のような繰り返し指定のメタ文字は通常、最も長い文字列と一致しますが、これらのメタ文字直後に ? をおくと最も短い文字列と一致します。たとえば、"&lt;abc&gt;&lt;def&gt;" という文字列をパターン &lt;.*&gt; で検索した場合、文字列全体と一致しますが &lt;.*?&gt; と検索した場合は "&lt;abc&gt;" と "&lt;def&gt;" の二つに分けて一致するようになります。</td></tr>
 <tr valign="top"><td align="center" nowrap>[<em>string</em>]</td><td><em>string</em> に含まれるいずれかの一文字と一致します。たとえば、HSP[123] は "HSP1" と "HSP2" と"HSP3" に一致しますが "HSP4" には一致しません。また、二つの文字を-でつなげば範囲指定が可能です。例えば [a-z] は任意の英小文字一文字に一致し、[a-zA-Z] は任意の英字一文字に一致します。-自体を検索する場合は [-a-z] のようにします。<em>string</em>には $ などのメタ文字を使用してもメタ文字と解釈されませんが、一部を除く \ で始まるメタ文字は機能します。</td></tr>
 <tr valign="top"><td align="center" nowrap>[^<em>string</em>]</td><td>[<em>string</em>] とは逆に <em>string</em> に含まれない任意の一文字と一致します。たとえば、HSP[^1-3] は "HSP4" や "HSP5" に一致しますが "HSP1" と "HSP2" と"HSP3" には一致しません。</td></tr>
-<tr valign="top"><td align="center" nowrap>|</td><td>論理和(OR)検索をします。たとえば、abc|def は "abc" と "def" に一致します。</td></tr>
-<tr valign="top"><td align="center" nowrap>(<em>pattern</em>)</td><td><em>pattern</em> を一つのグループとします。たとえば、20(09|10) は "2009" と "2010" に一致します。また、<em>pattern</em> に一致する文字列をサブマッチとして別途扱うことが出来ます(最大99個)。</td></tr>
-<tr valign="top"><td align="center" nowrap>(?:<em>pattern</em>)</td><td>サブマッチとして利用できない以外は (<em>pattern</em>) といっしょです。</td></tr>
+<tr valign="top"><td align="center" nowrap>|</td><td>論理和(OR)検索をします。たとえば、abc|def は "abc" と "def" に一致します。| は他の文字より評価の優先順位が低いので ( ) と組み合わせるのが便利です。</td></tr>
+<tr valign="top"><td align="center" nowrap>(<em>pattern</em>)</td><td><em>pattern</em> を一つのグループとします。たとえば、20(09|10) は "2009" と "2010" に一致します。また、<em>pattern</em> に一致する文字列をサブマッチとして後方参照することが出来ます(最大99個)。</td></tr>
+<tr valign="top"><td align="center" nowrap>(?:<em>pattern</em>)</td><td>サブマッチとして利用できない以外は (<em>pattern</em>) といっしょです。(<em>pattern</em>)を使う場合に比べてメモリの節約になります。</td></tr>
 <tr valign="top"><td align="center" nowrap>(?=<em>pattern</em>)</td><td><em>pattern</em> に一致する文字列の直前の位置に一致します。たとえば、HSP(?=2|3) は "HSP2" と "HSP3" の"HSP"に一致しますが "HSP1" の"HSP"には一致しません。また、サブマッチとしての利用は出来ません。</td></tr>
 <tr valign="top"><td align="center" nowrap>(?!<em>pattern</em>)</td><td><em>pattern</em> に一致しない文字列の直前の位置に一致します。たとえば、HSP(?!2)\d は "HSP1" や "HSP3" に一致しますが "HSP2" や "HSPa" には一致しません。また、サブマッチとしての利用は出来ません。</td></tr>
-<tr valign="top"><td align="center" nowrap>\<em>num</em></td><td>サブマッチと同じ文字列に一致します。一つ目のサブマッチは\1です。たとえば、(.)(.)\1\2 は "abab" や "0101" のような交互に繰り返す文字列に一致し、&lt;(.*?)&gt;.*&lt;/\1&gt; は "&lt;a&gt;hoge&lt;/a&gt;" や "&lt;b&gt;hoge&lt;/b&gt;" に一致します。対応するサブマッチがない場合は8進文字コードと見なされます。</td></tr>
+<tr valign="top"><td align="center" nowrap>\<em>num</em></td><td>サブマッチと同じ文字列に一致します。一つ目のサブマッチは\1で最大\99まで指定できます。たとえば、(.)(.)\1\2 は "abab" や "0101" のような交互に繰り返す文字列に一致し、&lt;(.*?)&gt;.*&lt;/\1&gt; は "&lt;a&gt;hoge&lt;/a&gt;" や "&lt;b&gt;hoge&lt;/b&gt;" に一致します。対応するサブマッチがない場合は8進文字コードと見なされます。</td></tr>
 <tr valign="top"><td align="center" nowrap>^</td><td>行頭に一致します。つまり、文字列の先頭および \n または \r の直後の位置に一致します。</td></tr>
 <tr valign="top"><td align="center" nowrap>$</td><td>行末に一致します。つまり、文字列の最後および \n または \r の直前の位置に一致します。</td></tr>
 <tr valign="top"><td align="center" nowrap>\</td><td>\の次にメタ文字をおくと、その文字と一致します。たとえば、\( は "(" に一致し \? は "?" に一致します。また、\\ は "\" に一致します。</td></tr>
@@ -147,6 +149,7 @@ replace
 	comres oMatches
 	oReg->"Execute" target
 	if stat<0 : return ""
+	retstr=""
 	if oMatches("count"){
 		oMatch=oMatches("item",0)
 		oSubmatches=oMatch("submatches")
@@ -155,8 +158,6 @@ replace
 			variant("vartype")=8/*VT_BSTR*/
 			retstr=variant("value")
 			variant=0
-		}else{
-			retstr=""
 		}
 		delcom oSubmatches
 		delcom oMatch
@@ -263,9 +264,17 @@ p5を1にすると最初に一致した部分だけを置換します。0や省略した場合は全ての一致した
 p6を1にするとメタ文字 ^ と $ が改行直後・直前に対応しません。0や省略した場合は対応します。
 正規表現のパターンについてはmatchの項目を参照してください。
 
-p3にはサブマッチを表す特殊文字 $ が使用できます。
-一番目のサブマッチは $1 となります。
-$ 自身に置換する場合は $$ とします。
+p3には以下の特殊文字が使用できます。
+html{
+<table border="1" style="font-family:MS UI Gothic;line-height:100%;">
+<tr><th>文字</th><th>説明</th></tr>
+<tr><td align="center" nowrap>$<em>num</em></td><td><em>num</em>番目のサブマッチ文字列に置換されます。一つ目のサブマッチは$1で最大$99まで指定できます。</td></tr>
+<tr><td align="center" nowrap>$&amp;</td><td>p2に一致した文字列に置換されます。</td></tr>
+<tr><td align="center" nowrap>$`</td><td>p1の中で、p2に一致した文字列よりも前方の部分に置換されます。</td></tr>
+<tr><td align="center" nowrap>$'</td><td>p1の中で、p2に一致した文字列よりも後方の部分に置換されます。</td></tr>
+<tr><td align="center" nowrap>$$</td><td>$に置換されます。</td></tr>
+</table>
+}html
 %sample
 #include "mod_regexp.as"
 a={"
