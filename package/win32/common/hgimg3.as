@@ -115,7 +115,6 @@
 #cmd hgsync $06
 #cmd hgrect $07
 #cmd hgrotate $08
-#cmd hgsquare $09
 #cmd settex $0a
 #cmd setfont $0b
 #cmd falpha $0c
@@ -544,6 +543,22 @@
 	gsel hgsel
 	return
 
+
+#deffunc dxfload str fn,int p1
+
+	;	DXF model load
+	;
+	exist fn
+	if strsize<0 : dialog "No file:"+fname : end
+	sdim dxfbuf,strsize
+	bload fn,dxfbuf
+	_dxfcolor = p1
+	if _dxfcolor = 0 {
+		_dxfcolor = -1
+	}
+	adddxf _dxfmdl, dxfbuf, _dxfcolor
+	sdim dxfbuf,64
+	return _dxfmdl
 
 
 #global

@@ -9,7 +9,7 @@
 %note
 hgimg3.as‚ğƒCƒ“ƒNƒ‹[ƒh‚·‚é‚±‚ÆB
 %date
-2010/03/11
+2010/04/20
 %author
 onitama
 %dll
@@ -733,6 +733,7 @@ texload–½—ß‚ÍA2‚Ìæ”(2,4,8,16c)ƒTƒCƒY‚Å‚È‚¢ƒeƒNƒXƒ`ƒƒ‚Í©“®“I‚É“K³‚ÈƒTƒCƒY‚É
 ‚Ü‚½AƒAƒ‹ƒtƒ@ƒ`ƒƒƒ“ƒlƒ‹‚ğŠÜ‚ŞƒeƒNƒXƒ`ƒƒ‚ğ“Ç‚İ‚Şê‡‚ÍAtexload2–½—ß‚ğg—p‚µ‚Ä‚­‚¾‚³‚¢B
 ^
 ‚±‚Ì–½—ß‚ÍAhgimg3.as“à‚Ìƒ‚ƒWƒ…[ƒ‹‚Æ‚µ‚ÄÀ‘•‚³‚ê‚Ä‚¢‚Ü‚·B
+‚Ü‚½A‰æ‘œ“Ç‚İ‚İ‚ÉAHSP‚ÌƒEƒBƒ“ƒhƒEID3‚ğ“à•”‚Åg—p‚µ‚Ä‚¢‚Ü‚·B
 %href
 settex
 texload2
@@ -783,6 +784,9 @@ p1‚Åw’è‚µ‚½ƒ‚ƒfƒ‹‚É‘Î‚µ‚ÄƒgƒD[ƒ“ƒVƒF[ƒfƒBƒ“ƒO‚Ìƒ‚[ƒh‚ğİ’è‚µAF‚Ìî•ñ‚ğ‚Â
 ‚ ‚ç‚©‚¶‚ßAaddxfile–½—ß‚É‚æ‚èXŒ`®‚Ì3Dƒ‚ƒfƒ‹‚ª“Ç‚İ‚Ü‚ê‚Ä‚¢‚é•K—v‚ª‚ ‚è‚Ü‚·B
 ƒgƒD[ƒ“ƒVƒF[ƒfƒBƒ“ƒO‚ğİ’è‚·‚éê‡‚É‚ÍA‚ ‚ç‚©‚¶‚ßƒgƒD[ƒ“ƒeƒNƒXƒ`ƒƒ‚ÆŒÄ‚Î‚ê‚éFî•ñ‚ğ‚Á‚½‰æ‘œƒf[ƒ^‚ğì¬‚µ‚Ä‚¨‚©‚È‚¯‚ê‚Î‚È‚è‚Ü‚¹‚ñB
 (ƒgƒD[ƒ“ƒeƒNƒXƒ`ƒƒ‚ÍAmaketoon–½—ß‚É‚æ‚Á‚Äì¬‚·‚é‚±‚Æ‚ª‰Â”\‚Å‚·B)
+^
+‚±‚Ì–½—ß‚ÍAhgimg3.as“à‚Ìƒ‚ƒWƒ…[ƒ‹‚Æ‚µ‚ÄÀ‘•‚³‚ê‚Ä‚¢‚Ü‚·B
+‚Ü‚½AHSP‚ÌƒEƒBƒ“ƒhƒEID3‚ğ“à•”‚Åg—p‚µ‚Ä‚¢‚Ü‚·B
 
 %href
 maketoon
@@ -810,6 +814,9 @@ p2‚ÅAì¬ƒ‚[ƒh‚ğw’è‚·‚é‚±‚Æ‚ª‚Å‚«‚Ü‚·B
 maketoon–½—ß‚ÍAƒ‚ƒfƒ‹‚Ì‚Âƒ}ƒeƒŠƒAƒ‹F‚ğ’Šo‚µA•W€“I‚ÈƒgƒD[ƒ“ƒeƒNƒXƒ`ƒƒ‚ğì¬‚µ‚Ü‚·B
 ì¬ƒ‚[ƒh‚É2‚ğw’è‚µ‚½ê‡‚ÍAutoon.bmpv‚Æ‚¢‚¤–¼‘O‚ÅƒgƒD[ƒ“ƒeƒNƒXƒ`ƒƒ‚ğ•Û‘¶‚µ‚Ü‚·B
 •Û‘¶‚³‚ê‚½ƒgƒD[ƒ“ƒeƒNƒXƒ`ƒƒ‚ÍAloadtoon–½—ß‚Å“Ç‚İ‚ñ‚Åg—p‚·‚é‚±‚Æ‚ª‰Â”\‚È‚Ù‚©A‰æ‘œ‚ğ•ÒW‚·‚é‚±‚Æ‚É‚æ‚èA‚æ‚è×‚©‚¢ƒgƒD[ƒ“ƒVƒF[ƒfƒBƒ“ƒO‚Ì•\Œ»‚ğs‚È‚¤‚±‚Æ‚ª‰Â”\‚É‚È‚è‚Ü‚·B
+^
+‚±‚Ì–½—ß‚ÍAhgimg3.as“à‚Ìƒ‚ƒWƒ…[ƒ‹‚Æ‚µ‚ÄÀ‘•‚³‚ê‚Ä‚¢‚Ü‚·B
+‚Ü‚½AHSP‚ÌƒEƒBƒ“ƒhƒEID3‚ğ“à•”‚Åg—p‚µ‚Ä‚¢‚Ü‚·B
 
 %href
 loadtoon
@@ -903,58 +910,6 @@ addspr
 addplate
 addsplate
 addbox
-
-
-%index
-setbg
-BGƒ}ƒbƒvî•ñİ’è
-%group
-Šg’£‰æ–Ê§Œä–½—ß
-%prm
-sx,sy,cx,cy
-(sx,sy) : ƒ}ƒbƒvX,YƒTƒCƒY
-(cx,cy) : ƒ`ƒbƒvX,YƒTƒCƒY
-%inst
-BGƒ}ƒbƒv•\¦ƒ‚ƒfƒ‹‚Ì“o˜^‚Ég—p‚³‚ê‚é
-ƒ}ƒbƒv‚ÌƒTƒCƒY‚ÆAƒ`ƒbƒvƒTƒCƒY‚ğw’è‚µ‚Ü‚·B
-%href
-addbg
-getbg
-setmap
-
-
-%index
-getbg
-BGƒ}ƒbƒv‚ğæ“¾
-%group
-Šg’£‰æ–Ê§Œä–½—ß
-%prm
-val,modelID
-val     : ƒNƒ[ƒ“‚ªì¬‚³‚ê‚é•Ï”–¼
-modelID : ƒ‚ƒfƒ‹ID
-%inst
-BGƒ}ƒbƒv‚ÉŠ„‚è“–‚Ä‚ç‚ê‚½ƒƒ‚ƒŠ‹óŠÔ‚ğ•Ï”val‚ÉƒNƒ[ƒ“‚ÅŠ„‚è“–‚Ä‚Ü‚·B
-ˆÈ~‚ÍA•Ï”val‚Ìƒƒ‚ƒŠ‹óŠÔ‚Æ‚µ‚ÄBGƒ}ƒbƒv‚ğ‘‚«Š·‚¦‚é‚±‚Æ‚ª‚Å‚«‚Ü‚·B
-%href
-addbg
-setbg
-setmap
-
-
-%index
-setmap
-BGƒ}ƒbƒvƒXƒNƒ[ƒ‹w’è
-%group
-Šg’£‰æ–Ê§Œä–½—ß
-%prm
-modelID,x,y
-(x,y)   : ¶ã‚ÌÀ•W
-modelID : ƒ‚ƒfƒ‹ID
-%inst
-BGƒ}ƒbƒv‚ÅƒEƒBƒ“ƒhƒE“à‚É•\¦‚³‚ê‚é¶ã‚Ìƒ}ƒbƒvÀ•W‚ğw’è‚µ‚Ü‚·B
-%href
-addbg
-setbg
 
 
 %index
@@ -1175,10 +1130,14 @@ EventID  : ƒCƒxƒ“ƒgID
 	OBJ_STAND            ’n–Ê‚Ìã‚É”z’u‚·‚é
 	OBJ_GRAVITY          d—ÍŒvZ‚ğ—LŒø‚É‚·‚é
 	OBJ_STATIC           áŠQ•¨‚Æ‚µ‚Ä”F¯‚³‚ê‚é
+	OBJ_BOUND            ’n–Ê‚Å”½”­‚·‚é(ƒƒbƒVƒ…ƒ}ƒbƒvƒRƒŠƒWƒ‡ƒ“—p)
+	OBJ_ALIEN            ƒ^[ƒQƒbƒg‚ÉŒü‚¯‚é(ƒƒbƒVƒ…ƒ}ƒbƒvƒRƒŠƒWƒ‡ƒ“—p)
+	OBJ_WALKCLIP         ˆÚ“®‚Ì§ŒÀ‚ğó‚¯‚é(ƒƒbƒVƒ…ƒ}ƒbƒvƒRƒŠƒWƒ‡ƒ“—p)
+	OBJ_EMITTER          ƒGƒ~ƒbƒ^[”­¶ƒIƒuƒWƒFƒNƒg‚É‚È‚é
 ^p
 •¡”‚Ì€–Ú‚ğ“¯‚É‘I‘ğ‚·‚éê‡‚ÍAuOBJ_LATE|OBJ_MOVEv‚Ì‚æ‚¤‚Éu|v‚Å‹æØ‚Á‚Äw’è‚µ‚Ä‚­‚¾‚³‚¢B‰½‚àw’è‚µ‚È‚¢ê‡‚ÍA0‚É‚·‚é‚©È—ª‚µ‚Ä\‚¢‚Ü‚¹‚ñB
 ƒIƒuƒWƒFƒNƒg‚Ìƒ‚[ƒh‚ÍA‚ ‚ç‚©‚¶‚ßƒfƒtƒHƒ‹ƒg‚Ìƒ‚[ƒh‚ªƒ‚ƒfƒ‹‚Ìí—Ş‚É‰‚¶‚Äİ’è‚³‚ê‚Ä‚¢‚é‚Ì‚ÅA’Êí‚Í“Á‚Éİ’è‚·‚é•K—v‚Í‚ ‚è‚Ü‚¹‚ñB
-‚Ü‚½Asetmode–½—ß‚Åƒ‚ƒfƒ‹‚Éƒ‚[ƒh‚ğw’è‚µ‚½ê‡‚ÍA‚»‚Ìƒ‚[ƒh‚ªƒIƒuƒWƒFƒNƒg‚É‚àŒp³‚³‚ê‚Ü‚·B
+OBJ_2D‚Ìƒ‚[ƒh‚ÍA©“®“I‚Éİ’è‚³‚ê‚é‚à‚Ì‚ÅA“r’†‚Å•ÏX‚µ‚È‚¢‚æ‚¤‚É‚µ‚Ä‚­‚¾‚³‚¢B
 EventID‚ğw’è‚·‚é‚ÆAŠY“–‚·‚éƒCƒxƒ“ƒg‚ªƒIƒuƒWƒFƒNƒg‚Éİ’è‚³‚ê‚Ü‚·B
 EventID‚ğÈ—ª‚·‚é‚©Aƒ}ƒCƒiƒX’l‚Ìê‡‚ÍƒCƒxƒ“ƒg‚ğİ’è‚µ‚Ü‚¹‚ñB
 %href
@@ -1329,24 +1288,6 @@ setsizef
 setuv
 meshmap
 objwalk
-
-
-%index
-addbg
-2DBGƒ}ƒbƒvƒ‚ƒfƒ‹‚ğì¬
-%group
-Šg’£‰æ–Ê§Œä–½—ß
-%prm
-val,winsizex,winsizey
-val      : ì¬‚³‚ê‚½ƒ‚ƒfƒ‹ID‚ª‘ã“ü‚³‚ê‚é•Ï”–¼
-winsizex : ƒEƒBƒ“ƒhƒE‚É•\¦‚·‚éƒ`ƒbƒv‚Ì”X
-winsizey : ƒEƒBƒ“ƒhƒE‚É•\¦‚·‚éƒ`ƒbƒv‚Ì”Y
-%inst
-2DBGƒ}ƒbƒvƒ‚ƒfƒ‹‚ğì¬‚µ‚Ü‚·B
-%href
-setsizef
-setuv
-setbg
 
 
 %index
@@ -2249,12 +2190,9 @@ MOCî•ñ‚ğİ’è‚µ‚Ü‚·B
 %href
 objset1
 objadd1
-objmov1
 objset1r
-objmov1r
 objsetf1
 objaddf1
-objmovf1
 
 
 %index
@@ -2272,12 +2210,9 @@ MOCî•ñ‚ğİ’è‚µ‚Ü‚·B
 %href
 objset1
 objadd1
-objmov1
 objset1r
-objmov1r
 objsetf1
 objaddf1
-objmovf1
 
 
 %index
@@ -2294,13 +2229,32 @@ x   : ‰ÁZ‚·‚é’l
 MOCî•ñ‚Éİ’è‚³‚ê‚Ä‚¢‚é’l‚Éx‚ğ‰ÁZ‚µ‚Ü‚·B
 %href
 objset1
-objadd1
-objmov1
+objadd1r
 objset1r
-objmov1r
 objsetf1
 objaddf1
-objmovf1
+
+
+%index
+objadd1r
+MOCî•ñ‚ğ‰ÁZ
+%group
+Šg’£‰æ–Ê§Œä–½—ß
+%prm
+ofs,x
+ofs : MOC‚ÌƒIƒtƒZƒbƒg”Ô†
+x   : ‰ÁZ‚·‚é’l(®”Šp“x’l)
+
+%inst
+MOCî•ñ‚Éİ’è‚³‚ê‚Ä‚¢‚é’l‚Éx‚ğ‰ÁZ‚µ‚Ü‚·B
+‚½‚¾‚µ®”’l(256‚Å‚P‰ñ“])‚ğƒ‰ƒWƒAƒ“’PˆÊ‚É•ÏŠ·‚µ‚½ƒpƒ‰ƒ[ƒ^[‚ğ‰ÁZ‚µ‚Ü‚·B
+Šp“x‚ğw’è‚·‚éƒpƒ‰ƒ[ƒ^[ˆÈŠO‚Å‚Í³í‚È’l‚É‚È‚ç‚È‚¢‚Ì‚Å’ˆÓ‚µ‚Ä‚­‚¾‚³‚¢B
+%href
+objset1
+objadd1
+objset1r
+objsetf1
+objaddf1
 
 
 %index
@@ -2318,70 +2272,9 @@ MOCî•ñ‚Éİ’è‚³‚ê‚Ä‚¢‚é’l‚Éfx‚ğ‰ÁZ‚µ‚Ü‚·B
 %href
 objset1
 objadd1
-objmov1
 objset1r
-objmov1r
 objsetf1
 objaddf1
-objmovf1
-
-
-%index
-objmov1
-MOCî•ñ‚ğ•Ï‰»
-%group
-Šg’£‰æ–Ê§Œä–½—ß
-%prm
-ofs,times,x
-ofs   : MOC‚ÌƒIƒtƒZƒbƒg”Ô†
-times : ƒtƒŒ[ƒ€”
-x     : İ’è‚·‚é’l
-
-%inst
-MOCî•ñ‚ğAtimes‚Å¦‚µ‚½ƒtƒŒ[ƒ€”Œã‚Éw’è‚µ‚½’l‚É
-•Ï‚í‚é‚æ‚¤‚É•Ï‰»î•ñ‚ğİ’è‚µ‚Ü‚·B
-MOC‚ª•Ï‰»‚·‚é•âŠÔ‚Ì•û–@‚ÍAobjmovmode–½—ß‚Åİ’è‚·‚é‚±‚Æ‚ª‰Â”\‚Å‚·B
-‚Ü‚½A•Ï‰»‚ªI—¹‚µ‚Ä‚¢‚é‚©‚Ç‚¤‚©‚ğobjcheck–½—ß‚Å’²‚×‚é‚±‚Æ‚ª‚Å‚«‚Ü‚·B
-%href
-objmovmode
-objcheck
-objset1
-objadd1
-objmov1
-objset1r
-objmov1r
-objsetf1
-objaddf1
-objmovf1
-
-
-%index
-objmovf1
-MOCî•ñ‚ğ•Ï‰»
-%group
-Šg’£‰æ–Ê§Œä–½—ß
-%prm
-ofs,times,fx
-ofs : MOC‚ÌƒIƒtƒZƒbƒg”Ô†
-times : ƒtƒŒ[ƒ€”
-fx  : İ’è‚·‚é’l(À”’l)
-
-%inst
-MOCî•ñ‚ğAtimes‚Å¦‚µ‚½ƒtƒŒ[ƒ€”Œã‚Éw’è‚µ‚½’l‚É
-•Ï‚í‚é‚æ‚¤‚É•Ï‰»î•ñ‚ğİ’è‚µ‚Ü‚·B
-MOC‚ª•Ï‰»‚·‚é•âŠÔ‚Ì•û–@‚ÍAobjmovmode–½—ß‚Åİ’è‚·‚é‚±‚Æ‚ª‰Â”\‚Å‚·B
-‚Ü‚½A•Ï‰»‚ªI—¹‚µ‚Ä‚¢‚é‚©‚Ç‚¤‚©‚ğobjcheck–½—ß‚Å’²‚×‚é‚±‚Æ‚ª‚Å‚«‚Ü‚·B
-%href
-objmovmode
-objcheck
-objset1
-objadd1
-objmov1
-objset1r
-objmov1r
-objsetf1
-objaddf1
-objmovf1
 
 
 %index
@@ -2401,43 +2294,9 @@ MOCî•ñ‚ÉŠp“xî•ñ‚ğİ’è‚µ‚Ü‚·B
 %href
 objset1
 objadd1
-objmov1
 objset1r
-objmov1r
 objsetf1
 objaddf1
-objmovf1
-
-
-%index
-objmov1r
-MOCî•ñ‚ğ•Ï‰»
-%group
-Šg’£‰æ–Ê§Œä–½—ß
-%prm
-ofs,times,x
-ofs   : MOC‚ÌƒIƒtƒZƒbƒg”Ô†
-times : ƒtƒŒ[ƒ€”
-x     : İ’è‚·‚é’l
-
-%inst
-MOCî•ñ‚ğAtimes‚Å¦‚µ‚½ƒtƒŒ[ƒ€”Œã‚Éw’è‚µ‚½’l‚É
-•Ï‚í‚é‚æ‚¤‚É•Ï‰»î•ñ‚ğİ’è‚µ‚Ü‚·B
-®”’l(256‚Å‚P‰ñ“])‚ğƒ‰ƒWƒAƒ“’PˆÊ‚Éƒpƒ‰ƒ[ƒ^[‚ğ•ÏŠ·‚µ‚Ü‚·B
-Šp“x‚ğw’è‚·‚éƒpƒ‰ƒ[ƒ^[ˆÈŠO‚Å‚Í³í‚È’l‚É‚È‚ç‚È‚¢‚Ì‚Å’ˆÓ‚µ‚Ä‚­‚¾‚³‚¢B
-MOC‚ª•Ï‰»‚·‚é•âŠÔ‚Ì•û–@‚ÍAobjmovmode–½—ß‚Åİ’è‚·‚é‚±‚Æ‚ª‰Â”\‚Å‚·B
-‚Ü‚½A•Ï‰»‚ªI—¹‚µ‚Ä‚¢‚é‚©‚Ç‚¤‚©‚ğobjcheck–½—ß‚Å’²‚×‚é‚±‚Æ‚ª‚Å‚«‚Ü‚·B
-%href
-objmovmode
-objcheck
-objset1
-objadd1
-objmov1
-objset1r
-objmov1r
-objsetf1
-objaddf1
-objmovf1
 
 
 %index
@@ -2457,12 +2316,9 @@ ofs‚Åw’è‚µ‚½ƒIƒtƒZƒbƒg”Ô†‚©‚ç‚Q‚Â‚Ìƒpƒ‰ƒ[ƒ^‚ª‘ÎÛ‚É‚È‚è‚Ü‚·B
 %href
 objset2
 objadd2
-objmov2
 objset2r
-objmov2r
 objsetf2
 objaddf2
-objmovf2
 
 
 %index
@@ -2482,12 +2338,9 @@ ofs‚Åw’è‚µ‚½ƒIƒtƒZƒbƒg”Ô†‚©‚ç‚Q‚Â‚Ìƒpƒ‰ƒ[ƒ^‚ª‘ÎÛ‚É‚È‚è‚Ü‚·B
 %href
 objset2
 objadd2
-objmov2
 objset2r
-objmov2r
 objsetf2
 objaddf2
-objmovf2
 
 
 %index
@@ -2502,17 +2355,14 @@ x   : ‰ÁZ‚·‚é’l
 y   : ‰ÁZ‚·‚é’l2
 
 %inst
-MOCî•ñ‚Éİ’è‚³‚ê‚Ä‚¢‚é’l‚Éx‚ğ‰ÁZ‚µ‚Ü‚·B
+MOCî•ñ‚Éİ’è‚³‚ê‚Ä‚¢‚é’l‚Éx,y‚ğ‰ÁZ‚µ‚Ü‚·B
 ofs‚Åw’è‚µ‚½ƒIƒtƒZƒbƒg”Ô†‚©‚ç‚Q‚Â‚Ìƒpƒ‰ƒ[ƒ^‚ª‘ÎÛ‚É‚È‚è‚Ü‚·B
 %href
 objset2
-objadd2
-objmov2
+objadd2r
 objset2r
-objmov2r
 objsetf2
 objaddf2
-objmovf2
 
 
 %index
@@ -2527,77 +2377,36 @@ fx  : ‰ÁZ‚·‚é’l(À”’l)
 fy  : ‰ÁZ‚·‚é’l2(À”’l)
 
 %inst
-MOCî•ñ‚Éİ’è‚³‚ê‚Ä‚¢‚é’l‚Éfx‚ğ‰ÁZ‚µ‚Ü‚·B
+MOCî•ñ‚Éİ’è‚³‚ê‚Ä‚¢‚é’l‚Éfx,fy‚ğ‰ÁZ‚µ‚Ü‚·B
 ofs‚Åw’è‚µ‚½ƒIƒtƒZƒbƒg”Ô†‚©‚ç‚Q‚Â‚Ìƒpƒ‰ƒ[ƒ^‚ª‘ÎÛ‚É‚È‚è‚Ü‚·B
 %href
 objset2
 objadd2
-objmov2
 objset2r
-objmov2r
 objsetf2
 objaddf2
-objmovf2
 
 
 %index
-objmov2
-MOCî•ñ‚ğ•Ï‰»
+objadd2r
+MOCî•ñ‚ğ‰ÁZ
 %group
 Šg’£‰æ–Ê§Œä–½—ß
 %prm
-ofs,times,x,y
-ofs   : MOC‚ÌƒIƒtƒZƒbƒg”Ô†
-times : ƒtƒŒ[ƒ€”
-x     : İ’è‚·‚é’l
-y     : İ’è‚·‚é’l2
-
-%inst
-MOCî•ñ‚ğAtimes‚Å¦‚µ‚½ƒtƒŒ[ƒ€”Œã‚Éw’è‚µ‚½’l‚É•Ï‚í‚é‚æ‚¤‚É•Ï‰»î•ñ‚ğİ’è‚µ‚Ü‚·B
-ofs‚Åw’è‚µ‚½ƒIƒtƒZƒbƒg”Ô†‚©‚ç‚Q‚Â‚Ìƒpƒ‰ƒ[ƒ^‚ª‘ÎÛ‚É‚È‚è‚Ü‚·B
-MOC‚ª•Ï‰»‚·‚é•âŠÔ‚Ì•û–@‚ÍAobjmovmode–½—ß‚Åİ’è‚·‚é‚±‚Æ‚ª‰Â”\‚Å‚·B
-‚Ü‚½A•Ï‰»‚ªI—¹‚µ‚Ä‚¢‚é‚©‚Ç‚¤‚©‚ğobjcheck–½—ß‚Å’²‚×‚é‚±‚Æ‚ª‚Å‚«‚Ü‚·B
-%href
-objmovmode
-objcheck
-objset2
-objadd2
-objmov2
-objset2r
-objmov2r
-objsetf2
-objaddf2
-objmovf2
-
-
-%index
-objmovf2
-MOCî•ñ‚ğ•Ï‰»
-%group
-Šg’£‰æ–Ê§Œä–½—ß
-%prm
-ofs,times,fx,fy
+ofs,fx,fy
 ofs : MOC‚ÌƒIƒtƒZƒbƒg”Ô†
-times : ƒtƒŒ[ƒ€”
-fx  : İ’è‚·‚é’l(À”’l)
-fy  : İ’è‚·‚é’l2(À”’l)
-
+fx  : ‰ÁZ‚·‚é’l(®”Šp“x’l)
+fy  : ‰ÁZ‚·‚é’l2(®”Šp“x’l)
 %inst
-MOCî•ñ‚ğAtimes‚Å¦‚µ‚½ƒtƒŒ[ƒ€”Œã‚Éw’è‚µ‚½’l‚É•Ï‚í‚é‚æ‚¤‚É•Ï‰»î•ñ‚ğİ’è‚µ‚Ü‚·B
-ofs‚Åw’è‚µ‚½ƒIƒtƒZƒbƒg”Ô†‚©‚ç‚Q‚Â‚Ìƒpƒ‰ƒ[ƒ^‚ª‘ÎÛ‚É‚È‚è‚Ü‚·B
-MOC‚ª•Ï‰»‚·‚é•âŠÔ‚Ì•û–@‚ÍAobjmovmode–½—ß‚Åİ’è‚·‚é‚±‚Æ‚ª‰Â”\‚Å‚·B
-‚Ü‚½A•Ï‰»‚ªI—¹‚µ‚Ä‚¢‚é‚©‚Ç‚¤‚©‚ğobjcheck–½—ß‚Å’²‚×‚é‚±‚Æ‚ª‚Å‚«‚Ü‚·B
+MOCî•ñ‚Éİ’è‚³‚ê‚Ä‚¢‚é’l‚Éfx,fy‚ğ‰ÁZ‚µ‚Ü‚·B
+‚½‚¾‚µ®”’l(256‚Å‚P‰ñ“])‚ğƒ‰ƒWƒAƒ“’PˆÊ‚É•ÏŠ·‚µ‚½ƒpƒ‰ƒ[ƒ^[‚ğ‰ÁZ‚µ‚Ü‚·B
+Šp“x‚ğw’è‚·‚éƒpƒ‰ƒ[ƒ^[ˆÈŠO‚Å‚Í³í‚È’l‚É‚È‚ç‚È‚¢‚Ì‚Å’ˆÓ‚µ‚Ä‚­‚¾‚³‚¢B
 %href
-objmovmode
-objcheck
 objset2
 objadd2
-objmov2
 objset2r
-objmov2r
 objsetf2
 objaddf2
-objmovf2
 
 
 %index
@@ -2619,44 +2428,9 @@ ofs‚Åw’è‚µ‚½ƒIƒtƒZƒbƒg”Ô†‚©‚ç‚Q‚Â‚Ìƒpƒ‰ƒ[ƒ^‚ª‘ÎÛ‚É‚È‚è‚Ü‚·B
 %href
 objset2
 objadd2
-objmov2
 objset2r
-objmov2r
 objsetf2
 objaddf2
-objmovf2
-
-
-%index
-objmov2r
-MOCî•ñ‚ğ•Ï‰»
-%group
-Šg’£‰æ–Ê§Œä–½—ß
-%prm
-ofs,times,x,y
-ofs   : MOC‚ÌƒIƒtƒZƒbƒg”Ô†
-times : ƒtƒŒ[ƒ€”
-x     : İ’è‚·‚é’l
-y     : İ’è‚·‚é’l2
-
-%inst
-MOCî•ñ‚ğAtimes‚Å¦‚µ‚½ƒtƒŒ[ƒ€”Œã‚Éw’è‚µ‚½’l‚É•Ï‚í‚é‚æ‚¤‚É•Ï‰»î•ñ‚ğİ’è‚µ‚Ü‚·B
-ofs‚Åw’è‚µ‚½ƒIƒtƒZƒbƒg”Ô†‚©‚ç‚Q‚Â‚Ìƒpƒ‰ƒ[ƒ^‚ª‘ÎÛ‚É‚È‚è‚Ü‚·B
-®”’l(256‚Å‚P‰ñ“])‚ğƒ‰ƒWƒAƒ“’PˆÊ‚Éƒpƒ‰ƒ[ƒ^[‚ğ•ÏŠ·‚µ‚Ü‚·B
-Šp“x‚ğw’è‚·‚éƒpƒ‰ƒ[ƒ^[ˆÈŠO‚Å‚Í³í‚È’l‚É‚È‚ç‚È‚¢‚Ì‚Å’ˆÓ‚µ‚Ä‚­‚¾‚³‚¢B
-MOC‚ª•Ï‰»‚·‚é•âŠÔ‚Ì•û–@‚ÍAobjmovmode–½—ß‚Åİ’è‚·‚é‚±‚Æ‚ª‰Â”\‚Å‚·B
-‚Ü‚½A•Ï‰»‚ªI—¹‚µ‚Ä‚¢‚é‚©‚Ç‚¤‚©‚ğobjcheck–½—ß‚Å’²‚×‚é‚±‚Æ‚ª‚Å‚«‚Ü‚·B
-%href
-objmovmode
-objcheck
-objset2
-objadd2
-objmov2
-objset2r
-objmov2r
-objsetf2
-objaddf2
-objmovf2
 
 
 %index
@@ -2676,12 +2450,9 @@ MOCî•ñ‚ğİ’è‚µ‚Ü‚·B
 %href
 objset3
 objadd3
-objmov3
 objset3r
-objmov3r
 objsetf3
 objaddf3
-objmovf3
 
 
 %index
@@ -2701,12 +2472,9 @@ MOCî•ñ‚ğİ’è‚µ‚Ü‚·B
 %href
 objset3
 objadd3
-objmov3
 objset3r
-objmov3r
 objsetf3
 objaddf3
-objmovf3
 
 
 %index
@@ -2721,17 +2489,14 @@ y   : ‰ÁZ‚·‚é’l2
 z   : ‰ÁZ‚·‚é’l3
 
 %inst
-MOCî•ñ‚Éİ’è‚³‚ê‚Ä‚¢‚é’l‚Éx‚ğ‰ÁZ‚µ‚Ü‚·B
+MOCî•ñ‚Éİ’è‚³‚ê‚Ä‚¢‚é’l‚Éx,y,z‚ğ‰ÁZ‚µ‚Ü‚·B
 ƒIƒtƒZƒbƒg”Ô†0‚©‚ç3‚Â‚Ìƒpƒ‰ƒ[ƒ^‚ª‘ÎÛ‚É‚È‚è‚Ü‚·B
 %href
 objset3
-objadd3
-objmov3
+objadd3r
 objset3r
-objmov3r
 objsetf3
 objaddf3
-objmovf3
 
 
 %index
@@ -2746,77 +2511,37 @@ fy  : ‰ÁZ‚·‚é’l2(À”’l)
 fz  : ‰ÁZ‚·‚é’l3(À”’l)
 
 %inst
-MOCî•ñ‚Éİ’è‚³‚ê‚Ä‚¢‚é’l‚Éfx‚ğ‰ÁZ‚µ‚Ü‚·B
+MOCî•ñ‚Éİ’è‚³‚ê‚Ä‚¢‚é’l‚Éfx,fy,fz‚ğ‰ÁZ‚µ‚Ü‚·B
 ƒIƒtƒZƒbƒg”Ô†0‚©‚ç3‚Â‚Ìƒpƒ‰ƒ[ƒ^‚ª‘ÎÛ‚É‚È‚è‚Ü‚·B
 %href
 objset3
 objadd3
-objmov3
 objset3r
-objmov3r
 objsetf3
 objaddf3
-objmovf3
 
 
 %index
-objmov3
-MOCî•ñ‚ğ•Ï‰»
+objadd3r
+MOCî•ñ‚ğ‰ÁZ
 %group
 Šg’£‰æ–Ê§Œä–½—ß
 %prm
-times,x,y,z
-times : ƒtƒŒ[ƒ€”
-x     : İ’è‚·‚é’l
-y     : İ’è‚·‚é’l2
-z     : İ’è‚·‚é’l3
-
+ofs,fx,fy,fz
+ofs : MOC‚ÌƒIƒtƒZƒbƒg”Ô†
+fx  : ‰ÁZ‚·‚é’l(®”Šp“x’l)
+fy  : ‰ÁZ‚·‚é’l2(®”Šp“x’l)
+fz  : ‰ÁZ‚·‚é’l3(®”Šp“x’l)
 %inst
-MOCî•ñ‚ğAtimes‚Å¦‚µ‚½ƒtƒŒ[ƒ€”Œã‚Éw’è‚µ‚½’l‚É•Ï‚í‚é‚æ‚¤‚É•Ï‰»î•ñ‚ğİ’è‚µ‚Ü‚·B
-ƒIƒtƒZƒbƒg”Ô†0‚©‚ç3‚Â‚Ìƒpƒ‰ƒ[ƒ^‚ª‘ÎÛ‚É‚È‚è‚Ü‚·B
-MOC‚ª•Ï‰»‚·‚é•âŠÔ‚Ì•û–@‚ÍAobjmovmode–½—ß‚Åİ’è‚·‚é‚±‚Æ‚ª‰Â”\‚Å‚·B
-‚Ü‚½A•Ï‰»‚ªI—¹‚µ‚Ä‚¢‚é‚©‚Ç‚¤‚©‚ğobjcheck–½—ß‚Å’²‚×‚é‚±‚Æ‚ª‚Å‚«‚Ü‚·B
+MOCî•ñ‚Éİ’è‚³‚ê‚Ä‚¢‚é’l‚Éfx,fy,fz‚ğ‰ÁZ‚µ‚Ü‚·B
+‚½‚¾‚µ®”’l(256‚Å‚P‰ñ“])‚ğƒ‰ƒWƒAƒ“’PˆÊ‚É•ÏŠ·‚µ‚½ƒpƒ‰ƒ[ƒ^[‚ğ‰ÁZ‚µ‚Ü‚·B
+Šp“x‚ğw’è‚·‚éƒpƒ‰ƒ[ƒ^[ˆÈŠO‚Å‚Í³í‚È’l‚É‚È‚ç‚È‚¢‚Ì‚Å’ˆÓ‚µ‚Ä‚­‚¾‚³‚¢B
 %href
-objmovmode
-objcheck
 objset3
 objadd3
-objmov3
 objset3r
-objmov3r
 objsetf3
 objaddf3
-objmovf3
-
-
-%index
-objmovf3
-MOCî•ñ‚ğ•Ï‰»
-%group
-Šg’£‰æ–Ê§Œä–½—ß
-%prm
-times,fx,fy,fz
-times : ƒtƒŒ[ƒ€”
-fx  : İ’è‚·‚é’l(À”’l)
-fy  : İ’è‚·‚é’l2(À”’l)
-fz  : İ’è‚·‚é’l3(À”’l)
-
-%inst
-MOCî•ñ‚ğAtimes‚Å¦‚µ‚½ƒtƒŒ[ƒ€”Œã‚Éw’è‚µ‚½’l‚É•Ï‚í‚é‚æ‚¤‚É•Ï‰»î•ñ‚ğİ’è‚µ‚Ü‚·B
-ƒIƒtƒZƒbƒg”Ô†0‚©‚ç3‚Â‚Ìƒpƒ‰ƒ[ƒ^‚ª‘ÎÛ‚É‚È‚è‚Ü‚·B
-MOC‚ª•Ï‰»‚·‚é•âŠÔ‚Ì•û–@‚ÍAobjmovmode–½—ß‚Åİ’è‚·‚é‚±‚Æ‚ª‰Â”\‚Å‚·B
-‚Ü‚½A•Ï‰»‚ªI—¹‚µ‚Ä‚¢‚é‚©‚Ç‚¤‚©‚ğobjcheck–½—ß‚Å’²‚×‚é‚±‚Æ‚ª‚Å‚«‚Ü‚·B
-%href
-objmovmode
-objcheck
-objset3
-objadd3
-objmov3
-objset3r
-objmov3r
-objsetf3
-objaddf3
-objmovf3
 
 
 %index
@@ -2838,44 +2563,9 @@ MOCî•ñ‚ÉŠp“xî•ñ‚ğİ’è‚µ‚Ü‚·B
 %href
 objset3
 objadd3
-objmov3
 objset3r
-objmov3r
 objsetf3
 objaddf3
-objmovf3
-
-
-%index
-objmov3r
-MOCî•ñ‚ğ•Ï‰»
-%group
-Šg’£‰æ–Ê§Œä–½—ß
-%prm
-times,x,y,z
-times : ƒtƒŒ[ƒ€”
-x     : İ’è‚·‚é’l
-y     : İ’è‚·‚é’l2
-z     : İ’è‚·‚é’l3
-
-%inst
-MOCî•ñ‚ğAtimes‚Å¦‚µ‚½ƒtƒŒ[ƒ€”Œã‚Éw’è‚µ‚½’l‚É•Ï‚í‚é‚æ‚¤‚É•Ï‰»î•ñ‚ğİ’è‚µ‚Ü‚·B
-ƒIƒtƒZƒbƒg”Ô†0‚©‚ç3‚Â‚Ìƒpƒ‰ƒ[ƒ^‚ª‘ÎÛ‚É‚È‚è‚Ü‚·B
-®”’l(256‚Å‚P‰ñ“])‚ğƒ‰ƒWƒAƒ“’PˆÊ‚Éƒpƒ‰ƒ[ƒ^[‚ğ•ÏŠ·‚µ‚Ü‚·B
-Šp“x‚ğw’è‚·‚éƒpƒ‰ƒ[ƒ^[ˆÈŠO‚Å‚Í³í‚È’l‚É‚È‚ç‚È‚¢‚Ì‚Å’ˆÓ‚µ‚Ä‚­‚¾‚³‚¢B
-MOC‚ª•Ï‰»‚·‚é•âŠÔ‚Ì•û–@‚ÍAobjmovmode–½—ß‚Åİ’è‚·‚é‚±‚Æ‚ª‰Â”\‚Å‚·B
-‚Ü‚½A•Ï‰»‚ªI—¹‚µ‚Ä‚¢‚é‚©‚Ç‚¤‚©‚ğobjcheck–½—ß‚Å’²‚×‚é‚±‚Æ‚ª‚Å‚«‚Ü‚·B
-%href
-objmovmode
-objcheck
-objset3
-objadd3
-objmov3
-objset3r
-objmov3r
-objsetf3
-objaddf3
-objmovf3
 
 
 %index
@@ -2884,50 +2574,43 @@ DXFŒ`®ƒtƒ@ƒCƒ‹‚ğ“Ç‚İ‚İ
 %group
 Šg’£‰æ–Ê§Œä–½—ß
 %prm
-"filename"
+"filename",p1
 "filename" : “Ç‚İ‚Şƒ‚ƒfƒ‹ƒtƒ@ƒCƒ‹(DXFŒ`®)
+p1(0)      : •\–Ê‚ÌFw’è(ƒIƒvƒVƒ‡ƒ“)
 %inst
 DXFŒ`®‚Ìƒtƒ@ƒCƒ‹‚ğƒ‚ƒfƒ‹ƒf[ƒ^‚Æ‚µ‚Ä“Ç‚İ‚İ‚Ü‚·B
 ƒVƒXƒeƒ€•Ï”stat‚É“Ç‚İ‚Ü‚ê‚½æ‚Ìƒ‚ƒfƒ‹ID‚ª•Ô‚³‚ê‚Ü‚·B
+p1‚Å“Ç‚İ‚Ü‚ê‚½ƒ|ƒŠƒSƒ“‚Ì•\–ÊF‚ğw’è‚·‚é‚±‚Æ‚ª‚Å‚«‚Ü‚·B•\–ÊF‚ÍARGB‚ğ24bit®”‚ÉƒpƒbƒN‚µ‚½Œ`®($rrggbb)‚Åw’è‚·‚é•K—v‚ª‚ ‚è‚Ü‚·B
+p1‚ğÈ—ª‚Ü‚½‚Í0‚Éw’è‚µ‚½ê‡‚ÍA”’F(0xffffff)‚ª‘I‘ğ‚³‚ê‚Ü‚·B
 DXFŒ`®‚ÍACAD‚â‚Ù‚Æ‚ñ‚Ç‚Ì3Dƒc[ƒ‹‚ªƒTƒ|[ƒg‚µ‚Ä‚¢‚éŠî–{“I‚È3DŒ`óƒtƒH[ƒ}ƒbƒg‚Å‚·BƒeƒNƒXƒ`ƒƒî•ñ‚È‚Ç‚“x‚Èî•ñ‚Í”½‰f‚³‚ê‚Ü‚¹‚ñ‚ªAŒ`ó‚ğ‚â‚èæ‚è‚·‚é‚±‚Æ‚ª‰Â”\‚Å‚·B
 dxfload–½—ß‚Å‚ÍADXFŒ`®‚Ì3DFACE‚Æ‚¢‚¤ƒ^ƒCƒv‚É‚Ì‚İ‘Î‰‚µ‚Ä‚¢‚Ü‚·B
 ˆê•”‚Ìƒtƒ@ƒCƒ‹‚Æ‚ÍŒİŠ·‚ª‚È‚¢‰Â”\«‚ª‚ ‚è‚Ü‚·B
+‚±‚Ì–½—ß‚ÍAhgimg3.asƒ‚ƒWƒ…[ƒ‹“à‚Å’è‹`‚³‚ê‚Ä‚¢‚Ü‚·B
 %href
-dxfconv
-dxfgetpoly
+adddxf
+%sample
+	dxfload "ball.dxf"		; dxfƒtƒ@ƒCƒ‹“Ç‚İ‚İ
+	m_model=stat
+	regobj obj, m_model		; ƒIƒuƒWƒFƒNƒg‚Ì“o˜^
 
 
 %index
-dxfconv
-DXFŒ`®ƒtƒ@ƒCƒ‹‚ğƒp[ƒX
+adddxf
+DXFŒ`®ƒf[ƒ^‚Ì“o˜^
 %group
 Šg’£‰æ–Ê§Œä–½—ß
 %prm
-val
-val : DXFŒ`®ƒtƒ@ƒCƒ‹‚ğƒoƒbƒtƒ@‚É“Ç‚İ‚ñ‚¾•Ï”–¼
+var1,var2,color
+var1     : ì¬‚³‚ê‚½ƒ‚ƒfƒ‹ID‚ª‘ã“ü‚³‚ê‚é•Ï”–¼
+var2     : DXFŒ`®‚Ìƒf[ƒ^‚ª‘ã“ü‚³‚ê‚Ä‚¢‚éƒoƒbƒtƒ@•Ï”–¼
+color(0) : •\–Ê‚ÌFw’è(ƒIƒvƒVƒ‡ƒ“)
 %inst
-DXFƒtƒ@ƒCƒ‹‚ğ“Ç‚İ‚ŞÛ‚Ég‚í‚ê‚é–½—ß‚Å‚·B
-’Êí‚Ídxfload–½—ß‚ğg—p‚µ‚Ä‚­‚¾‚³‚¢B
-‚±‚ê‚ç‚Ì–½—ß‚ÍAdxfload–½—ßƒ‚ƒWƒ…[ƒ‹“à‚Åg—p‚³‚ê‚Ä‚¢‚Ü‚·B
+DXFŒ`®‚Ìƒ‚ƒfƒ‹‚ğ“o˜^‚µ‚Ü‚·Bƒ‚ƒfƒ‹ƒf[ƒ^‚ÍA‚ ‚ç‚©‚¶‚ßvar2‚Åw’è‚³‚ê‚½•Ï”ƒoƒbƒtƒ@‚É“Ç‚İ‚Ü‚ê‚Ä‚¢‚é•K—v‚ª‚ ‚è‚Ü‚·B
+³í‚Éƒ‚ƒfƒ‹‚ª“o˜^‚³‚ê‚é‚ÆAvar‚Åw’è‚µ‚½•Ï”‚Éƒ‚ƒfƒ‹ID‚ª‘ã“ü‚³‚ê‚Ü‚·B
+color‚Å“Ç‚İ‚Ü‚ê‚½ƒ|ƒŠƒSƒ“‚Ì•\–ÊF‚ğw’è‚·‚é‚±‚Æ‚ª‚Å‚«‚Ü‚·B•\–ÊF‚ÍARGB‚ğ24bit®”‚ÉƒpƒbƒN‚µ‚½Œ`®($rrggbb)‚Åw’è‚·‚é•K—v‚ª‚ ‚è‚Ü‚·B
+color‚ğÈ—ª‚Ü‚½‚Í0‚Éw’è‚µ‚½ê‡‚ÍA”’F(0xffffff)‚ª‘I‘ğ‚³‚ê‚Ü‚·B
+‚±‚Ì–½—ß‚ÍAƒƒ‚ƒŠã‚É“Ç‚İ‚Ü‚ê‚½ƒf[ƒ^‚©‚ç“o˜^‚ğs‚È‚¤‚½‚ß‚Ì‚à‚Ì‚Å‚·BDXFŒ`®‚Ìƒtƒ@ƒCƒ‹‚ª—pˆÓ‚³‚ê‚Ä‚¢‚éê‡‚ÍAdxfload–½—ß‚ğ‚¨g‚¢‚­‚¾‚³‚¢B
 %href
-dxfload
-dxfgetpoly
-
-
-%index
-dxfgetpoly
-DXFŒ`®‚Ìƒ|ƒŠƒSƒ“”‚ğæ“¾
-%group
-Šg’£‰æ–Ê§Œä–½—ß
-%prm
-val
-val : Œ‹‰Ê‚ª‘ã“ü‚³‚ê‚é•Ï”–¼
-%inst
-•ÏŠ·‚³‚ê‚½DXFƒtƒ@ƒCƒ‹‚Ìƒ|ƒŠƒSƒ“”‚ğæ“¾‚µ‚Ü‚·B
-‚±‚Ì–½—ß‚ÍAdxfload–½—ßƒ‚ƒWƒ…[ƒ‹“à‚Åg—p‚³‚ê‚Ä‚¢‚Ü‚·B
-’Êí‚Íg‚¤•K—v‚Í‚ ‚è‚Ü‚¹‚ñB
-%href
-dxfconv
 dxfload
 
 
@@ -2943,9 +2626,6 @@ id      : ƒ‚ƒfƒ‹ID
 %inst
 w’è‚µ‚½ƒ‚ƒfƒ‹‘S‘Ì‚ğw’è‚µ‚½ƒXƒP[ƒ‹’l‚ÅŠg‘åk¬‚µ‚Ü‚·B
 ‚±‚ê‚É‚æ‚èƒ‚ƒfƒ‹‚»‚Ì‚à‚Ì‚ÌƒTƒCƒY©‘Ì‚ğ•Ï‚¦‚é‚±‚Æ‚ª‰Â”\‚É‚È‚è‚Ü‚·B
-
-%href
-modelmove
 
 
 %index
@@ -4327,6 +4007,7 @@ MOCİ’è–½—ß‚Ì‘ÎÛ‚Æ‚È‚éMOCƒOƒ‹[ƒv‚ğƒ‰ƒCƒg(ŒõŒ¹)‚ÌÀ•W‚Éİ’è‚µ‚Ü‚·B
 sellight
 sellang
 sellcolor
+sellambient
 
 
 %index
@@ -4343,6 +4024,7 @@ MOCİ’è–½—ß‚Ì‘ÎÛ‚Æ‚È‚éMOCƒOƒ‹[ƒv‚ğƒ‰ƒCƒg(ŒõŒ¹)‚ÌŠp“x‚Éİ’è‚µ‚Ü‚·B
 sellight
 sellpos
 sellcolor
+sellambient
 
 
 %index
@@ -4359,6 +4041,24 @@ MOCİ’è–½—ß‚Ì‘ÎÛ‚Æ‚È‚éMOCƒOƒ‹[ƒv‚ğƒ‰ƒCƒg(ŒõŒ¹)‚ÌF(R,G,B,Ambient)‚Éİ’è‚µ‚Ü‚·
 sellight
 sellpos
 sellang
+sellambient
+
+
+%index
+sellambient
+ŠÂ‹«ŒõF‚ğMOCî•ñ‚Éİ’è
+%group
+Šg’£‰æ–Ê§Œä–½—ß
+%prm
+id
+id     : ŒõŒ¹‚ÌID(0`3)
+%inst
+MOCİ’è–½—ß‚Ì‘ÎÛ‚Æ‚È‚éMOCƒOƒ‹[ƒv‚ğƒAƒ“ƒrƒGƒ“ƒg(ŠÂ‹«Œõ)‚ÌF(R,G,B)‚Éİ’è‚µ‚Ü‚·B
+%href
+sellight
+sellpos
+sellang
+sellcolor
 
 
 %index
@@ -4410,27 +4110,6 @@ fv      = FV’l‚ª‘ã“ü‚³‚ê‚Ä‚¢‚é•Ï”–¼
 %inst
 •Ï”fv‚Ì“à—e‚ğMOC‚É‰ÁZ‚µ‚Ü‚·B
 %href
-objgetfv
-fvset
-fvadd
-fvsub
-fvmul
-fvdiv
-
-
-%index
-objmovfv
-MOCˆÚ“®î•ñ‚ğİ’è
-%group
-Šg’£‰æ–Ê§Œä–½—ß
-%prm
-fv,times
-fv    : FV’l‚ª‘ã“ü‚³‚ê‚Ä‚¢‚é•Ï”–¼
-times : ƒtƒŒ[ƒ€”
-%inst
-timesƒtƒŒ[ƒ€Œã‚É•Ï”fv‚Ì“à—e‚É‚È‚é‚æ‚¤‚ÉMOC•Ï‰»’l‚ğİ’è‚µ‚Ü‚·B
-%href
-objsetfv
 objgetfv
 fvset
 fvadd
@@ -6280,5 +5959,38 @@ OBAQã‚ÌX,YÀ•W‚ğHGIMG3ã‚ÌX,Y,ZÀ•W‚É•ÏŠ·‚µ‚Ü‚·B
 (srcx,srcy)‚ÅOBAQã‚ÌX,YÀ•W‚ğw’è‚·‚é‚ÆA(x,y,z)‚Éw’è‚³‚ê‚½•Ï”‚ÉÀ”Œ^‚ÅHGIMG3ã‚ÌX,Y,ZÀ•W‚ª‘ã“ü‚³‚ê‚Ü‚·B
 %href
 qcnvaxis
+
+
+%index
+enumobj
+ƒIƒuƒWƒFƒNƒg‚ÌŒŸõŠJn
+%group
+Šg’£‰æ–Ê§Œä–½—ß
+%prm
+group
+group    : ƒRƒŠƒWƒ‡ƒ“ƒOƒ‹[ƒv
+%inst
+w’è‚µ‚½ƒRƒŠƒWƒ‡ƒ“ƒOƒ‹[ƒv‚É‘®‚·‚éƒIƒuƒWƒFƒNƒg‚ğŒŸõ‚µ‚Ü‚·B
+ŒŸõŒ‹‰Ê‚ÍAgetenum–½—ß‚É‚æ‚èæ“¾‚·‚é‚±‚Æ‚ª‚Å‚«‚Ü‚·B
+ŒŸõŒ‹‰Ê‚ª•¡”‚ ‚éê‡‚ÍAgetenum–½—ß‚ğŒÄ‚Ño‚·‚½‚Ñ‚ÉŸ‚ÌŒ‹‰Ê‚ª•Ô‚³‚ê‚Ü‚·B
+‚·‚×‚Ä‚ÌŒŸõ‚ªI—¹‚µ‚½ê‡‚ÍAgetenum–½—ß‚ÅƒIƒuƒWƒFƒNƒg‚ÌID‚Æ‚µ‚Ä-1‚ª•Ô‚³‚ê‚Ü‚·B
+%href
+getenum
+
+
+%index
+getenum
+ƒIƒuƒWƒFƒNƒg‚ÌŒŸõŒ‹‰Ê‚ğæ“¾
+%group
+Šg’£‰æ–Ê§Œä–½—ß
+%prm
+var
+var      : Œ‹‰Ê‚ª‘ã“ü‚³‚ê‚é•Ï”–¼
+%inst
+enumobj–½—ß‚É‚æ‚èŒŸõ‚³‚ê‚½ƒIƒuƒWƒFƒNƒg‚ÌID‚ğæ“¾‚µ‚Ü‚·B
+getenum–½—ß‚ğÀs‚·‚é‚½‚Ñ‚ÉAŸ‚ÌŒŸõŒ‹‰Ê‚ªæ“¾‚³‚ê‚Ü‚·Bæ“¾‚ªI‚í‚Á‚½ê‡‚É‚ÍA-1‚ª‘ã“ü‚³‚ê‚Ü‚·B
+
+%href
+enumobj
 
 

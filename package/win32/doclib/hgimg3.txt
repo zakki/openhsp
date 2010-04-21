@@ -40,40 +40,48 @@ HGIMG ver3.21   REFERENCE MANUAL       High Performance Graphic Image Plugin
 	必ず、HGIMG3のランタイムに対応したバージョンのコンパイラ
 	(hspcmp.dll)やスクリプトエディタをご使用下さい。
 	また、HSP3は実行ランタイムに対応したコードジェネレーター(hspcmp.dll)
-	をご使用ください。(HSP3.1以上を推奨)
+	をご使用ください。(HSP3.2以上を推奨)
 
 
 ・著作権とライセンス
 
 	ユーザーがHGIMG3を使って作成したオリジナルのソフトウェア(実行ファイル)の権利は、
 	それを作成したユーザーに属します。
-	ただし、HGIMG3ランタイムには、OggVorvis形式のファイルデコードにXiph.org Foundation
-	のライブラリを使用しており、配布規定に従って以下の表記をする必要があります。
+	ユーザーがHGIMG3を使って作成したオリジナルのソフトウェア(実行ファイル)を、
+	自由に通信、即売会、店頭などで展示、配布、販売することができます。
+	ライセンス料は必要ありません。
+
+	ただし、HGIMG3ではOggVorvis形式のファイルデコードにXiph.org Foundation
+	のライブラリを使用しており、実行ファイルの配布にあたっては
+	規定に従って以下のライセンス表記が必要になります。
 
 	--------------------------------------------------------------------------------
 	OggVorvis形式のファイルデコードに以下のライブラリを使用しています
 	libvorbis : Copyright (c) 2002-2004 Xiph.org Foundation
 	--------------------------------------------------------------------------------
-
-	(ライセンス表記は、配布物の中に上記の内容を含むテキストを含めるようにしてください。)
-
-	以上の項目を満たしていれば、ユーザーがHGIMG3を使って作成したオリジナルの
-	ソフトウェア(実行ファイル)を、自由に通信、即売会、店頭などで展示、配布、販売
-	することができます。ライセンス料は必要ありません。
-
-	HGIMG3は、HSP及びOpenHSPによる技術を基本にして作成されています。
-
-	OpenHSP
-	Copyright (C) 1997-2010, Onion Software/onitama.
-	All rights reserved.
+	(配布物の中に上記の内容を含むテキストを含めるようにしてください。)
 
 	HGIMG3ランタイムの著作権はonion softwareにあります。
 	onion softwareは本プログラムによって生じた、いかなる損害についても保証いたしません。
 	自己の責任の範囲で使用してください。
-	また、付属のサンプルスクリプトも自由に改変、公開していただいて構いません。
-	HGIMG3ランタイムとそれに付随するデータは、基本的にBSDライセンスのもと
-	有償・無償を問わず添付、複製、改編、再配布することができます。
-	ただし、その際には必ずライセンス表記も含めるようにしてください。
+
+	HGIMG3ランタイムとそれに付随するサンプルスクリプト・データは、
+	基本的にBSDライセンスのもと有償・無償を問わず添付、複製、改編、再配布
+	することができます。
+	ただし、その際には必ず以下のライセンス表記も含めるようにしてください。
+	(これは、ランタイムファイル(.hrt)及びサンプルスクリプト、データを配布
+	 する際の表記です。自分の作ったオリジナルのソフトウェア(実行ファイル)を
+	配布する際には、上にあるlibvorbisのライセンス表記のみで問題ありません。)
+
+	--------------------------------------------------------------------------------
+	HGIMG3 : Made with base technology of OpenHSP
+	Copyright (C) 1997-2010, Onion Software/onitama.
+	All rights reserved.
+	OggVorvis形式のファイルデコードに以下のライブラリを使用しています
+	libvorbis : Copyright (c) 2002-2004 Xiph.org Foundation
+	--------------------------------------------------------------------------------
+
+	(配布物の中に上記の内容を含むテキストを含めるようにしてください。)
 
 
 ・HGIMG3の概要
@@ -98,7 +106,6 @@ HGIMG ver3.21   REFERENCE MANUAL       High Performance Graphic Image Plugin
 	・スプライトの表示、移動の管理および衝突判定機能
 	・HSP3に対応した浮動小数によるジオメトリ演算
 	・イベントリスト登録機能により自由度の高い自律処理を実現可能
-	・独自フォーマット(mx)による3Dモデルの読み込み
 	・単位時間あたりの移動量から動きの計算を行なうタイムスケールモードを搭載
 	・DXF形式の3Dデータ読み込みをサポート
 	・使いやすい直接描画命令を装備
@@ -116,7 +123,7 @@ HGIMG ver3.21   REFERENCE MANUAL       High Performance Graphic Image Plugin
 	・独自のアニメーション形式(ma)によるモーション再生
 	・ポリゴン情報、および階層情報の参照と変更、mx形式でのセーブ
 	・画面上の2D位置から該当するポリゴンを検索するポリゴンスキャン機能
-	・objmov系のMOCパラメーター自動変更の仕様が変更されています
+	・objmov系のMOCパラメーター自動変更はイベント機能に置き換えせれています
 	・フォールオフレンダリング機能は削除されタイムスケールモードが搭載されています
 
 	HGIMG3は、以前のバージョン(HGIMG2)に比べて、機能は増えていますが、
@@ -127,9 +134,16 @@ HGIMG ver3.21   REFERENCE MANUAL       High Performance Graphic Image Plugin
 
 ・現バージョンでの注意点
 
-	以下の機能は未実装です。将来のバージョンでサポートされる予定です。
+	以下の症状が既知の不具合として報告されています。予めご了承ください。
 
-	・mx形式モデルの読み込み
+	・オブジェクトの親子関係が多階層になったときにパラメータの多重な変換を受ける。
+	・x形式のモデルデータがobjchild命令による親子関係に対応していない
+	・線分モデルがhgviewによる描画エリアの設定に対応していない。
+
+
+	また、以下の機能は未実装です。将来のバージョンでサポートされる予定です。
+
+	・独自フォーマット(mx)による3Dモデルの読み込み
 	・タイムスケールモード
 	・追加のライトパラメーター
 	・制限のないオブジェクト・モデル登録
@@ -137,6 +151,11 @@ HGIMG ver3.21   REFERENCE MANUAL       High Performance Graphic Image Plugin
 
 
 ・更新履歴
+
+	2010/04/21 ( Ver3.21a )
+
+		ドキュメント、リファレンス表記が古かった部分を修正
+		HGIMG上位互換のdxfload命令をサポート
 
 	2010/03/17 ( Ver3.21 )
 
@@ -365,51 +384,39 @@ HGIMG ver3.21   REFERENCE MANUAL       High Performance Graphic Image Plugin
 
 ・命令一覧(メイン)
 
-	hgini mode,yofs,ysize			DLLの初期化
+	hgini yofs,ysize			DLLの初期化
 	hgreset							シーン情報の初期化
-	hgsrc							ソースバッファ指定
-	hgdraw val, timer				描画の実行
+	hgdraw mode					描画の実行
 	hgbye							DLLの開放
-	getsync val,mode				時間待ち情報を取得
-	sync val						時間待ちを行なう
-	getdebug val					デバッグ情報取得
+	hgsync val						時間待ちを行なう
 	hgsetreq type,val				システムリクエスト設定
 	hggetreq val,type				システムリクエスト取得
 
-	setborder sx,sy,sz				オブジェクト有効範囲設定
-	clscolor sx,sy,cx,cy			背景色設定
+	setborder sx,sy,sz,option				オブジェクト有効範囲設定
+	clscolor color					背景色設定
 	clstex id						背景テクスチャ設定
-	setfont cx,cy,sw				オリジナルフォント定義
+	setfont cx,cy,px,sw				オリジナルフォント定義
 	fprt "mes",x,y					定義フォント文字列表示
 
 	cammode mode					カメラモードの設定
 
-	objact ObjID, anim				指定アニメーションを開始
+	objact ObjID,anim,mode				指定アニメーションを開始
 
 	setuv tx0,ty0,tx1,ty1			登録テクスチャUV座標を指定
 	setsizef sx,sy					登録モデルの幅、高さを指定
-	setbg sx,sy,cx,cy				BGマップ情報設定
-	getbg val,modelID				BGマップを取得
-	setmap modelID,x,y				BGマップスクロール指定
-	addbox val						箱(BOX)モデルを作成
-	addplate val, mode				板(PLATE)モデルを作成
-	addspr val, mode				2Dスプライトモデルを作成
-	addbg val, winx, winy,sw		2DBGマップモデルを作成
-
+	addbox var,sx,sy,texid				箱(BOX)モデルを作成
+	addplate var,mode,sx,sy,texid			板(PLATE)モデルを作成
+	addspr var,mode,x1,y1,x2,y2,texid		2Dスプライトモデルを作成
 	addxfile model,"filename"		モデルファイル読み込み
 
-	regobj val,ModelID, mode		オブジェクトの登録
+	regobj var,ModelID,mode,EventID		オブジェクトの登録
 	delobj ObjID					オブジェクトの削除
-	setobjm ObjID, ModelID			オブジェクトのモデル設定
+	setobjmodel ObjID, ModelID		オブジェクトのモデル設定
 	setobjmode id,mode,sw			オブジェクトのモード設定
 	setcoli id,mygroup,enegroup		オブジェクトのコリジョン設定
 	getcoli val,id,distance			オブジェクトのコリジョン判定
 	findobj exmode,group			オブジェクト検索
 	nextobj val						次のオブジェクト検索
-
-	uvanim id, wait, times, sw		モデルのUVアニメ設定
-	setmode ModelID, mode			モデルのモード設定
-	settimer ModelID, timer			モデルのタイマー設定
 
 	clsblur val						ブラー設定
 	setcolor r,g,b					単色ポリゴン作成設定
@@ -436,40 +443,29 @@ HGIMG ver3.21   REFERENCE MANUAL       High Performance Graphic Image Plugin
 
 	objset1 ofs,x					MOC情報を設定
 	objadd1 ofs,x					MOC情報を加算
-	objmov1 ofs,times,x				MOC移動情報を設定
 	objsetf1 ofs,x					MOC情報を設定
 	objaddf1 ofs,x					MOC情報を加算
-	objmovf1 ofs,times,x			MOC移動情報を設定
 	objset1r ofs,x					MOC情報を設定
-	objmov1r ofs,times,x			MOC移動情報を設定
 
 	objset2 ofs,x,y					MOC情報を設定
 	objadd2 ofs,x,y					MOC情報を加算
-	objmov2 ofs,times,x,y			MOC移動情報を設定
 	objsetf2 ofs,x,y				MOC情報を設定
 	objaddf2 ofs,x,y				MOC情報を加算
-	objmovf2 ofs,times,x,y			MOC移動情報を設定
 	objset2r ofs,x,y				MOC情報を設定
-	objmov2r ofs,times,x,y			MOC移動情報を設定
 
 	objset3 x,y,z					MOC情報を設定
 	objadd3 x,y,z					MOC情報を加算
-	objmov3 times,x,y,z				MOC移動情報を設定
 	objsetf3 x,y,z					MOC情報を設定
 	objaddf3 x,y,z					MOC情報を加算
-	objmovf3 times,x,y,z			MOC移動情報を設定
 	objset3r x,y,z					MOC情報を設定
-	objmov3r times,x,y,z			MOC移動情報を設定
 
 	objgetfv fv						MOC情報を取得
 	objsetfv fv						MOC情報を設定
 	objaddfv fv						MOC情報を加算
-	objmovfv fv,times				MOC移動情報を設定
 	objgetv v						MOC情報を整数値で取得
 	objsetv v						MOC情報を整数値で設定
 	objgetstr sval					MOC情報を文字列で取得
 
-	fvget							(未使用)
 	fvset fv,x,y,z					ベクトル設定
 	fvseti fv,x,y,z					整数値からベクトル設定
 	fvadd fv,x,y,z					ベクトル加算
@@ -486,45 +482,19 @@ HGIMG ver3.21   REFERENCE MANUAL       High Performance Graphic Image Plugin
 	fsin fval,rot					サインを求める
 	fcos fval,rot					コサインを求める
 	fsqr fval,prm					平方根を求める
-	fadd fval,prm					小数値加算
-	fsub fval,prm					小数値減算
-	fmul fval,prm					小数値乗算
-	fdiv fval,prm					小数値除算
-	fcmp val,prm1,prm2				小数値比較
 	froti fval,prm					整数値角度を小数値に変換
 
 	fv2str fv						ベクトルを文字列に変換
 	str2fv fv,"x,y,z"				文字列をベクトルに変換
 	str2f fval,"val"				文字列を小数値に変換
 	f2str val,fval					小数値を文字列に変換
-	f2i v,x,y,z						小数値を整数値に変換
 
-	mxload "filename",sw				モデルファイル読み込み
+	settex x,y,sw,mode				テクスチャを登録
 
-	setmtex id, nodeid, tex, shade	モデルのテクスチャを設定
-	getmtex val, modelid, nodeid	モデルのテクスチャを取得
-	getnode val, modelID, nodeID	モデルのノード情報を取得
-
-	evmodel eventID, modelID		イベントモデルID設定
-
-	copybuf mode					指定バッファに画面コピー
-
-	mxsend val						MX形式ファイルをパース
-	mxconv val						MX形式ファイルを変換
-	mxaconv val						MA形式ファイルを変換
-	mxgetpoly val					ポリゴン数を取得
-	mxgetname val,id				テクスチャ名を取得
-	settex x,y,sw					テクスチャを登録
-	gettex val						テクスチャIDを取得
-
-	modelmovef id,x,y,z				モデルの絶対位置を移動
-	modelscalef id,x,y,z				モデルの拡大縮小
+	modelscale id,x,y,z				モデルの拡大縮小
 	modelshade id,mode				モデルシェーディングモードの設定
 
 	dxfload "file"					DXF形式ファイルを読み込み
-	dxfconv val						DXF形式ファイルをパース
-	dxfgetpoly val					ポリゴン数を取得
-
 
 
 ・動作の概要
@@ -765,6 +735,10 @@ HGIMG ver3.21   REFERENCE MANUAL       High Performance Graphic Image Plugin
 		OBJ_STAND            地面の上に配置する
 		OBJ_GRAVITY          重力計算を有効にする
 		OBJ_STATIC           障害物として認識される
+		OBJ_BOUND            地面で反発する(メッシュマップコリジョン用)
+		OBJ_ALIEN            ターゲットに向ける(メッシュマップコリジョン用)
+		OBJ_WALKCLIP         移動の制限を受ける(メッシュマップコリジョン用)
+		OBJ_EMITTER          エミッター発生オブジェクトになる
 
 	複数の項目を同時に選択する場合は、「OBJ_LATE|OBJ_MOVE」のように
 	「|」で区切って指定してください。何も指定しない場合は、0にするか
@@ -1486,7 +1460,6 @@ HGIMG ver3.21   REFERENCE MANUAL       High Performance Graphic Image Plugin
 		objgetfv fv						MOC情報を取得
 		objsetfv fv						MOC情報を設定
 		objaddfv fv						MOC情報を加算
-		objmovfv fv,times				MOC移動情報を設定
 		objgetv v						MOC情報を整数値で取得
 		objsetv v						MOC情報を整数値で設定
 
@@ -2746,165 +2719,6 @@ HGIMG ver3.21   REFERENCE MANUAL       High Performance Graphic Image Plugin
 	そのまま利用することができます。(ただし商用利用禁止)
 	モデルやアニメーション作成も非常に高機能ですが、そのぶん
 	使い方を覚えるのに時間がかかるのが難点かもしれません。
-
-
-・MXファイルフォーマットについて
-
-	MXファイルは、HGIMG専用に作成されたポリゴンモデル記述ファイルです。
-	MXファイルへの変換や、加工などのサポートは今後順次リリースしていく予定です。
-	ver2.0β2からマテリアル情報エリアなどが追加されたMXフォーマットver2.0が
-	定められました。以前のバージョンからの上位互換となっています。
-
-	・mxフォーマット詳細(ver2.0)
-
-	ユーザー側でMXファイルを作成する場合は、以下のフォーマットに従って
-	ファイルを生成していただくようお願い致します。
-	MXファイルフォーマットは今後、拡張改編される可能性があります。
-	MXファイルについての技術的なご意見やご質問は、メールかβ版の掲示板へ
-	お願い致します。
-
-		MXファイル構造(以下の順に各構造体が記録されています)
-
-			[MXHED]
-			[MDINF]  ( SIZE_MDINF のバイト数だけ格納されています )
-			[NDINF]  ( SIZE_NDINF のバイト数だけ格納されています )
-			[MATINF] ( SIZE_MATINF のバイト数だけ格納されています )
-			[EMTINF] ( SIZE_EMTINF のバイト数だけ格納されています )
-
-		[MXHED]はヘッダ情報です。以下の内容を持っています。
-		h1～h4は、$4d,$58,$46,$00固定です。
-		現在のバージョンは2.00($0200)です。
-
-		typedef struct
-		{
-			//		MX file header structure (ver2)
-			//
-			char	h1;					// magic code1
-			char	h2;					// magic code2
-			char	h3;					// magic code3
-			char	h4;					// magic code4
-			int		version;			// version number info
-
-			int		size_mdinf;			// size of Model section
-			int		pt_mdinf;			// ptr to Model Segment
-			int		size_ndinf;			// size of Node section
-			int		pt_ndinf;			// ptr to Node Segment
-			int		size_matinf;		// size of Matinf section
-			int		pt_matinf;			// ptr to Matinf Segment
-
-			//		Additional information
-			int		flags;				// Extra Mode Flags
-			short	texoffset;			// global Texture ID offset
-			short	matoffset;			// global Material ID offset
-	
-			int		size_emtinf;		// size of ExMatinf section
-			int		pt_emtinf;			// ptr to ExMatinf Segment
-		} MXHED2;
-
-		flagsフィールドには、mxファイルに含まれる情報の設定が保存されます。
-		以下のフラグによってON/OFFをコントロールすることができます。
-		( (*)がついているものは現状でサポートされていません。)
-
-		#define MX_FLAG_GLOBALTEX 1		// グローバルのTextureIDを使用する
-		#define MX_FLAG_UV2	2			// UV値を0.0～1.0で格納する
-		#define MX_FLAG_PCOLOR 4		// 法線の替わりにRGB値を格納する(*)
-		#define MX_FLAG_WEIGHT 8		// ndinfのvector.wにボーンウェイト情報を格納する(*)
-		#define MX_FLAG_BONE 16			// ndinfのnormal.wにブレンド先ボーン情報を格納する(*)
-		#define MX_FLAG_BOUND 32		// mdinfのscale.wにバウンディング半径情報を格納する(*)
-
-		続いてモデル情報を示す構造体が続きます。
-		階層構造を持つモデル同士の接続を示しています。
-		ndinfが示す[NDINF]のインデックスから、num_ndinfの個数がモデルの
-		持つポリゴン情報になります。
-
-		typedef struct
-		{
-			MX_VECTOR pos;			// トランスレート
-			MX_VECTOR ang;			// 角度
-			MX_VECTOR scale;		// スケール
-			short	flag;			// enable flag ( master model )
-			short	num_ndinf;		// num of ndinf
-			int		ndinf;			// ndinf index
-			short	child;			// 子のmodel index
-			short	sibling;		// 兄弟のmodel index
-		} MDINF;
-
-		それに続いてポリゴン情報が記録されます。
-		NDINFには、すべて４角形ポリゴンとして記録されています。
-		３角形の場合は最後の２頂点は同じ座標になります。
-		UV座標はfloat値ですが、テクスチャ上の座標値(ドット単位)となります。
-		ただし、MX_FLAG_UV2が指定されている場合、UV値はテクスチャ上の仮想座標
-		(0.0～1.0)になります。
-		MX_VECTOR型のwは、通常は1.0fです。
-
-		typedef struct {
-		  float x, y, z, w;
-		} MX_VECTOR;
-
-		// 整数AXIS型
-		typedef struct {
-		float u,v;
-		} MX_UVAXIS;
-
-		typedef struct
-		{
-			MX_VECTOR v[4];			// 頂点座標
-			MX_VECTOR n[4];			// 法線
-			MX_UVAXIS uv[4];		// UV座標
-			int color;				// ディフューズ色(R8G8B8)
-			short tex;				// テクスチャID(-1の場合はテクスチャなし)
-			short mat;				// マテリアル情報
-		} NDINF;
-
-		matフィールド(マテリアル情報)は、以下のフラグが格納されます。
-
-		#define NODE_ATTR_COLKEY 0x8000
-		#define NODE_ATTR_USEMATERIAL 0x400	// MaterialID(bit0-10)を参照する
-		#define NODE_ATTR_GLOBALMAT 0x800	// グローバルのMaterialIDを使用する
-		#define NODE_ATTR_SHADE_NONE 0
-		#define NODE_ATTR_SHADE_FLAT 1
-		#define NODE_ATTR_SHADE_GOURAUD 2
-		#define NODE_ATTR_SHADE_WIREFRAME 4
-
-		通常は、シェーディングモード(0=光源計算なし/1=フラット/2=グーロー)が
-		指定されますが、NODE_ATTR_USEMATERIALフラグをONの時は、bit0～10で指定
-		された値はマテリアルID(EMTINFバッファ内の順番を示すID)となり、より
-		細かい質感設定が可能になります。
-		NODE_ATTR_COLKEYフラグがONの時は、テクスチャマッピングの際にカラーキー
-		(透明色)のドットは転送されなくなります。
-
-
-		次にテクスチャのファイル名(拡張子なし)がascii文字列で
-		記録されています。
-
-		typedef struct
-		{
-			char name[16];			// テクスチャのファイル名
-		} MATINF;
-
-
-		次にマテリアル定義の拡張用バッファが記録されています。
-
-		typedef struct
-		{
-			//	Extra Material Info
-			//
-			short	flag;			// Mode Flags
-			char	shade;			// Shade Mode (0=no light/1=flat/2=gouraud)
-			char	priority;		// Transparent priority
-			int		opt1;			// (option)
-			int		opt2;			// (option)
-			float	alpha;			// 0.0～1.0 透明 / 1.1～ 加算 / -0.1～ 減算
-
-			float	diffuse;		// diffuse rate値(0.0～1.0)
-			float	fog;			// fog rate値(0.0～1.0)
-			float	specular;		// スペキュラーrate値(0.0～)
-			float	envmap;			// 環境マップrate値(0.0～1.0)
-
-			float	pad[8];			// (reserved)
-		} EMTINF;
-
-		現状では、shadeフィールド以外はサポートされていません。
 
 
 -------------------------------------------------------------------------------
