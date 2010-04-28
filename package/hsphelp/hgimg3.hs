@@ -4669,6 +4669,8 @@ ChildObjID‚ÅŽw’è‚³‚ê‚½ƒIƒuƒWƒFƒNƒg‚ÍAObjID‚ÅŽw’è‚³‚ê‚½ƒIƒuƒWƒFƒNƒg‚ÆeŽqŠÖŒW‚ðŽ
 Žq‹Ÿ‚ðŽ‚Á‚Ä‚¢‚éeƒIƒuƒWƒFƒNƒg‚ðAChildObjID‚ÉŽw’è‚·‚é‚±‚Æ‚Å‘½ŠK‘w‚Ì\‘¢‚ðÝ’è‚·‚é‚±‚Æ‚ª‰Â”\‚Å‚·B
 ‚·‚Å‚É‰½‚ç‚©‚Ìe‚ðŽ‚Á‚Ä‚¢‚éƒIƒuƒWƒFƒNƒg‚ðŽq‹Ÿ‚ÉŽw’è‚·‚é‚±‚Æ‚Í‚Å‚«‚Ü‚¹‚ñB
 ChildObjID‚Éƒ}ƒCƒiƒX’l‚ðŽw’è‚·‚é‚ÆAObjID‚ÅŽw’è‚µ‚½ƒIƒuƒWƒFƒNƒg‚ªŽ‚ÂeŽqÝ’è‚ð‚·‚×‚Ä”jŠü‚µ‚Ü‚·B
+^
+Œ»Ý‚Ìƒo[ƒWƒ‡ƒ“‚Å‚ÍAxŒ`Ž®‚Ìƒ‚ƒfƒ‹‚ðŽ‚ÂƒIƒuƒWƒFƒNƒg‚Å‚ÌeŽqŠÖŒWÝ’è‚Í”½‰f‚³‚ê‚Ü‚¹‚ñBxŒ`Ž®ˆÈŠO‚Ì3D,2Dƒ‚ƒfƒ‹‚Å‚Ì‚Ý‚²Žg—p‚­‚¾‚³‚¢B
 %href
 regobj
 delobj

@@ -152,8 +152,9 @@ HGIMG ver3.21   REFERENCE MANUAL       High Performance Graphic Image Plugin
 
 ・更新履歴
 
-	2010/04/21 ( Ver3.21a )
+	2010/04/28 ( Ver3.21a )
 
+		x形式のモデル以外でsetefxによる半透明設定が正しく反映されないことがある不具合を修正
 		ドキュメント、リファレンス表記が古かった部分を修正
 		HGIMG上位互換のdxfload命令をサポート
 
