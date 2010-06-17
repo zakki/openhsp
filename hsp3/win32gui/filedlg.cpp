@@ -200,7 +200,7 @@ void fd_ini( HWND hwnd, char *extname, char *extinfo )
 	pszFilterPtr = pszFilter;
 	for(nFilterSeek = 0; nFilterSeek < nFilterLen; pszFilterPtr++, nFilterSeek++) {
 		if( is_sjis1(*pszFilterPtr) )
-			pszFilterPtr++;
+			pszFilterPtr++, nFilterSeek++;
 		else if( *DELIMITER_PIPE == *pszFilterPtr )
 			*pszFilterPtr = '\0';
 	}
