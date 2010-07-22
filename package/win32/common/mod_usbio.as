@@ -61,6 +61,7 @@ return
 // ディバイスを検索して一覧作成
 #deffunc uio_find
 	sdim devpath,256,MAX_DEVS
+	sdim path,256,MAX_DEVS
 	dev=0
 	devs=0
 
@@ -86,7 +87,8 @@ return
 		lpoke DevDetail,0,5
 		//DevDetail(0)=5 // size
 		SetupDiGetDeviceInterfaceDetail DeviceInfoSet,devData,varptr(DevDetail),size,Needed,0
-		path=strmid(DevDetail,4,size)
+		memcpy path,DevDetail,size,0,4
+		;path=strmid(DevDetail,4,size)
 		CreateFile path,0xC0000000,3,NULL,3,0
 		hHID=stat
 		HidD_GetAttributes hHID,DeviceAttributes
@@ -94,9 +96,9 @@ return
 		pid=DeviceAttributes(1)>>16&0xffff
 		ver=DeviceAttributes(2)&0xffff
 
-		//print path
-		//print strlen(path)
-		//print "vid="+vid+"  pid="+pid+" (v:"+ver+")"
+		;print path
+		;print strlen(path)
+		print "path="+DevDetail+"  vid="+vid+"  pid="+pid+" (v:"+ver+")"
 		if ((vid==0x0BFE && pid==0x1003) || (vid==0x12ED && pid==0x1003) || (vid==0x1352 && pid==0x100)) {
 			devpath(devs)=path
 			devs++
@@ -136,7 +138,7 @@ return
 	if (hHID==NULL) : uio_find
 	mref _stat,64
 	dim sz,1
-	cmdid++
+	cmdid=(cmdid+1)&255
 	sdim dat,10
 	poke dat,0,0
 	poke dat,1,3+port
@@ -146,7 +148,7 @@ return
 		poke dat,1,0x14+port
 	}
 	WriteFile hHID,dat,OutputByte,sz,NULL
-	if (stat==0) :_stat=1:return
+	if (stat==0) :_stat=1: return
 	f=1
 	repeat 100
 		ReadFile hHID,dat,InputByte,sz,NULL

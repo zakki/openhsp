@@ -1,5 +1,5 @@
-//#include "mod_usbio.as"
-#include "hspusbio.as"
+#include "mod_usbio.as"
+//#include "hspusbio.as"
 
 *start
 	title "USB-IO test"
@@ -33,13 +33,13 @@ stop
 	uio_inp tmp,port
 	;if stat :goto *start
 	mes "IN:"+tmp +"(stat="+stat+")"
-	str tmp,17 //tmp=strf("%02x",tmp) // HSP3
+	tmp=strf("%02x",tmp) // HSP3
 	objprm 1,tmp
 stop
 
 *write
 	tmp="$"+s
-	int tmp // tmp=int(tmp) // HSP3
+	tmp=int(tmp) // HSP3
 	uio_out port,tmp
 	;if stat :goto *start
 	mes "OUT:"+tmp +"(stat="+stat+")"
