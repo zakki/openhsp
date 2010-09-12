@@ -1865,8 +1865,10 @@ void __HspInit( Hsp3r *hsp3 ) {
 	}
 	EE->updateGlobalMapping( sDsBase, (void*)&sDsBasePtr );
 
-	__HspTaskFunc = new CHSP3_TASK[sLabMax];
-	__Task = new Task*[sLabMax];
+	if ( sLabMax > 0 ) {
+		__HspTaskFunc = new CHSP3_TASK[sLabMax];
+		__Task = new Task*[sLabMax];
+	}
 
 	Alert("HspInit");
 	for (int i=0;i<sLabMax;i++) {

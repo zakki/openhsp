@@ -489,11 +489,11 @@
 				>
 			</File>
 			<File
-				RelativePath="..\hsp3\supio.h"
+				RelativePath=".\Supio.h"
 				>
 			</File>
 			<File
-				RelativePath=".\Supio.h"
+				RelativePath="..\hsp3\supio.h"
 				>
 			</File>
 			<File
