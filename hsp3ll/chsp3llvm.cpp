@@ -2000,7 +2000,7 @@ int CHsp3LLVM::MakeImmidiateCPPName( char *mes, int type, int val, char *opt )
 }
 
 
-void CHsp3LLVM::MakeCPPTask( const char *funcdef, const char *name, int nexttask )
+void CHsp3LLVM::MakeCPPTask( const char *name, int nexttask )
 {
 	//		タスクの区切り
 	//			funcdef=新しい関数定義
@@ -2010,17 +2010,13 @@ void CHsp3LLVM::MakeCPPTask( const char *funcdef, const char *name, int nexttask
 
 	if ( tasknum ) {
 		if ( nexttask >= 0 ) {
-			OutLine( "TaskSwitch( %d );\r\n", nexttask );
 			if (sReachable) {
 				CreateCallImm( sCurBB, "TaskSwitch", nexttask );
 				sCurTask->operations.push_back( new TaskSwitchOp( nexttask ) );
 			}
 		}
 		Builder.CreateBr( sCurTaskRetBB );
-		//sCurTaskF->getBasicBlockList().push_back(sCurTaskRetBB);
-		OutMes( "}\r\n\r\n" );
 	}
-	OutMes( "%s {\r\n", funcdef );
 
 	sCurTask = new Task();
 	sCurTask->name = name;
@@ -2048,9 +2044,7 @@ void CHsp3LLVM::MakeCPPTask( int nexttask )
 	//
 	char name[256];
 	sprintf( name,"L%04x", nexttask );
-	char mes[256];
-	sprintf( mes,"static void L%04x( void )", nexttask );
-	MakeCPPTask( mes, name, nexttask );
+	MakeCPPTask( name, nexttask );
 }
 
 
@@ -2060,9 +2054,7 @@ void CHsp3LLVM::MakeCPPTask2( int nexttask, int newtask )
 	//
 	char name[256];
 	sprintf( name,"L%04x", newtask );
-	char mes[256];
-	sprintf( mes,"static void L%04x( void )", newtask );
-	MakeCPPTask( mes, name, nexttask );
+	MakeCPPTask( name, nexttask );
 }
 
 
@@ -2342,7 +2334,6 @@ int CHsp3LLVM::MakeCPPParam( BasicBlock *bblock, int addprm )
 	//
 	int i;
 	int prm;
-	int len;
 	int result;
 	int curidx;
 	CMemBuf tmpbuf;
@@ -2417,27 +2408,6 @@ int CHsp3LLVM::MakeCPPParam( BasicBlock *bblock, int addprm )
 
 	if ( ret < -1 )
 		return ret;
-
-	//		パラメーターを逆順で登録する
-	//		(stackをpopして正常な順番になるように)
-	//
-	i=tmpbuf.GetIndexBufferSize();
-	while(1) {
-		if ( i == 0 ) break;
-		i--;
-		p = tmpbuf.GetBuffer() + tmpbuf.GetIndex( i );
-		len = (int)strlen( p );
-		if ( len ) {
-			int a1;
-			char lnbuf[4096];
-			strsp_ini();
-			while(1) {
-				a1 = strsp_get( p, lnbuf, 0, 4090 );
-				OutLine( "%s\r\n", lnbuf );
-				if ( a1 == 0 ) break;
-			}
-		}
-	}
 
 	return prm;
 }
@@ -2543,20 +2513,6 @@ int CHsp3LLVM::MakeCPPVarExpression( CMemBuf *arname, BasicBlock *bblock )
 
 			getCS();
 
-			//		パラメーターを逆順で登録する
-			//		(stackをpopして正常な順番になるように)
-			//
-			i=tmpbuf.GetIndexBufferSize();
-			while(1) {
-				if ( i == 0 ) break;
-				i--;
-				p = tmpbuf.GetBuffer() + tmpbuf.GetIndex( i );
-				len = (int)strlen( p );
-				if ( len ) {
-					if (arname)
-						OutLineBuf( arname, "%s\r\n", p );
-				}
-			}
 			return prm;
 		}
 	}
@@ -2573,14 +2529,12 @@ void CHsp3LLVM::MakeCPPSub( int cmdtype, int cmdval, BasicBlock *bblock )
 	int pnum;
 	MCSCONTEXT ctxbak;
 
-	OutLine( "// %s ", GetHSPName( cmdtype, cmdval ).c_str() );
 	getCS();
 	GetContext( &ctxbak );
 	MakeProgramInfoParam2();
 	SetContext( &ctxbak );
 	pnum = MakeCPPParam( bblock );
 
-	OutLine( "%s(%d,%d);\r\n", GetHSPCmdTypeName( cmdtype ).c_str(), cmdval, pnum );
 	if (bblock) {
 		CreateCallImm( bblock, GetHSPCmdTypeName( cmdtype ), cmdval, pnum );
 		sCurTask->operations.push_back( new CmdOp( cmdtype, cmdval, pnum ) );
@@ -2606,19 +2560,9 @@ int CHsp3LLVM::MakeCPPMain( void )
 	//
 	tasknum = 0;
 
-	OutMes( "void __HspInitEntry( void );\r\n\r\n" );
-	MakeCPPTask( "void __HspEntry( void )", "__HspEntry" );
+	MakeCPPTask( "__HspEntry" );
 
-	OutMes( "\t// Var initalize\r\n" );
 	maxvar = hsphed->max_val;
-	for(i=0;i<maxvar;i++) {
-		OutMes( "\t%s%s = &mem_var[%d];\r\n", CPPHED_HSPVAR, GetHSPVarName( i ).c_str(), i );
-	}
-	OutMes( "\r\n" );
-
-	OutLine( "__HspInitEntry();\r\n" );
-	OutMes( "}\r\n\r\n" );
-	OutMes( "void __HspInitEntry( void ) {\r\n" );
 
 	//		コードの変換
 	//
@@ -2634,7 +2578,6 @@ int CHsp3LLVM::MakeCPPMain( void )
 				i = iftaskid[iflevel];
 				iflevel--;
 				//SetIndent( iflevel );
-				//OutLine( "}\n" );
 				MakeCPPTask( i );
 				continue;
 			}
@@ -2662,7 +2605,6 @@ int CHsp3LLVM::MakeCPPMain( void )
 			CMemBuf arname;
 			int va,pnum;
 			MakeImmidiateHSPName( mes, cmdtype, cmdval );
-			OutLine( "// %s ", mes );
 			getCS();
 			GetContext( &ctxbak );
 			op = MakeCPPVarForHSP();
@@ -2675,8 +2617,6 @@ int CHsp3LLVM::MakeCPPMain( void )
 			switch( op ) {
 			case -1:		// 通常の代入
 				pnum = MakeCPPParam( sCurBB );
-				OutMes( arname.GetBuffer() );
-				OutLine( "VarSet( %s,%d,%d );\r\n", mes, va, pnum );
 
 				if (sReachable) {
 					GetContext( &ctxbak2 );
@@ -2707,8 +2647,6 @@ int CHsp3LLVM::MakeCPPMain( void )
 				}
 				break;
 			case -2:		// ++
-				OutMes( arname.GetBuffer() );
-				OutLine( "VarInc( %s,%d );\r\n", mes, va );
 				if (sReachable) {
 					GetContext( &ctxbak2 );
 					SetContext( &ctxbak );
@@ -2733,8 +2671,6 @@ int CHsp3LLVM::MakeCPPMain( void )
 				}
 				break;
 			case -3:		// --
-				OutMes( arname.GetBuffer() );
-				OutLine( "VarDec( %s,%d );\r\n", mes, va );
 				if (sReachable) {
 					GetContext( &ctxbak2 );
 					SetContext( &ctxbak );
@@ -2765,8 +2701,6 @@ int CHsp3LLVM::MakeCPPMain( void )
 				if ( pnum > 1 ) {
 					Alert( "Too much parameters(VarCalc)." );
 				}
-				OutMes( arname.GetBuffer() );
-				OutLine( "VarCalc( %s,%d,%d );\r\n", mes, va, op );
 				if (sReachable) {
 					GetContext( &ctxbak2 );
 					SetContext( &ctxbak );
@@ -2804,7 +2738,6 @@ int CHsp3LLVM::MakeCPPMain( void )
 			//	HSPソースコメント
 			if ( cmdval == 0 ) {
 				GetContext( &ctxbak );
-				OutLine( "// if " );
 				mcs++;
 				getCS();
 				MakeProgramInfoParam2();
@@ -2815,7 +2748,6 @@ int CHsp3LLVM::MakeCPPMain( void )
 			if ( cmdval == 0 ) {
 				iflevel++;
 
-				sprintf( mes, "if (HspIf()) { TaskSwitch( %d ); return; }\r\n", curot );
 				thenTask = curot;
 				if ( iflevel >= MAX_IFLEVEL ) {
 					Alert( "Stack( If ) overflow." );
@@ -2829,7 +2761,6 @@ int CHsp3LLVM::MakeCPPMain( void )
 				ifmode[iflevel]++;
 				curot++;
 			} else {
-				strcpy( mes, "// else\r\n" );
 				ifmode[iflevel] = 3;
 				i = (int)*mcs;
 				ifptr[iflevel] = mcs + i + 1;
@@ -2842,7 +2773,7 @@ int CHsp3LLVM::MakeCPPMain( void )
 			mcs++;
 			getCS();
 			MakeCPPParam( sCurBB );
-			OutLine( mes );
+
 			if ( cmdval == 0 ) {
 
 				BasicBlock *thenBB = BasicBlock::Create( getGlobalContext(), "then", sCurTask->func );
@@ -2885,7 +2816,6 @@ int CHsp3LLVM::MakeCPPMain( void )
 				//		後にreturnを付ける
 				//
 				MakeCPPSub( cmdtype, cmdval, sCurBB );
-				OutLine( "return;\r\n" );
 				sReachable = false;
 				break;
 			case 0x01:								// gosub
@@ -2894,10 +2824,8 @@ int CHsp3LLVM::MakeCPPMain( void )
 				//
 				{
 				int pnum;
-				OutLine( "// %s\r\n", GetHSPName( cmdtype,cmdval ).c_str() );
 				getCS();
 				pnum = MakeCPPParam( sCurBB );
-				OutLine( "PushLabel( %d ); %s(%d,%d); return;\r\n", curot, GetHSPCmdTypeName( cmdtype ).c_str(), cmdval, pnum+1 );
 				CreateCallImm( sCurBB, "PushLabel", curot );
 				sCurTask->operations.push_back( new PushLabelOp( curot ) );
 				CreateCallImm( sCurBB, GetHSPCmdTypeName( cmdtype ), cmdval, pnum+1 );
@@ -2912,10 +2840,8 @@ int CHsp3LLVM::MakeCPPMain( void )
 				//
 				{
 				int pnum;
-				OutLine( "// repeat\r\n" );
 				getCS();
 				pnum = MakeCPPParam( sCurBB, 1 );
-				OutLine( "PushLabel( %d ); %s(%d,%d); return;\r\n", curot, GetHSPCmdTypeName( cmdtype ).c_str(), cmdval, pnum+1 );
 				CreateCallImm( sCurBB, "PushLabel", curot );
 				sCurTask->operations.push_back( new PushLabelOp( curot ) );
 				CreateCallImm( sCurBB, GetHSPCmdTypeName( cmdtype ), cmdval, pnum+1 );
@@ -2951,8 +2877,6 @@ int CHsp3LLVM::MakeCPPMain( void )
 	Builder.CreateBr( sCurTaskRetBB );
 	//	sCurTaskF->getBasicBlockList().push_back(sCurTaskRetBB);
 	//Builder.CreateRetVoid();
-	OutMes( "}\r\n\r\n" );
-	OutMes( "//-End of Source-------------------------------------------\r\n" );
 	return 0;
 }
 
@@ -2965,7 +2889,6 @@ int CHsp3LLVM::MakeSource( int option, void *ref )
 	//
 	int i;
 	int otmax;
-	int labindex;
 	int maxvar;
 	LLVMContext &Context = getGlobalContext();
 
@@ -2976,17 +2899,6 @@ int CHsp3LLVM::MakeSource( int option, void *ref )
 
 	// Create some module to put our function into it.
 	M = new Module( "test", Context );
-
-	OutMes( "//\r\n//\thsp3cnv generated source\r\n//\t[%s]\r\n//\r\n", orgname );
-
-	OutMes( "#include \"hsp3r.h\"\r\n" );
-	OutMes( "\r\n#define _HSP3CNV_DATE %s\n#define _HSP3CNV_TIME %s\r\n", localinfo.CurrentDate(), localinfo.CurrentTime() );
-	OutMes( "#define _HSP3CNV_MAXVAR %d\r\n", hsphed->max_val );
-	OutMes( "#define _HSP3CNV_MAXHPI %d\r\n", hsphed->max_hpi );
-	OutMes( "#define _HSP3CNV_VERSION 0x%x\r\n", hsphed->version );
-	OutMes( "#define _HSP3CNV_BOOTOPT %d\r\n", hsphed->bootoption );
-	OutMes( "\r\n/*-----------------------------------------------------------*/\r\n\r\n" );
-
 
 	sMaxVar = hsphed->max_val;
 	sMaxHpi = hsphed->max_hpi;
@@ -3001,8 +2913,6 @@ int CHsp3LLVM::MakeSource( int option, void *ref )
 	// 変数の準備
 	sVariables = new GlobalVariable*[maxvar];
 	for(i=0;i<maxvar;i++) {
-		OutMes( "static PVal *%s%s;\r\n", CPPHED_HSPVAR, GetHSPVarName( i ).c_str(), i );
-
 		Constant *constInt = ConstantInt::get(Type::getInt32Ty( Context ), (int)0);
 		Constant *constPtr = ConstantExpr::getIntToPtr( constInt, pvalType );
 
@@ -3013,16 +2923,9 @@ int CHsp3LLVM::MakeSource( int option, void *ref )
 
 	sDsBase = (GlobalVariable*)M->getOrInsertGlobal("ds_base", Type::getInt32Ty( Context ));
 
-	OutMes( "\r\n/*-----------------------------------------------------------*/\r\n\r\n" );
 
 	//		初期化ファンクションを作成する
 	//
-	OutMes( "void __HspInit( Hsp3r *hsp3 ) {\r\n" );
-	OutMes( "\thsp3->Reset( _HSP3CNV_MAXVAR, _HSP3CNV_MAXHPI );\r\n" );
-	OutMes( "}\r\n" );
-
-	OutMes( "\r\n/*-----------------------------------------------------------*/\r\n\r\n" );
-
 	otmax = GetOTCount();
 	curot = otmax;
 
@@ -3031,28 +2934,7 @@ int CHsp3LLVM::MakeSource( int option, void *ref )
 
 	//		タスク(ラベル)テーブルを作成する
 	//
-	OutMes( "\r\nCHSP3_TASK __HspTaskFunc[]={\r\n" );
-
-	labindex = 0;
-	while(1) {
-		if ( labindex>=otmax ) break;
-		if ( GetOTInfo( labindex ) == -1 ) {
-			OutMes( "(CHSP3_TASK) L%04x,\r\n", labindex );
-		} else {
-			OutMes( "(CHSP3_TASK) 0,\r\n" );
-		}
-		labindex++;
-	}
-	while(1) {
-		if ( labindex>=curot ) break;
-		OutMes( "(CHSP3_TASK) L%04x,\r\n", labindex );
-		labindex++;
-	}
-	OutMes( "\r\n};\r\n" );
-	OutMes( "\r\n/*-----------------------------------------------------------*/\r\n\r\n" );
-
-	sLabMax = labindex;
-	//sLabMax = labindex = 500;
+	sLabMax = curot;
 	sDsBasePtr = GetDS( 0 );
 
 	std::string ErrorInfo;

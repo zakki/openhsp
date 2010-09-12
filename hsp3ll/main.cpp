@@ -75,7 +75,7 @@ int readAx( char *fname )
 	//char fname[_MAX_PATH];
 	char fname2[_MAX_PATH];
 	char oname[_MAX_PATH];
-	char oname2[_MAX_PATH];
+	//char oname2[_MAX_PATH];
 
 	//	check switch and prm
 
@@ -100,10 +100,12 @@ int readAx( char *fname )
 			*(dest++) = *(src++);
 		addext( oname,"hs" );
 
+/*
 		memset(oname2, 0, _MAX_PATH);
 		for (char* dest = oname2, *src = fname; *src && *src != '.';)
 			*(dest++) = *(src++);
 		addext( oname2,"cpp" );
+*/
 	}
 	strcpy( fname2, fname ); addext( fname2,"hsp" );
 	addext( fname,"ax" );
@@ -144,13 +146,14 @@ int readAx( char *fname )
 			return 1;
 		}
 		hsp3->MakeSource( 0, NULL );
+/*
 #ifndef HSP3CNV_DEBUG
 		hsp3->SaveOutBuf( oname2 );
 #else
 		hsp3->SaveOutBuf( "test.cpp" );
 		puts( hsp3->GetOutBuf() );
 #endif
-
+*/
 	}
 
 	return st;
