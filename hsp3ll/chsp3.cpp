@@ -1149,7 +1149,7 @@ void CHsp3::MakeHspStyleString( char *str, CMemBuf *eout )
 	}
 	eout->Put( (char)0x22 );
 }
-	
+
 
 void CHsp3::MakeProgramInfoHSPName( bool putadr )
 {
@@ -1278,7 +1278,7 @@ int CHsp3::MakeProgramInfoParam2( void )
 	out->PutCR();
 	return 0;
 }
-	
+
 
 void CHsp3::MakeProgramInfo( void )
 {

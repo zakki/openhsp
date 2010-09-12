@@ -85,49 +85,49 @@ protected:
 	//		Settings
 	//
 	CMemBuf *buf;
- 	HSPHED *hsphed;
+	HSPHED *hsphed;
 
 
 	CMemBuf *mem_cs;
- 	CMemBuf *mem_ds;
- 	CMemBuf *mem_ot;
- 	CMemBuf *dinfo;
+	CMemBuf *mem_ds;
+	CMemBuf *mem_ot;
+	CMemBuf *dinfo;
 
- 	CMemBuf *linfo;
- 	CMemBuf *finfo;
- 	CMemBuf *minfo;
- 	CMemBuf *finfo2;
- 	CMemBuf *hpidat;
+	CMemBuf *linfo;
+	CMemBuf *finfo;
+	CMemBuf *minfo;
+	CMemBuf *finfo2;
+	CMemBuf *hpidat;
 
- 	CMemBuf *ot_info;
+	CMemBuf *ot_info;
 
- 	unsigned short *mcs;				// CS Code read pointer
- 	unsigned short *mcs_last;			// CS Code read pointer (original)
- 	unsigned short *mcs_start;			// CS Code start pointer
+	unsigned short *mcs;				// CS Code read pointer
+	unsigned short *mcs_last;			// CS Code read pointer (original)
+	unsigned short *mcs_start;			// CS Code start pointer
 	unsigned short *mcs_end;			// CS Code end pointer
 	unsigned char *mem_di_val;			// Debug VALS info ptr
- 	int cstype;
- 	int csval;
- 	int exflag;
+	int cstype;
+	int csval;
+	int exflag;
 
- 	char orgname[HSP_MAX_PATH];
+	char orgname[HSP_MAX_PATH];
 
- 	//	for Program Trace
- 	//
- 	CLabel *lb;							// label object
+	//	for Program Trace
+	//
+	CLabel *lb;							// label object
 
- 	//		Private function
- 	//
- 	int UpdateValueName( void );
- 	void MakeOTInfo( void );
+	//		Private function
+	//
+	int UpdateValueName( void );
+	void MakeOTInfo( void );
 
 public:
- 	std::string GetHSPOperator( int val ) const;
- 	std::string GetHSPOperator2( int val ) const;
- 	std::string GetHSPName( int type, int val ) const;
- 	std::string GetHSPVarName( int varid ) const;
- 	std::string GetHSPVarTypeName( int type ) const;
- 	std::string GetHSPCmdTypeName( int type ) const;
+	std::string GetHSPOperator( int val ) const;
+	std::string GetHSPOperator2( int val ) const;
+	std::string GetHSPName( int type, int val ) const;
+	std::string GetHSPVarName( int varid ) const;
+	std::string GetHSPVarTypeName( int type ) const;
+	std::string GetHSPCmdTypeName( int type ) const;
 };
 
 class CHsp3 : public CHsp3Parser {
