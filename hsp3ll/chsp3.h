@@ -5,6 +5,7 @@
 #ifndef __CHsp3_h
 #define __CHsp3_h
 
+#include <string>
 #include "../hsp3/hsp3config.h"
 #include "../hsp3/hsp3debug.h"
 #include "../hsp3/hsp3struct.h"
@@ -72,26 +73,26 @@ public:
 
 	//		Data Retrieve
 	//
-	LIBDAT *GetLInfo( int index );
-	STRUCTDAT *GetFInfo( int index );
-	STRUCTPRM *GetMInfo( int index );
+	const LIBDAT *GetLInfo( int index ) const;
+	const STRUCTDAT *GetFInfo( int index ) const;
+	const STRUCTPRM *GetMInfo( int index ) const;
 
-	int GetOTCount( void );
-	int GetLInfoCount( void );
-	int GetFInfoCount( void );
-	int GetFInfo2Count( void );
-	int GetMInfoCount( void );
+	int GetOTCount( void ) const;
+	int GetLInfoCount( void ) const;
+	int GetFInfoCount( void ) const;
+	int GetFInfo2Count( void ) const;
+	int GetMInfoCount( void ) const;
 
 	void initCS( void *ptr );
 	int getCS( void );
-	int getNextCS( int *type );
-	int getEXFLG( void );
-	char *GetDS( int offset ) const;
-	double GetDSf( int offset );
-	int GetOT( int index );
-	int GetOTInfo( int index );
+	int getNextCS( int *type ) const;
+	int getEXFLG( void ) const ;
+	const char * GetDS( int offset ) const;
+	double GetDSf( int offset ) const;
+	int GetOT( int index ) const;
+	int GetOTInfo( int index ) const;
 
-	void GetContext( MCSCONTEXT *ctx );
+	void GetContext( MCSCONTEXT *ctx ) const;
 	void SetContext( MCSCONTEXT *ctx );
 
 	//		Test Function
@@ -142,8 +143,6 @@ protected:
 	//	for Program Trace
 	//
 	CLabel *lb;							// label object
-	char hspoptmp[4];
-	char hspvarmp[16];
 	int iflevel;
 	int ifmode[MAX_IFLEVEL];
 	unsigned short *ifptr[MAX_IFLEVEL];
@@ -164,12 +163,15 @@ protected:
 	int MakeImmidiateHSPName( char *mes, int type, int val, char *opt = NULL );
 	void MakeHspStyleString( char *str, CMemBuf *eout );
 
-	char *GetHSPOperator( int val );
-	char *GetHSPOperator2( int val );
-	char *GetHSPName( int type, int val );
-	char *GetHSPVarName( int varid );
-	char *GetHSPVarTypeName( int type );
-	char *GetHSPCmdTypeName( int type );
+public:
+	std::string GetHSPOperator( int val ) const;
+	std::string GetHSPOperator2( int val ) const;
+	std::string GetHSPName( int type, int val ) const;
+	std::string GetHSPVarName( int varid ) const;
+	std::string GetHSPVarTypeName( int type ) const;
+	std::string GetHSPCmdTypeName( int type ) const;
+
+protected:
 	int GetHSPExpression( CMemBuf *eout );
 	int GetHSPVarExpression( char *mes );
 

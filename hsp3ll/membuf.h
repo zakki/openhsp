@@ -30,7 +30,7 @@ public:
 	void Put( char data );
 	void Put( float data );
 	void Put( double data );
-	void PutStr( char *data );
+	void PutStr( const char *data );
 	void PutCR( void );
 	void PutData( void *data, int sz );
 	int PutFile( char *fname );

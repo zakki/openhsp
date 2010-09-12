@@ -26,6 +26,7 @@ public:
 	virtual ~IHsp3Visitor() = 0;
 
 	virtual void visitObjectInfo(char* orgname, int codeSize, int dataSize, int objectTempSize, int lInfoCount, int fInfoCount, int mInfoCount){}
+	virtual void visitHead(HSPHED * const hsphed, CLocalInfo &localinfo) {}
 	virtual void visitObjectInfoEnd(){}
 
 	virtual void visitLInfo(int i, int max, LIBDAT *lib){}
@@ -54,6 +55,8 @@ public:
 class CHsp3VisitorCpp : public CHsp3OutVisitor {
 public:
 	CHsp3VisitorCpp(CHsp3* const hsp3, CMemBuf *out);
+	void visitHead(HSPHED * const hsphed, CLocalInfo &localinfo);
+	void visitObjectInfo(char* orgname, int codeSize, int dataSize, int objectTempSize, int lInfoCount, int fInfoCount, int mInfoCount);
 
 };
 
@@ -63,7 +66,7 @@ public:
 
 	void visitObjectInfo(char* orgname, int codeSize, int dataSize, int objectTempSize, int lInfoCount, int fInfoCount, int mInfoCount);
 	void visitObjectInfoEnd();
-
+	
 	void visitLInfo(int i, int max, LIBDAT *lib);
 	void visitFInfo(int i, int max, STRUCTDAT *fnc);
 

@@ -33,7 +33,7 @@ void CHsp3Cpp::MakeCPPVarName( char *outbuf, int varid )
 	//		変数名をoutbufにコピーする
 	//
 	strcpy( outbuf, CPPHED_HSPVAR );
-	strcat( outbuf, GetHSPVarName( varid ) );
+	strcat( outbuf, GetHSPVarName( varid ).c_str() );
 }
 
 
@@ -47,12 +47,12 @@ int CHsp3Cpp::MakeImmidiateCPPName( char *mes, int type, int val, char *opt )
 	if ( i == 0 ) return 0;
 	switch( type ) {
 	case TYPE_VAR:
-		sprintf( mes, "%s%s", CPPHED_HSPVAR, GetHSPVarName(val) );
+		sprintf( mes, "%s%s", CPPHED_HSPVAR, GetHSPVarName(val).c_str() );
 		if ( opt != NULL ) strcat( mes, opt );
 		break;
 	case TYPE_STRUCT:
 		{
-		STRUCTPRM *prm;
+		const STRUCTPRM *prm;
 		prm = GetMInfo( val );
 		if ( prm->subid != STRUCTPRM_SUBID_STACK ) {
 			sprintf( mes, "_modprm%d", val );
@@ -65,7 +65,7 @@ int CHsp3Cpp::MakeImmidiateCPPName( char *mes, int type, int val, char *opt )
 		sprintf( mes, "*L%04x", val );
 		break;
 	default:
-		strcpy( mes, GetHSPName( type, val ) );
+		strcpy( mes, GetHSPName( type, val ).c_str() );
 		if ( opt != NULL ) strcat( mes, opt );
 		if ( *mes == 0 ) return -1;
 		break;
@@ -152,7 +152,7 @@ void CHsp3Cpp::GetCPPExpressionSub( CMemBuf *eout )
 			//		記号(スタックから取り出して演算)
 			//
 			op = csval;
-			sprintf( mes,"Calc%s(); ", GetHSPOperator2(op) );
+			sprintf( mes,"Calc%s(); ", GetHSPOperator2(op).c_str() );
 			eout->PutStr( mes );
 			getCS();
 			break;
@@ -176,7 +176,7 @@ void CHsp3Cpp::GetCPPExpressionSub( CMemBuf *eout )
 			{
 			//		直実数値をスタックに積む
 			//
-			sprintf( mes,"Push%s(%f); ", GetHSPCmdTypeName(cstype), GetDSf(csval) );
+			sprintf( mes,"Push%s(%f); ", GetHSPCmdTypeName(cstype).c_str(), GetDSf(csval) );
 			eout->PutStr( mes );
 			getCS();
 			break;
@@ -186,14 +186,14 @@ void CHsp3Cpp::GetCPPExpressionSub( CMemBuf *eout )
 		case TYPE_LABEL:
 			//		直値をスタックに積む
 			//
-			sprintf( mes,"Push%s(%d); ", GetHSPCmdTypeName(cstype), csval );
+			sprintf( mes,"Push%s(%d); ", GetHSPCmdTypeName(cstype).c_str(), csval );
 			eout->PutStr( mes );
 			getCS();
 			break;
 		case TYPE_STRING:
 			//		文字列をスタックに積む
 			//
-			sprintf( mes,"Push%s(\"%s\"); ", GetHSPCmdTypeName(cstype), GetDS( csval ) );
+			sprintf( mes,"Push%s(\"%s\"); ", GetHSPCmdTypeName(cstype).c_str(), GetDS( csval ) );
 			eout->PutStr( mes );
 			getCS();
 			break;
@@ -212,7 +212,7 @@ void CHsp3Cpp::GetCPPExpressionSub( CMemBuf *eout )
 			eout->PutStr( "PushFuncEnd(); " );
 			va = MakeCPPVarExpression( &arname );
 			eout->PutStr( arname.GetBuffer() );
-			sprintf( mes, "Push%s(%d,%d); ", GetHSPCmdTypeName(fnctype), fncval, va );
+			sprintf( mes, "Push%s(%d,%d); ", GetHSPCmdTypeName(fnctype).c_str(), fncval, va );
 			eout->PutStr( mes );
 			break;
 			}
@@ -385,7 +385,7 @@ int CHsp3Cpp::MakeCPPVarForHSP( void )
 			if ( op == CALCCODE_ADD ) return -2;
 			return -3;
 		}
-		out->PutStr( GetHSPOperator(op) );
+		out->PutStr( GetHSPOperator(op).c_str() );
 		out->PutStr( "=" );
 		//getCS();
 		MakeProgramInfoParam2();
@@ -466,13 +466,13 @@ void CHsp3Cpp::MakeCPPSub( int cmdtype, int cmdval )
 	int pnum;
 	MCSCONTEXT ctxbak;
 
-	OutLine( "// %s ", GetHSPName( cmdtype, cmdval ) );
+	OutLine( "// %s ", GetHSPName( cmdtype, cmdval ).c_str() );
 	getCS();
 	GetContext( &ctxbak );
 	MakeProgramInfoParam2();
 	SetContext( &ctxbak );
 	pnum = MakeCPPParam();
-	OutLine( "%s(%d,%d);\r\n", GetHSPCmdTypeName(cmdtype), cmdval, pnum );
+	OutLine( "%s(%d,%d);\r\n", GetHSPCmdTypeName(cmdtype).c_str(), cmdval, pnum );
 }
 
 
@@ -495,7 +495,7 @@ int CHsp3Cpp::MakeCPPMain( void )
 	OutMes( "\t// Var initalize\r\n" );
 	maxvar = hsphed->max_val;
 	for(i=0;i<maxvar;i++) {
-		OutMes( "\t%s%s = &mem_var[%d];\r\n", CPPHED_HSPVAR, GetHSPVarName(i), i );
+		OutMes( "\t%s%s = &mem_var[%d];\r\n", CPPHED_HSPVAR, GetHSPVarName(i).c_str(), i );
 	}
 	OutMes( "\r\n" );
 
@@ -642,10 +642,10 @@ int CHsp3Cpp::MakeCPPMain( void )
 				//
 				{
 				int pnum;
-				OutLine( "// %s\r\n", GetHSPName(cmdtype,cmdval) );
+				OutLine( "// %s\r\n", GetHSPName(cmdtype,cmdval).c_str() );
 				getCS();
 				pnum = MakeCPPParam();
-				OutLine( "PushLabel(%d); %s(%d,%d); return;\r\n", curot, GetHSPCmdTypeName(cmdtype), cmdval, pnum+1 );
+				OutLine( "PushLabel(%d); %s(%d,%d); return;\r\n", curot, GetHSPCmdTypeName(cmdtype).c_str(), cmdval, pnum+1 );
 				MakeCPPTask( curot );
 				curot++;
 				break;
@@ -658,7 +658,7 @@ int CHsp3Cpp::MakeCPPMain( void )
 				OutLine( "// repeat\r\n" );
 				getCS();
 				pnum = MakeCPPParam(1);
-				OutLine( "PushLabel(%d); %s(%d,%d); return;\r\n", curot, GetHSPCmdTypeName(cmdtype), cmdval, pnum+1 );
+				OutLine( "PushLabel(%d); %s(%d,%d); return;\r\n", curot, GetHSPCmdTypeName(cmdtype).c_str(), cmdval, pnum+1 );
 				MakeCPPTask( curot );
 				curot++;
 				break;
@@ -704,21 +704,7 @@ int CHsp3Cpp::MakeSource( int option, void *ref )
 	int maxvar;
 	makeoption = option;
 
-	OutMes( "//\r\n//\thsp3cnv generated source\r\n//\t[%s]\r\n//\r\n", orgname );
-	OutMes( "#include \"hsp3r.h\"\r\n" );
-	OutMes( "\r\n#define _HSP3CNV_DATE %s\n#define _HSP3CNV_TIME %s\r\n", localinfo.CurrentDate(), localinfo.CurrentTime() );
-	OutMes( "#define _HSP3CNV_MAXVAR %d\r\n", hsphed->max_val );
-	OutMes( "#define _HSP3CNV_MAXHPI %d\r\n", hsphed->max_hpi );
-	OutMes( "#define _HSP3CNV_VERSION 0x%x\r\n", hsphed->version );
-	OutMes( "#define _HSP3CNV_BOOTOPT %d\r\n", hsphed->bootoption );
-	OutMes( "\r\n/*-----------------------------------------------------------*/\r\n\r\n" );
-
 	maxvar = hsphed->max_val;
-	for(i=0;i<maxvar;i++) {
-		OutMes( "static PVal *%s%s;\r\n", CPPHED_HSPVAR, GetHSPVarName(i), i );
-	}
-
-	OutMes( "\r\n/*-----------------------------------------------------------*/\r\n\r\n" );
 
 	//		初期化ファンクションを作成する
 	//

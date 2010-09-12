@@ -30,7 +30,6 @@ CHsp3::CHsp3( void )
 	buf = new CMemBuf;
 	out = new CMemBuf;
 	out2 = new CMemBuf;
-	visitor = new CHsp3Visitor(this, out);
 	lb = new CLabel;
 	lb->RegistList( hsp_prestr, "" );
 
@@ -155,7 +154,7 @@ int CHsp3::LoadObjectFile( char *fname )
 }
 
 
-void CHsp3::GetContext( MCSCONTEXT *ctx )
+void CHsp3::GetContext( MCSCONTEXT *ctx ) const
 {
 	//		コンテキストを取得
 	//		(ctxに書き込む)
@@ -183,7 +182,7 @@ void CHsp3::SetContext( MCSCONTEXT *ctx )
 
 /*------------------------------------------------------------*/
 
-LIBDAT *CHsp3::GetLInfo( int index )
+const LIBDAT * CHsp3::GetLInfo( int index ) const
 {
 	//		linfoから値を取得する
 	//
@@ -194,7 +193,7 @@ LIBDAT *CHsp3::GetLInfo( int index )
 }
 
 
-STRUCTDAT *CHsp3::GetFInfo( int index )
+const STRUCTDAT *CHsp3::GetFInfo( int index ) const
 {
 	//		finfoから値を取得する
 	//
@@ -204,7 +203,7 @@ STRUCTDAT *CHsp3::GetFInfo( int index )
 	return baseptr;
 }
 
-STRUCTPRM *CHsp3::GetMInfo( int index )
+const STRUCTPRM *CHsp3::GetMInfo( int index ) const
 {
 	//		minfoから値を取得する
 	//
@@ -215,7 +214,7 @@ STRUCTPRM *CHsp3::GetMInfo( int index )
 }
 
 
-int CHsp3::GetOTCount( void )
+int CHsp3::GetOTCount( void ) const
 {
 	//		OTのindex量を得る
 	//
@@ -223,14 +222,14 @@ int CHsp3::GetOTCount( void )
 }
 
 
-int CHsp3::GetLInfoCount( void )
+int CHsp3::GetLInfoCount( void ) const
 {
 	//		linfoのindex量を得る
 	//
 	return ( linfo->GetSize() / sizeof( LIBDAT ) );
 }
 
-int CHsp3::GetFInfoCount( void )
+int CHsp3::GetFInfoCount( void ) const
 {
 	//		finfoのindex量を得る
 	//
@@ -238,7 +237,7 @@ int CHsp3::GetFInfoCount( void )
 }
 
 
-int CHsp3::GetMInfoCount( void )
+int CHsp3::GetMInfoCount( void ) const
 {
 	//		minfoのindex量を得る
 	//
@@ -275,26 +274,42 @@ void CHsp3::MakeObjectInfo( void )
 {
 	//		読み込んだオブジェクトファイルの情報を出力(結果は出力バッファに)
 	//
-	visitor->visitObjectInfo(orgname,  mem_cs->GetSize(), mem_ds->GetSize(), mem_ot->GetSize(), GetLInfoCount(), GetFInfoCount(), GetMInfoCount() );
+	char mes[512];
+
+	sprintf( mes,"Original File : %s\n", orgname );
+	out->PutStr( mes );
+	sprintf( mes,"Code Segment Size : %d\n", mem_cs->GetSize() );
+	out->PutStr( mes );
+	sprintf( mes,"Data Segment Size : %d\n", mem_ds->GetSize() );
+	out->PutStr( mes );
+	sprintf( mes,"Object Temp Size : %d\n", mem_ot->GetSize() );
+	out->PutStr( mes );
+	sprintf( mes,"LibInfo(%d) FInfo(%d) MInfo(%d)\n", GetLInfoCount(), GetFInfoCount(), GetMInfoCount() );
+	out->PutStr( mes );
+
+	out->PutStr( "--------------------------------------------\n" );
 
 	{	//	LInfoの表示(DLLインポート情報)
 		int i,max;
-		LIBDAT *lib;
+		const LIBDAT *lib;
 		max = GetLInfoCount();
 		for(i=0;i<max;i++) {
 			lib = GetLInfo(i);
-			visitor->visitLInfo(i, max, lib);
+			sprintf( mes,"LInfo#%d : flag=%x name=%s clsid=%x\n", i, lib->flag, GetDS(lib->nameidx), lib->clsid );
+			out->PutStr( mes );
 		}
 	}
 
 	{	//	FInfoの表示(拡張命令情報)
 		int i,max;
-		STRUCTDAT *fnc;
-		char *p;
+		const STRUCTDAT *fnc;
+		const char *p;
 		max = GetFInfoCount();
 		for(i=0;i<max;i++) {
 			fnc = GetFInfo(i);
-			visitor->visitFInfo(i, max, fnc);
+			if ( fnc->nameidx < 0 ) p = ""; else p = GetDS( fnc->nameidx );
+			sprintf( mes,"FInfo#%d : index=%d ot=%d subid=%d name=%s param=%d\n", i, fnc->index, fnc->otindex, fnc->subid, p, fnc->prmmax );
+			out->PutStr( mes );
 		}
 	}
 /*
@@ -320,7 +335,7 @@ void CHsp3::MakeObjectInfo( void )
 		}
 	}
 */
-	visitor->visitObjectInfoEnd();
+	out->PutStr( "--------------------------------------------\n" );
 }
 
 
@@ -363,10 +378,11 @@ int CHsp3::UpdateValueName( void )
 }
 
 
-char *CHsp3::GetHSPVarName( int varid )
+std::string CHsp3::GetHSPVarName( int varid ) const
 {
 	//		変数名を取得
 	//
+	char hspvarmp[16];
 	int i;
 	unsigned char *mm;
 
@@ -390,7 +406,7 @@ void CHsp3::MakeOTInfo( void )
 	int *oi;
 	int *ot;
 	int maxfnc;
-	STRUCTDAT *fnc;
+	const STRUCTDAT *fnc;
 	maxot = GetOTCount();
 	ot_info = new CMemBuf( maxot * sizeof(int) );
 	oi = (int *)ot_info->GetBuffer();
@@ -409,7 +425,7 @@ void CHsp3::MakeOTInfo( void )
 }
 
 
-int CHsp3::GetOTInfo( int index )
+int CHsp3::GetOTInfo( int index ) const
 {
 	int *oi;
 	oi = (int *)ot_info->GetBuffer();
@@ -469,7 +485,6 @@ void CHsp3::OutCR( void )
 void CHsp3::SetIndent( int val )
 {
 	indent = val;
-	visitor->SetIndent(val);
 }
 
 /*------------------------------------------------------------*/
@@ -504,7 +519,7 @@ int CHsp3::getCS( void )
 	return csval;
 }
 
-int CHsp3::getEXFLG( void )
+int CHsp3::getEXFLG( void ) const
 {
 	//		次のコマンドのEXFLAGを読み取る
 	//
@@ -513,7 +528,7 @@ int CHsp3::getEXFLG( void )
 	return (int)( a & (EXFLG_1|EXFLG_2));
 }
 
-int CHsp3::getNextCS( int *type )
+int CHsp3::getNextCS( int *type ) const
 {
 	//		次のコマンドのTYPE,VALを読み取る
 	//
@@ -529,8 +544,7 @@ int CHsp3::getNextCS( int *type )
 	return (int)(mcs[1]);
 }
 
-
-char *CHsp3::GetDS( int offset ) const
+const char *CHsp3::GetDS( int offset ) const
 {
 	//		DSから文字列を取得する
 	//
@@ -541,17 +555,17 @@ char *CHsp3::GetDS( int offset ) const
 }
 
 
-double CHsp3::GetDSf( int offset )
+double CHsp3::GetDSf( int offset ) const
 {
 	//		DSからdouble値を取得する
 	//
-	char *ptr;
+	const char *ptr;
 	ptr = GetDS( offset );
-	return *(double *)ptr;
+	return *(const double *)ptr;
 }
 
 
-int CHsp3::GetOT( int index )
+int CHsp3::GetOT( int index ) const
 {
 	//		OTから値を取得する
 	//
@@ -563,7 +577,7 @@ int CHsp3::GetOT( int index )
 
 /*------------------------------------------------------------*/
 
-char *CHsp3::GetHSPName( int type, int val )
+std::string CHsp3::GetHSPName( int type, int val ) const
 {
 	//		type,valに対応したHSP登録名を得る
 	//
@@ -582,7 +596,7 @@ char *CHsp3::GetHSPName( int type, int val )
 	switch( type ) {
 	case TYPE_MODCMD:
 		{
-		STRUCTDAT *fnc;
+		const STRUCTDAT *fnc;
 		fnc = GetFInfo( val );
 		if ( fnc->index == STRUCTDAT_INDEX_FUNC ) return GetDS( fnc->nameidx );
 		if ( fnc->index == STRUCTDAT_INDEX_CFUNC ) return GetDS( fnc->nameidx );
@@ -590,7 +604,7 @@ char *CHsp3::GetHSPName( int type, int val )
 		}
 	case TYPE_DLLFUNC:
 		{
-		STRUCTDAT *fnc;
+		const STRUCTDAT *fnc;
 		fnc = GetFInfo( val );
 		return GetDS( fnc->nameidx );
 		}
@@ -602,7 +616,7 @@ char *CHsp3::GetHSPName( int type, int val )
 }
 
 
-char *CHsp3::GetHSPOperator( int val )
+std::string CHsp3::GetHSPOperator( int val ) const
 {
 	//		HSPの演算子を文字列(記号)で返す
 	//
@@ -640,13 +654,14 @@ char *CHsp3::GetHSPOperator( int val )
 	case CALCCODE_LR:
 		return "<<";
 	}
+	char hspoptmp[4];
 	hspoptmp[0] = (char)val;
 	hspoptmp[1] = 0;
 	return hspoptmp;
 }
 
 
-char *CHsp3::GetHSPOperator2( int val )
+std::string CHsp3::GetHSPOperator2( int val ) const
 {
 	//		HSPの演算子を文字列(メソッド)で返す
 	//
@@ -688,7 +703,7 @@ char *CHsp3::GetHSPOperator2( int val )
 }
 
 
-char *CHsp3::GetHSPVarTypeName( int type )
+std::string CHsp3::GetHSPVarTypeName( int type ) const
 {
 	//		HSPのタイプ値を文字列で返す
 	//
@@ -710,7 +725,7 @@ char *CHsp3::GetHSPVarTypeName( int type )
 }
 
 
-char *CHsp3::GetHSPCmdTypeName( int type )
+std::string CHsp3::GetHSPCmdTypeName( int type ) const
 {
 	//		HSPのコマンドタイプ値を文字列で返す
 	//
@@ -767,8 +782,8 @@ void CHsp3::MakeProgramInfoFuncParam( int structid )
 	//		structid : パラメーターID
 	//
 	char mes[256];
-	STRUCTDAT *fnc;
-	STRUCTPRM *prm;
+	const STRUCTDAT *fnc;
+	const STRUCTPRM *prm;
 	int i,max;
 	fnc = GetFInfo( structid );
 
@@ -949,12 +964,12 @@ int CHsp3::GetHSPExpression( CMemBuf *eout )
 			} else {
 				if ( stm2->type == -1 ) {			// (result)+(?)の場合
 					MakeImmidiateHSPName( mm, stm1->type, stm1->val, stm1->opt );
-					strcat( mes, GetHSPOperator(op) );
+					strcat( mes, GetHSPOperator(op).c_str() );
 					strcat( mes, mm );
 				} else {							// (?)+(?)の場合
 					MakeImmidiateHSPName( mm, stm1->type, stm1->val, stm1->opt );
 					strcat( mes, mm );
-					strcat( mes, GetHSPOperator(op) );
+					strcat( mes, GetHSPOperator(op).c_str() );
 					MakeImmidiateHSPName( mm, stm2->type, stm2->val, stm2->opt );
 					strcat( mes, mm );
 				}
@@ -997,7 +1012,6 @@ int CHsp3::GetHSPExpression( CMemBuf *eout )
 		}
 	}
 	if ( st.GetLevel() > 1 ) {
-		eout->PutStr( "//Invalid end stack" );
 		Alert( "Invalid end stack" ); return -5;
 	}
 	if ( st.GetLevel() == 1 ) {
@@ -1049,12 +1063,12 @@ int CHsp3::MakeImmidiateHSPName( char *mes, int type, int val, char *opt )
 	if ( i == 0 ) return 0;
 	switch( type ) {
 	case TYPE_VAR:
-		sprintf( mes, "%s", GetHSPVarName(val) );
+		sprintf( mes, "%s", GetHSPVarName(val).c_str() );
 		if ( opt != NULL ) strcat( mes, opt );
 		break;
 	case TYPE_STRUCT:
 		{
-		STRUCTPRM *prm;
+		const STRUCTPRM *prm;
 		prm = GetMInfo( val );
 		if ( prm->subid != STRUCTPRM_SUBID_STACK ) {
 			sprintf( mes, "_modprm%d", val );
@@ -1067,7 +1081,7 @@ int CHsp3::MakeImmidiateHSPName( char *mes, int type, int val, char *opt )
 		sprintf( mes, "*L%04x", val );
 		break;
 	default:
-		strcpy( mes, GetHSPName( type, val ) );
+		strcpy( mes, GetHSPName( type, val ).c_str() );
 		if ( opt != NULL ) strcat( mes, opt );
 		if ( *mes == 0 ) return -1;
 		break;
@@ -1125,10 +1139,10 @@ void CHsp3::MakeProgramInfoHSPName( bool putadr )
 	}
 	switch( cstype ) {
 	case TYPE_MARK:
-		sprintf( mes, "Mark'%s'\n", GetHSPOperator( csval ) );
+		sprintf( mes, "Mark'%s'\n", GetHSPOperator( csval ).c_str() );
 		break;
 	case TYPE_VAR:
-		sprintf( mes, "VAR:%d(%s)\n", csval, GetHSPVarName(csval) );
+		sprintf( mes, "VAR:%d(%s)\n", csval, GetHSPVarName(csval).c_str() );
 		break;
 	case TYPE_STRING:
 		sprintf( mes, "Str:%s\n", GetDS( csval ) );
@@ -1153,8 +1167,8 @@ void CHsp3::MakeProgramInfoHSPName( bool putadr )
 	case TYPE_INTCMD:
 	case TYPE_EXTCMD:
 	case TYPE_INTFUNC:
-		char *p;
-		p = GetHSPName( cstype, csval );
+		const char *p;
+		p = GetHSPName( cstype, csval ).c_str();
 		if ( *p == 0 ) {
 			sprintf( mes, "cmd?:CSTYPE%d VAL%d\n", cstype, csval );
 		} else {
@@ -1259,7 +1273,7 @@ void CHsp3::MakeProgramInfo( void )
 				ifmode[iflevel] = 0;
 				if ( iflevel == 0 ) { Alert( "Invalid endif." ); return; }
 				iflevel--;
-				visitor->visitEndIf();
+				out->PutStr( "endif\n" );
 				continue;
 			}
 		}
@@ -1298,12 +1312,12 @@ void CHsp3::MakeProgramInfo( void )
 				op = csval;
 				getCS();
 				if ( exflag & EXFLG_1) {		// ++ or --
-					out->PutStr( GetHSPOperator(op) );
-					out->PutStr( GetHSPOperator(op) );
+					out->PutStr( GetHSPOperator(op).c_str() );
+					out->PutStr( GetHSPOperator(op).c_str() );
 					MakeProgramInfoParam2();
 					break;
 				}
-				out->PutStr( GetHSPOperator(op) );
+				out->PutStr( GetHSPOperator(op).c_str() );
 				out->PutStr( "=" );
 				//getCS();
 				MakeProgramInfoParam2();
@@ -1334,7 +1348,7 @@ void CHsp3::MakeProgramInfo( void )
 			MakeProgramInfoParam2();
 			break;
 		default:
-			out->PutStr( GetHSPName( cstype, csval ) );
+			out->PutStr( GetHSPName( cstype, csval ).c_str() );
 			out->PutStr( " " );
 			getCS();
 			MakeProgramInfoParam2();
@@ -1355,5 +1369,3 @@ int CHsp3::MakeSource( int option, void *ref )
 	MakeProgramInfo();
 	return 0;
 }
-
-
