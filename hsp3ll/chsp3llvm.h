@@ -23,6 +23,7 @@ public:
 
 	CHsp3LLVM();
 	int MakeSource( int option, void *ref );
+	int MakeImmidiateCPPName( char *mes, int type, int val, char *opt=NULL );
 
 private:
 	//		Settings
@@ -45,7 +46,6 @@ private:
 	int MakeCPPVarForHSP( void );
 	void MakeCPPVarName( char *outbuf, int varid );
 	int MakeCPPVarExpression( CMemBuf *arname, llvm::BasicBlock *bblock );
-	int MakeImmidiateCPPName( char *mes, int type, int val, char *opt=NULL );
 
 };
 

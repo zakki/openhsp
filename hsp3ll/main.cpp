@@ -31,6 +31,8 @@ using namespace llvm;
 //#define HSP3CNV_DEBUG			// デバッグモード用
 extern void DumpResult();
 
+CHsp3LLVM* hsp3;
+
 /*----------------------------------------------------------*/
 
 int GetFilePath( char *bname )
@@ -133,7 +135,7 @@ int readAx( char *fname )
 	}
 	{
 		int i;
-		CHsp3LLVM* hsp3 = new CHsp3LLVM();
+		hsp3 = new CHsp3LLVM();
 		i = hsp3->LoadObjectFile( fname );
 		if (i) {
 			char buffer[1024];
@@ -164,11 +166,6 @@ int APIENTRY WinMain ( HINSTANCE hInstance,
 {
   
 	InitializeNativeTarget();
-
-	LLVMContext Context;
-  
-	// Create some module to put our function into it.
-	Module *M = new Module("test", Context);
 
 	readAx(lpCmdParam);
 

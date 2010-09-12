@@ -185,6 +185,8 @@ protected:
 	void MakeProgramInfoLabel( void );
 	void MakeProgramInfoFuncParam( int structid );
 	void MakeProgramInfoHSPName( bool putadr = true );
+
+public:
 	int MakeImmidiateName( char *mes, int type, int val );
 	int MakeImmidiateHSPName( char *mes, int type, int val, char *opt = NULL );
 	void MakeHspStyleString( char *str, CMemBuf *eout );
