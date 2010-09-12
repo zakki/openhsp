@@ -52,7 +52,7 @@ static int tflag;
 static int arrayobj_flag;
 
 
-static void HspVarCoreArray2( PVal *pval, int offset )
+void HspVarCoreArray2( PVal *pval, int offset )
 {
 	//		配列要素の指定 (index)
 	//		( Reset後に次元数だけ連続で呼ばれます )

@@ -68,6 +68,17 @@ static char *PROTOTYPES =
 	"declare void @PushDefault()\n"
 	"declare void @Intcmd(i32, i32)\n"
 	"declare i32 @Hsp3rReset(%struct.Hsp3r*, i32, i32)\n"
+	"declare void @HspVarCoreArray2(%struct.PVal*, i32)\n"
+
+	"define void @HspVarCoreReset(%struct.PVal* %a) {\n"
+	"%1 = getelementptr %struct.PVal* %a, i32 0, i32 8\n"
+	//	"%2 = load i32* %1\n"
+	"store i32 0, i32* %1\n"
+	"%2 = getelementptr %struct.PVal* %a, i32 0, i32 7\n"
+	//	"%4 = load i16* %3\n"
+	"store i16 0, i16* %2\n"
+	"ret void\n"
+	"}\n"
 	"define void @Nop() {\n"
 	"  ret void\n"
 	"}\n";
@@ -104,6 +115,7 @@ static PVal **Var__HspVars;
 
 
 extern int GetCurTaskId();
+extern void HspVarCoreArray2( PVal *pval, int offset );
 extern CHsp3LLVM *hsp3;
 
 
@@ -851,8 +863,14 @@ static bool IsCompilable( Task *task, Op *op ) {
 			//changed |= op->flag == pval.flag;
 			//op->flag = pval.flag;
 
+			for ( int i = 0; i <  pv->array(); i++ ) {
+				if ( op->operands[i]->flag != TYPE_INUM )
+					return false;
+			}
+
 			if (pval.flag == TYPE_INUM || pval.flag == TYPE_DNUM) {
-				return pv->array() == 0;
+				//return pv->array() == 0;
+				return true;
 			}
 		}
 		break;
@@ -1131,28 +1149,56 @@ static bool CompileOp( CHsp3LLVM *hsp, Function *func, BasicBlock *bb, Task *tas
 			Var *var = GetTaskVar(task, pv->no());
 			PVal& pval = mem_var[var->val];
 
+			Value *lpvar;
 			std::map<int, Value*>::iterator it = task->llVariables.find( pv->no() );
 			if ( it != task->llVariables.end() ) {
-				op->llValue = it->second;
-				return true;
+				lpvar = it->second;
 			} else {
 				char varname[256];
 				hsp->MakeImmidiateCPPName( varname, TYPE_VAR, pv->no() );
 				
-				Value *lpvar = M->getNamedValue( varname );
-				Value *lpval = Builder.CreateConstGEP2_32( lpvar, 0, 4 );
-				LoadInst *lptr = Builder.CreateLoad( lpval, "ptr" );
-				
-				if ( pval.flag == TYPE_INUM ) {
-					Value *lp = Builder.CreateBitCast( lptr, tyPI32 );
-					op->llValue = Builder.CreateLoad( lp );
-				} else if ( pval.flag == TYPE_DNUM ) {
-					Value *lp = Builder.CreateBitCast( lptr, tyPD );
-					op->llValue = Builder.CreateLoad( lp );
-				} else {
-					return false;
+				lpvar = M->getNamedValue( varname );
+			}
+			task->llVariables[pv->no()] = lpvar;
+
+			Value *lpval = Builder.CreateConstGEP2_32( lpvar, 0, 4 );
+			LoadInst *lptr = Builder.CreateLoad( lpval, "ptr" );
+			Value *ptr;
+			if ( pval.flag == TYPE_INUM ) {
+				ptr = Builder.CreateBitCast( lptr, tyPI32 );
+			} else if ( pval.flag == TYPE_DNUM ) {
+				ptr = Builder.CreateBitCast( lptr, tyPD );
+			} else {
+				return false;
+			}
+
+			Value *aptr;
+			if ( pv->array() == 0) {
+				aptr = ptr;
+			} else {
+				//				return false;
+				Function *pReset = M->getFunction( "HspVarCoreReset" );
+				Builder.CreateCall( pReset, lpvar );
+
+				Function *pArray2 = M->getFunction( "HspVarCoreArray2" );
+				for ( int i = 0; i <  pv->array(); i++ ) {
+					Builder.CreateCall2( pArray2, lpvar, pv->operands[i]->llValue );
 				}
+				Value *lpofs = Builder.CreateConstGEP2_32( lpvar, 0, 8 );
+				LoadInst *lofs = Builder.CreateLoad( lpofs, "offset" );
+				aptr = Builder.CreateGEP( ptr, lofs );
+			}
+
+			//Value *lpval = Builder.CreateConstGEP2_32( lpvar, 0, 4 );
+
+			if ( pval.flag == TYPE_INUM ) {
+				op->llValue = Builder.CreateLoad( aptr );
 				return true;
+			} else if ( pval.flag == TYPE_DNUM ) {
+				op->llValue = Builder.CreateLoad( aptr );
+				return true;
+			} else {
+				return false;
 			}
 		}
 		break;
@@ -1632,6 +1678,7 @@ void* HspLazyFunctionCreator( const std::string &Name )
 	if ("CalcRrI" == Name) return CalcRrI;
 	if ("PushDefault" == Name) return PushDefault;
 	if ("Intcmd" == Name) return Intcmd;
+	if ("HspVarCoreArray2" == Name) return HspVarCoreArray2;
 	//	if ("Hsp3rReset" == Name) return Hsp3rReset;
 
 	Alert((char*)(Name + " not foud").c_str());
