@@ -191,10 +191,6 @@
 				>
 			</File>
 			<File
-				RelativePath=".\chsp3visitor.cpp"
-				>
-			</File>
-			<File
 				RelativePath="..\hsp3\win32gui\comobj.cpp"
 				>
 			</File>
@@ -354,10 +350,6 @@
 			</File>
 			<File
 				RelativePath=".\chsp3rev.h"
-				>
-			</File>
-			<File
-				RelativePath=".\chsp3visitor.h"
 				>
 			</File>
 			<File

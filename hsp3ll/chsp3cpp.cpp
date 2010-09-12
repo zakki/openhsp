@@ -247,7 +247,6 @@ void* HspLazyFunctionCreator( const std::string &Name )
 }
 /*------------------------------------------------------------*/
 CHsp3Cpp::CHsp3Cpp() {
-	visitor = new CHsp3VisitorCpp(this, out);
 }
 
 void CHsp3Cpp::MakeCPPVarName( char *outbuf, int varid )

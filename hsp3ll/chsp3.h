@@ -14,7 +14,6 @@
 #include "membuf.h"
 #include "csstack.h"
 #include "supio.h"
-#include "chsp3visitor.h"
 
 #define MAX_IFLEVEL 32			// ifのネスト読み出し最大レベル
 #define VAREXP_BUFFER_MAX 1024	// 配列要素の読み出し用バッファ最大サイズ
@@ -170,8 +169,6 @@ protected:
 	CMemBuf *out2;
 
 	CLocalInfo localinfo;
-
-	CHsp3OutVisitor *visitor;
 
 	//	for Program Trace
 	//
