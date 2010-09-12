@@ -132,21 +132,21 @@ int readAx( char *fname )
 	}
 	{
 		int i;
-		CHsp3Cpp hsp3;
-		i = hsp3.LoadObjectFile( fname );
+		CHsp3Cpp* hsp3 = new CHsp3Cpp();
+		i = hsp3->LoadObjectFile( fname );
 		if (i) {
 			char buffer[1024];
 			sprintf(buffer,  "File open error.[%s](%d)\n", fname, i );
 			MessageBox(NULL , buffer, TEXT("hsp") , MB_ICONINFORMATION);
 			return 1;
 		}
-		hsp3.MakeSource( 0, NULL );
+		hsp3->MakeSource( 0, NULL );
 
 #ifndef HSP3CNV_DEBUG
-		hsp3.SaveOutBuf( oname2 );
+		hsp3->SaveOutBuf( oname2 );
 #else
-		hsp3.SaveOutBuf( "test.cpp" );
-		puts( hsp3.GetOutBuf() );
+		hsp3->SaveOutBuf( "test.cpp" );
+		puts( hsp3->GetOutBuf() );
 #endif
 
 	}

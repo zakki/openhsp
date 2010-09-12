@@ -36,7 +36,7 @@ private:
 	void MakeCPPLabel( void );
 	void MakeCPPTask( int nexttask );
 	void MakeCPPTask2( int nexttask, int newtask );
-	void MakeCPPTask( char *funcdef, int nexttask=-1 );
+	void MakeCPPTask( const char *funcdef, const char *name, int nexttask=-1 );
 	int MakeCPPParam( int addprm=0 );
 	int GetCPPExpression( CMemBuf *eout, int *result );
 	void GetCPPExpressionSub( CMemBuf *eout );

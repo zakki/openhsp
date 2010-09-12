@@ -4,7 +4,8 @@
 //			onion software/onitama 2008/5
 //
 #include <stdio.h>
-#include <string.h>
+#include <string>
+#include <map>
 
 #include "llvm/LLVMContext.h"
 #include "llvm/Module.h"
@@ -12,6 +13,8 @@
 #include "llvm/DerivedTypes.h"
 #include "llvm/Instructions.h"
 #include "llvm/Assembly/Parser.h"
+#include "llvm/Analysis/Verifier.h"
+#include "llvm/Bitcode/ReaderWriter.h"
 #include "llvm/ExecutionEngine/JIT.h"
 #include "llvm/ExecutionEngine/Interpreter.h"
 #include "llvm/ExecutionEngine/GenericValue.h"
@@ -20,6 +23,7 @@
 #include "llvm/Support/TypeBuilder.h"
 #include "llvm/Support/ManagedStatic.h"
 #include "llvm/Support/raw_ostream.h"
+#include "llvm/Support/IRBuilder.h"
 
 #include "supio.h"
 #include "chsp3cpp.h"
@@ -64,9 +68,15 @@ static char* PROTOTYPES =
 	"declare i32 @Hsp3rReset(%struct.Hsp3r*, i32, i32)";
 
 // 
-static LLVMContext Context;
 static Module *M;
 static ExecutionEngine* EE;
+static IRBuilder<> Builder(getGlobalContext());
+
+static Function *sCurTaskF;
+static BasicBlock *sCurBB;
+static bool sReachable;
+
+static std::map<std::string, Function*> sTasks;
 
 // Runtime
 CHSP3_TASK *__HspTaskFunc;
@@ -74,11 +84,27 @@ static GlobalVariable **sVariables;
 
 static int sMaxVar;
 static int sMaxHpi;
+static int sLabMax;
 
 static PVal **Var__HspVars;
 
 void __HspInit( Hsp3r *hsp3 ) {
+	char mes[256];
+
 	hsp3->Reset( sMaxVar, sMaxHpi );
+
+	__HspTaskFunc = new CHSP3_TASK[sLabMax];
+
+	for (int i=0;i<sLabMax;i++) {
+		sprintf( mes, "L%04x", i );
+		Function* func = sTasks[mes];
+		if ( func ) {
+			void *fp = EE->getPointerToFunction(func);
+			__HspTaskFunc[i] = (CHSP3_TASK)fp;
+		} else {
+			__HspTaskFunc[i] = NULL;
+		}
+	}
 }
 
 void __HspEntry( void ) {
@@ -87,13 +113,21 @@ void __HspEntry( void ) {
 		Var__HspVars[i] = mem_var + i;
 		EE->updateGlobalMapping( sVariables[i], Var__HspVars + i );
 	}
-	exit(0);
+
+	Function* func = sTasks["__HspEntry"];
+	void *fp = EE->getPointerToFunction(func);
+	CHSP3_TASK t = (CHSP3_TASK)fp;
+	t();
+
+//	exit(0);
 }
 
 
 // LLVM utilities
 
-static const StructType *getPVal(LLVMContext &Context) {
+static const StructType *getPVal() {
+	LLVMContext &Context = getGlobalContext();
+
 	//	%struct.PVal = type { i16, i16, [5 x i32], i32, i8*, i8*, i16, i16, i32, i32 }
     std::vector<const Type*> st;
 	//short   flag;           // type of val
@@ -121,6 +155,86 @@ static const StructType *getPVal(LLVMContext &Context) {
     return result;
 }
 
+Value* createCallImm( const std::string& name )
+{
+	if (!sReachable)
+		return NULL;
+
+	LLVMContext &Context = getGlobalContext();
+	Function* f = M->getFunction( name );
+	
+	std::vector<Value*> args;
+
+	return Builder.CreateCall( f, args.begin(), args.end() );
+}
+
+Value* createCallImm( const std::string& name, int a )
+{
+	if (!sReachable)
+		return NULL;
+
+	LLVMContext &Context = getGlobalContext();
+	Function* f = M->getFunction( name );
+	
+	std::vector<Value*> args;
+	
+	args.push_back( ConstantInt::get( Type::getInt32Ty( Context ), a ) );
+	
+	return Builder.CreateCall( f, args.begin(), args.end() );
+}
+
+Value* createCallImm( const std::string& name, int a, int b )
+{
+	if (!sReachable)
+		return NULL;
+
+	LLVMContext &Context = getGlobalContext();
+	Function* f = M->getFunction( name );
+	
+	std::vector<Value*> args;
+	
+	args.push_back(ConstantInt::get( Type::getInt32Ty( Context ), a ) );
+	args.push_back(ConstantInt::get( Type::getInt32Ty( Context ), b ) );
+	
+	return Builder.CreateCall( f, args.begin(), args.end() );
+}
+
+void* HspLazyFunctionCreator( const std::string &Name )
+{
+	if ("Prgcmd" == Name) return Prgcmd;
+	if ("PushVar" == Name) return PushVar;
+	if ("CalcMulI" == Name) return CalcMulI;
+	if ("VarSet" == Name) return VarSet;
+	if ("PushInt" == Name) return PushInt;
+	if ("CalcSubI" == Name) return CalcSubI;
+	if ("PushDouble" == Name) return PushDouble;
+	if ("PushFuncEnd" == Name) return PushFuncEnd;
+	if ("CalcAddI" == Name) return CalcAddI;
+	if ("PushIntfunc" == Name) return PushIntfunc;
+	if ("CalcDivI" == Name) return CalcDivI;
+	if ("PushVAP" == Name) return PushVAP;
+	if ("VarCalc" == Name) return VarCalc;
+	if ("VarInc" == Name) return VarInc;
+	if ("TaskSwitch" == Name) return TaskSwitch;
+	if ("CalcEqI" == Name) return CalcEqI;
+	if ("HspIf" == Name) return HspIf;
+	if ("CalcGtI" == Name) return CalcGtI;
+	if ("PushLabel" == Name) return PushLabel;
+	if ("CalcLtI" == Name) return CalcLtI;
+	if ("PushSysvar" == Name) return PushSysvar;
+	if ("Extcmd" == Name) return Extcmd;
+	if ("PushStr" == Name) return PushStr;
+	if ("CalcAndI" == Name) return CalcAndI;
+	if ("CalcNeI" == Name) return CalcNeI;
+	if ("CalcGtEqI" == Name) return CalcGtEqI;
+	if ("CalcXorI" == Name) return CalcXorI;
+	if ("PushExtvar" == Name) return PushExtvar;
+	if ("CalcRrI" == Name) return CalcRrI;
+	if ("PushDefault" == Name) return PushDefault;
+	if ("Intcmd" == Name) return Intcmd;
+	//	if ("Hsp3rReset" == Name) return Hsp3rReset;
+	return NULL;
+}
 /*------------------------------------------------------------*/
 CHsp3Cpp::CHsp3Cpp() {
 	visitor = new CHsp3VisitorCpp(this, out);
@@ -172,19 +286,33 @@ int CHsp3Cpp::MakeImmidiateCPPName( char *mes, int type, int val, char *opt )
 }
 
 
-void CHsp3Cpp::MakeCPPTask( char *funcdef, int nexttask )
+void CHsp3Cpp::MakeCPPTask( const char *funcdef, const char *name, int nexttask )
 {
 	//		タスクの区切り
 	//			funcdef=新しい関数定義
 	//			nextttask=次のタスク(ラベルID)
 	//
+	LLVMContext &Context = getGlobalContext();
+
 	if ( tasknum ) {
 		if ( nexttask >= 0 ) {
 			OutLine( "TaskSwitch(%d);\r\n", nexttask );
+			createCallImm( "TaskSwitch", nexttask );
 		}
+		Builder.CreateRetVoid();
 		OutMes( "}\r\n\r\n" );
 	}
 	OutMes( "%s {\r\n", funcdef );
+
+	Function *sCurTaskF =
+		cast<Function>(M->getOrInsertFunction(funcdef, Type::getVoidTy(Context),
+											  (Type *)0));
+
+	sTasks[name] = sCurTaskF;
+	sCurBB = BasicBlock::Create(Context, "entry", sCurTaskF);
+	Builder.SetInsertPoint(sCurBB);
+	sReachable = true;
+
 	tasknum++;
 }
 
@@ -193,9 +321,11 @@ void CHsp3Cpp::MakeCPPTask( int nexttask )
 {
 	//		単純タスクの生成
 	//
+	char name[256];
+	sprintf( name,"L%04x", nexttask );
 	char mes[256];
 	sprintf( mes,"static void L%04x( void )", nexttask );
-	MakeCPPTask( mes, nexttask );
+	MakeCPPTask( mes, name, nexttask );
 }
 
 
@@ -203,9 +333,11 @@ void CHsp3Cpp::MakeCPPTask2( int nexttask, int newtask )
 {
 	//		単純タスクの生成
 	//
+	char name[256];
+	sprintf( name,"L%04x", newtask );
 	char mes[256];
 	sprintf( mes,"static void L%04x( void )", newtask );
-	MakeCPPTask( mes, nexttask );
+	MakeCPPTask( mes, name, nexttask );
 }
 
 
@@ -243,6 +375,7 @@ void CHsp3Cpp::GetCPPExpressionSub( CMemBuf *eout )
 	//
 	char mes[8192];								// 展開される式の最大文字数
 	int op;
+	LLVMContext &Context = getGlobalContext();
 
 	*mes = 0;
 	switch(cstype) {
@@ -252,6 +385,8 @@ void CHsp3Cpp::GetCPPExpressionSub( CMemBuf *eout )
 			op = csval;
 			sprintf( mes,"Calc%s(); ", GetHSPOperator2(op).c_str() );
 			eout->PutStr( mes );
+			if (sReachable)
+				createCallImm( "Calc" + GetHSPOperator2(op) );
 			getCS();
 			break;
 		case TYPE_VAR:
@@ -268,6 +403,21 @@ void CHsp3Cpp::GetCPPExpressionSub( CMemBuf *eout )
 			eout->PutStr( arname.GetBuffer() );
 			sprintf( mes,"PushVar(%s,%d); ", varname, va );
 			eout->PutStr( mes );
+			if (sReachable) {
+				Function* f = M->getFunction("PushVar");
+				
+				std::vector<Value*> args;
+				Value *var = M->getNamedValue(varname);
+				if (!var)
+					Alert(varname);
+
+				LoadInst *ld = Builder.CreateLoad(var, "a");
+
+				args.push_back(ld);
+				args.push_back(ConstantInt::get(Type::getInt32Ty(Context), va));
+				
+				Builder.CreateCall(f, args.begin(), args.end());
+			}
 			break;
 			}
 		case TYPE_DNUM:
@@ -276,6 +426,14 @@ void CHsp3Cpp::GetCPPExpressionSub( CMemBuf *eout )
 			//
 			sprintf( mes,"Push%s(%f); ", GetHSPCmdTypeName(cstype).c_str(), GetDSf(csval) );
 			eout->PutStr( mes );
+			if (sReachable) {
+				Function* f = M->getFunction("Push" + GetHSPCmdTypeName(cstype));
+				
+				std::vector<Value*> args;
+				args.push_back(ConstantFP::get(Type::getDoubleTy(Context), GetDSf(csval)));
+				
+				Builder.CreateCall(f, args.begin(), args.end());
+			}
 			getCS();
 			break;
 			}
@@ -286,6 +444,9 @@ void CHsp3Cpp::GetCPPExpressionSub( CMemBuf *eout )
 			//
 			sprintf( mes,"Push%s(%d); ", GetHSPCmdTypeName(cstype).c_str(), csval );
 			eout->PutStr( mes );
+
+			createCallImm( "Push" + GetHSPCmdTypeName(cstype), csval );
+
 			getCS();
 			break;
 		case TYPE_STRING:
@@ -293,6 +454,17 @@ void CHsp3Cpp::GetCPPExpressionSub( CMemBuf *eout )
 			//
 			sprintf( mes,"Push%s(\"%s\"); ", GetHSPCmdTypeName(cstype).c_str(), GetDS( csval ) );
 			eout->PutStr( mes );
+			if (sReachable) {
+				Function* f = M->getFunction("Push" + GetHSPCmdTypeName(cstype));
+				
+				std::vector<Value*> args;
+
+				Constant* constInt = ConstantInt::get(Type::getInt32Ty(Context), (int)GetDS(csval));
+				Constant* constPtr = ConstantExpr::getIntToPtr(constInt, TypeBuilder<types::i<8>*, false>::get(Context));
+				args.push_back(constPtr);
+				
+				Builder.CreateCall(f, args.begin(), args.end());
+			}
 			getCS();
 			break;
 		default:
@@ -308,10 +480,12 @@ void CHsp3Cpp::GetCPPExpressionSub( CMemBuf *eout )
 			getCS();
 			//		引数を付加する
 			eout->PutStr( "PushFuncEnd(); " );
+			createCallImm( "PushFuncEnd" );
 			va = MakeCPPVarExpression( &arname );
 			eout->PutStr( arname.GetBuffer() );
 			sprintf( mes, "Push%s(%d,%d); ", GetHSPCmdTypeName(fnctype).c_str(), fncval, va );
 			eout->PutStr( mes );
+			createCallImm( "Push" + GetHSPCmdTypeName(fnctype), fncval, va );
 			break;
 			}
 	}
@@ -571,6 +745,8 @@ void CHsp3Cpp::MakeCPPSub( int cmdtype, int cmdval )
 	SetContext( &ctxbak );
 	pnum = MakeCPPParam();
 	OutLine( "%s(%d,%d);\r\n", GetHSPCmdTypeName(cmdtype).c_str(), cmdval, pnum );
+
+	createCallImm(GetHSPCmdTypeName(cmdtype), cmdval, pnum);
 }
 
 
@@ -584,11 +760,16 @@ int CHsp3Cpp::MakeCPPMain( void )
 	char mes[4096];
 	MCSCONTEXT ctxbak;
 	int maxvar;
+	LLVMContext &Context = getGlobalContext();
+	const Type* pvalType = getPVal();
+	const Type* ppvalType = PointerType::getUnqual(pvalType);
 
 	//		初期化
 	//
 	tasknum = 0;
-	MakeCPPTask( "void __HspEntry( void )" );
+
+	OutMes( "void __HspInitEntry( void );\r\n\r\n" );
+	MakeCPPTask( "void __HspEntry( void )", "__HspEntry" );
 
 	OutMes( "\t// Var initalize\r\n" );
 	maxvar = hsphed->max_val;
@@ -596,6 +777,10 @@ int CHsp3Cpp::MakeCPPMain( void )
 		OutMes( "\t%s%s = &mem_var[%d];\r\n", CPPHED_HSPVAR, GetHSPVarName(i).c_str(), i );
 	}
 	OutMes( "\r\n" );
+
+	OutLine( "__HspInitEntry();\r\n" );
+	OutMes( "}\r\n\r\n" );
+	OutMes( "void __HspInitEntry( void ) {\r\n" );
 
 	//		コードの変換
 	//
@@ -653,6 +838,29 @@ int CHsp3Cpp::MakeCPPMain( void )
 				pnum = MakeCPPParam();
 				OutMes( arname.GetBuffer() );
 				OutLine( "VarSet(%s,%d,%d);\r\n", mes, va, pnum );
+
+				if (sReachable) {
+					Function* f = M->getFunction("VarSet");
+					const FunctionType* ft = f->getFunctionType();
+
+					if (ft->getNumParams() != 3) {
+						Alert("bad sig");
+					}
+				
+					std::vector<Value*> args;
+
+//					Value *var = M->getOrInsertGlobal(mes, pvalType);
+					Value *var = M->getNamedValue(mes);
+					LoadInst *ld = Builder.CreateLoad(var, "a");
+					if (!var) {
+						Alert(mes);
+					}
+					args.push_back(ld);
+					args.push_back(ConstantInt::get(Type::getInt32Ty(Context), va));
+					args.push_back(ConstantInt::get(Type::getInt32Ty(Context), pnum));
+				
+					Builder.CreateCall(f, args.begin(), args.end());
+				}
 				break;
 			case -2:		// ++
 				OutMes( arname.GetBuffer() );
@@ -733,6 +941,7 @@ int CHsp3Cpp::MakeCPPMain( void )
 				//
 				MakeCPPSub( cmdtype, cmdval );
 				OutLine( "return;\r\n" );
+				sReachable = false;
 				break;
 			case 0x01:								// gosub
 			case 0x18:								// exgoto
@@ -784,6 +993,7 @@ int CHsp3Cpp::MakeCPPMain( void )
 		}
 	}
 
+	Builder.CreateRetVoid();
 	OutMes( "}\r\n\r\n" );
 	OutMes( "//-End of Source-------------------------------------------\r\n" );
 	return 0;
@@ -800,6 +1010,8 @@ int CHsp3Cpp::MakeSource( int option, void *ref )
 	int otmax;
 	int labindex;
 	int maxvar;
+	LLVMContext &Context = getGlobalContext();
+
 	makeoption = option;
 
 	maxvar = hsphed->max_val;
@@ -824,8 +1036,9 @@ int CHsp3Cpp::MakeSource( int option, void *ref )
 
 	maxvar = hsphed->max_val;
 
-	const Type* pvalType = getPVal(Context);
+	const Type* pvalType = getPVal();
 	const Type* ppvalType = PointerType::getUnqual(pvalType);
+	M->addTypeName("struct.PVal", pvalType);
 
 	// 関数の準備
 	SMDiagnostic Err;
@@ -835,13 +1048,14 @@ int CHsp3Cpp::MakeSource( int option, void *ref )
 	// 変数の準備
 	sVariables = new GlobalVariable*[maxvar];
 	for(i=0;i<maxvar;i++) {
-		//OutMes( "static PVal *%s%s;\r\n", CPPHED_HSPVAR, GetHSPVarName(i).c_str(), i );
+		OutMes( "static PVal *%s%s;\r\n", CPPHED_HSPVAR, GetHSPVarName(i).c_str(), i );
 
-		//Constant* constInt = ConstantInt::get(Type::getInt32Ty(Context), (int)&mem_var[0]); 
-		Constant* constInt = ConstantInt::get(Type::getInt32Ty(Context), (int)0); 
-		Constant* constPtr = ConstantExpr::getIntToPtr(constInt, ppvalType); 
+		Constant* constInt = ConstantInt::get(Type::getInt32Ty(Context), (int)0);
+		Constant* constPtr = ConstantExpr::getIntToPtr(constInt, ppvalType);
 
-		sVariables[i] = new GlobalVariable(ppvalType, false, GlobalValue::LinkageTypes::PrivateLinkage, constPtr, GetHSPVarName(i), M);
+//		sVariables[i] = new GlobalVariable(ppvalType, false, GlobalValue::ExternalLinkage, constPtr,
+//										   CPPHED_HSPVAR + GetHSPVarName(i), M);
+		sVariables[i] = (GlobalVariable*)M->getOrInsertGlobal(CPPHED_HSPVAR + GetHSPVarName(i), ppvalType);
 	}
 
 	OutMes( "\r\n/*-----------------------------------------------------------*/\r\n\r\n" );
@@ -882,8 +1096,31 @@ int CHsp3Cpp::MakeSource( int option, void *ref )
 	OutMes( "\r\n};\r\n" );
 	OutMes( "\r\n/*-----------------------------------------------------------*/\r\n\r\n" );
 
+	sLabMax = labindex;
 
-	EE = EngineBuilder(M).create();
+	std::string ErrorInfo;
+	std::auto_ptr<raw_fd_ostream> 
+		Out(new raw_fd_ostream("dump.ll", ErrorInfo,
+							   raw_fd_ostream::F_Binary));
+	if (!ErrorInfo.empty()) {
+		errs() << ErrorInfo << '\n';
+		return -1;
+	}
+	
+	*Out << *M;
+
+    std::string ErrMsg;
+//	if (verifyModule(*M, ReturnStatusAction, &ErrMsg)) {
+//		Alert((char*)ErrMsg.c_str());
+//	}
+
+
+	EE = EngineBuilder(M)
+		.setEngineKind(EngineKind::JIT)
+		.setOptLevel(CodeGenOpt::Default)
+		.create();
+
+	EE->InstallLazyFunctionCreator(HspLazyFunctionCreator);
 
 	return 0;
 }
