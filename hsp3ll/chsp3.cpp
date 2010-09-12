@@ -1038,7 +1038,7 @@ int CHsp3::GetHSPExpression( CMemBuf *eout )
 		}
 	}
 	if ( st.GetLevel() > 1 ) {
-		Alert( "Invalid end stack" ); return -5;
+		//		Alert( "Invalid end stack" ); return -5;
 	}
 	if ( st.GetLevel() == 1 ) {
 			stm1 = st.Peek();

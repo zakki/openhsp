@@ -29,6 +29,7 @@ void __HspEntry( void );				// hsp3cnvで生成されるエントリーポイント
 
 static	HSPCTX *hspctx;					// HSPのコンテキスト
 static	CHSP3_TASK curtask;				// 次に実行されるタスク関数
+static int curtaskId;
 static int *c_type;
 static int *c_val;
 static HSPEXINFO *exinfo;				// Info for Plugins
@@ -211,6 +212,7 @@ void VarUtilInit( HSPCTX *ctx )
 
 	//		最初のタスク実行関数をセット
 	curtask = (CHSP3_TASK)__HspEntry;
+	curtaskId = -1;
 }
 
 
@@ -700,6 +702,7 @@ void TaskSwitch( int label )
 	//		(label=タスク関数ID)
 	//
 	curtask = __HspTaskFunc[label];
+	curtaskId = label;
 }
 
 void TaskExec( void )
@@ -707,6 +710,11 @@ void TaskExec( void )
 	//		セットされたタスク関数を実行する
 	//
 	curtask();
+}
+
+int GetCurTaskId()
+{
+	return curtaskId;
 }
 
 

@@ -29,6 +29,7 @@
 using namespace llvm;
 
 //#define HSP3CNV_DEBUG			// デバッグモード用
+extern void DumpResult();
 
 /*----------------------------------------------------------*/
 
@@ -123,7 +124,7 @@ int readAx( char *fname )
 //	MessageBox(NULL , fname, TEXT("hsp") , MB_ICONINFORMATION);
 //	MessageBox(NULL , oname, TEXT("hsp") , MB_ICONINFORMATION);
 #ifndef HSP3CNV_DEBUG
-		hsp3.SaveOutBuf( oname );
+		//		hsp3.SaveOutBuf( oname );
 #else
 		hsp3.SaveOutBuf( "test.cpp" );
 		puts( hsp3.GetOutBuf() );
@@ -180,5 +181,8 @@ int APIENTRY WinMain ( HINSTANCE hInstance,
 	if ( res == 0 ) {
 		res = hsp3win_exec();
 	}
+	
+	DumpResult();
+
 	return res;
 }
