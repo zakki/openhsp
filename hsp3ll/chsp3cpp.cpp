@@ -24,6 +24,9 @@
 using namespace llvm;
 
 /*------------------------------------------------------------*/
+CHsp3Cpp::CHsp3Cpp() {
+	visitor = new CHsp3VisitorCpp(this, out);
+}
 
 void CHsp3Cpp::MakeCPPVarName( char *outbuf, int varid )
 {
@@ -368,7 +371,7 @@ int CHsp3Cpp::MakeCPPVarForHSP( void )
 	if ( i ) { out->PutStr( arbuf ); }
 	if ( cstype == TYPE_MARK ) {
 		if ( csval == CALCCODE_EQ ) {
-			out->PutStr( "=" );
+//			out->PutStr( "=" );
 			getCS();
 			MakeProgramInfoParam2();
 			return -1;
@@ -376,8 +379,8 @@ int CHsp3Cpp::MakeCPPVarForHSP( void )
 		op = csval;
 		getCS();
 		if ( exflag & EXFLG_1) {		// ++ or --
-			out->PutStr( GetHSPOperator(op) );
-			out->PutStr( GetHSPOperator(op) );
+//			out->PutStr( GetHSPOperator(op) );
+//			out->PutStr( GetHSPOperator(op) );
 			MakeProgramInfoParam2();
 			if ( op == CALCCODE_ADD ) return -2;
 			return -3;

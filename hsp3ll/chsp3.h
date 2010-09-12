@@ -13,6 +13,7 @@
 #include "membuf.h"
 #include "csstack.h"
 #include "supio.h"
+#include "chsp3visitor.h"
 
 #define MAX_IFLEVEL 32			// ifのネスト読み出し最大レベル
 #define VAREXP_BUFFER_MAX 1024	// 配列要素の読み出し用バッファ最大サイズ
@@ -85,7 +86,7 @@ public:
 	int getCS( void );
 	int getNextCS( int *type );
 	int getEXFLG( void );
-	char *GetDS( int offset );
+	char *GetDS( int offset ) const;
 	double GetDSf( int offset );
 	int GetOT( int index );
 	int GetOTInfo( int index );
@@ -135,6 +136,8 @@ protected:
 
 	char orgname[HSP_MAX_PATH];
 	CLocalInfo localinfo;
+
+	CHsp3OutVisitor *visitor;
 
 	//	for Program Trace
 	//

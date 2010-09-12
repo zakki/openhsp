@@ -30,6 +30,7 @@ CHsp3::CHsp3( void )
 	buf = new CMemBuf;
 	out = new CMemBuf;
 	out2 = new CMemBuf;
+	visitor = new CHsp3Visitor(this, out);
 	lb = new CLabel;
 	lb->RegistList( hsp_prestr, "" );
 
@@ -274,20 +275,7 @@ void CHsp3::MakeObjectInfo( void )
 {
 	//		読み込んだオブジェクトファイルの情報を出力(結果は出力バッファに)
 	//
-	char mes[512];
-
-	sprintf( mes,"Original File : %s\n", orgname );
-	out->PutStr( mes );
-	sprintf( mes,"Code Segment Size : %d\n", mem_cs->GetSize() );
-	out->PutStr( mes );
-	sprintf( mes,"Data Segment Size : %d\n", mem_ds->GetSize() );
-	out->PutStr( mes );
-	sprintf( mes,"Object Temp Size : %d\n", mem_ot->GetSize() );
-	out->PutStr( mes );
-	sprintf( mes,"LibInfo(%d) FInfo(%d) MInfo(%d)\n", GetLInfoCount(), GetFInfoCount(), GetMInfoCount() );
-	out->PutStr( mes );
-
-	out->PutStr( "--------------------------------------------\n" );
+	visitor->visitObjectInfo(orgname,  mem_cs->GetSize(), mem_ds->GetSize(), mem_ot->GetSize(), GetLInfoCount(), GetFInfoCount(), GetMInfoCount() );
 
 	{	//	LInfoの表示(DLLインポート情報)
 		int i,max;
@@ -295,8 +283,7 @@ void CHsp3::MakeObjectInfo( void )
 		max = GetLInfoCount();
 		for(i=0;i<max;i++) {
 			lib = GetLInfo(i);
-			sprintf( mes,"LInfo#%d : flag=%x name=%s clsid=%x\n", i, lib->flag, GetDS(lib->nameidx), lib->clsid );
-			out->PutStr( mes );
+			visitor->visitLInfo(i, max, lib);
 		}
 	}
 
@@ -307,9 +294,7 @@ void CHsp3::MakeObjectInfo( void )
 		max = GetFInfoCount();
 		for(i=0;i<max;i++) {
 			fnc = GetFInfo(i);
-			if ( fnc->nameidx < 0 ) p = ""; else p = GetDS( fnc->nameidx );
-			sprintf( mes,"FInfo#%d : index=%d ot=%d subid=%d name=%s param=%d\n", i, fnc->index, fnc->otindex, fnc->subid, p, fnc->prmmax );
-			out->PutStr( mes );
+			visitor->visitFInfo(i, max, fnc);
 		}
 	}
 /*
@@ -335,7 +320,7 @@ void CHsp3::MakeObjectInfo( void )
 		}
 	}
 */
-	out->PutStr( "--------------------------------------------\n" );
+	visitor->visitObjectInfoEnd();
 }
 
 
@@ -484,6 +469,7 @@ void CHsp3::OutCR( void )
 void CHsp3::SetIndent( int val )
 {
 	indent = val;
+	visitor->SetIndent(val);
 }
 
 /*------------------------------------------------------------*/
@@ -544,7 +530,7 @@ int CHsp3::getNextCS( int *type )
 }
 
 
-char *CHsp3::GetDS( int offset )
+char *CHsp3::GetDS( int offset ) const
 {
 	//		DSから文字列を取得する
 	//
@@ -1011,6 +997,7 @@ int CHsp3::GetHSPExpression( CMemBuf *eout )
 		}
 	}
 	if ( st.GetLevel() > 1 ) {
+		eout->PutStr( "//Invalid end stack" );
 		Alert( "Invalid end stack" ); return -5;
 	}
 	if ( st.GetLevel() == 1 ) {
@@ -1272,7 +1259,7 @@ void CHsp3::MakeProgramInfo( void )
 				ifmode[iflevel] = 0;
 				if ( iflevel == 0 ) { Alert( "Invalid endif." ); return; }
 				iflevel--;
-				out->PutStr( "endif\n" );
+				visitor->visitEndIf();
 				continue;
 			}
 		}

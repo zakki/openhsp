@@ -19,6 +19,7 @@ typedef void (* CHSP3_TASK) (void);
 class CHsp3Cpp : public CHsp3 {
 public:
 
+	CHsp3Cpp();
 	int MakeSource( int option, void *ref );
 
 private:

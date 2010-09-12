@@ -72,11 +72,12 @@ int readAx( char *fname )
 	//char fname[_MAX_PATH];
 	char fname2[_MAX_PATH];
 	char oname[_MAX_PATH];
+	char oname2[_MAX_PATH];
 
 	//	check switch and prm
 
 	st = 0; ppopt = 0; cmpopt = 0;
-	fname[0]=0;
+//	fname[0]=0;
 	fname2[0]=0;
 	oname[0]=0;
 
@@ -85,13 +86,21 @@ int readAx( char *fname )
 	int b;
 	char a1,a2;
 
-	if (fname[0]==0) { printf("No file name selected.\n");return 1; }
+	if (fname[0]==0) { printf("No file name selected.\n"); return 1; }
 #else
 	strcpy( fname,"test" );
 #endif
 
 	if (oname[0]==0) {
-		strcpy( oname,fname );addext( oname,"cpp" );
+		memset(oname, 0, _MAX_PATH);
+		for (char* dest = oname, *src = fname; *src && *src != '.';)
+			*(dest++) = *(src++);
+		addext( oname,"hs" );
+
+		memset(oname2, 0, _MAX_PATH);
+		for (char* dest = oname2, *src = fname; *src && *src != '.';)
+			*(dest++) = *(src++);
+		addext( oname2,"cpp" );
 	}
 	strcpy( fname2, fname ); addext( fname2,"hsp" );
 	addext( fname,"ax" );
@@ -99,16 +108,42 @@ int readAx( char *fname )
 	//		call main
 	{
 		int i;
+//		CHsp3Cpp hsp3;
+		CHsp3 hsp3;
+		i = hsp3.LoadObjectFile( fname );
+		if (i) {
+			char buffer[1024];
+			sprintf(buffer,  "File open error.[%s](%d)\n", fname, i );
+			MessageBox(NULL , buffer, TEXT("hsp") , MB_ICONINFORMATION);
+			return 1;
+		}
+		hsp3.MakeSource( 0, NULL );
+
+
+//	MessageBox(NULL , fname, TEXT("hsp") , MB_ICONINFORMATION);
+//	MessageBox(NULL , oname, TEXT("hsp") , MB_ICONINFORMATION);
+#ifndef HSP3CNV_DEBUG
+		hsp3.SaveOutBuf( oname );
+#else
+		hsp3.SaveOutBuf( "test.cpp" );
+		puts( hsp3.GetOutBuf() );
+#endif
+
+	}
+	{
+		int i;
 		CHsp3Cpp hsp3;
 		i = hsp3.LoadObjectFile( fname );
 		if (i) {
-			printf( "File open error.[%s](%d)\n", fname, i );
+			char buffer[1024];
+			sprintf(buffer,  "File open error.[%s](%d)\n", fname, i );
+			MessageBox(NULL , buffer, TEXT("hsp") , MB_ICONINFORMATION);
 			return 1;
 		}
 		hsp3.MakeSource( 0, NULL );
 
 #ifndef HSP3CNV_DEBUG
-		hsp3.SaveOutBuf( oname );
+		hsp3.SaveOutBuf( oname2 );
 #else
 		hsp3.SaveOutBuf( "test.cpp" );
 		puts( hsp3.GetOutBuf() );
