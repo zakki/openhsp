@@ -1740,13 +1740,13 @@ static void CompileTask( CHsp3LLVM *hsp, Task *task ) {
 static void TraceTaskProc() {
 	int cur = GetCurTaskId();
 	Task *task = __Task[cur];
-	if ( task->numChange > 5) {
+	if ( task->numChange > 5 ) {
 		__HspTaskFunc[cur] = task->funcPtr;
 		task->funcPtr();
 		return;
 	}
 
-	if ( task->numCurCall > 1000 ) {
+	if ( task->numCurCall > 1000 ) {// FIXME Œ^‚ª•Ï‚í‚ç‚È‚¢‚±‚Æ‚ğŠm”F‚·‚×‚«
 		__HspTaskFunc[cur] = task->funcPtr;
 		task->funcPtr();
 		return;
@@ -1755,7 +1755,7 @@ static void TraceTaskProc() {
 	task->numCall ++;
 
 	bool change = false;
-	for (std::set<Var>::iterator it = task->usedVariables.end();
+	for (std::set<Var>::iterator it = task->usedVariables.begin();
 		 it != task->usedVariables.end(); ++it) {
 		Var& var = *it;
 
