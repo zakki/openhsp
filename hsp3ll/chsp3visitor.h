@@ -43,8 +43,8 @@ protected:
 
 	//		Data Output
 	//
-	void OutMes( char *format, ... );
-	void OutLine( char *format, ... );
+	void OutMes( const char *format, ... );
+	void OutLine( const char *format, ... );
 	void OutLineBuf( CMemBuf *outbuf, char *format, ... );
 	void OutCR( void );
 public:

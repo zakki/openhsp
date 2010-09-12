@@ -15,7 +15,7 @@ CHsp3OutVisitor::CHsp3OutVisitor(CHsp3* hsp3, CMemBuf *out) : IHsp3Visitor(hsp3)
 {
 }
 
-void CHsp3OutVisitor::OutMes( char *format, ... )
+void CHsp3OutVisitor::OutMes( const char *format, ... )
 {
 	//		outbuf‚É•¶š—ñ‚ğo—Í(printfŒİŠ·)(4096•¶š‚Ü‚Å)
 	//
@@ -28,7 +28,7 @@ void CHsp3OutVisitor::OutMes( char *format, ... )
 }
 
 
-void CHsp3OutVisitor::OutLine( char *format, ... )
+void CHsp3OutVisitor::OutLine( const char *format, ... )
 {
 	//		outbuf‚É•¶š—ñ‚ğo—Í(printfŒİŠ·)(4096•¶š‚Ü‚Å)
 	//

@@ -20,16 +20,15 @@
 #include "../hspcmp/hspcmd.cpp"
 
 /*------------------------------------------------------------*/
-/*
-		constructor
-*/
-/*------------------------------------------------------------*/
 
-CHsp3::CHsp3( void )
+/*
+  Parser
+ */
+
+
+CHsp3Parser::CHsp3Parser( void )
 {
 	buf = new CMemBuf;
-	out = new CMemBuf;
-	out2 = new CMemBuf;
 	lb = new CLabel;
 	lb->RegistList( hsp_prestr, "" );
 
@@ -46,23 +45,15 @@ CHsp3::CHsp3( void )
 }
 
 
-CHsp3::~CHsp3( void )
+CHsp3Parser::~CHsp3Parser( void )
 {
 	DeleteObjectHeader();
 	delete lb;
-	delete out2;
-	delete out;
 	delete buf;
 }
 
 
-/*------------------------------------------------------------*/
-/*
-		interface
-*/
-/*------------------------------------------------------------*/
-
-void CHsp3::DeleteObjectHeader( void )
+void CHsp3Parser::DeleteObjectHeader( void )
 {
 	//		HSPヘッダー情報を破棄する
 	//
@@ -79,7 +70,7 @@ void CHsp3::DeleteObjectHeader( void )
 }
 
 
-void CHsp3::NewObjectHeader( void )
+void CHsp3Parser::NewObjectHeader( void )
 {
 	//		新規のHSPヘッダー情報を作成する
 	//
@@ -97,7 +88,7 @@ void CHsp3::NewObjectHeader( void )
 }
 
 
-int CHsp3::LoadObjectFile( char *fname )
+int CHsp3Parser::LoadObjectFile( char *fname )
 {
 	//		axファイルをロードする
 	//
@@ -138,20 +129,479 @@ int CHsp3::LoadObjectFile( char *fname )
 	UpdateValueName();				// 変数名のデバッグ情報を検索する
 	MakeOTInfo();					// OT情報を検索する
 
-	//	トレース用の初期設定
-	//
-	int i;
-	initCS( mem_cs->GetBuffer() );
-	mcs_start = ( unsigned short * )( mem_cs->GetBuffer() );
-	mcs_end = ( unsigned short * )( mem_cs->GetBuffer() + hsphed->max_cs );
-	getCS();
-	exflag = 0;
-	iflevel = 0;
-	for( i=0;i<MAX_IFLEVEL;i++ ) { ifmode[i]=0; ifptr[i]=0; }
-	SetIndent( 0 );
-
 	return 0;
 }
+
+
+
+int CHsp3Parser::UpdateValueName( void )
+{
+	//		mem_di_valを更新
+	//
+	unsigned char *mem_di;
+	unsigned char ofs;
+	int cl,a;
+
+	mem_di_val = NULL;
+	if ( dinfo->GetSize() == 0 ) {
+		return -1;
+	}
+	mem_di = (unsigned char *)dinfo->GetBuffer();
+	if ( mem_di[0]==255) return -1;
+	cl=0;a=0;
+	while(1) {
+		ofs=mem_di[a++];
+		switch( ofs ) {
+		case 252:
+			a+=2;
+			break;
+		case 253:
+			mem_di_val=&mem_di[a-1];
+			return 0;
+		case 254:
+			cl=(mem_di[a+4]<<8)+mem_di[a+3];
+			a+=5;
+			break;
+		case 255:
+			return -1;
+		default:
+			cl++;
+			break;
+		}
+	}
+	return cl;
+}
+
+
+
+void CHsp3Parser::MakeOTInfo( void )
+{
+	//		ot_infoを更新
+	//		(ot_infoにはFInfoのIDが入る)
+	//		(通常ラベルの場合は、ot_infoが-1になる)
+	//
+	int i,maxot;
+	int *oi;
+	int *ot;
+	int maxfnc;
+	const STRUCTDAT *fnc;
+	maxot = GetOTCount();
+	ot_info = new CMemBuf( maxot * sizeof(int) );
+	oi = (int *)ot_info->GetBuffer();
+	ot = (int *)mem_ot->GetBuffer();
+	for(i=0;i<maxot;i++) { oi[i]=-1; }
+	maxfnc = GetFInfoCount();
+	for(i=0;i<maxfnc;i++) {
+		fnc = GetFInfo(i);
+		switch( fnc->index ) {
+		case STRUCTDAT_INDEX_FUNC:					// 定義命令
+		case STRUCTDAT_INDEX_CFUNC:					// 定義関数
+			oi[fnc->otindex] = i;
+			break;
+		}
+	}
+}
+
+const LIBDAT * CHsp3Parser::GetLInfo( int index ) const
+{
+	//		linfoから値を取得する
+	//
+	LIBDAT *baseptr;
+	baseptr = (LIBDAT *)linfo->GetBuffer();
+	baseptr += index;
+	return baseptr;
+}
+
+
+const STRUCTDAT *CHsp3Parser::GetFInfo( int index ) const
+{
+	//		finfoから値を取得する
+	//
+	STRUCTDAT *baseptr;
+	baseptr = (STRUCTDAT *)finfo->GetBuffer();
+	baseptr += index;
+	return baseptr;
+}
+
+const STRUCTPRM *CHsp3Parser::GetMInfo( int index ) const
+{
+	//		minfoから値を取得する
+	//
+	STRUCTPRM *baseptr;
+	baseptr = (STRUCTPRM *)minfo->GetBuffer();
+	baseptr += index;
+	return baseptr;
+}
+
+
+int CHsp3Parser::GetOTCount( void ) const
+{
+	//		OTのindex量を得る
+	//
+	return ( mem_ot->GetSize() / sizeof( int ) );
+}
+
+
+int CHsp3Parser::GetLInfoCount( void ) const
+{
+	//		linfoのindex量を得る
+	//
+	return ( linfo->GetSize() / sizeof( LIBDAT ) );
+}
+
+int CHsp3Parser::GetFInfoCount( void ) const{
+
+	//		finfoのindex量を得る
+	//
+	return ( finfo->GetSize() / sizeof( STRUCTDAT ) );
+}
+
+
+int CHsp3Parser::GetMInfoCount( void ) const
+{
+	//		minfoのindex量を得る
+	//
+	return ( minfo->GetSize() / sizeof( STRUCTDAT ) );
+}
+
+
+
+/*------------------------------------------------------------*/
+
+void CHsp3Parser::initCS( void *ptr )
+{
+	//		読み取り先csポインタを初期化
+	//
+	mcs = (unsigned short *)ptr;
+}
+
+
+int CHsp3Parser::getCS( void )
+{
+	//		コマンドを１つ読み取る
+	//		(ver3.0以降用)
+	//
+	register unsigned short a;
+	mcs_last=mcs;
+	a=*mcs++;
+	exflag = a & (EXFLG_1|EXFLG_2);
+	cstype = a & CSTYPE;
+	if ( a & 0x8000 ) {
+		//	 32bit val code
+		//
+		csval = (int)*((int *)mcs);
+		mcs+=2;
+	} else {
+		// 16bit val code
+		csval = (int)(*mcs++);
+	}
+	return csval;
+}
+
+int CHsp3Parser::getEXFLG( void ) const
+{
+	//		次のコマンドのEXFLAGを読み取る
+	//
+	unsigned short a;
+	a=*mcs;
+	return (int)( a & (EXFLG_1|EXFLG_2));
+}
+
+int CHsp3Parser::getNextCS( int *type ) const
+{
+	//		次のコマンドのTYPE,VALを読み取る
+	//
+	unsigned short a;
+	a=*mcs;
+	*type = a & CSTYPE;
+	if ( a & 0x8000 ) {
+		//	 32bit val code
+		//
+		return (int)*((int *)mcs);
+	}
+	// 16bit val code
+	return (int)(mcs[1]);
+}
+
+const char *CHsp3Parser::GetDS( int offset ) const
+{
+	//		DSから文字列を取得する
+	//
+	char *baseptr;
+	baseptr = mem_ds->GetBuffer();
+	baseptr += offset;
+	return baseptr;
+}
+
+
+double CHsp3Parser::GetDSf( int offset ) const
+{
+	//		DSからdouble値を取得する
+	//
+	const char *ptr;
+	ptr = GetDS( offset );
+	return *(const double *)ptr;
+}
+
+
+int CHsp3Parser::GetOT( int index ) const
+{
+	//		OTから値を取得する
+	//
+	int *baseptr;
+	baseptr = (int *)mem_ot->GetBuffer();
+	return baseptr[index];
+}
+
+int CHsp3Parser::GetOTInfo( int index ) const
+{
+	int *oi;
+	oi = (int *)ot_info->GetBuffer();
+	return oi[index];
+}
+
+
+std::string CHsp3Parser::GetHSPVarName( int varid ) const
+{
+	//		変数名を取得
+	//
+	char hspvarmp[16];
+	int i;
+	unsigned char *mm;
+
+	if ( mem_di_val == NULL ) {						// 変数名情報がない場合
+		sprintf( hspvarmp, "_HspVar%d", varid );
+		return hspvarmp;
+	}
+	mm = mem_di_val + ( varid * 6 );
+	i = (mm[3]<<16)+(mm[2]<<8)+mm[1];
+	return GetDS( i );
+}
+
+
+/*------------------------------------------------------------*/
+
+std::string CHsp3Parser::GetHSPName( int type, int val ) const
+{
+	//		type,valに対応したHSP登録名を得る
+	//
+	int max,i;
+	LABOBJ *lobj;
+	max = lb->GetNumEntry();
+	for(i=0;i<max;i++) {
+		lobj = lb->GetLabel(i);
+		if ( lobj->type == type ) {
+			if ( lobj->opt == val ) {
+				return lobj->name;
+			}
+		}
+	}
+
+	switch( type ) {
+	case TYPE_MODCMD:
+		{
+		const STRUCTDAT *fnc;
+		fnc = GetFInfo( val );
+		if ( fnc->index == STRUCTDAT_INDEX_FUNC ) return GetDS( fnc->nameidx );
+		if ( fnc->index == STRUCTDAT_INDEX_CFUNC ) return GetDS( fnc->nameidx );
+		break;
+		}
+	case TYPE_DLLFUNC:
+		{
+		const STRUCTDAT *fnc;
+		fnc = GetFInfo( val );
+		return GetDS( fnc->nameidx );
+		}
+	default:
+		break;
+	}
+
+	return "";
+}
+
+
+std::string CHsp3Parser::GetHSPOperator( int val ) const
+{
+	//		HSPの演算子を文字列(記号)で返す
+	//
+	switch( val ) {
+	case CALCCODE_ADD:
+		return "+";
+	case CALCCODE_SUB:
+		return "-";
+	case CALCCODE_MUL:
+		return "*";
+	case CALCCODE_DIV:
+		return "/";
+	case CALCCODE_MOD:
+		return "%";
+	case CALCCODE_AND:
+		return "&";
+	case CALCCODE_OR:
+		return "|";
+	case CALCCODE_XOR:
+		return "^";
+	case CALCCODE_EQ:
+		return "=";
+	case CALCCODE_NE:
+		return "!=";
+	case CALCCODE_GT:
+		return ">";
+	case CALCCODE_LT:
+		return "<";
+	case CALCCODE_GTEQ:
+		return ">=";
+	case CALCCODE_LTEQ:
+		return "<=";
+	case CALCCODE_RR:
+		return ">>";
+	case CALCCODE_LR:
+		return "<<";
+	}
+	char hspoptmp[4];
+	hspoptmp[0] = (char)val;
+	hspoptmp[1] = 0;
+	return hspoptmp;
+}
+
+
+std::string CHsp3Parser::GetHSPOperator2( int val ) const
+{
+	//		HSPの演算子を文字列(メソッド)で返す
+	//
+	switch( val ) {
+	case CALCCODE_ADD:
+		return "AddI";
+	case CALCCODE_SUB:
+		return "SubI";
+	case CALCCODE_MUL:
+		return "MulI";
+	case CALCCODE_DIV:
+		return "DivI";
+	case CALCCODE_MOD:
+		return "ModI";
+	case CALCCODE_AND:
+		return "AndI";
+	case CALCCODE_OR:
+		return "OrI";
+	case CALCCODE_XOR:
+		return "XorI";
+	case CALCCODE_EQ:
+		return "EqI";
+	case CALCCODE_NE:
+		return "NeI";
+	case CALCCODE_GT:
+		return "GtI";
+	case CALCCODE_LT:
+		return "LtI";
+	case CALCCODE_GTEQ:
+		return "GtEqI";
+	case CALCCODE_LTEQ:
+		return "LtEqI";
+	case CALCCODE_RR:
+		return "RrI";
+	case CALCCODE_LR:
+		return "LrI";
+	}
+	return "";
+}
+
+
+std::string CHsp3Parser::GetHSPVarTypeName( int type ) const
+{
+	//		HSPのタイプ値を文字列で返す
+	//
+	switch( type ) {
+	case HSPVAR_FLAG_LABEL:
+		return "label";
+	case HSPVAR_FLAG_STR:
+		return "str";
+	case HSPVAR_FLAG_DOUBLE:
+		return "double";
+	case HSPVAR_FLAG_INT:
+		return "int";
+	case HSPVAR_FLAG_STRUCT:
+		return "module";
+	case HSPVAR_FLAG_COMSTRUCT:
+		return "comst";
+	}
+	return "";
+}
+
+
+std::string CHsp3Parser::GetHSPCmdTypeName( int type ) const
+{
+	//		HSPのコマンドタイプ値を文字列で返す
+	//
+	switch( type ) {
+	case TYPE_MARK:
+		return "Mark";
+	case TYPE_VAR:
+		return "Var";
+	case TYPE_STRING:
+		return "Str";
+	case TYPE_DNUM:
+		return "Double";
+	case TYPE_INUM:
+		return "Int";
+	case TYPE_STRUCT:
+		return "Module";
+	case TYPE_XLABEL:
+		return "Label";
+	case TYPE_LABEL:
+		return "Label";
+	case TYPE_INTCMD:
+		return "Intcmd";
+	case TYPE_EXTCMD:
+		return "Extcmd";
+	case TYPE_EXTSYSVAR:
+		return "Extvar";
+	case TYPE_CMPCMD:
+		return "Cmp";
+	case TYPE_MODCMD:
+		return "Modcmd";
+	case TYPE_INTFUNC:
+		return "Intfunc";
+	case TYPE_SYSVAR:
+		return "Sysvar";
+	case TYPE_PROGCMD:
+		return "Prgcmd";
+	case TYPE_DLLFUNC:
+		return "Dllfunc";
+	case TYPE_DLLCTRL:
+		return "Dllcmd";
+	case TYPE_USERDEF:
+		return "Usrfunc";
+	}
+	return "";
+}
+
+
+/*------------------------------------------------------------*/
+/*
+		constructor
+*/
+/*------------------------------------------------------------*/
+
+CHsp3::CHsp3( void )
+{
+	out = new CMemBuf;
+	out2 = new CMemBuf;
+}
+
+
+CHsp3::~CHsp3( void )
+{
+	delete out2;
+	delete out;
+}
+
+
+/*------------------------------------------------------------*/
+/*
+		interface
+*/
+/*------------------------------------------------------------*/
 
 
 void CHsp3::GetContext( MCSCONTEXT *ctx ) const
@@ -180,68 +630,23 @@ void CHsp3::SetContext( MCSCONTEXT *ctx )
 }
 
 
-/*------------------------------------------------------------*/
-
-const LIBDAT * CHsp3::GetLInfo( int index ) const
+int CHsp3::LoadObjectFile( char *fname )
 {
-	//		linfoから値を取得する
+	CHsp3Parser::LoadObjectFile(fname);
+
+	//	トレース用の初期設定
 	//
-	LIBDAT *baseptr;
-	baseptr = (LIBDAT *)linfo->GetBuffer();
-	baseptr += index;
-	return baseptr;
-}
+	int i;
+	initCS( mem_cs->GetBuffer() );
+	mcs_start = ( unsigned short * )( mem_cs->GetBuffer() );
+	mcs_end = ( unsigned short * )( mem_cs->GetBuffer() + hsphed->max_cs );
+	getCS();
+	exflag = 0;
+	iflevel = 0;
+	for( i=0;i<MAX_IFLEVEL;i++ ) { ifmode[i]=0; ifptr[i]=0; }
+	SetIndent( 0 );
 
-
-const STRUCTDAT *CHsp3::GetFInfo( int index ) const
-{
-	//		finfoから値を取得する
-	//
-	STRUCTDAT *baseptr;
-	baseptr = (STRUCTDAT *)finfo->GetBuffer();
-	baseptr += index;
-	return baseptr;
-}
-
-const STRUCTPRM *CHsp3::GetMInfo( int index ) const
-{
-	//		minfoから値を取得する
-	//
-	STRUCTPRM *baseptr;
-	baseptr = (STRUCTPRM *)minfo->GetBuffer();
-	baseptr += index;
-	return baseptr;
-}
-
-
-int CHsp3::GetOTCount( void ) const
-{
-	//		OTのindex量を得る
-	//
-	return ( mem_ot->GetSize() / sizeof( int ) );
-}
-
-
-int CHsp3::GetLInfoCount( void ) const
-{
-	//		linfoのindex量を得る
-	//
-	return ( linfo->GetSize() / sizeof( LIBDAT ) );
-}
-
-int CHsp3::GetFInfoCount( void ) const
-{
-	//		finfoのindex量を得る
-	//
-	return ( finfo->GetSize() / sizeof( STRUCTDAT ) );
-}
-
-
-int CHsp3::GetMInfoCount( void ) const
-{
-	//		minfoのindex量を得る
-	//
-	return ( minfo->GetSize() / sizeof( STRUCTDAT ) );
+	return 0;
 }
 
 /*------------------------------------------------------------*/
@@ -339,100 +744,6 @@ void CHsp3::MakeObjectInfo( void )
 }
 
 
-int CHsp3::UpdateValueName( void )
-{
-	//		mem_di_valを更新
-	//
-	unsigned char *mem_di;
-	unsigned char ofs;
-	int cl,a;
-
-	mem_di_val = NULL;
-	if ( dinfo->GetSize() == 0 ) {
-		return -1;
-	}
-	mem_di = (unsigned char *)dinfo->GetBuffer();
-	if ( mem_di[0]==255) return -1;
-	cl=0;a=0;
-	while(1) {
-		ofs=mem_di[a++];
-		switch( ofs ) {
-		case 252:
-			a+=2;
-			break;
-		case 253:
-			mem_di_val=&mem_di[a-1];
-			return 0;
-		case 254:
-			cl=(mem_di[a+4]<<8)+mem_di[a+3];
-			a+=5;
-			break;
-		case 255:
-			return -1;
-		default:
-			cl++;
-			break;
-		}
-	}
-	return cl;
-}
-
-
-std::string CHsp3::GetHSPVarName( int varid ) const
-{
-	//		変数名を取得
-	//
-	char hspvarmp[16];
-	int i;
-	unsigned char *mm;
-
-	if ( mem_di_val == NULL ) {						// 変数名情報がない場合
-		sprintf( hspvarmp, "_HspVar%d", varid );
-		return hspvarmp;
-	}
-	mm = mem_di_val + ( varid * 6 );
-	i = (mm[3]<<16)+(mm[2]<<8)+mm[1];
-	return GetDS( i );
-}
-
-
-void CHsp3::MakeOTInfo( void )
-{
-	//		ot_infoを更新
-	//		(ot_infoにはFInfoのIDが入る)
-	//		(通常ラベルの場合は、ot_infoが-1になる)
-	//
-	int i,maxot;
-	int *oi;
-	int *ot;
-	int maxfnc;
-	const STRUCTDAT *fnc;
-	maxot = GetOTCount();
-	ot_info = new CMemBuf( maxot * sizeof(int) );
-	oi = (int *)ot_info->GetBuffer();
-	ot = (int *)mem_ot->GetBuffer();
-	for(i=0;i<maxot;i++) { oi[i]=-1; }
-	maxfnc = GetFInfoCount();
-	for(i=0;i<maxfnc;i++) {
-		fnc = GetFInfo(i);
-		switch( fnc->index ) {
-		case STRUCTDAT_INDEX_FUNC:					// 定義命令
-		case STRUCTDAT_INDEX_CFUNC:					// 定義関数
-			oi[fnc->otindex] = i;
-			break;
-		}
-	}
-}
-
-
-int CHsp3::GetOTInfo( int index ) const
-{
-	int *oi;
-	oi = (int *)ot_info->GetBuffer();
-	return oi[index];
-}
-
-
 void CHsp3::OutMes( char *format, ... )
 {
 	//		outbufに文字列を出力(printf互換)(4096文字まで)
@@ -485,291 +796,6 @@ void CHsp3::OutCR( void )
 void CHsp3::SetIndent( int val )
 {
 	indent = val;
-}
-
-/*------------------------------------------------------------*/
-
-void CHsp3::initCS( void *ptr )
-{
-	//		読み取り先csポインタを初期化
-	//
-	mcs = (unsigned short *)ptr;
-}
-
-
-int CHsp3::getCS( void )
-{
-	//		コマンドを１つ読み取る
-	//		(ver3.0以降用)
-	//
-	register unsigned short a;
-	mcs_last=mcs;
-	a=*mcs++;
-	exflag = a & (EXFLG_1|EXFLG_2);
-	cstype = a & CSTYPE;
-	if ( a & 0x8000 ) {
-		//	 32bit val code
-		//
-		csval = (int)*((int *)mcs);
-		mcs+=2;
-	} else {
-		// 16bit val code
-		csval = (int)(*mcs++);
-	}
-	return csval;
-}
-
-int CHsp3::getEXFLG( void ) const
-{
-	//		次のコマンドのEXFLAGを読み取る
-	//
-	unsigned short a;
-	a=*mcs;
-	return (int)( a & (EXFLG_1|EXFLG_2));
-}
-
-int CHsp3::getNextCS( int *type ) const
-{
-	//		次のコマンドのTYPE,VALを読み取る
-	//
-	unsigned short a;
-	a=*mcs;
-	*type = a & CSTYPE;
-	if ( a & 0x8000 ) {
-		//	 32bit val code
-		//
-		return (int)*((int *)mcs);
-	}
-	// 16bit val code
-	return (int)(mcs[1]);
-}
-
-const char *CHsp3::GetDS( int offset ) const
-{
-	//		DSから文字列を取得する
-	//
-	char *baseptr;
-	baseptr = mem_ds->GetBuffer();
-	baseptr += offset;
-	return baseptr;
-}
-
-
-double CHsp3::GetDSf( int offset ) const
-{
-	//		DSからdouble値を取得する
-	//
-	const char *ptr;
-	ptr = GetDS( offset );
-	return *(const double *)ptr;
-}
-
-
-int CHsp3::GetOT( int index ) const
-{
-	//		OTから値を取得する
-	//
-	int *baseptr;
-	baseptr = (int *)mem_ot->GetBuffer();
-	return baseptr[index];
-}
-
-
-/*------------------------------------------------------------*/
-
-std::string CHsp3::GetHSPName( int type, int val ) const
-{
-	//		type,valに対応したHSP登録名を得る
-	//
-	int max,i;
-	LABOBJ *lobj;
-	max = lb->GetNumEntry();
-	for(i=0;i<max;i++) {
-		lobj = lb->GetLabel(i);
-		if ( lobj->type == type ) {
-			if ( lobj->opt == val ) {
-				return lobj->name;
-			}
-		}
-	}
-
-	switch( type ) {
-	case TYPE_MODCMD:
-		{
-		const STRUCTDAT *fnc;
-		fnc = GetFInfo( val );
-		if ( fnc->index == STRUCTDAT_INDEX_FUNC ) return GetDS( fnc->nameidx );
-		if ( fnc->index == STRUCTDAT_INDEX_CFUNC ) return GetDS( fnc->nameidx );
-		break;
-		}
-	case TYPE_DLLFUNC:
-		{
-		const STRUCTDAT *fnc;
-		fnc = GetFInfo( val );
-		return GetDS( fnc->nameidx );
-		}
-	default:
-		break;
-	}
-
-	return "";
-}
-
-
-std::string CHsp3::GetHSPOperator( int val ) const
-{
-	//		HSPの演算子を文字列(記号)で返す
-	//
-	switch( val ) {
-	case CALCCODE_ADD:
-		return "+";
-	case CALCCODE_SUB:
-		return "-";
-	case CALCCODE_MUL:
-		return "*";
-	case CALCCODE_DIV:
-		return "/";
-	case CALCCODE_MOD:
-		return "%";
-	case CALCCODE_AND:
-		return "&";
-	case CALCCODE_OR:
-		return "|";
-	case CALCCODE_XOR:
-		return "^";
-	case CALCCODE_EQ:
-		return "=";
-	case CALCCODE_NE:
-		return "!=";
-	case CALCCODE_GT:
-		return ">";
-	case CALCCODE_LT:
-		return "<";
-	case CALCCODE_GTEQ:
-		return ">=";
-	case CALCCODE_LTEQ:
-		return "<=";
-	case CALCCODE_RR:
-		return ">>";
-	case CALCCODE_LR:
-		return "<<";
-	}
-	char hspoptmp[4];
-	hspoptmp[0] = (char)val;
-	hspoptmp[1] = 0;
-	return hspoptmp;
-}
-
-
-std::string CHsp3::GetHSPOperator2( int val ) const
-{
-	//		HSPの演算子を文字列(メソッド)で返す
-	//
-	switch( val ) {
-	case CALCCODE_ADD:
-		return "AddI";
-	case CALCCODE_SUB:
-		return "SubI";
-	case CALCCODE_MUL:
-		return "MulI";
-	case CALCCODE_DIV:
-		return "DivI";
-	case CALCCODE_MOD:
-		return "ModI";
-	case CALCCODE_AND:
-		return "AndI";
-	case CALCCODE_OR:
-		return "OrI";
-	case CALCCODE_XOR:
-		return "XorI";
-	case CALCCODE_EQ:
-		return "EqI";
-	case CALCCODE_NE:
-		return "NeI";
-	case CALCCODE_GT:
-		return "GtI";
-	case CALCCODE_LT:
-		return "LtI";
-	case CALCCODE_GTEQ:
-		return "GtEqI";
-	case CALCCODE_LTEQ:
-		return "LtEqI";
-	case CALCCODE_RR:
-		return "RrI";
-	case CALCCODE_LR:
-		return "LrI";
-	}
-	return "";
-}
-
-
-std::string CHsp3::GetHSPVarTypeName( int type ) const
-{
-	//		HSPのタイプ値を文字列で返す
-	//
-	switch( type ) {
-	case HSPVAR_FLAG_LABEL:
-		return "label";
-	case HSPVAR_FLAG_STR:
-		return "str";
-	case HSPVAR_FLAG_DOUBLE:
-		return "double";
-	case HSPVAR_FLAG_INT:
-		return "int";
-	case HSPVAR_FLAG_STRUCT:
-		return "module";
-	case HSPVAR_FLAG_COMSTRUCT:
-		return "comst";
-	}
-	return "";
-}
-
-
-std::string CHsp3::GetHSPCmdTypeName( int type ) const
-{
-	//		HSPのコマンドタイプ値を文字列で返す
-	//
-	switch( type ) {
-	case TYPE_MARK:
-		return "Mark";
-	case TYPE_VAR:
-		return "Var";
-	case TYPE_STRING:
-		return "Str";
-	case TYPE_DNUM:
-		return "Double";
-	case TYPE_INUM:
-		return "Int";
-	case TYPE_STRUCT:
-		return "Module";
-	case TYPE_XLABEL:
-		return "Label";
-	case TYPE_LABEL:
-		return "Label";
-	case TYPE_INTCMD:
-		return "Intcmd";
-	case TYPE_EXTCMD:
-		return "Extcmd";
-	case TYPE_EXTSYSVAR:
-		return "Extvar";
-	case TYPE_CMPCMD:
-		return "Cmp";
-	case TYPE_MODCMD:
-		return "Modcmd";
-	case TYPE_INTFUNC:
-		return "Intfunc";
-	case TYPE_SYSVAR:
-		return "Sysvar";
-	case TYPE_PROGCMD:
-		return "Prgcmd";
-	case TYPE_DLLFUNC:
-		return "Dllfunc";
-	case TYPE_DLLCTRL:
-		return "Dllcmd";
-	case TYPE_USERDEF:
-		return "Usrfunc";
-	}
-	return "";
 }
 
 
@@ -960,7 +986,7 @@ int CHsp3::GetHSPExpression( CMemBuf *eout )
 			if ( stm1->type == -1 ) {				// (?)+(result)の場合
 				MakeImmidiateHSPName( mm, stm2->type, stm2->val, stm2->opt );
 				strcpy( mestmp, mes );
-				sprintf( mes,"(%s)%s%s", mestmp, GetHSPOperator(op), mm );
+				sprintf( mes,"(%s)%s%s", mestmp, GetHSPOperator(op).c_str(), mm );
 			} else {
 				if ( stm2->type == -1 ) {			// (result)+(?)の場合
 					MakeImmidiateHSPName( mm, stm1->type, stm1->val, stm1->opt );
