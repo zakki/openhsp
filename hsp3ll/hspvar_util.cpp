@@ -323,6 +323,34 @@ void PushIntfunc( int val, int pnum )
 	StackPush( resflag, ptr, basesize );
 }
 
+double CallDoubleIntfunc( int val, int pnum )
+{
+	char *ptr;
+	int resflag;
+	int basesize;
+
+	*c_type = TYPE_MARK;
+	*c_val = '(';
+	ptr = (char *)intfunc_info->reffunc( &resflag, val );						// タイプごとの関数振り分け
+	code_next();
+	basesize = HspVarCoreGetProc( resflag )->GetSize( (PDAT *)ptr );
+	return *(double*)ptr;
+}
+
+int CallIntIntfunc( int val, int pnum )
+{
+	char *ptr;
+	int resflag;
+	int basesize;
+
+	*c_type = TYPE_MARK;
+	*c_val = '(';
+	ptr = (char *)intfunc_info->reffunc( &resflag, val );						// タイプごとの関数振り分け
+	code_next();
+	basesize = HspVarCoreGetProc( resflag )->GetSize( (PDAT *)ptr );
+	return *(int*)ptr;
+}
+
 
 void PushSysvar( int val, int pnum )
 {
