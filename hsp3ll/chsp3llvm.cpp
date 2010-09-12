@@ -131,7 +131,7 @@ Value* CreateCallImm( BasicBlock *bblock, const std::string& name, int a, int b 
 enum OPCODE {
 	NOP, TASK_SWITCH_OP, CALC_OP, PUSH_VAR_OP, PUSH_VAR_PTR_OP, PUSH_DNUM_OP, PUSH_INUM_OP,
 	PUSH_STRUCT_OP, PUSH_LABEL_OP, PUSH_STR_OP, PUSH_CMD_OP, PUSH_FUNC_END_OP, VAR_SET_OP,
-	VAR_INC_OP, VAR_DEC_OP, VAR_CALC_OP, CMP_OP, CMD_OP
+	VAR_INC_OP, VAR_DEC_OP, VAR_CALC_OP, CMP_OP, CMD_OP, PUSH_DEFAULT
 };
 
 class Op {
@@ -426,6 +426,29 @@ public:
 		Builder.SetInsertPoint( bb );
 		Builder.CreateCall(f, args.begin(), args.end());
 
+		return bb;
+	}
+};
+
+class PushDefaultOp : public Op {
+	double val;
+public:
+	explicit PushDefaultOp()
+	{
+	}
+	virtual std::string GetName()
+	{
+		return "PushDefaultOp";
+	}
+	OPCODE GetOpCode()
+	{
+		return PUSH_DEFAULT;
+	}
+	BasicBlock* GenerateDefaultCode( CHsp3LLVM *hsp, Function *func, BasicBlock *bb )
+	{
+		LLVMContext &Context = getGlobalContext();
+
+		CreateCallImm( bb, "PushDefault" );
 		return bb;
 	}
 };
@@ -2085,10 +2108,9 @@ void CHsp3LLVM::MakeCPPLabel( void )
 }
 
 
-void CHsp3LLVM::GetCPPExpressionSub( CMemBuf *eout, BasicBlock *bblock, int flg )
+void CHsp3LLVM::GetCPPExpressionSub( BasicBlock *bblock, int flg )
 {
 	//		C/C++の計算式フォーマットでパラメーターを展開する(短項目)
-	//		eout : 出力先
 	//
 	char mes[8192];								// 展開される式の最大文字数
 	int op;
@@ -2103,8 +2125,6 @@ void CHsp3LLVM::GetCPPExpressionSub( CMemBuf *eout, BasicBlock *bblock, int flg 
 			//
 			op = csval;
 			sprintf( mes,"Calc%s(); ", GetHSPOperator2( op ).c_str() );
-			if (eout)
-				eout->PutStr( mes );
 			if (sReachable && bblock) {
 				CreateCallImm( bblock, "Calc" + GetHSPOperator2( op ) );
 				sCurTask->operations.push_back( new CalcOp( op ) );
@@ -2115,19 +2135,13 @@ void CHsp3LLVM::GetCPPExpressionSub( CMemBuf *eout, BasicBlock *bblock, int flg 
 			{
 			//		変数をスタックに積む
 			//
-			CMemBuf arname;
 			int va;
 			char varname[256];
 			MakeImmidiateCPPName( varname, cstype, csval );
 			sCurTask->usedVariables.insert(Var( cstype, csval ));
 			getCS();
 			//		配列要素を付加する
-			va = MakeCPPVarExpression( &arname, bblock );
-			if (eout)
-				eout->PutStr( arname.GetBuffer() );
-			sprintf( mes,"PushVar( %s,%d ); ", varname, va );
-			if (eout)
-				eout->PutStr( mes );
+			va = MakeCPPVarExpression( bblock );
 			if (sReachable && bblock) {
 				Function *f = M->getFunction( flg == 1 ? "PushVAP" : "PushVar" );
 
@@ -2155,9 +2169,6 @@ void CHsp3LLVM::GetCPPExpressionSub( CMemBuf *eout, BasicBlock *bblock, int flg 
 			//		直実数値をスタックに積む
 			//
 			double immval = GetDSf( csval );
-			sprintf( mes,"Push%s(%f); ", GetHSPCmdTypeName( cstype ).c_str(), immval );
-			if (eout)
-				eout->PutStr( mes );
 			if (sReachable && bblock) {
 				Function *f = M->getFunction("Push" + GetHSPCmdTypeName( cstype ));
 
@@ -2176,10 +2187,6 @@ void CHsp3LLVM::GetCPPExpressionSub( CMemBuf *eout, BasicBlock *bblock, int flg 
 		case TYPE_LABEL:
 			//		直値をスタックに積む
 			//
-			sprintf( mes,"Push%s(%d); ", GetHSPCmdTypeName( cstype ).c_str(), csval );
-			if (eout)
-				eout->PutStr( mes );
-
 			if (sReachable && bblock) {
 				CreateCallImm( bblock, "Push" + GetHSPCmdTypeName( cstype ), csval );
 				switch (cstype0) {
@@ -2200,9 +2207,6 @@ void CHsp3LLVM::GetCPPExpressionSub( CMemBuf *eout, BasicBlock *bblock, int flg 
 		case TYPE_STRING:
 			//		文字列をスタックに積む
 			//
-			sprintf( mes,"Push%s(\"%s\"); ", GetHSPCmdTypeName( cstype ).c_str(), GetDS( csval ) );
-			if (eout)
-				eout->PutStr( mes );
 			if (sReachable && bblock) {
 				Function *f = M->getFunction("Push" + GetHSPCmdTypeName( cstype ));
 
@@ -2234,25 +2238,16 @@ void CHsp3LLVM::GetCPPExpressionSub( CMemBuf *eout, BasicBlock *bblock, int flg 
 			int va;
 			int fnctype;
 			int fncval;
-			CMemBuf arname;
 			fnctype = cstype;
 			fncval = csval;
 			getCS();
 			//		引数を付加する
-			if (eout)
-				eout->PutStr( "PushFuncEnd(); " );
 			if (sReachable && bblock) {
 				CreateCallImm( bblock, "PushFuncEnd" );
 				sCurTask->operations.push_back( new PushFuncEndOp() );
 			}
 
-			va = MakeCPPVarExpression( &arname, bblock );
-			if (eout)
-				eout->PutStr( arname.GetBuffer() );
-
-			sprintf( mes, "Push%s(%d,%d); ", GetHSPCmdTypeName( fnctype ).c_str(), fncval, va );
-			if (eout)
-				eout->PutStr( mes );
+			va = MakeCPPVarExpression( bblock );
 
 			if (sReachable && bblock) {
 				CreateCallImm( bblock, "Push" + GetHSPCmdTypeName( fnctype ), fncval, va );
@@ -2264,10 +2259,9 @@ void CHsp3LLVM::GetCPPExpressionSub( CMemBuf *eout, BasicBlock *bblock, int flg 
 }
 
 
-int CHsp3LLVM::GetCPPExpression( CMemBuf *eout, int *result, BasicBlock *bblock, int flg )
+int CHsp3LLVM::GetCPPExpression( int *result, BasicBlock *bblock, int flg )
 {
 	//		C/C++の計算式フォーマットでパラメーターを展開する
-	//		eout : 出力先
 	//		result : 結果の格納先(-2=解析なし/-1=複数項の計算式/other=単一のパラメーターtype)
 	//
 	int res;
@@ -2314,7 +2308,7 @@ int CHsp3LLVM::GetCPPExpression( CMemBuf *eout, int *result, BasicBlock *bblock,
 				break;
 			}
 		default:
-			GetCPPExpressionSub( eout, bblock, flg );
+			GetCPPExpressionSub( bblock, flg );
 			break;
 		}
 
@@ -2335,27 +2329,22 @@ int CHsp3LLVM::MakeCPPParam( BasicBlock *bblock, int addprm )
 	int i;
 	int prm;
 	int result;
-	int curidx;
-	CMemBuf tmpbuf;
 	char *p;
 	std::vector<std::pair<MCSCONTEXT, int> > expressionContext;
 	int ret = 0;
 
 	prm = 0;
-	tmpbuf.AddIndexBuffer();
 
 	int j;
 	for(j=0;j<addprm;j++) {
 		if ( exflag & EXFLG_1) break;		// パラメーター列終端
 		if ( mcs > mcs_end ) break;			// データ終端チェック
 		if ( prm ) {
-			tmpbuf.Put( 0 );
 		}
 
 		MCSCONTEXT ctx;
 		GetContext( &ctx );
-		tmpbuf.RegistIndex( tmpbuf.GetSize() );
-		GetCPPExpressionSub( &tmpbuf, NULL );
+		GetCPPExpressionSub( NULL );
 		expressionContext.push_back( std::make_pair( ctx, -3 ) );
 		prm++;
 	}
@@ -2364,23 +2353,15 @@ int CHsp3LLVM::MakeCPPParam( BasicBlock *bblock, int addprm )
 		if ( exflag & EXFLG_1) break;		// パラメーター列終端
 		if ( mcs > mcs_end ) break;			// データ終端チェック
 		if ( prm ) {
-			tmpbuf.Put( 0 );
 		}
 		MCSCONTEXT ctx;
 		GetContext( &ctx );
-		curidx = tmpbuf.GetIndexBufferSize();
-		tmpbuf.RegistIndex( tmpbuf.GetSize() );
-		ret = i = GetCPPExpression( &tmpbuf, &result, NULL );
+		ret = i = GetCPPExpression( &result, NULL );
 		expressionContext.push_back( std::make_pair( ctx, result ) );
 		if ( i > 0 ) break;
 		if ( i < -1 ) break;
 		if ( i == -1 ) {
-			tmpbuf.PutStr( "PushDefault();" );
-		}
-		if ( result == TYPE_VAR ) {			// 単一項で変数が指定されていた場合
-			p = tmpbuf.GetBuffer() + tmpbuf.GetIndex( curidx );
-			p = strstr2( p, "PushVar" );
-			p[5] = 'A'; p[6] = 'P';			// PushVar -> PushVAPに直す
+			expressionContext.push_back( std::make_pair( ctx, -4 ) );
 		}
 		prm++;
 	}
@@ -2392,15 +2373,19 @@ int CHsp3LLVM::MakeCPPParam( BasicBlock *bblock, int addprm )
 		std::pair<MCSCONTEXT, int> &p = expressionContext[j];
 		SetContext( &p.first );
 		if ( p.second == -3 ) {
-			GetCPPExpressionSub( NULL, bblock );
+			GetCPPExpressionSub( bblock );
+		} else if ( p.second == -4 ) {
+			CreateCallImm( bblock, "PushDefault" );
+			if (sReachable && bblock) {
+				sCurTask->operations.push_back( new PushDefaultOp() );
+			}
 		} else {
 			if ( p.second == TYPE_VAR ) {			// 単一項で変数が指定されていた場合
-				i = GetCPPExpression( NULL, &result, bblock, 1 );
+				i = GetCPPExpression( &result, bblock, 1 );
 			} else {
-				i = GetCPPExpression( NULL, &result, bblock );
+				i = GetCPPExpression( &result, bblock );
 			}
 			if ( i == -1 ) {
-				CreateCallImm( bblock, "PushDefault" );
 			}
 		}
 	}
@@ -2423,10 +2408,8 @@ int CHsp3LLVM::MakeCPPVarForHSP( void )
 	int op;
 	char arbuf[VAREXP_BUFFER_MAX];
 	i = GetHSPVarExpression( arbuf );
-	if ( i ) { out->PutStr( arbuf ); }
 	if ( cstype == TYPE_MARK ) {
 		if ( csval == CALCCODE_EQ ) {
-			out->PutStr( "=" );
 			getCS();
 			MakeProgramInfoParam2();
 			return -1;
@@ -2434,14 +2417,10 @@ int CHsp3LLVM::MakeCPPVarForHSP( void )
 		op = csval;
 		getCS();
 		if ( exflag & EXFLG_1) {		// ++ or --
-			out->PutStr( GetHSPOperator( op ).c_str() );
-			out->PutStr( GetHSPOperator( op ).c_str() );
 			MakeProgramInfoParam2();
 			if ( op == CALCCODE_ADD ) return -2;
 			return -3;
 		}
-		out->PutStr( GetHSPOperator( op ).c_str() );
-		out->PutStr( "=" );
 		//getCS();
 		MakeProgramInfoParam2();
 		return op;
@@ -2451,22 +2430,18 @@ int CHsp3LLVM::MakeCPPVarForHSP( void )
 }
 
 
-int CHsp3LLVM::MakeCPPVarExpression( CMemBuf *arname, BasicBlock *bblock )
+int CHsp3LLVM::MakeCPPVarExpression( BasicBlock *bblock )
 {
 	//	変数名直後に続くパラメーター(配列)を展開する
-	//	arname : 配列設定展開用のバッファ
 	//	ret : 0=配列なし/1～=配列あり
 	//
 	int i;
 	int prm;
 	int len;
 	int result;
-	int curidx;
-	CMemBuf tmpbuf;
 	char *p;
 	int ret = 0;
-	std::vector<MCSCONTEXT> expressionContext;
-	tmpbuf.AddIndexBuffer();
+	std::vector<std::pair<MCSCONTEXT, int> > expressionContext;
 
 	if ( cstype == TYPE_MARK ) {
 		if ( csval == '(' ) {
@@ -2475,35 +2450,37 @@ int CHsp3LLVM::MakeCPPVarExpression( CMemBuf *arname, BasicBlock *bblock )
 			while(1) {
 				if ( exflag & EXFLG_1) break;		// パラメーター列終端
 				if ( mcs > mcs_end ) break;			// データ終端チェック
-				if ( prm > 1 ) {
-					tmpbuf.Put( 0 );
-				}
-				curidx = tmpbuf.GetIndexBufferSize();
-				tmpbuf.RegistIndex( tmpbuf.GetSize() );
 
 				MCSCONTEXT ctx;
 				GetContext( &ctx );
-				expressionContext.push_back(ctx);
-				ret = i = GetCPPExpression( &tmpbuf, &result, NULL );
+				ret = i = GetCPPExpression( &result, NULL );
+				expressionContext.push_back( std::make_pair( ctx, result ) );
 				if ( i > 0 ) break;
 				if ( i < -1 ) break;
 				if ( i == -1 ) {
-					tmpbuf.PutStr( "PushDefault();" );
+					expressionContext.push_back( std::make_pair( ctx, -4 ) );
 				}
-				//if ( result == TYPE_VAR ) {			// 単一項で変数が指定されていた場合
-				//	p = tmpbuf.GetBuffer() + tmpbuf.GetIndex( curidx );
-				//	p[5] = 'A'; p[6] = 'P';			// PushVar -> PushVAPに直す
-				//}
 				prm++;
 			}
 
 			MCSCONTEXT ctx;
 			GetContext( &ctx );
 			for(int j = expressionContext.size() - 1; j >= 0; j--) {
-				SetContext( &expressionContext[j] );
-				i = GetCPPExpression( NULL, &result, bblock );
-				if ( i == -1 ) {
+				std::pair<MCSCONTEXT, int> &p = expressionContext[j];
+				if ( p.second == -4 ) {
 					CreateCallImm( bblock, "PushDefault" );
+					if (sReachable && bblock) {
+						sCurTask->operations.push_back( new PushDefaultOp() );
+					}
+				} else {
+					SetContext( &p.first );
+					i = GetCPPExpression( &result, bblock );
+					if ( i == -1 ) {
+						CreateCallImm( bblock, "PushDefault" );
+						if (sReachable && bblock) {
+							sCurTask->operations.push_back( new PushDefaultOp() );
+						}
+					}
 				}
 			}
 			SetContext( &ctx );
@@ -2602,7 +2579,6 @@ int CHsp3LLVM::MakeCPPMain( void )
 		case TYPE_STRUCT:						// 代替変数(struct)
 		case TYPE_VAR:							// 変数代入
 			{
-			CMemBuf arname;
 			int va,pnum;
 			MakeImmidiateHSPName( mes, cmdtype, cmdval );
 			getCS();
@@ -2611,7 +2587,7 @@ int CHsp3LLVM::MakeCPPMain( void )
 			SetContext( &ctxbak );
 			MakeImmidiateCPPName( mes, cmdtype, cmdval );
 			sCurTask->usedVariables.insert(Var( cmdtype, cmdval ));
-			va = MakeCPPVarExpression( &arname, NULL );
+			va = MakeCPPVarExpression( NULL );
 			getCS();
 
 			switch( op ) {
@@ -2621,7 +2597,7 @@ int CHsp3LLVM::MakeCPPMain( void )
 				if (sReachable) {
 					GetContext( &ctxbak2 );
 					SetContext( &ctxbak );
-					MakeCPPVarExpression( NULL, sCurBB );
+					MakeCPPVarExpression( sCurBB );
 					SetContext( &ctxbak2 );
 
 					Function *f = M->getFunction( "VarSet" );
@@ -2650,7 +2626,7 @@ int CHsp3LLVM::MakeCPPMain( void )
 				if (sReachable) {
 					GetContext( &ctxbak2 );
 					SetContext( &ctxbak );
-					MakeCPPVarExpression( NULL, sCurBB );
+					MakeCPPVarExpression( sCurBB );
 					SetContext( &ctxbak2 );
 
 					Function *f = M->getFunction( "VarInc" );
@@ -2674,7 +2650,7 @@ int CHsp3LLVM::MakeCPPMain( void )
 				if (sReachable) {
 					GetContext( &ctxbak2 );
 					SetContext( &ctxbak );
-					MakeCPPVarExpression( NULL, sCurBB );
+					MakeCPPVarExpression( sCurBB );
 					SetContext( &ctxbak2 );
 
 					Function *f = M->getFunction( "VarDec" );
@@ -2704,7 +2680,7 @@ int CHsp3LLVM::MakeCPPMain( void )
 				if (sReachable) {
 					GetContext( &ctxbak2 );
 					SetContext( &ctxbak );
-					MakeCPPVarExpression( NULL, sCurBB );
+					MakeCPPVarExpression( sCurBB );
 					SetContext( &ctxbak2 );
 
 					Function *f = M->getFunction( "VarCalc" );

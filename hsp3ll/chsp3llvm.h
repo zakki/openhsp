@@ -41,11 +41,11 @@ private:
 	void MakeCPPTask2( int nexttask, int newtask );
 	void MakeCPPTask( const char *name, int nexttask=-1 );
 	int MakeCPPParam( llvm::BasicBlock *bblock, int addprm=0 );
-	int GetCPPExpression( CMemBuf *eout, int *result, llvm::BasicBlock *bblock, int flg=0 );
-	void GetCPPExpressionSub( CMemBuf *eout, llvm::BasicBlock *bblock, int flg=0 );
+	int GetCPPExpression( int *result, llvm::BasicBlock *bblock, int flg=0 );
+	void GetCPPExpressionSub( llvm::BasicBlock *bblock, int flg=0 );
 	int MakeCPPVarForHSP( void );
 	void MakeCPPVarName( char *outbuf, int varid );
-	int MakeCPPVarExpression( CMemBuf *arname, llvm::BasicBlock *bblock );
+	int MakeCPPVarExpression( llvm::BasicBlock *bblock );
 
 };
 
