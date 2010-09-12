@@ -35,17 +35,17 @@ private:
 	//		Internal Function
 	//
 	int MakeCPPMain( void );
-	void MakeCPPSub( int cmdtype, int cmdval, llvm::BasicBlock* bblock );
+	void MakeCPPSub( int cmdtype, int cmdval );
 	void MakeCPPLabel( void );
 	void MakeCPPTask( int nexttask );
 	void MakeCPPTask2( int nexttask, int newtask );
 	void MakeCPPTask( const char *name, int nexttask=-1 );
-	int MakeCPPParam( llvm::BasicBlock *bblock, int addprm=0 );
-	int GetCPPExpression( int *result, llvm::BasicBlock *bblock, int flg=0 );
-	void GetCPPExpressionSub( llvm::BasicBlock *bblock, int flg=0 );
+	int MakeCPPParam( bool process, int addprm=0 );
+	int GetCPPExpression( int *result, bool process, int flg=0 );
+	void GetCPPExpressionSub( bool process, int flg=0 );
 	int MakeCPPVarForHSP( void );
 	void MakeCPPVarName( char *outbuf, int varid );
-	int MakeCPPVarExpression( llvm::BasicBlock *bblock );
+	int MakeCPPVarExpression( bool process );
 
 };
 
