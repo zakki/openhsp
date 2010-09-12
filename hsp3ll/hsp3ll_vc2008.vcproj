@@ -183,7 +183,7 @@
 				>
 			</File>
 			<File
-				RelativePath=".\chsp3cpp.cpp"
+				RelativePath=".\chsp3llvm.cpp"
 				>
 			</File>
 			<File
@@ -345,7 +345,7 @@
 				>
 			</File>
 			<File
-				RelativePath=".\chsp3cpp.h"
+				RelativePath=".\chsp3llvm.h"
 				>
 			</File>
 			<File

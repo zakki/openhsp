@@ -1,9 +1,9 @@
 
 //
-//	CHsp3cpp.cpp structures
+//	CHsp3LLVM.cpp structures
 //
-#ifndef __CHsp3cpp_h
-#define __CHsp3cpp_h
+#ifndef __CHsp3LLVM_h
+#define __CHsp3LLVM_h
 
 #include "chsp3.h"
 
@@ -18,10 +18,10 @@ namespace llvm {
 }
 //	HSP3(.ax)->C++(.cpp) conversion class
 //
-class CHsp3Cpp : public CHsp3 {
+class CHsp3LLVM : public CHsp3 {
 public:
 
-	CHsp3Cpp();
+	CHsp3LLVM();
 	int MakeSource( int option, void *ref );
 
 private:

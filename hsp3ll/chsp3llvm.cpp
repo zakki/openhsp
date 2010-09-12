@@ -27,7 +27,7 @@
 #include "llvm/Support/IRBuilder.h"
 
 #include "supio.h"
-#include "chsp3cpp.h"
+#include "chsp3llvm.h"
 #include "hsp3r.h"
 
 using namespace llvm;
@@ -246,10 +246,10 @@ void* HspLazyFunctionCreator( const std::string &Name )
 	return NULL;
 }
 /*------------------------------------------------------------*/
-CHsp3Cpp::CHsp3Cpp() {
+CHsp3LLVM::CHsp3LLVM() {
 }
 
-void CHsp3Cpp::MakeCPPVarName( char *outbuf, int varid )
+void CHsp3LLVM::MakeCPPVarName( char *outbuf, int varid )
 {
 	//		変数名をoutbufにコピーする
 	//
@@ -258,7 +258,7 @@ void CHsp3Cpp::MakeCPPVarName( char *outbuf, int varid )
 }
 
 
-int CHsp3Cpp::MakeImmidiateCPPName( char *mes, int type, int val, char *opt )
+int CHsp3LLVM::MakeImmidiateCPPName( char *mes, int type, int val, char *opt )
 {
 	//		直値(int,double,str)を追加
 	//		(追加できない型の場合は-1を返す)
@@ -295,7 +295,7 @@ int CHsp3Cpp::MakeImmidiateCPPName( char *mes, int type, int val, char *opt )
 }
 
 
-void CHsp3Cpp::MakeCPPTask( const char *funcdef, const char *name, int nexttask )
+void CHsp3LLVM::MakeCPPTask( const char *funcdef, const char *name, int nexttask )
 {
 	//		タスクの区切り
 	//			funcdef=新しい関数定義
@@ -332,7 +332,7 @@ void CHsp3Cpp::MakeCPPTask( const char *funcdef, const char *name, int nexttask 
 }
 
 
-void CHsp3Cpp::MakeCPPTask( int nexttask )
+void CHsp3LLVM::MakeCPPTask( int nexttask )
 {
 	//		単純タスクの生成
 	//
@@ -344,7 +344,7 @@ void CHsp3Cpp::MakeCPPTask( int nexttask )
 }
 
 
-void CHsp3Cpp::MakeCPPTask2( int nexttask, int newtask )
+void CHsp3LLVM::MakeCPPTask2( int nexttask, int newtask )
 {
 	//		単純タスクの生成
 	//
@@ -356,7 +356,7 @@ void CHsp3Cpp::MakeCPPTask2( int nexttask, int newtask )
 }
 
 
-void CHsp3Cpp::MakeCPPLabel( void )
+void CHsp3LLVM::MakeCPPLabel( void )
 {
 	//		ラベルを生成
 	//
@@ -383,7 +383,7 @@ void CHsp3Cpp::MakeCPPLabel( void )
 }
 
 
-void CHsp3Cpp::GetCPPExpressionSub( CMemBuf *eout, BasicBlock *bblock, int flg )
+void CHsp3LLVM::GetCPPExpressionSub( CMemBuf *eout, BasicBlock *bblock, int flg )
 {
 	//		C/C++の計算式フォーマットでパラメーターを展開する(短項目)
 	//		eout : 出力先
@@ -525,7 +525,7 @@ void CHsp3Cpp::GetCPPExpressionSub( CMemBuf *eout, BasicBlock *bblock, int flg )
 }
 
 
-int CHsp3Cpp::GetCPPExpression( CMemBuf *eout, int *result, BasicBlock *bblock, int flg )
+int CHsp3LLVM::GetCPPExpression( CMemBuf *eout, int *result, BasicBlock *bblock, int flg )
 {
 	//		C/C++の計算式フォーマットでパラメーターを展開する
 	//		eout : 出力先
@@ -589,7 +589,7 @@ int CHsp3Cpp::GetCPPExpression( CMemBuf *eout, int *result, BasicBlock *bblock, 
 }
 
 
-int CHsp3Cpp::MakeCPPParam( BasicBlock* bblock, int addprm )
+int CHsp3LLVM::MakeCPPParam( BasicBlock* bblock, int addprm )
 {
 	//		パラメーターのトレース
 	//
@@ -696,7 +696,7 @@ int CHsp3Cpp::MakeCPPParam( BasicBlock* bblock, int addprm )
 }
 
 
-int CHsp3Cpp::MakeCPPVarForHSP( void )
+int CHsp3LLVM::MakeCPPVarForHSP( void )
 {
 	//		コメント用にHSP形式の代入を作成
 	//		(同時に代入の種類を識別して返す)
@@ -734,7 +734,7 @@ int CHsp3Cpp::MakeCPPVarForHSP( void )
 }
 
 
-int CHsp3Cpp::MakeCPPVarExpression( CMemBuf *arname, BasicBlock *bblock )
+int CHsp3LLVM::MakeCPPVarExpression( CMemBuf *arname, BasicBlock *bblock )
 {
 	//	変数名直後に続くパラメーター(配列)を展開する
 	//	arname : 配列設定展開用のバッファ
@@ -819,7 +819,7 @@ int CHsp3Cpp::MakeCPPVarExpression( CMemBuf *arname, BasicBlock *bblock )
 
 /*------------------------------------------------------------*/
 
-void CHsp3Cpp::MakeCPPSub( int cmdtype, int cmdval, BasicBlock* bblock )
+void CHsp3LLVM::MakeCPPSub( int cmdtype, int cmdval, BasicBlock* bblock )
 {
 	//		通常命令とパラメーターを展開
 	//
@@ -839,7 +839,7 @@ void CHsp3Cpp::MakeCPPSub( int cmdtype, int cmdval, BasicBlock* bblock )
 }
 
 
-int CHsp3Cpp::MakeCPPMain( void )
+int CHsp3LLVM::MakeCPPMain( void )
 {
 	//		プログラムのトレース
 	//
@@ -1200,7 +1200,7 @@ int CHsp3Cpp::MakeCPPMain( void )
 /*------------------------------------------------------------*/
 
 
-int CHsp3Cpp::MakeSource( int option, void *ref )
+int CHsp3LLVM::MakeSource( int option, void *ref )
 {
 	//		C/C++ソースを出力する
 	//

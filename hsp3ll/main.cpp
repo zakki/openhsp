@@ -22,7 +22,7 @@
 
 #include "chsp3.h"
 #include "chsp3rev.h"
-#include "chsp3cpp.h"
+#include "chsp3llvm.h"
 #include "../hsp3/win32gui/hsp3win.h"
 
 
@@ -132,7 +132,7 @@ int readAx( char *fname )
 	}
 	{
 		int i;
-		CHsp3Cpp* hsp3 = new CHsp3Cpp();
+		CHsp3LLVM* hsp3 = new CHsp3LLVM();
 		i = hsp3->LoadObjectFile( fname );
 		if (i) {
 			char buffer[1024];
@@ -141,7 +141,6 @@ int readAx( char *fname )
 			return 1;
 		}
 		hsp3->MakeSource( 0, NULL );
-
 #ifndef HSP3CNV_DEBUG
 		hsp3->SaveOutBuf( oname2 );
 #else
