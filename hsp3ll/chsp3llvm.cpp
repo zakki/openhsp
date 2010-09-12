@@ -37,6 +37,7 @@ using namespace llvm;
 
 //
 static char *PROTOTYPES = 
+	"%struct.PVal = type { i16, i16, [5 x i32], i32, i8*, i8*, i16, i16, i32, i32 }\n"
 	"declare void @Prgcmd(i32, i32)\n"
 	"declare void @PushVar(%struct.PVal*, i32)\n"
 	"declare void @CalcMulI()\n"
@@ -1894,34 +1895,10 @@ void __HspEntry( void ) {
 
 // LLVM utilities
 
-static const StructType *getPVal() {
+static const StructType *GetPValType() {
 	LLVMContext &Context = getGlobalContext();
 
-	//	%struct.PVal = type { i16, i16, [5 x i32], i32, i8*, i8*, i16, i16, i32, i32 }
-    std::vector<const Type*> st;
-	//short   flag;           // type of val
-    st.push_back(TypeBuilder<types::i<16>, false>::get(Context));
-	//short   mode;           // mode (0=normal/1=clone/2=alloced)
-    st.push_back(TypeBuilder<types::i<16>, false>::get(Context));
-	//int             len[5];         // length of array 4byte align (dim)
-    st.push_back(TypeBuilder<types::i<32>[5], false>::get(Context));
-	//int             size;           // size of Val
-    st.push_back(TypeBuilder<types::i<32>, false>::get(Context));
-	//char    *pt;            // ptr to array
-    st.push_back(TypeBuilder<types::i<8>*, false>::get(Context));
-	//void    *master;                        // Master pointer for data
-    st.push_back(TypeBuilder<types::i<8>*, false>::get(Context));
-	//unsigned short  support;        // Support Flag
-    st.push_back(TypeBuilder<types::i<16>, false>::get(Context));
-	//short   arraycnt;                       // Array Set Count
-    st.push_back(TypeBuilder<types::i<16>, false>::get(Context));
-	//int             offset;                         // Array Data Offset
-    st.push_back(TypeBuilder<types::i<32>, false>::get(Context));
-	//int             arraymul;                       // Array Multiple Value
-    st.push_back(TypeBuilder<types::i<32>, false>::get(Context));
-
-    StructType* result = StructType::get(Context, st);
-    return result;
+	return (StructType*)M->getTypeByName( "struct.PVal" );
 }
 
 Value* CreateCallImm( BasicBlock *bblock, const std::string& name )
@@ -2666,7 +2643,7 @@ int CHsp3LLVM::MakeCPPMain( void )
 	MCSCONTEXT ctxbak, ctxbak2;
 	int maxvar;
 	LLVMContext &Context = getGlobalContext();
-	const Type *pvalType = getPVal();
+	const Type *pvalType = GetPValType();
 	const Type *ppvalType = PointerType::getUnqual(pvalType);
 
 	//		èâä˙âª
@@ -3060,21 +3037,10 @@ int CHsp3LLVM::MakeSource( int option, void *ref )
 
 	maxvar = hsphed->max_val;
 
-	const Type *pvalType = getPVal();
-	const Type *ppvalType = PointerType::getUnqual(pvalType);
-	M->addTypeName("struct.PVal", pvalType);
-
 	// ä÷êîÇÃèÄîı
 	SMDiagnostic Err;
 	ParseAssemblyString(PROTOTYPES, M, Err, Context);
-	//Function *F = Function::Create(FT, Function::ExternalLinkage, Name, TheModule);
-
-	/*
-	M = ParseAssemblyFile("raytracing.ll", Err, Context);
-	for (Module::FunctionListType::iterator it = M->getFunctionList().begin(); it != M->getFunctionList().end(); it++) {
-		sTasks[it->getNameStr()] = &(*it);
-	}
-	*/
+	const Type *pvalType = GetPValType();
 
 	// ïœêîÇÃèÄîı
 	sVariables = new GlobalVariable*[maxvar];
