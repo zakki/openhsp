@@ -11,17 +11,115 @@
 #include "llvm/Constants.h"
 #include "llvm/DerivedTypes.h"
 #include "llvm/Instructions.h"
+#include "llvm/Assembly/Parser.h"
 #include "llvm/ExecutionEngine/JIT.h"
 #include "llvm/ExecutionEngine/Interpreter.h"
 #include "llvm/ExecutionEngine/GenericValue.h"
 #include "llvm/Target/TargetSelect.h"
+#include "llvm/Support/SourceMgr.h"
+#include "llvm/Support/TypeBuilder.h"
 #include "llvm/Support/ManagedStatic.h"
 #include "llvm/Support/raw_ostream.h"
 
 #include "supio.h"
 #include "chsp3cpp.h"
+#include "hsp3r.h"
 
 using namespace llvm;
+
+
+//
+static char* PROTOTYPES = 
+	"declare void @Prgcmd(i32, i32)\n"
+	"declare void @PushVar(%struct.PVal*, i32)\n"
+	"declare void @CalcMulI()\n"
+	"declare void @VarSet(%struct.PVal*, i32, i32)\n"
+	"declare void @PushInt(i32)\n"
+	"declare void @CalcSubI()\n"
+	"declare void @PushDouble(double)\n"
+	"declare void @PushFuncEnd()\n"
+	"declare void @CalcAddI()\n"
+	"declare void @PushIntfunc(i32, i32)\n"
+	"declare void @CalcDivI()\n"
+	"declare void @PushVAP(%struct.PVal*, i32)\n"
+	"declare void @VarCalc(%struct.PVal*, i32, i32)\n"
+	"declare void @VarInc(%struct.PVal*, i32)\n"
+	"declare void @TaskSwitch(i32)\n"
+	"declare void @CalcEqI()\n"
+	"declare i8 @HspIf() zeroext\n"
+	"declare void @CalcGtI()\n"
+	"declare void @PushLabel(i32)\n"
+	"declare void @CalcLtI()\n"
+	"declare void @PushSysvar(i32, i32)\n"
+	"declare void @Extcmd(i32, i32)\n"
+	"declare void @PushStr(i8*)\n"
+	"declare void @CalcAndI()\n"
+	"declare void @CalcNeI()\n"
+	"declare void @CalcGtEqI()\n"
+	"declare void @CalcXorI()\n"
+	"declare void @PushExtvar(i32, i32)\n"
+	"declare void @CalcRrI()\n"
+	"declare void @PushDefault()\n"
+	"declare void @Intcmd(i32, i32)\n"
+	"declare i32 @Hsp3rReset(%struct.Hsp3r*, i32, i32)";
+
+// 
+static LLVMContext Context;
+static Module *M;
+static ExecutionEngine* EE;
+
+// Runtime
+CHSP3_TASK *__HspTaskFunc;
+static GlobalVariable **sVariables;
+
+static int sMaxVar;
+static int sMaxHpi;
+
+static PVal **Var__HspVars;
+
+void __HspInit( Hsp3r *hsp3 ) {
+	hsp3->Reset( sMaxVar, sMaxHpi );
+}
+
+void __HspEntry( void ) {
+	Var__HspVars = new PVal*[sMaxVar];
+	for(int i=0;i<sMaxVar;i++) {
+		Var__HspVars[i] = mem_var + i;
+		EE->updateGlobalMapping( sVariables[i], Var__HspVars + i );
+	}
+	exit(0);
+}
+
+
+// LLVM utilities
+
+static const StructType *getPVal(LLVMContext &Context) {
+	//	%struct.PVal = type { i16, i16, [5 x i32], i32, i8*, i8*, i16, i16, i32, i32 }
+    std::vector<const Type*> st;
+	//short   flag;           // type of val
+    st.push_back(TypeBuilder<types::i<16>, false>::get(Context));
+	//short   mode;           // mode (0=normal/1=clone/2=alloced)
+    st.push_back(TypeBuilder<types::i<16>, false>::get(Context));
+	//int             len[5];         // length of array 4byte align (dim)
+    st.push_back(TypeBuilder<types::i<32>[5], false>::get(Context));
+	//int             size;           // size of Val
+    st.push_back(TypeBuilder<types::i<32>, false>::get(Context));
+	//char    *pt;            // ptr to array
+    st.push_back(TypeBuilder<types::i<8>*, false>::get(Context));
+	//void    *master;                        // Master pointer for data
+    st.push_back(TypeBuilder<types::i<8>*, false>::get(Context));
+	//unsigned short  support;        // Support Flag
+    st.push_back(TypeBuilder<types::i<16>, false>::get(Context));
+	//short   arraycnt;                       // Array Set Count
+    st.push_back(TypeBuilder<types::i<16>, false>::get(Context));
+	//int             offset;                         // Array Data Offset
+    st.push_back(TypeBuilder<types::i<32>, false>::get(Context));
+	//int             arraymul;                       // Array Multiple Value
+    st.push_back(TypeBuilder<types::i<32>, false>::get(Context));
+
+    static const StructType *const result = StructType::get(Context, st);
+    return result;
+}
 
 /*------------------------------------------------------------*/
 CHsp3Cpp::CHsp3Cpp() {
@@ -706,6 +804,48 @@ int CHsp3Cpp::MakeSource( int option, void *ref )
 
 	maxvar = hsphed->max_val;
 
+  
+	// Create some module to put our function into it.
+	M = new Module("test", Context);
+  
+	OutMes( "//\r\n//\thsp3cnv generated source\r\n//\t[%s]\r\n//\r\n", orgname );
+
+	OutMes( "#include \"hsp3r.h\"\r\n" );
+	OutMes( "\r\n#define _HSP3CNV_DATE %s\n#define _HSP3CNV_TIME %s\r\n", localinfo.CurrentDate(), localinfo.CurrentTime() );
+	OutMes( "#define _HSP3CNV_MAXVAR %d\r\n", hsphed->max_val );
+	OutMes( "#define _HSP3CNV_MAXHPI %d\r\n", hsphed->max_hpi );
+	OutMes( "#define _HSP3CNV_VERSION 0x%x\r\n", hsphed->version );
+	OutMes( "#define _HSP3CNV_BOOTOPT %d\r\n", hsphed->bootoption );
+	OutMes( "\r\n/*-----------------------------------------------------------*/\r\n\r\n" );
+
+
+	sMaxVar = hsphed->max_val;
+	sMaxHpi = hsphed->max_hpi;
+
+	maxvar = hsphed->max_val;
+
+	const Type* pvalType = getPVal(Context);
+	const Type* ppvalType = PointerType::getUnqual(pvalType);
+
+	// 関数の準備
+	SMDiagnostic Err;
+	ParseAssemblyString(PROTOTYPES, M, Err, Context);
+	//Function *F = Function::Create(FT, Function::ExternalLinkage, Name, TheModule);
+
+	// 変数の準備
+	sVariables = new GlobalVariable*[maxvar];
+	for(i=0;i<maxvar;i++) {
+		//OutMes( "static PVal *%s%s;\r\n", CPPHED_HSPVAR, GetHSPVarName(i).c_str(), i );
+
+		//Constant* constInt = ConstantInt::get(Type::getInt32Ty(Context), (int)&mem_var[0]); 
+		Constant* constInt = ConstantInt::get(Type::getInt32Ty(Context), (int)0); 
+		Constant* constPtr = ConstantExpr::getIntToPtr(constInt, ppvalType); 
+
+		sVariables[i] = new GlobalVariable(ppvalType, false, GlobalValue::LinkageTypes::PrivateLinkage, constPtr, GetHSPVarName(i), M);
+	}
+
+	OutMes( "\r\n/*-----------------------------------------------------------*/\r\n\r\n" );
+
 	//		初期化ファンクションを作成する
 	//
 	OutMes( "void __HspInit( Hsp3r *hsp3 ) {\r\n" );
@@ -741,6 +881,9 @@ int CHsp3Cpp::MakeSource( int option, void *ref )
 	}
 	OutMes( "\r\n};\r\n" );
 	OutMes( "\r\n/*-----------------------------------------------------------*/\r\n\r\n" );
+
+
+	EE = EngineBuilder(M).create();
 
 	return 0;
 }

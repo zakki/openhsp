@@ -24,7 +24,7 @@
 */
 /*------------------------------------------------------------*/
 
-extern CHSP3_TASK __HspTaskFunc[];		// hsp3cnvで生成されるタスク関数リスト
+extern CHSP3_TASK *__HspTaskFunc;		// hsp3cnvで生成されるタスク関数リスト
 void __HspEntry( void );				// hsp3cnvで生成されるエントリーポイント
 
 static	HSPCTX *hspctx;					// HSPのコンテキスト

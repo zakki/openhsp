@@ -4,6 +4,7 @@
 //
 #include "hsp3r.h"
 
+#if 0
 #define _HSP3CNV_DATE "2008/10/01"
 #define _HSP3CNV_TIME "16:20:42"
 #define _HSP3CNV_MAXVAR 1
@@ -96,4 +97,4 @@ CHSP3_TASK __HspTaskFunc[]={
 };
 
 /*-----------------------------------------------------------*/
-
+#endif
