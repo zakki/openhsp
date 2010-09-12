@@ -13,7 +13,9 @@
 //
 typedef void (* CHSP3_TASK) (void);
 
-
+namespace llvm {
+	class BasicBlock;
+}
 //	HSP3(.ax)->C++(.cpp) conversion class
 //
 class CHsp3Cpp : public CHsp3 {
@@ -32,17 +34,17 @@ private:
 	//		Internal Function
 	//
 	int MakeCPPMain( void );
-	void MakeCPPSub( int cmdtype, int cmdval );
+	void MakeCPPSub( int cmdtype, int cmdval, llvm::BasicBlock* bblock );
 	void MakeCPPLabel( void );
 	void MakeCPPTask( int nexttask );
 	void MakeCPPTask2( int nexttask, int newtask );
 	void MakeCPPTask( const char *funcdef, const char *name, int nexttask=-1 );
-	int MakeCPPParam( int addprm=0 );
-	int GetCPPExpression( CMemBuf *eout, int *result );
-	void GetCPPExpressionSub( CMemBuf *eout );
+	int MakeCPPParam( llvm::BasicBlock *bblock, int addprm=0 );
+	int GetCPPExpression( CMemBuf *eout, int *result, llvm::BasicBlock *bblock, int flg=0 );
+	void GetCPPExpressionSub( CMemBuf *eout, llvm::BasicBlock *bblock, int flg=0 );
 	int MakeCPPVarForHSP( void );
 	void MakeCPPVarName( char *outbuf, int varid );
-	int MakeCPPVarExpression( CMemBuf *arname );
+	int MakeCPPVarExpression( CMemBuf *arname, llvm::BasicBlock *bblock );
 	int MakeImmidiateCPPName( char *mes, int type, int val, char *opt=NULL );
 
 };

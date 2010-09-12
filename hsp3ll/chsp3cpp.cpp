@@ -6,6 +6,7 @@
 #include <stdio.h>
 #include <string>
 #include <map>
+#include <vector>
 
 #include "llvm/LLVMContext.h"
 #include "llvm/Module.h"
@@ -155,7 +156,7 @@ static const StructType *getPVal() {
     return result;
 }
 
-Value* createCallImm( const std::string& name )
+Value* createCallImm( BasicBlock *bblock, const std::string& name )
 {
 	if (!sReachable)
 		return NULL;
@@ -165,10 +166,11 @@ Value* createCallImm( const std::string& name )
 	
 	std::vector<Value*> args;
 
+	Builder.SetInsertPoint(bblock);
 	return Builder.CreateCall( f, args.begin(), args.end() );
 }
 
-Value* createCallImm( const std::string& name, int a )
+Value* createCallImm( BasicBlock *bblock, const std::string& name, int a )
 {
 	if (!sReachable)
 		return NULL;
@@ -179,11 +181,12 @@ Value* createCallImm( const std::string& name, int a )
 	std::vector<Value*> args;
 	
 	args.push_back( ConstantInt::get( Type::getInt32Ty( Context ), a ) );
-	
+
+	Builder.SetInsertPoint(bblock);
 	return Builder.CreateCall( f, args.begin(), args.end() );
 }
 
-Value* createCallImm( const std::string& name, int a, int b )
+Value* createCallImm( BasicBlock *bblock, const std::string& name, int a, int b )
 {
 	if (!sReachable)
 		return NULL;
@@ -195,7 +198,8 @@ Value* createCallImm( const std::string& name, int a, int b )
 	
 	args.push_back(ConstantInt::get( Type::getInt32Ty( Context ), a ) );
 	args.push_back(ConstantInt::get( Type::getInt32Ty( Context ), b ) );
-	
+
+	Builder.SetInsertPoint(bblock);
 	return Builder.CreateCall( f, args.begin(), args.end() );
 }
 
@@ -297,7 +301,7 @@ void CHsp3Cpp::MakeCPPTask( const char *funcdef, const char *name, int nexttask 
 	if ( tasknum ) {
 		if ( nexttask >= 0 ) {
 			OutLine( "TaskSwitch(%d);\r\n", nexttask );
-			createCallImm( "TaskSwitch", nexttask );
+			createCallImm( sCurBB, "TaskSwitch", nexttask );
 		}
 		Builder.CreateRetVoid();
 		OutMes( "}\r\n\r\n" );
@@ -368,7 +372,7 @@ void CHsp3Cpp::MakeCPPLabel( void )
 }
 
 
-void CHsp3Cpp::GetCPPExpressionSub( CMemBuf *eout )
+void CHsp3Cpp::GetCPPExpressionSub( CMemBuf *eout, BasicBlock *bblock, int flg )
 {
 	//		C/C++の計算式フォーマットでパラメーターを展開する(短項目)
 	//		eout : 出力先
@@ -384,9 +388,10 @@ void CHsp3Cpp::GetCPPExpressionSub( CMemBuf *eout )
 			//
 			op = csval;
 			sprintf( mes,"Calc%s(); ", GetHSPOperator2(op).c_str() );
-			eout->PutStr( mes );
-			if (sReachable)
-				createCallImm( "Calc" + GetHSPOperator2(op) );
+			if (eout)
+				eout->PutStr( mes );
+			if (sReachable && bblock)
+				createCallImm( bblock, "Calc" + GetHSPOperator2(op) );
 			getCS();
 			break;
 		case TYPE_VAR:
@@ -399,12 +404,14 @@ void CHsp3Cpp::GetCPPExpressionSub( CMemBuf *eout )
 			MakeImmidiateCPPName( varname, cstype, csval );
 			getCS();
 			//		配列要素を付加する
-			va = MakeCPPVarExpression( &arname );
-			eout->PutStr( arname.GetBuffer() );
+			va = MakeCPPVarExpression( &arname, bblock );
+			if (eout)
+				eout->PutStr( arname.GetBuffer() );
 			sprintf( mes,"PushVar(%s,%d); ", varname, va );
-			eout->PutStr( mes );
-			if (sReachable) {
-				Function* f = M->getFunction("PushVar");
+			if (eout)
+				eout->PutStr( mes );
+			if (sReachable && bblock) {
+				Function* f = M->getFunction( flg == 1 ? "PushVAP" : "PushVar" );
 				
 				std::vector<Value*> args;
 				Value *var = M->getNamedValue(varname);
@@ -415,7 +422,8 @@ void CHsp3Cpp::GetCPPExpressionSub( CMemBuf *eout )
 
 				args.push_back(ld);
 				args.push_back(ConstantInt::get(Type::getInt32Ty(Context), va));
-				
+
+				Builder.SetInsertPoint(bblock);
 				Builder.CreateCall(f, args.begin(), args.end());
 			}
 			break;
@@ -425,13 +433,15 @@ void CHsp3Cpp::GetCPPExpressionSub( CMemBuf *eout )
 			//		直実数値をスタックに積む
 			//
 			sprintf( mes,"Push%s(%f); ", GetHSPCmdTypeName(cstype).c_str(), GetDSf(csval) );
-			eout->PutStr( mes );
-			if (sReachable) {
+			if (eout)
+				eout->PutStr( mes );
+			if (sReachable && bblock) {
 				Function* f = M->getFunction("Push" + GetHSPCmdTypeName(cstype));
 				
 				std::vector<Value*> args;
 				args.push_back(ConstantFP::get(Type::getDoubleTy(Context), GetDSf(csval)));
-				
+
+				Builder.SetInsertPoint(bblock);
 				Builder.CreateCall(f, args.begin(), args.end());
 			}
 			getCS();
@@ -443,9 +453,11 @@ void CHsp3Cpp::GetCPPExpressionSub( CMemBuf *eout )
 			//		直値をスタックに積む
 			//
 			sprintf( mes,"Push%s(%d); ", GetHSPCmdTypeName(cstype).c_str(), csval );
-			eout->PutStr( mes );
+			if (eout)
+				eout->PutStr( mes );
 
-			createCallImm( "Push" + GetHSPCmdTypeName(cstype), csval );
+			if (sReachable && bblock)
+				createCallImm( bblock, "Push" + GetHSPCmdTypeName(cstype), csval );
 
 			getCS();
 			break;
@@ -453,8 +465,9 @@ void CHsp3Cpp::GetCPPExpressionSub( CMemBuf *eout )
 			//		文字列をスタックに積む
 			//
 			sprintf( mes,"Push%s(\"%s\"); ", GetHSPCmdTypeName(cstype).c_str(), GetDS( csval ) );
-			eout->PutStr( mes );
-			if (sReachable) {
+			if (eout)
+				eout->PutStr( mes );
+			if (sReachable && bblock) {
 				Function* f = M->getFunction("Push" + GetHSPCmdTypeName(cstype));
 				
 				std::vector<Value*> args;
@@ -462,7 +475,8 @@ void CHsp3Cpp::GetCPPExpressionSub( CMemBuf *eout )
 				Constant* constInt = ConstantInt::get(Type::getInt32Ty(Context), (int)GetDS(csval));
 				Constant* constPtr = ConstantExpr::getIntToPtr(constInt, TypeBuilder<types::i<8>*, false>::get(Context));
 				args.push_back(constPtr);
-				
+
+				Builder.SetInsertPoint(bblock);
 				Builder.CreateCall(f, args.begin(), args.end());
 			}
 			getCS();
@@ -479,20 +493,28 @@ void CHsp3Cpp::GetCPPExpressionSub( CMemBuf *eout )
 			fncval = csval;
 			getCS();
 			//		引数を付加する
-			eout->PutStr( "PushFuncEnd(); " );
-			createCallImm( "PushFuncEnd" );
-			va = MakeCPPVarExpression( &arname );
-			eout->PutStr( arname.GetBuffer() );
+			if (eout)
+				eout->PutStr( "PushFuncEnd(); " );
+			if (sReachable && bblock)
+				createCallImm( bblock, "PushFuncEnd" );
+
+			va = MakeCPPVarExpression( &arname, bblock );
+			if (eout)
+				eout->PutStr( arname.GetBuffer() );
+
 			sprintf( mes, "Push%s(%d,%d); ", GetHSPCmdTypeName(fnctype).c_str(), fncval, va );
-			eout->PutStr( mes );
-			createCallImm( "Push" + GetHSPCmdTypeName(fnctype), fncval, va );
+			if (eout)
+				eout->PutStr( mes );
+
+			if (sReachable && bblock)
+				createCallImm( bblock, "Push" + GetHSPCmdTypeName(fnctype), fncval, va );
 			break;
 			}
 	}
 }
 
 
-int CHsp3Cpp::GetCPPExpression( CMemBuf *eout, int *result )
+int CHsp3Cpp::GetCPPExpression( CMemBuf *eout, int *result, BasicBlock *bblock, int flg )
 {
 	//		C/C++の計算式フォーマットでパラメーターを展開する
 	//		eout : 出力先
@@ -542,7 +564,7 @@ int CHsp3Cpp::GetCPPExpression( CMemBuf *eout, int *result )
 				break;
 			}
 		default:
-			GetCPPExpressionSub( eout );
+			GetCPPExpressionSub( eout, bblock, flg );
 			break;
 		}
 
@@ -556,7 +578,7 @@ int CHsp3Cpp::GetCPPExpression( CMemBuf *eout, int *result )
 }
 
 
-int CHsp3Cpp::MakeCPPParam( int addprm )
+int CHsp3Cpp::MakeCPPParam( BasicBlock* bblock, int addprm )
 {
 	//		パラメーターのトレース
 	//
@@ -567,6 +589,8 @@ int CHsp3Cpp::MakeCPPParam( int addprm )
 	int curidx;
 	CMemBuf tmpbuf;
 	char *p;
+	std::vector<std::pair<MCSCONTEXT, int> > expressionContext;
+	int ret = 0;
 
 	prm = 0;
 	tmpbuf.AddIndexBuffer();
@@ -578,8 +602,12 @@ int CHsp3Cpp::MakeCPPParam( int addprm )
 		if ( prm ) {
 			tmpbuf.Put(0);
 		}
+
+		MCSCONTEXT ctx;
+		GetContext(&ctx);
 		tmpbuf.RegistIndex( tmpbuf.GetSize() );
-		GetCPPExpressionSub( &tmpbuf );
+		GetCPPExpressionSub( &tmpbuf, NULL );
+		expressionContext.push_back( std::make_pair( ctx, -3 ) );
 		prm++;
 	}
 
@@ -589,11 +617,14 @@ int CHsp3Cpp::MakeCPPParam( int addprm )
 		if ( prm ) {
 			tmpbuf.Put(0);
 		}
+		MCSCONTEXT ctx;
+		GetContext(&ctx);
 		curidx = tmpbuf.GetIndexBufferSize();
 		tmpbuf.RegistIndex( tmpbuf.GetSize() );
-		i = GetCPPExpression( &tmpbuf, &result );
+		ret = i = GetCPPExpression( &tmpbuf, &result, NULL );
+		expressionContext.push_back( std::make_pair( ctx, result ) );
 		if ( i > 0 ) break;
-		if ( i < -1 ) return i;
+		if ( i < -1 ) break;
 		if ( i == -1 ) {
 			tmpbuf.PutStr( "PushDefault();" );
 		}
@@ -604,6 +635,30 @@ int CHsp3Cpp::MakeCPPParam( int addprm )
 		}
 		prm++;
 	}
+	
+	// TODO
+	MCSCONTEXT ctx;
+	GetContext(&ctx);
+	for ( int j = expressionContext.size() - 1; j >= 0; j-- ) {
+		std::pair<MCSCONTEXT, int> &p = expressionContext[j];
+		SetContext(&p.first);
+		if ( p.second == -3 ) {
+			GetCPPExpressionSub( NULL, bblock );
+		} else {
+			if ( result == TYPE_VAR ) {			// 単一項で変数が指定されていた場合
+				i = GetCPPExpression( NULL, &result, bblock, 1 );
+			} else {
+				i = GetCPPExpression( NULL, &result, bblock );
+			}
+			if ( i == -1 ) {
+				createCallImm( bblock, "PushDefault" );
+			}
+		}
+	}
+	SetContext(&ctx);
+
+	if ( ret < -1 )
+		return ret;
 
 	//		パラメーターを逆順で登録する
 	//		(stackをpopして正常な順番になるように)
@@ -668,7 +723,7 @@ int CHsp3Cpp::MakeCPPVarForHSP( void )
 }
 
 
-int CHsp3Cpp::MakeCPPVarExpression( CMemBuf *arname )
+int CHsp3Cpp::MakeCPPVarExpression( CMemBuf *arname, BasicBlock *bblock )
 {
 	//	変数名直後に続くパラメーター(配列)を展開する
 	//	arname : 配列設定展開用のバッファ
@@ -681,6 +736,8 @@ int CHsp3Cpp::MakeCPPVarExpression( CMemBuf *arname )
 	int curidx;
 	CMemBuf tmpbuf;
 	char *p;
+	int ret = 0;
+	std::vector<MCSCONTEXT> expressionContext;
 	tmpbuf.AddIndexBuffer();
 
 	if ( cstype == TYPE_MARK ) {
@@ -695,9 +752,13 @@ int CHsp3Cpp::MakeCPPVarExpression( CMemBuf *arname )
 				}
 				curidx = tmpbuf.GetIndexBufferSize();
 				tmpbuf.RegistIndex( tmpbuf.GetSize() );
-				i = GetCPPExpression( &tmpbuf, &result );
+
+				MCSCONTEXT ctx;
+				GetContext(&ctx);
+				expressionContext.push_back(ctx);
+				ret = i = GetCPPExpression( &tmpbuf, &result, NULL );
 				if ( i > 0 ) break;
-				if ( i < -1 ) return i;
+				if ( i < -1 ) break;
 				if ( i == -1 ) {
 					tmpbuf.PutStr( "PushDefault();" );
 				}
@@ -707,6 +768,21 @@ int CHsp3Cpp::MakeCPPVarExpression( CMemBuf *arname )
 				//}
 				prm++;
 			}
+
+			MCSCONTEXT ctx;
+			GetContext(&ctx);
+			for(int j = expressionContext.size() - 1; j >= 0; j--) {
+				SetContext(&expressionContext[j]);
+				i = GetCPPExpression( NULL, &result, bblock );
+				if ( i == -1 ) {
+					createCallImm( bblock, "PushDefault" );
+				}
+			}
+			SetContext(&ctx);
+
+			if (ret < -1)
+				return ret;
+
 			getCS();
 
 			//		パラメーターを逆順で登録する
@@ -731,7 +807,7 @@ int CHsp3Cpp::MakeCPPVarExpression( CMemBuf *arname )
 
 /*------------------------------------------------------------*/
 
-void CHsp3Cpp::MakeCPPSub( int cmdtype, int cmdval )
+void CHsp3Cpp::MakeCPPSub( int cmdtype, int cmdval, BasicBlock* bblock )
 {
 	//		通常命令とパラメーターを展開
 	//
@@ -743,10 +819,11 @@ void CHsp3Cpp::MakeCPPSub( int cmdtype, int cmdval )
 	GetContext( &ctxbak );
 	MakeProgramInfoParam2();
 	SetContext( &ctxbak );
-	pnum = MakeCPPParam();
-	OutLine( "%s(%d,%d);\r\n", GetHSPCmdTypeName(cmdtype).c_str(), cmdval, pnum );
+	pnum = MakeCPPParam( bblock );
 
-	createCallImm(GetHSPCmdTypeName(cmdtype), cmdval, pnum);
+	OutLine( "%s(%d,%d);\r\n", GetHSPCmdTypeName(cmdtype).c_str(), cmdval, pnum );
+	if (bblock)
+		createCallImm( bblock, GetHSPCmdTypeName(cmdtype), cmdval, pnum );
 }
 
 
@@ -830,12 +907,12 @@ int CHsp3Cpp::MakeCPPMain( void )
 			op = MakeCPPVarForHSP();
 			SetContext( &ctxbak );
 			MakeImmidiateCPPName( mes, cmdtype, cmdval );
-			va = MakeCPPVarExpression( &arname );
+			va = MakeCPPVarExpression( &arname, sCurBB );
 			getCS();
 
 			switch( op ) {
 			case -1:		// 通常の代入
-				pnum = MakeCPPParam();
+				pnum = MakeCPPParam( sCurBB );
 				OutMes( arname.GetBuffer() );
 				OutLine( "VarSet(%s,%d,%d);\r\n", mes, va, pnum );
 
@@ -873,7 +950,7 @@ int CHsp3Cpp::MakeCPPMain( void )
 			case -4:		// エラー
 				break;
 			default:		// 演算子付き代入
-				pnum = MakeCPPParam();
+				pnum = MakeCPPParam( sCurBB );
 				if ( pnum > 1 ) {
 					Alert( "Too much parameters(VarCalc)." );
 				}
@@ -920,7 +997,7 @@ int CHsp3Cpp::MakeCPPMain( void )
 			}
 			mcs++;
 			getCS();
-			MakeCPPParam();
+			MakeCPPParam( sCurBB );
 			OutLine( mes );
 			//SetIndent( iflevel );
 			break;
@@ -939,7 +1016,7 @@ int CHsp3Cpp::MakeCPPMain( void )
 			case 0x19:								// on
 				//		後にreturnを付ける
 				//
-				MakeCPPSub( cmdtype, cmdval );
+				MakeCPPSub( cmdtype, cmdval, sCurBB );
 				OutLine( "return;\r\n" );
 				sReachable = false;
 				break;
@@ -951,7 +1028,7 @@ int CHsp3Cpp::MakeCPPMain( void )
 				int pnum;
 				OutLine( "// %s\r\n", GetHSPName(cmdtype,cmdval).c_str() );
 				getCS();
-				pnum = MakeCPPParam();
+				pnum = MakeCPPParam( sCurBB );
 				OutLine( "PushLabel(%d); %s(%d,%d); return;\r\n", curot, GetHSPCmdTypeName(cmdtype).c_str(), cmdval, pnum+1 );
 				MakeCPPTask( curot );
 				curot++;
@@ -964,7 +1041,7 @@ int CHsp3Cpp::MakeCPPMain( void )
 				int pnum;
 				OutLine( "// repeat\r\n" );
 				getCS();
-				pnum = MakeCPPParam(1);
+				pnum = MakeCPPParam( sCurBB, 1 );
 				OutLine( "PushLabel(%d); %s(%d,%d); return;\r\n", curot, GetHSPCmdTypeName(cmdtype).c_str(), cmdval, pnum+1 );
 				MakeCPPTask( curot );
 				curot++;
@@ -976,19 +1053,19 @@ int CHsp3Cpp::MakeCPPMain( void )
 			case 0x17:								// run
 				//		タスクを区切る
 				//
-				MakeCPPSub( cmdtype, cmdval );
+				MakeCPPSub( cmdtype, cmdval, sCurBB );
 				MakeCPPTask( curot );
 				curot++;
 				break;
 			default:
-				MakeCPPSub( cmdtype, cmdval );
+				MakeCPPSub( cmdtype, cmdval, sCurBB );
 				break;
 			}
 			break;
 		default:
 			//		通常命令
 			//
-			MakeCPPSub( cmdtype, cmdval );
+			MakeCPPSub( cmdtype, cmdval, sCurBB );
 			break;
 		}
 	}
