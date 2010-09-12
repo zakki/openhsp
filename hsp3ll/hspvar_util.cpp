@@ -827,3 +827,47 @@ void Intcmd( int cmd, int pnum )
 {
 	if ( intcmd_info->cmdfunc( cmd ) ) HspPostExec();
 }
+
+int GetFuncTypeRet( int type, int val, int pnum )
+{
+	switch ( type) {
+	case TYPE_INTFUNC:
+		{
+			switch( val >> 7 ) {
+			case 2:
+				return HSPVAR_FLAG_STR;
+			case 3:
+				return HSPVAR_FLAG_DOUBLE;
+			default:
+				return HSPVAR_FLAG_INT;
+			}
+			break;
+		}
+	case TYPE_SYSVAR:
+		{
+			switch( val ) {
+			case 0x000:	// system
+			case 0x001:	// hspstat
+			case 0x002:	// hspver
+			case 0x003:	// stat
+			case 0x004:	// cnt
+			case 0x005:	// err
+			case 0x006:	// strsize
+			case 0x007:	// looplev
+			case 0x008:	// sublev
+			case 0x009:	// iparam
+			case 0x00a:	// wparam
+			case 0x00b:	// lparam
+				return HSPVAR_FLAG_INT;
+			case 0x00c:	// refstr
+				return HSPVAR_FLAG_STR;
+			case 0x00d:	// refdval
+				return HSPVAR_FLAG_DOUBLE;
+			default:
+				throw HSPERR_UNSUPPORTED_FUNCTION;
+			}
+			break;
+		}
+	}
+	return HSPVAR_FLAG_MAX;
+}

@@ -49,6 +49,12 @@ void PushIntfunc( int val, int pnum );
 void PushSysvar( int val, int pnum );
 void PushDllfunc( int val, int pnum );
 
+double CallDoubleIntfunc( int val, int pnum );
+int CallIntIntfunc( int val, int pnum );
+
+double CallDoubleSysvar( int val, int pnum );
+int CallIntSysvar( int val, int pnum );
+
 void CalcAddI( void );
 void CalcSubI( void );
 void CalcMulI( void );
@@ -71,7 +77,7 @@ void VarInc( PVal *pv, int aval );
 void VarDec( PVal *pv, int aval );
 void VarCalc( PVal *pv, int aval, int op );
 
-
+int GetFuncTypeRet( int type, int val, int pnum );
 
 
 #endif

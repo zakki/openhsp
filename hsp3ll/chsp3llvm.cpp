@@ -124,13 +124,6 @@ extern void HspVarCoreArray2( PVal *pval, int offset );
 extern CHsp3LLVM *hsp3;
 
 
-extern double CallDoubleIntfunc( int val, int pnum );
-extern int CallIntIntfunc( int val, int pnum );
-
-extern double CallDoubleSysvar( int val, int pnum );
-extern int CallIntSysvar( int val, int pnum );
-
-
 Value* CreateCallImm( BasicBlock *bblock, const std::string& name );
 Value* CreateCallImm( BasicBlock *bblock, const std::string& name, int a );
 Value* CreateCallImm( BasicBlock *bblock, const std::string& name, int a, int b );
@@ -950,47 +943,8 @@ static bool IsCompilable( Task *task, Op *op )
 					return false;
 				}
 			}
-			switch ( pcop->GetCmdType()) {
-			case TYPE_INTFUNC:
-				{
-					switch( pcop->GetCmdVal() >> 7 ) {
-					case 2:
-						return false;
-					case 3:
-					return true;
-					break;
-				default:
-					return true;
-					break;
-					}
-					break;
-				}
-			case TYPE_SYSVAR:
-				switch( pcop->GetCmdVal() ) {
-				case 0x000:								// system
-				case 0x001:								// hspstat
-				case 0x002:								// hspver
-				case 0x003:								// stat
-				case 0x004:								// cnt
-				case 0x005:								// err
-				case 0x006:								// strsize
-				case 0x007:								// looplev
-				case 0x008:								// sublev
-				case 0x009:								// iparam
-				case 0x00a:								// wparam
-				case 0x00b:								// lparam
-					return true;
-				case 0x00c:								// refstr
-					//*type_res = HSPVAR_FLAG_STR;
-					return false;
-				case 0x00d:								// refdval
-					//*type_res = HSPVAR_FLAG_DOUBLE;
-					return false;
-				default:
-					throw HSPERR_UNSUPPORTED_FUNCTION;
-				}
-			}
-			//std::string name = "Push" + hsp->GetHSPCmdTypeName( op->GetCmdType() );
+			int retType = GetFuncTypeRet(  pcop->GetCmdType(),  pcop->GetCmdVal(), pcop->GetCmdPNum() );
+			return retType == HSPVAR_FLAG_INT || retType == HSPVAR_FLAG_DOUBLE;
 		}
 		break;
 
@@ -1115,51 +1069,9 @@ static void CheckType( CHsp3LLVM *hsp, Task *task)
 			case PUSH_CMD_OP:
 				{
 					PushCmdOp *pcop = (PushCmdOp*)op;
-					switch ( pcop->GetCmdType()) {
-					case TYPE_INTFUNC:
-						{
-							switch( pcop->GetCmdVal() >> 7 ) {
-							case 2:
-								op->flag = HSPVAR_FLAG_STR;
-								break;
-							case 3:
-								op->flag = HSPVAR_FLAG_DOUBLE;
-								break;
-							default:
-								op->flag = HSPVAR_FLAG_INT;
-								break;
-							}
-							break;
-						}
-					case TYPE_SYSVAR:
-						{
-							switch( pcop->GetCmdVal() ) {
-							case 0x000:								// system
-							case 0x001:								// hspstat
-							case 0x002:								// hspver
-							case 0x003:								// stat
-							case 0x004:								// cnt
-							case 0x005:								// err
-							case 0x006:								// strsize
-							case 0x007:								// looplev
-							case 0x008:								// sublev
-							case 0x009:								// iparam
-							case 0x00a:								// wparam
-							case 0x00b:								// lparam
-								op->flag = HSPVAR_FLAG_INT;
-								break;
-							case 0x00c:								// refstr
-								op->flag = HSPVAR_FLAG_STR;
-								break;
-							case 0x00d:								// refdval
-								op->flag = HSPVAR_FLAG_DOUBLE;
-								break;
-							default:
-								throw HSPERR_UNSUPPORTED_FUNCTION;
-							}
-							break;
-						}
-					}
+
+					int retType = GetFuncTypeRet(  pcop->GetCmdType(),  pcop->GetCmdVal(), pcop->GetCmdPNum() );
+					op->flag = retType;
 				}
 				break;
 
