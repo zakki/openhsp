@@ -62,7 +62,7 @@
 			<Tool
 				Name="VCLinkerTool"
 				AdditionalOptions=" /STACK:10000000 /machine:X86 /debug"
-				AdditionalDependencies="comctl32.lib LLVMJIT.lib LLVMInterpreter.lib LLVMX86CodeGen.lib LLVMExecutionEngine.lib LLVMSelectionDAG.lib LLVMX86Info.lib LLVMAsmPrinter.lib LLVMCodeGen.lib LLVMScalarOpts.lib LLVMInstCombine.lib LLVMTransformUtils.lib LLVMipa.lib LLVMAnalysis.lib LLVMTarget.lib LLVMCore.lib LLVMMC.lib LLVMSupport.lib LLVMSystem.lib "
+				AdditionalDependencies="comctl32.lib LLVMJIT.lib LLVMInterpreter.lib LLVMX86CodeGen.lib LLVMExecutionEngine.lib LLVMSelectionDAG.lib LLVMX86Info.lib LLVMAsmPrinter.lib LLVMAsmParser.lib LLVMCodeGen.lib LLVMScalarOpts.lib LLVMInstCombine.lib LLVMTransformUtils.lib LLVMipa.lib LLVMAnalysis.lib LLVMTarget.lib LLVMCore.lib LLVMMC.lib LLVMSupport.lib LLVMSystem.lib"
 				LinkIncremental="1"
 				GenerateDebugInformation="true"
 				SubSystem="2"
@@ -119,7 +119,7 @@
 			/>
 			<Tool
 				Name="VCCLCompilerTool"
-				PreprocessorDefinitions="WIN32;NDEBUG;_CONSOLE;_CRT_SECURE_NO_WARNINGS;HSPWIN;USE_WINDOWS_API"
+				PreprocessorDefinitions="WIN32;NDEBUG;_WINDOWS;HSPWIN;HSPWINGUI;__STDC_LIMIT_MACROS;__STDC_CONSTANT_MACROS;_CRT_SECURE_NO_DEPRECATE;_CRT_SECURE_NO_WARNINGS;_SCL_SECURE_NO_WARNINGS;CRT_NONSTDC_NO_WARNINGS;_SCL_SECURE_NO_DEPRECATE;USE_WINDOWS_API"
 				RuntimeLibrary="2"
 				UsePrecompiledHeader="0"
 				WarningLevel="3"
@@ -137,10 +137,11 @@
 			/>
 			<Tool
 				Name="VCLinkerTool"
+				AdditionalDependencies="comctl32.lib LLVMJIT.lib LLVMInterpreter.lib LLVMX86CodeGen.lib LLVMExecutionEngine.lib LLVMSelectionDAG.lib LLVMX86Info.lib LLVMAsmPrinter.lib LLVMAsmParser.lib LLVMCodeGen.lib LLVMScalarOpts.lib LLVMInstCombine.lib LLVMTransformUtils.lib LLVMipa.lib LLVMAnalysis.lib LLVMTarget.lib LLVMCore.lib LLVMMC.lib LLVMSupport.lib LLVMSystem.lib"
 				LinkIncremental="1"
 				GenerateDebugInformation="true"
-				SubSystem="1"
-				OptimizeReferences="2"
+				SubSystem="2"
+				OptimizeReferences="1"
 				EnableCOMDATFolding="2"
 				RandomizedBaseAddress="1"
 				DataExecutionPrevention="0"
@@ -187,6 +188,10 @@
 			</File>
 			<File
 				RelativePath=".\chsp3rev.cpp"
+				>
+			</File>
+			<File
+				RelativePath=".\chsp3visitor.cpp"
 				>
 			</File>
 			<File
@@ -352,6 +357,10 @@
 				>
 			</File>
 			<File
+				RelativePath=".\chsp3visitor.h"
+				>
+			</File>
+			<File
 				RelativePath="..\hsp3\win32gui\comobj.h"
 				>
 			</File>
@@ -488,11 +497,11 @@
 				>
 			</File>
 			<File
-				RelativePath=".\Supio.h"
+				RelativePath="..\hsp3\supio.h"
 				>
 			</File>
 			<File
-				RelativePath="..\hsp3\supio.h"
+				RelativePath=".\Supio.h"
 				>
 			</File>
 			<File
