@@ -1319,105 +1319,45 @@ static bool CompileOp( CHsp3LLVM *hsp, Function *func, BasicBlock *bb, Task *tas
 	case PUSH_CMD_OP:
 		{
 			PushCmdOp *pcop = (PushCmdOp*)op;
-			//TODO 複雑な引数はコンパイルしてスタックに積む
-			switch ( pcop->GetCmdType() ) {
-			case TYPE_INTFUNC:
-				{
-					for ( std::vector<Op*>::reverse_iterator it=op->operands.rbegin();
-						  it != op->operands.rend(); it++ ) {
-						//(*it)->compile = true;
+			int retType = GetFuncTypeRet(  pcop->GetCmdType(),  pcop->GetCmdVal(), pcop->GetCmdPNum() );
 
-						if ( (*it)->GetOpCode() == PUSH_FUNC_END_OP ) {
-							CreateCallImm( bb, "PushFuncEnd" );
-							continue;
-						}
-
-						switch ( (*it)->flag ) {
-						case HSPVAR_FLAG_INT:
-							{
-								Function *pPush = M->getFunction( "PushInt" );
-								Builder.CreateCall( pPush, (*it)->llValue );
-							}
-							break;
-						case HSPVAR_FLAG_DOUBLE:
-							{
-								Function *pPush = M->getFunction( "PushDouble" );
-								Builder.CreateCall( pPush, (*it)->llValue );
-							}
-							break;
-						default:
-							return false;
-						}
-					}
-
-					switch( pcop->GetCmdVal() >> 7 ) {
-					case 2:
-						return false;
-						break;
-					case 3:
-						op->llValue = CreateCallImm( bb, "CallDouble" + hsp->GetHSPCmdTypeName( pcop->GetCmdType() ),
-													 pcop->GetCmdVal(), pcop->GetCmdPNum() );
-						return true;
-					default:
-						op->llValue = CreateCallImm( bb, "CallInt" + hsp->GetHSPCmdTypeName( pcop->GetCmdType() ),
-													 pcop->GetCmdVal(), pcop->GetCmdPNum() );
-						return true;
-					}
+			for ( std::vector<Op*>::reverse_iterator it=op->operands.rbegin();
+				  it != op->operands.rend(); it++ ) {
+				//(*it)->compile = true;
+				if ( (*it)->GetOpCode() == PUSH_FUNC_END_OP ) {
+					CreateCallImm( bb, "PushFuncEnd" );
+					continue;
 				}
-			case TYPE_SYSVAR:
-				{
-					for ( std::vector<Op*>::reverse_iterator it=op->operands.rbegin();
-						  it != op->operands.rend(); it++ ) {
-						if ( (*it)->GetOpCode() == PUSH_FUNC_END_OP ) {
-							CreateCallImm( bb, "PushFuncEnd" );
-							continue;
-						}
 
-						switch ( (*it)->flag ) {
-						case HSPVAR_FLAG_INT:
-							{
-								Function *pPush = M->getFunction( "PushInt" );
-								Builder.CreateCall( pPush, (*it)->llValue );
-							}
-							break;
-						case HSPVAR_FLAG_DOUBLE:
-							{
-								Function *pPush = M->getFunction( "PushDouble" );
-								Builder.CreateCall( pPush, (*it)->llValue );
-							}
-							break;
-						default:
-							return false;
-						}
-					}
-
-					switch( pcop->GetCmdVal() ) {
-					case 0x000:								// system
-					case 0x001:								// hspstat
-					case 0x002:								// hspver
-					case 0x003:								// stat
-					case 0x004:								// cnt
-					case 0x005:								// err
-					case 0x006:								// strsize
-					case 0x007:								// looplev
-					case 0x008:								// sublev
-					case 0x009:								// iparam
-					case 0x00a:								// wparam
-					case 0x00b:								// lparam
-						op->llValue = CreateCallImm( bb, "CallInt" + hsp->GetHSPCmdTypeName( pcop->GetCmdType() ),
-													 pcop->GetCmdVal(), pcop->GetCmdPNum() );
-						return true;
-					case 0x00c:								// refstr
-						return false;
-					case 0x00d:								// refdval
-						op->llValue = CreateCallImm( bb, "CallDouble" + hsp->GetHSPCmdTypeName( pcop->GetCmdType() ),
-													 pcop->GetCmdVal(), pcop->GetCmdPNum() );
-						return true;
-					default:
-						throw HSPERR_UNSUPPORTED_FUNCTION;
+				switch ( (*it)->flag ) {
+				case HSPVAR_FLAG_INT:
+					{
+						Function *pPush = M->getFunction( "PushInt" );
+						Builder.CreateCall( pPush, (*it)->llValue );
 					}
 					break;
+				case HSPVAR_FLAG_DOUBLE:
+					{
+						Function *pPush = M->getFunction( "PushDouble" );
+						Builder.CreateCall( pPush, (*it)->llValue );
+					}
+					break;
+				default:
+					return false;
 				}
+			}
+
+			switch( retType ) {
+			case HSPVAR_FLAG_DOUBLE:
+				op->llValue = CreateCallImm( bb, "CallDouble" + hsp->GetHSPCmdTypeName( pcop->GetCmdType() ),
+											 pcop->GetCmdVal(), pcop->GetCmdPNum() );
+				return true;
+			case HSPVAR_FLAG_INT:
+				op->llValue = CreateCallImm( bb, "CallInt" + hsp->GetHSPCmdTypeName( pcop->GetCmdType() ),
+											 pcop->GetCmdVal(), pcop->GetCmdPNum() );
+				return true;
+			default:
+				return false;
 			}
 			break;
 		}
