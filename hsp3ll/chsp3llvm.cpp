@@ -15,80 +15,37 @@
 #include "llvm/Constants.h"
 #include "llvm/DerivedTypes.h"
 #include "llvm/Instructions.h"
+#include "llvm/PassManager.h"
 #include "llvm/Assembly/Parser.h"
 #include "llvm/Analysis/Verifier.h"
 #include "llvm/Bitcode/ReaderWriter.h"
 #include "llvm/ExecutionEngine/JIT.h"
 #include "llvm/ExecutionEngine/Interpreter.h"
 #include "llvm/ExecutionEngine/GenericValue.h"
+#include "llvm/Target/TargetData.h"
 #include "llvm/Target/TargetSelect.h"
+#include "llvm/Transforms/Scalar.h"
 #include "llvm/Support/SourceMgr.h"
 #include "llvm/Support/TypeBuilder.h"
 #include "llvm/Support/ManagedStatic.h"
 #include "llvm/Support/raw_ostream.h"
 #include "llvm/Support/IRBuilder.h"
 
+#include "llvm/Analysis/Dominators.h"
+#include "llvm/Analysis/Passes.h"
+#include "llvm/Analysis/Verifier.h"
+#include "llvm/Transforms/IPO.h"
+#include "llvm/Support/StandardPasses.h"
+
 #include "supio.h"
 #include "chsp3llvm.h"
 #include "hsp3r.h"
 
+#ifdef HSPWIN
+#include <windows.h>
+#endif
+
 using namespace llvm;
-
-
-//
-static char *PROTOTYPES =
-	"%struct.PVal = type { i16, i16, [5 x i32], i32, i8*, i8*, i16, i16, i32, i32 }\n"
-	"declare void @Prgcmd(i32, i32)\n"
-	"declare void @PushVar(%struct.PVal*, i32)\n"
-	"declare void @CalcMulI()\n"
-	"declare void @VarSet(%struct.PVal*, i32, i32)\n"
-	"declare void @PushInt(i32)\n"
-	"declare void @CalcSubI()\n"
-	"declare void @PushDouble(double)\n"
-	"declare void @PushFuncEnd()\n"
-	"declare void @CalcAddI()\n"
-	"declare void @PushIntfunc(i32, i32)\n"
-	"declare void @CalcDivI()\n"
-	"declare void @PushVAP(%struct.PVal*, i32)\n"
-	"declare void @VarCalc(%struct.PVal*, i32, i32)\n"
-	"declare void @VarInc(%struct.PVal*, i32)\n"
-	"declare void @TaskSwitch(i32)\n"
-	"declare void @CalcEqI()\n"
-	"declare i8 @HspIf() zeroext\n"
-	"declare void @CalcGtI()\n"
-	"declare void @PushLabel(i32)\n"
-	"declare void @CalcLtI()\n"
-	"declare void @PushSysvar(i32, i32)\n"
-	"declare void @Extcmd(i32, i32)\n"
-	"declare void @PushStr(i8*)\n"
-	"declare void @CalcAndI()\n"
-	"declare void @CalcNeI()\n"
-	"declare void @CalcGtEqI()\n"
-	"declare void @CalcXorI()\n"
-	"declare void @PushExtvar(i32, i32)\n"
-	"declare void @CalcRrI()\n"
-	"declare void @PushDefault()\n"
-	"declare void @Intcmd(i32, i32)\n"
-	"declare i32 @Hsp3rReset(%struct.Hsp3r*, i32, i32)\n"
-	"declare void @HspVarCoreArray2(%struct.PVal*, i32)\n"
-
-	"declare double @CallDoubleIntfunc(i32, i32)\n"
-	"declare i32 @CallIntIntfunc(i32, i32)\n"
-	"declare double @CallDoubleSysvar(i32, i32)\n"
-	"declare i32 @CallIntSysvar(i32, i32)\n"
-
-	"define void @HspVarCoreReset(%struct.PVal* %a) {\n"
-	"%1 = getelementptr %struct.PVal* %a, i32 0, i32 8\n"
-	//	"%2 = load i32* %1\n"
-	"store i32 0, i32* %1\n"
-	"%2 = getelementptr %struct.PVal* %a, i32 0, i32 7\n"
-	//	"%4 = load i16* %3\n"
-	"store i16 0, i16* %2\n"
-	"ret void\n"
-	"}\n"
-	"define void @Nop() {\n"
-	"  ret void\n"
-	"}\n";
 
 
 class Task;
@@ -97,6 +54,8 @@ class Task;
 static Module *M;
 static ExecutionEngine *EE;
 static IRBuilder<> Builder(getGlobalContext());
+static FunctionPassManager *TheFPM;
+static PassManager *Passes;
 
 static Task *sCurTask;
 //static BasicBlock *sCurBB;
@@ -115,7 +74,8 @@ static const char *sDsBasePtr;
 static int sMaxVar;
 static int sMaxHpi;
 static int sLabMax;
-
+static HSPCTX *sHspctx;
+static Hsp3r *sHsp3r;
 static PVal **Var__HspVars;
 
 
@@ -124,9 +84,10 @@ extern void HspVarCoreArray2( PVal *pval, int offset );
 extern CHsp3LLVM *hsp3;
 
 
-Value* CreateCallImm( BasicBlock *bblock, const std::string& name );
-Value* CreateCallImm( BasicBlock *bblock, const std::string& name, int a );
-Value* CreateCallImm( BasicBlock *bblock, const std::string& name, int a, int b );
+static Value* CreateCallImm( BasicBlock *bblock, const std::string& name );
+static Value* CreateCallImm( BasicBlock *bblock, const std::string& name, int a );
+static Value* CreateCallImm( BasicBlock *bblock, const std::string& name, int a, int b );
+static void LoadLLRuntime();
 
 enum OPCODE {
 	NOP, TASK_SWITCH_OP, CALC_OP, PUSH_VAR_OP, PUSH_VAR_PTR_OP, PUSH_DNUM_OP, PUSH_INUM_OP,
@@ -1443,7 +1404,49 @@ static bool CompileOp( CHsp3LLVM *hsp, Function *func, BasicBlock *bb, Task *tas
 	case PUSH_CMD_OP:
 		{
 			PushCmdOp *pcop = (PushCmdOp*)op;
-			int retType = GetFuncTypeRet(  pcop->GetCmdType(),  pcop->GetCmdVal(), pcop->GetCmdPNum() );
+			char funcname[256];
+			sprintf( funcname, "llvmRt%s_%03x",
+					 hsp->GetHSPCmdTypeName( pcop->GetCmdType() ).c_str(),
+					 pcop->GetCmdVal() );
+			Function *f = M->getFunction( funcname );
+			if ( f ) {
+				if ( f->getArgumentList().size() != op->operands.size() - 1 )
+					goto NOTMATCH;
+				int n = 0;
+				for ( Function::const_arg_iterator it = f->arg_begin();
+					  it != f->arg_end(); ++it, ++n ) {
+					const Type *t = it->getType();
+
+					switch ( op->operands[n]->flag ) {
+					case HSPVAR_FLAG_INT:
+						if ( !t->isIntegerTy( 32 ) )
+							goto NOTMATCH;
+						break;
+					case HSPVAR_FLAG_DOUBLE:
+						if (!t->isDoubleTy() )
+							goto NOTMATCH;
+						break;
+					default:
+						goto NOTMATCH;
+					}
+				}
+
+				{
+					std::vector<Value*> args;
+					for ( int i = 0; i < op->operands.size() - 1; ++i ) {
+						args.push_back( op->operands[i]->llValue );
+					}
+					op->llValue = Builder.CreateCall( f, args.begin(), args.end() );
+					return true;
+				}
+
+			NOTMATCH:
+				;
+			}
+
+			int retType = GetFuncTypeRet( pcop->GetCmdType(),
+										  pcop->GetCmdVal(),
+										  pcop->GetCmdPNum() );
 
 			for ( std::vector<Op*>::reverse_iterator it=op->operands.rbegin();
 				  it != op->operands.rend(); it++ ) {
@@ -1889,6 +1892,9 @@ static void TraceTaskProc()
 		task->numCurCall ++;
 	}
 	if ( task->numCurCall == 10 ) {
+
+		LoadLLRuntime();
+
 		CompileTask( hsp3, task );
 
 		if ( true ) {
@@ -1904,10 +1910,25 @@ static void TraceTaskProc()
 			Out->close();
 		}
 
-
 		std::string ErrMsg;
 		if ( verifyModule( *M, ReturnStatusAction, &ErrMsg ) ) {
 			Alert( (char*)ErrMsg.c_str() );
+		}
+
+		TheFPM->run( *task->spFunc );
+		Passes->run( *M) ;
+
+		if ( true ) {
+			std::string ErrorInfo;
+			std::auto_ptr<raw_fd_ostream>
+				Out(new raw_fd_ostream("dump_jit.ll", ErrorInfo,
+									   raw_fd_ostream::F_Binary));
+			if (!ErrorInfo.empty()) {
+				errs() << ErrorInfo << '\n';
+			} else {
+				*Out << *M;
+			}
+			Out->close();
 		}
 
 		if ( task->spFunc ) {
@@ -1957,6 +1978,7 @@ void __HspInit( Hsp3r *hsp3r )
 {
 	char mes[256];
 
+	sHsp3r = hsp3r;
 	hsp3r->Reset( sMaxVar, sMaxHpi );
 
 	Var__HspVars = new PVal*[sMaxVar];
@@ -1999,6 +2021,11 @@ void __HspInit( Hsp3r *hsp3r )
 
 void __HspEntry( void )
 {
+	sHspctx = &sHsp3r->hspctx;
+
+	GlobalVariable *ctx = (GlobalVariable*)M->getGlobalVariable( "hspctx" );
+	EE->updateGlobalMapping( ctx, (void*)&sHspctx );
+
 	Alert( "HspEntry" );
 	Task *task = sTasks["__HspEntry"];
 
@@ -2024,6 +2051,8 @@ Value* CreateCallImm( BasicBlock *bblock, const std::string& name )
 
 	LLVMContext &Context = getGlobalContext();
 	Function *f = M->getFunction( name );
+	if ( !f )
+		Alert( (char*)(name + " not found!").c_str() );
 
 	std::vector<Value*> args;
 
@@ -2038,6 +2067,8 @@ Value* CreateCallImm( BasicBlock *bblock, const std::string& name, int a )
 
 	LLVMContext &Context = getGlobalContext();
 	Function *f = M->getFunction( name );
+	if ( !f )
+		Alert( (char*)(name + " not found!").c_str() );
 
 	std::vector<Value*> args;
 
@@ -2054,6 +2085,8 @@ Value* CreateCallImm( BasicBlock *bblock, const std::string& name, int a, int b 
 
 	LLVMContext &Context = getGlobalContext();
 	Function *f = M->getFunction( name );
+	if ( !f )
+		Alert( (char*)(name + " not found!").c_str() );
 
 	std::vector<Value*> args;
 
@@ -2104,12 +2137,39 @@ void* HspLazyFunctionCreator( const std::string &Name )
 	if ("CallDoubleIntfunc" == Name) return CallDoubleIntfunc;
 	if ("CallIntSysvar" == Name) return CallIntSysvar;
 	if ("CallDoubleSysvar" == Name) return CallDoubleSysvar;
+	if ("log" == Name) return (double(*)(double))log;
+	if ("exp" == Name) return (double(*)(double))exp;
+	if ("sqrt" == Name) return (double(*)(double))sqrt;
+	if ("cos" == Name) return (double(*)(double))cos;
+	if ("sin" == Name) return (double(*)(double))sin;
 
 	//	if ("Hsp3rReset" == Name) return Hsp3rReset;
 
 	Alert( (char*)(Name + " not foud").c_str() );
 	return NULL;
 }
+
+static void LoadLLRuntime()
+{
+#ifdef HSPWIN
+	LLVMContext &Context = getGlobalContext();
+
+	HRSRC hrc;
+	HGLOBAL hgb;
+	LPVOID p;
+
+	hrc = FindResource(NULL, MAKEINTRESOURCEA(256), "TEXT");
+	hgb = LoadResource(NULL, hrc);
+	p = LockResource(hgb);
+
+	SMDiagnostic Err;
+	ParseAssemblyString( (char*) p, M, Err, Context );
+	FreeResource(hrc);
+#else
+	#error
+#endif
+}
+
 /*------------------------------------------------------------*/
 CHsp3LLVM::CHsp3LLVM()
 {
@@ -2865,9 +2925,10 @@ int CHsp3LLVM::MakeSource( int option, void *ref )
 
 	maxvar = hsphed->max_val;
 
+
 	// ŠÖ”‚Ì€”õ
-	SMDiagnostic Err;
-	ParseAssemblyString( PROTOTYPES, M, Err, Context );
+	LoadLLRuntime();
+
 	const Type *pvalType = GetPValType();
 
 	// •Ï”‚Ì€”õ
@@ -2997,13 +3058,36 @@ int CHsp3LLVM::MakeSource( int option, void *ref )
 		Alert( (char*)ErrMsg.c_str() );
 	}
 
-
 	EE = EngineBuilder( M )
 		.setEngineKind( EngineKind::JIT )
 		.setOptLevel( CodeGenOpt::Default )
 		.create();
 
 	EE->InstallLazyFunctionCreator( HspLazyFunctionCreator );
+
+	TargetData *TD = new TargetData(*EE->getTargetData());
+
+	Passes = new PassManager();
+
+	Passes->add(TD);
+	createStandardLTOPasses( Passes, false, true, true );
+
+
+	TheFPM = new FunctionPassManager(M);
+
+	// Set up the optimizer pipeline.  Start with registering info about how the
+	// target lays out data structures.
+	TheFPM->add(TD);
+	// Do simple "peephole" optimizations and bit-twiddling optzns.
+	TheFPM->add(createInstructionCombiningPass());
+	// Reassociate expressions.
+	TheFPM->add(createReassociatePass());
+	// Eliminate Common SubExpressions.
+	TheFPM->add(createGVNPass());
+	// Simplify the control flow graph (deleting unreachable blocks, etc).
+	TheFPM->add(createCFGSimplificationPass());
+
+	TheFPM->doInitialization();
 
 	return 0;
 }

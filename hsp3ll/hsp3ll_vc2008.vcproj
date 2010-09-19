@@ -137,7 +137,7 @@
 			/>
 			<Tool
 				Name="VCLinkerTool"
-				AdditionalDependencies="comctl32.lib LLVMJIT.lib LLVMInterpreter.lib LLVMX86CodeGen.lib LLVMExecutionEngine.lib LLVMSelectionDAG.lib LLVMX86Info.lib LLVMAsmPrinter.lib LLVMAsmParser.lib LLVMCodeGen.lib LLVMScalarOpts.lib LLVMInstCombine.lib LLVMTransformUtils.lib LLVMipa.lib LLVMAnalysis.lib LLVMTarget.lib LLVMCore.lib LLVMMC.lib LLVMSupport.lib LLVMSystem.lib"
+				AdditionalDependencies="comctl32.lib LLVMJIT.lib LLVMInterpreter.lib LLVMX86CodeGen.lib LLVMExecutionEngine.lib LLVMSelectionDAG.lib LLVMX86Info.lib LLVMAsmPrinter.lib LLVMAsmParser.lib LLVMCodeGen.lib LLVMScalarOpts.lib LLVMInstCombine.lib LLVMTransformUtils.lib LLVMipa.lib LLVMAnalysis.lib LLVMTarget.lib LLVMCore.lib LLVMMC.lib LLVMSupport.lib LLVMSystem.lib LLVMipo.lib"
 				LinkIncremental="1"
 				GenerateDebugInformation="true"
 				SubSystem="2"
@@ -489,11 +489,11 @@
 				>
 			</File>
 			<File
-				RelativePath=".\Supio.h"
+				RelativePath="..\hsp3\supio.h"
 				>
 			</File>
 			<File
-				RelativePath="..\hsp3\supio.h"
+				RelativePath=".\Supio.h"
 				>
 			</File>
 			<File
@@ -512,6 +512,10 @@
 			</File>
 			<File
 				RelativePath="..\hsp3\win32gui\hsp3.rc"
+				>
+			</File>
+			<File
+				RelativePath=".\hsp3llvm.rc"
 				>
 			</File>
 		</Filter>
