@@ -783,23 +783,15 @@ public:
 
 std::map<int, std::set<Task*> > varTaskMap;
 
-static void AnalyzeTask( Task *task )
+
+static void UpdateOperands( Task *task )
 {
 	std::stack<Op*> stack;
-
-	std::string filename = "dump_" + task->name + ".txt";
-	std::string ErrorInfo;
-	std::auto_ptr<raw_fd_ostream>
-		Out(new raw_fd_ostream(filename.c_str(), ErrorInfo,
-							   raw_fd_ostream::F_Binary));
-	if (!ErrorInfo.empty()) {
-		errs() << ErrorInfo << '\n';
-		return;
-	}
 
 	for ( std::vector<Op*>::iterator it=task->operations.begin();
 		 it != task->operations.end(); it++ ) {
 		Op *op = *it;
+		op->operands.clear();
 		switch ( op->GetOpCode() ) {
 		case PUSH_VAR_OP:
 			{
@@ -809,7 +801,6 @@ static void AnalyzeTask( Task *task )
 					stack.pop();
 				}
 				stack.push( op );
-				varTaskMap[pv->GetVarNo()].insert( task );
 			}
 			break;
 		case PUSH_VAR_PTR_OP:
@@ -820,7 +811,6 @@ static void AnalyzeTask( Task *task )
 					stack.pop();
 				}
 				stack.push( op );
-				varTaskMap[pv->GetVarNo()].insert( task );
 			}
 			break;
 		case PUSH_DNUM_OP:
@@ -859,12 +849,103 @@ static void AnalyzeTask( Task *task )
 				op->operands.push_back( stack.top() );
 				stack.pop();
 			}
-			varTaskMap[((VarRefOp*)op)->GetVarNo()].insert( task );
 			break;
 		case CMP_OP:
 			break;
 		case CMD_OP:
 			break;
+		case TASK_SWITCH_OP:
+			break;
+		default:
+			break;
+		}
+	}
+}
+
+static void AnalyzeTask( Task *task )
+{
+	std::string filename = "dump_" + task->name + ".txt";
+	std::string ErrorInfo;
+	std::auto_ptr<raw_fd_ostream>
+		Out(new raw_fd_ostream(filename.c_str(), ErrorInfo,
+							   raw_fd_ostream::F_Binary));
+	if (!ErrorInfo.empty()) {
+		errs() << ErrorInfo << '\n';
+		return;
+	}
+
+	UpdateOperands( task );
+
+	// 代入の右辺が変数へのポインタの場合、値に置き換える
+	while ( true ) {
+		bool changed = false;
+		for ( std::vector<Op*>::iterator it = task->operations.begin();
+			  it != task->operations.end() && !changed; it++ ) {
+			Op *op = *it;
+			switch ( op->GetOpCode() ) {
+			case VAR_INC_OP:
+			case VAR_DEC_OP:
+			case VAR_CALC_OP:
+			case VAR_SET_OP:
+				{
+					VarRefOp *vro = (VarRefOp*)op;
+					if (vro->operands.size() == 1) {
+						Op *rhv = vro->operands[0];
+						if ( rhv->GetOpCode() == PUSH_VAR_PTR_OP ) {
+							PushVarPtrOp *pv = (PushVarPtrOp*)rhv;
+							find( task->operations.begin(),
+								  task->operations.end(),
+								  pv)[0]
+								= new PushVarOp( pv->GetVarNo(), pv->GetArrayDim() );
+							*Out << "VAP->Var\r\n";
+							delete pv;
+							UpdateOperands( task );
+							changed = true;
+						}
+					}
+				}
+				break;
+			}
+		}
+		if ( !changed )
+			break;
+	}
+
+	for ( std::vector<Op*>::iterator it=task->operations.begin();
+		 it != task->operations.end(); it++ ) {
+		Op *op = *it;
+		switch ( op->GetOpCode() ) {
+		case PUSH_VAR_OP:
+			{
+				PushVarOp *pv = (PushVarOp*)op;
+				varTaskMap[pv->GetVarNo()].insert( task );
+			}
+			break;
+		case PUSH_VAR_PTR_OP:
+			{
+				PushVarPtrOp *pv = (PushVarPtrOp*)op;
+				varTaskMap[pv->GetVarNo()].insert( task );
+			}
+			break;
+
+		case VAR_INC_OP:
+		case VAR_DEC_OP:
+
+		case VAR_CALC_OP:
+		case VAR_SET_OP:
+			varTaskMap[((VarRefOp*)op)->GetVarNo()].insert( task );
+			break;
+
+		case PUSH_DNUM_OP:
+		case PUSH_INUM_OP:
+		case PUSH_STRUCT_OP:
+		case PUSH_LABEL_OP:
+		case PUSH_STR_OP:
+		case PUSH_FUNC_END_OP:
+		case PUSH_CMD_OP:
+		case CALC_OP:
+		case CMP_OP:
+		case CMD_OP:
 		case TASK_SWITCH_OP:
 			break;
 		default:
@@ -1227,6 +1308,10 @@ static bool CompileOp( CHsp3LLVM *hsp, Function *func, BasicBlock *bb, Task *tas
 			PVal& pval = mem_var[var->val];
 
 			Value *lpvar;
+			char varnamebuf[256];
+			hsp->MakeImmidiateCPPName( varnamebuf, TYPE_VAR, pv->GetVarNo() );
+			std::string varname(varnamebuf);
+
 			std::map<int, Value*>::iterator it = task->llVariables.find( pv->GetVarNo() );
 
 			if ( pv->useRegister) {
@@ -1241,20 +1326,17 @@ static bool CompileOp( CHsp3LLVM *hsp, Function *func, BasicBlock *bb, Task *tas
 			if ( it != task->llVariables.end() ) {
 				lpvar = it->second;
 			} else {
-				char varname[256];
-				hsp->MakeImmidiateCPPName( varname, TYPE_VAR, pv->GetVarNo() );
-
 				lpvar = M->getNamedValue( varname );
 			}
 			task->llVariables[pv->GetVarNo()] = lpvar;
 
-			Value *lpval = Builder.CreateConstGEP2_32( lpvar, 0, 4 );
-			LoadInst *lptr = Builder.CreateLoad( lpval, "ptr" );
+			Value *lpval = Builder.CreateConstGEP2_32( lpvar, 0, 4, "a_" + varname );
+			LoadInst *lptr = Builder.CreateLoad( lpval, "b_" + varname );
 			Value *ptr;
 			if ( pval.flag == HSPVAR_FLAG_INT ) {
-				ptr = Builder.CreateBitCast( lptr, tyPI32 );
+				ptr = Builder.CreateBitCast( lptr, tyPI32, "c_" + varname );
 			} else if ( pval.flag == HSPVAR_FLAG_DOUBLE ) {
-				ptr = Builder.CreateBitCast( lptr, tyPD );
+				ptr = Builder.CreateBitCast( lptr, tyPD, "d_" + varname );
 			} else {
 				return false;
 			}
@@ -1272,17 +1354,17 @@ static bool CompileOp( CHsp3LLVM *hsp, Function *func, BasicBlock *bb, Task *tas
 					Builder.CreateCall2( pArray2, lpvar, pv->operands[i]->llValue );
 				}
 				Value *lpofs = Builder.CreateConstGEP2_32( lpvar, 0, 8 );
-				LoadInst *lofs = Builder.CreateLoad( lpofs, "offset" );
+				LoadInst *lofs = Builder.CreateLoad( lpofs, "offset_" + varname );
 				aptr = Builder.CreateGEP( ptr, lofs );
 			}
 
 			//Value *lpval = Builder.CreateConstGEP2_32( lpvar, 0, 4 );
 
 			if ( pval.flag == HSPVAR_FLAG_INT ) {
-				op->llValue = Builder.CreateLoad( aptr );
+				op->llValue = Builder.CreateLoad( aptr, "p_" + varname );
 				return true;
 			} else if ( pval.flag == HSPVAR_FLAG_DOUBLE ) {
-				op->llValue = Builder.CreateLoad( aptr );
+				op->llValue = Builder.CreateLoad( aptr, "p_" + varname );
 				return true;
 			} else {
 				return false;
