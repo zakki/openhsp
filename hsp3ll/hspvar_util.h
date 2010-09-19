@@ -77,6 +77,7 @@ void VarInc( PVal *pv, int aval );
 void VarDec( PVal *pv, int aval );
 void VarCalc( PVal *pv, int aval, int op );
 
+int GetOpTypeRet( int op, int tflagA, int tflagB );
 int GetFuncTypeRet( int type, int val, int pnum );
 
 

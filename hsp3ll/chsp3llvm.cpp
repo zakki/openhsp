@@ -1060,6 +1060,11 @@ static bool IsCompilable( Task *task, Op *op )
 				return IsCompilable( task, op->operands[0] ) &&
 					IsCompilable( task, op->operands[1] );
 			}
+			if ((op->operands[0]->flag == HSPVAR_FLAG_INT && op->operands[1]->flag == HSPVAR_FLAG_DOUBLE)
+				|| (op->operands[0]->flag == HSPVAR_FLAG_DOUBLE && op->operands[1]->flag == HSPVAR_FLAG_INT)) {
+				return IsCompilable( task, op->operands[0] ) &&
+					IsCompilable( task, op->operands[1] );
+			}
 		}
 		break;
 
@@ -1135,7 +1140,7 @@ static void CheckType( CHsp3LLVM *hsp, Task *task)
 				{
 					Var *var = GetTaskVar(task, ((PushVarOp*)op)->GetVarNo());
 					PVal& pval = mem_var[var->val];
-					changed |= op->flag == pval.flag;
+					changed |= op->flag != pval.flag;
 					op->flag = pval.flag;
 				}
 				break;
@@ -1143,28 +1148,28 @@ static void CheckType( CHsp3LLVM *hsp, Task *task)
 				{
 					Var *var = GetTaskVar(task, ((PushVarPtrOp*)op)->GetVarNo());
 					PVal& pval = mem_var[var->val];
-					changed |= op->flag == pval.flag;
+					changed |= op->flag != pval.flag;
 					op->flag = pval.flag;
 				}
 				break;
 			case PUSH_DNUM_OP:
-				changed |= op->flag == HSPVAR_FLAG_DOUBLE;
+				changed |= op->flag != HSPVAR_FLAG_DOUBLE;
 				op->flag = HSPVAR_FLAG_DOUBLE;
 				break;
 			case PUSH_INUM_OP:
-				changed |= op->flag == HSPVAR_FLAG_INT;
+				changed |= op->flag != HSPVAR_FLAG_INT;
 				op->flag = HSPVAR_FLAG_INT;
 				break;
 			case PUSH_STRUCT_OP:
-				changed |= op->flag == HSPVAR_FLAG_STRUCT;
+				changed |= op->flag != HSPVAR_FLAG_STRUCT;
 				op->flag = HSPVAR_FLAG_STRUCT;
 				break;
 			case PUSH_LABEL_OP:
-				changed |= op->flag == HSPVAR_FLAG_LABEL;
+				changed |= op->flag != HSPVAR_FLAG_LABEL;
 				op->flag = HSPVAR_FLAG_LABEL;
 				break;
 			case PUSH_STR_OP:
-				changed |= op->flag == HSPVAR_FLAG_STR;
+				changed |= op->flag != HSPVAR_FLAG_STR;
 				op->flag = HSPVAR_FLAG_STR;
 				break;
 			case PUSH_FUNC_END_OP:
@@ -1175,14 +1180,19 @@ static void CheckType( CHsp3LLVM *hsp, Task *task)
 					PushCmdOp *pcop = (PushCmdOp*)op;
 
 					int retType = GetFuncTypeRet(  pcop->GetCmdType(),  pcop->GetCmdVal(), pcop->GetCmdPNum() );
+					changed |= op->flag != retType;
 					op->flag = retType;
 				}
 				break;
 
 			case CALC_OP:
-				if ( op->operands[0]->flag != HSPVAR_FLAG_MAX && op->operands[1]->flag != HSPVAR_FLAG_MAX ) {
-					changed |= op->flag == op->operands[0]->flag;
-					op->flag = op->operands[0]->flag;
+				{
+					CalcOp *calc = (CalcOp*)op;
+					int tflag = GetOpTypeRet( calc->GetCalcOp(),
+											 op->operands[1]->flag,
+											 op->operands[0]->flag );
+					changed |= op->flag != tflag;
+					op->flag = tflag;
 				}
 				break;
 
@@ -1209,6 +1219,8 @@ static void CheckType( CHsp3LLVM *hsp, Task *task)
 
 static Value* CompileCalcI( int code, Value *a, Value *b )
 {
+	LLVMContext &Context = getGlobalContext();
+
 	switch( code ) {
 	case CALCCODE_ADD:
 		return Builder.CreateAdd( a, b );
@@ -1220,37 +1232,56 @@ static Value* CompileCalcI( int code, Value *a, Value *b )
 		return Builder.CreateSDiv( a, b );
 	case CALCCODE_MOD:
 		return Builder.CreateSRem( a, b );
+	case CALCCODE_AND:
+		return Builder.CreateAnd( a, b );
+	case CALCCODE_OR:
+		return Builder.CreateOr( a, b );
+	case CALCCODE_XOR:
+		return Builder.CreateXor( a, b );
+	case CALCCODE_EQ:
+		{
+			Value *cond = Builder.CreateICmpEQ( a, b );
+			return Builder.CreateZExt( cond, Type::getInt32Ty( Context ) );
+		}
+	case CALCCODE_NE:
+		{
+			Value *cond = Builder.CreateICmpNE( a, b );
+			return Builder.CreateZExt( cond, Type::getInt32Ty( Context ) );
+		}
+	case CALCCODE_GT:
+		{
+			Value *cond = Builder.CreateICmpSGT( a, b );
+			return Builder.CreateZExt( cond, Type::getInt32Ty( Context ) );
+		}
+	case CALCCODE_LT:
+		{
+			Value *cond = Builder.CreateICmpSLT( a, b );
+			return Builder.CreateZExt( cond, Type::getInt32Ty( Context ) );
+		}
+	case CALCCODE_GTEQ:
+		{
+			Value *cond = Builder.CreateICmpSGE( a, b );
+			return Builder.CreateZExt( cond, Type::getInt32Ty( Context ) );
+		}
+	case CALCCODE_LTEQ:
+		{
+			Value *cond = Builder.CreateICmpSLE( a, b );
+			return Builder.CreateZExt( cond, Type::getInt32Ty( Context ) );
+		}
+	case CALCCODE_RR:
+		return Builder.CreateAShr( a, b );
+	case CALCCODE_LR:
+		return Builder.CreateShl( a, b );
+
 	default:
 		return NULL;
-					/*
-				case CALCCODE_AND:
-					return "AndI";
-				case CALCCODE_OR:
-					return "OrI";
-				case CALCCODE_XOR:
-					return "XorI";
-				case CALCCODE_EQ:
-					return "EqI";
-				case CALCCODE_NE:
-					return "NeI";
-				case CALCCODE_GT:
-					return "GtI";
-				case CALCCODE_LT:
-					return "LtI";
-				case CALCCODE_GTEQ:
-					return "GtEqI";
-				case CALCCODE_LTEQ:
-					return "LtEqI";
-				case CALCCODE_RR:
-					return "RrI";
-				case CALCCODE_LR:
-					return "LrI";
-					*/
 	}
 }
 
 static Value* CompileCalcD( int code, Value *a, Value *b )
 {
+	LLVMContext &Context = getGlobalContext();
+
 	switch( code ) {
 	case CALCCODE_ADD:
 		return Builder.CreateFAdd( a, b );
@@ -1262,32 +1293,43 @@ static Value* CompileCalcD( int code, Value *a, Value *b )
 		return Builder.CreateFDiv( a, b );
 	case CALCCODE_MOD:
 		return Builder.CreateFRem( a, b );
+//	case CALCCODE_AND:
+//	case CALCCODE_OR:
+//	case CALCCODE_XOR:
+	case CALCCODE_EQ:
+		{
+			Value *cond = Builder.CreateFCmpUEQ( a, b );
+			return Builder.CreateZExt( cond, Type::getInt32Ty( Context ) );
+		}
+	case CALCCODE_NE:
+		{
+			Value *cond = Builder.CreateFCmpUNE( a, b );
+			return Builder.CreateZExt( cond, Type::getInt32Ty( Context ) );
+		}
+	case CALCCODE_GT:
+		{
+			Value *cond = Builder.CreateFCmpUGT( a, b );
+			return Builder.CreateZExt( cond, Type::getInt32Ty( Context ) );
+		}
+	case CALCCODE_LT:
+		{
+			Value *cond = Builder.CreateFCmpULT( a, b );
+			return Builder.CreateZExt( cond, Type::getInt32Ty( Context ) );
+		}
+	case CALCCODE_GTEQ:
+		{
+			Value *cond = Builder.CreateFCmpUGE( a, b );
+			return Builder.CreateZExt( cond, Type::getInt32Ty( Context ) );
+		}
+	case CALCCODE_LTEQ:
+		{
+			Value *cond = Builder.CreateFCmpULE( a, b );
+			return Builder.CreateZExt( cond, Type::getInt32Ty( Context ) );
+		}
+//	case CALCCODE_RR:
+//	case CALCCODE_LR:
 	default:
 		return NULL;
-					/*
-				case CALCCODE_AND:
-					return "AndI";
-				case CALCCODE_OR:
-					return "OrI";
-				case CALCCODE_XOR:
-					return "XorI";
-				case CALCCODE_EQ:
-					return "EqI";
-				case CALCCODE_NE:
-					return "NeI";
-				case CALCCODE_GT:
-					return "GtI";
-				case CALCCODE_LT:
-					return "LtI";
-				case CALCCODE_GTEQ:
-					return "GtEqI";
-				case CALCCODE_LTEQ:
-					return "LtEqI";
-				case CALCCODE_RR:
-					return "RrI";
-				case CALCCODE_LR:
-					return "LrI";
-					*/
 	}
 }
 
@@ -1455,7 +1497,21 @@ static bool CompileOp( CHsp3LLVM *hsp, Function *func, BasicBlock *bb, Task *tas
 				op->llValue = CompileCalcD( calc->GetCalcOp(),
 											op->operands[1]->llValue,
 											op->operands[0]->llValue );
+			} else if ( op->operands[0]->flag == HSPVAR_FLAG_DOUBLE && op->operands[1]->flag == HSPVAR_FLAG_INT ) {
+				Value *v = Builder.CreateFPToSI( op->operands[0]->llValue,
+												TypeBuilder<types::i<32>, false>::get(Context) );
+				op->llValue = CompileCalcI( calc->GetCalcOp(),
+											op->operands[1]->llValue,
+											v );
+			} else if ( op->operands[0]->flag == HSPVAR_FLAG_INT && op->operands[1]->flag == HSPVAR_FLAG_DOUBLE ) {
+				Value *v = Builder.CreateSIToFP( op->operands[0]->llValue,
+												 TypeBuilder<types::ieee_double, false>::get(Context) );
+				op->llValue = CompileCalcD( calc->GetCalcOp(),
+											op->operands[1]->llValue ,
+											v );
 			}
+			if ( op->llValue == NULL )
+				return false;
 			return op->llValue != NULL;
 		}
 		break;

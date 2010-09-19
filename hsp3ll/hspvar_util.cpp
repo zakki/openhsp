@@ -828,9 +828,81 @@ void Intcmd( int cmd, int pnum )
 	if ( intcmd_info->cmdfunc( cmd ) ) HspPostExec();
 }
 
+
+int GetOpTypeRet( int op, int tflagA, int tflagB )
+{
+	switch ( tflagA ) {
+	case HSPVAR_FLAG_INT:
+		{
+			switch ( op ) {
+			case CALCCODE_ADD:
+			case CALCCODE_SUB:
+			case CALCCODE_MUL:
+			case CALCCODE_DIV:
+			case CALCCODE_MOD:
+				return HSPVAR_FLAG_INT;
+
+			case CALCCODE_AND:
+			case CALCCODE_OR:
+			case CALCCODE_XOR:
+				return HSPVAR_FLAG_INT;
+
+			case CALCCODE_EQ:
+			case CALCCODE_NE:
+			case CALCCODE_GT:
+			case CALCCODE_LT:
+			case CALCCODE_GTEQ:
+			case CALCCODE_LTEQ:
+				return HSPVAR_FLAG_INT;
+
+			case CALCCODE_RR:
+			case CALCCODE_LR:
+				return HSPVAR_FLAG_INT;
+
+			default:
+				throw 0;
+			}
+			break;
+		}
+	case HSPVAR_FLAG_DOUBLE:
+		{
+			switch ( op ) {
+			case CALCCODE_ADD:
+			case CALCCODE_SUB:
+			case CALCCODE_MUL:
+			case CALCCODE_DIV:
+			case CALCCODE_MOD:
+				return HSPVAR_FLAG_DOUBLE;
+
+			case CALCCODE_AND:
+			case CALCCODE_OR:
+			case CALCCODE_XOR:
+				return HSPVAR_FLAG_MAX;
+
+			case CALCCODE_EQ:
+			case CALCCODE_NE:
+			case CALCCODE_GT:
+			case CALCCODE_LT:
+			case CALCCODE_GTEQ:
+			case CALCCODE_LTEQ:
+				return HSPVAR_FLAG_INT;
+
+			case CALCCODE_RR:
+			case CALCCODE_LR:
+				return HSPVAR_FLAG_MAX;
+
+			default:
+				throw 0;
+			}
+			break;
+		}
+	}
+	return HSPVAR_FLAG_MAX;
+}
+
 int GetFuncTypeRet( int type, int val, int pnum )
 {
-	switch ( type) {
+	switch ( type ) {
 	case TYPE_INTFUNC:
 		{
 			switch( val >> 7 ) {
