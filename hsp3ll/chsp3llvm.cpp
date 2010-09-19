@@ -2793,12 +2793,18 @@ int CHsp3LLVM::MakeSource( int option, void *ref )
 
 	for(std::map<int, std::set<Task*> >::iterator it = varTaskMap.begin();
 		it != varTaskMap.end(); ++it) {
-		if ( it->second.size() == 1 ) {
-			Task *task = *(it->second.begin());
+		if ( it->second.size() == 0 )
+			continue;
+
+		bool useRegister = true;
+
+		// 書き込んでから読み込むタスクだけかチェック
+		for (std::set<Task*>::iterator it2 = it->second.begin();
+			 it2 != it->second.end(); ++it2) {
+			Task *task = *it2;
 			Var *var = GetTaskVar( task, it->first );
 
 			VarRefOp* firstAccessOp = NULL;
-			bool useRegister = true;
 			for ( std::vector<Op*>::iterator it2 = task->operations.begin();
 				  it2 != task->operations.end(); it2++ ) {
 				Op *op = *it2;
@@ -2837,6 +2843,13 @@ int CHsp3LLVM::MakeSource( int option, void *ref )
 				useRegister = false;
 				break;
 			}
+		}
+
+		for (std::set<Task*>::iterator it2 = it->second.begin();
+			 it2 != it->second.end(); ++it2) {
+			Task *task = *it2;
+			Var *var = GetTaskVar( task, it->first );
+
 			var->localVar = useRegister;
 		}
 	}
