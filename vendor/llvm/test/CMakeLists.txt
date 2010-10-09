@@ -24,6 +24,23 @@ endif()
 
 include(FindPythonInterp)
 if(PYTHONINTERP_FOUND)
+  get_directory_property(DEFINITIONS COMPILE_DEFINITIONS)
+  foreach(DEF ${DEFINITIONS})
+    set(DEFS "${DEFS} -D${DEF}")
+  endforeach()
+  get_directory_property(INC_DIRS INCLUDE_DIRECTORIES)
+  foreach(INC_DIR ${INC_DIRS})
+    set(IDIRS "${IDIRS} -I${INC_DIR}")
+  endforeach()
+  string(REPLACE "<CMAKE_CXX_COMPILER>" "${CMAKE_CXX_COMPILER}" TEST_COMPILE_CXX_CMD ${CMAKE_CXX_COMPILE_OBJECT})
+  string(REPLACE "<DEFINES>"            "${DEFS}"               TEST_COMPILE_CXX_CMD ${TEST_COMPILE_CXX_CMD})
+  string(REPLACE "<FLAGS>"              "${CMAKE_CXX_FLAGS}"    TEST_COMPILE_CXX_CMD ${TEST_COMPILE_CXX_CMD})
+  string(REPLACE "-o"                   ""                      TEST_COMPILE_CXX_CMD ${TEST_COMPILE_CXX_CMD})
+  string(REGEX REPLACE "<[^>]+>"        ""                      TEST_COMPILE_CXX_CMD ${TEST_COMPILE_CXX_CMD})
+  set(TEST_COMPILE_CXX_CMD "${TEST_COMPILE_CXX_CMD} ${IDIRS}")
+  if(NOT MSVC)
+    set(TEST_COMPILE_CXX_CMD "${TEST_COMPILE_CXX_CMD} -x c++")
+  endif()
   configure_file(
     ${CMAKE_CURRENT_SOURCE_DIR}/site.exp.in
     ${CMAKE_CURRENT_BINARY_DIR}/site.exp)
@@ -35,6 +52,7 @@ if(PYTHONINTERP_FOUND)
                 -e "s#\@LLVM_BINARY_DIR\@#${LLVM_BINARY_DIR}#"
                 -e "s#\@LLVM_TOOLS_DIR\@#${LLVM_TOOLS_BINARY_DIR}/${CMAKE_CFG_INTDIR}#"
                 -e "s#\@LLVMGCCDIR\@##"
+                -e "s#\@PYTHON_EXECUTABLE\@#${PYTHON_EXECUTABLE}#"
                 ${CMAKE_CURRENT_SOURCE_DIR}/lit.site.cfg.in >
                 ${CMAKE_CURRENT_BINARY_DIR}/lit.site.cfg
     COMMAND sed -e "s#\@LLVM_SOURCE_DIR\@#${LLVM_MAIN_SRC_DIR}#"

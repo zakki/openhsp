@@ -27,7 +27,7 @@
 using namespace llvm;
 
 void ARMJITInfo::replaceMachineCodeForFunction(void *Old, void *New) {
-  llvm_report_error("ARMJITInfo::replaceMachineCodeForFunction");
+  report_fatal_error("ARMJITInfo::replaceMachineCodeForFunction");
 }
 
 /// JITCompilerFunction - This contains the address of the JIT function used to
@@ -316,6 +316,18 @@ void ARMJITInfo::relocate(void *Function, MachineRelocation *MR,
       // JT base - (instruction addr + 8)
       ResultPtr = ResultPtr - (intptr_t)RelocPos - 8;
       *((intptr_t*)RelocPos) |= ResultPtr;
+      break;
+    }
+    case ARM::reloc_arm_movw: {
+      ResultPtr = ResultPtr & 0xFFFF; 
+      *((intptr_t*)RelocPos) |= ResultPtr & 0xFFF;
+      *((intptr_t*)RelocPos) |= ((ResultPtr >> 12) & 0xF) << 16;
+      break;
+    }
+    case ARM::reloc_arm_movt: {
+      ResultPtr = (ResultPtr >> 16) & 0xFFFF; 
+      *((intptr_t*)RelocPos) |= ResultPtr & 0xFFF;
+      *((intptr_t*)RelocPos) |= ((ResultPtr >> 12) & 0xF) << 16;
       break;
     }
     }

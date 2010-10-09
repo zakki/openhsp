@@ -1,4 +1,4 @@
-; RUN: llc < %s -march=x86 | FileCheck %s
+; RUN: llc < %s -mtriple=i686-linux | FileCheck %s
 ; Check the register copy comes after the call to f and before the call to g
 ; PR3784
 
@@ -28,5 +28,5 @@ lpad:		; preds = %cont, %entry
 }
 
 ; CHECK: call{{.*}}f
-; CHECK-NEXT: Llabel1:
+; CHECK-NEXT: Ltmp0:
 ; CHECK-NEXT: movl %eax, %esi

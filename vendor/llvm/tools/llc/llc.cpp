@@ -18,18 +18,14 @@
 #include "llvm/PassManager.h"
 #include "llvm/Pass.h"
 #include "llvm/ADT/Triple.h"
-#include "llvm/Analysis/Verifier.h"
 #include "llvm/Support/IRReader.h"
 #include "llvm/CodeGen/LinkAllAsmWriterComponents.h"
 #include "llvm/CodeGen/LinkAllCodegenComponents.h"
 #include "llvm/Config/config.h"
-#include "llvm/LinkAllVMCore.h"
 #include "llvm/Support/CommandLine.h"
 #include "llvm/Support/Debug.h"
-#include "llvm/Support/FileUtilities.h"
 #include "llvm/Support/FormattedStream.h"
 #include "llvm/Support/ManagedStatic.h"
-#include "llvm/Support/MemoryBuffer.h"
 #include "llvm/Support/PluginLoader.h"
 #include "llvm/Support/PrettyStackTrace.h"
 #include "llvm/System/Host.h"
@@ -39,7 +35,6 @@
 #include "llvm/Target/TargetMachine.h"
 #include "llvm/Target/TargetRegistry.h"
 #include "llvm/Target/TargetSelect.h"
-#include "llvm/Transforms/Scalar.h"
 #include <memory>
 using namespace llvm;
 
@@ -52,9 +47,6 @@ InputFilename(cl::Positional, cl::desc("<input bitcode>"), cl::init("-"));
 
 static cl::opt<std::string>
 OutputFilename("o", cl::desc("Output filename"), cl::value_desc("filename"));
-
-static cl::opt<bool>
-Force("f", cl::desc("Enable binary output on terminals"));
 
 // Determine optimization level.
 static cl::opt<char>
@@ -82,6 +74,11 @@ MAttrs("mattr",
   cl::CommaSeparated,
   cl::desc("Target specific attributes (-mattr=help for details)"),
   cl::value_desc("a1,+a2,-a3,..."));
+
+static cl::opt<bool>
+RelaxAll("mc-relax-all",
+  cl::desc("When used with filetype=obj, "
+           "relax all fixups in the emitted object file"));
 
 cl::opt<TargetMachine::CodeGenFileType>
 FileType("filetype", cl::init(TargetMachine::CGFT_AssemblyFile),
@@ -126,81 +123,67 @@ GetFileNameRoot(const std::string &InputFilename) {
   return outputFilename;
 }
 
-static formatted_raw_ostream *GetOutputStream(const char *TargetName, 
-                                              const char *ProgName) {
-  if (OutputFilename != "") {
-    if (OutputFilename == "-")
-      return &fouts();
+static tool_output_file *GetOutputStream(const char *TargetName,
+                                         Triple::OSType OS,
+                                         const char *ProgName) {
+  // If we don't yet have an output filename, make one.
+  if (OutputFilename.empty()) {
+    if (InputFilename == "-")
+      OutputFilename = "-";
+    else {
+      OutputFilename = GetFileNameRoot(InputFilename);
 
-    // Make sure that the Out file gets unlinked from the disk if we get a
-    // SIGINT
-    sys::RemoveFileOnSignal(sys::Path(OutputFilename));
-
-    std::string error;
-    raw_fd_ostream *FDOut =
-      new raw_fd_ostream(OutputFilename.c_str(), error,
-                         raw_fd_ostream::F_Binary);
-    if (!error.empty()) {
-      errs() << error << '\n';
-      delete FDOut;
-      return 0;
+      switch (FileType) {
+      default: assert(0 && "Unknown file type");
+      case TargetMachine::CGFT_AssemblyFile:
+        if (TargetName[0] == 'c') {
+          if (TargetName[1] == 0)
+            OutputFilename += ".cbe.c";
+          else if (TargetName[1] == 'p' && TargetName[2] == 'p')
+            OutputFilename += ".cpp";
+          else
+            OutputFilename += ".s";
+        } else
+          OutputFilename += ".s";
+        break;
+      case TargetMachine::CGFT_ObjectFile:
+        if (OS == Triple::Win32)
+          OutputFilename += ".obj";
+        else
+          OutputFilename += ".o";
+        break;
+      case TargetMachine::CGFT_Null:
+        OutputFilename += ".null";
+        break;
+      }
     }
-    formatted_raw_ostream *Out =
-      new formatted_raw_ostream(*FDOut, formatted_raw_ostream::DELETE_STREAM);
-
-    return Out;
   }
 
-  if (InputFilename == "-") {
-    OutputFilename = "-";
-    return &fouts();
-  }
-
-  OutputFilename = GetFileNameRoot(InputFilename);
-
+  // Decide if we need "binary" output.
   bool Binary = false;
   switch (FileType) {
   default: assert(0 && "Unknown file type");
   case TargetMachine::CGFT_AssemblyFile:
-    if (TargetName[0] == 'c') {
-      if (TargetName[1] == 0)
-        OutputFilename += ".cbe.c";
-      else if (TargetName[1] == 'p' && TargetName[2] == 'p')
-        OutputFilename += ".cpp";
-      else
-        OutputFilename += ".s";
-    } else
-      OutputFilename += ".s";
     break;
   case TargetMachine::CGFT_ObjectFile:
-    OutputFilename += ".o";
-    Binary = true;
-    break;
   case TargetMachine::CGFT_Null:
-    OutputFilename += ".null";
     Binary = true;
     break;
   }
 
-  // Make sure that the Out file gets unlinked from the disk if we get a
-  // SIGINT
-  sys::RemoveFileOnSignal(sys::Path(OutputFilename));
-
+  // Open the file.
   std::string error;
   unsigned OpenFlags = 0;
   if (Binary) OpenFlags |= raw_fd_ostream::F_Binary;
-  raw_fd_ostream *FDOut = new raw_fd_ostream(OutputFilename.c_str(), error,
-                                             OpenFlags);
+  tool_output_file *FDOut = new tool_output_file(OutputFilename.c_str(), error,
+                                                 OpenFlags);
   if (!error.empty()) {
     errs() << error << '\n';
     delete FDOut;
     return 0;
   }
 
-  formatted_raw_ostream *Out =
-    new formatted_raw_ostream(*FDOut, formatted_raw_ostream::DELETE_STREAM);
-
-  return Out;
+  return FDOut;
 }
 
 // main - Entry point for the llc compiler.
@@ -218,6 +201,7 @@ int main(int argc, char **argv) {
   // Initialize targets first, so that --version shows registered targets.
   InitializeAllTargets();
   InitializeAllAsmPrinters();
+  InitializeAllAsmParsers();
 
   cl::ParseCommandLineOptions(argc, argv, "llvm system compiler\n");
   
@@ -234,7 +218,7 @@ int main(int argc, char **argv) {
 
   // If we are supposed to override the target triple, do so now.
   if (!TargetTriple.empty())
-    mod.setTargetTriple(TargetTriple);
+    mod.setTargetTriple(Triple::normalize(TargetTriple));
 
   Triple TheTriple(mod.getTargetTriple());
   if (TheTriple.getTriple().empty())
@@ -290,8 +274,9 @@ int main(int argc, char **argv) {
   TargetMachine &Target = *target.get();
 
   // Figure out where we are going to send the output...
-  formatted_raw_ostream *Out = GetOutputStream(TheTarget->getName(), argv[0]);
-  if (Out == 0) return 1;
+  OwningPtr<tool_output_file> Out
+    (GetOutputStream(TheTarget->getName(), TheTriple.getOS(), argv[0]));
+  if (!Out) return 1;
 
   CodeGenOpt::Level OLvl = CodeGenOpt::Default;
   switch (OptLevel) {
@@ -305,85 +290,41 @@ int main(int argc, char **argv) {
   case '3': OLvl = CodeGenOpt::Aggressive; break;
   }
 
-  // Request that addPassesToEmitFile run the Verifier after running
-  // passes which modify the IR.
-#ifndef NDEBUG
-  bool DisableVerify = false;
-#else
-  bool DisableVerify = true;
-#endif
+  // Build up all of the passes that we want to do to the module.
+  PassManager PM;
 
-  // If this target requires addPassesToEmitWholeFile, do it now.  This is
-  // used by strange things like the C backend.
-  if (Target.WantsWholeFile()) {
-    PassManager PM;
+  // Add the target data from the target machine, if it exists, or the module.
+  if (const TargetData *TD = Target.getTargetData())
+    PM.add(new TargetData(*TD));
+  else
+    PM.add(new TargetData(&mod));
 
-    // Add the target data from the target machine, if it exists, or the module.
-    if (const TargetData *TD = Target.getTargetData())
-      PM.add(new TargetData(*TD));
+  // Override default to generate verbose assembly.
+  Target.setAsmVerbosityDefault(true);
+
+  if (RelaxAll) {
+    if (FileType != TargetMachine::CGFT_ObjectFile)
+      errs() << argv[0]
+             << ": warning: ignoring -mc-relax-all because filetype != obj";
     else
-      PM.add(new TargetData(&mod));
-
-    if (!NoVerify)
-      PM.add(createVerifierPass());
-
-    // Ask the target to add backend passes as necessary.
-    if (Target.addPassesToEmitWholeFile(PM, *Out, FileType, OLvl,
-                                        DisableVerify)) {
-      errs() << argv[0] << ": target does not support generation of this"
-             << " file type!\n";
-      if (Out != &fouts()) delete Out;
-      // And the Out file is empty and useless, so remove it now.
-      sys::Path(OutputFilename).eraseFromDisk();
-      return 1;
-    }
-    PM.run(mod);
-  } else {
-    // Build up all of the passes that we want to do to the module.
-    FunctionPassManager Passes(M.get());
-
-    // Add the target data from the target machine, if it exists, or the module.
-    if (const TargetData *TD = Target.getTargetData())
-      Passes.add(new TargetData(*TD));
-    else
-      Passes.add(new TargetData(&mod));
-
-#ifndef NDEBUG
-    if (!NoVerify)
-      Passes.add(createVerifierPass());
-#endif
-
-    // Override default to generate verbose assembly.
-    Target.setAsmVerbosityDefault(true);
-
-    if (Target.addPassesToEmitFile(Passes, *Out, FileType, OLvl,
-                                   DisableVerify)) {
-      errs() << argv[0] << ": target does not support generation of this"
-             << " file type!\n";
-      if (Out != &fouts()) delete Out;
-      // And the Out file is empty and useless, so remove it now.
-      sys::Path(OutputFilename).eraseFromDisk();
-      return 1;
-    }
-
-    Passes.doInitialization();
-
-    // Run our queue of passes all at once now, efficiently.
-    // TODO: this could lazily stream functions out of the module.
-    for (Module::iterator I = mod.begin(), E = mod.end(); I != E; ++I)
-      if (!I->isDeclaration()) {
-        if (DisableRedZone)
-          I->addFnAttr(Attribute::NoRedZone);
-        if (NoImplicitFloats)
-          I->addFnAttr(Attribute::NoImplicitFloat);
-        Passes.run(*I);
-      }
-
-    Passes.doFinalization();
+      Target.setMCRelaxAll(true);
   }
 
-  // Delete the ostream if it's not a stdout stream
-  if (Out != &fouts()) delete Out;
+  {
+    formatted_raw_ostream FOS(Out->os());
+
+    // Ask the target to add backend passes as necessary.
+    if (Target.addPassesToEmitFile(PM, FOS, FileType, OLvl, NoVerify)) {
+      errs() << argv[0] << ": target does not support generation of this"
+             << " file type!\n";
+      return 1;
+    }
+
+    PM.run(mod);
+  }
+
+  // Declare success.
+  Out->keep();
 
   return 0;
 }

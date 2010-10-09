@@ -43,17 +43,9 @@ def UseDeprecatedInsts : Predicate<"Subtarget.useDeprecatedV8Instructions()">;
 // Instruction Pattern Stuff
 //===----------------------------------------------------------------------===//
 
-def simm11  : PatLeaf<(imm), [{
-  // simm11 predicate - True if the imm fits in a 11-bit sign extended field.
-  return (((int)N->getZExtValue() << (32-11)) >> (32-11)) ==
-         (int)N->getZExtValue();
-}]>;
+def simm11  : PatLeaf<(imm), [{ return isInt<11>(N->getSExtValue()); }]>;
 
-def simm13  : PatLeaf<(imm), [{
-  // simm13 predicate - True if the imm fits in a 13-bit sign extended field.
-  return (((int)N->getZExtValue() << (32-13)) >> (32-13)) ==
-         (int)N->getZExtValue();
-}]>;
+def simm13  : PatLeaf<(imm), [{ return isInt<13>(N->getSExtValue()); }]>;
 
 def LO10 : SDNodeXForm<imm, [{
   return CurDAG->getTargetConstant((unsigned)N->getZExtValue() & 1023,
@@ -527,11 +519,11 @@ let Uses = [O0, O1, O2, O3, O4, O5],
   def JMPLrr : F3_1<2, 0b111000,
                     (outs), (ins MEMrr:$ptr),
                     "call $ptr",
-                    [(call  ADDRrr:$ptr)]>;
+                    [(call ADDRrr:$ptr)]>;
   def JMPLri : F3_2<2, 0b111000,
                     (outs), (ins MEMri:$ptr),
                     "call $ptr",
-                    [(call  ADDRri:$ptr)]>;
+                    [(call ADDRri:$ptr)]>;
 }
 
 // Section B.28 - Read State Register Instructions
@@ -665,7 +657,7 @@ let Defs = [FCC] in {
 //===----------------------------------------------------------------------===//
 
 // V9 Conditional Moves.
-let Predicates = [HasV9], isTwoAddress = 1 in {
+let Predicates = [HasV9], Constraints = "$T = $dst" in {
   // Move Integer Register on Condition (MOVcc) p. 194 of the V9 manual.
   // FIXME: Add instruction encodings for the JIT some day.
   def MOVICCrr

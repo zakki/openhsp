@@ -309,8 +309,6 @@ to write maintainable code more than where to put your curly braces.</p>
 <div class="doc_text">
 
 <ol>
-<li><a href="http://www.psc.edu/%7Esemke/cvs_branches.html">CVS
-Branch and Tag Primer</a></li>
 <li><a href="http://www.fortran-2000.com/ArnaudRecipes/sharedlib.html">Using
 static and shared libraries across platforms</a></li>
 </ol>
@@ -457,8 +455,8 @@ StringMap class which is used extensively in LLVM and Clang.</p>
 may have embedded null characters.  Therefore, they cannot simply take
 a <tt>const char *</tt>, and taking a <tt>const std::string&amp;</tt> requires
 clients to perform a heap allocation which is usually unnecessary.  Instead,
-many LLVM APIs use a <tt>const StringRef&amp;</tt> or a <tt>const 
-Twine&amp;</tt> for passing strings efficiently.</p>
+many LLVM APIs use a <tt>StringRef</tt> or a <tt>const Twine&amp;</tt> for
+passing strings efficiently.</p>
 
 </div>
 
@@ -477,19 +475,17 @@ on <tt>std:string</tt>, but does not require heap allocation.</p>
 an <tt>std::string</tt>, or explicitly with a character pointer and length.
 For example, the <tt>StringRef</tt> find function is declared as:</p>
 
-<div class="doc_code">
-  iterator find(const StringRef &amp;Key);
-</div>
+<pre class="doc_code">
+  iterator find(StringRef Key);
+</pre>
 
 <p>and clients can call it using any one of:</p>
 
-<div class="doc_code">
-<pre>
+<pre class="doc_code">
   Map.find("foo");                 <i>// Lookup "foo"</i>
   Map.find(std::string("bar"));    <i>// Lookup "bar"</i>
   Map.find(StringRef("\0baz", 4)); <i>// Lookup "\0baz"</i>
 </pre>
-</div>
 
 <p>Similarly, APIs which need to return a string may return a <tt>StringRef</tt>
 instance, which can be used directly or converted to an <tt>std::string</tt>
@@ -499,7 +495,8 @@ for more information.</p>
 
 <p>You should rarely use the <tt>StringRef</tt> class directly, because it contains
 pointers to external memory it is not generally safe to store an instance of the
-class (unless you know that the external storage will not be freed).</p>
+class (unless you know that the external storage will not be freed). StringRef is
+small and pervasive enough in LLVM that it should always be passed by value.</p>
 
 </div>
 
@@ -1211,14 +1208,14 @@ and erasing, but does not support iteration.</p>
 
 <div class="doc_text">
 
-<p>SmallPtrSet has all the advantages of SmallSet (and a SmallSet of pointers is 
-transparently implemented with a SmallPtrSet), but also supports iterators.  If
+<p>SmallPtrSet has all the advantages of <tt>SmallSet</tt> (and a <tt>SmallSet</tt> of pointers is 
+transparently implemented with a <tt>SmallPtrSet</tt>), but also supports iterators.  If
 more than 'N' insertions are performed, a single quadratically
 probed hash table is allocated and grows as needed, providing extremely
 efficient access (constant time insertion/deleting/queries with low constant
 factors) and is very stingy with malloc traffic.</p>
 
-<p>Note that, unlike std::set, the iterators of SmallPtrSet are invalidated
+<p>Note that, unlike <tt>std::set</tt>, the iterators of <tt>SmallPtrSet</tt> are invalidated
 whenever an insertion occurs.  Also, the values visited by the iterators are not
 visited in sorted order.</p>
 
@@ -1437,7 +1434,7 @@ to the key string for a value.</p>
 
 <p>The StringMap is very fast for several reasons: quadratic probing is very
 cache efficient for lookups, the hash value of strings in buckets is not
-recomputed when lookup up an element, StringMap rarely has to touch the
+recomputed when looking up an element, StringMap rarely has to touch the
 memory for unrelated objects when looking up a value (even when hash collisions
 happen), hash table growth does not recompute the hash values for strings
 already in the table, and each pair in the map is store in a single allocation
@@ -1843,6 +1840,21 @@ void printNextInstruction(Instruction* inst) {
 </pre>
 </div>
 
+<p>Unfortunately, these implicit conversions come at a cost; they prevent
+these iterators from conforming to standard iterator conventions, and thus
+from being usable with standard algorithms and containers. For example, they
+prevent the following code, where <tt>B</tt> is a <tt>BasicBlock</tt>,
+from compiling:</p>
+
+<div class="doc_code">
+<pre>
+  llvm::SmallVector&lt;llvm::Instruction *, 16&gt;(B-&gt;begin(), B-&gt;end());
+</pre>
+</div>
+
+<p>Because of this, these implicit conversions may be removed some day,
+and <tt>operator*</tt> changed to return a pointer instead of a reference.</p>
+
 </div>
 
 <!--_______________________________________________________________________-->
@@ -1962,7 +1974,11 @@ for (Value::use_iterator i = F-&gt;use_begin(), e = F-&gt;use_end(); i != e; ++i
 </pre>
 </div>
 
-<p>Alternately, it's common to have an instance of the <a
+<p>Note that dereferencing a <tt>Value::use_iterator</tt> is not a very cheap
+operation. Instead of performing <tt>*i</tt> above several times, consider
+doing it only once in the loop body and reusing its result.</p>
+
+<p>Alternatively, it's common to have an instance of the <a
 href="/doxygen/classllvm_1_1User.html">User Class</a> and need to know what
 <tt>Value</tt>s are used by it.  The list of all <tt>Value</tt>s used by a
 <tt>User</tt> is known as a <i>use-def</i> chain.  Instances of class
@@ -1981,10 +1997,13 @@ for (User::op_iterator i = pi-&gt;op_begin(), e = pi-&gt;op_end(); i != e; ++i) 
 </pre>
 </div>
 
-<!--
-  def-use chains ("finding all users of"): Value::use_begin/use_end
-  use-def chains ("finding all values used"): User::op_begin/op_end [op=operand]
--->
+<p>Declaring objects as <tt>const</tt> is an important tool of enforcing
+mutation free algorithms (such as analyses, etc.). For this purpose above
+iterators come in constant flavors as <tt>Value::const_use_iterator</tt>
+and <tt>Value::const_op_iterator</tt>.  They automatically arise when
+calling <tt>use/op_begin()</tt> on <tt>const Value*</tt>s or
+<tt>const User*</tt>s respectively.  Upon dereferencing, they return
+<tt>const Use*</tt>s. Otherwise the above patterns remain unchanged.</p>
 
 </div>
 
@@ -3058,7 +3077,7 @@ the <tt>lib/VMCore</tt> directory.</p>
   <dt><tt><a name="FunctionType">FunctionType</a></tt></dt>
   <dd>Subclass of DerivedTypes for function types.
     <ul>
-      <li><tt>bool isVarArg() const</tt>: Returns true if its a vararg
+      <li><tt>bool isVarArg() const</tt>: Returns true if it's a vararg
       function</li>
       <li><tt> const Type * getReturnType() const</tt>: Returns the
       return type of the function.</li>
@@ -3276,7 +3295,7 @@ simplifies the representation and makes it easier to manipulate.</p>
 <ul>
   <li><tt>Value::use_iterator</tt> - Typedef for iterator over the
 use-list<br>
-    <tt>Value::use_const_iterator</tt> - Typedef for const_iterator over
+    <tt>Value::const_use_iterator</tt> - Typedef for const_iterator over
 the use-list<br>
     <tt>unsigned use_size()</tt> - Returns the number of users of the
 value.<br>
@@ -3921,7 +3940,7 @@ arguments. An argument has a pointer to the parent Function.</p>
   <a href="mailto:dhurjati@cs.uiuc.edu">Dinakar Dhurjati</a> and
   <a href="mailto:sabre@nondot.org">Chris Lattner</a><br>
   <a href="http://llvm.org">The LLVM Compiler Infrastructure</a><br>
-  Last modified: $Date: 2010-02-25 17:51:27 -0600 (Thu, 25 Feb 2010) $
+  Last modified: $Date: 2010-08-04 10:59:16 -0500 (Wed, 04 Aug 2010) $
 </address>
 
 </body>

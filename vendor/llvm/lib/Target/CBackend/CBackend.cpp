@@ -36,6 +36,7 @@
 #include "llvm/Target/Mangler.h"
 #include "llvm/Transforms/Scalar.h"
 #include "llvm/MC/MCAsmInfo.h"
+#include "llvm/MC/MCContext.h"
 #include "llvm/MC/MCSymbol.h"
 #include "llvm/Target/TargetData.h"
 #include "llvm/Target/TargetRegistry.h"
@@ -72,7 +73,7 @@ namespace {
   public:
     static char ID;
     CBackendNameAllUsedStructsAndMergeFunctions() 
-      : ModulePass(&ID) {}
+      : ModulePass(ID) {}
     void getAnalysisUsage(AnalysisUsage &AU) const {
       AU.addRequired<FindUsedTypes>();
     }
@@ -95,6 +96,7 @@ namespace {
     LoopInfo *LI;
     const Module *TheModule;
     const MCAsmInfo* TAsm;
+    MCContext *TCtx;
     const TargetData* TD;
     std::map<const Type *, std::string> TypeNames;
     std::map<const ConstantFP *, unsigned> FPConstantMap;
@@ -108,8 +110,9 @@ namespace {
   public:
     static char ID;
     explicit CWriter(formatted_raw_ostream &o)
-      : FunctionPass(&ID), Out(o), IL(0), Mang(0), LI(0), 
-        TheModule(0), TAsm(0), TD(0), OpaqueCounter(0), NextAnonValueNumber(0) {
+      : FunctionPass(ID), Out(o), IL(0), Mang(0), LI(0), 
+        TheModule(0), TAsm(0), TCtx(0), TD(0), OpaqueCounter(0),
+        NextAnonValueNumber(0) {
       FPCounter = 0;
     }
 
@@ -145,6 +148,8 @@ namespace {
       delete IL;
       delete TD;
       delete Mang;
+      delete TCtx;
+      delete TAsm;
       FPConstantMap.clear();
       TypeNames.clear();
       ByValParams.clear();
@@ -194,7 +199,6 @@ namespace {
 
     void lowerIntrinsics(Function &F);
 
-    void printModule(Module *M);
     void printModuleTypes(const TypeSymbolTable &ST);
     void printContainedStructs(const Type *Ty, std::set<const Type *> &);
     void printFloatingPointConstants(Function &F);
@@ -259,7 +263,7 @@ namespace {
     //
     static const AllocaInst *isDirectAlloca(const Value *V) {
       const AllocaInst *AI = dyn_cast<AllocaInst>(V);
-      if (!AI) return false;
+      if (!AI) return 0;
       if (AI->isArrayAllocation())
         return 0;   // FIXME: we can also inline fixed size array allocas!
       if (AI->getParent() != &AI->getParent()->getParent()->getEntryBlock())
@@ -269,8 +273,8 @@ namespace {
     
     // isInlineAsm - Check if the instruction is a call to an inline asm chunk
     static bool isInlineAsm(const Instruction& I) {
-      if (isa<CallInst>(&I) && isa<InlineAsm>(I.getOperand(0)))
-        return true;
+      if (const CallInst *CI = dyn_cast<CallInst>(&I))
+        return isa<InlineAsm>(CI->getCalledValue());
       return false;
     }
     
@@ -468,8 +472,9 @@ void CWriter::printStructReturnPointerFunctionType(raw_ostream &Out,
     PrintedType = true;
   }
   if (FTy->isVarArg()) {
-    if (PrintedType)
-      FunctionInnards << ", ...";
+    if (!PrintedType)
+      FunctionInnards << " int"; //dummy argument for empty vararg functs
+    FunctionInnards << ", ...";
   } else if (!PrintedType) {
     FunctionInnards << "void";
   }
@@ -563,8 +568,9 @@ raw_ostream &CWriter::printType(raw_ostream &Out, const Type *Ty,
       ++Idx;
     }
     if (FTy->isVarArg()) {
-      if (FTy->getNumParams())
-        FunctionInnards << ", ...";
+      if (!FTy->getNumParams())
+        FunctionInnards << " int"; //dummy argument for empty vaarg functs
+      FunctionInnards << ", ...";
     } else if (!FTy->getNumParams()) {
       FunctionInnards << "void";
     }
@@ -1293,6 +1299,13 @@ void CWriter::printConstantWithCast(Constant* CPV, unsigned Opcode) {
 }
 
 std::string CWriter::GetValueName(const Value *Operand) {
+
+  // Resolve potential alias.
+  if (const GlobalAlias *GA = dyn_cast<GlobalAlias>(Operand)) {
+    if (const Value *V = GA->resolveAliasedGlobal(false))
+      Operand = V;
+  }
+
   // Mangle globals with the standard mangler interface for LLC compatibility.
   if (const GlobalValue *GV = dyn_cast<GlobalValue>(Operand)) {
     SmallString<128> Str;
@@ -1339,7 +1352,7 @@ void CWriter::writeInstComputationInline(Instruction &I) {
         Ty!=Type::getInt16Ty(I.getContext()) &&
         Ty!=Type::getInt32Ty(I.getContext()) &&
         Ty!=Type::getInt64Ty(I.getContext()))) {
-      llvm_report_error("The C backend does not currently support integer "
+      report_fatal_error("The C backend does not currently support integer "
                         "types of widths other than 1, 8, 16, 32, 64.\n"
                         "This is being tracked as PR 4158.");
   }
@@ -1731,7 +1744,8 @@ bool CWriter::doInitialization(Module &M) {
     TAsm = Match->createAsmInfo(Triple);
 #endif    
   TAsm = new CBEMCAsmInfo();
-  Mang = new Mangler(*TAsm);
+  TCtx = new MCContext(*TAsm);
+  Mang = new Mangler(*TCtx, *TD);
 
   // Keep track of which functions are static ctors/dtors so they can have
   // an attribute added to their prototypes.
@@ -2157,6 +2171,9 @@ void CWriter::printFunctionSignature(const Function *F, bool Prototype) {
    case CallingConv::X86_FastCall:
     Out << "__attribute__((fastcall)) ";
     break;
+   case CallingConv::X86_ThisCall:
+    Out << "__attribute__((thiscall)) ";
+    break;
    default:
     break;
   }
@@ -2231,12 +2248,16 @@ void CWriter::printFunctionSignature(const Function *F, bool Prototype) {
     }
   }
 
+  if (!PrintedArg && FT->isVarArg()) {
+    FunctionInnards << "int vararg_dummy_arg";
+    PrintedArg = true;
+  }
+
   // Finish printing arguments... if this is a vararg function, print the ...,
   // unless there are no known types, in which case, we just emit ().
   //
   if (FT->isVarArg() && PrintedArg) {
-    if (PrintedArg) FunctionInnards << ", ";
-    FunctionInnards << "...";  // Output varargs portion of signature!
+    FunctionInnards << ",...";  // Output varargs portion of signature!
   } else if (!FT->isVarArg() && !PrintedArg) {
     FunctionInnards << "void"; // ret() -> ret(void) in C.
   }
@@ -2852,7 +2873,7 @@ void CWriter::lowerIntrinsics(Function &F) {
 }
 
 void CWriter::visitCallInst(CallInst &I) {
-  if (isa<InlineAsm>(I.getOperand(0)))
+  if (isa<InlineAsm>(I.getCalledValue()))
     return visitInlineAsm(I);
 
   bool WroteCallee = false;
@@ -2874,7 +2895,7 @@ void CWriter::visitCallInst(CallInst &I) {
   bool hasByVal = I.hasByValArgument();
   bool isStructRet = I.hasStructRetAttr();
   if (isStructRet) {
-    writeOperandDeref(I.getOperand(1));
+    writeOperandDeref(I.getArgOperand(0));
     Out << " = ";
   }
   
@@ -2922,16 +2943,22 @@ void CWriter::visitCallInst(CallInst &I) {
 
   Out << '(';
 
-  unsigned NumDeclaredParams = FTy->getNumParams();
+  bool PrintedArg = false;
+  if(FTy->isVarArg() && !FTy->getNumParams()) {
+    Out << "0 /*dummy arg*/";
+    PrintedArg = true;
+  }
 
-  CallSite::arg_iterator AI = I.op_begin()+1, AE = I.op_end();
+  unsigned NumDeclaredParams = FTy->getNumParams();
+  CallSite CS(&I);
+  CallSite::arg_iterator AI = CS.arg_begin(), AE = CS.arg_end();
   unsigned ArgNo = 0;
   if (isStructRet) {   // Skip struct return argument.
     ++AI;
     ++ArgNo;
   }
       
-  bool PrintedArg = false;
+
   for (; AI != AE; ++AI, ++ArgNo) {
     if (PrintedArg) Out << ", ";
     if (ArgNo < NumDeclaredParams &&
@@ -2978,24 +3005,19 @@ bool CWriter::visitBuiltinCall(CallInst &I, Intrinsic::ID ID,
     Out << "0; ";
       
     Out << "va_start(*(va_list*)";
-    writeOperand(I.getOperand(1));
+    writeOperand(I.getArgOperand(0));
     Out << ", ";
     // Output the last argument to the enclosing function.
-    if (I.getParent()->getParent()->arg_empty()) {
-      std::string msg;
-      raw_string_ostream Msg(msg);
-      Msg << "The C backend does not currently support zero "
-           << "argument varargs functions, such as '"
-           << I.getParent()->getParent()->getName() << "'!";
-      llvm_report_error(Msg.str());
-    }
-    writeOperand(--I.getParent()->getParent()->arg_end());
+    if (I.getParent()->getParent()->arg_empty())
+      Out << "vararg_dummy_arg";
+    else
+      writeOperand(--I.getParent()->getParent()->arg_end());
     Out << ')';
     return true;
   case Intrinsic::vaend:
-    if (!isa<ConstantPointerNull>(I.getOperand(1))) {
+    if (!isa<ConstantPointerNull>(I.getArgOperand(0))) {
       Out << "0; va_end(*(va_list*)";
-      writeOperand(I.getOperand(1));
+      writeOperand(I.getArgOperand(0));
       Out << ')';
     } else {
       Out << "va_end(*(va_list*)0)";
@@ -3004,47 +3026,47 @@ bool CWriter::visitBuiltinCall(CallInst &I, Intrinsic::ID ID,
   case Intrinsic::vacopy:
     Out << "0; ";
     Out << "va_copy(*(va_list*)";
-    writeOperand(I.getOperand(1));
+    writeOperand(I.getArgOperand(0));
     Out << ", *(va_list*)";
-    writeOperand(I.getOperand(2));
+    writeOperand(I.getArgOperand(1));
     Out << ')';
     return true;
   case Intrinsic::returnaddress:
     Out << "__builtin_return_address(";
-    writeOperand(I.getOperand(1));
+    writeOperand(I.getArgOperand(0));
     Out << ')';
     return true;
   case Intrinsic::frameaddress:
     Out << "__builtin_frame_address(";
-    writeOperand(I.getOperand(1));
+    writeOperand(I.getArgOperand(0));
     Out << ')';
     return true;
   case Intrinsic::powi:
     Out << "__builtin_powi(";
-    writeOperand(I.getOperand(1));
+    writeOperand(I.getArgOperand(0));
     Out << ", ";
-    writeOperand(I.getOperand(2));
+    writeOperand(I.getArgOperand(1));
     Out << ')';
     return true;
   case Intrinsic::setjmp:
     Out << "setjmp(*(jmp_buf*)";
-    writeOperand(I.getOperand(1));
+    writeOperand(I.getArgOperand(0));
     Out << ')';
     return true;
   case Intrinsic::longjmp:
     Out << "longjmp(*(jmp_buf*)";
-    writeOperand(I.getOperand(1));
+    writeOperand(I.getArgOperand(0));
     Out << ", ";
-    writeOperand(I.getOperand(2));
+    writeOperand(I.getArgOperand(1));
     Out << ')';
     return true;
   case Intrinsic::prefetch:
     Out << "LLVM_PREFETCH((const void *)";
-    writeOperand(I.getOperand(1));
+    writeOperand(I.getArgOperand(0));
     Out << ", ";
-    writeOperand(I.getOperand(2));
+    writeOperand(I.getArgOperand(1));
     Out << ", ";
-    writeOperand(I.getOperand(3));
+    writeOperand(I.getArgOperand(2));
     Out << ")";
     return true;
   case Intrinsic::stacksave:
@@ -3061,7 +3083,7 @@ bool CWriter::visitBuiltinCall(CallInst &I, Intrinsic::ID ID,
     printType(Out, I.getType());
     Out << ')';  
     // Multiple GCC builtins multiplex onto this intrinsic.
-    switch (cast<ConstantInt>(I.getOperand(3))->getZExtValue()) {
+    switch (cast<ConstantInt>(I.getArgOperand(2))->getZExtValue()) {
     default: llvm_unreachable("Invalid llvm.x86.sse.cmp!");
     case 0: Out << "__builtin_ia32_cmpeq"; break;
     case 1: Out << "__builtin_ia32_cmplt"; break;
@@ -3082,9 +3104,9 @@ bool CWriter::visitBuiltinCall(CallInst &I, Intrinsic::ID ID,
       Out << 'd';
       
     Out << "(";
-    writeOperand(I.getOperand(1));
+    writeOperand(I.getArgOperand(0));
     Out << ", ";
-    writeOperand(I.getOperand(2));
+    writeOperand(I.getArgOperand(1));
     Out << ")";
     return true;
   case Intrinsic::ppc_altivec_lvsl:
@@ -3092,7 +3114,7 @@ bool CWriter::visitBuiltinCall(CallInst &I, Intrinsic::ID ID,
     printType(Out, I.getType());
     Out << ')';  
     Out << "__builtin_altivec_lvsl(0, (void*)";
-    writeOperand(I.getOperand(1));
+    writeOperand(I.getArgOperand(0));
     Out << ")";
     return true;
   }
@@ -3159,7 +3181,7 @@ static std::string gccifyAsm(std::string asmstr) {
 //TODO: assumptions about what consume arguments from the call are likely wrong
 //      handle communitivity
 void CWriter::visitInlineAsm(CallInst &CI) {
-  InlineAsm* as = cast<InlineAsm>(CI.getOperand(0));
+  InlineAsm* as = cast<InlineAsm>(CI.getCalledValue());
   std::vector<InlineAsm::ConstraintInfo> Constraints = as->ParseConstraints();
   
   std::vector<std::pair<Value*, int> > ResultVals;
@@ -3205,7 +3227,7 @@ void CWriter::visitInlineAsm(CallInst &CI) {
       DestVal = ResultVals[ValueCount].first;
       DestValNo = ResultVals[ValueCount].second;
     } else
-      DestVal = CI.getOperand(ValueCount-ResultVals.size()+1);
+      DestVal = CI.getArgOperand(ValueCount-ResultVals.size());
 
     if (I->isEarlyClobber)
       C = "&"+C;
@@ -3239,7 +3261,7 @@ void CWriter::visitInlineAsm(CallInst &CI) {
     }
     
     assert(ValueCount >= ResultVals.size() && "Input can't refer to result");
-    Value *SrcVal = CI.getOperand(ValueCount-ResultVals.size()+1);
+    Value *SrcVal = CI.getArgOperand(ValueCount-ResultVals.size());
     
     Out << "\"" << C << "\"(";
     if (!I->isIndirect)
@@ -3541,11 +3563,11 @@ void CWriter::visitExtractValueInst(ExtractValueInst &EVI) {
 //                       External Interface declaration
 //===----------------------------------------------------------------------===//
 
-bool CTargetMachine::addPassesToEmitWholeFile(PassManager &PM,
-                                              formatted_raw_ostream &o,
-                                              CodeGenFileType FileType,
-                                              CodeGenOpt::Level OptLevel,
-                                              bool DisableVerify) {
+bool CTargetMachine::addPassesToEmitFile(PassManagerBase &PM,
+                                         formatted_raw_ostream &o,
+                                         CodeGenFileType FileType,
+                                         CodeGenOpt::Level OptLevel,
+                                         bool DisableVerify) {
   if (FileType != TargetMachine::CGFT_AssemblyFile) return true;
 
   PM.add(createGCLoweringPass());

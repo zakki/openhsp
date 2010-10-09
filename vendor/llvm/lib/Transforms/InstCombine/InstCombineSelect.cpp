@@ -13,6 +13,7 @@
 
 #include "InstCombine.h"
 #include "llvm/Support/PatternMatch.h"
+#include "llvm/Analysis/InstructionSimplify.h"
 using namespace llvm;
 using namespace PatternMatch;
 
@@ -328,6 +329,37 @@ Instruction *InstCombiner::visitSelectInstWithICmp(SelectInst &SI,
       }
     }
 
+  // Transform (X >s -1) ? C1 : C2 --> ((X >>s 31) & (C2 - C1)) + C1
+  // and       (X <s  0) ? C2 : C1 --> ((X >>s 31) & (C2 - C1)) + C1
+  // FIXME: Type and constness constraints could be lifted, but we have to
+  //        watch code size carefully. We should consider xor instead of
+  //        sub/add when we decide to do that.
+  if (const IntegerType *Ty = dyn_cast<IntegerType>(CmpLHS->getType())) {
+    if (TrueVal->getType() == Ty) {
+      if (ConstantInt *Cmp = dyn_cast<ConstantInt>(CmpRHS)) {
+        ConstantInt *C1 = NULL, *C2 = NULL;
+        if (Pred == ICmpInst::ICMP_SGT && Cmp->isAllOnesValue()) {
+          C1 = dyn_cast<ConstantInt>(TrueVal);
+          C2 = dyn_cast<ConstantInt>(FalseVal);
+        } else if (Pred == ICmpInst::ICMP_SLT && Cmp->isNullValue()) {
+          C1 = dyn_cast<ConstantInt>(FalseVal);
+          C2 = dyn_cast<ConstantInt>(TrueVal);
+        }
+        if (C1 && C2) {
+          // This shift results in either -1 or 0.
+          Value *AShr = Builder->CreateAShr(CmpLHS, Ty->getBitWidth()-1);
+
+          // Check if we can express the operation with a single or.
+          if (C2->isAllOnesValue())
+            return ReplaceInstUsesWith(SI, Builder->CreateOr(AShr, C1));
+
+          Value *And = Builder->CreateAnd(AShr, C2->getValue()-C1->getValue());
+          return ReplaceInstUsesWith(SI, Builder->CreateAdd(And, C1));
+        }
+      }
+    }
+  }
+
   if (CmpLHS == TrueVal && CmpRHS == FalseVal) {
     // Transform (X == Y) ? X : Y  -> Y
     if (Pred == ICmpInst::ICMP_EQ)
@@ -421,49 +453,30 @@ Instruction *InstCombiner::visitSelectInst(SelectInst &SI) {
   Value *TrueVal = SI.getTrueValue();
   Value *FalseVal = SI.getFalseValue();
 
-  // select true, X, Y  -> X
-  // select false, X, Y -> Y
-  if (ConstantInt *C = dyn_cast<ConstantInt>(CondVal))
-    return ReplaceInstUsesWith(SI, C->getZExtValue() ? TrueVal : FalseVal);
-
-  // select C, X, X -> X
-  if (TrueVal == FalseVal)
-    return ReplaceInstUsesWith(SI, TrueVal);
-
-  if (isa<UndefValue>(TrueVal))   // select C, undef, X -> X
-    return ReplaceInstUsesWith(SI, FalseVal);
-  if (isa<UndefValue>(FalseVal))   // select C, X, undef -> X
-    return ReplaceInstUsesWith(SI, TrueVal);
-  if (isa<UndefValue>(CondVal)) {  // select undef, X, Y -> X or Y
-    if (isa<Constant>(TrueVal))
-      return ReplaceInstUsesWith(SI, TrueVal);
-    else
-      return ReplaceInstUsesWith(SI, FalseVal);
-  }
+  if (Value *V = SimplifySelectInst(CondVal, TrueVal, FalseVal, TD))
+    return ReplaceInstUsesWith(SI, V);
 
   if (SI.getType()->isIntegerTy(1)) {
     if (ConstantInt *C = dyn_cast<ConstantInt>(TrueVal)) {
       if (C->getZExtValue()) {
         // Change: A = select B, true, C --> A = or B, C
         return BinaryOperator::CreateOr(CondVal, FalseVal);
-      } else {
-        // Change: A = select B, false, C --> A = and !B, C
-        Value *NotCond =
-          InsertNewInstBefore(BinaryOperator::CreateNot(CondVal,
-                                             "not."+CondVal->getName()), SI);
-        return BinaryOperator::CreateAnd(NotCond, FalseVal);
       }
+      // Change: A = select B, false, C --> A = and !B, C
+      Value *NotCond =
+        InsertNewInstBefore(BinaryOperator::CreateNot(CondVal,
+                                           "not."+CondVal->getName()), SI);
+      return BinaryOperator::CreateAnd(NotCond, FalseVal);
     } else if (ConstantInt *C = dyn_cast<ConstantInt>(FalseVal)) {
       if (C->getZExtValue() == false) {
         // Change: A = select B, C, false --> A = and B, C
         return BinaryOperator::CreateAnd(CondVal, TrueVal);
-      } else {
-        // Change: A = select B, C, true --> A = or !B, C
-        Value *NotCond =
-          InsertNewInstBefore(BinaryOperator::CreateNot(CondVal,
-                                             "not."+CondVal->getName()), SI);
-        return BinaryOperator::CreateOr(NotCond, TrueVal);
       }
+      // Change: A = select B, C, true --> A = or !B, C
+      Value *NotCond =
+        InsertNewInstBefore(BinaryOperator::CreateNot(CondVal,
+                                           "not."+CondVal->getName()), SI);
+      return BinaryOperator::CreateOr(NotCond, TrueVal);
     }
     
     // select a, b, a  -> a&b

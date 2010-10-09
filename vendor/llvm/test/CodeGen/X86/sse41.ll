@@ -123,11 +123,11 @@ define float @ext_1(<4 x float> %v) nounwind {
 
 ; X32: _ext_1:
 ; X32:	  pshufd	$3, %xmm0, %xmm0
-; X32:	  addss	LCPI8_0, %xmm0
+; X32:	  addss	LCPI7_0, %xmm0
 
 ; X64: _ext_1:
 ; X64:	  pshufd	$3, %xmm0, %xmm0
-; X64:	  addss	LCPI8_0(%rip), %xmm0
+; X64:	  addss	LCPI7_0(%rip), %xmm0
 }
 define float @ext_2(<4 x float> %v) nounwind {
   %s = extractelement <4 x float> %v, i32 3
@@ -223,4 +223,29 @@ define i32 @ptestz_3(<4 x float> %t1, <4 x float> %t2) nounwind {
 declare i32 @llvm.x86.sse41.ptestz(<4 x float>, <4 x float>) nounwind readnone
 declare i32 @llvm.x86.sse41.ptestc(<4 x float>, <4 x float>) nounwind readnone
 declare i32 @llvm.x86.sse41.ptestnzc(<4 x float>, <4 x float>) nounwind readnone
+
+; This used to compile to insertps $0  + insertps $16.  insertps $0 is always
+; pointless.
+define <2 x float> @buildvector(<2 x float> %A, <2 x float> %B) nounwind  {
+entry:
+  %tmp7 = extractelement <2 x float> %A, i32 0
+  %tmp5 = extractelement <2 x float> %A, i32 1
+  %tmp3 = extractelement <2 x float> %B, i32 0
+  %tmp1 = extractelement <2 x float> %B, i32 1
+  %add.r = fadd float %tmp7, %tmp3
+  %add.i = fadd float %tmp5, %tmp1
+  %tmp11 = insertelement <2 x float> undef, float %add.r, i32 0
+  %tmp9 = insertelement <2 x float> %tmp11, float %add.i, i32 1
+  ret <2 x float> %tmp9
+; X32: buildvector:
+; X32-NOT: insertps $0
+; X32: insertps $16
+; X32-NOT: insertps $0
+; X32: ret
+; X64: buildvector:
+; X64-NOT: insertps $0
+; X64: insertps $16
+; X64-NOT: insertps $0
+; X64: ret
+}
 

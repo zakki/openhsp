@@ -1,6 +1,7 @@
 // This test describes how we eventually want to describe instructions in
 // the target independent code generators.
 // RUN: tblgen %s
+// XFAIL: vg_leak
 
 // Target indep stuff.
 class Instruction {   // Would have other stuff eventually
@@ -82,8 +83,7 @@ class Inst<dag opnds, string asmstr, bits<8> opcode,
 //     the pattern.
 //  6. Address expressions should become first-class entities.
 
-// Simple copy instruction.  isMoveInstr could easily be inferred from this,
-// as could TargetRegisterInfo::copyRegToReg.
+// Simple copy instruction.
 def MOV8rr : Inst<(ops R8:$dst, R8:$src),
                   "mov $dst, $src", 0x88, MRMDestReg,
                   [(set R8:$dst, R8:$src)]>;

@@ -27,7 +27,7 @@
 #ifndef LLVM_ANALYSIS_POINTERTRACKING_H
 #define LLVM_ANALYSIS_POINTERTRACKING_H
 
-#include "llvm/ADT/SmallSet.h"
+#include "llvm/ADT/SmallPtrSet.h"
 #include "llvm/Analysis/Dominators.h"
 #include "llvm/Instructions.h"
 #include "llvm/Pass.h"
@@ -98,6 +98,7 @@ namespace llvm {
     virtual bool runOnFunction(Function &F);
     virtual void getAnalysisUsage(AnalysisUsage &AU) const;
     void print(raw_ostream &OS, const Module* = 0) const;
+    Value *computeAllocationCountValue(Value *P, const Type *&Ty) const;
   private:
     Function *FF;
     TargetData *TD;

@@ -17,6 +17,8 @@
 
 #include "ARMSubtarget.h"
 #include "llvm/Target/TargetLowering.h"
+#include "llvm/Target/TargetRegisterInfo.h"
+#include "llvm/CodeGen/FastISel.h"
 #include "llvm/CodeGen/SelectionDAG.h"
 #include "llvm/CodeGen/CallingConvLower.h"
 #include <vector>
@@ -45,6 +47,8 @@ namespace llvm {
 
       PIC_ADD,      // Add with a PC operand and a PIC label.
 
+      AND,          // ARM "and" instruction that sets the 's' flag in CPSR.
+
       CMP,          // ARM compare instructions.
       CMPZ,         // ARM compare that sets only Z flag.
       CMPFP,        // ARM VFP compare instruction, sets FPSCR.
@@ -52,6 +56,8 @@ namespace llvm {
       FMSTAT,       // ARM fmstat instruction.
       CMOV,         // ARM conditional move instructions.
       CNEG,         // ARM conditional negate instructions.
+
+      BCC_i64,
 
       RBIT,         // ARM bitreverse instruction
 
@@ -70,13 +76,15 @@ namespace llvm {
       EH_SJLJ_SETJMP,    // SjLj exception handling setjmp.
       EH_SJLJ_LONGJMP,   // SjLj exception handling longjmp.
 
+      TC_RETURN,    // Tail call return pseudo.
+
       THREAD_POINTER,
 
       DYN_ALLOC,    // Dynamic allocation on the stack.
 
       MEMBARRIER,   // Memory barrier
       SYNCBARRIER,  // Memory sync barrier
-
+      
       VCEQ,         // Vector compare equal.
       VCGE,         // Vector compare greater than or equal.
       VCGEU,        // Vector compare unsigned greater than or equal.
@@ -120,6 +128,10 @@ namespace llvm {
       VGETLANEu,    // zero-extend vector extract element
       VGETLANEs,    // sign-extend vector extract element
 
+      // Vector move immediate and move negated immediate:
+      VMOVIMM,
+      VMVNIMM,
+
       // Vector duplicate:
       VDUP,
       VDUPLANE,
@@ -133,51 +145,61 @@ namespace llvm {
       VUZP,         // unzip (deinterleave)
       VTRN,         // transpose
 
+      // Vector multiply long:
+      VMULLs,       // ...signed
+      VMULLu,       // ...unsigned
+
+      // Operands of the standard BUILD_VECTOR node are not legalized, which
+      // is fine if BUILD_VECTORs are always lowered to shuffles or other
+      // operations, but for ARM some BUILD_VECTORs are legal as-is and their
+      // operands need to be legalized.  Define an ARM-specific version of
+      // BUILD_VECTOR for this purpose.
+      BUILD_VECTOR,
+
       // Floating-point max and min:
       FMAX,
-      FMIN
+      FMIN,
+
+      // Bit-field insert
+      BFI
     };
   }
 
   /// Define some predicates that are used for node matching.
   namespace ARM {
-    /// getVMOVImm - If this is a build_vector of constants which can be
-    /// formed by using a VMOV instruction of the specified element size,
-    /// return the constant being splatted.  The ByteSize field indicates the
-    /// number of bytes of each element [1248].
-    SDValue getVMOVImm(SDNode *N, unsigned ByteSize, SelectionDAG &DAG);
-
     /// getVFPf32Imm / getVFPf64Imm - If the given fp immediate can be
     /// materialized with a VMOV.f32 / VMOV.f64 (i.e. fconsts / fconstd)
     /// instruction, returns its 8-bit integer representation. Otherwise,
     /// returns -1.
     int getVFPf32Imm(const APFloat &FPImm);
     int getVFPf64Imm(const APFloat &FPImm);
+    bool isBitFieldInvertedMask(unsigned v);
   }
 
   //===--------------------------------------------------------------------===//
   //  ARMTargetLowering - ARM Implementation of the TargetLowering interface
 
   class ARMTargetLowering : public TargetLowering {
-    int VarArgsFrameIndex;            // FrameIndex for start of varargs area.
   public:
     explicit ARMTargetLowering(TargetMachine &TM);
 
-    virtual SDValue LowerOperation(SDValue Op, SelectionDAG &DAG);
+    virtual unsigned getJumpTableEncoding(void) const;
+
+    virtual SDValue LowerOperation(SDValue Op, SelectionDAG &DAG) const;
 
     /// ReplaceNodeResults - Replace the results of node with an illegal result
     /// type with new values built out of custom code.
     ///
     virtual void ReplaceNodeResults(SDNode *N, SmallVectorImpl<SDValue>&Results,
-                                    SelectionDAG &DAG);
+                                    SelectionDAG &DAG) const;
 
     virtual SDValue PerformDAGCombine(SDNode *N, DAGCombinerInfo &DCI) const;
 
     virtual const char *getTargetNodeName(unsigned Opcode) const;
 
-    virtual MachineBasicBlock *EmitInstrWithCustomInserter(MachineInstr *MI,
-                                                         MachineBasicBlock *MBB,
-                       DenseMap<MachineBasicBlock*, MachineBasicBlock*>*) const;
+    virtual MachineBasicBlock *
+      EmitInstrWithCustomInserter(MachineInstr *MI,
+                                  MachineBasicBlock *MBB) const;
 
     /// allowsUnalignedMemoryAccesses - Returns true if the target allows
     /// unaligned memory accesses. of the specified type.
@@ -190,9 +212,9 @@ namespace llvm {
     bool isLegalT2ScaledAddressingMode(const AddrMode &AM, EVT VT) const;
 
     /// isLegalICmpImmediate - Return true if the specified immediate is legal
-    /// icmp immediate, that is the target has icmp instructions which can compare
-    /// a register against the immediate without having to materialize the
-    /// immediate into a register.
+    /// icmp immediate, that is the target has icmp instructions which can
+    /// compare a register against the immediate without having to materialize
+    /// the immediate into a register.
     virtual bool isLegalICmpImmediate(int64_t Imm) const;
 
     /// getPreIndexedAddressParts - returns true by value, base pointer and
@@ -233,16 +255,32 @@ namespace llvm {
     /// being processed is 'm'.
     virtual void LowerAsmOperandForConstraint(SDValue Op,
                                               char ConstraintLetter,
-                                              bool hasMemory,
                                               std::vector<SDValue> &Ops,
                                               SelectionDAG &DAG) const;
 
-    virtual const ARMSubtarget* getSubtarget() {
+    const ARMSubtarget* getSubtarget() const {
       return Subtarget;
     }
 
+    /// getRegClassFor - Return the register class that should be used for the
+    /// specified value type.
+    virtual TargetRegisterClass *getRegClassFor(EVT VT) const;
+
     /// getFunctionAlignment - Return the Log2 alignment of this function.
     virtual unsigned getFunctionAlignment(const Function *F) const;
+
+    /// getMaximalGlobalOffset - Returns the maximal possible offset which can
+    /// be used for loads / stores from the global.
+    virtual unsigned getMaximalGlobalOffset() const;
+
+    /// createFastISel - This method returns a target specific FastISel object,
+    /// or null if the target does not support "fast" ISel.
+    virtual FastISel *createFastISel(FunctionLoweringInfo &funcInfo) const;
+
+    Sched::Preference getSchedulingPreference(SDNode *N) const;
+
+    unsigned getRegPressureLimit(const TargetRegisterClass *RC,
+                                 MachineFunction &MF) const;
 
     bool isShuffleMaskLegal(const SmallVectorImpl<int> &M, EVT VT) const;
     bool isOffsetFoldingLegal(const GlobalAddressSDNode *GA) const;
@@ -252,10 +290,16 @@ namespace llvm {
     /// materialize the FP immediate as a load from a constant pool.
     virtual bool isFPImmLegal(const APFloat &Imm, EVT VT) const;
 
+  protected:
+    std::pair<const TargetRegisterClass*, uint8_t>
+    findRepresentativeClass(EVT VT) const;
+
   private:
     /// Subtarget - Keep a pointer to the ARMSubtarget around so that we can
     /// make the right decision when generating code for different targets.
     const ARMSubtarget *Subtarget;
+
+    const TargetRegisterInfo *RegInfo;
 
     /// ARMPCLabelIndex - Keep track of the number of ARM PC labels created.
     ///
@@ -272,72 +316,89 @@ namespace llvm {
                           CCValAssign &VA, CCValAssign &NextVA,
                           SDValue &StackPtr,
                           SmallVector<SDValue, 8> &MemOpChains,
-                          ISD::ArgFlagsTy Flags);
+                          ISD::ArgFlagsTy Flags) const;
     SDValue GetF64FormalArgument(CCValAssign &VA, CCValAssign &NextVA,
-                                 SDValue &Root, SelectionDAG &DAG, DebugLoc dl);
+                                 SDValue &Root, SelectionDAG &DAG,
+                                 DebugLoc dl) const;
 
-    CCAssignFn *CCAssignFnForNode(CallingConv::ID CC, bool Return, bool isVarArg) const;
+    CCAssignFn *CCAssignFnForNode(CallingConv::ID CC, bool Return,
+                                  bool isVarArg) const;
     SDValue LowerMemOpCallTo(SDValue Chain, SDValue StackPtr, SDValue Arg,
                              DebugLoc dl, SelectionDAG &DAG,
                              const CCValAssign &VA,
-                             ISD::ArgFlagsTy Flags);
-    SDValue LowerINTRINSIC_W_CHAIN(SDValue Op, SelectionDAG &DAG);
+                             ISD::ArgFlagsTy Flags) const;
+    SDValue LowerEH_SJLJ_SETJMP(SDValue Op, SelectionDAG &DAG) const;
+    SDValue LowerEH_SJLJ_LONGJMP(SDValue Op, SelectionDAG &DAG) const;
     SDValue LowerINTRINSIC_WO_CHAIN(SDValue Op, SelectionDAG &DAG,
-                                    const ARMSubtarget *Subtarget);
-    SDValue LowerBlockAddress(SDValue Op, SelectionDAG &DAG);
-    SDValue LowerGlobalAddressDarwin(SDValue Op, SelectionDAG &DAG);
-    SDValue LowerGlobalAddressELF(SDValue Op, SelectionDAG &DAG);
-    SDValue LowerGlobalTLSAddress(SDValue Op, SelectionDAG &DAG);
+                                    const ARMSubtarget *Subtarget) const;
+    SDValue LowerBlockAddress(SDValue Op, SelectionDAG &DAG) const;
+    SDValue LowerGlobalAddressDarwin(SDValue Op, SelectionDAG &DAG) const;
+    SDValue LowerGlobalAddressELF(SDValue Op, SelectionDAG &DAG) const;
+    SDValue LowerGlobalTLSAddress(SDValue Op, SelectionDAG &DAG) const;
     SDValue LowerToTLSGeneralDynamicModel(GlobalAddressSDNode *GA,
-                                            SelectionDAG &DAG);
+                                            SelectionDAG &DAG) const;
     SDValue LowerToTLSExecModels(GlobalAddressSDNode *GA,
-                                   SelectionDAG &DAG);
-    SDValue LowerGLOBAL_OFFSET_TABLE(SDValue Op, SelectionDAG &DAG);
-    SDValue LowerBR_JT(SDValue Op, SelectionDAG &DAG);
-    SDValue LowerSELECT_CC(SDValue Op, SelectionDAG &DAG);
-    SDValue LowerBR_CC(SDValue Op, SelectionDAG &DAG);
-    SDValue LowerFRAMEADDR(SDValue Op, SelectionDAG &DAG);
-    SDValue LowerDYNAMIC_STACKALLOC(SDValue Op, SelectionDAG &DAG);
-    SDValue LowerShiftRightParts(SDValue Op, SelectionDAG &DAG);
-    SDValue LowerShiftLeftParts(SDValue Op, SelectionDAG &DAG);
+                                   SelectionDAG &DAG) const;
+    SDValue LowerGLOBAL_OFFSET_TABLE(SDValue Op, SelectionDAG &DAG) const;
+    SDValue LowerBR_JT(SDValue Op, SelectionDAG &DAG) const;
+    SDValue LowerSELECT(SDValue Op, SelectionDAG &DAG) const;
+    SDValue LowerSELECT_CC(SDValue Op, SelectionDAG &DAG) const;
+    SDValue LowerBR_CC(SDValue Op, SelectionDAG &DAG) const;
+    SDValue LowerFCOPYSIGN(SDValue Op, SelectionDAG &DAG) const;
+    SDValue LowerRETURNADDR(SDValue Op, SelectionDAG &DAG) const;
+    SDValue LowerFRAMEADDR(SDValue Op, SelectionDAG &DAG) const;
+    SDValue LowerShiftRightParts(SDValue Op, SelectionDAG &DAG) const;
+    SDValue LowerShiftLeftParts(SDValue Op, SelectionDAG &DAG) const;
+    SDValue LowerFLT_ROUNDS_(SDValue Op, SelectionDAG &DAG) const;
 
-    SDValue EmitTargetCodeForMemcpy(SelectionDAG &DAG, DebugLoc dl,
-                                      SDValue Chain,
-                                      SDValue Dst, SDValue Src,
-                                      SDValue Size, unsigned Align,
-                                      bool AlwaysInline,
-                                      const Value *DstSV, uint64_t DstSVOff,
-                                      const Value *SrcSV, uint64_t SrcSVOff);
     SDValue LowerCallResult(SDValue Chain, SDValue InFlag,
                             CallingConv::ID CallConv, bool isVarArg,
                             const SmallVectorImpl<ISD::InputArg> &Ins,
                             DebugLoc dl, SelectionDAG &DAG,
-                            SmallVectorImpl<SDValue> &InVals);
+                            SmallVectorImpl<SDValue> &InVals) const;
 
     virtual SDValue
       LowerFormalArguments(SDValue Chain,
                            CallingConv::ID CallConv, bool isVarArg,
                            const SmallVectorImpl<ISD::InputArg> &Ins,
                            DebugLoc dl, SelectionDAG &DAG,
-                           SmallVectorImpl<SDValue> &InVals);
+                           SmallVectorImpl<SDValue> &InVals) const;
 
     virtual SDValue
       LowerCall(SDValue Chain, SDValue Callee,
                 CallingConv::ID CallConv, bool isVarArg,
                 bool &isTailCall,
                 const SmallVectorImpl<ISD::OutputArg> &Outs,
+                const SmallVectorImpl<SDValue> &OutVals,
                 const SmallVectorImpl<ISD::InputArg> &Ins,
                 DebugLoc dl, SelectionDAG &DAG,
-                SmallVectorImpl<SDValue> &InVals);
+                SmallVectorImpl<SDValue> &InVals) const;
 
+    /// IsEligibleForTailCallOptimization - Check whether the call is eligible
+    /// for tail call optimization. Targets which want to do tail call
+    /// optimization should implement this function.
+    bool IsEligibleForTailCallOptimization(SDValue Callee,
+                                           CallingConv::ID CalleeCC,
+                                           bool isVarArg,
+                                           bool isCalleeStructRet,
+                                           bool isCallerStructRet,
+                                    const SmallVectorImpl<ISD::OutputArg> &Outs,
+                                    const SmallVectorImpl<SDValue> &OutVals,
+                                    const SmallVectorImpl<ISD::InputArg> &Ins,
+                                           SelectionDAG& DAG) const;
     virtual SDValue
       LowerReturn(SDValue Chain,
                   CallingConv::ID CallConv, bool isVarArg,
                   const SmallVectorImpl<ISD::OutputArg> &Outs,
-                  DebugLoc dl, SelectionDAG &DAG);
+                  const SmallVectorImpl<SDValue> &OutVals,
+                  DebugLoc dl, SelectionDAG &DAG) const;
 
     SDValue getARMCmp(SDValue LHS, SDValue RHS, ISD::CondCode CC,
-                      SDValue &ARMCC, SelectionDAG &DAG, DebugLoc dl);
+                      SDValue &ARMcc, SelectionDAG &DAG, DebugLoc dl) const;
+    SDValue getVFPCmp(SDValue LHS, SDValue RHS,
+                      SelectionDAG &DAG, DebugLoc dl) const;
+
+    SDValue OptimizeVFPBrcond(SDValue Op, SelectionDAG &DAG) const;
 
     MachineBasicBlock *EmitAtomicCmpSwap(MachineInstr *MI,
                                          MachineBasicBlock *BB,
@@ -348,6 +409,10 @@ namespace llvm {
                                         unsigned BinOpcode) const;
 
   };
+  
+  namespace ARM {
+    FastISel *createFastISel(FunctionLoweringInfo &funcInfo);
+  }
 }
 
 #endif  // ARMISELLOWERING_H

@@ -21,8 +21,10 @@
 #include "ARMJITInfo.h"
 #include "ARMSubtarget.h"
 #include "ARMISelLowering.h"
+#include "ARMSelectionDAGInfo.h"
 #include "Thumb1InstrInfo.h"
 #include "Thumb2InstrInfo.h"
+#include "llvm/ADT/OwningPtr.h"
 
 namespace llvm {
 
@@ -48,6 +50,7 @@ public:
   }
 
   // Pass Pipeline Configuration
+  virtual bool addPreISel(PassManagerBase &PM, CodeGenOpt::Level OptLevel);
   virtual bool addInstSelector(PassManagerBase &PM, CodeGenOpt::Level OptLevel);
   virtual bool addPreRegAlloc(PassManagerBase &PM, CodeGenOpt::Level OptLevel);
   virtual bool addPreSched2(PassManagerBase &PM, CodeGenOpt::Level OptLevel);
@@ -62,6 +65,7 @@ class ARMTargetMachine : public ARMBaseTargetMachine {
   ARMInstrInfo        InstrInfo;
   const TargetData    DataLayout;       // Calculates type size & alignment
   ARMTargetLowering   TLInfo;
+  ARMSelectionDAGInfo TSInfo;
 public:
   ARMTargetMachine(const Target &T, const std::string &TT,
                    const std::string &FS);
@@ -70,8 +74,12 @@ public:
     return &InstrInfo.getRegisterInfo();
   }
 
-  virtual       ARMTargetLowering *getTargetLowering() const {
-    return const_cast<ARMTargetLowering*>(&TLInfo);
+  virtual const ARMTargetLowering *getTargetLowering() const {
+    return &TLInfo;
+  }
+
+  virtual const ARMSelectionDAGInfo* getSelectionDAGInfo() const {
+    return &TSInfo;
   }
 
   virtual const ARMInstrInfo     *getInstrInfo() const { return &InstrInfo; }
@@ -83,9 +91,11 @@ public:
 ///   Thumb-1 and Thumb-2.
 ///
 class ThumbTargetMachine : public ARMBaseTargetMachine {
-  ARMBaseInstrInfo    *InstrInfo;   // either Thumb1InstrInfo or Thumb2InstrInfo
+  // Either Thumb1InstrInfo or Thumb2InstrInfo.
+  OwningPtr<ARMBaseInstrInfo> InstrInfo;
   const TargetData    DataLayout;   // Calculates type size & alignment
   ARMTargetLowering   TLInfo;
+  ARMSelectionDAGInfo TSInfo;
 public:
   ThumbTargetMachine(const Target &T, const std::string &TT,
                      const std::string &FS);
@@ -95,12 +105,18 @@ public:
     return &InstrInfo->getRegisterInfo();
   }
 
-  virtual ARMTargetLowering *getTargetLowering() const {
-    return const_cast<ARMTargetLowering*>(&TLInfo);
+  virtual const ARMTargetLowering *getTargetLowering() const {
+    return &TLInfo;
+  }
+
+  virtual const ARMSelectionDAGInfo *getSelectionDAGInfo() const {
+    return &TSInfo;
   }
 
   /// returns either Thumb1InstrInfo or Thumb2InstrInfo
-  virtual const ARMBaseInstrInfo *getInstrInfo() const { return InstrInfo; }
+  virtual const ARMBaseInstrInfo *getInstrInfo() const {
+    return InstrInfo.get();
+  }
   virtual const TargetData       *getTargetData() const { return &DataLayout; }
 };
 

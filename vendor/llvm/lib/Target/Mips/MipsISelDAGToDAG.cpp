@@ -13,7 +13,6 @@
 
 #define DEBUG_TYPE "mips-isel"
 #include "Mips.h"
-#include "MipsISelLowering.h"
 #include "MipsMachineFunction.h"
 #include "MipsRegisterInfo.h"
 #include "MipsSubtarget.h"
@@ -138,7 +137,7 @@ SelectAddr(SDNode *Op, SDValue Addr, SDValue &Offset, SDValue &Base)
   // Operand is a result from an ADD.
   if (Addr.getOpcode() == ISD::ADD) {
     if (ConstantSDNode *CN = dyn_cast<ConstantSDNode>(Addr.getOperand(1))) {
-      if (Predicate_immSExt16(CN)) {
+      if (isInt<16>(CN->getSExtValue())) {
 
         // If the first operand is a FI, get the TargetFI Node
         if (FrameIndexSDNode *FIN = dyn_cast<FrameIndexSDNode>
@@ -185,8 +184,9 @@ SDNode *MipsDAGToDAGISel::SelectLoadFp64(SDNode *N) {
   if (!Subtarget.isMips1() || NVT != MVT::f64)
     return NULL;
 
-  if (!Predicate_unindexedload(N) ||
-      !Predicate_load(N))
+  LoadSDNode *LN = cast<LoadSDNode>(N);
+  if (LN->getExtensionType() != ISD::NON_EXTLOAD ||
+      LN->getAddressingMode() != ISD::UNINDEXED)
     return NULL;
 
   SDValue Chain = N->getOperand(0);
@@ -226,12 +226,12 @@ SDNode *MipsDAGToDAGISel::SelectLoadFp64(SDNode *N) {
                                     MVT::Other, Offset0, Base, Chain);
   SDValue Undef = SDValue(CurDAG->getMachineNode(TargetOpcode::IMPLICIT_DEF,
                                                  dl, NVT), 0);
-  SDValue I0 = CurDAG->getTargetInsertSubreg(Mips::SUBREG_FPEVEN, dl, 
+  SDValue I0 = CurDAG->getTargetInsertSubreg(Mips::sub_fpeven, dl, 
                             MVT::f64, Undef, SDValue(LD0, 0));
 
   SDNode *LD1 = CurDAG->getMachineNode(Mips::LWC1, dl, MVT::f32,
                           MVT::Other, Offset1, Base, SDValue(LD0, 1));
-  SDValue I1 = CurDAG->getTargetInsertSubreg(Mips::SUBREG_FPODD, dl, 
+  SDValue I1 = CurDAG->getTargetInsertSubreg(Mips::sub_fpodd, dl, 
                             MVT::f64, I0, SDValue(LD1, 0));
 
   ReplaceUses(SDValue(N, 0), I1);
@@ -249,8 +249,8 @@ SDNode *MipsDAGToDAGISel::SelectStoreFp64(SDNode *N) {
 
   SDValue Chain = N->getOperand(0);
 
-  if (!Predicate_unindexedstore(N) ||
-      !Predicate_store(N))
+  StoreSDNode *SN = cast<StoreSDNode>(N);
+  if (SN->isTruncatingStore() || SN->getAddressingMode() != ISD::UNINDEXED)
     return NULL;
 
   SDValue N1 = N->getOperand(1);
@@ -267,9 +267,9 @@ SDNode *MipsDAGToDAGISel::SelectStoreFp64(SDNode *N) {
   DebugLoc dl = N->getDebugLoc();
 
   // Get the even and odd part from the f64 register
-  SDValue FPOdd = CurDAG->getTargetExtractSubreg(Mips::SUBREG_FPODD, 
+  SDValue FPOdd = CurDAG->getTargetExtractSubreg(Mips::sub_fpodd, 
                                                  dl, MVT::f32, N1);
-  SDValue FPEven = CurDAG->getTargetExtractSubreg(Mips::SUBREG_FPEVEN,
+  SDValue FPEven = CurDAG->getTargetExtractSubreg(Mips::sub_fpeven,
                                                  dl, MVT::f32, N1);
 
   // The second store should start after for 4 bytes. 
@@ -439,9 +439,9 @@ SDNode* MipsDAGToDAGISel::Select(SDNode *Node) {
         SDValue Undef = SDValue(
           CurDAG->getMachineNode(TargetOpcode::IMPLICIT_DEF, dl, MVT::f64), 0);
         SDNode *MTC = CurDAG->getMachineNode(Mips::MTC1, dl, MVT::f32, Zero);
-        SDValue I0 = CurDAG->getTargetInsertSubreg(Mips::SUBREG_FPEVEN, dl, 
+        SDValue I0 = CurDAG->getTargetInsertSubreg(Mips::sub_fpeven, dl, 
                             MVT::f64, Undef, SDValue(MTC, 0));
-        SDValue I1 = CurDAG->getTargetInsertSubreg(Mips::SUBREG_FPODD, dl, 
+        SDValue I1 = CurDAG->getTargetInsertSubreg(Mips::sub_fpodd, dl, 
                             MVT::f64, I0, SDValue(MTC, 0));
         ReplaceUses(SDValue(Node, 0), I1);
         return I1.getNode();

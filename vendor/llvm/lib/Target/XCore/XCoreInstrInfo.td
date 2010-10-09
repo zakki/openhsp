@@ -29,9 +29,10 @@ include "XCoreInstrFormats.td"
 // Call
 def SDT_XCoreBranchLink : SDTypeProfile<0, 1, [SDTCisPtrTy<0>]>;
 def XCoreBranchLink     : SDNode<"XCoreISD::BL",SDT_XCoreBranchLink,
-                            [SDNPHasChain, SDNPOptInFlag, SDNPOutFlag]>;
+                            [SDNPHasChain, SDNPOptInFlag, SDNPOutFlag,
+                             SDNPVariadic]>;
 
-def XCoreRetsp       : SDNode<"XCoreISD::RETSP", SDTNone,
+def XCoreRetsp       : SDNode<"XCoreISD::RETSP", SDTBrind,
                          [SDNPHasChain, SDNPOptInFlag]>;
 
 def SDT_XCoreBR_JT    : SDTypeProfile<0, 2,
@@ -139,17 +140,7 @@ def immU20 : PatLeaf<(imm), [{
   return (uint32_t)N->getZExtValue() < (1 << 20);
 }]>;
 
-def immMskBitp : PatLeaf<(imm), [{
-  uint32_t value = (uint32_t)N->getZExtValue();
-  if (!isMask_32(value)) {
-    return false;
-  }
-  int msksize = 32 - CountLeadingZeros_32(value);
-  return (msksize >= 1 && msksize <= 8)
-          || msksize == 16
-          || msksize == 24
-          || msksize == 32;
-}]>;
+def immMskBitp : PatLeaf<(imm), [{ return immMskBitp(N); }]>;
 
 def immBitp : PatLeaf<(imm), [{
   uint32_t value = (uint32_t)N->getZExtValue();
@@ -732,7 +723,7 @@ def NEG : _F2R<(outs GRRegs:$dst), (ins GRRegs:$b),
 // TODO setd, eet, eef, getts, setpt, outct, inct, chkct, outt, intt, out,
 // in, outshr, inshr, testct, testwct, tinitpc, tinitdp, tinitsp, tinitcp,
 // tsetmr, sext (reg), zext (reg)
-let isTwoAddress = 1 in {
+let Constraints = "$src1 = $dst" in {
 let neverHasSideEffects = 1 in
 def SEXT_rus : _FRUS<(outs GRRegs:$dst), (ins GRRegs:$src1, i32imm:$src2),
                  "sext $dst, $src2",

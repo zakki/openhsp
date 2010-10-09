@@ -32,8 +32,9 @@ MSP430InstrInfo::MSP430InstrInfo(MSP430TargetMachine &tm)
 void MSP430InstrInfo::storeRegToStackSlot(MachineBasicBlock &MBB,
                                           MachineBasicBlock::iterator MI,
                                     unsigned SrcReg, bool isKill, int FrameIdx,
-                                    const TargetRegisterClass *RC) const {
-  DebugLoc DL = DebugLoc::getUnknownLoc();
+                                          const TargetRegisterClass *RC,
+                                          const TargetRegisterInfo *TRI) const {
+  DebugLoc DL;
   if (MI != MBB.end()) DL = MI->getDebugLoc();
   MachineFunction &MF = *MBB.getParent();
   MachineFrameInfo &MFI = *MF.getFrameInfo();
@@ -59,8 +60,9 @@ void MSP430InstrInfo::storeRegToStackSlot(MachineBasicBlock &MBB,
 void MSP430InstrInfo::loadRegFromStackSlot(MachineBasicBlock &MBB,
                                            MachineBasicBlock::iterator MI,
                                            unsigned DestReg, int FrameIdx,
-                                           const TargetRegisterClass *RC) const{
-  DebugLoc DL = DebugLoc::getUnknownLoc();
+                                           const TargetRegisterClass *RC,
+                                           const TargetRegisterInfo *TRI) const{
+  DebugLoc DL;
   if (MI != MBB.end()) DL = MI->getDebugLoc();
   MachineFunction &MF = *MBB.getParent();
   MachineFrameInfo &MFI = *MF.getFrameInfo();
@@ -81,60 +83,31 @@ void MSP430InstrInfo::loadRegFromStackSlot(MachineBasicBlock &MBB,
     llvm_unreachable("Cannot store this register to stack slot!");
 }
 
-bool MSP430InstrInfo::copyRegToReg(MachineBasicBlock &MBB,
-                                   MachineBasicBlock::iterator I,
-                                   unsigned DestReg, unsigned SrcReg,
-                                   const TargetRegisterClass *DestRC,
-                                   const TargetRegisterClass *SrcRC) const {
-  DebugLoc DL = DebugLoc::getUnknownLoc();
-  if (I != MBB.end()) DL = I->getDebugLoc();
+void MSP430InstrInfo::copyPhysReg(MachineBasicBlock &MBB,
+                                  MachineBasicBlock::iterator I, DebugLoc DL,
+                                  unsigned DestReg, unsigned SrcReg,
+                                  bool KillSrc) const {
+  unsigned Opc;
+  if (MSP430::GR16RegClass.contains(DestReg, SrcReg))
+    Opc = MSP430::MOV16rr;
+  else if (MSP430::GR8RegClass.contains(DestReg, SrcReg))
+    Opc = MSP430::MOV8rr;
+  else
+    llvm_unreachable("Impossible reg-to-reg copy");
 
-  if (DestRC == SrcRC) {
-    unsigned Opc;
-    if (DestRC == &MSP430::GR16RegClass) {
-      Opc = MSP430::MOV16rr;
-    } else if (DestRC == &MSP430::GR8RegClass) {
-      Opc = MSP430::MOV8rr;
-    } else {
-      return false;
-    }
-
-    BuildMI(MBB, I, DL, get(Opc), DestReg).addReg(SrcReg);
-    return true;
-  }
-
-  return false;
-}
-
-bool
-MSP430InstrInfo::isMoveInstr(const MachineInstr& MI,
-                             unsigned &SrcReg, unsigned &DstReg,
-                             unsigned &SrcSubIdx, unsigned &DstSubIdx) const {
-  SrcSubIdx = DstSubIdx = 0; // No sub-registers yet.
-
-  switch (MI.getOpcode()) {
-  default:
-    return false;
-  case MSP430::MOV8rr:
-  case MSP430::MOV16rr:
-   assert(MI.getNumOperands() >= 2 &&
-           MI.getOperand(0).isReg() &&
-           MI.getOperand(1).isReg() &&
-           "invalid register-register move instruction");
-    SrcReg = MI.getOperand(1).getReg();
-    DstReg = MI.getOperand(0).getReg();
-    return true;
-  }
+  BuildMI(MBB, I, DL, get(Opc), DestReg)
+    .addReg(SrcReg, getKillRegState(KillSrc));
 }
 
 bool
 MSP430InstrInfo::spillCalleeSavedRegisters(MachineBasicBlock &MBB,
                                            MachineBasicBlock::iterator MI,
-                                const std::vector<CalleeSavedInfo> &CSI) const {
+                                        const std::vector<CalleeSavedInfo> &CSI,
+                                          const TargetRegisterInfo *TRI) const {
   if (CSI.empty())
     return false;
 
-  DebugLoc DL = DebugLoc::getUnknownLoc();
+  DebugLoc DL;
   if (MI != MBB.end()) DL = MI->getDebugLoc();
 
   MachineFunction &MF = *MBB.getParent();
@@ -154,11 +127,12 @@ MSP430InstrInfo::spillCalleeSavedRegisters(MachineBasicBlock &MBB,
 bool
 MSP430InstrInfo::restoreCalleeSavedRegisters(MachineBasicBlock &MBB,
                                              MachineBasicBlock::iterator MI,
-                                const std::vector<CalleeSavedInfo> &CSI) const {
+                                        const std::vector<CalleeSavedInfo> &CSI,
+                                          const TargetRegisterInfo *TRI) const {
   if (CSI.empty())
     return false;
 
-  DebugLoc DL = DebugLoc::getUnknownLoc();
+  DebugLoc DL;
   if (MI != MBB.end()) DL = MI->getDebugLoc();
 
   for (unsigned i = 0, e = CSI.size(); i != e; ++i)
@@ -173,8 +147,12 @@ unsigned MSP430InstrInfo::RemoveBranch(MachineBasicBlock &MBB) const {
 
   while (I != MBB.begin()) {
     --I;
+    if (I->isDebugValue())
+      continue;
     if (I->getOpcode() != MSP430::JMP &&
-        I->getOpcode() != MSP430::JCC)
+        I->getOpcode() != MSP430::JCC &&
+        I->getOpcode() != MSP430::Br &&
+        I->getOpcode() != MSP430::Bm)
       break;
     // Remove the branch.
     I->eraseFromParent();
@@ -241,6 +219,9 @@ bool MSP430InstrInfo::AnalyzeBranch(MachineBasicBlock &MBB,
   MachineBasicBlock::iterator I = MBB.end();
   while (I != MBB.begin()) {
     --I;
+    if (I->isDebugValue())
+      continue;
+
     // Working from the bottom, when we see a non-terminator
     // instruction, we're done.
     if (!isUnpredicatedTerminator(I))
@@ -249,6 +230,11 @@ bool MSP430InstrInfo::AnalyzeBranch(MachineBasicBlock &MBB,
     // A terminator that isn't a branch can't easily be handled
     // by this analysis.
     if (!I->getDesc().isBranch())
+      return true;
+
+    // Cannot handle indirect branches.
+    if (I->getOpcode() == MSP430::Br ||
+        I->getOpcode() == MSP430::Bm)
       return true;
 
     // Handle unconditional branches.
@@ -316,10 +302,8 @@ bool MSP430InstrInfo::AnalyzeBranch(MachineBasicBlock &MBB,
 unsigned
 MSP430InstrInfo::InsertBranch(MachineBasicBlock &MBB, MachineBasicBlock *TBB,
                               MachineBasicBlock *FBB,
-                            const SmallVectorImpl<MachineOperand> &Cond) const {
-  // FIXME this should probably have a DebugLoc operand
-  DebugLoc dl = DebugLoc::getUnknownLoc();
-
+                              const SmallVectorImpl<MachineOperand> &Cond,
+                              DebugLoc DL) const {
   // Shouldn't be a fall through.
   assert(TBB && "InsertBranch must not be told to insert a fallthrough");
   assert((Cond.size() == 1 || Cond.size() == 0) &&
@@ -328,18 +312,18 @@ MSP430InstrInfo::InsertBranch(MachineBasicBlock &MBB, MachineBasicBlock *TBB,
   if (Cond.empty()) {
     // Unconditional branch?
     assert(!FBB && "Unconditional branch with multiple successors!");
-    BuildMI(&MBB, dl, get(MSP430::JMP)).addMBB(TBB);
+    BuildMI(&MBB, DL, get(MSP430::JMP)).addMBB(TBB);
     return 1;
   }
 
   // Conditional branch.
   unsigned Count = 0;
-  BuildMI(&MBB, dl, get(MSP430::JCC)).addMBB(TBB).addImm(Cond[0].getImm());
+  BuildMI(&MBB, DL, get(MSP430::JCC)).addMBB(TBB).addImm(Cond[0].getImm());
   ++Count;
 
   if (FBB) {
     // Two-way Conditional branch. Insert the second branch.
-    BuildMI(&MBB, dl, get(MSP430::JMP)).addMBB(FBB);
+    BuildMI(&MBB, DL, get(MSP430::JMP)).addMBB(FBB);
     ++Count;
   }
   return Count;
@@ -356,10 +340,11 @@ unsigned MSP430InstrInfo::GetInstSizeInBytes(const MachineInstr *MI) const {
     switch (Desc.getOpcode()) {
     default:
       assert(0 && "Unknown instruction size!");
-    case TargetOpcode::DBG_LABEL:
+    case TargetOpcode::PROLOG_LABEL:
     case TargetOpcode::EH_LABEL:
     case TargetOpcode::IMPLICIT_DEF:
     case TargetOpcode::KILL:
+    case TargetOpcode::DBG_VALUE:
       return 0;
     case TargetOpcode::INLINEASM: {
       const MachineFunction *MF = MI->getParent()->getParent();

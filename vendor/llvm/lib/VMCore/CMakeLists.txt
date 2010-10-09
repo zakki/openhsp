@@ -6,6 +6,7 @@ add_llvm_library(LLVMCore
   ConstantFold.cpp
   Constants.cpp
   Core.cpp
+  DebugLoc.cpp
   Dominators.cpp
   Function.cpp
   GVMaterializer.cpp
@@ -16,11 +17,13 @@ add_llvm_library(LLVMCore
   Instructions.cpp
   IntrinsicInst.cpp
   LLVMContext.cpp
+  LLVMContextImpl.cpp
   LeakDetector.cpp
   Metadata.cpp
   Module.cpp
   Pass.cpp
   PassManager.cpp
+  PassRegistry.cpp
   PrintModulePass.cpp
   Type.cpp
   TypeSymbolTable.cpp

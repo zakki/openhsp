@@ -11,7 +11,7 @@
 @G = external global i32                          ; <i32*> [#uses=2]
 @array = external global i32*                     ; <i32**> [#uses=1]
 
-define arm_apcscc void @t() nounwind optsize {
+define void @t() nounwind optsize {
 ; CHECK: t:
 ; CHECK: mov.w r2, #1000
 entry:
@@ -19,10 +19,10 @@ entry:
   br label %bb
 
 bb:                                               ; preds = %bb, %entry
-; CHECK: LBB1_1:
+; CHECK: LBB0_1:
 ; CHECK: cmp r2, #0
-; CHECK: sub.w r9, r2, #1
-; CHECK: mov r2, r9
+; CHECK: sub{{(.w)?}} [[REGISTER:(r[0-9]+)|(lr)]], r2, #1
+; CHECK: mov r2, [[REGISTER]]
 
   %0 = phi i32 [ %.pre, %entry ], [ %3, %bb ]     ; <i32> [#uses=1]
   %indvar = phi i32 [ 0, %entry ], [ %indvar.next, %bb ] ; <i32> [#uses=2]

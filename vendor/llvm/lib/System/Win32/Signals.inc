@@ -140,6 +140,20 @@ bool sys::RemoveFileOnSignal(const sys::Path &Filename, std::string* ErrMsg) {
   return false;
 }
 
+// DontRemoveFileOnSignal - The public API
+void sys::DontRemoveFileOnSignal(const sys::Path &Filename) {
+  if (FilesToRemove == NULL)
+    return;
+
+  FilesToRemove->push_back(Filename);
+  std::vector<sys::Path>::reverse_iterator I =
+  std::find(FilesToRemove->rbegin(), FilesToRemove->rend(), Filename);
+  if (I != FilesToRemove->rend())
+    FilesToRemove->erase(I.base()-1);
+
+  LeaveCriticalSection(&CriticalSection);
+}
+
 /// PrintStackTraceOnErrorSignal - When an error signal (such as SIBABRT or
 /// SIGSEGV) is delivered to the process, print a stack trace and then exit.
 void sys::PrintStackTraceOnErrorSignal() {
@@ -163,6 +177,7 @@ void sys::AddSignalHandler(void (*FnPtr)(void *), void *Cookie) {
     CallBacksToRun = new std::vector<std::pair<void(*)(void*), void*> >();
   CallBacksToRun->push_back(std::make_pair(FnPtr, Cookie));
   RegisterHandler();
+  LeaveCriticalSection(&CriticalSection);
 }
 }
 
@@ -186,6 +201,10 @@ static void Cleanup() {
       (*CallBacksToRun)[i].first((*CallBacksToRun)[i].second);
 
   LeaveCriticalSection(&CriticalSection);
+}
+
+void llvm::sys::RunInterruptHandlers() {
+  Cleanup();
 }
 
 static LONG WINAPI LLVMUnhandledExceptionFilter(LPEXCEPTION_POINTERS ep) {
@@ -278,7 +297,7 @@ static LONG WINAPI LLVMUnhandledExceptionFilter(LPEXCEPTION_POINTERS ep) {
 
 #ifdef _MSC_VER
   if (ExitOnUnhandledExceptions)
-  	_exit(-3);
+    _exit(-3);
 #endif
 
   // Allow dialog box to pop up allowing choice to start debugger.
