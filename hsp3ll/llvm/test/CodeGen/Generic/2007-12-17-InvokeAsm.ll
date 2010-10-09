@@ -1,6 +1,4 @@
-; RUN: llc < %s -enable-eh
-
-target triple = "i686-pc-linux-gnu"
+; RUN: llc < %s
 
 define fastcc void @bc__support__high_resolution_time__initialize_clock_rate() {
 entry:

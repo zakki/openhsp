@@ -1,5 +1,7 @@
-; RUN: llc < %s -march=x86    -asm-verbose=false | FileCheck %s -check-prefix=32
-; RUN: llc < %s -march=x86-64 -asm-verbose=false | FileCheck %s -check-prefix=64
+; RUN: llc < %s -march=x86    -mattr=+sse2 -asm-verbose=false | FileCheck %s -check-prefix=32
+; RUN: llc < %s -march=x86-64 -mattr=+sse2 -asm-verbose=false | FileCheck %s -check-prefix=64
+; Darwin 8 generates stubs, which don't match
+; XFAIL: apple-darwin8
 
 define void @t1(i32 %x) nounwind ssp {
 entry:
@@ -57,11 +59,11 @@ define void @t5(void ()* nocapture %x) nounwind ssp {
 entry:
 ; 32: t5:
 ; 32-NOT: call
-; 32: jmpl *
+; 32: jmpl *4(%esp)
 
 ; 64: t5:
 ; 64-NOT: call
-; 64: jmpq *
+; 64: jmpq *%rdi
   tail call void %x() nounwind
   ret void
 }
@@ -215,9 +217,93 @@ entry:
   ret %struct.ns* %0
 }
 
+; rdar://6195379
+; llvm can't do sibcall for this in 32-bit mode (yet).
 declare fastcc %struct.ns* @foo7(%struct.cp* byval align 4, i8 signext) nounwind ssp
 
+%struct.__block_descriptor = type { i64, i64 }
+%struct.__block_descriptor_withcopydispose = type { i64, i64, i8*, i8* }
+%struct.__block_literal_1 = type { i8*, i32, i32, i8*, %struct.__block_descriptor* }
+%struct.__block_literal_2 = type { i8*, i32, i32, i8*, %struct.__block_descriptor_withcopydispose*, void ()* }
 
+define void @t14(%struct.__block_literal_2* nocapture %.block_descriptor) nounwind ssp {
+entry:
+; 64: t14:
+; 64: movq 32(%rdi)
+; 64-NOT: movq 16(%rdi)
+; 64: jmpq *16(%rdi)
+  %0 = getelementptr inbounds %struct.__block_literal_2* %.block_descriptor, i64 0, i32 5 ; <void ()**> [#uses=1]
+  %1 = load void ()** %0, align 8                 ; <void ()*> [#uses=2]
+  %2 = bitcast void ()* %1 to %struct.__block_literal_1* ; <%struct.__block_literal_1*> [#uses=1]
+  %3 = getelementptr inbounds %struct.__block_literal_1* %2, i64 0, i32 3 ; <i8**> [#uses=1]
+  %4 = load i8** %3, align 8                      ; <i8*> [#uses=1]
+  %5 = bitcast i8* %4 to void (i8*)*              ; <void (i8*)*> [#uses=1]
+  %6 = bitcast void ()* %1 to i8*                 ; <i8*> [#uses=1]
+  tail call void %5(i8* %6) nounwind
+  ret void
+}
+
+; rdar://7726868
+%struct.foo = type { [4 x i32] }
+
+define void @t15(%struct.foo* noalias sret %agg.result) nounwind  {
+; 32: t15:
+; 32: call {{_?}}f
+; 32: ret $4
+
+; 64: t15:
+; 64: callq {{_?}}f
+; 64: ret
+  tail call fastcc void @f(%struct.foo* noalias sret %agg.result) nounwind
+  ret void
+}
+
+declare void @f(%struct.foo* noalias sret) nounwind
+
+define void @t16() nounwind ssp {
+entry:
+; 32: t16:
+; 32: call {{_?}}bar4
+; 32: fstp
+
+; 64: t16:
+; 64: jmp {{_?}}bar4
+  %0 = tail call double @bar4() nounwind
+  ret void
+}
+
+declare double @bar4()
+
+; rdar://6283267
+define void @t17() nounwind ssp {
+entry:
+; 32: t17:
+; 32: jmp {{_?}}bar5
+
+; 64: t17:
+; 64: xorb %al, %al
+; 64: jmp {{_?}}bar5
+  tail call void (...)* @bar5() nounwind
+  ret void
+}
+
+declare void @bar5(...)
+
+; rdar://7774847
+define void @t18() nounwind ssp {
+entry:
+; 32: t18:
+; 32: call {{_?}}bar6
+; 32: fstp %st(0)
+
+; 64: t18:
+; 64: xorb %al, %al
+; 64: jmp {{_?}}bar6
+  %0 = tail call double (...)* @bar6() nounwind
+  ret void
+}
+
+declare double @bar6(...)
 
 define void @t19() alignstack(32) nounwind {
 entry:
@@ -229,3 +315,21 @@ entry:
 }
 
 declare void @foo()
+
+; If caller / callee calling convention mismatch then check if the return
+; values are returned in the same registers.
+; rdar://7874780
+
+define double @t20(double %x) nounwind {
+entry:
+; 32: t20:
+; 32: call {{_?}}foo20
+; 32: fldl (%esp)
+
+; 64: t20:
+; 64: jmp {{_?}}foo20
+  %0 = tail call fastcc double @foo20(double %x) nounwind
+  ret double %0
+}
+
+declare fastcc double @foo20(double) nounwind

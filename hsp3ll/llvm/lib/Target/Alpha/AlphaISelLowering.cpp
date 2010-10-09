@@ -13,6 +13,7 @@
 
 #include "AlphaISelLowering.h"
 #include "AlphaTargetMachine.h"
+#include "AlphaMachineFunctionInfo.h"
 #include "llvm/CodeGen/CallingConvLower.h"
 #include "llvm/CodeGen/MachineFrameInfo.h"
 #include "llvm/CodeGen/MachineFunction.h"
@@ -223,9 +224,10 @@ AlphaTargetLowering::LowerCall(SDValue Chain, SDValue Callee,
                                CallingConv::ID CallConv, bool isVarArg,
                                bool &isTailCall,
                                const SmallVectorImpl<ISD::OutputArg> &Outs,
+                               const SmallVectorImpl<SDValue> &OutVals,
                                const SmallVectorImpl<ISD::InputArg> &Ins,
                                DebugLoc dl, SelectionDAG &DAG,
-                               SmallVectorImpl<SDValue> &InVals) {
+                               SmallVectorImpl<SDValue> &InVals) const {
   // Alpha target does not yet support tail call optimization.
   isTailCall = false;
 
@@ -250,7 +252,7 @@ AlphaTargetLowering::LowerCall(SDValue Chain, SDValue Callee,
   for (unsigned i = 0, e = ArgLocs.size(); i != e; ++i) {
     CCValAssign &VA = ArgLocs[i];
 
-    SDValue Arg = Outs[i].Val;
+    SDValue Arg = OutVals[i];
 
     // Promote the value if needed.
     switch (VA.getLocInfo()) {
@@ -342,7 +344,7 @@ AlphaTargetLowering::LowerCallResult(SDValue Chain, SDValue InFlag,
                                      CallingConv::ID CallConv, bool isVarArg,
                                      const SmallVectorImpl<ISD::InputArg> &Ins,
                                      DebugLoc dl, SelectionDAG &DAG,
-                                     SmallVectorImpl<SDValue> &InVals) {
+                                     SmallVectorImpl<SDValue> &InVals) const {
 
   // Assign locations to each value returned by this call.
   SmallVector<CCValAssign, 16> RVLocs;
@@ -385,10 +387,12 @@ AlphaTargetLowering::LowerFormalArguments(SDValue Chain,
                                           const SmallVectorImpl<ISD::InputArg>
                                             &Ins,
                                           DebugLoc dl, SelectionDAG &DAG,
-                                          SmallVectorImpl<SDValue> &InVals) {
+                                          SmallVectorImpl<SDValue> &InVals)
+                                            const {
 
   MachineFunction &MF = DAG.getMachineFunction();
   MachineFrameInfo *MFI = MF.getFrameInfo();
+  AlphaMachineFunctionInfo *FuncInfo = MF.getInfo<AlphaMachineFunctionInfo>();
 
   unsigned args_int[] = {
     Alpha::R16, Alpha::R17, Alpha::R18, Alpha::R19, Alpha::R20, Alpha::R21};
@@ -422,7 +426,7 @@ AlphaTargetLowering::LowerFormalArguments(SDValue Chain,
       }
     } else { //more args
       // Create the frame index object for this incoming parameter...
-      int FI = MFI->CreateFixedObject(8, 8 * (ArgNo - 6), true, false);
+      int FI = MFI->CreateFixedObject(8, 8 * (ArgNo - 6), true);
 
       // Create the SelectionDAG nodes corresponding to a load
       //from this parameter
@@ -435,14 +439,14 @@ AlphaTargetLowering::LowerFormalArguments(SDValue Chain,
 
   // If the functions takes variable number of arguments, copy all regs to stack
   if (isVarArg) {
-    VarArgsOffset = Ins.size() * 8;
+    FuncInfo->setVarArgsOffset(Ins.size() * 8);
     std::vector<SDValue> LS;
     for (int i = 0; i < 6; ++i) {
       if (TargetRegisterInfo::isPhysicalRegister(args_int[i]))
         args_int[i] = AddLiveIn(MF, args_int[i], &Alpha::GPRCRegClass);
       SDValue argt = DAG.getCopyFromReg(Chain, dl, args_int[i], MVT::i64);
-      int FI = MFI->CreateFixedObject(8, -8 * (6 - i), true, false);
-      if (i == 0) VarArgsBase = FI;
+      int FI = MFI->CreateFixedObject(8, -8 * (6 - i), true);
+      if (i == 0) FuncInfo->setVarArgsBase(FI);
       SDValue SDFI = DAG.getFrameIndex(FI, MVT::i64);
       LS.push_back(DAG.getStore(Chain, dl, argt, SDFI, NULL, 0,
                                 false, false, 0));
@@ -450,7 +454,7 @@ AlphaTargetLowering::LowerFormalArguments(SDValue Chain,
       if (TargetRegisterInfo::isPhysicalRegister(args_float[i]))
         args_float[i] = AddLiveIn(MF, args_float[i], &Alpha::F8RCRegClass);
       argt = DAG.getCopyFromReg(Chain, dl, args_float[i], MVT::f64);
-      FI = MFI->CreateFixedObject(8, - 8 * (12 - i), true, false);
+      FI = MFI->CreateFixedObject(8, - 8 * (12 - i), true);
       SDFI = DAG.getFrameIndex(FI, MVT::i64);
       LS.push_back(DAG.getStore(Chain, dl, argt, SDFI, NULL, 0,
                                 false, false, 0));
@@ -467,12 +471,12 @@ SDValue
 AlphaTargetLowering::LowerReturn(SDValue Chain,
                                  CallingConv::ID CallConv, bool isVarArg,
                                  const SmallVectorImpl<ISD::OutputArg> &Outs,
-                                 DebugLoc dl, SelectionDAG &DAG) {
+                                 const SmallVectorImpl<SDValue> &OutVals,
+                                 DebugLoc dl, SelectionDAG &DAG) const {
 
   SDValue Copy = DAG.getCopyToReg(Chain, dl, Alpha::R26,
                                   DAG.getNode(AlphaISD::GlobalRetAddr,
-                                              DebugLoc::getUnknownLoc(),
-                                              MVT::i64),
+                                              DebugLoc(), MVT::i64),
                                   SDValue());
   switch (Outs.size()) {
   default:
@@ -481,7 +485,7 @@ AlphaTargetLowering::LowerReturn(SDValue Chain,
     break;
     //return SDValue(); // ret void is legal
   case 1: {
-    EVT ArgVT = Outs[0].Val.getValueType();
+    EVT ArgVT = Outs[0].VT;
     unsigned ArgReg;
     if (ArgVT.isInteger())
       ArgReg = Alpha::R0;
@@ -490,13 +494,13 @@ AlphaTargetLowering::LowerReturn(SDValue Chain,
       ArgReg = Alpha::F0;
     }
     Copy = DAG.getCopyToReg(Copy, dl, ArgReg,
-                            Outs[0].Val, Copy.getValue(1));
+                            OutVals[0], Copy.getValue(1));
     if (DAG.getMachineFunction().getRegInfo().liveout_empty())
       DAG.getMachineFunction().getRegInfo().addLiveOut(ArgReg);
     break;
   }
   case 2: {
-    EVT ArgVT = Outs[0].Val.getValueType();
+    EVT ArgVT = Outs[0].VT;
     unsigned ArgReg1, ArgReg2;
     if (ArgVT.isInteger()) {
       ArgReg1 = Alpha::R0;
@@ -507,13 +511,13 @@ AlphaTargetLowering::LowerReturn(SDValue Chain,
       ArgReg2 = Alpha::F1;
     }
     Copy = DAG.getCopyToReg(Copy, dl, ArgReg1,
-                            Outs[0].Val, Copy.getValue(1));
+                            OutVals[0], Copy.getValue(1));
     if (std::find(DAG.getMachineFunction().getRegInfo().liveout_begin(),
                   DAG.getMachineFunction().getRegInfo().liveout_end(), ArgReg1)
         == DAG.getMachineFunction().getRegInfo().liveout_end())
       DAG.getMachineFunction().getRegInfo().addLiveOut(ArgReg1);
     Copy = DAG.getCopyToReg(Copy, dl, ArgReg2,
-                            Outs[1].Val, Copy.getValue(1));
+                            OutVals[1], Copy.getValue(1));
     if (std::find(DAG.getMachineFunction().getRegInfo().liveout_begin(),
                    DAG.getMachineFunction().getRegInfo().liveout_end(), ArgReg2)
         == DAG.getMachineFunction().getRegInfo().liveout_end())
@@ -526,7 +530,8 @@ AlphaTargetLowering::LowerReturn(SDValue Chain,
 }
 
 void AlphaTargetLowering::LowerVAARG(SDNode *N, SDValue &Chain,
-                                     SDValue &DataPtr, SelectionDAG &DAG) {
+                                     SDValue &DataPtr,
+                                     SelectionDAG &DAG) const {
   Chain = N->getOperand(0);
   SDValue VAListP = N->getOperand(1);
   const Value *VAListS = cast<SrcValueSDNode>(N->getOperand(2))->getValue();
@@ -536,7 +541,7 @@ void AlphaTargetLowering::LowerVAARG(SDNode *N, SDValue &Chain,
                              false, false, 0);
   SDValue Tmp = DAG.getNode(ISD::ADD, dl, MVT::i64, VAListP,
                               DAG.getConstant(8, MVT::i64));
-  SDValue Offset = DAG.getExtLoad(ISD::SEXTLOAD, dl, MVT::i64, Base.getValue(1),
+  SDValue Offset = DAG.getExtLoad(ISD::SEXTLOAD, MVT::i64, dl, Base.getValue(1),
                                   Tmp, NULL, 0, MVT::i32, false, false, 0);
   DataPtr = DAG.getNode(ISD::ADD, dl, MVT::i64, Base, Offset);
   if (N->getValueType(0).isFloatingPoint())
@@ -557,7 +562,8 @@ void AlphaTargetLowering::LowerVAARG(SDNode *N, SDValue &Chain,
 
 /// LowerOperation - Provide custom lowering hooks for some operations.
 ///
-SDValue AlphaTargetLowering::LowerOperation(SDValue Op, SelectionDAG &DAG) {
+SDValue AlphaTargetLowering::LowerOperation(SDValue Op,
+                                            SelectionDAG &DAG) const {
   DebugLoc dl = Op.getDebugLoc();
   switch (Op.getOpcode()) {
   default: llvm_unreachable("Wasn't expecting to be able to lower this!");
@@ -625,7 +631,7 @@ SDValue AlphaTargetLowering::LowerOperation(SDValue Op, SelectionDAG &DAG) {
   }
   case ISD::ConstantPool: {
     ConstantPoolSDNode *CP = cast<ConstantPoolSDNode>(Op);
-    Constant *C = CP->getConstVal();
+    const Constant *C = CP->getConstVal();
     SDValue CPI = DAG.getTargetConstantPool(C, MVT::i64, CP->getAlignment());
     // FIXME there isn't really any debug info here
 
@@ -638,11 +644,13 @@ SDValue AlphaTargetLowering::LowerOperation(SDValue Op, SelectionDAG &DAG) {
     llvm_unreachable("TLS not implemented for Alpha.");
   case ISD::GlobalAddress: {
     GlobalAddressSDNode *GSDN = cast<GlobalAddressSDNode>(Op);
-    GlobalValue *GV = GSDN->getGlobal();
-    SDValue GA = DAG.getTargetGlobalAddress(GV, MVT::i64, GSDN->getOffset());
+    const GlobalValue *GV = GSDN->getGlobal();
+    SDValue GA = DAG.getTargetGlobalAddress(GV, dl, MVT::i64, 
+                                            GSDN->getOffset());
     // FIXME there isn't really any debug info here
 
-    //    if (!GV->hasWeakLinkage() && !GV->isDeclaration() && !GV->hasLinkOnceLinkage()) {
+    //    if (!GV->hasWeakLinkage() && !GV->isDeclaration() 
+    //        && !GV->hasLinkOnceLinkage()) {
     if (GV->hasLocalLinkage()) {
       SDValue Hi = DAG.getNode(AlphaISD::GPRelHi,  dl, MVT::i64, GA,
                                 DAG.getGLOBAL_OFFSET_TABLE(MVT::i64));
@@ -698,7 +706,7 @@ SDValue AlphaTargetLowering::LowerOperation(SDValue Op, SelectionDAG &DAG) {
 
     SDValue Result;
     if (Op.getValueType() == MVT::i32)
-      Result = DAG.getExtLoad(ISD::SEXTLOAD, dl, MVT::i64, Chain, DataPtr,
+      Result = DAG.getExtLoad(ISD::SEXTLOAD, MVT::i64, dl, Chain, DataPtr,
                               NULL, 0, MVT::i32, false, false, 0);
     else
       Result = DAG.getLoad(Op.getValueType(), dl, Chain, DataPtr, NULL, 0,
@@ -718,7 +726,7 @@ SDValue AlphaTargetLowering::LowerOperation(SDValue Op, SelectionDAG &DAG) {
                                   false, false, 0);
     SDValue NP = DAG.getNode(ISD::ADD, dl, MVT::i64, SrcP,
                                DAG.getConstant(8, MVT::i64));
-    Val = DAG.getExtLoad(ISD::SEXTLOAD, dl, MVT::i64, Result,
+    Val = DAG.getExtLoad(ISD::SEXTLOAD, MVT::i64, dl, Result,
                          NP, NULL,0, MVT::i32, false, false, 0);
     SDValue NPD = DAG.getNode(ISD::ADD, dl, MVT::i64, DestP,
                                 DAG.getConstant(8, MVT::i64));
@@ -726,22 +734,26 @@ SDValue AlphaTargetLowering::LowerOperation(SDValue Op, SelectionDAG &DAG) {
                              false, false, 0);
   }
   case ISD::VASTART: {
+    MachineFunction &MF = DAG.getMachineFunction();
+    AlphaMachineFunctionInfo *FuncInfo = MF.getInfo<AlphaMachineFunctionInfo>();
+
     SDValue Chain = Op.getOperand(0);
     SDValue VAListP = Op.getOperand(1);
     const Value *VAListS = cast<SrcValueSDNode>(Op.getOperand(2))->getValue();
 
     // vastart stores the address of the VarArgsBase and VarArgsOffset
-    SDValue FR  = DAG.getFrameIndex(VarArgsBase, MVT::i64);
+    SDValue FR  = DAG.getFrameIndex(FuncInfo->getVarArgsBase(), MVT::i64);
     SDValue S1  = DAG.getStore(Chain, dl, FR, VAListP, VAListS, 0,
                                false, false, 0);
     SDValue SA2 = DAG.getNode(ISD::ADD, dl, MVT::i64, VAListP,
                                 DAG.getConstant(8, MVT::i64));
-    return DAG.getTruncStore(S1, dl, DAG.getConstant(VarArgsOffset, MVT::i64),
+    return DAG.getTruncStore(S1, dl,
+                             DAG.getConstant(FuncInfo->getVarArgsOffset(),
+                                             MVT::i64),
                              SA2, NULL, 0, MVT::i32, false, false, 0);
   }
   case ISD::RETURNADDR:
-    return DAG.getNode(AlphaISD::GlobalRetAddr, DebugLoc::getUnknownLoc(),
-                       MVT::i64);
+    return DAG.getNode(AlphaISD::GlobalRetAddr, DebugLoc(), MVT::i64);
       //FIXME: implement
   case ISD::FRAMEADDR:          break;
   }
@@ -751,7 +763,7 @@ SDValue AlphaTargetLowering::LowerOperation(SDValue Op, SelectionDAG &DAG) {
 
 void AlphaTargetLowering::ReplaceNodeResults(SDNode *N,
                                              SmallVectorImpl<SDValue>&Results,
-                                             SelectionDAG &DAG) {
+                                             SelectionDAG &DAG) const {
   DebugLoc dl = N->getDebugLoc();
   assert(N->getValueType(0) == MVT::i32 &&
          N->getOpcode() == ISD::VAARG &&
@@ -824,8 +836,7 @@ getRegClassForInlineAsmConstraint(const std::string &Constraint,
 
 MachineBasicBlock *
 AlphaTargetLowering::EmitInstrWithCustomInserter(MachineInstr *MI,
-                                                 MachineBasicBlock *BB,
-                   DenseMap<MachineBasicBlock*, MachineBasicBlock*> *EM) const {
+                                                 MachineBasicBlock *BB) const {
   const TargetInstrInfo *TII = getTargetMachine().getInstrInfo();
   assert((MI->getOpcode() == Alpha::CAS32 ||
           MI->getOpcode() == Alpha::CAS64 ||
@@ -856,12 +867,10 @@ AlphaTargetLowering::EmitInstrWithCustomInserter(MachineInstr *MI,
   MachineBasicBlock *llscMBB = F->CreateMachineBasicBlock(LLVM_BB);
   MachineBasicBlock *sinkMBB = F->CreateMachineBasicBlock(LLVM_BB);
 
-  // Inform sdisel of the edge changes.
-  for (MachineBasicBlock::succ_iterator I = BB->succ_begin(),
-         E = BB->succ_end(); I != E; ++I)
-    EM->insert(std::make_pair(*I, sinkMBB));
-
-  sinkMBB->transferSuccessors(thisMBB);
+  sinkMBB->splice(sinkMBB->begin(), thisMBB,
+                  llvm::next(MachineBasicBlock::iterator(MI)),
+                  thisMBB->end());
+  sinkMBB->transferSuccessorsAndUpdatePHIs(thisMBB);
 
   F->insert(It, llscMBB);
   F->insert(It, sinkMBB);
@@ -910,7 +919,7 @@ AlphaTargetLowering::EmitInstrWithCustomInserter(MachineInstr *MI,
   thisMBB->addSuccessor(llscMBB);
   llscMBB->addSuccessor(llscMBB);
   llscMBB->addSuccessor(sinkMBB);
-  F->DeleteMachineInstr(MI);   // The pseudo instruction is gone now.
+  MI->eraseFromParent();   // The pseudo instruction is gone now.
 
   return sinkMBB;
 }

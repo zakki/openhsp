@@ -14,7 +14,6 @@
 
 #include "SPU.h"
 #include "SPUTargetMachine.h"
-#include "SPUISelLowering.h"
 #include "SPUHazardRecognizers.h"
 #include "SPUFrameInfo.h"
 #include "SPURegisterNames.h"
@@ -42,53 +41,30 @@ using namespace llvm;
 namespace {
   //! ConstantSDNode predicate for i32 sign-extended, 10-bit immediates
   bool
-  isI64IntS10Immediate(ConstantSDNode *CN)
-  {
-    return isS10Constant(CN->getSExtValue());
-  }
-
-  //! ConstantSDNode predicate for i32 sign-extended, 10-bit immediates
-  bool
   isI32IntS10Immediate(ConstantSDNode *CN)
   {
-    return isS10Constant(CN->getSExtValue());
+    return isInt<10>(CN->getSExtValue());
   }
 
   //! ConstantSDNode predicate for i32 unsigned 10-bit immediate values
   bool
   isI32IntU10Immediate(ConstantSDNode *CN)
   {
-    return isU10Constant(CN->getSExtValue());
+    return isUInt<10>(CN->getSExtValue());
   }
 
   //! ConstantSDNode predicate for i16 sign-extended, 10-bit immediate values
   bool
   isI16IntS10Immediate(ConstantSDNode *CN)
   {
-    return isS10Constant(CN->getSExtValue());
-  }
-
-  //! SDNode predicate for i16 sign-extended, 10-bit immediate values
-  bool
-  isI16IntS10Immediate(SDNode *N)
-  {
-    ConstantSDNode *CN = dyn_cast<ConstantSDNode>(N);
-    return (CN != 0 && isI16IntS10Immediate(CN));
+    return isInt<10>(CN->getSExtValue());
   }
 
   //! ConstantSDNode predicate for i16 unsigned 10-bit immediate values
   bool
   isI16IntU10Immediate(ConstantSDNode *CN)
   {
-    return isU10Constant((short) CN->getZExtValue());
-  }
-
-  //! SDNode predicate for i16 sign-extended, 10-bit immediate values
-  bool
-  isI16IntU10Immediate(SDNode *N)
-  {
-    return (N->getOpcode() == ISD::Constant
-            && isI16IntU10Immediate(cast<ConstantSDNode>(N)));
+    return isUInt<10>((short) CN->getZExtValue());
   }
 
   //! ConstantSDNode predicate for signed 16-bit values
@@ -120,14 +96,6 @@ namespace {
     return false;
   }
 
-  //! SDNode predicate for signed 16-bit values.
-  bool
-  isIntS16Immediate(SDNode *N, short &Imm)
-  {
-    return (N->getOpcode() == ISD::Constant
-            && isIntS16Immediate(cast<ConstantSDNode>(N), Imm));
-  }
-
   //! ConstantFPSDNode predicate for representing floats as 16-bit sign ext.
   static bool
   isFPS16Immediate(ConstantFPSDNode *FPN, short &Imm)
@@ -141,16 +109,6 @@ namespace {
     }
 
     return false;
-  }
-
-  bool
-  isHighLow(const SDValue &Op)
-  {
-    return (Op.getOpcode() == SPUISD::IndirectAddr
-            && ((Op.getOperand(0).getOpcode() == SPUISD::Hi
-                 && Op.getOperand(1).getOpcode() == SPUISD::Lo)
-                || (Op.getOperand(0).getOpcode() == SPUISD::Lo
-                    && Op.getOperand(1).getOpcode() == SPUISD::Hi)));
   }
 
   //===------------------------------------------------------------------===//
@@ -194,11 +152,8 @@ namespace {
 
 #ifndef NDEBUG
     if (retval == 0) {
-      std::string msg;
-      raw_string_ostream Msg(msg);
-      Msg << "SPUISelDAGToDAG.cpp: getValueTypeMapEntry returns NULL for "
-           << VT.getEVTString();
-      llvm_report_error(Msg.str());
+      report_fatal_error("SPUISelDAGToDAG.cpp: getValueTypeMapEntry returns"
+                         "NULL for " + Twine(VT.getEVTString()));
     }
 #endif
 
@@ -242,8 +197,8 @@ namespace {
   class SPUDAGToDAGISel :
     public SelectionDAGISel
   {
-    SPUTargetMachine &TM;
-    SPUTargetLowering &SPUtli;
+    const SPUTargetMachine &TM;
+    const SPUTargetLowering &SPUtli;
     unsigned GlobalBaseReg;
 
   public:
@@ -279,7 +234,6 @@ namespace {
 
     SDNode *emitBuildVector(SDNode *bvNode) {
       EVT vecVT = bvNode->getValueType(0);
-      EVT eltVT = vecVT.getVectorElementType();
       DebugLoc dl = bvNode->getDebugLoc();
 
       // Check to see if this vector can be represented as a CellSPU immediate
@@ -305,16 +259,15 @@ namespace {
       std::vector<Constant*> CV;
 
       for (size_t i = 0; i < bvNode->getNumOperands(); ++i) {
-        ConstantSDNode *V = dyn_cast<ConstantSDNode > (bvNode->getOperand(i));
+        ConstantSDNode *V = cast<ConstantSDNode > (bvNode->getOperand(i));
         CV.push_back(const_cast<ConstantInt *>(V->getConstantIntValue()));
       }
 
-      Constant *CP = ConstantVector::get(CV);
+      const Constant *CP = ConstantVector::get(CV);
       SDValue CPIdx = CurDAG->getConstantPool(CP, SPUtli.getPointerTy());
       unsigned Alignment = cast<ConstantPoolSDNode>(CPIdx)->getAlignment();
       SDValue CGPoolOffset =
-              SPU::LowerConstantPool(CPIdx, *CurDAG,
-                                     SPUtli.getSPUTargetMachine());
+              SPU::LowerConstantPool(CPIdx, *CurDAG, TM);
       
       HandleSDNode Dummy(CurDAG->getLoad(vecVT, dl,
                                          CurDAG->getEntryNode(), CGPoolOffset,
@@ -433,13 +386,13 @@ SPUDAGToDAGISel::SelectAFormAddr(SDNode *Op, SDValue N, SDValue &Base,
   case ISD::Constant:
   case ISD::ConstantPool:
   case ISD::GlobalAddress:
-    llvm_report_error("SPU SelectAFormAddr: Constant/Pool/Global not lowered.");
+    report_fatal_error("SPU SelectAFormAddr: Constant/Pool/Global not lowered.");
     /*NOTREACHED*/
 
   case ISD::TargetConstant:
   case ISD::TargetGlobalAddress:
   case ISD::TargetJumpTable:
-    llvm_report_error("SPUSelectAFormAddr: Target Constant/Pool/Global "
+    report_fatal_error("SPUSelectAFormAddr: Target Constant/Pool/Global "
                       "not wrapped as A-form address.");
     /*NOTREACHED*/
 
@@ -457,7 +410,7 @@ SPUDAGToDAGISel::SelectAFormAddr(SDNode *Op, SDValue N, SDValue &Base,
 
       case ISD::TargetGlobalAddress: {
         GlobalAddressSDNode *GSDN = cast<GlobalAddressSDNode>(Op0);
-        GlobalValue *GV = GSDN->getGlobal();
+        const GlobalValue *GV = GSDN->getGlobal();
         if (GV->getAlignment() == 16) {
           Base = Op0;
           Index = Zero;
@@ -510,7 +463,7 @@ SPUDAGToDAGISel::DFormAddressPredicate(SDNode *Op, SDValue N, SDValue &Base,
 
   if (Opc == ISD::FrameIndex) {
     // Stack frame index must be less than 512 (divided by 16):
-    FrameIndexSDNode *FIN = dyn_cast<FrameIndexSDNode>(N);
+    FrameIndexSDNode *FIN = cast<FrameIndexSDNode>(N);
     int FI = int(FIN->getIndex());
     DEBUG(errs() << "SelectDFormAddr: ISD::FrameIndex = "
                << FI << "\n");
@@ -531,11 +484,11 @@ SPUDAGToDAGISel::DFormAddressPredicate(SDNode *Op, SDValue N, SDValue &Base,
       return true;
     } else if (Op1.getOpcode() == ISD::Constant
                || Op1.getOpcode() == ISD::TargetConstant) {
-      ConstantSDNode *CN = dyn_cast<ConstantSDNode>(Op1);
+      ConstantSDNode *CN = cast<ConstantSDNode>(Op1);
       int32_t offset = int32_t(CN->getSExtValue());
 
       if (Op0.getOpcode() == ISD::FrameIndex) {
-        FrameIndexSDNode *FIN = dyn_cast<FrameIndexSDNode>(Op0);
+        FrameIndexSDNode *FIN = cast<FrameIndexSDNode>(Op0);
         int FI = int(FIN->getIndex());
         DEBUG(errs() << "SelectDFormAddr: ISD::ADD offset = " << offset
                    << " frame index = " << FI << "\n");
@@ -552,11 +505,11 @@ SPUDAGToDAGISel::DFormAddressPredicate(SDNode *Op, SDValue N, SDValue &Base,
       }
     } else if (Op0.getOpcode() == ISD::Constant
                || Op0.getOpcode() == ISD::TargetConstant) {
-      ConstantSDNode *CN = dyn_cast<ConstantSDNode>(Op0);
+      ConstantSDNode *CN = cast<ConstantSDNode>(Op0);
       int32_t offset = int32_t(CN->getSExtValue());
 
       if (Op1.getOpcode() == ISD::FrameIndex) {
-        FrameIndexSDNode *FIN = dyn_cast<FrameIndexSDNode>(Op1);
+        FrameIndexSDNode *FIN = cast<FrameIndexSDNode>(Op1);
         int FI = int(FIN->getIndex());
         DEBUG(errs() << "SelectDFormAddr: ISD::ADD offset = " << offset
                    << " frame index = " << FI << "\n");
@@ -611,18 +564,15 @@ SPUDAGToDAGISel::DFormAddressPredicate(SDNode *Op, SDValue N, SDValue &Base,
     Base = CurDAG->getTargetConstant(0, N.getValueType());
     Index = N;
     return true;
-  } else if (Opc == ISD::Register || Opc == ISD::CopyFromReg) {
+  } else if (Opc == ISD::Register 
+           ||Opc == ISD::CopyFromReg 
+           ||Opc == ISD::UNDEF
+           ||Opc == ISD::Constant) {
     unsigned OpOpc = Op->getOpcode();
 
     if (OpOpc == ISD::STORE || OpOpc == ISD::LOAD) {
       // Direct load/store without getelementptr
-      SDValue Addr, Offs;
-
-      // Get the register from CopyFromReg
-      if (Opc == ISD::CopyFromReg)
-        Addr = N.getOperand(1);
-      else
-        Addr = N;                       // Register
+      SDValue Offs;
 
       Offs = ((OpOpc == ISD::STORE) ? Op->getOperand(3) : Op->getOperand(2));
 
@@ -631,7 +581,7 @@ SPUDAGToDAGISel::DFormAddressPredicate(SDNode *Op, SDValue N, SDValue &Base,
           Offs = CurDAG->getTargetConstant(0, Offs.getValueType());
 
         Base = Offs;
-        Index = Addr;
+        Index = N;
         return true;
       }
     } else {
@@ -725,7 +675,7 @@ SPUDAGToDAGISel::Select(SDNode *N) {
 
     switch (Op0VT.getSimpleVT().SimpleTy) {
     default:
-      llvm_report_error("CellSPU Select: Unhandled zero/any extend EVT");
+      report_fatal_error("CellSPU Select: Unhandled zero/any extend EVT");
       /*NOTREACHED*/
     case MVT::i32:
       shufMask = CurDAG->getNode(ISD::BUILD_VECTOR, dl, MVT::v4i32,
@@ -915,11 +865,8 @@ SPUDAGToDAGISel::Select(SDNode *N) {
     const valtype_map_s *vtm = getValueTypeMapEntry(VT);
 
     if (vtm->ldresult_ins == 0) {
-      std::string msg;
-      raw_string_ostream Msg(msg);
-      Msg << "LDRESULT for unsupported type: "
-           << VT.getEVTString();
-      llvm_report_error(Msg.str());
+      report_fatal_error("LDRESULT for unsupported type: " +
+                         Twine(VT.getEVTString()));
     }
 
     Opc = vtm->ldresult_ins;
@@ -949,13 +896,21 @@ SPUDAGToDAGISel::Select(SDNode *N) {
             && ((RN = dyn_cast<RegisterSDNode>(Op0.getNode())) != 0
                 && RN->getReg() != SPU::R1))) {
       NewOpc = SPU::Ar32;
+      Ops[1] = Op1;
       if (Op1.getOpcode() == ISD::Constant) {
         ConstantSDNode *CN = cast<ConstantSDNode>(Op1);
         Op1 = CurDAG->getTargetConstant(CN->getSExtValue(), VT);
-        NewOpc = (isI32IntS10Immediate(CN) ? SPU::AIr32 : SPU::Ar32);
+        if (isInt<10>(CN->getSExtValue())) {
+          NewOpc = SPU::AIr32;
+          Ops[1] = Op1;
+        } else {
+          Ops[1] = SDValue(CurDAG->getMachineNode(SPU::ILr32, dl, 
+                                                  N->getValueType(0), 
+                                                  Op1),
+                           0); 
+        }
       }
       Ops[0] = Op0;
-      Ops[1] = Op1;
       n_ops = 2;
     }
   }
@@ -1252,7 +1207,7 @@ SDNode *SPUDAGToDAGISel::SelectI64Constant(uint64_t Value64, EVT OpVT,
     return CurDAG->getMachineNode(SPU::ORi64_v2i64, dl, OpVT,
                                   SDValue(emitBuildVector(i64vec.getNode()), 0));
   } else {
-    llvm_report_error("SPUDAGToDAGISel::SelectI64Constant: Unhandled i64vec"
+    report_fatal_error("SPUDAGToDAGISel::SelectI64Constant: Unhandled i64vec"
                       "condition");
   }
 }

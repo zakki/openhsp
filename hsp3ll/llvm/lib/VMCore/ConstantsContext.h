@@ -15,6 +15,7 @@
 #ifndef LLVM_CONSTANTSCONTEXT_H
 #define LLVM_CONSTANTSCONTEXT_H
 
+#include "llvm/InlineAsm.h"
 #include "llvm/Instructions.h"
 #include "llvm/Operator.h"
 #include "llvm/Support/Debug.h"
@@ -327,6 +328,39 @@ struct ExprMapKeyType {
   }
 };
 
+struct InlineAsmKeyType {
+  InlineAsmKeyType(StringRef AsmString,
+                   StringRef Constraints, bool hasSideEffects,
+                   bool isAlignStack)
+    : asm_string(AsmString), constraints(Constraints),
+      has_side_effects(hasSideEffects), is_align_stack(isAlignStack) {}
+  std::string asm_string;
+  std::string constraints;
+  bool has_side_effects;
+  bool is_align_stack;
+  bool operator==(const InlineAsmKeyType& that) const {
+    return this->asm_string == that.asm_string &&
+           this->constraints == that.constraints &&
+           this->has_side_effects == that.has_side_effects &&
+           this->is_align_stack == that.is_align_stack;
+  }
+  bool operator<(const InlineAsmKeyType& that) const {
+    if (this->asm_string != that.asm_string)
+      return this->asm_string < that.asm_string;
+    if (this->constraints != that.constraints)
+      return this->constraints < that.constraints;
+    if (this->has_side_effects != that.has_side_effects)
+      return this->has_side_effects < that.has_side_effects;
+    if (this->is_align_stack != that.is_align_stack)
+      return this->is_align_stack < that.is_align_stack;
+    return false;
+  }
+
+  bool operator!=(const InlineAsmKeyType& that) const {
+    return !(*this == that);
+  }
+};
+
 // The number of operands for each ConstantCreator::create method is
 // determined by the ConstantTraits template.
 // ConstantCreator - A class that is used to create constants by
@@ -477,14 +511,6 @@ struct ConstantKeyData<ConstantStruct> {
   }
 };
 
-template<>
-struct ConstantKeyData<ConstantUnion> {
-  typedef Constant* ValType;
-  static ValType getValType(ConstantUnion *CU) {
-    return cast<Constant>(CU->getOperand(0));
-  }
-};
-
 // ConstantPointerNull does not take extra "value" argument...
 template<class ValType>
 struct ConstantCreator<ConstantPointerNull, PointerType, ValType> {
@@ -514,6 +540,23 @@ struct ConstantKeyData<UndefValue> {
   typedef char ValType;
   static ValType getValType(UndefValue *C) {
     return 0;
+  }
+};
+
+template<>
+struct ConstantCreator<InlineAsm, PointerType, InlineAsmKeyType> {
+  static InlineAsm *create(const PointerType *Ty, const InlineAsmKeyType &Key) {
+    return new InlineAsm(Ty, Key.asm_string, Key.constraints,
+                         Key.has_side_effects, Key.is_align_stack);
+  }
+};
+
+template<>
+struct ConstantKeyData<InlineAsm> {
+  typedef InlineAsmKeyType ValType;
+  static ValType getValType(InlineAsm *Asm) {
+    return InlineAsmKeyType(Asm->getAsmString(), Asm->getConstraintString(),
+                            Asm->hasSideEffects(), Asm->isAlignStack());
   }
 };
 
@@ -549,8 +592,8 @@ public:
   void freeConstants() {
     for (typename MapTy::iterator I=Map.begin(), E=Map.end();
          I != E; ++I) {
-      if (I->second->use_empty())
-        delete I->second;
+      // Asserts that use_empty().
+      delete I->second;
     }
   }
     
@@ -706,9 +749,13 @@ public:
       
     // If this constant is the representative element for its abstract type,
     // update the AbstractTypeMap so that the representative element is I.
-    if (C->getType()->isAbstract()) {
+    //
+    // This must use getRawType() because if the type is under refinement, we
+    // will get the refineAbstractType callback below, and we don't want to
+    // kick union find in on the constant.
+    if (C->getRawType()->isAbstract()) {
       typename AbstractTypeMapTy::iterator ATI =
-          AbstractTypeMap.find(C->getType());
+          AbstractTypeMap.find(cast<DerivedType>(C->getRawType()));
       assert(ATI != AbstractTypeMap.end() &&
              "Abstract type not in AbstractTypeMap?");
       if (ATI->second == OldI)

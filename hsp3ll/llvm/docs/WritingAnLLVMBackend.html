@@ -561,8 +561,7 @@ def AL : Register&lt;"AL"&gt;, DwarfRegNum&lt;[0, 0, 0]&gt;;
 <p>
 This defines the register <tt>AL</tt> and assigns it values (with
 <tt>DwarfRegNum</tt>) that are used by <tt>gcc</tt>, <tt>gdb</tt>, or a debug
-information writer (such as <tt>DwarfWriter</tt>
-in <tt>llvm/lib/CodeGen/AsmPrinter</tt>) to identify a register. For register
+information writer to identify a register. For register
 <tt>AL</tt>, <tt>DwarfRegNum</tt> takes an array of 3 values representing 3
 different modes: the first element is for X86-64, the second for exception
 handling (EH) on X86-32, and the third is generic. -1 is a special Dwarf number
@@ -913,9 +912,6 @@ implementation in <tt>SparcRegisterInfo.cpp</tt>:
 <ul>
 <li><tt>getCalleeSavedRegs</tt> &mdash; Returns a list of callee-saved registers
     in the order of the desired callee-save stack frame offset.</li>
-
-<li><tt>getCalleeSavedRegClasses</tt> &mdash; Returns a list of preferred
-    register classes with which to spill each callee saved register.</li>
 
 <li><tt>getReservedRegs</tt> &mdash; Returns a bitset indexed by physical
     register numbers, indicating if a particular register is unavailable.</li>
@@ -1303,9 +1299,6 @@ implementation in <tt>SparcInstrInfo.cpp</tt>:
 </p>
 
 <ul>
-<li><tt>isMoveInstr</tt> &mdash; Return true if the instruction is a register to
-    register move; false, otherwise.</li>
-
 <li><tt>isLoadFromStackSlot</tt> &mdash; If the specified machine instruction is
     a direct load from a stack slot, return the register number of the
     destination and the <tt>FrameIndex</tt> of the stack slot.</li>
@@ -1314,7 +1307,8 @@ implementation in <tt>SparcInstrInfo.cpp</tt>:
     a direct store to a stack slot, return the register number of the
     destination and the <tt>FrameIndex</tt> of the stack slot.</li>
 
-<li><tt>copyRegToReg</tt> &mdash; Copy values between a pair of registers.</li>
+<li><tt>copyPhysReg</tt> &mdash; Copy values between a pair of physical
+    registers.</li>
 
 <li><tt>storeRegToStackSlot</tt> &mdash; Store a register value to a stack
     slot.</li>
@@ -2555,7 +2549,7 @@ with assembler.
   <a href="http://www.woo.com">Mason Woo</a> and <a href="http://misha.brukman.net">Misha Brukman</a><br>
   <a href="http://llvm.org">The LLVM Compiler Infrastructure</a>
   <br>
-  Last modified: $Date: 2010-02-02 12:44:12 -0600 (Tue, 02 Feb 2010) $
+  Last modified: $Date: 2010-07-16 17:35:46 -0500 (Fri, 16 Jul 2010) $
 </address>
 
 </body>

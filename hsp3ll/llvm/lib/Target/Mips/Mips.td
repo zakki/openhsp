@@ -1,4 +1,4 @@
-//===- Mips.td - Describe the Mips Target Machine ---------------*- C++ -*-===//
+//===- Mips.td - Describe the Mips Target Machine ----------*- tablegen -*-===//
 //
 //                     The LLVM Compiler Infrastructure
 //
@@ -24,10 +24,7 @@ include "MipsSchedule.td"
 include "MipsInstrInfo.td"
 include "MipsCallingConv.td"
 
-def MipsInstrInfo : InstrInfo {
-  let TSFlagsFields = [];
-  let TSFlagsShifts = [];
-}
+def MipsInstrInfo : InstrInfo;
 
 //===----------------------------------------------------------------------===//
 // Mips Subtarget features                                                    //

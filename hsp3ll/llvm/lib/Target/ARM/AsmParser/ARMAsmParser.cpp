@@ -8,6 +8,7 @@
 //===----------------------------------------------------------------------===//
 
 #include "ARM.h"
+#include "ARMSubtarget.h"
 #include "llvm/MC/MCParser/MCAsmLexer.h"
 #include "llvm/MC/MCParser/MCAsmParser.h"
 #include "llvm/MC/MCParser/MCParsedAsmOperand.h"
@@ -18,7 +19,10 @@
 #include "llvm/Target/TargetAsmParser.h"
 #include "llvm/Support/Compiler.h"
 #include "llvm/Support/SourceMgr.h"
+#include "llvm/Support/raw_ostream.h"
+#include "llvm/ADT/OwningPtr.h"
 #include "llvm/ADT/SmallVector.h"
+#include "llvm/ADT/StringSwitch.h"
 #include "llvm/ADT/Twine.h"
 using namespace llvm;
 
@@ -36,6 +40,7 @@ enum ShiftType {
 
 class ARMAsmParser : public TargetAsmParser {
   MCAsmParser &Parser;
+  TargetMachine &TM;
 
 private:
   MCAsmParser &getParser() const { return Parser; }
@@ -46,11 +51,11 @@ private:
 
   bool Error(SMLoc L, const Twine &Msg) { return Parser.Error(L, Msg); }
 
-  bool MaybeParseRegister(ARMOperand &Op, bool ParseWriteBack);
+  bool MaybeParseRegister(OwningPtr<ARMOperand> &Op, bool ParseWriteBack);
 
-  bool ParseRegisterList(ARMOperand &Op);
+  bool ParseRegisterList(OwningPtr<ARMOperand> &Op);
 
-  bool ParseMemory(ARMOperand &Op);
+  bool ParseMemory(OwningPtr<ARMOperand> &Op);
 
   bool ParseMemoryOffsetReg(bool &Negative,
                             bool &OffsetRegShifted,
@@ -58,11 +63,12 @@ private:
                             const MCExpr *&ShiftAmount,
                             const MCExpr *&Offset,
                             bool &OffsetIsReg,
-                            int &OffsetRegNum);
+                            int &OffsetRegNum,
+                            SMLoc &E);
 
-  bool ParseShift(enum ShiftType &St, const MCExpr *&ShiftAmount);
+  bool ParseShift(enum ShiftType &St, const MCExpr *&ShiftAmount, SMLoc &E);
 
-  bool ParseOperand(ARMOperand &Op);
+  bool ParseOperand(OwningPtr<ARMOperand> &Op);
 
   bool ParseDirectiveWord(unsigned Size, SMLoc L);
 
@@ -74,28 +80,35 @@ private:
 
   bool ParseDirectiveSyntax(SMLoc L);
 
-  // TODO - For now hacked versions of the next two are in here in this file to
-  // allow some parser testing until the table gen versions are implemented.
+  bool MatchInstruction(SMLoc IDLoc,
+                        const SmallVectorImpl<MCParsedAsmOperand*> &Operands,
+                        MCInst &Inst) {
+    if (!MatchInstructionImpl(Operands, Inst))
+      return false;
+
+    // FIXME: We should give nicer diagnostics about the exact failure.
+    Error(IDLoc, "unrecognized instruction");
+
+    return true;
+  }
 
   /// @name Auto-generated Match Functions
   /// {
-  bool MatchInstruction(const SmallVectorImpl<MCParsedAsmOperand*> &Operands,
-                        MCInst &Inst);
 
-  /// MatchRegisterName - Match the given string to a register name and return
-  /// its register number, or -1 if there is no match.  To allow return values
-  /// to be used directly in register lists, arm registers have values between
-  /// 0 and 15.
-  int MatchRegisterName(const StringRef &Name);
+  unsigned ComputeAvailableFeatures(const ARMSubtarget *Subtarget) const;
+
+  bool MatchInstructionImpl(const SmallVectorImpl<MCParsedAsmOperand*>
+                              &Operands,
+                            MCInst &Inst);
 
   /// }
 
 
 public:
-  ARMAsmParser(const Target &T, MCAsmParser &_Parser)
-    : TargetAsmParser(T), Parser(_Parser) {}
+  ARMAsmParser(const Target &T, MCAsmParser &_Parser, TargetMachine &_TM)
+    : TargetAsmParser(T), Parser(_Parser), TM(_TM) {}
 
-  virtual bool ParseInstruction(const StringRef &Name, SMLoc NameLoc,
+  virtual bool ParseInstruction(StringRef Name, SMLoc NameLoc,
                                 SmallVectorImpl<MCParsedAsmOperand*> &Operands);
 
   virtual bool ParseDirective(AsmToken DirectiveID);
@@ -104,15 +117,24 @@ public:
 /// ARMOperand - Instances of this class represent a parsed ARM machine
 /// instruction.
 struct ARMOperand : public MCParsedAsmOperand {
-  enum {
-    Token,
-    Register,
+private:
+  ARMOperand() {}
+public:
+  enum KindTy {
+    CondCode,
     Immediate,
-    Memory
+    Memory,
+    Register,
+    Token
   } Kind;
 
+  SMLoc StartLoc, EndLoc;
 
   union {
+    struct {
+      ARMCC::CondCodes Val;
+    } CC;
+
     struct {
       const char *Data;
       unsigned Length;
@@ -126,7 +148,7 @@ struct ARMOperand : public MCParsedAsmOperand {
     struct {
       const MCExpr *Val;
     } Imm;
-
+    
     // This is for all forms of ARM address expressions
     struct {
       unsigned BaseRegNum;
@@ -144,6 +166,42 @@ struct ARMOperand : public MCParsedAsmOperand {
     } Mem;
 
   };
+  
+  //ARMOperand(KindTy K, SMLoc S, SMLoc E)
+  //  : Kind(K), StartLoc(S), EndLoc(E) {}
+  
+  ARMOperand(const ARMOperand &o) : MCParsedAsmOperand() {
+    Kind = o.Kind;
+    StartLoc = o.StartLoc;
+    EndLoc = o.EndLoc;
+    switch (Kind) {
+    case CondCode:
+      CC = o.CC;
+      break;
+    case Token:
+      Tok = o.Tok;
+      break;
+    case Register:
+      Reg = o.Reg;
+      break;
+    case Immediate:
+      Imm = o.Imm;
+      break;
+    case Memory:
+      Mem = o.Mem;
+      break;
+    }
+  }
+  
+  /// getStartLoc - Get the location of the first token of this operand.
+  SMLoc getStartLoc() const { return StartLoc; }
+  /// getEndLoc - Get the location of the last token of this operand.
+  SMLoc getEndLoc() const { return EndLoc; }
+
+  ARMCC::CondCodes getCondCode() const {
+    assert(Kind == CondCode && "Invalid access!");
+    return CC.Val;
+  }
 
   StringRef getToken() const {
     assert(Kind == Token && "Invalid access!");
@@ -160,68 +218,144 @@ struct ARMOperand : public MCParsedAsmOperand {
     return Imm.Val;
   }
 
-  bool isToken() const {return Kind == Token; }
+  bool isCondCode() const { return Kind == CondCode; }
+
+  bool isImm() const { return Kind == Immediate; }
 
   bool isReg() const { return Kind == Register; }
+
+  bool isToken() const {return Kind == Token; }
+
+  void addExpr(MCInst &Inst, const MCExpr *Expr) const {
+    // Add as immediates when possible.
+    if (const MCConstantExpr *CE = dyn_cast<MCConstantExpr>(Expr))
+      Inst.addOperand(MCOperand::CreateImm(CE->getValue()));
+    else
+      Inst.addOperand(MCOperand::CreateExpr(Expr));
+  }
+
+  void addCondCodeOperands(MCInst &Inst, unsigned N) const {
+    assert(N == 2 && "Invalid number of operands!");
+    Inst.addOperand(MCOperand::CreateImm(unsigned(getCondCode())));
+    // FIXME: What belongs here?
+    Inst.addOperand(MCOperand::CreateReg(0));
+  }
 
   void addRegOperands(MCInst &Inst, unsigned N) const {
     assert(N == 1 && "Invalid number of operands!");
     Inst.addOperand(MCOperand::CreateReg(getReg()));
   }
 
-  static ARMOperand CreateToken(StringRef Str) {
-    ARMOperand Res;
-    Res.Kind = Token;
-    Res.Tok.Data = Str.data();
-    Res.Tok.Length = Str.size();
-    return Res;
+  void addImmOperands(MCInst &Inst, unsigned N) const {
+    assert(N == 1 && "Invalid number of operands!");
+    addExpr(Inst, getImm());
   }
 
-  static ARMOperand CreateReg(unsigned RegNum, bool Writeback) {
-    ARMOperand Res;
-    Res.Kind = Register;
-    Res.Reg.RegNum = RegNum;
-    Res.Reg.Writeback = Writeback;
-    return Res;
+  virtual void dump(raw_ostream &OS) const;
+
+  static void CreateCondCode(OwningPtr<ARMOperand> &Op, ARMCC::CondCodes CC,
+                             SMLoc S) {
+    Op.reset(new ARMOperand);
+    Op->Kind = CondCode;
+    Op->CC.Val = CC;
+    Op->StartLoc = S;
+    Op->EndLoc = S;
   }
 
-  static ARMOperand CreateImm(const MCExpr *Val) {
-    ARMOperand Res;
-    Res.Kind = Immediate;
-    Res.Imm.Val = Val;
-    return Res;
+  static void CreateToken(OwningPtr<ARMOperand> &Op, StringRef Str,
+                          SMLoc S) {
+    Op.reset(new ARMOperand);
+    Op->Kind = Token;
+    Op->Tok.Data = Str.data();
+    Op->Tok.Length = Str.size();
+    Op->StartLoc = S;
+    Op->EndLoc = S;
   }
 
-  static ARMOperand CreateMem(unsigned BaseRegNum, bool OffsetIsReg,
-                              const MCExpr *Offset, unsigned OffsetRegNum,
-                              bool OffsetRegShifted, enum ShiftType ShiftType,
-                              const MCExpr *ShiftAmount, bool Preindexed,
-                              bool Postindexed, bool Negative, bool Writeback) {
-    ARMOperand Res;
-    Res.Kind = Memory;
-    Res.Mem.BaseRegNum = BaseRegNum;
-    Res.Mem.OffsetIsReg = OffsetIsReg;
-    Res.Mem.Offset = Offset;
-    Res.Mem.OffsetRegNum = OffsetRegNum;
-    Res.Mem.OffsetRegShifted = OffsetRegShifted;
-    Res.Mem.ShiftType = ShiftType;
-    Res.Mem.ShiftAmount = ShiftAmount;
-    Res.Mem.Preindexed = Preindexed;
-    Res.Mem.Postindexed = Postindexed;
-    Res.Mem.Negative = Negative;
-    Res.Mem.Writeback = Writeback;
-    return Res;
+  static void CreateReg(OwningPtr<ARMOperand> &Op, unsigned RegNum, 
+                        bool Writeback, SMLoc S, SMLoc E) {
+    Op.reset(new ARMOperand);
+    Op->Kind = Register;
+    Op->Reg.RegNum = RegNum;
+    Op->Reg.Writeback = Writeback;
+    
+    Op->StartLoc = S;
+    Op->EndLoc = E;
+  }
+
+  static void CreateImm(OwningPtr<ARMOperand> &Op, const MCExpr *Val,
+                        SMLoc S, SMLoc E) {
+    Op.reset(new ARMOperand);
+    Op->Kind = Immediate;
+    Op->Imm.Val = Val;
+    
+    Op->StartLoc = S;
+    Op->EndLoc = E;
+  }
+
+  static void CreateMem(OwningPtr<ARMOperand> &Op,
+                        unsigned BaseRegNum, bool OffsetIsReg,
+                        const MCExpr *Offset, unsigned OffsetRegNum,
+                        bool OffsetRegShifted, enum ShiftType ShiftType,
+                        const MCExpr *ShiftAmount, bool Preindexed,
+                        bool Postindexed, bool Negative, bool Writeback,
+                        SMLoc S, SMLoc E) {
+    Op.reset(new ARMOperand);
+    Op->Kind = Memory;
+    Op->Mem.BaseRegNum = BaseRegNum;
+    Op->Mem.OffsetIsReg = OffsetIsReg;
+    Op->Mem.Offset = Offset;
+    Op->Mem.OffsetRegNum = OffsetRegNum;
+    Op->Mem.OffsetRegShifted = OffsetRegShifted;
+    Op->Mem.ShiftType = ShiftType;
+    Op->Mem.ShiftAmount = ShiftAmount;
+    Op->Mem.Preindexed = Preindexed;
+    Op->Mem.Postindexed = Postindexed;
+    Op->Mem.Negative = Negative;
+    Op->Mem.Writeback = Writeback;
+    
+    Op->StartLoc = S;
+    Op->EndLoc = E;
   }
 };
 
 } // end anonymous namespace.
+
+void ARMOperand::dump(raw_ostream &OS) const {
+  switch (Kind) {
+  case CondCode:
+    OS << ARMCondCodeToString(getCondCode());
+    break;
+  case Immediate:
+    getImm()->print(OS);
+    break;
+  case Memory:
+    OS << "<memory>";
+    break;
+  case Register:
+    OS << "<register " << getReg() << ">";
+    break;
+  case Token:
+    OS << "'" << getToken() << "'";
+    break;
+  }
+}
+
+/// @name Auto-generated Match Functions
+/// {
+
+static unsigned MatchRegisterName(StringRef Name);
+
+/// }
 
 /// Try to parse a register name.  The token must be an Identifier when called,
 /// and if it is a register name a Reg operand is created, the token is eaten
 /// and false is returned.  Else true is returned and no token is eaten.
 /// TODO this is likely to change to allow different register types and or to
 /// parse for a specific register type.
-bool ARMAsmParser::MaybeParseRegister(ARMOperand &Op, bool ParseWriteBack) {
+bool ARMAsmParser::MaybeParseRegister
+  (OwningPtr<ARMOperand> &Op, bool ParseWriteBack) {
+  SMLoc S, E;
   const AsmToken &Tok = Parser.getTok();
   assert(Tok.is(AsmToken::Identifier) && "Token is not an Identifier");
 
@@ -232,27 +366,35 @@ bool ARMAsmParser::MaybeParseRegister(ARMOperand &Op, bool ParseWriteBack) {
   RegNum = MatchRegisterName(Tok.getString());
   if (RegNum == -1)
     return true;
+  
+  S = Tok.getLoc();
+  
   Parser.Lex(); // Eat identifier token.
+    
+  E = Parser.getTok().getLoc();
 
   bool Writeback = false;
   if (ParseWriteBack) {
     const AsmToken &ExclaimTok = Parser.getTok();
     if (ExclaimTok.is(AsmToken::Exclaim)) {
+      E = ExclaimTok.getLoc();
       Writeback = true;
       Parser.Lex(); // Eat exclaim token
     }
   }
 
-  Op = ARMOperand::CreateReg(RegNum, Writeback);
+  ARMOperand::CreateReg(Op, RegNum, Writeback, S, E);
 
   return false;
 }
 
 /// Parse a register list, return false if successful else return true or an 
 /// error.  The first token must be a '{' when called.
-bool ARMAsmParser::ParseRegisterList(ARMOperand &Op) {
+bool ARMAsmParser::ParseRegisterList(OwningPtr<ARMOperand> &Op) {
+  SMLoc S, E;
   assert(Parser.getTok().is(AsmToken::LCurly) &&
          "Token is not an Left Curly Brace");
+  S = Parser.getTok().getLoc();
   Parser.Lex(); // Eat left curly brace token.
 
   const AsmToken &RegTok = Parser.getTok();
@@ -290,6 +432,7 @@ bool ARMAsmParser::ParseRegisterList(ARMOperand &Op) {
   const AsmToken &RCurlyTok = Parser.getTok();
   if (RCurlyTok.isNot(AsmToken::RCurly))
     return Error(RCurlyTok.getLoc(), "'}' expected");
+  E = RCurlyTok.getLoc();
   Parser.Lex(); // Eat left curly brace token.
 
   return false;
@@ -299,9 +442,11 @@ bool ARMAsmParser::ParseRegisterList(ARMOperand &Op) {
 /// or an error.  The first token must be a '[' when called.
 /// TODO Only preindexing and postindexing addressing are started, unindexed
 /// with option, etc are still to do.
-bool ARMAsmParser::ParseMemory(ARMOperand &Op) {
+bool ARMAsmParser::ParseMemory(OwningPtr<ARMOperand> &Op) {
+  SMLoc S, E;
   assert(Parser.getTok().is(AsmToken::LBrac) &&
          "Token is not an Left Bracket");
+  S = Parser.getTok().getLoc();
   Parser.Lex(); // Eat left bracket token.
 
   const AsmToken &BaseRegTok = Parser.getTok();
@@ -309,7 +454,7 @@ bool ARMAsmParser::ParseMemory(ARMOperand &Op) {
     return Error(BaseRegTok.getLoc(), "register expected");
   if (MaybeParseRegister(Op, false))
     return Error(BaseRegTok.getLoc(), "register expected");
-  int BaseRegNum = Op.getReg();
+  int BaseRegNum = Op->getReg();
 
   bool Preindexed = false;
   bool Postindexed = false;
@@ -329,21 +474,23 @@ bool ARMAsmParser::ParseMemory(ARMOperand &Op) {
     const MCExpr *ShiftAmount;
     const MCExpr *Offset;
     if(ParseMemoryOffsetReg(Negative, OffsetRegShifted, ShiftType, ShiftAmount,
-                            Offset, OffsetIsReg, OffsetRegNum))
+                            Offset, OffsetIsReg, OffsetRegNum, E))
       return true;
     const AsmToken &RBracTok = Parser.getTok();
     if (RBracTok.isNot(AsmToken::RBrac))
       return Error(RBracTok.getLoc(), "']' expected");
+    E = RBracTok.getLoc();
     Parser.Lex(); // Eat right bracket token.
 
     const AsmToken &ExclaimTok = Parser.getTok();
     if (ExclaimTok.is(AsmToken::Exclaim)) {
+      E = ExclaimTok.getLoc();
       Writeback = true;
       Parser.Lex(); // Eat exclaim token
     }
-    Op = ARMOperand::CreateMem(BaseRegNum, OffsetIsReg, Offset, OffsetRegNum,
-                               OffsetRegShifted, ShiftType, ShiftAmount,
-                               Preindexed, Postindexed, Negative, Writeback);
+    ARMOperand::CreateMem(Op, BaseRegNum, OffsetIsReg, Offset, OffsetRegNum,
+                          OffsetRegShifted, ShiftType, ShiftAmount,
+                          Preindexed, Postindexed, Negative, Writeback, S, E);
     return false;
   }
   // The "[Rn" we have so far was not followed by a comma.
@@ -352,6 +499,7 @@ bool ARMAsmParser::ParseMemory(ARMOperand &Op) {
     // the "[Rn".
     Postindexed = true;
     Writeback = true;
+    E = Tok.getLoc();
     Parser.Lex(); // Eat right bracket token.
 
     int OffsetRegNum = 0;
@@ -363,16 +511,17 @@ bool ARMAsmParser::ParseMemory(ARMOperand &Op) {
     const AsmToken &NextTok = Parser.getTok();
     if (NextTok.isNot(AsmToken::EndOfStatement)) {
       if (NextTok.isNot(AsmToken::Comma))
-	return Error(NextTok.getLoc(), "',' expected");
+        return Error(NextTok.getLoc(), "',' expected");
       Parser.Lex(); // Eat comma token.
       if(ParseMemoryOffsetReg(Negative, OffsetRegShifted, ShiftType,
-                              ShiftAmount, Offset, OffsetIsReg, OffsetRegNum))
+                              ShiftAmount, Offset, OffsetIsReg, OffsetRegNum, 
+                              E))
         return true;
     }
 
-    Op = ARMOperand::CreateMem(BaseRegNum, OffsetIsReg, Offset, OffsetRegNum,
-                               OffsetRegShifted, ShiftType, ShiftAmount,
-                               Preindexed, Postindexed, Negative, Writeback);
+    ARMOperand::CreateMem(Op, BaseRegNum, OffsetIsReg, Offset, OffsetRegNum,
+                          OffsetRegShifted, ShiftType, ShiftAmount,
+                          Preindexed, Postindexed, Negative, Writeback, S, E);
     return false;
   }
 
@@ -387,18 +536,20 @@ bool ARMAsmParser::ParseMemory(ARMOperand &Op) {
 ///   #offset
 /// we return false on success or an error otherwise.
 bool ARMAsmParser::ParseMemoryOffsetReg(bool &Negative,
-					bool &OffsetRegShifted,
+                                        bool &OffsetRegShifted,
                                         enum ShiftType &ShiftType,
                                         const MCExpr *&ShiftAmount,
                                         const MCExpr *&Offset,
                                         bool &OffsetIsReg,
-                                        int &OffsetRegNum) {
-  ARMOperand Op;
+                                        int &OffsetRegNum,
+                                        SMLoc &E) {
+  OwningPtr<ARMOperand> Op;
   Negative = false;
   OffsetRegShifted = false;
   OffsetIsReg = false;
   OffsetRegNum = -1;
   const AsmToken &NextTok = Parser.getTok();
+  E = NextTok.getLoc();
   if (NextTok.is(AsmToken::Plus))
     Parser.Lex(); // Eat plus token.
   else if (NextTok.is(AsmToken::Minus)) {
@@ -409,8 +560,10 @@ bool ARMAsmParser::ParseMemoryOffsetReg(bool &Negative,
   const AsmToken &OffsetRegTok = Parser.getTok();
   if (OffsetRegTok.is(AsmToken::Identifier)) {
     OffsetIsReg = !MaybeParseRegister(Op, false);
-    if (OffsetIsReg)
-      OffsetRegNum = Op.getReg();
+    if (OffsetIsReg) {
+      E = Op->getEndLoc();
+      OffsetRegNum = Op->getReg();
+    }
   }
   // If we parsed a register as the offset then their can be a shift after that
   if (OffsetRegNum != -1) {
@@ -420,8 +573,8 @@ bool ARMAsmParser::ParseMemoryOffsetReg(bool &Negative,
       Parser.Lex(); // Eat comma token.
 
       const AsmToken &Tok = Parser.getTok();
-      if (ParseShift(ShiftType, ShiftAmount))
-	return Error(Tok.getLoc(), "shift expected");
+      if (ParseShift(ShiftType, ShiftAmount, E))
+        return Error(Tok.getLoc(), "shift expected");
       OffsetRegShifted = true;
     }
   }
@@ -430,10 +583,12 @@ bool ARMAsmParser::ParseMemoryOffsetReg(bool &Negative,
     const AsmToken &HashTok = Parser.getTok();
     if (HashTok.isNot(AsmToken::Hash))
       return Error(HashTok.getLoc(), "'#' expected");
+    
     Parser.Lex(); // Eat hash token.
 
     if (getParser().ParseExpression(Offset))
      return true;
+    E = SMLoc::getFromPointer(Parser.getTok().getLoc().getPointer() - 1);
   }
   return false;
 }
@@ -442,11 +597,13 @@ bool ARMAsmParser::ParseMemoryOffsetReg(bool &Negative,
 ///   ( lsl | lsr | asr | ror ) , # shift_amount
 ///   rrx
 /// and returns true if it parses a shift otherwise it returns false.
-bool ARMAsmParser::ParseShift(ShiftType &St, const MCExpr *&ShiftAmount) {
+bool ARMAsmParser::ParseShift(ShiftType &St, 
+                              const MCExpr *&ShiftAmount, 
+                              SMLoc &E) {
   const AsmToken &Tok = Parser.getTok();
   if (Tok.isNot(AsmToken::Identifier))
     return true;
-  const StringRef &ShiftName = Tok.getString();
+  StringRef ShiftName = Tok.getString();
   if (ShiftName == "lsl" || ShiftName == "LSL")
     St = Lsl;
   else if (ShiftName == "lsr" || ShiftName == "LSR")
@@ -477,80 +634,11 @@ bool ARMAsmParser::ParseShift(ShiftType &St, const MCExpr *&ShiftAmount) {
   return false;
 }
 
-/// A hack to allow some testing, to be replaced by a real table gen version.
-int ARMAsmParser::MatchRegisterName(const StringRef &Name) {
-  if (Name == "r0" || Name == "R0")
-    return 0;
-  else if (Name == "r1" || Name == "R1")
-    return 1;
-  else if (Name == "r2" || Name == "R2")
-    return 2;
-  else if (Name == "r3" || Name == "R3")
-    return 3;
-  else if (Name == "r3" || Name == "R3")
-    return 3;
-  else if (Name == "r4" || Name == "R4")
-    return 4;
-  else if (Name == "r5" || Name == "R5")
-    return 5;
-  else if (Name == "r6" || Name == "R6")
-    return 6;
-  else if (Name == "r7" || Name == "R7")
-    return 7;
-  else if (Name == "r8" || Name == "R8")
-    return 8;
-  else if (Name == "r9" || Name == "R9")
-    return 9;
-  else if (Name == "r10" || Name == "R10")
-    return 10;
-  else if (Name == "r11" || Name == "R11" || Name == "fp")
-    return 11;
-  else if (Name == "r12" || Name == "R12" || Name == "ip")
-    return 12;
-  else if (Name == "r13" || Name == "R13" || Name == "sp")
-    return 13;
-  else if (Name == "r14" || Name == "R14" || Name == "lr")
-      return 14;
-  else if (Name == "r15" || Name == "R15" || Name == "pc")
-    return 15;
-  return -1;
-}
-
-/// A hack to allow some testing, to be replaced by a real table gen version.
-bool ARMAsmParser::
-MatchInstruction(const SmallVectorImpl<MCParsedAsmOperand*> &Operands,
-                 MCInst &Inst) {
-  ARMOperand &Op0 = *(ARMOperand*)Operands[0];
-  assert(Op0.Kind == ARMOperand::Token && "First operand not a Token");
-  const StringRef &Mnemonic = Op0.getToken();
-  if (Mnemonic == "add" ||
-      Mnemonic == "stmfd" ||
-      Mnemonic == "str" ||
-      Mnemonic == "ldmfd" ||
-      Mnemonic == "ldr" ||
-      Mnemonic == "mov" ||
-      Mnemonic == "sub" ||
-      Mnemonic == "bl" ||
-      Mnemonic == "push" ||
-      Mnemonic == "blx" ||
-      Mnemonic == "pop") {
-    // Hard-coded to a valid instruction, till we have a real matcher.
-    Inst = MCInst();
-    Inst.setOpcode(ARM::MOVr);
-    Inst.addOperand(MCOperand::CreateReg(2));
-    Inst.addOperand(MCOperand::CreateReg(2));
-    Inst.addOperand(MCOperand::CreateImm(0));
-    Inst.addOperand(MCOperand::CreateImm(0));
-    Inst.addOperand(MCOperand::CreateReg(0));
-    return false;
-  }
-
-  return true;
-}
-
 /// Parse a arm instruction operand.  For now this parses the operand regardless
 /// of the mnemonic.
-bool ARMAsmParser::ParseOperand(ARMOperand &Op) {
+bool ARMAsmParser::ParseOperand(OwningPtr<ARMOperand> &Op) {
+  SMLoc S, E;
+  
   switch (getLexer().getKind()) {
   case AsmToken::Identifier:
     if (!MaybeParseRegister(Op, true))
@@ -558,9 +646,11 @@ bool ARMAsmParser::ParseOperand(ARMOperand &Op) {
     // This was not a register so parse other operands that start with an
     // identifier (like labels) as expressions and create them as immediates.
     const MCExpr *IdVal;
+    S = Parser.getTok().getLoc();
     if (getParser().ParseExpression(IdVal))
       return true;
-    Op = ARMOperand::CreateImm(IdVal);
+    E = SMLoc::getFromPointer(Parser.getTok().getLoc().getPointer() - 1);
+    ARMOperand::CreateImm(Op, IdVal, S, E);
     return false;
   case AsmToken::LBrac:
     return ParseMemory(Op);
@@ -569,11 +659,13 @@ bool ARMAsmParser::ParseOperand(ARMOperand &Op) {
   case AsmToken::Hash:
     // #42 -> immediate.
     // TODO: ":lower16:" and ":upper16:" modifiers after # before immediate
+    S = Parser.getTok().getLoc();
     Parser.Lex();
     const MCExpr *ImmVal;
     if (getParser().ParseExpression(ImmVal))
       return true;
-    Op = ARMOperand::CreateImm(ImmVal);
+    E = SMLoc::getFromPointer(Parser.getTok().getLoc().getPointer() - 1);
+    ARMOperand::CreateImm(Op, ImmVal, S, E);
     return false;
   default:
     return Error(Parser.getTok().getLoc(), "unexpected token in operand");
@@ -581,24 +673,70 @@ bool ARMAsmParser::ParseOperand(ARMOperand &Op) {
 }
 
 /// Parse an arm instruction mnemonic followed by its operands.
-bool ARMAsmParser::ParseInstruction(const StringRef &Name, SMLoc NameLoc,
+bool ARMAsmParser::ParseInstruction(StringRef Name, SMLoc NameLoc,
                                SmallVectorImpl<MCParsedAsmOperand*> &Operands) {
-  Operands.push_back(new ARMOperand(ARMOperand::CreateToken(Name)));
+  OwningPtr<ARMOperand> Op;
 
-  SMLoc Loc = Parser.getTok().getLoc();
+  // Create the leading tokens for the mnemonic, split by '.' characters.
+  size_t Start = 0, Next = Name.find('.');
+  StringRef Head = Name.slice(Start, Next);
+
+  // Determine the predicate, if any.
+  //
+  // FIXME: We need a way to check whether a prefix supports predication,
+  // otherwise we will end up with an ambiguity for instructions that happen to
+  // end with a predicate name.
+  unsigned CC = StringSwitch<unsigned>(Head.substr(Head.size()-2))
+    .Case("eq", ARMCC::EQ)
+    .Case("ne", ARMCC::NE)
+    .Case("hs", ARMCC::HS)
+    .Case("lo", ARMCC::LO)
+    .Case("mi", ARMCC::MI)
+    .Case("pl", ARMCC::PL)
+    .Case("vs", ARMCC::VS)
+    .Case("vc", ARMCC::VC)
+    .Case("hi", ARMCC::HI)
+    .Case("ls", ARMCC::LS)
+    .Case("ge", ARMCC::GE)
+    .Case("lt", ARMCC::LT)
+    .Case("gt", ARMCC::GT)
+    .Case("le", ARMCC::LE)
+    .Case("al", ARMCC::AL)
+    .Default(~0U);
+  if (CC != ~0U) {
+    Head = Head.slice(0, Head.size() - 2);
+  } else
+    CC = ARMCC::AL;
+
+  ARMOperand::CreateToken(Op, Head, NameLoc);
+  Operands.push_back(Op.take());
+
+  ARMOperand::CreateCondCode(Op, ARMCC::CondCodes(CC), NameLoc);
+  Operands.push_back(Op.take());
+
+  // Add the remaining tokens in the mnemonic.
+  while (Next != StringRef::npos) {
+    Start = Next;
+    Next = Name.find('.', Start + 1);
+    Head = Name.slice(Start, Next);
+
+    ARMOperand::CreateToken(Op, Head, NameLoc);
+    Operands.push_back(Op.take());
+  }
+
+  // Read the remaining operands.
   if (getLexer().isNot(AsmToken::EndOfStatement)) {
-
     // Read the first operand.
-    ARMOperand Op;
+    OwningPtr<ARMOperand> Op;
     if (ParseOperand(Op)) return true;
-    Operands.push_back(new ARMOperand(Op));
+    Operands.push_back(Op.take());
 
     while (getLexer().is(AsmToken::Comma)) {
       Parser.Lex();  // Eat the comma.
 
       // Parse and remember the operand.
       if (ParseOperand(Op)) return true;
-      Operands.push_back(new ARMOperand(Op));
+      Operands.push_back(Op.take());
     }
   }
   return false;
@@ -682,16 +820,11 @@ bool ARMAsmParser::ParseDirectiveSyntax(SMLoc L) {
   const AsmToken &Tok = Parser.getTok();
   if (Tok.isNot(AsmToken::Identifier))
     return Error(L, "unexpected token in .syntax directive");
-  const StringRef &Mode = Tok.getString();
-  bool unified_syntax;
-  if (Mode == "unified" || Mode == "UNIFIED") {
+  StringRef Mode = Tok.getString();
+  if (Mode == "unified" || Mode == "UNIFIED")
     Parser.Lex();
-    unified_syntax = true;
-  }
-  else if (Mode == "divided" || Mode == "DIVIDED") {
+  else if (Mode == "divided" || Mode == "DIVIDED")
     Parser.Lex();
-    unified_syntax = false;
-  }
   else
     return Error(L, "unrecognized syntax mode in .syntax directive");
 
@@ -711,15 +844,10 @@ bool ARMAsmParser::ParseDirectiveCode(SMLoc L) {
   if (Tok.isNot(AsmToken::Integer))
     return Error(L, "unexpected token in .code directive");
   int64_t Val = Parser.getTok().getIntVal();
-  bool thumb_mode;
-  if (Val == 16) {
+  if (Val == 16)
     Parser.Lex();
-    thumb_mode = true;
-  }
-  else if (Val == 32) {
+  else if (Val == 32)
     Parser.Lex();
-    thumb_mode = false;
-  }
   else
     return Error(L, "invalid operand to .code directive");
 
@@ -732,8 +860,13 @@ bool ARMAsmParser::ParseDirectiveCode(SMLoc L) {
   return false;
 }
 
+extern "C" void LLVMInitializeARMAsmLexer();
+
 /// Force static initialization.
 extern "C" void LLVMInitializeARMAsmParser() {
   RegisterAsmParser<ARMAsmParser> X(TheARMTarget);
   RegisterAsmParser<ARMAsmParser> Y(TheThumbTarget);
+  LLVMInitializeARMAsmLexer();
 }
+
+#include "ARMGenAsmMatcher.inc"

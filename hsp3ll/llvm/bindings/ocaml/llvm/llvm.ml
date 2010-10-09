@@ -35,7 +35,6 @@ module TypeKind = struct
   | Opaque
   | Vector
   | Metadata
-  | Union
 end
 
 module Linkage = struct
@@ -90,13 +89,13 @@ module Attribute = struct
   | Optsize
   | Ssp
   | Sspreq
-  | Alignment
+  | Alignment of int
   | Nocapture
   | Noredzone
   | Noimplicitfloat
   | Naked
   | Inlinehint
-  | Stackalignment
+  | Stackalignment of int
 end
 
 module Icmp = struct
@@ -170,6 +169,8 @@ external delete_type_name : string -> llmodule -> unit
 external type_by_name : llmodule -> string -> lltype option
                       = "llvm_type_by_name"
 external dump_module : llmodule -> unit = "llvm_dump_module"
+external set_module_inline_asm : llmodule -> string -> unit
+                               = "llvm_set_module_inline_asm"
 
 (*===-- Types -------------------------------------------------------------===*)
 external classify_type : lltype -> TypeKind.t = "llvm_classify_type"
@@ -207,11 +208,6 @@ external packed_struct_type : llcontext -> lltype array -> lltype
 external struct_element_types : lltype -> lltype array
                               = "llvm_struct_element_types"
 external is_packed : lltype -> bool = "llvm_is_packed"
-
-(*--... Operations on union types ..........................................--*)
-external union_type : llcontext -> lltype array -> lltype = "llvm_union_type"
-external union_element_types : lltype -> lltype array
-                             = "llvm_union_element_types"
 
 (*--... Operations on pointer, vector, and array types .....................--*)
 external array_type : lltype -> int -> lltype = "llvm_array_type"
@@ -278,6 +274,8 @@ let fold_right_uses f v init =
 
 (*--... Operations on users ................................................--*)
 external operand : llvalue -> int -> llvalue = "llvm_operand"
+external set_operand : llvalue -> int -> llvalue -> unit = "llvm_set_operand"
+external num_operands : llvalue -> int = "llvm_num_operands"
 
 (*--... Operations on constants of (mostly) any type .......................--*)
 external is_constant : llvalue -> bool = "llvm_is_constant"
@@ -317,7 +315,6 @@ external const_struct : llcontext -> llvalue array -> llvalue
 external const_packed_struct : llcontext -> llvalue array -> llvalue
                              = "llvm_const_packed_struct"
 external const_vector : llvalue array -> llvalue = "llvm_const_vector"
-external const_union : lltype -> llvalue -> llvalue = "LLVMConstUnion"
 
 (*--... Constant expressions ...............................................--*)
 external align_of : lltype -> llvalue = "LLVMAlignOf"
@@ -548,10 +545,42 @@ let rec fold_right_function_range f i e init =
 let fold_right_functions f m init =
   fold_right_function_range f (function_end m) (At_start m) init
 
-external add_function_attr : llvalue -> Attribute.t -> unit
-                           = "llvm_add_function_attr"
-external remove_function_attr : llvalue -> Attribute.t -> unit
-                              = "llvm_remove_function_attr"
+external llvm_add_function_attr : llvalue -> int -> unit
+                                = "llvm_add_function_attr"
+external llvm_remove_function_attr : llvalue -> int -> unit
+                                   = "llvm_remove_function_attr"
+
+let pack_attr (attr:Attribute.t) : int =
+  match attr with
+      Attribute.Zext              -> 1 lsl 0
+    | Attribute.Sext              -> 1 lsl 1
+    | Attribute.Noreturn          -> 1 lsl 2
+    | Attribute.Inreg             -> 1 lsl 3
+    | Attribute.Structret         -> 1 lsl 4
+    | Attribute.Nounwind          -> 1 lsl 5
+    | Attribute.Noalias           -> 1 lsl 6
+    | Attribute.Byval             -> 1 lsl 7
+    | Attribute.Nest              -> 1 lsl 8
+    | Attribute.Readnone          -> 1 lsl 9
+    | Attribute.Readonly          -> 1 lsl 10
+    | Attribute.Noinline          -> 1 lsl 11
+    | Attribute.Alwaysinline      -> 1 lsl 12
+    | Attribute.Optsize           -> 1 lsl 13
+    | Attribute.Ssp               -> 1 lsl 14
+    | Attribute.Sspreq            -> 1 lsl 15
+    | Attribute.Alignment n       -> n lsl 16
+    | Attribute.Nocapture         -> 1 lsl 21
+    | Attribute.Noredzone         -> 1 lsl 22
+    | Attribute.Noimplicitfloat   -> 1 lsl 23
+    | Attribute.Naked             -> 1 lsl 24
+    | Attribute.Inlinehint        -> 1 lsl 25
+    | Attribute.Stackalignment n  -> n lsl 26
+
+let add_function_attr llval attr =
+  llvm_add_function_attr llval (pack_attr attr)
+
+let remove_function_attr llval attr =
+  llvm_remove_function_attr llval (pack_attr attr)
 
 (*--... Operations on params ...............................................--*)
 external params : llvalue -> llvalue array = "llvm_params"
@@ -602,10 +631,17 @@ let rec fold_right_param_range f init i e =
 let fold_right_params f fn init =
   fold_right_param_range f init (param_end fn) (At_start fn)
 
-external add_param_attr : llvalue -> Attribute.t -> unit
-                        = "llvm_add_param_attr"
-external remove_param_attr : llvalue -> Attribute.t -> unit
-                           = "llvm_remove_param_attr"
+external llvm_add_param_attr : llvalue -> int -> unit
+                                = "llvm_add_param_attr"
+external llvm_remove_param_attr : llvalue -> int -> unit
+                                = "llvm_remove_param_attr"
+
+let add_param_attr llval attr =
+  llvm_add_param_attr llval (pack_attr attr)
+
+let remove_param_attr llval attr =
+  llvm_remove_param_attr llval (pack_attr attr)
+
 external set_param_alignment : llvalue -> int -> unit
                              = "llvm_set_param_alignment"
 
@@ -727,10 +763,17 @@ external instruction_call_conv: llvalue -> int
                               = "llvm_instruction_call_conv"
 external set_instruction_call_conv: int -> llvalue -> unit
                                   = "llvm_set_instruction_call_conv"
-external add_instruction_param_attr : llvalue -> int -> Attribute.t -> unit
-                                    = "llvm_add_instruction_param_attr"
-external remove_instruction_param_attr : llvalue -> int -> Attribute.t -> unit
-                                       = "llvm_remove_instruction_param_attr"
+
+external llvm_add_instruction_param_attr : llvalue -> int -> int -> unit
+                                         = "llvm_add_instruction_param_attr"
+external llvm_remove_instruction_param_attr : llvalue -> int -> int -> unit
+                                         = "llvm_remove_instruction_param_attr"
+
+let add_instruction_param_attr llval i attr =
+  llvm_add_instruction_param_attr llval i (pack_attr attr)
+
+let remove_instruction_param_attr llval i attr =
+  llvm_remove_instruction_param_attr llval i (pack_attr attr)
 
 (*--... Operations on call instructions (only) .............................--*)
 external is_tail_call : llvalue -> bool = "llvm_is_tail_call"
@@ -1002,9 +1045,6 @@ let rec string_of_lltype ty =
       if is_packed ty
         then "<" ^ s ^ ">"
         else s
-  | TypeKind.Union -> "union { " ^ (concat2 ", " (
-                        Array.map string_of_lltype (union_element_types ty)
-                      )) ^ " }"
   | TypeKind.Array -> "["   ^ (string_of_int (array_length ty)) ^
                       " x " ^ (string_of_lltype (element_type ty)) ^ "]"
   | TypeKind.Vector -> "<"   ^ (string_of_int (vector_size ty)) ^

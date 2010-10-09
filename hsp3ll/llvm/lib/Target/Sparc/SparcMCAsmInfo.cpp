@@ -12,17 +12,15 @@
 //===----------------------------------------------------------------------===//
 
 #include "SparcMCAsmInfo.h"
-#include "llvm/ADT/SmallVector.h"
 using namespace llvm;
 
-SparcELFMCAsmInfo::SparcELFMCAsmInfo(const Target &T, const StringRef &TT) {
+SparcELFMCAsmInfo::SparcELFMCAsmInfo(const Target &T, StringRef TT) {
   Data16bitsDirective = "\t.half\t";
   Data32bitsDirective = "\t.word\t";
   Data64bitsDirective = 0;  // .xword is only supported by V9.
   ZeroDirective = "\t.skip\t";
   CommentString = "!";
   HasLEB128 = true;
-  AbsoluteDebugSectionOffsets = true;
   SupportsDebugInformation = true;
   
   SunStyleELFSectionSwitchSyntax = true;

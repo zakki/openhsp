@@ -39,6 +39,7 @@ void BitcodeReader::FreeState() {
   std::vector<BasicBlock*>().swap(FunctionBBs);
   std::vector<Function*>().swap(FunctionsWithBodies);
   DeferredFunctionInfo.clear();
+  MDKindMap.clear();
 }
 
 //===----------------------------------------------------------------------===//
@@ -75,6 +76,8 @@ static GlobalValue::LinkageTypes GetDecodedLinkage(unsigned Val) {
   case 11: return GlobalValue::LinkOnceODRLinkage;
   case 12: return GlobalValue::AvailableExternallyLinkage;
   case 13: return GlobalValue::LinkerPrivateLinkage;
+  case 14: return GlobalValue::LinkerPrivateWeakLinkage;
+  case 15: return GlobalValue::LinkerPrivateWeakDefAutoLinkage;
   }
 }
 
@@ -252,17 +255,18 @@ void BitcodeReaderValueList::ResolveConstantForwardRefs() {
     // at once.
     while (!Placeholder->use_empty()) {
       Value::use_iterator UI = Placeholder->use_begin();
+      User *U = *UI;
 
       // If the using object isn't uniqued, just update the operands.  This
       // handles instructions and initializers for global variables.
-      if (!isa<Constant>(*UI) || isa<GlobalValue>(*UI)) {
+      if (!isa<Constant>(U) || isa<GlobalValue>(U)) {
         UI.getUse().set(RealVal);
         continue;
       }
 
       // Otherwise, we have a constant that uses the placeholder.  Replace that
       // constant with a new constant that has *all* placeholder uses updated.
-      Constant *UserC = cast<Constant>(*UI);
+      Constant *UserC = cast<Constant>(U);
       for (User::op_iterator I = UserC->op_begin(), E = UserC->op_end();
            I != E; ++I) {
         Value *NewOp;
@@ -328,9 +332,9 @@ void BitcodeReaderMDValueList::AssignValue(Value *V, unsigned Idx) {
   }
 
   // If there was a forward reference to this value, replace it.
-  Value *PrevVal = OldV;
+  MDNode *PrevVal = cast<MDNode>(OldV);
   OldV->replaceAllUsesWith(V);
-  delete PrevVal;
+  MDNode::deleteTemporary(PrevVal);
   // Deleting PrevVal sets Idx value in MDValuePtrs to null. Set new
   // value for Idx.
   MDValuePtrs[Idx] = V;
@@ -346,7 +350,7 @@ Value *BitcodeReaderMDValueList::getValueFwdRef(unsigned Idx) {
   }
 
   // Create and return a placeholder, which will later be RAUW'd.
-  Value *V = new Argument(Type::getMetadataTy(Context));
+  Value *V = MDNode::getTemporary(Context, 0, 0);
   MDValuePtrs[Idx] = V;
   return V;
 }
@@ -585,13 +589,6 @@ bool BitcodeReader::ParseTypeTable() {
       ResultTy = StructType::get(Context, EltTys, Record[0]);
       break;
     }
-    case bitc::TYPE_CODE_UNION: {  // UNION: [eltty x N]
-      SmallVector<const Type*, 8> EltTys;
-      for (unsigned i = 0, e = Record.size(); i != e; ++i)
-        EltTys.push_back(getTypeByID(Record[i], true));
-      ResultTy = UnionType::get(&EltTys[0], EltTys.size());
-      break;
-    }
     case bitc::TYPE_CODE_ARRAY:     // ARRAY: [numelts, eltty]
       if (Record.size() < 2)
         return Error("Invalid ARRAY type record");
@@ -777,7 +774,8 @@ bool BitcodeReader::ParseMetadata() {
     bool IsFunctionLocal = false;
     // Read a record.
     Record.clear();
-    switch (Stream.ReadRecord(Code, Record)) {
+    Code = Stream.ReadRecord(Code, Record);
+    switch (Code) {
     default:  // Default behavior: ignore.
       break;
     case bitc::METADATA_NAME: {
@@ -790,34 +788,46 @@ bool BitcodeReader::ParseMetadata() {
       Record.clear();
       Code = Stream.ReadCode();
 
-      // METADATA_NAME is always followed by METADATA_NAMED_NODE.
-      if (Stream.ReadRecord(Code, Record) != bitc::METADATA_NAMED_NODE)
+      // METADATA_NAME is always followed by METADATA_NAMED_NODE2.
+      // Or METADATA_NAMED_NODE in LLVM 2.7. FIXME: Remove this in LLVM 3.0.
+      unsigned NextBitCode = Stream.ReadRecord(Code, Record);
+      if (NextBitCode == bitc::METADATA_NAMED_NODE) {
+        LLVM2_7MetadataDetected = true;
+      } else if (NextBitCode != bitc::METADATA_NAMED_NODE2)
         assert ( 0 && "Inavlid Named Metadata record");
 
       // Read named metadata elements.
       unsigned Size = Record.size();
-      SmallVector<MDNode *, 8> Elts;
+      NamedMDNode *NMD = TheModule->getOrInsertNamedMetadata(Name);
       for (unsigned i = 0; i != Size; ++i) {
-        if (Record[i] == ~0U) {
-          Elts.push_back(NULL);
-          continue;
-        }
         MDNode *MD = dyn_cast<MDNode>(MDValueList.getValueFwdRef(Record[i]));
         if (MD == 0)
           return Error("Malformed metadata record");
-        Elts.push_back(MD);
+        NMD->addOperand(MD);
       }
-      Value *V = NamedMDNode::Create(Context, Name.str(), Elts.data(),
-                                     Elts.size(), TheModule);
-      MDValueList.AssignValue(V, NextMDValueNo++);
+      // Backwards compatibility hack: NamedMDValues used to be Values,
+      // and they got their own slots in the value numbering. They are no
+      // longer Values, however we still need to account for them in the
+      // numbering in order to be able to read old bitcode files.
+      // FIXME: Remove this in LLVM 3.0.
+      if (LLVM2_7MetadataDetected)
+        MDValueList.AssignValue(0, NextMDValueNo++);
       break;
     }
-    case bitc::METADATA_FN_NODE:
+    case bitc::METADATA_FN_NODE: // FIXME: Remove in LLVM 3.0.
+    case bitc::METADATA_FN_NODE2:
       IsFunctionLocal = true;
       // fall-through
-    case bitc::METADATA_NODE: {
-      if (Record.empty() || Record.size() % 2 == 1)
-        return Error("Invalid METADATA_NODE record");
+    case bitc::METADATA_NODE:    // FIXME: Remove in LLVM 3.0.
+    case bitc::METADATA_NODE2: {
+
+      // Detect 2.7-era metadata.
+      // FIXME: Remove in LLVM 3.0.
+      if (Code == bitc::METADATA_FN_NODE || Code == bitc::METADATA_NODE)
+        LLVM2_7MetadataDetected = true;
+
+      if (Record.size() % 2 == 1)
+        return Error("Invalid METADATA_NODE2 record");
 
       unsigned Size = Record.size();
       SmallVector<Value*, 8> Elts;
@@ -830,7 +840,8 @@ bool BitcodeReader::ParseMetadata() {
         else
           Elts.push_back(NULL);
       }
-      Value *V = MDNode::getWhenValsUnresolved(Context, &Elts[0], Elts.size(),
+      Value *V = MDNode::getWhenValsUnresolved(Context,
+                                               Elts.data(), Elts.size(),
                                                IsFunctionLocal);
       IsFunctionLocal = false;
       MDValueList.AssignValue(V, NextMDValueNo++);
@@ -854,13 +865,12 @@ bool BitcodeReader::ParseMetadata() {
       SmallString<8> Name;
       Name.resize(RecordLength-1);
       unsigned Kind = Record[0];
-      (void) Kind;
       for (unsigned i = 1; i != RecordLength; ++i)
         Name[i-1] = Record[i];
       
       unsigned NewKind = TheModule->getMDKindID(Name.str());
-      assert(Kind == NewKind &&
-             "FIXME: Unable to handle custom metadata mismatch!");(void)NewKind;
+      if (!MDKindMap.insert(std::make_pair(Kind, NewKind)).second)
+        return Error("Conflicting METADATA_KIND records");
       break;
     }
     }
@@ -1287,6 +1297,12 @@ bool BitcodeReader::ParseModule() {
           UpgradedIntrinsics.push_back(std::make_pair(FI, NewFn));
       }
 
+      // Look for global variables which need to be renamed.
+      for (Module::global_iterator
+             GI = TheModule->global_begin(), GE = TheModule->global_end();
+           GI != GE; ++GI)
+        UpgradeGlobalVariable(GI);
+
       // Force deallocation of memory for these vectors to favor the client that
       // want lazy deserialization.
       std::vector<std::pair<GlobalVariable*, unsigned> >().swap(GlobalInits);
@@ -1520,11 +1536,15 @@ bool BitcodeReader::ParseModule() {
 bool BitcodeReader::ParseBitcodeInto(Module *M) {
   TheModule = 0;
 
-  if (Buffer->getBufferSize() & 3)
-    return Error("Bitcode stream should be a multiple of 4 bytes in length");
-
   unsigned char *BufPtr = (unsigned char *)Buffer->getBufferStart();
   unsigned char *BufEnd = BufPtr+Buffer->getBufferSize();
+
+  if (Buffer->getBufferSize() & 3) {
+    if (!isRawBitcode(BufPtr, BufEnd) && !isBitcodeWrapper(BufPtr, BufEnd))
+      return Error("Invalid bitcode signature");
+    else
+      return Error("Bitcode stream should be a multiple of 4 bytes in length");
+  }
 
   // If we have a wrapper header, parse it and ignore the non-bc file contents.
   // The magic number is 0x0B17C0DE stored in little endian.
@@ -1600,15 +1620,22 @@ bool BitcodeReader::ParseMetadataAttachment() {
     switch (Stream.ReadRecord(Code, Record)) {
     default:  // Default behavior: ignore.
       break;
-    case bitc::METADATA_ATTACHMENT: {
+    // FIXME: Remove in LLVM 3.0.
+    case bitc::METADATA_ATTACHMENT:
+      LLVM2_7MetadataDetected = true;
+    case bitc::METADATA_ATTACHMENT2: {
       unsigned RecordLength = Record.size();
       if (Record.empty() || (RecordLength - 1) % 2 == 1)
         return Error ("Invalid METADATA_ATTACHMENT reader!");
       Instruction *Inst = InstructionList[Record[0]];
       for (unsigned i = 1; i != RecordLength; i = i+2) {
         unsigned Kind = Record[i];
+        DenseMap<unsigned, unsigned>::iterator I =
+          MDKindMap.find(Kind);
+        if (I == MDKindMap.end())
+          return Error("Invalid metadata kind ID");
         Value *Node = MDValueList.getValueFwdRef(Record[i+1]);
-        Inst->setMetadata(Kind, cast<MDNode>(Node));
+        Inst->setMetadata(I->second, cast<MDNode>(Node));
       }
       break;
     }
@@ -1624,6 +1651,7 @@ bool BitcodeReader::ParseFunctionBody(Function *F) {
 
   InstructionList.clear();
   unsigned ModuleValueListSize = ValueList.size();
+  unsigned ModuleMDValueListSize = MDValueList.size();
 
   // Add all the function arguments to the value table.
   for(Function::arg_iterator I = F->arg_begin(), E = F->arg_end(); I != E; ++I)
@@ -1633,6 +1661,8 @@ bool BitcodeReader::ParseFunctionBody(Function *F) {
   BasicBlock *CurBB = 0;
   unsigned CurBBNo = 0;
 
+  DebugLoc LastLoc;
+  
   // Read all the records.
   SmallVector<uint64_t, 64> Record;
   while (1) {
@@ -1687,6 +1717,49 @@ bool BitcodeReader::ParseFunctionBody(Function *F) {
         FunctionBBs[i] = BasicBlock::Create(Context, "", F);
       CurBB = FunctionBBs[0];
       continue;
+
+        
+    case bitc::FUNC_CODE_DEBUG_LOC_AGAIN:  // DEBUG_LOC_AGAIN
+      // This record indicates that the last instruction is at the same
+      // location as the previous instruction with a location.
+      I = 0;
+        
+      // Get the last instruction emitted.
+      if (CurBB && !CurBB->empty())
+        I = &CurBB->back();
+      else if (CurBBNo && FunctionBBs[CurBBNo-1] &&
+               !FunctionBBs[CurBBNo-1]->empty())
+        I = &FunctionBBs[CurBBNo-1]->back();
+        
+      if (I == 0) return Error("Invalid DEBUG_LOC_AGAIN record");
+      I->setDebugLoc(LastLoc);
+      I = 0;
+      continue;
+        
+    // FIXME: Remove this in LLVM 3.0.
+    case bitc::FUNC_CODE_DEBUG_LOC:
+      LLVM2_7MetadataDetected = true;
+    case bitc::FUNC_CODE_DEBUG_LOC2: {      // DEBUG_LOC: [line, col, scope, ia]
+      I = 0;     // Get the last instruction emitted.
+      if (CurBB && !CurBB->empty())
+        I = &CurBB->back();
+      else if (CurBBNo && FunctionBBs[CurBBNo-1] &&
+               !FunctionBBs[CurBBNo-1]->empty())
+        I = &FunctionBBs[CurBBNo-1]->back();
+      if (I == 0 || Record.size() < 4)
+        return Error("Invalid FUNC_CODE_DEBUG_LOC record");
+      
+      unsigned Line = Record[0], Col = Record[1];
+      unsigned ScopeID = Record[2], IAID = Record[3];
+      
+      MDNode *Scope = 0, *IA = 0;
+      if (ScopeID) Scope = cast<MDNode>(MDValueList.getValueFwdRef(ScopeID-1));
+      if (IAID)    IA = cast<MDNode>(MDValueList.getValueFwdRef(IAID-1));
+      LastLoc = DebugLoc::get(Line, Col, Scope, IA);
+      I->setDebugLoc(LastLoc);
+      I = 0;
+      continue;
+    }
 
     case bitc::FUNC_CODE_INST_BINOP: {    // BINOP: [opval, ty, opval, opcode]
       unsigned OpNum = 0;
@@ -1932,6 +2005,7 @@ bool BitcodeReader::ParseFunctionBody(Function *F) {
         } while(OpNum != Record.size());
 
         const Type *ReturnType = F->getReturnType();
+        // Handle multiple return values. FIXME: Remove in LLVM 3.0.
         if (Vs.size() > 1 ||
             (ReturnType->isStructTy() &&
              (Vs.empty() || Vs[0]->getType() != ReturnType))) {
@@ -2125,13 +2199,18 @@ bool BitcodeReader::ParseFunctionBody(Function *F) {
       InstructionList.push_back(I);
       break;
     }
-    case bitc::FUNC_CODE_INST_ALLOCA: { // ALLOCA: [instty, op, align]
-      if (Record.size() < 3)
+    case bitc::FUNC_CODE_INST_ALLOCA: { // ALLOCA: [instty, opty, op, align]
+      // For backward compatibility, tolerate a lack of an opty, and use i32.
+      // Remove this in LLVM 3.0.
+      if (Record.size() < 3 || Record.size() > 4)
         return Error("Invalid ALLOCA record");
+      unsigned OpNum = 0;
       const PointerType *Ty =
-        dyn_cast_or_null<PointerType>(getTypeByID(Record[0]));
-      Value *Size = getFnValueByID(Record[1], Type::getInt32Ty(Context));
-      unsigned Align = Record[2];
+        dyn_cast_or_null<PointerType>(getTypeByID(Record[OpNum++]));
+      const Type *OpTy = Record.size() == 4 ? getTypeByID(Record[OpNum++]) :
+                                              Type::getInt32Ty(Context);
+      Value *Size = getFnValueByID(Record[OpNum++], OpTy);
+      unsigned Align = Record[OpNum++];
       if (!Ty || !Size) return Error("Invalid ALLOCA record");
       I = new AllocaInst(Ty->getElementType(), Size, (1 << Align) >> 1);
       InstructionList.push_back(I);
@@ -2175,7 +2254,10 @@ bool BitcodeReader::ParseFunctionBody(Function *F) {
       InstructionList.push_back(I);
       break;
     }
-    case bitc::FUNC_CODE_INST_CALL: {
+    // FIXME: Remove this in LLVM 3.0.
+    case bitc::FUNC_CODE_INST_CALL:
+      LLVM2_7MetadataDetected = true;
+    case bitc::FUNC_CODE_INST_CALL2: {
       // CALL: [paramattrs, cc, fnty, fnid, arg0, arg1...]
       if (Record.size() < 3)
         return Error("Invalid CALL record");
@@ -2263,7 +2345,7 @@ bool BitcodeReader::ParseFunctionBody(Function *F) {
     if (A->getParent() == 0) {
       // We found at least one unresolved value.  Nuke them all to avoid leaks.
       for (unsigned i = ModuleValueListSize, e = ValueList.size(); i != e; ++i){
-        if ((A = dyn_cast<Argument>(ValueList.back())) && A->getParent() == 0) {
+        if ((A = dyn_cast<Argument>(ValueList[i])) && A->getParent() == 0) {
           A->replaceAllUsesWith(UndefValue::get(A->getType()));
           delete A;
         }
@@ -2272,10 +2354,11 @@ bool BitcodeReader::ParseFunctionBody(Function *F) {
     }
   }
 
+  // FIXME: Check for unresolved forward-declared metadata references
+  // and clean up leaks.
+
   // See if anything took the address of blocks in this function.  If so,
   // resolve them now.
-  /// BlockAddrFwdRefs - These are blockaddr references to basic blocks.  These
-  /// are resolved lazily when functions are loaded.
   DenseMap<Function*, std::vector<BlockAddrRefTy> >::iterator BAFRI =
     BlockAddrFwdRefs.find(F);
   if (BAFRI != BlockAddrFwdRefs.end()) {
@@ -2293,8 +2376,21 @@ bool BitcodeReader::ParseFunctionBody(Function *F) {
     BlockAddrFwdRefs.erase(BAFRI);
   }
   
+  // FIXME: Remove this in LLVM 3.0.
+  unsigned NewMDValueListSize = MDValueList.size();
+
   // Trim the value list down to the size it was before we parsed this function.
   ValueList.shrinkTo(ModuleValueListSize);
+  MDValueList.shrinkTo(ModuleMDValueListSize);
+
+  // Backwards compatibility hack: Function-local metadata numbers
+  // were previously not reset between functions. This is now fixed,
+  // however we still need to understand the old numbering in order
+  // to be able to read old bitcode files.
+  // FIXME: Remove this in LLVM 3.0.
+  if (LLVM2_7MetadataDetected)
+    MDValueList.resize(NewMDValueListSize);
+
   std::vector<BasicBlock*>().swap(FunctionBBs);
 
   return false;

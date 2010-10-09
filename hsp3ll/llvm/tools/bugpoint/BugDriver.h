@@ -16,7 +16,7 @@
 #ifndef BUGDRIVER_H
 #define BUGDRIVER_H
 
-#include "llvm/ADT/DenseMap.h"
+#include "llvm/ADT/ValueMap.h"
 #include <vector>
 #include <string>
 
@@ -47,37 +47,38 @@ class BugDriver {
   const char *ToolName;            // argv[0] of bugpoint
   std::string ReferenceOutputFile; // Name of `good' output file
   Module *Program;             // The raw program, linked together
-  std::vector<const PassInfo*> PassesToRun;
+  std::vector<std::string> PassesToRun;
   AbstractInterpreter *Interpreter;   // How to run the program
   AbstractInterpreter *SafeInterpreter;  // To generate reference output, etc.
   GCC *gcc;
-  bool run_as_child;
   bool run_find_bugs;
   unsigned Timeout;
   unsigned MemoryLimit;
+  bool UseValgrind;
 
   // FIXME: sort out public/private distinctions...
   friend class ReducePassList;
   friend class ReduceMisCodegenFunctions;
 
 public:
-  BugDriver(const char *toolname, bool as_child, bool find_bugs,
-            unsigned timeout, unsigned memlimit, LLVMContext& ctxt);
+  BugDriver(const char *toolname, bool find_bugs,
+            unsigned timeout, unsigned memlimit, bool use_valgrind,
+            LLVMContext& ctxt);
+  ~BugDriver();
 
   const char *getToolName() const { return ToolName; }
 
-  LLVMContext& getContext() { return Context; }
+  LLVMContext& getContext() const { return Context; }
 
   // Set up methods... these methods are used to copy information about the
   // command line arguments into instance variables of BugDriver.
   //
   bool addSources(const std::vector<std::string> &FileNames);
-  template<class It>
-  void addPasses(It I, It E) { PassesToRun.insert(PassesToRun.end(), I, E); }
-  void setPassesToRun(const std::vector<const PassInfo*> &PTR) {
+  void addPass(std::string p) { PassesToRun.push_back(p); }
+  void setPassesToRun(const std::vector<std::string> &PTR) {
     PassesToRun = PTR;
   }
-  const std::vector<const PassInfo*> &getPassesToRun() const {
+  const std::vector<std::string> &getPassesToRun() const {
     return PassesToRun;
   }
 
@@ -85,7 +86,7 @@ public:
   /// variables are set up from command line arguments. The \p as_child argument
   /// indicates whether the driver is to run in parent mode or child mode.
   ///
-  bool run();
+  bool run(std::string &ErrMsg);
 
   /// debugOptimizerCrash - This method is called when some optimizer pass
   /// crashes on input.  It attempts to prune down the testcase to something
@@ -96,12 +97,12 @@ public:
   /// debugCodeGeneratorCrash - This method is called when the code generator
   /// crashes on an input.  It attempts to reduce the input as much as possible
   /// while still causing the code generator to crash.
-  bool debugCodeGeneratorCrash();
+  bool debugCodeGeneratorCrash(std::string &Error);
 
   /// debugMiscompilation - This method is used when the passes selected are not
   /// crashing, but the generated output is semantically different from the
   /// input.
-  bool debugMiscompilation();
+  void debugMiscompilation(std::string *Error);
 
   /// debugPassMiscompilation - This method is called when the specified pass
   /// miscompiles Program as input.  It tries to reduce the testcase to
@@ -115,12 +116,13 @@ public:
   /// compileSharedObject - This method creates a SharedObject from a given
   /// BitcodeFile for debugging a code generator.
   ///
-  std::string compileSharedObject(const std::string &BitcodeFile);
+  std::string compileSharedObject(const std::string &BitcodeFile,
+                                  std::string &Error);
 
   /// debugCodeGenerator - This method narrows down a module to a function or
   /// set of functions, using the CBE as a ``safe'' code generator for other
   /// functions that are not under consideration.
-  bool debugCodeGenerator();
+  bool debugCodeGenerator(std::string *Error);
 
   /// isExecutingJIT - Returns true if bugpoint is currently testing the JIT
   ///
@@ -128,12 +130,8 @@ public:
 
   /// runPasses - Run all of the passes in the "PassesToRun" list, discard the
   /// output, and return true if any of the passes crashed.
-  bool runPasses(Module *M = 0) {
-    if (M == 0) M = Program;
-    std::swap(M, Program);
-    bool Result = runPasses(PassesToRun);
-    std::swap(M, Program);
-    return Result;
+  bool runPasses(Module *M) const {
+    return runPasses(M, PassesToRun);
   }
 
   Module *getProgram() const { return Program; }
@@ -161,28 +159,30 @@ public:
   /// the specified one as the current program.
   void setNewProgram(Module *M);
 
-  /// compileProgram - Try to compile the specified module, throwing an
-  /// exception if an error occurs, or returning normally if not.  This is used
-  /// for code generation crash testing.
+  /// compileProgram - Try to compile the specified module, returning false and
+  /// setting Error if an error occurs.  This is used for code generation
+  /// crash testing.
   ///
-  void compileProgram(Module *M);
+  void compileProgram(Module *M, std::string *Error) const;
 
   /// executeProgram - This method runs "Program", capturing the output of the
-  /// program to a file, returning the filename of the file.  A recommended
-  /// filename may be optionally specified.  If there is a problem with the code
-  /// generator (e.g., llc crashes), this will throw an exception.
+  /// program to a file.  A recommended filename may be optionally specified.
   ///
-  std::string executeProgram(std::string RequestedOutputFilename = "",
-                             std::string Bitcode = "",
-                             const std::string &SharedObjects = "",
-                             AbstractInterpreter *AI = 0,
-                             bool *ProgramExitedNonzero = 0);
+  std::string executeProgram(const Module *Program,
+                             std::string OutputFilename,
+                             std::string Bitcode,
+                             const std::string &SharedObjects,
+                             AbstractInterpreter *AI,
+                             std::string *Error) const;
 
   /// executeProgramSafely - Used to create reference output with the "safe"
   /// backend, if reference output is not provided.  If there is a problem with
-  /// the code generator (e.g., llc crashes), this will throw an exception.
+  /// the code generator (e.g., llc crashes), this will return false and set
+  /// Error.
   ///
-  std::string executeProgramSafely(std::string OutputFile = "");
+  std::string executeProgramSafely(const Module *Program,
+                                   std::string OutputFile,
+                                   std::string *Error) const;
 
   /// createReferenceFile - calls compileProgram and then records the output
   /// into ReferenceOutputFile. Returns true if reference file created, false 
@@ -194,25 +194,27 @@ public:
 
   /// diffProgram - This method executes the specified module and diffs the
   /// output against the file specified by ReferenceOutputFile.  If the output
-  /// is different, true is returned.  If there is a problem with the code
-  /// generator (e.g., llc crashes), this will throw an exception.
+  /// is different, 1 is returned.  If there is a problem with the code
+  /// generator (e.g., llc crashes), this will return -1 and set Error.
   ///
-  bool diffProgram(const std::string &BitcodeFile = "",
+  bool diffProgram(const Module *Program,
+                   const std::string &BitcodeFile = "",
                    const std::string &SharedObj = "",
-                   bool RemoveBitcode = false);
-                   
-  /// EmitProgressBitcode - This function is used to output the current Program
-  /// to a file named "bugpoint-ID.bc".
+                   bool RemoveBitcode = false,
+                   std::string *Error = 0) const;
+
+  /// EmitProgressBitcode - This function is used to output M to a file named
+  /// "bugpoint-ID.bc".
   ///
-  void EmitProgressBitcode(const std::string &ID, bool NoFlyer = false);
+  void EmitProgressBitcode(const Module *M, const std::string &ID,
+                           bool NoFlyer = false) const;
 
   /// deleteInstructionFromProgram - This method clones the current Program and
   /// deletes the specified instruction from the cloned module.  It then runs a
   /// series of cleanup passes (ADCE and SimplifyCFG) to eliminate any code
   /// which depends on the value.  The modified module is then returned.
   ///
-  Module *deleteInstructionFromProgram(const Instruction *I, unsigned Simp)
-    const;
+  Module *deleteInstructionFromProgram(const Instruction *I, unsigned Simp);
 
   /// performFinalCleanups - This method clones the current Program and performs
   /// a series of cleanups intended to get rid of extra cruft on the module.  If
@@ -239,7 +241,7 @@ public:
   /// failure.  If AutoDebugCrashes is set to true, then bugpoint will
   /// automatically attempt to track down a crashing pass if one exists, and
   /// this method will never return null.
-  Module *runPassesOn(Module *M, const std::vector<const PassInfo*> &Passes,
+  Module *runPassesOn(Module *M, const std::vector<std::string> &Passes,
                       bool AutoDebugCrashes = false, unsigned NumExtraArgs = 0,
                       const char * const *ExtraArgs = NULL);
 
@@ -252,7 +254,8 @@ public:
   /// or failed, unless Quiet is set.  ExtraArgs specifies additional arguments
   /// to pass to the child bugpoint instance.
   ///
-  bool runPasses(const std::vector<const PassInfo*> &PassesToRun,
+  bool runPasses(Module *Program,
+                 const std::vector<std::string> &PassesToRun,
                  std::string &OutputFilename, bool DeleteOutput = false,
                  bool Quiet = false, unsigned NumExtraArgs = 0,
                  const char * const *ExtraArgs = NULL) const;
@@ -264,26 +267,25 @@ public:
   /// If the passes did not compile correctly, output the command required to 
   /// recreate the failure. This returns true if a compiler error is found.
   ///
-  bool runManyPasses(const std::vector<const PassInfo*> &AllPasses);
+  bool runManyPasses(const std::vector<std::string> &AllPasses,
+                     std::string &ErrMsg);
 
   /// writeProgramToFile - This writes the current "Program" to the named
   /// bitcode file.  If an error occurs, true is returned.
   ///
-  bool writeProgramToFile(const std::string &Filename, Module *M = 0) const;
+  bool writeProgramToFile(const std::string &Filename, const Module *M) const;
 
 private:
   /// runPasses - Just like the method above, but this just returns true or
   /// false indicating whether or not the optimizer crashed on the specified
   /// input (true = crashed).
   ///
-  bool runPasses(const std::vector<const PassInfo*> &PassesToRun,
+  bool runPasses(Module *M,
+                 const std::vector<std::string> &PassesToRun,
                  bool DeleteOutput = true) const {
     std::string Filename;
-    return runPasses(PassesToRun, Filename, DeleteOutput);
+    return runPasses(M, PassesToRun, Filename, DeleteOutput);
   }
-
-  /// runAsChild - The actual "runPasses" guts that runs in a child process.
-  int runPassesAsChild(const std::vector<const PassInfo*> &PassesToRun);
 
   /// initializeExecutionEnvironment - This method is used to set up the
   /// environment for executing LLVM programs.
@@ -301,7 +303,7 @@ Module *ParseInputFile(const std::string &InputFilename,
 /// getPassesString - Turn a list of passes into a string which indicates the
 /// command line options that must be passed to add the passes.
 ///
-std::string getPassesString(const std::vector<const PassInfo*> &Passes);
+std::string getPassesString(const std::vector<std::string> &Passes);
 
 /// PrintFunctionList - prints out list of problematic functions
 ///
@@ -320,7 +322,7 @@ void DeleteFunctionBody(Function *F);
 /// module, split the functions OUT of the specified module, and place them in
 /// the new module.
 Module *SplitFunctionsOutOfModule(Module *M, const std::vector<Function*> &F,
-                                  DenseMap<const Value*, Value*> &ValueMap);
+                                  ValueMap<const Value*, Value*> &VMap);
 
 } // End llvm namespace
 

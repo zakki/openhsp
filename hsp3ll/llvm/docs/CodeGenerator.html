@@ -1090,8 +1090,8 @@ def FADDS : AForm_2&lt;59, 21,
 <p>The portion of the instruction definition in bold indicates the pattern used
    to match the instruction.  The DAG operators
    (like <tt>fmul</tt>/<tt>fadd</tt>) are defined in
-   the <tt>lib/Target/TargetSelectionDAG.td</tt> file.  "<tt>F4RC</tt>" is the
-   register class of the input and result values.</p>
+   the <tt>include/llvm/Target/TargetSelectionDAG.td</tt> file.  "
+   <tt>F4RC</tt>" is the register class of the input and result values.</p>
 
 <p>The TableGen DAG instruction selector generator reads the instruction
    patterns in the <tt>.td</tt> file and automatically builds parts of the
@@ -1430,7 +1430,7 @@ bool RegMapping_Fer::compatible_class(MachineFunction &amp;mf,
    instruction,
    use <tt>TargetInstrInfo::get(opcode)::ImplicitUses</tt>. Pre-colored
    registers impose constraints on any register allocation algorithm. The
-   register allocator must make sure that none of them is been overwritten by
+   register allocator must make sure that none of them are overwritten by
    the values of virtual registers while still alive.</p>
 
 </div>
@@ -1457,8 +1457,8 @@ bool RegMapping_Fer::compatible_class(MachineFunction &amp;mf,
    order to get and store values in memory. To assign a physical register to a
    virtual register present in a given operand,
    use <tt>MachineOperand::setReg(p_reg)</tt>. To insert a store instruction,
-   use <tt>TargetRegisterInfo::storeRegToStackSlot(...)</tt>, and to insert a
-   load instruction, use <tt>TargetRegisterInfo::loadRegFromStackSlot</tt>.</p>
+   use <tt>TargetInstrInfo::storeRegToStackSlot(...)</tt>, and to insert a
+   load instruction, use <tt>TargetInstrInfo::loadRegFromStackSlot</tt>.</p>
 
 <p>The indirect mapping shields the application developer from the complexities
    of inserting load and store instructions. In order to map a virtual register
@@ -1594,22 +1594,22 @@ bool RegMapping_Fer::compatible_class(MachineFunction &amp;mf,
    different register allocators:</p>
 
 <ul>
-  <li><i>Simple</i> &mdash; This is a very simple implementation that does not
-      keep values in registers across instructions. This register allocator
-      immediately spills every value right after it is computed, and reloads all
-      used operands from memory to temporary registers before each
-      instruction.</li>
-
-  <li><i>Local</i> &mdash; This register allocator is an improvement on the
-      <i>Simple</i> implementation. It allocates registers on a basic block
-      level, attempting to keep values in registers and reusing registers as
-      appropriate.</li>
-
   <li><i>Linear Scan</i> &mdash; <i>The default allocator</i>. This is the
       well-know linear scan register allocator. Whereas the
       <i>Simple</i> and <i>Local</i> algorithms use a direct mapping
       implementation technique, the <i>Linear Scan</i> implementation
       uses a spiller in order to place load and stores.</li>
+
+  <li><i>Fast</i> &mdash; This register allocator is the default for debug
+      builds. It allocates registers on a basic block level, attempting to keep
+      values in registers and reusing registers as appropriate.</li>
+
+  <li><i>PBQP</i> &mdash; A Partitioned Boolean Quadratic Programming (PBQP)
+      based register allocator. This allocator works by constructing a PBQP
+      problem representing the register allocation problem under consideration,
+      solving this using a PBQP solver, and mapping the solution back to a
+      register assignment.</li>
+
 </ul>
 
 <p>The type of register allocator used in <tt>llc</tt> can be chosen with the
@@ -1617,9 +1617,9 @@ bool RegMapping_Fer::compatible_class(MachineFunction &amp;mf,
 
 <div class="doc_code">
 <pre>
-$ llc -regalloc=simple file.bc -o sp.s;
-$ llc -regalloc=local file.bc -o lc.s;
 $ llc -regalloc=linearscan file.bc -o ln.s;
+$ llc -regalloc=fast file.bc -o fa.s;
+$ llc -regalloc=pbqp file.bc -o pbqp.s;
 </pre>
 </div>
 
@@ -2162,7 +2162,7 @@ MOVSX32rm16 -&gt; movsx, 32-bit register, 16-bit memory
 
   <a href="mailto:sabre@nondot.org">Chris Lattner</a><br>
   <a href="http://llvm.org">The LLVM Compiler Infrastructure</a><br>
-  Last modified: $Date: 2010-03-11 18:12:20 -0600 (Thu, 11 Mar 2010) $
+  Last modified: $Date: 2010-08-31 17:01:07 -0500 (Tue, 31 Aug 2010) $
 </address>
 
 </body>

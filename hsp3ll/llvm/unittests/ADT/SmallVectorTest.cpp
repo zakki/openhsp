@@ -13,7 +13,9 @@
 
 #include "gtest/gtest.h"
 #include "llvm/ADT/SmallVector.h"
+#include "llvm/Support/Compiler.h"
 #include <stdarg.h>
+#include <list>
 
 using namespace llvm;
 
@@ -75,7 +77,8 @@ public:
     return c0.getValue() == c1.getValue();
   }
 
-  friend bool operator!=(const Constructable & c0, const Constructable & c1) {
+  friend bool ATTRIBUTE_UNUSED
+  operator!=(const Constructable & c0, const Constructable & c1) {
     return c0.getValue() != c1.getValue();
   }
 };
@@ -384,7 +387,7 @@ TEST_F(SmallVectorTest, ConstVectorTest) {
 // Direct array access.
 TEST_F(SmallVectorTest, DirectVectorTest) {
   EXPECT_EQ(0u, theVector.size());
-  EXPECT_EQ(4u, theVector.capacity());
+  EXPECT_LE(4u, theVector.capacity());
   EXPECT_EQ(0, Constructable::getNumConstructorCalls());
   theVector.end()[0] = 1;
   theVector.end()[1] = 2;
@@ -397,6 +400,11 @@ TEST_F(SmallVectorTest, DirectVectorTest) {
   EXPECT_EQ(2, theVector[1].getValue());
   EXPECT_EQ(3, theVector[2].getValue());
   EXPECT_EQ(4, theVector[3].getValue());
+}
+
+TEST_F(SmallVectorTest, IteratorTest) {
+  std::list<int> L;
+  theVector.insert(theVector.end(), L.begin(), L.end());
 }
 
 }

@@ -31,7 +31,8 @@ class SDTCisI64<int OpNum> : SDTCisVT<OpNum, i64>;
 def SDT_SystemZCall         : SDTypeProfile<0, -1, [SDTCisPtrTy<0>]>;
 def SDT_SystemZCallSeqStart : SDCallSeqStart<[SDTCisI64<0>]>;
 def SDT_SystemZCallSeqEnd   : SDCallSeqEnd<[SDTCisI64<0>, SDTCisI64<1>]>;
-def SDT_CmpTest             : SDTypeProfile<0, 2, [SDTCisSameAs<0, 1>]>;
+def SDT_CmpTest             : SDTypeProfile<1, 2, [SDTCisI64<0>,
+                                                   SDTCisSameAs<1, 2>]>;
 def SDT_BrCond              : SDTypeProfile<0, 3,
                                            [SDTCisVT<0, OtherVT>,
                                             SDTCisI8<1>, SDTCisVT<2, i64>]>;
@@ -47,7 +48,7 @@ def SDT_Address             : SDTypeProfile<1, 1,
 def SystemZretflag : SDNode<"SystemZISD::RET_FLAG", SDTNone,
                      [SDNPHasChain, SDNPOptInFlag]>;
 def SystemZcall    : SDNode<"SystemZISD::CALL", SDT_SystemZCall,
-                     [SDNPHasChain, SDNPOutFlag, SDNPOptInFlag]>;
+                     [SDNPHasChain, SDNPOutFlag, SDNPOptInFlag, SDNPVariadic]>;
 def SystemZcallseq_start :
                  SDNode<"ISD::CALLSEQ_START", SDT_SystemZCallSeqStart,
                         [SDNPHasChain, SDNPOutFlag]>;
@@ -477,7 +478,8 @@ def MOV64rmm  : RSYI<0x04EB,
                      "lmg\t{$from, $to, $dst}",
                      []>;
 
-let isReMaterializable = 1, isAsCheapAsAMove = 1, isTwoAddress = 1 in {
+let isReMaterializable = 1, isAsCheapAsAMove = 1,
+    Constraints = "$src = $dst" in {
 def MOV64Pr0_even : Pseudo<(outs GR64P:$dst), (ins GR64P:$src),
                            "lhi\t${dst:subreg_even}, 0",
                            []>;
@@ -536,7 +538,7 @@ def NEG64rr32 : RREI<0xB913, (outs GR64:$dst), (ins GR32:$src),
                       (implicit PSW)]>;
 }
 
-let isTwoAddress = 1 in {
+let Constraints = "$src1 = $dst" in {
 
 let Defs = [PSW] in {
 
@@ -923,12 +925,12 @@ def UDIVREM64m : RXYI<0xE387, (outs GR128:$dst), (ins GR128:$src1, rriaddr:$src2
                       "dlg\t{$dst, $src2}",
                       []>;
 } // mayLoad
-} // isTwoAddress = 1
+} // Constraints = "$src1 = $dst"
 
 //===----------------------------------------------------------------------===//
 // Shifts
 
-let isTwoAddress = 1 in
+let Constraints = "$src = $dst" in
 def SRL32rri : RSI<0x88,
                    (outs GR32:$dst), (ins GR32:$src, riaddr32:$amt),
                    "srl\t{$src, $amt}",
@@ -938,7 +940,7 @@ def SRL64rri : RSYI<0xEB0C,
                     "srlg\t{$dst, $src, $amt}",
                     [(set GR64:$dst, (srl GR64:$src, riaddr:$amt))]>;
 
-let isTwoAddress = 1 in
+let Constraints = "$src = $dst" in
 def SHL32rri : RSI<0x89,
                    (outs GR32:$dst), (ins GR32:$src, riaddr32:$amt),
                    "sll\t{$src, $amt}",
@@ -949,7 +951,7 @@ def SHL64rri : RSYI<0xEB0D,
                     [(set GR64:$dst, (shl GR64:$src, riaddr:$amt))]>;
 
 let Defs = [PSW] in {
-let isTwoAddress = 1 in
+let Constraints = "$src = $dst" in
 def SRA32rri : RSI<0x8A,
                    (outs GR32:$dst), (ins GR32:$src, riaddr32:$amt),
                    "sra\t{$src, $amt}",
@@ -980,100 +982,89 @@ let Defs = [PSW] in {
 def CMP32rr : RRI<0x19,
                   (outs), (ins GR32:$src1, GR32:$src2),
                   "cr\t$src1, $src2",
-                  [(SystemZcmp GR32:$src1, GR32:$src2), 
-                   (implicit PSW)]>;
+                  [(set PSW, (SystemZcmp GR32:$src1, GR32:$src2))]>; 
 def CMP64rr : RREI<0xB920,
                    (outs), (ins GR64:$src1, GR64:$src2),
                    "cgr\t$src1, $src2",
-                   [(SystemZcmp GR64:$src1, GR64:$src2), 
-                    (implicit PSW)]>;
+                   [(set PSW, (SystemZcmp GR64:$src1, GR64:$src2))]>;
 
 def CMP32ri   : RILI<0xC2D,
                      (outs), (ins GR32:$src1, s32imm:$src2),
                      "cfi\t$src1, $src2",
-                     [(SystemZcmp GR32:$src1, imm:$src2), 
-                      (implicit PSW)]>;
+                     [(set PSW, (SystemZcmp GR32:$src1, imm:$src2))]>;
 def CMP64ri32 : RILI<0xC2C,
                      (outs), (ins GR64:$src1, s32imm64:$src2),
                      "cgfi\t$src1, $src2",
-                     [(SystemZcmp GR64:$src1, i64immSExt32:$src2),
-                      (implicit PSW)]>;
+                     [(set PSW, (SystemZcmp GR64:$src1, i64immSExt32:$src2))]>;
 
 def CMP32rm : RXI<0x59,
                   (outs), (ins GR32:$src1, rriaddr12:$src2),
                   "c\t$src1, $src2",
-                  [(SystemZcmp GR32:$src1, (load rriaddr12:$src2)),
-                   (implicit PSW)]>;
+                  [(set PSW, (SystemZcmp GR32:$src1, (load rriaddr12:$src2)))]>;
 def CMP32rmy : RXYI<0xE359,
                     (outs), (ins GR32:$src1, rriaddr:$src2),
                     "cy\t$src1, $src2",
-                    [(SystemZcmp GR32:$src1, (load rriaddr:$src2)),
-                     (implicit PSW)]>;
+                    [(set PSW, (SystemZcmp GR32:$src1, (load rriaddr:$src2)))]>;
 def CMP64rm  : RXYI<0xE320,
                     (outs), (ins GR64:$src1, rriaddr:$src2),
                     "cg\t$src1, $src2",
-                    [(SystemZcmp GR64:$src1, (load rriaddr:$src2)),
-                     (implicit PSW)]>;
+                    [(set PSW, (SystemZcmp GR64:$src1, (load rriaddr:$src2)))]>;
 
 def UCMP32rr : RRI<0x15,
                    (outs), (ins GR32:$src1, GR32:$src2),
                    "clr\t$src1, $src2",
-                   [(SystemZucmp GR32:$src1, GR32:$src2),
-                    (implicit PSW)]>;
+                   [(set PSW, (SystemZucmp GR32:$src1, GR32:$src2))]>;
 def UCMP64rr : RREI<0xB921,
                     (outs), (ins GR64:$src1, GR64:$src2),
                     "clgr\t$src1, $src2",
-                    [(SystemZucmp GR64:$src1, GR64:$src2), 
-                     (implicit PSW)]>;
+                    [(set PSW, (SystemZucmp GR64:$src1, GR64:$src2))]>;
 
 def UCMP32ri   : RILI<0xC2F,
                       (outs), (ins GR32:$src1, i32imm:$src2),
                       "clfi\t$src1, $src2",
-                      [(SystemZucmp GR32:$src1, imm:$src2),
-                       (implicit PSW)]>;
+                      [(set PSW, (SystemZucmp GR32:$src1, imm:$src2))]>;
 def UCMP64ri32 : RILI<0xC2E,
                       (outs), (ins GR64:$src1, i64i32imm:$src2),
                       "clgfi\t$src1, $src2",
-                      [(SystemZucmp GR64:$src1, i64immZExt32:$src2),
-                       (implicit PSW)]>;
+                      [(set PSW,(SystemZucmp GR64:$src1, i64immZExt32:$src2))]>;
 
 def UCMP32rm  : RXI<0x55,
                     (outs), (ins GR32:$src1, rriaddr12:$src2),
                     "cl\t$src1, $src2",
-                    [(SystemZucmp GR32:$src1, (load rriaddr12:$src2)),
-                     (implicit PSW)]>;
+                    [(set PSW, (SystemZucmp GR32:$src1,
+                                            (load rriaddr12:$src2)))]>;
 def UCMP32rmy : RXYI<0xE355,
                      (outs), (ins GR32:$src1, rriaddr:$src2),
                      "cly\t$src1, $src2",
-                     [(SystemZucmp GR32:$src1, (load rriaddr:$src2)),
-                      (implicit PSW)]>;
+                     [(set PSW, (SystemZucmp GR32:$src1,
+                                             (load rriaddr:$src2)))]>;
 def UCMP64rm  : RXYI<0xE351,
                      (outs), (ins GR64:$src1, rriaddr:$src2),
                      "clg\t$src1, $src2",
-                     [(SystemZucmp GR64:$src1, (load rriaddr:$src2)),
-                      (implicit PSW)]>;
+                     [(set PSW, (SystemZucmp GR64:$src1,
+                                             (load rriaddr:$src2)))]>;
 
 def CMPSX64rr32  : RREI<0xB930,
                         (outs), (ins GR64:$src1, GR32:$src2),
                         "cgfr\t$src1, $src2",
-                        [(SystemZucmp GR64:$src1, (sext GR32:$src2)),
-                         (implicit PSW)]>;
+                        [(set PSW, (SystemZucmp GR64:$src1,
+                                                (sext GR32:$src2)))]>;
 def UCMPZX64rr32 : RREI<0xB931,
                         (outs), (ins GR64:$src1, GR32:$src2),
                         "clgfr\t$src1, $src2",
-                        [(SystemZucmp GR64:$src1, (zext GR32:$src2)),
-                         (implicit PSW)]>;
+                        [(set PSW, (SystemZucmp GR64:$src1,
+                                                (zext GR32:$src2)))]>;
 
 def CMPSX64rm32   : RXYI<0xE330,
                          (outs), (ins GR64:$src1, rriaddr:$src2),
                          "cgf\t$src1, $src2",
-                         [(SystemZucmp GR64:$src1, (sextloadi64i32 rriaddr:$src2)),
-                          (implicit PSW)]>;
+                         [(set PSW, (SystemZucmp GR64:$src1,
+                                             (sextloadi64i32 rriaddr:$src2)))]>;
 def UCMPZX64rm32  : RXYI<0xE331,
                          (outs), (ins GR64:$src1, rriaddr:$src2),
                          "clgf\t$src1, $src2",
-                         [(SystemZucmp GR64:$src1, (zextloadi64i32 rriaddr:$src2)),
-                          (implicit PSW)]>;
+                         [(set PSW, (SystemZucmp GR64:$src1,
+                                             (zextloadi64i32 rriaddr:$src2)))]>;
 
 // FIXME: Add other crazy ucmp forms
 
@@ -1112,7 +1103,8 @@ def : Pat<(SystemZcall (i64 texternalsym:$dst)), (CALLi texternalsym:$dst)>;
 
 // Arbitrary immediate support.
 def : Pat<(i32 imm:$src),
-          (EXTRACT_SUBREG (MOV64ri32 (i64 imm:$src)), subreg_32bit)>;
+          (EXTRACT_SUBREG (MOV64ri32 (GetI64FromI32 (i32 imm:$src))),
+             subreg_32bit)>;
 
 // Implement in terms of LLIHF/OILF.
 def : Pat<(i64 imm:$imm),
@@ -1138,13 +1130,13 @@ def : Pat<(mulhs GR32:$src1, GR32:$src2),
           (EXTRACT_SUBREG (MUL64rrP (INSERT_SUBREG (v2i32 (IMPLICIT_DEF)),
                                                    GR32:$src1, subreg_odd32),
                                     GR32:$src2),
-                          subreg_even32)>;
+                          subreg_32bit)>;
 
 def : Pat<(mulhu GR32:$src1, GR32:$src2),
           (EXTRACT_SUBREG (UMUL64rrP (INSERT_SUBREG (v2i32 (IMPLICIT_DEF)),
                                                     GR32:$src1, subreg_odd32),
                                      GR32:$src2),
-                          subreg_even32)>;
+                          subreg_32bit)>;
 def : Pat<(mulhu GR64:$src1, GR64:$src2),
           (EXTRACT_SUBREG (UMUL128rrP (INSERT_SUBREG (v2i64 (IMPLICIT_DEF)),
                                                      GR64:$src1, subreg_odd),

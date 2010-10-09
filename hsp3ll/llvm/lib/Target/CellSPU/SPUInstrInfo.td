@@ -62,8 +62,6 @@ let canFoldAsLoad = 1 in {
     def v4f32: LoadDFormVec<v4f32>;
     def v2f64: LoadDFormVec<v2f64>;
 
-    def v2i32: LoadDFormVec<v2i32>;
-
     def r128:  LoadDForm<GPRC>;
     def r64:   LoadDForm<R64C>;
     def r32:   LoadDForm<R32C>;
@@ -96,8 +94,6 @@ let canFoldAsLoad = 1 in {
     def v4f32: LoadAFormVec<v4f32>;
     def v2f64: LoadAFormVec<v2f64>;
 
-    def v2i32: LoadAFormVec<v2i32>;
-
     def r128:  LoadAForm<GPRC>;
     def r64:   LoadAForm<R64C>;
     def r32:   LoadAForm<R32C>;
@@ -129,8 +125,6 @@ let canFoldAsLoad = 1 in {
     def v2i64: LoadXFormVec<v2i64>;
     def v4f32: LoadXFormVec<v4f32>;
     def v2f64: LoadXFormVec<v2f64>;
-
-    def v2i32: LoadXFormVec<v2i32>;
 
     def r128:  LoadXForm<GPRC>;
     def r64:   LoadXForm<R64C>;
@@ -180,8 +174,6 @@ multiclass StoreDForms
   def v4f32: StoreDFormVec<v4f32>;
   def v2f64: StoreDFormVec<v2f64>;
 
-  def v2i32: StoreDFormVec<v2i32>;
-
   def r128:  StoreDForm<GPRC>;
   def r64:   StoreDForm<R64C>;
   def r32:   StoreDForm<R32C>;
@@ -211,8 +203,6 @@ multiclass StoreAForms
   def v2i64: StoreAFormVec<v2i64>;
   def v4f32: StoreAFormVec<v4f32>;
   def v2f64: StoreAFormVec<v2f64>;
-
-  def v2i32: StoreAFormVec<v2i32>;
 
   def r128:  StoreAForm<GPRC>;
   def r64:   StoreAForm<R64C>;
@@ -245,8 +235,6 @@ multiclass StoreXForms
   def v2i64: StoreXFormVec<v2i64>;
   def v4f32: StoreXFormVec<v4f32>;
   def v2f64: StoreXFormVec<v2f64>;
-
-  def v2i32: StoreXFormVec<v2i32>;
 
   def r128:  StoreXForm<GPRC>;
   def r64:   StoreXForm<R64C>;
@@ -607,7 +595,6 @@ class ARegInst<RegisterClass rclass>:
 multiclass AddInstruction {
   def v4i32: AVecInst<v4i32>;
   def v16i8: AVecInst<v16i8>;
-  
   def r32:   ARegInst<R32C>;
 }
 
@@ -655,7 +642,7 @@ def SFHvec:
 def SFHr16:
     RRForm<0b00010010000, (outs R16C:$rT), (ins R16C:$rA, R16C:$rB),
       "sfh\t$rT, $rA, $rB", IntegerOp,
-      [(set R16C:$rT, (sub R16C:$rA, R16C:$rB))]>;
+      [(set R16C:$rT, (sub R16C:$rB, R16C:$rA))]>;
 
 def SFHIvec:
     RI10Form<0b10110000, (outs VECREG:$rT), (ins VECREG:$rA, s10imm:$val),
@@ -670,11 +657,12 @@ def SFHIr16 : RI10Form<0b10110000, (outs R16C:$rT), (ins R16C:$rA, s10imm:$val),
 def SFvec : RRForm<0b00000010000, (outs VECREG:$rT),
                                   (ins VECREG:$rA, VECREG:$rB),
   "sf\t$rT, $rA, $rB", IntegerOp,
-  [(set (v4i32 VECREG:$rT), (sub (v4i32 VECREG:$rA), (v4i32 VECREG:$rB)))]>;
+  [(set (v4i32 VECREG:$rT), (sub (v4i32 VECREG:$rB), (v4i32 VECREG:$rA)))]>;
+
 
 def SFr32 : RRForm<0b00000010000, (outs R32C:$rT), (ins R32C:$rA, R32C:$rB),
   "sf\t$rT, $rA, $rB", IntegerOp,
-  [(set R32C:$rT, (sub R32C:$rA, R32C:$rB))]>;
+  [(set R32C:$rT, (sub R32C:$rB, R32C:$rA))]>;
 
 def SFIvec:
     RI10Form<0b00110000, (outs VECREG:$rT), (ins VECREG:$rA, s10imm:$val),
@@ -1133,16 +1121,14 @@ class XSBHInst<dag OOL, dag IOL, list<dag> pattern>:
       "xsbh\t$rDst, $rSrc",
       IntegerOp, pattern>;
 
-class XSBHVecInst<ValueType vectype>:
-    XSBHInst<(outs VECREG:$rDst), (ins VECREG:$rSrc),
-      [(set (v8i16 VECREG:$rDst), (sext (vectype VECREG:$rSrc)))]>;
-
 class XSBHInRegInst<RegisterClass rclass, list<dag> pattern>:
     XSBHInst<(outs rclass:$rDst), (ins rclass:$rSrc),
              pattern>;
 
 multiclass ExtendByteHalfword {
-  def v16i8:     XSBHVecInst<v8i16>;
+  def v16i8:     XSBHInst<(outs VECREG:$rDst), (ins VECREG:$rSrc),
+                          [
+                  /*(set (v8i16 VECREG:$rDst), (sext (v8i16 VECREG:$rSrc)))*/]>;
   def r8:        XSBHInst<(outs R16C:$rDst), (ins R8C:$rSrc),
                           [(set R16C:$rDst, (sext R8C:$rSrc))]>;
   def r16:       XSBHInRegInst<R16C,
@@ -1200,8 +1186,8 @@ class XSWDInst<dag OOL, dag IOL, list<dag> pattern>:
       
 class XSWDVecInst<ValueType in_vectype, ValueType out_vectype>:
     XSWDInst<(outs VECREG:$rDst), (ins VECREG:$rSrc),
-             [(set (out_vectype VECREG:$rDst),
-                   (sext (out_vectype VECREG:$rSrc)))]>;
+             [/*(set (out_vectype VECREG:$rDst),
+                   (sext (out_vectype VECREG:$rSrc)))*/]>;
       
 class XSWDRegInst<RegisterClass in_rclass, RegisterClass out_rclass>:
     XSWDInst<(outs out_rclass:$rDst), (ins in_rclass:$rSrc),
@@ -1270,7 +1256,12 @@ multiclass BitwiseAnd
 
 defm AND : BitwiseAnd;
 
-// N.B.: vnot_conv is one of those special target selection pattern fragments,
+
+def vnot_cell_conv : PatFrag<(ops node:$in),
+                             (xor node:$in, (bitconvert (v4i32 immAllOnesV)))>;
+
+// N.B.: vnot_cell_conv is one of those special target selection pattern
+// fragments,
 // in which we expect there to be a bit_convert on the constant. Bear in mind
 // that llvm translates "not <reg>" to "xor <reg>, -1" (or in this case, a
 // constant -1 vector.)
@@ -1303,7 +1294,7 @@ multiclass AndComplement
   def r8:   ANDCRegInst<R8C>;
 
   // Sometimes, the xor pattern has a bitcast constant:
-  def v16i8_conv: ANDCVecInst<v16i8, vnot_conv>;
+  def v16i8_conv: ANDCVecInst<v16i8, vnot_cell_conv>;
 }
 
 defm ANDC : AndComplement;
@@ -1444,6 +1435,9 @@ class ORCvtGPRCVec:
 
 class ORCvtVecGPRC:
     ORCvtForm<(outs GPRC:$rT), (ins VECREG:$rA)>;
+
+class ORCvtVecVec:
+    ORCvtForm<(outs VECREG:$rT), (ins VECREG:$rA)>;
 
 multiclass BitwiseOr
 {
@@ -1936,7 +1930,7 @@ multiclass SelectBits
   def v16i8: SELBVecInst<v16i8>;
   def v8i16: SELBVecInst<v8i16>;
   def v4i32: SELBVecInst<v4i32>;
-  def v2i64: SELBVecInst<v2i64, vnot_conv>;
+  def v2i64: SELBVecInst<v2i64, vnot_cell_conv>;
 
   def r128:  SELBRegInst<GPRC>;
   def r64:   SELBRegInst<R64C>;
@@ -2179,10 +2173,10 @@ multiclass ShiftLeftHalfwordImm
 defm SHLHI : ShiftLeftHalfwordImm;
 
 def : Pat<(SPUvec_shl (v8i16 VECREG:$rA), (i32 uimm7:$val)),
-          (SHLHIv8i16 VECREG:$rA, uimm7:$val)>;
+          (SHLHIv8i16 VECREG:$rA, (TO_IMM16 uimm7:$val))>;
 
 def : Pat<(shl R16C:$rA, (i32 uimm7:$val)),
-          (SHLHIr16 R16C:$rA, uimm7:$val)>;
+          (SHLHIr16 R16C:$rA, (TO_IMM16 uimm7:$val))>;
 
 //===----------------------------------------------------------------------===//
 
@@ -2370,7 +2364,7 @@ class ROTHInst<dag OOL, dag IOL, list<dag> pattern>:
 class ROTHVecInst<ValueType vectype>:
     ROTHInst<(outs VECREG:$rT), (ins VECREG:$rA, VECREG:$rB),
              [(set (vectype VECREG:$rT),
-                   (SPUvec_rotl VECREG:$rA, VECREG:$rB))]>;
+                   (SPUvec_rotl VECREG:$rA, (v8i16 VECREG:$rB)))]>;
 
 class ROTHRegInst<RegisterClass rclass>:
     ROTHInst<(outs rclass:$rT), (ins rclass:$rA, rclass:$rB),
@@ -2410,8 +2404,8 @@ multiclass RotateLeftHalfwordImm
 
 defm ROTHI: RotateLeftHalfwordImm;
 
-def : Pat<(SPUvec_rotl VECREG:$rA, (i32 uimm7:$val)),
-          (ROTHIv8i16 VECREG:$rA, imm:$val)>;
+def : Pat<(SPUvec_rotl (v8i16 VECREG:$rA), (i32 uimm7:$val)),
+          (ROTHIv8i16 VECREG:$rA, (TO_IMM16 imm:$val))>;
 
 //-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~
 // Rotate word:
@@ -2682,10 +2676,10 @@ def : Pat<(SPUvec_srl (v8i16 VECREG:$rA), (i32 imm:$val)),
           (ROTHMIv8i16 VECREG:$rA, imm:$val)>;
 
 def: Pat<(SPUvec_srl (v8i16 VECREG:$rA), (i16 imm:$val)),
-         (ROTHMIv8i16 VECREG:$rA, imm:$val)>;
+         (ROTHMIv8i16 VECREG:$rA, (TO_IMM32 imm:$val))>;
 
 def: Pat<(SPUvec_srl (v8i16 VECREG:$rA), (i8 imm:$val)),
-         (ROTHMIv8i16 VECREG:$rA, imm:$val)>;
+         (ROTHMIv8i16 VECREG:$rA, (TO_IMM32 imm:$val))>;
 
 def ROTHMIr16:
     ROTHMIInst<(outs R16C:$rT), (ins R16C:$rA, rothNeg7imm:$val),
@@ -2695,10 +2689,10 @@ def: Pat<(srl R16C:$rA, (i32 uimm7:$val)),
          (ROTHMIr16 R16C:$rA, uimm7:$val)>;
 
 def: Pat<(srl R16C:$rA, (i16 uimm7:$val)),
-         (ROTHMIr16 R16C:$rA, uimm7:$val)>;
+         (ROTHMIr16 R16C:$rA, (TO_IMM32 uimm7:$val))>;
 
 def: Pat<(srl R16C:$rA, (i8 uimm7:$val)),
-         (ROTHMIr16 R16C:$rA, uimm7:$val)>;
+         (ROTHMIr16 R16C:$rA, (TO_IMM32 uimm7:$val))>;
 
 // ROTM v4i32 form: See the ROTHM v8i16 comments.
 class ROTMInst<dag OOL, dag IOL, list<dag> pattern>:
@@ -2709,14 +2703,14 @@ def ROTMv4i32:
     ROTMInst<(outs VECREG:$rT), (ins VECREG:$rA, R32C:$rB),
              [/* see patterns below - $rB must be negated */]>;
 
-def : Pat<(SPUvec_srl VECREG:$rA, R32C:$rB),
+def : Pat<(SPUvec_srl (v4i32 VECREG:$rA), R32C:$rB),
           (ROTMv4i32 VECREG:$rA, (SFIr32 R32C:$rB, 0))>;
 
-def : Pat<(SPUvec_srl VECREG:$rA, R16C:$rB),
+def : Pat<(SPUvec_srl (v4i32 VECREG:$rA), R16C:$rB),
           (ROTMv4i32 VECREG:$rA,
                      (SFIr32 (XSHWr16 R16C:$rB), 0))>;
 
-def : Pat<(SPUvec_srl VECREG:$rA, R8C:$rB),
+def : Pat<(SPUvec_srl (v4i32 VECREG:$rA), R8C:$rB),
           (ROTMv4i32 VECREG:$rA,
                      (SFIr32 (XSHWr16 (XSBHr8 R8C:$rB)), 0))>;
 
@@ -2742,11 +2736,11 @@ def ROTMIv4i32:
       [(set (v4i32 VECREG:$rT),
             (SPUvec_srl VECREG:$rA, (i32 uimm7:$val)))]>;
 
-def : Pat<(SPUvec_srl VECREG:$rA, (i16 uimm7:$val)),
-          (ROTMIv4i32 VECREG:$rA, uimm7:$val)>;
+def : Pat<(SPUvec_srl (v4i32 VECREG:$rA), (i16 uimm7:$val)),
+          (ROTMIv4i32 VECREG:$rA, (TO_IMM32 uimm7:$val))>;
 
-def : Pat<(SPUvec_srl VECREG:$rA, (i8 uimm7:$val)),
-          (ROTMIv4i32 VECREG:$rA, uimm7:$val)>;
+def : Pat<(SPUvec_srl (v4i32 VECREG:$rA), (i8 uimm7:$val)),
+          (ROTMIv4i32 VECREG:$rA, (TO_IMM32 uimm7:$val))>;
 
 // ROTMI r32 form: know how to complement the immediate value.
 def ROTMIr32:
@@ -2755,10 +2749,10 @@ def ROTMIr32:
       [(set R32C:$rT, (srl R32C:$rA, (i32 uimm7:$val)))]>;
 
 def : Pat<(srl R32C:$rA, (i16 imm:$val)),
-          (ROTMIr32 R32C:$rA, uimm7:$val)>;
+          (ROTMIr32 R32C:$rA, (TO_IMM32 uimm7:$val))>;
 
 def : Pat<(srl R32C:$rA, (i8 imm:$val)),
-          (ROTMIr32 R32C:$rA, uimm7:$val)>;
+          (ROTMIr32 R32C:$rA, (TO_IMM32 uimm7:$val))>;
 
 //-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~
 // ROTQMBY: This is a vector form merely so that when used in an
@@ -2916,14 +2910,14 @@ def ROTMAHv8i16:
       "rotmah\t$rT, $rA, $rB", RotateShift,
       [/* see patterns below - $rB must be negated */]>;
 
-def : Pat<(SPUvec_sra VECREG:$rA, R32C:$rB),
+def : Pat<(SPUvec_sra (v8i16 VECREG:$rA), R32C:$rB),
           (ROTMAHv8i16 VECREG:$rA, (SFIr32 R32C:$rB, 0))>;
 
-def : Pat<(SPUvec_sra VECREG:$rA, R16C:$rB),
+def : Pat<(SPUvec_sra (v8i16 VECREG:$rA), R16C:$rB),
           (ROTMAHv8i16 VECREG:$rA,
                        (SFIr32 (XSHWr16 R16C:$rB), 0))>;
 
-def : Pat<(SPUvec_sra VECREG:$rA, R8C:$rB),
+def : Pat<(SPUvec_sra (v8i16 VECREG:$rA), R8C:$rB),
           (ROTMAHv8i16 VECREG:$rA,
                        (SFIr32 (XSHWr16 (XSBHr8 R8C:$rB)), 0))>;
 
@@ -2950,10 +2944,10 @@ def ROTMAHIv8i16:
             (SPUvec_sra (v8i16 VECREG:$rA), (i32 uimm7:$val)))]>;
 
 def : Pat<(SPUvec_sra (v8i16 VECREG:$rA), (i16 uimm7:$val)),
-          (ROTMAHIv8i16 (v8i16 VECREG:$rA), (i32 uimm7:$val))>;
+          (ROTMAHIv8i16 (v8i16 VECREG:$rA), (TO_IMM32 uimm7:$val))>;
 
 def : Pat<(SPUvec_sra (v8i16 VECREG:$rA), (i8 uimm7:$val)),
-          (ROTMAHIv8i16 (v8i16 VECREG:$rA), (i32 uimm7:$val))>;
+          (ROTMAHIv8i16 (v8i16 VECREG:$rA), (TO_IMM32 uimm7:$val))>;
 
 def ROTMAHIr16:
     RRForm<0b01111110000, (outs R16C:$rT), (ins R16C:$rA, rothNeg7imm_i16:$val),
@@ -2961,25 +2955,25 @@ def ROTMAHIr16:
       [(set R16C:$rT, (sra R16C:$rA, (i16 uimm7:$val)))]>;
 
 def : Pat<(sra R16C:$rA, (i32 imm:$val)),
-          (ROTMAHIr16 R16C:$rA, uimm7:$val)>;
+          (ROTMAHIr16 R16C:$rA, (TO_IMM32 uimm7:$val))>;
 
 def : Pat<(sra R16C:$rA, (i8 imm:$val)),
-          (ROTMAHIr16 R16C:$rA, uimm7:$val)>;
+          (ROTMAHIr16 R16C:$rA, (TO_IMM32 uimm7:$val))>;
 
 def ROTMAv4i32:
     RRForm<0b01011010000, (outs VECREG:$rT), (ins VECREG:$rA, R32C:$rB),
       "rotma\t$rT, $rA, $rB", RotateShift,
       [/* see patterns below - $rB must be negated */]>;
 
-def : Pat<(SPUvec_sra VECREG:$rA, R32C:$rB),
-          (ROTMAv4i32 (v4i32 VECREG:$rA), (SFIr32 R32C:$rB, 0))>;
+def : Pat<(SPUvec_sra (v4i32 VECREG:$rA), R32C:$rB),
+          (ROTMAv4i32 VECREG:$rA, (SFIr32 R32C:$rB, 0))>;
 
-def : Pat<(SPUvec_sra VECREG:$rA, R16C:$rB),
-          (ROTMAv4i32 (v4i32 VECREG:$rA),
+def : Pat<(SPUvec_sra (v4i32 VECREG:$rA), R16C:$rB),
+          (ROTMAv4i32 VECREG:$rA,
                       (SFIr32 (XSHWr16 R16C:$rB), 0))>;
 
-def : Pat<(SPUvec_sra VECREG:$rA, R8C:$rB),
-          (ROTMAv4i32 (v4i32 VECREG:$rA),
+def : Pat<(SPUvec_sra (v4i32 VECREG:$rA), R8C:$rB),
+          (ROTMAv4i32 VECREG:$rA,
                       (SFIr32 (XSHWr16 (XSBHr8 R8C:$rB)), 0))>;
 
 def ROTMAr32:
@@ -3891,6 +3885,79 @@ multiclass SFPSub
 
 defm FS : SFPSub;
 
+class FMInst<dag OOL, dag IOL, list<dag> pattern>:
+    RRForm<0b01100011010, OOL, IOL,
+      "fm\t$rT, $rA, $rB", SPrecFP,
+      pattern>;
+
+class FMVecInst<ValueType type>:
+    FMInst<(outs VECREG:$rT), (ins VECREG:$rA, VECREG:$rB),
+           [(set (type VECREG:$rT),
+                 (fmul (type VECREG:$rA), (type VECREG:$rB)))]>;
+
+multiclass SFPMul
+{
+  def v4f32: FMVecInst<v4f32>;
+  def f32:   FMInst<(outs R32FP:$rT), (ins R32FP:$rA, R32FP:$rB),
+                     [(set R32FP:$rT, (fmul R32FP:$rA, R32FP:$rB))]>; 
+}
+
+defm FM : SFPMul;
+
+// Floating point multiply and add
+// e.g. d = c + (a * b)
+def FMAv4f32:
+    RRRForm<0b0111, (outs VECREG:$rT), (ins VECREG:$rA, VECREG:$rB, VECREG:$rC),
+      "fma\t$rT, $rA, $rB, $rC", SPrecFP,
+      [(set (v4f32 VECREG:$rT),
+            (fadd (v4f32 VECREG:$rC),
+                  (fmul (v4f32 VECREG:$rA), (v4f32 VECREG:$rB))))]>;
+
+def FMAf32:
+    RRRForm<0b0111, (outs R32FP:$rT), (ins R32FP:$rA, R32FP:$rB, R32FP:$rC),
+      "fma\t$rT, $rA, $rB, $rC", SPrecFP,
+      [(set R32FP:$rT, (fadd R32FP:$rC, (fmul R32FP:$rA, R32FP:$rB)))]>;
+
+// FP multiply and subtract
+// Subtracts value in rC from product
+// res = a * b - c
+def FMSv4f32 :
+    RRRForm<0b0111, (outs VECREG:$rT), (ins VECREG:$rA, VECREG:$rB, VECREG:$rC),
+      "fms\t$rT, $rA, $rB, $rC", SPrecFP,
+      [(set (v4f32 VECREG:$rT),
+            (fsub (fmul (v4f32 VECREG:$rA), (v4f32 VECREG:$rB)),
+                  (v4f32 VECREG:$rC)))]>;
+
+def FMSf32 :
+    RRRForm<0b0111, (outs R32FP:$rT), (ins R32FP:$rA, R32FP:$rB, R32FP:$rC),
+      "fms\t$rT, $rA, $rB, $rC", SPrecFP,
+      [(set R32FP:$rT,
+            (fsub (fmul R32FP:$rA, R32FP:$rB), R32FP:$rC))]>;
+
+// Floating Negative Mulitply and Subtract
+// Subtracts product from value in rC
+// res = fneg(fms a b c)
+//     = - (a * b - c)
+//     = c - a * b
+// NOTE: subtraction order
+// fsub a b = a - b
+// fs a b = b - a?
+def FNMSf32 :
+    RRRForm<0b1101, (outs R32FP:$rT), (ins R32FP:$rA, R32FP:$rB, R32FP:$rC),
+      "fnms\t$rT, $rA, $rB, $rC", SPrecFP,
+      [(set R32FP:$rT, (fsub R32FP:$rC, (fmul R32FP:$rA, R32FP:$rB)))]>;
+
+def FNMSv4f32 :
+    RRRForm<0b1101, (outs VECREG:$rT), (ins VECREG:$rA, VECREG:$rB, VECREG:$rC),
+      "fnms\t$rT, $rA, $rB, $rC", SPrecFP,
+      [(set (v4f32 VECREG:$rT),
+            (fsub (v4f32 VECREG:$rC),
+                  (fmul (v4f32 VECREG:$rA),
+                        (v4f32 VECREG:$rB))))]>;
+
+
+
+
 // Floating point reciprocal estimate
 
 class FRESTInst<dag OOL, dag IOL>:
@@ -4016,72 +4083,6 @@ def FSCRRf32 :
 // status and control register read
 
 //--------------------------------------
-// Floating point multiply instructions
-//--------------------------------------
-
-def FMv4f32:
-    RRForm<0b00100011010, (outs VECREG:$rT), (ins VECREG:$rA, VECREG:$rB),
-      "fm\t$rT, $rA, $rB", SPrecFP,
-      [(set (v4f32 VECREG:$rT), (fmul (v4f32 VECREG:$rA),
-                                      (v4f32 VECREG:$rB)))]>;
-
-def FMf32 :
-    RRForm<0b01100011010, (outs R32FP:$rT), (ins R32FP:$rA, R32FP:$rB),
-      "fm\t$rT, $rA, $rB", SPrecFP,
-      [(set R32FP:$rT, (fmul R32FP:$rA, R32FP:$rB))]>;
-
-// Floating point multiply and add
-// e.g. d = c + (a * b)
-def FMAv4f32:
-    RRRForm<0b0111, (outs VECREG:$rT), (ins VECREG:$rA, VECREG:$rB, VECREG:$rC),
-      "fma\t$rT, $rA, $rB, $rC", SPrecFP,
-      [(set (v4f32 VECREG:$rT),
-            (fadd (v4f32 VECREG:$rC),
-                  (fmul (v4f32 VECREG:$rA), (v4f32 VECREG:$rB))))]>;
-
-def FMAf32:
-    RRRForm<0b0111, (outs R32FP:$rT), (ins R32FP:$rA, R32FP:$rB, R32FP:$rC),
-      "fma\t$rT, $rA, $rB, $rC", SPrecFP,
-      [(set R32FP:$rT, (fadd R32FP:$rC, (fmul R32FP:$rA, R32FP:$rB)))]>;
-
-// FP multiply and subtract
-// Subtracts value in rC from product
-// res = a * b - c
-def FMSv4f32 :
-    RRRForm<0b0111, (outs VECREG:$rT), (ins VECREG:$rA, VECREG:$rB, VECREG:$rC),
-      "fms\t$rT, $rA, $rB, $rC", SPrecFP,
-      [(set (v4f32 VECREG:$rT),
-            (fsub (fmul (v4f32 VECREG:$rA), (v4f32 VECREG:$rB)),
-                  (v4f32 VECREG:$rC)))]>;
-
-def FMSf32 :
-    RRRForm<0b0111, (outs R32FP:$rT), (ins R32FP:$rA, R32FP:$rB, R32FP:$rC),
-      "fms\t$rT, $rA, $rB, $rC", SPrecFP,
-      [(set R32FP:$rT,
-            (fsub (fmul R32FP:$rA, R32FP:$rB), R32FP:$rC))]>;
-
-// Floating Negative Mulitply and Subtract
-// Subtracts product from value in rC
-// res = fneg(fms a b c)
-//     = - (a * b - c)
-//     = c - a * b
-// NOTE: subtraction order
-// fsub a b = a - b
-// fs a b = b - a?
-def FNMSf32 :
-    RRRForm<0b1101, (outs R32FP:$rT), (ins R32FP:$rA, R32FP:$rB, R32FP:$rC),
-      "fnms\t$rT, $rA, $rB, $rC", SPrecFP,
-      [(set R32FP:$rT, (fsub R32FP:$rC, (fmul R32FP:$rA, R32FP:$rB)))]>;
-
-def FNMSv4f32 :
-    RRRForm<0b1101, (outs VECREG:$rT), (ins VECREG:$rA, VECREG:$rB, VECREG:$rC),
-      "fnms\t$rT, $rA, $rB, $rC", SPrecFP,
-      [(set (v4f32 VECREG:$rT),
-            (fsub (v4f32 VECREG:$rC),
-                  (fmul (v4f32 VECREG:$rA),
-                        (v4f32 VECREG:$rB))))]>;
-
-//--------------------------------------
 // Floating Point Conversions
 // Signed conversions:
 def CSiFv4f32:
@@ -4146,7 +4147,7 @@ def CFSif32 :
 def FESDvec :
     RRForm_1<0b00011101110, (outs VECREG:$rT), (ins VECREG:$rA),
       "fesd\t$rT, $rA", SPrecFP,
-      [(set (v2f64 VECREG:$rT), (fextend (v4f32 VECREG:$rA)))]>;
+      [/*(set (v2f64 VECREG:$rT), (fextend (v4f32 VECREG:$rA)))*/]>;
 
 def FESDf32 :
     RRForm_1<0b00011101110, (outs R64FP:$rT), (ins R32FP:$rA),
@@ -4375,7 +4376,7 @@ def : Pat<(v2f64 (bitconvert (v16i8 VECREG:$src))), (v2f64 VECREG:$src)>;
 def : Pat<(v2f64 (bitconvert (v8i16 VECREG:$src))), (v2f64 VECREG:$src)>;
 def : Pat<(v2f64 (bitconvert (v4i32 VECREG:$src))), (v2f64 VECREG:$src)>;
 def : Pat<(v2f64 (bitconvert (v2i64 VECREG:$src))), (v2f64 VECREG:$src)>;
-def : Pat<(v2f64 (bitconvert (v2f64 VECREG:$src))), (v2f64 VECREG:$src)>;
+def : Pat<(v2f64 (bitconvert (v4f32 VECREG:$src))), (v2f64 VECREG:$src)>;
 
 def : Pat<(i128 (bitconvert (v16i8 VECREG:$src))),
           (ORi128_vec VECREG:$src)>;

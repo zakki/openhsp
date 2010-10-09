@@ -72,7 +72,6 @@ module TypeKind : sig
   | Opaque
   | Vector
   | Metadata
-  | Union
 end
 
 (** The linkage of a global value, accessed with {!linkage} and
@@ -139,13 +138,13 @@ module Attribute : sig
   | Optsize
   | Ssp
   | Sspreq
-  | Alignment
+  | Alignment of int
   | Nocapture
   | Noredzone
   | Noimplicitfloat
   | Naked
   | Inlinehint
-  | Stackalignment
+  | Stackalignment of int
 end
 
 (** The predicate for an integer comparison ([icmp]) instruction.
@@ -284,6 +283,11 @@ external type_by_name : llmodule -> string -> lltype option
     error. See the method [llvm::Module::dump]. *)
 external dump_module : llmodule -> unit = "llvm_dump_module"
 
+(** [set_module_inline_asm m asm] sets the inline assembler for the module. See
+    the method [llvm::Module::setModuleInlineAsm]. *)
+external set_module_inline_asm : llmodule -> string -> unit
+                               = "llvm_set_module_inline_asm"
+
 
 (** {6 Types} *)
 
@@ -401,19 +405,6 @@ external struct_element_types : lltype -> lltype array
 (** [is_packed sty] returns [true] if the structure type [sty] is packed,
     [false] otherwise. See the method [llvm::StructType::isPacked]. *)
 external is_packed : lltype -> bool = "llvm_is_packed"
-
-
-(** {7 Operations on union types} *)
-
-(** [union_type context tys] returns the union type in the context [context]
-    containing the types in the array [tys]. See the method
-    [llvm::UnionType::get] *)
-external union_type : llcontext -> lltype array -> lltype = "llvm_union_type"
-
-(** [union_element_types uty] returns the constituent types of the union type
-    [uty]. See the method [llvm::UnionType::getElementType]. *)
-external union_element_types : lltype -> lltype array
-                             = "llvm_union_element_types"
 
 
 (** {7 Operations on pointer, vector, and array types} *)
@@ -552,6 +543,14 @@ val fold_right_uses : (lluse -> 'a -> 'a) -> llvalue -> 'a -> 'a
     method [llvm::User::getOperand]. *)
 external operand : llvalue -> int -> llvalue = "llvm_operand"
 
+(** [set_operand v i o] sets the operand of the value [v] at the index [i] to
+    the value [o].
+    See the method [llvm::User::setOperand]. *)
+external set_operand : llvalue -> int -> llvalue -> unit = "llvm_set_operand"
+
+(** [num_operands v] returns the number of operands for the value [v].
+    See the method [llvm::User::getNumOperands]. *)
+external num_operands : llvalue -> int = "llvm_num_operands"
 
 (** {7 Operations on constants of (mostly) any type} *)
 
@@ -683,10 +682,6 @@ external const_packed_struct : llcontext -> llvalue array -> llvalue
     [vector_type (type_of elts.(0)) (Array.length elts)] and containing the
     values [elts]. See the method [llvm::ConstantVector::get]. *)
 external const_vector : llvalue array -> llvalue = "llvm_const_vector"
-
-(** [const_union ty v] returns the union constant of type [union_type tys] and
-    containing the value [v]. See the method [llvm::ConstantUnion::get]. *)
-external const_union : lltype -> llvalue -> llvalue = "LLVMConstUnion"
 
 
 (** {7 Constant expressions} *)
@@ -986,7 +981,7 @@ external const_insertelement : llvalue -> llvalue -> llvalue -> llvalue
                              = "LLVMConstInsertElement"
 
 (** [const_shufflevector a b mask] returns a constant [shufflevector].
-    See the LLVM Language Reference for details on the [sufflevector]
+    See the LLVM Language Reference for details on the [shufflevector]
     instruction.
     See the method [llvm::ConstantExpr::getShuffleVector]. *)
 external const_shufflevector : llvalue -> llvalue -> llvalue -> llvalue
@@ -1282,13 +1277,11 @@ external set_gc : string option -> llvalue -> unit = "llvm_set_gc"
 
 (** [add_function_attr f a] adds attribute [a] to the return type of function
     [f]. *)
-external add_function_attr : llvalue -> Attribute.t -> unit
-                           = "llvm_add_function_attr"
+val add_function_attr : llvalue -> Attribute.t -> unit
 
 (** [remove_function_attr f a] removes attribute [a] from the return type of
     function [f]. *)
-external remove_function_attr : llvalue -> Attribute.t -> unit
-                              = "llvm_remove_function_attr"
+val remove_function_attr : llvalue -> Attribute.t -> unit
 
 (** {7 Operations on params} *)
 
@@ -1343,11 +1336,10 @@ val rev_iter_params : (llvalue -> unit) -> llvalue -> unit
 val fold_right_params : (llvalue -> 'a -> 'a) -> llvalue -> 'a -> 'a
 
 (** [add_param p a] adds attribute [a] to parameter [p]. *)
-external add_param_attr : llvalue -> Attribute.t -> unit = "llvm_add_param_attr"
+val add_param_attr : llvalue -> Attribute.t -> unit
 
 (** [remove_param_attr p a] removes attribute [a] from parameter [p]. *)
-external remove_param_attr : llvalue -> Attribute.t -> unit
-                           = "llvm_remove_param_attr"
+val remove_param_attr : llvalue -> Attribute.t -> unit
 
 (** [set_param_alignment p a] set the alignment of parameter [p] to [a]. *)
 external set_param_alignment : llvalue -> int -> unit
@@ -1499,14 +1491,12 @@ external set_instruction_call_conv: int -> llvalue -> unit
 (** [add_instruction_param_attr ci i a] adds attribute [a] to the [i]th
     parameter of the call or invoke instruction [ci]. [i]=0 denotes the return
     value. *)
-external add_instruction_param_attr : llvalue -> int -> Attribute.t -> unit
-  = "llvm_add_instruction_param_attr"
+val add_instruction_param_attr : llvalue -> int -> Attribute.t -> unit
 
 (** [remove_instruction_param_attr ci i a] removes attribute [a] from the
     [i]th parameter of the call or invoke instruction [ci]. [i]=0 denotes the
     return value. *)
-external remove_instruction_param_attr : llvalue -> int -> Attribute.t -> unit
-  = "llvm_remove_instruction_param_attr"
+val remove_instruction_param_attr : llvalue -> int -> Attribute.t -> unit
 
 (** {Operations on call instructions (only)} *)
 

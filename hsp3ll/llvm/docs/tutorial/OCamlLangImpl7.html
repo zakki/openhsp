@@ -582,10 +582,10 @@ then:    ; preds = %entry
 else:    ; preds = %entry
   <b>%x3 = load double* %x1</b>
   %subtmp = fsub double %x3, 1.000000e+00
-  %calltmp = call double @fib( double %subtmp )
+  %calltmp = call double @fib(double %subtmp)
   <b>%x4 = load double* %x1</b>
   %subtmp5 = fsub double %x4, 2.000000e+00
-  %calltmp6 = call double @fib( double %subtmp5 )
+  %calltmp6 = call double @fib(double %subtmp5)
   %addtmp = fadd double %calltmp, %calltmp6
   br label %ifcont
 
@@ -620,9 +620,9 @@ then:
 
 else:
   %subtmp = fsub double <b>%x</b>, 1.000000e+00
-  %calltmp = call double @fib( double %subtmp )
+  %calltmp = call double @fib(double %subtmp)
   %subtmp5 = fsub double <b>%x</b>, 2.000000e+00
-  %calltmp6 = call double @fib( double %subtmp5 )
+  %calltmp6 = call double @fib(double %subtmp5)
   %addtmp = fadd double %calltmp, %calltmp6
   br label %ifcont
 
@@ -650,9 +650,9 @@ entry:
 
 else:
   %subtmp = fsub double %x, 1.000000e+00
-  %calltmp = call double @fib( double %subtmp )
+  %calltmp = call double @fib(double %subtmp)
   %subtmp5 = fsub double %x, 2.000000e+00
-  %calltmp6 = call double @fib( double %subtmp5 )
+  %calltmp6 = call double @fib(double %subtmp5)
   %addtmp = fadd double %calltmp, %calltmp6
   ret double %addtmp
 
@@ -999,7 +999,7 @@ ocaml_lib ~extern:true "llvm_executionengine";;
 ocaml_lib ~extern:true "llvm_target";;
 ocaml_lib ~extern:true "llvm_scalar_opts";;
 
-flag ["link"; "ocaml"; "g++"] (S[A"-cc"; A"g++"]);;
+flag ["link"; "ocaml"; "g++"] (S[A"-cc"; A"g++"; A"-cclib"; A"-rdynamic"]);;
 dep ["link"; "ocaml"; "use_bindings"] ["bindings.o"];;
 </pre>
 </dd>
@@ -1901,7 +1901,7 @@ extern double printd(double X) {
   <a href="mailto:sabre@nondot.org">Chris Lattner</a><br>
   <a href="http://llvm.org">The LLVM Compiler Infrastructure</a><br>
   <a href="mailto:idadesub@users.sourceforge.net">Erick Tryzelaar</a><br>
-  Last modified: $Date: 2010-03-11 18:09:10 -0600 (Thu, 11 Mar 2010) $
+  Last modified: $Date: 2010-05-28 12:07:41 -0500 (Fri, 28 May 2010) $
 </address>
 </body>
 </html>

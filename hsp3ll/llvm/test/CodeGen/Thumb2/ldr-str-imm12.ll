@@ -20,15 +20,12 @@
 @zz_hold = external global %union.rec*            ; <%union.rec**> [#uses=2]
 @zz_res = external global %union.rec*             ; <%union.rec**> [#uses=1]
 
-define arm_apcscc %union.rec* @Manifest(%union.rec* %x, %union.rec* %env, %struct.STYLE* %style, %union.rec** %bthr, %union.rec** %fthr, %union.rec** %target, %union.rec** %crs, i32 %ok, i32 %need_expand, %union.rec** %enclose, i32 %fcr) nounwind {
+define %union.rec* @Manifest(%union.rec* %x, %union.rec* %env, %struct.STYLE* %style, %union.rec** %bthr, %union.rec** %fthr, %union.rec** %target, %union.rec** %crs, i32 %ok, i32 %need_expand, %union.rec** %enclose, i32 %fcr) nounwind {
 entry:
-; CHECK:       ldr.w	r9, [r7, #+28]
+; CHECK:       ldr.w	{{(r[0-9])|(lr)}}, [r7, #28]
   %xgaps.i = alloca [32 x %union.rec*], align 4   ; <[32 x %union.rec*]*> [#uses=0]
   %ycomp.i = alloca [32 x %union.rec*], align 4   ; <[32 x %union.rec*]*> [#uses=0]
-  br i1 false, label %bb, label %bb20
-
-bb:                                               ; preds = %entry
-  unreachable
+  br label %bb20
 
 bb20:                                             ; preds = %entry
   switch i32 undef, label %bb1287 [
@@ -49,14 +46,14 @@ bb119:                                            ; preds = %bb20, %bb20
 
 bb420:                                            ; preds = %bb20, %bb20
 ; CHECK: bb420
-; CHECK: str r{{[0-7]}}, [sp]
-; CHECK: str r{{[0-7]}}, [sp, #+4]
-; CHECK: str r{{[0-7]}}, [sp, #+8]
-; CHECK: str{{(.w)?}} r{{[0-9]+}}, [sp, #+24]
+; CHECK: str{{(.w)?}} r{{[0-9]+}}, [sp]
+; CHECK: str{{(.w)?}} r{{[0-9]+}}, [sp, #4]
+; CHECK: str{{(.w)?}} r{{[0-9]+}}, [sp, #8]
+; CHECK: str{{(.w)?}} r{{[0-9]+}}, [sp, #24]
   store %union.rec* null, %union.rec** @zz_hold, align 4
   store %union.rec* null, %union.rec** @zz_res, align 4
   store %union.rec* %x, %union.rec** @zz_hold, align 4
-  %0 = call arm_apcscc  %union.rec* @Manifest(%union.rec* undef, %union.rec* %env, %struct.STYLE* %style, %union.rec** %bthr, %union.rec** %fthr, %union.rec** %target, %union.rec** %crs, i32 %ok, i32 %need_expand, %union.rec** %enclose, i32 %fcr) nounwind ; <%union.rec*> [#uses=0]
+  %0 = call  %union.rec* @Manifest(%union.rec* undef, %union.rec* %env, %struct.STYLE* %style, %union.rec** %bthr, %union.rec** %fthr, %union.rec** %target, %union.rec** %crs, i32 %ok, i32 %need_expand, %union.rec** %enclose, i32 %fcr) nounwind ; <%union.rec*> [#uses=0]
   unreachable
 
 bb438:                                            ; preds = %bb20, %bb20

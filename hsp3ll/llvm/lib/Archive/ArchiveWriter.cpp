@@ -220,14 +220,13 @@ Archive::writeMember(
   }
 
   // Now that we have the data in memory, update the
-  // symbol table if its a bitcode file.
+  // symbol table if it's a bitcode file.
   if (CreateSymbolTable && member.isBitcode()) {
     std::vector<std::string> symbols;
     std::string FullMemberName = archPath.str() + "(" + member.getPath().str()
       + ")";
     Module* M = 
-      GetBitcodeSymbols((const unsigned char*)data,fSize,
-                        FullMemberName, Context, symbols, ErrMsg);
+      GetBitcodeSymbols(data, fSize, FullMemberName, Context, symbols, ErrMsg);
 
     // If the bitcode parsed successfully
     if ( M ) {
@@ -367,8 +366,7 @@ Archive::writeToDisk(bool CreateSymbolTable, bool TruncateNames, bool Compress,
 
   // Check for errors opening or creating archive file.
   if (!ArchiveFile.is_open() || ArchiveFile.bad()) {
-    if (TmpArchive.exists())
-      TmpArchive.eraseFromDisk();
+    TmpArchive.eraseFromDisk();
     if (ErrMsg)
       *ErrMsg = "Error opening archive file: " + archPath.str();
     return true;
@@ -388,8 +386,7 @@ Archive::writeToDisk(bool CreateSymbolTable, bool TruncateNames, bool Compress,
   for (MembersList::iterator I = begin(), E = end(); I != E; ++I) {
     if (writeMember(*I, ArchiveFile, CreateSymbolTable,
                      TruncateNames, Compress, ErrMsg)) {
-      if (TmpArchive.exists())
-        TmpArchive.eraseFromDisk();
+      TmpArchive.eraseFromDisk();
       ArchiveFile.close();
       return true;
     }
@@ -421,8 +418,7 @@ Archive::writeToDisk(bool CreateSymbolTable, bool TruncateNames, bool Compress,
 
     std::ofstream FinalFile(FinalFilePath.c_str(), io_mode);
     if (!FinalFile.is_open() || FinalFile.bad()) {
-      if (TmpArchive.exists())
-        TmpArchive.eraseFromDisk();
+      TmpArchive.eraseFromDisk();
       if (ErrMsg)
         *ErrMsg = "Error opening archive file: " + FinalFilePath.str();
       return true;
@@ -439,8 +435,7 @@ Archive::writeToDisk(bool CreateSymbolTable, bool TruncateNames, bool Compress,
     if (foreignST) {
       if (writeMember(*foreignST, FinalFile, false, false, false, ErrMsg)) {
         FinalFile.close();
-        if (TmpArchive.exists())
-          TmpArchive.eraseFromDisk();
+        TmpArchive.eraseFromDisk();
         return true;
       }
     }

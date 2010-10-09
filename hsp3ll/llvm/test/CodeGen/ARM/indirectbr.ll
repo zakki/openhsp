@@ -5,7 +5,7 @@
 @nextaddr = global i8* null                       ; <i8**> [#uses=2]
 @C.0.2070 = private constant [5 x i8*] [i8* blockaddress(@foo, %L1), i8* blockaddress(@foo, %L2), i8* blockaddress(@foo, %L3), i8* blockaddress(@foo, %L4), i8* blockaddress(@foo, %L5)] ; <[5 x i8*]*> [#uses=1]
 
-define internal arm_apcscc i32 @foo(i32 %i) nounwind {
+define internal i32 @foo(i32 %i) nounwind {
 ; ARM: foo:
 ; THUMB: foo:
 ; THUMB2: foo:
@@ -15,14 +15,14 @@ entry:
 ; indirect branch gets duplicated here
 ; ARM: bx
 ; THUMB: mov pc, r1
-; THUMB2: mov pc, r1
+; THUMB2: mov pc, r2
   br i1 %1, label %bb3, label %bb2
 
 bb2:                                              ; preds = %entry, %bb3
   %gotovar.4.0 = phi i8* [ %gotovar.4.0.pre, %bb3 ], [ %0, %entry ] ; <i8*> [#uses=1]
 ; ARM: bx
 ; THUMB: mov pc, r1
-; THUMB2: mov pc, r1
+; THUMB2: mov pc, r2
   indirectbr i8* %gotovar.4.0, [label %L5, label %L4, label %L3, label %L2, label %L1]
 
 bb3:                                              ; preds = %entry
@@ -59,6 +59,6 @@ L1:                                               ; preds = %L2, %bb2
   store i8* blockaddress(@foo, %L5), i8** @nextaddr, align 4
   ret i32 %res.3
 }
-; ARM: .long L_BA4__foo_L5-(LPC{{.*}}+8)
-; THUMB: .long L_BA4__foo_L5-(LPC{{.*}}+4)
-; THUMB2: .long L_BA4__foo_L5
+; ARM: .long Ltmp0-(LPC{{.*}}+8)
+; THUMB: .long Ltmp0-(LPC{{.*}}+4)
+; THUMB2: .long Ltmp0

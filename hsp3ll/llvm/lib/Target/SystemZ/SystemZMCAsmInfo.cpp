@@ -12,16 +12,18 @@
 //===----------------------------------------------------------------------===//
 
 #include "SystemZMCAsmInfo.h"
+#include "llvm/MC/MCContext.h"
 #include "llvm/MC/MCSectionELF.h"
 using namespace llvm;
 
-SystemZMCAsmInfo::SystemZMCAsmInfo(const Target &T, const StringRef &TT) {
+SystemZMCAsmInfo::SystemZMCAsmInfo(const Target &T, StringRef TT) {
   PrivateGlobalPrefix = ".L";
   WeakRefDirective = "\t.weak\t";
   PCSymbol = ".";
 }
 
-MCSection *SystemZMCAsmInfo::getNonexecutableStackSection(MCContext &Ctx) const{
-  return MCSectionELF::Create(".note.GNU-stack", MCSectionELF::SHT_PROGBITS,
-                              0, SectionKind::getMetadata(), false, Ctx);
+const MCSection *SystemZMCAsmInfo::
+getNonexecutableStackSection(MCContext &Ctx) const{
+  return Ctx.getELFSection(".note.GNU-stack", MCSectionELF::SHT_PROGBITS,
+                           0, SectionKind::getMetadata(), false);
 }

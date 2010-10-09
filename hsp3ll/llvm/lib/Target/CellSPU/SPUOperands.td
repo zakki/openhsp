@@ -9,6 +9,17 @@
 // Cell SPU Instruction Operands:
 //===----------------------------------------------------------------------===//
 
+// TO_IMM32 - Convert an i8/i16 to i32.
+def TO_IMM32 : SDNodeXForm<imm, [{
+  return getI32Imm(N->getZExtValue());
+}]>;
+
+// TO_IMM16 - Convert an i8/i32 to i16.
+def TO_IMM16 : SDNodeXForm<imm, [{
+  return CurDAG->getTargetConstant(N->getZExtValue(), MVT::i16);
+}]>;
+
+
 def LO16 : SDNodeXForm<imm, [{
   unsigned val = N->getZExtValue();
   // Transformation function: get the low 16 bits.
@@ -85,12 +96,6 @@ def immSExt8  : PatLeaf<(imm), [{
 // immU8: immediate, unsigned 8-bit quantity
 def immU8 : PatLeaf<(imm), [{
   return (N->getZExtValue() <= 0xff);
-}]>;
-
-// i64ImmSExt10 predicate - True if the i64 immediate fits in a 10-bit sign
-// extended field.  Used by RI10Form instructions like 'ldq'.
-def i64ImmSExt10  : PatLeaf<(imm), [{
-  return isI64IntS10Immediate(N);
 }]>;
 
 // i32ImmSExt10 predicate - True if the i32 immediate fits in a 10-bit sign
