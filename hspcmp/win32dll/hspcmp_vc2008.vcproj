@@ -190,6 +190,10 @@
 				>
 			</File>
 			<File
+				RelativePath=".\dpm.cpp"
+				>
+			</File>
+			<File
 				RelativePath="..\errormsg.cpp"
 				>
 			</File>
@@ -249,6 +253,10 @@
 			</File>
 			<File
 				RelativePath="..\comutil.h"
+				>
+			</File>
+			<File
+				RelativePath=".\dpm.h"
 				>
 			</File>
 			<File

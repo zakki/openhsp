@@ -8,9 +8,9 @@
 //		システム関連ラベル
 //
 #define HSPTITLE "OpenHSP ver."
-#define hspver "3.21"
-#define mvscode 8		// minor version code
-#define vercode 0x3208	// version code
+#define hspver "3.22"
+#define mvscode 9		// minor version code
+#define vercode 0x3209	// version code
 
 #define HSPERR_HANDLE		// HSPエラー例外を有効にします
 #define SYSERR_HANDLE		// システムエラー例外を有効にします

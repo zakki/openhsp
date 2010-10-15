@@ -12,6 +12,10 @@
 #include <string.h>
 #include <ctype.h>
 
+#ifdef HSPWIN
+#include <windows.h>
+#endif
+
 #include "hsp3config.h"
 #include "dpmread.h"
 #include "supio.h"
@@ -194,7 +198,15 @@ int dpm_ini( char *fname, long dpmofs, int chksum, int deckey )
 	dpm_ofs=dpmofs;
 	mem_dpm = NULL;
 
+#ifdef HSPWIN
+	if ( *fname == 0 ) {
+		GetModuleFileName( NULL,dpmfile,_MAX_PATH );
+	} else {
+		strcpy( dpmfile, fname );
+	}
+#else
 	strcpy( dpmfile, fname );
+#endif
 
 	fp=fopen( dpmfile,"rb" );
 	if (fp==NULL) return -1;
@@ -206,7 +218,9 @@ int dpm_ini( char *fname, long dpmofs, int chksum, int deckey )
 	dent=(int)getdw( p_dent );
 	fclose(fp);
 
-	buf[4]=0;if (strcmp((char *)buf,"DPMX")!=0) return -1;
+	buf[4]=0;if (strcmp((char *)buf,"DPMX")!=0) {
+		return -1;
+	}
 
 	namsize = getdw( p_dnam );
 	dirsize = 32 * dent;

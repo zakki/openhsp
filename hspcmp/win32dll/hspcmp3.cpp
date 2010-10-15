@@ -19,7 +19,8 @@
 #include "../token.h"
 #include "../ahtobj.h"
 
-//#define DPM_SUPPORT		// DPMファイルマネージャをサポート
+#define DPM_SUPPORT		// DPMファイルマネージャをサポート
+#include "dpm.h"
 
 //	VC++の場合
 #ifdef __cplusplus
