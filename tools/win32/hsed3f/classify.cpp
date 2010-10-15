@@ -36,6 +36,7 @@ DEF_CLASSIFY_TABLE DefClassifyTable[] = {
 	// Grammer
 	"\\\"",		"\\\"",	EMP_LINE_BETWEEN,	&(color.Character.String.Conf),		NULL,	4,	0,
 	"\"",		"\"",	EMP_LINE_BETWEEN,	&(color.Character.String.Conf),		NULL,	3,	4,
+	"{\"",		"\"}",	EMP_MULTI_BETWEEN,	&(color.Character.String.Conf),		NULL,	3,	4,
 	":",		"",		EMP_LINE_AFTER,		&(color.Character.Default.Conf),	NULL,	2,	1,
 	"/*",		"*/",	EMP_MULTI_BETWEEN,	&(color.Character.Comment.Conf),	NULL,	3,	0,
 	";",		"",		EMP_LINE_AFTER,		&(color.Character.Comment.Conf),	NULL,	3,	0,

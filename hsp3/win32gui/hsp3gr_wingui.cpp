@@ -1599,6 +1599,7 @@ void ex_mref( PVal *pval, int prm )
 	} else {
 		switch( prm ) {
 		case 0x40:
+			size = sizeof(int);
 			ptr = &ctx->stat;
 			break;
 		case 0x41:

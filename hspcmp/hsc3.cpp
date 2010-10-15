@@ -80,6 +80,8 @@ void CHsc3::AddSystemMacros( CToken *tk, int option )
 		tk->RegistExtMacro( "__hsp30__","" );
 		tk->RegistExtMacro( "__date__",linfo.CurrentDate() );
 		tk->RegistExtMacro( "__time__",linfo.CurrentTime() );
+		tk->RegistExtMacro( "__line__", 0 );
+		tk->RegistExtMacro( "__file__", "" );
 		if ( option & HSC3_OPT_DEBUGMODE ) tk->RegistExtMacro( "_debug", "" );
 	}
 }

@@ -73,7 +73,7 @@ static void rquickSort(DATA *data, int asdes, int first, int last)
 
     i = first;
     j = last;
-    x = (data[i].as.ikey + data[j].as.ikey)/2;
+    x = (data[i].as.ikey / 2) + (data[j].as.ikey / 2);
 
 //  while (i < j) {
 

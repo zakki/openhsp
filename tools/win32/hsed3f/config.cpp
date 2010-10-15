@@ -729,12 +729,14 @@ static void ini_setkey( const char *filename, const char *secname, char *writeke
 {
 	char buf[32];
 	wsprintf(buf, "%d", value);
-	ini_ssetkey(filename, secname, writekey, buf);
+	WritePrivateProfileString( filename, secname, writekey, buf );
 }
 
 static inline void ini_ssetkey( const char *filename, const char *secname, char *writekey, char *string )
 {
-	WritePrivateProfileString(secname, writekey, string, filename);
+	char buf[1280];
+	wsprintf( buf, "\"%s\"", string );
+	WritePrivateProfileString( secname, writekey, buf, filename );
 }
 
 static void ini_bsetkey( const char *filename, const char *secname, char *writekey, BYTE *buf, int length )

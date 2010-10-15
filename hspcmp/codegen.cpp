@@ -2296,6 +2296,12 @@ int CToken::GenerateCodeMain( CMemBuf *buf )
 			}
 		}
 		
+		//		ブレース対応チェック
+		if ( iflev > 0 ) {
+			Mesf( "#波括弧が閉じられていません。" );
+			errend ++;
+		}
+		
 		if ( errend ) throw CGERROR_FATAL;
 	}
 	catch ( CGERROR code ) {

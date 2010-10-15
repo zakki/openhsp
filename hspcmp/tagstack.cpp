@@ -103,7 +103,7 @@ int CTagStack::StackCheck( char *res )
 	while(1) {
 		i--; if ( i<0 ) break;
 		t = &mem_buf[i];
-		mem_tag[ t->tagid ].check = -1;
+		if ( t->tagid >= 0 ) mem_tag[ t->tagid ].check = -1;
 	}
 	n=0;
 	for(i=0;i<TAGSTK_TAGMAX;i++) {

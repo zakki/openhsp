@@ -2487,9 +2487,9 @@ ppresult_t CToken::PP_Func( char *name )
 		glmode=1;
 	}
 
-	i = lb->Search( word );if ( i != -1 ) { SetError("symbol in use"); return PPRESULT_ERROR; }
 	if ( glmode ) FixModuleName( word ); else AddModuleName( word );
 	//AddModuleName( word );
+	i = lb->Search( word );if ( i != -1 ) { SetError("symbol in use"); return PPRESULT_ERROR; }
 	id = lb->Regist( word, LAB_TYPE_PPDLLFUNC, 0 );
 	if ( glmode ) lb->SetEternal( id );
 	//

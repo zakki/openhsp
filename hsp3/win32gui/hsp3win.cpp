@@ -153,7 +153,15 @@ void hsp3win_msgfunc( HSPCTX *hspctx )
 	int tick;
 
 	while(1) {
-
+		// logmes ‚È‚çæ‚Éˆ—‚·‚é
+		if ( hspctx->runmode == RUNMODE_LOGMES ) {
+			hspctx->runmode = RUNMODE_RUN;
+#ifdef HSPDEBUG
+			if ( h_dbgwin != NULL ) dbgnotice( dbginfo, 1, 0, 0 );		// Debug Window Notice
+#endif
+			return;
+		}
+		
 		if ( PeekMessage( &msg, NULL, 0, 0, PM_REMOVE ) ) {
 			if (msg.message == WM_QUIT ) throw HSPERR_NONE;
 			hsp3win_dispatch( &msg );
@@ -201,12 +209,7 @@ void hsp3win_msgfunc( HSPCTX *hspctx )
 			hsp3win_debugopen();
 #endif
 			break;
-		case RUNMODE_LOGMES:
-			hspctx->runmode = RUNMODE_RUN;
-#ifdef HSPDEBUG
-			if ( h_dbgwin != NULL ) dbgnotice( dbginfo, 1, 0, 0 );		// Debug Window Notice
-#endif
-			return;
+	//	case RUNMODE_LOGMES:
 		default:
 			return;
 		}
