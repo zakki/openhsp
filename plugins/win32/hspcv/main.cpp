@@ -534,9 +534,8 @@ EXPORT BOOL WINAPI cvsmooth( HSPEXINFO *hei, int p1, int p2, int p3 )
 	if ( cv->flag == CVOBJ_FLAG_NONE ) return -1;
 	img = hspcv_temp( ep5 );
 	cvSmooth( cv->img, img, ep1, ep2, ep3, ep4 );
-	cvCopy( img, cv->img );
-
-	//hspcv_exchange( ep5, img );
+	//cvCopy( img, cv->img );
+	hspcv_exchange( ep5, img );
 
 	return 0;
 }
@@ -800,6 +799,7 @@ EXPORT BOOL WINAPI cvfacedetect( HSPEXINFO *hei, int p1, int p2, int p3 )
 
     cvReleaseImage( &gray );
     cvReleaseImage( &small_img );
+	cvReleaseMemStorage( &storage );
 
 	return -cvface_total;
 }
