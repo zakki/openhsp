@@ -799,7 +799,6 @@ EXPORT BOOL WINAPI cvfacedetect( HSPEXINFO *hei, int p1, int p2, int p3 )
 
     cvReleaseImage( &gray );
     cvReleaseImage( &small_img );
-	cvReleaseMemStorage( &storage );
 
 	return -cvface_total;
 }
