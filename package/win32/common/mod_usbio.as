@@ -1,6 +1,7 @@
 ////////////////////////////////////////////////////////////////////////////////
-//  mod_usbio  USB-IO制御モジュール for HSP
+//  mod_usbio  USB-IO制御モジュール for HSP ver0.4
 //                               Copyright(C) 2007 K.Kawahira
+//                               Modified 2010/7 onitama
 
 #module
 #define MAX_DEVS 32

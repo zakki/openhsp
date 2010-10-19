@@ -60,6 +60,11 @@ HSPCV ver3.2 REFERENCE MANUAL                       HSP : Hot Soup Processor
 
 ・更新履歴
 
+	2010/10/18 ver3.22
+
+	cvsmooth命令でメモリリークが発生する不具合を修正
+
+
 	2009/6/24 ver3.2beta4
 
 		cvfacedetect命令のメモリリークをさらに修正
