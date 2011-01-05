@@ -152,6 +152,16 @@ void CToken::CalcCG_factor( void )
 		if ( id < 0 ) {
 			id = lb->Regist( cg_str, TYPE_VAR, cg_valcnt );
 			cg_valcnt++;
+			if ( lb->GetInitFlag(id) == LAB_INIT_NO ) {
+#ifdef JPNMSG
+				Mesf( "#未初期化の変数があります(%s)", cg_str );
+#else
+				Mesf( "#Uninitalized variable (%s).", cg_str );
+#endif
+				if ( hed_cmpmode & CMPMODE_VARINIT ) {
+					throw CGERROR_VAR_NOINIT;
+				}
+			}
 		}
 		GenerateCodeVAR( id, texflag );
 		texflag = 0;
@@ -1299,6 +1309,25 @@ void CToken::CheckInternalProgCMD( int opt, int orgcs )
 		if ( i < 0 ) throw CGERROR_SYNTAX;
 		PutCS( lb->GetType(i), lb->GetOpt(i), EXFLG_2 );
 		break;
+
+	case 0x09:					// dim
+	case 0x0a:					// sdim
+	case 0x0d:					// dimtype
+	case 0x0e:					// dup
+	case 0x0f:					// dupptr
+		GetTokenCG( GETTOKEN_DEFAULT );
+		if ( ttype == TK_OBJ ) {
+			i = lb->Search( cg_str );
+		}
+		if ( i < 0 ) {
+			//	変数の初期化フラグをセットする
+			i = lb->Regist( cg_str, TYPE_VAR, cg_valcnt );
+			lb->SetInitFlag( i, LAB_INIT_DONE );
+			cg_valcnt++;
+			//Mesf( "#initflag set [%s]", cg_str );
+		}
+		cg_ptr = cg_ptr_bak;
+		break;
 	}
 }
 
@@ -1550,7 +1579,13 @@ void CToken::GenerateCodePP_func( int deftype )
 	}
 
 	if ( ref == 0 && (otflag & STRUCTDAT_OT_CLEANUP) == 0 ) {
-		if ( hed_cmpmode & CMPMODE_OPTINFO ) Mesf( "#Delete func %s", fbase );
+		if ( hed_cmpmode & CMPMODE_OPTINFO ) {
+#ifdef JPNMSG
+			Mesf( "#不要な関数呼び出しを削除しました %s", fbase );
+#else
+			Mesf( "#Delete func %s", fbase );
+#endif
+		}
 		return;
 	}
 
@@ -1697,7 +1732,11 @@ int CToken::GetParameterTypeCG( char *name )
 	if ( !strcmp( cg_str,"int" ) ) return MPTYPE_INUM;
 	if ( !strcmp( cg_str,"var" ) ) return MPTYPE_SINGLEVAR;
 	if ( !strcmp( cg_str,"val" ) ) { 
+#ifdef JPNMSG
+		Mesf( "警告:古いdeffunc表記があります 行%d.[%s]", cg_orgline, name );
+#else
 		Mesf( "Warning:Old deffunc expression at %d.[%s]", cg_orgline, name );
+#endif
 		return MPTYPE_SINGLEVAR;
 	}
 	if ( !strcmp( cg_str,"str" ) ) return MPTYPE_LOCALSTRING;
@@ -1921,7 +1960,13 @@ void CToken::GenerateCodePP_module( void )
 			ref = tmp_lb->GetReference( i );
 			if ( ref == 0 ) {
 				cg_flag = CG_FLAG_DISABLE;
-				if ( hed_cmpmode & CMPMODE_OPTINFO ) Mesf( "#Delete module %s", modname );
+				if ( hed_cmpmode & CMPMODE_OPTINFO ) {
+#ifdef JPNMSG
+					Mesf( "#モジュールを削除しました %s", modname );
+#else
+					Mesf( "#Delete module %s", modname );
+#endif
+				}
 				return;
 			}
 		}
@@ -2075,6 +2120,7 @@ int CToken::GenerateCodeSub( void )
 			if ( i < 0 ) {
 				//Mesf( "[%s][%d]",cg_str, cg_valcnt );
 				i = lb->Regist( cg_str, TYPE_VAR, cg_valcnt );
+				lb->SetInitFlag( i, LAB_INIT_DONE );		//	変数の初期化フラグをセットする
 				cg_valcnt++;
 				GenerateCodeLET( i );
 			} else {
@@ -2294,12 +2340,6 @@ int CToken::GenerateCodeMain( CMemBuf *buf )
 				Mesf( "#関数が存在しません [%s]", lb->GetName(GET_FI(a)->otindex) );
 				errend++;
 			}
-		}
-		
-		//		ブレース対応チェック
-		if ( iflev > 0 ) {
-			Mesf( "#波括弧が閉じられていません。" );
-			errend ++;
 		}
 		
 		if ( errend ) throw CGERROR_FATAL;
@@ -2864,7 +2904,11 @@ int CToken::GenerateCode( CMemBuf *srcbuf, char *oname, int mode )
 
 		res = axbuf.SaveFile( oname );
 		if ( res<0 ) {
+#ifdef JPNMSG
+			Mes( "#出力ファイルを書き込めません" );
+#else
 			Mes( "#Can't write output file." );
+#endif
 		} else {
 			int n_mod, n_hpi;
 			n_hpi = hpi_buf->GetSize() / sizeof(HPIDAT);

@@ -1,6 +1,6 @@
 ------------------------------------------------------------------------------
 OpenHSP ver3.2                                      HSP : Hot Soup Processor  
-ホットスーププロセッサ                copyright 1997-2010 (c) onion software  
+ホットスーププロセッサ                copyright 1997-2011 (c) onion software  
 ------------------------------------------------------------------------------
 
 ・OpenHSPについて
@@ -47,7 +47,9 @@ OpenHSPで提供されているソースコードは、以下のコンパイラで動作検証を行なって
 
 　　WINDOWS、WINDOWS GUI版
 
+　　■Microsoft Visual C++ 2003
 　　■Microsoft Visual C++ 2005
+　　■Microsoft Visual C++ 2008
 
 　　Linux版
 

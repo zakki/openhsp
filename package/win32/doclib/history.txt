@@ -1,9 +1,14 @@
 ------------------------------------------------------------------------------
-Hot Soup Processor ver3.22                          HSP : Hot Soup Processor  
-更新履歴                              copyright 1997-2010 (c) onion software  
+Hot Soup Processor ver3.23                          HSP : Hot Soup Processor  
+更新履歴                              copyright 1997-2011 (c) onion software  
 ------------------------------------------------------------------------------
 
 ・hsp3関連 更新履歴
+
+	2011/01/05 3.3β1
+
+	未初期化の変数をコンパイルレポートに出力するように修正
+	#cmpopt命令にvarinitオプションを追加
 
 	2010/10/18 3.22
 

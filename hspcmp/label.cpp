@@ -23,6 +23,11 @@ int CLabel::StrCase( char *str )
 	unsigned char a2;
 	unsigned char *ss;
 	hash = 0;
+
+	if ( casemode ) {			// 大文字小文字を区別する
+		return GetHash( str );
+	}
+
 	ss = (unsigned char *)str;
 	while(1) {
 		a1=*ss;
@@ -116,6 +121,8 @@ int CLabel::Regist( char *name, int type, int opt )
 	lab->data2 = NULL;
 	lab->hash = StrCase( lab->name );
 	lab->rel = NULL;
+	lab->init = LAB_INIT_NO;
+	lab->typefix = LAB_TYPEFIX_NONE;
 	return a;
 }
 
@@ -161,7 +168,7 @@ void CLabel::SetData( int id, char *str )
 		lab->data = NULL;
 		return;
 	}
-	lab->data = RegistTable( str, strlen(str)+1 );
+	lab->data = RegistTable( str, (int)strlen(str)+1 );
 }
 
 
@@ -175,6 +182,22 @@ void CLabel::SetData2( int id, char *str, int size )
 		return;
 	}
 	lab->data2 = RegistTable( str, size );
+}
+
+
+void CLabel::SetInitFlag( int id, int val )
+{
+	//		set init flag
+	//
+	mem_lab[id].init = (short)val;
+}
+
+
+void CLabel::SetForceType( int id, int val )
+{
+	//		set force type
+	//
+	mem_lab[id].typefix = (short)val;
 }
 
 
@@ -280,6 +303,7 @@ void CLabel::Reset( void )
 	for(i=0;i<maxlab;i++) { mem_lab[i].flag = -1; }
 	DisposeSymbolBuffer();
 	MakeSymbolBuffer();
+	casemode = 0;
 }
 
 
@@ -380,6 +404,12 @@ LABOBJ *CLabel::GetLabel( int id )
 }
 
 
+int CLabel::GetInitFlag( int id )
+{
+	return (int)mem_lab[id].init;
+}
+
+
 char *CLabel::RegistSymbol( char *str )
 {
 	//		シンボルテーブルに文字列を登録
@@ -391,7 +421,7 @@ char *CLabel::RegistSymbol( char *str )
 	int i;
 	//int hush;
 	i = 0;
-	p = ExpandSymbolBuffer( strlen(str)+1 );
+	p = ExpandSymbolBuffer( (int)strlen(str)+1 );
 	pmaster = p;
 	src = str;
 	a2 = *src;
@@ -742,5 +772,11 @@ void CLabel::AddRelation( char *name, int rel_id )
 	i = Search( name );
 	if ( i < 0 ) return;
 	AddRelation( i, rel_id );
+}
+
+
+void CLabel::SetCaseMode( int flag )
+{
+	casemode = flag;
 }
 

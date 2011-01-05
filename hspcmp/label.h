@@ -34,6 +34,12 @@
 #define PRM_MASK 0xfff
 #define PRM_FLAG_CTYPE 0x1000
 
+#define LAB_INIT_NO 0
+#define LAB_INIT_DONE 1
+
+#define LAB_TYPEFIX_NONE 0
+#define LAB_TYPEFIX_INT 4
+
 
 typedef struct LABREL LABREL;
 
@@ -53,6 +59,8 @@ typedef struct LABOBJ {
 	char	*data;				// data field
 	char	*data2;				// data field (opt)
 	LABREL	*rel;				// relation id
+	short	init;				// initalize flag
+	short	typefix;			// force type
 } LABOBJ;
 
 //  label manager class
@@ -69,6 +77,8 @@ public:
 	void SetFlag( int id, int val );
 	void SetData( int id, char *str );
 	void SetData2( int id, char *str, int size );
+	void SetInitFlag( int id, int val );
+	void SetForceType( int id, int val );
 	int Search( char *oname );
 	int SearchLocal( char *oname, char *loname );
 	int GetCount( void );
@@ -79,6 +89,7 @@ public:
 	char *GetName( int id );
 	char *GetData( int id );
 	char *GetData2( int id );
+	int GetInitFlag( int id );
 	LABOBJ *GetLabel( int id );
 	void DumpLabel( char *str );
 	void DumpHSPLabel( char *str, int option );
@@ -91,6 +102,7 @@ public:
 	void AddRelation( int id, int rel_id );
 	void AddRelation( char *name, int rel_id );
 	int SearchRelation( int id, int rel_id );
+	void SetCaseMode( int flag );
 
 private:
 	int StrCase( char *str );
@@ -119,6 +131,7 @@ private:
 	int maxsymbol;						// Max Symbol Size
 	int maxlab;							// Max Label Size
 	char token[64];						// Token for RegistList
+	int casemode;						// Case sensitive (0=none/other=ON)
 };
 
 
