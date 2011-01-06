@@ -5,11 +5,14 @@
 #ifndef __stack_h
 #define __stack_h
 
-#define STM_MAX_DEFAULT 256
+#define STM_MAX_DEFAULT 512
 #define STM_STRSIZE_DEFAULT 64
 
 #define STMMODE_SELF 0
 #define STMMODE_ALLOC 1
+
+#include "hspvar_core.h"
+#include "hsp3debug.h"
 
 //	STMDATA structure
 //
@@ -21,7 +24,7 @@ typedef struct
 	short mode;
 	char *ptr;
 	int ival;
-	char itemp[STM_STRSIZE_DEFAULT-4];		// data area peding
+	char itemp[STM_STRSIZE_DEFAULT-4];		// data area padding
 } STMDATA;
 
 void StackInit( void );
@@ -50,6 +53,25 @@ extern STMDATA *mem_stm;
 #define StackGetLevel (stm_cur)
 #define StackDecLevel stm_cur--
 
+inline void StackPushi( int val )
+{
+	STMDATA *stm;
+	if ( stm_cur >= stm_max ) throw HSPERR_STACK_OVERFLOW;
+	stm = &mem_stm[ stm_cur ];
+	stm->type = HSPVAR_FLAG_INT;
+	stm->mode = STMMODE_SELF;
+	stm->ptr = (char *)&(stm->ival);
+	stm->ival = val;
+	stm_cur++;
+}
 
+inline void StackPop( void )
+{
+	if ( stm_cur <= 0 ) throw HSPERR_UNKNOWN_CODE;
+	stm_cur--;
+	if ( mem_stm[ stm_cur ].mode ) {
+		free( mem_stm[ stm_cur ].ptr );
+	}
+}
 
 #endif

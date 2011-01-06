@@ -9,8 +9,6 @@
 #include <stdlib.h>
 #include <string.h>
 #include "stack.h"
-#include "hspvar_core.h"
-#include "hsp3debug.h"
 
 /*------------------------------------------------------------*/
 /*
@@ -107,18 +105,6 @@ void *StackPushSize( int type, int size )
 	return (void *)stm->ptr;
 }
 
-void StackPushi( int val )
-{
-	STMDATA *stm;
-	if ( stm_cur >= stm_max ) throw HSPERR_STACK_OVERFLOW;
-	stm = &mem_stm[ stm_cur ];
-	stm->type = HSPVAR_FLAG_INT;
-	stm->mode = STMMODE_SELF;
-	stm->ptr = (char *)&(stm->ival);
-	stm->ival = val;
-	stm_cur++;
-}
-
 void StackPushStr( char *str )
 {
 	StackPush( HSPVAR_FLAG_STR, str, (int)strlen(str)+1 );
@@ -142,14 +128,4 @@ void StackPushType( int type )
 {
 	StackPushTypeVal( type, 0, 0 );
 }
-
-void StackPop( void )
-{
-	if ( stm_cur <= 0 ) throw HSPERR_UNKNOWN_CODE;
-	stm_cur--;
-	if ( mem_stm[ stm_cur ].mode ) {
-		free( mem_stm[ stm_cur ].ptr );
-	}
-}
-
 

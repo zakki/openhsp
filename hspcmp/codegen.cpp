@@ -152,16 +152,17 @@ void CToken::CalcCG_factor( void )
 		if ( id < 0 ) {
 			id = lb->Regist( cg_str, TYPE_VAR, cg_valcnt );
 			cg_valcnt++;
-			if ( lb->GetInitFlag(id) == LAB_INIT_NO ) {
+		}
+		if ( lb->GetInitFlag(id) == LAB_INIT_NO ) {
 #ifdef JPNMSG
-				Mesf( "#未初期化の変数があります(%s)", cg_str );
+			Mesf( "#未初期化の変数があります(%s)", cg_str );
 #else
-				Mesf( "#Uninitalized variable (%s).", cg_str );
+			Mesf( "#Uninitalized variable (%s).", cg_str );
 #endif
-				if ( hed_cmpmode & CMPMODE_VARINIT ) {
-					throw CGERROR_VAR_NOINIT;
-				}
+			if ( hed_cmpmode & CMPMODE_VARINIT ) {
+				throw CGERROR_VAR_NOINIT;
 			}
+			lb->SetInitFlag( id, LAB_INIT_DONE );
 		}
 		GenerateCodeVAR( id, texflag );
 		texflag = 0;
@@ -327,6 +328,9 @@ char *CToken::PickLongStringCG( char *str )
 		p+=2;
 	}
 	if ( *psrc != '}' ) throw CGERROR_MULTILINE_STR;
+
+	PutDI( 254, 0, cg_orgline );				// ラインだけをデバッグ情報として登録
+
 	psrc++;
 	return psrc;
 }
@@ -508,6 +512,7 @@ char *CToken::GetTokenCG( char *str, int option )
 			vs+=2;
 			if ( *vs == 0 ) {
 				vs = (unsigned char *)GetLineCG();
+				cg_orgline++;
 			}
 			ttype = TK_STRING; cg_str = (char *)vs;
 			return PickLongStringCG( (char *)vs );

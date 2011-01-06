@@ -186,8 +186,10 @@ static void Object_StrInput( HSPOBJINFO *info, int wparam )
 	hwnd = bm->hwnd;
 	notify = wparam>>16;
 	if ( notify != EN_UPDATE ) return;
+
 	cid = GetDlgCtrlID( info->hCld );
 	val = GetDlgItemText( hwnd, cid, minp, 0x7fff );
+
 	if ( val == 0 ) {
 		bmscr_obj_ival = 0;
 		info->varset.ptr = (void *)&bmscr_obj_ival;
@@ -270,6 +272,15 @@ static void Object_SetInputBox( HSPOBJINFO *info, int type, void *ptr )
 	default:
 		throw HSPERR_TYPE_MISMATCH;
 	}
+}
+
+
+static void Object_SetInputMesBox( HSPOBJINFO *info, int type, void *ptr )
+{
+	HWND hw;
+	hw = info->hCld;
+	Object_SetInputBox( info, type, ptr );
+	Object_StrInput( info, EN_UPDATE<<16 );	// ‘¦Žž”½‰f‚³‚¹‚é
 }
 
 
@@ -786,8 +797,14 @@ int Bmscr::AddHSPObjectInput( PVal *pval, APTR aptr, int sizex, int sizey, char 
 	default:
 		throw HSPERR_TYPE_MISMATCH;
 	}
+
 	obj->func_delete = Object_WindowDelete;
 	obj->func_objprm = Object_SetInputBox;
+
+	if ( !subcl ) {			// mesbox—p‚ÌobjprmXV‚ð’Ç‰Á(2011/1/6)
+		obj->func_objprm = Object_SetInputMesBox;
+	}
+
 	Posinc( sizey );
 
 	SendMessage( hwedit, EM_LIMITTEXT, limit, 0L );

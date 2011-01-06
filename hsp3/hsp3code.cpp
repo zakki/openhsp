@@ -61,7 +61,7 @@ static	int funcres;							// ŠÖ”‚Ì–ß‚è’lŒ^
 */
 /*------------------------------------------------------------*/
 
-void code_next( void )
+static inline void __code_next( void )
 {
 	//		Get 1 command block
 	//		(ver3.0ˆÈ~—p)
@@ -83,6 +83,12 @@ void code_next( void )
 	val = (int)(*mcs++);
 
 //	printf( "%08x : type[%d] val[%d] ex[%d]\n",(int)(mcs-hspctx->mem_mcs), type,val,exflg );
+}
+
+
+void code_next( void )
+{
+	__code_next();
 }
 
 
@@ -246,6 +252,7 @@ static void inline code_calcop( int op )
 	int basesize;
 
 	stm2 = StackPeek;
+	//stm1 = stm2-1;
 	stm1 = StackPeek2;
 	tflag = stm1->type;
 

@@ -1,6 +1,6 @@
 
 #define APP_TITLE "HSP assistant "
-#define APP_VER "ver1.0"
+#define APP_VER "ver1.01"
 #define APP_CONF "\\hspat.cfg"
 #define APP_CACHE ".hat"
 #define APP_INDEX "index.hat"
@@ -69,6 +69,12 @@
 	yt=25			; 行数
 	xofs=4:yofs=2		; X,Yオフセット
 	wx=sx:wy=sy*yt+isy	; ウィンドウサイズ
+
+	if app_winx<0 : app_winx = 0
+	if app_winy<0 : app_winy = 0
+	if app_winx>=ginfo_dispx : app_winx = ginfo_dispx-wx
+	if app_winy>=ginfo_dispy : app_winy = ginfo_dispy-wy
+
 	screen 0,wx,wy,0,app_winx,app_winy
 	title APP_TITLE+APP_VER
 	gsel 0,1
