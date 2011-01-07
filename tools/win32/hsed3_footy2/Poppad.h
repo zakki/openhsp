@@ -60,9 +60,9 @@
 #define PM_ISAPPLICABLE WM_APP + 1
 #define PM_SETDEFAULT   WM_APP + 2
 
+#define POS_EXTTOOL                     5
 #define POS_TABBASE                     6
-#define POS_EXTTOOL                     7
-#define POS_WINDOW                      8
+#define POS_WINDOW                      6
 #define POS_TOOLPOPUPSEP                14
 #define POS_TOOLPOPUPBASE               (POS_TOOLPOPUPSEP + 1)
 #define POS_TOOLMAINBASE                0

@@ -36,6 +36,7 @@ extern char     startdir[_MAX_PATH];
 extern LOGFONT  chg_font;
 extern int      flg_statbar;
 extern int      flg_toolbar;
+extern int		flg_hspat;
 extern char     hdir[_MAX_PATH];
 extern char     helpopt[TMPSIZE];
 extern int      hsp_fullscr;
@@ -97,6 +98,7 @@ void gethdir( void );
 // Functions in popfont.cpp
 LOGFONT PopFontGetELG ( void );
 LOGFONT PopFontGetTLG( void );
+void PopFontMakeFont( LOGFONT *pLogFont, char *fonname, int fpts, int fopt, int angle );
 
 void LoadConfig()
 {
@@ -229,7 +231,8 @@ void DefaultColor(MYCOLOR *dest)
 
 void DefaultFont(LOGFONT *editfont, LOGFONT *tabfont)
 {
-	GetObject (GetStockObject(SYSTEM_FIXED_FONT), sizeof(LOGFONT), (PSTR)editfont);
+	//GetObject (GetStockObject(SYSTEM_FIXED_FONT), sizeof(LOGFONT), (PSTR)editfont);
+	PopFontMakeFont( editfont, "ÇlÇr ÉSÉVÉbÉN", 14, 0, 0 );
 	
 	NONCLIENTMETRICS ncm;
 	ncm.cbSize = sizeof(NONCLIENTMETRICS);
@@ -300,6 +303,10 @@ static void set_default( void )
 	linewidth = 50;
 	linespace = 0;
 
+	flg_statbar = 1;
+	flg_toolbar = 1;
+	flg_hspat = 1;
+
 	bAutoIndent = TRUE;
 
 	ColumnWidth[0] = 120;
@@ -344,6 +351,7 @@ static void reg_save( void )
 
 	reg_setkey( hKey,"toolbar", flg_toolbar );
 	reg_setkey( hKey,"statbar", flg_statbar );
+	reg_setkey( hKey,"hspat", flg_hspat );
 	reg_ssetkey( hKey,"helpdir", hsp_helpdir );
 	reg_setkey( hKey,"exewx", hsp_wx );
 	reg_setkey( hKey,"exewy", hsp_wy );
@@ -510,6 +518,7 @@ static void reg_load( void )
 			reg_getkey( hKey,"posy", &posy );
 			reg_getkey( hKey,"toolbar", &flg_toolbar );
 			reg_getkey( hKey,"statbar", &flg_statbar );
+			reg_getkey( hKey,"hspat", &flg_hspat );
 			reg_sgetkey( hKey,"helpdir", hsp_helpdir, sizeof(hsp_helpdir) );
 			reg_getkey( hKey,"exewx", &hsp_wx );
 			reg_getkey( hKey,"exewy", &hsp_wy );
@@ -802,6 +811,7 @@ static void ini_save( void )
 
 	ini_setkey( filename, "View", "toolbar", flg_toolbar );
 	ini_setkey( filename, "View", "statbar", flg_statbar );
+	ini_setkey( filename, "View", "hspat", flg_hspat );
 	ini_ssetkey( filename, "Help", "helpdir", hsp_helpdir );
 	ini_setkey( filename, "Compile", "exewx", hsp_wx );
 	ini_setkey( filename, "Compile", "exewy", hsp_wy );
@@ -947,6 +957,7 @@ static void ini_load()
 		ini_getkey( filename, "Startup", "posy", &posy );
 		ini_getkey( filename, "View", "toolbar", &flg_toolbar );
 		ini_getkey( filename, "View", "statbar", &flg_statbar );
+		ini_getkey( filename, "View", "hspat", &flg_hspat );
 		ini_sgetkey( filename, "Help", "helpdir", hsp_helpdir, sizeof(hsp_helpdir) );
 		ini_getkey( filename, "Compile", "exewx", &hsp_wx );
 		ini_getkey( filename, "Compile", "exewy", &hsp_wy );

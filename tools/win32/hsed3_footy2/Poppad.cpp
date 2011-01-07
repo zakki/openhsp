@@ -190,6 +190,7 @@ extern int	winflg;
 extern int	flg_toolbar;
 extern int	flg_statbar;
 extern int	startflag;
+extern int	flg_hspat;
 extern char startdir[_MAX_PATH];
 
 int  ClickID = -1;
@@ -280,6 +281,8 @@ void Statusbar_mes( char *mes );
           // Functions in main.cpp
 
 int ExecEzInputMenu( int id );
+void UpdateViewOption( int toolbar_flag, int stbar_flag );
+HWND main_aplsel( char *p1 );
 
           // Global variables
 
@@ -947,6 +950,23 @@ static void callhelp( void )
 }
 
 
+static void ExecHSPAssistant( void )
+{
+	char tmpfn[_MAX_PATH];
+	wsprintf( tmpfn, "\"%s\\hspat.exe\"", szExeDir );
+	WinExec( tmpfn, SW_SHOW );
+}
+
+
+static void CloseHSPAssistant( void )
+{
+	HWND hw;
+	hw = main_aplsel( "HSP assistant ver" );
+	if ( hw == NULL ) return;
+	SendMessage( hw, WM_CLOSE, 0, 0 );
+}
+
+
 void pophwnd( HWND hwnd )
 {
 	hwbak=hwnd;
@@ -1501,6 +1521,8 @@ int poppad_ini( HWND hwnd, LPARAM lParam )
 			   //ConfigEditColor( fgcolor,bgcolor );
 			   InitClassify();
 
+   			   if ( flg_hspat ) ExecHSPAssistant();		// HSPアシスタントを自動起動
+
                // Create the edit control child window
 
                //hwndEdit = CreateWindowEx ( WS_EX_ACCEPTFILES, "EDIT", NULL,
@@ -1546,6 +1568,7 @@ int poppad_ini( HWND hwnd, LPARAM lParam )
 			   PopFontSetTabFont();
 
 			   CreateTab(0, "", "", "");
+			   TabCtrl_SetCurFocus(hwndTab, 0);
 
 			   DoCaption (szTitleName, activeID) ;
 			   err_ini();
@@ -1561,6 +1584,10 @@ void poppad_bye( void )
 	PopFontDeinitialize () ;
 	ByeClassify();
 	DeleteObject((HGDIOBJ)(HFONT)SendMessage(hwndTab, WM_GETFONT, 0, 0));
+
+	if (flg_hspat) {						// HSPアシスタントを終了させる
+		CloseHSPAssistant();
+	}
 }
 
 
@@ -2430,8 +2457,7 @@ LRESULT CALLBACK EditProc (HWND hwnd, UINT iMsg, WPARAM wParam, LPARAM lParam)
 					return 0;
 
 				case IDM_START_RUNTIMEMAN:
-					wsprintf( tmpfn, "\"%s\\hspat.exe\"", szExeDir );
-					WinExec( tmpfn, SW_SHOW );
+					ExecHSPAssistant();
 					return 0;
 
 				case IDM_OPEN_SRCFOLDER:
@@ -3022,6 +3048,7 @@ BOOL CALLBACK ConfigBehaviorPageProc (HWND hDlg, UINT message, WPARAM /*wParam*/
 			CheckDlgButton(hDlg, IDC_RADIO2, bUseIni);
 			CheckDlgButton(hDlg, IDC_RADIO3+hsp_helpmode, BST_CHECKED);
 			CheckDlgButton(hDlg, IDC_CHECK1, bAutoIndent != FALSE);
+			CheckDlgButton(hDlg, IDC_CHECK2, flg_hspat );
 			return TRUE;
 
 		case PM_ISAPPLICABLE:
@@ -3032,6 +3059,7 @@ BOOL CALLBACK ConfigBehaviorPageProc (HWND hDlg, UINT message, WPARAM /*wParam*/
 			bUseIni     = BST_CHECKED == IsDlgButtonChecked(hDlg, IDC_RADIO2);
 			bAutoIndent = BST_CHECKED == IsDlgButtonChecked(hDlg, IDC_CHECK1);
 			hsp_helpmode= CheckRadio(hDlg, IDC_RADIO3, 4);
+			flg_hspat   = IsDlgButtonChecked(hDlg, IDC_CHECK2);
 			return TRUE;
 
 		case PM_SETDEFAULT:
@@ -3042,6 +3070,7 @@ BOOL CALLBACK ConfigBehaviorPageProc (HWND hDlg, UINT message, WPARAM /*wParam*/
 			CheckDlgButton(hDlg, IDC_RADIO5, BST_CHECKED);
 			CheckDlgButton(hDlg, IDC_RADIO6, BST_UNCHECKED);
 			CheckDlgButton(hDlg, IDC_CHECK1, BST_CHECKED);
+			CheckDlgButton(hDlg, IDC_CHECK2, BST_CHECKED);
 			return TRUE;
 	}
 	return FALSE;
@@ -3963,6 +3992,11 @@ BOOL CALLBACK ConfigVisualPageProc (HWND hDlg, UINT message, WPARAM /*wParam*/, 
 			CheckDlgButton(hDlg, IDC_CHECK4, nlEnabled);
 			CheckDlgButton(hDlg, IDC_CHECK5, eofEnabled);
 			CheckDlgButton(hDlg, IDC_CHECK6, ulEnabled);
+
+			CheckDlgButton(hDlg, IDC_CHECK7, flg_statbar );
+			CheckDlgButton(hDlg, IDC_CHECK8, hscroll_flag );
+			CheckDlgButton(hDlg, IDC_CHECK9, flg_toolbar );
+
 			SetDlgItemInt(hDlg, IDC_EDIT1, tabsize,     FALSE);
 			SetDlgItemInt(hDlg, IDC_EDIT2, rulerheight, FALSE);
 			SetDlgItemInt(hDlg, IDC_EDIT3, linewidth,   FALSE);
@@ -3995,11 +4029,19 @@ BOOL CALLBACK ConfigVisualPageProc (HWND hDlg, UINT message, WPARAM /*wParam*/, 
 			nlEnabled   = IsDlgButtonChecked(hDlg, IDC_CHECK4);
 			eofEnabled  = IsDlgButtonChecked(hDlg, IDC_CHECK5);
 			ulEnabled   = IsDlgButtonChecked(hDlg, IDC_CHECK6);
+
+			flg_statbar   = IsDlgButtonChecked(hDlg, IDC_CHECK7);
+			hscroll_flag  = IsDlgButtonChecked(hDlg, IDC_CHECK8);
+			flg_toolbar   = IsDlgButtonChecked(hDlg, IDC_CHECK9);
+
 			tabsize     = GetDlgItemInt(hDlg, IDC_EDIT1, NULL, FALSE);
 			rulerheight = GetDlgItemInt(hDlg, IDC_EDIT2, NULL, FALSE);
 			linewidth   = GetDlgItemInt(hDlg, IDC_EDIT3, NULL, FALSE);
 			linespace   = GetDlgItemInt(hDlg, IDC_EDIT4, NULL, FALSE);
+
 			poppad_setalledit();
+			poppad_setsb( hscroll_flag );
+			UpdateViewOption( flg_toolbar, flg_statbar );
 			return TRUE;
 
 		case PM_SETDEFAULT:
@@ -4009,6 +4051,11 @@ BOOL CALLBACK ConfigVisualPageProc (HWND hDlg, UINT message, WPARAM /*wParam*/, 
 			CheckDlgButton(hDlg, IDC_CHECK4, BST_UNCHECKED);
 			CheckDlgButton(hDlg, IDC_CHECK5, BST_CHECKED);
 			CheckDlgButton(hDlg, IDC_CHECK6, BST_CHECKED);
+
+			CheckDlgButton(hDlg, IDC_CHECK7, BST_CHECKED);
+			CheckDlgButton(hDlg, IDC_CHECK8, BST_CHECKED);
+			CheckDlgButton(hDlg, IDC_CHECK9, BST_CHECKED);
+
 			SetDlgItemInt(hDlg, IDC_EDIT1, 4,  FALSE);
 			SetDlgItemInt(hDlg, IDC_EDIT2, 10, FALSE);
 			SetDlgItemInt(hDlg, IDC_EDIT3, 50, FALSE);

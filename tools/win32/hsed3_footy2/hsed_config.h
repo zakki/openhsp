@@ -14,16 +14,16 @@
 #define HSPVER3		// HSP version3.0 flag
 
 #ifdef HSPVER3
-#include "../../../hsp3/hsp3config.h"
+#include "../hsp3/hsp3config.h"
 #else
 #define vercode 0x0206		// HSP2 version code
 #endif
 
-#define HSED_VER 0x0300 // HSP version3.0 for registry
+#define HSED_VER 0x0330 // HSP version3.0 for registry
 //#define HSED_VER 0x0261 // HSP version2.61 for registry
 
 #define HSED_PUBLIC_VER vercode // hsed public version
-#define HSED_PRIVATE_VER 0x10404 // hsed private version
+#define HSED_PRIVATE_VER 0x20000 // hsed private version
 
 //		システム関連ラベル
 //
@@ -31,8 +31,8 @@
 #define FILE_HSPCMP "hspcmp.dll"
 #define DEFAULT_RUNTIME "hsp3.exe"   // HSP3 runtime
 #define HSP_VERSION 3
-#define REG_SUFFIX "3"                        // Suffix of registry section name 
-#define INI_FILE "hsp3config.ini"             // INI section name
+#define REG_SUFFIX "3_3"                      // Suffix of registry section name 
+#define INI_FILE "hsed3config.ini"            // INI section name
 #define MUTEX_NAME  "HSPEditor3_Mutex"        // Name of Mutex object
 #define PROP_NAME   "HSPEditor3_Property"     // Name of Property list
 

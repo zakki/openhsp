@@ -51,7 +51,7 @@ char szStartDir[_MAX_PATH];
 char szExeDir[_MAX_PATH];
 char szDllDir[_MAX_PATH];
 char szAppName[]  = "onipad" ;
-int	 winflg,winx,winy,posx,posy,flg_toolbar,flg_statbar;
+int	 winflg,winx,winy,posx,posy,flg_toolbar,flg_statbar,flg_hspat;
 //int  flag_xpstyle;
 HWND hWndMain;
 HWND hwndConfigDlg = NULL;
@@ -71,12 +71,7 @@ HWND hwndNotify = NULL ;
 HWND hwndTab = NULL ;
 HWND hwndDummy = NULL ;
 
-extern DWORD dwToolBarStyles ;
-extern BOOL bStrings ;
-extern BOOL bLargeIcons ;
-extern BOOL bComboBox ;
 extern DWORD dwStatusBarStyles ;
-extern int cyToolBar ;
 extern TABINFO TabInfo ;
 extern int activeID ;
 extern int activeFootyID ;
@@ -90,6 +85,7 @@ static HMENU hSubMenu2 ;
 static int EzMenuId;
 CMemBuf *AhtMenuBuf;
 extern int ClickID;
+static int cyToolBar ;
 
 
 // Toolbar functions.
@@ -615,7 +611,28 @@ void MenuCheckMark (HMENU hmenu, int id, BOOL bCheck)
      iState = (bCheck) ? MF_CHECKED : MF_UNCHECKED ;
      CheckMenuItem (hmenu, id, iState) ;
      }
+//-------------------------------------------------------------------
+void UpdateViewOption( int toolbar_flag, int stbar_flag )
+{
+	RECT r ;
+	if ( toolbar_flag ) {
+		ShowWindow (hwndToolBar, SW_SHOW);
+	} else {
+		ShowWindow (hwndToolBar, SW_HIDE);
+	}
+	flg_toolbar = toolbar_flag;
 
+	if ( stbar_flag ) {
+		ShowWindow (hwndStatusBar, SW_SHOW);
+	} else {
+		ShowWindow (hwndStatusBar, SW_HIDE);
+	}
+	flg_statbar = stbar_flag;
+
+	// Resize other windows.
+	GetClientRect (hWndMain, &r) ;
+	PostMessage (hWndMain, WM_SIZE, 0, MAKELPARAM (r.right, r.bottom));
+}
 //-------------------------------------------------------------------
 LRESULT CALLBACK
 WndProc (HWND hwnd, UINT mMsg, WPARAM wParam, LPARAM lParam) 
@@ -837,7 +854,7 @@ WndProc (HWND hwnd, UINT mMsg, WPARAM wParam, LPARAM lParam)
                // Adjust client window size.
                x = 0 ;
                y = cyTB ;
-               cy = cy - (cyStatus + cyTB) ;
+               cy -= cyStatus + cyTB;
                MoveWindow (hwndClient, x, y, cx, cy, TRUE) ;
                return 0;
                }
@@ -961,3 +978,46 @@ ClientWndProc (HWND hwnd, UINT mMsg, WPARAM wParam, LPARAM lParam)
                //return (DefWindowProc (hwnd, mMsg, wParam, lParam)) ;
           }
      }
+
+
+
+/*------------------------------------------------------------*/
+/*
+		external application capture functions
+*/
+/*------------------------------------------------------------*/
+
+static	HWND tarhw=NULL;
+static	char wtitle[256];
+static	int stobj, objcnt;
+
+static BOOL CALLBACK cbWins( HWND hwnd, LPARAM lParam )
+{
+	int a;
+	char a1;
+	char namtmp[256];
+
+	objcnt++;
+	if (objcnt<stobj) return TRUE;
+	GetWindowText( hwnd,namtmp,256 );
+	a=0;
+	while(1) {
+		a1=wtitle[a];if (a1==0) break;
+		if (a1!=namtmp[a]) return TRUE;
+		a++;
+	}
+	tarhw=hwnd;
+	return FALSE;
+}
+
+HWND main_aplsel( char *p1 )
+{
+	tarhw=NULL;
+	objcnt=0;stobj=1;
+	strcpy( wtitle,p1 );
+	EnumWindows( (WNDENUMPROC) &cbWins, 0 );
+	if (tarhw==NULL) return NULL;
+	return tarhw;
+}
+
+

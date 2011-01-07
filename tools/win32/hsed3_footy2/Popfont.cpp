@@ -141,3 +141,67 @@ void PopFontApplyTabFont()
 	tabfont = temptabfont;
 	PopFontSetTabFont();
 }
+
+void PopFontMakeFont( LOGFONT *pLogFont, char *fonname, int fpts, int fopt, int angle )
+{
+	//	select new font
+	//		fopt : bit0=BOLD       bit1=Italic
+	//		       bit2=Underline  bit3=Strikeout
+	//		       bit4=Anti-alias
+	//		fpts : point size
+	//		angle: rotation
+	//
+	int a;
+	BYTE b;
+	;			// logical FONT ptr
+	unsigned char chk;
+
+	strcpy( pLogFont->lfFaceName, fonname );
+	pLogFont->lfHeight			= -fpts;
+	pLogFont->lfWidth			= 0;
+	pLogFont->lfOutPrecision	= 0 ;
+	pLogFont->lfClipPrecision	= 0 ;
+
+	if (fopt&4) {
+		pLogFont->lfUnderline		= TRUE;
+	} else {
+		pLogFont->lfUnderline		= FALSE;
+	}
+
+	if (fopt&8) {
+		pLogFont->lfStrikeOut		= TRUE;
+	} else {
+		pLogFont->lfStrikeOut		= FALSE;
+	}
+
+	if ( fopt & 16 ) {
+		pLogFont->lfQuality			= ANTIALIASED_QUALITY ;
+	} else {
+		pLogFont->lfQuality			= DEFAULT_QUALITY;
+	}
+
+	pLogFont->lfPitchAndFamily	= 0 ;
+	pLogFont->lfEscapement		= angle ;
+	pLogFont->lfOrientation		= 0 ;
+
+	b=DEFAULT_CHARSET;
+	a=0;while(1) {
+		chk=fonname[a++];
+		if (chk==0) break;
+		if (chk>=0x80) { b=SHIFTJIS_CHARSET;break; }
+	}
+	pLogFont->lfCharSet = b;
+
+	if (fopt&1) {
+		pLogFont->lfWeight = FW_BOLD;
+	} else {
+		pLogFont->lfWeight = FW_NORMAL;
+	}
+
+	if (fopt&2) {
+		pLogFont->lfItalic = TRUE;
+	} else {
+		pLogFont->lfItalic = FALSE;
+	}
+}
+
