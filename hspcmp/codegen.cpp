@@ -153,16 +153,18 @@ void CToken::CalcCG_factor( void )
 			id = lb->Regist( cg_str, TYPE_VAR, cg_valcnt );
 			cg_valcnt++;
 		}
-		if ( lb->GetInitFlag(id) == LAB_INIT_NO ) {
+		if ( lb->GetType(id) == TYPE_VAR ) {
+			if ( lb->GetInitFlag(id) == LAB_INIT_NO ) {
 #ifdef JPNMSG
-			Mesf( "#–¢‰Šú‰»‚Ì•Ï”‚ª‚ ‚è‚Ü‚·(%s)", cg_str );
+				Mesf( "#–¢‰Šú‰»‚Ì•Ï”‚ª‚ ‚è‚Ü‚·(%s)", cg_str );
 #else
-			Mesf( "#Uninitalized variable (%s).", cg_str );
+				Mesf( "#Uninitalized variable (%s).", cg_str );
 #endif
-			if ( hed_cmpmode & CMPMODE_VARINIT ) {
-				throw CGERROR_VAR_NOINIT;
+				if ( hed_cmpmode & CMPMODE_VARINIT ) {
+					throw CGERROR_VAR_NOINIT;
+				}
+				lb->SetInitFlag( id, LAB_INIT_DONE );
 			}
-			lb->SetInitFlag( id, LAB_INIT_DONE );
 		}
 		GenerateCodeVAR( id, texflag );
 		texflag = 0;

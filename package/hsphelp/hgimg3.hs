@@ -5930,6 +5930,8 @@ setcoli
 %index
 hgqview
 HGIMG3上のOBAQビュー設定
+%group
+拡張画面制御命令
 %prm
 ofsx,ofsy,ofsz,zoom
 ofsx(0.0)  : X方向の表示オフセット(実数)

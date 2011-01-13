@@ -313,7 +313,9 @@ char 	*hsp_prepp[] =
 	"$000 0 #undef",
 	"$000 0 #usecom",
 	"$000 0 #uselib",
+	"$000 0 #cmpopt",
 
+#if 0
 	"$000 1 and",
 	"$000 1 or",
 	"$000 1 xor",
@@ -333,10 +335,10 @@ char 	*hsp_prepp[] =
 	"$000 1 swbreak",
 	"$000 1 swend",
 
-
 	"$000 1 alloc",
 	"$000 1 ddim",
 	"$000 1 ldim",					// (3.2)
+#endif
 
 	"*"
 };

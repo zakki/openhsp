@@ -87,12 +87,12 @@ typedef struct tagClassifyTable{
 */
 
 // Default color macroes (onitamaê›íË)
-#define DEFCOLOR_COMMENT          RGB(  0, 255,   0)
-#define DEFCOLOR_FONT             RGB(255, 255, 255)
+#define DEFCOLOR_COMMENT          RGB(  0, 192,   0)
+#define DEFCOLOR_FONT             RGB(230, 230, 230)
 #define DEFCOLOR_FUNC             RGB(  0, 255, 255)
-#define DEFCOLOR_PREPROCESSOR     RGB(  0, 255, 255)
-#define DEFCOLOR_STRING           RGB(255, 255, 255)
-#define DEFCOLOR_LABEL            RGB(255, 255,   0)
+#define DEFCOLOR_PREPROCESSOR     RGB(  0, 255, 192)
+#define DEFCOLOR_STRING           RGB(255, 255, 192)
+#define DEFCOLOR_LABEL            RGB(255, 192, 214)
 #define DEFCOLOR_LINENUM          RGB( 49, 117, 189)
 #define DEFCOLOR_MACRO            RGB(192, 255, 255)
 #define DEFCOLOR_RULER_FONT       RGB(  0,   0,   0)

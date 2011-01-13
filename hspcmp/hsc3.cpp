@@ -261,9 +261,9 @@ void CHsc3::SetCommonPath( char *path )
 
 int CHsc3::GetCmdList( int option )
 {
-//	int res;
+	int res;
 	CToken tk;
-//	CMemBuf outbuf;
+	CMemBuf outbuf;
 
 	tk.SetErrorBuf( errbuf );
 	tk.SetCommonPath( common_path );
@@ -271,7 +271,7 @@ int CHsc3::GetCmdList( int option )
 	tk.LabelRegist3( hsp_prepp );			// プリプロセッサキーワード
 	AddSystemMacros( &tk, option );
 
-//	res = tk.ExpandFile( &outbuf, "hspdef.as", "hspdef.as" );
+	res = tk.ExpandFile( &outbuf, "hspdef.as", "hspdef.as" );
 //	if ( res<-1 ) return -1;
 	tk.LabelDump( errbuf, DUMPMODE_ALL );
 
