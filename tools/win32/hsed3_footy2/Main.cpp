@@ -34,7 +34,7 @@
 #pragma comment( lib,"comctl32.lib" )
 #pragma comment( lib,"htmlhelp.lib" )
 
-//#define FOOTYSTATIC
+#define FOOTYSTATIC
 #include "Footy2.h"
 #pragma comment( lib,"Footy2.lib" )
 #pragma comment( lib,"imm32.lib" )

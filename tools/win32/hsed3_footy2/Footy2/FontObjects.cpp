@@ -168,7 +168,7 @@ HFONT CFontObjects::GetFontHandle(const wchar_t *szFontName,int nHeight,bool bBo
 {
 	LOGFONTW fontStruct;
 	memset(&fontStruct,0,sizeof(LOGFONTW));
-	fontStruct.lfHeight = nHeight;
+	fontStruct.lfHeight = -nHeight;
 	fontStruct.lfWeight = (bBold ? m_fnWeight : FW_NORMAL);
 	fontStruct.lfCharSet = nCharSets;
 	fontStruct.lfOutPrecision = OUT_DEFAULT_PRECIS;
