@@ -34,6 +34,7 @@ static HSPCTX *hspctx;			// Current Context
 static unsigned short *mcs;		// Current PC ptr
 static unsigned short *mcsbak;
 static int val,type,exflg;
+static short csvalue, csvalue2;
 static int hspevent_opt;		// Event enable flag
 static MPModVarData modvar_init;
 static int sptr_res;
@@ -66,12 +67,12 @@ static inline void __code_next( void )
 	//		Get 1 command block
 	//		(ver3.0以降用)
 	//
-	register unsigned short a;
-	mcsbak=mcs;
-	a=*mcs++;
-	exflg = a & (EXFLG_1|EXFLG_2);
-	type = a & CSTYPE;
-	if ( a&0x8000 ) {
+//	register unsigned short csvalue;
+	mcsbak = mcs;
+	csvalue = *mcs++;
+	exflg = csvalue & (EXFLG_1|EXFLG_2);
+	type = csvalue & CSTYPE;
+	if ( csvalue & EXFLG_3 ) {
 		//	 32bit val code
 		//
 		val = (int)*((int *)mcs);
@@ -558,6 +559,32 @@ int code_get( void )
 			exflg&=~EXFLG_2;
 			return PARAM_ENDSPLIT;
 		}
+	}
+
+	if ( csvalue & EXFLG_0 ) {					// 単一の項目(高速化)
+		switch(type) {
+		case TYPE_INUM:
+			mpval = mpval_int;
+			*(int *)mpval->pt =val;
+			break;
+		case TYPE_DNUM:
+		case TYPE_STRING:
+			varproc = HspVarCoreGetProc( type );
+			mpval = HspVarCoreGetPVal( type );
+			if ( mpval->mode == HSPVAR_MODE_NONE ) {					// 型に合わせたテンポラリ変数を初期化
+				if ( varproc->flag == 0 ) {
+					throw HSPERR_TYPE_INITALIZATION_FAILED;
+				}
+				HspVarCoreClearTemp( mpval, type );						// 最小サイズのメモリを確保
+			}
+			varproc->Set( mpval, (PDAT *)(mpval->pt), strp(val) );		// テンポラリ変数に初期値を設定
+			break;
+		default:
+			throw HSPERR_UNKNOWN_CODE;
+		}
+		code_next();
+		exflg&=~EXFLG_2;
+		return 0;
 	}
 
 	resval = 0;

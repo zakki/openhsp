@@ -126,26 +126,31 @@ void CToken::CalcCG_factor( void )
 {
 	int id;
 
+	cs_lasttype = ttype;
 	switch( ttype ) {
 	case TK_NUM:
 		PutCS( TYPE_INUM, val, texflag );
 		texflag = 0;
 		CalcCG_token();
+		calccount++;
 		return;
 	case TK_DNUM:
 		PutCS( TYPE_DNUM, val_d, texflag );
 		texflag = 0;
 		CalcCG_token();
+		calccount++;
 		return;
 	case TK_STRING:
 		PutCS( TYPE_STRING, PutDS( cg_str ), texflag );
 		texflag = 0;
 		CalcCG_token();
+		calccount++;
 		return;
 	case TK_LABEL:
 		GenerateCodeLabel( cg_str, texflag );
 		texflag = 0;
 		CalcCG_token();
+		calccount++;
 		return;
 	case TK_OBJ:
 		id = lb->Search( cg_str );
@@ -169,6 +174,7 @@ void CToken::CalcCG_factor( void )
 		GenerateCodeVAR( id, texflag );
 		texflag = 0;
 		if ( ttype == TK_NONE ) ttype = val;		// CalcCG_token()に合わせるため
+		calccount++;
 		return;
 	case TK_SEPARATE:
 	case TK_EOL:
@@ -293,6 +299,8 @@ void CToken::CalcCG( int ex )
 	//		(結果は逆ポーランドでコードを出力する)
 	//
 	texflag = ex;
+	cs_lastptr = cs_buf->GetSize();
+	calccount = 0;
 
 	CalcCG_token_exprbeg_redo();
 
@@ -817,6 +825,22 @@ void CToken::GenerateCodePRM( void )
 		}
 
 		CalcCG( ex );								// 式の評価
+		//Mesf( "#count %d", calccount );
+		if ( calccount == 1 ) {						// パラメーターが単一項目の時
+			switch( cs_lasttype ) {
+			case TK_NUM:
+			case TK_DNUM:
+			case TK_STRING:
+				{
+				unsigned short *cstmp;
+				cstmp = (unsigned short *)( cs_buf->GetBuffer() + cs_lastptr );
+				*cstmp |= EXFLG_0;					// 単一項目フラグを立てる
+				break;
+				}
+			default:
+				break;
+			}
+		}
 
 		if ( ttype >= TK_SEPARATE ) break;
 		if ( ttype != ',' ) {
@@ -2368,8 +2392,8 @@ int CToken::GenerateCodeMain( CMemBuf *buf )
 void CToken::PutCS( int type, int value, int exflg )
 {
 	//		Register command code
-	//		(HSP ver3.0以降用)
-	//			type=0-0x1fff ( -1 to debug line info )
+	//		(HSP ver3.3以降用)
+	//			type=0-0xfff ( -1 to debug line info )
 	//			val=16,32bit length supported
 	//
 	int a;

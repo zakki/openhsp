@@ -47,9 +47,11 @@
 #define HSP3_FUNC_MAX 18
 #define HSP3_TYPE_USER 18
 
+#define EXFLG_0 0x1000
 #define EXFLG_1 0x2000
 #define EXFLG_2 0x4000
-#define CSTYPE 0x1fff
+#define EXFLG_3 0x8000
+#define CSTYPE 0x0fff
 
 typedef struct HSPHED
 {

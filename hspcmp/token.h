@@ -366,6 +366,9 @@ private:
 		int len;
 	} undefined_symbol_t;
 	std::vector<undefined_symbol_t> undefined_symbols;
+	int cs_lastptr;					// パラメーターの初期CS位置
+	int cs_lasttype;				// パラメーターのタイプ(単一時)
+	int calccount;					// パラメーター個数
 
 	//		for CodeGenerator
 	//
