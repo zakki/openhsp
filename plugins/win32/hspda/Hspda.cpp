@@ -48,6 +48,8 @@ int WINAPI hspda_DllMain (HINSTANCE hInstance, DWORD fdwReason, PVOID pvReserved
 */
 /*------------------------------------------------------------*/
 
+static int qsort_order;
+
 typedef struct {
 	union {
 		int ikey;
@@ -73,7 +75,8 @@ static void rquickSort(DATA *data, int asdes, int first, int last)
 
     i = first;
     j = last;
-    x = (data[i].as.ikey / 2) + (data[j].as.ikey / 2);
+    //x = (data[i].as.ikey / 2) + (data[j].as.ikey / 2);
+	x = (data[i].as.ikey + data[j].as.ikey)/2; 
 
 //  while (i < j) {
 
@@ -106,6 +109,35 @@ void QuickSort( DATA *data, int nmem, int asdes )
 {
     if (nmem <= 1) return;
     rquickSort(data, asdes, 0, nmem - 1);
+}
+
+
+int compare_int( const void *a, const void *b )
+{
+	const DATA *data_a = (DATA *)a;
+	const DATA *data_b = (DATA *)b;
+
+	return ( data_a->as.ikey - data_b->as.ikey );
+}
+
+
+int compare_intr( const void *a, const void *b )
+{
+	const DATA *data_a = (DATA *)a;
+	const DATA *data_b = (DATA *)b;
+
+	return ( data_b->as.ikey - data_a->as.ikey );
+}
+
+
+void QuickSort2( DATA *data, int nmem, int asdes )
+{
+    if (nmem <= 1) return;
+	if ( asdes == 0 ) {
+		qsort( data, nmem, sizeof(DATA), compare_int );
+	} else {
+		qsort( data, nmem, sizeof(DATA), compare_intr );
+	}
 }
 
 
@@ -338,7 +370,7 @@ EXPORT BOOL WINAPI sortval( HSPEXINFO *hei, int p2, int p3, int p4 )
 			dtmp[a].as.ikey=p[a];
 			dtmp[a].info=a;
 		}
-		QuickSort( dtmp, i, order );
+		QuickSort2( dtmp, i, order );
 		for(a=0;a<i;a++) {
 			p[a]=dtmp[a].as.ikey;
 		}

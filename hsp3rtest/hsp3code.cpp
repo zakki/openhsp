@@ -97,6 +97,9 @@ void code_puterror( HSPERROR error )
 {
 	//		ƒGƒ‰[—áŠO‚ð”­¶‚³‚¹‚é
 	//
+	if ( error == HSPERR_NONE ) {
+		hspctx->runmode = RUNMODE_END;
+	}
 	throw error;
 }
 
