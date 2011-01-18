@@ -4,99 +4,99 @@
 //
 #include "hsp3r.h"
 
-#define _HSP3CNV_DATE "2011/01/17"
-#define _HSP3CNV_TIME "17:24:42"
+#define _HSP3CNV_DATE "2011/01/18"
+#define _HSP3CNV_TIME "17:57:34"
 #define _HSP3CNV_MAXVAR 84
 #define _HSP3CNV_MAXHPI 0
 #define _HSP3CNV_VERSION 0x301
-#define _HSP3CNV_BOOTOPT 0
+#define _HSP3CNV_BOOTOPT 4096
 
 /*-----------------------------------------------------------*/
 
-static PVal *Var__HspVar0;
-static PVal *Var__HspVar1;
-static PVal *Var__HspVar2;
-static PVal *Var__HspVar3;
-static PVal *Var__HspVar4;
-static PVal *Var__HspVar5;
-static PVal *Var__HspVar6;
-static PVal *Var__HspVar7;
-static PVal *Var__HspVar8;
-static PVal *Var__HspVar9;
-static PVal *Var__HspVar10;
-static PVal *Var__HspVar11;
-static PVal *Var__HspVar12;
-static PVal *Var__HspVar13;
-static PVal *Var__HspVar14;
-static PVal *Var__HspVar15;
-static PVal *Var__HspVar16;
-static PVal *Var__HspVar17;
-static PVal *Var__HspVar18;
-static PVal *Var__HspVar19;
-static PVal *Var__HspVar20;
-static PVal *Var__HspVar21;
-static PVal *Var__HspVar22;
-static PVal *Var__HspVar23;
-static PVal *Var__HspVar24;
-static PVal *Var__HspVar25;
-static PVal *Var__HspVar26;
-static PVal *Var__HspVar27;
-static PVal *Var__HspVar28;
-static PVal *Var__HspVar29;
-static PVal *Var__HspVar30;
-static PVal *Var__HspVar31;
-static PVal *Var__HspVar32;
-static PVal *Var__HspVar33;
-static PVal *Var__HspVar34;
-static PVal *Var__HspVar35;
-static PVal *Var__HspVar36;
-static PVal *Var__HspVar37;
-static PVal *Var__HspVar38;
-static PVal *Var__HspVar39;
-static PVal *Var__HspVar40;
-static PVal *Var__HspVar41;
-static PVal *Var__HspVar42;
-static PVal *Var__HspVar43;
-static PVal *Var__HspVar44;
-static PVal *Var__HspVar45;
-static PVal *Var__HspVar46;
-static PVal *Var__HspVar47;
-static PVal *Var__HspVar48;
-static PVal *Var__HspVar49;
-static PVal *Var__HspVar50;
-static PVal *Var__HspVar51;
-static PVal *Var__HspVar52;
-static PVal *Var__HspVar53;
-static PVal *Var__HspVar54;
-static PVal *Var__HspVar55;
-static PVal *Var__HspVar56;
-static PVal *Var__HspVar57;
-static PVal *Var__HspVar58;
-static PVal *Var__HspVar59;
-static PVal *Var__HspVar60;
-static PVal *Var__HspVar61;
-static PVal *Var__HspVar62;
-static PVal *Var__HspVar63;
-static PVal *Var__HspVar64;
-static PVal *Var__HspVar65;
-static PVal *Var__HspVar66;
-static PVal *Var__HspVar67;
-static PVal *Var__HspVar68;
-static PVal *Var__HspVar69;
-static PVal *Var__HspVar70;
-static PVal *Var__HspVar71;
-static PVal *Var__HspVar72;
-static PVal *Var__HspVar73;
-static PVal *Var__HspVar74;
-static PVal *Var__HspVar75;
-static PVal *Var__HspVar76;
-static PVal *Var__HspVar77;
-static PVal *Var__HspVar78;
-static PVal *Var__HspVar79;
-static PVal *Var__HspVar80;
-static PVal *Var__HspVar81;
-static PVal *Var__HspVar82;
-static PVal *Var__HspVar83;
+static PVal *Var_gr;
+static PVal *Var_gy;
+static PVal *Var_gd;
+static PVal *Var_ctx;
+static PVal *Var_ctz;
+static PVal *Var_sunx;
+static PVal *Var_suny;
+static PVal *Var_sunz;
+static PVal *Var_nobstacles;
+static PVal *Var_r;
+static PVal *Var_ox;
+static PVal *Var_oy;
+static PVal *Var_oz;
+static PVal *Var_os;
+static PVal *Var_ocr;
+static PVal *Var_ocg;
+static PVal *Var_ocb;
+static PVal *Var_cx;
+static PVal *Var_cy;
+static PVal *Var_cz;
+static PVal *Var_omx;
+static PVal *Var_mx;
+static PVal *Var_omy;
+static PVal *Var_my;
+static PVal *Var_mw;
+static PVal *Var_obt;
+static PVal *Var_bt;
+static PVal *Var_step;
+static PVal *Var_w;
+static PVal *Var_h;
+static PVal *Var_zoom;
+static PVal *Var_ru;
+static PVal *Var_rd;
+static PVal *Var_vox;
+static PVal *Var_voz;
+static PVal *Var_gx;
+static PVal *Var_gz;
+static PVal *Var_sel;
+static PVal *Var_dx;
+static PVal *Var_v;
+static PVal *Var_orgxv;
+static PVal *Var_orgyv;
+static PVal *Var_mode;
+static PVal *Var_hit;
+static PVal *Var_starttime;
+static PVal *Var_py;
+static PVal *Var_px;
+static PVal *Var_lr;
+static PVal *Var_lg;
+static PVal *Var_lb;
+static PVal *Var_sr;
+static PVal *Var_sg;
+static PVal *Var_sb;
+static PVal *Var_yv;
+static PVal *Var_l;
+static PVal *Var_xv;
+static PVal *Var_zv;
+static PVal *Var_col;
+static PVal *Var_fg;
+static PVal *Var_t;
+static PVal *Var_y;
+static PVal *Var_x;
+static PVal *Var_z;
+static PVal *Var_nhit;
+static PVal *Var_n0d;
+static PVal *Var_n0c;
+static PVal *Var_endtime;
+static PVal *Var_minv;
+static PVal *Var_dy;
+static PVal *Var_dz;
+static PVal *Var_b;
+static PVal *Var_d;
+static PVal *Var_c;
+static PVal *Var_f;
+static PVal *Var_nx;
+static PVal *Var_ny;
+static PVal *Var_nz;
+static PVal *Var_e;
+static PVal *Var_nc;
+static PVal *Var_nd;
+static PVal *Var_oxv;
+static PVal *Var_oyv;
+static PVal *Var_ozv;
+static PVal *Var_a;
 
 /*-----------------------------------------------------------*/
 
@@ -108,117 +108,117 @@ void __HspInit( Hsp3r *hsp3 ) {
 
 void __HspEntry( void ) {
 	// Var initalize
-	Var__HspVar0 = &mem_var[0];
-	Var__HspVar1 = &mem_var[1];
-	Var__HspVar2 = &mem_var[2];
-	Var__HspVar3 = &mem_var[3];
-	Var__HspVar4 = &mem_var[4];
-	Var__HspVar5 = &mem_var[5];
-	Var__HspVar6 = &mem_var[6];
-	Var__HspVar7 = &mem_var[7];
-	Var__HspVar8 = &mem_var[8];
-	Var__HspVar9 = &mem_var[9];
-	Var__HspVar10 = &mem_var[10];
-	Var__HspVar11 = &mem_var[11];
-	Var__HspVar12 = &mem_var[12];
-	Var__HspVar13 = &mem_var[13];
-	Var__HspVar14 = &mem_var[14];
-	Var__HspVar15 = &mem_var[15];
-	Var__HspVar16 = &mem_var[16];
-	Var__HspVar17 = &mem_var[17];
-	Var__HspVar18 = &mem_var[18];
-	Var__HspVar19 = &mem_var[19];
-	Var__HspVar20 = &mem_var[20];
-	Var__HspVar21 = &mem_var[21];
-	Var__HspVar22 = &mem_var[22];
-	Var__HspVar23 = &mem_var[23];
-	Var__HspVar24 = &mem_var[24];
-	Var__HspVar25 = &mem_var[25];
-	Var__HspVar26 = &mem_var[26];
-	Var__HspVar27 = &mem_var[27];
-	Var__HspVar28 = &mem_var[28];
-	Var__HspVar29 = &mem_var[29];
-	Var__HspVar30 = &mem_var[30];
-	Var__HspVar31 = &mem_var[31];
-	Var__HspVar32 = &mem_var[32];
-	Var__HspVar33 = &mem_var[33];
-	Var__HspVar34 = &mem_var[34];
-	Var__HspVar35 = &mem_var[35];
-	Var__HspVar36 = &mem_var[36];
-	Var__HspVar37 = &mem_var[37];
-	Var__HspVar38 = &mem_var[38];
-	Var__HspVar39 = &mem_var[39];
-	Var__HspVar40 = &mem_var[40];
-	Var__HspVar41 = &mem_var[41];
-	Var__HspVar42 = &mem_var[42];
-	Var__HspVar43 = &mem_var[43];
-	Var__HspVar44 = &mem_var[44];
-	Var__HspVar45 = &mem_var[45];
-	Var__HspVar46 = &mem_var[46];
-	Var__HspVar47 = &mem_var[47];
-	Var__HspVar48 = &mem_var[48];
-	Var__HspVar49 = &mem_var[49];
-	Var__HspVar50 = &mem_var[50];
-	Var__HspVar51 = &mem_var[51];
-	Var__HspVar52 = &mem_var[52];
-	Var__HspVar53 = &mem_var[53];
-	Var__HspVar54 = &mem_var[54];
-	Var__HspVar55 = &mem_var[55];
-	Var__HspVar56 = &mem_var[56];
-	Var__HspVar57 = &mem_var[57];
-	Var__HspVar58 = &mem_var[58];
-	Var__HspVar59 = &mem_var[59];
-	Var__HspVar60 = &mem_var[60];
-	Var__HspVar61 = &mem_var[61];
-	Var__HspVar62 = &mem_var[62];
-	Var__HspVar63 = &mem_var[63];
-	Var__HspVar64 = &mem_var[64];
-	Var__HspVar65 = &mem_var[65];
-	Var__HspVar66 = &mem_var[66];
-	Var__HspVar67 = &mem_var[67];
-	Var__HspVar68 = &mem_var[68];
-	Var__HspVar69 = &mem_var[69];
-	Var__HspVar70 = &mem_var[70];
-	Var__HspVar71 = &mem_var[71];
-	Var__HspVar72 = &mem_var[72];
-	Var__HspVar73 = &mem_var[73];
-	Var__HspVar74 = &mem_var[74];
-	Var__HspVar75 = &mem_var[75];
-	Var__HspVar76 = &mem_var[76];
-	Var__HspVar77 = &mem_var[77];
-	Var__HspVar78 = &mem_var[78];
-	Var__HspVar79 = &mem_var[79];
-	Var__HspVar80 = &mem_var[80];
-	Var__HspVar81 = &mem_var[81];
-	Var__HspVar82 = &mem_var[82];
-	Var__HspVar83 = &mem_var[83];
+	Var_gr = &mem_var[0];
+	Var_gy = &mem_var[1];
+	Var_gd = &mem_var[2];
+	Var_ctx = &mem_var[3];
+	Var_ctz = &mem_var[4];
+	Var_sunx = &mem_var[5];
+	Var_suny = &mem_var[6];
+	Var_sunz = &mem_var[7];
+	Var_nobstacles = &mem_var[8];
+	Var_r = &mem_var[9];
+	Var_ox = &mem_var[10];
+	Var_oy = &mem_var[11];
+	Var_oz = &mem_var[12];
+	Var_os = &mem_var[13];
+	Var_ocr = &mem_var[14];
+	Var_ocg = &mem_var[15];
+	Var_ocb = &mem_var[16];
+	Var_cx = &mem_var[17];
+	Var_cy = &mem_var[18];
+	Var_cz = &mem_var[19];
+	Var_omx = &mem_var[20];
+	Var_mx = &mem_var[21];
+	Var_omy = &mem_var[22];
+	Var_my = &mem_var[23];
+	Var_mw = &mem_var[24];
+	Var_obt = &mem_var[25];
+	Var_bt = &mem_var[26];
+	Var_step = &mem_var[27];
+	Var_w = &mem_var[28];
+	Var_h = &mem_var[29];
+	Var_zoom = &mem_var[30];
+	Var_ru = &mem_var[31];
+	Var_rd = &mem_var[32];
+	Var_vox = &mem_var[33];
+	Var_voz = &mem_var[34];
+	Var_gx = &mem_var[35];
+	Var_gz = &mem_var[36];
+	Var_sel = &mem_var[37];
+	Var_dx = &mem_var[38];
+	Var_v = &mem_var[39];
+	Var_orgxv = &mem_var[40];
+	Var_orgyv = &mem_var[41];
+	Var_mode = &mem_var[42];
+	Var_hit = &mem_var[43];
+	Var_starttime = &mem_var[44];
+	Var_py = &mem_var[45];
+	Var_px = &mem_var[46];
+	Var_lr = &mem_var[47];
+	Var_lg = &mem_var[48];
+	Var_lb = &mem_var[49];
+	Var_sr = &mem_var[50];
+	Var_sg = &mem_var[51];
+	Var_sb = &mem_var[52];
+	Var_yv = &mem_var[53];
+	Var_l = &mem_var[54];
+	Var_xv = &mem_var[55];
+	Var_zv = &mem_var[56];
+	Var_col = &mem_var[57];
+	Var_fg = &mem_var[58];
+	Var_t = &mem_var[59];
+	Var_y = &mem_var[60];
+	Var_x = &mem_var[61];
+	Var_z = &mem_var[62];
+	Var_nhit = &mem_var[63];
+	Var_n0d = &mem_var[64];
+	Var_n0c = &mem_var[65];
+	Var_endtime = &mem_var[66];
+	Var_minv = &mem_var[67];
+	Var_dy = &mem_var[68];
+	Var_dz = &mem_var[69];
+	Var_b = &mem_var[70];
+	Var_d = &mem_var[71];
+	Var_c = &mem_var[72];
+	Var_f = &mem_var[73];
+	Var_nx = &mem_var[74];
+	Var_ny = &mem_var[75];
+	Var_nz = &mem_var[76];
+	Var_e = &mem_var[77];
+	Var_nc = &mem_var[78];
+	Var_nd = &mem_var[79];
+	Var_oxv = &mem_var[80];
+	Var_oyv = &mem_var[81];
+	Var_ozv = &mem_var[82];
+	Var_a = &mem_var[83];
 
 	// randomize 
 	Intcmd(39,0);
-	// _HspVar0 =0.000000
+	// gr =0.000000
 	PushDouble(0.000000); 
-	VarSet(Var__HspVar0,0,1);
-	// _HspVar1 =28.000000
+	VarSet(Var_gr,0,1);
+	// gy =28.000000
 	PushDouble(28.000000); 
-	VarSet(Var__HspVar1,0,1);
-	// _HspVar2 =80.000000
+	VarSet(Var_gy,0,1);
+	// gd =80.000000
 	PushDouble(80.000000); 
-	VarSet(Var__HspVar2,0,1);
-	// _HspVar3 =0.000000
+	VarSet(Var_gd,0,1);
+	// ctx =0.000000
 	PushDouble(0.000000); 
-	VarSet(Var__HspVar3,0,1);
-	// _HspVar4 =0.000000
+	VarSet(Var_ctx,0,1);
+	// ctz =0.000000
 	PushDouble(0.000000); 
-	VarSet(Var__HspVar4,0,1);
-	// _HspVar5 =0.500000
+	VarSet(Var_ctz,0,1);
+	// sunx =0.500000
 	PushDouble(0.500000); 
-	VarSet(Var__HspVar5,0,1);
-	// _HspVar6 =0.707100
+	VarSet(Var_sunx,0,1);
+	// suny =0.707100
 	PushDouble(0.707100); 
-	VarSet(Var__HspVar6,0,1);
-	// _HspVar7 =-0.500000
+	VarSet(Var_suny,0,1);
+	// sunz =-0.500000
 	PushDouble(-0.500000); 
-	VarSet(Var__HspVar7,0,1);
+	VarSet(Var_sunz,0,1);
 	// font "ÇlÇr ÉSÉVÉbÉN", 12
 	PushInt(12); 
 	PushStr("ÇlÇr ÉSÉVÉbÉN"); 
@@ -227,50 +227,50 @@ void __HspEntry( void ) {
 }
 
 static void L0000( void ) {
-	// _HspVar8 =8
+	// nobstacles =8
 	PushInt(8); 
-	VarSet(Var__HspVar8,0,1);
+	VarSet(Var_nobstacles,0,1);
 	// repeat
-	PushVAP(Var__HspVar8,0); 
+	PushVAP(Var_nobstacles,0); 
 	PushLabel(1); 
 	PushLabel(14); Prgcmd(4,3); return;
 	TaskSwitch(14);
 }
 
 static void L000e( void ) {
-	// _HspVar9 =(3.141590/4)*cnt
+	// r =(3.141590/4)*cnt
 	PushDouble(3.141590); PushInt(4); CalcDivI(); PushFuncEnd(); PushSysvar(4,0); CalcMulI(); 
-	VarSet(Var__HspVar9,0,1);
-	// _HspVar10 (cnt)=sin(_HspVar9)*20
-	PushFuncEnd(); 	PushVar(Var__HspVar9,0); 
+	VarSet(Var_r,0,1);
+	// ox (cnt)=sin(r)*20
+	PushFuncEnd(); 	PushVar(Var_r,0); 
 	PushIntfunc(384,1); PushInt(20); CalcMulI(); 
 	PushFuncEnd(); PushSysvar(4,0); 
-	VarSet(Var__HspVar10,1,1);
-	// _HspVar11 (cnt)=(cos(_HspVar9)*20)+28
-	PushFuncEnd(); 	PushVar(Var__HspVar9,0); 
+	VarSet(Var_ox,1,1);
+	// oy (cnt)=(cos(r)*20)+28
+	PushFuncEnd(); 	PushVar(Var_r,0); 
 	PushIntfunc(385,1); PushInt(20); CalcMulI(); PushInt(28); CalcAddI(); 
 	PushFuncEnd(); PushSysvar(4,0); 
-	VarSet(Var__HspVar11,1,1);
-	// _HspVar12 (cnt)=0.000000
+	VarSet(Var_oy,1,1);
+	// oz (cnt)=0.000000
 	PushDouble(0.000000); 
 	PushFuncEnd(); PushSysvar(4,0); 
-	VarSet(Var__HspVar12,1,1);
-	// _HspVar13 (cnt)=10.000000
+	VarSet(Var_oz,1,1);
+	// os (cnt)=10.000000
 	PushDouble(10.000000); 
 	PushFuncEnd(); PushSysvar(4,0); 
-	VarSet(Var__HspVar13,1,1);
-	// _HspVar14 (cnt)=0.300000
+	VarSet(Var_os,1,1);
+	// ocr (cnt)=0.300000
 	PushDouble(0.300000); 
 	PushFuncEnd(); PushSysvar(4,0); 
-	VarSet(Var__HspVar14,1,1);
-	// _HspVar15 (cnt)=0.300000
+	VarSet(Var_ocr,1,1);
+	// ocg (cnt)=0.300000
 	PushDouble(0.300000); 
 	PushFuncEnd(); PushSysvar(4,0); 
-	VarSet(Var__HspVar15,1,1);
-	// _HspVar16 (cnt)=0.300000
+	VarSet(Var_ocg,1,1);
+	// ocb (cnt)=0.300000
 	PushDouble(0.300000); 
 	PushFuncEnd(); PushSysvar(4,0); 
-	VarSet(Var__HspVar16,1,1);
+	VarSet(Var_ocb,1,1);
 	// loop 
 	Prgcmd(5,0);
 	return;
@@ -286,74 +286,74 @@ static void L0001( void ) {
 }
 
 static void L0003( void ) {
-	// _HspVar8 =rnd(12)+1
+	// nobstacles =rnd(12)+1
 	PushFuncEnd(); 	PushInt(12); 
 	PushIntfunc(1,1); PushInt(1); CalcAddI(); 
-	VarSet(Var__HspVar8,0,1);
-	// _HspVar17 =0.000000
+	VarSet(Var_nobstacles,0,1);
+	// cx =0.000000
 	PushDouble(0.000000); 
-	VarSet(Var__HspVar17,0,1);
-	// _HspVar18 =0.000000
+	VarSet(Var_cx,0,1);
+	// cy =0.000000
 	PushDouble(0.000000); 
-	VarSet(Var__HspVar18,0,1);
-	// _HspVar19 =0.000000
+	VarSet(Var_cy,0,1);
+	// cz =0.000000
 	PushDouble(0.000000); 
-	VarSet(Var__HspVar19,0,1);
+	VarSet(Var_cz,0,1);
 	// repeat
-	PushVAP(Var__HspVar8,0); 
+	PushVAP(Var_nobstacles,0); 
 	PushLabel(4); 
 	PushLabel(15); Prgcmd(4,3); return;
 	TaskSwitch(15);
 }
 
 static void L000f( void ) {
-	// _HspVar10 (cnt)=(0.000000+rnd(60))-30
+	// ox (cnt)=(0.000000+rnd(60))-30
 	PushDouble(0.000000); PushFuncEnd(); 	PushInt(60); 
 	PushIntfunc(1,1); CalcAddI(); PushInt(30); CalcSubI(); 
 	PushFuncEnd(); PushSysvar(4,0); 
-	VarSet(Var__HspVar10,1,1);
-	// _HspVar11 (cnt)=0.000000+rnd(40)
+	VarSet(Var_ox,1,1);
+	// oy (cnt)=0.000000+rnd(40)
 	PushDouble(0.000000); PushFuncEnd(); 	PushInt(40); 
 	PushIntfunc(1,1); CalcAddI(); 
 	PushFuncEnd(); PushSysvar(4,0); 
-	VarSet(Var__HspVar11,1,1);
-	// _HspVar12 (cnt)=(0.000000+rnd(60))-30
+	VarSet(Var_oy,1,1);
+	// oz (cnt)=(0.000000+rnd(60))-30
 	PushDouble(0.000000); PushFuncEnd(); 	PushInt(60); 
 	PushIntfunc(1,1); CalcAddI(); PushInt(30); CalcSubI(); 
 	PushFuncEnd(); PushSysvar(4,0); 
-	VarSet(Var__HspVar12,1,1);
-	// _HspVar13 (cnt)=0.010000*rnd(900)+4.000000
+	VarSet(Var_oz,1,1);
+	// os (cnt)=0.010000*rnd(900)+4.000000
 	PushDouble(4.000000); PushDouble(0.010000); PushFuncEnd(); 	PushInt(900); 
 	PushIntfunc(1,1); CalcMulI(); CalcAddI(); 
 	PushFuncEnd(); PushSysvar(4,0); 
-	VarSet(Var__HspVar13,1,1);
-	// _HspVar14 (cnt)=0.001000*rnd(1000)
+	VarSet(Var_os,1,1);
+	// ocr (cnt)=0.001000*rnd(1000)
 	PushDouble(0.001000); PushFuncEnd(); 	PushInt(1000); 
 	PushIntfunc(1,1); CalcMulI(); 
 	PushFuncEnd(); PushSysvar(4,0); 
-	VarSet(Var__HspVar14,1,1);
-	// _HspVar15 (cnt)=0.001000*rnd(1000)
+	VarSet(Var_ocr,1,1);
+	// ocg (cnt)=0.001000*rnd(1000)
 	PushDouble(0.001000); PushFuncEnd(); 	PushInt(1000); 
 	PushIntfunc(1,1); CalcMulI(); 
 	PushFuncEnd(); PushSysvar(4,0); 
-	VarSet(Var__HspVar15,1,1);
-	// _HspVar16 (cnt)=0.001000*rnd(1000)
+	VarSet(Var_ocg,1,1);
+	// ocb (cnt)=0.001000*rnd(1000)
 	PushDouble(0.001000); PushFuncEnd(); 	PushInt(1000); 
 	PushIntfunc(1,1); CalcMulI(); 
 	PushFuncEnd(); PushSysvar(4,0); 
-	VarSet(Var__HspVar16,1,1);
-	// _HspVar17 +=_HspVar10(cnt)/_HspVar8
+	VarSet(Var_ocb,1,1);
+	// cx +=ox(cnt)/nobstacles
 		PushFuncEnd(); PushSysvar(4,0); 
-	PushVar(Var__HspVar10,1); PushVar(Var__HspVar8,0); CalcDivI(); 
-	VarCalc(Var__HspVar17,0,0);
-	// _HspVar18 +=_HspVar11(cnt)/_HspVar8
+	PushVar(Var_ox,1); PushVar(Var_nobstacles,0); CalcDivI(); 
+	VarCalc(Var_cx,0,0);
+	// cy +=oy(cnt)/nobstacles
 		PushFuncEnd(); PushSysvar(4,0); 
-	PushVar(Var__HspVar11,1); PushVar(Var__HspVar8,0); CalcDivI(); 
-	VarCalc(Var__HspVar18,0,0);
-	// _HspVar19 +=_HspVar12(cnt)/_HspVar8
+	PushVar(Var_oy,1); PushVar(Var_nobstacles,0); CalcDivI(); 
+	VarCalc(Var_cy,0,0);
+	// cz +=oz(cnt)/nobstacles
 		PushFuncEnd(); PushSysvar(4,0); 
-	PushVar(Var__HspVar12,1); PushVar(Var__HspVar8,0); CalcDivI(); 
-	VarCalc(Var__HspVar19,0,0);
+	PushVar(Var_oz,1); PushVar(Var_nobstacles,0); CalcDivI(); 
+	VarCalc(Var_cz,0,0);
 	// loop 
 	Prgcmd(5,0);
 	return;
@@ -372,30 +372,30 @@ static void L0004( void ) {
 }
 
 static void L0010( void ) {
-	// _HspVar20 =_HspVar21
-	PushVAP(Var__HspVar21,0); 
-	VarSet(Var__HspVar20,0,1);
-	// _HspVar22 =_HspVar23
-	PushVAP(Var__HspVar23,0); 
-	VarSet(Var__HspVar22,0,1);
-	// _HspVar21 =mousex
+	// omx =mx
+	PushVAP(Var_mx,0); 
+	VarSet(Var_omx,0,1);
+	// omy =my
+	PushVAP(Var_my,0); 
+	VarSet(Var_omy,0,1);
+	// mx =mousex
 	PushFuncEnd(); PushExtvar(0,0); 
-	VarSet(Var__HspVar21,0,1);
-	// _HspVar23 =mousey
+	VarSet(Var_mx,0,1);
+	// my =mousey
 	PushFuncEnd(); PushExtvar(1,0); 
-	VarSet(Var__HspVar23,0,1);
-	// _HspVar24 =mousew
+	VarSet(Var_my,0,1);
+	// mw =mousew
 	PushFuncEnd(); PushExtvar(2,0); 
-	VarSet(Var__HspVar24,0,1);
-	// _HspVar25 =_HspVar26
-	PushVAP(Var__HspVar26,0); 
-	VarSet(Var__HspVar25,0,1);
-	// stick _HspVar26, 15+256
+	VarSet(Var_mw,0,1);
+	// obt =bt
+	PushVAP(Var_bt,0); 
+	VarSet(Var_obt,0,1);
+	// stick bt, 15+256
 	PushInt(15); PushInt(256); CalcAddI(); 
-	PushVAP(Var__HspVar26,0); 
+	PushVAP(Var_bt,0); 
 	Extcmd(52,2);
-	// if _HspVar26&16
-	PushVar(Var__HspVar26,0); PushInt(16); CalcAndI(); 
+	// if bt&16
+	PushVar(Var_bt,0); PushInt(16); CalcAndI(); 
 	if (HspIf()) { TaskSwitch(17); return; }
 	// break *L0005
 	PushLabel(5); 
@@ -405,12 +405,12 @@ static void L0010( void ) {
 }
 
 static void L0011( void ) {
-	// if _HspVar26&32
-	PushVar(Var__HspVar26,0); PushInt(32); CalcAndI(); 
+	// if bt&32
+	PushVar(Var_bt,0); PushInt(32); CalcAndI(); 
 	if (HspIf()) { TaskSwitch(18); return; }
-	// _HspVar27 =1
+	// step =1
 	PushInt(1); 
-	VarSet(Var__HspVar27,0,1);
+	VarSet(Var_step,0,1);
 	// color , 255
 	PushInt(255); 
 	PushDefault();
@@ -430,9 +430,9 @@ static void L0011( void ) {
 
 static void L0012( void ) {
 	// else
-	// _HspVar27 =16
+	// step =16
 	PushInt(16); 
-	VarSet(Var__HspVar27,0,1);
+	VarSet(Var_step,0,1);
 	// redraw 0
 	PushInt(0); 
 	Extcmd(27,1);
@@ -440,106 +440,106 @@ static void L0012( void ) {
 }
 
 static void L0013( void ) {
-	// _HspVar28 =ginfo(12)/_HspVar27
+	// w =ginfo(12)/step
 	PushFuncEnd(); 	PushInt(12); 
-	PushExtvar(256,1); PushVar(Var__HspVar27,0); CalcDivI(); 
-	VarSet(Var__HspVar28,0,1);
-	// _HspVar29 =ginfo(13)/_HspVar27
+	PushExtvar(256,1); PushVar(Var_step,0); CalcDivI(); 
+	VarSet(Var_w,0,1);
+	// h =ginfo(13)/step
 	PushFuncEnd(); 	PushInt(13); 
-	PushExtvar(256,1); PushVar(Var__HspVar27,0); CalcDivI(); 
-	VarSet(Var__HspVar29,0,1);
-	// _HspVar30 =1.000000/_HspVar29
-	PushDouble(1.000000); PushVar(Var__HspVar29,0); CalcDivI(); 
-	VarSet(Var__HspVar30,0,1);
-	// getkey _HspVar31, 33
+	PushExtvar(256,1); PushVar(Var_step,0); CalcDivI(); 
+	VarSet(Var_h,0,1);
+	// zoom =1.000000/h
+	PushDouble(1.000000); PushVar(Var_h,0); CalcDivI(); 
+	VarSet(Var_zoom,0,1);
+	// getkey ru, 33
 	PushInt(33); 
-	PushVAP(Var__HspVar31,0); 
+	PushVAP(Var_ru,0); 
 	Extcmd(35,2);
-	// getkey _HspVar32, 34
+	// getkey rd, 34
 	PushInt(34); 
-	PushVAP(Var__HspVar32,0); 
+	PushVAP(Var_rd,0); 
 	Extcmd(35,2);
-	// _HspVar2 -=_HspVar31-_HspVar32*0.500000
-	PushDouble(0.500000); PushVar(Var__HspVar31,0); PushVar(Var__HspVar32,0); CalcSubI(); CalcMulI(); 
-	VarCalc(Var__HspVar2,0,1);
-	// _HspVar0 +=((_HspVar26>>2)&1_HspVar26&1)-*0.030000
-	PushDouble(0.030000); PushVar(Var__HspVar26,0); PushInt(2); CalcRrI(); PushInt(1); CalcAndI(); PushVar(Var__HspVar26,0); PushInt(1); CalcAndI(); CalcSubI(); CalcMulI(); 
-	VarCalc(Var__HspVar0,0,0);
-	// _HspVar1 +=(((_HspVar26>>1)&1_HspVar26>>3)&1)-
-	PushVar(Var__HspVar26,0); PushInt(1); CalcRrI(); PushInt(1); CalcAndI(); PushVar(Var__HspVar26,0); PushInt(3); CalcRrI(); PushInt(1); CalcAndI(); CalcSubI(); 
-	VarCalc(Var__HspVar1,0,0);
-	// if _HspVar1<1.000000
-	PushVar(Var__HspVar1,0); PushDouble(1.000000); CalcLtI(); 
+	// gd -=ru-rd*0.500000
+	PushDouble(0.500000); PushVar(Var_ru,0); PushVar(Var_rd,0); CalcSubI(); CalcMulI(); 
+	VarCalc(Var_gd,0,1);
+	// gr +=((bt>>2)&1bt&1)-*0.030000
+	PushDouble(0.030000); PushVar(Var_bt,0); PushInt(2); CalcRrI(); PushInt(1); CalcAndI(); PushVar(Var_bt,0); PushInt(1); CalcAndI(); CalcSubI(); CalcMulI(); 
+	VarCalc(Var_gr,0,0);
+	// gy +=(((bt>>1)&1bt>>3)&1)-
+	PushVar(Var_bt,0); PushInt(1); CalcRrI(); PushInt(1); CalcAndI(); PushVar(Var_bt,0); PushInt(3); CalcRrI(); PushInt(1); CalcAndI(); CalcSubI(); 
+	VarCalc(Var_gy,0,0);
+	// if gy<1.000000
+	PushVar(Var_gy,0); PushDouble(1.000000); CalcLtI(); 
 	if (HspIf()) { TaskSwitch(20); return; }
-	// _HspVar1 =1.000000
+	// gy =1.000000
 	PushDouble(1.000000); 
-	VarSet(Var__HspVar1,0,1);
+	VarSet(Var_gy,0,1);
 	TaskSwitch(20);
 }
 
 static void L0014( void ) {
-	// _HspVar3 +=(_HspVar17-_HspVar3)*0.100000
-	PushVar(Var__HspVar17,0); PushVar(Var__HspVar3,0); CalcSubI(); PushDouble(0.100000); CalcMulI(); 
-	VarCalc(Var__HspVar3,0,0);
-	// _HspVar4 +=(_HspVar19-_HspVar4)*0.100000
-	PushVar(Var__HspVar19,0); PushVar(Var__HspVar4,0); CalcSubI(); PushDouble(0.100000); CalcMulI(); 
-	VarCalc(Var__HspVar4,0,0);
-	// _HspVar33 =sin(_HspVar0)
-	PushFuncEnd(); 	PushVar(Var__HspVar0,0); 
+	// ctx +=(cx-ctx)*0.100000
+	PushVar(Var_cx,0); PushVar(Var_ctx,0); CalcSubI(); PushDouble(0.100000); CalcMulI(); 
+	VarCalc(Var_ctx,0,0);
+	// ctz +=(cz-ctz)*0.100000
+	PushVar(Var_cz,0); PushVar(Var_ctz,0); CalcSubI(); PushDouble(0.100000); CalcMulI(); 
+	VarCalc(Var_ctz,0,0);
+	// vox =sin(gr)
+	PushFuncEnd(); 	PushVar(Var_gr,0); 
 	PushIntfunc(384,1); 
-	VarSet(Var__HspVar33,0,1);
-	// _HspVar34 =cos(_HspVar0)*-1
-	PushFuncEnd(); 	PushVar(Var__HspVar0,0); 
+	VarSet(Var_vox,0,1);
+	// voz =cos(gr)*-1
+	PushFuncEnd(); 	PushVar(Var_gr,0); 
 	PushIntfunc(385,1); PushInt(-1); CalcMulI(); 
-	VarSet(Var__HspVar34,0,1);
-	// _HspVar35 =(_HspVar33*_HspVar2)+_HspVar3
-	PushVar(Var__HspVar33,0); PushVar(Var__HspVar2,0); CalcMulI(); PushVar(Var__HspVar3,0); CalcAddI(); 
-	VarSet(Var__HspVar35,0,1);
-	// _HspVar36 =(_HspVar34*_HspVar2)+_HspVar4
-	PushVar(Var__HspVar34,0); PushVar(Var__HspVar2,0); CalcMulI(); PushVar(Var__HspVar4,0); CalcAddI(); 
-	VarSet(Var__HspVar36,0,1);
-	// if _HspVar26&256
-	PushVar(Var__HspVar26,0); PushInt(256); CalcAndI(); 
+	VarSet(Var_voz,0,1);
+	// gx =(vox*gd)+ctx
+	PushVar(Var_vox,0); PushVar(Var_gd,0); CalcMulI(); PushVar(Var_ctx,0); CalcAddI(); 
+	VarSet(Var_gx,0,1);
+	// gz =(voz*gd)+ctz
+	PushVar(Var_voz,0); PushVar(Var_gd,0); CalcMulI(); PushVar(Var_ctz,0); CalcAddI(); 
+	VarSet(Var_gz,0,1);
+	// if bt&256
+	PushVar(Var_bt,0); PushInt(256); CalcAndI(); 
 	if (HspIf()) { TaskSwitch(21); return; }
-	// if _HspVar37>=0
-	PushVar(Var__HspVar37,0); PushInt(0); CalcGtEqI(); 
+	// if sel>=0
+	PushVar(Var_sel,0); PushInt(0); CalcGtEqI(); 
 	if (HspIf()) { TaskSwitch(22); return; }
-	// _HspVar38 =_HspVar21-_HspVar20
-	PushVar(Var__HspVar21,0); PushVar(Var__HspVar20,0); CalcSubI(); 
-	VarSet(Var__HspVar38,0,1);
-	// _HspVar39 =0.160000
+	// dx =mx-omx
+	PushVar(Var_mx,0); PushVar(Var_omx,0); CalcSubI(); 
+	VarSet(Var_dx,0,1);
+	// v =0.160000
 	PushDouble(0.160000); 
-	VarSet(Var__HspVar39,0,1);
-	// _HspVar11 (_HspVar37)+=_HspVar22-_HspVar23*_HspVar39
-	PushVar(Var__HspVar39,0); PushVar(Var__HspVar22,0); PushVar(Var__HspVar23,0); CalcSubI(); CalcMulI(); 
-	PushVar(Var__HspVar37,0); 
-	VarCalc(Var__HspVar11,1,0);
-	// _HspVar10 (_HspVar37)-=(_HspVar39*_HspVar34)*_HspVar38
-	PushVar(Var__HspVar39,0); PushVar(Var__HspVar34,0); CalcMulI(); PushVar(Var__HspVar38,0); CalcMulI(); 
-	PushVar(Var__HspVar37,0); 
-	VarCalc(Var__HspVar10,1,1);
-	// _HspVar12 (_HspVar37)+=(_HspVar39*_HspVar33)*_HspVar38
-	PushVar(Var__HspVar39,0); PushVar(Var__HspVar33,0); CalcMulI(); PushVar(Var__HspVar38,0); CalcMulI(); 
-	PushVar(Var__HspVar37,0); 
-	VarCalc(Var__HspVar12,1,0);
-	// if _HspVar24>0
-	PushVar(Var__HspVar24,0); PushInt(0); CalcGtI(); 
+	VarSet(Var_v,0,1);
+	// oy (sel)+=omy-my*v
+	PushVar(Var_v,0); PushVar(Var_omy,0); PushVar(Var_my,0); CalcSubI(); CalcMulI(); 
+	PushVar(Var_sel,0); 
+	VarCalc(Var_oy,1,0);
+	// ox (sel)-=(v*voz)*dx
+	PushVar(Var_v,0); PushVar(Var_voz,0); CalcMulI(); PushVar(Var_dx,0); CalcMulI(); 
+	PushVar(Var_sel,0); 
+	VarCalc(Var_ox,1,1);
+	// oz (sel)+=(v*vox)*dx
+	PushVar(Var_v,0); PushVar(Var_vox,0); CalcMulI(); PushVar(Var_dx,0); CalcMulI(); 
+	PushVar(Var_sel,0); 
+	VarCalc(Var_oz,1,0);
+	// if mw>0
+	PushVar(Var_mw,0); PushInt(0); CalcGtI(); 
 	if (HspIf()) { TaskSwitch(23); return; }
-	// _HspVar13 (_HspVar37)+=0.400000
+	// os (sel)+=0.400000
 	PushDouble(0.400000); 
-	PushVar(Var__HspVar37,0); 
-	VarCalc(Var__HspVar13,1,0);
+	PushVar(Var_sel,0); 
+	VarCalc(Var_os,1,0);
 	TaskSwitch(23);
 }
 
 static void L0017( void ) {
-	// if _HspVar24<0
-	PushVar(Var__HspVar24,0); PushInt(0); CalcLtI(); 
+	// if mw<0
+	PushVar(Var_mw,0); PushInt(0); CalcLtI(); 
 	if (HspIf()) { TaskSwitch(24); return; }
-	// _HspVar13 (_HspVar37)-=0.400000
+	// os (sel)-=0.400000
 	PushDouble(0.400000); 
-	PushVar(Var__HspVar37,0); 
-	VarCalc(Var__HspVar13,1,1);
+	PushVar(Var_sel,0); 
+	VarCalc(Var_os,1,1);
 	TaskSwitch(24);
 }
 
@@ -553,22 +553,22 @@ static void L0016( void ) {
 
 static void L0015( void ) {
 	// else
-	// _HspVar37 =-1
+	// sel =-1
 	PushInt(-1); 
-	VarSet(Var__HspVar37,0,1);
+	VarSet(Var_sel,0,1);
 	TaskSwitch(25);
 }
 
 static void L0019( void ) {
-	// if ((_HspVar25^_HspVar26)&_HspVar26)&256
-	PushVar(Var__HspVar25,0); PushVar(Var__HspVar26,0); CalcXorI(); PushVar(Var__HspVar26,0); CalcAndI(); PushInt(256); CalcAndI(); 
+	// if ((obt^bt)&bt)&256
+	PushVar(Var_obt,0); PushVar(Var_bt,0); CalcXorI(); PushVar(Var_bt,0); CalcAndI(); PushInt(256); CalcAndI(); 
 	if (HspIf()) { TaskSwitch(26); return; }
-	// _HspVar40 =(_HspVar20/_HspVar27+0.5000000.500000*_HspVar28)-*_HspVar30
-	PushVar(Var__HspVar30,0); PushDouble(0.500000); PushVar(Var__HspVar20,0); PushVar(Var__HspVar27,0); CalcDivI(); CalcAddI(); PushDouble(0.500000); PushVar(Var__HspVar28,0); CalcMulI(); CalcSubI(); CalcMulI(); 
-	VarSet(Var__HspVar40,0,1);
-	// _HspVar41 =(_HspVar22/_HspVar27+0.5000000.500000*_HspVar29)-*_HspVar30
-	PushVar(Var__HspVar30,0); PushDouble(0.500000); PushVar(Var__HspVar22,0); PushVar(Var__HspVar27,0); CalcDivI(); CalcAddI(); PushDouble(0.500000); PushVar(Var__HspVar29,0); CalcMulI(); CalcSubI(); CalcMulI(); 
-	VarSet(Var__HspVar41,0,1);
+	// orgxv =(omx/step+0.5000000.500000*w)-*zoom
+	PushVar(Var_zoom,0); PushDouble(0.500000); PushVar(Var_omx,0); PushVar(Var_step,0); CalcDivI(); CalcAddI(); PushDouble(0.500000); PushVar(Var_w,0); CalcMulI(); CalcSubI(); CalcMulI(); 
+	VarSet(Var_orgxv,0,1);
+	// orgyv =(omy/step+0.5000000.500000*h)-*zoom
+	PushVar(Var_zoom,0); PushDouble(0.500000); PushVar(Var_omy,0); PushVar(Var_step,0); CalcDivI(); CalcAddI(); PushDouble(0.500000); PushVar(Var_h,0); CalcMulI(); CalcSubI(); CalcMulI(); 
+	VarSet(Var_orgyv,0,1);
 	// gosub
 	PushLabel(6); 
 	PushLabel(27); Prgcmd(1,2); return;
@@ -576,9 +576,9 @@ static void L0019( void ) {
 }
 
 static void L001b( void ) {
-	// _HspVar42 =2
+	// mode =2
 	PushInt(2); 
-	VarSet(Var__HspVar42,0,1);
+	VarSet(Var_mode,0,1);
 	// gosub
 	PushLabel(7); 
 	PushLabel(28); Prgcmd(1,2); return;
@@ -586,47 +586,47 @@ static void L001b( void ) {
 }
 
 static void L001c( void ) {
-	// _HspVar37 =_HspVar43
-	PushVAP(Var__HspVar43,0); 
-	VarSet(Var__HspVar37,0,1);
+	// sel =hit
+	PushVAP(Var_hit,0); 
+	VarSet(Var_sel,0,1);
 	TaskSwitch(26);
 }
 
 static void L001a( void ) {
-	// _HspVar44 =(((gettime(5)*60)+gettime(6))*1000)+gettime(7)
+	// starttime =(((gettime(5)*60)+gettime(6))*1000)+gettime(7)
 	PushFuncEnd(); 	PushInt(5); 
 	PushIntfunc(8,1); PushInt(60); CalcMulI(); PushFuncEnd(); 	PushInt(6); 
 	PushIntfunc(8,1); CalcAddI(); PushInt(1000); CalcMulI(); PushFuncEnd(); 	PushInt(7); 
 	PushIntfunc(8,1); CalcAddI(); 
-	VarSet(Var__HspVar44,0,1);
+	VarSet(Var_starttime,0,1);
 	// repeat
-	PushVAP(Var__HspVar29,0); 
+	PushVAP(Var_h,0); 
 	PushLabel(8); 
 	PushLabel(29); Prgcmd(4,3); return;
 	TaskSwitch(29);
 }
 
 static void L001d( void ) {
-	// _HspVar45 =cnt*_HspVar27
-	PushFuncEnd(); PushSysvar(4,0); PushVar(Var__HspVar27,0); CalcMulI(); 
-	VarSet(Var__HspVar45,0,1);
-	// _HspVar41 =(0.500000+cnt0.500000*_HspVar29)-*_HspVar30
-	PushVar(Var__HspVar30,0); PushDouble(0.500000); PushFuncEnd(); PushSysvar(4,0); CalcAddI(); PushDouble(0.500000); PushVar(Var__HspVar29,0); CalcMulI(); CalcSubI(); CalcMulI(); 
-	VarSet(Var__HspVar41,0,1);
+	// py =cnt*step
+	PushFuncEnd(); PushSysvar(4,0); PushVar(Var_step,0); CalcMulI(); 
+	VarSet(Var_py,0,1);
+	// orgyv =(0.500000+cnt0.500000*h)-*zoom
+	PushVar(Var_zoom,0); PushDouble(0.500000); PushFuncEnd(); PushSysvar(4,0); CalcAddI(); PushDouble(0.500000); PushVar(Var_h,0); CalcMulI(); CalcSubI(); CalcMulI(); 
+	VarSet(Var_orgyv,0,1);
 	// repeat
-	PushVAP(Var__HspVar28,0); 
+	PushVAP(Var_w,0); 
 	PushLabel(9); 
 	PushLabel(30); Prgcmd(4,3); return;
 	TaskSwitch(30);
 }
 
 static void L001e( void ) {
-	// _HspVar46 =cnt*_HspVar27
-	PushFuncEnd(); PushSysvar(4,0); PushVar(Var__HspVar27,0); CalcMulI(); 
-	VarSet(Var__HspVar46,0,1);
-	// _HspVar40 =(0.500000+cnt0.500000*_HspVar28)-*_HspVar30
-	PushVar(Var__HspVar30,0); PushDouble(0.500000); PushFuncEnd(); PushSysvar(4,0); CalcAddI(); PushDouble(0.500000); PushVar(Var__HspVar28,0); CalcMulI(); CalcSubI(); CalcMulI(); 
-	VarSet(Var__HspVar40,0,1);
+	// px =cnt*step
+	PushFuncEnd(); PushSysvar(4,0); PushVar(Var_step,0); CalcMulI(); 
+	VarSet(Var_px,0,1);
+	// orgxv =(0.500000+cnt0.500000*w)-*zoom
+	PushVar(Var_zoom,0); PushDouble(0.500000); PushFuncEnd(); PushSysvar(4,0); CalcAddI(); PushDouble(0.500000); PushVar(Var_w,0); CalcMulI(); CalcSubI(); CalcMulI(); 
+	VarSet(Var_orgxv,0,1);
 	// gosub
 	PushLabel(6); 
 	PushLabel(31); Prgcmd(1,2); return;
@@ -634,24 +634,24 @@ static void L001e( void ) {
 }
 
 static void L001f( void ) {
-	// _HspVar47 =1.000000
+	// lr =1.000000
 	PushDouble(1.000000); 
-	VarSet(Var__HspVar47,0,1);
-	// _HspVar48 =1.000000
+	VarSet(Var_lr,0,1);
+	// lg =1.000000
 	PushDouble(1.000000); 
-	VarSet(Var__HspVar48,0,1);
-	// _HspVar49 =1.000000
+	VarSet(Var_lg,0,1);
+	// lb =1.000000
 	PushDouble(1.000000); 
-	VarSet(Var__HspVar49,0,1);
-	// _HspVar50 =0.000000
+	VarSet(Var_lb,0,1);
+	// sr =0.000000
 	PushDouble(0.000000); 
-	VarSet(Var__HspVar50,0,1);
-	// _HspVar51 =0.000000
+	VarSet(Var_sr,0,1);
+	// sg =0.000000
 	PushDouble(0.000000); 
-	VarSet(Var__HspVar51,0,1);
-	// _HspVar52 =0.000000
+	VarSet(Var_sg,0,1);
+	// sb =0.000000
 	PushDouble(0.000000); 
-	VarSet(Var__HspVar52,0,1);
+	VarSet(Var_sb,0,1);
 	// gosub
 	PushLabel(7); 
 	PushLabel(32); Prgcmd(1,2); return;
@@ -659,15 +659,15 @@ static void L001f( void ) {
 }
 
 static void L0020( void ) {
-	// if _HspVar53>=0.000000
-	PushVar(Var__HspVar53,0); PushDouble(0.000000); CalcGtEqI(); 
+	// if yv>=0.000000
+	PushVar(Var_yv,0); PushDouble(0.000000); CalcGtEqI(); 
 	if (HspIf()) { TaskSwitch(33); return; }
-	// _HspVar54 =limitf(((_HspVar55*_HspVar5_HspVar53*_HspVar6)+_HspVar56*_HspVar7)+, 0, 1)
+	// l =limitf(((xv*sunxyv*suny)+zv*sunz)+, 0, 1)
 	PushFuncEnd(); 	PushInt(1); 
 		PushInt(0); 
-		PushVar(Var__HspVar55,0); PushVar(Var__HspVar5,0); CalcMulI(); PushVar(Var__HspVar53,0); PushVar(Var__HspVar6,0); CalcMulI(); CalcAddI(); PushVar(Var__HspVar56,0); PushVar(Var__HspVar7,0); CalcMulI(); CalcAddI(); 
+		PushVar(Var_xv,0); PushVar(Var_sunx,0); CalcMulI(); PushVar(Var_yv,0); PushVar(Var_suny,0); CalcMulI(); CalcAddI(); PushVar(Var_zv,0); PushVar(Var_sunz,0); CalcMulI(); CalcAddI(); 
 	PushIntfunc(393,3); 
-	VarSet(Var__HspVar54,0,1);
+	VarSet(Var_l,0,1);
 	// repeat
 	PushInt(8); 
 	PushLabel(10); 
@@ -676,9 +676,9 @@ static void L0020( void ) {
 }
 
 static void L0022( void ) {
-	// _HspVar54 =_HspVar54*_HspVar54
-	PushVar(Var__HspVar54,0); PushVar(Var__HspVar54,0); CalcMulI(); 
-	VarSet(Var__HspVar54,0,1);
+	// l =l*l
+	PushVar(Var_l,0); PushVar(Var_l,0); CalcMulI(); 
+	VarSet(Var_l,0,1);
 	// loop 
 	Prgcmd(5,0);
 	return;
@@ -686,49 +686,49 @@ static void L0022( void ) {
 }
 
 static void L000a( void ) {
-	// _HspVar57 =_HspVar54*100
-	PushVar(Var__HspVar54,0); PushInt(100); CalcMulI(); 
-	VarSet(Var__HspVar57,0,1);
+	// col =l*100
+	PushVar(Var_l,0); PushInt(100); CalcMulI(); 
+	VarSet(Var_col,0,1);
 	TaskSwitch(35);
 }
 
 static void L0021( void ) {
 	// else
-	// _HspVar58 =(_HspVar53*-1)*5.000000
-	PushVar(Var__HspVar53,0); PushInt(-1); CalcMulI(); PushDouble(5.000000); CalcMulI(); 
-	VarSet(Var__HspVar58,0,1);
-	// _HspVar59 =(_HspVar60*-1)/_HspVar53
-	PushVar(Var__HspVar60,0); PushInt(-1); CalcMulI(); PushVar(Var__HspVar53,0); CalcDivI(); 
-	VarSet(Var__HspVar59,0,1);
-	// _HspVar61 =_HspVar59*_HspVar55+_HspVar61
-	PushVar(Var__HspVar61,0); PushVar(Var__HspVar59,0); PushVar(Var__HspVar55,0); CalcMulI(); CalcAddI(); 
-	VarSet(Var__HspVar61,0,1);
-	// _HspVar60 =0.000000
+	// fg =(yv*-1)*5.000000
+	PushVar(Var_yv,0); PushInt(-1); CalcMulI(); PushDouble(5.000000); CalcMulI(); 
+	VarSet(Var_fg,0,1);
+	// t =(y*-1)/yv
+	PushVar(Var_y,0); PushInt(-1); CalcMulI(); PushVar(Var_yv,0); CalcDivI(); 
+	VarSet(Var_t,0,1);
+	// x =t*xv+x
+	PushVar(Var_x,0); PushVar(Var_t,0); PushVar(Var_xv,0); CalcMulI(); CalcAddI(); 
+	VarSet(Var_x,0,1);
+	// y =0.000000
 	PushDouble(0.000000); 
-	VarSet(Var__HspVar60,0,1);
-	// _HspVar62 =_HspVar59*_HspVar56+_HspVar62
-	PushVar(Var__HspVar62,0); PushVar(Var__HspVar59,0); PushVar(Var__HspVar56,0); CalcMulI(); CalcAddI(); 
-	VarSet(Var__HspVar62,0,1);
-	// _HspVar57 =limitf((((int(_HspVar61+80000)/8int(_HspVar62+80000)/8)+(_HspVar62+80000))&1)!=0*0.700000, 0.300000, _HspVar58)
-	PushFuncEnd(); 	PushVar(Var__HspVar58,0); 
+	VarSet(Var_y,0,1);
+	// z =t*zv+z
+	PushVar(Var_z,0); PushVar(Var_t,0); PushVar(Var_zv,0); CalcMulI(); CalcAddI(); 
+	VarSet(Var_z,0,1);
+	// col =limitf((((int(x+80000)/8int(z+80000)/8)+(z+80000))&1)!=0*0.700000, 0.300000, fg)
+	PushFuncEnd(); 	PushVar(Var_fg,0); 
 		PushDouble(0.300000); 
-		PushDouble(0.700000); PushFuncEnd(); 	PushVar(Var__HspVar61,0); PushInt(80000); CalcAddI(); 
-	PushIntfunc(0,1); PushInt(8); CalcDivI(); PushFuncEnd(); 	PushVar(Var__HspVar62,0); PushInt(80000); CalcAddI(); 
+		PushDouble(0.700000); PushFuncEnd(); 	PushVar(Var_x,0); PushInt(80000); CalcAddI(); 
+	PushIntfunc(0,1); PushInt(8); CalcDivI(); PushFuncEnd(); 	PushVar(Var_z,0); PushInt(80000); CalcAddI(); 
 	PushIntfunc(0,1); PushInt(8); CalcDivI(); CalcAddI(); PushInt(1); CalcAndI(); PushInt(0); CalcNeI(); CalcMulI(); 
 	PushIntfunc(393,3); 
-	VarSet(Var__HspVar57,0,1);
-	// _HspVar55 =_HspVar5
-	PushVAP(Var__HspVar5,0); 
-	VarSet(Var__HspVar55,0,1);
-	// _HspVar53 =_HspVar6
-	PushVAP(Var__HspVar6,0); 
-	VarSet(Var__HspVar53,0,1);
-	// _HspVar56 =_HspVar7
-	PushVAP(Var__HspVar7,0); 
-	VarSet(Var__HspVar56,0,1);
-	// _HspVar42 =1
+	VarSet(Var_col,0,1);
+	// xv =sunx
+	PushVAP(Var_sunx,0); 
+	VarSet(Var_xv,0,1);
+	// yv =suny
+	PushVAP(Var_suny,0); 
+	VarSet(Var_yv,0,1);
+	// zv =sunz
+	PushVAP(Var_sunz,0); 
+	VarSet(Var_zv,0,1);
+	// mode =1
 	PushInt(1); 
-	VarSet(Var__HspVar42,0,1);
+	VarSet(Var_mode,0,1);
 	// gosub
 	PushLabel(7); 
 	PushLabel(36); Prgcmd(1,2); return;
@@ -736,12 +736,12 @@ static void L0021( void ) {
 }
 
 static void L0024( void ) {
-	// if _HspVar43>0
-	PushVar(Var__HspVar43,0); PushInt(0); CalcGtI(); 
+	// if hit>0
+	PushVar(Var_hit,0); PushInt(0); CalcGtI(); 
 	if (HspIf()) { TaskSwitch(37); return; }
-	// _HspVar57 *=0.200000
+	// col *=0.200000
 	PushDouble(0.200000); 
-	VarCalc(Var__HspVar57,0,2);
+	VarCalc(Var_col,0,2);
 	TaskSwitch(37);
 }
 
@@ -750,44 +750,44 @@ static void L0025( void ) {
 }
 
 static void L0023( void ) {
-	// if _HspVar63
-	PushVAP(Var__HspVar63,0); 
+	// if nhit
+	PushVAP(Var_nhit,0); 
 	if (HspIf()) { TaskSwitch(38); return; }
-	// _HspVar50 +=_HspVar64*_HspVar14(_HspVar65)
-	PushVar(Var__HspVar64,0); 	PushVar(Var__HspVar65,0); 
-	PushVar(Var__HspVar14,1); CalcMulI(); 
-	VarCalc(Var__HspVar50,0,0);
-	// _HspVar51 +=_HspVar64*_HspVar15(_HspVar65)
-	PushVar(Var__HspVar64,0); 	PushVar(Var__HspVar65,0); 
-	PushVar(Var__HspVar15,1); CalcMulI(); 
-	VarCalc(Var__HspVar51,0,0);
-	// _HspVar52 +=_HspVar64*_HspVar16(_HspVar65)
-	PushVar(Var__HspVar64,0); 	PushVar(Var__HspVar65,0); 
-	PushVar(Var__HspVar16,1); CalcMulI(); 
-	VarCalc(Var__HspVar52,0,0);
+	// sr +=n0d*ocr(n0c)
+	PushVar(Var_n0d,0); 	PushVar(Var_n0c,0); 
+	PushVar(Var_ocr,1); CalcMulI(); 
+	VarCalc(Var_sr,0,0);
+	// sg +=n0d*ocg(n0c)
+	PushVar(Var_n0d,0); 	PushVar(Var_n0c,0); 
+	PushVar(Var_ocg,1); CalcMulI(); 
+	VarCalc(Var_sg,0,0);
+	// sb +=n0d*ocb(n0c)
+	PushVar(Var_n0d,0); 	PushVar(Var_n0c,0); 
+	PushVar(Var_ocb,1); CalcMulI(); 
+	VarCalc(Var_sb,0,0);
 	TaskSwitch(38);
 }
 
 static void L0026( void ) {
-	// color limitf((_HspVar57*_HspVar47)+_HspVar50, 0, 1)*255, limitf((_HspVar57*_HspVar48)+_HspVar51, 0, 1)*255, limitf((_HspVar57*_HspVar49)+_HspVar52, 0, 1)*255
+	// color limitf((col*lr)+sr, 0, 1)*255, limitf((col*lg)+sg, 0, 1)*255, limitf((col*lb)+sb, 0, 1)*255
 	PushFuncEnd(); 	PushInt(1); 
 		PushInt(0); 
-		PushVar(Var__HspVar57,0); PushVar(Var__HspVar49,0); CalcMulI(); PushVar(Var__HspVar52,0); CalcAddI(); 
+		PushVar(Var_col,0); PushVar(Var_lb,0); CalcMulI(); PushVar(Var_sb,0); CalcAddI(); 
 	PushIntfunc(393,3); PushInt(255); CalcMulI(); 
 	PushFuncEnd(); 	PushInt(1); 
 		PushInt(0); 
-		PushVar(Var__HspVar57,0); PushVar(Var__HspVar48,0); CalcMulI(); PushVar(Var__HspVar51,0); CalcAddI(); 
+		PushVar(Var_col,0); PushVar(Var_lg,0); CalcMulI(); PushVar(Var_sg,0); CalcAddI(); 
 	PushIntfunc(393,3); PushInt(255); CalcMulI(); 
 	PushFuncEnd(); 	PushInt(1); 
 		PushInt(0); 
-		PushVar(Var__HspVar57,0); PushVar(Var__HspVar47,0); CalcMulI(); PushVar(Var__HspVar50,0); CalcAddI(); 
+		PushVar(Var_col,0); PushVar(Var_lr,0); CalcMulI(); PushVar(Var_sr,0); CalcAddI(); 
 	PushIntfunc(393,3); PushInt(255); CalcMulI(); 
 	Extcmd(24,3);
-	// boxf _HspVar46, _HspVar45, (_HspVar46+_HspVar27)-1, (_HspVar45+_HspVar27)-1
-	PushVar(Var__HspVar45,0); PushVar(Var__HspVar27,0); CalcAddI(); PushInt(1); CalcSubI(); 
-	PushVar(Var__HspVar46,0); PushVar(Var__HspVar27,0); CalcAddI(); PushInt(1); CalcSubI(); 
-	PushVAP(Var__HspVar45,0); 
-	PushVAP(Var__HspVar46,0); 
+	// boxf px, py, (px+step)-1, (py+step)-1
+	PushVar(Var_py,0); PushVar(Var_step,0); CalcAddI(); PushInt(1); CalcSubI(); 
+	PushVar(Var_px,0); PushVar(Var_step,0); CalcAddI(); PushInt(1); CalcSubI(); 
+	PushVAP(Var_py,0); 
+	PushVAP(Var_px,0); 
 	Extcmd(49,4);
 	// loop 
 	Prgcmd(5,0);
@@ -803,18 +803,18 @@ static void L0009( void ) {
 }
 
 static void L0027( void ) {
-	// if _HspVar27=1
-	PushVar(Var__HspVar27,0); PushInt(1); CalcEqI(); 
+	// if step=1
+	PushVar(Var_step,0); PushInt(1); CalcEqI(); 
 	if (HspIf()) { TaskSwitch(40); return; }
-	// stick _HspVar26
-	PushVAP(Var__HspVar26,0); 
+	// stick bt
+	PushVAP(Var_bt,0); 
 	Extcmd(52,1);
-	// if _HspVar26&128
-	PushVar(Var__HspVar26,0); PushInt(128); CalcAndI(); 
+	// if bt&128
+	PushVar(Var_bt,0); PushInt(128); CalcAndI(); 
 	if (HspIf()) { TaskSwitch(41); return; }
-	// _HspVar27 =16
+	// step =16
 	PushInt(16); 
-	VarSet(Var__HspVar27,0,1);
+	VarSet(Var_step,0,1);
 	// break *L0008
 	PushLabel(8); 
 	Prgcmd(3,1);
@@ -834,12 +834,12 @@ static void L0028( void ) {
 }
 
 static void L0008( void ) {
-	// _HspVar66 =(((gettime(5)*60)+gettime(6))*1000)+gettime(7)
+	// endtime =(((gettime(5)*60)+gettime(6))*1000)+gettime(7)
 	PushFuncEnd(); 	PushInt(5); 
 	PushIntfunc(8,1); PushInt(60); CalcMulI(); PushFuncEnd(); 	PushInt(6); 
 	PushIntfunc(8,1); CalcAddI(); PushInt(1000); CalcMulI(); PushFuncEnd(); 	PushInt(7); 
 	PushIntfunc(8,1); CalcAddI(); 
-	VarSet(Var__HspVar66,0,1);
+	VarSet(Var_endtime,0,1);
 	// color 255, 255, 255
 	PushInt(255); 
 	PushInt(255); 
@@ -849,12 +849,12 @@ static void L0008( void ) {
 	PushInt(20); 
 	PushInt(0); 
 	Extcmd(17,2);
-	// mes (double(_HspVar66-_HspVar44)/1000+"->")+"sec"
-	PushStr("->"); PushFuncEnd(); 	PushVar(Var__HspVar66,0); PushVar(Var__HspVar44,0); CalcSubI(); 
+	// mes (double(endtime-starttime)/1000+"->")+"sec"
+	PushStr("->"); PushFuncEnd(); 	PushVar(Var_endtime,0); PushVar(Var_starttime,0); CalcSubI(); 
 	PushIntfunc(389,1); PushInt(1000); CalcDivI(); CalcAddI(); PushStr("sec"); CalcAddI(); 
 	Extcmd(15,1);
-	// if _HspVar27=1
-	PushVar(Var__HspVar27,0); PushInt(1); CalcEqI(); 
+	// if step=1
+	PushVar(Var_step,0); PushInt(1); CalcEqI(); 
 	if (HspIf()) { TaskSwitch(42); return; }
 	// dialog "ÉZÅ[ÉuÇµÇ‹Ç∑Ç©ÅH", 2
 	PushInt(2); 
@@ -881,8 +881,8 @@ static void L002c( void ) {
 }
 
 static void L002b( void ) {
-	// stick _HspVar26
-	PushVAP(Var__HspVar26,0); 
+	// stick bt
+	PushVAP(Var_bt,0); 
 	Extcmd(52,1);
 	TaskSwitch(45);
 }
@@ -923,12 +923,12 @@ static void L0005( void ) {
 }
 
 static void L0007( void ) {
-	// if _HspVar42=0
-	PushVar(Var__HspVar42,0); PushInt(0); CalcEqI(); 
+	// if mode=0
+	PushVar(Var_mode,0); PushInt(0); CalcEqI(); 
 	if (HspIf()) { TaskSwitch(46); return; }
-	// _HspVar63 =0
+	// nhit =0
 	PushInt(0); 
-	VarSet(Var__HspVar63,0,1);
+	VarSet(Var_nhit,0,1);
 	TaskSwitch(46);
 }
 
@@ -941,50 +941,50 @@ static void L002e( void ) {
 }
 
 static void L002f( void ) {
-	// _HspVar43 =-1
+	// hit =-1
 	PushInt(-1); 
-	VarSet(Var__HspVar43,0,1);
-	// _HspVar67 =10000.000000
+	VarSet(Var_hit,0,1);
+	// minv =10000.000000
 	PushDouble(10000.000000); 
-	VarSet(Var__HspVar67,0,1);
+	VarSet(Var_minv,0,1);
 	// repeat
-	PushVAP(Var__HspVar8,0); 
+	PushVAP(Var_nobstacles,0); 
 	PushLabel(12); 
 	PushLabel(48); Prgcmd(4,3); return;
 	TaskSwitch(48);
 }
 
 static void L0030( void ) {
-	// _HspVar9 =_HspVar13(cnt)
+	// r =os(cnt)
 		PushFuncEnd(); PushSysvar(4,0); 
-	PushVAP(Var__HspVar13,1); 
-	VarSet(Var__HspVar9,0,1);
-	// _HspVar38 =_HspVar10(cnt)-_HspVar61
+	PushVAP(Var_os,1); 
+	VarSet(Var_r,0,1);
+	// dx =ox(cnt)-x
 		PushFuncEnd(); PushSysvar(4,0); 
-	PushVar(Var__HspVar10,1); PushVar(Var__HspVar61,0); CalcSubI(); 
-	VarSet(Var__HspVar38,0,1);
-	// _HspVar68 =_HspVar11(cnt)-_HspVar60
+	PushVar(Var_ox,1); PushVar(Var_x,0); CalcSubI(); 
+	VarSet(Var_dx,0,1);
+	// dy =oy(cnt)-y
 		PushFuncEnd(); PushSysvar(4,0); 
-	PushVar(Var__HspVar11,1); PushVar(Var__HspVar60,0); CalcSubI(); 
-	VarSet(Var__HspVar68,0,1);
-	// _HspVar69 =_HspVar12(cnt)-_HspVar62
+	PushVar(Var_oy,1); PushVar(Var_y,0); CalcSubI(); 
+	VarSet(Var_dy,0,1);
+	// dz =oz(cnt)-z
 		PushFuncEnd(); PushSysvar(4,0); 
-	PushVar(Var__HspVar12,1); PushVar(Var__HspVar62,0); CalcSubI(); 
-	VarSet(Var__HspVar69,0,1);
-	// _HspVar70 =((_HspVar38*_HspVar55_HspVar68*_HspVar53)+_HspVar69*_HspVar56)+
-	PushVar(Var__HspVar38,0); PushVar(Var__HspVar55,0); CalcMulI(); PushVar(Var__HspVar68,0); PushVar(Var__HspVar53,0); CalcMulI(); CalcAddI(); PushVar(Var__HspVar69,0); PushVar(Var__HspVar56,0); CalcMulI(); CalcAddI(); 
-	VarSet(Var__HspVar70,0,1);
-	// _HspVar71 =((_HspVar38*_HspVar38_HspVar68*_HspVar68)+_HspVar69*_HspVar69)+
-	PushVar(Var__HspVar38,0); PushVar(Var__HspVar38,0); CalcMulI(); PushVar(Var__HspVar68,0); PushVar(Var__HspVar68,0); CalcMulI(); CalcAddI(); PushVar(Var__HspVar69,0); PushVar(Var__HspVar69,0); CalcMulI(); CalcAddI(); 
-	VarSet(Var__HspVar71,0,1);
-	// _HspVar72 =_HspVar9*_HspVar9-_HspVar71
-	PushVar(Var__HspVar71,0); PushVar(Var__HspVar9,0); PushVar(Var__HspVar9,0); CalcMulI(); CalcSubI(); 
-	VarSet(Var__HspVar72,0,1);
-	// _HspVar73 =(_HspVar70*_HspVar70)-_HspVar72
-	PushVar(Var__HspVar70,0); PushVar(Var__HspVar70,0); CalcMulI(); PushVar(Var__HspVar72,0); CalcSubI(); 
-	VarSet(Var__HspVar73,0,1);
-	// if _HspVar73<0.000000
-	PushVar(Var__HspVar73,0); PushDouble(0.000000); CalcLtI(); 
+	PushVar(Var_oz,1); PushVar(Var_z,0); CalcSubI(); 
+	VarSet(Var_dz,0,1);
+	// b =((dx*xvdy*yv)+dz*zv)+
+	PushVar(Var_dx,0); PushVar(Var_xv,0); CalcMulI(); PushVar(Var_dy,0); PushVar(Var_yv,0); CalcMulI(); CalcAddI(); PushVar(Var_dz,0); PushVar(Var_zv,0); CalcMulI(); CalcAddI(); 
+	VarSet(Var_b,0,1);
+	// d =((dx*dxdy*dy)+dz*dz)+
+	PushVar(Var_dx,0); PushVar(Var_dx,0); CalcMulI(); PushVar(Var_dy,0); PushVar(Var_dy,0); CalcMulI(); CalcAddI(); PushVar(Var_dz,0); PushVar(Var_dz,0); CalcMulI(); CalcAddI(); 
+	VarSet(Var_d,0,1);
+	// c =r*r-d
+	PushVar(Var_d,0); PushVar(Var_r,0); PushVar(Var_r,0); CalcMulI(); CalcSubI(); 
+	VarSet(Var_c,0,1);
+	// f =(b*b)-c
+	PushVar(Var_b,0); PushVar(Var_b,0); CalcMulI(); PushVar(Var_c,0); CalcSubI(); 
+	VarSet(Var_f,0,1);
+	// if f<0.000000
+	PushVar(Var_f,0); PushDouble(0.000000); CalcLtI(); 
 	if (HspIf()) { TaskSwitch(49); return; }
 	// continue *L000c
 	PushLabel(12); 
@@ -994,12 +994,12 @@ static void L0030( void ) {
 }
 
 static void L0031( void ) {
-	// _HspVar39 =_HspVar70-sqrt(_HspVar73)
-	PushVar(Var__HspVar70,0); PushFuncEnd(); 	PushVar(Var__HspVar73,0); 
+	// v =b-sqrt(f)
+	PushVar(Var_b,0); PushFuncEnd(); 	PushVar(Var_f,0); 
 	PushIntfunc(388,1); CalcSubI(); 
-	VarSet(Var__HspVar39,0,1);
-	// if _HspVar39<0.000000
-	PushVar(Var__HspVar39,0); PushDouble(0.000000); CalcLtI(); 
+	VarSet(Var_v,0,1);
+	// if v<0.000000
+	PushVar(Var_v,0); PushDouble(0.000000); CalcLtI(); 
 	if (HspIf()) { TaskSwitch(50); return; }
 	// continue *L000c
 	PushLabel(12); 
@@ -1009,12 +1009,12 @@ static void L0031( void ) {
 }
 
 static void L0032( void ) {
-	// if _HspVar42=1
-	PushVar(Var__HspVar42,0); PushInt(1); CalcEqI(); 
+	// if mode=1
+	PushVar(Var_mode,0); PushInt(1); CalcEqI(); 
 	if (HspIf()) { TaskSwitch(51); return; }
-	// _HspVar43 =1
+	// hit =1
 	PushInt(1); 
-	VarSet(Var__HspVar43,0,1);
+	VarSet(Var_hit,0,1);
 	// break *L000c
 	PushLabel(12); 
 	Prgcmd(3,1);
@@ -1023,18 +1023,18 @@ static void L0032( void ) {
 }
 
 static void L0033( void ) {
-	// if _HspVar39<_HspVar67
-	PushVar(Var__HspVar39,0); PushVar(Var__HspVar67,0); CalcLtI(); 
+	// if v<minv
+	PushVar(Var_v,0); PushVar(Var_minv,0); CalcLtI(); 
 	if (HspIf()) { TaskSwitch(52); return; }
-	// if (_HspVar53*_HspVar39+_HspVar60)>0.000000
-	PushVar(Var__HspVar60,0); PushVar(Var__HspVar53,0); PushVar(Var__HspVar39,0); CalcMulI(); CalcAddI(); PushDouble(0.000000); CalcGtI(); 
+	// if (yv*v+y)>0.000000
+	PushVar(Var_y,0); PushVar(Var_yv,0); PushVar(Var_v,0); CalcMulI(); CalcAddI(); PushDouble(0.000000); CalcGtI(); 
 	if (HspIf()) { TaskSwitch(53); return; }
-	// _HspVar67 =_HspVar39
-	PushVAP(Var__HspVar39,0); 
-	VarSet(Var__HspVar67,0,1);
-	// _HspVar43 =cnt
+	// minv =v
+	PushVAP(Var_v,0); 
+	VarSet(Var_minv,0,1);
+	// hit =cnt
 	PushFuncEnd(); PushSysvar(4,0); 
-	VarSet(Var__HspVar43,0,1);
+	VarSet(Var_hit,0,1);
 	TaskSwitch(53);
 }
 
@@ -1050,12 +1050,12 @@ static void L0034( void ) {
 }
 
 static void L000c( void ) {
-	// if _HspVar42
-	PushVAP(Var__HspVar42,0); 
+	// if mode
+	PushVAP(Var_mode,0); 
 	if (HspIf()) { TaskSwitch(54); return; }
-	// _HspVar42 =0
+	// mode =0
 	PushInt(0); 
-	VarSet(Var__HspVar42,0,1);
+	VarSet(Var_mode,0,1);
 	// break *L000b
 	PushLabel(11); 
 	Prgcmd(3,1);
@@ -1064,8 +1064,8 @@ static void L000c( void ) {
 }
 
 static void L0036( void ) {
-	// if _HspVar43<0
-	PushVar(Var__HspVar43,0); PushInt(0); CalcLtI(); 
+	// if hit<0
+	PushVar(Var_hit,0); PushInt(0); CalcLtI(); 
 	if (HspIf()) { TaskSwitch(55); return; }
 	// break *L000b
 	PushLabel(11); 
@@ -1075,85 +1075,85 @@ static void L0036( void ) {
 }
 
 static void L0037( void ) {
-	// _HspVar71 =1.000000/_HspVar13(_HspVar43)
-	PushDouble(1.000000); 	PushVar(Var__HspVar43,0); 
-	PushVar(Var__HspVar13,1); CalcDivI(); 
-	VarSet(Var__HspVar71,0,1);
-	// _HspVar61 +=_HspVar55*_HspVar67
-	PushVar(Var__HspVar55,0); PushVar(Var__HspVar67,0); CalcMulI(); 
-	VarCalc(Var__HspVar61,0,0);
-	// _HspVar74 =(_HspVar61-_HspVar10(_HspVar43))*_HspVar71
-	PushVar(Var__HspVar61,0); 	PushVar(Var__HspVar43,0); 
-	PushVar(Var__HspVar10,1); CalcSubI(); PushVar(Var__HspVar71,0); CalcMulI(); 
-	VarSet(Var__HspVar74,0,1);
-	// _HspVar60 +=_HspVar53*_HspVar67
-	PushVar(Var__HspVar53,0); PushVar(Var__HspVar67,0); CalcMulI(); 
-	VarCalc(Var__HspVar60,0,0);
-	// _HspVar75 =(_HspVar60-_HspVar11(_HspVar43))*_HspVar71
-	PushVar(Var__HspVar60,0); 	PushVar(Var__HspVar43,0); 
-	PushVar(Var__HspVar11,1); CalcSubI(); PushVar(Var__HspVar71,0); CalcMulI(); 
-	VarSet(Var__HspVar75,0,1);
-	// _HspVar62 +=_HspVar56*_HspVar67
-	PushVar(Var__HspVar56,0); PushVar(Var__HspVar67,0); CalcMulI(); 
-	VarCalc(Var__HspVar62,0,0);
-	// _HspVar76 =(_HspVar62-_HspVar12(_HspVar43))*_HspVar71
-	PushVar(Var__HspVar62,0); 	PushVar(Var__HspVar43,0); 
-	PushVar(Var__HspVar12,1); CalcSubI(); PushVar(Var__HspVar71,0); CalcMulI(); 
-	VarSet(Var__HspVar76,0,1);
-	// _HspVar71 =((_HspVar74*_HspVar55_HspVar75*_HspVar53)+_HspVar76*_HspVar56)+*2.000000
-	PushDouble(2.000000); PushVar(Var__HspVar74,0); PushVar(Var__HspVar55,0); CalcMulI(); PushVar(Var__HspVar75,0); PushVar(Var__HspVar53,0); CalcMulI(); CalcAddI(); PushVar(Var__HspVar76,0); PushVar(Var__HspVar56,0); CalcMulI(); CalcAddI(); CalcMulI(); 
-	VarSet(Var__HspVar71,0,1);
-	// _HspVar55 =_HspVar71*_HspVar74-_HspVar55
-	PushVar(Var__HspVar55,0); PushVar(Var__HspVar71,0); PushVar(Var__HspVar74,0); CalcMulI(); CalcSubI(); 
-	VarSet(Var__HspVar55,0,1);
-	// _HspVar53 =_HspVar71*_HspVar75-_HspVar53
-	PushVar(Var__HspVar53,0); PushVar(Var__HspVar71,0); PushVar(Var__HspVar75,0); CalcMulI(); CalcSubI(); 
-	VarSet(Var__HspVar53,0,1);
-	// _HspVar56 =_HspVar71*_HspVar76-_HspVar56
-	PushVar(Var__HspVar56,0); PushVar(Var__HspVar71,0); PushVar(Var__HspVar76,0); CalcMulI(); CalcSubI(); 
-	VarSet(Var__HspVar56,0,1);
-	// _HspVar77 =limitf(_HspVar71*0.500000+1.100000, 0, 1)
+	// d =1.000000/os(hit)
+	PushDouble(1.000000); 	PushVar(Var_hit,0); 
+	PushVar(Var_os,1); CalcDivI(); 
+	VarSet(Var_d,0,1);
+	// x +=xv*minv
+	PushVar(Var_xv,0); PushVar(Var_minv,0); CalcMulI(); 
+	VarCalc(Var_x,0,0);
+	// nx =(x-ox(hit))*d
+	PushVar(Var_x,0); 	PushVar(Var_hit,0); 
+	PushVar(Var_ox,1); CalcSubI(); PushVar(Var_d,0); CalcMulI(); 
+	VarSet(Var_nx,0,1);
+	// y +=yv*minv
+	PushVar(Var_yv,0); PushVar(Var_minv,0); CalcMulI(); 
+	VarCalc(Var_y,0,0);
+	// ny =(y-oy(hit))*d
+	PushVar(Var_y,0); 	PushVar(Var_hit,0); 
+	PushVar(Var_oy,1); CalcSubI(); PushVar(Var_d,0); CalcMulI(); 
+	VarSet(Var_ny,0,1);
+	// z +=zv*minv
+	PushVar(Var_zv,0); PushVar(Var_minv,0); CalcMulI(); 
+	VarCalc(Var_z,0,0);
+	// nz =(z-oz(hit))*d
+	PushVar(Var_z,0); 	PushVar(Var_hit,0); 
+	PushVar(Var_oz,1); CalcSubI(); PushVar(Var_d,0); CalcMulI(); 
+	VarSet(Var_nz,0,1);
+	// d =((nx*xvny*yv)+nz*zv)+*2.000000
+	PushDouble(2.000000); PushVar(Var_nx,0); PushVar(Var_xv,0); CalcMulI(); PushVar(Var_ny,0); PushVar(Var_yv,0); CalcMulI(); CalcAddI(); PushVar(Var_nz,0); PushVar(Var_zv,0); CalcMulI(); CalcAddI(); CalcMulI(); 
+	VarSet(Var_d,0,1);
+	// xv =d*nx-xv
+	PushVar(Var_xv,0); PushVar(Var_d,0); PushVar(Var_nx,0); CalcMulI(); CalcSubI(); 
+	VarSet(Var_xv,0,1);
+	// yv =d*ny-yv
+	PushVar(Var_yv,0); PushVar(Var_d,0); PushVar(Var_ny,0); CalcMulI(); CalcSubI(); 
+	VarSet(Var_yv,0,1);
+	// zv =d*nz-zv
+	PushVar(Var_zv,0); PushVar(Var_d,0); PushVar(Var_nz,0); CalcMulI(); CalcSubI(); 
+	VarSet(Var_zv,0,1);
+	// e =limitf(d*0.500000+1.100000, 0, 1)
 	PushFuncEnd(); 	PushInt(1); 
 		PushInt(0); 
-		PushDouble(1.100000); PushVar(Var__HspVar71,0); PushDouble(0.500000); CalcMulI(); CalcAddI(); 
+		PushDouble(1.100000); PushVar(Var_d,0); PushDouble(0.500000); CalcMulI(); CalcAddI(); 
 	PushIntfunc(393,3); 
-	VarSet(Var__HspVar77,0,1);
-	// _HspVar77 =(_HspVar77*_HspVar77)*4
-	PushVar(Var__HspVar77,0); PushVar(Var__HspVar77,0); CalcMulI(); PushInt(4); CalcMulI(); 
-	VarSet(Var__HspVar77,0,1);
-	// _HspVar78 =_HspVar43
-	PushVAP(Var__HspVar43,0); 
-	VarSet(Var__HspVar78,0,1);
-	// _HspVar79 =limitf(((_HspVar74*_HspVar5_HspVar75*_HspVar6)+_HspVar76*_HspVar7)+, 0, 1)
+	VarSet(Var_e,0,1);
+	// e =(e*e)*4
+	PushVar(Var_e,0); PushVar(Var_e,0); CalcMulI(); PushInt(4); CalcMulI(); 
+	VarSet(Var_e,0,1);
+	// nc =hit
+	PushVAP(Var_hit,0); 
+	VarSet(Var_nc,0,1);
+	// nd =limitf(((nx*sunxny*suny)+nz*sunz)+, 0, 1)
 	PushFuncEnd(); 	PushInt(1); 
 		PushInt(0); 
-		PushVar(Var__HspVar74,0); PushVar(Var__HspVar5,0); CalcMulI(); PushVar(Var__HspVar75,0); PushVar(Var__HspVar6,0); CalcMulI(); CalcAddI(); PushVar(Var__HspVar76,0); PushVar(Var__HspVar7,0); CalcMulI(); CalcAddI(); 
+		PushVar(Var_nx,0); PushVar(Var_sunx,0); CalcMulI(); PushVar(Var_ny,0); PushVar(Var_suny,0); CalcMulI(); CalcAddI(); PushVar(Var_nz,0); PushVar(Var_sunz,0); CalcMulI(); CalcAddI(); 
 	PushIntfunc(393,3); 
-	VarSet(Var__HspVar79,0,1);
-	// if _HspVar79>0.000000
-	PushVar(Var__HspVar79,0); PushDouble(0.000000); CalcGtI(); 
+	VarSet(Var_nd,0,1);
+	// if nd>0.000000
+	PushVar(Var_nd,0); PushDouble(0.000000); CalcGtI(); 
 	if (HspIf()) { TaskSwitch(56); return; }
-	// _HspVar80 =_HspVar55
-	PushVAP(Var__HspVar55,0); 
-	VarSet(Var__HspVar80,0,1);
-	// _HspVar81 =_HspVar53
-	PushVAP(Var__HspVar53,0); 
-	VarSet(Var__HspVar81,0,1);
-	// _HspVar82 =_HspVar56
-	PushVAP(Var__HspVar56,0); 
-	VarSet(Var__HspVar82,0,1);
-	// _HspVar55 =_HspVar5
-	PushVAP(Var__HspVar5,0); 
-	VarSet(Var__HspVar55,0,1);
-	// _HspVar53 =_HspVar6
-	PushVAP(Var__HspVar6,0); 
-	VarSet(Var__HspVar53,0,1);
-	// _HspVar56 =_HspVar7
-	PushVAP(Var__HspVar7,0); 
-	VarSet(Var__HspVar56,0,1);
-	// _HspVar42 =1
+	// oxv =xv
+	PushVAP(Var_xv,0); 
+	VarSet(Var_oxv,0,1);
+	// oyv =yv
+	PushVAP(Var_yv,0); 
+	VarSet(Var_oyv,0,1);
+	// ozv =zv
+	PushVAP(Var_zv,0); 
+	VarSet(Var_ozv,0,1);
+	// xv =sunx
+	PushVAP(Var_sunx,0); 
+	VarSet(Var_xv,0,1);
+	// yv =suny
+	PushVAP(Var_suny,0); 
+	VarSet(Var_yv,0,1);
+	// zv =sunz
+	PushVAP(Var_sunz,0); 
+	VarSet(Var_zv,0,1);
+	// mode =1
 	PushInt(1); 
-	VarSet(Var__HspVar42,0,1);
+	VarSet(Var_mode,0,1);
 	// gosub
 	PushLabel(7); 
 	PushLabel(57); Prgcmd(1,2); return;
@@ -1161,73 +1161,73 @@ static void L0037( void ) {
 }
 
 static void L0039( void ) {
-	// if _HspVar43>0
-	PushVar(Var__HspVar43,0); PushInt(0); CalcGtI(); 
+	// if hit>0
+	PushVar(Var_hit,0); PushInt(0); CalcGtI(); 
 	if (HspIf()) { TaskSwitch(58); return; }
-	// _HspVar79 *=0.200000
+	// nd *=0.200000
 	PushDouble(0.200000); 
-	VarCalc(Var__HspVar79,0,2);
+	VarCalc(Var_nd,0,2);
 	TaskSwitch(58);
 }
 
 static void L003a( void ) {
-	// _HspVar55 =_HspVar80
-	PushVAP(Var__HspVar80,0); 
-	VarSet(Var__HspVar55,0,1);
-	// _HspVar53 =_HspVar81
-	PushVAP(Var__HspVar81,0); 
-	VarSet(Var__HspVar53,0,1);
-	// _HspVar56 =_HspVar82
-	PushVAP(Var__HspVar82,0); 
-	VarSet(Var__HspVar56,0,1);
+	// xv =oxv
+	PushVAP(Var_oxv,0); 
+	VarSet(Var_xv,0,1);
+	// yv =oyv
+	PushVAP(Var_oyv,0); 
+	VarSet(Var_yv,0,1);
+	// zv =ozv
+	PushVAP(Var_ozv,0); 
+	VarSet(Var_zv,0,1);
 	TaskSwitch(56);
 }
 
 static void L0038( void ) {
-	// _HspVar47 *=_HspVar14(_HspVar78)*_HspVar77
-		PushVar(Var__HspVar78,0); 
-	PushVar(Var__HspVar14,1); PushVar(Var__HspVar77,0); CalcMulI(); 
-	VarCalc(Var__HspVar47,0,2);
-	// _HspVar48 *=_HspVar15(_HspVar78)*_HspVar77
-		PushVar(Var__HspVar78,0); 
-	PushVar(Var__HspVar15,1); PushVar(Var__HspVar77,0); CalcMulI(); 
-	VarCalc(Var__HspVar48,0,2);
-	// _HspVar49 *=_HspVar16(_HspVar78)*_HspVar77
-		PushVar(Var__HspVar78,0); 
-	PushVar(Var__HspVar16,1); PushVar(Var__HspVar77,0); CalcMulI(); 
-	VarCalc(Var__HspVar49,0,2);
-	// if _HspVar63=0
-	PushVar(Var__HspVar63,0); PushInt(0); CalcEqI(); 
+	// lr *=ocr(nc)*e
+		PushVar(Var_nc,0); 
+	PushVar(Var_ocr,1); PushVar(Var_e,0); CalcMulI(); 
+	VarCalc(Var_lr,0,2);
+	// lg *=ocg(nc)*e
+		PushVar(Var_nc,0); 
+	PushVar(Var_ocg,1); PushVar(Var_e,0); CalcMulI(); 
+	VarCalc(Var_lg,0,2);
+	// lb *=ocb(nc)*e
+		PushVar(Var_nc,0); 
+	PushVar(Var_ocb,1); PushVar(Var_e,0); CalcMulI(); 
+	VarCalc(Var_lb,0,2);
+	// if nhit=0
+	PushVar(Var_nhit,0); PushInt(0); CalcEqI(); 
 	if (HspIf()) { TaskSwitch(59); return; }
-	// _HspVar65 =_HspVar78
-	PushVAP(Var__HspVar78,0); 
-	VarSet(Var__HspVar65,0,1);
-	// _HspVar64 =_HspVar79
-	PushVAP(Var__HspVar79,0); 
-	VarSet(Var__HspVar64,0,1);
+	// n0c =nc
+	PushVAP(Var_nc,0); 
+	VarSet(Var_n0c,0,1);
+	// n0d =nd
+	PushVAP(Var_nd,0); 
+	VarSet(Var_n0d,0,1);
 	TaskSwitch(60);
 }
 
 static void L003b( void ) {
 	// else
-	// _HspVar50 +=(_HspVar79*_HspVar14(_HspVar78))*_HspVar47
-	PushVar(Var__HspVar79,0); 	PushVar(Var__HspVar78,0); 
-	PushVar(Var__HspVar14,1); CalcMulI(); PushVar(Var__HspVar47,0); CalcMulI(); 
-	VarCalc(Var__HspVar50,0,0);
-	// _HspVar51 +=(_HspVar79*_HspVar15(_HspVar78))*_HspVar48
-	PushVar(Var__HspVar79,0); 	PushVar(Var__HspVar78,0); 
-	PushVar(Var__HspVar15,1); CalcMulI(); PushVar(Var__HspVar48,0); CalcMulI(); 
-	VarCalc(Var__HspVar51,0,0);
-	// _HspVar52 +=(_HspVar79*_HspVar16(_HspVar78))*_HspVar49
-	PushVar(Var__HspVar79,0); 	PushVar(Var__HspVar78,0); 
-	PushVar(Var__HspVar16,1); CalcMulI(); PushVar(Var__HspVar49,0); CalcMulI(); 
-	VarCalc(Var__HspVar52,0,0);
+	// sr +=(nd*ocr(nc))*lr
+	PushVar(Var_nd,0); 	PushVar(Var_nc,0); 
+	PushVar(Var_ocr,1); CalcMulI(); PushVar(Var_lr,0); CalcMulI(); 
+	VarCalc(Var_sr,0,0);
+	// sg +=(nd*ocg(nc))*lg
+	PushVar(Var_nd,0); 	PushVar(Var_nc,0); 
+	PushVar(Var_ocg,1); CalcMulI(); PushVar(Var_lg,0); CalcMulI(); 
+	VarCalc(Var_sg,0,0);
+	// sb +=(nd*ocb(nc))*lb
+	PushVar(Var_nd,0); 	PushVar(Var_nc,0); 
+	PushVar(Var_ocb,1); CalcMulI(); PushVar(Var_lb,0); CalcMulI(); 
+	VarCalc(Var_sb,0,0);
 	TaskSwitch(60);
 }
 
 static void L003c( void ) {
-	// _HspVar63 ++
-	VarInc(Var__HspVar63,0);
+	// nhit ++
+	VarInc(Var_nhit,0);
 	// loop 
 	Prgcmd(5,0);
 	return;
@@ -1242,37 +1242,37 @@ static void L000b( void ) {
 }
 
 static void L0006( void ) {
-	// _HspVar55 =((_HspVar34*-1)*_HspVar40)-_HspVar33
-	PushVar(Var__HspVar34,0); PushInt(-1); CalcMulI(); PushVar(Var__HspVar40,0); CalcMulI(); PushVar(Var__HspVar33,0); CalcSubI(); 
-	VarSet(Var__HspVar55,0,1);
-	// _HspVar53 =_HspVar41*-1
-	PushVar(Var__HspVar41,0); PushInt(-1); CalcMulI(); 
-	VarSet(Var__HspVar53,0,1);
-	// _HspVar56 =(_HspVar33*_HspVar40)-_HspVar34
-	PushVar(Var__HspVar33,0); PushVar(Var__HspVar40,0); CalcMulI(); PushVar(Var__HspVar34,0); CalcSubI(); 
-	VarSet(Var__HspVar56,0,1);
-	// _HspVar83 =1.000000/sqrt(((_HspVar55*_HspVar55_HspVar53*_HspVar53)+_HspVar56*_HspVar56)+)
-	PushDouble(1.000000); PushFuncEnd(); 	PushVar(Var__HspVar55,0); PushVar(Var__HspVar55,0); CalcMulI(); PushVar(Var__HspVar53,0); PushVar(Var__HspVar53,0); CalcMulI(); CalcAddI(); PushVar(Var__HspVar56,0); PushVar(Var__HspVar56,0); CalcMulI(); CalcAddI(); 
+	// xv =((voz*-1)*orgxv)-vox
+	PushVar(Var_voz,0); PushInt(-1); CalcMulI(); PushVar(Var_orgxv,0); CalcMulI(); PushVar(Var_vox,0); CalcSubI(); 
+	VarSet(Var_xv,0,1);
+	// yv =orgyv*-1
+	PushVar(Var_orgyv,0); PushInt(-1); CalcMulI(); 
+	VarSet(Var_yv,0,1);
+	// zv =(vox*orgxv)-voz
+	PushVar(Var_vox,0); PushVar(Var_orgxv,0); CalcMulI(); PushVar(Var_voz,0); CalcSubI(); 
+	VarSet(Var_zv,0,1);
+	// a =1.000000/sqrt(((xv*xvyv*yv)+zv*zv)+)
+	PushDouble(1.000000); PushFuncEnd(); 	PushVar(Var_xv,0); PushVar(Var_xv,0); CalcMulI(); PushVar(Var_yv,0); PushVar(Var_yv,0); CalcMulI(); CalcAddI(); PushVar(Var_zv,0); PushVar(Var_zv,0); CalcMulI(); CalcAddI(); 
 	PushIntfunc(388,1); CalcDivI(); 
-	VarSet(Var__HspVar83,0,1);
-	// _HspVar55 *=_HspVar83
-	PushVAP(Var__HspVar83,0); 
-	VarCalc(Var__HspVar55,0,2);
-	// _HspVar53 *=_HspVar83
-	PushVAP(Var__HspVar83,0); 
-	VarCalc(Var__HspVar53,0,2);
-	// _HspVar56 *=_HspVar83
-	PushVAP(Var__HspVar83,0); 
-	VarCalc(Var__HspVar56,0,2);
-	// _HspVar61 =_HspVar35
-	PushVAP(Var__HspVar35,0); 
-	VarSet(Var__HspVar61,0,1);
-	// _HspVar60 =_HspVar1
-	PushVAP(Var__HspVar1,0); 
-	VarSet(Var__HspVar60,0,1);
-	// _HspVar62 =_HspVar36
-	PushVAP(Var__HspVar36,0); 
-	VarSet(Var__HspVar62,0,1);
+	VarSet(Var_a,0,1);
+	// xv *=a
+	PushVAP(Var_a,0); 
+	VarCalc(Var_xv,0,2);
+	// yv *=a
+	PushVAP(Var_a,0); 
+	VarCalc(Var_yv,0,2);
+	// zv *=a
+	PushVAP(Var_a,0); 
+	VarCalc(Var_zv,0,2);
+	// x =gx
+	PushVAP(Var_gx,0); 
+	VarSet(Var_x,0,1);
+	// y =gy
+	PushVAP(Var_gy,0); 
+	VarSet(Var_y,0,1);
+	// z =gz
+	PushVAP(Var_gz,0); 
+	VarSet(Var_z,0,1);
 	// return 
 	Prgcmd(2,0);
 	return;

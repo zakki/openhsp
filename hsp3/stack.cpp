@@ -17,8 +17,9 @@
 /*------------------------------------------------------------*/
 
 int stm_max;
-int stm_cur;
 STMDATA *mem_stm;
+STMDATA *stm_cur;
+STMDATA *stm_maxptr;
 
 /*------------------------------------------------------------*/
 /*
@@ -30,7 +31,8 @@ void StackInit( void )
 {
 	stm_max = STM_MAX_DEFAULT;
 	mem_stm = (STMDATA *)malloc( sizeof( STMDATA ) * stm_max );
-	stm_cur = 0;
+	stm_maxptr = mem_stm + stm_max;
+	stm_cur = mem_stm;
 }
 
 void StackTerm( void )
@@ -40,7 +42,7 @@ void StackTerm( void )
 }
 
 
-static void StackAlloc( STMDATA *stm, int size )
+static inline void StackAlloc( STMDATA *stm, int size )
 {
 	if ( size <= STM_STRSIZE_DEFAULT ) {
 		stm->mode = STMMODE_SELF;
@@ -54,7 +56,7 @@ static void StackAlloc( STMDATA *stm, int size )
 void StackReset( void )
 {
 	while(1) {
-		if ( stm_cur == 0 ) break;
+		if ( stm_cur == mem_stm ) break;
 		StackPop();
 	}
 }
@@ -63,8 +65,8 @@ void StackPush( int type, char *data, int size )
 {
 	STMDATA *stm;
 	double *dptr;
-	if ( stm_cur >= stm_max ) throw HSPERR_STACK_OVERFLOW;
-	stm = &mem_stm[ stm_cur ];
+	if ( stm_cur >= stm_maxptr ) throw HSPERR_STACK_OVERFLOW;
+	stm = stm_cur;
 	stm->type = type;
 	switch( type ) {
 	case HSPVAR_FLAG_LABEL:
@@ -97,8 +99,8 @@ void StackPush( int type, char *str )
 void *StackPushSize( int type, int size )
 {
 	STMDATA *stm;
-	if ( stm_cur >= stm_max ) throw HSPERR_STACK_OVERFLOW;
-	stm = &mem_stm[ stm_cur ];
+	if ( stm_cur >= stm_maxptr ) throw HSPERR_STACK_OVERFLOW;
+	stm = stm_cur;
 	stm->type = type;
 	StackAlloc( stm, size );
 	stm_cur++;
@@ -114,8 +116,8 @@ void StackPushTypeVal( int type, int val, int val2 )
 {
 	STMDATA *stm;
 	int *iptr;
-	if ( stm_cur >= stm_max ) throw HSPERR_STACK_OVERFLOW;
-	stm = &mem_stm[ stm_cur ];
+	if ( stm_cur >= stm_maxptr ) throw HSPERR_STACK_OVERFLOW;
+	stm = stm_cur;
 	stm->type = type;
 	stm->mode = STMMODE_SELF;
 	stm->ival = val;
@@ -129,3 +131,7 @@ void StackPushType( int type )
 	StackPushTypeVal( type, 0, 0 );
 }
 
+void StackPopFree( void )
+{
+	free( stm_cur->ptr );
+}

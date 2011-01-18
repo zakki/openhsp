@@ -51,6 +51,7 @@ static int dbgmode;
 
 PVal *plugin_pval;								// プラグインに渡される変数ポインタの実態
 PVal *mpval;									// code_getで使用されたテンポラリ変数
+static PVal *mpval_int;							// code_getで使用されたテンポラリ変数(int用)
 static PVal prmvar;								// パラメーターテンポラリ変数の実態
 
 static	unsigned char *mem_di_val;				// Debug VALS info ptr
@@ -78,6 +79,7 @@ void code_next( void )
 	if ( StackGetLevel <= 0 ) return;
 	next_stm = StackPeek;
 	type = next_stm->type;
+
 	if ( type == HSPVAR_FLAG_MARK ) {
 		val = next_stm->ival;
 		StackPop();
@@ -85,7 +87,6 @@ void code_next( void )
 		return;
 	}
 }
-
 
 /*------------------------------------------------------------*/
 /*
@@ -542,17 +543,32 @@ int code_get( void )
 	//tflag = type;
 	stm = StackPeek;
 	tflag = stm->type;
-	ptr = STM_GETPTR(stm);
+	val = stm->ival;
+
+	if ( tflag == HSPVAR_FLAG_INT ) {
+		mpval = mpval_int;
+		*(int *)mpval->pt = val;
+		StackDecLevel;
+		code_next();
+		return 0;
+	}
+	if ( tflag == HSPVAR_FLAG_DEFAULT ) {
+		StackDecLevel;
+		code_next();
+		return PARAM_DEFAULT;
+	}
 
 	if ( tflag >= TYPE_EX_SUBROUTINE ) return PARAM_END;
 	if ( tflag == HSPVAR_FLAG_MARK ) {
 		return PARAM_END;
 	}
+
+	ptr = STM_GETPTR(stm);
 	if ( tflag == HSPVAR_FLAG_VAR ) {
 		PVal *pval;
 		int *iptr;
 		iptr = (int *)stm->itemp;
-		pval = (PVal *)stm->ival;
+		pval = (PVal *)val;
 		tflag = pval->flag;
 		ptr = (char *)HspVarCorePtrAPTR( pval, *iptr );
 	}
@@ -568,7 +584,6 @@ int code_get( void )
 	}
 	varproc->Set( mpval, (PDAT *)(mpval->pt), ptr );				// テンポラリ変数に初期値を設定
 	StackPop();
-
 	code_next();
 	return 0;
 
@@ -2507,6 +2522,7 @@ void code_init( void )
 	StackInit();
 	HspVarCoreInit();			// ストレージコア初期化
 	mpval = HspVarCoreGetPVal(0);
+	mpval_int = HspVarCoreGetPVal(HSPVAR_FLAG_INT);
 	hspevent_opt = 0;			// イベントオプションを初期化
 
 	//		exinfoの初期化
@@ -2712,6 +2728,11 @@ rerun:
 	hspctx->looplev = 0;
 	hspctx->sublev = 0;
 	StackReset();
+	// HspVarCoreResetVartype() で変数領域か拡張されると変数が変なアドレスをさしてしまうので初期化
+	//   本当は hspvar_core.cpp:HspVarCoreResetVartype() の中か
+	//   もしくは hsp3.cpp:HspVarCoreResetVartype() の直後に行った方が良いはず...
+	mpval_int = HspVarCoreGetPVal(HSPVAR_FLAG_INT);
+	HspVarCoreClearTemp( mpval_int, HSPVAR_FLAG_INT );	// int型のテンポラリを初期化
 
 #ifdef HSPERR_HANDLE
 	try {

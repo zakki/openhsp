@@ -79,7 +79,7 @@ static void HspVarCoreArray2( PVal *pval, int offset )
 }
 
 
-static inline char * PrepareCalc( void )
+static char *PrepareCalc( void )
 {
 	//		スタックから２項目取り出し計算の準備を行なう
 	//
@@ -88,6 +88,12 @@ static inline char * PrepareCalc( void )
 	stm2 = StackPeek;
 	stm1 = StackPeek2;
 	tflag = stm1->type;
+
+	if ( tflag == HSPVAR_FLAG_INT ) {
+		if ( stm2->type == HSPVAR_FLAG_INT ) {					// HSPVAR_FLAG_INT のみ高速化
+			return NULL;
+		}
+	}
 
 	mpval = HspVarCoreGetPVal( tflag );
 	varproc = HspVarCoreGetProc( tflag );
@@ -114,7 +120,7 @@ static inline char * PrepareCalc( void )
 }
 
 
-static inline void AfterCalc( void )
+static void AfterCalc( void )
 {
 	//		計算後のスタック処理
 	//
@@ -232,16 +238,14 @@ void PushInt( int val )
 	StackPushi( val );
 }
 
+void PushDouble( double val )
+{
+	StackPush( HSPVAR_FLAG_DOUBLE, (char *)&val, sizeof(double) );
+}
 
 void PushStr( char *st )
 {
 	StackPushStr( st );
-}
-
-
-void PushDouble( double val )
-{
-	StackPush( HSPVAR_FLAG_DOUBLE, (char *)&val, sizeof(double) );
 }
 
 
@@ -262,6 +266,11 @@ void PushVar( PVal *pval, int aval )
 	ptr = HspVarCorePtrAPTR( pval, aptr );
 
 	tflag = pval->flag;
+	if ( tflag == HSPVAR_FLAG_INT ) {
+		StackPushi( *(int *)ptr );
+		return;
+	}
+
 	varproc = HspVarCoreGetProc( tflag );
 	basesize = varproc->basesize;
 	if ( basesize < 0 ) { basesize = varproc->GetSize( ptr ); }
@@ -282,7 +291,7 @@ void PushVAP( PVal *pval, int aval )
 
 void PushDefault( void )
 {
-	StackPushTypeVal( HSPVAR_FLAG_MARK, (int)'?', 0 );
+	StackPushTypeVal( HSPVAR_FLAG_DEFAULT, (int)'?', 0 );
 }
 
 
@@ -347,6 +356,11 @@ void CalcAddI( void )
 {
 	char *ptr;
 	ptr = PrepareCalc();
+	if ( ptr == NULL ) {									// 高速化のため
+		stm1->ival += stm2->ival;
+		StackDecLevel;
+		return;
+	}
 	varproc->AddI( (PDAT *)mpval->pt, ptr );
 	AfterCalc();
 }
@@ -356,6 +370,11 @@ void CalcSubI( void )
 {
 	char *ptr;
 	ptr = PrepareCalc();
+	if ( ptr == NULL ) {									// 高速化のため
+		stm1->ival -= stm2->ival;
+		StackDecLevel;
+		return;
+	}
 	varproc->SubI( (PDAT *)mpval->pt, ptr );
 	AfterCalc();
 }
@@ -365,6 +384,11 @@ void CalcMulI( void )
 {
 	char *ptr;
 	ptr = PrepareCalc();
+	if ( ptr == NULL ) {									// 高速化のため
+		stm1->ival *= stm2->ival;
+		StackDecLevel;
+		return;
+	}
 	varproc->MulI( (PDAT *)mpval->pt, ptr );
 	AfterCalc();
 }
@@ -374,6 +398,12 @@ void CalcDivI( void )
 {
 	char *ptr;
 	ptr = PrepareCalc();
+	if ( ptr == NULL ) {									// 高速化のため
+		if ( stm2->ival == 0 ) throw( HSPVAR_ERROR_DIVZERO );
+		stm1->ival /= stm2->ival;
+		StackDecLevel;
+		return;
+	}
 	varproc->DivI( (PDAT *)mpval->pt, ptr );
 	AfterCalc();
 }
@@ -383,6 +413,12 @@ void CalcModI( void )
 {
 	char *ptr;
 	ptr = PrepareCalc();
+	if ( ptr == NULL ) {									// 高速化のため
+		if ( stm2->ival == 0 ) throw( HSPVAR_ERROR_DIVZERO );
+		stm1->ival %= stm2->ival;
+		StackDecLevel;
+		return;
+	}
 	varproc->ModI( (PDAT *)mpval->pt, ptr );
 	AfterCalc();
 }
@@ -392,6 +428,11 @@ void CalcAndI( void )
 {
 	char *ptr;
 	ptr = PrepareCalc();
+	if ( ptr == NULL ) {									// 高速化のため
+		stm1->ival &= stm2->ival;
+		StackDecLevel;
+		return;
+	}
 	varproc->AndI( (PDAT *)mpval->pt, ptr );
 	AfterCalc();
 }
@@ -401,6 +442,11 @@ void CalcOrI( void )
 {
 	char *ptr;
 	ptr = PrepareCalc();
+	if ( ptr == NULL ) {									// 高速化のため
+		stm1->ival |= stm2->ival;
+		StackDecLevel;
+		return;
+	}
 	varproc->OrI( (PDAT *)mpval->pt, ptr );
 	AfterCalc();
 }
@@ -410,6 +456,11 @@ void CalcXorI( void )
 {
 	char *ptr;
 	ptr = PrepareCalc();
+	if ( ptr == NULL ) {									// 高速化のため
+		stm1->ival ^= stm2->ival;
+		StackDecLevel;
+		return;
+	}
 	varproc->XorI( (PDAT *)mpval->pt, ptr );
 	AfterCalc();
 }
@@ -419,6 +470,11 @@ void CalcEqI( void )
 {
 	char *ptr;
 	ptr = PrepareCalc();
+	if ( ptr == NULL ) {									// 高速化のため
+		stm1->ival = ( stm1->ival == stm2->ival );
+		StackDecLevel;
+		return;
+	}
 	varproc->EqI( (PDAT *)mpval->pt, ptr );
 	AfterCalc();
 }
@@ -428,6 +484,11 @@ void CalcNeI( void )
 {
 	char *ptr;
 	ptr = PrepareCalc();
+	if ( ptr == NULL ) {									// 高速化のため
+		stm1->ival = ( stm1->ival != stm2->ival );
+		StackDecLevel;
+		return;
+	}
 	varproc->NeI( (PDAT *)mpval->pt, ptr );
 	AfterCalc();
 }
@@ -437,6 +498,11 @@ void CalcGtI( void )
 {
 	char *ptr;
 	ptr = PrepareCalc();
+	if ( ptr == NULL ) {									// 高速化のため
+		stm1->ival = ( stm1->ival > stm2->ival );
+		StackDecLevel;
+		return;
+	}
 	varproc->GtI( (PDAT *)mpval->pt, ptr );
 	AfterCalc();
 }
@@ -446,6 +512,11 @@ void CalcLtI( void )
 {
 	char *ptr;
 	ptr = PrepareCalc();
+	if ( ptr == NULL ) {									// 高速化のため
+		stm1->ival = ( stm1->ival < stm2->ival );
+		StackDecLevel;
+		return;
+	}
 	varproc->LtI( (PDAT *)mpval->pt, ptr );
 	AfterCalc();
 }
@@ -455,6 +526,11 @@ void CalcGtEqI( void )
 {
 	char *ptr;
 	ptr = PrepareCalc();
+	if ( ptr == NULL ) {									// 高速化のため
+		stm1->ival = ( stm1->ival >= stm2->ival );
+		StackDecLevel;
+		return;
+	}
 	varproc->GtEqI( (PDAT *)mpval->pt, ptr );
 	AfterCalc();
 }
@@ -464,6 +540,11 @@ void CalcLtEqI( void )
 {
 	char *ptr;
 	ptr = PrepareCalc();
+	if ( ptr == NULL ) {									// 高速化のため
+		stm1->ival = ( stm1->ival <= stm2->ival );
+		StackDecLevel;
+		return;
+	}
 	varproc->LtEqI( (PDAT *)mpval->pt, ptr );
 	AfterCalc();
 }
@@ -473,6 +554,11 @@ void CalcRrI( void )
 {
 	char *ptr;
 	ptr = PrepareCalc();
+	if ( ptr == NULL ) {									// 高速化のため
+		stm1->ival >>= stm2->ival;
+		StackDecLevel;
+		return;
+	}
 	varproc->RrI( (PDAT *)mpval->pt, ptr );
 	AfterCalc();
 }
@@ -482,6 +568,11 @@ void CalcLrI( void )
 {
 	char *ptr;
 	ptr = PrepareCalc();
+	if ( ptr == NULL ) {									// 高速化のため
+		stm1->ival <<= stm2->ival;
+		StackDecLevel;
+		return;
+	}
 	varproc->LrI( (PDAT *)mpval->pt, ptr );
 	AfterCalc();
 }

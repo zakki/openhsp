@@ -38,26 +38,27 @@ void StackPushStr( char *str );
 void StackPushType( int type );
 void StackPushTypeVal( int type, int val, int val2 );
 void StackPop( void );
+void StackPopFree( void );
 
 extern int stm_max;
-extern int stm_cur;
 extern STMDATA *mem_stm;
-
+extern STMDATA *stm_cur;
+extern STMDATA *stm_maxptr;
 
 #define STM_GETPTR( pp ) ( pp->ptr ) 
 
-#define StackPeek (&mem_stm[ stm_cur-1 ])
-#define StackPeek2 (&mem_stm[ stm_cur-2 ])
-#define PeekPtr ((void *)mem_stm[ stm_cur-1 ].ptr)
+#define StackPeek (stm_cur-1)
+#define StackPeek2 (stm_cur-2)
+#define PeekPtr ((void *)(stm_cur-1)->ptr)
 
-#define StackGetLevel (stm_cur)
+#define StackGetLevel (stm_cur-mem_stm)
 #define StackDecLevel stm_cur--
 
 inline void StackPushi( int val )
 {
 	STMDATA *stm;
-	if ( stm_cur >= stm_max ) throw HSPERR_STACK_OVERFLOW;
-	stm = &mem_stm[ stm_cur ];
+//	if ( stm_cur >= stm_max ) throw HSPERR_STACK_OVERFLOW;
+	stm = stm_cur;
 	stm->type = HSPVAR_FLAG_INT;
 	stm->mode = STMMODE_SELF;
 	stm->ptr = (char *)&(stm->ival);
@@ -67,10 +68,10 @@ inline void StackPushi( int val )
 
 inline void StackPop( void )
 {
-	if ( stm_cur <= 0 ) throw HSPERR_UNKNOWN_CODE;
+//	if ( stm_cur <= 0 ) throw HSPERR_UNKNOWN_CODE;
 	stm_cur--;
-	if ( mem_stm[ stm_cur ].mode ) {
-		free( mem_stm[ stm_cur ].ptr );
+	if ( mem_stm->mode ) {
+		StackPopFree();
 	}
 }
 

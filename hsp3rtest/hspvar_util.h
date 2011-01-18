@@ -13,6 +13,7 @@ typedef void (* CHSP3_TASK) (void);
 //
 #define HSPVAR_FLAG_MARK 0
 #define HSPVAR_FLAG_VAR -1
+#define HSPVAR_FLAG_DEFAULT -2
 
 
 //	Utility
@@ -36,8 +37,11 @@ void Intcmd( int cmd, int pnum );
 extern PVal *mem_var;
 
 void PushInt( int val );
-void PushStr( char *st );
 void PushDouble( double val );
+//#define PushInt StackPushi
+//#define PushDouble StackPushd
+
+void PushStr( char *st );
 void PushLabel( int val );
 void PushVar( PVal *pv, int aval );
 void PushVAP( PVal *pval, int aval );
