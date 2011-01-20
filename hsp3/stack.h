@@ -56,19 +56,33 @@ extern STMDATA *stm_maxptr;
 
 inline void StackPushi( int val )
 {
-	STMDATA *stm;
-//	if ( stm_cur >= stm_max ) throw HSPERR_STACK_OVERFLOW;
-	stm = stm_cur;
-	stm->type = HSPVAR_FLAG_INT;
-	stm->mode = STMMODE_SELF;
-	stm->ptr = (char *)&(stm->ival);
-	stm->ival = val;
+//	if ( stm_cur >= stm_maxptr ) throw HSPERR_STACK_OVERFLOW;
+	stm_cur->type = HSPVAR_FLAG_INT;
+	stm_cur->ival = val;
+	stm_cur++;
+}
+
+inline void StackPushl( int val )
+{
+//	if ( stm_cur >= stm_maxptr ) throw HSPERR_STACK_OVERFLOW;
+	stm_cur->type = HSPVAR_FLAG_LABEL;
+	stm_cur->ival = val;
+	stm_cur++;
+}
+
+inline void StackPushd( double val )
+{
+	double *dptr;
+//	if ( stm_cur >= stm_maxptr ) throw HSPERR_STACK_OVERFLOW;
+	stm_cur->type = HSPVAR_FLAG_DOUBLE;
+	dptr = (double *)&stm_cur->ival;
+	*dptr = val;
 	stm_cur++;
 }
 
 inline void StackPop( void )
 {
-//	if ( stm_cur <= 0 ) throw HSPERR_UNKNOWN_CODE;
+//	if ( stm_cur <= mem_stm ) throw HSPERR_UNKNOWN_CODE;
 	stm_cur--;
 	if ( mem_stm->mode ) {
 		StackPopFree();

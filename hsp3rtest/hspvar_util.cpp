@@ -240,7 +240,8 @@ void PushInt( int val )
 
 void PushDouble( double val )
 {
-	StackPush( HSPVAR_FLAG_DOUBLE, (char *)&val, sizeof(double) );
+	//StackPush( HSPVAR_FLAG_DOUBLE, (char *)&val, sizeof(double) );
+	StackPushd( val );
 }
 
 void PushStr( char *st )
@@ -251,7 +252,8 @@ void PushStr( char *st )
 
 void PushLabel( int val )
 {
-	StackPush( HSPVAR_FLAG_LABEL, (char *)&val, sizeof(int)  );
+	//StackPush( HSPVAR_FLAG_LABEL, (char *)&val, sizeof(int)  );
+	StackPushl( val );
 }
 
 

@@ -29,10 +29,20 @@ STMDATA *stm_maxptr;
 
 void StackInit( void )
 {
+	int i;
+	STMDATA *stm;
+
 	stm_max = STM_MAX_DEFAULT;
 	mem_stm = (STMDATA *)malloc( sizeof( STMDATA ) * stm_max );
 	stm_maxptr = mem_stm + stm_max;
 	stm_cur = mem_stm;
+	stm = mem_stm;
+	for(i=0;i<stm_max;i++) {
+		stm->type = HSPVAR_FLAG_INT;
+		stm->mode = STMMODE_SELF;
+		stm->ptr = (char *)&(stm->ival);
+		stm++;
+	}
 }
 
 void StackTerm( void )
@@ -45,8 +55,8 @@ void StackTerm( void )
 static inline void StackAlloc( STMDATA *stm, int size )
 {
 	if ( size <= STM_STRSIZE_DEFAULT ) {
-		stm->mode = STMMODE_SELF;
-		stm->ptr = (char *)&(stm->ival);
+//		stm->mode = STMMODE_SELF;
+//		stm->ptr = (char *)&(stm->ival);
 		return;
 	}
 	stm->mode = STMMODE_ALLOC;
@@ -71,16 +81,16 @@ void StackPush( int type, char *data, int size )
 	switch( type ) {
 	case HSPVAR_FLAG_LABEL:
 	case HSPVAR_FLAG_INT:
-		stm->mode = STMMODE_SELF;
+//		stm->mode = STMMODE_SELF;
 		stm->ival = *(int *)data;
-		stm->ptr = (char *)&(stm->ival);
+//		stm->ptr = (char *)&(stm->ival);
 		stm_cur++;
 		return;
 	case HSPVAR_FLAG_DOUBLE:
 		dptr = (double *)&stm->ival;
 		*dptr = *(double *)data;
-		stm->mode = STMMODE_SELF;
-		stm->ptr = (char *)dptr;
+//		stm->mode = STMMODE_SELF;
+//		stm->ptr = (char *)dptr;
 		stm_cur++;
 		return;
 	default:
@@ -116,10 +126,10 @@ void StackPushTypeVal( int type, int val, int val2 )
 {
 	STMDATA *stm;
 	int *iptr;
-	if ( stm_cur >= stm_maxptr ) throw HSPERR_STACK_OVERFLOW;
+//	if ( stm_cur >= stm_maxptr ) throw HSPERR_STACK_OVERFLOW;
 	stm = stm_cur;
 	stm->type = type;
-	stm->mode = STMMODE_SELF;
+//	stm->mode = STMMODE_SELF;
 	stm->ival = val;
 	iptr = (int *)stm->itemp;
 	*iptr = val2;
@@ -134,4 +144,6 @@ void StackPushType( int type )
 void StackPopFree( void )
 {
 	free( stm_cur->ptr );
+	stm_cur->mode = STMMODE_SELF;
+	stm_cur->ptr = (char *)&(stm_cur->ival);
 }
