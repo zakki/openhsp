@@ -94,6 +94,52 @@ void CHsp3Cpp::MakeCPPTask2( int nexttask, int newtask )
 }
 
 
+void CHsp3Cpp::MakeCPPProgramInfoFuncParam( int structid )
+{
+	//		定義命令パラメーター生成
+	//		structid : パラメーターID
+	//
+	STRUCTDAT *fnc;
+	STRUCTPRM *prm;
+	int i,max;
+	fnc = GetFInfo( structid );
+	prm = GetMInfo( fnc->prmindex );
+	max = fnc->prmmax;
+	for(i=0;i<max;i++) {
+		switch( prm->mptype ) {
+		case MPTYPE_VAR:
+			//out->PutStr( "var" );
+			break;
+		case MPTYPE_STRING:
+		case MPTYPE_LOCALSTRING:
+			//out->PutStr( "str" );
+			break;
+		case MPTYPE_DNUM:
+			//out->PutStr( "double" );
+			break;
+		case MPTYPE_INUM:
+			//out->PutStr( "int" );
+			break;
+		case MPTYPE_LABEL:
+			//out->PutStr( "label" );
+			break;
+		case MPTYPE_LOCALVAR:
+			//out->PutStr( "local" );
+			break;
+		case MPTYPE_ARRAYVAR:
+			//out->PutStr( "array" );
+			break;
+		case MPTYPE_SINGLEVAR:
+			//out->PutStr( "var" );
+			break;
+		default:
+			break;
+		}
+		prm++;
+	}
+}
+
+
 void CHsp3Cpp::MakeCPPLabel( void )
 {
 	//		ラベルを生成
@@ -113,7 +159,10 @@ void CHsp3Cpp::MakeCPPLabel( void )
 			if ( GetOTInfo( labindex ) == -1 ) {
 				MakeCPPTask( labindex );
 			} else {
+				MakeCPPTask( labindex );
+				OutMes( "\t// " );
 				MakeProgramInfoFuncParam( GetOTInfo( labindex ) );
+				MakeCPPProgramInfoFuncParam( GetOTInfo( labindex ) );
 			}
 		}
 		labindex++;
@@ -442,6 +491,25 @@ int CHsp3Cpp::MakeCPPVarExpression( CMemBuf *arname )
 
 /*------------------------------------------------------------*/
 
+void CHsp3Cpp::MakeCPPSubModCmd( int cmdtype, int cmdval )
+{
+	//		定義命令とパラメーターを展開
+	//
+	int pnum;
+	MCSCONTEXT ctxbak;
+
+	OutLine( "// %s ", GetHSPName( cmdtype, cmdval ) );
+	getCS();
+	GetContext( &ctxbak );
+	MakeProgramInfoParam2();
+	SetContext( &ctxbak );
+
+	OutLine( "PushLabel(%d);\r\n", curot );
+	pnum = MakeCPPParam();
+	OutLine( "%s(%d,%d);\r\n", GetHSPCmdTypeName(cmdtype), cmdval, pnum+1 );
+}
+
+
 void CHsp3Cpp::MakeCPPSub( int cmdtype, int cmdval )
 {
 	//		通常命令とパラメーターを展開
@@ -537,7 +605,11 @@ int CHsp3Cpp::MakeCPPMain( void )
 			case -1:		// 通常の代入
 				pnum = MakeCPPParam();
 				OutMes( arname.GetBuffer() );
-				OutLine( "VarSet(%s,%d,%d);\r\n", mes, va, pnum );
+				if ( pnum <= 1 ) {
+					OutLine( "VarSet(%s,%d);\r\n", mes, va );
+				} else {
+					OutLine( "VarSet(%s,%d,%d);\r\n", mes, va, pnum );
+				}
 				break;
 			case -2:		// ++
 				OutMes( arname.GetBuffer() );
@@ -629,7 +701,7 @@ int CHsp3Cpp::MakeCPPMain( void )
 				getCS();
 				pnum = MakeCPPParam();
 				OutLine( "PushLabel(%d); %s(%d,%d); return;\r\n", curot, GetHSPCmdTypeName(cmdtype), cmdval, pnum+1 );
-				MakeCPPTask( curot );
+				MakeCPPTask2( -1, curot );
 				curot++;
 				break;
 				}
@@ -660,6 +732,12 @@ int CHsp3Cpp::MakeCPPMain( void )
 				MakeCPPSub( cmdtype, cmdval );
 				break;
 			}
+			break;
+		case TYPE_MODCMD:							// 定義命令
+			MakeCPPSubModCmd( cmdtype, cmdval );
+			OutLine( "return;\r\n" );
+			MakeCPPTask2( -1, curot );
+			curot++;
 			break;
 		default:
 			//		通常命令
@@ -727,7 +805,16 @@ int CHsp3Cpp::MakeSource( int option, void *ref )
 		if ( GetOTInfo( labindex ) == -1 ) {
 			OutMes( "(CHSP3_TASK) L%04x,\r\n", labindex );
 		} else {
-			OutMes( "(CHSP3_TASK) 0,\r\n" );
+		STRUCTDAT *fnc;
+			fnc = GetFInfo( GetOTInfo( labindex ) );
+			switch( fnc->index ) {
+			case STRUCTDAT_INDEX_FUNC:					// 定義命令
+			case STRUCTDAT_INDEX_CFUNC:					// 定義関数
+				OutMes( "(CHSP3_TASK) L%04x,\t// %s\r\n", labindex,  GetDS(fnc->nameidx) );
+			default:
+				OutMes( "(CHSP3_TASK) 0,\r\n" );
+			}
+
 		}
 		labindex++;
 	}

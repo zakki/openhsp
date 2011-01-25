@@ -36,6 +36,8 @@ private:
 	void MakeCPPTask( int nexttask );
 	void MakeCPPTask2( int nexttask, int newtask );
 	void MakeCPPTask( char *funcdef, int nexttask=-1 );
+
+	void MakeCPPSubModCmd( int cmdtype, int cmdval );
 	int MakeCPPParam( int addprm=0 );
 	int GetCPPExpression( CMemBuf *eout, int *result );
 	void GetCPPExpressionSub( CMemBuf *eout );
@@ -43,6 +45,7 @@ private:
 	void MakeCPPVarName( char *outbuf, int varid );
 	int MakeCPPVarExpression( CMemBuf *arname );
 	int MakeImmidiateCPPName( char *mes, int type, int val, char *opt=NULL );
+	void MakeCPPProgramInfoFuncParam( int structid );
 
 };
 

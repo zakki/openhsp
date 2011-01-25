@@ -168,7 +168,7 @@ static inline void code_arrayint2( PVal *pval, int offset )
 }
 
 
-static APTR CheckArray( PVal *pval, int ar )
+static inline APTR CheckArray( PVal *pval, int ar )
 {
 	//		Check PVal Array information
 	//		(配列要素(int)の取り出し)
@@ -178,6 +178,8 @@ static APTR CheckArray( PVal *pval, int ar )
 	PVal temp;
 	arrayobj_flag = 0;
 	HspVarCoreReset( pval );							// 配列ポインタをリセットする
+	if ( ar == 0 ) return 0;
+
 	if ( pval->support & HSPVAR_SUPPORT_MISCTYPE ) {	// 連想配列の場合
 		return 0;
 	}
@@ -313,8 +315,12 @@ void PushExtvar( int val, int pnum )
 	*c_val = '(';
 	ptr = (char *)extsysvar_info->reffunc( &resflag, val );						// タイプごとの関数振り分け
 	code_next();
-	basesize = HspVarCoreGetProc( resflag )->GetSize( (PDAT *)ptr );
-	StackPush( resflag, ptr, basesize );
+	if ( resflag == HSPVAR_FLAG_INT ) {
+		StackPushi( *(int *)ptr );
+	} else {
+		basesize = HspVarCoreGetProc( resflag )->GetSize( (PDAT *)ptr );
+		StackPush( resflag, ptr, basesize );
+	}
 }
 
 
@@ -328,8 +334,12 @@ void PushIntfunc( int val, int pnum )
 	*c_val = '(';
 	ptr = (char *)intfunc_info->reffunc( &resflag, val );						// タイプごとの関数振り分け
 	code_next();
-	basesize = HspVarCoreGetProc( resflag )->GetSize( (PDAT *)ptr );
-	StackPush( resflag, ptr, basesize );
+	if ( resflag == HSPVAR_FLAG_INT ) {
+		StackPushi( *(int *)ptr );
+	} else {
+		basesize = HspVarCoreGetProc( resflag )->GetSize( (PDAT *)ptr );
+		StackPush( resflag, ptr, basesize );
+	}
 }
 
 
@@ -343,8 +353,12 @@ void PushSysvar( int val, int pnum )
 	*c_val = '(';
 	ptr = (char *)sysvar_info->reffunc( &resflag, val );						// タイプごとの関数振り分け
 	code_next();
-	basesize = HspVarCoreGetProc( resflag )->GetSize( (PDAT *)ptr );
-	StackPush( resflag, ptr, basesize );
+	if ( resflag == HSPVAR_FLAG_INT ) {
+		StackPushi( *(int *)ptr );
+	} else {
+		basesize = HspVarCoreGetProc( resflag )->GetSize( (PDAT *)ptr );
+		StackPush( resflag, ptr, basesize );
+	}
 }
 
 
@@ -649,6 +663,45 @@ void VarSet( PVal *pval, int aval, int pnum )
 }
 
 
+void VarSet( PVal *pval, int aval )
+{
+	//	変数代入(var=???)
+	//		aval=配列要素のスタック数
+	//
+	int chk;
+	HspVarProc *proc;
+	APTR aptr;
+	void *ptr;
+	PDAT *dst;
+	int pleft;
+	int baseaptr;
+
+	aptr = CheckArray( pval, aval );
+	proc = HspVarCoreGetProc( pval->flag );
+	dst = HspVarCorePtrAPTR( pval, aptr );
+
+	chk = code_get();									// パラメーター値を取得
+	if ( chk != PARAM_OK ) { throw HSPERR_SYNTAX; }
+
+	ptr = mpval->pt;
+	if ( pval->flag != mpval->flag ) {
+
+		if ( pval->support & HSPVAR_SUPPORT_NOCONVERT ) {	// 型変換なしの場合
+			if ( arrayobj_flag ) {
+				proc->ObjectWrite( pval, ptr, mpval->flag );
+				return;
+			}
+		}
+		if ( aptr != 0 ) throw HSPERR_INVALID_ARRAYSTORE;	// 型変更の場合は配列要素0のみ
+		HspVarCoreClear( pval, mpval->flag );		// 最小サイズのメモリを確保
+		proc = HspVarCoreGetProc( pval->flag );
+		dst = proc->GetPtr( pval );					// PDATポインタを取得
+	}
+
+	proc->Set( pval, dst, ptr );
+}
+
+
 void VarInc( PVal *pval, int aval )
 {
 	//	変数インクリメント(var++)
@@ -691,6 +744,58 @@ void VarDec( PVal *pval, int aval )
 }
 
 
+static inline int calcprmf( int mval, int exp, int p )
+{
+	//		Caluculate parameter args (int)
+	//
+	switch(exp) {
+	case CALCCODE_ADD:
+		return mval + p;
+	case CALCCODE_SUB:
+		return mval - p;
+	case CALCCODE_MUL:
+		return mval * p;
+	case CALCCODE_DIV:
+		if ( p == 0 ) throw( HSPVAR_ERROR_DIVZERO );
+		return mval / p;
+	case CALCCODE_MOD:						// '%'
+		if ( p == 0 ) throw( HSPVAR_ERROR_DIVZERO );
+		return mval % p;
+
+	case CALCCODE_AND:
+		return mval & p;
+		break;
+	case CALCCODE_OR:
+		return mval | p;
+	case CALCCODE_XOR:
+		return mval ^ p;
+
+	case CALCCODE_EQ:
+		return (mval==p);
+	case CALCCODE_NE:
+		return (mval!=p);
+	case CALCCODE_GT:
+		return (mval>p);
+	case CALCCODE_LT:
+		return (mval<p);
+	case CALCCODE_GTEQ:						// '>='
+		return (mval>=p);
+	case CALCCODE_LTEQ:						// '<='
+		return (mval<=p);
+
+	case CALCCODE_RR:						// '>>'
+		return mval >> p;
+	case CALCCODE_LR:						// '<<'
+		return mval << p;
+
+	case '(':
+		throw HSPERR_INVALID_ARRAY;
+	default:
+		throw HSPVAR_ERROR_INVALID;
+	}
+}
+
+
 void VarCalc( PVal *pval, int aval, int op )
 {
 	//	変数演算代入(var*=???等)
@@ -702,6 +807,7 @@ void VarCalc( PVal *pval, int aval, int op )
 	APTR aptr;
 	void *ptr;
 	PDAT *dst;
+	int *iptr;
 
 	aptr = CheckArray( pval, aval );
 
@@ -714,6 +820,11 @@ void VarCalc( PVal *pval, int aval, int op )
 	ptr = mpval->pt;
 	if ( pval->flag != mpval->flag ) {					// 型が一致しない場合は変換
 		ptr = HspVarCoreCnvPtr( mpval, pval->flag );
+	}
+	if ( pval->flag == HSPVAR_FLAG_INT ) {
+		iptr = (int *)dst;
+		*iptr = calcprmf( *iptr, op, *(int *)ptr );
+		return;
 	}
 
 	switch(op) {

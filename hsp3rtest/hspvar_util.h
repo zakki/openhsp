@@ -71,6 +71,7 @@ void CalcRrI( void );
 void CalcLrI( void );
 
 void VarSet( PVal *pv, int aval, int pnum );
+void VarSet( PVal *pv, int aval );
 void VarInc( PVal *pv, int aval );
 void VarDec( PVal *pv, int aval );
 void VarCalc( PVal *pv, int aval, int op );
