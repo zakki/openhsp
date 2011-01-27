@@ -312,6 +312,9 @@ int hsp3win_init( HINSTANCE hInstance, char *startfile )
 	hsp3typeinit_extcmd( code_gettypeinfo( TYPE_EXTCMD ), hsp_wx, hsp_wy, hsp_wd, -1, -1 );
 	hsp3typeinit_extfunc( code_gettypeinfo( TYPE_EXTSYSVAR ) );
 
+	//		Utility setup
+	VarUtilInit();
+
 #ifdef HSPDEBUG
 	dbginfo = code_getdbg();
 #endif

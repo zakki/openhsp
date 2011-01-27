@@ -15,22 +15,14 @@ typedef void (* CHSP3_TASK) (void);
 #define HSPVAR_FLAG_VAR -1
 #define HSPVAR_FLAG_DEFAULT -2
 
-
 //	Utility
 //
-void VarUtilInit( HSPCTX *ctx );
+void VarUtilInit( void );
 void VarUtilTerm( void );
 
 void TaskExec( void );
 void TaskSwitch( int label );
-
-bool HspIf( void );
-
-void Extcmd( int cmd, int pnum );
-void Modcmd( int cmd, int pnum );
-void Dllcmd( int cmd, int pnum );
-void Prgcmd( int cmd, int pnum );
-void Intcmd( int cmd, int pnum );
+void HspPostExec( void );
 
 //  HSPVAR support functions
 //
@@ -47,6 +39,9 @@ void PushVar( PVal *pv, int aval );
 void PushVAP( PVal *pval, int aval );
 void PushDefault( void );
 void PushFuncEnd( void );
+
+void PushFuncPrm( int num );
+PVal *FuncPrm( int num );
 
 void PushExtvar( int val, int pnum );
 void PushIntfunc( int val, int pnum );
@@ -76,7 +71,13 @@ void VarInc( PVal *pv, int aval );
 void VarDec( PVal *pv, int aval );
 void VarCalc( PVal *pv, int aval, int op );
 
-
-
+//  command support functions
+//
+bool HspIf( void );
+void Extcmd( int cmd, int pnum );
+void Modcmd( int cmd, int pnum );
+void Dllcmd( int cmd, int pnum );
+void Prgcmd( int cmd, int pnum );
+void Intcmd( int cmd, int pnum );
 
 #endif

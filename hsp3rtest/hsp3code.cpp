@@ -1125,7 +1125,7 @@ static void cmdfunc_return( void )
 	r = (HSPROUTINE *)STM_GETPTR(stm);
 
 	if ( stm->type == TYPE_EX_CUSTOMFUNC ) {
-		customstack_delete( r->param, (char *)(r+1) );	// カスタム命令のローカルメモリを解放
+//		customstack_delete( r->param, (char *)(r+1) );	// カスタム命令のローカルメモリを解放
 	}
 
 	//mcs=r->mcsret;
@@ -1143,12 +1143,12 @@ static void cmdfunc_gosub( unsigned short *subr, unsigned short *retpc )
 {
 	//		gosub execute
 	//
-	HSPROUTINE r;
-	r.mcsret = retpc;
-	r.stacklev = hspctx->sublev++;
-	r.oldtack = hspctx->prmstack;
-	r.param = NULL;
-	StackPush( TYPE_EX_SUBROUTINE, (char *)&r, sizeof(HSPROUTINE) );
+	HSPROUTINE *r;
+	r = (HSPROUTINE *)StackPushSize( TYPE_EX_SUBROUTINE, sizeof(HSPROUTINE) );
+	r->mcsret = retpc;
+	r->stacklev = hspctx->sublev++;
+	r->oldtack = hspctx->prmstack;
+	r->param = NULL;
 
 	code_setpc( subr );
 }
@@ -1196,40 +1196,29 @@ static int code_callfunc( int cmd )
 	HSPROUTINE *r;
 	int size;
 	char *p;
+	unsigned short *sbr;
+	unsigned short *retpc;
+
+	retpc = code_getlb();						// 復帰後の位置を取得する
 
 	st = &hspctx->mem_finfo[cmd];
+	p = (char *)(stm_cur - 1);					// 引数スタック位置
 
-	size = sizeof(HSPROUTINE) + st->size;
+	//size = sizeof(HSPROUTINE) + st->size;
+	size = 0;
 	r = (HSPROUTINE *)StackPushSize( TYPE_EX_CUSTOMFUNC, size );
-	p = (char *)(r+1);
-	code_expandstruct( p, st, CODE_EXPANDSTRUCT_OPT_NONE );			// スタックの内容を初期化
+	//p = (char *)(r+1);
+	//code_expandstruct( p, st, CODE_EXPANDSTRUCT_OPT_NONE );			// スタックの内容を初期化
 
 	r->oldtack = hspctx->prmstack;				// 以前のスタックを保存
 	hspctx->prmstack = (void *)p;				// 新規スタックを設定
 
-	r->mcsret = mcsbak;							// 戻り場所
+	r->mcsret = retpc;							// 戻り場所
 	r->stacklev = hspctx->sublev++;				// ネストを進める
 	r->param = st;
 
-	mcs = (unsigned short *)( hspctx->mem_mcs + (hspctx->mem_ot[ st->otindex ]) );
-	code_next();
-
-	//		命令内で呼び出しを完結させる
-	//
-	while(1) {
-
-#ifdef HSPDEBUG
-		if ( dbgmode ) code_dbgtrace();					// トレースモード時の処理
-#endif
-		if ( GetTypeInfoPtr( type )->cmdfunc( val ) ) {	// タイプごとの関数振り分け
-			if ( hspctx->runmode == RUNMODE_RETURN ) {
-				cmdfunc_return();
-				break;
-			} else {
-				hspctx->msgfunc( hspctx );
-			}
-		}
-	}
+	sbr = (unsigned short *)( st->otindex );
+	code_setpc( sbr );
 
 	return RUNMODE_RUN;
 }
@@ -1960,7 +1949,7 @@ static int cmdfunc_prog( int cmd )
 	case 0x11:								// stop
 		hspctx->runmode = RUNMODE_STOP;
 		return RUNMODE_STOP;
-
+#if 0
 	case 0x12:								// newmod
 	case 0x13:								// setmod
 		{
@@ -2002,6 +1991,8 @@ static int cmdfunc_prog( int cmd )
 		code_delstruct( pval, aptr );
 		break;
 		}
+#endif
+
 /*
 	case 0x15:								// alloc
 		{
@@ -2245,6 +2236,12 @@ void code_setctx( HSPCTX *ctx )
 }
 
 
+HSPCTX *code_getctx( void )
+{
+	return hspctx;
+}
+
+
 void code_def_msgfunc(HSPCTX *ctx )
 {
 	//	デフォルトのHSPメッセージコールバック
@@ -2285,7 +2282,7 @@ void code_enable_typeinfo( HSP3TYPEINFO *info )
 }
 
 
-static HspVarProc *HspFunc_getproc( int id )
+static inline HspVarProc *HspFunc_getproc( int id )
 {
 	return (&hspvarproc[id]);
 }
@@ -2734,9 +2731,7 @@ rerun:
 	mpval_int = HspVarCoreGetPVal(HSPVAR_FLAG_INT);
 	HspVarCoreClearTemp( mpval_int, HSPVAR_FLAG_INT );	// int型のテンポラリを初期化
 
-#ifdef HSPERR_HANDLE
 	try {
-#endif
 		while(1) {
 			TaskExec();
 		}
@@ -2751,7 +2746,6 @@ rerun:
 			}
 #endif
 
-#ifdef HSPERR_HANDLE
 	}
 
 	catch( HSPERROR code ) {						// HSPエラー例外処理
@@ -2772,7 +2766,6 @@ rerun:
 			}
 		}
 	}
-#endif
 
 #ifdef SYSERR_HANDLE
 	catch( ... ) {									// その他の例外発生時
@@ -2789,12 +2782,7 @@ int code_execcmd2( void )
 {
 	//		部分的な実行を行なう(ENDSESSION用)
 	//
-	while(1) {
-		if ( GetTypeInfoPtr( type )->cmdfunc( val ) ) {	// タイプごとの関数振り分け
-			break;
-		}
-	}
-	return hspctx->runmode;
+	return code_execcmd();
 }
 
 

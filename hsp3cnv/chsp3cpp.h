@@ -27,6 +27,7 @@ private:
 	int makeoption;
 	int tasknum;
 	int curot;						// 追加用のタスク(ラベル)テーブルID
+	int curprmindex;				// 現在のパラメーター先頭インデックス
 
 	//		Internal Function
 	//

@@ -15,8 +15,24 @@ void CHsp3Cpp::MakeCPPVarName( char *outbuf, int varid )
 {
 	//		変数名をoutbufにコピーする
 	//
-	strcpy( outbuf, CPPHED_HSPVAR );
-	strcat( outbuf, GetHSPVarName( varid ) );
+	int i;
+	unsigned char *mm;
+	char *sptr;
+
+	if ( mem_di_val == NULL ) {						// 変数名情報がない場合
+		sprintf( outbuf, "%s%d", CPPHED_HSPVAR, varid );
+		return;
+	}
+
+	mm = mem_di_val + ( varid * 6 );
+	i = (mm[3]<<16)+(mm[2]<<8)+mm[1];
+	sprintf( outbuf, "%s%s", CPPHED_HSPVAR,  GetDS( i ) );
+
+	while(1) {
+		sptr = strstr2( outbuf, "@" );
+		if ( sptr == NULL ) break;
+		*sptr = 'M';
+	}
 }
 
 
@@ -30,7 +46,8 @@ int CHsp3Cpp::MakeImmidiateCPPName( char *mes, int type, int val, char *opt )
 	if ( i == 0 ) return 0;
 	switch( type ) {
 	case TYPE_VAR:
-		sprintf( mes, "%s%s", CPPHED_HSPVAR, GetHSPVarName(val) );
+		MakeCPPVarName( mes, val );
+		//sprintf( mes, "%s%s", CPPHED_HSPVAR, GetHSPVarName(val) );
 		if ( opt != NULL ) strcat( mes, opt );
 		break;
 	case TYPE_STRUCT:
@@ -38,14 +55,14 @@ int CHsp3Cpp::MakeImmidiateCPPName( char *mes, int type, int val, char *opt )
 		STRUCTPRM *prm;
 		prm = GetMInfo( val );
 		if ( prm->subid != STRUCTPRM_SUBID_STACK ) {
-			sprintf( mes, "_modprm%d", val );
+			sprintf( mes, "_modprm(%d)", val - curprmindex );
 		} else {
-			sprintf( mes, "_prm%d", val );
+			sprintf( mes, "FuncPrm(%d)", val - curprmindex );
 		}
 		break;
 		}
 	case TYPE_LABEL:
-		sprintf( mes, "*L%04x", val );
+		sprintf( mes, "*L%04d", val );
 		break;
 	default:
 		strcpy( mes, GetHSPName( type, val ) );
@@ -79,7 +96,7 @@ void CHsp3Cpp::MakeCPPTask( int nexttask )
 	//		単純タスクの生成
 	//
 	char mes[256];
-	sprintf( mes,"static void L%04x( void )", nexttask );
+	sprintf( mes,"static void L%04d( void )", nexttask );
 	MakeCPPTask( mes, nexttask );
 }
 
@@ -89,7 +106,7 @@ void CHsp3Cpp::MakeCPPTask2( int nexttask, int newtask )
 	//		単純タスクの生成
 	//
 	char mes[256];
-	sprintf( mes,"static void L%04x( void )", newtask );
+	sprintf( mes,"static void L%04d( void )", newtask );
 	MakeCPPTask( mes, nexttask );
 }
 
@@ -105,6 +122,8 @@ void CHsp3Cpp::MakeCPPProgramInfoFuncParam( int structid )
 	fnc = GetFInfo( structid );
 	prm = GetMInfo( fnc->prmindex );
 	max = fnc->prmmax;
+	curprmindex = fnc->prmindex;
+
 	for(i=0;i<max;i++) {
 		switch( prm->mptype ) {
 		case MPTYPE_VAR:
@@ -214,7 +233,6 @@ void CHsp3Cpp::GetCPPExpressionSub( CMemBuf *eout )
 			break;
 			}
 		case TYPE_INUM:
-		case TYPE_STRUCT:
 		case TYPE_LABEL:
 			//		直値をスタックに積む
 			//
@@ -222,6 +240,15 @@ void CHsp3Cpp::GetCPPExpressionSub( CMemBuf *eout )
 			eout->PutStr( mes );
 			getCS();
 			break;
+		case TYPE_STRUCT:
+			{
+			//		パラメーターをスタックに積む
+			//
+			sprintf( mes,"PushFuncPrm(%d); ", csval - curprmindex );
+			eout->PutStr( mes );
+			getCS();
+			break;
+			}
 		case TYPE_STRING:
 			//		文字列をスタックに積む
 			//
@@ -504,9 +531,9 @@ void CHsp3Cpp::MakeCPPSubModCmd( int cmdtype, int cmdval )
 	MakeProgramInfoParam2();
 	SetContext( &ctxbak );
 
-	OutLine( "PushLabel(%d);\r\n", curot );
 	pnum = MakeCPPParam();
-	OutLine( "%s(%d,%d);\r\n", GetHSPCmdTypeName(cmdtype), cmdval, pnum+1 );
+	OutLine( "PushLabel(%d);\r\n", curot );
+	OutLine( "%s(%d,%d);\r\n", GetHSPCmdTypeName(cmdtype), cmdval, pnum );
 }
 
 
@@ -546,7 +573,8 @@ int CHsp3Cpp::MakeCPPMain( void )
 	OutMes( "\t// Var initalize\r\n" );
 	maxvar = hsphed->max_val;
 	for(i=0;i<maxvar;i++) {
-		OutMes( "\t%s%s = &mem_var[%d];\r\n", CPPHED_HSPVAR, GetHSPVarName(i), i );
+		MakeCPPVarName( mes, i );
+		OutMes( "\t%s = &mem_var[%d];\r\n", mes, i );
 	}
 	OutMes( "\r\n" );
 
@@ -763,6 +791,7 @@ int CHsp3Cpp::MakeSource( int option, void *ref )
 	int otmax;
 	int labindex;
 	int maxvar;
+	char mes[4096];
 	makeoption = option;
 
 	OutMes( "//\r\n//\thsp3cnv generated source\r\n//\t[%s]\r\n//\r\n", orgname );
@@ -776,7 +805,8 @@ int CHsp3Cpp::MakeSource( int option, void *ref )
 
 	maxvar = hsphed->max_val;
 	for(i=0;i<maxvar;i++) {
-		OutMes( "static PVal *%s%s;\r\n", CPPHED_HSPVAR, GetHSPVarName(i), i );
+		MakeCPPVarName( mes, i );
+		OutMes( "static PVal *%s;\r\n", mes );
 	}
 
 	OutMes( "\r\n/*-----------------------------------------------------------*/\r\n\r\n" );
@@ -803,16 +833,18 @@ int CHsp3Cpp::MakeSource( int option, void *ref )
 	while(1) {
 		if ( labindex>=otmax ) break;
 		if ( GetOTInfo( labindex ) == -1 ) {
-			OutMes( "(CHSP3_TASK) L%04x,\r\n", labindex );
+			OutMes( "(CHSP3_TASK) L%04d,\r\n", labindex );
 		} else {
 		STRUCTDAT *fnc;
 			fnc = GetFInfo( GetOTInfo( labindex ) );
 			switch( fnc->index ) {
 			case STRUCTDAT_INDEX_FUNC:					// 定義命令
 			case STRUCTDAT_INDEX_CFUNC:					// 定義関数
-				OutMes( "(CHSP3_TASK) L%04x,\t// %s\r\n", labindex,  GetDS(fnc->nameidx) );
+				OutMes( "(CHSP3_TASK) L%04d,\t// %s\r\n", labindex,  GetDS(fnc->nameidx) );
+				break;
 			default:
 				OutMes( "(CHSP3_TASK) 0,\r\n" );
+				break;
 			}
 
 		}
@@ -820,10 +852,35 @@ int CHsp3Cpp::MakeSource( int option, void *ref )
 	}
 	while(1) {
 		if ( labindex>=curot ) break;
-		OutMes( "(CHSP3_TASK) L%04x,\r\n", labindex );
+		OutMes( "(CHSP3_TASK) L%04d,\r\n", labindex );
 		labindex++;
 	}
 	OutMes( "\r\n};\r\n" );
+
+	OutMes( "\r\n/*-----------------------------------------------------------*/\r\n\r\n" );
+
+	//		モジュール(関数)テーブルを作成する
+	//
+	int stmax;
+	STRUCTDAT *st;
+	CMemBuf fncname;
+
+	OutMes( "STRUCTDAT __HspFuncInfo[]={\r\n" );
+
+	stmax = GetFInfoCount();
+	for(i=0;i<stmax;i++) {
+		st = GetFInfo( i );
+		sprintf( mes, "\t\"%s\",\r\n", GetDS(st->nameidx) );
+		fncname.PutData( mes, strlen(mes) );
+		OutMes( "\t{ %d,%d, %d,%d,%d,%d,%d, %d },\r\n",
+			st->index, st->subid, st->prmindex, st->prmmax, st->nameidx, st->size, st->otindex, st->funcflag );
+	}
+	fncname.Put( (int)0 );
+
+	OutMes( "};\r\n\r\n" );
+
+	OutMes( "char *__HspFuncName[]={\r\n%s};\r\n\r\n", fncname.GetBuffer() );
+
 	OutMes( "\r\n/*-----------------------------------------------------------*/\r\n\r\n" );
 
 	return 0;

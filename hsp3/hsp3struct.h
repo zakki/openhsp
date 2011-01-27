@@ -514,6 +514,15 @@ typedef struct
 #define HSPEVENT_ENABLE_PICLOAD 32	// picload命令実行時
 
 
+//		ファンクション型
+//
+typedef int (* HSP3_CMDFUNC) (int);
+typedef void *(* HSP3_REFFUNC) (int *,int);
+typedef int (* HSP3_TERMFUNC) (int);
+typedef int (* HSP3_MSGFUNC) (int,int,int);
+typedef int (* HSP3_EVENTFUNC) (int,int,int,void *);
+
+
 typedef struct {
 	//	型ごとの情報
 	//	(*の項目は、親アプリケーションで設定されます)

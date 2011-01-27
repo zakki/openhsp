@@ -27,6 +27,9 @@
 extern CHSP3_TASK __HspTaskFunc[];		// hsp3cnvで生成されるタスク関数リスト
 void __HspEntry( void );				// hsp3cnvで生成されるエントリーポイント
 
+extern STRUCTDAT __HspFuncInfo[];		// hsp3cnvで生成される定義命令・関数リスト
+extern char *__HspFuncName[];			// hsp3cnvで生成される定義文字列リスト
+
 static	HSPCTX *hspctx;					// HSPのコンテキスト
 static	CHSP3_TASK curtask;				// 次に実行されるタスク関数
 static int *c_type;
@@ -41,6 +44,12 @@ static	HSP3TYPEINFO *extsysvar_info;
 static	HSP3TYPEINFO *intfunc_info;
 static	HSP3TYPEINFO *sysvar_info;
 static	HSP3TYPEINFO *progfunc_info;
+static	HSP3TYPEINFO *modfunc_info;
+
+static	HSP3_CMDFUNC intcmd_func;
+static	HSP3_CMDFUNC extcmd_func;
+static	HSP3_CMDFUNC progcmd_func;
+static	HSP3_CMDFUNC modcmd_func;
 
 /*------------------------------------------------------------*/
 
@@ -199,11 +208,11 @@ static inline APTR CheckArray( PVal *pval, int ar )
 
 /*------------------------------------------------------------*/
 
-void VarUtilInit( HSPCTX *ctx )
+void VarUtilInit( void )
 {
 	//		HSPVAR utilityの初期化
 	//
-	hspctx = ctx;
+	hspctx = code_getctx();
 	mem_var = hspctx->mem_var;
 	exinfo = hspctx->exinfo2;
 	c_type = exinfo->nptype;
@@ -216,6 +225,16 @@ void VarUtilInit( HSPCTX *ctx )
 	intfunc_info = code_gettypeinfo( TYPE_INTFUNC );
 	sysvar_info = code_gettypeinfo( TYPE_SYSVAR );
 	progfunc_info = code_gettypeinfo( TYPE_PROGCMD );
+	modfunc_info = code_gettypeinfo( TYPE_MODCMD );
+
+	//		実行用関数を抽出
+	intcmd_func = intcmd_info->cmdfunc;
+	extcmd_func = extcmd_info->cmdfunc;
+	progcmd_func = progfunc_info->cmdfunc;
+	modcmd_func = modfunc_info->cmdfunc;
+
+	//		HSPHEDを再構成
+	hspctx->mem_finfo = __HspFuncInfo;
 
 	//		最初のタスク実行関数をセット
 	curtask = (CHSP3_TASK)__HspEntry;
@@ -891,6 +910,46 @@ void VarCalc( PVal *pval, int aval, int op )
 }
 
 
+void PushFuncPrm( int num )
+{
+	//		引数(num)をスタックにpushする
+	//
+	STMDATA *stm;
+	int tflag, basesize;
+	char *ptr;
+	HspVarProc *proc;
+
+	stm = (STMDATA *)hspctx->prmstack;
+	stm -= num;
+
+	tflag = stm->type;
+	ptr = stm->ptr;
+	varproc = HspVarCoreGetProc( tflag );
+	basesize = varproc->basesize;
+	if ( basesize < 0 ) { basesize = varproc->GetSize( (PDAT *)ptr ); }
+	StackPush( tflag, ptr, basesize );
+}
+
+
+PVal *FuncPrm( int num )
+{
+	//		変数の引数(num)を得る
+	//
+	STMDATA *stm;
+	int tflag;
+	//char *ptr;
+
+	stm = (STMDATA *)hspctx->prmstack;
+	stm -= num;
+
+	tflag = stm->type;
+	if ( tflag != HSPVAR_FLAG_VAR ) throw HSPVAR_ERROR_INVALID;
+
+	//ptr = stm->itemp;
+	return (PVal *)( stm->ival );
+}
+
+
 /*------------------------------------------------------------*/
 /*
 		Program Control Process
@@ -920,7 +979,7 @@ void TaskExec( void )
 */
 /*------------------------------------------------------------*/
 
-static void HspPostExec( void )
+void HspPostExec( void )
 {
 	//		コマンド実行後の処理
 	//
@@ -944,12 +1003,15 @@ bool HspIf( void )
 
 void Extcmd( int cmd, int pnum )
 {
-	if ( extcmd_info->cmdfunc( cmd ) ) HspPostExec();
+	//if ( extcmd_info->cmdfunc( cmd ) ) HspPostExec();
+	if ( extcmd_func( cmd ) ) HspPostExec();
 }
 
 
 void Modcmd( int cmd, int pnum )
 {
+	//if ( modfunc_info->cmdfunc( cmd ) ) HspPostExec();
+	if ( modcmd_func( cmd ) ) HspPostExec();
 }
 
 
@@ -960,11 +1022,14 @@ void Dllcmd( int cmd, int pnum )
 
 void Prgcmd( int cmd, int pnum )
 {
-	if ( progfunc_info->cmdfunc( cmd ) ) HspPostExec();
+	//if ( progfunc_info->cmdfunc( cmd ) ) HspPostExec();
+	if ( progcmd_func( cmd ) ) HspPostExec();
 }
 
 
 void Intcmd( int cmd, int pnum )
 {
-	if ( intcmd_info->cmdfunc( cmd ) ) HspPostExec();
+	//if ( intcmd_info->cmdfunc( cmd ) ) HspPostExec();
+	if ( intcmd_func( cmd ) ) HspPostExec();
 }
+

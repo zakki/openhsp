@@ -103,9 +103,6 @@ int Hsp3r::Reset( int ext_vars, int ext_hpi )
 		}
 	}
 
-	//		Utility setup
-	VarUtilInit( &hspctx );
-
 	return 0;
 }
 
