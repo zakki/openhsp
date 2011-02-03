@@ -490,6 +490,7 @@ struct HSPCTX
 #define TYPE_EX_CUSTOMFUNC 0x101		// deffunc呼び出し用のスタックタイプ
 #define TYPE_EX_ENDOFPARAM 0x200		// パラメーター終端(HSPtoC)
 #define TYPE_EX_ARRAY_VARS 0x201		// 配列要素付き変数用スタックタイプ(HSPtoC)
+#define TYPE_EX_LOCAL_VARS 0x202		// ローカル変数用スタックタイプ(HSPtoC)
 
 typedef struct
 {

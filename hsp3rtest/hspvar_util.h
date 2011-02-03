@@ -24,9 +24,12 @@ void TaskExec( void );
 void TaskSwitch( int label );
 void HspPostExec( void );
 
+void DebugStackPeek( void );
+
 //  HSPVAR support functions
 //
 extern PVal *mem_var;
+extern int	prmstacks;
 
 void PushInt( int val );
 void PushDouble( double val );
@@ -41,12 +44,17 @@ void PushDefault( void );
 void PushFuncEnd( void );
 
 void PushFuncPrm( int num );
+void PushFuncPAP( int num );
+void PushFuncPrm( int num, int aval );
+void PushFuncPAP( int num, int aval );
 PVal *FuncPrm( int num );
+PVal *LocalPrm( int num );
 
 void PushExtvar( int val, int pnum );
 void PushIntfunc( int val, int pnum );
 void PushSysvar( int val, int pnum );
 void PushDllfunc( int val, int pnum );
+void PushModcmd( int val, int pnum );
 
 void CalcAddI( void );
 void CalcSubI( void );

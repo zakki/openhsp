@@ -1118,24 +1118,46 @@ static void cmdfunc_return( void )
 	//
 	STMDATA *stm;
 	HSPROUTINE *r;
+	STRUCTDAT *st;
+	PVal *pval;
+	int i,typ,lev;
 
 	if ( StackGetLevel == 0 ) throw HSPERR_RETURN_WITHOUT_GOSUB;
+
+	//DebugStackPeek();
 
 	stm = StackPeek;
 	r = (HSPROUTINE *)STM_GETPTR(stm);
 
-	if ( stm->type == TYPE_EX_CUSTOMFUNC ) {
-//		customstack_delete( r->param, (char *)(r+1) );	// カスタム命令のローカルメモリを解放
-	}
-
 	//mcs=r->mcsret;
 	code_setpc( r->mcsret );
 	hspctx->prmstack = r->oldtack;						// 以前のスタックに戻す
-
 	hspctx->sublev--;
 	//code_next();
+	st = r->param;
+	typ = stm->type;
 
-	StackPop();
+	switch( typ ) {
+	case TYPE_EX_CUSTOMFUNC:
+		lev = r->stacklev;
+		StackPop();
+		for(i=0;i<st->size;i++) {					// ローカル変数を破棄する
+			pval = (PVal *)PeekPtr;
+			HspVarCoreDispose( pval );
+			StackPop();
+		}
+		for(i=0;i<lev;i++) {
+			StackPop();
+		}
+//		customstack_delete( r->param, (char *)(r+1) );	// カスタム命令のローカルメモリを解放
+		break;
+	case TYPE_EX_SUBROUTINE:
+		StackPop();
+		break;
+	default:
+		throw HSPERR_RETURN_WITHOUT_GOSUB;
+	}
+
 }
 
 
@@ -1150,6 +1172,7 @@ static void cmdfunc_gosub( unsigned short *subr, unsigned short *retpc )
 	r->oldtack = hspctx->prmstack;
 	r->param = NULL;
 
+	hspctx->prmstack = NULL;
 	code_setpc( subr );
 }
 
@@ -1188,25 +1211,36 @@ static int cmdfunc_gosub( unsigned short *subr )
 }
 #endif
 
-static int code_callfunc( int cmd )
+static int code_callfunc( int cmd, int prmlevel )
 {
 	//	ユーザー拡張命令を呼び出す
 	//
 	STRUCTDAT *st;
 	HSPROUTINE *r;
+	int i;
 	int size;
 	char *p;
 	unsigned short *sbr;
 	unsigned short *retpc;
+	PVal *pval;
 
 	retpc = code_getlb();						// 復帰後の位置を取得する
 
 	st = &hspctx->mem_finfo[cmd];
-	p = (char *)(stm_cur - 1);					// 引数スタック位置
+
+	size = st->size;
+	if ( size ) {								// ローカル変数を初期化してスタックにpush
+		for(i=0;i<size;i++) {
+			pval = (PVal *)StackPushSize( TYPE_EX_LOCAL_VARS, sizeof(PVal) );
+			pval->mode = HSPVAR_MODE_NONE;
+			pval->flag = HSPVAR_FLAG_INT;				// 仮の型
+			HspVarCoreClear( pval, HSPVAR_FLAG_INT );	// グローバル変数を0にリセット
+		}
+	}
 
 	//size = sizeof(HSPROUTINE) + st->size;
-	size = 0;
-	r = (HSPROUTINE *)StackPushSize( TYPE_EX_CUSTOMFUNC, size );
+	p = (char *)(stm_cur - 1);					// 引数スタック位置
+	r = (HSPROUTINE *)StackPushSize( TYPE_EX_CUSTOMFUNC, sizeof(HSPROUTINE) );
 	//p = (char *)(r+1);
 	//code_expandstruct( p, st, CODE_EXPANDSTRUCT_OPT_NONE );			// スタックの内容を初期化
 
@@ -1214,11 +1248,68 @@ static int code_callfunc( int cmd )
 	hspctx->prmstack = (void *)p;				// 新規スタックを設定
 
 	r->mcsret = retpc;							// 戻り場所
-	r->stacklev = hspctx->sublev++;				// ネストを進める
+	r->stacklev = prmlevel;						// パラメータースタックの数
+	hspctx->sublev++;							// ネストを進める
 	r->param = st;
 
 	sbr = (unsigned short *)( st->otindex );
 	code_setpc( sbr );
+
+	return RUNMODE_RUN;
+}
+
+
+static int code_callcfunc( int cmd, int prmlevel )
+{
+	//	ユーザー拡張関数を呼び出す(呼び出しを完結させる)
+	//
+	STRUCTDAT *st;
+	HSPROUTINE *r;
+	int i;
+	int size;
+	char *p;
+	unsigned short *sbr;
+	unsigned short *retpc;
+	PVal *pval;
+
+	//retpc = code_getlb();						// 復帰後の位置を取得する
+	retpc = NULL;								// 復帰後の位置はダミー
+
+	st = &hspctx->mem_finfo[cmd];
+
+	size = st->size;
+	if ( size ) {								// ローカル変数を初期化してスタックにpush
+		for(i=0;i<size;i++) {
+			pval = (PVal *)StackPushSize( TYPE_EX_LOCAL_VARS, sizeof(PVal) );
+			pval->mode = HSPVAR_MODE_NONE;
+			pval->flag = HSPVAR_FLAG_INT;				// 仮の型
+			HspVarCoreClear( pval, HSPVAR_FLAG_INT );	// グローバル変数を0にリセット
+		}
+	}
+
+	//size = sizeof(HSPROUTINE) + st->size;
+	p = (char *)(stm_cur - 1);					// 引数スタック位置
+	r = (HSPROUTINE *)StackPushSize( TYPE_EX_CUSTOMFUNC, sizeof(HSPROUTINE) );
+	//p = (char *)(r+1);
+	//code_expandstruct( p, st, CODE_EXPANDSTRUCT_OPT_NONE );			// スタックの内容を初期化
+
+	r->oldtack = hspctx->prmstack;				// 以前のスタックを保存
+	hspctx->prmstack = (void *)p;				// 新規スタックを設定
+
+	r->mcsret = retpc;							// 戻り場所
+	r->stacklev = prmlevel;						// パラメータースタックの数
+	hspctx->sublev++;							// ネストを進める
+	r->param = st;
+
+	sbr = (unsigned short *)( st->otindex );
+	code_setpc( sbr );
+
+	//		gosub内で呼び出しを完結させる
+	//
+	while(1) {
+		TaskExec();
+		if ( hspctx->runmode == RUNMODE_RETURN ) break;
+	}
 
 	return RUNMODE_RUN;
 }
@@ -1356,6 +1447,7 @@ void code_delstruct( PVal *in_pval, APTR in_aptr )
 {
 	//		モジュール変数を破棄する
 	//
+#if 0
 	int i;
 	char *p;
 	char *out;
@@ -1398,6 +1490,7 @@ void code_delstruct( PVal *in_pval, APTR in_aptr )
 	//Alertf("STRUCT:BYE");
 	sbFree( fv->ptr );
 	fv->type = FLEXVAL_TYPE_NONE;
+#endif
 }
 
 
@@ -1497,7 +1590,7 @@ static int cmdfunc_custom( int cmd )
 	st = &hspctx->mem_finfo[cmd];
 	if ( st->index != STRUCTDAT_INDEX_FUNC ) throw HSPERR_SYNTAX;
 
-	return code_callfunc( cmd );
+	return code_callfunc( cmd, prmstacks );
 }
 
 
@@ -1518,11 +1611,11 @@ static void *reffunc_custom( int *type_res, int arg )
 
 	//			'('で始まるかを調べる
 	//
-	if ( type != TYPE_MARK ) throw HSPERR_INVALID_FUNCPARAM;
-	if ( val != '(' ) throw HSPERR_INVALID_FUNCPARAM;
+	//if ( type != TYPE_MARK ) throw HSPERR_INVALID_FUNCPARAM;
+	//if ( val != '(' ) throw HSPERR_INVALID_FUNCPARAM;
+	//code_next();
 
-	code_next();
-	code_callfunc( arg );
+	code_callcfunc( arg, prmstacks );
 
 	*type_res = funcres;					// 返値のタイプを指定する
 	switch( funcres ) {						// 返値のポインタを設定する
@@ -1541,9 +1634,9 @@ static void *reffunc_custom( int *type_res, int arg )
 
 	//			')'で終わるかを調べる
 	//
-	if ( type != TYPE_MARK ) throw HSPERR_INVALID_FUNCPARAM;
-	if ( val != ')' ) throw HSPERR_INVALID_FUNCPARAM;
-	code_next();
+	//if ( type != TYPE_MARK ) throw HSPERR_INVALID_FUNCPARAM;
+	//if ( val != ')' ) throw HSPERR_INVALID_FUNCPARAM;
+	//code_next();
 
 	funcres = old_funcres;
 	return ptr;
@@ -1750,11 +1843,11 @@ static int cmdfunc_prog( int cmd )
 		break;
 		}
 	case 0x02:								// return
-		//if ( exflg == 0 ) cmdfunc_return_setval();
+		if ( hspctx->prmstack != NULL ) cmdfunc_return_setval();
 		cmdfunc_return();
-		//hspctx->runmode = RUNMODE_RETURN;
-		//return RUNMODE_RETURN;
-		break;
+		hspctx->runmode = RUNMODE_RETURN;
+		return RUNMODE_RETURN;
+		//break;
 
 	case 0x03:								// break
 		if (hspctx->looplev==0) throw HSPERR_LOOP_WITHOUT_REPEAT;
@@ -2655,8 +2748,8 @@ void code_termfunc( void )
 	//		コードの終了処理
 	//
 	int i;
-	//int prmmax;
-	//STRUCTDAT *st;
+	int prmmax;
+	STRUCTDAT *st;
 	HSP3TYPEINFO *info;
 	//PVal *pval;
 
@@ -2669,6 +2762,7 @@ void code_termfunc( void )
 		if ( pval->flag == HSPVAR_FLAG_STRUCT ) code_delstruct_all( pval );
 		pval++;
 	}
+#endif
 
 	//		クリーンアップモジュールの呼び出し
 	//
@@ -2678,10 +2772,9 @@ void code_termfunc( void )
 		i--; if ( i < 0 ) break;
 		st = &hspctx->mem_finfo[ i ];
 		if (( st->index == STRUCTDAT_INDEX_FUNC )&&( st->funcflag & STRUCTDAT_FUNCFLAG_CLEANUP )) {
-			code_callfunc( i );
+			code_callcfunc( i, 0 );
 		}
 	}
-#endif
 
 	//		タイプの終了関数をすべて呼び出す
 	//

@@ -75,8 +75,8 @@ int Hsp3r::Reset( int ext_vars, int ext_hpi )
 	maxvar = ext_vars;
 	max_varhpi = ext_hpi;
 	hspctx.mem_mcs = (unsigned short *)this;
+	hspctx.hsphed = &hsphed;
 /*
-	hspctx.hsphed = hsphed;
 	hspctx.mem_mcs = (unsigned short *)( ptr + hsphed->pt_cs );
 	hspctx.mem_mds = (char *)( ptr + hsphed->pt_ds );
 	hspctx.mem_ot = (int *)( ptr + hsphed->pt_ot );
@@ -111,6 +111,13 @@ void Hsp3r::SetPackValue( int sum, int dec )
 {
 	hsp_sum = sum;
 	hsp_dec = dec;
+}
+
+
+void Hsp3r::SetFInfo( STRUCTDAT *finfo, int finfo_max )
+{
+	hspctx.mem_finfo = finfo;
+	hsphed.max_finfo = finfo_max;
 }
 
 

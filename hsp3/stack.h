@@ -84,7 +84,7 @@ inline void StackPop( void )
 {
 //	if ( stm_cur <= mem_stm ) throw HSPERR_UNKNOWN_CODE;
 	stm_cur--;
-	if ( mem_stm->mode ) {
+	if ( stm_cur->mode ) {
 		StackPopFree();
 	}
 }

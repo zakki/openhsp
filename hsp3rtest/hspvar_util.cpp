@@ -5,11 +5,13 @@
 //
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
 
 #include "../hsp3/hsp3struct.h"
 #include "../hsp3/stack.h"
 #include "../hsp3/strbuf.h"
 #include "../hsp3/hsp3code.h"
+#include "../hsp3/supio.h"
 #include "hspvar_util.h"
 
 /*------------------------------------------------------------*/
@@ -27,7 +29,6 @@
 extern CHSP3_TASK __HspTaskFunc[];		// hsp3cnvで生成されるタスク関数リスト
 void __HspEntry( void );				// hsp3cnvで生成されるエントリーポイント
 
-extern STRUCTDAT __HspFuncInfo[];		// hsp3cnvで生成される定義命令・関数リスト
 extern char *__HspFuncName[];			// hsp3cnvで生成される定義文字列リスト
 
 static	HSPCTX *hspctx;					// HSPのコンテキスト
@@ -37,6 +38,7 @@ static int *c_val;
 static HSPEXINFO *exinfo;				// Info for Plugins
 
 PVal *mem_var;							// 変数用のメモリ
+int	prmstacks;							// パラメータースタック数(モジュール呼び出し用)
 
 static	HSP3TYPEINFO *intcmd_info;
 static	HSP3TYPEINFO *extcmd_info;
@@ -233,9 +235,6 @@ void VarUtilInit( void )
 	progcmd_func = progfunc_info->cmdfunc;
 	modcmd_func = modfunc_info->cmdfunc;
 
-	//		HSPHEDを再構成
-	hspctx->mem_finfo = __HspFuncInfo;
-
 	//		最初のタスク実行関数をセット
 	curtask = (CHSP3_TASK)__HspEntry;
 }
@@ -381,10 +380,29 @@ void PushSysvar( int val, int pnum )
 }
 
 
+void PushModcmd( int val, int pnum )
+{
+	char *ptr;
+	int resflag;
+	int basesize;
+
+	*c_type = TYPE_MARK;
+	*c_val = '(';
+	prmstacks = pnum;
+	ptr = (char *)modfunc_info->reffunc( &resflag, val );						// タイプごとの関数振り分け
+	code_next();
+	if ( resflag == HSPVAR_FLAG_INT ) {
+		StackPushi( *(int *)ptr );
+	} else {
+		basesize = HspVarCoreGetProc( resflag )->GetSize( (PDAT *)ptr );
+		StackPush( resflag, ptr, basesize );
+	}
+}
+
+
 void PushDllfunc( int val, int pnum )
 {
 }
-
 
 
 void CalcAddI( void )
@@ -923,11 +941,113 @@ void PushFuncPrm( int num )
 	stm -= num;
 
 	tflag = stm->type;
+	if ( tflag == HSPVAR_FLAG_VAR ) {
+		PushVar( (PVal *)( stm->ival ), *(int *)stm->itemp );
+		return;
+	}
+
 	ptr = stm->ptr;
 	varproc = HspVarCoreGetProc( tflag );
 	basesize = varproc->basesize;
 	if ( basesize < 0 ) { basesize = varproc->GetSize( (PDAT *)ptr ); }
 	StackPush( tflag, ptr, basesize );
+}
+
+
+void PushFuncPAP( int num )
+{
+	//		引数(num)をスタックにpushする
+	//
+	STMDATA *stm;
+	int tflag, basesize;
+	char *ptr;
+	HspVarProc *proc;
+
+	stm = (STMDATA *)hspctx->prmstack;
+	stm -= num;
+
+	tflag = stm->type;
+	if ( tflag == HSPVAR_FLAG_VAR ) {
+		PushVAP( (PVal *)( stm->ival ), *(int *)stm->itemp );
+		return;
+	}
+
+	ptr = stm->ptr;
+	varproc = HspVarCoreGetProc( tflag );
+	basesize = varproc->basesize;
+	if ( basesize < 0 ) { basesize = varproc->GetSize( (PDAT *)ptr ); }
+	StackPush( tflag, ptr, basesize );
+}
+
+
+void PushFuncPrm( int num, int aval )
+{
+	//		ローカル変数の引数(num)をスタックにpushする
+	//		(PushVar相当)
+	STMDATA *stm;
+	int tflag;
+	PVal *pval;
+	int basesize;
+	APTR aptr;
+	PDAT *ptr;
+
+	stm = (STMDATA *)hspctx->prmstack;
+	stm -= num;
+	tflag = stm->type;
+
+	switch( tflag ) {
+	case TYPE_EX_LOCAL_VARS:
+		pval = (PVal *)( stm->ptr );
+		break;
+	case HSPVAR_FLAG_VAR:
+		pval = (PVal *)( stm->ival );
+		break;
+	default:
+		throw HSPVAR_ERROR_INVALID;
+	}
+	aptr = CheckArray( pval, aval );
+	ptr = HspVarCorePtrAPTR( pval, aptr );
+
+	tflag = pval->flag;
+	if ( tflag == HSPVAR_FLAG_INT ) {
+		StackPushi( *(int *)ptr );
+		return;
+	}
+
+	varproc = HspVarCoreGetProc( tflag );
+	basesize = varproc->basesize;
+	if ( basesize < 0 ) { basesize = varproc->GetSize( ptr ); }
+	StackPush( tflag, (char *)ptr, basesize );
+}
+
+
+void PushFuncPAP( int num, int aval )
+{
+	//		ローカル変数の引数(num)をスタックにpushする
+	//		(PushVAP相当)
+	STMDATA *stm;
+	int tflag;
+	PVal *pval;
+	APTR aptr;
+
+	stm = (STMDATA *)hspctx->prmstack;
+	stm -= num;
+	tflag = stm->type;
+
+	switch( tflag ) {
+	case TYPE_EX_LOCAL_VARS:
+		pval = (PVal *)( stm->ptr );
+		aptr = CheckArray( pval, aval );
+		StackPushTypeVal( HSPVAR_FLAG_VAR, (int)pval, (int)aptr );
+		break;
+	case HSPVAR_FLAG_VAR:
+		pval = (PVal *)( stm->ival );
+		aptr = CheckArray( pval, aval );
+		StackPushTypeVal( HSPVAR_FLAG_VAR, (int)pval, (int)aptr );
+		break;
+	default:
+		throw HSPVAR_ERROR_INVALID;
+	}
 }
 
 
@@ -947,6 +1067,23 @@ PVal *FuncPrm( int num )
 
 	//ptr = stm->itemp;
 	return (PVal *)( stm->ival );
+}
+
+
+PVal *LocalPrm( int num )
+{
+	//		ローカル変数の引数(num)を得る
+	//
+	STMDATA *stm;
+	int tflag;
+
+	stm = (STMDATA *)hspctx->prmstack;
+	stm -= num;
+
+	tflag = stm->type;
+	if ( tflag != TYPE_EX_LOCAL_VARS ) throw HSPVAR_ERROR_INVALID;
+
+	return (PVal *)( stm->ptr );
 }
 
 
@@ -1010,7 +1147,10 @@ void Extcmd( int cmd, int pnum )
 
 void Modcmd( int cmd, int pnum )
 {
+	int i;
 	//if ( modfunc_info->cmdfunc( cmd ) ) HspPostExec();
+	//Alertf("CMD=%d (lev%d)", cmd, StackGetLevel );
+	prmstacks = pnum;							// hsp3codeに渡すパラメーター数
 	if ( modcmd_func( cmd ) ) HspPostExec();
 }
 
@@ -1031,5 +1171,32 @@ void Intcmd( int cmd, int pnum )
 {
 	//if ( intcmd_info->cmdfunc( cmd ) ) HspPostExec();
 	if ( intcmd_func( cmd ) ) HspPostExec();
+}
+
+/*------------------------------------------------------------*/
+/*
+		For Debug
+*/
+/*------------------------------------------------------------*/
+
+void DebugStackPeek( void )
+{
+	STMDATA *stm;
+	char s1[256];
+	char dbg[4096];
+	char *p;
+	int i;
+	i = 0;
+	p = dbg; *p = 0;
+	stm = mem_stm;
+	while(1) {
+		if ( stm >= stm_cur ) break;
+		sprintf( s1, "STM#%d type:%d mode:%d ival:%d\r\n", i, stm->type, stm->mode, stm->ival );
+		i++;
+		strcpy( p, s1 );
+		p+=strlen(s1);
+		stm++;
+	}
+	Alertf( "%s", dbg );
 }
 

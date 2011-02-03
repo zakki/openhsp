@@ -28,6 +28,8 @@ private:
 	int tasknum;
 	int curot;						// 追加用のタスク(ラベル)テーブルID
 	int curprmindex;				// 現在のパラメーター先頭インデックス
+	int curprmlocal;				// 現在のローカル変数スタック数
+	int prmcnv_locvar[64];			// パラメーター変換用バッファ(ローカル変数用)
 
 	//		Internal Function
 	//
