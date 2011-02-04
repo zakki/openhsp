@@ -543,3 +543,28 @@ int SecurityCheck( char *name )
 #endif
 
 
+//
+//		windows debug support
+//
+void Alert( const char *mes )
+{
+	MessageBox( NULL, mes, "error",MB_ICONINFORMATION | MB_OK );
+}
+
+void AlertV( const char *mes, int val )
+{
+	char ss[1024];
+	sprintf( ss, "%s%d",mes,val );
+	MessageBox( NULL, ss, "error",MB_ICONINFORMATION | MB_OK );
+}
+
+void Alertf( const char *format, ... )
+{
+	char textbf[4096];
+	va_list args;
+	va_start(args, format);
+	vsprintf(textbf, format, args);
+	va_end(args);
+	MessageBox( NULL, textbf, "error",MB_ICONINFORMATION | MB_OK );
+}
+

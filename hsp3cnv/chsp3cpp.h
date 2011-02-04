@@ -43,7 +43,7 @@ private:
 	void MakeCPPSubModCmd( int cmdtype, int cmdval );
 	int MakeCPPParam( int addprm=0 );
 	int GetCPPExpression( CMemBuf *eout, int *result );
-	void GetCPPExpressionSub( CMemBuf *eout );
+	int GetCPPExpressionSub( CMemBuf *eout );
 	int MakeCPPVarForHSP( void );
 	void MakeCPPVarName( char *outbuf, int varid );
 	int MakeCPPVarExpression( CMemBuf *arname );

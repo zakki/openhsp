@@ -477,6 +477,7 @@ struct HSPCTX
 
 	HSPEXINFO *exinfo2;					// HSP function data(3.1)
 
+	int	prmstack_max;					// Parameter Stack Max(hsp3cnv) (3.3)
 };
 
 #define HSPCTX_REFSTR_MAX 4096
@@ -500,6 +501,7 @@ typedef struct
 	unsigned short *mcsret;				// 呼び出し元PCポインタ(復帰用)
 	STRUCTDAT *param;					// 引数パラメーターリスト
 	void *oldtack;						// 以前のスタックアドレス
+	int oldlev;							// 以前のスタックレベル
 
 } HSPROUTINE;
 

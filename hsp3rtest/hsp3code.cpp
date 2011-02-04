@@ -82,8 +82,8 @@ void code_next( void )
 
 	if ( type == HSPVAR_FLAG_MARK ) {
 		val = next_stm->ival;
-		StackPop();
-		next_stm = StackPeek;
+		//StackPop();
+		//next_stm = StackPeek;
 		return;
 	}
 }
@@ -1127,37 +1127,37 @@ static void cmdfunc_return( void )
 	//DebugStackPeek();
 
 	stm = StackPeek;
+	typ = stm->type;
 	r = (HSPROUTINE *)STM_GETPTR(stm);
 
 	//mcs=r->mcsret;
 	code_setpc( r->mcsret );
 	hspctx->prmstack = r->oldtack;						// 以前のスタックに戻す
 	hspctx->sublev--;
+
+	if ( typ == TYPE_EX_SUBROUTINE ) {
+		StackPop();										// ただのgosubの場合
+		return;
+	}
+	if ( typ != TYPE_EX_CUSTOMFUNC ) throw HSPERR_RETURN_WITHOUT_GOSUB;
+
+	//	カスタム命令の場合
 	//code_next();
 	st = r->param;
-	typ = stm->type;
+	lev = hspctx->prmstack_max;
+	hspctx->prmstack_max = r->oldlev;			// 以前のスタック数に戻す
 
-	switch( typ ) {
-	case TYPE_EX_CUSTOMFUNC:
-		lev = r->stacklev;
+	StackPop();
+
+	for(i=0;i<st->size;i++) {					// ローカル変数を破棄する
+		pval = (PVal *)PeekPtr;
+		HspVarCoreDispose( pval );
 		StackPop();
-		for(i=0;i<st->size;i++) {					// ローカル変数を破棄する
-			pval = (PVal *)PeekPtr;
-			HspVarCoreDispose( pval );
-			StackPop();
-		}
-		for(i=0;i<lev;i++) {
-			StackPop();
-		}
-//		customstack_delete( r->param, (char *)(r+1) );	// カスタム命令のローカルメモリを解放
-		break;
-	case TYPE_EX_SUBROUTINE:
-		StackPop();
-		break;
-	default:
-		throw HSPERR_RETURN_WITHOUT_GOSUB;
 	}
-
+	for(i=0;i<lev;i++) {
+		StackPop();
+	}
+//		customstack_delete( r->param, (char *)(r+1) );	// カスタム命令のローカルメモリを解放
 }
 
 
@@ -1245,12 +1245,13 @@ static int code_callfunc( int cmd, int prmlevel )
 	//code_expandstruct( p, st, CODE_EXPANDSTRUCT_OPT_NONE );			// スタックの内容を初期化
 
 	r->oldtack = hspctx->prmstack;				// 以前のスタックを保存
+	r->oldlev = hspctx->prmstack_max;			// 以前のスタック数を保存
 	hspctx->prmstack = (void *)p;				// 新規スタックを設定
 
 	r->mcsret = retpc;							// 戻り場所
-	r->stacklev = prmlevel;						// パラメータースタックの数
-	hspctx->sublev++;							// ネストを進める
+	r->stacklev = hspctx->sublev++;				// ネストを進める
 	r->param = st;
+	hspctx->prmstack_max = prmlevel;			// パラメータースタックの数
 
 	sbr = (unsigned short *)( st->otindex );
 	code_setpc( sbr );
@@ -1294,12 +1295,13 @@ static int code_callcfunc( int cmd, int prmlevel )
 	//code_expandstruct( p, st, CODE_EXPANDSTRUCT_OPT_NONE );			// スタックの内容を初期化
 
 	r->oldtack = hspctx->prmstack;				// 以前のスタックを保存
+	r->oldlev = hspctx->prmstack_max;			// 以前のスタック数を保存
 	hspctx->prmstack = (void *)p;				// 新規スタックを設定
 
 	r->mcsret = retpc;							// 戻り場所
-	r->stacklev = prmlevel;						// パラメータースタックの数
-	hspctx->sublev++;							// ネストを進める
+	r->stacklev = hspctx->sublev++;				// ネストを進める
 	r->param = st;
+	hspctx->prmstack_max = prmlevel;			// パラメータースタックの数
 
 	sbr = (unsigned short *)( st->otindex );
 	code_setpc( sbr );

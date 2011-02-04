@@ -199,15 +199,18 @@ void CHsp3Cpp::MakeCPPLabel( void )
 }
 
 
-void CHsp3Cpp::GetCPPExpressionSub( CMemBuf *eout )
+int CHsp3Cpp::GetCPPExpressionSub( CMemBuf *eout )
 {
-	//		C/C++の計算式フォーマットでパラメーターを展開する(短項目)
+	//		C/C++の計算式フォーマットでパラメーターを展開する(単項目)
 	//		eout : 出力先
+	//		ret  : vflag(変数項目の場合は1)
 	//
 	char mes[8192];								// 展開される式の最大文字数
 	int op;
+	int vflag;
 
 	*mes = 0;
+	vflag = 0;
 	switch(cstype) {
 		case TYPE_MARK:
 			//		記号(スタックから取り出して演算)
@@ -231,6 +234,7 @@ void CHsp3Cpp::GetCPPExpressionSub( CMemBuf *eout )
 			eout->PutStr( arname.GetBuffer() );
 			sprintf( mes,"PushVar(%s,%d); ", varname, va );
 			eout->PutStr( mes );
+			vflag = 1;
 			break;
 			}
 		case TYPE_DNUM:
@@ -266,6 +270,7 @@ void CHsp3Cpp::GetCPPExpressionSub( CMemBuf *eout )
 				va = MakeCPPVarExpression( &arname );
 				eout->PutStr( arname.GetBuffer() );
 				sprintf( mes,"PushFuncPrm(%d,%d); ", prmid, va );
+				vflag = 1;
 				break;
 			case MPTYPE_VAR:
 			case MPTYPE_ARRAYVAR:
@@ -275,7 +280,19 @@ void CHsp3Cpp::GetCPPExpressionSub( CMemBuf *eout )
 				va = MakeCPPVarExpression( &arname );
 				eout->PutStr( arname.GetBuffer() );
 				sprintf( mes,"PushFuncPrm(%d,%d); ", prmid, va );
+				vflag = 1;
 				break;
+			case MPTYPE_DNUM:
+				prmid = csval - curprmindex + curprmlocal;
+				getCS();
+				sprintf( mes,"PushFuncPrmD(%d); ", prmid );
+				break;
+			case MPTYPE_INUM:
+				prmid = csval - curprmindex + curprmlocal;
+				getCS();
+				sprintf( mes,"PushFuncPrmI(%d); ", prmid );
+				break;
+
 			default:
 				prmid = csval - curprmindex + curprmlocal;
 				getCS();
@@ -331,6 +348,7 @@ void CHsp3Cpp::GetCPPExpressionSub( CMemBuf *eout )
 			break;
 			}
 	}
+	return vflag;
 }
 
 
@@ -384,7 +402,7 @@ int CHsp3Cpp::GetCPPExpression( CMemBuf *eout, int *result )
 				break;
 			}
 		default:
-			GetCPPExpressionSub( eout );
+			if ( GetCPPExpressionSub( eout ) == 0 ) { tres = -1; }
 			break;
 		}
 

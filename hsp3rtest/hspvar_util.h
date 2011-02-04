@@ -25,6 +25,7 @@ void TaskSwitch( int label );
 void HspPostExec( void );
 
 void DebugStackPeek( void );
+void DebugMsg( char *msg );
 
 //  HSPVAR support functions
 //
@@ -44,7 +45,8 @@ void PushDefault( void );
 void PushFuncEnd( void );
 
 void PushFuncPrm( int num );
-void PushFuncPAP( int num );
+void PushFuncPrmI( int num );
+void PushFuncPrmD( int num );
 void PushFuncPrm( int num, int aval );
 void PushFuncPAP( int num, int aval );
 PVal *FuncPrm( int num );

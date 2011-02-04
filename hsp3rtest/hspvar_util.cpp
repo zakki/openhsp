@@ -7,6 +7,10 @@
 #include <stdlib.h>
 #include <string.h>
 
+#ifdef HSPWIN
+#include <windows.h>
+#endif
+
 #include "../hsp3/hsp3struct.h"
 #include "../hsp3/stack.h"
 #include "../hsp3/strbuf.h"
@@ -332,7 +336,8 @@ void PushExtvar( int val, int pnum )
 	*c_type = TYPE_MARK;
 	*c_val = '(';
 	ptr = (char *)extsysvar_info->reffunc( &resflag, val );						// タイプごとの関数振り分け
-	code_next();
+	StackPop();																	// PushFuncEndを取り除く
+	//code_next();
 	if ( resflag == HSPVAR_FLAG_INT ) {
 		StackPushi( *(int *)ptr );
 	} else {
@@ -351,7 +356,8 @@ void PushIntfunc( int val, int pnum )
 	*c_type = TYPE_MARK;
 	*c_val = '(';
 	ptr = (char *)intfunc_info->reffunc( &resflag, val );						// タイプごとの関数振り分け
-	code_next();
+	StackPop();																	// PushFuncEndを取り除く
+	//code_next();
 	if ( resflag == HSPVAR_FLAG_INT ) {
 		StackPushi( *(int *)ptr );
 	} else {
@@ -370,7 +376,8 @@ void PushSysvar( int val, int pnum )
 	*c_type = TYPE_MARK;
 	*c_val = '(';
 	ptr = (char *)sysvar_info->reffunc( &resflag, val );						// タイプごとの関数振り分け
-	code_next();
+	StackPop();																	// PushFuncEndを取り除く
+	//code_next();
 	if ( resflag == HSPVAR_FLAG_INT ) {
 		StackPushi( *(int *)ptr );
 	} else {
@@ -390,7 +397,8 @@ void PushModcmd( int val, int pnum )
 	*c_val = '(';
 	prmstacks = pnum;
 	ptr = (char *)modfunc_info->reffunc( &resflag, val );						// タイプごとの関数振り分け
-	code_next();
+	StackPop();																	// PushFuncEndを取り除く
+	//code_next();
 	if ( resflag == HSPVAR_FLAG_INT ) {
 		StackPushi( *(int *)ptr );
 	} else {
@@ -938,11 +946,14 @@ void PushFuncPrm( int num )
 	HspVarProc *proc;
 
 	stm = (STMDATA *)hspctx->prmstack;
+	if ( stm == NULL ) throw HSPERR_INVALID_FUNCPARAM;
+	if ( num >= hspctx->prmstack_max ) throw HSPERR_INVALID_FUNCPARAM;
 	stm -= num;
 
 	tflag = stm->type;
 	if ( tflag == HSPVAR_FLAG_VAR ) {
 		PushVar( (PVal *)( stm->ival ), *(int *)stm->itemp );
+		//PushVAP( (PVal *)( stm->ival ), *(int *)stm->itemp );
 		return;
 	}
 
@@ -954,29 +965,75 @@ void PushFuncPrm( int num )
 }
 
 
-void PushFuncPAP( int num )
+void PushFuncPrmI( int num )
 {
-	//		引数(num)をスタックにpushする
+	//		引数(num)をスタックにpushする(int)
 	//
 	STMDATA *stm;
-	int tflag, basesize;
-	char *ptr;
-	HspVarProc *proc;
+	int tflag;
+	int i_val;
+	int *ptr;
+	PVal *pval;
 
 	stm = (STMDATA *)hspctx->prmstack;
+	if ( stm == NULL ) throw HSPERR_INVALID_FUNCPARAM;
+	if ( num >= hspctx->prmstack_max ) {
+		StackPushi( 0 ); return;
+	}
 	stm -= num;
 
 	tflag = stm->type;
 	if ( tflag == HSPVAR_FLAG_VAR ) {
-		PushVAP( (PVal *)( stm->ival ), *(int *)stm->itemp );
-		return;
+		pval = (PVal *)( stm->ival );
+		tflag = pval->flag;
+		ptr = (int *)HspVarCorePtrAPTR( pval, *(int *)stm->itemp );
+	} else {
+		ptr = (int *)stm->ptr;
 	}
 
-	ptr = stm->ptr;
-	varproc = HspVarCoreGetProc( tflag );
-	basesize = varproc->basesize;
-	if ( basesize < 0 ) { basesize = varproc->GetSize( (PDAT *)ptr ); }
-	StackPush( tflag, ptr, basesize );
+	if ( tflag != TYPE_INUM ) {
+		if ( tflag != TYPE_DNUM ) throw HSPERR_TYPE_MISMATCH;
+		i_val = (int)*(double *)ptr;
+		ptr = &i_val;
+	}
+	StackPushi( *ptr );
+}
+
+
+void PushFuncPrmD( int num )
+{
+	//		引数(num)をスタックにpushする(double)
+	//
+	STMDATA *stm;
+	int tflag;
+	double d_val;
+	double *ptr;
+	PVal *pval;
+
+	stm = (STMDATA *)hspctx->prmstack;
+	if ( stm == NULL ) throw HSPERR_INVALID_FUNCPARAM;
+	if ( num >= hspctx->prmstack_max ) {
+		d_val = 0.0;
+		StackPush( TYPE_DNUM, (char *)&d_val, sizeof(double) );
+		return;
+	}
+	stm -= num;
+
+	tflag = stm->type;
+	if ( tflag == HSPVAR_FLAG_VAR ) {
+		pval = (PVal *)( stm->ival );
+		tflag = pval->flag;
+		ptr = (double *)HspVarCorePtrAPTR( pval, *(int *)stm->itemp );
+	} else {
+		ptr = (double *)stm->ptr;
+	}
+
+	if ( tflag != TYPE_DNUM ) {
+		if ( tflag != TYPE_INUM ) throw HSPERR_TYPE_MISMATCH;
+		d_val = (double)*(int *)ptr;
+		ptr = &d_val;
+	}
+	StackPush( TYPE_DNUM, (char *)ptr, sizeof(double) );
 }
 
 
@@ -992,6 +1049,8 @@ void PushFuncPrm( int num, int aval )
 	PDAT *ptr;
 
 	stm = (STMDATA *)hspctx->prmstack;
+	if ( stm == NULL ) throw HSPERR_INVALID_FUNCPARAM;
+	if ( num >= hspctx->prmstack_max ) throw HSPERR_INVALID_FUNCPARAM;
 	stm -= num;
 	tflag = stm->type;
 
@@ -1031,6 +1090,8 @@ void PushFuncPAP( int num, int aval )
 	APTR aptr;
 
 	stm = (STMDATA *)hspctx->prmstack;
+	if ( stm == NULL ) throw HSPERR_INVALID_FUNCPARAM;
+	if ( num >= hspctx->prmstack_max ) throw HSPERR_INVALID_FUNCPARAM;
 	stm -= num;
 	tflag = stm->type;
 
@@ -1060,6 +1121,8 @@ PVal *FuncPrm( int num )
 	//char *ptr;
 
 	stm = (STMDATA *)hspctx->prmstack;
+	if ( stm == NULL ) throw HSPERR_INVALID_FUNCPARAM;
+	if ( num >= hspctx->prmstack_max ) throw HSPERR_INVALID_FUNCPARAM;
 	stm -= num;
 
 	tflag = stm->type;
@@ -1078,6 +1141,8 @@ PVal *LocalPrm( int num )
 	int tflag;
 
 	stm = (STMDATA *)hspctx->prmstack;
+	if ( stm == NULL ) throw HSPERR_INVALID_FUNCPARAM;
+	if ( num >= hspctx->prmstack_max ) throw HSPERR_INVALID_FUNCPARAM;
 	stm -= num;
 
 	tflag = stm->type;
@@ -1099,6 +1164,13 @@ void TaskSwitch( int label )
 	//		次のタスク関数をセット
 	//		(label=タスク関数ID)
 	//
+#if 0
+	{
+	char ss[128];
+	sprintf( ss,"[%d]\n",label );
+	DebugMsg( ss );
+	}
+#endif
 	curtask = __HspTaskFunc[label];
 }
 
@@ -1198,5 +1270,15 @@ void DebugStackPeek( void )
 		stm++;
 	}
 	Alertf( "%s", dbg );
+}
+
+void DebugMsg( char *msg )
+{
+#ifdef HSPWIN
+	OutputDebugString( msg );
+	//Alertf( "%s", msg );
+#else
+	printf( "%s", msg );
+#endif
 }
 

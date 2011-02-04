@@ -988,12 +988,19 @@ int CHsp3::GetHSPExpression( CMemBuf *eout )
 		case TYPE_INUM:
 		case TYPE_STRING:
 		case TYPE_DNUM:
-		case TYPE_STRUCT:
 		case TYPE_LABEL:
 			//		直値をスタックに積む
 			//
 			st.Push( cstype, csval );
 			getCS();
+			break;
+		case TYPE_STRUCT:
+			//		パラメーター
+			//
+			stm1 = st.Push( cstype, csval );
+			getCS();
+			i = GetHSPVarExpression( mm );
+			if ( i ) st.SetExStr( stm1, mm );
 			break;
 		default:
 			//		関数として展開する
