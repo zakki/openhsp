@@ -1219,7 +1219,7 @@ void Extcmd( int cmd, int pnum )
 
 void Modcmd( int cmd, int pnum )
 {
-	int i;
+	//int i;
 	//if ( modfunc_info->cmdfunc( cmd ) ) HspPostExec();
 	//Alertf("CMD=%d (lev%d)", cmd, StackGetLevel );
 	prmstacks = pnum;							// hsp3codeに渡すパラメーター数

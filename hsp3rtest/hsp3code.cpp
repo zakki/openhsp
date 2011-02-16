@@ -1144,7 +1144,7 @@ static void cmdfunc_return( void )
 	//	カスタム命令の場合
 	//code_next();
 	st = r->param;
-	lev = hspctx->prmstack_max;
+	lev = hspctx->prmstack_max - st->size;
 	hspctx->prmstack_max = r->oldlev;			// 以前のスタック数に戻す
 
 	StackPop();
@@ -1251,7 +1251,7 @@ static int code_callfunc( int cmd, int prmlevel )
 	r->mcsret = retpc;							// 戻り場所
 	r->stacklev = hspctx->sublev++;				// ネストを進める
 	r->param = st;
-	hspctx->prmstack_max = prmlevel;			// パラメータースタックの数
+	hspctx->prmstack_max = st->size + prmlevel;			// パラメータースタックの数
 
 	sbr = (unsigned short *)( st->otindex );
 	code_setpc( sbr );
@@ -1301,7 +1301,7 @@ static int code_callcfunc( int cmd, int prmlevel )
 	r->mcsret = retpc;							// 戻り場所
 	r->stacklev = hspctx->sublev++;				// ネストを進める
 	r->param = st;
-	hspctx->prmstack_max = prmlevel;			// パラメータースタックの数
+	hspctx->prmstack_max = st->size + prmlevel;			// パラメータースタックの数
 
 	sbr = (unsigned short *)( st->otindex );
 	code_setpc( sbr );

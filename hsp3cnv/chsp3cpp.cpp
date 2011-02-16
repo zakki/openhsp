@@ -570,10 +570,10 @@ int CHsp3Cpp::MakeCPPVarExpression( CMemBuf *arname )
 				if ( i == -1 ) {
 					tmpbuf.PutStr( "PushDefault();" );
 				}
-				//if ( result == TYPE_VAR ) {			// 単一項で変数が指定されていた場合
-				//	p = tmpbuf.GetBuffer() + tmpbuf.GetIndex( curidx );
-				//	p[5] = 'A'; p[6] = 'P';			// PushVar -> PushVAPに直す
-				//}
+				if ( result == TYPE_VAR ) {			// 単一項で変数が指定されていた場合
+					p = tmpbuf.GetBuffer() + tmpbuf.GetIndex( curidx );
+					p[5] = 'A'; p[6] = 'P';			// PushVar -> PushVAPに直す
+				}
 				prm++;
 			}
 			getCS();
