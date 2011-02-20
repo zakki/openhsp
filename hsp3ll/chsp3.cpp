@@ -233,6 +233,13 @@ const STRUCTPRM *CHsp3Parser::GetMInfo( int index ) const
 	return baseptr;
 }
 
+const HSPHED *CHsp3Parser::GetHSPHed( void ) const
+{
+	//		ƒwƒbƒ_[‚ğæ“¾‚·‚é
+	//
+	return hsphed;
+}
+
 
 int CHsp3Parser::GetOTCount( void ) const
 {

@@ -189,6 +189,10 @@
 				>
 			</File>
 			<File
+				RelativePath=".\chsp3op.cpp"
+				>
+			</File>
+			<File
 				RelativePath=".\chsp3rev.cpp"
 				>
 			</File>
@@ -238,6 +242,10 @@
 			</File>
 			<File
 				RelativePath="..\hsp3\hsp3int.cpp"
+				>
+			</File>
+			<File
+				RelativePath=".\hsp3op.cpp"
 				>
 			</File>
 			<File
@@ -348,6 +356,10 @@
 			</File>
 			<File
 				RelativePath=".\chsp3llvm.h"
+				>
+			</File>
+			<File
+				RelativePath=".\chsp3op.h"
 				>
 			</File>
 			<File

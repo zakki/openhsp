@@ -31,7 +31,7 @@ using namespace llvm;
 //#define HSP3CNV_DEBUG			// デバッグモード用
 extern void DumpResult();
 
-CHsp3LLVM* hsp3;
+CHsp3Op* hsp3;
 
 /*----------------------------------------------------------*/
 
@@ -111,7 +111,7 @@ int readAx( char *fname )
 	addext( fname,"ax" );
 
 	//		call main
-	{
+	if (false) {
 		int i;
 //		CHsp3Cpp hsp3;
 		CHsp3 hsp3;
@@ -137,7 +137,7 @@ int readAx( char *fname )
 	}
 	{
 		int i;
-		hsp3 = new CHsp3LLVM();
+		hsp3 = new CHsp3Op();
 		i = hsp3->LoadObjectFile( fname );
 		if (i) {
 			char buffer[1024];
@@ -146,6 +146,7 @@ int readAx( char *fname )
 			return 1;
 		}
 		hsp3->MakeSource( 0, NULL );
+		MakeSource( hsp3, 0, NULL );
 /*
 #ifndef HSP3CNV_DEBUG
 		hsp3->SaveOutBuf( oname2 );

@@ -65,6 +65,7 @@ public:
 	const LIBDAT *GetLInfo( int index ) const;
 	const STRUCTDAT *GetFInfo( int index ) const;
 	const STRUCTPRM *GetMInfo( int index ) const;
+	const HSPHED *GetHSPHed( void ) const;
 
 	int GetOTCount( void ) const;
 	int GetLInfoCount( void ) const;

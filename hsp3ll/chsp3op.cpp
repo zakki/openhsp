@@ -1,0 +1,903 @@
+//
+//			HSP3 script generator
+//			onion software/onitama 2008/5
+//
+#include <stdio.h>
+#include <string>
+#include <map>
+#include <set>
+#include <vector>
+#include <stack>
+
+#include "supio.h"
+#include "hsp3r.h"
+#include "hsp3op.h"
+#include "chsp3op.h"
+
+#ifdef HSPWIN
+#include <windows.h>
+#endif
+
+
+namespace llvm {
+	class Function;
+	class BasicBlock;
+	class Value;
+};
+
+using namespace llvm;
+
+/*------------------------------------------------------------*/
+CHsp3Op::CHsp3Op()
+{
+}
+
+std::string CHsp3Op::MakeImmidiateCPPVarName( int type, int val, char *opt )
+{
+	//		変数名の生成
+	//		(追加できない型の場合は-1を返す)
+	//
+	char mes[256];
+	switch( type ) {
+	case TYPE_VAR:
+		sprintf( mes, "%s%s", CPPHED_HSPVAR, GetHSPVarName( val ).c_str() );
+		if ( opt != NULL ) strcat( mes, opt );
+		return mes;
+	case TYPE_STRUCT:
+		{
+		const STRUCTPRM *prm = GetMInfo( val );
+		if ( prm->subid != STRUCTPRM_SUBID_STACK ) {
+			sprintf( mes, "_modprm%d", val - curprmindex );
+		} else {
+			sprintf( mes, "_prm%d", val - curprmindex );
+		}
+		return mes;
+		}
+	default:
+		return GetHSPName( type, val );
+	}
+	return "";
+}
+
+
+void CHsp3Op::MakeCPPTask( const char *name, int nexttask )
+{
+	//		タスクの区切り
+	//			funcdef=新しい関数定義
+	//			nextttask=次のタスク(ラベルID)
+	//
+
+	if ( tasknum ) {
+		if ( nexttask >= 0 ) {
+			if ( sReachable ) {
+				sCurTask->operations.push_back( new TaskSwitchOp( nexttask ) );
+			}
+		}
+	}
+
+	sCurTask = new Block();
+	sCurTask->name = name;
+	sTasks[name] = sCurTask;
+	//	Alert((char*)name);
+
+	sReachable = true;
+
+	tasknum++;
+}
+
+
+void CHsp3Op::MakeCPPTask( int nexttask )
+{
+	//		単純タスクの生成
+	//
+	char name[256];
+	sprintf( name,"L%04x", nexttask );
+	MakeCPPTask( name, nexttask );
+}
+
+
+void CHsp3Op::MakeCPPTask2( int nexttask, int newtask )
+{
+	//		単純タスクの生成
+	//
+	char name[256];
+	sprintf( name,"L%04x", newtask );
+	MakeCPPTask( name, nexttask );
+}
+
+void CHsp3Op::MakeCPPProgramInfoFuncParam( int structid )
+{
+	//		定義命令パラメーター生成
+	//		structid : パラメーターID
+	//
+	const STRUCTDAT *fnc = GetFInfo( structid );
+	const STRUCTPRM *prm = GetMInfo( fnc->prmindex );
+	int max = fnc->prmmax;
+	int locnum = 0;
+	curprmindex = fnc->prmindex;
+
+	for(int i=0;i<max;i++) {
+		prmcnv_locvar[i] = -1;
+		switch( prm[i].mptype ) {
+		case MPTYPE_VAR:
+			break;
+		case MPTYPE_STRING:
+		case MPTYPE_LOCALSTRING:
+			break;
+		case MPTYPE_DNUM:
+			break;
+		case MPTYPE_INUM:
+			break;
+		case MPTYPE_LABEL:
+			break;
+		case MPTYPE_LOCALVAR:
+			prmcnv_locvar[i] = locnum;
+			locnum++;
+			break;
+		case MPTYPE_ARRAYVAR:
+			break;
+		case MPTYPE_SINGLEVAR:
+			break;
+		default:
+			break;
+		}
+	}
+
+//	fnc->size = locnum;		// size項目にローカル変数の数を入れておく(runtimeで必要)
+	curprmlocal = locnum;
+
+	int prmid = locnum;
+	for(int i=0;i<max;i++) {
+		switch( prm[i].mptype ) {
+		case MPTYPE_LOCALVAR:
+			break;
+		case MPTYPE_VAR:
+		case MPTYPE_STRING:
+		case MPTYPE_LOCALSTRING:
+		case MPTYPE_DNUM:
+		case MPTYPE_INUM:
+		case MPTYPE_LABEL:
+		case MPTYPE_ARRAYVAR:
+		case MPTYPE_SINGLEVAR:
+		default:
+			prmcnv_locvar[i] = prmid;
+			prmid++;
+			break;
+		}
+	}
+}
+
+void CHsp3Op::MakeCPPLabel( void )
+{
+	//		ラベルを生成
+	//
+	int otmax;
+	int labindex;
+	int myot;
+
+	otmax = GetOTCount();
+	if ( otmax == 0 ) return;
+	myot = (int)(mcs_last - mcs_start);
+
+	labindex = 0;
+	while(1) {
+		if ( labindex>=otmax ) break;
+		if ( myot == GetOT( labindex ) ) {
+			if ( GetOTInfo( labindex ) == -1 ) {
+				MakeCPPTask( labindex );
+			} else {
+				MakeCPPTask( labindex );
+//				MakeProgramInfoFuncParam( GetOTInfo( labindex ) );
+				MakeCPPProgramInfoFuncParam( GetOTInfo( labindex ) );
+			}
+		}
+		labindex++;
+	}
+}
+
+
+int CHsp3Op::GetCPPExpressionSub( bool bblock, int flg )
+{
+	//		C/C++の計算式フォーマットでパラメーターを展開する(短項目)
+	//
+	int op;
+	int cstype0 = cstype;
+	int csval0 = csval;
+	int vflag;
+
+	vflag = 0;
+	switch(cstype) {
+		case TYPE_MARK:
+			//		記号(スタックから取り出して演算)
+			//
+			op = csval;
+			if ( sReachable && bblock ) {
+				sCurTask->operations.push_back( new CalcOp( op ) );
+			}
+			getCS();
+			break;
+		case TYPE_VAR:
+			{
+			//		変数をスタックに積む
+			//
+			int va;
+			getCS();
+			//		配列要素を付加する
+			va = MakeCPPVarExpression( bblock );
+			if (sReachable && bblock) {
+				if ( flg == 1 && va == 0) {
+					sCurTask->operations.push_back( new PushVarPtrOp( csval0, va ) );
+				} else {
+					sCurTask->operations.push_back( new PushVarOp( csval0, va ) );
+				}
+			}
+			vflag = 1;
+			break;
+			}
+		case TYPE_DNUM:
+			{
+			//		直実数値をスタックに積む
+			//
+			double immval = GetDSf( csval );
+			if ( sReachable && bblock ) {
+				sCurTask->operations.push_back( new PushDnumOp( immval ) );
+			}
+			getCS();
+			break;
+			}
+		case TYPE_INUM:
+		case TYPE_LABEL:
+			//		直値をスタックに積む
+			//
+			if ( sReachable && bblock ) {
+				switch (cstype0) {
+				case TYPE_INUM:
+					sCurTask->operations.push_back( new PushInumOp( csval ) );
+					break;
+				case TYPE_LABEL:
+					sCurTask->operations.push_back( new PushLabelOp( csval ) );
+					break;
+				}
+			}
+
+			getCS();
+			break;
+		case TYPE_STRUCT:
+			{
+			//		パラメーターをスタックに積む
+			//
+			int va = 0;
+			int prmid;
+			const STRUCTPRM *prm = GetMInfo( csval );
+			switch( prm->mptype ) {
+			case MPTYPE_LOCALVAR:
+				prmid = prmcnv_locvar[csval - curprmindex];
+				getCS();
+				va = MakeCPPVarExpression( bblock );
+				vflag = 1;
+				break;
+			case MPTYPE_VAR:
+			case MPTYPE_ARRAYVAR:
+			case MPTYPE_SINGLEVAR:
+				prmid = csval - curprmindex + curprmlocal;
+				prmid = prmcnv_locvar[csval - curprmindex];
+				getCS();
+				va = MakeCPPVarExpression( bblock );
+				vflag = 1;
+				break;
+			default:
+				prmid = csval - curprmindex + curprmlocal;
+				prmid = prmcnv_locvar[csval - curprmindex];
+				getCS();
+				break;
+			}
+			if ( sReachable && bblock ) {
+				if ( flg == 1 && vflag && va == 0 ) {
+					sCurTask->operations.push_back( new PushFuncPrmPtrOp( csval0, prmid, va ) );
+				} else {
+					sCurTask->operations.push_back( new PushFuncPrmOp( csval0, prmid, va ) );
+				}
+			}
+			break;
+			}
+		case TYPE_STRING:
+			//		文字列をスタックに積む
+			//
+			if ( sReachable && bblock ) {
+				sCurTask->operations.push_back( new PushStrOp( csval ) );
+			}
+			getCS();
+			break;
+		default:
+			{
+			//		関数として展開する
+			//
+			int va;
+			int fnctype;
+			int fncval;
+			fnctype = cstype;
+			fncval = csval;
+			getCS();
+			//		引数を付加する
+			if ( sReachable && bblock ) {
+				sCurTask->operations.push_back( new PushFuncEndOp() );
+			}
+
+			va = MakeCPPVarExpression( bblock, 1 );
+
+			if ( sReachable && bblock ) {
+				sCurTask->operations.push_back( new PushCmdOp( fnctype, fncval, va ) );
+			}
+			break;
+			}
+	}
+	return vflag;
+}
+
+
+int CHsp3Op::GetCPPExpression( int *result, bool bblock, int flg )
+{
+	//		C/C++の計算式フォーマットでパラメーターを展開する
+	//		result : 結果の格納先(-2=解析なし/-1=複数項の計算式/other=単一のパラメーターtype)
+	//
+	int res;
+	int tres;
+
+	*result = -2;
+
+	if (exflag&EXFLG_1) return 1;				// パラメーター終端
+	if (exflag&EXFLG_2) {						// パラメーター区切り(デフォルト時)
+		exflag^=EXFLG_2;
+		return -1;
+	}
+	if ( cstype == TYPE_MARK ) {
+		if ( csval == 63 ) {					// パラメーター省略時('?')
+			getCS();
+			exflag&=~EXFLG_2;
+			return -1;
+		}
+		if ( csval == ')' ) {					// 関数内のパラメーター省略時
+			exflag&=~EXFLG_2;
+			return 2;
+		}
+	}
+
+	res = 0;
+	tres = cstype;
+
+	while(1) {
+		if ( mcs > mcs_end ) {
+			res = 1;			// データ終端チェック
+			break;
+		}
+
+		switch(cstype) {
+		case TYPE_MARK:
+			//		記号(スタックから取り出して演算)
+			//
+			if ( csval == ')' ) {					// 引数の終了マーク
+				exflag |= EXFLG_2;
+				res = 2;
+				break;
+			}
+		default:
+			if ( tres >= 0 ) {
+				if ( tres != cstype ) { tres = -1; }
+			}
+			GetCPPExpressionSub( bblock, flg );
+			break;
+		}
+
+		if ( exflag ) {								// パラメーター終端チェック
+			exflag&=~EXFLG_2;
+			break;
+		}
+	}
+	*result = tres;
+	return res;
+}
+
+
+int CHsp3Op::MakeCPPParam( bool bblock, int addprm )
+{
+	//		パラメーターのトレース
+	//
+	int i;
+	int prm;
+	int result;
+	std::vector<std::pair<MCSCONTEXT, int> > expressionContext;
+	int ret = 0;
+
+	prm = 0;
+
+	int j;
+	for(j=0;j<addprm;j++) {
+		if ( exflag & EXFLG_1) break;		// パラメーター列終端
+		if ( mcs > mcs_end ) break;			// データ終端チェック
+		if ( prm ) {
+		}
+
+		MCSCONTEXT ctx;
+		GetContext( &ctx );
+		GetCPPExpressionSub( NULL );
+		expressionContext.push_back( std::make_pair( ctx, -3 ) );
+		prm++;
+	}
+
+	while(1) {
+		if ( exflag & EXFLG_1) break;		// パラメーター列終端
+		if ( mcs > mcs_end ) break;			// データ終端チェック
+		if ( prm ) {
+		}
+		MCSCONTEXT ctx;
+		GetContext( &ctx );
+		ret = i = GetCPPExpression( &result, false );
+		expressionContext.push_back( std::make_pair( ctx, result ) );
+		if ( i > 0 ) break;
+		if ( i < -1 ) break;
+		if ( i == -1 ) {
+			expressionContext.push_back( std::make_pair( ctx, -4 ) );
+		}
+		prm++;
+	}
+
+	// TODO
+	MCSCONTEXT ctx;
+	GetContext( &ctx );
+	for ( int j = expressionContext.size() - 1; j >= 0; j-- ) {
+		std::pair<MCSCONTEXT, int> &p = expressionContext[j];
+		SetContext( &p.first );
+		if ( p.second == -3 ) {
+			GetCPPExpressionSub( bblock );
+		} else if ( p.second == -4 ) {
+			if (sReachable && bblock) {
+				sCurTask->operations.push_back( new PushDefaultOp() );
+			}
+		} else {
+			if ( p.second == TYPE_VAR || p.second == TYPE_STRUCT ) {			// 単一項で変数が指定されていた場合
+				i = GetCPPExpression( &result, bblock, 1 );
+			} else {
+				i = GetCPPExpression( &result, bblock );
+			}
+			if ( i == -1 ) {
+			}
+		}
+	}
+	SetContext( &ctx );
+
+	if ( ret < -1 )
+		return ret;
+
+	return prm;
+}
+
+
+int CHsp3Op::GetVarExpressionOp( void )
+{
+	//		(同時に代入の種類を識別して返す)
+	//		(retval:-1=通常代入、-2,-3=++or--、その他=演算子)
+	//
+	int i;
+	int op;
+	char arbuf[VAREXP_BUFFER_MAX];
+	i = GetHSPVarExpression( arbuf );
+	if ( cstype == TYPE_MARK ) {
+		if ( csval == CALCCODE_EQ ) {
+			return -1;
+		}
+		op = csval;
+		getCS();
+		if ( exflag & EXFLG_1) {		// ++ or --
+			if ( op == CALCCODE_ADD ) return -2;
+			return -3;
+		}
+		return op;
+	}
+	Alert( "CHsp3:Var Syntax unknown." );
+	return -4;
+}
+
+
+int CHsp3Op::MakeCPPVarExpression( bool bblock, int flg )
+{
+	//	変数名直後に続くパラメーター(配列)を展開する
+	//	ret : 0=配列なし/1～=配列あり
+	//
+	int i;
+	int prm;
+	int result;
+	int ret = 0;
+	std::vector<std::pair<MCSCONTEXT, int> > expressionContext;
+
+	if ( cstype == TYPE_MARK ) {
+		if ( csval == '(' ) {
+			getCS();
+			prm = 1;
+			while(1) {
+				if ( exflag & EXFLG_1) break;		// パラメーター列終端
+				if ( mcs > mcs_end ) break;			// データ終端チェック
+
+				MCSCONTEXT ctx;
+				GetContext( &ctx );
+				ret = i = GetCPPExpression( &result, false );
+				expressionContext.push_back( std::make_pair( ctx, result ) );
+				if ( i > 0 ) break;
+				if ( i < -1 ) break;
+				if ( i == -1 ) {
+					expressionContext.push_back( std::make_pair( ctx, -4 ) );
+				}
+				prm++;
+			}
+
+			MCSCONTEXT ctx;
+			GetContext( &ctx );
+			for(int j = expressionContext.size() - 1; j >= 0; j--) {
+				std::pair<MCSCONTEXT, int> &p = expressionContext[j];
+				if ( p.second == -4 ) {
+					if ( sReachable && bblock ) {
+						sCurTask->operations.push_back( new PushDefaultOp() );
+					}
+				} else {
+					SetContext( &p.first );
+//					if ( p.second == TYPE_VAR ) {			// 単一項で変数が指定されていた場合
+					if ( p.second != -1 && flg ) {
+						i = GetCPPExpression( &result, bblock, 1 );
+					} else {
+						i = GetCPPExpression( &result, bblock );
+					}
+//i = GetCPPExpression( &result, bblock );
+					if ( i == -1 ) {
+						if ( sReachable && bblock ) {
+							sCurTask->operations.push_back( new PushDefaultOp() );
+						}
+					}
+				}
+			}
+			SetContext( &ctx );
+
+			if (ret < -1)
+				return ret;
+
+			getCS();
+
+			return prm;
+		}
+	}
+	return 0;
+}
+
+
+/*------------------------------------------------------------*/
+
+void CHsp3Op::MakeCPPSub( int cmdtype, int cmdval )
+{
+	//		通常命令とパラメーターを展開
+	//
+	int pnum;
+
+	getCS();
+	pnum = MakeCPPParam( true );
+
+	if (sReachable) {
+		sCurTask->operations.push_back( new CmdOp( cmdtype, cmdval, pnum ) );
+	}
+}
+
+
+int CHsp3Op::MakeCPPMain( void )
+{
+	//		プログラムのトレース
+	//
+	int i;
+	int op;
+	int cmdtype, cmdval;
+	MCSCONTEXT ctxbak, ctxbak2;
+	int maxvar;
+
+	//		初期化
+	//
+	tasknum = 0;
+
+	MakeCPPTask( "__HspEntry" );
+
+	maxvar = hsphed->max_val;
+
+	//		コードの変換
+	//
+	while(1) {
+		if ( mcs > mcs_end ) break;
+
+		//		endifのチェック
+		//
+		if ( ifmode[iflevel]>=2 ) {		// if end
+			if ( mcs_last>=ifptr[iflevel] ) {
+				ifmode[iflevel] = 0;
+				if ( iflevel == 0 ) { Alert( "Invalid endif." ); return -1; }
+				i = iftaskid[iflevel];
+				iflevel--;
+				//SetIndent( iflevel );
+				MakeCPPTask( i );
+				continue;
+			}
+		}
+
+		//		ラベルチェック
+		//
+		MakeCPPLabel();
+
+		//		行頭のコード
+		//
+		cmdtype = cstype;
+		cmdval = csval;
+		//MakeProgramInfoHSPName();
+		//printf( "#%06x:CSTYPE%d VAL%d\n", mcs_last - mcs_start, cstype, csval );
+		//Alert( mes );
+		//out->PutStr( mes );
+
+		//		パラメーター
+		//
+		switch( cmdtype ) {
+		case TYPE_STRUCT:						// 代替変数(struct)
+		case TYPE_VAR:							// 変数代入
+			{
+			int va,pnum;
+			int varid;
+			switch ( cmdtype ) {
+			case TYPE_VAR:
+				{
+				varid = cmdval;
+				break;
+				}
+			case TYPE_STRUCT:
+				{
+				const STRUCTPRM *prm = GetMInfo( csval );
+				switch( prm->mptype ) {
+				case MPTYPE_LOCALVAR:
+					varid = prmcnv_locvar[cmdval - curprmindex];
+					break;
+				case MPTYPE_VAR:
+				case MPTYPE_ARRAYVAR:
+				case MPTYPE_SINGLEVAR:
+					varid = cmdval - curprmindex + curprmlocal;
+					break;
+				default:
+					varid = cmdval - curprmindex + curprmlocal;
+					break;
+				}
+				break;
+				}
+			}
+
+			getCS();
+			GetContext( &ctxbak );
+			va = MakeCPPVarExpression( false );
+
+			if ( cstype != TYPE_MARK ) {
+				break;// エラー
+			}
+
+			if ( csval == CALCCODE_EQ ) {
+				op = -1;
+				getCS();
+			} else {
+				int op2 = csval;
+				getCS();
+				if ( exflag & EXFLG_1) {		// ++ or --
+					if ( op2 == CALCCODE_ADD )
+						op = -2;
+					else
+						op = -3;
+				} else {
+					op = op2;
+				}
+			}
+
+			switch( op ) {
+			case -1:		// 通常の代入
+				pnum = MakeCPPParam( true );
+
+				if (sReachable) {
+					GetContext( &ctxbak2 );
+					SetContext( &ctxbak );
+					MakeCPPVarExpression( true );
+					SetContext( &ctxbak2 );
+
+					sCurTask->operations.push_back( new VarSetOp( cmdtype, cmdval, varid, va, pnum ) );
+				}
+				break;
+			case -2:		// ++
+				if (sReachable) {
+					GetContext( &ctxbak2 );
+					SetContext( &ctxbak );
+					MakeCPPVarExpression( true );
+					SetContext( &ctxbak2 );
+
+					sCurTask->operations.push_back( new VarIncOp( cmdtype, cmdval, varid, va ) );
+				}
+				break;
+			case -3:		// --
+				if (sReachable) {
+					GetContext( &ctxbak2 );
+					SetContext( &ctxbak );
+					MakeCPPVarExpression( true );
+					SetContext( &ctxbak2 );
+
+					sCurTask->operations.push_back( new VarDecOp( cmdtype, cmdval, varid, va ) );
+				}
+				break;
+			case -4:		// エラー
+				break;
+			default:		// 演算子付き代入
+				pnum = MakeCPPParam( true );
+				if ( pnum > 1 ) {
+					Alert( "Too much parameters(VarCalc)." );
+				}
+				if (sReachable) {
+					GetContext( &ctxbak2 );
+					SetContext( &ctxbak );
+					MakeCPPVarExpression( true );
+					SetContext( &ctxbak2 );
+
+					sCurTask->operations.push_back( new VarCalcOp( cmdtype, cmdval, varid, va, op ) );
+				}
+				break;
+			}
+			break;
+			}
+		case TYPE_CMPCMD:						// 比較命令
+			{
+			int thenTask = 0;
+			// C形式の出力
+			if ( cmdval == 0 ) {
+				iflevel++;
+
+				thenTask = curot;
+				if ( iflevel >= MAX_IFLEVEL ) {
+					Alert( "Stack( If ) overflow." );
+					return -2;
+				}
+
+				ifmode[iflevel] = 1;
+				iftaskid[iflevel] = curot;
+				i = (int)*mcs;
+				ifptr[iflevel] = mcs + i + 1;
+				ifmode[iflevel]++;
+				curot++;
+			} else {
+				ifmode[iflevel] = 3;
+				i = (int)*mcs;
+				ifptr[iflevel] = mcs + i + 1;
+				//SetIndent( iflevel-1 );
+				i = iftaskid[iflevel];
+				MakeCPPTask2( curot, i );
+				iftaskid[iflevel] = curot;
+				curot++;
+			}
+			mcs++;
+			getCS();
+			MakeCPPParam( true );
+
+			if ( cmdval == 0 ) {
+				sCurTask->operations.push_back( new CompareOp( thenTask ) );
+			} else {
+			}
+			//SetIndent( iflevel );
+			}
+			break;
+		case TYPE_PROGCMD:						// プログラム制御命令
+			switch( cmdval ) {
+			case 0x00:								// goto
+			case 0x02:								// return
+			case 0x03:								// break
+			case 0x05:								// loop
+			case 0x06:								// continue
+			case 0x0b:								// foreach
+			case 0x0c:								// (hidden)foreach check
+			case 0x10:								// end
+			case 0x1b:								// assert
+			case 0x11:								// stop
+			case 0x19:								// on
+				//		後にreturnを付ける
+				//
+				MakeCPPSub( cmdtype, cmdval );
+				sReachable = false;
+				break;
+			case 0x01:								// gosub
+			case 0x18:								// exgoto
+				//		gosubの展開
+				//
+				{
+				int pnum;
+				getCS();
+				pnum = MakeCPPParam( true );
+				if (sReachable) {
+					sCurTask->operations.push_back( new PushLabelOp( curot ) );
+					sCurTask->operations.push_back( new CmdOp( cmdtype, cmdval, pnum+1 ) );
+				}
+				sReachable = false;
+				MakeCPPTask( curot );
+				curot++;
+				break;
+				}
+			case 0x04:								// repeat
+				//		repeatの展開
+				//
+				{
+				int pnum;
+				getCS();
+				pnum = MakeCPPParam( true, 1 );
+				if (sReachable) {
+					sCurTask->operations.push_back( new PushLabelOp( curot ) );
+					sCurTask->operations.push_back( new CmdOp( cmdtype, cmdval, pnum+1 ) );
+				}
+				sReachable = false;
+				MakeCPPTask( curot );
+				curot++;
+				break;
+				}
+
+			case 0x07:								// wait
+			case 0x08:								// await
+			case 0x17:								// run
+				//		タスクを区切る
+				//
+				MakeCPPSub( cmdtype, cmdval );
+				MakeCPPTask( curot );
+				curot++;
+				break;
+			default:
+				MakeCPPSub( cmdtype, cmdval );
+				break;
+			}
+			break;
+		case TYPE_MODCMD:						// 定義命令
+			{
+			int pnum;
+			getCS();
+			pnum = MakeCPPParam( true );
+			if (sReachable) {
+				sCurTask->operations.push_back( new PushLabelOp( curot ) );
+				sCurTask->operations.push_back( new ModCmdOp( cmdtype, cmdval, pnum ) );
+			}
+			sReachable = false;
+			MakeCPPTask( curot );
+			curot++;
+			break;
+			}
+		default:
+			//		通常命令
+			//
+			MakeCPPSub( cmdtype, cmdval );
+			break;
+		}
+	}
+
+	return 0;
+}
+
+/*------------------------------------------------------------*/
+
+
+int CHsp3Op::MakeSource( int option, void *ref )
+{
+	//	コンパイル処理
+	//
+	int i;
+	int otmax;
+
+	makeoption = option;
+
+	//		初期化ファンクションを作成する
+	//
+	otmax = GetOTCount();
+	curot = otmax;
+
+	i = MakeCPPMain();
+	if ( i ) return i;
+
+	//		タスク(ラベル)テーブルを作成する
+	//
+	max_lab = curot;
+//sDsBasePtr = GetDS( 0 );
+	return 0;
+}
