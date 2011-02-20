@@ -122,12 +122,13 @@ protected:
 	void MakeOTInfo( void );
 
 public:
-	std::string GetHSPOperator( int val ) const;
-	std::string GetHSPOperator2( int val ) const;
-	std::string GetHSPName( int type, int val ) const;
 	std::string GetHSPVarName( int varid ) const;
-	std::string GetHSPVarTypeName( int type ) const;
-	std::string GetHSPCmdTypeName( int type ) const;
+	std::string GetHSPName( int type, int val ) const;
+
+	static std::string GetHSPOperator( int val );
+	static std::string GetHSPOperator2( int val );
+	static std::string GetHSPVarTypeName( int type );
+	static std::string GetHSPCmdTypeName( int type );
 };
 
 class CHsp3 : public CHsp3Parser {

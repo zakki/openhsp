@@ -420,7 +420,7 @@ std::string CHsp3Parser::GetHSPName( int type, int val ) const
 }
 
 
-std::string CHsp3Parser::GetHSPOperator( int val ) const
+std::string CHsp3Parser::GetHSPOperator( int val )
 {
 	//		HSPの演算子を文字列(記号)で返す
 	//
@@ -465,7 +465,7 @@ std::string CHsp3Parser::GetHSPOperator( int val ) const
 }
 
 
-std::string CHsp3Parser::GetHSPOperator2( int val ) const
+std::string CHsp3Parser::GetHSPOperator2( int val )
 {
 	//		HSPの演算子を文字列(メソッド)で返す
 	//
@@ -507,7 +507,7 @@ std::string CHsp3Parser::GetHSPOperator2( int val ) const
 }
 
 
-std::string CHsp3Parser::GetHSPVarTypeName( int type ) const
+std::string CHsp3Parser::GetHSPVarTypeName( int type )
 {
 	//		HSPのタイプ値を文字列で返す
 	//
@@ -529,7 +529,7 @@ std::string CHsp3Parser::GetHSPVarTypeName( int type ) const
 }
 
 
-std::string CHsp3Parser::GetHSPCmdTypeName( int type ) const
+std::string CHsp3Parser::GetHSPCmdTypeName( int type )
 {
 	//		HSPのコマンドタイプ値を文字列で返す
 	//
@@ -1015,12 +1015,19 @@ int CHsp3::GetHSPExpression( CMemBuf *eout )
 		case TYPE_INUM:
 		case TYPE_STRING:
 		case TYPE_DNUM:
-		case TYPE_STRUCT:
 		case TYPE_LABEL:
 			//		直値をスタックに積む
 			//
 			st.Push( cstype, csval );
 			getCS();
+			break;
+		case TYPE_STRUCT:
+			//		パラメーター
+			//
+			stm1 = st.Push( cstype, csval );
+			getCS();
+			i = GetHSPVarExpression( mm );
+			if ( i ) st.SetExStr( stm1, mm );
 			break;
 		default:
 			//		関数として展開する
@@ -1038,7 +1045,7 @@ int CHsp3::GetHSPExpression( CMemBuf *eout )
 		}
 	}
 	if ( st.GetLevel() > 1 ) {
-		//		Alert( "Invalid end stack" ); return -5;
+		Alert( "Invalid end stack" ); return -5;
 	}
 	if ( st.GetLevel() == 1 ) {
 			stm1 = st.Peek();

@@ -13,11 +13,12 @@ typedef void (* CHSP3_TASK) (void);
 //
 #define HSPVAR_FLAG_MARK 0
 #define HSPVAR_FLAG_VAR -1
+#define HSPVAR_FLAG_DEFAULT -2
 
 
 //	Utility
 //
-void VarUtilInit( HSPCTX *ctx );
+void VarUtilInit( void );
 void VarUtilTerm( void );
 
 void TaskExec( void );
@@ -34,6 +35,7 @@ void Intcmd( int cmd, int pnum );
 //  HSPVAR support functions
 //
 extern PVal *mem_var;
+extern int	prmstacks;
 
 void PushInt( int val );
 void PushStr( char *st );
@@ -44,10 +46,22 @@ void PushVAP( PVal *pval, int aval );
 void PushDefault( void );
 void PushFuncEnd( void );
 
+void PushFuncPrm1( int num );
+void PushFuncPrmI( int num );
+void PushFuncPrmD( int num );
+void PushFuncPrm( int num, int aval );
+void PushFuncPAP( int num, int aval );
+PVal *FuncPrm( int num );
+PVal *LocalPrm( int num );
+
+int FuncPrmI( int num );
+double FuncPrmD( int num );
+
 void PushExtvar( int val, int pnum );
 void PushIntfunc( int val, int pnum );
 void PushSysvar( int val, int pnum );
 void PushDllfunc( int val, int pnum );
+void PushModcmd( int val, int pnum );
 
 double CallDoubleIntfunc( int val, int pnum );
 int CallIntIntfunc( int val, int pnum );

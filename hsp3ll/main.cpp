@@ -57,7 +57,7 @@ int GetFilePath( char *bname )
 
 void usage1( void )
 {
-static 	char *p[] = {
+static char *p[] = {
 	"usage: hsp3cnv [options] [filename]",
 	"       -o??? set output file to ???",
 	NULL };
@@ -167,21 +167,21 @@ int APIENTRY WinMain ( HINSTANCE hInstance,
 					   LPSTR lpCmdParam,
 					   int iCmdShow )
 {
-  
+
 	InitializeNativeTarget();
 
 	readAx(lpCmdParam);
 
 	int res;
-#ifdef HSPDEBUG
+//#ifdef HSPDEBUG
 	res = hsp3win_init( hInstance, lpCmdParam );
-#else
-	res = hsp3win_init( hInstance, NULL );
-#endif
+//#else
+//	res = hsp3win_init( hInstance, NULL );
+//#endif
 	if ( res == 0 ) {
 		res = hsp3win_exec();
 	}
-	
+
 	DumpResult();
 
 	return res;

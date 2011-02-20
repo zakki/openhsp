@@ -24,6 +24,13 @@ public:
 	CHsp3LLVM();
 	int MakeSource( int option, void *ref );
 	int MakeImmidiateCPPName( char *mes, int type, int val, char *opt=NULL );
+	void MakeCPPProgramInfoFuncParam( int structid );
+	int GetLocalPrm( int val ) {
+		return prmcnv_locvar[val - curprmindex];
+	}
+	int GetFuncPrm( int val ) {
+		return val - curprmindex + curprmlocal;
+	}
 
 private:
 	//		Settings
@@ -31,6 +38,9 @@ private:
 	int makeoption;
 	int tasknum;
 	int curot;						// 追加用のタスク(ラベル)テーブルID
+	int curprmindex;				// 現在のパラメーター先頭インデックス
+	int curprmlocal;				// 現在のローカル変数スタック数
+	int prmcnv_locvar[64];			// パラメーター変換用バッファ(ローカル変数用)
 
 	//		Internal Function
 	//
@@ -42,10 +52,10 @@ private:
 	void MakeCPPTask( const char *name, int nexttask=-1 );
 	int MakeCPPParam( bool process, int addprm=0 );
 	int GetCPPExpression( int *result, bool process, int flg=0 );
-	void GetCPPExpressionSub( bool process, int flg=0 );
+	int GetCPPExpressionSub( bool process, int flg=0 );
 	int MakeCPPVarForHSP( void );
 	void MakeCPPVarName( char *outbuf, int varid );
-	int MakeCPPVarExpression( bool process );
+	int MakeCPPVarExpression( bool process, int flg=0 );
 
 };
 

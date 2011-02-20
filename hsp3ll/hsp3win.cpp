@@ -11,11 +11,6 @@
 #include <objbase.h>
 #include <commctrl.h>
 
-/*
-	rev 43
-	mingw : error : 不明な関数tolower
-	に対処
-*/
 #if defined( __GNUC__ )
 #include <ctype.h>
 #endif
@@ -32,7 +27,7 @@
 #include "hsp3r.h"
 
 extern void __HspInit( Hsp3r *hsp3 );
-
+extern void __HspSetup( Hsp3r *hsp3 );
 typedef BOOL (CALLBACK *HSP3DBGFUNC)(HSP3DEBUG *,int,int,int);
 
 /*----------------------------------------------------------*/
@@ -160,7 +155,15 @@ void hsp3win_msgfunc( HSPCTX *hspctx )
 	int tick;
 
 	while(1) {
-
+		// logmes なら先に処理する
+		if ( hspctx->runmode == RUNMODE_LOGMES ) {
+			hspctx->runmode = RUNMODE_RUN;
+#ifdef HSPDEBUG
+			if ( h_dbgwin != NULL ) dbgnotice( dbginfo, 1, 0, 0 );		// Debug Window Notice
+#endif
+			return;
+		}
+		
 		if ( PeekMessage( &msg, NULL, 0, 0, PM_REMOVE ) ) {
 			if (msg.message == WM_QUIT ) throw HSPERR_NONE;
 			hsp3win_dispatch( &msg );
@@ -208,12 +211,7 @@ void hsp3win_msgfunc( HSPCTX *hspctx )
 			hsp3win_debugopen();
 #endif
 			break;
-		case RUNMODE_LOGMES:
-			hspctx->runmode = RUNMODE_RUN;
-#ifdef HSPDEBUG
-			if ( h_dbgwin != NULL ) dbgnotice( dbginfo, 1, 0, 0 );		// Debug Window Notice
-#endif
-			return;
+	//	case RUNMODE_LOGMES:
 		default:
 			return;
 		}
@@ -248,7 +246,6 @@ int hsp3win_init( HINSTANCE hInstance, char *startfile )
 	//
 	hsp = new Hsp3r();
 	hsp->hspctx.instance = (void *)hInstance;
-	__HspInit( hsp );
 
 #if 0
 	if ( hsp->Reset( 16, 0 ) ) {
@@ -259,13 +256,52 @@ int hsp3win_init( HINSTANCE hInstance, char *startfile )
 		hsp->SetFileName( startfile );
 	}
 #endif
+#ifdef HSPDEBUG
+	h_dbgwin = NULL;
+	dbgwnd = NULL;
 
+	ss = strsp_cmds( startfile );
+	i = (int)( ss - startfile );
+	ss = startfile;
+	if ( ss[i-1] == 32 ) i--;
+	if ( *ss == 0x22 ) {
+		ss++;i-=2;
+	}
+	if ( i > 0 ) {
+		strncpy( fname, ss, i );
+		fname[i] = 0;
+		hsp->SetFileName( fname );
+	}
+#else
+	if ( startfile != NULL ) {
+		hsp->SetFileName( startfile );
+	}
+#endif
+	__HspInit( hsp );
+
+	//		実行ファイルかデバッグ中かを調べる
+	//
 	mode = 0;
 	orgexe=8;
 	hsp_wx = 640;
 	hsp_wy = 480;
 	hsp_wd = 0;
 	hsp_ss = 0;
+
+	for( a=0 ; a<8; a++) {
+		a1=optmes[a]-48;if (a1==fpas[a]) orgexe++;
+	}
+	if ( orgexe == 0 ) {
+		mode = atoi(optmes+9) + 0x10000;
+		a1=*(optmes+17);
+		if ( a1 == 's' ) hsp_ss = HSPSTAT_SSAVER;
+		hsp_wx=*(short *)(optmes+20);
+		hsp_wy=*(short *)(optmes+23);
+		hsp_wd=( *(short *)(optmes+26) );
+		hsp_sum=*(unsigned short *)(optmes+29);
+		hsp_dec=*(int *)(optmes+32);
+		hsp->SetPackValue( hsp_sum, hsp_dec );
+	}
 
 	//		起動ファイルのディレクトリをカレントにする
 	//
@@ -298,6 +334,12 @@ int hsp3win_init( HINSTANCE hInstance, char *startfile )
 	hsp3typeinit_extcmd( code_gettypeinfo( TYPE_EXTCMD ), hsp_wx, hsp_wy, hsp_wd, -1, -1 );
 	hsp3typeinit_extfunc( code_gettypeinfo( TYPE_EXTSYSVAR ) );
 
+	//		Utility setup
+	VarUtilInit();
+
+	//		Setup runtime
+	__HspSetup( hsp );
+
 #ifdef HSPDEBUG
 	dbginfo = code_getdbg();
 #endif
@@ -316,6 +358,8 @@ static void hsp3win_bye( void )
 	//
 	if ( h_dbgwin != NULL ) { FreeLibrary( h_dbgwin ); h_dbgwin = NULL; }
 #endif
+
+	//DllManager().free_all_library();
 
 	//		システム関連の解放
 	//
@@ -354,8 +398,8 @@ int hsp3win_exec( void )
 	//		実行メインを呼び出す
 	//
 	int runmode;
+	int endcode;
 rerun:
-	StackPushType( TYPE_EX_ENDOFPARAM );
 	hsp3win_msgfunc( ctx );
 
 	//		デバッグウインドゥ用
@@ -395,7 +439,8 @@ rerun:
 		goto rerun;
 	}
 #endif
+	endcode = ctx->endcode;
 	hsp3win_bye();
-	return ctx->endcode;
+	return endcode;
 }
 
