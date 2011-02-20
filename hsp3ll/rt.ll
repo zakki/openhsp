@@ -44,6 +44,7 @@ declare void @PushExtvar(i32, i32)
 declare void @CalcRrI()
 declare void @PushDefault()
 declare void @Intcmd(i32, i32)
+declare i32 @GetCurTaskId()
 declare i32 @Hsp3rReset(%struct.Hsp3r*, i32, i32)
 declare void @HspVarCoreArray2(%struct.PVal*, i32)
 

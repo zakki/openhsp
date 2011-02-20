@@ -48,7 +48,56 @@
 using namespace llvm;
 
 
-class Task;
+class Op;
+
+
+class Var {
+public:
+	int type;
+	int val;
+
+	int tflag;
+	int num;
+	int change;
+
+	bool localVar;
+
+	Var( int type, int val ) : type( type ), val( val ), tflag(0), num(0), change(0), localVar(false)
+	{
+	}
+
+
+	bool operator<( const Var& a ) const {
+		return (val < a.val) || (val == a.val && type < a.type);
+	}
+
+};
+
+class Task {
+public:
+	std::string name;
+	Function *func;
+	Function *spFunc;
+	CHSP3_TASK funcPtr;
+	BasicBlock *entry;
+	int numCall;
+	int numCurCall;
+	int numChange;
+	std::set<Var> usedVariables;
+	std::vector<Op*> operations;
+	std::map<int, Value*> llVariables;
+	std::set<BasicBlock*> returnBlocks;
+
+	bool useGeneralFunc;
+	bool skipTypeCheck;
+
+	Task() : numCall(0), numCurCall(0), numChange(0),
+			 useGeneralFunc(true), skipTypeCheck(false)
+	{
+	}
+};
+
+typedef int (* CHSP3_FUNC) (int);
 
 //
 static Module *M;
@@ -59,7 +108,7 @@ static PassManager *Passes;
 
 static Task *sCurTask;
 //static BasicBlock *sCurBB;
-static BasicBlock *sCurTaskRetBB;
+//static BasicBlock *sCurTaskRetBB;
 static bool sReachable;
 
 static std::map<std::string, Task*> sTasks;
@@ -77,6 +126,9 @@ static int sLabMax;
 static HSPCTX *sHspctx;
 static Hsp3r *sHsp3r;
 static PVal **Var__HspVars;
+static Function *sOrigFunc;
+static Function *sCurFunc;
+static int sCurNo;
 
 
 extern int GetCurTaskId();
@@ -88,6 +140,8 @@ static Value* CreateCallImm( BasicBlock *bblock, const std::string& name );
 static Value* CreateCallImm( BasicBlock *bblock, const std::string& name, int a );
 static Value* CreateCallImm( BasicBlock *bblock, const std::string& name, int a, int b );
 static void LoadLLRuntime();
+
+static void RecompileModule();
 
 enum OPCODE {
 	NOP, TASK_SWITCH_OP, CALC_OP, PUSH_VAR_OP, PUSH_VAR_PTR_OP, PUSH_DNUM_OP, PUSH_INUM_OP,
@@ -116,13 +170,14 @@ public:
 		return "Op";
 	}
 	virtual OPCODE GetOpCode() = 0;
-	virtual BasicBlock* GenerateDefaultCode( CHsp3LLVM *hsp, Function *func, BasicBlock *bb ) = 0;
+	virtual BasicBlock* GenerateDefaultCode( CHsp3LLVM *hsp, Function *func,
+											 BasicBlock *bb, BasicBlock *retBB, Task *task ) = 0;
 };
 
 class TaskSwitchOp : public Op {
-	int task;
+	int taskId;
 public:
-	explicit TaskSwitchOp( int task ) : task( task )
+	explicit TaskSwitchOp( int task ) : taskId( task )
 	{
 	}
 	virtual std::string GetName()
@@ -132,9 +187,14 @@ public:
 	OPCODE GetOpCode() {
 		return TASK_SWITCH_OP;
 	}
-	BasicBlock* GenerateDefaultCode( CHsp3LLVM *hsp, Function *func, BasicBlock *bb )
+	int GetNextTask() const
 	{
-		CreateCallImm( bb, "TaskSwitch", task );
+		return taskId;
+	}
+	BasicBlock* GenerateDefaultCode( CHsp3LLVM *hsp, Function *func,
+									 BasicBlock *bb, BasicBlock *retBB, Task *task )
+	{
+		CreateCallImm( bb, "TaskSwitch", taskId );
 		return bb;
 	}
 };
@@ -157,7 +217,8 @@ public:
 	{
 		return CALC_OP;
 	}
-	BasicBlock* GenerateDefaultCode( CHsp3LLVM *hsp, Function *func, BasicBlock *bb )
+	BasicBlock* GenerateDefaultCode( CHsp3LLVM *hsp, Function *func,
+									 BasicBlock *bb, BasicBlock *retBB, Task *task )
 	{
 		CreateCallImm( bb, "Calc" + hsp->GetHSPOperator2( op ) );
 		return bb;
@@ -199,7 +260,8 @@ public:
 	{
 		return PUSH_VAR_OP;
 	}
-	BasicBlock* GenerateDefaultCode( CHsp3LLVM *hsp, Function *func, BasicBlock *bb )
+	BasicBlock* GenerateDefaultCode( CHsp3LLVM *hsp, Function *func,
+									 BasicBlock *bb, BasicBlock *retBB, Task *task )
 	{
 		LLVMContext &Context = getGlobalContext();
 		Builder.SetInsertPoint( bb );
@@ -235,7 +297,8 @@ public:
 	OPCODE GetOpCode() {
 		return PUSH_VAR_PTR_OP;
 	}
-	BasicBlock* GenerateDefaultCode( CHsp3LLVM *hsp, Function *func, BasicBlock *bb )
+	BasicBlock* GenerateDefaultCode( CHsp3LLVM *hsp, Function *func,
+									 BasicBlock *bb, BasicBlock *retBB, Task *task )
 	{
 		LLVMContext &Context = getGlobalContext();
 		Builder.SetInsertPoint( bb );
@@ -277,7 +340,8 @@ public:
 	{
 		return PUSH_DNUM_OP;
 	}
-	BasicBlock* GenerateDefaultCode( CHsp3LLVM *hsp, Function *func, BasicBlock *bb )
+	BasicBlock* GenerateDefaultCode( CHsp3LLVM *hsp, Function *func,
+									 BasicBlock *bb, BasicBlock *retBB, Task *task )
 	{
 		LLVMContext &Context = getGlobalContext();
 		Function *f = M->getFunction("Push" + hsp->GetHSPCmdTypeName( TYPE_DNUM ));
@@ -310,7 +374,8 @@ public:
 	{
 		return PUSH_INUM_OP;
 	}
-	BasicBlock* GenerateDefaultCode( CHsp3LLVM *hsp, Function *func, BasicBlock *bb ) {
+	BasicBlock* GenerateDefaultCode( CHsp3LLVM *hsp, Function *func,
+									 BasicBlock *bb, BasicBlock *retBB, Task *task ) {
 		CreateCallImm( bb, "Push" + hsp->GetHSPCmdTypeName( TYPE_INUM ), val );
 
 		return bb;
@@ -331,7 +396,8 @@ public:
 	{
 		return PUSH_STRUCT_OP;
 	}
-	BasicBlock* GenerateDefaultCode( CHsp3LLVM *hsp, Function *func, BasicBlock *bb )
+	BasicBlock* GenerateDefaultCode( CHsp3LLVM *hsp, Function *func,
+									 BasicBlock *bb, BasicBlock *retBB, Task *task )
 	{
 		CreateCallImm( bb, "Push" + hsp->GetHSPCmdTypeName( TYPE_STRUCT ), val );
 
@@ -353,7 +419,8 @@ public:
 	{
 		return PUSH_LABEL_OP;
 	}
-	BasicBlock* GenerateDefaultCode( CHsp3LLVM *hsp, Function *func, BasicBlock *bb )
+	BasicBlock* GenerateDefaultCode( CHsp3LLVM *hsp, Function *func,
+									 BasicBlock *bb, BasicBlock *retBB, Task *task )
 	{
 		CreateCallImm( bb, "Push" + hsp->GetHSPCmdTypeName( TYPE_LABEL ), val );
 
@@ -375,7 +442,8 @@ public:
 	{
 		return PUSH_STR_OP;
 	}
-	BasicBlock* GenerateDefaultCode( CHsp3LLVM *hsp, Function *func, BasicBlock *bb )
+	BasicBlock* GenerateDefaultCode( CHsp3LLVM *hsp, Function *func,
+									 BasicBlock *bb, BasicBlock *retBB, Task *task )
 	{
 		LLVMContext &Context = getGlobalContext();
 		Function *f = M->getFunction("Push" + hsp->GetHSPCmdTypeName( TYPE_STRING ));
@@ -409,7 +477,8 @@ public:
 	{
 		return PUSH_DEFAULT;
 	}
-	BasicBlock* GenerateDefaultCode( CHsp3LLVM *hsp, Function *func, BasicBlock *bb )
+	BasicBlock* GenerateDefaultCode( CHsp3LLVM *hsp, Function *func,
+									 BasicBlock *bb, BasicBlock *retBB, Task *task )
 	{
 		LLVMContext &Context = getGlobalContext();
 
@@ -447,7 +516,8 @@ public:
 	{
 		return PUSH_CMD_OP;
 	}
-	BasicBlock* GenerateDefaultCode( CHsp3LLVM *hsp, Function *func, BasicBlock *bb )
+	BasicBlock* GenerateDefaultCode( CHsp3LLVM *hsp, Function *func,
+									 BasicBlock *bb, BasicBlock *retBB, Task *task )
 	{
 		CreateCallImm( bb, "Push" + hsp->GetHSPCmdTypeName( type ), val, ar );
 
@@ -468,7 +538,8 @@ public:
 	{
 		return PUSH_FUNC_END_OP;
 	}
-	BasicBlock* GenerateDefaultCode( CHsp3LLVM *hsp, Function *func, BasicBlock *bb )
+	BasicBlock* GenerateDefaultCode( CHsp3LLVM *hsp, Function *func,
+									 BasicBlock *bb, BasicBlock *retBB, Task *task )
 	{
 		CreateCallImm( bb, "PushFuncEnd" );
 
@@ -490,7 +561,8 @@ public:
 	{
 		return VAR_SET_OP;
 	}
-	BasicBlock* GenerateDefaultCode( CHsp3LLVM *hsp, Function *func, BasicBlock *bb )
+	BasicBlock* GenerateDefaultCode( CHsp3LLVM *hsp, Function *func,
+									 BasicBlock *bb, BasicBlock *retBB, Task *task )
 	{
 		LLVMContext &Context = getGlobalContext();
 		Builder.SetInsertPoint( bb );
@@ -530,7 +602,8 @@ public:
 	{
 		return VAR_INC_OP;
 	}
-	BasicBlock* GenerateDefaultCode( CHsp3LLVM *hsp, Function *func, BasicBlock *bb )
+	BasicBlock* GenerateDefaultCode( CHsp3LLVM *hsp, Function *func,
+									 BasicBlock *bb, BasicBlock *retBB, Task *task )
 	{
 		LLVMContext &Context = getGlobalContext();
 		Builder.SetInsertPoint( bb );
@@ -569,7 +642,8 @@ public:
 	{
 		return VAR_DEC_OP;
 	}
-	BasicBlock* GenerateDefaultCode( CHsp3LLVM *hsp, Function *func, BasicBlock *bb )
+	BasicBlock* GenerateDefaultCode( CHsp3LLVM *hsp, Function *func,
+									 BasicBlock *bb, BasicBlock *retBB, Task *task )
 	{
 		LLVMContext &Context = getGlobalContext();
 		Builder.SetInsertPoint( bb );
@@ -612,7 +686,8 @@ public:
 	int GetCalcOp() const {
 		return op;
 	}
-	BasicBlock* GenerateDefaultCode( CHsp3LLVM *hsp, Function *func, BasicBlock *bb )
+	BasicBlock* GenerateDefaultCode( CHsp3LLVM *hsp, Function *func,
+									 BasicBlock *bb, BasicBlock *retBB, Task *task )
 	{
 		LLVMContext &Context = getGlobalContext();
 		Builder.SetInsertPoint( bb );
@@ -644,9 +719,9 @@ public:
 };
 
 class CompareOp : public Op {
-	int task;
+	int taskId;
 public:
-	CompareOp( int task ) : task( task )
+	CompareOp( int task ) : taskId( task )
 	{
 	}
 	virtual std::string GetName()
@@ -659,9 +734,10 @@ public:
 	}
 	int GetNextTask() const
 	{
-		return task;
+		return taskId;
 	}
-	BasicBlock* GenerateDefaultCode( CHsp3LLVM *hsp, Function *func, BasicBlock *bb )
+	BasicBlock* GenerateDefaultCode( CHsp3LLVM *hsp, Function *func,
+									 BasicBlock *bb, BasicBlock *retBB, Task *task )
 	{
 		LLVMContext &Context = getGlobalContext();
 		Builder.SetInsertPoint( bb );
@@ -676,8 +752,9 @@ public:
 		Builder.CreateCondBr( cond, thenBB, elseBB );
 
 		Builder.SetInsertPoint( thenBB );
-		CreateCallImm( thenBB, "TaskSwitch", task );
-		Builder.CreateBr( sCurTaskRetBB );
+		CreateCallImm( thenBB, "TaskSwitch", taskId );
+		Builder.CreateBr( retBB );
+		task->returnBlocks.insert( thenBB );
 
 		return elseBB;
 	}
@@ -700,53 +777,12 @@ public:
 	{
 		return CMD_OP;
 	}
-	BasicBlock* GenerateDefaultCode( CHsp3LLVM *hsp, Function *func, BasicBlock *bb )
+	BasicBlock* GenerateDefaultCode( CHsp3LLVM *hsp, Function *func,
+									 BasicBlock *bb, BasicBlock *retBB, Task *task )
 	{
 		CreateCallImm( bb, hsp->GetHSPCmdTypeName( type ), val, pnum );
 
 		return bb;
-	}
-};
-
-class Var {
-public:
-	int type;
-	int val;
-
-	int tflag;
-	int num;
-	int change;
-
-	bool localVar;
-
-	Var( int type, int val ) : type( type ), val( val ), tflag(0), num(0), change(0), localVar(false)
-	{
-	}
-
-
-	bool operator<( const Var& a ) const {
-		return (val < a.val) || (val == a.val && type < a.type);
-	}
-
-};
-
-
-
-class Task {
-public:
-	std::string name;
-	Function *func;
-	Function *spFunc;
-	CHSP3_TASK funcPtr;
-	int numCall;
-	int numCurCall;
-	int numChange;
-	std::set<Var> usedVariables;
-	std::vector<Op*> operations;
-	std::map<int, Value*> llVariables;
-
-	Task() : func(NULL), funcPtr(NULL), numCall(0), numCurCall(0), numChange(0)
-	{
 	}
 };
 
@@ -1159,7 +1195,9 @@ static void CheckType( CHsp3LLVM *hsp, Task *task)
 				{
 					PushCmdOp *pcop = (PushCmdOp*)op;
 
-					int retType = GetFuncTypeRet(  pcop->GetCmdType(),  pcop->GetCmdVal(), pcop->GetCmdPNum() );
+					int retType = GetFuncTypeRet( pcop->GetCmdType(),
+												  pcop->GetCmdVal(),
+												  pcop->GetCmdPNum() );
 					changed |= op->flag != retType;
 					op->flag = retType;
 				}
@@ -1313,7 +1351,7 @@ static Value* CompileCalcD( int code, Value *a, Value *b )
 	}
 }
 
-static BasicBlock *CompileOp( CHsp3LLVM *hsp, Function *func, BasicBlock *bb, Task *task, Op *op )
+static BasicBlock *CompileOp( CHsp3LLVM *hsp, Function *func, BasicBlock *bb, Task *task, Op *op, BasicBlock *retBB )
 {
 	LLVMContext &Context = getGlobalContext();
 	Builder.SetInsertPoint( bb );
@@ -1694,7 +1732,8 @@ static BasicBlock *CompileOp( CHsp3LLVM *hsp, Function *func, BasicBlock *bb, Ta
 
 			Builder.SetInsertPoint( thenBB );
 			CreateCallImm( thenBB, "TaskSwitch", comp->GetNextTask() );
-			Builder.CreateBr( sCurTaskRetBB );
+			Builder.CreateBr( retBB );
+			task->returnBlocks.insert( thenBB );
 
 			return elseBB;
 		}
@@ -1709,7 +1748,7 @@ static BasicBlock *CompileOp( CHsp3LLVM *hsp, Function *func, BasicBlock *bb, Ta
 	return NULL;
 }
 
-static void CompileTask( CHsp3LLVM *hsp, Task *task )
+static void CompileTask( CHsp3LLVM *hsp, Task *task, Function *func, BasicBlock *retBB )
 {
 	LLVMContext &Context = getGlobalContext();
 
@@ -1830,17 +1869,10 @@ static void CompileTask( CHsp3LLVM *hsp, Task *task )
 
 
 	task->llVariables.clear();
-
-	task->spFunc = cast<Function>(M->getOrInsertFunction(buf,
-														 Type::getVoidTy( Context ),
-														 (Type *)0));
-	BasicBlock *curBB = BasicBlock::Create( Context, "entry", task->spFunc );
-
-	BasicBlock *retBB = BasicBlock::Create( Context, "ret", task->spFunc );
-	sCurTaskRetBB = retBB;
-
-	Builder.SetInsertPoint( retBB );
-	Builder.CreateRetVoid();
+	BasicBlock *curBB = BasicBlock::Create( Context,
+											task->name + "_entry",
+											func );
+	task->entry = curBB;
 
 	Builder.SetInsertPoint( curBB );
 
@@ -1851,23 +1883,22 @@ static void CompileTask( CHsp3LLVM *hsp, Task *task )
 		Op *op = *it;
 
 		if ( op->compile == VALUE ) {
-			curBB = CompileOp( hsp, task->spFunc, curBB, task, op );
+			curBB = CompileOp( hsp, func, curBB, task, op, retBB );
 			if ( !curBB ) {
-				task->spFunc = NULL;
 				Alert( (char*)(buf + op->GetName()).c_str() );
 				return;
 			}
 		} else {
-			curBB = op->GenerateDefaultCode( hsp, task->spFunc, curBB );
+			curBB = op->GenerateDefaultCode( hsp, func, curBB, retBB, task );
 		}
 	}
 
 	Builder.SetInsertPoint( curBB );
 	Builder.CreateBr( retBB );
+	task->returnBlocks.insert( curBB );
 }
 
-
-static void CompileTaskGeneral( CHsp3LLVM *hsp, Task *task )
+static void CompileTaskGeneral( CHsp3LLVM *hsp, Task *task, Function *func, BasicBlock *retBB )
 {
 	LLVMContext &Context = getGlobalContext();
 
@@ -1877,16 +1908,10 @@ static void CompileTaskGeneral( CHsp3LLVM *hsp, Task *task )
 
 	sprintf( buf, "%s", task->name.c_str() );
 
-	task->func = cast<Function>(M->getOrInsertFunction(buf,
-													   Type::getVoidTy( Context ),
-													   (Type *)0));
-	BasicBlock *curBB = BasicBlock::Create( Context, "entry", task->func );
-
-	BasicBlock *retBB = BasicBlock::Create( Context, "ret", task->func );
-	sCurTaskRetBB = retBB;
-
-	Builder.SetInsertPoint( retBB );
-	Builder.CreateRetVoid();
+	BasicBlock *curBB = BasicBlock::Create( Context,
+											task->name + "_entry",
+											func );
+	task->entry = curBB;
 
 	Builder.SetInsertPoint( curBB );
 
@@ -1896,11 +1921,12 @@ static void CompileTaskGeneral( CHsp3LLVM *hsp, Task *task )
 		  it != task->operations.end(); it++ ) {
 		Op *op = *it;
 
-		curBB = op->GenerateDefaultCode( hsp, task->func, curBB );
+		curBB = op->GenerateDefaultCode( hsp, func, curBB, retBB, task );
 	}
 
 	Builder.SetInsertPoint( curBB );
 	Builder.CreateBr( retBB );
+	task->returnBlocks.insert( curBB );
 }
 
 static void TraceTaskProc()
@@ -1951,7 +1977,23 @@ static void TraceTaskProc()
 		}
 	}
 	if ( !task->func ) {
-		CompileTaskGeneral( hsp3, task );
+		LLVMContext &Context = getGlobalContext();
+		char buf[256];
+		sprintf( buf, "%s_%d", task->name.c_str(), task->numCall );
+
+		Function* func = cast<Function>(M->getOrInsertFunction( buf,
+																Type::getInt32Ty( Context ),
+																Type::getInt32Ty( Context ),
+																(Type *)0 ));
+		Argument &arg = *func->arg_begin();
+		BasicBlock *funcRet = BasicBlock::Create( Context, "ret", func );
+
+		CompileTaskGeneral( hsp3, task, func, funcRet );
+
+		Builder.SetInsertPoint( funcRet );
+		Builder.CreateRet( ConstantInt::get( Type::getInt32Ty( Context ), -1 ) );
+
+		task->func = func;
 
 		std::string ErrMsg;
 		if ( verifyModule( *M, ReturnStatusAction, &ErrMsg ) ) {
@@ -1969,11 +2011,29 @@ static void TraceTaskProc()
 		task->numCurCall ++;
 	}
 	if ( task->numCurCall == 10 ) {
+		LLVMContext &Context = getGlobalContext();
+		char buf[256];
+		sprintf( buf, "%s_%d", task->name.c_str(), task->numCall );
 
 		LoadLLRuntime();
 
-		CompileTask( hsp3, task );
+		Function* func = cast<Function>(M->getOrInsertFunction( buf,
+																Type::getInt32Ty( Context ),
+																Type::getInt32Ty( Context ),
+																(Type *)0 ));
+		Argument &arg = *func->arg_begin();
+		BasicBlock *funcEntry = BasicBlock::Create( Context, "entry", func );
+		BasicBlock *funcRet = BasicBlock::Create( Context, "ret", func );
 
+		CompileTask( hsp3, task, func, funcRet );
+
+		Builder.SetInsertPoint( funcEntry );
+		Builder.CreateBr( task->entry );
+
+		Builder.SetInsertPoint( funcRet );
+		Builder.CreateRet( ConstantInt::get( Type::getInt32Ty( Context ), -1 ) );
+
+		task->spFunc = func;
 		if ( true ) {
 			std::string ErrorInfo;
 			std::auto_ptr<raw_fd_ostream>
@@ -2052,7 +2112,9 @@ void DumpResult()
 }
 
 void __HspInit( Hsp3r *hsp3r )
+
 {
+	LLVMContext &Context = getGlobalContext();
 	char mes[256];
 
 	sHsp3r = hsp3r;
@@ -2081,13 +2143,27 @@ void __HspInit( Hsp3r *hsp3r )
 		Task *task = sTasks[mes];
 		__Task[i] = task;
 		if ( task ) {
-			CompileTaskGeneral( hsp3, task );
+			Function* func = cast<Function>(M->getOrInsertFunction( mes,
+																	Type::getInt32Ty( Context ),
+																	Type::getInt32Ty( Context ),
+																	(Type *)0 ));
+			Argument &arg = *func->arg_begin();
+			BasicBlock *funcEntry = BasicBlock::Create( Context, "entry", func );
+			BasicBlock *funcRet = BasicBlock::Create( Context, "ret", func );
+
+			CompileTaskGeneral( hsp3, task, func, funcRet );
+
+			Builder.SetInsertPoint( funcEntry );
+			Builder.CreateBr( task->entry );
+
+			Builder.SetInsertPoint( funcRet );
+			Builder.CreateRet( ConstantInt::get( Type::getInt32Ty( Context ), -1 ) );
 
 			std::string ErrMsg;
 			if ( verifyModule( *M, ReturnStatusAction, &ErrMsg ) ) {
 				Alert( (char*)ErrMsg.c_str() );
 			}
-
+			task->func = func;
 			task->funcPtr = (CHSP3_TASK)EE->getPointerToFunction( task->func );
 			__HspTaskFunc[i] = TraceTaskProc;//task->funcPtr;
 		} else {
@@ -2103,13 +2179,11 @@ void __HspEntry( void )
 	GlobalVariable *ctx = (GlobalVariable*)M->getGlobalVariable( "hspctx" );
 	EE->updateGlobalMapping( ctx, (void*)&sHspctx );
 
-	Alert( "HspEntry" );
 	Task *task = sTasks["__HspEntry"];
 
 	void *fp = EE->getPointerToFunction( task->func );
-	CHSP3_TASK t = (CHSP3_TASK)fp;
-	t();
-//	exit(0);
+	CHSP3_FUNC t = (CHSP3_FUNC)fp;
+	t(1);
 }
 
 // LLVM utilities
@@ -2221,6 +2295,7 @@ void* HspLazyFunctionCreator( const std::string &Name )
 	if ("sin" == Name) return (double(*)(double))sin;
 
 	//	if ("Hsp3rReset" == Name) return Hsp3rReset;
+	if ("GetCurTaskId" == Name) return GetCurTaskId;
 
 	Alert( (char*)(Name + " not foud").c_str() );
 	return NULL;
@@ -2316,9 +2391,6 @@ void CHsp3LLVM::MakeCPPTask( const char *name, int nexttask )
 
 	sCurTask = new Task();
 	sCurTask->name = name;
-	sCurTask->func =
-		cast<Function>(M->getOrInsertFunction(name, Type::getVoidTy( Context ),
-											  (Type *)0));
 	sTasks[name] = sCurTask;
 	//	Alert((char*)name);
 
@@ -2982,7 +3054,7 @@ int CHsp3LLVM::MakeCPPMain( void )
 
 int CHsp3LLVM::MakeSource( int option, void *ref )
 {
-	//		C/C++ソースを出力する
+	//	コンパイル処理
 	//
 	int i;
 	int otmax;

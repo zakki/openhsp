@@ -25,6 +25,7 @@
 /*------------------------------------------------------------*/
 
 extern CHSP3_TASK *__HspTaskFunc;		// hsp3cnvで生成されるタスク関数リスト
+extern CHSP3_TASK *__HspTaskModFunc;	// hsp3cnvで生成されるユーザー定義関数リスト
 void __HspEntry( void );				// hsp3cnvで生成されるエントリーポイント
 
 static	HSPCTX *hspctx;					// HSPのコンテキスト
@@ -42,6 +43,7 @@ static	HSP3TYPEINFO *extsysvar_info;
 static	HSP3TYPEINFO *intfunc_info;
 static	HSP3TYPEINFO *sysvar_info;
 static	HSP3TYPEINFO *progfunc_info;
+static	HSP3TYPEINFO *modcmd_info;
 
 /*------------------------------------------------------------*/
 
@@ -209,6 +211,7 @@ void VarUtilInit( HSPCTX *ctx )
 	intfunc_info = code_gettypeinfo( TYPE_INTFUNC );
 	sysvar_info = code_gettypeinfo( TYPE_SYSVAR );
 	progfunc_info = code_gettypeinfo( TYPE_PROGCMD );
+	modcmd_info = code_gettypeinfo( TYPE_MODCMD );
 
 	//		最初のタスク実行関数をセット
 	curtask = (CHSP3_TASK)__HspEntry;
@@ -396,6 +399,37 @@ double CallDoubleSysvar( int val, int pnum )
 
 void PushDllfunc( int val, int pnum )
 {
+}
+
+
+void PushModule( int val )
+{
+}
+
+
+void PushModcmd( int val, int pnum )
+{
+#if 0
+	STRUCTDAT *st;
+	HSPROUTINE *r;
+	int size;
+	char *p;
+
+	st = &hspctx->mem_finfo[val];
+	size = sizeof(HSPROUTINE) + st->size;
+	r = (HSPROUTINE *)StackPushSize( TYPE_EX_CUSTOMFUNC, size );
+	p = (char *)(r+1);
+
+	code_expandstruct( p, st, CODE_EXPANDSTRUCT_OPT_NONE );
+
+	r->oldtack = hspctx->prmstack;
+	hspctx->prmstack = (void *)p;
+	r->mcsret = mcsbak;
+	r->stacklev = hspctx->sublev++;
+	r->param = st;
+
+	if ( modcmd_info->cmdfunc( cmd ) ) HspPostExec();
+#endif
 }
 
 

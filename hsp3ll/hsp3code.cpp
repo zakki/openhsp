@@ -1452,7 +1452,6 @@ char *code_getsptr( int *type )
 */
 /*------------------------------------------------------------*/
 
-static int p1,p2,p3,p4,p5,p6;
 static int reffunc_intfunc_ivalue;
 
 /*
@@ -1723,6 +1722,7 @@ static int cmdfunc_prog( int cmd )
 {
 	//		cmdfunc : TYPE_PROGCMD
 	//
+	int p1,p2,p3,p4,p5,p6;
 	code_next();							// 次のコードを取得(最初に必ず必要です)
 
 	switch( cmd ) {							// サブコマンドごとの分岐
