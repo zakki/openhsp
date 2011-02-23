@@ -66,7 +66,6 @@ CALCCODE_LR,
 CALCCODE_MAX
 };
 
-
 //	PVAL structure
 //
 typedef struct
@@ -86,6 +85,7 @@ typedef struct
 	short	arraycnt;			// Array Set Count
 	int		offset;				// Array Data Offset
 	int		arraymul;			// Array Multiple Value 
+
 } PVal;
 
 
@@ -235,5 +235,18 @@ void HspVarCoreArray( PVal *pval, int offset );
 #define HspVarCoreGetAPTR( pv ) ((pv)->offset)
 
 #define HspVarCoreCopyArrayInfo( pv, src ) (pv)->arraycnt = (src)->arraycnt;(pv)->offset = (src)->offset;(pv)->arraymul = (src)->arraymul;
+
+
+inline PDAT *HspVarCorePtrAPTR( PVal *pv, APTR ofs )
+{
+	//		変数データの実態ポインタを得る
+	//		(APTRとpvalから実態を求める)
+	//
+	pv->offset=ofs;
+	return hspvarproc[(pv)->flag].GetPtr(pv);
+}
+
+
+
 
 #endif

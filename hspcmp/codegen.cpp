@@ -153,11 +153,7 @@ void CToken::CalcCG_factor( void )
 		calccount++;
 		return;
 	case TK_OBJ:
-		id = lb->Search( cg_str );
-		if ( id < 0 ) {
-			id = lb->Regist( cg_str, TYPE_VAR, cg_valcnt );
-			cg_valcnt++;
-		}
+		id = SetVarsFixed( cg_str, cg_defvarfix );
 		if ( lb->GetType(id) == TYPE_VAR ) {
 			if ( lb->GetInitFlag(id) == LAB_INIT_NO ) {
 #ifdef JPNMSG
@@ -826,19 +822,22 @@ void CToken::GenerateCodePRM( void )
 
 		CalcCG( ex );								// 式の評価
 		//Mesf( "#count %d", calccount );
-		if ( calccount == 1 ) {						// パラメーターが単一項目の時
-			switch( cs_lasttype ) {
-			case TK_NUM:
-			case TK_DNUM:
-			case TK_STRING:
-				{
-				unsigned short *cstmp;
-				cstmp = (unsigned short *)( cs_buf->GetBuffer() + cs_lastptr );
-				*cstmp |= EXFLG_0;					// 単一項目フラグを立てる
-				break;
+
+		if ( hed_cmpmode & CMPMODE_OPTPRM ) {
+			if ( calccount == 1 ) {						// パラメーターが単一項目の時
+				switch( cs_lasttype ) {
+				case TK_NUM:
+				case TK_DNUM:
+				case TK_STRING:
+					{
+					unsigned short *cstmp;
+					cstmp = (unsigned short *)( cs_buf->GetBuffer() + cs_lastptr );
+					*cstmp |= EXFLG_0;					// 単一項目フラグを立てる
+					break;
+					}
+				default:
+					break;
 				}
-			default:
-				break;
 			}
 		}
 
@@ -922,12 +921,7 @@ void CToken::GenerateCodePRMF2( void )
 			GetTokenCG( GETTOKEN_NOFLOAT );
 			break;
 		case TK_OBJ:
-			id = lb->Search( cg_str );
-			if ( id < 0 ) {
-				id = lb->Regist( cg_str, TYPE_VAR, cg_valcnt );
-				cg_valcnt++;
-			}
-
+			id = SetVarsFixed( cg_str, cg_defvarfix );
 			t = lb->GetType(id);
 			if (( t == TYPE_XLABEL )||( t == TYPE_LABEL )) throw CGERROR_LABELNAME;
 			PutCSSymbol( id, ex );
@@ -969,11 +963,7 @@ void CToken::GenerateCodePRMF3( void )
 	GetTokenCG( GETTOKEN_DEFAULT );
 	if ( ttype != TK_OBJ ) throw CGERROR_PP_BAD_STRUCT_SOURCE;
 
-	id = lb->Search( cg_str );
-	if ( id < 0 ) {
-		id = lb->Regist( cg_str, TYPE_VAR, cg_valcnt );
-		cg_valcnt++;
-	}
+	id = SetVarsFixed( cg_str, cg_defvarfix );
 	GenerateCodeVAR( id, ex );
 
 	if ( ttype != TK_NONE ) throw CGERROR_PP_BAD_STRUCT_SOURCE;
@@ -1050,11 +1040,7 @@ void CToken::GenerateCodeMethod( void )
 		GetTokenCG( GETTOKEN_DEFAULT );
 		break;
 	case TK_OBJ:
-		id = lb->Search( cg_str );
-		if ( id < 0 ) {
-			id = lb->Regist( cg_str, TYPE_VAR, cg_valcnt );
-			cg_valcnt++;
-		}
+		id = SetVarsFixed( cg_str, cg_defvarfix );
 		GenerateCodeVAR( id, ex );
 		break;
 	default:
@@ -1085,7 +1071,7 @@ void CToken::GenerateCodeMethod( void )
 
 }
 
-
+#if 0
 void CToken::GenerateCodePRMN( void )
 {
 	//		HSP3Codeを展開する(パラメーター)
@@ -1142,7 +1128,7 @@ void CToken::GenerateCodePRMN( void )
 		GetTokenCG( GETTOKEN_DEFAULT );
 	}
 }
-
+#endif
 
 void CToken::GenerateCodeLabel( char *keyname, int ex )
 {
@@ -1348,13 +1334,9 @@ void CToken::CheckInternalProgCMD( int opt, int orgcs )
 	case 0x0f:					// dupptr
 		GetTokenCG( GETTOKEN_DEFAULT );
 		if ( ttype == TK_OBJ ) {
-			i = lb->Search( cg_str );
-		}
-		if ( i < 0 ) {
+			i = SetVarsFixed( cg_str, cg_defvarfix );
 			//	変数の初期化フラグをセットする
-			i = lb->Regist( cg_str, TYPE_VAR, cg_valcnt );
 			lb->SetInitFlag( i, LAB_INIT_DONE );
-			cg_valcnt++;
 			//Mesf( "#initflag set [%s]", cg_str );
 		}
 		cg_ptr = cg_ptr_bak;
@@ -2052,6 +2034,51 @@ void CToken::GenerateCodePP_struct( void )
 }
 
 
+void CToken::GenerateCodePP_defvars( int fixedvalue )
+{
+	//		HSP3Codeを展開する(defint,defdouble,defnone)
+	//
+	int id;
+	int prms;
+	prms = 0;
+	while(1) {
+		GetTokenCG( GETTOKEN_DEFAULT );
+		if ( ttype >= TK_EOL ) break;
+		if ( ttype != TK_OBJ ) throw CGERROR_WRONG_VARIABLE;
+		id = SetVarsFixed( cg_str, fixedvalue );
+		if ( lb->GetType(id) != TYPE_VAR ) {
+			throw CGERROR_WRONG_VARIABLE;
+		}
+		prms++;
+		//Mesf( "name:%s(%d) fixed:%d", cg_str, id, fixedvalue );
+
+		GetTokenCG( GETTOKEN_DEFAULT );
+		if ( ttype >= TK_EOL ) break;
+		if ( ttype != TK_NONE ) throw CGERROR_PP_WRONG_PARAM_NAME;
+		if ( val != ',' ) throw CGERROR_PP_WRONG_PARAM_NAME;
+	}
+
+	if ( prms == 0 ) {
+		cg_defvarfix = fixedvalue;
+	}
+}
+
+
+int CToken::SetVarsFixed( char *varname, int fixedvalue )
+{
+	//		変数の固定型を設定する
+	//
+	int id;
+	id = lb->Search( varname );
+	if ( id < 0 ) {
+		id = lb->Regist( varname, TYPE_VAR, cg_valcnt );
+		cg_valcnt++;
+	}
+	lb->SetForceType( id, fixedvalue );
+	return id;
+}
+
+
 void CToken::GenerateCodePP( char *buf )
 {
 	//		HSP3Codeを展開する(プリプロセスコマンド)
@@ -2100,6 +2127,9 @@ void CToken::GenerateCodePP( char *buf )
 	if ( !strcmp( cg_str,"struct" ) ) { GenerateCodePP_struct(); return; }
 	if ( !strcmp( cg_str,"usecom" ) ) { GenerateCodePP_usecom(); return; }
 	if ( !strcmp( cg_str,"comfunc" ) ) { GenerateCodePP_comfunc(); return; }
+	if ( !strcmp( cg_str,"defint" ) ) { GenerateCodePP_defvars( LAB_TYPEFIX_INT ); return; }
+	if ( !strcmp( cg_str,"defdouble" ) ) { GenerateCodePP_defvars( LAB_TYPEFIX_DOUBLE ); return; }
+	if ( !strcmp( cg_str,"defnone" ) ) { GenerateCodePP_defvars( LAB_TYPEFIX_NONE ); return; }
 }
 
 
@@ -2150,9 +2180,8 @@ int CToken::GenerateCodeSub( void )
 			i = lb->Search( cg_str );
 			if ( i < 0 ) {
 				//Mesf( "[%s][%d]",cg_str, cg_valcnt );
-				i = lb->Regist( cg_str, TYPE_VAR, cg_valcnt );
+				i = SetVarsFixed( cg_str, cg_defvarfix );
 				lb->SetInitFlag( i, LAB_INIT_DONE );		//	変数の初期化フラグをセットする
-				cg_valcnt++;
 				GenerateCodeLET( i );
 			} else {
 				t = lb->GetType( i );
@@ -2337,6 +2366,7 @@ int CToken::GenerateCodeMain( CMemBuf *buf )
 	cg_localcur = 0;
 	cg_locallabel = 0;
 	cg_varhpi = 0;
+	cg_defvarfix = LAB_TYPEFIX_NONE;
 
 	iflev=0;
 	replev=0;
@@ -2548,11 +2578,32 @@ void CToken::PutDIVars( void )
 	//
 	int a,i,id;
 	LABOBJ *lab;
+	char vtmpname[256];
+	char *p;
+
 	id = 0;
+	strcpy( vtmpname, "I_" );
+
 	for( a=0; a<lb->GetNumEntry(); a++ ) {
 		lab = lb->GetLabel(a);
 		if ( lab->type == TK_OBJ ) {
-			i = PutDS( lab->name );
+			switch( lab->typefix ) {
+			case LAB_TYPEFIX_INT:
+				vtmpname[0] = 'I';
+				p = vtmpname;
+				strcpy( p+2, lab->name );
+				break;
+			case LAB_TYPEFIX_DOUBLE:
+				vtmpname[0] = 'D';
+				p = vtmpname;
+				strcpy( p+2, lab->name );
+				break;
+			case LAB_TYPEFIX_NONE:
+			default:
+				p = lab->name;
+				break;
+			}
+			i = PutDS( p );
 			PutDI( 253, i, lab->opt );
 		}
 	}

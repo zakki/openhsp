@@ -39,6 +39,7 @@
 
 #define LAB_TYPEFIX_NONE 0
 #define LAB_TYPEFIX_INT 4
+#define LAB_TYPEFIX_DOUBLE 3
 
 
 typedef struct LABREL LABREL;

@@ -67,6 +67,7 @@ static char *err[]={
 	"インポートするインデックスが指定されていません",		// 37
 	"インポートするIID名が指定されていません",				// 38
 	"未初期化変数を使用しようとしました",					// 39
+	"指定できない変数名です",								// 40
 	"*"
 };
 #else
@@ -110,6 +111,8 @@ static char *err[]={
 	"No interface name to bind",							// 36
 	"No import index to bind",								// 37
 	"No import IID to bind",								// 38
+	"Uninitalized variable detected",						// 39
+	"Wrong name for variable",								// 40
 	"*"
 };
 #endif

@@ -314,6 +314,9 @@ char 	*hsp_prepp[] =
 	"$000 0 #usecom",
 	"$000 0 #uselib",
 	"$000 0 #cmpopt",
+	"$000 0 #defint",					// (3.3)
+	"$000 0 #defdouble",
+	"$000 0 #defnone",
 
 #if 0
 	"$000 1 and",

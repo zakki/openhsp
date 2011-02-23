@@ -33,6 +33,7 @@
 #define CMPMODE_OPTINFO 8
 #define CMPMODE_PUTVARS 16
 #define CMPMODE_VARINIT 32
+#define CMPMODE_OPTPRM 64
 
 #define CG_FLAG_ENABLE 0
 #define CG_FLAG_DISABLE 1
@@ -282,6 +283,7 @@ private:
 	void GenerateCodePP_func( int deftype );
 	void GenerateCodePP_usecom( void );
 	void GenerateCodePP_comfunc( void );
+	void GenerateCodePP_defvars( int fixedvalue );
 
 	int GetParameterTypeCG( char *name );
 	int GetParameterStructTypeCG( char *name );
@@ -301,6 +303,8 @@ private:
 	void CheckInternalIF( int opt );
 	void CheckCMDIF_Set( int mode );
 	void CheckCMDIF_Fin( int mode );
+
+	int SetVarsFixed( char *varname, int fixedvalue );
 
 	void CalcCG_token( void );
 	void CalcCG_token_exprbeg( void );
@@ -381,6 +385,7 @@ private:
 	int cg_locallabel;
 	int cg_varhpi;
 	int cg_putvars;
+	int cg_defvarfix;
 	char *cg_ptr;
 	char *cg_ptr_bak;
 	char *cg_str;

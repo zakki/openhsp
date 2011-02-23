@@ -273,6 +273,7 @@ void *HspVarCoreCnvPtr( PVal *pval, int flag )
 }
 
 
+#if 0
 PDAT *HspVarCorePtrAPTR( PVal *pv, APTR ofs )
 {
 	//		変数データの実態ポインタを得る
@@ -281,6 +282,7 @@ PDAT *HspVarCorePtrAPTR( PVal *pv, APTR ofs )
 	pv->offset=ofs;
 	return hspvarproc[(pv)->flag].GetPtr(pv);
 }
+#endif
 
 
 HspVarProc *HspVarCoreSeekProc( const char *name )

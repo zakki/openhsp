@@ -133,7 +133,7 @@ CToken::CToken( void )
 	s3 = (unsigned char *)malloc( s3size );
 	lb = new CLabel;
 	tmp_lb = NULL;
-	hed_cmpmode = CMPMODE_OPTCODE;
+	hed_cmpmode = CMPMODE_OPTCODE | CMPMODE_OPTPRM;
 	tstack = new CTagStack;
 	errbuf = NULL;
 	packbuf = NULL;
@@ -148,7 +148,7 @@ CToken::CToken( char *buf )
 	s3 = (unsigned char *)malloc( s3size );
 	lb = new CLabel;
 	tmp_lb = NULL;
-	hed_cmpmode = CMPMODE_OPTCODE;
+	hed_cmpmode = CMPMODE_OPTCODE | CMPMODE_OPTPRM;
 	tstack = new CTagStack;
 	errbuf = NULL;
 	packbuf = NULL;
@@ -2770,7 +2770,7 @@ ppresult_t CToken::PP_CmpOpt( void )
 	if (tstrcmp(optname,"ppout")) {			// preprocessor out sw
 		i = CMPMODE_PPOUT;
 	}
-	if (tstrcmp(optname,"optcode")) {		// code optimization off sw
+	if (tstrcmp(optname,"optcode")) {		// code optimization sw
 		i = CMPMODE_OPTCODE;
 	}
 	if (tstrcmp(optname,"case")) {			// case sensitive sw
@@ -2784,6 +2784,9 @@ ppresult_t CToken::PP_CmpOpt( void )
 	}
 	if (tstrcmp(optname,"varinit")) {		// VAR initalize check
 		i = CMPMODE_VARINIT;
+	}
+	if (tstrcmp(optname,"optprm")) {		// parameter optimization sw
+		i = CMPMODE_OPTPRM;
 	}
 
 	if ( i == 0 ) {
