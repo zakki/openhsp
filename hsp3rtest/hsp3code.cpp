@@ -71,7 +71,7 @@ static STMDATA *next_stm;
 static int mem_loopppt[HSP3_REPEAT_MAX];	// repeat loop info
 static int mem_loopppt2[HSP3_REPEAT_MAX];	// repeat loop info
 
-void code_next( void )
+inline void code_next( void )
 {
 	//		Get 1 command block
 	//		(ver3.0以降用)
@@ -545,13 +545,6 @@ int code_get( void )
 	tflag = stm->type;
 	val = stm->ival;
 
-	if ( tflag == HSPVAR_FLAG_INT ) {
-		mpval = mpval_int;
-		*(int *)mpval->pt = val;
-		StackDecLevel;
-		code_next();
-		return 0;
-	}
 	if ( tflag == HSPVAR_FLAG_DEFAULT ) {
 		StackDecLevel;
 		code_next();
@@ -571,6 +564,15 @@ int code_get( void )
 		pval = (PVal *)val;
 		tflag = pval->flag;
 		ptr = (char *)HspVarCorePtrAPTR( pval, *iptr );
+	}
+
+	if ( tflag == HSPVAR_FLAG_INT ) {
+		mpval = mpval_int;
+		*(int *)mpval->pt = *(int *)ptr;
+		//*(int *)mpval->pt = val;
+		StackDecLevel;
+		code_next();
+		return 0;
 	}
 
 	varproc = HspVarCoreGetProc( tflag );
@@ -985,6 +987,35 @@ unsigned short *code_getlb( void )
 {
 	//		ラベルパラメーターを取得
 	//
+	int tflag;
+	STMDATA *stm;
+	char *ptr;
+	HspVarProc *varproc;
+
+	if ( StackGetLevel <= 0 ) throw HSPERR_LABEL_REQUIRED;
+
+	stm = StackPeek;
+	tflag = stm->type;
+	val = stm->ival;
+
+	if ( tflag == HSPVAR_FLAG_VAR ) {	// 変数指定ならば内容を取得する
+		PVal *pval;
+		int *iptr;
+		iptr = (int *)stm->itemp;
+		pval = (PVal *)val;
+		tflag = pval->flag;
+		iptr = (int *)HspVarCorePtrAPTR( pval, *iptr );
+		val = *iptr;
+	}
+
+	if ( tflag != HSPVAR_FLAG_LABEL ) throw HSPERR_LABEL_REQUIRED;
+
+	StackDecLevel;
+	code_next();
+
+	return (unsigned short *)( val );
+
+#if 0
 	int chk;
 	int p;
 	chk = code_get();
@@ -992,6 +1023,8 @@ unsigned short *code_getlb( void )
 	if ( mpval->flag != HSPVAR_FLAG_LABEL ) { throw HSPERR_LABEL_REQUIRED; }
 	p = *(int *)mpval->pt;
 	return (unsigned short *)( p );
+#endif
+
 #if 0
 	if ( type != TYPE_LABEL ) {
 		int chk;

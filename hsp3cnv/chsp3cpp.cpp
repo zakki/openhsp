@@ -5,6 +5,7 @@
 //
 #include <stdio.h>
 #include <string.h>
+#include <math.h>
 
 #include "supio.h"
 #include "chsp3cpp.h"
@@ -199,6 +200,36 @@ void CHsp3Cpp::MakeCPPLabel( void )
 }
 
 
+int	CHsp3Cpp::GetVarFixedType( int varid )
+{
+	//		変数が固定タイプか調べる
+	//		( LAB_TYPEFIX_* が返る )
+	//
+	int i;
+	unsigned char *mm;
+	char *sptr;
+
+	if ( mem_di_val == NULL ) {						// 変数名情報がない場合
+		return LAB_TYPEFIX_NONE;
+	}
+
+	mm = mem_di_val + ( varid * 6 );
+	i = (mm[3]<<16)+(mm[2]<<8)+mm[1];
+	sptr = GetDS( i );
+
+	if ( sptr[1] == '_' ) {
+		switch( sptr[0] ) {
+		case 'I':
+			return LAB_TYPEFIX_INT;					// int型固定
+		case 'D':
+			return LAB_TYPEFIX_DOUBLE;				// double型固定
+		}
+	}
+
+	return LAB_TYPEFIX_NONE;						// 通常のタイプ
+}
+
+
 int CHsp3Cpp::GetCPPExpressionSub( CMemBuf *eout )
 {
 	//		C/C++の計算式フォーマットでパラメーターを展開する(単項目)
@@ -211,6 +242,9 @@ int CHsp3Cpp::GetCPPExpressionSub( CMemBuf *eout )
 
 	*mes = 0;
 	vflag = 0;
+	curprm_type = cstype;
+	curprm_val = csval;
+
 	switch(cstype) {
 		case TYPE_MARK:
 			//		記号(スタックから取り出して演算)
@@ -352,16 +386,181 @@ int CHsp3Cpp::GetCPPExpressionSub( CMemBuf *eout )
 }
 
 
+int CHsp3Cpp::AnalysisCPPCalcInt( int prm1, int prm2, int op )
+{
+	//		演算結果を返す(int)
+	//
+	switch( op ) {
+	case CALCCODE_ADD:
+		return (prm1 + prm2);
+	case CALCCODE_SUB:
+		return (prm1 - prm2);
+	case CALCCODE_MUL:
+		return (prm1 * prm2);
+	case CALCCODE_DIV:
+		if ( prm2 == 0 ) {
+			OutMes( "// Error 0 Divide\r\n" );
+			return 0;
+		}
+		return (prm1 / prm2);
+	case CALCCODE_MOD:
+		if ( prm2 == 0 ) {
+			OutMes( "// Error 0 Divide\r\n" );
+			return 0;
+		}
+		return (prm1 % prm2);
+	case CALCCODE_AND:
+		return (prm1 & prm2);
+	case CALCCODE_OR:
+		return (prm1 | prm2);
+	case CALCCODE_XOR:
+		return (prm1 ^ prm2);
+	case CALCCODE_EQ:
+		return (prm1 == prm2);
+	case CALCCODE_NE:
+		return (prm1 != prm2);
+	case CALCCODE_GT:
+		return (prm1 > prm2);
+	case CALCCODE_LT:
+		return (prm1 < prm2);
+	case CALCCODE_GTEQ:
+		return (prm1 >= prm2);
+	case CALCCODE_LTEQ:
+		return (prm1 <= prm2);
+	case CALCCODE_RR:
+		return (prm1 >> prm2);
+	case CALCCODE_LR:
+		return (prm1 << prm2);
+	default:
+		break;
+	}
+	OutMes( "// Unexpect calc\r\n" );
+	return 0;
+}
+
+
+double CHsp3Cpp::AnalysisCPPCalcDouble( double prm1, double prm2, int op, int *result )
+{
+	//		演算結果を返す(double)
+	//
+	*result = TYPE_DNUM;
+	switch( op ) {
+	case CALCCODE_ADD:
+		return (prm1 + prm2);
+	case CALCCODE_SUB:
+		return (prm1 - prm2);
+	case CALCCODE_MUL:
+		return (prm1 * prm2);
+	case CALCCODE_DIV:
+		if ( prm2 == 0.0 ) {
+			OutMes( "// Error 0 Divide\r\n" );
+			return 0;
+		}
+		return (prm1 / prm2);
+	case CALCCODE_MOD:
+		if ( prm2 == 0.0 ) {
+			OutMes( "// Error 0 Divide\r\n" );
+			return 0;
+		}
+		return ( fmod( prm1, prm2 ) );
+	case CALCCODE_EQ:
+		*result = TYPE_INUM;
+		return (double)(prm1 == prm2);
+	case CALCCODE_NE:
+		*result = TYPE_INUM;
+		return (double)(prm1 != prm2);
+	case CALCCODE_GT:
+		*result = TYPE_INUM;
+		return (double)(prm1 > prm2);
+	case CALCCODE_LT:
+		*result = TYPE_INUM;
+		return (double)(prm1 < prm2);
+	case CALCCODE_GTEQ:
+		*result = TYPE_INUM;
+		return (double)(prm1 >= prm2);
+	case CALCCODE_LTEQ:
+		*result = TYPE_INUM;
+		return (double)(prm1 <= prm2);
+	default:
+		break;
+	}
+	OutMes( "// Unexpect calc\r\n" );
+	return 0;
+}
+
+
+int CHsp3Cpp::AnalysisCPPCalcParam( PRMAINFO *cp1, PRMAINFO *cp2, CMemBuf *eout, int op )
+{
+	//		cp1,cp2の内容から演算が可能か調べる
+	//		( 返値 : 0=不可能/1=可能(演算を行ないcp2に格納する) )
+	//
+	char mes[8192];
+	int cpival,cpfact,res;
+	double cpdval,cpdfact;
+	double *dptr;
+
+	if ( cp1->lasttype != cp2->lasttype ) return 0;
+	switch( cp2->lasttype ) {
+	case TYPE_INUM:
+		cpival = cp2->lastval;
+		cpfact = cp1->lastval;
+		cp2->lastval = AnalysisCPPCalcInt( cpival, cpfact, op );
+		cp2->num = eout->GetSize();							// 書き込まれるバッファ位置を更新
+		sprintf( mes, "PushInt(%d);/*OPT*/ ", cp2->lastval );
+		eout->PutStr( mes );
+		eout->Put( 0 );
+		break;
+	case TYPE_DNUM:
+		cpdval = GetDSf(cp2->lastval);
+		cpdfact = GetDSf(cp1->lastval);
+		cpdval = AnalysisCPPCalcDouble( cpdval, cpdfact, op, &res );
+		cp2->num = eout->GetSize();							// 書き込まれるバッファ位置を更新
+		*mes = 0;
+		switch( res ) {
+		case TYPE_INUM:
+			cpival = (int)cpdval;
+			cp2->lastval = cpival;
+			cp2->lasttype = TYPE_INUM;
+			sprintf( mes, "PushInt(%d);/*OPT*/ ", cpival );
+			break;
+		case TYPE_DNUM:
+			dptr = (double *)GetDS( cp2->lastval );
+			*dptr = cpdval;
+			sprintf( mes, "PushDouble(%f);/*OPT*/ ", cpdval );
+			break;
+		default:
+			break;
+		}
+		eout->PutStr( mes );
+		break;
+	default:
+		return 0;
+	}
+	return -1;
+}
+
+
 int CHsp3Cpp::GetCPPExpression( CMemBuf *eout, int *result )
 {
 	//		C/C++の計算式フォーマットでパラメーターを展開する
 	//		eout : 出力先
 	//		result : 結果の格納先(-2=解析なし/-1=複数項の計算式/other=単一のパラメーターtype)
+	//		返値   : 0=終端(pあり)/1=終端(pなし)/2=関数内のp省略/-1=省略値
 	//
-	int res;
+	int i;
+	int res, bufcur;
 	int tres;
+	int prms;
+	PRMAINFO calcprm[MAX_CALCINFO];				// 演算パラメーターの内容保持
+	CMemBuf calcbuf;							// 演算パラメーターの一時保持
+	PRMAINFO *cp;
+	PRMAINFO *cp1;
+	PRMAINFO *cp2;
+	char *pbuf;
 
 	*result = -2;
+	prms = 0;
+	curprm_stack = 0;
 
 	if (exflag&EXFLG_1) return 1;				// パラメーター終端
 	if (exflag&EXFLG_2) {						// パラメーター区切り(デフォルト時)
@@ -380,6 +579,8 @@ int CHsp3Cpp::GetCPPExpression( CMemBuf *eout, int *result )
 		}
 	}
 
+	//		演算パラメーター(計算式)を解析する
+	//
 	res = 0;
 	tres = cstype;
 
@@ -394,7 +595,7 @@ int CHsp3Cpp::GetCPPExpression( CMemBuf *eout, int *result )
 
 		switch(cstype) {
 		case TYPE_MARK:
-			//		記号(スタックから取り出して演算)
+			//		記号(終端のチェック)
 			//
 			if ( csval == ')' ) {					// 引数の終了マーク
 				exflag |= EXFLG_2;
@@ -402,7 +603,28 @@ int CHsp3Cpp::GetCPPExpression( CMemBuf *eout, int *result )
 				break;
 			}
 		default:
-			if ( GetCPPExpressionSub( eout ) == 0 ) { tres = -1; }
+			//		単一項目の解析
+			//
+			bufcur = calcbuf.GetSize();				// 書き込まれるバッファ位置
+			cp = &calcprm[prms];
+			cp->num = bufcur;
+			cp->lasttype = cstype;
+			cp->lastval = csval;
+
+			if ( GetCPPExpressionSub( &calcbuf ) == 0 ) { tres = -1; }
+			calcbuf.Put( 0 );
+
+			if (( curprm_type == TYPE_MARK )&&( prms >= 2 )) {
+				//	実際にスタック内容と演算できるか確認して、可能ならばまとめる
+				cp1 = &calcprm[prms-1];
+				cp2 = &calcprm[prms-2];
+				if ( AnalysisCPPCalcParam( cp1, cp2, &calcbuf, curprm_val )) {
+					prms--;					// cp2だけを残してスタックを縮める
+					break;
+				}
+			}
+
+			prms++;
 			break;
 		}
 
@@ -411,77 +633,38 @@ int CHsp3Cpp::GetCPPExpression( CMemBuf *eout, int *result )
 			break;
 		}
 	}
+
+	//		最終的な内容を出力する
+	//
+	cp = &calcprm[0];
+	pbuf = calcbuf.GetBuffer();
+	for(i=0;i<prms;i++) {
+		eout->PutStr( pbuf + cp->num );
+		cp++;
+	}
+
 	*result = tres;
+	curprm_stack = prms;
 	return res;
 }
 
 
-int CHsp3Cpp::MakeCPPParam( int addprm )
+void CHsp3Cpp::OutputCPPParam( void )
 {
-	//		パラメーターのトレース
-	//
-	int i;
-	int prm;
-	int len;
-	int result;
-	int curidx;
-	CMemBuf tmpbuf;
-	char *p;
-
-	prm = 0;
-	tmpbuf.AddIndexBuffer();
-
-	int j;
-	for(j=0;j<addprm;j++) {
-		if ( exflag & EXFLG_1) break;		// パラメーター列終端
-		if ( mcs > mcs_end ) break;			// データ終端チェック
-		if ( prm ) {
-			tmpbuf.Put(0);
-		}
-		tmpbuf.RegistIndex( tmpbuf.GetSize() );
-		GetCPPExpressionSub( &tmpbuf );
-		prm++;
-	}
-
-	while(1) {
-		if ( exflag & EXFLG_1) break;		// パラメーター列終端
-		if ( mcs > mcs_end ) break;			// データ終端チェック
-		if ( prm ) {
-			tmpbuf.Put(0);
-		}
-		curidx = tmpbuf.GetIndexBufferSize();
-		tmpbuf.RegistIndex( tmpbuf.GetSize() );
-		i = GetCPPExpression( &tmpbuf, &result );
-		if ( i > 0 ) break;
-		if ( i < -1 ) return i;
-		if ( i == -1 ) {
-			tmpbuf.PutStr( "PushDefault();" );
-		}
-		switch( result ) {
-		case TYPE_VAR:
-			p = tmpbuf.GetBuffer() + tmpbuf.GetIndex( curidx );
-			p = strstr2( p, "PushVar" );
-			p[5] = 'A'; p[6] = 'P';			// PushVar -> PushVAPに直す
-			break;
-		case TYPE_STRUCT:
-			p = tmpbuf.GetBuffer() + tmpbuf.GetIndex( curidx );
-			p = strstr2( p, "PushFuncPrm" );
-			p[9] = 'A'; p[10] = 'P';		// PushFuncPrm -> PushFuncPAPに直す
-			break;
-		default:
-			break;
-		}
-		prm++;
-	}
-
-	//		パラメーターを逆順で登録する
+	//		MakeCPPParamでトレースしたパラメーターを出力する
+	//		(パラメーターを逆順で登録する)
 	//		(stackをpopして正常な順番になるように)
 	//
-	i=tmpbuf.GetIndexBufferSize();
+	int i;
+	int len;
+	char *p;
+
+	if ( prmbuf == NULL ) return;
+	i = maxprms;
 	while(1) {
 		if ( i == 0 ) break;
 		i--;
-		p = tmpbuf.GetBuffer() + tmpbuf.GetIndex(i);
+		p = prmbuf->GetBuffer() + prmbuf->GetIndex(i);
 		len = (int)strlen( p );
 		if ( len ) {
 			int a1;
@@ -494,7 +677,93 @@ int CHsp3Cpp::MakeCPPParam( int addprm )
 			}
 		}
 	}
+	DisposeCPPParam();
+}
 
+
+void CHsp3Cpp::DisposeCPPParam( void )
+{
+	//	トレースしたパラメーターを破棄する
+	//
+	if ( prmbuf == NULL ) return;
+	delete prmbuf;								// バッファを破棄する
+	prmbuf = NULL;
+}
+
+
+int CHsp3Cpp::MakeCPPParam( int addprm )
+{
+	//		パラメーターのトレース
+	//		( 返値は、パラメーター数 )
+	//		( maxprms, prmaに結果を返す )
+	//		( 実際の出力は、OutputCPPParamで行なう )
+	//
+	int i;
+	int prm;
+	int result;
+	int curidx;
+	char *p;
+	PRMAINFO *curp;
+
+	prm = 0;
+	curp = prma;
+
+	prmbuf = new CMemBuf;
+	prmbuf->AddIndexBuffer();
+
+	int j;
+	for(j=0;j<addprm;j++) {
+		if ( exflag & EXFLG_1) break;		// パラメーター列終端
+		if ( mcs > mcs_end ) break;			// データ終端チェック
+		if ( prm ) {
+			prmbuf->Put(0);
+		}
+		prmbuf->RegistIndex( prmbuf->GetSize() );
+		GetCPPExpressionSub( prmbuf );
+		curp->num = 1;
+		curp->lasttype = curprm_type;
+		curp->lastval = curprm_val;
+		curp++;
+		prm++;
+	}
+
+	while(1) {
+		if ( exflag & EXFLG_1) break;		// パラメーター列終端
+		if ( mcs > mcs_end ) break;			// データ終端チェック
+		if ( prm ) {
+			prmbuf->Put(0);
+		}
+		curidx = prmbuf->GetIndexBufferSize();
+		prmbuf->RegistIndex( prmbuf->GetSize() );
+		i = GetCPPExpression( prmbuf, &result );
+		if ( i > 0 ) break;
+		if ( i < -1 ) return i;
+		if ( i == -1 ) {
+			prmbuf->PutStr( "PushDefault();" );
+		}
+		curp->num = curprm_stack;
+		curp->lasttype = curprm_type;
+		curp->lastval = curprm_val;
+		curp++;
+
+		switch( result ) {
+		case TYPE_VAR:
+			p = prmbuf->GetBuffer() + prmbuf->GetIndex( curidx );
+			p = strstr2( p, "PushVa" );
+			p[5] = 'A'; p[6] = 'P';			// PushVar -> PushVAPに直す
+			break;
+		case TYPE_STRUCT:
+			p = prmbuf->GetBuffer() + prmbuf->GetIndex( curidx );
+			p = strstr2( p, "PushFuncPrm" );
+			p[9] = 'A'; p[10] = 'P';		// PushFuncPrm -> PushFuncPAPに直す
+			break;
+		default:
+			break;
+		}
+		prm++;
+	}
+
+	maxprms = prm;
 	return prm;
 }
 
@@ -614,8 +883,100 @@ void CHsp3Cpp::MakeCPPSubModCmd( int cmdtype, int cmdval )
 	SetContext( &ctxbak );
 
 	pnum = MakeCPPParam();
+	OutputCPPParam();
 	OutLine( "PushLabel(%d);\r\n", curot );
 	OutLine( "%s(%d,%d);\r\n", GetHSPCmdTypeName(cmdtype), cmdval, pnum );
+}
+
+
+void CHsp3Cpp::MakeCPPSubProgCmd( int cmdtype, int cmdval )
+{
+	//		プログラム制御命令を展開
+	//
+	int pnum;
+	PRMAINFO *prm;
+
+	switch( cmdval ) {
+	case 0x00:								// goto
+		{
+		MCSCONTEXT ctxbak;
+		OutLine( "// goto " );
+		getCS();
+		GetContext( &ctxbak );
+		MakeProgramInfoParam2();
+		SetContext( &ctxbak );
+
+		pnum = MakeCPPParam();
+		prm = &prma[0];
+		if (( pnum == 1 )&&( prm->num == 1 )&&( prm->lasttype == TYPE_LABEL )) {
+			OutLine( "TaskSwitch(%d);\r\n", prm->lastval );
+			DisposeCPPParam();
+		} else {
+			OutputCPPParam();
+			OutLine( "%s(%d,%d);\r\n", GetHSPCmdTypeName(cmdtype), cmdval, pnum );
+		}
+		OutLine( "return;\r\n" );
+		break;
+		}
+
+	case 0x02:								// return
+	case 0x03:								// break
+	case 0x05:								// loop
+	case 0x06:								// continue
+	case 0x0b:								// foreach
+	case 0x0c:								// (hidden)foreach check
+	case 0x10:								// end
+	case 0x1b:								// assert
+	case 0x11:								// stop
+	case 0x19:								// on
+		//		後にreturnを付ける
+		//
+		MakeCPPSub( cmdtype, cmdval );
+		OutLine( "return;\r\n" );
+		break;
+	case 0x01:								// gosub
+	case 0x18:								// exgoto
+		//		gosubの展開
+		//
+		{
+		int pnum;
+		OutLine( "// %s\r\n", GetHSPName(cmdtype,cmdval) );
+		getCS();
+		pnum = MakeCPPParam();
+		OutputCPPParam();
+		OutLine( "PushLabel(%d); %s(%d,%d); return;\r\n", curot, GetHSPCmdTypeName(cmdtype), cmdval, pnum+1 );
+		MakeCPPTask2( -1, curot );
+		curot++;
+		break;
+		}
+	case 0x04:								// repeat
+		//		repeatの展開
+		//
+		{
+		int pnum;
+		OutLine( "// repeat\r\n" );
+		getCS();
+		pnum = MakeCPPParam(1);
+		OutputCPPParam();
+		OutLine( "PushLabel(%d); %s(%d,%d); return;\r\n", curot, GetHSPCmdTypeName(cmdtype), cmdval, pnum+1 );
+		MakeCPPTask( curot );
+		curot++;
+		break;
+		}
+
+	case 0x07:								// wait
+	case 0x08:								// await
+	case 0x17:								// run
+		//		タスクを区切る
+		//
+		MakeCPPSub( cmdtype, cmdval );
+		MakeCPPTask( curot );
+		curot++;
+		break;
+	default:
+		MakeCPPSub( cmdtype, cmdval );
+		break;
+	}
 }
 
 
@@ -631,7 +992,14 @@ void CHsp3Cpp::MakeCPPSub( int cmdtype, int cmdval )
 	GetContext( &ctxbak );
 	MakeProgramInfoParam2();
 	SetContext( &ctxbak );
+
 	pnum = MakeCPPParam();
+
+	//PRMAINFO *prm;
+	//prm = &prma[0];
+	//OutLine( "// %d, #%d type:%d val:%d\r\n", pnum, prm->num, prm->lasttype, prm->lastval );
+
+	OutputCPPParam();
 	OutLine( "%s(%d,%d);\r\n", GetHSPCmdTypeName(cmdtype), cmdval, pnum );
 }
 
@@ -714,6 +1082,7 @@ int CHsp3Cpp::MakeCPPMain( void )
 			switch( op ) {
 			case -1:		// 通常の代入
 				pnum = MakeCPPParam();
+				OutputCPPParam();
 				OutMes( arname.GetBuffer() );
 				if ( pnum <= 1 ) {
 					OutLine( "VarSet(%s,%d);\r\n", mes, va );
@@ -733,6 +1102,7 @@ int CHsp3Cpp::MakeCPPMain( void )
 				break;
 			default:		// 演算子付き代入
 				pnum = MakeCPPParam();
+				OutputCPPParam();
 				if ( pnum > 1 ) {
 					Alert( "Too much parameters(VarCalc)." );
 				}
@@ -780,68 +1150,12 @@ int CHsp3Cpp::MakeCPPMain( void )
 			mcs++;
 			getCS();
 			MakeCPPParam();
+			OutputCPPParam();
 			OutLine( mes );
 			//SetIndent( iflevel );
 			break;
 		case TYPE_PROGCMD:						// プログラム制御命令
-			switch( cmdval ) {
-			case 0x00:								// goto
-			case 0x02:								// return
-			case 0x03:								// break
-			case 0x05:								// loop
-			case 0x06:								// continue
-			case 0x0b:								// foreach
-			case 0x0c:								// (hidden)foreach check
-			case 0x10:								// end
-			case 0x1b:								// assert
-			case 0x11:								// stop
-			case 0x19:								// on
-				//		後にreturnを付ける
-				//
-				MakeCPPSub( cmdtype, cmdval );
-				OutLine( "return;\r\n" );
-				break;
-			case 0x01:								// gosub
-			case 0x18:								// exgoto
-				//		gosubの展開
-				//
-				{
-				int pnum;
-				OutLine( "// %s\r\n", GetHSPName(cmdtype,cmdval) );
-				getCS();
-				pnum = MakeCPPParam();
-				OutLine( "PushLabel(%d); %s(%d,%d); return;\r\n", curot, GetHSPCmdTypeName(cmdtype), cmdval, pnum+1 );
-				MakeCPPTask2( -1, curot );
-				curot++;
-				break;
-				}
-			case 0x04:								// repeat
-				//		repeatの展開
-				//
-				{
-				int pnum;
-				OutLine( "// repeat\r\n" );
-				getCS();
-				pnum = MakeCPPParam(1);
-				OutLine( "PushLabel(%d); %s(%d,%d); return;\r\n", curot, GetHSPCmdTypeName(cmdtype), cmdval, pnum+1 );
-				MakeCPPTask( curot );
-				curot++;
-				break;
-				}
-
-			case 0x07:								// wait
-			case 0x08:								// await
-			case 0x17:								// run
-				//		タスクを区切る
-				//
-				MakeCPPSub( cmdtype, cmdval );
-				MakeCPPTask( curot );
-				curot++;
-				break;
-			default:
-				MakeCPPSub( cmdtype, cmdval );
-				break;
-			}
+			MakeCPPSubProgCmd( cmdtype, cmdval );
 			break;
 		case TYPE_MODCMD:							// 定義命令
 			MakeCPPSubModCmd( cmdtype, cmdval );

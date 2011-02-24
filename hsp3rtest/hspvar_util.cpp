@@ -257,6 +257,7 @@ void VarUtilTerm( void )
 */
 /*------------------------------------------------------------*/
 
+#if 0
 void PushInt( int val )
 {
 	StackPushi( val );
@@ -267,6 +268,7 @@ void PushDouble( double val )
 	//StackPush( HSPVAR_FLAG_DOUBLE, (char *)&val, sizeof(double) );
 	StackPushd( val );
 }
+#endif
 
 void PushStr( char *st )
 {
@@ -289,14 +291,20 @@ void PushVar( PVal *pval, int aval )
 	PDAT *ptr;
 
 	aptr = CheckArray( pval, aval );
-	ptr = HspVarCorePtrAPTR( pval, aptr );
 
 	tflag = pval->flag;
 	if ( tflag == HSPVAR_FLAG_INT ) {
+		ptr = (PDAT *)(( (int *)(pval->pt))+ aptr );		// Ž©‘O‚ÅŒvŽZ
 		StackPushi( *(int *)ptr );
 		return;
 	}
+	if ( tflag == HSPVAR_FLAG_DOUBLE ) {
+		ptr = (PDAT *)(( (double *)(pval->pt))+ aptr );		// Ž©‘O‚ÅŒvŽZ
+		StackPushd( *(double *)ptr );
+		return;
+	}
 
+	ptr = HspVarCorePtrAPTR( pval, aptr );
 	varproc = HspVarCoreGetProc( tflag );
 	basesize = varproc->basesize;
 	if ( basesize < 0 ) { basesize = varproc->GetSize( ptr ); }

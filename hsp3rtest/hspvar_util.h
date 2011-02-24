@@ -32,10 +32,10 @@ void DebugMsg( char *msg );
 extern PVal *mem_var;
 extern int	prmstacks;
 
-void PushInt( int val );
-void PushDouble( double val );
-//#define PushInt StackPushi
-//#define PushDouble StackPushd
+//void PushInt( int val );
+//void PushDouble( double val );
+#define PushInt StackPushi
+#define PushDouble StackPushd
 
 void PushStr( char *st );
 void PushLabel( int val );
