@@ -1,81 +1,145 @@
 //
 //	hsp3cnv generated source
-//	[test.ax]
+//	[d:\onidev\openhsp\trunk\hsp3cnv\bin\test.ax]
 //
 #include "hsp3r.h"
 
-#define _HSP3CNV_DATE "2011/01/27"
-#define _HSP3CNV_TIME "20:03:26"
-#define _HSP3CNV_MAXVAR 4
+#define _HSP3CNV_DATE "2011/02/25"
+#define _HSP3CNV_TIME "19:13:22"
+#define _HSP3CNV_MAXVAR 3
 #define _HSP3CNV_MAXHPI 0
 #define _HSP3CNV_VERSION 0x301
 #define _HSP3CNV_BOOTOPT 0
 
 /*-----------------------------------------------------------*/
 
-static PVal *Var_aMm0;
-static PVal *Var_bMm0;
-static PVal *Var_i;
-static PVal *Var_j;
-
-/*-----------------------------------------------------------*/
-
-void __HspInit( Hsp3r *hsp3 ) {
-	hsp3->Reset( _HSP3CNV_MAXVAR, _HSP3CNV_MAXHPI );
-}
+static PVal *Var_a;
+static PVal *Var_b;
+static PVal *Var_c;
 
 /*-----------------------------------------------------------*/
 
 void __HspEntry( void ) {
 	// Var initalize
-	Var_aMm0 = &mem_var[0];
-	Var_bMm0 = &mem_var[1];
-	Var_i = &mem_var[2];
-	Var_j = &mem_var[3];
+	Var_a = &mem_var[0];
+	Var_b = &mem_var[1];
+	Var_c = &mem_var[2];
 
-	// goto *L0000
+	// gosub
 	PushLabel(0); 
-	Prgcmd(0,1);
+	PushLabel(5); Prgcmd(1,2); return;
+}
+
+static void L0005( void ) {
+	// a =hspver
+	PushFuncEnd(); PushSysvar(2,0); 
+	VarSet(Var_a,0);
+	// mes "START"+strf("%x", a)
+	PushStr("START"); PushFuncEnd(); 	PushVar(Var_a,0); 
+		PushStr("%x"); 
+	PushIntfunc(259,2); CalcAddI(); 
+	Extcmd(15,1);
+	// mes "SIN="+sin(0.500000+sqrt(1.000000))
+	PushStr("SIN="); PushFuncEnd(); 	PushDouble(0.500000); PushFuncEnd(); 	PushDouble(1.000000); 
+	PushIntfunc(388,1); CalcAddI(); 
+	PushIntfunc(384,1); CalcAddI(); 
+	Extcmd(15,1);
+	// a =0
+	PushInt(0); 
+	VarSet(Var_a,0);
+	// b =0
+	PushInt(0); 
+	VarSet(Var_b,0);
+	// c =0
+	PushInt(0); 
+	VarSet(Var_c,0);
+	// repeat
+	PushInt(10); 
+	PushLabel(1); 
+	PushLabel(6); Prgcmd(4,3); return;
+	TaskSwitch(6);
+}
+
+static void L0006( void ) {
+	// a ++
+	VarInc(Var_a,0);
+	// b =rnd(5)+1
+	PushFuncEnd(); 	PushInt(5); 
+	PushIntfunc(1,1); PushInt(1); CalcAddI(); 
+	VarSet(Var_b,0);
+	// mes (("A="+a)+"/B=")+b
+	PushStr("A="); PushVar(Var_a,0); CalcAddI(); PushStr("/B="); CalcAddI(); PushVar(Var_b,0); CalcAddI(); 
+	Extcmd(15,1);
+	// c +=a/b
+	PushVar(Var_a,0); PushVar(Var_b,0); CalcDivI(); 
+	VarCalc(Var_c,0,0);
+	// loop 
+	Prgcmd(5,0);
 	return;
 	TaskSwitch(1);
 }
 
 static void L0001( void ) {
-	// #deffunc testini 
-	// a@m0 =0
-	PushInt(0); 
-	VarSet(Var_aMm0,0);
-	// b@m0 =1
-	PushInt(1); 
-	VarSet(Var_bMm0,0);
-	// return 
-	Prgcmd(2,0);
-	return;
+	// mes "C="+c
+	PushStr("C="); PushVar(Var_c,0); CalcAddI(); 
+	Extcmd(15,1);
+	// mes "END"
+	PushStr("END"); 
+	Extcmd(15,1);
 	TaskSwitch(2);
 }
 
 static void L0002( void ) {
-	// #deffunc testadd int _prm0
-	// a@m0 =a@m0+_prm0
-	PushVar(Var_aMm0,0); PushFuncPrm(0); CalcAddI(); 
-	VarSet(Var_aMm0,0);
-	// b@m0 +=_prm0
-	PushFuncPrm(0); 
-	VarCalc(Var_bMm0,0,0);
-	// return 
-	Prgcmd(2,0);
+	// stop 
+	Prgcmd(17,0);
+	return;
+	// goto *L0002
+	TaskSwitch(2);
+	return;
+	TaskSwitch(0);
+}
+
+static void L0000( void ) {
+	// repeat
+	PushInt(10); 
+	PushLabel(3); 
+	PushLabel(7); Prgcmd(4,3); return;
+	TaskSwitch(7);
+}
+
+static void L0007( void ) {
+	// if cnt=3
+	PushFuncEnd(); PushSysvar(4,0); PushInt(3); CalcEqI(); 
+	if (HspIf()) { TaskSwitch(8); return; }
+	// continue *L0003
+	PushLabel(3); 
+	Prgcmd(6,1);
+	return;
+	TaskSwitch(8);
+}
+
+static void L0008( void ) {
+	// mes "OK"+cnt
+	PushStr("OK"); PushFuncEnd(); PushSysvar(4,0); CalcAddI(); 
+	Extcmd(15,1);
+	// if cnt=5
+	PushFuncEnd(); PushSysvar(4,0); PushInt(5); CalcEqI(); 
+	if (HspIf()) { TaskSwitch(9); return; }
+	// break *L0003
+	PushLabel(3); 
+	Prgcmd(3,1);
+	return;
+	TaskSwitch(9);
+}
+
+static void L0009( void ) {
+	// loop 
+	Prgcmd(5,0);
 	return;
 	TaskSwitch(3);
 }
 
 static void L0003( void ) {
-	// #deffunc testvar var _prm1, var _prm2
-	// _prm1 =a@m0
-	PushVAP(Var_aMm0,0); 
-	VarSet(FuncPrm(0),0);
-	// _prm2 =b@m0
-	PushVAP(Var_bMm0,0); 
-	VarSet(FuncPrm(1),0);
 	// return 
 	Prgcmd(2,0);
 	return;
@@ -83,78 +147,10 @@ static void L0003( void ) {
 }
 
 static void L0004( void ) {
-	// #deffunc testmes str _prm3
-	// mes ((("A="+a@m0)+"(")+_prm3)+")"
-	PushStr("A="); PushVar(Var_aMm0,0); CalcAddI(); PushStr("("); CalcAddI(); PushFuncPrm(0); CalcAddI(); PushStr(")"); CalcAddI(); 
-	Extcmd(15,1);
-	// mes ((("B="+b@m0)+"(")+_prm3)+")"
-	PushStr("B="); PushVar(Var_bMm0,0); CalcAddI(); PushStr("("); CalcAddI(); PushFuncPrm(0); CalcAddI(); PushStr(")"); CalcAddI(); 
-	Extcmd(15,1);
-	// return 
-	Prgcmd(2,0);
-	return;
-	TaskSwitch(0);
-}
-
-static void L0000( void ) {
-	// testini 
-	PushLabel(7);
-	Modcmd(0,0);
-	return;
-}
-
-static void L0007( void ) {
-	// testadd 1
-	PushInt(1); 
-	PushLabel(8);
-	Modcmd(1,1);
-	return;
-}
-
-static void L0008( void ) {
-	// testmes "OK"
-	PushStr("OK"); 
-	PushLabel(9);
-	Modcmd(3,1);
-	return;
-}
-
-static void L0009( void ) {
-	// testvar i, j
-	PushVAP(Var_j,0); 
-	PushVAP(Var_i,0); 
-	PushLabel(10);
-	Modcmd(2,2);
-	return;
-}
-
-static void L0010( void ) {
-	// mes "I(a)="+i
-	PushStr("I(a)="); PushVar(Var_i,0); CalcAddI(); 
-	Extcmd(15,1);
-	// mes "J(b)="+j
-	PushStr("J(b)="); PushVar(Var_j,0); CalcAddI(); 
-	Extcmd(15,1);
-	TaskSwitch(5);
-}
-
-static void L0005( void ) {
-	// stop 
-	Prgcmd(17,0);
-	return;
-	// goto *L0005
-	PushLabel(5); 
-	Prgcmd(0,1);
-	return;
-	TaskSwitch(6);
-}
-
-static void L0006( void ) {
 	// stop 
 	Prgcmd(17,0);
 	return;
 	// goto 
-	PushLabel(6); 
 	Prgcmd(0,0);
 	return;
 }
@@ -163,35 +159,27 @@ static void L0006( void ) {
 
 CHSP3_TASK __HspTaskFunc[]={
 (CHSP3_TASK) L0000,
-(CHSP3_TASK) L0001,	// testini
-(CHSP3_TASK) L0002,	// testadd
-(CHSP3_TASK) L0003,	// testvar
-(CHSP3_TASK) L0004,	// testmes
+(CHSP3_TASK) L0001,
+(CHSP3_TASK) L0002,
+(CHSP3_TASK) L0003,
+(CHSP3_TASK) L0004,
 (CHSP3_TASK) L0005,
 (CHSP3_TASK) L0006,
 (CHSP3_TASK) L0007,
 (CHSP3_TASK) L0008,
 (CHSP3_TASK) L0009,
-(CHSP3_TASK) L0010,
 
 };
 
 /*-----------------------------------------------------------*/
 
-STRUCTDAT __HspFuncInfo[]={
-	{ -1,0, 0,0,0,0,1, 0 },
-	{ -1,1, 0,1,8,4,2, 0 },
-	{ -1,2, 1,2,16,16,3, 0 },
-	{ -1,3, 3,1,24,4,4, 0 },
-};
 
-char *__HspFuncName[]={
-	"testini",
-	"testadd",
-	"testvar",
-	"testmes",
-};
+/*-----------------------------------------------------------*/
 
+void __HspInit( Hsp3r *hsp3 ) {
+	hsp3->Reset( _HSP3CNV_MAXVAR, _HSP3CNV_MAXHPI );
+	hsp3->SetFInfo( 0, 0 );
+}
 
 /*-----------------------------------------------------------*/
 

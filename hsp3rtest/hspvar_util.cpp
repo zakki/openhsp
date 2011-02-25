@@ -268,18 +268,18 @@ void PushDouble( double val )
 	//StackPush( HSPVAR_FLAG_DOUBLE, (char *)&val, sizeof(double) );
 	StackPushd( val );
 }
-#endif
-
-void PushStr( char *st )
-{
-	StackPushStr( st );
-}
-
 
 void PushLabel( int val )
 {
 	//StackPush( HSPVAR_FLAG_LABEL, (char *)&val, sizeof(int)  );
 	StackPushl( val );
+}
+#endif
+
+
+void PushStr( char *st )
+{
+	StackPushStr( st );
 }
 
 
@@ -648,6 +648,54 @@ void CalcLrI( void )
 
 
 
+void VarSet( PVal *pval, int aval )
+{
+	//	変数代入(var=???)
+	//		aval=配列要素のスタック数
+	//
+	int chk;
+	HspVarProc *proc;
+	APTR aptr;
+	void *ptr;
+	PDAT *dst;
+	int pleft;
+	int baseaptr;
+	int tflag;
+
+	aptr = CheckArray( pval, aval );
+	dst = HspVarCorePtrAPTR( pval, aptr );
+	tflag = pval->flag;
+
+	chk = code_get();									// パラメーター値を取得
+	if ( chk != PARAM_OK ) { throw HSPERR_SYNTAX; }
+
+	ptr = mpval->pt;
+
+	if ( tflag != mpval->flag ) {
+
+		proc = HspVarCoreGetProc( tflag );
+		if ( pval->support & HSPVAR_SUPPORT_NOCONVERT ) {	// 型変換なしの場合
+			if ( arrayobj_flag ) {
+				proc->ObjectWrite( pval, ptr, mpval->flag );
+				return;
+			}
+		}
+		if ( aptr != 0 ) throw HSPERR_INVALID_ARRAYSTORE;	// 型変更の場合は配列要素0のみ
+		HspVarCoreClear( pval, mpval->flag );		// 最小サイズのメモリを確保
+		proc = HspVarCoreGetProc( pval->flag );
+		dst = proc->GetPtr( pval );					// PDATポインタを取得
+
+	} else {
+		if ( tflag == HSPVAR_FLAG_INT ) {
+			*(int *)dst = *(int *)ptr;
+			return;
+		}
+		proc = HspVarCoreGetProc( tflag );
+	}
+	proc->Set( pval, dst, ptr );
+}
+
+
 void VarSet( PVal *pval, int aval, int pnum )
 {
 	//	変数代入(var=???)
@@ -713,45 +761,6 @@ void VarSet( PVal *pval, int aval, int pnum )
 		proc->Set( pval, dst, ptr );				// 次の配列にたたき込む
 		pleft--;
 	}
-}
-
-
-void VarSet( PVal *pval, int aval )
-{
-	//	変数代入(var=???)
-	//		aval=配列要素のスタック数
-	//
-	int chk;
-	HspVarProc *proc;
-	APTR aptr;
-	void *ptr;
-	PDAT *dst;
-	int pleft;
-	int baseaptr;
-
-	aptr = CheckArray( pval, aval );
-	proc = HspVarCoreGetProc( pval->flag );
-	dst = HspVarCorePtrAPTR( pval, aptr );
-
-	chk = code_get();									// パラメーター値を取得
-	if ( chk != PARAM_OK ) { throw HSPERR_SYNTAX; }
-
-	ptr = mpval->pt;
-	if ( pval->flag != mpval->flag ) {
-
-		if ( pval->support & HSPVAR_SUPPORT_NOCONVERT ) {	// 型変換なしの場合
-			if ( arrayobj_flag ) {
-				proc->ObjectWrite( pval, ptr, mpval->flag );
-				return;
-			}
-		}
-		if ( aptr != 0 ) throw HSPERR_INVALID_ARRAYSTORE;	// 型変更の場合は配列要素0のみ
-		HspVarCoreClear( pval, mpval->flag );		// 最小サイズのメモリを確保
-		proc = HspVarCoreGetProc( pval->flag );
-		dst = proc->GetPtr( pval );					// PDATポインタを取得
-	}
-
-	proc->Set( pval, dst, ptr );
 }
 
 

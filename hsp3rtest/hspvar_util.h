@@ -34,11 +34,12 @@ extern int	prmstacks;
 
 //void PushInt( int val );
 //void PushDouble( double val );
+//void PushLabel( int val );
 #define PushInt StackPushi
 #define PushDouble StackPushd
+#define PushLabel StackPushl
 
 void PushStr( char *st );
-void PushLabel( int val );
 void PushVar( PVal *pv, int aval );
 void PushVAP( PVal *pval, int aval );
 void PushDefault( void );

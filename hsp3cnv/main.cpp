@@ -91,11 +91,12 @@ int main( int argc, char *argv[] )
 	strcpy( fname,"test" );
 #endif
 
+	getpath( fname, fname2, 1+16 );
+
 	if (oname[0]==0) {
-		strcpy( oname,fname );addext( oname,"cpp" );
+		strcpy( oname,fname2 );addext( oname,"cpp" );
 	}
-	strcpy( fname2, fname ); addext( fname2,"hsp" );
-	addext( fname,"ax" );
+	strcpy( fname, fname2 ); addext( fname,"ax" );
 
 	//		call main
 	{
