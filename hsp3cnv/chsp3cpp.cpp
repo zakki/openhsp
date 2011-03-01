@@ -1342,12 +1342,12 @@ int CHsp3Cpp::MakeSource( int option, void *ref )
 	if ( stmax ) {
 		OutMes( "\thsp3->SetFInfo( __HspFuncInfo, %d );\r\n", stmax * sizeof(STRUCTDAT) );
 	} else {
-		OutMes( "\thsp3->SetFInfo( 0, 0, 0 );\r\n" );
+		OutMes( "\thsp3->SetFInfo( 0, 0 );\r\n" );
 	}
 	if ( lbmax ) {
 		OutMes( "\thsp3->SetLInfo( __HspLibInfo, %d );\r\n", lbmax * sizeof(LIBDAT) );
 	} else {
-		OutMes( "\thsp3->SetLInfo( 0, 0, 0 );\r\n" );
+		OutMes( "\thsp3->SetLInfo( 0, 0 );\r\n" );
 	}
 	OutMes( "}\r\n" );
 
