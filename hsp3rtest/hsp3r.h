@@ -23,7 +23,9 @@ public:
 	int Reset( int ext_vars, int ext_hpi );		// HSP3Rの初期化を行なう
 	void SetPackValue( int sum, int dec );		// packfile用の設定データを渡す
 	void SetFileName( char *name );				// axファイル名を指定する
+	void SetDataName( char *data );				// Data Segment設定
 	void SetFInfo( STRUCTDAT *finfo, int finfo_max );	// FInfo設定
+	void SetLInfo( LIBDAT *linfo, int linfo_max );	// LInfo設定
 
 	//	Data
 	//

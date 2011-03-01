@@ -551,6 +551,7 @@ int CHsp3Cpp::GetCPPExpression( CMemBuf *eout, int *result )
 	int res, bufcur;
 	int tres;
 	int prms;
+	int expres;
 	PRMAINFO calcprm[MAX_CALCINFO];				// 演算パラメーターの内容保持
 	CMemBuf calcbuf;							// 演算パラメーターの一時保持
 	PRMAINFO *cp;
@@ -589,9 +590,6 @@ int CHsp3Cpp::GetCPPExpression( CMemBuf *eout, int *result )
 			res = 1;			// データ終端チェック
 			break;
 		}
-		if ( tres >= 0 ) {
-			if ( tres != cstype ) { tres = -1; }
-		}
 
 		switch(cstype) {
 		case TYPE_MARK:
@@ -600,18 +598,26 @@ int CHsp3Cpp::GetCPPExpression( CMemBuf *eout, int *result )
 			if ( csval == ')' ) {					// 引数の終了マーク
 				exflag |= EXFLG_2;
 				res = 2;
+				//OutLine( "/*end*/" );
 				break;
 			}
 		default:
 			//		単一項目の解析
 			//
+			if ( tres >= 0 ) {
+				if ( tres != cstype ) { tres = -1; }
+			}
 			bufcur = calcbuf.GetSize();				// 書き込まれるバッファ位置
 			cp = &calcprm[prms];
 			cp->num = bufcur;
 			cp->lasttype = cstype;
 			cp->lastval = csval;
 
-			if ( GetCPPExpressionSub( &calcbuf ) == 0 ) { tres = -1; }
+			//OutLine( "/*#%d t:%d v:%d*/",prms,cstype,csval );
+			expres = GetCPPExpressionSub( &calcbuf );
+			if ( expres == 0 ) {
+				tres = -1;
+			}
 			calcbuf.Put( 0 );
 
 			if (( curprm_type == TYPE_MARK )&&( prms >= 2 )) {
@@ -644,6 +650,7 @@ int CHsp3Cpp::GetCPPExpression( CMemBuf *eout, int *result )
 	}
 
 	*result = tres;
+	//OutLine( "/*res%d*/",tres );
 	curprm_stack = prms;
 	return res;
 }
@@ -746,16 +753,20 @@ int CHsp3Cpp::MakeCPPParam( int addprm )
 		curp->lastval = curprm_val;
 		curp++;
 
-		switch( result ) {
+		switch( result ) {			// 単一項で変数が指定されていた場合のチェック
 		case TYPE_VAR:
 			p = prmbuf->GetBuffer() + prmbuf->GetIndex( curidx );
 			p = strstr2( p, "PushVa" );
-			p[5] = 'A'; p[6] = 'P';			// PushVar -> PushVAPに直す
+			if ( p != NULL ) {
+				p[5] = 'A'; p[6] = 'P';			// PushVar -> PushVAPに直す
+			}
 			break;
 		case TYPE_STRUCT:
 			p = prmbuf->GetBuffer() + prmbuf->GetIndex( curidx );
 			p = strstr2( p, "PushFuncPrm" );
-			p[9] = 'A'; p[10] = 'P';		// PushFuncPrm -> PushFuncPAPに直す
+			if ( p != NULL ) {
+				p[9] = 'A'; p[10] = 'P';		// PushFuncPrm -> PushFuncPAPに直す
+			}
 			break;
 		default:
 			break;
@@ -834,15 +845,31 @@ int CHsp3Cpp::MakeCPPVarExpression( CMemBuf *arname )
 				curidx = tmpbuf.GetIndexBufferSize();
 				tmpbuf.RegistIndex( tmpbuf.GetSize() );
 				i = GetCPPExpression( &tmpbuf, &result );
-				if ( i > 0 ) break;
 				if ( i < -1 ) return i;
 				if ( i == -1 ) {
 					tmpbuf.PutStr( "PushDefault();" );
 				}
-				if ( result == TYPE_VAR ) {			// 単一項で変数が指定されていた場合
+
+				switch( result ) {			// 単一項で変数が指定されていた場合のチェック
+				case TYPE_VAR:
 					p = tmpbuf.GetBuffer() + tmpbuf.GetIndex( curidx );
-					p[5] = 'A'; p[6] = 'P';			// PushVar -> PushVAPに直す
+					p = strstr2( p, "PushVa" );
+					if ( p != NULL ) {
+						p[5] = 'A'; p[6] = 'P';			// PushVar -> PushVAPに直す
+					}
+					break;
+				case TYPE_STRUCT:
+					p = tmpbuf.GetBuffer() + tmpbuf.GetIndex( curidx );
+					p = strstr2( p, "PushFuncPrm" );
+					if ( p != NULL ) {
+						p[9] = 'A'; p[10] = 'P';		// PushFuncPrm -> PushFuncPAPに直す
+					}
+					break;
+				default:
+					break;
 				}
+
+				if ( i > 0 ) break;
 				prm++;
 			}
 			getCS();
@@ -1250,25 +1277,55 @@ int CHsp3Cpp::MakeSource( int option, void *ref )
 	//		モジュール(関数)テーブルを作成する
 	//
 	int stmax;
+	int curst;
 	STRUCTDAT *st;
-	CMemBuf fncname;
+	CMemBuf stname;
+	char *pst;
 
+	curst = 0;
 	stmax = GetFInfoCount();
 	if ( stmax ) {
 		OutMes( "STRUCTDAT __HspFuncInfo[]={\r\n" );
 
 		for(i=0;i<stmax;i++) {
 			st = GetFInfo( i );
-			sprintf( mes, "\t\"%s\",\r\n", GetDS(st->nameidx) );
-			fncname.PutData( mes, strlen(mes) );
+			pst = GetDS(st->nameidx);
+			sprintf( mes, "\"%s\\0\"\\\r\n", pst );
+			stname.PutData( mes, (int)strlen(mes) );
 			OutMes( "\t{ %d,%d, %d,%d,%d,%d,%d, (void *)%d },\r\n",
-				st->index, st->subid, st->prmindex, st->prmmax, st->nameidx, st->size, st->otindex, st->funcflag );
+				st->index, st->subid, st->prmindex, st->prmmax, curst, st->size, st->otindex, st->funcflag );
+			curst += (int)strlen( pst )+1;
 		}
-		fncname.Put( (int)0 );
-
 		OutMes( "};\r\n\r\n" );
+	}
 
-		OutMes( "char *__HspFuncName[]={\r\n%s};\r\n\r\n", fncname.GetBuffer() );
+	//		ライブラリ(DLL)テーブルを作成する
+	//
+	int lbmax;
+	LIBDAT *lb;
+	CMemBuf libname;
+
+	lbmax = GetLInfoCount();
+	if ( lbmax ) {
+		OutMes( "LIBDAT __HspLibInfo[]={\r\n" );
+
+		for(i=0;i<lbmax;i++) {
+			lb = GetLInfo( i );
+			pst = GetDS(lb->nameidx);
+			sprintf( mes, "\"%s\\0\"\\\r\n", pst );
+			stname.PutData( mes, (int)strlen(mes) );
+			OutMes( "\t{ %d,%d, (void *)%d, %d },\r\n",
+				lb->flag, curst, lb->hlib, lb->clsid );
+			curst += (int)strlen( pst )+1;
+		}
+		OutMes( "};\r\n\r\n" );
+	}
+
+	//		文字列テーブルを作成する
+	//
+	if ( curst > 0 ) {
+		stname.Put( (int)0 );
+		OutMes( "char __HspDataName[]=%s;\r\n\r\n", stname.GetBuffer() );
 	}
 
 	OutMes( "\r\n/*-----------------------------------------------------------*/\r\n\r\n" );
@@ -1277,10 +1334,20 @@ int CHsp3Cpp::MakeSource( int option, void *ref )
 	//
 	OutMes( "void __HspInit( Hsp3r *hsp3 ) {\r\n" );
 	OutMes( "\thsp3->Reset( _HSP3CNV_MAXVAR, _HSP3CNV_MAXHPI );\r\n" );
+	if ( curst > 0 ) {
+		OutMes( "\thsp3->SetDataName( __HspDataName );\r\n" );
+	} else {
+		OutMes( "\thsp3->SetDataName( 0 );\r\n" );
+	}
 	if ( stmax ) {
 		OutMes( "\thsp3->SetFInfo( __HspFuncInfo, %d );\r\n", stmax * sizeof(STRUCTDAT) );
 	} else {
-		OutMes( "\thsp3->SetFInfo( 0, 0 );\r\n" );
+		OutMes( "\thsp3->SetFInfo( 0, 0, 0 );\r\n" );
+	}
+	if ( lbmax ) {
+		OutMes( "\thsp3->SetLInfo( __HspLibInfo, %d );\r\n", lbmax * sizeof(LIBDAT) );
+	} else {
+		OutMes( "\thsp3->SetLInfo( 0, 0, 0 );\r\n" );
 	}
 	OutMes( "}\r\n" );
 

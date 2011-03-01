@@ -764,7 +764,7 @@ char *CHsp3::GetHSPCmdTypeName( int type )
 	case TYPE_DLLFUNC:
 		return "Dllfunc";
 	case TYPE_DLLCTRL:
-		return "Dllcmd";
+		return "Dllctrl";
 	case TYPE_USERDEF:
 		return "Usrfunc";
 	}

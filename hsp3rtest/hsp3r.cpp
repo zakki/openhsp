@@ -76,6 +76,9 @@ int Hsp3r::Reset( int ext_vars, int ext_hpi )
 	max_varhpi = ext_hpi;
 	hspctx.mem_mcs = (unsigned short *)this;
 	hspctx.hsphed = &hsphed;
+
+	memset( &hsphed, 0, sizeof(HSPHED) );
+	hsphed.max_hpi = (short)( ext_hpi * sizeof( HPIDAT ) );
 /*
 	hspctx.mem_mcs = (unsigned short *)( ptr + hsphed->pt_cs );
 	hspctx.mem_mds = (char *)( ptr + hsphed->pt_ds );
@@ -114,10 +117,28 @@ void Hsp3r::SetPackValue( int sum, int dec )
 }
 
 
+void Hsp3r::SetDataName( char *data )
+{
+	// Data Segmentİ’è
+	//
+	hspctx.mem_mds = data;
+}
+
+
 void Hsp3r::SetFInfo( STRUCTDAT *finfo, int finfo_max )
 {
+	//		FInfo‚ğÄ\¬‚·‚é
+	//
 	hspctx.mem_finfo = finfo;
 	hsphed.max_finfo = finfo_max;
 }
 
+
+void Hsp3r::SetLInfo( LIBDAT *linfo, int linfo_max )
+{
+	//		LInfo‚ğÄ\¬‚·‚é
+	//
+	hspctx.mem_linfo = linfo;
+	hsphed.max_linfo = linfo_max;
+}
 

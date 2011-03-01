@@ -948,6 +948,7 @@ APTR code_getva( PVal **pval )
 	*pval = getv_pval;
 
 	getv_pval->offset = aptr;
+	code_next();
 	return aptr;
 
 #if 0

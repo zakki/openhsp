@@ -20,6 +20,7 @@
 #include "../hsp3/hsp3ext.h"
 #include "../hsp3/hsp3gr.h"
 
+#include "../hsp3/win32gui/hsp3extlib.h"
 #include "../hsp3/win32gui/hspvar_comobj.h"
 #include "../hsp3/win32gui/hspvar_variant.h"
 #include "../hsp3/supio.h"
@@ -307,8 +308,8 @@ int hsp3win_init( HINSTANCE hInstance, char *startfile )
 	HspVarCoreRegisterType( TYPE_VARIANT, HspVarVariant_Init );
 #endif
 
-//	hsp3typeinit_dllcmd( code_gettypeinfo( TYPE_DLLFUNC ) );
-//	hsp3typeinit_dllctrl( code_gettypeinfo( TYPE_DLLCTRL ) );
+	hsp3typeinit_dllcmd( code_gettypeinfo( TYPE_DLLFUNC ) );
+	hsp3typeinit_dllctrl( code_gettypeinfo( TYPE_DLLCTRL ) );
 	hsp3typeinit_extcmd( code_gettypeinfo( TYPE_EXTCMD ), hsp_wx, hsp_wy, hsp_wd, -1, -1 );
 	hsp3typeinit_extfunc( code_gettypeinfo( TYPE_EXTSYSVAR ) );
 
@@ -334,7 +335,7 @@ static void hsp3win_bye( void )
 	if ( h_dbgwin != NULL ) { FreeLibrary( h_dbgwin ); h_dbgwin = NULL; }
 #endif
 
-	//DllManager().free_all_library();
+	DllManager().free_all_library();
 
 	//		システム関連の解放
 	//

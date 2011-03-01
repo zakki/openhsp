@@ -57,6 +57,7 @@ void PushExtvar( int val, int pnum );
 void PushIntfunc( int val, int pnum );
 void PushSysvar( int val, int pnum );
 void PushDllfunc( int val, int pnum );
+void PushDllctrl( int val, int pnum );
 void PushModcmd( int val, int pnum );
 
 void CalcAddI( void );
@@ -87,7 +88,8 @@ void VarCalc( PVal *pv, int aval, int op );
 bool HspIf( void );
 void Extcmd( int cmd, int pnum );
 void Modcmd( int cmd, int pnum );
-void Dllcmd( int cmd, int pnum );
+void Dllfunc( int cmd, int pnum );
+void Dllctrl( int cmd, int pnum );
 void Prgcmd( int cmd, int pnum );
 void Intcmd( int cmd, int pnum );
 
