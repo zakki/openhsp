@@ -104,6 +104,12 @@ static char *PrepareCalc( void )
 	//
 	char *calc_ptr;
 
+#if 0
+	if ( StackGetLevel < 2 ) {
+		Alertf("Stack underflow(%d)",StackGetLevel);
+	}
+#endif
+
 	stm2 = StackPeek;
 	stm1 = StackPeek2;
 	tflag = stm1->type;
@@ -352,7 +358,7 @@ void PushExtvar( int val, int pnum )
 	*c_type = TYPE_MARK;
 	*c_val = '(';
 	ptr = (char *)extsysvar_info->reffunc( &resflag, val );						// タイプごとの関数振り分け
-	StackPop();																	// PushFuncEndを取り除く
+	StackPop();																// PushFuncEndを取り除く
 	//code_next();
 	if ( resflag == HSPVAR_FLAG_INT ) {
 		StackPushi( *(int *)ptr );
@@ -392,7 +398,7 @@ void PushSysvar( int val, int pnum )
 	*c_type = TYPE_MARK;
 	*c_val = '(';
 	ptr = (char *)sysvar_info->reffunc( &resflag, val );						// タイプごとの関数振り分け
-	StackPop();																	// PushFuncEndを取り除く
+	//StackPop();																// PushFuncEndを取り除く
 	//code_next();
 	if ( resflag == HSPVAR_FLAG_INT ) {
 		StackPushi( *(int *)ptr );

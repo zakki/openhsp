@@ -142,3 +142,11 @@ void Hsp3r::SetLInfo( LIBDAT *linfo, int linfo_max )
 	hsphed.max_linfo = linfo_max;
 }
 
+
+void Hsp3r::SetMInfo( STRUCTPRM *minfo, int minfo_max )
+{
+	//		MInfoÇçƒç\ê¨Ç∑ÇÈ
+	//
+	hspctx.mem_minfo = minfo;
+	hsphed.max_minfo = minfo_max;
+}

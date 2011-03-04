@@ -362,6 +362,13 @@ int CHsp3Cpp::GetCPPExpressionSub( CMemBuf *eout )
 			eout->PutStr( mes );
 			break;
 			}
+		case TYPE_SYSVAR:
+			//		システム変数として展開する
+			//
+			sprintf( mes,"Push%s(%d,0); ", GetHSPCmdTypeName(cstype), csval );
+			eout->PutStr( mes );
+			getCS();
+			break;
 		default:
 			{
 			//		関数として展開する
@@ -704,6 +711,7 @@ int CHsp3Cpp::MakeCPPParam( int addprm )
 	//		( 返値は、パラメーター数 )
 	//		( maxprms, prmaに結果を返す )
 	//		( 実際の出力は、OutputCPPParamで行なう )
+	//		( addprmが-1の場合は、単一の変数(～VAP,～PAP)を生成しない )
 	//
 	int i;
 	int prm;
@@ -719,19 +727,21 @@ int CHsp3Cpp::MakeCPPParam( int addprm )
 	prmbuf->AddIndexBuffer();
 
 	int j;
-	for(j=0;j<addprm;j++) {
-		if ( exflag & EXFLG_1) break;		// パラメーター列終端
-		if ( mcs > mcs_end ) break;			// データ終端チェック
-		if ( prm ) {
-			prmbuf->Put(0);
+	if ( addprm > 0 ) {
+		for(j=0;j<addprm;j++) {
+			if ( exflag & EXFLG_1) break;		// パラメーター列終端
+			if ( mcs > mcs_end ) break;			// データ終端チェック
+			if ( prm ) {
+				prmbuf->Put(0);
+			}
+			prmbuf->RegistIndex( prmbuf->GetSize() );
+			GetCPPExpressionSub( prmbuf );
+			curp->num = 1;
+			curp->lasttype = curprm_type;
+			curp->lastval = curprm_val;
+			curp++;
+			prm++;
 		}
-		prmbuf->RegistIndex( prmbuf->GetSize() );
-		GetCPPExpressionSub( prmbuf );
-		curp->num = 1;
-		curp->lasttype = curprm_type;
-		curp->lastval = curprm_val;
-		curp++;
-		prm++;
 	}
 
 	while(1) {
@@ -753,23 +763,25 @@ int CHsp3Cpp::MakeCPPParam( int addprm )
 		curp->lastval = curprm_val;
 		curp++;
 
-		switch( result ) {			// 単一項で変数が指定されていた場合のチェック
-		case TYPE_VAR:
-			p = prmbuf->GetBuffer() + prmbuf->GetIndex( curidx );
-			p = strstr2( p, "PushVa" );
-			if ( p != NULL ) {
-				p[5] = 'A'; p[6] = 'P';			// PushVar -> PushVAPに直す
+		if ( addprm >= 0 ) {
+			switch( result ) {			// 単一項で変数が指定されていた場合のチェック
+			case TYPE_VAR:
+				p = prmbuf->GetBuffer() + prmbuf->GetIndex( curidx );
+				p = strstr2( p, "PushVa" );
+				if ( p != NULL ) {
+					p[5] = 'A'; p[6] = 'P';			// PushVar -> PushVAPに直す
+				}
+				break;
+			case TYPE_STRUCT:
+				p = prmbuf->GetBuffer() + prmbuf->GetIndex( curidx );
+				p = strstr2( p, "PushFuncPrm" );
+				if ( p != NULL ) {
+					p[9] = 'A'; p[10] = 'P';		// PushFuncPrm -> PushFuncPAPに直す
+				}
+				break;
+			default:
+				break;
 			}
-			break;
-		case TYPE_STRUCT:
-			p = prmbuf->GetBuffer() + prmbuf->GetIndex( curidx );
-			p = strstr2( p, "PushFuncPrm" );
-			if ( p != NULL ) {
-				p[9] = 'A'; p[10] = 'P';		// PushFuncPrm -> PushFuncPAPに直す
-			}
-			break;
-		default:
-			break;
 		}
 		prm++;
 	}
@@ -825,7 +837,7 @@ int CHsp3Cpp::MakeCPPVarExpression( CMemBuf *arname )
 	//
 	int i;
 	int prm;
-	int len;
+	int tlen,len;
 	int result;
 	int curidx;
 	CMemBuf tmpbuf;
@@ -877,16 +889,19 @@ int CHsp3Cpp::MakeCPPVarExpression( CMemBuf *arname )
 			//		パラメーターを逆順で登録する
 			//		(stackをpopして正常な順番になるように)
 			//
-			i=tmpbuf.GetIndexBufferSize();
+			i = tmpbuf.GetIndexBufferSize();
+			tlen = 0;
 			while(1) {
 				if ( i == 0 ) break;
 				i--;
 				p = tmpbuf.GetBuffer() + tmpbuf.GetIndex(i);
 				len = (int)strlen( p );
 				if ( len ) {
-					OutLineBuf( arname, "%s\r\n", p );
+					tlen += len;
+					OutLineBuf( arname, "%s\r\n", p,tlen );
 				}
 			}
+			if ( tlen == 0 ) return 0;
 			return prm;
 		}
 	}
@@ -1108,7 +1123,7 @@ int CHsp3Cpp::MakeCPPMain( void )
 
 			switch( op ) {
 			case -1:		// 通常の代入
-				pnum = MakeCPPParam();
+				pnum = MakeCPPParam(-1);
 				OutputCPPParam();
 				OutMes( arname.GetBuffer() );
 				if ( pnum <= 1 ) {
@@ -1128,7 +1143,7 @@ int CHsp3Cpp::MakeCPPMain( void )
 			case -4:		// エラー
 				break;
 			default:		// 演算子付き代入
-				pnum = MakeCPPParam();
+				pnum = MakeCPPParam(-1);
 				OutputCPPParam();
 				if ( pnum > 1 ) {
 					Alert( "Too much parameters(VarCalc)." );
@@ -1303,7 +1318,6 @@ int CHsp3Cpp::MakeSource( int option, void *ref )
 	//
 	int lbmax;
 	LIBDAT *lb;
-	CMemBuf libname;
 
 	lbmax = GetLInfoCount();
 	if ( lbmax ) {
@@ -1317,6 +1331,22 @@ int CHsp3Cpp::MakeSource( int option, void *ref )
 			OutMes( "\t{ %d,%d, (void *)%d, %d },\r\n",
 				lb->flag, curst, lb->hlib, lb->clsid );
 			curst += (int)strlen( pst )+1;
+		}
+		OutMes( "};\r\n\r\n" );
+	}
+
+	//		パラメーター(MINFO)テーブルを作成する
+	//
+	int mimax;
+	STRUCTPRM *mi;
+
+	mimax = GetMInfoCount();
+	if ( mimax ) {
+		OutMes( "STRUCTPRM __HspPrmInfo[]={\r\n" );
+
+		for(i=0;i<mimax;i++) {
+			mi = GetMInfo( i );
+			OutMes( "\t{ %d, %d, %d },\r\n", mi->mptype, mi->subid, mi->offset );
 		}
 		OutMes( "};\r\n\r\n" );
 	}
@@ -1348,6 +1378,11 @@ int CHsp3Cpp::MakeSource( int option, void *ref )
 		OutMes( "\thsp3->SetLInfo( __HspLibInfo, %d );\r\n", lbmax * sizeof(LIBDAT) );
 	} else {
 		OutMes( "\thsp3->SetLInfo( 0, 0 );\r\n" );
+	}
+	if ( mimax ) {
+		OutMes( "\thsp3->SetMInfo( __HspPrmInfo, %d );\r\n", mimax * sizeof(STRUCTPRM) );
+	} else {
+		OutMes( "\thsp3->SetMInfo( 0, 0 );\r\n" );
 	}
 	OutMes( "}\r\n" );
 

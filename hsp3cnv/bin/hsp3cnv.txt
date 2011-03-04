@@ -51,20 +51,20 @@ hsp3cnvが出力したソースは、test.cppとしてプロジェクトに登録されています。
 
 このバージョンは、プレビュー版であり、動作は以下の内容に制限されています。
 
-	・基本的な変数の代入
-	・パラメーター計算式の評価
-	・条件分岐(if)
 	・HSP3がサポートする基本命令、基本関数、システム変数
-	・goto,exgoto,gosub,return,repeat,loop,break,continue命令サポート
-	・モジュール変数以外の機能(#module、#global)
+	・int,double,str,label型の変数
+	・モジュール変数以外のモジュール機能(#module、#global)
 	・ユーザー定義命令、関数(#deffunc、#defcfunc)
+	・DLL及び、プラグイン呼び出し(仮対応)
 
 以下の機能は、まだサポートしていません。
 
-	・DLL及び、プラグイン呼び出し
+	・プラグインによる変数型の拡張、コマンドタイプの拡張
+	・COMオブジェクト操作、COM型・Variant型変数
 	・モジュール変数
+	・varptr関数によるdll関数ポインタ取得機能
 
-以下の機能は、このプロジェクトではサポート予定がありません。
+以下の機能は、このシステム上でのサポート予定がありません。
 
 	・run命令
 
@@ -111,9 +111,10 @@ THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND 
 
 ・更新履歴
 
-	2011/02/25 0.3
+	2011/03/04 0.3
 
 		モジュール、ユーザー定義命令に対応
+		プラグイン、DLLに仮対応
 
 	2011/01/17 0.2
 

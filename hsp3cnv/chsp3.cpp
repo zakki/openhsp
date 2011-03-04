@@ -241,7 +241,7 @@ int CHsp3::GetMInfoCount( void )
 {
 	//		minfo‚Ìindex—Ê‚ð“¾‚é
 	//
-	return ( minfo->GetSize() / sizeof( STRUCTDAT ) );
+	return ( minfo->GetSize() / sizeof( STRUCTPRM ) );
 }
 
 /*------------------------------------------------------------*/

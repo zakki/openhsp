@@ -25,7 +25,8 @@ public:
 	void SetFileName( char *name );				// axファイル名を指定する
 	void SetDataName( char *data );				// Data Segment設定
 	void SetFInfo( STRUCTDAT *finfo, int finfo_max );	// FInfo設定
-	void SetLInfo( LIBDAT *linfo, int linfo_max );	// LInfo設定
+	void SetMInfo( STRUCTPRM *minfo, int minfo_max );	// MInfo設定
+	void SetLInfo( LIBDAT *linfo, int linfo_max );		// LInfo設定
 
 	//	Data
 	//
