@@ -191,7 +191,9 @@ void HspVarCoreDim( PVal *pval, int flag, int len1, int len2, int len3, int len4
 	HspVarProc *p;
 	p = &hspvarproc[ flag ];
 	if ((len1<0)||(len2<0)||(len3<0)||(len4<0)) throw HSPVAR_ERROR_ILLEGALPRM;
+
 	HspVarCoreDispose( pval );
+
 	pval->flag = flag;
 	pval->len[0] = 1;
 	pval->offset = 0;

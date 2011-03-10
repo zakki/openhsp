@@ -89,8 +89,8 @@ int Hsp3r::Reset( int ext_vars, int ext_hpi )
 	hspctx.mem_minfo = (STRUCTPRM *)( ptr + hsphed->pt_minfo );
 	hspctx.mem_finfo = (STRUCTDAT *)( ptr + hsphed->pt_finfo );
 */
-	code_resetctx( &hspctx );		// hsp3code setup
 	HspVarCoreResetVartype( max_varhpi );		// Œ^‚Ì‰Šú‰»
+	code_resetctx( &hspctx );		// hsp3code setup
 
 	//		HspVar setup
 	hspctx.mem_var = NULL;

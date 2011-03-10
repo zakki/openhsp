@@ -2383,6 +2383,9 @@ void code_resetctx( HSPCTX *ctx )
 {
 	//		コンテキストのリセット(オブジェクトロード後の初期化)
 	//
+	mpval_int = HspVarCoreGetPVal(HSPVAR_FLAG_INT);
+	HspVarCoreClearTemp( mpval_int, HSPVAR_FLAG_INT );	// int型のテンポラリを初期化
+
 	ctx->err = HSPERR_NONE;
 #ifdef HSPDEBUG
 	ctx->hspstat = HSPSTAT_DEBUG;
@@ -2648,7 +2651,6 @@ void code_init( void )
 	StackInit();
 	HspVarCoreInit();			// ストレージコア初期化
 	mpval = HspVarCoreGetPVal(0);
-	mpval_int = HspVarCoreGetPVal(HSPVAR_FLAG_INT);
 	hspevent_opt = 0;			// イベントオプションを初期化
 
 	//		exinfoの初期化
@@ -2857,8 +2859,8 @@ rerun:
 	// HspVarCoreResetVartype() で変数領域か拡張されると変数が変なアドレスをさしてしまうので初期化
 	//   本当は hspvar_core.cpp:HspVarCoreResetVartype() の中か
 	//   もしくは hsp3.cpp:HspVarCoreResetVartype() の直後に行った方が良いはず...
-	mpval_int = HspVarCoreGetPVal(HSPVAR_FLAG_INT);
-	HspVarCoreClearTemp( mpval_int, HSPVAR_FLAG_INT );	// int型のテンポラリを初期化
+	//mpval_int = HspVarCoreGetPVal(HSPVAR_FLAG_INT);
+	//HspVarCoreClearTemp( mpval_int, HSPVAR_FLAG_INT );	// int型のテンポラリを初期化
 
 	try {
 		while(1) {

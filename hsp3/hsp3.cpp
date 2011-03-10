@@ -170,8 +170,8 @@ int Hsp3::Reset( int mode )
 	hspctx.mem_minfo = (STRUCTPRM *)( ptr + hsphed->pt_minfo );
 	hspctx.mem_finfo = (STRUCTDAT *)( ptr + hsphed->pt_finfo );
 
-	code_resetctx( &hspctx );		// hsp3code setup
 	HspVarCoreResetVartype( hsphed->max_varhpi );		// Œ^‚Ì‰Šú‰»
+	code_resetctx( &hspctx );		// hsp3code setup
 
 	//		HspVar setup
 	hspctx.mem_var = NULL;
