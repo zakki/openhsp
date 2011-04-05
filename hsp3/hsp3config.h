@@ -33,15 +33,32 @@
 #define dbmes_size 0x10000
 
 //
-//		以下のラベルはコンパイルオプションで設定されます
+//		環境フラグ:以下のラベルはコンパイルオプションで設定されます
 //
 //#define HSPWIN		// Windows(WIN32) version flag
-//#define HSPWINGUI		// Windows(WIN32) version flag
 //#define HSPMAC		// Macintosh version flag
 //#define HSPLINUX		// Linux(CLI) version flag
+//#define HSPIOS		// iOS version flag
+//#define HSPNDK		// android NDK version flag
+
+//
+//		環境フラグに付加されるオプション
+//
+//#define HSPWINGUI		// Windows/GUI (WIN32) version flag
+//#define HSPWINDISH	// Windows/DISH (WIN32) version flag
 //#define HSPLINUXGUI	// Linux(GUI) version flag
 
 //#define HSPDEBUG	// Debug version flag
+
+
+//
+//		gcc使用のチェック
+//
+#if defined(HSPMAC)|defined(HSPIOS)|defined(HSPNDK)|defined(HSPLINUX)
+#define HSPGCC			// GCC使用フラグ
+#define HSPUTF8			// UTF8使用フラグ
+#endif
+
 
 //
 //		移植用の定数
@@ -50,7 +67,7 @@
 #define HSP_MAX_PATH	260
 #define HSP_PATH_SEPARATOR '\\'
 #endif
-#ifdef HSPLINUX
+#ifdef HSPGCC
 #define HSP_MAX_PATH	256
 #define HSP_PATH_SEPARATOR '/'
 #endif

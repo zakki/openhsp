@@ -12,8 +12,18 @@
 #include "win32/hsp3gr_win.h"
 #endif
 #endif
+
+#ifdef HSPIOS
+#include "ios/hsp3gr_ios.h"
+#endif
+
+#ifdef HSPNDK
+#include "ndk/hsp3gr_ndk.h"
+#endif
+
 #ifdef HSPLINUX
 #include "linux/hsp3gr_linux.h"
 #endif
+
 
 #endif

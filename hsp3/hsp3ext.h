@@ -8,8 +8,18 @@
 #ifdef HSPWIN
 #include "win32gui/hsp3ext_win.h"
 #endif
+
+#ifdef HSPIOS
+#include "ios/hsp3ext_ios.h"
+#endif
+
+#ifdef HSPNDK
+#include "ndk/hsp3ext_ndk.h"
+#endif
+
 #ifdef HSPLINUX
 #include "linux/hsp3ext_linux.h"
 #endif
+
 
 #endif
