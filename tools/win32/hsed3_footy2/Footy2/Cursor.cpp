@@ -26,9 +26,11 @@ bool CCursor::LoadCursors(HINSTANCE hInstance){
 	m_hIBeam = LoadCursor(NULL,IDC_IBEAM);
 	m_hUpDownCursor = LoadCursor(NULL,IDC_SIZENS);
 	m_hRightLeftCursor = LoadCursor(NULL,IDC_SIZEWE);
-	m_hOnUrlCursor = LoadCursor(hInstance,MAKEINTRESOURCE(IDC_URL));
+	m_hOnUrlCursor = LoadCursor(NULL,IDC_ARROW);
+	//m_hOnUrlCursor = LoadCursor(hInstance,MAKEINTRESOURCE(IDC_URL));
 	if (!m_hOnUrlCursor)return false;
-	m_hLineCountCursor = LoadCursor(hInstance,MAKEINTRESOURCE(IDC_LINE));
+	m_hLineCountCursor = LoadCursor(NULL,IDC_ARROW);
+	//m_hLineCountCursor = LoadCursor(hInstance,MAKEINTRESOURCE(IDC_LINE));
 	if (!m_hLineCountCursor)return false;
 	return true;
 }
@@ -39,9 +41,12 @@ CCursor::DestroyCursors
 -------------------------------------------------------------------*/
 void CCursor::DestroyCursors(){
 	/*自分でロードしたのは破壊しちゃうよ*/
-	SAFE_DELETEOBJECT(m_hOnUrlCursor);
-	SAFE_DELETEOBJECT(m_hLineCountCursor);
+	//SAFE_DELETEOBJECT(m_hOnUrlCursor);
+	//SAFE_DELETEOBJECT(m_hLineCountCursor);
 	/*共通オブジェクトは破壊しちゃまずいでしょ…*/
+	m_hOnUrlCursor = NULL;
+	m_hLineCountCursor = NULL;
+
 	m_hIBeam = NULL;
 	m_hArrowCursor = NULL;
 	m_hUpDownCursor = NULL;

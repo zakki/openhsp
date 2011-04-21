@@ -39,6 +39,12 @@ FOOTYEXPORT(int) Footy2SetMetrics(int nID,int nObject,int nValue,bool bRefresh)
 			pFooty->m_cView[i].SetUnderlineVisible(nValue);
 		}
 		break;
+	case SM_MARGIN_HEIGHT:
+		for (int i=0;i<3;i++)
+		{
+			pFooty->m_cView[i].SetMarginHeight(nValue);
+		}
+		break;
 	case SM_TAB_WIDTH:
 		pFooty->m_cDoc.SetTabLen(nValue);
 		break;

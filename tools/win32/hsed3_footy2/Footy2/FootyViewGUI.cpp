@@ -87,6 +87,21 @@ void CFootyView::SetRulerHeight(int nHeight){
 	MoveWin(m_x,m_y,m_nWidth,m_nHeight,false);
 }
 
+/*-------------------------------------------------------------------
+CFootyView::SetMarginHeight
+マージン高さを指定する
+-------------------------------------------------------------------*/
+void CFootyView::SetMarginHeight(int nHeight){
+	if (nHeight < 0) {
+		m_nHeightMargin = 0 ;
+		m_nLineCountMargin = 0;
+	} else {
+		m_nHeightMargin = nHeight;
+		m_nLineCountMargin = nHeight;
+	}
+	MoveWin(m_x,m_y,m_nWidth,m_nHeight,false);
+}
+
 //-----------------------------------------------------------------------------
 /**
  * @brief ウィンドウの強制再描画処理です
@@ -869,7 +884,7 @@ bool CFootyView::RendLineCount(HDC hDC,const RECT *rc){
 	}
 
 	// レンダリング開始
-	for (nPosY = m_nRulerHeight;nPosY < rc->bottom;nPosY += m_pFonts->GetHeight()){
+	for (nPosY = m_nRulerHeight;nPosY < rc->bottom;nPosY += m_pFonts->GetHeight() + m_nHeightMargin ){
 		// レンダリング処理を行う
 		if (!cNowLine.GetEthicNum()){				// 行番号は最初の論理行のときのみ表示
 			// 行番号を表示させる
@@ -884,7 +899,7 @@ bool CFootyView::RendLineCount(HDC hDC,const RECT *rc){
 			int nLineIcons = cNowLine.GetLinePointer()->GetLineIcons();
 			for (int nIconIndex = 0;nLineIcons != 0 && nIconIndex < sizeof(int) * 8;nIconIndex++){
 				if ((nLineIcons & (1 << nIconIndex)) != 0){
-					int nIconTop = nPosY + m_pFonts->GetHeight() / 2 - ICON_HEIGHT / 2;
+					int nIconTop = nPosY + ( m_pFonts->GetHeight() + m_nHeightMargin ) / 2 - ICON_HEIGHT / 2;
 					SelectObject(hDcBitmap,m_bmpIcons[nIconIndex]);
 					TransparentBlt(hDC,nIconLeft,nIconTop,ICON_WIDTH,ICON_HEIGHT,
 						hDcBitmap,0,0,ICON_WIDTH,ICON_HEIGHT,RGB(255,0,255));

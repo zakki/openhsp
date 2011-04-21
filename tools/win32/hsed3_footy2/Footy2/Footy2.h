@@ -330,6 +330,7 @@ enum SetMetricsCode
 	SM_TAB_WIDTH,								//!< タブの横幅
 	SM_REDOREM,									//!< REDO可能な回数(取得のみ)
 	SM_UNDOREM,									//!< UNDO可能な回数(取得のみ)
+	SM_MARGIN_HEIGHT,							//!< 行マージン(onitama追加)
 };
 
 //! テキストが編集された原因

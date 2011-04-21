@@ -131,7 +131,7 @@ void InitClassify()
 	hsc_getmes((int)buf, 0, 0, 0);
 
 	int tableCapacity = DefClassifyTableSize() + getStrLinesSize(buf) + 1;
-	free(ClassifyTable);
+	if ( ClassifyTable != NULL ) { free(ClassifyTable); }
 	ClassifyTable = (CLASSIFY_TABLE *)malloc(tableCapacity * sizeof(CLASSIFY_TABLE));
 
 	for(int i = 0; DefClassifyTable[i].Word1 != NULL; i++, nCTSize++){

@@ -52,6 +52,7 @@ public:
 	}
 	void SetLineWidth(int nWidth);
 	void SetRulerHeight(int nHeight);
+	void SetMarginHeight(int nHeight);
 	bool MoveWin(int x,int y,int nWidth,int nHeight,bool bRefresh = true);
 	bool Refresh(bool bSendOther = true);
 	void SetFocus(){::SetFocus(m_hWnd);}

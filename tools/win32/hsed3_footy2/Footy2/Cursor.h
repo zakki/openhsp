@@ -19,7 +19,7 @@ public:
 	static void UseUpDown();					/*上下カーソルを使用します。*/
 	static void UseRightLeft();					/*左右カーソルを使用します。*/
 	
-private:
+//private:
 	static HCURSOR m_hArrowCursor;				/*アローカーソル*/
 	static HCURSOR m_hIBeam;					/*Iビーム*/
 	static HCURSOR m_hLineCountCursor;			/*行番号表示領域のカーソル*/

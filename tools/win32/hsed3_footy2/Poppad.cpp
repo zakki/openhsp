@@ -1463,7 +1463,9 @@ void poppad_setedit(int FootyID)
 	Footy2SetMetrics(FootyID, SM_TAB_WIDTH, tabsize, false);
 	Footy2SetMetrics(FootyID, SM_RULER_HEIGHT, rulerheight, false);
 	Footy2SetMetrics(FootyID, SM_LINENUM_WIDTH, linewidth, false);
-//	FootySetMetrics(FootyID, F_SM_LINESPACE, linespace, false);	// 2008-02-17 Shark++ 代替機能未実装
+	Footy2SetMetrics(FootyID, SM_MARGIN_HEIGHT, linespace, false);
+
+	//	FootySetMetrics(FootyID, F_SM_LINESPACE, linespace, false);	// 2008-02-17 Shark++ 代替機能未実装
 	//Footy2Refresh(FootyID);
 }
 
@@ -1858,7 +1860,7 @@ int poppad_menupop( WPARAM wParam, LPARAM lParam )
 			 EnableMenuItem ((HMENU) wParam, IDM_REPLACE, iEnable) ;
 			 break ;
 
-		case 5 :		// HSP menu
+		case 3 :		// HSP menu
 
 			iEnable = hsp_fullscr ? MF_CHECKED : MF_UNCHECKED ;
 			CheckMenuItem ((HMENU) wParam, IDM_FULLSCR, iEnable) ;
@@ -2040,16 +2042,20 @@ LRESULT CALLBACK EditProc (HWND hwnd, UINT iMsg, WPARAM wParam, LPARAM lParam)
                         lpTabInfo = GetTabInfo(activeID);
 
 						nFootyID = activeFootyID;
-						if(lpTabInfo == NULL
+						bCreated = false;
+
+						if(lpTabInfo != NULL ) {
+							if(lpTabInfo->NeedSave){ bCreated = true; }
+						}
+						if( lpTabInfo == NULL
 							|| lpTabInfo->FileName[0] != '\0'
-//							|| FootyGetMetrics(activeFootyID, F_GM_UNDOREM) > 0
-//							|| FootyGetMetrics(activeFootyID, F_GM_REDOREM) > 0){
-							|| Footy2IsEdited(activeFootyID) ){	// 2008-02-17 Shark++ 代替機能未実装
-								CreateTab(activeID, szTitleName, szFileName, szDirName);
+							|| Footy2IsEdited(activeFootyID) ){
 								bCreated = true;
+						}
+						if ( bCreated ) {
+								CreateTab(activeID, szTitleName, szFileName, szDirName);
 							} else {
 								SetTabInfo(activeID, szTitleName, szFileName, szDirName, FALSE);
-								bCreated = false;
 							}
 						if (!PopFileRead (activeFootyID, szFileName)){
 #ifdef JPNMSG
@@ -4090,16 +4096,21 @@ void LoadFromCommandLine(char *lpCmdLine)
 
 		if(SearchResult < 0){
 			lpTabInfo = GetTabInfo(activeID);
-			if(lpTabInfo == NULL || lpTabInfo->FileName[0] != '\0'
-//				|| FootyGetMetrics(activeFootyID, F_GM_UNDOREM) > 0
-//				|| FootyGetMetrics(activeFootyID, F_GM_REDOREM) > 0){
-				|| Footy2IsEdited(activeFootyID) ){	// 2008-02-17 Shark++ 代替機能未実装
-					CreateTab(activeID, "", path, "");
+
+			bCreated = false;
+			if(lpTabInfo != NULL ) {
+				if(lpTabInfo->NeedSave){ bCreated = true; }
+			}
+			if( lpTabInfo == NULL
+				|| lpTabInfo->FileName[0] != '\0'
+				|| Footy2IsEdited(activeFootyID) ){
 					bCreated = true;
-				} else {
+			}
+			if ( bCreated ) {
+					CreateTab(activeID, "", path, "");
+			} else {
 					SetTabInfo(activeID, NULL, path, NULL, -1);
-                    bCreated = false;
-				}
+			}
 			if(poppad_reload(activeID))
 				if(bCreated)
                     DeleteTab(activeID);
@@ -4132,16 +4143,21 @@ LRESULT FileDrop(WPARAM wParam, LPARAM /*lParam*/)
 		SearchResult = SearchTab(NULL, NULL, NULL, GetFileIndex(tmpfn));
 		if(SearchResult < 0){
 			lpTabInfo = GetTabInfo(activeID);
-			if(lpTabInfo == NULL || lpTabInfo->FileName[0] != '\0'
-//				|| FootyGetMetrics(activeFootyID, F_GM_UNDOREM) > 0
-//				|| FootyGetMetrics(activeFootyID, F_GM_REDOREM) > 0){
-				|| Footy2IsEdited(activeFootyID) ) {	// 2008-02-17 Shark++ 代替機能未実装
-					CreateTab(activeID, "", tmpfn, "");
+
+			bCreated = false;
+			if(lpTabInfo != NULL ) {
+				if(lpTabInfo->NeedSave){ bCreated = true; }
+			}
+			if( lpTabInfo == NULL
+				|| lpTabInfo->FileName[0] != '\0'
+				|| Footy2IsEdited(activeFootyID) ){
 					bCreated = true;
-				} else {
+			}
+			if ( bCreated ) {
+					CreateTab(activeID, "", tmpfn, "");
+			} else {
 					SetTabInfo(activeID, NULL, tmpfn, NULL, -1);
-					bCreated = false;
-				}
+			}
 			if(poppad_reload(activeID))
 				if(bCreated)
                     DeleteTab(activeID);
