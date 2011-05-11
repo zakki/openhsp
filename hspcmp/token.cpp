@@ -3168,13 +3168,7 @@ int CToken::ExpandLine( CMemBuf *buf, CMemBuf *src, char *refname )
 	*errtmp = 0;
 
 	while(1) {
-		char ln_str[16];
-#ifdef HSPWIN
-		_itoa( pline, ln_str, 10 );
-#else
-		sprintf( ln_str, "%d", pline );
-#endif
-		RegistExtMacro( "__line__", ln_str );			// 行番号マクロを更新
+		RegistExtMacro( "__line__", pline );			// 行番号マクロを更新
 
 		while( *p == ' ' || *p == '\t' ) {
 			p++;
