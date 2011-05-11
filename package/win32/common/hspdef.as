@@ -110,7 +110,6 @@
 #define global M_PI	3.14159265358979323846
 #define global ctype rad2deg(%1)       (57.295779513082320877*(%1))
 #define global ctype deg2rad(%1)       (0.017453292519943295769*(%1))
-#define global ctype powf(%1,%2)        expf(logf(%1)*(%2))
 
 
 #ifndef _DEBUG

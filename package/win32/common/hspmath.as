@@ -28,7 +28,7 @@
 #const  INT_MAX                 2147483647                              ; ç≈ëÂíl
 #const  INT_MIN                 -INT_MAX-1                              ; ç≈è¨íl
 
-#define ctype pow(%1,%2)        expf(logf(%1)*(%2))	; x^y
+#define ctype pow(%1,%2)        powf((%1),(%2))	; x^y
 #define ctype log10(%1)         (logf(%1)/logf(10))     ; log_10(x)
 #define ctype log2(%1)          (logf(%1)/logf(2))      ; log_2(x)
 

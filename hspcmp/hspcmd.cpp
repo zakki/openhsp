@@ -258,6 +258,7 @@ char 	s_rec[1]= "", *hsp_prestr[] =
 	"$187 13 expf",
 	"$188 13 logf",
 	"$189 13 limitf",
+	"$18a 13 powf",						// (3.3)
 
 	//	3.0 external sysvar,function
 

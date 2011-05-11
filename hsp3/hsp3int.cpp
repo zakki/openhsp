@@ -989,6 +989,11 @@ static void *reffunc_intfunc( int *type_res, int arg )
 		reffunc_intfunc_value = d1;
 		break;
 		}
+	case 0x18a:								// powf
+		dval = code_getd();
+		dval2 = code_getd();
+		reffunc_intfunc_value = powf( dval, dval2 );
+		break;
 
 	default:
 		throw HSPERR_UNSUPPORTED_FUNCTION;
