@@ -963,7 +963,13 @@ static void CloseHSPAssistant( void )
 	HWND hw;
 	hw = main_aplsel( "HSP assistant ver" );
 	if ( hw == NULL ) return;
-	SendMessage( hw, WM_CLOSE, 0, 0 );
+	PostMessage( hw, WM_CLOSE, 0, 0 );
+	//SendMessage( hw, WM_CLOSE, 0, 0 );
+	while(1) {
+		Sleep( 500 );
+		hw = main_aplsel( "HSP assistant ver" );
+		if ( hw == NULL ) break;
+	}
 }
 
 
@@ -1582,14 +1588,16 @@ int poppad_ini( HWND hwnd, LPARAM lParam )
 void poppad_bye( void )
 {
     //case WM_DESTROY :
+
+	if (flg_hspat) {						// HSPアシスタントを終了させる
+		CloseHSPAssistant();
+	}
+
 	err_bye();
 	PopFontDeinitialize () ;
 	ByeClassify();
 	DeleteObject((HGDIOBJ)(HFONT)SendMessage(hwndTab, WM_GETFONT, 0, 0));
 
-	if (flg_hspat) {						// HSPアシスタントを終了させる
-		CloseHSPAssistant();
-	}
 }
 
 

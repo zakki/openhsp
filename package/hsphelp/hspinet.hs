@@ -6,7 +6,7 @@
 %type
 拡張命令
 %ver
-3.21
+3.3
 %note
 hspinet.asをインクルードすること。
 
@@ -17,7 +17,7 @@ onitama
 %dll
 hspinet
 %url
-http://www.onionsoft.net/hsp/
+http://hsp.tv/
 %port
 Win
 

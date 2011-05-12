@@ -1,6 +1,6 @@
 ------------------------------------------------------------------------------
-HSP3データフォーマット資料 v0.1                     HSP : Hot Soup Processor  
-ホットスーププロセッサ                     copyright 2009 (c) onion software  
+HSP3データフォーマット資料 v0.2                     HSP : Hot Soup Processor  
+ホットスーププロセッサ                     copyright 2011 (c) onion software  
 ------------------------------------------------------------------------------
 
 ・はじめに
@@ -31,7 +31,7 @@ HSP3データフォーマット資料 v0.1                     HSP : Hot Soup Processor
 	また、必要であれば、改編者の著作権表示も付加するようにしてください。
 
 OpenHSP
-Copyright (C) 1997-2009, Onion Software/onitama.
+Copyright (C) 1997-2011, Onion Software/onitama.
 All rights reserved.
 
 Redistribution and use in source and binary forms, with or without modification, are permitted provided that the following conditions are met:
@@ -225,26 +225,27 @@ THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND 
 
 	[32bit code]
 		MSB                          LSB
-		┌─┬──┬──┬──────┐
-		│ 0│ Ex2│ Ex1│    Type    │
-		└─┴──┴──┴──────┘
-		              +
-		┌──────────────┐
-		│       　Code(16bit)  　  　│
-		└──────────────┘
+		┌─┬──┬──┬──┬──────┐
+		│ 0│ Ex2│ Ex1│ Ex0│    Type    │
+		└─┴──┴──┴──┴──────┘
+		                   +
+		┌─────────────────┐
+		│           　Code(16bit)    　  　│
+		└─────────────────┘
 
 	[48bit code]
 		MSB                          LSB
-		┌─┬──┬──┬──────┐
-		│ 1│ Ex2│ Ex1│    Type    │
-		└─┴──┴──┴──────┘
-		              +
-		┌──────────────┐
-		│       　Code(32bit)  　  　│
-		└──────────────┘
+		┌─┬──┬──┬──┬──────┐
+		│ 1│ Ex2│ Ex1│ Ex0│    Type    │
+		└─┴──┴──┴──┴──────┘
+		                   +
+		┌─────────────────┐
+		│           　Code(32bit)    　  　│
+		└─────────────────┘
 
 	基本は16bit(short)値が１つの単位となります。
-	Type値は、bit0～bit12 (0～0x1fff)。(CSTYPEマクロでマスク値を定義)
+	Type値は、bit0～bit11 (0～0xfff)。(CSTYPEマクロでマスク値を定義)
+	Ex0値は、bit12 (0x1000)。(EXFLG_0マクロで値を定義)
 	Ex1値は、bit13 (0x2000)。(EXFLG_1マクロで値を定義)
 	Ex2値は、bit14 (0x4000)。(EXFLG_2マクロで値を定義)
 	Code値が、0x0000～0xffff(符号なし)までの場合は、サイズ削減のために
@@ -280,6 +281,8 @@ THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND 
 	Ex1値は、行頭であることを示すフラグ(1ならば行頭となる)、
 	Ex2値は、パラメーターの区切りであることを示すフラグ(1ならば区切り)
 	となっています。
+	Ex0値は、パラメーターが演算や変数を含まない単一の値であることを示す
+	フラグとして使用されます(HSP3.3以降で追加)。
 
 	TYPE_USERDEFタイプ以降は、プラグインによって拡張された命令などで使用
 	されていきます。(タイプ値の最大は、0x1fffになります)
@@ -315,6 +318,7 @@ THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND 
 
 	"$009 15 dim",
 	"$00a 15 sdim",
+//	"$00d 15 skiperr",				// delete
 	"$00b 15 foreach",				// (ver3.0)
 //	"$00c 15 eachchk",				// (ver3.0) hidden
 	"$00d 15 dimtype",				// (ver3.0)
@@ -324,8 +328,9 @@ THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND 
 	"$010 15 end",
 	"$011 15 stop",
 	"$012 15 newmod",				// (ver3.0)
-//	"$013 15 setmod",				// (ver3.0) ( deleted in 3.1 )
+//	"$013 15 setmod",				// (ver3.0)
 	"$014 15 delmod",				// (ver3.0)
+//	"$015 15 alloc",				// (changed 3.0)
 	"$016 15 mref",					// (ver2.5)
 	"$017 15 run",
 	"$018 15 exgoto",				// ver2.6
@@ -333,6 +338,12 @@ THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND 
 	"$01a 15 mcall",				// (ver3.0)
 	"$01b 15 assert",				// (ver3.0)
 	"$01c 15 logmes",				// (ver3.0)
+	"$01d 15 newlab",				// (ver3.2)
+	"$01e 15 resume",				// (ver3.2)
+	"$01f 15 yield",				// (ver3.2)
+
+//	"$015 15 logmode",				// (ver2.55)
+//	"$016 15 logmes",				// (ver2.55)
 
 	//	enhanced command (ver2.6)
 
@@ -377,6 +388,7 @@ THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND 
 	"$027 8 randomize",				// (changed on ver3.0)
 	"$028 8 noteunsel",				// (changed on ver3.0)
 	"$029 8 noteget",				// (changed on ver2.55)
+	"$02a 8 split",					// (ver3.2)
 
 	//	enhanced command (ver2.2)
 
@@ -385,6 +397,9 @@ THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND 
 	"$001 9 chgdisp",
 	"$002 9 exec",
 	"$003 9 dialog",
+
+//	"$007 9 palfade",				// delete
+//	"$009 9 palcopy",				// delete
 
 	"$008 9 mmload",
 	"$009 9 mmplay",
@@ -416,6 +431,8 @@ THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND 
 	"$020 9 gmode",
 	"$021 9 bmpsave",
 
+//	"$022 9 text",					// delete
+
 	"$022 9 hsvcolor",				// (ver3.0)
 	"$023 9 getkey",
 
@@ -442,9 +459,17 @@ THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND 
 	"$032 9 objprm",
 	"$033 9 objmode",
 	"$034 9 stick",
+//	"$041 9 objsend",				// delete
 	"$035 9 grect",					// (ver3.0)
 	"$036 9 grotate",				// (ver3.0)
 	"$037 9 gsquare",				// (ver3.0)
+	"$038 9 gradf",					// (ver3.2)
+	"$039 9 objimage",				// (ver3.2)
+	"$03a 9 objskip",				// (ver3.2)
+	"$03b 9 objenable",				// (ver3.2)
+	"$03c 9 celload",				// (ver3.2)
+	"$03d 9 celdiv",				// (ver3.2)
+	"$03e 9 celput",				// (ver3.2)
 
 	//	enhanced command (ver3.0)
 
@@ -459,6 +484,7 @@ THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND 
 	"$008 17 comevent",
 	"$009 17 comevarg",
 	"$00a 17 sarrayconv",
+	//"$00b 17 variantref",
 
 	"$100 17 callfunc",
 	"$101 17 cnvwtos",
@@ -507,6 +533,7 @@ THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND 
 	"$101 13 strmid",
 	"$103 13 strf",
 	"$104 13 getpath",
+	"$105 13 strtrim",					// (3.2)
 
 	//	3.0 math function
 	"$180 13 sin",
@@ -519,6 +546,7 @@ THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND 
 	"$187 13 expf",
 	"$188 13 logf",
 	"$189 13 limitf",
+	"$18a 13 powf",						// (3.3)
 
 	//	3.0 external sysvar,function
 
@@ -644,7 +672,11 @@ THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND 
 
 ・更新履歴
 
-	2007/11/1 ver0.1
+	2011/05/12 ver0.2
+
+		HSP3.3に合わせて一部改訂。
+
+	2007/11/01 ver0.1
 
 		最初のバージョン。
 

@@ -6,7 +6,7 @@
 %type
 拡張命令
 %ver
-3.2
+3.3
 %note
 llmod3.hspをインクルードする。必要に応じてlistview.hsp,progbox.hsp,trackbox.hsp,treebox.hsp,udbtn.hspをインクルードする
 

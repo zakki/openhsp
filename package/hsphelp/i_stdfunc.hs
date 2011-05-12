@@ -6,15 +6,15 @@
 %type
 “à‘ ŠÖ”
 %ver
-3.2
+3.3
 %note
-ver3.2•W€ŠÖ”
+ver3.3•W€ŠÖ”
 %date
-2009/08/01
+2011/05/10
 %author
 onitama
 %url
-http://www.onionsoft.net/
+http://hsp.tv/
 %port
 Win
 Cli

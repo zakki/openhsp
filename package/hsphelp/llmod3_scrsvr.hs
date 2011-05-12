@@ -6,7 +6,7 @@
 %type
 拡張命令
 %ver
-3.2
+3.3
 %note
 llmod3.hsp,scrsvr.hspをインクルードする
 (Windows9xのみ利用可能です)

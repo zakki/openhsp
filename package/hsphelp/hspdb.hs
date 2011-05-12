@@ -6,7 +6,7 @@
 %type
 拡張命令
 %ver
-3.2
+3.3
 %note
 hspdb.asをインクルードすること。
 
@@ -17,7 +17,7 @@ onitama
 %dll
 hspdb
 %url
-http://www.onionsoft.net/
+http://hsp.tv/
 %port
 Win
 %portinfo

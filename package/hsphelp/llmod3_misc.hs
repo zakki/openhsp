@@ -6,7 +6,7 @@
 %type
 拡張命令
 %ver
-3.2
+3.3
 %note
 llmod3.hsp,misc.hspをインクルードする
 

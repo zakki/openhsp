@@ -17,7 +17,7 @@ mod_getenv.asをインクルードすること。
 %author
 onitama
 %ver
-3.2
+3.3
 %date
 2009/08/01
 %index

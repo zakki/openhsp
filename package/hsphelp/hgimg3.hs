@@ -5,7 +5,7 @@
 %type
 拡張命令
 %ver
-3.21
+3.3
 %note
 hgimg3.asをインクルードすること。
 %date

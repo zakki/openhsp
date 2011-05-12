@@ -14,7 +14,7 @@ ver3.3•W€–½—ß
 %author
 onitama
 %url
-http://www.onionsoft.net/
+http://hsp.tv/
 %port
 Win
 Cli
