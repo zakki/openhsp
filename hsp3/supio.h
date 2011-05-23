@@ -5,6 +5,10 @@
 #ifndef __supio_h
 #define __supio_h
 
+#ifdef HSPDISH
+#include "../hsp3dish/supio.h"
+#else
+
 #ifdef HSPWIN
 #include "win32gui/supio_win.h"
 #endif
@@ -21,6 +25,7 @@
 #include "linux/supio_linux.h"
 #endif
 
+#endif
 
 #endif
 
