@@ -57,9 +57,7 @@ public:
 	int num;
 	int change;
 
-	bool localVar;
-
-	Var( int type, int val ) : type( type ), val( val ), tflag(0), num(0), change(0), localVar(false)
+	Var( int type, int val ) : type( type ), val( val ), tflag(0), num(0), change(0)
 	{
 	}
 
@@ -105,8 +103,8 @@ static bool sReachable;
 
 std::map<std::string, Task*> sTasks;
 
-std::map<VarKey, Var*> sVars;
-std::map<VarKey, std::set<Task*> > varTaskMap;
+static std::map<VarKey, Var*> sVars;
+static Program sProgram;
 
 // Runtime
 CHSP3_TASK *__HspTaskFunc;
@@ -1353,7 +1351,8 @@ static void CompileTask( CHsp3Op *hsp, Task *task, Function *func, BasicBlock *r
 	for (std::set<VarKey>::iterator it =  task->block->usedVariables.begin();
 		 it != task->block->usedVariables.end(); ++it) {
 		Var* var = sVars[*it];
-		if ( !var->localVar )
+		VarInfo *info = sProgram.varInfos[*it];
+		if ( !info->localVar )
 			continue;
 		bool useRegister = true;
 		for ( std::vector<Op*>::iterator it2 = task->block->operations.begin();
@@ -1628,11 +1627,13 @@ void DumpResult()
 
 			for (std::set<VarKey>::iterator it =  task->block->usedVariables.begin();
 				 it != task->block->usedVariables.end(); ++it) {
-				Var* var = sVars[*it];
+				Var *var = sVars[*it];
+				VarInfo *info = sProgram.varInfos[*it];
 				switch( var->type ) {
 				case TYPE_VAR:
 					sprintf( buf, "\tvar%d type %d, num %d, change %d local %d\r\n",
-							 var->val, var->tflag, var->num, var->change, (int)var->localVar );
+							 var->val, var->tflag, var->num, var->change,
+							 (int)info->localVar );
 					*Out << buf;
 					break;
 				default:
@@ -1965,14 +1966,16 @@ int MakeSource( CHsp3Op *hsp, int option, void *ref )
 	sLabMax = hsp->GetLabMax();
 	sDsBasePtr = hsp->GetDS( 0 );
 
-	std::map<std::string, Block*>& blocks = hsp->GetBlocks();
-	for(std::map<std::string, Block*>::iterator it = blocks.begin(); it != blocks.end(); ++it) {
+	sProgram.blocks = hsp->GetBlocks();
+	sProgram.entryPoint  =sProgram.blocks["__HspEntry"];
+	AnalyzeProgram( &sProgram );
+
+	for(std::map<std::string, Block*>::iterator it = sProgram.blocks.begin();
+		it != sProgram.blocks.end(); ++it) {
 		Task *task = new Task();
 		Block *block = it->second;
 		task->block = block;
 		sTasks[task->block->name] = task;
-
-		AnalyzeTask( task->block );
 
 		for (std::set<VarKey>::iterator it2 = block->usedVariables.begin();
 			 it2 != block->usedVariables.end(); ++it2) {
@@ -1980,76 +1983,6 @@ int MakeSource( CHsp3Op *hsp, int option, void *ref )
 				continue;
 			Var *var = new Var(it2->first, it2->second);
 			sVars[*it2] = var;
-		}
-	}
-
-	for(std::map<VarKey, std::set<Task*> >::iterator it = varTaskMap.begin();
-		it != varTaskMap.end(); ++it) {
-		if ( it->second.size() == 0 )
-			continue;
-
-		bool useRegister = true;
-
-		// 書き込んでから読み込むタスクだけかチェック
-		for (std::set<Task*>::iterator it2 = it->second.begin();
-			 it2 != it->second.end(); ++it2) {
-			Task *task = *it2;
-			Var *var = GetTaskVar( task, it->first );
-
-			VarRefOp* firstAccessOp = NULL;
-			for ( std::vector<Op*>::iterator it2 = task->block->operations.begin();
-				  it2 != task->block->operations.end(); it2++ ) {
-				Op *op = *it2;
-				switch ( op->GetOpCode() ) {
-				case PUSH_VAR_PTR_OP:
-				case PUSH_VAR_OP:
-				case PUSH_FUNC_PARAM_OP:
-				case PUSH_FUNC_PARAM_PTR_OP:
-				case VAR_SET_OP:
-				case VAR_CALC_OP:
-				case VAR_INC_OP:
-				case VAR_DEC_OP:
-					{
-						VarRefOp* vrop = (VarRefOp*)op;
-						if ( vrop->GetVarNo() != var->val )
-							continue;
-						if ( op->GetOpCode() == PUSH_VAR_PTR_OP ) {
-							useRegister = false;
-						}
-						if ( vrop->GetArrayDim() > 0) {
-							useRegister = false;
-						}
-						if ( vrop->IsParam() ) {
-							useRegister = false;
-						}
-						if ( !firstAccessOp ) {
-							firstAccessOp = vrop;
-						}
-					}
-					break;
-				}
-			}
-			switch (firstAccessOp->GetOpCode()) {
-			case VAR_SET_OP:
-				break;
-			case PUSH_VAR_OP:
-			case PUSH_VAR_PTR_OP:
-			case PUSH_FUNC_PARAM_OP:
-			case PUSH_FUNC_PARAM_PTR_OP:
-			case VAR_CALC_OP:
-			case VAR_INC_OP:
-			case VAR_DEC_OP:
-				useRegister = false;
-				break;
-			}
-		}
-
-		for (std::set<Task*>::iterator it2 = it->second.begin();
-			 it2 != it->second.end(); ++it2) {
-			Task *task = *it2;
-			Var *var = GetTaskVar( task, it->first );
-
-			var->localVar = useRegister;
 		}
 	}
 
@@ -2108,76 +2041,6 @@ int MakeSource( CHsp3Op *hsp, int option, void *ref )
 				}
 			}
 			*Out2 << "\r\n" << "\r\n";
-		}
-	}
-
-	for(std::map<VarKey, std::set<Task*> >::iterator it = varTaskMap.begin();
-		it != varTaskMap.end(); ++it) {
-		if ( it->second.size() == 0 )
-			continue;
-
-		bool useRegister = true;
-
-		// 書き込んでから読み込むタスクだけかチェック
-		for (std::set<Task*>::iterator it2 = it->second.begin();
-			 it2 != it->second.end(); ++it2) {
-			Task *task = *it2;
-			Var *var = GetTaskVar( task, it->first );
-
-			VarRefOp* firstAccessOp = NULL;
-			for ( std::vector<Op*>::iterator it2 = task->block->operations.begin();
-				  it2 != task->block->operations.end(); it2++ ) {
-				Op *op = *it2;
-				switch ( op->GetOpCode() ) {
-				case PUSH_VAR_PTR_OP:
-				case PUSH_VAR_OP:
-				case PUSH_FUNC_PARAM_OP:
-				case PUSH_FUNC_PARAM_PTR_OP:
-				case VAR_SET_OP:
-				case VAR_CALC_OP:
-				case VAR_INC_OP:
-				case VAR_DEC_OP:
-					{
-						VarRefOp* vrop = (VarRefOp*)op;
-						if ( vrop->GetVarNo() != var->val )
-							continue;
-						if ( op->GetOpCode() == PUSH_VAR_PTR_OP ) {
-							useRegister = false;
-						}
-						if ( vrop->GetArrayDim() > 0) {
-							useRegister = false;
-						}
-						if ( vrop->IsParam() ) {
-							useRegister = false;
-						}
-						if ( !firstAccessOp ) {
-							firstAccessOp = vrop;
-						}
-					}
-					break;
-				}
-			}
-			switch (firstAccessOp->GetOpCode()) {
-			case VAR_SET_OP:
-				break;
-			case PUSH_VAR_OP:
-			case PUSH_VAR_PTR_OP:
-			case PUSH_FUNC_PARAM_OP:
-			case PUSH_FUNC_PARAM_PTR_OP:
-			case VAR_CALC_OP:
-			case VAR_INC_OP:
-			case VAR_DEC_OP:
-				useRegister = false;
-				break;
-			}
-		}
-
-		for (std::set<Task*>::iterator it2 = it->second.begin();
-			 it2 != it->second.end(); ++it2) {
-			Task *task = *it2;
-			Var *var = GetTaskVar( task, it->first );
-
-			var->localVar = useRegister;
 		}
 	}
 

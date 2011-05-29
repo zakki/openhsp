@@ -528,4 +528,15 @@ public:
 	}
 };
 
+class Program {
+public:
+	std::map<std::string, Block*> blocks;
+	Block *entryPoint;
+
+	std::map<VarKey, std::set<std::string> > varTaskMap;
+	std::map<VarKey, VarInfo*> varInfos;
+};
+
+void AnalyzeProgram(Program* program);
+
 #endif

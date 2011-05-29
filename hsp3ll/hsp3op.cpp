@@ -14,8 +14,6 @@
 #include "supio.h"
 #include "hsp3r.h"
 
-std::map<VarKey, std::set<Block*> > varTaskMap;
-
 void UpdateOperands( Block *task )
 {
 	std::stack<Op*> stack;
@@ -62,6 +60,7 @@ void UpdateOperands( Block *task )
 		case PUSH_LABEL_OP:
 		case PUSH_STR_OP:
 		case PUSH_FUNC_END_OP:
+		case PUSH_DEFAULT_OP:
 			stack.push( op );
 			break;
 
@@ -149,7 +148,7 @@ void UpdateOperands( Block *task )
 	}
 }
 
-void AnalyzeTask( Block *task )
+void AnalyzeTask( Program* program, Block *task )
 {
 	UpdateOperands( task );
 
@@ -165,20 +164,20 @@ void AnalyzeTask( Block *task )
 			case VAR_CALC_OP:
 			case VAR_SET_OP:
 				{
-					VarRefOp *vro = (VarRefOp*)op;
-					if (vro->operands.size() == 1) {
-						Op *rhv = vro->operands[0];
-						if ( rhv->GetOpCode() == PUSH_VAR_PTR_OP ) {
-							PushVarPtrOp *pv = (PushVarPtrOp*)rhv;
-							std::find( task->operations.begin(),
-									   task->operations.end(),
-									   pv)[0]
-								= new PushVarOp( pv->GetVarNo(), pv->GetArrayDim() );
-							delete pv;
-							UpdateOperands( task );
-							changed = true;
-						}
+				VarRefOp *vro = (VarRefOp*)op;
+				if (vro->operands.size() == 1) {
+					Op *rhv = vro->operands[0];
+					if ( rhv->GetOpCode() == PUSH_VAR_PTR_OP ) {
+						PushVarPtrOp *pv = (PushVarPtrOp*)rhv;
+						std::find( task->operations.begin(),
+								   task->operations.end(),
+								   pv)[0]
+							= new PushVarOp( pv->GetVarNo(), pv->GetArrayDim() );
+						delete pv;
+						UpdateOperands( task );
+						changed = true;
 					}
+				}
 				}
 				break;
 			}
@@ -187,6 +186,7 @@ void AnalyzeTask( Block *task )
 			break;
 	}
 
+	//	使っている変数
 	for ( std::vector<Op*>::iterator it=task->operations.begin();
 		 it != task->operations.end(); it++ ) {
 		Op *op = *it;
@@ -202,7 +202,7 @@ void AnalyzeTask( Block *task )
 
 		case VAR_CALC_OP:
 		case VAR_SET_OP:
-			varTaskMap[((VarRefOp*)op)->GetVarKey()].insert( task );
+			program->varTaskMap[((VarRefOp*)op)->GetVarKey()].insert( task->name );
 			break;
 
 		case PUSH_DNUM_OP:
@@ -219,6 +219,95 @@ void AnalyzeTask( Block *task )
 			break;
 		default:
 			break;
+		}
+	}
+}
+
+void AnalyzeProgram(Program* program) {
+	std::map<std::string, Block*>& blocks = program->blocks;
+	std::map<VarKey, std::set<std::string> >& varTaskMap = program->varTaskMap;
+	std::map<VarKey, VarInfo*>& varInfos = program->varInfos;
+
+	for(std::map<std::string, Block*>::iterator it = blocks.begin(); it != blocks.end(); ++it) {
+		Block *block = it->second;
+		AnalyzeTask( program, block );
+
+		for (std::set<VarKey>::iterator it2 = block->usedVariables.begin();
+			 it2 != block->usedVariables.end(); ++it2) {
+			if (varInfos.find(*it2) != varInfos.end())
+				continue;
+			VarInfo *var = new VarInfo(it2->first, it2->second);
+			varInfos[*it2] = var;
+		}
+	}
+
+	for(std::map<VarKey, std::set<std::string> >::iterator it = varTaskMap.begin();
+		it != varTaskMap.end(); ++it) {
+		if ( it->second.size() == 0 )
+			continue;
+
+		bool localVar = true;
+
+		// 書き込んでから読み込むタスクだけかチェック
+		for(std::set<std::string>::iterator it2 = it->second.begin();
+			 it2 != it->second.end(); ++it2) {
+			Block *block = program->blocks[*it2];
+			VarInfo *var = varInfos[it->first];
+			VarRefOp* firstAccessOp = NULL;
+
+			for(std::vector<Op*>::iterator it2 = block->operations.begin();
+				it2 != block->operations.end(); it2++) {
+				Op *op = *it2;
+				switch ( op->GetOpCode() ) {
+				case PUSH_VAR_PTR_OP:
+				case PUSH_VAR_OP:
+				case PUSH_FUNC_PARAM_OP:
+				case PUSH_FUNC_PARAM_PTR_OP:
+				case VAR_SET_OP:
+				case VAR_CALC_OP:
+				case VAR_INC_OP:
+				case VAR_DEC_OP:
+				{
+					VarRefOp* vrop = (VarRefOp*)op;
+					if ( vrop->GetVarNo() != var->val )
+						continue;
+					if ( op->GetOpCode() == PUSH_VAR_PTR_OP ) {
+						localVar = false;
+					}
+					if ( vrop->GetArrayDim() > 0) {
+						localVar = false;
+					}
+					if ( vrop->IsParam() ) {
+						localVar = false;
+					}
+					if ( !firstAccessOp ) {
+						firstAccessOp = vrop;
+					}
+				}
+				break;
+				}
+			}
+			switch (firstAccessOp->GetOpCode()) {
+			case VAR_SET_OP:
+				break;
+			case PUSH_VAR_OP:
+			case PUSH_VAR_PTR_OP:
+			case PUSH_FUNC_PARAM_OP:
+			case PUSH_FUNC_PARAM_PTR_OP:
+			case VAR_CALC_OP:
+			case VAR_INC_OP:
+			case VAR_DEC_OP:
+				localVar = false;
+				break;
+			}
+		}
+
+		for (std::set<std::string>::iterator it2 = it->second.begin();
+			 it2 != it->second.end(); ++it2) {
+			Block *task = blocks[*it2];
+			VarInfo *var = varInfos[it->first];
+
+			var->localVar = localVar;
 		}
 	}
 }
