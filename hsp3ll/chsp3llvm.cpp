@@ -145,6 +145,7 @@ static BasicBlock *GenerateDefaultCode( CHsp3Op *hsp, Function *func,
 										Task *task, Op *op );
 
 static void RecompileModule();
+static void MarkCompile( Op *op, COMPILE_TYPE comp );
 
 extern void UpdateOperands( Block *block );
 extern void AnalyzeTask( Block *block );
@@ -257,13 +258,21 @@ static bool IsCompilable( Task *task, Op *op, CHsp3Op *hsp, const std::map<VarId
 			CalcOp *calc = (CalcOp*)op;
 			if ((op->operands[0]->flag == HSPVAR_FLAG_INT && op->operands[1]->flag == HSPVAR_FLAG_INT)
 				|| (op->operands[0]->flag == HSPVAR_FLAG_DOUBLE && op->operands[1]->flag == HSPVAR_FLAG_DOUBLE)) {
-				return IsCompilable( task, op->operands[0], hsp, varTypes ) &&
-					IsCompilable( task, op->operands[1], hsp, varTypes );
+				if ( IsCompilable( task, op->operands[0], hsp, varTypes ) &&
+					 IsCompilable( task, op->operands[1], hsp, varTypes ) ) {
+					MarkCompile( op, VALUE );
+					op->compile = VALUE_STACK;
+					return true;
+				}
 			}
 			if ((op->operands[0]->flag == HSPVAR_FLAG_INT && op->operands[1]->flag == HSPVAR_FLAG_DOUBLE)
 				|| (op->operands[0]->flag == HSPVAR_FLAG_DOUBLE && op->operands[1]->flag == HSPVAR_FLAG_INT)) {
-				return IsCompilable( task, op->operands[0], hsp, varTypes ) &&
-					IsCompilable( task, op->operands[1], hsp, varTypes );
+				if ( IsCompilable( task, op->operands[0], hsp, varTypes ) &&
+					 IsCompilable( task, op->operands[1], hsp, varTypes ) ) {
+					MarkCompile( op, VALUE );
+					op->compile = VALUE_STACK;
+					return true;
+				}
 			}
 		}
 		break;
@@ -284,6 +293,8 @@ static bool IsCompilable( Task *task, Op *op, CHsp3Op *hsp, const std::map<VarId
 
 				if ( (op->operands[0]->flag == HSPVAR_FLAG_INT || op->operands[0]->flag == HSPVAR_FLAG_DOUBLE)
 					 && (tflag == HSPVAR_FLAG_INT || tflag == HSPVAR_FLAG_DOUBLE)) {
+					op->compile = VALUE;
+					MarkCompile( op, VALUE );
 					return true;
 				}
 			}
@@ -298,8 +309,16 @@ static bool IsCompilable( Task *task, Op *op, CHsp3Op *hsp, const std::map<VarId
 			if ( vs->GetArrayDim() == 0 && op->operands.size() == 1 ) {
 				if ( IsCompilable( task, op->operands[0], hsp, varTypes ) &&
 					 op->operands[0]->flag == tflag ) {
+					op->compile = VALUE;
+					MarkCompile( op, VALUE );
 					return true;
 				}
+			}
+
+			if ( IsCompilable( task, op->operands[vs->GetArrayDim()], hsp, varTypes ) ) {
+				//op->compile = RHS;
+				//MarkCompile( op->operands[vs->GetArrayDim()], VALUE );
+				return true;
 			}
 		}
 		break;
@@ -307,7 +326,10 @@ static bool IsCompilable( Task *task, Op *op, CHsp3Op *hsp, const std::map<VarId
 		{
 			CompareOp *comp = (CompareOp*)op;
 			if ( op->operands[0]->flag == HSPVAR_FLAG_INT ) {
-				return IsCompilable( task, op->operands[0], hsp, varTypes );
+				if ( IsCompilable( task, op->operands[0], hsp, varTypes ) ) {
+					op->compile = VALUE;
+					MarkCompile( op, VALUE );
+				}
 			}
 		}
 		break;
@@ -751,6 +773,25 @@ static BasicBlock *CompileOp( CHsp3Op *hsp, Function *func, BasicBlock *bb, Basi
 												static_cast<Value*>(op->operands[1]->llValue) ,
 												v );
 			}
+			if ( calc->compile == VALUE_STACK ) {
+				Value *res = static_cast<Value*>(op->llValue);
+				switch ( calc->flag ) {
+				case HSPVAR_FLAG_INT:
+					{
+						Function *pPush = sCC->M->getFunction( "PushInt" );
+						sCC->Builder.CreateCall( pPush, res );
+					}
+					break;
+				case HSPVAR_FLAG_DOUBLE:
+					{
+						Function *pPush = sCC->M->getFunction( "PushDouble" );
+						sCC->Builder.CreateCall( pPush, res );
+					}
+					break;
+				default:
+					return NULL;
+				}
+			}
 			if ( op->llValue == NULL )
 				return NULL;
 			return bb;
@@ -768,7 +809,7 @@ static BasicBlock *CompileOp( CHsp3Op *hsp, Function *func, BasicBlock *bb, Basi
 			VarStatics *var = GetTaskVar( task, varId );
 			PVal& pval = mem_var[varId.val()];
 
-			if ( vs->useRegister) {
+			if ( vs->useRegister ) {
 				std::map<VarId, Value*>::iterator it
 					= task->llVariables.find( vs->GetVarId() );
 
@@ -865,32 +906,73 @@ static BasicBlock *CompileOp( CHsp3Op *hsp, Function *func, BasicBlock *bb, Basi
 			VarSetOp *vs = (VarSetOp*)op;
 			const VarId &varId = vs->GetVarId();
 			VarStatics *var = GetTaskVar( task, varId );
-			PVal& pval = mem_var[varId.val()];
 
-			if ( vs->useRegister) {
-				op->llValue = op->operands[0]->llValue;
-				task->llVariables[ vs->GetVarId() ] = static_cast<Value*>(op->llValue);
+			if ( vs->compile == VALUE ) { 
+				if ( vs->useRegister ) {
+					op->llValue = op->operands[0]->llValue;
+					task->llVariables[ vs->GetVarId() ] = static_cast<Value*>(op->llValue);
 
-				Function *pNop = sCC->M->getFunction( "Nop" );
-				sCC->Builder.SetInsertPoint( bb );
-				sCC->Builder.CreateCall( pNop );
+					Function *pNop = sCC->M->getFunction( "Nop" );
+					sCC->Builder.SetInsertPoint( bb );
+					sCC->Builder.CreateCall( pNop );
 
-				return bb;
-			}
+					return bb;
+				}
 
-			Value *lpvar = sCC->MakeImmidiateCPPName( hsp, bb, vs->GetVarType(),
-													  vs->GetVarNo(), vs->GetPrmNo() );
-			Value *lpval = sCC->Builder.CreateConstGEP2_32( lpvar, 0, 4 );
-			LoadInst *lptr = sCC->Builder.CreateLoad( lpval, "ptr" );
+				PVal& pval = mem_var[varId.val()];
+				Value *lpvar = sCC->MakeImmidiateCPPName( hsp, bb, vs->GetVarType(),
+														  vs->GetVarNo(), vs->GetPrmNo() );
+				Value *lpval = sCC->Builder.CreateConstGEP2_32( lpvar, 0, 4 );
+				LoadInst *lptr = sCC->Builder.CreateLoad( lpval, "ptr" );
+				
+				if ( pval.flag == HSPVAR_FLAG_INT ) {
+					Value *lp = sCC->Builder.CreateBitCast( lptr, tyPI32 );
+					op->llValue = sCC->Builder.CreateStore( static_cast<Value*>(op->operands[0]->llValue), lp );
+				} else if ( pval.flag == HSPVAR_FLAG_DOUBLE ) {
+					Value *lp = sCC->Builder.CreateBitCast( lptr, tyPD );
+					op->llValue = sCC->Builder.CreateStore( static_cast<Value*>(op->operands[0]->llValue), lp );
+				} else {
+					return NULL;
+				}
+/*
+			} else if ( vs->compile == RHS ) {
+				Op* rop = op->operands[vs->GetArrayDim()];
+				Value* rhv = static_cast<Value*>(rop->llValue);
 
-			if ( pval.flag == HSPVAR_FLAG_INT ) {
-				Value *lp = sCC->Builder.CreateBitCast( lptr, tyPI32 );
-				op->llValue = sCC->Builder.CreateStore( static_cast<Value*>(op->operands[0]->llValue), lp );
-			} else if ( pval.flag == HSPVAR_FLAG_DOUBLE ) {
-				Value *lp = sCC->Builder.CreateBitCast( lptr, tyPD );
-				op->llValue = sCC->Builder.CreateStore( static_cast<Value*>(op->operands[0]->llValue), lp );
-			} else {
-				return NULL;
+				switch ( rop->flag ) {
+				case HSPVAR_FLAG_INT:
+					{
+						Function *pPush = sCC->M->getFunction( "PushInt" );
+						sCC->Builder.CreateCall( pPush, rhv );
+					}
+					break;
+				case HSPVAR_FLAG_DOUBLE:
+					{
+						Function *pPush = sCC->M->getFunction( "PushDouble" );
+						sCC->Builder.CreateCall( pPush, rhv );
+					}
+					break;
+				default:
+					return NULL;
+				}
+
+				Function *f = sCC->M->getFunction( "VarSet" );
+				const FunctionType *ft = f->getFunctionType();
+
+				Value *var = sCC->MakeImmidiateCPPName( hsp, bb, vs->GetVarType(),
+														vs->GetVarNo(), vs->GetPrmNo() );
+				if (!var) {
+					Alert( "mes" );
+				}
+				std::vector<Value*> args;
+				args.push_back(var);
+				args.push_back(ConstantInt::get( Type::getInt32Ty( Context ),
+												 vs->GetArrayDim() ));
+				args.push_back(ConstantInt::get( Type::getInt32Ty( Context ),
+												 vs->GetCmdPNum() ));
+
+				sCC->Builder.CreateCall(f, args.begin(), args.end());
+*/
 			}
 			return bb;
 		}
@@ -1300,8 +1382,8 @@ static void CompileTask( CHsp3Op *hsp, Task *task, Function *func, BasicBlock *r
 		case COMPARE_OP:
 			{
 				if ( IsCompilable( task, op, hsp, varTypes ) ) {
-					op->compile = VALUE;
-					MarkCompile( op, VALUE );
+					//op->compile = VALUE;
+					//MarkCompile( op, VALUE );
 				}
 			}
 			break;
@@ -1357,7 +1439,7 @@ static void CompileTask( CHsp3Op *hsp, Task *task, Function *func, BasicBlock *r
 					} else {
 						if ( vrop->GetVarNo() != it->val() )
 							continue;
-						if ( vrop->compile != VALUE )
+						if ( vrop->compile == DEFAULT )
 							useRegister = false;
 					}
 				}
@@ -1399,14 +1481,14 @@ static void CompileTask( CHsp3Op *hsp, Task *task, Function *func, BasicBlock *r
 		  it != task->block->operations.end(); it++ ) {
 		Op *op = *it;
 
-		if ( op->compile == VALUE ) {
+		if ( op->compile == DEFAULT ) {
+			curBB = GenerateDefaultCode( hsp, func, curBB, retBB, task, op );
+		} else {
 			curBB = CompileOp( hsp, func, curBB, retBB, task, op );
 			if ( !curBB ) {
 				Alert( (char*)(buf + op->GetName()).c_str() );
 				return;
 			}
-		} else {
-			curBB = GenerateDefaultCode( hsp, func, curBB, retBB, task, op );
 		}
 	}
 

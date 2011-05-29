@@ -1144,12 +1144,15 @@ PVal *FuncPrm( int num )
 	//char *ptr;
 
 	stm = (STMDATA *)hspctx->prmstack;
-	if ( stm == NULL ) throw HSPERR_INVALID_FUNCPARAM;
-	if ( num >= hspctx->prmstack_max ) throw HSPERR_INVALID_FUNCPARAM;
+	if ( stm == NULL )
+		throw HSPERR_INVALID_FUNCPARAM;
+	if ( num >= hspctx->prmstack_max )
+		throw HSPERR_INVALID_FUNCPARAM;
 	stm -= num;
 
 	tflag = stm->type;
-	if ( tflag != HSPVAR_FLAG_VAR ) throw HSPVAR_ERROR_INVALID;
+	if ( tflag != HSPVAR_FLAG_VAR )
+		throw HSPVAR_ERROR_INVALID;
 
 	//ptr = stm->itemp;
 	return (PVal *)( stm->ival );
@@ -1169,7 +1172,8 @@ PVal *LocalPrm( int num )
 	stm -= num;
 
 	tflag = stm->type;
-	if ( tflag != TYPE_EX_LOCAL_VARS ) throw HSPVAR_ERROR_INVALID;
+	if ( tflag != TYPE_EX_LOCAL_VARS )
+		throw HSPVAR_ERROR_INVALID;
 
 	return (PVal *)( stm->ptr );
 }

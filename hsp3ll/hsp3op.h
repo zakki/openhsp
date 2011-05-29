@@ -46,7 +46,7 @@ enum OPCODE {
 };
 
 enum COMPILE_TYPE {
-	DEFAULT, VALUE
+	DEFAULT, VALUE, VALUE_STACK
 };
 
 class Op;
