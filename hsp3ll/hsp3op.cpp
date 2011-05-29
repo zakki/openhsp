@@ -9,6 +9,7 @@
 #include <vector>
 #include <stack>
 #include <algorithm>
+#include <cassert>
 
 #include "hsp3op.h"
 #include "supio.h"
@@ -250,6 +251,7 @@ void AnalyzeTask( Program* program, Block *block )
 		case PUSH_STR_OP:
 		case PUSH_FUNC_END_OP:
 		case PUSH_CMD_OP:
+		case PUSH_DEFAULT_OP:
 		case CALC_OP:
 		case MODCMD_OP:
 			break;
@@ -288,7 +290,8 @@ void AnalyzeTask( Program* program, Block *block )
 			break;
 		}
 		default:
-			throw "Unknown op";
+			Alert( "Unknown op" );
+			assert(false);
 		}
 	}
 }

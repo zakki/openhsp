@@ -345,119 +345,101 @@ static void CheckType( CHsp3Op *hsp, Task *task)
 		op->flag = HSPVAR_FLAG_MAX;
 	}
 
-	bool changed;
-	do {
-		changed = false;
-		for ( op_list::iterator it=task->block->operations.begin();
-			  it != task->block->operations.end(); it++ ) {
-			Op *op = *it;
+	for ( op_list::iterator it=task->block->operations.begin();
+		  it != task->block->operations.end(); it++ ) {
+		Op *op = *it;
 
-			switch ( op->GetOpCode() ) {
-			case PUSH_VAR_OP:
-				{
-					const VarId &varId = ((PushVarOp*)op)->GetVarId();
-					VarStatics *var = GetTaskVar( task, varId );
-					PVal& pval = mem_var[varId.val()];
-
-					changed |= op->flag != pval.flag;
-					op->flag = pval.flag;
-				}
+		switch ( op->GetOpCode() ) {
+		case PUSH_VAR_OP:
+		{
+			const VarId &varId = ((PushVarOp*)op)->GetVarId();
+			VarStatics *var = GetTaskVar( task, varId );
+			PVal& pval = mem_var[varId.val()];
+			op->flag = pval.flag;
+			break;
+		}
+		case PUSH_VAR_PTR_OP:
+		{
+			const VarId &varId = ((PushVarPtrOp*)op)->GetVarId();
+			VarStatics *var = GetTaskVar( task, varId );
+			PVal& pval = mem_var[varId.val()];
+			op->flag = pval.flag;
+			break;
+		}
+		case PUSH_DNUM_OP:
+			op->flag = HSPVAR_FLAG_DOUBLE;
+			break;
+		case PUSH_INUM_OP:
+			op->flag = HSPVAR_FLAG_INT;
+			break;
+		case PUSH_LABEL_OP:
+			op->flag = HSPVAR_FLAG_LABEL;
+			break;
+		case PUSH_STR_OP:
+			op->flag = HSPVAR_FLAG_STR;
+			break;
+		case PUSH_FUNC_END_OP:
+		case PUSH_FUNC_PARAM_PTR_OP:
+			break;
+		case PUSH_FUNC_PARAM_OP:
+		{
+			PushFuncPrmOp *prmop = (PushFuncPrmOp*)op;
+			const STRUCTPRM *st = hsp->GetMInfo( prmop->GetVarNo() );
+			switch( st->mptype ) {
+			case MPTYPE_LOCALVAR:
 				break;
-			case PUSH_VAR_PTR_OP:
-				{
-					const VarId &varId = ((PushVarPtrOp*)op)->GetVarId();
-					VarStatics *var = GetTaskVar( task, varId );
-					PVal& pval = mem_var[varId.val()];
-					changed |= op->flag != pval.flag;
-					op->flag = pval.flag;
-				}
+			case MPTYPE_VAR:
+			case MPTYPE_ARRAYVAR:
+			case MPTYPE_SINGLEVAR:
 				break;
-			case PUSH_DNUM_OP:
-				changed |= op->flag != HSPVAR_FLAG_DOUBLE;
+			case MPTYPE_DNUM:
 				op->flag = HSPVAR_FLAG_DOUBLE;
 				break;
-			case PUSH_INUM_OP:
-				changed |= op->flag != HSPVAR_FLAG_INT;
+			case MPTYPE_INUM:
 				op->flag = HSPVAR_FLAG_INT;
 				break;
-			case PUSH_LABEL_OP:
-				changed |= op->flag != HSPVAR_FLAG_LABEL;
-				op->flag = HSPVAR_FLAG_LABEL;
-				break;
-			case PUSH_STR_OP:
-				changed |= op->flag != HSPVAR_FLAG_STR;
-				op->flag = HSPVAR_FLAG_STR;
-				break;
-			case PUSH_FUNC_END_OP:
-			case PUSH_FUNC_PARAM_PTR_OP:
-				break;
-			case PUSH_FUNC_PARAM_OP:
-				{
-				PushFuncPrmOp *prmop = (PushFuncPrmOp*)op;
-				const STRUCTPRM *st = hsp->GetMInfo( prmop->GetVarNo() );
-				switch( st->mptype ) {
-				case MPTYPE_LOCALVAR:
-					break;
-				case MPTYPE_VAR:
-				case MPTYPE_ARRAYVAR:
-				case MPTYPE_SINGLEVAR:
-					break;
-				case MPTYPE_DNUM:
-					changed |= op->flag != HSPVAR_FLAG_DOUBLE;
-					op->flag = HSPVAR_FLAG_DOUBLE;
-					break;
-				case MPTYPE_INUM:
-					changed |= op->flag != HSPVAR_FLAG_INT;
-					op->flag = HSPVAR_FLAG_INT;
-					break;
-				}
-				}
-				break;
-
-			case PUSH_CMD_OP:
-				{
-					PushCmdOp *pcop = (PushCmdOp*)op;
-
-					int retType = GetFuncTypeRet( pcop->GetCmdType(),
-												  pcop->GetCmdVal(),
-												  pcop->GetCmdPNum() );
-					changed |= op->flag != retType;
-					op->flag = retType;
-				}
-				break;
-
-			case CALC_OP:
-				{
-					CalcOp *calc = (CalcOp*)op;
-					int tflag = GetOpTypeRet( calc->GetCalcOp(),
-											 op->operands[1]->flag,
-											 op->operands[0]->flag );
-					changed |= op->flag != tflag;
-					op->flag = tflag;
-				}
-				break;
-
-			case VAR_INC_OP:
-			case VAR_DEC_OP:
-				break;
-
-			case VAR_CALC_OP:
-				break;
-			case VAR_SET_OP:
-				break;
-			case COMPARE_OP:
-				break;
-			case CMD_OP:
-				break;
-			case MODCMD_OP:
-				break;
-			case TASK_SWITCH_OP:
-				break;
-			default:
-				break;
 			}
+			break;
 		}
-	} while (changed);
+		case PUSH_CMD_OP:
+		{
+			PushCmdOp *pcop = (PushCmdOp*)op;
+			int retType = GetFuncTypeRet( pcop->GetCmdType(),
+										  pcop->GetCmdVal(),
+										  pcop->GetCmdPNum() );
+			op->flag = retType;
+			break;
+		}
+		case CALC_OP:
+		{
+			CalcOp *calc = (CalcOp*)op;
+			int tflag = GetOpTypeRet( calc->GetCalcOp(),
+									  op->operands[1]->flag,
+									  op->operands[0]->flag );
+			op->flag = tflag;
+		}
+		break;
+
+		case VAR_INC_OP:
+		case VAR_DEC_OP:
+			break;
+
+		case VAR_CALC_OP:
+			break;
+		case VAR_SET_OP:
+			break;
+		case COMPARE_OP:
+			break;
+		case CMD_OP:
+			break;
+		case MODCMD_OP:
+			break;
+		case TASK_SWITCH_OP:
+			break;
+		default:
+			break;
+		}
+	}
 }
 
 static BasicBlock *CompileOp( CHsp3Op *hsp, Function *func, BasicBlock *bb, BasicBlock *retBB, Task *task, Op *op )
@@ -1164,6 +1146,9 @@ static BasicBlock *GenerateDefaultCode( CHsp3Op *hsp, Function *func,
 							o->GetCmdVal(), o->GetCmdPNum() );
 		return bb;
 	}
+	default:
+		Alert( "Unknown op" );
+		return NULL;
 	}
 }
 
@@ -1363,7 +1348,7 @@ static void TraceTaskProc()
 	Timer timer( &task );
 
 	if ( task.numChange > 5) {
-#ifdef HSP_PROFILE
+#if HSP_PROFILE
 		__HspTaskFunc[cur] = ProfileTaskProc;
 #else
 		__HspTaskFunc[cur] = task.funcPtr;
@@ -1373,7 +1358,7 @@ static void TraceTaskProc()
 	}
 
 	if ( task.numCurCall > 1000 ) {// FIXME Œ^‚ª•Ï‚í‚ç‚È‚¢‚±‚Æ‚ðŠm”F‚·‚×‚«
-#ifdef HSP_PROFILE
+#if HSP_PROFILE
 		__HspTaskFunc[cur] = ProfileTaskProc;
 #else
 		__HspTaskFunc[cur] = task.funcPtr;
