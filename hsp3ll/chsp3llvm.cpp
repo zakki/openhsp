@@ -163,24 +163,21 @@ static VarStatics *GetTaskVar( Task *task, const VarId& id )
 		return NULL;
 }
 
-static bool IsCompilable( Task *task, Op *op, CHsp3Op *hsp )
+static bool IsCompilable( Task *task, Op *op, CHsp3Op *hsp, const std::map<VarId, int>& varTypes )
 {
 	switch ( op->GetOpCode() ) {
 	case PUSH_VAR_OP:
 		{
 			PushVarOp *pv = (PushVarOp*)op;
 			const VarId &varId = pv->GetVarId();
-			VarStatics *var = GetTaskVar( task, varId );
-			PVal& pval = mem_var[varId.val()];
-			//changed |= op->flag == pval.flag;
-			//op->flag = pval.flag;
+			int tflag = varTypes.find(varId)->second;
 
 			for ( int i = 0; i <  pv->GetArrayDim(); i++ ) {
 				if ( op->operands[i]->flag != HSPVAR_FLAG_INT )
 					return false;
 			}
 
-			if (pval.flag == TYPE_INUM || pval.flag == HSPVAR_FLAG_DOUBLE) {
+			if (tflag == TYPE_INUM || tflag == HSPVAR_FLAG_DOUBLE) {
 				//return pv->GetArrayDim() == 0;
 				return true;
 			}
@@ -188,11 +185,10 @@ static bool IsCompilable( Task *task, Op *op, CHsp3Op *hsp )
 		break;
 	case PUSH_VAR_PTR_OP:
 		{
-			PushVarPtrOp *pv = (PushVarPtrOp*)op;
-			const VarId &varId = pv->GetVarId();
-			VarStatics *var = GetTaskVar( task, varId );
-			PVal& pval = mem_var[varId.val()];
-			//changed |= op->flag == pval.flag;
+			//PushVarPtrOp *pv = (PushVarPtrOp*)op;
+			//const VarId &varId = pv->GetVarId();
+			//VarStatics *var = GetTaskVar( task, varId );
+			//PVal& pval = mem_var[varId.val()];
 			//op->flag = pval.flag;
 		}
 		break;
@@ -210,21 +206,22 @@ static bool IsCompilable( Task *task, Op *op, CHsp3Op *hsp )
 		{
 			PushFuncPrmOp *prmop = (PushFuncPrmOp*)op;
 			const STRUCTPRM *st = hsp->GetMInfo( prmop->GetVarNo() );
+			const VarId &varId = prmop->GetVarId();
+			int tflag = varTypes.find(varId)->second;
+
 			switch( st->mptype ) {
 			case MPTYPE_LOCALVAR:
 				break;
 			case MPTYPE_VAR:
 			case MPTYPE_ARRAYVAR:
 			case MPTYPE_SINGLEVAR:
-/*
-				for ( int i = 0; i <  pv->GetArrayDim(); i++ ) {
+				for ( int i = 0; i <  prmop->GetArrayDim(); i++ ) {
 					if ( op->operands[i]->flag != HSPVAR_FLAG_INT )
 						return false;
 				}
-				if (pval.flag == TYPE_INUM || pval.flag == HSPVAR_FLAG_DOUBLE) {
+				if (tflag == TYPE_INUM || tflag == HSPVAR_FLAG_DOUBLE) {
 					return true;
 				}
-*/
 				break;
 			case MPTYPE_DNUM:
 				return true;
@@ -246,7 +243,7 @@ static bool IsCompilable( Task *task, Op *op, CHsp3Op *hsp )
 					return false;
 				}
 
-				if ( !IsCompilable( task, *it, hsp ) ) {
+				if ( !IsCompilable( task, *it, hsp, varTypes ) ) {
 					return false;
 				}
 			}
@@ -260,13 +257,13 @@ static bool IsCompilable( Task *task, Op *op, CHsp3Op *hsp )
 			CalcOp *calc = (CalcOp*)op;
 			if ((op->operands[0]->flag == HSPVAR_FLAG_INT && op->operands[1]->flag == HSPVAR_FLAG_INT)
 				|| (op->operands[0]->flag == HSPVAR_FLAG_DOUBLE && op->operands[1]->flag == HSPVAR_FLAG_DOUBLE)) {
-				return IsCompilable( task, op->operands[0], hsp ) &&
-					IsCompilable( task, op->operands[1], hsp );
+				return IsCompilable( task, op->operands[0], hsp, varTypes ) &&
+					IsCompilable( task, op->operands[1], hsp, varTypes );
 			}
 			if ((op->operands[0]->flag == HSPVAR_FLAG_INT && op->operands[1]->flag == HSPVAR_FLAG_DOUBLE)
 				|| (op->operands[0]->flag == HSPVAR_FLAG_DOUBLE && op->operands[1]->flag == HSPVAR_FLAG_INT)) {
-				return IsCompilable( task, op->operands[0], hsp ) &&
-					IsCompilable( task, op->operands[1], hsp );
+				return IsCompilable( task, op->operands[0], hsp, varTypes ) &&
+					IsCompilable( task, op->operands[1], hsp, varTypes );
 			}
 		}
 		break;
@@ -279,15 +276,14 @@ static bool IsCompilable( Task *task, Op *op, CHsp3Op *hsp )
 		{
 			VarCalcOp *vs = (VarCalcOp*)op;
 			const VarId &varId = vs->GetVarId();
-			VarStatics *var = GetTaskVar( task, varId );
-			PVal& pval = mem_var[varId.val()];
+			int tflag = varTypes.find(varId)->second;
 
 			if ( vs->GetArrayDim() == 0 && op->operands.size() == 1 ) {
-				if ( !IsCompilable( task, op->operands[0], hsp ) )
+				if ( !IsCompilable( task, op->operands[0], hsp, varTypes ) )
 					return false;
 
 				if ( (op->operands[0]->flag == HSPVAR_FLAG_INT || op->operands[0]->flag == HSPVAR_FLAG_DOUBLE)
-					 && (pval.flag == HSPVAR_FLAG_INT || pval.flag == HSPVAR_FLAG_DOUBLE)) {
+					 && (tflag == HSPVAR_FLAG_INT || tflag == HSPVAR_FLAG_DOUBLE)) {
 					return true;
 				}
 			}
@@ -297,12 +293,11 @@ static bool IsCompilable( Task *task, Op *op, CHsp3Op *hsp )
 		{
 			VarSetOp *vs = (VarSetOp*)op;
 			const VarId &varId = vs->GetVarId();
-			VarStatics *var = GetTaskVar( task, varId );
-			PVal& pval = mem_var[varId.val()];
+			int tflag = varTypes.find(varId)->second;
 
 			if ( vs->GetArrayDim() == 0 && op->operands.size() == 1 ) {
-				if ( IsCompilable( task, op->operands[0], hsp ) &&
-					 op->operands[0]->flag == pval.flag ) {
+				if ( IsCompilable( task, op->operands[0], hsp, varTypes ) &&
+					 op->operands[0]->flag == tflag ) {
 					return true;
 				}
 			}
@@ -312,7 +307,7 @@ static bool IsCompilable( Task *task, Op *op, CHsp3Op *hsp )
 		{
 			CompareOp *comp = (CompareOp*)op;
 			if ( op->operands[0]->flag == HSPVAR_FLAG_INT ) {
-				return IsCompilable( task, op->operands[0], hsp );
+				return IsCompilable( task, op->operands[0], hsp, varTypes );
 			}
 		}
 		break;
@@ -381,6 +376,7 @@ static void CheckType( CHsp3Op *hsp, Task *task,
 		case PUSH_FUNC_PARAM_OP:
 		{
 			PushFuncPrmOp *prmop = (PushFuncPrmOp*)op;
+			const VarId &varId = prmop->GetVarId();
 			const STRUCTPRM *st = hsp->GetMInfo( prmop->GetVarNo() );
 			switch( st->mptype ) {
 			case MPTYPE_LOCALVAR:
@@ -388,7 +384,7 @@ static void CheckType( CHsp3Op *hsp, Task *task,
 			case MPTYPE_VAR:
 			case MPTYPE_ARRAYVAR:
 			case MPTYPE_SINGLEVAR:
-				//op->flag = varTypes[varId];
+				op->flag = varTypes.find(varId)->second;
 				break;
 			case MPTYPE_DNUM:
 				op->flag = HSPVAR_FLAG_DOUBLE;
@@ -440,6 +436,7 @@ static void CheckType( CHsp3Op *hsp, Task *task,
 	}
 }
 
+//TODO –¾Ž¦“I‚É•Ï”‚ÌŒ^î•ñ‚ð“n‚· -> CheckType
 static BasicBlock *CompileOp( CHsp3Op *hsp, Function *func, BasicBlock *bb, BasicBlock *retBB, Task *task, Op *op )
 {
 	LLVMContext &Context = getGlobalContext();
@@ -556,7 +553,79 @@ static BasicBlock *CompileOp( CHsp3Op *hsp, Function *func, BasicBlock *bb, Basi
 			case MPTYPE_VAR:
 			case MPTYPE_ARRAYVAR:
 			case MPTYPE_SINGLEVAR:
+			{
+				//PushVarOp *pv = (PushVarOp*)op;
+				const VarId &varId = prmop->GetVarId();
+				VarStatics *var = GetTaskVar( task, varId );
+				//PVal& pval = mem_var[varId.val()];
+				PVal &pval = *FuncPrm( varId.prm() );
+				Value *lpvar;
+				string varname(hsp->MakeImmidiateCPPVarName( varId.type(), varId.val() ));
+
+				std::map<VarId, Value*>::iterator it
+					= task->llVariables.find( varId );
+
+/*
+				if ( pv->useRegister) {
+					op->llValue = it->second;
+
+					Function *pNop = sCC->M->getFunction( "Nop" );
+					sCC->Builder.SetInsertPoint( bb );
+					sCC->Builder.CreateCall( pNop );
+					return bb;
+				}
+*/
+
+				//if ( it != task->llVariables.end() ) {
+				//lpvar = it->second;
+				//} else {
+					lpvar = sCC->MakeImmidiateCPPName( hsp, bb, varId.type(),
+													   varId.val(), varId.prm() );
+					//}
+				task->llVariables[varId] = lpvar;
+				Value *lpval = sCC->Builder.CreateConstGEP2_32( lpvar, 0, 4, "a_" + varname );
+				LoadInst *lptr = sCC->Builder.CreateLoad( lpval, "b_" + varname );
+				Value *ptr;
+				if ( pval.flag == HSPVAR_FLAG_INT ) {
+					ptr = sCC->Builder.CreateBitCast( lptr, tyPI32, "c_" + varname );
+				} else if ( pval.flag == HSPVAR_FLAG_DOUBLE ) {
+					ptr = sCC->Builder.CreateBitCast( lptr, tyPD, "d_" + varname );
+				} else {
+					return NULL;
+				}
+
+				Value *aptr;
+				BasicBlock *curBB;
+				if ( prmop->GetArrayDim() == 0) {
+					aptr = ptr;
+					curBB = bb;
+				} else {
+					curBB = bb;
+					sCC->Builder.SetInsertPoint( curBB );
+					Function *pReset = sCC->M->getFunction( "HspVarCoreReset" );
+					sCC->Builder.CreateCall( pReset, lpvar );
+
+					Function *pArray2 = sCC->M->getFunction( "HspVarCoreArray2" );
+					for ( int i = 0; i <  prmop->GetArrayDim(); i++ ) {
+						sCC->Builder.CreateCall2( pArray2, lpvar,
+												  static_cast<Value*>(prmop->operands[i]->llValue ));
+					}
+					Value *lpofs = sCC->Builder.CreateConstGEP2_32( lpvar, 0, 8 );
+					LoadInst *lofs = sCC->Builder.CreateLoad( lpofs, "offset_" + varname );
+					aptr = sCC->Builder.CreateGEP( ptr, lofs );
+				}
+
+				if ( pval.flag == HSPVAR_FLAG_INT ) {
+					op->llValue = sCC->Builder.CreateLoad( aptr, "var_" + varname );
+					return curBB;
+				} else if ( pval.flag == HSPVAR_FLAG_DOUBLE ) {
+					op->llValue = sCC->Builder.CreateLoad( aptr, "var_" + varname );
+					return curBB;
+				} else {
+					return NULL;
+				}
 				break;
+			}
 			case MPTYPE_DNUM:
 				op->llValue = sCC->CreateCallImm( bb, "FuncPrmD",
 												  prmop->GetPrmNo() );
@@ -1157,7 +1226,42 @@ static void CompileTask( CHsp3Op *hsp, Task *task, Function *func, BasicBlock *r
 	std::map<VarId, int> varTypes;
 	for (std::set<VarId>::iterator it =  task->block->usedVariables.begin();
 		 it != task->block->usedVariables.end(); ++it) {
-		if (it->type() != TYPE_STRUCT) {
+		if (it->type() == TYPE_STRUCT) {
+			try {
+				const STRUCTPRM *st = hsp->GetMInfo( it->val() );
+				switch( st->mptype ) {
+				case MPTYPE_LOCALVAR:
+				{
+					varTypes[*it] = HSPVAR_FLAG_MAX;
+					break;
+				}
+				case MPTYPE_VAR:
+				case MPTYPE_ARRAYVAR:
+				case MPTYPE_SINGLEVAR:
+				{
+					PVal *pval = FuncPrm( it->prm() );
+					varTypes[*it] = pval->flag;
+					break;
+				}
+				case MPTYPE_DNUM:
+				{
+					varTypes[*it] = HSPVAR_FLAG_DOUBLE;
+					break;
+				}
+				case MPTYPE_INUM:
+					varTypes[*it] = HSPVAR_FLAG_INT;
+					break;
+				}
+			} catch (HSPERROR e) {
+				
+			string funcname =
+				( format( "prm type error %1%_%2%" )
+				% it->type()
+				% it->prm() ).str();
+				Alert((char*)funcname.c_str());
+				throw e;
+			}
+		} else {
 			varTypes[*it] = mem_var[it->val()].flag;
 		}
 	}
@@ -1195,7 +1299,7 @@ static void CompileTask( CHsp3Op *hsp, Task *task, Function *func, BasicBlock *r
 		case VAR_SET_OP:
 		case COMPARE_OP:
 			{
-				if ( IsCompilable( task, op, hsp ) ) {
+				if ( IsCompilable( task, op, hsp, varTypes ) ) {
 					op->compile = VALUE;
 					MarkCompile( op, VALUE );
 				}
