@@ -164,7 +164,7 @@ static VarStatics *GetTaskVar( Task *task, const VarId& id )
 		return NULL;
 }
 
-static bool IsCompilable( Task *task, Op *op, CHsp3Op *hsp, const std::map<VarId, int>& varTypes )
+static bool CheckCompileType( Task *task, Op *op, CHsp3Op *hsp, const std::map<VarId, int>& varTypes )
 {
 	switch ( op->GetOpCode() ) {
 	case PUSH_VAR_OP:
@@ -244,7 +244,7 @@ static bool IsCompilable( Task *task, Op *op, CHsp3Op *hsp, const std::map<VarId
 					return false;
 				}
 
-				if ( !IsCompilable( task, *it, hsp, varTypes ) ) {
+				if ( !CheckCompileType( task, *it, hsp, varTypes ) ) {
 					return false;
 				}
 			}
@@ -258,8 +258,8 @@ static bool IsCompilable( Task *task, Op *op, CHsp3Op *hsp, const std::map<VarId
 			CalcOp *calc = (CalcOp*)op;
 			if ((op->operands[0]->flag == HSPVAR_FLAG_INT && op->operands[1]->flag == HSPVAR_FLAG_INT)
 				|| (op->operands[0]->flag == HSPVAR_FLAG_DOUBLE && op->operands[1]->flag == HSPVAR_FLAG_DOUBLE)) {
-				if ( IsCompilable( task, op->operands[0], hsp, varTypes ) &&
-					 IsCompilable( task, op->operands[1], hsp, varTypes ) ) {
+				if ( CheckCompileType( task, op->operands[0], hsp, varTypes ) &&
+					 CheckCompileType( task, op->operands[1], hsp, varTypes ) ) {
 					MarkCompile( op, VALUE );
 					op->compile = VALUE_STACK;
 					return true;
@@ -267,13 +267,16 @@ static bool IsCompilable( Task *task, Op *op, CHsp3Op *hsp, const std::map<VarId
 			}
 			if ((op->operands[0]->flag == HSPVAR_FLAG_INT && op->operands[1]->flag == HSPVAR_FLAG_DOUBLE)
 				|| (op->operands[0]->flag == HSPVAR_FLAG_DOUBLE && op->operands[1]->flag == HSPVAR_FLAG_INT)) {
-				if ( IsCompilable( task, op->operands[0], hsp, varTypes ) &&
-					 IsCompilable( task, op->operands[1], hsp, varTypes ) ) {
+				if ( CheckCompileType( task, op->operands[0], hsp, varTypes ) &&
+					 CheckCompileType( task, op->operands[1], hsp, varTypes ) ) {
 					MarkCompile( op, VALUE );
 					op->compile = VALUE_STACK;
 					return true;
 				}
 			}
+			CheckCompileType( task, op->operands[0], hsp, varTypes );
+			CheckCompileType( task, op->operands[1], hsp, varTypes );
+			return false;
 		}
 		break;
 
@@ -288,7 +291,7 @@ static bool IsCompilable( Task *task, Op *op, CHsp3Op *hsp, const std::map<VarId
 			int tflag = varTypes.find(varId)->second;
 
 			if ( vs->GetArrayDim() == 0 && op->operands.size() == 1 ) {
-				if ( !IsCompilable( task, op->operands[0], hsp, varTypes ) )
+				if ( !CheckCompileType( task, op->operands[0], hsp, varTypes ) )
 					return false;
 
 				if ( (op->operands[0]->flag == HSPVAR_FLAG_INT || op->operands[0]->flag == HSPVAR_FLAG_DOUBLE)
@@ -307,7 +310,7 @@ static bool IsCompilable( Task *task, Op *op, CHsp3Op *hsp, const std::map<VarId
 			int tflag = varTypes.find(varId)->second;
 
 			if ( vs->GetArrayDim() == 0 && op->operands.size() == 1 ) {
-				if ( IsCompilable( task, op->operands[0], hsp, varTypes ) &&
+				if ( CheckCompileType( task, op->operands[0], hsp, varTypes ) &&
 					 op->operands[0]->flag == tflag ) {
 					op->compile = VALUE;
 					MarkCompile( op, VALUE );
@@ -315,7 +318,7 @@ static bool IsCompilable( Task *task, Op *op, CHsp3Op *hsp, const std::map<VarId
 				}
 			}
 
-			if ( IsCompilable( task, op->operands[vs->GetArrayDim()], hsp, varTypes ) ) {
+			if ( CheckCompileType( task, op->operands[vs->GetArrayDim()], hsp, varTypes ) ) {
 				//op->compile = RHS;
 				//MarkCompile( op->operands[vs->GetArrayDim()], VALUE );
 				return true;
@@ -326,7 +329,7 @@ static bool IsCompilable( Task *task, Op *op, CHsp3Op *hsp, const std::map<VarId
 		{
 			CompareOp *comp = (CompareOp*)op;
 			if ( op->operands[0]->flag == HSPVAR_FLAG_INT ) {
-				if ( IsCompilable( task, op->operands[0], hsp, varTypes ) ) {
+				if ( CheckCompileType( task, op->operands[0], hsp, varTypes ) ) {
 					op->compile = VALUE;
 					MarkCompile( op, VALUE );
 				}
@@ -335,6 +338,14 @@ static bool IsCompilable( Task *task, Op *op, CHsp3Op *hsp, const std::map<VarId
 		break;
 	case CMD_OP:
 	case MODCMD_OP:
+		{
+			CallOp *call = (CallOp*)op;
+
+			for ( op_list::iterator it=call->operands.begin();
+				  it != call->operands.end(); it++ ) {
+				CheckCompileType( task, *it, hsp, varTypes );
+			}
+		}
 		break;
 	case TASK_SWITCH_OP:
 		break;
@@ -516,6 +527,32 @@ static BasicBlock *CompileOp( CHsp3Op *hsp, Function *func, BasicBlock *bb, Basi
 				curBB = bb;
 			} else {
 				curBB = bb;
+
+				Value *ofs1 = NULL;
+				BasicBlock *inBB = NULL;
+				BasicBlock *outBB = NULL;
+				BasicBlock *uniBB = NULL;
+
+				if ( pv->GetArrayDim() == 1) {
+					// 1次元配列の場合はインラインで範囲チェック
+					sCC->Builder.SetInsertPoint( curBB );
+					Function *pArray2 = sCC->M->getFunction( "HspVarCoreArray1D" );
+					ofs1 = sCC->Builder.CreateCall2( pArray2, lpvar,
+													 static_cast<Value*>(pv->operands[0]->llValue ));
+					
+					Value *cond = sCC->Builder.CreateICmpSGE( ofs1,
+															  ConstantInt::get( Type::getInt32Ty( Context ), 0 ) );
+
+					inBB = BasicBlock::Create( Context, "in", func );
+					outBB = BasicBlock::Create( Context, "out", func );
+					uniBB = BasicBlock::Create( Context, "uni", func );
+					sCC->Builder.CreateCondBr( cond, inBB, outBB );
+					
+					sCC->Builder.SetInsertPoint( inBB );
+					sCC->Builder.CreateBr( uniBB );
+
+					curBB = outBB;
+				}
 				sCC->Builder.SetInsertPoint( curBB );
 				Function *pReset = sCC->M->getFunction( "HspVarCoreReset" );
 				sCC->Builder.CreateCall( pReset, lpvar );
@@ -527,7 +564,21 @@ static BasicBlock *CompileOp( CHsp3Op *hsp, Function *func, BasicBlock *bb, Basi
 				}
 				Value *lpofs = sCC->Builder.CreateConstGEP2_32( lpvar, 0, 8 );
 				LoadInst *lofs = sCC->Builder.CreateLoad( lpofs, "offset_" + varname );
-				aptr = sCC->Builder.CreateGEP( ptr, lofs );
+				Value* ofs;
+				if ( pv->GetArrayDim() == 1) {
+					sCC->Builder.CreateBr( uniBB );
+					
+					sCC->Builder.SetInsertPoint( uniBB );
+					PHINode *ofsPhi = sCC->Builder.CreatePHI( Type::getInt32Ty( Context ) );
+					ofsPhi->addIncoming(ofs1, inBB);
+					ofsPhi->addIncoming(lofs, outBB);
+					ofs = ofsPhi;
+					curBB = uniBB;
+				} else {
+					ofs = lofs;
+				}
+
+				aptr = sCC->Builder.CreateGEP( ptr, ofs );
 			}
 
 			//Value *lpval = sCC->Builder.CreateConstGEP2_32( lpvar, 0, 4 );
@@ -1380,15 +1431,11 @@ static void CompileTask( CHsp3Op *hsp, Task *task, Function *func, BasicBlock *r
 		case VAR_CALC_OP:
 		case VAR_SET_OP:
 		case COMPARE_OP:
-			{
-				if ( IsCompilable( task, op, hsp, varTypes ) ) {
-					//op->compile = VALUE;
-					//MarkCompile( op, VALUE );
-				}
-			}
+			CheckCompileType( task, op, hsp, varTypes );
 			break;
 		case CMD_OP:
 		case MODCMD_OP:
+			CheckCompileType( task, op, hsp, varTypes );
 			break;
 		case TASK_SWITCH_OP:
 			break;

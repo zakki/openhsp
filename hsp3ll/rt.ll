@@ -90,52 +90,22 @@ define void @HspVarCoreReset(%struct.PVal* %a) {
   ret void
 }
 
-define i32 @HspVarCoreArray2b(%struct.PVal* %pval, i32 %offset) {
+define i32 @HspVarCoreArray1D(%struct.PVal* %pval, i32 %offset) {
 entry:
-  %tmp2 = getelementptr %struct.PVal* %pval, i32 0, i32 7 ; <i16*> [#uses=2]
-  %tmp3 = load i16* %tmp2, align 4                ; <i16> [#uses=4]
-  %tmp4 = icmp sgt i16 %tmp3, 4                   ; <i1> [#uses=1]
-  br i1 %tmp4, label %UnifiedReturnBlock, label %bb6
+  %tmp39 = icmp slt i32 %offset, 0
+  br i1 %tmp39, label %UnifiedReturnBlock, label %bb1
 
-bb6:                                              ; preds = %entry
-  %tmp10 = icmp eq i16 %tmp3, 0                   ; <i1> [#uses=1]
-  %tmp15 = getelementptr %struct.PVal* %pval, i32 0, i32 9 ; <i32*> [#uses=2]
-  br i1 %tmp10, label %bb31, label %bb16
+bb1:
+  %plen = getelementptr %struct.PVal* %pval, i32 0, i32 2, i32 1
+  %len = load i32* %plen, align 4
+  %tmp = icmp sgt i32 %len, %offset
+  br i1 %tmp, label %bb2, label %UnifiedReturnBlock
 
-bb16:                                             ; preds = %bb6
-  %tmp19 = load i32* %tmp15, align 4              ; <i32> [#uses=1]
-  %tmp2223 = sext i16 %tmp3 to i32                ; <i32> [#uses=1]
-  %tmp26 = getelementptr %struct.PVal* %pval, i32 0, i32 2, i32 %tmp2223 ; <i32*> [#uses=1]
-  %tmp27 = load i32* %tmp26, align 4              ; <i32> [#uses=1]
-  %tmp28 = mul i32 %tmp27, %tmp19                 ; <i32> [#uses=2]
-  br label %bb31
+bb2:
+  ret i32 %offset
 
-bb31:                                             ; preds = %bb16, %bb6
-  %storemerge = phi i32 [ %tmp28, %bb16 ], [ 1, %bb6 ] ; <i32> [#uses=1]
-  %tmp94.rle = phi i32 [ %tmp28, %bb16 ], [ 1, %bb6 ] ; <i32> [#uses=1]
-  store i32 %storemerge, i32* %tmp15
-  %tmp35 = add i16 %tmp3, 1                       ; <i16> [#uses=2]
-  store i16 %tmp35, i16* %tmp2, align 4
-  %tmp39 = icmp slt i32 %offset, 0                ; <i1> [#uses=1]
-  br i1 %tmp39, label %UnifiedReturnBlock, label %bb43
-
-bb43:                                             ; preds = %bb31
-  %tmp4748 = sext i16 %tmp35 to i32               ; <i32> [#uses=1]
-  %tmp51 = getelementptr %struct.PVal* %pval, i32 0, i32 2, i32 %tmp4748 ; <i32*> [#uses=1]
-  %tmp52 = load i32* %tmp51, align 4              ; <i32> [#uses=1]
-  %tmp54 = icmp sgt i32 %tmp52, %offset           ; <i1> [#uses=1]
-  br i1 %tmp54, label %bb88, label %UnifiedReturnBlock
-
-bb88:                                             ; preds = %bb43
-  %tmp90 = getelementptr %struct.PVal* %pval, i32 0, i32 8 ; <i32*> [#uses=2]
-  %tmp91 = load i32* %tmp90, align 4              ; <i32> [#uses=1]
-  %tmp96 = mul i32 %tmp94.rle, %offset            ; <i32> [#uses=1]
-  %tmp97 = add i32 %tmp96, %tmp91                 ; <i32> [#uses=1]
-  store i32 %tmp97, i32* %tmp90, align 4
-  ret i32 0
-
-UnifiedReturnBlock:                               ; preds = %bb43, %bb31, %entry
-  ret i32 7
+UnifiedReturnBlock:
+  ret i32 -1
 }
 
 define i32 @HspVarCoreArray2c(%struct.PVal* %pval, i32 %offset, i32 %arraycnt) {
