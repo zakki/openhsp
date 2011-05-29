@@ -336,7 +336,8 @@ static void MarkCompile( Op *op, COMPILE_TYPE comp )
 	}
 }
 
-static void CheckType( CHsp3Op *hsp, Task *task)
+static void CheckType( CHsp3Op *hsp, Task *task,
+					   const std::map<VarId, int>& varTypes)
 {
 	for ( op_list::iterator it=task->block->operations.begin();
 		  it != task->block->operations.end(); it++ ) {
@@ -353,17 +354,13 @@ static void CheckType( CHsp3Op *hsp, Task *task)
 		case PUSH_VAR_OP:
 		{
 			const VarId &varId = ((PushVarOp*)op)->GetVarId();
-			VarStatics *var = GetTaskVar( task, varId );
-			PVal& pval = mem_var[varId.val()];
-			op->flag = pval.flag;
+			op->flag = varTypes.find(varId)->second;
 			break;
 		}
 		case PUSH_VAR_PTR_OP:
 		{
 			const VarId &varId = ((PushVarPtrOp*)op)->GetVarId();
-			VarStatics *var = GetTaskVar( task, varId );
-			PVal& pval = mem_var[varId.val()];
-			op->flag = pval.flag;
+			op->flag = varTypes.find(varId)->second;
 			break;
 		}
 		case PUSH_DNUM_OP:
@@ -391,6 +388,7 @@ static void CheckType( CHsp3Op *hsp, Task *task)
 			case MPTYPE_VAR:
 			case MPTYPE_ARRAYVAR:
 			case MPTYPE_SINGLEVAR:
+				//op->flag = varTypes[varId];
 				break;
 			case MPTYPE_DNUM:
 				op->flag = HSPVAR_FLAG_DOUBLE;
@@ -1156,7 +1154,15 @@ static void CompileTask( CHsp3Op *hsp, Task *task, Function *func, BasicBlock *r
 {
 	LLVMContext &Context = getGlobalContext();
 
-	CheckType( hsp, task );
+	std::map<VarId, int> varTypes;
+	for (std::set<VarId>::iterator it =  task->block->usedVariables.begin();
+		 it != task->block->usedVariables.end(); ++it) {
+		if (it->type() != TYPE_STRUCT) {
+			varTypes[*it] = mem_var[it->val()].flag;
+		}
+	}
+
+	CheckType( hsp, task, varTypes );
 
 	string buf( GetTaskFuncName( task ) );
 
@@ -1309,7 +1315,13 @@ static void CompileTaskGeneral( CHsp3Op *hsp, Task *task, Function *func, BasicB
 {
 	LLVMContext &Context = getGlobalContext();
 
-	CheckType( hsp, task );
+	std::map<VarId, int> varTypes;
+	for (std::set<VarId>::iterator it =  task->block->usedVariables.begin();
+		 it != task->block->usedVariables.end(); ++it) {
+		varTypes[*it] = HSPVAR_FLAG_MAX;
+	}
+
+	CheckType( hsp, task, varTypes );
 
 	BasicBlock *curBB = BasicBlock::Create( Context,
 											task->block->name + "_entry",
