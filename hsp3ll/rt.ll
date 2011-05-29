@@ -10,17 +10,22 @@
 %struct.STRUCTDAT = type { i16, i16, i32, i32, i32, i32, i32, %"struct.STRUCTDAT::._34" }
 %"struct.STRUCTDAT::._34" = type { i8* }
 %struct.STRUCTPRM = type { i16, i16, i32 }
+%struct.STMDATA = type { i16, i16, i8*, i32, [60 x i8] }
 
 %struct.Hsp3 = type { %struct.HSPCTX, i8*, i8*, i32, i32, i32, i32 }
 
 declare void @Prgcmd(i32, i32)
 declare void @Modcmd(i32, i32)
-declare void @PushVar(%struct.PVal*, i32)
-declare void @CalcMulI()
 declare void @VarSet(%struct.PVal*, i32, i32)
+
 declare void @PushInt(i32)
-declare void @CalcSubI()
 declare void @PushDouble(double)
+declare void @PushStr(i8*)
+declare void @PushLabel(i32)
+declare void @PushVar(%struct.PVal*, i32)
+declare void @PushVAP(%struct.PVal*, i32)
+declare void @PushDefault()
+
 declare void @PushFuncEnd()
 
 declare void @PushFuncPrm1(i32)
@@ -35,29 +40,32 @@ declare i32 @FuncPrmI(i32)
 declare double @FuncPrmD(i32)
 
 declare void @CalcAddI()
-declare void @PushIntfunc(i32, i32)
+declare void @CalcSubI()
+declare void @CalcMulI()
 declare void @CalcDivI()
-declare void @PushVAP(%struct.PVal*, i32)
+declare void @CalcModI()
+declare void @CalcAndI()
+declare void @CalcOrI()
+declare void @CalcXorI()
+declare void @CalcEqI()
+declare void @CalcNeI()
+declare void @CalcGtI()
+declare void @CalcLtI()
+declare void @CalcGtEqI()
+declare void @CalcLtEqI()
+declare void @CalcRrI()
+declare void @CalcLrI()
+
+declare void @PushIntfunc(i32, i32)
 declare void @VarCalc(%struct.PVal*, i32, i32)
 declare void @VarInc(%struct.PVal*, i32)
 declare void @TaskSwitch(i32)
-declare void @CalcEqI()
 declare i8 @HspIf() zeroext
-declare void @CalcGtI()
-declare void @PushLabel(i32)
-declare void @CalcLtI()
 declare void @PushSysvar(i32, i32)
+declare void @PushExtvar(i32, i32)
 declare void @PushDllfunc(i32, i32)
 declare void @PushModcmd(i32, i32)
 declare void @Extcmd(i32, i32)
-declare void @PushStr(i8*)
-declare void @CalcAndI()
-declare void @CalcNeI()
-declare void @CalcGtEqI()
-declare void @CalcXorI()
-declare void @PushExtvar(i32, i32)
-declare void @CalcRrI()
-declare void @PushDefault()
 declare void @Intcmd(i32, i32)
 declare i32 @GetCurTaskId()
 declare i32 @Hsp3rReset(%struct.Hsp3r*, i32, i32)

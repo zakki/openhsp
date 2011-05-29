@@ -1796,73 +1796,82 @@ Value* CreateCallImm( BasicBlock *bblock, const std::string& name, int a, int b 
 	return Builder.CreateCall( f, args.begin(), args.end() );
 }
 
-void* HspLazyFunctionCreator( const std::string &Name )
+void* HspLazyFunctionCreator( const std::string &name )
 {
-	if ("Prgcmd" == Name) return Prgcmd;
-	if ("Modcmd" == Name) return Modcmd;
-	if ("PushVar" == Name) return PushVar;
-	if ("CalcMulI" == Name) return CalcMulI;
-	if ("VarSet" == Name) return VarSet;
-	if ("PushInt" == Name) return PushInt;
-	if ("CalcSubI" == Name) return CalcSubI;
-	if ("PushDouble" == Name) return PushDouble;
-	if ("PushFuncEnd" == Name) return PushFuncEnd;
-	if ("CalcAddI" == Name) return CalcAddI;
-	if ("CalcDivI" == Name) return CalcDivI;
-	if ("PushVAP" == Name) return PushVAP;
-	if ("VarCalc" == Name) return VarCalc;
-	if ("VarInc" == Name) return VarInc;
-	if ("TaskSwitch" == Name) return TaskSwitch;
-	if ("CalcEqI" == Name) return CalcEqI;
-	if ("HspIf" == Name) return HspIf;
-	if ("CalcGtI" == Name) return CalcGtI;
-	if ("PushLabel" == Name) return PushLabel;
-	if ("CalcLtI" == Name) return CalcLtI;
+#define RESOLVE_FUNC(arg) if (#arg == name) return arg;
+RESOLVE_FUNC(Prgcmd)
+RESOLVE_FUNC(Modcmd)
+RESOLVE_FUNC(VarSet)
+RESOLVE_FUNC(PushInt)
+RESOLVE_FUNC(PushDouble)
+RESOLVE_FUNC(PushStr)
+RESOLVE_FUNC(PushLabel)
+RESOLVE_FUNC(PushVar)
+RESOLVE_FUNC(PushVAP)
+RESOLVE_FUNC(PushDefault)
+RESOLVE_FUNC(PushFuncEnd)
 
-	if ("PushExtvar" == Name) return PushExtvar;
-	if ("PushIntfunc" == Name) return PushIntfunc;
-	if ("PushSysvar" == Name) return PushSysvar;
-	if ("PushModcmd" == Name) return PushModcmd;
-	if ("PushDllfunc" == Name) return PushDllfunc;
+RESOLVE_FUNC(PushFuncPrm1)
+RESOLVE_FUNC(PushFuncPrmI)
+RESOLVE_FUNC(PushFuncPrmD)
+RESOLVE_FUNC(PushFuncPrm)
+RESOLVE_FUNC(PushFuncPAP)
+RESOLVE_FUNC(FuncPrm)
+RESOLVE_FUNC(LocalPrm)
+RESOLVE_FUNC(FuncPrmI)
+RESOLVE_FUNC(FuncPrmD)
 
-	if ("Extcmd" == Name) return Extcmd;
-	if ("PushStr" == Name) return PushStr;
-	if ("CalcAndI" == Name) return CalcAndI;
-	if ("CalcNeI" == Name) return CalcNeI;
-	if ("CalcGtEqI" == Name) return CalcGtEqI;
-	if ("CalcXorI" == Name) return CalcXorI;
-	if ("CalcRrI" == Name) return CalcRrI;
-	if ("PushDefault" == Name) return PushDefault;
+RESOLVE_FUNC(CalcAddI)
+RESOLVE_FUNC(CalcSubI)
+RESOLVE_FUNC(CalcMulI)
+RESOLVE_FUNC(CalcDivI)
+RESOLVE_FUNC(CalcModI)
+RESOLVE_FUNC(CalcAndI)
+RESOLVE_FUNC(CalcOrI)
+RESOLVE_FUNC(CalcXorI)
+RESOLVE_FUNC(CalcEqI)
+RESOLVE_FUNC(CalcNeI)
+RESOLVE_FUNC(CalcGtI)
+RESOLVE_FUNC(CalcLtI)
+RESOLVE_FUNC(CalcGtEqI)
+RESOLVE_FUNC(CalcLtEqI)
+RESOLVE_FUNC(CalcRrI)
+RESOLVE_FUNC(CalcLrI)
 
-	if ("PushFuncPrm1" == Name) return PushFuncPrm1;
-	if ("PushFuncPrmI" == Name) return PushFuncPrmI;
-	if ("PushFuncPrmD" == Name) return PushFuncPrmD;
-	if ("PushFuncPrm" == Name) return PushFuncPrm;
-	if ("PushFuncPAP" == Name) return PushFuncPAP;
-	if ("FuncPrm" == Name) return FuncPrm;
-	if ("LocalPrm" == Name) return LocalPrm;
+RESOLVE_FUNC(PushIntfunc)
+RESOLVE_FUNC(VarCalc)
+RESOLVE_FUNC(VarInc)
+RESOLVE_FUNC(TaskSwitch)
+RESOLVE_FUNC(HspIf)
+RESOLVE_FUNC(PushSysvar)
+RESOLVE_FUNC(PushExtvar)
+RESOLVE_FUNC(PushDllfunc)
+RESOLVE_FUNC(PushModcmd)
+RESOLVE_FUNC(Extcmd)
+RESOLVE_FUNC(Intcmd)
+RESOLVE_FUNC(GetCurTaskId)
+//RESOLVE_FUNC(Hsp3rReset)
+RESOLVE_FUNC(HspVarCoreArray2)
+RESOLVE_FUNC(CallDoubleIntfunc)
+RESOLVE_FUNC(CallIntIntfunc)
+RESOLVE_FUNC(CallDoubleSysvar)
+RESOLVE_FUNC(CallIntSysvar)
 
-	if ("FuncPrmI" == Name) return FuncPrmI;
-	if ("FuncPrmD" == Name) return FuncPrmD;
+RESOLVE_FUNC(strlen)
 
-	if ("Intcmd" == Name) return Intcmd;
-	//if ("HspVarCoreReset" == Name) return HspVarCoreReset;
-	if ("HspVarCoreArray2" == Name) return HspVarCoreArray2;
+//RESOLVE_FUNC(log)
+//RESOLVE_FUNC(exp)
+//RESOLVE_FUNC(sqrt)
+//RESOLVE_FUNC(cos)
+//RESOLVE_FUNC(sin)
+	if ("log" == name) return (double(*)(double))log;
+	if ("exp" == name) return (double(*)(double))exp;
+	if ("sqrt" == name) return (double(*)(double))sqrt;
+	if ("cos" == name) return (double(*)(double))cos;
+	if ("sin" == name) return (double(*)(double))sin;
+#undef LAZY_FUNC
 
-	if ("CallIntIntfunc" == Name) return CallIntIntfunc;
-	if ("CallDoubleIntfunc" == Name) return CallDoubleIntfunc;
-	if ("CallIntSysvar" == Name) return CallIntSysvar;
-	if ("CallDoubleSysvar" == Name) return CallDoubleSysvar;
-	if ("log" == Name) return (double(*)(double))log;
-	if ("exp" == Name) return (double(*)(double))exp;
-	if ("sqrt" == Name) return (double(*)(double))sqrt;
-	if ("cos" == Name) return (double(*)(double))cos;
-	if ("sin" == Name) return (double(*)(double))sin;
-
-	//	if ("Hsp3rReset" == Name) return Hsp3rReset;
-	if ("GetCurTaskId" == Name) return GetCurTaskId;
-
-	Alert( (char*)(Name + " not foud").c_str() );
+	Alert( const_cast<char*>((name + " not foud").c_str()) );
 	return NULL;
 }
 
@@ -2025,7 +2034,9 @@ int MakeSource( CHsp3Op *hsp, int option, void *ref )
 				  it != task->block->operations.end(); it++ ) {
 				Op *op = *it;
 				*Out2 << op->GetName()
-					  << op->GetParam() << "\r\n";
+					  << op->GetParam()
+					  << (op->compile == VALUE ? "[V]" : "[D]")
+					  << "\r\n";
 			}
 			*Out2 << "\r\n";
 
@@ -2033,11 +2044,15 @@ int MakeSource( CHsp3Op *hsp, int option, void *ref )
 				  it != task->block->operations.end(); it++ ) {
 				Op *op = *it;
 				*Out2 << op->GetName()
-					  << op->GetParam() << "\r\n";
+					  << op->GetParam()
+					  << (op->compile == VALUE ? "[V]" : "[D]")
+					  << "\r\n";
 				for(int k=0; k<op->operands.size(); k++) {
 					Op* o = op->operands[k];
 					*Out2 << "\t" << o->GetName()
-						  << o->GetParam() << "\r\n";
+						  << o->GetParam()
+						  << (op->compile == VALUE ? "[V]" : "[D]")
+						  << "\r\n";
 				}
 			}
 			*Out2 << "\r\n" << "\r\n";
