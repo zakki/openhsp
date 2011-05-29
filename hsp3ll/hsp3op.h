@@ -11,6 +11,7 @@
 #include <set>
 #include <vector>
 #include <stack>
+#include <iostream>
 
 #include "supio.h"
 #include "chsp3.h"
@@ -537,6 +538,7 @@ public:
 	std::map<VarKey, VarInfo*> varInfos;
 };
 
-void AnalyzeProgram(Program* program);
+void AnalyzeProgram( Program* program );
+void PrettyPrint( const Block *block, std::ostream &out );
 
 #endif

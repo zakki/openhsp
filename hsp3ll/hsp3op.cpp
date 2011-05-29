@@ -223,7 +223,7 @@ void AnalyzeTask( Program* program, Block *task )
 	}
 }
 
-void AnalyzeProgram(Program* program) {
+void AnalyzeProgram( Program* program ) {
 	std::map<std::string, Block*>& blocks = program->blocks;
 	std::map<VarKey, std::set<std::string> >& varTaskMap = program->varTaskMap;
 	std::map<VarKey, VarInfo*>& varInfos = program->varInfos;
@@ -310,4 +310,36 @@ void AnalyzeProgram(Program* program) {
 			var->localVar = localVar;
 		}
 	}
+}
+
+void PrettyPrint( const Block *block, std::ostream &out ) {
+
+	out << "block:" << block->name << "\r\n";
+
+	for ( std::vector<Op*>::const_iterator it=block->operations.begin();
+		  it != block->operations.end(); it++ ) {
+		Op *op = *it;
+		out << op->GetName()
+			  << op->GetParam()
+			  << (op->compile == VALUE ? "[V]" : "[D]")
+			  << "\r\n";
+	}
+	out << "\r\n";
+
+	for ( std::vector<Op*>::const_iterator it=block->operations.begin();
+		  it != block->operations.end(); it++ ) {
+		Op *op = *it;
+		out << op->GetName()
+			  << op->GetParam()
+			  << (op->compile == VALUE ? "[V]" : "[D]")
+			  << "\r\n";
+		for(int k=0; k<op->operands.size(); k++) {
+			Op* o = op->operands[k];
+			out << "\t" << o->GetName()
+				  << o->GetParam()
+				  << (op->compile == VALUE ? "[V]" : "[D]")
+				  << "\r\n";
+		}
+	}
+	out << "\r\n" << "\r\n";
 }

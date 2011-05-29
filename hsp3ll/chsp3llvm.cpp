@@ -8,6 +8,7 @@
 #include <set>
 #include <vector>
 #include <stack>
+#include <fstream>
 
 #include "llvm/LLVMContext.h"
 #include "llvm/Module.h"
@@ -1998,64 +1999,32 @@ int MakeSource( CHsp3Op *hsp, int option, void *ref )
 	// Œ‹‰Ê‚ðƒ_ƒ“ƒv
 	//
 	{
-		std::string ErrorInfo;
+		std::string errorInfo;
 		std::auto_ptr<raw_fd_ostream>
-			Out(new raw_fd_ostream("dump.ll", ErrorInfo,
+			out(new raw_fd_ostream("dump.ll", errorInfo,
 								   raw_fd_ostream::F_Binary));
-		if (!ErrorInfo.empty()) {
-			errs() << ErrorInfo << '\n';
+		if (!errorInfo.empty()) {
+			errs() << errorInfo << '\n';
 			return -1;
 		}
 
-		*Out << *M;
+		*out << *M;
 	}
 
 	{
-		std::string ErrorInfo;
-		std::auto_ptr<raw_fd_ostream>
-			Out2(new raw_fd_ostream("dump2.txt", ErrorInfo,
-									raw_fd_ostream::F_Binary));
-		if (!ErrorInfo.empty()) {
-			errs() << ErrorInfo << '\n';
-			return -1;
-		}
+		std::ofstream out("dump2.txt");
 
 		char mes[256];
 		for (int i=0;i<sLabMax;i++) {
 			sprintf( mes, "L%04x", i );
-			*Out2 << "#" << mes << "\r\n";
+			out << "#" << mes << "\r\n";
 			Task *task = sTasks[mes];
 
 			if ( task == NULL ) {
-				*Out2 << "NO OP\r\n";
+				out << "NO OP\r\n";
 				continue;
 			}
-			for ( std::vector<Op*>::iterator it=task->block->operations.begin();
-				  it != task->block->operations.end(); it++ ) {
-				Op *op = *it;
-				*Out2 << op->GetName()
-					  << op->GetParam()
-					  << (op->compile == VALUE ? "[V]" : "[D]")
-					  << "\r\n";
-			}
-			*Out2 << "\r\n";
-
-			for ( std::vector<Op*>::iterator it=task->block->operations.begin();
-				  it != task->block->operations.end(); it++ ) {
-				Op *op = *it;
-				*Out2 << op->GetName()
-					  << op->GetParam()
-					  << (op->compile == VALUE ? "[V]" : "[D]")
-					  << "\r\n";
-				for(int k=0; k<op->operands.size(); k++) {
-					Op* o = op->operands[k];
-					*Out2 << "\t" << o->GetName()
-						  << o->GetParam()
-						  << (op->compile == VALUE ? "[V]" : "[D]")
-						  << "\r\n";
-				}
-			}
-			*Out2 << "\r\n" << "\r\n";
+			PrettyPrint( task->block, out );
 		}
 	}
 
