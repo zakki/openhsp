@@ -44,6 +44,7 @@
 #include "chsp3llvm.h"
 #include "hsp3r.h"
 #include "hsp3op.h"
+#include "compilecontext.h"
 
 #ifdef HSPWIN
 #include <windows.h>
@@ -109,13 +110,6 @@ public:
 
 typedef int (* CHSP3_FUNC) (int);
 
-//
-static Module *M;
-static ExecutionEngine *EE;
-static IRBuilder<> Builder(getGlobalContext());
-static FunctionPassManager *TheFPM;
-static PassManager *Passes;
-
 static std::map<VarId, VarStatics*> sVarStatics;
 static Program sProgram;
 
@@ -125,6 +119,12 @@ boost::ptr_vector<Task> __Task;
 static GlobalVariable **sVariables;
 static GlobalVariable *sDsBase;
 static const char *sDsBasePtr;
+
+static CompileContext *sCC;
+
+static ExecutionEngine *EE;
+static FunctionPassManager *TheFPM;
+static PassManager *Passes;
 
 static int sMaxVar;
 static int sMaxHpi;
@@ -136,14 +136,6 @@ static PVal **Var__HspVars;
 extern int GetCurTaskId();
 extern void HspVarCoreArray2( PVal *pval, int offset );
 extern CHsp3Op *hsp3;
-
-static Value* MakeImmidiateCPPName( CHsp3Op* hsp, BasicBlock* bb, int type,
-									int val, int prm, char *opt=NULL );
-
-static Value* CreateCallImm( BasicBlock *bblock, const string& name );
-static Value* CreateCallImm( BasicBlock *bblock, const string& name, int a );
-static Value* CreateCallImm( BasicBlock *bblock, const string& name, int a, int b );
-static void LoadLLRuntime();
 
 static BasicBlock *CompileOp( CHsp3Op *hsp, Function *func,
 							  BasicBlock *bb, BasicBlock *retBB,
@@ -468,126 +460,10 @@ static void CheckType( CHsp3Op *hsp, Task *task)
 	} while (changed);
 }
 
-static Value* CompileCalcI( int code, Value *a, Value *b )
-{
-	LLVMContext &Context = getGlobalContext();
-
-	switch( code ) {
-	case CALCCODE_ADD:
-		return Builder.CreateAdd( a, b );
-	case CALCCODE_SUB:
-		return Builder.CreateSub( a, b );
-	case CALCCODE_MUL:
-		return Builder.CreateMul( a, b );
-	case CALCCODE_DIV:
-		return Builder.CreateSDiv( a, b );
-	case CALCCODE_MOD:
-		return Builder.CreateSRem( a, b );
-	case CALCCODE_AND:
-		return Builder.CreateAnd( a, b );
-	case CALCCODE_OR:
-		return Builder.CreateOr( a, b );
-	case CALCCODE_XOR:
-		return Builder.CreateXor( a, b );
-	case CALCCODE_EQ:
-		{
-			Value *cond = Builder.CreateICmpEQ( a, b );
-			return Builder.CreateZExt( cond, Type::getInt32Ty( Context ) );
-		}
-	case CALCCODE_NE:
-		{
-			Value *cond = Builder.CreateICmpNE( a, b );
-			return Builder.CreateZExt( cond, Type::getInt32Ty( Context ) );
-		}
-	case CALCCODE_GT:
-		{
-			Value *cond = Builder.CreateICmpSGT( a, b );
-			return Builder.CreateZExt( cond, Type::getInt32Ty( Context ) );
-		}
-	case CALCCODE_LT:
-		{
-			Value *cond = Builder.CreateICmpSLT( a, b );
-			return Builder.CreateZExt( cond, Type::getInt32Ty( Context ) );
-		}
-	case CALCCODE_GTEQ:
-		{
-			Value *cond = Builder.CreateICmpSGE( a, b );
-			return Builder.CreateZExt( cond, Type::getInt32Ty( Context ) );
-		}
-	case CALCCODE_LTEQ:
-		{
-			Value *cond = Builder.CreateICmpSLE( a, b );
-			return Builder.CreateZExt( cond, Type::getInt32Ty( Context ) );
-		}
-	case CALCCODE_RR:
-		return Builder.CreateAShr( a, b );
-	case CALCCODE_LR:
-		return Builder.CreateShl( a, b );
-
-	default:
-		return NULL;
-	}
-}
-
-static Value* CompileCalcD( int code, Value *a, Value *b )
-{
-	LLVMContext &Context = getGlobalContext();
-
-	switch( code ) {
-	case CALCCODE_ADD:
-		return Builder.CreateFAdd( a, b );
-	case CALCCODE_SUB:
-		return Builder.CreateFSub( a, b );
-	case CALCCODE_MUL:
-		return Builder.CreateFMul( a, b );
-	case CALCCODE_DIV:
-		return Builder.CreateFDiv( a, b );
-	case CALCCODE_MOD:
-		return Builder.CreateFRem( a, b );
-//	case CALCCODE_AND:
-//	case CALCCODE_OR:
-//	case CALCCODE_XOR:
-	case CALCCODE_EQ:
-		{
-			Value *cond = Builder.CreateFCmpUEQ( a, b );
-			return Builder.CreateZExt( cond, Type::getInt32Ty( Context ) );
-		}
-	case CALCCODE_NE:
-		{
-			Value *cond = Builder.CreateFCmpUNE( a, b );
-			return Builder.CreateZExt( cond, Type::getInt32Ty( Context ) );
-		}
-	case CALCCODE_GT:
-		{
-			Value *cond = Builder.CreateFCmpUGT( a, b );
-			return Builder.CreateZExt( cond, Type::getInt32Ty( Context ) );
-		}
-	case CALCCODE_LT:
-		{
-			Value *cond = Builder.CreateFCmpULT( a, b );
-			return Builder.CreateZExt( cond, Type::getInt32Ty( Context ) );
-		}
-	case CALCCODE_GTEQ:
-		{
-			Value *cond = Builder.CreateFCmpUGE( a, b );
-			return Builder.CreateZExt( cond, Type::getInt32Ty( Context ) );
-		}
-	case CALCCODE_LTEQ:
-		{
-			Value *cond = Builder.CreateFCmpULE( a, b );
-			return Builder.CreateZExt( cond, Type::getInt32Ty( Context ) );
-		}
-//	case CALCCODE_RR:
-//	case CALCCODE_LR:
-	default:
-		return NULL;
-	}
-}
-
 static BasicBlock *CompileOp( CHsp3Op *hsp, Function *func, BasicBlock *bb, BasicBlock *retBB, Task *task, Op *op )
 {
 	LLVMContext &Context = getGlobalContext();
-	Builder.SetInsertPoint( bb );
+	sCC->Builder.SetInsertPoint( bb );
 
 	const Type *tyPI8 = TypeBuilder<types::i<8>*, false>::get(Context);
 	const Type *tyPI32 = TypeBuilder<types::i<32>*, false>::get(Context);
@@ -609,27 +485,27 @@ static BasicBlock *CompileOp( CHsp3Op *hsp, Function *func, BasicBlock *bb, Basi
 			if ( pv->useRegister) {
 				op->llValue = it->second;
 
-				Function *pNop = M->getFunction( "Nop" );
-				Builder.SetInsertPoint( bb );
-				Builder.CreateCall( pNop );
+				Function *pNop = sCC->M->getFunction( "Nop" );
+				sCC->Builder.SetInsertPoint( bb );
+				sCC->Builder.CreateCall( pNop );
 				return bb;
 			}
 
 			if ( it != task->llVariables.end() ) {
 				lpvar = it->second;
 			} else {
-				lpvar = MakeImmidiateCPPName( hsp, bb, pv->GetVarType(),
-											  pv->GetVarNo(), pv->GetPrmNo() );
+				lpvar = sCC->MakeImmidiateCPPName( hsp, bb, pv->GetVarType(),
+												   pv->GetVarNo(), pv->GetPrmNo() );
 			}
 			task->llVariables[pv->GetVarId()] = lpvar;
 
-			Value *lpval = Builder.CreateConstGEP2_32( lpvar, 0, 4, "a_" + varname );
-			LoadInst *lptr = Builder.CreateLoad( lpval, "b_" + varname );
+			Value *lpval = sCC->Builder.CreateConstGEP2_32( lpvar, 0, 4, "a_" + varname );
+			LoadInst *lptr = sCC->Builder.CreateLoad( lpval, "b_" + varname );
 			Value *ptr;
 			if ( pval.flag == HSPVAR_FLAG_INT ) {
-				ptr = Builder.CreateBitCast( lptr, tyPI32, "c_" + varname );
+				ptr = sCC->Builder.CreateBitCast( lptr, tyPI32, "c_" + varname );
 			} else if ( pval.flag == HSPVAR_FLAG_DOUBLE ) {
-				ptr = Builder.CreateBitCast( lptr, tyPD, "d_" + varname );
+				ptr = sCC->Builder.CreateBitCast( lptr, tyPD, "d_" + varname );
 			} else {
 				return NULL;
 			}
@@ -641,27 +517,27 @@ static BasicBlock *CompileOp( CHsp3Op *hsp, Function *func, BasicBlock *bb, Basi
 				curBB = bb;
 			} else {
 				curBB = bb;
-				Builder.SetInsertPoint( curBB );
-				Function *pReset = M->getFunction( "HspVarCoreReset" );
-				Builder.CreateCall( pReset, lpvar );
+				sCC->Builder.SetInsertPoint( curBB );
+				Function *pReset = sCC->M->getFunction( "HspVarCoreReset" );
+				sCC->Builder.CreateCall( pReset, lpvar );
 
-				Function *pArray2 = M->getFunction( "HspVarCoreArray2" );
+				Function *pArray2 = sCC->M->getFunction( "HspVarCoreArray2" );
 				for ( int i = 0; i <  pv->GetArrayDim(); i++ ) {
-					Builder.CreateCall2( pArray2, lpvar,
+					sCC->Builder.CreateCall2( pArray2, lpvar,
 										 static_cast<Value*>(pv->operands[i]->llValue ));
 				}
-				Value *lpofs = Builder.CreateConstGEP2_32( lpvar, 0, 8 );
-				LoadInst *lofs = Builder.CreateLoad( lpofs, "offset_" + varname );
-				aptr = Builder.CreateGEP( ptr, lofs );
+				Value *lpofs = sCC->Builder.CreateConstGEP2_32( lpvar, 0, 8 );
+				LoadInst *lofs = sCC->Builder.CreateLoad( lpofs, "offset_" + varname );
+				aptr = sCC->Builder.CreateGEP( ptr, lofs );
 			}
 
-			//Value *lpval = Builder.CreateConstGEP2_32( lpvar, 0, 4 );
+			//Value *lpval = sCC->Builder.CreateConstGEP2_32( lpvar, 0, 4 );
 
 			if ( pval.flag == HSPVAR_FLAG_INT ) {
-				op->llValue = Builder.CreateLoad( aptr, "p_" + varname );
+				op->llValue = sCC->Builder.CreateLoad( aptr, "p_" + varname );
 				return curBB;
 			} else if ( pval.flag == HSPVAR_FLAG_DOUBLE ) {
-				op->llValue = Builder.CreateLoad( aptr, "p_" + varname );
+				op->llValue = sCC->Builder.CreateLoad( aptr, "p_" + varname );
 				return curBB;
 			} else {
 				return NULL;
@@ -702,12 +578,12 @@ static BasicBlock *CompileOp( CHsp3Op *hsp, Function *func, BasicBlock *bb, Basi
 			case MPTYPE_SINGLEVAR:
 				break;
 			case MPTYPE_DNUM:
-				op->llValue = CreateCallImm( bb, "FuncPrmD",
-											 prmop->GetPrmNo() );
+				op->llValue = sCC->CreateCallImm( bb, "FuncPrmD",
+												  prmop->GetPrmNo() );
 				return bb;
 			case MPTYPE_INUM:
-				op->llValue = CreateCallImm( bb, "FuncPrmI",
-											 prmop->GetPrmNo() );
+				op->llValue = sCC->CreateCallImm( bb, "FuncPrmI",
+												  prmop->GetPrmNo() );
 				return bb;
 			}
 			return NULL;
@@ -721,7 +597,7 @@ static BasicBlock *CompileOp( CHsp3Op *hsp, Function *func, BasicBlock *bb, Basi
 				( format( "llvmRt%1%_%2$03x" )
 				  % hsp->GetHSPCmdTypeName( pcop->GetCmdType() )
 				  % pcop->GetCmdVal() ).str();
-			Function *f = M->getFunction( funcname );
+			Function *f = sCC->M->getFunction( funcname );
 			if ( f ) {
 				if ( f->getArgumentList().size() != op->operands.size() - 1 )
 					goto NOTMATCH;
@@ -749,7 +625,7 @@ static BasicBlock *CompileOp( CHsp3Op *hsp, Function *func, BasicBlock *bb, Basi
 					for ( int i = 0; i < op->operands.size() - 1; ++i ) {
 						args.push_back( static_cast<Value*>(op->operands[i]->llValue) );
 					}
-					op->llValue = Builder.CreateCall( f, args.begin(), args.end() );
+					op->llValue = sCC->Builder.CreateCall( f, args.begin(), args.end() );
 					return bb;
 				}
 
@@ -765,21 +641,21 @@ static BasicBlock *CompileOp( CHsp3Op *hsp, Function *func, BasicBlock *bb, Basi
 				  it != op->operands.rend(); it++ ) {
 				//(*it)->compile = true;
 				if ( (*it)->GetOpCode() == PUSH_FUNC_END_OP ) {
-					CreateCallImm( bb, "PushFuncEnd" );
+					sCC->CreateCallImm( bb, "PushFuncEnd" );
 					continue;
 				}
 
 				switch ( (*it)->flag ) {
 				case HSPVAR_FLAG_INT:
 					{
-						Function *pPush = M->getFunction( "PushInt" );
-						Builder.CreateCall( pPush, static_cast<Value*>((*it)->llValue) );
+						Function *pPush = sCC->M->getFunction( "PushInt" );
+						sCC->Builder.CreateCall( pPush, static_cast<Value*>((*it)->llValue) );
 					}
 					break;
 				case HSPVAR_FLAG_DOUBLE:
 					{
-						Function *pPush = M->getFunction( "PushDouble" );
-						Builder.CreateCall( pPush, static_cast<Value*>((*it)->llValue) );
+						Function *pPush = sCC->M->getFunction( "PushDouble" );
+						sCC->Builder.CreateCall( pPush, static_cast<Value*>((*it)->llValue) );
 					}
 					break;
 				default:
@@ -789,12 +665,12 @@ static BasicBlock *CompileOp( CHsp3Op *hsp, Function *func, BasicBlock *bb, Basi
 
 			switch( retType ) {
 			case HSPVAR_FLAG_DOUBLE:
-				op->llValue = CreateCallImm( bb, "CallDouble" + hsp->GetHSPCmdTypeName( pcop->GetCmdType() ),
-											 pcop->GetCmdVal(), pcop->GetCmdPNum() );
+				op->llValue = sCC->CreateCallImm( bb, "CallDouble" + hsp->GetHSPCmdTypeName( pcop->GetCmdType() ),
+												  pcop->GetCmdVal(), pcop->GetCmdPNum() );
 				return bb;
 			case HSPVAR_FLAG_INT:
-				op->llValue = CreateCallImm( bb, "CallInt" + hsp->GetHSPCmdTypeName( pcop->GetCmdType() ),
-											 pcop->GetCmdVal(), pcop->GetCmdPNum() );
+				op->llValue = sCC->CreateCallImm( bb, "CallInt" + hsp->GetHSPCmdTypeName( pcop->GetCmdType() ),
+												  pcop->GetCmdVal(), pcop->GetCmdPNum() );
 				return bb;
 			default:
 				return NULL;
@@ -806,25 +682,25 @@ static BasicBlock *CompileOp( CHsp3Op *hsp, Function *func, BasicBlock *bb, Basi
 		{
 			CalcOp *calc = (CalcOp*)op;
 			if ( op->operands[0]->flag == HSPVAR_FLAG_INT && op->operands[1]->flag == HSPVAR_FLAG_INT ) {
-				op->llValue = CompileCalcI( calc->GetCalcOp(),
-											static_cast<Value*>(op->operands[1]->llValue),
-											static_cast<Value*>(op->operands[0]->llValue) );
+				op->llValue = sCC->CreateCalcI( calc->GetCalcOp(),
+												static_cast<Value*>(op->operands[1]->llValue),
+												static_cast<Value*>(op->operands[0]->llValue) );
 			} else if ( op->operands[0]->flag == HSPVAR_FLAG_DOUBLE && op->operands[1]->flag == HSPVAR_FLAG_DOUBLE ) {
-				op->llValue = CompileCalcD( calc->GetCalcOp(),
-											static_cast<Value*>(op->operands[1]->llValue),
-											static_cast<Value*>(op->operands[0]->llValue) );
+				op->llValue = sCC->CreateCalcD( calc->GetCalcOp(),
+												static_cast<Value*>(op->operands[1]->llValue),
+												static_cast<Value*>(op->operands[0]->llValue) );
 			} else if ( op->operands[0]->flag == HSPVAR_FLAG_DOUBLE && op->operands[1]->flag == HSPVAR_FLAG_INT ) {
-				Value *v = Builder.CreateFPToSI( static_cast<Value*>(op->operands[0]->llValue),
+				Value *v = sCC->Builder.CreateFPToSI( static_cast<Value*>(op->operands[0]->llValue),
 												TypeBuilder<types::i<32>, false>::get(Context) );
-				op->llValue = CompileCalcI( calc->GetCalcOp(),
-											static_cast<Value*>(op->operands[1]->llValue),
-											v );
+				op->llValue = sCC->CreateCalcI( calc->GetCalcOp(),
+												static_cast<Value*>(op->operands[1]->llValue),
+												v );
 			} else if ( op->operands[0]->flag == HSPVAR_FLAG_INT && op->operands[1]->flag == HSPVAR_FLAG_DOUBLE ) {
-				Value *v = Builder.CreateSIToFP( static_cast<Value*>(op->operands[0]->llValue),
+				Value *v = sCC->Builder.CreateSIToFP( static_cast<Value*>(op->operands[0]->llValue),
 												 TypeBuilder<types::ieee_double, false>::get(Context) );
-				op->llValue = CompileCalcD( calc->GetCalcOp(),
-											static_cast<Value*>(op->operands[1]->llValue) ,
-											v );
+				op->llValue = sCC->CreateCalcD( calc->GetCalcOp(),
+												static_cast<Value*>(op->operands[1]->llValue) ,
+												v );
 			}
 			if ( op->llValue == NULL )
 				return NULL;
@@ -852,13 +728,13 @@ static BasicBlock *CompileOp( CHsp3Op *hsp, Function *func, BasicBlock *bb, Basi
 					if ( op->operands[0]->flag == HSPVAR_FLAG_INT ) {
 						rhs = static_cast<Value*>(op->operands[0]->llValue);
 					} else if ( op->operands[0]->flag == HSPVAR_FLAG_DOUBLE ) {
-						rhs = Builder.CreateFPToSI( static_cast<Value*>(op->operands[0]->llValue),
+						rhs = sCC->Builder.CreateFPToSI( static_cast<Value*>(op->operands[0]->llValue),
 													TypeBuilder<types::i<32>, false>::get(Context) );
 					} else {
 						return NULL;
 					}
-					Value *result = CompileCalcI( vs->GetCalcOp(),
-												  it->second, rhs );
+					Value *result = sCC->CreateCalcI( vs->GetCalcOp(),
+													  it->second, rhs );
 					if ( !result )
 						return NULL;
 					op->llValue = result;
@@ -867,14 +743,14 @@ static BasicBlock *CompileOp( CHsp3Op *hsp, Function *func, BasicBlock *bb, Basi
 					if ( op->operands[0]->flag == HSPVAR_FLAG_DOUBLE ) {
 						rhs = static_cast<Value*>(op->operands[0]->llValue);
 					} else if ( op->operands[0]->flag == HSPVAR_FLAG_INT ) {
-						rhs = Builder.CreateSIToFP( static_cast<Value*>(op->operands[0]->llValue),
+						rhs = sCC->Builder.CreateSIToFP( static_cast<Value*>(op->operands[0]->llValue),
 													TypeBuilder<types::ieee_double, false>::get(Context) );
 					} else {
 						return NULL;
 					}
 
-					Value *result = CompileCalcD( vs->GetCalcOp(),
-												  it->second, rhs);
+					Value *result = sCC->CreateCalcD( vs->GetCalcOp(),
+													  it->second, rhs );
 					if ( !result )
 						return NULL;
 					op->llValue = result;
@@ -883,52 +759,52 @@ static BasicBlock *CompileOp( CHsp3Op *hsp, Function *func, BasicBlock *bb, Basi
 				}
 				task->llVariables[ vs->GetVarId() ] = static_cast<Value*>(op->llValue);
 
-				Function *pNop = M->getFunction( "Nop" );
-				Builder.SetInsertPoint( bb );
-				Builder.CreateCall( pNop );
+				Function *pNop = sCC->M->getFunction( "Nop" );
+				sCC->Builder.SetInsertPoint( bb );
+				sCC->Builder.CreateCall( pNop );
 
 				return bb;
 			}
 
-			Value *lpvar = MakeImmidiateCPPName( hsp, bb, vs->GetVarType(),
-												 vs->GetVarNo(), vs->GetPrmNo() );
-			Value *lpval = Builder.CreateConstGEP2_32( lpvar, 0, 4 );
-			LoadInst *lptr = Builder.CreateLoad( lpval, "ptr" );
+			Value *lpvar = sCC->MakeImmidiateCPPName( hsp, bb, vs->GetVarType(),
+													  vs->GetVarNo(), vs->GetPrmNo() );
+			Value *lpval = sCC->Builder.CreateConstGEP2_32( lpvar, 0, 4 );
+			LoadInst *lptr = sCC->Builder.CreateLoad( lpval, "ptr" );
 
 			if ( pval.flag == HSPVAR_FLAG_INT ) {
-				Value *lp = Builder.CreateBitCast( lptr, tyPI32 );
-				Value *lhs = Builder.CreateLoad( lp );
+				Value *lp = sCC->Builder.CreateBitCast( lptr, tyPI32 );
+				Value *lhs = sCC->Builder.CreateLoad( lp );
 				Value *rhs;
 				if ( op->operands[0]->flag == HSPVAR_FLAG_INT ) {
 					rhs = static_cast<Value*>(op->operands[0]->llValue);
 				} else if ( op->operands[0]->flag == HSPVAR_FLAG_DOUBLE ) {
-					rhs = Builder.CreateFPToSI( static_cast<Value*>(op->operands[0]->llValue),
+					rhs = sCC->Builder.CreateFPToSI( static_cast<Value*>(op->operands[0]->llValue),
 												TypeBuilder<types::i<32>, false>::get(Context) );
 				} else {
 					return NULL;
 				}
 
-				Value *result = CompileCalcI( vs->GetCalcOp(), lhs, rhs );
+				Value *result = sCC->CreateCalcI( vs->GetCalcOp(), lhs, rhs );
 				if ( !result )
 					return NULL;
-				op->llValue = Builder.CreateStore( result, lp );
+				op->llValue = sCC->Builder.CreateStore( result, lp );
 			} else if ( pval.flag == HSPVAR_FLAG_DOUBLE ) {
-				Value *lp = Builder.CreateBitCast( lptr, tyPD );
-				Value *lhs = Builder.CreateLoad( lp );
+				Value *lp = sCC->Builder.CreateBitCast( lptr, tyPD );
+				Value *lhs = sCC->Builder.CreateLoad( lp );
 				Value *rhs;
 				if ( op->operands[0]->flag == HSPVAR_FLAG_DOUBLE ) {
 					rhs = static_cast<Value*>(op->operands[0]->llValue);
 				} else if ( op->operands[0]->flag == HSPVAR_FLAG_INT ) {
-					rhs = Builder.CreateSIToFP( static_cast<Value*>(op->operands[0]->llValue),
+					rhs = sCC->Builder.CreateSIToFP( static_cast<Value*>(op->operands[0]->llValue),
 												TypeBuilder<types::ieee_double, false>::get(Context) );
 				} else {
 					return NULL;
 				}
 
-				Value *result = CompileCalcD( vs->GetCalcOp(), lhs, rhs );
+				Value *result = sCC->CreateCalcD( vs->GetCalcOp(), lhs, rhs );
 				if ( !result )
 					return NULL;
-				op->llValue = Builder.CreateStore( result, lp );
+				op->llValue = sCC->Builder.CreateStore( result, lp );
 			} else {
 				return NULL;
 			}
@@ -946,24 +822,24 @@ static BasicBlock *CompileOp( CHsp3Op *hsp, Function *func, BasicBlock *bb, Basi
 				op->llValue = op->operands[0]->llValue;
 				task->llVariables[ vs->GetVarId() ] = static_cast<Value*>(op->llValue);
 
-				Function *pNop = M->getFunction( "Nop" );
-				Builder.SetInsertPoint( bb );
-				Builder.CreateCall( pNop );
+				Function *pNop = sCC->M->getFunction( "Nop" );
+				sCC->Builder.SetInsertPoint( bb );
+				sCC->Builder.CreateCall( pNop );
 
 				return bb;
 			}
 
-			Value *lpvar = MakeImmidiateCPPName( hsp, bb, vs->GetVarType(),
-												 vs->GetVarNo(), vs->GetPrmNo() );
-			Value *lpval = Builder.CreateConstGEP2_32( lpvar, 0, 4 );
-			LoadInst *lptr = Builder.CreateLoad( lpval, "ptr" );
+			Value *lpvar = sCC->MakeImmidiateCPPName( hsp, bb, vs->GetVarType(),
+													  vs->GetVarNo(), vs->GetPrmNo() );
+			Value *lpval = sCC->Builder.CreateConstGEP2_32( lpvar, 0, 4 );
+			LoadInst *lptr = sCC->Builder.CreateLoad( lpval, "ptr" );
 
 			if ( pval.flag == HSPVAR_FLAG_INT ) {
-				Value *lp = Builder.CreateBitCast( lptr, tyPI32 );
-				op->llValue = Builder.CreateStore( static_cast<Value*>(op->operands[0]->llValue), lp );
+				Value *lp = sCC->Builder.CreateBitCast( lptr, tyPI32 );
+				op->llValue = sCC->Builder.CreateStore( static_cast<Value*>(op->operands[0]->llValue), lp );
 			} else if ( pval.flag == HSPVAR_FLAG_DOUBLE ) {
-				Value *lp = Builder.CreateBitCast( lptr, tyPD );
-				op->llValue = Builder.CreateStore( static_cast<Value*>(op->operands[0]->llValue), lp );
+				Value *lp = sCC->Builder.CreateBitCast( lptr, tyPD );
+				op->llValue = sCC->Builder.CreateStore( static_cast<Value*>(op->operands[0]->llValue), lp );
 			} else {
 				return NULL;
 			}
@@ -974,19 +850,19 @@ static BasicBlock *CompileOp( CHsp3Op *hsp, Function *func, BasicBlock *bb, Basi
 		{
 			CompareOp *comp = (CompareOp*)op;
 
-			Builder.SetInsertPoint( bb );
+			sCC->Builder.SetInsertPoint( bb );
 
 			BasicBlock *thenBB = BasicBlock::Create( Context, "then", func );
 			BasicBlock *elseBB = BasicBlock::Create( Context, "else", func );
 
 
-			Value *cond = Builder.CreateICmpEQ( static_cast<Value*>(op->operands[0]->llValue),
+			Value *cond = sCC->Builder.CreateICmpEQ( static_cast<Value*>(op->operands[0]->llValue),
 											   ConstantInt::get( Type::getInt32Ty( Context ), 0 ) );
-			Builder.CreateCondBr( cond, thenBB, elseBB );
+			sCC->Builder.CreateCondBr( cond, thenBB, elseBB );
 
-			Builder.SetInsertPoint( thenBB );
-			CreateCallImm( thenBB, "TaskSwitch", comp->GetNextTask() );
-			Builder.CreateBr( retBB );
+			sCC->Builder.SetInsertPoint( thenBB );
+			sCC->CreateCallImm( thenBB, "TaskSwitch", comp->GetNextTask() );
+			sCC->Builder.CreateBr( retBB );
 			task->returnBlocks.insert( thenBB );
 
 			return elseBB;
@@ -1007,105 +883,105 @@ static BasicBlock *GenerateDefaultCode( CHsp3Op *hsp, Function *func,
 										BasicBlock *bb, BasicBlock *retBB, Task *task, Op *op )
 {
 	LLVMContext &Context = getGlobalContext();
-	Builder.SetInsertPoint( bb );
+	sCC->Builder.SetInsertPoint( bb );
 
 	switch ( op->GetOpCode() ) {
 	case TASK_SWITCH_OP:
 	{
 		TaskSwitchOp *o = (TaskSwitchOp*)op;
-		CreateCallImm( bb, "TaskSwitch", o->GetNextTask() );
+		sCC->CreateCallImm( bb, "TaskSwitch", o->GetNextTask() );
 		return bb;
 	}
 	case CALC_OP:
 	{
 		CalcOp *o = (CalcOp*)op;
-		CreateCallImm( bb, "Calc" + hsp->GetHSPOperator2( o->GetCalcOp() ) );
+		sCC->CreateCallImm( bb, "Calc" + hsp->GetHSPOperator2( o->GetCalcOp() ) );
 		return bb;
 	}
 	case PUSH_VAR_OP:
 	{
 		PushVarOp *o = (PushVarOp*)op;
-		Function* f = M->getFunction( "PushVar" );
+		Function* f = sCC->M->getFunction( "PushVar" );
 
 		std::vector<Value*> args;
-		Value *var = MakeImmidiateCPPName( hsp, bb, TYPE_VAR,
-										   o->GetVarNo(), o->GetPrmNo() );
+		Value *var = sCC->MakeImmidiateCPPName( hsp, bb, TYPE_VAR,
+												o->GetVarNo(), o->GetPrmNo() );
 		if (!var)
 			Alert( "varname" );
 		args.push_back( var );
 		args.push_back(ConstantInt::get( Type::getInt32Ty( Context ),
 										 o->GetArrayDim() ));
 
-		Builder.SetInsertPoint( bb );
-		Builder.CreateCall(f, args.begin(), args.end());
+		sCC->Builder.SetInsertPoint( bb );
+		sCC->Builder.CreateCall(f, args.begin(), args.end());
 
 		return bb;
 	}
 	case PUSH_VAR_PTR_OP:
 	{
 		PushVarPtrOp *o = (PushVarPtrOp*)op;
-		Function *f = M->getFunction( "PushVAP" );
+		Function *f = sCC->M->getFunction( "PushVAP" );
 
 		std::vector<Value*> args;
-		Value *var = MakeImmidiateCPPName( hsp, bb, TYPE_VAR,
-										   o->GetVarNo(), o->GetPrmNo() );
+		Value *var = sCC->MakeImmidiateCPPName( hsp, bb, TYPE_VAR,
+												o->GetVarNo(), o->GetPrmNo() );
 		if (!var)
 			Alert( "varname" );
 		args.push_back(var);
 		args.push_back(ConstantInt::get( Type::getInt32Ty( Context ),
 										 o->GetArrayDim() ));
 
-		Builder.SetInsertPoint( bb );
-		Builder.CreateCall(f, args.begin(), args.end());
+		sCC->Builder.SetInsertPoint( bb );
+		sCC->Builder.CreateCall(f, args.begin(), args.end());
 
 		return bb;
 	}
 	case PUSH_DNUM_OP:
 	{
 		PushDnumOp *o = (PushDnumOp*)op;
-		Function *f = M->getFunction("Push" + hsp->GetHSPCmdTypeName( TYPE_DNUM ));
+		Function *f = sCC->M->getFunction("Push" + hsp->GetHSPCmdTypeName( TYPE_DNUM ));
 
 		std::vector<Value*> args;
 		args.push_back(ConstantFP::get( Type::getDoubleTy( Context ), o->GetValue() ));
 
-		Builder.SetInsertPoint( bb );
-		Builder.CreateCall( f, args.begin(), args.end() );
+		sCC->Builder.SetInsertPoint( bb );
+		sCC->Builder.CreateCall( f, args.begin(), args.end() );
 
 		return bb;
 	}
 	case PUSH_INUM_OP:
 	{
 		PushInumOp *o = (PushInumOp*)op;
-		CreateCallImm( bb, "Push" + hsp->GetHSPCmdTypeName( TYPE_INUM ), o->GetValue() );
+		sCC->CreateCallImm( bb, "Push" + hsp->GetHSPCmdTypeName( TYPE_INUM ), o->GetValue() );
 		return bb;
 	}
 	case PUSH_LABEL_OP:
 	{
 		PushLabelOp *o = (PushLabelOp*)op;
-		CreateCallImm( bb, "Push" + hsp->GetHSPCmdTypeName( TYPE_LABEL ), o->GetValue() );
+		sCC->CreateCallImm( bb, "Push" + hsp->GetHSPCmdTypeName( TYPE_LABEL ), o->GetValue() );
 		return bb;
 	}
 	case PUSH_STR_OP:
 	{
 		PushStrOp *o = (PushStrOp*)op;
-		Function *f = M->getFunction("Push" + hsp->GetHSPCmdTypeName( TYPE_STRING ));
+		Function *f = sCC->M->getFunction("Push" + hsp->GetHSPCmdTypeName( TYPE_STRING ));
 
 		std::vector<Value*> args;
 
-		LoadInst *ld = Builder.CreateLoad( sDsBase, "base" );
+		LoadInst *ld = sCC->Builder.CreateLoad( sDsBase, "base" );
 		Constant *constInt = ConstantInt::get(Type::getInt32Ty( Context ), o->GetValue());
-		Value *v = Builder.CreateAdd( ld, constInt );
-		Value *ptr = Builder.CreateIntToPtr(v, TypeBuilder<types::i<8>*, false>::get(Context));
+		Value *v = sCC->Builder.CreateAdd( ld, constInt );
+		Value *ptr = sCC->Builder.CreateIntToPtr(v, TypeBuilder<types::i<8>*, false>::get(Context));
 		args.push_back(ptr);
 
-		Builder.SetInsertPoint( bb );
-		Builder.CreateCall(f, args.begin(), args.end());
+		sCC->Builder.SetInsertPoint( bb );
+		sCC->Builder.CreateCall(f, args.begin(), args.end());
 
 		return bb;
 	}
 	case PUSH_DEFAULT_OP:
 	{
-		CreateCallImm( bb, "PushDefault" );
+		sCC->CreateCallImm( bb, "PushDefault" );
 		return bb;
 	}
 	case PUSH_FUNC_PARAM_OP:
@@ -1115,22 +991,22 @@ static BasicBlock *GenerateDefaultCode( CHsp3Op *hsp, Function *func,
 		const STRUCTPRM *st = hsp->GetMInfo( o->GetVarNo() );
 		switch( st->mptype ) {
 		case MPTYPE_LOCALVAR:
-			CreateCallImm( bb, "PushFuncPrm", o->GetPrmNo(), o->GetArrayDim() );
+			sCC->CreateCallImm( bb, "PushFuncPrm", o->GetPrmNo(), o->GetArrayDim() );
 			break;
 		case MPTYPE_VAR:
 		case MPTYPE_ARRAYVAR:
 		case MPTYPE_SINGLEVAR:
-			CreateCallImm( bb, "PushFuncPrm", o->GetPrmNo(), o->GetArrayDim() );
+			sCC->CreateCallImm( bb, "PushFuncPrm", o->GetPrmNo(), o->GetArrayDim() );
 			break;
 		case MPTYPE_DNUM:
-			CreateCallImm( bb, "PushFuncPrmD", o->GetPrmNo() );
+			sCC->CreateCallImm( bb, "PushFuncPrmD", o->GetPrmNo() );
 			break;
 		case MPTYPE_INUM:
-			CreateCallImm( bb, "PushFuncPrmI", o->GetPrmNo() );
+			sCC->CreateCallImm( bb, "PushFuncPrmI", o->GetPrmNo() );
 			break;
 
 		default:
-			CreateCallImm( bb, "PushFuncPrm1", o->GetPrmNo() );
+			sCC->CreateCallImm( bb, "PushFuncPrm1", o->GetPrmNo() );
 			break;
 		}
 		return bb;
@@ -1139,35 +1015,35 @@ static BasicBlock *GenerateDefaultCode( CHsp3Op *hsp, Function *func,
 	{
 		PushFuncPrmPtrOp *o = (PushFuncPrmPtrOp*)op;
 
-		CreateCallImm( bb, "PushFuncPAP", o->GetPrmNo(), o->GetArrayDim() );
+		sCC->CreateCallImm( bb, "PushFuncPAP", o->GetPrmNo(), o->GetArrayDim() );
 		return bb;
 	}
 	case PUSH_CMD_OP:
 	{
 		PushCmdOp *o = (PushCmdOp*)op;
 
-		CreateCallImm( bb, "Push" + hsp->GetHSPCmdTypeName( o->GetCmdType() ),
-					   o->GetCmdVal(), o->GetCmdPNum() );
+		sCC->CreateCallImm( bb, "Push" + hsp->GetHSPCmdTypeName( o->GetCmdType() ),
+							o->GetCmdVal(), o->GetCmdPNum() );
 		return bb;
 	}
 	case PUSH_FUNC_END_OP:
 	{
 		PushFuncEndOp *o = (PushFuncEndOp*)op;
 
-		CreateCallImm( bb, "PushFuncEnd" );
+		sCC->CreateCallImm( bb, "PushFuncEnd" );
 		return bb;
 	}
 	case VAR_SET_OP:
 	{
 		VarSetOp *o = (VarSetOp*)op;
 
-		Function *f = M->getFunction( "VarSet" );
+		Function *f = sCC->M->getFunction( "VarSet" );
 		const FunctionType *ft = f->getFunctionType();
 
 		std::vector<Value*> args;
 
-		Value *var = MakeImmidiateCPPName( hsp, bb, o->GetVarType(),
-										   o->GetVarNo(), o->GetPrmNo() );
+		Value *var = sCC->MakeImmidiateCPPName( hsp, bb, o->GetVarType(),
+												o->GetVarNo(), o->GetPrmNo() );
 		if (!var) {
 			Alert( "mes" );
 		}
@@ -1177,7 +1053,7 @@ static BasicBlock *GenerateDefaultCode( CHsp3Op *hsp, Function *func,
 		args.push_back(ConstantInt::get( Type::getInt32Ty( Context ),
 										 o->GetCmdPNum() ));
 
-		Builder.CreateCall(f, args.begin(), args.end());
+		sCC->Builder.CreateCall(f, args.begin(), args.end());
 
 		return bb;
 	}
@@ -1185,13 +1061,13 @@ static BasicBlock *GenerateDefaultCode( CHsp3Op *hsp, Function *func,
 	{
 		VarIncOp *o = (VarIncOp*)op;
 
-		Function *f = M->getFunction( "VarInc" );
+		Function *f = sCC->M->getFunction( "VarInc" );
 		const FunctionType *ft = f->getFunctionType();
 
 		std::vector<Value*> args;
 
-		Value *var = MakeImmidiateCPPName( hsp, bb, o->GetVarType(),
-										   o->GetVarNo(), o->GetPrmNo() );
+		Value *var = sCC->MakeImmidiateCPPName( hsp, bb, o->GetVarType(),
+												o->GetVarNo(), o->GetPrmNo() );
 		if (!var) {
 			Alert( "mes" );
 		}
@@ -1199,7 +1075,7 @@ static BasicBlock *GenerateDefaultCode( CHsp3Op *hsp, Function *func,
 		args.push_back(ConstantInt::get( Type::getInt32Ty( Context ),
 										 o->GetArrayDim() ));
 
-		Builder.CreateCall(f, args.begin(), args.end());
+		sCC->Builder.CreateCall(f, args.begin(), args.end());
 
 		return bb;
 	}
@@ -1207,13 +1083,13 @@ static BasicBlock *GenerateDefaultCode( CHsp3Op *hsp, Function *func,
 	{
 		VarDecOp *o = (VarDecOp*)op;
 
-		Function *f = M->getFunction( "VarDec" );
+		Function *f = sCC->M->getFunction( "VarDec" );
 		const FunctionType *ft = f->getFunctionType();
 
 		std::vector<Value*> args;
 
-		Value *var = MakeImmidiateCPPName( hsp, bb, o->GetVarType(),
-										   o->GetVarNo(), o->GetPrmNo() );
+		Value *var = sCC->MakeImmidiateCPPName( hsp, bb, o->GetVarType(),
+												o->GetVarNo(), o->GetPrmNo() );
 		if (!var) {
 			Alert( "mes" );
 		}
@@ -1221,7 +1097,7 @@ static BasicBlock *GenerateDefaultCode( CHsp3Op *hsp, Function *func,
 		args.push_back(ConstantInt::get( Type::getInt32Ty( Context ),
 										 o->GetArrayDim() ));
 
-		Builder.CreateCall(f, args.begin(), args.end());
+		sCC->Builder.CreateCall(f, args.begin(), args.end());
 
 		return bb;
 	}
@@ -1229,7 +1105,7 @@ static BasicBlock *GenerateDefaultCode( CHsp3Op *hsp, Function *func,
 	{
 		VarCalcOp *o = (VarCalcOp*)op;
 
-		Function *f = M->getFunction( "VarCalc" );
+		Function *f = sCC->M->getFunction( "VarCalc" );
 		const FunctionType *ft = f->getFunctionType();
 
 		if (ft->getNumParams() != 3) {
@@ -1238,8 +1114,8 @@ static BasicBlock *GenerateDefaultCode( CHsp3Op *hsp, Function *func,
 
 		std::vector<Value*> args;
 
-		Value *var = MakeImmidiateCPPName( hsp, bb, o->GetVarType(),
-										   o->GetVarNo(), o->GetPrmNo() );
+		Value *var = sCC->MakeImmidiateCPPName( hsp, bb, o->GetVarType(),
+												o->GetVarNo(), o->GetPrmNo() );
 		if (!var) {
 			Alert( "mes" );
 		}
@@ -1249,7 +1125,7 @@ static BasicBlock *GenerateDefaultCode( CHsp3Op *hsp, Function *func,
 		args.push_back(ConstantInt::get( Type::getInt32Ty( Context ),
 										 o->GetCalcOp() ));
 
-		Builder.CreateCall(f, args.begin(), args.end());
+		sCC->Builder.CreateCall(f, args.begin(), args.end());
 
 		return bb;
 	}
@@ -1259,16 +1135,15 @@ static BasicBlock *GenerateDefaultCode( CHsp3Op *hsp, Function *func,
 
 		BasicBlock *thenBB = BasicBlock::Create( Context, "then", func );
 		BasicBlock *elseBB = BasicBlock::Create( Context, "else", func );
-		Value *ifRes = CreateCallImm( bb, "HspIf" );
-
-		Value *cond = Builder.CreateICmpNE( ifRes,
+		Value *ifRes = sCC->CreateCallImm( bb, "HspIf" );
+		Value *cond = sCC->Builder.CreateICmpNE( ifRes,
 											ConstantInt::get( Type::getInt8Ty( Context ), 0 ) );
 
-		Builder.CreateCondBr( cond, thenBB, elseBB );
+		sCC->Builder.CreateCondBr( cond, thenBB, elseBB );
 
-		Builder.SetInsertPoint( thenBB );
-		CreateCallImm( thenBB, "TaskSwitch", o->GetNextTask() );
-		Builder.CreateBr( retBB );
+		sCC->Builder.SetInsertPoint( thenBB );
+		sCC->CreateCallImm( thenBB, "TaskSwitch", o->GetNextTask() );
+		sCC->Builder.CreateBr( retBB );
 		task->returnBlocks.insert( thenBB );
 
 		return elseBB;
@@ -1277,16 +1152,16 @@ static BasicBlock *GenerateDefaultCode( CHsp3Op *hsp, Function *func,
 	{
 		CmdOp *o = (CmdOp*)op;
 
-		CreateCallImm( bb, hsp->GetHSPCmdTypeName( o->GetCmdType() ),
-					   o->GetCmdVal(), o->GetCmdPNum() );
+		sCC->CreateCallImm( bb, hsp->GetHSPCmdTypeName( o->GetCmdType() ),
+							o->GetCmdVal(), o->GetCmdPNum() );
 		return bb;
 	}
 	case MODCMD_OP:
 	{
 		ModCmdOp *o = (ModCmdOp*)op;
 
-		CreateCallImm( bb, hsp->GetHSPCmdTypeName( o->GetCmdType() ),
-					   o->GetCmdVal(), o->GetCmdPNum() );
+		sCC->CreateCallImm( bb, hsp->GetHSPCmdTypeName( o->GetCmdType() ),
+							o->GetCmdVal(), o->GetCmdPNum() );
 		return bb;
 	}
 	}
@@ -1422,7 +1297,7 @@ static void CompileTask( CHsp3Op *hsp, Task *task, Function *func, BasicBlock *r
 											func );
 	task->entry = curBB;
 
-	Builder.SetInsertPoint( curBB );
+	sCC->Builder.SetInsertPoint( curBB );
 
 
 	for ( op_list::iterator it=task->block->operations.begin();
@@ -1440,8 +1315,8 @@ static void CompileTask( CHsp3Op *hsp, Task *task, Function *func, BasicBlock *r
 		}
 	}
 
-	Builder.SetInsertPoint( curBB );
-	Builder.CreateBr( retBB );
+	sCC->Builder.SetInsertPoint( curBB );
+	sCC->Builder.CreateBr( retBB );
 	task->returnBlocks.insert( curBB );
 }
 
@@ -1456,7 +1331,7 @@ static void CompileTaskGeneral( CHsp3Op *hsp, Task *task, Function *func, BasicB
 											func );
 	task->entry = curBB;
 
-	Builder.SetInsertPoint( curBB );
+	sCC->Builder.SetInsertPoint( curBB );
 
 	for ( op_list::iterator it=task->block->operations.begin();
 		  it != task->block->operations.end(); it++ ) {
@@ -1465,8 +1340,8 @@ static void CompileTaskGeneral( CHsp3Op *hsp, Task *task, Function *func, BasicB
 		curBB = GenerateDefaultCode( hsp, func, curBB, retBB, task, op );
 	}
 
-	Builder.SetInsertPoint( curBB );
-	Builder.CreateBr( retBB );
+	sCC->Builder.SetInsertPoint( curBB );
+	sCC->Builder.CreateBr( retBB );
 	task->returnBlocks.insert( curBB );
 }
 
@@ -1541,7 +1416,7 @@ static void TraceTaskProc()
 	if ( !task.func ) {
 		LLVMContext &Context = getGlobalContext();
 
-		Function* func = cast<Function>(M->getOrInsertFunction( GetTaskFuncName( &task ),
+		Function* func = cast<Function>(sCC->M->getOrInsertFunction( GetTaskFuncName( &task ),
 																Type::getInt32Ty( Context ),
 																Type::getInt32Ty( Context ),
 																(Type *)0 ));
@@ -1550,13 +1425,13 @@ static void TraceTaskProc()
 
 		CompileTaskGeneral( hsp3, &task, func, funcRet );
 
-		Builder.SetInsertPoint( funcRet );
-		Builder.CreateRet( ConstantInt::get( Type::getInt32Ty( Context ), -1 ) );
+		sCC->Builder.SetInsertPoint( funcRet );
+		sCC->Builder.CreateRet( ConstantInt::get( Type::getInt32Ty( Context ), -1 ) );
 
 		task.func = func;
 
 		string ErrMsg;
-		if ( verifyModule( *M, ReturnStatusAction, &ErrMsg ) ) {
+		if ( verifyModule( *sCC->M, ReturnStatusAction, &ErrMsg ) ) {
 			Alert( (char*)ErrMsg.c_str() );
 		}
 
@@ -1573,9 +1448,9 @@ static void TraceTaskProc()
 	if ( task.numCurCall == 10 ) {
 		LLVMContext &Context = getGlobalContext();
 
-		LoadLLRuntime();
+		sCC->LoadLLRuntime();
 
-		Function* func = cast<Function>(M->getOrInsertFunction( GetTaskFuncName( &task ),
+		Function* func = cast<Function>(sCC->M->getOrInsertFunction( GetTaskFuncName( &task ),
 																Type::getInt32Ty( Context ),
 																Type::getInt32Ty( Context ),
 																(Type *)0 ));
@@ -1585,11 +1460,11 @@ static void TraceTaskProc()
 
 		CompileTask( hsp3, &task, func, funcRet );
 
-		Builder.SetInsertPoint( funcEntry );
-		Builder.CreateBr( task.entry );
+		sCC->Builder.SetInsertPoint( funcEntry );
+		sCC->Builder.CreateBr( task.entry );
 
-		Builder.SetInsertPoint( funcRet );
-		Builder.CreateRet( ConstantInt::get( Type::getInt32Ty( Context ), -1 ) );
+		sCC->Builder.SetInsertPoint( funcRet );
+		sCC->Builder.CreateRet( ConstantInt::get( Type::getInt32Ty( Context ), -1 ) );
 
 		task.spFunc = func;
 		if ( true ) {
@@ -1600,18 +1475,18 @@ static void TraceTaskProc()
 			if (!ErrorInfo.empty()) {
 				errs() << ErrorInfo << '\n';
 			} else {
-				*Out << *M;
+				*Out << *sCC->M;
 			}
 			Out->close();
 		}
 
 		string ErrMsg;
-		if ( verifyModule( *M, ReturnStatusAction, &ErrMsg ) ) {
+		if ( verifyModule( *sCC->M, ReturnStatusAction, &ErrMsg ) ) {
 			Alert( (char*)ErrMsg.c_str() );
 		}
 
 		TheFPM->run( *task.spFunc );
-		Passes->run( *M) ;
+		Passes->run( *sCC->M) ;
 
 		if ( true ) {
 			string ErrorInfo;
@@ -1621,7 +1496,7 @@ static void TraceTaskProc()
 			if (!ErrorInfo.empty()) {
 				errs() << ErrorInfo << '\n';
 			} else {
-				*Out << *M;
+				*Out << *sCC->M;
 			}
 			Out->close();
 		}
@@ -1674,140 +1549,6 @@ void DumpResult()
 	}
 }
 
-void __HspInit( Hsp3r *hsp3r )
-{
-	sHsp3r = hsp3r;
-	hsp3r->Reset( sMaxVar, sMaxHpi );
-
-}
-
-void __HspSetup( Hsp3r *hsp3r )
-{
-	LLVMContext &Context = getGlobalContext();
-
-	Var__HspVars = new PVal*[sMaxVar];
-	for(int i=0;i<sMaxVar;i++) {
-		Var__HspVars[i] = mem_var + i;
-		EE->updateGlobalMapping( sVariables[i], Var__HspVars[i] );
-	}
-	EE->updateGlobalMapping( sDsBase, (void*)&sDsBasePtr );
-
-	if ( sLabMax > 0 ) {
-		__HspTaskFunc = new CHSP3_TASK[sLabMax];
-	}
-
-	Alert( "HspSetup" );
-	for (int i=0; i<sLabMax+1; i++) {
-		if ( __Task.is_null(i) ) {
-			__HspTaskFunc[i] = NULL;
-		} else {
-			Task &task = __Task[i];
-			__Task[i] = task;
-
-			Function* func = cast<Function>(M->getOrInsertFunction( task.block->name,
-																	Type::getInt32Ty( Context ),
-																	Type::getInt32Ty( Context ),
-																	(Type *)0 ));
-			Argument &arg = *func->arg_begin();
-			BasicBlock *funcEntry = BasicBlock::Create( Context, "entry", func );
-			BasicBlock *funcRet = BasicBlock::Create( Context, "ret", func );
-
-			CompileTaskGeneral( hsp3, &task, func, funcRet );
-
-			Builder.SetInsertPoint( funcEntry );
-			Builder.CreateBr( task.entry );
-
-			Builder.SetInsertPoint( funcRet );
-			Builder.CreateRet( ConstantInt::get( Type::getInt32Ty( Context ), -1 ) );
-
-			string ErrMsg;
-			if ( verifyModule( *M, ReturnStatusAction, &ErrMsg ) ) {
-				Alert( (char*)ErrMsg.c_str() );
-			}
-			task.func = func;
-			task.funcPtr = (CHSP3_TASK)EE->getPointerToFunction( task.func );
-			__HspTaskFunc[i] = TraceTaskProc;//task.funcPtr;
-		}
-	}
-	string ErrorInfo;
-	std::auto_ptr<raw_fd_ostream>
-		Out(new raw_fd_ostream("dump0.ll", ErrorInfo,
-							   raw_fd_ostream::F_Binary));
-	if (!ErrorInfo.empty()) {
-		errs() << ErrorInfo << '\n';
-		return;
-	}
-
-	*Out << *M;
-}
-
-void __HspEntry( void )
-{
-	sHspctx = &sHsp3r->hspctx;
-
-	GlobalVariable *ctx = (GlobalVariable*)M->getGlobalVariable( "hspctx" );
-	EE->updateGlobalMapping( ctx, (void*)&sHspctx );
-
-	Task &task = __Task[sLabMax];
-
-	void *fp = EE->getPointerToFunction( task.func );
-	CHSP3_FUNC t = (CHSP3_FUNC)fp;
-	t(1);
-}
-
-// LLVM utilities
-
-static const StructType *GetPValType()
-{
-	LLVMContext &Context = getGlobalContext();
-
-	return (StructType*)M->getTypeByName( "struct.PVal" );
-}
-
-Value* CreateCallImm( BasicBlock *bblock, const string& name )
-{
-
-	LLVMContext &Context = getGlobalContext();
-	Function *f = M->getFunction( name );
-	if ( !f )
-		Alert( (char*)(name + " not found!").c_str() );
-
-	std::vector<Value*> args;
-
-	Builder.SetInsertPoint( bblock );
-	return Builder.CreateCall( f, args.begin(), args.end() );
-}
-
-Value* CreateCallImm( BasicBlock *bblock, const string& name, int a )
-{
-	LLVMContext &Context = getGlobalContext();
-	Function *f = M->getFunction( name );
-	if ( !f )
-		Alert( (char*)(name + " not found!").c_str() );
-
-	std::vector<Value*> args;
-
-	args.push_back( ConstantInt::get( Type::getInt32Ty( Context ), a ) );
-
-	Builder.SetInsertPoint( bblock );
-	return Builder.CreateCall( f, args.begin(), args.end() );
-}
-
-Value* CreateCallImm( BasicBlock *bblock, const string& name, int a, int b )
-{
-	LLVMContext &Context = getGlobalContext();
-	Function *f = M->getFunction( name );
-	if ( !f )
-		Alert( (char*)(name + " not found!").c_str() );
-
-	std::vector<Value*> args;
-
-	args.push_back(ConstantInt::get( Type::getInt32Ty( Context ), a ) );
-	args.push_back(ConstantInt::get( Type::getInt32Ty( Context ), b ) );
-
-	Builder.SetInsertPoint( bblock );
-	return Builder.CreateCall( f, args.begin(), args.end() );
-}
 
 void* HspLazyFunctionCreator( const string &name )
 {
@@ -1888,64 +1629,86 @@ RESOLVE_FUNC(strlen)
 	return NULL;
 }
 
-static void LoadLLRuntime()
+
+void __HspInit( Hsp3r *hsp3r )
 {
-#ifdef HSPWIN
-	LLVMContext &Context = getGlobalContext();
+	sHsp3r = hsp3r;
+	hsp3r->Reset( sMaxVar, sMaxHpi );
 
-	HRSRC hrc;
-	HGLOBAL hgb;
-	LPVOID p;
-
-	hrc = FindResource(NULL, MAKEINTRESOURCEA(256), "TEXT");
-	hgb = LoadResource(NULL, hrc);
-	p = LockResource(hgb);
-
-	SMDiagnostic Err;
-	ParseAssemblyString( (char*) p, M, Err, Context );
-	FreeResource(hrc);
-#else
-	#error
-#endif
 }
 
-Value* MakeImmidiateCPPName( CHsp3Op* hsp, BasicBlock* bb, int type, int val, int prm, char *opt )
+void __HspSetup( Hsp3r *hsp3r )
 {
-	//		直値(int,double,str)を追加
-	//		(追加できない型の場合は-1を返す)
-	//
-	char mes[4096];
-	int i;
-	i = hsp->MakeImmidiateName( mes, type, val );
-	if ( i == 0 ) return NULL;
-	switch( type ) {
-	case TYPE_VAR:
-		sprintf( mes, "%s%s", CPPHED_HSPVAR, hsp->GetHSPVarName( val ).c_str() );
-		if ( opt != NULL ) strcat( mes, opt );
-		break;
-	case TYPE_STRUCT:
-		{
-		const STRUCTPRM *st = hsp->GetMInfo( val );
-		switch( st->mptype ) {
-		case MPTYPE_LOCALVAR:
-			return CreateCallImm( bb, "LocalPrm", prm );
-			break;
-		default:
-			return CreateCallImm( bb, "FuncPrm", prm );
-			break;
-		}
-		break;
-		}
-	case TYPE_LABEL:
-		sprintf( mes, "*L%04x", val );
-		break;
-	default:
-		strcpy( mes, hsp->GetHSPName( type, val ).c_str() );
-		if ( opt != NULL ) strcat( mes, opt );
-		if ( *mes == 0 ) return NULL;
-		break;
+	LLVMContext &Context = getGlobalContext();
+
+	Var__HspVars = new PVal*[sMaxVar];
+	for(int i=0;i<sMaxVar;i++) {
+		Var__HspVars[i] = mem_var + i;
+		EE->updateGlobalMapping( sVariables[i], Var__HspVars[i] );
 	}
-	return M->getNamedValue( mes );
+	EE->updateGlobalMapping( sDsBase, (void*)&sDsBasePtr );
+
+	if ( sLabMax > 0 ) {
+		__HspTaskFunc = new CHSP3_TASK[sLabMax];
+	}
+
+	Alert( "HspSetup" );
+	for (int i=0; i<sLabMax+1; i++) {
+		if ( __Task.is_null(i) ) {
+			__HspTaskFunc[i] = NULL;
+		} else {
+			Task &task = __Task[i];
+			__Task[i] = task;
+
+			Function* func = cast<Function>(sCC->M->getOrInsertFunction( task.block->name,
+																	Type::getInt32Ty( Context ),
+																	Type::getInt32Ty( Context ),
+																	(Type *)0 ));
+			Argument &arg = *func->arg_begin();
+			BasicBlock *funcEntry = BasicBlock::Create( Context, "entry", func );
+			BasicBlock *funcRet = BasicBlock::Create( Context, "ret", func );
+
+			CompileTaskGeneral( hsp3, &task, func, funcRet );
+
+			sCC->Builder.SetInsertPoint( funcEntry );
+			sCC->Builder.CreateBr( task.entry );
+
+			sCC->Builder.SetInsertPoint( funcRet );
+			sCC->Builder.CreateRet( ConstantInt::get( Type::getInt32Ty( Context ), -1 ) );
+
+			string ErrMsg;
+			if ( verifyModule( *sCC->M, ReturnStatusAction, &ErrMsg ) ) {
+				Alert( (char*)ErrMsg.c_str() );
+			}
+			task.func = func;
+			task.funcPtr = (CHSP3_TASK)EE->getPointerToFunction( task.func );
+			__HspTaskFunc[i] = TraceTaskProc;//task.funcPtr;
+		}
+	}
+	string ErrorInfo;
+	std::auto_ptr<raw_fd_ostream>
+		Out(new raw_fd_ostream("dump0.ll", ErrorInfo,
+							   raw_fd_ostream::F_Binary));
+	if (!ErrorInfo.empty()) {
+		errs() << ErrorInfo << '\n';
+		return;
+	}
+
+	*Out << *sCC->M;
+}
+
+void __HspEntry( void )
+{
+	sHspctx = &sHsp3r->hspctx;
+
+	GlobalVariable *ctx = (GlobalVariable*)sCC->M->getGlobalVariable( "hspctx" );
+	EE->updateGlobalMapping( ctx, (void*)&sHspctx );
+
+	Task &task = __Task[sLabMax];
+
+	void *fp = EE->getPointerToFunction( task.func );
+	CHSP3_FUNC t = (CHSP3_FUNC)fp;
+	t(1);
 }
 
 int MakeSource( CHsp3Op *hsp, int option, void *ref )
@@ -1956,8 +1719,10 @@ int MakeSource( CHsp3Op *hsp, int option, void *ref )
 	int maxvar;
 	LLVMContext &Context = getGlobalContext();
 
+	sCC = new CompileContext();
+
 	// Create some module to put our function into it.
-	M = new Module( "test", Context );
+	sCC->M = new Module( "test", Context );
 
 	sMaxVar = hsp->GetHSPHed()->max_val;
 	sMaxHpi = hsp->GetHSPHed()->max_hpi;
@@ -1965,9 +1730,9 @@ int MakeSource( CHsp3Op *hsp, int option, void *ref )
 
 
 	// 関数の準備
-	LoadLLRuntime();
+	sCC->LoadLLRuntime();
 
-	const Type *pvalType = GetPValType();
+	const Type *pvalType = sCC->GetPValType();
 
 	// 変数の準備
 	sVariables = new GlobalVariable*[maxvar];
@@ -1977,10 +1742,10 @@ int MakeSource( CHsp3Op *hsp, int option, void *ref )
 
 //		sVariables[i] = new GlobalVariable(ppvalType, false, GlobalValue::ExternalLinkage, constPtr,
 //										   CPPHED_HSPVAR + GetHSPVarName( i ), M);
-		sVariables[i] = (GlobalVariable*)M->getOrInsertGlobal(CPPHED_HSPVAR + hsp->GetHSPVarName( i ), pvalType);
+		sVariables[i] = (GlobalVariable*)sCC->M->getOrInsertGlobal(CPPHED_HSPVAR + hsp->GetHSPVarName( i ), pvalType);
 	}
 
-	sDsBase = (GlobalVariable*)M->getOrInsertGlobal("ds_base", Type::getInt32Ty( Context ));
+	sDsBase = (GlobalVariable*)sCC->M->getOrInsertGlobal("ds_base", Type::getInt32Ty( Context ));
 
 
 	//		タスク(ラベル)テーブルを作成する
@@ -2021,7 +1786,7 @@ int MakeSource( CHsp3Op *hsp, int option, void *ref )
 			return -1;
 		}
 
-		*out << *M;
+		*out << *sCC->M;
 	}
 
 	{
@@ -2039,11 +1804,11 @@ int MakeSource( CHsp3Op *hsp, int option, void *ref )
 	}
 
 	string ErrMsg;
-	if ( verifyModule( *M, ReturnStatusAction, &ErrMsg ) ) {
+	if ( verifyModule( *sCC->M, ReturnStatusAction, &ErrMsg ) ) {
 		Alert( (char*)ErrMsg.c_str() );
 	}
 
-	EE = EngineBuilder( M )
+	EE = EngineBuilder( sCC->M )
 		.setEngineKind( EngineKind::JIT )
 		.setOptLevel( CodeGenOpt::Default )
 		.create();
@@ -2058,7 +1823,7 @@ int MakeSource( CHsp3Op *hsp, int option, void *ref )
 	createStandardLTOPasses( Passes, false, true, true );
 
 
-	TheFPM = new FunctionPassManager(M);
+	TheFPM = new FunctionPassManager( sCC->M );
 
 	// Set up the optimizer pipeline.  Start with registering info about how the
 	// target lays out data structures.
