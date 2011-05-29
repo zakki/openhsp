@@ -108,8 +108,6 @@ static IRBuilder<> Builder(getGlobalContext());
 static FunctionPassManager *TheFPM;
 static PassManager *Passes;
 
-static bool sReachable;
-
 static std::map<VarKey, Var*> sVars;
 static Program sProgram;
 
@@ -126,8 +124,6 @@ static int sLabMax;
 static HSPCTX *sHspctx;
 static Hsp3r *sHsp3r;
 static PVal **Var__HspVars;
-static Function *sOrigFunc;
-static Function *sCurFunc;
 
 extern int GetCurTaskId();
 extern void HspVarCoreArray2( PVal *pval, int offset );
@@ -1419,7 +1415,6 @@ static void CompileTask( CHsp3Op *hsp, Task *task, Function *func, BasicBlock *r
 
 	Builder.SetInsertPoint( curBB );
 
-	sReachable = true;
 
 	for ( op_list::iterator it=task->block->operations.begin();
 		  it != task->block->operations.end(); it++ ) {
@@ -1453,8 +1448,6 @@ static void CompileTaskGeneral( CHsp3Op *hsp, Task *task, Function *func, BasicB
 	task->entry = curBB;
 
 	Builder.SetInsertPoint( curBB );
-
-	sReachable = true;
 
 	for ( op_list::iterator it=task->block->operations.begin();
 		  it != task->block->operations.end(); it++ ) {
@@ -1742,8 +1735,6 @@ static const StructType *GetPValType()
 
 Value* CreateCallImm( BasicBlock *bblock, const string& name )
 {
-	if (!sReachable)
-		return NULL;
 
 	LLVMContext &Context = getGlobalContext();
 	Function *f = M->getFunction( name );
@@ -1758,9 +1749,6 @@ Value* CreateCallImm( BasicBlock *bblock, const string& name )
 
 Value* CreateCallImm( BasicBlock *bblock, const string& name, int a )
 {
-	if (!sReachable)
-		return NULL;
-
 	LLVMContext &Context = getGlobalContext();
 	Function *f = M->getFunction( name );
 	if ( !f )
@@ -1776,9 +1764,6 @@ Value* CreateCallImm( BasicBlock *bblock, const string& name, int a )
 
 Value* CreateCallImm( BasicBlock *bblock, const string& name, int a, int b )
 {
-	if (!sReachable)
-		return NULL;
-
 	LLVMContext &Context = getGlobalContext();
 	Function *f = M->getFunction( name );
 	if ( !f )
