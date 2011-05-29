@@ -139,7 +139,7 @@ void UpdateOperands( Block *task )
 		case VAR_CALC_OP:
 			{
 				VarRefOp *vr = (VarRefOp*)op;
-				task->usedVariables.insert( VarKey( vr->GetVarType(), vr->GetVarNo()) );
+				task->usedVariables.insert( vr->GetVarId() );
 			}
 			break;
 		default:
@@ -211,7 +211,7 @@ void AnalyzeTask( Program* program, Block *block )
 
 		case VAR_CALC_OP:
 		case VAR_SET_OP:
-			program->varTaskMap[((VarRefOp*)op)->GetVarKey()].insert( block->name );
+			program->varTaskMap[((VarRefOp*)op)->GetVarId()].insert( block->name );
 			break;
 
 		case PUSH_DNUM_OP:
@@ -302,11 +302,11 @@ void AnalyzeProgram( Program* program ) {
 		Block *block = it->second;
 		AnalyzeTask( program, block );
 
-		for (std::set<VarKey>::iterator it2 = block->usedVariables.begin();
+		for (std::set<VarId>::iterator it2 = block->usedVariables.begin();
 			 it2 != block->usedVariables.end(); ++it2) {
 			if (varInfos.find(*it2) != varInfos.end())
 				continue;
-			VarInfo *var = new VarInfo(it2->first, it2->second);
+			VarInfo *var = new VarInfo();
 			varInfos[*it2] = var;
 		}
 	}
@@ -315,6 +315,7 @@ void AnalyzeProgram( Program* program ) {
 		it != varTaskMap.end(); ++it) {
 		if ( it->second.size() == 0 )
 			continue;
+		const VarId& id = it->first;
 
 		bool localVar = true;
 
@@ -322,7 +323,7 @@ void AnalyzeProgram( Program* program ) {
 		for(std::set<std::string>::iterator it2 = it->second.begin();
 			 it2 != it->second.end(); ++it2) {
 			Block *block = program->blocks[*it2];
-			VarInfo *var = varInfos[it->first];
+			VarInfo *var = varInfos[id];
 			VarRefOp* firstAccessOp = NULL;
 
 			for(op_list::iterator it2 = block->operations.begin();
@@ -339,7 +340,7 @@ void AnalyzeProgram( Program* program ) {
 				case VAR_DEC_OP:
 				{
 					VarRefOp* vrop = (VarRefOp*)op;
-					if ( vrop->GetVarNo() != var->val )
+					if ( vrop->GetVarId() != id )
 						continue;
 					if ( op->GetOpCode() == PUSH_VAR_PTR_OP ) {
 						localVar = false;

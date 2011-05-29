@@ -12,12 +12,31 @@
 #include <vector>
 #include <stack>
 #include <iostream>
+#include <boost/tuple/tuple.hpp>
+#include <boost/tuple/tuple_comparison.hpp>
 
 #include "supio.h"
 #include "chsp3.h"
 //#include "hsp3r.h"
 
-typedef std::pair<int, int> VarKey;
+class VarId : public boost::tuple<int, int, int> {
+public:
+	VarId(int type, int varid, int prmid) : boost::tuple<int, int, int>( type, varid, prmid ) {
+	}
+
+	int type() const {
+		return get<0>();
+	}
+
+	int val() const {
+		return get<1>();
+	}
+
+	int prm() const {
+		return get<2>();
+	}
+};
+
 
 enum OPCODE {
 	NOP, TASK_SWITCH_OP, CALC_OP, PUSH_VAR_OP, PUSH_VAR_PTR_OP, PUSH_DNUM_OP, PUSH_INUM_OP,
@@ -117,9 +136,9 @@ public:
 	VarRefOp( int type, int val, int prm, int va ) : type( type ), val( val ), prm( prm ), va( va )
 	{
 	}
-	VarKey GetVarKey() const
+	VarId GetVarId() const
 	{
-		return std::make_pair(type, val);
+		return VarId(type, val, prm);
 	}
 	int GetVarType() const
 	{
@@ -145,7 +164,7 @@ public:
 
 class PushVarOp : public VarRefOp {
 public:
-	PushVarOp( int val, int va ) : VarRefOp( TYPE_VAR, val, -1, va )
+	PushVarOp( int val, int va ) : VarRefOp( TYPE_VAR, val, val, va )
 	{
 	}
 	virtual std::string GetName() const
@@ -160,7 +179,7 @@ public:
 
 class PushVarPtrOp : public VarRefOp {
 public:
-	PushVarPtrOp( int val, int va ) : VarRefOp( TYPE_VAR, val, -1, va )
+	PushVarPtrOp( int val, int va ) : VarRefOp( TYPE_VAR, val, val, va )
 	{
 	}
 	virtual std::string GetName() const
@@ -502,31 +521,20 @@ public:
 
 class VarInfo {
 public:
-	int type;
-	int val;
-
 	int tflag;
-	int num;
-	int change;
 
 	bool localVar;
 
-	VarInfo( int type, int val ) : type( type ), val( val ), tflag(0), num(0), change(0), localVar(false)
+	VarInfo() : tflag(0), localVar(false)
 	{
 	}
-
-
-	bool operator<( const VarInfo& a ) const {
-		return (val < a.val) || (val == a.val && type < a.type);
-	}
-
 };
 
 class Block {
 public:
 	int id;
 	std::string name;
-	std::set<VarKey> usedVariables;
+	std::set<VarId> usedVariables;
 	op_list operations;
 	std::vector<int> nextTasks;
 
@@ -536,8 +544,8 @@ public:
 };
 
 typedef std::map<std::string, Block*> block_map;
-typedef std::map<VarKey, std::set<std::string> > var_task_map;
-typedef std::map<VarKey, VarInfo*> var_info_map;
+typedef std::map<VarId, std::set<std::string> > var_task_map;
+typedef std::map<VarId, VarInfo*> var_info_map;
 
 class Program {
 public:

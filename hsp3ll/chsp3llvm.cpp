@@ -56,24 +56,15 @@ using std::string;
 using boost::format;
 
 
-class Var {
+class VarStatics {
 public:
-	const int type;
-	const int val;
-
 	int tflag;
 	int num;
 	int change;
 
-	Var( int type, int val ) : type( type ), val( val ), tflag(0), num(0), change(0)
+	VarStatics() : tflag(0), num(0), change(0)
 	{
 	}
-
-
-	bool operator<( const Var& a ) const {
-		return (val < a.val) || (val == a.val && type < a.type);
-	}
-
 };
 
 class Task {
@@ -87,7 +78,7 @@ public:
 	int numCurCall;
 	int numChange;
 	long long time;
-	std::map<VarKey, Value*> llVariables;
+	std::map<VarId, Value*> llVariables;
 	std::set<BasicBlock*> returnBlocks;
 
 	std::set<Task*> incoming;
@@ -125,7 +116,7 @@ static IRBuilder<> Builder(getGlobalContext());
 static FunctionPassManager *TheFPM;
 static PassManager *Passes;
 
-static std::map<VarKey, Var*> sVars;
+static std::map<VarId, VarStatics*> sVarStatics;
 static Program sProgram;
 
 // Runtime
@@ -172,21 +163,12 @@ static string GetTaskFuncName( const Task *task )
 	return ( format( "%1%_%2%" ) % task->block->name % task->numCall ).str();
 }
 
-static Var *GetTaskVar( Task *task, const std::pair<int, int>& key )
+static VarStatics *GetTaskVar( Task *task, const VarId& id )
 {
-	for (std::set<VarKey>::iterator it = task->block->usedVariables.begin();
-		 it != task->block->usedVariables.end(); it++) {
-		Var* var = sVars[*it];
-
-		if ( var->type != key.first )
-			continue;
-
-		PVal& pval = mem_var[var->val];
-		if ( var->val == key.second ) {
-			return var;
-		}
-	}
-	return NULL;
+	if ( task->block->usedVariables.find( id ) != task->block->usedVariables.end() )
+		return sVarStatics[id];
+	else
+		return NULL;
 }
 
 static bool IsCompilable( Task *task, Op *op, CHsp3Op *hsp )
@@ -195,8 +177,9 @@ static bool IsCompilable( Task *task, Op *op, CHsp3Op *hsp )
 	case PUSH_VAR_OP:
 		{
 			PushVarOp *pv = (PushVarOp*)op;
-			Var *var = GetTaskVar( task, pv->GetVarKey() );
-			PVal& pval = mem_var[var->val];
+			const VarId &varId = pv->GetVarId();
+			VarStatics *var = GetTaskVar( task, varId );
+			PVal& pval = mem_var[varId.val()];
 			//changed |= op->flag == pval.flag;
 			//op->flag = pval.flag;
 
@@ -214,8 +197,9 @@ static bool IsCompilable( Task *task, Op *op, CHsp3Op *hsp )
 	case PUSH_VAR_PTR_OP:
 		{
 			PushVarPtrOp *pv = (PushVarPtrOp*)op;
-			Var *var = GetTaskVar( task, pv->GetVarKey() );
-			PVal& pval = mem_var[var->val];
+			const VarId &varId = pv->GetVarId();
+			VarStatics *var = GetTaskVar( task, varId );
+			PVal& pval = mem_var[varId.val()];
 			//changed |= op->flag == pval.flag;
 			//op->flag = pval.flag;
 		}
@@ -302,8 +286,10 @@ static bool IsCompilable( Task *task, Op *op, CHsp3Op *hsp )
 	case VAR_CALC_OP:
 		{
 			VarCalcOp *vs = (VarCalcOp*)op;
-			Var *var = GetTaskVar( task, vs->GetVarKey() );
-			PVal& pval = mem_var[var->val];
+			const VarId &varId = vs->GetVarId();
+			VarStatics *var = GetTaskVar( task, varId );
+			PVal& pval = mem_var[varId.val()];
+
 			if ( vs->GetArrayDim() == 0 && op->operands.size() == 1 ) {
 				if ( !IsCompilable( task, op->operands[0], hsp ) )
 					return false;
@@ -318,8 +304,10 @@ static bool IsCompilable( Task *task, Op *op, CHsp3Op *hsp )
 	case VAR_SET_OP:
 		{
 			VarSetOp *vs = (VarSetOp*)op;
-			Var *var = GetTaskVar( task, vs->GetVarKey() );
-			PVal& pval = mem_var[var->val];
+			const VarId &varId = vs->GetVarId();
+			VarStatics *var = GetTaskVar( task, varId );
+			PVal& pval = mem_var[varId.val()];
+
 			if ( vs->GetArrayDim() == 0 && op->operands.size() == 1 ) {
 				if ( IsCompilable( task, op->operands[0], hsp ) &&
 					 op->operands[0]->flag == pval.flag ) {
@@ -375,18 +363,19 @@ static void CheckType( CHsp3Op *hsp, Task *task)
 			switch ( op->GetOpCode() ) {
 			case PUSH_VAR_OP:
 				{
-					Var *var = GetTaskVar( task,
-										   ((PushVarOp*)op)->GetVarKey() );
-					PVal& pval = mem_var[var->val];
+					const VarId &varId = ((PushVarOp*)op)->GetVarId();
+					VarStatics *var = GetTaskVar( task, varId );
+					PVal& pval = mem_var[varId.val()];
+
 					changed |= op->flag != pval.flag;
 					op->flag = pval.flag;
 				}
 				break;
 			case PUSH_VAR_PTR_OP:
 				{
-					Var *var = GetTaskVar(task,
-										  ((PushVarPtrOp*)op)->GetVarKey() );
-					PVal& pval = mem_var[var->val];
+					const VarId &varId = ((PushVarPtrOp*)op)->GetVarId();
+					VarStatics *var = GetTaskVar( task, varId );
+					PVal& pval = mem_var[varId.val()];
 					changed |= op->flag != pval.flag;
 					op->flag = pval.flag;
 				}
@@ -608,13 +597,14 @@ static BasicBlock *CompileOp( CHsp3Op *hsp, Function *func, BasicBlock *bb, Basi
 	case PUSH_VAR_OP:
 		{
 			PushVarOp *pv = (PushVarOp*)op;
-			Var *var = GetTaskVar( task, pv->GetVarKey() );
-			PVal& pval = mem_var[var->val];
+			const VarId &varId = pv->GetVarId();
+			VarStatics *var = GetTaskVar( task, varId );
+			PVal& pval = mem_var[varId.val()];
 			Value *lpvar;
 			string varname(hsp->MakeImmidiateCPPVarName( pv->GetVarType(), pv->GetVarNo() ));
 
-			std::map<std::pair<int, int>, Value*>::iterator it
-				= task->llVariables.find( std::make_pair( pv->GetVarType(), pv->GetVarNo() ));
+			std::map<VarId, Value*>::iterator it
+				= task->llVariables.find( pv->GetVarId() );
 
 			if ( pv->useRegister) {
 				op->llValue = it->second;
@@ -631,7 +621,7 @@ static BasicBlock *CompileOp( CHsp3Op *hsp, Function *func, BasicBlock *bb, Basi
 				lpvar = MakeImmidiateCPPName( hsp, bb, pv->GetVarType(),
 											  pv->GetVarNo(), pv->GetPrmNo() );
 			}
-			task->llVariables[std::make_pair( pv->GetVarType(), pv->GetVarNo() )] = lpvar;
+			task->llVariables[pv->GetVarId()] = lpvar;
 
 			Value *lpval = Builder.CreateConstGEP2_32( lpvar, 0, 4, "a_" + varname );
 			LoadInst *lptr = Builder.CreateLoad( lpval, "b_" + varname );
@@ -849,12 +839,13 @@ static BasicBlock *CompileOp( CHsp3Op *hsp, Function *func, BasicBlock *bb, Basi
 	case VAR_CALC_OP:
 		{
 			VarCalcOp *vs = (VarCalcOp*)op;
-			Var *var = GetTaskVar( task, vs->GetVarKey() );
-			PVal& pval = mem_var[var->val];
+			const VarId &varId = vs->GetVarId();
+			VarStatics *var = GetTaskVar( task, varId );
+			PVal& pval = mem_var[varId.val()];
 
 			if ( vs->useRegister) {
-				std::map<std::pair<int, int>, Value*>::iterator it
-					= task->llVariables.find( vs->GetVarKey() );
+				std::map<VarId, Value*>::iterator it
+					= task->llVariables.find( vs->GetVarId() );
 
 				if ( pval.flag == HSPVAR_FLAG_INT ) {
 					Value *rhs;
@@ -890,7 +881,7 @@ static BasicBlock *CompileOp( CHsp3Op *hsp, Function *func, BasicBlock *bb, Basi
 				} else {
 					return NULL;
 				}
-				task->llVariables[ vs->GetVarKey() ] = static_cast<Value*>(op->llValue);
+				task->llVariables[ vs->GetVarId() ] = static_cast<Value*>(op->llValue);
 
 				Function *pNop = M->getFunction( "Nop" );
 				Builder.SetInsertPoint( bb );
@@ -947,12 +938,13 @@ static BasicBlock *CompileOp( CHsp3Op *hsp, Function *func, BasicBlock *bb, Basi
 	case VAR_SET_OP:
 		{
 			VarSetOp *vs = (VarSetOp*)op;
-			Var *var = GetTaskVar( task, vs->GetVarKey() );
-			PVal& pval = mem_var[var->val];
+			const VarId &varId = vs->GetVarId();
+			VarStatics *var = GetTaskVar( task, varId );
+			PVal& pval = mem_var[varId.val()];
 
 			if ( vs->useRegister) {
 				op->llValue = op->operands[0]->llValue;
-				task->llVariables[ vs->GetVarKey() ] = static_cast<Value*>(op->llValue);
+				task->llVariables[ vs->GetVarId() ] = static_cast<Value*>(op->llValue);
 
 				Function *pNop = M->getFunction( "Nop" );
 				Builder.SetInsertPoint( bb );
@@ -1371,9 +1363,9 @@ static void CompileTask( CHsp3Op *hsp, Task *task, Function *func, BasicBlock *r
 			break;
 		}
 	}
-	for (std::set<VarKey>::iterator it =  task->block->usedVariables.begin();
+	for (std::set<VarId>::iterator it =  task->block->usedVariables.begin();
 		 it != task->block->usedVariables.end(); ++it) {
-		Var* var = sVars[*it];
+		VarStatics *var = sVarStatics[*it];
 		VarInfo *info = sProgram.varInfos[*it];
 		if ( !info->localVar )
 			continue;
@@ -1393,7 +1385,7 @@ static void CompileTask( CHsp3Op *hsp, Task *task, Function *func, BasicBlock *r
 					if ( vrop->IsParam() ) {
 							useRegister = false;
 					} else {
-						if ( vrop->GetVarNo() != var->val )
+						if ( vrop->GetVarNo() != it->val() )
 							continue;
 						if ( vrop->compile != VALUE )
 							useRegister = false;
@@ -1414,7 +1406,7 @@ static void CompileTask( CHsp3Op *hsp, Task *task, Function *func, BasicBlock *r
 			case VAR_DEC_OP:
 				{
 					VarRefOp* vrop = (VarRefOp*)op;
-					if ( vrop->GetVarNo() != var->val )
+					if ( vrop->GetVarNo() != it->val() )
 						continue;
 					vrop->useRegister = useRegister;
 				}
@@ -1518,14 +1510,14 @@ static void TraceTaskProc()
 	task.numCall ++;
 
 	bool change = false;
-	for (std::set<VarKey>::iterator it = task.block->usedVariables.begin();
+	for (std::set<VarId>::iterator it = task.block->usedVariables.begin();
 		 it != task.block->usedVariables.end(); ++it) {
-		Var* var = sVars[*it];
+		VarStatics *var = sVarStatics[*it];
 
-		switch( var->type ) {
+		switch( it->type() ) {
 		case TYPE_VAR:
 		{
-			PVal& pval = mem_var[var->val];
+			PVal& pval = mem_var[it->val()];
 			if (var->tflag != pval.flag) {
 				var->num = 1;
 				var->change ++;
@@ -1662,19 +1654,19 @@ void DumpResult()
 				 task.numCall, task.numCurCall, task.numChange, task.time );
 		*Out << buf;
 
-		for (std::set<VarKey>::iterator it =  task.block->usedVariables.begin();
+		for (std::set<VarId>::iterator it =  task.block->usedVariables.begin();
 			 it != task.block->usedVariables.end(); ++it) {
-			Var *var = sVars[*it];
+			VarStatics *var = sVarStatics[*it];
 			VarInfo *info = sProgram.varInfos[*it];
-			switch( var->type ) {
+			switch( it->type() ) {
 			case TYPE_VAR:
 				sprintf( buf, "\tvar%d type %d, num %d, change %d local %d\r\n",
-						 var->val, var->tflag, var->num, var->change,
+						 it->val(), var->tflag, var->num, var->change,
 						 (int)info->localVar );
 				*Out << buf;
 				break;
 			default:
-				sprintf( buf, "\t%d\r\n", var->type );
+				sprintf( buf, "\t%d\r\n", it->type() );
 				*Out << buf;
 				break;
 			}
@@ -2008,12 +2000,12 @@ int MakeSource( CHsp3Op *hsp, int option, void *ref )
 		task->block = block;
 		__Task.replace(task->block->id, task);
 
-		for (std::set<VarKey>::iterator it2 = block->usedVariables.begin();
+		for (std::set<VarId>::iterator it2 = block->usedVariables.begin();
 			 it2 != block->usedVariables.end(); ++it2) {
-			if (sVars.find(*it2) != sVars.end())
+			if (sVarStatics.find(*it2) != sVarStatics.end())
 				continue;
-			Var *var = new Var(it2->first, it2->second);
-			sVars[*it2] = var;
+			VarStatics *var = new VarStatics();
+			sVarStatics[*it2] = var;
 		}
 	}
 
