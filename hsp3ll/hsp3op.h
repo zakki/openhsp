@@ -524,6 +524,7 @@ public:
 
 class Block {
 public:
+	int id;
 	std::string name;
 	std::set<VarKey> usedVariables;
 	op_list operations;

@@ -65,7 +65,7 @@ string CHsp3Op::MakeImmidiateCPPVarName( int type, int val, char *opt )
 }
 
 
-void CHsp3Op::MakeCPPTask( const string& name, int nexttask )
+void CHsp3Op::MakeCPPTask( int id, const string& name, int nexttask )
 {
 	//		タスクの区切り
 	//			funcdef=新しい関数定義
@@ -81,6 +81,7 @@ void CHsp3Op::MakeCPPTask( const string& name, int nexttask )
 	}
 
 	curTask = new Block();
+	curTask->id = id;
 	curTask->name = name;
 	tasks[name] = curTask;
 	//	Alert((char*)name);
@@ -96,7 +97,7 @@ void CHsp3Op::MakeCPPTask( int nexttask )
 	//		単純タスクの生成
 	//
 	string name = ( format( "L%1$04x" ) % nexttask ).str();
-	MakeCPPTask( name, nexttask );
+	MakeCPPTask( nexttask, name, nexttask );
 }
 
 
@@ -105,7 +106,7 @@ void CHsp3Op::MakeCPPTask2( int nexttask, int newtask )
 	//		単純タスクの生成
 	//
 	string name = ( format( "L%1$04x" ) % newtask ).str();
-	MakeCPPTask( name, nexttask );
+	MakeCPPTask( newtask, name, nexttask );
 }
 
 void CHsp3Op::MakeCPPProgramInfoFuncParam( int structid )
@@ -601,7 +602,7 @@ int CHsp3Op::MakeCPPMain( void )
 	//
 	tasknum = 0;
 
-	MakeCPPTask( "__HspEntry" );
+	MakeCPPTask( -1, "__HspEntry" );
 
 	maxvar = hsphed->max_val;
 
@@ -901,6 +902,7 @@ int CHsp3Op::MakeSource( int option, void *ref )
 	//		タスク(ラベル)テーブルを作成する
 	//
 	max_lab = curot;
+	tasks["__HspEntry"]->id = max_lab;
 //sDsBasePtr = GetDS( 0 );
 	return 0;
 }

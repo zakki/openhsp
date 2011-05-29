@@ -9,6 +9,7 @@
 #include <vector>
 #include <stack>
 #include <fstream>
+#include <boost/ptr_container/ptr_vector.hpp>
 #include <boost/format.hpp>
 
 #include "llvm/LLVMContext.h"
@@ -86,6 +87,9 @@ public:
 	std::map<VarKey, Value*> llVariables;
 	std::set<BasicBlock*> returnBlocks;
 
+	std::set<Task*> incoming;
+	std::set<Task*> outgoing;
+
 	bool useGeneralFunc;
 	bool skipTypeCheck;
 
@@ -106,14 +110,12 @@ static PassManager *Passes;
 
 static bool sReachable;
 
-std::map<string, Task*> sTasks;
-
 static std::map<VarKey, Var*> sVars;
 static Program sProgram;
 
 // Runtime
 CHSP3_TASK *__HspTaskFunc;
-Task **__Task;
+boost::ptr_vector<Task> __Task;
 static GlobalVariable **sVariables;
 static GlobalVariable *sDsBase;
 static const char *sDsBasePtr;
@@ -1469,24 +1471,24 @@ static void CompileTaskGeneral( CHsp3Op *hsp, Task *task, Function *func, BasicB
 static void TraceTaskProc()
 {
 	int cur = GetCurTaskId();
-	Task *task = __Task[cur];
-	if ( task->numChange > 5) {
-		__HspTaskFunc[cur] = task->funcPtr;
-		task->funcPtr();
+	Task &task = __Task[cur];
+	if ( task.numChange > 5) {
+		__HspTaskFunc[cur] = task.funcPtr;
+		task.funcPtr();
 		return;
 	}
 
-	if ( task->numCurCall > 1000 ) {// FIXME Œ^‚ª•Ï‚í‚ç‚È‚¢‚±‚Æ‚ðŠm”F‚·‚×‚«
-		__HspTaskFunc[cur] = task->funcPtr;
-		task->funcPtr();
+	if ( task.numCurCall > 1000 ) {// FIXME Œ^‚ª•Ï‚í‚ç‚È‚¢‚±‚Æ‚ðŠm”F‚·‚×‚«
+		__HspTaskFunc[cur] = task.funcPtr;
+		task.funcPtr();
 		return;
 	}
 
-	task->numCall ++;
+	task.numCall ++;
 
 	bool change = false;
-	for (std::set<VarKey>::iterator it = task->block->usedVariables.begin();
-		 it != task->block->usedVariables.end(); ++it) {
+	for (std::set<VarKey>::iterator it = task.block->usedVariables.begin();
+		 it != task.block->usedVariables.end(); ++it) {
 		Var* var = sVars[*it];
 
 		switch( var->type ) {
@@ -1513,44 +1515,44 @@ static void TraceTaskProc()
 			break;
 		}
 	}
-	if ( !task->func ) {
+	if ( !task.func ) {
 		LLVMContext &Context = getGlobalContext();
 
-		Function* func = cast<Function>(M->getOrInsertFunction( GetTaskFuncName( task ),
+		Function* func = cast<Function>(M->getOrInsertFunction( GetTaskFuncName( &task ),
 																Type::getInt32Ty( Context ),
 																Type::getInt32Ty( Context ),
 																(Type *)0 ));
 		Argument &arg = *func->arg_begin();
 		BasicBlock *funcRet = BasicBlock::Create( Context, "ret", func );
 
-		CompileTaskGeneral( hsp3, task, func, funcRet );
+		CompileTaskGeneral( hsp3, &task, func, funcRet );
 
 		Builder.SetInsertPoint( funcRet );
 		Builder.CreateRet( ConstantInt::get( Type::getInt32Ty( Context ), -1 ) );
 
-		task->func = func;
+		task.func = func;
 
 		string ErrMsg;
 		if ( verifyModule( *M, ReturnStatusAction, &ErrMsg ) ) {
 			Alert( (char*)ErrMsg.c_str() );
 		}
 
-		if ( task->func ) {
-			task->funcPtr = (CHSP3_TASK)EE->getPointerToFunction( task->func );
+		if ( task.func ) {
+			task.funcPtr = (CHSP3_TASK)EE->getPointerToFunction( task.func );
 		}
 	} else if ( change ) {
-		task->numChange ++;
-		task->numCurCall = 1;
-		task->funcPtr = (CHSP3_TASK)EE->getPointerToFunction( task->func );
+		task.numChange ++;
+		task.numCurCall = 1;
+		task.funcPtr = (CHSP3_TASK)EE->getPointerToFunction( task.func );
 	} else {
-		task->numCurCall ++;
+		task.numCurCall ++;
 	}
-	if ( task->numCurCall == 10 ) {
+	if ( task.numCurCall == 10 ) {
 		LLVMContext &Context = getGlobalContext();
 
 		LoadLLRuntime();
 
-		Function* func = cast<Function>(M->getOrInsertFunction( GetTaskFuncName( task ),
+		Function* func = cast<Function>(M->getOrInsertFunction( GetTaskFuncName( &task ),
 																Type::getInt32Ty( Context ),
 																Type::getInt32Ty( Context ),
 																(Type *)0 ));
@@ -1558,15 +1560,15 @@ static void TraceTaskProc()
 		BasicBlock *funcEntry = BasicBlock::Create( Context, "entry", func );
 		BasicBlock *funcRet = BasicBlock::Create( Context, "ret", func );
 
-		CompileTask( hsp3, task, func, funcRet );
+		CompileTask( hsp3, &task, func, funcRet );
 
 		Builder.SetInsertPoint( funcEntry );
-		Builder.CreateBr( task->entry );
+		Builder.CreateBr( task.entry );
 
 		Builder.SetInsertPoint( funcRet );
 		Builder.CreateRet( ConstantInt::get( Type::getInt32Ty( Context ), -1 ) );
 
-		task->spFunc = func;
+		task.spFunc = func;
 		if ( true ) {
 			string ErrorInfo;
 			std::auto_ptr<raw_fd_ostream>
@@ -1585,7 +1587,7 @@ static void TraceTaskProc()
 			Alert( (char*)ErrMsg.c_str() );
 		}
 
-		TheFPM->run( *task->spFunc );
+		TheFPM->run( *task.spFunc );
 		Passes->run( *M) ;
 
 		if ( true ) {
@@ -1601,12 +1603,12 @@ static void TraceTaskProc()
 			Out->close();
 		}
 
-		if ( task->spFunc ) {
-			task->funcPtr = (CHSP3_TASK)EE->getPointerToFunction( task->spFunc );
+		if ( task.spFunc ) {
+			task.funcPtr = (CHSP3_TASK)EE->getPointerToFunction( task.spFunc );
 		}
 	}
 
-	task->funcPtr();
+	task.funcPtr();
 }
 
 void DumpResult()
@@ -1618,29 +1620,31 @@ void DumpResult()
 		Out( new raw_fd_ostream( "dump.txt", ErrorInfo,
 								 raw_fd_ostream::F_Binary ) );
 
-	for (int i=0;i<sLabMax;i++) {
-		Task *task = __Task[i];
-		if (task) {
-			sprintf( buf, "L%04x call:%d cur:%d change:%d\r\n",
-					 i, task->numCall, task->numCurCall, task->numChange );
-			*Out << buf;
+	for (int i=0; i<sLabMax+1; i++) {
+		if ( __Task.is_null(i) )
+			continue;
 
-			for (std::set<VarKey>::iterator it =  task->block->usedVariables.begin();
-				 it != task->block->usedVariables.end(); ++it) {
-				Var *var = sVars[*it];
-				VarInfo *info = sProgram.varInfos[*it];
-				switch( var->type ) {
-				case TYPE_VAR:
-					sprintf( buf, "\tvar%d type %d, num %d, change %d local %d\r\n",
-							 var->val, var->tflag, var->num, var->change,
-							 (int)info->localVar );
-					*Out << buf;
-					break;
-				default:
-					sprintf( buf, "\t%d\r\n", var->type );
-					*Out << buf;
-					break;
-				}
+		Task &task = __Task[i];
+
+		sprintf( buf, "L%04x call:%d cur:%d change:%d\r\n",
+				 i - 1, task.numCall, task.numCurCall, task.numChange );
+		*Out << buf;
+
+		for (std::set<VarKey>::iterator it =  task.block->usedVariables.begin();
+			 it != task.block->usedVariables.end(); ++it) {
+			Var *var = sVars[*it];
+			VarInfo *info = sProgram.varInfos[*it];
+			switch( var->type ) {
+			case TYPE_VAR:
+				sprintf( buf, "\tvar%d type %d, num %d, change %d local %d\r\n",
+						 var->val, var->tflag, var->num, var->change,
+						 (int)info->localVar );
+				*Out << buf;
+				break;
+			default:
+				sprintf( buf, "\t%d\r\n", var->type );
+				*Out << buf;
+				break;
 			}
 		}
 	}
@@ -1666,22 +1670,17 @@ void __HspSetup( Hsp3r *hsp3r )
 
 	if ( sLabMax > 0 ) {
 		__HspTaskFunc = new CHSP3_TASK[sLabMax];
-		__Task = new Task*[sLabMax];
 	}
 
 	Alert( "HspSetup" );
-	for (int i=-1;i<sLabMax;i++) {
-		string taskName;
-		if ( i == -1 ) {
-			taskName = "__HspEntry";
+	for (int i=0; i<sLabMax+1; i++) {
+		if ( __Task.is_null(i) ) {
+			__HspTaskFunc[i] = NULL;
 		} else {
-			taskName = ( format( "L%1$04x" ) % i ).str();
-		}
-		//		Alert( mes );
-		Task *task = sTasks[taskName];
-		__Task[i] = task;
-		if ( task ) {
-			Function* func = cast<Function>(M->getOrInsertFunction( taskName,
+			Task &task = __Task[i];
+			__Task[i] = task;
+
+			Function* func = cast<Function>(M->getOrInsertFunction( task.block->name,
 																	Type::getInt32Ty( Context ),
 																	Type::getInt32Ty( Context ),
 																	(Type *)0 ));
@@ -1689,10 +1688,10 @@ void __HspSetup( Hsp3r *hsp3r )
 			BasicBlock *funcEntry = BasicBlock::Create( Context, "entry", func );
 			BasicBlock *funcRet = BasicBlock::Create( Context, "ret", func );
 
-			CompileTaskGeneral( hsp3, task, func, funcRet );
+			CompileTaskGeneral( hsp3, &task, func, funcRet );
 
 			Builder.SetInsertPoint( funcEntry );
-			Builder.CreateBr( task->entry );
+			Builder.CreateBr( task.entry );
 
 			Builder.SetInsertPoint( funcRet );
 			Builder.CreateRet( ConstantInt::get( Type::getInt32Ty( Context ), -1 ) );
@@ -1701,11 +1700,9 @@ void __HspSetup( Hsp3r *hsp3r )
 			if ( verifyModule( *M, ReturnStatusAction, &ErrMsg ) ) {
 				Alert( (char*)ErrMsg.c_str() );
 			}
-			task->func = func;
-			task->funcPtr = (CHSP3_TASK)EE->getPointerToFunction( task->func );
-			__HspTaskFunc[i] = TraceTaskProc;//task->funcPtr;
-		} else {
-			__HspTaskFunc[i] = NULL;
+			task.func = func;
+			task.funcPtr = (CHSP3_TASK)EE->getPointerToFunction( task.func );
+			__HspTaskFunc[i] = TraceTaskProc;//task.funcPtr;
 		}
 	}
 	string ErrorInfo;
@@ -1727,9 +1724,9 @@ void __HspEntry( void )
 	GlobalVariable *ctx = (GlobalVariable*)M->getGlobalVariable( "hspctx" );
 	EE->updateGlobalMapping( ctx, (void*)&sHspctx );
 
-	Task *task = sTasks["__HspEntry"];
+	Task &task = __Task[sLabMax];
 
-	void *fp = EE->getPointerToFunction( task->func );
+	void *fp = EE->getPointerToFunction( task.func );
 	CHSP3_FUNC t = (CHSP3_FUNC)fp;
 	t(1);
 }
@@ -1979,12 +1976,13 @@ int MakeSource( CHsp3Op *hsp, int option, void *ref )
 	sProgram.entryPoint  =sProgram.blocks["__HspEntry"];
 	AnalyzeProgram( &sProgram );
 
+	__Task.resize( sLabMax + 1 );
 	for(std::map<string, Block*>::iterator it = sProgram.blocks.begin();
 		it != sProgram.blocks.end(); ++it) {
 		Task *task = new Task();
 		Block *block = it->second;
 		task->block = block;
-		sTasks[task->block->name] = task;
+		__Task.replace(task->block->id, task);
 
 		for (std::set<VarKey>::iterator it2 = block->usedVariables.begin();
 			 it2 != block->usedVariables.end(); ++it2) {
@@ -2014,16 +2012,13 @@ int MakeSource( CHsp3Op *hsp, int option, void *ref )
 		std::ofstream out("dump2.txt");
 
 		char mes[256];
-		for (int i=0;i<sLabMax;i++) {
-			sprintf( mes, "L%04x", i );
-			out << "#" << mes << std::endl;
-			Task *task = sTasks[mes];
-
-			if ( task == NULL ) {
-				out << "NO OP" << std::endl;
+		for (int i=0;i<sLabMax+1;i++) {
+			if ( __Task.is_null(i) )
 				continue;
-			}
-			PrettyPrint( out, task->block );
+
+			Task &task = __Task[i];
+			out << "#" << task.block->name << std::endl;
+			PrettyPrint( out, task.block );
 		}
 	}
 

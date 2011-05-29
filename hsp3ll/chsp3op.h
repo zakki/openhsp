@@ -56,7 +56,7 @@ private:
 	void MakeCPPLabel( void );
 	void MakeCPPTask( int nexttask );
 	void MakeCPPTask2( int nexttask, int newtask );
-	void MakeCPPTask( const std::string& name, int nexttask=-1 );
+	void MakeCPPTask( int id, const std::string& name, int nexttask=-1 );
 	int MakeCPPParam( bool process, int addprm=0 );
 	int GetCPPExpression( int *result, bool process, int flg=0 );
 	int GetCPPExpressionSub( bool process, int flg=0 );
