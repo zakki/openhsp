@@ -442,7 +442,7 @@ void PrettyPrint( std::ostream &out, const Block *block ) {
 	for ( op_list::const_iterator it=block->operations.begin();
 		  it != block->operations.end(); ++it ) {
 		Op *op = *it;
-		if ( op->refer ) {
+		if ( !op->refer ) {
 			PrettyPrint( out, op, 0 );
 		}
 	}

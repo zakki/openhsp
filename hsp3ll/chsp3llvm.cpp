@@ -49,6 +49,8 @@
 #include <windows.h>
 #endif
 
+#define HSP_PROFILE 0
+
 using namespace llvm;
 using std::string;
 using boost::format;
@@ -84,6 +86,7 @@ public:
 	int numCall;
 	int numCurCall;
 	int numChange;
+	long long time;
 	std::map<VarKey, Value*> llVariables;
 	std::set<BasicBlock*> returnBlocks;
 
@@ -93,9 +96,23 @@ public:
 	bool useGeneralFunc;
 	bool skipTypeCheck;
 
-	Task() : numCall(0), numCurCall(0), numChange(0),
+	Task() : numCall(0), numCurCall(0), numChange(0), time(0),
 			 useGeneralFunc(true), skipTypeCheck(false)
 	{
+	}
+};
+
+class Timer {
+	Task* task;
+	LARGE_INTEGER start;
+public:
+	explicit Timer(Task* t) : task(t) {
+		QueryPerformanceCounter( &start );
+	}
+	~Timer() {
+		LARGE_INTEGER end;
+		QueryPerformanceCounter( &end );
+		task->time += end.QuadPart - start.QuadPart;
 	}
 };
 
@@ -1461,18 +1478,39 @@ static void CompileTaskGeneral( CHsp3Op *hsp, Task *task, Function *func, BasicB
 	task->returnBlocks.insert( curBB );
 }
 
+
+static void ProfileTaskProc()
+{
+	int cur = GetCurTaskId();
+	Task &task = __Task[cur];
+	Timer timer( &task );
+
+	task.numCall ++;
+	task.funcPtr();
+}
+
 static void TraceTaskProc()
 {
 	int cur = GetCurTaskId();
 	Task &task = __Task[cur];
+	Timer timer( &task );
+
 	if ( task.numChange > 5) {
+#ifdef HSP_PROFILE
+		__HspTaskFunc[cur] = ProfileTaskProc;
+#else
 		__HspTaskFunc[cur] = task.funcPtr;
+#endif
 		task.funcPtr();
 		return;
 	}
 
 	if ( task.numCurCall > 1000 ) {// FIXME Œ^‚ª•Ï‚í‚ç‚È‚¢‚±‚Æ‚ðŠm”F‚·‚×‚«
+#ifdef HSP_PROFILE
+		__HspTaskFunc[cur] = ProfileTaskProc;
+#else
 		__HspTaskFunc[cur] = task.funcPtr;
+#endif
 		task.funcPtr();
 		return;
 	}
@@ -1619,8 +1657,9 @@ void DumpResult()
 
 		Task &task = __Task[i];
 
-		sprintf( buf, "L%04x call:%d cur:%d change:%d\r\n",
-				 i - 1, task.numCall, task.numCurCall, task.numChange );
+		sprintf( buf, "%s call:%d cur:%d change:%d time:%lld\r\n",
+				 task.block->name.c_str(),
+				 task.numCall, task.numCurCall, task.numChange, task.time );
 		*Out << buf;
 
 		for (std::set<VarKey>::iterator it =  task.block->usedVariables.begin();
