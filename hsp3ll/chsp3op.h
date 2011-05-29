@@ -32,7 +32,7 @@ public:
 	}
 	std::map<std::string, Block*> GetBlocks()
 	{
-		return sTasks;
+		return tasks;
 	}
 
 private:
@@ -45,9 +45,9 @@ private:
 	int curprmlocal;				// 現在のローカル変数スタック数
 	int prmcnv_locvar[64];			// パラメーター変換用バッファ(ローカル変数用)
 	int max_lab;
-	std::map<std::string, Block*> sTasks;
-	Block *sCurTask;
-	bool sReachable;
+	std::map<std::string, Block*> tasks;
+	Block *curTask;
+	bool reachable;
 
 	//		Internal Function
 	//

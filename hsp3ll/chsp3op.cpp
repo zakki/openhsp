@@ -69,18 +69,18 @@ void CHsp3Op::MakeCPPTask( const char *name, int nexttask )
 
 	if ( tasknum ) {
 		if ( nexttask >= 0 ) {
-			if ( sReachable ) {
-				sCurTask->operations.push_back( new TaskSwitchOp( nexttask ) );
+			if ( reachable ) {
+				curTask->operations.push_back( new TaskSwitchOp( nexttask ) );
 			}
 		}
 	}
 
-	sCurTask = new Block();
-	sCurTask->name = name;
-	sTasks[name] = sCurTask;
+	curTask = new Block();
+	curTask->name = name;
+	tasks[name] = curTask;
 	//	Alert((char*)name);
 
-	sReachable = true;
+	reachable = true;
 
 	tasknum++;
 }
@@ -196,7 +196,7 @@ void CHsp3Op::MakeCPPLabel( void )
 }
 
 
-int CHsp3Op::GetCPPExpressionSub( bool bblock, int flg )
+int CHsp3Op::GetCPPExpressionSub( bool addop, int flg )
 {
 	//		C/C++の計算式フォーマットでパラメーターを展開する(短項目)
 	//
@@ -211,8 +211,8 @@ int CHsp3Op::GetCPPExpressionSub( bool bblock, int flg )
 			//		記号(スタックから取り出して演算)
 			//
 			op = csval;
-			if ( sReachable && bblock ) {
-				sCurTask->operations.push_back( new CalcOp( op ) );
+			if ( reachable && addop ) {
+				curTask->operations.push_back( new CalcOp( op ) );
 			}
 			getCS();
 			break;
@@ -223,12 +223,12 @@ int CHsp3Op::GetCPPExpressionSub( bool bblock, int flg )
 			int va;
 			getCS();
 			//		配列要素を付加する
-			va = MakeCPPVarExpression( bblock );
-			if (sReachable && bblock) {
+			va = MakeCPPVarExpression( addop );
+			if ( reachable && addop ) {
 				if ( flg == 1 && va == 0) {
-					sCurTask->operations.push_back( new PushVarPtrOp( csval0, va ) );
+					curTask->operations.push_back( new PushVarPtrOp( csval0, va ) );
 				} else {
-					sCurTask->operations.push_back( new PushVarOp( csval0, va ) );
+					curTask->operations.push_back( new PushVarOp( csval0, va ) );
 				}
 			}
 			vflag = 1;
@@ -239,8 +239,8 @@ int CHsp3Op::GetCPPExpressionSub( bool bblock, int flg )
 			//		直実数値をスタックに積む
 			//
 			double immval = GetDSf( csval );
-			if ( sReachable && bblock ) {
-				sCurTask->operations.push_back( new PushDnumOp( immval ) );
+			if ( reachable && addop ) {
+				curTask->operations.push_back( new PushDnumOp( immval ) );
 			}
 			getCS();
 			break;
@@ -249,13 +249,13 @@ int CHsp3Op::GetCPPExpressionSub( bool bblock, int flg )
 		case TYPE_LABEL:
 			//		直値をスタックに積む
 			//
-			if ( sReachable && bblock ) {
+			if ( reachable && addop ) {
 				switch (cstype0) {
 				case TYPE_INUM:
-					sCurTask->operations.push_back( new PushInumOp( csval ) );
+					curTask->operations.push_back( new PushInumOp( csval ) );
 					break;
 				case TYPE_LABEL:
-					sCurTask->operations.push_back( new PushLabelOp( csval ) );
+					curTask->operations.push_back( new PushLabelOp( csval ) );
 					break;
 				}
 			}
@@ -273,7 +273,7 @@ int CHsp3Op::GetCPPExpressionSub( bool bblock, int flg )
 			case MPTYPE_LOCALVAR:
 				prmid = prmcnv_locvar[csval - curprmindex];
 				getCS();
-				va = MakeCPPVarExpression( bblock );
+				va = MakeCPPVarExpression( addop );
 				vflag = 1;
 				break;
 			case MPTYPE_VAR:
@@ -282,7 +282,7 @@ int CHsp3Op::GetCPPExpressionSub( bool bblock, int flg )
 				prmid = csval - curprmindex + curprmlocal;
 				prmid = prmcnv_locvar[csval - curprmindex];
 				getCS();
-				va = MakeCPPVarExpression( bblock );
+				va = MakeCPPVarExpression( addop );
 				vflag = 1;
 				break;
 			default:
@@ -291,11 +291,11 @@ int CHsp3Op::GetCPPExpressionSub( bool bblock, int flg )
 				getCS();
 				break;
 			}
-			if ( sReachable && bblock ) {
+			if ( reachable && addop ) {
 				if ( flg == 1 && vflag && va == 0 ) {
-					sCurTask->operations.push_back( new PushFuncPrmPtrOp( csval0, prmid, va ) );
+					curTask->operations.push_back( new PushFuncPrmPtrOp( csval0, prmid, va ) );
 				} else {
-					sCurTask->operations.push_back( new PushFuncPrmOp( csval0, prmid, va ) );
+					curTask->operations.push_back( new PushFuncPrmOp( csval0, prmid, va ) );
 				}
 			}
 			break;
@@ -303,8 +303,8 @@ int CHsp3Op::GetCPPExpressionSub( bool bblock, int flg )
 		case TYPE_STRING:
 			//		文字列をスタックに積む
 			//
-			if ( sReachable && bblock ) {
-				sCurTask->operations.push_back( new PushStrOp( csval ) );
+			if ( reachable && addop ) {
+				curTask->operations.push_back( new PushStrOp( csval ) );
 			}
 			getCS();
 			break;
@@ -319,14 +319,14 @@ int CHsp3Op::GetCPPExpressionSub( bool bblock, int flg )
 			fncval = csval;
 			getCS();
 			//		引数を付加する
-			if ( sReachable && bblock ) {
-				sCurTask->operations.push_back( new PushFuncEndOp() );
+			if ( reachable && addop ) {
+				curTask->operations.push_back( new PushFuncEndOp() );
 			}
 
-			va = MakeCPPVarExpression( bblock, 1 );
+			va = MakeCPPVarExpression( addop, 1 );
 
-			if ( sReachable && bblock ) {
-				sCurTask->operations.push_back( new PushCmdOp( fnctype, fncval, va ) );
+			if ( reachable && addop ) {
+				curTask->operations.push_back( new PushCmdOp( fnctype, fncval, va ) );
 			}
 			break;
 			}
@@ -335,7 +335,7 @@ int CHsp3Op::GetCPPExpressionSub( bool bblock, int flg )
 }
 
 
-int CHsp3Op::GetCPPExpression( int *result, bool bblock, int flg )
+int CHsp3Op::GetCPPExpression( int *result, bool addop, int flg )
 {
 	//		C/C++の計算式フォーマットでパラメーターを展開する
 	//		result : 結果の格納先(-2=解析なし/-1=複数項の計算式/other=単一のパラメーターtype)
@@ -384,7 +384,7 @@ int CHsp3Op::GetCPPExpression( int *result, bool bblock, int flg )
 			if ( tres >= 0 ) {
 				if ( tres != cstype ) { tres = -1; }
 			}
-			GetCPPExpressionSub( bblock, flg );
+			GetCPPExpressionSub( addop, flg );
 			break;
 		}
 
@@ -398,7 +398,7 @@ int CHsp3Op::GetCPPExpression( int *result, bool bblock, int flg )
 }
 
 
-int CHsp3Op::MakeCPPParam( bool bblock, int addprm )
+int CHsp3Op::MakeCPPParam( bool addop, int addprm )
 {
 	//		パラメーターのトレース
 	//
@@ -448,16 +448,16 @@ int CHsp3Op::MakeCPPParam( bool bblock, int addprm )
 		std::pair<MCSCONTEXT, int> &p = expressionContext[j];
 		SetContext( &p.first );
 		if ( p.second == -3 ) {
-			GetCPPExpressionSub( bblock );
+			GetCPPExpressionSub( addop );
 		} else if ( p.second == -4 ) {
-			if (sReachable && bblock) {
-				sCurTask->operations.push_back( new PushDefaultOp() );
+			if ( reachable && addop ) {
+				curTask->operations.push_back( new PushDefaultOp() );
 			}
 		} else {
 			if ( p.second == TYPE_VAR || p.second == TYPE_STRUCT ) {			// 単一項で変数が指定されていた場合
-				i = GetCPPExpression( &result, bblock, 1 );
+				i = GetCPPExpression( &result, addop, 1 );
 			} else {
-				i = GetCPPExpression( &result, bblock );
+				i = GetCPPExpression( &result, addop );
 			}
 			if ( i == -1 ) {
 			}
@@ -498,7 +498,7 @@ int CHsp3Op::GetVarExpressionOp( void )
 }
 
 
-int CHsp3Op::MakeCPPVarExpression( bool bblock, int flg )
+int CHsp3Op::MakeCPPVarExpression( bool addop, int flg )
 {
 	//	変数名直後に続くパラメーター(配列)を展開する
 	//	ret : 0=配列なし/1～=配列あり
@@ -534,21 +534,21 @@ int CHsp3Op::MakeCPPVarExpression( bool bblock, int flg )
 			for(int j = expressionContext.size() - 1; j >= 0; j--) {
 				std::pair<MCSCONTEXT, int> &p = expressionContext[j];
 				if ( p.second == -4 ) {
-					if ( sReachable && bblock ) {
-						sCurTask->operations.push_back( new PushDefaultOp() );
+					if ( reachable && addop ) {
+						curTask->operations.push_back( new PushDefaultOp() );
 					}
 				} else {
 					SetContext( &p.first );
 //					if ( p.second == TYPE_VAR ) {			// 単一項で変数が指定されていた場合
 					if ( p.second != -1 && flg ) {
-						i = GetCPPExpression( &result, bblock, 1 );
+						i = GetCPPExpression( &result, addop, 1 );
 					} else {
-						i = GetCPPExpression( &result, bblock );
+						i = GetCPPExpression( &result, addop );
 					}
-//i = GetCPPExpression( &result, bblock );
+//i = GetCPPExpression( &result, addop );
 					if ( i == -1 ) {
-						if ( sReachable && bblock ) {
-							sCurTask->operations.push_back( new PushDefaultOp() );
+						if ( reachable && addop ) {
+							curTask->operations.push_back( new PushDefaultOp() );
 						}
 					}
 				}
@@ -578,8 +578,8 @@ void CHsp3Op::MakeCPPSub( int cmdtype, int cmdval )
 	getCS();
 	pnum = MakeCPPParam( true );
 
-	if (sReachable) {
-		sCurTask->operations.push_back( new CmdOp( cmdtype, cmdval, pnum ) );
+	if ( reachable ) {
+		curTask->operations.push_back( new CmdOp( cmdtype, cmdval, pnum ) );
 	}
 }
 
@@ -696,33 +696,33 @@ int CHsp3Op::MakeCPPMain( void )
 			case -1:		// 通常の代入
 				pnum = MakeCPPParam( true );
 
-				if (sReachable) {
+				if ( reachable ) {
 					GetContext( &ctxbak2 );
 					SetContext( &ctxbak );
 					MakeCPPVarExpression( true );
 					SetContext( &ctxbak2 );
 
-					sCurTask->operations.push_back( new VarSetOp( cmdtype, cmdval, varid, va, pnum ) );
+					curTask->operations.push_back( new VarSetOp( cmdtype, cmdval, varid, va, pnum ) );
 				}
 				break;
 			case -2:		// ++
-				if (sReachable) {
+				if ( reachable ) {
 					GetContext( &ctxbak2 );
 					SetContext( &ctxbak );
 					MakeCPPVarExpression( true );
 					SetContext( &ctxbak2 );
 
-					sCurTask->operations.push_back( new VarIncOp( cmdtype, cmdval, varid, va ) );
+					curTask->operations.push_back( new VarIncOp( cmdtype, cmdval, varid, va ) );
 				}
 				break;
 			case -3:		// --
-				if (sReachable) {
+				if ( reachable ) {
 					GetContext( &ctxbak2 );
 					SetContext( &ctxbak );
 					MakeCPPVarExpression( true );
 					SetContext( &ctxbak2 );
 
-					sCurTask->operations.push_back( new VarDecOp( cmdtype, cmdval, varid, va ) );
+					curTask->operations.push_back( new VarDecOp( cmdtype, cmdval, varid, va ) );
 				}
 				break;
 			case -4:		// エラー
@@ -732,13 +732,13 @@ int CHsp3Op::MakeCPPMain( void )
 				if ( pnum > 1 ) {
 					Alert( "Too much parameters(VarCalc)." );
 				}
-				if (sReachable) {
+				if ( reachable ) {
 					GetContext( &ctxbak2 );
 					SetContext( &ctxbak );
 					MakeCPPVarExpression( true );
 					SetContext( &ctxbak2 );
 
-					sCurTask->operations.push_back( new VarCalcOp( cmdtype, cmdval, varid, va, op ) );
+					curTask->operations.push_back( new VarCalcOp( cmdtype, cmdval, varid, va, op ) );
 				}
 				break;
 			}
@@ -778,7 +778,7 @@ int CHsp3Op::MakeCPPMain( void )
 			MakeCPPParam( true );
 
 			if ( cmdval == 0 ) {
-				sCurTask->operations.push_back( new CompareOp( thenTask ) );
+				curTask->operations.push_back( new CompareOp( thenTask ) );
 			} else {
 			}
 			//SetIndent( iflevel );
@@ -800,7 +800,7 @@ int CHsp3Op::MakeCPPMain( void )
 				//		後にreturnを付ける
 				//
 				MakeCPPSub( cmdtype, cmdval );
-				sReachable = false;
+				reachable = false;
 				break;
 			case 0x01:								// gosub
 			case 0x18:								// exgoto
@@ -810,11 +810,11 @@ int CHsp3Op::MakeCPPMain( void )
 				int pnum;
 				getCS();
 				pnum = MakeCPPParam( true );
-				if (sReachable) {
-					sCurTask->operations.push_back( new PushLabelOp( curot ) );
-					sCurTask->operations.push_back( new CmdOp( cmdtype, cmdval, pnum+1 ) );
+				if ( reachable ) {
+					curTask->operations.push_back( new PushLabelOp( curot ) );
+					curTask->operations.push_back( new CmdOp( cmdtype, cmdval, pnum+1 ) );
 				}
-				sReachable = false;
+				reachable = false;
 				MakeCPPTask( curot );
 				curot++;
 				break;
@@ -826,11 +826,11 @@ int CHsp3Op::MakeCPPMain( void )
 				int pnum;
 				getCS();
 				pnum = MakeCPPParam( true, 1 );
-				if (sReachable) {
-					sCurTask->operations.push_back( new PushLabelOp( curot ) );
-					sCurTask->operations.push_back( new CmdOp( cmdtype, cmdval, pnum+1 ) );
+				if ( reachable ) {
+					curTask->operations.push_back( new PushLabelOp( curot ) );
+					curTask->operations.push_back( new CmdOp( cmdtype, cmdval, pnum+1 ) );
 				}
-				sReachable = false;
+				reachable = false;
 				MakeCPPTask( curot );
 				curot++;
 				break;
@@ -855,11 +855,11 @@ int CHsp3Op::MakeCPPMain( void )
 			int pnum;
 			getCS();
 			pnum = MakeCPPParam( true );
-			if (sReachable) {
-				sCurTask->operations.push_back( new PushLabelOp( curot ) );
-				sCurTask->operations.push_back( new ModCmdOp( cmdtype, cmdval, pnum ) );
+			if ( reachable ) {
+				curTask->operations.push_back( new PushLabelOp( curot ) );
+				curTask->operations.push_back( new ModCmdOp( cmdtype, cmdval, pnum ) );
 			}
-			sReachable = false;
+			reachable = false;
 			MakeCPPTask( curot );
 			curot++;
 			break;
