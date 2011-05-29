@@ -30,7 +30,7 @@ public:
 	int GetLabMax() const {
 		return max_lab;
 	}
-	std::map<std::string, Block*> GetBlocks()
+	const block_map& GetBlocks()
 	{
 		return tasks;
 	}
@@ -45,7 +45,7 @@ private:
 	int curprmlocal;				// 現在のローカル変数スタック数
 	int prmcnv_locvar[64];			// パラメーター変換用バッファ(ローカル変数用)
 	int max_lab;
-	std::map<std::string, Block*> tasks;
+	block_map tasks;
 	Block *curTask;
 	bool reachable;
 

@@ -18,7 +18,7 @@ void UpdateOperands( Block *task )
 {
 	std::stack<Op*> stack;
 
-	for ( std::vector<Op*>::iterator it=task->operations.begin();
+	for ( op_list::iterator it=task->operations.begin();
 		 it != task->operations.end(); it++ ) {
 		Op *op = *it;
 		op->operands.clear();
@@ -124,7 +124,7 @@ void UpdateOperands( Block *task )
 	}
 
 	// アクセスしている変数をリストアップ
-	for ( std::vector<Op*>::iterator it=task->operations.begin();
+	for ( op_list::iterator it=task->operations.begin();
 		 it != task->operations.end(); it++ ) {
 		Op *op = *it;
 
@@ -147,7 +147,7 @@ void UpdateOperands( Block *task )
 		}
 	}
 
-	for ( std::vector<Op*>::iterator it=task->operations.begin();
+	for ( op_list::iterator it=task->operations.begin();
 		 it != task->operations.end(); it++ ) {
 		Op *op = *it;
 		for(int k=0; k<op->operands.size(); k++) {
@@ -164,7 +164,7 @@ void AnalyzeTask( Program* program, Block *block )
 	// 代入の右辺が変数へのポインタの場合、値に置き換える
 	while ( true ) {
 		bool changed = false;
-		for ( std::vector<Op*>::iterator it = block->operations.begin();
+		for ( op_list::iterator it = block->operations.begin();
 			  it != block->operations.end() && !changed; it++ ) {
 			Op *op = *it;
 			switch ( op->GetOpCode() ) {
@@ -196,7 +196,7 @@ void AnalyzeTask( Program* program, Block *block )
 	}
 
 	//	使っている変数
-	for ( std::vector<Op*>::iterator it=block->operations.begin();
+	for ( op_list::iterator it=block->operations.begin();
 		 it != block->operations.end(); it++ ) {
 		Op *op = *it;
 		switch ( op->GetOpCode() ) {
@@ -232,7 +232,7 @@ void AnalyzeTask( Program* program, Block *block )
 	}
 
 	// コントロールフロー
-	for ( std::vector<Op*>::iterator it=block->operations.begin();
+	for ( op_list::iterator it=block->operations.begin();
 		 it!=block->operations.end(); it++ ) {
 		Op *op = *it;
 		switch ( op->GetOpCode() ) {
@@ -276,6 +276,7 @@ void AnalyzeTask( Program* program, Block *block )
 				case 0x1b:								// assert
 				case 0x11:								// stop
 				case 0x19:								// on
+                    break;
 				}
 			}
 			break;
@@ -293,11 +294,11 @@ void AnalyzeTask( Program* program, Block *block )
 }
 
 void AnalyzeProgram( Program* program ) {
-	std::map<std::string, Block*>& blocks = program->blocks;
-	std::map<VarKey, std::set<std::string> >& varTaskMap = program->varTaskMap;
-	std::map<VarKey, VarInfo*>& varInfos = program->varInfos;
+	block_map& blocks = program->blocks;
+	var_task_map& varTaskMap = program->varTaskMap;
+	var_info_map& varInfos = program->varInfos;
 
-	for(std::map<std::string, Block*>::iterator it = blocks.begin(); it != blocks.end(); ++it) {
+	for(block_map::iterator it = blocks.begin(); it != blocks.end(); ++it) {
 		Block *block = it->second;
 		AnalyzeTask( program, block );
 
@@ -310,7 +311,7 @@ void AnalyzeProgram( Program* program ) {
 		}
 	}
 
-	for(std::map<VarKey, std::set<std::string> >::iterator it = varTaskMap.begin();
+	for(var_task_map::iterator it = varTaskMap.begin();
 		it != varTaskMap.end(); ++it) {
 		if ( it->second.size() == 0 )
 			continue;
@@ -324,7 +325,7 @@ void AnalyzeProgram( Program* program ) {
 			VarInfo *var = varInfos[it->first];
 			VarRefOp* firstAccessOp = NULL;
 
-			for(std::vector<Op*>::iterator it2 = block->operations.begin();
+			for(op_list::iterator it2 = block->operations.begin();
 				it2 != block->operations.end(); it2++) {
 				Op *op = *it2;
 				switch ( op->GetOpCode() ) {
@@ -426,19 +427,19 @@ void PrettyPrint( std::ostream &out, const Block *block ) {
 	out  << std::endl;;
 
 	int id = 0;
-	for ( std::vector<Op*>::const_iterator it=block->operations.begin();
+	for ( op_list::const_iterator it=block->operations.begin();
 		  it != block->operations.end(); ++it, ++id ) {
 		(*it)->id = id;
 	}
 
-	for ( std::vector<Op*>::const_iterator it=block->operations.begin();
+	for ( op_list::const_iterator it=block->operations.begin();
 		  it != block->operations.end(); it++ ) {
 		Op *op = *it;
 		out << *op << std::endl;
 	}
 	out << std::endl;
 
-	for ( std::vector<Op*>::const_iterator it=block->operations.begin();
+	for ( op_list::const_iterator it=block->operations.begin();
 		  it != block->operations.end(); ++it ) {
 		Op *op = *it;
 		if ( op->refer ) {

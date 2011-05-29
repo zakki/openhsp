@@ -30,6 +30,8 @@ enum COMPILE_TYPE {
 	DEFAULT, VALUE
 };
 
+class Op;
+typedef std::vector<Op*> op_list;
 
 class Op {
 public:
@@ -39,7 +41,7 @@ public:
 	int id;
 	Op* refer;
 
-	std::vector<Op*> operands;
+	op_list operands;
 
 	Op() : flag(-1), llValue(NULL), refer(NULL)
 	{
@@ -524,7 +526,7 @@ class Block {
 public:
 	std::string name;
 	std::set<VarKey> usedVariables;
-	std::vector<Op*> operations;
+	op_list operations;
 	std::vector<int> nextTasks;
 
 	Block()
@@ -532,13 +534,17 @@ public:
 	}
 };
 
+typedef std::map<std::string, Block*> block_map;
+typedef std::map<VarKey, std::set<std::string> > var_task_map;
+typedef std::map<VarKey, VarInfo*> var_info_map;
+
 class Program {
 public:
-	std::map<std::string, Block*> blocks;
+	block_map blocks;
 	Block *entryPoint;
 
-	std::map<VarKey, std::set<std::string> > varTaskMap;
-	std::map<VarKey, VarInfo*> varInfos;
+	var_task_map varTaskMap;
+	var_info_map varInfos;
 };
 
 void AnalyzeProgram( Program* program );

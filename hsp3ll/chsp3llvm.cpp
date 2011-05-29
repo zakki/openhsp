@@ -237,7 +237,7 @@ static bool IsCompilable( Task *task, Op *op, CHsp3Op *hsp )
 	case PUSH_CMD_OP:
 		{
 			PushCmdOp *pcop = (PushCmdOp*)op;
-			for ( std::vector<Op*>::iterator it=op->operands.begin();
+			for ( op_list::iterator it=op->operands.begin();
 				  it != op->operands.end(); it++ ) {
 
 				if ( (*it)->flag != HSPVAR_FLAG_INT
@@ -325,7 +325,7 @@ static bool IsCompilable( Task *task, Op *op, CHsp3Op *hsp )
 
 static void MarkCompile( Op *op, COMPILE_TYPE comp )
 {
-	for ( std::vector<Op*>::iterator it=op->operands.begin();
+	for ( op_list::iterator it=op->operands.begin();
 		  it != op->operands.end(); it++ ) {
 		(*it)->compile = comp;
 		MarkCompile( *it, comp );
@@ -334,7 +334,7 @@ static void MarkCompile( Op *op, COMPILE_TYPE comp )
 
 static void CheckType( CHsp3Op *hsp, Task *task)
 {
-	for ( std::vector<Op*>::iterator it=task->block->operations.begin();
+	for ( op_list::iterator it=task->block->operations.begin();
 		  it != task->block->operations.end(); it++ ) {
 		Op *op = *it;
 		op->compile = DEFAULT;
@@ -344,7 +344,7 @@ static void CheckType( CHsp3Op *hsp, Task *task)
 	bool changed;
 	do {
 		changed = false;
-		for ( std::vector<Op*>::iterator it=task->block->operations.begin();
+		for ( op_list::iterator it=task->block->operations.begin();
 			  it != task->block->operations.end(); it++ ) {
 			Op *op = *it;
 
@@ -747,7 +747,7 @@ static BasicBlock *CompileOp( CHsp3Op *hsp, Function *func, BasicBlock *bb, Basi
 										  pcop->GetCmdVal(),
 										  pcop->GetCmdPNum() );
 
-			for ( std::vector<Op*>::reverse_iterator it=op->operands.rbegin();
+			for ( op_list::reverse_iterator it=op->operands.rbegin();
 				  it != op->operands.rend(); it++ ) {
 				//(*it)->compile = true;
 				if ( (*it)->GetOpCode() == PUSH_FUNC_END_OP ) {
@@ -1286,7 +1286,7 @@ static void CompileTask( CHsp3Op *hsp, Task *task, Function *func, BasicBlock *r
 
 	sprintf( buf, "%s_%d", task->block->name.c_str(), task->numCall );
 
-	for ( std::vector<Op*>::iterator it=task->block->operations.begin();
+	for ( op_list::iterator it=task->block->operations.begin();
 		  it != task->block->operations.end(); it++ ) {
 		Op *op = *it;
 
@@ -1332,7 +1332,7 @@ static void CompileTask( CHsp3Op *hsp, Task *task, Function *func, BasicBlock *r
 	}
 
 	// ƒŒƒWƒXƒ^‚ÉŠ„‚è“–‚Ä‚é‚©”»’f
-	for ( std::vector<Op*>::iterator it2 = task->block->operations.begin();
+	for ( op_list::iterator it2 = task->block->operations.begin();
 		  it2 != task->block->operations.end(); it2++ ) {
 		Op *op = *it2;
 		switch ( op->GetOpCode() ) {
@@ -1356,7 +1356,7 @@ static void CompileTask( CHsp3Op *hsp, Task *task, Function *func, BasicBlock *r
 		if ( !info->localVar )
 			continue;
 		bool useRegister = true;
-		for ( std::vector<Op*>::iterator it2 = task->block->operations.begin();
+		for ( op_list::iterator it2 = task->block->operations.begin();
 			  it2 != task->block->operations.end(); it2++ ) {
 			Op *op = *it2;
 			switch ( op->GetOpCode() ) {
@@ -1380,7 +1380,7 @@ static void CompileTask( CHsp3Op *hsp, Task *task, Function *func, BasicBlock *r
 				break;
 			}
 		}
-		for ( std::vector<Op*>::iterator it2 = task->block->operations.begin();
+		for ( op_list::iterator it2 = task->block->operations.begin();
 			  it2 != task->block->operations.end(); it2++ ) {
 			Op *op = *it2;
 			switch ( op->GetOpCode() ) {
@@ -1412,7 +1412,7 @@ static void CompileTask( CHsp3Op *hsp, Task *task, Function *func, BasicBlock *r
 
 	sReachable = true;
 
-	for ( std::vector<Op*>::iterator it=task->block->operations.begin();
+	for ( op_list::iterator it=task->block->operations.begin();
 		  it != task->block->operations.end(); it++ ) {
 		Op *op = *it;
 
@@ -1451,7 +1451,7 @@ static void CompileTaskGeneral( CHsp3Op *hsp, Task *task, Function *func, BasicB
 
 	sReachable = true;
 
-	for ( std::vector<Op*>::iterator it=task->block->operations.begin();
+	for ( op_list::iterator it=task->block->operations.begin();
 		  it != task->block->operations.end(); it++ ) {
 		Op *op = *it;
 
