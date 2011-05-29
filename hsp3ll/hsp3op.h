@@ -36,10 +36,12 @@ public:
 	COMPILE_TYPE compile;
 	int flag;
 	void *llValue;
+	int id;
+	Op* refer;
 
 	std::vector<Op*> operands;
 
-	Op() : flag(-1)
+	Op() : flag(-1), llValue(NULL), refer(NULL)
 	{
 	}
 	virtual ~Op() {}
@@ -523,6 +525,7 @@ public:
 	std::string name;
 	std::set<VarKey> usedVariables;
 	std::vector<Op*> operations;
+	std::vector<int> nextTasks;
 
 	Block()
 	{
@@ -539,6 +542,6 @@ public:
 };
 
 void AnalyzeProgram( Program* program );
-void PrettyPrint( const Block *block, std::ostream &out );
+void PrettyPrint( std::ostream &out, const Block *block );
 
 #endif

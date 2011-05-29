@@ -146,17 +146,26 @@ void UpdateOperands( Block *task )
 			break;
 		}
 	}
+
+	for ( std::vector<Op*>::iterator it=task->operations.begin();
+		 it != task->operations.end(); it++ ) {
+		Op *op = *it;
+		for(int k=0; k<op->operands.size(); k++) {
+			Op* o = op->operands[k];
+			o->refer = op;
+		}
+	}
 }
 
-void AnalyzeTask( Program* program, Block *task )
+void AnalyzeTask( Program* program, Block *block )
 {
-	UpdateOperands( task );
+	UpdateOperands( block );
 
 	// 代入の右辺が変数へのポインタの場合、値に置き換える
 	while ( true ) {
 		bool changed = false;
-		for ( std::vector<Op*>::iterator it = task->operations.begin();
-			  it != task->operations.end() && !changed; it++ ) {
+		for ( std::vector<Op*>::iterator it = block->operations.begin();
+			  it != block->operations.end() && !changed; it++ ) {
 			Op *op = *it;
 			switch ( op->GetOpCode() ) {
 			case VAR_INC_OP:
@@ -169,12 +178,12 @@ void AnalyzeTask( Program* program, Block *task )
 					Op *rhv = vro->operands[0];
 					if ( rhv->GetOpCode() == PUSH_VAR_PTR_OP ) {
 						PushVarPtrOp *pv = (PushVarPtrOp*)rhv;
-						std::find( task->operations.begin(),
-								   task->operations.end(),
-								   pv)[0]
+						std::find( block->operations.begin(),
+								   block->operations.end(),
+								   pv )[0]
 							= new PushVarOp( pv->GetVarNo(), pv->GetArrayDim() );
 						delete pv;
-						UpdateOperands( task );
+						UpdateOperands( block );
 						changed = true;
 					}
 				}
@@ -187,8 +196,8 @@ void AnalyzeTask( Program* program, Block *task )
 	}
 
 	//	使っている変数
-	for ( std::vector<Op*>::iterator it=task->operations.begin();
-		 it != task->operations.end(); it++ ) {
+	for ( std::vector<Op*>::iterator it=block->operations.begin();
+		 it != block->operations.end(); it++ ) {
 		Op *op = *it;
 		switch ( op->GetOpCode() ) {
 		case PUSH_VAR_OP:
@@ -202,7 +211,7 @@ void AnalyzeTask( Program* program, Block *task )
 
 		case VAR_CALC_OP:
 		case VAR_SET_OP:
-			program->varTaskMap[((VarRefOp*)op)->GetVarKey()].insert( task->name );
+			program->varTaskMap[((VarRefOp*)op)->GetVarKey()].insert( block->name );
 			break;
 
 		case PUSH_DNUM_OP:
@@ -219,6 +228,66 @@ void AnalyzeTask( Program* program, Block *task )
 			break;
 		default:
 			break;
+		}
+	}
+
+	// コントロールフロー
+	for ( std::vector<Op*>::iterator it=block->operations.begin();
+		 it!=block->operations.end(); it++ ) {
+		Op *op = *it;
+		switch ( op->GetOpCode() ) {
+		case PUSH_VAR_OP:
+		case PUSH_VAR_PTR_OP:
+		case PUSH_FUNC_PARAM_OP:
+		case PUSH_FUNC_PARAM_PTR_OP:
+		case VAR_INC_OP:
+		case VAR_DEC_OP:
+		case VAR_CALC_OP:
+		case VAR_SET_OP:
+		case PUSH_DNUM_OP:
+		case PUSH_INUM_OP:
+		case PUSH_LABEL_OP:
+		case PUSH_STR_OP:
+		case PUSH_FUNC_END_OP:
+		case PUSH_CMD_OP:
+		case CALC_OP:
+		case MODCMD_OP:
+			break;
+
+		case COMPARE_OP:
+		{
+			CompareOp *comp = (CompareOp*)op;
+			block->nextTasks.push_back( comp->GetNextTask() );
+			break;
+		}
+		case CMD_OP:
+		{
+			CmdOp *cmd = (CmdOp*)op;
+			if ( cmd->GetCmdType() == TYPE_PROGCMD ) {
+				switch ( cmd->GetCmdVal() ) {
+				case 0x00:								// goto
+				case 0x02:								// return
+				case 0x03:								// break
+				case 0x05:								// loop
+				case 0x06:								// continue
+				case 0x0b:								// foreach
+				case 0x0c:								// (hidden)foreach check
+				case 0x10:								// end
+				case 0x1b:								// assert
+				case 0x11:								// stop
+				case 0x19:								// on
+				}
+			}
+			break;
+		}
+		case TASK_SWITCH_OP:
+		{
+			TaskSwitchOp *ts = (TaskSwitchOp*)op;
+			block->nextTasks.push_back( ts->GetNextTask() );
+			break;
+		}
+		default:
+			throw "Unknown op";
 		}
 	}
 }
@@ -312,34 +381,69 @@ void AnalyzeProgram( Program* program ) {
 	}
 }
 
-void PrettyPrint( const Block *block, std::ostream &out ) {
 
-	out << "block:" << block->name << "\r\n";
+std::ostream& operator<< (std::ostream &out, const Op &op) {
+	out << "(" << op.id << ")"
+		<< op.GetName()
+		<< op.GetParam();
 
-	for ( std::vector<Op*>::const_iterator it=block->operations.begin();
-		  it != block->operations.end(); it++ ) {
-		Op *op = *it;
-		out << op->GetName()
-			  << op->GetParam()
-			  << (op->compile == VALUE ? "[V]" : "[D]")
-			  << "\r\n";
+	switch ( op.compile ) {
+	case DEFAULT:
+		out << "[D]";
+		break;
+	case VALUE:
+		out << "[V]";
+		break;
+	default:
+		out << "[?]";
+		break;
 	}
-	out << "\r\n";
+
+	return out;
+}
+
+void PrettyPrint( std::ostream &out, const Op *op, int depth ) {
+	for ( int i=0; i<depth; ++i ) {
+		out << "  ";
+	}
+	out << *op << std::endl;
+	for(int k=0; k<op->operands.size(); k++) {
+		Op* o = op->operands[k];
+		PrettyPrint( out, o, depth+1 );
+	}
+}
+
+void PrettyPrint( std::ostream &out, const Block *block ) {
+
+	out << "block:" << block->name << std::endl;
+
+
+	out << "out:";
+	for ( std::vector<int>::const_iterator it=block->nextTasks.begin();
+		  it != block->nextTasks.end(); ++it ) {
+		out << *it << ", ";
+	}
+	out  << std::endl;;
+
+	int id = 0;
+	for ( std::vector<Op*>::const_iterator it=block->operations.begin();
+		  it != block->operations.end(); ++it, ++id ) {
+		(*it)->id = id;
+	}
 
 	for ( std::vector<Op*>::const_iterator it=block->operations.begin();
 		  it != block->operations.end(); it++ ) {
 		Op *op = *it;
-		out << op->GetName()
-			  << op->GetParam()
-			  << (op->compile == VALUE ? "[V]" : "[D]")
-			  << "\r\n";
-		for(int k=0; k<op->operands.size(); k++) {
-			Op* o = op->operands[k];
-			out << "\t" << o->GetName()
-				  << o->GetParam()
-				  << (op->compile == VALUE ? "[V]" : "[D]")
-				  << "\r\n";
+		out << *op << std::endl;
+	}
+	out << std::endl;
+
+	for ( std::vector<Op*>::const_iterator it=block->operations.begin();
+		  it != block->operations.end(); ++it ) {
+		Op *op = *it;
+		if ( op->refer ) {
+			PrettyPrint( out, op, 0 );
 		}
 	}
-	out << "\r\n" << "\r\n";
+	out << std::endl << std::endl;
 }

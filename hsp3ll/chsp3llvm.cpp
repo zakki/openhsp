@@ -2017,14 +2017,14 @@ int MakeSource( CHsp3Op *hsp, int option, void *ref )
 		char mes[256];
 		for (int i=0;i<sLabMax;i++) {
 			sprintf( mes, "L%04x", i );
-			out << "#" << mes << "\r\n";
+			out << "#" << mes << std::endl;
 			Task *task = sTasks[mes];
 
 			if ( task == NULL ) {
-				out << "NO OP\r\n";
+				out << "NO OP" << std::endl;
 				continue;
 			}
-			PrettyPrint( task->block, out );
+			PrettyPrint( out, task->block );
 		}
 	}
 
