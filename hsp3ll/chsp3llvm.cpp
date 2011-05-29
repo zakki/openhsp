@@ -9,6 +9,7 @@
 #include <vector>
 #include <stack>
 #include <fstream>
+#include <boost/format.hpp>
 
 #include "llvm/LLVMContext.h"
 #include "llvm/Module.h"
@@ -48,6 +49,9 @@
 #endif
 
 using namespace llvm;
+using std::string;
+using boost::format;
+
 
 class Var {
 public:
@@ -102,7 +106,7 @@ static PassManager *Passes;
 
 static bool sReachable;
 
-std::map<std::string, Task*> sTasks;
+std::map<string, Task*> sTasks;
 
 static std::map<VarKey, Var*> sVars;
 static Program sProgram;
@@ -130,9 +134,9 @@ extern CHsp3Op *hsp3;
 static Value* MakeImmidiateCPPName( CHsp3Op* hsp, BasicBlock* bb, int type,
 									int val, int prm, char *opt=NULL );
 
-static Value* CreateCallImm( BasicBlock *bblock, const std::string& name );
-static Value* CreateCallImm( BasicBlock *bblock, const std::string& name, int a );
-static Value* CreateCallImm( BasicBlock *bblock, const std::string& name, int a, int b );
+static Value* CreateCallImm( BasicBlock *bblock, const string& name );
+static Value* CreateCallImm( BasicBlock *bblock, const string& name, int a );
+static Value* CreateCallImm( BasicBlock *bblock, const string& name, int a, int b );
 static void LoadLLRuntime();
 
 static BasicBlock *CompileOp( CHsp3Op *hsp, Function *func,
@@ -147,6 +151,11 @@ static void RecompileModule();
 extern void UpdateOperands( Block *block );
 extern void AnalyzeTask( Block *block );
 
+
+static string GetTaskFuncName( const Task *task )
+{
+	return ( format( "%1%_%2%" ) % task->block->name % task->numCall ).str();
+}
 
 static Var *GetTaskVar( Task *task, const std::pair<int, int>& key )
 {
@@ -587,7 +596,7 @@ static BasicBlock *CompileOp( CHsp3Op *hsp, Function *func, BasicBlock *bb, Basi
 			Var *var = GetTaskVar( task, pv->GetVarKey() );
 			PVal& pval = mem_var[var->val];
 			Value *lpvar;
-			std::string varname(hsp->MakeImmidiateCPPVarName( pv->GetVarType(), pv->GetVarNo() ));
+			string varname(hsp->MakeImmidiateCPPVarName( pv->GetVarType(), pv->GetVarNo() ));
 
 			std::map<std::pair<int, int>, Value*>::iterator it
 				= task->llVariables.find( std::make_pair( pv->GetVarType(), pv->GetVarNo() ));
@@ -703,10 +712,10 @@ static BasicBlock *CompileOp( CHsp3Op *hsp, Function *func, BasicBlock *bb, Basi
 	case PUSH_CMD_OP:
 		{
 			PushCmdOp *pcop = (PushCmdOp*)op;
-			char funcname[256];
-			sprintf( funcname, "llvmRt%s_%03x",
-					 hsp->GetHSPCmdTypeName( pcop->GetCmdType() ).c_str(),
-					 pcop->GetCmdVal() );
+			string funcname =
+				( format( "llvmRt%1%_%2$03x" )
+				  % hsp->GetHSPCmdTypeName( pcop->GetCmdType() )
+				  % pcop->GetCmdVal() ).str();
 			Function *f = M->getFunction( funcname );
 			if ( f ) {
 				if ( f->getArgumentList().size() != op->operands.size() - 1 )
@@ -1282,9 +1291,7 @@ static void CompileTask( CHsp3Op *hsp, Task *task, Function *func, BasicBlock *r
 
 	CheckType( hsp, task );
 
-	char buf[256];
-
-	sprintf( buf, "%s_%d", task->block->name.c_str(), task->numCall );
+	string buf( GetTaskFuncName( task ) );
 
 	for ( op_list::iterator it=task->block->operations.begin();
 		  it != task->block->operations.end(); it++ ) {
@@ -1438,10 +1445,6 @@ static void CompileTaskGeneral( CHsp3Op *hsp, Task *task, Function *func, BasicB
 
 	CheckType( hsp, task );
 
-	char buf[256];
-
-	sprintf( buf, "%s", task->block->name.c_str() );
-
 	BasicBlock *curBB = BasicBlock::Create( Context,
 											task->block->name + "_entry",
 											func );
@@ -1512,10 +1515,8 @@ static void TraceTaskProc()
 	}
 	if ( !task->func ) {
 		LLVMContext &Context = getGlobalContext();
-		char buf[256];
-		sprintf( buf, "%s_%d", task->block->name.c_str(), task->numCall );
 
-		Function* func = cast<Function>(M->getOrInsertFunction( buf,
+		Function* func = cast<Function>(M->getOrInsertFunction( GetTaskFuncName( task ),
 																Type::getInt32Ty( Context ),
 																Type::getInt32Ty( Context ),
 																(Type *)0 ));
@@ -1529,7 +1530,7 @@ static void TraceTaskProc()
 
 		task->func = func;
 
-		std::string ErrMsg;
+		string ErrMsg;
 		if ( verifyModule( *M, ReturnStatusAction, &ErrMsg ) ) {
 			Alert( (char*)ErrMsg.c_str() );
 		}
@@ -1546,12 +1547,10 @@ static void TraceTaskProc()
 	}
 	if ( task->numCurCall == 10 ) {
 		LLVMContext &Context = getGlobalContext();
-		char buf[256];
-		sprintf( buf, "%s_%d", task->block->name.c_str(), task->numCall );
 
 		LoadLLRuntime();
 
-		Function* func = cast<Function>(M->getOrInsertFunction( buf,
+		Function* func = cast<Function>(M->getOrInsertFunction( GetTaskFuncName( task ),
 																Type::getInt32Ty( Context ),
 																Type::getInt32Ty( Context ),
 																(Type *)0 ));
@@ -1569,7 +1568,7 @@ static void TraceTaskProc()
 
 		task->spFunc = func;
 		if ( true ) {
-			std::string ErrorInfo;
+			string ErrorInfo;
 			std::auto_ptr<raw_fd_ostream>
 				Out(new raw_fd_ostream("dump_jit.ll", ErrorInfo,
 									   raw_fd_ostream::F_Binary));
@@ -1581,7 +1580,7 @@ static void TraceTaskProc()
 			Out->close();
 		}
 
-		std::string ErrMsg;
+		string ErrMsg;
 		if ( verifyModule( *M, ReturnStatusAction, &ErrMsg ) ) {
 			Alert( (char*)ErrMsg.c_str() );
 		}
@@ -1590,7 +1589,7 @@ static void TraceTaskProc()
 		Passes->run( *M) ;
 
 		if ( true ) {
-			std::string ErrorInfo;
+			string ErrorInfo;
 			std::auto_ptr<raw_fd_ostream>
 				Out(new raw_fd_ostream("dump_jit.ll", ErrorInfo,
 									   raw_fd_ostream::F_Binary));
@@ -1614,7 +1613,7 @@ void DumpResult()
 {
 	char buf[256];
 
-	std::string ErrorInfo;
+	string ErrorInfo;
 	std::auto_ptr<raw_fd_ostream>
 		Out( new raw_fd_ostream( "dump.txt", ErrorInfo,
 								 raw_fd_ostream::F_Binary ) );
@@ -1657,7 +1656,6 @@ void __HspInit( Hsp3r *hsp3r )
 void __HspSetup( Hsp3r *hsp3r )
 {
 	LLVMContext &Context = getGlobalContext();
-	char mes[256];
 
 	Var__HspVars = new PVal*[sMaxVar];
 	for(int i=0;i<sMaxVar;i++) {
@@ -1673,16 +1671,17 @@ void __HspSetup( Hsp3r *hsp3r )
 
 	Alert( "HspSetup" );
 	for (int i=-1;i<sLabMax;i++) {
+		string taskName;
 		if ( i == -1 ) {
-			sprintf( mes, "%s", "__HspEntry" );
+			taskName = "__HspEntry";
 		} else {
-			sprintf( mes, "L%04x", i );
+			taskName = ( format( "L%1$04x" ) % i ).str();
 		}
 		//		Alert( mes );
-		Task *task = sTasks[mes];
+		Task *task = sTasks[taskName];
 		__Task[i] = task;
 		if ( task ) {
-			Function* func = cast<Function>(M->getOrInsertFunction( mes,
+			Function* func = cast<Function>(M->getOrInsertFunction( taskName,
 																	Type::getInt32Ty( Context ),
 																	Type::getInt32Ty( Context ),
 																	(Type *)0 ));
@@ -1698,7 +1697,7 @@ void __HspSetup( Hsp3r *hsp3r )
 			Builder.SetInsertPoint( funcRet );
 			Builder.CreateRet( ConstantInt::get( Type::getInt32Ty( Context ), -1 ) );
 
-			std::string ErrMsg;
+			string ErrMsg;
 			if ( verifyModule( *M, ReturnStatusAction, &ErrMsg ) ) {
 				Alert( (char*)ErrMsg.c_str() );
 			}
@@ -1709,7 +1708,7 @@ void __HspSetup( Hsp3r *hsp3r )
 			__HspTaskFunc[i] = NULL;
 		}
 	}
-	std::string ErrorInfo;
+	string ErrorInfo;
 	std::auto_ptr<raw_fd_ostream>
 		Out(new raw_fd_ostream("dump0.ll", ErrorInfo,
 							   raw_fd_ostream::F_Binary));
@@ -1744,7 +1743,7 @@ static const StructType *GetPValType()
 	return (StructType*)M->getTypeByName( "struct.PVal" );
 }
 
-Value* CreateCallImm( BasicBlock *bblock, const std::string& name )
+Value* CreateCallImm( BasicBlock *bblock, const string& name )
 {
 	if (!sReachable)
 		return NULL;
@@ -1760,7 +1759,7 @@ Value* CreateCallImm( BasicBlock *bblock, const std::string& name )
 	return Builder.CreateCall( f, args.begin(), args.end() );
 }
 
-Value* CreateCallImm( BasicBlock *bblock, const std::string& name, int a )
+Value* CreateCallImm( BasicBlock *bblock, const string& name, int a )
 {
 	if (!sReachable)
 		return NULL;
@@ -1778,7 +1777,7 @@ Value* CreateCallImm( BasicBlock *bblock, const std::string& name, int a )
 	return Builder.CreateCall( f, args.begin(), args.end() );
 }
 
-Value* CreateCallImm( BasicBlock *bblock, const std::string& name, int a, int b )
+Value* CreateCallImm( BasicBlock *bblock, const string& name, int a, int b )
 {
 	if (!sReachable)
 		return NULL;
@@ -1797,7 +1796,7 @@ Value* CreateCallImm( BasicBlock *bblock, const std::string& name, int a, int b 
 	return Builder.CreateCall( f, args.begin(), args.end() );
 }
 
-void* HspLazyFunctionCreator( const std::string &name )
+void* HspLazyFunctionCreator( const string &name )
 {
 #define RESOLVE_FUNC(arg) if (#arg == name) return arg;
 RESOLVE_FUNC(Prgcmd)
@@ -1980,7 +1979,7 @@ int MakeSource( CHsp3Op *hsp, int option, void *ref )
 	sProgram.entryPoint  =sProgram.blocks["__HspEntry"];
 	AnalyzeProgram( &sProgram );
 
-	for(std::map<std::string, Block*>::iterator it = sProgram.blocks.begin();
+	for(std::map<string, Block*>::iterator it = sProgram.blocks.begin();
 		it != sProgram.blocks.end(); ++it) {
 		Task *task = new Task();
 		Block *block = it->second;
@@ -1999,7 +1998,7 @@ int MakeSource( CHsp3Op *hsp, int option, void *ref )
 	// Œ‹‰Ê‚ðƒ_ƒ“ƒv
 	//
 	{
-		std::string errorInfo;
+		string errorInfo;
 		std::auto_ptr<raw_fd_ostream>
 			out(new raw_fd_ostream("dump.ll", errorInfo,
 								   raw_fd_ostream::F_Binary));
@@ -2028,7 +2027,7 @@ int MakeSource( CHsp3Op *hsp, int option, void *ref )
 		}
 	}
 
-	std::string ErrMsg;
+	string ErrMsg;
 	if ( verifyModule( *M, ReturnStatusAction, &ErrMsg ) ) {
 		Alert( (char*)ErrMsg.c_str() );
 	}

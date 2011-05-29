@@ -8,6 +8,8 @@
 #include <set>
 #include <vector>
 #include <stack>
+#include <boost/format.hpp>
+#include <boost/lexical_cast.hpp>
 
 #include "supio.h"
 #include "hsp3r.h"
@@ -26,32 +28,35 @@ namespace llvm {
 };
 
 using namespace llvm;
+using std::string;
+using boost::lexical_cast;
+using boost::format;
 
 /*------------------------------------------------------------*/
 CHsp3Op::CHsp3Op()
 {
 }
 
-std::string CHsp3Op::MakeImmidiateCPPVarName( int type, int val, char *opt )
+string CHsp3Op::MakeImmidiateCPPVarName( int type, int val, char *opt )
 {
 	//		変数名の生成
 	//		(追加できない型の場合は-1を返す)
 	//
-	char mes[256];
 	switch( type ) {
 	case TYPE_VAR:
-		sprintf( mes, "%s%s", CPPHED_HSPVAR, GetHSPVarName( val ).c_str() );
-		if ( opt != NULL ) strcat( mes, opt );
-		return mes;
+		if ( opt != NULL ) {
+			return CPPHED_HSPVAR + GetHSPVarName( val ) + opt;
+		} else {
+			return CPPHED_HSPVAR + GetHSPVarName( val );
+		}
 	case TYPE_STRUCT:
 		{
-		const STRUCTPRM *prm = GetMInfo( val );
-		if ( prm->subid != STRUCTPRM_SUBID_STACK ) {
-			sprintf( mes, "_modprm%d", val - curprmindex );
-		} else {
-			sprintf( mes, "_prm%d", val - curprmindex );
-		}
-		return mes;
+			const STRUCTPRM *prm = GetMInfo( val );
+			if ( prm->subid != STRUCTPRM_SUBID_STACK ) {
+				return "_modprm" + lexical_cast<string>( val - curprmindex );
+			} else {
+				return "_prm" + lexical_cast<string>( val - curprmindex );
+			}
 		}
 	default:
 		return GetHSPName( type, val );
@@ -60,7 +65,7 @@ std::string CHsp3Op::MakeImmidiateCPPVarName( int type, int val, char *opt )
 }
 
 
-void CHsp3Op::MakeCPPTask( const char *name, int nexttask )
+void CHsp3Op::MakeCPPTask( const string& name, int nexttask )
 {
 	//		タスクの区切り
 	//			funcdef=新しい関数定義
@@ -90,8 +95,7 @@ void CHsp3Op::MakeCPPTask( int nexttask )
 {
 	//		単純タスクの生成
 	//
-	char name[256];
-	sprintf( name,"L%04x", nexttask );
+	string name = ( format( "L%1$04x" ) % nexttask ).str();
 	MakeCPPTask( name, nexttask );
 }
 
@@ -100,8 +104,7 @@ void CHsp3Op::MakeCPPTask2( int nexttask, int newtask )
 {
 	//		単純タスクの生成
 	//
-	char name[256];
-	sprintf( name,"L%04x", newtask );
+	string name = ( format( "L%1$04x" ) % newtask ).str();
 	MakeCPPTask( name, nexttask );
 }
 

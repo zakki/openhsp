@@ -276,7 +276,7 @@ void AnalyzeTask( Program* program, Block *block )
 				case 0x1b:								// assert
 				case 0x11:								// stop
 				case 0x19:								// on
-                    break;
+					break;
 				}
 			}
 			break;

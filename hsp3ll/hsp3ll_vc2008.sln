@@ -1,7 +1,7 @@
 ﻿
-Microsoft Visual Studio Solution File, Format Version 10.00
-# Visual C++ Express 2008
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "hsp3ll", "hsp3ll_vc2008.vcproj", "{1359A0F2-846F-4003-8B86-6703B821031C}"
+Microsoft Visual Studio Solution File, Format Version 11.00
+# Visual C++ Express 2010
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "hsp3ll", "hsp3ll_vc2008.vcxproj", "{1359A0F2-846F-4003-8B86-6703B821031C}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
