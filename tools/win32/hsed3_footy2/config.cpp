@@ -301,7 +301,7 @@ static void set_default( void )
 	tabsize = 4;
 	rulerheight = 10;
 	linewidth = 50;
-	linespace = 0;
+	linespace = 2;
 
 	flg_statbar = 1;
 	flg_toolbar = 1;

@@ -119,6 +119,7 @@ void CToken::CalcCG_regmark( int mark )
 	default:
 		throw CGERROR_CALCEXP;
 	}
+	calccount++;
 	PutCS( TK_NONE, op, texflag );
 }
 

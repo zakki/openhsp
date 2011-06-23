@@ -825,8 +825,12 @@ static void *reffunc_intfunc( int *type_res, int arg )
 		p1 = code_getdi(0);
 		if ( p1 >= size ) throw HSPERR_BUFFER_OVERFLOW;
 		ps = code_gets();
-		ptr += p1;
-		ps2 = strstr2( ptr, ps );
+		if ( p1 >= 0 ) {
+			ptr += p1;
+			ps2 = strstr2( ptr, ps );
+		} else {
+			ps2 = NULL;
+		}
 		if ( ps2 == NULL ) {
 			reffunc_intfunc_ivalue = -1;
 		} else {
