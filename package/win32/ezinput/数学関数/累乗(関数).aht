@@ -4,7 +4,9 @@
 #aht ver "1.1"
 #aht icon "deficon.bmp"
 #aht iconid 0
-#aht helpkw "wparam"
+#aht helpkw "powf"
 
+#define ’ê	""	;;str
+#define w”	""	;;str
 
-#ahtmes "wparam "+
+#ahtmes "powf( "+’ê+" , "+w”+" )"+
