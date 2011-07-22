@@ -1,19 +1,19 @@
-;(2009/4/21)
+; (2011/7/18)
 ; HSP HELP Browser II—p HELPƒ\[ƒXƒtƒ@ƒCƒ‹
 ; Easy3D for HSP3
 ;
 ;http://www5d.biglobe.ne.jp/~ochikko/e3dhsp3_func.htm ‚©‚ç
-;HSŒ`Ž®‚Ö‚ÌˆÚB Easy3DHelp2Hs Ver1.20
-;HP : http://www.geocities.jp/yutopp/index.html
+;HSŒ`Ž®‚Ö‚ÌˆÚB Easy3DHelp2Hs Ver1.30
+;WebSite : http://yutopp.org.jp/
 %type
 Easy3D For HSP3 –½—ß
 %ver
-5.0.4.0
+5.5.0.2
 
 %note
 e3dhsp3.as‚ðƒCƒ“ƒNƒ‹[ƒh‚·‚é‚±‚ÆB
 %date
-2009/04/20
+2011/07/18
 
 %author
 ‚¨‚¿‚á‚Á‚±
@@ -29,7 +29,7 @@ Direct3D‚Ì‰Šú‰»‚ð‚·‚éB
 Easy3D For HSP3 : ‰Šú‰»
 
 %prm
-p1,p2,p3,p4,p5,p6,p7,p8
+p1,p2,p3,p4,p5,p6,p7,p8,p9
 p1 : [IN] •Ï”‚Ü‚½‚ÍA”’l@F@wid
 p2 : [IN] •Ï”‚Ü‚½‚ÍA”’l@F@objid
 p3 : [IN] •Ï”‚Ü‚½‚ÍA”’l@F@fullscreenflag
@@ -38,6 +38,7 @@ p5 : [IN] •Ï”‚Ü‚½‚ÍA”’l@F@multisamplenum
 p6 : [OUT] •Ï”@F@scid
 p7 : [IN] •Ï”‚Ü‚½‚ÍA”’l@F@gpuflag
 p8 : [IN] •Ï”‚Ü‚½‚ÍA”’l@F@enablereverb
+p9 : [IN] •Ï”‚Ü‚½‚ÍA”’l@F@index32bit
 
 %inst
 Direct3D‚Ì‰Šú‰»‚ð‚·‚éB
@@ -103,6 +104,17 @@ e3dhsp3_antialias.hsp
 ‚É‘‚«‚Ü‚µ‚½‚Ì‚ÅA‚²——‚­‚¾‚³‚¢B
 
 
+ver5.1.0.2‚Åindex32bitˆø”‚ð’Ç‰Á‚µ‚Ü‚µ‚½B
+index32bitˆø”‚É‚P‚ðŽw’è‚·‚é‚Æ‚R‚QƒrƒbƒgƒCƒ“ƒfƒbƒNƒXƒ‚[ƒh‚Å‹N“®‚µA‚O‚ðŽw’è‚·‚é‚Æ‚P‚UƒrƒbƒgƒCƒ“ƒfƒbƒNƒXƒ‚[ƒh‚Å‹N“®‚µ‚Ü‚·B
+‚R‚QƒrƒbƒgƒCƒ“ƒfƒbƒNƒXƒ‚[ƒh‚Å‚Í‚U‚T‚T‚R‚T/‚Rƒ|ƒŠƒSƒ“‚Ü‚Å‚Ì§ŒÀ‚ª‚È‚­‚È‚è‚Ü‚·B
+‚R‚QƒrƒbƒgƒCƒ“ƒfƒbƒNƒXƒ‚[ƒh‚Å‚ÍƒrƒfƒIƒJ[ƒh‚É”\—Í‚ª–³‚¢ê‡‚Í‹N“®‚Å‚«‚È‚­‚È‚è‚Ü‚·B
+‘½‚­‚ÌƒlƒbƒgƒuƒbƒN‚È‚Ç‚Å‚Í‚R‚QƒrƒbƒgƒCƒ“ƒfƒbƒNƒXƒ‚[ƒh‚Í“®‚©‚È‚¢‚æ‚¤‚È‚Ì‚Å’ˆÓ‚µ‚Ä‚­‚¾‚³‚¢B
+
+
+ver5.3.1.3‚Åfullscreenflag‚Ì’lŽw’è‚ðŠg’£B
+
+
+
 
 
 ¨ˆø”
@@ -129,11 +141,14 @@ e3dhsp3_antialias.hsp
 @@‚µ‚È‚¢‚Æ‚«iƒEƒCƒ“ƒhƒEƒ‚[ƒhj‚Í‚O‚ðŽw’è‚µ‚Ä‚­‚¾‚³‚¢B
 @@È—ª‚µ‚½ê‡‚ÍAƒEƒCƒ“ƒhƒEƒ‚[ƒh‚É‚È‚è‚Ü‚·B
 
+@@E3DCheckFullScreenParams‚Åflag‚É‚Q‚ðŽw’è‚µ‚½ê‡‚ÍAfullscreenflag‚É‚à‚Q‚ðŽw’è‚µ‚Ä‚­‚¾‚³‚¢B
+@@‚Ü‚½‚±‚Ìê‡AƒEƒCƒ“ƒhƒE‚Ìì¬‚Íscreen–½—ß‚Å‚Í‚È‚­bgscr–½—ß‚ðŽg‚Á‚Ä‚­‚¾‚³‚¢B
+
 
 4. [IN] •Ï”‚Ü‚½‚ÍA”’l@F@bits
 @@F”‚ðŒˆ‚ß‚éƒrƒbƒg”‚ðŽw’è‚µ‚Ä‚­‚¾‚³‚¢B
 @@‚P‚U‚ ‚é‚¢‚ÍA‚R‚Q‚Ì‚Ý—LŒø‚Å‚·B
-@@fullscreenflag‚É‚P‚ðŽw’è‚µ‚½‚Æ‚«‚Ì‚ÝAŒ‹‰Ê‚É”½‰f‚³‚ê‚Ü‚·B
+@@fullscreenflag‚É‚P‚Ü‚½‚Í‚Q‚ðŽw’è‚µ‚½‚Æ‚«‚Ì‚ÝAŒ‹‰Ê‚É”½‰f‚³‚ê‚Ü‚·B
 
 
 5. [IN] •Ï”‚Ü‚½‚ÍA”’l@F@multisamplenum
@@ -164,8 +179,16 @@ e3dhsp3_antialias.hsp
 
 @@È—ª‚µ‚½ê‡‚ÍA‚P‚ª“K—p‚³‚ê‚Ü‚·B
 
+9. [IN] •Ï”‚Ü‚½‚ÍA”’l@F@index32bit
+@@‚P‚ðŽw’è‚·‚é‚Æ‚R‚QƒrƒbƒgƒCƒ“ƒfƒbƒNƒXƒ‚[ƒh‚É‚È‚è‚Ü‚·B‚O‚ðŽw’è‚·‚é‚Æ‚P‚UƒrƒbƒgƒCƒ“ƒfƒbƒNƒXƒ‚[ƒh‚É‚È‚è‚Ü‚·B
+È—ª‚·‚é‚Æ‚O‚ðŽw’è‚µ‚½‚Ì‚Æ“¯‚¶‚É‚È‚è‚Ü‚·B
+Ú‚µ‚­‚Í‘O‹L‚ð‚²——‚­‚¾‚³‚¢B
 
-ƒo[ƒWƒ‡ƒ“ : ver1.0.0.1
+
+ƒo[ƒWƒ‡ƒ“ : ver1.0.0.1<BR>
+      ver5.1.0.2‚ÅŠg’£<BR>
+      ver5.3.1.3‚ÅŠg’£<BR>
+      
 
 %index
 E3DBye
@@ -215,9 +238,11 @@ p4 : [IN] •Ï”‚Ü‚½‚ÍA”’l@F@mult
 @@“Ç‚Ýž‚ñ‚¾Œ`óƒf[ƒ^‚ðŽ¯•Ê‚·‚éhsid
 
 3. [IN] •Ï”‚Ü‚½‚ÍA”’l@F@adjustuvflag
-@@‚t‚u’l‚ð³‹K‰»‚·‚é‚©‚Ç‚¤‚©‚Ìƒtƒ‰ƒO
-@@³‹K‰»‚·‚éê‡‚Í‚P‚ðŽw’è
-@@‚µ‚È‚¢ê‡‚Í‚O‚ðŽw’è
+@@‚t‚u’l‚ð³‹K‰»‚·‚é‚©‚Ç‚¤‚©‚Ìƒtƒ‰ƒOB
+@@³‹K‰»‚·‚éê‡‚Í‚P‚ðŽw’èB
+@@‚µ‚È‚¢ê‡‚Í‚O‚ðŽw’èB
+@@‚Q‚ðŽw’è‚·‚é‚Æ0.0‚©‚ç1.0‚ÌŠÔ‚ÉƒNƒ‰ƒ“ƒv‚µ‚Ü‚·B
+
 
 4. [IN] •Ï”‚Ü‚½‚ÍA”’l@F@mult
 @@“Ç‚Ýž‚Ý”{—¦‚ðŽw’è‚µ‚Ä‚­‚¾‚³‚¢B
@@ -225,7 +250,10 @@ p4 : [IN] •Ï”‚Ü‚½‚ÍA”’l@F@mult
 
 
 
-ƒo[ƒWƒ‡ƒ“ : ver1.0.0.1
+ƒo[ƒWƒ‡ƒ“ : ver1.0.0.1<BR>
+      ver5.0.5.4‚ÅŠg’£<BR>
+      <BR>
+
 
 %index
 E3DCreateSwapChain
@@ -447,9 +475,10 @@ E3DBeginScene
 Easy3D For HSP3 : •`‰æ
 
 %prm
-p1,p2
+p1,p2,p3
 p1 : [IN] •Ï”‚Ü‚½‚ÍA”’l@F@scid
 p2 : [IN] •Ï”‚Ü‚½‚ÍA”’l@F@skipflag
+p3 : [IN] •Ï”‚Ü‚½‚ÍA”’l@F@zscid
 
 %inst
 ƒAƒvƒŠƒP[ƒVƒ‡ƒ“‚Å‚ÍAƒŒƒ“ƒ_ƒŠƒ“ƒO‚ðŽÀs‚·‚é‘O‚É‚Í•K‚¸‚±‚Ìƒƒ\ƒbƒh‚ðŒÄ‚Ño‚µA
@@ -460,6 +489,10 @@ p2 : [IN] •Ï”‚Ü‚½‚ÍA”’l@F@skipflag
 ‹ï‘Ì“I‚É‚ÍA
 E3DRender, E3DDrawText, E3DDrawBigText‚ðA
 E3DBeginScene‚ÆAE3DEndScene‚ÅƒTƒ“ƒhƒCƒbƒ`‚·‚é‚æ‚¤‚É‹Lq‚·‚éB
+
+
+ver5.2.0.8‚Åzscidˆø”‚ª’Ç‰Á‚³‚ê‚Ü‚µ‚½B
+ver5.2.1.0‚Åskipflag‚ðŠg’£‚µ‚Ü‚µ‚½B
 
 
 
@@ -473,15 +506,25 @@ E3DBeginScene‚ÆAE3DEndScene‚ÅƒTƒ“ƒhƒCƒbƒ`‚·‚é‚æ‚¤‚É‹Lq‚·‚éB
 @@Žw’è‚µ‚Ä‚­‚¾‚³‚¢B
 
 2. [IN] •Ï”‚Ü‚½‚ÍA”’l@F@skipflag
-@@skipflag‚É‚OˆÈŠO‚ðŽw’è‚·‚é‚ÆA
-@@ƒoƒbƒNƒoƒbƒtƒ@‚ÌƒNƒŠƒAA”wŒi‚Ì•\Ž¦‚ðƒXƒLƒbƒv‚µ‚Ü‚·B
-@
-@@E3DCopyTextureToBackBuffer‚ðŽg‚¤‚Æ‚«‚È‚Ç‚ÉA
-@@Žg—p‚µ‚Ä‚­‚¾‚³‚¢B
+@@skipflag‚É‚O‚ðŽw’è‚·‚é‚ÆF‚Ì‰Šú‰»‚ÆZƒoƒbƒtƒ@‚Ì‰Šú‰»‚Æ”wŒi‚Ì•`‰æ‚ðs‚¢‚Ü‚·B
+@@skipflag‚É‚P‚ð‘«‚·‚ÆF‚Ì‰Šú‰»‚ÆZƒoƒbƒtƒ@‚Ì‰Šú‰»‚Æ”wŒi‚Ì•`‰æ‚ðs‚¢‚Ü‚¹‚ñB
+@@skipflag‚É‚Q‚ð‘«‚·‚ÆƒVƒF[ƒ_[’è”‚ÌƒrƒfƒIƒJ[ƒh‚Ö‚Ì“]‘—‚ðƒLƒƒƒ“ƒZƒ‹‚µ‚Ü‚·B
+@@skipflag‚É‚S‚ð‘«‚·‚ÆF‚Ì‰Šú‰»‚Ís‚¢‚Ü‚·‚ªZƒoƒbƒtƒ@‚Ì‰Šú‰»‚Æ”wŒi‚Ì•`‰æ‚Ís‚¢‚Ü‚¹‚ñB@
+
+3. [IN] •Ï”‚Ü‚½‚ÍA”’l@F@zscid
+@@Zƒoƒbƒtƒ@‚ðŽw’è‚Å‚«‚Ü‚·B
+@@•`‰æ‚ÉŽg—p‚µ‚½‚¢Zƒoƒbƒtƒ@‚ðŽ‚ÂƒŒƒ“ƒ_[ƒ^[ƒQƒbƒgƒeƒNƒXƒ`ƒƒ‚È‚Ç‚ÌƒXƒƒbƒvƒ`ƒFƒCƒ“ID‚ðŽw’è‚µ‚Ü‚·B
+@@‚±‚Ìˆø”‚ðÈ—ª‚µ‚½ê‡‚Íscid‚ÅŽw’è‚µ‚½Zƒoƒbƒtƒ@‚ªŽg—p‚³‚ê‚Ü‚·B
+@@zscid‚ðŽw’è‚µ‚½ê‡‚ÍŽw’è‚µ‚½Zƒoƒbƒtƒ@‚Í‚±‚Ì–½—ß‚Å‰Šú‰»‚³‚ê‚Ü‚¹‚ñB
+@@zscid‚ÅŽw’è‚·‚éZƒoƒbƒtƒ@‚Íscid‚ÅŽw’è‚µ‚½ƒT[ƒtƒFƒX‚Ì‘å‚«‚³‚Æ‘å‚«‚³‚ª“¯‚¶Žž‚Ì‚Ý—LŒø‚Å‚·B
 
 
 
-ƒo[ƒWƒ‡ƒ“ : ver1.0.0.1
+
+ƒo[ƒWƒ‡ƒ“ : ver1.0.0.1<BR>
+      ver5.2.0.8‚ÅŠg’£<BR>
+      ver5.2.1.0‚ÅŠg’£<BR>
+      
 
 %index
 E3DEndScene
@@ -1231,8 +1274,9 @@ p4 : [IN] •Ï”‚Ü‚½‚ÍA”’l@F@degz
 
 %inst
 Œ`óƒf[ƒ^‚ÌŒü‚«‚ðŽw’è‚·‚éB
-XŽ²AYŽ²AZŽ²‚Ì‡”Ô‚ÉA
-Žw’è‚µ‚½Šp“x‚¾‚¯‰ñ“]‚µ‚Ü‚·B
+
+
+ver5.2.2.9‚©‚çZ,X,YŽ²‚Ì‡”Ô‚Å‰ñ“]‚·‚é‚æ‚¤‚É‚È‚è‚Ü‚µ‚½B
 
 
 
@@ -1249,7 +1293,9 @@ XŽ²AYŽ²AZŽ²‚Ì‡”Ô‚ÉA
 
 
 
-ƒo[ƒWƒ‡ƒ“ : ver1.0.0.1
+ƒo[ƒWƒ‡ƒ“ : ver1.0.0.1<BR>
+      ver5.2.2.9‚ÅŽd—l•ÏX<BR>
+      
 
 %index
 E3DRotateInit
@@ -2216,7 +2262,7 @@ p7 : [IN] •¶Žš—ñ‚Ü‚½‚ÍA•¶Žš—ñ•Ï”@F@str
 
 ‰p”Žš‚Ì‚ÝB
 scale‚ª‚P.0‚Ì‚Æ‚«‚ÍA‚P‚Qƒ|ƒCƒ“ƒg‚Ì‘å‚«‚³B
-
+\n‚Å‰üs‚Å‚«‚Ü‚·B
 
 
 
@@ -4415,6 +4461,8 @@ mqo ƒtƒ@ƒCƒ‹‚ð’n–Êƒf[ƒ^‚Æ‚µ‚ÄA“Ç‚Ýž‚Ý‚Ü‚·B
 @@UVÀ•W‚ð³‹K‰»‚µ‚½‚¢‚Æ‚«‚Í‚P‚ðA
 @@‚»‚¤‚Å‚È‚¢‚Æ‚«‚ÍA‚O‚ðŽw’è‚µ‚Ä‚­‚¾‚³‚¢B
 @@‰½‚àŽw’è‚µ‚È‚¢‚Æ‚«‚ÍA‚O‚Æ‚µ‚Äˆµ‚í‚ê‚Ü‚·B
+@@‚Q‚ðŽw’è‚·‚é‚Æ0.0‚©‚ç1.0‚ÌŠÔ‚ÉƒNƒ‰ƒ“ƒv‚µ‚Ü‚·B
+
 
 5. [IN] •¶Žš—ñ‚Ü‚½‚ÍA•¶Žš—ñ•Ï”@F@bonetype
 @@mqo‚Éƒ{[ƒ“‚ªŠÜ‚Ü‚ê‚Ä‚¢‚éê‡‚Í
@@ -4432,6 +4480,8 @@ mqo ƒtƒ@ƒCƒ‹‚ð’n–Êƒf[ƒ^‚Æ‚µ‚ÄA“Ç‚Ýž‚Ý‚Ü‚·B
 
 ƒo[ƒWƒ‡ƒ“ : ver1.0.0.1<BR>
       ver4.0.1.8‚Åˆø”’Ç‰Á<BR>
+      ver5.0.5.4‚ÅŠg’£<BR>
+      <BR>
       
 
 %index
@@ -5106,47 +5156,27 @@ E3DLoadSound
 Easy3D For HSP3 : ƒTƒEƒ“ƒh
 
 %prm
-p1,p2,p3,p4
+p1,p2,p3,p4,p5
 p1 : [IN] •¶Žš—ñ‚Ü‚½‚ÍA•¶Žš—ñ•Ï”@F@filename
 p2 : [OUT] •Ï”@F@soundid
 p3 : [IN] •Ï”‚Ü‚½‚ÍA”’l@F@use3dflag
-p4 : [IN] •Ï”‚Ü‚½‚ÍA”’l@F@bufnum
+p4 : [IN] •Ï”‚Ü‚½‚ÍA”’l@F@reverbflag
+p5 : [IN] •Ï”‚Ü‚½‚ÍA”’l@F@bufnum
 
 %inst
 ‰¹‚Ìƒf[ƒ^‚ð“Ç‚Ýž‚ÝA‰¹‚ðŽ¯•Ê‚·‚é”Ô†AsoundidA‚ðŽæ“¾‚µ‚Ü‚·B
 
-ver1.0.5.0‚©‚ç‚R‚cƒTƒEƒ“ƒh‚É‘Î‰ž‚Å‚«‚é‚æ‚¤‚É
-‚È‚è‚Ü‚µ‚½B
-use3dflag‚É‚P‚ðŽw’è‚·‚é‚ÆA
-‚R‚cƒTƒEƒ“ƒh‚Æ‚µ‚Äƒ[ƒh‚µ‚Ü‚·B
+ogg‚Æwav‚ð“Ç‚Ýž‚ß‚Ü‚·B
+ogg‚ÍƒXƒeƒŒƒI‚Ì‚ÝB
 
+‚RDƒTƒEƒ“ƒh‚É‚à‘Î‰ž‚µ‚Ä‚¢‚Ü‚·B
+‚RDƒTƒEƒ“ƒh‚Íƒ‚ƒmƒ‰ƒ‹‚Ì‚Ý‚Å‚·B
 
-“Ç‚Ýž‚ß‚é‰¹ƒf[ƒ^‚ÌŽí—Þ‚ÍA
-*.wav, *.mid, *.sgt ƒtƒ@ƒCƒ‹‚Å‚·B
-html{
-<strong>‚R‚cƒTƒEƒ“ƒh‚ÍAwavƒtƒ@ƒCƒ‹‚Ìƒ‚ƒmƒ‰ƒ‹Œ`Ž®‚Ì‚Ý</strong>
-}html‚Å‚·B
+MIDI‚Í“Ç‚Ýž‚ß‚Ü‚¹‚ñB
 
+ver5.3.0.3‚Åoggdatanumˆø”’Ç‰ÁB
+ver5.3.1.6‚Åoggdatanumˆø”‚ðíœiŽ©“®Ý’è‚É•ÏXj
 
-‚R‚cƒTƒEƒ“ƒh‚ÌÝ’è‚É‚Â‚¢‚Ä‚ÍA
-E3DSet3DSound‚ÅŽn‚Ü‚éŠÖ”–¼‚ð
-‚¨’²‚×‚­‚¾‚³‚¢B
-
-
-“¯‚¶‚h‚c‚ÌA‚R‚cƒTƒEƒ“ƒh‚ð“¯Žž‚É‚¢‚­‚Â
-d‚Ë‚ÄÄ¶‚Å‚«‚é‚©‚Íbufnumˆø”‚ÅŽw’è‚µ‚Ü‚·B
-
-ŽÀÛ‚ÌŽg—p—á‚ÍAzip’†‚ÌA
-html{
-<strong>e3dhsp3_sound.hsp</strong>
-}html
-‚ð‚²——‚­‚¾‚³‚¢B
-
-‚R‚cƒTƒEƒ“ƒh‚ÌŽg—p—á‚ÍA
-html{
-<strong>e3dhsp3_3Dsound.hsp</strong>
-}html
-‚ð‚²——‚­‚¾‚³‚¢B
 
 
 
@@ -5158,74 +5188,43 @@ html{
 @@ì¬‚µ‚½‰¹ƒf[ƒ^‚ðŽ¯•Ê‚·‚é”Ô†‚ª‘ã“ü‚³‚ê‚Ü‚·B
 
 3. [IN] •Ï”‚Ü‚½‚ÍA”’l@F@use3dflag
-@@ƒtƒ@ƒCƒ‹‚ðƒXƒeƒŒƒIƒTƒEƒ“ƒh‚Æ‚µ‚Ä“Ç‚Ýž‚Þê‡‚Í‚O‚ðA
 @@‚R‚cƒTƒEƒ“ƒh‚Æ‚µ‚Ä“Ç‚Ýž‚Þê‡‚Í‚P‚ðŽw’è‚µ‚Ä‚­‚¾‚³‚¢B
-@@Žw’è‚µ‚È‚©‚Á‚½ê‡‚ÍAƒXƒeƒŒƒIƒTƒEƒ“ƒh‚ÆŒ©‚È‚³‚ê‚Ü‚·B
+@@ƒfƒtƒHƒ‹ƒg’l‚Í‚O‚Å‚·B
 
-4. [IN] •Ï”‚Ü‚½‚ÍA”’l@F@bufnum
-@@“¯‚¶‚h‚c‚ÌA‚R‚cƒTƒEƒ“ƒh‚ðA“¯Žž‚É‚¢‚­‚Âd‚Ë‚ÄÄ¶‚Å‚«‚é‚©‚ð
-@@Žw’è‚µ‚Ü‚·B
+4. [IN] •Ï”‚Ü‚½‚ÍA”’l@F@reverbflag
+@@ƒŠƒo[ƒu‚ð—LŒø‚É‚µ‚½‚¢‚Æ‚«‚Í‚P‚ð
+@@‚µ‚½‚­‚È‚¢‚Æ‚«‚Í‚O‚ðŽw’è‚µ‚Ü‚·B
 
-@@‚R‚cƒTƒEƒ“ƒh‚Å‚Í‚È‚¢ê‡‚ÍA
-@@¡‚Ü‚Å’Ê‚èADirectMusic‚ªAŽ©“®“I‚ÉA
-@@d‚Ë‚ÄÄ¶‚µ‚Ä‚­‚ê‚Ü‚·B
+5. [IN] •Ï”‚Ü‚½‚ÍA”’l@F@bufnum
+@@“¯‚¶‚h‚c‚ÌƒTƒEƒ“ƒh‚ð“¯Žž‚É‚¢‚­‚Âd‚Ë‚ÄÄ¶‚Å‚«‚é‚©‚ðŽw’è‚µ‚Ü‚·B
 
 
-ƒo[ƒWƒ‡ƒ“ : ver1.0.0.1
+
+
+ƒo[ƒWƒ‡ƒ“ : ver1.0.0.1<BR>
+      ver5.3.0.0‚ÅŽd—l•ÏX<BR>
+      ver5.3.0.3‚ÅŠg’£<BR>
+      ver5.3.1.6‚ÅC³<BR>
+      <BR>
+      
 
 %index
 E3DPlaySound
-E3DLoadSound‚ÅA“Ç‚Ýž‚ñ‚¾A‰¹ƒf[ƒ^‚ðÄ¶‚µ‚Ü‚·B
+E3DLoadSound‚Å“Ç‚Ýž‚ñ‚¾‰¹ƒf[ƒ^‚ðÄ¶‚µ‚Ü‚·B
 %group
 Easy3D For HSP3 : ƒTƒEƒ“ƒh
 
 %prm
-p1,p2,p3
+p1,p2,p3,p4
 p1 : [IN] •Ï”‚Ü‚½‚ÍA”’l@F@soundid
-p2 : [IN] •Ï”‚Ü‚½‚ÍA”’l@F@isprimary
-p3 : [IN] •Ï”‚Ü‚½‚ÍA”’l@F@boundaryflag
+p2 : [IN] •Ï”‚Ü‚½‚ÍA”’l@F@startsample
+p3 : [IN] •Ï”‚Ü‚½‚ÍA”’l@F@openo
+p4 : [IN] •Ï”‚Ü‚½‚ÍA”’l@F@numloops
 
 %inst
-E3DLoadSound‚ÅA“Ç‚Ýž‚ñ‚¾A‰¹ƒf[ƒ^‚ðÄ¶‚µ‚Ü‚·B
-
-isprimary ˆø”‚É‚ÍA
-‚a‚f‚lÄ¶Žž‚ÉA‚P‚ðA
-Œø‰Ê‰¹Ä¶Žž‚É‚O‚ðŽw’è‚µ‚Ä‚­‚¾‚³‚¢B
+E3DLoadSound‚Å“Ç‚Ýž‚ñ‚¾‰¹ƒf[ƒ^‚ðÄ¶‚µ‚Ü‚·B
 
 
-boundaryflag‚É‚ÍAÄ¶‹«ŠE‚ðŽw’è‚µ‚Ü‚·B
-e3dhsp3.as“à‚Å’è‹`‚µ‚Ä‚¢‚éA
-DMUS_SEGF_@‚ÅŽn‚Ü‚é’è”‚ðŽw’è‚µ‚Ä‚­‚¾‚³‚¢B
-
-‚»‚ê‚¼‚ê‚ÌˆÓ–¡‚ÍAˆÈ‰º‚Ì’Ê‚è‚Å‚·B
-
-DMUS_SEGF_BEAT
-@@”‚Ì‹«ŠE‚Å‰‰‘t‚·‚éB
-
-DMUS_SEGF_DEFAULT
-@@ƒZƒOƒƒ“ƒg‚ÌƒfƒtƒHƒ‹ƒg‚Ì‹«ŠE‚ðŽg—p‚·‚éB
-
-DMUS_SEGF_GRID
-@@ƒOƒŠƒbƒh(”‚Ì¬•ªŠ„)‹«ŠE‚Å‰‰‘t‚·‚éB
-
-DMUS_SEGF_MEASURE
-@@¬ß‹«ŠE‚Å‰‰‘t‚·‚éB
-
-DMUS_SEGF_QUEUE
-@@ƒvƒ‰ƒCƒ}ƒŠ ƒZƒOƒƒ“ƒg ƒLƒ…[‚ÌÅŒã‚É’u‚­B
-@@ƒvƒ‰ƒCƒ}ƒŠ ƒZƒOƒƒ“ƒg‚É‘Î‚µ‚Ä‚Ì‚Ý
-@@—LŒø‚Å‚ ‚éB 
-
-DMUS_SEGF_SEGMENTEND
-@@ŠJŽnƒ^ƒCƒ€‚Å‰‰‘t’†‚Ìƒvƒ‰ƒCƒ}ƒŠ ƒZƒOƒƒ“ƒg
-@@‚ÌÅŒã‚Å‰‰‘t‚·‚éB
-@@Œ»Ý‰‰‘t’†‚Ìƒvƒ‰ƒCƒ}ƒŠ ƒZƒOƒƒ“ƒgŒã‚É
-@@Šù‚É‘}“ü‚³‚ê‚Ä‚¢‚éƒZƒOƒƒ“ƒg‚ÍA
-@@ƒtƒ‰ƒbƒVƒ… (‰ð•ú) ‚³‚ê‚éB
-
-
-‚R‚cƒTƒEƒ“ƒh‚ÌÄ¶Žž‚É‚ÍA
-isprimary, boundaryflag‚ðŽw’è‚µ‚Ä‚à”½‰f‚³‚ê‚Ü‚¹‚ñB
 
 
 
@@ -5234,27 +5233,25 @@ isprimary, boundaryflag‚ðŽw’è‚µ‚Ä‚à”½‰f‚³‚ê‚Ü‚¹‚ñB
 1. [IN] •Ï”‚Ü‚½‚ÍA”’l@F@soundid
 @@Ä¶‚µ‚½‚¢‰¹‚ðŽ¯•Ê‚·‚é”Ô†‚ðAŽw’è‚µ‚Ü‚·B
 
-2. [IN] •Ï”‚Ü‚½‚ÍA”’l@F@isprimary
-@@isprimary‚É‚P‚ðŽw’è‚·‚é‚ÆA
-@@ƒvƒ‰ƒCƒ}ƒŠƒZƒOƒƒ“ƒg‚Æ‚µ‚ÄÄ¶‚³‚ê‚Ü‚·B
-@@ƒvƒ‰ƒCƒ}ƒŠƒZƒOƒƒ“ƒg‚ÍAˆê“x‚ÉAˆê‚Â‚¾‚¯A
-@@Ä¶‚Å‚«‚Ü‚·B
+2. [IN] •Ï”‚Ü‚½‚ÍA”’l@F@startsample
+@@Ä¶ŠJŽnˆÊ’u‚ðƒTƒ“ƒvƒ‹iŽü”g”j’PˆÊ‚ÅŽw’è‚µ‚Ü‚·B
 
-@@isprimary‚É‚O‚ðŽw’è‚·‚é‚ÆA
-@@ƒZƒJƒ“ƒ_ƒŠƒZƒOƒƒ“ƒg‚Æ‚µ‚ÄAÄ¶‚³‚ê‚Ü‚·B
-@@ƒvƒ‰ƒCƒ}ƒŠƒZƒOƒƒ“ƒg‚ÉAd‚Ë‚ÄAÄ¶‚³‚ê‚Ü‚·B
+3. [IN] •Ï”‚Ü‚½‚ÍA”’l@F@openo
+@@«—ˆ‚Ìƒoƒbƒ`ˆ——p‚Ìˆø”‚Å‚·B
+@@Œ»Ý‚Í‚O‚ðŽw’è‚µ‚Ä‚¨‚¢‚Ä‚­‚¾‚³‚¢B
 
-@@‚a‚f‚l‚ðÄ¶‚·‚é‚Æ‚«‚É‚ÍA
-@@isprimary‚ð‚P‚ÉA
-@@Œø‰Ê‰¹‚ðÄ¶‚·‚é‚Æ‚«‚É‚ÍA
-@@isprimary‚ð‚O‚ÉA
-@@Žw’è‚·‚é‚ÆA‚¤‚Ü‚­‚¢‚«‚Ü‚·B
+4. [IN] •Ï”‚Ü‚½‚ÍA”’l@F@numloops
+@@ŒJ‚è•Ô‚µ‰ñ”‚ðŽw’è‚µ‚Ü‚·B
+@@–³ŒÀƒ‹[ƒv‚Í‚Q‚T‚T‚ðŽw’è‚µ‚Ü‚·B
+@@‚Q‚T‚TˆÈ‰º‚Å‚à‚ ‚Ü‚è‘å‚«‚¢’l‚ðŽw’è‚·‚é‚Æƒnƒ“ƒO‚·‚é‚±‚Æ‚ª‚ ‚è‚Ü‚·i‚Q‚T‚T‚Íƒnƒ“ƒO‚µ‚Ü‚¹‚ñjB
+@
 
-3. [IN] •Ï”‚Ü‚½‚ÍA”’l@F@boundaryflag
-@@‰E‚Ìà–¾‚ð‚¨“Ç‚Ý‚­‚¾‚³‚¢B
+@@
 
 
-ƒo[ƒWƒ‡ƒ“ : ver1.0.0.1
+ƒo[ƒWƒ‡ƒ“ : ver1.0.0.1<BR>
+      ver5.3.0.0‚ÅŽd—l•ÏX<BR>
+      
 
 %index
 E3DStopSound
@@ -5263,9 +5260,8 @@ E3DStopSound
 Easy3D For HSP3 : ƒTƒEƒ“ƒh
 
 %prm
-p1,p2
+p1
 p1 : [IN] •Ï”‚Ü‚½‚ÍA”’l@F@soundid
-p2 : [IN] •Ï”‚Ü‚½‚ÍA”’l@F@flag
 
 %inst
 ‰¹‚ÌÄ¶‚ð’âŽ~‚µ‚Ü‚·B
@@ -5278,58 +5274,11 @@ p2 : [IN] •Ï”‚Ü‚½‚ÍA”’l@F@flag
 @@’âŽ~‚µ‚½‚¢‰¹‚ðŽ¯•Ê‚·‚é”Ô†‚ðAŽw’è‚µ‚Ü‚·B
 
 
-2. [IN] •Ï”‚Ü‚½‚ÍA”’l@F@flag
-
-@@‚R‚cƒTƒEƒ“ƒh‚Ì’âŽ~ó‘Ô‚ðŽw’è‚µ‚Ü‚·B
-
-@@flag‚É‚O‚ðŽw’è‚·‚é‚ÆAE3DStopSound‚µ‚½Œã‚ÉA
-@@E3DPlaySound‚µ‚½ê‡A’âŽ~‚µ‚½‘±‚«‚ÌêŠ‚©‚ç
-@@Ä¶‚³‚ê‚Ü‚·B
-
-@@flag‚É‚P‚ðŽw’è‚·‚é‚ÆAŽŸ‚ÉE3DPlaySound‚µ‚½ê‡A
-@@Å‰‚©‚çÄ¶‚³‚ê‚Ü‚·B
-
-@@ƒfƒtƒHƒ‹ƒg‚Å‚ÍAflag 0 ‚ðŽw’è‚µ‚½‚Ì‚Æ“¯‚¶ó‘Ô‚É‚È‚Á‚Ä‚¢‚Ü‚·B
-
-@@‚R‚cƒTƒEƒ“ƒhˆÈŠO‚ÍAí‚ÉAŽŸ‰ñ‚ÌE3DPlaySoundŽž‚ÉA
-@@Å‰‚©‚çÄ¶‚³‚ê‚Ü‚·B
 
 
-
-ƒo[ƒWƒ‡ƒ“ : ver1.0.0.1
-
-%index
-E3DSetSoundLoop
-‰¹‚ðŒJ‚è•Ô‚µÄ¶‚·‚é‚©‚Ç‚¤‚©‚ðAŽw’è‚µ‚Ü‚·B
-%group
-Easy3D For HSP3 : ƒTƒEƒ“ƒh
-
-%prm
-p1,p2
-p1 : [IN] •Ï”‚Ü‚½‚ÍA”’l@F@soundid
-p2 : [IN] •Ï”‚Ü‚½‚ÍA”’l@F@loopflag
-
-%inst
-‰¹‚ðŒJ‚è•Ô‚µÄ¶‚·‚é‚©‚Ç‚¤‚©‚ðAŽw’è‚µ‚Ü‚·B
-ƒfƒtƒHƒ‹ƒg‚Å‚ÍA
-ŒJ‚è•Ô‚³‚È‚¢ó‘Ô‚É‚È‚Á‚Ä‚¢‚Ü‚·B
-
-
-
-
-¨ˆø”
-1. [IN] •Ï”‚Ü‚½‚ÍA”’l@F@soundid
-@@ƒ‹[ƒvÝ’è‚µ‚½‚¢‰¹‚ðŽ¯•Ê‚·‚é”Ô†‚ðAŽw’è‚µ‚Ü‚·B
-
-2. [IN] •Ï”‚Ü‚½‚ÍA”’l@F@loopflag
-@@loopflag ‚É‚P‚ðŽw’è‚·‚é‚ÆA
-@@‰¹‚ðA–³ŒÀ‰ñAÄ¶‚·‚é‚æ‚¤‚É‚È‚è‚Ü‚·B
-@@loopflag‚É‚O‚ðŽw’è‚·‚é‚ÆA
-@@ˆê‰ñ‚Ì‚ÝA‰¹‚ðÄ¶‚·‚é‚æ‚¤‚É‚È‚è‚Ü‚·B
-
-
-
-ƒo[ƒWƒ‡ƒ“ : ver1.0.0.1
+ƒo[ƒWƒ‡ƒ“ : ver1.0.0.1<BR>
+      ver5.3.0.0‚ÅŽd—l•ÏX<BR>
+      
 
 %index
 E3DSetSoundVolume
@@ -5345,26 +5294,14 @@ p2 : [IN] •Ï”‚Ü‚½‚ÍA”’l@F@soundid
 %inst
 ‰¹‚Ì‰¹—Ê‚ðÝ’è‚µ‚Ü‚·B
 
-‚R‚cƒTƒEƒ“ƒh‚ÍA
-‰¹‚²‚Æ‚É‰¹—Ê‚ÌÝ’è‚ªo—ˆ‚Ü‚·B
-‚»‚Ì‘ã‚í‚èA‰¹‚Ì‘•‚Ío—ˆ‚Ü‚¹‚ñB
-‚R‚cƒTƒEƒ“ƒh‚ÍA‰¹—Ê‚ÌÝ’è‚ð‚µ‚Ä‚àA
-ŽŸ‚ÌE3DPlaySoundŽž‚Ü‚ÅA”½‰f‚³‚ê‚Ü‚¹‚ñB
-
-
-ƒXƒeƒŒƒIƒTƒEƒ“ƒh‚ÍA
-ŒÂX‚É‰¹—Ê‚ÌÝ’è‚ð‚·‚é‚±‚Æ‚Í‚Å‚«‚Ü‚¹‚ñB
-
 
 
 
 
 ¨ˆø”
 1. [IN] •Ï”‚Ü‚½‚ÍA”’l@F@volume
-@@‰¹—Ê‚ðŽw’è‚µ‚Ü‚·B
-@@0 ‚©‚ç -10000 ‚Ì’l‚ðŽw’è‚µ‚Ä‚­‚¾‚³‚¢B
-
-@@-10000 ‚ÍA-100dB ‚É‘Š“–‚µ‚Ü‚·B
+@@ŽÀ”B
+@@ƒ\[ƒX‰¹—Ê‚Æ‚Ì”ä—¦‚ðŽw’è‚µ‚Ü‚·B
 
 2. [IN] •Ï”‚Ü‚½‚ÍA”’l@F@soundid
 @@Ý’è‚µ‚½‚¢‰¹‚ðŽ¯•Ê‚·‚é”Ô†‚ðŽw’è‚µ‚Ü‚·B
@@ -5373,53 +5310,9 @@ p2 : [IN] •Ï”‚Ü‚½‚ÍA”’l@F@soundid
 
 
 
-ƒo[ƒWƒ‡ƒ“ : ver1.0.0.1
-
-%index
-E3DSetSoundTempo
-‰¹‚Ìƒeƒ“ƒ|‚ðÝ’è‚µ‚Ü‚·B
-%group
-Easy3D For HSP3 : ƒTƒEƒ“ƒh
-
-%prm
-p1
-p1 : [IN] •Ï”‚Ü‚½‚ÍA”’l@F@tempo
-
-%inst
-‰¹‚Ìƒeƒ“ƒ|‚ðÝ’è‚µ‚Ü‚·B
-E3DPlaySound‚ÅAÄ¶‚µ‚Ä‚¢‚éA
-‘S‚Ä‚Ì‰¹‚ÉA‰e‹¿‚µ‚Ü‚·B
-i‰¹‚²‚Æ‚ÉÝ’è‚·‚é‚±‚Æ‚ÍAo—ˆ‚Ü‚¹‚ñj
-
-‰¹‚ð‘‚­Ä¶‚µ‚½‚èA’x‚­Ä¶‚µ‚½‚èAo—ˆ‚é‚æ‚¤‚É‚È‚è‚Ü‚·B
-
-‚R‚cƒTƒEƒ“ƒh‚É‚ÍA”½‰f‚³‚ê‚Ü‚¹‚ñB
-
-
-
-
-¨ˆø”
-1. [IN] •Ï”‚Ü‚½‚ÍA”’l@F@tempo
-@@ƒeƒ“ƒ|‚ðŽw’è‚µ‚Ü‚·B
-
-@@tempo ‚É‚ÍA0.01 ‚©‚ç 100.0 ‚Ì’l‚ð
-@@Žw’è‚µ‚Ä‚­‚¾‚³‚¢B
-
-@@0.01‚ðŽw’è‚µ‚½ê‡‚ÍA
-@@0.01 ”{‚Ìƒeƒ“ƒ|A
-@@‚Â‚Ü‚èA‚¨‚»[‚­AÄ¶‚³‚ê‚Ü‚·B
-
-@@100.0‚ðŽw’è‚µ‚½ê‡‚ÍA
-@@100 ”{‚Ìƒeƒ“ƒ|A
-@@‚Â‚Ü‚èA‚·‚²‚­‘‚­Ä¶‚³‚ê‚Ü‚·B
-
-@@1.0‚ðŽw’è‚µ‚½ê‡‚ÍA
-@@1 ”{‚Ìƒeƒ“ƒ|A
-@@‚Â‚Ü‚èA’Êí‚ÌA‘¬‚³‚ÅAÄ¶‚³‚ê‚Ü‚·B
-
-
-
-ƒo[ƒWƒ‡ƒ“ : ver1.0.0.1
+ƒo[ƒWƒ‡ƒ“ : ver1.0.0.1<BR>
+      ver5.3.0.0‚ÅŽd—l•ÏX<BR>
+      
 
 %index
 E3DDestroySound
@@ -5460,17 +5353,6 @@ p2 : [IN] •Ï”‚Ü‚½‚ÍA”’l@F@freq
 %inst
 ‰¹‚ÌŽü”g”‚ðÝ’è‚µ‚Ü‚·B
 
-‚R‚cƒTƒEƒ“ƒh‚ÉŽü”g”‚ðÝ’è‚µ‚Ä‚àA
-ŽŸ‰ñ‚ÌE3DPlaySoundŽž‚Ü‚ÅA”½‰f‚³‚ê‚Ü‚¹‚ñB
-
-
-html{
-<strong>ƒXƒeƒŒƒIƒTƒEƒ“ƒh‚ÅƒŠƒo[ƒu‚ª—LŒø‚É‚È‚Á‚Ä‚¢‚éê‡‚ÍA
-‚±‚ÌŠÖ”‚ÍŽ¸”s‚µ‚Ü‚·B</strong>
-}html
-ƒŠƒo[ƒu‚ð–³Œø‚É‚·‚é‚É‚ÍAE3DInit‚Ì‚W”Ô–Ú‚Ìˆø”‚É‚O‚ð
-Žw’è‚µ‚Ä‚­‚¾‚³‚¢B
-
 
 
 
@@ -5478,13 +5360,19 @@ html{
 ¨ˆø”
 1. [IN] •Ï”‚Ü‚½‚ÍA”’l@F@soundid
 @@Ý’è‚µ‚½‚¢‰¹‚ðŽ¯•Ê‚·‚é”Ô†
+@@-1‚ðŽw’è‚·‚é‚Æ“Ç‚Ýž‚ÝÏ‚Ý‚Ì‘S‚Ä‚ÌƒTƒEƒ“ƒh‚É‘Î‚µ‚Äˆ—‚µ‚Ü‚·B
 
 2. [IN] •Ï”‚Ü‚½‚ÍA”’l@F@freq
-@@Žü”g”‚ðŽw’è‚µ‚Ü‚·B
+@@ŽÀ”B
+@@ƒ\[ƒXŽü”g”‚Æ‚Ì”ä—¦‚ðŽw’è‚µ‚Ü‚·B
 
 
 
-ƒo[ƒWƒ‡ƒ“ : ver1.0.0.1
+ƒo[ƒWƒ‡ƒ“ : ver1.0.0.1<BR>
+      ver5.3.0.0‚ÅŽd—l•ÏX<BR>
+      ver5.3.4.1‚ÅŠg’£<BR>
+      <BR>
+      
 
 %index
 E3DGetSoundVolume
@@ -5506,11 +5394,14 @@ p2 : [OUT] •Ï”@F@vol
 @@‰¹‚ðŽ¯•Ê‚·‚é”Ô†
 
 2. [OUT] •Ï”@F@vol
-@@‰¹—Ê‚ª‘ã“ü‚³‚ê‚Ü‚·B
+@@ŽÀ”Œ^‚Ì•Ï”B
+@@‰¹—Êiƒ\[ƒX‰¹—Ê‚Æ‚Ì”ä—¦j‚ª‘ã“ü‚³‚ê‚Ü‚·B
 
 
 
-ƒo[ƒWƒ‡ƒ“ : ver1.0.0.1
+ƒo[ƒWƒ‡ƒ“ : ver1.0.0.1<BR>
+      ver5.3.0.0‚ÅŽd—l•ÏX<BR>
+      
 
 %index
 E3DGetSoundFrequency
@@ -5532,81 +5423,14 @@ p2 : [OUT] •Ï”@F@freq
 @@‰¹‚ðŽ¯•Ê‚·‚é”Ô†
 
 2. [OUT] •Ï”@F@freq
-@@Žü”g”‚ª‘ã“ü‚³‚ê‚Ü‚·B
+@@ŽÀ”Œ^‚Ì•Ï”B
+@@ƒ\[ƒXŽü”g”‚Æ‚Ì”ä—¦‚ª‘ã“ü‚³‚ê‚Ü‚·B
 
 
 
-ƒo[ƒWƒ‡ƒ“ : ver1.0.0.1
-
-%index
-E3DSet3DSoundListener
-‚RDƒTƒEƒ“ƒhÄ¶Žž‚ÉŠÖŒW‚·‚éƒŠƒXƒi[i•·‚«Žèj‚Ì
-ƒpƒ‰ƒ[ƒ^‚ðÝ’è‚µ‚Ü‚·B
-%group
-Easy3D For HSP3 : ƒTƒEƒ“ƒh
-
-%prm
-p1,p2
-p1 : [IN] •Ï”‚Ü‚½‚ÍA”’l@F@doppler
-p2 : [IN] •Ï”‚Ü‚½‚ÍA”’l@F@rolloff
-
-%inst
-‚RDƒTƒEƒ“ƒhÄ¶Žž‚ÉŠÖŒW‚·‚éƒŠƒXƒi[i•·‚«Žèj‚Ì
-ƒpƒ‰ƒ[ƒ^‚ðÝ’è‚µ‚Ü‚·B
-‚±‚±‚ÅÝ’è‚µ‚½ƒpƒ‰ƒ[ƒ^‚ÍA‚RDƒTƒEƒ“ƒh‘S‘Ì‚É‰e‹¿‚µ‚Ü‚·B
-
-
-‚±‚±‚ÅÝ’è‚·‚éŒW”‚ÍA
-DirectX‚ÌƒhƒLƒ…ƒƒ“ƒg‚ÉÚ‚µ‚­‘‚¢‚Ä‚ ‚è‚Ü‚·B
-‚¨Ž‚¿‚Ì•û‚ÍA
-
-[DirectX9ƒhƒLƒ…ƒƒ“ƒg]-&gt;@@
-@@[DirectSound]-&gt;
-@@[DirectSound‚ÌŽg‚¢•û]-&gt;
-@@[3DƒTƒEƒ“ƒh]-&gt;
-@@[DirectSound ‚Ì3D ƒŠƒXƒi[]-&gt;
-@@[ƒhƒbƒvƒ‰[Œø‰Ê]
-
-[DirectX9ƒhƒLƒ…ƒƒ“ƒg]-&gt;@@
-@@[DirectSound]-&gt;
-@@[DirectSound‚ÌŽg‚¢•û]-&gt;
-@@[3DƒTƒEƒ“ƒh]-&gt;
-@@[DirectSound ‚Ì3D ƒŠƒXƒi[]-&gt;
-@@[ƒ[ƒ‹ƒIƒtŒW”]
-
-‚ð‚¨“Ç‚Ý‚­‚¾‚³‚¢B
-
-
-‚R‚cƒTƒEƒ“ƒh‚ÌŽg—p—á‚ÍA
-html{
-<strong>e3dhsp3_3Dsound.hsp</strong>
-}html
-‚ð‚²——‚­‚¾‚³‚¢B
-
-
-
-
-¨ˆø”
-1. [IN] •Ï”‚Ü‚½‚ÍA”’l@F@doppler
-@@ƒhƒbƒvƒ‰[ŒW”‚ðŽw’è‚µ‚Ä‚­‚¾‚³‚¢B
-@@0.0‚©‚ç10.0‚Ì’l‚ª—LŒø‚Å‚·B
-
-@@0.0‚ðŽw’è‚·‚é‚ÆAƒhƒbƒvƒ‰[Œø‰Ê‚È‚µB
-@@2.0‚ðŽw’è‚·‚é‚ÆAŽÀ¢ŠE‚Ì‚Q”{‚Ìƒhƒbƒvƒ‰[Œø‰Ê‚ª“¾‚ç‚ê‚Ü‚·B
-@@ŽÀ”B
-
-2. [IN] •Ï”‚Ü‚½‚ÍA”’l@F@rolloff
-@@ƒ[ƒ‹ƒIƒtŒW”‚ðŽw’è‚µ‚Ä‚­‚¾‚³‚¢B
-@@ƒŠƒXƒi[‚Æ‰¹‚Ì‹——£‚É‚æ‚éŒ¸Š‚Ì‹ï‡‚ð‘€ì‚Å‚«‚Ü‚·B
-@@0.0‚©‚ç10.0‚Ì’l‚ª—LŒø‚Å‚·B
-
-@@0.0‚ðŽw’è‚·‚é‚ÆAŒ¸Š‚È‚µB
-@@2.0‚ðŽw’è‚·‚é‚ÆAŽÀ¢ŠE‚Ì‚Q”{‚ÌŒ¸ŠŒø‰Ê‚ª“¾‚ç‚ê‚Ü‚·B
-@@ŽÀ”B
-
-
-
-ƒo[ƒWƒ‡ƒ“ : ver1.0.0.1
+ƒo[ƒWƒ‡ƒ“ : ver1.0.0.1<BR>
+      ver5.3.0.0‚ÅŽd—l•ÏX<BR>
+      
 
 %index
 E3DSet3DSoundListenerMovement
@@ -5646,71 +5470,6 @@ hsid‚É-1‚ð“n‚µ‚½ê‡‚É‚ÍA
 1. [IN] •Ï”‚Ü‚½‚ÍA”’l@F@hsid
 @@ƒ‚ƒfƒ‹ƒf[ƒ^‚ðŽ¯•Ê‚·‚é”Ô†
 @@-1‚Ì‚Æ‚«‚ÍAŽ‹“_‚ðƒŠƒXƒi[‚Æ‚µ‚Ü‚·B
-
-
-ƒo[ƒWƒ‡ƒ“ : ver1.0.0.1
-
-%index
-E3DSet3DSoundDistance
-‚RDƒTƒEƒ“ƒh‚ÌÅ¬‹——£‚ÆÅ‘å‹——£‚ðÝ’è‚µ‚Ü‚·B
-%group
-Easy3D For HSP3 : ƒTƒEƒ“ƒh
-
-%prm
-p1,p2,p3
-p1 : [IN] •Ï”‚Ü‚½‚ÍA”’l@F@soundid
-p2 : [IN] •Ï”‚Ü‚½‚ÍA”’l@F@min
-p3 : [IN] •Ï”‚Ü‚½‚ÍA”’l@F@max
-
-%inst
-‚RDƒTƒEƒ“ƒh‚ÌÅ¬‹——£‚ÆÅ‘å‹——£‚ðÝ’è‚µ‚Ü‚·B
-
-html{
-<strong>E3DLoadSound‚Ìuse3dflag‚É‚P‚ðŽw’è‚µ‚Ä
-“Ç‚Ýž‚ñ‚¾ƒTƒEƒ“ƒh‚Ì‚Ý‚É‘Î‚µA—LŒø‚Å‚·B
-</strong>
-}html
-
-‚±‚±‚ÅÝ’è‚·‚éŒW”‚ÍA
-DirectX‚ÌƒhƒLƒ…ƒƒ“ƒg‚ÉÚ‚µ‚­‘‚¢‚Ä‚ ‚è‚Ü‚·B
-‚¨Ž‚¿‚Ì•û‚ÍA
-
-[DirectX9ƒhƒLƒ…ƒƒ“ƒg]-&gt;
-@@[DirectSound]-&gt;
-@@[DirectSound‚ÌŽg‚¢•û]-&gt;
-@@[3DƒTƒEƒ“ƒh]-&gt;
-@@[DirectSound 3D ‚Ìƒoƒbƒtƒ@]-&gt;
-@@[Å¬‹——£‚ÆÅ‘å‹——£]
-
-‚ð‚¨“Ç‚Ý‚­‚¾‚³‚¢B
-
-
-‚R‚cƒTƒEƒ“ƒh‚ÌŽg—p—á‚ÍA
-html{
-<strong>e3dhsp3_3Dsound.hsp</strong>
-}html
-‚ð‚²——‚­‚¾‚³‚¢B
-
-
-
-¨ˆø”
-1. [IN] •Ï”‚Ü‚½‚ÍA”’l@F@soundid
-@@‚R‚cƒTƒEƒ“ƒh‚ðŽ¯•Ê‚·‚é”Ô†
-
-2. [IN] •Ï”‚Ü‚½‚ÍA”’l@F@min
-3. [IN] •Ï”‚Ü‚½‚ÍA”’l@F@max
-@@Å¬‹——£‚ÆÅ‘å‹——£‚ðŽw’è‚µ‚Ü‚·B
-@@ŽÀ”B
-
-@@ˆÈ‰º‚ÍADirectX‚ÌƒhƒLƒ…ƒƒ“ƒg‚©‚ç‚Ìˆø—p‚Å‚·B
-@@ƒŠƒXƒi[‚ª‰¹Œ¹‚É‹ß‚Ã‚­‚É‚Â‚ê‚ÄƒTƒEƒ“ƒh‚ª‘å‚«‚­‚È‚èA
-@@‹——£‚ª”¼•ª‚É‚È‚Á‚½‚Æ‚«‚É‰¹‚Ìƒ{ƒŠƒ…[ƒ€‚Í”{‘‚·‚éB
-@@‚µ‚©‚µA“Á’è‚Ì“_‚ð‰ß‚¬‚é‚ÆAƒ{ƒŠƒ…[ƒ€‚ª‘‰Á‚µ‘±‚¯‚é‚Ì‚Í
-@@‡—“I‚Å‚Í‚È‚¢B‚±‚ê‚ª‰¹Œ¹‚ÌÅ¬‹——£‚Å‚ ‚éB
-
-@@‰¹Œ¹‚ÌÅ‘å‹——£‚Æ‚ÍA
-@@‚»‚êˆÈã—£‚ê‚Ä‚à‰¹‚ª‚æ‚è¬‚³‚­‚È‚ç‚È‚¢‹——£‚ðˆÓ–¡‚·‚éB
-
 
 
 ƒo[ƒWƒ‡ƒ“ : ver1.0.0.1
@@ -7061,6 +6820,13 @@ html{
 <strong>ver2.0.0.5‚ÅA‰ÁŽZƒ‚[ƒh‚»‚Ì‚Q‚ª‘‚¦‚Ü‚µ‚½B</strong>
 }html
 
+html{
+<strong>ver5.0.5.0‚ÅæŽZAŒ¸ŽZAƒXƒNƒŠ[ƒ“AƒlƒK”½“]ƒ‚[ƒh‚ª‘‚¦‚Ü‚µ‚½B</strong>
+}html
+
+html{
+<strong>ver5.1.0.1‚ÅƒI[ƒo[ƒŒƒC•—A•¢‚¢Ä‚«•—ƒ‚[ƒh‚ª‘‚¦‚Ü‚µ‚½B</strong>
+}html
 
 sigƒ‚ƒfƒ‹ƒf[ƒ^‚Ì”¼“§–¾ƒ‚[ƒh‚ÌÝ’è‚Í
 E3DSetMaterialBlendingMode‚ð‚¨Žg‚¢‚­‚¾‚³‚¢B
@@ -7101,12 +6867,22 @@ E3DSetMaterialBlendingMode‚ð‚¨Žg‚¢‚­‚¾‚³‚¢B
 @@‚Q‚ðŽw’è‚·‚é‚ÆA
 @@’¸“_ƒAƒ‹ƒtƒ@‚ðl—¶‚µ‚½ƒAƒbƒhƒ‚[ƒh‚É‚È‚è‚Ü‚·B
 
+@@‚P‚O‚R‚ðŽw’è‚·‚é‚ÆæŽZƒ‚[ƒhB
+@@‚P‚O‚S‚ðŽw’è‚·‚é‚ÆŒ¸ŽZƒ‚[ƒhB
+@@‚P‚O‚T‚ðŽw’è‚·‚é‚ÆƒXƒNƒŠ[ƒ“ƒ‚[ƒhB
+@@‚P‚O‚U‚ðŽw’è‚·‚é‚ÆƒlƒK”½“]ƒ‚[ƒh‚É‚È‚è‚Ü‚·B
+
+@@‚P‚O‚V‚ðŽw’è‚·‚é‚ÆƒI[ƒo[ƒŒƒC•—‡¬ƒ‚[ƒhB
+@@‚P‚O‚W‚ðŽw’è‚·‚é‚Æ•¢‚¢Ä‚«•—ƒ‚[ƒh‚É‚È‚è‚Ü‚·B
+
 
 
 
 ƒo[ƒWƒ‡ƒ“ : ver1.0.0.1<BR>
-      <BR>
-      ver2.0.0.5‚ÅŠg’£
+      ver2.0.0.5‚ÅŠg’£<BR>
+      ver5.0.5.0‚ÅŠg’£<BR>
+      ver5.1.0.1‚ÅŠg’£<BR>
+      
 
 %index
 E3DSetRenderState
@@ -7992,7 +7768,7 @@ p1 : [IN] ”’l‚Ü‚½‚ÍA•Ï”@F@hsid
 p2 : [IN] ”’l‚Ü‚½‚ÍA•Ï”@F@motid
 p3 : [IN] ”’l‚Ü‚½‚ÍA•Ï”@F@boneno
 p4 : [IN] ”’l‚Ü‚½‚ÍA•Ï”@F@mpid
-p5 : [IN, OUT]@’·‚³‚l‚o‚hQ‚l‚`‚w‚Ì”z—ñ@F@mpinfo
+p5 : [IN][OUT]@’·‚³‚l‚o‚hQ‚l‚`‚w‚Ì”z—ñ@F@mpinfo
 
 %inst
 mpinfo‚ÅŽw’è‚µ‚½”z—ñ‚ÉA
@@ -8087,7 +7863,7 @@ e3dhsp3_motionpoint.hsp
 @@ƒ‚[ƒVƒ‡ƒ“ƒ|ƒCƒ“ƒg‚ðŽ¯•Ê‚·‚é‚h‚c
 @@E3DGetNextMP‚ÅŽæ“¾‚µ‚½id‚ð“n‚µ‚Ä‚­‚¾‚³‚¢B
 
-5. [IN, OUT]@’·‚³‚l‚o‚hQ‚l‚`‚w‚Ì”z—ñ@F@mpinfo
+5. [IN][OUT]@’·‚³‚l‚o‚hQ‚l‚`‚w‚Ì”z—ñ@F@mpinfo
 @@ƒ‚[ƒVƒ‡ƒ“ƒ|ƒCƒ“ƒg‚Ìî•ñ‚ðŠi”[‚·‚é”z—ñB
 @@mpinfo(MPI_QUA)‚¾‚¯‚ÍAŒÄ‚Ño‚µ‘O‚ÉA
 @@‚ ‚ç‚©‚¶‚ßÝ’è‚µ‚Ä‚¨‚­•K—v‚ª‚ ‚è‚Ü‚·B
@@ -8652,7 +8428,7 @@ Easy3D For HSP3 : ƒ‚ƒfƒ‹Œü‚«
 %prm
 p1,p2
 p1 : [IN] ”’l‚Ü‚½‚ÍA•Ï”@F@hsid
-p2 : [IN, (OUT)] ”’l‚Ü‚½‚ÍA•Ï”@F@qid
+p2 : [IN][OUT] ”’l‚Ü‚½‚ÍA•Ï”@F@qid
 
 %inst
 E3DGetDirQ‚ðqid‚Å‘€ì‚Å‚«‚é‚æ‚¤‚É‚µ‚½‚à‚Ì‚Å‚·B
@@ -8667,7 +8443,7 @@ qid‚ÅŽw’è‚µ‚½ƒNƒH[ƒ^ƒjƒIƒ“‚ÉA
 1. [IN] ”’l‚Ü‚½‚ÍA•Ï”@F@hsid
 @@Œ`óƒf[ƒ^‚ðŽ¯•Ê‚·‚é‚h‚c
 
-2. [IN, (OUT)] ”’l‚Ü‚½‚ÍA•Ï”@F@qid
+2. [IN][OUT] ”’l‚Ü‚½‚ÍA•Ï”@F@qid
 @@ƒNƒH[ƒ^ƒjƒIƒ“‚ðŽ¯•Ê‚·‚é‚h‚c
 @@E3DCreateQ‚ÅŽæ“¾‚µ‚½id‚ð“n‚µ‚Ä‚­‚¾‚³‚¢B
 
@@ -8773,7 +8549,7 @@ upflag == 1 ‚Ì‚Æ‚«‚ÍA
 upflag == 2 ‚Ì‚Æ‚«‚ÍA
 ãŒü‚«•ûŒü‚ªA˜A‘±‚µ‚½Œü‚«‚ð‚Æ‚é‚æ‚¤‚ÉA
 §Œä‚³‚ê‚Ü‚·B
-‚»‚ÌŒ‹‰ÊA’ˆ•Ô‚è‚ª‚©‚Ì‚¤‚Æ‚È‚è‚Ü‚·B
+‚»‚ÌŒ‹‰ÊA’ˆ•Ô‚è‚ª‰Â”\‚Æ‚È‚è‚Ü‚·B
 
 upflag == 3 ‚Ì‚Æ‚«‚ÍA
 ãŒü‚«•ûŒü‚ðA“Á‚É§Œä‚µ‚Ü‚¹‚ñB
@@ -9920,7 +9696,7 @@ upflag == 1 ‚Ì‚Æ‚«‚ÍA
 upflag == 2 ‚Ì‚Æ‚«‚ÍA
 ãŒü‚«•ûŒü‚ªA˜A‘±‚µ‚½Œü‚«‚ð‚Æ‚é‚æ‚¤‚É
 §Œä‚³‚ê‚Ü‚·B
-‚»‚ÌŒ‹‰ÊA’ˆ•Ô‚è‚ª‚©‚Ì‚¤‚Æ‚È‚è‚Ü‚·B
+‚»‚ÌŒ‹‰ÊA’ˆ•Ô‚è‚ª‰Â”\‚Æ‚È‚è‚Ü‚·B
 
 upflag == 3 ‚Ì‚Æ‚«‚ÍA
 ãŒü‚«•ûŒü‚ð“Á‚É§Œä‚µ‚Ü‚¹‚ñB
@@ -10359,7 +10135,7 @@ p9 : [IN] ”’l‚Ü‚½‚ÍA•Ï”@F@b
 
 %inst
 E3DCreateFont‚Åì¬‚µ‚½ƒtƒHƒ“ƒg‚É‚æ‚èAŽw’è‚µ‚½ˆÊ’uAF‚ÅAƒeƒLƒXƒg‚ð•\Ž¦‚µ‚Ü‚·B
-
+\n‚Å‰üs‚Å‚«‚Ü‚·B
 
 
 
@@ -10438,7 +10214,7 @@ curcnt‚É‚ÍA’ÊíA‚±‚Ì–½—ß‚ðŒÄ‚Ño‚·‚½‚Ñ‚ÉA
 ‹ï‘Ì“I‚ÈŽg—p—á‚ÍA
 e3dhsp3_fontWithCnt.hsp
 ‚É‘‚«‚Ü‚µ‚½‚Ì‚ÅA‚²——‚­‚¾‚³‚¢B
-
+\n‚Å‰üs‚Å‚«‚Ü‚·B
 
 
 
@@ -12261,9 +12037,11 @@ html{
 @@ƒCƒ“ƒ|[ƒg‚·‚é*.sig ‚ÌƒpƒX•¶Žš—ñB
 
 3. [IN] •Ï”‚Ü‚½‚ÍA”’l@F@adjustuvflag
-@@‚t‚u’l‚ð³‹K‰»‚·‚é‚©‚Ç‚¤‚©‚Ìƒtƒ‰ƒO
-@@³‹K‰»‚·‚éê‡‚Í‚P‚ðŽw’è
-@@‚µ‚È‚¢ê‡‚Í‚O‚ðŽw’è
+@@‚t‚u’l‚ð³‹K‰»‚·‚é‚©‚Ç‚¤‚©‚Ìƒtƒ‰ƒOB
+@@³‹K‰»‚·‚éê‡‚Í‚P‚ðŽw’èB
+@@‚µ‚È‚¢ê‡‚Í‚O‚ðŽw’èB
+@@‚Q‚ðŽw’è‚·‚é‚Æ0.0‚©‚ç1.0‚ÌŠÔ‚ÉƒNƒ‰ƒ“ƒv‚µ‚Ü‚·B
+
 
 4. [IN] •Ï”‚Ü‚½‚ÍA”’l@F@mult
 @@”{—¦‚Ì’l‚ðŽw’è‚µ‚Ä‚­‚¾‚³‚¢B
@@ -12296,7 +12074,10 @@ html{
 
 
 
-ƒo[ƒWƒ‡ƒ“ : ver1.0.0.1
+ƒo[ƒWƒ‡ƒ“ : ver1.0.0.1<BR>
+      ver5.0.5.4‚ÅŠg’£<BR>
+      <BR>
+
 
 %index
 E3DSigLoadFromBuf
@@ -12350,9 +12131,11 @@ resdir = dir_cur + &quot;\\&quot;
 @@“Ç‚Ýž‚ñ‚¾Œ`óƒf[ƒ^‚ðŽ¯•Ê‚·‚éhsid
 
 5. [IN] •Ï”‚Ü‚½‚ÍA”’l@F@adjustuvflag
-@@‚t‚u’l‚ð³‹K‰»‚·‚é‚©‚Ç‚¤‚©‚Ìƒtƒ‰ƒO
-@@³‹K‰»‚·‚éê‡‚Í‚P‚ðŽw’è
-@@‚µ‚È‚¢ê‡‚Í‚O‚ðŽw’è
+@@‚t‚u’l‚ð³‹K‰»‚·‚é‚©‚Ç‚¤‚©‚Ìƒtƒ‰ƒOB
+@@³‹K‰»‚·‚éê‡‚Í‚P‚ðŽw’èB
+@@‚µ‚È‚¢ê‡‚Í‚O‚ðŽw’èB
+@@‚Q‚ðŽw’è‚·‚é‚Æ0.0‚©‚ç1.0‚ÌŠÔ‚ÉƒNƒ‰ƒ“ƒv‚µ‚Ü‚·B
+
 
 6. [IN] •Ï”‚Ü‚½‚ÍA”’l@F@mult
 @@”{—¦‚Ì’l‚ðŽw’è‚µ‚Ä‚­‚¾‚³‚¢B
@@ -12362,7 +12145,10 @@ resdir = dir_cur + &quot;\\&quot;
 
 
 
-ƒo[ƒWƒ‡ƒ“ : ver1.0.0.1
+ƒo[ƒWƒ‡ƒ“ : ver1.0.0.1<BR>
+      ver5.0.5.4‚ÅŠg’£<BR>
+      <BR>
+
 
 %index
 E3DSigImportFromBuf
@@ -12525,7 +12311,7 @@ E3DCheckFullScreenParams
 Easy3D For HSP3 : •`‰æƒpƒ‰ƒ[ƒ^
 
 %prm
-p1,p2,p3,p4,p5,p6,p7
+p1,p2,p3,p4,p5,p6,p7,p8
 p1 : [IN] ”’l‚Ü‚½‚ÍA•Ï”@F@screenw
 p2 : [IN] ”’l‚Ü‚½‚ÍA•Ï”@F@screenh
 p3 : [IN] ”’l‚Ü‚½‚ÍA•Ï”@F@bits
@@ -12533,6 +12319,7 @@ p4 : [OUT] •Ï”@F@validflag
 p5 : [OUT] •Ï”@F@validw
 p6 : [OUT] •Ï”@F@validh
 p7 : [OUT] •Ï”@F@validbits
+p8 : [IN] ”’l‚Ü‚½‚ÍA•Ï”@F@flag
 
 %inst
 ƒtƒ‹ƒXƒNƒŠ[ƒ“‚Ìƒpƒ‰ƒ[ƒ^‚ðƒ`ƒFƒbƒN‚µA—^‚¦‚½ðŒ‚É‹ß‚¢ƒpƒ‰ƒ[ƒ^‚ðŽæ“¾‚µ‚Ü‚·B
@@ -12556,6 +12343,7 @@ E3DInit‚Ìbitsˆø”‚Évalidbits‚ðŽw’è‚µ‚ÄAƒtƒ‹ƒXƒNƒŠ[ƒ“‰Šú‰»‚µ‚Ä‚­‚¾‚³‚¢B
 e3dhsp3_fullscreen.hsp
 ‚É‘‚«‚Ü‚µ‚½‚Ì‚ÅA‚²——‚­‚¾‚³‚¢B
 
+ver5.3.1.3‚Åflagˆø”’Ç‰ÁB
 
 
 
@@ -12587,9 +12375,17 @@ e3dhsp3_fullscreen.hsp
 
 @@‚±‚ê‚ç‚Ì’l‚ÍAvalidflag‚É‚P‚ª‘ã“ü‚³‚ê‚Ä‚¢‚é‚Æ‚«‚Ì‚Ý—LŒø‚Å‚·B
 
+8. [IN] ”’l‚Ü‚½‚ÍA•Ï”@F@flag
+@@‰¡Fc‚ª‚SF‚R‚ÌƒEƒCƒ“ƒhƒEƒTƒCƒY‚ÉŽ©“®“I‚É’²®‚µ‚½‚¢ê‡‚Í‚P‚ðŽw’è‚µ‚Ü‚·B
+@@’²®‹@”\‚ðƒIƒt‚É‚µ‚Äscreenw, screenhˆø”‚»‚Ì‚Ü‚Ü‚Ì’l‚Å”»’è‚·‚é‚É‚Í‚Q‚ðŽw’è‚µ‚Ü‚·B
+@@ƒfƒtƒHƒ‹ƒg’l‚Í‚P‚Å‚·B
+@@flag‚É‚Q‚ðŽw’è‚µ‚½ê‡‚ÍE3DInit‚Ìfullscreenflag‚É‚à‚Q‚ðŽw’è‚µ‚Ä‚­‚¾‚³‚¢B
 
 
-ƒo[ƒWƒ‡ƒ“ : ver1.0.0.1
+
+
+ƒo[ƒWƒ‡ƒ“ : ver1.0.0.1<BR>
+      ver5.3.1.3‚ÅŠg’£
 
 %index
 E3DGetMaxMultiSampleNum
@@ -13944,6 +13740,7 @@ html{
 •\Ž¦—pƒIƒuƒWƒFƒNƒg‚Ì‚Ý‚É‘Î‚µ‚Ä—LŒø‚Å‚·B
 iƒ{[ƒ“‚É‘Î‚µ‚ÄŒÄ‚ñ‚Å‚àA–³ˆÓ–¡‚Å‚·Bj
 
+partno‚É-1‚ðŽw’è‚·‚é‚Æƒ‚ƒfƒ‹‘S‘Ì‚Ì‹«ŠE‹…‚ðŽæ“¾‚Å‚«‚Ü‚·B
 
 
 
@@ -13966,7 +13763,9 @@ html{
 
 
 
-ƒo[ƒWƒ‡ƒ“ : ver1.0.0.1
+ƒo[ƒWƒ‡ƒ“ : ver1.0.0.1<BR>
+      ver5.4.1.4‚ÅŠg’£<BR>
+      
 
 %index
 E3DGetChildJoint
@@ -14251,13 +14050,14 @@ E3DSetUV
 Easy3D For HSP3 : ƒ‚ƒfƒ‹î•ñ
 
 %prm
-p1,p2,p3,p4,p5,p6
+p1,p2,p3,p4,p5,p6,p7
 p1 : [IN] •Ï”‚Ü‚½‚ÍA”’l@F@hsid
 p2 : [IN] •Ï”‚Ü‚½‚ÍA”’l@F@partno
 p3 : [IN] •Ï”‚Ü‚½‚ÍA”’l@F@vertno
 p4 : [IN] •Ï”‚Ü‚½‚ÍA”’l@F@u
 p5 : [IN] •Ï”‚Ü‚½‚ÍA”’l@F@v
 p6 : [IN] •Ï”‚Ü‚½‚ÍA”’l@F@setflag
+p7 : [IN] •Ï”‚Ü‚½‚ÍA”’l@F@clampflag
 
 %inst
 ƒeƒNƒXƒ`ƒƒ[‚Ì‚t‚uÀ•W‚ðƒZƒbƒg‚µ‚Ü‚·B
@@ -14276,19 +14076,23 @@ vertno‚É-1‚ðŽw’è‚·‚é‚ÆA
 ˆ—‚ðs‚¤‚æ‚¤‚É‚µ‚Ü‚µ‚½B
 </strong>
 }html
+ver5.0.4.4‚Åƒrƒ‹ƒ{[ƒh‚É‘Î‰ž‚µ‚Ü‚µ‚½B
 
+ver5.0.5.5‚Åclampflag‚ð’Ç‰Á‚µ‚Ü‚µ‚½B
 
 
 
 ¨ˆø”
 1. [IN] •Ï”‚Ü‚½‚ÍA”’l@F@hsid
-@@Œ`óƒf[ƒ^‚ðŽ¯•Ê‚·‚éid
+@@Œ`óƒf[ƒ^‚ðŽ¯•Ê‚·‚éidB
+@@-1‚ð“n‚·‚Æƒrƒ‹ƒ{[ƒh‚Ìˆ—‚ð‚µ‚Ü‚·B
 
 2. [IN] •Ï”‚Ü‚½‚ÍA”’l@F@partno
-@@ƒp[ƒc‚ðŽ¯•Ê‚·‚é”Ô†
+@@ƒp[ƒc‚ðŽ¯•Ê‚·‚é”Ô†B
+@@hsid‚É-1‚ð“n‚µ‚½ê‡‚Íƒrƒ‹ƒ{[ƒhID‚ðŽw’è‚µ‚Ü‚·B
 
 3. [IN] •Ï”‚Ü‚½‚ÍA”’l@F@vertno
-@@’¸“_‚Ì”Ô†
+@@’¸“_‚Ì”Ô†B
 
 @@-1‚ðŽw’è‚·‚é‚ÆA‘S‚Ä‚Ì’¸“_‚É‘Î‚µ‚Äˆ—‚µ‚Ü‚·B
 
@@ -14306,9 +14110,17 @@ vertno‚É-1‚ðŽw’è‚·‚é‚ÆA
 @@setflag‚É‚P‚ðŽw’è‚·‚é‚ÆA
 @@Žw’è‚t‚u’l‚ðAŠù‘¶‚Ì‚t‚u’l‚ÉA‘«‚µŽZ‚µ‚Ü‚·B
 
+7. [IN] •Ï”‚Ü‚½‚ÍA”’l@F@clampflag
+@@‚P‚ðƒZƒbƒg‚·‚é‚ÆUV‚Ì’l‚ð‚OD‚O‚©‚ç‚PD‚O‚ÌŠÔ‚ÉƒNƒ‰ƒ“ƒv‚µ‚Ü‚·B
+@@‚O‚ðŽw’è‚·‚é‚ÆƒNƒ‰ƒ“ƒv‚Ís‚¢‚Ü‚¹‚ñB
+@@‰½‚àŽw’è‚µ‚È‚©‚Á‚½ê‡‚Í‚O‚Æ“¯‚¶‚Å‚·B
 
 
-ƒo[ƒWƒ‡ƒ“ : ver1.0.0.1
+
+ƒo[ƒWƒ‡ƒ“ : ver1.0.0.1<BR>
+      ver5.0.4.4‚ÅŠg’£<BR>
+      ver5.0.5.5‚ÅŠg’£<BR>
+      
 
 %index
 E3DGetUV
@@ -14583,11 +14395,12 @@ E3DSetBillboardUV
 Easy3D For HSP3 : ƒrƒ‹ƒ{[ƒh
 
 %prm
-p1,p2,p3,p4
+p1,p2,p3,p4,p5
 p1 : [IN] •Ï”‚Ü‚½‚ÍA”’l@F@bbid
 p2 : [IN] •Ï”‚Ü‚½‚ÍA”’l@F@unum
 p3 : [IN] •Ï”‚Ü‚½‚ÍA”’l@F@vnum
 p4 : [IN] •Ï”‚Ü‚½‚ÍA”’l@F@tileno
+p5 : [IN] •Ï”‚Ü‚½‚ÍA”’l@F@revuflag
 
 %inst
 ƒrƒ‹ƒ{[ƒh‚Ì‚t‚u‚ðÝ’è‚µ‚Ü‚·B
@@ -14611,6 +14424,9 @@ p4 : [IN] •Ï”‚Ü‚½‚ÍA”’l@F@tileno
 ‹@”\‚µ‚Ü‚·B
 
 
+ver5.0.4.5‚Årevuflagˆø”‚ð’Ç‰Á‚µ‚Ü‚µ‚½B
+
+
 
 
 
@@ -14625,9 +14441,17 @@ p4 : [IN] •Ï”‚Ü‚½‚ÍA”’l@F@tileno
 4. [IN] •Ï”‚Ü‚½‚ÍA”’l@F@tileno
 @@Ý’è‚µ‚½‚¢ƒeƒNƒXƒ`ƒƒ‚Ìƒ^ƒCƒ‹‚Ì”Ô†
 
+5. [IN] •Ï”‚Ü‚½‚ÍA”’l@F@revuflag
+@@‚P‚ðŽw’è‚·‚é‚ÆƒeƒNƒXƒ`ƒƒ‚ð¶‰E”½“]‚³‚¹‚Ü‚·B
+@@‚O‚ðŽw’è‚·‚é‚Æ‚»‚Ì‚Ü‚ÜB
+@@È—ª‚µ‚½‚Æ‚«‚Í‚Oi‚»‚Ì‚Ü‚Üj‚Æ‚È‚è‚Ü‚·B
 
 
-ƒo[ƒWƒ‡ƒ“ : ver1.0.0.1
+
+
+ƒo[ƒWƒ‡ƒ“ : ver1.0.0.1<BR>
+      ver5.0.4.5‚ÅŠg’£<BR>
+      
 
 %index
 E3DCreateTexture
@@ -15172,6 +14996,8 @@ gndƒtƒ@ƒCƒ‹‚Ì“Ç‚Ýž‚Ý‘¬“x‚ÍAmqoƒtƒ@ƒCƒ‹‚Ì“Ç‚Ýž‚Ý‚æ‚è‚àA
 @@‚t‚u’l‚ð³‹K‰»‚·‚é‚©‚Ç‚¤‚©‚Ìƒtƒ‰ƒO
 @@³‹K‰»‚·‚éê‡‚Í‚P‚ðŽw’è
 @@‚µ‚È‚¢ê‡‚Í‚O‚ðŽw’è
+@@‚Q‚ðŽw’è‚·‚é‚Æ0.0‚©‚ç1.0‚ÌŠÔ‚ÉƒNƒ‰ƒ“ƒv‚µ‚Ü‚·B
+
 
 4. [IN] •Ï”‚Ü‚½‚ÍA”’l@F@mult
 @@“Ç‚Ýž‚Ý”{—¦‚ðŽw’è‚µ‚Ä‚­‚¾‚³‚¢B
@@ -15181,7 +15007,10 @@ gndƒtƒ@ƒCƒ‹‚Ì“Ç‚Ýž‚Ý‘¬“x‚ÍAmqoƒtƒ@ƒCƒ‹‚Ì“Ç‚Ýž‚Ý‚æ‚è‚àA
 
 
 
-ƒo[ƒWƒ‡ƒ“ : ver1.0.0.1
+ƒo[ƒWƒ‡ƒ“ : ver1.0.0.1<BR>
+      ver5.0.5.4‚ÅŠg’£<BR>
+      <BR>
+
 
 %index
 E3DLoadGndFileFromBuf
@@ -15238,11 +15067,16 @@ resdir = dir_cur+ &quot;\\&quot;
 @@‚t‚u’l‚ð³‹K‰»‚·‚é‚©‚Ç‚¤‚©‚Ìƒtƒ‰ƒO
 @@³‹K‰»‚·‚éê‡‚Í‚P‚ðŽw’è
 @@‚µ‚È‚¢ê‡‚Í‚O‚ðŽw’è
+@@‚Q‚ðŽw’è‚·‚é‚Æ0.0‚©‚ç1.0‚ÌŠÔ‚ÉƒNƒ‰ƒ“ƒv‚µ‚Ü‚·B
 
 
 
 
-ƒo[ƒWƒ‡ƒ“ : ver1.0.0.1
+
+ƒo[ƒWƒ‡ƒ“ : ver1.0.0.1<BR>
+      ver5.0.5.4‚ÅŠg’£<BR>
+      <BR>
+
 
 %index
 E3DCreateTextureFromBuf
@@ -15321,13 +15155,14 @@ E3DLoadSoundFromBuf
 Easy3D For HSP3 : ƒTƒEƒ“ƒh
 
 %prm
-p1,p2,p3,p4,p5,p6
+p1,p2,p3,p4,p5,p6,p7
 p1 : [IN] •Ï”@F@buf
 p2 : [IN] •Ï”‚Ü‚½‚ÍA”’l@F@bufleng
 p3 : [IN] •Ï”‚Ü‚½‚ÍA”’l@F@type
 p4 : [IN] •Ï”‚Ü‚½‚ÍA”’l@F@use3dflag
-p5 : [IN] •Ï”‚Ü‚½‚ÍA”’l@F@bufnum
-p6 : [OUT] •Ï”@F@soundid
+p5 : [IN] •Ï”‚Ü‚½‚ÍA”’l@F@reverbflag
+p6 : [IN] •Ï”‚Ü‚½‚ÍA”’l@F@bufnum
+p7 : [OUT] •Ï”@F@soundid
 
 %inst
 ƒƒ‚ƒŠ‚©‚ç‰¹ƒf[ƒ^‚ð“Ç‚Ýž‚ÝA‚h‚c‚ðŽæ“¾‚µ‚Ü‚·B
@@ -15337,6 +15172,9 @@ E3DLoadSound‚Æ“¯‚¶‚Å‚·B
 
 E3DLoadSound‚Ìà–¾‚ð‚¨“Ç‚Ý‚­‚¾‚³‚¢B
 
+Œ»ÝAogg‚É‚Í‚±‚Ì–½—ß‚ÍŽg‚¦‚Ü‚¹‚ñB
+
+ver5.3.1.6‚Åoggdatanumˆø”‚ðíœB
 
 
 
@@ -15348,27 +15186,30 @@ E3DLoadSound‚Ìà–¾‚ð‚¨“Ç‚Ý‚­‚¾‚³‚¢B
 @@ƒoƒbƒtƒ@‚Ì’†‚Ìƒf[ƒ^‚Ì’·‚³(ƒoƒCƒg)
 
 3. [IN] •Ï”‚Ü‚½‚ÍA”’l@F@type
-@@midi‚Ì‚Æ‚«‚Í‚PA‚»‚êˆÈŠO‚Í‚O‚ðŽw’è‚µ‚Ä‚­‚¾‚³‚¢B
+@@‚O‚ðŽw’è‚µ‚Ä‚­‚¾‚³‚¢B
 
 4. [IN] •Ï”‚Ü‚½‚ÍA”’l@F@use3dflag
-@@ƒtƒ@ƒCƒ‹‚ðƒXƒeƒŒƒIƒTƒEƒ“ƒh‚Æ‚µ‚Ä“Ç‚Ýž‚Þê‡‚Í‚O‚ðA
 @@‚R‚cƒTƒEƒ“ƒh‚Æ‚µ‚Ä“Ç‚Ýž‚Þê‡‚Í‚P‚ðŽw’è‚µ‚Ä‚­‚¾‚³‚¢B
-@@Žw’è‚µ‚È‚©‚Á‚½ê‡‚ÍAƒXƒeƒŒƒIƒTƒEƒ“ƒh‚ÆŒ©‚È‚³‚ê‚Ü‚·B
+@@ƒfƒtƒHƒ‹ƒg’l‚Í‚OD
 
-5. [IN] •Ï”‚Ü‚½‚ÍA”’l@F@bufnum
-@@“¯‚¶‚h‚c‚ÌA‚R‚cƒTƒEƒ“ƒh‚ðA“¯Žž‚É‚¢‚­‚Âd‚Ë‚ÄÄ¶‚Å‚«‚é‚©‚ð
-@@Žw’è‚µ‚Ü‚·B
+5. [IN] •Ï”‚Ü‚½‚ÍA”’l@F@reverbflag
+@@ƒŠƒo[ƒu‚ðƒIƒ“‚É‚µ‚½‚¢‚Æ‚«‚Í‚P‚ð
+@@ƒIƒt‚É‚µ‚½‚¢‚Æ‚«‚Í‚O‚ðŽw’è‚µ‚Ä‚­‚¾‚³‚¢B
 
-@@‚R‚cƒTƒEƒ“ƒh‚Å‚Í‚È‚¢ê‡‚ÍA
-@@¡‚Ü‚Å’Ê‚èADirectMusic‚ªAŽ©“®“I‚ÉA
-@@d‚Ë‚ÄÄ¶‚µ‚Ä‚­‚ê‚Ü‚·B
+6. [IN] •Ï”‚Ü‚½‚ÍA”’l@F@bufnum
+@@“¯‚¶‚h‚c‚ÌƒTƒEƒ“ƒh‚ð“¯Žž‚É‚¢‚­‚Âd‚Ë‚ÄÄ¶‚Å‚«‚é‚©‚ðŽw’è‚µ‚Ü‚·B
 
-6. [OUT] •Ï”@F@soundid
+7. [OUT] •Ï”@F@soundid
 @@ì¬‚µ‚½‰¹ƒf[ƒ^‚ðŽ¯•Ê‚·‚é”Ô†‚ª‘ã“ü‚³‚ê‚Ü‚·B
 
 
 
-ƒo[ƒWƒ‡ƒ“ : ver1.0.0.1
+ƒo[ƒWƒ‡ƒ“ : ver1.0.0.1<BR>
+      ver5.3.0.0‚ÅŽd—l•ÏX<BR>
+      ver5.3.0.3‚ÅŠg’£<BR>
+      ver5.3.1.6‚ÅC³<BR>
+      <BR>
+      
 
 %index
 E3DTwistBone
@@ -15425,54 +15266,6 @@ bonenoˆø”‚ÉŽw’è‚µ‚½ƒWƒ‡ƒCƒ“ƒg‚É
 ƒo[ƒWƒ‡ƒ“ : ver1.0.0.1
 
 %index
-E3DSetStartPointOfSound
-‰¹‚ÌÄ¶ŠJŽnˆÊ’u‚ðŽw’è‚µ‚Ü‚·B
-%group
-Easy3D For HSP3 : ƒTƒEƒ“ƒh
-
-%prm
-p1,p2
-p1 : [IN] •Ï”‚Ü‚½‚ÍA”’l@F@soundid
-p2 : [IN] •Ï”‚Ü‚½‚ÍA”’l@F@time
-
-%inst
-‰¹‚ÌÄ¶ŠJŽnˆÊ’u‚ðŽw’è‚µ‚Ü‚·B
-
-E3DPlaySound‚Ì’¼‘O‚ÉŒÄ‚ñ‚Å‚­‚¾‚³‚¢B
-
-E3DLoadSound‚Ìbufnumˆø”‚É‚P‚ðŽw’è‚µ‚Ä‚¢‚ÄA3‚cƒTƒEƒ“ƒh‚Ìê‡‚ÍA
-Ä¶’†‚Ì‰¹‚É‚à‰e‹¿‚µ‚Ü‚·B
-
-timeˆø”‚ÍA
-midi‚Ìê‡‚ÆA‚R‚cƒTƒEƒ“ƒh(wav)‚Ìê‡‚Å
-ˆÓ–¡‚ªˆÙ‚È‚è‚Ü‚·‚Ì‚ÅA’ˆÓ‚µ‚Ä‚­‚¾‚³‚¢B
-
-midi‚ÆA3DƒTƒEƒ“ƒh‚Ì‚½‚ß‚ÌŠÖ”‚Å‚·B
-html{
-<strong>‚R‚cƒTƒEƒ“ƒhˆÈŠO‚Ìwav‚É‚ÍA
-Œø‰Ê‚ª‚ ‚è‚Ü‚¹‚ñB</strong>
-}html
-
-
-
-
-¨ˆø”
-1. [IN] •Ï”‚Ü‚½‚ÍA”’l@F@soundid
-@@‰¹‚ðŽ¯•Ê‚·‚é”Ô†‚ðAŽw’è‚µ‚Ü‚·B
-
-2. [IN] •Ï”‚Ü‚½‚ÍA”’l@F@time
-@@‚R‚cƒTƒEƒ“ƒh‚Ìê‡‚ÍA
-@@ƒ~ƒŠ•bi1•b‚ª‚P‚O‚O‚Oj‚ðŽw’è‚µ‚Ä‚­‚¾‚³‚¢B
-
-@@midi‚Ìê‡‚ÍA4•ª‰¹•„‚Ì”‚É‚æ‚é”’l‚ðŽw’è‚µ‚Ä‚­‚¾‚³‚¢B
-@@4•ª‰¹•„‚ ‚½‚è768‚Ì”’l‚ðŽw’è‚µ‚Ä‚­‚¾‚³‚¢B
-
-
-
-
-ƒo[ƒWƒ‡ƒ“ : ver1.0.0.1
-
-%index
 E3DGetBoneQ
 ƒ{[ƒ“‚ÌƒNƒH[ƒ^ƒjƒIƒ“‚ðŽæ“¾‚µ‚Ü‚·B
 %group
@@ -15485,7 +15278,7 @@ p2 : [IN] ”’l‚Ü‚½‚ÍA•Ï”@F@boneno
 p3 : [IN] ”’l‚Ü‚½‚ÍA•Ï”@F@motid
 p4 : [IN] ”’l‚Ü‚½‚ÍA•Ï”@F@frameno
 p5 : [IN] ”’l‚Ü‚½‚ÍA•Ï”@F@kind
-p6 : [IN, OUT] ”’l‚Ü‚½‚ÍA•Ï”@F@qid
+p6 : [IN][OUT] ”’l‚Ü‚½‚ÍA•Ï”@F@qid
 
 %inst
 ƒ{[ƒ“‚ÌƒNƒH[ƒ^ƒjƒIƒ“‚ðŽæ“¾‚µ‚Ü‚·B
@@ -15540,7 +15333,7 @@ E3DGetCurrentBoneQ‚ð‚¨Žg‚¢‚­‚¾‚³‚¢B
 @@‚·‚é‚É‚ÍA‚Q‚ðŽw’è‚µ‚Ä‚­‚¾‚³‚¢B
 
 
-6. [IN, OUT] ”’l‚Ü‚½‚ÍA•Ï”@F@qid
+6. [IN][OUT] ”’l‚Ü‚½‚ÍA•Ï”@F@qid
 @@ƒNƒH[ƒ^ƒjƒIƒ“‚ðŽ¯•Ê‚·‚é”Ô†B
 @@E3DCreateQ‚ÅŽæ“¾‚µ‚½”Ô†‚ðŽw’è‚µ‚Ä‚­‚¾‚³‚¢B
 
@@ -15559,12 +15352,13 @@ E3DSetBoneQ
 Easy3D For HSP3 : ƒ‚[ƒVƒ‡ƒ“
 
 %prm
-p1,p2,p3,p4,p5
+p1,p2,p3,p4,p5,p6
 p1 : [IN] ”’l‚Ü‚½‚ÍA•Ï”@F@hsid
 p2 : [IN] ”’l‚Ü‚½‚ÍA•Ï”@F@boneno
 p3 : [IN] ”’l‚Ü‚½‚ÍA•Ï”@F@motid
 p4 : [IN] ”’l‚Ü‚½‚ÍA•Ï”@F@frameno
 p5 : [IN] ”’l‚Ü‚½‚ÍA•Ï”@F@qid
+p6 : [IN] ”’l‚Ü‚½‚ÍA•Ï”@F@curboneonly
 
 %inst
 ƒ{[ƒ“‚ÌƒNƒH[ƒ^ƒjƒIƒ“‚ðƒZƒbƒg‚µ‚Ü‚·B
@@ -15576,6 +15370,11 @@ p5 : [IN] ”’l‚Ü‚½‚ÍA•Ï”@F@qid
 E3DFillUpMotion‚ðŒÄ‚Ño‚³‚È‚¢‚ÆA
 ‘¼‚ÌƒtƒŒ[ƒ€‚É‚ÍA”½‰f‚³‚ê‚Ü‚¹‚ñB
 
+ver5.4.0.0‚Åcurboneonlyƒtƒ‰ƒO‚ð’Ç‰Á‚µ‚Ü‚µ‚½B
+‚±‚Ìƒtƒ‰ƒO‚ª‚O‚Ì‚Æ‚«i¡‚Ü‚Å‚Æ“¯‚¶“®ìj‚ÍAƒNƒH[ƒ^ƒjƒIƒ“‚ðƒZƒbƒg‚µ‚½ŒãAe‚É‚³‚©‚Ì‚Ú‚Á‚ÄŽp¨‚ÌŒvŽZ‚ð‚µ‚Ü‚·B
+‚±‚ÌŒvŽZ‚ÍE3DFillUpMotion‚Å‚às‚í‚ê‚é‚Ì‚ÅA‘½”‚Ìƒ{[ƒ“‚ÉSetBoneQ‚ð‚·‚é‚Æ‚©‚È‚è‚Ìƒ^ƒCƒ€ƒƒX‚É‚È‚è‚Ü‚·B
+curboneonly‚É‚P‚ðƒZƒbƒg‚·‚é‚Æ‚±‚ÌŒvŽZ‚ðƒXƒLƒbƒv‚µ‚Ü‚·B
+curboneonly‚É‚P‚ðƒZƒbƒg‚µ‚Ä‘½”‚Ìƒ{[ƒ“‚ÌÝ’è‚ðs‚Á‚½Œã‚ÉAˆê‰ñE3DFillUpMotion‚ð‚·‚ê‚Î—Ç‚¢‚±‚Æ‚É‚È‚è‚Ü‚·B
 
 
 
@@ -15603,9 +15402,14 @@ E3DFillUpMotion‚ðŒÄ‚Ño‚³‚È‚¢‚ÆA
 @@qid‚ÅŽ¯•Ê‚³‚ê‚éƒNƒH[ƒ^ƒjƒIƒ“‚Ì“à—e‚ðA
 @@ƒ{[ƒ“‚ÌŽp¨‚ÉƒZƒbƒg‚µ‚Ü‚·B
 
+6. [IN] ”’l‚Ü‚½‚ÍA•Ï”@F@curboneonly
+@@‘Oq‚ð‚¨“Ç‚Ý‰º‚³‚¢B
 
 
-ƒo[ƒWƒ‡ƒ“ : ver1.0.0.1
+
+ƒo[ƒWƒ‡ƒ“ : ver1.0.0.1<BR>
+      ver5.4.0.0‚ÅŠg’£<BR>
+      
 
 %index
 E3DIsSoundPlaying
@@ -15823,6 +15627,8 @@ filename‚ÅŽw’è‚µ‚½’n–Êƒf[ƒ^‚ð
 3. [IN] •Ï”‚Ü‚½‚ÍA”’l@F@adjustuvflag
 @@UVÀ•W‚ð³‹K‰»‚µ‚½‚¢‚Æ‚«‚Í‚P‚ðA
 @@‚»‚¤‚Å‚È‚¢‚Æ‚«‚ÍA‚O‚ðŽw’è‚µ‚Ä‚­‚¾‚³‚¢B
+@@‚Q‚ðŽw’è‚·‚é‚Æ0.0‚©‚ç1.0‚ÌŠÔ‚ÉƒNƒ‰ƒ“ƒv‚µ‚Ü‚·B
+
 
 4. [IN] •Ï”‚Ü‚½‚ÍA”’l@F@mult
 @@Œ`óƒf[ƒ^‚ÌÀ•W‚ÉŠ|‚¯‚é”’lB
@@ -15853,7 +15659,10 @@ filename‚ÅŽw’è‚µ‚½’n–Êƒf[ƒ^‚ð
 ÅŒã‚ÉAˆÚ“®‚µ‚Ü‚·B
 
 
-ƒo[ƒWƒ‡ƒ“ : ver1.0.0.1
+ƒo[ƒWƒ‡ƒ“ : ver1.0.0.1<BR>
+      ver5.0.5.4‚ÅŠg’£<BR>
+      <BR>
+
 
 %index
 E3DLoadMQOFileAsMovableAreaFromBuf
@@ -16035,13 +15844,18 @@ E3DLoadMQOFileAsGround‚Ìà–¾‚à‚¨“Ç‚Ý‚­‚¾‚³‚¢B
 @@UVÀ•W‚ð³‹K‰»‚µ‚½‚¢‚Æ‚«‚Í‚P‚ðA
 @@‚»‚¤‚Å‚È‚¢‚Æ‚«‚ÍA‚O‚ðŽw’è‚µ‚Ä‚­‚¾‚³‚¢B
 @@‰½‚àŽw’è‚µ‚È‚¢‚Æ‚«‚ÍA‚O‚Æ‚µ‚Äˆµ‚í‚ê‚Ü‚·B
+@@‚Q‚ðŽw’è‚·‚é‚Æ0.0‚©‚ç1.0‚ÌŠÔ‚ÉƒNƒ‰ƒ“ƒv‚µ‚Ü‚·B
+
 
 4. [OUT] •Ï”@F@threadid
 @@ì¬‚µ‚½ƒXƒŒƒbƒh‚ðŽ¯•Ê‚·‚é‚h‚c‚ªA‘ã“ü‚³‚ê‚Ü‚·B
 
 
 
-ƒo[ƒWƒ‡ƒ“ : ver1.0.0.1
+ƒo[ƒWƒ‡ƒ“ : ver1.0.0.1<BR>
+      ver5.0.5.4‚ÅŠg’£<BR>
+      <BR>
+
 
 %index
 E3DSigLoadThread
@@ -16096,9 +15910,11 @@ E3DSigLoad‚Ìà–¾‚àA‚¨“Ç‚Ý‚­‚¾‚³‚¢B
 @@*.sig ‚ÌƒpƒX•¶Žš—ñB
 
 2. [IN] •Ï”‚Ü‚½‚ÍA”’l@F@adjustuvflag
-@@‚t‚u’l‚ð³‹K‰»‚·‚é‚©‚Ç‚¤‚©‚Ìƒtƒ‰ƒO
-@@³‹K‰»‚·‚éê‡‚Í‚P‚ðŽw’è
-@@‚µ‚È‚¢ê‡‚Í‚O‚ðŽw’è
+@@‚t‚u’l‚ð³‹K‰»‚·‚é‚©‚Ç‚¤‚©‚Ìƒtƒ‰ƒOB
+@@³‹K‰»‚·‚éê‡‚Í‚P‚ðŽw’èB
+@@‚µ‚È‚¢ê‡‚Í‚O‚ðŽw’èB
+@@‚Q‚ðŽw’è‚·‚é‚Æ0.0‚©‚ç1.0‚ÌŠÔ‚ÉƒNƒ‰ƒ“ƒv‚µ‚Ü‚·B
+
 
 3. [IN] •Ï”‚Ü‚½‚ÍA”’l@F@mult
 @@“Ç‚Ýž‚Ý”{—¦‚ðŽw’è‚µ‚Ä‚­‚¾‚³‚¢B
@@ -16111,7 +15927,10 @@ E3DSigLoad‚Ìà–¾‚àA‚¨“Ç‚Ý‚­‚¾‚³‚¢B
 
 
 
-ƒo[ƒWƒ‡ƒ“ : ver1.0.0.1
+ƒo[ƒWƒ‡ƒ“ : ver1.0.0.1<BR>
+      ver5.0.5.4‚ÅŠg’£<BR>
+      <BR>
+
 
 %index
 E3DSigLoadFromBufThread
@@ -16173,9 +15992,11 @@ E3DSigLoadFromBuf‚Ìà–¾‚à‚¨“Ç‚Ý‚­‚¾‚³‚¢B
 @@ƒoƒbƒtƒ@‚Ì’†‚Ìƒf[ƒ^‚Ì’·‚³
 
 4. [IN] •Ï”‚Ü‚½‚ÍA”’l@F@adjustuvflag
-@@‚t‚u’l‚ð³‹K‰»‚·‚é‚©‚Ç‚¤‚©‚Ìƒtƒ‰ƒO
-@@³‹K‰»‚·‚éê‡‚Í‚P‚ðŽw’è
-@@‚µ‚È‚¢ê‡‚Í‚O‚ðŽw’è
+@@‚t‚u’l‚ð³‹K‰»‚·‚é‚©‚Ç‚¤‚©‚Ìƒtƒ‰ƒOB
+@@³‹K‰»‚·‚éê‡‚Í‚P‚ðŽw’èB
+@@‚µ‚È‚¢ê‡‚Í‚O‚ðŽw’èB
+@@‚Q‚ðŽw’è‚·‚é‚Æ0.0‚©‚ç1.0‚ÌŠÔ‚ÉƒNƒ‰ƒ“ƒv‚µ‚Ü‚·B
+
 
 5. [IN] •Ï”‚Ü‚½‚ÍA”’l@F@mult
 @@”{—¦‚ðŽw’è‚µ‚Ä‚­‚¾‚³‚¢B
@@ -16188,7 +16009,10 @@ E3DSigLoadFromBuf‚Ìà–¾‚à‚¨“Ç‚Ý‚­‚¾‚³‚¢B
 
 
 
-ƒo[ƒWƒ‡ƒ“ : ver1.0.0.1
+ƒo[ƒWƒ‡ƒ“ : ver1.0.0.1<BR>
+      ver5.0.5.4‚ÅŠg’£<BR>
+      <BR>
+
 
 %index
 E3DLoadMQOFileAsMovableAreaThread
@@ -16444,9 +16268,11 @@ E3DLoadGNDFile‚Ìà–¾‚à‚¨“Ç‚Ý‚­‚¾‚³‚¢B
 @@*.gnd ‚ÌƒpƒX•¶Žš—ñB
 
 2. [IN] •Ï”‚Ü‚½‚ÍA”’l@F@adjustuvflag
-@@‚t‚u’l‚ð³‹K‰»‚·‚é‚©‚Ç‚¤‚©‚Ìƒtƒ‰ƒO
-@@³‹K‰»‚·‚éê‡‚Í‚P‚ðŽw’è
-@@‚µ‚È‚¢ê‡‚Í‚O‚ðŽw’è
+@@‚t‚u’l‚ð³‹K‰»‚·‚é‚©‚Ç‚¤‚©‚Ìƒtƒ‰ƒOB
+@@³‹K‰»‚·‚éê‡‚Í‚P‚ðŽw’èB
+@@‚µ‚È‚¢ê‡‚Í‚O‚ðŽw’èB
+@@‚Q‚ðŽw’è‚·‚é‚Æ0.0‚©‚ç1.0‚ÌŠÔ‚ÉƒNƒ‰ƒ“ƒv‚µ‚Ü‚·B
+
 
 3. [IN] •Ï”‚Ü‚½‚ÍA”’l@F@mult
 @@“Ç‚Ýž‚Ý”{—¦‚ðŽw’è‚µ‚Ä‚­‚¾‚³‚¢B
@@ -16458,7 +16284,9 @@ E3DLoadGNDFile‚Ìà–¾‚à‚¨“Ç‚Ý‚­‚¾‚³‚¢B
 
 
 
-ƒo[ƒWƒ‡ƒ“ : ver1.0.0.1
+ƒo[ƒWƒ‡ƒ“ : ver1.0.0.1<BR>
+      ver5.0.5.4‚ÅŠg’£<BR>
+      
 
 %index
 E3DLoadGndFileFromBufThread
@@ -16521,16 +16349,21 @@ E3DLoadGNDFileFromBuf‚Ìà–¾‚à‚¨“Ç‚Ý‚­‚¾‚³‚¢B
 @@ƒoƒbƒtƒ@‚Ì’†‚Ìƒf[ƒ^‚Ì’·‚³
 
 4. [IN] •Ï”‚Ü‚½‚ÍA”’l@F@adjustuvflag
-@@‚t‚u’l‚ð³‹K‰»‚·‚é‚©‚Ç‚¤‚©‚Ìƒtƒ‰ƒO
-@@³‹K‰»‚·‚éê‡‚Í‚P‚ðŽw’è
-@@‚µ‚È‚¢ê‡‚Í‚O‚ðŽw’è
+@@‚t‚u’l‚ð³‹K‰»‚·‚é‚©‚Ç‚¤‚©‚Ìƒtƒ‰ƒOB
+@@³‹K‰»‚·‚éê‡‚Í‚P‚ðŽw’èB
+@@‚µ‚È‚¢ê‡‚Í‚O‚ðŽw’èB
+@@‚Q‚ðŽw’è‚·‚é‚Æ0.0‚©‚ç1.0‚ÌŠÔ‚ÉƒNƒ‰ƒ“ƒv‚µ‚Ü‚·B
+
 
 5. [OUT] •Ï”@F@threadid
 @@ì¬‚µ‚½ƒXƒŒƒbƒh‚ðŽ¯•Ê‚·‚é‚h‚c‚ªA‘ã“ü‚³‚ê‚Ü‚·B
 
 
 
-ƒo[ƒWƒ‡ƒ“ : ver1.0.0.1
+ƒo[ƒWƒ‡ƒ“ : ver1.0.0.1<BR>
+      ver5.0.5.4‚ÅŠg’£<BR>
+      <BR>
+
 
 %index
 E3DAddMotionThread
@@ -16743,10 +16576,10 @@ COL_MQCLASSIC
 @@emissive—L‚è
 
 COL_TOON1
-@@ƒeƒNƒXƒ`ƒƒ‚ðŽg—p‚µ‚½ƒgƒD[ƒ“•\Ž¦
-@@’¸“_F‚ÍÝ’è‚µ‚È‚¢‚±‚Æ‚ð„§B
-COL_TOON0
 @@ƒsƒNƒZƒ‹ƒVƒF[ƒ_[‚ðŽg—p‚µ‚½ƒgƒD[ƒ“•\Ž¦B
+COL_PPHONG
+@@ƒsƒNƒZƒ‹ƒVƒF[ƒ_[‚ðŽg—p‚µ‚½Phong•\Ž¦B
+
 
 F‚ÌƒI[ƒo[ƒtƒ[ˆ—‚ÍA
 e3dhsp3.as‚ÌOVERFLOW_ ‚ÅŽn‚Ü‚é’è”‚ÅA
@@ -16764,7 +16597,9 @@ OVERFLOW_ORG
 
 ver3.0.0.1‚Å‚ÌŽd—l•ÏX‚É‚æ‚èAŒ»Ý‚ÍACOL_PHONG‚ÆCOL_TOON1‚ÆCOL_TOON0‚Ì‚Ý‚ÌƒTƒ|[ƒg‚Æ‚È‚è‚Ü‚·iver3.0.3.4Œ»Ýj
 
+ver5.2.1.5‚ÅCOL_PPHONG‚ð’Ç‰Á‚µ‚Ü‚µ‚½B
 
+ver5.2.2.0‚ÅCOL_TOON1‚ÆCOL_TOON0‚Í“‡‚³‚êCOL_TOON1‚Æ‚È‚è‚Ü‚µ‚½B
 
 
 
@@ -16781,7 +16616,8 @@ ver3.0.0.1‚Å‚ÌŽd—l•ÏX‚É‚æ‚èAŒ»Ý‚ÍACOL_PHONG‚ÆCOL_TOON1‚ÆCOL_TOON0‚Ì‚Ý‚ÌƒTƒ|
 
 
 
-ƒo[ƒWƒ‡ƒ“ : ver1.0.0.1
+ƒo[ƒWƒ‡ƒ“ : ver1.0.0.1<BR>
+      ver5.2.1.5‚ÅŠg’£
 
 %index
 E3DSetLightBlendMode
@@ -17297,7 +17133,7 @@ NOR‚ÍA
 EXC‚ÍA‚·‚Å‚ÉÝ’è‚µ‚Ä‚ ‚é‰e‹¿“xî•ñ‚ðA”jŠü‚µ‚Ä‚©‚çA‰e‹¿“xƒf[ƒ^‚ðÝ’è‚µ‚Ü‚·B
 ADD‚ÍA‚·‚Å‚ÉÝ’è‚µ‚Ä‚ ‚é‰e‹¿“x‚Ì”äd‚ÉAŽw’è‚µ‚½”äd‚ð‘«‚µŽZ‚µ‚Ü‚·B
 SUB‚ÍA‚·‚Å‚ÉÝ’è‚µ‚Ä‚ ‚é‰e‹¿“x‚Ì”äd‚©‚çAŽw’è‚µ‚½”äd‚ðˆø‚«ŽZ‚µ‚Ü‚·B
-ERA‚ÍAŽw’è‚µ‚½ƒ{[ƒ“‚Ì‰e‹¿“xƒf[ƒ^‚ðíœ‚µ‚Ü‚·B
+
 
 calcmode‚É‚Â‚¢‚Ä‚ÍA
 E3DGetInfElem‚Ìà–¾‚ð‚²——‚­‚¾‚³‚¢B
@@ -17334,6 +17170,11 @@ html{
 html{
 <strong>‰e‹¿“x‚Ì•ÒW‚ª‚·‚×‚ÄI‚í‚Á‚½‚çAE3DCreateSkinMat‚ðŒÄ‚ñ‚Å</strong>
 }html•\Ž¦‚É”½‰f‚³‚¹‚Ä‚­‚¾‚³‚¢B
+
+PAINT_ERA‚ÍŽg‚¦‚Ü‚¹‚ñB
+‰e‹¿“x‚ðÁ‚µ‚½‚¢ê‡‚Í
+E3DDeleteInfElem‚ð‚²Žg—p‚­‚¾‚³‚¢B
+
 
 
 
@@ -17459,6 +17300,11 @@ html{
 }html‚ÉA-1‚ðŽw’è‚·‚é‚ÆA
 ‘Sƒp[ƒc‚Ì‘S’¸“_‚Ì‰e‹¿“x‚ð
 ƒfƒtƒHƒ‹ƒgó‘Ô‚É–ß‚µ‚Ü‚·B
+
+‚±‚Ì–½—ß‚ðŒÄ‚ñ‚¾‚¾‚¯‚Å‚Í•\Ž¦‚É‚Í”½‰f‚³‚ê‚Ü‚¹‚ñB
+html{
+<strong>‰e‹¿“x‚Ì•ÒW‚ª‚·‚×‚ÄI‚í‚Á‚½‚çAE3DCreateSkinMat‚ðŒÄ‚ñ‚Å</strong>
+}html•\Ž¦‚É”½‰f‚³‚¹‚Ä‚­‚¾‚³‚¢B
 
 
 
@@ -17807,45 +17653,6 @@ E3DChkConfGround2‚Æ“¯‚¶‚Å‚·B
 ƒo[ƒWƒ‡ƒ“ : ver1.0.0.1
 
 %index
-E3DGetMidiMusicTime
-Midi‚Ìƒ~ƒ…[ƒWƒbƒNƒ^ƒCƒ€‚ðŽæ“¾‚µ‚Ü‚·B
-%group
-Easy3D For HSP3 : ƒTƒEƒ“ƒh
-
-%prm
-p1,p2
-p1 : [IN] •Ï”‚Ü‚½‚ÍA”’l@F@soundid
-p2 : [OUT] •Ï”@F@musictime
-
-%inst
-Midi‚Ìƒ~ƒ…[ƒWƒbƒNƒ^ƒCƒ€‚ðŽæ“¾‚µ‚Ü‚·B
-
-4•ª‰¹•„“–‚½‚èA768‚Ì’l‚ªŽæ“¾‚³‚ê‚Ü‚·B
-
-E3DLoadSound‚ÅMidi‚ð“Ç‚Ýž‚ñ‚Å‚¢‚é‚Æ‚«‚Ì‚ÝA‹@”\‚µ‚Ü‚·B
-
-ŽÀÛ‚ÉŽg—p‚·‚éÛ‚É‚ÍA
-E3DPlaySound‚Ì’¼‘O‚ÉŽæ“¾‚µ‚½musictime‚ð
-ƒvƒŒƒC’†‚ÉŽæ“¾‚µ‚½musictime‚©‚çˆø‚¢‚½’l‚Å
-Œ»ÝˆÊ’u‚ðŠm”F‚µ‚Ü‚·B
-
-
-
-
-
-¨ˆø”
-1. [IN] •Ï”‚Ü‚½‚ÍA”’l@F@soundid
-@@ƒTƒEƒ“ƒh‚ðŽ¯•Ê‚·‚é‚h‚c
-@@E3DLoadSound‚ÅŽæ“¾‚µ‚½’l‚ðŽw’è‚µ‚Ä‚­‚¾‚³‚¢B
-
-2. [OUT] •Ï”@F@musictime
-@@Œ»Ý‚Ìƒ~ƒ…[ƒWƒbƒNƒ^ƒCƒ€‚ª‘ã“ü‚³‚ê‚Ü‚·B
-
-
-
-ƒo[ƒWƒ‡ƒ“ : ver1.0.0.1
-
-%index
 E3DSetNextMotionFrameNo
 ƒ‚[ƒVƒ‡ƒ“‚ÌÅŒã‚ÌƒtƒŒ[ƒ€”Ô†‚É“ž’B‚µ‚½ŒãA‚Ç‚Ìƒ‚[ƒVƒ‡ƒ“‚ÌA‚Ç‚ÌƒtƒŒ[ƒ€”Ô†‚ÉAƒWƒƒƒ“ƒv‚·‚é‚©‚ðŽw’è‚Å‚«‚Ü‚·B
 %group
@@ -17886,7 +17693,7 @@ E3DSetLinearFogParams
 Easy3D For HSP3 : •`‰æƒpƒ‰ƒ[ƒ^
 
 %prm
-p1,p2,p3,p4
+p1,p2,p3,p4,p5,p6,p7
 p1 : [IN] ”’l‚Ü‚½‚ÍA•Ï”@F@enable
 p2 : [IN] ”’l‚Ü‚½‚ÍA•Ï”@F@r
 p3 : [IN] ”’l‚Ü‚½‚ÍA•Ï”@F@g
@@ -17900,6 +17707,14 @@ p7 : [IN] ”’l‚Ü‚½‚ÍA•Ï”@F@hsid
 ’¸“_ƒtƒHƒO‚È‚Ì‚ÅAƒ|ƒŠƒSƒ“‚Ì‚È‚¢•”•ª‚É‚ÍAƒtƒHƒO‚Í‚©‚©‚è‚Ü‚¹‚ñB
 ‰æ–Ê‘S‘Ì‚ÉƒtƒHƒO‚ð‚©‚¯‚½‚¢ê‡‚ÍA
 E3DCreateBG‚ÅA”wŒi‚ðì¬‚µ‚Ä‚­‚¾‚³‚¢Bi”wŒi‚Íƒ|ƒŠƒSƒ“‚Å‚·Bj
+
+
+hsid, ƒrƒ‹ƒ{[ƒh‚ðì¬‚µ‚Ä‚©‚çŒÄ‚Ño‚µ‚Ä‚­‚¾‚³‚¢B
+E3DCreateBG‚æ‚è‚à‘O‚ÅŒÄ‚Ño‚µ‚Ä‚­‚¾‚³‚¢B
+
+
+E3DSetHeightFogParams‚Æ‚Ì¬Ý‚Ío—ˆ‚Ü‚¹‚ñB
+
 
 ‹ï‘Ì“I‚ÈŽg—p—á‚ÍA
 e3dhsp3_wall.hsp
@@ -17919,7 +17734,7 @@ e3dhsp3_wall.hsp
 4. [IN] ”’l‚Ü‚½‚ÍA•Ï”@F@b
 @@ƒtƒHƒO‚ÌF‚ðAir, g, bj‚ÅŽw’è‚µ‚Ü‚·B
 
-5 [IN] ”’l‚Ü‚½‚ÍA•Ï”@F@start
+5. [IN] ”’l‚Ü‚½‚ÍA•Ï”@F@start
 6. [IN] ”’l‚Ü‚½‚ÍA•Ï”@F@end
 @@ƒtƒHƒO‚ªŠJŽn‚³‚ê‚é‹——£‚ðstart‚ÉA
 @@ƒtƒHƒO‚ªI—¹‚·‚éiˆê”Ô”Z‚­‚È‚éj‹——£‚ðend‚É
@@ -18286,7 +18101,8 @@ e3dhsp3_MotionAccelerator.hsp
 @@*.moa‚ÌƒpƒX•¶Žš—ñB
 
 3. [IN] ”’l‚Ü‚½‚Í•Ï”@F@FillUpFrameLength
-@@•âŠÔƒ‚[ƒVƒ‡ƒ“‚ÌƒtƒŒ[ƒ€’·
+@@•âŠÔƒ‚[ƒVƒ‡ƒ“‚ÌƒtƒŒ[ƒ€’·B
+@@ver5.3.2.6ˆÈ~‚Å‚ÍA-1‚ðŽw’è‚·‚é‚Æmoaƒtƒ@ƒCƒ‹‚É‹Lq‚³‚ê‚Ä‚¢‚éƒtƒŒ[ƒ€’·‚ð“Ç‚Ýž‚Ý‚Ü‚·B
 
 4. [IN] •Ï”‚Ü‚½‚ÍA”’l@F@mvmult
 @@ƒ‚[ƒVƒ‡ƒ“‚ÌˆÚ“®¬•ª‚ÉŠ|‚¯‚é”{—¦
@@ -20053,9 +19869,11 @@ sigƒtƒ@ƒCƒ‹‚Ì“Ç‚Ýž‚Ý‘¬“x‚ÍAmqoƒtƒ@ƒCƒ‹‚Ì“Ç‚Ýž‚Ý‚æ‚è‚àA
 @@“Ç‚Ýž‚ñ‚¾Œ`óƒf[ƒ^‚ðŽ¯•Ê‚·‚éhsid
 
 3. [IN] •Ï”‚Ü‚½‚ÍA”’l@F@adjustuvflag
-@@‚t‚u’l‚ð³‹K‰»‚·‚é‚©‚Ç‚¤‚©‚Ìƒtƒ‰ƒO
-@@³‹K‰»‚·‚éê‡‚Í‚P‚ðŽw’è
-@@‚µ‚È‚¢ê‡‚Í‚O‚ðŽw’è
+@@‚t‚u’l‚ð³‹K‰»‚·‚é‚©‚Ç‚¤‚©‚Ìƒtƒ‰ƒOB
+@@³‹K‰»‚·‚éê‡‚Í‚P‚ðŽw’èB
+@@‚µ‚È‚¢ê‡‚Í‚O‚ðŽw’èB
+@@‚Q‚ðŽw’è‚·‚é‚Æ0.0‚©‚ç1.0‚ÌŠÔ‚ÉƒNƒ‰ƒ“ƒv‚µ‚Ü‚·B
+
 
 4. [IN] •Ï”‚Ü‚½‚ÍA”’l@F@mult
 @@“Ç‚Ýž‚Ý”{—¦‚ðŽw’è‚µ‚Ä‚­‚¾‚³‚¢B
@@ -20064,7 +19882,10 @@ sigƒtƒ@ƒCƒ‹‚Ì“Ç‚Ýž‚Ý‘¬“x‚ÍAmqoƒtƒ@ƒCƒ‹‚Ì“Ç‚Ýž‚Ý‚æ‚è‚àA
 
 
 
-ƒo[ƒWƒ‡ƒ“ : ver3.0.2.5‚Å’Ç‰Á
+ƒo[ƒWƒ‡ƒ“ : ver3.0.2.5‚Å’Ç‰Á<BR>
+      ver5.0.5.4‚ÅŠg’£<BR>
+      <BR>
+
 
 %index
 E3DLoadSigFileAsGroundFromBuf
@@ -20119,9 +19940,11 @@ resdir = dir_cur+ &quot;\\&quot;
 @@“Ç‚Ýž‚ñ‚¾Œ`óƒf[ƒ^‚ðŽ¯•Ê‚·‚éhsid
 
 5. [IN] •Ï”‚Ü‚½‚ÍA”’l@F@adjustuvflag
-@@‚t‚u’l‚ð³‹K‰»‚·‚é‚©‚Ç‚¤‚©‚Ìƒtƒ‰ƒO
-@@³‹K‰»‚·‚éê‡‚Í‚P‚ðŽw’è
-@@‚µ‚È‚¢ê‡‚Í‚O‚ðŽw’è
+@@‚t‚u’l‚ð³‹K‰»‚·‚é‚©‚Ç‚¤‚©‚Ìƒtƒ‰ƒOB
+@@³‹K‰»‚·‚éê‡‚Í‚P‚ðŽw’èB
+@@‚µ‚È‚¢ê‡‚Í‚O‚ðŽw’èB
+@@‚Q‚ðŽw’è‚·‚é‚Æ0.0‚©‚ç1.0‚ÌŠÔ‚ÉƒNƒ‰ƒ“ƒv‚µ‚Ü‚·B
+
 
 6. [IN] •Ï”‚Ü‚½‚ÍA”’l@F@mult
 @@“Ç‚Ýž‚Ý”{—¦‚ðŽw’è‚µ‚Ä‚­‚¾‚³‚¢B
@@ -20130,7 +19953,10 @@ resdir = dir_cur+ &quot;\\&quot;
 
 
 
-ƒo[ƒWƒ‡ƒ“ : ver3.0.2.5‚Å’Ç‰Á
+ƒo[ƒWƒ‡ƒ“ : ver3.0.2.5‚Å’Ç‰Á<BR>
+      ver5.0.5.4‚ÅŠg’£<BR>
+      <BR>
+
 
 %index
 E3DGetCenterPos
@@ -20254,56 +20080,6 @@ facenoˆø”‚É‚ÍA‚O‚©‚çfacenum - 1‚Ü‚Å‚Ì’l‚ð
 6. [OUT] •Ï”@F@nz
 @@ŽÀ”Œ^‚Ì•Ï”B
 @@–@ü‚ÌƒxƒNƒgƒ‹‚ª‘ã“ü‚³‚ê‚Ü‚·B
-
-
-
-ƒo[ƒWƒ‡ƒ“ : ver3.0.3.0‚Å’Ç‰Á
-
-%index
-E3DGetReferenceTime
-ƒXƒeƒŒƒIƒTƒEƒ“ƒh‚ÌƒŠƒtƒ@ƒŒƒ“ƒXƒ^ƒCƒ€‚ðŽæ“¾‚µ‚Ü‚·B
-%group
-Easy3D For HSP3 : ƒTƒEƒ“ƒh
-
-%prm
-p1,p2,p3
-p1 : [IN] •Ï”‚Ü‚½‚ÍA”’l@F@soundid
-p2 : [OUT] •Ï”@F@mtime
-p3 : [OUT] •Ï”@F@reftime
-
-%inst
-ƒXƒeƒŒƒIƒTƒEƒ“ƒh‚ÌƒŠƒtƒ@ƒŒƒ“ƒXƒ^ƒCƒ€‚ðŽæ“¾‚µ‚Ü‚·B
-
-‚±‚Ì–½—ß‚ÍA‚RDƒTƒEƒ“ƒh‚É‚ÍŽg‚¦‚Ü‚¹‚ñB
-ƒXƒeƒŒƒIƒTƒEƒ“ƒh‚Ìwav‚ÉŽg—p‚Å‚«‚Ü‚·B
-
-ƒŠƒtƒ@ƒŒƒ“ƒXƒ^ƒCƒ€‚ÍA‚P•b‚ ‚½‚è–ñ10,000,000‚Ì’l‚Å‚·B
-
-‚±‚ÌŽžŠÔ‚Í‰¹ƒf[ƒ^‚ð“Ç‚Ýž‚ñ‚¾’¼Œã‚©‚ç‘‰Á‚µ‚Ä‚¢‚«‚Ü‚·B
-‚Å‚·‚Ì‚ÅAÄ¶‚µ‚Ä‚©‚ç‚ÌŽžŠÔ‚ð‘ª‚è‚½‚¢‚Æ‚«‚ÍA
-Ä¶’¼Œã‚ÌƒŠƒtƒ@ƒŒƒ“ƒXƒ^ƒCƒ€‚ðŽæ“¾‚µ‚Ä‚¨‚¢‚ÄA
-Œ»Ý‚ÌƒŠƒtƒ@ƒŒƒ“ƒXƒ^ƒCƒ€‚©‚çˆø‚«ŽZ‚µ‚ÄŒvŽZ‚µ‚Ä‚­‚¾‚³‚¢B
-
-
-
-
-
-¨ˆø”
-1. [IN] •Ï”‚Ü‚½‚ÍA”’l@F@soundid
-@@‰¹ƒf[ƒ^‚ðŽ¯•Ê‚·‚éID‚ðŽw’è‚µ‚Ä‚­‚¾‚³‚¢B
-
-2. [OUT] •Ï”@F@mtime
-@@®”Œ^‚Ì•Ï”
-@@ƒ~ƒ…[ƒWƒbƒNƒ^ƒCƒ€‚ª‘ã“ü‚³‚ê‚Ü‚·B
-@@‚S•ª‰¹•„‚ ‚½‚è768‚Ì’l‚Å‚·B
-@@MIDI—p‚ÌŽžŠÔ‚Å‚·B
-
-3. [OUT] •Ï”@F@reftime
-@@ŽÀ”Œ^‚Ì•Ï”
-@@ƒŠƒtƒ@ƒŒƒ“ƒXƒ^ƒCƒ€‚ª‘ã“ü‚³‚ê‚Ü‚·B
-@@‚P•b‚ ‚½‚è–ñ10,000,000‚Ì’l‚Å‚·B
-@@wav—p‚ÌŽžŠÔ‚Å‚·B
-
 
 
 
@@ -20492,7 +20268,7 @@ p3 : [IN] •¶Žš—ñ‚Ü‚½‚ÍA•¶Žš—ñ•Ï”@F@motname
 ƒo[ƒWƒ‡ƒ“ : ver3.0.3.8‚Å’Ç‰Á
 
 %index
- E3DGetMaterialNoByName
+E3DGetMaterialNoByName
 ƒ}ƒeƒŠƒAƒ‹–¼‚©‚çƒ}ƒeƒŠƒAƒ‹”Ô†‚ðŽæ“¾‚µ‚Ü‚·B
 %group
 Easy3D For HSP3 : ƒ}ƒeƒŠƒAƒ‹
@@ -21204,8 +20980,14 @@ blendmode 0, 1, 2‚ÍƒAƒ‹ƒtƒ@ƒeƒXƒg‚ÌÝ’è‚à•ÏX‚µ‚Ü‚·B
 ƒAƒ‹ƒtƒ@ƒeƒXƒg‚ÌÝ’è‚ð•ÏX‚µ‚½‚­‚È‚¢ê‡‚Í
 blendmode 100, 101, 102‚ð‚¨Žg‚¢‚­‚¾‚³‚¢B
 
+ver5.0.5.0‚Åƒ‚[ƒh‚ª‚S‚Â‘‚¦‚Ü‚µ‚½B
+
+ver5.1.0.1‚Åƒ‚[ƒh‚ª‚Q‚Â‘‚¦‚Ü‚µ‚½B
+
 ƒAƒ‹ƒtƒ@ƒeƒXƒg‚ðÝ’è‚µ‚½‚¢ê‡‚Í
 E3DSetMaterialAlphaTest‚ð‚²Žg—p‚­‚¾‚³‚¢B
+
+
 
 
 
@@ -21247,11 +21029,22 @@ E3DSetMaterialAlphaTest‚ð‚²Žg—p‚­‚¾‚³‚¢B
 @@ƒAƒ‹ƒtƒ@ƒeƒXƒg‚Í•ÏX‚µ‚Ü‚¹‚ñB
 
 
+@@‚P‚O‚R‚ðŽw’è‚·‚é‚ÆæŽZƒ‚[ƒh
+@@‚P‚O‚S‚ðŽw’è‚·‚é‚ÆŒ¸ŽZƒ‚[ƒh
+@@‚P‚O‚T‚ðŽw’è‚·‚é‚ÆƒXƒNƒŠ[ƒ“ƒ‚[ƒh
+@@‚P‚O‚U‚ðŽw’è‚·‚é‚ÆƒlƒK”½“]ƒ‚[ƒh‚É‚È‚è‚Ü‚·B
+
+@@‚P‚O‚V‚ðŽw’è‚·‚é‚ÆƒI[ƒo[ƒŒƒC•—‡¬ƒ‚[ƒhB
+@@‚P‚O‚W‚ðŽw’è‚·‚é‚Æ•¢‚¢Ä‚«•—ƒ‚[ƒh‚É‚È‚è‚Ü‚·B
+
+
 
 
 
 ƒo[ƒWƒ‡ƒ“ : ver4.0.0.1‚Å’Ç‰Á<BR>
-      ver5.0.2.9‚ÅŠg’£
+      ver5.0.2.9‚ÅŠg’£<BR>
+      ver5.0.5.0‚ÅŠg’£<BR>
+      ver5.1.0.1‚ÅŠg’£
 
 %index
 E3DGetTextureFromMaterial
@@ -21815,7 +21608,7 @@ p1,p2,p3,p4
 p1 : [IN] ”’l‚Ü‚½‚ÍA•Ï”@F@hsid
 p2 : [IN] ”’l‚Ü‚½‚ÍA•Ï”@F@boneno
 p3 : [IN] ”’l‚Ü‚½‚ÍA•Ï”@F@kind
-p4 : [IN, OUT] ”’l‚Ü‚½‚ÍA•Ï”@F@qid
+p4 : [IN][OUT] ”’l‚Ü‚½‚ÍA•Ï”@F@qid
 
 %inst
 Œ»Ý‚Ìƒ{[ƒ“‚ÌŽp¨î•ñ‚ðŽæ“¾‚µ‚Ü‚·B
@@ -21844,7 +21637,7 @@ E3DSetNewPose, E3DSetNewPoseML‚ÌŒ‹‰Ê‚ðŽg—p‚µ‚Ü‚·B
 @@‚·‚é‚É‚ÍA‚Q‚ðŽw’è‚µ‚Ä‚­‚¾‚³‚¢B
 
 
-4. [IN, OUT] ”’l‚Ü‚½‚ÍA•Ï”@F@qid
+4. [IN][OUT] ”’l‚Ü‚½‚ÍA•Ï”@F@qid
 @@ƒNƒH[ƒ^ƒjƒIƒ“‚ðŽ¯•Ê‚·‚é”Ô†B
 @@E3DCreateQ‚ÅŽæ“¾‚µ‚½”Ô†‚ðŽw’è‚µ‚Ä‚­‚¾‚³‚¢B
 
@@ -22466,9 +22259,11 @@ E3DLoadSigFileAsGround‚Ìà–¾‚àA‚¨“Ç‚Ý‚­‚¾‚³‚¢B
 @@*.sig ‚ÌƒpƒX•¶Žš—ñB
 
 2. [IN] •Ï”‚Ü‚½‚ÍA”’l@F@adjustuvflag
-@@‚t‚u’l‚ð³‹K‰»‚·‚é‚©‚Ç‚¤‚©‚Ìƒtƒ‰ƒO
-@@³‹K‰»‚·‚éê‡‚Í‚P‚ðŽw’è
-@@‚µ‚È‚¢ê‡‚Í‚O‚ðŽw’è
+@@‚t‚u’l‚ð³‹K‰»‚·‚é‚©‚Ç‚¤‚©‚Ìƒtƒ‰ƒOB
+@@³‹K‰»‚·‚éê‡‚Í‚P‚ðŽw’èB
+@@‚µ‚È‚¢ê‡‚Í‚O‚ðŽw’èB
+@@‚Q‚ðŽw’è‚·‚é‚Æ0.0‚©‚ç1.0‚ÌŠÔ‚ÉƒNƒ‰ƒ“ƒv‚µ‚Ü‚·B
+
 
 3. [IN] •Ï”‚Ü‚½‚ÍA”’l@F@mult
 @@“Ç‚Ýž‚Ý”{—¦‚ðŽw’è‚µ‚Ä‚­‚¾‚³‚¢B
@@ -22480,7 +22275,10 @@ E3DLoadSigFileAsGround‚Ìà–¾‚àA‚¨“Ç‚Ý‚­‚¾‚³‚¢B
 
 
 
-ƒo[ƒWƒ‡ƒ“ : ver5.0.0.7‚Å’Ç‰Á
+ƒo[ƒWƒ‡ƒ“ : ver5.0.0.7‚Å’Ç‰Á<BR>
+      ver5.0.5.4‚ÅŠg’£<BR>
+      <BR>
+
 
 %index
 E3DLoadSigFileAsGroundFromBufThread
@@ -22538,9 +22336,11 @@ E3DLoadSigFileAsGroundFromBuf‚Ìà–¾‚àA‚¨“Ç‚Ý‚­‚¾‚³‚¢B
 @@ƒoƒbƒtƒ@‚Ì’†‚Ìƒf[ƒ^‚Ì’·‚³
 
 4. [IN] •Ï”‚Ü‚½‚ÍA”’l@F@adjustuvflag
-@@‚t‚u’l‚ð³‹K‰»‚·‚é‚©‚Ç‚¤‚©‚Ìƒtƒ‰ƒO
-@@³‹K‰»‚·‚éê‡‚Í‚P‚ðŽw’è
-@@‚µ‚È‚¢ê‡‚Í‚O‚ðŽw’è
+@@‚t‚u’l‚ð³‹K‰»‚·‚é‚©‚Ç‚¤‚©‚Ìƒtƒ‰ƒOB
+@@³‹K‰»‚·‚éê‡‚Í‚P‚ðŽw’èB
+@@‚µ‚È‚¢ê‡‚Í‚O‚ðŽw’èB
+@@‚Q‚ðŽw’è‚·‚é‚Æ0.0‚©‚ç1.0‚ÌŠÔ‚ÉƒNƒ‰ƒ“ƒv‚µ‚Ü‚·B
+
 
 5. [IN] •Ï”‚Ü‚½‚ÍA”’l@F@mult
 @@“Ç‚Ýž‚Ý”{—¦‚ðŽw’è‚µ‚Ä‚­‚¾‚³‚¢B
@@ -22552,7 +22352,10 @@ E3DLoadSigFileAsGroundFromBuf‚Ìà–¾‚àA‚¨“Ç‚Ý‚­‚¾‚³‚¢B
 
 
 
-ƒo[ƒWƒ‡ƒ“ : ver5.0.0.7‚Å’Ç‰Á
+ƒo[ƒWƒ‡ƒ“ : ver5.0.0.7‚Å’Ç‰Á<BR>
+      ver5.0.5.4‚ÅŠg’£<BR>
+      <BR>
+
 
 %index
 E3DSetLightIdOfBumpMap
@@ -23329,9 +23132,9 @@ Easy3D For HSP3 : •`‰æƒpƒ‰ƒ[ƒ^
 
 %prm
 p1,p2,p3
-p1 : [IN] ŽÀ”Œ^”z—ñ•Ï” pos
-p2 : [IN] ŽÀ”Œ^”z—ñ•Ï” target
-p3 : [IN] ŽÀ”Œ^”z—ñ•Ï” upvec
+p1 : [IN] ŽÀ”Œ^”z—ñ•Ï”@F@pos
+p2 : [IN] ŽÀ”Œ^”z—ñ•Ï”@F@target
+p3 : [IN] ŽÀ”Œ^”z—ñ•Ï”@F@upvec
 
 %inst
 ƒVƒƒƒhƒEƒ}ƒbƒv‚ðì¬‚·‚éÛ‚ÌƒJƒƒ‰‚ÌˆÊ’u‚ðÝ’è‚µ‚Ü‚·B
@@ -23340,19 +23143,19 @@ p3 : [IN] ŽÀ”Œ^”z—ñ•Ï” upvec
 
 
 ¨ˆø”
-1. [IN] ŽÀ”Œ^”z—ñ•Ï” pos
+1. [IN] ŽÀ”Œ^”z—ñ•Ï”@F@pos
 @@ƒJƒƒ‰‚ÌˆÊ’u‚ðŽÀ”Œ^‚Ì”z—ñ‚ÅŽw’è‚µ‚Ü‚·B
 @@ddim pos, 3‚Åì¬‚µ
 @@pos(0)‚ÉXÀ•WApos(1)‚ÉYÀ•WApos(2)‚ÉZÀ•W‚ð
 @@Žw’è‚µ‚Ü‚·B
 
-2. [IN] ŽÀ”Œ^”z—ñ•Ï” target
+2. [IN] ŽÀ”Œ^”z—ñ•Ï”@F@target
 @@ƒJƒƒ‰‚Ì’Ž‹“_‚ðŽÀ”Œ^‚Ì”z—ñ‚ÅŽw’è‚µ‚Ü‚·B
 @@ddim target, 3‚Åì¬‚µ
 @@pos(0)‚ÉXÀ•WApos(1)‚ÉYÀ•WApos(2)‚ÉZÀ•W‚ð
 @@Žw’è‚µ‚Ü‚·B
 
-3. [IN] ŽÀ”Œ^”z—ñ•Ï” upvec
+3. [IN] ŽÀ”Œ^”z—ñ•Ï”@F@upvec
 @@ƒJƒƒ‰‚Ìã•ûŒüƒxƒNƒgƒ‹‚ð
 @@ŽÀ”Œ^‚Ì”z—ñ‚ÅŽw’è‚µ‚Ü‚·B
 @@ddim upvec, 3‚Åì¬‚µ
@@ -23616,6 +23419,10 @@ SHADOWIN_NOT‚Ì‚Æ‚«‚Í
 ’n–Êƒf[ƒ^‚ÌƒfƒtƒHƒ‹ƒg’l‚Å‚·B
 
 
+ver5.2.2.6‚æ‚èSHADOWIN_EXCLUDE‚ª’Ç‰Á‚³‚ê‚Ü‚µ‚½B
+SHADOWIN_EXCLUDE‚ðŽw’è‚µ‚½ê‡‚Í
+ƒVƒƒƒhƒEƒ}ƒbƒv‚©‚çŽw’èƒp[ƒc‚ðœŠO‚µ‚Ü‚·B
+
 
 
 
@@ -23626,6 +23433,7 @@ SHADOWIN_NOT‚Ì‚Æ‚«‚Í
 
 2. [IN] ”’l‚Ü‚½‚ÍA•Ï”@F@partno
 @@ƒp[ƒc‚ðŽ¯•Ê‚·‚éIDB
+@@-1‚ðŽw’è‚·‚é‚Æ‘S‚Ä‚Ìƒp[ƒc‚É‘Î‚µ‚Äˆ—‚ðs‚¢‚Ü‚·B
 
 3. [IN] ”’l‚Ü‚½‚ÍA•Ï”@F@flag
 @@SHADOWIN_‚Å‚Í‚¶‚Ü‚é’è”‚ðŽw’è‚µ‚Ü‚·B
@@ -23634,7 +23442,8 @@ SHADOWIN_NOT‚Ì‚Æ‚«‚Í
 
 
 
-ƒo[ƒWƒ‡ƒ“ : ver5.0.2.7‚Å’Ç‰Á
+ƒo[ƒWƒ‡ƒ“ : ver5.0.2.7‚Å’Ç‰Á<BR>
+      ver5.2.2.6‚ÅŠg’£
 
 %index
 E3DSetMaterialAlphaTest
@@ -23935,4 +23744,8068 @@ p7 : [IN] ”’l‚Ü‚½‚ÍA•Ï”@F@excludeflag
 
 
 ƒo[ƒWƒ‡ƒ“ : 
+
+%index
+E3DSetLightId2OfBumpMap
+ƒoƒ“ƒvƒ}ƒbƒv‚ðÝ’è‚µ‚½ƒ‚ƒfƒ‹‚ðÆ‚ç‚·‚QŒÂ–Ú‚Ìƒ‰ƒCƒg‚ðŽw’è‚µ‚Ü‚·B
+%group
+Easy3D For HSP3 : ƒ‰ƒCƒg
+
+%prm
+p1
+p1 : [IN] ”’l‚Ü‚½‚ÍA•Ï”@F@lid
+
+%inst
+ƒoƒ“ƒvƒ}ƒbƒv‚ðÝ’è‚µ‚½ƒ‚ƒfƒ‹‚ðÆ‚ç‚·‚QŒÂ–Ú‚Ìƒ‰ƒCƒg‚ðŽw’è‚µ‚Ü‚·B
+‰e‚ð•\Ž¦‚µ‚Ä‚¢‚éê‡‚Í—LŒø‚É‚È‚è‚Ü‚¹‚ñBi‰e•\Ž¦Žž‚Íƒ‰ƒCƒg‚PŒÂ‚¾‚¯—LŒøj
+
+
+
+
+¨ˆø”
+1. [IN] ”’l‚Ü‚½‚ÍA•Ï”@F@lid
+@@ƒ‰ƒCƒg‚ðŽ¯•Ê‚·‚é‚h‚c
+
+
+
+ƒo[ƒWƒ‡ƒ“ : ver5.0.4.1‚Å’Ç‰Á
+
+%index
+E3DSetLightId3OfBumpMap
+ƒoƒ“ƒvƒ}ƒbƒv‚ðÝ’è‚µ‚½ƒ‚ƒfƒ‹‚ðÆ‚ç‚·‚RŒÂ–Ú‚Ìƒ‰ƒCƒg‚ðŽw’è‚µ‚Ü‚·B
+%group
+Easy3D For HSP3 : ƒ‰ƒCƒg
+
+%prm
+p1
+p1 : [IN] ”’l‚Ü‚½‚ÍA•Ï”@F@lid
+
+%inst
+ƒoƒ“ƒvƒ}ƒbƒv‚ðÝ’è‚µ‚½ƒ‚ƒfƒ‹‚ðÆ‚ç‚·‚RŒÂ–Ú‚Ìƒ‰ƒCƒg‚ðŽw’è‚µ‚Ü‚·B
+‰e‚ð•\Ž¦‚µ‚Ä‚¢‚éê‡‚Í—LŒø‚É‚È‚è‚Ü‚¹‚ñBi‰e•\Ž¦Žž‚Íƒ‰ƒCƒg‚PŒÂ‚¾‚¯—LŒøj
+
+
+
+
+¨ˆø”
+1. [IN] ”’l‚Ü‚½‚ÍA•Ï”@F@lid
+@@ƒ‰ƒCƒg‚ðŽ¯•Ê‚·‚é‚h‚c
+
+
+
+ƒo[ƒWƒ‡ƒ“ : ver5.0.4.1‚Å’Ç‰Á
+
+%index
+E3DGetCharaDir
+ƒLƒƒƒ‰ƒNƒ^[‚©‚çŒ©‚Ä”CˆÓ‚Ì•ûŒü‚ÌƒxƒNƒgƒ‹‚ðŽæ“¾‚µ‚Ü‚·B
+%group
+Easy3D For HSP3 : ŽZp
+
+%prm
+p1,p2,p3,p4,p5,p6
+p1 : [IN] ”’l‚Ü‚½‚ÍA•Ï”@F@hsid
+p2 : [IN] ”’l‚Ü‚½‚ÍA•Ï”@F@degxz
+p3 : [IN] ”’l‚Ü‚½‚ÍA•Ï”@F@degy
+p4 : [OUT] •Ï”@F@dstx
+p5 : [OUT] •Ï”@F@dsty
+p6 : [OUT] •Ï”@F@dstz
+
+%inst
+ƒLƒƒƒ‰ƒNƒ^[‚©‚çŒ©‚Ä”CˆÓ‚Ì•ûŒü‚ÌƒxƒNƒgƒ‹‚ðŽæ“¾‚µ‚Ü‚·B
+degxz‚É‚ÍXZ•½–Êã‚ÌŠp“x‚ðdegy‚É‚Í‹Â‚¬Šp“x‚ðŽw’è‚µ‚Ü‚·B
+
+—á‚¦‚ÎƒLƒƒƒ‰ƒNƒ^[‚ÌŒü‚¢‚Ä‚¢‚éŒü‚«‚ðŽæ“¾‚µ‚½‚¢ê‡‚Í
+( degxz, degy ) = ( 0.0, 0.0 )‚ðŽw’è‚µ‚Ü‚·B
+ƒLƒƒƒ‰ƒNƒ^[Œã‚ë‚Í(180.0, 0.0), ‰E‚Í(-90.0, 0.0)
+¶‚Í(90.0, 0.0)ã‚Íi0.0, 90j‰º‚Í(0.0, -90)
+‚Æ‚¢‚¤‚æ‚¤‚ÉŽw’è‚µ‚Ü‚·B
+
+
+
+¨ˆø”
+1. [IN] ”’l‚Ü‚½‚ÍA•Ï”@F@hsid
+@@Œ`óƒf[ƒ^‚ðŽ¯•Ê‚·‚éid
+2. [IN] ”’l‚Ü‚½‚ÍA•Ï”@F@degxz
+@@xz•½–Êã‚Å‚ÌŠp“xB
+@@ŽÀ”B
+3. [IN] ”’l‚Ü‚½‚ÍA•Ï”@F@degy
+@@‹Â‚¬Šp“xB
+@@ŽÀ”B
+4. [OUT] •Ï”@F@dstx
+5. [OUT] •Ï”@F@dsty
+6. [OUT] •Ï”@F@dstz
+@@Œü‚«‚ÌƒxƒNƒgƒ‹‚ª‘ã“ü‚³‚ê‚Ü‚·B
+@@ŽÀ”Œ^‚Ì•Ï”B
+
+
+
+
+
+
+ƒo[ƒWƒ‡ƒ“ : ver5.0.4.7‚Å’Ç‰Á
+
+%index
+E3DGetStrSizeByFontID
+•¶Žš—ñ‚Ì•`‰æ‚É•K—v‚È•‚Æ‚‚³‚ðŽæ“¾‚µ‚Ü‚·B
+%group
+Easy3D For HSP3 : ƒeƒLƒXƒg
+
+%prm
+p1,p2,p3,p4
+p1 : [IN] ”’l‚Ü‚½‚ÍA•Ï”@F@fontid
+p2 : [IN] •¶Žš—ñ‚Ü‚½‚ÍA•¶Žš—ñ‚Ì•Ï”@F@textstr
+p3 : [OUT] •Ï”@F@strwidth
+p4 : [OUT] •Ï”@F@strheight
+
+%inst
+•¶Žš—ñ‚Ì•`‰æ‚É•K—v‚È•‚Æ‚‚³‚ðŽæ“¾‚µ‚Ü‚·B
+
+
+
+
+¨ˆø”
+1. [IN] ”’l‚Ü‚½‚ÍA•Ï”@F@fontid
+@@E3DCreateFont‚Åì¬‚µ‚½AƒtƒHƒ“ƒg‚Ì”Ô†‚ðŽw’è‚µ‚Ü‚·B
+
+2. [IN] •¶Žš—ñ‚Ü‚½‚ÍA•¶Žš—ñ‚Ì•Ï”@F@textstr
+@@‘å‚«‚³‚ð’²‚×‚½‚¢•¶Žš—ñ‚ðŽw’è‚µ‚Ü‚·B
+
+3. [OUT] •Ï”@F@strwidth
+4. [OUT] •Ï”@F@strheight
+@@•`‰æ‚É•K—v‚È•‚Æ‚‚³‚ª‘ã“ü‚³‚ê‚Ü‚·B
+
+
+
+
+ƒo[ƒWƒ‡ƒ“ : ver5.0.5.1‚Å’Ç‰Á
+
+%index
+E3DSetUVBatch
+•¡”‚Ì’¸“_‚ÌUVÝ’è‚ðˆêŠ‡‚Ås‚¢‚Ü‚·B
+%group
+Easy3D For HSP3 : ƒ‚ƒfƒ‹î•ñ
+
+%prm
+p1,p2,p3,p4,p5,p6,p7
+p1 : [IN] •Ï”‚Ü‚½‚ÍA”’l@F@hsid
+p2 : [IN] •Ï”‚Ü‚½‚ÍA”’l@F@partno
+p3 : [IN] ”z—ñ•Ï”@F@vertnoptr
+p4 : [IN] •Ï”‚Ü‚½‚ÍA”’l@F@setnum
+p5 : [IN] ”z—ñ•Ï”@F@uvptr
+p6 : [IN] •Ï”‚Ü‚½‚ÍA”’l@F@setflag
+p7 : [IN] •Ï”‚Ü‚½‚ÍA”’l@F@clampflag
+
+%inst
+•¡”‚Ì’¸“_‚ÌUVÝ’è‚ðˆêŠ‡‚Ås‚¢‚Ü‚·B
+ƒrƒfƒIƒoƒbƒtƒ@‚ÌƒƒbƒN‚ÆƒAƒ“ƒƒbƒN‚Ì‰ñ”‚ªÅ¬ŒÀ‚È‚Ì‚Å
+•¡”‰ñE3DSetUV‚ð‚æ‚Ñ‚¾‚·‚æ‚è‚à‚‘¬‚Å‚·B
+
+
+ˆ—‚µ‚½‚¢’¸“_‚Ì‘”‚ðsetnumŒÂ‚Æ‚·‚é‚Æ‚«
+vertnoptr(0)‚©‚çvertnoptr(setnum - 1) ‚Ü‚Å‚Ì®””z—ñ‚É
+’¸“_‚Ì”Ô†‚ðŠi”[‚µ‚Ä‚­‚¾‚³‚¢B
+
+UV‚ÌŽw’è‚ÌŽd•û‚ÍA‚Ü‚¸ddim‚Å
+ddim uvptr, 2, setnum
+‚Ì‚æ‚¤‚É‚QŽŸŒ³‚ÌŽw’è—p‚Ì”z—ñ‚ðì¬‚µ‚Ä‚­‚¾‚³‚¢B
+
+‚»‚µ‚Ä
+uvptr( 0, ’¸“_‚ÌƒCƒ“ƒfƒbƒNƒX ) ‚ÉUÀ•W‚ðŠi”[‚µ
+uvptr( 1, ’¸“_‚ÌƒCƒ“ƒfƒbƒNƒX ) ‚ÉVÀ•W‚ðŠi”[‚µ‚Ä‚­‚¾‚³‚¢B
+’¸“_‚ÌƒCƒ“ƒfƒbƒNƒX‚Æ‚Í’¸“_”Ô†‚Å‚Í‚ ‚è‚Ü‚¹‚ñB
+‚O‚©‚çsetnum‚Ü‚Å‚Ì’l‚Å‚·B
+
+
+
+
+¨ˆø”
+1. [IN] •Ï”‚Ü‚½‚ÍA”’l@F@hsid
+@@Œ`óƒf[ƒ^‚ðŽ¯•Ê‚·‚éidB
+@@-1‚ð“n‚·‚Æƒrƒ‹ƒ{[ƒh‚Ìˆ—‚ð‚µ‚Ü‚·B
+
+2. [IN] •Ï”‚Ü‚½‚ÍA”’l@F@partno
+@@ƒp[ƒc‚ðŽ¯•Ê‚·‚é”Ô†B
+@@hsid‚É-1‚ð“n‚µ‚½ê‡‚Íƒrƒ‹ƒ{[ƒhID‚ðŽw’è‚µ‚Ü‚·B
+
+3. [IN] ”z—ñ•Ï”@F@vertnoptr
+@@’¸“_‚Ì”Ô†‚ðŠi”[‚µ‚½”z—ñB
+
+4. [IN] •Ï”‚Ü‚½‚ÍA”’l@F@setnum
+@@vertnoptr‚Ì—v‘f”B
+@@uvptr‚Ì—v‘f”‚Æ“¯‚¶‚Å‚·B
+
+5. [IN] ”z—ñ•Ï”@F@uvptr
+@@Ý’è‚µ‚½‚¢‚t‚u’l‚Ì’l‚ðŽw’è‚µ‚Ä‚­‚¾‚³‚¢B
+@@ŽÀ”Œ^‚Ì”z—ñB
+
+6. [IN] •Ï”‚Ü‚½‚ÍA”’l@F@setflag
+@@setflag ‚É‚O‚ðŽw’è‚·‚é‚ÆA
+@@Žw’è‚t‚u’l‚ðA‚»‚Ì‚Ü‚ÜƒZƒbƒg‚µ‚Ü‚·B
+
+@@setflag‚É‚P‚ðŽw’è‚·‚é‚ÆA
+@@Žw’è‚t‚u’l‚ðAŠù‘¶‚Ì‚t‚u’l‚ÉA‘«‚µŽZ‚µ‚Ü‚·B
+
+7. [IN] •Ï”‚Ü‚½‚ÍA”’l@F@clampflag
+@@‚P‚ðƒZƒbƒg‚·‚é‚ÆUV‚Ì’l‚ð‚OD‚O‚©‚ç‚PD‚O‚ÌŠÔ‚ÉƒNƒ‰ƒ“ƒv‚µ‚Ü‚·B
+@@‚O‚ðŽw’è‚·‚é‚ÆƒNƒ‰ƒ“ƒv‚Ís‚¢‚Ü‚¹‚ñB
+@@‰½‚àŽw’è‚µ‚È‚©‚Á‚½ê‡‚Í‚O‚Æ“¯‚¶‚Å‚·B
+
+
+ƒo[ƒWƒ‡ƒ“ : ver5.0.5.5‚Å’Ç‰Á
+
+%index
+E3DSetPresentInterval
+E3DPresent‚ªƒ‚ƒjƒ^‚Ì‚’¼“¯Šú‚É‡‚í‚¹‚Ä“®ì‚·‚é‚©‚Ç‚¤‚©‚ðÝ’è‚µ‚Ü‚·B
+%group
+Easy3D For HSP3 : •`‰æƒpƒ‰ƒ[ƒ^
+
+%prm
+p1
+p1 : [IN] •Ï”‚Ü‚½‚ÍA”’l@F@flag
+
+%inst
+E3DPresent‚ªƒ‚ƒjƒ^‚Ì‚’¼“¯Šú‚É‡‚í‚¹‚Ä“®ì‚·‚é‚©‚Ç‚¤‚©‚ðÝ’è‚µ‚Ü‚·B
+E3DInit‚æ‚è‚à‘O‚ÉŒÄ‚Ño‚·‚±‚Æ‚ð‘z’è‚µ‚Ä‚¢‚Ü‚·B
+E3DInit‚ðŒÄ‚Ño‚µ‚½‚ç“r’†‚Å•ÏX‚·‚é‚±‚Æ‚Ío—ˆ‚Ü‚¹‚ñB
+‚±‚Ì–½—ß‚ðŒÄ‚Ño‚³‚È‚©‚Á‚½ê‡‚Í‚’¼“¯Šú‚µ‚Ü‚¹‚ñB
+
+
+
+
+¨ˆø”
+1. [IN] •Ï”‚Ü‚½‚ÍA”’l@F@flag
+@@‚O‚ðŽw’è‚·‚é‚Æ‚’¼“¯Šú‚µ‚Ü‚¹‚ñB
+@@‚P‚ðŽw’è‚·‚é‚Æ‚’¼“¯Šú‚µ‚Ü‚·B
+
+
+ƒo[ƒWƒ‡ƒ“ : ver5.0.5.6‚Å’Ç‰Á
+
+%index
+E3DGetScreenPosDouble
+Œ`óƒf[ƒ^‚Ì‰æ–Êã‚Å‚Ì2D‚ÌÀ•W‚ðŽæ“¾‚·‚éŠÖ”‚Å‚·B
+%group
+Easy3D For HSP3 : ƒ‚ƒfƒ‹î•ñ
+
+%prm
+p1,p2,p3,p4,p5,p6,p7,p8
+p1 : [IN] •Ï”‚Ü‚½‚ÍA”’l@F@scid
+p2 : [IN] ”’l‚Ü‚½‚ÍA•Ï”@F@hsid
+p3 : [IN] ”’l‚Ü‚½‚ÍA•Ï”@F@partno
+p4 : [OUT] •Ï”@F@scx
+p5 : [OUT] •Ï”@F@scy
+p6 : [OUT] •Ï”@F@scz
+p7 : [IN] ”’l‚Ü‚½‚ÍA•Ï”@F@vertno
+p8 : [IN] ”’l‚Ü‚½‚ÍA•Ï”@F@calcmode
+
+%inst
+Œ`óƒf[ƒ^‚Ì‰æ–Êã‚Å‚Ì2D‚ÌÀ•W‚ðŽæ“¾‚·‚éŠÖ”‚Å‚·B
+‰œs‚«î•ñZ‚àŽæ“¾‚Å‚«‚Ü‚·B
+
+E3DGetScreenPos3‚ÌŽÀ”ƒo[ƒWƒ‡ƒ“‚Å‚·B
+
+ƒp[ƒc’PˆÊAƒ‚ƒfƒ‹’PˆÊAƒrƒ‹ƒ{[ƒh’PˆÊ‚Å
+Žg—p‚Å‚«‚Ü‚·B
+
+’¸“_’PˆÊ‚Å‚Ì‚Q‚cÀ•W‚àŽæ“¾‚Å‚«‚Ü‚·B
+
+‚R‚cƒLƒƒƒ‰ƒNƒ^[‚ÌˆÊ’u‚ÉA2D‚ÌƒXƒvƒ‰ƒCƒg‚ð•\Ž¦‚·‚éA‚È‚Ç‚Ì—p“r‚ÉŽg‚¦‚Ü‚·B
+
+Zî•ñ‚ÍAƒXƒvƒ‰ƒCƒg•`‰æŽž‚ÌZŽw’è‚Ì’l‚ÉŽg—p‚Å‚«‚Ü‚·B
+
+
+html{
+<strong>E3DChkInView‚æ‚èŒã‚ÅAŒÄ‚Ño‚µ‚Ä‚­‚¾‚³‚¢B</strong>
+}html
+
+
+
+
+
+¨ˆø”
+1. [IN] •Ï”‚Ü‚½‚ÍA”’l@F@scid
+@@ƒXƒƒbƒvƒ`ƒFƒCƒ“‚h‚cB
+@@E3DInit‚âE3DCreateSwapChain‚ÅŽæ“¾‚µ‚½‚h‚c‚ð
+@@Žw’è‚µ‚Ä‚­‚¾‚³‚¢B
+
+2. [IN] ”’l‚Ü‚½‚ÍA•Ï”@F@hsid
+@@Œ`óƒf[ƒ^‚ðŽ¯•Ê‚·‚é‚h‚c
+@@-1‚ðŽw’è‚·‚é‚ÆAƒrƒ‹ƒ{[ƒh‚Ì‚Q‚cˆÊ’u‚ðŽæ“¾‚Å‚«‚Ü‚·B
+
+3. [IN] ”’l‚Ü‚½‚ÍA•Ï”@F@partno
+@@Ý’è‚µ‚½‚¢ƒp[ƒc‚Ì”Ô†‚ðŽw’è‚µ‚Ü‚·B
+
+@@E3DGetPartNoByName‚ÅŽæ“¾‚µ‚½”Ô†‚ð“n‚µ‚Ä‚­‚¾‚³‚¢B
+
+@@hsid‚É-1‚ðŽw’è‚µ‚½ê‡‚ÍA
+@@E3DCreateBillboard‚ÅŽæ“¾‚µ‚½A
+@@ƒrƒ‹ƒ{[ƒhid‚ð“n‚µ‚Ä‚­‚¾‚³‚¢B
+
+@@partno‚É-1‚ð“n‚·‚ÆA
+@@ƒ‚ƒfƒ‹‘S‘Ì‚Ì’†SÀ•W‚Ì‚Q‚cÀ•W‚ð
+@@Žæ“¾‚Å‚«‚Ü‚·B
+
+4. [OUT] •Ï”@F@scx
+5. [OUT] •Ï”@F@scy
+@@Žw’è‚µ‚½ƒp[ƒc‚Ì2DƒXƒNƒŠ[ƒ“À•W‚ª‘ã“ü‚³‚ê‚Ü‚·B      @@ŽÀ”‚Ì•Ï”B
+
+6. [OUT] •Ï”@F@scz
+@@‰œs‚«î•ñZ
+@@ŽÀ”‚Ì•Ï”B
+@@‚±‚Ì’l‚É‚O‚©‚ç‚P‚Ì”ÍˆÍŠO‚Ì’l‚ª“¾‚ç‚ê‚½ê‡‚ÍA
+@@‰æ–Ê‚É•`‰æ‚³‚ê‚È‚¢’¸“_‚Å‚·B
+
+
+7. [IN] ”’l‚Ü‚½‚ÍA•Ï”@F@vertno
+@@Žæ“¾‚µ‚½‚¢’¸“_‚Ì”Ô†‚ðŽw’è‚µ‚Ü‚·B
+@@‚±‚Ìˆø”‚ðÈ—ª‚µ‚½ê‡‚âA-1‚ðŽw’è‚µ‚½ê‡‚ÍA
+@@ƒp[ƒc‚Ì’†S‚Ì‚Q‚cÀ•W‚ðŽæ“¾‚µ‚Ü‚·B
+
+8. [IN] ”’l‚Ü‚½‚ÍA•Ï”@F@calcmode
+@@1‚ðŽw’è‚µ‚Ä‚­‚¾‚³‚¢B
+
+
+ƒo[ƒWƒ‡ƒ“ : ver5.0.5.6‚Å’Ç‰Á
+
+%index
+E3DSetBillboardSize
+ƒrƒ‹ƒ{[ƒh‚Ì‘å‚«‚³‚ðÝ’è‚µ‚Ü‚·B
+%group
+Easy3D For HSP3 : ƒrƒ‹ƒ{[ƒh
+
+%prm
+p1,p2,p3,p4,p5
+p1 : [IN] •Ï”‚Ü‚½‚ÍA”’l@F@bbid
+p2 : [IN] •Ï”‚Ü‚½‚ÍA”’l@F@width
+p3 : [IN] •Ï”‚Ü‚½‚ÍA”’l@F@height
+p4 : [IN] •Ï”‚Ü‚½‚ÍA”’l@F@dirmode
+p5 : [IN] •Ï”‚Ü‚½‚ÍA”’l@F@orgflag
+
+%inst
+ƒrƒ‹ƒ{[ƒh‚Ì‘å‚«‚³‚ðÝ’è‚µ‚Ü‚·B
+‘å‚«‚³‚ÍE3DCreateBillboard‚Å‚àÝ’è‚³‚ê‚é‚Ì‚Å
+‚±‚Ì–½—ß‚Í‘å‚«‚³‚ð•ÏX‚µ‚½‚¢‚Æ‚«‚Ì‚Ý‚ÉŽg—p‚µ‚Ü‚·B
+
+‚±‚Ì–½—ß‚ÍƒrƒfƒIƒƒ‚ƒŠ‚ÉƒAƒNƒZƒX‚·‚é‚Ì‚Å‘½—p‚·‚é‚Æd‚­‚È‚é‰Â”\«‚ª‚ ‚è‚Ü‚·B
+Šg‘åk¬‚ÍE3DSetScale‚ð‚²Žg—p‚­‚¾‚³‚¢BE3DSetScale‚Í‚‘¬‚Å‚·B
+
+
+
+¨ˆø”
+1. [IN] •Ï”‚Ü‚½‚ÍA”’l@F@bbid
+@@ƒrƒ‹ƒ{[ƒh‚ðŽ¯•Ê‚·‚éIDB
+
+2. [IN] •Ï”‚Ü‚½‚ÍA”’l@F@width
+@@ƒrƒ‹ƒ{[ƒh‚Ì•B
+@@ŽÀ”B
+
+3. [IN] •Ï”‚Ü‚½‚ÍA”’l@F@height
+@@ƒrƒ‹ƒ{[ƒh‚Ì‚‚³B
+@@ŽÀ”B
+
+4. [IN] •Ï”‚Ü‚½‚ÍA”’l@F@dirmode
+@@dirmode‚É‚O‚ðŽw’è‚·‚é‚ÆA
+@@ƒrƒ‹ƒ{[ƒh‚ÍA‚xŽ²‚ÉŠÖ‚µ‚Ä‚Ì‚ÝA‰ñ“]‚µ‚Ü‚·B
+@@’n–Ê‚É—§‚Á‚Ä‚¢‚é–Ø‚È‚Ç‚ÉŽg—p‚µ‚Ä‚­‚¾‚³‚¢B
+
+@@dirmode‚Ì‚P‚ðŽw’è‚·‚é‚ÆA
+@@ƒrƒ‹ƒ{[ƒh‚ÍA‘S•ûŒü‚É‰ñ“]‚µ‚Ü‚·B
+@@ƒJƒƒ‰‚Ì‚‚³‚É‚©‚©‚í‚ç‚¸AƒJƒƒ‰‚Ì•ûŒü‚ðŒü‚©‚¹‚½‚¢‚à‚Ì
+@@—á‚¦‚ÎA‰Î‚â‰Œ‚È‚Ç‚ÉAŽg—p‚µ‚Ä‚­‚¾‚³‚¢B
+
+5. [IN] •Ï”‚Ü‚½‚ÍA”’l@F@orgflag
+@@ƒrƒ‹ƒ{[ƒh‚ÌŒ´“_‚ÌˆÊ’u‚ðŽw’è‚µ‚Ü‚·B
+
+@@orgflag‚É‚O‚ðŽw’è‚·‚é‚ÆA
+@@Œ´“_‚ÍAƒrƒ‹ƒ{[ƒh‚ÌŽlŠpŒ`‚Ì‰º‚Ì•Ó‚Ì’†S‚É‚È‚è‚Ü‚·B
+@@’n–Ê‚É¶‚â‚·–Ø‚È‚Ç‚Ìê‡‚ÉA•Ö—˜‚Å‚·B
+
+@@orgflag‚É‚P‚ðŽw’è‚·‚é‚ÆA
+@@Œ´“_‚ÍAƒrƒ‹ƒ{[ƒh‚Ì’†S‚É‚È‚è‚Ü‚·B
+@@”š”­‚È‚Ç‚ÌA“ÁŽêŒø‰Ê‚ÉŽg‚¤ê‡‚ÉA•Ö—˜‚Å‚·B
+
+
+
+ƒo[ƒWƒ‡ƒ“ : ver5.1.0.0‚Å’Ç‰Á
+
+%index
+E3DSetHeightFogParams
+‚‚³ƒtƒHƒOiüŒ`j‚ðÝ’è‚µ‚Ü‚·B
+%group
+Easy3D For HSP3 : •`‰æƒpƒ‰ƒ[ƒ^
+
+%prm
+p1,p2,p3,p4,p5,p6,p7
+p1 : [IN] ”’l‚Ü‚½‚ÍA•Ï”@F@enable
+p2 : [IN] ”’l‚Ü‚½‚ÍA•Ï”@F@r
+p3 : [IN] ”’l‚Ü‚½‚ÍA•Ï”@F@g
+p4 : [IN] ”’l‚Ü‚½‚ÍA•Ï”@F@b
+p5 : [IN] ”’l‚Ü‚½‚ÍA•Ï”@F@start
+p6 : [IN] ”’l‚Ü‚½‚ÍA•Ï”@F@end
+p7 : [IN] ”’l‚Ü‚½‚ÍA•Ï”@F@hsid
+
+%inst
+‚‚³ƒtƒHƒOiüŒ`j‚ðÝ’è‚µ‚Ü‚·B
+’¸“_ƒtƒHƒO‚È‚Ì‚ÅAƒ|ƒŠƒSƒ“‚Ì‚È‚¢•”•ª‚É‚ÍAƒtƒHƒO‚Í‚©‚©‚è‚Ü‚¹‚ñB
+‰æ–Ê‘S‘Ì‚ÉƒtƒHƒO‚ð‚©‚¯‚½‚¢ê‡‚ÍA
+E3DCreateBG‚ÅA”wŒi‚ðì¬‚µ‚Ä‚­‚¾‚³‚¢Bi”wŒi‚Íƒ|ƒŠƒSƒ“‚Å‚·Bj
+
+hsid, ƒrƒ‹ƒ{[ƒh‚ðì¬‚µ‚Ä‚©‚çŒÄ‚Ño‚µ‚Ä‚­‚¾‚³‚¢B
+E3DCreateBG‚æ‚è‚à‘O‚ÅŒÄ‚Ño‚µ‚Ä‚­‚¾‚³‚¢B
+
+E3DSetLinearFogParams‚Æ‚Ì¬Ý‚Ío—ˆ‚Ü‚¹‚ñB
+
+‹ï‘Ì“I‚ÈŽg—p—á‚ÍA
+e3dhsp3_HeightFog.hsp
+‚É‘‚«‚Ü‚µ‚½‚Ì‚ÅA‚²——‚­‚¾‚³‚¢B
+
+
+
+
+¨ˆø”
+1. [IN] ”’l‚Ü‚½‚ÍA•Ï”@F@enable
+@@‚P‚ðŽw’è‚·‚é‚ÆAƒtƒHƒO‚ª—LŒø‚ÉA
+@@‚O‚ðŽw’è‚·‚é‚ÆAƒtƒHƒO‚ª–³Œø‚É‚È‚è‚Ü‚·B
+
+2. [IN] ”’l‚Ü‚½‚ÍA•Ï”@F@r
+3. [IN] ”’l‚Ü‚½‚ÍA•Ï”@F@g
+4. [IN] ”’l‚Ü‚½‚ÍA•Ï”@F@b
+@@ƒtƒHƒO‚ÌF‚ðAir, g, bj‚ÅŽw’è‚µ‚Ü‚·B
+
+5. [IN] ”’l‚Ü‚½‚ÍA•Ï”@F@start
+6. [IN] ”’l‚Ü‚½‚ÍA•Ï”@F@end
+@@ƒtƒHƒO‚ªˆê”Ô”Z‚­‚È‚éˆê”Ô’á‚¢‚‚³‚ðstart‚ÉŽw’è‚µ‚Ä‚­‚¾‚³‚¢B
+@@ƒtƒHƒO‚ª–³‚­‚È‚éˆê”Ô‚‚¢‚‚³‚ðend‚ÉŽw’è‚µ‚Ä‚­‚¾‚³‚¢B
+
+7. [IN] ”’l‚Ü‚½‚ÍA•Ï”@F@hsid
+@@‚±‚Ìˆø”‚ÉAƒ‚ƒfƒ‹ƒf[ƒ^‚Ìhsid‚ð
+@@Žw’è‚·‚é‚±‚Æ‚É‚æ‚èA
+@@ƒ‚ƒfƒ‹’PˆÊ‚Å‚ÌƒtƒHƒO‚ÌŽw’è‚ª‰Â”\‚É‚È‚è‚Ü‚·B
+@@“ÁŽêŒø‰Ê‚È‚Ç‚ÅAƒtƒHƒO‚ð‚©‚¯‚½‚­‚È‚¢ê‡‚È‚Ç‚Ì
+@@•\Ž¦‚É‚¨Žg‚¢‚­‚¾‚³‚¢B
+@@‚±‚Ìˆø”‚ðAÈ—ª‚µ‚½ê‡‚ÍA
+@@‚·‚×‚Ä‚Ìƒ‚ƒfƒ‹ƒf[ƒ^‚É‘Î‚µ‚ÄAÝ’è‚µ‚Ü‚·B
+
+
+
+
+ƒo[ƒWƒ‡ƒ“ : ver5.1.0.0‚Å’Ç‰Á
+
+%index
+E3DSetTextureToBG
+E3DCreateBG‚Åì¬‚µ‚½”wŒi‚ÌƒeƒNƒXƒ`ƒƒ‚ð•ÏX‚µ‚Ü‚·B
+%group
+Easy3D For HSP3 : ƒeƒNƒXƒ`ƒƒ
+
+%prm
+p1,p2,p3
+p1 : [IN] •Ï”‚Ü‚½‚ÍA”’l@F@scid
+p2 : [IN] •Ï”‚Ü‚½‚ÍA”’l@F@stageno
+p3 : [IN] •Ï”‚Ü‚½‚ÍA”’l@F@texid
+
+%inst
+E3DCreateBG‚Åì¬‚µ‚½”wŒi‚ÌƒeƒNƒXƒ`ƒƒ‚ð•ÏX‚µ‚Ü‚·B
+E3DCreateBG‚ªŒÄ‚Ño‚³‚ê‚Ä‚¢‚éó‘Ô‚ÅŽg—p‚µ‚Ä‚­‚¾‚³‚¢B
+
+
+
+
+¨ˆø”
+1. [IN] •Ï”‚Ü‚½‚ÍA”’l@F@scid
+@@ƒXƒƒbƒvƒ`ƒFƒCƒ“ID‚ðŽw’è‚µ‚Ü‚·B
+
+2. [IN] •Ï”‚Ü‚½‚ÍA”’l@F@stageno
+@@”wŒi‚Ì‚P–‡–Ú‚ÌƒeƒNƒXƒ`ƒƒ‚ÉƒZƒbƒg‚µ‚½‚¢ê‡‚Í‚O‚ðA‚Q–‡–Ú‚ÌƒeƒNƒXƒ`ƒƒ‚ÉƒZƒbƒg‚µ‚½‚¢ê‡‚Í‚P‚ðŽw’è‚µ‚Ü‚·B
+
+3. [IN] •Ï”‚Ü‚½‚ÍA”’l@F@texid
+@@“\‚è•t‚¯‚½‚¢ƒeƒNƒXƒ`ƒƒ‚Ì‚h‚c‚ðŽw’è‚µ‚Ü‚·B
+
+
+ƒo[ƒWƒ‡ƒ“ : ver5.1.0.0‚Å’Ç‰Á
+
+%index
+E3DGetTextureFromBG
+E3DCreateBG‚Åì¬‚µ‚½”wŒi‚ÌƒeƒNƒXƒ`ƒƒID‚ðŽæ“¾‚µ‚Ü‚·B
+%group
+Easy3D For HSP3 : ƒeƒNƒXƒ`ƒƒ
+
+%prm
+p1,p2,p3
+p1 : [IN] •Ï”‚Ü‚½‚ÍA”’l@F@scid
+p2 : [IN] •Ï”‚Ü‚½‚ÍA”’l@F@stageno
+p3 : [OUT] •Ï”@F@texid
+
+%inst
+E3DCreateBG‚Åì¬‚µ‚½”wŒi‚ÌƒeƒNƒXƒ`ƒƒID‚ðŽæ“¾‚µ‚Ü‚·B
+E3DCreateBG‚ªŒÄ‚Ño‚³‚ê‚Ä‚¢‚éó‘Ô‚ÅŽg—p‚µ‚Ä‚­‚¾‚³‚¢B
+
+
+
+
+¨ˆø”
+1. [IN] •Ï”‚Ü‚½‚ÍA”’l@F@scid
+@@ƒXƒƒbƒvƒ`ƒFƒCƒ“ID‚ðŽw’è‚µ‚Ü‚·B
+
+2. [IN] •Ï”‚Ü‚½‚ÍA”’l@F@stageno
+@@”wŒi‚Ì‚P–‡–Ú‚ÌƒeƒNƒXƒ`ƒƒ‚ðŽæ“¾‚µ‚½‚¢ê‡‚Í‚O‚ðA‚Q–‡–Ú‚ÌƒeƒNƒXƒ`ƒƒ‚ðŽæ“¾‚µ‚½‚¢ê‡‚Í‚P‚ðŽw’è‚µ‚Ü‚·B
+
+3. [OUT] •Ï”@F@texid
+@@ƒeƒNƒXƒ`ƒƒ‚Ì‚h‚c‚ª‘ã“ü‚³‚ê‚Ü‚·B
+
+
+ƒo[ƒWƒ‡ƒ“ : ver5.1.0.0‚Å’Ç‰Á
+
+%index
+E3DChangeMoaIdling
+MOAiƒ‚[ƒVƒ‡ƒ“ƒAƒNƒZƒ‰ƒŒ[ƒ^j‚ÌƒAƒCƒhƒŠƒ“ƒOƒ‚[ƒVƒ‡ƒ“‚ð•ÏX‚µ‚Ü‚·B
+%group
+Easy3D For HSP3 : ƒ‚[ƒVƒ‡ƒ“
+
+%prm
+p1,p2
+p1 : [IN] •Ï”‚Ü‚½‚ÍA”’l@F@hsid
+p2 : [IN] •Ï”‚Ü‚½‚ÍA”’l@F@motid
+
+%inst
+MOAiƒ‚[ƒVƒ‡ƒ“ƒAƒNƒZƒ‰ƒŒ[ƒ^j‚ÌƒAƒCƒhƒŠƒ“ƒOƒ‚[ƒVƒ‡ƒ“‚ð•ÏX‚µ‚Ü‚·B
+
+•›ì—p‚Æ‚µ‚ÄŒ»ÝÄ¶’†‚Ìƒ‚[ƒVƒ‡ƒ“‚ªV‚µ‚¢iŽw’è‚µ‚½jƒAƒCƒhƒŠƒ“ƒOƒ‚[ƒVƒ‡ƒ“‚É‚È‚è‚Ü‚·B
+
+
+
+¨ˆø”
+1. [IN] •Ï”‚Ü‚½‚ÍA”’l@F@hsid
+@@Œ`óƒf[ƒ^‚ðŽ¯•Ê‚·‚éIDB
+
+2. [IN] •Ï”‚Ü‚½‚ÍA”’l@F@motid
+@@V‚µ‚¢ƒAƒCƒhƒŠƒ“ƒOƒ‚[ƒVƒ‡ƒ“‚ÌIDB
+
+
+
+ƒo[ƒWƒ‡ƒ“ : ver5.2.0.1‚Å’Ç‰Á
+
+%index
+E3DSetMotionBlur
+ƒ‚[ƒVƒ‡ƒ“ƒuƒ‰[‚ÌƒIƒ“ƒIƒt‚ÆŽí—Þ‚ðÝ’è‚µ‚Ü‚·B
+%group
+Easy3D For HSP3 : ƒGƒtƒFƒNƒg
+
+%prm
+p1,p2,p3
+p1 : [IN] •Ï”‚Ü‚½‚ÍA”’l@F@hsid
+p2 : [IN] •Ï”‚Ü‚½‚ÍA”’l@F@mode
+p3 : [IN] •Ï”‚Ü‚½‚ÍA”’l@F@blurtime
+
+%inst
+ƒ‚[ƒVƒ‡ƒ“ƒuƒ‰[‚ÌƒIƒ“ƒIƒt‚ÆŽí—Þ‚ðÝ’è‚µ‚Ü‚·B
+Ží—Þ‚É‚Íƒ[ƒ‹ƒhƒuƒ‰[‚ÆƒJƒƒ‰ƒuƒ‰[‚ª‚ ‚è‚Ü‚·B
+
+ƒ[ƒ‹ƒhƒuƒ‰[‚ÍƒLƒƒƒ‰ƒNƒ^[‚Ìƒ[ƒ‹ƒhÀ•WiˆÊ’uj‚ª•Ï‰»‚µ‚½‚Æ‚«‚Éƒuƒ‰[‚ª¶‚¶‚Ü‚·B
+
+ƒJƒƒ‰ƒuƒ‰[‚ÍƒLƒƒƒ‰ƒNƒ^[‚ÌƒJƒƒ‰À•WiƒLƒƒƒ‰ˆÊ’uŠÜ‚Þj‚ª•Ï‰»‚µ‚½‚Æ‚«‚Éƒuƒ‰[‚ª¶‚¶‚Ü‚·B‚±‚Ìƒ‚[ƒh‚Å‚ÍˆÊ’u‚ª“¯‚¶‚Å‚àƒJƒƒ‰‚ª“®‚¢‚½Žž‚É‚Íƒuƒ‰[‚ª¶‚¶‚Ü‚·B
+
+‚±‚Ì–½—ß‚ÍƒIƒt‚É‚·‚é‚Æ‚«ˆÈŠOd‚¢ˆ—‚Å‚·B
+–ˆ‰ñŒÄ‚Ô•K—v‚Í‚ ‚è‚Ü‚¹‚ñB
+ó‘Ô‚ð•Ï‰»‚³‚¹‚é‚Æ‚«‚Ì‚ÝŒÄ‚ñ‚Å‚­‚¾‚³‚¢B
+
+
+ver5.2.0.4‚Åblurtimeˆø”‚ª’Ç‰Á‚³‚ê‚Ü‚µ‚½B
+‚±‚ê‚Í‰½ƒtƒŒ[ƒ€‘O‚Ìƒf[ƒ^‚ðƒuƒ‰[ì¬‚ÉŽg—p‚·‚é‚©‚ðŽw’è‚·‚é‚à‚Ì‚Å‚·B
+blurtime‚É‚Í‚P‚©‚ç‚Q‚O‚Ü‚Å‚Ì”Žš‚ðŽw’è‚µ‚Ä‚­‚¾‚³‚¢B
+
+
+‹ï‘Ì“I‚ÈŽg—p—á‚Í
+e3dhsp3_MotionBlur.hsp‚ð‚²——‚­‚¾‚³‚¢B
+
+
+
+
+¨ˆø”
+1. [IN] •Ï”‚Ü‚½‚ÍA”’l@F@hsid
+@@Œ`óƒf[ƒ^‚ðŽ¯•Ê‚·‚éIDB
+
+2. [IN] •Ï”‚Ü‚½‚ÍA”’l@F@mode
+@@BLUR_NONE‚ðŽw’è‚·‚é‚Æƒuƒ‰[‚ª–³Œø‚É‚È‚è‚Ü‚·B
+@@BLUR_WORLD‚ðŽw’è‚·‚é‚Æƒ[ƒ‹ƒhƒuƒ‰[‚ªƒIƒ“‚É‚È‚è‚Ü‚·B
+@@BLUR_CAMERA‚ðŽw’è‚·‚é‚ÆƒJƒƒ‰ƒuƒ‰[‚ªƒIƒ“‚É‚È‚è‚Ü‚·B
+@@BLUR_‚ÅŽn‚Ü‚é’è”‚Íe3dhsp3.as‚Å’è‹`‚³‚ê‚Ä‚¢‚Ü‚·B
+
+3. [IN] •Ï”‚Ü‚½‚ÍA”’l@F@blurtime
+@@‰½ƒtƒŒ[ƒ€‘O‚Ìƒf[ƒ^‚ðƒuƒ‰[ì¬‚ÉŽg—p‚·‚é‚©‚ðŽw’è‚µ‚Ü‚·B
+@@‚P‚©‚ç‚Q‚O‚Ü‚Å‚Ì®”B
+
+
+
+ƒo[ƒWƒ‡ƒ“ : ver5.2.0.3‚Å’Ç‰Á<BR>
+      ver5.2.0.4‚ÅŠg’£
+
+%index
+E3DSetBeforeBlur
+ƒuƒ‰[ì¬—p‚Ìƒf[ƒ^‚ð€”õ‚µ‚Ü‚·B
+%group
+Easy3D For HSP3 : ƒGƒtƒFƒNƒg
+
+%prm
+p1
+p1 : [IN] •Ï”‚Ü‚½‚ÍA”’l@F@hsid
+
+%inst
+ƒuƒ‰[ì¬—p‚Ìƒf[ƒ^‚ð€”õ‚µ‚Ü‚·B
+Œ»Ý‚ÌŽp¨‚È‚Ç‚ð•Û‘¶‚µE3DSetMotionBlur‚ÅŽw’è‚µ‚½blurtime‰ñ•ª’~Ï‚µ‚Ü‚·B
+
+‚±‚Ì–½—ß‚ÍE3DSetMotionBlur‚ð­‚È‚­‚Æ‚à‚P‰ñ‚ÍŒÄ‚Ño‚µ‚½Œã‚Å‚È‚¢‚ÆˆÓ–¡‚ðŽ‚¿‚Ü‚¹‚ñB
+
+–ˆƒtƒŒ[ƒ€ŒÄ‚Ño‚µ‚Ä‚­‚¾‚³‚¢B
+
+‹ï‘Ì“I‚ÈŽg—p—á‚Í
+e3dhsp3_MotionBlur.hsp‚ð‚²——‚­‚¾‚³‚¢B
+
+
+
+
+
+¨ˆø”
+1. [IN] •Ï”‚Ü‚½‚ÍA”’l@F@hsid
+@@Œ`óƒf[ƒ^‚ðŽ¯•Ê‚·‚éIDB
+
+
+
+ƒo[ƒWƒ‡ƒ“ : ver5.2.0.3‚Å’Ç‰Á<BR>
+      ver5.2.0.4‚ÅC³
+
+%index
+E3DRenderMotionBlur
+ƒ‚[ƒVƒ‡ƒ“ƒuƒ‰[‚ð•\Ž¦‚µ‚Ü‚·B
+%group
+Easy3D For HSP3 : ƒGƒtƒFƒNƒg
+
+%prm
+p1,p2,p3
+p1 : [IN] ”’l‚Ü‚½‚ÍA•Ï”@F@scid
+p2 : [IN] ”z—ñ•Ï”@F@hsidarray
+p3 : [IN] ”’l‚Ü‚½‚ÍA•Ï”@F@num
+
+%inst
+ƒ‚[ƒVƒ‡ƒ“ƒuƒ‰[‚ð•\Ž¦‚µ‚Ü‚·B
+
+•s“§–¾‚Ì•`‰æA”¼“§–¾‚Ì•`‰æ‚ÌŒã‚ÉŒÄ‚Ño‚µ‚Ä‚­‚¾‚³‚¢B
+Œ»Ý‚ÌƒLƒƒƒ‰ƒNƒ^[‚Ìó‘Ô‚ÆE3DSetBeforeBlur‚ðŒÄ‚Ño‚µ‚½‚Æ‚«‚ÌƒLƒƒƒ‰ƒNƒ^[‚Ìó‘Ô‚©‚çˆÚ“®‹OÕƒ{ƒŠƒ…[ƒ€‚ðì¬‚µ”¼“§–¾‚Å•\Ž¦‚µ‚Ü‚·B
+
+‹ï‘Ì“I‚ÈŽg—p—á‚Í
+e3dhsp3_MotionBlur.hsp‚ð‚²——‚­‚¾‚³‚¢B
+
+
+
+
+¨ˆø”
+1. [IN] ”’l‚Ü‚½‚ÍA•Ï”@F@scid
+@@ƒXƒƒbƒvƒ`ƒFƒCƒ“ID‚ðŽw’è‚µ‚Ä‚­‚¾‚³‚¢B
+
+2. [IN] ”z—ñ•Ï”@F@hsidarray
+@@•`‰æ‚µ‚½‚¢hsid‚ð”z—ñ‚ÉŠi”[‚µ‚Ä‚­‚¾‚³‚¢B
+@@ƒrƒ‹ƒ{[ƒh‚ð•`‰æ‚µ‚½‚¢‚Æ‚«‚Íhsid‚É-1‚ð
+@@Ši”[‚µ‚Ä‚­‚¾‚³‚¢B
+
+
+3. [IN] ”’l‚Ü‚½‚ÍA•Ï”@F@num
+@@hsidarray‚É‰½ŒÂ‚Ìhsid‚ðŠi”[‚µ‚½‚©‚ðŽw’è‚µ‚Ä‚­‚¾‚³‚¢B
+
+
+
+ƒo[ƒWƒ‡ƒ“ : ver5.2.0.3‚Å’Ç‰Á
+
+%index
+E3DInitBeforeBlur
+ƒuƒ‰[ì¬—pƒf[ƒ^‚ð‰Šú‰»‚µ‚Ü‚·B
+%group
+Easy3D For HSP3 : ƒGƒtƒFƒNƒg
+
+%prm
+p1
+p1 : [IN] •Ï”‚Ü‚½‚ÍA”’l@F@hsid
+
+%inst
+ƒuƒ‰[ì¬—pƒf[ƒ^‚ð‰Šú‰»‚µ‚Ü‚·B
+
+E3DSetMotionBlurŒÄ‚Ño‚µ‚©‚ç”‚¦‚Ä‚P‰ñ–Ú‚Ì•`‰æ‚Ì‘O‚É‚Í
+•K‚¸ŒÄ‚Ño‚µ‚Ä‚­‚¾‚³‚¢B
+ŒÄ‚Î‚È‚©‚Á‚½ê‡‚ÍƒSƒ~‚Ì‚æ‚¤‚Èƒuƒ‰[‚ª•\Ž¦‚³‚ê‚Ü‚·B
+
+E3DRender‚æ‚è‚àŒã‚ÅŒÄ‚Ño‚µ‚Ä‚­‚¾‚³‚¢B
+
+‹ï‘Ì“I‚ÈŽg—p—á‚Í
+e3dhsp3_MotionBlur.hsp‚ð‚²——‚­‚¾‚³‚¢B
+
+
+
+
+
+¨ˆø”
+1. [IN] •Ï”‚Ü‚½‚ÍA”’l@F@hsid
+@@Œ`óƒf[ƒ^‚ðŽ¯•Ê‚·‚éIDB
+
+
+
+ƒo[ƒWƒ‡ƒ“ : ver5.2.0.4‚Å’Ç‰Á
+
+%index
+E3DSetMotionBlurPart
+ƒ‚[ƒVƒ‡ƒ“ƒuƒ‰[‚ÌƒIƒ“ƒIƒt‚ÆŽí—Þ‚Ì•ÏX‚ðƒp[ƒc’PˆÊ‚Ås‚¢‚Ü‚·B
+%group
+Easy3D For HSP3 : ƒGƒtƒFƒNƒg
+
+%prm
+p1,p2,p3,p4,p5
+p1 : [IN] •Ï”‚Ü‚½‚ÍA”’l@F@hsid
+p2 : [IN] •Ï”‚Ü‚½‚ÍA”’l@F@mode
+p3 : [IN] •Ï”‚Ü‚½‚ÍA”’l@F@blurtime
+p4 : [IN] ”z—ñ•Ï”@F@partarray
+p5 : [IN] ”’l‚Ü‚½‚ÍA•Ï”@F@num
+
+%inst
+ƒ‚[ƒVƒ‡ƒ“ƒuƒ‰[‚ÌƒIƒ“ƒIƒt‚ÆŽí—Þ‚Ì•ÏX‚ðƒp[ƒc’PˆÊ‚Ås‚¢‚Ü‚·B
+
+E3DSetMotionBlur‚Ì‘ã‚í‚è‚ÉŒÄ‚Ño‚µ‚Ü‚·B
+
+ƒp[ƒc’PˆÊ‚ÅÝ’è‚Å‚«‚é‚±‚ÆˆÈŠO‚ÍE3DSetMotionBlur‚Æ“¯‚¶‚Å‚·B
+E3DSetMotionBlur‚Ìà–¾‚à‚¨“Ç‚Ý‚­‚¾‚³‚¢B
+
+
+
+
+
+¨ˆø”
+1. [IN] •Ï”‚Ü‚½‚ÍA”’l@F@hsid
+@@Œ`óƒf[ƒ^‚ðŽ¯•Ê‚·‚éIDB
+@@ƒrƒ‹ƒ{[ƒh‚ÉƒZƒbƒg‚µ‚½‚¢‚Æ‚«‚Í-1‚ðŽw’èB
+
+2. [IN] •Ï”‚Ü‚½‚ÍA”’l@F@mode
+@@BLUR_NONE‚ðŽw’è‚·‚é‚Æƒuƒ‰[‚ª–³Œø‚É‚È‚è‚Ü‚·B
+@@BLUR_WORLD‚ðŽw’è‚·‚é‚Æƒ[ƒ‹ƒhƒuƒ‰[‚ªƒIƒ“‚É‚È‚è‚Ü‚·B
+@@BLUR_CAMERA‚ðŽw’è‚·‚é‚ÆƒJƒƒ‰ƒuƒ‰[‚ªƒIƒ“‚É‚È‚è‚Ü‚·B
+@@BLUR_‚ÅŽn‚Ü‚é’è”‚Íe3dhsp3.as‚Å’è‹`‚³‚ê‚Ä‚¢‚Ü‚·B
+
+3. [IN] •Ï”‚Ü‚½‚ÍA”’l@F@blurtime
+@@‰½ƒtƒŒ[ƒ€‘O‚Ìƒf[ƒ^‚ðƒuƒ‰[ì¬‚ÉŽg—p‚·‚é‚©‚ðŽw’è‚µ‚Ü‚·B
+@@‚P‚©‚ç‚Q‚O‚Ü‚Å‚Ì®”B
+
+4. [IN] ”z—ñ•Ï”@F@partarray
+@@Ý’è‚µ‚½‚¢ƒp[ƒg‚Ì”Ô†‚ð”z—ñ‚ÉŠi”[‚µ‚Ä‚­‚¾‚³‚¢B
+@@ƒp[ƒg‚Ì”Ô†‚ÍRokDeBone2‚ÌŠK‘w\‘¢ƒGƒfƒBƒ^‚Åƒp[ƒc–¼‚ð‰EƒNƒŠƒbƒN‚µƒVƒŠƒAƒ‹”Ô†‚ð’²‚×‚é‚©A‚Ü‚½‚ÍE3DGetPartNoByName‚ðŽg—p‚µ‚ÄŽæ“¾‚µ‚Ä‚­‚¾‚³‚¢B
+@@hsid‚É-1‚ðŽw’è‚µ‚½ê‡‚Íƒrƒ‹ƒ{[ƒhID‚ðŠi”[‚µ‚Ä‚­‚¾‚³‚¢B
+@@
+
+5. [IN] ”’l‚Ü‚½‚ÍA•Ï”@F@num
+@@partarray‚É‰½ŒÂ‚Ìƒp[ƒg”Ô†‚ðŠi”[‚µ‚½‚©‚ðŽw’è‚µ‚Ä‚­‚¾‚³‚¢B
+
+
+
+ƒo[ƒWƒ‡ƒ“ : ver5.2.0.6‚Å’Ç‰Á
+
+%index
+E3DBlurTexture16Box
+ƒeƒNƒXƒ`ƒƒ‚É‚P‚Uƒ{ƒbƒNƒXƒuƒ‰[‚Å‚Ú‚©‚µ‚ð‚©‚¯‚Ü‚·B
+%group
+Easy3D For HSP3 : ƒGƒtƒFƒNƒg
+
+%prm
+p1,p2,p3
+p1 : [IN] •Ï”‚Ü‚½‚ÍA”’l@F@resultscid
+p2 : [IN] •Ï”‚Ü‚½‚ÍA”’l@F@srctexid
+p3 : [IN] •Ï”‚Ü‚½‚ÍA”’l@F@adjustuvflag
+
+%inst
+ƒeƒNƒXƒ`ƒƒ‚É‚P‚Uƒ{ƒbƒNƒXƒuƒ‰[‚Å‚Ú‚©‚µ‚ð‚©‚¯‚Ü‚·B
+‚PƒpƒXˆ—‚Å‚·B
+ver5.3.0.5‚Åˆø”’Ç‰ÁB
+
+
+
+¨ˆø”
+1. [IN] •Ï”‚Ü‚½‚ÍA”’l@F@resultscid
+@@Œ‹‰Ê‚ð•`‰æ‚·‚éƒŒƒ“ƒ_[ƒ^[ƒQƒbƒg‚ÌƒXƒƒbƒvƒ`ƒFƒCƒ“IDB
+
+2. [IN] •Ï”‚Ü‚½‚ÍA”’l@F@srctexid
+@@‚Ú‚©‚µ‚½‚¢ƒeƒNƒXƒ`ƒƒ‚ÌIDB
+
+3. [IN] •Ï”‚Ü‚½‚ÍA”’l@F@adjustuvflag
+@@UV•â³‚ð‚·‚éê‡‚Í‚PA‚µ‚È‚¢ê‡‚Í‚OB
+@@‚µ‚È‚¢‚Æƒ{ƒP‚ª‘å‚«‚¢‚ª‰E‰º‚É‚¸‚ê‚Ü‚·B
+
+
+
+
+ƒo[ƒWƒ‡ƒ“ : ver5.2.0.8‚Å’Ç‰Á<BR>
+      ver5.3.0.5‚ÅŠg’£<BR>
+      
+
+%index
+E3DBlurTexture9Corn
+ƒeƒNƒXƒ`ƒƒ‚É‚XƒR[ƒ“ƒuƒ‰[‚Å‚Ú‚©‚µ‚ð‚©‚¯‚Ü‚·B
+%group
+Easy3D For HSP3 : ƒGƒtƒFƒNƒg
+
+%prm
+p1,p2,p3
+p1 : [IN] •Ï”‚Ü‚½‚ÍA”’l@F@resultscid
+p2 : [IN] •Ï”‚Ü‚½‚ÍA”’l@F@srctexid
+p3 : [IN] •Ï”‚Ü‚½‚ÍA”’l@F@adjustuvflag
+
+%inst
+ƒeƒNƒXƒ`ƒƒ‚É‚XƒR[ƒ“ƒuƒ‰[‚Å‚Ú‚©‚µ‚ð‚©‚¯‚Ü‚·B
+‚PƒpƒXˆ—‚Å‚·B
+
+ver5.3.0.5‚Åˆø”’Ç‰ÁB
+
+
+
+
+¨ˆø”
+1. [IN] •Ï”‚Ü‚½‚ÍA”’l@F@resultscid
+@@Œ‹‰Ê‚ð•`‰æ‚·‚éƒŒƒ“ƒ_[ƒ^[ƒQƒbƒg‚ÌƒXƒƒbƒvƒ`ƒFƒCƒ“IDB
+
+2. [IN] •Ï”‚Ü‚½‚ÍA”’l@F@srctexid
+@@‚Ú‚©‚µ‚½‚¢ƒeƒNƒXƒ`ƒƒ‚ÌIDB
+
+3. [IN] •Ï”‚Ü‚½‚ÍA”’l@F@adjustuvflag
+@@UV•â³‚ð‚·‚éê‡‚Í‚PA‚µ‚È‚¢ê‡‚Í‚OB
+@@‚µ‚È‚¢‚Æƒ{ƒP‚ª‘å‚«‚¢‚ª‰E‰º‚É‚¸‚ê‚Ü‚·B
+
+
+
+
+ƒo[ƒWƒ‡ƒ“ : ver5.2.0.8‚Å’Ç‰Á<BR>
+      ver5.3.0.5‚ÅŠg’£<BR>
+      <BR>
+
+
+%index
+E3DBlurTextureGauss5x5
+ƒeƒNƒXƒ`ƒƒ‚ÉƒKƒEƒXƒuƒ‰[‚Å‚Ú‚©‚µ‚ð‚©‚¯‚Ü‚·B
+%group
+Easy3D For HSP3 : ƒGƒtƒFƒNƒg
+
+%prm
+p1,p2,p3,p4
+p1 : [IN] •Ï”‚Ü‚½‚ÍA”’l@F@resultscid
+p2 : [IN] •Ï”‚Ü‚½‚ÍA”’l@F@srctexid
+p3 : [IN] •Ï”‚Ü‚½‚ÍA”’l@F@dispersion
+p4 : [IN] •Ï”‚Ü‚½‚ÍA”’l@F@adjustuvflag
+
+%inst
+ƒeƒNƒXƒ`ƒƒ‚ÉƒKƒEƒXƒuƒ‰[‚Å‚Ú‚©‚µ‚ð‚©‚¯‚Ü‚·B
+‚PƒpƒXˆ—‚Å‚·B
+
+ver5.3.0.5‚Åˆø”’Ç‰ÁB
+
+
+
+
+¨ˆø”
+1. [IN] •Ï”‚Ü‚½‚ÍA”’l@F@resultscid
+@@Œ‹‰Ê‚ð•`‰æ‚·‚éƒŒƒ“ƒ_[ƒ^[ƒQƒbƒg‚ÌƒXƒƒbƒvƒ`ƒFƒCƒ“IDB
+
+2. [IN] •Ï”‚Ü‚½‚ÍA”’l@F@srctexid
+@@‚Ú‚©‚µ‚½‚¢ƒeƒNƒXƒ`ƒƒ‚ÌIDB
+
+3. [IN] •Ï”‚Ü‚½‚ÍA”’l@F@dispersion
+@@ŽÀ”B
+@@‚Ú‚©‚µ‚Ì‹­‚³B‘å‚«‚¢‚Ù‚Ç‚Ú‚¯‚éB
+@@‚±‚Ì–½—ß‚Å‚Í‚Ú‚©‚µ‚ÉŒÀŠE‚ª‚ ‚è‚Ü‚·B
+@@‚à‚Á‚Æ‚½‚­‚³‚ñ‚Ú‚©‚µ‚½‚¢ê‡‚Í
+@@E3DBlurTextureGauss‚ðŽg‚Á‚Ä‚­‚¾‚³‚¢B
+
+4. [IN] •Ï”‚Ü‚½‚ÍA”’l@F@adjustuvflag
+@@UV•â³‚ð‚·‚éê‡‚Í‚PA‚µ‚È‚¢ê‡‚Í‚OB
+@@‚µ‚È‚¢‚Æƒ{ƒP‚ª‘å‚«‚¢‚ª‰E‰º‚É‚¸‚ê‚Ü‚·B
+
+
+
+
+ƒo[ƒWƒ‡ƒ“ : ver5.2.0.8‚Å’Ç‰Á<BR>ver5.3.0.5‚ÅŠg’£<BR>
+
+
+%index
+E3DBlurTextureGauss
+ƒeƒNƒXƒ`ƒƒ‚ÉƒKƒEƒXƒuƒ‰[‚Å‚Ú‚©‚µ‚ð‚©‚¯‚Ü‚·B
+%group
+Easy3D For HSP3 : ƒGƒtƒFƒNƒg
+
+%prm
+p1,p2,p3,p4,p5,p6,p7
+p1 : [IN] •Ï”‚Ü‚½‚ÍA”’l@F@resultscid
+p2 : [IN] •Ï”‚Ü‚½‚ÍA”’l@F@workscid
+p3 : [IN] •Ï”‚Ü‚½‚ÍA”’l@F@worktexid
+p4 : [IN] •Ï”‚Ü‚½‚ÍA”’l@F@srctexid
+p5 : [IN] •Ï”‚Ü‚½‚ÍA”’l@F@dispersion
+p6 : [IN] •Ï”‚Ü‚½‚ÍA”’l@F@colmult
+p7 : [IN] •Ï”‚Ü‚½‚ÍA”’l@F@adjustuvflag
+
+%inst
+ƒeƒNƒXƒ`ƒƒ‚ÉƒKƒEƒXƒuƒ‰[‚Å‚Ú‚©‚µ‚ð‚©‚¯‚Ü‚·B
+c•ûŒü‚Ì‚Ú‚©‚µ‚Æ‰¡•ûŒü‚Ì‚Ú‚©‚µ‚Ì‚QƒpƒX\¬‚Å‚·B
+E3D‚Ì’†‚Å‚Íˆê”ÔŒø‰Ê‚Ì‚ ‚é‚Ú‚©‚µ‚Å‚·B
+
+‹ï‘Ì“I‚ÈŽg—p—á‚Í
+e3dhsp3_BlurTexture.hsp‚É‘‚«‚Ü‚µ‚½‚Ì‚Å‚²——‚­‚¾‚³‚¢B
+
+ver5.3.0.5‚Åˆø”’Ç‰ÁB
+
+
+
+
+
+¨ˆø”
+1. [IN] •Ï”‚Ü‚½‚ÍA”’l@F@resultscid
+@@Œ‹‰Ê‚ð•`‰æ‚·‚éƒŒƒ“ƒ_[ƒ^[ƒQƒbƒg‚ÌƒXƒƒbƒvƒ`ƒFƒCƒ“IDB
+
+2. [IN] •Ï”‚Ü‚½‚ÍA”’l@F@workscid
+@@“r’†Œo‰ßŠi”[—p‚ÌƒŒƒ“ƒ_[ƒ^[ƒQƒbƒgƒeƒNƒXƒ`ƒƒ‚ÌƒXƒƒbƒvƒ`ƒFƒCƒ“IDB
+
+3. [IN] •Ï”‚Ü‚½‚ÍA”’l@F@worktexid
+@@“r’†Œo‰ßŠi”[—p‚ÌƒŒƒ“ƒ_[ƒ^[ƒQƒbƒgƒeƒNƒXƒ`ƒƒ‚ÌƒeƒNƒXƒ`ƒƒIDB
+
+4. [IN] •Ï”‚Ü‚½‚ÍA”’l@F@srctexid
+@@‚Ú‚©‚µ‚½‚¢ƒeƒNƒXƒ`ƒƒ‚ÌIDB
+
+5. [IN] •Ï”‚Ü‚½‚ÍA”’l@F@dispersion
+@@ŽÀ”B
+@@‚Ú‚©‚µ‚Ì‹­‚³B‘å‚«‚¢‚Ù‚Ç‚Ú‚¯‚éB
+
+6. [IN] •Ï”‚Ü‚½‚ÍA”’l@F@colmult
+@@ŽÀ”B
+@@‚Ú‚©‚µF‚ÉæŽZ‚·‚éŒW”‚ðŽw’è‚µ‚Ü‚·B
+@@c•ûŒü‰¡•ûŒü‚Ì‚Q‰ñŠ|‚¯ŽZ‚³‚ê‚Ü‚·B
+
+7. [IN] •Ï”‚Ü‚½‚ÍA”’l@F@adjustuvflag
+@@UV•â³‚ð‚·‚éê‡‚Í‚PA‚µ‚È‚¢ê‡‚Í‚OB
+@@‚µ‚È‚¢‚Æƒ{ƒP‚ª‘å‚«‚¢‚ª‰E‰º‚É‚¸‚ê‚Ü‚·B
+
+
+
+
+
+ƒo[ƒWƒ‡ƒ“ : ver5.2.0.8‚Å’Ç‰Á<BR>ver5.3.0.5‚ÅŠg’£<BR>
+
+
+%index
+E3DBlendRTTexture
+‚Q‚Â‚ÌƒeƒNƒXƒ`ƒƒ‚ðƒAƒ‹ƒtƒ@ƒuƒŒƒ“ƒh‚µ‚P‚Â‚ÌƒeƒNƒXƒ`ƒƒ‚ÉƒŒƒ“ƒ_[‚µ‚Ü‚·B
+%group
+Easy3D For HSP3 : ƒGƒtƒFƒNƒg
+
+%prm
+p1,p2,p3,p4,p5,p6,p7,p8,p9,p10,p11
+p1 : [IN] •Ï”‚Ü‚½‚ÍA”’l@F@resultscid
+p2 : [IN] •Ï”‚Ü‚½‚ÍA”’l@F@texid1
+p3 : [IN] ”z—ñ‚Ì•Ï”@F@col1
+p4 : [IN] •Ï”‚Ü‚½‚ÍA”’l@F@texf1
+p5 : [IN] •Ï”‚Ü‚½‚ÍA”’l@F@texid2
+p6 : [IN] ”z—ñ‚Ì•Ï”@F@col2
+p7 : [IN] •Ï”‚Ü‚½‚ÍA”’l@F@texf2
+p8 : [IN] •Ï”‚Ü‚½‚ÍA”’l@F@blendop
+p9 : [IN] •Ï”‚Ü‚½‚ÍA”’l@F@srcblend
+p10 : [IN] •Ï”‚Ü‚½‚ÍA”’l@F@destblend
+p11 : [IN] •Ï”‚Ü‚½‚ÍA”’l@F@adjustuvflag
+
+%inst
+‚Q‚Â‚ÌƒeƒNƒXƒ`ƒƒ‚ðƒAƒ‹ƒtƒ@ƒuƒŒƒ“ƒh‚µ‚P‚Â‚ÌƒeƒNƒXƒ`ƒƒ‚ÉƒŒƒ“ƒ_[‚µ‚Ü‚·B
+
+‚Q‚Â–Ú‚ÌƒeƒNƒXƒ`ƒƒID‚É-1‚ðŽw’è‚·‚é‚Æ‚QŒÂ–Ú‚ÌƒeƒNƒXƒ`ƒƒ‚Í–³Œø‚É‚È‚è‚PŒÂ‚ÌƒeƒNƒXƒ`ƒƒ‚¾‚¯‚Åˆ—‚ªs‚í‚ê‚Ü‚·B‚±‚ê‚ÍƒeƒNƒXƒ`ƒƒ‚ÌƒTƒCƒY‚ð•Ï‚¦‚½‚¢ê‡‚È‚Ç‚É•Ö—˜‚Å‚·B
+
+‹ï‘Ì“I‚ÈŽg—p—á‚Í
+e3dhsp3_BlurTexture.hsp‚É‘‚«‚Ü‚µ‚½‚Ì‚Å‚²——‚­‚¾‚³‚¢B
+
+ver5.3.0.5‚Åˆø”’Ç‰ÁB
+
+
+
+¨ˆø”
+1. [IN] •Ï”‚Ü‚½‚ÍA”’l@F@resultscid
+@@Œ‹‰Ê‚ð•`‰æ‚·‚éƒŒƒ“ƒ_[ƒ^[ƒQƒbƒg‚ÌƒXƒƒbƒvƒ`ƒFƒCƒ“IDB
+
+2. [IN] •Ï”‚Ü‚½‚ÍA”’l@F@texid1
+@@‚P–‡–Ú‚ÌƒeƒNƒXƒ`ƒƒ‚ÌIDB
+@@Å‰‚É•`‰æ‚³‚ê‚éB
+
+3. [IN] ”z—ñ‚Ì•Ï”@F@col1
+@@ŽÀ”Œ^‚Ì”z—ñ‚Ì•Ï”B
+@@—v‘f”‚Í‚S‚ÂB
+@@col1(0)‚É‚ÍÔF¬•ª‚ðcol1(1)‚É‚Í—ÎF¬•ª‚ð
+@@col1(2)‚É‚ÍÂF¬•ª‚ðcol1(3)‚É‚Í“§–¾“x‚ð
+@@Ý’è‚µ‚Ä“n‚µ‚Ü‚·B
+@@Še’l‚Í0.0‚©‚ç1.0‚Å‚·B
+@@‚±‚ÌF‚Ítexid1‚ÌƒeƒNƒXƒ`ƒƒ‚ÌF‚ÉæŽZ‚³‚ê‚Ü‚·B
+
+4. [IN] •Ï”‚Ü‚½‚ÍA”’l@F@texf1
+@@texid1‚ÌŠg‘åk¬ƒtƒBƒ‹ƒ^‚ÌŽí—ÞB
+@@D3DTEXF_POINT‚Í‚Ú‚¯‚Ü‚¹‚ñB
+@@D3DTEXF_LINEAR‚Í‚Ú‚¯‚Ü‚·B
+@@‚Ç‚¿‚ç‚©‚ðŽw’è‚µ‚Ä‚­‚¾‚³‚¢B
+
+5. [IN] •Ï”‚Ü‚½‚ÍA”’l@F@texid2
+@@‚Q–‡–Ú‚ÌƒeƒNƒXƒ`ƒƒ‚ÌIDB
+@@texid1‚ÌŒã‚É•`‰æ‚³‚ê‚éB
+
+6. [IN] ”z—ñ‚Ì•Ï”@F@col2
+@@ŽÀ”Œ^‚Ì”z—ñ‚Ì•Ï”B
+@@—v‘f”‚Í‚S‚ÂB
+@@col2(0)‚É‚ÍÔF¬•ª‚ðcol2(1)‚É‚Í—ÎF¬•ª‚ð
+@@col2(2)‚É‚ÍÂF¬•ª‚ðcol2(3)‚É‚Í“§–¾“x‚ð
+@@Ý’è‚µ‚Ä“n‚µ‚Ü‚·B
+@@Še’l‚Í0.0‚©‚ç1.0‚Å‚·B
+@@‚±‚ÌF‚Ítexid2‚ÌƒeƒNƒXƒ`ƒƒ‚ÌF‚ÉæŽZ‚³‚ê‚Ü‚·B
+
+7. [IN] •Ï”‚Ü‚½‚ÍA”’l@F@texf2
+@@texid2‚ÌŠg‘åk¬ƒtƒBƒ‹ƒ^‚ÌŽí—ÞB
+@@D3DTEXF_POINT‚Í‚Ú‚¯‚Ü‚¹‚ñB
+@@D3DTEXF_LINEAR‚Í‚Ú‚¯‚Ü‚·B
+@@‚Ç‚¿‚ç‚©‚ðŽw’è‚µ‚Ä‚­‚¾‚³‚¢B
+
+8. [IN] •Ï”‚Ü‚½‚ÍA”’l@F@blendop
+@@ƒAƒ‹ƒtƒ@ƒuƒŒƒ“ƒh‘€ì‚ÌŽí—ÞB
+@@e3dhsp3.as‚Å’è‹`‚³‚ê‚Ä‚¢‚éD3DBLENDOP_‚ÅŽn‚Ü‚é’è”‚ðŽw’è‚µ‚Ä‚­‚¾‚³‚¢B
+
+9. [IN] •Ï”‚Ü‚½‚ÍA”’l@F@srcblend
+@@D3DRS_SRCBLEND‚Ì’lB
+@@e3dhsp3.as‚Å’è‹`‚³‚ê‚Ä‚¢‚éD3DBLEND_‚ÅŽn‚Ü‚é’è”‚ðŽw’è‚µ‚Ä‚­‚¾‚³‚¢B
+
+10. [IN] •Ï”‚Ü‚½‚ÍA”’l@F@destblend
+@@D3DRS_DESTBLEND‚Ì’lB
+@@e3dhsp3.as‚Å’è‹`‚³‚ê‚Ä‚¢‚éD3DBLEND_‚ÅŽn‚Ü‚é’è”‚ðŽw’è‚µ‚Ä‚­‚¾‚³‚¢B
+
+11. [IN] •Ï”‚Ü‚½‚ÍA”’l@F@adjustuvflag
+@@UV•â³‚ð‚·‚éê‡‚Í‚PA‚µ‚È‚¢ê‡‚Í‚OB
+@@‚µ‚È‚¢‚Æƒ{ƒP‚ª‘å‚«‚¢‚ª‰E‰º‚É‚¸‚ê‚Ü‚·B
+
+
+
+
+ƒo[ƒWƒ‡ƒ“ : ver5.2.0.8‚Å’Ç‰Á<BR>
+      ver5.3.0.5‚ÅŠg’£<BR>
+      
+
+%index
+E3DSetClearCol
+ƒT[ƒtƒFƒX‚ÌƒNƒŠƒAF‚ðƒXƒƒbƒvƒ`ƒFƒCƒ“‚²‚Æ‚ÉÝ’è‚µ‚Ü‚·B
+%group
+Easy3D For HSP3 : •`‰æƒpƒ‰ƒ[ƒ^
+
+%prm
+p1,p2,p3,p4,p5
+p1 : [IN] •Ï”‚Ü‚½‚ÍA”’l@F@scid
+p2 : [IN] •Ï”‚Ü‚½‚ÍA”’l@F@A
+p3 : [IN] •Ï”‚Ü‚½‚ÍA”’l@F@R
+p4 : [IN] •Ï”‚Ü‚½‚ÍA”’l@F@G
+p5 : [IN] •Ï”‚Ü‚½‚ÍA”’l@F@B
+
+%inst
+ƒT[ƒtƒFƒX‚ÌƒNƒŠƒAF‚ðƒXƒƒbƒvƒ`ƒFƒCƒ“‚²‚Æ‚ÉÝ’è‚µ‚Ü‚·B
+ƒŒƒ“ƒ_[ƒ^[ƒQƒbƒgƒeƒNƒXƒ`ƒƒ‚ÌƒNƒŠƒAF‚àÝ’è‚Å‚«‚Ü‚·B
+E3DBeginScene‚æ‚è‘O‚ÅŒÄ‚ñ‚Å‚­‚¾‚³‚¢B
+
+
+
+
+¨ˆø”
+1. [IN] •Ï”‚Ü‚½‚ÍA”’l@F@scid
+@@ƒXƒƒbƒvƒ`ƒFƒCƒ“ID‚ðŽw’è‚µ‚Ü‚·B
+
+2. [IN] •Ï”‚Ü‚½‚ÍA”’l@F@A
+@@ƒNƒŠƒAF‚Ì“§–¾“x‚ðŽw’è‚µ‚Ü‚·B
+@@‚O‚©‚ç‚Q‚T‚T‚Ü‚Å‚Ì®”’l‚Å‚·B
+
+3. [IN] •Ï”‚Ü‚½‚ÍA”’l@F@R
+@@ƒNƒŠƒAF‚ÌÔ¬•ª‚ðŽw’è‚µ‚Ü‚·B
+@@‚O‚©‚ç‚Q‚T‚T‚Ü‚Å‚Ì®”’l‚Å‚·B
+
+4. [IN] •Ï”‚Ü‚½‚ÍA”’l@F@G
+@@ƒNƒŠƒAF‚Ì—Î¬•ª‚ðŽw’è‚µ‚Ü‚·B
+@@‚O‚©‚ç‚Q‚T‚T‚Ü‚Å‚Ì®”’l‚Å‚·B
+
+5. [IN] •Ï”‚Ü‚½‚ÍA”’l@F@B
+@@ƒNƒŠƒAF‚ÌÂ¬•ª‚ðŽw’è‚µ‚Ü‚·B
+@@‚O‚©‚ç‚Q‚T‚T‚Ü‚Å‚Ì®”’l‚Å‚·B
+
+
+
+
+ƒo[ƒWƒ‡ƒ“ : ver5.2.0.9‚Å’Ç‰Á
+
+%index
+E3DSetMotionBlurMinAlpha
+ƒ‚[ƒVƒ‡ƒ“ƒuƒ‰[‚Ìƒuƒ‰[‚ÌÁ‚¦‹ï‡‚ðÝ’è‚µ‚Ü‚·B
+%group
+Easy3D For HSP3 : ƒGƒtƒFƒNƒg
+
+%prm
+p1,p2,p3
+p1 : [IN] •Ï”‚Ü‚½‚ÍA”’l@F@hsid
+p2 : [IN] •Ï”‚Ü‚½‚ÍA”’l@F@partno
+p3 : [IN] •Ï”‚Ü‚½‚ÍA”’l@F@minAlpha
+
+%inst
+ƒ‚[ƒVƒ‡ƒ“ƒuƒ‰[‚Ìƒuƒ‰[‚ÌÁ‚¦‹ï‡‚ðÝ’è‚µ‚Ü‚·B
+ƒ‚[ƒVƒ‡ƒ“ƒuƒ‰[‚Í“®‚¢‚½Œã‚ÌˆÊ’u‚Ì“§–¾“x‚ª‚P‚Å
+“®‚­‘O‚ÌˆÊ’u‚Ì“§–¾“x‚ÍminAlpha‚Æ‚È‚è‚Ü‚·B
+ƒuƒ‰[‚Ì“§–¾“x‚Í‚P‚©‚çminAlpha‚Ü‚Å™X‚É”–‚­‚È‚Á‚Ä‚¢‚­‚±‚Æ‚É‚È‚è‚Ü‚·B
+
+‚±‚ÌminAlpha‚Ì’l‚ð’²®‚·‚é‚±‚Æ‚Åƒuƒ‰[‚ÌÁ‚¦‹ï‡‚ð•Ï‚¦‚é‚±‚Æ‚ªo—ˆ‚Ü‚·B
+
+‰½‚àÝ’è‚µ‚È‚¢ó‘Ô‚Å‚ÍminAlpha‚Í0.2‚É‚È‚Á‚Ä‚¢‚Ü‚·B
+
+
+
+
+
+¨ˆø”
+1. [IN] •Ï”‚Ü‚½‚ÍA”’l@F@hsid
+@@Œ`óƒf[ƒ^‚ðŽ¯•Ê‚·‚éIDB
+
+2. [IN] •Ï”‚Ü‚½‚ÍA”’l@F@partno
+@@Ý’è‚µ‚½‚¢ƒp[ƒc‚Ì”Ô†B
+@@-1‚ðŽw’è‚·‚é‚Æ‘S‚Ä‚Ìƒp[ƒc‚ÉÝ’è‚µ‚Ü‚·B
+
+3. [IN] •Ï”‚Ü‚½‚ÍA”’l@F@minAlpha
+@@0.0‚©‚ç1.0‚Ü‚Å‚ÌŽÀ”B
+@@ƒuƒ‰[‚ÌÅ¬“§–¾“x‚ðŽw’è‚µ‚Ü‚·B
+
+
+
+
+ƒo[ƒWƒ‡ƒ“ : ver5.2.0.9‚Å’Ç‰Á
+
+%index
+E3DRenderGlow
+ƒOƒ[Œ¹‚ð•`‰æ‚µ‚Ü‚·B
+%group
+Easy3D For HSP3 : ƒGƒtƒFƒNƒg
+
+%prm
+p1,p2
+p1 : [IN] ”z—ñ•Ï”@F@hsidarray
+p2 : [IN] ”’l‚Ü‚½‚ÍA•Ï”@F@num
+
+%inst
+ƒOƒ[Œ¹‚ð•`‰æ‚µ‚Ü‚·B
+ƒOƒ[‚ÌŽg‚¢•û‚É‚Â‚¢‚Ä‚Írdb2_glow.htm‚ð‚²——‚­‚¾‚³‚¢B
+‹ï‘Ì“I‚ÈŽg—p—á‚Í
+e3dhsp3_glow.hsp‚ð‚²——‚­‚¾‚³‚¢B
+
+
+
+
+¨ˆø”
+1. [IN] ”z—ñ•Ï”@F@hsidarray
+@@•`‰æ‚µ‚½‚¢hsid‚ð”z—ñ‚ÉŠi”[‚µ‚Ä‚­‚¾‚³‚¢B
+
+2. [IN] ”’l‚Ü‚½‚ÍA•Ï”@F@num
+@@hsidarray‚É‰½ŒÂ‚Ìhsid‚ðŠi”[‚µ‚½‚©‚ðŽw’è‚µ‚Ä‚­‚¾‚³‚¢B
+
+
+
+ƒo[ƒWƒ‡ƒ“ : ver5.2.1.0‚Å’Ç‰Á
+
+%index
+E3DSetMaterialGlowParams
+ƒOƒ[‚Ì—LŒø–³Œø‚ÆF”{—¦‚ðŽw’è‚µ‚Ü‚·B
+%group
+Easy3D For HSP3 : ƒ}ƒeƒŠƒAƒ‹
+
+%prm
+p1,p2,p3,p4,p5
+p1 : [IN] •Ï”‚Ü‚½‚ÍA”’l@F@hsid
+p2 : [IN] •Ï”‚Ü‚½‚ÍA”’l@F@matno
+p3 : [IN] •Ï”‚Ü‚½‚ÍA”’l@F@glowmode
+p4 : [IN] •Ï”‚Ü‚½‚ÍA”’l@F@setcolflag
+p5 : [IN] ”z—ñ‚Ì•Ï”@F@colmult
+
+%inst
+ƒOƒ[‚Ì—LŒø–³Œø‚ÆF”{—¦‚ðŽw’è‚µ‚Ü‚·B
+
+‚±‚Ì–½—ß‚ÅƒOƒ[‚Ìƒ‚[ƒh‚âƒIƒ“ƒIƒt‚ð•ÏX‚·‚é‚Æ
+ƒ}ƒeƒŠƒAƒ‹‚Ì“§‰ß•û–@transparent‚ªŽ©“®“I‚É“KØ‚È‚à‚Ì‚É•ÏX‚³‚ê‚Ü‚·B
+ƒ‚[ƒh•ÏX‘O‚Ìó‘Ô‚É–ß‚µ‚½‚¢ê‡‚Í
+E3DGetMaterialTransparent‚ÆE3DSetMaterialTransparent
+‚ðŽg—p‚µ‚Ä•ÏX‘O‚Ìó‘Ô‚ð•Û‘¶‚µ‚Ä‚¨‚¢‚Ä•œŒ³‚µ‚Ä‚­‚¾‚³‚¢B
+
+ƒOƒ[‚ÌŽg‚¢•û‚É‚Â‚¢‚Ä‚Írdb2_glow.htm‚ð‚²——‚­‚¾‚³‚¢B
+‹ï‘Ì“I‚ÈŽg—p—á‚Í
+e3dhsp3_glow.hsp‚ð‚²——‚­‚¾‚³‚¢B
+
+
+
+
+¨ˆø”
+1. [IN] •Ï”‚Ü‚½‚ÍA”’l@F@hsid
+@@Œ`óƒf[ƒ^‚ðŽ¯•Ê‚·‚éid
+
+2. [IN] •Ï”‚Ü‚½‚ÍA”’l@F@matno
+@@ƒ}ƒeƒŠƒAƒ‹”Ô†B
+@@E3DGetMaterialNoByName‚ÅŽæ“¾‚µ‚½”Ô†A
+@@‚à‚µ‚­‚Í
+@@RokDeBone2‚Ìu–Êƒ}ƒeƒŠƒAƒ‹vƒƒjƒ…[‚Å
+@@•\Ž¦‚³‚ê‚Ä‚¢‚éuƒ}ƒeƒŠƒAƒ‹”Ô†v
+
+3. [IN] •Ï”‚Ü‚½‚ÍA”’l@F@glowmode
+@@ƒOƒ[‚Ìƒ‚[ƒh‚ðŽw’è‚µ‚Ü‚·B
+@@GLOW_NONE‚ðŽw’è‚·‚é‚ÆƒOƒ[‚ª–³Œø‚É‚È‚è‚Ü‚·B
+@@GLOW_NORMAL‚ðŽw’è‚·‚é‚Æ•s“§–¾ƒOƒ[‚É‚È‚è‚Ü‚·B
+@@GLOW_ALPHA‚ðŽw’è‚·‚é‚Æ”¼“§–¾ƒOƒ[‚É‚È‚è‚Ü‚·B
+@@GLOW‚ÅŽn‚Ü‚é’è”‚Íe3dhsp3.as‚Å’è‹`‚³‚ê‚Ä‚¢‚Ü‚·B
+
+4. [IN] •Ï”‚Ü‚½‚ÍA”’l@F@setcolflag
+@@colmultˆø”‚ÅŽw’è‚µ‚½’l‚ðÝ’è‚µ‚½‚¢‚Æ‚«‚Í‚P‚ðŽw’è‚µA–³Ž‹‚µ‚½‚¢‚Æ‚«‚Í‚O‚ðŽw’è‚µ‚Ü‚·B
+
+5. [IN] ”z—ñ‚Ì•Ï”@F@colmult
+@@ŽÀ”Œ^‚Ì”z—ñ‚Ì•Ï”B
+@@colmult(0)‚É‚ÍÔ‚Ì”{—¦‚ðcolmult(1)‚É‚Í—Î‚Ì”{—¦‚ðcolmult(2)‚É‚ÍÂ‚Ì”{—¦‚ðŽw’è‚µ‚Ä‚­‚¾‚³‚¢B
+
+
+
+
+ƒo[ƒWƒ‡ƒ“ : ver5.2.1.0‚Å’Ç‰Á
+
+%index
+E3DGetMaterialGlowParams
+ƒOƒ[‚Ì—LŒø–³Œø‚ÆF”{—¦‚ðŽæ“¾‚µ‚Ü‚·B
+%group
+Easy3D For HSP3 : ƒ}ƒeƒŠƒAƒ‹
+
+%prm
+p1,p2,p3,p4
+p1 : [IN] •Ï”‚Ü‚½‚ÍA”’l@F@hsid
+p2 : [IN] •Ï”‚Ü‚½‚ÍA”’l@F@matno
+p3 : [OUT] •Ï”@F@glowmode
+p4 : [OUT] ”z—ñ‚Ì•Ï”@F@colmult
+
+%inst
+ƒOƒ[‚Ì—LŒø–³Œø‚ÆF”{—¦‚ðŽæ“¾‚µ‚Ü‚·B
+ƒOƒ[‚ÌŽg‚¢•û‚É‚Â‚¢‚Ä‚Írdb2_glow.htm‚ð‚²——‚­‚¾‚³‚¢B
+‹ï‘Ì“I‚ÈŽg—p—á‚Í
+e3dhsp3_glow.hsp‚ð‚²——‚­‚¾‚³‚¢B
+
+
+
+
+¨ˆø”
+1. [IN] •Ï”‚Ü‚½‚ÍA”’l@F@hsid
+@@Œ`óƒf[ƒ^‚ðŽ¯•Ê‚·‚éid
+
+2. [IN] •Ï”‚Ü‚½‚ÍA”’l@F@matno
+@@ƒ}ƒeƒŠƒAƒ‹”Ô†B
+@@E3DGetMaterialNoByName‚ÅŽæ“¾‚µ‚½”Ô†A
+@@‚à‚µ‚­‚Í
+@@RokDeBone2‚Ìu–Êƒ}ƒeƒŠƒAƒ‹vƒƒjƒ…[‚Å
+@@•\Ž¦‚³‚ê‚Ä‚¢‚éuƒ}ƒeƒŠƒAƒ‹”Ô†v
+
+3. [OUT] •Ï”@F@glowmode
+@@ƒOƒ[‚Ìƒ‚[ƒh‚ª‘ã“ü‚³‚ê‚Ü‚·B
+@@GLOW_NONE‚ÍƒOƒ[–³‚µB
+@@GLOW_NORMAL‚Í•s“§–¾ƒOƒ[B
+@@GLOW_ALPHA‚Í”¼“§–¾ƒOƒ[B
+@@GLOW‚ÅŽn‚Ü‚é’è”‚Íe3dhsp3.as‚Å’è‹`‚³‚ê‚Ä‚¢‚Ü‚·B
+
+4. [OUT] ”z—ñ‚Ì•Ï”@F@colmult
+@@ŽÀ”Œ^‚Ì”z—ñ‚Ì•Ï”B
+@@‚±‚Ì–½—ß‚ðŒÄ‚Ô‘O‚É•K‚¸ddim colmult, 3‚ðŽÀs‚µ‚Ä‚­‚¾‚³‚¢B
+@@ƒOƒ[‚ÌF”{—¦‚ª‘ã“ü‚³‚ê‚Ü‚·B
+@@colmult(0)‚É‚ÍÔ‚Ì”{—¦‚ªcolmult(1)‚É‚Í—Î‚Ì”{—¦‚ªcolmult(2)‚É‚ÍÂ‚Ì”{—¦‚ª‘ã“ü‚³‚ê‚Ü‚·B
+
+
+
+
+ƒo[ƒWƒ‡ƒ“ : ver5.2.1.0‚Å’Ç‰Á
+
+%index
+E3DSetMaterialTransparent
+ƒeƒNƒXƒ`ƒƒ‚Ì“§‰ß•û–@‚ðÝ’è‚µ‚Ü‚·B
+%group
+Easy3D For HSP3 : ƒ}ƒeƒŠƒAƒ‹
+
+%prm
+p1,p2,p3
+p1 : [IN] •Ï”‚Ü‚½‚ÍA”’l@F@hsid
+p2 : [IN] •Ï”‚Ü‚½‚ÍA”’l@F@matno
+p3 : [IN] •Ï”‚Ü‚½‚ÍA”’l@F@transparent
+
+%inst
+ƒeƒNƒXƒ`ƒƒ‚Ì“§‰ß•û–@‚ðÝ’è‚µ‚Ü‚·B
+
+
+¨ˆø”
+1. [IN] •Ï”‚Ü‚½‚ÍA”’l@F@hsid
+@@Œ`óƒf[ƒ^‚ðŽ¯•Ê‚·‚éid
+
+2. [IN] •Ï”‚Ü‚½‚ÍA”’l@F@matno
+@@ƒ}ƒeƒŠƒAƒ‹”Ô†B
+@@E3DGetMaterialNoByName‚ÅŽæ“¾‚µ‚½”Ô†A
+@@‚à‚µ‚­‚Í
+@@RokDeBone2‚Ìu–Êƒ}ƒeƒŠƒAƒ‹vƒƒjƒ…[‚Å
+@@•\Ž¦‚³‚ê‚Ä‚¢‚éuƒ}ƒeƒŠƒAƒ‹”Ô†v
+
+3. [IN] •Ï”‚Ü‚½‚ÍA”’l@F@transparent
+@@ƒeƒNƒXƒ`ƒƒ‚Ì“§‰ßƒ‚[ƒh‚ðŽw’è‚µ‚Ü‚·B
+@@‚O‚ðŽw’è‚·‚é‚Æ“§‰ß‚È‚µB
+@@‚P‚ðŽw’è‚·‚é‚Æ•F“§‰ßB
+@@‚Q‚ðŽw’è‚·‚é‚ÆƒeƒNƒXƒ`ƒƒ‚ÌƒAƒ‹ƒtƒ@‚É‚æ‚è“§‰ßB
+
+
+
+ƒo[ƒWƒ‡ƒ“ : ver5.2.1.0‚Å’Ç‰Á
+
+%index
+E3DGetMaterialTransparent
+ƒeƒNƒXƒ`ƒƒ‚Ì“§‰ß•û–@‚ðŽæ“¾‚µ‚Ü‚·B
+%group
+Easy3D For HSP3 : ƒ}ƒeƒŠƒAƒ‹
+
+%prm
+p1,p2,p3
+p1 : [IN] •Ï”‚Ü‚½‚ÍA”’l@F@hsid
+p2 : [IN] •Ï”‚Ü‚½‚ÍA”’l@F@matno
+p3 : [OUT] •Ï”@F@transparent
+
+%inst
+ƒeƒNƒXƒ`ƒƒ‚Ì“§‰ß•û–@‚ðŽæ“¾‚µ‚Ü‚·B
+
+
+¨ˆø”
+1. [IN] •Ï”‚Ü‚½‚ÍA”’l@F@hsid
+@@Œ`óƒf[ƒ^‚ðŽ¯•Ê‚·‚éid
+
+2. [IN] •Ï”‚Ü‚½‚ÍA”’l@F@matno
+@@ƒ}ƒeƒŠƒAƒ‹”Ô†B
+@@E3DGetMaterialNoByName‚ÅŽæ“¾‚µ‚½”Ô†A
+@@‚à‚µ‚­‚Í
+@@RokDeBone2‚Ìu–Êƒ}ƒeƒŠƒAƒ‹vƒƒjƒ…[‚Å
+@@•\Ž¦‚³‚ê‚Ä‚¢‚éuƒ}ƒeƒŠƒAƒ‹”Ô†v
+
+3. [OUT] •Ï”@F@transparent
+@@ƒeƒNƒXƒ`ƒƒ‚Ì“§‰ßƒ‚[ƒh‚ª‘ã“ü‚³‚ê‚Ü‚·B
+@@‚O‚Í“§‰ß‚È‚µB
+@@‚P‚Í•F“§‰ßB
+@@‚Q‚ÍƒeƒNƒXƒ`ƒƒƒAƒ‹ƒtƒ@‚É‚æ‚é“§‰ßB
+@
+
+
+ƒo[ƒWƒ‡ƒ“ : ver5.2.1.0‚Å’Ç‰Á
+
+%index
+E3DChkHDR
+HDR‚Å•`‰æ‚Å‚«‚é‚©‚Ç‚¤‚©‚ð’²‚×‚Ü‚·B
+%group
+Easy3D For HSP3 : ŠÂ‹«
+
+%prm
+p1,p2,p3
+p1 : [OUT] •Ï”@F@okflag
+p2 : [OUT] •Ï”@F@hdrformat
+p3 : [OUT] •Ï”@F@toneformat
+
+%inst
+HDR‚Å•`‰æ‚Å‚«‚é‚©‚Ç‚¤‚©‚ð’²‚×‚Ü‚·B
+E3DInit‚æ‚è‚àŒã‚ÅŒÄ‚Ño‚µ‚Ü‚·B
+Žå‚É•‚“®¬”ƒtƒH[ƒ}ƒbƒg‚ÌƒeƒNƒXƒ`ƒƒ‚ªŽg‚¦‚é‚©‚Ç‚¤‚©‚ª–â‘è‚É‚È‚è‚Ü‚·B
+
+
+
+¨ˆø”
+1. [OUT] •Ï”@F@okflag
+@@HDR‚ªŽg—p‚Å‚«‚éê‡‚Í‚P‚ªo—ˆ‚È‚¢ê‡‚Í‚O‚ª‘ã“ü‚³‚ê‚Ü‚·B
+
+2. [OUT] •Ï”@F@hdrformat
+@@HDRƒV[ƒ“‚ð•`‰æ‚·‚é‚Æ‚«‚ÌƒeƒNƒXƒ`ƒƒ‚ÌƒtƒH[ƒ}ƒbƒg‚ª‘ã“ü‚³‚ê‚Ü‚·B
+
+3. [OUT] •Ï”@F@toneformat
+@@ƒg[ƒ“ƒ}ƒbƒv‚ðì¬‚·‚é‚Æ‚«‚ÌƒeƒNƒXƒ`ƒƒ‚ÌƒtƒH[ƒ}ƒbƒg‚ª‘ã“ü‚³‚ê‚Ü‚·B
+
+
+
+ƒo[ƒWƒ‡ƒ“ : ver5.2.1.6‚Å’Ç‰Á
+
+%index
+E3DCheckSpec
+Easy3D‚ªŽÀs‰Â”\‚©‚Ç‚¤‚©‚ð’²‚×‚Ü‚·B
+%group
+Easy3D For HSP3 : ŠÂ‹«
+
+%prm
+p1,p2
+p1 : [IN] •Ï”‚Ü‚½‚ÍA”’l@F@wid
+p2 : [OUT] •Ï”@F@okflag
+
+%inst
+Easy3D‚ªŽÀs‰Â”\‚©‚Ç‚¤‚©‚ð’²‚×‚Ü‚·B
+ƒsƒNƒZƒ‹ƒVƒF[ƒ_[‚QD‚O‚ª‘¶Ý‚·‚é‚©‚Ç‚¤‚©‚â
+ƒXƒgƒŠ[ƒ€‚ð‚R‚ÂˆÈãŽg‚¦‚é‚©‚Ç‚¤‚©‚È‚Ç‚ð’²‚×‚Ü‚·B
+E3DInit‚æ‚è‚à‘O‚ÅŒÄ‚Ño‚µ‚Ü‚·B
+
+
+
+¨ˆø”
+1. [IN] •Ï”‚Ü‚½‚ÍA”’l@F@wid
+@@ƒEƒCƒ“ƒhƒE‚Ì‚h‚c‚ð“n‚µ‚Ä‚­‚¾‚³‚¢B
+@@screen–½—ß‚âbgscr–½—ß‚ÉŽw’è‚µ‚½‚Ì‚Æ“¯‚¶”Ô†‚ð
+@@Žw’è‚µ‚Ä‚­‚¾‚³‚¢B
+@@E3DInit‚É“n‚·—\’è‚Ìwid‚ðŽw’è‚µ‚Ä‚­‚¾‚³‚¢B
+
+2. [OUT] •Ï”@F@okflag
+@@Easy3D‚ªŽg—p‚Å‚«‚éê‡‚Í‚P‚ªo—ˆ‚È‚¢ê‡‚Í‚O‚ª‘ã“ü‚³‚ê‚Ü‚·B
+
+
+
+ƒo[ƒWƒ‡ƒ“ : ver5.2.1.6‚Å’Ç‰Á
+
+%index
+E3DDisablePostEffect
+ƒfƒtƒHƒ‹ƒg‚Ì“®ì‚Å‚Ídll‚Æ“¯‚¶êŠ‚ÉE3D_HLSLƒtƒHƒ‹ƒ_‚ª–³‚¢‚ÆƒGƒ‰[‚É‚È‚è‚Ü‚·‚ªAƒ|ƒXƒgƒGƒtƒFƒNƒg‹@”\‚ðŽg‚í‚È‚¢‚Æ‚±‚Ì–½—ß‚ÅéŒ¾‚·‚ê‚ÎAE3D_HLSLƒtƒHƒ‹ƒ_‚ª‚È‚­‚Ä‚àƒGƒ‰[‚É‚È‚è‚Ü‚¹‚ñB
+%group
+Easy3D For HSP3 : ŠÂ‹«
+
+%prm
+‚È‚µ
+
+%inst
+ƒfƒtƒHƒ‹ƒg‚Ì“®ì‚Å‚Ídll‚Æ“¯‚¶êŠ‚ÉE3D_HLSLƒtƒHƒ‹ƒ_‚ª–³‚¢‚ÆƒGƒ‰[‚É‚È‚è‚Ü‚·‚ªAƒ|ƒXƒgƒGƒtƒFƒNƒg‹@”\‚ðŽg‚í‚È‚¢‚Æ‚±‚Ì–½—ß‚ÅéŒ¾‚·‚ê‚ÎAE3D_HLSLƒtƒHƒ‹ƒ_‚ª‚È‚­‚Ä‚àƒGƒ‰[‚É‚È‚è‚Ü‚¹‚ñB
+
+E3DInit‚æ‚è‚à‘O‚Å‚P‰ñ‚¾‚¯ŒÄ‚Ño‚µ‚Ä‚­‚¾‚³‚¢B
+
+
+
+¨ˆø”
+‚È‚µ
+
+ƒo[ƒWƒ‡ƒ“ : ver5.2.1.6‚Å’Ç‰Á
+
+%index
+E3DSetHDRLightDiffuse
+HDR—p‚Ì‹­‚¢ƒ‰ƒCƒgFiŠgŽUŒõj‚ðÝ’è‚·‚é‚±‚Æ‚ªo—ˆ‚Ü‚·B
+%group
+Easy3D For HSP3 : ƒ‰ƒCƒg
+
+%prm
+p1,p2,p3,p4
+p1 : [IN] •Ï”‚Ü‚½‚ÍA”’l@F@lid
+p2 : [IN] •Ï”‚Ü‚½‚ÍA”’l@F@R
+p3 : [IN] •Ï”‚Ü‚½‚ÍA”’l@F@G
+p4 : [IN] •Ï”‚Ü‚½‚ÍA”’l@F@B
+
+%inst
+HDR—p‚Ì‹­‚¢ƒ‰ƒCƒgFiŠgŽUŒõj‚ðÝ’è‚·‚é‚±‚Æ‚ªo—ˆ‚Ü‚·B
+•‚“®¬”“_‚ÅŽw’è‚µ‚Ü‚·B
+‚PD‚O‚Í®”Žw’èŽž‚Ì‚Q‚T‚T‚É‘Š“–‚µ‚Ü‚·B
+
+
+
+¨ˆø”
+1. [IN] •Ï”‚Ü‚½‚ÍA”’l@F@lid
+@@ƒ‰ƒCƒg‚ðŽ¯•Ê‚·‚éid
+
+2. [IN] •Ï”‚Ü‚½‚ÍA”’l@F@R
+3. [IN] •Ï”‚Ü‚½‚ÍA”’l@F@G
+4. [IN] •Ï”‚Ü‚½‚ÍA”’l@F@B
+@@ƒ‰ƒCƒg‚ÌŠgŽUF‚ðiR,G,Bj‚ÅŽw’è‚µ‚Ü‚·B
+
+
+
+
+ƒo[ƒWƒ‡ƒ“ : ver5.2.1.6‚Å’Ç‰Á
+
+%index
+E3DSetHDRLightSpecular
+HDR—p‚Ì‹­‚¢ƒ‰ƒCƒgFi”½ŽËŒõj‚ðÝ’è‚·‚é‚±‚Æ‚ªo—ˆ‚Ü‚·B
+%group
+Easy3D For HSP3 : ƒ‰ƒCƒg
+
+%prm
+p1,p2,p3,p4
+p1 : [IN] •Ï”‚Ü‚½‚ÍA”’l@F@lid
+p2 : [IN] •Ï”‚Ü‚½‚ÍA”’l@F@R
+p3 : [IN] •Ï”‚Ü‚½‚ÍA”’l@F@G
+p4 : [IN] •Ï”‚Ü‚½‚ÍA”’l@F@B
+
+%inst
+HDR—p‚Ì‹­‚¢ƒ‰ƒCƒgFi”½ŽËŒõj‚ðÝ’è‚·‚é‚±‚Æ‚ªo—ˆ‚Ü‚·B
+•‚“®¬”“_‚ÅŽw’è‚µ‚Ü‚·B
+‚PD‚O‚Í®”Žw’èŽž‚Ì‚Q‚T‚T‚É‘Š“–‚µ‚Ü‚·B
+
+
+
+¨ˆø”
+1. [IN] •Ï”‚Ü‚½‚ÍA”’l@F@lid
+@@ƒ‰ƒCƒg‚ðŽ¯•Ê‚·‚éid
+
+2. [IN] •Ï”‚Ü‚½‚ÍA”’l@F@R
+3. [IN] •Ï”‚Ü‚½‚ÍA”’l@F@G
+4. [IN] •Ï”‚Ü‚½‚ÍA”’l@F@B
+@@ƒ‰ƒCƒg‚Ì”½ŽËF‚ðiR,G,Bj‚ÅŽw’è‚µ‚Ü‚·B
+
+
+
+ƒo[ƒWƒ‡ƒ“ : ver5.2.1.6‚Å’Ç‰Á
+
+%index
+E3DDownScaleRTTexture4x4
+c‰¡‚»‚ê‚¼‚ê‚S•ª‚Ì‚P‚Ì‘å‚«‚³‚ÌƒŒƒ“ƒ_[ƒ^[ƒQƒbƒgƒeƒNƒXƒ`ƒƒ‚ÉƒRƒs[‚µ‚Ü‚·B
+%group
+Easy3D For HSP3 : ƒGƒtƒFƒNƒg
+
+%prm
+p1,p2
+p1 : [IN] •Ï”‚Ü‚½‚ÍA”’l@F@dstscid
+p2 : [IN] •Ï”‚Ü‚½‚ÍA”’l@F@srctexid
+
+%inst
+c‰¡‚»‚ê‚¼‚ê‚S•ª‚Ì‚P‚Ì‘å‚«‚³‚ÌƒŒƒ“ƒ_[ƒ^[ƒQƒbƒgƒeƒNƒXƒ`ƒƒ‚ÉƒRƒs[‚µ‚Ü‚·B
+
+
+
+
+¨ˆø”
+1. [IN] •Ï”‚Ü‚½‚ÍA”’l@F@dstscid
+@@•`‰ææ‚ÌƒŒƒ“ƒ_[ƒ^[ƒQƒbƒgƒeƒNƒXƒ`ƒƒ‚ÌƒXƒƒbƒvƒ`ƒFƒCƒ“IDB¬‚³‚¢•û‚ÌƒeƒNƒXƒ`ƒƒB
+
+2. [IN] •Ï”‚Ü‚½‚ÍA”’l@F@srctexid
+@@•`‰æŒ³‚ÌƒŒƒ“ƒ_[ƒ^[ƒQƒbƒgƒeƒNƒXƒ`ƒƒ‚ÌƒeƒNƒXƒ`ƒƒIDB‘å‚«‚¢•û‚ÌƒeƒNƒXƒ`ƒƒB
+
+
+
+
+ƒo[ƒWƒ‡ƒ“ : ver5.2.1.6‚Å’Ç‰Á
+
+%index
+E3DDownScaleRTTexture2x2
+c‰¡‚»‚ê‚¼‚ê‚Q•ª‚Ì‚P‚Ì‘å‚«‚³‚ÌƒŒƒ“ƒ_[ƒ^[ƒQƒbƒgƒeƒNƒXƒ`ƒƒ‚ÉƒRƒs[‚µ‚Ü‚·B
+%group
+Easy3D For HSP3 : ƒGƒtƒFƒNƒg
+
+%prm
+p1,p2
+p1 : [IN] •Ï”‚Ü‚½‚ÍA”’l@F@dstscid
+p2 : [IN] •Ï”‚Ü‚½‚ÍA”’l@F@srctexid
+
+%inst
+c‰¡‚»‚ê‚¼‚ê‚Q•ª‚Ì‚P‚Ì‘å‚«‚³‚ÌƒŒƒ“ƒ_[ƒ^[ƒQƒbƒgƒeƒNƒXƒ`ƒƒ‚ÉƒRƒs[‚µ‚Ü‚·B
+
+
+
+
+¨ˆø”
+1. [IN] •Ï”‚Ü‚½‚ÍA”’l@F@dstscid
+@@•`‰ææ‚ÌƒŒƒ“ƒ_[ƒ^[ƒQƒbƒgƒeƒNƒXƒ`ƒƒ‚ÌƒXƒƒbƒvƒ`ƒFƒCƒ“IDB¬‚³‚¢•û‚ÌƒeƒNƒXƒ`ƒƒB
+
+2. [IN] •Ï”‚Ü‚½‚ÍA”’l@F@srctexid
+@@•`‰æŒ³‚ÌƒŒƒ“ƒ_[ƒ^[ƒQƒbƒgƒeƒNƒXƒ`ƒƒ‚ÌƒeƒNƒXƒ`ƒƒIDB‘å‚«‚¢•û‚ÌƒeƒNƒXƒ`ƒƒB
+
+
+
+ƒo[ƒWƒ‡ƒ“ : ver5.2.1.6‚Å’Ç‰Á
+
+%index
+E3DCreateToneMapTexture
+ƒg[ƒ“ƒ}ƒbƒvƒeƒNƒXƒ`ƒƒ‚ðì¬‚µ‚Ü‚·B
+%group
+Easy3D For HSP3 : ƒeƒNƒXƒ`ƒƒ
+
+%prm
+p1,p2,p3,p4
+p1 : [IN] •Ï”‚Ü‚½‚ÍA”’l@F@tonenum
+p2 : [IN] •Ï”‚Ü‚½‚ÍA”’l@F@toneformat
+p3 : [OUT] •Ï”@F@tonemapid
+p4 : [OUT] •Ï”@F@okflag
+
+%inst
+ƒg[ƒ“ƒ}ƒbƒvƒeƒNƒXƒ`ƒƒ‚ðì¬‚µ‚Ü‚·B
+ƒg[ƒ“ƒ}ƒbƒvƒeƒNƒXƒ`ƒƒ‚Æ‚ÍƒV[ƒ“‚Ì–¾‚é‚³‚ðŒv‘ª‚·‚é‚½‚ß‚ÉŽg—p‚·‚éƒŒƒ“ƒ_[ƒ^[ƒQƒbƒgƒeƒNƒXƒ`ƒƒ‚Å‚·B
+
+ˆê“x‚É—LŒø‚É‚Å‚«‚éƒg[ƒ“ƒ}ƒbƒv‚Ì‘g‚Í‚P‚O‘g‚Ü‚Å‚Å‚·B
+‚»‚êˆÈã‚Ìƒg[ƒ“ƒ}ƒbƒv‚ðŽg—p‚µ‚½‚¢ê‡‚ÍE3DDestroyToneMapTexture‚ðŒÄ‚ñ‚Å•s—v‚È‚à‚Ì‚ðíœ‚µ‚Ä‚©‚ç
+‚±‚Ì–½—ß‚ðŒÄ‚ñ‚Å‚­‚¾‚³‚¢B
+
+‹ï‘Ì“I‚ÈŽg—p—á‚Í
+e3dhsp3_HDRLighting.hsp‚ð‚²——‚­‚¾‚³‚¢B
+
+
+
+
+
+¨ˆø”
+1. [IN] •Ï”‚Ü‚½‚ÍA”’l@F@tonenum
+@@ƒg[ƒ“ƒ}ƒbƒvƒeƒNƒXƒ`ƒƒ‚Ì”‚ðŽw’è‚µ‚Ü‚·B
+@@‚RˆÈã‚Ì”‚ðŽw’è‚µ‚Ä‚­‚¾‚³‚¢B
+@@ƒg[ƒ“ƒ}ƒbƒv‚Í‚PX1‚Ì‘å‚«‚³‚Ì‚à‚Ì‚©‚ç‡”Ô‚É‚S”{‚¸‚Â‚µ‚½ƒTƒCƒY‚ÌƒeƒNƒXƒ`ƒƒ‚É‚È‚è‚Ü‚·B
+@@—á‚¦‚Îtonenum‚É‚S‚ðŽw’è‚µ‚½ê‡‚Í
+@@1X1, 4X4, 16X16, 64X64‚ÌƒTƒCƒY‚ÌƒeƒNƒXƒ`ƒƒ‚ª“à•”‚Åì¬‚³‚ê‚Ü‚·B
+
+2. [IN] •Ï”‚Ü‚½‚ÍA”’l@F@toneformat
+@@ƒg[ƒ“ƒ}ƒbƒvƒeƒNƒXƒ`ƒƒ‚ÌƒtƒH[ƒ}ƒbƒgB
+@@E3DChkHDR‚ÅŽæ“¾‚µ‚½toneformat‚ðŽw’è‚µ‚Ä‚­‚¾‚³‚¢B
+@@
+3. [OUT] •Ï”@F@tonemapid
+@@ì¬‚µ‚½ƒg[ƒ“ƒ}ƒbƒv‚ðŽ¯•Ê‚·‚éID‚ª‘ã“ü‚³‚ê‚Ü‚·B
+
+4. [OUT] •Ï”@F@okflag
+@@–½—ß‚ª¬Œ÷‚µ‚½ê‡‚É‚Í‚P‚ªŽ¸”s‚µ‚½ê‡‚É‚Í‚O‚ª‘ã“ü‚³‚ê‚Ü‚·B
+
+
+
+
+ƒo[ƒWƒ‡ƒ“ : ver5.2.1.6‚Å’Ç‰Á
+
+%index
+E3DDestroyToneMapTexture
+ƒg[ƒ“ƒ}ƒbƒvƒeƒNƒXƒ`ƒƒ‚ðíœ‚µ‚Ü‚·B
+%group
+Easy3D For HSP3 : ƒeƒNƒXƒ`ƒƒ
+
+%prm
+p1
+p1 : [IN] •Ï”‚Ü‚½‚ÍA”’l@F@tonemapid
+
+%inst
+ƒg[ƒ“ƒ}ƒbƒvƒeƒNƒXƒ`ƒƒ‚ðíœ‚µ‚Ü‚·B
+
+
+¨ˆø”
+1. [IN] •Ï”‚Ü‚½‚ÍA”’l@F@tonemapid
+@@íœ‚·‚éƒg[ƒ“ƒ}ƒbƒv‚ðŽ¯•Ê‚·‚éIDB
+
+
+ƒo[ƒWƒ‡ƒ“ : ver5.2.1.6‚Å’Ç‰Á
+
+%index
+E3DRenderToneMap
+ƒg[ƒ“ƒ}ƒbƒv‚ÉƒV[ƒ“‚Ì–¾‚é‚³‚ðƒŒƒ“ƒ_ƒŠƒ“ƒO‚µ–¾‚é‚³‚ðŒv‘ª‚µ‚Ü‚·B
+%group
+Easy3D For HSP3 : ƒGƒtƒFƒNƒg
+
+%prm
+p1,p2
+p1 : [IN] •Ï”‚Ü‚½‚ÍA”’l@F@tonemapid
+p2 : [IN] •Ï”‚Ü‚½‚ÍA”’l@F@srctexid
+
+%inst
+ƒg[ƒ“ƒ}ƒbƒv‚ÉƒV[ƒ“‚Ì–¾‚é‚³‚ðƒŒƒ“ƒ_ƒŠƒ“ƒO‚µ–¾‚é‚³‚ðŒv‘ª‚µ‚Ü‚·B
+
+‹ï‘Ì“I‚ÈŽg—p—á‚Í
+e3dhsp3_HDRLighting.hsp‚ð‚²——‚­‚¾‚³‚¢B
+
+
+
+
+
+¨ˆø”
+1. [IN] •Ï”‚Ü‚½‚ÍA”’l@F@tonemapid
+@@ƒg[ƒ“ƒ}ƒbƒv‚ðŽ¯•Ê‚·‚éIDB
+
+2. [IN] •Ï”‚Ü‚½‚ÍA”’l@F@srctexid
+@@–¾‚é‚³‚ðŒv‘ª‚µ‚½‚¢ƒeƒNƒXƒ`ƒƒ‚ÌIDB
+
+
+
+ƒo[ƒWƒ‡ƒ“ : ver5.2.1.6‚Å’Ç‰Á
+
+%index
+E3DBrightPassRTTextureHDR
+HDR‚Å•`‰æ‚µ‚½ƒeƒNƒXƒ`ƒƒ‚Ì–¾‚é‚¢•”•ª‚¾‚¯‚ð”²‚«o‚µLDR‚É•ÏŠ·‚µ‚Ü‚·B
+%group
+Easy3D For HSP3 : ƒGƒtƒFƒNƒg
+
+%prm
+p1,p2,p3,p4,p5,p6
+p1 : [IN] •Ï”‚Ü‚½‚ÍA”’l@F@dstscid
+p2 : [IN] •Ï”‚Ü‚½‚ÍA”’l@F@srctexid
+p3 : [IN] •Ï”‚Ü‚½‚ÍA”’l@F@middlegray
+p4 : [IN] •Ï”‚Ü‚½‚ÍA”’l@F@threshold
+p5 : [IN] •Ï”‚Ü‚½‚ÍA”’l@F@offset
+p6 : [IN] •Ï”‚Ü‚½‚ÍA”’l@F@tonemapid
+
+%inst
+HDR‚Å•`‰æ‚µ‚½ƒeƒNƒXƒ`ƒƒ‚Ì–¾‚é‚¢•”•ª‚¾‚¯‚ð”²‚«o‚µLDR‚É•ÏŠ·‚µ‚Ü‚·B
+
+‹ï‘Ì“I‚ÈŽg—p—á‚Í
+e3dhsp3_HDRLighting.hsp‚ð‚²——‚­‚¾‚³‚¢B
+
+
+
+
+
+¨ˆø”
+1. [IN] •Ï”‚Ü‚½‚ÍA”’l@F@dstscid
+@@•`‰ææ‚ÌƒXƒƒbƒvƒ`ƒFƒCƒ“IDB
+@@
+2. [IN] •Ï”‚Ü‚½‚ÍA”’l@F@srctexid
+@@HDR‚Å•`‰æ‚³‚ê‚Ä‚¢‚éŒ³‰æ‘œ‚Ì“ü‚Á‚½ƒeƒNƒXƒ`ƒƒ‚ÌIDB
+@@
+3. [IN] •Ï”‚Ü‚½‚ÍA”’l@F@middlegray
+@@‰æ–Ê‚Ì–¾‚é‚³‚ðŒˆ‚ß‚éƒL[‚É‚È‚é’lB
+@@ŽÀ”B
+@@
+4. [IN] •Ï”‚Ü‚½‚ÍA”’l@F@threshold
+@@‚±‚Ì’l‚æ‚èˆÃ‚¢•”•ª‚ÍF‚ª‚O‚É‚È‚éB
+@@ŽÀ”B
+
+5. [IN] •Ï”‚Ü‚½‚ÍA”’l@F@offset
+@@threshold‚ÅF¬•ª‚ðˆø‚¢‚½Œã‚Éoffset‚¾‚¯F‚ð‘«‚µ‚Ü‚·B
+@@
+6. [IN] •Ï”‚Ü‚½‚ÍA”’l@F@tonemapid
+@@ƒV[ƒ“‚Ì–¾‚é‚³‚ð‹L˜^‚µ‚Ä‚ ‚éƒg[ƒ“ƒ}ƒbƒv‚ÌIDB
+
+
+
+
+ƒo[ƒWƒ‡ƒ“ : ver5.2.1.6‚Å’Ç‰Á
+
+%index
+E3DRenderHDRFinal
+HDRƒV[ƒ“‚Æƒuƒ‹[ƒ€‰æ‘œ‚ð‡¬‚µLDR‚É•ÏŠ·‚µ‚Ä•`‰æ‚µ‚Ü‚·B
+%group
+Easy3D For HSP3 : ƒGƒtƒFƒNƒg
+
+%prm
+p1,p2,p3,p4,p5
+p1 : [IN] •Ï”‚Ü‚½‚ÍA”’l@F@dstscid
+p2 : [IN] •Ï”‚Ü‚½‚ÍA”’l@F@srctexid0
+p3 : [IN] •Ï”‚Ü‚½‚ÍA”’l@F@srctexid1
+p4 : [IN] •Ï”‚Ü‚½‚ÍA”’l@F@tonemapid
+p5 : [IN] •Ï”‚Ü‚½‚ÍA”’l@F@middlegray
+
+%inst
+HDRƒV[ƒ“‚Æƒuƒ‹[ƒ€‰æ‘œ‚ð‡¬‚µLDR‚É•ÏŠ·‚µ‚Ä•`‰æ‚µ‚Ü‚·B
+
+
+‹ï‘Ì“I‚ÈŽg—p—á‚Í
+e3dhsp3_HDRLighting.hsp‚ð‚²——‚­‚¾‚³‚¢B
+
+
+
+
+
+¨ˆø”
+1. [IN] •Ï”‚Ü‚½‚ÍA”’l@F@dstscid
+@@•`‰ææ‚ÌƒXƒƒbƒvƒ`ƒFƒCƒ“IDB
+@@
+2. [IN] •Ï”‚Ü‚½‚ÍA”’l@F@srctexid0
+@@HDR‚Å•`‰æ‚³‚ê‚Ä‚¢‚éŒ³‰æ‘œ‚Ì“ü‚Á‚½ƒeƒNƒXƒ`ƒƒ‚ÌIDB
+
+3. [IN] •Ï”‚Ü‚½‚ÍA”’l@F@srctexid1
+@@ƒuƒ‹[ƒ€‰æ‘œ‚ÌƒeƒNƒXƒ`ƒƒIDB
+
+4. [IN] •Ï”‚Ü‚½‚ÍA”’l@F@tonemapid
+@@ƒg[ƒ“ƒ}ƒbƒv‚ÌIDB
+
+5. [IN] •Ï”‚Ü‚½‚ÍA”’l@F@middlegray
+@@ƒV[ƒ“‚Ì–¾‚é‚³‚ðŒˆ’è‚·‚éƒL[‚Ì’lB
+@@E3DBrightPassRTTextureHDR‚ÉŽw’è‚µ‚½‚Ì‚Æ“¯‚¶’l‚ðŽw’è‚µ‚Ü‚·B
+@@ŽÀ”B
+
+
+
+
+ƒo[ƒWƒ‡ƒ“ : ver5.2.1.6‚Å’Ç‰Á
+
+%index
+E3DMonoRTTexture
+ƒeƒNƒXƒ`ƒƒ‚Ì“à—e‚ð”’•‰æ‘œ‚É•ÏŠ·‚µ‚Ü‚·B
+%group
+Easy3D For HSP3 : ƒGƒtƒFƒNƒg
+
+%prm
+p1,p2
+p1 : [IN] •Ï”‚Ü‚½‚ÍA”’l@F@dstscid
+p2 : [IN] •Ï”‚Ü‚½‚ÍA”’l@F@srctexid
+
+%inst
+ƒeƒNƒXƒ`ƒƒ‚Ì“à—e‚ð”’•‰æ‘œ‚É•ÏŠ·‚µ‚Ü‚·B
+
+‹ï‘Ì“I‚ÈŽg—p—á‚Í
+e3dhsp3_Mono.hsp‚ð‚²——‚­‚¾‚³‚¢B
+
+
+
+¨ˆø”
+1. [IN] •Ï”‚Ü‚½‚ÍA”’l@F@dstscid
+@@•`‰ææ‚ÌƒXƒƒbƒvƒ`ƒFƒCƒ“IDB
+@@
+2. [IN] •Ï”‚Ü‚½‚ÍA”’l@F@srctexid
+@@Œ³‰æ‘œ‚Ì“ü‚Á‚½ƒeƒNƒXƒ`ƒƒ‚ÌIDB
+
+
+
+ƒo[ƒWƒ‡ƒ“ : ver5.2.1.7‚Å’Ç‰Á
+
+%index
+E3DCbCrRTTexture
+ƒeƒNƒXƒ`ƒƒ‚Ì“à—e‚ðYCbCrF‹óŠÔ‚É•ÏŠ·‚µY‚ð•Û‚Á‚½‚Ü‚ÜCb‚ÆCr‚ðŽw’è’l‚ÉÝ’è‚µ‚Ü‚·B
+%group
+Easy3D For HSP3 : ƒGƒtƒFƒNƒg
+
+%prm
+p1,p2,p3,p4
+p1 : [IN] •Ï”‚Ü‚½‚ÍA”’l@F@dstscid
+p2 : [IN] •Ï”‚Ü‚½‚ÍA”’l@F@srctexid
+p3 : [IN] •Ï”‚Ü‚½‚ÍA”’l@F@cb
+p4 : [IN] •Ï”‚Ü‚½‚ÍA”’l@F@cr
+
+%inst
+ƒeƒNƒXƒ`ƒƒ‚Ì“à—e‚ðYCbCrF‹óŠÔ‚É•ÏŠ·‚µY‚ð•Û‚Á‚½‚Ü‚ÜCb‚ÆCr‚ðŽw’è’l‚ÉÝ’è‚µ‚Ü‚·B
+
+YCbCr‚Ì’l‚ÌƒZƒbƒg‚ª‚Ç‚ñ‚ÈF‚É‚È‚é‚Ì‚©‚ÍPhotoShop‚È‚Ç‚ÌƒyƒCƒ“ƒgƒ\ƒtƒg‚ÅŠm”F‚µ‚Ä‚­‚¾‚³‚¢B
+
+‹ï‘Ì“I‚ÈŽg—p—á‚Í
+e3dhsp3_CbCr.hsp‚ð‚²——‚­‚¾‚³‚¢B
+
+
+
+
+
+¨ˆø”
+1. [IN] •Ï”‚Ü‚½‚ÍA”’l@F@dstscid
+@@•`‰ææ‚ÌƒXƒƒbƒvƒ`ƒFƒCƒ“IDB
+@@
+2. [IN] •Ï”‚Ü‚½‚ÍA”’l@F@srctexid
+@@Œ³‰æ‘œ‚Ì“ü‚Á‚½ƒeƒNƒXƒ`ƒƒ‚ÌIDB
+
+3. [IN] •Ï”‚Ü‚½‚ÍA”’l@F@cb
+@@YCbCr‚ÌCb‚Ì’lB
+@@ŽÀ”B
+
+4. [IN] •Ï”‚Ü‚½‚ÍA”’l@F@cr
+@@YCbCr‚ÌCr‚Ì’lB
+@@ŽÀ”B
+
+
+
+
+ƒo[ƒWƒ‡ƒ“ : ver5.2.1.7‚Å’Ç‰Á
+
+%index
+E3DShaderConstOffset16
+posteffect.fx‚Ìƒf[ƒ^float2 avSampleOffsets[16]‚É’l‚ðÝ’è‚µ‚Ü‚·B
+%group
+Easy3D For HSP3 : ƒGƒtƒFƒNƒg
+
+%prm
+p1
+p1 : [IN] ”z—ñ‚Ì•Ï”@F@offsetarray
+
+%inst
+posteffect.fx‚Ìƒf[ƒ^float2 avSampleOffsets[16]‚É’l‚ðÝ’è‚µ‚Ü‚·B
+‚±‚Ìƒf[ƒ^‚Í‘¼‚Ì–½—ß‚Å‚àŽg‚í‚ê‚Ü‚·B
+iŽg‚í‚ê‚Ä‚¢‚éêŠ‚Íposteffect.fx‚ÅŠm”F‚µ‚Ä‚­‚¾‚³‚¢Bj
+‘¼‚Ì–½—ß‚Åã‘‚«‚³‚ê‚é‚±‚Æ‚ª‚ ‚é‚Ì‚Å‚»‚Ì“s“xÝ’è‚µ‚Ä‚­‚¾‚³‚¢B
+
+offsetarray‚É‚Í
+ddim offsetarray, 2, 16
+‚ÅŠm•Û‚µ‚½”z—ñ‚ðŽg—p‚µ‚Ä‚­‚¾‚³‚¢Bidim‚Å‚È‚­‚ÄŽÀ”‚Ìddim‚Å‚·j
+Ž©•ª‚Å’l‚ðƒZƒbƒg‚µ‚Ä‚©‚ç–½—ß‚É“n‚µ‚Ä‚­‚¾‚³‚¢B
+
+
+
+
+
+¨ˆø”
+1. [IN] ”z—ñ‚Ì•Ï”@F@offsetarray
+@@ƒZƒbƒg‚µ‚½‚¢’l‚ªÝ’è‚µ‚Ä‚ ‚éŽÀ”‚Ì”z—ñB
+@@Ú‚µ‚­‚Í‘O‹L‚ð‚²——‚­‚¾‚³‚¢B
+
+
+
+ƒo[ƒWƒ‡ƒ“ : ver5.2.1.8‚Å’Ç‰Á
+
+%index
+E3DShaderConstWeight16
+posteffect.fx‚Ìƒf[ƒ^float4 avSampleWeights[16]‚É’l‚ðÝ’è‚µ‚Ü‚·B
+%group
+Easy3D For HSP3 : ƒGƒtƒFƒNƒg
+
+%prm
+p1
+p1 : [IN] ”z—ñ‚Ì•Ï”@F@weightarray
+
+%inst
+posteffect.fx‚Ìƒf[ƒ^float4 avSampleWeights[16]‚É’l‚ðÝ’è‚µ‚Ü‚·B
+‚±‚Ìƒf[ƒ^‚Í‘¼‚Ì–½—ß‚Å‚àŽg‚í‚ê‚Ü‚·B
+iŽg‚í‚ê‚Ä‚¢‚éêŠ‚Íposteffect.fx‚ÅŠm”F‚µ‚Ä‚­‚¾‚³‚¢Bj
+‘¼‚Ì–½—ß‚Åã‘‚«‚³‚ê‚é‚±‚Æ‚ª‚ ‚é‚Ì‚Å‚»‚Ì“s“xÝ’è‚µ‚Ä‚­‚¾‚³‚¢B
+
+weightarray‚É‚Í
+ddim weightarray, 4, 16
+‚ÅŠm•Û‚µ‚½”z—ñ‚ðŽg—p‚µ‚Ä‚­‚¾‚³‚¢Bidim‚Å‚È‚­‚ÄŽÀ”‚Ìddim‚Å‚·j
+Ž©•ª‚Å’l‚ðƒZƒbƒg‚µ‚Ä‚©‚ç–½—ß‚É“n‚µ‚Ä‚­‚¾‚³‚¢B
+
+
+
+
+¨ˆø”
+1. [IN] ”z—ñ‚Ì•Ï”@F@weightarray
+@@ƒZƒbƒg‚µ‚½‚¢’l‚ªÝ’è‚µ‚Ä‚ ‚éŽÀ”‚Ì”z—ñB
+@@Ú‚µ‚­‚Í‘O‹L‚ð‚²——‚­‚¾‚³‚¢B
+
+
+
+ƒo[ƒWƒ‡ƒ“ : ver5.2.1.8‚Å’Ç‰Á
+
+%index
+E3DShaderConstUserFL4
+posteffect.fx‚Ìƒf[ƒ^float4 userFL4_0‚©‚çuserFL4_9‚Ì‚Ç‚ê‚©‚É’l‚ðÝ’è‚µ‚Ü‚·B
+%group
+Easy3D For HSP3 : ƒGƒtƒFƒNƒg
+
+%prm
+p1,p2
+p1 : [IN] •Ï”‚Ü‚½‚ÍA”’l@F@datano
+p2 : [IN] ”z—ñ‚Ì•Ï”@F@flarray
+
+%inst
+posteffect.fx‚Ìƒf[ƒ^float4 userFL4_0‚©‚çuserFL4_9‚Ì‚Ç‚ê‚©‚É’l‚ðÝ’è‚µ‚Ü‚·B
+
+flarray‚É‚Í
+ddim flarray, 4
+‚ÅŠm•Û‚µ‚½”z—ñ‚ðŽg—p‚µ‚Ä‚­‚¾‚³‚¢Bidim‚Å‚È‚­‚ÄŽÀ”‚Ìddim‚Å‚·j
+Ž©•ª‚Å’l‚ðƒZƒbƒg‚µ‚Ä‚©‚ç–½—ß‚É“n‚µ‚Ä‚­‚¾‚³‚¢B
+
+‹ï‘Ì“I‚ÈŽg—p—á‚Í
+e3dhsp3_CustomShader.hsp‚ð‚²——‚­‚¾‚³‚¢B
+
+
+
+
+¨ˆø”
+1. [IN] •Ï”‚Ü‚½‚ÍA”’l@F@datano
+@@userFL4_0‚©‚çuserFL4_9‚Ü‚Å‚Ì‚Ç‚ê‚É’l‚ðƒZƒbƒg‚·‚é‚©‚ð‚O‚©‚ç‚X‚Ì®”‚ÅŽw’è‚µ‚Ü‚·B
+
+2. [IN] ”z—ñ‚Ì•Ï”@F@flarray
+@@ƒZƒbƒg‚µ‚½‚¢’l‚ªÝ’è‚µ‚Ä‚ ‚éŽÀ”‚Ì”z—ñB
+@@Ú‚µ‚­‚Í‘O‹L‚ð‚²——‚­‚¾‚³‚¢B
+
+
+
+ƒo[ƒWƒ‡ƒ“ : ver5.2.1.8‚Å’Ç‰Á
+
+%index
+E3DShaderConstUserTex
+posteffect.fx‚Ìƒf[ƒ^texture usertex0‚©‚çusertex4‚Ì‚Ç‚ê‚©‚É’l‚ðÝ’è‚µ‚Ü‚·B
+%group
+Easy3D For HSP3 : ƒGƒtƒFƒNƒg
+
+%prm
+p1,p2
+p1 : [IN] •Ï”‚Ü‚½‚ÍA”’l@F@datano
+p2 : [IN] •Ï”‚Ü‚½‚ÍA”’l@F@srctexid
+
+%inst
+posteffect.fx‚Ìƒf[ƒ^texture usertex0‚©‚çusertex4‚Ì‚Ç‚ê‚©‚É’l‚ðÝ’è‚µ‚Ü‚·B
+
+‹ï‘Ì“I‚ÈŽg—p—á‚Í
+e3dhsp3_CustomShader.hsp‚ð‚²——‚­‚¾‚³‚¢B
+
+
+
+
+¨ˆø”
+1. [IN] •Ï”‚Ü‚½‚ÍA”’l@F@datano
+@@usertex0‚©‚çusetex4‚Ü‚Å‚Ì‚Ç‚ê‚É’l‚ðƒZƒbƒg‚·‚é‚©‚ð‚O‚©‚ç‚S‚Ì®”‚ÅŽw’è‚µ‚Ü‚·B
+
+2. [IN] •Ï”‚Ü‚½‚ÍA”’l@F@srctexid
+@@Ý’è‚µ‚½‚¢ƒeƒNƒXƒ`ƒƒ‚ðŽ¯•Ê‚·‚éIDB
+
+
+
+
+ƒo[ƒWƒ‡ƒ“ : ver5.2.1.8‚Å’Ç‰Á
+
+%index
+E3DCallUserShader
+posteffect.fx‚Ìtechnique PostEffectUser0‚©‚çPostEffectUser4‚Ì‚¤‚¿‚Ìˆê‚Â‚ðŽÀs‚µ‚Ü‚·B
+%group
+Easy3D For HSP3 : ƒGƒtƒFƒNƒg
+
+%prm
+p1,p2,p3
+p1 : [IN] •Ï”‚Ü‚½‚ÍA”’l@F@shaderno
+p2 : [IN] •Ï”‚Ü‚½‚ÍA”’l@F@passno
+p3 : [IN] •Ï”‚Ü‚½‚ÍA”’l@F@dstscid
+
+%inst
+posteffect.fx‚Ìtechnique PostEffectUser0‚©‚çPostEffectUser4‚Ì‚¤‚¿‚Ìˆê‚Â‚ðŽÀs‚µ‚Ü‚·B
+ŽÀs‚·‚éƒpƒX‚à‚P‚Â‚¾‚¯‘I‚×‚Ü‚·B
+
+‹ï‘Ì“I‚ÈŽg—p—á‚Í
+e3dhsp3_CustomShader.hsp‚ð‚²——‚­‚¾‚³‚¢B
+
+
+
+
+¨ˆø”
+1. [IN] •Ï”‚Ü‚½‚ÍA”’l@F@shaderno
+@@PostEffectUser0‚©‚çPostEffectUser4‚Ü‚Å‚Ì‚Ç‚ê‚ðŽÀs‚·‚é‚©‚ð‚O‚©‚ç‚S‚Ì®”‚ÅŽw’è‚µ‚Ü‚·B
+
+2. [IN] •Ï”‚Ü‚½‚ÍA”’l@F@passno
+@@ƒeƒNƒjƒbƒN‚Ì‰½”Ô‚ÌƒpƒX‚ðŽÀs‚·‚é‚©‚ðŽw’è‚µ‚Ü‚·B
+@@—á‚¦‚Îpass P0‚ðŽÀs‚µ‚½‚¢‚Æ‚«‚Í‚O‚ðpass P1‚ðŽÀs‚µ‚½‚¢‚Æ‚«‚Í‚P‚ðŽw’è‚µ‚Ü‚·B
+@@‹Lq‚µ‚Ä‚ ‚éƒpƒX‚Ì”Ô†Å‘å’l‚æ‚è‚à‘å‚«‚¢’l‚ðŽw’è‚·‚é‚ÆƒGƒ‰[‚É‚È‚è‚Ü‚·B
+
+3. [IN] •Ï”‚Ü‚½‚ÍA”’l@F@dstscid
+@@•`‰ææ‚ÌƒXƒƒbƒvƒ`ƒFƒCƒ“IDB
+
+
+
+ƒo[ƒWƒ‡ƒ“ : ver5.2.1.8‚Å’Ç‰Á
+
+%index
+E3DCreateBone
+ƒ{[ƒ“‚ðV‹K‚Éì¬‚µ‚Ü‚·B
+%group
+Easy3D For HSP3 : ƒ‚ƒfƒ‹î•ñ
+
+%prm
+p1,p2,p3,p4
+p1 : [IN] •Ï”‚Ü‚½‚ÍA”’l@F@hsid
+p2 : [IN] •¶Žš—ñ‚Ü‚½‚ÍA•¶Žš—ñ‚Ì•Ï”@F@name
+p3 : [IN] •Ï”‚Ü‚½‚ÍA”’l@F@parentid
+p4 : [OUT] •Ï”@F@serialid
+
+%inst
+ƒ{[ƒ“‚ðV‹K‚Éì¬‚µ‚Ü‚·B
+
+“Ç‚Ýž‚ÝÏ‚Ý‚Ìƒ‚[ƒVƒ‡ƒ“‚Í‘S‚Ä”jŠü‚³‚ê‚Ü‚·B
+
+‰e‹¿“x‚ÌÄŒvŽZ‚Í‚µ‚Ü‚¹‚ñB
+‚µ‚½‚¢ê‡‚ÍE3DJointRemake‚ðŒÄ‚Ño‚µ‚Ä‚­‚¾‚³‚¢B
+
+ƒ{[ƒ“‚ÌˆÊ’u‚ÍE3DSetJointInitialPos‚ÅÝ’è‚µ‚Ä‚­‚¾‚³‚¢B
+
+Easy3D‚ÌŽd—lãƒ{[ƒ“‚ð”jŠü‚·‚é‚ÆƒSƒ~ƒf[ƒ^‚ªŽc‚è‚Ü‚·B
+ƒSƒ~ƒf[ƒ^‚Í‚ ‚Ü‚è‘½‚­‚È‚é‚Æ•`‰æ‘¬“x‚É‰e‹¿‚µ‚Ü‚·B
+E3DCreateBone‚É‚ÍƒSƒ~ƒf[ƒ^‚ª‘¶Ý‚·‚ê‚Î‚»‚ê‚ðÄ—˜—p‚·‚é‚æ‚¤‚ÈŽd‘g‚Ý‚ª‚ ‚è‚Ü‚·B
+‚Å‚·‚Ì‚Å‚Ü‚¸•s—v‚Èƒ{[ƒ“‚ðE3DDestroyBone‚µ‚½Œã‚ÉE3DCreateBone‚·‚é‚ÆƒSƒ~‚ª­‚È‚­‚ÄÏ‚Ý‚Ü‚·B
+ƒSƒ~‚Ì‘|œ‚ÌŽd•û‚ÍRokDeBone2ver5.2.1.3‚ÌV‹@”\‚Ìƒy[ƒW‚Ìà–¾‚ð‚²——‚­‚¾‚³‚¢B
+
+
+
+
+¨ˆø”
+1. [IN] •Ï”‚Ü‚½‚ÍA”’l@F@hsid
+@@ƒ‚ƒfƒ‹ƒf[ƒ^‚ðŽ¯•Ê‚·‚éIDB
+
+2. [IN] •¶Žš—ñ‚Ü‚½‚ÍA•¶Žš—ñ‚Ì•Ï”@F@name
+@@ƒ{[ƒ“‚Ì–¼‘O‚ðŠi”[‚µ‚½•¶Žš—ñB
+@@‚Q‚T‚TƒoƒCƒg‚Ü‚Å‚Å‚·B
+
+3. [IN] •Ï”‚Ü‚½‚ÍA”’l@F@parentid
+@@e‚É‚È‚éƒWƒ‡ƒCƒ“ƒg‚ðŽ¯•Ê‚·‚éƒp[ƒc‚ÌIDB
+@@ˆê”Ôe‚Ìƒ{[ƒ“‚ðì¬‚·‚éê‡ˆÈŠO‚Í•K‚¸ƒWƒ‡ƒCƒ“ƒg‚ÌID‚ðŽw’è‚µ‚Ä‚­‚¾‚³‚¢B
+@@ˆê”Ôe‚Ìƒ{[ƒ“‚ðì¬‚·‚é‚Æ‚«‚Í-1‚ðŽw’è‚µ‚Ä‚­‚¾‚³‚¢B-1‚ðŽw’è‚·‚é‚Æƒp[ƒc‚ð‚Ü‚Æ‚ß‚é–ðŠ„‚ð‚·‚éƒp[ƒc‚Ì‚¤‚¿‚Åˆê”ÔÅŒã‚Éì‚ç‚ê‚½ƒp[ƒc‚ªe‚É‚È‚è‚Ü‚·B
+( ’Êí‚ÍuJoint Partv‚Æ‚¢‚¤–¼‘O‚Ìƒp[ƒc‚É‚È‚è‚Ü‚·B)
+
+4. [OUT] •Ï”@F@serialid
+@@V‚½‚Éì¬‚³‚ê‚½ƒ{[ƒ“‚ðŽ¯•Ê‚·‚éID(ƒp[ƒc‚ÌID)‚ª‘ã“ü‚³‚ê‚Ü‚·B
+@@ƒGƒ‰[‚ª¶‚¶‚½ê‡‚Í-1‚ª‘ã“ü‚³‚ê‚Ü‚·B
+
+
+
+
+
+ƒo[ƒWƒ‡ƒ“ : ver5.2.1.9‚Å’Ç‰Á
+
+%index
+E3DDestroyBone
+ƒ{[ƒ“‚ð”jŠü‚µ‚Ü‚·B
+%group
+Easy3D For HSP3 : ƒ‚ƒfƒ‹î•ñ
+
+%prm
+p1,p2
+p1 : [IN] •Ï”‚Ü‚½‚ÍA”’l@F@hsid
+p2 : [IN] •Ï”‚Ü‚½‚ÍA”’l@F@boneno
+
+%inst
+ƒ{[ƒ“‚ð”jŠü‚µ‚Ü‚·B
+
+“Ç‚Ýž‚ÝÏ‚Ý‚Ìƒ‚[ƒVƒ‡ƒ“‚Í‘S‚Ä”jŠü‚³‚ê‚Ü‚·B
+
+‰e‹¿“x‚ÌÄŒvŽZ‚Í‹­§“I‚És‚í‚ê‚Ü‚·B
+
+E3DCreateBone‚Ìà–¾‚à‚¨“Ç‚Ý‚­‚¾‚³‚¢B
+
+
+
+
+
+
+¨ˆø”
+1. [IN] •Ï”‚Ü‚½‚ÍA”’l@F@hsid
+@@ƒ‚ƒfƒ‹ƒf[ƒ^‚ðŽ¯•Ê‚·‚éIDB
+
+2. [IN] •Ï”‚Ü‚½‚ÍA”’l@F@boneno
+@@íœ‚µ‚½‚¢ƒ{[ƒ“‚ðŽ¯•Ê‚·‚éIDB
+
+
+
+
+ƒo[ƒWƒ‡ƒ“ : ver5.2.1.9‚Å’Ç‰Á
+
+%index
+E3DGetMorphBaseNum
+ƒ‚[ƒt‚Ìƒx[ƒX‚Ì”‚ðŽæ“¾‚µ‚Ü‚·B
+%group
+Easy3D For HSP3 : ƒ‚[ƒt
+
+%prm
+p1,p2
+p1 : [IN] •Ï”‚Ü‚½‚ÍA”’l@F@hsid
+p2 : [OUT] •Ï”@F@basenumptr
+
+%inst
+ƒ‚[ƒt‚Ìƒx[ƒX‚Ì”‚ðŽæ“¾‚µ‚Ü‚·B
+‚»‚ê‚¼‚ê‚Ìƒ‚[ƒt‚É‚Íƒx[ƒX‚Í‚PŒÂ‚¾‚¯‚µ‚©ŠÜ‚Ü‚ê‚È‚¢‚Ì‚Å
+‚±‚Ì”‚Íƒ‚[ƒt‚Ì”‚Æˆê’v‚µ‚Ü‚·B
+
+‹ï‘Ì“I‚ÈŽg—p—á‚Í
+e3dhsp3_MorphInfo.hsp‚ð‚²——‚­‚¾‚³‚¢B
+
+
+
+
+¨ˆø”
+1. [IN] •Ï”‚Ü‚½‚ÍA”’l@F@hsid
+@@ƒ‚ƒfƒ‹‚ðŽ¯•Ê‚·‚é”Ô†‚ðŽw’è‚µ‚Ä‚­‚¾‚³‚¢B
+
+2. [OUT] •Ï”@F@basenumptr
+@@ƒx[ƒX‚Ì”‚ª‘ã“ü‚³‚ê‚Ü‚·B
+
+
+
+ƒo[ƒWƒ‡ƒ“ : ver5.2.2.3‚Å’Ç‰Á<BR>
+      
+
+%index
+E3DGetMorphBaseInfo
+ƒ‚[ƒt‚Ìƒx[ƒX‚Ìî•ñ‚ðˆêŠ‡‚ÅŽæ“¾‚µ‚Ü‚·B
+%group
+Easy3D For HSP3 : ƒ‚[ƒt
+
+%prm
+p1,p2,p3,p4
+p1 : [IN] •Ï”‚Ü‚½‚ÍA”’l@F@hsid
+p2 : [IN] •Ï”‚Ü‚½‚ÍA”’l@F@arrayleng
+p3 : [OUT] •¶Žš—ñ‚Ì•Ï”@F@basename
+p4 : [OUT] ”z—ñ•Ï”@F@baseinfo
+
+%inst
+ƒ‚[ƒt‚Ìƒx[ƒX‚Ìî•ñ‚ðˆêŠ‡‚ÅŽæ“¾‚µ‚Ü‚·B
+
+‹ï‘Ì“I‚ÈŽg—p—á‚Í
+e3dhsp3_MorphInfo.hsp‚ð‚²——‚­‚¾‚³‚¢B
+
+
+
+
+
+¨ˆø”
+1. [IN] •Ï”‚Ü‚½‚ÍA”’l@F@hsid
+@@ƒ‚ƒfƒ‹‚ðŽ¯•Ê‚·‚é”Ô†‚ðŽw’è‚µ‚Ä‚­‚¾‚³‚¢B
+
+2. [IN] •Ï”‚Ü‚½‚ÍA”’l@F@arrayleng
+@@basename‚Æbaseinfo‚Ì—v‘f”‚ðŽw’è‚µ‚Ä‚­‚¾‚³‚¢B
+@@E3DGetMorphBaseNum‚ÅŽæ“¾‚µ‚½basenumŒÂ‚¶‚á‚È‚¢‚ÆƒGƒ‰[‚É‚È‚è‚Ü‚·B
+
+3. [OUT] •¶Žš—ñ‚Ì•Ï”@F@basename
+@@ƒx[ƒX‚Ì–¼‘O‚ª‘ã“ü‚³‚ê‚Ü‚·B
+@@sdim basename, 256, basenum
+@@‚Ì‚æ‚¤‚É•¶Žš—ñ‚ðì¬‚µ‚ÄŽw’è‚µ‚Ä‚­‚¾‚³‚¢B
+B
+4. [OUT] ”z—ñ•Ï”@F@baseinfo
+@@ƒx[ƒX‚Ìî•ñ‚ª‘ã“ü‚³‚ê‚Ü‚·B
+@@dim baseinfo, MBI_MAX, basenum
+@@‚Å”z—ñ‚ðì¬‚µ‚Ä‚­‚¾‚³‚¢B
+@@MBI_‚ÅŽn‚Ü‚é’è”‚Íe3dhsp3.as‚Å’è‹`‚³‚ê‚Ä‚¢‚Ü‚·B
+
+@@basecnt‚ð‚O‚©‚çbasenum - 1‚Ü‚Å‚Ì”‚Æ‚·‚é‚Æ
+@@baseinfo( MBI_DISPNO, basecnt )‚É‚Íƒx[ƒX‚ÌƒVƒŠƒAƒ‹ID‚ª‘ã“ü‚³‚ê‚Ü‚·B
+@@baseinfo( MBI_BONENO, basecnt )‚É‚Íƒ‚[ƒt‚Ìƒ‚[ƒVƒ‡ƒ“î•ñ‚ÌŠi”[æƒ{[ƒ“”Ô†‚ª‘ã“ü‚³‚ê‚Ü‚·B
+@@baseinfo( MBI_TARGETNUM, basecnt )‚É‚Íƒx[ƒX‚É‘Î‰ž•t‚¯‚ç‚ê‚½ƒ^[ƒQƒbƒg‚Ì”‚ª‘ã“ü‚³‚ê‚Ü‚·B
+@@
+
+
+
+ƒo[ƒWƒ‡ƒ“ : ver5.2.2.3‚Å’Ç‰Á
+
+%index
+E3DGetMorphTargetInfo
+ƒ‚[ƒt‚Ìƒ^[ƒQƒbƒg‚Ìî•ñ‚ðƒ‚[ƒt‚²‚Æiƒx[ƒX‚²‚Æj‚ÉŽæ“¾‚µ‚Ü‚·B
+%group
+Easy3D For HSP3 : ƒ‚[ƒt
+
+%prm
+p1,p2,p3,p4,p5
+p1 : [IN] •Ï”‚Ü‚½‚ÍA”’l@F@hsid
+p2 : [IN] •Ï”‚Ü‚½‚ÍA”’l@F@baseid
+p3 : [IN] int@F@arrayleng
+p4 : [OUT] •¶Žš—ñ‚Ì•Ï”@F@targetname
+p5 : [OUT] ”z—ñ•Ï”@F@targetno
+
+%inst
+ƒ‚[ƒt‚Ìƒ^[ƒQƒbƒg‚Ìî•ñ‚ðƒ‚[ƒt‚²‚Æiƒx[ƒX‚²‚Æj‚ÉŽæ“¾‚µ‚Ü‚·B
+
+‹ï‘Ì“I‚ÈŽg—p—á‚Í
+e3dhsp3_MorphInfo.hsp‚ð‚²——‚­‚¾‚³‚¢B
+
+
+
+
+
+¨ˆø”
+1. [IN] •Ï”‚Ü‚½‚ÍA”’l@F@hsid
+@@ƒ‚ƒfƒ‹‚ðŽ¯•Ê‚·‚é”Ô†‚ðŽw’è‚µ‚Ä‚­‚¾‚³‚¢B
+
+2. [IN] •Ï”‚Ü‚½‚ÍA”’l@F@baseid
+@@ƒ‚[ƒt‚Ìƒx[ƒX‚ðŽ¯•Ê‚·‚é”Ô†‚ðŽw’è‚µ‚Ä‚­‚¾‚³‚¢B
+@@E3DGetMorphBaseInfo‚ÅŽæ“¾‚µ‚½baseinfo( MBI_DISPNO, basecnt )‚ðŽw’è‚µ‚Ä‚­‚¾‚³‚¢B
+
+3. [IN] int@F@arrayleng
+@@targetname‚Ætargetinfo‚Ì—v‘f”‚ðŽw’è‚µ‚Ä‚­‚¾‚³‚¢B
+@@ƒx[ƒX‚ÉŠÜ‚Ü‚ê‚éƒ^[ƒQƒbƒg”‚ÆˆÙ‚È‚éê‡‚É‚ÍƒGƒ‰[‚É‚È‚è‚Ü‚·B
+
+
+4. [OUT] •¶Žš—ñ‚Ì•Ï”@F@targetname
+@@ƒ^[ƒQƒbƒg‚Ì–¼‘O‚ª‘ã“ü‚³‚ê‚Ü‚·B
+@@sdim targetname, 256, targetnum
+@@‚Ì‚æ‚¤‚É”z—ñ‚ðì¬‚µ‚Ä‚­‚¾‚³‚¢B
+
+5. [OUT] ”z—ñ•Ï”@F@targetno
+@@ƒ^[ƒQƒbƒg‚ÌƒVƒŠƒAƒ‹ID‚ª‘ã“ü‚³‚ê‚Ü‚·B
+@@dim targetno, targetnum
+@@‚Ì‚æ‚¤‚É”z—ñ‚ðì¬‚µ‚Ä‚­‚¾‚³‚¢B
+
+
+
+
+ƒo[ƒWƒ‡ƒ“ : ver5.2.2.3‚Å’Ç‰Á
+
+%index
+E3DGetMorphKeyNum
+ƒ‚[ƒtƒ‚[ƒVƒ‡ƒ“‚ÌƒL[‚Ì”‚ðŽæ“¾‚µ‚Ü‚·B
+%group
+Easy3D For HSP3 : ƒ‚[ƒt
+
+%prm
+p1,p2,p3,p4,p5,p6
+p1 : [IN] •Ï”‚Ü‚½‚ÍA”’l@F@hsid
+p2 : [IN] •Ï”‚Ü‚½‚ÍA”’l@F@motid
+p3 : [IN] •Ï”‚Ü‚½‚ÍA”’l@F@boneid
+p4 : [IN] •Ï”‚Ü‚½‚ÍA”’l@F@baseid
+p5 : [IN] •Ï”‚Ü‚½‚ÍA”’l@F@targetid
+p6 : [OUT] •Ï”@F@keynum
+
+%inst
+ƒ‚[ƒtƒ‚[ƒVƒ‡ƒ“‚ÌƒL[‚Ì”‚ðŽæ“¾‚µ‚Ü‚·B
+
+‹ï‘Ì“I‚ÈŽg—p—á‚Í
+e3dhsp3_MorphInfo.hsp‚ð‚²——‚­‚¾‚³‚¢B
+
+
+
+
+
+¨ˆø”
+1. [IN] •Ï”‚Ü‚½‚ÍA”’l@F@hsid
+@@ƒ‚ƒfƒ‹‚ðŽ¯•Ê‚·‚é”Ô†‚ðŽw’è‚µ‚Ä‚­‚¾‚³‚¢B
+
+2. [IN] •Ï”‚Ü‚½‚ÍA”’l@F@motid
+@@ƒ‚[ƒVƒ‡ƒ“‚ðŽ¯•Ê‚·‚é”Ô†‚ðŽw’è‚µ‚Ä‚­‚¾‚³‚¢B
+
+3. [IN] •Ï”‚Ü‚½‚ÍA”’l@F@boneid
+@@ƒ‚[ƒtƒ‚[ƒVƒ‡ƒ“î•ñ‚ÌŠi”[æ‚Ìƒ{[ƒ“‚ðŽ¯•Ê‚·‚é”Ô†‚ðŽw’è‚µ‚Ä‚­‚¾‚³‚¢B
+@@E3DGetMorphBaseInfo‚ÅŽæ“¾‚µ‚½baseinfo( MBI_BONENO, basecnt )‚ðŽw’è‚µ‚Ä‚­‚¾‚³‚¢B
+
+4. [IN] •Ï”‚Ü‚½‚ÍA”’l@F@baseid
+@@ƒ‚[ƒt‚Ìƒx[ƒX‚ðŽ¯•Ê‚·‚é”Ô†‚ðŽw’è‚µ‚Ä‚­‚¾‚³‚¢B
+@@E3DGetMorphBaseInfo‚ÅŽæ“¾‚µ‚½baseinfo( MBI_DISPNO, basecnt )‚ðŽw’è‚µ‚Ä‚­‚¾‚³‚¢B
+
+5. [IN] •Ï”‚Ü‚½‚ÍA”’l@F@targetid
+@@ƒ‚[ƒt‚Ìƒ^[ƒQƒbƒg‚ðŽ¯•Ê‚·‚é”Ô†‚ðŽw’è‚µ‚Ä‚­‚¾‚³‚¢B
+@@E3DGetMorphTargetInfo‚ÅŽæ“¾‚µ‚½targetno( targetcnt )‚ðŽw’è‚µ‚Ä‚­‚¾‚³‚¢B
+
+6. [OUT] •Ï”@F@keynum
+@@ƒL[‚Ì”‚ª‘ã“ü‚³‚ê‚Ü‚·B
+
+
+
+ƒo[ƒWƒ‡ƒ“ : ver5.2.2.3‚Å’Ç‰Á
+
+%index
+E3DGetMorphKey
+ƒ‚[ƒtƒ‚[ƒVƒ‡ƒ“‚Ìî•ñ‚ðƒL[‚Ì”•ªŽæ“¾‚µ‚Ü‚·B
+%group
+Easy3D For HSP3 : ƒ‚[ƒt
+
+%prm
+p1,p2,p3,p4,p5,p6,p7,p8
+p1 : [IN] •Ï”‚Ü‚½‚ÍA”’l@F@hsid
+p2 : [IN] •Ï”‚Ü‚½‚ÍA”’l@F@motid
+p3 : [IN] •Ï”‚Ü‚½‚ÍA”’l@F@boneid
+p4 : [IN] •Ï”‚Ü‚½‚ÍA”’l@F@baseid
+p5 : [IN] int@F@targetid
+p6 : [IN] int@F@arrayleng
+p7 : [OUT] •Ï”@F@framenoarray
+p8 : [OUT] •Ï”@F@ratearray
+
+%inst
+ƒ‚[ƒtƒ‚[ƒVƒ‡ƒ“‚Ìî•ñ‚ðƒL[‚Ì”•ªŽæ“¾‚µ‚Ü‚·B
+
+‹ï‘Ì“I‚ÈŽg—p—á‚Í
+e3dhsp3_MorphInfo.hsp‚ð‚²——‚­‚¾‚³‚¢B
+
+
+
+
+
+¨ˆø”
+1. [IN] •Ï”‚Ü‚½‚ÍA”’l@F@hsid
+@@ƒ‚ƒfƒ‹‚ðŽ¯•Ê‚·‚é”Ô†‚ðŽw’è‚µ‚Ä‚­‚¾‚³‚¢B
+
+2. [IN] •Ï”‚Ü‚½‚ÍA”’l@F@motid
+@@ƒ‚[ƒVƒ‡ƒ“‚ðŽ¯•Ê‚·‚é”Ô†‚ðŽw’è‚µ‚Ä‚­‚¾‚³‚¢B
+
+3. [IN] •Ï”‚Ü‚½‚ÍA”’l@F@boneid
+@@ƒ‚[ƒtƒ‚[ƒVƒ‡ƒ“î•ñ‚ÌŠi”[æ‚Ìƒ{[ƒ“‚ðŽ¯•Ê‚·‚é”Ô†‚ðŽw’è‚µ‚Ä‚­‚¾‚³‚¢B
+@@E3DGetMorphBaseInfo‚ÅŽæ“¾‚µ‚½baseinfo( MBI_BONENO, basecnt )‚ðŽw’è‚µ‚Ä‚­‚¾‚³‚¢B
+
+4. [IN] •Ï”‚Ü‚½‚ÍA”’l@F@baseid
+@@ƒ‚[ƒt‚Ìƒx[ƒX‚ðŽ¯•Ê‚·‚é”Ô†‚ðŽw’è‚µ‚Ä‚­‚¾‚³‚¢B
+@@E3DGetMorphBaseInfo‚ÅŽæ“¾‚µ‚½baseinfo( MBI_DISPNO, basecnt )‚ðŽw’è‚µ‚Ä‚­‚¾‚³‚¢B
+
+5. [IN] int@F@targetid
+@@ƒ‚[ƒt‚Ìƒ^[ƒQƒbƒg‚ðŽ¯•Ê‚·‚é”Ô†‚ðŽw’è‚µ‚Ä‚­‚¾‚³‚¢B
+@@E3DGetMorphTargetInfo‚ÅŽæ“¾‚µ‚½targetno( targetcnt )‚ðŽw’è‚µ‚Ä‚­‚¾‚³‚¢B
+
+6. [IN] int@F@arrayleng
+@@motioninfoptr‚Ì—v‘f”‚ðŽw’è‚µ‚Ä‚­‚¾‚³‚¢B
+@@E3DGetMorphKeyNum‚ÅŽæ“¾‚µ‚½keynumŒÂ‚¶‚á‚È‚¢‚ÆƒGƒ‰[‚É‚È‚è‚Ü‚·B
+
+
+7. [OUT] •Ï”@F@framenoarray
+@@ƒL[ƒtƒŒ[ƒ€‚Ì”Ô†‚ªƒL[‚Ì”•ª‘ã“ü‚³‚ê‚Ü‚·B
+@@E3DGetMorphKeyNum‚ÅŽæ“¾‚µ‚½ƒL[‚Ì”‚ðkeynum‚Æ‚·‚é‚Æ
+@@dim framenoarray, keynum
+@@‚Ì‚æ‚¤‚É”z—ñ‚ðì¬‚µ‚Ä‚­‚¾‚³‚¢B
+
+8. [OUT] •Ï”@F@ratearray
+@@ŽÀ”Œ^‚Ì”z—ñ•Ï”B
+@@ƒ‚[ƒtƒ‚[ƒVƒ‡ƒ“‚ÌƒuƒŒƒ“ƒh—¦‚ªƒL[‚Ì”•ª‘ã“ü‚³‚ê‚Ü‚·B
+@@E3DGetMorphKeyNum‚ÅŽæ“¾‚µ‚½ƒL[‚Ì”‚ðkeynum‚Æ‚·‚é‚Æ
+@@ddim ratearray, keynum
+@@‚Ì‚æ‚¤‚É”z—ñ‚ðì¬‚µ‚Ä‚­‚¾‚³‚¢B
+
+
+
+
+ƒo[ƒWƒ‡ƒ“ : ver5.2.2.3‚Å’Ç‰Á
+
+%index
+E3DGetCurMorphInfo
+”CˆÓ‚ÌƒtƒŒ[ƒ€”Ô†‚Ì•âŠÔÏ‚Ý‚Ìƒ‚[ƒtƒ‚[ƒVƒ‡ƒ“î•ñ‚ðŽæ“¾‚µ‚Ü‚·B
+%group
+Easy3D For HSP3 : ƒ‚[ƒt
+
+%prm
+p1,p2,p3,p4,p5,p6
+p1 : [IN] •Ï”‚Ü‚½‚ÍA”’l@F@hsid
+p2 : [IN] •Ï”‚Ü‚½‚ÍA”’l@F@boneid
+p3 : [IN] •Ï”‚Ü‚½‚ÍA”’l@F@baseid
+p4 : [IN] •Ï”‚Ü‚½‚ÍA”’l@F@targetid
+p5 : [OUT] •Ï”@F@framenoptr
+p6 : [OUT] •Ï”@F@rateptr
+
+%inst
+”CˆÓ‚ÌƒtƒŒ[ƒ€”Ô†‚Ì•âŠÔÏ‚Ý‚Ìƒ‚[ƒtƒ‚[ƒVƒ‡ƒ“î•ñ‚ðŽæ“¾‚µ‚Ü‚·B
+‚±‚Ì–½—ß‚Å‚ÍŒ»Ý‚Ìƒ‚[ƒVƒ‡ƒ“IDAƒtƒŒ[ƒ€”Ô†‚É‚Â‚¢‚Ä‚Ìî•ñ‚ðŽæ“¾‚µ‚Ü‚·B
+”CˆÓ‚Ìƒ‚[ƒVƒ‡ƒ“AƒtƒŒ[ƒ€”Ô†‚Ìî•ñ‚ðŽæ“¾‚µ‚½‚¢ê‡‚Í
+E3DSetMotionFrameNo‚Æ‘g‚Ý‡‚í‚¹‚ÄŽg‚Á‚Ä‚­‚¾‚³‚¢B
+
+
+
+
+¨ˆø”
+1. [IN] •Ï”‚Ü‚½‚ÍA”’l@F@hsid
+@@ƒ‚ƒfƒ‹‚ðŽ¯•Ê‚·‚é”Ô†‚ðŽw’è‚µ‚Ä‚­‚¾‚³‚¢B
+
+2. [IN] •Ï”‚Ü‚½‚ÍA”’l@F@boneid
+@@ƒ‚[ƒtƒ‚[ƒVƒ‡ƒ“î•ñ‚ÌŠi”[æ‚Ìƒ{[ƒ“‚ðŽ¯•Ê‚·‚é”Ô†‚ðŽw’è‚µ‚Ä‚­‚¾‚³‚¢B
+@@E3DGetMorphBaseInfo‚ÅŽæ“¾‚µ‚½baseinfo( MBI_BONENO, basecnt )‚ðŽw’è‚µ‚Ä‚­‚¾‚³‚¢B
+
+3. [IN] •Ï”‚Ü‚½‚ÍA”’l@F@baseid
+@@ƒ‚[ƒt‚Ìƒx[ƒX‚ðŽ¯•Ê‚·‚é”Ô†‚ðŽw’è‚µ‚Ä‚­‚¾‚³‚¢B
+@@E3DGetMorphBaseInfo‚ÅŽæ“¾‚µ‚½baseinfo( MBI_DISPNO, basecnt )‚ðŽw’è‚µ‚Ä‚­‚¾‚³‚¢B
+
+4. [IN] •Ï”‚Ü‚½‚ÍA”’l@F@targetid
+@@ƒ‚[ƒt‚Ìƒ^[ƒQƒbƒg‚ðŽ¯•Ê‚·‚é”Ô†‚ðŽw’è‚µ‚Ä‚­‚¾‚³‚¢B
+@@E3DGetMorphTargetInfo‚ÅŽæ“¾‚µ‚½targetno( targetcnt )‚ðŽw’è‚µ‚Ä‚­‚¾‚³‚¢B
+
+5. [OUT] •Ï”@F@framenoptr
+@@ƒtƒŒ[ƒ€”Ô†‚ª‘ã“ü‚³‚ê‚Ü‚·B
+
+6. [OUT] •Ï”@F@rateptr
+@@ŽÀ”Œ^‚Ì•Ï”
+@@ƒuƒŒƒ“ƒh—¦‚ª‘ã“ü‚³‚ê‚Ü‚·B
+
+
+
+
+ƒo[ƒWƒ‡ƒ“ : ver5.2.2.3‚Å’Ç‰Á
+
+%index
+E3DCreateMorph
+ƒ‚[ƒt‚ðì¬‚µ‚Ü‚·B
+%group
+Easy3D For HSP3 : ƒ‚[ƒt
+
+%prm
+p1,p2,p3
+p1 : [IN] •Ï”‚Ü‚½‚ÍA”’l@F@hsid
+p2 : [IN] •Ï”‚Ü‚½‚ÍA”’l@F@baseid
+p3 : [IN] •Ï”‚Ü‚½‚ÍA”’l@F@boneid
+
+%inst
+ƒ‚[ƒt‚ðì¬‚µ‚Ü‚·B
+ƒx[ƒX‚ÌID‚Æƒ{[ƒ“‚ÌID‚ðŽw’è‚µ‚Ü‚·B
+‚±‚±‚ÅŽw’è‚µ‚½ƒ{[ƒ“‚Éì¬‚µ‚½ƒ‚[ƒt‚Ìƒ‚[ƒVƒ‡ƒ“î•ñ‚ªŠi”[‚³‚ê‚Ü‚·B
+
+‚±‚Ì–½—ß‚ðŒÄ‚Ô‚Æ“Ç‚Ýž‚ÝÏ‚Ý‚Ìƒ‚[ƒVƒ‡ƒ“‚Í‘S‚Ä”jŠü‚³‚ê‚Ü‚·B
+
+‹ï‘Ì“I‚ÈŽg—p—á‚Í
+e3dhsp3_MorphInfo_Create.hsp‚ð‚²——‚­‚¾‚³‚¢B
+
+
+
+
+
+¨ˆø”
+1. [IN] •Ï”‚Ü‚½‚ÍA”’l@F@hsid
+@@ƒ‚ƒfƒ‹‚ðŽ¯•Ê‚·‚é”Ô†‚ðŽw’è‚µ‚Ä‚­‚¾‚³‚¢B
+
+2. [IN] •Ï”‚Ü‚½‚ÍA”’l@F@baseid
+@@ƒx[ƒX‚ðŽ¯•Ê‚·‚é”Ô†‚ðŽw’è‚µ‚Ä‚­‚¾‚³‚¢B
+@@E3DGetPartNoByName‚È‚Ç‚ÅID‚ðŽæ“¾‚µ‚ÄŽw’è‚µ‚Ä‚­‚¾‚³‚¢B
+
+3. [IN] •Ï”‚Ü‚½‚ÍA”’l@F@boneid
+@@ƒ{[ƒ“‚ðŽ¯•Ê‚·‚é”Ô†‚ðŽw’è‚µ‚Ä‚­‚¾‚³‚¢B
+@@E3DGetPartNoByName‚È‚Ç‚ÅID‚ðŽæ“¾‚µ‚ÄŽw’è‚µ‚Ä‚­‚¾‚³‚¢B
+
+
+ƒo[ƒWƒ‡ƒ“ : ver5.2.2.3‚Å’Ç‰Á
+
+%index
+E3DAddMorphTarget
+E3DCreateMorph‚Åì¬‚µ‚½ƒ‚[ƒt‚Éƒ^[ƒQƒbƒg‚ð’Ç‰Á‚µ‚Ü‚·B
+%group
+Easy3D For HSP3 : ƒ‚[ƒt
+
+%prm
+p1,p2,p3
+p1 : [IN] •Ï”‚Ü‚½‚ÍA”’l@F@hsid
+p2 : [IN] •Ï”‚Ü‚½‚ÍA”’l@F@baseid
+p3 : [IN] •Ï”‚Ü‚½‚ÍA”’l@F@targetid
+
+%inst
+E3DCreateMorph‚Åì¬‚µ‚½ƒ‚[ƒt‚Éƒ^[ƒQƒbƒg‚ð’Ç‰Á‚µ‚Ü‚·B
+
+‹ï‘Ì“I‚ÈŽg—p—á‚Í
+e3dhsp3_MorphInfo_Create.hsp‚ð‚²——‚­‚¾‚³‚¢B
+
+
+
+
+
+¨ˆø”
+1. [IN] •Ï”‚Ü‚½‚ÍA”’l@F@hsid
+@@ƒ‚ƒfƒ‹‚ðŽ¯•Ê‚·‚é”Ô†‚ðŽw’è‚µ‚Ä‚­‚¾‚³‚¢B
+
+2. [IN] •Ï”‚Ü‚½‚ÍA”’l@F@baseid
+@@ƒx[ƒX‚ðŽ¯•Ê‚·‚é”Ô†‚ðŽw’è‚µ‚Ä‚­‚¾‚³‚¢B
+@@E3DGetPartNoByName‚È‚Ç‚ÅID‚ðŽæ“¾‚µ‚ÄŽw’è‚µ‚Ä‚­‚¾‚³‚¢B
+
+3. [IN] •Ï”‚Ü‚½‚ÍA”’l@F@targetid
+@@ƒ^[ƒQƒbƒg‚ðŽ¯•Ê‚·‚é”Ô†‚ðŽw’è‚µ‚Ä‚­‚¾‚³‚¢B
+@@E3DGetPartNoByName‚È‚Ç‚ÅID‚ðŽæ“¾‚µ‚ÄŽw’è‚µ‚Ä‚­‚¾‚³‚¢B
+
+
+ƒo[ƒWƒ‡ƒ“ : ver5.2.2.3‚Å’Ç‰Á
+
+%index
+E3DSetMorphKey
+ƒ‚[ƒtƒ‚[ƒVƒ‡ƒ“‚ÌƒL[‚ðì¬‚µ‚Ü‚·B
+%group
+Easy3D For HSP3 : ƒ‚[ƒt
+
+%prm
+p1,p2,p3,p4,p5,p6,p7
+p1 : [IN] •Ï”‚Ü‚½‚ÍA”’l@F@hsid
+p2 : [IN] •Ï”‚Ü‚½‚ÍA”’l@F@motid
+p3 : [IN] •Ï”‚Ü‚½‚ÍA”’l@F@boneid
+p4 : [IN] •Ï”‚Ü‚½‚ÍA”’l@F@baseid
+p5 : [IN] •Ï”‚Ü‚½‚ÍA”’l@F@targetid
+p6 : [IN] •Ï”‚Ü‚½‚ÍA”’l@F@frameno
+p7 : [IN] •Ï”‚Ü‚½‚ÍA”’l@F@rate
+
+%inst
+ƒ‚[ƒtƒ‚[ƒVƒ‡ƒ“‚ÌƒL[‚ðì¬‚µ‚Ü‚·B
+ƒL[‚ª‚·‚Å‚É‚ ‚éê‡‚ÍŠù‘¶‚ÌƒL[‚Éã‘‚«‚µ‚Ü‚·B
+
+‹ï‘Ì“I‚ÈŽg—p—á‚Í
+e3dhsp3_MorphInfo_Create.hsp‚ð‚²——‚­‚¾‚³‚¢B
+
+
+
+
+
+¨ˆø”
+1. [IN] •Ï”‚Ü‚½‚ÍA”’l@F@hsid
+@@ƒ‚ƒfƒ‹‚ðŽ¯•Ê‚·‚é”Ô†‚ðŽw’è‚µ‚Ä‚­‚¾‚³‚¢B
+
+2. [IN] •Ï”‚Ü‚½‚ÍA”’l@F@motid
+@@ƒ‚[ƒVƒ‡ƒ“‚ðŽ¯•Ê‚·‚é”Ô†‚ðŽw’è‚µ‚Ä‚­‚¾‚³‚¢B
+
+3. [IN] •Ï”‚Ü‚½‚ÍA”’l@F@boneid
+@@ƒ‚[ƒtƒ‚[ƒVƒ‡ƒ“î•ñ‚ÌŠi”[æ‚Ìƒ{[ƒ“‚ðŽ¯•Ê‚·‚é”Ô†‚ðŽw’è‚µ‚Ä‚­‚¾‚³‚¢B
+@@E3DGetMorphBaseInfo‚ÅŽæ“¾‚µ‚½baseinfo( MBI_BONENO, basecnt )‚ðŽw’è‚µ‚Ä‚­‚¾‚³‚¢B
+
+4. [IN] •Ï”‚Ü‚½‚ÍA”’l@F@baseid
+@@ƒ‚[ƒt‚Ìƒx[ƒX‚ðŽ¯•Ê‚·‚é”Ô†‚ðŽw’è‚µ‚Ä‚­‚¾‚³‚¢B
+@@E3DGetMorphBaseInfo‚ÅŽæ“¾‚µ‚½baseinfo( MBI_DISPNO, basecnt )‚ðŽw’è‚µ‚Ä‚­‚¾‚³‚¢B
+
+5. [IN] •Ï”‚Ü‚½‚ÍA”’l@F@targetid
+@@ƒ‚[ƒt‚Ìƒ^[ƒQƒbƒg‚ðŽ¯•Ê‚·‚é”Ô†‚ðŽw’è‚µ‚Ä‚­‚¾‚³‚¢B
+@@E3DGetMorphTargetInfo‚ÅŽæ“¾‚µ‚½targetno( targetcnt )‚ðŽw’è‚µ‚Ä‚­‚¾‚³‚¢B
+
+6. [IN] •Ï”‚Ü‚½‚ÍA”’l@F@frameno
+@@ƒL[‚ÌƒtƒŒ[ƒ€”Ô†‚ðŽw’è‚µ‚Ü‚·B
+
+7. [IN] •Ï”‚Ü‚½‚ÍA”’l@F@rate
+@@ŽÀ”B
+@@ƒL[‚ÌƒuƒŒƒ“ƒh—¦‚ðŽw’è‚µ‚Ü‚·B
+
+
+
+ƒo[ƒWƒ‡ƒ“ : ver5.2.2.3‚Å’Ç‰Á
+
+%index
+E3DDestroyMorphKey
+ƒ‚[ƒtƒ‚[ƒVƒ‡ƒ“‚ÌƒL[‚ðíœ‚µ‚Ü‚·B
+%group
+Easy3D For HSP3 : ƒ‚[ƒt
+
+%prm
+p1,p2,p3,p4,p5
+p1 : [IN] •Ï”‚Ü‚½‚ÍA”’l@F@hsid
+p2 : [IN] •Ï”‚Ü‚½‚ÍA”’l@F@motid
+p3 : [IN] •Ï”‚Ü‚½‚ÍA”’l@F@boneid
+p4 : [IN] •Ï”‚Ü‚½‚ÍA”’l@F@frameno
+p5 : [IN] •Ï”‚Ü‚½‚ÍA”’l@F@baseid
+
+%inst
+ƒ‚[ƒtƒ‚[ƒVƒ‡ƒ“‚ÌƒL[‚ðíœ‚µ‚Ü‚·B
+ƒ‚[ƒt‚ÉŠÜ‚Ü‚ê‚é‘S‚Ä‚Ìƒ^[ƒQƒbƒg‚ÌƒL[‚ªíœ‚³‚ê‚Ü‚·B
+
+‹ï‘Ì“I‚ÈŽg—p—á‚Í
+e3dhsp3_MorphInfo_Create.hsp‚ð‚²——‚­‚¾‚³‚¢B
+
+
+
+
+
+¨ˆø”
+1. [IN] •Ï”‚Ü‚½‚ÍA”’l@F@hsid
+@@ƒ‚ƒfƒ‹‚ðŽ¯•Ê‚·‚é”Ô†‚ðŽw’è‚µ‚Ä‚­‚¾‚³‚¢B
+
+2. [IN] •Ï”‚Ü‚½‚ÍA”’l@F@motid
+@@ƒ‚[ƒVƒ‡ƒ“‚ðŽ¯•Ê‚·‚é”Ô†‚ðŽw’è‚µ‚Ä‚­‚¾‚³‚¢B
+
+3. [IN] •Ï”‚Ü‚½‚ÍA”’l@F@boneid
+@@ƒ‚[ƒtƒ‚[ƒVƒ‡ƒ“î•ñ‚ÌŠi”[æ‚Ìƒ{[ƒ“‚ðŽ¯•Ê‚·‚é”Ô†‚ðŽw’è‚µ‚Ä‚­‚¾‚³‚¢B
+@@E3DGetMorphBaseInfo‚ÅŽæ“¾‚µ‚½baseinfo( MBI_BONENO, basecnt )‚ðŽw’è‚µ‚Ä‚­‚¾‚³‚¢B
+
+4. [IN] •Ï”‚Ü‚½‚ÍA”’l@F@frameno
+@@íœ‚µ‚½‚¢ƒL[‚ª‘¶Ý‚·‚éƒtƒŒ[ƒ€”Ô†‚ðŽw’è‚µ‚Ä‚­‚¾‚³‚¢B
+
+5. [IN] •Ï”‚Ü‚½‚ÍA”’l@F@baseid
+@@ƒ‚[ƒt‚Ìƒx[ƒX‚ðŽ¯•Ê‚·‚é”Ô†‚ðŽw’è‚µ‚Ä‚­‚¾‚³‚¢B
+@@E3DGetMorphBaseInfo‚ÅŽæ“¾‚µ‚½baseinfo( MBI_DISPNO, basecnt )‚ðŽw’è‚µ‚Ä‚­‚¾‚³‚¢B
+
+
+
+ƒo[ƒWƒ‡ƒ“ : ver5.2.2.3‚Å’Ç‰Á
+
+%index
+E3DGetToon1MaterialNum
+ƒgƒD[ƒ“ƒ}ƒeƒŠƒAƒ‹‚Ì”‚ðŽæ“¾‚µ‚Ü‚·B
+%group
+Easy3D For HSP3 : ƒ}ƒeƒŠƒAƒ‹
+
+%prm
+p1,p2,p3
+p1 : [IN] •Ï”‚Ü‚½‚ÍA”’l@F@hsid
+p2 : [IN] •Ï”‚Ü‚½‚ÍA”’l@F@partno
+p3 : [OUT] •Ï”@F@matnum
+
+%inst
+ƒgƒD[ƒ“ƒ}ƒeƒŠƒAƒ‹‚Ì”‚ðŽæ“¾‚µ‚Ü‚·B
+ƒgƒD[ƒ“ƒ}ƒeƒŠƒAƒ‹‚Æ‚Í’Êí‚Ìƒ}ƒeƒŠƒAƒ‹‚Æ‚ÍˆÙ‚È‚è‚Ü‚·B
+RokDeBone2‚ÌuƒgƒDvƒ{ƒ^ƒ“‚ð‰Ÿ‚µ‚½‚Æ‚«‚Éo‚Ä‚­‚éƒ_ƒCƒAƒƒO‚É•\Ž¦‚³‚ê‚Ä‚¢‚éƒ}ƒeƒŠƒAƒ‹‚Ì‚±‚Æ‚Å‚·B
+ˆê‰ñ‚àƒgƒD[ƒ“•\Ž¦‚µ‚½‚±‚Æ‚ª–³‚¢ó‘Ô‚Å‚±‚Ì–½—ß‚ðŒÄ‚Ô‚ÆAƒ}ƒeƒŠƒAƒ‹”‚É‚Í‚O‚ª•Ô‚Á‚Ä‚«‚Ü‚·B
+
+
+
+
+¨ˆø”
+1. [IN] •Ï”‚Ü‚½‚ÍA”’l@F@hsid
+@@ƒ‚ƒfƒ‹‚ðŽ¯•Ê‚·‚é”Ô†‚ðŽw’è‚µ‚Ä‚­‚¾‚³‚¢B
+
+2. [IN] •Ï”‚Ü‚½‚ÍA”’l@F@partno
+@@ƒp[ƒc‚ðŽ¯•Ê‚·‚é”Ô†‚ðŽw’è‚µ‚Ä‚­‚¾‚³‚¢B
+@@E3DGetDispObjInfo‚ÅŽæ“¾‚µ‚½•\Ž¦ƒIƒuƒWƒFƒNƒg‚ÌID‚ðŽw’è‚µ‚Ä‚­‚¾‚³‚¢B
+
+3. [OUT] •Ï”@F@matnum
+@@ƒgƒD[ƒ“ƒ}ƒeƒŠƒAƒ‹‚Ì”‚ª‘ã“ü‚³‚ê‚Ü‚·B
+
+
+
+ƒo[ƒWƒ‡ƒ“ : ver5.2.2.5‚Å’Ç‰Á
+
+%index
+E3DGetToon1Material
+ƒgƒD[ƒ“ƒ}ƒeƒŠƒAƒ‹‚Ìî•ñ‚ðƒp[ƒc‚²‚Æ‚ÉˆêŠ‡Žæ“¾‚µ‚Ü‚·B
+%group
+Easy3D For HSP3 : ƒ}ƒeƒŠƒAƒ‹
+
+%prm
+p1,p2,p3,p4,p5,p6
+p1 : [IN] •Ï”‚Ü‚½‚ÍA”’l@F@hsid
+p2 : [IN] •Ï”‚Ü‚½‚ÍA”’l@F@partno
+p3 : [OUT] •¶Žš—ñŒ^”z—ñ‚Ì•Ï”@F@matname
+p4 : [OUT] ”z—ñ‚Ì•Ï”@F@dinfo
+p5 : [OUT] ”z—ñ‚Ì•Ï”@F@iinfo
+p6 : [IN] •Ï”‚Ü‚½‚ÍA”’l@F@arrayleng
+
+%inst
+ƒgƒD[ƒ“ƒ}ƒeƒŠƒAƒ‹‚Ìî•ñ‚ðƒp[ƒc‚²‚Æ‚ÉˆêŠ‡Žæ“¾‚µ‚Ü‚·B
+
+E3DGetToon1MaterialNum‚ÅŽæ“¾‚µ‚½ƒ}ƒeƒŠƒAƒ‹‚Ì”‚ðmatnum‚Æ‚·‚é‚ÆA
+
+matname‚Í
+sdim matname, 32, matnum
+dinfoiŽÀ”ƒf[ƒ^j‚Í
+ddim dinfo, TMD_MAX, matnum
+iinfoi®”ƒf[ƒ^j‚Í
+dim iinfo, TMI_MAX,, matnum
+‚Ì‚æ‚¤‚Éì¬‚µ‚Ü‚·B
+
+TMD_ATMI_‚ÅŽn‚Ü‚é’è”‚Íe3dhsp3.as‚Å’è‹`‚³‚ê‚Ä‚¢‚Ü‚·B
+TMD_DIFFUSE_RA
+TMD_DIFFUSE_GA
+TMD_DIFFUSE_B‚ÍƒgƒD[ƒ“‚ÌdiffuseF‚ÌRGB
+
+TMD_SPECULAR_RA
+TMD_SPECULAR_GA
+TMD_SPECULAR_B‚ÍƒgƒD[ƒ“‚ÌspecularF‚ÌRGB
+
+TMD_AMBIENT_RA
+TMD_AMBIENT_GA
+TMD_AMBIENT_B‚ÍƒgƒD[ƒ“‚ÌambientF‚ÌRGB
+
+TMD_DARKNL
+TMD_BRIGHTNL‚Í‰A‚âƒnƒCƒ‰ƒCƒg‚Ì‘å‚«‚³‚Ìè‡’liÚ‚µ‚­‚ÍE3DSetToon1NL‚Ìà–¾‚ð‚¨“Ç‚Ý‚­‚¾‚³‚¢j
+
+TMD_EDGECOL0_RA
+TMD_EDGECOL0_GA
+TMD_EDGECOL0_B‚Í—ÖŠsü‚ÌF‚ÌRGB
+
+TMD_EDGEWIDTH0‚Í—ÖŠsü‚Ì•
+
+TMD_MAX‚Ídinfo‚Ì—v‘f”
+‚Ö‚ÌƒCƒ“ƒfƒbƒNƒX‚Å‚·B
+
+
+TMI_VALID0‚Í—ÖŠsü‚Ì—LŒø–³Œø‚Ìƒtƒ‰ƒO
+
+TMI_INV0‚Í—ÖŠsü‚Ì”½“]ƒtƒ‰ƒO
+
+TMI_MAX‚Íiinfo‚Ì—v‘f”
+‚Ö‚ÌƒCƒ“ƒfƒbƒNƒX‚Å‚·B
+
+
+
+
+
+¨ˆø”
+1. [IN] •Ï”‚Ü‚½‚ÍA”’l@F@hsid
+@@ƒ‚ƒfƒ‹‚ðŽ¯•Ê‚·‚é”Ô†‚ðŽw’è‚µ‚Ä‚­‚¾‚³‚¢B
+
+2. [IN] •Ï”‚Ü‚½‚ÍA”’l@F@partno
+@@ƒp[ƒc‚ðŽ¯•Ê‚·‚é”Ô†‚ðŽw’è‚µ‚Ä‚­‚¾‚³‚¢B
+@@E3DGetDispObjInfo‚ÅŽæ“¾‚µ‚½•\Ž¦ƒIƒuƒWƒFƒNƒg‚ÌID‚ðŽw’è‚µ‚Ä‚­‚¾‚³‚¢B
+
+3. [OUT] •¶Žš—ñŒ^”z—ñ‚Ì•Ï”@F@matname
+@@ƒgƒD[ƒ“ƒ}ƒeƒŠƒAƒ‹‚Ì–¼‘O‚ª‘ã“ü‚³‚ê‚Ü‚·B
+@@Ú‚µ‚­‚Í‘O‹L‚ð‚²——‚­‚¾‚³‚¢B
+
+4. [OUT] ”z—ñ‚Ì•Ï”@F@dinfo
+@@ŽÀ”Œ^‚Ì”z—ñ‚Ì•Ï”B
+@@ƒgƒD[ƒ“ƒ}ƒeƒŠƒAƒ‹‚ÌŽÀ”î•ñ‚ª‘ã“ü‚³‚ê‚Ü‚·B
+@@Ú‚µ‚­‚Í‘O‹L‚ð‚²——‚­‚¾‚³‚¢B
+
+5. [OUT] ”z—ñ‚Ì•Ï”@F@iinfo
+@@®”Œ^‚Ì”z—ñ‚Ì•Ï”B
+@@ƒgƒD[ƒ“ƒ}ƒeƒŠƒAƒ‹‚Ì®”î•ñ‚ª‘ã“ü‚³‚ê‚Ü‚·B
+@@Ú‚µ‚­‚Í‘O‹L‚ð‚²——‚­‚¾‚³‚¢B
+
+6. [IN] •Ï”‚Ü‚½‚ÍA”’l@F@arrayleng
+@@toon1ptr‚ðì¬‚µ‚½‚Æ‚«‚Ì—v‘f”‚ðŽw’è‚µ‚Ü‚·B
+@@E3DGetToon1MaterialNum‚ÅŽæ“¾‚Å‚«‚ématnum‚ÆˆÙ‚È‚é‚ÆƒGƒ‰[‚É‚È‚è‚Ü‚·B
+
+
+
+ƒo[ƒWƒ‡ƒ“ : ver5.2.2.5‚Å’Ç‰Á
+
+%index
+E3DSetToon1Name
+ƒgƒD[ƒ“ƒ}ƒeƒŠƒAƒ‹‚Ì–¼‘O‚ð•ÏX‚µ‚Ü‚·B
+%group
+Easy3D For HSP3 : ƒ}ƒeƒŠƒAƒ‹
+
+%prm
+p1,p2,p3,p4
+p1 : [IN] •Ï”‚Ü‚½‚ÍA”’l@F@hsid
+p2 : [IN] •Ï”‚Ü‚½‚ÍA”’l@F@partno
+p3 : [IN] •¶Žš—ñ‚Ü‚½‚Í•¶Žš—ñ‚Ì•Ï”@F@oldname
+p4 : [IN] •¶Žš—ñ‚Ü‚½‚Í•¶Žš—ñ‚Ì•Ï”@F@newname
+
+%inst
+ƒgƒD[ƒ“ƒ}ƒeƒŠƒAƒ‹‚Ì–¼‘O‚ð•ÏX‚µ‚Ü‚·B
+
+
+
+
+¨ˆø”
+1. [IN] •Ï”‚Ü‚½‚ÍA”’l@F@hsid
+@@ƒ‚ƒfƒ‹‚ðŽ¯•Ê‚·‚é”Ô†‚ðŽw’è‚µ‚Ä‚­‚¾‚³‚¢B
+
+2. [IN] •Ï”‚Ü‚½‚ÍA”’l@F@partno
+@@ƒp[ƒc‚ðŽ¯•Ê‚·‚é”Ô†‚ðŽw’è‚µ‚Ä‚­‚¾‚³‚¢B
+@@E3DGetDispObjInfo‚ÅŽæ“¾‚µ‚½•\Ž¦ƒIƒuƒWƒFƒNƒg‚ÌID‚ðŽw’è‚µ‚Ä‚­‚¾‚³‚¢B
+
+3. [IN] •¶Žš—ñ‚Ü‚½‚Í•¶Žš—ñ‚Ì•Ï”@F@oldname
+@@–¼‘O‚ð•Ï‚¦‚½‚¢ƒgƒD[ƒ“ƒ}ƒeƒŠƒAƒ‹‚ÌŒ³‚Ì–¼‘O
+
+4. [IN] •¶Žš—ñ‚Ü‚½‚Í•¶Žš—ñ‚Ì•Ï”@F@newname
+@@ƒgƒD[ƒ“ƒ}ƒeƒŠƒAƒ‹‚ÌV‚µ‚¢–¼‘OB
+@@–¼‘O‚Ì’·‚³‚Í‚R‚PƒoƒCƒg‚Ü‚Å‚Å‚·B
+
+
+ƒo[ƒWƒ‡ƒ“ : ver5.2.2.5‚Å’Ç‰Á
+
+%index
+E3DSetToon1Diffuse
+ƒgƒD[ƒ“ƒ}ƒeƒŠƒAƒ‹‚ÌDiffuseF‚ðÝ’è‚µ‚Ü‚·B
+%group
+Easy3D For HSP3 : ƒ}ƒeƒŠƒAƒ‹
+
+%prm
+p1,p2,p3,p4
+p1 : [IN] •Ï”‚Ü‚½‚ÍA”’l@F@hsid
+p2 : [IN] •Ï”‚Ü‚½‚ÍA”’l@F@partno
+p3 : [IN] •¶Žš—ñ‚Ü‚½‚Í•¶Žš—ñ‚Ì•Ï”@F@matname
+p4 : [IN] ”z—ñ‚Ì•Ï”@F@col
+
+%inst
+ƒgƒD[ƒ“ƒ}ƒeƒŠƒAƒ‹‚ÌDiffuseF‚ðÝ’è‚µ‚Ü‚·B
+ƒ‰ƒCƒg‚ª“–‚½‚Á‚½–¾‚é‚¢•”•ª‚ÌF‚Å‚·B
+
+
+
+
+¨ˆø”
+1. [IN] •Ï”‚Ü‚½‚ÍA”’l@F@hsid
+@@ƒ‚ƒfƒ‹‚ðŽ¯•Ê‚·‚é”Ô†‚ðŽw’è‚µ‚Ä‚­‚¾‚³‚¢B
+
+2. [IN] •Ï”‚Ü‚½‚ÍA”’l@F@partno
+@@ƒp[ƒc‚ðŽ¯•Ê‚·‚é”Ô†‚ðŽw’è‚µ‚Ä‚­‚¾‚³‚¢B
+@@E3DGetDispObjInfo‚ÅŽæ“¾‚µ‚½•\Ž¦ƒIƒuƒWƒFƒNƒg‚ÌID‚ðŽw’è‚µ‚Ä‚­‚¾‚³‚¢B
+
+3. [IN] •¶Žš—ñ‚Ü‚½‚Í•¶Žš—ñ‚Ì•Ï”@F@matname
+@@ƒgƒD[ƒ“ƒ}ƒeƒŠƒAƒ‹‚Ì–¼‘O
+
+4. [IN] ”z—ñ‚Ì•Ï”@F@col
+@@ŽÀ”Œ^‚Ì”z—ñ•Ï”B
+@@diffuseFB
+@@ddim col, 3‚Åì¬‚µ‚Ä‚­‚¾‚³‚¢B
+@@col(0)‚ÉRAcol(1)‚ÉGAcol(2)‚ÉB¬•ª‚ðƒZƒbƒg‚µ‚Ä‚©‚çŒÄ‚Ño‚µ‚Ü‚·B
+B
+
+
+ƒo[ƒWƒ‡ƒ“ : ver5.2.2.5‚Å’Ç‰Á
+
+%index
+E3DSetToon1Specular
+ƒgƒD[ƒ“ƒ}ƒeƒŠƒAƒ‹‚ÌSpecularF‚ðÝ’è‚µ‚Ü‚·B
+%group
+Easy3D For HSP3 : ƒ}ƒeƒŠƒAƒ‹
+
+%prm
+p1,p2,p3,p4
+p1 : [IN] •Ï”‚Ü‚½‚ÍA”’l@F@hsid
+p2 : [IN] •Ï”‚Ü‚½‚ÍA”’l@F@partno
+p3 : [IN] •¶Žš—ñ‚Ü‚½‚Í•¶Žš—ñ‚Ì•Ï”@F@matname
+p4 : [IN] ”z—ñ‚Ì•Ï”@F@col
+
+%inst
+ƒgƒD[ƒ“ƒ}ƒeƒŠƒAƒ‹‚ÌSpecularF‚ðÝ’è‚µ‚Ü‚·B
+ƒnƒCƒ‰ƒCƒg‚Ì•”•ª‚ÌF‚Å‚·B
+
+
+
+
+¨ˆø”
+1. [IN] •Ï”‚Ü‚½‚ÍA”’l@F@hsid
+@@ƒ‚ƒfƒ‹‚ðŽ¯•Ê‚·‚é”Ô†‚ðŽw’è‚µ‚Ä‚­‚¾‚³‚¢B
+
+2. [IN] •Ï”‚Ü‚½‚ÍA”’l@F@partno
+@@ƒp[ƒc‚ðŽ¯•Ê‚·‚é”Ô†‚ðŽw’è‚µ‚Ä‚­‚¾‚³‚¢B
+@@E3DGetDispObjInfo‚ÅŽæ“¾‚µ‚½•\Ž¦ƒIƒuƒWƒFƒNƒg‚ÌID‚ðŽw’è‚µ‚Ä‚­‚¾‚³‚¢B
+
+3. [IN] •¶Žš—ñ‚Ü‚½‚Í•¶Žš—ñ‚Ì•Ï”@F@matname
+@@ƒgƒD[ƒ“ƒ}ƒeƒŠƒAƒ‹‚Ì–¼‘O
+
+4. [IN] ”z—ñ‚Ì•Ï”@F@col
+@@ŽÀ”Œ^‚Ì”z—ñ•Ï”B
+@@specularFB
+@@ddim col, 3‚Åì¬‚µ‚Ä‚­‚¾‚³‚¢B
+@@col(0)‚ÉRAcol(1)‚ÉGAcol(2)‚ÉB¬•ª‚ðƒZƒbƒg‚µ‚Ä‚©‚çŒÄ‚Ño‚µ‚Ü‚·B
+B
+
+
+ƒo[ƒWƒ‡ƒ“ : ver5.2.2.5‚Å’Ç‰Á
+
+%index
+E3DSetToon1Ambient
+ƒgƒD[ƒ“ƒ}ƒeƒŠƒAƒ‹‚ÌAmbientF‚ðÝ’è‚µ‚Ü‚·B
+%group
+Easy3D For HSP3 : ƒ}ƒeƒŠƒAƒ‹
+
+%prm
+p1,p2,p3,p4
+p1 : [IN] •Ï”‚Ü‚½‚ÍA”’l@F@hsid
+p2 : [IN] •Ï”‚Ü‚½‚ÍA”’l@F@partno
+p3 : [IN] •¶Žš—ñ‚Ü‚½‚Í•¶Žš—ñ‚Ì•Ï”@F@matname
+p4 : [IN] ”z—ñ‚Ì•Ï”@F@col
+
+%inst
+ƒgƒD[ƒ“ƒ}ƒeƒŠƒAƒ‹‚ÌAmbientF‚ðÝ’è‚µ‚Ü‚·B
+ƒ‰ƒCƒg‚ª“–‚½‚ç‚È‚¢ˆÃ‚¢•”•ª‚ÌF‚Å‚·B
+
+
+
+¨ˆø”
+1. [IN] •Ï”‚Ü‚½‚ÍA”’l@F@hsid
+@@ƒ‚ƒfƒ‹‚ðŽ¯•Ê‚·‚é”Ô†‚ðŽw’è‚µ‚Ä‚­‚¾‚³‚¢B
+
+2. [IN] •Ï”‚Ü‚½‚ÍA”’l@F@partno
+@@ƒp[ƒc‚ðŽ¯•Ê‚·‚é”Ô†‚ðŽw’è‚µ‚Ä‚­‚¾‚³‚¢B
+@@E3DGetDispObjInfo‚ÅŽæ“¾‚µ‚½•\Ž¦ƒIƒuƒWƒFƒNƒg‚ÌID‚ðŽw’è‚µ‚Ä‚­‚¾‚³‚¢B
+
+3. [IN] •¶Žš—ñ‚Ü‚½‚Í•¶Žš—ñ‚Ì•Ï”@F@matname
+@@ƒgƒD[ƒ“ƒ}ƒeƒŠƒAƒ‹‚Ì–¼‘O
+
+4. [IN] ”z—ñ‚Ì•Ï”@F@col
+@@ŽÀ”Œ^‚Ì”z—ñ•Ï”B
+@@ambientFB
+@@ddim col, 3‚Åì¬‚µ‚Ä‚­‚¾‚³‚¢B
+@@col(0)‚ÉRAcol(1)‚ÉGAcol(2)‚ÉB¬•ª‚ðƒZƒbƒg‚µ‚Ä‚©‚çŒÄ‚Ño‚µ‚Ü‚·B
+
+
+
+ƒo[ƒWƒ‡ƒ“ : ver5.2.2.5‚Å’Ç‰Á
+
+%index
+E3DSetToon1NL
+ƒgƒD[ƒ“•\Ž¦‚Ìdiffuse, specular, ambient‚ÌŠ„‡‚ðŒˆ‚ß‚é‚½‚ß‚ÌŒW”‚ðÝ’è‚µ‚Ü‚·B
+%group
+Easy3D For HSP3 : ƒ}ƒeƒŠƒAƒ‹
+
+%prm
+p1,p2,p3,p4,p5
+p1 : [IN] •Ï”‚Ü‚½‚ÍA”’l@F@hsid
+p2 : [IN] •Ï”‚Ü‚½‚ÍA”’l@F@partno
+p3 : [IN] •¶Žš—ñ‚Ü‚½‚Í•¶Žš—ñ‚Ì•Ï”@F@matname
+p4 : [IN] •Ï”‚Ü‚½‚ÍA”’l@F@darknl
+p5 : [IN] •Ï”‚Ü‚½‚ÍA”’l@F@brightnl
+
+%inst
+ƒgƒD[ƒ“•\Ž¦‚Ìdiffuse, specular, ambient‚ÌŠ„‡‚ðŒˆ‚ß‚é‚½‚ß‚ÌŒW”‚ðÝ’è‚µ‚Ü‚·B
+
+F‚ÌŠ„‡‚Í–Ê‚Ì–@ü‚Æƒ‰ƒCƒg‚Ì”½“]ƒxƒNƒgƒ‹‚Æ‚Ì‚È‚·Šp“xidegj‚ÅŒˆ’è‚µ‚Ü‚·B
+ˆÃ‚¢F‚ÌŠp“x‚Ìè‡’l‚ðdarkdeg, ƒnƒCƒ‰ƒCƒg‚ÌŠp“x‚Ìè‡’l‚ðbrightdeg‚Æ‚µ‚Ü‚·B
+deg‚ªdarkdeg‚æ‚è‘å‚«‚¢Šp“x‚Ì•”•ª‚ÍˆÃ‚¢F(ambient)‚Å“h‚è‚Ü‚·B
+deg‚ªbrightdeg‚æ‚è¬‚³‚¢Šp“x‚Ìê‡‚ÍƒnƒCƒ‰ƒCƒgispecularj‚Å“h‚è‚Ü‚·B
+‚»‚êˆÈŠO‚Ì•”•ª‚Í–¾‚é‚¢F(diffuse)‚Å“h‚è‚Ü‚·B
+darkdeg &gt;= brightdeg‚Å‚È‚¢‚Æ‚¢‚¯‚Ü‚¹‚ñB
+ƒsƒ“‚Æ‚±‚È‚¢•û‚ÍRokDeBone2‚ÅuƒgƒDvƒ{ƒ^ƒ“‚ð‰Ÿ‚µ‚Ädarkdeg‚Æbrightdeg‚ðÝ’è‚·‚éƒXƒ‰ƒCƒ_[‚ð“®‚©‚µ‚Ä‚Ý‚Ä—‰ð‚µ‚Ä‚­‚¾‚³‚¢B
+
+RokDeBone2“à•”‚Å‚Í‚±‚ê‚ç‚Ìè‡’l‚ÍŠp“x‚Å‚Í‚È‚­‚Äcos‚Ì’l‚Å•ÛŽ‚µ‚Ä‚¢‚Ü‚·B
+‚»‚Ì‚½‚ß‚±‚Ì–½—ß‚É“n‚·’l‚àcos( darkdeg * DEG2PAI )‚Æcos( brightdeg * DEG2PAI )‚ð“n‚µ‚Ä‚­‚¾‚³‚¢B
+DEG2PAI‚Íu“xv‚ðuƒ‰ƒWƒAƒ“v‚É•ÏŠ·‚·‚é‚½‚ß‚Ì’è”‚Å‚·B
+
+
+
+
+¨ˆø”
+1. [IN] •Ï”‚Ü‚½‚ÍA”’l@F@hsid
+@@ƒ‚ƒfƒ‹‚ðŽ¯•Ê‚·‚é”Ô†‚ðŽw’è‚µ‚Ä‚­‚¾‚³‚¢B
+
+2. [IN] •Ï”‚Ü‚½‚ÍA”’l@F@partno
+@@ƒp[ƒc‚ðŽ¯•Ê‚·‚é”Ô†‚ðŽw’è‚µ‚Ä‚­‚¾‚³‚¢B
+@@E3DGetDispObjInfo‚ÅŽæ“¾‚µ‚½•\Ž¦ƒIƒuƒWƒFƒNƒg‚ÌID‚ðŽw’è‚µ‚Ä‚­‚¾‚³‚¢B
+
+3. [IN] •¶Žš—ñ‚Ü‚½‚Í•¶Žš—ñ‚Ì•Ï”@F@matname
+@@ƒgƒD[ƒ“ƒ}ƒeƒŠƒAƒ‹‚Ì–¼‘O
+
+4. [IN] •Ï”‚Ü‚½‚ÍA”’l@F@darknl
+@@ŽÀ”B
+@@cos( darkdeg * DEG2PAI )‚ðŽw’è‚µ‚Ä‚­‚¾‚³‚¢B
+@@Ú‚µ‚­‚Í‘O‹L‚ð‚²——‚­‚¾‚³‚¢B
+
+5. [IN] •Ï”‚Ü‚½‚ÍA”’l@F@brightnl
+@@ŽÀ”B
+@@cos( brightdeg * DEG2PAI )‚ðŽw’è‚µ‚Ä‚­‚¾‚³‚¢B
+@@Ú‚µ‚­‚Í‘O‹L‚ð‚²——‚­‚¾‚³‚¢B
+
+
+
+ƒo[ƒWƒ‡ƒ“ : ver5.2.2.5‚Å’Ç‰Á
+
+%index
+E3DSetToon1Edge0
+ƒgƒD[ƒ“ƒ}ƒeƒŠƒAƒ‹‚ÌƒGƒbƒWi—ÖŠsüj‚Ìƒpƒ‰ƒ[ƒ^‚ðÝ’è‚µ‚Ü‚·B
+%group
+Easy3D For HSP3 : ƒ}ƒeƒŠƒAƒ‹
+
+%prm
+p1,p2,p3,p4,p5,p6,p7
+p1 : [IN] •Ï”‚Ü‚½‚ÍA”’l@F@hsid
+p2 : [IN] •Ï”‚Ü‚½‚ÍA”’l@F@partno
+p3 : [IN] •¶Žš—ñ‚Ü‚½‚Í•¶Žš—ñ‚Ì•Ï”@F@matname
+p4 : [IN] •Ï”@F@col
+p5 : [IN] •Ï”‚Ü‚½‚ÍA”’l@F@validflag
+p6 : [IN] •Ï”‚Ü‚½‚ÍA”’l@F@invflag
+p7 : [IN] •Ï”‚Ü‚½‚ÍA”’l@F@width
+
+%inst
+ƒgƒD[ƒ“ƒ}ƒeƒŠƒAƒ‹‚ÌƒGƒbƒWi—ÖŠsüj‚Ìƒpƒ‰ƒ[ƒ^‚ðÝ’è‚µ‚Ü‚·B
+
+
+
+
+¨ˆø”
+1. [IN] •Ï”‚Ü‚½‚ÍA”’l@F@hsid
+@@ƒ‚ƒfƒ‹‚ðŽ¯•Ê‚·‚é”Ô†‚ðŽw’è‚µ‚Ä‚­‚¾‚³‚¢B
+
+2. [IN] •Ï”‚Ü‚½‚ÍA”’l@F@partno
+@@ƒp[ƒc‚ðŽ¯•Ê‚·‚é”Ô†‚ðŽw’è‚µ‚Ä‚­‚¾‚³‚¢B
+@@E3DGetDispObjInfo‚ÅŽæ“¾‚µ‚½•\Ž¦ƒIƒuƒWƒFƒNƒg‚ÌID‚ðŽw’è‚µ‚Ä‚­‚¾‚³‚¢B
+
+3. [IN] •¶Žš—ñ‚Ü‚½‚Í•¶Žš—ñ‚Ì•Ï”@F@matname
+@@ƒgƒD[ƒ“ƒ}ƒeƒŠƒAƒ‹‚Ì–¼‘O
+
+4. [IN] •Ï”@F@col
+@@—ÖŠsü‚ÌFB
+@@ŽÀ”Œ^‚Ì”z—ñ•Ï”B
+@@ddim col, 3‚Åì¬‚µ‚Ä‚­‚¾‚³‚¢B
+@@col(0)‚ÉRAcol(1)‚ÉGAcol(2)‚ÉB¬•ª‚ðƒZƒbƒg‚µ‚Ä‚©‚çŒÄ‚Ño‚µ‚Ü‚·B
+
+5. [IN] •Ï”‚Ü‚½‚ÍA”’l@F@validflag
+@@—ÖŠsü‚ð•\Ž¦‚·‚é‚Æ‚«‚Í‚PB‚µ‚È‚¢‚Æ‚«‚Í‚OB
+
+6. [IN] •Ï”‚Ü‚½‚ÍA”’l@F@invflag
+@@—ÖŠsü—p‚Ì–Ê‚ÌŒü‚«‚ð”½“]‚·‚é‚Æ‚«‚Í‚PB‚µ‚È‚¢‚Æ‚«‚Í‚OB’Êí‚Í‚OB
+@@—¼–ÊƒIƒuƒWƒFƒNƒg‚Ì’²®—pB
+
+7. [IN] •Ï”‚Ü‚½‚ÍA”’l@F@width
+@@ŽÀ”B
+@@—ÖŠsü‚Ì•B
+
+
+ƒo[ƒWƒ‡ƒ“ : ver5.2.2.5‚Å’Ç‰Á
+
+%index
+E3DLoadCameraFile
+RokDeBone2‚Åì¬‚µ‚½ƒJƒƒ‰ƒtƒ@ƒCƒ‹i*.camj‚ð“Ç‚Ýž‚Ý
+ƒAƒjƒ”Ô†‚ðŽæ“¾‚µ‚Ü‚·B
+%group
+Easy3D For HSP3 : ƒJƒƒ‰
+
+%prm
+p1,p2
+p1 : [IN] •¶Žš—ñ‚Ü‚½‚ÍA•¶Žš—ñ‚Ì•Ï”@F@filename
+p2 : [OUT] •Ï”@F@animno
+
+%inst
+RokDeBone2‚Åì¬‚µ‚½ƒJƒƒ‰ƒtƒ@ƒCƒ‹i*.camj‚ð“Ç‚Ýž‚Ý
+ƒAƒjƒ”Ô†‚ðŽæ“¾‚µ‚Ü‚·B
+
+
+
+¨ˆø”
+1. [IN] •¶Žš—ñ‚Ü‚½‚ÍA•¶Žš—ñ‚Ì•Ï”@F@filename
+@@ƒJƒƒ‰ƒtƒ@ƒCƒ‹‚Ìƒtƒ@ƒCƒ‹–¼‚ðƒtƒ‹ƒpƒX‚ÅŽw’è‚µ‚Ä‚­‚¾‚³‚¢B
+
+2. [OUT] •Ï”@F@animno
+@@“Ç‚Ýž‚ñ‚¾ƒAƒjƒ‚ðŽ¯•Ê‚·‚éƒAƒjƒ”Ô†‚ª‘ã“ü‚³‚ê‚Ü‚·B
+
+
+
+
+
+ƒo[ƒWƒ‡ƒ“ : ver5.2.2.7‚Å’Ç‰Á
+
+%index
+E3DDestroyCameraAnim
+ƒJƒƒ‰ƒAƒjƒ‚ð”jŠü‚µ‚Ü‚·B
+%group
+Easy3D For HSP3 : ƒJƒƒ‰
+
+%prm
+p1
+p1 : [IN] •Ï”‚Ü‚½‚ÍA”’l@F@animno
+
+%inst
+ƒJƒƒ‰ƒAƒjƒ‚ð”jŠü‚µ‚Ü‚·B
+
+
+
+
+¨ˆø”
+1. [IN] •Ï”‚Ü‚½‚ÍA”’l@F@animno
+@@ƒJƒƒ‰ƒAƒjƒ‚ðŽ¯•Ê‚·‚é”Ô†‚ðŽw’è‚µ‚Ä‚­‚¾‚³‚¢B
+
+
+
+ƒo[ƒWƒ‡ƒ“ : ver5.2.2.7‚Å’Ç‰Á
+
+%index
+E3DSaveCameraFile
+ƒJƒƒ‰ƒAƒjƒ‚ðƒeƒLƒXƒgƒtƒ@ƒCƒ‹‚É•Û‘¶‚µ‚Ü‚·B
+%group
+Easy3D For HSP3 : ƒJƒƒ‰
+
+%prm
+p1,p2
+p1 : [IN] •¶Žš—ñ‚Ü‚½‚ÍA•¶Žš—ñ‚Ì•Ï”@F@filename
+p2 : [IN] •Ï”‚Ü‚½‚ÍA”’l@F@animno
+
+%inst
+ƒJƒƒ‰ƒAƒjƒ‚ðƒeƒLƒXƒgƒtƒ@ƒCƒ‹‚É•Û‘¶‚µ‚Ü‚·B
+
+
+¨ˆø”
+1. [IN] •¶Žš—ñ‚Ü‚½‚ÍA•¶Žš—ñ‚Ì•Ï”@F@filename
+@@ƒJƒƒ‰ƒtƒ@ƒCƒ‹‚Ìƒtƒ@ƒCƒ‹–¼‚ðƒtƒ‹ƒpƒX‚ÅŽw’è‚µ‚Ä‚­‚¾‚³‚¢B
+
+2. [IN] •Ï”‚Ü‚½‚ÍA”’l@F@animno
+@@ƒJƒƒ‰ƒAƒjƒ‚ðŽ¯•Ê‚·‚é”Ô†‚ðŽw’è‚µ‚Ä‚­‚¾‚³‚¢B
+
+
+
+
+ƒo[ƒWƒ‡ƒ“ : ver5.2.2.7‚Å’Ç‰Á
+
+%index
+E3DSetCameraAnimNo
+ƒJƒŒƒ“ƒg‚ÌƒJƒƒ‰ƒAƒjƒ”Ô†‚ðƒZƒbƒg‚µ‚Ü‚·B
+%group
+Easy3D For HSP3 : ƒJƒƒ‰
+
+%prm
+p1
+p1 : [IN] •Ï”‚Ü‚½‚ÍA”’l@F@animno
+
+%inst
+ƒJƒŒƒ“ƒg‚ÌƒJƒƒ‰ƒAƒjƒ”Ô†‚ðƒZƒbƒg‚µ‚Ü‚·B
+ƒtƒŒ[ƒ€”Ô†‚Í‚O‚É–ß‚è‚Ü‚·B
+
+
+
+¨ˆø”
+1. [IN] •Ï”‚Ü‚½‚ÍA”’l@F@animno
+@@ƒJƒƒ‰ƒAƒjƒ‚ðŽ¯•Ê‚·‚é”Ô†‚ðŽw’è‚µ‚Ä‚­‚¾‚³‚¢B
+
+
+
+ƒo[ƒWƒ‡ƒ“ : ver5.2.2.7‚Å’Ç‰Á
+
+%index
+E3DGetCameraAnimNo
+ƒJƒŒƒ“ƒg‚ÌƒJƒƒ‰ƒAƒjƒ”Ô†‚ðŽæ“¾‚µ‚Ü‚·B
+%group
+Easy3D For HSP3 : ƒJƒƒ‰
+
+%prm
+p1
+p1 : [OUT] •Ï”@F@animno
+
+%inst
+ƒJƒŒƒ“ƒg‚ÌƒJƒƒ‰ƒAƒjƒ”Ô†‚ðŽæ“¾‚µ‚Ü‚·B
+
+
+
+
+¨ˆø”
+1. [OUT] •Ï”@F@animno
+@@ƒJƒƒ‰ƒAƒjƒ‚ðŽ¯•Ê‚·‚é”Ô†‚ª‘ã“ü‚³‚ê‚Ü‚·B
+
+
+
+ƒo[ƒWƒ‡ƒ“ : ver5.2.2.7‚Å’Ç‰Á
+
+%index
+E3DSetCameraFrameNo
+Ä¶‚·‚éƒJƒƒ‰ƒAƒjƒ‚ÌƒAƒjƒ”Ô†‚ÆƒJƒƒ‰”Ô†‚ÆƒtƒŒ[ƒ€”Ô†‚ðÝ’è‚µ‚Ü‚·B
+%group
+Easy3D For HSP3 : ƒJƒƒ‰
+
+%prm
+p1,p2,p3,p4
+p1 : [IN] •Ï”‚Ü‚½‚ÍA”’l@F@animno
+p2 : [IN] •Ï”‚Ü‚½‚ÍA”’l@F@camerano
+p3 : [IN] •Ï”‚Ü‚½‚ÍA”’l@F@frameno
+p4 : [IN] •Ï”‚Ü‚½‚ÍA”’l@F@isfirst
+
+%inst
+Ä¶‚·‚éƒJƒƒ‰ƒAƒjƒ‚ÌƒAƒjƒ”Ô†‚ÆƒJƒƒ‰”Ô†‚ÆƒtƒŒ[ƒ€”Ô†‚ðÝ’è‚µ‚Ü‚·B
+
+
+¨ˆø”
+1. [IN] •Ï”‚Ü‚½‚ÍA”’l@F@animno
+@@ƒJƒƒ‰ƒAƒjƒ‚ðŽ¯•Ê‚·‚é”Ô†‚ðŽw’è‚µ‚Ä‚­‚¾‚³‚¢B
+
+2. [IN] •Ï”‚Ü‚½‚ÍA”’l@F@camerano
+@@ƒJƒƒ‰”Ô†‚ðŽw’è‚µ‚Ü‚·i‚O‚©‚ç‚QjB
+@@ƒJƒƒ‰”Ô†‚É-1‚ðŽw’è‚·‚é‚ÆƒJƒƒ‰‚ÌƒXƒCƒbƒ`ƒL[‚ÉŠî‚Ã‚¢‚ÄƒJƒƒ‰‚ðØ‚è‘Ö‚¦Ä¶‚µ‚Ü‚·B
+
+3. [IN] •Ï”‚Ü‚½‚ÍA”’l@F@frameno
+@@ƒtƒŒ[ƒ€”Ô†‚ðŽw’è‚µ‚Ä‚­‚¾‚³‚¢B
+
+4. [IN] •Ï”‚Ü‚½‚ÍA”’l@F@isfirst
+@@‚±‚Ì–½—ß‚ðŒÄ‚ñ‚¾Œã‚ÉE3DSetNewCamera‚ðŒÄ‚Ño‚·ê‡‚Í‚P‚ðAŒÄ‚Ño‚³‚È‚¢ê‡‚Í‚O‚ðŽw’è‚µ‚Ü‚·B
+
+
+
+
+ƒo[ƒWƒ‡ƒ“ : ver5.2.2.7‚Å’Ç‰Á
+
+%index
+E3DGetCameraFrameNo
+Œ»ÝÄ¶’†‚ÌƒJƒƒ‰ƒAƒjƒ‚ÌƒAƒjƒ”Ô†AƒJƒƒ‰”Ô†AƒtƒŒ[ƒ€”Ô†‚ðŽæ“¾‚µ‚Ü‚·B
+%group
+Easy3D For HSP3 : ƒJƒƒ‰
+
+%prm
+p1,p2,p3
+p1 : [OUT] •Ï”@F@animno
+p2 : [OUT] •Ï”@F@camerano
+p3 : [OUT] •Ï”@F@frameno
+
+%inst
+Œ»ÝÄ¶’†‚ÌƒJƒƒ‰ƒAƒjƒ‚ÌƒAƒjƒ”Ô†AƒJƒƒ‰”Ô†AƒtƒŒ[ƒ€”Ô†‚ðŽæ“¾‚µ‚Ü‚·B
+
+
+¨ˆø”
+1. [OUT] •Ï”@F@animno
+@@ƒJƒƒ‰ƒAƒjƒ‚ðŽ¯•Ê‚·‚é”Ô†‚ª‘ã“ü‚³‚ê‚Ü‚·B
+
+2. [OUT] •Ï”@F@camerano
+@@ƒJƒƒ‰”Ô†‚ª‘ã“ü‚³‚ê‚Ü‚·B
+
+3. [OUT] •Ï”@F@frameno
+@@ƒtƒŒ[ƒ€”Ô†‚ª‘ã“ü‚³‚ê‚Ü‚·B
+
+
+
+ƒo[ƒWƒ‡ƒ“ : ver5.2.2.7‚Å’Ç‰Á
+
+%index
+E3DSetNewCamera
+ƒJƒƒ‰‚ÌƒtƒŒ[ƒ€‚ðƒAƒjƒƒ^ƒCƒv‚É]‚Á‚Äi‚ßAV‚µ‚¢ƒJƒƒ‰î•ñ‚ðƒZƒbƒg‚µ‚Ü‚·B
+%group
+Easy3D For HSP3 : ƒJƒƒ‰
+
+%prm
+p1
+p1 : [IN] •Ï”‚Ü‚½‚ÍA”’l@F@camerano
+
+%inst
+ƒJƒƒ‰‚ÌƒtƒŒ[ƒ€‚ðƒAƒjƒƒ^ƒCƒv‚É]‚Á‚Äi‚ßAV‚µ‚¢ƒJƒƒ‰î•ñ‚ðƒZƒbƒg‚µ‚Ü‚·B
+
+
+¨ˆø”
+1. [IN] •Ï”‚Ü‚½‚ÍA”’l@F@camerano
+@@ƒJƒƒ‰”Ô†‚ðŽw’è‚µ‚Ü‚·i‚O‚©‚ç‚QjB
+@@ƒJƒƒ‰”Ô†‚É-1‚ðŽw’è‚·‚é‚ÆƒJƒƒ‰‚ÌƒXƒCƒbƒ`ƒL[‚ÉŠî‚Ã‚¢‚ÄƒJƒƒ‰‚ðØ‚è‘Ö‚¦Ä¶‚µ‚Ü‚·B
+
+
+
+ƒo[ƒWƒ‡ƒ“ : ver5.2.2.7‚Å’Ç‰Á
+
+%index
+E3DSetNextCameraAnimFrameNo
+animno‚ÅŽ¯•Ê‚³‚ê‚éƒAƒjƒ‚ªbefframeno‚ÌƒtƒŒ[ƒ€”Ô†‚É’B‚µ‚½‚çnextanimno‚ÅŽ¯•Ê‚³‚ê‚éƒAƒjƒ‚Ìnextframeno‚ÉØ‚è‘Ö‚¦‚é‚±‚Æ‚ð—\–ñ‚µ‚Ü‚·B
+%group
+Easy3D For HSP3 : ƒJƒƒ‰
+
+%prm
+p1,p2,p3,p4
+p1 : [IN] •Ï”‚Ü‚½‚ÍA”’l@F@animno
+p2 : [IN] •Ï”‚Ü‚½‚ÍA”’l@F@nextanimno
+p3 : [IN] •Ï”‚Ü‚½‚ÍA”’l@F@nextframeno
+p4 : [IN] •Ï”‚Ü‚½‚ÍA”’l@F@befframeno
+
+%inst
+animno‚ÅŽ¯•Ê‚³‚ê‚éƒAƒjƒ‚ªbefframeno‚ÌƒtƒŒ[ƒ€”Ô†‚É’B‚µ‚½‚çnextanimno‚ÅŽ¯•Ê‚³‚ê‚éƒAƒjƒ‚Ìnextframeno‚ÉØ‚è‘Ö‚¦‚é‚±‚Æ‚ð—\–ñ‚µ‚Ü‚·B
+ƒAƒjƒ‚ÌØ‚è‘Ö‚¦‚ÍE3DSetNewCamera‚Ås‚í‚ê‚Ü‚·B
+
+
+
+¨ˆø”
+1. [IN] •Ï”‚Ü‚½‚ÍA”’l@F@animno
+@@ƒJƒƒ‰ƒAƒjƒ‚ðŽ¯•Ê‚·‚é”Ô†‚ðŽw’è‚µ‚Ä‚­‚¾‚³‚¢B
+
+2. [IN] •Ï”‚Ü‚½‚ÍA”’l@F@nextanimno
+@@Ø‚è‘Ö‚¦æ‚ÌƒJƒƒ‰ƒAƒjƒ‚ðŽ¯•Ê‚·‚é”Ô†‚ðŽw’è‚µ‚Ä‚­‚¾‚³‚¢B
+
+3. [IN] •Ï”‚Ü‚½‚ÍA”’l@F@nextframeno
+@@Ø‚è‘Ö‚¦æ‚ÌƒJƒƒ‰ƒAƒjƒ‚ÌƒtƒŒ[ƒ€”Ô†‚ðŽw’è‚µ‚Ä‚­‚¾‚³‚¢B
+
+4. [IN] •Ï”‚Ü‚½‚ÍA”’l@F@befframeno
+@@Ø‚è‘Ö‚¦‘O‚ÌƒJƒƒ‰ƒAƒjƒ‚ªbefframenoƒtƒŒ[ƒ€‚Ü‚Å’B‚µ‚½‚çƒAƒjƒ‚ÌØ‚è‘Ö‚¦‚ª‹N‚±‚è‚Ü‚·B
+@@-1‚ðŽw’è‚µ‚½ê‡‚ÍØ‚è‘Ö‚¦‘O‚ÌƒAƒjƒ‚ªÅIƒtƒŒ[ƒ€‚É’B‚µ‚½‚Æ‚«‚ÉƒAƒjƒ‚ªØ‚è‘Ö‚í‚è‚Ü‚·B
+
+
+
+
+ƒo[ƒWƒ‡ƒ“ : ver5.2.2.7‚Å’Ç‰Á
+
+%index
+E3DGetNextCameraAnimFrameNo
+E3DSetNextCameraAnimFrameNo‚ÅÝ’è‚µ‚½î•ñ‚ðŽæ“¾‚µ‚Ü‚·B
+%group
+Easy3D For HSP3 : ƒJƒƒ‰
+
+%prm
+p1,p2,p3
+p1 : [IN] •Ï”‚Ü‚½‚ÍA”’l@F@animno
+p2 : [OUT] •Ï”@F@nextanimno
+p3 : [OUT] •Ï”@F@nextframeno
+
+%inst
+E3DSetNextCameraAnimFrameNo‚ÅÝ’è‚µ‚½î•ñ‚ðŽæ“¾‚µ‚Ü‚·B
+
+
+
+
+¨ˆø”
+1. [IN] •Ï”‚Ü‚½‚ÍA”’l@F@animno
+@@ƒJƒƒ‰ƒAƒjƒ‚ðŽ¯•Ê‚·‚é”Ô†‚ðŽw’è‚µ‚Ä‚­‚¾‚³‚¢B
+
+2. [OUT] •Ï”@F@nextanimno
+@@Ø‚è‘Ö‚¦æ‚ÌƒJƒƒ‰ƒAƒjƒ‚ðŽ¯•Ê‚·‚é”Ô†‚ª‘ã“ü‚³‚ê‚Ü‚·B
+
+3. [OUT] •Ï”@F@nextframeno
+@@Ø‚è‘Ö‚¦æ‚ÌƒJƒƒ‰ƒAƒjƒ‚ÌƒtƒŒ[ƒ€”Ô†‚ª‘ã“ü‚³‚ê‚Ü‚·B
+
+
+
+ƒo[ƒWƒ‡ƒ“ : ver5.2.2.7‚Å’Ç‰Á
+
+%index
+E3DCreateNewCameraAnim
+ƒJƒƒ‰ƒAƒjƒ‚ðì¬‚µƒAƒjƒ‚ðŽ¯•Ê‚·‚é”Ô†‚ðŽæ“¾‚µ‚Ü‚·B
+%group
+Easy3D For HSP3 : ƒJƒƒ‰
+
+%prm
+p1,p2,p3,p4
+p1 : [IN] •¶Žš—ñ‚Ü‚½‚ÍA•¶Žš—ñ‚Ì•Ï”@F@animname
+p2 : [IN] •Ï”‚Ü‚½‚ÍA”’l@F@animtype
+p3 : [IN] •Ï”‚Ü‚½‚ÍA”’l@F@framenum
+p4 : [OUT] •Ï”@F@animno
+
+%inst
+ƒJƒƒ‰ƒAƒjƒ‚ðì¬‚µƒAƒjƒ‚ðŽ¯•Ê‚·‚é”Ô†‚ðŽæ“¾‚µ‚Ü‚·B
+
+
+¨ˆø”
+1. [IN] •¶Žš—ñ‚Ü‚½‚ÍA•¶Žš—ñ‚Ì•Ï”@F@animname
+@@ƒAƒjƒ‚Ì–¼‘O‚ðŽw’è‚µ‚Ü‚·B
+@@‚Q‚T‚TƒoƒCƒg‚Ü‚Å‚Å‚·B
+
+2. [IN] •Ï”‚Ü‚½‚ÍA”’l@F@animtype
+@@ƒAƒjƒ‚ÌU‚é•‘‚¢‚ðŽw’è‚µ‚Ü‚·B
+@@‚P‚ðŽw’è‚·‚é‚ÆƒtƒŒ[ƒ€”Ô†‚Íi‚Ý‚Ü‚¹‚ñB
+@@‚Q‚ðŽw’è‚·‚é‚ÆÅIƒtƒŒ[ƒ€”Ô†‚É’B‚µ‚½‚ç‚»‚Ìó‘Ô‚ðˆÛŽ‚µ‚Ü‚·B
+@@‚R‚ðŽw’è‚·‚é‚Æƒ‹[ƒv‚µ‚Ü‚·B
+@@‚S‚ðŽw’è‚·‚é‚Æƒsƒ“ƒ|ƒ“Ä¶‚µ‚Ü‚·B
+@@‚T‚ðŽw’è‚·‚é‚ÆÅIƒtƒŒ[ƒ€‚É’B‚µ‚½ŒãRokDeBone2‚ÅŽw’è‚µ‚½ƒtƒŒ[ƒ€‚ÉƒWƒƒƒ“ƒv‚µ‚Ü‚·B
+
+3. [IN] •Ï”‚Ü‚½‚ÍA”’l@F@framenum
+@@ƒJƒƒ‰ƒAƒjƒ‚ð‚ÌƒtƒŒ[ƒ€”‚ðŽw’è‚µ‚Ü‚·B
+
+4. [OUT] •Ï”@F@animno
+@@ì¬‚µ‚½ƒAƒjƒ‚ðŽ¯•Ê‚·‚é”Ô†‚ª‘ã“ü‚³‚ê‚Ü‚·B
+
+
+
+
+ƒo[ƒWƒ‡ƒ“ : ver5.2.2.7‚Å’Ç‰Á
+
+%index
+E3DSetCameraFrameNum
+ƒJƒƒ‰ƒAƒjƒ‚ÌƒtƒŒ[ƒ€’·‚ðÝ’è‚µ‚Ü‚·B
+%group
+Easy3D For HSP3 : ƒJƒƒ‰
+
+%prm
+p1,p2
+p1 : [IN] •Ï”‚Ü‚½‚ÍA”’l@F@animno
+p2 : [IN] •Ï”‚Ü‚½‚ÍA”’l@F@framenum
+
+%inst
+ƒJƒƒ‰ƒAƒjƒ‚ÌƒtƒŒ[ƒ€’·‚ðÝ’è‚µ‚Ü‚·B
+Œ»Ý‚ÌƒtƒŒ[ƒ€’·‚æ‚è‚à¬‚³‚¢’l‚ðŽw’è‚µ‚½ê‡‚Í
+”ÍˆÍ‚©‚ç‚Í‚Ýo‚½ƒL[‚Ííœ‚³‚ê‚Ü‚·B
+
+
+
+¨ˆø”
+1. [IN] •Ï”‚Ü‚½‚ÍA”’l@F@animno
+@@ƒJƒƒ‰ƒAƒjƒ‚ðŽ¯•Ê‚·‚é”Ô†‚ðŽw’è‚µ‚Ä‚­‚¾‚³‚¢B
+
+2. [IN] •Ï”‚Ü‚½‚ÍA”’l@F@framenum
+@@ƒtƒŒ[ƒ€’·‚ðŽw’è‚µ‚Ä‚­‚¾‚³‚¢B
+
+
+
+
+ƒo[ƒWƒ‡ƒ“ : ver5.2.2.7‚Å’Ç‰Á
+
+%index
+E3DGetCameraFrameNum
+ƒJƒƒ‰ƒAƒjƒ‚ÌƒtƒŒ[ƒ€’·‚ðŽæ“¾‚µ‚Ü‚·B
+%group
+Easy3D For HSP3 : ƒJƒƒ‰
+
+%prm
+p1,p2
+p1 : [IN] •Ï”‚Ü‚½‚ÍA”’l@F@animno
+p2 : [OUT] •Ï”@F@framenum
+
+%inst
+ƒJƒƒ‰ƒAƒjƒ‚ÌƒtƒŒ[ƒ€’·‚ðŽæ“¾‚µ‚Ü‚·B
+
+
+¨ˆø”
+1. [IN] •Ï”‚Ü‚½‚ÍA”’l@F@animno
+@@ƒJƒƒ‰ƒAƒjƒ‚ðŽ¯•Ê‚·‚é”Ô†‚ðŽw’è‚µ‚Ä‚­‚¾‚³‚¢B
+
+2. [OUT] •Ï”@F@framenum
+@@ƒtƒŒ[ƒ€’·‚ª‘ã“ü‚³‚ê‚Ü‚·B
+
+
+
+ƒo[ƒWƒ‡ƒ“ : ver5.2.2.7‚Å’Ç‰Á
+
+%index
+E3DSetCameraAnimName
+ƒJƒƒ‰ƒAƒjƒ‚Ì–¼‘O‚ðÝ’è‚µ‚Ü‚·B
+%group
+Easy3D For HSP3 : ƒJƒƒ‰
+
+%prm
+p1,p2
+p1 : [IN] •Ï”‚Ü‚½‚ÍA”’l@F@animno
+p2 : [IN] •¶Žš—ñ‚Ü‚½‚ÍA•¶Žš—ñ‚Ì•Ï”@F@srcname
+
+%inst
+ƒJƒƒ‰ƒAƒjƒ‚Ì–¼‘O‚ðÝ’è‚µ‚Ü‚·B
+
+
+¨ˆø”
+1. [IN] •Ï”‚Ü‚½‚ÍA”’l@F@animno
+@@ƒJƒƒ‰ƒAƒjƒ‚ðŽ¯•Ê‚·‚é”Ô†‚ðŽw’è‚µ‚Ä‚­‚¾‚³‚¢B
+
+2. [IN] •¶Žš—ñ‚Ü‚½‚ÍA•¶Žš—ñ‚Ì•Ï”@F@srcname
+@@ƒJƒƒ‰ƒAƒjƒ‚Ì–¼‘O‚ðŽw’è‚µ‚Ü‚·B
+@@‚Q‚T‚TƒoƒCƒg‚Ü‚Å‚Å‚·B
+
+
+
+
+ƒo[ƒWƒ‡ƒ“ : ver5.2.2.7‚Å’Ç‰Á
+
+%index
+E3DGetCameraAnimName
+ƒJƒƒ‰ƒAƒjƒ‚Ì–¼‘O‚ðŽæ“¾‚µ‚Ü‚·B
+%group
+Easy3D For HSP3 : ƒJƒƒ‰
+
+%prm
+p1,p2,p3
+p1 : [IN] •Ï”‚Ü‚½‚ÍA”’l@F@animno
+p2 : [OUT] •¶Žš—ñ‚Ì•Ï”@F@dstname
+p3 : [IN] •Ï”‚Ü‚½‚ÍA”’l@F@arrayleng
+
+%inst
+ƒJƒƒ‰ƒAƒjƒ‚Ì–¼‘O‚ðŽæ“¾‚µ‚Ü‚·B
+
+
+¨ˆø”
+1. [IN] •Ï”‚Ü‚½‚ÍA”’l@F@animno
+@@ƒJƒƒ‰ƒAƒjƒ‚ðŽ¯•Ê‚·‚é”Ô†‚ðŽw’è‚µ‚Ä‚­‚¾‚³‚¢B
+
+2. [OUT] •¶Žš—ñ‚Ì•Ï”@F@dstname
+@@–¼‘O‚ðŠi”[‚·‚é•¶Žš—ñ‚Ì•Ï”‚ðŽw’è‚µ‚Ü‚·B
+
+3. [IN] •Ï”‚Ü‚½‚ÍA”’l@F@arrayleng
+@@dstname‚Ì”z—ñ’·‚ðŽw’è‚µ‚Ü‚·B
+
+
+
+
+ƒo[ƒWƒ‡ƒ“ : ver5.2.2.7‚Å’Ç‰Á
+
+%index
+E3DSetCameraAnimType
+ƒJƒƒ‰ƒAƒjƒ‚Ìƒ^ƒCƒv‚ðÝ’è‚µ‚Ü‚·B
+%group
+Easy3D For HSP3 : ƒJƒƒ‰
+
+%prm
+p1,p2
+p1 : [IN] •Ï”‚Ü‚½‚ÍA”’l@F@animno
+p2 : [IN] •Ï”‚Ü‚½‚ÍA”’l@F@type
+
+%inst
+ƒJƒƒ‰ƒAƒjƒ‚Ìƒ^ƒCƒv‚ðÝ’è‚µ‚Ü‚·B
+ƒ^ƒCƒv‚ÌÚ×‚ÍE3DCreateNewCameraAnim‚Ìanimtypeˆø”‚Ìà–¾‚ð‚²——‚­‚¾‚³‚¢B
+
+
+
+¨ˆø”
+1. [IN] •Ï”‚Ü‚½‚ÍA”’l@F@animno
+@@ƒJƒƒ‰ƒAƒjƒ‚ðŽ¯•Ê‚·‚é”Ô†‚ðŽw’è‚µ‚Ä‚­‚¾‚³‚¢B
+
+2. [IN] •Ï”‚Ü‚½‚ÍA”’l@F@type
+@@ƒ^ƒCƒv‚ðŽw’è‚µ‚Ü‚·B
+
+
+
+
+ƒo[ƒWƒ‡ƒ“ : ver5.2.2.7‚Å’Ç‰Á
+
+%index
+E3DGetCameraAnimType
+ƒJƒƒ‰ƒAƒjƒ‚Ìƒ^ƒCƒv‚ðŽæ“¾‚µ‚Ü‚·B
+%group
+Easy3D For HSP3 : ƒJƒƒ‰
+
+%prm
+p1,p2
+p1 : [IN] •Ï”‚Ü‚½‚ÍA”’l@F@animno
+p2 : [OUT] •Ï”@F@type
+
+%inst
+ƒJƒƒ‰ƒAƒjƒ‚Ìƒ^ƒCƒv‚ðŽæ“¾‚µ‚Ü‚·B
+ƒ^ƒCƒv‚ÌÚ×‚ÍE3DCreateNewCameraAnim‚Ìanimtypeˆø”‚Ìà–¾‚ð‚²——‚­‚¾‚³‚¢B
+
+
+
+¨ˆø”
+1. [IN] •Ï”‚Ü‚½‚ÍA”’l@F@animno
+@@ƒJƒƒ‰ƒAƒjƒ‚ðŽ¯•Ê‚·‚é”Ô†‚ðŽw’è‚µ‚Ä‚­‚¾‚³‚¢B
+
+2. [OUT] •Ï”@F@type
+@@ƒ^ƒCƒv‚ª‘ã“ü‚³‚ê‚Ü‚·B
+
+
+
+ƒo[ƒWƒ‡ƒ“ : ver5.2.2.7‚Å’Ç‰Á
+
+%index
+E3DSetCameraKey
+ƒJƒƒ‰ƒAƒjƒ‚ÌƒL[‚ðÝ’è‚µ‚Ü‚·B
+%group
+Easy3D For HSP3 : ƒJƒƒ‰
+
+%prm
+p1,p2,p3,p4,p5
+p1 : [IN] •Ï”‚Ü‚½‚ÍA”’l@F@animno
+p2 : [IN] •Ï”‚Ü‚½‚ÍA”’l@F@camerano
+p3 : [IN] •Ï”‚Ü‚½‚ÍA”’l@F@frameno
+p4 : [IN] ”z—ñ‚Ì•Ï”@F@cami
+p5 : [IN] ”z—ñ‚Ì•Ï”@F@camd
+
+%inst
+ƒJƒƒ‰ƒAƒjƒ‚ÌƒL[‚ðÝ’è‚µ‚Ü‚·B
+Žw’è‚µ‚½ƒtƒŒ[ƒ€”Ô†‚ÉƒL[‚ª‘¶Ý‚µ‚È‚¢ê‡‚ÍŽ©“®“I‚Éì¬‚µ‚Ä‚©‚çÝ’è‚µ‚Ü‚·B
+
+cami‚Ídim cami, CAMI_MAX‚Åì¬‚µ‚Ü‚·B
+CAMI_‚ÅŽn‚Ü‚é’è”‚Íe3dhsp3.as‚Å’è‹`‚³‚ê‚Ä‚¢‚Ü‚·B
+
+CAMI_LOOKTYPE‚Í’Ž‹ƒ‚[ƒh‚Ö‚ÌƒCƒ“ƒfƒbƒNƒX‚Å‚·B
+Œ»Ý’Ž‹‚È‚µƒ‚[ƒh‚µ‚©ƒTƒ|[ƒg‚µ‚Ä‚¢‚Ü‚¹‚ñ‚Ì‚Å
+CAML_NORMAL‚ðŽw’è‚µ‚Ä‚­‚¾‚³‚¢B
+
+CAMI_HSID‚ÆCAMI_BONENO‚Í«—ˆ‚ÌŠg’£—p‚ÌƒCƒ“ƒfƒbƒNƒX‚Å‚·B
+-1‚ðŽw’è‚µ‚Ä‚­‚¾‚³‚¢B
+
+
+
+CAMI_INTERP‚ÍƒL[ŠÔ‚Ì•âŠÔ•û–@‚Ö‚ÌƒCƒ“ƒfƒbƒNƒX‚Å‚·B
+‚O‚ðŽw’è‚·‚é‚ÆüŒ`A‚P‚ðŽw’è‚·‚é‚ÆƒXƒvƒ‰ƒCƒ“•âŠÔ‚É‚È‚è‚Ü‚·B
+
+‚»‚ê‚¼‚ê‚Ì’l‚É‚Í
+cami( CAMI_LOOKTYPE ) ‚È‚Ç‚Ì‚æ‚¤‚É‚µ‚ÄƒAƒNƒZƒX‚µ‚Ä‚­‚¾‚³‚¢B
+
+
+camd‚Íddim camd, CAMD_MAX‚Åì¬‚µ‚Ü‚·B
+dim‚Å‚Í‚È‚­‚ÄddimiŽÀ”j‚Å‚·B
+
+CAMD_POSX
+CAMD_POSY
+CAMD_POSZ
+‚ÍƒJƒƒ‰ˆÊ’u‚ÌXYZÀ•W‚Ö‚ÌƒCƒ“ƒfƒbƒNƒX‚Å‚·B
+
+CAMD_TARX
+CAMD_TARY
+CAMD_TARZ
+‚ÍƒJƒƒ‰‚Ì’Ž‹“_‚ÌXYZÀ•W‚Ö‚ÌƒCƒ“ƒfƒbƒNƒX‚Å‚·B
+
+CAMD_UPX
+CAMD_UPY
+CAMD_UPZ
+‚ÍƒJƒƒ‰‚Ìã•ûŒüƒxƒNƒgƒ‹‚ÌXYZ¬•ª‚Ö‚ÌƒCƒ“ƒfƒbƒNƒX‚Å‚·B
+
+CAMD_DIST
+‚ÍƒJƒƒ‰‚Æ’Ž‹“_‚Ì‹——£‚Ö‚ÌƒCƒ“ƒfƒbƒNƒX‚Å‚·B
+
+CAMD_NEARZ
+CAMD_FARZ
+‚ÍƒvƒƒWƒFƒNƒVƒ‡ƒ“‚Ìˆê”Ô‹ß‚¢‹——£‚Æˆê”Ô‰“‚¢‹——£‚Ö‚ÌƒCƒ“ƒfƒbƒNƒX‚Å‚·B
+
+CAMD_FOV
+‚ÍƒvƒƒWƒFƒNƒVƒ‡ƒ“‚ÌŽ‹–ìŠp‚Ö‚ÌƒCƒ“ƒfƒbƒNƒX‚Å‚·B
+
+CAMD_ORTHOSIZE
+‚Í«—ˆ‚ÌŠg’£—p‚ÌƒCƒ“ƒfƒbƒNƒX‚Å‚·B3000.0‚È‚Ç‚Ì”’l‚ð“ü‚ê‚Ä‚¨‚¢‚Ä‚­‚¾‚³‚¢B
+
+‚»‚ê‚¼‚ê‚Ì’l‚É‚Ícamd( CAMD_POSX )‚È‚Ç‚Ì‚æ‚¤‚É‚µ‚ÄƒAƒNƒZƒX‚µ‚Ä‚­‚¾‚³‚¢B
+
+
+‹ï‘Ì“I‚ÈŽg—p—á‚Í
+e3dhsp3_CameraAnime.hsp‚ð‚²——‚­‚¾‚³‚¢B
+
+ver5.2.2.8‚Å³ŽË‰e‚É‘Î‰ž‚µ‚Ü‚µ‚½B
+CAMI_ORTHO‚Íƒp[ƒX•\Ž¦‚Ì‚Æ‚«‚OA³ŽË‰e•\Ž¦‚Ì‚Æ‚«‚P‚ðŽw’è‚µ‚Ü‚·B
+
+CAMD_ORTHOSIZE‚Í³ŽË‰e‚Ì‚Æ‚«‚Ìƒrƒ…[‚ÌƒTƒCƒY‚ðŽw’è‚µ‚Ü‚·B
+
+
+
+
+
+
+¨ˆø”
+1. [IN] •Ï”‚Ü‚½‚ÍA”’l@F@animno
+@@ƒJƒƒ‰ƒAƒjƒ‚ðŽ¯•Ê‚·‚é”Ô†‚ðŽw’è‚µ‚Ä‚­‚¾‚³‚¢B
+
+2. [IN] •Ï”‚Ü‚½‚ÍA”’l@F@camerano
+@@ƒJƒƒ‰”Ô†‚ðŽw’è‚µ‚Ä‚­‚¾‚³‚¢B
+
+3. [IN] •Ï”‚Ü‚½‚ÍA”’l@F@frameno
+@@ƒtƒŒ[ƒ€”Ô†‚ðŽw’è‚µ‚Ä‚­‚¾‚³‚¢B
+
+4. [IN] ”z—ñ‚Ì•Ï”@F@cami
+@@ƒJƒƒ‰ƒL[‚Ì®”ƒƒ“ƒo‚ðƒZƒbƒg‚µ‚Ü‚·B
+@@Ú‚µ‚­‚Í‘O‹L‚ð‚²——‚­‚¾‚³‚¢B
+
+5. [IN] ”z—ñ‚Ì•Ï”@F@camd
+@@ŽÀ”Œ^‚Ì”z—ñ‚Ì•Ï”B
+@@ƒJƒƒ‰ƒL[‚ÌŽÀ”ƒƒ“ƒo‚ðƒZƒbƒg‚µ‚Ü‚·B
+@@Ú‚µ‚­‚Í‘O‹L‚ð‚²——‚­‚¾‚³‚¢B
+
+
+
+
+ƒo[ƒWƒ‡ƒ“ : ver5.2.2.7‚Å’Ç‰Á
+
+%index
+E3DGetCameraKey
+ƒJƒƒ‰ƒAƒjƒ‚ÌƒL[‚Ìî•ñ‚ðŽæ“¾‚µ‚Ü‚·B
+%group
+Easy3D For HSP3 : ƒJƒƒ‰
+
+%prm
+p1,p2,p3,p4,p5,p6
+p1 : [IN] •Ï”‚Ü‚½‚ÍA”’l@F@animno
+p2 : [IN] •Ï”‚Ü‚½‚ÍA”’l@F@camerano
+p3 : [IN] •Ï”‚Ü‚½‚ÍA”’l@F@frameno
+p4 : [OUT] ”z—ñ‚Ì•Ï”@F@cami
+p5 : [OUT] ”z—ñ‚Ì•Ï”@F@camd
+p6 : [OUT] •Ï”@F@exsitflag
+
+%inst
+ƒJƒƒ‰ƒAƒjƒ‚ÌƒL[‚Ìî•ñ‚ðŽæ“¾‚µ‚Ü‚·B
+Žw’è‚µ‚½ƒtƒŒ[ƒ€”Ô†‚ÉƒL[‚ª–³‚¢ê‡‚Í•âŠÔŒvŽZ‚µ‚Äî•ñ‚ðŽæ“¾‚µ‚Ü‚·B
+
+cami, camd‚É‚Â‚¢‚Ä‚ÍE3DSetCameraKey‚Ìà–¾‚ð‚²——‚­‚¾‚³‚¢B
+
+
+
+¨ˆø”
+1. [IN] •Ï”‚Ü‚½‚ÍA”’l@F@animno
+@@ƒJƒƒ‰ƒAƒjƒ‚ðŽ¯•Ê‚·‚é”Ô†‚ðŽw’è‚µ‚Ä‚­‚¾‚³‚¢B
+
+2. [IN] •Ï”‚Ü‚½‚ÍA”’l@F@camerano
+@@ƒJƒƒ‰”Ô†‚ðŽw’è‚µ‚Ä‚­‚¾‚³‚¢B
+
+3. [IN] •Ï”‚Ü‚½‚ÍA”’l@F@frameno
+@@ƒtƒŒ[ƒ€”Ô†‚ðŽw’è‚µ‚Ä‚­‚¾‚³‚¢B
+
+4. [OUT] ”z—ñ‚Ì•Ï”@F@cami
+@@ƒJƒƒ‰ƒL[‚Ì®”ƒƒ“ƒo‚ª‘ã“ü‚³‚ê‚Ü‚·B
+
+5. [OUT] ”z—ñ‚Ì•Ï”@F@camd
+@@ŽÀ”Œ^‚Ì”z—ñ‚Ì•Ï”B
+@@ƒJƒƒ‰ƒL[‚ÌŽÀ”ƒƒ“ƒo‚ª‘ã“ü‚³‚ê‚Ü‚·B
+
+6. [OUT] •Ï”@F@exsitflag
+@@Žw’è‚µ‚½ƒtƒŒ[ƒ€”Ô†‚ÉƒL[‚ª‚ ‚Á‚½ê‡‚Í‚P‚ª
+@@–³‚©‚Á‚½ê‡‚É‚Í‚O‚ª‘ã“ü‚³‚ê‚Ü‚·B
+
+
+
+
+ƒo[ƒWƒ‡ƒ“ : ver5.2.2.7‚Å’Ç‰Á
+
+%index
+E3DDeleteCameraKey
+ƒJƒƒ‰ƒAƒjƒ‚ÌƒL[‚ðíœ‚µ‚Ü‚·B
+%group
+Easy3D For HSP3 : ƒJƒƒ‰
+
+%prm
+p1,p2,p3
+p1 : [IN] •Ï”‚Ü‚½‚ÍA”’l@F@animno
+p2 : [IN] •Ï”‚Ü‚½‚ÍA”’l@F@camerano
+p3 : [IN] •Ï”‚Ü‚½‚ÍA”’l@F@frameno
+
+%inst
+ƒJƒƒ‰ƒAƒjƒ‚ÌƒL[‚ðíœ‚µ‚Ü‚·B
+
+
+
+
+¨ˆø”
+1. [IN] •Ï”‚Ü‚½‚ÍA”’l@F@animno
+@@ƒJƒƒ‰ƒAƒjƒ‚ðŽ¯•Ê‚·‚é”Ô†‚ðŽw’è‚µ‚Ä‚­‚¾‚³‚¢B
+
+2. [IN] •Ï”‚Ü‚½‚ÍA”’l@F@camerano
+@@ƒJƒƒ‰”Ô†‚ðŽw’è‚µ‚Ä‚­‚¾‚³‚¢B
+
+3. [IN] •Ï”‚Ü‚½‚ÍA”’l@F@frameno
+@@ƒtƒŒ[ƒ€”Ô†‚ðŽw’è‚µ‚Ä‚­‚¾‚³‚¢B
+
+
+
+ƒo[ƒWƒ‡ƒ“ : ver5.2.2.7‚Å’Ç‰Á
+
+%index
+E3DGetCameraKeyframeNoRange
+start‚Æend‚ÅŽw’è‚µ‚½ƒtƒŒ[ƒ€”ÍˆÍ‚ÌƒL[ƒtƒŒ[ƒ€‚ÌŒÂ”‚ÆƒtƒŒ[ƒ€”Ô†‚ðŽæ“¾‚µ‚Ü‚·B
+%group
+Easy3D For HSP3 : ƒJƒƒ‰
+
+%prm
+p1,p2,p3,p4,p5,p6,p7
+p1 : [IN] •Ï”‚Ü‚½‚ÍA”’l@F@animno
+p2 : [IN] •Ï”‚Ü‚½‚ÍA”’l@F@camerano
+p3 : [IN] •Ï”‚Ü‚½‚ÍA”’l@F@start
+p4 : [IN] •Ï”‚Ü‚½‚ÍA”’l@F@end
+p5 : [OUT] ”z—ñ‚Ì•Ï”@F@framearray
+p6 : [IN] •Ï”‚Ü‚½‚ÍA”’l@F@arrayleng
+p7 : [OUT] •Ï”@F@getnum
+
+%inst
+start‚Æend‚ÅŽw’è‚µ‚½ƒtƒŒ[ƒ€”ÍˆÍ‚ÌƒL[ƒtƒŒ[ƒ€‚ÌŒÂ”‚ÆƒtƒŒ[ƒ€”Ô†‚ðŽæ“¾‚µ‚Ü‚·B
+
+arrayleng‚É‚O‚ðŽw’è‚µ‚ÄŒÄ‚Ño‚·‚Æframearrayˆø”‚Ö‚Ì‘ã“ü‚ðs‚í‚¸‚ÉƒL[‚ÌŒÂ”‚Ì‚Ý‚ðŽæ“¾‚µ‚Ü‚·B
+
+E3DGetCameraKeyframeNoRange animno, camno, start, end, dummy, 0, keynum
+
+dim framearray, keynum
+
+E3DGetCameraKeyframeNoRange animno, camno, start, end, framearray, keynum,
+chknum
+
+‚Ì‚æ‚¤‚É‚µ‚ÄŽg‚Á‚Ä‚­‚¾‚³‚¢B
+
+
+
+
+¨ˆø”
+1. [IN] •Ï”‚Ü‚½‚ÍA”’l@F@animno
+@@ƒJƒƒ‰ƒAƒjƒ‚ðŽ¯•Ê‚·‚é”Ô†‚ðŽw’è‚µ‚Ä‚­‚¾‚³‚¢B
+
+2. [IN] •Ï”‚Ü‚½‚ÍA”’l@F@camerano
+@@ƒJƒƒ‰”Ô†‚ðŽw’è‚µ‚Ä‚­‚¾‚³‚¢B
+
+3. [IN] •Ï”‚Ü‚½‚ÍA”’l@F@start
+4. [IN] •Ï”‚Ü‚½‚ÍA”’l@F@end
+@@ƒL[‚ð’²‚×‚½‚¢ƒtƒŒ[ƒ€”Ô†‚ÌÅ‰‚ÆÅŒã‚Ì’l‚ðŽw’è‚µ‚Ä‚­‚¾‚³‚¢B
+
+5. [OUT] ”z—ñ‚Ì•Ï”@F@framearray
+@@ƒtƒŒ[ƒ€”Ô†‚ªgetnumŒÂ‚¾‚¯‘ã“ü‚³‚ê‚Ü‚·B
+@@arrayleng‚ª‚O‚Ìê‡‚Í‘ã“ü‚³‚ê‚Ü‚¹‚ñB
+
+6. [IN] •Ï”‚Ü‚½‚ÍA”’l@F@arrayleng
+@@framearray‚Ì”z—ñ’·i—v‘f”j‚ðŽw’è‚µ‚Ä‚­‚¾‚³‚¢B
+@@‚O‚ðŽw’è‚·‚é‚ÆƒL[‚ÌŒÂ”‚¾‚¯‚ð’²‚×‚Ü‚·B
+
+7. [OUT] •Ï”@F@getnum
+@@Žæ“¾‚µ‚½ƒL[ƒtƒŒ[ƒ€”Ô†‚ÌŒÂ”‚ª‘ã“ü‚³‚ê‚Ü‚·B
+
+
+
+
+ƒo[ƒWƒ‡ƒ“ : ver5.2.2.7‚Å’Ç‰Á
+
+%index
+E3DSetCameraSWKey
+ƒJƒƒ‰ƒAƒjƒ‚ÌƒXƒCƒbƒ`ƒL[‚ðƒZƒbƒg‚µ‚Ü‚·B
+%group
+Easy3D For HSP3 : ƒJƒƒ‰
+
+%prm
+p1,p2,p3
+p1 : [IN] •Ï”‚Ü‚½‚ÍA”’l@F@animno
+p2 : [IN] •Ï”‚Ü‚½‚ÍA”’l@F@frameno
+p3 : [IN] •Ï”‚Ü‚½‚ÍA”’l@F@camerano
+
+%inst
+ƒJƒƒ‰ƒAƒjƒ‚ÌƒXƒCƒbƒ`ƒL[‚ðƒZƒbƒg‚µ‚Ü‚·B
+Žw’è‚µ‚½ƒtƒŒ[ƒ€”Ô†‚ÉƒL[‚ª‘¶Ý‚µ‚È‚¢ê‡‚ÍŽ©“®“I‚Éì¬‚µ‚Ä‚©‚çƒZƒbƒg‚µ‚Ü‚·B
+
+
+
+
+¨ˆø”
+1. [IN] •Ï”‚Ü‚½‚ÍA”’l@F@animno
+@@ƒJƒƒ‰ƒAƒjƒ‚ðŽ¯•Ê‚·‚é”Ô†‚ðŽw’è‚µ‚Ä‚­‚¾‚³‚¢B
+
+2. [IN] •Ï”‚Ü‚½‚ÍA”’l@F@frameno
+@@ƒtƒŒ[ƒ€”Ô†‚ðŽw’è‚µ‚Ä‚­‚¾‚³‚¢B
+
+3. [IN] •Ï”‚Ü‚½‚ÍA”’l@F@camerano
+@@ƒJƒƒ‰”Ô†‚ðŽw’è‚µ‚Ä‚­‚¾‚³‚¢B
+
+
+
+
+ƒo[ƒWƒ‡ƒ“ : ver5.2.2.7‚Å’Ç‰Á
+
+%index
+E3DGetCameraSWKey
+ƒJƒƒ‰ƒAƒjƒ‚ÌƒXƒCƒbƒ`ƒL[‚Ìî•ñ‚ðŽæ“¾‚µ‚Ü‚·B
+%group
+Easy3D For HSP3 : ƒJƒƒ‰
+
+%prm
+p1,p2,p3,p4
+p1 : [IN] •Ï”‚Ü‚½‚ÍA”’l@F@animno
+p2 : [IN] •Ï”‚Ü‚½‚ÍA”’l@F@frameno
+p3 : [OUT] •Ï”@F@camerano
+p4 : [OUT] •Ï”@F@existflag
+
+%inst
+ƒJƒƒ‰ƒAƒjƒ‚ÌƒXƒCƒbƒ`ƒL[‚Ìî•ñ‚ðŽæ“¾‚µ‚Ü‚·B
+Žw’è‚µ‚½ƒtƒŒ[ƒ€”Ô†‚ÉƒL[‚ª‘¶Ý‚µ‚È‚¢ê‡‚Í•âŠÔ‚µ‚Äî•ñ‚ðŽæ“¾‚µ‚Ü‚·B
+
+
+
+¨ˆø”
+1. [IN] •Ï”‚Ü‚½‚ÍA”’l@F@animno
+@@ƒJƒƒ‰ƒAƒjƒ‚ðŽ¯•Ê‚·‚é”Ô†‚ðŽw’è‚µ‚Ä‚­‚¾‚³‚¢B
+
+2. [IN] •Ï”‚Ü‚½‚ÍA”’l@F@frameno
+@@ƒtƒŒ[ƒ€”Ô†‚ðŽw’è‚µ‚Ä‚­‚¾‚³‚¢B
+
+3. [OUT] •Ï”@F@camerano
+@@ƒJƒƒ‰”Ô†‚ª‘ã“ü‚³‚ê‚Ü‚·B
+
+4. [OUT] •Ï”@F@existflag
+@@Žw’è‚µ‚½ƒtƒŒ[ƒ€”Ô†‚ÉƒL[‚ª‚ ‚Á‚½ê‡‚Í‚P‚ª
+@@–³‚©‚Á‚½ê‡‚É‚Í‚O‚ª‘ã“ü‚³‚ê‚Ü‚·B
+
+
+
+
+ƒo[ƒWƒ‡ƒ“ : ver5.2.2.7‚Å’Ç‰Á
+
+%index
+E3DDeleteCameraSWKey
+ƒJƒƒ‰ƒAƒjƒ‚ÌƒXƒCƒbƒ`ƒL[‚ðíœ‚µ‚Ü‚·B
+%group
+Easy3D For HSP3 : ƒJƒƒ‰
+
+%prm
+p1,p2
+p1 : [IN] •Ï”‚Ü‚½‚ÍA”’l@F@animno
+p2 : [IN] •Ï”‚Ü‚½‚ÍA”’l@F@frameno
+
+%inst
+ƒJƒƒ‰ƒAƒjƒ‚ÌƒXƒCƒbƒ`ƒL[‚ðíœ‚µ‚Ü‚·B
+
+
+
+
+¨ˆø”
+1. [IN] •Ï”‚Ü‚½‚ÍA”’l@F@animno
+@@ƒJƒƒ‰ƒAƒjƒ‚ðŽ¯•Ê‚·‚é”Ô†‚ðŽw’è‚µ‚Ä‚­‚¾‚³‚¢B
+
+2. [IN] •Ï”‚Ü‚½‚ÍA”’l@F@frameno
+@@ƒtƒŒ[ƒ€”Ô†‚ðŽw’è‚µ‚Ä‚­‚¾‚³‚¢B
+
+
+
+ƒo[ƒWƒ‡ƒ“ : ver5.2.2.7‚Å’Ç‰Á
+
+%index
+E3DGetCameraSWKeyframeNoRange
+start‚Æend‚ÅŽw’è‚µ‚½ƒtƒŒ[ƒ€”ÍˆÍ‚ÌƒXƒCƒbƒ`ƒL[ƒtƒŒ[ƒ€‚ÌŒÂ”‚ÆƒtƒŒ[ƒ€”Ô†‚ðŽæ“¾‚µ‚Ü‚·B
+%group
+Easy3D For HSP3 : ƒJƒƒ‰
+
+%prm
+p1,p2,p3,p4,p5,p6
+p1 : [IN] •Ï”‚Ü‚½‚ÍA”’l@F@animno
+p2 : [IN] •Ï”‚Ü‚½‚ÍA”’l@F@start
+p3 : [IN] •Ï”‚Ü‚½‚ÍA”’l@F@end
+p4 : [OUT] ”z—ñ‚Ì•Ï”@F@framearray
+p5 : [IN] •Ï”‚Ü‚½‚ÍA”’l@F@arrayleng
+p6 : [OUT] •Ï”@F@getnum
+
+%inst
+start‚Æend‚ÅŽw’è‚µ‚½ƒtƒŒ[ƒ€”ÍˆÍ‚ÌƒXƒCƒbƒ`ƒL[ƒtƒŒ[ƒ€‚ÌŒÂ”‚ÆƒtƒŒ[ƒ€”Ô†‚ðŽæ“¾‚µ‚Ü‚·B
+
+arrayleng‚É‚O‚ðŽw’è‚µ‚ÄŒÄ‚Ño‚·‚Æframearrayˆø”‚Ö‚Ì‘ã“ü‚ðs‚í‚¸‚ÉƒL[‚ÌŒÂ”‚Ì‚Ý‚ðŽæ“¾‚µ‚Ü‚·B
+
+E3DGetCameraSWKeyframeNoRange animno, start, end, dummy, 0, keynum
+
+dim framearray, keynum
+
+E3DGetCameraSWKeyframeNoRange animno, start, end, framearray, keynum, chknum
+
+‚Ì‚æ‚¤‚É‚µ‚ÄŽg‚Á‚Ä‚­‚¾‚³‚¢B
+
+
+
+
+¨ˆø”
+1. [IN] •Ï”‚Ü‚½‚ÍA”’l@F@animno
+@@ƒJƒƒ‰ƒAƒjƒ‚ðŽ¯•Ê‚·‚é”Ô†‚ðŽw’è‚µ‚Ä‚­‚¾‚³‚¢B
+
+2. [IN] •Ï”‚Ü‚½‚ÍA”’l@F@start
+3. [IN] •Ï”‚Ü‚½‚ÍA”’l@F@end
+@@ƒL[‚ð’²‚×‚½‚¢ƒtƒŒ[ƒ€”Ô†‚ÌÅ‰‚ÆÅŒã‚Ì’l‚ðŽw’è‚µ‚Ä‚­‚¾‚³‚¢B
+
+4. [OUT] ”z—ñ‚Ì•Ï”@F@framearray
+@@ƒtƒŒ[ƒ€”Ô†‚ªgetnumŒÂ‚¾‚¯‘ã“ü‚³‚ê‚Ü‚·B
+@@arrayleng‚ª‚O‚Ìê‡‚Í‘ã“ü‚³‚ê‚Ü‚¹‚ñB
+
+5. [IN] •Ï”‚Ü‚½‚ÍA”’l@F@arrayleng
+@@framearray‚Ì”z—ñ’·i—v‘f”j‚ðŽw’è‚µ‚Ä‚­‚¾‚³‚¢B
+@@‚O‚ðŽw’è‚·‚é‚ÆƒL[‚ÌŒÂ”‚¾‚¯‚ð’²‚×‚Ü‚·B
+
+6. [OUT] •Ï”@F@getnum
+@@Žæ“¾‚µ‚½ƒL[ƒtƒŒ[ƒ€”Ô†‚ÌŒÂ”‚ª‘ã“ü‚³‚ê‚Ü‚·B
+
+
+
+ƒo[ƒWƒ‡ƒ“ : ver5.2.2.7‚Å’Ç‰Á
+
+%index
+E3DSetOrtho
+³ŽË‰e‚ðƒIƒ“‚É‚µA³ŽË‰e‚Ìƒpƒ‰ƒ[ƒ^‚ðÝ’è‚µ‚Ü‚·B
+%group
+Easy3D For HSP3 : •`‰æƒpƒ‰ƒ[ƒ^
+
+%prm
+p1,p2,p3
+p1 : [IN] •Ï”‚Ü‚½‚ÍA”’l@F@proj_near
+p2 : [IN] •Ï”‚Ü‚½‚ÍA”’l@F@proj_far
+p3 : [IN] •Ï”‚Ü‚½‚ÍA”’l@F@orthosize
+
+%inst
+³ŽË‰e‚ðƒIƒ“‚É‚µA³ŽË‰e‚Ìƒpƒ‰ƒ[ƒ^‚ðÝ’è‚µ‚Ü‚·B
+
+
+
+
+¨ˆø”
+1. [IN] •Ï”‚Ü‚½‚ÍA”’l@F@proj_near
+@@ƒNƒŠƒbƒsƒ“ƒO‚ÌÅ¬‹——£B
+@@ŽÀ”B
+
+2. [IN] •Ï”‚Ü‚½‚ÍA”’l@F@proj_far
+@@ƒNƒŠƒbƒsƒ“ƒO‚ÌÅ‘å‹——£B
+@@ŽÀ”B
+
+3. [IN] •Ï”‚Ü‚½‚ÍA”’l@F@orthosize
+@@³ŽË‰e‚Ìƒrƒ…[‚Ì‘å‚«‚³B
+@@ŽÀ”B
+
+
+
+
+
+ƒo[ƒWƒ‡ƒ“ : ver5.2.2.8‚Å’Ç‰Á
+
+%index
+E3DLoadGPFile
+RokDeBone2‚Åì¬‚µ‚½GPAƒtƒ@ƒCƒ‹i*.gpaj‚ð“Ç‚Ýž‚ÝƒAƒjƒ”Ô†‚ðŽæ“¾‚µ‚Ü‚·B
+%group
+Easy3D For HSP3 : GPA
+
+%prm
+p1,p2,p3
+p1 : [IN] •Ï”‚Ü‚½‚ÍA”’l@F@hsid
+p2 : [IN] •¶Žš—ñ‚Ü‚½‚ÍA•¶Žš—ñ‚Ì•Ï”@F@filename
+p3 : [OUT] •Ï”@F@animno@@“Ç‚Ýž‚ñ‚¾ƒAƒjƒ‚ðŽ¯•Ê‚·‚éƒAƒjƒ”Ô†‚ª‘ã“ü‚³‚ê‚Ü‚·B
+
+%inst
+RokDeBone2‚Åì¬‚µ‚½GPAƒtƒ@ƒCƒ‹i*.gpaj‚ð“Ç‚Ýž‚ÝƒAƒjƒ”Ô†‚ðŽæ“¾‚µ‚Ü‚·B
+
+
+¨ˆø”
+1. [IN] •Ï”‚Ü‚½‚ÍA”’l@F@hsid
+@@ƒ‚ƒfƒ‹‚ðŽ¯•Ê‚·‚é”Ô†‚ðŽw’è‚µ‚Ä‚­‚¾‚³‚¢B
+
+2. [IN] •¶Žš—ñ‚Ü‚½‚ÍA•¶Žš—ñ‚Ì•Ï”@F@filename
+@@GPƒtƒ@ƒCƒ‹‚Ìƒtƒ@ƒCƒ‹–¼‚ðƒtƒ‹ƒpƒX‚ÅŽw’è‚µ‚Ä‚­‚¾‚³‚¢B
+
+3. [OUT] •Ï”@F@animno@@“Ç‚Ýž‚ñ‚¾ƒAƒjƒ‚ðŽ¯•Ê‚·‚éƒAƒjƒ”Ô†‚ª‘ã“ü‚³‚ê‚Ü‚·B
+
+
+
+
+
+ƒo[ƒWƒ‡ƒ“ : ver5.2.2.9‚Å’Ç‰Á
+
+%index
+E3DDestroyGPAnim
+GPƒAƒjƒ‚ð”jŠü‚µ‚Ü‚·B
+%group
+Easy3D For HSP3 : GPA
+
+%prm
+p1,p2
+p1 : [IN] •Ï”‚Ü‚½‚ÍA”’l@F@hsid@@ƒ‚ƒfƒ‹‚ðŽ¯•Ê‚·‚é”Ô†‚ðŽw’è‚µ‚Ä‚­‚¾‚³‚¢B
+p2 : [IN] •Ï”‚Ü‚½‚ÍA”’l@F@animno
+
+%inst
+GPƒAƒjƒ‚ð”jŠü‚µ‚Ü‚·B
+
+
+¨ˆø”
+1. [IN] •Ï”‚Ü‚½‚ÍA”’l@F@hsid@@ƒ‚ƒfƒ‹‚ðŽ¯•Ê‚·‚é”Ô†‚ðŽw’è‚µ‚Ä‚­‚¾‚³‚¢B
+
+2. [IN] •Ï”‚Ü‚½‚ÍA”’l@F@animno
+@@GPƒAƒjƒ‚ðŽ¯•Ê‚·‚é”Ô†‚ðŽw’è‚µ‚Ä‚­‚¾‚³‚¢B
+
+
+
+ƒo[ƒWƒ‡ƒ“ : ver5.2.2.9‚Å’Ç‰Á
+
+%index
+E3DSaveGPFile
+GPƒAƒjƒ‚ðƒeƒLƒXƒgƒtƒ@ƒCƒ‹‚É•Û‘¶‚µ‚Ü‚·B
+%group
+Easy3D For HSP3 : GPA
+
+%prm
+p1,p2,p3
+p1 : [IN] •Ï”‚Ü‚½‚ÍA”’l@F@hsid@@ƒ‚ƒfƒ‹‚ðŽ¯•Ê‚·‚é”Ô†‚ðŽw’è‚µ‚Ä‚­‚¾‚³‚¢B
+p2 : [IN] •¶Žš—ñ‚Ü‚½‚ÍA•¶Žš—ñ‚Ì•Ï”@F@filename
+p3 : [IN] •Ï”‚Ü‚½‚ÍA”’l@F@animno
+
+%inst
+GPƒAƒjƒ‚ðƒeƒLƒXƒgƒtƒ@ƒCƒ‹‚É•Û‘¶‚µ‚Ü‚·B
+
+
+¨ˆø”
+1. [IN] •Ï”‚Ü‚½‚ÍA”’l@F@hsid@@ƒ‚ƒfƒ‹‚ðŽ¯•Ê‚·‚é”Ô†‚ðŽw’è‚µ‚Ä‚­‚¾‚³‚¢B
+
+2. [IN] •¶Žš—ñ‚Ü‚½‚ÍA•¶Žš—ñ‚Ì•Ï”@F@filename
+@@GPƒtƒ@ƒCƒ‹‚Ìƒtƒ@ƒCƒ‹–¼‚ðƒtƒ‹ƒpƒX‚ÅŽw’è‚µ‚Ä‚­‚¾‚³‚¢B
+
+3. [IN] •Ï”‚Ü‚½‚ÍA”’l@F@animno
+@@GPƒAƒjƒ‚ðŽ¯•Ê‚·‚é”Ô†‚ðŽw’è‚µ‚Ä‚­‚¾‚³‚¢B
+
+
+
+
+ƒo[ƒWƒ‡ƒ“ : ver5.2.2.9‚Å’Ç‰Á
+
+%index
+E3DSetGPAnimNo
+ƒJƒŒƒ“ƒg‚ÌGPƒAƒjƒ”Ô†‚ðƒZƒbƒg‚µ‚Ü‚·B
+%group
+Easy3D For HSP3 : GPA
+
+%prm
+p1,p2
+p1 : [IN] •Ï”‚Ü‚½‚ÍA”’l@F@hsid@@ƒ‚ƒfƒ‹‚ðŽ¯•Ê‚·‚é”Ô†‚ðŽw’è‚µ‚Ä‚­‚¾‚³‚¢B
+p2 : [IN] •Ï”‚Ü‚½‚ÍA”’l@F@animno
+
+%inst
+ƒJƒŒƒ“ƒg‚ÌGPƒAƒjƒ”Ô†‚ðƒZƒbƒg‚µ‚Ü‚·BƒtƒŒ[ƒ€”Ô†‚Í‚O‚É–ß‚è‚Ü‚·B
+
+
+¨ˆø”
+1. [IN] •Ï”‚Ü‚½‚ÍA”’l@F@hsid@@ƒ‚ƒfƒ‹‚ðŽ¯•Ê‚·‚é”Ô†‚ðŽw’è‚µ‚Ä‚­‚¾‚³‚¢B
+
+2. [IN] •Ï”‚Ü‚½‚ÍA”’l@F@animno
+@@GPƒAƒjƒ‚ðŽ¯•Ê‚·‚é”Ô†‚ðŽw’è‚µ‚Ä‚­‚¾‚³‚¢B
+
+
+
+ƒo[ƒWƒ‡ƒ“ : ver5.2.2.9‚Å’Ç‰Á
+
+%index
+E3DGetGPAnimNo
+ƒJƒŒƒ“ƒg‚ÌGPƒAƒjƒ”Ô†‚ðŽæ“¾‚µ‚Ü‚·B
+%group
+Easy3D For HSP3 : GPA
+
+%prm
+p1,p2
+p1 : [IN] •Ï”‚Ü‚½‚ÍA”’l@F@hsid@@ƒ‚ƒfƒ‹‚ðŽ¯•Ê‚·‚é”Ô†‚ðŽw’è‚µ‚Ä‚­‚¾‚³‚¢B
+p2 : [OUT] •Ï”@F@animno
+
+%inst
+ƒJƒŒƒ“ƒg‚ÌGPƒAƒjƒ”Ô†‚ðŽæ“¾‚µ‚Ü‚·B
+
+
+
+
+¨ˆø”
+1. [IN] •Ï”‚Ü‚½‚ÍA”’l@F@hsid@@ƒ‚ƒfƒ‹‚ðŽ¯•Ê‚·‚é”Ô†‚ðŽw’è‚µ‚Ä‚­‚¾‚³‚¢B
+
+2. [OUT] •Ï”@F@animno
+@@GPƒAƒjƒ‚ðŽ¯•Ê‚·‚é”Ô†‚ª‘ã“ü‚³‚ê‚Ü‚·B
+
+
+
+ƒo[ƒWƒ‡ƒ“ : ver5.2.2.9‚Å’Ç‰Á
+
+%index
+E3DSetGPFrameNo
+Ä¶‚·‚éGPƒAƒjƒ‚ÌƒAƒjƒ”Ô†‚ÆƒtƒŒ[ƒ€”Ô†‚ðÝ’è‚µ‚Ü‚·B
+%group
+Easy3D For HSP3 : GPA
+
+%prm
+p1,p2,p3,p4
+p1 : [IN] •Ï”‚Ü‚½‚ÍA”’l@F@hsid@@ƒ‚ƒfƒ‹‚ðŽ¯•Ê‚·‚é”Ô†‚ðŽw’è‚µ‚Ä‚­‚¾‚³‚¢B
+p2 : [IN] •Ï”‚Ü‚½‚ÍA”’l@F@animno
+
+%inst
+Ä¶‚·‚éGPƒAƒjƒ‚ÌƒAƒjƒ”Ô†‚ÆƒtƒŒ[ƒ€”Ô†‚ðÝ’è‚µ‚Ü‚·B
+
+
+¨ˆø”
+1. [IN] •Ï”‚Ü‚½‚ÍA”’l@F@hsid@@ƒ‚ƒfƒ‹‚ðŽ¯•Ê‚·‚é”Ô†‚ðŽw’è‚µ‚Ä‚­‚¾‚³‚¢B
+
+2. [IN] •Ï”‚Ü‚½‚ÍA”’l@F@animno
+@@GPƒAƒjƒ‚ðŽ¯•Ê‚·‚é”Ô†‚ðŽw’è‚µ‚Ä‚­‚¾‚³‚¢B
+3. 
+[IN] •Ï”‚Ü‚½‚ÍA”’l@F@frameno@@ƒtƒŒ[ƒ€”Ô†‚ðŽw’è‚µ‚Ä‚­‚¾‚³‚¢B
+4. [IN] 
+•Ï”‚Ü‚½‚ÍA”’l@F@isfirst
+@@‚±‚Ì–½—ß‚ðŒÄ‚ñ‚¾Œã‚ÉE3DSetNewGP‚ðŒÄ‚Ño‚·ê‡‚Í‚P‚ðAŒÄ‚Ño‚³‚È‚¢ê‡‚Í‚O‚ðŽw’è‚µ‚Ü‚·B
+
+
+
+ƒo[ƒWƒ‡ƒ“ : ver5.2.2.9‚Å’Ç‰Á
+
+%index
+E3DGetGPFrameNo
+Œ»ÝÄ¶’†‚ÌGPƒAƒjƒ‚ÌƒAƒjƒ”Ô†AƒtƒŒ[ƒ€”Ô†‚ðŽæ“¾‚µ‚Ü‚·B
+%group
+Easy3D For HSP3 : GPA
+
+%prm
+p1,p2,p3
+p1 : [IN] •Ï”‚Ü‚½‚ÍA”’l@F@hsid@@ƒ‚ƒfƒ‹‚ðŽ¯•Ê‚·‚é”Ô†‚ðŽw’è‚µ‚Ä‚­‚¾‚³‚¢B
+p2 : [OUT] •Ï”@F@animno
+p3 : [OUT] 
+
+%inst
+Œ»ÝÄ¶’†‚ÌGPƒAƒjƒ‚ÌƒAƒjƒ”Ô†AƒtƒŒ[ƒ€”Ô†‚ðŽæ“¾‚µ‚Ü‚·B
+
+
+¨ˆø”
+1. [IN] •Ï”‚Ü‚½‚ÍA”’l@F@hsid@@ƒ‚ƒfƒ‹‚ðŽ¯•Ê‚·‚é”Ô†‚ðŽw’è‚µ‚Ä‚­‚¾‚³‚¢B
+
+2. [OUT] •Ï”@F@animno
+@@GPƒAƒjƒ‚ðŽ¯•Ê‚·‚é”Ô†‚ª‘ã“ü‚³‚ê‚Ü‚·B
+3. [OUT] 
+•Ï”@F@frameno@@ƒtƒŒ[ƒ€”Ô†‚ª‘ã“ü‚³‚ê‚Ü‚·B
+
+
+
+ƒo[ƒWƒ‡ƒ“ : ver5.2.2.9‚Å’Ç‰Á
+
+%index
+E3DSetNewGP
+ƒAƒjƒ‚ÌƒtƒŒ[ƒ€‚ðƒAƒjƒƒ^ƒCƒv‚É]‚Á‚Äi‚ßAV‚µ‚¢GPî•ñ‚ðƒZƒbƒg‚µ‚Ü‚·B
+%group
+Easy3D For HSP3 : GPA
+
+%prm
+p1
+p1 : [IN] •Ï”‚Ü‚½‚ÍA”’l@F@hsid@@ƒ‚ƒfƒ‹‚ðŽ¯•Ê‚·‚é”Ô†‚ðŽw’è‚µ‚Ä‚­‚¾‚³‚¢B
+
+%inst
+ƒAƒjƒ‚ÌƒtƒŒ[ƒ€‚ðƒAƒjƒƒ^ƒCƒv‚É]‚Á‚Äi‚ßAV‚µ‚¢GPî•ñ‚ðƒZƒbƒg‚µ‚Ü‚·B
+
+
+¨ˆø”
+1. [IN] •Ï”‚Ü‚½‚ÍA”’l@F@hsid@@ƒ‚ƒfƒ‹‚ðŽ¯•Ê‚·‚é”Ô†‚ðŽw’è‚µ‚Ä‚­‚¾‚³‚¢B
+
+
+
+
+ƒo[ƒWƒ‡ƒ“ : ver5.2.2.9‚Å’Ç‰Á
+
+%index
+E3DSetNextGPAnimFrameNo
+animno‚ÅŽ¯•Ê‚³‚ê‚éƒAƒjƒ‚ªbefframeno‚ÌƒtƒŒ[ƒ€”Ô†‚É’B‚µ‚½‚çnextanimno‚ÅŽ¯•Ê‚³‚ê‚éƒAƒjƒ‚Ìnextframeno‚ÉØ‚è‘Ö‚¦‚é‚±‚Æ‚ð—\–ñ‚µ‚Ü‚·B
+%group
+Easy3D For HSP3 : GPA
+
+%prm
+p1,p2,p3,p4,p5
+p1 : [IN] •Ï”‚Ü‚½‚ÍA”’l@F@hsid@@ƒ‚ƒfƒ‹‚ðŽ¯•Ê‚·‚é”Ô†‚ðŽw’è‚µ‚Ä‚­‚¾‚³‚¢B
+p2 : [IN] •Ï”‚Ü‚½‚ÍA”’l@F@animno
+p3 : [IN] •Ï”‚Ü‚½‚ÍA”’l@F@nextanimno
+p4 : [IN] •Ï”‚Ü‚½‚ÍA”’l@F@nextframeno
+p5 : [IN] •Ï”‚Ü‚½‚ÍA”’l@F@befframeno
+
+%inst
+animno‚ÅŽ¯•Ê‚³‚ê‚éƒAƒjƒ‚ªbefframeno‚ÌƒtƒŒ[ƒ€”Ô†‚É’B‚µ‚½‚çnextanimno‚ÅŽ¯•Ê‚³‚ê‚éƒAƒjƒ‚Ìnextframeno‚ÉØ‚è‘Ö‚¦‚é‚±‚Æ‚ð—\–ñ‚µ‚Ü‚·BƒAƒjƒ‚ÌØ‚è‘Ö‚¦‚ÍE3DSetNewCamera‚Ås‚í‚ê‚Ü‚·B
+
+
+¨ˆø”
+1. [IN] •Ï”‚Ü‚½‚ÍA”’l@F@hsid@@ƒ‚ƒfƒ‹‚ðŽ¯•Ê‚·‚é”Ô†‚ðŽw’è‚µ‚Ä‚­‚¾‚³‚¢B
+
+2. [IN] •Ï”‚Ü‚½‚ÍA”’l@F@animno
+@@GPƒAƒjƒ‚ðŽ¯•Ê‚·‚é”Ô†‚ðŽw’è‚µ‚Ä‚­‚¾‚³‚¢B
+
+3. [IN] •Ï”‚Ü‚½‚ÍA”’l@F@nextanimno
+@@Ø‚è‘Ö‚¦æ‚ÌGPƒAƒjƒ‚ðŽ¯•Ê‚·‚é”Ô†‚ðŽw’è‚µ‚Ä‚­‚¾‚³‚¢B
+
+4. [IN] •Ï”‚Ü‚½‚ÍA”’l@F@nextframeno
+@@Ø‚è‘Ö‚¦æ‚ÌGPƒAƒjƒ‚ÌƒtƒŒ[ƒ€”Ô†‚ðŽw’è‚µ‚Ä‚­‚¾‚³‚¢B
+
+5. [IN] •Ï”‚Ü‚½‚ÍA”’l@F@befframeno
+@@Ø‚è‘Ö‚¦‘O‚ÌGPƒAƒjƒ‚ªbefframenoƒtƒŒ[ƒ€‚Ü‚Å’B‚µ‚½‚çƒAƒjƒ‚ÌØ‚è‘Ö‚¦‚ª‹N‚±‚è‚Ü‚·B@@-1‚ðŽw’è‚µ‚½ê‡‚ÍØ‚è‘Ö‚¦‘O‚ÌƒAƒjƒ‚ªÅIƒtƒŒ[ƒ€‚É’B‚µ‚½‚Æ‚«‚ÉƒAƒjƒ‚ªØ‚è‘Ö‚í‚è‚Ü‚·B
+
+
+
+
+ƒo[ƒWƒ‡ƒ“ : ver5.2.2.9‚Å’Ç‰Á
+
+%index
+E3DGetNextGPAnimFrameNo
+E3DSetNextGPAnimFrameNo‚ÅÝ’è‚µ‚½î•ñ‚ðŽæ“¾‚µ‚Ü‚·B
+%group
+Easy3D For HSP3 : GPA
+
+%prm
+p1,p2,p3,p4
+p1 : [IN] •Ï”‚Ü‚½‚ÍA”’l@F@hsid@@ƒ‚ƒfƒ‹‚ðŽ¯•Ê‚·‚é”Ô†‚ðŽw’è‚µ‚Ä‚­‚¾‚³‚¢B
+p2 : [IN] •Ï”‚Ü‚½‚ÍA”’l@F@animno
+p3 : [OUT] •Ï”@F@nextanimno
+p4 : [OUT] •Ï”@F@nextframeno
+
+%inst
+E3DSetNextGPAnimFrameNo‚ÅÝ’è‚µ‚½î•ñ‚ðŽæ“¾‚µ‚Ü‚·B
+
+
+
+
+¨ˆø”
+1. [IN] •Ï”‚Ü‚½‚ÍA”’l@F@hsid@@ƒ‚ƒfƒ‹‚ðŽ¯•Ê‚·‚é”Ô†‚ðŽw’è‚µ‚Ä‚­‚¾‚³‚¢B
+
+2. [IN] •Ï”‚Ü‚½‚ÍA”’l@F@animno
+@@GPƒAƒjƒ‚ðŽ¯•Ê‚·‚é”Ô†‚ðŽw’è‚µ‚Ä‚­‚¾‚³‚¢B
+
+3. [OUT] •Ï”@F@nextanimno
+@@Ø‚è‘Ö‚¦æ‚ÌGPƒAƒjƒ‚ðŽ¯•Ê‚·‚é”Ô†‚ª‘ã“ü‚³‚ê‚Ü‚·B
+
+4. [OUT] •Ï”@F@nextframeno
+@@Ø‚è‘Ö‚¦æ‚ÌGPƒAƒjƒ‚ÌƒtƒŒ[ƒ€”Ô†‚ª‘ã“ü‚³‚ê‚Ü‚·B
+
+
+
+ƒo[ƒWƒ‡ƒ“ : ver5.2.2.9‚Å’Ç‰Á
+
+%index
+E3DCreateNewGPAnim
+GPƒAƒjƒ‚ðì¬‚µƒAƒjƒ‚ðŽ¯•Ê‚·‚é”Ô†‚ðŽæ“¾‚µ‚Ü‚·B
+%group
+Easy3D For HSP3 : GPA
+
+%prm
+p1,p2,p3,p4,p5
+p1 : [IN] •Ï”‚Ü‚½‚ÍA”’l@F@hsid@@ƒ‚ƒfƒ‹‚ðŽ¯•Ê‚·‚é”Ô†‚ðŽw’è‚µ‚Ä‚­‚¾‚³‚¢B
+p2 : [IN] •¶Žš—ñ‚Ü‚½‚ÍA•¶Žš—ñ‚Ì•Ï”@F@animname@@ƒAƒjƒ‚Ì–¼‘O‚ðŽw’è‚µ‚Ü‚·B@@‚Q‚T‚TƒoƒCƒg‚Ü‚Å‚Å‚·B
+p3 : [IN] •Ï”‚Ü‚½‚ÍA”’l@F@animtype@@ƒAƒjƒ‚ÌU‚é•‘‚¢‚ðŽw’è‚µ‚Ü‚·B@@‚P‚ðŽw’è‚·‚é‚ÆƒtƒŒ[ƒ€”Ô†‚Íi‚Ý‚Ü‚¹‚ñB@@‚Q‚ðŽw’è‚·‚é‚ÆÅIƒtƒŒ[ƒ€”Ô†‚É’B‚µ‚½‚ç‚»‚Ìó‘Ô‚ðˆÛŽ‚µ‚Ü‚·B@@‚R‚ðŽw’è‚·‚é‚Æƒ‹[ƒv‚µ‚Ü‚·B@@‚S‚ðŽw’è‚·‚é‚Æƒsƒ“ƒ|ƒ“Ä¶‚µ‚Ü‚·B@@‚T‚ðŽw’è‚·‚é‚ÆÅIƒtƒŒ[ƒ€‚É’B‚µ‚½ŒãRokDeBone2‚ÅŽw’è‚µ‚½ƒtƒŒ[ƒ€‚ÉƒWƒƒƒ“ƒv‚µ‚Ü‚·B
+p4 : [IN] •Ï”‚Ü‚½‚ÍA”’l@F@framenum@@ƒJƒƒ‰ƒAƒjƒ‚ð‚ÌƒtƒŒ[ƒ€”‚ðŽw’è‚µ‚Ü‚·B
+p5 : [OUT] •Ï”@F@animno@@ì¬‚µ‚½ƒAƒjƒ‚ðŽ¯•Ê‚·‚é”Ô†‚ª‘ã“ü‚³‚ê‚Ü‚·B
+
+%inst
+GPƒAƒjƒ‚ðì¬‚µƒAƒjƒ‚ðŽ¯•Ê‚·‚é”Ô†‚ðŽæ“¾‚µ‚Ü‚·B
+
+
+¨ˆø”
+1. [IN] •Ï”‚Ü‚½‚ÍA”’l@F@hsid@@ƒ‚ƒfƒ‹‚ðŽ¯•Ê‚·‚é”Ô†‚ðŽw’è‚µ‚Ä‚­‚¾‚³‚¢B
+
+2. [IN] •¶Žš—ñ‚Ü‚½‚ÍA•¶Žš—ñ‚Ì•Ï”@F@animname@@ƒAƒjƒ‚Ì–¼‘O‚ðŽw’è‚µ‚Ü‚·B@@‚Q‚T‚TƒoƒCƒg‚Ü‚Å‚Å‚·B
+
+3. [IN] •Ï”‚Ü‚½‚ÍA”’l@F@animtype@@ƒAƒjƒ‚ÌU‚é•‘‚¢‚ðŽw’è‚µ‚Ü‚·B@@‚P‚ðŽw’è‚·‚é‚ÆƒtƒŒ[ƒ€”Ô†‚Íi‚Ý‚Ü‚¹‚ñB@@‚Q‚ðŽw’è‚·‚é‚ÆÅIƒtƒŒ[ƒ€”Ô†‚É’B‚µ‚½‚ç‚»‚Ìó‘Ô‚ðˆÛŽ‚µ‚Ü‚·B@@‚R‚ðŽw’è‚·‚é‚Æƒ‹[ƒv‚µ‚Ü‚·B@@‚S‚ðŽw’è‚·‚é‚Æƒsƒ“ƒ|ƒ“Ä¶‚µ‚Ü‚·B@@‚T‚ðŽw’è‚·‚é‚ÆÅIƒtƒŒ[ƒ€‚É’B‚µ‚½ŒãRokDeBone2‚ÅŽw’è‚µ‚½ƒtƒŒ[ƒ€‚ÉƒWƒƒƒ“ƒv‚µ‚Ü‚·B
+
+4. [IN] •Ï”‚Ü‚½‚ÍA”’l@F@framenum@@ƒJƒƒ‰ƒAƒjƒ‚ð‚ÌƒtƒŒ[ƒ€”‚ðŽw’è‚µ‚Ü‚·B
+
+5. [OUT] •Ï”@F@animno@@ì¬‚µ‚½ƒAƒjƒ‚ðŽ¯•Ê‚·‚é”Ô†‚ª‘ã“ü‚³‚ê‚Ü‚·B
+
+
+
+
+ƒo[ƒWƒ‡ƒ“ : ver5.2.2.9‚Å’Ç‰Á
+
+%index
+E3DSetGPFrameNum
+GPƒAƒjƒ‚ÌƒtƒŒ[ƒ€’·‚ðÝ’è‚µ‚Ü‚·B
+%group
+Easy3D For HSP3 : GPA
+
+%prm
+p1,p2,p3
+p1 : [IN] •Ï”‚Ü‚½‚ÍA”’l@F@hsid@@ƒ‚ƒfƒ‹‚ðŽ¯•Ê‚·‚é”Ô†‚ðŽw’è‚µ‚Ä‚­‚¾‚³‚¢B
+p2 : [IN] •Ï”‚Ü‚½‚ÍA”’l@F@animno
+p3 : [IN] •Ï”‚Ü‚½‚ÍA”’l@F@framenum@@ƒtƒŒ[ƒ€’·‚ðŽw’è‚µ‚Ä‚­‚¾‚³‚¢B
+
+%inst
+GPƒAƒjƒ‚ÌƒtƒŒ[ƒ€’·‚ðÝ’è‚µ‚Ü‚·BŒ»Ý‚ÌƒtƒŒ[ƒ€’·‚æ‚è‚à¬‚³‚¢’l‚ðŽw’è‚µ‚½ê‡‚Í”ÍˆÍ‚©‚ç‚Í‚Ýo‚½ƒL[‚Ííœ‚³‚ê‚Ü‚·B
+
+
+¨ˆø”
+1. [IN] •Ï”‚Ü‚½‚ÍA”’l@F@hsid@@ƒ‚ƒfƒ‹‚ðŽ¯•Ê‚·‚é”Ô†‚ðŽw’è‚µ‚Ä‚­‚¾‚³‚¢B
+
+2. [IN] •Ï”‚Ü‚½‚ÍA”’l@F@animno
+@@GPƒAƒjƒ‚ðŽ¯•Ê‚·‚é”Ô†‚ðŽw’è‚µ‚Ä‚­‚¾‚³‚¢B
+
+3. [IN] •Ï”‚Ü‚½‚ÍA”’l@F@framenum@@ƒtƒŒ[ƒ€’·‚ðŽw’è‚µ‚Ä‚­‚¾‚³‚¢B
+
+
+
+
+ƒo[ƒWƒ‡ƒ“ : ver5.2.2.9‚Å’Ç‰Á
+
+%index
+E3DGetGPFrameNum
+GPƒAƒjƒ‚ÌƒtƒŒ[ƒ€’·‚ðŽæ“¾‚µ‚Ü‚·B
+%group
+Easy3D For HSP3 : GPA
+
+%prm
+p1,p2,p3
+p1 : [IN] •Ï”‚Ü‚½‚ÍA”’l@F@hsid@@ƒ‚ƒfƒ‹‚ðŽ¯•Ê‚·‚é”Ô†‚ðŽw’è‚µ‚Ä‚­‚¾‚³‚¢B
+p2 : [IN] •Ï”‚Ü‚½‚ÍA”’l@F@animno
+p3 : [OUT] •Ï”@F@framenum@@ƒtƒŒ[ƒ€’·‚ª‘ã“ü‚³‚ê‚Ü‚·B
+
+%inst
+GPƒAƒjƒ‚ÌƒtƒŒ[ƒ€’·‚ðŽæ“¾‚µ‚Ü‚·B
+
+
+¨ˆø”
+1. [IN] •Ï”‚Ü‚½‚ÍA”’l@F@hsid@@ƒ‚ƒfƒ‹‚ðŽ¯•Ê‚·‚é”Ô†‚ðŽw’è‚µ‚Ä‚­‚¾‚³‚¢B
+
+2. [IN] •Ï”‚Ü‚½‚ÍA”’l@F@animno
+@@GPƒAƒjƒ‚ðŽ¯•Ê‚·‚é”Ô†‚ðŽw’è‚µ‚Ä‚­‚¾‚³‚¢B
+
+3. [OUT] •Ï”@F@framenum@@ƒtƒŒ[ƒ€’·‚ª‘ã“ü‚³‚ê‚Ü‚·B
+
+
+
+ƒo[ƒWƒ‡ƒ“ : ver5.2.2.9‚Å’Ç‰Á
+
+%index
+E3DSetGPAnimName
+GPƒAƒjƒ‚Ì–¼‘O‚ðÝ’è‚µ‚Ü‚·B
+%group
+Easy3D For HSP3 : GPA
+
+%prm
+p1,p2,p3
+p1 : [IN] •Ï”‚Ü‚½‚ÍA”’l@F@hsid@@ƒ‚ƒfƒ‹‚ðŽ¯•Ê‚·‚é”Ô†‚ðŽw’è‚µ‚Ä‚­‚¾‚³‚¢B
+p2 : [IN] •Ï”‚Ü‚½‚ÍA”’l@F@animno
+p3 : [IN] •¶Žš—ñ‚Ü‚½‚ÍA•¶Žš—ñ‚Ì•Ï”@F@srcname
+
+%inst
+GPƒAƒjƒ‚Ì–¼‘O‚ðÝ’è‚µ‚Ü‚·B
+
+
+¨ˆø”
+1. [IN] •Ï”‚Ü‚½‚ÍA”’l@F@hsid@@ƒ‚ƒfƒ‹‚ðŽ¯•Ê‚·‚é”Ô†‚ðŽw’è‚µ‚Ä‚­‚¾‚³‚¢B
+
+2. [IN] •Ï”‚Ü‚½‚ÍA”’l@F@animno
+@@GPƒAƒjƒ‚ðŽ¯•Ê‚·‚é”Ô†‚ðŽw’è‚µ‚Ä‚­‚¾‚³‚¢B
+
+3. [IN] •¶Žš—ñ‚Ü‚½‚ÍA•¶Žš—ñ‚Ì•Ï”@F@srcname
+@@GPƒAƒjƒ‚Ì–¼‘O‚ðŽw’è‚µ‚Ü‚·B@@‚Q‚T‚TƒoƒCƒg‚Ü‚Å‚Å‚·B
+
+
+
+
+ƒo[ƒWƒ‡ƒ“ : ver5.2.2.9‚Å’Ç‰Á
+
+%index
+E3DGetGPAnimName
+GPƒAƒjƒ‚Ì–¼‘O‚ðŽæ“¾‚µ‚Ü‚·B
+%group
+Easy3D For HSP3 : GPA
+
+%prm
+p1,p2,p3,p4
+p1 : [IN] •Ï”‚Ü‚½‚ÍA”’l@F@hsid@@ƒ‚ƒfƒ‹‚ðŽ¯•Ê‚·‚é”Ô†‚ðŽw’è‚µ‚Ä‚­‚¾‚³‚¢B
+p2 : [IN] •Ï”‚Ü‚½‚ÍA”’l@F@animno
+p3 : [OUT] •¶Žš—ñ‚Ì•Ï”@F@dstname@@–¼‘O‚ðŠi”[‚·‚é•¶Žš—ñ‚Ì•Ï”‚ðŽw’è‚µ‚Ü‚·B
+p4 : [IN] •Ï”‚Ü‚½‚ÍA”’l@F@arrayleng@@dstname‚Ì”z—ñ’·‚ðŽw’è‚µ‚Ü‚·B
+
+%inst
+GPƒAƒjƒ‚Ì–¼‘O‚ðŽæ“¾‚µ‚Ü‚·B
+
+
+¨ˆø”
+1. [IN] •Ï”‚Ü‚½‚ÍA”’l@F@hsid@@ƒ‚ƒfƒ‹‚ðŽ¯•Ê‚·‚é”Ô†‚ðŽw’è‚µ‚Ä‚­‚¾‚³‚¢B
+
+2. [IN] •Ï”‚Ü‚½‚ÍA”’l@F@animno
+@@GPƒAƒjƒ‚ðŽ¯•Ê‚·‚é”Ô†‚ðŽw’è‚µ‚Ä‚­‚¾‚³‚¢B
+
+3. [OUT] •¶Žš—ñ‚Ì•Ï”@F@dstname@@–¼‘O‚ðŠi”[‚·‚é•¶Žš—ñ‚Ì•Ï”‚ðŽw’è‚µ‚Ü‚·B
+
+4. [IN] •Ï”‚Ü‚½‚ÍA”’l@F@arrayleng@@dstname‚Ì”z—ñ’·‚ðŽw’è‚µ‚Ü‚·B
+
+
+
+
+ƒo[ƒWƒ‡ƒ“ : ver5.2.2.9‚Å’Ç‰Á
+
+%index
+E3DSetGPAnimType
+GPƒAƒjƒ‚Ìƒ^ƒCƒv‚ðÝ’è‚µ‚Ü‚·B
+%group
+Easy3D For HSP3 : GPA
+
+%prm
+p1,p2,p3
+p1 : [IN] •Ï”‚Ü‚½‚ÍA”’l@F@hsid@@ƒ‚ƒfƒ‹‚ðŽ¯•Ê‚·‚é”Ô†‚ðŽw’è‚µ‚Ä‚­‚¾‚³‚¢B
+p2 : [IN] •Ï”‚Ü‚½‚ÍA”’l@F@animno
+p3 : [IN] •Ï”‚Ü‚½‚ÍA”’l@F@type@@ƒ^ƒCƒv‚ðŽw’è‚µ‚Ü‚·B
+
+%inst
+GPƒAƒjƒ‚Ìƒ^ƒCƒv‚ðÝ’è‚µ‚Ü‚·B
+ƒ^ƒCƒv‚ÌÚ×‚ÍE3DCreateNewGPAnim‚Ìanimtypeˆø”‚Ìà–¾‚ð‚²——‚­‚¾‚³‚¢B
+
+
+
+¨ˆø”
+1. [IN] •Ï”‚Ü‚½‚ÍA”’l@F@hsid@@ƒ‚ƒfƒ‹‚ðŽ¯•Ê‚·‚é”Ô†‚ðŽw’è‚µ‚Ä‚­‚¾‚³‚¢B
+
+2. [IN] •Ï”‚Ü‚½‚ÍA”’l@F@animno
+@@GPƒAƒjƒ‚ðŽ¯•Ê‚·‚é”Ô†‚ðŽw’è‚µ‚Ä‚­‚¾‚³‚¢B
+
+3. [IN] •Ï”‚Ü‚½‚ÍA”’l@F@type@@ƒ^ƒCƒv‚ðŽw’è‚µ‚Ü‚·B
+
+
+
+
+ƒo[ƒWƒ‡ƒ“ : ver5.2.2.9‚Å’Ç‰Á
+
+%index
+E3DGetGPAnimType
+GPƒAƒjƒ‚Ìƒ^ƒCƒv‚ðŽæ“¾‚µ‚Ü‚·B
+%group
+Easy3D For HSP3 : GPA
+
+%prm
+p1,p2,p3
+p1 : [IN] •Ï”‚Ü‚½‚ÍA”’l@F@hsid@@ƒ‚ƒfƒ‹‚ðŽ¯•Ê‚·‚é”Ô†‚ðŽw’è‚µ‚Ä‚­‚¾‚³‚¢B
+p2 : [IN] •Ï”‚Ü‚½‚ÍA”’l@F@animno
+p3 : [OUT] •Ï”@F@type@@ƒ^ƒCƒv‚ª‘ã“ü‚³‚ê‚Ü‚·B
+
+%inst
+GPƒAƒjƒ‚Ìƒ^ƒCƒv‚ðŽæ“¾‚µ‚Ü‚·B
+ƒ^ƒCƒv‚ÌÚ×‚ÍE3DCreateNewGPAnim‚Ìanimtypeˆø”‚Ìà–¾‚ð‚²——‚­‚¾‚³‚¢B
+
+
+
+¨ˆø”
+1. [IN] •Ï”‚Ü‚½‚ÍA”’l@F@hsid@@ƒ‚ƒfƒ‹‚ðŽ¯•Ê‚·‚é”Ô†‚ðŽw’è‚µ‚Ä‚­‚¾‚³‚¢B
+
+2. [IN] •Ï”‚Ü‚½‚ÍA”’l@F@animno
+@@GPƒAƒjƒ‚ðŽ¯•Ê‚·‚é”Ô†‚ðŽw’è‚µ‚Ä‚­‚¾‚³‚¢B
+
+3. [OUT] •Ï”@F@type@@ƒ^ƒCƒv‚ª‘ã“ü‚³‚ê‚Ü‚·B
+
+
+
+ƒo[ƒWƒ‡ƒ“ : ver5.2.2.9‚Å’Ç‰Á
+
+%index
+E3DSetGPKey
+GPƒAƒjƒ‚ÌƒL[‚ðÝ’è‚µ‚Ü‚·B
+%group
+Easy3D For HSP3 : GPA
+
+%prm
+p1,p2,p3,p4,p5
+p1 : [IN] •Ï”‚Ü‚½‚ÍA”’l@F@hsid@@ƒ‚ƒfƒ‹‚ðŽ¯•Ê‚·‚é”Ô†‚ðŽw’è‚µ‚Ä‚­‚¾‚³‚¢B
+p2 : [IN] •Ï”‚Ü‚½‚ÍA”’l@F@animno
+p3 : [IN] 
+p4 : [IN] ”z—ñ‚Ì•Ï”@F@gpi
+p5 : [IN] ”z—ñ‚Ì•Ï”@F@gpd@@ŽÀ”Œ^‚Ì”z—ñ‚Ì•Ï”B
+
+%inst
+GPƒAƒjƒ‚ÌƒL[‚ðÝ’è‚µ‚Ü‚·BŽw’è‚µ‚½ƒtƒŒ[ƒ€”Ô†‚ÉƒL[‚ª‘¶Ý‚µ‚È‚¢ê‡‚ÍŽ©“®“I‚Éì¬‚µ‚Ä‚©‚çÝ’è‚µ‚Ü‚·B
+
+gpi‚Ídim gpi, GPI_MAX‚Åì¬‚µ‚Ü‚·B
+GPI_‚ÅŽn‚Ü‚é’è”‚Íe3dhsp3.as‚Å’è‹`‚³‚ê‚Ä‚¢‚Ü‚·B
+
+GPI_ONGMODE‚Í
+Ú’nƒ‚[ƒh‚Å‚·BGROUND_NONE‚ðŽw’è‚µ‚½‚Æ‚«‚ÍÚ’n‚È‚µBGROUND_ONE‚ðŽw’è‚µ‚½‚Æ‚«‚ÍƒL[‚ÌuŠÔ‚¾‚¯Ú’nBGROUND_ON‚ðŽw’è‚µ‚½ê‡‚ÍŽŸ‚ÌƒL[‚Ü‚Å‚ÌŠÔÚ’n‚µ‚Ü‚·B
+GROUND_‚ÅŽn‚Ü‚é’è”‚Íe3dhsp3.as‚Å’è‹`‚³‚ê‚Ä‚¢‚Ü‚·B
+
+GPI_INTERP‚ÍƒL[ŠÔ‚Ì•âŠÔ•û–@‚Ö‚ÌƒCƒ“ƒfƒbƒNƒX‚Å‚·B‚O‚ðŽw’è‚·‚é‚ÆüŒ`A‚P‚ðŽw’è‚·‚é‚ÆƒXƒvƒ‰ƒCƒ“•âŠÔ‚É‚È‚è‚Ü‚·B
+‚»‚ê‚¼‚ê‚Ì’l‚É‚Í
+gpi( GPI_ONGMODE ) ‚È‚Ç‚Ì‚æ‚¤‚É‚µ‚ÄƒAƒNƒZƒX‚µ‚Ä‚­‚¾‚³‚¢B
+
+
+gpd‚Íddim gpd, GPD_MAX‚Åì¬‚µ‚Ü‚·B
+dim‚Å‚Í‚È‚­‚Äddim‚Å‚·B
+GPD_‚ÅŽn‚Ü‚é’è”‚Íe3dhsp3.as‚Å’è‹`‚³‚ê‚Ä‚¢‚Ü‚·B
+
+GPD_POSX
+GPD_POSY
+GPD_POSZ
+‚ÍƒLƒƒƒ‰ƒNƒ^[‚ÌˆÊ’uÀ•W‚Å‚·B
+
+GPD_ROTX
+GPD_ROTY
+GPD_ROTZ
+‚ÍƒLƒƒƒ‰ƒNƒ^[‚Ì‰ñ“]Šp“x‚Å‚·B
+Z,X,Y‚Ì‡”Ô‚É‰ñ“]‚µ‚Ü‚·B
+
+GPD_RAYY‚Í
+Ú’n—p‚ÌƒŒƒC‚ÌŽn“_‚ÌYÀ•W‚Å‚·B
+
+GPD_RAYLENG‚Í
+Ú’n—p‚ÌƒŒƒC‚Ì’·‚³‚Å‚·B
+
+GPD_OFFSETY‚Í
+Ú’n—p‚Ì’n–Ê‚©‚ç‚Ì‚‚³‚Å‚·B
+
+‚»‚ê‚¼‚ê‚Ì’l‚É‚Ígpd( GPD_POSX )‚È‚Ç‚Ì‚æ‚¤‚É‚µ‚ÄƒAƒNƒZƒX‚µ‚Ä‚­‚¾‚³‚¢B
+
+
+E3DSetGPKey‚ðŒÄ‚Ño‚µ‚Ä‚àÄ¶—p‚Ìƒf[ƒ^‚É‚Í”½‰f‚³‚ê‚Ü‚¹‚ñBÄ¶—p‚Ìƒf[ƒ^‚É”½‰f‚µ‚½‚¢ê‡‚ÍE3DCalcGPFullFrame‚ðŒÄ‚Ño‚µ‚Ä‚­‚¾‚³‚¢B
+E3DCalcGPFullFrame‚Íd‚¢ˆ—‚Å‚·‚Ì‚Å‘S‚Ä‚ÌE3DSetGPKey‚ªI‚í‚Á‚Ä‚©‚çÅŒã‚É‚P“x‚¾‚¯ŒÄ‚Ño‚·‚æ‚¤‚É‚·‚é‚Æ—Ç‚¢‚Å‚·B
+
+
+
+
+
+¨ˆø”
+1. [IN] •Ï”‚Ü‚½‚ÍA”’l@F@hsid@@ƒ‚ƒfƒ‹‚ðŽ¯•Ê‚·‚é”Ô†‚ðŽw’è‚µ‚Ä‚­‚¾‚³‚¢B
+
+2. [IN] •Ï”‚Ü‚½‚ÍA”’l@F@animno
+@@GPƒAƒjƒ‚ðŽ¯•Ê‚·‚é”Ô†‚ðŽw’è‚µ‚Ä‚­‚¾‚³‚¢B
+3. [IN] 
+•Ï”‚Ü‚½‚ÍA”’l@F@frameno@@ƒtƒŒ[ƒ€”Ô†‚ðŽw’è‚µ‚Ä‚­‚¾‚³‚¢B
+
+4. [IN] ”z—ñ‚Ì•Ï”@F@gpi
+@@GPƒL[‚Ì®”ƒƒ“ƒo‚ðƒZƒbƒg‚µ‚Ü‚·B@@Ú‚µ‚­‚Í‘O‹L‚ð‚²——‚­‚¾‚³‚¢B
+
+5. [IN] ”z—ñ‚Ì•Ï”@F@gpd@@ŽÀ”Œ^‚Ì”z—ñ‚Ì•Ï”B
+@@GPƒL[‚ÌŽÀ”ƒƒ“ƒo‚ðƒZƒbƒg‚µ‚Ü‚·B@@Ú‚µ‚­‚Í‘O‹L‚ð‚²——‚­‚¾‚³‚¢B
+
+
+
+
+ƒo[ƒWƒ‡ƒ“ : ver5.2.2.9‚Å’Ç‰Á
+
+%index
+E3DGetGPKey
+GPƒAƒjƒ‚ÌƒL[‚Ìî•ñ‚ðŽæ“¾‚µ‚Ü‚·B
+%group
+Easy3D For HSP3 : GPA
+
+%prm
+p1,p2,p3,p4,p5,p6
+p1 : [IN] •Ï”‚Ü‚½‚ÍA”’l@F@hsid@@ƒ‚ƒfƒ‹‚ðŽ¯•Ê‚·‚é”Ô†‚ðŽw’è‚µ‚Ä‚­‚¾‚³‚¢B
+p2 : [IN] •Ï”‚Ü‚½‚ÍA”’l@F@animno
+p3 : [IN] 
+p4 : [OUT] ”z—ñ‚Ì•Ï”@F@gpi
+p5 : [OUT] ”z—ñ‚Ì•Ï”@F@gpd@@ŽÀ”Œ^‚Ì”z—ñ‚Ì•Ï”B
+p6 : [OUT] 
+
+%inst
+GPƒAƒjƒ‚ÌƒL[‚Ìî•ñ‚ðŽæ“¾‚µ‚Ü‚·BŽw’è‚µ‚½ƒtƒŒ[ƒ€”Ô†‚ÉƒL[‚ª–³‚¢ê‡‚Í•âŠÔŒvŽZ‚µ‚Äî•ñ‚ðŽæ“¾‚µ‚Ü‚·B
+
+gpi, gpd‚É‚Â‚¢‚Ä‚ÍE3DSetGPKey‚Ìà–¾‚ð‚²——‚­‚¾‚³‚¢B
+
+
+
+¨ˆø”
+1. [IN] •Ï”‚Ü‚½‚ÍA”’l@F@hsid@@ƒ‚ƒfƒ‹‚ðŽ¯•Ê‚·‚é”Ô†‚ðŽw’è‚µ‚Ä‚­‚¾‚³‚¢B
+
+2. [IN] •Ï”‚Ü‚½‚ÍA”’l@F@animno
+@@GPƒAƒjƒ‚ðŽ¯•Ê‚·‚é”Ô†‚ðŽw’è‚µ‚Ä‚­‚¾‚³‚¢B
+3. [IN] 
+•Ï”‚Ü‚½‚ÍA”’l@F@frameno@@ƒtƒŒ[ƒ€”Ô†‚ðŽw’è‚µ‚Ä‚­‚¾‚³‚¢B
+
+4. [OUT] ”z—ñ‚Ì•Ï”@F@gpi
+@@GPƒL[‚Ì®”ƒƒ“ƒo‚ª‘ã“ü‚³‚ê‚Ü‚·B
+
+5. [OUT] ”z—ñ‚Ì•Ï”@F@gpd@@ŽÀ”Œ^‚Ì”z—ñ‚Ì•Ï”B
+@@GPƒL[‚ÌŽÀ”ƒƒ“ƒo‚ª‘ã“ü‚³‚ê‚Ü‚·B
+6. [OUT] 
+•Ï”@F@exsitflag@@Žw’è‚µ‚½ƒtƒŒ[ƒ€”Ô†‚ÉƒL[‚ª‚ ‚Á‚½ê‡‚Í‚P‚ª@@–³‚©‚Á‚½ê‡‚É‚Í‚O‚ª‘ã“ü‚³‚ê‚Ü‚·B
+
+
+
+
+ƒo[ƒWƒ‡ƒ“ : ver5.2.2.9‚Å’Ç‰Á
+
+%index
+E3DDeleteGPKey
+GPƒAƒjƒ‚ÌƒL[‚ðíœ‚µ‚Ü‚·B
+%group
+Easy3D For HSP3 : GPA
+
+%prm
+p1,p2,p3
+p1 : [IN] •Ï”‚Ü‚½‚ÍA”’l@F@hsid@@ƒ‚ƒfƒ‹‚ðŽ¯•Ê‚·‚é”Ô†‚ðŽw’è‚µ‚Ä‚­‚¾‚³‚¢B
+p2 : [IN] •Ï”‚Ü‚½‚ÍA”’l@F@animno@@ƒJƒƒ‰ƒAƒjƒ‚ðŽ¯•Ê‚·‚é”Ô†‚ðŽw’è‚µ‚Ä‚­‚¾‚³‚¢B
+p3 : [IN] 
+
+%inst
+GPƒAƒjƒ‚ÌƒL[‚ðíœ‚µ‚Ü‚·B
+
+E3DDeleteGPKey‚ðŒÄ‚Ño‚µ‚Ä‚àÄ¶—p‚Ìƒf[ƒ^‚É‚Í”½‰f‚³‚ê‚Ü‚¹‚ñBÄ¶—p‚Ìƒf[ƒ^‚É”½‰f‚µ‚½‚¢ê‡‚ÍE3DCalcGPFullFrame‚ðŒÄ‚Ño‚µ‚Ä‚­‚¾‚³‚¢B
+E3DCalcGPFullFrame‚Íd‚¢ˆ—‚Å‚·‚Ì‚Å‘S‚Ä‚ÌE3DDeleteGPKey‚ªI‚í‚Á‚Ä‚©‚çÅŒã‚É‚P“x‚¾‚¯ŒÄ‚Ño‚·‚æ‚¤‚É‚·‚é‚Æ—Ç‚¢‚Å‚·B
+
+
+
+
+¨ˆø”
+1. [IN] •Ï”‚Ü‚½‚ÍA”’l@F@hsid@@ƒ‚ƒfƒ‹‚ðŽ¯•Ê‚·‚é”Ô†‚ðŽw’è‚µ‚Ä‚­‚¾‚³‚¢B
+
+2. [IN] •Ï”‚Ü‚½‚ÍA”’l@F@animno@@ƒJƒƒ‰ƒAƒjƒ‚ðŽ¯•Ê‚·‚é”Ô†‚ðŽw’è‚µ‚Ä‚­‚¾‚³‚¢B
+3. [IN] 
+•Ï”‚Ü‚½‚ÍA”’l@F@frameno@@ƒtƒŒ[ƒ€”Ô†‚ðŽw’è‚µ‚Ä‚­‚¾‚³‚¢B
+
+
+
+ƒo[ƒWƒ‡ƒ“ : ver5.2.2.9‚Å’Ç‰Á
+
+%index
+E3DGetGPKeyframeNoRange
+start‚Æend‚ÅŽw’è‚µ‚½ƒtƒŒ[ƒ€”ÍˆÍ‚ÌƒL[ƒtƒŒ[ƒ€‚ÌŒÂ”‚ÆƒtƒŒ[ƒ€”Ô†‚ðŽæ“¾‚µ‚Ü‚·B
+%group
+Easy3D For HSP3 : GPA
+
+%prm
+p1,p2,p3,p4,p5,p6,p7
+p1 : [IN] •Ï”‚Ü‚½‚ÍA”’l@F@hsid@@ƒ‚ƒfƒ‹‚ðŽ¯•Ê‚·‚é”Ô†‚ðŽw’è‚µ‚Ä‚­‚¾‚³‚¢B
+p2 : [IN] •Ï”‚Ü‚½‚ÍA”’l@F@animno
+p3 : [IN] •Ï”‚Ü‚½‚ÍA”’l@F@start4. 
+
+%inst
+start‚Æend‚ÅŽw’è‚µ‚½ƒtƒŒ[ƒ€”ÍˆÍ‚ÌƒL[ƒtƒŒ[ƒ€‚ÌŒÂ”‚ÆƒtƒŒ[ƒ€”Ô†‚ðŽæ“¾‚µ‚Ü‚·B
+arrayleng‚É‚O‚ðŽw’è‚µ‚ÄŒÄ‚Ño‚·‚Æframearrayˆø”‚Ö‚Ì‘ã“ü‚ðs‚í‚¸‚ÉƒL[‚ÌŒÂ”‚Ì‚Ý‚ðŽæ“¾‚µ‚Ü‚·B
+
+E3DGeGPKeyframeNoRange animno, start, end, dummy, 0, keynum
+dim framearray, 
+keynum
+
+E3DGetGPKeyframeNoRange animno, start, end, framearray, keynum, chknum
+‚Ì‚æ‚¤‚É‚µ‚ÄŽg‚Á‚Ä‚­‚¾‚³‚¢B
+
+
+
+
+¨ˆø”
+1. [IN] •Ï”‚Ü‚½‚ÍA”’l@F@hsid@@ƒ‚ƒfƒ‹‚ðŽ¯•Ê‚·‚é”Ô†‚ðŽw’è‚µ‚Ä‚­‚¾‚³‚¢B
+
+2. [IN] •Ï”‚Ü‚½‚ÍA”’l@F@animno
+@@GPƒAƒjƒ‚ðŽ¯•Ê‚·‚é”Ô†‚ðŽw’è‚µ‚Ä‚­‚¾‚³‚¢B
+3. [IN] •Ï”‚Ü‚½‚ÍA”’l@F@start4. 
+[IN] •Ï”‚Ü‚½‚ÍA”’l@F@end@@ƒL[‚ð’²‚×‚½‚¢ƒtƒŒ[ƒ€”Ô†‚ÌÅ‰‚ÆÅŒã‚Ì’l‚ðŽw’è‚µ‚Ä‚­‚¾‚³‚¢B
+5. [OUT] 
+”z—ñ‚Ì•Ï”@F@framearray@@ƒtƒŒ[ƒ€”Ô†‚ªgetnumŒÂ‚¾‚¯‘ã“ü‚³‚ê‚Ü‚·B@@arrayleng‚ª‚O‚Ìê‡‚Í‘ã“ü‚³‚ê‚Ü‚¹‚ñB
+6. 
+[IN] 
+•Ï”‚Ü‚½‚ÍA”’l@F@arrayleng@@framearray‚Ì”z—ñ’·i—v‘f”j‚ðŽw’è‚µ‚Ä‚­‚¾‚³‚¢B@@‚O‚ðŽw’è‚·‚é‚ÆƒL[‚ÌŒÂ”‚¾‚¯‚ð’²‚×‚Ü‚·B
+7. 
+[OUT] •Ï”@F@getnum@@Žæ“¾‚µ‚½ƒL[ƒtƒŒ[ƒ€”Ô†‚ÌŒÂ”‚ª‘ã“ü‚³‚ê‚Ü‚·B
+
+
+
+ƒo[ƒWƒ‡ƒ“ : ver5.2.2.9‚Å’Ç‰Á
+
+%index
+E3DCalcGPFullFrame
+GPƒAƒjƒ‚ÌƒL[î•ñ‚©‚ç‘S‚Ä‚ÌƒtƒŒ[ƒ€‚ÌŽp¨î•ñ‚ðŒvŽZ‚µ‚Ü‚·B
+%group
+Easy3D For HSP3 : GPA
+
+%prm
+p1,p2
+p1 : [IN] •Ï”‚Ü‚½‚ÍA”’l@F@hsid@@ƒ‚ƒfƒ‹‚ðŽ¯•Ê‚·‚é”Ô†‚ðŽw’è‚µ‚Ä‚­‚¾‚³‚¢B
+p2 : [IN] •Ï”‚Ü‚½‚ÍA”’l@F@animno
+
+%inst
+GPƒAƒjƒ‚ÌƒL[î•ñ‚©‚ç‘S‚Ä‚ÌƒtƒŒ[ƒ€‚ÌŽp¨î•ñ‚ðŒvŽZ‚µ‚Ü‚·B
+‚±‚ÌŒ‹‰Ê‚ÍGPƒAƒjƒ‚ÌÄ¶‚âE3DGetGPKey‚È‚Ç‚ÉŽg‚í‚ê‚Ü‚·B
+
+d‚¢ˆ—‚Å‚·‚Ì‚Å‚È‚é‚×‚­ŒÄ‚Ño‚µ‰ñ”‚Í­‚È‚­‚µ‚Ä‚­‚¾‚³‚¢B
+
+
+
+
+¨ˆø”
+1. [IN] •Ï”‚Ü‚½‚ÍA”’l@F@hsid@@ƒ‚ƒfƒ‹‚ðŽ¯•Ê‚·‚é”Ô†‚ðŽw’è‚µ‚Ä‚­‚¾‚³‚¢B
+
+2. [IN] •Ï”‚Ü‚½‚ÍA”’l@F@animno
+@@GPƒAƒjƒ‚ðŽ¯•Ê‚·‚é”Ô†‚ðŽw’è‚µ‚Ä‚­‚¾‚³‚¢B
+
+
+ƒo[ƒWƒ‡ƒ“ : ver5.2.2.9‚Å’Ç‰Á
+
+%index
+E3DSetGPGroundHSID
+GPƒAƒjƒ‚ÌÚ’n—p‚Ì’n–Ê‚ÌHSID‚ðŽw’è‚µ‚Ü‚·B
+%group
+Easy3D For HSP3 : GPA
+
+%prm
+p1,p2,p3
+p1 : [IN] •Ï”‚Ü‚½‚ÍA”’l@F@hsid@@ƒ‚ƒfƒ‹‚ðŽ¯•Ê‚·‚é”Ô†‚ðŽw’è‚µ‚Ä‚­‚¾‚³‚¢B
+p2 : [IN] •Ï”‚Ü‚½‚ÍA”’l@F@animno
+p3 : [IN] •Ï”‚Ü‚½‚ÍA”’l@F@ghsid
+
+%inst
+GPƒAƒjƒ‚ÌÚ’n—p‚Ì’n–Ê‚ÌHSID‚ðŽw’è‚µ‚Ü‚·B
+
+
+¨ˆø”
+1. [IN] •Ï”‚Ü‚½‚ÍA”’l@F@hsid@@ƒ‚ƒfƒ‹‚ðŽ¯•Ê‚·‚é”Ô†‚ðŽw’è‚µ‚Ä‚­‚¾‚³‚¢B
+
+2. [IN] •Ï”‚Ü‚½‚ÍA”’l@F@animno
+@@GPƒAƒjƒ‚ðŽ¯•Ê‚·‚é”Ô†‚ðŽw’è‚µ‚Ä‚­‚¾‚³‚¢B
+
+3. [IN] •Ï”‚Ü‚½‚ÍA”’l@F@ghsid
+@@Ú’n—p‚Ì’n–Ê‚Ìƒ‚ƒfƒ‹ƒf[ƒ^‚ðŽ¯•Ê‚·‚éIDB
+
+
+
+ƒo[ƒWƒ‡ƒ“ : ver5.2.2.9‚Å’Ç‰Á
+
+%index
+E3DGetGPGroundHSID
+GPƒAƒjƒ‚ÌÚ’n—p‚Ì’n–Ê‚ÌHSID‚ðŽæ“¾‚µ‚Ü‚·B
+%group
+Easy3D For HSP3 : GPA
+
+%prm
+p1,p2,p3
+p1 : [IN] •Ï”‚Ü‚½‚ÍA”’l@F@hsid@@ƒ‚ƒfƒ‹‚ðŽ¯•Ê‚·‚é”Ô†‚ðŽw’è‚µ‚Ä‚­‚¾‚³‚¢B
+p2 : [IN] •Ï”‚Ü‚½‚ÍA”’l@F@animno
+p3 : [OUT] •Ï”@F@ghsid
+
+%inst
+GPƒAƒjƒ‚ÌÚ’n—p‚Ì’n–Ê‚ÌHSID‚ðŽæ“¾‚µ‚Ü‚·B
+
+
+¨ˆø”
+1. [IN] •Ï”‚Ü‚½‚ÍA”’l@F@hsid@@ƒ‚ƒfƒ‹‚ðŽ¯•Ê‚·‚é”Ô†‚ðŽw’è‚µ‚Ä‚­‚¾‚³‚¢B
+
+2. [IN] •Ï”‚Ü‚½‚ÍA”’l@F@animno
+@@GPƒAƒjƒ‚ðŽ¯•Ê‚·‚é”Ô†‚ðŽw’è‚µ‚Ä‚­‚¾‚³‚¢B
+
+3. [OUT] •Ï”@F@ghsid
+@@Ú’n—p‚Ì’n–Ê‚Ìƒ‚ƒfƒ‹ƒf[ƒ^‚ðŽ¯•Ê‚·‚éID‚ª‘ã“ü‚³‚ê‚Ü‚·B
+
+
+
+ƒo[ƒWƒ‡ƒ“ : ver5.2.2.9‚Å’Ç‰Á
+
+%index
+E3DLoadMOEFile
+RokDeBone2‚Åì¬‚µ‚½MOEƒtƒ@ƒCƒ‹i*.moej‚ð“Ç‚Ýž‚ÝƒAƒjƒ”Ô†‚ðŽæ“¾‚µ‚Ü‚·B
+%group
+Easy3D For HSP3 : MOE
+
+%prm
+p1,p2,p3
+p1 : [IN] •Ï”‚Ü‚½‚ÍA”’l@F@hsid@@ƒ‚ƒfƒ‹‚ðŽ¯•Ê‚·‚é”Ô†‚ðŽw’è‚µ‚Ä‚­‚¾‚³‚¢B
+p2 : [IN] 
+p3 : [OUT] 
+
+%inst
+RokDeBone2‚Åì¬‚µ‚½MOEƒtƒ@ƒCƒ‹i*.moej‚ð“Ç‚Ýž‚ÝƒAƒjƒ”Ô†‚ðŽæ“¾‚µ‚Ü‚·B
+
+
+¨ˆø”
+1. [IN] •Ï”‚Ü‚½‚ÍA”’l@F@hsid@@ƒ‚ƒfƒ‹‚ðŽ¯•Ê‚·‚é”Ô†‚ðŽw’è‚µ‚Ä‚­‚¾‚³‚¢B
+2. [IN] 
+•¶Žš—ñ‚Ü‚½‚ÍA•¶Žš—ñ‚Ì•Ï”@F@filename
+@@MOEƒtƒ@ƒCƒ‹‚Ìƒtƒ@ƒCƒ‹–¼‚ðƒtƒ‹ƒpƒX‚ÅŽw’è‚µ‚Ä‚­‚¾‚³‚¢B
+3. [OUT] 
+•Ï”@F@animno@@“Ç‚Ýž‚ñ‚¾ƒAƒjƒ‚ðŽ¯•Ê‚·‚éƒAƒjƒ”Ô†‚ª‘ã“ü‚³‚ê‚Ü‚·B
+
+
+
+
+ƒo[ƒWƒ‡ƒ“ : ver5.2.3.1
+
+%index
+E3DDestroyMOEAnim
+MOEƒAƒjƒ‚ð”jŠü‚µ‚Ü‚·B
+%group
+Easy3D For HSP3 : MOE
+
+%prm
+p1,p2
+p1 : [IN] •Ï”‚Ü‚½‚ÍA”’l@F@hsid@@ƒ‚ƒfƒ‹‚ðŽ¯•Ê‚·‚é”Ô†‚ðŽw’è‚µ‚Ä‚­‚¾‚³‚¢B
+p2 : [IN] 
+
+%inst
+MOEƒAƒjƒ‚ð”jŠü‚µ‚Ü‚·B
+
+
+¨ˆø”
+1. [IN] •Ï”‚Ü‚½‚ÍA”’l@F@hsid@@ƒ‚ƒfƒ‹‚ðŽ¯•Ê‚·‚é”Ô†‚ðŽw’è‚µ‚Ä‚­‚¾‚³‚¢B
+2. [IN] 
+•Ï”‚Ü‚½‚ÍA”’l@F@animno
+@@MOEƒAƒjƒ‚ðŽ¯•Ê‚·‚é”Ô†‚ðŽw’è‚µ‚Ä‚­‚¾‚³‚¢B
+
+
+
+ƒo[ƒWƒ‡ƒ“ : ver5.2.3.1
+
+%index
+E3DSaveMOEFile
+MOEƒAƒjƒ‚ðƒeƒLƒXƒgƒtƒ@ƒCƒ‹‚É•Û‘¶‚µ‚Ü‚·B
+%group
+Easy3D For HSP3 : MOE
+
+%prm
+p1,p2,p3
+p1 : [IN] •Ï”‚Ü‚½‚ÍA”’l@F@hsid@@ƒ‚ƒfƒ‹‚ðŽ¯•Ê‚·‚é”Ô†‚ðŽw’è‚µ‚Ä‚­‚¾‚³‚¢B
+p2 : [IN] 
+p3 : [IN] 
+
+%inst
+MOEƒAƒjƒ‚ðƒeƒLƒXƒgƒtƒ@ƒCƒ‹‚É•Û‘¶‚µ‚Ü‚·B
+
+
+¨ˆø”
+1. [IN] •Ï”‚Ü‚½‚ÍA”’l@F@hsid@@ƒ‚ƒfƒ‹‚ðŽ¯•Ê‚·‚é”Ô†‚ðŽw’è‚µ‚Ä‚­‚¾‚³‚¢B
+2. [IN] 
+•¶Žš—ñ‚Ü‚½‚ÍA•¶Žš—ñ‚Ì•Ï”@F@filename
+@@MOEƒtƒ@ƒCƒ‹‚Ìƒtƒ@ƒCƒ‹–¼‚ðƒtƒ‹ƒpƒX‚ÅŽw’è‚µ‚Ä‚­‚¾‚³‚¢B
+3. [IN] 
+•Ï”‚Ü‚½‚ÍA”’l@F@animno
+@@MOEƒAƒjƒ‚ðŽ¯•Ê‚·‚é”Ô†‚ðŽw’è‚µ‚Ä‚­‚¾‚³‚¢B
+
+
+
+
+ƒo[ƒWƒ‡ƒ“ : ver5.2.3.1
+
+%index
+E3DSetMOEAnimNo
+ƒJƒŒƒ“ƒg‚ÌMOEƒAƒjƒ”Ô†‚ðƒZƒbƒg‚µ‚Ü‚·B
+%group
+Easy3D For HSP3 : MOE
+
+%prm
+p1,p2
+p1 : [IN] •Ï”‚Ü‚½‚ÍA”’l@F@hsid@@ƒ‚ƒfƒ‹‚ðŽ¯•Ê‚·‚é”Ô†‚ðŽw’è‚µ‚Ä‚­‚¾‚³‚¢B
+p2 : [IN] 
+
+%inst
+ƒJƒŒƒ“ƒg‚ÌMOEƒAƒjƒ”Ô†‚ðƒZƒbƒg‚µ‚Ü‚·BƒtƒŒ[ƒ€”Ô†‚Í‚O‚É–ß‚è‚Ü‚·B
+
+
+¨ˆø”
+1. [IN] •Ï”‚Ü‚½‚ÍA”’l@F@hsid@@ƒ‚ƒfƒ‹‚ðŽ¯•Ê‚·‚é”Ô†‚ðŽw’è‚µ‚Ä‚­‚¾‚³‚¢B
+2. [IN] 
+•Ï”‚Ü‚½‚ÍA”’l@F@animno
+@@MOEƒAƒjƒ‚ðŽ¯•Ê‚·‚é”Ô†‚ðŽw’è‚µ‚Ä‚­‚¾‚³‚¢B
+
+
+ƒo[ƒWƒ‡ƒ“ : ver5.2.3.1
+
+%index
+E3DGetMOEAnimNo
+ƒJƒŒƒ“ƒg‚ÌGPƒAƒjƒ”Ô†‚ðŽæ“¾‚µ‚Ü‚·B
+%group
+Easy3D For HSP3 : MOE
+
+%prm
+p1,p2
+p1 : [IN] •Ï”‚Ü‚½‚ÍA”’l@F@hsid@@ƒ‚ƒfƒ‹‚ðŽ¯•Ê‚·‚é”Ô†‚ðŽw’è‚µ‚Ä‚­‚¾‚³‚¢B
+p2 : [OUT] 
+
+%inst
+ƒJƒŒƒ“ƒg‚ÌGPƒAƒjƒ”Ô†‚ðŽæ“¾‚µ‚Ü‚·B
+
+
+
+
+¨ˆø”
+1. [IN] •Ï”‚Ü‚½‚ÍA”’l@F@hsid@@ƒ‚ƒfƒ‹‚ðŽ¯•Ê‚·‚é”Ô†‚ðŽw’è‚µ‚Ä‚­‚¾‚³‚¢B
+2. [OUT] 
+•Ï”@F@animno
+@@MOEƒAƒjƒ‚ðŽ¯•Ê‚·‚é”Ô†‚ª‘ã“ü‚³‚ê‚Ü‚·B
+
+
+
+ƒo[ƒWƒ‡ƒ“ : ver5.2.3.1
+
+%index
+E3DSetMOEFrameNo
+Ä¶‚·‚éMOEƒAƒjƒ‚ÌƒAƒjƒ”Ô†‚ÆƒtƒŒ[ƒ€”Ô†‚ðÝ’è‚µ‚Ü‚·B
+%group
+Easy3D For HSP3 : MOE
+
+%prm
+p1,p2,p3,p4
+p1 : [IN] •Ï”‚Ü‚½‚ÍA”’l@F@hsid@@ƒ‚ƒfƒ‹‚ðŽ¯•Ê‚·‚é”Ô†‚ðŽw’è‚µ‚Ä‚­‚¾‚³‚¢B
+p2 : [IN] 
+p3 : [IN] 
+p4 : [IN] 
+
+%inst
+Ä¶‚·‚éMOEƒAƒjƒ‚ÌƒAƒjƒ”Ô†‚ÆƒtƒŒ[ƒ€”Ô†‚ðÝ’è‚µ‚Ü‚·B
+
+
+¨ˆø”
+1. [IN] •Ï”‚Ü‚½‚ÍA”’l@F@hsid@@ƒ‚ƒfƒ‹‚ðŽ¯•Ê‚·‚é”Ô†‚ðŽw’è‚µ‚Ä‚­‚¾‚³‚¢B
+2. [IN] 
+•Ï”‚Ü‚½‚ÍA”’l@F@animno
+@@MOEƒAƒjƒ‚ðŽ¯•Ê‚·‚é”Ô†‚ðŽw’è‚µ‚Ä‚­‚¾‚³‚¢B
+3. [IN] 
+•Ï”‚Ü‚½‚ÍA”’l@F@frameno@@ƒtƒŒ[ƒ€”Ô†‚ðŽw’è‚µ‚Ä‚­‚¾‚³‚¢B
+4. [IN] 
+•Ï”‚Ü‚½‚ÍA”’l@F@isfirst
+@@‚±‚Ì–½—ß‚ðŒÄ‚ñ‚¾Œã‚ÉE3DSetNewMOE‚ðŒÄ‚Ño‚·ê‡‚Í‚P‚ðAŒÄ‚Ño‚³‚È‚¢ê‡‚Í‚O‚ðŽw’è‚µ‚Ü‚·B
+
+
+ƒo[ƒWƒ‡ƒ“ : ver5.2.3.1
+
+%index
+E3DGetMOEFrameNo
+Œ»ÝÄ¶’†‚ÌMOEƒAƒjƒ‚ÌƒAƒjƒ”Ô†AƒtƒŒ[ƒ€”Ô†‚ðŽæ“¾‚µ‚Ü‚·B
+%group
+Easy3D For HSP3 : MOE
+
+%prm
+p1,p2,p3
+p1 : [IN] •Ï”‚Ü‚½‚ÍA”’l@F@hsid@@ƒ‚ƒfƒ‹‚ðŽ¯•Ê‚·‚é”Ô†‚ðŽw’è‚µ‚Ä‚­‚¾‚³‚¢B
+p2 : [OUT] 
+p3 : [OUT] 
+
+%inst
+Œ»ÝÄ¶’†‚ÌMOEƒAƒjƒ‚ÌƒAƒjƒ”Ô†AƒtƒŒ[ƒ€”Ô†‚ðŽæ“¾‚µ‚Ü‚·B
+
+
+¨ˆø”
+1. [IN] •Ï”‚Ü‚½‚ÍA”’l@F@hsid@@ƒ‚ƒfƒ‹‚ðŽ¯•Ê‚·‚é”Ô†‚ðŽw’è‚µ‚Ä‚­‚¾‚³‚¢B
+2. [OUT] 
+•Ï”@F@animno
+@@MOEƒAƒjƒ‚ðŽ¯•Ê‚·‚é”Ô†‚ª‘ã“ü‚³‚ê‚Ü‚·B
+3. [OUT] 
+•Ï”@F@frameno@@ƒtƒŒ[ƒ€”Ô†‚ª‘ã“ü‚³‚ê‚Ü‚·B
+
+
+
+ƒo[ƒWƒ‡ƒ“ : ver5.2.3.1
+
+%index
+E3DSetNewMOE
+ƒAƒjƒ‚ÌƒtƒŒ[ƒ€‚ðƒAƒjƒƒ^ƒCƒv‚É]‚Á‚Äi‚ßAV‚µ‚¢MOEî•ñ‚ðƒZƒbƒg‚µ‚Ü‚·B
+%group
+Easy3D For HSP3 : MOE
+
+%prm
+p1
+p1 : [IN] •Ï”‚Ü‚½‚ÍA”’l@F@hsid@@ƒ‚ƒfƒ‹‚ðŽ¯•Ê‚·‚é”Ô†‚ðŽw’è‚µ‚Ä‚­‚¾‚³‚¢B
+
+%inst
+ƒAƒjƒ‚ÌƒtƒŒ[ƒ€‚ðƒAƒjƒƒ^ƒCƒv‚É]‚Á‚Äi‚ßAV‚µ‚¢MOEî•ñ‚ðƒZƒbƒg‚µ‚Ü‚·B
+
+
+¨ˆø”
+1. [IN] •Ï”‚Ü‚½‚ÍA”’l@F@hsid@@ƒ‚ƒfƒ‹‚ðŽ¯•Ê‚·‚é”Ô†‚ðŽw’è‚µ‚Ä‚­‚¾‚³‚¢B
+
+ƒo[ƒWƒ‡ƒ“ : ver5.2.3.1
+
+%index
+E3DSetNextMOEAnimFrameNo
+animno‚ÅŽ¯•Ê‚³‚ê‚éƒAƒjƒ‚ªbefframeno‚ÌƒtƒŒ[ƒ€”Ô†‚É’B‚µ‚½‚çnextanimno‚ÅŽ¯•Ê‚³‚ê‚éƒAƒjƒ‚Ìnextframeno‚ÉØ‚è‘Ö‚¦‚é‚±‚Æ‚ð—\–ñ‚µ‚Ü‚·B
+%group
+Easy3D For HSP3 : MOE
+
+%prm
+p1,p2,p3,p4,p5
+p1 : [IN] •Ï”‚Ü‚½‚ÍA”’l@F@hsid@@ƒ‚ƒfƒ‹‚ðŽ¯•Ê‚·‚é”Ô†‚ðŽw’è‚µ‚Ä‚­‚¾‚³‚¢B
+p2 : [IN] 
+p3 : [IN] 
+p4 : [IN] 
+p5 : [IN] 
+
+%inst
+animno‚ÅŽ¯•Ê‚³‚ê‚éƒAƒjƒ‚ªbefframeno‚ÌƒtƒŒ[ƒ€”Ô†‚É’B‚µ‚½‚çnextanimno‚ÅŽ¯•Ê‚³‚ê‚éƒAƒjƒ‚Ìnextframeno‚ÉØ‚è‘Ö‚¦‚é‚±‚Æ‚ð—\–ñ‚µ‚Ü‚·B
+ƒAƒjƒ‚ÌØ‚è‘Ö‚¦‚ÍE3DSetNewMOE‚Ås‚í‚ê‚Ü‚·B
+
+
+
+¨ˆø”
+1. [IN] •Ï”‚Ü‚½‚ÍA”’l@F@hsid@@ƒ‚ƒfƒ‹‚ðŽ¯•Ê‚·‚é”Ô†‚ðŽw’è‚µ‚Ä‚­‚¾‚³‚¢B
+2. [IN] 
+•Ï”‚Ü‚½‚ÍA”’l@F@animno
+@@MOEƒAƒjƒ‚ðŽ¯•Ê‚·‚é”Ô†‚ðŽw’è‚µ‚Ä‚­‚¾‚³‚¢B
+3. [IN] 
+•Ï”‚Ü‚½‚ÍA”’l@F@nextanimno
+@@Ø‚è‘Ö‚¦æ‚ÌMOEƒAƒjƒ‚ðŽ¯•Ê‚·‚é”Ô†‚ðŽw’è‚µ‚Ä‚­‚¾‚³‚¢B
+4. [IN] 
+•Ï”‚Ü‚½‚ÍA”’l@F@nextframeno
+@@Ø‚è‘Ö‚¦æ‚ÌMOEƒAƒjƒ‚ÌƒtƒŒ[ƒ€”Ô†‚ðŽw’è‚µ‚Ä‚­‚¾‚³‚¢B
+5. [IN] 
+•Ï”‚Ü‚½‚ÍA”’l@F@befframeno
+@@Ø‚è‘Ö‚¦‘O‚ÌMOEƒAƒjƒ‚ªbefframenoƒtƒŒ[ƒ€‚Ü‚Å’B‚µ‚½‚çƒAƒjƒ‚ÌØ‚è‘Ö‚¦‚ª‹N‚±‚è‚Ü‚·B@@-1‚ðŽw’è‚µ‚½ê‡‚ÍØ‚è‘Ö‚¦‘O‚ÌƒAƒjƒ‚ªÅIƒtƒŒ[ƒ€‚É’B‚µ‚½‚Æ‚«‚ÉƒAƒjƒ‚ªØ‚è‘Ö‚í‚è‚Ü‚·B
+
+
+
+
+ƒo[ƒWƒ‡ƒ“ : ver5.2.3.1
+
+%index
+E3DGetNextMOEAnimFrameNo
+E3DSetNextMOEAnimFrameNo‚ÅÝ’è‚µ‚½î•ñ‚ðŽæ“¾‚µ‚Ü‚·B
+%group
+Easy3D For HSP3 : MOE
+
+%prm
+p1,p2,p3,p4
+p1 : [IN] •Ï”‚Ü‚½‚ÍA”’l@F@hsid@@ƒ‚ƒfƒ‹‚ðŽ¯•Ê‚·‚é”Ô†‚ðŽw’è‚µ‚Ä‚­‚¾‚³‚¢B
+p2 : [IN] 
+p3 : [OUT] 
+p4 : [OUT] 
+
+%inst
+E3DSetNextMOEAnimFrameNo‚ÅÝ’è‚µ‚½î•ñ‚ðŽæ“¾‚µ‚Ü‚·B
+
+
+
+
+¨ˆø”
+1. [IN] •Ï”‚Ü‚½‚ÍA”’l@F@hsid@@ƒ‚ƒfƒ‹‚ðŽ¯•Ê‚·‚é”Ô†‚ðŽw’è‚µ‚Ä‚­‚¾‚³‚¢B
+2. [IN] 
+•Ï”‚Ü‚½‚ÍA”’l@F@animno
+@@MOEƒAƒjƒ‚ðŽ¯•Ê‚·‚é”Ô†‚ðŽw’è‚µ‚Ä‚­‚¾‚³‚¢B
+3. [OUT] 
+•Ï”@F@nextanimno
+@@Ø‚è‘Ö‚¦æ‚ÌMOEƒAƒjƒ‚ðŽ¯•Ê‚·‚é”Ô†‚ª‘ã“ü‚³‚ê‚Ü‚·B
+4. [OUT] 
+•Ï”@F@nextframeno
+@@Ø‚è‘Ö‚¦æ‚ÌMOEƒAƒjƒ‚ÌƒtƒŒ[ƒ€”Ô†‚ª‘ã“ü‚³‚ê‚Ü‚·B
+
+
+
+ƒo[ƒWƒ‡ƒ“ : ver5.2.3.1
+
+%index
+E3DCreateNewMOEAnim
+MOEƒAƒjƒ‚ðì¬‚µƒAƒjƒ‚ðŽ¯•Ê‚·‚é”Ô†‚ðŽæ“¾‚µ‚Ü‚·B
+%group
+Easy3D For HSP3 : MOE
+
+%prm
+p1,p2,p3,p4,p5
+p1 : [IN] •Ï”‚Ü‚½‚ÍA”’l@F@hsid@@ƒ‚ƒfƒ‹‚ðŽ¯•Ê‚·‚é”Ô†‚ðŽw’è‚µ‚Ä‚­‚¾‚³‚¢B
+p2 : [IN] 
+p3 : [IN] 
+
+%inst
+MOEƒAƒjƒ‚ðì¬‚µƒAƒjƒ‚ðŽ¯•Ê‚·‚é”Ô†‚ðŽæ“¾‚µ‚Ü‚·B
+
+
+¨ˆø”
+1. [IN] •Ï”‚Ü‚½‚ÍA”’l@F@hsid@@ƒ‚ƒfƒ‹‚ðŽ¯•Ê‚·‚é”Ô†‚ðŽw’è‚µ‚Ä‚­‚¾‚³‚¢B
+2. [IN] 
+•¶Žš—ñ‚Ü‚½‚ÍA•¶Žš—ñ‚Ì•Ï”@F@animname@@ƒAƒjƒ‚Ì–¼‘O‚ðŽw’è‚µ‚Ü‚·B@@‚Q‚T‚TƒoƒCƒg‚Ü‚Å‚Å‚·B
+3. [IN] 
+•Ï”‚Ü‚½‚ÍA”’l@F@animtype@@ƒAƒjƒ‚ÌU‚é•‘‚¢‚ðŽw’è‚µ‚Ü‚·B@@‚P‚ðŽw’è‚·‚é‚ÆƒtƒŒ[ƒ€”Ô†‚Íi‚Ý‚Ü‚¹‚ñB@@‚Q‚ðŽw’è‚·‚é‚ÆÅIƒtƒŒ[ƒ€”Ô†‚É’B‚µ‚½‚ç‚»‚Ìó‘Ô‚ðˆÛŽ‚µ‚Ü‚·B@@‚R‚ðŽw’è‚·‚é‚Æƒ‹[ƒv‚µ‚Ü‚·B@@‚S‚ðŽw’è‚·‚é‚Æƒsƒ“ƒ|ƒ“Ä¶‚µ‚Ü‚·B@@‚T‚ðŽw’è‚·‚é‚ÆÅIƒtƒŒ[ƒ€‚É’B‚µ‚½ŒãRokDeBone2‚ÅŽw’è‚µ‚½ƒtƒŒ[ƒ€‚ÉƒWƒƒƒ“ƒv‚µ‚Ü‚·B
+4. 
+[IN] •Ï”‚Ü‚½‚ÍA”’l@F@framenum
+@@MOEƒAƒjƒ‚ð‚ÌƒtƒŒ[ƒ€”‚ðŽw’è‚µ‚Ü‚·B
+5. [OUT] 
+•Ï”@F@animno@@ì¬‚µ‚½ƒAƒjƒ‚ðŽ¯•Ê‚·‚é”Ô†‚ª‘ã“ü‚³‚ê‚Ü‚·B
+
+ƒo[ƒWƒ‡ƒ“ : ver5.2.3.1
+
+%index
+E3DSetMOEFrameNum
+MOEƒAƒjƒ‚ÌƒtƒŒ[ƒ€’·‚ðÝ’è‚µ‚Ü‚·B
+%group
+Easy3D For HSP3 : MOE
+
+%prm
+p1,p2,p3
+p1 : [IN] •Ï”‚Ü‚½‚ÍA”’l@F@hsid@@ƒ‚ƒfƒ‹‚ðŽ¯•Ê‚·‚é”Ô†‚ðŽw’è‚µ‚Ä‚­‚¾‚³‚¢B
+p2 : [IN] 
+p3 : [IN] 
+
+%inst
+MOEƒAƒjƒ‚ÌƒtƒŒ[ƒ€’·‚ðÝ’è‚µ‚Ü‚·BŒ»Ý‚ÌƒtƒŒ[ƒ€’·‚æ‚è‚à¬‚³‚¢’l‚ðŽw’è‚µ‚½ê‡‚Í”ÍˆÍ‚©‚ç‚Í‚Ýo‚½ƒL[‚Ííœ‚³‚ê‚Ü‚·B
+
+
+¨ˆø”
+1. [IN] •Ï”‚Ü‚½‚ÍA”’l@F@hsid@@ƒ‚ƒfƒ‹‚ðŽ¯•Ê‚·‚é”Ô†‚ðŽw’è‚µ‚Ä‚­‚¾‚³‚¢B
+2. [IN] 
+•Ï”‚Ü‚½‚ÍA”’l@F@animno@@GPƒAƒjƒ‚ðŽ¯•Ê‚·‚é”Ô†‚ðŽw’è‚µ‚Ä‚­‚¾‚³‚¢B
+3. [IN] 
+•Ï”‚Ü‚½‚ÍA”’l@F@framenum@@ƒtƒŒ[ƒ€’·‚ðŽw’è‚µ‚Ä‚­‚¾‚³‚¢B
+
+
+
+
+ƒo[ƒWƒ‡ƒ“ : ver5.2.3.1
+
+%index
+E3DGetMOEFrameNum
+MOEƒAƒjƒ‚ÌƒtƒŒ[ƒ€’·‚ðŽæ“¾‚µ‚Ü‚·B
+%group
+Easy3D For HSP3 : MOE
+
+%prm
+p1,p2,p3
+p1 : [IN] •Ï”‚Ü‚½‚ÍA”’l@F@hsid@@ƒ‚ƒfƒ‹‚ðŽ¯•Ê‚·‚é”Ô†‚ðŽw’è‚µ‚Ä‚­‚¾‚³‚¢B
+p2 : [IN] 
+p3 : [OUT] 
+
+%inst
+MOEƒAƒjƒ‚ÌƒtƒŒ[ƒ€’·‚ðŽæ“¾‚µ‚Ü‚·B
+
+
+¨ˆø”
+1. [IN] •Ï”‚Ü‚½‚ÍA”’l@F@hsid@@ƒ‚ƒfƒ‹‚ðŽ¯•Ê‚·‚é”Ô†‚ðŽw’è‚µ‚Ä‚­‚¾‚³‚¢B
+2. [IN] 
+•Ï”‚Ü‚½‚ÍA”’l@F@animno
+@@MOEƒAƒjƒ‚ðŽ¯•Ê‚·‚é”Ô†‚ðŽw’è‚µ‚Ä‚­‚¾‚³‚¢B
+3. [OUT] 
+•Ï”@F@framenum@@ƒtƒŒ[ƒ€’·‚ª‘ã“ü‚³‚ê‚Ü‚·B
+
+ƒo[ƒWƒ‡ƒ“ : ver5.2.3.1
+
+%index
+E3DSetMOEAnimName
+MOEƒAƒjƒ‚Ì–¼‘O‚ðÝ’è‚µ‚Ü‚·B
+%group
+Easy3D For HSP3 : MOE
+
+%prm
+p1,p2,p3
+p1 : [IN] •Ï”‚Ü‚½‚ÍA”’l@F@hsid@@ƒ‚ƒfƒ‹‚ðŽ¯•Ê‚·‚é”Ô†‚ðŽw’è‚µ‚Ä‚­‚¾‚³‚¢B
+p2 : [IN] 
+p3 : [IN] 
+
+%inst
+MOEƒAƒjƒ‚Ì–¼‘O‚ðÝ’è‚µ‚Ü‚·B
+
+
+¨ˆø”
+1. [IN] •Ï”‚Ü‚½‚ÍA”’l@F@hsid@@ƒ‚ƒfƒ‹‚ðŽ¯•Ê‚·‚é”Ô†‚ðŽw’è‚µ‚Ä‚­‚¾‚³‚¢B
+2. [IN] 
+•Ï”‚Ü‚½‚ÍA”’l@F@animno
+@@MOEƒAƒjƒ‚ðŽ¯•Ê‚·‚é”Ô†‚ðŽw’è‚µ‚Ä‚­‚¾‚³‚¢B
+3. [IN] 
+•¶Žš—ñ‚Ü‚½‚ÍA•¶Žš—ñ‚Ì•Ï”@F@srcname
+@@MOEƒAƒjƒ‚Ì–¼‘O‚ðŽw’è‚µ‚Ü‚·B@@‚Q‚T‚TƒoƒCƒg‚Ü‚Å‚Å‚·B
+
+
+
+
+ƒo[ƒWƒ‡ƒ“ : ver5.2.3.1
+
+%index
+E3DGetMOEAnimName
+MOEƒAƒjƒ‚Ì–¼‘O‚ðŽæ“¾‚µ‚Ü‚·B
+%group
+Easy3D For HSP3 : MOE
+
+%prm
+p1,p2,p3,p4
+p1 : [IN] •Ï”‚Ü‚½‚ÍA”’l@F@hsid@@ƒ‚ƒfƒ‹‚ðŽ¯•Ê‚·‚é”Ô†‚ðŽw’è‚µ‚Ä‚­‚¾‚³‚¢B
+p2 : [IN] 
+p3 : [OUT] 
+p4 : [IN] 
+
+%inst
+MOEƒAƒjƒ‚Ì–¼‘O‚ðŽæ“¾‚µ‚Ü‚·B
+
+
+¨ˆø”
+1. [IN] •Ï”‚Ü‚½‚ÍA”’l@F@hsid@@ƒ‚ƒfƒ‹‚ðŽ¯•Ê‚·‚é”Ô†‚ðŽw’è‚µ‚Ä‚­‚¾‚³‚¢B
+2. [IN] 
+•Ï”‚Ü‚½‚ÍA”’l@F@animno
+@@MOEƒAƒjƒ‚ðŽ¯•Ê‚·‚é”Ô†‚ðŽw’è‚µ‚Ä‚­‚¾‚³‚¢B
+3. [OUT] 
+•¶Žš—ñ‚Ì•Ï”@F@dstname@@–¼‘O‚ðŠi”[‚·‚é•¶Žš—ñ‚Ì•Ï”‚ðŽw’è‚µ‚Ü‚·B
+4. [IN] 
+•Ï”‚Ü‚½‚ÍA”’l@F@arrayleng@@dstname‚Ì”z—ñ’·‚ðŽw’è‚µ‚Ü‚·B
+
+
+
+
+ƒo[ƒWƒ‡ƒ“ : ver5.2.3.1
+
+%index
+E3DSetMOEAnimType
+MOEƒAƒjƒ‚Ìƒ^ƒCƒv‚ðÝ’è‚µ‚Ü‚·B
+%group
+Easy3D For HSP3 : MOE
+
+%prm
+p1,p2,p3
+p1 : [IN] •Ï”‚Ü‚½‚ÍA”’l@F@hsid@@ƒ‚ƒfƒ‹‚ðŽ¯•Ê‚·‚é”Ô†‚ðŽw’è‚µ‚Ä‚­‚¾‚³‚¢B
+p2 : [IN] 
+p3 : [IN] 
+
+%inst
+MOEƒAƒjƒ‚Ìƒ^ƒCƒv‚ðÝ’è‚µ‚Ü‚·B
+ƒ^ƒCƒv‚ÌÚ×‚ÍE3DCreateNewMOEAnim‚Ìanimtypeˆø”‚Ìà–¾‚ð‚²——‚­‚¾‚³‚¢B
+
+
+
+¨ˆø”
+1. [IN] •Ï”‚Ü‚½‚ÍA”’l@F@hsid@@ƒ‚ƒfƒ‹‚ðŽ¯•Ê‚·‚é”Ô†‚ðŽw’è‚µ‚Ä‚­‚¾‚³‚¢B
+2. [IN] 
+•Ï”‚Ü‚½‚ÍA”’l@F@animno
+@@MOEƒAƒjƒ‚ðŽ¯•Ê‚·‚é”Ô†‚ðŽw’è‚µ‚Ä‚­‚¾‚³‚¢B
+3. [IN] 
+•Ï”‚Ü‚½‚ÍA”’l@F@type@@ƒ^ƒCƒv‚ðŽw’è‚µ‚Ü‚·B
+
+
+
+
+ƒo[ƒWƒ‡ƒ“ : ver5.2.3.1
+
+%index
+E3DGetMOEAnimType
+MOEƒAƒjƒ‚Ìƒ^ƒCƒv‚ðŽæ“¾‚µ‚Ü‚·B
+%group
+Easy3D For HSP3 : MOE
+
+%prm
+p1,p2,p3
+p1 : [IN] •Ï”‚Ü‚½‚ÍA”’l@F@hsid@@ƒ‚ƒfƒ‹‚ðŽ¯•Ê‚·‚é”Ô†‚ðŽw’è‚µ‚Ä‚­‚¾‚³‚¢B
+p2 : [IN] 
+p3 : [OUT] 
+
+%inst
+MOEƒAƒjƒ‚Ìƒ^ƒCƒv‚ðŽæ“¾‚µ‚Ü‚·B
+ƒ^ƒCƒv‚ÌÚ×‚ÍE3DCreateNewMOEAnim‚Ìanimtypeˆø”‚Ìà–¾‚ð‚²——‚­‚¾‚³‚¢B
+
+
+
+¨ˆø”
+1. [IN] •Ï”‚Ü‚½‚ÍA”’l@F@hsid@@ƒ‚ƒfƒ‹‚ðŽ¯•Ê‚·‚é”Ô†‚ðŽw’è‚µ‚Ä‚­‚¾‚³‚¢B
+2. [IN] 
+•Ï”‚Ü‚½‚ÍA”’l@F@animno
+@@MOEƒAƒjƒ‚ðŽ¯•Ê‚·‚é”Ô†‚ðŽw’è‚µ‚Ä‚­‚¾‚³‚¢B
+3. [OUT] 
+•Ï”@F@type@@ƒ^ƒCƒv‚ª‘ã“ü‚³‚ê‚Ü‚·B
+
+
+
+ƒo[ƒWƒ‡ƒ“ : ver5.2.3.1
+
+%index
+E3DGetMOEKeyframeNoRange
+start‚Æend‚ÅŽw’è‚µ‚½ƒtƒŒ[ƒ€”ÍˆÍ‚ÌƒL[ƒtƒŒ[ƒ€‚ÌŒÂ”‚ÆƒtƒŒ[ƒ€”Ô†‚ðŽæ“¾‚µ‚Ü‚·B
+%group
+Easy3D For HSP3 : MOE
+
+%prm
+p1,p2,p3,p4,p5,p6,p7
+p1 : [IN] •Ï”‚Ü‚½‚ÍA”’l@F@hsid@@ƒ‚ƒfƒ‹‚ðŽ¯•Ê‚·‚é”Ô†‚ðŽw’è‚µ‚Ä‚­‚¾‚³‚¢B
+p2 : [IN] 
+p3 : [IN] 
+p4 : [IN] 
+p5 : [OUT] 
+
+%inst
+start‚Æend‚ÅŽw’è‚µ‚½ƒtƒŒ[ƒ€”ÍˆÍ‚ÌƒL[ƒtƒŒ[ƒ€‚ÌŒÂ”‚ÆƒtƒŒ[ƒ€”Ô†‚ðŽæ“¾‚µ‚Ü‚·B
+arrayleng‚É‚O‚ðŽw’è‚µ‚ÄŒÄ‚Ño‚·‚Æframearrayˆø”‚Ö‚Ì‘ã“ü‚ðs‚í‚¸‚ÉƒL[‚ÌŒÂ”‚Ì‚Ý‚ðŽæ“¾‚µ‚Ü‚·B
+
+E3DGeMOEKeyframeNoRange animno, start, end, dummy, 0, keynum
+dim framearray, 
+keynum
+
+E3DGetMOEKeyframeNoRange animno, start, end, framearray, keynum, chknum
+‚Ì‚æ‚¤‚É‚µ‚ÄŽg‚Á‚Ä‚­‚¾‚³‚¢B
+
+
+
+
+¨ˆø”
+1. [IN] •Ï”‚Ü‚½‚ÍA”’l@F@hsid@@ƒ‚ƒfƒ‹‚ðŽ¯•Ê‚·‚é”Ô†‚ðŽw’è‚µ‚Ä‚­‚¾‚³‚¢B
+2. [IN] 
+•Ï”‚Ü‚½‚ÍA”’l@F@animno
+@@MOEƒAƒjƒ‚ðŽ¯•Ê‚·‚é”Ô†‚ðŽw’è‚µ‚Ä‚­‚¾‚³‚¢B
+3. [IN] 
+•Ï”‚Ü‚½‚ÍA”’l@F@start4. [IN] 
+•Ï”‚Ü‚½‚ÍA”’l@F@end@@ƒL[‚ð’²‚×‚½‚¢ƒtƒŒ[ƒ€”Ô†‚ÌÅ‰‚ÆÅŒã‚Ì’l‚ðŽw’è‚µ‚Ä‚­‚¾‚³‚¢B
+5. [OUT] 
+”z—ñ‚Ì•Ï”@F@framearray@@ƒtƒŒ[ƒ€”Ô†‚ªgetnumŒÂ‚¾‚¯‘ã“ü‚³‚ê‚Ü‚·B@@arrayleng‚ª‚O‚Ìê‡‚Í‘ã“ü‚³‚ê‚Ü‚¹‚ñB
+6. 
+[IN] 
+•Ï”‚Ü‚½‚ÍA”’l@F@arrayleng@@framearray‚Ì”z—ñ’·i—v‘f”j‚ðŽw’è‚µ‚Ä‚­‚¾‚³‚¢B@@‚O‚ðŽw’è‚·‚é‚ÆƒL[‚ÌŒÂ”‚¾‚¯‚ð’²‚×‚Ü‚·B
+7. 
+[OUT] •Ï”@F@getnum@@Žæ“¾‚µ‚½ƒL[ƒtƒŒ[ƒ€”Ô†‚ÌŒÂ”‚ª‘ã“ü‚³‚ê‚Ü‚·B
+
+
+
+ƒo[ƒWƒ‡ƒ“ : ver5.2.3.1
+
+%index
+E3DGetMOEElemNum
+MOEƒAƒjƒ‚ÌƒL[‚ÉŠÜ‚Ü‚ê‚éMOEELEM‚Ì”‚ðŽæ“¾‚µ‚Ü‚·B
+%group
+Easy3D For HSP3 : MOE
+
+%prm
+p1,p2,p3,p4,p5
+p1 : [IN] •Ï”‚Ü‚½‚ÍA”’l@F@hsid@@Œ`óƒf[ƒ^‚ðŽ¯•Ê‚·‚é‚h‚c
+p2 : [IN] •Ï”‚Ü‚½‚ÍA”’l@F@animno@@MOEƒAƒjƒ‚ðŽ¯•Ê‚·‚é”Ô†‚ðŽw’è‚µ‚Ä‚­‚¾‚³‚¢B
+p3 : [IN] •Ï”‚Ü‚½‚ÍA”’l@F@frameno@@ƒtƒŒ[ƒ€”Ô†‚ðŽw’è‚µ‚Ä‚­‚¾‚³‚¢B
+p4 : [OUT] •Ï”@F@moeenumptr@@ƒL[‚ÉŠÜ‚Ü‚ê‚éMOEELEM‚Ì”‚ª‘ã“ü‚³‚ê‚Ü‚·B
+p5 : [OUT] •Ï”@F@existkeyptr@@Žw’è‚µ‚½ƒtƒŒ[ƒ€‚ÉƒL[‚ª‘¶Ý‚·‚é‚Æ‚«‚Í‚PA‚µ‚È‚¢‚Æ‚«‚Í‚O‚ª‘ã“ü‚³‚ê‚Ü‚·B
+
+%inst
+MOEƒAƒjƒ‚ÌƒL[‚ÉŠÜ‚Ü‚ê‚éMOEELEM‚Ì”‚ðŽæ“¾‚µ‚Ü‚·B
+MOEELEM‚Íeventno, listnum, list, notlistnum, notlist‚©‚ç¬‚è‚Ü‚·B
+Ú‚µ‚­‚ÍRokDeBone2‚Ìƒ}ƒjƒ…ƒAƒ‹‚ÌumoaƒCƒxƒ“ƒgƒAƒjƒ‚Æ‚Ív‚Ìƒy[ƒW‚ð‚²——‚­‚¾‚³‚¢B
+ƒL[‚É‚ÍMOEELEM•¡”‚ÌMOEELEM‚ÆƒAƒCƒhƒŠƒ“ƒOƒ‚[ƒVƒ‡ƒ“‚ªŠÜ‚Ü‚ê‚Ä‚¢‚Ü‚·BMOEELEM‚ª‚OŒÂ‚ÅƒAƒCƒhƒŠƒ“ƒOƒ‚[ƒVƒ‡ƒ“‚¾‚¯‚ÌƒL[‚à‘¶Ý‚·‚é‚Ì‚Å’ˆÓ‚µ‚Ä‚­‚¾‚³‚¢B
+
+
+
+¨ˆø”
+1. [IN] •Ï”‚Ü‚½‚ÍA”’l@F@hsid@@Œ`óƒf[ƒ^‚ðŽ¯•Ê‚·‚é‚h‚c
+
+2. [IN] •Ï”‚Ü‚½‚ÍA”’l@F@animno@@MOEƒAƒjƒ‚ðŽ¯•Ê‚·‚é”Ô†‚ðŽw’è‚µ‚Ä‚­‚¾‚³‚¢B
+
+3. [IN] •Ï”‚Ü‚½‚ÍA”’l@F@frameno@@ƒtƒŒ[ƒ€”Ô†‚ðŽw’è‚µ‚Ä‚­‚¾‚³‚¢B
+
+4. [OUT] •Ï”@F@moeenumptr@@ƒL[‚ÉŠÜ‚Ü‚ê‚éMOEELEM‚Ì”‚ª‘ã“ü‚³‚ê‚Ü‚·B
+
+5. [OUT] •Ï”@F@existkeyptr@@Žw’è‚µ‚½ƒtƒŒ[ƒ€‚ÉƒL[‚ª‘¶Ý‚·‚é‚Æ‚«‚Í‚PA‚µ‚È‚¢‚Æ‚«‚Í‚O‚ª‘ã“ü‚³‚ê‚Ü‚·B
+
+
+
+ƒo[ƒWƒ‡ƒ“ : ver5.2.3.1
+
+%index
+E3DGetMOEElem
+ƒL[‚ÉŠÜ‚Ü‚ê‚éMOEELEM‚Ìî•ñ‚ðŽæ“¾‚µ‚Ü‚·B
+%group
+Easy3D For HSP3 : MOE
+
+%prm
+p1,p2,p3,p4,p5,p6,p7
+p1 : [IN] •Ï”‚Ü‚½‚ÍA”’l@F@hsid
+p2 : [IN] •Ï”‚Ü‚½‚ÍA”’l@F@animno@@MOEƒAƒjƒ‚ðŽ¯•Ê‚·‚é”Ô†‚ðŽw’è‚µ‚Ä‚­‚¾‚³‚¢B
+p3 : [IN] •Ï”‚Ü‚½‚ÍA”’l@F@frameno
+p4 : [IN] •Ï”‚Ü‚½‚ÍA”’l@F@moeeindex
+p5 : [OUT] ”z—ñ•Ï”@F@moei
+p6 : [OUT] ”z—ñ•Ï”@F@list
+p7 : [OUT] ”z—ñ•Ï”@F@notlist
+
+%inst
+ƒL[‚ÉŠÜ‚Ü‚ê‚éMOEELEM‚Ìî•ñ‚ðŽæ“¾‚µ‚Ü‚·B
+MOEELEM‚Ímoei, list, notlist‚Å•\Œ»‚µ‚Ü‚·B
+moei‚Í
+dim moei, MOEI_MAX
+‚Åì¬‚µ‚Ü‚·B
+MOEI_‚ÅŽn‚Ü‚é’è”‚Íe3dhsp3.as‚Å’è‹`‚³‚ê‚Ä‚¢‚Ü‚·B
+MOEI_EVENTNO‚ÍƒCƒxƒ“ƒg”Ô†‚Ö‚ÌƒCƒ“ƒfƒbƒNƒXB
+MOEI_LISTNUM‚Ílist‚ÉƒZƒbƒg‚³‚ê‚½—v‘f‚Ì”‚Ö‚ÌƒCƒ“ƒfƒbƒNƒXB
+MOEI_NOTLISTNUM‚Ínotlist‚ÉƒZƒbƒg‚³‚ê‚½—v‘f‚Ì”‚Ö‚ÌƒCƒ“ƒfƒbƒNƒXB
+
+list, notlist‚Í‚»‚ê‚¼‚ê
+dim list, MOELISTLENG
+dim notlist, MOELISTLENG
+‚Åì¬‚µ‚Ü‚·B
+‚»‚ê‚¼‚ê‚ÌˆÓ–¡‚Â‚¢‚Ä‚ÍRokDeBone2‚Ìƒ}ƒjƒ…ƒAƒ‹‚ÌumoaƒCƒxƒ“ƒgƒAƒjƒ‚Æ‚Ív‚Ìƒy[ƒW‚ð‚²——‚­‚¾‚³‚¢B
+moeeindex‚É‚ÍE3DGetMOEElemNum‚ÅŽæ“¾‚µ‚½MOEELEM‚ÌŒÂ”‚ðmoeenum‚Æ‚·‚é‚ÆA‚O‚©‚ç(moeenum 
+- 
+1)‚Ü‚Å‚Ì”‚ðŽw’è‚µ‚Ä‚­‚¾‚³‚¢BMOELEM‚Ì\¬—v‘f‚Ìà–¾‚É‚Â‚¢‚Ä‚Í
+RokDeBone2‚Ìƒ}ƒjƒ…ƒAƒ‹‚ÌumoaƒCƒxƒ“ƒgƒAƒjƒ‚Æ‚Ív‚Ìƒy[ƒW‚ð‚²——‚­‚¾‚³‚¢B
+
+
+
+
+¨ˆø”
+1. [IN] •Ï”‚Ü‚½‚ÍA”’l@F@hsid
+@@Œ`óƒf[ƒ^‚ðŽ¯•Ê‚·‚é‚h‚c
+
+2. [IN] •Ï”‚Ü‚½‚ÍA”’l@F@animno@@MOEƒAƒjƒ‚ðŽ¯•Ê‚·‚é”Ô†‚ðŽw’è‚µ‚Ä‚­‚¾‚³‚¢B
+
+3. [IN] •Ï”‚Ü‚½‚ÍA”’l@F@frameno
+@@ƒtƒŒ[ƒ€”Ô†‚ðŽw’è‚µ‚Ä‚­‚¾‚³‚¢B
+
+4. [IN] •Ï”‚Ü‚½‚ÍA”’l@F@moeeindex
+@@MOEELEM‚ÌƒCƒ“ƒfƒbƒNƒX‚ðŽw’è‚µ‚Ü‚·B
+@@‚O‚©‚çmoeenum - 1‚Ü‚Å‚Ì”’l‚ðŽw’è‚µ‚Ü‚·B
+
+5. [OUT] ”z—ñ•Ï”@F@moei
+6. [OUT] ”z—ñ•Ï”@F@list
+7. [OUT] ”z—ñ•Ï”@F@notlist
+@@MOEELEM‚Ìî•ñ‚ª‘ã“ü‚³‚ê‚Ü‚·B
+@@Ú‚µ‚­‚Í‘O‹L‚ð‚²——‚­‚¾‚³‚¢B
+
+
+
+
+ƒo[ƒWƒ‡ƒ“ : ver5.2.3.1
+
+%index
+E3DAddMOEElem
+MOEƒAƒjƒ‚ÌƒL[‚ÉMOEELEM‚ð’Ç‰Á‚µ‚Ü‚·B
+%group
+Easy3D For HSP3 : MOE
+
+%prm
+p1,p2,p3,p4,p5,p6
+p1 : [IN] int@F@hsid@@Œ`óƒf[ƒ^‚ðŽ¯•Ê‚·‚é‚h‚c
+p2 : [IN] 
+p3 : [IN] 
+p4 : [IN] ”z—ñ•Ï”@F@moei
+p5 : [IN] ”z—ñ•Ï”@F@list
+p6 : [IN] ”z—ñ•Ï”@F@notlist
+
+%inst
+MOEƒAƒjƒ‚ÌƒL[‚ÉMOEELEM‚ð’Ç‰Á‚µ‚Ü‚·BŽw’è‚µ‚½ƒtƒŒ[ƒ€‚ÉƒL[‚ª–³‚¢ê‡‚ÍƒL[‚ðŽ©“®“I‚ÉƒL[‚ðì¬‚µ‚½Œã‚ÉMOEELEM‚ð’Ç‰Á‚µ‚Ü‚·B
+
+MOEELEM‚Ì•\Œ»‚ÌŽd•û‚É‚Â‚¢‚Ä‚Í
+E3DGetMOEElem‚Ìà–¾‚ð‚²——‚­‚¾‚³‚¢B
+MOEELEM‚Ìlist‚ÌÅ‰‚Ì—v‘flist[0]‚É‚Ì‚Ý•‰‚Ì’l-1‚ðŽw’è‚·‚é‚±‚Æ‚ªo—ˆ‚Ü‚·B-1‚Íu‘S‚Ä‚Ìƒ{[ƒ“v‚ðˆÓ–¡‚µ‚Ü‚·B
+
+
+‚±‚Ì–½—ß‚ðŒÄ‚Ño‚µ‚Ä‚àÄ¶—p‚Ìƒf[ƒ^‚É‚Í”½‰f‚³‚ê‚Ü‚¹‚ñBÄ¶—p‚Ìƒf[ƒ^‚É”½‰f‚µ‚½‚¢ê‡‚ÍE3DCalcMOEFullFrame‚ðŒÄ‚Ño‚µ‚Ä‚­‚¾‚³‚¢B
+E3DCalcMOEFullFrame‚Íd‚¢ˆ—‚Å‚·‚Ì‚Å‘S‚Ä‚Ì•ÒW–½—ß‚ªI‚í‚Á‚Ä‚©‚çÅŒã‚É‚P“x‚¾‚¯ŒÄ‚Ño‚·‚æ‚¤‚É‚·‚é‚Æ—Ç‚¢‚Å‚·B
+
+
+
+
+¨ˆø”
+1. [IN] int@F@hsid@@Œ`óƒf[ƒ^‚ðŽ¯•Ê‚·‚é‚h‚c
+2. [IN] 
+int@F@animno@@MOEƒAƒjƒ‚ðŽ¯•Ê‚·‚é”Ô†‚ðŽw’è‚µ‚Ä‚­‚¾‚³‚¢B
+3. [IN] 
+int@F@frameno@@ƒtƒŒ[ƒ€”Ô†‚ðŽw’è‚µ‚Ä‚­‚¾‚³‚¢B
+
+4. [IN] ”z—ñ•Ï”@F@moei
+5. [IN] ”z—ñ•Ï”@F@list
+6. [IN] ”z—ñ•Ï”@F@notlist
+@@MOEELEM‚Ìî•ñ‚ðŽw’è‚µ‚Ü‚·B
+
+
+
+ƒo[ƒWƒ‡ƒ“ : ver5.2.3.1
+
+%index
+E3DDeleteMOEElem
+MOEƒAƒjƒ‚ÌƒL[‚©‚çMOEELEM‚ðíœ‚µ‚Ü‚·B
+%group
+Easy3D For HSP3 : MOE
+
+%prm
+p1,p2,p3,p4
+p1 : [IN] •Ï”‚Ü‚½‚ÍA”’l@F@hsid@@Œ`óƒf[ƒ^‚ðŽ¯•Ê‚·‚é‚h‚c
+p2 : [IN] •Ï”‚Ü‚½‚ÍA”’l@F@animno@@MOEƒAƒjƒ‚ðŽ¯•Ê‚·‚é”Ô†‚ðŽw’è‚µ‚Ä‚­‚¾‚³‚¢B
+p3 : [IN] •Ï”‚Ü‚½‚ÍA”’l@F@frameno@@ƒtƒŒ[ƒ€”Ô†‚ðŽw’è‚µ‚Ä‚­‚¾‚³‚¢B
+p4 : [IN] •Ï”‚Ü‚½‚ÍA”’l@F@moeeindex
+
+%inst
+MOEƒAƒjƒ‚ÌƒL[‚©‚çMOEELEM‚ðíœ‚µ‚Ü‚·Bmoeeindex‚É-1‚ðŽw’è‚·‚é‚ÆƒL[’†‚Ì‘S‚Ä‚ÌMOEELEM‚ðíœ‚µ‚Ü‚·BMOEELEM‚ª‚OŒÂ‚É‚È‚Á‚Ä‚àƒL[‚Ííœ‚³‚ê‚Ü‚¹‚ñB
+
+
+‚±‚Ì–½—ß‚ðŒÄ‚Ño‚µ‚Ä‚àÄ¶—p‚Ìƒf[ƒ^‚É‚Í”½‰f‚³‚ê‚Ü‚¹‚ñBÄ¶—p‚Ìƒf[ƒ^‚É”½‰f‚µ‚½‚¢ê‡‚ÍE3DCalcMOEFullFrame‚ðŒÄ‚Ño‚µ‚Ä‚­‚¾‚³‚¢B
+E3DCalcMOEFullFrame‚Íd‚¢ˆ—‚Å‚·‚Ì‚Å‘S‚Ä‚Ì•ÒW–½—ß‚ªI‚í‚Á‚Ä‚©‚çÅŒã‚É‚P“x‚¾‚¯ŒÄ‚Ño‚·‚æ‚¤‚É‚·‚é‚Æ—Ç‚¢‚Å‚·B
+
+
+
+
+¨ˆø”
+1. [IN] •Ï”‚Ü‚½‚ÍA”’l@F@hsid@@Œ`óƒf[ƒ^‚ðŽ¯•Ê‚·‚é‚h‚c
+
+2. [IN] •Ï”‚Ü‚½‚ÍA”’l@F@animno@@MOEƒAƒjƒ‚ðŽ¯•Ê‚·‚é”Ô†‚ðŽw’è‚µ‚Ä‚­‚¾‚³‚¢B
+
+3. [IN] •Ï”‚Ü‚½‚ÍA”’l@F@frameno@@ƒtƒŒ[ƒ€”Ô†‚ðŽw’è‚µ‚Ä‚­‚¾‚³‚¢B
+
+4. [IN] •Ï”‚Ü‚½‚ÍA”’l@F@moeeindex
+@@’Êí0‚©‚çmoeenum - 1‚Ü‚Å‚Ì”‚ðŽw’è‚µ‚Ä‚­‚¾‚³‚¢B-1‚ðŽw’è‚·‚é‚Æ‘S‚Ä‚ÌMOEELEM‚ðíœ‚µ‚Ü‚·B
+
+
+
+ƒo[ƒWƒ‡ƒ“ : ver5.2.3.1
+
+%index
+E3DSetMOEKeyIdling
+MOEƒAƒjƒ‚ÌƒL[‚ÌƒAƒCƒhƒŠƒ“ƒOƒ‚[ƒVƒ‡ƒ“î•ñ‚ðÝ’è‚µ‚Ü‚·B
+%group
+Easy3D For HSP3 : MOE
+
+%prm
+p1,p2,p3,p4
+p1 : [IN] •Ï”‚Ü‚½‚ÍA”’l@F@hsid@@Œ`óƒf[ƒ^‚ðŽ¯•Ê‚·‚é‚h‚c
+p2 : [IN] •Ï”‚Ü‚½‚ÍA”’l@F@animno@@MOEƒAƒjƒ‚ðŽ¯•Ê‚·‚é”Ô†‚ðŽw’è‚µ‚Ä‚­‚¾‚³‚¢B
+p3 : [IN] •Ï”‚Ü‚½‚ÍA”’l@F@frameno@@ƒtƒŒ[ƒ€”Ô†‚ðŽw’è‚µ‚Ä‚­‚¾‚³‚¢B
+p4 : [IN] •Ï”‚Ü‚½‚ÍA”’l@F@motid@@ƒAƒCƒhƒŠƒ“ƒOƒ‚[ƒVƒ‡ƒ“‚ÌID‚ðŽw’è‚µ‚Ä‚­‚¾‚³‚¢B
+
+%inst
+MOEƒAƒjƒ‚ÌƒL[‚ÌƒAƒCƒhƒŠƒ“ƒOƒ‚[ƒVƒ‡ƒ“î•ñ‚ðÝ’è‚µ‚Ü‚·B
+
+‚±‚Ì–½—ß‚ðŒÄ‚Ño‚µ‚Ä‚àÄ¶—p‚Ìƒf[ƒ^‚É‚Í”½‰f‚³‚ê‚Ü‚¹‚ñBÄ¶—p‚Ìƒf[ƒ^‚É”½‰f‚µ‚½‚¢ê‡‚ÍE3DCalcMOEFullFrame‚ðŒÄ‚Ño‚µ‚Ä‚­‚¾‚³‚¢B
+E3DCalcMOEFullFrame‚Íd‚¢ˆ—‚Å‚·‚Ì‚Å‘S‚Ä‚Ì•ÒW–½—ß‚ªI‚í‚Á‚Ä‚©‚çÅŒã‚É‚P“x‚¾‚¯ŒÄ‚Ño‚·‚æ‚¤‚É‚·‚é‚Æ—Ç‚¢‚Å‚·B
+
+
+
+
+¨ˆø”
+1. [IN] •Ï”‚Ü‚½‚ÍA”’l@F@hsid@@Œ`óƒf[ƒ^‚ðŽ¯•Ê‚·‚é‚h‚c
+
+2. [IN] •Ï”‚Ü‚½‚ÍA”’l@F@animno@@MOEƒAƒjƒ‚ðŽ¯•Ê‚·‚é”Ô†‚ðŽw’è‚µ‚Ä‚­‚¾‚³‚¢B
+
+3. [IN] •Ï”‚Ü‚½‚ÍA”’l@F@frameno@@ƒtƒŒ[ƒ€”Ô†‚ðŽw’è‚µ‚Ä‚­‚¾‚³‚¢B
+
+4. [IN] •Ï”‚Ü‚½‚ÍA”’l@F@motid@@ƒAƒCƒhƒŠƒ“ƒOƒ‚[ƒVƒ‡ƒ“‚ÌID‚ðŽw’è‚µ‚Ä‚­‚¾‚³‚¢B
+
+
+
+ƒo[ƒWƒ‡ƒ“ : ver5.2.3.1
+
+%index
+E3DGetMOEKeyIdling
+MOEƒAƒjƒ‚ÌƒL[‚ÌƒAƒCƒhƒŠƒ“ƒOƒ‚[ƒVƒ‡ƒ“î•ñ‚ðŽæ“¾‚µ‚Ü‚·B
+%group
+Easy3D For HSP3 : MOE
+
+%prm
+p1,p2,p3,p4
+p1 : [IN] •Ï”‚Ü‚½‚ÍA”’l@F@hsid@@Œ`óƒf[ƒ^‚ðŽ¯•Ê‚·‚é‚h‚c
+p2 : [IN] •Ï”‚Ü‚½‚ÍA”’l@F@animno@@MOEƒAƒjƒ‚ðŽ¯•Ê‚·‚é”Ô†‚ðŽw’è‚µ‚Ä‚­‚¾‚³‚¢B
+p3 : [IN] •Ï”‚Ü‚½‚ÍA”’l@F@frameno@@ƒtƒŒ[ƒ€”Ô†‚ðŽw’è‚µ‚Ä‚­‚¾‚³‚¢B
+p4 : [IN] •Ï”@F@motidptr
+
+%inst
+MOEƒAƒjƒ‚ÌƒL[‚ÌƒAƒCƒhƒŠƒ“ƒOƒ‚[ƒVƒ‡ƒ“î•ñ‚ðŽæ“¾‚µ‚Ü‚·B
+
+
+
+
+¨ˆø”
+1. [IN] •Ï”‚Ü‚½‚ÍA”’l@F@hsid@@Œ`óƒf[ƒ^‚ðŽ¯•Ê‚·‚é‚h‚c
+
+2. [IN] •Ï”‚Ü‚½‚ÍA”’l@F@animno@@MOEƒAƒjƒ‚ðŽ¯•Ê‚·‚é”Ô†‚ðŽw’è‚µ‚Ä‚­‚¾‚³‚¢B
+
+3. [IN] •Ï”‚Ü‚½‚ÍA”’l@F@frameno@@ƒtƒŒ[ƒ€”Ô†‚ðŽw’è‚µ‚Ä‚­‚¾‚³‚¢B
+
+4. [IN] •Ï”@F@motidptr
+@@ƒAƒCƒhƒŠƒ“ƒOƒ‚[ƒVƒ‡ƒ“‚ÌID‚ª‘ã“ü‚³‚ê‚Ü‚·B
+
+
+
+ƒo[ƒWƒ‡ƒ“ : ver5.2.3.1
+
+%index
+E3DDeleteMOEKey
+MOEƒAƒjƒ‚ÌƒL[‚ðíœ‚µ‚Ü‚·B
+%group
+Easy3D For HSP3 : MOE
+
+%prm
+p1,p2,p3
+p1 : [IN] •Ï”‚Ü‚½‚ÍA”’l@F@hsid@@ƒ‚ƒfƒ‹‚ðŽ¯•Ê‚·‚é”Ô†‚ðŽw’è‚µ‚Ä‚­‚¾‚³‚¢B
+p2 : [IN] 
+p3 : [IN] 
+
+%inst
+MOEƒAƒjƒ‚ÌƒL[‚ðíœ‚µ‚Ü‚·B
+
+‚±‚Ì–½—ß‚ðŒÄ‚Ño‚µ‚Ä‚àÄ¶—p‚Ìƒf[ƒ^‚É‚Í”½‰f‚³‚ê‚Ü‚¹‚ñBÄ¶—p‚Ìƒf[ƒ^‚É”½‰f‚µ‚½‚¢ê‡‚ÍE3DCalcMOEFullFrame‚ðŒÄ‚Ño‚µ‚Ä‚­‚¾‚³‚¢B
+E3DCalcMOEFullFrame‚Íd‚¢ˆ—‚Å‚·‚Ì‚Å‘S‚Ä‚Ì•ÒW–½—ß‚ªI‚í‚Á‚Ä‚©‚çÅŒã‚É‚P“x‚¾‚¯ŒÄ‚Ño‚·‚æ‚¤‚É‚·‚é‚Æ—Ç‚¢‚Å‚·B
+
+
+
+
+¨ˆø”
+1. [IN] •Ï”‚Ü‚½‚ÍA”’l@F@hsid@@ƒ‚ƒfƒ‹‚ðŽ¯•Ê‚·‚é”Ô†‚ðŽw’è‚µ‚Ä‚­‚¾‚³‚¢B
+2. [IN] 
+•Ï”‚Ü‚½‚ÍA”’l@F@animno
+@@MOEƒAƒjƒ‚ðŽ¯•Ê‚·‚é”Ô†‚ðŽw’è‚µ‚Ä‚­‚¾‚³‚¢B
+3. [IN] 
+•Ï”‚Ü‚½‚ÍA”’l@F@frameno@@ƒtƒŒ[ƒ€”Ô†‚ðŽw’è‚µ‚Ä‚­‚¾‚³‚¢B
+
+
+
+ƒo[ƒWƒ‡ƒ“ : ver5.2.3.1
+
+%index
+E3DCalcMOEFullFrame
+MOEƒAƒjƒ‚ÌƒL[î•ñ‚©‚ç‘S‚Ä‚ÌƒtƒŒ[ƒ€‚ÌŽp¨î•ñ‚ðŒvŽZ‚µ‚Ü‚·B
+%group
+Easy3D For HSP3 : MOE
+
+%prm
+p1,p2
+p1 : [IN] •Ï”‚Ü‚½‚ÍA”’l@F@hsid@@ƒ‚ƒfƒ‹‚ðŽ¯•Ê‚·‚é”Ô†‚ðŽw’è‚µ‚Ä‚­‚¾‚³‚¢B
+p2 : [IN] 
+
+%inst
+MOEƒAƒjƒ‚ÌƒL[î•ñ‚©‚ç‘S‚Ä‚ÌƒtƒŒ[ƒ€‚ÌŽp¨î•ñ‚ðŒvŽZ‚µ‚Ü‚·B
+‚±‚ÌŒ‹‰Ê‚ÍMOEƒAƒjƒ‚ÌÄ¶‚ÉŽg‚í‚ê‚Ü‚·B
+d‚¢ˆ—‚Å‚·‚Ì‚Å‚È‚é‚×‚­ŒÄ‚Ño‚µ‰ñ”‚Í­‚È‚­‚µ‚Ä‚­‚¾‚³‚¢B
+
+
+
+
+¨ˆø”
+1. [IN] •Ï”‚Ü‚½‚ÍA”’l@F@hsid@@ƒ‚ƒfƒ‹‚ðŽ¯•Ê‚·‚é”Ô†‚ðŽw’è‚µ‚Ä‚­‚¾‚³‚¢B
+2. [IN] 
+•Ï”‚Ü‚½‚ÍA”’l@F@animno
+@@MOEƒAƒjƒ‚ðŽ¯•Ê‚·‚é”Ô†‚ðŽw’è‚µ‚Ä‚­‚¾‚³‚¢B
+
+
+ƒo[ƒWƒ‡ƒ“ : ver5.2.3.1
+
+%index
+E3DUpdateSound
+‰¹‚ÌXVˆ—‚ð‚µ‚Ü‚·B
+%group
+Easy3D For HSP3 : ƒTƒEƒ“ƒh
+
+%prm
+‚È‚µ
+
+%inst
+‰¹‚ÌXVˆ—‚ð‚µ‚Ü‚·B
+“¯‚¶‰¹‚Ì‘½dÄ¶‚Ì‚½‚ß‚Ìî•ñXV‚â‚RDƒTƒEƒ“ƒhƒpƒ‰ƒ[ƒ^‚Ì”½‰f‚È‚Ç‚ªŽå‚È“®ì‚Å‚·B
+
+–ˆƒtƒŒ[ƒ€ŒÄ‚Ño‚µ‚Ä‚­‚¾‚³‚¢B
+
+
+
+
+¨ˆø”
+‚È‚µ
+
+ƒo[ƒWƒ‡ƒ“ : ver5.3.0.0
+
+%index
+E3DGetSoundSamplesPlayed
+‰¹‚ÌŒ»Ý‚ÌÄ¶ˆÊ’u‚ðŽæ“¾‚µ‚Ü‚·B
+%group
+Easy3D For HSP3 : ƒTƒEƒ“ƒh
+
+%prm
+p1,p2
+p1 : [IN] •Ï”‚Ü‚½‚ÍA”’l@F@soundid
+p2 : [OUT] •Ï”@F@smpptr
+
+%inst
+‰¹‚ÌŒ»Ý‚ÌÄ¶ˆÊ’u‚ðŽæ“¾‚µ‚Ü‚·B
+ƒTƒ“ƒvƒ‹iŽü”g”j’PˆÊ‚Ì’l‚Å‚·B
+
+Ä¶‚ðƒXƒgƒbƒv‚·‚é‚Æ‚O‚É–ß‚è‚Ü‚·B
+
+
+
+¨ˆø”
+1. [IN] •Ï”‚Ü‚½‚ÍA”’l@F@soundid
+@@‰¹ƒf[ƒ^‚ðŽ¯•Ê‚·‚é‚h‚c
+
+2. [OUT] •Ï”@F@smpptr
+@@ŽÀ”Œ^‚Ì•Ï”B
+@@Ä¶ˆÊ’u‚ª‘ã“ü‚³‚ê‚Ü‚·B
+
+
+
+ƒo[ƒWƒ‡ƒ“ : ver5.3.0.0
+
+%index
+E3DSet3DSoundEmiDist
+‚RDƒTƒEƒ“ƒh‚Ì‰¹‚Ì“Í‚­‹——£‚ðŽw’è‚µ‚Ü‚·B
+%group
+Easy3D For HSP3 : ƒTƒEƒ“ƒh
+
+%prm
+p1,p2
+p1 : [IN] •Ï”‚Ü‚½‚ÍA”’l@F@soundid
+p2 : [IN] •Ï”‚Ü‚½‚ÍA”’l@F@dist
+
+%inst
+‚RDƒTƒEƒ“ƒh‚Ì‰¹‚Ì“Í‚­‹——£‚ðŽw’è‚µ‚Ü‚·B
+E3DUpdateSound‚Å“K—p‚³‚ê‚Ü‚·B
+
+
+
+¨ˆø”
+1. [IN] •Ï”‚Ü‚½‚ÍA”’l@F@soundid
+@@‰¹ƒf[ƒ^‚ðŽ¯•Ê‚·‚é‚h‚c
+
+2. [IN] •Ï”‚Ü‚½‚ÍA”’l@F@dist
+@@ŽÀ”B
+@@‰¹‚Ì“Í‚­Å‘å‹——£B
+
+
+
+
+ƒo[ƒWƒ‡ƒ“ : ver5.3.0.3
+
+%index
+E3DFadeSound
+ƒtƒF[ƒhˆ—‚ð‚µ‚Ü‚·B
+%group
+Easy3D For HSP3 : ƒTƒEƒ“ƒh
+
+%prm
+p1,p2,p3,p4
+p1 : [IN] •Ï”‚Ü‚½‚ÍA”’l@F@soundid
+p2 : [IN] •Ï”‚Ü‚½‚ÍA”’l@F@msc
+p3 : [IN] •Ï”‚Ü‚½‚ÍA”’l@F@startgain
+p4 : [IN] •Ï”‚Ü‚½‚ÍA”’l@F@endgain
+
+%inst
+ƒtƒF[ƒhˆ—‚ð‚µ‚Ü‚·B
+E3DPlaySound‚æ‚è‚àŒã‚ÅŒÄ‚Ñ‚Ü‚·B
+
+
+
+
+¨ˆø”
+1. [IN] •Ï”‚Ü‚½‚ÍA”’l@F@soundid
+@@‰¹ƒf[ƒ^‚ðŽ¯•Ê‚·‚é‚h‚c
+
+2. [IN] •Ï”‚Ü‚½‚ÍA”’l@F@msc
+3. [IN] •Ï”‚Ü‚½‚ÍA”’l@F@startgain
+4. [IN] •Ï”‚Ü‚½‚ÍA”’l@F@endgain
+@@mscƒ~ƒŠƒZƒJƒ“ƒh‚ÌŠÔ‚É‰¹‚ÌƒQƒCƒ“‚ðstartgain‚©‚çendgain‚É•Ï‰»‚³‚¹‚Ü‚·B
+@@gain‚ÍŽÀ”B‚PD‚O‚ª“™”{B
+
+
+
+
+ƒo[ƒWƒ‡ƒ“ : ver5.3.0.5
+
+%index
+E3DGlobalToLocalParBone
+ƒOƒ[ƒoƒ‹À•WŒn‚ÌÀ•W’l‚ÆƒNƒH[ƒ^ƒjƒIƒ“‚ð
+Žw’è‚µ‚½ƒ{[ƒ“‚Ìe‚Ìƒ{[ƒ“‚Ìƒ[ƒJƒ‹À•WŒn‚É•ÏŠ·‚µ‚Ü‚·B
+%group
+Easy3D For HSP3 : ŽZp
+
+%prm
+p1,p2,p3,p4,p5,p6,p7,p8,p9
+p1 : [IN] •Ï”‚Ü‚½‚ÍA”’l@F@hsid
+p2 : [IN] •Ï”‚Ü‚½‚ÍA”’l@F@motid
+p3 : [IN] •Ï”‚Ü‚½‚ÍA”’l@F@frameno
+p4 : [IN] •Ï”‚Ü‚½‚ÍA”’l@F@boneno
+p5 : [IN] •Ï”‚Ü‚½‚ÍA”’l@F@flag
+p6 : [IN] •Ï”‚Ü‚½‚ÍA”’l@F@srcqid
+p7 : [IN][OUT] •Ï”‚Ü‚½‚ÍA”’l@F@dstqid
+p8 : [IN] •Ï”@F@srcvecptr
+p9 : [OUT] •Ï”@F@dstvecptr
+
+%inst
+ƒOƒ[ƒoƒ‹À•WŒn‚ÌÀ•W’l‚ÆƒNƒH[ƒ^ƒjƒIƒ“‚ð
+Žw’è‚µ‚½ƒ{[ƒ“‚Ìe‚Ìƒ{[ƒ“‚Ìƒ[ƒJƒ‹À•WŒn‚É•ÏŠ·‚µ‚Ü‚·B
+
+‚Â‚Ü‚èe‚Ì‰e‹¿‚ðœ‚¢‚½’l‚ðŽæ“¾‚Å‚«‚Ü‚·B
+
+
+
+¨ˆø”
+1. [IN] •Ï”‚Ü‚½‚ÍA”’l@F@hsid
+@@ƒ‚ƒfƒ‹‚ðŽ¯•Ê‚·‚é”Ô†‚ðŽw’è‚µ‚Ä‚­‚¾‚³‚¢B
+
+2. [IN] •Ï”‚Ü‚½‚ÍA”’l@F@motid
+@@ƒ‚[ƒVƒ‡ƒ“‚ðŽ¯•Ê‚·‚é”Ô†‚ðŽw’è‚µ‚Ä‚­‚¾‚³‚¢B
+
+3. [IN] •Ï”‚Ü‚½‚ÍA”’l@F@frameno
+@@ƒtƒŒ[ƒ€”Ô†‚ðŽw’è‚µ‚Ä‚­‚¾‚³‚¢B
+
+4. [IN] •Ï”‚Ü‚½‚ÍA”’l@F@boneno
+@@ƒ{[ƒ“‚ðŽ¯•Ê‚·‚é”Ô†‚ðŽw’è‚µ‚Ä‚­‚¾‚³‚¢B
+
+5. [IN] •Ï”‚Ü‚½‚ÍA”’l@F@flag
+@@ƒtƒ‰ƒO‚É‚P‚ðƒZƒbƒg‚·‚é‚ÆƒNƒH[ƒ^ƒjƒIƒ“‚Ì‚Ý‚ð•ÏŠ·‚µ‚Ü‚·B‚Q‚ðƒZƒbƒg‚·‚é‚ÆÀ•W’l‚Ì‚Ý‚ð•ÏŠ·‚µ‚Ü‚·B‚R‚ðƒZƒbƒg‚·‚é‚ÆƒNƒH[ƒ^ƒjƒIƒ“‚ÆÀ•W’l‚Ì—¼•û‚ð•ÏŠ·‚µ‚Ü‚·B
+
+6. [IN] •Ï”‚Ü‚½‚ÍA”’l@F@srcqid
+@@•ÏŠ·‘O‚Ìî•ñ‚ª“ü‚Á‚Ä‚¢‚éƒNƒH[ƒ^ƒjƒIƒ“‚ÌIDB
+
+7. [IN][OUT] •Ï”‚Ü‚½‚ÍA”’l@F@dstqid
+@@•ÏŠ·Œã‚ÌƒNƒH[ƒ^ƒjƒIƒ“î•ñ‚ðŠi”[‚·‚éƒNƒH[ƒ^ƒjƒIƒ“‚ÌIDB
+
+@@E3DCreateQ‚Åì¬‚µ‚½ƒNƒH[ƒ^ƒjƒIƒ“‚ÌID‚ðŽw’è‚µ‚Ä‚­‚¾‚³‚¢B
+
+8. [IN] •Ï”@F@srcvecptr
+@@ŽÀ”Œ^‚Ì•Ï”B
+@@ddim srcvec, 3‚ÅŠm•Û‚µ‚Ä‚­‚¾‚³‚¢B
+@@•ÏŠ·‘O‚ÌÀ•W’l‚ðŽw’è‚µ‚Ü‚·B
+
+9. [OUT] •Ï”@F@dstvecptr
+@@ŽÀ”Œ^‚Ì•Ï”B
+@@ddim dstvec, 3‚ÅŠm•Û‚µ‚Ä‚­‚¾‚³‚¢B
+@@•ÏŠ·Œã‚ÌÀ•W’l‚ª‘ã“ü‚³‚ê‚Ü‚·B
+
+
+
+
+ƒo[ƒWƒ‡ƒ“ : ver5.3.0.7
+
+%index
+E3DLocalToGlobalParBone
+ƒ[ƒJƒ‹À•WŒn‚ÌÀ•W’l‚ÆƒNƒH[ƒ^ƒjƒIƒ“‚ð
+Žw’è‚µ‚½ƒ{[ƒ“‚Ìe‚Ìƒ{[ƒ“‚Ì‰e‹¿‚ðl—¶‚µ‚½ƒOƒ[ƒoƒ‹À•WŒn‚É•ÏŠ·‚µ‚Ü‚·B
+%group
+Easy3D For HSP3 : ŽZp
+
+%prm
+p1,p2,p3,p4,p5,p6,p7,p8,p9
+p1 : [IN] •Ï”‚Ü‚½‚ÍA”’l@F@hsid
+p2 : [IN] •Ï”‚Ü‚½‚ÍA”’l@F@motid
+p3 : [IN] •Ï”‚Ü‚½‚ÍA”’l@F@frameno
+p4 : [IN] •Ï”‚Ü‚½‚ÍA”’l@F@boneno
+p5 : [IN] •Ï”‚Ü‚½‚ÍA”’l@F@flag
+p6 : [IN] •Ï”‚Ü‚½‚ÍA”’l@F@srcqid
+p7 : [IN][OUT] •Ï”‚Ü‚½‚ÍA”’l@F@dstqid
+p8 : [IN] •Ï”@F@srcvecptr
+p9 : [OUT] •Ï”@F@dstvecptr
+
+%inst
+ƒ[ƒJƒ‹À•WŒn‚ÌÀ•W’l‚ÆƒNƒH[ƒ^ƒjƒIƒ“‚ð
+Žw’è‚µ‚½ƒ{[ƒ“‚Ìe‚Ìƒ{[ƒ“‚Ì‰e‹¿‚ðl—¶‚µ‚½ƒOƒ[ƒoƒ‹À•WŒn‚É•ÏŠ·‚µ‚Ü‚·B
+
+E3DGlobalToLocalParBone‚Ì‹t•ÏŠ·‚Å‚·B
+
+
+
+¨ˆø”
+1. [IN] •Ï”‚Ü‚½‚ÍA”’l@F@hsid
+@@ƒ‚ƒfƒ‹‚ðŽ¯•Ê‚·‚é”Ô†‚ðŽw’è‚µ‚Ä‚­‚¾‚³‚¢B
+
+2. [IN] •Ï”‚Ü‚½‚ÍA”’l@F@motid
+@@ƒ‚[ƒVƒ‡ƒ“‚ðŽ¯•Ê‚·‚é”Ô†‚ðŽw’è‚µ‚Ä‚­‚¾‚³‚¢B
+
+3. [IN] •Ï”‚Ü‚½‚ÍA”’l@F@frameno
+@@ƒtƒŒ[ƒ€”Ô†‚ðŽw’è‚µ‚Ä‚­‚¾‚³‚¢B
+
+4. [IN] •Ï”‚Ü‚½‚ÍA”’l@F@boneno
+@@ƒ{[ƒ“‚ðŽ¯•Ê‚·‚é”Ô†‚ðŽw’è‚µ‚Ä‚­‚¾‚³‚¢B
+
+5. [IN] •Ï”‚Ü‚½‚ÍA”’l@F@flag
+@@ƒtƒ‰ƒO‚É‚P‚ðƒZƒbƒg‚·‚é‚ÆƒNƒH[ƒ^ƒjƒIƒ“‚Ì‚Ý‚ð•ÏŠ·‚µ‚Ü‚·B‚Q‚ðƒZƒbƒg‚·‚é‚ÆÀ•W’l‚Ì‚Ý‚ð•ÏŠ·‚µ‚Ü‚·B‚R‚ðƒZƒbƒg‚·‚é‚ÆƒNƒH[ƒ^ƒjƒIƒ“‚ÆÀ•W’l‚Ì—¼•û‚ð•ÏŠ·‚µ‚Ü‚·B
+
+6. [IN] •Ï”‚Ü‚½‚ÍA”’l@F@srcqid
+@@•ÏŠ·‘O‚Ìî•ñ‚ª“ü‚Á‚Ä‚¢‚éƒNƒH[ƒ^ƒjƒIƒ“‚ÌIDB
+
+7. [IN][OUT] •Ï”‚Ü‚½‚ÍA”’l@F@dstqid
+@@•ÏŠ·Œã‚ÌƒNƒH[ƒ^ƒjƒIƒ“î•ñ‚ðŠi”[‚·‚éƒNƒH[ƒ^ƒjƒIƒ“‚ÌIDB
+
+@@E3DCreateQ‚Åì¬‚µ‚½ƒNƒH[ƒ^ƒjƒIƒ“‚ÌID‚ðŽw’è‚µ‚Ä‚­‚¾‚³‚¢B
+
+8. [IN] •Ï”@F@srcvecptr
+@@ŽÀ”Œ^‚Ì•Ï”B
+@@ddim srcvec, 3‚ÅŠm•Û‚µ‚Ä‚­‚¾‚³‚¢B
+@@•ÏŠ·‘O‚ÌÀ•W’l‚ðŽw’è‚µ‚Ü‚·B
+
+9. [OUT] •Ï”@F@dstvecptr
+@@ŽÀ”Œ^‚Ì•Ï”B
+@@ddim dstvec, 3‚ÅŠm•Û‚µ‚Ä‚­‚¾‚³‚¢B
+@@•ÏŠ·Œã‚ÌÀ•W’l‚ª‘ã“ü‚³‚ê‚Ü‚·B
+
+
+
+
+ƒo[ƒWƒ‡ƒ“ : ver5.3.0.7
+
+%index
+E3DGetBoneTra
+ƒ{[ƒ“‚ÌˆÚ“®¬•ª‚ðŽæ“¾‚µ‚Ü‚·B
+%group
+Easy3D For HSP3 : ƒ‚[ƒVƒ‡ƒ“
+
+%prm
+p1,p2,p3,p4,p5,p6
+p1 : [IN] •Ï”‚Ü‚½‚ÍA”’l@F@hsid
+p2 : [IN] •Ï”‚Ü‚½‚ÍA”’l@F@boneno
+p3 : [IN] •Ï”‚Ü‚½‚ÍA”’l@F@motid
+p4 : [IN] •Ï”‚Ü‚½‚ÍA”’l@F@frameno
+p5 : [OUT] ”z—ñ•Ï”@F@vec
+p6 : [OUT] •Ï”@F@existptr
+
+%inst
+ƒ{[ƒ“‚ÌˆÚ“®¬•ª‚ðŽæ“¾‚µ‚Ü‚·B
+ƒ‚[ƒVƒ‡ƒ“ƒ|ƒCƒ“ƒg‚ª‘¶Ý‚µ‚È‚¢ê‡‚Í•âŠÔŒvŽZ‚µ‚Äî•ñ‚ðŽæ“¾‚µ‚Ü‚·B
+
+vec‚É‚Í
+ddim vec, 3
+‚Åì¬‚µ‚½”z—ñ‚ðŽw’è‚µ‚Ä‚­‚¾‚³‚¢B
+vec(0)‚ÉX¬•ª‚ªvec(1)‚ÉY¬•ª‚ªvec(2)‚ÉZ¬•ª‚ª‘ã“ü‚³‚ê‚Ü‚·B
+
+
+
+
+¨ˆø”
+1. [IN] •Ï”‚Ü‚½‚ÍA”’l@F@hsid
+@@ƒ‚ƒfƒ‹‚ðŽ¯•Ê‚·‚é”Ô†‚ðŽw’è‚µ‚Ä‚­‚¾‚³‚¢B
+
+2. [IN] •Ï”‚Ü‚½‚ÍA”’l@F@boneno
+@@ƒ{[ƒ“‚ðŽ¯•Ê‚·‚é”Ô†‚ðŽw’è‚µ‚Ä‚­‚¾‚³‚¢B
+
+3. [IN] •Ï”‚Ü‚½‚ÍA”’l@F@motid
+@@ƒ‚[ƒVƒ‡ƒ“‚ðŽ¯•Ê‚·‚é”Ô†‚ðŽw’è‚µ‚Ä‚­‚¾‚³‚¢B
+
+4. [IN] •Ï”‚Ü‚½‚ÍA”’l@F@frameno
+@@ƒtƒŒ[ƒ€”Ô†‚ðŽw’è‚µ‚Ä‚­‚¾‚³‚¢B
+
+5. [OUT] ”z—ñ•Ï”@F@vec
+@@ŽÀ”Œ^‚Ì”z—ñB
+@@ˆÚ“®¬•ª‚ª‘ã“ü‚³‚ê‚Ü‚·B
+
+6. [OUT] •Ï”@F@existptr
+@@Žw’è‚µ‚½ƒtƒŒ[ƒ€‚Éƒ‚[ƒVƒ‡ƒ“ƒ|ƒCƒ“ƒg‚ª‘¶Ý‚·‚éê‡‚Í‚P‚ªA‚µ‚È‚¢ê‡‚Í‚O‚ª‘ã“ü‚³‚ê‚Ü‚·B
+
+
+
+ƒo[ƒWƒ‡ƒ“ : ver5.3.1.4
+
+%index
+E3DGetBoneScale
+ƒ{[ƒ“‚ÌŠg‘åk¬¬•ª‚ðŽæ“¾‚µ‚Ü‚·B
+%group
+Easy3D For HSP3 : ƒ‚[ƒVƒ‡ƒ“
+
+%prm
+p1,p2,p3,p4,p5,p6
+p1 : [IN] •Ï”‚Ü‚½‚ÍA”’l@F@hsid
+p2 : [IN] •Ï”‚Ü‚½‚ÍA”’l@F@boneno
+p3 : [IN] •Ï”‚Ü‚½‚ÍA”’l@F@motid
+p4 : [IN] •Ï”‚Ü‚½‚ÍA”’l@F@frameno
+p5 : [OUT] ”z—ñ•Ï”@F@vec
+p6 : [OUT] •Ï”@F@existptr
+
+%inst
+ƒ{[ƒ“‚ÌŠg‘åk¬¬•ª‚ðŽæ“¾‚µ‚Ü‚·B
+ƒ‚[ƒVƒ‡ƒ“ƒ|ƒCƒ“ƒg‚ª‘¶Ý‚µ‚È‚¢ê‡‚Í•âŠÔŒvŽZ‚µ‚Äî•ñ‚ðŽæ“¾‚µ‚Ü‚·B
+
+vec‚É‚Í
+ddim vec, 3
+‚Åì¬‚µ‚½”z—ñ‚ðŽw’è‚µ‚Ä‚­‚¾‚³‚¢B
+vec(0)‚ÉX¬•ª‚ªvec(1)‚ÉY¬•ª‚ªvec(2)‚ÉZ¬•ª‚ª‘ã“ü‚³‚ê‚Ü‚·B
+
+
+
+
+
+¨ˆø”
+1. [IN] •Ï”‚Ü‚½‚ÍA”’l@F@hsid
+@@ƒ‚ƒfƒ‹‚ðŽ¯•Ê‚·‚é”Ô†‚ðŽw’è‚µ‚Ä‚­‚¾‚³‚¢B
+
+2. [IN] •Ï”‚Ü‚½‚ÍA”’l@F@boneno
+@@ƒ{[ƒ“‚ðŽ¯•Ê‚·‚é”Ô†‚ðŽw’è‚µ‚Ä‚­‚¾‚³‚¢B
+
+3. [IN] •Ï”‚Ü‚½‚ÍA”’l@F@motid
+@@ƒ‚[ƒVƒ‡ƒ“‚ðŽ¯•Ê‚·‚é”Ô†‚ðŽw’è‚µ‚Ä‚­‚¾‚³‚¢B
+
+4. [IN] •Ï”‚Ü‚½‚ÍA”’l@F@frameno
+@@ƒtƒŒ[ƒ€”Ô†‚ðŽw’è‚µ‚Ä‚­‚¾‚³‚¢B
+
+5. [OUT] ”z—ñ•Ï”@F@vec
+@@ŽÀ”Œ^‚Ì”z—ñB
+@@Šg‘åk¬¬•ª‚ª‘ã“ü‚³‚ê‚Ü‚·B
+
+6. [OUT] •Ï”@F@existptr
+@@Žw’è‚µ‚½ƒtƒŒ[ƒ€‚Éƒ‚[ƒVƒ‡ƒ“ƒ|ƒCƒ“ƒg‚ª‘¶Ý‚·‚éê‡‚Í‚P‚ªA‚µ‚È‚¢ê‡‚Í‚O‚ª‘ã“ü‚³‚ê‚Ü‚·B
+
+
+
+ƒo[ƒWƒ‡ƒ“ : ver5.3.1.4
+
+%index
+E3DSetBoneTra
+ƒ{[ƒ“‚ÌˆÚ“®¬•ª‚ðÝ’è‚µ‚Ü‚·B
+%group
+Easy3D For HSP3 : ƒ‚[ƒVƒ‡ƒ“
+
+%prm
+p1,p2,p3,p4,p5
+p1 : [IN] •Ï”‚Ü‚½‚ÍA”’l@F@hsid
+p2 : [IN] •Ï”‚Ü‚½‚ÍA”’l@F@boneno
+p3 : [IN] •Ï”‚Ü‚½‚ÍA”’l@F@motid
+p4 : [IN] •Ï”‚Ü‚½‚ÍA”’l@F@frameno
+p5 : [IN] ”z—ñ•Ï”@F@vec
+
+%inst
+ƒ{[ƒ“‚ÌˆÚ“®¬•ª‚ðÝ’è‚µ‚Ü‚·B
+ƒ‚[ƒVƒ‡ƒ“ƒ|ƒCƒ“ƒg‚ª‘¶Ý‚µ‚È‚¢ê‡‚ÍƒGƒ‰[‚É‚È‚è‚Ü‚·B
+
+vec‚É‚Í
+ddim vec, 3
+‚Åì¬‚µ‚½”z—ñ‚ðŽg—p‚µ‚Ä‚­‚¾‚³‚¢B
+vec(0)‚ÉX¬•ª‚ðvec(1)‚ÉY¬•ª‚ðvec(2)‚ÉZ¬•ª‚ðƒZƒbƒg‚µ‚Ä‚­‚¾‚³‚¢B
+
+
+
+
+
+¨ˆø”
+1. [IN] •Ï”‚Ü‚½‚ÍA”’l@F@hsid
+@@ƒ‚ƒfƒ‹‚ðŽ¯•Ê‚·‚é”Ô†‚ðŽw’è‚µ‚Ä‚­‚¾‚³‚¢B
+
+2. [IN] •Ï”‚Ü‚½‚ÍA”’l@F@boneno
+@@ƒ{[ƒ“‚ðŽ¯•Ê‚·‚é”Ô†‚ðŽw’è‚µ‚Ä‚­‚¾‚³‚¢B
+
+3. [IN] •Ï”‚Ü‚½‚ÍA”’l@F@motid
+@@ƒ‚[ƒVƒ‡ƒ“‚ðŽ¯•Ê‚·‚é”Ô†‚ðŽw’è‚µ‚Ä‚­‚¾‚³‚¢B
+
+4. [IN] •Ï”‚Ü‚½‚ÍA”’l@F@frameno
+@@ƒtƒŒ[ƒ€”Ô†‚ðŽw’è‚µ‚Ä‚­‚¾‚³‚¢B
+
+5. [IN] ”z—ñ•Ï”@F@vec
+@@ŽÀ”Œ^‚Ì”z—ñB
+@@ˆÚ“®¬•ª‚ðŽw’è‚µ‚Ü‚·B
+
+
+
+ƒo[ƒWƒ‡ƒ“ : ver5.3.1.4
+
+%index
+E3DSetBoneScale
+ƒ{[ƒ“‚ÌŠg‘åk¬¬•ª‚ðŽæ“¾‚µ‚Ü‚·B
+%group
+Easy3D For HSP3 : ƒ‚[ƒVƒ‡ƒ“
+
+%prm
+p1,p2,p3,p4,p5
+p1 : [IN] •Ï”‚Ü‚½‚ÍA”’l@F@hsid
+p2 : [IN] •Ï”‚Ü‚½‚ÍA”’l@F@boneno
+p3 : [IN] •Ï”‚Ü‚½‚ÍA”’l@F@motid
+p4 : [IN] •Ï”‚Ü‚½‚ÍA”’l@F@frameno
+p5 : [IN] ”z—ñ•Ï”@F@vec
+
+%inst
+ƒ{[ƒ“‚ÌŠg‘åk¬¬•ª‚ðŽæ“¾‚µ‚Ü‚·B
+ƒ‚[ƒVƒ‡ƒ“ƒ|ƒCƒ“ƒg‚ª‘¶Ý‚µ‚È‚¢ê‡‚ÍƒGƒ‰[‚É‚È‚è‚Ü‚·B
+
+vec‚É‚Í
+ddim vec, 3
+‚Åì¬‚µ‚½”z—ñ‚ðŽg—p‚µ‚Ä‚­‚¾‚³‚¢B
+vec(0)‚ÉX¬•ª‚ðvec(1)‚ÉY¬•ª‚ðvec(2)‚ÉZ¬•ª‚ðƒZƒbƒg‚µ‚Ä‚­‚¾‚³‚¢B
+
+
+
+
+¨ˆø”
+1. [IN] •Ï”‚Ü‚½‚ÍA”’l@F@hsid
+@@ƒ‚ƒfƒ‹‚ðŽ¯•Ê‚·‚é”Ô†‚ðŽw’è‚µ‚Ä‚­‚¾‚³‚¢B
+
+2. [IN] •Ï”‚Ü‚½‚ÍA”’l@F@boneno
+@@ƒ{[ƒ“‚ðŽ¯•Ê‚·‚é”Ô†‚ðŽw’è‚µ‚Ä‚­‚¾‚³‚¢B
+
+3. [IN] •Ï”‚Ü‚½‚ÍA”’l@F@motid
+@@ƒ‚[ƒVƒ‡ƒ“‚ðŽ¯•Ê‚·‚é”Ô†‚ðŽw’è‚µ‚Ä‚­‚¾‚³‚¢B
+
+4. [IN] •Ï”‚Ü‚½‚ÍA”’l@F@frameno
+@@ƒtƒŒ[ƒ€”Ô†‚ðŽw’è‚µ‚Ä‚­‚¾‚³‚¢B
+
+5. [IN] ”z—ñ•Ï”@F@vec
+@@ŽÀ”Œ^‚Ì”z—ñB
+@@Šg‘åk¬¬•ª‚ðŽw’è‚µ‚Ü‚·B
+
+
+
+ƒo[ƒWƒ‡ƒ“ : ver5.3.1.4
+
+%index
+E3DCreateMotionPoint
+ƒ‚[ƒVƒ‡ƒ“ƒ|ƒCƒ“ƒg‚ðì¬‚µ‚Ü‚·B
+%group
+Easy3D For HSP3 : ƒ‚[ƒVƒ‡ƒ“
+
+%prm
+p1,p2,p3,p4
+p1 : [IN] •Ï”‚Ü‚½‚ÍA”’l@F@hsid
+p2 : [IN] •Ï”‚Ü‚½‚ÍA”’l@F@boneno
+p3 : [IN] •Ï”‚Ü‚½‚ÍA”’l@F@motid
+p4 : [IN] •Ï”‚Ü‚½‚ÍA”’l@F@frameno
+
+%inst
+ƒ‚[ƒVƒ‡ƒ“ƒ|ƒCƒ“ƒg‚ðì¬‚µ‚Ü‚·B
+‘OŒã‚Ìƒ‚[ƒVƒ‡ƒ“ƒ|ƒCƒ“ƒg‚ð’²‚×‚Ä•âŠÔŒvŽZ‚µ‚½ƒ‚[ƒVƒ‡ƒ“î•ñ‚ðƒZƒbƒg‚µ‚Ü‚·B
+
+
+
+
+¨ˆø”
+1. [IN] •Ï”‚Ü‚½‚ÍA”’l@F@hsid
+@@ƒ‚ƒfƒ‹‚ðŽ¯•Ê‚·‚é”Ô†‚ðŽw’è‚µ‚Ä‚­‚¾‚³‚¢B
+
+2. [IN] •Ï”‚Ü‚½‚ÍA”’l@F@boneno
+@@ƒ{[ƒ“‚ðŽ¯•Ê‚·‚é”Ô†‚ðŽw’è‚µ‚Ä‚­‚¾‚³‚¢B
+
+3. [IN] •Ï”‚Ü‚½‚ÍA”’l@F@motid
+@@ƒ‚[ƒVƒ‡ƒ“‚ðŽ¯•Ê‚·‚é”Ô†‚ðŽw’è‚µ‚Ä‚­‚¾‚³‚¢B
+
+4. [IN] •Ï”‚Ü‚½‚ÍA”’l@F@frameno
+@@ƒtƒŒ[ƒ€”Ô†‚ðŽw’è‚µ‚Ä‚­‚¾‚³‚¢B
+
+
+
+ƒo[ƒWƒ‡ƒ“ : ver5.3.1.4
+
+%index
+E3DSet3DSoundDopplerScaler
+ƒhƒbƒvƒ‰[Œø‰Ê‚ÌŒW”‚ðÝ’è‚µ‚Ü‚·B
+%group
+Easy3D For HSP3 : ƒTƒEƒ“ƒh
+
+%prm
+p1,p2
+p1 : [IN] •Ï”‚Ü‚½‚ÍA”’l@F@soundid
+p2 : [IN]•Ï”‚Ü‚½‚ÍA”’l@F@srcdp
+
+%inst
+ƒhƒbƒvƒ‰[Œø‰Ê‚ÌŒW”‚ðÝ’è‚µ‚Ü‚·B
+’l‚ª‘å‚«‚¢‚Ù‚Çƒhƒbƒvƒ‰[Œø‰Ê‚ª‘å‚«‚­‚È‚è‚Ü‚·B
+
+ƒhƒbƒvƒ‰[Œø‰Ê‚Í‰¹Œ¹‚âƒŠƒXƒi[‚Ì‘¬“x‚É‚æ‚Á‚Ä¶‚¶‚Ü‚·B
+
+‰¹Œ¹‚Ì‘¬“x‚Í
+E3DSet3DSoundMovement‚ÅŽw’è‚·‚é‘¬“x‚Å‚·B
+
+ƒŠƒXƒi[‚Ì‘¬“x‚Í
+E3DSet3DSoundListenerMovement‚ÅŽw’è‚µ‚½ƒLƒƒƒ‰ƒNƒ^[‚Ü‚½‚ÍƒJƒƒ‰‚ÌŒ»Ý‚ÌˆÊ’u‚©‚ç‚P‰ñ‘O‚ÌŒÄ‚Ño‚µŽž‚ÌˆÊ’u‚ðˆø‚¢‚½‚à‚Ì‚Æ‚È‚è‚Ü‚·B
+
+
+
+
+¨ˆø”
+1. [IN] •Ï”‚Ü‚½‚ÍA”’l@F@soundid
+@@‰¹‚ðŽ¯•Ê‚·‚é”Ô†‚ðAŽw’è‚µ‚Ü‚·B
+@@-1‚ðŽw’è‚·‚é‚Æ“Ç‚Ýž‚ÝÏ‚Ý‚Ì‘S‚Ä‚Ì‰¹‚É‘Î‚µ‚Äˆ—‚ð‚µ‚Ü‚·B
+
+2. [IN]•Ï”‚Ü‚½‚ÍA”’l@F@srcdp
+@@ƒhƒbƒvƒ‰[Œø‰Ê‚ÌŒW”‚ðŽw’è‚µ‚Ü‚·B
+@@‚OˆÈã‚Ì”’l‚ðŽw’è‚µ‚Ü‚·B
+@@ŽÀ”B
+
+
+
+ƒo[ƒWƒ‡ƒ“ : ver5.3.2.2
+
+%index
+E3DGet3DSoundDopplerScaler
+ƒhƒbƒvƒ‰[Œø‰Ê‚ÌŒW”‚ðŽæ“¾‚µ‚Ü‚·B
+%group
+Easy3D For HSP3 : ƒTƒEƒ“ƒh
+
+%prm
+p1,p2
+p1 : [IN] •Ï”‚Ü‚½‚ÍA”’l@F@soundid
+p2 : [OUT] •Ï”@F@dpptr
+
+%inst
+ƒhƒbƒvƒ‰[Œø‰Ê‚ÌŒW”‚ðŽæ“¾‚µ‚Ü‚·B
+
+
+
+
+¨ˆø”
+1. [IN] •Ï”‚Ü‚½‚ÍA”’l@F@soundid
+@@‰¹‚ðŽ¯•Ê‚·‚é”Ô†‚ðAŽw’è‚µ‚Ü‚·B
+
+2. [OUT] •Ï”@F@dpptr
+@@ŽÀ”Œ^‚Ì•Ï”B
+@@ƒhƒbƒvƒ‰[Œø‰Ê‚ÌŒW”‚ª‘ã“ü‚³‚ê‚Ü‚·B
+
+
+
+ƒo[ƒWƒ‡ƒ“ : ver5.3.2.2
+
+%index
+E3DLoadMQOFileAsChara
+mqoƒtƒ@ƒCƒ‹‚ðƒLƒƒƒ‰ƒNƒ^[‚Æ‚µ‚Ä“Ç‚Ýž‚Ý‚Ü‚·B
+%group
+Easy3D For HSP3 : ƒ‚ƒfƒ‹ƒf[ƒ^
+
+%prm
+p1,p2,p3,p4,p5
+p1 : [IN] •¶Žš—ñ‚Ü‚½‚ÍA•¶Žš—ñ•Ï”@F@filename
+p2 : [IN] •Ï”‚Ü‚½‚ÍA”’l@F@mult
+p3 : [OUT] •Ï”@F@hsid
+p4 : [IN] •Ï”‚Ü‚½‚ÍA”’l@F@adjustuvflag
+p5 : [IN] •¶Žš—ñ‚Ü‚½‚ÍA•¶Žš—ñ•Ï”@F@bonetype
+
+%inst
+mqoƒtƒ@ƒCƒ‹‚ðƒLƒƒƒ‰ƒNƒ^[‚Æ‚µ‚Ä“Ç‚Ýž‚Ý‚Ü‚·B
+ƒc[ƒ‹—p‚Ì–½—ß‚Å‚·B
+ƒQ[ƒ€‚È‚Ç‚Å‚ÍRokDeBone2‚Åmqo‚ð“Ç‚Ýž‚Ýsig‚Å•Û‘¶‚µ‚ÄAE3DSigLoad‚Å“Ç‚Ýž‚ñ‚Å‚­‚¾‚³‚¢B
+
+sig‚Ì“Ç‚Ýž‚Ý‚Ì‚Ù‚¤‚ª‚‘¬‚Å‚·B
+
+
+
+
+¨ˆø”
+1. [IN] •¶Žš—ñ‚Ü‚½‚ÍA•¶Žš—ñ•Ï”@F@filename
+@@“Ç‚Ýž‚ÞAmqo ƒtƒ@ƒCƒ‹–¼B
+
+2. [IN] •Ï”‚Ü‚½‚ÍA”’l@F@mult
+@@Œ`óƒf[ƒ^‚ÌÀ•W‚ÉŠ|‚¯‚é”’lB
+@@À•W’l@–@mult ‚ÅŒvŽZ‚³‚ê‚Ü‚·B
+@@“™”{‚Í‚PD‚O
+@@ŽÀ”B
+
+3. [OUT] •Ï”@F@hsid
+@@ì¬‚µ‚½ƒLƒƒƒ‰ƒNƒ^[‚ðŽ¯•Ê‚·‚éhsid‚ª‘ã“ü‚³‚ê‚Ü‚·B
+
+4. [IN] •Ï”‚Ü‚½‚ÍA”’l@F@adjustuvflag
+@@UVÀ•W‚ð³‹K‰»‚µ‚½‚¢‚Æ‚«‚Í‚P‚ðA
+@@‚»‚¤‚Å‚È‚¢‚Æ‚«‚ÍA‚O‚ðŽw’è‚µ‚Ä‚­‚¾‚³‚¢B
+@@‰½‚àŽw’è‚µ‚È‚¢‚Æ‚«‚ÍA‚O‚Æ‚µ‚Äˆµ‚í‚ê‚Ü‚·B
+@@‚Q‚ðŽw’è‚·‚é‚Æ0.0‚©‚ç1.0‚ÌŠÔ‚ÉƒNƒ‰ƒ“ƒv‚µ‚Ü‚·B
+
+
+5. [IN] •¶Žš—ñ‚Ü‚½‚ÍA•¶Žš—ñ•Ï”@F@bonetype
+@@mqo‚Éƒ{[ƒ“‚ªŠÜ‚Ü‚ê‚Ä‚¢‚éê‡‚Í
+@@ƒ{[ƒ“‚Ìƒ^ƒCƒv‚ðŽw’è‚µ‚Ü‚·B
+@@BONETYPE_RDB2‚ðŽw’è‚·‚é‚ÆRokDeBone2Œ`Ž®‚Ì
+@@ü•ª‚ðƒ{[ƒ“‚Æ”FŽ¯‚·‚éƒ^ƒCƒv‚É‚È‚è‚Ü‚·B
+@@BONETYPE_MIKO‚ðŽw’è‚·‚é‚Æ
+@@mikotoŒ`Ž®‚Ìƒ^ƒCƒv‚É‚È‚è‚Ü‚·B
+@@È—ª‚·‚é‚ÆBONETYPE_RDB2‚É‚È‚è‚Ü‚·B
+@@‚±‚ê‚ç‚Ì’è”‚Íe3dhsp3.as‚Å’è‹`‚³‚ê‚Ä‚¢‚Ü‚·B
+
+
+
+
+ƒo[ƒWƒ‡ƒ“ : ver5.3.2.2
+
+%index
+E3DLoadSSF
+‰¹ƒZƒbƒgƒtƒ@ƒCƒ‹*.ssf‚ð“Ç‚Ýž‚Ý‚Ü‚·B
+%group
+Easy3D For HSP3 : ‰¹ƒZƒbƒg
+
+%prm
+p1
+p1 : [IN] •¶Žš—ñ‚Ü‚½‚Í•¶Žš—ñ‚Ì•Ï”@F@filename
+
+%inst
+‰¹ƒZƒbƒgƒtƒ@ƒCƒ‹*.ssf‚ð“Ç‚Ýž‚Ý‚Ü‚·B
+
+
+
+
+¨ˆø”
+1. [IN] •¶Žš—ñ‚Ü‚½‚Í•¶Žš—ñ‚Ì•Ï”@F@filename
+@@ssfƒtƒ@ƒCƒ‹‚ÌƒpƒX‚ðŽw’è‚µ‚Ü‚·B
+
+
+
+ƒo[ƒWƒ‡ƒ“ : ver5.3.2.5
+
+%index
+E3DDestroyAllSoundSet
+“Ç‚Ýž‚ÝÏ‚Ý‚Ì‘S‚Ä‚Ì‰¹ƒZƒbƒg‚ð”jŠü‚µ‚Ü‚·B
+%group
+Easy3D For HSP3 : ‰¹ƒZƒbƒg
+
+%prm
+‚È‚µ
+
+%inst
+“Ç‚Ýž‚ÝÏ‚Ý‚Ì‘S‚Ä‚Ì‰¹ƒZƒbƒg‚ð”jŠü‚µ‚Ü‚·B
+
+
+
+
+¨ˆø”
+‚È‚µ
+
+ƒo[ƒWƒ‡ƒ“ : ver5.3.2.5
+
+%index
+E3DGetSoundSetNum
+“Ç‚Ýž‚ÝÏ‚Ý‚Ì‰¹ƒZƒbƒg‚Ì”‚ðŽæ“¾‚µ‚Ü‚·B
+%group
+Easy3D For HSP3 : ‰¹ƒZƒbƒg
+
+%prm
+p1
+p1 : [OUT] •Ï”@F@numptr
+
+%inst
+“Ç‚Ýž‚ÝÏ‚Ý‚Ì‰¹ƒZƒbƒg‚Ì”‚ðŽæ“¾‚µ‚Ü‚·B
+
+
+
+
+¨ˆø”
+1. [OUT] •Ï”@F@numptr
+@@‰¹ƒZƒbƒg‚Ì”‚ª‘ã“ü‚³‚ê‚Ü‚·B
+
+
+
+ƒo[ƒWƒ‡ƒ“ : ver5.3.2.5
+
+%index
+E3DGetSoundSetInfo
+‰¹ƒZƒbƒg‚Ìî•ñ‚ðŽæ“¾‚µ‚Ü‚·B
+%group
+Easy3D For HSP3 : ‰¹ƒZƒbƒg
+
+%prm
+p1,p2,p3
+p1 : [IN] •Ï”‚Ü‚½‚ÍA”’l@F@ssindex
+p2 : [OUT] •¶Žš—ñ‚Ì•Ï”@F@name
+p3 : [OUT] •Ï”@F@setid
+
+%inst
+‰¹ƒZƒbƒg‚Ìî•ñ‚ðŽæ“¾‚µ‚Ü‚·B
+‰¹ƒZƒbƒg‚²‚Æ‚ÉŒÄ‚Ño‚µ‚Ü‚·B
+ssindex‚É‚Í‚O‚©‚çE3DGetSoundSetNum‚ÅŽæ“¾‚µ‚½num - 1‚Ü‚Å‚Ì”’l‚ðŽw’è‚µ‚Ü‚·B
+
+
+
+
+¨ˆø”
+1. [IN] •Ï”‚Ü‚½‚ÍA”’l@F@ssindex
+@@‰¹ƒZƒbƒg‚ÌƒCƒ“ƒfƒbƒNƒXB
+@@‰¹ƒZƒbƒg‚ÌID‚Å‚Í‚ ‚è‚Ü‚¹‚ñB
+
+2. [OUT] •¶Žš—ñ‚Ì•Ï”@F@name
+@@‰¹ƒZƒbƒg‚Ì–¼‘O‚ª‘ã“ü‚³‚ê‚Ü‚·B
+@@sdim name, 32‚Åì¬‚µ‚½•¶Žš—ñ•Ï”‚ð“n‚µ‚Ä‚­‚¾‚³‚¢B
+
+3. [OUT] •Ï”@F@setid
+@@‰¹ƒZƒbƒg‚ÌID‚ª‘ã“ü‚³‚ê‚Ü‚·B
+
+
+
+
+ƒo[ƒWƒ‡ƒ“ : ver5.3.2.5
+
+%index
+E3DGetSoundSetBGM
+‰¹ƒZƒbƒg‚ÉŠÖ˜A•t‚¯‚ç‚ê‚Ä‚¢‚éBGM‚ÌƒTƒEƒ“ƒhID‚ðŽæ“¾‚µ‚Ü‚·B
+%group
+Easy3D For HSP3 : ‰¹ƒZƒbƒg
+
+%prm
+p1,p2
+p1 : [IN] •Ï”‚Ü‚½‚ÍA”’l@F@setid
+p2 : [OUT] •Ï”@F@bgmidptr
+
+%inst
+‰¹ƒZƒbƒg‚ÉŠÖ˜A•t‚¯‚ç‚ê‚Ä‚¢‚éBGM‚ÌƒTƒEƒ“ƒhID‚ðŽæ“¾‚µ‚Ü‚·B
+
+
+
+
+¨ˆø”
+1. [IN] •Ï”‚Ü‚½‚ÍA”’l@F@setid
+@@‰¹ƒZƒbƒg‚ÌID‚ðŽw’è‚µ‚Ü‚·B
+@@‰¹ƒZƒbƒg‚ÌƒCƒ“ƒfƒbƒNƒX‚Å‚Í‚ ‚è‚Ü‚¹‚ñB
+
+2. [OUT] •Ï”@F@bgmidptr
+@@BGM‚ÌƒTƒEƒ“ƒhID‚ª‘ã“ü‚³‚ê‚Ü‚·B
+
+
+
+ƒo[ƒWƒ‡ƒ“ : ver5.3.2.5
+
+%index
+E3DLoadSAF
+‰¹ƒAƒjƒƒtƒ@ƒCƒ‹*.saf‚ð“Ç‚Ýž‚ÝƒAƒjƒ‚ðŽ¯•Ê‚·‚éID‚ðŽæ“¾‚µ‚Ü‚·B
+%group
+Easy3D For HSP3 : ‰¹ƒAƒjƒ
+
+%prm
+p1,p2
+p1 : [IN] •¶Žš—ñ‚Ü‚½‚Í•¶Žš—ñ•Ï”@F@filename
+p2 : [OUT] •Ï”@F@animnoptr
+
+%inst
+‰¹ƒAƒjƒƒtƒ@ƒCƒ‹*.saf‚ð“Ç‚Ýž‚ÝƒAƒjƒ‚ðŽ¯•Ê‚·‚éID‚ðŽæ“¾‚µ‚Ü‚·B
+
+
+
+
+¨ˆø”
+1. [IN] •¶Žš—ñ‚Ü‚½‚Í•¶Žš—ñ•Ï”@F@filename
+@@safƒtƒ@ƒCƒ‹‚ÌƒpƒX‚ðŽw’è‚µ‚Ü‚·B
+
+2. [OUT] •Ï”@F@animnoptr
+@@“Ç‚Ýž‚ñ‚¾ƒAƒjƒ‚ðŽ¯•Ê‚·‚éID‚ª‘ã“ü‚³‚ê‚Ü‚·B
+
+
+
+ƒo[ƒWƒ‡ƒ“ : ver5.3.2.5
+
+%index
+E3DDestroyAllSndAnim
+“Ç‚Ýž‚ÝÏ‚Ý‚Ì‘S‚Ä‚Ì‰¹ƒAƒjƒ‚ð”jŠü‚µ‚Ü‚·B
+%group
+Easy3D For HSP3 : ‰¹ƒAƒjƒ
+
+%prm
+‚È‚µ
+
+%inst
+“Ç‚Ýž‚ÝÏ‚Ý‚Ì‘S‚Ä‚Ì‰¹ƒAƒjƒ‚ð”jŠü‚µ‚Ü‚·B
+
+
+
+
+¨ˆø”
+‚È‚µ
+
+
+
+ƒo[ƒWƒ‡ƒ“ : ver5.3.2.5
+
+%index
+E3DGetSndAnimFrameNum
+‰¹ƒAƒjƒ‚ÌƒtƒŒ[ƒ€’·‚ðŽæ“¾‚µ‚Ü‚·B
+%group
+Easy3D For HSP3 : ‰¹ƒAƒjƒ
+
+%prm
+p1,p2
+p1 : [IN] •Ï”‚Ü‚½‚ÍA”’l@F@animno
+p2 : [OUT] •Ï”@F@numptr
+
+%inst
+‰¹ƒAƒjƒ‚ÌƒtƒŒ[ƒ€’·‚ðŽæ“¾‚µ‚Ü‚·B
+
+
+¨ˆø”
+1. [IN] •Ï”‚Ü‚½‚ÍA”’l@F@animno
+@@ƒAƒjƒ‚ðŽ¯•Ê‚·‚é”Ô†‚ðŽw’è‚µ‚Ü‚·B
+
+2. [OUT] •Ï”@F@numptr
+@@ƒAƒjƒ‚ÌƒtƒŒ[ƒ€’·‚ª‘ã“ü‚³‚ê‚Ü‚·B
+
+
+
+ƒo[ƒWƒ‡ƒ“ : ver5.3.2.5
+
+%index
+E3DGetSndAnimBGM
+‰¹ƒAƒjƒ‚ÉŠÖ˜A•t‚¯‚ç‚ê‚Ä‚¢‚éBGM‚ÌƒTƒEƒ“ƒhID‚ðŽæ“¾‚µ‚Ü‚·B
+%group
+Easy3D For HSP3 : ‰¹ƒAƒjƒ
+
+%prm
+p1,p2
+p1 : [IN] •Ï”‚Ü‚½‚ÍA”’l@F@animno
+p2 : [OUT] •Ï”@F@bgmidptr
+
+%inst
+‰¹ƒAƒjƒ‚ÉŠÖ˜A•t‚¯‚ç‚ê‚Ä‚¢‚éBGM‚ÌƒTƒEƒ“ƒhID‚ðŽæ“¾‚µ‚Ü‚·B
+
+
+
+
+¨ˆø”
+1. [IN] •Ï”‚Ü‚½‚ÍA”’l@F@animno
+@@ƒAƒjƒ‚ðŽ¯•Ê‚·‚é”Ô†‚ðŽw’è‚µ‚Ü‚·B
+
+2. [OUT] •Ï”@F@bgmidptr
+@@BGM‚ÌƒTƒEƒ“ƒhID‚ª‘ã“ü‚³‚ê‚Ü‚·B
+
+
+
+ƒo[ƒWƒ‡ƒ“ : ver5.3.2.5
+
+%index
+E3DGetSndAnimFPS
+‰¹ƒAƒjƒ‚ÌFPS‚ðŽæ“¾‚µ‚Ü‚·B
+%group
+Easy3D For HSP3 : ‰¹ƒAƒjƒ
+
+%prm
+p1,p2
+p1 : [IN] •Ï”‚Ü‚½‚ÍA”’l@F@animno
+p2 : [OUT] •Ï”@F@fpsptr
+
+%inst
+‰¹ƒAƒjƒ‚ÌFPS‚ðŽæ“¾‚µ‚Ü‚·B
+
+
+
+
+¨ˆø”
+1. [IN] •Ï”‚Ü‚½‚ÍA”’l@F@animno
+@@ƒAƒjƒ‚ðŽ¯•Ê‚·‚é”Ô†‚ðŽw’è‚µ‚Ü‚·B
+
+2. [OUT] •Ï”@F@fpsptr
+@@FPS‚ª‘ã“ü‚³‚ê‚Ü‚·B
+
+
+
+ƒo[ƒWƒ‡ƒ“ : ver5.3.2.5
+
+%index
+E3DGetSndAnimMode
+‰¹ƒAƒjƒ‚ÌŒJ‚è•Ô‚µƒ‚[ƒh‚ðŽæ“¾‚µ‚Ü‚·B
+%group
+Easy3D For HSP3 : ‰¹ƒAƒjƒ
+
+%prm
+p1,p2
+p1 : [IN] •Ï”‚Ü‚½‚ÍA”’l@F@animno
+p2 : [OUT] •Ï”@F@modeptr
+
+%inst
+‰¹ƒAƒjƒ‚ÌŒJ‚è•Ô‚µƒ‚[ƒh‚ðŽæ“¾‚µ‚Ü‚·B
+
+
+
+
+¨ˆø”
+1. [IN] •Ï”‚Ü‚½‚ÍA”’l@F@animno
+@@ƒAƒjƒ‚ðŽ¯•Ê‚·‚é”Ô†‚ðŽw’è‚µ‚Ü‚·B
+
+2. [OUT] •Ï”@F@modeptr
+@@ŒJ‚è•Ô‚µ‚È‚µ‚Ìê‡‚Í‚P‚ªŒJ‚è•Ô‚µÄ¶‚Ìê‡‚Í‚Q‚T‚T‚ª‘ã“ü‚³‚ê‚Ü‚·B
+
+
+
+ƒo[ƒWƒ‡ƒ“ : ver5.3.2.5
+
+%index
+E3DStartSndAnim
+‰¹ƒAƒjƒ‚ÌÄ¶‚ðŠJŽn‚µ‚Ü‚·B
+%group
+Easy3D For HSP3 : ‰¹ƒAƒjƒ
+
+%prm
+p1,p2
+p1 : [IN] •Ï”‚Ü‚½‚ÍA”’l@F@animno
+p2 : [IN] •Ï”‚Ü‚½‚ÍA”’l@F@startframe
+
+%inst
+‰¹ƒAƒjƒ‚ÌÄ¶‚ðŠJŽn‚µ‚Ü‚·B
+
+
+
+
+¨ˆø”
+1. [IN] •Ï”‚Ü‚½‚ÍA”’l@F@animno
+@@ƒAƒjƒ‚ðŽ¯•Ê‚·‚é”Ô†‚ðŽw’è‚µ‚Ü‚·B
+
+2. [IN] •Ï”‚Ü‚½‚ÍA”’l@F@startframe
+@@Ä¶‚ðŠJŽn‚·‚éÛ‚ÌƒXƒ^[ƒgƒtƒŒ[ƒ€”Ô†‚ðŽw’è‚µ‚Ü‚·B
+
+
+
+ƒo[ƒWƒ‡ƒ“ : ver5.3.2.5
+
+%index
+E3DSetSndAnimFrameNo
+Ä¶‚·‚é‰¹ƒAƒjƒ‚ÌƒtƒŒ[ƒ€”Ô†‚ðŽw’è‚µ‚Ü‚·B
+%group
+Easy3D For HSP3 : ‰¹ƒAƒjƒ
+
+%prm
+p1,p2
+p1 : [IN] •Ï”‚Ü‚½‚ÍA”’l@F@animno
+p2 : [IN] •Ï”‚Ü‚½‚ÍA”’l@F@frameno
+
+%inst
+Ä¶‚·‚é‰¹ƒAƒjƒ‚ÌƒtƒŒ[ƒ€”Ô†‚ðŽw’è‚µ‚Ü‚·B
+‚±‚Ì–½—ß‚Í‰¹ƒAƒjƒ‚ÅÝ’è‚³‚ê‚Ä‚¢‚éŒø‰Ê‰¹—p‚Ì‚à‚Ì‚Å‚·B
+BGM‚É‚Í‰e‹¿‚ð—^‚¦‚Ü‚¹‚ñB
+
+
+
+
+¨ˆø”
+1. [IN] •Ï”‚Ü‚½‚ÍA”’l@F@animno
+@@ƒAƒjƒ‚ðŽ¯•Ê‚·‚é”Ô†‚ðŽw’è‚µ‚Ü‚·B
+
+2. [IN] •Ï”‚Ü‚½‚ÍA”’l@F@frameno
+@@Ä¶‚·‚éƒtƒŒ[ƒ€”Ô†‚ðŽw’è‚µ‚Ü‚·B
+
+
+
+ƒo[ƒWƒ‡ƒ“ : ver5.3.2.5
+
+%index
+E3DStopSndAnim
+‰¹ƒAƒjƒ‚ÌÄ¶‚ð’âŽ~‚µ‚Ü‚·B
+%group
+Easy3D For HSP3 : ‰¹ƒAƒjƒ
+
+%prm
+p1
+p1 : [IN] •Ï”‚Ü‚½‚ÍA”’l@F@animno
+
+%inst
+‰¹ƒAƒjƒ‚ÌÄ¶‚ð’âŽ~‚µ‚Ü‚·B
+
+
+
+
+¨ˆø”
+1. [IN] •Ï”‚Ü‚½‚ÍA”’l@F@animno
+@@ƒAƒjƒ‚ðŽ¯•Ê‚·‚é”Ô†‚ðŽw’è‚µ‚Ü‚·B
+
+
+
+ƒo[ƒWƒ‡ƒ“ : ver5.3.2.5
+
+%index
+E3DGetSoundTotalTime
+‰¹‚Ìƒg[ƒ^ƒ‹ƒ^ƒCƒ€‚ðŽæ“¾‚µ‚Ü‚·B
+%group
+Easy3D For HSP3 : ƒTƒEƒ“ƒh
+
+%prm
+p1,p2
+p1 : [IN] •Ï”‚Ü‚½‚ÍA”’l@F@soundid
+p2 : [OUT] •Ï”@F@timeptr
+
+%inst
+‰¹‚Ìƒg[ƒ^ƒ‹ƒ^ƒCƒ€‚ðŽæ“¾‚µ‚Ü‚·B
+
+
+
+
+¨ˆø”
+1. [IN] •Ï”‚Ü‚½‚ÍA”’l@F@soundid
+@@‰¹‚ðŽ¯•Ê‚·‚éID‚ðŽw’è‚µ‚Ü‚·B
+
+2. [OUT] •Ï”@F@timeptr
+@@ŽÀ”Œ^‚Ì•Ï”B
+@@ƒg[ƒ^ƒ‹ƒ^ƒCƒ€‚ª‘ã“ü‚³‚ê‚Ü‚·B
+
+
+
+ƒo[ƒWƒ‡ƒ“ : ver5.3.2.5
+
+%index
+E3DConvSoundSampleToFrame
+‰¹‚ÌƒTƒ“ƒvƒ‹”‚ðƒtƒŒ[ƒ€”Ô†‚É•ÏŠ·‚µ‚Ü‚·B
+%group
+Easy3D For HSP3 : ƒTƒEƒ“ƒh
+
+%prm
+p1,p2,p3,p4
+p1 : [IN] •Ï”‚Ü‚½‚ÍA”’l@F@soundid
+p2 : [IN] •Ï”‚Ü‚½‚ÍA”’l@F@srcfps
+p3 : [IN] •Ï”‚Ü‚½‚ÍA”’l@F@srcsample
+p4 : [OUT] •Ï”@F@frameptr
+
+%inst
+‰¹‚ÌƒTƒ“ƒvƒ‹”‚ðƒtƒŒ[ƒ€”Ô†‚É•ÏŠ·‚µ‚Ü‚·B
+Œ»ÝÄ¶’†‚ÌˆÊ’uiƒTƒ“ƒvƒ‹”j‚Í
+E3DGetSoundSamplesPlayed‚ÅŽæ“¾‚Å‚«‚Ü‚·B
+
+
+
+
+¨ˆø”
+1. [IN] •Ï”‚Ü‚½‚ÍA”’l@F@soundid
+@@‰¹‚ðŽ¯•Ê‚·‚éID‚ðŽw’è‚µ‚Ü‚·B
+
+2. [IN] •Ï”‚Ü‚½‚ÍA”’l@F@srcfps
+@@‰¹ƒAƒjƒ‚ÌFPS‚ðŽw’è‚µ‚Ü‚·B
+
+3. [IN] •Ï”‚Ü‚½‚ÍA”’l@F@srcsample
+@@ŽÀ”B
+@@ƒTƒ“ƒvƒ‹”‚ðŽw’è‚µ‚Ü‚·B
+
+4. [OUT] •Ï”@F@frameptr
+@@ƒtƒŒ[ƒ€”Ô†‚ª‘ã“ü‚³‚ê‚Ü‚·B
+
+
+
+ƒo[ƒWƒ‡ƒ“ : ver5.3.2.5
+
+%index
+E3DGetSoundStartCnt
+‰¹‚Ìstartcnt‚ðŽæ“¾‚µ‚Ü‚·B
+%group
+Easy3D For HSP3 : ƒTƒEƒ“ƒh
+
+%prm
+p1,p2
+p1 : [IN] •Ï”‚Ü‚½‚ÍA”’l@F@soundid
+p2 : [OUT] •Ï”@F@cntptr
+
+%inst
+‰¹‚Ìstartcnt‚ðŽæ“¾‚µ‚Ü‚·B
+startcnt‚Í‚O‚©‚çŽn‚Ü‚èA‰¹‚ÌÄ¶‚ªŽÀÛ‚ÉŠJŽn‚³‚ê‚½‚Æ‚«‚É‚P‚¸‚Â‘‚¦‚Ü‚·B
+‰¹‚ÌÄ¶–½—ß‚ðŒÄ‚Ño‚µ‚Ä‚àŽÀÛ‚ÉÄ¶‚³‚ê‚é‚Ü‚Å‚É‚Í­‚µŽžŠÔ‚ª‚©‚©‚è‚Ü‚·B
+‚±‚Ìstartcnt‚Ì’l‚ðŠÄŽ‹‚·‚é‚±‚Æ‚Å
+ŽÀÛ‚ÉÄ¶‚ªŠJŽn‚³‚ê‚½Žž‚ð”cˆ¬‚Å‚«‚Ü‚·B
+
+
+
+
+¨ˆø”
+1. [IN] •Ï”‚Ü‚½‚ÍA”’l@F@soundid
+@@‰¹‚ðŽ¯•Ê‚·‚éID‚ðŽw’è‚µ‚Ü‚·B
+
+2. [OUT] •Ï”@F@cntptr
+@@startcnt‚ª‘ã“ü‚³‚ê‚Ü‚·B
+
+
+
+ƒo[ƒWƒ‡ƒ“ : ver5.3.2.5
+
+%index
+E3DGetSoundEndCnt
+‰¹‚Ìendcnt‚ðŽæ“¾‚µ‚Ü‚·B
+%group
+Easy3D For HSP3 : ƒTƒEƒ“ƒh
+
+%prm
+p1,p2
+p1 : [IN] •Ï”‚Ü‚½‚ÍA”’l@F@soundid
+p2 : [OUT] •Ï”@F@cntptr
+
+%inst
+‰¹‚Ìendcnt‚ðŽæ“¾‚µ‚Ü‚·B
+endcnt‚Í‚O‚©‚çŽn‚Ü‚èA‰¹‚ÌÄ¶‚ªŽÀÛ‚ÉI—¹‚µ‚½‚Æ‚«‚É‚P‚¸‚Â‘‚¦‚Ü‚·B
+‰¹‚Ì’âŽ~–½—ß‚ðŒÄ‚Î‚È‚¢ê‡‚Å‚àÄ¶‚ªÅŒã‚Ü‚Å’B‚µI—¹‚·‚ê‚ÎƒJƒEƒ“ƒg‚ª‘‚¦‚é‚Ì‚Å
+ŽÀÛ‚ÉÄ¶‚ªI—¹‚µ‚½‚Æ‚«‚ð”cˆ¬‚Å‚«‚Ü‚·B
+
+
+
+
+¨ˆø”
+1. [IN] •Ï”‚Ü‚½‚ÍA”’l@F@soundid
+@@‰¹‚ðŽ¯•Ê‚·‚éID‚ðŽw’è‚µ‚Ü‚·B
+
+2. [OUT] •Ï”@F@cntptr
+@@endcnt‚ª‘ã“ü‚³‚ê‚Ü‚·B
+
+
+
+ƒo[ƒWƒ‡ƒ“ : ver5.3.2.5
+
+%index
+E3DPCWait
+Žw’è‚µ‚½FPS‚É‹ß‚­‚È‚é‚æ‚¤‚É‘Ò‹@‚µ‚Ü‚·B
+%group
+Easy3D For HSP3 : “¯Šú
+
+%prm
+p1,p2
+p1 : [IN] •Ï”‚Ü‚½‚ÍA”’l@F@srcfps
+p2 : [OUT] •Ï”@F@dstfps
+
+%inst
+Žw’è‚µ‚½FPS‚É‹ß‚­‚È‚é‚æ‚¤‚É‘Ò‹@‚µ‚Ü‚·B
+E3DWaitByFPS‚æ‚è‚à‚¸“x‚Å‚·‚ªCPU‚ðÁ”ï‚µ‚Ü‚·B
+‰¹‚Ì“¯Šú‚ÌÛ‚É‚Í³Šm‚Èƒ^ƒCƒ~ƒ“ƒO‚ª•K—v‚É‚È‚é‚Ì‚Å‚±‚Ì–½—ß‚ðŽg‚Á‚Ä‚­‚¾‚³‚¢B
+•K‚¸await 0‚ÌŒã‚ÅŒÄ‚ñ‚Å‰º‚³‚¢B
+
+
+
+
+¨ˆø”
+1. [IN] •Ï”‚Ü‚½‚ÍA”’l@F@srcfps
+@@–Ú•W‚ÌFPS‚ðŽw’è‚µ‚Ü‚·B
+
+2. [OUT] •Ï”@F@dstfps
+@@ŽÀ”Œ^‚Ì•Ï”B
+@@ŽÀÛ‚ÌFPS‚ª‘ã“ü‚³‚ê‚Ü‚·B
+
+
+
+ƒo[ƒWƒ‡ƒ“ : ver5.3.2.5
+
+%index
+E3DSetCameraOffset
+ƒJƒƒ‰‚ÌƒIƒtƒZƒbƒg‚ðÝ’è‚µ‚Ü‚·B
+%group
+Easy3D For HSP3 : ƒJƒƒ‰
+
+%prm
+p1,p2,p3
+p1 : [IN] •Ï”@F@camoffbef
+p2 : [IN] •Ï”‚Ü‚½‚ÍA”’l@F@camqid
+p3 : [IN] •Ï”@F@camoffaft
+
+%inst
+ƒJƒƒ‰‚ÌƒIƒtƒZƒbƒg‚ðÝ’è‚µ‚Ü‚·B
+Ú‚µ‚­‚Íƒ}ƒjƒ…ƒAƒ‹‚Ìe3d_CameraOffset.htm‚ð‚²——‚­‚¾‚³‚¢B
+‹ï‘Ì“I‚ÈŽg—p—á‚Í
+e3dhsp3_CameraOffset.hsp‚ð‚²——‚­‚¾‚³‚¢B
+
+
+
+
+¨ˆø”
+1. [IN] •Ï”@F@camoffbef
+@@‰ñ“]‘O‚Ì•½sˆÚ“®¬•ª‚ðŽw’è‚µ‚Ü‚·B
+@@ŽÀ””z—ñ‚Ì•Ï”–¼‚ðŽw’è‚µ‚Ä‚­‚¾‚³‚¢B
+@@camoffbef(0)‚ÉXÀ•W
+@@camoffbef(1)‚ÉYÀ•W
+@@camoffbef(2)‚ÉZÀ•W‚ðŽw’è‚µ‚Ä‚­‚¾‚³‚¢B
+
+2. [IN] •Ï”‚Ü‚½‚ÍA”’l@F@camqid
+@@‰ñ“]‚ð•\‚·ƒNƒH[ƒ^ƒjƒIƒ“‚ÌID‚ðŽw’è‚µ‚Ä‚­‚¾‚³‚¢B
+
+3. [IN] •Ï”@F@camoffaft
+@@‰ñ“]Œã‚Ì•½sˆÚ“®¬•ª‚ðŽw’è‚µ‚Ü‚·B
+@@ŽÀ””z—ñ‚Ì•Ï”–¼‚ðŽw’è‚µ‚Ä‚­‚¾‚³‚¢B
+@@camoffaft(0)‚ÉXÀ•W
+@@camoffaft(1)‚ÉYÀ•W
+@@camoffaft(2)‚ÉZÀ•W‚ðŽw’è‚µ‚Ä‚­‚¾‚³‚¢B
+
+
+
+
+ƒo[ƒWƒ‡ƒ“ : ver5.3.3.3
+
+%index
+E3DAllClearInfElem
+ƒ{[ƒ“‚Ì‰e‹¿“x‚ð‘S‚Äíœ‚µ‚Ü‚Á‚³‚ç‚Èó‘Ô‚É‚µ‚Ü‚·B
+%group
+Easy3D For HSP3 : ƒ{[ƒ“‰e‹¿
+
+%prm
+p1,p2,p3
+p1 : [IN] •Ï”‚Ü‚½‚ÍA”’l@F@hsid
+p2 : [IN] •Ï”‚Ü‚½‚ÍA”’l@F@partno
+p3 : [IN] •Ï”‚Ü‚½‚ÍA”’l@F@vertno
+
+%inst
+ƒ{[ƒ“‚Ì‰e‹¿“x‚ð‘S‚Äíœ‚µ‚Ü‚Á‚³‚ç‚Èó‘Ô‚É‚µ‚Ü‚·B
+
+ƒ{[ƒ“‚Ì‰e‹¿“x‚ª‚P‚Â‚à’è‹`‚³‚ê‚Ä‚¢‚È‚¢ó‘Ô‚Å
+E3DCreateSkinMat‚â•`‰æ–½—ß‚ðŒÄ‚Ño‚·‚ÆƒGƒ‰[‚É‚È‚è‚Ü‚·B
+
+‚±‚Ì–½—ß‚ðŒÄ‚Ño‚µ‚½ê‡‚Í
+•K‚¸­‚È‚­‚Æ‚à‚P‚Â‚Íƒ{[ƒ“‚Ì‰e‹¿“x‚ðÝ’è‚µ
+‰e‹¿“x‚ÌÝ’è‚ª‘S•”I‚í‚Á‚½‚ç
+E3DCreateSkinMat‚ðŒÄ‚Ño‚³‚È‚¯‚ê‚Î‚È‚è‚Ü‚¹‚ñB
+
+
+
+
+¨ˆø”
+1. [IN] •Ï”‚Ü‚½‚ÍA”’l@F@hsid
+@@ƒ‚ƒfƒ‹ƒf[ƒ^‚ðŽ¯•Ê‚·‚éIDB
+
+2. [IN] •Ï”‚Ü‚½‚ÍA”’l@F@partno
+@@•\Ž¦ƒIƒuƒWƒFƒNƒg‚ðŽ¯•Ê‚·‚é”Ô†B
+@@-1‚ðŽw’è‚·‚é‚Æ‘S‚Ä‚Ìƒp[ƒc‚É‘Î‚µ‚Äˆ—‚µ‚Ü‚·B
+
+3. [IN] •Ï”‚Ü‚½‚ÍA”’l@F@vertno
+@@’¸“_‚Ì”Ô†B
+@@-1‚ðŽw’è‚·‚é‚Æ‘S‚Ä‚Ì’¸“_‚Éˆ—‚µ‚Ü‚·B
+@@partno‚É-1‚ðŽw’è‚µ‚½ê‡‚Í
+@@Ž©“®“I‚É“à•”‚Åvertno‚É-1‚ªƒZƒbƒg‚³‚ê‚Ü‚·B
+
+
+ƒo[ƒWƒ‡ƒ“ : ver5.3.3.7
+
+%index
+E3DSetGPOffset
+GPA‚ÌÄ¶ŠJŽnˆÊ’u‚ÆŒü‚«‚ðŽw’è‚µ‚Ü‚·B
+%group
+Easy3D For HSP3 : GPA
+
+%prm
+p1,p2,p3
+p1 : [IN] •Ï”‚Ü‚½‚ÍA”’l@F@hsid
+p2 : [IN] •Ï”@F@tra
+p3 : [IN] •Ï”‚Ü‚½‚ÍA”’l@F@qid
+
+%inst
+GPA‚ÌÄ¶ŠJŽnˆÊ’u‚ÆŒü‚«‚ðŽw’è‚µ‚Ü‚·B
+
+‚±‚Ì–½—ß‚ðŒÄ‚Ô‘O‚É
+E3DSetGPGroundHSID‚ðŒÄ‚ÑA
+‚±‚Ì–½—ß‚ðŒÄ‚ñ‚¾Œã‚É
+E3DCalcGPFullFrame‚ðŒÄ‚Î‚È‚¢‚ÆƒIƒtƒZƒbƒg‚ÍƒAƒjƒ‚É”½‰f‚³‚ê‚Ü‚¹‚ñB
+
+‹ï‘Ì“I‚ÈŽg—p—á‚Í
+e3dhsp3_GPOffset.hsp‚ð‚²——‚­‚¾‚³‚¢B
+
+
+
+
+¨ˆø”
+1. [IN] •Ï”‚Ü‚½‚ÍA”’l@F@hsid
+@@ƒ‚ƒfƒ‹ƒf[ƒ^‚ðŽ¯•Ê‚·‚éIDB
+
+2. [IN] •Ï”@F@tra
+@@ŽÀ”Œ^‚Ì”z—ñ‚Ì•Ï”B
+@@GPA‚ðŠJŽn‚·‚éˆÊ’uB
+@@ddim tra, 3‚Åƒƒ‚ƒŠ‚ðì¬‚µ‚Ä‚­‚¾‚³‚¢B
+@@tra(0)‚ÉXÀ•WAtra(1)‚ÉYÀ•WAtra(2)‚ÉZÀ•W‚ð‘ã“ü‚µ‚Ä‚©‚ç‚±‚Ì–½—ß‚É“n‚µ‚Ä‚­‚¾‚³‚¢B
+
+3. [IN] •Ï”‚Ü‚½‚ÍA”’l@F@qid
+@@GPA‚ðŠJŽn‚·‚éŒü‚«‚ð•\‚·ƒNƒH[ƒ^ƒjƒIƒ“‚ÌIDB
+
+
+
+ƒo[ƒWƒ‡ƒ“ : ver5.3.4.5
+
+%index
+E3DSelectLightType
+‚±‚Ì–½—ß‚ðltypeˆø”‚É‚P‚ð“ü‚ê‚Ä
+html{
+<strong>E3DInit‚æ‚è‘O‚É</strong>
+}htmlŒÄ‚Ño‚·‚Æ
+•½sŒõŒ¹‚ÆƒXƒ|ƒbƒgƒ‰ƒCƒg‚ð‡Œv‚RŒÂ‚Ü‚ÅŽg‚¤‚±‚Æ‚ªo—ˆ‚é‚æ‚¤‚É‚È‚è‚Ü‚·B
+%group
+Easy3D For HSP3 : ƒ‰ƒCƒg
+
+%prm
+p1
+p1 : [IN] •Ï”‚Ü‚½‚ÍA”’l@F@ltype
+
+%inst
+‚±‚Ì–½—ß‚ðltypeˆø”‚É‚P‚ð“ü‚ê‚Ä
+html{
+<strong>E3DInit‚æ‚è‘O‚É</strong>
+}htmlŒÄ‚Ño‚·‚Æ
+•½sŒõŒ¹‚ÆƒXƒ|ƒbƒgƒ‰ƒCƒg‚ð‡Œv‚RŒÂ‚Ü‚ÅŽg‚¤‚±‚Æ‚ªo—ˆ‚é‚æ‚¤‚É‚È‚è‚Ü‚·B
+
+‚±‚Ì–½—ß‚ðŒÄ‚Ño‚³‚È‚©‚Á‚½‚èltype‚É‚O‚ð“ü‚ê‚ÄŒÄ‚Ño‚·‚Æ•½sŒõŒ¹‚Æƒ|ƒCƒ“ƒgƒ‰ƒCƒg‚ð‡Œv‚RŒÂ‚Ü‚ÅŽg‚¤‚±‚Æ‚ªo—ˆ‚Ü‚·B
+
+ŒÄ‚Ño‚·ê‡‚Í•K‚¸E3DInit‚æ‚è‘O‚ÅŒÄ‚Ño‚µ‚Ü‚·B
+ˆê“xE3DInit‚ðŒÄ‚Ño‚µ‚½‚ç“r’†‚Å•ÏX‚·‚é‚±‚Æ‚Ío—ˆ‚Ü‚¹‚ñB
+
+
+ƒ|ƒCƒ“ƒgƒ‰ƒCƒg‚âƒXƒ|ƒbƒgƒ‰ƒCƒg‚Í
+ƒVƒF[ƒ_[ƒ^ƒCƒv‚É‚æ‚Á‚Ä‚©‚È‚èŒ©‰h‚¦‚ª•Ï‚í‚è‚Ü‚·B
+ƒfƒtƒHƒ‹ƒg‚ÌCOL_PHONG‚¾‚Æ’¸“_’PˆÊ‚ÅŒvŽZ‚³‚ê‚é‚Ì‚Å‚©‚È‚èƒ|ƒŠƒSƒ“‚ª×‚©‚­‚È‚¢‚Æ‚«‚ê‚¢‚ÉŒø‰Ê‚ªo‚Ü‚¹‚ñB
+COL_PPHONG‚¾‚ÆƒsƒNƒZƒ‹’PˆÊ‚ÅŒvŽZ‚³‚ê‚é‚½‚ß
+‘e‚¢ƒ|ƒŠƒSƒ“‚Å‚à‚«‚ê‚¢‚ÉŒø‰Ê‚ªo‚Ü‚·B
+ˆê”Ê‚Éƒ|ƒŠƒSƒ“‚ð×‚©‚­‚·‚é‚æ‚è‚àCOL_PPHONG‚ðŽg‚Á‚½‚Ù‚¤‚ªŽÀs‘¬“x‚ª‘¬‚¢‚Å‚·B
+
+ƒVƒF[ƒ_[ƒ^ƒCƒv‚ÍE3DSetShaderType‚ÅÝ’è‚µ‚Ü‚·B
+
+
+
+
+¨ˆø”
+1. [IN] •Ï”‚Ü‚½‚ÍA”’l@F@ltype
+@@‚P‚ðŽw’è‚·‚é‚Æ•½sŒõŒ¹‚ÆƒXƒ|ƒbƒgƒ‰ƒCƒg‚ðŽg—p‚Å‚«‚Ü‚·B
+@@‚O‚ðŽw’è‚·‚é‚Æ•½sŒõŒ¹‚Æƒ|ƒCƒ“ƒgƒ‰ƒCƒg‚ðŽg—p‚Å‚«‚Ü‚·B
+
+
+
+ƒo[ƒWƒ‡ƒ“ : ver5.3.4.6
+
+%index
+E3DRenderZandN
+ƒ‚ƒfƒ‹‚ÌZî•ñ‚Æ–@üî•ñ‚ð‘‚«o‚µ‚Ü‚·B
+%group
+Easy3D For HSP3 : •`‰æ
+
+%prm
+p1,p2,p3,p4,p5,p6
+p1 : [IN][OUT] •Ï”‚Ü‚½‚ÍA”’l@F@outzscid
+p2 : [IN][OUT] •Ï”‚Ü‚½‚ÍA”’l@F@outnscid
+p3 : [IN] •Ï”‚Ü‚½‚ÍA”’l@F@inzscid
+p4 : [IN] •Ï”‚Ü‚½‚ÍA”’l@F@hsid
+p5 : [IN] •Ï”‚Ü‚½‚ÍA”’l@F@skipflag
+p6 : [IN] •Ï”‚Ü‚½‚ÍA”’l@F@renderflag
+
+%inst
+ƒ‚ƒfƒ‹‚ÌZî•ñ‚Æ–@üî•ñ‚ð‘‚«o‚µ‚Ü‚·B
+’Êí‚ÌƒXƒƒbƒvƒ`ƒFƒCƒ“‚âƒŒƒ“ƒ_[ƒ^[ƒQƒbƒgƒeƒNƒXƒ`ƒƒ‚É‘Î‚µ‚Äˆ—‚ðs‚¦‚Ü‚·B
+Zo—Í,–@üo—ÍAZ“ü—Í‚ÌƒT[ƒtƒFƒX‚Ì‘å‚«‚³‚Í“¯‚¶‚Å‚È‚¯‚ê‚Î‚È‚ç‚È‚¢B
+ƒIƒuƒWƒFƒNƒg‚ª‚È‚¢•”•ª‚ÍƒAƒ‹ƒtƒ@‚ª‚OB
+
+Zo—Í‚Ír, g, b‚R¬•ª‚É–‚PA–‚Q‚T‚UA‚Q‚T‚U–‚Q‚T‚UƒXƒP[ƒ‹i¬”•”j‚Å
+•ªŠ„o—Í‚µ‚Ä‚¢‚Ü‚·B
+
+Žg—p‚·‚é‚Æ‚«‚Í
+depth = r + g / 256.0f + b / (256.0f * 256.0f)
+‚Ì‚æ‚¤‚É‚µ‚ÄŽg‚¢‚Ü‚·B
+
+
+
+
+
+¨ˆø”
+1. [IN][OUT] •Ï”‚Ü‚½‚ÍA”’l@F@outzscid
+@@Zî•ñ‚ðo—Í‚·‚éscid
+
+2. [IN][OUT] •Ï”‚Ü‚½‚ÍA”’l@F@outnscid
+@@–@üî•ñ‚ðo—Í‚·‚éscid
+
+3. [IN] •Ï”‚Ü‚½‚ÍA”’l@F@inzscid
+@@o—Í‚ÌÛ‚ÉŽg—p‚·‚éZƒoƒbƒtƒ@‚Ìscid
+
+4. [IN] •Ï”‚Ü‚½‚ÍA”’l@F@hsid
+@@Œ`óƒf[ƒ^‚ðŽ¯•Ê‚·‚éID
+
+5. [IN] •Ï”‚Ü‚½‚ÍA”’l@F@skipflag
+@@ˆ—‚ÌƒXƒLƒbƒvƒtƒ‰ƒOB
+@@‚P‚ð‘«‚·‚ÆZo—ÍƒXƒLƒbƒvB
+@@‚Q‚ð‘«‚·‚Æ–@üo—ÍƒXƒLƒbƒvB
+@@‚S‚ð‘«‚·‚ÆZƒoƒbƒtƒ@[‰Šú‰»ƒXƒLƒbƒvB
+@@‚W‚ð‘«‚·‚Æƒ‚[ƒVƒ‡ƒ“‚ÌŽp¨ŒvŽZƒXƒLƒbƒvB
+@@‚P‚U‚ð‘«‚·‚ÆBeginScene, EndScene‚ðƒXƒLƒbƒvB
+
+6. [IN] •Ï”‚Ü‚½‚ÍA”’l@F@renderflag
+@@ƒŒƒ“ƒ_[ƒtƒ‰ƒOB
+@@‚P‚ð‘«‚·‚ÆZî•ñ‚ðo—ÍB
+@@‚Q‚ð‘«‚·‚Æ–@üî•ñ‚ðo—ÍB
+@@‚S‚ð‘«‚·‚ÆƒJƒƒ‰À•WŒn‚Ì–@ü‚ðo—ÍB‚½‚¾‚µ‚Q‚Æ‘g‚Ý‡‚í‚¹‚È‚¢‚Æ–³ŒøB
+
+
+
+ƒo[ƒWƒ‡ƒ“ : ver5.3.4.7
+
+%index
+E3DGetMaterialNum
+–Êƒ}ƒeƒŠƒAƒ‹‚Ì‘”‚ðŽæ“¾‚µ‚Ü‚·B
+%group
+Easy3D For HSP3 : ƒ}ƒeƒŠƒAƒ‹
+
+%prm
+p1,p2
+p1 : [IN] •Ï”‚Ü‚½‚ÍA”’l@F@hsid
+p2 : [OUT] •Ï”@F@getnum
+
+%inst
+–Êƒ}ƒeƒŠƒAƒ‹‚Ì‘”‚ðŽæ“¾‚µ‚Ü‚·B
+
+
+
+
+¨ˆø”
+1. [IN] •Ï”‚Ü‚½‚ÍA”’l@F@hsid
+@@ƒ‚ƒfƒ‹ƒf[ƒ^‚ðŽ¯•Ê‚·‚éIDB
+
+2. [OUT] •Ï”@F@getnum
+@@–Êƒ}ƒeƒŠƒAƒ‹‚Ì‘”‚ª‘ã“ü‚³‚ê‚Ü‚·B
+
+
+
+
+ƒo[ƒWƒ‡ƒ“ : ver5.3.4.7
+
+%index
+E3DGetMaterialInfo
+‘S‚Ä‚Ì–Êƒ}ƒeƒŠƒAƒ‹‚Ìî•ñ‚ðŽæ“¾‚µ‚Ü‚·B
+%group
+Easy3D For HSP3 : ƒ}ƒeƒŠƒAƒ‹
+
+%prm
+p1,p2,p3,p4,p5,p6
+p1 : [IN] •Ï”‚Ü‚½‚ÍA”’l@F@hsid
+p2 : [IN] •Ï”@F@name
+p3 : [IN] •Ï”@F@mii
+p4 : [IN] •Ï”@F@mid
+p5 : [IN] •Ï”‚Ü‚½‚ÍA”’l@F@arrayleng
+p6 : [OUT] •Ï”@F@getnum
+
+%inst
+‘S‚Ä‚Ì–Êƒ}ƒeƒŠƒAƒ‹‚Ìî•ñ‚ðŽæ“¾‚µ‚Ü‚·B
+
+ƒ}ƒeƒŠƒAƒ‹î•ñ‚Íname[•¶Žš—ñ]Amii[®”î•ñ]Amid[ŽÀ”î•ñ]‚É•ª‚¯‚ÄŽæ“¾‚µ‚Ü‚·B
+
+E3DGetMaterialNum‚ÅŽæ“¾‚µ‚½ƒ}ƒeƒŠƒAƒ‹”‚ðmatnum‚Æ‚·‚é‚Æ
+name‚Í
+sdim name, 256, matnum
+‚Åì¬‚µ‚Ü‚·B
+mii‚Í
+dim mii, MII_MAX, matnum
+mid‚Í
+ddim mid, MID_MAX, matnum
+‚Åì¬‚µ‚Ü‚·B
+
+MII_AMID_‚ÅŽn‚Ü‚é’è”‚Íe3dhsp3.as‚Å’è‹`‚³‚ê‚Ä‚¢‚Ü‚·B
+
+MII_–‚Ímii‚ÌŠeƒƒ“ƒo[‚ÉƒAƒNƒZƒX‚·‚é‚Ì‚ÉŽg‚¢‚Ü‚·B
+
+MII_MATNO ‚Íƒ}ƒeƒŠƒAƒ‹”Ô†‚Ö‚ÌƒCƒ“ƒfƒbƒNƒX‚Å‚·B
+MII_DIFFR ‚ÍDiffuse‚ÌR¬•ª‚Ö‚ÌƒCƒ“ƒfƒbƒNƒX‚Å‚·B
+MII_DIFFG ‚ÍDiffuse‚ÌG¬•ª‚Ö‚ÌƒCƒ“ƒfƒbƒNƒX‚Å‚·B
+MII_DIFFB ‚ÍDiffuse‚ÌB¬•ª‚Ö‚ÌƒCƒ“ƒfƒbƒNƒX‚Å‚·B
+MII_SPCR ‚ÍSpecular‚ÌR¬•ª‚Ö‚ÌƒCƒ“ƒfƒbƒNƒX‚Å‚·B
+MII_SPCG ‚ÍSpecular‚ÌG¬•ª‚Ö‚ÌƒCƒ“ƒfƒbƒNƒX‚Å‚·B
+MII_SPCB ‚ÍSpecular‚ÌB¬•ª‚Ö‚ÌƒCƒ“ƒfƒbƒNƒX‚Å‚·B
+MII_AMBR ‚ÍAmbient‚ÌR¬•ª‚Ö‚ÌƒCƒ“ƒfƒbƒNƒX‚Å‚·B
+MII_AMBG ‚ÍAmbient‚ÌG¬•ª‚Ö‚ÌƒCƒ“ƒfƒbƒNƒX‚Å‚·B
+MII_AMBB ‚ÍAmbient‚ÌB¬•ª‚Ö‚ÌƒCƒ“ƒfƒbƒNƒX‚Å‚·B
+MII_EMIR ‚ÍEmissive‚ÌR¬•ª‚Ö‚ÌƒCƒ“ƒfƒbƒNƒX‚Å‚·B
+MII_EMIG ‚ÍEmissive‚ÌG¬•ª‚Ö‚ÌƒCƒ“ƒfƒbƒNƒX‚Å‚·B
+MII_EMIB ‚ÍEmissive‚ÌB¬•ª‚Ö‚ÌƒCƒ“ƒfƒbƒNƒX‚Å‚·B
+MII_MAX ‚Ímii‚Ì”z—ñ’·‚ÉŽg‚¢‚Ü‚·B
+
+—á‚¦‚Î‚PŒÂ–Ú‚Ìƒ}ƒeƒŠƒAƒ‹‚Ìƒ}ƒeƒŠƒAƒ‹”Ô†‚É‚Í
+mii( 1MII_MATNO, 0 )‚ÅƒAƒNƒZƒX‚µ‚Ü‚·B
+
+
+MID_–‚Ímid‚ÌŠeƒƒ“ƒo[‚ÉƒAƒNƒZƒX‚·‚é‚Ì‚ÉŽg‚¢‚Ü‚·B
+
+MID_ALPHA ‚Íalpha‚Ö‚ÌƒCƒ“ƒfƒbƒNƒX‚Å‚·B
+MID_POWER Specular Power‚Ö‚ÌƒCƒ“ƒfƒbƒNƒX‚Å‚·B
+MID_MAX ‚Ímid‚Ì”z—ñ’·‚ÉŽg‚¢‚Ü‚·B&nbsp;
+
+—á‚¦‚Î‚QŒÂ–Ú‚Ìƒ}ƒeƒŠƒAƒ‹‚ÌƒAƒ‹ƒtƒ@‚É‚Í
+mid( MID_ALPHA, 1 )‚ÅƒAƒNƒZƒX‚µ‚Ü‚·B
+
+
+
+
+
+¨ˆø”
+1. [IN] •Ï”‚Ü‚½‚ÍA”’l@F@hsid
+@@ƒ‚ƒfƒ‹ƒf[ƒ^‚ðŽ¯•Ê‚·‚éIDB
+
+2. [IN] •Ï”@F@name
+@@–Êƒ}ƒeƒŠƒAƒ‹‚Ì–¼‘O‚ª‘ã“ü‚³‚ê‚Ü‚·B
+
+3. [IN] •Ï”@F@mii
+@@–Êƒ}ƒeƒŠƒAƒ‹ƒCƒ“ƒtƒH‚Ì®”¬•ª‚ª‘ã“ü‚³‚ê‚Ü‚·B
+
+4. [IN] •Ï”@F@mid
+@@–Êƒ}ƒeƒŠƒAƒ‹ƒCƒ“ƒtƒH‚ÌŽÀ”¬•ª‚ª‘ã“ü‚³‚ê‚Ü‚·B
+
+5. [IN] •Ï”‚Ü‚½‚ÍA”’l@F@arrayleng
+@@–Êƒ}ƒeƒŠƒAƒ‹î•ñŽæ“¾—p‚Ì”z—ñ‚Ì’·‚³‚ðŽw’è‚µ‚Ü‚·B
+
+6. [OUT] •Ï”@F@getnum
+@@Žæ“¾‚µ‚½–Êƒ}ƒeƒŠƒAƒ‹î•ñ‚Ì”‚ª‘ã“ü‚³‚ê‚Ü‚·B
+
+
+
+
+
+ƒo[ƒWƒ‡ƒ“ : ver5.3.4.7
+
+%index
+E3DGetMOELocalMotionFrameNo
+ƒ‚[ƒVƒ‡ƒ“(qua)‚Ìƒ‚[ƒVƒ‡ƒ“”Ô†‚ÆƒtƒŒ[ƒ€”Ô†‚ðŽæ“¾‚µ‚Ü‚·B
+%group
+Easy3D For HSP3 : MOE
+
+%prm
+p1,p2,p3,p4,p5
+p1 : [IN] •Ï”‚Ü‚½‚ÍA”’l@F@hsid
+p2 : [IN] •Ï”‚Ü‚½‚ÍA”’l@F@moeanimno
+p3 : [IN] •Ï”‚Ü‚½‚ÍA”’l@F@moeframeno
+p4 : [OUT] •Ï”@F@localanimno
+p5 : [OUT] •Ï”@F@localframeno
+
+%inst
+ƒ‚[ƒVƒ‡ƒ“(qua)‚Ìƒ‚[ƒVƒ‡ƒ“”Ô†‚ÆƒtƒŒ[ƒ€”Ô†‚ðŽæ“¾‚µ‚Ü‚·B
+
+moeanimno, moeframeno‚Í
+E3DGetMOEFrameNo hsid, moeanimno, moeframeno
+‚ÅŽæ“¾‚µ‚½’l‚ðŽw’è‚µ‚Ü‚·B
+
+
+
+
+¨ˆø”
+1. [IN] •Ï”‚Ü‚½‚ÍA”’l@F@hsid
+@@ƒ‚ƒfƒ‹‚ðŽ¯•Ê‚·‚é”Ô†‚ðŽw’è‚µ‚Ä‚­‚¾‚³‚¢B
+
+2. [IN] •Ï”‚Ü‚½‚ÍA”’l@F@moeanimno
+@@MOE‚ÌƒAƒjƒ‚Ì”Ô†‚ðŽw’è‚µ‚Ü‚·B
+@@qua‚ÌƒAƒjƒ”Ô†‚Å‚Í‚ ‚è‚Ü‚¹‚ñB
+
+3. [IN] •Ï”‚Ü‚½‚ÍA”’l@F@moeframeno
+@@MOE‚ÌƒtƒŒ[ƒ€”Ô†‚ðŽw’è‚µ‚Ü‚·B
+@@qua‚ÌƒtƒŒ[ƒ€”Ô†‚Å‚Í‚ ‚è‚Ü‚¹‚ñB
+
+4. [OUT] •Ï”@F@localanimno
+@@MOE‚ÌŽw’èƒtƒŒ[ƒ€‚É‘Î‰ž‚·‚équa‚ÌƒAƒjƒ”Ô†‚ª‘ã“ü‚³‚ê‚Ü‚·B
+
+5. [OUT] •Ï”@F@localframeno
+@@MOE‚ÌŽw’èƒtƒŒ[ƒ€‚É‘Î‰ž‚·‚équa‚ÌƒtƒŒ[ƒ€”Ô†‚ª‘ã“ü‚³‚ê‚Ü‚·B
+
+
+
+
+ƒo[ƒWƒ‡ƒ“ : ver5.3.4.8
+
+%index
+E3DGetMOELocalNextMotionFrameNo
+ŽŸ‚ÉÄ¶‚ª—\–ñ‚³‚ê‚Ä‚¢‚éƒ‚[ƒVƒ‡ƒ“‚Ì”Ô†‚ÆƒtƒŒ[ƒ€”Ô†‚ðŽæ“¾‚µ‚Ü‚·B
+%group
+Easy3D For HSP3 : MOE
+
+%prm
+p1,p2,p3,p4,p5
+p1 : [IN] •Ï”‚Ü‚½‚ÍA”’l@F@hsid
+p2 : [IN] •Ï”‚Ü‚½‚ÍA”’l@F@moeanimno
+p3 : [IN] •Ï”‚Ü‚½‚ÍA”’l@F@moeframeno
+p4 : [OUT] •Ï”@F@localnextanimno
+p5 : [OUT] •Ï”@F@localnextframeno
+
+%inst
+ŽŸ‚ÉÄ¶‚ª—\–ñ‚³‚ê‚Ä‚¢‚éƒ‚[ƒVƒ‡ƒ“‚Ì”Ô†‚ÆƒtƒŒ[ƒ€”Ô†‚ðŽæ“¾‚µ‚Ü‚·B
+
+moeanimno, moeframeno‚Í
+E3DGetMOEFrameNo hsid, moeanimno, moeframeno
+‚ÅŽæ“¾‚µ‚½’l‚ðŽw’è‚µ‚Ü‚·B
+
+E3DGetMOELocalMotionFrameNo hsid, moeanimno, moeframeno, localanimno, localframeno
+‚ÅŽæ“¾‚µ‚½localanimno‚ª‚O‚Ì‚Æ‚«‚É‚±‚Ì–½—ß‚ÍˆÓ–¡‚ðŽ‚¿‚Ü‚·
+ilocalnextanimno‚É‚OˆÈã‚Ì’l‚ª‘ã“ü‚³‚ê‚Ü‚·Bj
+
+localnextframeno‚É‚Í•âŠÔ‚ªI‚í‚Á‚½‚Æ‚«‚ÌƒWƒƒƒ“ƒvæ‚ÌƒtƒŒ[ƒ€”Ô†‚ª“ü‚è‚Ü‚·B
+‚Â‚Ü‚è•âŠÔƒtƒŒ[ƒ€’·‚ª‚T‚Ì‚Æ‚«‚ÍA‚¢‚Â‚à(localnextanimno‚ª‚OˆÈã‚Ì‚Æ‚«‚Í‚¢‚Â‚à)
+‚T‚ª“ü‚è‚Ü‚·B
+
+‚Å‚·‚Ì‚Ålocalanimno‚ª‚O‚¾‚Á‚½‚Æ‚«‚Í
+Œ»ÝÄ¶’†‚Ìƒ‚[ƒVƒ‡ƒ“‚Í
+ƒ‚[ƒVƒ‡ƒ“ID=localnextanimno
+ƒtƒŒ[ƒ€”Ô†=localframeno
+‚Æ‚È‚è‚Ü‚·B
+
+
+
+
+¨ˆø”
+1. [IN] •Ï”‚Ü‚½‚ÍA”’l@F@hsid
+@@ƒ‚ƒfƒ‹‚ðŽ¯•Ê‚·‚é”Ô†‚ðŽw’è‚µ‚Ä‚­‚¾‚³‚¢B
+
+2. [IN] •Ï”‚Ü‚½‚ÍA”’l@F@moeanimno
+@@MOE‚ÌƒAƒjƒ‚Ì”Ô†‚ðŽw’è‚µ‚Ü‚·B
+@@qua‚ÌƒAƒjƒ”Ô†‚Å‚Í‚ ‚è‚Ü‚¹‚ñB
+
+3. [IN] •Ï”‚Ü‚½‚ÍA”’l@F@moeframeno
+@@MOE‚ÌƒtƒŒ[ƒ€”Ô†‚ðŽw’è‚µ‚Ü‚·B
+@@qua‚ÌƒtƒŒ[ƒ€”Ô†‚Å‚Í‚ ‚è‚Ü‚¹‚ñB
+
+4. [OUT] •Ï”@F@localnextanimno
+@@MOE‚ÌŽw’èƒtƒŒ[ƒ€‚ÉÄ¶’†‚Ìqua‚ÌŽŸ‚ÉÄ¶‚ª—\–ñ‚³‚ê‚Ä‚¢‚éƒAƒjƒ‚Ì”Ô†‚ª‘ã“ü‚³‚ê‚Ü‚·B
+
+5. [OUT] •Ï”@F@localnextframeno
+@@MOE‚ÌŽw’èƒtƒŒ[ƒ€‚ÉÄ¶’†‚Ìqua‚ÌŽŸ‚ÉÄ¶‚ª—\–ñ‚³‚ê‚Ä‚¢‚éƒAƒjƒ‚ÌŠJŽnƒtƒŒ[ƒ€”Ô†‚ª‘ã“ü‚³‚ê‚Ü‚·B
+
+
+
+ƒo[ƒWƒ‡ƒ“ : ver5.3.4.8
+
+%index
+E3DSetMotionBlurMaxAlpha
+ƒ‚[ƒVƒ‡ƒ“ƒuƒ‰[‚Ìˆê”Ô”Z‚¢•”•ª‚Ì“§–¾“x‚ÌŒW”‚ðŽw’è‚µ‚Ü‚·B
+%group
+Easy3D For HSP3 : ƒGƒtƒFƒNƒg
+
+%prm
+p1,p2,p3
+p1 : [IN] •Ï”‚Ü‚½‚ÍA”’l@F@hsid
+p2 : [IN] •Ï”‚Ü‚½‚ÍA”’l@F@partno
+p3 : [IN] •Ï”‚Ü‚½‚ÍA”’l@F@maxAlpha
+
+%inst
+ƒ‚[ƒVƒ‡ƒ“ƒuƒ‰[‚Ìˆê”Ô”Z‚¢•”•ª‚Ì“§–¾“x‚ÌŒW”‚ðŽw’è‚µ‚Ü‚·B
+ƒ}ƒeƒŠƒAƒ‹‚ÌƒAƒ‹ƒtƒ@‚É‚±‚Ì–½—ß‚ÅŽw’è‚µ‚½ŒW”‚ðŠ|‚¯ŽZ‚µ‚½‚à‚Ì‚ðA“§–¾“x‚Æ‚µ‚ÄÝ’è‚µ‚Ü‚·B
+
+E3DSetMotionBlurMinAlpha‚Í“§–¾“x‚Ì’l‚ðŽw’è‚·‚é‚Ì‚É‘Î‚µA‚±‚Ì–½—ß‚ÍŒW”‚ðŽw’è‚·‚é“_‚É’ˆÓ‚µ‚Ä‚­‚¾‚³‚¢B
+
+
+
+¨ˆø”
+1. [IN] •Ï”‚Ü‚½‚ÍA”’l@F@hsid
+@@Œ`óƒf[ƒ^‚ðŽ¯•Ê‚·‚éIDB
+
+2. [IN] •Ï”‚Ü‚½‚ÍA”’l@F@partno
+@@Ý’è‚µ‚½‚¢ƒp[ƒc‚Ì”Ô†B
+@@-1‚ðŽw’è‚·‚é‚Æ‘S‚Ä‚Ìƒp[ƒc‚ÉÝ’è‚µ‚Ü‚·B
+
+3. [IN] •Ï”‚Ü‚½‚ÍA”’l@F@maxAlpha
+@@0.0‚©‚ç1.0‚Ü‚Å‚ÌŽÀ”B
+@@ƒuƒ‰[‚ÌÅ‘å“§–¾“x‚ÌŒW”‚ðŽw’è‚µ‚Ü‚·B
+
+
+
+ƒo[ƒWƒ‡ƒ“ : ver5.4.0.5
+
+%index
+E3DGetMaterial1stTex
+ƒ}ƒeƒŠƒAƒ‹‚ÌƒeƒNƒXƒ`ƒƒi‚P–‡–Új‚Ì–¼‘O‚ðŽæ“¾‚µ‚Ü‚·B
+%group
+Easy3D For HSP3 : ƒ}ƒeƒŠƒAƒ‹
+
+%prm
+p1,p2,p3
+p1 : [IN] •Ï”‚Ü‚½‚ÍA”’l@F@hsid
+p2 : [IN] •Ï”‚Ü‚½‚ÍA”’l@F@matno
+p3 : [OUT] •¶Žš—ñ‚Ì•Ï”@F@texname
+
+%inst
+ƒ}ƒeƒŠƒAƒ‹‚ÌƒeƒNƒXƒ`ƒƒi‚P–‡–Új‚Ì–¼‘O‚ðŽæ“¾‚µ‚Ü‚·B
+
+texnameˆø”‚Í
+sdim texname, 256‚Åì¬‚µ‚Ä‚©‚ç“n‚µ‚Ä‚­‚¾‚³‚¢B
+
+
+
+¨ˆø”
+1. [IN] •Ï”‚Ü‚½‚ÍA”’l@F@hsid
+@@Œ`óƒf[ƒ^‚ðŽ¯•Ê‚·‚éid
+
+2. [IN] •Ï”‚Ü‚½‚ÍA”’l@F@matno
+@@ƒ}ƒeƒŠƒAƒ‹”Ô†B
+@@E3DGetMaterialNoByName‚ÅŽæ“¾‚µ‚½”Ô†A
+@@‚à‚µ‚­‚Í
+@@RokDeBone2‚Ìu–Êƒ}ƒeƒŠƒAƒ‹vƒƒjƒ…[‚Å
+@@•\Ž¦‚³‚ê‚Ä‚¢‚éuƒ}ƒeƒŠƒAƒ‹”Ô†v
+
+3. [OUT] •¶Žš—ñ‚Ì•Ï”@F@texname
+@@ƒeƒNƒXƒ`ƒƒ‚Ì–¼‘O‚ª‘ã“ü‚³‚ê‚Ü‚·B
+@@‘O‹L‚à‚²‚ç‚ñ‚­‚¾‚³‚¢B
+
+
+
+ƒo[ƒWƒ‡ƒ“ : ver5.4.0.6
+
+%index
+E3DSetMaterial1stTex
+ƒ}ƒeƒŠƒAƒ‹‚ÌƒeƒNƒXƒ`ƒƒi‚P–‡–Új‚Ì–¼‘O‚ðÝ’è‚µ‚Ü‚·B
+%group
+Easy3D For HSP3 : ƒ}ƒeƒŠƒAƒ‹
+
+%prm
+p1,p2,p3
+p1 : [IN] •Ï”‚Ü‚½‚ÍA”’l@F@hsid
+p2 : [IN] •Ï”‚Ü‚½‚ÍA”’l@F@matno
+p3 : [IN] •¶Žš—ñ‚Ü‚½‚Í•¶Žš—ñ‚Ì•Ï”@F@texname
+
+%inst
+ƒ}ƒeƒŠƒAƒ‹‚ÌƒeƒNƒXƒ`ƒƒi‚P–‡–Új‚Ì–¼‘O‚ðÝ’è‚µ‚Ü‚·B
+
+–¼‘O‚Í‚Q‚T‚U•¶Žš‚Ü‚Å‚Å‚·B
+ƒ‚ƒfƒ‹ƒf[ƒ^‚Æ“¯‚¶êŠ‚©‚çƒtƒ@ƒCƒ‹‚ð’T‚µ
+ƒeƒNƒXƒ`ƒƒ‚ðƒZƒbƒg‚µ‚È‚¨‚µ‚Ü‚·B
+
+
+
+
+¨ˆø”
+1. [IN] •Ï”‚Ü‚½‚ÍA”’l@F@hsid
+@@Œ`óƒf[ƒ^‚ðŽ¯•Ê‚·‚éid
+
+2. [IN] •Ï”‚Ü‚½‚ÍA”’l@F@matno
+@@ƒ}ƒeƒŠƒAƒ‹”Ô†B
+@@E3DGetMaterialNoByName‚ÅŽæ“¾‚µ‚½”Ô†A
+@@‚à‚µ‚­‚Í
+@@RokDeBone2‚Ìu–Êƒ}ƒeƒŠƒAƒ‹vƒƒjƒ…[‚Å
+@@•\Ž¦‚³‚ê‚Ä‚¢‚éuƒ}ƒeƒŠƒAƒ‹”Ô†v
+
+3. [IN] •¶Žš—ñ‚Ü‚½‚Í•¶Žš—ñ‚Ì•Ï”@F@texname
+@@ƒeƒNƒXƒ`ƒƒ‚Ì–¼‘O‚ðŽw’è‚µ‚Ü‚·BB
+@@‘O‹L‚à‚²‚ç‚ñ‚­‚¾‚³‚¢B
+
+
+
+ƒo[ƒWƒ‡ƒ“ : ver5.4.0.6
+
+%index
+E3DGetMOEKeyGoOnFlag
+MOE‚ÌƒCƒxƒ“ƒgŒp‘±ƒtƒ‰ƒO‚ðŽæ“¾‚µ‚Ü‚·B
+%group
+Easy3D For HSP3 : MOE
+
+%prm
+p1,p2,p3,p4
+p1 : [IN] •Ï”‚Ü‚½‚ÍA”’l@F@hsid
+p2 : [IN] •Ï”‚Ü‚½‚ÍA”’l@F@animno
+p3 : [IN] •Ï”‚Ü‚½‚ÍA”’l@F@frameno
+p4 : [OUT] •Ï”@F@flagptr
+
+%inst
+MOE‚ÌƒCƒxƒ“ƒgŒp‘±ƒtƒ‰ƒO‚ðŽæ“¾‚µ‚Ü‚·B
+
+Žw’è‚µ‚½ƒtƒŒ[ƒ€‚ÉƒL[‚ª–³‚¢ê‡‚ÍƒGƒ‰[‚É‚È‚è‚Ü‚·B
+
+
+
+¨ˆø”
+1. [IN] •Ï”‚Ü‚½‚ÍA”’l@F@hsid
+@@Œ`óƒf[ƒ^‚ðŽ¯•Ê‚·‚éid
+
+2. [IN] •Ï”‚Ü‚½‚ÍA”’l@F@animno
+@@MOE‚ÌƒAƒjƒ”Ô†‚ðŽw’è‚µ‚Ü‚·B
+
+3. [IN] •Ï”‚Ü‚½‚ÍA”’l@F@frameno
+@@MOEƒAƒjƒ‚ÌƒtƒŒ[ƒ€”Ô†B
+
+4. [OUT] •Ï”@F@flagptr
+@@ƒtƒ‰ƒO‚ª‘ã“ü‚³‚ê‚Ü‚·B
+@@Œp‘±‚Ì‚Æ‚«‚Í‚PB’P”­‚Ì‚Æ‚«‚Í‚OB
+
+
+
+ƒo[ƒWƒ‡ƒ“ : ver5.4.0.6
+
+%index
+E3DSetMOEKeyGoOnFlag
+MOE‚ÌƒCƒxƒ“ƒgŒp‘±ƒtƒ‰ƒO‚ðÝ’è‚µ‚Ü‚·B
+%group
+Easy3D For HSP3 : MOE
+
+%prm
+p1,p2,p3,p4
+p1 : [IN] •Ï”‚Ü‚½‚ÍA”’l@F@hsid
+p2 : [IN] •Ï”‚Ü‚½‚ÍA”’l@F@animno
+p3 : [IN] •Ï”‚Ü‚½‚ÍA”’l@F@frameno
+p4 : [IN] •Ï”‚Ü‚½‚ÍA”’l@F@flag
+
+%inst
+MOE‚ÌƒCƒxƒ“ƒgŒp‘±ƒtƒ‰ƒO‚ðÝ’è‚µ‚Ü‚·B
+
+Žw’è‚µ‚½ƒtƒŒ[ƒ€‚ÉƒL[‚ª–³‚¢ê‡‚ÍƒGƒ‰[‚É‚È‚è‚Ü‚·B
+
+E3DCalcMOEFullFrame–½—ß‚ðŒÄ‚Ño‚·‚Æ‚±‚ÌÝ’è‚ª”½‰f‚³‚ê‚Ü‚·B
+
+
+
+
+¨ˆø”
+1. [IN] •Ï”‚Ü‚½‚ÍA”’l@F@hsid
+@@Œ`óƒf[ƒ^‚ðŽ¯•Ê‚·‚éid
+
+2. [IN] •Ï”‚Ü‚½‚ÍA”’l@F@animno
+@@MOE‚ÌƒAƒjƒ”Ô†‚ðŽw’è‚µ‚Ü‚·B
+
+3. [IN] •Ï”‚Ü‚½‚ÍA”’l@F@frameno
+@@MOEƒAƒjƒ‚ÌƒtƒŒ[ƒ€”Ô†B
+
+4. [IN] •Ï”‚Ü‚½‚ÍA”’l@F@flag
+@@ƒtƒ‰ƒO‚ðŽw’è‚µ‚Ü‚·B
+@@Œp‘±‚Ì‚Æ‚«‚Í‚PB’P”­‚Ì‚Æ‚«‚Í‚OB
+
+
+
+ƒo[ƒWƒ‡ƒ“ : ver5.4.0.6
+
+%index
+E3DGetMOATrunkNotComID
+moa‚Ì‹¤’Ê•ªŠò‹ÖŽ~ID‚ÌŒÂ”‚ÆID‚ðŽæ“¾‚µ‚Ü‚·B
+%group
+Easy3D For HSP3 : ƒ‚[ƒVƒ‡ƒ“
+
+%prm
+p1,p2,p3,p4,p5
+p1 : [IN] •Ï”‚Ü‚½‚ÍA”’l@F@hsid
+p2 : [IN] •Ï”‚Ü‚½‚ÍA”’l@F@motid
+p3 : [IN] •Ï”‚Ü‚½‚ÍA”’l@F@arrayelng
+p4 : [OUT] •Ï”@F@notcomid
+p5 : [OUT] •Ï”@F@getnum
+
+%inst
+moa‚Ì‹¤’Ê•ªŠò‹ÖŽ~ID‚ÌŒÂ”‚ÆID‚ðŽæ“¾‚µ‚Ü‚·B
+
+arrayleng‚É‚O‚ðŽw’è‚·‚é‚ÆID‚Ì”‚¾‚¯‚ðŽæ“¾‚µ‚Ü‚·B
+Žg‚¢•û‚Í
+
+E3DGetMOATrunkNotComID hsid, motid, 0, notcomid, idnum
+
+dim notcomid, idnum
+
+E3DGetMOATrunkNotComID hsid, motid, idnum, notcomid, chknum
+
+‚Ì‚æ‚¤‚Éarrayleng‚ð•Ï‚¦‚Ä‚Q‰ñŒÄ‚Ño‚µ‚ÄŽg‚¢‚Ü‚·B
+
+
+
+
+
+
+¨ˆø”
+1. [IN] •Ï”‚Ü‚½‚ÍA”’l@F@hsid
+@@Œ`óƒf[ƒ^‚ðŽ¯•Ê‚·‚éid
+
+2. [IN] •Ï”‚Ü‚½‚ÍA”’l@F@motid
+@@Trunk‚Ìƒ‚[ƒVƒ‡ƒ“‚ðŽ¯•Ê‚·‚éid
+
+3. [IN] •Ï”‚Ü‚½‚ÍA”’l@F@arrayelng
+@@notcomidˆø”‚ÉŽw’è‚·‚é”z—ñ‚Ì—v‘f”B
+
+4. [OUT] •Ï”@F@notcomid
+@@ID‚ðŠi”[‚·‚é”z—ñB
+
+5. [OUT] •Ï”@F@getnum
+@@ID‚Ì”‚ª‘ã“ü‚³‚ê‚Ü‚·B
+
+
+
+
+
+
+
+ƒo[ƒWƒ‡ƒ“ : ver5.4.0.7
+
+%index
+E3DSetMOATrunkNotComID
+moa‚Ì‹¤’Ê•ªŠò‹ÖŽ~ID‚ÌŒÂ”‚ÆID‚ðÝ’è‚µ‚Ü‚·B
+%group
+Easy3D For HSP3 : ƒ‚[ƒVƒ‡ƒ“
+
+%prm
+p1,p2,p3,p4
+p1 : [IN] •Ï”‚Ü‚½‚ÍA”’l@F@hsid
+p2 : [IN] •Ï”‚Ü‚½‚ÍA”’l@F@motid
+p3 : [IN] •Ï”‚Ü‚½‚ÍA”’l@F@arrayelng
+p4 : [IN] •Ï”‚Ü‚½‚ÍA”’l@F@notcomid
+
+%inst
+moa‚Ì‹¤’Ê•ªŠò‹ÖŽ~ID‚ÌŒÂ”‚ÆID‚ðÝ’è‚µ‚Ü‚·B
+
+
+
+
+
+¨ˆø”
+1. [IN] •Ï”‚Ü‚½‚ÍA”’l@F@hsid
+@@Œ`óƒf[ƒ^‚ðŽ¯•Ê‚·‚éid
+
+2. [IN] •Ï”‚Ü‚½‚ÍA”’l@F@motid
+@@Trunk‚Ìƒ‚[ƒVƒ‡ƒ“‚ðŽ¯•Ê‚·‚éid
+
+3. [IN] •Ï”‚Ü‚½‚ÍA”’l@F@arrayelng
+@@notcomidˆø”‚ÉŽw’è‚·‚é”z—ñ‚Ì—v‘f”B
+
+4. [IN] •Ï”‚Ü‚½‚ÍA”’l@F@notcomid
+@@ID‚ðŠi”[‚µ‚½”z—ñB
+
+
+
+
+ƒo[ƒWƒ‡ƒ“ : ver5.4.0.7
+
+%index
+E3DGetZa3Euler
+À‚R‚Å‚ÌƒIƒCƒ‰[Šp“x‚ðŽæ“¾‚µ‚Ü‚·B
+%group
+Easy3D For HSP3 : ƒ‚[ƒVƒ‡ƒ“
+
+%prm
+p1,p2,p3,p4,p5,p6
+p1 : [IN] •Ï”‚Ü‚½‚ÍA”’l@F@hsid
+p2 : [IN] •Ï”‚Ü‚½‚ÍA”’l@F@motid
+p3 : [IN] •Ï”‚Ü‚½‚ÍA”’l@F@frameno
+p4 : [IN] •Ï”‚Ü‚½‚ÍA”’l@F@boneno
+p5 : [IN] •Ï”@F@befeul
+p6 : [OUT] •Ï”@F@geteul
+
+%inst
+À‚R‚Å‚ÌƒIƒCƒ‰[Šp“x‚ðŽæ“¾‚µ‚Ü‚·B
+
+befeul, geteul‚Í
+ddim befeil, 3
+ddim geteul, 3
+‚ÅŽÀ”Œ^‚Ì”z—ñ‚ðì¬‚µ‚Ä‚­‚¾‚³‚¢B
+
+
+
+
+
+¨ˆø”
+1. [IN] •Ï”‚Ü‚½‚ÍA”’l@F@hsid
+@@Œ`óƒf[ƒ^‚ðŽ¯•Ê‚·‚éid
+
+2. [IN] •Ï”‚Ü‚½‚ÍA”’l@F@motid
+@@ƒ‚[ƒVƒ‡ƒ“‚ðŽ¯•Ê‚·‚éid
+
+3. [IN] •Ï”‚Ü‚½‚ÍA”’l@F@frameno
+@@ƒ‚[ƒVƒ‡ƒ“‚ÌƒtƒŒ[ƒ€”Ô†
+
+4. [IN] •Ï”‚Ü‚½‚ÍA”’l@F@boneno
+@@ƒ{[ƒ“‚ðŽ¯•Ê‚·‚éƒp[ƒc‚Ì”Ô†
+
+5. [IN] •Ï”@F@befeul
+@@ŽÀ”Œ^‚Ì”z—ñB@
+@@befeul(0), befeul(1), befeul(2)‚É‚»‚ê‚¼‚êX,Y,Z‚ÌƒIƒCƒ‰[Šp“x‚ðŽw’è‚µ‚Ä‚­‚¾‚³‚¢B
+@@ŒvŽZŽž‚Ébefeul‚É‹ß‚¢’l‚ðgeteul‚ÉŠi”[‚µ‚Ü‚·B
+
+6. [OUT] •Ï”@F@geteul
+@@ŽÀ”Œ^‚Ì”z—ñB
+@@ƒ{[ƒ“‚ÌŽp¨‚ÌƒIƒCƒ‰[Šp“x‚ª‘ã“ü‚³‚ê‚Ü‚·B
+@@geteul(0), geteul(1), geteul(2)‚É‚»‚ê‚¼‚êX,YZ¬•ª‚ª‘ã“ü‚³‚ê‚Ü‚·B
+
+
+
+
+ƒo[ƒWƒ‡ƒ“ : ver5.4.0.9
+
+%index
+E3DSetZa3Euler
+À‚R‚Å‚ÌƒIƒCƒ‰[Šp‚ÌŽp¨‚ðƒ{[ƒ“‚ÉÝ’è‚µ‚Ü‚·B
+%group
+Easy3D For HSP3 : ƒ‚[ƒVƒ‡ƒ“
+
+%prm
+p1,p2,p3,p4,p5
+p1 : [IN] •Ï”‚Ü‚½‚ÍA”’l@F@hsid
+p2 : [IN] •Ï”‚Ü‚½‚ÍA”’l@F@motid
+p3 : [IN] •Ï”‚Ü‚½‚ÍA”’l@F@frameno
+p4 : [IN] •Ï”‚Ü‚½‚ÍA”’l@F@boneno
+p5 : [IN] •Ï”@F@seteul
+
+%inst
+À‚R‚Å‚ÌƒIƒCƒ‰[Šp‚ÌŽp¨‚ðƒ{[ƒ“‚ÉÝ’è‚µ‚Ü‚·B
+
+seteul‚Í
+ddim seteul, 3
+‚ÅŽÀ”Œ^‚Ì”z—ñ‚ðì¬‚µ‚Ä‚­‚¾‚³‚¢B
+
+
+ƒ‚[ƒVƒ‡ƒ“‚É”½‰f‚³‚¹‚é‚É‚Í
+E3DFillUpMotion‚ðŒÄ‚Ño‚·•K—v‚ª‚ ‚è‚Ü‚·B
+
+
+
+¨ˆø”
+1. [IN] •Ï”‚Ü‚½‚ÍA”’l@F@hsid
+@@Œ`óƒf[ƒ^‚ðŽ¯•Ê‚·‚éid
+
+2. [IN] •Ï”‚Ü‚½‚ÍA”’l@F@motid
+@@ƒ‚[ƒVƒ‡ƒ“‚ðŽ¯•Ê‚·‚éid
+
+3. [IN] •Ï”‚Ü‚½‚ÍA”’l@F@frameno
+@@ƒ‚[ƒVƒ‡ƒ“‚ÌƒtƒŒ[ƒ€”Ô†
+
+4. [IN] •Ï”‚Ü‚½‚ÍA”’l@F@boneno
+@@ƒ{[ƒ“‚ðŽ¯•Ê‚·‚éƒp[ƒc‚Ì”Ô†
+
+5. [IN] •Ï”@F@seteul
+@@ŽÀ”Œ^‚Ì”z—ñB
+@@ƒ{[ƒ“‚ÌŽp¨‚ÌƒIƒCƒ‰[Šp“x‚ðŽw’è‚µ‚Ü‚·B
+@@seteul(0), seteul(1), seteul(2)‚É‚»‚ê‚¼‚êX,YZ¬•ª‚ðŽw’è‚µ‚Ü‚·BB
+
+
+
+
+ƒo[ƒWƒ‡ƒ“ : ver5.4.0.9
+
+%index
+E3DGetMOELocalMotionFrameNoML
+MOE‚ÌƒAƒjƒ”Ô†‚ÆƒtƒŒ[ƒ€”Ô†‚É‘Î‰ž‚·‚équa‚Ìƒ‚[ƒVƒ‡ƒ“‚Ìî•ñ‚ðƒ{[ƒ“‚²‚Æ‚ÉŽæ“¾‚µ‚Ü‚·B
+%group
+Easy3D For HSP3 : MOE
+
+%prm
+p1,p2,p3,p4,p5,p6
+p1 : [IN] •Ï”‚Ü‚½‚ÍA”’l@F@hsid
+p2 : [IN] •Ï”‚Ü‚½‚ÍA”’l@F@moeanimno
+p3 : [IN] •Ï”‚Ü‚½‚ÍA”’l@F@moeframeno
+p4 : [IN] •Ï”‚Ü‚½‚ÍA”’l@F@boneno
+p5 : [OUT] •Ï”@F@localanimno
+p6 : [OUT] •Ï”@F@localframeno
+
+%inst
+MOE‚ÌƒAƒjƒ”Ô†‚ÆƒtƒŒ[ƒ€”Ô†‚É‘Î‰ž‚·‚équa‚Ìƒ‚[ƒVƒ‡ƒ“‚Ìî•ñ‚ðƒ{[ƒ“‚²‚Æ‚ÉŽæ“¾‚µ‚Ü‚·B
+
+
+
+
+
+¨ˆø”
+1. [IN] •Ï”‚Ü‚½‚ÍA”’l@F@hsid
+@@ƒ‚ƒfƒ‹‚ðŽ¯•Ê‚·‚é”Ô†‚ðŽw’è‚µ‚Ä‚­‚¾‚³‚¢B
+
+2. [IN] •Ï”‚Ü‚½‚ÍA”’l@F@moeanimno
+@@MOE‚ÌƒAƒjƒ‚Ì”Ô†‚ðŽw’è‚µ‚Ü‚·B
+@@qua‚ÌƒAƒjƒ”Ô†‚Å‚Í‚ ‚è‚Ü‚¹‚ñB
+
+3. [IN] •Ï”‚Ü‚½‚ÍA”’l@F@moeframeno
+@@MOE‚ÌƒtƒŒ[ƒ€”Ô†‚ðŽw’è‚µ‚Ü‚·B
+@@qua‚ÌƒtƒŒ[ƒ€”Ô†‚Å‚Í‚ ‚è‚Ü‚¹‚ñB
+
+4. [IN] •Ï”‚Ü‚½‚ÍA”’l@F@boneno
+@@ƒ{[ƒ“‚ðŽ¯•Ê‚·‚é”Ô†‚ðŽw’è‚µ‚Ä‚­‚¾‚³‚¢B
+
+5. [OUT] •Ï”@F@localanimno
+@@MOE‚ÌŽw’èƒtƒŒ[ƒ€‚É‘Î‰ž‚·‚équa‚ÌƒAƒjƒ”Ô†‚ª‘ã“ü‚³‚ê‚Ü‚·B
+
+6. [OUT] •Ï”@F@localframeno
+@@MOE‚ÌŽw’èƒtƒŒ[ƒ€‚É‘Î‰ž‚·‚équa‚ÌƒtƒŒ[ƒ€”Ô†‚ª‘ã“ü‚³‚ê‚Ü‚·B
+
+
+
+ƒo[ƒWƒ‡ƒ“ : ver5.4.1.0
+
+%index
+E3DGetMOELocalNextMotionFrameNoML
+MOE‚ÌƒAƒjƒ”Ô†‚ÆƒtƒŒ[ƒ€”Ô†‚É‘Î‰ž‚·‚équa‚ÌŽŸ‚Ìƒ‚[ƒVƒ‡ƒ“‚Ìî•ñ‚ðƒ{[ƒ“‚²‚Æ‚ÉŽæ“¾‚µ‚Ü‚·B
+%group
+Easy3D For HSP3 : MOE
+
+%prm
+p1,p2,p3,p4,p5,p6
+p1 : [IN] •Ï”‚Ü‚½‚ÍA”’l@F@hsid
+p2 : [IN] •Ï”‚Ü‚½‚ÍA”’l@F@moeanimno
+p3 : [IN] •Ï”‚Ü‚½‚ÍA”’l@F@moeframeno
+p4 : [IN] •Ï”‚Ü‚½‚ÍA”’l@F@boneno
+p5 : [OUT] •Ï”@F@localnextanimno
+p6 : [OUT] •Ï”@F@localnextframeno
+
+%inst
+MOE‚ÌƒAƒjƒ”Ô†‚ÆƒtƒŒ[ƒ€”Ô†‚É‘Î‰ž‚·‚équa‚ÌŽŸ‚Ìƒ‚[ƒVƒ‡ƒ“‚Ìî•ñ‚ðƒ{[ƒ“‚²‚Æ‚ÉŽæ“¾‚µ‚Ü‚·B
+
+
+
+
+¨ˆø”
+1. [IN] •Ï”‚Ü‚½‚ÍA”’l@F@hsid
+@@ƒ‚ƒfƒ‹‚ðŽ¯•Ê‚·‚é”Ô†‚ðŽw’è‚µ‚Ä‚­‚¾‚³‚¢B
+
+2. [IN] •Ï”‚Ü‚½‚ÍA”’l@F@moeanimno
+@@MOE‚ÌƒAƒjƒ‚Ì”Ô†‚ðŽw’è‚µ‚Ü‚·B
+@@qua‚ÌƒAƒjƒ”Ô†‚Å‚Í‚ ‚è‚Ü‚¹‚ñB
+
+3. [IN] •Ï”‚Ü‚½‚ÍA”’l@F@moeframeno
+@@MOE‚ÌƒtƒŒ[ƒ€”Ô†‚ðŽw’è‚µ‚Ü‚·B
+@@qua‚ÌƒtƒŒ[ƒ€”Ô†‚Å‚Í‚ ‚è‚Ü‚¹‚ñB
+
+4. [IN] •Ï”‚Ü‚½‚ÍA”’l@F@boneno
+@@ƒ{[ƒ“‚ðŽ¯•Ê‚·‚é”Ô†‚ðŽw’è‚µ‚Ä‚­‚¾‚³‚¢B
+
+5. [OUT] •Ï”@F@localnextanimno
+@@MOE‚ÌŽw’èƒtƒŒ[ƒ€‚ÉÄ¶’†‚Ìqua‚ÌŽŸ‚ÉÄ¶‚ª—\–ñ‚³‚ê‚Ä‚¢‚éƒAƒjƒ‚Ì”Ô†‚ª‘ã“ü‚³‚ê‚Ü‚·B
+
+6. [OUT] •Ï”@F@localnextframeno
+@@MOE‚ÌŽw’èƒtƒŒ[ƒ€‚ÉÄ¶’†‚Ìqua‚ÌŽŸ‚ÉÄ¶‚ª—\–ñ‚³‚ê‚Ä‚¢‚éƒAƒjƒ‚ÌŠJŽnƒtƒŒ[ƒ€”Ô†‚ª‘ã“ü‚³‚ê‚Ü‚·B
+
+
+
+ƒo[ƒWƒ‡ƒ“ : ver5.4.1.0
+
+%index
+E3DSetDefaultGP
+GPƒAƒjƒ‚ÌƒfƒtƒHƒ‹ƒg‚Ìƒpƒ‰ƒ[ƒ^‚ðÝ’è‚µ‚Ü‚·B
+%group
+Easy3D For HSP3 : GPA
+
+%prm
+p1,p2,p3
+p1 : [IN] •Ï”‚Ü‚½‚ÍA”’l@F@hsid@@ƒ‚ƒfƒ‹‚ðŽ¯•Ê‚·‚é”Ô†‚ðŽw’è‚µ‚Ä‚­‚¾‚³‚¢B
+p2 : [IN] ”z—ñ‚Ì•Ï”@F@gpi
+p3 : [IN] ”z—ñ‚Ì•Ï”@F@gpd@@ŽÀ”Œ^‚Ì”z—ñ‚Ì•Ï”B
+
+%inst
+GPƒAƒjƒ‚ÌƒfƒtƒHƒ‹ƒg‚Ìƒpƒ‰ƒ[ƒ^‚ðÝ’è‚µ‚Ü‚·B
+
+gpi, gpd‚ÌÚ×‚ÍE3DSetGPKey‚Ìà–¾‚ð‚²——‚­‚¾‚³‚¢B
+
+
+
+
+¨ˆø”
+1. [IN] •Ï”‚Ü‚½‚ÍA”’l@F@hsid@@ƒ‚ƒfƒ‹‚ðŽ¯•Ê‚·‚é”Ô†‚ðŽw’è‚µ‚Ä‚­‚¾‚³‚¢B
+
+2. [IN] ”z—ñ‚Ì•Ï”@F@gpi
+@@GPƒL[‚Ì®”ƒƒ“ƒo‚ðƒZƒbƒg‚µ‚Ü‚·B
+
+3. [IN] ”z—ñ‚Ì•Ï”@F@gpd@@ŽÀ”Œ^‚Ì”z—ñ‚Ì•Ï”B
+@@GPƒL[‚ÌŽÀ”ƒƒ“ƒo‚ðƒZƒbƒg‚µ‚Ü‚·B
+
+
+
+
+ƒo[ƒWƒ‡ƒ“ : ver5.4.1.1
+
+%index
+E3DSetDefaultCamera
+ƒJƒƒ‰ƒAƒjƒ‚ÌƒfƒtƒHƒ‹ƒg‚Ìƒpƒ‰ƒ[ƒ^‚ð
+ƒJƒƒ‰”Ô†‚²‚Æ‚ÉÝ’è‚µ‚Ü‚·B
+%group
+Easy3D For HSP3 : ƒJƒƒ‰
+
+%prm
+p1,p2,p3
+p1 : [IN] •Ï”‚Ü‚½‚ÍA”’l@F@camerano
+p2 : [IN] ”z—ñ‚Ì•Ï”@F@cami
+p3 : [IN] ”z—ñ‚Ì•Ï”@F@camd
+
+%inst
+ƒJƒƒ‰ƒAƒjƒ‚ÌƒfƒtƒHƒ‹ƒg‚Ìƒpƒ‰ƒ[ƒ^‚ð
+ƒJƒƒ‰”Ô†‚²‚Æ‚ÉÝ’è‚µ‚Ü‚·B
+
+cami, camd‚ÌÚ×‚ÍE3DSetCameraKey‚Ìà–¾‚ð‚²——‚­‚¾‚³‚¢B
+
+
+
+
+¨ˆø”
+1. [IN] •Ï”‚Ü‚½‚ÍA”’l@F@camerano
+@@ƒJƒƒ‰”Ô†‚ðŽw’è‚µ‚Ä‚­‚¾‚³‚¢B
+
+2. [IN] ”z—ñ‚Ì•Ï”@F@cami
+@@ƒJƒƒ‰ƒL[‚Ì®”ƒƒ“ƒo‚ðƒZƒbƒg‚µ‚Ü‚·B
+
+3. [IN] ”z—ñ‚Ì•Ï”@F@camd
+@@ŽÀ”Œ^‚Ì”z—ñ‚Ì•Ï”B
+@@ƒJƒƒ‰ƒL[‚ÌŽÀ”ƒƒ“ƒo‚ðƒZƒbƒg‚µ‚Ü‚·B
+
+
+
+
+ƒo[ƒWƒ‡ƒ“ : ver5.4.1.1
+
+%index
+E3DValidHsid
+hsid‚ªŽg—p‰Â”\‚©‚Ç‚¤‚©‚ðƒ`ƒFƒbƒN‚µ‚Ü‚·B
+%group
+Easy3D For HSP3 : •`‰æƒpƒ‰ƒ[ƒ^
+
+%prm
+p1,p2
+p1 : [IN] •Ï”‚Ü‚½‚ÍA”’l@F@hsid
+p2 : [OUT] •Ï”@F@flagptr
+
+%inst
+hsid‚ªŽg—p‰Â”\‚©‚Ç‚¤‚©‚ðƒ`ƒFƒbƒN‚µ‚Ü‚·B
+—á‚¦‚ÎE3DDestroyHandlerSet‚ðŒÄ‚Ño‚µ‚½Œã‚Ìhsid‚É‘Î‚µ‚ÄŒÄ‚Ño‚·‚Æ–³Œø‚Ìƒtƒ‰ƒO‚ª•Ô‚³‚ê‚Ü‚·B
+
+
+
+
+¨ˆø”
+1. [IN] •Ï”‚Ü‚½‚ÍA”’l@F@hsid
+@@ƒ‚ƒfƒ‹‚ðŽ¯•Ê‚·‚é”Ô†‚ðŽw’è‚µ‚Ä‚­‚¾‚³‚¢B
+
+2. [OUT] •Ï”@F@flagptr
+@@hsid‚ª—LŒø‚Ì‚Æ‚«‚Í‚PA–³Œø‚Ì‚Æ‚«‚Í‚O‚ª‘ã“ü‚³‚ê‚Ü‚·B
+
+
+
+ƒo[ƒWƒ‡ƒ“ : ver5.4.1.4
+
+%index
+E3DKinectLoadLib
+Kinect‘€ì—p‚Ìƒ‰ƒCƒuƒ‰ƒŠ‚ðƒ[ƒh‚µ‚Ü‚·B
+%group
+Easy3D For HSP3 : Kinect
+
+%prm
+p1
+p1 : [OUT] •Ï”@F@validflagptr
+
+%inst
+Kinect‘€ì—p‚Ìƒ‰ƒCƒuƒ‰ƒŠ‚ðƒ[ƒh‚µ‚Ü‚·B
+OpenNI‚ªƒCƒ“ƒXƒg[ƒ‹‚³‚ê‚Ä‚¢‚ÄOpenNI‚ÌƒTƒ“ƒvƒ‹‚ª“®‚­ó‘Ô‚Éƒ}ƒVƒ“‚ª‚È‚¢‚Æ‚¢‚¯‚Ü‚¹‚ñB
+
+
+
+
+¨ˆø”
+1. [OUT] •Ï”@F@validflagptr
+@@³í‚Éƒ‰ƒCƒuƒ‰ƒŠ‚ªƒ[ƒh‚Å‚«‚½‚ç‚P‚ª‘ã“ü‚³‚ê‚Ü‚·BŽ¸”s‚·‚é‚Æ‚O‚ª‘ã“ü‚³‚ê‚Ü‚·B
+
+
+
+ƒo[ƒWƒ‡ƒ“ : ver5.5.0.0
+
+%index
+E3DKinectSetChara
+Kinect‚ÌƒLƒƒƒvƒ`ƒƒ‚ÆEasy3D‚ÌƒLƒƒƒ‰ƒNƒ^[‚ÌŠÖ˜A•t‚¯‚ð‚µ‚Ü‚·B
+%group
+Easy3D For HSP3 : Kinect
+
+%prm
+p1,p2,p3,p4
+p1 : [IN] •Ï”‚Ü‚½‚ÍA”’l@F@hsid
+p2 : [IN] •¶Žš—ñ‚Ü‚½‚ÍA•¶Žš—ñ•Ï”@F@kstname
+p3 : [IN] •Ï”‚Ü‚½‚ÍA”’l@F@motid
+p4 : [IN] •Ï”‚Ü‚½‚ÍA”’l@F@capmode
+
+%inst
+Kinect‚ÌƒLƒƒƒvƒ`ƒƒ‚ÆEasy3D‚ÌƒLƒƒƒ‰ƒNƒ^[‚ÌŠÖ˜A•t‚¯‚ð‚µ‚Ü‚·B
+
+kstƒtƒ@ƒCƒ‹‚ÍRokDeBone2‚Åì¬‚µ‚Ü‚·B
+
+
+
+
+
+¨ˆø”
+1. [IN] •Ï”‚Ü‚½‚ÍA”’l@F@hsid
+@@ƒ‚ƒfƒ‹‚ðŽ¯•Ê‚·‚é”Ô†‚ðŽw’è‚µ‚Ä‚­‚¾‚³‚¢B
+
+2. [IN] •¶Žš—ñ‚Ü‚½‚ÍA•¶Žš—ñ•Ï”@F@kstname
+@@kstƒtƒ@ƒCƒ‹‚Ìƒtƒ@ƒCƒ‹–¼‚ðŽw’è‚µ‚Ü‚·B
+
+3. [IN] •Ï”‚Ü‚½‚ÍA”’l@F@motid
+@@ƒ‚[ƒVƒ‡ƒ“‚ðŽ¯•Ê‚·‚é”Ô†‚ðŽw’è‚µ‚Ä‚­‚¾‚³‚¢B
+
+4. [IN] •Ï”‚Ü‚½‚ÍA”’l@F@capmode
+@@CAPMODE_ALL‚ðŽw’è‚·‚é‚Æmotid‚ÅŽw’è‚µ‚½ƒ‚[ƒVƒ‡ƒ“‚ÌÅ‰‚ÌƒtƒŒ[ƒ€‚©‚çÅŒã‚ÌƒtƒŒ[ƒ€‚Ü‚ÅƒLƒƒƒvƒ`ƒƒ‚ð‚µ‚Ü‚·BÅŒã‚ÌƒtƒŒ[ƒ€‚É’B‚µ‚½‚çŽ©“®“I‚ÉƒLƒƒƒvƒ`ƒƒ‚ÍI—¹‚µ‚Ü‚·B
+@@CAPMODE_ONE‚ðŽw’è‚·‚é‚Æmotid‚ÅŽw’è‚µ‚½ƒ‚[ƒVƒ‡ƒ“‚ÌÅ‰‚Ì‚PƒtƒŒ[ƒ€iƒtƒŒ[ƒ€”Ô†‚Oj‚ÉƒLƒƒƒvƒ`ƒƒ‚µ‚Ü‚·B‚±‚Ìƒ‚[ƒh‚Å‚ÍE3DKinectEndCapture‚ðŒÄ‚Ô‚Ü‚ÅƒLƒƒƒvƒ`ƒƒ[‚ª‘±‚«‚Ü‚·B
+
+
+
+
+ƒo[ƒWƒ‡ƒ“ : ver5.5.0.0
+
+%index
+E3DKinectStartCapture
+Kinect‚Ìƒ‚[ƒVƒ‡ƒ“ƒLƒƒƒvƒ`ƒƒ‚ðŠJŽn‚µ‚Ü‚·B
+%group
+Easy3D For HSP3 : Kinect
+
+%prm
+‚È‚µ
+
+%inst
+Kinect‚Ìƒ‚[ƒVƒ‡ƒ“ƒLƒƒƒvƒ`ƒƒ‚ðŠJŽn‚µ‚Ü‚·B
+‚P‚O•b‚Ù‚ÇŽžŠÔ‚ªŠ|‚©‚è‚Ü‚·B
+
+
+
+
+¨ˆø”
+
+
+ƒo[ƒWƒ‡ƒ“ : ver5.5.0.0
+
+%index
+3DKinectEndCapture
+Kinect‚Ìƒ‚[ƒVƒ‡ƒ“ƒLƒƒƒvƒ`ƒƒ‚ðI—¹‚µ‚Ü‚·B
+%group
+Easy3D For HSP3 : Kinect
+
+%prm
+‚È‚µ
+
+%inst
+Kinect‚Ìƒ‚[ƒVƒ‡ƒ“ƒLƒƒƒvƒ`ƒƒ‚ðI—¹‚µ‚Ü‚·B
+
+
+
+
+¨ˆø”
+
+
+ƒo[ƒWƒ‡ƒ“ : ver5.5.0.0
+
+%index
+E3DKinectIsTracking
+Kinect‚Ìƒ‚[ƒVƒ‡ƒ“ƒLƒƒƒvƒ`ƒƒ‚ªƒgƒ‰ƒbƒLƒ“ƒOó‘Ô‚É‚ ‚é‚©‚Ç‚¤‚©‚ð’²‚×‚Ü‚·B
+%group
+Easy3D For HSP3 : Kinect
+
+%prm
+p1,p2
+p1 : [OUT] •Ï”@F@flagptr
+p2 : [OUT] •Ï”@F@capcntptr
+
+%inst
+Kinect‚Ìƒ‚[ƒVƒ‡ƒ“ƒLƒƒƒvƒ`ƒƒ‚ªƒgƒ‰ƒbƒLƒ“ƒOó‘Ô‚É‚ ‚é‚©‚Ç‚¤‚©‚ð’²‚×‚Ü‚·B
+ƒgƒ‰ƒbƒLƒ“ƒOó‘Ô‚Æ‚ÍKinect‚ª“®ì‚µA‰ŠúŽp¨‚ð”FŽ¯‚µ‚ÄˆÊ’uî•ñ‚ð‘—M‚µŽn‚ß‚½ó‘Ô‚Å‚·B
+‰ŠúŽp¨‚ÍMedia/KinectSampleƒtƒHƒ‹ƒ_‚Ì’†‚Ìsigƒtƒ@ƒCƒ‹‚ÌŽp¨‚Æ“¯‚¶‚Å‚·B
+Kinect‚ª“®ì‚µŽn‚ß‚Ä‚©‚çƒJƒƒ‰‚É‘Sg‚ª“ü‚é‚æ‚¤‚É‚QC‚R‚—£‚êA³–Ê‚ðŒü‚¢‚Ä‰ŠúŽp¨‚ðŽæ‚é‚±‚Æ‚Åƒgƒ‰ƒbƒLƒ“ƒO‚ªŠJŽn‚³‚ê‚Ü‚·B
+‚±‚Ì‰ŠúŽp¨‚ª‚¢‚¢‰ÁŒ¸‚¾‚Æƒ‚[ƒVƒ‡ƒ“‚ª—‚ê‚Ü‚·B^–Ê–Ú‚É‚µ‚Á‚©‚è‰ŠúŽp¨‚ðŽæ‚è‚Ü‚µ‚å‚¤B
+
+
+
+
+¨ˆø”
+1. [OUT] •Ï”@F@flagptr
+@@ƒgƒ‰ƒbƒLƒ“ƒOó‘Ô‚Ì‚Æ‚«‚É‚PA‚»‚¤‚Å‚È‚¢‚Æ‚«‚É‚O‚ª‘ã“ü‚³‚ê‚Ü‚·B
+
+2. [OUT] •Ï”@F@capcntptr
+@@ƒgƒ‰ƒbƒLƒ“ƒO‚ªŠJŽn‚³‚ê‚Ä‚©‚ç‰½‰ñE3DKinectSetSkelPos‚ðŒÄ‚Ño‚µ‚½‚©‚ð‘ã“ü‚µ‚Ü‚·B
+
+
+
+
+
+ƒo[ƒWƒ‡ƒ“ : ver5.5.0.0
+
+%index
+E3DKinectGetSkelPos
+Kinect‚ÅƒLƒƒƒvƒ`ƒƒ‚µ‚½ƒ{[ƒ“‚ÌˆÊ’u‚ðŽæ“¾‚µ‚Ü‚·B
+%group
+Easy3D For HSP3 : Kinect
+
+%prm
+p1,p2
+p1 : [OUT] •Ï”@F@posptrd
+p2 : [OUT] •Ï”@F@getflagptr
+
+%inst
+Kinect‚ÅƒLƒƒƒvƒ`ƒƒ‚µ‚½ƒ{[ƒ“‚ÌˆÊ’u‚ðŽæ“¾‚µ‚Ü‚·B
+ƒ{[ƒ“‚Ì–¼‘O‚Íusercoef.h‚ÉSKEL_*‚Å’è‹`‚³‚ê‚Ä‚¢‚Ü‚·B
+
+posptr‚É‚Í
+ddim pos, 3, SKEL_MAX
+‚Å’è‹`‚µ‚½pos‚ðŽw’è‚µ‚Ä‚­‚¾‚³‚¢B
+
+ˆÊ’u‚Íƒgƒ‰ƒbƒLƒ“ƒO‚ªŠJŽn‚³‚ê‚Ä‚¢‚È‚¢‚ÆŽæ“¾‚Å‚«‚Ü‚¹‚ñB
+
+
+
+
+¨ˆø”
+1. [OUT] •Ï”@F@posptrd
+@@ŽÀ”Œ^‚Ì”z—ñ‚Ì•Ï”B
+@@ˆÊ’u‚ðŠi”[‚·‚é”z—ñ‚ðŽw’è‚µ‚Ä‚­‚¾‚³‚¢BÚ‚µ‚­‚Í‘O‹L‚ð‚²——‚­‚¾‚³‚¢B
+
+2. [OUT] •Ï”@F@getflagptr
+@@ˆÊ’u‚ªŽæ“¾‚Å‚«‚½‚ç‚P‚ªo—ˆ‚È‚©‚Á‚½‚ç‚O‚ª‘ã“ü‚³‚ê‚Ü‚·B
+ƒgƒ‰ƒbƒLƒ“ƒOó‘Ô‚Å‚È‚¢‚ÆˆÊ’u‚ÍŽæ“¾‚Å‚«‚Ü‚¹‚ñB
+
+
+
+
+ƒo[ƒWƒ‡ƒ“ : ver5.5.0.0
+
+%index
+E3DKinectSetSkelPos
+E3DKinectGetSkelPos‚ÅŽæ“¾‚µ‚½ƒ{[ƒ“‚ÌˆÊ’u‚ð
+ƒ{[ƒ“‚ÌŽp¨î•ñ‚É•ÏŠ·‚µ‚Ä‚©‚çƒLƒƒƒ‰ƒNƒ^[‚É“K‰ž‚µ‚Ü‚·B
+%group
+Easy3D For HSP3 : Kinect
+
+%prm
+p1,p2,p3,p4
+p1 : [IN] •Ï”‚Ü‚½‚ÍA”’l@F@kinectflag
+p2 : [IN] •Ï”‚Ü‚½‚ÍA”’l@F@posmode
+p3 : [IN] •Ï”@F@posptr
+p4 : [OUT] •Ï”@F@framenoptr
+
+%inst
+E3DKinectGetSkelPos‚ÅŽæ“¾‚µ‚½ƒ{[ƒ“‚ÌˆÊ’u‚ð
+ƒ{[ƒ“‚ÌŽp¨î•ñ‚É•ÏŠ·‚µ‚Ä‚©‚çƒLƒƒƒ‰ƒNƒ^[‚É“K‰ž‚µ‚Ü‚·B
+
+Kinect‚Æ‚¢‚Á‚µ‚å‚ÉŽg‚í‚È‚¢•û–@‚à‚ ‚è‚Ü‚·B
+bullet‚È‚Ç‚ÅŒvŽZ‚µ‚½ƒ{[ƒ“‚ÌˆÊ’u‚ðƒLƒƒƒ‰ƒNƒ^[‚É“K—p‚·‚éê‡‚Íkinectflag‚É‚O‚ðŽw’è‚µ‚Ä‚­‚¾‚³‚¢B‚»‚Ìê‡‚Í‚±‚Ì–½—ß‚ðŒÄ‚Ô‘O‚É‚P‰ñE3DKinectSetChara‚ðŒÄ‚Ô•K—v‚ª‚ ‚è‚Ü‚·B
+
+
+
+
+
+¨ˆø”
+1. [IN] •Ï”‚Ü‚½‚ÍA”’l@F@kinectflag
+@@Kinect‚Æ‚¢‚Á‚µ‚å‚ÉŽg‚¤ê‡‚Í‚P‚ðAKinectˆÈŠO‚ÅŽg‚¤ê‡‚Í‚O‚ðŽw’è‚µ‚Ä‚­‚¾‚³‚¢B
+
+2. [IN] •Ï”‚Ü‚½‚ÍA”’l@F@posmode
+@@‘S‘ÌˆÚ“®‚ÌŽp¨‚ð‚Ç‚¤ˆ—‚·‚é‚©‚ðŽw’è‚µ‚Ü‚·B
+@@POSMODE_TOPOFJOINT‚ðŽw’è‚·‚é‚Æ‘S‘ÌˆÚ“®‚ðˆê”Ôe‚Ìƒ{[ƒ“‚ÌŽp¨‚ÉŠi”[‚µ‚Ü‚·B
+@@POSMODE_GLOBAL‚ðŽw’è‚·‚é‚Æ‘S‘ÌˆÚ“®‚ðƒLƒƒƒ‰ƒNƒ^[‚ÌƒOƒ[ƒoƒ‹‚ÌˆÊ’uî•ñ‚ÉŠi”[‚µ‚Ü‚·B‚Â‚Ü‚èE3DGetPos‚Å‚±‚Ìî•ñ‚ðŽæ“¾‚Å‚«‚Ü‚·B
+@@POSMODE_ZERO‚ðŽw’è‚·‚é‚Æ‘S‘ÌˆÚ“®‚ðƒLƒƒƒ“ƒZƒ‹‚µ‚Ü‚·B
+
+3. [IN] •Ï”@F@posptr
+@@ŽÀ”Œ^‚Ì”z—ñ‚Ì•Ï”B
+@@ƒ{[ƒ“‚ÌˆÊ’uî•ñ‚ðŽw’è‚µ‚Ü‚·B
+@@ddim pos, 3, SKEL_MAX;‚Ìpos‚ðŽw’è‚µ‚Ü‚·B
+
+4. [OUT] •Ï”@F@framenoptr
+@@Ä¶‚³‚ê‚éƒtƒŒ[ƒ€”Ô†‚ª‘ã“ü‚³‚ê‚Ü‚·B
+
+
+
+
+
+ƒo[ƒWƒ‡ƒ“ : ver5.5.0.0
+
+%index
+E3DKinectRenderSilhouette
+Kinect‚ÅƒLƒƒƒvƒ`ƒƒ‚µ‚Ä‚¢‚éƒvƒŒƒCƒ„[‚ÌƒVƒ‹ƒGƒbƒg‚ð‚QD•`‰æ‚·‚é–½—ß‚Å‚·B
+%group
+Easy3D For HSP3 : Kinect
+
+%prm
+p1,p2
+p1 : [IN] •Ï”‚Ü‚½‚ÍA”’l@F@withalpha
+p2 : [IN] •Ï”@F@tposptr
+
+%inst
+Kinect‚ÅƒLƒƒƒvƒ`ƒƒ‚µ‚Ä‚¢‚éƒvƒŒƒCƒ„[‚ÌƒVƒ‹ƒGƒbƒg‚ð‚QD•`‰æ‚·‚é–½—ß‚Å‚·B
+
+E3DBeginScene‚ÆE3DEndScene‚ÌŠÔ‚É‹Lq‚µ‚Ü‚·B
+
+
+
+
+¨ˆø”
+1. [IN] •Ï”‚Ü‚½‚ÍA”’l@F@withalpha
+@@”¼“§–¾‚Å•`‰æ‚·‚é‚Æ‚«‚Í‚PA•s“§–¾‚Å•`‰æ‚·‚é‚Æ‚«‚Í‚O‚ðŽw’è‚µ‚Ü‚·B
+
+2. [IN] •Ï”@F@tposptr
+@@ŽÀ”Œ^‚Ì”z—ñ‚Ì•Ï”B
+@@•`‰æ‚·‚éƒGƒŠƒAiŽlŠpj‚ÌŽl‹÷‚Ì’l‚ðŽw’è‚µ‚Ü‚·B
+
+@@tpos(0)‚Étop‚ð
+@@tpos(1)‚Éleft‚ð
+@@tpos(2)‚Ébottom‚ð
+@@tpos(3)‚Éright‚ðŽw’è‚µ‚Ü‚·B
+
+
+@@‰æ–Ê‚Ì’†S‚ª‚O‚Å‚·B
+@@‰¡‚Í¶‚ª-1.0f‰E‚ª+1.0f
+@@ã‰º‚Íã‚ª1.0f‰º‚ª-1.0f‚Å‚·B
+
+
+
+
+ƒo[ƒWƒ‡ƒ“ : ver5.5.0.0
 

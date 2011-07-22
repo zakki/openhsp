@@ -513,6 +513,248 @@
 #cmd E3DGetVersion $1D6
 #cmd E3DSetJointInitialPos $1D7
 
+#cmd E3DSetLightId2OfBumpMap $1D8
+#cmd E3DSetLightId3OfBumpMap $1D9
+
+#cmd E3DGetCharaDir $1DA
+#cmd E3DGetStrSizeByFontID $1DB
+#cmd E3DSetUVBatch $1DC
+#cmd E3DSetPresentInterval $1DD
+#cmd E3DGetScreenPosDouble $1DE
+#cmd E3DSetBillboardSize $1DF
+#cmd E3DSetHeightFogParams $1E0
+#cmd E3DSetTextureToBG $1E1
+#cmd E3DGetTextureFromBG $1E2
+#cmd E3DChangeMoaIdling $1E3
+
+#cmd E3DSetMotionBlur $1E4
+#cmd E3DSetBeforeBlur $1E5
+#cmd E3DRenderMotionBlur $1E6 
+#cmd E3DInitBeforeBlur $1E7
+#cmd E3DSetMotionBlurPart $1E8
+
+#cmd E3DBlurTexture16Box $1E9
+#cmd E3DBlurTexture9Corn $1EA
+#cmd E3DBlurTextureGauss5x5 $1EB
+#cmd E3DBlurTextureGauss $1EC
+#cmd E3DBlendRTTexture $1ED
+
+#cmd E3DSetClearCol $1EE
+#cmd E3DSetMotionBlurMinAlpha $1EF
+
+#cmd E3DRenderGlow	$1F0
+#cmd E3DSetMaterialGlowParams $1F1
+#cmd E3DGetMaterialTransparent $1F2
+#cmd E3DSetMaterialTransparent $1F3
+#cmd E3DGetMaterialGlowParams $1F4
+
+#cmd E3DChkHDR $1F5
+#cmd E3DSetHDRLightDiffuse $1F6
+#cmd E3DSetHDRLightSpecular $1F7
+#cmd E3DDownScaleRTTexture4x4 $1F8
+#cmd E3DDownScaleRTTexture2x2 $1F9
+#cmd E3DCreateToneMapTexture $1FA
+#cmd E3DRenderToneMap $1FB
+#cmd E3DBrightPassRTTextureHDR $1FC
+#cmd E3DDestroyToneMapTexture $1FD
+#cmd E3DRenderHDRFinal $1FE
+#cmd E3DDisablePostEffect $1FF
+#cmd E3DCheckSpec $200
+
+#cmd E3DMonoRTTexture $201
+#cmd E3DCbCrRTTexture $202
+
+#cmd E3DShaderConstOffset16 $203
+#cmd E3DShaderConstWeight16 $204
+#cmd E3DShaderConstUserFL4 $205
+#cmd E3DShaderConstUserTex $206
+#cmd E3DCallUserShader $207
+
+#cmd E3DCreateBone $208
+#cmd E3DDestroyBone $209
+
+#cmd E3DGetMorphBaseNum $20A
+#cmd E3DGetMorphBaseInfo $20B
+#cmd E3DGetMorphTargetInfo $20C
+#cmd E3DGetMorphKeyNum $20D
+#cmd E3DGetMorphKey $20E
+#cmd E3DGetCurMorphInfo $20F
+#cmd E3DCreateMorph $210
+#cmd E3DAddMorphTarget $211
+#cmd E3DSetMorphKey $212
+#cmd E3DDestroyMorphKey $213
+
+#cmd E3DGetToon1MaterialNum $214
+#cmd E3DGetToon1Material $215
+#cmd E3DSetToon1Name $216
+#cmd E3DSetToon1Diffuse $217
+#cmd E3DSetToon1Specular $218
+#cmd E3DSetToon1Ambient $219
+#cmd E3DSetToon1NL $21A
+#cmd E3DSetToon1Edge0 $21B
+
+#cmd E3DChkConfLineAndFacePart $21C
+
+#cmd E3DLoadCameraFile $21D
+#cmd E3DDestroyCameraAnim $21E
+#cmd E3DSaveCameraFile $21F
+#cmd E3DSetCameraAnimNo $220
+#cmd E3DGetCameraAnimNo $221
+#cmd E3DSetCameraFrameNo $222
+#cmd E3DGetCameraFrameNo $223
+#cmd E3DSetNewCamera $224
+#cmd E3DSetNextCameraAnimFrameNo $225
+#cmd E3DGetNextCameraAnimFrameNo $226
+#cmd E3DCreateNewCameraAnim $227
+#cmd E3DSetCameraFrameNum $228
+#cmd E3DGetCameraFrameNum $229
+#cmd E3DSetCameraAnimName $22A
+#cmd E3DGetCameraAnimName $22B
+#cmd E3DSetCameraAnimType $22C
+#cmd E3DGetCameraAnimType $22D
+#cmd E3DSetCameraKey $22E
+#cmd E3DGetCameraKey $22F
+#cmd E3DDeleteCameraKey $230
+#cmd E3DGetCameraKeyframeNoRange $231
+#cmd E3DSetCameraSWKey $232
+#cmd E3DGetCameraSWKey $233
+#cmd E3DDeleteCameraSWKey $234
+#cmd E3DGetCameraSWKeyframeNoRange $235
+
+#cmd E3DSetOrtho $236
+
+#cmd E3DLoadGPFile $237
+#cmd E3DDestroyGPAnim $238
+#cmd E3DSaveGPFile $239
+#cmd E3DSetGPAnimNo $23A
+#cmd E3DGetGPAnimNo $23B
+#cmd E3DSetGPFrameNo $23C
+#cmd E3DGetGPFrameNo $23D
+#cmd E3DSetNewGP $23E
+#cmd E3DSetNextGPAnimFrameNo $23F
+#cmd E3DGetNextGPAnimFrameNo $240
+#cmd E3DCreateNewGPAnim $241
+#cmd E3DSetGPFrameNum $242
+#cmd E3DGetGPFrameNum $243
+#cmd E3DSetGPAnimName $244
+#cmd E3DGetGPAnimName $245
+#cmd E3DSetGPAnimType $246
+#cmd E3DGetGPAnimType $247
+#cmd E3DSetGPKey $248
+#cmd E3DGetGPKey $249
+#cmd E3DDeleteGPKey $24A
+#cmd E3DGetGPKeyframeNoRange $24B
+#cmd E3DCalcGPFullFrame $24C
+#cmd E3DSetGPGroundHSID $24D
+#cmd E3DGetGPGroundHSID $24E
+
+#cmd E3DLoadMOEFile $24F
+#cmd E3DDestroyMOEAnim $250
+#cmd E3DSaveMOEFile $251
+#cmd E3DSetMOEAnimNo $252
+#cmd E3DGetMOEAnimNo $253
+#cmd E3DSetMOEFrameNo $254
+#cmd E3DGetMOEFrameNo $255
+#cmd E3DSetNewMOE $256
+#cmd E3DSetNextMOEAnimFrameNo $257
+#cmd E3DGetNextMOEAnimFrameNo $258
+#cmd E3DCreateNewMOEAnim $259
+#cmd E3DSetMOEFrameNum $25A
+#cmd E3DGetMOEFrameNum $25B
+#cmd E3DSetMOEAnimName $25C
+#cmd E3DGetMOEAnimName $25D
+#cmd E3DSetMOEAnimType $25E
+#cmd E3DGetMOEAnimType $25F
+#cmd E3DGetMOEKeyframeNoRange $260
+#cmd E3DGetMOEElemNum $261
+#cmd E3DGetMOEElem $262
+#cmd E3DAddMOEElem $263
+#cmd E3DDeleteMOEElem $264
+#cmd E3DSetMOEKeyIdling $265
+#cmd E3DGetMOEKeyIdling $266
+#cmd E3DDeleteMOEKey $267
+#cmd E3DCalcMOEFullFrame $268
+
+#cmd E3DUpdateSound $269
+#cmd E3DGetSoundSamplesPlayed $26A
+#cmd E3DSet3DSoundEmiDist $26B 
+#cmd E3DFadeSound $26C
+
+#cmd E3DGlobalToLocalParBone $26D
+#cmd E3DLocalToGlobalParBone $26E
+
+#cmd E3DGetBoneTra $26F
+#cmd E3DGetBoneScale $270
+#cmd E3DSetBoneTra $271
+#cmd E3DSetBoneScale $272
+#cmd E3DCreateMotionPoint $273
+#cmd E3DSet3DSoundDopplerScaler $274
+#cmd E3DGet3DSoundDopplerScaler $275
+#cmd E3DLoadMQOFileAsChara $276
+
+#cmd E3DLoadSSF $277
+#cmd E3DDestroyAllSoundSet $278
+#cmd E3DGetSoundSetNum $279
+#cmd E3DGetSoundSetInfo $27A
+#cmd E3DGetSoundSetBGM $27B
+#cmd E3DLoadSAF $27C
+#cmd E3DDestroyAllSndAnim $27D
+#cmd E3DGetSndAnimFrameNum $27E
+#cmd E3DGetSndAnimBGM $27F
+#cmd E3DGetSndAnimFPS $280
+#cmd E3DGetSndAnimMode $281
+#cmd E3DStartSndAnim $282
+#cmd E3DSetSndAnimFrameNo $283
+#cmd E3DStopSndAnim $284
+#cmd E3DGetSoundTotalTime $285
+#cmd E3DConvSoundSampleToFrame $286
+#cmd E3DGetSoundStartCnt $287
+#cmd E3DGetSoundEndCnt $288
+#cmd E3DPCWait $289
+#cmd E3DSetCameraOffset $28A
+
+#cmd E3DAllClearInfElem $28B
+#cmd E3DExtractParts $28C
+#cmd E3DSetGPOffset $28D
+#cmd E3DSelectLightType $28E
+#cmd E3DRenderZandN	$28F
+
+#cmd E3DGetMaterialNum $290
+#cmd E3DGetMaterialInfo $291
+
+#cmd E3DGetMOELocalMotionFrameNo $292
+#cmd E3DGetMOELocalNextMotionFrameNo $293
+
+#cmd E3DSetMotionBlurMaxAlpha $294
+#cmd E3DSetMoeKeyGoOnFlag $295
+#cmd E3DGetMoeKeyGoOnFlag $296
+#cmd E3DSetMaterial1stTex $297
+#cmd E3DGetMaterial1stTex $298
+#cmd E3DGetMOATrunkNotComID	$299
+#cmd E3DSetMOATrunkNotComID $29A
+#cmd E3DGetZa3Euler $29B
+#cmd E3DSetZa3Euler $29C
+#cmd E3DGetMOELocalMotionFrameNoML $29D
+#cmd E3DGetMOELocalNextMotionFrameNoML $29E
+#cmd E3DSetDefaultCamera $29F
+#cmd E3DSetDefaultGP $300
+#cmd E3DValidHsid $301
+#cmd E3DGetInViewFlag $302
+#cmd E3DWriteBmpFromSurface $303
+
+
+#cmd E3DKinectLoadLib $304
+#cmd E3DKinectSetChara $305
+#cmd E3DKinectStartCapture $306
+#cmd E3DKinectEndCapture $307
+#cmd E3DKinectIsTracking $308
+#cmd E3DKinectGetSkelPos $309
+#cmd E3DKinectSetSkelPos $30A
+#cmd E3DKinectRenderSilhouette $30B
+
+#cmd E3DGetMotionJumpFrame $30C
+#cmd E3DSetMotionJumpFrame $30D
+
 ;////////////////////////////////////////////////////////////
 ; E3DGetInfElem, E3DSetInfElemで使用する定数
 ;////////////////////////////////////////////////////////////
@@ -549,6 +791,7 @@
 #define global COL_MQCLASSIC 4
 #define global COL_TOON0	5
 #define global COL_TOON1	6
+#define global COL_PPHONG	7
 
 #define global OVERFLOW_CLAMP 0
 #define global OVERFLOW_SCALE 1
@@ -1052,6 +1295,7 @@ POW2X = 1,2,4,8,16,32,64,128,256,512,1024,2048,4096,8192,16384,32768,65536,13107
 #define global SHADOWIN_PROJ	0
 #define global SHADOWIN_ALWAYS	1
 #define global SHADOWIN_NOT		2
+#define global SHADOWIN_EXCLUDE	3
 
 ;//////////////////////////////////////////
 ; E3DSetSymInfElemで使用
@@ -1066,6 +1310,209 @@ POW2X = 1,2,4,8,16,32,64,128,256,512,1024,2048,4096,8192,16384,32768,65536,13107
 #define global QUATYPE_NUM	0
 #define global QUATYPE_NAME	1
 
+;//////////////////////////////////////////
+; E3DSetMotionBlurで使用
+;//////////////////////////////////////////
+#define global BLUR_NONE	0
+#define global BLUR_WORLD	1
+#define global BLUR_CAMERA	2
 
+;//////////////////////////////////////////
+; E3DBlendRTTextureで使用
+;//////////////////////////////////////////
+
+#define global D3DBLENDOP_ADD			1
+#define global D3DBLENDOP_SUBTRACT		2
+#define global D3DBLENDOP_REVSUBTRACT	3
+
+#define global D3DBLEND_ZERO				1
+#define global D3DBLEND_ONE					2
+#define global D3DBLEND_SRCCOLOR			3
+#define global D3DBLEND_INVSRCCOLOR			4
+#define global D3DBLEND_SRCALPHA			5
+#define global D3DBLEND_INVSRCALPHA			6
+#define global D3DBLEND_DESTALPHA			7
+#define global D3DBLEND_INVDESTALPHA		8
+#define global D3DBLEND_DESTCOLOR			9
+#define global D3DBLEND_INVDESTCOLOR		10
+#define global D3DBLEND_SRCALPHASAT			11
+#define global D3DBLEND_BOTHSRCALPHA		12
+#define global D3DBLEND_BOTHINVSRCALPHA		13
+#define global D3DBLEND_BLENDFACTOR			14
+#define global D3DBLEND_INVBLENDFACTOR		15
+
+;///////////////////////////////////////////
+; E3DSetMaterialGlowParams
+;///////////////////////////////////////////
+
+#define global GLOW_NONE	0
+#define global GLOW_NORMAL	1
+#define global GLOW_ALPHA	2
+
+;///////////////////////////////////////////
+; E3DGetMorphBaseInfo
+;///////////////////////////////////////////
+
+#define global MBI_DISPNO		0
+#define global MBI_BONENO		1
+#define global MBI_TARGETNUM	2
+#define global MBI_MAX			3
+
+;///////////////////////////////////////////
+; E3DGetToon1Material
+;///////////////////////////////////////////
+#define global TMD_DIFFUSE_R		0
+#define global TMD_DIFFUSE_G		1
+#define global TMD_DIFFUSE_B		2
+#define global TMD_SPECULAR_R	3
+#define global TMD_SPECULAR_G	4
+#define global TMD_SPECULAR_B	5
+#define global TMD_AMBIENT_R		6
+#define global TMD_AMBIENT_G		7
+#define global TMD_AMBIENT_B		8
+#define global TMD_DARKNL		9
+#define global TMD_BRIGHTNL		10
+#define global TMD_EDGECOL0_R	11
+#define global TMD_EDGECOL0_G	12
+#define global TMD_EDGECOL0_B	13
+#define global TMD_EDGEWIDTH0	14
+#define global TMD_MAX			15
+
+#define global TMI_VALID0		0
+#define global TMI_INV0			1
+#define global TMI_MAX			2
+
+;////////////////////////////////////////////
+; CameraAnime
+;////////////////////////////////////////////
+
+#define global CAMI_LOOKTYPE	0
+#define global CAMI_HSID		1
+#define global CAMI_BONENO		2
+#define global CAMI_ORTHO		3
+#define global CAMI_INTERP		4
+#define global CAMI_MAX			5
+
+#define global CAMD_POSX		0
+#define global CAMD_POSY		1
+#define global CAMD_POSZ		2
+#define global CAMD_TARX		3
+#define global CAMD_TARY		4
+#define global CAMD_TARZ		5
+#define global CAMD_UPX			6
+#define global CAMD_UPY			7
+#define global CAMD_UPZ			8
+#define global CAMD_DIST		9
+#define global CAMD_NEARZ		10
+#define global CAMD_FARZ		11
+#define global CAMD_FOV			12
+#define global CAMD_ORTHOSIZE	13
+#define global CAMD_MAX			14
+
+#define global CAML_NORMAL		0
+#define global CAML_LOOKONCE	1
+#define global CAML_LOCK		2
+#define global CAML_MAX			3
+
+;/////////////////////////////////////////////
+; GPAnim
+;/////////////////////////////////////////////
+
+#define global GPI_ONGMODE		0
+#define global GPI_INTERP		1
+#define global GPI_MAX			2
+
+#define global GPD_POSX			0
+#define global GPD_POSY			1
+#define global GPD_POSZ			2
+#define global GPD_ROTX			3
+#define global GPD_ROTY			4
+#define global GPD_ROTZ			5
+#define global GPD_RAYY			6
+#define global GPD_RAYLENG		7
+#define global GPD_OFFSETY		8
+#define global GPD_MAX			9
+
+#define global GROUND_NONE		0
+#define global GROUND_ONE		1
+#define global GROUND_ON		2
+#define global GROUND_MAX		3
+
+;//////////////////////////////////////////
+; MOEAnim
+;//////////////////////////////////////////
+
+#define global MOELISTLENG	15
+
+#define global MOEI_LISTNUM		0
+#define global MOEI_NOTLISTNUM	1
+#define global MOEI_EVENTNO		2
+#define global MOEI_MAX			3
+
+;////////////////////////////////////////////
+; MaterialInfo
+;/////////////////////////////////////////////
+
+#define global MII_MATNO	0
+#define global MII_DIFFR	1
+#define global MII_DIFFG	2
+#define global MII_DIFFB	3
+#define global MII_SPCR	4
+#define global MII_SPCG	5
+#define global MII_SPCB	6
+#define global MII_AMBR	7
+#define global MII_AMBG	8
+#define global MII_AMBB	9
+#define global MII_EMIR	10
+#define global MII_EMIG	11
+#define global MII_EMIB	12
+#define global MII_MAX		13
+
+#define global MID_ALPHA	0
+#define global MID_POWER	1
+#define global MID_MAX		2
+
+/***
+typedef struct tag_materialinfo
+{
+	int materialno;
+	char name[256];
+	float alpha;
+	E3DCOLOR4UC diffuse;
+	E3DCOLOR4UC specular;
+	E3DCOLOR4UC ambient;
+	E3DCOLOR4UC emissive;
+	float power;
+} MATERIALINFO;
+***/
+
+;/////////////////////////////////
+; for kinect
+;////////////////////////////////
+
+#define global CAPMODE_ALL	0
+#define global CAPMODE_ONE	1
+
+#define global POSMODE_TOPOFJOINT	0
+#define global POSMODE_GLOBAL		1
+#define global POSMODE_ZERO			2
+
+#define global SKEL_TOPOFJOINT		0
+#define global SKEL_TORSO			1
+#define global SKEL_LEFT_HIP		2
+#define global SKEL_LEFT_KNEE		3
+#define global SKEL_LEFT_FOOT		4
+#define global SKEL_RIGHT_HIP		5
+#define global SKEL_RIGHT_KNEE		6
+#define global SKEL_RIGHT_FOOT		7
+#define global SKEL_NECK			8
+#define global SKEL_HEAD			9
+#define global SKEL_LEFT_SHOULDER	10
+#define global SKEL_LEFT_ELBOW		11
+#define global SKEL_LEFT_HAND		12
+#define global SKEL_RIGHT_SHOULDER	13
+#define global SKEL_RIGHT_ELBOW		14
+#define global SKEL_RIGHT_HAND		15
+#define global SKEL_MAX				16
 
 

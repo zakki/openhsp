@@ -1,0 +1,109 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<HTML>
+<HEAD>
+<META name="GENERATOR" content="IBM WebSphere Studio Homepage Builder Version 11.0.0.0 for Windows">
+<META http-equiv="Content-Type" content="text/html; charset=Shift_JIS">
+<META http-equiv="Content-Style-Type" content="text/css">
+<TITLE></TITLE>
+</HEAD>
+<BODY>
+<P><FONT size="+2"><B>Version 5.3.0.0での変更点</B></FONT><BR>
+<BR>
+<FONT color="#ff0000">Windows XP以降（XP含む）でしか実行できなくなりました。</FONT><BR>
+<BR>
+サウンド機能をDirectMusic、DirectSoundからXAudio2, X3DAudioに変えました。<BR>
+DirectMusic, DirectSoundはWin Vista以降の環境でハードウェアを使用することが出来ませんが<BR>
+XAudio2, X3DAudioは新しい環境でもハードウェアを使用して音を鳴らすことが出来ます。<BR>
+<BR>
+<BR>
+音の命令の互換性が一部失われます。<BR>
+　　新規命令<BR>
+　　E3DUpdateSound<BR>
+　　E3DGetSoundSamplesPlayed<BR>
+<BR>
+　　引数が変わった命令<BR>
+　　E3DLoadSound<BR>
+　　E3DPlaySound<BR>
+　　E3DStopSound<BR>
+　　E3DSetSoundVolume（デシベル指定ではなく小数の倍率指定になります）<BR>
+　　E3DGetSoundVolume<BR>
+　　E3DLoadSoundFromBuf<BR>
+<BR>
+　　機能しなくなった命令<BR>
+　　E3DSetSoundLoop<BR>
+　　E3DSetSoundTempo<BR>
+　　E3DSet3DSoundListener<BR>
+　　E3DSet3DSoundDistance<BR>
+　　E3DSetStartPointOfSound<BR>
+　　E3DGetMidiMusicTime<BR>
+　　E3DGetReferenceTime<BR>
+<BR>
+　　引数の意味が変わった命令<BR>
+　　E3DSetSoundFrequency<BR>
+　　E3DGetSoundFrequency<BR>
+　　　　引数は周波数の値そのものではなく、ソースの周波数との比率になります。<BR>
+<BR>
+　　再生開始時間やループの回数は再生時に指定するようになります。<BR>
+　　再生時間取得はサンプル（周波数）単位になります。<BR>
+<BR>
+　　周波数や音量はステレオサウンドでも３Dサウンドでも個別に設定出来るようになりました。<BR>
+<BR>
+　　あとの音命令は同じ仕様。<BR>
+<BR>
+<BR>
+oggの再生が可能になりました。<BR>
+oggは使用ライブラリの関係上ステレオサウンドのみしか使えません。<BR>
+oggはFromBuf命令も使えません。<BR>
+<BR>
+３Dサウンドはモノラルのみしか使えません。<BR>
+<BR>
+<BR>
+<FONT color="#ff0000"><B>ver5.3.0.0からVC90ランタイムが必要になります。</B></FONT><BR>
+Visual Studio (C++) 2008 SP1をインストールしていない人は<BR>
+vcredistをインストールしてください。<BR>
+<BR>
+３２ビット版の人はvcredist_x86.exeを<BR>
+６４ビット版の人はvcredist_x64.exeを<BR>
+管理者権限で実行してください。<BR>
+これらのファイルはWin32版では「dll」フォルダに<BR>
+HSP版では「(重要)VC90Install」フォルダに入っています。<BR>
+<BR>
+<BR>
+１回インストールすればそれ以降のexe実行は必要ありません。<BR>
+<BR>
+<BR>
+////////////// 追記　2010/04/01 /////////////////////<BR>
+<BR>
+DirectX SDKのバージョンが変わりました。<BR>
+<BR>
+HSP版の人はランタイムだけ、<BR>
+Win３２版の人はSDKをインストールする必要があります。<BR>
+<BR>
+SDKをインストールするにはここ。<BR>
+<A href="http://www.microsoft.com/downloads/details.aspx?displaylang=en&amp;FamilyID=b66e14b8-8505-4b17-bf80-edb2df5abad4">http://www.microsoft.com/downloads/details.aspx?displaylang=en&amp;FamilyID=b66e14b8-8505-4b17-bf80-edb2df5abad4</A><BR>
+<BR>
+ランタイムをインストールするにはここ。<BR>
+<A href="http://www.microsoft.com/downloads/details.aspx?familyid=04AC064B-00D1-474E-B7B1-442D8712D553&amp;displaylang=en">http://www.microsoft.com/downloads/details.aspx?familyid=04AC064B-00D1-474E-B7B1-442D8712D553&amp;displaylang=en</A><BR>
+<BR>
+DirectXのバージョンはSeleneと同じ（August 2009）にしました。<BR>
+<BR>
+vc90ランタイムについては<BR>
+Windows Installer 3.0も必要なようです。<BR>
+<A href="http://www.microsoft.com/downloads/details.aspx?familyid=5FBC5470-B259-4733-A914-A956122E08E8&amp;displaylang=en">http://www.microsoft.com/downloads/details.aspx?familyid=5FBC5470-B259-4733-A914-A956122E08E8&amp;displaylang=en</A><BR>
+<BR>
+これでも解決しないようでしたら<BR>
+espresso3389の日記を読んでみてください。<BR>
+<A href="http://d.hatena.ne.jp/espresso3389/20090509/1241856483">http://d.hatena.ne.jp/espresso3389/20090509/1241856483</A><BR>
+<BR>
+///////////////// さらに追記　/////////////////////////<BR>
+<BR>
+VC90ランタイムのインストールにはWindows Installerが必要になります。<BR>
+これはWindow Updateでインストールされると思うので<BR>
+エラーが出るような人はWindows Update後にVC90ランタイムのインストールを試みてください。<BR>
+<BR>
+<BR>
+<A href="index.htm">トップページに戻る</A><BR>
+<BR>
+</P>
+</BODY>
+</HTML>
