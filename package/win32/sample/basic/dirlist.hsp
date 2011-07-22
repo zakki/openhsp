@@ -17,5 +17,4 @@
 	stop
 *chg
 	chdir ad
-	if stat : dialog "ERROR!"
 	goto *getdir

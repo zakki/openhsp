@@ -1,13 +1,13 @@
 ------------------------------------------------------------------------------
-HGIMG ver3.21   REFERENCE MANUAL       High Performance Graphic Image Plugin  
-ＨＳＰ拡張DLLリファレンス             copyright 2001-2010 (c) onion software  
+HGIMG ver3.3    REFERENCE MANUAL       High Performance Graphic Image Plugin  
+ＨＳＰ拡張DLLリファレンス             copyright 2001-2011 (c) onion software  
 ------------------------------------------------------------------------------
 
 ・はじめに
 
-	HGIMG3は、Hot Soup Processor ver3.2以降とともに使用することで、
+	HGIMG3は、Hot Soup Processor ver3.3以降とともに使用することで、
 	画面の描画に関する様々な機能拡張を提供します。
-	HGIMG3は、Windows98、Me、2000、XP、Vista以降のDirectX8以上が
+	HGIMG3は、Windows98、Me、2000、XP、Vista、7以降のDirectX8以上が
 	インストールされた環境で動作します。
 
 
@@ -75,7 +75,7 @@ HGIMG ver3.21   REFERENCE MANUAL       High Performance Graphic Image Plugin
 
 	--------------------------------------------------------------------------------
 	HGIMG3 : Made with base technology of OpenHSP
-	Copyright (C) 1997-2010, Onion Software/onitama.
+	Copyright (C) 1997-2011, Onion Software/onitama.
 	All rights reserved.
 	OggVorvis形式のファイルデコードに以下のライブラリを使用しています
 	libvorbis : Copyright (c) 2002-2004 Xiph.org Foundation
@@ -151,6 +151,10 @@ HGIMG ver3.21   REFERENCE MANUAL       High Performance Graphic Image Plugin
 
 
 ・更新履歴
+
+	2011/07/07 ( Ver3.3β3 )
+
+		objgetfv命令で配列の情報が正しく設定されないことがある不具合を修正
 
 	2010/04/28 ( Ver3.21a )
 

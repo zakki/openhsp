@@ -1,6 +1,6 @@
 ------------------------------------------------------------------------------
-OBAQ for HSP ver3.21 REFERENCE MANUAL               HSP : Hot Soup Processor  
-ＨＳＰ拡張拡張DLLリファレンス    Copyright 2010 (c) Zener Works/kuni/onitama  
+OBAQ for HSP ver3.3 REFERENCE MANUAL                HSP : Hot Soup Processor  
+ＨＳＰ拡張拡張DLLリファレンス    Copyright 2011 (c) Zener Works/kuni/onitama  
 ------------------------------------------------------------------------------
 
 ・はじめに
@@ -374,7 +374,7 @@ OBAQ for HSP ver3.21 REFERENCE MANUAL               HSP : Hot Soup Processor
 ・注意点
 
 	OBAQ.DLLは、HSP3.EXEと同時に使用されるプラグインファイルです。
-	使用するHSPは、ver3.2以上をお使い下さい。ver2.61やそれ以前のHSPには
+	使用するHSPは、ver3.3以上をお使い下さい。ver2.61やそれ以前のHSPには
 	対応していませんのでご注意下さい。
 	EXEファイルを作成した場合でも、OBAQ.DLLをEXEファイルと同じディレクトリ
 	に置かないと動作しません。また、packfileにDLLを追加することはできません。

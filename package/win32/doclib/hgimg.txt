@@ -1,11 +1,11 @@
 ------------------------------------------------------------------------------
-HGIMG.DLL ver3.2    REFERENCE MANUAL   High Performance Graphic Image Plugin  
-ＨＳＰ拡張DLLリファレンス             copyright 2001-2009 (c) onion software  
+HGIMG.DLL ver3.3    REFERENCE MANUAL   High Performance Graphic Image Plugin  
+ＨＳＰ拡張DLLリファレンス             copyright 2001-2011 (c) onion software  
 ------------------------------------------------------------------------------
 
 ・はじめに
 
-	このDLLは、Hot Soup Processor ver3.2以降とともに使用することで、様々な
+	このDLLは、Hot Soup Processor ver3.3以降とともに使用することで、様々な
 	機能拡張を行なうことのできるプラグインモジュールです。
 	この拡張DLLを使用することにより、新規命令が多数追加され、フルカラー、
 	パレットモードでの2D・3Dグラフィック表示をサポートします。

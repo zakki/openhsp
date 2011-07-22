@@ -1,6 +1,6 @@
 ------------------------------------------------------------------------------
-HGIMG3 2D Elements Editor ver3.2 MANUAL             HSP : Hot Soup Processor  
-ＨＳＰサポートツールリファレンス           copyright 2009 (c) onion software  
+HGIMG3 2D Elements Editor ver3.3 MANUAL             HSP : Hot Soup Processor  
+ＨＳＰサポートツールリファレンス           copyright 2011 (c) onion software  
 ------------------------------------------------------------------------------
 
 ・はじめに

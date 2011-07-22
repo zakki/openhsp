@@ -1,11 +1,11 @@
 ------------------------------------------------------------------------------
-HSPOGG ver3.2 REFERENCE MANUAL                      HSP : Hot Soup Processor  
-ＨＳＰ拡張拡張DLLリファレンス         copyright 2007-2009 (c) onion software  
+HSPOGG ver3.3 REFERENCE MANUAL                      HSP : Hot Soup Processor  
+ＨＳＰ拡張拡張DLLリファレンス         copyright 2007-2011 (c) onion software  
 ------------------------------------------------------------------------------
 
 ・はじめに
 
-	このDLLは、Hot Soup Processor ver3.2以降とともに使用することで、
+	このDLLは、Hot Soup Processor ver3以降とともに使用することで、
 	Direct Soundを使用した波形の再生、及びOggVorbis形式による音楽データの
 	再生を行なうことができるプラグインです。
 

@@ -1,11 +1,11 @@
 ------------------------------------------------------------------------------
-HSPEXT ver3.2  REFERENCE MANUAL                     HSP : Hot Soup Processor  
-ＨＳＰ拡張DLLリファレンス             copyright 1999-2009 (c) onion software  
+HSPEXT ver3.3  REFERENCE MANUAL                     HSP : Hot Soup Processor  
+ＨＳＰ拡張DLLリファレンス             copyright 1999-2011 (c) onion software  
 ------------------------------------------------------------------------------
 
 ・はじめに
 
-	このDLLは、Hot Soup Processor ver3.2以降とともに使用することで、様々な
+	このDLLは、Hot Soup Processor ver3以降とともに使用することで、様々な
 	機能拡張を行なうことのできるプラグインモジュールです。
 	この拡張DLLを使用することで、多くの新規命令が追加され、レジストリ操作、
 	簡易数学関数、シリアル通信、拡張ダイアログ表示、拡張ファイルアクセスなど

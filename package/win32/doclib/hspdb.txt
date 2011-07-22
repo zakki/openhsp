@@ -1,11 +1,11 @@
 ------------------------------------------------------------------------------
-HSPDB ver3.2  REFERENCE MANUAL                      HSP : Hot Soup Processor  
-ＨＳＰ拡張DLLリファレンス             copyright 2004-2009 (c) onion software  
+HSPDB ver3.3  REFERENCE MANUAL                      HSP : Hot Soup Processor  
+ＨＳＰ拡張DLLリファレンス             copyright 2004-2011 (c) onion software  
 ------------------------------------------------------------------------------
 
 ・はじめに
 
-	このDLLは、Hot Soup Processor ver3.2以降とともに使用することで、Windowsの
+	このDLLは、Hot Soup Processor ver3以降とともに使用することで、Windowsの
 	ODBCを経由して各種データベースへのアクセスを可能にするためのプラグインです。
 	この拡張DLLを使用することにより、新規命令が追加されます。
 	HSPDBを使用することにより、Oracle、MS-SQL Server、dBase、Paradoxなど

@@ -1,11 +1,11 @@
 ------------------------------------------------------------------------------
-HSPCMP.DLL ver3.2                                   HSP : Hot Soup Processor  
-ＨＳＰ拡張DLLリファレンス             copyright 1999-2009 (c) onion software  
+HSPCMP.DLL ver3.3                                   HSP : Hot Soup Processor  
+ＨＳＰ拡張DLLリファレンス             copyright 1999-2011 (c) onion software  
 ------------------------------------------------------------------------------
 
 ・はじめに
 
-	このDLLは、Hot Soup Processor ver3.2以降のHSPスクリプトエディタなどで使用
+	このDLLは、Hot Soup Processor ver3.3以降のHSPスクリプトエディタなどで使用
 	可能なHSPコードコンパイラです。
 	HSP本体と組み合わせて、スクリプトからコードコンパイラの機能を呼び出す
 	ことができます。

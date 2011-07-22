@@ -9,7 +9,7 @@
 	sdim fname,128
 	sdim lname,128
 
-	fname="fxshort.as"
+	fname="fxshort.hsp"
 	fxshort lname,fname
 
 	mes "original file name="+fname

@@ -1,11 +1,11 @@
 ------------------------------------------------------------------------------
-HSPDA ver3.2 REFERENCE MANUAL                       HSP : Hot Soup Processor  
-ＨＳＰ拡張DLLリファレンス             copyright 1999-2009 (c) onion software  
+HSPDA ver3.3 REFERENCE MANUAL                       HSP : Hot Soup Processor  
+ＨＳＰ拡張DLLリファレンス             copyright 1999-2011 (c) onion software  
 ------------------------------------------------------------------------------
 
 ・はじめに
 
-	このDLLは、Hot Soup Processor ver3.2以降とともに使用することで、様々な
+	このDLLは、Hot Soup Processor ver3.3以降とともに使用することで、様々な
 	機能拡張を行なうことのできるプラグインモジュールです。
 	この拡張DLLを使用することにより、新規命令が追加され、各種データへの
 	アクセス機能がHSPからコントロールできるようになります。
