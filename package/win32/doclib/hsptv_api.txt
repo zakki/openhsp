@@ -24,6 +24,22 @@ HSPTV API ver3.3 REFERENCE MANUAL                   HSP : Hot Soup Processor
 	また、スクリプトの実行を行なうと、HSPTVブラウザが起動し動作します。
 
 
+・標準イメージについて
+
+	HSPTVブラウザで使用するための標準イメージが用意されています。
+	標準イメージは、hsptvフォルダ内にhsptv_img.bmpとして格納されています。
+	すべての環境で共通して使用できる画像素材としてご利用ください。
+	以下のスクリプトで画像を読み込むことが可能です。
+
+		;	HSPTVブラウザ用・標準イメージを読み込む
+		celload dir_exe+"\\hsptv\\hsptv_img.bmp",1
+
+	上の例では、画像バッファ1に、標準イメージ(hsptv_img.bmp)を読み込みます。	hsptv_img.bmpファイルは、ユーザーが改変・削除・変更しないようにしてください。
+	イメージの内容については、実際に画像ファイルを直接ご確認ください。
+	汎用的に使用できる16x16、32x32、64x64ドットの素材が、512x512画像として
+	詰められています。アイデア次第で様々な用途や目的に利用することができます。
+
+
 ・ランキング機能について
 
 	HSPTV対応プログラムは、ランキング情報を保持する機能を利用することが
@@ -160,7 +176,7 @@ HSPTV API ver3.3 REFERENCE MANUAL                   HSP : Hot Soup Processor
 
 ・サンプルスクリプトについて
 
-	サンプルディレクトリに「hsptv_test.hsp」として、以下のスクリプトが
+	サンプルディレクトリmiscに「hsptv_test.hsp」として、以下のスクリプトが
 	収録されています。
 	このスクリプトは、上位10名の情報表示と更新を行なうことができます。
 
@@ -201,6 +217,9 @@ HSPTV API ver3.3 REFERENCE MANUAL                   HSP : Hot Soup Processor
 		loop
 		return
 
+	この他、標準イメージを利用するためのサンプル、「hsptv_test2.hsp」
+	「hsptv_test3.hsp」も収録されています。
+
 
 ・再受信可能な文字列について
 
@@ -213,6 +232,10 @@ HSPTV API ver3.3 REFERENCE MANUAL                   HSP : Hot Soup Processor
 
 
 ・更新履歴
+
+	2011/7/26  ver3.3RC1
+
+		標準イメージの記述を追加。
 
 	2007/7/13  ver3.2β4
 

@@ -87,6 +87,12 @@
 #define ID__DAAK                        2926
 #define ID_2927                         2927
 #define IDM_HSPTV                       2928
+#define ID_2929                         2929
+#define ID_2930                         2930
+#define ID_DIRDPM                       2931
+#define IDM_DIRDPM                      2931
+#define ID_SRCCNV                       2932
+#define IDM_SRCCNV                      2932
 #define IDCM_ADD                        3000
 #define IDCM_ALLSEL                     3001
 #define IDCM_BYE                        3002
@@ -177,7 +183,7 @@
 #ifndef APSTUDIO_READONLY_SYMBOLS
 #define _APS_NO_MFC                     1
 #define _APS_NEXT_RESOURCE_VALUE        5010
-#define _APS_NEXT_COMMAND_VALUE         2929
+#define _APS_NEXT_COMMAND_VALUE         2933
 #define _APS_NEXT_CONTROL_VALUE         4057
 #define _APS_NEXT_SYMED_VALUE           6003
 #endif

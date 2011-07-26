@@ -950,6 +950,22 @@ static void callhelp( void )
 }
 
 
+static void ExecMkDPM( void )
+{
+	char tmpfn[2048];
+	wsprintf( tmpfn, "\"%s\\hsp3.exe\" \"%s\\mkpack.ax\"", szExeDir, szExeDir );
+	WinExec( tmpfn, SW_SHOW );
+}
+
+
+static void ExecCnvSrc( void )
+{
+	char tmpfn[2048];
+	wsprintf( tmpfn, "\"%s\\hsp3.exe\" \"%s\\cnvsrc.ax\"", szExeDir, szExeDir );
+	WinExec( tmpfn, SW_SHOW );
+}
+
+
 static void ExecHSPAssistant( void )
 {
 	char tmpfn[_MAX_PATH];
@@ -2487,6 +2503,14 @@ LRESULT CALLBACK EditProc (HWND hwnd, UINT iMsg, WPARAM wParam, LPARAM lParam)
                 case IDM_HSPTV:
 					wsprintf( tmpfn, "\"%s\\hsptv.exe\"", szExeDir );
 					WinExec( tmpfn, SW_SHOW );
+					return 0;
+
+                case IDM_DIRDPM:
+					ExecMkDPM();
+					return 0;
+
+                case IDM_SRCCNV:
+					ExecCnvSrc();
 					return 0;
 
 				// Messages from Help menu

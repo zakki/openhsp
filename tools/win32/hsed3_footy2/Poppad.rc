@@ -102,6 +102,8 @@ BEGIN
         MENUITEM "HSPアシスタント起動(&F)...",          IDM_START_RUNTIMEMAN
         MENUITEM "スクリプト自動作成(&T)...",            IDM_AHTTOOL
         MENUITEM "HSPTVブラウザ起動(&H)...",          IDM_HSPTV
+        MENUITEM "指定フォルダからDPM作成(D)...",         ID_DIRDPM
+        MENUITEM "指定ファイルをCソースに変換(C)...",        ID_SRCCNV
         MENUITEM SEPARATOR
         MENUITEM "オプション(&O)...",                IDM_OPTION
     END
@@ -918,6 +920,8 @@ END
 STRINGTABLE 
 BEGIN
     IDM_HSPTV               "HSPTVブラウザを起動"
+    IDM_DIRDPM              "指定されたフォルダ内のファイルをDPM形式に変換"
+    IDM_SRCCNV              "指定されたスクリプトをC言語ソースに変換する"
 END
 
 STRINGTABLE 

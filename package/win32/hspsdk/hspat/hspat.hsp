@@ -1,6 +1,6 @@
 
 #define APP_TITLE "HSP assistant "
-#define APP_VER "ver1.01"
+#define APP_VER "ver1.2"
 #define APP_CONF "\\hspat.cfg"
 #define APP_CACHE ".hat"
 #define APP_INDEX "index.hat"
@@ -42,6 +42,12 @@
 	app_netstart=0
 	app_downdir=""
 
+	celload "hspat_info.bmp"
+	tex_info=stat
+	celload "hspat_icon.bmp"
+	tex_icon=stat
+	celdiv tex_icon,16,16
+
 	get_hsp_appdata_path app_dir
 	cfg_init app_dir+APP_CONF
 	cfg_load:appcfg=stat
@@ -55,6 +61,7 @@
 		app_proxy=cfg_getvar("proxy")
 		app_proxyport=0+cfg_getvar("proxyport")
 		app_downdir=cfg_getvar("downdir")
+		app_notice=0+cfg_getvar("notice")
 		sdim app_neturl,$1000
 		repeat
 			cfg_getdata s1
@@ -78,12 +85,6 @@
 	screen 0,wx,wy,0,app_winx,app_winy
 	title APP_TITLE+APP_VER
 	gsel 0,1
-
-	celload "hspat_info.bmp"
-	tex_info=stat
-	celload "hspat_icon.bmp"
-	tex_icon=stat
-	celdiv tex_icon,16,16
 
 	ezdir=dir_exe+"\\ezinput\\"
 	sdim ezfolder,4096
@@ -439,6 +440,41 @@
 	;	アプリケーション開始
 	;
 	initalize
+	if app_notice : goto *boot3		; noticeがある場合(2回目以降の起動)
+
+	color 203,224,237:boxf
+	y=80
+	color 128,0,0:font msgothic,16,1
+	pos 28,y+26:mes "HSPアシスタントにようこそ!"
+	pos 12,y+60
+	color 0,0,0:font msgothic,12
+	mes "HSPアシスタントは、各種機能の検索、"
+	mes "サンプルスクリプトのブラウズ及びネット上の"
+	mes "素材を取得する役割を持つHSP専用ツールです。"
+	mes "HSPスクリプトエディタと連携した便利な"
+	mes "アシスタントとして、是非ご活用ください。"
+	mes "HSPアシスタントの詳しい使用方法については、"
+	mes "HSPアシスタントマニュアルをご覧ください。"
+	mes ""
+	mes "(HSPアシスタントの自動起動設定は、"
+	mes "HSPスクリプトエディタのツール→設定メニュー"
+	mes "内の起動オプションで選択できます)"
+
+	pos 36,y+230
+	objsize 200,24
+	button "HSPアシスタントを開始する",*boot2
+	button "マニュアルを参照する",*boot_man
+
+	stop
+*boot_man
+	exec "doclib\\hspat.htm",16
+	stop
+
+*boot2
+	cls 1
+	treset app_mode
+	app_notice=1
+*boot3
 	onexit *terminate
 	onclick goto *clk_mode
 	oncmd goto *mousewheel,$20A
@@ -463,6 +499,7 @@
 	cfg_sets "proxy",app_proxy
 	cfg_seti "proxyport",app_proxyport
 	cfg_sets "downdir",app_downdir
+	cfg_seti "notice",app_notice
 
 	notesel app_neturl
 	repeat notemax
