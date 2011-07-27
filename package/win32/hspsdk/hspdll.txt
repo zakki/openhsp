@@ -1,6 +1,6 @@
 ------------------------------------------------------------------------------
-Hot Soup Processor ver3.2                           HSP : Hot Soup Processor  
-SDK仕様ガイド                         copyright 1997-2009 (c) onion software  
+Hot Soup Processor ver3.3                           HSP : Hot Soup Processor  
+SDK仕様ガイド                         copyright 1997-2011 (c) onion software  
 ------------------------------------------------------------------------------
 
 ・プラグイン開発マニュアル

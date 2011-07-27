@@ -137,7 +137,7 @@ void MMMan::ClearAllBank( void )
 }
 
 
-void MMMan::Reset( HWND hwnd )
+void MMMan::Reset( void *hwnd )
 {
 	ClearAllBank();
 	hwm = hwnd;
@@ -149,7 +149,7 @@ void MMMan::Reset( HWND hwnd )
 int MMMan::SendMCI( char *mci_commands )
 {
 	int a;
-	a=mciSendString( mci_commands,res,256,hwm );
+	a=mciSendString( mci_commands,res,256,(HWND)hwm );
 	if (a) return -1;
 	return atoi(res);
 }
@@ -161,7 +161,7 @@ char *MMMan::GetMCIResult( void )
 }
 
 
-void MMMan::SetWindow( HWND hwnd, int x, int y, int sx, int sy )
+void MMMan::SetWindow( void *hwnd, int x, int y, int sx, int sy )
 {
 	avi_wnd = hwnd;
 	avi_x = x; avi_y = y;
@@ -195,7 +195,6 @@ int MMMan::Load( char *fname, int num, int opt )
 	//
 	int a = 1,getlen;
 	char fext[8];
-	char a1,a2,a3;
 	char *pt;
 	int flag;
 	MMM *mmm;
@@ -203,6 +202,9 @@ int MMMan::Load( char *fname, int num, int opt )
 	flag = MMDATA_MCIVOICE;
 	pt = NULL;
 
+
+#if 0
+	char a1,a2,a3;
 	a1=tolower(fname[0]);
 	a2=tolower(fname[1]);
 	a3=fname[2];
@@ -210,9 +212,11 @@ int MMMan::Load( char *fname, int num, int opt )
 		flag = MMDATA_CDAUDIO;
 		a = atoi( fname+3 );if ( a<1 ) a=1;
 	}
+#endif
 
 	getpath(fname,fext,16+2);				// Šg’£Žq‚ð¬•¶Žš‚ÅŽæ‚èo‚·
 
+#if 0
 	if (!strcmp(fext,".avi")) {				// when "AVI"
 		flag = MMDATA_MCIVIDEO;
 	}
@@ -224,6 +228,7 @@ int MMMan::Load( char *fname, int num, int opt )
 	if (!strcmp(fext,".mpg")) {				// when "MPG"
 		flag = MMDATA_MPEGVIDEO;
 	}
+#endif
 
 	if (!strcmp(fext,".wav")) {				// when "WAV"
 		getlen = dpm_exist( fname );
@@ -287,6 +292,7 @@ int MMMan::Play( int num )
 				sprintf( ss,"open %s type MPEGVIDEO alias myid",fpath );
 			}
 			SendMCI( ss );
+/*
 			if (flg!=MMDATA_MCIVOICE) {
 				if ( SendMCI( "where myid source" )==0 ) strcpy( avi_wh,res+4 );
 				if ( a&16 ) {
@@ -298,6 +304,7 @@ int MMMan::Play( int num )
 				sprintf( ss,"put myid destination at %d %d %s",avi_x,avi_y,avi_wh );
 				SendMCI( ss );
 			}
+*/
 			strcpy( ss,"play myid from 0" );
 			break;
 

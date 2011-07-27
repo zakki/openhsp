@@ -430,10 +430,9 @@ char *dpm_readalloc( char *fname )
 	int len;
 	len = dpm_exist( fname );
 	if ( len < 0 ) return NULL;
-	p = mem_ini( len );
+	p = mem_ini( len+1 );
 	dpm_read( fname, p, len, 0 );
+	p[len] = 0;
 	return p;
 }
-
-
 /*----------------------------------------------------------------------------------*/

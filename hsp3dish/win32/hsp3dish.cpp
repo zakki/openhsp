@@ -23,6 +23,7 @@
 #include "../supio.h"
 #include "../hgio.h"
 //#include "../hsp3ext.h"
+#include "../../hsp3/strnote.h"
 
 typedef BOOL (CALLBACK *HSP3DBGFUNC)(HSP3DEBUG *,int,int,int);
 
@@ -50,6 +51,76 @@ static HINSTANCE h_dbgwin;
 static HWND dbgwnd;
 static HSP3DEBUG *dbginfo;
 #endif
+
+//-------------------------------------------------------------
+//		Sync Timer Routines
+//-------------------------------------------------------------
+
+static int	timecnt;
+static int	timer_period = -1;
+static int	timerid = 0;
+
+//
+// TimerFunc --- タイマーコールバック関数
+//
+static void CALLBACK TimerFunc( UINT wID, UINT wUser, DWORD dwUser, DWORD dw1, DWORD dw2 )
+{
+	timecnt++;
+}
+
+/*----------------------------------------------------------*/
+
+#define MAX_INIFILE_LINESTR 1024
+
+static	char *mem_inifile = NULL;
+static	CStrNote *note_ini = NULL;
+static	int lines_inifile;
+static	char s_inifile[MAX_INIFILE_LINESTR];
+
+static void	CloseIniFile( void )
+{
+	if ( mem_inifile != NULL ) {
+		mem_bye( mem_inifile );
+		mem_inifile = NULL;
+	}
+	if ( note_ini != NULL ) {
+		delete note_ini;
+		note_ini = NULL;
+	}
+}
+
+static int	OpenIniFile( char *fname )
+{
+	CloseIniFile();
+	mem_inifile = dpm_readalloc( fname );
+	if ( mem_inifile == NULL ) return -1;
+	note_ini = new CStrNote;
+	note_ini->Select( mem_inifile );
+	lines_inifile = note_ini->GetMaxLine();
+	return 0;
+}
+
+static char *GetIniFileStr( char *keyword )
+{
+	int i;
+	char *s;
+	for(i=0;i<lines_inifile;i++) {
+		note_ini->GetLine( s_inifile, i, MAX_INIFILE_LINESTR );
+		if ( strncmp( s_inifile, keyword, strlen(keyword) ) == 0 ) {
+			s = strchr2( s_inifile, '=' ) + 1;
+			return s;
+		}
+	}
+	return NULL;
+}
+
+static int	GetIniFileInt( char *keyword )
+{
+	char *s;
+	s = GetIniFileStr( keyword );
+	if ( s == NULL ) return 0;
+	return atoi( s );
+}
 
 /*----------------------------------------------------------*/
 
@@ -135,6 +206,9 @@ static void hsp3dish_initwindow( HINSTANCE hInstance, int sx, int sy, char *wind
 	// 描画APIに渡す
 	hgio_init( 0, sx, sy, m_hWnd );
 	hgio_clsmode( CLSMODE_SOLID, 0xffffff, 0 );
+
+	// HWNDをHSPCTXに保存する
+	ctx->wnd_parent = m_hWnd;
 }
 
 
@@ -256,6 +330,36 @@ static void hsp3dish_dispatch( MSG *msg )
 }
 
 
+int hsp3dish_wait( int tick )
+{
+	//		時間待ち(wait)
+	//		(awaitに変換します)
+	//
+	if ( ctx->waitcount <= 0 ) {
+		ctx->runmode = RUNMODE_RUN;
+		return RUNMODE_RUN;
+	}
+	ctx->waittick = tick + ( ctx->waitcount * 10 );
+	return RUNMODE_AWAIT;
+}
+
+
+int hsp3dish_await( int tick )
+{
+	//		時間待ち(await)
+	//
+	if ( ctx->waittick < 0 ) {
+		if ( ctx->lasttick == 0 ) ctx->lasttick = tick;
+		ctx->waittick = ctx->lasttick + ctx->waitcount;
+	}
+	if ( tick >= ctx->waittick ) {
+		ctx->lasttick = tick;
+		ctx->runmode = RUNMODE_RUN;
+		return RUNMODE_RUN;
+	}
+	return RUNMODE_AWAIT;
+}
+
 void hsp3dish_msgfunc( HSPCTX *hspctx )
 {
 	MSG msg;
@@ -291,18 +395,40 @@ void hsp3dish_msgfunc( HSPCTX *hspctx )
 			MsgWaitForMultipleObjects(0, NULL, FALSE, 1000, QS_ALLINPUT );
 			break;
 		case RUNMODE_WAIT:
-			tick = GetTickCount();
-			hspctx->runmode = code_exec_wait( tick );
-		case RUNMODE_AWAIT:
-			tick = GetTickCount();
-			if ( code_exec_await( tick ) != RUNMODE_RUN ) {
-				MsgWaitForMultipleObjects(0, NULL, FALSE, hspctx->waittick - tick, QS_ALLINPUT );
+			if ( timer_period == -1 ) {
+				//	通常のタイマー
+				tick = GetTickCount();
+				hspctx->runmode = code_exec_wait( tick );
 			} else {
-#ifndef HSPDEBUG
-				if ( ctx->hspstat & HSPSTAT_SSAVER ) {
-					if ( hsp_sscnt ) hsp_sscnt--;
+				//	高精度タイマー
+				tick = timeGetTime();
+				hspctx->runmode = hsp3dish_wait( tick );
+			}
+		case RUNMODE_AWAIT:
+			if ( timer_period == -1 ) {
+				//	通常のタイマー
+				tick = GetTickCount();
+				if ( code_exec_await( tick ) != RUNMODE_RUN ) {
+					MsgWaitForMultipleObjects(0, NULL, FALSE, hspctx->waittick - tick, QS_ALLINPUT );
 				}
-#endif
+			} else {
+				//	高精度タイマー
+				int ttl;
+				tick = timeGetTime();
+				hsp3dish_await( tick );
+				ttl = ctx->waittick - tick;
+				while( ttl > 5 ) {					// 5以上のラグはここで吸収
+					if ( tick >= ctx->waittick ) break;
+					Sleep(5);
+					tick = timeGetTime();
+					ttl -= 5;
+				}
+				while( tick < ctx->waittick ) {
+					Sleep(1);
+					tick = timeGetTime();
+				}
+				ctx->lasttick = tick;
+				ctx->runmode = RUNMODE_RUN;
 			}
 			break;
 		case RUNMODE_END:
@@ -419,6 +545,14 @@ int hsp3dish_init( HINSTANCE hInstance, char *startfile )
 		return 1;
 	}
 
+#ifdef HSPDEBUG
+	if ( OpenIniFile( "hsp3dish.ini" ) == 0 ) {
+		hsp_wx = GetIniFileInt( "wx" );
+		hsp_wy = GetIniFileInt( "wy" );
+		CloseIniFile();
+	}
+#endif
+
 	ctx = &hsp->hspctx;
 
 	{
@@ -470,6 +604,22 @@ int hsp3dish_init( HINSTANCE hInstance, char *startfile )
 	//
 	hsp3dish_initwindow( hInstance, hsp_wx, hsp_wy, "HSPDish ver" hspver );
 
+
+	//		Start Timer
+	//
+	// timerGetTime関数による精度アップ(μ秒単位)
+	timer_period = -1;
+#if 1
+	TIMECAPS caps;
+	if (timeGetDevCaps(&caps,sizeof(TIMECAPS)) == TIMERR_NOERROR){
+		// マルチメディアタイマーのサービス精度を最大に
+		timer_period = caps.wPeriodMin;
+		timeBeginPeriod( timer_period );
+		//timerid = timeSetEvent( timer_period, caps.wPeriodMin, TimerFunc, 0, (UINT)TIME_PERIODIC );
+		timecnt = 0;
+	}
+#endif
+
 #ifndef HSP_COM_UNSUPPORTED
 //	HspVarCoreRegisterType( TYPE_COMOBJ, HspVarComobj_Init );
 //	HspVarCoreRegisterType( TYPE_VARIANT, HspVarVariant_Init );
@@ -496,6 +646,17 @@ static void hsp3dish_bye( void )
 	//		Window関連の解放
 	//
 	hsp3dish_drawoff();
+
+	//		タイマーの開放
+	//
+	if ( timer_period != -1 ) {
+//		if( timerid != 0 ) {
+//			timeKillEvent( timerid );
+//			timerid = 0;
+//		}
+		timeEndPeriod( timer_period );
+		timer_period = -1;
+	}
 
 	//		HSP関連の解放
 	//

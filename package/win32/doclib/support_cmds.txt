@@ -121,9 +121,6 @@ grotate	,sys|func
 gsquare	,sys|func
 gradf	,sys|func
 button	,sys|func
-mmload	,sys|func
-mmplay	,sys|func
-mmstop	,sys|func
 
 
 HSP3Dishサポート済みプリプロセッサ命令
@@ -232,7 +229,12 @@ mouse	,sys|func
 
 getkey	,sys|func
 bsave	,sys|func
+exist	,sys|func
 notesave	,sys|func
+
+mmload	,sys|func
+mmplay	,sys|func
+mmstop	,sys|func
 
 
 HSP3Dishサポート外コマンド
@@ -283,7 +285,6 @@ newlab	,sys|func
 resume	,sys|func
 yield	,sys|func
 bcopy	,sys|func
-exist	,sys|func
 delete	,sys|func
 mkdir	,sys|func
 chdir	,sys|func

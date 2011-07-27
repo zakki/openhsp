@@ -18,6 +18,8 @@
 #include "hgio.h"
 #include "supio.h"
 
+#define USE_MMAN
+
 /*------------------------------------------------------------*/
 /*
 		system data
@@ -36,6 +38,11 @@ static int msact;
 static int dispflg;
 
 extern int resY0, resY1;
+
+#ifdef USE_MMAN
+#include "win32/mmman.h"
+static MMMan *mmman;
+#endif
 
 /*----------------------------------------------------------*/
 //					HSP system support
@@ -172,25 +179,31 @@ static int cmdfunc_extcmd( int cmd )
 		cmdfunc_dialog();
 		break;
 
-#if 0
+#ifdef USE_MMAN
 	case 0x08:								// mmload
 		{
-		//int i;
-		char fname[64];
-		strncpy( fname, code_gets(), 63 );
+		int i;
+		char fname[_MAX_PATH];
+		strncpy( fname, code_gets(), _MAX_PATH-1 );
 		p1 = code_getdi( 0 );
 		p2 = code_getdi( 0 );
-		//i = mmman->Load( fname, p1, p2 );
-		//if (i) throw HSPERR_FILE_IO;
+		i = mmman->Load( fname, p1, p2 );
+		if (i) throw HSPERR_FILE_IO;
 		break;
 		}
 	case 0x09:								// mmplay
 		p1 = code_getdi( 0 );
+		//mmman->SetWindow( bmscr->hwnd, bmscr->cx, bmscr->cy, bmscr->sx, bmscr->sy );
+		mmman->Play( p1 );
 		break;
 
 	case 0x0a:								// mmstop
+		mmman->Stop();
 		break;
+#endif
 
+
+#if 0
 	case 0x0d:								// pget
 		p1 = code_getdi( bmscr->cx );
 		p2 = code_getdi( bmscr->cy );
@@ -802,6 +815,9 @@ static int termfunc_extcmd( int option )
 	//		termfunc : TYPE_EXTCMD
 	//		(“à‘ GUI)
 	//
+#ifdef USE_MMAN
+	delete mmman;
+#endif
 	delete wnd;
 	return 0;
 }
@@ -816,6 +832,11 @@ void hsp3typeinit_extcmd( HSP3TYPEINFO *info )
 	val = exinfo->npval;
 	wnd = new HspWnd();
 	bmscr = wnd->GetBmscr( 0 );
+
+#ifdef USE_MMAN
+	mmman = new MMMan;
+	mmman->Reset( ctx->wnd_parent );
+#endif
 
 	//		function register
 	//

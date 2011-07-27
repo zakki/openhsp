@@ -40,7 +40,7 @@ public:
 	MMMan();
 	~MMMan();
 
-	void Reset( HWND hwnd );
+	void Reset( void *hwnd );
 	void ClearAllBank( void );
 	void DeleteBank( int bank );
 	int AllocBank( void );
@@ -57,7 +57,7 @@ public:
 
 	void GetInfo( int bank, char **fname, int *num, int *flag, int *opt );
 	int GetBusy( void );
-	void SetWindow( HWND hwnd, int x, int y, int sx, int sy );
+	void SetWindow( void *hwnd, int x, int y, int sx, int sy );
 	int GetBankMax( void ) { return mm_cur;  };
 
 private:
@@ -65,9 +65,8 @@ private:
 	MMM *mem_snd;
 	int curmus;			// current playing MIDI (-1=none)
 	char res[256];
-	HWND hwm;
-
-	HWND avi_wnd;
+	void *hwm;
+	void *avi_wnd;
 	int	avi_x, avi_y,avi_sx,avi_sy;
 	char avi_wh[64];
 };
