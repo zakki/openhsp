@@ -213,6 +213,12 @@ void SetEditColor(int FootyID)
 	Footy2SetColor(FootyID, CP_RULERLINE, color.Ruler.Division.Conf,  false);
 	Footy2SetColor(FootyID, CP_CARETPOS, color.Ruler.Caret.Conf,  false);
 	Footy2SetColor(FootyID, CP_BACKGROUND, color.Edit.Background.Conf,  false);
+
+	Footy2SetColor(FootyID, CP_URLTEXT, color.Character.Default.Conf,  false);
+	Footy2SetColor(FootyID, CP_URLUNDERLINE, color.Character.Default.Conf,  false);
+	Footy2SetColor(FootyID, CP_MAILTEXT, color.Character.Default.Conf,  false);
+	Footy2SetColor(FootyID, CP_MAILUNDERLINE, color.Character.Default.Conf,  false);
+
 	Footy2Refresh(FootyID);
 }
 
