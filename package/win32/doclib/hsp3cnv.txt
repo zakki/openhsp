@@ -1,5 +1,5 @@
 ------------------------------------------------------------------------------
-HSP3CNV : HSP3ソースコンバーター ver0.3             HSP : Hot Soup Processor  
+HSP3CNV : HSP3ソースコンバーター ver0.4             HSP : Hot Soup Processor  
 ホットスーププロセッサ                     copyright 2011 (c) onion software  
 ------------------------------------------------------------------------------
 
@@ -126,6 +126,10 @@ THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND 
 
 
 ・更新履歴
+
+	2011/09/13 0.4(HSP3.3)
+
+		改行を含む文字列などを「\n」のようなフォーマット済みの文字列に変換するように修正
 
 	2011/07/25 0.3(HSP3.3RC1)
 

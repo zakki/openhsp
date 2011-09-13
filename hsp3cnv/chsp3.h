@@ -86,6 +86,7 @@ public:
 	int getNextCS( int *type );
 	int getEXFLG( void );
 	char *GetDS( int offset );
+	char *GetDS_fmt( int offset );
 	double GetDSf( int offset );
 	int GetOT( int index );
 	int GetOTInfo( int index );
@@ -146,6 +147,7 @@ protected:
 	unsigned short *ifptr[MAX_IFLEVEL];
 	int iftaskid[MAX_IFLEVEL];
 	int indent;
+	char strtmp[4096];
 
 	//		Private function
 	//
@@ -160,6 +162,7 @@ protected:
 	int MakeImmidiateName( char *mes, int type, int val );
 	int MakeImmidiateHSPName( char *mes, int type, int val, char *opt = NULL );
 	void MakeHspStyleString( char *str, CMemBuf *eout );
+	void MakeHspStyleString2( char *str, char *dst );
 
 	char *GetHSPOperator( int val );
 	char *GetHSPOperator2( int val );

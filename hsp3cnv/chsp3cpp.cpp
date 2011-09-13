@@ -339,7 +339,7 @@ int CHsp3Cpp::GetCPPExpressionSub( CMemBuf *eout )
 		case TYPE_STRING:
 			//		文字列をスタックに積む
 			//
-			sprintf( mes,"Push%s(\"%s\"); ", GetHSPCmdTypeName(cstype), GetDS( csval ) );
+			sprintf( mes,"Push%s(\"%s\"); ", GetHSPCmdTypeName(cstype), GetDS_fmt( csval ) );
 			eout->PutStr( mes );
 			getCS();
 			break;

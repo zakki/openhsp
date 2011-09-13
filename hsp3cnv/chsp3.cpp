@@ -544,6 +544,15 @@ int CHsp3::getNextCS( int *type )
 }
 
 
+char *CHsp3::GetDS_fmt( int offset )
+{
+	//		DSから文字列を取得する(フォーマット済み文字列)
+	//
+	MakeHspStyleString2( GetDS(offset), strtmp );
+	return strtmp;
+}
+
+
 char *CHsp3::GetDS( int offset )
 {
 	//		DSから文字列を取得する
@@ -1039,7 +1048,8 @@ int CHsp3::MakeImmidiateName( char *mes, int type, int val )
 	//
 	switch( type ) {
 	case TYPE_STRING:
-		sprintf( mes, "\"%s\"", GetDS( val ) );
+		//sprintf( mes, "\"%s\"", GetDS( val ) );
+		sprintf( mes, "\"%s\"", GetDS_fmt( val ) );
 		break;
 	case TYPE_DNUM:
 		{
@@ -1128,6 +1138,42 @@ void CHsp3::MakeHspStyleString( char *str, CMemBuf *eout )
 		eout->Put( a1 );
 	}
 	eout->Put( (char)0x22 );
+}
+	
+
+void CHsp3::MakeHspStyleString2( char *str, char *dst )
+{
+	//		HSPのエスケープを使用した文字列を生成する
+	//		str : 元の文字列
+	//		dst : 出力先
+	//
+	char *p;
+	char *pdst;
+	char a1;
+	p = str;
+	pdst = dst;
+	while(1) {
+		a1 = *p++;
+		if ( a1 == 0 ) break;
+		if ( a1 == 13 ) {
+			if ( *p==10 ) p++;
+			*pdst++ = '\\';
+			a1='n';
+		}
+		if ( a1 == '\t' ) {
+			*pdst++ = '\\';
+			a1='t';
+		}
+		if ( a1 == '\\' ) {
+			*pdst++ = '\\';
+		}
+		if ( a1 == 0x22 ) {
+			*pdst++ = '\\';
+			a1 = 0x22;
+		}
+		*pdst++ = a1;
+	}
+	*pdst++ = 0;
 }
 	
 

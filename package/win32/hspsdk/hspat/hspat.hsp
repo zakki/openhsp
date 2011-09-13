@@ -1,6 +1,6 @@
 
 #define APP_TITLE "HSP assistant "
-#define APP_VER "ver1.2"
+#define APP_VER "ver1.21"
 #define APP_CONF "\\hspat.cfg"
 #define APP_CACHE ".hat"
 #define APP_INDEX "index.hat"
@@ -337,14 +337,15 @@
 	gmode 0,bsx,bsy:pos tmode*bsx,0
 	gcopy tex_info,tmode*bsx,isy
 	color 32,32,32
-	sysfont 17
+	;sysfont 17
+	font msgothic,10,1
 	pos 16,46
 
 	if tmode=0 {
 		tezreset -1
 		mes "HSPの命令を目的の処理から探して入力します。"
 		mes "下のグループから機能を選択してください。"
-		mes "スクリプトエディタのカーソル位置に追加されます。"
+		mes "エディタのカーソル位置に追加されます。"
 	}
 	if tmode=1 {
 		tsmpreset -1
@@ -354,8 +355,8 @@
 	}
 	if tmode=2 {
 		tnetreset -1
-		mes "ネットワークから画像、音声、スクリプト等の素材を"
-		mes "取得し、使えるように準備します。"
+		mes "ネットワークから画像、音声、スクリプト等の"
+		mes "素材を取得し、使えるように準備します。"
 		mes "下のリストからサイトを選択してください。"
 	}
 
