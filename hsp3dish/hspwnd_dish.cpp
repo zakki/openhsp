@@ -634,7 +634,7 @@ int Bmscr::CelPut( Bmscr *src, int id, float destx, float desty, float ang )
 
 	bak_cx = cx + (int)dsx;
 	bak_cy = cy;
-	hgio_copyrot( (BMSCR *)this, xx, yy, psx, psy, src->celofsx, src->celofsy, (BMSCR *)src, dsx, dsy, ang );
+	hgio_copyrot( (BMSCR *)this, xx, yy, psx, psy, (float)src->celofsx * destx, (float)src->celofsy * desty, (BMSCR *)src, dsx, dsy, ang );
 	cx = bak_cx;
 	cy = bak_cy;
 	return 0;

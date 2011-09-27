@@ -1149,7 +1149,7 @@ void hgio_copy( BMSCR *bm, short xx, short yy, short srcsx, short srcsy, BMSCR *
 }
 
 
-void hgio_copyrot( BMSCR *bm, short xx, short yy, short srcsx, short srcsy, short s_ofsx, short s_ofsy, BMSCR *bmsrc, float psx, float psy, float ang )
+void hgio_copyrot( BMSCR *bm, short xx, short yy, short srcsx, short srcsy, float s_ofsx, float s_ofsy, BMSCR *bmsrc, float psx, float psy, float ang )
 {
 	//		画像コピー
 	//		texid内の(xx,yy)-(xx+srcsx,yy+srcsy)を現在の画面に(psx,psy)サイズでコピー
@@ -1169,8 +1169,8 @@ void hgio_copyrot( BMSCR *bm, short xx, short yy, short srcsx, short srcsy, shor
 	mx1 = -my0;
 	my1 = mx0;
 
-	ofsx = (float)-s_ofsx;
-	ofsy = (float)-s_ofsy;
+	ofsx = -s_ofsx;
+	ofsy = -s_ofsy;
 	x0 = mx0 * ofsy;
 	y0 = my0 * ofsy;
 	x1 = mx1 * ofsx;

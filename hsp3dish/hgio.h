@@ -32,7 +32,7 @@ void hgio_line2( float x, float y );
 void hgio_boxf( BMSCR *bm, float x1, float y1, float x2, float y2 );
 void hgio_circle( BMSCR *bm, float x1, float y1, float x2, float y2, int mode );
 void hgio_copy( BMSCR *bm, short xx, short yy, short srcsx, short srcsy, BMSCR *bmsrc, float psx, float psy );
-void hgio_copyrot( BMSCR *bm, short xx, short yy, short srcsx, short srcsy, short ofsx, short ofsy, BMSCR *bmsrc, float psx, float psy, float ang );
+void hgio_copyrot( BMSCR *bm, short xx, short yy, short srcsx, short srcsy, float ofsx, float ofsy, BMSCR *bmsrc, float psx, float psy, float ang );
 void hgio_fillrot( BMSCR *bm, float x, float y, float sx, float sy, float ang );
 
 void hgio_clsmode( int mode, int color, int tex );
