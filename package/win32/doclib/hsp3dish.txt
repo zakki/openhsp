@@ -216,6 +216,10 @@ Users Manual                               copyright 2011 (c) onion software
 
 ・更新履歴
 
+	2011/09/27 3.3a
+
+	celput命令で中心座標がずれる不具合を修正
+
 	2011/07/27 ver3.3RC1
 
 	起動設定ファイル(hsp3dish.ini)の読み込みを追加
