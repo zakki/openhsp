@@ -83,6 +83,8 @@ public:
 
 	void FillRot( int x, int y, int dst_sx, int dst_sy, float ang );
 
+	void SetFilter( int type );
+
 	//
 	//		Window data structure
 	//

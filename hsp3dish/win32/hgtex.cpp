@@ -253,13 +253,17 @@ int RegistTexFromMemFile( char *data, int size, int orgx, int orgy )
 	LPDIRECT3DTEXTURE8 t;
 	D3DSURFACE_DESC desc;
 	D3DFORMAT format;
+	D3DXIMAGE_INFO info;
 
 	format = D3DFMT_A8R8G8B8;
 	//format = D3DFMT_A4R4G4B4;
 	//GetSysReq(SYSREQ_NOMIPMAP) = 0
 	hr = D3DXCreateTextureFromFileInMemoryEx( d3ddev, data, size, 0, 0, 0, 0, format,
-								D3DPOOL_MANAGED, D3DX_FILTER_LINEAR, D3DX_FILTER_LINEAR,
-								0, NULL, NULL, &t );
+								D3DPOOL_MANAGED, D3DX_FILTER_NONE, D3DX_FILTER_NONE,
+								0, &info, NULL, &t );
+//	hr = D3DXCreateTextureFromFileInMemoryEx( d3ddev, data, size, 0, 0, 0, 0, format,
+//								D3DPOOL_MANAGED, D3DX_FILTER_LINEAR, D3DX_FILTER_LINEAR,
+//								0, &info, NULL, &t );
 	if ( FAILED(hr) ) return -1;
 
 	t->GetLevelDesc( 0, &desc );
@@ -268,9 +272,11 @@ int RegistTexFromMemFile( char *data, int size, int orgx, int orgy )
 	//Alertf( "Lev[%d][%d][%d][%d][%d]", t->GetLevelCount(),sx,sy,orgx,orgy );
 	px = orgx; if ( px <= 0 ) px = sx;
 	py = orgy; if ( py <= 0 ) py = sy;
+	//px = orgx; if ( px <= 0 ) px = info.Width;
+	//py = orgy; if ( py <= 0 ) py = info.Height;
 
 	sel = GetNextTexID();
-	SetTex( sel, TEXMODE_NORMAL, 0, px, py, sx, sy, t );
+	SetTex( sel, TEXMODE_NORMAL, 0, px, py, info.Width, info.Height, t );
 	return sel;
 }
 

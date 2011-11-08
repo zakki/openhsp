@@ -38,6 +38,7 @@ void hgio_fillrot( BMSCR *bm, float x, float y, float sx, float sy, float ang );
 void hgio_clsmode( int mode, int color, int tex );
 int hgio_getWidth( void );
 int hgio_getHeight( void );
+void hgio_setfilter( int type, int opt );
 
 enum {
 CLSMODE_NONE = 0,
@@ -46,6 +47,11 @@ CLSMODE_TEXTURE,
 CLSMODE_BLUR,
 CLSMODE_MAX,
 };
+
+#define HGIO_FILTER_TYPE_NONE 0
+#define HGIO_FILTER_TYPE_LINEAR 1
+#define HGIO_FILTER_TYPE_LINEAR2 2
+
 
 #ifdef HSPWIN
 #include "win32/hgiox.h"

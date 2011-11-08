@@ -606,6 +606,13 @@ static int cmdfunc_extcmd( int cmd )
 		bmscr->CelPut( bm2, p2, (float)zx, (float)zy, (float)rot );
 		break;
 		}
+
+	case 0x3f:								// gfilter
+		p1=code_getdi(0);
+		//	•ÏŒ`‚ ‚è
+		bmscr->SetFilter( p1 );
+		break;
+
 	default:
 		throw HSPERR_UNSUPPORTED_FUNCTION;
 	}
@@ -858,4 +865,12 @@ void hsp3typeinit_extfunc( HSP3TYPEINFO *info )
 {
 	info->reffunc = reffunc_sysvar;
 }
+
+void hsp3notify_extcmd( void )
+{
+#ifdef USE_MMAN
+	mmman->Notify();
+#endif
+}
+
 

@@ -9,6 +9,7 @@
 
 void hsp3typeinit_extcmd( HSP3TYPEINFO *info );
 void hsp3typeinit_extfunc( HSP3TYPEINFO *info );
+void hsp3notify_extcmd( void );
 
 void hsp3gr_dbg_gui( void );
 

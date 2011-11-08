@@ -177,6 +177,8 @@ static void InitDraw( void )
 
 //	d3ddev->SetTextureStageState( 0, D3DTSS_MAGFILTER, D3DTEXF_LINEAR  );
 //	d3ddev->SetTextureStageState( 0, D3DTSS_MINFILTER, D3DTEXF_LINEAR  );
+	d3ddev->SetTextureStageState( 0, D3DTSS_MAGFILTER, D3DTEXF_POINT  );
+	d3ddev->SetTextureStageState( 0, D3DTSS_MINFILTER, D3DTEXF_POINT  );
 
 	//	DiffuseA x TextureA ‚ðAlpha’l‚Æ‚·‚é
 	d3ddev->SetTextureStageState( 0,D3DTSS_ALPHAOP,D3DTOP_MODULATE );
@@ -806,8 +808,8 @@ int hgio_texload( BMSCR *bm, char *fname )
 	if ( i < 0 ) return i;
 
 	tex = GetTex( i );
-	bm->sx = tex->sx;
-	bm->sy = tex->sy;
+	bm->sx = tex->width;
+	bm->sy = tex->height;
 	bm->texid = i;
 
 	return 0;
@@ -1246,5 +1248,24 @@ void hgio_copyrot( BMSCR *bm, short xx, short yy, short srcsx, short srcsy, floa
 	d3ddev->SetVertexShader(D3DFVF_TLVERTEX);
 	// ‚Æ‚è‚ ‚¦‚¸’¼Ú•`‰æ(ŽlŠpŒ`)
 	d3ddev->DrawPrimitiveUP(D3DPT_TRIANGLEFAN,2,vertex2D,sizeof(D3DTLVERTEX));
+}
+
+
+void hgio_setfilter( int type, int opt )
+{
+	int ft;
+	switch( type ) {
+	case HGIO_FILTER_TYPE_LINEAR:
+		ft = D3DTEXF_LINEAR;
+		break;
+	case HGIO_FILTER_TYPE_LINEAR2:
+		ft = D3DTEXF_FLATCUBIC;
+		break;
+	default:
+		ft = D3DTEXF_POINT;
+		break;
+	}
+	d3ddev->SetTextureStageState( 0, D3DTSS_MAGFILTER, ft  );
+	d3ddev->SetTextureStageState( 0, D3DTSS_MINFILTER, ft  );
 }
 

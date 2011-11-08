@@ -167,6 +167,12 @@ LRESULT CALLBACK WndProc( HWND hwnd, UINT uMessage, WPARAM wParam, LPARAM lParam
 		return 0;
 		}
 
+	case MM_MCINOTIFY:
+		if ( wParam == MCI_NOTIFY_SUCCESSFUL ) {
+			hsp3notify_extcmd();
+		}
+		return 0;
+
 	case WM_QUERYENDSESSION:
 	case WM_CLOSE:
 		ctx->runmode = RUNMODE_END;

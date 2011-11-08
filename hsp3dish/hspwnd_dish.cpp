@@ -676,3 +676,10 @@ int Bmscr::CelPut( Bmscr *src, int id )
 }
 
 
+void Bmscr::SetFilter( int type )
+{
+	//		•âŠÔƒtƒBƒ‹ƒ^İ’è
+	//
+	hgio_setfilter( type, 0 );
+}
+
