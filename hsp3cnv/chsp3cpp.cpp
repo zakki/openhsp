@@ -964,8 +964,6 @@ void CHsp3Cpp::MakeCPPSubProgCmd( int cmdtype, int cmdval )
 	case 0x02:								// return
 	case 0x03:								// break
 	case 0x05:								// loop
-	case 0x06:								// continue
-	case 0x0b:								// foreach
 	case 0x0c:								// (hidden)foreach check
 	case 0x10:								// end
 	case 0x1b:								// assert
@@ -992,15 +990,31 @@ void CHsp3Cpp::MakeCPPSubProgCmd( int cmdtype, int cmdval )
 		break;
 		}
 	case 0x04:								// repeat
-		//		repeat‚Ì“WŠJ
+	case 0x0b:								// foreach
+		//		repeat,foreach‚Ì“WŠJ
 		//
 		{
 		int pnum;
-		OutLine( "// repeat\r\n" );
+		OutLine( "// %s\r\n", GetHSPName(cmdtype,cmdval) );
 		getCS();
 		pnum = MakeCPPParam(1);
 		OutputCPPParam();
 		OutLine( "PushLabel(%d); %s(%d,%d); return;\r\n", curot, GetHSPCmdTypeName(cmdtype), cmdval, pnum+1 );
+		MakeCPPTask( curot );
+		curot++;
+		break;
+		}
+
+	case 0x06:								// continue
+		//		continue‚Ì“WŠJ
+		//
+		{
+		int pnum;
+		OutLine( "// %s\r\n", GetHSPName(cmdtype,cmdval) );
+		getCS();
+		pnum = MakeCPPParam(1);
+		OutputCPPParam();
+		OutLine( "%s(%d,%d); return;\r\n", GetHSPCmdTypeName(cmdtype), cmdval, pnum );
 		MakeCPPTask( curot );
 		curot++;
 		break;

@@ -1027,6 +1027,7 @@ int CHsp3::GetHSPExpression( CMemBuf *eout )
 		}
 	}
 	if ( st.GetLevel() > 1 ) {
+		eout->PutStr( "/*ERROR*/" );
 		Alert( "Invalid end stack" ); return -5;
 	}
 	if ( st.GetLevel() == 1 ) {
