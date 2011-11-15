@@ -1,5 +1,5 @@
 ------------------------------------------------------------------------------
-HSP3Dish ver3.3                             HSP : Hot Soup Processor  
+HSP3Dish ver3.3a3                                   HSP : Hot Soup Processor  
 Users Manual                               copyright 2011 (c) onion software  
 ------------------------------------------------------------------------------
 
@@ -67,6 +67,26 @@ Users Manual                               copyright 2011 (c) onion software
 	を参照してください。
 
 
+・gfilter命令について(new)
+
+	hsp3dish ver3.3a2から、フィルタリング(テクスチャ補間)の設定を行なう
+	ためのgfilter命令が追加されています。
+
+	マクロ名        値      内容
+	-------------------------------------------
+	FILTER_NONE     0       補間なし(NEAREST)
+	FILTER_LINEAR   1       直線補間(LINEAR)
+	FILTER_LINEAR2  2       エリア補間(高度な補間処理)
+
+	フィルタリングの設定により、画像の拡大・縮小時のドット補間方法を
+	選ぶことができます。FILTER_NONEを指定することで、補間なし(ニアレスト)
+	の状態になります。FILTER_LINEARは、直線(リニア)補間、FILTER_LINEAR2は
+	より高度な補間方法(バイリニアなど)を選択します。
+	gfilter命令の設定は、以降のすべての描画命令に適用されます。
+	また、「redraw 0」による画面クリア時には、フィルタリング設定は
+	FILTER_NONEにリセットされます。
+
+
 ・HSP3Dish(GL版)の差異
 
 	提供されているHSP3Dishは、OpenGLやDirectXによる高速描画を前提として
@@ -111,6 +131,14 @@ Users Manual                               copyright 2011 (c) onion software
 	　Windows版では、効果音にwav、BGM(サウンド)にmidまたはmp3を使用する
 	　ことが可能ですが、プラットフォームごとにサポートする形式が変更される
 	　ことが考えられます。
+
+
+・Windows上でのgmode 6について(new)
+
+	hsp3dishのWindows版において、gmode6(色減算)は半透明レートが無効に
+	なっています。これは、Windows DirectX8特有の制限によるもので、
+	他のプラットフォームでは正しく反映される仕様になっています。
+	今後、Windows版でも正しい表示を再現できるよう検討していく予定です。
 
 
 ・サンプルスクリプトについて
@@ -184,8 +212,9 @@ Users Manual                               copyright 2011 (c) onion software
 		Windows向けのHSP3Dishが持つ機能をほぼサポートします。
 		フォントの種類、扱えるオーディオファイルの形式などに違いが
 		出ますが、基本的な文法も含めてそのまま移行が可能です。
-		現在、一部のユーザー間でテストを進めており、早い段階で
-		一般向けのライブラリ公開ができるよう準備を進めています。
+		現在、ランタイムのテスト版が公開されています。
+		http://www.onionsoft.net/wp/archives/562
+
 		ただし、現状ではiPhone/iPadの実機上で動作させるためには、
 		MacOS環境及びxcode(developer登録)が必要になります。
 		簡単な動作画面を以下のURLでご覧頂けます。
@@ -216,9 +245,16 @@ Users Manual                               copyright 2011 (c) onion software
 
 ・更新履歴
 
+	2011/10/24 3.3a2
+
+	テクスチャサイズが2のn乗でない時に正しく描画されない場合がある不具合を修正
+	デフォルトでフィルタリング(テクスチャ補間)を行なわないように修正
+	フィルタリングの設定を行なうgfilter命令を追加。
+	mmload命令でmp3などのサウンドをループ再生できない不具合を修正
+
 	2011/09/27 3.3a
 
-	celput命令で中心座標がずれる不具合を修正
+	celput命令で中心座標がずれる不具合を修正。
 
 	2011/07/27 ver3.3RC1
 
