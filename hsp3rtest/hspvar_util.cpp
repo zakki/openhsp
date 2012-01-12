@@ -11,6 +11,8 @@
 #include <windows.h>
 #endif
 
+#include "../hsp3/hsp3config.h"
+
 #include "../hsp3/hsp3struct.h"
 #include "../hsp3/stack.h"
 #include "../hsp3/strbuf.h"
@@ -40,6 +42,7 @@ static	CHSP3_TASK curtask;				// 次に実行されるタスク関数
 static int *c_type;
 static int *c_val;
 static HSPEXINFO *exinfo;				// Info for Plugins
+static int lasttask;
 
 PVal *mem_var;							// 変数用のメモリ
 int	prmstacks;							// パラメータースタック数(モジュール呼び出し用)
@@ -472,6 +475,14 @@ void PushDllctrl( int val, int pnum )
 }
 
 
+void PushVarOffset( PVal *pval )
+{
+	//	変数のoffset値をpushする
+	//
+	StackPushi( pval->offset );
+}
+
+
 void CalcAddI( void )
 {
 	char *ptr;
@@ -709,8 +720,8 @@ void VarSet( PVal *pval, int aval )
 	APTR aptr;
 	void *ptr;
 	PDAT *dst;
-	int pleft;
-	int baseaptr;
+	//int pleft;
+	//int baseaptr;
 	int tflag;
 
 	aptr = CheckArray( pval, aval );
@@ -812,6 +823,48 @@ void VarSet( PVal *pval, int aval, int pnum )
 		proc->Set( pval, dst, ptr );				// 次の配列にたたき込む
 		pleft--;
 	}
+}
+
+
+void VarSet2( PVal *pval )
+{
+	//	変数代入(連続代入用)(var=???)
+	//
+	int chk;
+	HspVarProc *proc;
+	//APTR aptr;
+	void *ptr;
+	PDAT *dst;
+	int baseaptr;
+	STMDATA *stm;
+	int *iptr;
+	int tflag;
+
+	proc = HspVarCoreGetProc( pval->flag );
+
+	chk = code_get();							// パラメーター値を取得
+	if ( chk != PARAM_OK ) { throw HSPERR_SYNTAX; }
+	if ( pval->flag != mpval->flag ) {
+			throw HSPERR_INVALID_ARRAYSTORE;	// 型変更はできない
+	}
+	ptr = mpval->pt;
+
+	stm = StackPeek;
+	tflag = stm->type;
+	if ( tflag != HSPVAR_FLAG_INT ) { throw HSPERR_SYNTAX; }
+	iptr = (int *)STM_GETPTR(stm);
+	baseaptr = *iptr;							// PushVarOffsetであらかじめ入れてあるoffset値
+	StackDecLevel;
+	code_next();
+
+	baseaptr++;
+
+	pval->arraycnt = 0;							// 配列指定カウンタをリセット
+	pval->offset = 0;
+	code_arrayint2( pval, baseaptr );			// 配列チェック
+
+	dst = HspVarCorePtr( pval );
+	proc->Set( pval, dst, ptr );				// 次の配列にたたき込む
 }
 
 
@@ -1011,7 +1064,7 @@ void PushFuncPrm( int num )
 	STMDATA *stm;
 	int tflag, basesize;
 	char *ptr;
-	HspVarProc *proc;
+	//HspVarProc *proc;
 
 	stm = (STMDATA *)hspctx->prmstack;
 	if ( stm == NULL ) throw HSPERR_INVALID_FUNCPARAM;
@@ -1234,10 +1287,15 @@ void TaskSwitch( int label )
 	//
 #if 0
 	{
-	char ss[128];
-	sprintf( ss,"[%d]\n",label );
-	DebugMsg( ss );
+	//char ss[128];
+	//sprintf( ss,"[%d]\n",label );
+	//DebugMsg( ss );
+	Alertf( "[%d]\n",label );
 	}
+#endif
+
+#ifdef _DEBUG
+	lasttask = label;
 #endif
 	curtask = __HspTaskFunc[label];
 }
@@ -1247,6 +1305,18 @@ void TaskExec( void )
 	//		セットされたタスク関数を実行する
 	//
 	curtask();
+}
+
+
+int GetTaskID( void )
+{
+	//		タスク関数IDを取得
+	//
+#ifdef _DEBUG
+	return lasttask;
+#else
+	return -1;
+#endif
 }
 
 
@@ -1260,11 +1330,13 @@ void HspPostExec( void )
 {
 	//		コマンド実行後の処理
 	//
+#if 0
 	if ( hspctx->runmode == RUNMODE_RETURN ) {
 		//cmdfunc_return();
 	} else {
 		hspctx->msgfunc( hspctx );
 	}
+#endif
 }
 
 bool HspIf( void )
@@ -1344,7 +1416,7 @@ void DebugStackPeek( void )
 		p+=strlen(s1);
 		stm++;
 	}
-	Alertf( "%s", dbg );
+	//Alertf( "%s", dbg );
 }
 
 void DebugMsg( char *msg )
@@ -1353,7 +1425,7 @@ void DebugMsg( char *msg )
 	OutputDebugString( msg );
 	//Alertf( "%s", msg );
 #else
-	printf( "%s", msg );
+	Alertf( "%s", msg );
 #endif
 }
 

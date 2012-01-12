@@ -127,6 +127,11 @@ THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND 
 
 ・更新履歴
 
+	2012/01/12 0.6(HSP3.3a4)
+
+		出力ソースにhsp3cnvのバージョン情報を含めるように修正
+		変数の連続代入(a=1,2,3)の変換フォーマットを修正
+
 	2011/12/16 0.5(HSP3.3a3)
 
 		VC++のランタイム不要でhsp3cnv.exeが実行できるように修正

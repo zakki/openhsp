@@ -10,6 +10,8 @@
 #include "supio.h"
 #include "chsp3cpp.h"
 
+#define VARSET_MOD		// 新しい連続代入処理に変換
+
 /*------------------------------------------------------------*/
 
 void CHsp3Cpp::MakeCPPVarName( char *outbuf, int varid )
@@ -791,6 +793,49 @@ int CHsp3Cpp::MakeCPPParam( int addprm )
 }
 
 
+int CHsp3Cpp::MakeCPPParamForVar( char *varname, int va, char *arrayname )
+{
+	//		パラメーターのトレース(新しい展開方法)
+	//		( 返値は、パラメーター数 )
+	//		( maxprms, prmaに結果を返す )
+	//		( 実際の出力は、OutputCPPParamで行なう )
+	//		( addprmが-1の場合は、単一の変数(～VAP,～PAP)を生成しない )
+	//
+	int i;
+	int prm;
+	int result;
+	CMemBuf tmp;
+
+	prm = 0;
+
+		if ( exflag & EXFLG_1) return -1;		// パラメーター列終端
+		if ( mcs > mcs_end ) return -1;			// データ終端チェック
+		i = GetCPPExpression( &tmp, &result );
+		if ( i > 0 ) return -1;
+		if ( i < -1 ) return i;
+		if ( i == -1 ) {
+			OutLine( "PushInt(0);\r\n" );
+		}
+
+		if ( maxprms > 0 ) {
+			OutLine( "PushVarOffset(%s);\r\n", varname );
+		}
+
+		OutLine( "%s\r\n",tmp.GetBuffer() );
+
+		if ( maxprms == 0 ) {
+			OutMes( arrayname );
+			OutLine( "VarSet(%s,%d);\r\n", varname, va );
+		} else {
+			OutLine( "VarSet2(%s);\r\n", varname );
+		}
+		prm++;
+
+	maxprms++;
+	return prm;
+}
+
+
 int CHsp3Cpp::MakeCPPVarForHSP( void )
 {
 	//		コメント用にHSP形式の代入を作成
@@ -1137,6 +1182,13 @@ int CHsp3Cpp::MakeCPPMain( void )
 
 			switch( op ) {
 			case -1:		// 通常の代入
+#ifdef VARSET_MOD
+				maxprms = 0;
+				while(1) {
+					pnum = MakeCPPParamForVar( mes, va, arname.GetBuffer() );
+					if ( pnum < 0 ) break;
+				}
+#else
 				pnum = MakeCPPParam(-1);
 				OutputCPPParam();
 				OutMes( arname.GetBuffer() );
@@ -1145,6 +1197,7 @@ int CHsp3Cpp::MakeCPPMain( void )
 				} else {
 					OutLine( "VarSet(%s,%d,%d);\r\n", mes, va, pnum );
 				}
+#endif
 				break;
 			case -2:		// ++
 				OutMes( arname.GetBuffer() );
@@ -1246,7 +1299,7 @@ int CHsp3Cpp::MakeSource( int option, void *ref )
 	char mes[4096];
 	makeoption = option;
 
-	OutMes( "//\r\n//\thsp3cnv generated source\r\n//\t[%s]\r\n//\r\n", orgname );
+	OutMes( "//\r\n//\thsp3cnv(%s) generated source\r\n//\t[%s]\r\n//\r\n", HSP3CNV_VERSION, orgname );
 	OutMes( "#include \"hsp3r.h\"\r\n" );
 	OutMes( "\r\n#define _HSP3CNV_DATE %s\n#define _HSP3CNV_TIME %s\r\n", localinfo.CurrentDate(), localinfo.CurrentTime() );
 	OutMes( "#define _HSP3CNV_MAXVAR %d\r\n", hsphed->max_val );
@@ -1299,7 +1352,7 @@ int CHsp3Cpp::MakeSource( int option, void *ref )
 		OutMes( "(CHSP3_TASK) L%04d,\r\n", labindex );
 		labindex++;
 	}
-	OutMes( "\r\n};\r\n" );
+	OutMes( "(CHSP3_TASK) 0,\r\n\r\n};\r\n" );
 
 	OutMes( "\r\n/*-----------------------------------------------------------*/\r\n\r\n" );
 

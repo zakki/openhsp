@@ -73,6 +73,7 @@ private:
 	int MakeCPPVarExpression( CMemBuf *arname );
 	int MakeImmidiateCPPName( char *mes, int type, int val, char *opt=NULL );
 	void MakeCPPProgramInfoFuncParam( int structid );
+	int MakeCPPParamForVar( char *varname, int va, char *arrayname );
 
 	int	GetVarFixedType( int varid );
 };

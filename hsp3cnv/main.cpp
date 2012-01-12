@@ -42,6 +42,9 @@ static 	char *p[] = {
 	"       -o??? set output file to ???",
 	NULL };
 	int i;
+
+	printf( "hsp3cnv ver%s onion software\n", HSP3CNV_VERSION );
+
 	for(i=0; p[i]; i++)
 		printf( "%s\n", p[i]);
 	return;

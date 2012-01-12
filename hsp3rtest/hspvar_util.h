@@ -23,6 +23,7 @@ void VarUtilTerm( void );
 void TaskExec( void );
 void TaskSwitch( int label );
 void HspPostExec( void );
+int GetTaskID( void );
 
 void DebugStackPeek( void );
 void DebugMsg( char *msg );
@@ -52,6 +53,7 @@ void PushFuncPrm( int num, int aval );
 void PushFuncPAP( int num, int aval );
 PVal *FuncPrm( int num );
 PVal *LocalPrm( int num );
+void PushVarOffset( PVal *pval );
 
 void PushExtvar( int val, int pnum );
 void PushIntfunc( int val, int pnum );
@@ -79,6 +81,7 @@ void CalcLrI( void );
 
 void VarSet( PVal *pv, int aval, int pnum );
 void VarSet( PVal *pv, int aval );
+void VarSet2( PVal *pval );
 void VarInc( PVal *pv, int aval );
 void VarDec( PVal *pv, int aval );
 void VarCalc( PVal *pv, int aval, int op );
