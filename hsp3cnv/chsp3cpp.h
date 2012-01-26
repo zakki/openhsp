@@ -55,6 +55,8 @@ private:
 	void MakeCPPTask2( int nexttask, int newtask );
 	void MakeCPPTask( char *funcdef, int nexttask=-1 );
 	int MakeCPPParam( int addprm=0 );
+	void MakeCppStyleString( char *str, char *dst );
+	char *GetDS_cpp( int offset );
 
 	void MakeCPPSub( int cmdtype, int cmdval );
 	void MakeCPPSubModCmd( int cmdtype, int cmdval );

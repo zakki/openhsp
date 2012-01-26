@@ -14,6 +14,54 @@
 
 /*------------------------------------------------------------*/
 
+void CHsp3Cpp::MakeCppStyleString( char *str, char *dst )
+{
+	//		C++のエスケープを使用した文字列を生成する
+	//		str : 元の文字列
+	//		dst : 出力先
+	//
+	char *p;
+	char *pdst;
+	char a1;
+	p = str;
+	pdst = dst;
+	while(1) {
+		a1 = *p++;
+		if ( a1 == 0 ) break;
+		if ( a1 == 13 ) {
+			*pdst++ = '\\';
+			a1='r';
+		}
+		if ( a1 == 10 ) {
+			*pdst++ = '\\';
+			a1='n';
+		}
+		if ( a1 == '\t' ) {
+			*pdst++ = '\\';
+			a1='t';
+		}
+		if ( a1 == '\\' ) {
+			*pdst++ = '\\';
+		}
+		if ( a1 == 0x22 ) {
+			*pdst++ = '\\';
+			a1 = 0x22;
+		}
+		*pdst++ = a1;
+	}
+	*pdst++ = 0;
+}
+	
+
+char *CHsp3Cpp::GetDS_cpp( int offset )
+{
+	//		DSから文字列を取得する(フォーマット済み文字列)
+	//
+	MakeCppStyleString( GetDS(offset), strtmp );
+	return strtmp;
+}
+
+
 void CHsp3Cpp::MakeCPPVarName( char *outbuf, int varid )
 {
 	//		変数名をoutbufにコピーする
@@ -60,6 +108,9 @@ int CHsp3Cpp::MakeImmidiateCPPName( char *mes, int type, int val, char *opt )
 		switch( prm->mptype ) {
 		case MPTYPE_LOCALVAR:
 			sprintf( mes, "LocalPrm(%d)", prmcnv_locvar[val - curprmindex] );
+			break;
+		case MPTYPE_SINGLEVAR:
+			sprintf( mes, "FuncPrmVA(%d)", val - curprmindex + curprmlocal );
 			break;
 		default:
 			sprintf( mes, "FuncPrm(%d)", val - curprmindex + curprmlocal );
@@ -341,7 +392,7 @@ int CHsp3Cpp::GetCPPExpressionSub( CMemBuf *eout )
 		case TYPE_STRING:
 			//		文字列をスタックに積む
 			//
-			sprintf( mes,"Push%s(\"%s\"); ", GetHSPCmdTypeName(cstype), GetDS_fmt( csval ) );
+			sprintf( mes,"Push%s(\"%s\"); ", GetHSPCmdTypeName(cstype), GetDS_cpp( csval ) );
 			eout->PutStr( mes );
 			getCS();
 			break;
@@ -769,14 +820,14 @@ int CHsp3Cpp::MakeCPPParam( int addprm )
 			switch( result ) {			// 単一項で変数が指定されていた場合のチェック
 			case TYPE_VAR:
 				p = prmbuf->GetBuffer() + prmbuf->GetIndex( curidx );
-				p = strstr2( p, "PushVa" );
+				p = strstr2rev( p, "PushVa" );
 				if ( p != NULL ) {
 					p[5] = 'A'; p[6] = 'P';			// PushVar -> PushVAPに直す
 				}
 				break;
 			case TYPE_STRUCT:
 				p = prmbuf->GetBuffer() + prmbuf->GetIndex( curidx );
-				p = strstr2( p, "PushFuncPrm" );
+				p = strstr2rev( p, "PushFuncPrm" );
 				if ( p != NULL ) {
 					p[9] = 'A'; p[10] = 'P';		// PushFuncPrm -> PushFuncPAPに直す
 				}

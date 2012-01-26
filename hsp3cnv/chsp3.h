@@ -14,6 +14,8 @@
 #include "csstack.h"
 #include "supio.h"
 
+#define HSP3CNV_VERSION "3.3a4"
+
 #define MAX_IFLEVEL 32			// ifのネスト読み出し最大レベル
 #define VAREXP_BUFFER_MAX 1024	// 配列要素の読み出し用バッファ最大サイズ
 

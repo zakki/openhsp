@@ -127,10 +127,13 @@ THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND 
 
 ・更新履歴
 
-	2012/01/12 0.6(HSP3.3a4)
+	2012/01/26 0.6(HSP3.3a4)
 
 		出力ソースにhsp3cnvのバージョン情報を含めるように修正
 		変数の連続代入(a=1,2,3)の変換フォーマットを修正
+		ユーザー定義命令のvar引数で配列要素が渡っていない不具合を修正
+		配列変数が正しく展開されないことがある不具合を修正
+		改行文字列をHSPと同様のCR+LFに変換するように修正
 
 	2011/12/16 0.5(HSP3.3a3)
 
