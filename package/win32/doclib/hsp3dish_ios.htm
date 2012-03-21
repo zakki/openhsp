@@ -1,0 +1,348 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html lang="ja">
+<head>
+	<meta http-equiv="Content-Type" content="text/html; charset=Shift_JIS">
+	<meta http-equiv="Content-Language" content="ja">
+	<meta http-equiv="Content-Style-Type" content="text/css">
+	<meta http-equiv="Content-Script-Type" content="text/javascript">
+	<meta name="author" content="OpenHSP3 Project（http://dev.onionsoft.net/trac/wiki）">
+	<meta name="keywords" content="HSP3,HotSoupProcessor3,HSP3Dish,iOS,iPhone,iPad">
+	<meta name="description" content="HSP3Dish iOS版に関する情報を掲載">
+	<link href="../main.css" rel="stylesheet" type="text/css" media="all">
+	<title>HSP3Dish iOS版プログラミングガイド</title>
+</head>
+<body>
+	<div id="CONTAINER">
+	<!-- ヘッダー -->
+	<p id="COPY">HSP : HSP3Dish / onion software 2012(c)</p>
+	<img src="hsp3dish.jpg" width="640" height="200" alt="タイトル">
+	<h1>HSP3Dish iOS版プログラミングガイド</h1>
+
+	<!-- 目次 -->
+	<ol>
+		<li><a href="#ABOUT">iOS版 HSP3Dish概要</a></li>
+		<li><a href="#PREPARE">環境の準備</a></li>
+		<li><a href="#SAMPLE">サンプルプロジェクト</a></li>
+		<li><a href="#MAKECPP">スクリプトの準備</a></li>
+		<li><a href="#MAKEPROJ">XCode4プロジェクトの作成</a></li>
+		<li><a href="#ADDHSP">HSP3Dish関連ファイルの登録</a></li>
+		<li><a href="#RUNPROJ">HSP3Dishの実行と設定</a></li>
+		<li><a href="#UPDATE11">iHSP11の更新</a></li>
+		<li><a href="#UPDATE12">iHSP12の更新(new)</a></li>
+		<li><a href="#NOTICE">iOS版の注意事項、制限</a></li>
+		<li><a href="#NEWVER">iOS版の更新予定</a></li>
+	</ol>
+
+	<h2 id="ABOUT">iOS版 HSP3Dish概要</h2>
+	<p>
+	iOS版 HSP3Dishは、iOS搭載機種(iPhoneシリーズ,iPadシリーズ,iPod Touch)上で動作するHSP3Dishのランタイムです。
+	Windows版 HSP3Dishがサポートする機能をiOS上で再現することが可能です。
+	(iOS版 HSP3Dishは、Windows版のスクリプトを実行させることを目的としており、HSP3開発システムそのものをiOS上で再現するものではありません。)
+	<br>
+	このマニュアルでは、iOS版の利用方法、注意点などを説明していきます。
+	</p>
+
+	<h2 id="PREPARE">環境の準備</h2>
+	<p>
+	現状ではiPhone/iPadの実機上で動作させるためには、MacOSX環境及び開発ツールXcode、iOS Developer Program(有償)が必要になります。<br>
+	ここまでに必要なプロセスは、通常のiPhone/iPadの開発と変わりません。詳しくは、iOS Developer Programのホームページなど各種資料を参照してください。
+	</p>
+	<pre>
+	iOS Developer Program
+	<a href="http://developer.apple.com/jp/programs/ios/">http://developer.apple.com/jp/programs/ios/</a>
+	</pre>
+	<p>
+	このドキュメントでは、Xcode4.2以降が実際に動作し、iPhone/iPadの実機にプログラムが転送できることを前提として、HSP3Dishの導入方法を解説します。
+	それまでの準備については、既存のマニュアル等をご覧ください。
+	<br>
+	使用するターゲットSDKのバージョンは、4.3以降を想定しています。
+	</p>
+
+	<h2 id="SAMPLE">サンプルプロジェクト</h2>
+	<p>
+	<img src="hsp3dish/s_block3.jpg" style="float:right;">
+	iOSフォルダには、HSP3.3フルセットに含まれているブロック崩しのHSP3Dishサンプル(block3.hsp)を、
+	Xcode4のプロジェクトに変換したサンプルが含まれています。
+	<br>
+	「iHSP12」「block」フォルダをOSX上にコピーした後、「block.xcodeproj」を開いてビルドすることで
+	実際にiOSデバイス上で動作させることができます。
+	</p>
+
+	<h2 id="MAKECPP">スクリプトの準備</h2>
+	<p>
+	iOS上でスクリプトを動作させる場合には、最初にWindows上でスクリプトをCソースコードに変換します。
+	スクリプトエディタの、「ツール」メニューから「指定ファイルをCソースに変換」メニューを選択してください。
+	ツールの画面が起動するので、block3のスクリプトを指定して「変換」ボタンを押してください。
+	この時、「出力ソースをUTF-8に変換」のチェックをONにしておくのを忘れないでください。
+	<br>
+	<b>※HSP3.3フォルダにある、hsp3cnv.exe(HSP3ソースコンバーター)を最新版にするのを忘れないでください。最新版はHSP3Dish(このアーカイブ)に同梱されています。</b>
+	</p>
+	<img src="hsp3dish/s_cnvsrc.jpg"><br>
+	<p>
+	正常に終了するとスクリプトと同じフォルダに拡張子が.cppのCソースファイルが作成されます。
+	これでスクリプトの準備は完了です。
+	</p>
+
+	<h2 id="MAKEPROJ">XCode4プロジェクトの作成</h2>
+	<p>
+	OSX上でXcode4を起動して新規プロジェクト(Create a new Xcode project)を選択します。
+	テンプレートの選択画面になりますので、「iOS Application」の「Empty Application」を選び「Next」を押してください。
+	</p>
+	<img src="hsp3dish/s_proj1.jpg"><br>
+	<p>
+	オプション画面で、製品名(Product Name)入力します。<br>
+	識別子(Company Identifier)は、作成者を識別する名前(メーカー名など)を入力します。<br>
+	Class Prefixは空欄にしておいて構いません。
+	Device FamilyはiPhoneに設定し、3つのチェックボックスは、基本的には外しておいて下さい。
+	</p>
+	<img src="hsp3dish/s_proj2.jpg"><br>
+	<p>
+	次に、プロジェクトのフォルダを作成する場所を設定します。これは任意の場所を指定して構いません。<br>
+	正常にプロジェクトが作成されると、開発環境(IDE)が起動します。<br>
+	メインウィンドウにプロジェクトの概要(Summary)が表示されるはずです。
+	</p>
+	<img src="hsp3dish/s_proj3.jpg"><br>
+	<p>
+	デフォルトで、Deployment Target(対応OSのバージョン)が5.0に設定されているので、
+	幅広いターゲットでも動作するよう、OS4.3以降に下げておくことを推奨します。
+	</p>
+
+	<h2 id="ADDHSP">HSP3Dish関連ファイルの登録</h2>
+	<p>
+	作成されたプロジェクトのフォルダと同じ階層に、「iHSP12」フォルダを配置してください。
+	「iHSPxx」フォルダはアーカイブ内のiOSフォルダに同梱されています。
+	</p>
+	<img src="hsp3dish/s_menu.jpg" style="float:right;">
+	<img src="hsp3dish/s_folder.jpg"><br>
+	<p>
+	XCode上でプロジェクトに必要なファイルを追加してください。<br>
+	Fileメニューから、「Add Files to～」を選択し、「iHSP12」のフォルダ(下層も含む)を追加(Add)します。<br>
+	さらに、Windows上で作成されたCソースファイル(拡張子が.cppのファイル)を追加(Add)します。<br>
+	</p>
+	<p>
+	続いて、プロジェクトにフレームワークの追加を行ないます。以下のフレームワークを追加してください。
+	</p>
+	<ul>
+	<li>AudioToolbox.framework</li>
+	<li>OpenAL.framework</li>
+	<li>OpenGLES.framework</li>
+	<li>QuartzCore.framework</li>
+	</ul>
+	<p>
+	フレームワークの追加は、プロジェクトの「Summary」タブの「Linked Frameworks and Libraries」項目の「+」ボタンで行なうことができます。<br>
+	正常に追加されると、ファイルナビゲーターは以下のような状態になります。
+	</p>
+	<img src="hsp3dish/s_proj4.jpg"><br>
+	<p>
+	必要に応じて、プロジェクトのSupporting Files内にある、[プロジェクト名]-info.plistファイルにフルスクリーンの設定を追加します。<br>
+	</p>
+	<ul>
+	<li>Localization native development region項目をJapanに設定変更</li>
+	<li>Status bar is initally hidden項目を追加し、Yesに設定(フルスクリーンにする場合)</li>
+	</ul>
+	<img src="hsp3dish/s_plist.jpg"><br>
+	<p>
+	アイコンやデータファイル(画像やサウンド)がある場合は、「resource」フォルダを作成してプロジェクトに追加(Add)してください。
+	</p>
+	<img src="hsp3dish/s_resource.jpg"><br>
+	<p>
+	以上で、hsp3dishのビルドを行なう環境が整いました。
+	</p>
+
+	<h2 id="RUNPROJ">HSP3Dishの実行と設定</h2>
+	<p>
+	実際にHSP3Dishを実行させる場合は、HSPランタイムの初期化コードをAppDelegateに組み込む必要があります。
+	プロジェクトの作成時に自動的に生成される、AppDelegate.mファイルをエディタで開き編集します。
+	</p>
+	<img src="hsp3dish/s_code2.jpg"><br>
+	<br>
+	<p>
+	冒頭の「#import "AppDelegate.h"」の下に以下のコードを追加してください。<br>
+	(「iHSP12」への相対パス指定によりクラス宣言を読み込んでいます)
+	</p>
+	<pre>
+	    #import "../../iHSP12/Classes/HspView.h"
+	</pre>
+	<p>
+	次に「- (BOOL)application:～{」のあるブロック内の「// Override point for customization after application launch.」行の直前に以下のコードを追加してください。<br>
+	(HSPの実行を行なうHspViewクラスを生成しウィンドウに設定しています)
+	</p>
+	<pre>
+	    //ビューの生成と追加
+	    HspView* view=[[HspView alloc] initWithFrame:CGRectMake(0,0,320,480)];
+	    [view startFrame:60];
+	    [view clsMode:1 color:0xffffff];
+	    [self.window addSubview:view];
+	    [view release];
+	</pre>
+	<p>
+	さらに「self.window.backgroundColor =」のある行頭に「//」を追加してコードを無効にします。
+	<pre>
+	    // Override point for customization after application launch.
+	    //self.window.backgroundColor = [UIColor whiteColor];
+	</pre>
+	以下のようなコードになっているか確認してみてください。
+	</p>
+	<img src="hsp3dish/s_code.jpg"><br>
+	<p>
+	HSPランタイムを組み込む追加コードにより、いくつかの設定を行なうことができます。
+	</p>
+	<pre>
+	    HspView* view=[[HspView alloc] initWithFrame:CGRectMake(0,0,320,480)];
+	</pre>
+	<p>
+	この設定により、左上(0,0)から(320,480)の範囲を描画フレームとしています。
+	320×480は、iPhone 3GSの設定に合わせてありますが、iPadなど他の解像度を利用する場合はこの値を変更する必要があります。
+	</p>
+	<pre>
+	    [view startFrame:60];
+	</pre>
+	<p>
+	この設定により、タスクが実行されるフレームレートをコントロールすることができます。
+	通常は、60を指定することにより秒間60フレーム(fps)となっていますが、この値を変更することができます。
+	通常のHSPとは異なり、iOS版のHSP3Dishでは指定されたフレームレートを単位として実行を行なっています。
+	高いフレームレートを指定することも可能ですが、CPUにかかる負荷はバッテリー消費に影響がありますので、
+	できる限り抑えた値にしておくことを推奨しています。
+	</p>
+	<pre>
+	    [view clsMode:1 color:0xffffff];
+	</pre>
+	<p>
+	この設定により、「redraw 0」による描画開始時に画面をクリア(消去)するかどうかを変更できます。
+	デフォルトの設定では、クリアは有効に、背景色は白(0xffffff)が指定されています。<br>
+	「clsMode:0」にした場合は画面のクリアは行なわれませんので、自前でクリアする必要があります。
+	(自前で画面クリアを行なう場合に、重複してクリアすることを避けるためのオプション設定になっています。)<br>
+	「color:0xffffff」は、クリアする色を指定するもので16進数によりRGBのコードを記述します。
+	</p>
+	<p>
+	適切に設定を行なった上で、「Run」ボタンでビルド実行を行なってください。
+	HSP3Dishで作成したスクリプトが実行されるはずです。
+	</p>
+	<img src="hsp3dish/s_iphone.jpg"><br>
+
+	<h2 id="UPDATE11">iHSP11の更新</h2>
+	<p>
+	iOS版ランタイムver1.1から、以下の機能が追加されています。
+	</p>
+	<ul>
+	<li>bsave命令によるユーザーデータ保存</li><br>
+	<p>
+	bsave命令により、変数バッファの内容をユーザーデータとして保存することができます。
+	(iOSではフォルダの指定はできませんので、ファイル名だけを指定するようにしてください。)<br>
+	保存されたデータは、同じファイル名を指定することでbload命令により読み出すことが可能です。
+	bsave命令で、リソースにあるファイルと同じ名前で保存することはできません。
+	ユーザーデータは、アプリケーションごとに異なる領域に保存されます。異なるアプリケーション間でデータを共有することはできません。
+	また、bsave命令では、ファイルのオフセット指定(ファイルの一部だけを書き換える機能)は無効になっていますので注意してください。
+	</p>
+	<li>gfilter命令対応</li><br>
+	<p>
+	Windows版(3.3a2)で追加されたgfilter命令をiOSでもサポートしました。描画時のフィルタリングモードを設定することができます。
+	</p>
+	<ul><pre>
+	マクロ名        値      内容
+	-------------------------------------------
+	FILTER_NONE     0       補間なし(NEAREST)
+	FILTER_LINEAR   1       直線補間(LINEAR)
+	</pre></ul>
+	<p>
+	使用できる補間モードは、0(補間なし)と1(リニア補間)のみです。
+	標準では、補間なし(NEAREST)が設定されています。スクリプト中で「gfilter 1」のように設定した後の描画命令で、
+	フィルタリングモードが反映されます。
+	</p>
+	<li>タスク切替時の停止</li><br>
+	<p>
+	タスク切替時には、HSPの実行を停止し処理を軽減させることができます。
+	作成した「????AppDelegate.m」ファイルの、applicationWillResignActive内に以下を追加してください。
+	</p>
+	<pre>
+	    HspView* view =(HspView*)[self.window.subviews objectAtIndex:0];
+	    [view actMode:0];
+	</pre>
+	<p>
+	次に、applicationDidBecomeActiveに以下のコードを追加してください。
+	</p>
+	<pre>
+	    HspView* view =(HspView*)[self.window.subviews objectAtIndex:0];
+	    [view actMode:1];
+	</pre>
+	<p>
+	サンプルのblockプロジェクトでも同様の処理が入っていますので、参考にしてください。
+	タスク切り替え対応は次回以降のバージョンでさらに細かい設定を追加する予定です。
+	</p>
+	</ul>
+
+
+	<h2 id="UPDATE12">iHSP12の更新(new)</h2>
+	<p>
+	iOS版ランタイムver1.2では大幅な機能の追加は行なっていません。
+	hsp3cnvの更新に伴う対応により、スクリプト変換時の互換性が向上しています。
+	</p>
+
+
+	<h2 id="NOTICE">iOS版の注意事項、制限</h2>
+	<ul>
+	<li>入力可能な情報</li>
+	<p>
+	タップした座標がmousex,mouseyに反映されます。
+	またstick命令により、クリック(タップ)のON/OFFを取得可能です。
+	</p>
+	<li>画像フォーマットについて</li>
+	<p>
+	celload、picload命令などで読み込まれる画像は、以下のフォーマットが使用できます。iOSでは、PNG形式が推奨されます。
+	<ul>
+	<li>PortableNetworkGraphic(PNG)　.png </li>
+	<li>TaggedImageFileFormat(TIFF)　.tiff, .tif </li>
+	<li>JointPhotographicExpertsGroup(JPEG)　.jpeg, .jpg </li>
+	<li>GraphicInterchangeFormat(GIF)　.gif </li>
+	<li>WindowsBitmapFormat(DIB)　.bmp, .BMPf </li>
+	<li>Windowsアイコン形式　.ico </li>
+	<li>Windowsカーソル　.cur </li>
+	<li>XWindowビットマップ　.xbm</li>
+	</ul>
+	</p>
+	<li>画像サイズについて</li>
+	<p>
+	celload、picload命令などで読み込まれる画像が、2^nのサイズ、つまり縦・横のサイズが1,2,4,8,16,32,64,128,256,512であることが推奨されます。正方形である必要はありません。
+	1024,2048,4096などの大きなサイズの画像は扱えない機種もあるので、推奨されません。
+	</p>
+	<li>再生可能なサウンドファイルについて</li>
+	<p>
+	拡張子が「.wav」「.mp3」「.caf」「.aac」のファイルに対応しています。
+	圧縮された音声ファイルについては、mmload命令で読み込んだ時点ですべての波形がメモリに展開されるため、多くの音楽を同時に読み込むことは推奨されません。
+	「.wav」「.mp3」については、Windows版のhsp3dishでサポートされている形式です。
+	「.caf」「.aac」形式は、Mac及びiOSでサポートされている形式です。
+	</p>
+	</ul>
+
+	<h2 id="NEWVER">iOS版の更新予定</h2>
+	<p>
+	以下の機能は今後、上から順に高い優先度で追加される予定です。
+	</p>
+	<ul>
+	<li>iOS上の各種システム情報取得</li>
+	<li>HSP3Dishの各種設定を行なう機能の追加(setreq,getreq命令)</li>
+	<li>画面の自動回転サポート</li>
+	<li>機種による画面サイズ動的変更のサポート</li>
+	<li>buttonを始めとする配置オブジェクトのサポート</li>
+	<li>サウンド再生時のボリュームコントロール</li>
+	<li>grotate、gsquare、gradf命令のサポート</li>
+	<li>傾きセンサーの入力情報の取得</li>
+	<li>マルチタッチ入力情報の取得</li>
+	<li>http接続、ブラウザの呼び出しサポート</li>
+	<li>OBAQプラグイン機能のサポート</li>
+	</ul>
+	<p>
+	バージョンアップの告知は、HSPオフィシャルサイトHSPTV!にて行なわれますので、随時ご確認ください。
+	</p>
+
+	<!-- フッター -->
+	<ul id="FOOTER">
+		<li><a href="#CONTAINER">このページの1番上に戻る</a></li>
+		<li><a href="../index.htm">インデックスに戻る</a></li>
+	</ul>
+	<a href="http://www.onionsoft.net/">
+		<img src="onibtn.gif" width="147" height="50" alt="ONION software" id="ONIBTN">
+	</a>
+</div><!-- container -->
+</body>
+</html>

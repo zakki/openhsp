@@ -346,6 +346,35 @@ void PushVAP( PVal *pval, int aval )
 }
 
 
+void PushVarFromVAP( PVal *pval, int aval )
+{
+	//	PushVAPされている変数の値をpushする
+	int basesize;
+	APTR aptr;
+	PDAT *ptr;
+
+	aptr = (APTR)aval;
+
+	tflag = pval->flag;
+	if ( tflag == HSPVAR_FLAG_INT ) {
+		ptr = (PDAT *)(( (int *)(pval->pt))+ aptr );		// 自前で計算
+		StackPushi( *(int *)ptr );
+		return;
+	}
+	if ( tflag == HSPVAR_FLAG_DOUBLE ) {
+		ptr = (PDAT *)(( (double *)(pval->pt))+ aptr );		// 自前で計算
+		StackPushd( *(double *)ptr );
+		return;
+	}
+
+	ptr = HspVarCorePtrAPTR( pval, aptr );
+	varproc = HspVarCoreGetProc( tflag );
+	basesize = varproc->basesize;
+	if ( basesize < 0 ) { basesize = varproc->GetSize( ptr ); }
+	StackPush( tflag, (char *)ptr, basesize );
+}
+
+
 void PushDefault( void )
 {
 	StackPushTypeVal( HSPVAR_FLAG_DEFAULT, (int)'?', 0 );
@@ -1126,7 +1155,7 @@ void PushFuncPrm( int num )
 
 	tflag = stm->type;
 	if ( tflag == HSPVAR_FLAG_VAR ) {
-		PushVar( (PVal *)( stm->ival ), *(int *)stm->itemp );
+		PushVarFromVAP( (PVal *)( stm->ival ), *(int *)stm->itemp );
 		//PushVAP( (PVal *)( stm->ival ), *(int *)stm->itemp );
 		return;
 	}

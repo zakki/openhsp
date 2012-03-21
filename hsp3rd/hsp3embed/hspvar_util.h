@@ -43,6 +43,7 @@ extern int	prmstacks;
 void PushStr( char *st );
 void PushVar( PVal *pv, int aval );
 void PushVAP( PVal *pval, int aval );
+void PushVarFromVAP( PVal *pval, int aval );
 void PushDefault( void );
 void PushFuncEnd( void );
 

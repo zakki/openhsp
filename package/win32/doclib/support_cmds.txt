@@ -134,8 +134,6 @@ HSP3Dishサポート済みプリプロセッサ命令
 #endif	,pre|func
 #enum	,pre|func
 #epack	,pre|func
-#func	,pre|func
-#cfunc	,pre|func
 #global	,pre|func
 #if	,pre|func
 #ifdef	,pre|func
@@ -144,7 +142,6 @@ HSP3Dishサポート済みプリプロセッサ命令
 #module	,pre|func
 #pack	,pre|func
 #packopt	,pre|func
-#regcmd	,pre|func
 #runtime	,pre|func
 #undef	,pre|func
 #cmpopt	,pre|func
@@ -296,9 +293,12 @@ groll	,sys|func
 mref	,sys|func
 mcall	,sys|func
 
+#regcmd	,pre|func
 #usecom	,pre|func
 #uselib	,pre|func
 #defint	,pre|func
+#func	,pre|func
+#cfunc	,pre|func
 #defdouble	,pre|func
 #defnone	,pre|func
 #modfunc	,pre|func
