@@ -670,10 +670,20 @@
 ;	タイマー機能モジュール
 ;===========================================================
 
+
+#ifdef _HSP3DISH
+
+#defcfunc d3timer
+	getreq _timevalue,SYSREQ_TIMER
+	return _timevalue
+
+#else
 ; ms タイマー
 ;-----------------------------------------------------------
 #uselib "winmm.dll"
 #cfunc global d3timer "timeGetTime"
+#endif
+
 
 
 ; d3getfps fps 取得 (カウント 1000ms, 更新 200ms)
@@ -700,6 +710,7 @@
 	}
 
 	return cfps
+
 
 
 #global

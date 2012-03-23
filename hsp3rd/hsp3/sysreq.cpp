@@ -7,6 +7,9 @@
 #include <stdarg.h>
 #include "sysreq.h"
 
+#include "hgio.h"
+#include "supio.h"
+
 static int	sysreq[SYSREQ_MAX];		// 初期設定データプール
 static char dbgmsg[512];			// デバッグ用メッセージプール
 
@@ -40,6 +43,12 @@ void SetSysReq( int reqid, int val )
 
 int GetSysReq( int reqid )
 {
+	switch( reqid ) {
+	case SYSREQ_TIMER:
+		return hgio_gettick();
+	default:
+		break;
+	}
 	return sysreq[ reqid ];
 }
 

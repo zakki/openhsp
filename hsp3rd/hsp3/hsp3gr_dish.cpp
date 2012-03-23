@@ -22,7 +22,7 @@
 #include "win32/dxsnd.h"
 
 #define USE_MMAN
-//#define USE_DGOBJ
+#define USE_DGOBJ
 
 /*------------------------------------------------------------*/
 /*
@@ -232,6 +232,18 @@ static int *code_getivec( void )
 	return v;
 }
 #endif
+
+
+static int *code_getiv( void )
+{
+	//		変数パラメーターを取得(PDATポインタ)
+	//
+	PVal *pval;
+	pval = code_getpval();
+	if ( pval->flag != HSPVAR_FLAG_INT ) throw HSPERR_TYPE_MISMATCH;
+	return (int *)HspVarCorePtrAPTR( pval, 0 );
+}
+
 
 /*------------------------------------------------------------*/
 /*
@@ -635,17 +647,60 @@ static int cmdfunc_extcmd( int cmd )
 		bmscr->FillRot( p1, p2, p3, p4, (float)rot );
 		break;
 		}
+	case 0x36:								// grotate
+		{
+		Bmscr *bm2;
+		double rot;
+
+		p1 = code_getdi(0);			// パラメータ1:数値
+		p2 = code_getdi(0);			// パラメータ2:数値
+		p3 = code_getdi(0);			// パラメータ3:数値
+		rot = code_getdd(0.0);		// パラメータ4:数値
+		p4 = code_getdi(bmscr->gx);	// パラメータ5:数値
+		p5 = code_getdi(bmscr->gy);	// パラメータ6:数値
+
+		bm2 = wnd->GetBmscrSafe( p1 );	// 転送元のBMSCRを取得
+		bmscr->FillRotTex( p4, p5, (float)rot, bm2, p2, p3, bmscr->gx, bmscr->gy );
+		break;
+		}
+
+	case 0x37:								// gsquare
+		{
+		Bmscr *bm2;
+		int ep1;
+		int *px;
+		int *py;
+		int *ptx;
+		int *pty;
+
+		ep1 = code_getdi(0);				// パラメータ1:数値
+		px = code_getiv();
+		py = code_getiv();
+
+		if ( ep1 >= 0 ) {
+			bm2 = wnd->GetBmscrSafe( ep1 );	// 転送元のBMSCRを取得
+			ptx = code_getiv();
+			pty = code_getiv();
+		} else {
+			bm2 = NULL;
+			ptx = NULL;
+			pty = NULL;
+			if ( ep1 == -257 ) {
+				ptx = code_getiv();
+			}
+		}
+		bmscr->SquareTex( px, py, bm2, ptx, pty, ep1 );
+		break;
+		}
 
 	case 0x38:								// gradf
 		{
 		int gradmode;
-//		int col;
 		p1 = code_getdi( 0 );
 		p2 = code_getdi( 0 );
 		p3 = code_getdi( bmscr->sx );
 		p4 = code_getdi( bmscr->sy );
 		gradmode = code_getdi( 0 );
-//		col = CnvRGB( bmscr->color );
 		p5 = code_getdi( 0 );
 		p6 = code_getdi( 0 );
 		bmscr->GradFill( p1, p2, p3, p4, gradmode, p5, p6 );

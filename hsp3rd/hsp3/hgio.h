@@ -49,6 +49,12 @@ int hgio_getWidth( void );
 int hgio_getHeight( void );
 void hgio_setfilter( int type, int opt );
 
+void hgio_square( BMSCR *bm, int *posx, int *posy, int *color );
+void hgio_square_tex( BMSCR *bm, int *posx, int *posy, BMSCR *bmsrc, int *uvx, int *uvy );
+
+int hgio_gettick( void );
+
+
 enum {
 CLSMODE_NONE = 0,
 CLSMODE_SOLID,

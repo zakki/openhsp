@@ -56,6 +56,9 @@ line	,sys|func
 boxf	,sys|func
 stick	,sys|func
 grect	,sys|func
+grotate	,sys|func
+gsquare	,sys|func
+gradf	,sys|func
 celload	,sys|func
 celdiv	,sys|func
 celput	,sys|func
@@ -117,9 +120,6 @@ ginfo	,sys|func
 HSP3Dishサポート予定コマンド
 (近い将来実装されます)
 
-grotate	,sys|func
-gsquare	,sys|func
-gradf	,sys|func
 button	,sys|func
 
 

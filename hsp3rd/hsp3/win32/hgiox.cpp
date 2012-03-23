@@ -168,9 +168,9 @@ static void InitDraw( void )
 	d3ddev->SetRenderState( D3DRS_ZWRITEENABLE, FALSE );
 //	d3ddev->SetRenderState( D3DRS_AMBIENT, 0xff808080 );
 //    d3ddev->SetRenderState( D3DRS_AMBIENT, 0xffffffff);
-	//d3ddev->SetRenderState( D3DRS_CULLMODE, D3DCULL_NONE );
+	d3ddev->SetRenderState( D3DRS_CULLMODE, D3DCULL_NONE );
 	//d3ddev->SetRenderState( D3DRS_CULLMODE, D3DCULL_CCW );
-	d3ddev->SetRenderState( D3DRS_CULLMODE, D3DCULL_CW );
+	//d3ddev->SetRenderState( D3DRS_CULLMODE, D3DCULL_CW );
 
 	d3ddev->SetRenderState(D3DRS_LIGHTING,FALSE);           //ライティングしない
 	//d3ddev->SetRenderState(D3DRS_COLORVERTEX,TRUE);
@@ -1429,5 +1429,98 @@ void hgio_drawsprite( hgmodel *mdl, HGMODEL_DRAWPRM *prm )
 	d3ddev->DrawPrimitiveUP(D3DPT_TRIANGLEFAN,2,vertex2D,sizeof(D3DTLVERTEX));
 }
 
-#endif
 
+void hgio_square_tex( BMSCR *bm, int *posx, int *posy, BMSCR *bmsrc, int *uvx, int *uvy )
+{
+	//		四角形(square)テクスチャ描画
+	//
+	D3DTLVERTEX *v;
+	TEXINF *tex;
+	int texid;
+	float sx,sy;
+
+	if ( bm == NULL ) return;
+	if ( bm->type != HSPWND_TYPE_MAIN ) throw HSPERR_UNSUPPORTED_FUNCTION;
+
+	texid = bmsrc->texid;
+	ChangeTex( texid );
+	tex = GetTex( texid );
+	sx = tex->ratex;
+	sy = tex->ratey;
+
+	v = vertex2D;
+	v[0].color = v[1].color = v[2].color = v[3].color = GetCopyTexAlpha( bm ) | 0xffffff;
+
+	v->x = (float)posx[2];
+	v->y = (float)posy[2];
+	v->tu0 = ((float)uvx[2]) * sx;
+	v->tv0 = ((float)uvy[2]) * sy;
+	v++;
+	v->x = (float)posx[1];
+	v->y = (float)posy[1];
+	v->tu0 = ((float)uvx[1]) * sx;
+	v->tv0 = ((float)uvy[1]) * sy;
+	v++;
+	v->x = (float)posx[0];
+	v->y = (float)posy[0];
+	v->tu0 = ((float)uvx[0]) * sx;
+	v->tv0 = ((float)uvy[0]) * sy;
+	v++;
+	v->x = (float)posx[3];
+	v->y = (float)posy[3];
+	v->tu0 = ((float)uvx[3]) * sx;
+	v->tv0 = ((float)uvy[3]) * sy;
+
+	//デバイスに使用する頂点フォーマットをセットする
+	d3ddev->SetVertexShader(D3DFVF_TLVERTEX);
+	// とりあえず直接描画(四角形)
+	d3ddev->DrawPrimitiveUP(D3DPT_TRIANGLEFAN,2,vertex2D,sizeof(D3DTLVERTEX));
+}
+
+
+void hgio_square( BMSCR *bm, int *posx, int *posy, int *color )
+{
+	//		四角形(square)単色描画
+	//
+	D3DTLVERTEXC *v;
+	int basecolor;
+
+	if ( bm == NULL ) return;
+	if ( bm->type != HSPWND_TYPE_MAIN ) throw HSPERR_UNSUPPORTED_FUNCTION;
+
+	ChangeTex( -1 );
+
+	v = vertex2DC;
+	basecolor = GetCopyTexAlpha( bm );
+
+	v[2].color = basecolor | ( color[0] & 0xffffff );
+	v[1].color = basecolor | ( color[1] & 0xffffff );
+	v[0].color = basecolor | ( color[2] & 0xffffff );
+	v[3].color = basecolor | ( color[3] & 0xffffff );
+
+	v->x = (float)posx[2];
+	v->y = (float)posy[2];
+	v++;
+	v->x = (float)posx[1];
+	v->y = (float)posy[1];
+	v++;
+	v->x = (float)posx[0];
+	v->y = (float)posy[0];
+	v++;
+	v->x = (float)posx[3];
+	v->y = (float)posy[3];
+
+	//デバイスに使用する頂点フォーマットをセットする
+	d3ddev->SetVertexShader(D3DFVF_TLVERTEXC);
+	// とりあえず直接描画(四角形)
+	d3ddev->DrawPrimitiveUP(D3DPT_TRIANGLEFAN,2,vertex2DC,sizeof(D3DTLVERTEXC));
+}
+
+
+int hgio_gettick( void )
+{
+	return timeGetTime();
+}
+
+
+#endif
