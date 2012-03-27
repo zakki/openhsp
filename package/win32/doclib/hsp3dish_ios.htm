@@ -28,7 +28,8 @@
 		<li><a href="#ADDHSP">HSP3Dish関連ファイルの登録</a></li>
 		<li><a href="#RUNPROJ">HSP3Dishの実行と設定</a></li>
 		<li><a href="#UPDATE11">iHSP11の更新</a></li>
-		<li><a href="#UPDATE12">iHSP12の更新(new)</a></li>
+		<li><a href="#UPDATE12">iHSP12の更新</a></li>
+		<li><a href="#UPDATE13">iHSP13の更新(new)</a></li>
 		<li><a href="#NOTICE">iOS版の注意事項、制限</a></li>
 		<li><a href="#NEWVER">iOS版の更新予定</a></li>
 	</ol>
@@ -272,11 +273,35 @@
 	</ul>
 
 
-	<h2 id="UPDATE12">iHSP12の更新(new)</h2>
+	<h2 id="UPDATE12">iHSP12の更新</h2>
 	<p>
 	iOS版ランタイムver1.2では大幅な機能の追加は行なっていません。
 	hsp3cnvの更新に伴う対応により、スクリプト変換時の互換性が向上しています。
 	</p>
+
+
+	<h2 id="UPDATE13">iHSP13の更新</h2>
+	<p>
+	iOS版ランタイムver1.3では以下の更新を行なっています。
+	</p>
+	<ul>
+	<li>画像ファイル読み込みライブラリの変更</li><br>
+	<p>
+	画像ファイル読み込みを内部API(QuartzCore)からandroidと同様のstb_imageに変更しました。
+	これにより、取り扱うことのできる画像ファイルの種類が変更されています。<br>
+	また、従来発生していたPNGファイルのαチャンネル値が正しく反映されない不具合が修正されます。
+	</p>
+	<li>dpmファイルのサポート</li><br>
+	<p>
+	リソースにdata.dpmファイルを追加することにより、複数ファイルがパックされたデータにアクセスすることが可能になりました。
+	ただし、音声ファイルやアイコンなどiOSのシステムがアクセスするファイルは含めることができませんのでご注意下さい。
+	</p>
+	<li>命令サポートの追加</li><br>
+	<p>
+	ランタイムの更新により、grotate、gsquare、gradf命令がサポートされます。
+	また、不具合修正によりスクリプト変換時の互換性が向上しています。
+	</p>
+	</ul>
 
 
 	<h2 id="NOTICE">iOS版の注意事項、制限</h2>
@@ -290,14 +315,14 @@
 	<p>
 	celload、picload命令などで読み込まれる画像は、以下のフォーマットが使用できます。iOSでは、PNG形式が推奨されます。
 	<ul>
-	<li>PortableNetworkGraphic(PNG)　.png </li>
-	<li>TaggedImageFileFormat(TIFF)　.tiff, .tif </li>
-	<li>JointPhotographicExpertsGroup(JPEG)　.jpeg, .jpg </li>
-	<li>GraphicInterchangeFormat(GIF)　.gif </li>
-	<li>WindowsBitmapFormat(DIB)　.bmp, .BMPf </li>
-	<li>Windowsアイコン形式　.ico </li>
-	<li>Windowsカーソル　.cur </li>
-	<li>XWindowビットマップ　.xbm</li>
+	<li>JPEG baseline (プログレッシブJPEGは非サポート)</li>
+	<li>PNG (8-bit形式のみ)</li>
+	<li>TGA (サブセット)</li>
+	<li>BMP (白黒、REL圧縮は非サポート)</li>
+	<li>PSD (RGB24bitのみ読み出し)</li>
+	<li>GIF</li>
+	<li>HDR (radiance rgbE format)</li>
+	<li>PIC (Softimage PIC)</li>
 	</ul>
 	</p>
 	<li>画像サイズについて</li>
@@ -319,13 +344,11 @@
 	以下の機能は今後、上から順に高い優先度で追加される予定です。
 	</p>
 	<ul>
-	<li>iOS上の各種システム情報取得</li>
-	<li>HSP3Dishの各種設定を行なう機能の追加(setreq,getreq命令)</li>
+	<li>各種システム情報取得</li>
 	<li>画面の自動回転サポート</li>
 	<li>機種による画面サイズ動的変更のサポート</li>
 	<li>buttonを始めとする配置オブジェクトのサポート</li>
 	<li>サウンド再生時のボリュームコントロール</li>
-	<li>grotate、gsquare、gradf命令のサポート</li>
 	<li>傾きセンサーの入力情報の取得</li>
 	<li>マルチタッチ入力情報の取得</li>
 	<li>http接続、ブラウザの呼び出しサポート</li>
