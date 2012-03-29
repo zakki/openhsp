@@ -7,7 +7,10 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+
+#ifdef HSPWIN
 #include <windows.h>
+#endif
 
 #include "../hsp3/hsp3config.h"
 #include "../hsp3/hsp3code.h"
@@ -19,10 +22,13 @@
 #include "hgio.h"
 #include "supio.h"
 #include "sysreq.h"
+
+#ifdef HSPWIN
 #include "win32/dxsnd.h"
+#endif
 
 #define USE_MMAN
-#define USE_DGOBJ
+//#define USE_DGOBJ
 
 /*------------------------------------------------------------*/
 /*
@@ -44,7 +50,13 @@ static int dispflg;
 extern int resY0, resY1;
 
 #ifdef USE_MMAN
+#ifdef HSPWIN
 #include "win32/mmman.h"
+#endif
+#ifdef HSPIOS
+#include "ios/mmman.h"
+#endif
+
 static MMMan *mmman;
 #endif
 
@@ -293,8 +305,8 @@ static int cmdfunc_extcmd( int cmd )
 	case 0x08:								// mmload
 		{
 		int i;
-		char fname[_MAX_PATH];
-		strncpy( fname, code_gets(), _MAX_PATH-1 );
+		char fname[HSP_MAX_PATH];
+		strncpy( fname, code_gets(), HSP_MAX_PATH-1 );
 		p1 = code_getdi( 0 );
 		p2 = code_getdi( 0 );
 		i = mmman->Load( fname, p1, p2 );

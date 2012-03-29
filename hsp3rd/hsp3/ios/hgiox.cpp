@@ -461,9 +461,7 @@ void hgio_reset( void )
         
     //ブレンドの設定
     glEnable(GL_BLEND);
-#ifdef HSPIOS
     glBlendEquationOES(GL_FUNC_ADD_OES);
-#endif
     glBlendFunc(GL_ONE,GL_ONE_MINUS_SRC_ALPHA);
 
     //ポイントの設定
@@ -525,23 +523,17 @@ void hgio_setBlendMode( int mode, int aval )
             break;
         case 5:                     //add
             glEnable(GL_BLEND);
-#ifdef HSPIOS
             glBlendEquationOES(GL_FUNC_ADD_OES);
-#endif
             glBlendFunc(GL_SRC_ALPHA,GL_ONE);
             break;
         case 6:                     //sub
             glEnable(GL_BLEND);
-#ifdef HSPIOS
             glBlendEquationOES(GL_FUNC_REVERSE_SUBTRACT_OES);
-#endif
             glBlendFunc(GL_SRC_ALPHA,GL_ONE);
             break;
         default:                    //normal blend
             glEnable(GL_BLEND);
-#ifdef HSPIOS
             glBlendEquationOES(GL_FUNC_ADD_OES);
-#endif
             glBlendFunc(GL_SRC_ALPHA,GL_ONE_MINUS_SRC_ALPHA);
             //glBlendFunc(GL_ONE,GL_ONE_MINUS_SRC_ALPHA);
             break;
@@ -567,30 +559,22 @@ void hgio_setBlendModeFlat( int mode )
         case 3:                     //blend+alpha
         case 4:                     //blend+alpha
             glEnable(GL_BLEND);
-#ifdef HSPIOS
             glBlendEquationOES(GL_FUNC_ADD_OES);
-#endif
             glBlendFunc(GL_ONE,GL_ONE_MINUS_SRC_ALPHA);
             break;
         case 5:                     //add
             glEnable(GL_BLEND);
-#ifdef HSPIOS
             glBlendEquationOES(GL_FUNC_ADD_OES);
-#endif
             glBlendFunc(GL_SRC_ALPHA,GL_ONE);
             break;
         case 6:                     //sub
             glEnable(GL_BLEND);
-#ifdef HSPIOS
             glBlendEquationOES(GL_FUNC_REVERSE_SUBTRACT_OES);
-#endif
             glBlendFunc(GL_SRC_ALPHA,GL_ONE);
             break;
         default:                    //normal blend
             glEnable(GL_BLEND);
-#ifdef HSPIOS
             glBlendEquationOES(GL_FUNC_ADD_OES);
-#endif
             glBlendFunc(GL_ONE,GL_ONE_MINUS_SRC_ALPHA);
             break;
     }
@@ -1565,26 +1549,20 @@ void hgio_SetAlphaModeDG( int efxprm )
     switch( alphaop ) {
         case 0:                     //blend+alpha
             glEnable(GL_BLEND);
-#ifdef HSPIOS
             glBlendEquationOES(GL_FUNC_ADD_OES);
-#endif
             glBlendFunc(GL_SRC_ALPHA,GL_ONE_MINUS_SRC_ALPHA);
             break;
         case 1:                     //blend+alpha
         case 5:                     //add
             glEnable(GL_BLEND);
-#ifdef HSPIOS
             glBlendEquationOES(GL_FUNC_ADD_OES);
-#endif
             glBlendFunc(GL_SRC_ALPHA,GL_ONE_MINUS_SRC_ALPHA);
             aval = 0xff;
             break;
 		case 2:
 		case 6:
             glEnable(GL_BLEND);
-#ifdef HSPIOS
             glBlendEquationOES(GL_FUNC_ADD_OES);
-#endif
             glBlendFunc(GL_SRC_ALPHA,GL_ONE);
             break;
         case 3:                     //sub
@@ -1592,9 +1570,7 @@ void hgio_SetAlphaModeDG( int efxprm )
         case 4:                     //sub
         case 8:                     //sub
             glEnable(GL_BLEND);
-#ifdef HSPIOS
             glBlendEquationOES(GL_FUNC_REVERSE_SUBTRACT_OES);
-#endif
             glBlendFunc(GL_SRC_ALPHA,GL_ONE);
             break;
     }

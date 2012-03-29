@@ -22,6 +22,7 @@
 #include "../hsp3gr.h"
 #include "../supio.h"
 #include "../hgio.h"
+#include "../sysreq.h"
 //#include "../hsp3ext.h"
 #include "../../hsp3/strnote.h"
 
@@ -480,6 +481,7 @@ int hsp3dish_init( HINSTANCE hInstance, char *startfile )
 	OleInitialize( NULL );
 #endif
 	InitCommonControls();
+	InitSysReq();
 
 	//		HSPŠÖ˜A‚Ì‰Šú‰»
 	//

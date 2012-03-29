@@ -530,56 +530,27 @@ void Bmscr::GetClientSize( int *xsize, int *ysize )
 }
 
 
-void Bmscr::GradFill( int x, int y, int sx, int sy, int mode, int col1, int col2 )
+void Bmscr::GradFill( int _x, int _y, int _sx, int _sy, int mode, int col1, int col2 )
 {
 	//		グラデーション塗りつぶし
 	//
-#if 0
-	TRIVERTEX axis[2];
-	PTRIVERTEX vtx;
-	static int grad_rect[2] = { 0, 1 };
+	int posx[4];
+	int posy[4];
+	int vcol[4];
 
-	vtx = &axis[1];
-	vtx->x = x + sx; vtx->y = y + sy;
-	CnvRGB16( vtx, col2 );
+	posx[0] = _x;		posy[0] = _y;
+	posx[1] = _x+_sx;	posy[1] = _y;
+	posx[2] = _x+_sx;	posy[2] = _y+_sy;
+	posx[3] = _x;		posy[3] = _y+_sy;
 
-	vtx = &axis[0];
-	vtx->x = x; vtx->y = y;
-	CnvRGB16( vtx, col1 );
-
-	GradientFill( hdc, axis, 2, &grad_rect, 1, mode );
-	Send( x,y,sx,sy );
-#endif
-}
-
-
-void Bmscr::GradFillEx( int *vx, int *vy, int *vcol )
-{
-	//		グラデーション塗りつぶし(gsquare用)
-	//
-#if 0
-	TRIVERTEX axis[4];
-	PTRIVERTEX vtx;
-	int i;
-	int minx,miny,maxx,maxy, ax,ay;
-	static int grad_square[6] = { 0, 1, 2, 0, 2, 3 };
-	minx = sx;
-	miny = sy;
-	maxx = maxy = 0;
-	for(i=0;i<4;i++) {
-		vtx = &axis[i];
-		vtx->x = vx[i];
-		if ( vtx->x < minx ) { minx = vtx->x; }
-		if ( vtx->x > maxx ) { maxx = vtx->x; }
-		vtx->y = vy[i];
-		if ( vtx->y < miny ) { miny = vtx->y; }
-		if ( vtx->y > maxy ) { maxy = vtx->y; }
-		CnvRGB16( vtx, (DWORD)vcol[i] );
+	if ( mode ) {
+		vcol[0] = vcol[1] = col1;
+		vcol[2] = vcol[3] = col2;
+	} else {
+		vcol[0] = vcol[3] = col1;
+		vcol[1] = vcol[2] = col2;
 	}
-	GradientFill( hdc, axis, 4, &grad_square, 2, GRADIENT_FILL_TRIANGLE );
-	ax = maxx - minx + 1; ay = maxy - miny + 1;
-	if (( ax > 0 )&&( ay > 0 )) { Send( minx,miny,ax,ay ); }
-#endif
+	SquareTex( posx, posy, NULL, vcol, NULL, -257 );
 }
 
 
@@ -588,6 +559,14 @@ void Bmscr::FillRot( int x, int y, int dst_sx, int dst_sy, float ang )
 	//		回転矩形塗りつぶし(grect用)
 	//
 	hgio_fillrot( (BMSCR *)this, (float)x, (float)y, (float)dst_sx, (float)dst_sy, ang );
+}
+
+
+void Bmscr::FillRotTex( int dst_sx, int dst_sy, float ang, Bmscr *src, int tx, int ty, int srcx, int srcy )
+{
+	//		回転矩形塗りつぶし(grotate用)
+	//
+	hgio_copyrot( (BMSCR *)this, tx, ty, srcx, srcy, (float)(dst_sx>>1), (float)(dst_sy>>1), (BMSCR *)src, (float)dst_sx, (float)dst_sy, ang );
 }
 
 
@@ -682,4 +661,24 @@ void Bmscr::SetFilter( int type )
 	//
 	hgio_setfilter( type, 0 );
 }
+
+
+void Bmscr::SquareTex( int *dst_x, int *dst_y, Bmscr *src, int *src_x, int *src_y, int mode )
+{
+	//		頂点指定による四角形描画(gsquare用)
+	//
+	int coltmp[4];
+
+	if ( mode < 0 ) {
+		if ( mode == -257 ) {
+			hgio_square( (BMSCR *)this, dst_x, dst_y, src_x );
+		} else {
+			coltmp[0] = coltmp[1] = coltmp[2] = coltmp[3] = color;
+			hgio_square( (BMSCR *)this, dst_x, dst_y, coltmp );
+		}
+		return;
+	}
+	hgio_square_tex( (BMSCR *)this, dst_x, dst_y, (BMSCR *)src, src_x, src_y );
+}
+
 

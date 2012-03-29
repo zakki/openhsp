@@ -1927,8 +1927,15 @@ static int cmdfunc_prog( int cmd )
 
 	case 0x06:								// continue
 		{
+		LOOPDAT *lop;
 		unsigned short *label;
 		label = code_getlb();
+
+		lop=GETLOP(hspctx->looplev);
+		code_next();
+		p2=lop->cnt + 1;
+		p1 = code_getdi( p2 );
+		lop->cnt = p1 - 1;
 		}
 	case 0x05:								// loop
 		{
@@ -1948,22 +1955,7 @@ static int cmdfunc_prog( int cmd )
 		//code_next();
 		break;
 		}
-/*
-	case 0x06:								// continue
-		{
-		LOOPDAT *lop;
-		unsigned short *label;
-		label = code_getlb();
-		lop=GETLOP(hspctx->looplev);
-		code_next();
-		p2=lop->cnt + 1;
-		p1 = code_getdi( p2 );
-		lop->cnt = p1 - 1;
-		//mcs=label;
-		//val=0x05;type=TYPE_PROGCMD;exflg=0;	// set 'loop' code
-		break;
-		}
-*/
+
 	case 0x07:								// wait
 		hspctx->waitcount = code_getdi( 100 );
 		hspctx->runmode = RUNMODE_WAIT;

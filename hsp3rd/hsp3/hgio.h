@@ -13,6 +13,9 @@
 #include "hgevent.h"
 #include "hgemitter.h"
 
+#ifdef __cplusplus
+extern "C" {
+#endif
 
 //		universal draw command function
 //
@@ -55,6 +58,11 @@ void hgio_square_tex( BMSCR *bm, int *posx, int *posy, BMSCR *bmsrc, int *uvx, i
 int hgio_gettick( void );
 
 
+#ifdef __cplusplus
+}
+#endif /* __cplusplus */
+
+
 enum {
 CLSMODE_NONE = 0,
 CLSMODE_SOLID,
@@ -73,15 +81,15 @@ CLSMODE_MAX,
 #endif
 
 #ifdef HSPIOS
-#include "ios/hgio_ios.h"
+#include "ios/hgiox.h"
 #endif
 
 #ifdef HSPNDK
-#include "ndk/hgio_ndk.h"
+#include "ndk/hgiox.h"
 #endif
 
 #ifdef HSPLINUX
-#include "linux/hgio_linux.h"
+#include "linux/hgiox.h"
 #endif
 
 

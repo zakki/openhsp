@@ -7,7 +7,7 @@
 #include <stdlib.h>
 #include <math.h>
 
-#include "hsp3config.h"
+#include "../hsp3/hsp3config.h"
 #include "hgobj.h"
 #include "supio.h"
 

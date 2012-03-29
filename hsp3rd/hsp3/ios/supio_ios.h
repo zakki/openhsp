@@ -2,7 +2,6 @@
 //
 //	supio.cpp functions (linux)
 //
-#include "../../appengine.h"
 
 char *mem_ini( int size );
 void mem_bye( void *ptr );
@@ -33,7 +32,8 @@ void TrimCode( char *p, int code );
 void TrimCodeL( char *p, int code );
 void TrimCodeR( char *p, int code );
 
-#define Alert LOGI
-#define AlertV LOGI
-#define Alertf LOGI
+
+void Alert( char *mes );
+void AlertV( char *mes, int val );
+void Alertf( const char *format, ... );
 

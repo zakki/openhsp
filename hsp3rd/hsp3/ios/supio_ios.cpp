@@ -26,7 +26,7 @@
 // dirlist
 #include <dirent.h>
 
-#include "supio_ndk.h"
+#include "supio_ios.h"
 #include "../dpmread.h"
 #include "../strbuf.h"
 
@@ -95,6 +95,9 @@ void mem_bye( void *ptr ) {
 
 int mem_save( char *fname, void *mem, int msize, int seekofs )
 {
+    gb_savedata( fname, (char *)mem, msize );
+    return msize;
+#if 0
 	FILE *fp;
 	int flen;
 
@@ -109,6 +112,7 @@ int mem_save( char *fname, void *mem, int msize, int seekofs )
 	flen = (int)fwrite( mem, 1, msize, fp );
 	fclose(fp);
 	return flen;
+#endif
 }
 
 

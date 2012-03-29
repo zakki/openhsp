@@ -62,11 +62,21 @@
 	<h2 id="SAMPLE">サンプルプロジェクト</h2>
 	<p>
 	<img src="hsp3dish/s_block3.jpg" style="float:right;">
-	iOSフォルダには、HSP3.3フルセットに含まれているブロック崩しのHSP3Dishサンプル(block3.hsp)を、
-	Xcode4のプロジェクトに変換したサンプルが含まれています。
+	<img src="hsp3dish/s_hspproj.jpg" style="float:right;">
+	<img src="hsp3dish/s_gcube.jpg" style="float:right;">
+	iOSフォルダには、HSP3Dishランタイム及びxcode用のサンプルプロジェクトが含まれています。
+
+	<ul>
+	<li>iHSP13フォルダ - HSP3Dishランタイム本体</li>
+	<li>hspprojフォルダ - HSP3Dishサンプル(hsplogo.hsp)</li>
+	<li>blockフォルダ - ブロック崩しサンプル(block3.hsp)</li>
+	<li>gcubeフォルダ - iPad用、d3module使用サンプル(gcube.hsp)</li>
+	</ul>
+
 	<br>
-	「iHSP12」「block」フォルダをOSX上にコピーした後、「block.xcodeproj」を開いてビルドすることで
-	実際にiOSデバイス上で動作させることができます。
+	すべてのフォルダをOSX上にコピーした後、プロジェクトファイル(.xcodeproj)を開いてビルドすることができます。
+	(実際にiOSデバイス上で動作させるためには、iOS Developer Programの登録が必要になります)
+	<br clear="all">
 	</p>
 
 	<h2 id="MAKECPP">スクリプトの準備</h2>
@@ -110,14 +120,14 @@
 
 	<h2 id="ADDHSP">HSP3Dish関連ファイルの登録</h2>
 	<p>
-	作成されたプロジェクトのフォルダと同じ階層に、「iHSP12」フォルダを配置してください。
+	作成されたプロジェクトのフォルダと同じ階層に、「iHSP13」フォルダを配置してください。
 	「iHSPxx」フォルダはアーカイブ内のiOSフォルダに同梱されています。
 	</p>
 	<img src="hsp3dish/s_menu.jpg" style="float:right;">
 	<img src="hsp3dish/s_folder.jpg"><br>
 	<p>
 	XCode上でプロジェクトに必要なファイルを追加してください。<br>
-	Fileメニューから、「Add Files to～」を選択し、「iHSP12」のフォルダ(下層も含む)を追加(Add)します。<br>
+	Fileメニューから、「Add Files to～」を選択し、「iHSP13」のフォルダ(下層も含む)を追加(Add)します。<br>
 	さらに、Windows上で作成されたCソースファイル(拡張子が.cppのファイル)を追加(Add)します。<br>
 	</p>
 	<p>
@@ -146,6 +156,16 @@
 	アイコンやデータファイル(画像やサウンド)がある場合は、「resource」フォルダを作成してプロジェクトに追加(Add)してください。
 	</p>
 	<img src="hsp3dish/s_resource.jpg"><br>
+
+	<p>
+	パッケージに含まれるPNGファイルの最適化(圧縮)を無効にします。これは、HSPが外部のPNG読み込みライブラリを使用するために必要な設定です。<br>
+	</p>
+	<ul>
+	<li>プロジェクトのBuild SettingsタブのPackaging内にある、Compress PNG Filesの設定をすべてNoにしてください</li>
+	</ul>
+	<img src="hsp3dish/s_comppng.jpg"><br>
+	<br>
+
 	<p>
 	以上で、hsp3dishのビルドを行なう環境が整いました。
 	</p>
@@ -159,10 +179,10 @@
 	<br>
 	<p>
 	冒頭の「#import "AppDelegate.h"」の下に以下のコードを追加してください。<br>
-	(「iHSP12」への相対パス指定によりクラス宣言を読み込んでいます)
+	(「iHSP13」への相対パス指定によりクラス宣言を読み込んでいます)
 	</p>
 	<pre>
-	    #import "../../iHSP12/Classes/HspView.h"
+	    #import "../../iHSP13/Classes/HspView.h"
 	</pre>
 	<p>
 	次に「- (BOOL)application:～{」のあるブロック内の「// Override point for customization after application launch.」行の直前に以下のコードを追加してください。<br>
@@ -215,11 +235,38 @@
 	(自前で画面クリアを行なう場合に、重複してクリアすることを避けるためのオプション設定になっています。)<br>
 	「color:0xffffff」は、クリアする色を指定するもので16進数によりRGBのコードを記述します。
 	</p>
+
+	<p>
+	タスク切替時には、HSPの実行を停止し処理を軽減させることを推奨します。
+	作成した「AppDelegate.m」ファイルの、applicationWillResignActive内に以下を追加してください。
+	</p>
+	<pre>
+	    HspView* view =(HspView*)[self.window.subviews objectAtIndex:0];
+	    [view actMode:0];
+	</pre>
+	<p>
+	次に、applicationDidBecomeActiveに以下のコードを追加してください。
+	</p>
+	<pre>
+	    HspView* view =(HspView*)[self.window.subviews objectAtIndex:0];
+	    [view actMode:1];
+	</pre>
+	<p>
+	サンプルのblockプロジェクトでも同様の処理が入っていますので、参考にしてください。
+	</p>
+
 	<p>
 	適切に設定を行なった上で、「Run」ボタンでビルド実行を行なってください。
 	HSP3Dishで作成したスクリプトが実行されるはずです。
 	</p>
+
+	<p>
+	新規プロジェクトを作成した場合は、デフォルトでビルドスキームがDebugになっています。
+	ProductメニューのEdit Scheme...の設定で、Build Configurationを「Release」に変更することで、最適化されたコードが出力され、より高速に実行されます。
+	</p>
+
 	<img src="hsp3dish/s_iphone.jpg"><br>
+
 
 	<h2 id="UPDATE11">iHSP11の更新</h2>
 	<p>
@@ -250,26 +297,6 @@
 	標準では、補間なし(NEAREST)が設定されています。スクリプト中で「gfilter 1」のように設定した後の描画命令で、
 	フィルタリングモードが反映されます。
 	</p>
-	<li>タスク切替時の停止</li><br>
-	<p>
-	タスク切替時には、HSPの実行を停止し処理を軽減させることができます。
-	作成した「????AppDelegate.m」ファイルの、applicationWillResignActive内に以下を追加してください。
-	</p>
-	<pre>
-	    HspView* view =(HspView*)[self.window.subviews objectAtIndex:0];
-	    [view actMode:0];
-	</pre>
-	<p>
-	次に、applicationDidBecomeActiveに以下のコードを追加してください。
-	</p>
-	<pre>
-	    HspView* view =(HspView*)[self.window.subviews objectAtIndex:0];
-	    [view actMode:1];
-	</pre>
-	<p>
-	サンプルのblockプロジェクトでも同様の処理が入っていますので、参考にしてください。
-	タスク切り替え対応は次回以降のバージョンでさらに細かい設定を追加する予定です。
-	</p>
 	</ul>
 
 
@@ -298,7 +325,7 @@
 	</p>
 	<li>命令サポートの追加</li><br>
 	<p>
-	ランタイムの更新により、grotate、gsquare、gradf命令がサポートされます。
+	ランタイムの更新により、grotate、gsquare、gradf、setreq、getreq命令がサポートされます。
 	また、不具合修正によりスクリプト変換時の互換性が向上しています。
 	</p>
 	</ul>
@@ -328,6 +355,7 @@
 	<li>画像サイズについて</li>
 	<p>
 	celload、picload命令などで読み込まれる画像が、2^nのサイズ、つまり縦・横のサイズが1,2,4,8,16,32,64,128,256,512であることが推奨されます。正方形である必要はありません。
+	(2^nでないサイズ読み込み時には、内部で変換を行なうためオーバーヘッドが発生します)
 	1024,2048,4096などの大きなサイズの画像は扱えない機種もあるので、推奨されません。
 	</p>
 	<li>再生可能なサウンドファイルについて</li>

@@ -7,6 +7,15 @@
 
 #include "hspwnd_dish.h"
 #include "../hsp3/dpmread.h"
+#include "geometry.h"
+
+#include "hgmodel.h"
+#include "hgevent.h"
+#include "hgemitter.h"
+
+#ifdef __cplusplus
+extern "C" {
+#endif
 
 //		universal draw command function
 //
@@ -35,10 +44,24 @@ void hgio_copy( BMSCR *bm, short xx, short yy, short srcsx, short srcsy, BMSCR *
 void hgio_copyrot( BMSCR *bm, short xx, short yy, short srcsx, short srcsy, float ofsx, float ofsy, BMSCR *bmsrc, float psx, float psy, float ang );
 void hgio_fillrot( BMSCR *bm, float x, float y, float sx, float sy, float ang );
 
+void hgio_setcenter( float x, float y );
+void hgio_drawsprite( hgmodel *mdl, HGMODEL_DRAWPRM *prm );
+
 void hgio_clsmode( int mode, int color, int tex );
 int hgio_getWidth( void );
 int hgio_getHeight( void );
 void hgio_setfilter( int type, int opt );
+
+void hgio_square( BMSCR *bm, int *posx, int *posy, int *color );
+void hgio_square_tex( BMSCR *bm, int *posx, int *posy, BMSCR *bmsrc, int *uvx, int *uvy );
+
+int hgio_gettick( void );
+
+
+#ifdef __cplusplus
+}
+#endif /* __cplusplus */
+
 
 enum {
 CLSMODE_NONE = 0,
@@ -58,15 +81,15 @@ CLSMODE_MAX,
 #endif
 
 #ifdef HSPIOS
-#include "ios/hgio_ios.h"
+#include "ios/hgiox.h"
 #endif
 
 #ifdef HSPNDK
-#include "ndk/hgio_ndk.h"
+#include "ndk/hgiox.h"
 #endif
 
 #ifdef HSPLINUX
-#include "linux/hgio_linux.h"
+#include "linux/hgiox.h"
 #endif
 
 

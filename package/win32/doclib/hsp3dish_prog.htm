@@ -23,8 +23,9 @@
 		<li><a href="#ABOUT">HSP3Dishとは</a></li>
 		<li><a href="#DISHUSE">HSP3Dishの使用方法</a></li>
 		<li><a href="#DRAWDIFF">HSP3との差異</a></li>
-		<li><a href="#GMODE">gmode命令について(new)</a></li>
-		<li><a href="#GFILTER">gfilter命令について(new)</a></li>
+		<li><a href="#GMODE">gmode命令について</a></li>
+		<li><a href="#GFILTER">gfilter命令について</a></li>
+		<li><a href="#SYSREQ">setreq、getreq命令について(new)</a></li>
 		<li><a href="#SAMPLE">サンプルスクリプト</a></li>
 		<li><a href="#CMDLIST">HSP3Dishコマンドリスト</a></li>
 		<li><a href="#WINHRT">Windows上での実行ファイル作成</a></li>
@@ -152,7 +153,7 @@
 	</p>
 	</ul>
 
-	<h2 id="GMODE">gmode命令について(new)</h2>
+	<h2 id="GMODE">gmode命令について</h2>
 	<p>
 	hsp3dishでは、celput、gcopy等の画像コピー命令で、アルファチャンネルを含めた
 	コピーが実行されます。そのため、gmodeによる指定は、いくつか違いが出ます。
@@ -169,7 +170,7 @@
 	通常のHSPにあるRGBが0の場合に透過するモードや、特定の色コードを透過するモードは選択できませんので注意してください。
 	</p>
 
-	<h2 id="GFILTER">gfilter命令について(new)</h2>
+	<h2 id="GFILTER">gfilter命令について</h2>
 	<p>
 	hsp3dish ver3.3a2から、フィルタリング(テクスチャ補間)の設定を行なう
 	ためのgfilter命令が追加されています。
@@ -190,6 +191,58 @@
 	また、「redraw 0」による画面クリア時には、フィルタリング設定は
 	FILTER_NONEにリセットされます。
 	</p>
+
+	<h2 id="SYSREQ">setreq、getreq命令について(new)</h2>
+	<p>
+	hsp3dish ver3.3a6から、システムの各種設定を行なうためのsetreq、getreq命令が
+	追加されています。<br>
+	</p>
+	<pre>
+		setreq type,val			システムリクエスト設定書き込み
+
+		type : 設定タイプ(SYSREQ_???)
+		val  : 設定する値
+
+		getreq var,type			システムリクエスト設定読み出し
+
+		var  : 結果が代入される変数名
+		type : 設定タイプ(SYSREQ_???)
+	</pre>
+	<pre>
+	設定タイプ名      読み書き(*)   内容
+	-------------------------------------------
+	SYSREQ_CLSMODE        RW        背景のクリアフラグ
+	SYSREQ_CLSCOLOR       RW        背景クリア色
+	SYSREQ_TIMER          R         ミリ秒単位のタイマー値
+	SYSREQ_PLATFORM       R         HSP3Dishを実行しているプラットフォーム
+
+	(*)項目ごとに、読み(R)書き(W)の可否が異なります
+	</pre>
+	<li>SYSREQ_CLSMODE、SYSREQ_CLSCOLOR</li>
+	<p>
+	redraw 0による描画開始時に画面をクリアするかどうかを設定します。
+	SYSREQ_CLSMODEに1を設定した場合はクリア、0の場合はクリアを行ないません。
+	スクリプト内で画面のクリアを行なっている場合は、システム側で背景クリアをしない方が
+	処理速度の向上につながります。
+	SYSREQ_CLSCOLORでクリアする際の色コードを設定することができます。
+	色コードは、RGB24bit($rrggbb)を1つにした数値で設定します。
+	</p>
+	<li>SYSREQ_TIMER</li>
+	<p>
+	ミリ秒単位のタイマー値を返します。
+	プラットフォームごとに返される値は異なりますが、1ミリ秒につき1ずつ値が加算されていきます。
+	</p>
+	<li>SYSREQ_PLATFORM</li>
+	<p>
+	以下のHSP3Dishプラットフォーム値を返します。
+	</p>
+	<pre>
+	マクロ名            値  内容
+	-------------------------------------------
+	PLATFORM_WINDOWS    0   Windows版
+	PLATFORM_IOS        1   iOS版
+	PLATFORM_ANDROID    2   android版
+	</pre>
 
 	<h2 id="SAMPLE">サンプルスクリプト</h2>
 	<p>

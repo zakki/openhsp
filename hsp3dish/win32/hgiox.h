@@ -2,8 +2,10 @@
 //
 //	hgiox.cpp structures
 //
-#ifndef __hgio_h
-#define __hgio_h
+#ifndef __hgiox_h
+#define __hgiox_h
+
+#include "hginc.h"
 
 int hgio_device_restore( void );
 

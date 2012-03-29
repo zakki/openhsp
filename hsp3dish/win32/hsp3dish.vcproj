@@ -281,6 +281,30 @@
 					>
 				</File>
 				<File
+					RelativePath="..\geometry.cpp"
+					>
+				</File>
+				<File
+					RelativePath="..\hgdx.cpp"
+					>
+				</File>
+				<File
+					RelativePath="..\hgemitter.cpp"
+					>
+				</File>
+				<File
+					RelativePath="..\hgevent.cpp"
+					>
+				</File>
+				<File
+					RelativePath="..\hgmodel.cpp"
+					>
+				</File>
+				<File
+					RelativePath="..\hgobj.cpp"
+					>
+				</File>
+				<File
 					RelativePath="..\..\hsp3\hsp3.cpp"
 					>
 				</File>
@@ -353,6 +377,10 @@
 				Name="win"
 				>
 				<File
+					RelativePath=".\dxsnd.cpp"
+					>
+				</File>
+				<File
 					RelativePath=".\hgiox.cpp"
 					>
 				</File>
@@ -391,7 +419,35 @@
 					>
 				</File>
 				<File
+					RelativePath="..\geometry.h"
+					>
+				</File>
+				<File
+					RelativePath="..\hgdx.h"
+					>
+				</File>
+				<File
+					RelativePath="..\hgemitter.h"
+					>
+				</File>
+				<File
+					RelativePath="..\hgevent.h"
+					>
+				</File>
+				<File
+					RelativePath="..\hginc.h"
+					>
+				</File>
+				<File
 					RelativePath="..\hgio.h"
+					>
+				</File>
+				<File
+					RelativePath="..\hgmodel.h"
+					>
+				</File>
+				<File
+					RelativePath="..\hgobj.h"
 					>
 				</File>
 				<File
@@ -470,6 +526,10 @@
 			<Filter
 				Name="win"
 				>
+				<File
+					RelativePath=".\dxsnd.h"
+					>
+				</File>
 				<File
 					RelativePath=".\hgiox.h"
 					>

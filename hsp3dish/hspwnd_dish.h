@@ -74,14 +74,14 @@ public:
 	int Copy( Bmscr *src, int xx, int yy, int psx, int psy );
 	int Zoom( int dx, int dy, Bmscr *src, int xx, int yy, int psx, int psy, int mode );
 
-	void GradFill( int x, int y, int sx, int sy, int mode, int col1, int col2 );
-	void GradFillEx( int *vx, int *vy, int *vcol );
-
 	void SetCelDivideSize( int new_divsx, int new_divsy, int new_ofsx, int new_ofsy );
 	int CelPut( Bmscr *src, int id );
 	int CelPut( Bmscr *src, int id, float destx, float desty, float ang );
 
 	void FillRot( int x, int y, int dst_sx, int dst_sy, float ang );
+	void FillRotTex( int dst_sx, int dst_sy, float ang, Bmscr *src, int tx, int ty, int srcx, int scry );
+	void SquareTex( int *dst_x, int *dst_y, Bmscr *src, int *src_x, int *src_y, int mode );
+	void GradFill( int x, int y, int sx, int sy, int mode, int col1, int col2 );
 
 	void SetFilter( int type );
 

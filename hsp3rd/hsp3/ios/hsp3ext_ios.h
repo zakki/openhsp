@@ -2,8 +2,8 @@
 //
 //	hsp3ext.cpp header
 //
-#ifndef __hsp3ext_ndk_h
-#define __hsp3ext_ndk_h
+#ifndef __hsp3ext_linux_h
+#define __hsp3ext_linux_h
 
 #include "../hsp3code.h"
 

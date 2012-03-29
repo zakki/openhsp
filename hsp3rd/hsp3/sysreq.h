@@ -44,8 +44,13 @@ SYSREQ_CLSMODE,
 SYSREQ_CLSCOLOR,
 SYSREQ_CLSTEX,
 SYSREQ_TIMER,
+SYSREQ_PLATFORM,
 SYSREQ_MAX
 };
+
+#define PLATFORM_WINDOWS 0
+#define PLATFORM_IOS 1
+#define PLATFORM_ANDROID 2
 
 void InitSysReq( void );
 void SetSysReq( int reqid, int val );
