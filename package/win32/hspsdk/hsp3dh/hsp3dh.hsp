@@ -1,0 +1,939 @@
+
+	;
+	;	HSP3Dish helper
+	;
+#packopt name "hsp3dh"
+#include "hspcmp.as"
+#include "hspext.as"
+#include "hspinet.as"
+#include "mod_appconfig.as"
+
+#define APPTITLE "HSP3Dish helper"
+#define APPVER "0.1"
+#define APP_CONF "\\hsp3dh.cfg"
+
+#uselib "shell32.dll"
+#cfunc SHBrowseForFolder "SHBrowseForFolder" int
+#func SHGetPathFromIDList "SHGetPathFromIDList" int,int
+#func SHFileOperation "SHFileOperationA" int
+#uselib "ole32.dll"
+#func CoTaskMemFree "CoTaskMemFree" int
+#uselib "KERNEL32.DLL"
+#func global RemoveDirectory "RemoveDirectoryA" sptr
+
+
+	;
+	;	HSP3Dish Helper tool
+	;	onion software/onitama 2012/4
+	;
+	randomize
+	goto *boot
+
+#deffunc initalize
+	;	tool初期化
+	;
+	sdim s1,256:sdim s2,256
+	wx=480:wy=240	; ウィンドウサイズ
+	;
+	app_winx=-1
+	app_winy=-1
+	app_mode=0
+	flag_utf8=1
+	and_targetid=1
+	path_java=""
+	path_sdk=""
+	path_ndk=""
+	path_ant=""
+	path_proj=""
+	and_name=""
+	and_pack=""
+	and_fname=""
+
+	get_hsp_appdata_path app_dir
+
+	cfg_init app_dir+APP_CONF
+	cfg_load:appcfg=stat
+	if appcfg {	; cfg読み込み
+		app_winx=0+cfg_getvar("winx")
+		app_winy=0+cfg_getvar("winy")
+		app_mode=0+cfg_getvar("mode")
+		path_java=cfg_getvar("path_java")
+		path_sdk=cfg_getvar("path_sdk")
+		path_ndk=cfg_getvar("path_ndk")
+		path_ant=cfg_getvar("path_ant")
+		path_proj=cfg_getvar("path_proj")
+		flag_utf8 = 0+cfg_getvar("flag_utf8")
+		and_name=cfg_getvar("and_name")
+		and_pack=cfg_getvar("and_pack")
+		and_targetid = 0+cfg_getvar("and_targetid")
+		and_fname=cfg_getvar("and_fname")
+	}
+
+	if app_winx<0 : app_winx = -1
+	if app_winy<0 : app_winy = -1
+	if app_winx>=ginfo_dispx : app_winx = ginfo_dispx-wx
+	if app_winy>=ginfo_dispy : app_winy = ginfo_dispy-wy
+
+	screen 0,wx,wy,0,app_winx,app_winy
+	title APPTITLE +" ver."+APPVER
+	gsel 0,1
+
+	sdim buf,$10000
+	sdim tmp,$10000
+	sdim outbuf,$10000
+	sdim ln,4096
+	sdim fname,1024
+	sdim and_package, 256
+
+	return
+
+#deffunc initwnd
+
+	cls 4
+	syscolor 15:boxf
+	sysfont 17
+	color 0,0,0
+	return
+
+#deffunc initsub
+
+	screen 1,wx,480,8,ginfo_wx1-4,ginfo_wy2+1
+	title "console"
+
+	cls 4
+	syscolor 15:boxf
+	sysfont 17
+	color 0,0,0
+	mesbox buf,wx,320,0
+
+	objsize 160,24
+	pos wx-168,480-32
+	button gosub "閉じる",*closesub
+
+	pos 8,320+8
+
+	gsel 0
+	return
+
+*closesub
+	gsel 1,-1
+	gsel 0
+	return
+
+
+#deffunc execcmd str _p1
+
+	tmp=""
+	cmd = dir_exe+"\\"+_p1
+	pipeexec tmp,cmd,1
+	if stat : dialog "コマンドラインの実行に失敗しました" : return -1
+
+	lnbak=""
+	repeat
+	pipeget ln
+	if stat=0 : break
+	;if stat=2 {
+	;	if ln!=lnbak : buf+=ln
+	;	lnbak=ln
+	;}
+	await 10
+	loop
+
+	buf=""
+	i=0
+	repeat
+		getstr s1,tmp,i,10
+		if strsize=0 : break
+		i+=strsize
+		buf+=s1
+		buf+="\n"
+	loop
+
+	gsel 1
+	objprm 0,buf
+	gsel 0
+
+	return 0
+
+#if 0
+#deffunc selfolder array fpath
+	;	フォルダ選択
+	;
+	dim prm,16
+	sdim stitle,260
+	sdim fname,260
+	sdim fpath,260
+
+	SubTitle="フォルダを選択してください"
+	prm(0)=hwnd,0,varptr(fname),varptr(stitle)
+	prm(4)=0x01,0,0,0
+	res = SHBrowseForFolder(varptr(prm))
+	if res = 0 : return -1
+
+	SHGetPathFromIDList res,varptr(fpath)
+	CoTaskMemFree res
+	return 0
+#endif
+
+
+;--------------------------------------------------------------------------------
+
+*boot
+	;	アプリケーション開始
+	;
+	initalize
+	onexit *owari
+
+
+*topmenu
+	if app_mode>=1 : goto *andmenu
+
+*srcmenu
+	app_mode=0
+	initwnd
+	pos 8,8
+	mes "指定されたスクリプトをC言語ソースファイルに変換します"
+
+	pos 8,30
+	sysfont 17
+	mes "ソーススクリプト:"
+	objsize 390,24
+	input fname
+	objsize 64,24
+	pos 408,41:button "参照...",*selfile
+
+	objsize 160,24
+	pos 8,68
+	chkbox "出力ソースをUTF-8に変換",flag_utf8
+
+	pos 312,68
+	objsize 160,48
+	button "変換",*mksrc
+
+	y=184
+	objsize 148,48
+	color 190,190,240:boxf 8,y,8+144,y+46
+	pos 8+48,y+16:color 0,0,0
+	mes "ソース変換"
+	pos 8+158,y
+	button "android",*go_andmenu
+	pos 8+158*2,y
+	button "オプション",*option
+	stop
+
+*go_andmenu
+	app_mode=1
+	goto *topmenu
+
+*andmenu
+	initwnd
+	pos 8,8
+	mes "HSP3Dish android"
+
+	pos 8,30
+
+	if path_java="" : goto *andmenu2
+	if path_sdk="" : goto *andmenu2
+	if path_ndk="" : goto *andmenu2
+	if path_ant="" : goto *andmenu2
+	if path_proj="" : goto *andmenu2
+
+	if app_mode>1 : goto *andmenu_proj
+
+	mes "プロジェクト名:"
+	objsize 240,24
+	input and_name
+	objsize 60,24
+	pos 280,45:mes "ID:"
+	pos 300,41:input and_targetid
+	objsize 100,24
+	pos 370,41:button "ID一覧...",*view_ids
+
+	pos 8,70
+	mes "パッケージ名:"
+	objsize 390,24
+	input and_package
+
+	x=ginfo_sx-150:y=114
+	objsize 140,32
+	pos x,y
+	button "新規作成",*and_start
+
+	goto *andmenu3
+
+*andmenu2
+	mes "android環境のオプションが設定されていません。"
+	mes "下のオプションボタンを押して設定を行なってください。"
+	goto *andmenu3
+
+*andmenu_proj
+
+	mes "ソーススクリプト:"
+	objsize 390,24
+	input and_fname
+	objsize 64,24
+	pos 408,41:button "参照...",*selfile2
+
+	pos 8,70
+	mes "データファイル(dpm):"
+	objsize 390,24
+	input and_pack
+	objsize 64,24
+	pos 408,82:button "作成...",*selfile_pack
+
+	gosub *upd_prj
+	pos 8,110
+	mes "プロジェクト名:"
+	objsize 300,24
+	combox selprj, 100, projlist
+	objsize 64,24
+	pos 408,122:button gosub "更新",*upd_prj
+
+	x=ginfo_sx-130:y=154
+	objsize 120,24
+	pos x,y
+	button "転送",*and_exec
+	pos x-130,y
+	button "ビルド",*and_build
+	pos x-260,y
+	button "クリーン",*and_clean
+
+
+
+	goto *andmenu3
+
+*upd_prj
+	sdim projlist,4096
+	dirlist projlist,path_proj+"\\*.*",5
+	selprj=-1
+	notesel projlist
+	repeat notemax
+		noteget s1,cnt
+		if s1=and_name : selprj=cnt
+	loop
+	return
+
+*get_prjname
+	and_name=""
+	notesel projlist
+	if selprj>=0 : noteget and_name,selprj
+	return
+
+
+*andmenu3
+	y=6
+	objsize 170,20
+	pos 300,y
+	if app_mode=1 {
+		button "既存プロジェクト",*go_preproj
+	} else {
+		button "新規プロジェクト",*go_newproj
+	}
+
+	y=184
+	objsize 148,48
+	pos 8,y
+	button "ソース変換",*srcmenu
+	color 190,190,240:boxf 8+158,y,8+158+144,y+46
+	pos 8+158+48,y+16:color 0,0,0
+	mes "android"
+	pos 8+158*2,y
+	button "オプション",*option
+	stop
+
+*go_newproj
+	app_mode=1
+	goto *topmenu
+*go_preproj
+	app_mode=2
+	goto *topmenu
+
+
+*option
+	initwnd
+	pos 8,8
+	mes "android オプション設定"
+	y=40
+
+	pos 8,y+3:mes "Javaフォルダ"
+	objsize 320,24
+	pos 80,y:input path_java
+	objsize 64,24
+	pos 408,y:button "参照...",*selpath_java
+	y+=30
+
+	pos 8,y+3:mes "SDKフォルダ"
+	objsize 320,24
+	pos 80,y:input path_sdk
+	objsize 64,24
+	pos 408,y:button "参照...",*selpath_sdk
+	y+=30
+
+	pos 8,y+3:mes "NDKフォルダ"
+	objsize 320,24
+	pos 80,y:input path_ndk
+	objsize 64,24
+	pos 408,y:button "参照...",*selpath_ndk
+	y+=30
+
+	pos 8,y+3:mes "antフォルダ"
+	objsize 320,24
+	pos 80,y:input path_ant
+	objsize 64,24
+	pos 408,y:button "参照...",*selpath_ant
+	y+=30
+
+	pos 8,y+3:mes "プロジェクト"
+	objsize 320,24
+	pos 80,y:input path_proj
+	objsize 64,24
+	pos 408,y:button "参照...",*selpath_proj
+	y+=30
+
+	pos 8,200
+	objsize 160,24
+	button "メインメニュー",*topmenu
+*optmenu_1
+	stop
+
+*selpath_java
+	selfolder s1,"Javaインストールフォルダを指定してください" : if stat : goto *optmenu_1
+	path_java = s1
+	objprm 0, s1
+	stop
+*selpath_sdk
+	selfolder s1,"android SDKインストールフォルダを指定してください" : if stat : goto *optmenu_1
+	path_sdk = s1
+	objprm 2, s1
+	stop
+*selpath_ndk
+	selfolder s1,"android NDKインストールフォルダを指定してください" : if stat : goto *optmenu_1
+	path_ndk = s1
+	objprm 4, s1
+	stop
+*selpath_ant
+	selfolder s1,"antインストールフォルダを指定してください" : if stat : goto *optmenu_1
+	path_ant = s1
+	objprm 6, s1
+	stop
+*selpath_proj
+	selfolder s1,"プロジェクトのルートフォルダを指定してください" : if stat : goto *optmenu_1
+	path_proj = s1
+	objprm 8, s1
+	stop
+*selfile_pack
+	selfolder s1,"データフォルダを指定してください"
+	if stat=0 {
+		and_pack = s1
+		gosub *mkdpm
+		and_pack+="\\data.dpm"
+		objprm 2, and_pack
+	}
+	stop
+
+*owari
+	;	アプリケーション終了
+	;
+	gsel 0
+	get_hsp_appdata_path app_dir
+	cfg_init app_dir+APP_CONF
+	cfg_seti "winx",ginfo_wx1
+	cfg_seti "winy",ginfo_wy1
+	cfg_seti "mode",app_mode
+	cfg_seti "flag_utf8",flag_utf8
+
+	cfg_sets "path_java",path_java
+	cfg_sets "path_sdk",path_sdk
+	cfg_sets "path_ndk",path_ndk
+	cfg_sets "path_ant",path_ant
+	cfg_sets "path_proj",path_proj
+
+	cfg_sets "and_name",and_name
+	cfg_sets "and_pack",and_pack
+	cfg_seti "and_targetid",and_targetid
+	cfg_sets "and_fname",and_fname
+
+	cfg_save
+	end
+
+*selfile
+	dialog "hsp",16,"hsp3スクリプト"
+	fname=refstr
+	if stat : objprm 0,fname
+	stop
+*selfile2
+	dialog "hsp",16,"hsp3スクリプト"
+	and_fname=refstr
+	if stat : objprm 0,and_fname
+	stop
+
+*mksrc
+	;	hsp convert only
+	;
+	if fname="" : stop
+
+	initsub
+
+	s1=fname
+	gosub *hspcnv
+	if hspcnv_res : goto *fin
+
+	gsel 1
+	mes "終了しました。"
+*fin
+	objprm 0,buf
+
+	;button "OK",*topmenu
+	gsel 0
+	goto *topmenu
+
+*hspcnv
+	;	hsp convert
+	;	s1 = full path name (.hsp)
+	;	(out) hspcnv_res 0=ok,1=error
+	;
+	hspcnv_res=0
+	mydir=getpath(s1,32)
+	myfile=getpath(s1,1+8+16)
+
+	chdir mydir
+	hspname=myfile+".hsp" ; スクリプトファイル名
+	objname=myfile+".ax" ; オブジェクトファイル名
+	cppname=myfile+".cpp" ; Cファイル名
+
+	hsc_ini s1
+	hsc_objname objname
+	hsc_comp 0 ; コンパイル
+	res=stat
+	hsc_getmes buf
+	if res!=0 : dialog "エラーが発生しました。" : hspcnv_res=1 : return
+
+	cmd = dir_exe+"\\hsp3cnv "+myfile
+	pipeexec tmp,cmd,1
+	if stat : dialog "hsp3cnvを実行できませんでした" : hspcnv_res=1 : return
+
+	buf+=tmp
+	gsel 1
+	mes "HSP変換処理中..."
+
+	repeat
+	pipeget ln
+	if stat=0 : break
+	;buf+=ln
+	await 10
+	loop
+
+	;mes buf
+	exist cppname
+	if strsize<=0 : dialog "hsp3cnvの変換でエラーが発生しました" : hspcnv_res=1 : return
+
+	if flag_utf8=0 : return
+
+	maxsize = strsize*2
+	sdim outbuf, maxsize
+
+	gsel 1
+	mes "UTF-8に変換中..."
+
+	notesel cppbuf
+	noteload cppname
+
+	nkfcnv outbuf,cppbuf,"Sw",-1,maxsize		; 文字コード変換
+
+	notesel outbuf
+	notesave cppname
+
+	gsel 1
+	mes "変換終了しました。"
+
+	return
+
+*mkdpm
+	;	packfile作成
+	;	s1 = packfile dir
+	;
+	sname = "packfile"
+	chdir s1
+
+	dirlist s1,"*.*",0
+	notesel s1
+
+	repeat notemax
+	noteget ff,cnt
+
+	hed=""
+	if ff="packfile" : hed=";"
+	if getpath(ff,2)=".dpm" : hed=";"
+
+	if hed!="" : noteadd hed+ff,cnt,1	
+
+	loop
+
+	noteadd "; packfile generated by hsp3dish helper",0
+	notesave sname			; テキストファイルをセーブ
+
+	hsc_ini ""
+	pack_ini "data.dpm"
+	pack_make 1,0
+
+	return
+
+
+
+	;	android
+	;
+*bat_init
+	notesel tmp
+	tmp="@ECHO OFF\n"
+	tmp+="SET JAVA_HOME="+path_java+"\n"
+	tmp+="SET NDK_ROOT="+path_ndk+"\n"
+	tmp+="SET PATH="+path_ant+"\\bin;"+path_sdk+"\\tools;"+path_sdk+"\\platform-tools;"+path_ndk+";"+path_java+"\\bin;"
+	tmp+="%PATH%\n"
+	s1="C:":if peek(path_proj,1)=":" {
+		poke s1,0,peek(path_proj,0)
+	}
+	tmp+=s1+"\n"
+	tmp+="CD "+path_proj+"\n"
+	;tmp+="ECHO START\n"
+
+	return
+*bat_save
+	chdir dir_exe
+	notesave "go.bat"
+	return
+
+*view_ids
+	initsub
+	gsel 1
+	mes "処理中..."
+	gosub *bat_init
+	tmp+="android list targets\n"
+	gosub *bat_save
+	execcmd "go.bat"
+	if stat : goto *topmenu
+
+	gsel 1
+	mes "IDリスト一覧を取得しました。"
+	gsel 0
+	goto *topmenu
+
+*and_start
+	;	create project
+	;
+	initsub
+	gsel 1
+
+	if and_targetid<=0 : mes "無効なIDです" : goto *and_fin
+	if and_name="" : mes "プロジェクト名が無効です" : goto *and_fin
+	if and_package="" {
+		and_package=strf("hsp%04d%02d%02d",gettime(0),gettime(1),gettime(3) )+"."+and_name
+		;mes "パッケージ名が無効です" : goto *and_fin
+	}
+
+	basedir=path_proj+"\\"+and_name+"\\"
+	dirlist s1,basedir+"*.*"
+	if stat : mes "すでにプロジェクトが存在しています" : goto *and_fin	
+
+	mes "処理中..."
+
+	gosub *bat_init
+	tmp+="android create project --target "+and_targetid+" --path ./"+and_name+" --activity "+and_name+" --package "+and_package+"\n"
+
+	gosub *bat_save
+
+	execcmd "go.bat"
+	if stat : goto *and_fin
+
+	;	create project後にフォルダを改変
+	;
+	prj_dlist={"jni
+jni\\hsp3
+jni\\hsp3\\ndk
+jni\\hsp3embed
+res\\drawable-hdpi
+res\\drawable-ldpi
+res\\drawable-mdpi"}
+
+	prj_flist={"jni\\Android.mk
+jni\\appengine.h
+jni\\Application.mk
+jni\\main.c
+jni\\hsp3\\dpmread.cpp
+jni\\hsp3\\dpmread.h
+jni\\hsp3\\geometry.cpp
+jni\\hsp3\\geometry.h
+jni\\hsp3\\hgdx.cpp
+jni\\hsp3\\hgdx.h
+jni\\hsp3\\hgemitter.cpp
+jni\\hsp3\\hgemitter.h
+jni\\hsp3\\hgevent.cpp
+jni\\hsp3\\hgevent.h
+jni\\hsp3\\hginc.h
+jni\\hsp3\\hgio.h
+jni\\hsp3\\hgio_dg.h
+jni\\hsp3\\hgmodel.cpp
+jni\\hsp3\\hgmodel.h
+jni\\hsp3\\hgobj.cpp
+jni\\hsp3\\hgobj.h
+jni\\hsp3\\hsp3code.h
+jni\\hsp3\\hsp3config.h
+jni\\hsp3\\hsp3debug.cpp
+jni\\hsp3\\hsp3debug.h
+jni\\hsp3\\hsp3ext.h
+jni\\hsp3\\hsp3gr.h
+jni\\hsp3\\hsp3gr_dish.cpp
+jni\\hsp3\\hsp3gr_dish.h
+jni\\hsp3\\hsp3int.cpp
+jni\\hsp3\\hsp3int.h
+jni\\hsp3\\hsp3struct.h
+jni\\hsp3\\hspvar_core.cpp
+jni\\hsp3\\hspvar_core.h
+jni\\hsp3\\hspvar_double.cpp
+jni\\hsp3\\hspvar_int.cpp
+jni\\hsp3\\hspvar_label.cpp
+jni\\hsp3\\hspvar_label.h
+jni\\hsp3\\hspvar_str.cpp
+jni\\hsp3\\hspvar_struct.cpp
+jni\\hsp3\\hspwnd.h
+jni\\hsp3\\hspwnd_dish.cpp
+jni\\hsp3\\hspwnd_dish.h
+jni\\hsp3\\random.cpp
+jni\\hsp3\\random.h
+jni\\hsp3\\stack.cpp
+jni\\hsp3\\stack.h
+jni\\hsp3\\strbuf.cpp
+jni\\hsp3\\strbuf.h
+jni\\hsp3\\strnote.cpp
+jni\\hsp3\\strnote.h
+jni\\hsp3\\supio.h
+jni\\hsp3\\sysreq.cpp
+jni\\hsp3\\sysreq.h
+jni\\hsp3\\ndk\\font_data.h
+jni\\hsp3\\ndk\\hgiox.cpp
+jni\\hsp3\\ndk\\hgiox.h
+jni\\hsp3\\ndk\\hsp3ext_ndk.cpp
+jni\\hsp3\\ndk\\hsp3ext_ndk.h
+jni\\hsp3\\ndk\\mmman.cpp
+jni\\hsp3\\ndk\\mmman.h
+jni\\hsp3\\ndk\\stb_image.c
+jni\\hsp3\\ndk\\stb_image.h
+jni\\hsp3\\ndk\\supio_ndk.cpp
+jni\\hsp3\\ndk\\supio_ndk.h
+jni\\hsp3embed\\hsp3code.cpp
+jni\\hsp3embed\\hsp3embed.cpp
+jni\\hsp3embed\\hsp3embed.h
+jni\\hsp3embed\\hsp3r.cpp
+jni\\hsp3embed\\hsp3r.h
+jni\\hsp3embed\\hspsource.cpp
+jni\\hsp3embed\\hspvar_util.cpp
+jni\\hsp3embed\\hspvar_util.h
+jni\\hsp3embed\\misc.cpp
+jni\\hsp3embed\\misc.h
+res\\drawable-hdpi\\icon.png
+res\\drawable-ldpi\\icon.png
+res\\drawable-mdpi\\icon.png"}
+
+	gsel 1
+	mes "プロジェクトの更新中..."
+
+	errflag=0
+
+	notesel prj_dlist
+	repeat notemax
+		noteget s1,cnt
+		mkdir basedir+s1
+	loop
+
+	notesel prj_flist
+	repeat notemax
+		noteget s1,cnt
+		s2 = dir_exe+"\\android\\hspproj\\"+s1
+		buf+="Copying "+s1+"...\n"
+		exist s2
+		if strsize<=0 : dialog "ファイル["+s1+"]がありません。" : errflag++ : break
+		bcopy s2,basedir+s1
+	loop
+
+	s1=basedir+"AndroidManifest.xml"
+	notesel tmp
+	noteload s1
+	noteadd "    <uses-sdk android:minSdkVersion=\"10\" />",5,0
+	noteadd "    <application android:icon=\"@drawable/icon\" android:label=\"@string/app_name\">",6,1
+	noteadd "        <activity android:name=\"android.app.NativeActivity\"",7,1
+	noteadd "            <meta-data android:name=\"android.app.lib_name\"",9,0
+	noteadd "                    android:value=\""+and_name+"\" />",10,0
+	notesave s1
+
+	s1=basedir+"jni\\Android.mk"
+	notesel tmp
+	noteload s1
+	noteadd "LOCAL_MODULE    := "+and_name,4,1
+	notesave s1
+
+	s1=basedir+"jni\\hsp3embed\\hsp3r.cpp"
+	s3="*":poke s3,0,10
+	notesel tmp
+	noteload s1
+	i=0
+	repeat
+		getstr s2,tmp,i,10
+		if strsize=0 : break
+		i+=strsize
+		if instr(s2,0,"libhsp3dish.so")>=0 {
+			outbuf+="    dpm_ini( \"/data/data/"+and_package+"/lib/libhsp3dish.so\",0,-1,-1 );"
+		} else {
+			outbuf+=s2
+		}
+		outbuf+=s3
+	loop
+	notesel outbuf
+	notesave s1
+
+	gsel 1
+	if errflag : mes "エラーのため処理を中断しました" : goto *and_fin
+
+	objprm 0,buf
+	mes "終了しました。"
+
+	gsel 0
+	goto *go_preproj
+
+*and_fin
+	gsel 0
+	goto *topmenu
+
+
+*and_exec
+	;	project execute
+	;
+	gosub *get_prjname
+	if and_name="" : dialog "プロジェクトが指定されていません" : goto *topmenu
+
+	basedir=path_proj+"\\"+and_name+"\\bin\\"
+	s1 = and_name+"-debug.apk"
+	exist basedir+s1
+	if strsize<=0 : dialog "ビルドされたファイルがありません" : goto *topmenu
+
+	initsub
+	gsel 1
+
+	mes "処理中..."
+
+	gosub *bat_init
+	tmp+="CD "+and_name+"\\bin\n"
+	tmp+="adb install -r "+and_name+"-debug.apk\n"
+	gosub *bat_save
+
+	execcmd "go.bat"
+	if stat : goto *and_fin
+
+	gsel 1
+	mes "終了しました。"
+
+	goto *and_fin
+
+*and_clean
+	;	project clean
+	;
+	gosub *get_prjname
+	if and_name="" : dialog "プロジェクトが指定されていません" : goto *topmenu
+
+	initsub
+	gsel 1
+
+	mes "処理中..."
+
+	gosub *bat_init
+
+	s1=path_proj+"\\"+and_name+"\\obj\\local\\armeabi\\objs\\test2\\hsp3embed\\*.*"
+	tmp+="DEL /F /Q "+s1+"\n"
+	tmp+="ECHO "+s1+"\n"
+
+	tmp+="CD "+and_name+"\n"
+	tmp+="ant clean\n"
+
+	gosub *bat_save
+
+	execcmd "go.bat"
+	if stat : goto *and_fin
+
+/*
+	s1=path_proj+"\\"+and_name+"\\obj\\local\\armeabi\\objs\\test2\\hsp3embed"
+	gsel 1
+	mes "Delete ["+s1+"]"
+
+	dim SHFILEOPSTRUCT, 8
+	SHFILEOPSTRUCT.0 = hWnd
+	SHFILEOPSTRUCT.1 = 0x0003 //FO_DELETE
+	SHFILEOPSTRUCT.2 = varptr( s1 )
+	SHFILEOPSTRUCT.3 = 0
+	SHFILEOPSTRUCT.4 = 0x0114 // FOF_SIMPLEPROGRESS | FOF_NOCONFIRMATION
+	SHFILEOPSTRUCT.5 = -1
+	SHFileOperation varptr( SHFILEOPSTRUCT )
+	if stat!=0 {
+		mes "フォルダの削除に失敗しました"
+	}
+*/
+	gsel 1
+	mes "終了しました。"
+	goto *and_fin
+
+*and_build
+	;	project build
+	;
+	gosub *get_prjname
+	if and_name="" : dialog "プロジェクトが指定されていません" : goto *topmenu
+
+	initsub
+
+	if and_fname="" : goto *nohsp_conv
+
+	s1=and_fname
+	gosub *hspcnv
+	if hspcnv_res : goto *and_fin
+
+	basedir=path_proj+"\\"+and_name+"\\jni\\hsp3embed\\"
+	bcopy cppname, basedir+"hspsource.cpp"
+
+*nohsp_conv
+	gsel 1
+	mes "NDKビルド処理中..."
+
+	gosub *bat_init
+	tmp+="CD "+and_name+"\n"
+	tmp+="ndk-build\n"
+
+	gosub *bat_save
+
+	execcmd "go.bat"
+	if stat : goto *and_fin
+
+	if and_pack="" : goto *nohsp_pack
+
+	gsel 1
+	mes "packfile処理中..."
+	exist and_pack
+	if strsize<=0 : mes "data.dpmがありません" : goto *and_fin
+
+	basedir=path_proj+"\\"+and_name+"\\libs\\armeabi\\"
+
+	mes "make ["+basedir+"libhsp3dish.so] ..."
+	bcopy and_pack, basedir+"libhsp3dish.so"
+
+*nohsp_pack
+
+	gsel 1
+	mes and_name+"ビルド処理中..."
+
+	gosub *bat_init
+	tmp+="CD "+and_name+"\n"
+	tmp+="ant debug\n"
+	gosub *bat_save
+
+	execcmd "go.bat"
+	if stat : goto *and_fin
+
+	gsel 1
+	mes "終了しました。"
+	goto *and_fin
+
