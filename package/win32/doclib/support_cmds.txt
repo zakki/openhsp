@@ -63,6 +63,9 @@ celload	,sys|func
 celdiv	,sys|func
 celput	,sys|func
 
+exec	,sys|func
+dialog	,sys|func
+
 
 HSP3Dishサポート済みシステム変数・関数
 
@@ -215,9 +218,6 @@ objsize	,sys|func
 
 onexit	,sys|func
 onerror	,sys|func
-
-exec	,sys|func
-dialog	,sys|func
 
 dupptr	,sys|func
 newmod	,sys|func

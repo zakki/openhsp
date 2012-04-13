@@ -29,7 +29,8 @@
 		<li><a href="#RUNPROJ">HSP3Dishの実行と設定</a></li>
 		<li><a href="#UPDATE11">iHSP11の更新</a></li>
 		<li><a href="#UPDATE12">iHSP12の更新</a></li>
-		<li><a href="#UPDATE13">iHSP13の更新(new)</a></li>
+		<li><a href="#UPDATE13">iHSP13の更新</a></li>
+		<li><a href="#UPDATE14">iHSP14の更新(new)</a></li>
 		<li><a href="#NOTICE">iOS版の注意事項、制限</a></li>
 		<li><a href="#NEWVER">iOS版の更新予定</a></li>
 	</ol>
@@ -67,7 +68,7 @@
 	iOSフォルダには、HSP3Dishランタイム及びxcode用のサンプルプロジェクトが含まれています。
 
 	<ul>
-	<li>iHSP13フォルダ - HSP3Dishランタイム本体</li>
+	<li>iHSP14フォルダ - HSP3Dishランタイム本体</li>
 	<li>hspprojフォルダ - HSP3Dishサンプル(hsplogo.hsp)</li>
 	<li>blockフォルダ - ブロック崩しサンプル(block3.hsp)</li>
 	<li>gcubeフォルダ - iPad用、d3module使用サンプル(gcube.hsp)</li>
@@ -120,14 +121,14 @@
 
 	<h2 id="ADDHSP">HSP3Dish関連ファイルの登録</h2>
 	<p>
-	作成されたプロジェクトのフォルダと同じ階層に、「iHSP13」フォルダを配置してください。
+	作成されたプロジェクトのフォルダと同じ階層に、「iHSP14」フォルダを配置してください。
 	「iHSPxx」フォルダはアーカイブ内のiOSフォルダに同梱されています。
 	</p>
 	<img src="hsp3dish/s_menu.jpg" style="float:right;">
 	<img src="hsp3dish/s_folder.jpg"><br>
 	<p>
 	XCode上でプロジェクトに必要なファイルを追加してください。<br>
-	Fileメニューから、「Add Files to～」を選択し、「iHSP13」のフォルダ(下層も含む)を追加(Add)します。<br>
+	Fileメニューから、「Add Files to～」を選択し、「iHSP14」のフォルダ(下層も含む)を追加(Add)します。<br>
 	さらに、Windows上で作成されたCソースファイル(拡張子が.cppのファイル)を追加(Add)します。<br>
 	</p>
 	<p>
@@ -179,10 +180,10 @@
 	<br>
 	<p>
 	冒頭の「#import "AppDelegate.h"」の下に以下のコードを追加してください。<br>
-	(「iHSP13」への相対パス指定によりクラス宣言を読み込んでいます)
+	(「iHSP14」への相対パス指定によりクラス宣言を読み込んでいます)
 	</p>
 	<pre>
-	    #import "../../iHSP13/Classes/HspView.h"
+	    #import "../../iHSP14/Classes/HspView.h"
 	</pre>
 	<p>
 	次に「- (BOOL)application:～{」のあるブロック内の「// Override point for customization after application launch.」行の直前に以下のコードを追加してください。<br>
@@ -252,7 +253,8 @@
 	    [view actMode:1];
 	</pre>
 	<p>
-	サンプルのblockプロジェクトでも同様の処理が入っていますので、参考にしてください。
+	既にサンプルには、これらのコードが含まれています。
+	iOSフォルダに含まれているAppDelegate.mファイルを上書きして頂いても構いません。
 	</p>
 
 	<p>
@@ -327,6 +329,31 @@
 	<p>
 	ランタイムの更新により、grotate、gsquare、gradf、setreq、getreq命令がサポートされます。
 	また、不具合修正によりスクリプト変換時の互換性が向上しています。
+	</p>
+	</ul>
+
+
+	<h2 id="UPDATE14">iHSP14の更新</h2>
+	<p>
+	iOS版ランタイムver1.4では以下の更新を行なっています。
+	</p>
+	<ul>
+	<li>exec命令のサポート</li><br>
+	<p>
+	exec命令でURLスキームを指定することにより、Safariブラウザを指定したURLで開くことができます。
+	</p>
+	<pre>
+	exec "http://hsp.tv/",16
+	</pre>
+	<p>
+	上の例では、「hsp.tv」のサイトを開きます。
+	Windowsの時と同様に、第2パラメーターに16(関連付けアプリケーション実行)を指定するようにしてください。
+	</p>
+	<li>dialog命令のサポート</li><br>
+	<p>
+	システムによるダイアログ表示をサポートしています。
+	タイプ0～3のみをサポートしています。
+	Windows版のような警告アイコン等は表示されません。
 	</p>
 	</ul>
 
