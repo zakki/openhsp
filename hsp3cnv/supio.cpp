@@ -292,6 +292,34 @@ char *strstr2( char *target, char *src )
 }
 
 
+char *strstr2rev( char *target, char *src )
+{
+	//		strstrŠÖ”‚Ì‘SŠp‘Î‰”Å(•¶š—ñ‚ÌŒã‚ë‚©‚çŒŸõ)
+	//
+	unsigned char *p;
+	unsigned char *s;
+	unsigned char *p2;
+	unsigned char a2;
+	unsigned char a3;
+
+	if (( *src==0 )||( *target==0 )) return NULL;
+	p=(unsigned char *)target + strlen(target);
+
+	while(1) {
+		if ( p==(unsigned char *)target ) break;
+		p--;
+		p2 = p;
+		s=(unsigned char *)src;
+		while(1) {
+			a2=*s++;if (a2==0) return (char *)p;
+			a3=*p2++;if (a3==0) break;
+			if (a2!=a3) break;
+		}
+	}
+	return NULL;
+}
+
+
 void getpath( char *stmp, char *outbuf, int p2 )
 {
 	char *p;

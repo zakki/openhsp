@@ -24,6 +24,7 @@ int strsp_getptr( void );
 int strsp_get( char *srcstr, char *dststr, char splitchr, int len );
 
 char *strstr2( char *target, char *src );
+char *strstr2rev( char *target, char *src );
 
 void getpath( char *stmp, char *outbuf, int p2 );
 

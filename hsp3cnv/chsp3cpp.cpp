@@ -1153,6 +1153,21 @@ void CHsp3Cpp::MakeCPPSub( int cmdtype, int cmdval )
 
 	OutputCPPParam();
 	OutLine( "%s(%d,%d);\r\n", GetHSPCmdTypeName(cmdtype), cmdval, pnum );
+
+	if ( cmdtype == TYPE_EXTCMD ) {
+		switch( cmdval ) {
+		case 0x002:				// exec
+		case 0x003:				// dialog
+			//		É^ÉXÉNÇãÊêÿÇÈ
+			//
+			MakeCPPTask( curot );
+			curot++;
+			break;
+		default:
+			break;
+		}
+	}
+
 }
 
 

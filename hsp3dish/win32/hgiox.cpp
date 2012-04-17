@@ -1523,4 +1523,36 @@ int hgio_gettick( void )
 }
 
 
+int hgio_exec( char *stmp, char *option, int mode )
+{
+	int i,j;
+	j=SW_SHOWDEFAULT;if (mode&2) j=SW_SHOWMINIMIZED;
+
+	if ( *option != 0 ) {
+		SHELLEXECUTEINFO exinfo;
+		memset( &exinfo, 0, sizeof(SHELLEXECUTEINFO) );
+		exinfo.cbSize = sizeof(SHELLEXECUTEINFO);
+		exinfo.fMask = SEE_MASK_INVOKEIDLIST;
+		exinfo.hwnd = master_wnd;
+		exinfo.lpVerb = option;
+		exinfo.lpFile = stmp;
+		exinfo.nShow = SW_SHOWNORMAL;
+		if ( ShellExecuteEx( &exinfo ) == false ) throw HSPERR_EXTERNAL_EXECUTE;
+		return 0;
+	}
+		
+	if ( mode&16 ) {
+		i = (int)ShellExecute( NULL,NULL,stmp,"","",j );
+	}
+	else if ( mode&32 ) {
+		i = (int)ShellExecute( NULL,"print",stmp,"","",j );
+	}
+	else {
+		i=WinExec( stmp,j );
+	}
+	if (i<32) throw HSPERR_EXTERNAL_EXECUTE;
+	return 0;
+}
+
+
 #endif
