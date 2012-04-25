@@ -86,6 +86,8 @@
 #enum INET_MODE_FTPRESULT
 #enum INET_MODE_ERROR
 
+#func getenv getenv2 $202
+#func getctime getctime $202
 
 #module
 

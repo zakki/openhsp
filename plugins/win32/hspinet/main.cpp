@@ -8,6 +8,8 @@
 #include <windows.h>
 #include <stdio.h>
 #include <stdlib.h>
+#include <time.h>
+
 #include "../hpi3sample/hsp3plugin.h"
 
 #include "czhttp.h"
@@ -1236,4 +1238,182 @@ EXPORT BOOL WINAPI nkfguess( HSPEXINFO *hei, int p1, int p2, int p3 )
 
 
 /*------------------------------------------------------------------------------------*/
+
+static char *strchr2( char *target, char code )
+{
+	//		str中最後のcode位置を探す(全角対応版)
+	//
+	unsigned char *p;
+	unsigned char a1;
+	char *res;
+	p=(unsigned char *)target;
+	res = NULL;
+	while(1) {
+		a1=*p;if ( a1==0 ) break;
+		if ( a1==code ) res=(char *)p;
+		p++;							// 検索位置を移動
+		if (a1>=129) {					// 全角文字チェック
+			if ((a1<=159)||(a1>=224)) p++;
+		}
+	}
+	return res;
+}
+
+static void CutLastChr( char *p, char code )
+{
+	//		最後のcodeを取り除く
+	//
+	char *ss;
+	char *ss2;
+	int i;
+	ss = strchr2( p, code );
+	if ( ss != NULL ) {
+		i = (int)strlen( p ); ss2 = p + i -1;
+		if ( ss == ss2 ) *ss = 0;
+	}
+}
+
+static	int splc;	// split pointer
+
+static void strsp_ini( void )
+{
+	splc=0;
+}
+
+static int strsp_getptr( void )
+{
+	return splc;
+}
+
+static int strsp_get( char *srcstr, char *dststr, char splitchr, int len )
+{
+	//		split string with parameters
+	//
+	unsigned char a1;
+	unsigned char a2;
+	int a;
+	int sjflg;
+	a=0;sjflg=0;
+	while(1) {
+		sjflg=0;
+		a1=srcstr[splc];
+		if (a1==0) break;
+		splc++;
+		if (a1>=0x81) if (a1<0xa0) sjflg++;
+		if (a1>=0xe0) sjflg++;
+
+		if (a1==splitchr) break;
+		if (a1==13) {
+			a2=srcstr[splc];
+			if (a2==10) splc++;
+			break;
+		}
+		dststr[a++]=a1;
+		if (sjflg) {
+			dststr[a++]=srcstr[splc++];
+		}
+		if ( a>=len ) break;
+	}
+	dststr[a]=0;
+	if ( a1 == splitchr ) {
+		while(1) {
+			sjflg=0;
+			a1=srcstr[splc];
+			if (a1==0) break;
+			if (a1==13) break;
+			if (a1>=0x81) if (a1<0xa0) sjflg++;
+			if (a1>=0xe0) sjflg++;
+
+			if (( sjflg == 0 )&&( a1 != splitchr )) break;
+			if ( sjflg ) splc++;
+			splc++;
+		}
+	}
+	return (int)a1;
+}
+
+
+
+
+EXPORT BOOL WINAPI getenv2( HSPEXINFO *hei, int p1, int p2, int p3 )
+{
+	//	(type$202)
+	//	システム環境変数を取得します
+	//		getenv2 変数, "環境変数名"
+	//
+	PVal *pv;
+	APTR ap;
+	char *ss;
+	char buf[0x8000];
+
+	ap = hei->HspFunc_prm_getva( &pv );		// パラメータ1:変数
+	ss = hei->HspFunc_prm_gets();		// パラメータ2:文字列
+
+	GetEnvironmentVariable( ss, buf, 0x7fff );
+	hei->HspFunc_prm_setva( pv, ap, HSPVAR_FLAG_STR, buf );	// 変数に値を代入
+
+	return 0;
+}
+
+
+EXPORT BOOL WINAPI getctime( HSPEXINFO *hei, int p1, int p2, int p3 )
+{
+	//	(type$202)
+	//	システム環境変数を取得します
+	//		getctime 変数, mode
+	//
+	PVal *pv;
+	APTR ap;
+	char *ss;
+	char buf[128];
+	time_t timer;
+
+	ap = hei->HspFunc_prm_getva( &pv );		// パラメータ1:変数
+	p1 = hei->HspFunc_prm_getdi(0);			// パラメータ2:数値
+
+	switch( p1 ) {
+	case 0:
+		time( &timer );
+		ss = ctime( &timer );
+		CutLastChr( ss, 10 );
+		break;
+	case 1:
+		time( &timer );
+		ss = asctime( gmtime( &timer ) );
+		CutLastChr( ss, 10 );
+		break;
+	case 2:
+		{
+		char tm1[32];
+		char tm2[32];
+		char tm3[32];
+		char tm4[32];
+		char tm5[32];
+		int tm3_i;
+		time( &timer );
+		ss = asctime( gmtime( &timer ) );
+		CutLastChr( ss, 10 );
+
+		strsp_ini();
+		strsp_get( ss, tm1, ' ', 31 );
+		strsp_get( ss, tm2, ' ', 31 );
+		strsp_get( ss, tm3, ' ', 31 );
+		strsp_get( ss, tm4, ' ', 31 );
+		strsp_get( ss, tm5, ' ', 31 );
+		tm3_i = atoi( (const char *)tm3 );
+
+		sprintf( buf,"%s, %02d %s %s %s GMT", tm1, tm3_i, tm2, tm5, tm4 );
+		ss = buf;
+		break;
+		}
+	default:
+		ss = "";
+		break;
+	}
+	//asctime
+	hei->HspFunc_prm_setva( pv, ap, HSPVAR_FLAG_STR, ss );	// 変数に値を代入
+
+	return 0;
+}
+
 

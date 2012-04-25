@@ -1,6 +1,6 @@
 ------------------------------------------------------------------------------
 HSPINET ver3.3 REFERENCE MANUAL                     HSP : Hot Soup Processor  
-ＨＳＰ拡張拡張DLLリファレンス         copyright 2005-2011 (c) onion software  
+ＨＳＰ拡張拡張DLLリファレンス         copyright 2005-2012 (c) onion software  
 ------------------------------------------------------------------------------
 
 ・はじめに
@@ -60,6 +60,11 @@ HSPINET ver3.3 REFERENCE MANUAL                     HSP : Hot Soup Processor
 
 ・更新履歴
 
+	2012/4/25  ver3.4β1
+
+		環境変数を取得するためのgetenv命令を追加。
+		asctime形式、RFC1123形式の日付時刻を取得するgetctime命令を追加。
+
 	2010/3/16  ver3.21RC3
 
 		netexec命令のHSP呼び出し規約を以前と同様に戻しました。
@@ -116,7 +121,7 @@ HSPINET ver3.3 REFERENCE MANUAL                     HSP : Hot Soup Processor
 
 -hspinetライセンス表記(ここから)--------------------------------------------
 
-  OpenHSP Copyright (c) 1997-2010, Onion Software/onitama.
+  OpenHSP Copyright (c) 1997-2012, Onion Software/onitama.
   NKF Copyright (C) 1987, FUJITSU LTD. (I.Ichikawa).
   NKF Copyright (C) 1996-2009, The nkf Project.
   cJSON Copyright (c) 2009 Dave Gamble
@@ -186,6 +191,8 @@ HSPINET ver3.3 REFERENCE MANUAL                     HSP : Hot Soup Processor
 
 	nkfcnv						NKFによる文字コード変換を行なう
 	nkfguess					NKFによる文字コード認識結果を取得する
+	getenv						環境変数の取得
+	getctime					文字列による日付と時刻の取得
 
 
 
@@ -743,6 +750,34 @@ HSPINET ver3.3 REFERENCE MANUAL                     HSP : Hot Soup Processor
 		結果は、p1で指定された変数に文字列として代入されます。
 		必ず、先にnkfcnv命令で変換を行なっておく必要があります。
 
+
+・その他の命令
+
+	getenv	p1, "name"				環境変数の取得
+
+		p1 : 結果の文字列が代入される変数
+		"name" : 環境変数名
+
+		環境変数の値を取得し、変数に代入します。
+		結果は文字列型で代入されます。
+		変数のバッファは文字列に合わせて自動的に調整されます。
+
+
+	getctime p1, mode				文字列による日付と時刻の取得
+		p1 : 結果の文字列が代入される変数
+		mode(0) : 取得される形式の指定
+
+		日付と時刻を文字列で取得します。
+		modeの値により、取得するフォーマットを指定します。
+
+		 mode   内容
+		---------------------------------------------
+		   0    C言語のasctime関数による現在時刻(ローカル)
+		        例: Sun Nov  6 08:49:37 1994
+		   1    C言語のasctime関数による現在時刻(GMT/UTC)
+		        例: Sun Nov  6 08:49:37 1994
+		   2    RFC 1123で定義される日付フォーマット
+		        例: Sun, 06 Nov 1994 08:49:37 GMT
 
 -------------------------------------------------------------------------------
                                                 HSP users manual / end of file 
