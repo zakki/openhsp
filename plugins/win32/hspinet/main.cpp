@@ -1239,6 +1239,35 @@ EXPORT BOOL WINAPI nkfguess( HSPEXINFO *hei, int p1, int p2, int p3 )
 
 /*------------------------------------------------------------------------------------*/
 
+static char *strstr2( char *target, char *src )
+{
+	//		strstr関数の全角対応版
+	//
+	unsigned char *p;
+	unsigned char *s;
+	unsigned char *p2;
+	unsigned char a1;
+	unsigned char a2;
+	unsigned char a3;
+	p=(unsigned char *)target;
+	if (( *src==0 )||( *target==0 )) return NULL;
+	while(1) {
+		a1=*p;if ( a1==0 ) break;
+		p2 = p;
+		s=(unsigned char *)src;
+		while(1) {
+			a2=*s++;if (a2==0) return (char *)p;
+			a3=*p2++;if (a3==0) break;
+			if (a2!=a3) break;
+		}
+		p++;							// 検索位置を移動
+		if (a1>=129) {					// 全角文字チェック
+			if ((a1<=159)||(a1>=224)) p++;
+		}
+	}
+	return NULL;
+}
+
 static char *strchr2( char *target, char code )
 {
 	//		str中最後のcode位置を探す(全角対応版)
@@ -1349,6 +1378,7 @@ EXPORT BOOL WINAPI getenv2( HSPEXINFO *hei, int p1, int p2, int p3 )
 	ap = hei->HspFunc_prm_getva( &pv );		// パラメータ1:変数
 	ss = hei->HspFunc_prm_gets();		// パラメータ2:文字列
 
+	*buf = 0;
 	GetEnvironmentVariable( ss, buf, 0x7fff );
 	hei->HspFunc_prm_setva( pv, ap, HSPVAR_FLAG_STR, buf );	// 変数に値を代入
 
@@ -1416,4 +1446,38 @@ EXPORT BOOL WINAPI getctime( HSPEXINFO *hei, int p1, int p2, int p3 )
 	return 0;
 }
 
+
+EXPORT BOOL WINAPI getenvprm( HSPEXINFO *hei, int p1, int p2, int p3 )
+{
+	//	(type$202)
+	//	パラメーターを取得します
+	//		getenvprm 変数, データ変数, "要素名", 区切り記号
+	//
+	PVal *pv;
+	APTR ap;
+	char *vptr;
+	char *ss;
+	char *res;
+	char src[256];
+	char buf[0x8000];
+	int slen;
+
+	ap = hei->HspFunc_prm_getva( &pv );		// パラメータ1:変数
+	vptr = (char *)hei->HspFunc_prm_getv();	// パラメータ2:変数
+	ss = hei->HspFunc_prm_gets();			// パラメータ3:文字列
+	strncpy( src, ss, 255 ); 
+	slen = (int)strlen( src );
+	p1 = hei->HspFunc_prm_getdi('&');			// パラメータ4:数値
+
+	*buf = 0;
+	res = strstr2( vptr, src );
+	if ( res != NULL ) {
+		strsp_ini();
+		strsp_get( res+slen, buf, p1, 0x7fff );
+	}
+
+	hei->HspFunc_prm_setva( pv, ap, HSPVAR_FLAG_STR, buf );	// 変数に値を代入
+
+	return 0;
+}
 

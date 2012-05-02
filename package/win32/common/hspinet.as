@@ -87,6 +87,7 @@
 #enum INET_MODE_ERROR
 
 #func getenv getenv2 $202
+#func getenvprm getenvprm $202
 #func getctime getctime $202
 
 #module
