@@ -9,7 +9,7 @@
 #include "mod_appconfig.as"
 
 #define APPTITLE "HSP3Dish helper"
-#define APPVER "0.1"
+#define APPVER "0.3"
 #define APP_CONF "\\hsp3dh.cfg"
 
 #uselib "shell32.dll"
@@ -124,7 +124,7 @@
 #deffunc execcmd str _p1
 
 	tmp=""
-	cmd = dir_exe+"\\"+_p1
+	cmd = app_dir+"\\"+_p1
 	pipeexec tmp,cmd,1
 	if stat : dialog "コマンドラインの実行に失敗しました" : return -1
 
@@ -598,7 +598,7 @@
 
 	return
 *bat_save
-	chdir dir_exe
+	chdir app_dir
 	notesave "go.bat"
 	return
 
@@ -774,6 +774,7 @@ res\\drawable-mdpi\\icon.png"}
 	s3="*":poke s3,0,10
 	notesel tmp
 	noteload s1
+	outbuf=""
 	i=0
 	repeat
 		getstr s2,tmp,i,10
@@ -796,6 +797,7 @@ res\\drawable-mdpi\\icon.png"}
 	mes "終了しました。"
 
 	gsel 0
+	app_mode=2
 	goto *go_preproj
 
 *and_fin
@@ -845,7 +847,7 @@ res\\drawable-mdpi\\icon.png"}
 
 	gosub *bat_init
 
-	s1=path_proj+"\\"+and_name+"\\obj\\local\\armeabi\\objs\\test2\\hsp3embed\\*.*"
+	s1=path_proj+"\\"+and_name+"\\obj\\local\\armeabi\\objs\\"+and_name+"\\hsp3embed\\*.*"
 	tmp+="DEL /F /Q "+s1+"\n"
 	tmp+="ECHO "+s1+"\n"
 
@@ -892,6 +894,8 @@ res\\drawable-mdpi\\icon.png"}
 	gosub *hspcnv
 	if hspcnv_res : goto *and_fin
 
+	hsplog=buf
+
 	basedir=path_proj+"\\"+and_name+"\\jni\\hsp3embed\\"
 	bcopy cppname, basedir+"hspsource.cpp"
 
@@ -907,6 +911,10 @@ res\\drawable-mdpi\\icon.png"}
 
 	execcmd "go.bat"
 	if stat : goto *and_fin
+
+	ndklog=buf
+	i=instr(buf,0,"Install")
+	if i<0 : gsel 1 : mes "NDKのビルドに失敗しました" : goto *and_fin
 
 	if and_pack="" : goto *nohsp_pack
 
@@ -933,7 +941,10 @@ res\\drawable-mdpi\\icon.png"}
 	execcmd "go.bat"
 	if stat : goto *and_fin
 
+	buf = hsplog + "\n" + ndklog + "\n" + buf
+
 	gsel 1
 	mes "終了しました。"
+	objprm 0,buf
 	goto *and_fin
 
