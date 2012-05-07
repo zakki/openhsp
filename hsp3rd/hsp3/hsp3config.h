@@ -40,6 +40,7 @@
 //#define HSPLINUX		// Linux(CLI) version flag
 //#define HSPIOS		// iOS version flag
 //#define HSPNDK		// android NDK version flag
+//#define HSPDISH		// HSP3Dish flag
 
 //
 //		環境フラグに付加されるオプション

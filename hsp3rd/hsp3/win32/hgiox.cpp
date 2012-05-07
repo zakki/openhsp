@@ -1516,11 +1516,48 @@ void hgio_square( BMSCR *bm, int *posx, int *posy, int *color )
 	d3ddev->DrawPrimitiveUP(D3DPT_TRIANGLEFAN,2,vertex2DC,sizeof(D3DTLVERTEXC));
 }
 
+/*-------------------------------------------------------------------------------*/
+
+/*----------------------------------------------------------*/
+//					HSP system support
+/*----------------------------------------------------------*/
 
 int hgio_gettick( void )
 {
 	return timeGetTime();
 }
 
+int hgio_exec( char *stmp, char *ps, int mode )
+{
+	int i,j;
+	j=SW_SHOWDEFAULT;if (mode&2) j=SW_SHOWMINIMIZED;
+
+	if ( *ps != 0 ) {
+		SHELLEXECUTEINFO exinfo;
+		memset( &exinfo, 0, sizeof(SHELLEXECUTEINFO) );
+		exinfo.cbSize = sizeof(SHELLEXECUTEINFO);
+		exinfo.fMask = SEE_MASK_INVOKEIDLIST;
+		exinfo.hwnd = master_wnd;
+		exinfo.lpVerb = ps;
+		exinfo.lpFile = stmp;
+		exinfo.nShow = SW_SHOWNORMAL;
+		if ( ShellExecuteEx( &exinfo ) == false ) throw HSPERR_EXTERNAL_EXECUTE;
+		return 0;
+	}
+		
+	if ( mode&16 ) {
+		i = (int)ShellExecute( NULL,NULL,stmp,"","",j );
+	}
+	else if ( mode&32 ) {
+		i = (int)ShellExecute( NULL,"print",stmp,"","",j );
+	}
+	else {
+		i=WinExec( stmp,j );
+	}
+	if (i<32) throw HSPERR_EXTERNAL_EXECUTE;
+	return 0;
+}
+
+/*-------------------------------------------------------------------------------*/
 
 #endif

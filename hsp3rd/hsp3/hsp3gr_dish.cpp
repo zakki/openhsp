@@ -91,6 +91,7 @@ static VECTOR p_vec2;
 static void ExecFile( char *stmp, char *ps, int mode )
 {
 	//	外部ファイル実行
+	hgio_exec( stmp, ps, mode );
 }
 		
 static char *getdir( int id )
@@ -274,7 +275,7 @@ static void cmdfunc_dialog( void )
 	strncpy( stmp, ptr, 0x4000-1 );
 	p1 = code_getdi( 0 );
 	ps = code_getds("");
-	hgio_dialog( p1, stmp, ps );
+	ctx->stat = hgio_dialog( p1, stmp, ps );
 }
 
 
@@ -294,12 +295,17 @@ static int cmdfunc_extcmd( int cmd )
 		p1 = code_getdi( 0 );
 		ps = code_getds( "" );
 		ExecFile( fname, ps, p1 );
-		break;
+
+        ctx->waitcount = 0;
+        ctx->runmode = RUNMODE_WAIT;
+        return RUNMODE_WAIT;
 		}
 
 	case 0x03:								// dialog
 		cmdfunc_dialog();
-		break;
+        ctx->waitcount = 0;
+        ctx->runmode = RUNMODE_WAIT;
+        return RUNMODE_WAIT;
 
 #ifdef USE_MMAN
 	case 0x08:								// mmload
@@ -818,9 +824,9 @@ static int cmdfunc_extcmd( int cmd )
 		p1 = code_getdi( 0 );
 		if ( hg == NULL ) throw HSPERR_UNSUPPORTED_FUNCTION;
 		ctx->stat = hg->DrawObjAll();
-
+#ifdef HSPWIN
 		SetSysReq( SYSREQ_RESULT, GetTickCount()  );
-
+#endif
 		break;
 
 	case 0x52:								// dgspruv
@@ -1925,7 +1931,13 @@ static int cmdfunc_extcmd( int cmd )
 	//
 	case 0x100:								// dmmini
 		{
-		if ( dxsnd_flag == 0 ) SndInit( (HWND)ctx->wnd_parent );
+        if ( dxsnd_flag == 0 ) {
+#ifdef HSPWIN
+            SndInit( (HWND)ctx->wnd_parent );
+#else
+            SndInit( NULL );
+#endif
+        }
 		dxsnd_flag = 1;
 		break;
 		}
@@ -1958,7 +1970,7 @@ static int cmdfunc_extcmd( int cmd )
 	case 0x107:								// dmmload
 		{
 		char *ps;
-		char fname[_MAX_PATH];
+		char fname[HSP_MAX_PATH];
 		char fext[8];
 		char *mp;
 		ps = code_gets();

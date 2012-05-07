@@ -19,10 +19,9 @@
 #include "hsp3config.h"
 #include "dpmread.h"
 #include "supio.h"
-#include "supio.h"
 
 #ifdef HSPIOS
-#include "../Classes/hgiox.h"
+#include "../Classes/iOSBridge.h"
 #endif
 
 static int dpm_flag = 0;			// 0=none/1=packed
@@ -209,12 +208,16 @@ int dpm_ini( char *fname, long dpmofs, int chksum, int deckey )
 	} else {
 		strcpy( dpmfile, fname );
 	}
-#else
+#endif
+#ifdef HSPNDK
 	strcpy( dpmfile, fname );
+#endif
+#ifdef HSPIOS
+	strcpy( dpmfile, gb_filepath(fname) );
 #endif
 
 	fp=fopen( dpmfile,"rb" );
-	if (fp==NULL) return -1;
+    if (fp==NULL) return -1;
 
 	if (dpmofs>0) fseek( fp, dpmofs, SEEK_SET );
 
@@ -261,6 +264,9 @@ int dpm_ini( char *fname, long dpmofs, int chksum, int deckey )
 	//
 	dpm_flag = 1;
 	strcpy(dpm_file,dpmfile);
+#ifdef HSPIOS||HSPNDK
+	Alertf( "Init:DPM ready(%s)",dpm_file );
+#endif
 	return 0;
 }
 
@@ -302,12 +308,6 @@ int dpm_read( char *fname, void *readmem, int rlen, int seekofs )
         gb_loaddata( fname, lpRd, filesize );
         return filesize;
     }
-	ff = fopen( gb_filepath(fname), "rb" );
-	if ( ff == NULL ) return -1;
-	if ( seekofs>=0 ) fseek( ff, seeksize, SEEK_SET );
-	a1 = (int)fread( lpRd, 1, rlen, ff );
-	fclose( ff );
-	return a1;
 #endif
 
 	if (dpm_flag) {
@@ -327,6 +327,14 @@ int dpm_read( char *fname, void *readmem, int rlen, int seekofs )
 		}
 	}
 
+#ifdef HSPIOS
+	ff = fopen( gb_filepath(fname), "rb" );
+	if ( ff == NULL ) return -1;
+	if ( seekofs>=0 ) fseek( ff, seeksize, SEEK_SET );
+	a1 = (int)fread( lpRd, 1, rlen, ff );
+	fclose( ff );
+	return a1;
+#endif
     
 	//	Read normal file
 	ff = fopen( fname, "rb" );
@@ -346,14 +354,8 @@ int dpm_exist( char *fname )
 #ifdef HSPIOS
     length = gb_existdata( fname );
     if ( length > 0 ) return length;
+#endif
     
-    ff=fopen( gb_filepath(fname),"rb" );
-	if (ff==NULL) return -1;
-	fseek( ff,0,SEEK_END );
-	length=(int)ftell( ff );			// normal file size
-	fclose(ff);
-#else
-
 #if 0
 	dpm_chkmemf( fname );
 	if ( memf_flag ) {					// ÉÅÉÇÉäÉXÉgÉäÅ[ÉÄéû
@@ -368,12 +370,20 @@ int dpm_exist( char *fname )
 		}
 	}
 
+#ifdef HSPIOS
+    ff=fopen( gb_filepath(fname),"rb" );
+	if (ff==NULL) return -1;
+	fseek( ff,0,SEEK_END );
+	length=(int)ftell( ff );			// normal file size
+	fclose(ff);
+	return length;
+#endif
+    
     ff=fopen( fname,"rb" );
 	if (ff==NULL) return -1;
 	fseek( ff,0,SEEK_END );
 	length=(int)ftell( ff );			// normal file size
 	fclose(ff);
-#endif
 
 	return length;
 }
@@ -390,13 +400,14 @@ int dpm_filebase( char *fname )
 	if ( memf_flag ) {
 		return 2;
 	}
+#endif
+
 	if ( dpm_flag ) {
 		if ( dpmchk( fname )==0 ) {
 			dpm_close();
 			return 1;
 		}
 	}
-#endif
 
 #ifdef HSPIOS
 	ff=fopen( gb_filepath( fname ), "rb" );

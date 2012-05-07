@@ -181,3 +181,12 @@ int hsp3eb_exec( void )
 	return ctx->runmode;
 }
 
+
+void hsp3eb_setstat( int stat )
+{
+	//		stat’l‚ğİ’è
+	//
+    ctx->stat = stat;
+}
+
+
