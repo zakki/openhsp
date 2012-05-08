@@ -69,7 +69,7 @@
 	iOSフォルダには、HSP3Dishランタイム及びxcode用のサンプルプロジェクトが含まれています。
 
 	<ul>
-	<li>iHSP14フォルダ - HSP3Dishランタイム本体</li>
+	<li>iHSP15フォルダ - HSP3Dishランタイム本体</li>
 	<li>hspprojフォルダ - HSP3Dishサンプル(hsplogo.hsp)</li>
 	<li>blockフォルダ - ブロック崩しサンプル(block3.hsp)</li>
 	<li>gcubeフォルダ - iPad用、d3module使用サンプル(gcube.hsp)</li>
@@ -122,14 +122,14 @@
 
 	<h2 id="ADDHSP">HSP3Dish関連ファイルの登録</h2>
 	<p>
-	作成されたプロジェクトのフォルダと同じ階層に、「iHSP14」フォルダを配置してください。
+	作成されたプロジェクトのフォルダと同じ階層に、「iHSP15」フォルダを配置してください。
 	「iHSPxx」フォルダはアーカイブ内のiOSフォルダに同梱されています。
 	</p>
 	<img src="hsp3dish/s_menu.jpg" style="float:right;">
 	<img src="hsp3dish/s_folder.jpg"><br>
 	<p>
 	XCode上でプロジェクトに必要なファイルを追加してください。<br>
-	Fileメニューから、「Add Files to～」を選択し、「iHSP14」のフォルダ(下層も含む)を追加(Add)します。<br>
+	Fileメニューから、「Add Files to～」を選択し、「iHSP15」のフォルダ(下層も含む)を追加(Add)します。<br>
 	さらに、Windows上で作成されたCソースファイル(拡張子が.cppのファイル)を追加(Add)します。<br>
 	</p>
 	<p>
@@ -181,10 +181,10 @@
 	<br>
 	<p>
 	冒頭の「#import "AppDelegate.h"」の下に以下のコードを追加してください。<br>
-	(「iHSP14」への相対パス指定によりクラス宣言を読み込んでいます)
+	(「iHSP15」への相対パス指定によりクラス宣言を読み込んでいます)
 	</p>
 	<pre>
-	    #import "../../iHSP14/Classes/HspView.h"
+	    #import "../../iHSP15/Classes/HspView.h"
 	</pre>
 	<p>
 	次に「- (BOOL)application:～{」のあるブロック内の「// Override point for customization after application launch.」行の直前に以下のコードを追加してください。<br>
