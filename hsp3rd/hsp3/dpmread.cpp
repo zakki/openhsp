@@ -264,9 +264,7 @@ int dpm_ini( char *fname, long dpmofs, int chksum, int deckey )
 	//
 	dpm_flag = 1;
 	strcpy(dpm_file,dpmfile);
-#ifdef HSPIOS||HSPNDK
 	Alertf( "Init:DPM ready(%s)",dpm_file );
-#endif
 	return 0;
 }
 
@@ -305,7 +303,7 @@ int dpm_read( char *fname, void *readmem, int rlen, int seekofs )
 #ifdef HSPIOS
     filesize = gb_existdata( fname );
     if ( filesize > 0 ) {
-        gb_loaddata( fname, lpRd, filesize );
+        gb_loaddata( fname, lpRd, filesize, seekofs );
         return filesize;
     }
 #endif

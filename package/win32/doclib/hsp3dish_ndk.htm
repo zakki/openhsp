@@ -250,10 +250,19 @@
 	<p>
 	現在のバージョンは、プレビュー版となっておりサウンドの再生はサポートしていません。
 	</p>
-	<li>表示フレームレートについて</li>
+	<li>画面の回転について</li>
 	<p>
-	現在のバージョンは、フレームレートは60fps固定となっています。
-	将来のバージョンでは、自由なフレームレートによる表示に対応する予定です。
+	画面の回転及び、アクティビティの復帰には現在のバージョンでは対応していません。
+	将来のバージョンでは対応する予定です。
+	画面の回転については、AndroidManifest.xmlを書き換えて抑制することが可能です。
+	</p>
+	<pre>
+        &ltactivity android:name="android.app.NativeActivity"
+	          android:screenOrientation="portrait"
+                  android:label="@string/app_name"&gt
+	</pre>
+	<p>
+	上で示した位置に、「android:screenOrientation=」の行を追加してください。
 	</p>
 	</ul>
 
@@ -263,7 +272,6 @@
 	</p>
 	<ul>
 	<li>サウンド再生のサポート</li>
-	<li>フレームレート変更のサポート</li>
 	<li>各種システム情報取得</li>
 	<li>画面の自動回転サポート</li>
 	<li>機種による画面サイズ動的変更のサポート</li>

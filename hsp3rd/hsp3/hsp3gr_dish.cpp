@@ -56,6 +56,9 @@ extern int resY0, resY1;
 #ifdef HSPIOS
 #include "ios/mmman.h"
 #endif
+#ifdef HSPNDK
+#include "ndk/mmman.h"
+#endif
 
 static MMMan *mmman;
 #endif

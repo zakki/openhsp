@@ -653,18 +653,6 @@ void hgio_setfilter( int type, int opt )
 }
 
 
-int hgio_dialog( int mode, char *str1, char *str2 )
-{
-#ifdef HSPNDK
-	LOGW( str1 );
-#endif
-#ifdef HSPIOS
-    Alertf( str1 );
-#endif
-	return 0;
-}
-
-
 int hgio_title( char *str1 )
 {
 	return 0;
@@ -1023,8 +1011,8 @@ void hgio_line( BMSCR *bm, float x, float y )
          _line_colors[i*4+3]=_color.a;
      }
 
-	linebasex = x;
-	linebasey = y;
+	linebasex = x + 0.375f;
+	linebasey = y + 0.375f;
 
     hgio_setBlendModeFlat(0);
 	ChangeTex( -1 );
@@ -1041,8 +1029,10 @@ void hgio_line2( float x, float y )
 
      //頂点配列情報
      _line_vertexs[0]= linebasex;_line_vertexs[1]=-linebasey;_line_vertexs[2]=0;
-     _line_vertexs[3]= x;_line_vertexs[4]=-y;_line_vertexs[5]=0;     
-     
+	linebasex = x + 0.375f;
+	linebasey = y + 0.375f;
+    _line_vertexs[3]= linebasex;_line_vertexs[4]=-linebasey;_line_vertexs[5]=0;
+    
 
     //ラインの描画
     glEnableClientState(GL_COLOR_ARRAY);
@@ -1470,6 +1460,25 @@ int hgio_gettick( void )
 #endif
 }
 
+int hgio_exec( char *msg, char *option, int mode )
+{
+#ifdef HSPIOS
+    gb_exec( mode, msg );
+#endif
+    return 0;
+}
+
+int hgio_dialog( int mode, char *str1, char *str2 )
+{
+#ifdef HSPNDK
+	LOGW( str1 );
+#endif
+#ifdef HSPIOS
+    gb_dialog( mode, str1, str2 );
+    //Alertf( str1 );
+#endif
+	return 0;
+}
 
 /*-------------------------------------------------------------------------------*/
 

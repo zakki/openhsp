@@ -30,7 +30,8 @@
 		<li><a href="#UPDATE11">iHSP11の更新</a></li>
 		<li><a href="#UPDATE12">iHSP12の更新</a></li>
 		<li><a href="#UPDATE13">iHSP13の更新</a></li>
-		<li><a href="#UPDATE14">iHSP14の更新(new)</a></li>
+		<li><a href="#UPDATE14">iHSP14の更新</a></li>
+		<li><a href="#UPDATE15">iHSP15の更新(new)</a></li>
 		<li><a href="#NOTICE">iOS版の注意事項、制限</a></li>
 		<li><a href="#NEWVER">iOS版の更新予定</a></li>
 	</ol>
@@ -357,6 +358,23 @@
 	</p>
 	</ul>
 
+	<h2 id="UPDATE15">iHSP15の更新</h2>
+	<p>
+	iOS版ランタイムver1.5では以下の更新を行なっています。
+	</p>
+	<ul>
+	<li>wait,await命令の時間待ち</li><br>
+	<p>
+	スクリプト中のwait,await命令で指定された時間待ちを正しく反映するように修正しました。
+	ただし、実行のタイミングはあくまでも [view startFrame:60] で指定されたフレームレートに従いますので、それ以上のレートにはなりません。<br>
+	基本的には、フレームレートは60fpsを使用すれば問題ありません。
+	</p>
+	<li>不具合の修正</li><br>
+	<p>
+	いくつかのマイナーな不具合修正を行なっています。
+	ローカルストレージ(ユーザーデータ)のbsave,bloadでオフセット値が使用できるようになったほか、mes命令のカレントポジション移動、line命令の座標ずれなどが修正されています。
+	</p>
+	</ul>
 
 	<h2 id="NOTICE">iOS版の注意事項、制限</h2>
 	<ul>

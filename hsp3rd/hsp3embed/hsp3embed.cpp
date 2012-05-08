@@ -50,6 +50,38 @@ void hsp3eb_dialog( char *mes )
 	Alertf( (const char *)mes );
 }
 
+int hsp3eb_wait( int tick )
+{
+	//		時間待ち(wait)
+	//		(awaitに変換します)
+	//
+	if ( ctx->waitcount <= 0 ) {
+		ctx->runmode = RUNMODE_RUN;
+		return RUNMODE_RUN;
+	}
+	ctx->waittick = tick + ( ctx->waitcount * 10 );
+	return RUNMODE_AWAIT;
+}
+
+
+int hsp3eb_await( int tick )
+{
+	//		時間待ち(await)
+	//
+	if ( ctx->waittick < 0 ) {
+		if ( ctx->lasttick == 0 ) ctx->lasttick = tick;
+		ctx->waittick = ctx->lasttick + ctx->waitcount;
+	}
+	if ( tick >= ctx->waittick ) {
+		ctx->lasttick = tick;
+		ctx->runmode = RUNMODE_RUN;
+		return RUNMODE_RUN;
+	}
+	return RUNMODE_AWAIT;
+}
+
+/*----------------------------------------------------------*/
+
 int hsp3eb_init( void )
 {
 	//		システム関連の初期化
@@ -179,6 +211,34 @@ int hsp3eb_exec( void )
 	}
 	//Alertf( "RUN=%d",ctx->runmode );
 	return ctx->runmode;
+}
+
+
+int hsp3eb_exectime( int tick )
+{
+	//		実行メインを呼び出す
+	//		(time=経過時間)
+	//
+	switch( ctx->runmode ) {
+	case RUNMODE_STOP:
+			break;
+		case RUNMODE_WAIT:
+			//	高精度タイマー
+			ctx->runmode = hsp3eb_wait( tick );
+			return ctx->runmode;
+		case RUNMODE_AWAIT:
+			//	高精度タイマー
+			ctx->runmode = hsp3eb_await( tick );
+			return ctx->runmode;
+		case RUNMODE_END:
+		case RUNMODE_INTJUMP:
+		case RUNMODE_ASSERT:
+			ctx->runmode = RUNMODE_STOP;
+			return ctx->runmode;
+		default:
+			break;
+		}
+	return hsp3eb_exec();
 }
 
 
