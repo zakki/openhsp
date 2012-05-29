@@ -612,7 +612,7 @@ int CzHttp::FtpConnect( void )
 
 	hService = InternetConnect( hSession,
                                 req_url,
-                                INTERNET_DEFAULT_FTP_PORT,
+                                ftp_port,
                                 username,
                                 userpass,
                                 INTERNET_SERVICE_FTP,

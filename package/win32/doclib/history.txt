@@ -1,10 +1,19 @@
 ------------------------------------------------------------------------------
-Hot Soup Processor ver3.3                           HSP : Hot Soup Processor  
-更新履歴                              copyright 1997-2011 (c) onion software  
+Hot Soup Processor ver3.31                          HSP : Hot Soup Processor  
+更新履歴                              copyright 1997-2012 (c) onion software  
 ------------------------------------------------------------------------------
 
 ・hsp3関連 更新履歴
 
+	2012/05/29 3.31β1
+
+	指定した文字列の置換を行なうstrrep命令を追加
+	変数名として認識する文字列のオーバーフロー時にフリーズする不具合を修正(BT#256)
+	[hspinet] netgetv命令によるバイナリデータの取得に対応(BT#240)
+	[hspinet] FTPのポート番号の指定が無視される不具合を修正(BT#248)
+	[hspinet] 環境変数を取得するためのgetenv命令を追加。
+	[hspinet] 文字列の中から特定の情報を取り出すためのgetenvprm命令を追加。
+	[hspinet] asctime形式、RFC1123形式の日付時刻を取得するgetctime命令を追加。
 	2011/09/27 3.3a
 
 	HSPDishランタイム(Windows)のcelput命令で中心座標がずれる不具合を修正

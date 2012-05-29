@@ -612,14 +612,21 @@ EXPORT BOOL WINAPI netgetv( HSPEXINFO *hei, int p1, int p2, int p3 )
 	PVal *pv;
 	APTR ap;
 	char *ss;
+	int size;
+	char *varbase;
 	ap = hei->HspFunc_prm_getva( &pv );		// パラメータ1:変数
 
 	if ( http == NULL ) return -1;
 
 	//http->SetVarRequestGet( ss );
 	ss = http->getVarData();
-	hei->HspFunc_prm_setva( pv, ap, HSPVAR_FLAG_STR, ss );	// 変数に値を代入
-	return -http->getVarSize();
+	size = http->getVarSize();
+	if ( size < 63 ) size = 63;
+	hei->HspFunc_dim( pv, TYPE_STRING, size+1, 0, 0, 0, 0 );
+	varbase = (char *)pv->pt;
+	memcpy( varbase, ss, size );								// 変数に値を代入
+	//hei->HspFunc_prm_setva( pv, ap, HSPVAR_FLAG_STR, ss );	// 変数に値を代入
+	return -size;
 }
 
 
@@ -644,7 +651,7 @@ EXPORT BOOL WINAPI netrequest_post( HSPEXINFO *hei, int p1, int p2, int p3 )
 {
 	//	(type$202)
 	//		ファイルデータをメモリに取得する(netgetvで取得)
-	//		netrequest_post "path",var"
+	//		netrequest_post "path",var
 	//
 	char *ss;
 	char *ap;

@@ -60,8 +60,10 @@ HSPINET ver3.3 REFERENCE MANUAL                     HSP : Hot Soup Processor
 
 ・更新履歴
 
-	2012/5/2  ver3.4β1
+	2012/5/29  ver3.31β1
 
+		netgetv命令によるバイナリデータの取得に対応(BT#240)
+		FTPのポート番号の指定が無視される不具合を修正(BT#248)
 		環境変数を取得するためのgetenv命令を追加。
 		文字列の中から特定の情報を取り出すためのgetenvprm命令を追加。
 		asctime形式、RFC1123形式の日付時刻を取得するgetctime命令を追加。

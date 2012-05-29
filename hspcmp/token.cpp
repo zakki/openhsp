@@ -593,7 +593,7 @@ int CToken::GetToken( void )
 		if ((a1>=0x5b)&&(a1<=0x5e)) break;
 		if ((a1>=0x7b)&&(a1<=0x7f)) break;
 
-		if ( a>=OBJNAME_MAX ) continue;
+		if ( a>=OBJNAME_MAX ) break;
 
 		if (a1>=129) {						// 全角文字チェック
 			if (a1<=159) { s3[a++]=a1;wp++;a1=*wp; }
@@ -3191,10 +3191,10 @@ int CToken::ExpandLine( CMemBuf *buf, CMemBuf *src, char *refname )
 			wrtbuf = buf;
 		}
 
-		//Mesf("%d:%s", pline, src->GetFileName() );
-		//sprintf( mestmp,"%d:%s:%s", pline, src->GetFileName(), linebuf );
-		//Alert( mestmp );
-		//buf->PutStr( mestmp );
+//		Mesf("%d:%s", pline, src->GetFileName() );
+//		sprintf( mestmp,"%d:%s:%s(%d)", pline, src->GetFileName(), linebuf, is_preprocess_line );
+//		Alert( mestmp );
+//		buf->PutStr( mestmp );
 
 		//		マクロ展開前に処理されるプリプロセッサ
 		if ( is_preprocess_line ) {

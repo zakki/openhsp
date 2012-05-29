@@ -100,7 +100,8 @@ char 	s_rec[1]= "", *hsp_prestr[] =
 	"$027 8 randomize",				// (changed on ver3.0)
 	"$028 8 noteunsel",				// (changed on ver3.0)
 	"$029 8 noteget",				// (changed on ver2.55)
-	"$02a 8 split",					// (ver3.2)
+	"$02a 8 split",					// (3.2)
+	"$02b 8 strrep",				// (3.4)
 
 	//	enhanced command (ver2.2)
 

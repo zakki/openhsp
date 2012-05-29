@@ -641,6 +641,105 @@ static int cmdfunc_intcmd( int cmd )
 		ctx->stat = n;
 		break;
 		}
+	case 0x02b:								// strrep
+		{
+		PVal *pval;
+		APTR aptr;
+		char *ss;
+		char *p;
+		unsigned char a1;
+		char a2;
+		char *s_match;
+		int len_match;
+		char *s_rep;
+		int len_rep;
+		char *s_buffer;
+		int len_buffer;
+		char *s_result;
+		int len_result;
+		int psize, csize, cursize, i;
+		int reptime;
+#ifndef HSPUTF8
+		int sjis_flag;
+#endif
+		aptr = code_getva( &pval );
+		if ( pval->flag != HSPVAR_FLAG_STR ) throw HSPERR_TYPE_MISMATCH;
+		s_buffer = (char *)HspVarCorePtrAPTR( pval, aptr );
+		len_buffer = (int)strlen( s_buffer );
+		len_result = len_buffer + 0x4000;
+		if ( len_result < 0x8000 ) len_result = 0x8000;
+		s_result = sbAlloc( len_result );
+		*s_result = 0;
+
+		ss = code_gets();
+		if ( *ss == 0 ) throw HSPERR_ILLEGAL_FUNCTION;
+		len_match = (int)strlen( ss );
+		s_match = sbAlloc( len_match + 1 );
+		memcpy( s_match, ss, len_match + 1 );
+		s_rep = code_gets();
+		len_rep = (int)strlen( s_rep );
+		reptime = 0;
+
+		// replace
+		//
+		cursize = 0;
+		p = s_buffer;
+		a2 = s_match[0];
+		while(1) {
+			a1 = (unsigned char)*p;
+			if ( a1 == 0 ) break;
+
+#ifndef HSPUTF8
+			//	sjisチェック
+			sjis_flag = 0;
+			if ( a1 >= 129 ) {
+				if ((a1<=159)||(a1>=224)) sjis_flag++;
+			}
+#endif
+
+			//	比較する
+			psize = 0; csize = 1;
+			if ( a1 == a2 ) {
+				if ( memcmp( p, s_match, len_match ) == 0 ) {
+					psize = len_match;
+					csize = len_rep;
+				}
+			}
+
+			//	バッファチェック
+			i = cursize + csize;
+			if ( i >= len_result ) {
+				len_result += 0x8000;
+				s_result = sbExpand( s_result, len_result );
+			}
+
+			if ( psize ) {				// 置き換え
+
+				memcpy( s_result+cursize, s_rep, csize );
+				p += psize;
+				cursize += csize;
+				reptime++;
+
+			} else {					// 置き換えなし
+				s_result[cursize++] = a1;
+				p++;
+#ifndef HSPUTF8
+				if ( sjis_flag ) {
+					s_result[cursize++] = *p++;
+				}
+#endif
+			}
+
+		}
+		s_result[cursize] = 0;
+
+		code_setva( pval, aptr, TYPE_STRING, s_result );
+		sbFree( s_match );
+		sbFree( s_result );
+
+		ctx->stat = reptime;
+		break;
+		}
 
 
 	default:
