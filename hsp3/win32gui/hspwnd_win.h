@@ -166,6 +166,8 @@ public:
 	void SetCelDivideSize( int new_divsx, int new_divsy, int new_ofsx, int new_ofsy );
 	int CelPut( Bmscr *src, int id );
 
+	int RenderAlphaBitmap( int psx, int psy, int components, unsigned char *src );
+
 	//
 	//		Window data structure
 	//

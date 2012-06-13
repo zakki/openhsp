@@ -51,6 +51,13 @@ static HWND dbgwnd;
 static HSP3DEBUG *dbginfo;
 #endif
 
+//-------------------------------------------------------------
+//		Sync Timer Routines
+//-------------------------------------------------------------
+
+static int	timer_period = -1;
+static int	timerid = 0;
+
 /*----------------------------------------------------------*/
 
 void hsp3win_dialog( char *mes )
@@ -185,7 +192,6 @@ void hsp3win_msgfunc( HSPCTX *hspctx )
 		case RUNMODE_WAIT:
 			tick = GetTickCount();
 			hspctx->runmode = code_exec_wait( tick );
-		case RUNMODE_AWAIT:
 			tick = GetTickCount();
 			if ( code_exec_await( tick ) != RUNMODE_RUN ) {
 				MsgWaitForMultipleObjects(0, NULL, FALSE, hspctx->waittick - tick, QS_ALLINPUT );
@@ -196,6 +202,40 @@ void hsp3win_msgfunc( HSPCTX *hspctx )
 				}
 #endif
 			}
+			break;
+		case RUNMODE_AWAIT:
+			if ( timer_period == -1 ) {
+				//	通常のタイマー
+				tick = GetTickCount();
+				if ( code_exec_await( tick ) != RUNMODE_RUN ) {
+					MsgWaitForMultipleObjects(0, NULL, FALSE, hspctx->waittick - tick, QS_ALLINPUT );
+					break;
+				}
+			} else {
+				//	高精度タイマー
+				int ttl;
+				tick = timeGetTime();
+				code_exec_await( tick );
+				ttl = hspctx->waittick - tick;
+				while( ttl > 5 ) {					// 5以上のラグはここで吸収
+					if ( tick >= hspctx->waittick ) break;
+					MsgWaitForMultipleObjects(0, NULL, FALSE, 5, QS_ALLINPUT );
+					//Sleep(5);
+					tick = timeGetTime();
+					ttl -= 5;
+				}
+				while( tick < hspctx->waittick ) {
+					Sleep(1);
+					tick = timeGetTime();
+				}
+				hspctx->lasttick = tick;
+				hspctx->runmode = RUNMODE_RUN;
+			}
+#ifndef HSPDEBUG
+			if ( ctx->hspstat & HSPSTAT_SSAVER ) {
+				if ( hsp_sscnt ) hsp_sscnt--;
+			}
+#endif
 			break;
 		case RUNMODE_END:
 			throw HSPERR_NONE;
@@ -357,6 +397,20 @@ int hsp3win_init( HINSTANCE hInstance, char *startfile )
 	HspVarCoreRegisterType( TYPE_VARIANT, HspVarVariant_Init );
 #endif
 
+
+	// timerGetTime関数による精度アップ(μ秒単位)
+	timer_period = -1;
+#if 1
+	TIMECAPS caps;
+	if (timeGetDevCaps(&caps,sizeof(TIMECAPS)) == TIMERR_NOERROR){
+		// マルチメディアタイマーのサービス精度を最大に
+		timer_period = caps.wPeriodMin;
+		timeBeginPeriod( timer_period );
+	}
+#endif
+
+	//		Initalize GUI System
+	//
 	hsp3typeinit_dllcmd( code_gettypeinfo( TYPE_DLLFUNC ) );
 	hsp3typeinit_dllctrl( code_gettypeinfo( TYPE_DLLCTRL ) );
 	hsp3typeinit_extcmd( code_gettypeinfo( TYPE_EXTCMD ), hsp_wx, hsp_wy, hsp_wd, -1, -1 );
@@ -374,6 +428,13 @@ static void hsp3win_bye( void )
 	//		HSP関連の解放
 	//
 	if ( hsp != NULL ) { delete hsp; hsp = NULL; }
+
+	//		タイマーの開放
+	//
+	if ( timer_period != -1 ) {
+		timeEndPeriod( timer_period );
+		timer_period = -1;
+	}
 
 #ifdef HSPDEBUG
 	//		デバッグウインドゥの解放

@@ -16,11 +16,20 @@
 #include "../supio.h"
 #include "fcpoly.h"
 
+#ifndef HSP_COMPACT
+#define USE_STBIMAGE
+#endif
+
+#ifdef USE_STBIMAGE
+#include "stb_image.h"
+#endif
+
 #include <ocidl.h>
 #include <olectl.h>
 
 #define HIMETRIC_INCH	2540
 #define MAP_LOGHIM_TO_PIX(x,ppli)   ( ((ppli)*(x) + HIMETRIC_INCH/2) / HIMETRIC_INCH )
+
 
 /*
 	rev 43
@@ -551,6 +560,8 @@ int HspWnd::Picload( int id, char *fname, int mode )
 	long hmWidth, hmHeight;
 	LPPICTURE gpPicture;							// IPicture
     LPSTREAM pstm = NULL;							// IStreamを取得する
+	char fext[8];
+	int stbmode;
 
 	bm = GetBmscr( id );
 	if ( bm == NULL ) return 1;
@@ -567,6 +578,39 @@ int HspWnd::Picload( int id, char *fname, int mode )
     if( pBuf == NULL ) return 2;
 	i = dpm_read( fname, pBuf, size, 0 );
 	if ( i <= 0 ) return 1;
+
+#ifdef USE_STBIMAGE
+	stbmode = 0;
+	getpath(fname,fext,16+2);				// 拡張子を小文字で取り出す
+
+	if (!strcmp(fext,".png")) stbmode++;	// ".png"の時
+	if (!strcmp(fext,".psd")) stbmode++;	// ".psd"の時
+	if (!strcmp(fext,".tga")) stbmode++;	// ".tga"の時
+
+	if ( stbmode ) {						// stb_imageを使用して読み込む
+		int components;
+		unsigned char *sp_image;
+		sp_image = stbi_load_from_memory( (unsigned char *)pBuf, size, &psx, &psy, &components, 0);
+		if ( sp_image == NULL ) return 3;
+
+		if ( mode == 0 ) {
+			int palsw,type;
+			type = bm->type; palsw = bm->palmode;
+			MakeBmscr( id, type, -1, -1, psx, psy, psx, psy, palsw );
+			bm = GetBmscr( id );
+		}
+
+		x = bm->cx; y = bm->cy;
+		bm->RenderAlphaBitmap( psx, psy, components, sp_image );
+		bm->Send( x, y, psx, psy );
+
+		stbi_image_free(sp_image);
+		GlobalUnlock( h );
+		GlobalFree(h);
+		return 0;
+	}
+#endif
+
 	GlobalUnlock( h );
 
 	hr = CreateStreamOnHGlobal( h, TRUE, &pstm );	// グローバル領域からIStreamを作成
@@ -586,11 +630,8 @@ int HspWnd::Picload( int id, char *fname, int mode )
 
 	if ( mode == 0 ) {
 		int palsw,type;
-		//int wx,wy;
 		type = bm->type; palsw = bm->palmode;
-		//wx = bm->wx; wy = bm->wy;
 		MakeBmscr( id, type, -1, -1, psx, psy, psx, psy, palsw );
-		//MakeBmscr( id, type, -1, -1, wx, wy, psx, psy, palsw );
 		bm = GetBmscr( id );
 	}
 
@@ -602,6 +643,7 @@ int HspWnd::Picload( int id, char *fname, int mode )
 	bm->Send( x, y, psx, psy );
 
 	gpPicture->Release();
+	GlobalFree(h);
 	return 0;
 }
 
@@ -1729,6 +1771,75 @@ int Bmscr::CelPut( Bmscr *src, int id )
 	cx = bak_cx;
 	cy = bak_cy;
 	return res;
+}
+
+
+int Bmscr::RenderAlphaBitmap( int t_psx, int t_psy, int components, unsigned char *src )
+{
+	//		Alpha付きbitmapデータを描画する(stb_image用)
+	//
+	int a,b,x,y;
+	int psx,psy;
+	BYTE *p;
+	BYTE *p2;
+	BYTE a1,a2,a3,a4,a4r;
+	int p_ofs, p2_ofs;
+
+	x = this->cx;
+	y = this->cy;
+	if ( x < 0 ) return -1;
+	if ( y < 0 ) return -1;
+	psx = t_psx;
+	psy = t_psy;
+	if ( (x+psx)>this->sx ) psx = t_psx - x;
+	if ( (y+psy)>this->sy ) psy = t_psy - y;
+
+	p=(BYTE *)this->pBit;
+	p+=x*3;
+	p+=(this->sy-y-1) * this->sx2;
+	p2=(BYTE *)src;
+
+	p_ofs = ( this->sx2 ) + ( psx * 3 );
+	p2_ofs = ( t_psx * 3 ) - ( psx * 3 );
+
+	if ( components < 4 ) {
+		//		24bit normal copy
+		for(b=0;b<psy;b++) {
+			for(a=0;a<psx;a++) {
+				a1=*p2++;a2=*p2++;a3=*p2++;p2++;
+				*p++=a3;
+				*p++=a2;
+				*p++=a1;
+			}
+			p-=p_ofs;
+			p2+=p2_ofs;
+		}
+		return 0;
+	}
+
+	//		32bit copy
+	short ha;
+	for(b=0;b<psy;b++) {
+		for(a=0;a<psx;a++) {
+			a1=*p2++;a2=*p2++;a3=*p2++;a4=*p2++;a4r=255-a4;
+			if ( a4r == 0 ) {
+				*p++=a3;
+				*p++=a2;
+				*p++=a1;
+			} else {
+				ha=((((short)*p)* a4r)>>8) + (((short)a3)*a4>>8);
+				*p++=(BYTE)ha;
+				ha=((((short)*p)* a4r)>>8) + (((short)a2)*a4>>8);
+				*p++=(BYTE)ha;
+				ha=((((short)*p)* a4r)>>8) + (((short)a1)*a4>>8);
+				*p++=(BYTE)ha;
+			}
+		}
+		p-=p_ofs;
+		p2+=p2_ofs;
+	}
+
+	return 0;
 }
 
 

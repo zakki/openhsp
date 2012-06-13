@@ -729,8 +729,12 @@ GIF形式  : 拡張子 GIF : GIF形式のデータ。
 JPEG形式 : 拡張子 JPG : JFIF標準のJPEGデータ。
                         グレイスケールデータでもOKです。
 ICO形式  : 拡張子 ICO : Windows標準のICO形式のアイコンデータ。
+PNG形式  : 拡張子 PNG : Portable Network Graphicsデータ。(*)
+PSD形式  : 拡張子 PSD : Photoshop形式のデータ。(合成レイヤーのみ)(*)
+TGA形式  : 拡張子 TGA : TARGA 形式のデータ。(*)
 ^p
 picload命令は、screen、buffer、 bgscr命令で初期化された画面に対して実行することができます。
+(*)の付いた形式は、コンバクト版ランタイム(hsp3c)、及びHSPLetでは使用することができませんので注意してください。
 
 %href
 screen
@@ -740,7 +744,7 @@ imgload
 %port+
 Let
 %portinfo
-HSPLet時には、BMP、JPEG、GIF、PNGの読み込みをサポートしています。 ICOの読み込みはサポートしていません。
+HSPLet時には、BMP、JPEG、GIF、PNGの読み込みをサポートしています。その他の読み込みはサポートしていません。
 
 %index
 pos
