@@ -5,13 +5,16 @@ Hot Soup Processor ver3.31                          HSP : Hot Soup Processor
 
 ・hsp3関連 更新履歴
 
-	2012/06/13 3.31β1
+	2012/06/14 3.31β1
 
+	HSP3Dish開発環境をHSPフルセットに統合
+	HSP Document Libraryのバージョンを1.34に更新
 	読み込み可能な画像フォーマットにPNG、TGA、PSD形式を追加
 	await命令の時間待ちを高精度タイマーによる処理に変更
 	cnvstow命令でバッファオーバーフローが発生することがある不具合を修正(BT#245)
 	指定した文字列の置換を行なうstrrep命令を追加
 	変数名として認識する文字列のオーバーフロー時にフリーズする不具合を修正(BT#256)
+	[HGIMG3] テンプレート定義の含まれていないxファイルの読み込みに対応
 	[hspinet] netgetv命令によるバイナリデータの取得に対応(BT#240)
 	[hspinet] FTPのポート番号の指定が無視される不具合を修正(BT#248)
 	[hspinet] 環境変数を取得するためのgetenv命令を追加。

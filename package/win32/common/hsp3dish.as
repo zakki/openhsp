@@ -101,6 +101,11 @@
 #enum global SYSREQ_CLSCOLOR
 #enum global SYSREQ_CLSTEX
 #enum global SYSREQ_TIMER
+#enum global SYSREQ_PLATFORM
+
+#const global PLATFORM_WINDOWS 0
+#const global PLATFORM_IOS 1
+#const global PLATFORM_ANDROID 2
 
 #define global SYSREQ_DEBUG $10000
 
