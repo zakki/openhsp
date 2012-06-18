@@ -590,7 +590,7 @@ int HspWnd::Picload( int id, char *fname, int mode )
 	if ( stbmode ) {						// stb_image‚ðŽg—p‚µ‚Ä“Ç‚Ýž‚Þ
 		int components;
 		unsigned char *sp_image;
-		sp_image = stbi_load_from_memory( (unsigned char *)pBuf, size, &psx, &psy, &components, 0);
+		sp_image = stbi_load_from_memory( (unsigned char *)pBuf, size, &psx, &psy, &components, 4 );
 		if ( sp_image == NULL ) return 3;
 
 		if ( mode == 0 ) {
@@ -1785,6 +1785,7 @@ int Bmscr::RenderAlphaBitmap( int t_psx, int t_psy, int components, unsigned cha
 	BYTE a1,a2,a3,a4,a4r;
 	int p_ofs, p2_ofs;
 
+
 	x = this->cx;
 	y = this->cy;
 	if ( x < 0 ) return -1;
@@ -1793,6 +1794,8 @@ int Bmscr::RenderAlphaBitmap( int t_psx, int t_psy, int components, unsigned cha
 	psy = t_psy;
 	if ( (x+psx)>this->sx ) psx = t_psx - x;
 	if ( (y+psy)>this->sy ) psy = t_psy - y;
+
+	//Alertf( "(%d,%d)(%d,%d)%d",x,y,psx,psy,components );
 
 	p=(BYTE *)this->pBit;
 	p+=x*3;
