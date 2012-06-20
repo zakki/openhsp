@@ -1286,7 +1286,7 @@ static int cmdfunc_extcmd( int cmd )
 		if ( p1 < 0 ) p1 = wnd->GetEmptyBufferId();
 
 		wnd->MakeBmscrOff( p1, 32, 32, p2 );
-		i = wnd->Picload( p1, fname, 0 );
+		i = wnd->Picload( p1, fname, 2 );
 		if ( i ) throw HSPERR_PICTURE_MISSING;
 
 		ctx->stat = p1;

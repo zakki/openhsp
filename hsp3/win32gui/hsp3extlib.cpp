@@ -386,7 +386,7 @@ int cnvwstr( void *out, char *in, int bufsize )
 {
 	//	sjis->unicode ‚É•ÏŠ·
 	//
-	return MultiByteToWideChar( CP_ACP, 0, in, -1, (LPWSTR)out, bufsize/2 );
+	return MultiByteToWideChar( CP_ACP, 0, in, -1, (LPWSTR)out, bufsize );
 }
 
 

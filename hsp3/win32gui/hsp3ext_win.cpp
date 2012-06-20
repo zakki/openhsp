@@ -608,7 +608,7 @@ static int cmdfunc_ctrlcmd( int cmd )
 		int size;
 		ptr = code_getvptr( &pval, &size );
 		ps = code_gets();
-		cnvwstr( ptr, ps, size );
+		cnvwstr( ptr, ps, size/2 );
 		break;
 		}
 

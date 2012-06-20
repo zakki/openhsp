@@ -593,11 +593,12 @@ int HspWnd::Picload( int id, char *fname, int mode )
 		sp_image = stbi_load_from_memory( (unsigned char *)pBuf, size, &psx, &psy, &components, 4 );
 		if ( sp_image == NULL ) return 3;
 
-		if ( mode == 0 ) {
+		if (( mode == 0 )||( mode == 2 )) {
 			int palsw,type;
 			type = bm->type; palsw = bm->palmode;
 			MakeBmscr( id, type, -1, -1, psx, psy, psx, psy, palsw );
 			bm = GetBmscr( id );
+			if ( mode == 2 ) bm->Cls( 4 );	// 黒色でクリアしておく
 		}
 
 		x = bm->cx; y = bm->cy;
@@ -628,11 +629,12 @@ int HspWnd::Picload( int id, char *fname, int mode )
 	psx = MulDiv( hmWidth, GetDeviceCaps( bm->hdc, LOGPIXELSX ), HIMETRIC_INCH );
 	psy = MulDiv( hmHeight, GetDeviceCaps( bm->hdc, LOGPIXELSY ), HIMETRIC_INCH );
 
-	if ( mode == 0 ) {
+	if (( mode == 0 )||( mode == 2 )) {
 		int palsw,type;
 		type = bm->type; palsw = bm->palmode;
 		MakeBmscr( id, type, -1, -1, psx, psy, psx, psy, palsw );
 		bm = GetBmscr( id );
+		if ( mode == 2 ) bm->Cls( 4 );	// 黒色でクリアしておく
 	}
 
 	// setup initial position
@@ -1778,22 +1780,25 @@ int Bmscr::RenderAlphaBitmap( int t_psx, int t_psy, int components, unsigned cha
 {
 	//		Alpha付きbitmapデータを描画する(stb_image用)
 	//
-	int a,b,x,y;
+	int a,b,x,y,x2,y2;
 	int psx,psy;
 	BYTE *p;
 	BYTE *p2;
 	BYTE a1,a2,a3,a4,a4r;
 	int p_ofs, p2_ofs;
 
-
 	x = this->cx;
 	y = this->cy;
-	if ( x < 0 ) return -1;
-	if ( y < 0 ) return -1;
+	x2 = 0; y2 = 0;
 	psx = t_psx;
 	psy = t_psy;
-	if ( (x+psx)>this->sx ) psx = t_psx - x;
-	if ( (y+psy)>this->sy ) psy = t_psy - y;
+
+	if ( x > this->sx ) return -1;
+	if ( y > this->sy ) return -1;
+	if ( x < 0 ) { x2 = -x; x = 0; psx -= x2; }
+	if ( y < 0 ) { y2 = -y; y = 0; psy -= y2; }
+	if ( (x+psx)>this->sx ) psx = this->sx - x;
+	if ( (y+psy)>this->sy ) psy = this->sy - y;
 
 	//Alertf( "(%d,%d)(%d,%d)%d",x,y,psx,psy,components );
 
@@ -1801,9 +1806,11 @@ int Bmscr::RenderAlphaBitmap( int t_psx, int t_psy, int components, unsigned cha
 	p+=x*3;
 	p+=(this->sy-y-1) * this->sx2;
 	p2=(BYTE *)src;
+	p2+=x2 * 4;
+	p2+=t_psx * 4 * y2;
 
 	p_ofs = ( this->sx2 ) + ( psx * 3 );
-	p2_ofs = ( t_psx * 3 ) - ( psx * 3 );
+	p2_ofs = ( t_psx * 4 ) - ( psx * 4 );
 
 	if ( components < 4 ) {
 		//		24bit normal copy
