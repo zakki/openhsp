@@ -120,12 +120,6 @@ mousew	,sys|func
 ginfo	,sys|func
 
 
-HSP3Dishサポート予定コマンド
-(近い将来実装されます)
-
-button	,sys|func
-
-
 HSP3Dishサポート済みプリプロセッサ命令
 
 #addition	,pre|func
@@ -210,11 +204,18 @@ screen	,sys|func
 bgscr	,sys|func
 width	,sys|func
 
+button	,sys|func
 font	,sys|func
 mes	,sys|func
 print	,sys|func
 title	,sys|func
 objsize	,sys|func
+objimage	,sys|func
+objskip	,sys|func
+objenable	,sys|func
+clrobj	,sys|func
+objprm	,sys|func
+objmode	,sys|func
 
 onexit	,sys|func
 onerror	,sys|func
@@ -259,12 +260,6 @@ callfunc	,sys|func|1
 cnvwtos	,sys|func|1
 comevdisp	,sys|func|1
 libptr	,sys|func|1
-objimage	,sys|func
-objskip	,sys|func
-objenable	,sys|func
-clrobj	,sys|func
-objprm	,sys|func
-objmode	,sys|func
 listbox	,sys|func
 chkbox	,sys|func
 combox	,sys|func

@@ -159,13 +159,34 @@ LRESULT CALLBACK WndProc( HWND hwnd, UINT uMessage, WPARAM wParam, LPARAM lParam
 */
 	case WM_MOUSEMOVE:
 		{
-		BMSCR *bm;
+		Bmscr *bm;
 		if ( exinfo != NULL ) {
-			bm = (BMSCR *)exinfo->HspFunc_getbmscr(0);
+			bm = (Bmscr *)exinfo->HspFunc_getbmscr(0);
 			bm->savepos[BMSCR_SAVEPOS_MOSUEX] = LOWORD(lParam);
 			bm->savepos[BMSCR_SAVEPOS_MOSUEY] = HIWORD(lParam);
+			bm->UpdateAllObjects();
 		}
 		return 0;
+		}
+	case WM_LBUTTONUP:
+		{
+		Bmscr *bm;
+		if ( exinfo != NULL ) {
+			bm = (Bmscr *)exinfo->HspFunc_getbmscr(0);
+			bm->tapstat = 0;
+			bm->UpdateAllObjects();
+		}
+		break;
+		}
+	case WM_LBUTTONDOWN:
+		{
+		Bmscr *bm;
+		if ( exinfo != NULL ) {
+			bm = (Bmscr *)exinfo->HspFunc_getbmscr(0);
+			bm->tapstat = 1;
+			bm->UpdateAllObjects();
+		}
+		break;
 		}
 
 	case MM_MCINOTIFY:

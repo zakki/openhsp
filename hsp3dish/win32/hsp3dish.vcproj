@@ -353,6 +353,10 @@
 					>
 				</File>
 				<File
+					RelativePath="..\hspwnd_obj.cpp"
+					>
+				</File>
+				<File
 					RelativePath="..\random.cpp"
 					>
 				</File>

@@ -23,6 +23,7 @@
 		<li><a href="#ABOUT">HSP3Dishとは</a></li>
 		<li><a href="#DISHUSE">HSP3Dishの使用方法</a></li>
 		<li><a href="#DRAWDIFF">HSP3との差異</a></li>
+		<li><a href="#BUTTON">button命令について</a></li>
 		<li><a href="#GMODE">gmode命令について</a></li>
 		<li><a href="#GFILTER">gfilter命令について</a></li>
 		<li><a href="#SYSREQ">setreq、getreq命令について(new)</a></li>
@@ -152,6 +153,22 @@
 	プラットフォームごとにサポートする形式が変更される可能性があります。
 	</p>
 	</ul>
+
+	<h2 id="BUTTON">button命令について</h2>
+	<p>
+	現在サポートされている配置オブジェクトは、button命令によるボタンのみとなっています。
+	標準のオブジェクトと以下の点が異なっているので注意してください。
+	</p>
+	<pre>
+	・buttonの文字サイズ・色などは固定です
+	・標準でbuttonの背景はグレーのグラデーションが使用されます
+	・objimage命令によりbutton背景の画像を変更することが可能です
+	・キーボードによるボタン操作、フォーカス移動はサポートしていません
+	・ボタンの描画はredrawによる画像更新時に行なわれます
+	</pre>
+	<p>
+	これ以外のオブジェクトについては、今後順次サポートしていく予定です。
+	</p>
 
 	<h2 id="GMODE">gmode命令について</h2>
 	<p>

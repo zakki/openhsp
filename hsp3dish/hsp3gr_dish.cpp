@@ -56,6 +56,9 @@ extern int resY0, resY1;
 #ifdef HSPIOS
 #include "ios/mmman.h"
 #endif
+#ifdef HSPNDK
+#include "ndk/mmman.h"
+#endif
 
 static MMMan *mmman;
 #endif
@@ -287,6 +290,31 @@ static int cmdfunc_extcmd( int cmd )
 	code_next();							// 次のコードを取得(最初に必ず必要です)
 	switch( cmd ) {							// サブコマンドごとの分岐
 
+	case 0x00:								// button
+		{
+		int i;
+		char btnname[256];
+		unsigned short *sbr;
+		Bmscr *bmsrc;
+
+		i = 0;
+		if ( *type == TYPE_PROGCMD ) {
+			i = *val;
+			if ( i >= 2 ) throw HSPERR_SYNTAX;
+			code_next();
+		}
+		strncpy( btnname, code_gets(), 255 );
+		sbr = code_getlb();
+		code_next();
+		ctx->stat = bmscr->AddHSPObjectButton( btnname, i, (void *)sbr );
+		p1 = bmscr->imgbtn;
+		if ( p1 >= 0 ) {
+			bmsrc = wnd->GetBmscrSafe( p1 );
+			bmscr->SetButtonImage( ctx->stat, p1, bmscr->btn_x1, bmscr->btn_y1, bmscr->btn_x2, bmscr->btn_y2, bmscr->btn_x3, bmscr->btn_y3 );
+		}
+		break;
+		}
+
 	case 0x02:								// exec
 		{
 		char *ps;
@@ -295,12 +323,17 @@ static int cmdfunc_extcmd( int cmd )
 		p1 = code_getdi( 0 );
 		ps = code_getds( "" );
 		ExecFile( fname, ps, p1 );
-		break;
+
+        ctx->waitcount = 0;
+        ctx->runmode = RUNMODE_WAIT;
+        return RUNMODE_WAIT;
 		}
 
 	case 0x03:								// dialog
 		cmdfunc_dialog();
-		break;
+        ctx->waitcount = 0;
+        ctx->runmode = RUNMODE_WAIT;
+        return RUNMODE_WAIT;
 
 #ifdef USE_MMAN
 	case 0x08:								// mmload
@@ -430,6 +463,7 @@ static int cmdfunc_extcmd( int cmd )
 		p3 = code_getdi( 0 );
 		p4 = code_getdi( 0 );
 		p5 = code_getdi( 0 );
+		if ( p1&1 ) bmscr->DrawAllObjects();
 		ctx->stat = hgio_redraw( (BMSCR *)bmscr, p1 );
 		break;
 
@@ -719,6 +753,33 @@ static int cmdfunc_extcmd( int cmd )
 		bmscr->GradFill( p1, p2, p3, p4, gradmode, p5, p6 );
 		break;
 		}
+	case 0x39:								// objimage
+		p1 = code_getdi( -1 );
+		bmscr->imgbtn = p1;
+		bmscr->btn_x1 = (short)code_getdi( 0 );
+		bmscr->btn_y1 = (short)code_getdi( 0 );
+		bmscr->btn_x2 = (short)code_getdi( 0 );
+		bmscr->btn_y2 = (short)code_getdi( 0 );
+		bmscr->btn_x3 = (short)code_getdi( bmscr->btn_x1 );
+		bmscr->btn_y3 = (short)code_getdi( bmscr->btn_y1 );
+		break;
+
+	case 0x3a:								// objskip
+		{
+		p1=code_getdi(0);
+		p2=code_getdi(2);
+		bmscr->SetObjectMode( p1, p2 );
+		break;
+		}
+
+	case 0x3b:								// objenable
+		{
+		p1=code_getdi(0);
+		p2=code_getdi(1);
+		bmscr->EnableObject( p1, p2 );
+		break;
+		}
+
 	case 0x3c:								// celload
 		{
 		//int i;
@@ -2259,6 +2320,7 @@ void hsp3typeinit_extcmd( HSP3TYPEINFO *info )
 	val = exinfo->npval;
 	wnd = new HspWnd();
 	bmscr = wnd->GetBmscr( 0 );
+	SetObjectEventNoticePtr( &ctx->stat );
 
 #ifdef USE_MMAN
 	mmman = new MMMan;
