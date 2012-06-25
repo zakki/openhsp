@@ -1132,6 +1132,45 @@ void CHsp3Cpp::MakeCPPSubProgCmd( int cmdtype, int cmdval )
 }
 
 
+void CHsp3Cpp::MakeCPPSubExtCmd( int cmdtype, int cmdval )
+{
+	//		拡張命令を展開
+	//
+	int pnum;
+	int btnopt;
+
+	switch( cmdval ) {
+	case 0x00:								// button
+		{
+		MCSCONTEXT ctxbak;
+		OutLine( "// button " );
+		getCS();
+		btnopt = 0;
+		if ( cstype == TYPE_PROGCMD ) {
+			if ( csval <= 1 ) {
+				btnopt = csval;
+				OutLine( "%s ", GetHSPName( cstype, csval ) );
+				getCS();
+			}
+		}
+		GetContext( &ctxbak );
+		MakeProgramInfoParam2();
+		SetContext( &ctxbak );
+
+		pnum = MakeCPPParam();
+		OutputCPPParam();
+		OutLine( "PushInt(%d); %s(%d,%d);\r\n", btnopt, GetHSPCmdTypeName(cmdtype), cmdval, pnum+1 );
+
+		break;
+		}
+
+	default:
+		MakeCPPSub( cmdtype, cmdval );
+		break;
+	}
+}
+
+
 void CHsp3Cpp::MakeCPPSub( int cmdtype, int cmdval )
 {
 	//		通常命令とパラメーターを展開
@@ -1331,6 +1370,9 @@ int CHsp3Cpp::MakeCPPMain( void )
 			break;
 		case TYPE_PROGCMD:						// プログラム制御命令
 			MakeCPPSubProgCmd( cmdtype, cmdval );
+			break;
+		case TYPE_EXTCMD:						// 拡張命令
+			MakeCPPSubExtCmd( cmdtype, cmdval );
 			break;
 		case TYPE_MODCMD:							// 定義命令
 			MakeCPPSubModCmd( cmdtype, cmdval );

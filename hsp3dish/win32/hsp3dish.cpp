@@ -168,6 +168,18 @@ LRESULT CALLBACK WndProc( HWND hwnd, UINT uMessage, WPARAM wParam, LPARAM lParam
 		}
 		return 0;
 		}
+	case WM_MOUSELEAVE:
+		{
+		Bmscr *bm;
+		if ( exinfo != NULL ) {
+			bm = (Bmscr *)exinfo->HspFunc_getbmscr(0);
+			bm->tapstat = 0;
+			bm->savepos[BMSCR_SAVEPOS_MOSUEX] = -1;
+			bm->savepos[BMSCR_SAVEPOS_MOSUEY] = -1;
+			bm->UpdateAllObjects();
+		}
+		break;
+		}
 	case WM_LBUTTONUP:
 		{
 		Bmscr *bm;
@@ -185,6 +197,14 @@ LRESULT CALLBACK WndProc( HWND hwnd, UINT uMessage, WPARAM wParam, LPARAM lParam
 			bm = (Bmscr *)exinfo->HspFunc_getbmscr(0);
 			bm->tapstat = 1;
 			bm->UpdateAllObjects();
+
+			// WM_MOUSELEAVE メッセージの登録処理
+			TRACKMOUSEEVENT tme;
+			tme.cbSize = sizeof( TRACKMOUSEEVENT );
+			tme.dwFlags = TME_LEAVE;
+			tme.hwndTrack = hwnd;
+			tme.dwHoverTime = HOVER_DEFAULT;
+			_TrackMouseEvent( &tme );
 		}
 		break;
 		}

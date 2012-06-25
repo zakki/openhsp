@@ -2443,7 +2443,8 @@ void code_call( const unsigned short *pc )
 {
 	//		サブルーチンジャンプを行なう
 	//
-	mcs = mcsbak;
+	mcs = (unsigned short *)GetTaskID();
+	//mcs = mcsbak;
 	cmdfunc_gosub( (unsigned short *)pc, mcs );
 	hspctx->runmode = RUNMODE_RUN;
 }

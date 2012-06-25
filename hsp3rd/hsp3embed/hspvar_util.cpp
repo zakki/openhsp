@@ -1401,9 +1401,7 @@ void TaskSwitch( int label )
 	}
 #endif
 
-#ifdef _DEBUG
 	lasttask = label;
-#endif
 	curtask = __HspTaskFunc[label];
 }
 
@@ -1419,11 +1417,7 @@ int GetTaskID( void )
 {
 	//		ƒ^ƒXƒNŠÖ”ID‚ğæ“¾
 	//
-#ifdef _DEBUG
 	return lasttask;
-#else
-	return -1;
-#endif
 }
 
 

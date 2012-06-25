@@ -143,6 +143,7 @@ void HspWnd::MakeBmscr( int id, int type, int x, int y, int sx, int sy )
 	bm->type = type;
 	bm->texid = -1;
 	bm->Init( sx, sy );
+	bm->master_hspwnd = static_cast< void * >( this );
 }
 
 
@@ -162,8 +163,7 @@ void HspWnd::MakeBmscrFromResource( int id, char *fname )
 	bm->type = HSPWND_TYPE_BUFFER;
 	bm->texid = -1;
 	bm->Init( fname );
-//	bm->Init( hInst, hwnd, sx, sy,
-//	 ( mode & 0x01 ? BMSCR_PALMODE_PALETTECOLOR : BMSCR_PALMODE_FULLCOLOR ) );
+	bm->master_hspwnd = static_cast< void * >( this );
 }
 
 
@@ -236,6 +236,7 @@ Bmscr::~Bmscr()
 	//		Bmscr”jŠü
 	//
 	if ( flag == BMSCR_FLAG_INUSE ) {
+		ResetHSPObject();					//		object remove
 		hgio_delscreen( (BMSCR *)this );
 	}
 }
@@ -251,29 +252,33 @@ void Bmscr::Init( int p_sx, int p_sy )
 	flag = BMSCR_FLAG_INUSE;
 
 	objmax = 0;
-//	mem_obj = NULL;
+	mem_obj = NULL;
 	sx = p_sx; sy = p_sy;
 	sx2 = sx;
 
 	Cls(0);
+
+	imgbtn = -1;
 
 	objmode = 1;
 	fl_dispw = 0;
 
 	fl_dispw = 1;
 	fl_udraw = 1;
+
+	resname[0] = 0;
 }
 
 
 void Bmscr::Init( char *fname )
 {
 	int i;
-	strcpy( resname, fname );
 	i = hgio_texload( (BMSCR *)this, fname );
 	if ( i < 0 ) {
 		throw HSPERR_PICTURE_MISSING;
 	}
 	Init( sx, sy );
+	strncpy( resname, fname, RESNAME_MAX-1 );
 	//Alertf( "(%d,%d)",sx,sy );
 }
 
@@ -290,7 +295,10 @@ void Bmscr::Cls( int mode )
 
 	//		object initalize
 	//
-	//ResetHSPObject();
+	ResetHSPObject();
+	tapstat = 0;
+	tapinvalid = 0;
+	cur_obj = NULL;
 
 	//		text setting initalize
 	//
@@ -300,7 +308,7 @@ void Bmscr::Cls( int mode )
 	//		vals initalize
 	//
 	textspeed=0;
-	ox=64;oy=24;py=0;
+	ox=64;oy=32;py=0;
 	gx=32;gy=32;gmode=0;
 	objstyle = 00;
 	for(i=0;i<BMSCR_SAVEPOS_MAX;i++) { savepos[i] = 0; }

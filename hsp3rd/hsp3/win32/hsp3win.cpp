@@ -163,13 +163,54 @@ LRESULT CALLBACK WndProc( HWND hwnd, UINT uMessage, WPARAM wParam, LPARAM lParam
 */
 	case WM_MOUSEMOVE:
 		{
-		BMSCR *bm;
+		Bmscr *bm;
 		if ( exinfo != NULL ) {
-			bm = (BMSCR *)exinfo->HspFunc_getbmscr(0);
+			bm = (Bmscr *)exinfo->HspFunc_getbmscr(0);
 			bm->savepos[BMSCR_SAVEPOS_MOSUEX] = LOWORD(lParam);
 			bm->savepos[BMSCR_SAVEPOS_MOSUEY] = HIWORD(lParam);
+			bm->UpdateAllObjects();
 		}
 		return 0;
+		}
+	case WM_MOUSELEAVE:
+		{
+		Bmscr *bm;
+		if ( exinfo != NULL ) {
+			bm = (Bmscr *)exinfo->HspFunc_getbmscr(0);
+			bm->tapstat = 0;
+			bm->savepos[BMSCR_SAVEPOS_MOSUEX] = -1;
+			bm->savepos[BMSCR_SAVEPOS_MOSUEY] = -1;
+			bm->UpdateAllObjects();
+		}
+		break;
+		}
+	case WM_LBUTTONUP:
+		{
+		Bmscr *bm;
+		if ( exinfo != NULL ) {
+			bm = (Bmscr *)exinfo->HspFunc_getbmscr(0);
+			bm->tapstat = 0;
+			bm->UpdateAllObjects();
+		}
+		break;
+		}
+	case WM_LBUTTONDOWN:
+		{
+		Bmscr *bm;
+		if ( exinfo != NULL ) {
+			bm = (Bmscr *)exinfo->HspFunc_getbmscr(0);
+			bm->tapstat = 1;
+			bm->UpdateAllObjects();
+
+			// WM_MOUSELEAVE ƒƒbƒZ[ƒW‚Ì“o˜^ˆ—
+			TRACKMOUSEEVENT tme;
+			tme.cbSize = sizeof( TRACKMOUSEEVENT );
+			tme.dwFlags = TME_LEAVE;
+			tme.hwndTrack = hwnd;
+			tme.dwHoverTime = HOVER_DEFAULT;
+			_TrackMouseEvent( &tme );
+		}
+		break;
 		}
 
 	case MM_MCINOTIFY:
@@ -448,7 +489,9 @@ void hsp3dish_msgfunc( HSPCTX *hspctx )
 		case RUNMODE_RETURN:
 			throw HSPERR_RETURN_WITHOUT_GOSUB;
 		case RUNMODE_INTJUMP:
-			throw HSPERR_INTJUMP;
+			//throw HSPERR_INTJUMP;
+			hspctx->runmode = RUNMODE_RUN;
+			break;
 		case RUNMODE_ASSERT:
 			hspctx->runmode = RUNMODE_STOP;
 #ifdef HSPDEBUG

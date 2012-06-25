@@ -264,7 +264,7 @@ int dpm_ini( char *fname, long dpmofs, int chksum, int deckey )
 	//
 	dpm_flag = 1;
 	strcpy(dpm_file,dpmfile);
-	Alertf( "Init:DPM ready(%s)",dpm_file );
+	//Alertf( "Init:DPM ready(%s)",dpm_file );
 	return 0;
 }
 

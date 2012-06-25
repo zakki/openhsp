@@ -8,9 +8,9 @@
 //		システム関連ラベル
 //
 #define HSPTITLE "Hot Soup Processor ver."
-#define hspver "3.3"
-#define mvscode 4		// minor version code
-#define vercode 0x3304	// version code
+#define hspver "3.31beta2"
+#define mvscode 2		// minor version code
+#define vercode 0x3311	// version code
 
 #define HSPERR_HANDLE		// HSPエラー例外を有効にします
 #define SYSERR_HANDLE		// システムエラー例外を有効にします
@@ -41,6 +41,7 @@
 //#define HSPIOS		// iOS version flag
 //#define HSPNDK		// android NDK version flag
 //#define HSPDISH		// HSP3Dish flag
+#define HSPEMBED		// HSP3 Embed runtime flag
 
 //
 //		環境フラグに付加されるオプション

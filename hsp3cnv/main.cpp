@@ -91,7 +91,7 @@ int main( int argc, char *argv[] )
 	if (st) { printf("Illegal switch selected.\n");return 1; }
 	if (fname[0]==0) { printf("No file name selected.\n");return 1; }
 #else
-	strcpy( fname,"test" );
+	strcpy( fname,"gradf_btn" );
 #endif
 
 	getpath( fname, fname2, 1+16 );

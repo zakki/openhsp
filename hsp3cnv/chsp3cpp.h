@@ -61,6 +61,7 @@ private:
 	void MakeCPPSub( int cmdtype, int cmdval );
 	void MakeCPPSubModCmd( int cmdtype, int cmdval );
 	void MakeCPPSubProgCmd( int cmdtype, int cmdval );
+	void MakeCPPSubExtCmd( int cmdtype, int cmdval );
 	void OutputCPPParam( void );
 	void DisposeCPPParam( void );
 

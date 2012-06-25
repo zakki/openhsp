@@ -1286,12 +1286,12 @@ int CHsp3::MakeProgramInfoParam2( void )
 	//
 	int i;
 	int prm;
-	//char mes[4096];
+//	char mes[4096];
 
 	prm = 0;
 	while(1) {
-		//sprintf( mes,"---%04x:%x:CSTYPE%d VAL%d\n", mcs - mcs_start, exflag, cstype, csval );
-		//out->PutStr( mes );
+//		sprintf( mes,"---%04x:%x:CSTYPE%d VAL%d\n", mcs - mcs_start, exflag, cstype, csval );
+//		out->PutStr( mes );
 
 		if ( exflag & EXFLG_1) break;		// パラメーター列終端
 		if ( mcs > mcs_end ) break;			// データ終端チェック

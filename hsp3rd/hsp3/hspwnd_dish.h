@@ -7,7 +7,9 @@
 
 #include "../hsp3/hsp3code.h"
 
-#define HSPOBJ_LIMIT_DEFAULT	1024
+//	Window Object Info
+//
+#define HSPOBJ_LIMIT_DEFAULT	128
 
 #define HSPOBJ_INPUT_STR 2
 #define HSPOBJ_INPUT_DOUBLE 3
@@ -21,6 +23,61 @@
 #define HSPOBJ_TAB_DISABLE 2
 #define HSPOBJ_TAB_SKIP 3
 #define HSPOBJ_TAB_SELALLTEXT 4
+
+typedef struct HSP3VARSET
+{
+	//	HSP3VARSET structure
+	//
+	int type;
+	PVal *pval;
+	APTR aptr;
+	void *ptr;
+} HSP3VARSET;
+
+typedef struct HSP3BTNSET
+{
+	//	HSP3BTNSET structure
+	//	(HSP3VARSETと同サイズにすること)
+	//
+	char name[64];				// button name
+	short messx, messy;			// message rect size
+
+	//	参照元
+	short normal_x, normal_y;	// 通常時
+	short push_x, push_y;		// 押下時
+	short focus_x, focus_y;		// フォーカス時
+
+	short jumpmode;				// jump mode
+	short ext;					// dummy
+	void *ptr;					// jump 呼び出し先
+} HSP3BTNSET;
+
+typedef struct HSPOBJINFO
+{
+	//		Object Info (3.0)
+	//
+	short	owmode;		// objectのmode
+	short	enableflag;	// objectの有効フラグ
+
+	void	*bm;		// objectが配置されているBMSCR構造体のポインタ
+	void	*hCld;		// objectのhandle
+	int		owid;		// objectのValue(汎用)
+	int		owsize;		// objectの使用サイズ(汎用)
+
+	short x,y;			// 左上座標
+	short sx,sy;		// サイズ
+	short tapflag;		// タップフラグ
+	short srcid;		// 参照BufferID
+
+	HSP3BTNSET *btnset;	// objectから設定される情報
+
+	//		callback function
+	void	(*func_draw)( struct HSPOBJINFO * );
+	void	(*func_notice)( struct HSPOBJINFO *, int );
+	void	(*func_objprm)( struct HSPOBJINFO *, int, void * );
+	void	(*func_delete)( struct HSPOBJINFO * );
+
+} HSPOBJINFO;
 
 #define BMSCR_FLAG_NOUSE	0
 #define BMSCR_FLAG_INUSE	1
@@ -42,6 +99,8 @@ BMSCR_SAVEPOS_MAX,
 };
 
 #define RESNAME_MAX 64
+
+void SetObjectEventNoticePtr( int *ptr );
 
 //	Bmscr class
 //
@@ -84,6 +143,22 @@ public:
 	void GradFill( int x, int y, int sx, int sy, int mode, int col1, int col2 );
 
 	void SetFilter( int type );
+
+	int NewHSPObject( void );
+	void ResetHSPObject( void );
+	void NextObject( int plus );
+
+	HSPOBJINFO *AddHSPObject( int id, int mode );
+	HSPOBJINFO *GetHSPObject( int id );
+	HSPOBJINFO *GetHSPObjectSafe( int id );
+	void DeleteHSPObject( int id );
+	void EnableObject( int id, int sw );
+	void SetObjectMode( int id, int owmode );
+	int DrawAllObjects( void );
+	int UpdateAllObjects( void );
+
+	int AddHSPObjectButton( char *name, int eventid, void *callptr );
+	void SetButtonImage( int id, int bufid, int x1, int y1, int x2, int y2, int x3, int y3 );
 
 	//
 	//		Window data structure
@@ -143,10 +218,16 @@ public:
 	//		Class depend data
 	//
 	int		objstyle;					// objects style
-//	HSPOBJINFO *mem_obj;				// Window objects
+	HSPOBJINFO *mem_obj;				// Window objects
 	int objmax;							// Max number of obj
 	int objlimit;						// Limit number of obj
 	short savepos[BMSCR_SAVEPOS_MAX];	// saved position
+	void *master_hspwnd;				// Parent hspwnd class
+
+	int		imgbtn;						// Custom Button Flag (-1=none)
+	short	btn_x1, btn_y1;				// Custom Button Image X,Y
+	short	btn_x2, btn_y2;				// Custom Button Image X,Y (press)
+	short	btn_x3, btn_y3;				// Custom Button Image X,Y (mouse over)
 
 	short	divx, divy;					// Divide value for CEL
 	short	divsx, divsy;				// CEL size
@@ -154,6 +235,10 @@ public:
 
 	char	resname[RESNAME_MAX];		// Resource Name
 	int		texid;						// Texture ID
+
+	short	tapstat;					// TapStatus
+	short	tapinvalid;					// Invalid Tap Flag
+	HSPOBJINFO *cur_obj;				// Tap active objects
 private:
 //	void Blt( int mode, Bmscr *src, int xx, int yy, int asx, int asy );
 //	void CnvRGB16( PTRIVERTEX target, DWORD src );
@@ -267,10 +352,16 @@ typedef struct BMSCR
 	//		Class depend data
 	//
 	int		objstyle;					// objects style
-//	HSPOBJINFO *mem_obj;				// Window objects
+	HSPOBJINFO *mem_obj;				// Window objects
 	int objmax;							// Max number of obj
 	int objlimit;						// Limit number of obj
 	short savepos[BMSCR_SAVEPOS_MAX];	// saved position
+	void *master_hspwnd;				// Parent hspwnd class
+
+	int		imgbtn;						// Custom Button Flag (-1=none)
+	short	btn_x1, btn_y1;				// Custom Button Image X,Y
+	short	btn_x2, btn_y2;				// Custom Button Image X,Y (press)
+	short	btn_x3, btn_y3;				// Custom Button Image X,Y (mouse over)
 
 	short	divx, divy;					// Divide value for CEL
 	short	divsx, divsy;				// CEL size
@@ -278,6 +369,10 @@ typedef struct BMSCR
 
 	char	resname[RESNAME_MAX];		// Resource Name
 	int		texid;						// Texture ID
+
+	short	tapstat;					// TapStatus
+	short	tapinvalid;					// Invalid Tap Flag
+	HSPOBJINFO *cur_obj;				// Tap active objects
 } BMSCR;
 
 #endif
