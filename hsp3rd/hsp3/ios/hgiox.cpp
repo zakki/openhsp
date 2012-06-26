@@ -32,7 +32,7 @@
 #include "../sysreq.h"
 #include "../hgio.h"
 
-
+static		HSPREAL infoval[HGIO_INFO_MAX];
 
 /*-------------------------------------------------------------------------------*/
 
@@ -134,8 +134,8 @@ static	int  font_sx, font_sy;
 static	GLfloat _line_vertexs[16*3];
 static	GLbyte  _line_colors[16*4];
 
-static	int  total_tick;
 #ifdef HSPIOS
+static	double  total_tick;
 static	CFAbsoluteTime  lastTime;
 #endif
 
@@ -416,9 +416,16 @@ void hgio_init( int mode, int sx, int sy, void *hwnd )
 	font_sx = 16;
 	font_sy = 16;
 
+	//		infovalをリセット
+	//
+	int i;
+	for(i=0;i<HGIO_INFO_MAX;i++) {
+		infoval[i] = 0.0;
+	}
+
     //  timer initalize
-    total_tick = 0;
 #ifdef HSPIOS
+    total_tick = 0.0;
     lastTime = CFAbsoluteTimeGetCurrent();
 #endif
 }
@@ -427,16 +434,19 @@ void hgio_init( int mode, int sx, int sy, void *hwnd )
 void hgio_reset( void )
 {
     //ビューポート変換
+//    glViewport(0,0,320,480);
     glViewport(0,0,_bgsx,_bgsy);
     
     //投影変換
     glMatrixMode(GL_PROJECTION);
     glLoadIdentity();
+
+//    glOrthof( 0, 320.0f, -480.0f, 0,-100,100);
     glOrthof( 0, _bgsx * _scaleX, -_bgsy * _scaleY, 0,-100,100);
 //    glOrthof( 0, _bgsx, -_bgsy, 0,-100,100);
     //glTranslatef(engine->width/2,engine->height/2,0);
 
-    //モデリング変換    
+    //モデリング変換
     glMatrixMode(GL_MODELVIEW);
     glLoadIdentity();
 
@@ -461,7 +471,9 @@ void hgio_reset( void )
         
     //ブレンドの設定
     glEnable(GL_BLEND);
+#ifdef HSPIOS
     glBlendEquationOES(GL_FUNC_ADD_OES);
+#endif
     glBlendFunc(GL_ONE,GL_ONE_MINUS_SRC_ALPHA);
 
     //ポイントの設定
@@ -523,17 +535,23 @@ void hgio_setBlendMode( int mode, int aval )
             break;
         case 5:                     //add
             glEnable(GL_BLEND);
+#ifdef HSPIOS
             glBlendEquationOES(GL_FUNC_ADD_OES);
+#endif
             glBlendFunc(GL_SRC_ALPHA,GL_ONE);
             break;
         case 6:                     //sub
             glEnable(GL_BLEND);
+#ifdef HSPIOS
             glBlendEquationOES(GL_FUNC_REVERSE_SUBTRACT_OES);
+#endif
             glBlendFunc(GL_SRC_ALPHA,GL_ONE);
             break;
         default:                    //normal blend
             glEnable(GL_BLEND);
+#ifdef HSPIOS
             glBlendEquationOES(GL_FUNC_ADD_OES);
+#endif
             glBlendFunc(GL_SRC_ALPHA,GL_ONE_MINUS_SRC_ALPHA);
             //glBlendFunc(GL_ONE,GL_ONE_MINUS_SRC_ALPHA);
             break;
@@ -559,22 +577,30 @@ void hgio_setBlendModeFlat( int mode )
         case 3:                     //blend+alpha
         case 4:                     //blend+alpha
             glEnable(GL_BLEND);
+#ifdef HSPIOS
             glBlendEquationOES(GL_FUNC_ADD_OES);
+#endif
             glBlendFunc(GL_ONE,GL_ONE_MINUS_SRC_ALPHA);
             break;
         case 5:                     //add
             glEnable(GL_BLEND);
+#ifdef HSPIOS
             glBlendEquationOES(GL_FUNC_ADD_OES);
+#endif
             glBlendFunc(GL_SRC_ALPHA,GL_ONE);
             break;
         case 6:                     //sub
             glEnable(GL_BLEND);
+#ifdef HSPIOS
             glBlendEquationOES(GL_FUNC_REVERSE_SUBTRACT_OES);
+#endif
             glBlendFunc(GL_SRC_ALPHA,GL_ONE);
             break;
         default:                    //normal blend
             glEnable(GL_BLEND);
+#ifdef HSPIOS
             glBlendEquationOES(GL_FUNC_ADD_OES);
+#endif
             glBlendFunc(GL_ONE,GL_ONE_MINUS_SRC_ALPHA);
             break;
     }
@@ -634,18 +660,6 @@ int hgio_getHeight( void )
 void hgio_setfilter( int type, int opt )
 {
 	hgio_setFilterMode( type );
-}
-
-
-int hgio_dialog( int mode, char *str1, char *str2 )
-{
-#ifdef HSPNDK
-	LOGW( str1 );
-#endif
-#ifdef HSPIOS
-    Alertf( str1 );
-#endif
-	return 0;
 }
 
 
@@ -730,15 +744,6 @@ int hgio_render_end( void )
     eglSwapBuffers(appengine->display, appengine->surface);
 #endif
 
-    
-    // 経過時間の計測
-#ifdef HSPIOS
-    CFAbsoluteTime now;
-    now = CFAbsoluteTimeGetCurrent();
-    total_tick += (int)(( now - lastTime ) * 1000.0f );
-    lastTime = now;
-#endif
-    
 	drawflag = 0;
 	return res;
 }
@@ -1007,8 +1012,8 @@ void hgio_line( BMSCR *bm, float x, float y )
          _line_colors[i*4+3]=_color.a;
      }
 
-	linebasex = x;
-	linebasey = y;
+	linebasex = x + 0.375f;
+	linebasey = y + 0.375f;
 
     hgio_setBlendModeFlat(0);
 	ChangeTex( -1 );
@@ -1025,8 +1030,10 @@ void hgio_line2( float x, float y )
 
      //頂点配列情報
      _line_vertexs[0]= linebasex;_line_vertexs[1]=-linebasey;_line_vertexs[2]=0;
-     _line_vertexs[3]= x;_line_vertexs[4]=-y;_line_vertexs[5]=0;     
-     
+	linebasex = x + 0.375f;
+	linebasey = y + 0.375f;
+    _line_vertexs[3]= linebasex;_line_vertexs[4]=-linebasey;_line_vertexs[5]=0;
+    
 
     //ラインの描画
     glEnableClientState(GL_COLOR_ARRAY);
@@ -1448,23 +1455,54 @@ int hgio_gettick( void )
 	return i;
 #endif
 
+    // 経過時間の計測
 #ifdef HSPIOS
-    return total_tick;
+    CFAbsoluteTime now;
+    now = CFAbsoluteTimeGetCurrent();
+    total_tick += now - lastTime;
+    lastTime = now;
+#endif
+
+#ifdef HSPIOS
+    return (int)(total_tick * 1000.0 );
     //return (int)( CFAbsoluteTimeGetCurrent() * 1000.0 );
 #endif
 }
 
+int hgio_exec( char *msg, char *option, int mode )
+{
+#ifdef HSPIOS
+    gb_exec( mode, msg );
+#endif
+    return 0;
+}
+
+int hgio_dialog( int mode, char *str1, char *str2 )
+{
+#ifdef HSPNDK
+	LOGW( str1 );
+#endif
+#ifdef HSPIOS
+    gb_dialog( mode, str1, str2 );
+    //Alertf( str1 );
+#endif
+	return 0;
+}
 
 /*-------------------------------------------------------------------------------*/
 
 void hgio_touch( int xx, int yy, int button )
 {
+    Bmscr *bm;
 	mouse_x = xx * _scaleX;
 	mouse_y = yy * _scaleY;
 	mouse_btn = button;
     if ( mainbm != NULL ) {
         mainbm->savepos[BMSCR_SAVEPOS_MOSUEX] = mouse_x;
         mainbm->savepos[BMSCR_SAVEPOS_MOSUEY] = mouse_y;
+        mainbm->tapstat = button;
+        bm = (Bmscr *)mainbm;
+        bm->UpdateAllObjects();
     }
 }
 
@@ -1549,20 +1587,26 @@ void hgio_SetAlphaModeDG( int efxprm )
     switch( alphaop ) {
         case 0:                     //blend+alpha
             glEnable(GL_BLEND);
+#ifdef HSPIOS
             glBlendEquationOES(GL_FUNC_ADD_OES);
+#endif
             glBlendFunc(GL_SRC_ALPHA,GL_ONE_MINUS_SRC_ALPHA);
             break;
         case 1:                     //blend+alpha
         case 5:                     //add
             glEnable(GL_BLEND);
+#ifdef HSPIOS
             glBlendEquationOES(GL_FUNC_ADD_OES);
+#endif
             glBlendFunc(GL_SRC_ALPHA,GL_ONE_MINUS_SRC_ALPHA);
             aval = 0xff;
             break;
 		case 2:
 		case 6:
             glEnable(GL_BLEND);
+#ifdef HSPIOS
             glBlendEquationOES(GL_FUNC_ADD_OES);
+#endif
             glBlendFunc(GL_SRC_ALPHA,GL_ONE);
             break;
         case 3:                     //sub
@@ -1570,7 +1614,9 @@ void hgio_SetAlphaModeDG( int efxprm )
         case 4:                     //sub
         case 8:                     //sub
             glEnable(GL_BLEND);
+#ifdef HSPIOS
             glBlendEquationOES(GL_FUNC_REVERSE_SUBTRACT_OES);
+#endif
             glBlendFunc(GL_SRC_ALPHA,GL_ONE);
             break;
     }
@@ -1691,4 +1737,22 @@ void hgio_drawsprite( hgmodel *mdl, HGMODEL_DRAWPRM *prm )
     glDrawArrays(GL_TRIANGLE_STRIP,0,4);
 }
 
+HSPREAL hgio_getinfo( int type )
+{
+	int i;
+	i = type - HGIO_INFO_BASE;
+	if (( i >= 0 )&&( i < HGIO_INFO_MAX)) {
+		return infoval[i];
+	}
+	return 0.0;
+}
+
+void hgio_setinfo( int type, HSPREAL val )
+{
+	int i;
+	i = type - HGIO_INFO_BASE;
+	if (( i >= 0 )&&( i < HGIO_INFO_MAX)) {
+		infoval[i] = val;
+	}
+}
 

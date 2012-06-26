@@ -92,6 +92,8 @@ static		int m_tsize;		// テキスト使用フォントのサイズ
 static		int m_tstyle;		// テキスト使用フォントのスタイル指定
 static		float center_x, center_y;
 
+static		HSPREAL infoval[HGIO_INFO_MAX];
+
 //		DirectX objects
 //
 static		D3DDISPLAYMODE target_disp;
@@ -587,6 +589,12 @@ void hgio_init( int mode, int sx, int sy, void *hwnd )
 		mestexbm.texid = mestexid;
 	}
 
+	//		infovalをリセット
+	//
+	int i;
+	for(i=0;i<HGIO_INFO_MAX;i++) {
+		infoval[i] = 0.0;
+	}
 }
 
 
@@ -1516,29 +1524,25 @@ void hgio_square( BMSCR *bm, int *posx, int *posy, int *color )
 	d3ddev->DrawPrimitiveUP(D3DPT_TRIANGLEFAN,2,vertex2DC,sizeof(D3DTLVERTEXC));
 }
 
-/*-------------------------------------------------------------------------------*/
-
-/*----------------------------------------------------------*/
-//					HSP system support
-/*----------------------------------------------------------*/
 
 int hgio_gettick( void )
 {
 	return timeGetTime();
 }
 
-int hgio_exec( char *stmp, char *ps, int mode )
+
+int hgio_exec( char *stmp, char *option, int mode )
 {
 	int i,j;
 	j=SW_SHOWDEFAULT;if (mode&2) j=SW_SHOWMINIMIZED;
 
-	if ( *ps != 0 ) {
+	if ( *option != 0 ) {
 		SHELLEXECUTEINFO exinfo;
 		memset( &exinfo, 0, sizeof(SHELLEXECUTEINFO) );
 		exinfo.cbSize = sizeof(SHELLEXECUTEINFO);
 		exinfo.fMask = SEE_MASK_INVOKEIDLIST;
 		exinfo.hwnd = master_wnd;
-		exinfo.lpVerb = ps;
+		exinfo.lpVerb = option;
 		exinfo.lpFile = stmp;
 		exinfo.nShow = SW_SHOWNORMAL;
 		if ( ShellExecuteEx( &exinfo ) == false ) throw HSPERR_EXTERNAL_EXECUTE;
@@ -1558,6 +1562,24 @@ int hgio_exec( char *stmp, char *ps, int mode )
 	return 0;
 }
 
-/*-------------------------------------------------------------------------------*/
+
+HSPREAL hgio_getinfo( int type )
+{
+	int i;
+	i = type - HGIO_INFO_BASE;
+	if (( i >= 0 )&&( i < HGIO_INFO_MAX)) {
+		return infoval[i];
+	}
+	return 0.0;
+}
+
+void hgio_setinfo( int type, HSPREAL val )
+{
+	int i;
+	i = type - HGIO_INFO_BASE;
+	if (( i >= 0 )&&( i < HGIO_INFO_MAX)) {
+		infoval[i] = val;
+	}
+}
 
 #endif

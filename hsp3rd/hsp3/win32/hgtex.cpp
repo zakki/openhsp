@@ -878,6 +878,13 @@ static void MakeAlphaTable( int format, int TextColor )
 	gval = (DWORD)((TextColor>> 8)&0xff);
 	bval = (DWORD)((TextColor    )&0xff);
 
+	if (( TextColor & 0xff000000 ) == 0 ) {
+		for ( DWORD ia = 0; ia <= 32; ia++ ) {
+			AlphaTbl[ia] = 0;
+		}
+		return;
+	}
+
 	switch( format ) {
 	case TEXMODE_MES8:
 		for ( DWORD ia = 0; ia <= 32; ia++ )

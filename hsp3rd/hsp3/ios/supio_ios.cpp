@@ -30,7 +30,7 @@
 #include "../dpmread.h"
 #include "../strbuf.h"
 
-void gb_savedata(char* key, char* data, int size);
+void gb_savedata(char* key, char* data, int size, int offset);
 
 #ifndef _MAX_PATH
 #define _MAX_PATH	256
@@ -95,7 +95,7 @@ void mem_bye( void *ptr ) {
 
 int mem_save( char *fname, void *mem, int msize, int seekofs )
 {
-    gb_savedata( fname, (char *)mem, msize );
+    gb_savedata( fname, (char *)mem, msize, seekofs );
     return msize;
 #if 0
 	FILE *fp;

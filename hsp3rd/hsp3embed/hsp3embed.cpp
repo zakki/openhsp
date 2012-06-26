@@ -225,10 +225,12 @@ int hsp3eb_exectime( int tick )
 		case RUNMODE_WAIT:
 			//	高精度タイマー
 			ctx->runmode = hsp3eb_wait( tick );
+			if ( ctx->runmode == RUNMODE_RUN ) break;
 			return ctx->runmode;
 		case RUNMODE_AWAIT:
 			//	高精度タイマー
 			ctx->runmode = hsp3eb_await( tick );
+			if ( ctx->runmode == RUNMODE_RUN ) break;
 			return ctx->runmode;
 		case RUNMODE_END:
 		case RUNMODE_INTJUMP:

@@ -52,6 +52,9 @@
 
 //#define HSPDEBUG	// Debug version flag
 
+//		HSPが使用する実数型
+//
+#define HSPREAL double
 
 //
 //		gcc使用のチェック

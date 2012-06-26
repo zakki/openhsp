@@ -5,8 +5,9 @@
 #ifndef __hgio_h
 #define __hgio_h
 
-#include "hspwnd_dish.h"
+#include "../hsp3/hsp3config.h"
 #include "../hsp3/dpmread.h"
+#include "hspwnd_dish.h"
 #include "geometry.h"
 
 #include "hgmodel.h"
@@ -57,7 +58,9 @@ void hgio_square_tex( BMSCR *bm, int *posx, int *posy, BMSCR *bmsrc, int *uvx, i
 
 int hgio_gettick( void );
 int hgio_exec( char *msg, char *option, int mode );
-int hgio_draw_object( BMSCR *bm );
+
+void hgio_setinfo( int type, HSPREAL val );
+HSPREAL hgio_getinfo( int type );
 
 #ifdef __cplusplus
 }
@@ -75,6 +78,12 @@ CLSMODE_MAX,
 #define HGIO_FILTER_TYPE_NONE 0
 #define HGIO_FILTER_TYPE_LINEAR 1
 #define HGIO_FILTER_TYPE_LINEAR2 2
+
+#define HGIO_INFO_MAX 16
+#define HGIO_INFO_BASE 0x100
+#define HGIO_INFO_ACCEL_X (HGIO_INFO_BASE+0)
+#define HGIO_INFO_ACCEL_Y (HGIO_INFO_BASE+1)
+#define HGIO_INFO_ACCEL_Z (HGIO_INFO_BASE+2)
 
 
 #ifdef HSPWIN

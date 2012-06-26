@@ -423,7 +423,312 @@ void MMMan::GetInfo( int bank, char **fname, int *num, int *flag, int *opt )
 }
 
 
+//---------------------------------------------------------------------------
+//	dxsnd service
+//---------------------------------------------------------------------------
+
+//		Struct
+//
+typedef struct
+{
+short flag;		// enable flag
+short volume;		// volume(0～-10000)
+short pan;		// pan(-10000～10000)
+short speed;		// speed
+int loopptr;		// loop pointer
+char *fname;		// file name (optional)
+
+} SNDINF;
+
+//		Data
+//
+static		int sndflg;
+static		SNDINF *sndinf;
 
 
+/*------------------------------------------------------------*/
+/*
+        Subroutines
+ */
+/*------------------------------------------------------------*/
+
+static int GetEmptyEntry( void )
+{
+	int i;
+	for(i=0;i<SNDINF_MAX;i++) {
+		if ( sndinf[i].flag == SNDFLAG_NONE ) return i;
+	}
+	return -1;
+}
+
+
+static void ResetSndInf( SNDINF *snd )
+{
+	//	各種デフォルト
+	snd->volume = 0;
+	snd->pan = 0;
+	snd->speed = 0;
+	snd->loopptr = -1;
+}
+
+/*------------------------------------------------------------*/
+/*
+		Main process
+*/
+/*------------------------------------------------------------*/
+
+int SndInit( void *hWnd )
+{
+	sndflg = -1;
+
+	sndinf = (SNDINF *)malloc( sizeof(SNDINF) * SNDINF_MAX );
+	for(int i=0;i<SNDINF_MAX;i++) {
+		sndinf[i].flag = SNDFLAG_NONE;
+	}
+
+	sndflg = 0;
+
+	return 0;
+}
+
+
+void SndTerm( void )
+{
+	if ( sndflg == 0 ) {
+		//	終了処理
+		SndStopAll();
+		SndReset();
+		free( sndinf );
+	}
+}
+
+
+void SndReset( void )
+{
+	int i;
+	if ( sndflg ) return;
+	for(i=0;i<SNDINF_MAX;i++) {
+		SndStop( i );
+		SndDelete( i );
+	}
+}
+
+
+void SndDelete( int id )
+{
+	SNDINF *snd;
+	if ( sndflg ) return;
+	if (( id < 0 )||( id >= SNDINF_MAX )) return;
+	snd = &sndinf[id];
+//	if ( snd->flag & SNDFLAG_READY_WAV ) {
+//		snd->lpSoundBuffer->Release();
+//	}
+//	if ( snd->flag & SNDFLAG_READY_OGG ) {
+//		free( snd->fname );
+//	}
+	snd->flag = SNDFLAG_NONE;
+}
+
+
+void SndSetVolume( int id, int vol )
+{
+	int type;
+	SNDINF *snd;
+	if ( sndflg ) return;
+	if (( id < 0 )||( id >= SNDINF_MAX )) return;
+	snd = &sndinf[id];
+	snd->volume = vol;
+	type = snd->flag & 15;
+	switch( type ) {
+//	case SNDFLAG_READY_WAV:
+//		snd->lpSoundBuffer->SetVolume( snd->volume );
+//		break;
+	}
+}
+
+
+void SndSetPan( int id, int pan )
+{
+	int type;
+	SNDINF *snd;
+	if ( sndflg ) return;
+	if (( id < 0 )||( id >= SNDINF_MAX )) return;
+	snd = &sndinf[id];
+	snd->pan = pan;
+	type = snd->flag & 15;
+	switch( type ) {
+//	case SNDFLAG_READY_WAV:
+//		snd->lpSoundBuffer->SetPan( snd->pan );
+//		break;
+	}
+}
+
+
+void SndSetLoop( int id, int loop )
+{
+	SNDINF *snd;
+	if ( sndflg ) return;
+	if (( id < 0 )||( id >= SNDINF_MAX )) return;
+	snd = &sndinf[id];
+	if ( loop < 0 ) {
+		snd->flag &= ~SNDFLAG_LOOP;
+		snd->loopptr = -1;
+		return;
+	}
+	snd->flag |= SNDFLAG_LOOP;
+	snd->loopptr = loop;
+}
+
+
+int SndRegistWav( int newid, char *mem, int option )
+{
+	int id;
+	SNDINF *snd;
+	id = newid;
+	if ( sndflg ) return -1;
+	if ( id < 0 ) {
+		id = GetEmptyEntry();
+	} else {
+		SndDelete( id );
+	}
+	if (( id < 0 )||( id >= SNDINF_MAX )) return -1;
+	snd = &sndinf[id];
+
+/*
+	snd->lpSoundBuffer = lpBuffer;
+	snd->lpSoundBuffer->SetCurrentPosition( 0 );
+	snd->lpSoundBuffer->SetVolume( 0 );
+	snd->lpSoundBuffer->SetPan( 0 );
+	snd->flag = SNDFLAG_READY_WAV;
+*/
+	snd->flag |= option;
+	ResetSndInf( snd );
+
+	//Alertf( "DataSize %d (%d,%d)", DataSize, size1, size2 );
+	//Alertf( "%dBit %.1lfKHz", wf.Format.wBitsPerSample, wf.Format.nSamplesPerSec/1000.0 );
+
+	return id;
+}
+
+
+void SndPlay( int id )
+{
+	int type;
+	SNDINF *snd;
+	if ( sndflg ) return;
+	if (( id < 0 )||( id >= SNDINF_MAX )) return;
+
+	snd = &sndinf[id];
+	type = snd->flag & 15;
+/*
+	switch( type ) {
+	case SNDFLAG_READY_WAV:
+		SndStop( id );
+		snd->lpSoundBuffer->SetVolume( snd->volume );
+		snd->lpSoundBuffer->SetPan( snd->pan );
+		if ( snd->flag & SNDFLAG_LOOP ) {
+			snd->lpSoundBuffer->Play( 0, 0, DSBPLAY_LOOPING );
+		} else {
+			snd->lpSoundBuffer->Play( 0, 0, 0 );
+		}
+		break;
+	}
+*/
+}
+
+
+void SndPlayPos( int id, int pos )
+{
+	int type;
+	SNDINF *snd;
+	if ( sndflg ) return;
+	if (( id < 0 )||( id >= SNDINF_MAX )) return;
+
+	snd = &sndinf[id];
+	type = snd->flag & 15;
+/*
+	switch( type ) {
+	case SNDFLAG_READY_WAV:
+		SndStop( id );
+		snd->lpSoundBuffer->SetVolume( snd->volume );
+		snd->lpSoundBuffer->SetPan( snd->pan );
+		if ( snd->flag & SNDFLAG_LOOP ) {
+			snd->lpSoundBuffer->Play( 0, 0, DSBPLAY_LOOPING );
+		} else {
+			snd->lpSoundBuffer->Play( 0, 0, 0 );
+		}
+		snd->lpSoundBuffer->SetCurrentPosition( pos );
+		break;
+	}
+*/
+}
+
+
+void SndStopAll( void )
+{
+	for(int i=0;i<SNDINF_MAX;i++) {
+		SndStop( i );
+	}
+}
+
+
+void SndStop( int id )
+{
+	int type;
+	SNDINF *snd;
+	if ( sndflg ) return;
+	if (( id < 0 )||( id >= SNDINF_MAX )) return;
+	snd = &sndinf[id];
+	type = snd->flag & 15;
+/*
+	switch( type ) {
+	case SNDFLAG_READY_WAV:
+		snd->lpSoundBuffer->Stop();
+		snd->lpSoundBuffer->SetCurrentPosition( 0 );
+		break;
+	}
+*/
+}
+
+
+int SndGetStatus( int id, int option )
+{
+	int type;
+	SNDINF *snd;
+	if ( sndflg ) return 0;
+	if (( id < 0 )||( id >= SNDINF_MAX )) return 0;
+	snd = &sndinf[id];
+	if ( option < 16 ) {
+		short *p;
+		p = (short *)snd;
+		return (int)p[ option ];
+	}
+/*
+	type = snd->flag & 15;
+	switch( type ) {
+	case SNDFLAG_READY_WAV:
+		{
+		DWORD status = 0;
+		snd->lpSoundBuffer->GetStatus( &status );
+		if (status == DSBSTATUS_PLAYING) return 1;
+		break;
+		}
+	}
+*/
+	return 0;
+}
+
+
+double SndGetTime( int id, int option )
+{
+	int type;
+	SNDINF *snd;
+	if ( sndflg ) return (0.0);
+	if (( id < 0 )||( id >= SNDINF_MAX )) return (0.0);
+	snd = &sndinf[id];
+	type = snd->flag & 15;
+
+	return (0.0);
+}
 
 

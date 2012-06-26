@@ -109,8 +109,9 @@
 
 #define global SYSREQ_DEBUG $10000
 
-#define global ginfo_accx ginfo(28)
-#define global ginfo_accy ginfo(29)
+#define global ginfo_accx ginfo(0x100)
+#define global ginfo_accy ginfo(0x101)
+#define global ginfo_accz ginfo(0x102)
 
 #regcmd 9
 #cmd gfilter $3f

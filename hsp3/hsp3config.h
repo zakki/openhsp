@@ -40,6 +40,8 @@
 //#define HSPLINUX		// Linux(CLI) version flag
 //#define HSPIOS		// iOS version flag
 //#define HSPNDK		// android NDK version flag
+//#define HSPDISH		// HSP3Dish flag
+//#define HSPEMBED		// HSP3 Embed runtime flag
 
 //
 //		環境フラグに付加されるオプション
@@ -50,6 +52,9 @@
 
 //#define HSPDEBUG	// Debug version flag
 
+//		HSPが使用する実数型
+//
+#define HSPREAL double
 
 //
 //		gcc使用のチェック

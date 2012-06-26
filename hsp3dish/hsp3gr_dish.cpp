@@ -2188,6 +2188,11 @@ static int get_ginfo( int arg )
 		return 0;
 	case 25:
 		return wnd->GetEmptyBufferId();
+	case 28:
+	case 29:
+	case 30:
+	case 31:
+		return 0;
 
 	default:
 		throw HSPERR_UNSUPPORTED_FUNCTION;
@@ -2197,9 +2202,11 @@ static int get_ginfo( int arg )
 
 
 static int reffunc_intfunc_ivalue;
+static HSPREAL reffunc_intfunc_dvalue;
 
 static void *reffunc_function( int *type_res, int arg )
 {
+	int i;
 	void *ptr;
 
 	//		返値のタイプを設定する
@@ -2217,7 +2224,14 @@ static void *reffunc_function( int *type_res, int arg )
 
 	//	int function
 	case 0x000:								// ginfo
-		reffunc_intfunc_ivalue = get_ginfo( code_geti() );
+		i = code_geti();
+		if ( i < 0x100 ) {
+			reffunc_intfunc_ivalue = get_ginfo( i );
+		} else {
+			reffunc_intfunc_dvalue = hgio_getinfo( i );
+			ptr = &reffunc_intfunc_dvalue;
+			*type_res = HSPVAR_FLAG_DOUBLE;
+		}
 		break;
 
 
