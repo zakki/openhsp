@@ -611,12 +611,16 @@ static int cmdfunc_extcmd( int cmd )
 		unsigned short *sbr;
 		Bmscr *bmsrc;
 
+#ifndef HSPEMBED
 		i = 0;
 		if ( *type == TYPE_PROGCMD ) {
 			i = *val;
 			if ( i >= 2 ) throw HSPERR_SYNTAX;
 			code_next();
 		}
+#else
+		i = code_geti();
+#endif
 		strncpy( btnname, code_gets(), 255 );
 		sbr = code_getlb();
 		code_next();
