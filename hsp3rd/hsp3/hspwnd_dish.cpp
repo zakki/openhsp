@@ -218,6 +218,35 @@ int HspWnd::GetEmptyBufferId( void )
 }
 
 
+void HspWnd::Resume( void )
+{
+	//		画面の再構築(フレームバッファ破棄時用)
+	//
+	int i;
+	Bmscr *bm;
+
+	bm = GetBmscr(0);
+	hgio_screen( (BMSCR *)bm );
+	hgio_resume();
+
+	bm->tapstat = 0;
+	bm->tapinvalid = 0;
+	bm->cur_obj = NULL;
+
+	//		リソースを読み込み直す
+	//
+	for(i=1;i<bmscr_max;i++) {
+		bm = GetBmscr(i);
+		if ( bm != NULL ) {
+			if ( bm->type == HSPWND_TYPE_BUFFER ) {
+				bm->Init( bm->resname );
+			}
+		}
+	}
+
+}
+
+
 /*------------------------------------------------------------*/
 /*
 		Bmscr interface

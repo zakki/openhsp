@@ -16,6 +16,7 @@
 
 #ifdef HSPNDK
 #include "../../appengine.h"
+#include "../../javafunc.h"
 #include "font_data.h"
 #endif
 
@@ -32,7 +33,7 @@
 #include "../sysreq.h"
 #include "../hgio.h"
 
-
+static		HSPREAL infoval[HGIO_INFO_MAX];
 
 /*-------------------------------------------------------------------------------*/
 
@@ -130,12 +131,13 @@ static int		mouse_btn;
 
 static	int  font_texid;
 static	int  font_sx, font_sy;
+static	int  mes_sx, mes_sy;
 
 static	GLfloat _line_vertexs[16*3];
 static	GLbyte  _line_colors[16*4];
 
-static	int  total_tick;
 #ifdef HSPIOS
+static	double  total_tick;
 static	CFAbsoluteTime  lastTime;
 #endif
 
@@ -416,27 +418,38 @@ void hgio_init( int mode, int sx, int sy, void *hwnd )
 	font_sx = 16;
 	font_sy = 16;
 
+	//		infovalをリセット
+	//
+	int i;
+	for(i=0;i<HGIO_INFO_MAX;i++) {
+		infoval[i] = 0.0;
+	}
+
     //  timer initalize
-    total_tick = 0;
 #ifdef HSPIOS
+    total_tick = 0.0;
     lastTime = CFAbsoluteTimeGetCurrent();
 #endif
+
 }
 
 
 void hgio_reset( void )
 {
     //ビューポート変換
+//    glViewport(0,0,320,480);
     glViewport(0,0,_bgsx,_bgsy);
     
     //投影変換
     glMatrixMode(GL_PROJECTION);
     glLoadIdentity();
+
+//    glOrthof( 0, 320.0f, -480.0f, 0,-100,100);
     glOrthof( 0, _bgsx * _scaleX, -_bgsy * _scaleY, 0,-100,100);
 //    glOrthof( 0, _bgsx, -_bgsy, 0,-100,100);
     //glTranslatef(engine->width/2,engine->height/2,0);
 
-    //モデリング変換    
+    //モデリング変換
     glMatrixMode(GL_MODELVIEW);
     glLoadIdentity();
 
@@ -680,7 +693,8 @@ int hgio_mes( BMSCR *bm, char *str1 )
 {
 #ifdef HSPNDK
 	hgio_putTexFont( bm->cx, bm->cy, str1 );
-	bm->printsizey = font_sy;
+	bm->printsizex = mes_sx;
+	bm->printsizey = mes_sy;
 	//LOGI( str1 );
 #endif
 #ifdef HSPIOS
@@ -734,15 +748,6 @@ int hgio_render_end( void )
     eglSwapBuffers(appengine->display, appengine->surface);
 #endif
 
-    
-    // 経過時間の計測
-#ifdef HSPIOS
-    CFAbsoluteTime now;
-    now = CFAbsoluteTimeGetCurrent();
-    total_tick += (int)(( now - lastTime ) * 1000.0f );
-    lastTime = now;
-#endif
-    
 	drawflag = 0;
 	return res;
 }
@@ -1454,14 +1459,25 @@ int hgio_gettick( void )
 	return i;
 #endif
 
+    // 経過時間の計測
 #ifdef HSPIOS
-    return total_tick;
+    CFAbsoluteTime now;
+    now = CFAbsoluteTimeGetCurrent();
+    total_tick += now - lastTime;
+    lastTime = now;
+#endif
+
+#ifdef HSPIOS
+    return (int)(total_tick * 1000.0 );
     //return (int)( CFAbsoluteTimeGetCurrent() * 1000.0 );
 #endif
 }
 
 int hgio_exec( char *msg, char *option, int mode )
 {
+#ifdef HSPNDK
+	j_callActivity( msg, option, mode );
+#endif
 #ifdef HSPIOS
     gb_exec( mode, msg );
 #endif
@@ -1471,7 +1487,7 @@ int hgio_exec( char *msg, char *option, int mode )
 int hgio_dialog( int mode, char *str1, char *str2 )
 {
 #ifdef HSPNDK
-	LOGW( str1 );
+	j_dispDialog( str1, str2, mode );
 #endif
 #ifdef HSPIOS
     gb_dialog( mode, str1, str2 );
@@ -1480,16 +1496,59 @@ int hgio_dialog( int mode, char *str1, char *str2 )
 	return 0;
 }
 
+char *hgio_sysinfo( int p2, int *res, char *outbuf )
+{
+	int fl;
+	char *p1;
+	fl = HSPVAR_FLAG_STR;
+	p1 = outbuf;
+	*p1=0;
+
+	switch(p2) {
+	case 0:
+#ifdef HSPNDK
+		{
+		char tmp[256];
+		strcpy( tmp, j_getinfo( JAVAFUNC_INFO_VERSION ) );
+		strcpy( p1, "android " );
+		strcat( p1, tmp );
+		}
+#endif
+#ifdef HSPIOS
+        gb_getSysVer( p1 );
+#endif
+        break;
+	case 1:
+		break;
+	case 2:
+#ifdef HSPNDK
+		j_getinfo( JAVAFUNC_INFO_DEVICE );
+#endif
+#ifdef HSPIOS
+        gb_getSysModel( p1 );
+#endif
+		break;
+	default:
+		return NULL;
+	}
+	*res = fl;
+	return p1;
+}
+
 /*-------------------------------------------------------------------------------*/
 
 void hgio_touch( int xx, int yy, int button )
 {
+    Bmscr *bm;
 	mouse_x = xx * _scaleX;
 	mouse_y = yy * _scaleY;
 	mouse_btn = button;
     if ( mainbm != NULL ) {
         mainbm->savepos[BMSCR_SAVEPOS_MOSUEX] = mouse_x;
         mainbm->savepos[BMSCR_SAVEPOS_MOSUEY] = mouse_y;
+        mainbm->tapstat = button;
+        bm = (Bmscr *)mainbm;
+        bm->UpdateAllObjects();
     }
 }
 
@@ -1530,6 +1589,9 @@ void hgio_putTexFont( int x, int y, char *msg )
 		hgio_fcopy( xx, yy, tx, ty, font_sx, font_sy, font_texid );
 		xx += font_sx;
 	}
+
+	mes_sx = xx - x;
+	mes_sy = font_sy;
 }
 
 
@@ -1722,6 +1784,77 @@ void hgio_drawsprite( hgmodel *mdl, HGMODEL_DRAWPRM *prm )
 	//hgio_setBlendMode( bm->gmode, bm->gfrate );
     //glDisableClientState(GL_COLOR_ARRAY);
     glDrawArrays(GL_TRIANGLE_STRIP,0,4);
+}
+
+HSPREAL hgio_getinfo( int type )
+{
+	int i;
+	i = type - HGIO_INFO_BASE;
+	if (( i >= 0 )&&( i < HGIO_INFO_MAX)) {
+		return infoval[i];
+	}
+	return 0.0;
+}
+
+void hgio_setinfo( int type, HSPREAL val )
+{
+	int i;
+	i = type - HGIO_INFO_BASE;
+	if (( i >= 0 )&&( i < HGIO_INFO_MAX)) {
+		infoval[i] = val;
+	}
+}
+
+
+void hgio_resume( void )
+{
+	//	画面リソースの再構築
+	//
+
+	//テクスチャ初期化
+	TexInit();
+
+#ifdef HSPNDK
+	font_texid = RegistTexMem( font_data, font_data_size );
+#endif
+}
+
+//
+//		FILE I/O Service
+//
+int hgio_file_exist( char *fname )
+{
+#ifdef HSPNDK
+	int size;
+	AAssetManager* mgr = appengine->app->activity->assetManager;
+	if (mgr == NULL) return -1;
+	AAsset* asset = AAssetManager_open(mgr, (const char *)fname, AASSET_MODE_UNKNOWN);
+	if (asset == NULL) return -1;
+    size = (int)AAsset_getLength(asset);
+    AAsset_close(asset);
+	//Alertf( "[EXIST]%s:%d",fname,size );
+    return size;
+#endif
+    return -1;
+}
+
+
+int hgio_file_read( char *fname, void *ptr, int size, int offset )
+{
+#ifdef HSPNDK
+	int readsize;
+	AAssetManager* mgr = appengine->app->activity->assetManager;
+	if (mgr == NULL) return -1;
+	AAsset* asset = AAssetManager_open(mgr, (const char *)fname, AASSET_MODE_UNKNOWN);
+	if (asset == NULL) return -1;
+    readsize = (int)AAsset_getLength(asset);
+	if ( readsize > size ) readsize = size;
+	if ( offset>0 ) AAsset_seek( asset, offset, SEEK_SET );
+	AAsset_read( asset, ptr, readsize );
+    AAsset_close(asset);
+    return readsize;
+#endif
+    return -1;
 }
 
 

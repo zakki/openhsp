@@ -9,7 +9,7 @@
 #include "mod_appconfig.as"
 
 #define APPTITLE "HSP3Dish helper"
-#define APPVER "0.3"
+#define APPVER "0.5"
 #define APP_CONF "\\hsp3dh.cfg"
 
 #uselib "shell32.dll"
@@ -290,9 +290,12 @@
 	pos 408,122:button gosub "更新",*upd_prj
 
 	x=ginfo_sx-130:y=154
-	objsize 120,24
+	objsize 60,24
 	pos x,y
 	button "転送",*and_exec
+	pos x+60,y
+	button "Logcat",*and_logcat
+	objsize 120,24
 	pos x-130,y
 	button "ビルド",*and_build
 	pos x-260,y
@@ -646,7 +649,10 @@
 
 	;	create project後にフォルダを改変
 	;
-	prj_dlist={"jni
+	prj_dlist={"assets
+src\\tv
+src\\tv\\hsp
+jni
 jni\\hsp3
 jni\\hsp3\\ndk
 jni\\hsp3embed
@@ -658,6 +664,10 @@ res\\drawable-mdpi"}
 jni\\appengine.h
 jni\\Application.mk
 jni\\main.c
+jni\\hsp_native_app_glue.c
+jni\\hsp_native_app_glue.h
+jni\\javafunc.cpp
+jni\\javafunc.h
 jni\\hsp3\\dpmread.cpp
 jni\\hsp3\\dpmread.h
 jni\\hsp3\\geometry.cpp
@@ -697,6 +707,7 @@ jni\\hsp3\\hspvar_struct.cpp
 jni\\hsp3\\hspwnd.h
 jni\\hsp3\\hspwnd_dish.cpp
 jni\\hsp3\\hspwnd_dish.h
+jni\\hsp3\\hspwnd_obj.cpp
 jni\\hsp3\\random.cpp
 jni\\hsp3\\random.h
 jni\\hsp3\\stack.cpp
@@ -729,6 +740,7 @@ jni\\hsp3embed\\hspvar_util.cpp
 jni\\hsp3embed\\hspvar_util.h
 jni\\hsp3embed\\misc.cpp
 jni\\hsp3embed\\misc.h
+src\\tv\\hsp\\HspActivity.java
 res\\drawable-hdpi\\icon.png
 res\\drawable-ldpi\\icon.png
 res\\drawable-mdpi\\icon.png"}
@@ -759,9 +771,12 @@ res\\drawable-mdpi\\icon.png"}
 	noteload s1
 	noteadd "    <uses-sdk android:minSdkVersion=\"10\" />",5,0
 	noteadd "    <application android:icon=\"@drawable/icon\" android:label=\"@string/app_name\">",6,1
-	noteadd "        <activity android:name=\"android.app.NativeActivity\"",7,1
-	noteadd "            <meta-data android:name=\"android.app.lib_name\"",9,0
-	noteadd "                    android:value=\""+and_name+"\" />",10,0
+	noteadd "        <activity android:name=\"tv.hsp.HspActivity\"",7,1
+	noteadd "                  android:screenOrientation=\"portrait\"",8,0
+	noteadd "                  android:theme=\"@android:style/Theme.Black.NoTitleBar.Fullscreen\"",9,0
+	noteadd "            <meta-data android:name=\"android.app.lib_name\"",11,0
+	noteadd "                    android:value=\""+and_name+"\" />",12,0
+	noteadd "	<uses-permission android:name=\"android.permission.VIBRATE\"/>",19,0
 	notesave s1
 
 	s1=basedir+"jni\\Android.mk"
@@ -803,6 +818,17 @@ res\\drawable-mdpi\\icon.png"}
 *and_fin
 	gsel 0
 	goto *topmenu
+
+
+*and_logcat
+	;	logcat
+	;
+	gosub *bat_init
+	tmp+="adb logcat -s native-activity\n"
+	gosub *bat_save
+
+	exec "go.bat"
+	goto *and_fin
 
 
 *and_exec

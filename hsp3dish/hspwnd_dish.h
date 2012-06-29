@@ -255,6 +255,7 @@ public:
 	//
 	HspWnd( void );
 	~HspWnd( void );
+	void Resume( void );
 
 	void SetMasterSize( int m_sx, int m_sy );
 	void SetMasterInstance( void *m_inst );

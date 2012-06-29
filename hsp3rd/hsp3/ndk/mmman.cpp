@@ -1,8 +1,8 @@
 
 //
 //		MMMAN : Multimedia manager source
-//				for iOS enviroment
-//				onion software/onitama 2011/9
+//				for OpenSL/ES enviroment
+//				onion software/onitama 2012/6
 //
 #include <stdio.h>
 #include <stdlib.h>
@@ -10,6 +10,10 @@
 #include "../../hsp3/dpmread.h"
 #include "../../hsp3/strbuf.h"
 #include "../supio.h"
+#include "../../javafunc.h"
+
+#include <android/asset_manager.h>
+#include <android/asset_manager_jni.h>
 
 #include "mmman.h"
 
@@ -30,82 +34,16 @@ typedef struct MMM
 	short	lasttrk;		//	CD last track No.
 	void	*mempt;			//	pointer to sound data
 	char	*fname;			//	sound filename (sbstr)
+
+	//	OpenSL/ES Objects
+	//
+	SLObjectItf   playerObject;
+	SLPlayItf     playerPlay;
+	SLSeekItf     playerSeek;
+	SLVolumeItf   playerVolume;
+	int pause_flag;
+
 } MMM;
-
-static void SoundInit(void)
-{
-}
-
-static void SoundTerm(void)
-{
-}
-
-static void SoundDelete( MMM *mmm )
-{
-	if ( mmm->flag != MMDATA_MCIVOICE ) return;
-}
-
-static void SoundPlay( MMM *mmm )
-{
-	if ( mmm->flag != MMDATA_MCIVOICE ) return;
-	if ( mmm->opt == 1 ) {
-//		alSourcei( mmm->source, AL_LOOPING, AL_TRUE );
-	} else {
-//		alSourcei( mmm->source, AL_LOOPING, AL_FALSE );
-	}
-//	alSourcePlay( mmm->source );
-    //Alertf("Play.");
-}
-
-static void SoundPause( MMM *mmm )
-{
-	if ( mmm->flag != MMDATA_MCIVOICE ) return;
-//	alSourcePause( mmm->source );
-}
-
-static void SoundStop( MMM *mmm )
-{
-	if ( mmm->flag != MMDATA_MCIVOICE ) return;
-//	alSourceStop( mmm->source );
-}
-
-static void SoundParam( MMM *mmm, float pan, float gain, float pitch )
-{
-	if ( mmm->flag != MMDATA_MCIVOICE ) return;
-//	alSource3f( mmm->source, AL_POSITION, pan, 0.0f, 0.0f );
-//	alSourcef( mmm->source, AL_GAIN, gain );
-//	alSourcef( mmm->source, AL_PITCH, pitch );
-}
-
-static int SoundState( MMM *mmm )
-{
-//	ALint state;
-	if ( mmm->flag != MMDATA_MCIVOICE ) return 0;
-//	alGetSourcei( mmm->source, AL_SOURCE_STATE, &state );
-//	if(state == AL_PLAYING) {
-//		return 1;
-//	}
-	return 0;
-}
-
-static int SoundLoad( MMM *mmm, char *fname )
-{
-    char *fext;
-/*
-    char fname1[256];
-    char fname2[64];
-    getpath( fname, fname1, 17 );       // ファイル名
-    getpath( fname, fname2, 18 );       // 拡張子
-    fext = "";//fname2+1;
-	Alertf("#%s[%s] load",fname1,fname2);
-*/    
-    fext = "";
-
-
-	mmm->flag = MMDATA_MCIVOICE;
-	//Alertf("#%s rate:%d size:%d ok.",fname,sampleRate,dataSize);
-	return 0;
-}
 
 //---------------------------------------------------------------------------
 
@@ -115,7 +53,42 @@ MMMan::MMMan()
 	//
 	mem_snd = NULL;
 	mm_cur = 0;
-    SoundInit();
+	engine_flag = 0;
+
+    SLresult result;
+
+	// create engine
+	const SLInterfaceID engine_ids[] = {SL_IID_ENGINE};
+	const SLboolean engine_req[] = {SL_BOOLEAN_TRUE};
+	result = slCreateEngine(&engineObject, 0, NULL, 1, engine_ids, engine_req);
+	if (SL_RESULT_SUCCESS != result) {
+		return;
+	}
+	// realize the engine
+	result = (*this->engineObject)->Realize(this->engineObject, SL_BOOLEAN_FALSE);
+	if (SL_RESULT_SUCCESS != result) {
+		return;
+	}
+	// get the engine interface, which is needed in order to create other objects
+	result = (*this->engineObject)->GetInterface(this->engineObject, SL_IID_ENGINE, &this->engineEngine);
+	if (SL_RESULT_SUCCESS != result) {
+		return;
+	}
+	// create output mix
+	const SLInterfaceID mix_ids[1] = {SL_IID_VOLUME};
+	const SLboolean mix_req[1] = {SL_BOOLEAN_TRUE};
+	result = (*this->engineEngine)->CreateOutputMix(this->engineEngine, &this->outputMixObject, 0, mix_ids, mix_req);
+	if (SL_RESULT_SUCCESS != result) {
+		return;
+	}
+	// realize the output mix
+	result = (*this->outputMixObject)->Realize(this->outputMixObject, SL_BOOLEAN_FALSE);
+	if (SL_RESULT_SUCCESS != result) {
+		return;
+	}
+
+	engine_flag = 1;
+	//Alertf( "[MMMan Ready]" );
 }
 
 
@@ -124,7 +97,11 @@ MMMan::~MMMan()
 	//		terminate MM manager
 	//
 	ClearAllBank();
-    SoundTerm();
+
+	if ( engine_flag ) {
+		(*this->outputMixObject)->Destroy(this->outputMixObject);
+		(*this->engineObject)->Destroy(this->engineObject);
+	}
 }
 
 void MMMan::DeleteBank( int bank )
@@ -133,15 +110,48 @@ void MMMan::DeleteBank( int bank )
 	char *lpSnd;
 
 	m = &(mem_snd[bank]);
-	if ( m->flag == MMDATA_MCIVOICE ) {
-		SoundDelete( m );
+	if ( m->flag == MMDATA_INTWAVE ) {
+			StopBank( m );
+			(*m->playerObject)->Destroy(m->playerObject);
 	}
-
 	lpSnd = sndbank( bank );
 	if ( lpSnd != NULL ) {
 		free( lpSnd );
 	}
 	mem_snd[bank].mempt=NULL;
+}
+
+
+SLuint32 MMMan::GetState( MMM *mmm )
+{
+	SLuint32 state;
+	(*mmm->playerPlay)->GetPlayState(mmm->playerPlay, &state);
+	return state;
+}
+
+
+void MMMan::SetState( MMM *mmm, SLuint32 state )
+{
+	(*mmm->playerPlay)->SetPlayState(mmm->playerPlay, state);
+}
+
+
+int MMMan::AllocBank( void )
+{
+	int ids,sz;
+
+	if ( engine_flag == 0 ) return -1;
+
+	ids = mm_cur++;
+	sz = mm_cur * sizeof(MMM);
+	if ( mem_snd == NULL ) {
+		mem_snd = (MMM *)sbAlloc( sz );
+	} else {
+		mem_snd = (MMM *)sbExpand( (char *)mem_snd, sz );
+	}
+	mem_snd[ids].flag = MMDATA_NONE;
+	mem_snd[ids].num = -1;
+	return ids;
 }
 
 
@@ -167,30 +177,16 @@ MMM *MMMan::SetBank( int num, int flag, int opt, void *mempt, char *fname )
 		DeleteBank( bank );
 	}
 
+	if ( bank < 0 ) return NULL;
+
 	m = &(mem_snd[bank]);
 	m->flag = flag;
 	m->opt = opt;
 	m->num = num;
 	m->mempt = mempt;
 	m->fname = NULL;
-
+	m->pause_flag = 0;
 	return m;
-}
-
-
-int MMMan::AllocBank( void )
-{
-	int ids,sz;
-	ids = mm_cur++;
-	sz = mm_cur * sizeof(MMM);
-	if ( mem_snd == NULL ) {
-		mem_snd = (MMM *)sbAlloc( sz );
-	} else {
-		mem_snd = (MMM *)sbExpand( (char *)mem_snd, sz );
-	}
-	mem_snd[ids].flag = MMDATA_NONE;
-	mem_snd[ids].num = -1;
-	return ids;
 }
 
 
@@ -223,17 +219,169 @@ void MMMan::SetWindow( void *hwnd, int x, int y, int sx, int sy )
 }
 
 
-void MMMan::Stop( void )
+void MMMan::Pause( void )
 {
-	//		stop playing sound
+	//		pause all playing sounds
 	//
 	MMM *m;
 	int a;
 	m = &(mem_snd[0]);
 	for(a=0;a<mm_cur;a++) {
-		SoundStop( m );
+		PauseBank( m );
 		m++;
 	}
+}
+
+
+void MMMan::Resume( void )
+{
+	//		resume all playing sounds
+	//
+	MMM *m;
+	int a;
+	m = &(mem_snd[0]);
+	for(a=0;a<mm_cur;a++) {
+		ResumeBank( m );
+		m++;
+	}
+}
+
+
+void MMMan::Stop( void )
+{
+	//		stop all playing sounds
+	//
+	MMM *m;
+	int a;
+	m = &(mem_snd[0]);
+	for(a=0;a<mm_cur;a++) {
+		StopBank( m );
+		m++;
+	}
+}
+
+
+void MMMan::StopNum( int num )
+{
+    int bank;
+	MMM *m;
+    bank = SearchBank(num);
+    if ( bank < 0 ) return;
+	m = &(mem_snd[bank]);
+	StopBank( m );
+	return;
+}
+
+
+void MMMan::StopBank( MMM *mmm )
+{
+	if ( mmm == NULL ) return;
+	SetState( mmm, SL_PLAYSTATE_STOPPED );
+	mmm->pause_flag = 0;
+}
+
+
+void MMMan::PauseBank( MMM *mmm )
+{
+	if ( mmm == NULL ) return;
+	if ( GetState(mmm) == SL_PLAYSTATE_PLAYING ) {
+		SetState( mmm, SL_PLAYSTATE_PAUSED );
+		mmm->pause_flag = 1;
+	}
+}
+
+
+void MMMan::ResumeBank( MMM *mmm )
+{
+	if ( mmm == NULL ) return;
+	if ( mmm->pause_flag ) {
+		SetState( mmm, SL_PLAYSTATE_PLAYING );
+		mmm->pause_flag = 0;
+	}
+}
+
+
+void MMMan::PlayBank( MMM *mmm )
+{
+	if ( mmm == NULL ) return;
+	SetState( mmm, SL_PLAYSTATE_STOPPED );
+	SeekBank( mmm,  0, SL_SEEKMODE_FAST );
+	SetState( mmm, SL_PLAYSTATE_PLAYING );
+	mmm->pause_flag = 0;
+}
+
+
+void MMMan::SetLoopBank( MMM *mmm, int flag )
+{
+	if ( mmm == NULL ) return;
+	if (flag) {
+		(*mmm->playerSeek)->SetLoop(mmm->playerSeek, SL_BOOLEAN_TRUE, 0, SL_TIME_UNKNOWN);
+	} else {
+		(*mmm->playerSeek)->SetLoop(mmm->playerSeek, SL_BOOLEAN_FALSE, 0, SL_TIME_UNKNOWN);
+	}
+}
+
+
+void MMMan::SeekBank( MMM *mmm, int pos, SLuint32 seekMode )
+{
+	if ( mmm == NULL ) return;
+	(*mmm->playerSeek)->SetPosition(mmm->playerSeek, pos, seekMode);
+}
+
+
+int MMMan::BankLoad( MMM *mmm, char *fname )
+{
+	SLresult result;
+	struct engine *en;
+
+	if ( mmm == NULL ) return -9;
+
+	en = javafunc_engine();
+	//Alertf( "[MMMan] Start Loading %s [%x]",fname, en );
+
+	AAssetManager* mgr = en->app->activity->assetManager;
+	if (mgr == NULL) return -1;
+
+	AAsset* asset = AAssetManager_open(mgr, fname, AASSET_MODE_UNKNOWN);
+	if (asset == NULL) return -2;
+
+	// open asset as file descriptor
+	off_t start, length;
+	int fd = AAsset_openFileDescriptor(asset, &start, &length);
+	if (fd < 0) return -3;
+	AAsset_close(asset);
+
+	// configure audio source
+	SLDataLocator_AndroidFD loc_fd = {SL_DATALOCATOR_ANDROIDFD, fd, start, length};
+	SLDataFormat_MIME format_mime = {SL_DATAFORMAT_MIME, NULL, SL_CONTAINERTYPE_UNSPECIFIED};
+	SLDataSource audioSrc = {&loc_fd, &format_mime};
+
+	// configure audio sink
+	SLDataLocator_OutputMix loc_outmix = {SL_DATALOCATOR_OUTPUTMIX, this->outputMixObject};
+	SLDataSink audioSnk = {&loc_outmix, NULL};
+
+	// create audio player
+	const SLInterfaceID player_ids[3] = {SL_IID_PLAY, SL_IID_VOLUME, SL_IID_SEEK};
+	const SLboolean player_req[3] = {SL_BOOLEAN_TRUE, SL_BOOLEAN_TRUE, SL_BOOLEAN_TRUE};
+	result = (*engineEngine)->CreateAudioPlayer(this->engineEngine, &mmm->playerObject, &audioSrc, &audioSnk,
+	        3, player_ids, player_req);
+	if (SL_RESULT_SUCCESS != result) return -4;
+
+	// realize the player
+	result = (*mmm->playerObject)->Realize(mmm->playerObject, SL_BOOLEAN_FALSE);
+	if (SL_RESULT_SUCCESS != result) return -5;
+
+	// get the play interface
+	result = (*mmm->playerObject)->GetInterface(mmm->playerObject, SL_IID_PLAY, &mmm->playerPlay);
+	if (SL_RESULT_SUCCESS != result) return -6;
+	// get the seek interface
+	result = (*mmm->playerObject)->GetInterface(mmm->playerObject, SL_IID_SEEK, &mmm->playerSeek);
+	if (SL_RESULT_SUCCESS != result) return -7;
+	// the volume interface
+	result = (*mmm->playerObject)->GetInterface(mmm->playerObject, SL_IID_VOLUME, &mmm->playerVolume);
+	if (SL_RESULT_SUCCESS != result) return -8;
+
+	return 0;
 }
 
 
@@ -242,16 +390,22 @@ int MMMan::Load( char *fname, int num, int opt )
 	//		Load sound to bank
 	//			opt : 0=normal/1=loop/2=wait/3=continuous
 	//
-	int flag;
+	int flag,res;
 	MMM *mmm;
 
-	flag = MMDATA_MCIVOICE;
+	flag = MMDATA_INTWAVE;
 	mmm = SetBank( num, flag, opt, NULL, fname );
 
-	if ( SoundLoad( mmm, fname ) ) {
-		mmm->flag = MMDATA_NONE;
-		return -1;
+	if ( mmm != NULL ) {
+		res = BankLoad( mmm, fname );
+		if ( res ) {
+			mmm->flag = MMDATA_NONE;
+			Alertf( "[MMMan] Failed %s on bank #%d (%d)",fname,num,res );
+			return -1;
+		}
+		if ( opt == 1 ) SetLoopBank( mmm, opt );
 	}
+	Alertf( "[MMMan] Loaded %s on bank #%d",fname,num );
 	return 0;
 }
 
@@ -265,7 +419,7 @@ int MMMan::Play( int num )
     bank = SearchBank(num);
     if ( bank < 0 ) return 1;
 	m = &(mem_snd[bank]);
-	SoundPlay( m );
+	if ( m->flag == MMDATA_INTWAVE ) PlayBank( m );
 	return 0;
 }
 

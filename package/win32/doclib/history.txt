@@ -5,15 +5,23 @@ Hot Soup Processor ver3.31                          HSP : Hot Soup Processor
 
 ・hsp3関連 更新履歴
 
-	2012/06/25 3.31β2
+	2012/06/29 3.31β2
 
 	β1でCOM関連機能が正しく動作しないことがあった不具合を修正
 	strrep命令の検索文字列が全角文字で始まっている場合に正しく検索されない不具合を修正
 	新規対応フォーマット画像が画面サイズより大きい場合エラーになる不具合を修正
 	picload命令にモード2のオプションを追加
 	[HSP3Dish] button命令のサポートを追加(Windows,iOS,android)
+	[HSP3Dish] sysinfo関数の一部サポートを追加(Windows,iOS,android)
 	[HSP3Dish][iOS] 横画面サポートを追加
-	[HSP3Dish][iOS,android] await命令の待ち時間を微調整
+	[HSP3Dish][iOS] 加速度センサーのサポートを追加
+	[HSP3Dish][iOS] await命令の待ち時間を微調整
+	[HSP3Dish][android] OpenSL/ESによるサウンドサポートを追加
+	[HSP3Dish][android] デフォルトでフルスクリーンになるように修正
+	[HSP3Dish][android] アプリの切り替え、テクスチャ復帰に対応
+	[HSP3Dish][android] exec命令によるタスク呼び出しに対応
+	[HSP3Dish][android] end命令によるタスク終了に対応
+	[HSP3Dish][android] HSP3DHにLogcatウインドゥ表示を追加
 	[HSP3CNV] button命令に対応
 	[hsp3rd] 最新版のテスト用ランタイムに更新
 

@@ -89,6 +89,8 @@ int hgio_getmousebtn( void );
 
 void hgio_test(void);
 
+int hgio_file_exist( char *fname );
+int hgio_file_read( char *fname, void *ptr, int size, int offset );
 
 #ifdef __cplusplus
 }

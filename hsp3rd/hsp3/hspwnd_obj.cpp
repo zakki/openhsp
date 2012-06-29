@@ -340,6 +340,9 @@ int Bmscr::UpdateAllObjects( void )
 	}
 
 	if ( this->cur_obj != NULL ) {			// ボタンにフォーカスしている時(押した後)
+
+		//Alertf( "[BtnHold]%d,%d,%d",msx,msy,tapstat );
+
 		info = this->cur_obj;
 		tap = -1;
 		y = msy - info->y;
@@ -381,9 +384,11 @@ int Bmscr::UpdateAllObjects( void )
 		info++;
 	}
 
+	//Alertf( "[BtnPush][%x,%d]%d,%d,%d",focus,msx,msy,tapstat );
+
 	//		押したボタンの判定
 	//
-	if ( info->tapflag == 0 ) {
+	//if ( info->tapflag == 0 ) {
 		if ( this->tapstat == 1 ) {
 			if ( focus != NULL ) {
 				this->tapinvalid = 0;
@@ -393,7 +398,7 @@ int Bmscr::UpdateAllObjects( void )
 				this->tapinvalid = 1;
 			}
 		}
-	}
+	//}
 
 	return -1;
 }

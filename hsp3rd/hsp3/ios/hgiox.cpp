@@ -16,6 +16,7 @@
 
 #ifdef HSPNDK
 #include "../../appengine.h"
+#include "../../javafunc.h"
 #include "font_data.h"
 #endif
 
@@ -130,6 +131,7 @@ static int		mouse_btn;
 
 static	int  font_texid;
 static	int  font_sx, font_sy;
+static	int  mes_sx, mes_sy;
 
 static	GLfloat _line_vertexs[16*3];
 static	GLbyte  _line_colors[16*4];
@@ -428,6 +430,7 @@ void hgio_init( int mode, int sx, int sy, void *hwnd )
     total_tick = 0.0;
     lastTime = CFAbsoluteTimeGetCurrent();
 #endif
+
 }
 
 
@@ -690,7 +693,8 @@ int hgio_mes( BMSCR *bm, char *str1 )
 {
 #ifdef HSPNDK
 	hgio_putTexFont( bm->cx, bm->cy, str1 );
-	bm->printsizey = font_sy;
+	bm->printsizex = mes_sx;
+	bm->printsizey = mes_sy;
 	//LOGI( str1 );
 #endif
 #ifdef HSPIOS
@@ -1471,6 +1475,9 @@ int hgio_gettick( void )
 
 int hgio_exec( char *msg, char *option, int mode )
 {
+#ifdef HSPNDK
+	j_callActivity( msg, option, mode );
+#endif
 #ifdef HSPIOS
     gb_exec( mode, msg );
 #endif
@@ -1480,13 +1487,52 @@ int hgio_exec( char *msg, char *option, int mode )
 int hgio_dialog( int mode, char *str1, char *str2 )
 {
 #ifdef HSPNDK
-	LOGW( str1 );
+	j_dispDialog( str1, str2, mode );
 #endif
 #ifdef HSPIOS
     gb_dialog( mode, str1, str2 );
     //Alertf( str1 );
 #endif
 	return 0;
+}
+
+char *hgio_sysinfo( int p2, int *res, char *outbuf )
+{
+	int fl;
+	char *p1;
+	fl = HSPVAR_FLAG_STR;
+	p1 = outbuf;
+	*p1=0;
+
+	switch(p2) {
+	case 0:
+#ifdef HSPNDK
+		{
+		char tmp[256];
+		strcpy( tmp, j_getinfo( JAVAFUNC_INFO_VERSION ) );
+		strcpy( p1, "android " );
+		strcat( p1, tmp );
+		}
+#endif
+#ifdef HSPIOS
+        gb_getSysVer( p1 );
+#endif
+        break;
+	case 1:
+		break;
+	case 2:
+#ifdef HSPNDK
+		j_getinfo( JAVAFUNC_INFO_DEVICE );
+#endif
+#ifdef HSPIOS
+        gb_getSysModel( p1 );
+#endif
+		break;
+	default:
+		return NULL;
+	}
+	*res = fl;
+	return p1;
 }
 
 /*-------------------------------------------------------------------------------*/
@@ -1543,6 +1589,9 @@ void hgio_putTexFont( int x, int y, char *msg )
 		hgio_fcopy( xx, yy, tx, ty, font_sx, font_sy, font_texid );
 		xx += font_sx;
 	}
+
+	mes_sx = xx - x;
+	mes_sy = font_sy;
 }
 
 
@@ -1755,4 +1804,57 @@ void hgio_setinfo( int type, HSPREAL val )
 		infoval[i] = val;
 	}
 }
+
+
+void hgio_resume( void )
+{
+	//	画面リソースの再構築
+	//
+
+	//テクスチャ初期化
+	TexInit();
+
+#ifdef HSPNDK
+	font_texid = RegistTexMem( font_data, font_data_size );
+#endif
+}
+
+//
+//		FILE I/O Service
+//
+int hgio_file_exist( char *fname )
+{
+#ifdef HSPNDK
+	int size;
+	AAssetManager* mgr = appengine->app->activity->assetManager;
+	if (mgr == NULL) return -1;
+	AAsset* asset = AAssetManager_open(mgr, (const char *)fname, AASSET_MODE_UNKNOWN);
+	if (asset == NULL) return -1;
+    size = (int)AAsset_getLength(asset);
+    AAsset_close(asset);
+	//Alertf( "[EXIST]%s:%d",fname,size );
+    return size;
+#endif
+    return -1;
+}
+
+
+int hgio_file_read( char *fname, void *ptr, int size, int offset )
+{
+#ifdef HSPNDK
+	int readsize;
+	AAssetManager* mgr = appengine->app->activity->assetManager;
+	if (mgr == NULL) return -1;
+	AAsset* asset = AAssetManager_open(mgr, (const char *)fname, AASSET_MODE_UNKNOWN);
+	if (asset == NULL) return -1;
+    readsize = (int)AAsset_getLength(asset);
+	if ( readsize > size ) readsize = size;
+	if ( offset>0 ) AAsset_seek( asset, offset, SEEK_SET );
+	AAsset_read( asset, ptr, readsize );
+    AAsset_close(asset);
+    return readsize;
+#endif
+    return -1;
+}
+
 

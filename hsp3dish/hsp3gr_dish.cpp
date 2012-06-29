@@ -134,10 +134,12 @@ static int sysinfo( int p2 )
 	int fl;
 	char *p1;
 
-	fl = HSPVAR_FLAG_INT;
-	p1 = ctx->stmp;
-	*p1 = 0;
-
+	p1 = hgio_sysinfo( p2, &fl, ctx->stmp );
+	if ( p1 == NULL ) {
+		p1 = ctx->stmp;
+		*p1 = 0;
+		return HSPVAR_FLAG_INT;
+	}
 	return fl;
 }
 
@@ -297,12 +299,16 @@ static int cmdfunc_extcmd( int cmd )
 		unsigned short *sbr;
 		Bmscr *bmsrc;
 
+#ifndef HSPEMBED
 		i = 0;
 		if ( *type == TYPE_PROGCMD ) {
 			i = *val;
 			if ( i >= 2 ) throw HSPERR_SYNTAX;
 			code_next();
 		}
+#else
+		i = code_geti();
+#endif
 		strncpy( btnname, code_gets(), 255 );
 		sbr = code_getlb();
 		code_next();
@@ -2370,6 +2376,28 @@ void hsp3notify_extcmd( void )
 {
 #ifdef USE_MMAN
 	mmman->Notify();
+#endif
+}
+
+
+void hsp3extcmd_pause( void )
+{
+#ifdef HSPNDK
+#ifdef USE_MMAN
+	mmman->Pause();
+#endif
+#endif
+}
+
+
+void hsp3extcmd_resume( void )
+{
+#ifdef HSPNDK
+#ifdef USE_MMAN
+	mmman->Resume();
+	wnd->Resume();
+	bmscr = wnd->GetBmscr( 0 );
+#endif
 #endif
 }
 

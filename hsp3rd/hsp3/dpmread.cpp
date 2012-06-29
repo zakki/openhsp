@@ -24,6 +24,10 @@
 #include "../Classes/iOSBridge.h"
 #endif
 
+#ifdef HSPNDK
+#include "hsp3/hgio.h"
+#endif
+
 static int dpm_flag = 0;			// 0=none/1=packed
 static int memf_flag = 0;			// 0=none/1=on memory
 static unsigned char *mem_dpm = NULL;
@@ -103,7 +107,6 @@ static int dpmchk( char *fname )
 	dpm_lastchr = 0;
 	dpm_opmode = 1;
 	return 0;
-
 }
 
 
@@ -333,7 +336,11 @@ int dpm_read( char *fname, void *readmem, int rlen, int seekofs )
 	fclose( ff );
 	return a1;
 #endif
-    
+
+#ifdef HSPNDK
+	return hgio_file_read( fname, readmem, rlen, seekofs );
+#endif
+
 	//	Read normal file
 	ff = fopen( fname, "rb" );
 	if ( ff == NULL ) return -1;
@@ -377,6 +384,10 @@ int dpm_exist( char *fname )
 	return length;
 #endif
     
+#ifdef HSPNDK
+	return hgio_file_exist( fname );
+#endif
+
     ff=fopen( fname,"rb" );
 	if (ff==NULL) return -1;
 	fseek( ff,0,SEEK_END );
@@ -411,11 +422,16 @@ int dpm_filebase( char *fname )
 	ff=fopen( gb_filepath( fname ), "rb" );
 	if (ff==NULL) return -1;
 	fclose(ff);
-#else
+#endif
+
+#ifdef HSPNDK
+	if ( hgio_file_exist( fname ) < 0 ) return -1;
+	return 0;
+#endif
+
 	ff=fopen( fname, "rb" );
 	if (ff==NULL) return -1;
 	fclose(ff);
-#endif
 	return 0;
 }
 

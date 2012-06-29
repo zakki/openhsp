@@ -12,5 +12,7 @@ void hsp3typeinit_extfunc( HSP3TYPEINFO *info );
 void hsp3notify_extcmd( void );
 
 void hsp3gr_dbg_gui( void );
+void hsp3extcmd_pause( void );
+void hsp3extcmd_resume( void );
 
 #endif
