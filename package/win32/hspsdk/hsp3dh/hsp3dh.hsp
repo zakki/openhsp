@@ -592,7 +592,7 @@
 	tmp+="SET NDK_ROOT="+path_ndk+"\n"
 	tmp+="SET PATH="+path_ant+"\\bin;"+path_sdk+"\\tools;"+path_sdk+"\\platform-tools;"+path_ndk+";"+path_java+"\\bin;"
 	tmp+="%PATH%\n"
-	s1="C:":if peek(path_proj,1)=":" {
+	s1="C:":if peek(path_proj,1)=':' {
 		poke s1,0,peek(path_proj,0)
 	}
 	tmp+=s1+"\n"
