@@ -29,8 +29,7 @@
 #include "supio_ndk.h"
 #include "../dpmread.h"
 #include "../strbuf.h"
-
-void gb_savedata(char* key, char* data, int size);
+#include "../hgio.h"
 
 #ifndef _MAX_PATH
 #define _MAX_PATH	256
@@ -93,11 +92,16 @@ void mem_bye( void *ptr ) {
 }
 
 
-int mem_save( char *fname, void *mem, int msize, int seekofs )
+int mem_save( char *p_fname, void *mem, int msize, int seekofs )
 {
 	FILE *fp;
 	int flen;
+	char *fname;
 
+	fname = p_fname;
+	if ( *fname != '/' ) {
+		fname = hgio_getstorage(p_fname);
+	}
 	if (seekofs<0) {
 		fp=fopen(fname,"wb");
 	}

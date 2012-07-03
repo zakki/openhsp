@@ -9,7 +9,7 @@
 #include "mod_appconfig.as"
 
 #define APPTITLE "HSP3Dish helper"
-#define APPVER "0.5"
+#define APPVER "0.8"
 #define APP_CONF "\\hsp3dh.cfg"
 
 #uselib "shell32.dll"
@@ -39,7 +39,7 @@
 	app_winy=-1
 	app_mode=0
 	flag_utf8=1
-	and_targetid=1
+	and_targetid=""
 	path_java=""
 	path_sdk=""
 	path_ndk=""
@@ -48,6 +48,7 @@
 	and_name=""
 	and_pack=""
 	and_fname=""
+	and_keystore=""
 
 	get_hsp_appdata_path app_dir
 
@@ -65,9 +66,12 @@
 		flag_utf8 = 0+cfg_getvar("flag_utf8")
 		and_name=cfg_getvar("and_name")
 		and_pack=cfg_getvar("and_pack")
-		and_targetid = 0+cfg_getvar("and_targetid")
+		and_targetid = cfg_getvar("and_target")
 		and_fname=cfg_getvar("and_fname")
+		and_keystore=cfg_getvar("and_keystore")
 	}
+	if and_targetid="" : and_targetid="\"android-10\""
+	if and_keystore="" : and_keystore="hspapp"
 
 	if app_winx<0 : app_winx = -1
 	if app_winy<0 : app_winy = -1
@@ -243,11 +247,11 @@
 	mes "プロジェクト名:"
 	objsize 240,24
 	input and_name
-	objsize 60,24
+	objsize 100,24
 	pos 280,45:mes "ID:"
 	pos 300,41:input and_targetid
-	objsize 100,24
-	pos 370,41:button "ID一覧...",*view_ids
+	objsize 60,24
+	pos 410,41:button "ID...",*view_ids
 
 	pos 8,70
 	mes "パッケージ名:"
@@ -258,6 +262,21 @@
 	objsize 140,32
 	pos x,y
 	button "新規作成",*and_start
+
+	y=154
+	x=ginfo_sx-240
+	pos x,y+4
+	mes "キー名:"
+
+	x=ginfo_sx-200
+	objsize 100,24
+	pos x,y
+	input and_keystore
+
+	x=ginfo_sx-90
+	objsize 80,24
+	pos x,y
+	button "KEY作成",*and_makekey
 
 	goto *andmenu3
 
@@ -289,12 +308,14 @@
 	objsize 64,24
 	pos 408,122:button gosub "更新",*upd_prj
 
-	x=ginfo_sx-130:y=154
+	x=ginfo_sx-190:y=154
 	objsize 60,24
 	pos x,y
 	button "転送",*and_exec
 	pos x+60,y
 	button "Logcat",*and_logcat
+	pos x+120,y
+	button "リリース",*and_release
 	objsize 120,24
 	pos x-130,y
 	button "ビルド",*and_build
@@ -453,8 +474,9 @@
 
 	cfg_sets "and_name",and_name
 	cfg_sets "and_pack",and_pack
-	cfg_seti "and_targetid",and_targetid
+	cfg_sets "and_target",and_targetid
 	cfg_sets "and_fname",and_fname
+	cfg_sets "and_keystore",and_keystore
 
 	cfg_save
 	end
@@ -620,13 +642,33 @@
 	gsel 0
 	goto *topmenu
 
+*and_makekey
+	;	create keystore
+	;
+	initsub
+	gsel 1
+	if and_keystore="" : mes "無効なキー名です" : goto *and_fin
+
+	mes "処理中..."
+
+	gosub *bat_init
+	tmp+="keytool -genkey -keystore "+and_keystore+".keystore -alias "+and_keystore+" -validity 10000\n"
+
+	gosub *bat_save
+
+	exec "go.bat"
+
+	gsel 1
+	mes "終了しました。"
+	goto *and_fin
+
 *and_start
 	;	create project
 	;
 	initsub
 	gsel 1
 
-	if and_targetid<=0 : mes "無効なIDです" : goto *and_fin
+	if and_targetid="" : mes "無効なIDです" : goto *and_fin
 	if and_name="" : mes "プロジェクト名が無効です" : goto *and_fin
 	if and_package="" {
 		and_package=strf("hsp%04d%02d%02d",gettime(0),gettime(1),gettime(3) )+"."+and_name
@@ -830,6 +872,41 @@ res\\drawable-mdpi\\icon.png"}
 	exec "go.bat"
 	goto *and_fin
 
+*and_release
+	;	release
+	;
+	gosub *get_prjname
+	if and_name="" : dialog "プロジェクトが指定されていません" : goto *topmenu
+
+	initsub
+
+	gsel 1
+	mes and_name+"ビルド処理中..."
+
+	gosub *bat_init
+	tmp+="CD "+and_name+"\n"
+	tmp+="ant release\n"
+
+	gosub *bat_save
+
+	execcmd "go.bat"
+	if stat : goto *and_fin
+
+	gsel 1
+	mes "ビルドを終了しました。"
+	objprm 0,buf
+
+	gosub *bat_init
+	tmp+="CD "+and_name+"\n"
+	tmp+="jarsigner -verbose -keystore ..\\"+and_keystore+".keystore bin\\"+and_name+"-release-unsigned.apk "+and_keystore+"\n"
+	tmp+="zipalign -v 4 bin\\"+and_name+"-release-unsigned.apk bin\\"+and_name+".apk\n"
+	gosub *bat_save
+
+	exec "go.bat"
+
+	gsel 1
+	mes and_name+".apkを作成しました。"
+	goto *and_fin
 
 *and_exec
 	;	project execute
@@ -931,7 +1008,7 @@ res\\drawable-mdpi\\icon.png"}
 
 	gosub *bat_init
 	tmp+="CD "+and_name+"\n"
-	tmp+="ndk-build\n"
+	tmp+="ndk-build NDK_DEBUG=0\n"
 
 	gosub *bat_save
 
