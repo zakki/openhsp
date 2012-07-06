@@ -114,23 +114,19 @@ void QuickSort( DATA *data, int nmem, int asdes )
 
 int compare_int( const void *a, const void *b )
 {
-	const DATA *data_a = (DATA *)a;
-	const DATA *data_b = (DATA *)b;
+    const DATA *data_a = (DATA *)a;
+    const DATA *data_b = (DATA *)b;
 
-	//	HSPVBT#244‚æ‚è
-	return data_a->as.ikey > data_b->as.ikey ? 1 : data_a->as.ikey == data_b->as.ikey ? 0 : -1;
-	//return ( data_a->as.ikey - data_b->as.ikey );
+    return data_a->as.ikey > data_b->as.ikey ? 1 : data_a->as.ikey == data_b->as.ikey ? 0 : -1;
 }
 
 
 int compare_intr( const void *a, const void *b )
 {
-	const DATA *data_a = (DATA *)a;
-	const DATA *data_b = (DATA *)b;
+    const DATA *data_a = (DATA *)a;
+    const DATA *data_b = (DATA *)b;
 
-	//	HSPVBT#244‚æ‚è
 	return data_b->as.ikey > data_a->as.ikey ? 1 : data_a->as.ikey == data_b->as.ikey ? 0 : -1;
-	//return ( data_b->as.ikey - data_a->as.ikey );
 }
 
 

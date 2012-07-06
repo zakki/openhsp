@@ -136,6 +136,24 @@ static long chkfile( char *filename )
 	return filesize;
 }
 
+static char *gettvfolder( char *name )
+{
+	//	get HSPTV resource folder path
+
+#ifdef HSPWIN
+	static char p[_MAX_PATH];
+	char ifname[_MAX_PATH];
+	GetModuleFileName( NULL,ifname,_MAX_PATH );
+	getpath( ifname, p, 32 );
+	CutLastChr( p, '\\' );
+	strcat( p, "\\hsptv\\" );
+	strcat( p, name );
+	return p;
+#endif
+	return NULL;
+}
+
+
 static void cpyfile( FILE *ff, char *filename, int encode )
 {
 	//	copy file to pack
@@ -143,8 +161,14 @@ static void cpyfile( FILE *ff, char *filename, int encode )
 	int a;
 	FILE *ff2;
 
-	ff2=fopen( filename,"rb" );
-	if (ff2==NULL) return;
+	ff2 = fopen( filename, "rb" );
+	if (ff2==NULL) {
+		char *name2;
+		name2 = gettvfolder( filename );
+		if ( name2 == NULL ) return;
+		ff2 = fopen( name2, "rb" );
+		if ( ff2 == NULL ) return;
+	}
 
 	while(1) {
 		a=fgetc(ff2);if (a<0) break;
@@ -295,10 +319,18 @@ static int newfile( int mode )
 			}
 
 			res=chkfile(s1);
-			if (res==-1) {
-				sprintf(tmp,"#ファイルがありません。[%s]\r\n",s1);
-				prt(tmp);efl++;
-				break;
+			if (res<0) {
+				char *name2;
+				name2 = gettvfolder( s1 );
+				if ( name2 != NULL ) {
+					res = chkfile( name2 );
+					if ( res < 0 ) name2 = NULL;
+				}
+				if ( name2 == NULL ) {
+					sprintf(tmp,"#No File [%s]\r\n",s1);
+					prt(tmp);efl++;
+					break;
+				}
 			}
 
 			//		longname bufferに書き込み
@@ -544,7 +576,7 @@ void dpmc_ini( CMemBuf *mesbuf, char *infile )
 	strcpy(bname,fname);
 	addext(fname,"dpm");
 	strcpy(aname,"packfile");
-	prt("Datafile Pack Manager ver.3.0 / onion software 1997-2006\r\n");
+	prt("Datafile Pack Manager ver.3.0 / onion software 1997-2012\r\n");
 	defseed1 = 0xaa; defseed2 = 0x55;			// data.dpm用のデフォルトSEED
 }
 

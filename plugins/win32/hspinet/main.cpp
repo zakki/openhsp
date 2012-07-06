@@ -346,11 +346,11 @@ EXPORT BOOL WINAPI ftpopen( HSPEXINFO *hei, int p1, int p2, int p3 )
 {
 	//	(type$202)
 	//		FTP接続
-	//		ftpopen "アドレス","ユーザー","パスワード",port
+	//		ftpopen "アドレス","ユーザー","パスワード",port,passive
 	//
 	int i;
 	char *ss;
-	int _p1;
+	int _p1,_p2;
 	ss = hei->HspFunc_prm_gets();			// パラメータ1:文字列
 	http->SetURL( ss );
 	ss = hei->HspFunc_prm_gets();			// パラメータ2:文字列
@@ -358,7 +358,10 @@ EXPORT BOOL WINAPI ftpopen( HSPEXINFO *hei, int p1, int p2, int p3 )
 	ss = hei->HspFunc_prm_gets();			// パラメータ3:文字列
 	http->SetUserPassword( ss );
 	_p1 = hei->HspFunc_prm_getdi(INTERNET_DEFAULT_FTP_PORT);		// パラメータ4:整数値
+	_p2 = hei->HspFunc_prm_getdi(0);		// パラメータ5:整数値
+
 	http->SetFtpPort( _p1 );
+	http->SetFtpFlag( _p2 );
 	i = http->FtpConnect();
 	return i;
 }

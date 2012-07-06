@@ -70,6 +70,7 @@
 #define global dir_cmdline dirinfo(4)
 #define global dir_desktop dirinfo($10000)
 #define global dir_mydoc dirinfo($10005)
+#define global dir_tv dirinfo(5)
 
 #define global font_normal (0)
 #define global font_bold (1)

@@ -27,6 +27,7 @@ char *to_hsp_string_literal( const char *src );
 int atoi_allow_overflow( const char *s );
 
 void getpath( const char *src, char *outbuf, int p2 );
+void CutLastChr( char *p, char code );
 
 void ExecFile( char *stmp, char *ps, int mode );
 void dirinfo( char *p, int id );

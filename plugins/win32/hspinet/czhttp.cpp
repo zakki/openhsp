@@ -58,6 +58,7 @@ void CzHttp::Reset( void )
 	strcpy( username, "anonymous" );
 	strcpy( userpass, "aaa@aaa.com" );
 	ftp_port = INTERNET_DEFAULT_FTP_PORT;
+	ftp_flag = 0;
 
 	// Reset Value
 	mode = CZHTTP_MODE_READY;
@@ -478,6 +479,18 @@ void CzHttp::SetFtpPort( int port )
 }
 
 
+void CzHttp::SetFtpFlag( int flag )
+{
+	// パッシブモードの設定
+	//
+	if ( flag ) {
+		ftp_flag = INTERNET_FLAG_PASSIVE;
+	} else {
+		ftp_flag = 0;
+	}
+}
+
+
 void CzHttp::ResetFlexBuf( int defsize )
 {
 	if ( pt != NULL ) {	free( pt );	}
@@ -616,7 +629,7 @@ int CzHttp::FtpConnect( void )
                                 username,
                                 userpass,
                                 INTERNET_SERVICE_FTP,
-                                0,
+                                ftp_flag,
                                 0 );
 
 

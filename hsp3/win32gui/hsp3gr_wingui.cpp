@@ -146,6 +146,18 @@ static char *getdir( int id )
 		sbStrCopy( &(ctx->stmp), ss );
 		p = ctx->stmp;
 		return p;
+	case 5:				//    HSPTV素材があるディレクトリ
+#ifdef HSPDEBUG|HSP3IMP
+		GetModuleFileName( NULL,fname,_MAX_PATH );
+		getpath( fname, p, 32 );
+		CutLastChr( p, '\\' );
+		strcat( p, "\\hsptv\\" );
+		return p;
+#else
+		*p = 0;
+		return p;
+#endif
+		break;
 	default:
 		if ( id & 0x10000 ) {
 			SHGetSpecialFolderPath( NULL, p, id & 0xffff, FALSE );

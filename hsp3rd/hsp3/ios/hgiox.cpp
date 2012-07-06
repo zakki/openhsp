@@ -113,13 +113,15 @@ static GLbyte panelColorsTex[]={
 
 //	グラフィックス設定
 static int _bgsx, _bgsy;	//背景サイズ
+static int _sizex, _sizey;	//初期サイズ
 static Color _color;   	//色
 static int   _flipMode;	//フリップ
 static int   _originX; 	//原点X
 static int   _originY; 	//原点Y
 static GLint  _filter;	//フィルタ
-static float _scaleX, _scaleY;	// スケール
 static float center_x, center_y;
+static float _scaleX;	// スケールX
+static float _scaleY;	// スケールY
 
 static int		drawflag;
 static engine	*appengine;
@@ -383,6 +385,8 @@ void hgio_init( int mode, int sx, int sy, void *hwnd )
 	//背景サイズ
 	_bgsx = sx;
 	_bgsy = sy;
+	_sizex = sx;
+	_sizey = sy;
 	_scaleX = 1.0f;
 	_scaleY = 1.0f;
           
@@ -434,21 +438,86 @@ void hgio_init( int mode, int sx, int sy, void *hwnd )
 }
 
 
+void hgio_view( int sx, int sy )
+{
+	_bgsx = sx;
+	_bgsy = sy;
+    //Alertf( "Size(%d,%d)",_bgsx,_bgsy );
+}
+
+
+void hgio_scale( float xx, float yy )
+{
+	_scaleX = xx;
+	_scaleY = yy;
+    //Alertf( "Scale(%f,%f)",_scaleX,_scaleY );
+}
+
+
+void hgio_autoscale( int mode )
+{
+	int m_mode;
+	float x,y;
+	float adjx,adjy;
+	adjx = (float)_sizex/(float)_bgsx;
+	adjy = (float)_sizey/(float)_bgsy;
+
+	m_mode = mode;
+	if ( mode == 0 ) {
+		x = (float)_bgsx * adjy;
+		y = (float)_bgsy * adjx;
+		if ( adjx > adjy ) {
+			m_mode=1;
+			if ( y > (float)_sizey ) { m_mode=2; }
+		} else {
+			m_mode=2;
+			if ( x > (float)_sizex ) { m_mode=1; }
+		}
+	}
+
+	switch( m_mode ) {
+	case 1:
+		_scaleX = adjx;
+		_scaleY = adjx;
+		break;
+	case 2:
+		_scaleX = adjy;
+		_scaleY = adjy;
+		break;
+	default:
+		_scaleX = adjx;
+		_scaleY = adjy;
+		break;
+	}
+    Alertf( "Scale(%f,%f)",_scaleX,_scaleY );
+}
+
+
 void hgio_reset( void )
 {
-    //ビューポート変換
-//    glViewport(0,0,320,480);
-    glViewport(0,0,_bgsx,_bgsy);
-    
     //投影変換
     glMatrixMode(GL_PROJECTION);
     glLoadIdentity();
 
+	float ox,oy;
+	ox = (float)_sizex * ( 1.0f / _scaleX );
+	oy = (float)_sizey * ( 1.0f / _scaleY );
+    glOrthof( 0, ox, -oy, 0,-100,100);
+//    Alertf( "(%f,%f)(%f,%f)(%f,%f)",ox,oy,_sizex, _sizey, _scaleX,_scaleY );
 //    glOrthof( 0, 320.0f, -480.0f, 0,-100,100);
-    glOrthof( 0, _bgsx * _scaleX, -_bgsy * _scaleY, 0,-100,100);
-//    glOrthof( 0, _bgsx, -_bgsy, 0,-100,100);
+//    glOrthof( 0, _bgsx * _scaleX, -_bgsy * _scaleY, 0,-100,100);
     //glTranslatef(engine->width/2,engine->height/2,0);
 
+    //ビューポート変換
+//    glViewport(0,0,800,480);
+//    glViewport(0,0,480,320);
+
+	_originX = ( _sizex - (_bgsx * _scaleX) ) / 2;
+	_originY = ( _sizey - (_bgsy * _scaleY) ) / 2;
+//	glViewport(_originX,-_originY,_bgsx*_scaleX,_bgsy*_scaleY);
+//	glViewport(_originX,-_originY, _bgsx, _bgsy );
+	glViewport(_originX,-_originY, _sizex, _sizey );
+    
     //モデリング変換
     glMatrixMode(GL_MODELVIEW);
     glLoadIdentity();
@@ -1822,6 +1891,9 @@ void hgio_resume( void )
 //
 //		FILE I/O Service
 //
+static char storage_path[256];
+static char my_storage_path[256+64];
+
 int hgio_file_exist( char *fname )
 {
 #ifdef HSPNDK
@@ -1855,6 +1927,32 @@ int hgio_file_read( char *fname, void *ptr, int size, int offset )
     return readsize;
 #endif
     return -1;
+}
+
+
+void hgio_setstorage( char *path )
+{
+	int i;
+	*storage_path = 0;
+#ifdef HSPNDK
+	i = strlen(path);if (( i<=0 )||( i>=255 )) return;
+	strcpy( storage_path, path );
+	if ( storage_path[i-1]!='/' ) {
+		storage_path[i] = '/';
+		storage_path[i+1] = 0;
+	}
+#endif
+}
+
+
+char *hgio_getstorage( char *fname )
+{
+#ifdef HSPNDK
+	strcpy( my_storage_path, storage_path );
+	strcat( my_storage_path, fname );
+	return my_storage_path;
+#endif
+    return "";
 }
 
 

@@ -191,6 +191,14 @@
 				>
 			</File>
 			<File
+				RelativePath=".\dpm.cpp"
+				>
+			</File>
+			<File
+				RelativePath=".\dpm.h"
+				>
+			</File>
+			<File
 				RelativePath="..\errormsg.cpp"
 				>
 			</File>

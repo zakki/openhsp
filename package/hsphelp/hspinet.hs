@@ -6,12 +6,12 @@
 %type
 Šg’£–½—ß
 %ver
-3.4
+3.31
 %note
 hspinet.as‚ðƒCƒ“ƒNƒ‹[ƒh‚·‚é‚±‚ÆB
 
 %date
-2012/04/25
+2012/07/04
 %author
 onitama
 %dll
@@ -386,11 +386,12 @@ FTPƒZƒbƒVƒ‡ƒ“‚ÌŠJŽn
 %group
 Šg’£“üo—Í§Œä–½—ß
 %prm
-p1,p2,p3,p4
+p1,p2,p3,p4,p5
 p1 : ftpƒT[ƒo[ƒAƒhƒŒƒX(•¶Žš—ñ)
 p2 : ftpƒƒOƒCƒ“ƒ†[ƒU[–¼(•¶Žš—ñ)
 p3 : ftpƒƒOƒCƒ“ƒ†[ƒU[ƒpƒXƒ[ƒh(•¶Žš—ñ)
 p4 : ƒ|[ƒg”Ô†(È—ª‰Â”\)
+p5 : PASSIVEƒ‚[ƒhƒtƒ‰ƒO(È—ª‰Â”\)
 
 %inst
 ftpƒT[ƒo[‚ÉÚ‘±‚µ‚ÄƒZƒbƒVƒ‡ƒ“‚ðŠJŽn‚µ‚Ü‚·B
@@ -398,6 +399,9 @@ p1‚ÉƒT[ƒo[‚ÌƒAƒhƒŒƒXAp2‚Éƒ†[ƒU[–¼Ap3‚ÉƒpƒXƒ[ƒh‚ðŽw’è‚µ‚Äftp‚ÉÚ‘±‚µ‚Ü‚·
 p4ƒpƒ‰ƒ[ƒ^[‚Åƒ|[ƒg”Ô†‚ðŽw’è‚·‚é‚±‚Æ‚ª‚Å‚«‚Ü‚·B
 p4‚ÌŽw’è‚ðÈ—ª‚µ‚½ê‡‚ÍA•W€‚Ìƒ|[ƒg”Ô†‚ªŽg—p‚³‚ê‚Ü‚·B
 ŽÀs‚É¬Œ÷‚µ‚½ê‡‚ÍAƒVƒXƒeƒ€•Ï”stat‚É0‚ª‘ã“ü‚³‚êAŽ¸”s‚µ‚½ê‡‚Í‚»‚êˆÈŠO‚Ì’l‚ª‘ã“ü‚³‚ê‚Ü‚·B
+p5ƒpƒ‰ƒ[ƒ^[‚ÅÚ‘±Žž‚ÌPASSIVEƒ‚[ƒhƒtƒ‰ƒO‚ðÝ’è‚·‚é‚±‚Æ‚ª‚Å‚«‚Ü‚·B
+p5‚É1‚ðÝ’è‚µ‚½ê‡‚ÍAPASSIVEƒ‚[ƒh‚ÅftpÚ‘±‚ðs‚È‚¢‚Ü‚·B0‚Ü‚½‚ÍÈ—ª‚µ‚½ê‡‚ÍA’Êí‚ÌftpÚ‘±‚Æ‚È‚è‚Ü‚·B
+^
 ‚ ‚ç‚©‚¶‚ßAnetinit–½—ß‚É‚æ‚Á‚Ä‰Šú‰»‚ðs‚È‚¤•K—v‚ª‚ ‚è‚Ü‚·B
 ftpƒZƒbƒVƒ‡ƒ“‚ðŠJŽn‚µ‚½Œã‚ÍAftpŠÖ˜A–½—ß‚Ì‚ÝŽg—p‚·‚é‚±‚Æ‚ª‚Å‚«‚Ü‚·Bhttp‚È‚Ç‘¼‚Ìƒlƒbƒg‘€ì‚ðs‚È‚¤ê‡‚É‚ÍA•K‚¸ftpclose–½—ß‚É‚æ‚èftpƒZƒbƒVƒ‡ƒ“‚ðI—¹‚³‚¹‚é‚æ‚¤‚É‚µ‚Ä‚­‚¾‚³‚¢B
 

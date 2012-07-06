@@ -51,6 +51,7 @@ public:
 	void SetUserName( char *name );						// ユーザー名の設定
 	void SetUserPassword( char *pass );					// パスワードの設定
 	void SetFtpPort( int port );						// ポートの設定
+	void SetFtpFlag( int flag );						// パッシブモードの設定
 
 	void SetVarRequestGet( char *path );
 	void SetVarRequestPost( char *path, char *post );
@@ -108,6 +109,7 @@ private:
 	FILE *fp;
 	int proxy_local;		// ProxyLocal flag
 	int ftp_port;			// Ftp port
+	int ftp_flag;			// Ftp flags
 
 	char req_url[1024];		// Request URL
 	char req_url2[1024];	// Request URL (for POST/GET)
