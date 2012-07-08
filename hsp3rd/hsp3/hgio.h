@@ -24,6 +24,10 @@ void hgio_init( int mode, int sx, int sy, void *hwnd );
 void hgio_term( void );
 void hgio_resume( void );
 
+void hgio_view( int sx, int sy );
+void hgio_scale( float xx, float yy );
+void hgio_autoscale( int mode );
+
 int hgio_render_start( void );
 int hgio_render_end( void );
 void hgio_screen( BMSCR *bm );
@@ -63,6 +67,9 @@ int hgio_exec( char *msg, char *option, int mode );
 void hgio_setinfo( int type, HSPREAL val );
 HSPREAL hgio_getinfo( int type );
 char *hgio_sysinfo( int p2, int *res, char *outbuf );
+void hgio_setstorage( char *path );
+char *hgio_getstorage( char *fname );
+
 
 #ifdef __cplusplus
 }

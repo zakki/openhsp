@@ -122,6 +122,8 @@ static GLint  _filter;	//フィルタ
 static float center_x, center_y;
 static float _scaleX;	// スケールX
 static float _scaleY;	// スケールY
+static float _rateX;	// 1/スケールX
+static float _rateY;	// 1/スケールY
 
 static int		drawflag;
 static engine	*appengine;
@@ -389,7 +391,9 @@ void hgio_init( int mode, int sx, int sy, void *hwnd )
 	_sizey = sy;
 	_scaleX = 1.0f;
 	_scaleY = 1.0f;
-          
+	_rateX = 1.0f;
+	_rateY = 1.0f;
+
     //色
     hgio_setColor( 0 );
 
@@ -500,8 +504,10 @@ void hgio_reset( void )
     glLoadIdentity();
 
 	float ox,oy;
-	ox = (float)_sizex * ( 1.0f / _scaleX );
-	oy = (float)_sizey * ( 1.0f / _scaleY );
+	_rateX = 1.0f / _scaleX;
+	_rateY = 1.0f / _scaleY;
+	ox = (float)_sizex * _rateX;
+	oy = (float)_sizey * _rateY;
     glOrthof( 0, ox, -oy, 0,-100,100);
 //    Alertf( "(%f,%f)(%f,%f)(%f,%f)",ox,oy,_sizex, _sizey, _scaleX,_scaleY );
 //    glOrthof( 0, 320.0f, -480.0f, 0,-100,100);
@@ -1609,8 +1615,8 @@ char *hgio_sysinfo( int p2, int *res, char *outbuf )
 void hgio_touch( int xx, int yy, int button )
 {
     Bmscr *bm;
-	mouse_x = xx * _scaleX;
-	mouse_y = yy * _scaleY;
+	mouse_x = xx * _rateX;
+	mouse_y = yy * _rateY;
 	mouse_btn = button;
     if ( mainbm != NULL ) {
         mainbm->savepos[BMSCR_SAVEPOS_MOSUEX] = mouse_x;
