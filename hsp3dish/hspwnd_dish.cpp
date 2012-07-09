@@ -239,7 +239,7 @@ void HspWnd::Resume( void )
 		bm = GetBmscr(i);
 		if ( bm != NULL ) {
 			if ( bm->type == HSPWND_TYPE_BUFFER ) {
-				bm->Init( bm->resname );
+				hgio_texload( (BMSCR *)bm, bm->resname );
 			}
 		}
 	}

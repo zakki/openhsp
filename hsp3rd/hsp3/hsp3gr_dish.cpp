@@ -119,6 +119,8 @@ static char *getdir( int id )
 		break;
 	case 4:				//    コマンドライン文字列
 		break;
+	case 5:				//    HSPTVディレクトリ
+		break;
 	default:
 		throw HSPERR_ILLEGAL_FUNCTION;
 	}
@@ -2151,14 +2153,16 @@ static int get_ginfo( int arg )
 		//	return i;
 		//}
 	case 26:
-		return bmscr->sx;
+		return hgio_getWidth();
+		//return bmscr->sx;
 	case 13:
 		//if ( bmscr->type != HSPWND_TYPE_BUFFER ) {
 		//	bmscr->GetClientSize( &i, &j );
 		//	return j;
 		//}
 	case 27:
-		return bmscr->sy;
+		return hgio_getHeight();
+		//return bmscr->sy;
 	case 14:
 		return bmscr->printsizex;
 	case 15:
@@ -2181,10 +2185,10 @@ static int get_ginfo( int arg )
 		return 0;
 	case 20:
 		//return GetSystemMetrics( SM_CXSCREEN );
-		return 0;
+		return bmscr->sx;
 	case 21:
 		//return GetSystemMetrics( SM_CYSCREEN );
-		return 0;
+		return bmscr->sy;
 	case 22:
 		return bmscr->cx;
 	case 23:

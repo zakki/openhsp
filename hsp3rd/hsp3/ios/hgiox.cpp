@@ -506,8 +506,8 @@ void hgio_reset( void )
 	float ox,oy;
 	_rateX = 1.0f / _scaleX;
 	_rateY = 1.0f / _scaleY;
-	ox = (float)_sizex * _rateX;
-	oy = (float)_sizey * _rateY;
+	ox = (float)_bgsx;
+	oy = (float)_bgsy;
     glOrthof( 0, ox, -oy, 0,-100,100);
 //    Alertf( "(%f,%f)(%f,%f)(%f,%f)",ox,oy,_sizex, _sizey, _scaleX,_scaleY );
 //    glOrthof( 0, 320.0f, -480.0f, 0,-100,100);
@@ -515,14 +515,11 @@ void hgio_reset( void )
     //glTranslatef(engine->width/2,engine->height/2,0);
 
     //ビューポート変換
-//    glViewport(0,0,800,480);
-//    glViewport(0,0,480,320);
-
-	_originX = ( _sizex - (_bgsx * _scaleX) ) / 2;
-	_originY = ( _sizey - (_bgsy * _scaleY) ) / 2;
-//	glViewport(_originX,-_originY,_bgsx*_scaleX,_bgsy*_scaleY);
-//	glViewport(_originX,-_originY, _bgsx, _bgsy );
-	glViewport(_originX,-_originY, _sizex, _sizey );
+	_originX = ( _sizex - ((float)_bgsx * _scaleX) ) / 2;
+	_originY = ( _sizey - ((float)_bgsy * _scaleY) ) / 2;
+	glViewport(_originX,_originY,(float)_bgsx*_scaleX,(float)_bgsy*_scaleY);
+//	glViewport(_originX,_originY, ox, oy );
+//	glViewport(_originX,-_originY, _sizex, _sizey );
     
     //モデリング変換
     glMatrixMode(GL_MODELVIEW);
@@ -1615,8 +1612,8 @@ char *hgio_sysinfo( int p2, int *res, char *outbuf )
 void hgio_touch( int xx, int yy, int button )
 {
     Bmscr *bm;
-	mouse_x = xx * _rateX;
-	mouse_y = yy * _rateY;
+	mouse_x = xx * _rateX - _originX;
+	mouse_y = yy * _rateY - _originY;
 	mouse_btn = button;
     if ( mainbm != NULL ) {
         mainbm->savepos[BMSCR_SAVEPOS_MOSUEX] = mouse_x;

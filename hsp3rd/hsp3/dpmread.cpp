@@ -279,16 +279,18 @@ void dpm_bye( void )
 }
 
 
-int dpm_read( char *fname, void *readmem, int rlen, int seekofs )
+int dpm_read( char *p_fname, void *readmem, int rlen, int seekofs )
 {
 	char *lpRd;
 	FILE *ff;
 	int a1;
 	int seeksize;
 	int filesize;
+	char *fname;
 
 	//dpm_chkmemf( fname );
 
+	fname = p_fname;
 	seeksize=seekofs;
 	if (seeksize<0) seeksize=0;
 
@@ -338,7 +340,11 @@ int dpm_read( char *fname, void *readmem, int rlen, int seekofs )
 #endif
 
 #ifdef HSPNDK
-	return hgio_file_read( fname, readmem, rlen, seekofs );
+	a1 = hgio_file_read( fname, readmem, rlen, seekofs );
+	if ( a1 >= 0 ) return a1;
+	if ( *fname != '/' ) {
+		fname = hgio_getstorage(p_fname);
+	}
 #endif
 
 	//	Read normal file
@@ -351,11 +357,13 @@ int dpm_read( char *fname, void *readmem, int rlen, int seekofs )
 }
 
 
-int dpm_exist( char *fname )
+int dpm_exist( char *p_fname )
 {
 	FILE *ff;
 	int length;
+	char *fname;
 
+	fname = p_fname;
 #ifdef HSPIOS
     length = gb_existdata( fname );
     if ( length > 0 ) return length;
@@ -385,7 +393,11 @@ int dpm_exist( char *fname )
 #endif
     
 #ifdef HSPNDK
-	return hgio_file_exist( fname );
+	length = hgio_file_exist( fname );
+	if ( length >= 0 ) return length;
+	if ( *fname != '/' ) {
+		fname = hgio_getstorage(p_fname);
+	}
 #endif
 
     ff=fopen( fname,"rb" );

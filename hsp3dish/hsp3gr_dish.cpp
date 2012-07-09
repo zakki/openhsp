@@ -10,6 +10,8 @@
 
 #ifdef HSPWIN
 #include <windows.h>
+#include <direct.h>
+#include <shlobj.h>
 #endif
 
 #include "../hsp3/hsp3config.h"
@@ -102,27 +104,73 @@ static char *getdir( int id )
 	//		dirinfo命令の内容をstmpに設定する
 	//
 	char *p;
-//	char *ss;
-//	char fname[HSP_MAX_PATH+1];
+#ifdef HSPWIN
+	char *ss;
+	char fname[HSP_MAX_PATH+1];
+#endif
 	p = ctx->stmp;
 
 	*p = 0;
 
 	switch( id ) {
 	case 0:				//    カレント(現在の)ディレクトリ
+#ifdef HSPWIN
+		_getcwd( p, _MAX_PATH );
+#endif
 		break;
 	case 1:				//    HSPの実行ファイルがあるディレクトリ
+#ifdef HSPWIN
+		GetModuleFileName( NULL,fname,_MAX_PATH );
+		getpath( fname, p, 32 );
+#endif
 		break;
 	case 2:				//    Windowsディレクトリ
+#ifdef HSPWIN
+		GetWindowsDirectory( p, _MAX_PATH );
+#endif
 		break;
 	case 3:				//    Windowsのシステムディレクトリ
+#ifdef HSPWIN
+		GetSystemDirectory( p, _MAX_PATH );
+#endif
 		break;
 	case 4:				//    コマンドライン文字列
+#ifdef HSPWIN
+		ss = ctx->cmdline;
+		sbStrCopy( &(ctx->stmp), ss );
+		p = ctx->stmp;
+		return p;
+#endif
+		break;
+	case 5:				//    HSPTV素材があるディレクトリ
+#ifdef HSPWIN
+#if defined(HSPDEBUG)||defined(HSP3IMP)
+		GetModuleFileName( NULL,fname,_MAX_PATH );
+		getpath( fname, p, 32 );
+		CutLastChr( p, '\\' );
+		strcat( p, "\\hsptv\\" );
+		return p;
+#else
+		*p = 0;
+		return p;
+#endif
+#endif
 		break;
 	default:
+#ifdef HSPWIN
+		if ( id & 0x10000 ) {
+			SHGetSpecialFolderPath( NULL, p, id & 0xffff, FALSE );
+			break;
+		}
+#endif
 		throw HSPERR_ILLEGAL_FUNCTION;
 	}
 
+#ifdef HSPWIN
+	//		最後の'\\'を取り除く
+	//
+	CutLastChr( p, '\\' );
+#endif
 	return p;
 }
 
@@ -2151,14 +2199,16 @@ static int get_ginfo( int arg )
 		//	return i;
 		//}
 	case 26:
-		return bmscr->sx;
+		return hgio_getWidth();
+		//return bmscr->sx;
 	case 13:
 		//if ( bmscr->type != HSPWND_TYPE_BUFFER ) {
 		//	bmscr->GetClientSize( &i, &j );
 		//	return j;
 		//}
 	case 27:
-		return bmscr->sy;
+		return hgio_getHeight();
+		//return bmscr->sy;
 	case 14:
 		return bmscr->printsizex;
 	case 15:
@@ -2181,10 +2231,10 @@ static int get_ginfo( int arg )
 		return 0;
 	case 20:
 		//return GetSystemMetrics( SM_CXSCREEN );
-		return 0;
+		return bmscr->sx;
 	case 21:
 		//return GetSystemMetrics( SM_CYSCREEN );
-		return 0;
+		return bmscr->sy;
 	case 22:
 		return bmscr->cx;
 	case 23:

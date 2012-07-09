@@ -147,7 +147,7 @@ static char *getdir( int id )
 		p = ctx->stmp;
 		return p;
 	case 5:				//    HSPTV素材があるディレクトリ
-#ifdef HSPDEBUG|HSP3IMP
+#if defined(HSPDEBUG)||defined(HSP3IMP)
 		GetModuleFileName( NULL,fname,_MAX_PATH );
 		getpath( fname, p, 32 );
 		CutLastChr( p, '\\' );
