@@ -192,50 +192,40 @@ void hsp3win_msgfunc( HSPCTX *hspctx )
 		case RUNMODE_WAIT:
 			tick = GetTickCount();
 			hspctx->runmode = code_exec_wait( tick );
-			tick = GetTickCount();
-			if ( code_exec_await( tick ) != RUNMODE_RUN ) {
-				MsgWaitForMultipleObjects(0, NULL, FALSE, hspctx->waittick - tick, QS_ALLINPUT );
-			} else {
-#ifndef HSPDEBUG
-				if ( ctx->hspstat & HSPSTAT_SSAVER ) {
-					if ( hsp_sscnt ) hsp_sscnt--;
-				}
-#endif
-			}
-			break;
 		case RUNMODE_AWAIT:
 			if ( timer_period == -1 ) {
+
 				//	通常のタイマー
 				tick = GetTickCount();
 				if ( code_exec_await( tick ) != RUNMODE_RUN ) {
 					MsgWaitForMultipleObjects(0, NULL, FALSE, hspctx->waittick - tick, QS_ALLINPUT );
-					break;
+				} else {
+#ifndef HSPDEBUG
+					if ( ctx->hspstat & HSPSTAT_SSAVER ) {
+						if ( hsp_sscnt ) hsp_sscnt--;
+					}
+#endif
 				}
 			} else {
 				//	高精度タイマー
-				int ttl;
-				tick = timeGetTime();
-				code_exec_await( tick );
-				ttl = hspctx->waittick - tick;
-				while( ttl > 5 ) {					// 5以上のラグはここで吸収
-					if ( tick >= hspctx->waittick ) break;
-					MsgWaitForMultipleObjects(0, NULL, FALSE, 5, QS_ALLINPUT );
-					//Sleep(5);
+				tick = timeGetTime()+5;				// すこし早めに抜けるようにする
+				if ( code_exec_await( tick ) != RUNMODE_RUN ) {
+					MsgWaitForMultipleObjects(0, NULL, FALSE, hspctx->waittick - tick, QS_ALLINPUT );
+				} else {
 					tick = timeGetTime();
-					ttl -= 5;
-				}
-				while( tick < hspctx->waittick ) {
-					Sleep(1);
-					tick = timeGetTime();
-				}
-				hspctx->lasttick = tick;
-				hspctx->runmode = RUNMODE_RUN;
-			}
+					while( tick < hspctx->waittick ) {	// 細かいwaitを取る
+						Sleep(1);
+						tick = timeGetTime();
+					}
+					hspctx->lasttick = tick;
+					hspctx->runmode = RUNMODE_RUN;
 #ifndef HSPDEBUG
-			if ( ctx->hspstat & HSPSTAT_SSAVER ) {
-				if ( hsp_sscnt ) hsp_sscnt--;
-			}
+					if ( ctx->hspstat & HSPSTAT_SSAVER ) {
+						if ( hsp_sscnt ) hsp_sscnt--;
+					}
 #endif
+				}
+			}
 			break;
 		case RUNMODE_END:
 			throw HSPERR_NONE;
