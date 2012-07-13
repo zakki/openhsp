@@ -9,7 +9,7 @@
 #include "mod_appconfig.as"
 
 #define APPTITLE "HSP3Dish helper"
-#define APPVER "0.8"
+#define APPVER "0.9"
 #define APP_CONF "\\hsp3dh.cfg"
 
 #uselib "shell32.dll"
@@ -83,6 +83,7 @@
 	gsel 0,1
 
 	sdim buf,$10000
+	sdim buftxt,$10000
 	sdim tmp,$10000
 	sdim outbuf,$10000
 	sdim ln,4096
@@ -108,7 +109,7 @@
 	syscolor 15:boxf
 	sysfont 17
 	color 0,0,0
-	mesbox buf,wx,320,0
+	mesbox buftxt,wx,320,0
 
 	objsize 160,24
 	pos wx-168,480-32
@@ -991,6 +992,9 @@ res\\drawable-mdpi\\icon.png"}
 
 	initsub
 
+	buf=""
+	hsplog=""
+
 	if and_fname="" : goto *nohsp_conv
 
 	s1=and_fname
@@ -1017,7 +1021,11 @@ res\\drawable-mdpi\\icon.png"}
 
 	ndklog=buf
 	i=instr(buf,0,"Install")
-	if i<0 : gsel 1 : mes "NDK‚Ìƒrƒ‹ƒh‚ÉŽ¸”s‚µ‚Ü‚µ‚½" : goto *and_fin
+	if i<0 {
+		notesel buf
+		notesave path_proj+"\\"+and_name+"\\ndk-build.log"
+		gsel 1 : mes "NDK‚Ìƒrƒ‹ƒh‚ÉŽ¸”s‚µ‚Ü‚µ‚½" : goto *and_fin
+	}
 
 	if and_pack="" : goto *nohsp_pack
 
