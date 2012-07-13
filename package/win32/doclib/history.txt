@@ -22,6 +22,7 @@ Hot Soup Processor ver3.31                          HSP : Hot Soup Processor
 	[HSP3Dish][android] bsave命令によるストレージ保存に対応
 	[HSP3Dish][android] 安定性向上のためインスタンス破棄時の処理を修正
 	[HSP3Dish][android] HSP3DHのID指定をデフォルトで不要に修正
+	[hsp3dh] ログが長くなった場合にNDKビルドに失敗することがあった不具合を修正
 
 	2012/07/01 3.31β2
 
