@@ -598,10 +598,22 @@ static int cmdfunc_extcmd( int cmd )
 		APTR aptr;
 		aptr = code_getva( &pval );
 		p1=code_getdi(1);
-//		if ( code_event( HSPEVENT_GETKEY, p1, 0, &p2 ) == 0 ) {
-//			if ( GetAsyncKeyState(p1)&0x8000 ) p2=1; else p2=0;
-//		}
 		p2 = 0;
+#ifdef HSPWIN
+		if ( code_event( HSPEVENT_GETKEY, p1, 0, &p2 ) == 0 ) {
+			if ( GetAsyncKeyState(p1)&0x8000 ) p2=1;
+		}
+#endif
+#ifdef HSPIOS
+		if ( p1 == 1 ) {
+			p2 = ( hgio_stick(0)&256 )>>8;
+		}
+#endif
+#ifdef HSPNDK
+		if ( p1 == 1 ) {
+			p2 = ( hgio_stick(0)&256 )>>8;
+		}
+#endif
 		code_setva( pval, aptr, TYPE_INUM, &p2 );
 		break;
 		}

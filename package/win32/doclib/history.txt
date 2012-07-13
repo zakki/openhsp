@@ -5,7 +5,7 @@ Hot Soup Processor ver3.31                          HSP : Hot Soup Processor
 
 ・hsp3関連 更新履歴
 
-	2012/07/11 3.31RC1
+	2012/07/13 3.31RC1
 
 	wait,await実行中にウインドウ応答がなくなる不具合を修正
 	hsptvディレクトリに自由に使用できる素材ファイルを追加
@@ -13,6 +13,7 @@ Hot Soup Processor ver3.31                          HSP : Hot Soup Processor
 	#pack、#epack命令のファイルをhsptvディレクトリ内も検索するように修正
 	[hspda] sortval命令でソートが正しく動作しない場合がある不具合を修正(BT#244)
 	[hspinet] ftpopen命令にPASSIVEモード接続のオプションを追加
+	[HSP3Dish] getkey命令に対応(キー情報取得はWindowsのみ)
 	[HSP3Dish][iOS] mes命令による文字列描画でノイズが発生する不具合を修正
 	[HSP3Dish][iOS] 文字列描画でメモリリークが発生する不具合を修正
 	[HSP3Dish][android,iOS] 画面サイズのスケーリングに対応

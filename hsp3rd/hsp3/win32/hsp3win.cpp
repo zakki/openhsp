@@ -465,22 +465,18 @@ void hsp3dish_msgfunc( HSPCTX *hspctx )
 				}
 			} else {
 				//	高精度タイマー
-				int ttl;
-				tick = timeGetTime();
-				hsp3dish_await( tick );
-				ttl = ctx->waittick - tick;
-				while( ttl > 5 ) {					// 5以上のラグはここで吸収
-					if ( tick >= ctx->waittick ) break;
-					Sleep(5);
+				tick = timeGetTime()+5;				// すこし早めに抜けるようにする
+				if ( hsp3dish_await( tick ) != RUNMODE_RUN ) {
+					MsgWaitForMultipleObjects(0, NULL, FALSE, hspctx->waittick - tick, QS_ALLINPUT );
+				} else {
 					tick = timeGetTime();
-					ttl -= 5;
+					while( tick < hspctx->waittick ) {	// 細かいwaitを取る
+						Sleep(1);
+						tick = timeGetTime();
+					}
+					hspctx->lasttick = tick;
+					hspctx->runmode = RUNMODE_RUN;
 				}
-				while( tick < ctx->waittick ) {
-					Sleep(1);
-					tick = timeGetTime();
-				}
-				ctx->lasttick = tick;
-				ctx->runmode = RUNMODE_RUN;
 			}
 			break;
 		case RUNMODE_END:

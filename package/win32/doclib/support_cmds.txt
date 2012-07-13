@@ -43,13 +43,11 @@ pset	,sys|func
 pos	,sys|func
 circle	,sys|func
 cls	,sys|func
-picload	,sys|func
 color	,sys|func
 redraw	,sys|func
 gsel	,sys|func
 gcopy	,sys|func
 gzoom	,sys|func
-gmode	,sys|func
 hsvcolor	,sys|func
 buffer	,sys|func
 line	,sys|func
@@ -59,12 +57,24 @@ grect	,sys|func
 grotate	,sys|func
 gsquare	,sys|func
 gradf	,sys|func
-celload	,sys|func
 celdiv	,sys|func
 celput	,sys|func
 
-exec	,sys|func
-dialog	,sys|func
+objsize	,sys|func
+objimage	,sys|func
+objenable	,sys|func
+clrobj	,sys|func
+objprm	,sys|func
+button	,sys|func
+
+getkey	,sys|func
+bsave	,sys|func
+exist	,sys|func
+notesave	,sys|func
+
+mmload	,sys|func
+mmplay	,sys|func
+mmstop	,sys|func
 
 
 HSP3Dishサポート済みシステム変数・関数
@@ -95,6 +105,7 @@ lpeek	,sys|func
 varptr	,sys|func
 varuse	,sys|func
 noteinfo	,sys|func
+notesize	,sys|macro
 instr	,sys|func
 abs	,sys|func
 limit	,sys|func
@@ -118,6 +129,12 @@ mousex	,sys|func
 mousey	,sys|func
 mousew	,sys|func
 ginfo	,sys|func
+ginfo_winx	,sys|macro
+ginfo_winy	,sys|macro
+ginfo_vx	,sys|macro
+ginfo_vy	,sys|macro
+ginfo_accx	,sys|macro
+ginfo_accy	,sys|macro
 
 
 HSP3Dishサポート済みプリプロセッサ命令
@@ -198,45 +215,45 @@ deg2rad	,sys|macro
 
 
 HSP3Dish非互換コマンド
-(これらの命令はWindowsでのみ使用可能、またはデバイス依存の仕様)
+(これらの命令はデバイスにより異なる仕様が含まれています)
 
 screen	,sys|func
 bgscr	,sys|func
 width	,sys|func
-
-button	,sys|func
 font	,sys|func
+
+picload	,sys|func
+celload	,sys|func
+gmode	,sys|func
 mes	,sys|func
 print	,sys|func
-title	,sys|func
-objsize	,sys|func
-objimage	,sys|func
-objskip	,sys|func
-objenable	,sys|func
-clrobj	,sys|func
-objprm	,sys|func
-objmode	,sys|func
 
+exec	,sys|func
+dialog	,sys|func
+
+
+HSP3Dish非互換コマンド
+(これらの命令はWindows上でのみ動作し、他のデバイスでは無視されます)
+
+chdpm	,sys|func
+memfile	,sys|func
+bcopy	,sys|func
+delete	,sys|func
+mkdir	,sys|func
+chdir	,sys|func
+dirlist	,sys|func
+
+title	,sys|func
 onexit	,sys|func
 onerror	,sys|func
 
 dupptr	,sys|func
-newmod	,sys|func
-delmod	,sys|func
-mouse	,sys|func
 
-getkey	,sys|func
-bsave	,sys|func
-exist	,sys|func
-notesave	,sys|func
-
-mmload	,sys|func
-mmplay	,sys|func
-mmstop	,sys|func
 
 
 HSP3Dishサポート外コマンド
 
+mouse	,sys|func
 run	,sys|func
 objinfo	,sys|func
 dirinfo	,sys|func
@@ -271,22 +288,20 @@ palette	,sys|func
 sysfont	,sys|func
 chgdisp	,sys|func
 syscolor	,sys|func
-chdpm	,sys|func
-memfile	,sys|func
 newlab	,sys|func
 resume	,sys|func
 yield	,sys|func
-bcopy	,sys|func
-delete	,sys|func
-mkdir	,sys|func
-chdir	,sys|func
-dirlist	,sys|func
 pget	,sys|func
 mci	,sys|func
 objsel	,sys|func
 groll	,sys|func
 mref	,sys|func
 mcall	,sys|func
+newmod	,sys|func
+delmod	,sys|func
+
+objskip	,sys|func
+objmode	,sys|func
 
 #regcmd	,pre|func
 #usecom	,pre|func
@@ -309,8 +324,6 @@ hdc	,sys|func
 iparam	,sys|func
 wparam	,sys|func
 lparam	,sys|func
-ginfo_winx	,sys|macro
-ginfo_winy	,sys|macro
 ginfo_paluse	,sys|macro
 ginfo_act	,sys|macro
 ginfo_sel	,sys|macro
@@ -318,9 +331,6 @@ ginfo_wx1	,sys|macro
 ginfo_wy1	,sys|macro
 ginfo_wx2	,sys|macro
 ginfo_wy2	,sys|macro
-ginfo_vx	,sys|macro
-ginfo_vy	,sys|macro
-notesize	,sys|macro
 dir_cur	,sys|macro
 dir_exe	,sys|macro
 dir_win	,sys|macro

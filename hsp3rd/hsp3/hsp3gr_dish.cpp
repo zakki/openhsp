@@ -10,6 +10,8 @@
 
 #ifdef HSPWIN
 #include <windows.h>
+#include <direct.h>
+#include <shlobj.h>
 #endif
 
 #include "../hsp3/hsp3config.h"
@@ -102,29 +104,73 @@ static char *getdir( int id )
 	//		dirinfo命令の内容をstmpに設定する
 	//
 	char *p;
-//	char *ss;
-//	char fname[HSP_MAX_PATH+1];
+#ifdef HSPWIN
+	char *ss;
+	char fname[HSP_MAX_PATH+1];
+#endif
 	p = ctx->stmp;
 
 	*p = 0;
 
 	switch( id ) {
 	case 0:				//    カレント(現在の)ディレクトリ
+#ifdef HSPWIN
+		_getcwd( p, _MAX_PATH );
+#endif
 		break;
 	case 1:				//    HSPの実行ファイルがあるディレクトリ
+#ifdef HSPWIN
+		GetModuleFileName( NULL,fname,_MAX_PATH );
+		getpath( fname, p, 32 );
+#endif
 		break;
 	case 2:				//    Windowsディレクトリ
+#ifdef HSPWIN
+		GetWindowsDirectory( p, _MAX_PATH );
+#endif
 		break;
 	case 3:				//    Windowsのシステムディレクトリ
+#ifdef HSPWIN
+		GetSystemDirectory( p, _MAX_PATH );
+#endif
 		break;
 	case 4:				//    コマンドライン文字列
+#ifdef HSPWIN
+		ss = ctx->cmdline;
+		sbStrCopy( &(ctx->stmp), ss );
+		p = ctx->stmp;
+		return p;
+#endif
 		break;
-	case 5:				//    HSPTVディレクトリ
+	case 5:				//    HSPTV素材があるディレクトリ
+#ifdef HSPWIN
+#if defined(HSPDEBUG)||defined(HSP3IMP)
+		GetModuleFileName( NULL,fname,_MAX_PATH );
+		getpath( fname, p, 32 );
+		CutLastChr( p, '\\' );
+		strcat( p, "\\hsptv\\" );
+		return p;
+#else
+		*p = 0;
+		return p;
+#endif
+#endif
 		break;
 	default:
+#ifdef HSPWIN
+		if ( id & 0x10000 ) {
+			SHGetSpecialFolderPath( NULL, p, id & 0xffff, FALSE );
+			break;
+		}
+#endif
 		throw HSPERR_ILLEGAL_FUNCTION;
 	}
 
+#ifdef HSPWIN
+	//		最後の'\\'を取り除く
+	//
+	CutLastChr( p, '\\' );
+#endif
 	return p;
 }
 
@@ -552,10 +598,22 @@ static int cmdfunc_extcmd( int cmd )
 		APTR aptr;
 		aptr = code_getva( &pval );
 		p1=code_getdi(1);
-//		if ( code_event( HSPEVENT_GETKEY, p1, 0, &p2 ) == 0 ) {
-//			if ( GetAsyncKeyState(p1)&0x8000 ) p2=1; else p2=0;
-//		}
 		p2 = 0;
+#ifdef HSPWIN
+		if ( code_event( HSPEVENT_GETKEY, p1, 0, &p2 ) == 0 ) {
+			if ( GetAsyncKeyState(p1)&0x8000 ) p2=1;
+		}
+#endif
+#ifdef HSPIOS
+		if ( p1 == 1 ) {
+			p2 = ( hgio_stick(0)&256 )>>8;
+		}
+#endif
+#ifdef HSPNDK
+		if ( p1 == 1 ) {
+			p2 = ( hgio_stick(0)&256 )>>8;
+		}
+#endif
 		code_setva( pval, aptr, TYPE_INUM, &p2 );
 		break;
 		}
