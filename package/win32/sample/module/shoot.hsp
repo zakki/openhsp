@@ -175,12 +175,12 @@
 	randomize
 	title "shooting sample"
 
-	mmload "bom.wav",SE_BOM
+	mmload dir_tv+"se_bom.wav",SE_BOM
 
 	buffer chrbuf
-	picload "shootchr.bmp"
+	picload dir_tv+"shootchr.bmp"
 	buffer bombuf
-	picload "bom.bmp"
+	picload dir_tv+"bom.bmp"
 
 	gosub *makebg
 
