@@ -610,15 +610,24 @@ void hgio_setBlendMode( int mode, int aval )
             break;
         case 5:                     //add
             glEnable(GL_BLEND);
+#ifdef HSPIOS
             glBlendEquationOES(GL_FUNC_ADD_OES);
+#endif
+            glBlendFunc(GL_SRC_ALPHA,GL_ONE);
             break;
         case 6:                     //sub
             glEnable(GL_BLEND);
+#ifdef HSPIOS
             glBlendEquationOES(GL_FUNC_REVERSE_SUBTRACT_OES);
+#endif
+            glBlendFunc(GL_SRC_ALPHA,GL_ONE);
             break;
         default:                    //normal blend
             glEnable(GL_BLEND);
+#ifdef HSPIOS
             glBlendEquationOES(GL_FUNC_ADD_OES);
+#endif
+            glBlendFunc(GL_SRC_ALPHA,GL_ONE_MINUS_SRC_ALPHA);
             //glBlendFunc(GL_ONE,GL_ONE_MINUS_SRC_ALPHA);
             break;
     }
@@ -643,19 +652,31 @@ void hgio_setBlendModeFlat( int mode )
         case 3:                     //blend+alpha
         case 4:                     //blend+alpha
             glEnable(GL_BLEND);
+#ifdef HSPIOS
             glBlendEquationOES(GL_FUNC_ADD_OES);
+#endif
+            glBlendFunc(GL_ONE,GL_ONE_MINUS_SRC_ALPHA);
             break;
         case 5:                     //add
             glEnable(GL_BLEND);
+#ifdef HSPIOS
             glBlendEquationOES(GL_FUNC_ADD_OES);
+#endif
+            glBlendFunc(GL_SRC_ALPHA,GL_ONE);
             break;
         case 6:                     //sub
             glEnable(GL_BLEND);
+#ifdef HSPIOS
             glBlendEquationOES(GL_FUNC_REVERSE_SUBTRACT_OES);
+#endif
+            glBlendFunc(GL_SRC_ALPHA,GL_ONE);
             break;
         default:                    //normal blend
             glEnable(GL_BLEND);
+#ifdef HSPIOS
             glBlendEquationOES(GL_FUNC_ADD_OES);
+#endif
+            glBlendFunc(GL_ONE,GL_ONE_MINUS_SRC_ALPHA);
             break;
     }
 }
