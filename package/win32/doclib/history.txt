@@ -5,6 +5,11 @@ Hot Soup Processor ver3.31                          HSP : Hot Soup Processor
 
 ・hsp3関連 更新履歴
 
+	2012/08/22 3.31
+
+	[HSP3Dish] アクティブなウインドウID取得(ginfo_act)のサポートを追加(Windows)
+	ドキュメントの微修正
+
 	2012/07/13 3.31RC1
 
 	wait,await実行中にウインドウ応答がなくなる不具合を修正

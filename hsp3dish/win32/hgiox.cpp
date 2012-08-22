@@ -1649,4 +1649,9 @@ char *hgio_sysinfo( int p2, int *res, char *outbuf )
 	return p1;
 }
 
+HWND hgio_gethwnd( void )
+{
+	return master_wnd;
+}
+
 #endif

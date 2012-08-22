@@ -19,6 +19,11 @@
 
 HspWnd *curwnd;
 
+#ifdef HSPWIN
+#include <windows.h>
+HWND hgio_gethwnd( void );
+#endif
+
 /*------------------------------------------------------------*/
 /*
 		constructor
@@ -65,6 +70,12 @@ int HspWnd::GetActive( void )
 {
 	//
 	//		detect active window
+#ifdef HSPWIN
+	HWND hwnd;
+	hwnd = hgio_gethwnd();
+	if ( GetActiveWindow() != hwnd ) return -1;
+#endif
+
 	return 0;
 }
 
