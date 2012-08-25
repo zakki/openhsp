@@ -124,6 +124,7 @@ static float _scaleX;	// スケールX
 static float _scaleY;	// スケールY
 static float _rateX;	// 1/スケールX
 static float _rateY;	// 1/スケールY
+static int _uvfix;		// UVFix
 
 static int		drawflag;
 static engine	*appengine;
@@ -393,6 +394,7 @@ void hgio_init( int mode, int sx, int sy, void *hwnd )
 	_scaleY = 1.0f;
 	_rateX = 1.0f;
 	_rateY = 1.0f;
+	_uvfix = 0;
 
     //色
     hgio_setColor( 0 );
@@ -494,6 +496,13 @@ void hgio_autoscale( int mode )
 		break;
 	}
     Alertf( "Scale(%f,%f)",_scaleX,_scaleY );
+}
+
+
+void hgio_uvfix( int mode )
+{
+	_uvfix = mode;
+
 }
 
 
@@ -1238,11 +1247,18 @@ void hgio_fcopy( float distx, float disty, short xx, short yy, short srcsx, shor
     ratey = tex->ratey;
 
     flp = uvf2D;
-    x1 = ((GLfloat)xx) * ratex;
-    y1 = ((GLfloat)yy) * ratey;
-    x2 = ((GLfloat)(xx+srcsx)) * ratex;
-    y2 = ((GLfloat)(yy+srcsy)) * ratey;
-    
+	if ( _uvfix ) {
+	    x1 = (((GLfloat)xx) + 0.5f) * ratex;
+	    y1 = (((GLfloat)yy) + 0.5f) * ratey;
+	    x2 = ((GLfloat)(xx+srcsx) - 0.5f) * ratex;
+	    y2 = ((GLfloat)(yy+srcsy) - 0.5f) * ratey;
+	} else {
+	    x1 = ((GLfloat)xx) * ratex;
+	    y1 = ((GLfloat)yy) * ratey;
+	    x2 = ((GLfloat)(xx+srcsx)) * ratex;
+	    y2 = ((GLfloat)(yy+srcsy)) * ratey;
+	}
+
     *flp++ = x1;
     *flp++ = y1;
     *flp++ = x1;
@@ -1300,10 +1316,17 @@ void hgio_copy( BMSCR *bm, short xx, short yy, short srcsx, short srcsy, BMSCR *
     ratey = tex->ratey;
 
     flp = uvf2D;
-    x1 = ((GLfloat)xx) * ratex;
-    y1 = ((GLfloat)yy) * ratey;
-    x2 = ((GLfloat)(xx+srcsx)) * ratex;
-    y2 = ((GLfloat)(yy+srcsy)) * ratey;
+	if ( _uvfix ) {
+	    x1 = (((GLfloat)xx) + 0.5f) * ratex;
+	    y1 = (((GLfloat)yy) + 0.5f) * ratey;
+	    x2 = ((GLfloat)(xx+srcsx) - 0.5f) * ratex;
+	    y2 = ((GLfloat)(yy+srcsy) - 0.5f) * ratey;
+	} else {
+	    x1 = ((GLfloat)xx) * ratex;
+	    y1 = ((GLfloat)yy) * ratey;
+	    x2 = ((GLfloat)(xx+srcsx)) * ratex;
+	    y2 = ((GLfloat)(yy+srcsy)) * ratey;
+	}
     
     *flp++ = x1;
     *flp++ = y1;
