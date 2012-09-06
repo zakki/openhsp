@@ -188,6 +188,7 @@ ginfo_dispx	,sys|macro
 ginfo_dispy	,sys|macro
 ginfo_cx	,sys|macro
 ginfo_cy	,sys|macro
+ginfo_act	,sys|macro
 ginfo_intid	,sys|macro
 ginfo_newid	,sys|macro
 ginfo_sx	,sys|macro
@@ -325,7 +326,6 @@ iparam	,sys|func
 wparam	,sys|func
 lparam	,sys|func
 ginfo_paluse	,sys|macro
-ginfo_act	,sys|macro
 ginfo_sel	,sys|macro
 ginfo_wx1	,sys|macro
 ginfo_wy1	,sys|macro

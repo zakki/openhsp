@@ -45,7 +45,7 @@
 	seteprim m_sd,19,$00000000
 	regobj mysdw, m_sd, OBJ_LAND|OBJ_LATE	; 接地モードで登録
 	setangr mysdw,-64,0,0			; 上を向ける
-	setefx mysdw,$600			; Zバッファを無視
+	setefx mysdw,$500			; Zバッファを無視
 	setpos mysdw,0,50,0
 	objchild obj, mysdw			; メインキャラの子に設定
 	hgprm 0,10				; 接地座標を指定
