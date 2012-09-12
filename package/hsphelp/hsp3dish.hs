@@ -11,9 +11,11 @@
 hsp3dish.asをインクルードすること。
 
 %date
-2012/09/03
+2012/09/12
 %author
 onitama
+%dll
+HSP3Dish
 %url
 http://hsp.tv/
 %port
