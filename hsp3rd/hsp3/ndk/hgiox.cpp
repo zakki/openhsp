@@ -1635,8 +1635,10 @@ char *hgio_sysinfo( int p2, int *res, char *outbuf )
 void hgio_touch( int xx, int yy, int button )
 {
     Bmscr *bm;
-	mouse_x = xx * _rateX - _originX;
-	mouse_y = yy * _rateY - _originY;
+	mouse_x = ( xx - _originX ) * _rateX;
+	mouse_y = ( yy - _originY ) * _rateY;
+//	mouse_x = xx * _rateX - _originX;
+//	mouse_y = yy * _rateY - _originY;
 	mouse_btn = button;
     if ( mainbm != NULL ) {
         mainbm->savepos[BMSCR_SAVEPOS_MOSUEX] = mouse_x;

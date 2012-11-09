@@ -9,7 +9,7 @@
 #include "mod_appconfig.as"
 
 #define APPTITLE "HSP3Dish helper"
-#define APPVER "0.9"
+#define APPVER "0.91"
 #define APP_CONF "\\hsp3dh.cfg"
 
 #uselib "shell32.dll"
@@ -128,7 +128,7 @@
 
 #deffunc execcmd str _p1
 
-	tmp=""
+	sdim tmp,$20000
 	cmd = app_dir+"\\"+_p1
 	pipeexec tmp,cmd,1
 	if stat : dialog "コマンドラインの実行に失敗しました" : return -1
@@ -288,14 +288,14 @@
 
 *andmenu_proj
 
-	mes "ソーススクリプト:"
+	mes "ソーススクリプト: (空白の場合はhspフォルダを参照)"
 	objsize 390,24
 	input and_fname
 	objsize 64,24
 	pos 408,41:button "参照...",*selfile2
 
 	pos 8,70
-	mes "データファイル(dpm):"
+	mes "データファイル(dpm): (空白の場合は未使用)"
 	objsize 390,24
 	input and_pack
 	objsize 64,24
@@ -995,9 +995,27 @@ res\\drawable-mdpi\\icon.png"}
 	buf=""
 	hsplog=""
 
-	if and_fname="" : goto *nohsp_conv
+	if and_fname!="" : goto *andhsp_conv
 
+	s3 = path_proj+"\\"+and_name+"\\hsp"
+	dirlist tmp, s3, 5
+	if stat=0 : goto *nohsp_conv		; hspフォルダが無い場合スキップ
+
+	s1=s3+"\\main.hsp"
+	exist s1
+	if strsize>0 : goto *andhsp_conv2
+
+	dirlist tmp, s3+"\\*.hsp", 1
+	getstr s2,tmp,0
+	s1=s3+"\\"+s2	
+	goto *andhsp_conv2
+
+*andhsp_conv
 	s1=and_fname
+*andhsp_conv2
+	gsel 1
+	mes "ソーススクリプト:"+getpath(s1,8)
+
 	gosub *hspcnv
 	if hspcnv_res : goto *and_fin
 
@@ -1005,6 +1023,7 @@ res\\drawable-mdpi\\icon.png"}
 
 	basedir=path_proj+"\\"+and_name+"\\jni\\hsp3embed\\"
 	bcopy cppname, basedir+"hspsource.cpp"
+	goto *nohsp_conv
 
 *nohsp_conv
 	gsel 1
