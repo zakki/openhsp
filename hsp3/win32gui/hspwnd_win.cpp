@@ -222,7 +222,8 @@ LRESULT CALLBACK WndProc( HWND hwnd, UINT uMessage, WPARAM wParam, LPARAM lParam
 			break;
 		}
 		code_puterror( HSPERR_NONE );
-		break;
+		return 0;
+		//break;
 
 	case WM_DRAWITEM:
 		if ( wParam & MESSAGE_HSPOBJ ) {

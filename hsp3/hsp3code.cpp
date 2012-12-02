@@ -99,6 +99,7 @@ void code_puterror( HSPERROR error )
 	//
 	if ( error == HSPERR_NONE ) {
 		hspctx->runmode = RUNMODE_END;
+		return;
 	}
 	throw error;
 }
@@ -2719,6 +2720,10 @@ rerun:
 					cmdfunc_return();
 				} else {
 					hspctx->msgfunc( hspctx );
+				}
+				if ( hspctx->runmode == RUNMODE_END ) {
+					i = hspctx->runmode;
+					break;
 				}
 			}
 		}
