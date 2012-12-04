@@ -2863,6 +2863,9 @@ int code_execcmd( void )
 				if ( hspctx->runmode != RUNMODE_RETURN ) {
 					hspctx->msgfunc( hspctx );
 				}
+				if ( hspctx->runmode == RUNMODE_END ) {
+					break;
+				}
             }
 		}
 #ifdef HSPERR_HANDLE

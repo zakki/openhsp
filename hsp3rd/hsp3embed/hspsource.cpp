@@ -1,11 +1,11 @@
 //
-//	hsp3cnv generated source
+//	hsp3cnv(3.31b2) generated source
 //	[block3.ax]
 //
 #include "hsp3r.h"
 
-#define _HSP3CNV_DATE "2011/10/02"
-#define _HSP3CNV_TIME "17:09:32"
+#define _HSP3CNV_DATE "2012/07/08"
+#define _HSP3CNV_TIME "15:45:40"
 #define _HSP3CNV_MAXVAR 38
 #define _HSP3CNV_MAXHPI 0
 #define _HSP3CNV_VERSION 0x301
@@ -597,6 +597,7 @@ CHSP3_TASK __HspTaskFunc[]={
 (CHSP3_TASK) L0023,
 (CHSP3_TASK) L0024,
 (CHSP3_TASK) L0025,
+(CHSP3_TASK) 0,
 
 };
 

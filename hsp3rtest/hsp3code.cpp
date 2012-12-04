@@ -10,6 +10,8 @@
 #include <string.h>
 #include <math.h>
 
+#include "../hsp3/hsp3config.h"
+
 #include "../hsp3/supio.h"
 
 #include "../hsp3/hspwnd.h"
@@ -18,7 +20,6 @@
 #include "../hsp3/strbuf.h"
 #include "../hsp3/hsp3code.h"
 #include "../hsp3/hsp3debug.h"
-#include "../hsp3/hsp3config.h"
 #include "../hsp3/hsp3int.h"
 
 #define strp(dsptr) &hspctx->mem_mds[dsptr]
@@ -1338,7 +1339,9 @@ static int code_callcfunc( int cmd, int prmlevel )
 	hspctx->prmstack_max = st->size + prmlevel;			// パラメータースタックの数
 
 	sbr = (unsigned short *)( st->otindex );
-	code_setpc( sbr );
+
+	//Alertf("*cfunc*\n");
+    code_setpc( sbr );
 
 	//		gosub内で呼び出しを完結させる
 	//
@@ -1347,6 +1350,7 @@ static int code_callcfunc( int cmd, int prmlevel )
 		if ( hspctx->runmode == RUNMODE_RETURN ) break;
 	}
 
+	//Alertf("*over*\n");
 	return RUNMODE_RUN;
 }
 
@@ -1883,7 +1887,7 @@ static int cmdfunc_prog( int cmd )
 		cmdfunc_return();
 		hspctx->runmode = RUNMODE_RETURN;
 		return RUNMODE_RETURN;
-		//break;
+		break;
 
 	case 0x03:								// break
 		if (hspctx->looplev==0) throw HSPERR_LOOP_WITHOUT_REPEAT;
@@ -1923,8 +1927,15 @@ static int cmdfunc_prog( int cmd )
 
 	case 0x06:								// continue
 		{
+		LOOPDAT *lop;
 		unsigned short *label;
 		label = code_getlb();
+
+		lop=GETLOP(hspctx->looplev);
+		code_next();
+		p2=lop->cnt + 1;
+		p1 = code_getdi( p2 );
+		lop->cnt = p1 - 1;
 		}
 	case 0x05:								// loop
 		{
@@ -1944,22 +1955,7 @@ static int cmdfunc_prog( int cmd )
 		//code_next();
 		break;
 		}
-/*
-	case 0x06:								// continue
-		{
-		LOOPDAT *lop;
-		unsigned short *label;
-		label = code_getlb();
-		lop=GETLOP(hspctx->looplev);
-		code_next();
-		p2=lop->cnt + 1;
-		p1 = code_getdi( p2 );
-		lop->cnt = p1 - 1;
-		//mcs=label;
-		//val=0x05;type=TYPE_PROGCMD;exflg=0;	// set 'loop' code
-		break;
-		}
-*/
+
 	case 0x07:								// wait
 		hspctx->waitcount = code_getdi( 100 );
 		hspctx->runmode = RUNMODE_WAIT;
@@ -2447,7 +2443,8 @@ void code_call( const unsigned short *pc )
 {
 	//		サブルーチンジャンプを行なう
 	//
-	mcs = mcsbak;
+	mcs = (unsigned short *)GetTaskID();
+	//mcs = mcsbak;
 	cmdfunc_gosub( (unsigned short *)pc, mcs );
 	hspctx->runmode = RUNMODE_RUN;
 }
@@ -2650,9 +2647,10 @@ void code_init( void )
 	sbInit();					// 可変メモリバッファ初期化
 	StackInit();
 	HspVarCoreInit();			// ストレージコア初期化
-	mpval = HspVarCoreGetPVal(0);
 	hspevent_opt = 0;			// イベントオプションを初期化
-
+	mpval = HspVarCoreGetPVal(0);
+	//mpval_int = HspVarCoreGetPVal(HSPVAR_FLAG_INT);
+	
 	//		exinfoの初期化
 	//
 	exinfo = &mem_exinfo;
@@ -2777,6 +2775,7 @@ void code_init( void )
 	dbginfo.dbg_set = code_dbgset;
 #endif
 
+
 }
 
 
@@ -2847,6 +2846,60 @@ void code_bye( void )
 
 int code_execcmd( void )
 {
+	//		実行メインを呼び出す
+	//
+	int i;
+	if ( hspctx->runmode == RUNMODE_ERROR ) {
+		return hspctx->runmode;
+	}
+	hspctx->runmode = RUNMODE_RUN;
+
+#ifdef HSPERR_HANDLE
+	try {
+#endif
+		while(1) {
+			TaskExec();
+			if ( hspctx->runmode != 0 ) {
+				if ( hspctx->runmode != RUNMODE_RETURN ) {
+					hspctx->msgfunc( hspctx );
+				}
+				if ( hspctx->runmode == RUNMODE_END ) {
+					break;
+				}
+            }
+		}
+#ifdef HSPERR_HANDLE
+	}
+#endif
+
+#ifdef HSPERR_HANDLE
+	catch( HSPERROR code ) {						// HSPエラー例外処理
+		if ( code == HSPERR_NONE ) {
+			hspctx->runmode = RUNMODE_END;
+		} else {
+			i = RUNMODE_ERROR;
+			hspctx->err = code;
+			hspctx->runmode = i;
+			//if ( code_isirq( HSPIRQ_ONERROR ) ) {
+			//	code_sendirq( HSPIRQ_ONERROR, 0, (int)code, code_getdebug_line() );
+			//	if ( hspctx->runmode != i ) goto rerun;
+			//}
+			return i;
+		}
+	}
+#endif
+
+#ifdef SYSERR_HANDLE
+	catch( ... ) {									// その他の例外発生時
+		hspctx->err = HSPERR_UNKNOWN_CODE;
+		return RUNMODE_ERROR;
+	}
+#endif
+
+	//Alertf( "RUN=%d",ctx->runmode );
+	return hspctx->runmode;
+
+#if 0
 	//		命令実行メイン
 	//
 	int i;
@@ -2906,6 +2959,7 @@ rerun:
 #endif
 	hspctx->runmode = i;
 	return i;
+#endif
 }
 
 

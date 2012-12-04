@@ -199,8 +199,8 @@ void hsp3win_msgfunc( HSPCTX *hspctx )
 #endif
 			}
 			break;
-		case RUNMODE_END:
-			throw HSPERR_NONE;
+//		case RUNMODE_END:
+//			throw HSPERR_NONE;
 		case RUNMODE_RETURN:
 			throw HSPERR_RETURN_WITHOUT_GOSUB;
 		case RUNMODE_INTJUMP:

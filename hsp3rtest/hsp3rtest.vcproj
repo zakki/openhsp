@@ -43,7 +43,7 @@
 				PreprocessorDefinitions="WIN32;_DEBUG;_WINDOWS;HSPWIN;HSPWINGUI;_CRT_SECURE_NO_WARNINGS"
 				MinimalRebuild="true"
 				BasicRuntimeChecks="3"
-				RuntimeLibrary="0"
+				RuntimeLibrary="1"
 				UsePrecompiledHeader="0"
 				WarningLevel="3"
 				Detect64BitPortabilityProblems="true"
@@ -290,6 +290,10 @@
 				>
 			</File>
 			<File
+				RelativePath="..\hsp3\win32gui\stb_image.c"
+				>
+			</File>
+			<File
 				RelativePath="..\hsp3\strbuf.cpp"
 				>
 			</File>
@@ -413,6 +417,10 @@
 			</File>
 			<File
 				RelativePath="..\hsp3\stack.h"
+				>
+			</File>
+			<File
+				RelativePath="..\hsp3\win32gui\stb_image.h"
 				>
 			</File>
 			<File

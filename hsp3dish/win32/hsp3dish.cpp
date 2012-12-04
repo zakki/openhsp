@@ -475,8 +475,8 @@ void hsp3dish_msgfunc( HSPCTX *hspctx )
 				}
 			}
 			break;
-		case RUNMODE_END:
-			throw HSPERR_NONE;
+//		case RUNMODE_END:
+//			throw HSPERR_NONE;
 			return;
 		case RUNMODE_RETURN:
 			throw HSPERR_RETURN_WITHOUT_GOSUB;

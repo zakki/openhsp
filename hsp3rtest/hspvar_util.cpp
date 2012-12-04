@@ -47,6 +47,9 @@ static int lasttask;
 PVal *mem_var;							// 変数用のメモリ
 int	prmstacks;							// パラメータースタック数(モジュール呼び出し用)
 
+PVal var_proxy;							// 代理変数用のメモリ
+
+
 static	HSP3TYPEINFO *intcmd_info;
 static	HSP3TYPEINFO *extcmd_info;
 static	HSP3TYPEINFO *extsysvar_info;
@@ -258,6 +261,9 @@ void VarUtilInit( void )
 
 	//		最初のタスク実行関数をセット
 	curtask = (CHSP3_TASK)__HspEntry;
+
+	//		代理変数を初期化(パラメーター渡し用)
+	var_proxy.offset = 0;
 }
 
 
@@ -337,6 +343,35 @@ void PushVAP( PVal *pval, int aval )
 	aptr = CheckArray( pval, aval );
 	//ptr = HspVarCorePtrAPTR( pval, aptr );
 	StackPushTypeVal( HSPVAR_FLAG_VAR, (int)pval, (int)aptr );
+}
+
+
+void PushVarFromVAP( PVal *pval, int aval )
+{
+	//	PushVAPされている変数の値をpushする
+	int basesize;
+	APTR aptr;
+	PDAT *ptr;
+
+	aptr = (APTR)aval;
+
+	tflag = pval->flag;
+	if ( tflag == HSPVAR_FLAG_INT ) {
+		ptr = (PDAT *)(( (int *)(pval->pt))+ aptr );		// 自前で計算
+		StackPushi( *(int *)ptr );
+		return;
+	}
+	if ( tflag == HSPVAR_FLAG_DOUBLE ) {
+		ptr = (PDAT *)(( (double *)(pval->pt))+ aptr );		// 自前で計算
+		StackPushd( *(double *)ptr );
+		return;
+	}
+
+	ptr = HspVarCorePtrAPTR( pval, aptr );
+	varproc = HspVarCoreGetProc( tflag );
+	basesize = varproc->basesize;
+	if ( basesize < 0 ) { basesize = varproc->GetSize( ptr ); }
+	StackPush( tflag, (char *)ptr, basesize );
 }
 
 
@@ -710,12 +745,13 @@ void CalcLrI( void )
 
 
 
-void VarSet( PVal *pval, int aval )
+void VarSet( PVal *m_pval, int aval )
 {
 	//	変数代入(var=???)
 	//		aval=配列要素のスタック数
 	//
 	int chk;
+	PVal *pval;
 	HspVarProc *proc;
 	APTR aptr;
 	void *ptr;
@@ -724,7 +760,15 @@ void VarSet( PVal *pval, int aval )
 	//int baseaptr;
 	int tflag;
 
-	aptr = CheckArray( pval, aval );
+	if ( m_pval == &var_proxy ) {
+		STMDATA *stm = (STMDATA *)m_pval->master;
+		pval = (PVal *)( stm->ival );
+		aptr = *(int *)stm->itemp;
+		if ( aval != 0 ) throw HSPERR_SYNTAX;
+	} else {
+		pval = m_pval;
+		aptr = CheckArray( pval, aval );
+	}
 	dst = HspVarCorePtrAPTR( pval, aptr );
 	tflag = pval->flag;
 
@@ -758,7 +802,7 @@ void VarSet( PVal *pval, int aval )
 }
 
 
-void VarSet( PVal *pval, int aval, int pnum )
+void VarSet( PVal *m_pval, int aval, int pnum )
 {
 	//	変数代入(var=???)
 	//		aval=配列要素のスタック数
@@ -771,10 +815,19 @@ void VarSet( PVal *pval, int aval, int pnum )
 	PDAT *dst;
 	int pleft;
 	int baseaptr;
+	PVal *pval;
 
-	aptr = CheckArray( pval, aval );
-	proc = HspVarCoreGetProc( pval->flag );
+	if ( m_pval == &var_proxy ) {
+		STMDATA *stm = (STMDATA *)m_pval->master;
+		pval = (PVal *)( stm->ival );
+		aptr = *(int *)stm->itemp;
+		if ( aval != 0 ) throw HSPERR_SYNTAX;
+	} else {
+		pval = m_pval;
+		aptr = CheckArray( pval, aval );
+	}
 	dst = HspVarCorePtrAPTR( pval, aptr );
+	proc = HspVarCoreGetProc( pval->flag );
 
 	chk = code_get();									// パラメーター値を取得
 	if ( chk != PARAM_OK ) { throw HSPERR_SYNTAX; }
@@ -868,7 +921,7 @@ void VarSet2( PVal *pval )
 }
 
 
-void VarInc( PVal *pval, int aval )
+void VarInc( PVal *m_pval, int aval )
 {
 	//	変数インクリメント(var++)
 	//
@@ -877,9 +930,19 @@ void VarInc( PVal *pval, int aval )
 	int incval;
 	void *ptr;
 	PDAT *dst;
+	PVal *pval;
 
-	aptr = CheckArray( pval, aval );
+	if ( m_pval == &var_proxy ) {
+		STMDATA *stm = (STMDATA *)m_pval->master;
+		pval = (PVal *)( stm->ival );
+		aptr = *(int *)stm->itemp;
+		if ( aval != 0 ) throw HSPERR_SYNTAX;
+	} else {
+		pval = m_pval;
+		aptr = CheckArray( pval, aval );
+	}
 	proc = HspVarCoreGetProc( pval->flag );
+
 	incval = 1;
 	if ( pval->flag == HSPVAR_FLAG_INT ) { ptr = &incval; } else {
 		ptr = (int *)proc->Cnv( &incval, HSPVAR_FLAG_INT );	// 型がINTでない場合は変換
@@ -889,7 +952,7 @@ void VarInc( PVal *pval, int aval )
 }
 
 
-void VarDec( PVal *pval, int aval )
+void VarDec( PVal *m_pval, int aval )
 {
 	//	変数デクリメント(var--)
 	//
@@ -898,9 +961,19 @@ void VarDec( PVal *pval, int aval )
 	int incval;
 	void *ptr;
 	PDAT *dst;
+	PVal *pval;
 
-	aptr = CheckArray( pval, aval );
+	if ( m_pval == &var_proxy ) {
+		STMDATA *stm = (STMDATA *)m_pval->master;
+		pval = (PVal *)( stm->ival );
+		aptr = *(int *)stm->itemp;
+		if ( aval != 0 ) throw HSPERR_SYNTAX;
+	} else {
+		pval = m_pval;
+		aptr = CheckArray( pval, aval );
+	}
 	proc = HspVarCoreGetProc( pval->flag );
+
 	incval = 1;
 	if ( pval->flag == HSPVAR_FLAG_INT ) { ptr = &incval; } else {
 		ptr = (int *)proc->Cnv( &incval, HSPVAR_FLAG_INT );	// 型がINTでない場合は変換
@@ -962,7 +1035,7 @@ static inline int calcprmf( int mval, int exp, int p )
 }
 
 
-void VarCalc( PVal *pval, int aval, int op )
+void VarCalc( PVal *m_pval, int aval, int op )
 {
 	//	変数演算代入(var*=???等)
 	//		aval=配列要素のスタック数
@@ -974,8 +1047,17 @@ void VarCalc( PVal *pval, int aval, int op )
 	void *ptr;
 	PDAT *dst;
 	int *iptr;
+	PVal *pval;
 
-	aptr = CheckArray( pval, aval );
+	if ( m_pval == &var_proxy ) {
+		STMDATA *stm = (STMDATA *)m_pval->master;
+		pval = (PVal *)( stm->ival );
+		aptr = *(int *)stm->itemp;
+		if ( aval != 0 ) throw HSPERR_SYNTAX;
+	} else {
+		pval = m_pval;
+		aptr = CheckArray( pval, aval );
+	}
 
 	proc = HspVarCoreGetProc( pval->flag );
 	dst = HspVarCorePtrAPTR( pval, aptr );
@@ -1073,7 +1155,7 @@ void PushFuncPrm( int num )
 
 	tflag = stm->type;
 	if ( tflag == HSPVAR_FLAG_VAR ) {
-		PushVar( (PVal *)( stm->ival ), *(int *)stm->itemp );
+		PushVarFromVAP( (PVal *)( stm->ival ), *(int *)stm->itemp );
 		//PushVAP( (PVal *)( stm->ival ), *(int *)stm->itemp );
 		return;
 	}
@@ -1233,9 +1315,34 @@ void PushFuncPAP( int num, int aval )
 }
 
 
+PVal *FuncPrmVA( int num )
+{
+	//		変数の引数(num)を得る(var用)
+	//
+	STMDATA *stm;
+	int tflag;
+	//char *ptr;
+
+	stm = (STMDATA *)hspctx->prmstack;
+	if ( stm == NULL ) throw HSPERR_INVALID_FUNCPARAM;
+	if ( num >= hspctx->prmstack_max ) throw HSPERR_INVALID_FUNCPARAM;
+	stm -= num;
+
+	tflag = stm->type;
+	if ( tflag != HSPVAR_FLAG_VAR ) throw HSPVAR_ERROR_INVALID;
+
+	//ptr = stm->itemp;
+
+	var_proxy.master = stm;
+	return &var_proxy;
+
+	//return (PVal *)( stm->ival );
+}
+
+
 PVal *FuncPrm( int num )
 {
-	//		変数の引数(num)を得る
+	//		変数の引数(num)を得る(array用)
 	//
 	STMDATA *stm;
 	int tflag;
@@ -1294,9 +1401,7 @@ void TaskSwitch( int label )
 	}
 #endif
 
-#ifdef _DEBUG
 	lasttask = label;
-#endif
 	curtask = __HspTaskFunc[label];
 }
 
@@ -1312,11 +1417,7 @@ int GetTaskID( void )
 {
 	//		タスク関数IDを取得
 	//
-#ifdef _DEBUG
 	return lasttask;
-#else
-	return -1;
-#endif
 }
 
 

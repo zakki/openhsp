@@ -72,7 +72,7 @@ int Hsp3r::Reset( int ext_vars, int ext_hpi )
 	//
 #ifdef HSPNDK
     //      android data file path
-    dpm_ini( "/data/data/com.example.hsptest1/lib/libhsp3dish.so",0,-1,-1 );
+    dpm_ini( "/data/data/hsp20120708.block/lib/libhsp3dish.so",0,-1,-1 );
 #else
     dpm_ini( "data.dpm",0,-1,-1 );				// original EXE mode
 #endif

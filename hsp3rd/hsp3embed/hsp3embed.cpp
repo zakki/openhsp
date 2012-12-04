@@ -225,14 +225,15 @@ int hsp3eb_exectime( int tick )
 		case RUNMODE_WAIT:
 			//	高精度タイマー
 			ctx->runmode = hsp3eb_wait( tick );
-			if ( ctx->runmode == RUNMODE_RUN ) break;
+            if ( ctx->runmode == RUNMODE_RUN ) break;
 			return ctx->runmode;
 		case RUNMODE_AWAIT:
 			//	高精度タイマー
 			ctx->runmode = hsp3eb_await( tick );
-			if ( ctx->runmode == RUNMODE_RUN ) break;
+            if ( ctx->runmode == RUNMODE_RUN ) break;
 			return ctx->runmode;
 		case RUNMODE_END:
+			return ctx->runmode;
 		case RUNMODE_INTJUMP:
 		case RUNMODE_ASSERT:
 			ctx->runmode = RUNMODE_STOP;
@@ -249,6 +250,39 @@ void hsp3eb_setstat( int stat )
 	//		stat値を設定
 	//
     ctx->stat = stat;
+}
+
+
+HSPCTX *hsp3eb_getctx( void )
+{
+	//		HSPCTXを返す
+	//
+	return ctx;
+}
+
+
+char *hsp3eb_stmp( char *str )
+{
+	//		HSPCTXのstmpに文字列を格納する
+	//
+	code_stmpstr( str );
+	return ctx->stmp;
+}
+
+
+void hsp3eb_pause( void )
+{
+	//		アプリケーションの一時停止
+	//
+	hsp3extcmd_pause();
+}
+
+
+void hsp3eb_resume( void )
+{
+	//		アプリケーションの再開
+	//
+	hsp3extcmd_resume();
 }
 
 
