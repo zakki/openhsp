@@ -55,7 +55,7 @@
             [self release];
             return nil;
         }
-        
+
         //アニメ
         _animeTimer=nil;
     }

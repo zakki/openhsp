@@ -67,25 +67,25 @@ static GLbyte panelColors[]={
     _bgSize=size;
 
     //ビューポート変換
-    glViewport(0,0,_bgSize.width,_bgSize.height);
+    //glViewport(0,0,_bgSize.width,_bgSize.height);
     
     //投影変換
     glMatrixMode(GL_PROJECTION);
     glLoadIdentity();
-    glOrthof(-_bgSize.width/2,_bgSize.width/2,
-        -_bgSize.height/2,_bgSize.height/2,-100,100);    
-    glTranslatef(-_bgSize.width/2,_bgSize.height/2,0);
-    
+//    glOrthof(-_bgSize.width/2,_bgSize.width/2,
+//        -_bgSize.height/2,_bgSize.height/2,-100,100);
+//    glTranslatef(-_bgSize.width/2,_bgSize.height/2,0);
+/*
     //モデリング変換    
     glMatrixMode(GL_MODELVIEW);
-
+*/
     //クリア色の設定
     glClearColor(0,0,0,1);
     
     //頂点配列の設定
     glVertexPointer(2,GL_FLOAT,0,panelVertices);
     glEnableClientState(GL_VERTEX_ARRAY);
-    
+
     //UVの設定
     glTexCoordPointer(2,GL_FLOAT,0,panelUVs);
         
@@ -259,11 +259,12 @@ static GLbyte panelColors[]={
 }
 
 //原点の指定
+/*
 - (void)setOrigin_x:(int)x y:(int)y {
     _originX=x;
     _originY=y;
 }
-
+*/
 
 //====================
 //文字列設定

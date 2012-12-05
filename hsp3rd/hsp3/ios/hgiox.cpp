@@ -124,6 +124,7 @@ static float _scaleX;	// スケールX
 static float _scaleY;	// スケールY
 static float _rateX;	// 1/スケールX
 static float _rateY;	// 1/スケールY
+static int _uvfix;		// UVFix
 
 static int		drawflag;
 static engine	*appengine;
@@ -393,6 +394,7 @@ void hgio_init( int mode, int sx, int sy, void *hwnd )
 	_scaleY = 1.0f;
 	_rateX = 1.0f;
 	_rateY = 1.0f;
+	_uvfix = 0;
 
     //色
     hgio_setColor( 0 );
@@ -416,7 +418,7 @@ void hgio_init( int mode, int sx, int sy, void *hwnd )
 //	SetSysReq( SYSREQ_CLSCOLOR, 0xffffff );
 
     //クリア色の設定
-	hgio_reset();
+	//hgio_reset();
 	Alertf( "Init:HGIOScreen(%d,%d)",sx,sy );
 
 	//フォント準備
@@ -439,6 +441,13 @@ void hgio_init( int mode, int sx, int sy, void *hwnd )
     lastTime = CFAbsoluteTimeGetCurrent();
 #endif
 
+}
+
+
+void hgio_size( int sx, int sy )
+{
+	_sizex = sx;
+	_sizey = sy;
 }
 
 
@@ -497,6 +506,13 @@ void hgio_autoscale( int mode )
 }
 
 
+void hgio_uvfix( int mode )
+{
+	_uvfix = mode;
+
+}
+
+
 void hgio_reset( void )
 {
     //投影変換
@@ -509,15 +525,16 @@ void hgio_reset( void )
 	ox = (float)_bgsx;
 	oy = (float)_bgsy;
     glOrthof( 0, ox, -oy, 0,-100,100);
-//    Alertf( "(%f,%f)(%f,%f)(%f,%f)",ox,oy,_sizex, _sizey, _scaleX,_scaleY );
 //    glOrthof( 0, 320.0f, -480.0f, 0,-100,100);
 //    glOrthof( 0, _bgsx * _scaleX, -_bgsy * _scaleY, 0,-100,100);
     //glTranslatef(engine->width/2,engine->height/2,0);
 
     //ビューポート変換
-	_originX = ( _sizex - ((float)_bgsx * _scaleX) ) / 2;
-	_originY = ( _sizey - ((float)_bgsy * _scaleY) ) / 2;
-	glViewport(_originX,_originY,(float)_bgsx*_scaleX,(float)_bgsy*_scaleY);
+	_originX = ( _sizex - (ox * _scaleX) ) / 2;
+	_originY = ( _sizey - (oy * _scaleY) ) / 2;
+//    Alertf( "(%f,%f)(%d,%d)(%f,%f)",ox,oy,_originX, _originY, _scaleX,_scaleY );
+
+    glViewport((float)_originX,(float)_originY,ox * _scaleX,oy * _scaleY);
 //	glViewport(_originX,_originY, ox, oy );
 //	glViewport(_originX,-_originY, _sizex, _sizey );
     
@@ -1238,11 +1255,18 @@ void hgio_fcopy( float distx, float disty, short xx, short yy, short srcsx, shor
     ratey = tex->ratey;
 
     flp = uvf2D;
-    x1 = ((GLfloat)xx) * ratex;
-    y1 = ((GLfloat)yy) * ratey;
-    x2 = ((GLfloat)(xx+srcsx)) * ratex;
-    y2 = ((GLfloat)(yy+srcsy)) * ratey;
-    
+	if ( _uvfix ) {
+	    x1 = (((GLfloat)xx) + 0.5f) * ratex;
+	    y1 = (((GLfloat)yy) + 0.5f) * ratey;
+	    x2 = ((GLfloat)(xx+srcsx) - 0.5f) * ratex;
+	    y2 = ((GLfloat)(yy+srcsy) - 0.5f) * ratey;
+	} else {
+	    x1 = ((GLfloat)xx) * ratex;
+	    y1 = ((GLfloat)yy) * ratey;
+	    x2 = ((GLfloat)(xx+srcsx)) * ratex;
+	    y2 = ((GLfloat)(yy+srcsy)) * ratey;
+	}
+
     *flp++ = x1;
     *flp++ = y1;
     *flp++ = x1;
@@ -1300,10 +1324,17 @@ void hgio_copy( BMSCR *bm, short xx, short yy, short srcsx, short srcsy, BMSCR *
     ratey = tex->ratey;
 
     flp = uvf2D;
-    x1 = ((GLfloat)xx) * ratex;
-    y1 = ((GLfloat)yy) * ratey;
-    x2 = ((GLfloat)(xx+srcsx)) * ratex;
-    y2 = ((GLfloat)(yy+srcsy)) * ratey;
+	if ( _uvfix ) {
+	    x1 = (((GLfloat)xx) + 0.5f) * ratex;
+	    y1 = (((GLfloat)yy) + 0.5f) * ratey;
+	    x2 = ((GLfloat)(xx+srcsx) - 0.5f) * ratex;
+	    y2 = ((GLfloat)(yy+srcsy) - 0.5f) * ratey;
+	} else {
+	    x1 = ((GLfloat)xx) * ratex;
+	    y1 = ((GLfloat)yy) * ratey;
+	    x2 = ((GLfloat)(xx+srcsx)) * ratex;
+	    y2 = ((GLfloat)(yy+srcsy)) * ratey;
+	}
     
     *flp++ = x1;
     *flp++ = y1;
@@ -1612,8 +1643,10 @@ char *hgio_sysinfo( int p2, int *res, char *outbuf )
 void hgio_touch( int xx, int yy, int button )
 {
     Bmscr *bm;
-	mouse_x = xx * _rateX - _originX;
-	mouse_y = yy * _rateY - _originY;
+	mouse_x = ( xx - _originX ) * _rateX;
+	mouse_y = ( yy - _originY ) * _rateY;
+//	mouse_x = xx * _rateX - _originX;
+//	mouse_y = yy * _rateY - _originY;
 	mouse_btn = button;
     if ( mainbm != NULL ) {
         mainbm->savepos[BMSCR_SAVEPOS_MOSUEX] = mouse_x;

@@ -14,7 +14,6 @@
     GLuint       _viewFrameBuff;  //フレームバッファ
     GLuint       _depthRenderBuff;//デプスレンダーバッファ
     BOOL         _initFlag;       //初期化フラグ
-    
 @private
     //アニメ
     NSTimer* _animeTimer;//アニメタイマー

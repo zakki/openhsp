@@ -11,7 +11,10 @@
 
     int dialog_type;
     int disp_sx, disp_sy;
-//  Graphics* _g;     
+    CGFloat      _scalefix;
+    int          _screenx;
+    int          _screeny;
+//  Graphics* _g;
 //	Image*    _image;
     UIAccelerometer *accelerometer;
 }
@@ -24,6 +27,7 @@
 - (void)dispScaleX:(int)x Y:(int)y;
 - (void)dispAutoScale:(int)mode;
 - (void)UseAccelerometer:(float)freq;
+- (void)useRetina;
 
 #define ACTMODE_LOCK 2
 #define ACTMODE_NORMAL 1
