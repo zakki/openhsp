@@ -37,7 +37,6 @@ noteload	,sys|func
 randomize	,sys|func
 noteunsel	,sys|func
 noteget	,sys|func
-split	,sys|func
 
 pset	,sys|func
 pos	,sys|func
@@ -300,6 +299,7 @@ mref	,sys|func
 mcall	,sys|func
 newmod	,sys|func
 delmod	,sys|func
+split	,sys|func
 
 objskip	,sys|func
 objmode	,sys|func

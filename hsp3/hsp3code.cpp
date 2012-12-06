@@ -1152,6 +1152,9 @@ static int cmdfunc_gosub( unsigned short *subr )
 			} else {
 				hspctx->msgfunc( hspctx );
 			}
+			if ( hspctx->runmode == RUNMODE_END ) {
+				return RUNMODE_END;
+			}
 		}
 	}
 
@@ -1198,6 +1201,9 @@ static int code_callfunc( int cmd )
 				break;
 			} else {
 				hspctx->msgfunc( hspctx );
+			}
+			if ( hspctx->runmode == RUNMODE_END ) {
+				return RUNMODE_END;
 			}
 		}
 	}
@@ -2722,8 +2728,9 @@ rerun:
 					hspctx->msgfunc( hspctx );
 				}
 				if ( hspctx->runmode == RUNMODE_END ) {
-					i = hspctx->runmode;
-					break;
+					return RUNMODE_END;
+//					i = hspctx->runmode;
+//					break;
 				}
 			}
 		}

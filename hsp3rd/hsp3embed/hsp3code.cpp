@@ -1211,40 +1211,6 @@ static void cmdfunc_gosub( unsigned short *subr, unsigned short *retpc )
 	code_setpc( subr );
 }
 
-#if 0
-static int cmdfunc_gosub( unsigned short *subr )
-{
-	//		gosub execute
-	//
-	HSPROUTINE r;
-	r.mcsret = mcs;
-	r.stacklev = hspctx->sublev++;
-	r.oldtack = hspctx->prmstack;
-	r.param = NULL;
-	StackPush( TYPE_EX_SUBROUTINE, (char *)&r, sizeof(HSPROUTINE) );
-
-	mcs = subr;
-	code_next();
-
-	//		gosub内で呼び出しを完結させる
-	//
-	while(1) {
-#ifdef HSPDEBUG
-		if ( dbgmode ) code_dbgtrace();					// トレースモード時の処理
-#endif
-		if ( GetTypeInfoPtr( type )->cmdfunc( val ) ) {	// タイプごとの関数振り分け
-			if ( hspctx->runmode == RUNMODE_RETURN ) {
-				cmdfunc_return();
-				break;
-			} else {
-				hspctx->msgfunc( hspctx );
-			}
-		}
-	}
-
-	return RUNMODE_RUN;
-}
-#endif
 
 static int code_callfunc( int cmd, int prmlevel )
 {
@@ -2898,68 +2864,6 @@ int code_execcmd( void )
 
 	//Alertf( "RUN=%d",ctx->runmode );
 	return hspctx->runmode;
-
-#if 0
-	//		命令実行メイン
-	//
-	int i;
-	hspctx->endcode = 0;
-
-rerun:
-	hspctx->looplev = 0;
-	hspctx->sublev = 0;
-	StackReset();
-	// HspVarCoreResetVartype() で変数領域か拡張されると変数が変なアドレスをさしてしまうので初期化
-	//   本当は hspvar_core.cpp:HspVarCoreResetVartype() の中か
-	//   もしくは hsp3.cpp:HspVarCoreResetVartype() の直後に行った方が良いはず...
-	//mpval_int = HspVarCoreGetPVal(HSPVAR_FLAG_INT);
-	//HspVarCoreClearTemp( mpval_int, HSPVAR_FLAG_INT );	// int型のテンポラリを初期化
-
-	try {
-		while(1) {
-			TaskExec();
-		}
-
-#if 0
-			if ( GetTypeInfoPtr( type )->cmdfunc( val ) ) {	// タイプごとの関数振り分け
-				if ( hspctx->runmode == RUNMODE_RETURN ) {
-					cmdfunc_return();
-				} else {
-					hspctx->msgfunc( hspctx );
-				}
-			}
-#endif
-
-	}
-
-	catch( HSPERROR code ) {						// HSPエラー例外処理
-		if ( code == HSPERR_NONE ) {
-			i = RUNMODE_END;
-		} else if ( code == HSPERR_INTJUMP ) {
-			goto rerun;
-		} else if ( code == HSPERR_EXITRUN ) {
-			i = RUNMODE_EXITRUN;
-		} else {
-			i = RUNMODE_ERROR;
-			hspctx->err = code;
-			hspctx->runmode = i;
-			if ( code_isirq( HSPIRQ_ONERROR ) ) {
-				code_sendirq( HSPIRQ_ONERROR, 0, (int)code, code_getdebug_line() );
-				if ( hspctx->runmode != i ) goto rerun;
-				return i;
-			}
-		}
-	}
-
-#ifdef SYSERR_HANDLE
-	catch( ... ) {									// その他の例外発生時
-		hspctx->err = HSPERR_UNKNOWN_CODE;
-		return RUNMODE_ERROR;
-	}
-#endif
-	hspctx->runmode = i;
-	return i;
-#endif
 }
 
 
