@@ -20,8 +20,11 @@ void gb_setogl( EAGLContext *context, GLuint viewRenderBuff, GLuint viewFrameBuf
         sy = frame.size.height;
         disp_sx = sx;
         disp_sy = sy;
+        _screenx = sx;
+        _screeny = sy;
        
-        _scalefix =[UIScreen mainScreen].scale;
+        _scalefix = [UIScreen mainScreen].scale;
+        _scaleuse = 1.0f;
 
         NSLog(@"Init HspView(%d,%d)",sx,sy);
         hgio_init( 0, sx, sy, NULL );
@@ -92,13 +95,17 @@ void gb_setogl( EAGLContext *context, GLuint viewRenderBuff, GLuint viewFrameBuf
 - (void)useRetina {
 
     CAEAGLLayer* eaglLayer=(CAEAGLLayer*)self.layer;
-    self.contentScaleFactor = _scalefix;
-    eaglLayer.contentsScale = _scalefix;
-    _screenx = (int)((float)disp_sx * _scalefix);
-    _screeny = (int)((float)disp_sy * _scalefix);
+
+    if ( _scalefix > 1.0f ) {
+        _scaleuse = _scalefix;
+        self.contentScaleFactor = _scalefix;
+        eaglLayer.contentsScale = _scalefix;
+        _screenx = (int)((float)disp_sx * _scalefix);
+        _screeny = (int)((float)disp_sy * _scalefix);
     
-    hgio_size( _screenx, _screeny );
-    hgio_scale( _scalefix, _scalefix );
+        hgio_size( _screenx, _screeny );
+        hgio_scale( _scalefix, _scalefix );
+    }
 }
 
 
@@ -187,7 +194,7 @@ void gb_setogl( EAGLContext *context, GLuint viewRenderBuff, GLuint viewFrameBuf
 	
 	[super touchesBegan:touches withEvent:event];
 
-	hgio_touch( location.x * _scalefix, location.y * _scalefix, 1 );
+	hgio_touch( location.x * _scaleuse, location.y * _scaleuse, 1 );
 	//NSLog(@"タップ開始 %f, %f  タップ数：%d", location.x, location.y, taps);
 }
 
@@ -199,7 +206,7 @@ void gb_setogl( EAGLContext *context, GLuint viewRenderBuff, GLuint viewFrameBuf
 	
 	[super touchesMoved:touches withEvent:event];
 	
-	hgio_touch( newLocation.x * _scalefix, newLocation.y * _scalefix, 1 );
+	hgio_touch( newLocation.x * _scaleuse, newLocation.y * _scaleuse, 1 );
 	//NSLog(@"指の動き：%f , %f から %f, %f", oldLocation.x, oldLocation.y, newLocation.x, newLocation.y);
 }
 
@@ -210,7 +217,7 @@ void gb_setogl( EAGLContext *context, GLuint viewRenderBuff, GLuint viewFrameBuf
 	
 	[super touchesEnded:touches withEvent:event];
 	
-	hgio_touch( location.x * _scalefix, location.y * _scalefix, 0 );
+	hgio_touch( location.x * _scaleuse, location.y * _scaleuse, 0 );
 	//NSLog(@"タップ終了 %f, %f", location.x, location.y);	
 }
 

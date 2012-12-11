@@ -12,6 +12,7 @@
     int dialog_type;
     int disp_sx, disp_sy;
     CGFloat      _scalefix;
+    CGFloat      _scaleuse;
     int          _screenx;
     int          _screeny;
 //  Graphics* _g;
