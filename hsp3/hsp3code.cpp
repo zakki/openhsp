@@ -3099,7 +3099,11 @@ void code_execirq( IRQDAT *irq, int wparam, int lparam )
 		code_setpci( irq->ptr );
 	}
 	if ( irq->opt == IRQ_OPT_GOSUB ) {
-		code_call( irq->ptr );
+		mcs = mcsbak;
+		cmdfunc_gosub( (unsigned short *)irq->ptr );
+		if ( hspctx->runmode != RUNMODE_END ) {
+			hspctx->runmode = RUNMODE_RUN;
+		}
 	}
 	//Alertf("sublev%d", hspctx->sublev );
 }
