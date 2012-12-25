@@ -1524,6 +1524,7 @@ static void *reffunc_custom( int *type_res, int arg )
 		ptr = &hspctx->stat;
 		break;
 	default:
+		if ( hspctx->runmode == RUNMODE_END ) throw HSPERR_NONE;
 		throw HSPERR_NORETVAL;
 	}
 
@@ -2280,6 +2281,7 @@ void code_setpc( const unsigned short *pc )
 {
 	//		プログラムカウンタを設定
 	//
+	if ( hspctx->runmode == RUNMODE_END ) return;
 	mcs = (unsigned short *)pc;
 	code_next();
 	hspctx->runmode = RUNMODE_RUN;
@@ -2299,6 +2301,7 @@ void code_call( const unsigned short *pc )
 	//
 	mcs = mcsbak;
 	cmdfunc_gosub( (unsigned short *)pc );
+	if ( hspctx->runmode == RUNMODE_END ) return;
 	hspctx->runmode = RUNMODE_RUN;
 }
 

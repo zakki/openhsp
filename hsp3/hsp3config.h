@@ -9,8 +9,8 @@
 //
 #define HSPTITLE "OpenHSP ver." 
 #define hspver "3.32" 
-#define mvscode 6		// minor version code
-#define vercode 0x3315	// version code
+#define mvscode 7		// minor version code
+#define vercode 0x3316	// version code
 
 #define HSPERR_HANDLE		// HSPエラー例外を有効にします
 #define SYSERR_HANDLE		// システムエラー例外を有効にします
