@@ -101,6 +101,9 @@
 #define global SYSREQ_OBAQMATBUF 28
 #define global SYSREQ_2DFILTER2 29
 #define global SYSREQ_FPUPRESERVE 30
+#define global SYSREQ_DSSOFTWARE 31
+#define global SYSREQ_DSGLOBAL 32
+#define global SYSREQ_DSBUFSEC 33
 #define global SYSREQ_DEBUG $10000
 
 #define event_delobj(%1) event_prmset %1,PRMSET_FLAG,0
