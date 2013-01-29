@@ -14,7 +14,7 @@
 <body>
 	<div id="CONTAINER">
 	<!-- ヘッダー -->
-	<p id="COPY">HSP : HSP3Dish / onion software 2012(c)</p>
+	<p id="COPY">HSP : HSP3Dish / onion software 2013(c)</p>
 	<img src="hsp3dish.jpg" width="640" height="200" alt="タイトル">
 	<h1>HSP3Dish iOS版プログラミングガイド</h1>
 
@@ -118,13 +118,13 @@
 	</p>
 	<img src="hsp3dish/s_proj3.jpg"><br>
 	<p>
-	デフォルトで、Deployment Target(対応OSのバージョン)が5.0に設定されているので、
-	幅広いターゲットでも動作するよう、OS4.3以降に下げておくことを推奨します。
+	デフォルトで、Deployment Target(対応OSのバージョン)が5.0以降に設定されているので、
+	4.3以降に下げておいてください。(バージョン指定によって正しくビルドされないことがあります)
 	</p>
 	<img src="hsp3dish/s_xcode45.jpg"><br>
 	<p>
 	XCodeのバージョン4.5以降では、コンパイラの設定を変更する必要があります。<br>
-	プロジェクトのBuild Settingsの中にある、Apple LLVM compiler 4.1 - Language内のオプション、「C++ Language Dialect」「C++ Standard Library」をともに「Compiler Default」に変更してください。<br>
+	プロジェクトのBuild Settingsの中にある、Apple LLVM compiler 4.1 - Language内のオプション、「C Language Dialect」「C++ Language Dialect」「C++ Standard Library」をすべて「Compiler Default」に変更してください。<br>
 	以前のXCodeで作成されたプロジェクトファイルは問題なく読み込みビルドすることが可能です。
 	</p>
 

@@ -655,8 +655,8 @@ static int cmdfunc_extcmd( int cmd )
 	case 0x02:								// exec
 		{
 		char *ps;
-		char fname[_MAX_PATH];
-		strncpy( fname, code_gets(), _MAX_PATH-1 );
+		char *fname;
+		fname = code_stmpstr( code_gets() );
 		p1 = code_getdi( 0 );
 		ps = code_getds( "" );
 		ExecFile( fname, ps, p1 );

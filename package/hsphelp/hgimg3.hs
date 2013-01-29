@@ -5,11 +5,11 @@
 %type
 拡張命令
 %ver
-3.3
+3.32
 %note
 hgimg3.asをインクルードすること。
 %date
-2010/04/20
+2013/01/29
 %author
 onitama
 %dll
@@ -549,6 +549,9 @@ type値で指定できるのは以下のシンボルです。
 	SYSREQ_OBAQMATBUF OBAQ用マテリアルバッファ数
 	SYSREQ_2DFILTER2   2D直接描画時のテクスチャ補間モード
 	SYSREQ_FPUPRESERVE FPU演算精度設定オプション(0=単精度/1=変更なし)
+	SYSREQ_DSSOFTWARE  ソフトウェアサウンドバッファの使用(1=ON,0=OFF)
+	SYSREQ_DSGLOBAL    グローバルサウンドフォーカス(1=ON,0=OFF)
+	SYSREQ_DSBUFSEC    oggストリーム再生バッファのサイズ(秒数)
 ^p
 %href
 hgini

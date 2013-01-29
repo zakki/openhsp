@@ -1,6 +1,6 @@
 ------------------------------------------------------------------------------
-HGIMG ver3.31   REFERENCE MANUAL       High Performance Graphic Image Plugin  
-ＨＳＰ拡張DLLリファレンス             copyright 2001-2012 (c) onion software  
+HGIMG ver3.32   REFERENCE MANUAL       High Performance Graphic Image Plugin  
+ＨＳＰ拡張DLLリファレンス             copyright 2001-2013 (c) onion software  
 ------------------------------------------------------------------------------
 
 ・はじめに
@@ -152,6 +152,12 @@ HGIMG ver3.31   REFERENCE MANUAL       High Performance Graphic Image Plugin
 
 ・更新履歴
 
+	2013/01/29 ( Ver3.32RC1 )
+
+		ogg再生時のループポイントが初期化されない不具合を修正
+2		ogg再生時のDirectSoundソフトウェアバッファを使用スイッチを追加
+		ogg再生時のストリームバッファサイズ設定を追加
+2
 	2012/06/14 ( Ver3.31β1 )
 
 		テンプレート定義の含まれていないxファイルの読み込みに対応
@@ -2578,7 +2584,7 @@ HGIMG ver3.31   REFERENCE MANUAL       High Performance Graphic Image Plugin
 	行なっていませんので、別途資料やツールをご用意下さい。
 
 
-・OBAQサポート機能について(new)
+・OBAQサポート機能について
 
 	OBAQ(物理エンジン)プラグインと連携して、表示のサポートを行なう機能が
 	追加されています。
@@ -2667,7 +2673,7 @@ HGIMG ver3.31   REFERENCE MANUAL       High Performance Graphic Image Plugin
 		qmat2 0, 0,0, 0,16	; 線の太さ(zoomy)
 
 
-・FPU精度設定オプションについて(new)
+・FPU精度設定オプションについて
 
 	DirectX初期化時に、浮動小数演算ユニット(FPU)の精度がfloat(32bit)に
 	設定されます。これにより、通常double(64bit)で演算されていたものも
@@ -2684,6 +2690,54 @@ HGIMG ver3.31   REFERENCE MANUAL       High Performance Graphic Image Plugin
 		hgini
 
 
+・サウンドに関する詳細設定について(new)
+
+	サウンドの再生機能に関する詳細設定をhgsetreq命令で行なうことが可能です。
+	hgsetreq命令には、以下の設定項目が用意されています。
+
+	・SYSREQ_DSSOFTWARE
+
+	ソフトウェアサウンドバッファの使用を設定します(1=ON,0=OFF)
+	(デフォルトは1=ONです)
+	ソフトウェアサウンドバッファは、CPUによるサウンドのミキシングを
+	行なうための設定です。「0=OFF」を設定することにより、ハードウェアの
+	ミキシングが有効になります。これは、古いハードウェアやOS上での
+	CPU負荷低減につながります。
+	Windows Vista以降はソフトウェアサウンドバッファを使用することが
+	推奨されています。通常はデフォルト(1=ON)で問題ありません。
+
+	・SYSREQ_DSGLOBAL
+
+	グローバルサウンドフォーカス(1=ON,0=OFF)
+	(デフォルトは1=ONです)
+	グローバルサウンドフォーカスは、アプリケーションのウインドウが有効
+	(フォーカスされている)場合のみサウンドを再生するかを設定します。
+	デフォルト(1=ON)では、グローバルサウンドフォーカスは有効となり、
+	常にサウンドが再生される状態となります。
+	「0=OFF」を設定することにより、アプリケーションのウインドウが
+	フォーカスされていない時にはサウンドも再生されない状態となります。
+
+	・SYSREQ_DSBUFSEC
+
+	oggストリーム再生バッファのサイズ(秒数)
+	(デフォルトは2です)
+	oggストリームを再生するための内部バッファのサイズを指定します。
+	デフォルトでは2(秒)となっています。通常は、変更する必要ありませんが、
+	ファイルアクセスを抑えたい場合や負荷を軽減するためにより長い時間を
+	割り当てる際に設定してください。
+	長い秒数を指定すれば、それだけメモリが多く消費されます。
+
+	----------------------------------------------------------------------
+
+	サウンドの詳細設定は、必ずdmmini命令を実行する前に設定を行なってください。
+	dmmini命令が実行された時点で、内容が反映されます。
+
+		hgsetreq SYSREQ_DSBUFSEC,2	; ストリームバッファのサイズ(秒数)
+		hgsetreq SYSREQ_DSGLOBAL,1	; フォーカス外でもサウンドを再生するフラグ(1=ON,0=OFF)
+		hgsetreq SYSREQ_DSSOFTWARE,1	; ソフトウェアバッファを使用するフラグ(1=ON,0=OFF)
+		dmmini
+
+
 ・HGIMG3対応ツールについて
 
 	HGIMG3に対応した3Dツールとして以下のものを推奨しています。
@@ -2696,7 +2750,7 @@ HGIMG ver3.31   REFERENCE MANUAL       High Performance Graphic Image Plugin
 	います。MX形式、X形式での出力に対応しています。
 
 	[おちゃっこLAB]
-	http://www5d.biglobe.ne.jp/~ochikko/
+	http://ochakkolab.moo.jp/
 
 	ボーンによるモーションを付けるためのツール、RokDeBone2が公開されています。
 	Metasequoiaと六角大王のデータを利用することができ、IKにも対応しています。
@@ -2711,23 +2765,6 @@ HGIMG ver3.31   REFERENCE MANUAL       High Performance Graphic Image Plugin
 	3Dデータの作成を行ないx形式で出力することが可能です。
 	Metasequoia自身や、プラグインでかなり多種のフォーマット読み込みに
 	対応しているため既存の3Dファイルからの変換の可能性がぐんと広がります。
-
-	[game space]
-	http://www.caligari.com/gamespace/
-
-	ゲーム用のポリゴンモデル、アニメーションに特化したツールです。
-	直感的なインターフェースで作業でき、いくつかの制限があるものの、
-	フリー版も用意されています。x形式での出力に対応しています。
-
-	[SOFTIMAGE|XSI Mod Tool]
-	http://www.softimage.jp/modtool/
-
-	これは、かなり本格的なツールです。
-	もともとプロ用3Dソフトである、SOFTIMAGE|XSIの機能を制限
-	して無料版として配布しているものですが、ほとんどの機能は
-	そのまま利用することができます。(ただし商用利用禁止)
-	モデルやアニメーション作成も非常に高機能ですが、そのぶん
-	使い方を覚えるのに時間がかかるのが難点かもしれません。
 
 
 -------------------------------------------------------------------------------

@@ -14,7 +14,7 @@
 <body>
 	<div id="CONTAINER">
 	<!-- ヘッダー -->
-	<p id="COPY">HSP : HSP3Dish / onion software 2012(c)</p>
+	<p id="COPY">HSP : HSP3Dish / onion software 2013(c)</p>
 	<img src="hsp3dish.jpg" width="640" height="200" alt="タイトル">
 	<h1>HSP3Dish プログラミングマニュアル・基本仕様ガイド</h1>
 
@@ -33,6 +33,7 @@
 		<li><a href="#INIFILE">起動設定ファイルについて</a></li>
 		<li><a href="#EXCHANGE">他プラットフォームへの変換</a></li>
 		<li><a href="#INPUT">各種入力への対応について</a></li>
+		<li><a href="#KNOWNBUG">既知の不具合について</a></li>
 		<li><a href="#LICENCE">著作権とライセンス</a></li>
 		<li><a href="#CONTACT">連絡先</a></li>
 	</ol>
@@ -57,6 +58,13 @@
 	HSP3Dishは、現在まだ制約や未実装の機能がありますが、
 	新しいHSP3の流れとして今後も進化を続ける予定です。どうぞご期待ください。
 	</p>
+	<p>
+	公式サイトHSPTV!上に、HSP3Dishについての紹介ページが用意されています。
+	HSP3Dishについての最新情報や、ユーザー作品や資料など役立つ情報が集められていますので、ぜひご覧ください。
+	</p>
+	<ul><p>
+	<a href="http://hsp.tv/make/hsp3dish.html" target="_blank">HSP3Dishサポートページ<br>http://hsp.tv/make/hsp3dish.html</a><br>
+	</p></ul>
 
 	<h2 id="DISHUSE">HSP3Dishの使用方法</h2>
 	<p>
@@ -353,6 +361,13 @@
 	Windows上で擬似的にテストできるシステムの作成を検討しています。
 	</p>
 
+	<h2 id="KNOWNBUG">既知の不具合について</h2>
+	<p>
+	<li>#defcfuncによる複数パラメーターを持つユーザー定義関数の呼び出しで、パラメーター省略時に正しく実行が行なわれない不具合が報告されています
+	<li>split命令は現在正しく動作していません。getstr命令などにより代用下さい
+	<li>PNGデコーダーの違いによりWindows上で表示できる画像が、iOS,androidで表示できない場合があります
+	</p>
+
 	<h2 id="LICENCE">著作権とライセンス</h2>
 	<p><b>
 	ユーザーが、HSP3Dishを使って作成したオリジナルのソフトウェア(実行ファイル)の権利は、それを作成したユーザーに属します。<br>
@@ -370,7 +385,7 @@
 	</p>
 	<p>
 	HSP3Dishは、OpenHSP技術からの派生により作成されています。
-	HSP3Dish及びOpenHSPに含まれるファイルは、BSDライセンスのもと自由に添付・複製・改編・再配布することが
+	HSP3Dish及びOpenHSPに含まれるファイル及びソースコードは、BSDライセンスのもと自由に添付・複製・改編・再配布することが
 	できます。その際には<a href="License_j.txt">ライセンス表記(License_j.txt)</a>を明示するようにしてください。
 	</p>
 	<p>
