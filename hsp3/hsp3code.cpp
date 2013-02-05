@@ -1196,14 +1196,14 @@ static int code_callfunc( int cmd )
 		if ( dbgmode ) code_dbgtrace();					// トレースモード時の処理
 #endif
 		if ( GetTypeInfoPtr( type )->cmdfunc( val ) ) {	// タイプごとの関数振り分け
+			if ( hspctx->runmode == RUNMODE_END ) {
+				throw HSPERR_NONE;
+			}
 			if ( hspctx->runmode == RUNMODE_RETURN ) {
 				cmdfunc_return();
 				break;
 			} else {
 				hspctx->msgfunc( hspctx );
-			}
-			if ( hspctx->runmode == RUNMODE_END ) {
-				return RUNMODE_END;
 			}
 		}
 	}
@@ -1524,7 +1524,9 @@ static void *reffunc_custom( int *type_res, int arg )
 		ptr = &hspctx->stat;
 		break;
 	default:
-		if ( hspctx->runmode == RUNMODE_END ) throw HSPERR_NONE;
+		if ( hspctx->runmode == RUNMODE_END ) {
+			throw HSPERR_NONE;
+		}
 		throw HSPERR_NORETVAL;
 	}
 
