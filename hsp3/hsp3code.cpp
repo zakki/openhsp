@@ -2650,15 +2650,26 @@ void code_termfunc( void )
 
 	//		モジュール変数デストラクタ呼び出し
 	//
+#ifdef HSPERR_HANDLE
+	try {
+#endif
 	prmmax = hspctx->hsphed->max_val;
 	pval = hspctx->mem_var;
 	for(i=0;i<prmmax;i++) {
 		if ( pval->flag == HSPVAR_FLAG_STRUCT ) code_delstruct_all( pval );
 		pval++;
 	}
+#ifdef HSPERR_HANDLE
+	}
+	catch( ... ) {
+	}
+#endif
 
 	//		クリーンアップモジュールの呼び出し
 	//
+#ifdef HSPERR_HANDLE
+	try {
+#endif
 	prmmax = hspctx->hsphed->max_finfo / sizeof(STRUCTDAT);
 	i = prmmax;
 	while(1) {
@@ -2668,6 +2679,11 @@ void code_termfunc( void )
 			code_callfunc( i );
 		}
 	}
+#ifdef HSPERR_HANDLE
+	}
+	catch( ... ) {
+	}
+#endif
 
 	//		タイプの終了関数をすべて呼び出す
 	//
