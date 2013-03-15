@@ -152,6 +152,11 @@ HGIMG ver3.32   REFERENCE MANUAL       High Performance Graphic Image Plugin
 
 ・更新履歴
 
+	2013/03/15 ( Ver3.32a )
+
+		3.32リリース版でfvdirなどfv～系の命令で正しくベクトル値が反映されない不具合を修正
+
+
 	2013/01/29 ( Ver3.32RC1 )
 
 		ogg再生時のループポイントが初期化されない不具合を修正
