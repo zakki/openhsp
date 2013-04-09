@@ -310,6 +310,36 @@ static int *code_getiv( void )
 	return (int *)HspVarCorePtrAPTR( pval, 0 );
 }
 
+static int *code_getiv2( PVal **out_pval )
+{
+	//		変数パラメーターを取得(PDATポインタ)(初期化あり)
+	//
+	PVal *pval;
+	int *v;
+	int size;
+	int dummy;
+
+	v = (int *)code_getvptr( &pval, &size );
+	if ( pval->flag != HSPVAR_FLAG_INT ) {
+		dummy = 0;
+		code_setva( pval, 0, HSPVAR_FLAG_INT, &dummy );
+		v = (int *)HspVarCorePtrAPTR( pval, 0 );
+	}
+	*out_pval = pval;
+	return v;
+}
+
+static void code_setivlen( PVal *pval, int len )
+{
+	//		配列変数を拡張(intのみ)
+	//
+	int ilen;
+	ilen = len;
+	if ( ilen < 1 ) ilen = 1;
+	pval->len[1] = ilen;						// ちょっと強引に配列を拡張
+	pval->size = ilen * sizeof(int);
+}
+
 
 /*------------------------------------------------------------*/
 /*
@@ -372,8 +402,8 @@ static int cmdfunc_extcmd( int cmd )
 	case 0x02:								// exec
 		{
 		char *ps;
-		char fname[HSP_MAX_PATH];
-		strncpy( fname, code_gets(), HSP_MAX_PATH-1 );
+		char *fname;
+		fname = code_stmpstr( code_gets() );
 		p1 = code_getdi( 0 );
 		ps = code_getds( "" );
 		ExecFile( fname, ps, p1 );
@@ -924,6 +954,49 @@ static int cmdfunc_extcmd( int cmd )
 		code_setva( p_pval, p_aptr, HSPVAR_FLAG_INT, &p2 );
 		break;
 		}
+
+	case 0x42:								// mmvol
+		break;
+	case 0x43:								// mmpan
+		break;
+	case 0x44:								// mmstat
+		break;
+	case 0x45:								// mtlist
+		{
+		int *p_ptr;
+		int p_size;
+		PVal *p_pval;
+		p_ptr = code_getiv2( &p_pval );				// 変数ポインタ取得
+		p_size = bmscr->listMTouch( p_ptr );		// マルチタッチリスト取得
+		code_setivlen( p_pval, p_size );			// 要素数を設定
+		ctx->stat = p_size;							// statに要素数を代入
+		break;
+		}
+	case 0x46:								// mtinfo
+		{
+		int *p_ptr;
+		HSP3MTOUCH *mt;
+		PVal *p_pval;
+		p_ptr = code_getiv2( &p_pval );				// 変数ポインタ取得
+		p1 = code_getdi( 0 );
+		mt = bmscr->getMTouch( p1 );
+		code_setivlen( p_pval, 4 );					// 要素数を設定
+		if ( mt ) {
+			p_ptr[0] = mt->flag;
+			p_ptr[1] = mt->x;
+			p_ptr[2] = mt->y;
+			p_ptr[3] = mt->pointid;
+			ctx->stat = mt->flag;
+		} else {
+			p_ptr[0] = -1;
+			p_ptr[1] = 0;
+			p_ptr[2] = 0;
+			p_ptr[3] = 0;
+			ctx->stat = -1;
+		}
+		break;
+		}
+
 
 #ifdef USE_DGOBJ
 	/* DG Graphics Support */

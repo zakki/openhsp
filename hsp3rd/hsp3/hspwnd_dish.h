@@ -90,6 +90,18 @@ typedef struct HSPOBJINFO
 #define HSPWND_TYPE_BGSCR 3
 #define HSPWND_TYPE_SSPREVIEW 4
 
+#define BMSCR_MAX_MTOUCH	16		// Max Points of Multi-Touch
+typedef struct HSP3MTOUCH
+{
+	//	HSP3VARSET structure
+	//
+	int flag;		// Touch Flag (1=ON/0=OFF)
+	int x;			// X Position
+	int y;			// Y Position
+	int pointid;	// Touch point ID
+} HSP3MTOUCH;
+
+
 enum {
 BMSCR_SAVEPOS_MOSUEX,
 BMSCR_SAVEPOS_MOSUEY,
@@ -159,6 +171,17 @@ public:
 
 	int AddHSPObjectButton( char *name, int eventid, void *callptr );
 	void SetButtonImage( int id, int bufid, int x1, int y1, int x2, int y2, int x3, int y3 );
+
+	void setMTouch( HSP3MTOUCH *mt, int x, int y, bool touch );
+	void setMTouchByPoint( int old_x, int old_y, int x, int y, bool touch );
+	void setMTouchByPointId( int pointid, int x, int y, bool touch );
+	HSP3MTOUCH *getMTouch( int id );
+	HSP3MTOUCH *getMTouchByPointId( int pointid );
+	HSP3MTOUCH *getMTouchByPoint( int x, int y );
+	HSP3MTOUCH *getMTouchNew( void );
+	void resetMTouch( void );
+	int listMTouch( int *outbuf );
+
 
 	//
 	//		Window data structure
@@ -239,6 +262,10 @@ public:
 	short	tapstat;					// TapStatus
 	short	tapinvalid;					// Invalid Tap Flag
 	HSPOBJINFO *cur_obj;				// Tap active objects
+
+	int		mtouch_num;					// Active Multi-Touch points
+	HSP3MTOUCH mtouch[BMSCR_MAX_MTOUCH];	// Multi-Touch Info
+
 private:
 //	void Blt( int mode, Bmscr *src, int xx, int yy, int asx, int asy );
 //	void CnvRGB16( PTRIVERTEX target, DWORD src );
@@ -374,6 +401,10 @@ typedef struct BMSCR
 	short	tapstat;					// TapStatus
 	short	tapinvalid;					// Invalid Tap Flag
 	HSPOBJINFO *cur_obj;				// Tap active objects
+
+	int		mtouch_num;					// Active Multi-Touch points
+	HSP3MTOUCH mtouch[BMSCR_MAX_MTOUCH];	// Multi-Touch Info
+
 } BMSCR;
 
 #endif

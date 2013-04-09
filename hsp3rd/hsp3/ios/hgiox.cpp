@@ -1287,7 +1287,7 @@ void hgio_fcopy( float distx, float disty, short xx, short yy, short srcsx, shor
 }
 
 
-void hgio_copy( BMSCR *bm, short xx, short yy, short srcsx, short srcsy, BMSCR *bmsrc, float psx, float psy )
+void hgio_copy( BMSCR *bm, short xx, short yy, short srcsx, short srcsy, BMSCR *bmsrc, float s_psx, float s_psy )
 {
 	//		画像コピー
 	//		texid内の(xx,yy)-(xx+srcsx,yy+srcsy)を現在の画面に(psx,psy)サイズでコピー
@@ -1300,8 +1300,27 @@ void hgio_copy( BMSCR *bm, short xx, short yy, short srcsx, short srcsy, BMSCR *
 	if ( tex->mode == TEXMODE_NONE ) return;
 
     GLfloat *flp;
-    GLfloat x1,y1,x2,y2;
-    float ratex,ratey;
+    GLfloat x1,y1,x2,y2,tx0,tx1,ty0,ty1;
+    float psx,psy,ratex,ratey;
+
+    if ( s_psx < 0.0f ) {
+        psx = -s_psx;
+        tx1 = ((GLfloat)xx);
+        tx0 = ((GLfloat)(xx+srcsx));
+    } else {
+        psx = s_psx;
+        tx0 = ((GLfloat)xx);
+        tx1 = ((GLfloat)(xx+srcsx));
+    }
+    if ( s_psy < 0.0f ) {
+        psy = -s_psy;
+        ty1 = ((GLfloat)yy);
+        ty0 = ((GLfloat)(yy+srcsy));
+    } else {
+        psy = s_psy;
+        ty0 = ((GLfloat)yy);
+        ty1 = ((GLfloat)(yy+srcsy));
+    }
     
     flp = vertf2D;
     x1 = (GLfloat)bm->cx;
@@ -1318,32 +1337,30 @@ void hgio_copy( BMSCR *bm, short xx, short yy, short srcsx, short srcsy, BMSCR *
     *flp++ = x2;
     *flp++ = y2;
 
-    //ratex = 1.0f / image.width;
-    //ratey = 1.0f / image.height;
+	if ( _uvfix ) {
+        tx0 += 0.5f;
+        ty0 += 0.5f;
+        tx1 -= 0.5f;
+        ty1 -= 0.5f;
+	}
     ratex = tex->ratex;
     ratey = tex->ratey;
 
     flp = uvf2D;
-	if ( _uvfix ) {
-	    x1 = (((GLfloat)xx) + 0.5f) * ratex;
-	    y1 = (((GLfloat)yy) + 0.5f) * ratey;
-	    x2 = ((GLfloat)(xx+srcsx) - 0.5f) * ratex;
-	    y2 = ((GLfloat)(yy+srcsy) - 0.5f) * ratey;
-	} else {
-	    x1 = ((GLfloat)xx) * ratex;
-	    y1 = ((GLfloat)yy) * ratey;
-	    x2 = ((GLfloat)(xx+srcsx)) * ratex;
-	    y2 = ((GLfloat)(yy+srcsy)) * ratey;
-	}
+
+    tx0 *= ratex;
+    ty0 *= ratey;
+    tx1 *= ratex;
+    ty1 *= ratey;
     
-    *flp++ = x1;
-    *flp++ = y1;
-    *flp++ = x1;
-    *flp++ = y2;
-    *flp++ = x2;
-    *flp++ = y1;
-    *flp++ = x2;
-    *flp++ = y2;
+    *flp++ = tx0;
+    *flp++ = ty0;
+    *flp++ = tx0;
+    *flp++ = ty1;
+    *flp++ = tx1;
+    *flp++ = ty0;
+    *flp++ = tx1;
+    *flp++ = ty1;
 
 	ChangeTex( tex->texid );
 //    glBindTexture( GL_TEXTURE_2D, tex->texid );
@@ -1645,8 +1662,6 @@ void hgio_touch( int xx, int yy, int button )
     Bmscr *bm;
 	mouse_x = ( xx - _originX ) * _rateX;
 	mouse_y = ( yy - _originY ) * _rateY;
-//	mouse_x = xx * _rateX - _originX;
-//	mouse_y = yy * _rateY - _originY;
 	mouse_btn = button;
     if ( mainbm != NULL ) {
         mainbm->savepos[BMSCR_SAVEPOS_MOSUEX] = mouse_x;
@@ -1654,7 +1669,58 @@ void hgio_touch( int xx, int yy, int button )
         mainbm->tapstat = button;
         bm = (Bmscr *)mainbm;
         bm->UpdateAllObjects();
+        bm->setMTouchByPointId( 0, mouse_x, mouse_y, button!=0 );
     }
+}
+
+void hgio_mtouch( int old_x, int old_y, int xx, int yy, int button, int opt )
+{
+    Bmscr *bm;
+    int x,y,old_x2,old_y2;
+    if ( mainbm == NULL ) return;
+    bm = (Bmscr *)mainbm;
+	x = ( xx - _originX ) * _rateX;
+	y = ( yy - _originY ) * _rateY;
+    if ( opt == 0) {
+        mouse_x = x;
+        mouse_y = y;
+        mouse_btn = button;
+        mainbm->savepos[BMSCR_SAVEPOS_MOSUEX] = mouse_x;
+        mainbm->savepos[BMSCR_SAVEPOS_MOSUEY] = mouse_y;
+        mainbm->tapstat = button;
+        bm->UpdateAllObjects();
+    }
+    if ( old_x >= 0 ) {
+        old_x2 = ( old_x - _originX ) * _rateX;
+    } else {
+        old_x2 = old_x;
+    }
+    if ( old_y >= 0 ) {
+        old_y2 = ( old_y - _originY ) * _rateY;
+    } else {
+        old_y2 = old_y;
+    }
+    bm->setMTouchByPoint( old_x2, old_y2, x, y, button!=0 );
+}
+
+void hgio_mtouchid( int pointid, int xx, int yy, int button, int opt )
+{
+    Bmscr *bm;
+    int x,y;
+    if ( mainbm == NULL ) return;
+    bm = (Bmscr *)mainbm;
+	x = ( xx - _originX ) * _rateX;
+	y = ( yy - _originY ) * _rateY;
+    if ( opt == 0 ) {
+        mouse_x = x;
+        mouse_y = y;
+        mouse_btn = button;
+        mainbm->savepos[BMSCR_SAVEPOS_MOSUEX] = mouse_x;
+        mainbm->savepos[BMSCR_SAVEPOS_MOSUEY] = mouse_y;
+        mainbm->tapstat = button;
+        bm->UpdateAllObjects();
+    }
+    bm->setMTouchByPointId( pointid, x, y, button!=0 );
 }
 
 int hgio_getmousex( void )

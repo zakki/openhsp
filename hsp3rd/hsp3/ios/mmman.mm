@@ -235,7 +235,7 @@ static int SoundLoad( MMM *mmm, char *fname )
 	alSourcei( mmm->source, AL_BUFFER, mmm->buffer);
 	free(audioData);
 	mmm->flag = MMDATA_MCIVOICE;
-	//Alertf("#%s rate:%d size:%d ok.",fname,sampleRate,dataSize);
+	Alertf("#%s rate:%d size:%d ok.",fname,sampleRate,dataSize);
 	return 0;
 }
 
