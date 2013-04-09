@@ -41,6 +41,8 @@ static char optmes[] = "HSPHED~~\0_1_________2_________3______";
 static int hsp_wx, hsp_wy, hsp_wd, hsp_ss;
 static int drawflag;
 
+static	HWND m_hWnd;
+
 #ifndef HSPDEBUG
 static int hsp_sscnt, hsp_ssx, hsp_ssy;
 #endif
@@ -67,6 +69,71 @@ static int	timerid = 0;
 static void CALLBACK TimerFunc( UINT wID, UINT wUser, DWORD dwUser, DWORD dw1, DWORD dw2 )
 {
 	timecnt++;
+}
+
+//-------------------------------------------------------------
+//		Multi-Touch Interface
+//-------------------------------------------------------------
+
+#ifndef WM_TOUCH
+
+#define NID_MULTI_INPUT		0x40	// マルチタッチ可能フラグ
+#define NID_READY		0x80		// タッチ入力可能フラグ
+
+#define WM_GESTURE		0x0119
+#define WM_TOUCH		0x0240
+#define SM_DIGITIZER		94
+#define SM_MAXIMUMTOUCHES	95
+
+#define TOUCHEVENTF_MOVE	0x0001	//Movement has occurred. Cannot be combined with TOUCHEVENTF_DOWN.
+#define TOUCHEVENTF_DOWN	0x0002	//The corresponding touch point was established through a new contact. Cannot be combined with TOUCHEVENTF_MOVE or TOUCHEVENTF_UP.
+#define TOUCHEVENTF_UP	0x0004	//A touch point was removed.
+#define TOUCHEVENTF_INRANGE	0x0008	//A touch point is in range. This flag is used to enable touch hover support on compatible hardware.Applications that do not want support for hover can ignore this flag.
+#define TOUCHEVENTF_PRIMARY	0x0010	//Indicates that this TOUCHINPUT structure corresponds to a primary contact point. See the following text for more information on primary touch points.
+#define TOUCHEVENTF_NOCOALESCE	0x0020	//When received using GetTouchInputInfo, this input was not coalesced.
+#define TOUCHEVENTF_PALM	0x0080	//The touch event came from the user's palm.
+
+typedef struct _TOUCHINPUT { 
+LONG x; 
+LONG y; 
+HANDLE hSource; 
+DWORD dwID; 
+DWORD dwFlags; 
+DWORD dwMask; 
+DWORD dwTime; 
+ULONG_PTR dwExtraInfo; 
+DWORD cxContact; 
+DWORD cyContact; 
+} TOUCHINPUT;
+
+#endif
+
+static	int mt_flag;				// マルチタッチ初期化モード(1=マルチタッチ/0=NORMAL)
+static	HMODULE h_user32;
+static	bool (WINAPI *i_RegisterTouchWindow)( HWND, int ); 
+static	bool (WINAPI *i_GetTouchInputInfo)( HANDLE, int, TOUCHINPUT *, int );
+static	bool (WINAPI *i_CloseTouchInputHandle)( HANDLE ); 
+static	TOUCHINPUT touchinput[BMSCR_MAX_MTOUCH];
+
+static void	MTouchInit( HWND hwnd )
+{
+	int sysmet;
+	mt_flag = 0;
+	i_RegisterTouchWindow = NULL;
+	i_CloseTouchInputHandle = NULL;
+	sysmet = GetSystemMetrics( SM_DIGITIZER );
+	if (( sysmet & NID_READY ) == 0 ) return;
+	if (( sysmet & NID_MULTI_INPUT ) == 0 ) return;
+	h_user32 = GetModuleHandle("USER32.DLL");
+	if ( h_user32 ) {
+		i_RegisterTouchWindow = (bool (WINAPI *)( HWND, int )) GetProcAddress(h_user32, "RegisterTouchWindow" ); 
+		i_CloseTouchInputHandle =(bool (WINAPI *)( HANDLE )) GetProcAddress(h_user32, "CloseTouchInputHandle" ); 
+		i_GetTouchInputInfo = (bool (WINAPI *)( HANDLE, int, TOUCHINPUT *, int )) GetProcAddress(h_user32, "GetTouchInputInfo" ); 
+		if ( i_RegisterTouchWindow ) {
+			i_RegisterTouchWindow( hwnd, 0 );
+			mt_flag = 1;
+		}
+	}
 }
 
 /*----------------------------------------------------------*/
@@ -125,8 +192,6 @@ static int	GetIniFileInt( char *keyword )
 
 /*----------------------------------------------------------*/
 
-static	HWND m_hWnd;
-
 LRESULT CALLBACK WndProc( HWND hwnd, UINT uMessage, WPARAM wParam, LPARAM lParam )
 {
 	switch (uMessage)
@@ -160,11 +225,22 @@ LRESULT CALLBACK WndProc( HWND hwnd, UINT uMessage, WPARAM wParam, LPARAM lParam
 	case WM_MOUSEMOVE:
 		{
 		Bmscr *bm;
+		int x,y;
 		if ( exinfo != NULL ) {
 			bm = (Bmscr *)exinfo->HspFunc_getbmscr(0);
-			bm->savepos[BMSCR_SAVEPOS_MOSUEX] = LOWORD(lParam);
-			bm->savepos[BMSCR_SAVEPOS_MOSUEY] = HIWORD(lParam);
+			x = LOWORD(lParam); y = HIWORD(lParam);
+			bm->savepos[BMSCR_SAVEPOS_MOSUEX] = x;
+			bm->savepos[BMSCR_SAVEPOS_MOSUEY] = y;
 			bm->UpdateAllObjects();
+			if ( bm->tapstat ) {
+				if ( mt_flag ) {
+					if( GetMessageExtraInfo() == 0 ) {
+						bm->setMTouchByPointId( -1, x, y, true );
+					}
+				} else {
+					bm->setMTouchByPointId( -1, x, y, true );
+				}
+			}
 		}
 		return 0;
 		}
@@ -177,6 +253,13 @@ LRESULT CALLBACK WndProc( HWND hwnd, UINT uMessage, WPARAM wParam, LPARAM lParam
 			bm->savepos[BMSCR_SAVEPOS_MOSUEX] = -1;
 			bm->savepos[BMSCR_SAVEPOS_MOSUEY] = -1;
 			bm->UpdateAllObjects();
+			if ( mt_flag ) {
+				if( GetMessageExtraInfo() == 0 ) {
+					bm->setMTouchByPointId( -1, -1, -1, false );
+				}
+			} else {
+				bm->setMTouchByPointId( -1, -1, -1, false );
+			}
 		}
 		break;
 		}
@@ -187,6 +270,13 @@ LRESULT CALLBACK WndProc( HWND hwnd, UINT uMessage, WPARAM wParam, LPARAM lParam
 			bm = (Bmscr *)exinfo->HspFunc_getbmscr(0);
 			bm->tapstat = 0;
 			bm->UpdateAllObjects();
+			if ( mt_flag ) {
+				if( GetMessageExtraInfo() == 0 ) {
+					bm->setMTouchByPointId( -1, -1, -1, false );
+				}
+			} else {
+				bm->setMTouchByPointId( -1, -1, -1, false );
+			}
 		}
 		break;
 		}
@@ -197,6 +287,13 @@ LRESULT CALLBACK WndProc( HWND hwnd, UINT uMessage, WPARAM wParam, LPARAM lParam
 			bm = (Bmscr *)exinfo->HspFunc_getbmscr(0);
 			bm->tapstat = 1;
 			bm->UpdateAllObjects();
+			if ( mt_flag ) {
+				if( GetMessageExtraInfo() == 0 ) {
+					bm->setMTouchByPointId( -1, bm->savepos[BMSCR_SAVEPOS_MOSUEX], bm->savepos[BMSCR_SAVEPOS_MOSUEY], true );
+				}
+			} else {
+				bm->setMTouchByPointId( -1, bm->savepos[BMSCR_SAVEPOS_MOSUEX], bm->savepos[BMSCR_SAVEPOS_MOSUEY], true );
+			}
 
 			// WM_MOUSELEAVE メッセージの登録処理
 			TRACKMOUSEEVENT tme;
@@ -205,6 +302,42 @@ LRESULT CALLBACK WndProc( HWND hwnd, UINT uMessage, WPARAM wParam, LPARAM lParam
 			tme.hwndTrack = hwnd;
 			tme.dwHoverTime = HOVER_DEFAULT;
 			_TrackMouseEvent( &tme );
+		}
+		break;
+		}
+
+	case WM_TOUCH:
+		{
+		//			マルチタッチ入力の処理
+		int i;
+		bool res;
+		Bmscr *bm;
+		int num = LOWORD(wParam);
+		HANDLE ti = (HANDLE)lParam;
+		POINT touchpos;
+		TOUCHINPUT *tdata;
+		if ( exinfo == NULL ) break;
+		bm = (Bmscr *)exinfo->HspFunc_getbmscr(0);
+		if ( bm == NULL ) break;
+
+		res = i_GetTouchInputInfo( ti, num, touchinput, sizeof(TOUCHINPUT) );
+		if ( res ) {
+			tdata = touchinput;
+			for(i=0;i<num;i++) {
+				touchpos.x = tdata->x / 100;
+				touchpos.y = tdata->y / 100;
+				ScreenToClient( hwnd, &touchpos );
+				if ( tdata->dwFlags & ( TOUCHEVENTF_DOWN|TOUCHEVENTF_MOVE) ) {
+					bm->setMTouchByPointId( tdata->dwID, touchpos.x, touchpos.y, true );
+				} else {
+					if ( tdata->dwFlags & TOUCHEVENTF_UP ) {
+						bm->setMTouchByPointId( tdata->dwID, touchpos.x, touchpos.y, false );
+					}
+				}
+				tdata++;
+			}
+			i_CloseTouchInputHandle( ti );
+			return 0;
 		}
 		break;
 		}
@@ -254,6 +387,9 @@ static void hsp3dish_initwindow( HINSTANCE hInstance, int sx, int sy, char *wind
 	// 描画APIに渡す
 	hgio_init( 0, sx, sy, m_hWnd );
 	hgio_clsmode( CLSMODE_SOLID, 0xffffff, 0 );
+
+	// マルチタッチ初期化
+	MTouchInit( m_hWnd );
 
 	// HWNDをHSPCTXに保存する
 	ctx->wnd_parent = m_hWnd;

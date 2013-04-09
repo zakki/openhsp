@@ -1147,7 +1147,7 @@ void hgio_fillrot( BMSCR *bm, float x, float y, float sx, float sy, float ang )
 }
 
 
-void hgio_copy( BMSCR *bm, short xx, short yy, short srcsx, short srcsy, BMSCR *bmsrc, float psx, float psy )
+void hgio_copy( BMSCR *bm, short xx, short yy, short srcsx, short srcsy, BMSCR *bmsrc, float s_psx, float s_psy )
 {
 	//		画像コピー
 	//		texid内の(xx,yy)-(xx+srcsx,yy+srcsy)を現在の画面に(psx,psy)サイズでコピー
@@ -1155,12 +1155,32 @@ void hgio_copy( BMSCR *bm, short xx, short yy, short srcsx, short srcsy, BMSCR *
 	//
 	D3DTLVERTEX *v;
 	TEXINF *tex;
-	int texpx,texpy,texid;
+	int texid;
+	float psx,psy;
 	float x1,y1,x2,y2,sx,sy;
 	float tx0,ty0,tx1,ty1;
 
 	if ( bm == NULL ) return;
 	if ( bm->type != HSPWND_TYPE_MAIN ) throw HSPERR_UNSUPPORTED_FUNCTION;
+
+	if ( s_psx < 0.0 ) {
+		psx = -s_psx;
+		tx1 = ((float)xx);
+		tx0 = ((float)(xx + srcsx));
+	} else {
+		psx = s_psx;
+		tx0 = ((float)xx);
+		tx1 = ((float)(xx + srcsx));
+	}
+	if ( s_psy < 0.0 ) {
+		psy = -s_psy;
+		ty1 = ((float)yy);
+		ty0 = ((float)(yy + srcsy));
+	} else {
+		psy = s_psy;
+		ty0 = ((float)yy);
+		ty1 = ((float)(yy + srcsy));
+	}
 
 	x1 = ((float)bm->cx) - 0.5f;
 	y1 = ((float)bm->cy) - 0.5f;
@@ -1172,13 +1192,11 @@ void hgio_copy( BMSCR *bm, short xx, short yy, short srcsx, short srcsy, BMSCR *
 	tex = GetTex( texid );
 	sx = tex->ratex;
 	sy = tex->ratey;
-	texpx = xx + srcsx;
-	texpy = yy + srcsy;
 
-	tx0 = ((float)xx) * sx;
-	ty0 = ((float)yy) * sy;
-	tx1 = ((float)(texpx)) * sx;
-	ty1 = ((float)(texpy)) * sy;
+	tx0 *= sx;
+	tx1 *= sx;
+	ty0 *= sy;
+	ty1 *= sy;
 
 	v = vertex2D;
 	v[0].color = v[1].color = v[2].color = v[3].color = GetCopyTexAlpha( bm ) | 0xffffff;
