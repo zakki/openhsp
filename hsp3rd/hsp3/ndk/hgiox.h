@@ -83,6 +83,9 @@ void hgio_circleLine( float x, float y, float rx, float ry );
 void hgio_circleFill( float x, float y, float rx, float ry );
 
 void hgio_touch( int xx, int yy, int button );
+void hgio_mtouch( int old_x, int old_y, int xx, int yy, int button, int opt );
+void hgio_mtouchid( int pointid, int xx, int yy, int button, int opt );
+
 int hgio_getmousex( void );
 int hgio_getmousey( void );
 int hgio_getmousebtn( void );

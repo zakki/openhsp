@@ -27,6 +27,7 @@ void hgio_resume( void );
 void hgio_view( int sx, int sy );
 void hgio_scale( float xx, float yy );
 void hgio_autoscale( int mode );
+void hgio_uvfix( int mode );
 
 int hgio_render_start( void );
 int hgio_render_end( void );
