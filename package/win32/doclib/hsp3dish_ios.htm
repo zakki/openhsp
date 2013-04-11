@@ -71,7 +71,7 @@
 	iOSフォルダには、HSP3Dishランタイム及びxcode用のサンプルプロジェクトが含まれています。
 
 	<ul>
-	<li>iHSP17フォルダ - HSP3Dishランタイム本体</li>
+	<li>iHSP18フォルダ - HSP3Dishランタイム本体</li>
 	<li>hspprojフォルダ - HSP3Dishサンプル(hsplogo.hsp)</li>
 	<li>blockフォルダ - ブロック崩しサンプル(block3.hsp)</li>
 	<li>gcubeフォルダ - iPad用、d3module使用サンプル(xsample_gcube.hsp)</li>
@@ -130,14 +130,14 @@
 
 	<h2 id="ADDHSP">HSP3Dish関連ファイルの登録</h2>
 	<p>
-	作成されたプロジェクトのフォルダと同じ階層に、「iHSP17」フォルダを配置してください。
+	作成されたプロジェクトのフォルダと同じ階層に、「iHSP18」フォルダを配置してください。
 	「iHSPxx」フォルダはアーカイブ内のiOSフォルダに同梱されています。
 	</p>
 	<img src="hsp3dish/s_menu.jpg" style="float:right;">
 	<img src="hsp3dish/s_folder.jpg"><br>
 	<p>
 	XCode上でプロジェクトに必要なファイルを追加してください。<br>
-	Fileメニューから、「Add Files to～」を選択し、「iHSP17」のフォルダ(下層も含む)を追加(Add)します。<br>
+	Fileメニューから、「Add Files to～」を選択し、「iHSP18」のフォルダ(下層も含む)を追加(Add)します。<br>
 	さらに、Windows上で作成されたCソースファイル(拡張子が.cppのファイル)を追加(Add)します。<br>
 	</p>
 	<p>
@@ -148,6 +148,7 @@
 	<li>OpenAL.framework</li>
 	<li>OpenGLES.framework</li>
 	<li>QuartzCore.framework</li>
+	<li>iAd.framework</li>
 	</ul>
 	<p>
 	フレームワークの追加は、プロジェクトの「Summary」タブの「Linked Frameworks and Libraries」項目の「+」ボタンで行なうことができます。<br>
@@ -183,19 +184,19 @@
 	<h2 id="RUNPROJ">HSP3Dishの実行と設定</h2>
 	<p>
 	実際にHSP3Dishを実行させる場合は、HSPランタイムの初期化コードをAppDelegateに組み込む必要があります。
-	プロジェクトの作成時に自動的に生成される、AppDelegate.mファイルをエディタで開き編集するか、またはiOSフォルダに含まれているAppDelegate.mファイルを上書きコピーしてご使用下さい。
+	iOSフォルダに含まれているAppDelegate.m、AppDelegate.hファイルを上書きコピーしてご使用下さい。
 	</p>
 	<img src="hsp3dish/s_code2.jpg"><br>
 	<br>
 	<p>
-	冒頭の「#import "AppDelegate.h"」の下に以下のコードを追加してください。<br>
-	(「iHSP17」への相対パス指定によりクラス宣言を読み込んでいます)
+	冒頭の「#import "AppDelegate.h"」の下に以下のコードが追加されていることを確認してください。<br>
+	(「iHSP18」への相対パス指定によりクラス宣言を読み込んでいます)
 	</p>
 	<pre>
-	    #import "../../iHSP17/Classes/HspView.h"
+	    #import "../../iHSP18/Classes/HspView.h"
 	</pre>
 	<p>
-	次に「- (BOOL)application:～{」のあるブロック内の「// Override point for customization after application launch.」行の直前に以下のコードを追加してください。<br>
+	次に「- (BOOL)application:～{」のあるブロック内の「// Override point for customization after application launch.」行の直前に以下のコードがあることを確認してください。<br>
 	(HSPの実行を行なうHspViewクラスを生成しウィンドウに設定しています)
 	</p>
 	<pre>
@@ -203,15 +204,12 @@
 	    HspView* view=[[HspView alloc] initWithFrame:CGRectMake(0,0,320,480)];
 	    [view startFrame:60];
 	    [view clsMode:1 color:0xffffff];
-	    [self.window addSubview:view];
+	    hsp = [[HspViewController alloc] init];
+	    [hsp setHspView:view];
+	    self.window.rootViewController = hsp;
 	    [view release];
 	</pre>
 	<p>
-	さらに「self.window.backgroundColor =」のある行頭に「//」を追加してコードを無効にします。
-	<pre>
-	    // Override point for customization after application launch.
-	    //self.window.backgroundColor = [UIColor whiteColor];
-	</pre>
 	以下のようなコードになっているか確認してみてください。
 	</p>
 	<img src="hsp3dish/s_code.jpg"><br>
@@ -224,6 +222,12 @@
 	<p>
 	この設定により、左上(0,0)から(320,480)の範囲を描画フレームとしています。
 	320×480は、iPhone 3GSの設定に合わせてありますが、iPadなど他の解像度を利用する場合はこの値を変更する必要があります。
+	</p>
+	<pre>
+	    HspView* view=[[HspView alloc] initWithFrame:[[UIScreen mainScreen] applicationFrame]];
+	</pre>
+	<p>
+	有効な画面サイズ全体を描画フレームとする場合は、上のように書き換えることが可能です。
 	</p>
 	<pre>
 	    [view startFrame:60];
@@ -244,6 +248,13 @@
 	「clsMode:0」にした場合は画面のクリアは行なわれませんので、自前でクリアする必要があります。
 	(自前で画面クリアを行なう場合に、重複してクリアすることを避けるためのオプション設定になっています。)<br>
 	「color:0xffffff」は、クリアする色を指定するもので16進数によりRGBのコードを記述します。
+	</p>
+	<pre>
+	    [view useMultiTouch];
+	</pre>
+	<p>
+	この設定を追加することにより、mtlist,mtinfo命令によるマルチタッチ情報の取得が可能になります。<br>
+	この指定がない場合は、複数のポイントをタッチした場合でも、1つのタッチとみなされます。
 	</p>
 	<pre>
 	    [view dispRotate:1];
@@ -310,22 +321,20 @@
 	<br>
 
 	<p>
-	タスク切替時には、HSPの実行を停止し処理を軽減させることを推奨します。
-	作成した「AppDelegate.m」ファイルの、applicationWillResignActive内に以下を追加してください。
+	タスク切替時には、HSPの実行を停止し処理を軽減させる設定になっています。
+	「AppDelegate.m」ファイルの、applicationWillResignActive内に停止用のコードが含まれています。
 	</p>
 	<pre>
-	    HspView* view =(HspView*)[self.window.subviews objectAtIndex:0];
-	    [view actMode:0];
+	    [hsp actMode:0];
 	</pre>
 	<p>
-	次に、applicationDidBecomeActiveに以下のコードを追加してください。
+	また、applicationDidBecomeActiveに以下の再開用コードが含まれています。
 	</p>
 	<pre>
-	    HspView* view =(HspView*)[self.window.subviews objectAtIndex:0];
-	    [view actMode:1];
+	    [hsp actMode:1];
 	</pre>
 	<p>
-	既にサンプルには、これらのコードが含まれています。
+	既にサンプルには、これらの適切なコードが含まれていますので参考にしてみてください。
 	適切に設定を行なった上で、「Run」ボタンでビルド実行を行なってください。
 	HSP3Dishで作成したスクリプトが実行されるはずです。
 	</p>
@@ -353,7 +362,7 @@
 	プロジェクトに追加することで読み込み可能になります。<br>
 	リソースに、data.dpmファイルを追加することにより、複数ファイルがパックされたデータにアクセスすることが可能です。
 	data.dpmファイルは、Windows上のHSP開発システム上で作成可能です。詳しくは、dpmファイル、パックファイル等の項目を参照してください。
-	また、HSP3Dishでは、音声ファイル(wav、mp3など)やアイコンなどiOSのシステムがアクセスするファイルは含めることができませんのでご注意下さい。
+	また、HSP3Dishでは、音声ファイル(wav、mp3など)やアイコンなどiOSのシステムがアクセスするファイルは含めることができませんのでご注意下さい。ファイル名の長さ制限(12文字以内)などは、HSPのpackfile仕様と同様です。
 	</p>
 
 	<h2 id="EXECURL">exec命令のサポートについて</h2>
@@ -377,7 +386,7 @@
 
 	<h2 id="SENSOR">加速度センサーのサポートについて</h2>
 	<p>
-	iOS版では、加速度センサーをサポートしています。AppDelegate.mに必要な初期化を追加する必要があります。詳しくは、<a href="#RUNPROJ">HSP3Dishの実行と設定</a>をご覧ください。<br>
+	iOS版では、加速度センサーの情報取得をサポートしています。AppDelegate.mに必要な初期化を追加する必要があります。詳しくは、<a href="#RUNPROJ">HSP3Dishの実行と設定</a>をご覧ください。<br>
 	現在は、Windows版では加速度センサーと同様の値を読み取ることができないため、実行中のランタイムに応じて、テストを行なうコードを作成してテストを行なうようにしてください。
 	</p>
 
@@ -394,8 +403,6 @@
 	    [view clsMode:1 color:0xffffff];
 	    [view dispViewX:640 Y:960];
 	    [view dispAutoScale:0];
-	    [self.window addSubview:view];
-	    [view release];
 	</pre>
 	<p>
 	この設定により、Retinaディスプレイ搭載機種で正しく反映され、Retinaディスプレイでない機種では縮小サイズ(320×480)で表示されるようになります。
@@ -489,8 +496,6 @@
 	<ul>
 	<li>各種システム情報取得</li>
 	<li>機種による画面サイズ動的変更のサポート</li>
-	<li>サウンド再生時のボリュームコントロール</li>
-	<li>マルチタッチ入力情報の取得</li>
 	<li>http接続、ブラウザの呼び出しサポート</li>
 	<li>OBAQプラグイン機能のサポート</li>
 	</ul>

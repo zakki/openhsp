@@ -5,6 +5,8 @@
 #ifndef __mmman_h
 #define __mmman_h
 
+#define MMMAN_USE_DXSND		// Uses DirectSound function
+
 //	flags
 //
 enum
@@ -27,8 +29,10 @@ typedef struct MMM
 	int		flag;			//	bank mode (0=none/1=wav/2=mid/3=cd/4=avi)
 	int		opt;			//	option (0=none/1=loop/2=wait/16=fullscr)
 	int		num;			//	request number
-	short	track;			//	CD track No.
-	short	lasttrk;		//	CD last track No.
+	int		vol;			//  last volume ( -1000 to 0 )
+	int		pan;			//  last pan ( -1000 to 1000 )
+	short	track;			//	CD track No. ( SoundID )
+	short	lasttrk;		//	CD last track No. ( SoundID )
 	void	*mempt;			//	pointer to sound data
 	char	*fname;			//	sound filename (sbstr)
 } MMM;
@@ -53,12 +57,17 @@ public:
 	int Load( char *fname, int bank, int opt );
 	int Play( int bank );
 	void Stop( void );
+	void StopBank( int bank=-1 );
 	void Notify( void );
 
 	void GetInfo( int bank, char **fname, int *num, int *flag, int *opt );
 	int GetBusy( void );
 	void SetWindow( void *hwnd, int x, int y, int sx, int sy );
 	int GetBankMax( void ) { return mm_cur;  };
+
+	void SetVol( int bank, int vol );
+	void SetPan( int bank, int pan );
+	int GetStatus( int bank, int infoid );
 
 private:
 	int mm_cur;

@@ -90,6 +90,18 @@ typedef struct HSPOBJINFO
 #define HSPWND_TYPE_BGSCR 3
 #define HSPWND_TYPE_SSPREVIEW 4
 
+#define BMSCR_MAX_MTOUCH	16		// Max Points of Multi-Touch
+typedef struct HSP3MTOUCH
+{
+	//	HSP3VARSET structure
+	//
+	int flag;		// Touch Flag (1=ON/0=OFF)
+	int x;			// X Position
+	int y;			// Y Position
+	int pointid;	// Touch point ID
+} HSP3MTOUCH;
+
+
 enum {
 BMSCR_SAVEPOS_MOSUEX,
 BMSCR_SAVEPOS_MOSUEY,
@@ -97,6 +109,22 @@ BMSCR_SAVEPOS_MOSUEZ,
 BMSCR_SAVEPOS_MOSUEW,
 BMSCR_SAVEPOS_MAX,
 };
+
+typedef struct {
+	//	デバイスごとの情報
+	//	(*の項目は、親アプリケーションで設定されます)
+	//
+	char *devname;				// *デバイスランタイム名
+	char *error;				// *エラーメッセージ
+
+	//	ファンクション情報
+	//
+	int (*devprm)( char *name, char *value );	// パラメーター設定ファンクション
+	int (*devcontrol)( char *cmd, int p1, int p2, int p3 );	// コマンド受け取りファンクション
+	int *(*devinfoi)( char *name, int *size );	// int情報受け取りファンクション
+	char *(*devinfo)( char *name );				// str情報受け取りファンクション
+
+} HSP3DEVINFO;
 
 #define RESNAME_MAX 64
 
@@ -159,6 +187,17 @@ public:
 
 	int AddHSPObjectButton( char *name, int eventid, void *callptr );
 	void SetButtonImage( int id, int bufid, int x1, int y1, int x2, int y2, int x3, int y3 );
+
+	void setMTouch( HSP3MTOUCH *mt, int x, int y, bool touch );
+	void setMTouchByPoint( int old_x, int old_y, int x, int y, bool touch );
+	void setMTouchByPointId( int pointid, int x, int y, bool touch );
+	HSP3MTOUCH *getMTouch( int id );
+	HSP3MTOUCH *getMTouchByPointId( int pointid );
+	HSP3MTOUCH *getMTouchByPoint( int x, int y );
+	HSP3MTOUCH *getMTouchNew( void );
+	void resetMTouch( void );
+	int listMTouch( int *outbuf );
+
 
 	//
 	//		Window data structure
@@ -239,6 +278,10 @@ public:
 	short	tapstat;					// TapStatus
 	short	tapinvalid;					// Invalid Tap Flag
 	HSPOBJINFO *cur_obj;				// Tap active objects
+
+	int		mtouch_num;					// Active Multi-Touch points
+	HSP3MTOUCH mtouch[BMSCR_MAX_MTOUCH];	// Multi-Touch Info
+
 private:
 //	void Blt( int mode, Bmscr *src, int xx, int yy, int asx, int asy );
 //	void CnvRGB16( PTRIVERTEX target, DWORD src );
@@ -268,6 +311,7 @@ public:
 	int GetActive( void );
 	int GetBmscrMax( void ) { return bmscr_max; };
 	int GetEmptyBufferId( void );
+	HSP3DEVINFO *getDevInfo( void ) { return &devinfo; }
 
 	//	Data
 	//
@@ -287,6 +331,9 @@ private:
 	Bmscr **mem_bm;
 	int bmscr_max;
 	int bmscr_res;
+
+	//	Info for HSP3Dish Device
+	HSP3DEVINFO devinfo;
 };
 
 
@@ -374,6 +421,10 @@ typedef struct BMSCR
 	short	tapstat;					// TapStatus
 	short	tapinvalid;					// Invalid Tap Flag
 	HSPOBJINFO *cur_obj;				// Tap active objects
+
+	int		mtouch_num;					// Active Multi-Touch points
+	HSP3MTOUCH mtouch[BMSCR_MAX_MTOUCH];	// Multi-Touch Info
+
 } BMSCR;
 
 #endif

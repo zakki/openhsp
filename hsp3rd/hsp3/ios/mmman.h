@@ -40,6 +40,11 @@ public:
 	void SetWindow( void *hwnd, int x, int y, int sx, int sy );
 	int GetBankMax( void ) { return mm_cur;  };
 
+	void StopBank( int bank=-1 );
+	void SetVol( int bank, int vol );
+	void SetPan( int bank, int pan );
+	int GetStatus( int bank, int infoid );
+
 private:
 	int mm_cur;
 	MMM *mem_snd;

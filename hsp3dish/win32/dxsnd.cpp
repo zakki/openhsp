@@ -257,7 +257,7 @@ static void PlayOgg( SNDINF *snd )
 	ODXT_SetLoopPoint( odxt, snd->loopptr );
 	ODXT_StartFname( odxt, snd->fname, 0 );
 	ODXT_SetOutPan( odxt, snd->pan );
-	ODXT_SetOutVol( odxt, snd->volume );	// Startしたら必ず音量を設定しないとうまくならない場合がある?
+	ODXT_SetOutVol( odxt, snd->volume );
 	oggflag = OGGFLAG_PLAYING;
 #endif
 }
@@ -271,17 +271,8 @@ static void PlayOggPos( SNDINF *snd, int pos )
 	ODXT_SetLoopPoint( odxt, snd->loopptr );
 	ODXT_StartFname( odxt, snd->fname, pos );
 	ODXT_SetOutPan( odxt, snd->pan );
-	ODXT_SetOutVol( odxt, snd->volume );	// Startしたら必ず音量を設定しないとうまくならない場合がある?
+	ODXT_SetOutVol( odxt, snd->volume );
 	oggflag = OGGFLAG_PLAYING;
-	//if ( oggflag != OGGFLAG_PLAYING ) return;
-	//ODXT_StartLink( odxt, pos );
-	//ODXT_Stop( odxt );
-	//ODXT_Pause( odxt, true );
-	//ODXT_ResetEntry( odxt );
-	//ODXT_StartLink( odxt, pos );
-	//ODXT_Pause( odxt, false );
-	//Sleep( 1000 );
-	//ODXT_StartSeamless( odxt );
 #endif
 }
 
@@ -346,10 +337,9 @@ int SndInit( HWND hWnd )
 	// Initalize OGG lib.
 #ifdef USE_OGGVORBIS
 	ODXT_INIT_PARAM	param;
-	// ODX初期化パラメータの設定
 	param.lpDS = lpDirectSound;
-	param.use_software_soundbuffer = FALSE;	// オプショナル
-	param.focus_sound              = TRUE;	// オプショナル
+	param.use_software_soundbuffer = FALSE;
+	param.focus_sound              = TRUE;
 	ODXT_Init(&param);
 	oggflag = OGGFLAG_NONE;
 #endif
@@ -542,11 +532,11 @@ EXIT_LOAD:
 int SndRegistOgg( int newid, char *fname, int option )
 {
 	int id;
-	SNDINF *snd;
 	id = newid;
 	if ( sndflg ) return -1;
 
 #ifdef USE_OGGVORBIS
+	SNDINF *snd;
 	if ( id < 0 ) {
 		id = GetEmptyEntry();
 	} else {
@@ -668,7 +658,9 @@ int SndGetStatus( int id, int option )
 		{
 		DWORD status = 0;
 		snd->lpSoundBuffer->GetStatus( &status );
-		if (status == DSBSTATUS_PLAYING) return 1;
+		if (status & DSBSTATUS_PLAYING) {
+			return 1;
+		}
 		break;
 		}
 	case SNDFLAG_READY_OGG:

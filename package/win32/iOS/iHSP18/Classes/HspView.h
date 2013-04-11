@@ -1,6 +1,11 @@
 #import "Canvas.h"
 #import "Graphics.h"
 #import "Image.h"
+#import <iAd/iAd.h>
+
+#define ACTMODE_LOCK 2
+#define ACTMODE_NORMAL 1
+#define ACTMODE_STOP 0
 
 //HspViewの宣言
 @interface HspView : Canvas <UIAlertViewDelegate,UIAccelerometerDelegate> {
@@ -15,9 +20,13 @@
     CGFloat      _scaleuse;
     int          _screenx;
     int          _screeny;
-//  Graphics* _g;
-//	Image*    _image;
+
+    int          mt_flag;
+    bool         adview_enable;
+    int          adview_flag;
     UIAccelerometer *accelerometer;
+    UIViewController *parent;
+    
 }
 - (void)actMode:(int)amode;
 - (void)dispMode:(int)dmode;
@@ -28,10 +37,9 @@
 - (void)dispScaleX:(int)x Y:(int)y;
 - (void)dispAutoScale:(int)mode;
 - (void)UseAccelerometer:(float)freq;
+- (void)useMultiTouch;
 - (void)useRetina;
+- (void)setParent:(UIViewController *)controller;
 
-#define ACTMODE_LOCK 2
-#define ACTMODE_NORMAL 1
-#define ACTMODE_STOP 0
 
 @end

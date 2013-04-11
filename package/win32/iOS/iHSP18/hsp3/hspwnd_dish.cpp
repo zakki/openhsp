@@ -19,6 +19,11 @@
 
 HspWnd *curwnd;
 
+#ifdef HSPWIN
+#include <windows.h>
+HWND hgio_gethwnd( void );
+#endif
+
 /*------------------------------------------------------------*/
 /*
 		constructor
@@ -65,6 +70,12 @@ int HspWnd::GetActive( void )
 {
 	//
 	//		detect active window
+#ifdef HSPWIN
+	HWND hwnd;
+	hwnd = hgio_gethwnd();
+	if ( GetActiveWindow() != hwnd ) return -1;
+#endif
+
 	return 0;
 }
 
@@ -124,6 +135,9 @@ void HspWnd::Reset( void )
 #endif
 
 	curwnd = this;
+
+	//	Reset DevInfo
+	memset( &devinfo, 0, sizeof(HSP3DEVINFO) );
 }
 
 
@@ -355,6 +369,9 @@ void Bmscr::Cls( int mode )
 	if ( wid == 0 ) {
 		hgio_screen( (BMSCR *)this );
 	}
+
+	//		Multi-Touch Reset
+	resetMTouch();
 }
 
 
@@ -718,4 +735,141 @@ void Bmscr::SquareTex( int *dst_x, int *dst_y, Bmscr *src, int *src_x, int *src_
 	hgio_square_tex( (BMSCR *)this, dst_x, dst_y, (BMSCR *)src, src_x, src_y );
 }
 
+/*----------------------------------------------------------------*/
+
+void Bmscr::setMTouch( HSP3MTOUCH *mt, int x, int y, bool touch )
+{
+	if ( mt == NULL ) return;
+	if ( touch == false ) {
+		mt->flag = 0;
+		return;
+	}
+	mt->flag = 1;
+	mt->x = x;
+	mt->y = y;
+}
+
+
+void Bmscr::setMTouchByPoint( int old_x, int old_y, int x, int y, bool touch )
+{
+	HSP3MTOUCH *mt;
+	mt = getMTouchByPoint( old_x, old_y );
+	if ( mt == NULL ) {
+		mt = getMTouchNew();
+	}
+	setMTouch( mt, x, y, touch );
+}
+
+
+void Bmscr::setMTouchByPointId( int pointid, int x, int y, bool touch )
+{
+	HSP3MTOUCH *mt;
+	mt = getMTouchByPointId( pointid );
+	if ( mt == NULL ) {
+		mt = getMTouchNew();
+		if ( mt == NULL ) return;
+		mt->pointid = pointid;
+	}
+	setMTouch( mt, x, y, touch );
+}
+
+
+HSP3MTOUCH *Bmscr::getMTouch( int touchid )
+{
+	if ( touchid < 0 ) return NULL;
+	if ( touchid >= BMSCR_MAX_MTOUCH ) return NULL;
+	return &mtouch[touchid];
+}
+
+
+void Bmscr::resetMTouch( void )
+{
+	int i;
+	HSP3MTOUCH *mt;
+	mt = mtouch;
+	mtouch_num = 0;
+	for(i=0;i<BMSCR_MAX_MTOUCH;i++) {
+		mt->flag = 0;
+		mt->x = 0; mt->y = 0;
+		mt->pointid = -2;
+		mt++;
+	}
+
+	//	Test
+	//addMTouch( 1, 123,456, true );
+	//addMTouch( 5, 222,333, true );
+}
+
+
+HSP3MTOUCH *Bmscr::getMTouchByPointId( int pointid )
+{
+	int i;
+	HSP3MTOUCH *mt;
+	mt = mtouch;
+	for(i=0;i<BMSCR_MAX_MTOUCH;i++) {
+		if ( mt->flag ) {
+			if ( mt->pointid == pointid ) {
+				return mt;
+			}
+		}
+		mt++;
+	}
+	return NULL;
+}
+
+
+HSP3MTOUCH *Bmscr::getMTouchByPoint( int x, int y )
+{
+	int i;
+	HSP3MTOUCH *mt;
+	mt = mtouch;
+	for(i=0;i<BMSCR_MAX_MTOUCH;i++) {
+		if ( mt->flag ) {
+			if ( mt->y == y ) {
+				if ( mt->x == x ) {
+					return mt;
+				}
+			}
+		}
+		mt++;
+	}
+	return NULL;
+}
+
+
+HSP3MTOUCH *Bmscr::getMTouchNew( void )
+{
+	int i;
+	HSP3MTOUCH *mt;
+	mt = mtouch;
+	for(i=0;i<BMSCR_MAX_MTOUCH;i++) {
+		if ( mt->flag == 0 ) {
+			return mt;
+		}
+		mt++;
+	}
+	return NULL;
+}
+
+
+int Bmscr::listMTouch( int *outbuf )
+{
+	//	タッチ情報のIDリストを返す
+	//	outbufからint配列を書き出す、返値はIDの個数
+	//
+	int i;
+	int *buf;
+	HSP3MTOUCH *mt;
+	buf = outbuf;
+	mt = mtouch;
+	mtouch_num = 0;
+	for(i=0;i<BMSCR_MAX_MTOUCH;i++) {
+		if ( mt->flag ) {
+			*buf++ = i;
+			mtouch_num++;
+		}
+		mt++;
+	}
+	return mtouch_num;
+}
 

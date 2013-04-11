@@ -120,6 +120,7 @@ static void	MTouchInit( HWND hwnd )
 	int sysmet;
 	mt_flag = 0;
 	i_RegisterTouchWindow = NULL;
+	i_GetTouchInputInfo = NULL;
 	i_CloseTouchInputHandle = NULL;
 	sysmet = GetSystemMetrics( SM_DIGITIZER );
 	if (( sysmet & NID_READY ) == 0 ) return;
@@ -348,10 +349,25 @@ LRESULT CALLBACK WndProc( HWND hwnd, UINT uMessage, WPARAM wParam, LPARAM lParam
 		}
 		return 0;
 
+
 	case WM_QUERYENDSESSION:
 	case WM_CLOSE:
-		ctx->runmode = RUNMODE_END;
-		break;
+		{
+		int id,retval;
+		id = GetWindowLong( hwnd, GWL_USERDATA );
+		if ( code_isirq( HSPIRQ_ONEXIT ) ) {
+			int iparam = 0;
+			if ( uMessage == WM_QUERYENDSESSION ) iparam++;
+			retval = code_sendirq( HSPIRQ_ONEXIT, iparam, id, 0 );
+			if ( retval == RUNMODE_INTJUMP ) retval = code_execcmd2();	// onexit goto時は実行してみる
+			if ( retval != RUNMODE_END ) return 0;
+			//break;
+		}
+		code_puterror( HSPERR_NONE );
+		PostQuitMessage(0);
+		return 0;
+		//break;
+		}
 
 	}
 
@@ -544,6 +560,7 @@ int hsp3dish_await( int tick )
 	return RUNMODE_AWAIT;
 }
 
+
 void hsp3dish_msgfunc( HSPCTX *hspctx )
 {
 	MSG msg;
@@ -558,6 +575,7 @@ void hsp3dish_msgfunc( HSPCTX *hspctx )
 #endif
 			return;
 		}
+		
 		if ( PeekMessage( &msg, NULL, 0, 0, PM_REMOVE ) ) {
 			if (msg.message == WM_QUIT ) throw HSPERR_NONE;
 			hsp3dish_dispatch( &msg );
@@ -579,26 +597,26 @@ void hsp3dish_msgfunc( HSPCTX *hspctx )
 			MsgWaitForMultipleObjects(0, NULL, FALSE, 1000, QS_ALLINPUT );
 			break;
 		case RUNMODE_WAIT:
-			if ( timer_period == -1 ) {
-				//	通常のタイマー
-				tick = GetTickCount();
-				hspctx->runmode = code_exec_wait( tick );
-			} else {
-				//	高精度タイマー
-				tick = timeGetTime();
-				hspctx->runmode = hsp3dish_wait( tick );
-			}
+			tick = GetTickCount();
+			hspctx->runmode = code_exec_wait( tick );
 		case RUNMODE_AWAIT:
 			if ( timer_period == -1 ) {
+
 				//	通常のタイマー
 				tick = GetTickCount();
 				if ( code_exec_await( tick ) != RUNMODE_RUN ) {
 					MsgWaitForMultipleObjects(0, NULL, FALSE, hspctx->waittick - tick, QS_ALLINPUT );
+				} else {
+#ifndef HSPDEBUG
+					if ( ctx->hspstat & HSPSTAT_SSAVER ) {
+						if ( hsp_sscnt ) hsp_sscnt--;
+					}
+#endif
 				}
 			} else {
 				//	高精度タイマー
 				tick = timeGetTime()+5;				// すこし早めに抜けるようにする
-				if ( hsp3dish_await( tick ) != RUNMODE_RUN ) {
+				if ( code_exec_await( tick ) != RUNMODE_RUN ) {
 					MsgWaitForMultipleObjects(0, NULL, FALSE, hspctx->waittick - tick, QS_ALLINPUT );
 				} else {
 					tick = timeGetTime();
@@ -608,12 +626,16 @@ void hsp3dish_msgfunc( HSPCTX *hspctx )
 					}
 					hspctx->lasttick = tick;
 					hspctx->runmode = RUNMODE_RUN;
+#ifndef HSPDEBUG
+					if ( ctx->hspstat & HSPSTAT_SSAVER ) {
+						if ( hsp_sscnt ) hsp_sscnt--;
+					}
+#endif
 				}
 			}
 			break;
 //		case RUNMODE_END:
 //			throw HSPERR_NONE;
-			return;
 		case RUNMODE_RETURN:
 			throw HSPERR_RETURN_WITHOUT_GOSUB;
 		case RUNMODE_INTJUMP:
@@ -632,6 +654,55 @@ void hsp3dish_msgfunc( HSPCTX *hspctx )
 	}
 }
 
+
+/*----------------------------------------------------------*/
+//		デバイスコントロール関連
+/*----------------------------------------------------------*/
+static HSP3DEVINFO *mem_devinfo;
+static int devinfo_dummy;
+
+static int hsp3dish_devprm( char *name, char *value )
+{
+	return -1;
+}
+
+static int hsp3dish_devcontrol( char *cmd, int p1, int p2, int p3 )
+{
+	return NULL;
+}
+
+static int *hsp3dish_devinfoi( char *name, int *size )
+{
+	devinfo_dummy = 0;
+	*size = -1;
+	return NULL;
+//	return &devinfo_dummy;
+}
+
+static char *hsp3dish_devinfo( char *name )
+{
+	if ( strcmp( name, "name" )==0 ) {
+		return mem_devinfo->devname;
+	}
+	if ( strcmp( name, "error" )==0 ) {
+		return mem_devinfo->error;
+	}
+	return NULL;
+}
+
+static void hsp3dish_setdevinfo( HSP3DEVINFO *devinfo )
+{
+	//		Initalize DEVINFO
+	mem_devinfo = devinfo;
+	devinfo->devname = "win32dev";
+	devinfo->error = "";
+	devinfo->devprm = hsp3dish_devprm;
+	devinfo->devcontrol = hsp3dish_devcontrol;
+	devinfo->devinfo = hsp3dish_devinfo;
+	devinfo->devinfoi = hsp3dish_devinfoi;
+}
+
+/*----------------------------------------------------------*/
 
 int hsp3dish_init( HINSTANCE hInstance, char *startfile )
 {
@@ -815,6 +886,12 @@ int hsp3dish_init( HINSTANCE hInstance, char *startfile )
 	hsp3typeinit_extfunc( code_gettypeinfo( TYPE_EXTSYSVAR ) );
 	exinfo = ctx->exinfo2;
 
+	//		Initalize DEVINFO
+	HSP3DEVINFO *devinfo;
+	devinfo = hsp3extcmd_getdevinfo();
+	hsp3dish_setdevinfo( devinfo );
+
+
 #ifdef HSPDEBUG
 	dbginfo = code_getdbg();
 #endif
@@ -941,4 +1018,5 @@ int hsp3dish_exec( void )
 	hsp3dish_bye();
 	return endcode;
 }
+
 

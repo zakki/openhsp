@@ -5,11 +5,19 @@
 //					onion software/onitama 1997/8
 //
 
-#include <windows.h>
-#include <windowsx.h>
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
+#include <math.h>
+
+#include "../../hsp3/hsp3config.h"
+
+#ifdef HSPWIN
+#include <windows.h>
+#include <windowsx.h>
+#include <direct.h>
+#include <shlobj.h>
+#endif
 
 /*
 	rev 43
@@ -24,6 +32,11 @@
 #include "../../hsp3/dpmread.h"
 #include "../../hsp3/strbuf.h"
 #include "mmman.h"
+
+#ifdef MMMAN_USE_DXSND
+#include "dxsnd.h"
+#endif
+
 
 /*
 	rev 43
@@ -43,6 +56,7 @@ MMMan::MMMan()
 	//
 	mem_snd = NULL;
 	mm_cur = 0;
+	hwm = NULL;
 }
 
 
@@ -51,6 +65,28 @@ MMMan::~MMMan()
 	//		terminate MM manager
 	//
 	ClearAllBank();
+#ifdef MMMAN_USE_DXSND
+	SndTerm();
+#endif
+}
+
+
+void MMMan::Reset( void *hwnd )
+{
+	ClearAllBank();
+	curmus=-1;
+
+#ifdef MMMAN_USE_DXSND
+	if ( hwm == NULL ) {
+		SndInit( (HWND)hwnd );
+	}
+#endif
+	hwm = hwnd;
+	avi_wnd = hwnd;
+
+#ifdef MMMAN_USE_DXSND
+	SndReset();
+#endif
 }
 
 
@@ -95,6 +131,8 @@ MMM *MMMan::SetBank( int num, int flag, int opt, void *mempt, char *fname )
 	m->flag = flag;
 	m->opt = opt;
 	m->num = num;
+	m->vol = 0;
+	m->pan = 0;
 	m->mempt = mempt;
 	m->fname = NULL;
 
@@ -137,15 +175,6 @@ void MMMan::ClearAllBank( void )
 }
 
 
-void MMMan::Reset( void *hwnd )
-{
-	ClearAllBank();
-	hwm = hwnd;
-	avi_wnd = hwnd;
-	curmus=-1;
-}
-
-
 int MMMan::SendMCI( char *mci_commands )
 {
 	int a;
@@ -173,7 +202,9 @@ void MMMan::Stop( void )
 {
 	//		stop playing sound
 	//
+#ifndef MMMAN_USE_DXSND
 	sndPlaySound(NULL, 0);				// stop PCM sound
+#endif
 	if (curmus!=-1) {
 		SendMCI("stop myid");
 		SendMCI("close myid");
@@ -193,14 +224,17 @@ int MMMan::Load( char *fname, int num, int opt )
 	//		Load sound to bank
 	//			opt : 0=normal/1=loop/2=wait/3=continuous
 	//
-	int a = 1,getlen;
 	char fext[8];
 	char *pt;
 	int flag;
+	int track;
+	int lasttrack;
 	MMM *mmm;
 
-	flag = MMDATA_MCIVOICE;
+	flag = MMDATA_MPEGVIDEO;
 	pt = NULL;
+	track = -1;
+	lasttrack = -1;
 
 
 #if 0
@@ -209,8 +243,11 @@ int MMMan::Load( char *fname, int num, int opt )
 	a2=tolower(fname[1]);
 	a3=fname[2];
 	if ((a1=='c')&&(a2=='d')&&(a3==':')) {	// when "CD"
+		int a;
 		flag = MMDATA_CDAUDIO;
 		a = atoi( fname+3 );if ( a<1 ) a=1;
+		track = a;
+		lasttrk = SendMCI( "status cdaudio number of tracks" );
 	}
 #endif
 
@@ -231,6 +268,15 @@ int MMMan::Load( char *fname, int num, int opt )
 #endif
 
 	if (!strcmp(fext,".wav")) {				// when "WAV"
+#ifdef MMMAN_USE_DXSND
+		char *mp;
+		mp = dpm_readalloc( fname );		// HSPリソースを含めて検索する
+		if ( mp == NULL ) { return 1; }
+		track = SndRegistWav( -1, mp, 0);
+		if ( opt == 1 ) { SndSetLoop( track, 0 ); }
+		mem_bye( mp );
+		flag = MMDATA_INTWAVE;
+#else
 		getlen = dpm_exist( fname );
 		if ( getlen==-1 ) return 1;
 		if ( getlen < 2000000 ) {			// 2MB以上はMCIから再生
@@ -238,14 +284,12 @@ int MMMan::Load( char *fname, int num, int opt )
 			dpm_read( fname, pt, getlen, 0 );
 			flag = MMDATA_INTWAVE;
 		}
+#endif
 	}
 
 	mmm = SetBank( num, flag, opt, pt, fname );
-
-	if ( flag == MMDATA_CDAUDIO ) {
-		mmm->track = a;
-		mmm->lasttrk = SendMCI( "status cdaudio number of tracks" );
-	}
+	mmm->track = (short)track;
+	mmm->lasttrk = (short)lasttrack;
 	return 0;
 }
 
@@ -254,8 +298,7 @@ int MMMan::Play( int num )
 {
 	//		Play sound
 	//
-	int a,i,j,flg;
-	int prm;
+	int a,flg;
 	int bank;
 	char ss[1024];
 	char fpath[MAX_PATH];
@@ -267,16 +310,25 @@ int MMMan::Play( int num )
 	mmm=&mem_snd[bank];
 	a=mmm->opt;
 	flg=mmm->flag;
-	if ((flg>1)&&(curmus!=-1)) Stop();
+	if ((flg>1)&&(curmus!=-1)) {
+		Stop();
+	}
 	switch(flg) {
 
 		case MMDATA_INTWAVE:							// when "WAV"
 
+#ifdef MMMAN_USE_DXSND
+			SndPlay( mmm->track );
+#else	
+			{
+			int prm;
 			prm=SND_MEMORY | SND_NODEFAULT;
 			if (a==0) prm|=SND_ASYNC;
 			if (a==1) prm|=SND_LOOP | SND_ASYNC;
 			if (a==2) prm|=SND_SYNC;
 			sndPlaySound( (LPCSTR)mmm->mempt,prm);
+			}
+#endif
 			return 0;
 
 		case MMDATA_MCIVOICE:							// when "MID" file
@@ -305,11 +357,14 @@ int MMMan::Play( int num )
 				SendMCI( ss );
 			}
 */
+			if ( mmm->vol != 0 ) { SetVol( num, mmm->vol ); }
 			strcpy( ss,"play myid from 0" );
 			break;
 
+/*
 		case MMDATA_CDAUDIO:							// when "CD audio"
-
+			{
+			int i,j;
 			SendMCI( "open cdaudio alias myid" );
 			SendMCI( "set myid time format tmsf" );
 
@@ -320,6 +375,8 @@ int MMMan::Play( int num )
 				sprintf( ss,"play myid from %d to %d",i,i+1 );
 			}
 			break;
+			}
+*/
 	}
 
 	a&=15;
@@ -371,5 +428,156 @@ int MMMan::GetBusy( void )
 	return 0;
 }
 */
+
+
+void MMMan::SetVol( int num, int vol )
+{
+	MMM *mmm;
+	int bank,flg;
+	char ss[1024];
+	bank = SearchBank( num );
+	if ( bank < 0 ) return;
+
+	mmm=&mem_snd[bank];
+	mmm->vol = vol;
+	if ( mmm->vol > 0 ) mmm->vol = 0;
+	if ( mmm->vol < -1000 ) mmm->vol = -1000;
+
+	flg=mmm->flag;
+	switch(flg) {
+	case MMDATA_INTWAVE:							// when "WAV"
+#ifdef MMMAN_USE_DXSND
+		{
+		// DirectSoundのボリューム値に変換する
+		double myvol;
+		double maxvol;
+		if ( mmm->vol == 0 ) {
+			SndSetVolume( mmm->track, 0 );
+			break;
+		}
+		maxvol = 1000.0;
+		myvol = (double)(mmm->vol + 1000);
+		if ( myvol == 0.0 ) {
+			myvol = -10000.0;
+		} else {
+			myvol = ( 10.0 * (log10( myvol / maxvol ))) * 1000.0;
+		}
+		SndSetVolume( mmm->track, (int)myvol );
+		}
+#endif
+		break;
+	case MMDATA_MPEGVIDEO:							// when "MPG" file
+		if ( curmus != -1 ) {
+			int mcivol;
+			mcivol = mmm->vol + 1000;
+			sprintf( ss,"setaudio myid volume to %d",mcivol );
+			SendMCI( ss );
+		}
+		break;
+	}
+}
+
+
+void MMMan::SetPan( int num, int pan )
+{
+	MMM *mmm;
+	int bank,flg;
+	bank = SearchBank( num );
+	if ( bank < 0 ) return;
+
+	mmm=&mem_snd[bank];
+	flg=mmm->flag;
+	switch(flg) {
+	case MMDATA_INTWAVE:							// when "WAV"
+#ifdef MMMAN_USE_DXSND
+		{
+		// DirectSoundの値に変換する
+		int fixpan;
+		fixpan = pan;
+		mmm->pan = fixpan;
+		if ( fixpan > 1000 ) fixpan = 1000;
+		if ( fixpan < -1000 ) fixpan = -1000;
+		SndSetPan( mmm->track, fixpan * 10 );
+		}
+#endif
+		break;
+	}
+}
+
+
+int MMMan::GetStatus( int num, int infoid )
+{
+	MMM *mmm;
+	int bank,flg;
+	int res;
+	bank = SearchBank( num );
+	if ( bank < 0 ) return 0;
+
+	mmm=&mem_snd[bank];
+	flg=mmm->flag;
+	res = 0;
+	switch( infoid ) {
+	case 0:
+		res = mmm->opt;
+		break;
+	case 1:
+		res = mmm->vol;
+		break;
+	case 2:
+		res = mmm->pan;
+		break;
+	case 16:
+#ifdef MMMAN_USE_DXSND
+		res = SndGetStatus( mmm->track, 16 );
+#else
+		if (( flg == MMDATA_MCIVOICE )||( flg == MMDATA_MCIVIDEO )||( flg == MMDATA_MPEGVIDEO )) {
+			if (curmus!=-1) res = 1;
+		}
+#endif
+		break;
+	}
+	return res;
+}
+
+
+void MMMan::StopBank( int num )
+{
+	//		stop playing sound
+	//
+	MMM *mmm;
+	int bank,flg;
+
+	if ( num < 0 ) {
+#ifdef MMMAN_USE_DXSND
+	SndStopAll();
+#endif
+		Stop();
+		return;
+	}
+
+	bank = SearchBank( num );
+	if ( bank < 0 ) return;
+	mmm=&mem_snd[bank];
+	flg=mmm->flag;
+	switch(flg) {
+	case MMDATA_INTWAVE:							// when "WAV"
+#ifdef MMMAN_USE_DXSND
+		SndStop( mmm->track );
+#else
+		sndPlaySound(NULL, 0);						// stop PCM sound
+#endif
+		break;
+
+	case MMDATA_MCIVOICE:							// when "MID" file
+	case MMDATA_MCIVIDEO:							// when "AVI" file
+	case MMDATA_MPEGVIDEO:							// when "MPG" file
+		if (curmus!=-1) {
+			SendMCI("stop myid");
+			SendMCI("close myid");
+			curmus=-1;
+		}
+		break;
+	}
+}
 
 

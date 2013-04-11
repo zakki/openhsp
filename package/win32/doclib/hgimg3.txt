@@ -152,6 +152,10 @@ HGIMG ver3.32   REFERENCE MANUAL       High Performance Graphic Image Plugin
 
 ・更新履歴
 
+	2013/04/10 ( Ver3.32b )
+
+		fvdirなどfv～系の命令でベクトル値が正しく認識されない不具合を再度修正
+
 	2013/03/15 ( Ver3.32a )
 
 		3.32リリース版でfvdirなどfv～系の命令で正しくベクトル値が反映されない不具合を修正

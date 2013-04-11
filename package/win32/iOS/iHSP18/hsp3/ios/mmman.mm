@@ -39,6 +39,8 @@ typedef struct MMM
 	short	lasttrk;		//	CD last track No.
 	void	*mempt;			//	pointer to sound data
 	char	*fname;			//	sound filename (sbstr)
+    int     vol;
+    int     pan;
 	ALuint  buffer;
 	ALuint  source;
 } MMM;
@@ -235,7 +237,7 @@ static int SoundLoad( MMM *mmm, char *fname )
 	alSourcei( mmm->source, AL_BUFFER, mmm->buffer);
 	free(audioData);
 	mmm->flag = MMDATA_MCIVOICE;
-	//Alertf("#%s rate:%d size:%d ok.",fname,sampleRate,dataSize);
+	Alertf("#%s rate:%d size:%d ok.",fname,sampleRate,dataSize);
 	return 0;
 }
 
@@ -305,6 +307,8 @@ MMM *MMMan::SetBank( int num, int flag, int opt, void *mempt, char *fname )
 	m->num = num;
 	m->mempt = mempt;
 	m->fname = NULL;
+    m->vol = 0;
+    m->pan = 0;
 
 	return m;
 }
@@ -421,6 +425,95 @@ void MMMan::GetInfo( int bank, char **fname, int *num, int *flag, int *opt )
 	*flag=mmm->flag;
 	*num=mmm->num;
 }
+
+
+void MMMan::StopBank( int num )
+{
+    int bank;
+	MMM *m;
+    if ( num < 0 ) {
+        Stop();
+        return;
+    }
+    bank = SearchBank(num);
+    if ( bank < 0 ) return;
+	m = &(mem_snd[bank]);
+	SoundStop( m );
+}
+
+
+void MMMan::SetVol( int num, int vol )
+{
+    int bank;
+	MMM *mmm;
+    int fixvol;
+    float gain;
+    bank = SearchBank(num);
+    if ( bank < 0 ) return;
+	mmm = &(mem_snd[bank]);
+	if ( mmm->flag != MMDATA_MCIVOICE ) return;
+
+    fixvol = vol + 1000;
+    if ( fixvol > 1000 ) fixvol = 1000;
+    if ( fixvol < 0 ) fixvol = 0;
+    mmm->vol = fixvol - 1000;
+    gain = ((float)fixvol) / 1000.0f;
+	alSourcef( mmm->source, AL_GAIN, gain );
+    
+	//alSource3f( mmm->source, AL_POSITION, pan, 0.0f, 0.0f );
+	//alSourcef( mmm->source, AL_PITCH, pitch );
+}
+
+
+void MMMan::SetPan( int num, int pan )
+{
+    int bank;
+	MMM *mmm;
+    int fixpan;
+    float posx;
+    bank = SearchBank(num);
+    if ( bank < 0 ) return;
+	mmm = &(mem_snd[bank]);
+	if ( mmm->flag != MMDATA_MCIVOICE ) return;
+
+    fixpan = pan;
+    if ( fixpan < -1000 ) fixpan = -1000;
+    if ( fixpan > 1000 ) fixpan = 1000;
+    mmm->pan = fixpan;
+    posx = ((float)fixpan) / 1000.0f;
+	
+    alSource3f( mmm->source, AL_POSITION, posx, 0.0f, 0.0f );
+}
+
+
+int MMMan::GetStatus( int num, int infoid )
+{
+	MMM *mmm;
+    int res;
+    int bank;
+    bank = SearchBank(num);
+    if ( bank < 0 ) return 0;
+	mmm = &(mem_snd[bank]);
+	if ( mmm->flag != MMDATA_MCIVOICE ) return 0;
+
+    res = 0;
+    switch( infoid ){
+    case 0:
+            res = mmm->opt;
+            break;
+    case 1:
+            res = mmm->vol;
+            break;
+    case 2:
+            res = mmm->pan;
+            break;
+    case 16:
+            res = SoundState(mmm);
+            break;
+    }
+    return res;
+}
+
 
 
 //---------------------------------------------------------------------------

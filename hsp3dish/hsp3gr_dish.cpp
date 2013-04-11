@@ -8,13 +8,14 @@
 #include <stdlib.h>
 #include <string.h>
 
+#include "../hsp3/hsp3config.h"
+
 #ifdef HSPWIN
 #include <windows.h>
 #include <direct.h>
 #include <shlobj.h>
 #endif
 
-#include "../hsp3/hsp3config.h"
 #include "../hsp3/hsp3code.h"
 #include "../hsp3/hsp3debug.h"
 #include "../hsp3/strbuf.h"
@@ -310,6 +311,36 @@ static int *code_getiv( void )
 	return (int *)HspVarCorePtrAPTR( pval, 0 );
 }
 
+static int *code_getiv2( PVal **out_pval )
+{
+	//		変数パラメーターを取得(PDATポインタ)(初期化あり)
+	//
+	PVal *pval;
+	int *v;
+	int size;
+	int dummy;
+
+	v = (int *)code_getvptr( &pval, &size );
+	if ( pval->flag != HSPVAR_FLAG_INT ) {
+		dummy = 0;
+		code_setva( pval, 0, HSPVAR_FLAG_INT, &dummy );
+		v = (int *)HspVarCorePtrAPTR( pval, 0 );
+	}
+	*out_pval = pval;
+	return v;
+}
+
+static void code_setivlen( PVal *pval, int len )
+{
+	//		配列変数を拡張(intのみ)
+	//
+	int ilen;
+	ilen = len;
+	if ( ilen < 1 ) ilen = 1;
+	pval->len[1] = ilen;						// ちょっと強引に配列を拡張
+	pval->size = ilen * sizeof(int);
+}
+
 
 /*------------------------------------------------------------*/
 /*
@@ -408,7 +439,8 @@ static int cmdfunc_extcmd( int cmd )
 		break;
 
 	case 0x0a:								// mmstop
-		mmman->Stop();
+		p1 = code_getdi( -1 );
+		mmman->StopBank( p1 );
 		break;
 #endif
 
@@ -924,6 +956,125 @@ static int cmdfunc_extcmd( int cmd )
 		code_setva( p_pval, p_aptr, HSPVAR_FLAG_INT, &p2 );
 		break;
 		}
+
+	case 0x42:								// mmvol
+		p1 = code_getdi( 0 );
+		p2 = code_getdi( 0 );
+		mmman->SetVol( p1, p2 );
+		break;
+	case 0x43:								// mmpan
+		p1 = code_getdi( 0 );
+		p2 = code_getdi( 0 );
+		mmman->SetPan( p1, p2 );
+		break;
+	case 0x44:								// mmstat
+		{
+		PVal *p_pval;
+		APTR p_aptr;
+		p_aptr = code_getva( &p_pval );
+		p1 = code_getdi( 0 );
+		p2 = code_getdi( 0 );
+		p3 = mmman->GetStatus( p1, p2 );
+		code_setva( p_pval, p_aptr, HSPVAR_FLAG_INT, &p3 );
+		break;
+		}
+	case 0x45:								// mtlist
+		{
+		int *p_ptr;
+		int p_size;
+		PVal *p_pval;
+		p_ptr = code_getiv2( &p_pval );				// 変数ポインタ取得
+		p_size = bmscr->listMTouch( p_ptr );		// マルチタッチリスト取得
+		code_setivlen( p_pval, p_size );			// 要素数を設定
+		ctx->stat = p_size;							// statに要素数を代入
+		break;
+		}
+	case 0x46:								// mtinfo
+		{
+		int *p_ptr;
+		HSP3MTOUCH *mt;
+		PVal *p_pval;
+		p_ptr = code_getiv2( &p_pval );				// 変数ポインタ取得
+		p1 = code_getdi( 0 );
+		mt = bmscr->getMTouch( p1 );
+		code_setivlen( p_pval, 4 );					// 要素数を設定
+		if ( mt ) {
+			p_ptr[0] = mt->flag;
+			p_ptr[1] = mt->x;
+			p_ptr[2] = mt->y;
+			p_ptr[3] = mt->pointid;
+			ctx->stat = mt->flag;
+		} else {
+			p_ptr[0] = -1;
+			p_ptr[1] = 0;
+			p_ptr[2] = 0;
+			p_ptr[3] = 0;
+			ctx->stat = -1;
+		}
+		break;
+		}
+	case 0x47:								// devinfo
+		{
+		PVal *p_pval;
+		APTR p_aptr;
+		char *ps;
+		char *s_res;
+		int p_res;
+		p_aptr = code_getva( &p_pval );
+		ps = code_gets();
+		p_res = 0;
+		s_res = wnd->getDevInfo()->devinfo( ps );
+		if ( s_res == NULL ) {
+			p_res = -1;
+		} else {
+			code_setva( p_pval, p_aptr, TYPE_STRING, s_res );
+		}
+		ctx->stat = p_res;
+		break;
+		}
+	case 0x48:								// devinfoi
+		{
+		PVal *p_pval;
+		int *p_ptr;
+		char *ps;
+		int p_size;
+		int *i_res;
+		p_ptr = code_getiv2( &p_pval );				// 変数ポインタ取得
+		ps = code_gets();
+		i_res = wnd->getDevInfo()->devinfoi( ps, &p_size );
+		if ( i_res == NULL ) {
+			p_size = -1;
+		} else {
+			code_setivlen( p_pval, p_size );			// 要素数を設定
+			memcpy( p_ptr, i_res, sizeof(int)*p_size );
+		}
+		ctx->stat = p_size;
+		break;
+		}
+	case 0x49:								// devprm
+		{
+		char *ps;
+		char prmname[256];
+		int p_res;
+		strncpy( prmname, code_gets(), 255 );
+		ps = code_gets();
+		p_res = wnd->getDevInfo()->devprm( prmname, ps );
+		ctx->stat = p_res;
+		break;
+		}
+	case 0x4a:								// devcontrol
+		{
+		char *cname;
+		int p_res;
+		cname = code_stmpstr( code_gets() );
+		p1 = code_getdi( 0 );
+		p2 = code_getdi( 0 );
+		p3 = code_getdi( 0 );
+		p_res = wnd->getDevInfo()->devcontrol( cname, p1, p2, p3 );
+		ctx->stat = p_res;
+		break;
+		}
+
 
 #ifdef USE_DGOBJ
 	/* DG Graphics Support */
@@ -2432,6 +2583,11 @@ void hsp3typeinit_extcmd( HSP3TYPEINFO *info )
 void hsp3typeinit_extfunc( HSP3TYPEINFO *info )
 {
 	info->reffunc = reffunc_sysvar;
+}
+
+HSP3DEVINFO *hsp3extcmd_getdevinfo( void )
+{
+	return wnd->getDevInfo();
 }
 
 void hsp3notify_extcmd( void )
