@@ -135,6 +135,9 @@ void HspWnd::Reset( void )
 #endif
 
 	curwnd = this;
+
+	//	Reset DevInfo
+	memset( &devinfo, 0, sizeof(HSP3DEVINFO) );
 }
 
 

@@ -38,6 +38,7 @@ public:
 	void Pause( void );
 	void Resume( void );
 	void Stop( void );
+	void StopBank( int bank=-1 );
 	void Notify( void );
 
 	void PlayBank( MMM *mmm );
@@ -52,6 +53,10 @@ public:
 	int GetBusy( void );
 	void SetWindow( void *hwnd, int x, int y, int sx, int sy );
 	int GetBankMax( void ) { return mm_cur;  };
+
+	void SetVol( int bank, int vol );
+	void SetPan( int bank, int pan );
+	int GetStatus( int bank, int infoid );
 
 private:
 	int mm_cur;

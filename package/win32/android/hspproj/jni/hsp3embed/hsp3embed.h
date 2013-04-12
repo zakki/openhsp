@@ -15,6 +15,7 @@ int hsp3eb_exec( void );
 int hsp3eb_exectime( int time );
 void hsp3eb_setstat( int stat );
 struct HSPCTX *hsp3eb_getctx( void );
+void *hsp3eb_getDevInfo( void );
 char *hsp3eb_stmp( char *str );
 void hsp3eb_pause( void );
 void hsp3eb_resume( void );

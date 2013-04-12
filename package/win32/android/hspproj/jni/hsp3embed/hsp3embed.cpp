@@ -261,6 +261,14 @@ HSPCTX *hsp3eb_getctx( void )
 }
 
 
+void *hsp3eb_getDevInfo( void )
+{
+	//		DEVINFOを返す
+	//
+	return hsp3extcmd_getdevinfo();
+}
+
+
 char *hsp3eb_stmp( char *str )
 {
 	//		HSPCTXのstmpに文字列を格納する

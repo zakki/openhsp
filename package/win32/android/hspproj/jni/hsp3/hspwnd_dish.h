@@ -110,6 +110,22 @@ BMSCR_SAVEPOS_MOSUEW,
 BMSCR_SAVEPOS_MAX,
 };
 
+typedef struct {
+	//	デバイスごとの情報
+	//	(*の項目は、親アプリケーションで設定されます)
+	//
+	char *devname;				// *デバイスランタイム名
+	char *error;				// *エラーメッセージ
+
+	//	ファンクション情報
+	//
+	int (*devprm)( char *name, char *value );	// パラメーター設定ファンクション
+	int (*devcontrol)( char *cmd, int p1, int p2, int p3 );	// コマンド受け取りファンクション
+	int *(*devinfoi)( char *name, int *size );	// int情報受け取りファンクション
+	char *(*devinfo)( char *name );				// str情報受け取りファンクション
+
+} HSP3DEVINFO;
+
 #define RESNAME_MAX 64
 
 void SetObjectEventNoticePtr( int *ptr );
@@ -295,6 +311,7 @@ public:
 	int GetActive( void );
 	int GetBmscrMax( void ) { return bmscr_max; };
 	int GetEmptyBufferId( void );
+	HSP3DEVINFO *getDevInfo( void ) { return &devinfo; }
 
 	//	Data
 	//
@@ -314,6 +331,9 @@ private:
 	Bmscr **mem_bm;
 	int bmscr_max;
 	int bmscr_res;
+
+	//	Info for HSP3Dish Device
+	HSP3DEVINFO devinfo;
 };
 
 

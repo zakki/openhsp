@@ -5,10 +5,12 @@
 
 #include "javafunc.h"
 
+#include <stdio.h>
+#include <stdlib.h>
 #include "hsp3/hsp3config.h"
 #include "hsp3/hsp3struct.h"
+#include "hsp3/hsp3ext.h"
 #include "hsp3embed/hsp3embed.h"
-#include "hsp3/ndk/hgiox.h"
 
 static int *p_runmode;
 
@@ -16,7 +18,6 @@ void hgio_view( int sx, int sy );
 void hgio_scale( float xx, float yy );
 void hgio_autoscale( int mode );
 void hgio_setstorage( char *path );
-
 
 /**
  * デバイスに対してのEGLコンテキストの初期化
@@ -114,41 +115,12 @@ static int32_t engine_handle_input(struct android_app* app,
     struct engine* engine = (struct engine*) app->userData;
     if (AInputEvent_getType(event) == AINPUT_EVENT_TYPE_MOTION) {
 
-        int i,keyid,pid;
 		int xx,yy;
-		int acttype;
+		xx = AMotionEvent_getX(event, 0);
+		yy = AMotionEvent_getY(event, 0);
+        engine->state.x = xx;
+        engine->state.y = yy;
         int action = AKeyEvent_getAction(event);
-        acttype = action & AMOTION_EVENT_ACTION_MASK;
-        size_t count = AMotionEvent_getPointerCount(event);
-        //LOGI("***INPUT(TYPE%d)x%d",acttype, count);
-        for (i = 0; i < count; i++){
-
-            if (acttype == AMOTION_EVENT_ACTION_POINTER_DOWN || acttype == AMOTION_EVENT_ACTION_POINTER_UP) {
-		        pid = ( action & AMOTION_EVENT_ACTION_POINTER_INDEX_MASK )>>AMOTION_EVENT_ACTION_POINTER_INDEX_SHIFT;
-            } else {
-				pid = i;
-			}
-            keyid = AMotionEvent_getPointerId(event, pid);
-			xx = AMotionEvent_getX(event, pid);
-			yy = AMotionEvent_getY(event, pid);
-			if ( i == 0 ) {
-		        engine->state.x = xx;
-		        engine->state.y = yy;
-		    }
-	        //LOGI("***INPUT(#%d,%d)",i,keyid);
-	        switch (acttype) {
-			case AMOTION_EVENT_ACTION_DOWN:
-	        case AMOTION_EVENT_ACTION_MOVE:
-			case AMOTION_EVENT_ACTION_POINTER_DOWN:
-		        hgio_mtouchid( keyid, xx, yy, 1, i );
-				break;
-	        case AMOTION_EVENT_ACTION_UP:
-	        case AMOTION_EVENT_ACTION_POINTER_UP:
-		        hgio_mtouchid( keyid, xx, yy, 0, i );
-				break;
-			}
-	    }
-/*
         switch (action & AMOTION_EVENT_ACTION_MASK) {
 		case AMOTION_EVENT_ACTION_DOWN:
         	//LOGI("***DOWN(%d,%d)",xx,yy);
@@ -162,9 +134,6 @@ static int32_t engine_handle_input(struct android_app* app,
 			hgio_touch( xx, yy, 0 );
 			break;
 		}
-*/		
-		
-		
 //		engine->animating = 1;
         return 1;
     }
@@ -198,6 +167,7 @@ static void engine_handle_cmd(struct android_app* app, int32_t cmd) {
 				engine->hspctx = ctx;
 				p_runmode = &(ctx->runmode);
 				hgio_setstorage( j_getinfo(JAVAFUNC_INFO_FILESDIR) );
+			    hsp3dish_setdevinfo();
 			} else {
 		       	LOGI("[HSP Resume]");
 		        hsp3eb_resume();

@@ -34,6 +34,8 @@ typedef struct MMM
 	short	lasttrk;		//	CD last track No.
 	void	*mempt;			//	pointer to sound data
 	char	*fname;			//	sound filename (sbstr)
+	int		vol;
+	int		pan;
 
 	//	OpenSL/ES Objects
 	//
@@ -186,6 +188,8 @@ MMM *MMMan::SetBank( int num, int flag, int opt, void *mempt, char *fname )
 	m->mempt = mempt;
 	m->fname = NULL;
 	m->pause_flag = 0;
+	m->vol = 0;
+	m->pan = 0;
 	return m;
 }
 
@@ -258,18 +262,6 @@ void MMMan::Stop( void )
 		StopBank( m );
 		m++;
 	}
-}
-
-
-void MMMan::StopNum( int num )
-{
-    int bank;
-	MMM *m;
-    bank = SearchBank(num);
-    if ( bank < 0 ) return;
-	m = &(mem_snd[bank]);
-	StopBank( m );
-	return;
 }
 
 
@@ -445,7 +437,113 @@ void MMMan::GetInfo( int bank, char **fname, int *num, int *flag, int *opt )
 }
 
 
+/*--------------------------------------------------------------------------------*/
 
+float gain_to_attenuation( float gain )
+{
+    return gain < 0.01F ? -96.0F : 20 * log10( gain );
+}
+
+void MMMan::SetVol( int num, int vol )
+{
+	MMM *mmm;
+	int bank,flg;
+	char ss[1024];
+	bank = SearchBank( num );
+	if ( bank < 0 ) return;
+
+	mmm=&mem_snd[bank];
+	mmm->vol = vol;
+	if ( mmm->vol > 0 ) mmm->vol = 0;
+	if ( mmm->vol < -1000 ) mmm->vol = -1000;
+
+	flg=mmm->flag;
+	switch(flg) {
+	case MMDATA_INTWAVE:							// when "WAV"
+
+		float myvol;
+		float maxvol;
+		maxvol = 1000.0;
+		myvol = (float)(mmm->vol + 1000);
+		myvol = myvol / 1000.0f;
+		(*mmm->playerVolume)->SetVolumeLevel( mmm->playerVolume, (SLmillibel)(gain_to_attenuation( myvol ) * 100) );
+
+		break;
+	}
+}
+
+
+void MMMan::SetPan( int num, int pan )
+{
+	MMM *mmm;
+	int bank,flg;
+    int fixpan;
+	bank = SearchBank( num );
+	if ( bank < 0 ) return;
+
+	mmm=&mem_snd[bank];
+	flg=mmm->flag;
+	switch(flg) {
+	case MMDATA_INTWAVE:							// when "WAV"
+
+	    fixpan = pan;
+	    if ( fixpan < -1000 ) fixpan = -1000;
+	    if ( fixpan > 1000 ) fixpan = 1000;
+	    mmm->pan = fixpan;
+
+		(*mmm->playerVolume)->EnableStereoPosition( mmm->playerVolume, SL_BOOLEAN_TRUE );
+		(*mmm->playerVolume)->SetStereoPosition( mmm->playerVolume, fixpan );
+
+		break;
+	}
+}
+
+
+int MMMan::GetStatus( int num, int infoid )
+{
+	MMM *mmm;
+	int bank,flg;
+	int res;
+	bank = SearchBank( num );
+	if ( bank < 0 ) return 0;
+
+	mmm = &(mem_snd[bank]);
+	if ( mmm->flag != MMDATA_INTWAVE ) return 0;
+	flg=mmm->flag;
+	res = 0;
+	switch( infoid ) {
+	case 0:
+		res = mmm->opt;
+		break;
+	case 1:
+		res = mmm->vol;
+		break;
+	case 2:
+		res = mmm->pan;
+		break;
+	case 16:
+		if ( GetState(mmm) == SL_PLAYSTATE_PLAYING ) { res = 1; }
+		break;
+	}
+	return res;
+}
+
+
+void MMMan::StopBank( int num )
+{
+	//		stop playing sound
+	//
+    int bank;
+	MMM *m;
+	if ( num < 0 ) {
+		Stop();
+		return;
+	}
+    bank = SearchBank(num);
+    if ( bank < 0 ) return;
+	m = &(mem_snd[bank]);
+	StopBank( m );
+}
 
 
 
