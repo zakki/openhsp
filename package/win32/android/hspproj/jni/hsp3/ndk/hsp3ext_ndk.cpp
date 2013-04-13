@@ -13,6 +13,7 @@
 #include "../hgio.h"
 #include "../sysreq.h"
 #include "../../hsp3embed/hsp3embed.h"
+#include "../../javafunc.h"
 
 /*----------------------------------------------------------*/
 //		DevInfo Call
@@ -29,6 +30,7 @@ static int hsp3dish_devprm( char *name, char *value )
 static int hsp3dish_devcontrol( char *cmd, int p1, int p2, int p3 )
 {
 	if ( strcmp( cmd, "vibrate" )==0 ) {
+		j_callVibrator( p1 );
         //AudioServicesPlayAlertSound(kSystemSoundID_Vibrate);
 		return 0;
 	}
