@@ -155,18 +155,20 @@ HGIMG ver3.32   REFERENCE MANUAL       High Performance Graphic Image Plugin
 	2013/04/10 ( Ver3.32b )
 
 		fvdirなどfv～系の命令でベクトル値が正しく認識されない不具合を再度修正
+		アプリケーション終了時のクリーンアップ処理でエラーが発生する不具合を修正
 
 	2013/03/15 ( Ver3.32a )
 
 		3.32リリース版でfvdirなどfv～系の命令で正しくベクトル値が反映されない不具合を修正
 
-
 	2013/01/29 ( Ver3.32RC1 )
 
+		ogg再生時はDirectSoundソフトウェアバッファをデフォルトで使用するように修正
 		ogg再生時のループポイントが初期化されない不具合を修正
-2		ogg再生時のDirectSoundソフトウェアバッファを使用スイッチを追加
+		ogg再生時のDirectSoundソフトウェアバッファを使用スイッチを追加
 		ogg再生時のストリームバッファサイズ設定を追加
-2
+		str2fv命令で不正な文字列が入力された場合の変換方法を修正
+
 	2012/06/14 ( Ver3.31β1 )
 
 		テンプレート定義の含まれていないxファイルの読み込みに対応
@@ -2512,7 +2514,7 @@ HGIMG ver3.32   REFERENCE MANUAL       High Performance Graphic Image Plugin
 
 	hgsetreqで設定できる主な項目は以下の通りです。
 
-		マクロ名          内容(デフォルト値)
+		マクロ名          内容
 		-----------------------------------------------------
 		SYSREQ_MAXMODEL   モデル最大数
 		SYSREQ_MAXOBJ     オブジェクト最大数
@@ -2532,13 +2534,37 @@ HGIMG ver3.32   REFERENCE MANUAL       High Performance Graphic Image Plugin
 		SYSREQ_QUATALG    Xファイルモデルアニメーション補間モード
 		SYSREQ_DXVSYNC    フルスクリーンモード時のVSYNC待ちモード
 		SYSREQ_DEFTIMER   hgsyncの時間待ちモード(0=HGIMG3/1=await)
-		SYSREQ_NOMIPMAP   テクスチャのMIPMAP生成モード(0=自動/1=MIPMAPな	し)
+		SYSREQ_NOMIPMAP   テクスチャのMIPMAP生成モード(0=自動/1=MIPMAPなし)
 		SYSREQ_DEVLOST    DirectXデバイスの存在フラグ(0=存在/-1=ロスト)
 		SYSREQ_MAXEMITTER エミッター最大数
 		SYSREQ_THROUGHFLAG　X方向のボーダー処理フラグ(0=通常/1=スルー)
 		SYSREQ_OBAQMATBUF OBAQ用マテリアルバッファ数
+		SYSREQ_2DFILTER2   2D直接描画時のテクスチャ補間モード
+		SYSREQ_FPUPRESERVE FPU演算精度設定オプション(0=単精度/1=変更なし)
+		SYSREQ_DSSOFTWARE  ソフトウェアサウンドバッファの使用(1=ON,0=OFF)
+		SYSREQ_DSGLOBAL    グローバルサウンドフォーカス(1=ON,0=OFF)
+		SYSREQ_DSBUFSEC    oggストリーム再生バッファのサイズ(秒数)
 
 	HGIMG2.61までに存在したパケットサイズは廃止されています。
+	主に使用する項目のデフォルト値は、以下の通りです。
+
+		マクロ名          内容(デフォルト値)
+		-----------------------------------------------------
+	        SYSREQ_MAXMODEL   モデル最大数(4096) 
+	        SYSREQ_MAXOBJ     オブジェクト最大数(512) 
+	        SYSREQ_MAXTEX     テクスチャ最大数(512) 
+	        SYSREQ_DXMODE     フルスクリーンモードスイッチ(0) 
+	        SYSREQ_DXWIDTH    フルスクリーンモード時の横サイズ(640) 
+	        SYSREQ_DXHEIGHT   フルスクリーンモード時の縦サイズ(480) 
+	        SYSREQ_COLORKEY   テクスチャ登録時の透明色コード(0) 
+	        SYSREQ_MAXEVENT   イベント最大数(512) 
+	        SYSREQ_MAXEVENT   イベント最大数(512) 
+	        SYSREQ_MDLANIM    モデルあたりのアニメーション最大数(16) 
+	        SYSREQ_CALCNORMAL Xファイルモデル法線再計算スイッチ(0) 
+		SYSREQ_FPUPRESERVE FPU演算精度設定オプション(0)
+		SYSREQ_DSSOFTWARE  ソフトウェアサウンドバッファの使用(1)
+		SYSREQ_DSGLOBAL    グローバルサウンドフォーカス(1)
+		SYSREQ_DSBUFSEC    oggストリーム再生バッファのサイズ(2)
 
 
 ・DirectXパラメーターの参照について
@@ -2546,7 +2572,7 @@ HGIMG ver3.32   REFERENCE MANUAL       High Performance Graphic Image Plugin
 	hggetreq命令により、いくつかのDirectXに関するパラメーターを
 	取得することが可能です。
 
-		マクロ名          内容(デフォルト値)
+		マクロ名          内容
 		-----------------------------------------------------
 		SYSREQ_RESULT     エラー発生時の原因コード(参照のみ)
 		SYSREQ_RESVMODE   ステータスコード(参照のみ)
@@ -2580,7 +2606,7 @@ HGIMG ver3.32   REFERENCE MANUAL       High Performance Graphic Image Plugin
 		使用することで、DirectX APIを直接利用することが可能です。
 
 
-・OggVorbisストリーム再生について
+・OggVorbisストリーム再生について(new)
 
 	OggVorbis形式は、ライセンスフリーの圧縮音声ファイルフォーマットです。
 	mp3形式などに比べて、ライセンスの問題がなく、OS環境に左右されずに
@@ -2591,6 +2617,28 @@ HGIMG ver3.32   REFERENCE MANUAL       High Performance Graphic Image Plugin
 	できるようになっています。
 	OggVorbis形式ファイルの作成やエンコードの詳細については、サポートを
 	行なっていませんので、別途資料やツールをご用意下さい。
+
+	3.32RC1版から、oggストリーム再生バッファの設定をhgsetreq命令で
+	行なうことができるようになっています。以下は設定の例です。
+
+	hgsetreq SYSREQ_DSBUFSEC,2	; ストリームバッファのサイズ(秒数)
+	hgsetreq SYSREQ_DSGLOBAL,1	; フォーカス外でもサウンドを再生するフラグ(1=ON,0=OFF)
+	hgsetreq SYSREQ_DSSOFTWARE,1	; ソフトウェアバッファを使用するフラグ(1=ON,0=OFF)
+
+	上で示した値が、デフォルトで設定されている値となります。
+	DirectXのサウンドバッファは、ハードウェアサウンドバッファと
+	ソフトウェアサウンドバッファが用意されており、ハードウェアでミキシングが
+	可能なデバイスでは、自動的にハードウェアが設定されるようになっています。
+	3.32RC1以前のバージョンでは、ハードウェアサウンドバッファを使用する設定に
+	なっていましたが、3.32RC1版以降ではソフトウェアサウンドバッファを使用する設定に
+	変更されています。
+	この設定は、アプリケーションごとの音の再生をミキシングする際に、ハードウェア側の
+	支援を受けるか、あるいはCPUが処理するかの違いになりますが、Windows Vistaから
+	アプリケーションごとのサウンド管理方法が変更になったため、ソフトウェアサウンドバッファを
+	使用することが推奨されています。最近の高速なCPUであれば、ソフトウェアサウンドバッファで
+	あってもそれほど重い処理になるとは考え難いですが、逆に古いマシンやWindows XP以前の
+	OSなどで負荷を軽減させるなどの特別な目的があれば、ハードウェア側に処理を任せるように
+	してみてください。
 
 
 ・OBAQサポート機能について

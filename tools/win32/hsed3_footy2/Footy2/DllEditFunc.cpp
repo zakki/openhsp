@@ -97,6 +97,9 @@ FOOTYEXPORT(int) Footy2Undo(int id)
 	CFooty *pFooty = GetFooty(id);
 	if (!pFooty)return FOOTY2ERR_NOID;
 
+	// 選択解除
+	pFooty->m_cDoc.ClearSelected();
+
 	// アンドゥ処理
 	if (!pFooty->Undo())
 		return FOOTY2ERR_NOUNDO;
@@ -122,6 +125,8 @@ FOOTYEXPORT(int) Footy2Redo(int id)
 	// Footyを取得する
 	CFooty *pFooty = GetFooty(id);
 	if (!pFooty)return FOOTY2ERR_NOID;
+	// 選択解除
+	pFooty->m_cDoc.ClearSelected();
 	// リドゥ処理
 	if (!pFooty->Redo())
 		return FOOTY2ERR_NOUNDO;

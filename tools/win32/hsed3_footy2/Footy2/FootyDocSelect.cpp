@@ -246,6 +246,21 @@ CFootyDoc::RedrawType CFootyDoc::DeleteSelected(CUndoBuffer *pUndoBuffer)
 	return REDRAW_ALL;
 }
 
+/**
+ * CFootyDoc::ClearSelected by inovia
+ * @brief 選択しているテキストを解除します。
+ * @param pUndoBuffer アンドゥに記録するためのバッファ。NULL可。
+ * @note 削除した後は選択状態を解除してキャレット位置(pPos)を選択始点に移動します。
+ */
+int CFootyDoc::ClearSelected()
+{
+	if (!IsSelecting())return REDRAW_FAILED;
+	// 選択を解除する
+	m_nSelectType = SELECT_NONE;
+	SendMoveCaretCallBack();
+	return REDRAW_ALL;
+}
+
 /*-------------------------------------------------------------------
 CFootyDoc::GetSelLength
 現在選択しているテキストの長さを取得します

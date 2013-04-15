@@ -79,6 +79,7 @@ public:
 	}
 	size_t GetSelLength(LineMode nLineMode = LM_CRLF);
 	RedrawType DeleteSelected(CUndoBuffer *pUndoBuffer);
+	int ClearSelected();
 	void SelectAll();
 	
 	// ƒf[ƒ^æ“¾

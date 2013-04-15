@@ -12,7 +12,7 @@
 #include <string.h>
 #include <direct.h>
 
-#include "hsp3dish.h"
+#include "hsp3win.h"
 
 /*----------------------------------------------------------*/
 

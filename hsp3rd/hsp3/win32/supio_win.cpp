@@ -63,9 +63,11 @@ void strcase( char *target )
 		a1=*p;if ( a1==0 ) break;
 		*p=tolower(a1);
 		p++;							// 検索位置を移動
+#ifndef HSPUTF8
 		if (a1>=129) {					// 全角文字チェック
 			if ((a1<=159)||(a1>=224)) p++;
 		}
+#endif
 	}
 }
 
@@ -127,9 +129,11 @@ char *strstr2( char *target, char *src )
 			if (a2!=a3) break;
 		}
 		p++;							// 検索位置を移動
+#ifndef HSPUTF8
 		if (a1>=129) {					// 全角文字チェック
 			if ((a1<=159)||(a1>=224)) p++;
 		}
+#endif
 	}
 	return NULL;
 }
@@ -148,9 +152,11 @@ char *strchr2( char *target, char code )
 		a1=*p;if ( a1==0 ) break;
 		if ( a1==code ) res=(char *)p;
 		p++;							// 検索位置を移動
+#ifndef HSPUTF8
 		if (a1>=129) {					// 全角文字チェック
 			if ((a1<=159)||(a1>=224)) p++;
 		}
+#endif
 	}
 	return res;
 }
@@ -322,8 +328,10 @@ int strsp_get( char *srcstr, char *dststr, char splitchr, int len )
 		a1=srcstr[splc];
 		if (a1==0) break;
 		splc++;
+#ifndef HSPUTF8
 		if (a1>=0x81) if (a1<0xa0) sjflg++;
 		if (a1>=0xe0) sjflg++;
+#endif
 
 		if (a1==splitchr) break;
 		if (a1==13) {
@@ -442,6 +450,7 @@ char *strchr3( char *target, int code, int sw, char **findptr )
 	while(1) {
 		a1=*p;if ( a1==0 ) break;
 		if ( a1==code1 ) {
+#ifndef HSPUTF8
 			if ( a1 <129 ) {
 				res=(char *)p;
 			} else {
@@ -453,11 +462,18 @@ char *strchr3( char *target, int code, int sw, char **findptr )
 					res=(char *)p;
 				}
 			}
+#else
+			if ( p[1]==code2 ) {
+				res=(char *)p;
+			}
+#endif
 		}
 		p++;							// 検索位置を移動
+#ifndef HSPUTF8
 		if (a1>=129) {					// 全角文字チェック
 			if ((a1<=159)||(a1>=224)) p++;
 		}
+#endif
 		if ( res != NULL ) { *findptr = res; pres = (char *)p; res = NULL; }
 
 		switch( sw ) {
