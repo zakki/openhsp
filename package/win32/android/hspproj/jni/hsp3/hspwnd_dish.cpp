@@ -253,7 +253,9 @@ void HspWnd::Resume( void )
 		bm = GetBmscr(i);
 		if ( bm != NULL ) {
 			if ( bm->type == HSPWND_TYPE_BUFFER ) {
+				bm->flag = BMSCR_FLAG_NOUSE;
 				hgio_texload( (BMSCR *)bm, bm->resname );
+				bm->flag = BMSCR_FLAG_INUSE;
 			}
 		}
 	}

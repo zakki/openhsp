@@ -24,6 +24,7 @@
 - (void)setHspView:(HspView *)hspview
 {
     [self setView:hspview];
+    [hspview setParent:self];
 }
 
 - (void)controlBanner:(int)prm
@@ -36,8 +37,8 @@
     
         [self.view addSubview:adView];
         adView.delegate = self;
-        NSLog(@"Banner ready");
         bannerIsVisible = false;
+        //[self bannerViewDidLoadAd:adView];
     }
     
 }
@@ -71,7 +72,6 @@
          }
          ];
         
-        NSLog(@"Banner on");
         bannerIsVisible = true;
     }
 }

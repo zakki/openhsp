@@ -194,6 +194,7 @@ static void engine_handle_cmd(struct android_app* app, int32_t cmd) {
 				//hgio_view( 480, 320 );
 				//hgio_scale( 1.0f, 1.0f );
 				//hgio_autoscale( 0 );
+				InitSysReq();
 				hsp3eb_init();
 				ctx = hsp3eb_getctx();
 				engine->hspctx = ctx;

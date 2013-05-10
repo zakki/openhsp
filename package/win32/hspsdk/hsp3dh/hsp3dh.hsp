@@ -9,7 +9,7 @@
 #include "mod_appconfig.as"
 
 #define APPTITLE "HSP3Dish helper"
-#define APPVER "0.91"
+#define APPVER "0.92"
 #define APP_CONF "\\hsp3dh.cfg"
 
 #uselib "shell32.dll"
@@ -796,7 +796,10 @@ res\\drawable-mdpi\\icon.png"}
 	notesel prj_dlist
 	repeat notemax
 		noteget s1,cnt
-		mkdir basedir+s1
+		dirlist s2, basedir+s1, 5
+		if stat = 0 {
+			mkdir basedir+s1
+		}
 	loop
 
 	notesel prj_flist
