@@ -668,7 +668,7 @@ static int hsp3dish_devprm( char *name, char *value )
 
 static int hsp3dish_devcontrol( char *cmd, int p1, int p2, int p3 )
 {
-	return NULL;
+	return -1;
 }
 
 static int *hsp3dish_devinfoi( char *name, int *size )

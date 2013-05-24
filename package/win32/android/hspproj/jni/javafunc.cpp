@@ -172,3 +172,12 @@ int j_callActivity( char *msg1, char *msg2, int type )
 	return jcall_SSI_int( "callActivity", msg1, msg2, type );
 }
 
+//--------------------------------------------------------------------------
+
+int j_callAdMob( int val )
+{
+		return jcall_int_int( "callAdMob", val );
+}
+
+
+

@@ -191,7 +191,7 @@ static void engine_handle_cmd(struct android_app* app, int32_t cmd) {
             if ( engine->hspctx == NULL ) {
 				HSPCTX *ctx;
 			    hgio_init( 0, engine->width, engine->height, engine );
-				//hgio_view( 480, 320 );
+				//hgio_view( 320, 480 );
 				//hgio_scale( 1.0f, 1.0f );
 				//hgio_autoscale( 0 );
 				InitSysReq();
@@ -245,7 +245,7 @@ static void engine_handle_cmd(struct android_app* app, int32_t cmd) {
  */
 void android_main(struct android_app* state) {
     struct engine engine;
-
+ 
     // glueが削除されないように
     app_dummy();
 
@@ -316,6 +316,10 @@ void android_main(struct android_app* state) {
 			//hsp3eb_exec();
 			//engine_draw_frame(&engine);
         }
+        
+        
+         
+        
 			if ( (*p_runmode) >= RUNMODE_END ) {
 //				if ( (*p_runmode) == RUNMODE_ERROR ) {
 //					j_dispDialog( "HSPError", "Bye!", 0 );

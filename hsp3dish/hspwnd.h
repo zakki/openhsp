@@ -9,4 +9,9 @@
 #include "hspwnd_dish.h"
 #endif
 
+#ifdef HSPDISHGP
+#include "hspwnd_dishgp.h"
+#endif
+
+
 #endif

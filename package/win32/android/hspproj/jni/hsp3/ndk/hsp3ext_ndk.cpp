@@ -34,6 +34,10 @@ static int hsp3dish_devcontrol( char *cmd, int p1, int p2, int p3 )
         //AudioServicesPlayAlertSound(kSystemSoundID_Vibrate);
 		return 0;
 	}
+	if ( strcmp( cmd, "AdMob" )==0 ) {
+		j_callAdMob( p1 );
+		return 0;
+	}
 	return -1;
 }
 

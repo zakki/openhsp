@@ -9,5 +9,9 @@
 #include "hsp3gr_dish.h"
 #endif
 
+#ifdef HSPDISHGP
+#include "hsp3gr_dishgp.h"
+#endif
+
 
 #endif

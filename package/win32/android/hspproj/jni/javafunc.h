@@ -19,6 +19,7 @@ char *j_getinfo( int type );
 int j_callVibrator( int val );
 int j_dispDialog( char *msg1, char *msg2, int type );
 int j_callActivity( char *msg1, char *msg2, int type );
+int j_callAdMob( int val );
 
 #ifdef __cplusplus
 }
