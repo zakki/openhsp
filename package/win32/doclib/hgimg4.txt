@@ -26,9 +26,9 @@ HGIMG4 REFERENCE MANUAL                High Performance Graphic Image Plugin
 
 	HGIMG4は、以下のようなファイル構成になっています。
 
-		hgimg4.txt (このファイル)
 		hsp3gp.exe (実行用ランタイム)
 
+		docs/hgimg4.txt (このファイル)
 		commonフォルダ (HGIMG4ヘッダファイル)
 		hsphelpフォルダ (HGIMG4ヘルプファイル)
 		runtimeフォルダ (HGIMG4カスタムランタイム)
@@ -56,37 +56,82 @@ HGIMG4 REFERENCE MANUAL                High Performance Graphic Image Plugin
 
 ・命令一覧(メイン)
 
-	setcls
+	setcls mode,color,tex				画面消去設定
 
-	gpreset
-	gpsetprm
-	gpgetprm
-	gppostefx
-	gpuselight
+	gpreset	option					シーンを描画
+	gpsetprm prmid,value				グローバルパラメーターを設定
+	gpgetprm prmid,value				グローバルパラメーターを取得
+	gppostefx  postid,opt1,opt2			ポストエフェクト生成
+	gpuselight objid				ライトオブジェクトの切り替え
 
-	gpdelobj
-	gpcolormat
-	gptexmat
-	gpusermat
-	gpclone
-	gpload
-	gpmesh
-	gpfloor
-	gpbox
-	gpspr
-	gplight
-	setobjmode
-	gplookat
-	gppbind
+	delobj objid					オブジェクトの破棄
+
+	gpcolormat var,color,opt			カラーマテリアルの生成
+	gptexmat var,"file",opt				テクスチャマテリアルの生成
+	gpusermat var,"vsh","fsh",opt			カスタムマテリアルの生成
+
+	gpbox var,size,color,matobj			箱ノードを生成
+	gpfloor var,sizex,sizey,color,matobj		床ノードを生成
+	gpmesh var,sizex,sizey,color,matobj		板ノードを生成
+	gpload var,"file","name"			gpbモデルノードを生成
+	gpspr var,bufid,celid				2Dスプライトノードを生成
+
+	gplight opt,val1,val2				ライトノードを生成
+
+	gpclone var,objid				ノードを複製
+	setobjmode objid,value,mode			オブジェクトのモード設定
+	gplookat objid,x,y,z				指定座標に向けてノードを回転
+
+	gppbind objid,mass,friction			標準的な物理特性を設定
 
 
 ・命令一覧(描画命令)
 
-	celputm
-	gpdraw
+	celputm vxpos,vypos,vcelid,bufid,count		セルをまとめて描画する
+	gpdraw option					シーン内の全ノードを描画する
 
 
-・命令一覧(パラメーター設定)
+・命令一覧(オブジェクト操作)
+
+	getpos id,x,y,z					ノード座標を取得
+	setpos id,x,y,z					ノード座標を設定
+	addpos id,x,y,z					ノード座標を加算
+	getposi id,x,y,z				ノード座標を取得(整数値)
+
+	setang id,x,y,z					ノード回転を設定
+	addang id,x,y,z					ノード回転を加算
+
+	getquat id,x,y,z				ノード回転を取得(クォータニオン)
+	setquat id,x,y,z				ノード回転を設定(クォータニオン)
+	addquat id,x,y,z				ノード回転を加算(クォータニオン)
+
+	getscale id,x,y,z				ノード倍率を取得
+	setscale id,x,y,z				ノード倍率を設定
+	addscale id,x,y,z				ノード倍率を加算
+	getscalei id,x,y,z				ノード倍率を取得(整数値)
+
+	getdir id,x,y,z					ノード移動量を取得
+	setdir id,x,y,z					ノード移動量を設定
+	adddir id,x,y,z					ノード移動量を加算
+	getdiri id,x,y,z				ノード移動量を取得(整数値)
+
+	getwork id,x,y,z				ノードワーク値を取得
+	setwork id,x,y,z				ノードワーク値を設定
+	addwork id,x,y,z				ノードワーク値を加算
+	getworki id,x,y,z				ノードワーク値を取得(整数値)
+
+	getwork2 id,x,y,z				ノードワーク値2を取得
+	setwork2 id,x,y,z				ノードワーク値2を設定
+	addwork2 id,x,y,z				ノードワーク値2を加算
+	getwork2i id,x,y,z				ノードワーク値2を取得(整数値)
+
+	getcolor id,x,y,z				ノードRGBカラーを取得
+	setcolor id,x,y,z				ノードRGBカラーを設定
+	addcolor id,x,y,z				ノードRGBカラーを加算
+	getcolori id,x,y,z				ノードRGBカラーを取得(整数値)
+
+
+・命令一覧(補助)
 
 	selmoc id, mocofs				MOC情報を設定
 	selpos id					移動座標をMOC情報に設定
@@ -94,30 +139,12 @@ HGIMG4 REFERENCE MANUAL                High Performance Graphic Image Plugin
 	selscale id					スケールをMOC情報に設定
 	seldir id					移動量をMOC情報に設定
 
-	objset1 ofs,x					MOC情報を設定
-	objadd1 ofs,x					MOC情報を加算
-	objsetf1 ofs,x					MOC情報を設定
-	objaddf1 ofs,x					MOC情報を加算
-	objset1r ofs,x					MOC情報を設定
+	objsetf3 x,y,z					選択中のMOC情報を設定
+	objaddf3 x,y,z					選択中のMOC情報を加算
 
-	objset2 ofs,x,y					MOC情報を設定
-	objadd2 ofs,x,y					MOC情報を加算
-	objsetf2 ofs,x,y				MOC情報を設定
-	objaddf2 ofs,x,y				MOC情報を加算
-	objset2r ofs,x,y				MOC情報を設定
-
-	objset3 x,y,z					MOC情報を設定
-	objadd3 x,y,z					MOC情報を加算
-	objsetf3 x,y,z					MOC情報を設定
-	objaddf3 x,y,z					MOC情報を加算
-	objset3r x,y,z					MOC情報を設定
-
-	objgetfv fv					MOC情報を取得
-	objsetfv fv					MOC情報を設定
-	objaddfv fv					MOC情報を加算
-	objgetv v					MOC情報を整数値で取得
-	objsetv v					MOC情報を整数値で設定
-	objgetstr sval					MOC情報を文字列で取得
+	objgetfv fv					選択中のMOC情報を取得
+	objsetfv fv					選択中のMOC情報を設定
+	objaddfv fv					選択中のMOC情報を加算
 
 	fvset fv,x,y,z					ベクトル設定
 	fvseti fv,x,y,z					整数値からベクトル設定
@@ -204,6 +231,72 @@ HGIMG4 REFERENCE MANUAL                High Performance Graphic Image Plugin
 ・3D動作の概要
 
 	HGIMG4は、シンプルで柔軟性のある3D描画システムを提供します。
+	重要な構成単位が、「シーン」と「ノードオブジェクト」になります。
+
+	「ノードオブジェクト」は、HGIMG4の操作対象となるもので、
+	「ノード」「オブジェクト」とも呼ばれています。
+	「ノードオブジェクト」は、3D世界を構成する要素すべてを含んでおり、
+	それぞれが独自の番号(ID)を持っています。
+
+	「ノードオブジェクト」には、以下の種類があります。
+
+		「カメラ(視点)」
+		「ライト(光源)」
+		「3Dモデル(物体)」
+		「エミッター(パーティクル発生源)」
+
+	ノードオブジェクトは、以下の情報を持っています。
+
+		識別番号(ID)
+		X,Y,Z座標(Pos)
+		X,Y,Z回転(Ang)
+		X,Y,Z倍率(Scale)
+		X,Y,Z移動量(Dir)
+		R,G,Bカラー(Color)
+		ワーク値(X,Y,Z,W)(Work,Work2)
+		マテリアル特性(MatID)
+		物理特性(PhyID)
+
+	「シーン」は、複数の「ノードオブジェクト」を含めた世界全体を指します。
+	HGIMG4では、「シーン」に登録された「ノードオブジェクト」がレンダリング(描画)の
+	対象となります。
+
+	一般的なプログラムの流れとしては、以下のようになります。
+
+		gpreset命令でシーン全体をリセット
+			↓
+		必要なノードオブジェクトをシーンに登録する
+			↓
+		ノードオブジェクト情報の設定を適切に行なう
+			↓
+		描画ループに入る(gpdraw命令でシーンの描画を行なう)
+
+	シーンにノードオブジェクトを追加するための命令として以下が用意されています。
+
+		gpbox var,size,color,matobj			箱ノードを生成
+		gpfloor var,sizex,sizey,color,matobj		床ノードを生成
+		gpmesh var,sizex,sizey,color,matobj		板ノードを生成
+		gpload var,"file","name"			gpbモデルノードを生成
+		gpspr var,bufid,celid				2Dスプライトノードを生成
+
+		gplight opt,val1,val2				ライトノードを生成
+
+	シーンに追加されたノードオブジェクトIDは、生成時に指定された変数に代入されます。
+	以降は、ノードオブジェクトIDを介して各種情報を操作することが可能です。
+
+
+・モデルデータについて
+
+	gpload命令で読み込むためのファイル(.gpb形式)を生成するためのGPBコンバーターが
+	同梱されています。
+
+		gpbconv.exe
+
+	を起動することで、GUIによるファイル変換ツールが起動します。
+	(内部でコマンドラインツールのgameplay-encoder.exeを呼び出します)
+
+	.gpb形式はfbx形式から変換することが可能です。
+	fbx形式は、Autodesk社の3Dツールで使用されている標準的な3D形式です。
 
 
 ・現バージョンでの注意点
@@ -215,8 +308,10 @@ HGIMG4 REFERENCE MANUAL                High Performance Graphic Image Plugin
 	・モデルアニメーションの各種コントロール
 	・マテリアルパラメーターの詳細設定
 	・コリジョンと物理パラメーターの詳細設定
+	・HGIMG3相当のイベント機能を実装
 	・ポストエフェクト(マルチパスレンダリング)に関する設定
 	・日本語フォントのサポート
+	・パーティクルとエミッターの詳細設定
 	・マルチテクスチャ、バップマップ、ハイトマップ、LODサポート
 	・マルチプラットフォーム化(iOS、Android)
 
