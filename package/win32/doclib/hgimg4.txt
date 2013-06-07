@@ -68,7 +68,7 @@ HGIMG4 REFERENCE MANUAL                High Performance Graphic Image Plugin
 
 	gpcolormat var,color,opt			カラーマテリアルの生成
 	gptexmat var,"file",opt				テクスチャマテリアルの生成
-	gpusermat var,"vsh","fsh",opt			カスタムマテリアルの生成
+	gpusermat var,"vsh","fsh","defs",color,opt	カスタムマテリアルの生成
 
 	gpbox var,size,color,matobj			箱ノードを生成
 	gpfloor var,sizex,sizey,color,matobj		床ノードを生成
@@ -76,7 +76,7 @@ HGIMG4 REFERENCE MANUAL                High Performance Graphic Image Plugin
 	gpload var,"file","name"			gpbモデルノードを生成
 	gpspr var,bufid,celid				2Dスプライトノードを生成
 
-	gplight opt,val1,val2				ライトノードを生成
+	gplight var,opt					ライトノードを生成
 
 	gpclone var,objid				ノードを複製
 	setobjmode objid,value,mode			オブジェクトのモード設定
@@ -184,6 +184,25 @@ HGIMG4 REFERENCE MANUAL                High Performance Graphic Image Plugin
 	参照してください。
 
 
+・HGIMG3との違い
+
+	HGIMG4では、基本的にHGIMG3とソースコードの互換性はありません。
+	しかし、HGIMG3に触れたことがあるユーザーであれば、命令体系やシステム的に継承されている
+	点が多いため比較的容易に移行することができるでしょう。
+
+	HGIMG3との主な違いは以下の通りです。
+
+	・HGIMG3ではモデルを生成して、オブジェクトに割り当てていましたが、HGIMG4では
+	　オブジェクト(ノードオブジェクト)を直接生成して配置する形になります。
+	・ライトの反映、テクスチャ、色、半透明設定などの情報はマテリアルオブジェクトとして
+	　生成され、オブジェクトに割り当てる形になります。HGIMG3でsetefx命令により指定されていた
+	　マテリアルの設定は利用できません。
+	・HGIMG4ではオブジェクトの回転情報を内部ではクォータニオン形式で保持しています。
+	　HGIMG3と同様にX,Y,Z回転の角度を与えることも可能ですが、HGIMG3と異なる回転姿勢になる
+	　可能性があります。
+	・同じモデルを複数配置するような場合は、クローン(gpclone命令)を利用することが推奨されます。
+
+
 ・初期化と描画の方法
 
 	初期化を以下の手順に従って行なって下さい。
@@ -285,7 +304,27 @@ HGIMG4 REFERENCE MANUAL                High Performance Graphic Image Plugin
 	以降は、ノードオブジェクトIDを介して各種情報を操作することが可能です。
 
 
-・モデルデータについて
+・フレームレートの取得
+
+	getreq命令により、描画時のフレームレートを取得することができます。
+
+		getreq fps,SYSREQ_FPS
+
+	上の例では、変数fpsにフレームレート(1秒間に画面が描画された回数)を代入します。
+	フレームレートは、基本的に描画ループ(redraw 0～redraw 1の繰り返し)で指定される
+	await命令の待ち時間で決定されます。
+	フレームレートを一定に保ち、画面のちらつき(ティアリング)を防止するために、
+	VSYNC待ち(垂直同期待ち)を指定することができます。
+
+		setreq SYSREQ_VSYNC,1
+		gpreset
+
+	上のように、gpresetの前でsetreq命令によりVSYNC待ちを有効にしてください。
+	これにより、通常は秒間60フレームごとの動作となります。
+	(その場合でも、await命令は入れるようにしてください)
+
+
+・3Dモデルデータ
 
 	gpload命令で読み込むためのファイル(.gpb形式)を生成するためのGPBコンバーターが
 	同梱されています。
@@ -295,8 +334,17 @@ HGIMG4 REFERENCE MANUAL                High Performance Graphic Image Plugin
 	を起動することで、GUIによるファイル変換ツールが起動します。
 	(内部でコマンドラインツールのgameplay-encoder.exeを呼び出します)
 
+	.gpb形式とともに読み込まれるマテリアル情報(.material)も、GPBコンバーターから
+	出力が可能です。.materialは、テキスト形式のファイルなので、通常のテキストエディタで
+	閲覧したり、必要に応じて内容を編集することが可能です。
+
 	.gpb形式はfbx形式から変換することが可能です。
 	fbx形式は、Autodesk社の3Dツールで使用されている標準的な3D形式です。
+	http://www.autodesk.co.jp/adsk/servlet/pc/index?siteID=1169823&id=14945696
+
+	他の形式からfbxに変換するためのFBX Converterが公開されています。
+	これにより、OBJ, DXF, DAE(Collada), 3DSの形式から変換することができます。
+	http://usa.autodesk.com/adsk/servlet/pc/item?siteID=123112&id=10775855
 
 
 ・現バージョンでの注意点
