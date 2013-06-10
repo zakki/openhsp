@@ -147,6 +147,7 @@ public:
 	void Width( int x, int y, int wposx, int wposy, int mode );
 	void Title( char *str );
 	void Setcolor( int a1, int a2, int a3 );
+	void Setcolor( int icolor );
 	void SetHSVColor( int hval, int sval, int vval );
 	int BmpSave( char *fname );
 	void GetClientSize( int *xsize, int *ysize );
@@ -281,6 +282,8 @@ public:
 
 	int		mtouch_num;					// Active Multi-Touch points
 	HSP3MTOUCH mtouch[BMSCR_MAX_MTOUCH];	// Multi-Touch Info
+
+	float	colorvalue[4];				// ColorRGB value each 0.0Å`1.0
 
 private:
 //	void Blt( int mode, Bmscr *src, int xx, int yy, int asx, int asy );
@@ -424,6 +427,8 @@ typedef struct BMSCR
 
 	int		mtouch_num;					// Active Multi-Touch points
 	HSP3MTOUCH mtouch[BMSCR_MAX_MTOUCH];	// Multi-Touch Info
+
+	float	colorvalue[4];				// ColorRGB value each 0.0Å`1.0
 
 } BMSCR;
 

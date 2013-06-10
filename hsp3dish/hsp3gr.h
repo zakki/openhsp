@@ -10,7 +10,7 @@
 #endif
 
 #ifdef HSPDISHGP
-#include "hsp3gr_dishgp.h"
+#include "hsp3gr_dish.h"
 #endif
 
 

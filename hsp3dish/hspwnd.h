@@ -10,7 +10,7 @@
 #endif
 
 #ifdef HSPDISHGP
-#include "hspwnd_dishgp.h"
+#include "hspwnd_dish.h"
 #endif
 
 

@@ -52,6 +52,8 @@ void hgio_copy( BMSCR *bm, short xx, short yy, short srcsx, short srcsy, BMSCR *
 void hgio_copyrot( BMSCR *bm, short xx, short yy, short srcsx, short srcsy, float ofsx, float ofsy, BMSCR *bmsrc, float psx, float psy, float ang );
 void hgio_fillrot( BMSCR *bm, float x, float y, float sx, float sy, float ang );
 
+int hgio_celputmulti( BMSCR *bm, int *xpos, int *ypos, int *cel, int count, BMSCR *bmsrc );
+
 void hgio_setcenter( float x, float y );
 void hgio_drawsprite( hgmodel *mdl, HGMODEL_DRAWPRM *prm );
 
