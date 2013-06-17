@@ -1029,7 +1029,7 @@ static int cmdfunc_extcmd( int cmd )
 	case 0x3e:								// celput
 		{
 		Bmscr *bm2;
-		double zx,zy,rot;
+		HSPREAL zx,zy,rot;
 
 		p1=code_getdi(1);
 		p2=code_getdi(0);
@@ -1228,17 +1228,38 @@ static int cmdfunc_extcmd( int cmd )
 		game->resetScreen( p1 );
 		break;
 	case 0x61:								// gpdraw
-		p1 = code_getdi( 0 );
+		p1 = code_getdi( -1 );
 		game->drawAll( p1 );
+		if ( p1 & GPDRAW_OPT_DRAW2D ) {
+			hgio_draw_gpsprite( bmscr, false );
+		}
+		if ( p1 & GPDRAW_OPT_DRAW2D_LATE ) {
+			hgio_draw_gpsprite( bmscr, true );
+		}
 		break;
 	case 0x62:								// gpusescene
 		p1 = code_getdi( 0 );
 		game->selectScene( p1 );
 		break;
 	case 0x63:								// gpsetprm
+		p1 = code_getdi( 0 );
+		p2 = code_getdi( 0 );
+		p3 = code_getdi( 0 );
+		p4 = game->setObjectPrm( p1, p2, p3 );
+		if ( p4 < 0 ) throw HSPERR_ILLEGAL_FUNCTION;
 		break;
 	case 0x64:								// gpgetprm
+		{
+		PVal *p_pval;
+		APTR p_aptr;
+		p_aptr = code_getva( &p_pval );
+		p1 = code_getdi( 0 );
+		p2 = code_getdi( 0 );
+		p4 = game->getObjectPrm( p1, p2, &p6 );
+		if ( p4 < 0 ) throw HSPERR_ILLEGAL_FUNCTION;
+		code_setva( p_pval, p_aptr, HSPVAR_FLAG_INT, &p6 );
 		break;
+		}
 	case 0x65:								// gppostefx
 		break;
 	case 0x66:								// gpuselight
@@ -1277,7 +1298,44 @@ static int cmdfunc_extcmd( int cmd )
 		mat->setState( fname, ps );
 		break;
 		}
-
+	case 0x6a:								// gpviewport
+		p1 = code_getdi( 0 );
+		p2 = code_getdi( 0 );
+		p3 = code_getdi( bmscr->sx );
+		p4 = code_getdi( bmscr->sy );
+		game->updateViewport( p1, p2, p3, p4 );
+		break;
+	case 0x6b:								// setobjname
+		{
+		gameplay::Node *node;
+		char *ps;
+		p1 = code_getdi( 0 );
+		ps = code_gets();
+		node = game->getNode( p1 );
+		if ( node == NULL ) throw HSPERR_ILLEGAL_FUNCTION;
+		node->setId( (const char *)ps );
+		break;
+		}
+	case 0x6c:								// getobjname
+		{
+		gameplay::Node *node;
+		PVal *p_pval;
+		APTR p_aptr;
+		char *str;
+		p_aptr = code_getva( &p_pval );
+		p1 = code_getdi( 0 );
+		node = game->getNode( p1 );
+		if ( node == NULL ) throw HSPERR_ILLEGAL_FUNCTION;
+		str = (char *)node->getId();
+		code_setva( p_pval, p_aptr, HSPVAR_FLAG_STR, &str );
+		break;
+		}
+	case 0x6d:								// setborder
+		break;
+	case 0x6e:								// findobj
+		break;
+	case 0x6f:								// nextobj
+		break;
 
 	case 0x70:								// gpdelobj
 		p1 = code_getdi( 0 );
@@ -1358,7 +1416,8 @@ static int cmdfunc_extcmd( int cmd )
 		p_aptr = code_getva( &p_pval );
 		ps = code_gets();
 		strncpy( fname, ps, HSP_MAX_PATH );
-		ps = code_gets();
+		ps = code_getds("");
+		if ( *ps == 0 ) { ps = NULL; }
 		p6 = game->makeModelNode( fname, ps );
 		code_setva( p_pval, p_aptr, HSPVAR_FLAG_INT, &p6 );
 		break;
@@ -1402,9 +1461,20 @@ static int cmdfunc_extcmd( int cmd )
 		break;
 		}
 	case 0x79:								// gpspr
+		{
+		Bmscr *bm2;
+		PVal *p_pval;
+		APTR p_aptr;
+		p_aptr = code_getva( &p_pval );
 		p1 = code_getdi( 0 );
-		//game->drawTest( p1 );
+		p2 = code_getdi( 0 );
+		p3 = code_getdi( 3 );
+		bm2 = wnd->GetBmscrSafe( p1 );	// “]‘—Œ³‚ÌBMSCR‚ðŽæ“¾
+		if ( bm2 == NULL ) code_puterror( HSPERR_ILLEGAL_FUNCTION );
+		p6 = game->makeSpriteObj( p2, p3, bm2 );
+		code_setva( p_pval, p_aptr, HSPVAR_FLAG_INT, &p6 );
 		break;
+		}
 	case 0x7a:								// gplight
 		p1 = code_getdi( 0 );
 		p2 = code_getdi( 0 );
@@ -1631,7 +1701,37 @@ static int cmdfunc_extcmd( int cmd )
 		}
 		break;
 		}
-
+	case 0xd7:								// selmoc
+		p1 = code_getdi( 0 );
+		p2 = code_getdi( 0 );
+		select_objid = p1;
+		select_objmoc = p2;
+		break;
+	case 0xd8:								// gpcnvaxis
+		break;
+	case 0xd9:								// getcoli
+		{
+		PVal *p_pval;
+		APTR p_aptr;
+		p_aptr = code_getva( &p_pval );
+		p1 = code_getdi( 0 );
+		fp1 = (float)code_getdd( 1.0 );
+		p6 = 0;
+		code_setva( p_pval, p_aptr, HSPVAR_FLAG_INT, &p6 );
+		break;
+		}
+	case 0xda:								// setcoli
+		{
+		gpobj *obj;
+		p1 = code_getdi( 0 );
+		p2 = code_getdi( 0 );
+		p3 = code_getdi( 0 );
+		obj = game->getObj( p1 );
+		if ( obj == NULL ) throw HSPERR_ILLEGAL_FUNCTION;
+		obj->_mygroup = p2;
+		obj->_colgroup = p3;
+		break;
+		}
 
 	case 0xe0:								// fvset
 		p_vec = code_getvvec();

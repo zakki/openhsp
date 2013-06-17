@@ -81,24 +81,55 @@ MOC_MAX
 #define GPOBJ_MATOPT_NOZWRITE (16)
 #define GPOBJ_MATOPT_BLENDADD (32)
 
+#define GPDRAW_OPT_OBJUPDATE (1)
+#define GPDRAW_OPT_DRAWSCENE (2)
+#define GPDRAW_OPT_DRAW2D (4)
+#define GPDRAW_OPT_DRAWSCENE_LATE (8)
+#define GPDRAW_OPT_DRAW2D_LATE (16)
+
+
+//  HGIMG4 Sprite Object
+class gpspr {
+public:
+	gpspr();
+	~gpspr();
+	void reset( int id, int celid, int gmode, void *bmscr );
+
+	int _id;							// 親オブジェクトID
+	int _celid;							// 表示セルID
+	int _gmode;							// gmode値
+	void *_bmscr;						// 参照元bmscrポインタ
+	Vector4 _pos;						// 位置
+	Vector4 _ang;						// 回転角度
+	Vector4 _scale;						// スケール
+};
+
 
 //  HGIMG4 Node Object
 class gpobj {
 public:
 	gpobj();
 	~gpobj();
-	void reset( int id );
+	void reset( int id );				// 初期化
+	bool isVisible( bool lateflag );	// 表示できるか調べる
+	float getAlphaRate( void );			// Alpha値を取得する
 
 	short _flag;						// 存在フラグ
 	short _mark;						// マーク処理用
 	int _mode;							// モード(GPOBJ_MODE_*)
 	int _id;							// ノードオブジェクトID
+	int	_transparent;					// 透明度(0=透明/255=不透明)
+	int	_mygroup;						// 自分のコリジョングループ
+	int	_colgroup;						// 対象のコリジョングループ
 	int _shape;							// 生成された形状
+	int _usegpmat;						// gpmat使用時のID(-1=固有Material)
+	int _usegpphy;						// gpphy使用時のID(-1=固有Physics)
+	int _colilog;						// 衝突ログID
+	gpspr *_spr;						// 生成された2Dスプライト情報
 	Node *_node;						// 生成されたNode
 	Model *_model;						// 生成されたModel
 	Camera *_camera;					// 生成されたCamera
 	Light *_light;						// 生成されたLight
-	int _usegpmat;						// gpmat使用時のID(-1=固有Material)
 	Vector3 _sizevec;					// 生成されたサイズパラメーター
 	Vector4 _vec[GPOBJ_USERVEC_MAX];	// ワーク用ベクター
 };
@@ -137,12 +168,18 @@ public:
 	void hookSetSysReq( int reqid, int value );
 	void hookGetSysReq( int reqid );
 
+	void updateViewport( int x, int y, int w, int h );
+
 	gpobj *getObj( int id );
 	int deleteObj( int id );
 	gpobj *addObj( void );
 	Node *getNode( int objid );
 	Light *getLight( int lgtid );
 	Camera *getCamera( int camid );
+	int setObjName( int objid, char *name );
+	char *getObjName( int objid );
+	int getObjectPrm( int objid, int prmid, int *outptr );
+	int setObjectPrm( int objid, int prmid, int value );
 
 	gpmat *getMat( int id );
 	int deleteMat( int id );
@@ -157,6 +194,7 @@ public:
 
 	void drawAll( int option );
 	void drawNode( Node *node );
+	void updateAll( void );
 	void drawObj( gpobj *obj );
 
 	void selectScene( int sceneid );
@@ -172,6 +210,7 @@ public:
 	int makeBoxNode( float size, int color, int matid=-1 );
 	int makeModelNode( char *fname, char *idname );
 	int makeCloneNode( int objid );
+	int makeSpriteObj( int celid, int gmode, void *bmscr );
 
 	int makeNewMat( Material* material, int mode = GPMAT_MODE_3D );
 	int makeNewMat2D( char *fname, int matopt );
@@ -196,6 +235,7 @@ public:
 	int setObjectVector( int objid, int moc, Vector4 *prm );
 	void setSceneVector( int moc, Vector4 *prm );
 	void setNodeVector( gpobj *obj, Node *node, int moc, Vector4 *prm );
+	void setSpriteVector( gpobj *obj, int moc, Vector4 *prm );
 
 	int addObjectVector( int objid, int moc, Vector4 *prm );
 	void addSceneVector( int moc, Vector4 *prm );
@@ -207,6 +247,11 @@ public:
 
 	// physics
 	int setPhysicsObjectAuto( int objid, float mass, float friction );
+
+	// sprite
+	gpspr *getSpriteObj( int objid );
+	void findSpriteObj( bool lateflag );
+	gpobj *getNextSpriteObj( void );
 
 	// utility function
 	void colorVector3( int color, Vector4 &vec );
@@ -260,9 +305,17 @@ protected:
 
 private:
 
+
+    /**
+     * update the scene each frame.
+     */
+	int updateObjBorder( int mode, Vector4 *pos, Vector4 *dir );
+	void updateObj( gpobj *obj );
+
     /**
      * Draws the scene each frame.
      */
+    bool updateNodeMaterial( Node* node, Material *material );
     bool drawScene(Node* node);
 	bool init2DRender( void );
 
@@ -274,6 +327,11 @@ private:
 	// gpobj
 	int _maxobj;
 	gpobj *_gpobj;
+	int _find_count;
+	int _find_mode;
+	int _find_group;
+	bool _find_lateflag;
+	gpobj *_find_gpobj;
 
 	// gpmat
 	int _maxmat;
@@ -294,6 +352,11 @@ private:
 	Camera *_cameraDefault;
 //	Node *_camera;
 	Quaternion _qcam_billboard;
+
+	// Obj support value
+	Vector3 border1;		// BORDER座標1
+	Vector3 border2;		// BORDER座標2
+
 
 	// preset flat mesh
     Matrix _projectionMatrix2D;

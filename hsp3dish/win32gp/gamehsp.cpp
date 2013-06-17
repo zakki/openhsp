@@ -37,16 +37,62 @@ gpobj::~gpobj()
 
 void gpobj::reset( int id )
 {
+	int i;
 	_mode = 0;
 	_mark = 0;
 	_shape = GPOBJ_SHAPE_NONE;
+	_spr = NULL;
 	_node = NULL;
 	_model = NULL;
 	_camera = NULL;
 	_light = NULL;
 	_flag = GPOBJ_FLAG_ENTRY;
 	_id = id;
+	_mygroup = 0;
+	_colgroup = 0;
+	_transparent = 255;
+
 	_usegpmat = -1;
+	_usegpphy = -1;
+	_colilog = -1;
+
+	for(i=0;i<GPOBJ_USERVEC_MAX;i++) {
+		_vec[i].set( Vector4::zero() );
+	}
+
+}
+
+
+bool gpobj::isVisible( bool lateflag )
+{
+	//	表示可能か調べる
+	//  ( GPOBJ_MODE_LATE指定時か、半透明時は手前の優先度として認識される )
+	//	( lateflag : true=手前の描画優先度 )
+	//
+	bool curflag;
+	if ( _flag == 0 ) return false;
+
+	if ( _mode & GPOBJ_MODE_LATE ) {
+		curflag = true;						// 手前を強制
+	} else {
+		if ( _transparent >= 255 ) {
+			curflag = false;				// 通常の優先順位
+		} else {
+			curflag = true;					// 透明を含む
+		}
+	}
+
+	return ( curflag == lateflag );
+}
+
+
+float gpobj::getAlphaRate( void )
+{
+	// Alpha値を取得する
+	// ( _transparent値を0.0～1.0に変換する)
+	if ( _transparent >= 255 ) return 1.0f;
+	if ( _transparent <= 0 ) return 0.0f;
+	return ( 1.0f / 255.0f ) * (float)_transparent;
 }
 
 
@@ -252,11 +298,27 @@ void gamehsp::resetScreen( int opt )
 	_deflight = makeNewLgt( -1, GPLGT_OPT_NORMAL );
 	selectLight( _deflight );
 
+	// ボーダー初期化
+	border1.set( -50.0f, 0.0f, -50.0f );
+	border2.set( 50.0f, 100.0f,  50.0f );
+
 	// 2D初期化
 	init2DRender();
 
 	//makeFloorNode( 20.0f, 20.0f, 0x404040 );
 	//makeModelNode( "res/mikuA","mikuA_root" );
+
+	// ビューポート初期化
+	updateViewport( 0, 0, getWidth(), getHeight() );
+
+}
+
+
+void gamehsp::updateViewport( int x, int y, int w, int h )
+{
+	Rectangle viewport;
+	viewport.set( (float)x, (float)y, (float)w, (float)h );
+	setViewport( viewport );
 }
 
 
@@ -291,6 +353,7 @@ bool gamehsp::init2DRender( void )
 	// 2D用のプロジェクション
 	//Matrix::createOrthographic(getWidth(), getHeight(), -1.0f, 1.0f, &_projectionMatrix2D);
 	Matrix::createOrthographicOffCenter( 0.0f, getWidth(), getHeight(), 0.0f, -1.0f, 1.0f, &_projectionMatrix2D);
+	_projectionMatrix2D.translate( 0.5f, 0.0f, 0.0f );						// 座標誤差修正のため0.5ドットずらす
 
 	// スプライト用のshader
 	_spriteEffect = Effect::createFromFile(SPRITE_VSH, SPRITE_FSH);
@@ -333,6 +396,25 @@ void gamehsp::selectScene( int sceneid )
 }
 
 
+int gamehsp::setObjName( int objid, char *name )
+{
+	Node *node;
+	node = getNode( objid );
+	if ( node == NULL ) return -1;
+	node->setId( name );
+	return 0;
+}
+
+
+char *gamehsp::getObjName( int objid )
+{
+	Node *node;
+	node = getNode( objid );
+	if ( node == NULL ) return NULL;
+	return (char *)node->getId();
+}
+
+	
 void gamehsp::addSceneVector( int ch, Vector4 *prm )
 {
 }
@@ -485,6 +567,42 @@ void gamehsp::setSceneVector( int ch, Vector4 *prm )
 }
 
 
+void gamehsp::setSpriteVector( gpobj *obj, int moc, Vector4 *prm )
+{
+	gpspr *spr;
+	spr = obj->_spr;
+	if ( spr == NULL ) return;
+
+	switch(moc) {
+	case MOC_POS:
+		spr->_pos.set( *prm );
+		break;
+	case MOC_SCALE:
+		spr->_scale.set( *prm );
+		break;
+	case MOC_DIR:
+		obj->_vec[GPOBJ_USERVEC_DIR] = *prm;
+		break;
+
+	case MOC_ANGX:
+	case MOC_ANGY:
+	case MOC_ANGZ:
+		spr->_ang.set( *prm );
+		break;
+
+	case MOC_COLOR:
+		obj->_vec[GPOBJ_USERVEC_COLOR] = *prm;
+		break;
+	case MOC_WORK:
+		obj->_vec[GPOBJ_USERVEC_WORK] = *prm;
+		break;
+	case MOC_WORK2:
+		obj->_vec[GPOBJ_USERVEC_WORK2] = *prm;
+		break;
+	}
+}
+
+
 void gamehsp::setNodeVector( gpobj *obj, Node *node, int moc, Vector4 *prm )
 {
 	switch(moc) {
@@ -570,6 +688,10 @@ int gamehsp::setObjectVector( int objid, int moc, Vector4 *prm )
 	if ( flag_id == 0 ) {
 		obj = getObj( objid );
 		if ( obj == NULL ) return -1;
+		if ( obj->_spr ) {
+			setSpriteVector( obj, moc, prm );
+			return 0;
+		}
 		setNodeVector( obj, obj->_node, moc, prm );
 		return 0;
 	}
@@ -689,22 +811,39 @@ void gamehsp::drawAll( int option )
 	Camera* camera = _scene->getActiveCamera();
 	m = camera->getNode()->getMatrix();
 	m.getRotation(&_qcam_billboard);
-/*
-	int i;
-	Node *node;
-	gpobj *obj = _gpobj;
 
-	for(i=0;i<_maxobj;i++) {
-		if ( obj->_flag ) {
-			node = obj->_node;
-			if ( node ) {
-				drawNode( obj );
-			}
-		}
-		obj++;
+	//	gpobjの内部動作更新
+	//
+	if ( option & GPDRAW_OPT_OBJUPDATE ) {
+		updateAll();
 	}
-*/
-	_scene->visit(this, &gamehsp::drawScene);
+
+	if ( option & GPDRAW_OPT_DRAWSCENE ) {
+		_scene->visit(this, &gamehsp::drawScene);
+	}
+}
+
+
+bool gamehsp::updateNodeMaterial( Node* node, Material *material )
+{
+	//	再帰的にノードのマテリアルを設定
+	//
+	Node *sub_node;
+	sub_node = node->getFirstChild();
+	if ( sub_node ) {
+		updateNodeMaterial( sub_node, material );
+	}
+	sub_node = node->getNextSibling();
+	if ( sub_node ) {
+		updateNodeMaterial( sub_node, material );
+	}
+
+	Model* model = node->getModel(); 
+    if (model)
+    {
+		model->setMaterial( material );
+    }
+	return true;
 }
 
 
@@ -737,16 +876,29 @@ bool gamehsp::drawScene(Node* node)
 }
 
 
-int gamehsp::drawFont( int x, int y, char *text, Vector4 *p_color, int size )
+int gamehsp::getObjectPrm( int objid, int prmid, int *outptr )
 {
-	// フォントで描画
-	int xsize;
-	if ( mFont == NULL ) return 0;
+	int *base_i;
+	gpobj *obj;
+	obj = getObj( objid );
+	if ( obj == NULL ) return -1;
+	if ( prmid < 0 ) return -1;
+	base_i = (int *)obj;
+	*outptr = base_i[prmid];
+	return 0;
+}
 
-    mFont->start();
-    xsize = mFont->drawText(text, x, y, *p_color, size );
-    mFont->finish();
-	return xsize;
+
+int gamehsp::setObjectPrm( int objid, int prmid, int value )
+{
+	int *base_i;
+	gpobj *obj;
+	obj = getObj( objid );
+	if ( obj == NULL ) return -1;
+	if ( prmid < 0 ) return -1;
+	base_i = (int *)obj;
+	base_i[prmid] = value;
+	return 0;
 }
 
 
@@ -769,6 +921,18 @@ int gamehsp::makeNullNode( void )
 	if ( _curscene >= 0 ) {
 		_scene->addNode( obj->_node );
 	}
+
+	return obj->_id;
+}
+
+
+int gamehsp::makeSpriteObj( int celid, int gmode, void *bmscr )
+{
+	gpobj *obj = addObj();
+	if ( obj == NULL ) return -1;
+
+	obj->_spr = new gpspr;
+	obj->_spr->reset( obj->_id, celid, gmode, bmscr );
 
 	return obj->_id;
 }
@@ -914,26 +1078,15 @@ int gamehsp::makeModelNode( char *fname, char *idname )
 	gpobj *obj = addObj();
 	if ( obj == NULL ) return -1;
 
-	//getpath( fname, fn, 1 );
-	strcpy( fn, fname );
+	getpath( fname, fn, 1 );
+	//strcpy( fn, fname );
 	strcpy( fn2, fn );
 	strcat( fn, ".gpb" );
 	strcat( fn2, ".material" );
 
     Bundle *bundle = Bundle::create( fn );
-    Node *mCubeNode = bundle->loadNode(idname);
-
-	if ( _curscene >= 0 ) {
-		_scene->addNode( mCubeNode );
-	}
-
-	//mCubeNode->scale( 0.2f );
-
-    Node *node = mCubeNode;
-	if ( node->getModel() == NULL ) {
-		node = mCubeNode->getFirstChild();
-	}
-	Model* model = node->getModel();
+	Node *rootNode;
+	Node *node;
 
 	Material* boxMaterial = Material::create( fn2 );
 
@@ -964,14 +1117,45 @@ int gamehsp::makeModelNode( char *fname, char *idname )
 		}
 	}
 
-	model->setMaterial( boxMaterial );
+	if ( idname ) {
+		rootNode = bundle->loadNode( idname );
+		if ( rootNode == NULL ) {
+			Alertf( "Node not found.(%s#%s)",fname,idname );
+			return -1;
+		}
+		updateNodeMaterial( rootNode, boxMaterial );
+
+	} else {
+
+		unsigned int i;
+		rootNode = Node::create();
+		for(i=0;i<bundle->getObjectCount();i++) {
+			node = bundle->loadNode( bundle->getObjectId(i) );
+			if ( node ) {
+				Model* model = node->getModel(); 
+			    if (model) {
+					model->setMaterial( boxMaterial );
+			    }
+				//Alertf( "#%d %s",i, bundle->getObjectId(i) );
+				rootNode->addChild( node );
+				SAFE_RELEASE(node);
+			}
+		}
+	}
+
+
+	if ( _curscene >= 0 ) {
+		_scene->addNode( rootNode );
+	}
+
+	//model->setMaterial( boxMaterial );
 
 	SAFE_RELEASE(bundle);
     SAFE_RELEASE(boxMaterial);
 
 	//nodetemp = mCubeNode;
-	mCubeNode->setUserPointer( obj, NULL );
-	obj->_node = mCubeNode;
+	rootNode->setUserPointer( obj, NULL );
+	obj->_node = rootNode;
 
 	// 初期化パラメーターを保存
 	obj->_shape = GPOBJ_SHAPE_MODEL;
@@ -1011,7 +1195,6 @@ int gamehsp::makeNewModelWithMat( gpobj *obj, Mesh *mesh, int matid )
 	obj->_usegpmat = matid;
 	return 0;
 }
-
 
 
 /*------------------------------------------------------------*/
@@ -1087,7 +1270,12 @@ int gamehsp::deleteObj( int id )
 	Material *material;
 	gpobj *obj = getObj( id );
 	if ( obj == NULL ) return -1;
+
 	obj->_flag = GPOBJ_FLAG_NONE;
+	if ( obj->_spr ) {
+		delete obj->_spr;
+		obj->_spr = NULL;
+	}
 	model = obj->_model;
 	if ( model ) {
 		if ( obj->_usegpmat < 0 ) {
@@ -1160,11 +1348,20 @@ int gamehsp::makeCloneNode( int objid )
 	Node *node;
 	obj = getObj( objid );
 	if ( obj == NULL ) return -1;
-	node = obj->_node;
-	if ( node == NULL ) return -1;
 
 	gpobj *newobj = addObj();
 	if ( newobj == NULL ) return -1;
+
+	if ( obj->_spr ) {
+		newobj->_spr = new gpspr;
+		newobj->_spr->reset( newobj->_id, obj->_spr->_celid, obj->_spr->_gmode, obj->_spr->_bmscr );
+		return newobj->_id;
+	}
+	
+	node = obj->_node;
+	if ( node == NULL ) {
+		return newobj->_id;
+	}
 
 	newobj->_mode = obj->_mode;
 	newobj->_usegpmat = obj->_usegpmat;
@@ -1183,6 +1380,183 @@ int gamehsp::makeCloneNode( int objid )
 	node->setUserPointer( obj, NULL );
 
 	return newobj->_id;
+}
+
+
+/*------------------------------------------------------------*/
+/*
+		gpobj update
+*/
+/*------------------------------------------------------------*/
+
+int gamehsp::updateObjBorder( int mode, Vector4 *pos, Vector4 *dir )
+{
+	//		自動範囲クリップ
+	//
+	int cflag,thru;
+	cflag = 0;
+	thru = GetSysReq( SYSREQ_THROUGHFLAG );
+		if ( thru & 1 ) {
+			if ( pos->x < border1.x ) {
+				pos->x = border2.x - ( border1.x - pos->x );
+			}
+			if ( pos->x > border2.x ) {
+				pos->x = border1.x + ( pos->x - border2.x );
+			}
+		}
+		if ( thru & 2 ) {
+			if ( pos->y < border1.y ) {
+				pos->y = border2.y - ( border1.y - pos->y );
+			}
+			if ( pos->y > border2.y ) {
+				pos->y = border1.y + ( pos->y - border2.y );
+			}
+		}
+		if ( thru & 4 ) {
+			if ( pos->z < border1.z ) {
+				pos->z = border2.z - ( border1.z - pos->z );
+			}
+			if ( pos->z > border2.z ) {
+				pos->z = border1.z + ( pos->z - border2.z );
+			}
+		}
+		if ( mode & GPOBJ_MODE_FLIP ) {
+			if ( pos->x < border1.x ) {
+				pos->x = border1.x;
+				dir->x *= -1.0f;
+			}
+			if ( pos->x > border2.x ) {
+				pos->x = border2.x;
+				dir->x *= -1.0f;
+			}
+			if ( pos->y < border1.y ) {
+				pos->y = border1.y;
+				dir->y *= -1.0f;
+			}
+			if ( pos->y > border2.y ) {
+				pos->y = border2.y;
+				dir->y *= -1.0f;
+			}
+			if ( pos->z < border1.z ) {
+				pos->z = border1.z;
+				dir->z *= -1.0f;
+			}
+			if ( pos->z > border2.z ) {
+				pos->z = border2.z;
+				dir->z *= -1.0f;
+			}
+		}
+		else {
+			if ( pos->x < border1.x ) {
+				cflag++;
+			}
+			if ( pos->x > border2.x ) {
+				cflag++;
+			}
+			if ( pos->y < border1.y ) {
+				cflag++;
+			}
+			if ( pos->y > border2.y ) {
+				cflag++;
+			}
+			if ( pos->z < border1.z ) {
+				cflag++;
+			}
+			if ( pos->z > border2.z ) {
+				cflag++;
+			}
+			if ( cflag ) {
+				return -1;
+			}
+		}
+
+	return 0;
+}
+
+void gamehsp::updateObj( gpobj *obj )
+{
+}
+
+void gamehsp::updateAll( void )
+{
+	/*
+		All update of gpobj
+	*/
+	int i;
+	gpobj *obj = _gpobj;
+	for(i=0;i<_maxobj;i++) {
+		if ( obj->_flag ) {
+			updateObj( obj );
+		}
+		obj++;
+	}
+}
+
+
+/*------------------------------------------------------------*/
+/*
+		gpspr Obj
+*/
+/*------------------------------------------------------------*/
+
+gpspr::gpspr()
+{
+	_id = -1;
+}
+
+gpspr::~gpspr()
+{
+}
+
+void gpspr::reset( int id, int celid, int gmode, void *bmscr )
+{
+	_id = id;
+	_celid = celid;
+	_gmode = gmode;
+	_bmscr = bmscr;
+	_pos.set( Vector4::zero() );
+	_ang.set( Vector4::zero() );
+	_scale.set( 1.0f, 1.0f, 1.0f, 1.0f );
+}
+
+
+gpspr *gamehsp::getSpriteObj( int objid )
+{
+	//	スプライト情報を返す
+	//
+	gpobj *obj = getObj( objid );
+	if ( obj == NULL ) return NULL;
+	return obj->_spr;
+}
+
+
+void gamehsp::findSpriteObj( bool lateflag )
+{
+	_find_count = 0;
+	_find_gpobj = _gpobj;
+	_find_lateflag = lateflag;
+}
+
+
+gpobj *gamehsp::getNextSpriteObj( void )
+{
+	gpobj *res;
+	while(1) {
+		if ( _find_count >= _maxobj ) { return NULL; }
+		if ( _find_gpobj->_flag ) {
+			if ( _find_gpobj->_spr ) {
+				if ( _find_gpobj->isVisible( _find_lateflag ) ) {
+					res = _find_gpobj;
+					break;
+				}
+			}
+		}
+		_find_count++;
+		_find_gpobj++;
+	}
+	_find_count++;
+	_find_gpobj++;
+	return res;
 }
 
 
@@ -1475,6 +1849,19 @@ Material* gamehsp::make2DMaterialForMesh( void )
 	state->setBlendSrc(RenderState::BLEND_SRC_ALPHA);
 	state->setBlendDst(RenderState::BLEND_ONE_MINUS_SRC_ALPHA);
 	return mesh_material;
+}
+
+
+int gamehsp::drawFont( int x, int y, char *text, Vector4 *p_color, int size )
+{
+	// フォントで描画
+	int xsize;
+	if ( mFont == NULL ) return 0;
+
+    mFont->start();
+    xsize = mFont->drawText(text, x, y, *p_color, size );
+    mFont->finish();
+	return xsize;
 }
 
 

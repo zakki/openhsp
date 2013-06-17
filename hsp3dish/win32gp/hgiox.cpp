@@ -387,8 +387,8 @@ void hgio_line( BMSCR *bm, float x, float y )
 	float b_val = bm->colorvalue[2];
 	game->setPolyDiffuse2D( r_val, g_val, b_val, 1.0f );
 
-	linebasex = x + 0.5f;
-	linebasey = y + 0.5f;
+	linebasex = x;
+	linebasey = y;
 }
 
 
@@ -402,8 +402,8 @@ void hgio_line2( float x, float y )
 
 	*v++ = linebasex; *v++ = linebasey; v++;
 	v+=4;
-	linebasex = x + 0.5f;
-	linebasey = y + 0.5f;
+	linebasex = x;
+	linebasey = y;
 	*v++ = linebasex; *v++ = linebasey; v++;
 
 	game->drawLineColor2D();
@@ -1180,5 +1180,51 @@ HWND hgio_gethwnd( void )
 {
 	return master_wnd;
 }
+
+
+/*------------------------------------------------------------*/
+/*
+		HGIMG4 Sprite service
+*/
+/*------------------------------------------------------------*/
+
+void hgio_draw_gpsprite( Bmscr *bmscr, bool lateflag )
+{
+	float zx,zy,rot;
+	gpobj *obj;
+	gpspr *spr;
+	game->findSpriteObj( lateflag );
+	while(1) {
+		obj = game->getNextSpriteObj();
+		if ( obj == NULL ) break;
+		spr = obj->_spr;
+		if ( spr ) {
+
+			zx = spr->_scale.x;
+			zy = spr->_scale.y;
+			rot = spr->_ang.z;
+
+			bmscr->cx = (int)spr->_pos.x;
+			bmscr->cy = (int)spr->_pos.y;
+			bmscr->gmode = spr->_gmode;
+			bmscr->gfrate = obj->_transparent;
+
+			if (( rot == 0.0f )&&( zx == 1.0f )&&( zy == 1.0f )) {
+				//	•ÏŒ`‚È‚µ
+				bmscr->CelPut( (Bmscr *)spr->_bmscr, spr->_celid );
+			} else {
+				//	•ÏŒ`‚ ‚è
+				bmscr->CelPut( (Bmscr *)spr->_bmscr, spr->_celid, zx, zy, rot );
+			}
+		}
+	}
+
+}
+
+
+
+
+
+
 
 #endif
