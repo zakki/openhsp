@@ -5,8 +5,10 @@ Hot Soup Processor ver3.4                           HSP : Hot Soup Processor
 
 ・hsp3関連 更新履歴
 
-	2013/05/10 3.4β2
+	2013/06/17 3.4β2
 
+	[HGIMG4] 最初のバージョンを同梱
+	[HSP3Dish] Windows版でmp3のボリューム設定が反映されないことがある不具合を修正
 	[HSP3Dish][android] アプリのレジューム時にテクスチャデータが復帰しないことがある不具合を修正
 	[HSP3Dish][android] HSP3Dish helperで新規プロジェクト作成が失敗することがある不具合を修正
 	[HSP3Dish][android] getreq命令でPLATFORM_ANDROIDが正しく取得できない不具合を修正

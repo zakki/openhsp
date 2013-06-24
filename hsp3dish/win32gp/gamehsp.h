@@ -31,8 +31,7 @@ using namespace gameplay;
 #define GPOBJ_MODE_SORT (0x400)
 #define GPOBJ_MODE_LATE (0x4000)
 
-#define GPOBJ_ID_PHYFLAG  (0x2000000)
-#define GPOBJ_ID_MATFLAG  (0x800000)
+#define GPOBJ_ID_MATFLAG  (0x200000)
 #define GPOBJ_ID_FLAGBIT (0xff00000)
 #define GPOBJ_ID_FLAGMASK (0x0fffff)
 
@@ -64,11 +63,31 @@ MOC_ANGZ,
 MOC_MAX
 };
 
-#define GPOBJ_USERVEC_DIR 0
-#define GPOBJ_USERVEC_COLOR 1
-#define GPOBJ_USERVEC_WORK 2
-#define GPOBJ_USERVEC_WORK2 3
-#define GPOBJ_USERVEC_MAX 4
+enum {
+GPOBJ_USERVEC_DIR = 0,
+GPOBJ_USERVEC_COLOR,
+GPOBJ_USERVEC_WORK,
+GPOBJ_USERVEC_WORK2,
+GPOBJ_USERVEC_MAX
+};
+
+enum {
+GPPSET_ENABLE = 0,
+GPPSET_FRICTION,
+GPPSET_DAMPING,
+GPPSET_KINEMATIC,
+GPPSET_ANISOTROPIC_FRICTION,
+GPPSET_GRAVITY,
+GPPSET_LINEAR_FACTOR,
+GPPSET_ANGULAR_FACTOR,
+GPPSET_ANGULAR_VELOCITY,
+GPPSET_LINEAR_VELOCITY,
+GPPSET_MAX
+};
+
+#define GPOBJ_PRM_ID_NONE (0)
+#define GPOBJ_PRM_ID_SPR (0x100)
+#define GPOBJ_PRM_ID_CLOG (0x200)
 
 #define GPOBJ_MARK_UPDATE_POS (0x100)
 #define GPOBJ_MARK_UPDATE_ANG (0x200)
@@ -94,6 +113,7 @@ public:
 	gpspr();
 	~gpspr();
 	void reset( int id, int celid, int gmode, void *bmscr );
+	int getDistanceHit( Vector3 *v, float size );
 
 	int _id;							// 親オブジェクトID
 	int _celid;							// 表示セルID
@@ -111,21 +131,23 @@ public:
 	gpobj();
 	~gpobj();
 	void reset( int id );				// 初期化
-	bool isVisible( bool lateflag );	// 表示できるか調べる
+	bool isVisible( void );				// 表示できるか調べる
+	bool isVisible( bool lateflag );	// 表示できるか調べる(lateflagあり)
 	float getAlphaRate( void );			// Alpha値を取得する
 
 	short _flag;						// 存在フラグ
 	short _mark;						// マーク処理用
 	int _mode;							// モード(GPOBJ_MODE_*)
 	int _id;							// ノードオブジェクトID
+	int _timer;							// タイマー値
 	int	_transparent;					// 透明度(0=透明/255=不透明)
 	int	_mygroup;						// 自分のコリジョングループ
 	int	_colgroup;						// 対象のコリジョングループ
 	int _shape;							// 生成された形状
 	int _usegpmat;						// gpmat使用時のID(-1=固有Material)
-	int _usegpphy;						// gpphy使用時のID(-1=固有Physics)
 	int _colilog;						// 衝突ログID
 	gpspr *_spr;						// 生成された2Dスプライト情報
+	gpphy *_phy;						// 生成されたコリジョン情報
 	Node *_node;						// 生成されたNode
 	Model *_model;						// 生成されたModel
 	Camera *_camera;					// 生成されたCamera
@@ -164,6 +186,7 @@ public:
 	void resetScreen( int opt=0 );
 	void deleteAll( void );
 	void deleteObjectID( int id );
+	int setObjectPool( int startid, int num );
 
 	void hookSetSysReq( int reqid, int value );
 	void hookGetSysReq( int reqid );
@@ -178,6 +201,7 @@ public:
 	Camera *getCamera( int camid );
 	int setObjName( int objid, char *name );
 	char *getObjName( int objid );
+	int *getObjectPrmPtr( int objid, int prmid );
 	int getObjectPrm( int objid, int prmid, int *outptr );
 	int setObjectPrm( int objid, int prmid, int value );
 
@@ -187,15 +211,13 @@ public:
 
 	Material *getMaterial( int matid );
 
-	gpphy *getPhy( int id );
-	int deletePhy( int id );
-	gpphy *addPhy( void );
-	PhysicsRigidBody::Parameters *getParameters( int phyid );
-
 	void drawAll( int option );
 	void drawNode( Node *node );
 	void updateAll( void );
 	void drawObj( gpobj *obj );
+	int updateObjColi( int objid, float size, int addcol );
+	void findeObj( int exmode, int group );
+	gpobj *getNextObj( void );
 
 	void selectScene( int sceneid );
 	void selectLight( int lightid );
@@ -214,7 +236,6 @@ public:
 
 	int makeNewMat( Material* material, int mode = GPMAT_MODE_3D );
 	int makeNewMat2D( char *fname, int matopt );
-	int makeNewPhy( int phyopt );
 	int makeNewLgt( int id, int lgtopt, float range=1.0f, float inner=0.5f, float outer=1.0f );
 	int makeNewCam( int id, float fov, float aspect, float near, float far );
 
@@ -232,6 +253,8 @@ public:
 
 	int getObjectVector( int objid, int moc, Vector4 *prm );
 	void getNodeVector( gpobj *obj, Node *node, int moc, Vector4 *prm );
+	void getSpriteVector( gpobj *obj, int moc, Vector4 *prm );
+
 	int setObjectVector( int objid, int moc, Vector4 *prm );
 	void setSceneVector( int moc, Vector4 *prm );
 	void setNodeVector( gpobj *obj, Node *node, int moc, Vector4 *prm );
@@ -240,13 +263,18 @@ public:
 	int addObjectVector( int objid, int moc, Vector4 *prm );
 	void addSceneVector( int moc, Vector4 *prm );
 	void addNodeVector( gpobj *obj, Node *node, int moc, Vector4 *prm );
+	void addSpriteVector( gpobj *obj, int moc, Vector4 *prm );
+
 	int lookAtObject( int objid, Vector4 *prm );
 	void lookAtNode(Node* node, const Vector3& target );
 
 	void updateLightVector( gpobj *obj, int moc );
 
 	// physics
-	int setPhysicsObjectAuto( int objid, float mass, float friction );
+	gpphy *getPhy( int id );
+	int setObjectBindPhysics( int objid, float mass, float friction );
+	gpphy *setPhysicsObjectAuto( gpobj *obj, float mass, float friction );
+	int objectPhysicsApply( int objid, int type, Vector3 *prm );
 
 	// sprite
 	gpspr *getSpriteObj( int objid );
@@ -259,6 +287,8 @@ public:
 	void attachColorMaterial( Model *model, int icolor );
 	Mesh *createCubeMesh( float size );
 	Material*make2DMaterialForMesh( void );
+	void setBorder( float x0, float x1, float y0, float y1, float z0, float z1 );
+	void getBorder( Vector3 *v1, Vector3 *v2 );
 
 	// 2D draw function
 	float *startPolyTex2D( gpmat *mat );
@@ -309,14 +339,14 @@ private:
     /**
      * update the scene each frame.
      */
-	int updateObjBorder( int mode, Vector4 *pos, Vector4 *dir );
+	int updateObjBorder( int mode, Vector3 *pos, Vector4 *dir );
 	void updateObj( gpobj *obj );
 
     /**
      * Draws the scene each frame.
      */
     bool updateNodeMaterial( Node* node, Material *material );
-    bool drawScene(Node* node);
+	bool drawScene(Node* node);
 	bool init2DRender( void );
 
 	Font*	mFont;
@@ -326,9 +356,11 @@ private:
 
 	// gpobj
 	int _maxobj;
+	int _objpool_startid;
+	int _objpool_max;
 	gpobj *_gpobj;
 	int _find_count;
-	int _find_mode;
+	int _find_exmode;
 	int _find_group;
 	bool _find_lateflag;
 	gpobj *_find_gpobj;
@@ -337,20 +369,15 @@ private:
 	int _maxmat;
 	gpmat *_gpmat;
 
-	// gpphy
-	int _maxphy;
-	gpphy *_gpphy;
-	int _defphysics;
-
 	// default scene
 	int _curscene;
 	int _curlight;
 	int _deflight;
 	int _curcamera;
 	int _defcamera;
+	bool _scenedraw_lateflag;
 	Scene *_scene;
 	Camera *_cameraDefault;
-//	Node *_camera;
 	Quaternion _qcam_billboard;
 
 	// Obj support value

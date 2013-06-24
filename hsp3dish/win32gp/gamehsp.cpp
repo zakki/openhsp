@@ -42,6 +42,7 @@ void gpobj::reset( int id )
 	_mark = 0;
 	_shape = GPOBJ_SHAPE_NONE;
 	_spr = NULL;
+	_phy = NULL;
 	_node = NULL;
 	_model = NULL;
 	_camera = NULL;
@@ -53,13 +54,24 @@ void gpobj::reset( int id )
 	_transparent = 255;
 
 	_usegpmat = -1;
-	_usegpphy = -1;
 	_colilog = -1;
 
 	for(i=0;i<GPOBJ_USERVEC_MAX;i++) {
 		_vec[i].set( Vector4::zero() );
 	}
 
+}
+
+
+bool gpobj::isVisible( void )
+{
+	//	表示可能か調べる
+	//
+	if ( _flag == 0 ) return false;
+	if ( _mode & GPOBJ_MODE_HIDE ) {		// 非表示設定
+		return false;
+	}
+	return true;
 }
 
 
@@ -72,6 +84,9 @@ bool gpobj::isVisible( bool lateflag )
 	bool curflag;
 	if ( _flag == 0 ) return false;
 
+	if ( _mode & GPOBJ_MODE_HIDE ) {		// 非表示設定
+		return false;
+	}
 	if ( _mode & GPOBJ_MODE_LATE ) {
 		curflag = true;						// 手前を強制
 	} else {
@@ -109,7 +124,6 @@ gamehsp::gamehsp()
 	_maxobj = 0;
 	_gpobj = NULL;
 	_gpmat = NULL;
-	_gpphy = NULL;
 	_colrate = 1.0f / 255.0f;
 	_scene = NULL;
 	_meshBatch = NULL;
@@ -154,12 +168,6 @@ void gamehsp::deleteAll( void )
 		for(i=0;i<_maxmat;i++) { deleteMat( i ); }
 		delete[] _gpmat;
 		_gpmat = NULL;
-	}
-	if ( _gpphy ) {
-		int i;
-		for(i=0;i<_maxphy;i++) { deletePhy( i ); }
-		delete[] _gpphy;
-		_gpphy = NULL;
 	}
 
 	if ( _meshBatch ) {
@@ -259,14 +267,11 @@ void gamehsp::resetScreen( int opt )
 	// gpobj作成
 	_maxobj = GetSysReq( SYSREQ_MAXOBJ );
 	_gpobj = new gpobj[ _maxobj ];
+	setObjectPool( 0, -1 );
 
 	// gpmat作成
 	_maxmat = GetSysReq( SYSREQ_MAXMATERIAL );
 	_gpmat = new gpmat[ _maxmat ];
-
-	// gplgt作成
-	_maxphy = GetSysReq( SYSREQ_MAXPHYSICS );
-	_gpphy = new gpphy[ _maxphy ];
 
 	// シーン作成
 	_scene = Scene::create();
@@ -322,6 +327,20 @@ void gamehsp::updateViewport( int x, int y, int w, int h )
 }
 
 
+void gamehsp::setBorder( float x0, float x1, float y0, float y1, float z0, float z1 )
+{
+	border1.set( x0, y0, z0 );
+	border2.set( x1, y1, z1 );
+}
+
+
+void gamehsp::getBorder( Vector3 *v1, Vector3 *v2 )
+{
+	*v1 = border1;
+	*v2 = border2;
+}
+
+
 void gamehsp::deleteObjectID( int id )
 {
 	//	指定されたIDのオブジェクトを削除する
@@ -334,9 +353,6 @@ void gamehsp::deleteObjectID( int id )
 	switch( flag_id ) {
 	case GPOBJ_ID_MATFLAG:
 		deleteMat( id );
-		return;
-	case GPOBJ_ID_PHYFLAG:
-		deletePhy( id );
 		return;
 	default:
 		break;
@@ -491,6 +507,42 @@ void gamehsp::addNodeVector( gpobj *obj, Node *node, int moc, Vector4 *prm )
 }
 
 
+void gamehsp::addSpriteVector( gpobj *obj, int moc, Vector4 *prm )
+{
+	gpspr *spr;
+	spr = obj->_spr;
+	if ( spr == NULL ) return;
+
+	switch(moc) {
+	case MOC_POS:
+		spr->_pos.add( *prm );
+		break;
+	case MOC_SCALE:
+		spr->_scale.add( *prm );
+		break;
+	case MOC_DIR:
+		obj->_vec[GPOBJ_USERVEC_DIR] += *prm;
+		break;
+
+	case MOC_ANGX:
+	case MOC_ANGY:
+	case MOC_ANGZ:
+		spr->_ang.add( *prm );
+		break;
+
+	case MOC_COLOR:
+		obj->_vec[GPOBJ_USERVEC_COLOR] += *prm;
+		break;
+	case MOC_WORK:
+		obj->_vec[GPOBJ_USERVEC_WORK] += *prm;
+		break;
+	case MOC_WORK2:
+		obj->_vec[GPOBJ_USERVEC_WORK2] += *prm;
+		break;
+	}
+}
+
+
 int gamehsp::addObjectVector( int objid, int moc, Vector4 *prm )
 {
 	gpobj *obj;
@@ -499,6 +551,10 @@ int gamehsp::addObjectVector( int objid, int moc, Vector4 *prm )
 	if ( flag_id == 0 ) {
 		obj = getObj( objid );
 		if ( obj == NULL ) return -1;
+		if ( obj->_spr ) {
+			addSpriteVector( obj, moc, prm );
+			return 0;
+		}
 		addNodeVector( obj, obj->_node, moc, prm );
 		return 0;
 	}
@@ -723,23 +779,6 @@ int gamehsp::setObjectVector( int objid, int moc, Vector4 *prm )
 }
 
 
-int gamehsp::getObjectVector( int objid, int moc, Vector4 *prm )
-{
-	int flag_id;
-	flag_id = objid & GPOBJ_ID_FLAGBIT;
-	if ( flag_id == 0 ) {
-		gpobj *obj;
-		obj = getObj( objid );
-		if ( obj == NULL ) return -1;
-		getNodeVector( obj, obj->_node, moc, prm );
-		return 0;
-	}
-	getNodeVector( NULL, getNode(objid), moc, prm );
-
-	return 0;
-}
-
-
 void gamehsp::getNodeVector( gpobj *obj, Node *node, int moc, Vector4 *prm )
 {
 	switch(moc) {
@@ -792,6 +831,61 @@ void gamehsp::getNodeVector( gpobj *obj, Node *node, int moc, Vector4 *prm )
 }
 
 
+void gamehsp::getSpriteVector( gpobj *obj, int moc, Vector4 *prm )
+{
+	gpspr *spr;
+	spr = obj->_spr;
+	if ( spr == NULL ) return;
+
+	switch(moc) {
+	case MOC_POS:
+		prm->set( spr->_pos );
+		break;
+	case MOC_SCALE:
+		prm->set( spr->_scale );
+		break;
+	case MOC_ANGX:
+	case MOC_ANGY:
+	case MOC_ANGZ:
+		prm->set( spr->_ang );
+		break;
+
+	case MOC_DIR:
+		*prm = obj->_vec[GPOBJ_USERVEC_DIR];
+		break;
+	case MOC_COLOR:
+		*prm = obj->_vec[GPOBJ_USERVEC_COLOR];
+		break;
+	case MOC_WORK:
+		*prm = obj->_vec[GPOBJ_USERVEC_WORK];
+		break;
+	case MOC_WORK2:
+		*prm = obj->_vec[GPOBJ_USERVEC_WORK2];
+		break;
+	}
+}
+
+
+int gamehsp::getObjectVector( int objid, int moc, Vector4 *prm )
+{
+	int flag_id;
+	flag_id = objid & GPOBJ_ID_FLAGBIT;
+	if ( flag_id == 0 ) {
+		gpobj *obj;
+		obj = getObj( objid );
+		if ( obj == NULL ) return -1;
+		if ( obj->_spr ) {
+			getSpriteVector( obj, moc, prm );
+			return 0;
+		}
+		getNodeVector( obj, obj->_node, moc, prm );
+		return 0;
+	}
+	getNodeVector( NULL, getNode(objid), moc, prm );
+	return 0;
+}
+
+
 void gamehsp::drawNode( Node *node )
 {
 	Model* model = node->getModel(); 
@@ -812,13 +906,14 @@ void gamehsp::drawAll( int option )
 	m = camera->getNode()->getMatrix();
 	m.getRotation(&_qcam_billboard);
 
-	//	gpobjの内部動作更新
+	//	gpobjの3Dシーン描画
 	//
-	if ( option & GPDRAW_OPT_OBJUPDATE ) {
-		updateAll();
-	}
-
 	if ( option & GPDRAW_OPT_DRAWSCENE ) {
+		_scenedraw_lateflag = false;
+		_scene->visit(this, &gamehsp::drawScene);
+	}
+	if ( option & GPDRAW_OPT_DRAWSCENE_LATE ) {
+		_scenedraw_lateflag = true;
 		_scene->visit(this, &gamehsp::drawScene);
 	}
 }
@@ -852,10 +947,10 @@ bool gamehsp::drawScene(Node* node)
     // If the node visited contains a model, draw it
 	gpobj *obj = (gpobj *)node->getUserPointer();
     Model* model = node->getModel(); 
-
 	if ( obj ) {
+		if ( obj->isVisible( _scenedraw_lateflag ) == false ) return true;
+
 		int mode = obj->_mode;
-		if ( mode & GPOBJ_MODE_HIDE ) return true;
 		if ( mode & GPOBJ_MODE_XFRONT ) {
 			node->setRotation(_qcam_billboard);
 		}
@@ -876,15 +971,37 @@ bool gamehsp::drawScene(Node* node)
 }
 
 
-int gamehsp::getObjectPrm( int objid, int prmid, int *outptr )
+int *gamehsp::getObjectPrmPtr( int objid, int prmid )
 {
+	int id;
 	int *base_i;
 	gpobj *obj;
 	obj = getObj( objid );
-	if ( obj == NULL ) return -1;
-	if ( prmid < 0 ) return -1;
-	base_i = (int *)obj;
-	*outptr = base_i[prmid];
+	if ( obj == NULL ) return NULL;
+	if ( prmid < 0 ) return NULL;
+	if ( prmid & 0x100 ) {
+		gpspr *spr;
+		spr = obj->_spr;
+		if ( spr == NULL ) return NULL;
+		id = prmid & 0xff;
+		if ( id >= (sizeof(gpspr)/sizeof(int)) ) return NULL;
+		base_i = (int *)spr;
+		base_i += id;
+	} else {
+		base_i = (int *)obj;
+		if ( prmid >= (sizeof(gpobj)/sizeof(int)) ) return NULL;
+		base_i += prmid;
+	}
+	return base_i;
+}
+
+
+int gamehsp::getObjectPrm( int objid, int prmid, int *outptr )
+{
+	int *base_i;
+	base_i = getObjectPrmPtr( objid, prmid );
+	if ( base_i == NULL ) return -1;
+	*outptr = *base_i;
 	return 0;
 }
 
@@ -892,12 +1009,9 @@ int gamehsp::getObjectPrm( int objid, int prmid, int *outptr )
 int gamehsp::setObjectPrm( int objid, int prmid, int value )
 {
 	int *base_i;
-	gpobj *obj;
-	obj = getObj( objid );
-	if ( obj == NULL ) return -1;
-	if ( prmid < 0 ) return -1;
-	base_i = (int *)obj;
-	base_i[prmid] = value;
+	base_i = getObjectPrmPtr( objid, prmid );
+	if ( base_i == NULL ) return -1;
+	*base_i = value;
 	return 0;
 }
 
@@ -933,6 +1047,7 @@ int gamehsp::makeSpriteObj( int celid, int gmode, void *bmscr )
 
 	obj->_spr = new gpspr;
 	obj->_spr->reset( obj->_id, celid, gmode, bmscr );
+	obj->_mode |= GPOBJ_MODE_2D;
 
 	return obj->_id;
 }
@@ -1199,59 +1314,6 @@ int gamehsp::makeNewModelWithMat( gpobj *obj, Mesh *mesh, int matid )
 
 /*------------------------------------------------------------*/
 /*
-		Physics process
-*/
-/*------------------------------------------------------------*/
-
-int gamehsp::setPhysicsObjectAuto( int objid, float mass, float friction )
-{
-	gpobj *obj;
-	obj = getObj( objid );
-	if ( obj == NULL ) return -1;
-	Node *node = obj->_node;
-	if ( node == NULL ) return -1;
-
-	if ( obj->_shape < 0 ) return -1;
-
-	PhysicsRigidBody::Parameters rigParams;
-
-	rigParams.mass = mass;	// 重さ
-	rigParams.friction = friction;
-	rigParams.restitution = 0.5f;
-	rigParams.linearDamping = 0.1f;
-	rigParams.angularDamping = 0.5f;
-
-	switch( obj->_shape ) {
-	case GPOBJ_SHAPE_BOX:
-		node->setCollisionObject(PhysicsCollisionObject::RIGID_BODY, 
-			PhysicsCollisionShape::box( obj->_sizevec ), &rigParams);
-		break;
-	case GPOBJ_SHAPE_FLOOR:
-	case GPOBJ_SHAPE_PLATE:
-	    rigParams.restitution = 0.75f;
-	    rigParams.linearDamping = 0.025f;
-	    rigParams.angularDamping = 0.16f;
-		node->setCollisionObject(PhysicsCollisionObject::RIGID_BODY, 
-			PhysicsCollisionShape::box( obj->_sizevec ), &rigParams);
-		break;
-	case GPOBJ_SHAPE_MODEL:
-		{
-		BoundingSphere sphere;
-		sphere = node->getBoundingSphere();
-		node->setCollisionObject(PhysicsCollisionObject::RIGID_BODY, 
-			PhysicsCollisionShape::sphere( sphere.radius, sphere.center ), &rigParams);
-		break;
-		}
-	default:
-		return -1;
-	}
-
-	return 0;
-}
-
-
-/*------------------------------------------------------------*/
-/*
 		Node process
 */
 /*------------------------------------------------------------*/
@@ -1276,6 +1338,10 @@ int gamehsp::deleteObj( int id )
 		delete obj->_spr;
 		obj->_spr = NULL;
 	}
+	if ( obj->_phy ) {
+		delete obj->_phy;
+		obj->_phy = NULL;
+	}
 	model = obj->_model;
 	if ( model ) {
 		if ( obj->_usegpmat < 0 ) {
@@ -1292,11 +1358,30 @@ int gamehsp::deleteObj( int id )
 }
 
 
+int gamehsp::setObjectPool( int startid, int num )
+{
+	int max;
+	max = num;
+	if ( max < 0 ) {
+		max = _maxobj - startid;
+	}
+	if ( startid < 0 ) return -1;
+	if ( startid >= _maxobj ) return -1;
+	if ( ( startid + max ) > _maxobj ) return -1;
+	_objpool_startid = startid;
+	_objpool_max = max;
+	return 0;
+}
+
+
 gpobj *gamehsp::addObj( void )
 {
+	//	空のgpobjを生成する
+	//
 	int i;
 	gpobj *obj = _gpobj;
-	for(i=0;i<_maxobj;i++) {
+	obj += _objpool_startid;
+	for( i=_objpool_startid; i<_objpool_max; i++ ) {
 		if ( obj->_flag == GPOBJ_FLAG_NONE ) {
 			obj->reset(i);
 			return obj;
@@ -1349,15 +1434,14 @@ int gamehsp::makeCloneNode( int objid )
 	obj = getObj( objid );
 	if ( obj == NULL ) return -1;
 
+	if ( obj->_spr ) {
+		// 2Dスプライトの場合
+		return makeSpriteObj( obj->_spr->_celid, obj->_spr->_gmode, obj->_spr->_bmscr );
+	}
+	
 	gpobj *newobj = addObj();
 	if ( newobj == NULL ) return -1;
 
-	if ( obj->_spr ) {
-		newobj->_spr = new gpspr;
-		newobj->_spr->reset( newobj->_id, obj->_spr->_celid, obj->_spr->_gmode, obj->_spr->_bmscr );
-		return newobj->_id;
-	}
-	
 	node = obj->_node;
 	if ( node == NULL ) {
 		return newobj->_id;
@@ -1371,6 +1455,7 @@ int gamehsp::makeCloneNode( int objid )
 	node->setUserPointer( NULL, NULL );
 
 	newobj->_node = node->clone();
+
 	newobj->_node->setUserPointer( newobj, NULL );
 
 	if ( _curscene >= 0 ) {
@@ -1389,7 +1474,7 @@ int gamehsp::makeCloneNode( int objid )
 */
 /*------------------------------------------------------------*/
 
-int gamehsp::updateObjBorder( int mode, Vector4 *pos, Vector4 *dir )
+int gamehsp::updateObjBorder( int mode, Vector3 *pos, Vector4 *dir )
 {
 	//		自動範囲クリップ
 	//
@@ -1473,9 +1558,41 @@ int gamehsp::updateObjBorder( int mode, Vector4 *pos, Vector4 *dir )
 	return 0;
 }
 
+
 void gamehsp::updateObj( gpobj *obj )
 {
+	//		gpobjの更新
+	//
+	int mode = obj->_mode;
+	if ( mode & ( GPOBJ_MODE_MOVE|GPOBJ_MODE_BORDER) ) {
+		int cflag;
+		Vector3 pos;
+		Vector4 *dir;
+		if ( obj->_spr ) {
+			pos = *(Vector3 *)&obj->_spr->_pos;
+		} else {
+			pos = obj->_node->getTranslation();
+		}
+		dir = &obj->_vec[GPOBJ_USERVEC_DIR];
+		if ( mode & GPOBJ_MODE_MOVE ) {
+			pos.add( *(Vector3 *)dir );
+		}
+		if ( mode & GPOBJ_MODE_BORDER ) {
+			cflag = updateObjBorder( mode, &pos, dir );
+			if ( cflag ) {												// 消去フラグ
+				deleteObj( obj->_id );
+				return;
+			}
+		}
+		if ( obj->_spr ) {
+			obj->_spr->_pos.set( pos.x, pos.y, pos.z, 1.0f );
+		} else {
+			obj->_node->setTranslation( pos );
+		}
+	}
+
 }
+
 
 void gamehsp::updateAll( void )
 {
@@ -1483,6 +1600,9 @@ void gamehsp::updateAll( void )
 		All update of gpobj
 	*/
 	int i;
+
+    if ( getState() == PAUSED ) return;
+
 	gpobj *obj = _gpobj;
 	for(i=0;i<_maxobj;i++) {
 		if ( obj->_flag ) {
@@ -1490,6 +1610,73 @@ void gamehsp::updateAll( void )
 		}
 		obj++;
 	}
+}
+
+
+int gamehsp::updateObjColi( int objid, float size, int addcol )
+{
+	int i;
+	int chkgroup;
+	gpobj *obj;
+	gpobj *atobj;
+	gpspr *spr;
+	Vector3 *pos;
+
+	obj = getObj( objid );
+	if ( obj == NULL ) return -1;
+
+	if ( addcol == 0 ) {
+		chkgroup = obj->_colgroup;
+	} else {
+		chkgroup = addcol;
+	}
+
+	spr = obj->_spr;
+	if ( spr ) {									// 2Dスプライト時の処理
+		gpspr *atspr;
+		pos = (Vector3 *)&spr->_pos;
+		atobj = _gpobj;
+		for(i=0;i<_maxobj;i++) {
+			if ( atobj->isVisible() ) {
+				if (( atobj->_mygroup & chkgroup )&&( i != objid )) {
+					atspr = atobj->_spr;
+					if ( atspr ) {
+						if ( atspr->getDistanceHit( pos, size ) ) {
+							return i;
+						}
+					}
+				}
+			}
+			atobj++;
+		}
+		return -1;
+	}
+
+	Vector3 vpos;
+	Node *node;
+	BoundingSphere bound;
+	if ( obj->_node == NULL ) return -1;
+
+	vpos = obj->_node->getTranslation();
+	bound = obj->_node->getBoundingSphere();
+	bound.radius *= size;							// 自分のサイズを調整する
+	atobj = _gpobj;
+
+	for(i=0;i<_maxobj;i++) {
+		if ( atobj->isVisible() ) {
+			if (( atobj->_mygroup & chkgroup )&&( i != objid )) {
+				node = atobj->_node;
+				if ( node ) {
+					if ( bound.intersects( node->getBoundingSphere() ) ) {
+						return i;
+					}
+				}
+			}
+		}
+		atobj++;
+	}
+
+	return -1;
 }
 
 
@@ -1520,6 +1707,22 @@ void gpspr::reset( int id, int celid, int gmode, void *bmscr )
 }
 
 
+int gpspr::getDistanceHit( Vector3 *v, float size )
+{
+	float sz;
+	sz = size * 1.0f;//colscale[0];
+	if ( fabs( _pos.x - v->x ) < sz ) {
+		sz = size * 1.0f;//colscale[1]
+		if ( fabs( _pos.y - v->y ) < sz ) {
+			return 1;
+		}
+	}
+	return 0;
+}
+
+
+
+
 gpspr *gamehsp::getSpriteObj( int objid )
 {
 	//	スプライト情報を返す
@@ -1546,6 +1749,37 @@ gpobj *gamehsp::getNextSpriteObj( void )
 		if ( _find_gpobj->_flag ) {
 			if ( _find_gpobj->_spr ) {
 				if ( _find_gpobj->isVisible( _find_lateflag ) ) {
+					res = _find_gpobj;
+					break;
+				}
+			}
+		}
+		_find_count++;
+		_find_gpobj++;
+	}
+	_find_count++;
+	_find_gpobj++;
+	return res;
+}
+
+
+void gamehsp::findeObj( int exmode, int group )
+{
+	_find_count = 0;
+	_find_gpobj = _gpobj;
+	_find_exmode = exmode;
+	_find_group = group;
+}
+
+
+gpobj *gamehsp::getNextObj( void )
+{
+	gpobj *res;
+	while(1) {
+		if ( _find_count >= _maxobj ) { return NULL; }
+		if ( _find_gpobj->_flag ) {
+			if ( _find_gpobj->_colgroup & _find_group ) {
+				if (( _find_gpobj->_mode & _find_exmode ) == 0 ) {
 					res = _find_gpobj;
 					break;
 				}

@@ -24,9 +24,72 @@ void gpphy::reset( int id )
 {
 	_mode = 0;
 	_mark = 0;
-	_rigParams = NULL;
+	_colObj = NULL;
 	_flag = GPPHY_FLAG_ENTRY;
 	_id = id;
+}
+
+
+int gpphy::setParameter( int prmid, Vector3 *prm )
+{
+	if ( _colObj == NULL ) return -1;
+
+	switch( prmid ) {
+
+	case GPPSET_ENABLE:
+		_colObj->setEnabled( prm->x != 0.0f );
+		break;
+	case GPPSET_FRICTION:
+		_colObj->setFriction( prm->x );
+		_colObj->setRestitution( prm->y );
+		break;
+	case GPPSET_DAMPING:
+		_colObj->setDamping( prm->x, prm->y );
+		break;
+	case GPPSET_KINEMATIC:
+		_colObj->setKinematic( prm->x != 0.0f );
+		break;
+	case GPPSET_ANISOTROPIC_FRICTION:
+		_colObj->setAnisotropicFriction( *prm );
+		break;
+	case GPPSET_GRAVITY:
+		_colObj->setGravity( *prm );
+		break;
+	case GPPSET_LINEAR_FACTOR:
+		_colObj->setLinearFactor( *prm );
+		break;
+	case GPPSET_ANGULAR_FACTOR:
+		_colObj->setAngularFactor( *prm );
+		break;
+	case GPPSET_ANGULAR_VELOCITY:
+		_colObj->setAngularVelocity( *prm );
+		break;
+	case GPPSET_LINEAR_VELOCITY:
+		_colObj->setLinearVelocity( *prm );
+		break;
+	default:
+		return -1;
+
+	}
+	return 0;
+}
+
+
+void gpphy::bindNodeAsBox( Node *node, Vector3 &size, PhysicsRigidBody::Parameters *rigParams )
+{
+	PhysicsCollisionObject *pco;
+	pco =node->setCollisionObject(PhysicsCollisionObject::RIGID_BODY, 
+			PhysicsCollisionShape::box( size ), rigParams );
+	_colObj = pco->asRigidBody();
+}
+
+
+void gpphy::bindNodeAsSphere( Node *node, float radius, Vector3 &center, PhysicsRigidBody::Parameters *rigParams )
+{
+	PhysicsCollisionObject *pco;
+	pco = node->setCollisionObject(PhysicsCollisionObject::RIGID_BODY, 
+			PhysicsCollisionShape::sphere( radius, center ), rigParams );
+	_colObj = pco->asRigidBody();
 }
 
 
@@ -36,52 +99,109 @@ void gpphy::reset( int id )
 */
 /*------------------------------------------------------------*/
 
-gpphy *gamehsp::getPhy( int id )
+gpphy *gamehsp::getPhy( int objid )
 {
-	int flag_id;
-	int base_id;
-	flag_id = id & GPOBJ_ID_FLAGBIT;
-	if ( flag_id != GPOBJ_ID_PHYFLAG ) return NULL;
-	base_id = id & GPOBJ_ID_FLAGMASK;
-	if (( base_id < 0 )||( base_id >= _maxphy )) return NULL;
-	if ( _gpphy[base_id]._flag == GPPHY_FLAG_NONE ) return NULL;
-	return &_gpphy[base_id];
+	gpobj *obj;
+	gpphy *phy;
+	obj = getObj( objid );
+	if ( obj == NULL ) return NULL;
+
+	phy = obj->_phy;
+	return phy;
 }
 
 
-int gamehsp::deletePhy( int id )
+gpphy *gamehsp::setPhysicsObjectAuto( gpobj *obj, float mass, float friction )
 {
-	gpphy *phy = getPhy( id );
-	if ( phy == NULL ) return -1;
-	phy->_flag = GPPHY_FLAG_NONE;
-	if ( phy->_rigParams ) {
-		delete phy->_rigParams;
-		phy->_rigParams = NULL;
+	gpphy *phy;
+	Node *node = obj->_node;
+	if ( node == NULL ) return NULL;
+
+	if ( obj->_shape < 0 ) return NULL;
+
+	if ( obj->_phy ) {
+		delete obj->_phy;
+		obj->_phy = NULL;
 	}
+
+	phy = new gpphy;
+	if ( phy == NULL ) return NULL;
+	
+	PhysicsRigidBody::Parameters rigParams;
+
+	rigParams.mass = mass;	// d‚³
+	rigParams.friction = friction;
+	rigParams.restitution = 0.5f;
+	rigParams.linearDamping = 0.1f;
+	rigParams.angularDamping = 0.5f;
+
+	switch( obj->_shape ) {
+	case GPOBJ_SHAPE_BOX:
+		phy->bindNodeAsBox( node, obj->_sizevec, &rigParams );
+		break;
+	case GPOBJ_SHAPE_FLOOR:
+	case GPOBJ_SHAPE_PLATE:
+	    rigParams.restitution = 0.75f;
+	    rigParams.linearDamping = 0.025f;
+	    rigParams.angularDamping = 0.16f;
+		phy->bindNodeAsBox( node, obj->_sizevec, &rigParams );
+		break;
+	case GPOBJ_SHAPE_MODEL:
+		{
+		BoundingSphere sphere;
+		sphere = node->getBoundingSphere();
+		phy->bindNodeAsSphere( node, sphere.radius, sphere.center, &rigParams );
+		break;
+		}
+	default:
+		return NULL;
+	}
+
+	obj->_phy = phy;
+	return phy;
+}
+
+
+int gamehsp::setObjectBindPhysics( int objid, float mass, float friction )
+{
+	gpobj *obj;
+	gpphy *phy;
+	obj = getObj( objid );
+	if ( obj == NULL ) return -1;
+
+	phy = setPhysicsObjectAuto( obj, mass, friction );
+	if ( phy == NULL ) return -1;
+
 	return 0;
 }
 
 
-gpphy *gamehsp::addPhy( void )
+int gamehsp::objectPhysicsApply( int objid, int type, Vector3 *prm )
 {
-	int i;
-	gpphy *phy = _gpphy;
-	for(i=0;i<_maxphy;i++) {
-		if ( phy->_flag == GPPHY_FLAG_NONE ) {
-			phy->reset( i|GPOBJ_ID_PHYFLAG );
-			return phy;
-		}
-		phy++;
+	gpphy *phy;
+	PhysicsRigidBody *colObj;
+	phy = getPhy( objid );
+	if ( phy == NULL ) return -1;
+
+	colObj = phy->_colObj;
+	if ( colObj == NULL ) return -1;
+
+	switch( type ) {
+	case GPPAPPLY_FORCE:
+		colObj->applyForce( *prm );
+		break;
+	case GPPAPPLY_IMPULSE:
+		colObj->applyImpulse( *prm );
+		break;
+	case GPPAPPLY_TORQUE:
+		colObj->applyTorque( *prm );
+		break;
+	case GPPAPPLY_TORQUE_IMPULSE:
+		colObj->applyTorqueImpulse( *prm );
+		break;
+	default:
+		return -1;
 	}
-	return NULL;
+	return 0;
 }
-
-
-PhysicsRigidBody::Parameters *gamehsp::getParameters( int phyid )
-{
-	gpphy *phy = getPhy( phyid );
-	if ( phy == NULL ) return NULL;
-	return phy->_rigParams;
-}
-
 

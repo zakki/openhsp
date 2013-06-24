@@ -1229,7 +1229,11 @@ static int cmdfunc_extcmd( int cmd )
 		break;
 	case 0x61:								// gpdraw
 		p1 = code_getdi( -1 );
+		if ( p1 & GPDRAW_OPT_OBJUPDATE ) {
+			game->updateAll();
+		}
 		game->drawAll( p1 );
+
 		if ( p1 & GPDRAW_OPT_DRAW2D ) {
 			hgio_draw_gpsprite( bmscr, false );
 		}
@@ -1331,11 +1335,46 @@ static int cmdfunc_extcmd( int cmd )
 		break;
 		}
 	case 0x6d:								// setborder
+		{
+		float x,y,z;
+		gameplay::Vector3 v1;
+		gameplay::Vector3 v2;
+		code_getvec( &p_vec1 );
+		p1 = code_getdi( 0 );
+		switch( p1 ) {
+		case 0:
+			x = p_vec1.x * 0.5f;
+			y = p_vec1.y * 0.5f;
+			z = p_vec1.z * 0.5f;
+			game->setBorder( -x, x, -y, y, -z, z );
+			break;
+		case 1:
+			game->getBorder( &v1, &v2 );
+			game->setBorder( p_vec1.x, v2.x, p_vec1.y, v2.y, p_vec1.z, v2.z );
+			break;
+		case 2:
+			game->getBorder( &v1, &v2 );
+			game->setBorder( v1.x, p_vec1.x, v1.y, p_vec1.y, v1.z, p_vec1.z );
+			break;
+		}
 		break;
+		}
 	case 0x6e:								// findobj
+		p1 = code_getdi( 0 );
+		p2 = code_getdi( 0 );
+		game->findeObj( p1, p2 );
 		break;
 	case 0x6f:								// nextobj
+		{
+		PVal *p_pval;
+		APTR p_aptr;
+		gpobj *obj;
+		p_aptr = code_getva( &p_pval );
+		obj = game->getNextObj();
+		if ( obj ) { p1 = obj->_id; } else { p1 = -1; }
+		code_setva( p_pval, p_aptr, HSPVAR_FLAG_INT, &p1 );
 		break;
+		}
 
 	case 0x70:								// gpdelobj
 		p1 = code_getdi( 0 );
@@ -1516,7 +1555,7 @@ static int cmdfunc_extcmd( int cmd )
 		p1 = code_getdi( 0 );
 		fp1 = (float)code_getdd( 1.0 );
 		fp2 = (float)code_getdd( 0.5 );
-		game->setPhysicsObjectAuto( p1, fp1, fp2 );
+		ctx->stat = game->setObjectBindPhysics( p1, fp1, fp2 );
 		break;
 	case 0x7e:								// gpcamera
 		p1 = code_getdi( 0 );
@@ -1716,7 +1755,8 @@ static int cmdfunc_extcmd( int cmd )
 		p_aptr = code_getva( &p_pval );
 		p1 = code_getdi( 0 );
 		fp1 = (float)code_getdd( 1.0 );
-		p6 = 0;
+		p2 = code_getdi( 0 );
+		p6 = game->updateObjColi( p1, fp1, p2 );
 		code_setva( p_pval, p_aptr, HSPVAR_FLAG_INT, &p6 );
 		break;
 		}
@@ -1898,16 +1938,34 @@ static int cmdfunc_extcmd( int cmd )
 		}
 
 
-	case 0xf0:								// fvquat
+	case 0xf0:								// gppset
+		{
+		gpphy *phy;
+		p1 = code_getdi( 0 );
+		p2 = code_getdi( 0 );
+		code_getvec( &p_vec1 );
+		phy = game->getPhy( p1 );
+		if ( phy == NULL ) throw HSPERR_ILLEGAL_FUNCTION;
+		ctx->stat = phy->setParameter( p2, (Vector3 *)&p_vec1 );
 		break;
-	case 0xf1:								// fvqaxang
+		}
+
+	case 0xf1:								// gpobjpool
+		p1 = code_getdi( 0 );
+		p2 = code_getdi( -1 );
+		p3 = game->setObjectPool( p1, p2 );
+		if ( p3 < 0 ) throw HSPERR_ILLEGAL_FUNCTION;
 		break;
-	case 0xf2:								// fvqangx
+
+	case 0xf2:								// gppapply
+		p1 = code_getdi( 0 );
+		p2 = code_getdi( 0 );
+		code_getvec( &p_vec1 );
+		p3 = game->objectPhysicsApply( p1, p2, (Vector3 *)&p_vec1 );
+		if ( p3 < 0 ) throw HSPERR_ILLEGAL_FUNCTION;
 		break;
-	case 0xf3:								// fvqangy
-		break;
-	case 0xf4:								// fvqangz
-		break;
+
+
 
 #endif
 

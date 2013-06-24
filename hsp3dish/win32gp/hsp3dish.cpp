@@ -752,7 +752,6 @@ int hsp3dish_init( HINSTANCE hInstance, char *startfile )
 	InitSysReq();
 	
 	SetSysReq( SYSREQ_MAXMATERIAL, 64 );		// マテリアルのデフォルト値
-	SetSysReq( SYSREQ_MAXPHYSICS, 64 );			// フィジックスのデフォルト値
 
 	game = NULL;
 	platform = NULL;
