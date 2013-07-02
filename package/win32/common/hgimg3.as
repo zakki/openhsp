@@ -106,7 +106,7 @@
 #define global SYSREQ_DSBUFSEC 33
 #define global SYSREQ_DEBUG $10000
 
-#define event_delobj(%1) event_prmset %1,PRMSET_FLAG,0
+#define global event_delobj(%1) event_prmset %1,PRMSET_FLAG,0
 
 #regcmd 18
 #cmd _hgini $00
