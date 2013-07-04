@@ -219,12 +219,10 @@ LRESULT CALLBACK WndProc( HWND hwnd, UINT uMessage, WPARAM wParam, LPARAM lParam
 			retval = code_sendirq( HSPIRQ_ONEXIT, iparam, id, 0 );
 			if ( retval == RUNMODE_INTJUMP ) retval = code_execcmd2();	// onexit gotoéûÇÕé¿çsÇµÇƒÇ›ÇÈ
 			if ( retval != RUNMODE_END ) return 0;
-			//break;
 		}
 		code_puterror( HSPERR_NONE );
 		PostQuitMessage(0);
-		return 0;
-		//break;
+		return (uMessage == WM_QUERYENDSESSION) ? true : false;
 
 	case WM_DRAWITEM:
 		if ( wParam & MESSAGE_HSPOBJ ) {

@@ -18,23 +18,17 @@
 #const global CLSMODE_TEXTURE 2
 #const global CLSMODE_BLUR 3
 
-#const global GPOBJ_MODE_HIDE 1
-#const global GPOBJ_MODE_TREE 2
-#const global GPOBJ_MODE_XFRONT 4
-#const global GPOBJ_MODE_MOVE 32
-#const global GPOBJ_MODE_FLIP 64
-#const global GPOBJ_MODE_BORDER 0x80
-#const global GPOBJ_MODE_2D 0x100
-#const global GPOBJ_MODE_TIMER 0x200
-#const global GPOBJ_MODE_SORT 0x400
-#const global GPOBJ_MODE_STATIC 0x800
-#const global GPOBJ_MODE_GRAVITY 0x1000
-#const global GPOBJ_MODE_LATE 0x4000
-#const global GPOBJ_MODE_FIRST 0x8000
-#const global GPOBJ_MODE_STAND 0x10000
-#const global GPOBJ_MODE_GROUND 0x20000
-#const global GPOBJ_MODE_LAND 0x40000
-#const global GPOBJ_MODE_LOOKAT 0x80000
+#const global OBJ_HIDE 1
+#const global OBJ_CLIP 2
+#const global OBJ_XFRONT 4
+#const global OBJ_WIRE 8
+#const global OBJ_MOVE 32
+#const global OBJ_FLIP 64
+#const global OBJ_BORDER 0x80
+#const global OBJ_2D 0x100
+#const global OBJ_TIMER 0x200
+#const global OBJ_SORT 0x400
+#const global OBJ_LATE 0x4000
 
 #const global GPOBJ_SCENE  0x100001
 #const global GPOBJ_CAMERA 0x100002
@@ -46,6 +40,48 @@
 #const global GPOBJ_MATOPT_NOZTEST (8)
 #const global GPOBJ_MATOPT_NOZWRITE (16)
 #const global GPOBJ_MATOPT_BLENDADD (32)
+
+#enum global PRMSET_FLAG = 0
+#enum global PRMSET_MODE
+#enum global PRMSET_ID
+#enum global PRMSET_ALPHA
+#enum global PRMSET_TIMER
+#enum global PRMSET_MYGROUP
+#enum global PRMSET_COLGROUP
+#enum global PRMSET_SHAPE
+#enum global PRMSET_USEGPMAT
+#enum global PRMSET_USEGPPHY
+#enum global PRMSET_COLILOG
+#enum global PRMSET_SPRID = 0x100
+#enum global PRMSET_SPRCELID
+#enum global PRMSET_SPRGMODE
+
+#define GPOBJ_LGTOPT_NORMAL (0)
+#define GPOBJ_LGTOPT_POINT (1)
+#define GPOBJ_LGTOPT_SPOT (2)
+
+#enum global GPPSET_ENABLE = 0
+#enum global GPPSET_FRICTION
+#enum global GPPSET_DAMPING
+#enum global GPPSET_KINEMATIC
+#enum global GPPSET_ANISOTROPIC_FRICTION
+#enum global GPPSET_GRAVITY
+#enum global GPPSET_LINEAR_FACTOR
+#enum global GPPSET_ANGULAR_FACTOR
+#enum global GPPSET_ANGULAR_VELOCITY
+#enum global GPPSET_LINEAR_VELOCITY
+
+#const global GPPAPPLY_FORCE (0)
+#const global GPPAPPLY_IMPULSE (1)
+#const global GPPAPPLY_TORQUE (2)
+#const global GPPAPPLY_TORQUE_IMPULSE (3)
+
+#const global GPDRAW_OPT_OBJUPDATE (1)
+#const global GPDRAW_OPT_DRAWSCENE (2)
+#const global GPDRAW_OPT_DRAW2D (4)
+#const global GPDRAW_OPT_DRAWSCENE_LATE (8)
+#const global GPDRAW_OPT_DRAW2D_LATE (16)
+
 
 ;
 ;	system request
@@ -84,6 +120,10 @@
 #enum global SYSREQ_CLSCOLOR
 #enum global SYSREQ_CLSTEX
 #enum global SYSREQ_TIMER
+#enum global SYSREQ_PLATFORM
+#enum global SYSREQ_FPS
+#enum global SYSREQ_VSYNC
+#enum global SYSREQ_MAXMATERIAL
 
 #define global ginfo_accx ginfo(0x100)
 #define global ginfo_accy ginfo(0x101)
@@ -114,14 +154,23 @@
 #cmd gpgetprm $64
 #cmd gppostefx $65
 #cmd gpuselight $66
+#cmd gpusecamera $67
+#cmd gpmatprm $68
+#cmd gpmatstate $69
+#cmd gpviewport $6a
+#cmd setobjname $6b
+#cmd getobjname $6c
+#cmd setborder $6d
+#cmd findobj $6e
+#cmd nextobj $6f
 
-#cmd gpdelobj $70
+#cmd delobj $70
 #cmd gpcolormat $71
 #cmd gptexmat $72
 #cmd gpusermat $73
 #cmd gpclone $74
 #cmd gpload $75
-#cmd gpmesh $76
+#cmd gpplate $76
 #cmd gpfloor $77
 #cmd gpbox $78
 #cmd gpspr $79
@@ -129,6 +178,8 @@
 #cmd setobjmode $7b
 #cmd gplookat $7c
 #cmd gppbind $7d
+#cmd gpcamera $7e
+#cmd gpnull $7f
 
 #cmd getpos $80
 #cmd getquat $81
@@ -183,38 +234,40 @@
 #cmd addangy $ca
 #cmd addangz $cc
 
-#cmd objset $d0
-#cmd objseti $d1
-#cmd objadd $d2
-#cmd objget $d3
-#cmd objgeti $d4
-#cmd objsetfv $d5
-#cmd objgetvv $d6
-#cmd objaddfv $d7
+#cmd objsetf3 $d0
+#cmd objaddf3 $d1
+#cmd objsetfv $d2
+#cmd objaddfv $d3
+#cmd objgetfv $d4
+#cmd setangr $d5
+#cmd addangr $d6
+#cmd selmoc $d7
+#cmd gpcnvaxis $d8
+#cmd getcoli $d9
+#cmd setcoli $da
+#cmd getobjcoli $db
+#cmd objexist $dc
 
 #cmd fvset $e0
-#cmd fvseti $e1
-#cmd fvadd $e2
-#cmd fvsub $e3
-#cmd fvmul $e4
-#cmd fvdiv $e5
-#cmd fvdir $e6
-#cmd fvmin $e7
-#cmd fvmax $e8
-#cmd fvunit $e9
-#cmd fvouter $ea
-#cmd fvinner $eb
-#cmd fvface $ec
+#cmd fvadd $e1
+#cmd fvsub $e2
+#cmd fvmul $e3
+#cmd fvdiv $e4
+#cmd fvdir $e5
+#cmd fvmin $e6
+#cmd fvmax $e7
+#cmd fvunit $e8
+#cmd fvouter $e9
+#cmd fvinner $ea
+#cmd fvface $eb
+#cmd fv2str $ec
+#cmd f2str $ed
+#cmd str2fv $ee
+#cmd str2f $ef
 
-#cmd fv2str $ed
-#cmd f2str $ee
-#cmd str2fv $ef
-
-#cmd fvquat $f0
-#cmd fvqaxang $f1
-#cmd fvqangx $f2
-#cmd fvqangy $f3
-#cmd fvqangz $f4
+#cmd gppset $f0
+#cmd gpobjpool $f1
+#cmd gppapply $f2
 
 #define fsin(%1,%2) %1=sin(%2)
 #define fcos(%1,%2) %1=cos(%2)

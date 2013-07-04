@@ -2027,7 +2027,10 @@ static int cmdfunc_prog( int cmd )
 			}
 			p2++;
 		}
-		if ( otbak != NULL ) code_call( otbak );
+		if ( otbak != NULL ) {
+			code_call( otbak );
+			return hspctx->runmode;
+		}
 		break;
 		}
 
