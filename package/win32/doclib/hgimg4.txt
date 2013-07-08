@@ -87,12 +87,12 @@ HGIMG4 REFERENCE MANUAL                High Performance Graphic Image Plugin
 	gpbox var,size,color,matobj			箱ノードを生成
 	gpfloor var,sizex,sizey,color,matobj		床ノードを生成
 	gpplate var,sizex,sizey,color,matobj		板ノードを生成
-	gpload var,"file","name"			gpbモデルノードを生成
+	gpload var,"file","name"			3Dモデルノードを生成
 	gpspr var,bufid,celid,gmode			2Dスプライトノード生成
 	gpnull var					ヌルノードを生成
 
-	gplight var,id,opt,range,inner,outer		ライトノードを設定
-	gpcamera var,id,fov,aspect,near,far		カメラノードを設定
+	gplight id,opt,range,inner,outer		ライトノードを設定
+	gpcamera id,fov,aspect,near,far			カメラノードを設定
 
 	gpclone var,objid				ノードを複製
 	setobjmode objid,value,mode			オブジェクトのモード設定
@@ -304,8 +304,6 @@ HGIMG4 REFERENCE MANUAL                High Performance Graphic Image Plugin
 		gpplate var,sizex,sizey,color,matobj		板ノードを生成
 		gpload var,"file","name"			gpbモデルノードを生成
 		gpnull var					ヌルノードを生成
-		gplight var,id,opt,range,inner,outer		ライトノードを設定
-		gpcamera var,id,fov,aspect,near,far		カメラノードを設定
 		gpclone var,objid				ノードを複製
 
 	それぞれの命令詳細は、命令のヘルプ(F1キー)を参照してください。
