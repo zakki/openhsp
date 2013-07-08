@@ -326,14 +326,13 @@ static void hsp3dish_setdevinfo( void )
         hgio_touch( newLocation.x * _scaleuse, newLocation.y * _scaleuse, 1 );
     }
     
-	//NSLog( @"指の動き：%f , %f から %f, %f ID%d", oldLocation.x, oldLocation.y, newLocation.x, newLocation.y, p_id);
+	//NSLog( @"指の動き：%f, %f ID%d", newLocation.x, newLocation.y, p_id);
 	[super touchesMoved:touches withEvent:event];
 }
 
 
-- (void) touchesEnded:(NSSet *)touches withEvent:(UIEvent *)event {	
+- (void) touchesEnded:(NSSet *)touches withEvent:(UIEvent *)event {
 	UITouch *touch;
-    CGPoint oldLocation;
 	CGPoint location;
     int p_id;
     int count;
@@ -349,7 +348,7 @@ static void hsp3dish_setdevinfo( void )
             hgio_mtouchid( p_id, location.x * _scaleuse, location.y * _scaleuse, 0, count );
             count++;
         }
-        //NSLog(@"タップ終了 %f, %f -> %f, %f ID%d", oldLocation.x, oldLocation.y, location.x, location.y, p_id);
+        //NSLog(@"タップ終了 %f, %f ID%d", location.x, location.y, p_id);
         
     } else {
         // マルチタッチでない時
@@ -361,6 +360,38 @@ static void hsp3dish_setdevinfo( void )
     }
 	
 	[super touchesEnded:touches withEvent:event];
+	
+}
+
+- (void) touchesCancelled:(NSSet *)touches withEvent:(UIEvent *)event {
+	UITouch *touch;
+	CGPoint location;
+    int p_id;
+    int count;
+    
+	if ( mt_flag ) {
+        // マルチタッチ時
+        count = 0;
+        NSEnumerator *enumlator = [touches objectEnumerator];
+        while( touch = [enumlator nextObject] ) {
+            //oldLocation = [touch previousLocationInView:self];
+            location = [touch locationInView:self];
+            p_id = [touch hash];
+            hgio_mtouchid( p_id, location.x * _scaleuse, location.y * _scaleuse, 0, count );
+            count++;
+            //NSLog(@"タップ終了 %f, %f ID%d", location.x, location.y, p_id);
+        }
+    
+    } else {
+        // マルチタッチでない時
+        touch = [touches anyObject];
+        location = [touch locationInView:self];
+        //NSInteger taps = [touch tapCount];
+        hgio_touch( location.x * _scaleuse, location.y * _scaleuse, 0 );
+        //NSLog(@"タップ終了 %f, %f", location.x, location.y);
+    }
+	
+	[super touchesCancelled:touches withEvent:event];
 	
 }
 
@@ -377,7 +408,11 @@ static void hsp3dish_setdevinfo( void )
 
 - (void)dispViewX:(int)x Y:(int)y
 {
-    hgio_view(x,y);
+    int xsize, ysize;
+    xsize = x; ysize = y;
+    if ( xsize < 0 ) { xsize = disp_sx; }
+    if ( ysize < 0 ) { ysize = disp_sy; }
+    hgio_view(xsize,ysize);
 }
 
 - (void)dispScaleX:(int)x Y:(int)y

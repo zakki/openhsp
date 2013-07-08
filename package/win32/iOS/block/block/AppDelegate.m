@@ -1,13 +1,13 @@
 //
 //  AppDelegate.m
-//  block
+//  block3
 //
-//  Created by onitama on 12/03/02.
+//  Created by onitama on 12/03/26.
 //  Copyright (c) 2012 __MyCompanyName__. All rights reserved.
 //
 
 #import "AppDelegate.h"
-#import "../../iHSP17/Classes/HspView.h"
+#import "../../iHSP18/Classes/HspView.h"
 
 @implementation AppDelegate
 
@@ -23,11 +23,20 @@
 {
     self.window = [[[UIWindow alloc] initWithFrame:[[UIScreen mainScreen] bounds]] autorelease];
 
-    //ビューの生成と追加  
-    HspView* view=[[HspView alloc] initWithFrame:CGRectMake(0,0,320,480)];
+    //ビューの生成と追加
+    HspView* view=[[HspView alloc] initWithFrame:[[UIScreen mainScreen] applicationFrame]];
+
     [view startFrame:60];
-    [view clsMode:1 color:0xffffff];
-    [self.window addSubview:view];
+//    [view useRetina];
+//    [view dispRotate:3];
+    [view useMultiTouch];
+//    [view useiAD];
+    [view clsMode:0 color:0xffffff];
+
+    hsp = [[HspViewController alloc] init];
+    [hsp setView:view];
+    self.window.rootViewController = hsp;
+    
     [view release];
     
     // Override point for customization after application launch.
@@ -36,12 +45,15 @@
     return YES;
 }
 
+
 - (void)applicationWillResignActive:(UIApplication *)application
 {
     /*
      Sent when the application is about to move from active to inactive state. This can occur for certain types of temporary interruptions (such as an incoming phone call or SMS message) or when the user quits the application and it begins the transition to the background state.
      Use this method to pause ongoing tasks, disable timers, and throttle down OpenGL ES frame rates. Games should use this method to pause the game.
      */
+    HspView* view =(HspView*)[self.window.subviews objectAtIndex:0];
+    [view actMode:0];
 }
 
 - (void)applicationDidEnterBackground:(UIApplication *)application
@@ -64,6 +76,8 @@
     /*
      Restart any tasks that were paused (or not yet started) while the application was inactive. If the application was previously in the background, optionally refresh the user interface.
      */
+    HspView* view =(HspView*)[self.window.subviews objectAtIndex:0];
+    [view actMode:1];
 }
 
 - (void)applicationWillTerminate:(UIApplication *)application

@@ -2,8 +2,8 @@
 //  main.m
 //  gcube
 //
-//  Created by 武田 寧 on 12/03/28.
-//  Copyright (c) 2012 __MyCompanyName__. All rights reserved.
+//  Created by onitama on 2013/07/08.
+//  Copyright (c) 2013年 onion software. All rights reserved.
 //
 
 #import <UIKit/UIKit.h>

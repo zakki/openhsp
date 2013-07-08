@@ -7,7 +7,7 @@
 //
 
 #import "AppDelegate.h"
-#import "../../iHSP17/Classes/HspView.h"
+#import "../../iHSP18/Classes/HspView.h"
 
 @implementation AppDelegate
 
@@ -23,18 +23,30 @@
 {
     self.window = [[[UIWindow alloc] initWithFrame:[[UIScreen mainScreen] bounds]] autorelease];
 
-    //ビューの生成と追加  
-    HspView* view=[[HspView alloc] initWithFrame:CGRectMake(0,0,320,480)];
-    [view startFrame:60];
-    [view clsMode:1 color:0xffffff];
-    [self.window addSubview:view];
-    [view release];
+    //ビューの生成と追加
+    HspView* view=[[HspView alloc] initWithFrame:[[UIScreen mainScreen] applicationFrame]];
 
+    [view startFrame:60];
+    [view clsMode:0 color:0xffffff];
+//    [view useRetina];
+//    [view dispRotate:3];
+    [view useMultiTouch];
+    [view dispViewX:320 Y:480];
+    [view dispAutoScale:0];
+//    [view useiAD];
+
+    hsp = [[HspViewController alloc] init];
+    [hsp setView:view];
+    self.window.rootViewController = hsp;
+    
+    [view release];
+    
     // Override point for customization after application launch.
     //self.window.backgroundColor = [UIColor whiteColor];
     [self.window makeKeyAndVisible];
     return YES;
 }
+
 
 - (void)applicationWillResignActive:(UIApplication *)application
 {

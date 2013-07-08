@@ -115,7 +115,7 @@ public class HspActivity extends NativeActivity {
 	public void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 		// Make your custom init here
-		getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
+		//getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
 		_activity = this;
 
 		WindowManager windowmanager = (WindowManager)getSystemService(WINDOW_SERVICE);

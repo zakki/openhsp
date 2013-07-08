@@ -7,8 +7,12 @@
 //
 
 #import <UIKit/UIKit.h>
+#import "HspViewController.h"
 
-@interface AppDelegate : UIResponder <UIApplicationDelegate>
+@interface AppDelegate : UIResponder <UIApplicationDelegate> {
+
+    HspViewController *hsp;
+}
 
 @property (strong, nonatomic) UIWindow *window;
 

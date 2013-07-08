@@ -2,8 +2,8 @@
 //  main.m
 //  hspproj
 //
-//  Created by 武田 寧 on 12/03/26.
-//  Copyright (c) 2012 __MyCompanyName__. All rights reserved.
+//  Created by onitama on 2013/01/29.
+//  Copyright (c) 2013年 onion software. All rights reserved.
 //
 
 #import <UIKit/UIKit.h>
