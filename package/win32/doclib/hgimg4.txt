@@ -82,6 +82,8 @@ HGIMG4 REFERENCE MANUAL                High Performance Graphic Image Plugin
 	gptexmat var,"file",opt				テクスチャマテリアルの生成
 	gpusermat var,"vsh","fsh","defs",color,opt	カスタムマテリアルの生成
 	gpmatprm objid,"name",x,y,z			マテリアルのパラメーター設定
+	gpmatprm objid,"name",value			マテリアルのパラメーター設定(2)
+	gpmatprm objid,"name",x,y,z,w			マテリアルのパラメーター設定(3)
 	gpmatstate objid,"name","value"			マテリアルのステート設定
 
 	gpbox var,size,color,matobj			箱ノードを生成
@@ -96,6 +98,7 @@ HGIMG4 REFERENCE MANUAL                High Performance Graphic Image Plugin
 
 	gpclone var,objid				ノードを複製
 	setobjmode objid,value,mode			オブジェクトのモード設定
+	setalpha objid,value				オブジェクトの透明度(α値)設定
 	gplookat objid,x,y,z				指定座標に向けてノードを回転
 
 	gppbind objid,mass,friction			ノードに標準的な物理特性を設定
@@ -841,7 +844,7 @@ HGIMG4 REFERENCE MANUAL                High Performance Graphic Image Plugin
 	αチャンネル値の設定により、2Dスプライトオブジェクト及び3Dノードオブジェクトの
 	透明度を変更することができます。
 
-		gpsetprm オブジェクトID, PRMSET_ALPHA, α値
+		setalpha オブジェクトID, α値
 
 	α値は、0～255までの整数値で、0が完全な透明、255が完全な不透明となります。
 	α値が255以外(半透明)の状態となったオブジェクトは、描画順序が前面に変更されます。
@@ -1115,6 +1118,28 @@ HGIMG4 REFERENCE MANUAL                High Performance Graphic Image Plugin
 	・パーティクルとエミッターの詳細設定
 	・マルチテクスチャ、バップマップ、ハイトマップ、LODサポート
 	・マルチプラットフォーム化(iOS、Android)
+
+
+・OpenGLについて
+
+	HGIMG4は、描画のベースシステムとしてOpenGLを使用しています。
+	Windows用の3D描画ベースライブラリとしては、HGIMG3でDirectXを使用
+	していましたが、今回は大きく方向を転換しています。
+	OpenGLは、DirectXと同様にランタイムライブラリが必要となりますが、
+	その多くはビデオドライバと同時にインストールされます。
+	また、古くからサポートされていたDirectXと異なりOpenGL(3.1)は
+	新しいハードウェアしかサポートされていません。
+	主に2006年以降のnVidiaやAMD製のグラフィックカード及びintel製の
+	グラフィックチップ搭載マザーボード等でサポートされています。
+	Windows7以降の多くのシステムで、サポートされていると思われますが、
+	古いパソコンでの互換性が持てない場合もあります。
+	その一方で、OpenGLはiOS及びAndroidなどのスマートフォン、タブレット
+	端末において標準的な描画ライブラリとして採用されています。
+	HSP3Dishをベースに作成されているHGIMG4は、これらの端末上での動作も
+	視野に入れて開発されており、今後Windowsでも普及が進むと考えられる
+	OpenGLを全面的に採用しています。
+	DirectXと異なる環境に戸惑うユーザーの方もいるかと思いますが、
+	互換性などの情報も含めて、今後情報などを提供していきたいと考えています。
 
 
 ・ライセンスについて
