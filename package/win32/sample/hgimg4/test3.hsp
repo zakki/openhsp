@@ -14,6 +14,8 @@ title "HGIMG4 Test"
 	x(2)=sx : y(2)=sy : col(2)=$ff0000
 	x(3)=0 : y(3)=sy : col(3)=$ff00ff
 
+	font "",32	; フォントサイズを指定
+
 	gmode 0
 
 	;

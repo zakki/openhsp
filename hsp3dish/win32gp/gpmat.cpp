@@ -51,6 +51,24 @@ int gpmat::setParameter( char *name, Vector4 *value )
 }
 
 
+int gpmat::setParameter( char *name, Vector3 *value )
+{
+	if ( _material == NULL ) return -1;
+    _material->getParameter( name )->setValue( value );
+
+	return 0;
+}
+
+
+int gpmat::setParameter( char *name, float value )
+{
+	if ( _material == NULL ) return -1;
+    _material->getParameter( name )->setValue( value );
+
+	return 0;
+}
+
+
 int gpmat::setState( char *name, char *value )
 {
 	RenderState::StateBlock *state;
@@ -168,6 +186,10 @@ void gamehsp::setMaterialDefaultBinding( Material* material, int icolor, int mat
 
 	colorVector3( icolor, color );
 	material->getParameter("u_diffuseColor")->setValue(color);
+
+	gameplay::MaterialParameter *prm_modalpha;
+	prm_modalpha = material->getParameter("u_modulateAlpha");
+	if ( prm_modalpha ) { prm_modalpha->setValue( 1.0f ); }
 
 	RenderState::StateBlock *state;
 	state = material->getStateBlock();
@@ -287,9 +309,9 @@ Material *gamehsp::makeMaterialColor( int color, int matopt )
 {
 	Material *material;
 	if ( matopt & GPOBJ_MATOPT_NOLIGHT ) {
-		material = makeMaterialFromShader( "res/shaders/colored-unlit.vert", "res/shaders/colored-unlit.frag", NULL );
+		material = makeMaterialFromShader( "res/shaders/colored-unlit.vert", "res/shaders/colored-unlit.frag", "MODULATE_ALPHA" );
 	} else {
-		material = makeMaterialFromShader( "res/shaders/colored.vert", "res/shaders/colored.frag", NULL );
+		material = makeMaterialFromShader( "res/shaders/colored.vert", "res/shaders/colored.frag", "MODULATE_ALPHA" );
 	}
 	if ( material == NULL ) return NULL;
 
@@ -304,9 +326,9 @@ Material *gamehsp::makeMaterialTexture( char *fname, int matopt )
 	bool mipmap;
 	mipmap = (matopt & GPOBJ_MATOPT_NOMIPMAP ) == 0;
 	if ( matopt & GPOBJ_MATOPT_NOLIGHT ) {
-		material = makeMaterialFromShader( "res/shaders/textured-unlit.vert", "res/shaders/textured-unlit.frag", NULL );
+		material = makeMaterialFromShader( "res/shaders/textured-unlit.vert", "res/shaders/textured-unlit.frag", "MODULATE_ALPHA" );
 	} else {
-		material = makeMaterialFromShader( "res/shaders/textured.vert", "res/shaders/textured.frag", NULL );
+		material = makeMaterialFromShader( "res/shaders/textured.vert", "res/shaders/textured.frag", "MODULATE_ALPHA" );
 	}
 	if ( material == NULL ) return NULL;
 

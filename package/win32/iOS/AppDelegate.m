@@ -24,21 +24,23 @@
     self.window = [[[UIWindow alloc] initWithFrame:[[UIScreen mainScreen] bounds]] autorelease];
 
     //ビューの生成と追加
-    HspView* view=[[HspView alloc] initWithFrame:CGRectMake(0,0,320,480)];
-//    HspView* view=[[HspView alloc] initWithFrame:[[UIScreen mainScreen] applicationFrame]];
+    HspView* view=[[HspView alloc] initWithFrame:[[UIScreen mainScreen] applicationFrame]];
 
     [view startFrame:60];
+    [view clsMode:1 color:0xffffff];
 //    [view useRetina];
 //    [view dispRotate:3];
     [view useMultiTouch];
-    [view clsMode:0 color:0xffffff];
+    [view dispViewX:320 Y:480];
+    [view dispAutoScale:0];
+//    [view useAccelerometer:1.0f / 30.0f];
 
     hsp = [[HspViewController alloc] init];
-    [hsp setHspView:view];
+    [hsp setView:view];
     self.window.rootViewController = hsp;
     
     [view release];
-
+    
     // Override point for customization after application launch.
     //self.window.backgroundColor = [UIColor whiteColor];
     [self.window makeKeyAndVisible];
@@ -52,7 +54,8 @@
      Sent when the application is about to move from active to inactive state. This can occur for certain types of temporary interruptions (such as an incoming phone call or SMS message) or when the user quits the application and it begins the transition to the background state.
      Use this method to pause ongoing tasks, disable timers, and throttle down OpenGL ES frame rates. Games should use this method to pause the game.
      */
-    [hsp actMode:0];
+    HspView* view =(HspView*)[self.window.subviews objectAtIndex:0];
+    [view actMode:0];
 }
 
 - (void)applicationDidEnterBackground:(UIApplication *)application
@@ -75,7 +78,8 @@
     /*
      Restart any tasks that were paused (or not yet started) while the application was inactive. If the application was previously in the background, optionally refresh the user interface.
      */
-    [hsp actMode:1];
+    HspView* view =(HspView*)[self.window.subviews objectAtIndex:0];
+    [view actMode:1];
 }
 
 - (void)applicationWillTerminate:(UIApplication *)application

@@ -1285,7 +1285,7 @@ static int cmdfunc_extcmd( int cmd )
 		code_getvec( &p_vec1 );
 		mat = game->getMat( p1 );
 		if ( mat == NULL ) throw HSPERR_ILLEGAL_FUNCTION;
-		mat->setParameter( fname, &p_vec1 );
+		mat->setParameter( fname, (gameplay::Vector3 *)&p_vec1 );
 		break;
 		}
 	case 0x69:								// gpmatstate
@@ -1772,6 +1772,30 @@ static int cmdfunc_extcmd( int cmd )
 		obj->_colgroup = p3;
 		break;
 		}
+	case 0xdb:								// getobjcoli
+		{
+		PVal *p_pval;
+		APTR p_aptr;
+		gpobj *obj;
+		p_aptr = code_getva( &p_pval );
+		p1 = code_getdi( 0 );
+		obj = game->getObj( p1 );
+		if ( obj == NULL ) code_puterror( HSPERR_ILLEGAL_FUNCTION );
+		p1 = obj->_mygroup;
+		code_setva( p_pval, p_aptr, HSPVAR_FLAG_INT, &p1 );
+		break;
+		}
+	case 0xdc:								// objexist
+		{
+		gpobj *obj;
+		p1 = code_getdi( 0 );
+		p2 = 0;
+		obj = game->getObj( p1 );
+		if ( obj == NULL ) p2 = -1;
+		ctx->stat = p2;
+		break;
+		}
+
 
 	case 0xe0:								// fvset
 		p_vec = code_getvvec();
@@ -1965,6 +1989,48 @@ static int cmdfunc_extcmd( int cmd )
 		if ( p3 < 0 ) throw HSPERR_ILLEGAL_FUNCTION;
 		break;
 
+	case 0xf3:								// setalpha
+		{
+		gpobj *obj;
+		p1 = code_getdi( 0 );
+		p2 = code_getdi( 255 );
+		obj = game->getObj( p1 );
+		if ( obj == NULL ) throw HSPERR_ILLEGAL_FUNCTION;
+		if ( p2 < 0 ) p2 = 0;
+		if ( p2 > 255 ) p2 = 255;
+		obj->_transparent = p2;
+		break;
+		}
+	case 0xf4:								// gpmatprm1
+		{
+		char fname[256];
+		char *ps;
+		gpmat *mat;
+		p1 = code_getdi( 0 );
+		ps = code_gets();
+		strncpy( fname, ps, 256 );
+		dp1 = code_getdd( 0.0 );
+		mat = game->getMat( p1 );
+		if ( mat == NULL ) throw HSPERR_ILLEGAL_FUNCTION;
+		mat->setParameter( fname, dp1 );
+		break;
+		}
+	case 0xf5:								// gpmatprm4
+		{
+		char fname[256];
+		char *ps;
+		gpmat *mat;
+		p1 = code_getdi( 0 );
+		ps = code_gets();
+		strncpy( fname, ps, 256 );
+		code_getvec( &p_vec1 );
+		dp1 = code_getdd( 0.0 );
+		mat = game->getMat( p1 );
+		if ( mat == NULL ) throw HSPERR_ILLEGAL_FUNCTION;
+		p_vec1.w = (float)dp1;
+		mat->setParameter( fname, &p_vec1 );
+		break;
+		}
 
 
 #endif

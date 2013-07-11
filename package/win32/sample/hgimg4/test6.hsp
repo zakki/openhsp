@@ -33,13 +33,13 @@ title "HGIMG4 Test"
 	if key&256 : sw=sw+1 : if sw>2 : sw=0
 
 	n = cnt&127:if n>=64 : n=63-(n-64)
-	x.0=n+0
+	x.0=n+150
 	y.0=n/2+150
-	x.1=sx-n
+	x.1=sx-n-150
 	y.1=n/2+150
-	x.2=n+sx
+	x.2=n+sx-150
 	y.2=400-(n/2)
-	x.3=0-n
+	x.3=150-n
 	y.3=400-(n/2)
 
 	if sw=0 : gsquare 3,x,y,tx,ty

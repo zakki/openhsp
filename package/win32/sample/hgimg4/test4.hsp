@@ -23,9 +23,8 @@ title "HGIMG4 Test"
 		x=mousex
 		y=mousey
 		id++
+		if id>=64 : id=0
 	}
-
-	py=sin(0.1*cnt)*64+(sy/2)
 
 	redraw 0
 
@@ -35,7 +34,7 @@ title "HGIMG4 Test"
 
 	; •¶Žš‚ð•\Ž¦
 	color 255,255,255
-	pos 32,py
+	pos 16,16
 	mes "celput Sample"
 
 	redraw 1

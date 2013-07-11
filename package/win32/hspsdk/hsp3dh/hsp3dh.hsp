@@ -9,7 +9,7 @@
 #include "mod_appconfig.as"
 
 #define APPTITLE "HSP3Dish helper"
-#define APPVER "0.92"
+#define APPVER "0.95"
 #define APP_CONF "\\hsp3dh.cfg"
 
 #uselib "shell32.dll"
@@ -49,6 +49,7 @@
 	and_pack=""
 	and_fname=""
 	and_keystore=""
+	flag_admob=0
 
 	get_hsp_appdata_path app_dir
 
@@ -66,11 +67,12 @@
 		flag_utf8 = 0+cfg_getvar("flag_utf8")
 		and_name=cfg_getvar("and_name")
 		and_pack=cfg_getvar("and_pack")
-		and_targetid = cfg_getvar("and_target")
+		;and_targetid = cfg_getvar("and_target")
 		and_fname=cfg_getvar("and_fname")
 		and_keystore=cfg_getvar("and_keystore")
+		flag_admob = 0+cfg_getvar("flag_admob")
 	}
-	if and_targetid="" : and_targetid="\"android-10\""
+	if and_targetid="" : and_targetid="\"android-17\""
 	if and_keystore="" : and_keystore="hspapp"
 
 	if app_winx<0 : app_winx = -1
@@ -258,6 +260,10 @@
 	mes "パッケージ名:"
 	objsize 390,24
 	input and_package
+
+	objsize 160,24
+	pos 8,110
+	chkbox "AdMobを使用する",flag_admob
 
 	x=ginfo_sx-150:y=114
 	objsize 140,32
@@ -478,6 +484,7 @@
 	cfg_sets "and_target",and_targetid
 	cfg_sets "and_fname",and_fname
 	cfg_sets "and_keystore",and_keystore
+	cfg_seti "flag_admob",flag_admob
 
 	cfg_save
 	end
@@ -695,10 +702,12 @@
 	prj_dlist={"assets
 src\\tv
 src\\tv\\hsp
+hsp
 jni
 jni\\hsp3
 jni\\hsp3\\ndk
 jni\\hsp3embed
+res\\drawable-xhdpi
 res\\drawable-hdpi
 res\\drawable-ldpi
 res\\drawable-mdpi"}
@@ -784,9 +793,10 @@ jni\\hsp3embed\\hspvar_util.h
 jni\\hsp3embed\\misc.cpp
 jni\\hsp3embed\\misc.h
 src\\tv\\hsp\\HspActivity.java
-res\\drawable-hdpi\\icon.png
-res\\drawable-ldpi\\icon.png
-res\\drawable-mdpi\\icon.png"}
+res\\drawable-xhdpi\\ic_launcher.png
+res\\drawable-hdpi\\ic_launcher.png
+res\\drawable-ldpi\\ic_launcher.png
+res\\drawable-mdpi\\ic_launcher.png"}
 
 	gsel 1
 	mes "プロジェクトの更新中..."
@@ -812,18 +822,34 @@ res\\drawable-mdpi\\icon.png"}
 		bcopy s2,basedir+s1
 	loop
 
+	if flag_admob {
+		s1 = basedir+"src\\tv\\hsp\\HspActivity.java"
+		s2 = dir_exe+"\\android\\hspproj\\src\\tv\\hsp\\HspActivityAdMob.java"
+		bcopy s2,s1
+	}
+
 	s1=basedir+"AndroidManifest.xml"
 	notesel tmp
 	noteload s1
 	noteadd "    <uses-sdk android:minSdkVersion=\"10\" />",5,0
-	noteadd "    <application android:icon=\"@drawable/icon\" android:label=\"@string/app_name\">",6,1
+	noteadd "    <application android:icon=\"@drawable/ic_launcher\" android:label=\"@string/app_name\">",6,1
 	noteadd "        <activity android:name=\"tv.hsp.HspActivity\"",7,1
 	noteadd "                  android:screenOrientation=\"portrait\"",8,0
 	noteadd "                  android:theme=\"@android:style/Theme.Black.NoTitleBar.Fullscreen\"",9,0
 	noteadd "            <meta-data android:name=\"android.app.lib_name\"",11,0
 	noteadd "                    android:value=\""+and_name+"\" />",12,0
 	noteadd "	<uses-permission android:name=\"android.permission.VIBRATE\"/>",19,0
+
+	if flag_admob {
+	noteadd "	<activity android:name=\"com.google.ads.AdActivity\"",18,0
+	noteadd "              android:configChanges=\"keyboard|keyboardHidden|orientation|screenLayout|uiMode|screenSize|smallestScreenSize\"/>",19,0
+	noteadd "	<uses-permission android:name=\"android.permission.ACCESS_NETWORK_STATE\"/>",22,0
+	noteadd "	<uses-permission android:name=\"android.permission.INTERNET\"/>",22,0
+	}
 	notesave s1
+
+
+
 
 	s1=basedir+"jni\\Android.mk"
 	notesel tmp

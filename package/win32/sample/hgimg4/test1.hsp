@@ -16,6 +16,7 @@ repeat
 	addang id_model,0,0.02,0.01	; ノード回転
 	gpdraw				; シーンの描画
 
+	color 255,255,255
 	pos 8,8:mes "HGIMG4 sample"
 
 	redraw 1			; 描画終了

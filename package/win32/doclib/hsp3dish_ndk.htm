@@ -34,7 +34,8 @@
 		<li><a href="#EXECTASK">タスク(アクティビティ)呼び出し</a></li>
 		<li><a href="#SCALE">画面サイズのスケーリングについて</a></li>
 		<li><a href="#RELEASE">リリースビルド</a></li>
-		<li><a href="#DEVCONTROL">デバイスコントロールについて(new)</a></li>
+		<li><a href="#DEVCONTROL">デバイスコントロールについて</a></li>
+		<li><a href="#ADMOB">AdMobによる広告配信(new)</a></li>
 		<li><a href="#NOTICE">android版の注意事項、制限</a></li>
 		<li><a href="#NEWVER">android版の更新予定</a></li>
 	</ol>
@@ -95,8 +96,8 @@
 	<p>
 	このツールにより、必要なAPIをインストールすることができます。(ネットに接続されている必要があります)
 	<br>
-	「Android 4.0.3 (API 15)」のような形で、それぞれのバージョンに対応したAPIのチェックボックスが表示されます。
-	この中で、「Tools」「Android 2.3.3 (API 10)」はチェックを入れて必ずインストールするようにしてください。
+	「Android 4.2.2 (API 17)」のような形で、それぞれのバージョンに対応したAPIのチェックボックスが表示されます。
+	この中で、「Tools」「Android 4.2.2 (API 17)」はチェックを入れて必ずインストールするようにしてください。
 	それ以外のバージョンは必要に応じてインストールして頂いて構いません。
 	<br>
 	「Install packages...」のボタンを押すことで、ダウンロードとインストールが行なわれます。
@@ -139,7 +140,7 @@
 	プロジェクトのタイトル名となります。スペースを含まない英文字のみで指定してください。
 	</p>
 	<li>ID</li><br><p>
-	ビルドのターゲットIDを設定します。ターゲットIDは、SDKのAPIバージョンを指定するための番号になります。デフォルトで「"android-10"」(2.3.3)が指定されています。
+	ビルドのターゲットIDを設定します。ターゲットIDは、SDKのAPIバージョンを指定するための番号になります。デフォルトで「"android-17"」(4.2.2)が指定されています。
 	</p>
 	<ul><img src="hsp3dish/s_and8.jpg"><br></ul>
 	<p>
@@ -151,6 +152,10 @@
 	名称には、スペースを含まない英文字のみで指定してください。<a href="http://ja.wikipedia.org/wiki/%E3%83%91%E3%83%83%E3%82%B1%E3%83%BC%E3%82%B8_%28Java%29" target="_blank">Javaのパッケージ命名規約</a>なども参考にしてみてください。
 	<br>
 	パッケージ名を省略した場合は、日付とプロジェクト名から自動的に生成される文字列が適用されます。
+	</p>
+	<li>AdMobを使用する</li><br><p>
+	AdMobによる広告配信アプリを作成する場合にチェックを入れてください。
+	AdMobのライブラリ及びSDK4.2.2以降が必要となります。詳しくは、「AdMobによる広告配信」を参照してください。
 	</p>
 	</ul>
 
@@ -194,6 +199,7 @@
 	<br>
 	「クリーン」ボタンを押すことで、ビルドされたデータを破棄してプロジェクトフォルダを初期化することができます。全体を再度ビルドする場合には、一度「クリーン」によりデータを破棄しておいてください。
 	</p>
+	</ul>
 
 	<h2 id="SAMPLE">サンプルプロジェクト</h2>
 	<p>
@@ -332,6 +338,7 @@
 	コントロールコマンド    内容
 	-------------------------------------------
 	vibrate			バイブ(振動)動作(パラメーター1)
+	AdMob			AdMobによる広告の表示
 	</pre>
 	<p>
 	たとえば、
@@ -410,6 +417,171 @@
 	公開されている情報は、Android Developer Consoleから、いつでも修正を行なうことができます。
 	ファイルを更新する場合は、再度リリースビルドを行なって、apkファイルを差し替えた後にactivate(有効化)してください。
 	ただし、更新を行なうためには、バージョン番号を上げる必要があります。プロジェクトが使用している「AndroidManifest.xml」ファイルの、android:versionCode、android:versionName項目の数値を更新してから、リリースビルドを行なうようにしてください。
+	</p>
+	</ul>
+
+
+	<h2 id="ADMOB">AdMobによる広告配信</h2>
+	<ul>
+	<li>広告配信のための準備</li><br>
+	<p>
+	HSP3DishではAdMobを使った広告配信モデルのアプリを作成することが可能です。
+	適切に設定を行なうことで、HSP3Dishのアプリから広告を配信し、収益を得ることができるようになります。
+	AdMobはGoogleが提供するモバイル広告配信の仕組みです。これをアプリに組み込むことで、無料アプリであっても広告料を得ることができます。<br>
+	AdMobを組み込むためには、以下の手順で準備を行なっておく必要があります。<br><br>
+
+	1. AdMobアカウントの作成
+<br><br>
+	アカウントを登録し、支払い情報などの必要事項を記入します。<br>
+	<a href="http://www.google.co.jp/ads/admob/" target="_blank">http://www.google.co.jp/ads/admob/</a>
+<br><br>
+	2. パブリッシャーIDの取得
+<br><br>
+	AdMobのwebページにログインし、サイト/アプリケーションの追加を行ないます。
+	(アプリがまだGoogle Playで公開されていない段階でも可能です)<br>
+	Androidアプリケーションを選択し、App名、パッケージURL、ジャンル、説明等の
+	必要事項を記入することで、パブリッシャーIDを取得することができます。
+	パッケージURLは、「market://details?id=net.onionsoft.****」のような
+	アプリのパッケージ名を指定してください。
+<br><br>
+	3. AdMob SDKのダウンロード
+<br><br>
+	最新版のAdMob SDKが必要になりますので、ダウンロードしておきましょう。<br>
+	<a href="https://developers.google.com/mobile-ads-sdk/download?hl=ja" target="_blank">https://developers.google.com/mobile-ads-sdk/download?hl=ja</a>
+<br><br>
+	5. 最新のAndroid APIライブラリのダウンロード
+<br><br>
+	AdMob SDKをビルドするために、Android APIライブラリの最新版を使用できる状態にする必要があります。
+	"android-17"(Android 4.2 (API 17))が利用可能かどうかを確認しておいてください。
+	Android APIライブラリのダウンロードは、SDKフォルダ内のSDK Manager.exeを起動して行ないます。
+	(Android SDKをインストールしたフォルダ内にSDK Manager.exeがあるはずです)
+	このツールで、Android 4.2 (API 17)の項目にチェックを入れてアップデートを行なってください。
+<br><br>
+	HSP3Dish helperを起動して、androidタブの「新規プロジェクト」モードの「ID...」ボタンを押すと、
+	インストールされているAPIの一覧が表示されます。この中に、"android-17"が存在してれば問題ありません。
+<br><br>
+	6. AdMobを使用するプロジェクトの作成
+<br><br>
+	新規プロジェクトを作成します。その際に、必ず「AdMobを使用する」のチェックボックスをONにしておいてください。
+	それ以外の設定は、通常の新規プロジェクト作成と変わりありません。
+<br><br>
+	7. AdMob SDKのコピー
+<br><br>
+	AdMob SDKのライブラリをプロジェクトフォルダにコピーする必要があります。
+	プロジェクトのフォルダ内にある、libsフォルダにAdMob SDKのjarファイル( GoogleAdMobAdsSdkAndroid-6.4.1の場合は、「GoogleAdMobAdsSdk-6.4.1.jar」)をコピーしてください。
+<br><br>
+	8. パブリッシャーIDの登録
+<br><br>
+	プロジェクトのフォルダ以下の「src/tv/hsp/HspActivity.java」ファイルを編集します。
+	</p>
+<pre>
+		adView = new AdView(_activity, AdSize.BANNER, "publisherID");
+</pre>
+	<p>
+	の行を探してください。このpublisherIDの部分を、AdMobのwebページで取得したパブリッシャーID文字列に置き換えてください。
+	このパブリッシャーIDにより、広告の配信者が特定されます。
+<br><br>
+	9. AdMob表示スクリプトの追加
+<br><br>
+	スクリプト実行時の適切なタイミングでAdMobを有効にしてください。
+	タイトル画面や、ゲームメニューなど画像や音声のリソース読み込みが落ち着いた後に有効にすることを推奨します。
+	(CPU負荷が高い時には、AdMobのタスクが遅延することがあります)<br>
+	AdMobを有効にする場合は、
+	</p>
+<pre>
+		devcontrol "AdMob"		; AdMobを有効にする
+</pre>
+	<p>
+	をスクリプトに記述してください。("AdMob"の文字列は大小文字を正確に識別します)
+	WindowsやiOSでは、この記述は無視されますが、複数機種実行時にAndroid上でのみ実行したい場合は、以下のように記述することができます。
+	</p>
+<pre>
+		getreq v_platform,SYSREQ_PLATFORM
+		if ( v_platform = PLATFORM_ANDROID ) {
+			devcontrol "AdMob"		; AdMobを有効にする
+		}
+</pre>
+	<p>
+	「devcontrol "AdMob"」は、最初の実行時にAdMob表示を開始し、それ以降は実行しても
+	無視されますので、タイトル画面表示時などに何度でも実行されても問題ありません。
+	デフォルトでは、画面下にバナーとして広告が表示されます。
+	(この時、デバイスがネット接続可能な状態であることを確認しておいてください)
+<br><br>
+	以上の準備でAdMobを使用したアプリをビルドすることが可能になります。
+	</p>
+	</ul>
+
+	<ul>
+	<li>AdMobプロジェクトのビルド</li><br>
+	<p>
+	プロジェクトの更新が完了したら、後は通常のHSP3Dishと同様に、HSP3Dish helperから
+	プロジェクトのビルドを行なうことができます。<br>
+	ビルド時にエラーが発生した場合は、エラーメッセージなどを参考にしながら、
+	プロジェクトの設定に問題がないか確認をしてください。
+<br><br>
+	ビルドが成功したら、デバイスに転送して実行を確認することができます。
+<br><br>
+	実行の確認を何度も行なう場合には、テスト用端末の登録を行なっておいてください。
+	テスト用端末の登録は、src/tv/hsp/HspActivity.javaファイルのソースで指定します。<br>
+	以下の行があることを確認してください。
+	</p>
+<pre>
+		//adRequest.addTestDevice(AdRequest.TEST_EMULATOR);
+		//adRequest.addTestDevice("********************************");
+</pre>
+	<p>
+	先頭が「//」になっている行はコメントとして扱われます。
+	「//」を取り除くことで機能します。
+	</p>
+<pre>
+		adRequest.addTestDevice(AdRequest.TEST_EMULATOR);
+</pre>
+	<p>
+	の行は、エミュレーターデバイス上の動作チェック用のコードです。
+	</p>
+<pre>
+		adRequest.addTestDevice("********************************");
+</pre>
+	<p>
+	の行は、実機デバイス上の動作チェック用のコードです。
+	"****～"の部分に、デバイスIDを記入する必要があります。
+	デバイスIDは、AdMob表示時にAndroidログ(ddmsツール等で表示可能です)内に、
+	</p>
+<pre>
+	「 To get test ads on this device, call adRequest.addTestDevice("********************************");」
+</pre>
+	<p>
+	というメッセージが流れますので、そこで確認することができます。
+	(広告の表示エラーや、問題に関するメッセージも表示されます)
+	</p>
+	</ul>
+
+	<ul>
+	<li>広告バナーサイズについて</li><br>
+	<p>
+	Google AdMob Adsのページで、広告バナーサイズを確認することができます。<br>
+	<a href="https://developers.google.com/mobile-ads-sdk/docs/android/intermediate?hl=ja" target="_blank">https://developers.google.com/mobile-ads-sdk/docs/android/intermediate?hl=ja</a>
+<br><br>
+	現在のコードでは、画面下に縦は75ドット、横は画面いっぱいまでバナーの領域を確保しています。
+	サイズや位置などは、src/tv/hsp/HspActivity.javaファイルのソースを変更することで調整可能です。
+	</p>
+<pre>
+
+		popUp.setWidth(disp_width+4);		// 横サイズ(disp_widthは画面全体)
+		popUp.setHeight(77);			// 縦サイズ
+</pre>
+	<p>
+	ここで指定したサイズはポップアップのサイズで、実際のバナー表示領域は若干少なくなるので
+	注意してください。
+	</p>
+	</ul>
+
+	<ul>
+	<li>アプリのリリース</li><br>
+	<p>
+	AdMobの表示をサポートしたアプリは、通常のHSP3Dishアプリと同様の方法でビルドし、
+	Google Playから配信することが可能です。
+	リリース時には、テスト用端末の登録コードを削除するのを忘れないようにしてください。
 	</p>
 	</ul>
 
@@ -495,12 +667,11 @@
 	</p>
 	<ul>
 	<li>傾きセンサーの入力情報の取得</li>
-	<li>admobによる広告配信への対応</li>
 	<li>dialog命令によるダイアログ表示サポート</li>
 	<li>各種システム情報取得</li>
 	<li>日本語フォントの描画サポート</li>
 	<li>http接続、ブラウザの呼び出しサポート</li>
-	<li>OBAQプラグイン機能のサポート</li>
+	<li>HGIMG4のサポート</li>
 	</ul>
 	<p>
 	バージョンアップの告知は、HSPオフィシャルサイトHSPTV!にて行なわれますので、随時ご確認ください。

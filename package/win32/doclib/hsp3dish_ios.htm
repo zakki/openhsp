@@ -33,9 +33,9 @@
 		<li><a href="#SENSOR">加速度センサーのサポートについて</a></li>
 		<li><a href="#DIALOG">dialog命令のサポートについて</a></li>
 		<li><a href="#RETINA">Retinaディスプレイ対応について</a></li>
-		<li><a href="#DEVCONTROL">デバイスコントロールについて(new)</a></li>
+		<li><a href="#DEVCONTROL">デバイスコントロールについて</a></li>
 		<li><a href="#RELEASE">AppStoreへの登録について</a></li>
-		<li><a href="#IAD">iAdの対応について(new)</a></li>
+		<li><a href="#IAD">iAdの対応について</a></li>
 		<li><a href="#NOTICE">iOS版の注意事項、制限</a></li>
 		<li><a href="#NEWVER">iOS版の更新予定</a></li>
 	</ol>
@@ -76,7 +76,7 @@
 	<li>iHSP18フォルダ - HSP3Dishランタイム本体</li>
 	<li>hspprojフォルダ - HSP3Dishサンプル(hsplogo.hsp)</li>
 	<li>blockフォルダ - ブロック崩しサンプル(block3.hsp)</li>
-	<li>gcubeフォルダ - iPad用、d3module使用サンプル(xsample_gcube.hsp)</li>
+	<li>gcubeフォルダ - d3module使用サンプル(xsample_gcube.hsp)</li>
 	</ul>
 
 	<br>
@@ -88,13 +88,12 @@
 	<h2 id="MAKECPP">スクリプトの準備</h2>
 	<p>
 	iOS上でスクリプトを動作させる場合には、最初にWindows上でスクリプトをCソースコードに変換します。
-	スクリプトエディタの、「ツール」メニューから「指定ファイルをCソースに変換」メニューを選択してください。
-	ツールの画面が起動するので、block3のスクリプトを指定して「変換」ボタンを押してください。
+	変換ツールとなる、HSP3Dish Helper(hsp3dh.exe)を起動してください。 
+	(スクリプトエディタの、「ツール」メニューから「指定ファイルをCソースに変換」メニューを選択して起動することも可能です。)<br>
+	ツールが起動したら、「ソース変換」のタブが選択されていることを確認して、変換したいHSPのスクリプトを指定して「変換」ボタンを押してください。
 	この時、「出力ソースをUTF-8に変換」のチェックをONにしておくのを忘れないでください。
-	<br>
-	<b>※HSP3.3フォルダにある、hsp3cnv.exe(HSP3ソースコンバーター)を最新版にするのを忘れないでください。最新版はHSP3Dish(このアーカイブ)に同梱されています。</b>
 	</p>
-	<img src="hsp3dish/s_cnvsrc.jpg"><br>
+	<img src="hsp3dish/s_and1.jpg"><br>
 	<p>
 	正常に終了するとスクリプトと同じフォルダに拡張子が.cppのCソースファイルが作成されます。
 	これでスクリプトの準備は完了です。
@@ -158,12 +157,8 @@
 	</p>
 	<img src="hsp3dish/s_proj4.jpg"><br>
 	<p>
-	必要に応じて、プロジェクトのSupporting Files内にある、[プロジェクト名]-info.plistファイルにフルスクリーンの設定を追加します。<br>
+	プロジェクトの「Summary」タブで、サポートされる画面の方向、ステータスバーの表示設定(フルスクリーンにする場合は、Hide during application launchにチェックを入れる)を行なってください。
 	</p>
-	<ul>
-	<li>Localization native development region項目をJapanに設定変更</li>
-	<li>Status bar is initally hidden項目を追加し、Yesに設定(フルスクリーンにする場合)</li>
-	</ul>
 	<img src="hsp3dish/s_plist.jpg"><br>
 	<p>
 	アイコンやデータファイル(画像やサウンド)がある場合は、「Resource」フォルダを作成してプロジェクトに追加(Add)してください。(サンプルプロジェクトのResourceフォルダなどを参考にしてみてください)
@@ -174,7 +169,7 @@
 	パッケージに含まれるPNGファイルの最適化(圧縮)を無効にします。これは、HSPが外部のPNG読み込みライブラリを使用するために必要な設定です。<br>
 	</p>
 	<ul>
-	<li>プロジェクトのBuild SettingsタブのPackaging内にある、Compress PNG Filesの設定をすべてNoにしてください</li>
+	<li>プロジェクトのBuild SettingsタブのPackaging内にある、Compress PNG Filesの設定をNoにしてください</li>
 	</ul>
 	<img src="hsp3dish/s_comppng.jpg"><br>
 	<br>
@@ -187,6 +182,7 @@
 	<p>
 	実際にHSP3Dishを実行させる場合は、HSPランタイムの初期化コードをAppDelegateに組み込む必要があります。
 	iOSフォルダに含まれているAppDelegate.m、AppDelegate.hファイルを上書きコピーしてご使用下さい。
+	(念のため、XCodeを一旦終了してから、プロジェクト内のファイルを上書き更新することを推奨します)
 	</p>
 	<img src="hsp3dish/s_code2.jpg"><br>
 	<br>
@@ -203,17 +199,20 @@
 	</p>
 	<pre>
 	    //ビューの生成と追加
-	    HspView* view=[[HspView alloc] initWithFrame:CGRectMake(0,0,320,480)];
+	    HspView* view=[[HspView alloc] initWithFrame:[[UIScreen mainScreen] applicationFrame]];
+
 	    [view startFrame:60];
 	    [view clsMode:1 color:0xffffff];
-	    hsp = [[HspViewController alloc] init];
-	    [hsp setHspView:view];
-	    self.window.rootViewController = hsp;
-	    [view release];
+	    //    [view useRetina];
+	    //    [view dispRotate:3];
+	    [view useMultiTouch];
+	    [view dispViewX:320 Y:480];
+	    [view dispAutoScale:0];
+	    //    [view useAccelerometer:1.0f / 30.0f];
 	</pre>
 
 	<p>
-	iOSフォルダに含まれているAppDelegate.mには、標準的な設定(320x480、60フレーム)による初期化コードが書かれています。
+	iOSフォルダに含まれているAppDelegate.mには、標準的な設定(320×480、60フレーム)による初期化コードが書かれています。
 	冒頭が「//」で始まる行はコメントとして認識され、書かれた内容は無効となります。
 	必要に応じて、「//」を削除することで設定を有効にすることができます。
 	</p>
@@ -221,19 +220,6 @@
 
 	<p>
 	AppDelegate.m内の追加コードにより、いくつかの設定を行なうことができます。
-	</p>
-	<pre>
-	    HspView* view=[[HspView alloc] initWithFrame:CGRectMake(0,0,320,480)];
-	</pre>
-	<p>
-	この設定により、左上(0,0)から(320,480)の範囲を描画フレームとしています。
-	320×480は、iPhone 3GSの設定に合わせてありますが、iPadなど他の解像度を利用する場合はこの値を変更する必要があります。
-	</p>
-	<pre>
-	    HspView* view=[[HspView alloc] initWithFrame:[[UIScreen mainScreen] applicationFrame]];
-	</pre>
-	<p>
-	有効な画面サイズ全体を描画フレームとする場合は、上のように書き換えることが可能です。
 	</p>
 	<pre>
 	    [view startFrame:60];
@@ -256,11 +242,12 @@
 	「color:0xffffff」は、クリアする色を指定するもので16進数によりRGBのコードを記述します。
 	</p>
 	<pre>
-	    [view useMultiTouch];
+	    [view useRetina];
 	</pre>
 	<p>
-	この設定を追加することにより、mtlist,mtinfo命令によるマルチタッチ情報の取得が可能になります。<br>
-	この指定がない場合は、複数のポイントをタッチした場合でも、1つのタッチとみなされます。
+	この設定により、Retinaディスプレイ搭載機種(iPhone4以降)では、解像度を倍にして処理することができます。
+	(あらかじめ、640×960などの高解像度でアプリを作成しておく必要があります)
+	Retinaディスプレイを搭載していない機種では、通常通りの解像度を維持します。
 	</p>
 	<pre>
 	    [view dispRotate:1];
@@ -272,32 +259,19 @@
 	指定する座標)もあらかじめ横長(480x320など)に設定しておく必要があります。
 	</p>
 	<pre>
-	    [view useAccelerometer:1.0f / 30.0f];
+	    [view useMultiTouch];
 	</pre>
 	<p>
-	この設定を追加することにより、加速度センサーの値を取得することが可能になります。<br>
-	指定する値は、センサーの読み取り間隔を設定します。上の設定では、30分の1秒単位に取得を行ないます。
-	加速度センサーの値は、システム変数のginfo_accx、ginfo_accy、ginfo_acczにそれぞれ
-	X,Y,Z軸の値が実数で代入されます。
-	これは、それぞれの座標軸の加速度を-1.0～+1.0の範囲で取得したものになります。<br>
-	加速度センサーを使用しない場合は、この設定を追加しないでください。センサー情報の取得により、余計なバッテリーを消費してしまいます。
-	Windows上など加速度センサーが使用できない環境では、0.0が取得されます。
+	この設定を追加することにより、mtlist,mtinfo命令によるマルチタッチ情報の取得が可能になります。<br>
+	この指定がない場合は、複数のポイントをタッチした場合でも、1つのタッチとみなされます。
 	</p>
-
-	<pre>
-	    [view useRetina];
-	</pre>
-	<p>
-	この設定により、Retinaディスプレイ搭載機種(iPhone4以降)では、解像度を倍にして処理することができます。
-	Retinaディスプレイを搭載していない機種では、通常通りの解像度を維持します。
-	</p>
-
 	<pre>
 	    [view dispViewX:320 Y:480];
 	</pre>
 	<p>
 	スクリプトが動作する解像度(想定される解像度)を設定することができます。
-	画面のスケーリング機能(dispAutoScale、dispScaleX)を使用する場合には、必ず設定するようにしてください。上の例では、横サイズが320、縦サイズが480であることを示しています。
+	画面のスケーリング機能(dispAutoScale、dispScaleX)を使用する場合には、必ず設定するようにしてください。上の例では、横サイズが320、縦サイズが480であることを示しています。<br>
+	この項目をコメントアウト(無効)にした場合は、起動時のデバイス解像度全体がそのまま有効となり、スクリプト側で画面サイズに応じた処理を行なうことが可能になります。
 	</p>
 
 	<pre>
@@ -322,6 +296,18 @@
 	</pre></ul>
 	<p>
 	スケーリングの設定は、起動時に行なわれます。スクリプト実行中に変更することはできません。
+	</p>
+	<pre>
+	    [view useAccelerometer:1.0f / 30.0f];
+	</pre>
+	<p>
+	この設定を追加することにより、加速度センサーの値を取得することが可能になります。<br>
+	指定する値は、センサーの読み取り間隔を設定します。上の設定では、30分の1秒単位に取得を行ないます。
+	加速度センサーの値は、システム変数のginfo_accx、ginfo_accy、ginfo_acczにそれぞれ
+	X,Y,Z軸の値が実数で代入されます。
+	これは、それぞれの座標軸の加速度を-1.0～+1.0の範囲で取得したものになります。<br>
+	加速度センサーを使用しない場合は、この設定を追加しないでください。センサー情報の取得により、余計なバッテリーを消費してしまいます。
+	Windows上など加速度センサーが使用できない環境では、0.0が取得されます。
 	</p>
 
 	<p>
@@ -396,20 +382,14 @@
 
 	<h2 id="RETINA">Retinaディスプレイ対応について</h2>
 	<p>
-	AppDelegate.mに必要な初期化を追加することでRetinaディスプレイに対応させることができます。<br>
-	あらかじめ、640×960の高精細なサイズでアプリの作成を行なった上で、以下のように初期化を行なってください。
+	AppDelegate.mの初期化(「[view useRetina];」)を有効にすることで、Retinaディスプレイに対応させることができます。<br>
+	あらかじめ、640×960(iPhone5の場合は、640x1136)などの高精細なサイズでアプリの作成を行なった上で、設定を行なってください。
 	</p>
 	<pre>
-	    //ビューの生成と追加
-	    HspView* view=[[HspView alloc] initWithFrame:CGRectMake(0,0,320,480)];
 	    [view useRetina];
-	    [view startFrame:60];
-	    [view clsMode:1 color:0xffffff];
-	    [view dispViewX:640 Y:960];
-	    [view dispAutoScale:0];
 	</pre>
 	<p>
-	この設定により、Retinaディスプレイ搭載機種で正しく反映され、Retinaディスプレイでない機種では縮小サイズ(320×480)で表示されるようになります。
+	この設定により、Retinaディスプレイ搭載機種で正しく反映され、Retinaディスプレイでない機種では縮小サイズで表示されるようになります。
 	</p>
 
 	<h2 id="DEVCONTROL">デバイスコントロールについて</h2>
@@ -478,7 +458,7 @@
 	全世界のマーケットを対象に作品を公開することができますので、是非あなたもチャレンジしてみてください。
 	</p>
 
-	<h2 id="IAD">iAdの対応について(new)</h2>
+	<h2 id="IAD">iAdの対応について</h2>
 	<p>
 	HSP3Dish ver3.4β1版から、アプリ内に広告を表示するiAdのシステムに対応しています。<br>
 	iAdを有効にする場合は、
@@ -552,9 +532,9 @@
 	</p>
 	<ul>
 	<li>各種システム情報取得</li>
-	<li>機種による画面サイズ動的変更のサポート</li>
 	<li>http接続、ブラウザの呼び出しサポート</li>
-	<li>OBAQプラグイン機能のサポート</li>
+	<li>GAMECENTER、Google Play Game Servicesなど各種ランキングサービスの設定</li>
+	<li>HGIMG4のサポート</li>
 	</ul>
 	<p>
 	バージョンアップの告知は、HSPオフィシャルサイトHSPTV!にて行なわれますので、随時ご確認ください。

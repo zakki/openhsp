@@ -5,7 +5,7 @@ Hot Soup Processor ver3.4                           HSP : Hot Soup Processor
 
 ・hsp3関連 更新履歴
 
-	2013/07/03 3.4β2
+	2013/07/10 3.4β2
 
 	windowsの終了セッションにHSPランタイムが残ってしまう不具合を修正
 	on gosub～命令の指定先でend命令が認識されない不具合を修正(BT#263)
@@ -14,7 +14,8 @@ Hot Soup Processor ver3.4                           HSP : Hot Soup Processor
 	[HSP3Dish][android] アプリのレジューム時にテクスチャデータが復帰しないことがある不具合を修正
 	[HSP3Dish][android] HSP3Dish helperで新規プロジェクト作成が失敗することがある不具合を修正
 	[HSP3Dish][android] getreq命令でPLATFORM_ANDROIDが正しく取得できない不具合を修正
-	[HSP3Dish][android] AdMobによる広告収益アプリに仮対応
+	[HSP3Dish][android] HSP3Dish helperでのAdMobプロジェクトに対応
+	[HSP3Dish][android] HSP3Dish helperの新規プロジェクトをSDK4.2.2標準に修正
 	[HSP3Dish][iOS] iAdの表示が行なわれないことがある不具合を修正
 
 	2013/04/16 3.4β1

@@ -56,6 +56,8 @@ void gpobj::reset( int id )
 	_usegpmat = -1;
 	_colilog = -1;
 
+	_prm_modalpha = NULL;
+
 	for(i=0;i<GPOBJ_USERVEC_MAX;i++) {
 		_vec[i].set( Vector4::zero() );
 	}
@@ -87,6 +89,9 @@ bool gpobj::isVisible( bool lateflag )
 	if ( _mode & GPOBJ_MODE_HIDE ) {		// 非表示設定
 		return false;
 	}
+	if ( _transparent <= 0 ) {				// 完全な透明
+		return false;
+	}
 	if ( _mode & GPOBJ_MODE_LATE ) {
 		curflag = true;						// 手前を強制
 	} else {
@@ -108,6 +113,19 @@ float gpobj::getAlphaRate( void )
 	if ( _transparent >= 255 ) return 1.0f;
 	if ( _transparent <= 0 ) return 0.0f;
 	return ( 1.0f / 255.0f ) * (float)_transparent;
+}
+
+
+void gpobj::updateParameter( Material *mat )
+{
+	//	マテリアル設定後処理を行なう
+	//	パラメーターのポインタ設定など、モデル確定後にgpobjで必要な処理を行なう
+	//
+	_prm_modalpha = NULL;
+	if ( _flag == 0 ) return;
+	if ( mat ) {
+		_prm_modalpha = mat->getParameter("u_modulateAlpha");
+	}
 }
 
 
@@ -948,19 +966,30 @@ bool gamehsp::drawScene(Node* node)
 	gpobj *obj = (gpobj *)node->getUserPointer();
     Model* model = node->getModel(); 
 	if ( obj ) {
-		if ( obj->isVisible( _scenedraw_lateflag ) == false ) return true;
+		if ( obj->isVisible( _scenedraw_lateflag ) == false ) return false;
 
 		int mode = obj->_mode;
 		if ( mode & GPOBJ_MODE_XFRONT ) {
 			node->setRotation(_qcam_billboard);
 		}
 		if ( mode & GPOBJ_MODE_CLIP ) {
-			if (node->getBoundingSphere().intersects(_cameraDefault->getFrustum()) == false ) return true;
+			if (node->getBoundingSphere().intersects(_cameraDefault->getFrustum()) == false ) return false;
 		}
-		if ( mode & GPOBJ_MODE_WIRE ) {
-			if (model) { model->draw(true); }
-			return true;
+
+		//	Alphaのモジュレート設定
+		gameplay::MaterialParameter *prm_modalpha = obj->_prm_modalpha;
+		if ( prm_modalpha ) { prm_modalpha->setValue( obj->getAlphaRate() ); }
+
+		if ( model ) {
+
+			if ( mode & GPOBJ_MODE_WIRE ) {			// ワイヤーフレーム描画時
+				model->draw(true);
+				return true;
+			}
+
 		}
+
+
 	}
 
     if (model)
@@ -1258,6 +1287,7 @@ int gamehsp::makeModelNode( char *fname, char *idname )
 		}
 	}
 
+	obj->updateParameter( boxMaterial );
 
 	if ( _curscene >= 0 ) {
 		_scene->addNode( rootNode );
@@ -1295,6 +1325,7 @@ void gamehsp::makeNewModel( gpobj *obj, Mesh *mesh, Material *material )
 	node->setModel(model);
 	node->setUserPointer( obj, NULL );
 	obj->_model = model;
+	obj->updateParameter( material );
 	SAFE_RELEASE(model);
 }
 

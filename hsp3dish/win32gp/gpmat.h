@@ -22,6 +22,8 @@ public:
 	gpmat();
 	~gpmat();
 	void reset( int id );
+	int setParameter( char *name, float value );
+	int setParameter( char *name, Vector3 *value );
 	int setParameter( char *name, Vector4 *value );
 	int setState( char *name, char *value );
 

@@ -44,8 +44,8 @@
 #enum global PRMSET_FLAG = 0
 #enum global PRMSET_MODE
 #enum global PRMSET_ID
-#enum global PRMSET_ALPHA
 #enum global PRMSET_TIMER
+#enum global PRMSET_ALPHA
 #enum global PRMSET_MYGROUP
 #enum global PRMSET_COLGROUP
 #enum global PRMSET_SHAPE
@@ -268,6 +268,9 @@
 #cmd gppset $f0
 #cmd gpobjpool $f1
 #cmd gppapply $f2
+#cmd setalpha $f3
+#cmd gpmatprm1 $f4
+#cmd gpmatprm4 $f5
 
 #define fsin(%1,%2) %1=sin(%2)
 #define fcos(%1,%2) %1=cos(%2)

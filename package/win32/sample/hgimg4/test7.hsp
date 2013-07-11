@@ -14,9 +14,10 @@ title "HGIMG4 Test"
 repeat
 	redraw 0			; •`‰æŠJn
 
-	addang id_model,0,0.02,0.02	; ƒm[ƒh‰ñ“]
+	addang id_model,0,0.01,0.02	; ƒm[ƒh‰ñ“]
 	gpdraw				; ƒV[ƒ“‚Ì•`‰æ
 
+	color 255,255,255
 	pos 8,8:mes "HGIMG4 sample"
 
 	redraw 1			; •`‰æI—¹

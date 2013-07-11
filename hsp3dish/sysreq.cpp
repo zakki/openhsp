@@ -31,6 +31,9 @@ void InitSysReq( void )
 	sysreq[ SYSREQ_2DFILTER2 ] = 1;			// D3DTEXF_POINT
 	sysreq[ SYSREQ_3DFILTER ] = 2;			// D3DTEXF_LINEAR
 
+	sysreq[ SYSREQ_MAXMATERIAL ] = 128;
+
+
 #ifdef HSPIOS
     sysreq[ SYSREQ_PLATFORM ] = PLATFORM_IOS;
 #endif    

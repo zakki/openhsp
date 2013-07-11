@@ -134,6 +134,7 @@ public:
 	bool isVisible( void );				// 表示できるか調べる
 	bool isVisible( bool lateflag );	// 表示できるか調べる(lateflagあり)
 	float getAlphaRate( void );			// Alpha値を取得する
+	void updateParameter( Material *mat );	// 後処理
 
 	short _flag;						// 存在フラグ
 	short _mark;						// マーク処理用
@@ -154,6 +155,8 @@ public:
 	Light *_light;						// 生成されたLight
 	Vector3 _sizevec;					// 生成されたサイズパラメーター
 	Vector4 _vec[GPOBJ_USERVEC_MAX];	// ワーク用ベクター
+
+	gameplay::MaterialParameter *_prm_modalpha;	// Alphaモジュレート用パラメーター
 };
 
 #define BUFSIZE_POLYCOLOR 32
