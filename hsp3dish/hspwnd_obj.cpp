@@ -53,7 +53,7 @@ static void Object_ButtonDraw( HSPOBJINFO *info )
 	int x1,x2,y1,y2;
 
 	bm = (Bmscr *)info->bm;
-	bm->SetFont( "", 18, 0 );
+	bm->SetFontInternal( "", 18, 0 );
 
 	x1 = info->x; y1 = info->y;
 	x2 = info->x + info->sx - 1; y2 = info->y + info->sy - 1;

@@ -666,7 +666,10 @@ static int cmdfunc_extcmd( int cmd )
 		p3 = code_getdi( 0 );
 		p4 = code_getdi( 0 );
 		p5 = code_getdi( 0 );
-		if ( p1&1 ) bmscr->DrawAllObjects();
+		if ( p1&1 ) {
+			bmscr->DrawAllObjects();	// オブジェクトを描画する
+			bmscr->SetDefaultFont();	// フォントを元に戻す
+		}
 		ctx->stat = hgio_redraw( (BMSCR *)bmscr, p1 );
 		break;
 
@@ -869,6 +872,18 @@ static int cmdfunc_extcmd( int cmd )
 		bmscr->cx=code_getdi(bmscr->cx);
 		bmscr->cy=code_getdi(bmscr->cy);
 		bmscr->Line( p1, p2 );
+		break;
+
+	case 0x30:								// clrobj
+		p1 = code_getdi( 0 );
+		p2 = code_getdi( -1 );
+		p4 = bmscr->objmax-1;
+		if ( p4 < 0 ) break;
+		if (( p1<0 )|( p2>p4 )|( p1>p4 )) throw HSPERR_ILLEGAL_FUNCTION;
+		if ( p2<0 ) p2 = p4;
+		for( p3=p1; p3<=p2; p3++ ) {
+			bmscr->DeleteHSPObject( p3 );
+		}
 		break;
 
 	case 0x31:								// boxf

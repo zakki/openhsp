@@ -336,6 +336,7 @@ void Bmscr::Cls( int mode )
 
 	//		Font initalize
 	//
+	SetFont( "", 18, 0 );
 	//Sysfont(0);
 
 	//		object initalize
@@ -428,6 +429,23 @@ void Bmscr::Setcolor( int icolor )
 
 void Bmscr::SetFont( char *fontname, int size, int style )
 {
+	strncpy( font_curname, fontname, RESNAME_MAX-1 );
+	font_cursize = size;
+	font_curstyle = style;
+
+	hgio_font( fontname, size, style );
+}
+
+
+void Bmscr::SetDefaultFont( void )
+{
+	SetFont( font_curname, font_cursize, font_curstyle );
+}
+
+
+void Bmscr::SetFontInternal( char *fontname, int size, int style )
+{
+	//	内部用のフォント変更(カレントを残す)
 	hgio_font( fontname, size, style );
 }
 

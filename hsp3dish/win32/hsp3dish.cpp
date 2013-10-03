@@ -365,7 +365,7 @@ LRESULT CALLBACK WndProc( HWND hwnd, UINT uMessage, WPARAM wParam, LPARAM lParam
 		}
 		code_puterror( HSPERR_NONE );
 		PostQuitMessage(0);
-		return 0;
+		return (uMessage == WM_QUERYENDSESSION) ? true : false;
 		//break;
 		}
 
