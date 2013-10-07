@@ -24,6 +24,8 @@ HspWnd *curwnd;
 HWND hgio_gethwnd( void );
 #endif
 
+#define COLORRATE ( 1.0f / 255.0f )
+
 /*------------------------------------------------------------*/
 /*
 		constructor
@@ -253,9 +255,7 @@ void HspWnd::Resume( void )
 		bm = GetBmscr(i);
 		if ( bm != NULL ) {
 			if ( bm->type == HSPWND_TYPE_BUFFER ) {
-				bm->flag = BMSCR_FLAG_NOUSE;
 				hgio_texload( (BMSCR *)bm, bm->resname );
-				bm->flag = BMSCR_FLAG_INUSE;
 			}
 		}
 	}
@@ -336,6 +336,7 @@ void Bmscr::Cls( int mode )
 
 	//		Font initalize
 	//
+	SetFont( "", 18, 0 );
 	//Sysfont(0);
 
 	//		object initalize
@@ -397,11 +398,54 @@ void Bmscr::Posinc( int pp )
 void Bmscr::Setcolor( int a1, int a2, int a3 )
 {
 	color = 0xff000000|((a1&0xff)<<16)|((a2&0xff)<<8)|(a3&0xff);
+
+#ifdef HSPDISHGP
+	colorvalue[0] = ((float)a1) * COLORRATE;
+	colorvalue[1] = ((float)a2) * COLORRATE;
+	colorvalue[2] = ((float)a3) * COLORRATE;
+	colorvalue[3] = 1.0f;
+#endif
+
+}
+
+
+void Bmscr::Setcolor( int icolor )
+{
+	color = icolor;
+
+	int a1 = ( icolor >> 16 ) & 0xff;
+	int a2 = ( icolor >>  8 ) & 0xff;
+	int a3 = ( icolor ) & 0xff;
+
+#ifdef HSPDISHGP
+	colorvalue[0] = ((float)a1) * COLORRATE;
+	colorvalue[1] = ((float)a2) * COLORRATE;
+	colorvalue[2] = ((float)a3) * COLORRATE;
+	colorvalue[3] = 1.0f;
+#endif
+
 }
 
 
 void Bmscr::SetFont( char *fontname, int size, int style )
 {
+	strncpy( font_curname, fontname, RESNAME_MAX-1 );
+	font_cursize = size;
+	font_curstyle = style;
+
+	hgio_font( fontname, size, style );
+}
+
+
+void Bmscr::SetDefaultFont( void )
+{
+	SetFont( font_curname, font_cursize, font_curstyle );
+}
+
+
+void Bmscr::SetFontInternal( char *fontname, int size, int style )
+{
+	//	内部用のフォント変更(カレントを残す)
 	hgio_font( fontname, size, style );
 }
 

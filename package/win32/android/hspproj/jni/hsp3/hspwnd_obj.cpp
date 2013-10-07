@@ -53,7 +53,7 @@ static void Object_ButtonDraw( HSPOBJINFO *info )
 	int x1,x2,y1,y2;
 
 	bm = (Bmscr *)info->bm;
-	bm->SetFont( "", 18, 0 );
+	bm->SetFontInternal( "", 18, 0 );
 
 	x1 = info->x; y1 = info->y;
 	x2 = info->x + info->sx - 1; y2 = info->y + info->sy - 1;
@@ -64,7 +64,7 @@ static void Object_ButtonDraw( HSPOBJINFO *info )
 		bm->gfrate = 0;
 		bm->cx = x1;
 		bm->cy = y1;
-		bm->color = 0;
+		bm->Setcolor( 0 );
 		bm->Print( info->btnset->name );
 		btn->messx = bm->printsizex;
 		btn->messy = bm->printsizey;
@@ -88,7 +88,7 @@ static void Object_ButtonDraw( HSPOBJINFO *info )
 		bm->gmode = 0;
 		bm->gfrate = 255;
 		bm->GradFill( x1+1, y1+1, info->sx-2, info->sy-2, 1, col1, col2 );
-		bm->color = 0xff808080;
+		bm->Setcolor( 0xff808080 );
 		bm->cx = x1; bm->cy = y1;
 		bm->Line( x2, y1 );
 		bm->Line( x2, y2 );
@@ -106,7 +106,7 @@ static void Object_ButtonDraw( HSPOBJINFO *info )
 		}
 		bm->gmode = 3;
 		bm->gfrate = 255;
-		bm->color = tcol;
+		bm->Setcolor( tcol );
 		bm->cx = x1;
 		bm->cy = y1;
 		HspWnd *wnd = (HspWnd *)bm->master_hspwnd;
@@ -115,7 +115,7 @@ static void Object_ButtonDraw( HSPOBJINFO *info )
 
 	bm->gmode = 3;
 	bm->gfrate = 255;
-	bm->color = tcol;
+	bm->Setcolor( tcol );
 	bm->cx = info->x + ( info->sx - btn->messx )/2;
 	bm->cy = info->y + ( info->sy - btn->messy )/2;
 	if ( info->tapflag == 1 ) {
