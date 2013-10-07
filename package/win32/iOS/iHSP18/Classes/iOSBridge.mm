@@ -320,9 +320,11 @@ int gb_mes( BMSCR *bm, char *msg )
     gb_colorset( bm );
     
     NSString *nsstr = [[NSString alloc] initWithUTF8String:msg];
-	//[_g drawString:nsstr x:bm->cx y:bm->cy];
+
+    //[_g drawString:nsstr x:bm->cx y:bm->cy];
     Image *image = [_g makeTextImage:nsstr];
 	[nsstr release];
+
     if (image==nil) return -1;
     
     GLfloat *flp;

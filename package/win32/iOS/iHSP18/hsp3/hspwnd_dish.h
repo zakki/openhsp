@@ -147,10 +147,13 @@ public:
 	void Width( int x, int y, int wposx, int wposy, int mode );
 	void Title( char *str );
 	void Setcolor( int a1, int a2, int a3 );
+	void Setcolor( int icolor );
 	void SetHSVColor( int hval, int sval, int vval );
 	int BmpSave( char *fname );
 	void GetClientSize( int *xsize, int *ysize );
 	void SetFont( char *fontname, int size, int style );
+	void SetFontInternal( char *fontname, int size, int style );
+	void SetDefaultFont( void );
 
 	void Print( char *mes );
 	void Boxfill( int x1,int y1,int x2,int y2 );
@@ -281,6 +284,12 @@ public:
 
 	int		mtouch_num;					// Active Multi-Touch points
 	HSP3MTOUCH mtouch[BMSCR_MAX_MTOUCH];	// Multi-Touch Info
+
+	float	colorvalue[4];				// ColorRGB value each 0.0～1.0
+
+	char	font_curname[RESNAME_MAX];	// Current Font Name
+	int		font_cursize;				// Current Font Size
+	int		font_curstyle;				// Current Font Style
 
 private:
 //	void Blt( int mode, Bmscr *src, int xx, int yy, int asx, int asy );
@@ -424,6 +433,8 @@ typedef struct BMSCR
 
 	int		mtouch_num;					// Active Multi-Touch points
 	HSP3MTOUCH mtouch[BMSCR_MAX_MTOUCH];	// Multi-Touch Info
+
+	float	colorvalue[4];				// ColorRGB value each 0.0～1.0
 
 } BMSCR;
 

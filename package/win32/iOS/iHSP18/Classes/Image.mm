@@ -248,10 +248,17 @@
 //テキストUIイメージの生成
 + (UIImage*)makeTextUIImage:(NSString*)text font:(UIFont*)font 
     color:(UIColor*)color bgcolor:(UIColor*)bgcolor {
+
+    int sizex,sizey;
+    
     //ラベルの生成
     UILabel* label=[[[UILabel alloc] init] autorelease]; 
 	CGSize size=[text sizeWithFont:font constrainedToSize:CGSizeMake(512,512) 
         lineBreakMode:UILineBreakModeWordWrap];
+
+    sizex = size.width;
+    sizey = size.height;
+    
     [label setFrame:CGRectMake(0,0,size.width,size.height)];
     [label setText:text];
     [label setFont:font];
@@ -261,26 +268,27 @@
     [label setNumberOfLines:0];
 
     //コンテキストの生成
-    if (size.width<32)  size.width=32;
-    if (size.height<32) size.height=32;
+    if (sizex<32)  sizex=32;
+    if (sizey<32) sizey=32;
+
     unsigned char *bmpData;
     CGContextRef context;	
     CGColorSpaceRef colorSpace;
     int msize;
-    msize = size.width*size.height*sizeof(unsigned char)*4;
+    msize = sizex * sizey * sizeof(unsigned char) * 4;
 	bmpData=(unsigned char *)malloc(msize); 
     //memset( bmpData, 0, msize );
 	colorSpace=CGColorSpaceCreateDeviceRGB();
     context=CGBitmapContextCreate(bmpData, 
-        size.width,size.height,8,size.width*4,
+        sizex, sizey, 8, sizex * 4,
         colorSpace,
 		kCGImageAlphaPremultipliedFirst);
     CGContextSetShouldAntialias(context,0);
-    CGContextClearRect(context,CGRectMake(0,0,size.width,size.height));
+    CGContextClearRect(context,CGRectMake(0,0,sizex,sizey));
     
     //コンテキストの設定
     UIGraphicsPushContext(context);
-    CGContextTranslateCTM(context,0,size.height);
+    CGContextTranslateCTM(context,0,sizey);
     CGContextScaleCTM(context,1,-1);    
     
     //ラベルの描画
