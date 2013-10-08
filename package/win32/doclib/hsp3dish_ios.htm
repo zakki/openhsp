@@ -24,7 +24,7 @@
 		<li><a href="#PREPARE">環境の準備</a></li>
 		<li><a href="#SAMPLE">サンプルプロジェクト</a></li>
 		<li><a href="#MAKECPP">スクリプトの準備</a></li>
-		<li><a href="#MAKEPROJ">XCode4プロジェクトの作成</a></li>
+		<li><a href="#MAKEPROJ">XCode5プロジェクトの作成</a></li>
 		<li><a href="#ADDHSP">HSP3Dish関連ファイルの登録</a></li>
 		<li><a href="#RUNPROJ">HSP3Dishの実行と設定</a></li>
 		<li><a href="#BSAVE">bsave命令によるユーザーデータ保存</a></li>
@@ -36,6 +36,7 @@
 		<li><a href="#DEVCONTROL">デバイスコントロールについて</a></li>
 		<li><a href="#RELEASE">AppStoreへの登録について</a></li>
 		<li><a href="#IAD">iAdの対応について</a></li>
+		<li><a href="#ADMOB">AdMobの対応について</a></li>
 		<li><a href="#NOTICE">iOS版の注意事項、制限</a></li>
 		<li><a href="#NEWVER">iOS版の更新予定</a></li>
 	</ol>
@@ -99,34 +100,63 @@
 	これでスクリプトの準備は完了です。
 	</p>
 
-	<h2 id="MAKEPROJ">XCode4プロジェクトの作成</h2>
+	<h2 id="MAKEPROJ">XCode5プロジェクトの作成</h2>
+	<p><b>
+	現在のiOS開発環境最新版は、XCode5となります。
+	以前のバージョンとなる、Xcode4を使用するためのガイドは<a href="hsp3dish_xcode4.htm">こちらを参照してください</a>。
+	</b></p>
 	<p>
-	OSX上でXcode4を起動して新規プロジェクト(Create a new Xcode project)を選択します。
+	OSX上でXcode5を起動して新規プロジェクト(Create a new Xcode project)を選択します。
 	テンプレートの選択画面になりますので、「iOS Application」の「Empty Application」を選び「Next」を押してください。
 	</p>
-	<img src="hsp3dish/s_proj1.jpg"><br>
+	<img src="hsp3dish/s_proj1_5.jpg"><br>
 	<p>
 	オプション画面で、製品名(Product Name)入力します。<br>
 	識別子(Company Identifier)は、作成者を識別する名前(メーカー名など)を入力します。<br>
-	Class Prefixは空欄にしておいて構いません。
-	Device FamilyはiPhoneに設定し、3つのチェックボックスは、基本的には外しておいて下さい。
+	Device FamilyはiPhoneやiPadなどの任意のデバイスを設定します。その他の項目は、基本的にはそのままにしておいてください。
 	</p>
-	<img src="hsp3dish/s_proj2.jpg"><br>
 	<p>
 	次に、プロジェクトのフォルダを作成する場所を設定します。これは任意の場所を指定して構いません。<br>
 	正常にプロジェクトが作成されると、開発環境(IDE)が起動します。<br>
-	メインウィンドウにプロジェクトの概要(Summary)が表示されるはずです。
+	メインウィンドウにプロジェクトの概要(General)が表示されるはずです。
 	</p>
-	<img src="hsp3dish/s_proj3.jpg"><br>
+	<img src="hsp3dish/xcode5_opt2.jpg"><br>
+	<br>
 	<p>
-	デフォルトで、Deployment Target(対応OSのバージョン)が5.0以降に設定されているので、
-	4.3以降に下げておいてください。(バージョン指定によって正しくビルドされないことがあります)
+	HSP3Dishでは、最低動作バージョン(Deployment Target)を4.3に指定することを推奨しています。
+	XCode5でこの設定を変更するためには、最初にプロジェクトのビルド設定(Build Settings)タブのArchitecturesを
+	変更する必要があります。デフォルトでは、64bitアーキテクチャを含む設定になっているので、
+	これをStandard(armv7,armv7sのみ)にしてください。
+	これにより、Deployment Targetを4.3に指定することが可能です。
 	</p>
-	<img src="hsp3dish/s_xcode45.jpg"><br>
+	<img src="hsp3dish/xcode5_opt3.jpg"><br>
+	<br>
+
 	<p>
-	XCodeのバージョン4.5以降では、コンパイラの設定を変更する必要があります。<br>
-	プロジェクトのBuild Settingsの中にある、Apple LLVM compiler 4.1 - Language内のオプション、「C Language Dialect」「C++ Language Dialect」「C++ Standard Library」をすべて「Compiler Default」に変更してください。<br>
-	以前のXCodeで作成されたプロジェクトファイルは問題なく読み込みビルドすることが可能です。
+	さらに、コンパイラの設定を以下のように変更する必要があります。<br>
+	プロジェクトのビルド設定(Build Settings)タブの「Apple LLVM 5.0 - Language - Objective C」項目、「Objective-C Automatic Referece Counting」を「No」に変更します。
+	</p>
+	<img src="hsp3dish/xcode5_opt5.jpg"><br>
+	<br>
+
+	<p>
+	同じく、ビルド設定(Build Settings)タブの「Apple LLVM 5.0 - Language」項目、「C Language Dialect」を「GNU99 [-std=gnu99]」に変更。<br>
+「Apple LLVM 5.0 - Language - C++」項目、「C++ Language Dialect」「C++ Standard Library」をすべて「Compiler Default」に変更。<br>
+「Apple LLVM 5.0 - Language - Modules」項目、「Enable Modules (C and Objective-C)」「No」にそれぞれ変更してください。
+	</p>
+	<img src="hsp3dish/xcode5_opt1.jpg"><br>
+	<br>
+
+
+	<p>
+	最後にビルド設定(Build Settings)タブの「Packaging」項目、「Compress PNG Files」を「No」に変更するのを忘れないでください。
+	</p>
+	<img src="hsp3dish/xcode5_opt4.jpg"><br>
+	<br>
+
+	<p>
+	以上で新規プロジェクトファイルの設定が完了します。<br>
+	尚、以前のXCodeで作成されたプロジェクトファイルは問題なく読み込みビルドすることが可能です。
 	</p>
 
 	<h2 id="ADDHSP">HSP3Dish関連ファイルの登録</h2>
@@ -152,30 +182,20 @@
 	<li>iAd.framework</li>
 	</ul>
 	<p>
-	フレームワークの追加は、プロジェクトの「Summary」タブの「Linked Frameworks and Libraries」項目の「+」ボタンで行なうことができます。<br>
-	正常に追加されると、ファイルナビゲーターは以下のような状態になります。
+	フレームワークの追加は、プロジェクトの「General」タブの「Linked Frameworks and Libraries」項目の「+」ボタンで行なうことができます。
 	</p>
-	<img src="hsp3dish/s_proj4.jpg"><br>
+	<img src="hsp3dish/xcode5_opt2.jpg"><br><br>
 	<p>
 	プロジェクトの「Summary」タブで、サポートされる画面の方向、ステータスバーの表示設定(フルスクリーンにする場合は、Hide during application launchにチェックを入れる)を行なってください。
 	</p>
-	<img src="hsp3dish/s_plist.jpg"><br>
 	<p>
 	アイコンやデータファイル(画像やサウンド)がある場合は、「Resource」フォルダを作成してプロジェクトに追加(Add)してください。(サンプルプロジェクトのResourceフォルダなどを参考にしてみてください)
 	</p>
-	<img src="hsp3dish/s_resource.jpg"><br>
+	<img src="hsp3dish/s_resource.jpg"><br><br>
 
 	<p>
-	パッケージに含まれるPNGファイルの最適化(圧縮)を無効にします。これは、HSPが外部のPNG読み込みライブラリを使用するために必要な設定です。<br>
-	</p>
-	<ul>
-	<li>プロジェクトのBuild SettingsタブのPackaging内にある、Compress PNG Filesの設定をNoにしてください</li>
-	</ul>
-	<img src="hsp3dish/s_comppng.jpg"><br>
-	<br>
-
-	<p>
-	以上で、hsp3dishのビルドを行なう環境が整いました。
+	以上で、HSP3Dish関連ファイルの登録が整いました。<br>
+	アプリアイコンやスタートアップスクリーンなどは、必要に応じて登録を行なってください。
 	</p>
 
 	<h2 id="RUNPROJ">HSP3Dishの実行と設定</h2>
@@ -470,6 +490,52 @@
 	の記述を追加してください。iAdが有効になった後は、画面下にiAdが配信する広告表示が行なわれます。<br>
 	iAdによる広告収益を得るためには、iTunes connect上で適切な設定を行なう必要があります。
 	詳しくは、<a href="https://developer.apple.com/jp/support/ios/iad-network.html" target="_blank">デベロッパーサポートのiAd項目</a>を参照してください。
+	</p>
+
+	<h2 id="ADMOB">AdMobの対応について</h2>
+	<p>
+	HSP3Dish ver3.4β3版から、アプリ内に広告を表示するAdMobのシステムに仮対応しています。<br>
+	標準的なHSP3Dishランタイム(iHSP18フォルダ)と合わせて、AdMob対応のランタイム(iHSP18AdMobフォルダ)を
+	同梱しています。AdMobを使用する際には、iHSP18ではなくiHSP18AdMobフォルダをプロジェクトに追加してください。<br>
+	また、AppDelegate.m内の#import部分のコードを、以下のように修正する必要があります。
+	</p>
+	<pre>
+	    #import "../../iHSP18AdMob/Classes/HspView.h"
+	</pre>
+	<p>
+	さらに、以下のフレームワークをプロジェクトに追加してください。
+	</p>
+	<ul>
+	<li>AdSupport.framework</li>
+	<li>StoreKit.framework</li>
+	<li>MessageUI.framework</li>
+	<li>SystemConfiguration.framework</li>
+	<li>CoreGraphics.framework</li>
+	<li>CoreAudio.framework</li>
+	<li>UIKit.framework</li>
+	<li>Foundation.framework</li>
+	</ul>
+	<p>
+	最後に、ユーザーが個別に取得するAdMobパブリッシャーIDを指定します。
+	「iHSP18admob/Classes/HspViewController.mm」ファイル内のコードを直接修正してください。
+	</p>
+	<pre>
+		// 広告の「ユニット ID」を指定する。これは AdMob パブリッシャーID です。
+		adMobView.adUnitID = @"a??????????????";
+	</pre>
+
+	<p>
+	以上でAdMobに対応したアプリの作成が可能になります。<br>
+	実際にAdMobを有効にする場合は、スクリプト内のdevcontrol命令を記述してください。(これは、android版と共通の記述となります)
+	</p>
+	<pre>
+		devcontrol "AdMob"
+	</pre>
+	<p>
+	AdMobが有効になった後は、画面下にAdMobが配信する広告表示が行なわれます。<br>
+	AdMobによる広告収益を得るためには、web上のAdMobページで適切な設定を行なう必要があります。
+	詳しくは、<a href="http://www.google.co.jp/ads/admob/" target="_blank">AdMobオフィシャルサイト</a>を参照してください。
+	AdMobのメリットの１つは、androidと共通でIDや収益の管理を行なうことができる点になります。
 	</p>
 
 	<h2 id="NOTICE">iOS版の注意事項、制限</h2>
