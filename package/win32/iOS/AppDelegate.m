@@ -36,7 +36,7 @@
 //    [view useAccelerometer:1.0f / 30.0f];
 
     hsp = [[HspViewController alloc] init];
-    [hsp setView:view];
+    [hsp setHspView:view];
     self.window.rootViewController = hsp;
     
     [view release];

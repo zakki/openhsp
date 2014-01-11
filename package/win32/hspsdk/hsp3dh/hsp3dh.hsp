@@ -9,7 +9,7 @@
 #include "mod_appconfig.as"
 
 #define APPTITLE "HSP3Dish helper"
-#define APPVER "0.95"
+#define APPVER "0.96"
 #define APP_CONF "\\hsp3dh.cfg"
 
 #uselib "shell32.dll"
@@ -32,7 +32,7 @@
 #deffunc initalize
 	;	tool初期化
 	;
-	sdim s1,256:sdim s2,256
+	sdim s1,256:sdim s2,256:sdim s3,256
 	wx=480:wy=240	; ウィンドウサイズ
 	;
 	app_winx=-1
@@ -49,6 +49,11 @@
 	and_pack=""
 	and_fname=""
 	and_keystore=""
+
+	ios_proj=""
+	ios_org="hsp3dish"
+	ios_ident="onionsoft.hsptv"
+
 	flag_admob=0
 
 	get_hsp_appdata_path app_dir
@@ -71,6 +76,8 @@
 		and_fname=cfg_getvar("and_fname")
 		and_keystore=cfg_getvar("and_keystore")
 		flag_admob = 0+cfg_getvar("flag_admob")
+		ios_org=cfg_getvar("ios_org")
+		ios_ident=cfg_getvar("ios_ident")
 	}
 	if and_targetid="" : and_targetid="\"android-17\""
 	if and_keystore="" : and_keystore="hspapp"
@@ -212,6 +219,25 @@
 	objsize 160,24
 	pos 8,68
 	chkbox "出力ソースをUTF-8に変換",flag_utf8
+	chkbox "XCode5用プロジェクトを生成",flag_xcode
+
+	objsize 130,24
+	pos 20,126
+	mes "プロジェクト名:"
+	pos 90,122
+	input ios_proj
+
+	objsize 160,24
+	pos 240,126
+	mes "Organization:"
+	pos 310,122
+	input ios_org
+
+	objsize 220,24
+	pos 20,154
+	mes "Identifier:"
+	pos 90,150
+	input ios_ident
 
 	pos 312,68
 	objsize 160,48
@@ -486,6 +512,9 @@
 	cfg_sets "and_keystore",and_keystore
 	cfg_seti "flag_admob",flag_admob
 
+	cfg_sets "ios_org",ios_org
+	cfg_sets "ios_ident",ios_ident
+
 	cfg_save
 	end
 
@@ -510,7 +539,11 @@
 	s1=fname
 	gosub *hspcnv
 	if hspcnv_res : goto *fin
+	if flag_xcode=0 : goto *mksrc_ok
 
+	gosub *mkxcode5
+
+*mksrc_ok
 	gsel 1
 	mes "終了しました。"
 *fin
@@ -1035,6 +1068,7 @@ res\\drawable-mdpi\\ic_launcher.png"}
 	if strsize>0 : goto *andhsp_conv2
 
 	dirlist tmp, s3+"\\*.hsp", 1
+	if stat=0 : goto *nohsp_conv
 	getstr s2,tmp,0
 	s1=s3+"\\"+s2	
 	goto *andhsp_conv2
@@ -1106,4 +1140,136 @@ res\\drawable-mdpi\\ic_launcher.png"}
 	mes "終了しました。"
 	objprm 0,buf
 	goto *and_fin
+
+*mkxcode5
+	;
+	;	xcode5ファイル出力
+	;
+	;	create project後にフォルダを改変
+	;
+	prj_dlist={"hspproj
+hspproj\\Images.xcassets
+hspproj\\Images.xcassets\\AppIcon.appiconset
+hspproj\\Images.xcassets\\LaunchImage.launchimage
+hspproj\\en.lproj
+hspproj\\Resouces
+hspproj.xcodeproj
+hspproj.xcodeproj\\xcuserdata
+hspproj.xcodeproj\\project.xcworkspace
+hspproj.xcodeproj\\project.xcworkspace\\xcuserdata"}
+
+	prj_flist={"hspproj\\en.lproj\\InfoPlist.strings
+hspproj\\Images.xcassets\\AppIcon.appiconset\\Contents.json
+hspproj\\Images.xcassets\\LaunchImage.launchimage\\Contents.json
+hspproj\\Resouces\\Icon.png
+hspproj\\AppDelegate.h
+hspproj\\AppDelegate.m
+hspproj\\hspproj-Info.plist
+hspproj\\hspproj-Prefix.pch
+hspproj\\main.m
+hspproj.xcodeproj\\project.xcworkspace\\contents.xcworkspacedata
+hspproj.xcodeproj\\project.pbxproj"}
+
+	buf+="XCode5プロジェクトの生成中...\n"
+
+	errflag=0
+
+	if ios_proj="" : errflag=1
+	if ios_org="" : errflag=1
+	if ios_ident="" : errflag=1
+
+	if errflag {
+		buf+="設定されていない項目があります。\n"
+		return
+	}
+
+	basedir=mydir+"\\"+ios_proj+"\\"
+	dirlist s1,basedir+"*.*"
+	if stat {
+		buf+="同名のプロジェクトフォルダが存在します。\n"
+		return
+	}
+	mkdir basedir
+
+	notesel prj_dlist
+	repeat notemax
+		noteget s1,cnt
+		dirlist s2, basedir+s1, 5
+		if stat = 0 {
+			mkdir basedir+s1
+		}
+	loop
+
+	notesel prj_flist
+	repeat notemax
+		noteget s1,cnt
+		s2 = dir_exe+"\\ios\\hspproj\\"+s1
+		buf+="Copying "+s1+"...\n"
+		exist s2
+		if strsize<=0 : buf+="ファイル["+s1+"]がありません。\n" : errflag++ : break
+		bcopy s2,basedir+s1
+	loop
+
+	s2=cppname
+	bcopy s2,basedir+"hspproj\\hspsource.cpp"
+
+	s1=basedir+"hspproj\\hspproj-Info.plist"
+	notesel tmp
+	noteload s1
+	noteadd "	<string>"+ios_ident+".${PRODUCT_NAME:rfc1034identifier}</string>",11,1
+	notesave s1
+
+	fname=basedir+"hspproj.xcodeproj\\project.pbxproj"
+	notesel tmp
+	noteload fname
+	s2="ORGANIZATIONNAME"
+	s3="				ORGANIZATIONNAME = \""+ios_org+"\";"
+	gosub *rep_tmpline
+	s2="name = hspproj;"
+	s3="			name = "+ios_proj+";"
+	gosub *rep_tmpline
+	s2="productName = hspproj;"
+	s3="			productName = "+ios_proj+";"
+	gosub *rep_tmpline
+	notesave fname
+
+	if errflag {
+		buf+="プロジェクトの作成に失敗しました。\n"
+		return
+	}
+
+	buf+="プロジェクトフォルダ["+ios_proj+"]を生成しました。\n"
+	return
+
+*rep_tmpline
+	;	tmpのテキスト内にあるs2文字列の行をs3に差し替える
+	;	(lf改行に対応)
+	i=0:chk=0
+	lfcode="*":poke lfcode,0,10
+	notesel tmp
+	sdim obuf,$10000
+	repeat
+		getstr s1,tmp,i,10
+		if strsize<=0 : break
+		i+=strsize
+		if instr(s1,0,s2)>=0 {
+			obuf+=s3+lfcode
+			chk++
+		} else {
+			obuf+=s1+lfcode
+		}
+	loop
+
+	if chk=0 {
+		buf+="項目["+s2+"]がありませんでした。\n"
+		i=0
+		errflag=1
+		return
+	}
+	tmp=obuf
+	return
+
+
+
+
 

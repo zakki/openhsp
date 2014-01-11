@@ -17,6 +17,31 @@
 //	列挙したいプリンタオブジェクトタイプを
 #define	DEV_PRINTE_ENUM	PRINTER_ENUM_LOCAL|PRINTER_ENUM_CONNECTIONS
 
+static int dev_printe_enum = DEV_PRINTE_ENUM;
+
+/**
+ *	@brief	規定のプリンタを取得(Windows2000以降用)
+ *	@param[in]	pName	プリンタ名がコピーされる
+ */
+bool DevGetDefaultPrinter( char *pName ) {
+	DWORD dwSize = 512;
+	GetDefaultPrinter( pName, &dwSize);
+	return true;
+}
+
+/**
+ *	@brief	プリンタ取得フラグの設定
+ *	@param[in]	printe_prm	PRINTER_ENUM_*の値
+ */
+void DevSetPrinterFlags(int printe_prm) {
+
+	if ( printe_prm <= 0 ) {
+		dev_printe_enum = DEV_PRINTE_ENUM;
+		return;
+	}
+	dev_printe_enum = printe_prm;
+}
+
 /**
  *	@brief	プリンタ数取得
  *	@return	プリンタ数
@@ -26,11 +51,11 @@ int DevGetNumPrinter(void)
 	//	ローカルプリンタ情報取得
 	DWORD	dwSize = 0;
 	DWORD	dwCount = 0;
-	::EnumPrinters( DEV_PRINTE_ENUM , NULL, 2, NULL, 0, &dwSize, &dwCount );
+	::EnumPrinters( dev_printe_enum , NULL, 2, NULL, 0, &dwSize, &dwCount );
 
 	BYTE*	pPrinter = new BYTE[dwSize];
 	assert( pPrinter != NULL );
-	BOOL	Ret = ::EnumPrinters( DEV_PRINTE_ENUM , NULL, 2, pPrinter, dwSize, &dwSize, &dwCount );
+	BOOL	Ret = ::EnumPrinters( dev_printe_enum , NULL, 2, pPrinter, dwSize, &dwSize, &dwCount );
 	assert( Ret != 0 );
 
 #ifdef	_DEBUG
@@ -56,11 +81,11 @@ bool DevGetEnumPrinterNameByNo( int No, char* pName )
 	//	ローカルプリンタ情報取得
 	DWORD	dwSize = 0;
 	DWORD	dwCount = 0;
-	::EnumPrinters( DEV_PRINTE_ENUM , NULL, 2, NULL, 0, &dwSize, &dwCount );
+	::EnumPrinters( dev_printe_enum , NULL, 2, NULL, 0, &dwSize, &dwCount );
 
 	BYTE*	pPrinter = new BYTE[dwSize];
 	assert( pPrinter != NULL );
-	BOOL	Ret = ::EnumPrinters( DEV_PRINTE_ENUM , NULL, 2, pPrinter, dwSize, &dwSize, &dwCount );
+	BOOL	Ret = ::EnumPrinters( dev_printe_enum , NULL, 2, pPrinter, dwSize, &dwSize, &dwCount );
 	assert( Ret != 0 );
 
 	bool	bRet = false;
@@ -89,11 +114,11 @@ int DevGetEnumPrinterName( char* pName )
 	//	ローカルプリンタ情報取得
 	DWORD	dwSize = 0;
 	DWORD	dwCount = 0;
-	::EnumPrinters( DEV_PRINTE_ENUM , NULL, 2, NULL, 0, &dwSize, &dwCount );
+	::EnumPrinters( dev_printe_enum , NULL, 2, NULL, 0, &dwSize, &dwCount );
 
 	BYTE*	pPrinter = new BYTE[dwSize];
 	assert( pPrinter != NULL );
-	BOOL	Ret = ::EnumPrinters( DEV_PRINTE_ENUM , NULL, 2, pPrinter, dwSize, &dwSize, &dwCount );
+	BOOL	Ret = ::EnumPrinters( dev_printe_enum , NULL, 2, pPrinter, dwSize, &dwSize, &dwCount );
 	assert( Ret != 0 );
 
 	dwSize = 0;
@@ -129,11 +154,11 @@ int DevGetEnumPrinterDriverName( char* pName )
 	//	ローカルプリンタ情報取得
 	DWORD	dwSize = 0;
 	DWORD	dwCount = 0;
-	::EnumPrinters( DEV_PRINTE_ENUM , NULL, 2, NULL, 0, &dwSize, &dwCount );
+	::EnumPrinters( dev_printe_enum , NULL, 2, NULL, 0, &dwSize, &dwCount );
 
 	BYTE*	pPrinter = new BYTE[dwSize];
 	assert( pPrinter != NULL );
-	BOOL	Ret = ::EnumPrinters( DEV_PRINTE_ENUM , NULL, 2, pPrinter, dwSize, &dwSize, &dwCount );
+	BOOL	Ret = ::EnumPrinters( dev_printe_enum , NULL, 2, pPrinter, dwSize, &dwSize, &dwCount );
 	assert( Ret != 0 );
 
 	dwSize = 0;
@@ -174,11 +199,11 @@ bool DevGetPrinterInfo( DEVPRINTERDOC* pPrinterDoc, const int PrinterNo )
 	{
 		DWORD	dwSize = 0;
 		DWORD	dwCount = 0;
-		::EnumPrinters( DEV_PRINTE_ENUM , NULL, 2, NULL, 0, &dwSize, &dwCount );
+		::EnumPrinters( dev_printe_enum , NULL, 2, NULL, 0, &dwSize, &dwCount );
 
 		BYTE*	pPrinter = new BYTE[dwSize];
 		assert( pPrinter != NULL );
-		BOOL	Ret = ::EnumPrinters( DEV_PRINTE_ENUM , NULL, 2, pPrinter, dwSize, &dwSize, &dwCount );
+		BOOL	Ret = ::EnumPrinters( dev_printe_enum , NULL, 2, pPrinter, dwSize, &dwSize, &dwCount );
 		assert( Ret != 0 );
 
 		bool	bFind = false;
@@ -222,6 +247,8 @@ bool DevGetPrinterInfo( DEVPRINTERDOC* pPrinterDoc, const int PrinterNo )
 	pPrinterDoc->hDC = NULL;
 	pPrinterDoc->HorzRes = ::GetDeviceCaps( hDC, HORZRES );
 	pPrinterDoc->VertRes = ::GetDeviceCaps( hDC, VERTRES );
+	pPrinterDoc->HorzSize = ::GetDeviceCaps( hDC, HORZSIZE );
+	pPrinterDoc->VertSize = ::GetDeviceCaps( hDC, VERTSIZE );
 	pPrinterDoc->PhysicalWidth = ::GetDeviceCaps( hDC, PHYSICALWIDTH );
 	pPrinterDoc->PhysicalHeight = ::GetDeviceCaps( hDC, PHYSICALHEIGHT );
 	pPrinterDoc->PhysicalOffsetX = ::GetDeviceCaps( hDC, PHYSICALOFFSETX );
@@ -248,11 +275,11 @@ bool DevStartDocPrinter( DEVPRINTERDOC* pPrinterDoc, const int PrinterNo, const 
 	{
 		DWORD	dwSize = 0;
 		DWORD	dwCount = 0;
-		::EnumPrinters( DEV_PRINTE_ENUM , NULL, 2, NULL, 0, &dwSize, &dwCount );
+		::EnumPrinters( dev_printe_enum , NULL, 2, NULL, 0, &dwSize, &dwCount );
 
 		BYTE*	pPrinter = new BYTE[dwSize];
 		assert( pPrinter != NULL );
-		BOOL	Ret = ::EnumPrinters( DEV_PRINTE_ENUM , NULL, 2, pPrinter, dwSize, &dwSize, &dwCount );
+		BOOL	Ret = ::EnumPrinters( dev_printe_enum , NULL, 2, pPrinter, dwSize, &dwSize, &dwCount );
 		assert( Ret != 0 );
 
 		bool	bFind = false;
@@ -427,5 +454,62 @@ bool DevPrintBitmapPrinter( const int PrinterNo, const char* pDocName, int DstX,
 
 	return true;
 }
+
+
+/**
+ *	@brief	プリンタデバイスコンテキスト情報取得
+ *	@param[out]	pPrinterDoc
+ *	@param[in]	PrinterNo		プリンタ番号
+ *	@retval	true	成功
+ *	@retval	false	失敗
+ */
+bool DevGetPrinterProperty( DEVPRINTERDOC* pPrinterDoc, const int PrinterNo )
+{
+	assert( pPrinterDoc != NULL );
+
+	char	PrinterName[1024], DeviceName[1024], DriverName[1024];
+	{
+		DWORD	dwSize = 0;
+		DWORD	dwCount = 0;
+		::EnumPrinters( dev_printe_enum , NULL, 2, NULL, 0, &dwSize, &dwCount );
+
+		BYTE*	pPrinter = new BYTE[dwSize];
+		assert( pPrinter != NULL );
+		BOOL	Ret = ::EnumPrinters( dev_printe_enum , NULL, 2, pPrinter, dwSize, &dwSize, &dwCount );
+		assert( Ret != 0 );
+
+		bool	bFind = false;
+		PRINTER_INFO_2*	pPI2 = (PRINTER_INFO_2*)pPrinter;
+		for( DWORD i = 0; i < dwCount; i++ ){
+			if( i == PrinterNo ){
+				strcpy( PrinterName, pPI2->pPrinterName );
+				strcpy( DeviceName, pPI2->pPrinterName );
+				strcpy( DriverName, pPI2->pDriverName );
+				bFind = true;
+				break;
+			}
+			pPI2++;
+		}
+
+		delete []pPrinter;
+		if( bFind == false )	return false;
+	}
+
+	//	プリンタオープン
+	HANDLE	hPrinter = NULL;
+	BOOL	Ret = ::OpenPrinter( PrinterName, &hPrinter, NULL );
+	assert( Ret != 0 );
+
+	::PrinterProperties( NULL, hPrinter);
+
+	//	プリンタクローズ
+	BOOL	bRet = ::ClosePrinter( hPrinter );
+	assert( bRet != 0 );
+
+	return true;
+}
+
+
+
 
 #endif	//	WIN32

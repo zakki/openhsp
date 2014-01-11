@@ -36,16 +36,21 @@ int WINAPI DllMain (HINSTANCE hInstance, DWORD fdwReason, PVOID pvReserved)
 */
 /*------------------------------------------------------------*/
 
-EXPORT BOOL WINAPI netinit( int p1, int p2, int p3, int p4 )
+EXPORT BOOL WINAPI prnflags( HSPEXINFO *hei, int p1, int p2, int p3 )
 {
-	//	(type$00)
-	return 0;
-}
-
-
-EXPORT BOOL WINAPI netterm( int p1, int p2, int p3, int p4 )
-{
-	//	(type$00)
+	//	(type$202)
+	//	プリンタを列挙するためのフラグを設定する
+	//		prnflags flags
+	//		
+	//		  PRINTER_ENUM_DEFAULT = 1
+	//		  PRINTER_ENUM_LOCAL = 2
+	//		  PRINTER_ENUM_REMOTE = $10
+	//		  PRINTER_ENUM_SHARED = $20
+	//		  PRINTER_ENUM_NETWORK = $40
+	//
+	int ep1;
+	ep1 = hei->HspFunc_prm_getdi(0);			// パラメータ1:数値
+	DevSetPrinterFlags( ep1 );
 	return 0;
 }
 
@@ -73,6 +78,25 @@ EXPORT BOOL WINAPI enumprn( HSPEXINFO *hei, int p1, int p2, int p3 )
 
 	num = DevGetNumPrinter();
 	return -num;
+}
+
+
+EXPORT BOOL WINAPI getdefprn( HSPEXINFO *hei, int p1, int p2, int p3 )
+{
+	//	(type$202)
+	//	規定のプリンタを取得する
+	//		getdefprn 変数
+	//
+	char ss[512];
+	PVal *pv;
+	APTR ap;
+
+	*ss = 0;
+	ap = hei->HspFunc_prm_getva( &pv );			// パラメータ1:変数
+	DevGetDefaultPrinter( ss );
+	hei->HspFunc_prm_setva( pv, ap, HSPVAR_FLAG_STR, ss );	// 変数に値を代入
+
+	return 0;
 }
 
 
@@ -109,6 +133,10 @@ EXPORT BOOL WINAPI propprn( HSPEXINFO *hei, int p1, int p2, int p3 )
 	case 2:
 		x = doc.PhysicalOffsetX;
 		y = doc.PhysicalOffsetY;
+		break;
+	case 3:
+		x = doc.HorzSize;
+		y = doc.VertSize;
 		break;
 	}
 
@@ -147,5 +175,20 @@ EXPORT BOOL WINAPI execprn( HSPEXINFO *hei, int p1, int p2, int p3 )
 
 	return 0;
 }
+
+
+EXPORT BOOL WINAPI prndialog( HSPEXINFO *hei, int p1, int p2, int p3 )
+{
+	//	(type$202)
+	//	プリンタの設定ダイアログを開く
+	//		prndialog no
+	//
+	int ep1;
+	DEVPRINTERDOC doc;
+	ep1 = hei->HspFunc_prm_getdi(0);			// パラメータ1:数値
+	DevGetPrinterProperty( &doc, ep1 );
+	return 0;
+}
+
 
 /*------------------------------------------------------------------------------------*/

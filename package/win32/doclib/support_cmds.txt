@@ -300,6 +300,7 @@ mcall	,sys|func
 newmod	,sys|func
 delmod	,sys|func
 split	,sys|func
+strrep	,sys|func
 
 objskip	,sys|func
 objmode	,sys|func
