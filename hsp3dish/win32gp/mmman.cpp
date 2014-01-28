@@ -357,8 +357,14 @@ int MMMan::Play( int num )
 				SendMCI( ss );
 			}
 */
-			if ( mmm->vol != 0 ) { SetVol( num, mmm->vol ); }
 			strcpy( ss,"play myid from 0" );
+
+			a&=15;
+			if (a==1) strcat( ss," notify" );
+			if (a==2) strcat( ss," wait" );
+			SendMCI( ss );
+
+			if ( mmm->vol != 0 ) { SetVol( num, mmm->vol ); }
 			break;
 
 /*
@@ -379,10 +385,6 @@ int MMMan::Play( int num )
 */
 	}
 
-	a&=15;
-	if (a==1) strcat( ss," notify" );
-	if (a==2) strcat( ss," wait" );
-	SendMCI( ss );
 	curmus = num;
 
 	return 0;
