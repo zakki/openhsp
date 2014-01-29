@@ -7,7 +7,7 @@ randomize
 
 celload "hsp3dish.png",3
 
-screen 0,640,480,0
+screen 0,480,800,0
 
 	gmode 0,640,200
 

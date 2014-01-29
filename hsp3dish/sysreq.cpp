@@ -11,12 +11,16 @@
 #include "supio.h"
 
 static int	sysreq[SYSREQ_MAX];		// 初期設定データプール
+static float sysreqf[SYSREQ_MAX];		// 初期設定データプール
 static char dbgmsg[512];			// デバッグ用メッセージプール
 
 void InitSysReq( void )
 {
 	int i;
-	for(i=0;i<SYSREQ_MAX;i++) sysreq[i]=0;
+	for(i=0;i<SYSREQ_MAX;i++) {
+		sysreq[i]=0;
+		sysreqf[i]=0.0f;
+	}
 	sysreq[ SYSREQ_MAXMODEL ] = 128;
 	sysreq[ SYSREQ_MAXOBJ ] = 1024;
 	sysreq[ SYSREQ_MAXTEX ] = 128;
@@ -60,6 +64,20 @@ int GetSysReq( int reqid )
 		break;
 	}
 	return sysreq[ reqid ];
+}
+
+
+void SetSysReqF( int reqid, float val )
+{
+	if (( reqid < 0 )||( reqid >= SYSREQ_MAX )) return;
+	sysreqf[ reqid ] = val;
+}
+
+
+float GetSysReqF( int reqid )
+{
+	if (( reqid < 0 )||( reqid >= SYSREQ_MAX )) return 0.0f;
+	return sysreqf[ reqid ];
 }
 
 

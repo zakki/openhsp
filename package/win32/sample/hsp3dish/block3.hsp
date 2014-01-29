@@ -6,8 +6,8 @@
 	;
 #cmpopt varname 1
 
-	x1=0:y1=0		; 画面左上の座標
-	x2=320:y2=480		; 画面右下の座標
+	x1=0:y1=0				; 画面左上の座標
+	x2=ginfo_winx:y2=ginfo_winy		; 画面右下の座標
 
 	screen 0,x2,y2
 	title "ブロック崩し"
@@ -23,7 +23,7 @@
 	mblsize=-blsize
 
 	barsize=64		; バーのサイズ
-	barx=240:bary=440	; バーの座標
+	barx=240:bary=540	; バーの座標
 
 	barhalf=barsize/2
 	blhalf=blsize/2
@@ -126,7 +126,7 @@
 
 *gameover
 	color 255,255,255
-	pos 120,280:mes "GAME OVER"
+	pos 160,380:mes "GAME OVER"
 	return
 	;objsize 180,32
 	;pos 150,330:button "終わり",*owari

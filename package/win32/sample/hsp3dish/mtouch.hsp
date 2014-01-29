@@ -27,7 +27,7 @@ repeat
 
 
 	redraw 1
-	await 1000/50
+	await 1000/60
 
 loop
 

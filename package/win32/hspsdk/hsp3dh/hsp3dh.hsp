@@ -9,7 +9,7 @@
 #include "mod_appconfig.as"
 
 #define APPTITLE "HSP3Dish helper"
-#define APPVER "0.96"
+#define APPVER "0.97"
 #define APP_CONF "\\hsp3dh.cfg"
 
 #uselib "shell32.dll"
@@ -736,6 +736,10 @@
 src\\tv
 src\\tv\\hsp
 hsp
+libs
+libs\\armeabi
+libs\\armeabi-v7a
+libs\\x86
 jni
 jni\\hsp3
 jni\\hsp3\\ndk
@@ -751,81 +755,43 @@ jni\\Application.mk
 jni\\main.c
 jni\\hsp_native_app_glue.c
 jni\\hsp_native_app_glue.h
-jni\\javafunc.cpp
 jni\\javafunc.h
-jni\\hsp3\\dpmread.cpp
 jni\\hsp3\\dpmread.h
-jni\\hsp3\\geometry.cpp
 jni\\hsp3\\geometry.h
-jni\\hsp3\\hgdx.cpp
-jni\\hsp3\\hgdx.h
-jni\\hsp3\\hgemitter.cpp
-jni\\hsp3\\hgemitter.h
-jni\\hsp3\\hgevent.cpp
-jni\\hsp3\\hgevent.h
-jni\\hsp3\\hginc.h
 jni\\hsp3\\hgio.h
 jni\\hsp3\\hgio_dg.h
-jni\\hsp3\\hgmodel.cpp
-jni\\hsp3\\hgmodel.h
-jni\\hsp3\\hgobj.cpp
-jni\\hsp3\\hgobj.h
 jni\\hsp3\\hsp3code.h
 jni\\hsp3\\hsp3config.h
-jni\\hsp3\\hsp3debug.cpp
 jni\\hsp3\\hsp3debug.h
 jni\\hsp3\\hsp3ext.h
 jni\\hsp3\\hsp3gr.h
-jni\\hsp3\\hsp3gr_dish.cpp
 jni\\hsp3\\hsp3gr_dish.h
-jni\\hsp3\\hsp3int.cpp
 jni\\hsp3\\hsp3int.h
 jni\\hsp3\\hsp3struct.h
-jni\\hsp3\\hspvar_core.cpp
 jni\\hsp3\\hspvar_core.h
-jni\\hsp3\\hspvar_double.cpp
-jni\\hsp3\\hspvar_int.cpp
-jni\\hsp3\\hspvar_label.cpp
 jni\\hsp3\\hspvar_label.h
-jni\\hsp3\\hspvar_str.cpp
-jni\\hsp3\\hspvar_struct.cpp
 jni\\hsp3\\hspwnd.h
-jni\\hsp3\\hspwnd_dish.cpp
 jni\\hsp3\\hspwnd_dish.h
-jni\\hsp3\\hspwnd_obj.cpp
-jni\\hsp3\\random.cpp
 jni\\hsp3\\random.h
-jni\\hsp3\\stack.cpp
 jni\\hsp3\\stack.h
-jni\\hsp3\\strbuf.cpp
 jni\\hsp3\\strbuf.h
-jni\\hsp3\\strnote.cpp
 jni\\hsp3\\strnote.h
 jni\\hsp3\\supio.h
-jni\\hsp3\\sysreq.cpp
 jni\\hsp3\\sysreq.h
-jni\\hsp3\\ndk\\font_data.h
-jni\\hsp3\\ndk\\hgiox.cpp
 jni\\hsp3\\ndk\\hgiox.h
-jni\\hsp3\\ndk\\hsp3ext_ndk.cpp
 jni\\hsp3\\ndk\\hsp3ext_ndk.h
-jni\\hsp3\\ndk\\mmman.cpp
 jni\\hsp3\\ndk\\mmman.h
-jni\\hsp3\\ndk\\stb_image.c
-jni\\hsp3\\ndk\\stb_image.h
-jni\\hsp3\\ndk\\supio_ndk.cpp
 jni\\hsp3\\ndk\\supio_ndk.h
-jni\\hsp3embed\\hsp3code.cpp
-jni\\hsp3embed\\hsp3embed.cpp
 jni\\hsp3embed\\hsp3embed.h
 jni\\hsp3embed\\hsp3r.cpp
 jni\\hsp3embed\\hsp3r.h
 jni\\hsp3embed\\hspsource.cpp
-jni\\hsp3embed\\hspvar_util.cpp
 jni\\hsp3embed\\hspvar_util.h
-jni\\hsp3embed\\misc.cpp
 jni\\hsp3embed\\misc.h
 src\\tv\\hsp\\HspActivity.java
+libs\\armeabi\\libhsp3lib.a
+libs\\armeabi-v7a\\libhsp3lib.a
+libs\\x86\\libhsp3lib.a
 res\\drawable-xhdpi\\ic_launcher.png
 res\\drawable-hdpi\\ic_launcher.png
 res\\drawable-ldpi\\ic_launcher.png

@@ -43,7 +43,7 @@ repeat
 
 	gmode 0
 	color 0,0,128
-	boxf 0,0,300,100
+	boxf
 
 	gmode 0
 	pos 0,20+16:celput 1,$1f

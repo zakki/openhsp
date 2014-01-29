@@ -15,11 +15,14 @@ Hot Soup Processor ver3.4                           HSP : Hot Soup Processor
 	[HSP3Dish][iOS] XCode5でビルドした際にフォントの描画時落ちることがあった不具合を修正
 	[HSP3Dish][iOS] XCode5及びiOS7対応のランタイム更新
 	[HSP3Dish][iOS] AdMobによる広告収益アプリに対応
+	[HSP3Dish][Win][android] 物理エンジンOBAQ機能をサポート
 	[HSP3Dish][Win] 再生前に設定した音量がmp3等の音楽ファイルで適用されない不具合を修正
 	[HSP3Dish][Win] mp3等の音楽ファイルでループ再生後に音量が戻ってしまう不具合を修正
 	[HSP3Dish][Win] 再生前に設定した音量がmp3等の音楽ファイルで適用されない不具合を修正
+	[HSP3Dish][android] ランタイムをスタティックライブラリとして持つ形に変更
 	[HSP3Dish] 画面内にボタンが存在すると、mes命令のフォントが変更される不具合を修正
 	[HSP3Dish] clrobj命令が機能していなかった不具合を修正
+	[HSP3Dish] サンプルスクリプトの画面サイズを480x800に変更しました
 	ドキュメントの一部修正
 
 	2013/07/10 3.4β2

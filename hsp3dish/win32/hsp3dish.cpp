@@ -26,6 +26,13 @@
 //#include "../hsp3ext.h"
 #include "../../hsp3/strnote.h"
 
+//#define USE_OBAQ
+
+#ifdef USE_OBAQ
+#include "../obaq/hsp3dw.h"
+#endif
+
+
 typedef BOOL (CALLBACK *HSP3DBGFUNC)(HSP3DEBUG *,int,int,int);
 
 /*----------------------------------------------------------*/
@@ -884,6 +891,12 @@ int hsp3dish_init( HINSTANCE hInstance, char *startfile )
 	//
 	hsp3typeinit_extcmd( code_gettypeinfo( TYPE_EXTCMD ) );
 	hsp3typeinit_extfunc( code_gettypeinfo( TYPE_EXTSYSVAR ) );
+
+#ifdef USE_OBAQ
+	hsp3typeinit_dw_extcmd( code_gettypeinfo( TYPE_DLLFUNC ) );
+	hsp3typeinit_dw_extfunc( code_gettypeinfo( TYPE_DLLCTRL ) );
+#endif
+
 	exinfo = ctx->exinfo2;
 
 	//		Initalize DEVINFO

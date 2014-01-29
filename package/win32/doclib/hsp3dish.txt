@@ -1,6 +1,6 @@
 ------------------------------------------------------------------------------
-HSP3Dish ver3.3                                     HSP : Hot Soup Processor  
-Users Manual                               copyright 2012 (c) onion software  
+HSP3Dish ver3.4                                     HSP : Hot Soup Processor  
+Users Manual                               copyright 2014 (c) onion software  
 ------------------------------------------------------------------------------
 
 ÅEHSP3DishÇ∆ÇÕ

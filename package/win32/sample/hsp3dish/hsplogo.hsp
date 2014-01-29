@@ -68,7 +68,7 @@
 
 	;foreach sprflg
 	repeat sprmax
-	set_sprite cnt,rnd(320),rnd(480)+480+sprhy,0
+	set_sprite cnt,rnd(480),rnd(800)+800+sprhy,0
 	sprpx.cnt=rnd(4096)
 	sprpy.cnt=rnd(4)-4
 	sprchr.cnt=rnd(64)
@@ -84,7 +84,7 @@
 	sprx.cnt+=sin(ROT4096*sprpx.cnt)*4
 	spry.cnt+=sprpy.cnt
 	sprpx.cnt+=64
-	if spry.cnt<-sprhy : spry.cnt=480+sprhy
+	if spry.cnt<-sprhy : spry.cnt=800+sprhy
 	sprchr.cnt=(sprchr.cnt+1)&63
 
 	loop
@@ -93,7 +93,7 @@
 #global
 
 	x1=0:y1=0		; 画面左上の座標
-	x2=320:y2=480		; 画面右下の座標
+	x2=480:y2=800		; 画面右下の座標
 
 	celload "hsplogo8.png",1
 
@@ -110,7 +110,7 @@
 	repeat
 	redraw 0
 	;color 0,0,0:boxf
-	gradf 0,0,320,480,1,0,128
+	gradf x1,y1,x2,y2,1,0,128
 
 	move_sprite1
 	draw_sprite

@@ -11,59 +11,6 @@
 #const global FILTER_LINEAR 1
 #const global FILTER_LINEAR2 2
 
-#const global FLAG_NONE 0
-#const global FLAG_ENTRY 1
-#const global FLAG_VISIBLE 2
-#const global FLAG_MOVING 4
-
-#const global OBJ_HIDE 1
-#const global OBJ_TREE 2
-#const global OBJ_XFRONT 4
-#const global OBJ_MOVE 32
-#const global OBJ_FLIP 64
-#const global OBJ_BORDER 0x80
-#const global OBJ_2D 0x100
-#const global OBJ_SORT 0x400
-#const global OBJ_STATIC 0x800
-#const global OBJ_GRAVITY 0x1000
-#const global OBJ_LATE 0x4000
-#const global OBJ_FIRST 0x8000
-
-#const global OBJ_STAND 0x10000
-#const global OBJ_GROUND 0x20000
-#const global OBJ_LAND 0x40000
-#const global OBJ_LOOKAT 0x80000
-
-#const global OBJ_BOUND 0x100000
-#const global OBJ_ALIEN 0x200000
-#const global OBJ_WALKCLIP 0x400000
-#const global OBJ_EMITTER 0x800000
-
-#enum global PRMSET_MODE = 0
-#enum global PRMSET_FLAG
-#enum global PRMSET_SHADE
-#enum global PRMSET_TIMER
-#enum global PRMSET_MYGROUP
-#enum global PRMSET_COLGROUP
-
-#const global HGOBJ_CAMERA 0
-#const global HGOBJ_LIGHT 1
-
-#const global CAM_MODE_NORMAL 0
-#const global CAM_MODE_LOOKAT 1
-#const global CAM_MODE_LOOKOBJ 2
-#const global CAM_MODE_AUTOMOVE 3
-
-#const global HGMODEL_ROTORDER_ZYX 0
-#const global HGMODEL_ROTORDER_XYZ 1
-#const global HGMODEL_ROTORDER_YXZ 2
-
-#const global MOVEMODE_LINEAR 0
-#const global MOVEMODE_SPLINE 1
-#const global MOVEMODE_LINEAR_REL 2
-#const global MOVEMODE_SPLINE_REL 3
-#const global MOVEMODE_FROMWORK 16
-
 ;
 ;	system request
 ;
@@ -102,6 +49,16 @@
 #enum global SYSREQ_CLSTEX
 #enum global SYSREQ_TIMER
 #enum global SYSREQ_PLATFORM
+#enum global SYSREQ_FPS
+#enum global SYSREQ_VSYNC
+#enum global SYSREQ_MAXMATERIAL
+#enum global SYSREQ_PHYSICS_RATE
+#enum global SYSREQ_MAXOBAQ
+#enum global SYSREQ_MAXLOG
+#enum global SYSREQ_DEFAULT_WEIGHT
+#enum global SYSREQ_DEFAULT_MOMENT
+#enum global SYSREQ_DEFAULT_DAMPER
+#enum global SYSREQ_DEFAULT_FRICTION
 
 #const global PLATFORM_WINDOWS 0
 #const global PLATFORM_IOS 1
@@ -126,6 +83,116 @@
 #cmd devinfoi $48
 #cmd devprm $49
 #cmd devcontrol $4a
+
+#endif
+
+;
+;	obaq header for HSP3Dish
+;
+#ifndef __obaq__
+#define __obaq__
+
+#regcmd 16
+#cmd qreset $00							// qreset
+#cmd qterm $01							// qterm
+#cmd qexec $02							// qexec
+#cmd qdraw $03							// qdraw
+#cmd qview $04							// qview
+#cmd qsetreq $05						// qsetreq
+#cmd qgetreq $06						// qgetreq
+#cmd qborder $07						// qborder
+#cmd qgravity $08						// qgravity
+#cmd qcnvaxis $09						// qcnvaxis
+#cmd qgetaxis $0a						// qgetaxis
+#cmd qaddpoly $0b						// qaddpoly
+#cmd qdel $0c							// qdel
+#cmd qpos $0d							// qpos
+#cmd qgetpos $0e						// qgetpos
+#cmd qweight $0f						// qweight
+#cmd qgetweight $10						// qgetweight
+#cmd qspeed $11							// qspeed
+#cmd qgetspeed $12						// qgetspeed
+#cmd qgroup $13							// qgroup
+#cmd qgetgroup $14						// qgetgroup
+#cmd qtype $15							// qtype
+#cmd qgettype $16						// qgettype
+#cmd qstat $17							// qstat
+#cmd qgetstat $18						// qgetstat
+#cmd qcollision $19						// qcollision
+#cmd qgetcol $1a						// qgetcol
+#cmd qgetcol2 $1b						// qgetcol2
+#cmd qgetcol3 $1c						// qgetcol3
+#cmd qmat $1d							// qmat
+#cmd qmat2 $1e							// qmat2
+#cmd qmat3 $1f							// qmat3
+#cmd qgetmat $20						// qgetmat
+#cmd qgetmat2 $21						// qgetmat2
+#cmd qgetmat3 $22						// qgetmat3
+#cmd quser $23							// quser
+#cmd quser2 $24							// quser2
+#cmd qgetuser $25						// qgetuser
+#cmd qgetuser2 $26						// qgetuser2
+#cmd qdamper $27						// qdamper
+#cmd qgetdamper $28						// qgetdamper
+#cmd qpush $29							// qpush
+#cmd qblast $2a							// qblast
+#cmd qaddmodel $2b						// qaddmodel
+#cmd qfind $2c							// qfind
+#cmd qnext $2d							// qnext
+#cmd qinertia $2e						// qinertia
+#cmd qgetinertia $2f						// qgetinertia
+#cmd qgetversion $30						// qgetversion
+#cmd qinner $31							// qinner
+
+;
+;	type define
+;
+#const global type_normal 0
+#const global type_inner 1
+#const global type_bindX 0x40
+#const global type_bindY 0x80
+#const global type_bindR 0x100
+#const global type_bind 0x1c0
+#const global type_nest 0x20000
+#const global type_autowipe 0x100000
+
+;
+;	stat define
+;
+#const global stat_reserve 0
+#const global stat_sleep 1
+#const global stat_active 2
+
+;
+;	collision check
+;
+#const global colsw_none 0
+#const global colsw_active 1
+#const global colsw_all 2
+#const global colsw_nest 3
+
+;
+;	material type
+;
+#const global mat_none 0
+#const global mat_spr 1
+#const global mat_spr2 2
+#const global mat_wire 3
+#const global mat_wire2 4
+#const global mat_delay 0x1000
+
+;
+;	system request
+;
+#define global REQ_NONE 0
+#define global REQ_PHYSICS_RATE 1
+#define global REQ_MAXOBJ 2
+#define global REQ_MAXLOG 3
+#define global REQ_DEFAULT_WEIGHT 4
+#define global REQ_DEFAULT_MOMENT 5
+#define global REQ_DEFAULT_DAMPER 6
+#define global REQ_DEFAULT_FRICTION 7
+
 
 #endif
 
