@@ -26,6 +26,7 @@ static int hsp3dish_devprm( char *name, char *value )
 
 static int hsp3dish_devcontrol( char *cmd, int p1, int p2, int p3 )
 {
+    
 	if ( strcmp( cmd, "vibrate" )==0 ) {
         AudioServicesPlayAlertSound(kSystemSoundID_Vibrate);
 		return 0;
@@ -105,6 +106,12 @@ static void hsp3dish_setdevinfo( void )
     }
     act_mode = 0;
     return self;
+}
+
+//フレームの初期化(横画面)
+- (id)initWithFrameSide:(CGRect)frame {
+    CGRect side = CGRectMake( frame.origin.x, frame.origin.y, frame.size.height, frame.size.width );
+    return [self initWithFrame:side ];
 }
 
 //メモリ解放
@@ -429,6 +436,7 @@ static void hsp3dish_setdevinfo( void )
 {
     parent = controller;
     hspview_controller = (HspViewController *)controller;
+	NSLog(@"---%x", controller );
 }
 
 @end

@@ -10,12 +10,13 @@ Hot Soup Processor ver3.4                           HSP : Hot Soup Processor
 	画像をプリンタで印刷するための新規プラグインhspprintを追加
 	[HGIMG3] hgbye命令で終了後に再びhgini命令で初期化した際に正しくウインドウサイズが反映されない不具合を修正
 	[HGIMG4] hsp3gp.hrtが正しく実行されない不具合を修正
+	[HSP3Dish][iOS] アイコン、スプラッシュリソースをretina基準に修正
 	[HSP3Dish][iOS] HSP3Dish helperからのXCode5プロジェクト出力に対応
 	[HSP3Dish][iOS] iAdによる広告が正しく出ないことがある不具合を修正
 	[HSP3Dish][iOS] XCode5でビルドした際にフォントの描画時落ちることがあった不具合を修正
 	[HSP3Dish][iOS] XCode5及びiOS7対応のランタイム更新
 	[HSP3Dish][iOS] AdMobによる広告収益アプリに対応
-	[HSP3Dish][Win][android] 物理エンジンOBAQ機能をサポート
+	[HSP3Dish][Win][android][iOS] 物理エンジンOBAQ機能をサポート
 	[HSP3Dish][Win] 再生前に設定した音量がmp3等の音楽ファイルで適用されない不具合を修正
 	[HSP3Dish][Win] mp3等の音楽ファイルでループ再生後に音量が戻ってしまう不具合を修正
 	[HSP3Dish][Win] 再生前に設定した音量がmp3等の音楽ファイルで適用されない不具合を修正

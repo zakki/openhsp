@@ -1114,10 +1114,8 @@ res\\drawable-mdpi\\ic_launcher.png"}
 	;	create project後にフォルダを改変
 	;
 	prj_dlist={"hspproj
-hspproj\\Images.xcassets
-hspproj\\Images.xcassets\\AppIcon.appiconset
-hspproj\\Images.xcassets\\LaunchImage.launchimage
 hspproj\\en.lproj
+hspproj\\ja.lproj
 hspproj\\Resouces
 hspproj.xcodeproj
 hspproj.xcodeproj\\xcuserdata
@@ -1125,11 +1123,15 @@ hspproj.xcodeproj\\project.xcworkspace
 hspproj.xcodeproj\\project.xcworkspace\\xcuserdata"}
 
 	prj_flist={"hspproj\\en.lproj\\InfoPlist.strings
-hspproj\\Images.xcassets\\AppIcon.appiconset\\Contents.json
-hspproj\\Images.xcassets\\LaunchImage.launchimage\\Contents.json
-hspproj\\Resouces\\Icon.png
+hspproj\\ja.lproj\\InfoPlist.strings
 hspproj\\AppDelegate.h
 hspproj\\AppDelegate.m
+hspproj\\icon57.png
+hspproj\\icon58.png
+hspproj\\icon120.png
+hspproj\\Default.png
+hspproj\\Default@2x.png
+hspproj\\Default-568h@2x.png
 hspproj\\hspproj-Info.plist
 hspproj\\hspproj-Prefix.pch
 hspproj\\main.m
@@ -1176,6 +1178,8 @@ hspproj.xcodeproj\\project.pbxproj"}
 		bcopy s2,basedir+s1
 	loop
 
+	if errflag  : goto *go_iosprjerr
+
 	s2=cppname
 	bcopy s2,basedir+"hspproj\\hspsource.cpp"
 
@@ -1198,7 +1202,7 @@ hspproj.xcodeproj\\project.pbxproj"}
 	s3="			productName = "+ios_proj+";"
 	gosub *rep_tmpline
 	notesave fname
-
+*go_iosprjerr
 	if errflag {
 		buf+="プロジェクトの作成に失敗しました。\n"
 		return

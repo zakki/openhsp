@@ -29,6 +29,7 @@
 
 - (void)controlBanner:(int)prm
 {
+    NSLog(@"controlBanner___");
     if ( adView == nil ) {
         CGRect screenRect = [[UIScreen mainScreen] applicationFrame];
         adView = [[[ADBannerView alloc] initWithFrame:CGRectZero] autorelease];
@@ -39,6 +40,7 @@
         adView.delegate = self;
         bannerIsVisible = false;
         //[self bannerViewDidLoadAd:adView];
+        NSLog(@"controlBanner");
     }
     
 }

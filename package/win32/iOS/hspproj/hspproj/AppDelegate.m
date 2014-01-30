@@ -1,13 +1,11 @@
 //
 //  AppDelegate.m
-//  hspproj
+//  for hsp3dish
 //
-//  Created by onitama on 12/03/26.
-//  Copyright (c) 2012 __MyCompanyName__. All rights reserved.
 //
 
 #import "AppDelegate.h"
-#import "../../iHSP18/Classes/HspView.h"
+#import "../../iHSP19/Classes/HspView.h"
 
 @implementation AppDelegate
 
@@ -27,16 +25,16 @@
     HspView* view=[[HspView alloc] initWithFrame:[[UIScreen mainScreen] applicationFrame]];
 
     [view startFrame:60];
-    [view clsMode:0 color:0xffffff];
-//    [view useRetina];
+    [view useRetina];
 //    [view dispRotate:3];
     [view useMultiTouch];
-    [view dispViewX:320 Y:480];
+    [view dispViewX:480 Y:800];
     [view dispAutoScale:0];
-//    [view useiAD];
+    [view clsMode:0 color:0xffffff];
+//    [view UseAccelerometer::1.0f / 30.0f];
 
     hsp = [[HspViewController alloc] init];
-    [hsp setView:view];
+    [hsp setHspView:view];
     self.window.rootViewController = hsp;
     
     [view release];

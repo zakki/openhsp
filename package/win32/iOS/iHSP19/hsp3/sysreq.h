@@ -45,6 +45,15 @@ SYSREQ_CLSCOLOR,
 SYSREQ_CLSTEX,
 SYSREQ_TIMER,
 SYSREQ_PLATFORM,
+
+SYSREQ_PHYSICS_RATE,
+SYSREQ_MAXOBAQ,
+SYSREQ_MAXLOG,
+SYSREQ_DEFAULT_WEIGHT,
+SYSREQ_DEFAULT_MOMENT,
+SYSREQ_DEFAULT_DAMPER,
+SYSREQ_DEFAULT_FRICTION,
+
 SYSREQ_MAX
 };
 
@@ -55,6 +64,8 @@ SYSREQ_MAX
 void InitSysReq( void );
 void SetSysReq( int reqid, int val );
 int GetSysReq( int reqid );
+void SetSysReqF( int reqid, float val );
+float GetSysReqF( int reqid );
 void DebugMsg( char *format, ... );
 char *GetDebug( void );
 
