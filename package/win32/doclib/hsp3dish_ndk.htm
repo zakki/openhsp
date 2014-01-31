@@ -14,7 +14,7 @@
 <body>
 	<div id="CONTAINER">
 	<!-- ヘッダー -->
-	<p id="COPY">HSP : HSP3Dish / onion software 2013(c)</p>
+	<p id="COPY">HSP : HSP3Dish / onion software 2014(c)</p>
 	<img src="hsp3dish.jpg" width="640" height="200" alt="タイトル">
 	<h1>HSP3Dish android(NDK)版プログラミングガイド</h1>
 
@@ -35,7 +35,7 @@
 		<li><a href="#SCALE">画面サイズのスケーリングについて</a></li>
 		<li><a href="#RELEASE">リリースビルド</a></li>
 		<li><a href="#DEVCONTROL">デバイスコントロールについて</a></li>
-		<li><a href="#ADMOB">AdMobによる広告配信(new)</a></li>
+		<li><a href="#ADMOB">AdMobによる広告配信</a></li>
 		<li><a href="#NOTICE">android版の注意事項、制限</a></li>
 		<li><a href="#NEWVER">android版の更新予定</a></li>
 	</ol>
@@ -64,15 +64,17 @@
 	<ul>
 	<li>android開発環境(SDK) → <a href="http://developer.android.com/sdk/index.html" target="_blank">[ダウンロードサイト]</a>
 	<ul><p>
-	最新版のWindows版(インストーラーではない)zipアーカイブを任意のフォルダに解凍してください。推奨フォルダは、「c:\android\android-sdk～」です。
+	最新版のWindows版zipアーカイブまたはインストーラー版を任意のフォルダに解凍してください。推奨フォルダは、「c:\android\android-sdk～」です。
+	(インストールするSDKは基本的に32bit版を推奨します。64bit版での動作は確認していません。)
 	</p></ul>
 	<li>JDK(Java Development Kit) → <a href="http://java.sun.com/javase/ja/6/download.html" target="_blank">[ダウンロードサイト]</a>
 	<ul><p>
-	JDK (Java Development Kit)をインストールしてください。x86版のJRE6+JDK6を推奨します。JDK7(ver1.7)は、apkファイルの署名が正しく行なわれないため推奨されません。
+	JDK (Java Development Kit)をインストールしてください。x86(32bit)版のJRE6+JDK6を推奨します。JDK7(ver1.7)は、apkファイルの署名が正しく行なわれないため推奨されません。
 	</p></ul>
 	<li>Android NDK（Native Development Kit）開発環境 → <a href="http://developer.android.com/sdk/ndk/index.html" target="_blank">[ダウンロードサイト]</a>
 	<ul><p>
 	最新版のWindows版zipアーカイブを任意のフォルダに解凍してください。推奨フォルダは、「c:\android\android-ndk～」です。
+	(動作確認済みのバージョンは、r7,r8,r9です)
 	</p></ul>
 	<li>Apache Ant(開発補助ツール) → <a href="http://www.jajakarta.org/ant/ant-1.6.1/docs/ja/" target="_blank">[ダウンロードサイト]</a>
 	<ul><p>

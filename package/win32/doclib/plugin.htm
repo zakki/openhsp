@@ -23,7 +23,7 @@
 
 	<div id="CONTAINER">
 		<!-- ヘッダー -->
-		<p id="COPY"><a id="top" class="head">HSP : Hot Soup Processor ver3.3 / onion software 1997-2011(c)</a></p>
+		<p id="COPY"><a id="top" class="head">HSP : Hot Soup Processor ver3.4 / onion software 1997-2014(c)</a></p>
 		<img src="hsp3ttl.jpg" alt="タイトル" width="640" height="200">
 		<h1>拡張プラグイン・モジュール一覧</h1>
 
@@ -47,13 +47,14 @@
 					<li><a href="#HSPSOCK">HSPSOCK.DLL</a></li>
 					<li><a href="#HSPUSBIO">HSPUSBIO.DLL</a></li>
 					<li><a href="#HSP3IMP">HSP3IMP.DLL</a></li>
-					<li><a href="#HSP3DISH">HSP3DISH.hrt</a></li>
+					<li><a href="#HSPPRINT">HSPPRINT.DLL</a></li>
 				</ol>
 			</li>
 			<li><a href="#MODULE">モジュール</a>
 				<ol>
 					<li><a href="#D3MODULE">d3module</a></li>
 					<li><a href="#Artlet2D">Artlet2D</a></li>
+					<li><a href="#HSP3DISH">HSP3DISH.hrt</a></li>
 					<li><a href="#SQLele">SQLele</a></li>
 					<li><a href="#llmod3">llmod3</a></li>
 					<li><a href="#hsp3util">hsp3util.as</a></li>
@@ -543,6 +544,35 @@
 			</tr>
 		</table>
 
+		<h3 id="HSPPRINT">HSPPRINT.DLL</h3>
+		<table summary="拡張プラグインHSPPRINT.DLLの紹介です。" class="pluginlist">
+			<caption>HSPPRINT.DLLの紹介</caption>
+			<tr>
+				<th width="20%">拡張プラグイン</th>
+				<th width="30%">HSPPRINT.DLL</th>
+				<th width="5%">Ver3.4</th>
+				<th width="25%">作者:おにたま</th>
+				<th width="20%"><a href="http://www.onionsoft.net/">作者のページ</a></th>
+			</tr>
+			<tr>
+				<td colspan="5">
+					<p>
+					hspprintは、Windowsに接続されたプリンターデバイス上で画像印刷を可能にするためのプラグインです。
+					この拡張DLLを使用することにより、印刷に関する新規命令が追加されます。
+					hspprint.dllを使用するためには、Windows2000以降のシステム及び、有効な
+					ドライバーがインストールされたプリンタデバイス(ローカルまたはネットワーク)が必要になります。
+					hspprintは、指定された画像を印刷するためのシンプルなプラグインです。
+					任意フォントを使った文字の印刷、ベクターデータの印刷には対応していません。
+					プラグインの機能についてご確認の上、ご利用ください。
+					</p>
+					<p>
+						詳しくは、別途ドキュメント「<a href="hspprint.txt">hspprint.txt</a>」を参照してください。
+					</p>
+				</td>
+			</tr>
+		</table>
+
+
 		<h2 id="MODULE">モジュール</h2>
 		<h3 id="D3MODULE">d3module</h3>
 		<table summary="拡張モジュールd3moduleの紹介です。" class="pluginlist">
@@ -646,6 +676,7 @@
 				</td>
 			</tr>
 		</table>
+
 
 		<h3 id="SQLele">SQLele</h3>
 		<table summary="拡張モジュールSQLeleの紹介です。" class="pluginlist">
@@ -1059,13 +1090,8 @@
 
 		<h2 id="SHIYOU">拡張プラグインの仕様</h2>
 		<p>
-			HSP拡張プラグインを作成するための詳細な仕様については、HSP開発キット(HSPSDK)を別途ダウンロードして
-			マニュアルを参照してください。
+			HSP拡張プラグインを作成するための詳細な仕様については、HSP開発キット(HSPSDK)フォルダを参照してください。
 		</p>
-		<dl>
-			<dt>HSPダウンロードリスト（HSPTV!）</dt>
-			<dd><p><a href="http://hsp.tv/make/downlist.html">http://hsp.tv/make/downlist.html</a></p></dd>
-		</dl>
 
 		<!-- フッター -->
 		<ul id="FOOTER">
