@@ -112,6 +112,24 @@
 #define global ctype rad2deg(%1)       (57.295779513082320877*(%1))
 #define global ctype deg2rad(%1)       (0.017453292519943295769*(%1))
 
+#define global ease_linear (0)
+#define global ease_quad_in (1)
+#define global ease_quad_out (2)
+#define global ease_quad_inout (3)
+#define global ease_cubic_in (4)
+#define global ease_cubic_out (5)
+#define global ease_cubic_inout (6)
+#define global ease_quartic_in (7)
+#define global ease_quartic_out (8)
+#define global ease_quartic_inout (9)
+#define global ease_bounce_in (10)
+#define global ease_bounce_out (11)
+#define global ease_bounce_inout (12)
+#define global ease_shake_in (13)
+#define global ease_shake_out (14)
+#define global ease_shake_inout (15)
+#define global ease_loop (4096)
+
 
 #ifndef _DEBUG
 #undef assert

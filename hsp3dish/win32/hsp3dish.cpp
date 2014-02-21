@@ -26,7 +26,7 @@
 //#include "../hsp3ext.h"
 #include "../../hsp3/strnote.h"
 
-//#define USE_OBAQ
+#define USE_OBAQ
 
 #ifdef USE_OBAQ
 #include "../obaq/hsp3dw.h"

@@ -56,7 +56,7 @@ int CStrNote::nnget( char *nbase, int line )
 		while(1) {
 			a1=*nn;if (a1==0) return 1;
 			nn++;
-#ifdef HSPLINUX
+#if defined(HSPLINUX) || defined(HSPDISH)
 			if (a1==10) {
 				a++;if (a==line) break;
 			}
@@ -85,7 +85,7 @@ int CStrNote::GetLine( char *nres, int line )
 	while(1) {
 		a1=*nn++;
 		if ((a1==0)||(a1==13)) break;
-#ifdef HSPLINUX
+#if defined(HSPLINUX) || defined(HSPDISH)
 		if (a1==10) break;
 #endif
 		*pp++=a1;
@@ -111,7 +111,7 @@ int CStrNote::GetLine( char *nres, int line, int max )
 		if ( cnt>=max ) break;
 		a1=*nn++;
 		if ((a1==0)||(a1==13)) break;
-#ifdef HSPLINUX
+#if defined(HSPLINUX) || defined(HSPDISH)
 		if (a1==10) break;
 #endif
 		*pp++=a1;
@@ -132,7 +132,7 @@ char *CStrNote::GetLineDirect( int line )
 	while(1) {
 		a1=*lastnn;
 		if ((a1==0)||(a1==13)) break;
-#ifdef HSPLINUX
+#if defined(HSPLINUX) || defined(HSPDISH)
 		if (a1==10) break;
 #endif
 		lastnn++;
@@ -159,7 +159,7 @@ int CStrNote::GetMaxLine( void )
 	nn=base;
 	while(1) {
 		a1=*nn++;if (a1==0) break;
-#ifdef HSPLINUX
+#if defined(HSPLINUX) || defined(HSPDISH)
 		if ((a1==13)||(a1==10)) {
 #else
 		if (a1==13) {
@@ -211,7 +211,7 @@ int CStrNote::PutLine( char *nstr2, int line, int ovr )
 		while(1) {
 			a1=*p1++;if (a1==0) break;
 			a++;
-#ifdef HSPLINUX
+#if defined(HSPLINUX) || defined(HSPDISH)
 			if ((a1==13)||(a1==10)) {
 #else
 			if (a1==13) {

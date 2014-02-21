@@ -38,6 +38,291 @@ static HSPCTX *ctx;			// Current Context
 static HSPEXINFO *exinfo;	// Info for Plugins
 static CStrNote note;
 
+
+/*------------------------------------------------------------*/
+/*
+		Easing Function
+*/
+/*------------------------------------------------------------*/
+
+static int ease_type;
+static int ease_reverse;
+static HSPREAL ease_start;
+static HSPREAL ease_diff;
+static HSPREAL ease_4096;
+static HSPREAL ease_start_org;
+static HSPREAL ease_diff_org;
+
+#define EASE_LINEAR 0
+#define EASE_QUAD_IN 1
+#define EASE_QUAD_OUT 2
+#define EASE_QUAD_INOUT 3
+#define EASE_CUBIC_IN 4
+#define EASE_CUBIC_OUT 5
+#define EASE_CUBIC_INOUT 6
+#define EASE_QUARTIC_IN 7
+#define EASE_QUARTIC_OUT 8
+#define EASE_QUARTIC_INOUT 9
+#define EASE_BOUNCE_IN 10
+#define EASE_BOUNCE_OUT 11
+#define EASE_BOUNCE_INOUT 12
+#define EASE_SHAKE_IN 13
+#define EASE_SHAKE_OUT 14
+#define EASE_SHAKE_INOUT 15
+#define EASE_LOOP 4096
+
+/*------------------------------------------------------------*/
+
+static HSPREAL _ease_linear( HSPREAL t )
+{
+	return ease_diff * t + ease_start;
+}
+
+static HSPREAL _ease_quad_in( HSPREAL t )
+{
+	return ease_diff * t * t + ease_start;
+}
+
+static HSPREAL _ease_quad_out( HSPREAL t )
+{
+	return -ease_diff * t * (t - 2) + ease_start;
+}
+
+static HSPREAL _ease_quad_inout( HSPREAL t )
+{
+	HSPREAL tt;
+	tt = t * 2;
+	if ( tt < 1 ) {
+		return ease_diff * 0.5 * tt * tt + ease_start;
+	}
+	tt = tt - 1;
+	return -ease_diff * 0.5 * (tt * (tt - 2) - 1) + ease_start;
+}
+
+static HSPREAL _ease_cubic_in( HSPREAL t )
+{
+	return ease_diff * t * t * t + ease_start;
+}
+
+static HSPREAL _ease_cubic_out( HSPREAL t )
+{
+	HSPREAL tt;
+	tt = t - 1;
+	return ease_diff*(tt*tt*tt + 1) + ease_start;
+}
+
+static HSPREAL _ease_cubic_inout( HSPREAL t )
+{
+	HSPREAL tt;
+	tt = t * 2;
+	if ( tt < 1 ) {
+		return ease_diff * 0.5 *tt*tt*tt + ease_start;
+	}
+	tt = tt - 2;
+	return ease_diff * 0.5 * (tt*tt*tt + 2) + ease_start;
+}
+
+static HSPREAL _ease_quartic_in( HSPREAL t )
+{
+	return ease_diff * t * t * t * t + ease_start;
+}
+
+static HSPREAL _ease_quartic_out( HSPREAL t )
+{
+	HSPREAL tt;
+	tt = t - 1;
+	return -ease_diff*(tt*tt*tt*tt - 1) + ease_start;
+}
+
+static HSPREAL _ease_quartic_inout( HSPREAL t )
+{
+	HSPREAL tt;
+	tt = t * 2;
+	if ( tt < 1 ) {
+		return ease_diff * 0.5 *tt*tt*tt*tt + ease_start;
+	}
+	tt = tt - 2;
+	return -ease_diff * 0.5 * (tt*tt*tt*tt - 2) + ease_start;
+}
+
+static HSPREAL _ease_bounce( HSPREAL t )
+{
+	if ( t < (1/2.75)) {
+		return ease_diff*(7.5625*t*t);
+	} else if (t < (2/2.75)) {
+		return ease_diff*(7.5625*(t-=(1.5/2.75))*t + .75);
+	} else if (t < (2.5/2.75)) {
+		return ease_diff*(7.5625*(t-=(2.25/2.75))*t + .9375);
+	} else {
+		return ease_diff*(7.5625*(t-=(2.625/2.75))*t + .984375);
+	}
+}
+
+static HSPREAL _ease_bounce_in( HSPREAL t )
+{
+	HSPREAL tt;
+	tt = (HSPREAL)1 - t;
+	return ease_diff - _ease_bounce( tt ) + ease_start;
+}
+
+static HSPREAL _ease_bounce_out( HSPREAL t )
+{
+	return _ease_bounce(t) + ease_start;
+}
+
+static HSPREAL _ease_bounce_inout( HSPREAL t )
+{
+	HSPREAL tt;
+	if (t < 0.5) {
+		tt = (HSPREAL)1 - (t * 2);
+		return ( ease_diff - _ease_bounce( tt )) * 0.5 + ease_start;
+	}
+	return _ease_bounce( t*2 - 1 ) * 0.5 + ease_diff*0.5 + ease_start;
+}
+
+static HSPREAL _ease_shake( HSPREAL t )
+{
+	int pulse;
+	HSPREAL tt;
+	tt = t * t * 8;
+	pulse = (int)tt;
+	tt -= (HSPREAL)pulse;
+	if ( pulse & 1 ) {
+		return ( (HSPREAL)1 - tt );
+	}
+	return tt;
+}
+static HSPREAL _ease_shake_in( HSPREAL t )
+{
+	HSPREAL tt;
+	tt = (HSPREAL)1 - t;
+	return ( ease_diff * _ease_shake(tt) ) * tt - ease_diff * 0.5 * tt + ease_start;
+}
+
+static HSPREAL _ease_shake_out( HSPREAL t )
+{
+	return ( ease_diff * _ease_shake(t) ) * t - ease_diff * 0.5 * t + ease_start;
+}
+
+static HSPREAL _ease_shake_inout( HSPREAL t )
+{
+	HSPREAL tt;
+	tt = t * 2;
+	if ( tt < 1 ) {
+		return _ease_shake_in( tt );
+	}
+	tt = tt - 1;
+	return _ease_shake_out( tt );
+}
+
+/*------------------------------------------------------------*/
+
+static void initEase( void )
+{
+	ease_4096 = (HSPREAL)1.0 / (HSPREAL)4096.0;
+}
+
+static void setEase( int type, HSPREAL value_start, HSPREAL value_end )
+{
+	ease_type = type;
+	ease_reverse = 0;
+	ease_start_org = ease_start = value_start;
+	ease_diff_org = ease_diff = value_end - value_start;
+}
+
+static HSPREAL getEase( HSPREAL value )
+{
+	int type;
+	int reverse;
+	HSPREAL t;
+	t = value;
+	type = ease_type & ( EASE_LOOP - 1 );
+	reverse = 0;
+	if ( ease_type & EASE_LOOP ) {
+		int ival;
+		t = abs(t);
+		ival = (int)t;
+		reverse = ival & 1;
+		t = t - (HSPREAL)ival;
+	} else {
+		if ( t < 0 ) t = (HSPREAL)0;
+		if ( t > 1 ) t = (HSPREAL)1;
+	}
+
+	if ( ease_reverse != reverse ) {
+		ease_reverse = reverse;			// リバース時の動作
+		if ( ease_reverse ) {
+			ease_start = ease_start_org + ease_diff_org;
+			ease_diff = -ease_diff_org;
+		} else {
+			ease_start = ease_start_org;
+			ease_diff = ease_diff_org;
+		}
+	}
+
+	switch( type ) {
+	case EASE_QUAD_IN:
+		return _ease_quad_in( t );
+	case EASE_QUAD_OUT:
+		return _ease_quad_out( t );
+	case EASE_QUAD_INOUT:
+		return _ease_quad_inout( t );
+
+	case EASE_CUBIC_IN:
+		return _ease_cubic_in( t );
+	case EASE_CUBIC_OUT:
+		return _ease_cubic_out( t );
+	case EASE_CUBIC_INOUT:
+		return _ease_cubic_inout( t );
+
+	case EASE_QUARTIC_IN:
+		return _ease_quartic_in( t );
+	case EASE_QUARTIC_OUT:
+		return _ease_quartic_out( t );
+	case EASE_QUARTIC_INOUT:
+		return _ease_quartic_inout( t );
+
+	case EASE_BOUNCE_IN:
+		return _ease_bounce_in( t );
+	case EASE_BOUNCE_OUT:
+		return _ease_bounce_out( t );
+	case EASE_BOUNCE_INOUT:
+		return _ease_bounce_inout( t );
+
+	case EASE_SHAKE_IN:
+		return _ease_shake_in( t );
+	case EASE_SHAKE_OUT:
+		return _ease_shake_out( t );
+	case EASE_SHAKE_INOUT:
+		return _ease_shake_inout( t );
+
+	case EASE_LINEAR:
+	default:
+		break;
+	}
+	return _ease_linear( t );
+}
+
+static HSPREAL getEase( HSPREAL value, HSPREAL maxvalue )
+{
+	if ( maxvalue == 0 ) return (HSPREAL)0;
+	return getEase( value / maxvalue );
+}
+
+static int getEaseInt( int i_value, int i_maxvalue )
+{
+	int i;
+	HSPREAL value;
+	if ( i_maxvalue > 0 ) {
+		value = (HSPREAL)i_value / (HSPREAL)i_maxvalue;
+	} else {
+		value = ease_4096 * i_value;
+	}
+	i = (int)getEase(value);
+	return i;
+}
+
+
 /*------------------------------------------------------------*/
 /*
 		interface
@@ -185,7 +470,7 @@ static char *cnvformat( void )
 			if ( val_type == HSPVAR_FLAG_INT ) {
 				n = SNPRINTF( p + len, space, fmt, *(int *)val_ptr );
 			} else if ( val_type == HSPVAR_FLAG_DOUBLE ) {
-				n = SNPRINTF( p + len, space, fmt, *(double *)val_ptr );
+				n = SNPRINTF( p + len, space, fmt, *(HSPREAL *)val_ptr );
 			} else {
 				n = SNPRINTF( p + len, space, fmt, (char *)val_ptr );
 			}
@@ -641,103 +926,39 @@ static int cmdfunc_intcmd( int cmd )
 		ctx->stat = n;
 		break;
 		}
+
 	case 0x02b:								// strrep
 		{
 		PVal *pval;
 		APTR aptr;
 		char *ss;
-		char *p;
-		unsigned char a1;
-		char a2;
-		char *s_match;
-		int len_match;
 		char *s_rep;
-		int len_rep;
 		char *s_buffer;
-		int len_buffer;
 		char *s_result;
-		int len_result;
-		int psize, csize, cursize, i;
-		int reptime;
-#ifndef HSPUTF8
-		int sjis_flag;
-#endif
+
 		aptr = code_getva( &pval );
 		if ( pval->flag != HSPVAR_FLAG_STR ) throw HSPERR_TYPE_MISMATCH;
 		s_buffer = (char *)HspVarCorePtrAPTR( pval, aptr );
-		len_buffer = (int)strlen( s_buffer );
-		len_result = len_buffer + 0x4000;
-		if ( len_result < 0x8000 ) len_result = 0x8000;
-		s_result = sbAlloc( len_result );
-		*s_result = 0;
 
 		ss = code_gets();
 		if ( *ss == 0 ) throw HSPERR_ILLEGAL_FUNCTION;
-		len_match = (int)strlen( ss );
-		s_match = sbAlloc( len_match + 1 );
-		memcpy( s_match, ss, len_match + 1 );
+		ReplaceSetMatch( s_buffer, ss );
+
 		s_rep = code_gets();
-		len_rep = (int)strlen( s_rep );
-		reptime = 0;
-
-		// replace
-		//
-		cursize = 0;
-		p = s_buffer;
-		a2 = s_match[0];
-		while(1) {
-			a1 = (unsigned char)*p;
-			if ( a1 == 0 ) break;
-
-#ifndef HSPUTF8
-			//	sjisチェック
-			sjis_flag = 0;
-			if ( a1 >= 129 ) {
-				if ((a1<=159)||(a1>=224)) sjis_flag++;
-			}
-#endif
-
-			//	比較する
-			psize = 0; csize = 1;
-			if ( a1 == a2 ) {
-				if ( memcmp( p, s_match, len_match ) == 0 ) {
-					psize = len_match;
-					csize = len_rep;
-				}
-			}
-
-			//	バッファチェック
-			i = cursize + csize;
-			if ( i >= len_result ) {
-				len_result += 0x8000;
-				s_result = sbExpand( s_result, len_result );
-			}
-
-			if ( psize ) {				// 置き換え
-
-				memcpy( s_result+cursize, s_rep, csize );
-				p += psize;
-				cursize += csize;
-				reptime++;
-
-			} else {					// 置き換えなし
-				s_result[cursize++] = a1;
-				p++;
-#ifndef HSPUTF8
-				if ( sjis_flag ) {
-					s_result[cursize++] = *p++;
-				}
-#endif
-			}
-
-		}
-		s_result[cursize] = 0;
-
+		s_result = ReplaceStr( s_rep );
 		code_setva( pval, aptr, TYPE_STRING, s_result );
-		sbFree( s_match );
-		sbFree( s_result );
+		ctx->stat = ReplaceDone();
+		break;
+		}
 
-		ctx->stat = reptime;
+	case 0x02c:								// setease
+		{
+		HSPREAL dval;
+		HSPREAL dval2;
+		dval = code_getd();
+		dval2 = code_getd();
+		p1 = code_getdi( ease_type );
+		setEase( p1, dval, dval2 );
 		break;
 		}
 
@@ -749,7 +970,7 @@ static int cmdfunc_intcmd( int cmd )
 }
 
 static int reffunc_intfunc_ivalue;
-static double reffunc_intfunc_value;
+static HSPREAL reffunc_intfunc_value;
 
 static void *reffunc_intfunc( int *type_res, int arg )
 {
@@ -758,8 +979,8 @@ static void *reffunc_intfunc( int *type_res, int arg )
 	//
 	void *ptr;
 	int chk;
-	double dval;
-	double dval2;
+	HSPREAL dval;
+	HSPREAL dval2;
 	int ival;
 	char *sval;
 	int p1,p2,p3;
@@ -773,7 +994,7 @@ static void *reffunc_intfunc( int *type_res, int arg )
 	//		返値のタイプをargをもとに設定する
 	//		0～255   : int
 	//		256～383 : string
-	//		384～511 : double
+	//		384～511 : double(HSPREAL)
 	//
 	switch( arg>>7 ) {
 		case 2:										// 返値がstr
@@ -950,6 +1171,12 @@ static void *reffunc_intfunc( int *type_res, int arg )
 		reffunc_intfunc_ivalue = GetLimit( p1, p2, p3 );
 		break;
 
+	case 0x012:								// getease
+		p1 = code_geti();
+		p2 = code_getdi(-1);
+		reffunc_intfunc_ivalue = getEaseInt( p1, p2 );
+		break;
+
 
 	// str function
 	case 0x100:								// str
@@ -1062,10 +1289,10 @@ static void *reffunc_intfunc( int *type_res, int arg )
 		break;
 	case 0x185:								// double
 		{
-		double *dp;
+		HSPREAL *dp;
 		chk = code_get();
 		if ( chk <= PARAM_END ) { throw HSPERR_INVALID_FUNCPARAM; }
-		dp = (double *)HspVarCoreCnvPtr( mpval, HSPVAR_FLAG_DOUBLE );
+		dp = (HSPREAL *)HspVarCoreCnvPtr( mpval, HSPVAR_FLAG_DOUBLE );
 		reffunc_intfunc_value = *dp;
 		break;
 		}
@@ -1083,7 +1310,7 @@ static void *reffunc_intfunc( int *type_res, int arg )
 		break;
 	case 0x189:								// limitf
 		{
-		double d1,d2,d3;
+		HSPREAL d1,d2,d3;
 		d1 = code_getd();
 		d2 = code_getd();
 		d3 = code_getd();
@@ -1095,7 +1322,16 @@ static void *reffunc_intfunc( int *type_res, int arg )
 	case 0x18a:								// powf
 		dval = code_getd();
 		dval2 = code_getd();
-		reffunc_intfunc_value = powf( dval, dval2 );
+		reffunc_intfunc_value = pow( dval, dval2 );
+		break;
+	case 0x18b:								// geteasef
+		dval = code_getd();
+		dval2 = code_getdd(1.0);
+		if ( dval2 == 1.0 ) {
+			reffunc_intfunc_value = getEase( dval );
+		} else {
+			reffunc_intfunc_value = getEase( dval, dval2 );
+		}
 		break;
 
 	default:
@@ -1134,6 +1370,7 @@ void hsp3typeinit_intcmd( HSP3TYPEINFO *info )
 	exinfo = info->hspexinfo;
 	type = exinfo->nptype;
 	val = exinfo->npval;
+	initEase();
 
 	info->cmdfunc = cmdfunc_intcmd;
 	info->termfunc = termfunc_intcmd;

@@ -9,7 +9,11 @@
 #ifdef HSPWINGUI
 #include "win32gui/hsp3gr_wingui.h"
 #else
+#ifdef HSPDISH
+#include "win32dish/hsp3gr_dish.h"
+#else
 #include "win32/hsp3gr_win.h"
+#endif
 #endif
 #endif
 

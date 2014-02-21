@@ -1,8 +1,9 @@
 
 //
 //	supio.cpp functions
+//	(UTF-8対応版)
 //
-#include "../../hsp3/hsp3config.h"
+#include "../hsp3config.h"
 
 #ifdef HSPWIN
 #include <windows.h>
@@ -16,8 +17,8 @@
 #include <ctype.h>
 
 #include "supio_win.h"
-#include "../../hsp3/dpmread.h"
-#include "../../hsp3/strbuf.h"
+#include "../dpmread.h"
+#include "../strbuf.h"
 
 //
 //		basic C I/O support
@@ -63,9 +64,6 @@ void strcase( char *target )
 		a1=*p;if ( a1==0 ) break;
 		*p=tolower(a1);
 		p++;							// 検索位置を移動
-		if (a1>=129) {					// 全角文字チェック
-			if ((a1<=159)||(a1>=224)) p++;
-		}
 	}
 }
 
@@ -127,8 +125,12 @@ char *strstr2( char *target, char *src )
 			if (a2!=a3) break;
 		}
 		p++;							// 検索位置を移動
-		if (a1>=129) {					// 全角文字チェック
-			if ((a1<=159)||(a1>=224)) p++;
+		if (a1&128) {					// UTF8チェック
+			while(1) {
+				a1=*p;if ( a1==0 ) break;
+				if ( ( a1 & 0xc0 ) != 0x80 ) break;
+				p++;					// UTF8 encode
+			}
 		}
 	}
 	return NULL;
@@ -148,8 +150,12 @@ char *strchr2( char *target, char code )
 		a1=*p;if ( a1==0 ) break;
 		if ( a1==code ) res=(char *)p;
 		p++;							// 検索位置を移動
-		if (a1>=129) {					// 全角文字チェック
-			if ((a1<=159)||(a1>=224)) p++;
+		if (a1&128) {					// UTF8チェック
+			while(1) {
+				a1=*p;if ( a1==0 ) break;
+				if ( ( a1 & 0xc0 ) != 0x80 ) break;
+				p++;					// UTF8 encode
+			}
 		}
 	}
 	return res;
@@ -315,15 +321,11 @@ int strsp_get( char *srcstr, char *dststr, char splitchr, int len )
 	unsigned char a1;
 	unsigned char a2;
 	int a;
-	int sjflg;
-	a=0;sjflg=0;
+	a=0;
 	while(1) {
-		sjflg=0;
 		a1=srcstr[splc];
 		if (a1==0) break;
 		splc++;
-		if (a1>=0x81) if (a1<0xa0) sjflg++;
-		if (a1>=0xe0) sjflg++;
 
 		if (a1==splitchr) break;
 		if (a1==13) {
@@ -331,15 +333,20 @@ int strsp_get( char *srcstr, char *dststr, char splitchr, int len )
 			if (a2==10) splc++;
 			break;
 		}
-#ifdef HSPLINUX
 		if (a1==10) {
 			a2=srcstr[splc];
 			break;
 		}
-#endif
 		dststr[a++]=a1;
-		if (sjflg) {
-			dststr[a++]=srcstr[splc++];
+
+		if (a1&128) {					// UTF8チェック
+			while(1) {
+				a1=srcstr[splc];
+				if ( a1==0 ) break;
+				if ( ( a1 & 0xc0 ) != 0x80 ) break;
+				splc++;
+				dststr[a++]=a1;
+			}
 		}
 		if ( a>=len ) break;
 	}
@@ -424,7 +431,7 @@ int htoi( char *str )
 
 char *strchr3( char *target, int code, int sw, char **findptr )
 {
-	//		文字列中のcode位置を探す(2バイトコード、全角対応版)
+	//		文字列中のcode位置を探す(1バイトコード、半角対応のみ版)
 	//		sw = 0 : findptr = 最後に見つかったcode位置
 	//		sw = 1 : findptr = 最初に見つかったcode位置
 	//		sw = 2 : findptr = 最初に見つかったcode位置(最初の文字のみ検索)
@@ -439,7 +446,7 @@ char *strchr3( char *target, int code, int sw, char **findptr )
 
 	p=(unsigned char *)target;
 	code1 = (unsigned char)(code&0xff);
-	code2 = (unsigned char)(code>>8);
+	code2 = 0;
 
 	res = NULL;
 	pres = NULL;
@@ -448,21 +455,15 @@ char *strchr3( char *target, int code, int sw, char **findptr )
 	while(1) {
 		a1=*p;if ( a1==0 ) break;
 		if ( a1==code1 ) {
-			if ( a1 <129 ) {
-				res=(char *)p;
-			} else {
-				if ((a1<=159)||(a1>=224)) {
-					if ( p[1]==code2 ) {
-						res=(char *)p;
-					}
-				} else {
-					res=(char *)p;
-				}
-			}
+			res=(char *)p;
 		}
 		p++;							// 検索位置を移動
-		if (a1>=129) {					// 全角文字チェック
-			if ((a1<=159)||(a1>=224)) p++;
+		if (a1&128) {					// UTF8チェック
+			while(1) {
+				a1=*p;if ( a1==0 ) break;
+				if ( ( a1 & 0xc0 ) != 0x80 ) break;
+				p++;
+			}
 		}
 		if ( res != NULL ) { *findptr = res; pres = (char *)p; res = NULL; }
 
@@ -562,7 +563,6 @@ char *ReplaceStr( char *repstr )
 	unsigned char a1;
 	unsigned char a2;
 	int psize, csize, cursize, i;
-	int sjis_flag;
 
 	s_rep = repstr;
 	len_rep = (int)strlen( s_rep );
@@ -576,14 +576,6 @@ char *ReplaceStr( char *repstr )
 	while(1) {
 		a1 = (unsigned char)*p;
 		if ( a1 == 0 ) break;
-
-#ifndef HSPUTF8
-		//	sjisチェック
-		sjis_flag = 0;
-		if ( a1 >= 129 ) {
-			if ((a1<=159)||(a1>=224)) sjis_flag++;
-		}
-#endif
 
 		//	比較する
 		psize = 0; csize = 1;
@@ -611,11 +603,16 @@ char *ReplaceStr( char *repstr )
 		} else {					// 置き換えなし
 			s_result[cursize++] = a1;
 			p++;
-#ifndef HSPUTF8
-			if ( sjis_flag ) {
-				s_result[cursize++] = *p++;
+
+			if (a1&128) {					// UTF8チェック
+				while(1) {
+					a1 = (unsigned char)*p;
+					if ( a1==0 ) break;
+					if ( ( a1 & 0xc0 ) != 0x80 ) break;
+					s_result[cursize++] = *p++;
+				}
 			}
-#endif
+
 		}
 
 	}

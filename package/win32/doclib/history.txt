@@ -1,9 +1,16 @@
 ------------------------------------------------------------------------------
 Hot Soup Processor ver3.4                           HSP : Hot Soup Processor  
-更新履歴                              copyright 1997-2013 (c) onion software  
+更新履歴                              copyright 1997-2014 (c) onion software  
 ------------------------------------------------------------------------------
 
 ・hsp3関連 更新履歴
+
+	2014/02/18 3.4β4
+
+	イージング制御のための、setease命令、getease、geteasef関数を標準で追加
+	[HSP3Dish][android][iOS] UTF8文字列を正しく扱うように修正
+	[HSP3Dish][android][iOS] getstr命令、メモリノートパッド命令が認識する改行コードにLF(コード10)を追加
+	[HSP3Dish][Win][android][iOS] redraw命令のパラメーター値を追加
 
 	2014/02/01 3.4β3
 

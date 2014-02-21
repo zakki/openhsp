@@ -102,6 +102,7 @@ char 	s_rec[1]= "", *hsp_prestr[] =
 	"$029 8 noteget",				// (changed on ver2.55)
 	"$02a 8 split",					// (3.2)
 	"$02b 8 strrep",				// (3.4)
+	"$02c 8 setease",				// (3.4)
 
 	//	enhanced command (ver2.2)
 
@@ -240,6 +241,7 @@ char 	s_rec[1]= "", *hsp_prestr[] =
 	"$00f 13 instr",
 	"$010 13 abs",						// (3.0)
 	"$011 13 limit",					// (3.0)
+	"$012 13 getease",					// (3.4)
 
 	//	3.0 string function
 	"$100 13 str",
@@ -260,6 +262,7 @@ char 	s_rec[1]= "", *hsp_prestr[] =
 	"$188 13 logf",
 	"$189 13 limitf",
 	"$18a 13 powf",						// (3.3)
+	"$18b 13 geteasef",					// (3.4)
 
 	//	3.0 external sysvar,function
 

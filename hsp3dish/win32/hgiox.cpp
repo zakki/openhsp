@@ -641,15 +641,8 @@ void hgio_resume( void )
 }
 
 
-int hgio_render_end( void )
+void hgio_text_render( void )
 {
-	HRESULT hr;
-	int res;
-
-	if ( drawflag == 0 ) return 0;
-
-	res = 0;
-
 	//	テキスト画面描画
 	if ( mestexflag ) {
 		mainbm->gfrate = 255;
@@ -658,6 +651,17 @@ int hgio_render_end( void )
 		mainbm->cy = 0;
 		hgio_copy( mainbm, 0, 0, nDestWidth, nDestHeight, &mestexbm, (float)nDestWidth, (float)nDestHeight );
 	}
+}
+
+
+int hgio_render_end( void )
+{
+	HRESULT hr;
+	int res;
+
+	if ( drawflag == 0 ) return 0;
+
+	res = 0;
 
 	//テクスチャステージのリセット
 	d3ddev->SetTexture( 0, NULL );

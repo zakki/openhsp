@@ -667,8 +667,22 @@ static int cmdfunc_extcmd( int cmd )
 		p4 = code_getdi( 0 );
 		p5 = code_getdi( 0 );
 		if ( p1&1 ) {
-			bmscr->DrawAllObjects();	// オブジェクトを描画する
-			bmscr->SetDefaultFont();	// フォントを元に戻す
+			if (( p1 & 16 ) == 0 ) {
+				bmscr->DrawAllObjects();	// オブジェクトを描画する
+				bmscr->SetDefaultFont();	// フォントを元に戻す
+#ifdef HSPWIN
+				hgio_text_render();
+#endif
+			}
+		} else {
+			if ( p1 & 16 ) {
+				bmscr->DrawAllObjects();	// オブジェクトを描画する
+				bmscr->SetDefaultFont();	// フォントを元に戻す
+#ifdef HSPWIN
+				hgio_text_render();
+#endif
+				break;
+			}
 		}
 		ctx->stat = hgio_redraw( (BMSCR *)bmscr, p1 );
 		break;

@@ -8,5 +8,6 @@
 #include "hginc.h"
 
 int hgio_device_restore( void );
+void hgio_text_render( void );
 
 #endif
