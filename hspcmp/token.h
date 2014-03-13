@@ -175,6 +175,8 @@ public:
 	void PutDI( void );
 	void PutDI( int dbg_code, int a, int subid );
 	void PutDIVars( void );
+	void PutDILabels( void );
+	void PutDIParams( void );
 	void PutHPI( short flag, short option, char *libname, char *funcname );
 	int PutLIB( int flag, char *name );
 	void SetLIBIID( int id, char *clsid );

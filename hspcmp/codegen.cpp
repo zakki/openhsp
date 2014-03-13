@@ -2611,6 +2611,45 @@ void CToken::PutDIVars( void )
 }
 
 
+// ラベル名の情報を出力する
+void CToken::PutDILabels( void )
+{
+	int num = ot_buf->GetSize() / sizeof(int);
+	int *table = new int[num];
+	for (int i = 0; i < num; i++) table[i] = -1;
+	for (int i = 0; i < lb->GetNumEntry(); i++) {
+		if (lb->GetType(i) == TYPE_LABEL) {
+			int id = lb->GetOpt(i);
+			table[id] = i;
+		}
+	}
+	di_buf->Put((unsigned char)255);
+	for (int i = 0; i < num; i ++) {
+		if (table[i] == -1) continue;
+		char *name = lb->GetName(table[i]);
+		int dsPos = PutDS(name);
+		PutDI(251, dsPos, i);
+	}
+	delete[] table;
+}
+
+
+// 引数名の情報を出力する
+void CToken::PutDIParams( void )
+{
+	di_buf->Put((unsigned char)255);
+	for (int i = 0; i < lb->GetNumEntry(); i++) {
+		if (lb->GetType(i) == TYPE_STRUCT) {
+			int id = lb->GetOpt(i);
+			if (id < 0) continue;
+			char *name = lb->GetName(i);
+			int dsPos = PutDS(name);
+			PutDI(251, dsPos, id);
+		}
+	}
+}
+
+
 char *CToken::GetDS( int ptr )
 {
 	int i;
@@ -2905,6 +2944,10 @@ int CToken::GenerateCode( CMemBuf *srcbuf, char *oname, int mode )
 		}
 		if (( cg_debug )||( cg_putvars )) {
 			PutDIVars();
+		}
+		if ( cg_debug ) {
+			PutDILabels();
+			PutDIParams();
 		}
 		PutDI( -1, 0, 0 );								// デバッグ情報終端
 
