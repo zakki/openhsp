@@ -2700,6 +2700,7 @@ int CToken::PutLIB( int flag, char *name )
 	lib.flag = flag;
 	lib.nameidx = i;
 	lib.hlib = NULL;
+	lib.clsid = -1;
 	li_buf->PutData( &lib, sizeof(LIBDAT) );
 	//Mesf( "LIB#%d:%s",flag,name );
 
