@@ -1270,17 +1270,55 @@ int gamehsp::makeModelNode( char *fname, char *idname )
 		updateNodeMaterial( rootNode, boxMaterial );
 
 	} else {
-
 		unsigned int i;
+
+		Scene *scene;
+		Animation *animation;
+
+/*
+		scene = bundle->loadScene();
+		if ( scene ) {
+			node = scene->getFirstNode();
+			animation = node->getAnimation("animations");
+			if (animation) {
+				Alertf( "Found Power Scene Node(%s) Clip count: %d", node->getId(), animation->getClipCount() );
+			}
+
+
+
+			for(i=0;i<bundle->getObjectCount();i++) {
+				node = scene->findNode( bundle->getObjectId(i) );
+				if ( node ) {
+				//node = scene->getFirstNode();
+				animation = node->getAnimation("animations");
+				if (animation) {
+					if ( animation->getClipCount() > 0 ) {
+						Alertf( "Scene Node(%s) Clip count: %d", node->getId(), animation->getClipCount() );
+					}
+				} else {
+					//Alertf( "Scene Node(%s)", node->getId() );
+				}
+				}
+			}
+		}
+*/
 		rootNode = Node::create();
+
+		//Alertf( "GO NEXT" );
 		for(i=0;i<bundle->getObjectCount();i++) {
 			node = bundle->loadNode( bundle->getObjectId(i) );
 			if ( node ) {
-				Model* model = node->getModel(); 
+				Model* model = node->getModel();
 			    if (model) {
 					model->setMaterial( boxMaterial );
 			    }
 				//Alertf( "#%d %s",i, bundle->getObjectId(i) );
+
+				//Animation *animation = node->getAnimation("animations");
+				//if (animation) {
+				//	Alertf( "(%s) Clip count: %d", bundle->getObjectId(i), animation->getClipCount() );
+				//}
+
 				rootNode->addChild( node );
 				SAFE_RELEASE(node);
 			}

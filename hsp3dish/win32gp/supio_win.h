@@ -62,3 +62,8 @@ char *strchr3( char *target, int code, int sw, char **findptr );
 void TrimCode( char *p, int code );
 void TrimCodeL( char *p, int code );
 void TrimCodeR( char *p, int code );
+
+void ReplaceSetMatch( char *src, char *match );
+char *ReplaceStr( char *repstr );
+int ReplaceDone( void );
+

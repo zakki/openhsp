@@ -240,10 +240,10 @@ static HSPREAL getEase( HSPREAL value )
 	reverse = 0;
 	if ( ease_type & EASE_LOOP ) {
 		int ival;
-		t = abs(t);
-		ival = (int)t;
+        HSPREAL dval;
+        t = modf( t, &dval );
+		ival = (int)dval;
 		reverse = ival & 1;
-		t = t - (HSPREAL)ival;
 	} else {
 		if ( t < 0 ) t = (HSPREAL)0;
 		if ( t > 1 ) t = (HSPREAL)1;

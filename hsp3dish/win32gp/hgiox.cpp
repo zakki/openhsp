@@ -1223,7 +1223,9 @@ void hgio_draw_gpsprite( Bmscr *bmscr, bool lateflag )
 
 
 
-
+void hgio_text_render( void )
+{
+}
 
 
 

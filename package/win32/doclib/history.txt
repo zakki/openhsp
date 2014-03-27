@@ -5,9 +5,12 @@ Hot Soup Processor ver3.4                           HSP : Hot Soup Processor
 
 ・hsp3関連 更新履歴
 
-	2014/02/18 3.4β4
+	2014/03/26 3.4β4
 
+	オブジェクトファイルに不要な行番号情報が出力されないように修正
+	デバッグ時のオブジェクトファイルにラベル名と引数名を記録するように修正(fujidig)
 	イージング制御のための、setease命令、getease、geteasef関数を標準で追加
+	[HSP3Dish][android] android-ndk-r9以降で正しくコンパイルが通るように修正
 	[HSP3Dish][android][iOS] UTF8文字列を正しく扱うように修正
 	[HSP3Dish][android][iOS] getstr命令、メモリノートパッド命令が認識する改行コードにLF(コード10)を追加
 	[HSP3Dish][Win][android][iOS] redraw命令のパラメーター値を追加

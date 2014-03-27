@@ -331,6 +331,12 @@ int strsp_get( char *srcstr, char *dststr, char splitchr, int len )
 			if (a2==10) splc++;
 			break;
 		}
+#ifdef HSPLINUX
+		if (a1==10) {
+			a2=srcstr[splc];
+			break;
+		}
+#endif
 		dststr[a++]=a1;
 		if (sjflg) {
 			dststr[a++]=srcstr[splc++];
@@ -516,6 +522,114 @@ void TrimCodeL( char *p, int code )
 		if ( ss2 == NULL ) break;
 		strcpy( ss2, ss );
 	}
+}
+
+//
+//		文字列置き換え
+//
+static	char *s_match;
+static	int len_match;
+static	char *s_rep;
+static	int len_rep;
+static	char *s_buffer;
+static	int len_buffer;
+static	char *s_result;
+static	int len_result;
+static	int reptime;
+
+void ReplaceSetMatch( char *src, char *match )
+{
+	//		置き換え元、置き換え対象のセット
+	//
+	s_buffer = src;
+	len_buffer = (int)strlen( s_buffer );
+	len_result = len_buffer + 0x4000;
+	if ( len_result < 0x8000 ) len_result = 0x8000;
+	s_result = sbAlloc( len_result );
+	*s_result = 0;
+
+	len_match = (int)strlen( match );
+	s_match = sbAlloc( len_match + 1 );
+	memcpy( s_match, match, len_match + 1 );
+}
+
+
+char *ReplaceStr( char *repstr )
+{
+	//		置き換え実行
+	//
+	char *p;
+	unsigned char a1;
+	unsigned char a2;
+	int psize, csize, cursize, i;
+	int sjis_flag;
+
+	s_rep = repstr;
+	len_rep = (int)strlen( s_rep );
+	reptime = 0;
+
+	// replace
+	//
+	cursize = 0;
+	p = s_buffer;
+	a2 = (unsigned char)s_match[0];
+	while(1) {
+		a1 = (unsigned char)*p;
+		if ( a1 == 0 ) break;
+
+#ifndef HSPUTF8
+		//	sjisチェック
+		sjis_flag = 0;
+		if ( a1 >= 129 ) {
+			if ((a1<=159)||(a1>=224)) sjis_flag++;
+		}
+#endif
+
+		//	比較する
+		psize = 0; csize = 1;
+		if ( a1 == a2 ) {
+			if ( memcmp( p, s_match, len_match ) == 0 ) {
+				psize = len_match;
+				csize = len_rep;
+			}
+		}
+
+		//	バッファチェック
+		i = cursize + csize;
+		if ( i >= len_result ) {
+			len_result += 0x8000;
+			s_result = sbExpand( s_result, len_result );
+		}
+
+		if ( psize ) {				// 置き換え
+
+			memcpy( s_result+cursize, s_rep, csize );
+			p += psize;
+			cursize += csize;
+			reptime++;
+
+		} else {					// 置き換えなし
+			s_result[cursize++] = a1;
+			p++;
+#ifndef HSPUTF8
+			if ( sjis_flag ) {
+				s_result[cursize++] = *p++;
+			}
+#endif
+		}
+
+	}
+	s_result[cursize] = 0;
+	return s_result;
+}
+
+int ReplaceDone( void )
+{
+	//		置き換えの後処理
+	//
+	sbFree( s_match );
+	sbFree( s_result );
+	return reptime;
 }
 
 

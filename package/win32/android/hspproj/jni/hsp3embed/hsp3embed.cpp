@@ -14,6 +14,8 @@
 #include "../hsp3/hsp3gr.h"
 #include "../hsp3/supio.h"
 
+#include "../obaq/hsp3dw.h"
+
 #include "hsp3r.h"
 #include "hsp3embed.h"
 
@@ -47,7 +49,7 @@ static HSP3DEBUG *dbginfo;
 
 void hsp3eb_dialog( char *mes )
 {
-	Alertf( (const char *)mes );
+	Alert( (const char *)mes );
 }
 
 int hsp3eb_wait( int tick )
@@ -118,6 +120,10 @@ int hsp3eb_init( void )
 //	hsp3typeinit_dllctrl( code_gettypeinfo( TYPE_DLLCTRL ) );
 	hsp3typeinit_extcmd( code_gettypeinfo( TYPE_EXTCMD )  );
 	hsp3typeinit_extfunc( code_gettypeinfo( TYPE_EXTSYSVAR ) );
+
+	hsp3typeinit_dw_extcmd( code_gettypeinfo( TYPE_DLLFUNC ) );
+	hsp3typeinit_dw_extfunc( code_gettypeinfo( TYPE_DLLCTRL ) );
+
 
 	//		Utility setup
 	VarUtilInit();

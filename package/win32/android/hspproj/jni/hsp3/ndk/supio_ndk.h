@@ -33,7 +33,11 @@ void TrimCode( char *p, int code );
 void TrimCodeL( char *p, int code );
 void TrimCodeR( char *p, int code );
 
-#define Alert LOGI
+void Alert( const char *mes );
 #define AlertV LOGI
 #define Alertf LOGI
+
+void ReplaceSetMatch( char *src, char *match );
+char *ReplaceStr( char *repstr );
+int ReplaceDone( void );
 

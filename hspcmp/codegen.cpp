@@ -336,7 +336,9 @@ char *CToken::PickLongStringCG( char *str )
 	}
 	if ( *psrc != '}' ) throw CGERROR_MULTILINE_STR;
 
-	PutDI( 254, 0, cg_orgline );				// ラインだけをデバッグ情報として登録
+	if ( cg_debug ) {
+		PutDI( 254, 0, cg_orgline );                // ラインだけをデバッグ情報として登録
+	}
 
 	psrc++;
 	return psrc;
@@ -2101,7 +2103,9 @@ void CToken::GenerateCodePP( char *buf )
 				PutDI( 254, i, cg_orgline );				// ファイル名をデバッグ情報として登録
 			}
 		} else {
+			if ( cg_debug ) {
 				PutDI( 254, 0, cg_orgline );				// ラインだけをデバッグ情報として登録
+			}
 		}
 		//Mesf( "#%d [%s]",cg_orgline, cg_str );
 		return;

@@ -173,7 +173,6 @@ int strcat2( char *str1, char *str2 )
 char *strstr2( char *target, char *src )
 {
 	//		strstr関数の全角対応版
-	//		注意! : SJISのみ対応です
 	//
 	unsigned char *p;
 	unsigned char *s;
@@ -193,8 +192,12 @@ char *strstr2( char *target, char *src )
 			if (a2!=a3) break;
 		}
 		p++;							// 検索位置を移動
-		if (a1>=129) {					// 全角文字チェック
-			if ((a1<=159)||(a1>=224)) p++;
+		if (a1&128) {					// UTF8チェック
+			while(1) {
+				a1=*p;if ( a1==0 ) break;
+				if ( ( a1 & 0xc0 ) != 0x80 ) break;
+				p++;					// UTF8 encode
+			}
 		}
 	}
 	return NULL;
@@ -204,7 +207,6 @@ char *strstr2( char *target, char *src )
 char *strchr2( char *target, char code )
 {
 	//		str中最後のcode位置を探す(全角対応版)
-	//		注意! : SJISのみ対応です
 	//
 	unsigned char *p;
 	unsigned char a1;
@@ -215,8 +217,12 @@ char *strchr2( char *target, char code )
 		a1=*p;if ( a1==0 ) break;
 		if ( a1==code ) res=(char *)p;
 		p++;							// 検索位置を移動
-		if (a1>=129) {					// 全角文字チェック
-			if ((a1<=159)||(a1>=224)) p++;
+		if (a1&128) {					// UTF8チェック
+			while(1) {
+				a1=*p;if ( a1==0 ) break;
+				if ( ( a1 & 0xc0 ) != 0x80 ) break;
+				p++;					// UTF8 encode
+			}
 		}
 	}
 	return res;
@@ -431,18 +437,20 @@ int strsp_get( char *srcstr, char *dststr, char splitchr, int len )
 {
 	//		split string with parameters
 	//
-	char a1;
-	char a2;
+
+/*
+	rev 44
+	mingw : warning : 比較は常に偽
+	に対処
+*/
+	unsigned char a1;
+	unsigned char a2;
 	int a;
-	int sjflg;
-	a=0;sjflg=0;
+	a=0;
 	while(1) {
-		sjflg=0;
 		a1=srcstr[splc];
 		if (a1==0) break;
 		splc++;
-		if (a1>=0x81) if (a1<0xa0) sjflg++;
-		if (a1>=0xe0) sjflg++;
 
 		if (a1==splitchr) break;
 		if (a1==13) {
@@ -450,9 +458,20 @@ int strsp_get( char *srcstr, char *dststr, char splitchr, int len )
 			if (a2==10) splc++;
 			break;
 		}
+		if (a1==10) {
+			a2=srcstr[splc];
+			break;
+		}
 		dststr[a++]=a1;
-		if (sjflg) {
-			dststr[a++]=srcstr[splc++];
+
+		if (a1&128) {					// UTF8チェック
+			while(1) {
+				a1=srcstr[splc];
+				if ( a1==0 ) break;
+				if ( ( a1 & 0xc0 ) != 0x80 ) break;
+				splc++;
+				dststr[a++]=a1;
+			}
 		}
 		if ( a>=len ) break;
 	}
@@ -537,7 +556,7 @@ int htoi( char *str )
 
 char *strchr3( char *target, int code, int sw, char **findptr )
 {
-	//		文字列中のcode位置を探す(2バイトコード、全角対応版)
+	//		文字列中のcode位置を探す(1バイトコード、半角対応のみ版)
 	//		sw = 0 : findptr = 最後に見つかったcode位置
 	//		sw = 1 : findptr = 最初に見つかったcode位置
 	//		sw = 2 : findptr = 最初に見つかったcode位置(最初の文字のみ検索)
@@ -552,7 +571,7 @@ char *strchr3( char *target, int code, int sw, char **findptr )
 
 	p=(unsigned char *)target;
 	code1 = (unsigned char)(code&0xff);
-	code2 = (unsigned char)(code>>8);
+	code2 = 0;
 
 	res = NULL;
 	pres = NULL;
@@ -561,21 +580,15 @@ char *strchr3( char *target, int code, int sw, char **findptr )
 	while(1) {
 		a1=*p;if ( a1==0 ) break;
 		if ( a1==code1 ) {
-			if ( a1 <129 ) {
-				res=(char *)p;
-			} else {
-				if ((a1<=159)||(a1>=224)) {
-					if ( p[1]==code2 ) {
-						res=(char *)p;
-					}
-				} else {
-					res=(char *)p;
-				}
-			}
+			res=(char *)p;
 		}
 		p++;							// 検索位置を移動
-		if (a1>=129) {					// 全角文字チェック
-			if ((a1<=159)||(a1>=224)) p++;
+		if (a1&128) {					// UTF8チェック
+			while(1) {
+				a1=*p;if ( a1==0 ) break;
+				if ( ( a1 & 0xc0 ) != 0x80 ) break;
+				p++;
+			}
 		}
 		if ( res != NULL ) { *findptr = res; pres = (char *)p; res = NULL; }
 
@@ -637,4 +650,118 @@ void TrimCodeL( char *p, int code )
 	}
 }
 
+
+//
+//		文字列置き換え
+//
+static	char *s_match;
+static	int len_match;
+static	char *s_rep;
+static	int len_rep;
+static	char *s_buffer;
+static	int len_buffer;
+static	char *s_result;
+static	int len_result;
+static	int reptime;
+
+void ReplaceSetMatch( char *src, char *match )
+{
+	//		置き換え元、置き換え対象のセット
+	//
+	s_buffer = src;
+	len_buffer = (int)strlen( s_buffer );
+	len_result = len_buffer + 0x4000;
+	if ( len_result < 0x8000 ) len_result = 0x8000;
+	s_result = sbAlloc( len_result );
+	*s_result = 0;
+
+	len_match = (int)strlen( match );
+	s_match = sbAlloc( len_match + 1 );
+	memcpy( s_match, match, len_match + 1 );
+}
+
+
+char *ReplaceStr( char *repstr )
+{
+	//		置き換え実行
+	//
+	char *p;
+	unsigned char a1;
+	unsigned char a2;
+	int psize, csize, cursize, i;
+
+	s_rep = repstr;
+	len_rep = (int)strlen( s_rep );
+	reptime = 0;
+
+	// replace
+	//
+	cursize = 0;
+	p = s_buffer;
+	a2 = (unsigned char)s_match[0];
+	while(1) {
+		a1 = (unsigned char)*p;
+		if ( a1 == 0 ) break;
+
+		//	比較する
+		psize = 0; csize = 1;
+		if ( a1 == a2 ) {
+			if ( memcmp( p, s_match, len_match ) == 0 ) {
+				psize = len_match;
+				csize = len_rep;
+			}
+		}
+
+		//	バッファチェック
+		i = cursize + csize;
+		if ( i >= len_result ) {
+			len_result += 0x8000;
+			s_result = sbExpand( s_result, len_result );
+		}
+
+		if ( psize ) {				// 置き換え
+
+			memcpy( s_result+cursize, s_rep, csize );
+			p += psize;
+			cursize += csize;
+			reptime++;
+
+		} else {					// 置き換えなし
+			s_result[cursize++] = a1;
+			p++;
+
+			if (a1&128) {					// UTF8チェック
+				while(1) {
+					a1 = (unsigned char)*p;
+					if ( a1==0 ) break;
+					if ( ( a1 & 0xc0 ) != 0x80 ) break;
+					s_result[cursize++] = *p++;
+				}
+			}
+
+		}
+
+	}
+	s_result[cursize] = 0;
+	return s_result;
+}
+
+int ReplaceDone( void )
+{
+	//		置き換えの後処理
+	//
+	sbFree( s_match );
+	sbFree( s_result );
+	return reptime;
+}
+
+
+
+//
+//		android debug support
+//
+void Alert( const char *mes )
+{
+	LOGI( mes, 1 );
+}
 
