@@ -595,6 +595,8 @@ p2以降に、分割された要素が代入される変数名を指定します。
 %href
 getstr
 csvnote
+%port-
+Let
 
 
 
