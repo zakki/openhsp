@@ -133,7 +133,7 @@ CToken::CToken( void )
 	s3 = (unsigned char *)malloc( s3size );
 	lb = new CLabel;
 	tmp_lb = NULL;
-	hed_cmpmode = CMPMODE_OPTCODE | CMPMODE_OPTPRM;
+	hed_cmpmode = CMPMODE_OPTCODE | CMPMODE_OPTPRM | CMPMODE_SKIPJPSPC;
 	tstack = new CTagStack;
 	errbuf = NULL;
 	packbuf = NULL;
@@ -148,7 +148,7 @@ CToken::CToken( char *buf )
 	s3 = (unsigned char *)malloc( s3size );
 	lb = new CLabel;
 	tmp_lb = NULL;
-	hed_cmpmode = CMPMODE_OPTCODE | CMPMODE_OPTPRM;
+	hed_cmpmode = CMPMODE_OPTCODE | CMPMODE_OPTPRM | CMPMODE_SKIPJPSPC;
 	tstack = new CTagStack;
 	errbuf = NULL;
 	packbuf = NULL;
@@ -1123,6 +1123,19 @@ char *CToken::ExpandToken( char *str, int *type, int ppmode )
 		return (char *)vs;
 	}
 
+#ifdef HSPWIN
+	if ( hed_cmpmode & CMPMODE_SKIPJPSPC ) {
+		if ( a1 == 0x81 && vs[1] == 0x40 ) {	// 全角スペースを半角スペースに変換する
+			*type = TK_CODE;
+			vs+=2;
+			if (wrtbuf!=NULL) {
+				wrtbuf->Put( (char)0x20 );
+			}
+			return (char *)vs;
+		}
+	}
+#endif
+
 	chk=0;
 	if ((a1>=0x3a)&&(a1<=0x3f)) chk++;
 	if ((a1>=0x5b)&&(a1<=0x5e)) chk++;
@@ -1175,7 +1188,22 @@ char *CToken::ExpandToken( char *str, int *type, int ppmode )
 		s2[a++]='#';
 	}
 */
-	while(1) {								// シンボル取り出し
+
+	//		半角スペースの検出
+	//
+#ifdef HSPWIN
+	if (( hed_cmpmode & CMPMODE_SKIPJPSPC ) == 0 ) {
+		if ( strncmp( (char *)s2,"　",2 )==0 ) {
+			SetError("SJIS space code error");
+			*type = TK_ERROR; return (char *)vs;
+		}
+	}
+#endif
+
+
+	//	 シンボル取り出し
+	//
+	while(1) {
 		a1=*vs;
 		//if ((a1>='A')&&(a1<='Z')) a1+=0x20;		// to lower case
 
@@ -1221,12 +1249,6 @@ char *CToken::ExpandToken( char *str, int *type, int ppmode )
 	//
 	strcase2( (char *)s2, fixname );
 
-	//		半角スペースの検出
-	//
-	if ( strncmp( (char *)s2,"　",2 )==0 ) {
-		SetError("SJIS space code error");
-		*type = TK_ERROR; return (char *)vs;
-	}
 	
 	//	if ( vs_modbrk != NULL ) *vs_modbrk = 0;
 	FixModuleName( (char *)s2 );
@@ -2788,6 +2810,9 @@ ppresult_t CToken::PP_CmpOpt( void )
 	if (tstrcmp(optname,"optprm")) {		// parameter optimization sw
 		i = CMPMODE_OPTPRM;
 	}
+	if (tstrcmp(optname,"skipjpspc")) {		// skip Japanese Space Code sw
+		i = CMPMODE_SKIPJPSPC;
+	}
 
 	if ( i == 0 ) {
 		SetError("illegal option name"); return PPRESULT_ERROR;
@@ -3166,13 +3191,26 @@ int CToken::ExpandLine( CMemBuf *buf, CMemBuf *src, char *refname )
 	enumgc = 0;
 	mulstr = LMODE_ON;
 	*errtmp = 0;
+	unsigned char a1;
 
 	while(1) {
 		RegistExtMacro( "__line__", pline );			// 行番号マクロを更新
 
-		while( *p == ' ' || *p == '\t' ) {
-			p++;
+		while(1) {
+			a1 = *(unsigned char *)p;
+			if ( a1 == ' ' || a1 == '\t' ) {
+				p++; continue;
+			}
+#ifdef HSPWIN
+			if ( hed_cmpmode & CMPMODE_SKIPJPSPC ) {
+				if ( a1 == 0x81 && p[1] == 0x40 ) {		// 全角スペースチェック
+					p+=2; continue;
+				}
+			}
+#endif
+			break;
 		}
+
 		if ( *p==0 ) break;					// 終了(EOF)
 		ahtkeyword = NULL;					// AHTキーワードをリセットする
 
