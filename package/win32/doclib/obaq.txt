@@ -1,6 +1,6 @@
 ------------------------------------------------------------------------------
-OBAQ for HSP ver3.3 REFERENCE MANUAL                HSP : Hot Soup Processor  
-ＨＳＰ拡張拡張DLLリファレンス    Copyright 2011 (c) Zener Works/kuni/onitama  
+OBAQ for HSP ver3.4 REFERENCE MANUAL                HSP : Hot Soup Processor  
+ＨＳＰ拡張拡張DLLリファレンス    Copyright 2014 (c) Zener Works/kuni/onitama  
 ------------------------------------------------------------------------------
 
 ・はじめに
@@ -381,6 +381,14 @@ OBAQ for HSP ver3.3 REFERENCE MANUAL                HSP : Hot Soup Processor
 
 
 ・更新履歴
+
+	2014/04/24 ver3.4β4
+
+		qspeed命令のoptionパラメーター値に2を追加しました。
+		いままで、optionパラメーターに1を指定していた場合に、
+		指定した値の２倍が設定されていました。
+		このため、互換性を考慮して、option値で2を指定した場合に、
+		指定した値が正しく設定される仕様を追加しました。
 
 	2010/01/28 ver3.21
 

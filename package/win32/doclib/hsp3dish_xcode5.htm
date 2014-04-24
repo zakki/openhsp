@@ -23,6 +23,7 @@
 		<li><a href="#ABOUT">はじめに</a></li>
 		<li><a href="#MAKEPROJ">XCode5プロジェクトの作成</a></li>
 		<li><a href="#ADDHSP">HSP3Dish関連ファイルの登録</a></li>
+		<li><a href="#XCODE51">XCode5.1以降の設定</a></li>
 	</ol>
 
 	<h2 id="ABOUT">はじめに</h2>
@@ -97,14 +98,14 @@
 
 	<h2 id="ADDHSP">HSP3Dish関連ファイルの登録</h2>
 	<p>
-	作成されたプロジェクトのフォルダと同じ階層に、「iHSP19」フォルダを配置してください。
+	作成されたプロジェクトのフォルダと同じ階層に、「iHSP20」フォルダを配置してください。
 	「iHSPxx」フォルダはアーカイブ内のiOSフォルダに同梱されています。
 	</p>
 	<img src="hsp3dish/s_menu.jpg" style="float:right;">
 	<img src="hsp3dish/s_folder.jpg"><br>
 	<p>
 	XCode上でプロジェクトに必要なファイルを追加してください。<br>
-	Fileメニューから、「Add Files to～」を選択し、「iHSP19」のフォルダ(下層も含む)を追加(Add)します。<br>
+	Fileメニューから、「Add Files to～」を選択し、「iHSP20」のフォルダ(下層も含む)を追加(Add)します。<br>
 	さらに、Windows上で作成されたCソースファイル(拡張子が.cppのファイル)を追加(Add)します。<br>
 	</p>
 	<p>
@@ -136,6 +137,14 @@
 	<p>
 	新規プロジェクトを作成した場合は、デフォルトでビルドスキームがDebugになっています。
 	ProductメニューのEdit Scheme...の設定で、Build Configurationを「Release」に変更することで、最適化されたコードが出力され、より高速に実行されます。
+	</p>
+
+
+	<h2 id="XCODE51">XCode5.1以降の設定</h2>
+	<p>
+	XCode5.1以降では、64bitアーキテクチャがデフォルトで指定されているため、それまでのプロジェクトをコンパイルしようとする場合にもエラーとなってしまいます。
+	これを解決するには、プロジェクトのBuild Settingsタブにある、「Architectures」内の、「Architectures」項目が「$(ARCHS_STANDARD)」になっているのを、「$(ARCHS_STANDARD_32_BIT)」に変更します。<br>
+	変更後に、プロジェクトを一度クリーン(ProductメニューのClean項目)してから、再度ビルドを行なうようにしてください。
 	</p>
 
 

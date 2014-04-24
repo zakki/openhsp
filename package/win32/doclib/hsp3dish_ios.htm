@@ -32,6 +32,7 @@
 		<li><a href="#SENSOR">加速度センサーのサポートについて</a></li>
 		<li><a href="#DIALOG">dialog命令のサポートについて</a></li>
 		<li><a href="#RETINA">Retinaディスプレイ対応について</a></li>
+		<li><a href="#UNIVERSAL">Universalアプリ対応について</a></li>
 		<li><a href="#DEVCONTROL">デバイスコントロールについて</a></li>
 		<li><a href="#RELEASE">AppStoreへの登録について</a></li>
 		<li><a href="#IAD">iAdの対応について</a></li>
@@ -73,7 +74,7 @@
 	iOSフォルダには、HSP3Dishランタイム及びxcode用のサンプルプロジェクトが含まれています。
 
 	<ul>
-	<li>iHSP19フォルダ - HSP3Dishランタイム本体</li>
+	<li>iHSP20フォルダ - HSP3Dishランタイム本体</li>
 	<li>hspprojフォルダ - HSP3Dishサンプル(hsplogo.hsp)</li>
 	</ul>
 
@@ -115,11 +116,11 @@
 
 	<p>
 	実際にiOS上で動作させる場合には、XCode5上でプロジェクトをコンパイルする必要があります。<br>
-	<a href="#MAKECPP">スクリプトの準備</a>で出力した、XCode5用プロジェクトフォルダと、「iHSP19」フォルダ(HSPアーカイブ内のiOSフォルダに同梱されています。)をMacOSX上にコピーしてください。<br>
+	<a href="#MAKECPP">スクリプトの準備</a>で出力した、XCode5用プロジェクトフォルダと、「iHSP20」フォルダ(HSPアーカイブ内のiOSフォルダに同梱されています。)をMacOSX上にコピーしてください。<br>
 	※Xcode5を使用して手動でプロジェクトを作成する場合は<a href="hsp3dish_xcode5.htm">こちらを参照してください</a>。
 	</p>
 	<p>
-	必ず作成されたプロジェクトのフォルダと同じ階層に、「iHSP19」フォルダを配置してください。
+	必ず作成されたプロジェクトのフォルダと同じ階層に、「iHSP20」フォルダを配置してください。
 	</p>
 	<p>
 	<img src="hsp3dish/s_folder.jpg"><br>
@@ -206,8 +207,14 @@
 	<p>
 	この設定を追加することにより、画面全体を回転して表示させることが可能です。<br>
 	指定する値は、0～3の範囲で90度単位(時計回り)に回転の角度を指定することができます。
-	1または、3の場合は横長の画面になります。その場合は、画面の初期化サイズ(dispViewXで
-	指定する座標)もあらかじめ横長(480x320など)に設定しておく必要があります。
+	1または、3の場合は横長の画面になります。その場合は、「ビューの生成と追加」部分の初期化コードにある「initWithFrame」を「initWithFrameSide」に変更してください。
+	</p>
+	<pre>
+		    //ビューの生成と追加
+		    HspView* view=[[HspView alloc] initWithFrameSide:[[UIScreen mainScreen] applicationFrame]];
+	</pre>
+	<p>
+	これにより横長画面のスケーリングを正しく行なうことができるようになります。
 	</p>
 	<pre>
 	    [view useMultiTouch];
@@ -376,6 +383,17 @@
 	この設定により、Retinaディスプレイ搭載機種で正しく反映され、Retinaディスプレイでない機種では縮小サイズで表示されるようになります。
 	</p>
 
+	<h2 id="UNIVERSAL">Universalアプリ対応について</h2>
+	<p>
+	プロジェクトをUniversalアプリ(iPad,iPhoneどちらでも同一のアプリで動作する)としてビルドする場合は、
+	プロジェクトのGeneral項目→Deployment Info→Deployment TargetをUniversalに変更してください。<br>
+	その後、iPhone、iPadごとの設定ができるようになりますので、同一の設定を行なってビルドを行なってください。<br>
+	Universalアプリでは、AppDelegate.m内の初期化時にview dispViewX項目で、正しくアプリが使用する解像度を指定して、スケーリングを行なうか、
+	アプリ側で画面の初期化サイズ(ginfo_sx,gfino_syなど)を調べた上で、それに対応した描画を行なう必要がありますので注意してください。
+	</p>
+	<img src="hsp3dish/s_universal.jpg"><br>
+
+
 	<h2 id="DEVCONTROL">デバイスコントロールについて</h2>
 	<p>
 	iOSデバイス固有の機能にdevcontrolなどの命令でアクセスすることが可能です。<br>
@@ -459,12 +477,12 @@
 	<h2 id="ADMOB">AdMobの対応について</h2>
 	<p>
 	アプリ内に広告を表示するAdMobのシステムに仮対応しています。<br>
-	標準的なHSP3Dishランタイム(iHSP19フォルダ)と合わせて、AdMob対応のランタイム(iHSP19AdMobフォルダ)を
-	同梱しています。AdMobを使用する際には、iHSP19ではなくiHSP19AdMobフォルダをプロジェクトに追加してください。<br>
+	標準的なHSP3Dishランタイム(iHSP20フォルダ)と合わせて、AdMob対応のランタイム(iHSP20AdMobフォルダ)を
+	同梱しています。AdMobを使用する際には、iHSP20ではなくiHSP20AdMobフォルダをプロジェクトに追加してください。<br>
 	また、AppDelegate.m内の#import部分のコードを、以下のように修正する必要があります。
 	</p>
 	<pre>
-	    #import "../../iHSP19AdMob/Classes/HspView.h"
+	    #import "../../iHSP20AdMob/Classes/HspView.h"
 	</pre>
 	<p>
 	さらに、以下のフレームワークをプロジェクトに追加してください。
@@ -481,7 +499,7 @@
 	</ul>
 	<p>
 	最後に、ユーザーが個別に取得するAdMobパブリッシャーIDを指定します。
-	「iHSP19admob/Classes/HspViewController.mm」ファイル内のコードを直接修正してください。
+	「iHSP20admob/Classes/HspViewController.mm」ファイル内のコードを直接修正してください。
 	</p>
 	<pre>
 		// 広告の「ユニット ID」を指定する。これは AdMob パブリッシャーID です。
