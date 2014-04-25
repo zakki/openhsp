@@ -5,8 +5,9 @@ Hot Soup Processor ver3.4                           HSP : Hot Soup Processor
 
 ・hsp3関連 更新履歴
 
-	2014/04/24 3.4β4
+	2014/04/25 3.4β4
 
+	HSP3オフィシャル3D素材 "珠音（たまね）"をhgimg3/hgimg4フォルダに同梱
 	スクリプト中の全角スペースをスペース・タブと同様に無視するように修正
 	スクリプト中の全角スペースを無視する設定スイッチを#cmpoptに追加
 	オブジェクトファイルに不要な行番号情報が出力されないように修正
@@ -18,6 +19,7 @@ Hot Soup Processor ver3.4                           HSP : Hot Soup Processor
 	[HSP3Dish][android][iOS] UTF8文字列を正しく扱うように修正
 	[HSP3Dish][android][iOS] getstr命令、メモリノートパッド命令が認識する改行コードにLF(コード10)を追加
 	[HSP3Dish][Win][android][iOS] redraw命令のパラメーター値を追加
+	ドキュメントの一部修正
 
 	2014/02/01 3.4β3
 
