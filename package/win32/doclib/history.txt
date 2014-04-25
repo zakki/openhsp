@@ -14,6 +14,7 @@ Hot Soup Processor ver3.4                           HSP : Hot Soup Processor
 	デバッグ時のオブジェクトファイルにラベル名と引数名を記録するように修正(fujidig)
 	イージング制御のための、setease命令、getease、geteasef関数を標準で追加
 	[OBAQ] qspeed命令のoptionパラメーター値を追加、ヘルプを修正
+	[HSP3Dish][iOS] XCode5.1以降で正しくコンパイルが通るように修正
 	[HSP3Dish][iOS] Universalアプリ対応についてのドキュメントを追加
 	[HSP3Dish][android] android-ndk-r9以降で正しくコンパイルが通るように修正
 	[HSP3Dish][android][iOS] UTF8文字列を正しく扱うように修正
