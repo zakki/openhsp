@@ -5,6 +5,13 @@ Hot Soup Processor ver3.4                           HSP : Hot Soup Processor
 
 ・hsp3関連 更新履歴
 
+	2014/06/03 3.4β5
+
+	変数名に付加された全角スペースが無視されない不具合を修正
+	[HSP3Dish][android] mes命令による内蔵フォント表示に対応
+	β4版のobaq.dllが古いバージョンだったのを差し替え
+	ドキュメントの一部修正
+
 	2014/04/25 3.4β4
 
 	HSP3オフィシャル3D素材 "珠音（たまね）"をhgimg3/hgimg4フォルダに同梱

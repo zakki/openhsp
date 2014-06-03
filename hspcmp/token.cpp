@@ -399,9 +399,22 @@ int CToken::GetToken( void )
 	rval=TK_OBJ;
 
 	while(1) {
-		a1=*wp;if ((a1!=32)&&(a1!=9)) break;	// Skip Space & Tab
+		a1=*wp;
+
+#ifdef HSPWIN
+		if ( a1 == 0x81 ) {
+			if ( wp[1] == 0x40 ) {	// 全角スペースは無視
+				if ( hed_cmpmode & CMPMODE_SKIPJPSPC ) {
+					wp+=2; continue;
+				}
+			}
+		}
+#endif
+
+		if ((a1!=32)&&(a1!=9)) break;	// Skip Space & Tab
 		wp++;
 	}
+
 	if (a1==0) { wp=NULL;return TK_NONE; }		// End of Source
 	if (a1==13) {					// Line Break
 		wp++;if (*wp==10) wp++;
@@ -596,6 +609,16 @@ int CToken::GetToken( void )
 		if ( a>=OBJNAME_MAX ) break;
 
 		if (a1>=129) {						// 全角文字チェック
+
+#ifdef HSPWIN
+			if ( hed_cmpmode & CMPMODE_SKIPJPSPC ) {
+				if ( a1 == 0x81 ) {
+					if ( wp[1] == 0x40 ) {	// 全角スペースは終端として処理
+						break;
+					}
+				}
+			}
+#endif
 			if (a1<=159) { s3[a++]=a1;wp++;a1=*wp; }
 			else if (a1>=224) { s3[a++]=a1;wp++;a1=*wp; }
 		}
@@ -1208,6 +1231,13 @@ char *CToken::ExpandToken( char *str, int *type, int ppmode )
 		//if ((a1>='A')&&(a1<='Z')) a1+=0x20;		// to lower case
 
 		if (a1>=129) {				// 全角文字チェック
+#ifdef HSPWIN
+			if ( hed_cmpmode & CMPMODE_SKIPJPSPC ) {
+				if ( a1 == 0x81 && vs[1] == 0x40 ) {	// 全角スペースは終端と判断
+					break;
+				}
+			}
+#endif
 			if ((a1<=159)||(a1>=224)) {
 				if ( a<OBJNAME_MAX ) {
 					s2[a++]=a1;
