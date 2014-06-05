@@ -93,7 +93,7 @@ public:
 	int GetInitFlag( int id );
 	LABOBJ *GetLabel( int id );
 	void DumpLabel( char *str );
-	void DumpHSPLabel( char *str, int option );
+	void DumpHSPLabel( char *str, int option, int maxsize );
 	int RegistList( char **list, char *modname );
 	int RegistList2( char **list, char *modname );
 	int RegistList3( char **list );

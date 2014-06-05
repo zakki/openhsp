@@ -59,6 +59,7 @@
 #enum global SYSREQ_DEFAULT_MOMENT
 #enum global SYSREQ_DEFAULT_DAMPER
 #enum global SYSREQ_DEFAULT_FRICTION
+#enum global SYSREQ_MESCACHE_MAX
 
 #const global PLATFORM_WINDOWS 0
 #const global PLATFORM_IOS 1
@@ -185,13 +186,13 @@
 ;	system request
 ;
 #define global REQ_NONE 0
-#define global REQ_PHYSICS_RATE 1
-#define global REQ_MAXOBJ 2
-#define global REQ_MAXLOG 3
-#define global REQ_DEFAULT_WEIGHT 4
-#define global REQ_DEFAULT_MOMENT 5
-#define global REQ_DEFAULT_DAMPER 6
-#define global REQ_DEFAULT_FRICTION 7
+#define global REQ_PHYSICS_RATE (SYSREQ_PHYSICS_RATE)
+#define global REQ_MAXOBJ (SYSREQ_MAXOBAQ)
+#define global REQ_MAXLOG (SYSREQ_MAXLOG)
+#define global REQ_DEFAULT_WEIGHT (SYSREQ_DEFAULT_WEIGHT)
+#define global REQ_DEFAULT_MOMENT (SYSREQ_DEFAULT_MOMENT)
+#define global REQ_DEFAULT_DAMPER (SYSREQ_DEFAULT_DAMPER)
+#define global REQ_DEFAULT_FRICTION (SYSREQ_DEFAULT_FRICTION)
 
 
 #endif

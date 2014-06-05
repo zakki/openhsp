@@ -806,8 +806,9 @@ int hsp3dish_init( HINSTANCE hInstance, char *startfile )
 
 #ifdef HSPDEBUG
 	if ( OpenIniFile( "hsp3dish.ini" ) == 0 ) {
-		hsp_wx = GetIniFileInt( "wx" );
-		hsp_wy = GetIniFileInt( "wy" );
+		int iprm;
+		iprm = GetIniFileInt( "wx" );if ( iprm > 0 ) hsp_wx = iprm;
+		iprm = GetIniFileInt( "wy" );if ( iprm > 0 ) hsp_wy = iprm;
 		CloseIniFile();
 	}
 #endif

@@ -14,6 +14,54 @@ static int	sysreq[SYSREQ_MAX];		// 初期設定データプール
 static float sysreqf[SYSREQ_MAX];		// 初期設定データプール
 static char dbgmsg[512];			// デバッグ用メッセージプール
 
+void SetSysReq( int reqid, int val )
+{
+	if (( reqid < 0 )||( reqid >= SYSREQ_MAX )) return;
+	sysreq[ reqid ] = val;
+	sysreqf[ reqid ] = (float)val;
+}
+
+
+int GetSysReq( int reqid )
+{
+	switch( reqid ) {
+	case SYSREQ_TIMER:
+		return hgio_gettick();
+	default:
+		break;
+	}
+	return sysreq[ reqid ];
+}
+
+
+void SetSysReqF( int reqid, float val )
+{
+	if (( reqid < 0 )||( reqid >= SYSREQ_MAX )) return;
+	sysreqf[ reqid ] = val;
+	sysreq[ reqid ] = (int)val;
+}
+
+
+float GetSysReqF( int reqid )
+{
+	if (( reqid < 0 )||( reqid >= SYSREQ_MAX )) return 0.0f;
+	return sysreqf[ reqid ];
+}
+
+
+void DebugMsg( char *format, ... )
+{
+	va_list args;
+	va_start(args, format);
+	vsprintf(dbgmsg, format, args);
+	va_end(args);
+}
+
+char *GetDebug( void )
+{
+	return dbgmsg;
+}
+
 void InitSysReq( void )
 {
 	int i;
@@ -37,6 +85,7 @@ void InitSysReq( void )
 
 	sysreq[ SYSREQ_MAXMATERIAL ] = 128;
 
+	SetSysReq( SYSREQ_MESCACHE_MAX, 64 );
 
 #ifdef HSPIOS
     sysreq[ SYSREQ_PLATFORM ] = PLATFORM_IOS;
@@ -48,49 +97,4 @@ void InitSysReq( void )
 	dbgmsg[0] = 0;
 }
 
-
-void SetSysReq( int reqid, int val )
-{
-	sysreq[ reqid ] = val;
-}
-
-
-int GetSysReq( int reqid )
-{
-	switch( reqid ) {
-	case SYSREQ_TIMER:
-		return hgio_gettick();
-	default:
-		break;
-	}
-	return sysreq[ reqid ];
-}
-
-
-void SetSysReqF( int reqid, float val )
-{
-	if (( reqid < 0 )||( reqid >= SYSREQ_MAX )) return;
-	sysreqf[ reqid ] = val;
-}
-
-
-float GetSysReqF( int reqid )
-{
-	if (( reqid < 0 )||( reqid >= SYSREQ_MAX )) return 0.0f;
-	return sysreqf[ reqid ];
-}
-
-
-void DebugMsg( char *format, ... )
-{
-	va_list args;
-	va_start(args, format);
-	vsprintf(dbgmsg, format, args);
-	va_end(args);
-}
-
-char *GetDebug( void )
-{
-	return dbgmsg;
-}
 

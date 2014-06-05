@@ -1,5 +1,5 @@
 //
-//	a_graphics.cpp header
+//	hgiox.cpp header
 //
 #ifndef __hgiox_h
 #define __hgiox_h
@@ -9,6 +9,7 @@ extern "C" {
 #endif
 
 #include "../hginc.h"
+#include "hgtex.h"
 
 //フリップ定数
 #define GRAPHICS_FLIP_NONE       -1
@@ -43,7 +44,7 @@ int hgio_getHeight( void );
 void hgio_setfilter( int type, int opt );
 
 void hgio_fillrot( struct BMSCR *bm, float x, float y, float sx, float sy, float ang );
-void hgio_fcopy( float distx, float disty, short xx, short yy, short srcsx, short srcsy, int texid );
+void hgio_fcopy( float distx, float disty, short xx, short yy, short srcsx, short srcsy, int texid, int color );
 void hgio_copy( struct BMSCR *bm, short xx, short yy, short srcsx, short srcsy, struct BMSCR *bmsrc, float psx, float psy );
 void hgio_copyrot( struct BMSCR *bm, short xx, short yy, short srcsx, short srcsy, float ofsx, float ofsy, struct BMSCR *bmsrc, float psx, float psy, float ang );
 #endif
@@ -57,7 +58,7 @@ void hgio_setClear( int rval, int gval ,int bval );
 void hgio_setFilterMode( int mode );
 void hgio_setBlendMode( int mode, int aval );
 void hgio_setBlendModeFlat( int mode );
-void hgio_putTexFont( int x, int y, char *msg );
+void hgio_putTexFont( int x, int y, char *msg, int color );
 
 //色の指定
 void hgio_setColor( int color );
@@ -94,6 +95,7 @@ void hgio_test(void);
 
 int hgio_file_exist( char *fname );
 int hgio_file_read( char *fname, void *ptr, int size, int offset );
+
 
 #ifdef __cplusplus
 }

@@ -10,45 +10,15 @@
 #include "hgio.h"
 #include "supio.h"
 
-static int	sysreq[SYSREQ_MAX];			// 初期設定データプール
+static int	sysreq[SYSREQ_MAX];		// 初期設定データプール
 static float sysreqf[SYSREQ_MAX];		// 初期設定データプール
 static char dbgmsg[512];			// デバッグ用メッセージプール
 
-void InitSysReq( void )
-{
-	int i;
-	for(i=0;i<SYSREQ_MAX;i++) {
-		sysreq[i]=0;
-		sysreqf[i]=0.0f;
-	}
-	sysreq[ SYSREQ_MAXMODEL ] = 128;
-	sysreq[ SYSREQ_MAXOBJ ] = 1024;
-	sysreq[ SYSREQ_MAXTEX ] = 128;
-	sysreq[ SYSREQ_MAXMOC ] = 4096;
-	sysreq[ SYSREQ_PKTSIZE ] = 0x100000;
-	sysreq[ SYSREQ_MAXEVENT ] = 256;
-	sysreq[ SYSREQ_MDLANIM ] = 16;
-	sysreq[ SYSREQ_MAXEMITTER ] = 16;
-	sysreq[ SYSREQ_OBAQMATBUF ] = 1024;
-
-	sysreq[ SYSREQ_2DFILTER ] = 1;			// D3DTEXF_POINT
-	sysreq[ SYSREQ_2DFILTER2 ] = 1;			// D3DTEXF_POINT
-	sysreq[ SYSREQ_3DFILTER ] = 2;			// D3DTEXF_LINEAR
-
-#ifdef HSPIOS
-    sysreq[ SYSREQ_PLATFORM ] = PLATFORM_IOS;
-#endif    
-#ifdef HSPNDK
-    sysreq[ SYSREQ_PLATFORM ] = PLATFORM_ANDROID;
-#endif    
-    
-	dbgmsg[0] = 0;
-}
-
-
 void SetSysReq( int reqid, int val )
 {
+	if (( reqid < 0 )||( reqid >= SYSREQ_MAX )) return;
 	sysreq[ reqid ] = val;
+	sysreqf[ reqid ] = (float)val;
 }
 
 
@@ -68,6 +38,7 @@ void SetSysReqF( int reqid, float val )
 {
 	if (( reqid < 0 )||( reqid >= SYSREQ_MAX )) return;
 	sysreqf[ reqid ] = val;
+	sysreq[ reqid ] = (int)val;
 }
 
 
@@ -91,6 +62,39 @@ char *GetDebug( void )
 	return dbgmsg;
 }
 
+void InitSysReq( void )
+{
+	int i;
+	for(i=0;i<SYSREQ_MAX;i++) {
+		sysreq[i]=0;
+		sysreqf[i]=0.0f;
+	}
+	sysreq[ SYSREQ_MAXMODEL ] = 128;
+	sysreq[ SYSREQ_MAXOBJ ] = 1024;
+	sysreq[ SYSREQ_MAXTEX ] = 128;
+	sysreq[ SYSREQ_MAXMOC ] = 4096;
+	sysreq[ SYSREQ_PKTSIZE ] = 0x100000;
+	sysreq[ SYSREQ_MAXEVENT ] = 256;
+	sysreq[ SYSREQ_MDLANIM ] = 16;
+	sysreq[ SYSREQ_MAXEMITTER ] = 16;
+	sysreq[ SYSREQ_OBAQMATBUF ] = 1024;
 
+	sysreq[ SYSREQ_2DFILTER ] = 1;			// D3DTEXF_POINT
+	sysreq[ SYSREQ_2DFILTER2 ] = 1;			// D3DTEXF_POINT
+	sysreq[ SYSREQ_3DFILTER ] = 2;			// D3DTEXF_LINEAR
+
+	sysreq[ SYSREQ_MAXMATERIAL ] = 128;
+
+	SetSysReq( SYSREQ_MESCACHE_MAX, 64 );
+
+#ifdef HSPIOS
+    sysreq[ SYSREQ_PLATFORM ] = PLATFORM_IOS;
+#endif    
+#ifdef HSPNDK
+    sysreq[ SYSREQ_PLATFORM ] = PLATFORM_ANDROID;
+#endif    
+    
+	dbgmsg[0] = 0;
+}
 
 

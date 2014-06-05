@@ -5,8 +5,8 @@
 #ifndef __hsc3_h
 #define __hsc3_h
 
-#define HSC3TITLE "OpenHSP script preprocessor"
-#define HSC3TITLE2 "OpenHSP code generator"
+#define HSC3TITLE "HSP script preprocessor"
+#define HSC3TITLE2 "HSP code generator"
 
 #define HSC3_OPT_NOHSPDEF 1
 #define HSC3_OPT_DEBUGMODE 2

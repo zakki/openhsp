@@ -201,6 +201,7 @@ static void engine_handle_cmd(struct android_app* app, int32_t cmd) {
 				p_runmode = &(ctx->runmode);
 				hgio_setstorage( j_getinfo(JAVAFUNC_INFO_FILESDIR) );
 			    hsp3dish_setdevinfo();
+
 			} else {
 		       	LOGI("[HSP Resume]");
 		        hsp3eb_resume();

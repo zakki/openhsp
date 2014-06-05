@@ -413,9 +413,9 @@ void Bmscr::Setcolor( int icolor )
 {
 	color = icolor;
 
-	int a1 = ( icolor >> 16 ) & 0xff;
-	int a2 = ( icolor >>  8 ) & 0xff;
-	int a3 = ( icolor ) & 0xff;
+	//int a1 = ( icolor >> 16 ) & 0xff;
+	//int a2 = ( icolor >>  8 ) & 0xff;
+	//int a3 = ( icolor ) & 0xff;
 
 #ifdef HSPDISHGP
 	colorvalue[0] = ((float)a1) * COLORRATE;

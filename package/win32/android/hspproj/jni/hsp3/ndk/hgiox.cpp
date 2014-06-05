@@ -1,5 +1,5 @@
 //
-//		Draw lib (android/opengl/ndk)
+//		Draw lib (iOS/android/opengl/ndk)
 //			onion software/onitama 2011/11
 //
 
@@ -15,6 +15,9 @@
 #include "../hsp3config.h"
 
 #ifdef HSPNDK
+#define USE_JAVA_FONT
+#define FONT_TEX_SX 512
+#define FONT_TEX_SY 128
 #include "../../appengine.h"
 #include "../../javafunc.h"
 #include "font_data.h"
@@ -50,32 +53,6 @@ typedef struct{
     unsigned char a;
 } Color;
 
-#define TEXINF_MAX 64
-// テクスチャ情報
-typedef struct
-{
-short mode;			// mode
-short opt;			// option
-short sx;			// x-size
-short sy;			// y-size
-short width;		// real x-size
-short height;		// real y-size
-GLuint texid;		// TexID
-float ratex;		// 1/sx
-float ratey;		// 1/sy
-
-} TEXINF;
-
-enum {
-TEXMODE_NONE = 0,
-TEXMODE_NORMAL,
-TEXMODE_MES8,
-TEXMODE_MES4,
-TEXMODE_MAX,
-};
-
-static TEXINF texinf[TEXINF_MAX];
-static int curtex;
 static float linebasex, linebasey;
 
 
@@ -137,6 +114,8 @@ static int		mouse_btn;
 static	int  font_texid;
 static	int  font_sx, font_sy;
 static	int  mes_sx, mes_sy;
+static	int  font_size;
+static	int  font_style;
 
 static	GLfloat _line_vertexs[16*3];
 static	GLbyte  _line_colors[16*4];
@@ -193,184 +172,6 @@ static void gluPerspective(double fovy, double aspect, double zNear, double zFar
 
 /*-------------------------------------------------------------------------------*/
 /*
-		Texture Manage Routines
-*/
-/*-------------------------------------------------------------------------------*/
-
-TEXINF *GetTex( int id )
-{
-	return &texinf[id];
-}
-
-
-void DeleteTex( int id )
-{
-	TEXINF *t;
-	t = GetTex( id );
-	if ( t->mode == TEXMODE_NONE ) return;
-	glDeleteTextures( 1, &t->texid );
-	t->mode = TEXMODE_NONE;
-}
-
-
-void TexReset( void )
-{
-	curtex = -1;
-}
-
-
-void TexInit( void )
-{
-	int i;
-	for(i=0;i<TEXINF_MAX;i++) {
-		texinf[i].mode = TEXMODE_NONE;
-	}
-	TexReset();
-}
-
-
-void TexTerm( void )
-{
-	int i;
-	for(i=0;i<TEXINF_MAX;i++) {
-		DeleteTex( i );
-	}
-}
-
-
-void ChangeTex( int id )
-{
-	//	テクスチャ設定
-	//	TexIDではなくOpenGLのIDを渡すこと
-	if ( id < 0 ) {
-		curtex = -1;
-	    glBindTexture(GL_TEXTURE_2D,0);
-		return;
-	}
-	curtex = id;
-    glBindTexture( GL_TEXTURE_2D, id );
-}
-
-
-int GetNextTex( void )
-{
-	int i,sel;
-	sel = -1;
-	for(i=0;i<TEXINF_MAX;i++) {
-		if ( texinf[i].mode == TEXMODE_NONE ) { sel=i;break; }
-	}
-	return sel;
-}
-
-
-int SetTex( int sel, short mode, short opt, short sx, short sy, short width, short height, GLuint texid )
-{
-	TEXINF *t;
-	int myid;
-	myid = sel;
-	if ( sel >= 0 ) {
-		t = GetTex( sel );
-	} else {
-		myid = GetNextTex();
-		t = GetTex( myid );
-	}
-	t->mode = mode;
-	t->opt = opt;
-	t->sx = sx;
-	t->sy = sy;
-	t->width = width;
-	t->height = height;
-	t->ratex = 1.0f / (float)sx;
-	t->ratey = 1.0f / (float)sy;
-	t->texid = texid;
-	return myid;
-}
-
-
-static int Get2N( int val )
-{
-	int res = 1;
-	while(1) {
-		if ( res >= val ) break;
-		res<<=1;
-	}
-	return res;
-}
-
-
-int RegistTexMem( unsigned char *ptr, int size )
-{
-	GLuint id;
-	int texid, tsx,tsy,comp;
-	int sx,sy;
-	unsigned char *pImg;
-	unsigned char *pImg2;
-
-	pImg = stbi_load_from_memory( ptr, size, &tsx, &tsy, &comp, 4 );
-
-	id = -1;
-	if ( pImg != NULL ) {
-		sx = Get2N( tsx );
-		sy = Get2N( tsy );
-		if (( sx != tsx )||( sy != tsy )) {
-			//	Exchange to 2N bitmap
-			char *p;
-			char *p2;
-			int x,y;
-			pImg2 = (unsigned char *)mem_ini( sx * sy * 4 );
-			p = (char *)pImg;
-			p2 = (char *)pImg2;
-			for(y=0;y<tsy;y++) {
-#if 0
- 				p2 = (char *)pImg2 + (sx*y*4);
- 				for(x=0;x<tsx;x++) {
-					p2[0] = p[0];
-					p2[1] = p[1];
-					p2[2] = p[2];
-					p2[3] = p[3];
-					p+=4; p2+=4;
-				}
-#else
-				memcpy( p2, p, tsx*4 );
-				p+=tsx*4;
-				p2+=sx*4;
-#endif
-			}
-			mem_bye(pImg);
-			pImg = pImg2;
-		}
-		glGenTextures( 1, &id );
-		glBindTexture( GL_TEXTURE_2D, id );
-		glTexImage2D( GL_TEXTURE_2D, 0, GL_RGBA, sx, sy, 0, GL_RGBA, GL_UNSIGNED_BYTE, pImg );
-		mem_bye(pImg);
-		texid = SetTex( -1, TEXMODE_NORMAL, 0, sx, sy, tsx, tsy, id );
-		Alertf( "Tex:ID%d (%d,%d)(%dx%d)",texid,sx,sy,tsx,tsy );
-		return texid;
-	}
-	Alertf( "Tex:failed" );
-	return -1;
-}
-
-
-int RegistTex( char *fname )
-{
-	char *ptr;
-	int len;
-	int id;
-
-	len = dpm_exist( fname );
-	//Alertf( "Tex:read(%s)(%d)", fname, len );
-	if ( len < 0 ) return -1;
-	ptr = mem_ini( len );
-	dpm_read( fname, ptr, len, 0 );
-	id = RegistTexMem( (unsigned char *)ptr, len );
-	mem_bye( ptr );
-	return id;
-}
-
-
-/*-------------------------------------------------------------------------------*/
-/*
 		Draw Service
 */
 /*-------------------------------------------------------------------------------*/
@@ -423,7 +224,11 @@ void hgio_init( int mode, int sx, int sy, void *hwnd )
 
 	//フォント準備
 #ifdef HSPNDK
+	#ifdef USE_JAVA_FONT
+	//font_texid = MakeEmptyTex( FONT_TEX_SX, FONT_TEX_SY );
+	#else
 	font_texid = RegistTexMem( font_data, font_data_size );
+	#endif
 #endif
 	font_sx = 16;
 	font_sy = 16;
@@ -581,6 +386,11 @@ void hgio_reset( void )
 	TexReset();
 
 	//フォント描画リセット
+#ifdef HSPNDK
+#ifdef USE_JAVA_FONT
+	TexProc();
+#endif
+#endif
 
 }
 
@@ -588,6 +398,24 @@ void hgio_term( void )
 {
 	hgio_render_end();
 	TexTerm();
+}
+
+
+void hgio_resume( void )
+{
+	//	画面リソースの再構築
+	//
+
+	//テクスチャ初期化
+	TexInit();
+
+#ifdef HSPNDK
+	#ifdef USE_JAVA_FONT
+	//font_texid = MakeEmptyTex( FONT_TEX_SX, FONT_TEX_SY );
+	#else
+	font_texid = RegistTexMem( font_data, font_data_size );
+	#endif
+#endif
 }
 
 
@@ -771,6 +599,8 @@ int hgio_stick( int actsw )
 
 int hgio_font( char *fontname, int size, int style )
 {
+	font_size = size;
+	font_style = style;
 #ifdef HSPIOS
     gb_font( size, style, fontname );
 #endif
@@ -781,7 +611,7 @@ int hgio_font( char *fontname, int size, int style )
 int hgio_mes( BMSCR *bm, char *str1 )
 {
 #ifdef HSPNDK
-	hgio_putTexFont( bm->cx, bm->cy, str1 );
+	hgio_putTexFont( bm->cx, bm->cy, str1, bm->color );
 	bm->printsizex = mes_sx;
 	bm->printsizey = mes_sy;
 	//LOGI( str1 );
@@ -789,86 +619,6 @@ int hgio_mes( BMSCR *bm, char *str1 )
 #ifdef HSPIOS
     gb_mes( bm, str1 );
 #endif
-	return 0;
-}
-
-
-int hgio_render_start( void )
-{
-	if ( drawflag ) {
-		hgio_render_end();
-	}
-
-#ifdef HSPIOS
-    gb_render_start();
-#endif
-    
-#ifdef HSPNDK
-	if ( GetSysReq( SYSREQ_CLSMODE ) == CLSMODE_SOLID ) {
-		int ccol = GetSysReq( SYSREQ_CLSCOLOR );
-		hgio_setClear( (ccol>>16)&0xff, (ccol>>8)&0xff, (ccol)&0xff );
-		hgio_clear();
-	}
-#endif
-
-	hgio_reset();
-
-	drawflag = 1;
-	return 0;
-}
-
-
-int hgio_render_end( void )
-{
-	int res;
-	res = 0;
-	if ( drawflag == 0 ) return 0;
-
-#ifdef HSPIOS
-    gb_render_end();
-#endif
-
-#ifdef HSPNDK
-    //後処理
-    if (appengine->display == NULL) {
-        // displayが無い
-        return 0;
-    }
-    eglSwapBuffers(appengine->display, appengine->surface);
-#endif
-
-	drawflag = 0;
-	return res;
-}
-
-
-void hgio_screen( BMSCR *bm )
-{
-    mainbm = bm;
-}
-
-
-void hgio_delscreen( BMSCR *bm )
-{
-	if ( bm->flag == BMSCR_FLAG_NOUSE ) return;
-	if ( bm->texid != -1 ) {
-		DeleteTex( bm->texid );
-		//gb_delimage( bm->texid );
-		bm->texid = -1;
-	}
-}
-
-
-int hgio_redraw( BMSCR *bm, int flag )
-{
-	if ( bm == NULL ) return -1;
-	if ( bm->type != HSPWND_TYPE_MAIN ) throw HSPERR_UNSUPPORTED_FUNCTION;
-
-	if ( flag & 1 ) {
-		hgio_render_end();
-	} else {
-		hgio_render_start();
-	}
 	return 0;
 }
 
@@ -1221,7 +971,7 @@ void hgio_fillrot( BMSCR *bm, float x, float y, float sx, float sy, float ang )
 }
 
 
-void hgio_fcopy( float distx, float disty, short xx, short yy, short srcsx, short srcsy, int texid )
+void hgio_fcopy( float distx, float disty, short xx, short yy, short srcsx, short srcsy, int texid, int color )
 {
 	//		画像コピー(フォント用)
 	//		texid内の(xx,yy)-(xx+srcsx,yy+srcsy)を現在の画面に等倍でコピー
@@ -1282,6 +1032,8 @@ void hgio_fcopy( float distx, float disty, short xx, short yy, short srcsx, shor
     glTexCoordPointer( 2,GL_FLOAT,0,uvf2D );
 
 	hgio_setBlendMode( 3, 255 );
+	hgio_panelcolor( color, 255 );
+	
 //    glDisableClientState(GL_COLOR_ARRAY);
     glDrawArrays(GL_TRIANGLE_STRIP,0,4);
 }
@@ -1742,28 +1494,47 @@ int hgio_getmousebtn( void )
 
 /*-------------------------------------------------------------------------------*/
 
-void hgio_putTexFont( int x, int y, char *msg )
+#ifdef HSPNDK
+
+void hgio_putTexFont( int x, int y, char *msg, int color )
 {
+
+#ifdef USE_JAVA_FONT
+	int texid;
+	TEXINF *tinf;
+	texid = GetCacheMesTextureID( msg, font_size, font_style );
+	if ( texid >= 0 ) {
+		tinf = GetTex( texid );
+		mes_sx = tinf->width;
+		mes_sy = tinf->height;
+		hgio_fcopy( x, y, 0, 0, mes_sx, mes_sy, texid, color );
+	}
+
+	//hgio_makeTexFont( msg );
+	//hgio_fcopy( x, y, 0, 0, mes_sx, mes_sy, font_texid, color );
+
+#else
 	int xx,yy,tx,ty;
 	char a;
 	char *p;
-
 	p = msg;
 	xx = x; yy = y;
-
 	while(1) {
 		a = (int)*p++;
 		if ( a == 0 ) break;
 
 		tx = ( a & 15 ) * font_sx;
 		ty = ( a >> 4 ) * font_sy;
-		hgio_fcopy( xx, yy, tx, ty, font_sx, font_sy, font_texid );
+		hgio_fcopy( xx, yy, tx, ty, font_sx, font_sy, font_texid, 0xffffff );
 		xx += font_sx;
 	}
 
 	mes_sx = xx - x;
 	mes_sy = font_sy;
+#endif
 }
+
+#endif
 
 
 void hgio_test(void)
@@ -1779,7 +1550,7 @@ void hgio_test(void)
 	hgio_setColor( 0xffff00 );
 	hgio_circleFill( 640,400,200,200 );
 
-	hgio_putTexFont( 0,0, (char *)"This is Android Test." );
+	//hgio_putTexFont( 0,0, (char *)"This is Android Test." );
 	//hgio_fcopy( 0,0,  0, 0, 256, 128, font_texid );
 
     hgio_render_end();
@@ -1977,18 +1748,91 @@ void hgio_setinfo( int type, HSPREAL val )
 }
 
 
-void hgio_resume( void )
+int hgio_render_start( void )
 {
-	//	画面リソースの再構築
-	//
+	if ( drawflag ) {
+		hgio_render_end();
+	}
 
-	//テクスチャ初期化
-	TexInit();
+#ifdef HSPIOS
+    gb_render_start();
+#endif
+    
+#ifdef HSPNDK
+	if ( GetSysReq( SYSREQ_CLSMODE ) == CLSMODE_SOLID ) {
+		int ccol = GetSysReq( SYSREQ_CLSCOLOR );
+		hgio_setClear( (ccol>>16)&0xff, (ccol>>8)&0xff, (ccol)&0xff );
+		hgio_clear();
+	}
+#endif
+
+	hgio_reset();
+
+
+	drawflag = 1;
+	return 0;
+}
+
+
+int hgio_render_end( void )
+{
+	int res;
+	res = 0;
+	if ( drawflag == 0 ) return 0;
+
+#ifdef HSPIOS
+    gb_render_end();
+#endif
 
 #ifdef HSPNDK
-	font_texid = RegistTexMem( font_data, font_data_size );
+
+	//hgio_setColor( 0xffffff );
+	//hgio_fcopy( 0, 100,  0, 0, 118, 22, 1 );
+
+    //後処理
+    if (appengine->display == NULL) {
+        // displayが無い
+        return 0;
+    }
+    eglSwapBuffers(appengine->display, appengine->surface);
 #endif
+
+	drawflag = 0;
+	return res;
 }
+
+
+void hgio_screen( BMSCR *bm )
+{
+    mainbm = bm;
+}
+
+
+void hgio_delscreen( BMSCR *bm )
+{
+	if ( bm->flag == BMSCR_FLAG_NOUSE ) return;
+	if ( bm->texid != -1 ) {
+		DeleteTex( bm->texid );
+		//gb_delimage( bm->texid );
+		bm->texid = -1;
+	}
+}
+
+
+int hgio_redraw( BMSCR *bm, int flag )
+{
+	if ( bm == NULL ) return -1;
+	if ( bm->type != HSPWND_TYPE_MAIN ) throw HSPERR_UNSUPPORTED_FUNCTION;
+
+	if ( flag & 1 ) {
+		hgio_render_end();
+	} else {
+		hgio_render_start();
+	}
+	return 0;
+}
+
+
 
 //
 //		FILE I/O Service

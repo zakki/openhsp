@@ -23,6 +23,8 @@
 extern char *hsp_prestr[];
 extern char *hsp_prepp[];
 
+#define ERRBUF_SIZE 0x10000
+
 //-------------------------------------------------------------
 //		Routines
 //-------------------------------------------------------------
@@ -44,7 +46,7 @@ void CHsc3::ResetError( void )
 	//		エラーメッセージ消去
 	//
 	if ( errbuf != NULL ) { delete errbuf; errbuf=NULL; }
-	errbuf = new CMemBuf( 0x1000 );
+	errbuf = new CMemBuf( ERRBUF_SIZE );
 	hed_option = 0;
 	hed_runtime[0] = 0;
 }
@@ -56,7 +58,7 @@ void CHsc3::ResetError( void )
 
 CHsc3::CHsc3( void )
 {
-	errbuf = new CMemBuf( 0x1000 );
+	errbuf = new CMemBuf( ERRBUF_SIZE );
 	lb_info = NULL;
 	addkw = NULL;
 	common_path[0] = 0;

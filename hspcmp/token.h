@@ -69,6 +69,8 @@
 
 #define	CALCVAR double
 
+#define LINEBUF_MAX 0x10000
+
 // line mode type
 #define LMODE_ON 0
 #define LMODE_STR 1
@@ -348,8 +350,8 @@ private:
 	unsigned char *wp;
 	unsigned char s2[1024];
 	unsigned char *s3;
-	char linebuf[0x8000];			// Line expand buffer
-	char linetmp[0x8000];			// Line expand temp
+	char linebuf[LINEBUF_MAX];		// Line expand buffer
+	char linetmp[LINEBUF_MAX];		// Line expand temp
 	char errtmp[128];				// temp for error message
 	char mestmp[128];				// meseage temp
 	int incinf;						// include level

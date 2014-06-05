@@ -373,6 +373,10 @@ int MMMan::BankLoad( MMM *mmm, char *fname )
 	result = (*mmm->playerObject)->GetInterface(mmm->playerObject, SL_IID_VOLUME, &mmm->playerVolume);
 	if (SL_RESULT_SUCCESS != result) return -8;
 
+	(*mmm->playerSeek)->SetPosition(mmm->playerSeek, 0, SL_SEEKMODE_FAST); 
+	(*mmm->playerPlay)->SetPlayState(mmm->playerPlay, SL_PLAYSTATE_PAUSED);
+	(*mmm->playerPlay)->SetPlayState(mmm->playerPlay, SL_PLAYSTATE_STOPPED);
+
 	return 0;
 }
 

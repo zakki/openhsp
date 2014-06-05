@@ -34,6 +34,14 @@ static int hsp3dish_devcontrol( char *cmd, int p1, int p2, int p3 )
         //AudioServicesPlayAlertSound(kSystemSoundID_Vibrate);
 		return 0;
 	}
+	if ( strcmp( cmd, "setflag" )==0 ) {
+		j_addWindowFlag( p1 );
+		return 0;
+	}
+	if ( strcmp( cmd, "clearflag" )==0 ) {
+		j_clearWindowFlag( p1 );
+		return 0;
+	}
 	if ( strcmp( cmd, "AdMob" )==0 ) {
 		j_callAdMob( p1 );
 		return 0;
@@ -52,6 +60,9 @@ static char *hsp3dish_devinfo( char *name )
 {
 	if ( strcmp( name, "name" )==0 ) {
 		return mem_devinfo->devname;
+	}
+	if ( strcmp( name, "locale" )==0 ) {
+		return j_getinfo( JAVAFUNC_INFO_LOCALE );
 	}
 	if ( strcmp( name, "error" )==0 ) {
 		return mem_devinfo->error;

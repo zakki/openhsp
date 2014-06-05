@@ -643,15 +643,20 @@ void CLabel::DumpLabel( char *str )
 }
 
 
-void CLabel::DumpHSPLabel( char *str, int option )
+void CLabel::DumpHSPLabel( char *str, int option, int maxsize )
 {
 	char tmp[256];
 	char *typem;
 //	char optm[256];
 	char *p;
+	char *p_limit;
 	int a;
 	p = str;
+	p_limit = p + maxsize;
+
 	for(a=0;a<cur;a++) {
+		if ( p >= p_limit ) break;
+
 		LABOBJ *lab=&mem_lab[a]; typem = NULL;
 		switch( lab->type ) {
 		case LAB_TYPE_PPEX_PRECMD:
