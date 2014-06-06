@@ -10,6 +10,7 @@ Hot Soup Processor ver3.4                           HSP : Hot Soup Processor
 	userdef.as及びhspdef.asの定義が多い場合にエディタが起動できなくなる不具合を修正
 	変数名に付加された全角スペースが無視されない不具合を修正
 	[HSP3Dish][Win] hsp3dish.iniファイルが空の場合に落ちる不具合を修正
+	[HSP3Dish][android] β3でレジューム時のテクスチャ復帰がおかしくなっていたのを修正
 	[HSP3Dish][android] コンパイルのアーキテクチャ設定を標準でARMv7となるように修正(浮動小数演算などが高速化されます)
 	[HSP3Dish][android] 初回のサウンド再生時、冒頭の音が重複して再生されることがある不具合を修正
 	[HSP3Dish][android] exec命令にアクティビティ名を検索して実行するオプションを追加

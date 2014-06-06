@@ -255,7 +255,9 @@ void HspWnd::Resume( void )
 		bm = GetBmscr(i);
 		if ( bm != NULL ) {
 			if ( bm->type == HSPWND_TYPE_BUFFER ) {
+				bm->flag = BMSCR_FLAG_NOUSE;
 				hgio_texload( (BMSCR *)bm, bm->resname );
+				bm->flag = BMSCR_FLAG_INUSE;
 			}
 		}
 	}
@@ -413,11 +415,10 @@ void Bmscr::Setcolor( int icolor )
 {
 	color = icolor;
 
-	//int a1 = ( icolor >> 16 ) & 0xff;
-	//int a2 = ( icolor >>  8 ) & 0xff;
-	//int a3 = ( icolor ) & 0xff;
-
 #ifdef HSPDISHGP
+	int a1 = ( icolor >> 16 ) & 0xff;
+	int a2 = ( icolor >>  8 ) & 0xff;
+	int a3 = ( icolor ) & 0xff;
 	colorvalue[0] = ((float)a1) * COLORRATE;
 	colorvalue[1] = ((float)a2) * COLORRATE;
 	colorvalue[2] = ((float)a3) * COLORRATE;

@@ -9,7 +9,7 @@
 #include "mod_appconfig.as"
 
 #define APPTITLE "HSP3Dish helper"
-#define APPVER "0.97"
+#define APPVER "0.98"
 #define APP_CONF "\\hsp3dh.cfg"
 
 #uselib "shell32.dll"
@@ -755,6 +755,7 @@ jni\\Application.mk
 jni\\main.c
 jni\\hsp_native_app_glue.c
 jni\\hsp_native_app_glue.h
+jni\\javafunc.cpp
 jni\\javafunc.h
 jni\\hsp3\\dpmread.h
 jni\\hsp3\\geometry.h

@@ -25,11 +25,20 @@ import android.os.AsyncTask;
 import android.os.Vibrator;
 import android.os.Bundle;
 import android.util.Log;
-import android.view.Surface;
-import android.widget.Toast;
 import android.view.Display;
+import android.view.Surface;
 import android.view.WindowManager;
+import android.view.ViewGroup;
+import android.view.ViewGroup.LayoutParams;
+import android.view.ViewGroup.MarginLayoutParams;
+import android.view.Gravity;
 import android.view.View.OnClickListener;
+
+import android.widget.Toast;
+import android.widget.PopupWindow;
+import android.widget.LinearLayout;
+import android.widget.Button;
+import android.widget.TextView;
 
 import java.util.List;
 import java.util.ArrayList;

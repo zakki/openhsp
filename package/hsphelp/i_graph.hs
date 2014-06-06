@@ -10,7 +10,7 @@
 %note
 ver3.4標準命令
 %date
-2009/08/01
+2014/06/06
 %author
 onitama
 %url
@@ -396,6 +396,7 @@ font
 画面制御命令
 %prm
 "fontname",p1,p2
+"fontname"   : フォント名
 p1=1～99(12) : フォントの大きさ
 p2=0～(0)    : フォントのスタイル
 
