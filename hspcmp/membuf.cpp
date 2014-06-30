@@ -99,17 +99,17 @@ void CMemBuf::Index( void )
 
 void CMemBuf::Put( int data )
 {
-	int *p;
-	p = (int *)PreparePtr( sizeof(int) );
-	*p = data;
+	char *p;
+	p = PreparePtr( sizeof(int) );
+	memcpy( p, &data, sizeof(int) );
 }
 
 
 void CMemBuf::Put( short data )
 {
-	short *p;
-	p = (short *)PreparePtr( sizeof(short) );
-	*p = data;
+	char *p;
+	p = PreparePtr( sizeof(short) );
+	memcpy( p, &data, sizeof(short) );
 }
 
 
@@ -131,17 +131,17 @@ void CMemBuf::Put( unsigned char data )
 
 void CMemBuf::Put( float data )
 {
-	float *p;
-	p = (float *)PreparePtr( sizeof(float) );
-	*p = data;
+	char *p;
+	p = PreparePtr( sizeof(float) );
+	memcpy( p, &data, sizeof(float) );
 }
 
 
 void CMemBuf::Put( double data )
 {
-	double *p;
-	p = (double *)PreparePtr( sizeof(double) );
-	*p = data;
+	char *p;
+	p = PreparePtr( sizeof(double) );
+	memcpy( p, &data, sizeof(data) );
 }
 
 

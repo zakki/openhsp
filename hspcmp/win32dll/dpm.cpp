@@ -9,7 +9,22 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#ifdef EMSCRIPTEN
+#ifndef _MAX_PATH
+#define _MAX_PATH       256
+#endif
+#ifndef _MAX_DIR
+#define _MAX_DIR        256
+#endif
+#ifndef _MAX_EXT
+#define _MAX_EXT        256
+#endif
+#ifndef _MAX_FNAME
+#define _MAX_FNAME      256
+#endif
+#else
 #include <windows.h>
+#endif
 #include "../membuf.h"
 #include "../supio.h"
 
