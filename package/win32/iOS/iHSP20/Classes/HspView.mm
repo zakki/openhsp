@@ -114,15 +114,10 @@ static void hsp3dish_setdevinfo( void )
     return [self initWithFrameOrg:side ];
 }
 
-//フレームの初期化(自動判別)
+//フレームの初期化(縦画面)
 - (id)initWithFrame:(CGRect)frame {
 
-//    if ( UIDeviceOrientationIsPortrait(self.interfaceOrientation) ) {
-        
- //   }
-    
-    CGRect side = CGRectMake( frame.origin.x, frame.origin.y, frame.size.height, frame.size.width );
-    return [self initWithFrameOrg:side ];
+    return [self initWithFrameOrg:frame ];
 }
 
 //メモリ解放

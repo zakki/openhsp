@@ -1184,15 +1184,17 @@ hspproj.xcodeproj\\project.pbxproj"}
 	s2=cppname
 	bcopy s2,basedir+"hspproj\\hspsource.cpp"
 
-	s1=basedir+"hspproj\\hspproj-Info.plist"
+	pfname=basedir+"hspproj\\hspproj-Info.plist"
 	notesel tmp
-	noteload s1
-	noteadd "	<string>"+ios_ident+".${PRODUCT_NAME:rfc1034identifier}</string>",11,1
-	notesave s1
+	noteload pfname
+	s2="${PRODUCT_NAME:rfc1034identifier}"
+	s3="	<string>"+ios_ident+".${PRODUCT_NAME:rfc1034identifier}</string>"
+	gosub *rep_tmpline
+	notesave pfname
 
-	fname=basedir+"hspproj.xcodeproj\\project.pbxproj"
+	pfname=basedir+"hspproj.xcodeproj\\project.pbxproj"
 	notesel tmp
-	noteload fname
+	noteload pfname
 	s2="ORGANIZATIONNAME"
 	s3="				ORGANIZATIONNAME = \""+ios_org+"\";"
 	gosub *rep_tmpline
@@ -1202,7 +1204,7 @@ hspproj.xcodeproj\\project.pbxproj"}
 	s2="productName = hspproj;"
 	s3="			productName = "+ios_proj+";"
 	gosub *rep_tmpline
-	notesave fname
+	notesave pfname
 *go_iosprjerr
 	if errflag {
 		buf+="プロジェクトの作成に失敗しました。\n"

@@ -87,8 +87,9 @@ void StackPush( int type, char *data, int size )
 		stm_cur++;
 		return;
 	case HSPVAR_FLAG_DOUBLE:
-		dptr = (double *)&stm->ival;
-		*dptr = *(double *)data;
+		//dptr = (double *)&stm->ival;
+		//*dptr = *(double *)data;
+		memcpy(&stm->ival, data, sizeof(double));
 //		stm->mode = STMMODE_SELF;
 //		stm->ptr = (char *)dptr;
 		stm_cur++;

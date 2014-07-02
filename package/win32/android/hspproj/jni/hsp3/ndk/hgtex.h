@@ -28,6 +28,8 @@ float ratey;		// 1/sy
 short hash;			// Text Hashcode (short)
 short life;			// Text Cache life
 char *text;			// Text Message
+int font_size;		// Text font size
+int font_style;		// Text font style
 char buf[TEXMES_NAME_BUFFER];		// Text Data Buffer
 
 } TEXINF;

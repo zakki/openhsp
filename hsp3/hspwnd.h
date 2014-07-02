@@ -25,6 +25,10 @@
 #include "linux/hspwnd_linux.h"
 #endif
 
+#ifdef HSPEMSCRIPTEN
+#include "emscripten/hspwnd_emscripten.h"
+#endif
+
 #endif
 
 #endif

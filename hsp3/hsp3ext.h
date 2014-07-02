@@ -21,5 +21,9 @@
 #include "linux/hsp3ext_linux.h"
 #endif
 
+#ifdef HSPEMSCRIPTEN
+#include "emscripten/hsp3ext_emscripten.h"
+#endif
+
 
 #endif

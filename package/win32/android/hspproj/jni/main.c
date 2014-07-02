@@ -190,11 +190,11 @@ static void engine_handle_cmd(struct android_app* app, int32_t cmd) {
             engine_init_display(engine);
             if ( engine->hspctx == NULL ) {
 				HSPCTX *ctx;
+				InitSysReq();
 			    hgio_init( 0, engine->width, engine->height, engine );
 				//hgio_view( 320, 480 );
 				//hgio_scale( 1.0f, 1.0f );
 				//hgio_autoscale( 0 );
-				InitSysReq();
 				hsp3eb_init();
 				ctx = hsp3eb_getctx();
 				engine->hspctx = ctx;

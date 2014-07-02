@@ -43,6 +43,7 @@
 //#define HSPDISH		// HSP3Dish flag
 //#define HSPDISHGP		// HSP3Dish(HGIMG4) flag
 //#define HSPEMBED		// HSP3 Embed runtime flag
+//#define HSPEMSCRIPTEN	// EMSCRIPTEN version flag
 
 //
 //		環境フラグに付加されるオプション
@@ -60,7 +61,7 @@
 //
 //		gcc使用のチェック
 //
-#if defined(HSPMAC)|defined(HSPIOS)|defined(HSPNDK)|defined(HSPLINUX)
+#if defined(HSPMAC)|defined(HSPIOS)|defined(HSPNDK)|defined(HSPLINUX)|defined(HSPEMSCRIPTEN)
 #define HSPGCC			// GCC使用フラグ
 #define HSPUTF8			// UTF8使用フラグ
 #endif

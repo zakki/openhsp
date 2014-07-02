@@ -130,7 +130,8 @@ static int HspVarDouble_GetSize( const PDAT *pval )
 // Set
 static void HspVarDouble_Set( PVal *pval, PDAT *pdat, const void *in )
 {
-	*GetPtr(pdat) = *((double *)(in));
+	//*GetPtr(pdat) = *((double *)(in));
+	memcpy(pdat, in, sizeof(double));
 }
 
 // Add

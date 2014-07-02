@@ -18,6 +18,19 @@
 
 static char startax[]={ 'S'-40,'T'-40,'A'-40,'R'-40,'T'-40,
 			 '.'-40,'A'-40,'X'-40, 0 };
+/*------------------------------------------------------------*/
+/*
+		util
+*/
+/*------------------------------------------------------------*/
+
+static void* copy(char* ptr, size_t size)
+{
+	void* dst = malloc( size );
+	memcpy( dst, ptr, size );
+	return dst;
+}
+
 
 /*------------------------------------------------------------*/
 /*
@@ -161,14 +174,14 @@ int Hsp3::Reset( int mode )
 
 	maxvar = hsphed->max_val;
 	hspctx.hsphed = hsphed;
-	hspctx.mem_mcs = (unsigned short *)( ptr + hsphed->pt_cs );
+	hspctx.mem_mcs = (unsigned short *)copy( ptr + hsphed->pt_cs, hsphed->max_cs );
 	hspctx.mem_mds = (char *)( ptr + hsphed->pt_ds );
-	hspctx.mem_ot = (int *)( ptr + hsphed->pt_ot );
-	hspctx.mem_di = (unsigned char *)( ptr + hsphed->pt_dinfo );
+	hspctx.mem_ot = (int *)copy( ptr + hsphed->pt_ot, hsphed->max_ot );
+	hspctx.mem_di = (unsigned char *)copy( ptr + hsphed->pt_dinfo, hsphed->max_dinfo );
 
-	hspctx.mem_linfo = (LIBDAT *)( ptr + hsphed->pt_linfo );
-	hspctx.mem_minfo = (STRUCTPRM *)( ptr + hsphed->pt_minfo );
-	hspctx.mem_finfo = (STRUCTDAT *)( ptr + hsphed->pt_finfo );
+	hspctx.mem_linfo = (LIBDAT *)copy( ptr + hsphed->pt_linfo, hsphed->max_linfo );
+	hspctx.mem_minfo = (STRUCTPRM *)copy( ptr + hsphed->pt_minfo, hsphed->max_minfo );
+	hspctx.mem_finfo = (STRUCTDAT *)copy( ptr + hsphed->pt_finfo, hsphed->max_finfo );
 
 	HspVarCoreResetVartype( hsphed->max_varhpi );		// Œ^‚Ì‰Šú‰»
 	code_resetctx( &hspctx );		// hsp3code setup

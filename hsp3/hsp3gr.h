@@ -29,5 +29,9 @@
 #include "linux/hsp3gr_linux.h"
 #endif
 
+#ifdef HSPEMSCRIPTEN
+#include "emscripten/hsp3gr_emscripten.h"
+#endif
+
 
 #endif

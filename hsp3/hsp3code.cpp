@@ -62,6 +62,11 @@ static	int funcres;							// 関数の戻り値型
 */
 /*------------------------------------------------------------*/
 
+
+static int getU32(unsigned short *mcs) {
+	return (mcs[1] << 16) | (mcs[0]);
+}
+
 static inline void __code_next( void )
 {
 	//		Get 1 command block
@@ -75,7 +80,7 @@ static inline void __code_next( void )
 	if ( csvalue & EXFLG_3 ) {
 		//	 32bit val code
 		//
-		val = (int)*((int *)mcs);
+		val = getU32(mcs);
 		mcs+=2;
 //		printf( "%08x | type[%d] val[%d] ex[%d]\n",(int)(mcs-hspctx->mem_mcs), type,val,exflg );
 		return;
@@ -593,6 +598,7 @@ int code_get( void )
 
 	while(1) {
 		//Alertf( "type%d val%d exflg%d",type,val,exflg );
+		//printf( "type%d val%d exflg%d\n",type,val,exflg );
 
 		switch(type) {
 		case TYPE_MARK:
@@ -1124,7 +1130,21 @@ static void cmdfunc_return( void )
 	StackPop();
 }
 
+#ifdef HSPEMSCRIPTEN
+static void cmdfunc_gosub( unsigned short *subr, unsigned short *retpc )
+{
+	//		gosub execute
+	//
+	HSPROUTINE r;
+	r.mcsret = retpc;
+	r.stacklev = hspctx->sublev++;
+	r.oldtack = hspctx->prmstack;
+	r.param = NULL;
+	StackPush( TYPE_EX_SUBROUTINE, (char *)&r, sizeof(HSPROUTINE) );
 
+	code_setpc( subr );
+}
+#else
 static int cmdfunc_gosub( unsigned short *subr )
 {
 	//		gosub execute
@@ -1160,6 +1180,7 @@ static int cmdfunc_gosub( unsigned short *subr )
 
 	return RUNMODE_RUN;
 }
+#endif
 
 
 static int code_callfunc( int cmd )
@@ -1296,8 +1317,12 @@ void code_expandstruct( char *p, STRUCTDAT *st, int option )
 			break;
 			}
 		case MPTYPE_DNUM:
-			*(double *)out = code_getd();
+			{
+			//*(double *)out = code_getd();
+			double d = code_getd();
+			memcpy(out, &d, sizeof(double));
 			break;
+			}
 		case MPTYPE_LOCALSTRING:
 			{
 			char *str;
@@ -1725,13 +1750,26 @@ static int cmdfunc_prog( int cmd )
 		break;
 
 	case 0x01:								// gosub
+#ifdef HSPEMSCRIPTEN
+		{
+		unsigned short *sbr;
+		sbr = code_getlb();
+		cmdfunc_gosub( sbr, mcs );
+		break;
+		}
+#else
 		{
 		unsigned short *sbr;
 		sbr = code_getlb();
 		return cmdfunc_gosub( sbr );
 		}
+#endif
 	case 0x02:								// return
+#ifdef HSPEMSCRIPTEN
+		if ( hspctx->prmstack != NULL ) cmdfunc_return_setval();
+#else
 		if ( exflg == 0 ) cmdfunc_return_setval();
+#endif
 		//return cmdfunc_return();
 		hspctx->runmode = RUNMODE_RETURN;
 		return RUNMODE_RETURN;
@@ -2305,7 +2343,11 @@ void code_call( const unsigned short *pc )
 	//		サブルーチンジャンプを行なう
 	//
 	mcs = mcsbak;
+#ifdef HSPEMSCRIPTEN
+	cmdfunc_gosub( (unsigned short *)pc, mcs );
+#else
 	cmdfunc_gosub( (unsigned short *)pc );
+#endif
 	if ( hspctx->runmode == RUNMODE_END ) return;
 	hspctx->runmode = RUNMODE_RUN;
 }
@@ -2734,9 +2776,14 @@ rerun:
 #ifdef HSPERR_HANDLE
 	try {
 #endif
+#ifdef HSPEMSCRIPTEN
+		{
+#else
 		while(1) {
+#endif
 			//Alertf( "#%d,%d line%d",type,val,code_getdebug_line() );
 			//Alertf( "#%d,%d",type,val );
+			//printf( "#%d,%d  line%d\n",type,val,code_getdebug_line() );
 			//stack->Reset();
 			//stack->StoreLevel();
 			//stack->ResumeLevel();
@@ -2757,6 +2804,10 @@ rerun:
 //					break;
 				}
 			}
+#ifdef HSPEMSCRIPTEN
+			return RUNMODE_RUN;
+#else
+#endif
 		}
 #ifdef HSPERR_HANDLE
 	}
@@ -2791,6 +2842,88 @@ rerun:
 	return i;
 }
 
+#ifdef HSPEMSCRIPTEN
+int code_execcmd_one( int& prev )
+{
+	//		命令実行メイン
+	//
+	int i;
+	hspctx->endcode = 0;
+
+rerun:
+	if (prev == 0) {
+		hspctx->looplev = 0;
+		hspctx->sublev = 0;
+		StackReset();
+		prev = 1;
+	}
+
+#ifdef HSPERR_HANDLE
+	try {
+#endif
+		{
+			//Alertf( "#%d,%d line%d",type,val,code_getdebug_line() );
+			//Alertf( "#%d,%d",type,val );
+			//printf( "#%d,%d  line%d\n",type,val,code_getdebug_line() );
+			//stack->Reset();
+			//stack->StoreLevel();
+			//stack->ResumeLevel();
+
+#ifdef HSPDEBUG
+			if ( dbgmode ) code_dbgtrace();					// トレースモード時の処理
+#endif
+
+			if ( GetTypeInfoPtr( type )->cmdfunc( val ) ) {	// タイプごとの関数振り分け
+				if ( hspctx->runmode == RUNMODE_RETURN ) {
+					cmdfunc_return();
+				} else {
+					hspctx->msgfunc( hspctx );
+				}
+				if ( hspctx->runmode == RUNMODE_END ) {
+					return RUNMODE_END;
+//					i = hspctx->runmode;
+//					break;
+				}
+			}
+			return RUNMODE_RUN;
+		}
+#ifdef HSPERR_HANDLE
+	}
+
+	catch( HSPERROR code ) {						// HSPエラー例外処理
+		//printf( "#catch %d\n", code );
+		if ( code == HSPERR_NONE ) {
+			i = RUNMODE_END;
+		} else if ( code == HSPERR_INTJUMP ) {
+			goto rerun;
+		} else if ( code == HSPERR_EXITRUN ) {
+			i = RUNMODE_EXITRUN;
+		} else {
+			i = RUNMODE_ERROR;
+			hspctx->err = code;
+			hspctx->runmode = i;
+			if ( code_isirq( HSPIRQ_ONERROR ) ) {
+				code_sendirq( HSPIRQ_ONERROR, 0, (int)code, code_getdebug_line() );
+				if ( hspctx->runmode != i ) {
+					prev = 0;
+					return RUNMODE_RUN;
+				}
+				return i;
+			}
+		}
+	}
+#endif
+
+#ifdef SYSERR_HANDLE
+	catch( ... ) {									// その他の例外発生時
+		hspctx->err = HSPERR_UNKNOWN_CODE;
+		return RUNMODE_ERROR;
+	}
+#endif
+	hspctx->runmode = i;
+	return i;
+}
+#endif
 
 int code_execcmd2( void )
 {
@@ -3124,10 +3257,14 @@ void code_execirq( IRQDAT *irq, int wparam, int lparam )
 	}
 	if ( irq->opt == IRQ_OPT_GOSUB ) {
 		mcs = mcsbak;
+#ifdef HSPEMSCRIPTEN
+		code_call( irq->ptr );
+#else
 		cmdfunc_gosub( (unsigned short *)irq->ptr );
 		if ( hspctx->runmode != RUNMODE_END ) {
 			hspctx->runmode = RUNMODE_RUN;
 		}
+#endif
 	}
 	//Alertf("sublev%d", hspctx->sublev );
 }
