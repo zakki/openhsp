@@ -1,6 +1,6 @@
 ------------------------------------------------------------------------------
-HSPSOCK ver3.3   REFERENCE MANUAL                   HSP : Hot Soup Processor  
-ＨＳＰ拡張DLLリファレンス             copyright 1999-2011 (c) onion software  
+HSPSOCK ver3.4   REFERENCE MANUAL                   HSP : Hot Soup Processor  
+ＨＳＰ拡張DLLリファレンス             copyright 1999-2014 (c) onion software  
 ------------------------------------------------------------------------------
 
 ・はじめに
@@ -255,9 +255,10 @@ HSPSOCK ver3.3   REFERENCE MANUAL                   HSP : Hot Soup Processor
 		   3    : Socketのバインドに失敗した
 
 
-	sockwait p1					クライアントの着信を待つ
+	sockwait p1,p2					クライアントの着信を待つ
 
 	p1=0～31(0)  : ソケットID番号
+	p2=0～31(0)  : 代替ソケットID番号
 
 	・説明
 
@@ -277,6 +278,15 @@ HSPSOCK ver3.3   REFERENCE MANUAL                   HSP : Hot Soup Processor
 		waitやawait命令を入れて間をあける必要があります。
 		そうしないと、Windowsの他のアプリケーションにタスクが回らなく
 		なってしまいます。
+
+		p2が0か省略された場合は、p1で指定されたソケットID番号を通して、
+		クライアントとの通信を行なうことが可能になります。
+		p2に0以外の値を指定した場合は、着信したクライアントとの通信を
+		p2で指定した代替ソケットIDを通して行なうことができます。
+		この場合、p1で指定したソケットID番号では、引き続きsockmake命令で
+		サーバー動作を行なうことが可能です。
+		同一のポートで、複数のクライアント着信を受け付ける場合は、
+		代替ソケットID番号を使用するようにしてください。
 
 		結果がエラーの場合は、0以外の値になります。エラーが起こった
 		場合は、通信を行なうことはできません。

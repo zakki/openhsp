@@ -127,21 +127,27 @@ EXPORT BOOL WINAPI sockmake ( int p1, int p2, int p3, char *p4 )
 	if (sockf==0) {
 		if ( sockprep() ) return -1;
 	}
-	mysoc = socket(PF_INET, SOCK_STREAM, 0);
-	if (mysoc == INVALID_SOCKET) return -2;
-	socsv[p1]=mysoc;
+
+	if ( socsv[p1] == -1 ) {
+		mysoc = socket(PF_INET, SOCK_STREAM, 0);
+		if (mysoc == INVALID_SOCKET) return -2;
+		socsv[p1]=mysoc;
+
+		len=sizeof(from);
+		memset( &from,0,len );
+		memset( &addr,0,len );
+
+		addr.sin_family		 = AF_INET;						/* インターネットの場合 */
+		addr.sin_port		 = htons((unsigned short)port);	/* ポート番号 */
+		addr.sin_addr.s_addr = INADDR_ANY;					/* サーバのIPアドレス */
+
+		if ( bind( mysoc,(LPSOCKADDR)&addr,sizeof(addr) ) ) return -3;
+
+	} else {
+		mysoc = socsv[p1];
+	}
+
 	svstat[p1]=1;
-
-	len=sizeof(from);
-	memset( &from,0,len );
-	memset( &addr,0,len );
-
-	addr.sin_family		 = AF_INET;						/* インターネットの場合 */
-	addr.sin_port		 = htons((unsigned short)port);	/* ポート番号 */
-	addr.sin_addr.s_addr = INADDR_ANY;					/* サーバのIPアドレス */
-
-	if ( bind( mysoc,(LPSOCKADDR)&addr,sizeof(addr) ) ) return -3;
-
 	fnSockListen( (LPVOID)p1 );
 	//hThread = CreateThread( NULL, 0, fnSockListen, (LPVOID)p1, 0, &dwThreadId );
 	//svth[ p1 ] = hThread;
@@ -210,7 +216,13 @@ EXPORT BOOL WINAPI sockwait ( int p1, int p2, int p3, char *p4 )
 	//(dllサイズ削減のため以下のコードに差し替え)
 	//sprintf( s1,"%s:%d",inet_ntoa(from.sin_addr),ntohs(from.sin_port) );
 
-	soc[p1]=soc2;
+	if ( p2 == 0 ) {
+		soc[p1]=soc2;
+	} else {
+		soc[p2]=soc2;
+		socsv[p2]=-1;
+	}
+
 	strcpy( s1, inet_ntoa(from.sin_addr) );
 	strcat( s1,":" );
 	itoa( ntohs(from.sin_port),s2,10 );
@@ -225,10 +237,12 @@ EXPORT BOOL WINAPI sockclose ( int p1, int p2, int p3, int p4 )
 {
 	/* シャットダウン */
 	if (socsv[p1]!=-1) shutdown( socsv[p1], 2 );
-	shutdown(soc[p1], 2 );
+	if (soc[p1]!=-1) shutdown(soc[p1], 2 );
 	/* ソケットを破棄 */
-	closesocket(soc[p1]);
+	if (soc[p1]!=-1) closesocket(soc[p1]);
 	if (socsv[p1]!=-1) closesocket( socsv[p1] );
+
+	soc[p1]=-1;socsv[p1]=-1;svstat[p1]=0;
 	return 0;
 }
 
