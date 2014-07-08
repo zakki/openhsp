@@ -93,7 +93,10 @@ void InitSysReq( void )
 #ifdef HSPNDK
     sysreq[ SYSREQ_PLATFORM ] = PLATFORM_ANDROID;
 #endif    
-    
+#ifdef HSPEMSCRIPTEN
+	sysreq[ SYSREQ_PLATFORM ] = PLATFORM_EMSCRIPTEN;
+#endif
+
 	dbgmsg[0] = 0;
 }
 

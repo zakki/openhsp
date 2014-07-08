@@ -1,0 +1,58 @@
+CC = em++
+#CFLAGS = -Wall -DHSPDISH -DHSPEMSCRIPTEN -DHSPDEBUG -fpermissive -g4 --js-opts 0 -s SAFE_HEAP=1 -s USE_TYPED_ARRAYS=2 -s LEGACY_GL_EMULATION=1
+#CFLAGS = -Wall -DHSPDISH -DHSPEMSCRIPTEN -DHSPDEBUG -fpermissive -g4 -s USE_TYPED_ARRAYS=2 -s LEGACY_GL_EMULATION=1
+CFLAGS = -Wall -DHSPDISH -DHSPEMSCRIPTEN -DHSPDEBUG -fpermissive -s USE_TYPED_ARRAYS=2 -s LEGACY_GL_EMULATION=1 -O2 -s DISABLE_EXCEPTION_CATCHING=0
+# -O2 -s DISABLE_EXCEPTION_CATCHING=0
+
+OBJS = ../hsp3/dpmread.bc \
+	geometry.bc \
+	hgdx.bc \
+	hgemitter.bc \
+	hgevent.bc \
+	hgmodel.bc \
+	hgobj.bc \
+	../hsp3/hsp3.bc \
+	../hsp3/hsp3code.bc \
+	../hsp3/hsp3debug.bc \
+	hsp3gr_dish.bc \
+	../hsp3/hsp3int.bc \
+	../hsp3/hspvar_core.bc \
+	../hsp3/hspvar_double.bc \
+	../hsp3/hspvar_int.bc \
+	../hsp3/hspvar_label.bc \
+	../hsp3/hspvar_str.bc \
+	../hsp3/hspvar_struct.bc \
+	hspwnd_dish.bc \
+	hspwnd_obj.bc \
+	random.bc \
+	../hsp3/stack.bc \
+	../hsp3/strbuf.bc \
+	../hsp3/strnote.bc \
+	sysreq.bc \
+	emscripten/hgtex.bc \
+	emscripten/hgiox.bc \
+	emscripten/hsp3dish.bc \
+	emscripten/main.bc \
+	emscripten/mmman.bc \
+	emscripten/stb_image.bc \
+	emscripten/supio_emscripten.bc
+
+TARGET = emscripten/hsp3dish.js
+
+LIBS =
+.SUFFIXES: .cpp
+$(TARGET): $(OBJS)
+	$(CC) $(CFLAGS) $(OBJS) -o $@ $(LIBS)
+%.bc: %.c
+	echo $(CC) $(CFLAGS) -c $< -o $*.bc
+	$(CC) $(CFLAGS) -c $< -o $*.bc
+%.bc: %.cpp
+	echo $(CC) $(CFLAGS) -c $< -o $*.bc
+	$(CC) $(CFLAGS) -c $< -o $*.bc
+
+clean:
+	rm -f $(OBJS) $(TARGET)
+
+release:
+	make clean
+	make "CFLAGS = -O3 -Wall --input-charset=cp932 --exec-charset=cp932 -DHSPEMSCRIPTEN"

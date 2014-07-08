@@ -66,6 +66,9 @@ extern int resY0, resY1;
 #ifdef HSPNDK
 #include "ndk/mmman.h"
 #endif
+#ifdef HSPEMSCRIPTEN
+#include "emscripten/mmman.h"
+#endif
 
 static MMMan *mmman;
 #endif
