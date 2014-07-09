@@ -8,9 +8,9 @@
 //		システム関連ラベル
 //
 #define HSPTITLE "Hot Soup Processor ver."
-#define hspver "3.4beta5"
-#define mvscode 5		// minor version code
-#define vercode 0x3405	// version code
+#define hspver "3.4"
+#define mvscode 6		// minor version code
+#define vercode 0x3406	// version code
 
 #define HSPERR_HANDLE		// HSPエラー例外を有効にします
 #define SYSERR_HANDLE		// システムエラー例外を有効にします
