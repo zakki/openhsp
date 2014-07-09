@@ -1274,37 +1274,22 @@ int gamehsp::makeModelNode( char *fname, char *idname )
 
 		Scene *scene;
 		Animation *animation;
+		char *rootid;
 
-/*
+		rootNode = Node::create();
+		rootid = NULL;
+
 		scene = bundle->loadScene();
 		if ( scene ) {
 			node = scene->getFirstNode();
 			animation = node->getAnimation("animations");
 			if (animation) {
-				Alertf( "Found Power Scene Node(%s) Clip count: %d", node->getId(), animation->getClipCount() );
+				rootid = (char *)node->getId();
+				//Alertf( "Found Power Scene Node(%s) Clip count: %d", node->getId(), animation->getClipCount() );
 			}
 
-
-
-			for(i=0;i<bundle->getObjectCount();i++) {
-				node = scene->findNode( bundle->getObjectId(i) );
-				if ( node ) {
-				//node = scene->getFirstNode();
-				animation = node->getAnimation("animations");
-				if (animation) {
-					if ( animation->getClipCount() > 0 ) {
-						Alertf( "Scene Node(%s) Clip count: %d", node->getId(), animation->getClipCount() );
-					}
-				} else {
-					//Alertf( "Scene Node(%s)", node->getId() );
-				}
-				}
-			}
 		}
-*/
-		rootNode = Node::create();
 
-		//Alertf( "GO NEXT" );
 		for(i=0;i<bundle->getObjectCount();i++) {
 			node = bundle->loadNode( bundle->getObjectId(i) );
 			if ( node ) {
@@ -1314,15 +1299,29 @@ int gamehsp::makeModelNode( char *fname, char *idname )
 			    }
 				//Alertf( "#%d %s",i, bundle->getObjectId(i) );
 
-				//Animation *animation = node->getAnimation("animations");
-				//if (animation) {
-				//	Alertf( "(%s) Clip count: %d", bundle->getObjectId(i), animation->getClipCount() );
-				//}
+				animation = node->getAnimation("animations");
+				if (animation) {
+					if (  strcmp( node->getId() ,rootid ) == 0 ) {
+						AnimationClip *aclip;
+						aclip = animation->createClip( "idle", 0, animation->getDuration() );
+						aclip->setRepeatCount( AnimationClip::REPEAT_INDEFINITE );
+						animation->play("idle");
+						//animation->createClips("zombie.animation");
+						//Alertf( "(%s) Clip count: %d Dur:%ld", node->getId(), animation->getClipCount(), animation->getDuration() );
+						rootNode->addChild( node );
+					}
+				} else {
+					rootNode->addChild( node );
+				}
 
-				rootNode->addChild( node );
 				SAFE_RELEASE(node);
 			}
 		}
+
+
+		SAFE_RELEASE(scene);
+
+
 	}
 
 	obj->updateParameter( boxMaterial );
