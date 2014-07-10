@@ -9,7 +9,7 @@
 #include "mod_appconfig.as"
 
 #define APPTITLE "HSP3Dish helper"
-#define APPVER "0.98"
+#define APPVER "1.0"
 #define APP_CONF "\\hsp3dh.cfg"
 
 #uselib "shell32.dll"
@@ -49,6 +49,9 @@
 	and_pack=""
 	and_fname=""
 	and_keystore=""
+	js_pack=""
+	js_fname=""
+	hspjsname="hsp3dish.js"
 
 	ios_proj=""
 	ios_org="hsp3dish"
@@ -200,6 +203,7 @@
 
 
 *topmenu
+	if app_mode>=3 : goto *jsmenu
 	if app_mode>=1 : goto *andmenu
 
 *srcmenu
@@ -246,11 +250,14 @@
 	y=184
 	objsize 148,48
 	color 190,190,240:boxf 8,y,8+144,y+46
-	pos 8+48,y+16:color 0,0,0
-	mes "ソース変換"
+	pos 8+34,y+16:color 0,0,0
+	mes "ソース変換/iOS"
+	objsize 96,48
 	pos 8+158,y
 	button "android",*go_andmenu
-	pos 8+158*2,y
+	pos 8+158+104,y
+	button "hsp3js",*go_hsp3js
+	pos 8+158+104*2,y
 	button "オプション",*option
 	stop
 
@@ -355,8 +362,6 @@
 	pos x-260,y
 	button "クリーン",*and_clean
 
-
-
 	goto *andmenu3
 
 *upd_prj
@@ -390,11 +395,17 @@
 	y=184
 	objsize 148,48
 	pos 8,y
-	button "ソース変換",*srcmenu
-	color 190,190,240:boxf 8+158,y,8+158+144,y+46
-	pos 8+158+48,y+16:color 0,0,0
+	button "ソース変換/iOS",*srcmenu
+
+	color 190,190,240
+	boxf 8+158,y,8+158+96,y+46
+	pos 8+158+30,y+16:color 0,0,0
 	mes "android"
-	pos 8+158*2,y
+
+	objsize 96,48
+	pos 8+158+104,y
+	button "hsp3js",*go_hsp3js
+	pos 8+158+104*2,y
 	button "オプション",*option
 	stop
 
@@ -405,6 +416,60 @@
 	app_mode=2
 	goto *topmenu
 
+*go_hsp3js
+	app_mode=3
+	goto *topmenu
+
+*jsmenu
+	initwnd
+	pos 8,8
+	mes "指定されたHSP3DishスクリプトをHTML5/JavaScriptに変換します"
+
+	pos 8,30
+	sysfont 17
+	mes "ソーススクリプト:"
+	objsize 390,24
+	input js_fname
+	objsize 64,24
+	pos 408,41:button "参照...",*seljsfile
+
+	pos 8,70
+	mes "データフォルダ: (空白の場合は未使用)"
+	objsize 390,24
+	input js_pack
+	objsize 64,24
+	pos 408,82:button "参照...",*selfile_jspack
+
+	pos 312,118
+	objsize 160,48
+	button "変換",*cnv_js
+
+	y=184
+	objsize 148,48
+	pos 8,y
+	button "ソース変換/iOS",*srcmenu
+
+	color 190,190,240
+	boxf 8+158+104,y,8+158+104+96,y+46
+	pos 8+158+104+30,y+16:color 0,0,0
+	mes "hsp3js"
+
+	objsize 96,48
+	pos 8+158,y
+	button "android",*go_andmenu
+
+	pos 8+158+104*2,y
+	button "オプション",*option
+
+	stop
+
+*selfile_jspack
+	selfolder s1,"データフォルダを指定してください"
+	if stat=0 {
+		js_pack = s1
+		objprm 2, js_pack
+	}
+	stop
 
 *option
 	initwnd
@@ -528,6 +593,11 @@
 	and_fname=refstr
 	if stat : objprm 0,and_fname
 	stop
+*seljsfile
+	dialog "hsp",16,"hsp3スクリプト"
+	js_fname=refstr
+	if stat : objprm 0,js_fname
+	stop
 
 *mksrc
 	;	hsp convert only
@@ -553,12 +623,10 @@
 	gsel 0
 	goto *topmenu
 
-*hspcnv
-	;	hsp convert
+*hspcomp
+	;	hsp compile
 	;	s1 = full path name (.hsp)
-	;	(out) hspcnv_res 0=ok,1=error
 	;
-	hspcnv_res=0
 	mydir=getpath(s1,32)
 	myfile=getpath(s1,1+8+16)
 
@@ -572,6 +640,16 @@
 	hsc_comp 0 ; コンパイル
 	res=stat
 	hsc_getmes buf
+	return
+
+*hspcnv
+	;	hsp convert
+	;	s1 = full path name (.hsp)
+	;	(out) hspcnv_res 0=ok,1=error
+	;
+	hspcnv_res=0
+
+	gosub *hspcomp
 	if res!=0 : dialog "エラーが発生しました。" : hspcnv_res=1 : return
 
 	cmd = dir_exe+"\\hsp3cnv "+myfile
@@ -1242,7 +1320,164 @@ hspproj.xcodeproj\\project.pbxproj"}
 	tmp=obuf
 	return
 
+*cnv_js
+	;	hsp3.js変換
+	;
+	initsub
+	gsel 1
+	buf=""
+	mes "処理中..."
 
+	if js_fname="" : mes "ファイルが指定されていません。" : goto *cnv_jsok
 
+	s1=js_fname
+	gosub *hspcomp
+	if res!=0 : dialog "エラーが発生しました。" : goto *cnv_jsok
+
+	gosub *read_dishini
+	buf+="画面サイズは、( "+dishwx+" x "+dishwy+" )に設定されます。\n"
+
+	dataname=myfile+".data" ; .dataファイル名
+	htmlname=myfile+".html" ; htmlファイル名
+
+	tmp=mydir+objname+"\n"
+	dim jspack_start,64
+	dim jspack_size,64
+	jspack_cnt=0
+	jspack_cur=0
+	maxsize=$10000
+	sdim outbuf, maxsize
+
+	if js_pack="" : goto *no_jspack
+
+	;	.data作成
+	;
+	s1=getpath(js_pack+"\\",32)
+	mes "データフォルダ追加 ["+s1+"]"
+	;
+	chdir s1
+	dirlist s2,"*.*",1
+	notesel s2
+	repeat notemax
+		noteget ff,cnt
+		tmp+=s1 + ff + "\n"
+	loop
+
+*no_jspack
+	chdir mydir
+
+	notesel tmp
+	repeat notemax
+		noteget ff,cnt
+		gosub *sub_jspack
+	loop
+	bsave dataname,outbuf,jspack_cur
+	buf+="["+dataname+"]を作成しました.\n"
+
+	;	template.htmlの書き換え
+	notesel outbuf
+	s1 = dir_exe+"\\hsp3js\\template.html"
+	noteload s1
+
+	strrep outbuf, "$$$title$$$", myfile+" - HSP3Dish"
+	strrep outbuf, "$$$hspax$$$", myfile
+	strrep outbuf, "$$$datasize$$$", ""+jspack_cur
+
+	s1="":s2=""
+	notesel tmp
+	repeat notemax
+		noteget ff,cnt
+		ff=getpath(ff,8)
+		i=jspack_start(cnt):i2=i+jspack_size(cnt)
+		s1+="      new DataRequest("+i+", "+i2+", 0, 0).open('GET', '/"+ff+"');\n"
+		s2+="          DataRequest.prototype.requests[\"/"+ff+"\"].onload();\n"
+	loop
+
+	strrep outbuf, "$$$datarequest$$$", s1
+	strrep outbuf, "$$$requestonload$$$", s2
+
+	notesel outbuf
+	notesave htmlname
+	buf+="["+htmlname+"]を作成しました.\n"
+
+	notesel outbuf
+	s1 = dir_exe+"\\hsp3js\\"+hspjsname
+	noteload s1
+
+	strrep outbuf, "c[6394]=320", "c[6394]="+dishwx
+	strrep outbuf, "c[6396]=480", "c[6396]="+dishwy
+
+	notesave hspjsname
+	buf+="["+hspjsname+"]を作成しました.\n"
+
+	buf+="※作成された3ファイルをwebブラウザで閲覧可能なサーバーにアップロードしてください。\n"
+
+*cnv_jsok
+	sdim outbuf,64
+	sdim buftxt,64
+	sdim tmp,64
+	gsel 1
+	mes "終了しました。"
+	objprm 0,buf
+	goto *and_fin
+
+*sub_jspack
+	;	.dataに追加(ff=filename)
+	;
+	exist ff:res=strsize
+	if res<0 {
+		buf+="["+ff+"] not found.\n"
+		return
+	}
+	jspack_start(jspack_cnt)=jspack_cur
+	jspack_size(jspack_cnt)=res
+
+	sdim buftxt,res+1
+	if (jspack_cur+res)>maxsize {
+		maxsize=jspack_cur+res+64
+		memexpand outbuf, maxsize
+	}
+	bload ff,buftxt
+	memcpy outbuf, buftxt, res, jspack_cur, 0
+
+	buf+="file ["+getpath(ff,8)+"] packed. ( "+res+" bytes )\n"
+
+	jspack_cnt++
+	jspack_cur+=res
+
+	return
+
+*read_dishini
+	;	カレントからhsp3dish.iniファイルを読み出す
+	;
+	dishwx=320
+	dishwy=480
+	dishfs=0
+	dishas=-1
+	s1="hsp3dish.ini"
+	;
+	exist s1
+	if strsize<0 : return	; no file
+	;
+	sdim dishini,$1000
+	notesel dishini
+	noteload s1
+	;
+	repeat notemax
+		noteget s1,cnt
+		if peek(s1,0)=';' : continue
+		i=instr(s1,0,"=")
+		if i>=1 {
+			s2=strmid(s1,0,i)
+			s3=strmid(s1,i+1,255)
+			if s2="wx" : dishwx=0+s3
+			if s2="wy" : dishwy=0+s3
+			if s2="fullscr" : dishfs=0+s3
+			if s2="autoscale" : dishas=0+s3
+			;dialog "["+s2+"]="+s3
+		}
+	loop
+	;
+	return
 
 
