@@ -62,14 +62,12 @@ void handleEvent() {
 				Bmscr *bm;
 				if ( exinfo != NULL ) {
 					SDL_MouseMotionEvent *m = (SDL_MouseMotionEvent*)&event;
-					int x, y;
-					SDL_GetMouseState(&x, &y);
 
 					bm = (Bmscr *)exinfo->HspFunc_getbmscr(0);
-					bm->savepos[BMSCR_SAVEPOS_MOSUEX] = x;
-					bm->savepos[BMSCR_SAVEPOS_MOSUEY] = y;
+					bm->savepos[BMSCR_SAVEPOS_MOSUEX] = m->x;
+					bm->savepos[BMSCR_SAVEPOS_MOSUEY] = m->y;
 					bm->UpdateAllObjects();
-					bm->setMTouchByPointId( -1, x, y, true );
+					bm->setMTouchByPointId( -1, m->x, m->y, true );
 
 					//printf("motion: %d,%d  %d,%d\n", m->x, m->y, m->xrel, m->yrel);
 				}
@@ -80,34 +78,15 @@ void handleEvent() {
 		case SDL_MOUSEBUTTONDOWN:
 			{
 				SDL_MouseButtonEvent *m = (SDL_MouseButtonEvent*)&event;
-				Bmscr *bm;
-				if ( exinfo != NULL ) {
-					bm = (Bmscr *)exinfo->HspFunc_getbmscr(0);
-					bm->tapstat = 1;
-					bm->UpdateAllObjects();
-					bm->setMTouchByPointId( -1, bm->savepos[BMSCR_SAVEPOS_MOSUEX], bm->savepos[BMSCR_SAVEPOS_MOSUEY], true );
-				}
-				// if (m->button == 2) {
-				// 	REPORT_RESULT();
-				// 	emscripten_run_script("throw 'done'");
-				// }
 				//printf("button down: %d,%d  %d,%d\n", m->button, m->state, m->x, m->y);
-				//result += 3 * (m->button + m->state + m->x + m->y);
-				hgio_touch( bm->savepos[BMSCR_SAVEPOS_MOSUEX], bm->savepos[BMSCR_SAVEPOS_MOSUEY], 1 );
+				hgio_touch( m->x, m->y, 1 );
 				break;
 			}
 		case SDL_MOUSEBUTTONUP:
 			{
 				SDL_MouseButtonEvent *m = (SDL_MouseButtonEvent*)&event;
-				Bmscr *bm;
-				if ( exinfo != NULL ) {
-					bm = (Bmscr *)exinfo->HspFunc_getbmscr(0);
-					bm->tapstat = 0;
-					bm->UpdateAllObjects();
-					bm->setMTouchByPointId( -1, -1, -1, false );
-				}
 				//printf("button up: %d,%d  %d,%d\n", m->button, m->state, m->x, m->y);
-				hgio_touch( -1, -1, 0 );
+				hgio_touch( m->x, m->y, 0 );
 				break;
 			}
 		}
