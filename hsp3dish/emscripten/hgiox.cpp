@@ -584,6 +584,12 @@ void hgio_setOrigin( int x, int y )
     _originY=y;
 }
 
+void hgio_scale_point( int xx, int yy, int &x, int & y )
+{
+	x = ( xx - _originX ) * _rateX;
+	y = ( yy - _originY ) * _rateY;
+}
+
 /*-------------------------------------------------------------------------------*/
 
 void hgio_clsmode( int mode, int color, int tex )

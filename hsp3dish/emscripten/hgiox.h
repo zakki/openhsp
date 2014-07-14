@@ -68,6 +68,8 @@ void hgio_setLineWidth( int lineWidth );
 void hgio_setFlipMode( int flipMode );
 //原点の指定
 void hgio_setOrigin( int x, int y );
+//スケーリング
+void hgio_scale_point( int xx, int yy, int &x, int & y );
 //ポイントカラー設定
 void hgio_panelcolor( int color, int aval );
 

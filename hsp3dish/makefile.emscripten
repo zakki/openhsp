@@ -41,7 +41,7 @@ TARGET = emscripten/hsp3dish.js
 
 LIBS =
 .SUFFIXES: .cpp
-$(TARGET): $(OBJS)
+$(TARGET): $(OBJS) emscripten/license.js
 	$(CC) $(CFLAGS) $(OBJS) -o tmp.js $(LIBS)
 	cat emscripten/license.js tmp.js > $@
 %.bc: %.c

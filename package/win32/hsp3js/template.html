@@ -300,6 +300,15 @@ function assert(check, msg) {
         this.requests[this.name] = null;
       },
     };
+
+    Module.preRun.push(function() {
+        ENV.HSP_WX = "320";//スクリプトの動作解像度
+        ENV.HSP_WY = "480";
+        ENV.HSP_SX = "320";//表示解像度
+        ENV.HSP_SY = "480";
+        ENV.HSP_AUTOSCALE = "3";//スケーリングモード
+    });
+
     //  new DataRequest(0, 2408, 0, 0).open('GET', '/block3.ax');
 $$$datarequest$$$
 
