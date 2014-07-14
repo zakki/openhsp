@@ -62,12 +62,14 @@ void handleEvent() {
 				Bmscr *bm;
 				if ( exinfo != NULL ) {
 					SDL_MouseMotionEvent *m = (SDL_MouseMotionEvent*)&event;
+					int x, y;
+					hgio_scale_point( m->x, m->y, x, y );
 
 					bm = (Bmscr *)exinfo->HspFunc_getbmscr(0);
-					bm->savepos[BMSCR_SAVEPOS_MOSUEX] = m->x;
-					bm->savepos[BMSCR_SAVEPOS_MOSUEY] = m->y;
+					bm->savepos[BMSCR_SAVEPOS_MOSUEX] = x;
+					bm->savepos[BMSCR_SAVEPOS_MOSUEY] = y;
 					bm->UpdateAllObjects();
-					bm->setMTouchByPointId( -1, m->x, m->y, true );
+					bm->setMTouchByPointId( -1, x, y, true );
 
 					//printf("motion: %d,%d  %d,%d\n", m->x, m->y, m->xrel, m->yrel);
 				}
@@ -378,6 +380,49 @@ int hsp3dish_init( char *startfile )
 		hsp->SetPackValue( hsp_sum, hsp_dec );
 	}
 
+	char *env_wx = getenv( "HSP_WX" );
+	if ( env_wx ) {
+		int v = atoi( env_wx );
+		if ( v > 0 ) {
+			hsp_wx = v;
+		}
+	}
+
+	char *env_wy = getenv( "HSP_WY" );
+	if ( env_wy ) {
+		int v = atoi( env_wy );
+		if ( v > 0 ) {
+			hsp_wy = v;
+		}
+	}
+
+	float sx, sy;
+
+	char *env_sx = getenv( "HSP_SX" );
+	if ( env_sx ) {
+		sx = atof( env_sx );
+	}
+
+	char *env_sy = getenv( "HSP_SY" );
+	if ( env_sy ) {
+		sy = atof( env_sy );
+	}
+
+	if ( sx > 0 && sy > 0 ) {
+		//OK
+	} else {
+		sx = hsp_wx;
+		sy = hsp_wy;
+	}
+
+	char *env_autoscale = getenv( "HSP_AUTOSCALE" );
+	int autoscale = 0;
+	if ( env_autoscale ) {
+		autoscale = atoi( env_autoscale );
+	}
+
+	printf("Screen %f %f\n", sx, sy);
+
 	if ( hsp->Reset( mode ) ) {
 		hsp3dish_dialog( "Startup failed." );
 		return 1;
@@ -392,7 +437,13 @@ int hsp3dish_init( char *startfile )
 
 	//		Initalize Window
 	//
-	hsp3dish_initwindow( NULL, hsp_wx, hsp_wy, "HSPDish ver" hspver );
+	hsp3dish_initwindow( NULL, sx, sy, "HSPDish ver" hspver );
+
+	if ( sx != hsp_wx || sy != hsp_wy ) {
+		hgio_view( hsp_wx, hsp_wy );
+		hgio_size( sx, sy );
+		hgio_autoscale( autoscale );
+	}
 
 //	hsp3typeinit_dllcmd( code_gettypeinfo( TYPE_DLLFUNC ) );
 //	hsp3typeinit_dllctrl( code_gettypeinfo( TYPE_DLLCTRL ) );
