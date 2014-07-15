@@ -125,6 +125,7 @@
       var spinnerElement = document.getElementById('spinner');
 
       var Module = {
+        $$$memoptions$$$
         preRun: [],
         postRun: [],
         print: (function() {
@@ -302,14 +303,13 @@ function assert(check, msg) {
     };
 
     Module.preRun.push(function() {
-        ENV.HSP_WX = "320";//スクリプトの動作解像度
-        ENV.HSP_WY = "480";
-        ENV.HSP_SX = "320";//表示解像度
-        ENV.HSP_SY = "480";
-        ENV.HSP_AUTOSCALE = "3";//スケーリングモード
+        ENV.HSP_WX = "$$$scrsize_x$$$";//スクリプトの動作解像度
+        ENV.HSP_WY = "$$$scrsize_y$$$";
+        ENV.HSP_SX = "$$$dispsize_x$$$";//表示解像度
+        ENV.HSP_SY = "$$$dispsize_y$$$";
+        ENV.HSP_AUTOSCALE = "0";//スケーリングモード
     });
 
-    //  new DataRequest(0, 2408, 0, 0).open('GET', '/block3.ax');
 $$$datarequest$$$
 
     function processPackageData(arrayBuffer) {
@@ -322,7 +322,7 @@ $$$datarequest$$$
       var ptr = Module['_malloc'](byteArray.length);
       Module['HEAPU8'].set(byteArray, ptr);
       DataRequest.prototype.byteArray = Module['HEAPU8'].subarray(ptr, ptr+byteArray.length);
-      //    DataRequest.prototype.requests["/block3.ax"].onload();
+
 $$$requestonload$$$
           Module['removeRunDependency']('datafile_$$$hspax$$$.data');
 
@@ -350,5 +350,6 @@ $$$requestonload$$$
 })();
     </script>
     <script async type="text/javascript" src="hsp3dish.js"></script>
+  <p>powered by <a href="http://hsp.tv/make/hsp3dish.html" target="_blank">hsp3dish.js</a> / OpenHSP</p>
   </body>
 </html>

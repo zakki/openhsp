@@ -89,6 +89,7 @@ typedef struct MACDEF {
 
 #define COMP_MODE_DEBUG 1
 #define COMP_MODE_DEBUGWIN 2
+#define COMP_MODE_UTF8 4
 
 #define HEDINFO_RUNTIME 0x1000		// runtime指定用のヘッダ情報
 
@@ -109,6 +110,8 @@ class CTagStack;
 class CStrNote;
 class AHTMODEL;
 
+#define SCNVBUF_DEFAULTSIZE 0x8000
+
 //  token analysis class
 class CToken {
 public:
@@ -117,6 +120,9 @@ public:
 	~CToken();
 	CLabel *GetLabelInfo( void );
 	void SetLabelInfo( CLabel *lbinfo );
+
+	void InitSCNV( int size );
+	char *ExecSCNV( char *srcbuf, int opt );
 
 	void Error( char *mes );
 	void LineError( char *mes, int line, char *fname );
@@ -173,6 +179,8 @@ public:
 	int PutOT( int value );
 	int PutDS( char *str );
 	int PutDS( char *str, int size );
+	int PutDSBuf( char *str );
+	int PutDSBuf( char *str, int size );
 	char *GetDS( int ptr );
 	void SetOT( int id, int value );
 	void PutDI( void );
@@ -391,6 +399,7 @@ private:
 	int cg_varhpi;
 	int cg_putvars;
 	int cg_defvarfix;
+	int cg_utf8out;
 	char *cg_ptr;
 	char *cg_ptr_bak;
 	char *cg_str;
@@ -441,6 +450,12 @@ private:
 	int cg_errline;
 	int cg_orgline;
 	char cg_orgfile[256];
+
+	//		for SCNV
+	//
+	char *scnvbuf;			// SCNV変換バッファ
+	int	scnvsize;			// SCNV変換バッファサイズ
+
 };
 
 

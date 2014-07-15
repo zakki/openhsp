@@ -51,6 +51,8 @@
 	and_keystore=""
 	js_pack=""
 	js_fname=""
+	js_memopt=""
+	js_memsize=0
 	hspjsname="hsp3dish.js"
 
 	ios_proj=""
@@ -256,7 +258,7 @@
 	pos 8+158,y
 	button "android",*go_andmenu
 	pos 8+158+104,y
-	button "hsp3js",*go_hsp3js
+	button "hsp3dish.js",*go_hsp3js
 	pos 8+158+104*2,y
 	button "オプション",*option
 	stop
@@ -404,7 +406,7 @@
 
 	objsize 96,48
 	pos 8+158+104,y
-	button "hsp3js",*go_hsp3js
+	button "hsp3dish.js",*go_hsp3js
 	pos 8+158+104*2,y
 	button "オプション",*option
 	stop
@@ -423,7 +425,7 @@
 *jsmenu
 	initwnd
 	pos 8,8
-	mes "指定されたHSP3DishスクリプトをHTML5/JavaScriptに変換します"
+	mes "指定されたHSP3Dishスクリプトをhtml(WebGL/JavaScript)に変換します"
 
 	pos 8,30
 	sysfont 17
@@ -440,6 +442,11 @@
 	objsize 64,24
 	pos 408,82:button "参照...",*selfile_jspack
 
+	pos 8,110
+	mes "メモリサイズ(MB)指定(空白の場合は規定値)"
+	objsize 120,24
+	input js_memopt
+
 	pos 312,118
 	objsize 160,48
 	button "変換",*cnv_js
@@ -451,8 +458,8 @@
 
 	color 190,190,240
 	boxf 8+158+104,y,8+158+104+96,y+46
-	pos 8+158+104+30,y+16:color 0,0,0
-	mes "hsp3js"
+	pos 8+158+104+22,y+16:color 0,0,0
+	mes "hsp3dish.js"
 
 	objsize 96,48
 	pos 8+158,y
@@ -1348,6 +1355,10 @@ hspproj.xcodeproj\\project.pbxproj"}
 	maxsize=$10000
 	sdim outbuf, maxsize
 
+	js_memsize = 0+js_memopt
+	if js_memsize<0 || js_memsize>=2048 : mes "メモリサイズ指定が無効です。" : goto *cnv_jsok
+	js_memsize *= 1048576
+
 	if js_pack="" : goto *no_jspack
 
 	;	.data作成
@@ -1396,6 +1407,21 @@ hspproj.xcodeproj\\project.pbxproj"}
 	strrep outbuf, "$$$datarequest$$$", s1
 	strrep outbuf, "$$$requestonload$$$", s2
 
+	;	サイズ設定
+	s1=""+dishwx : s2=""+dishwy
+	strrep outbuf, "$$$scrsize_x$$$", s1
+	strrep outbuf, "$$$scrsize_y$$$", s2
+	strrep outbuf, "$$$dispsize_x$$$", s1
+	strrep outbuf, "$$$dispsize_y$$$", s2
+
+	;	メモリオプション
+	s1=""
+	if js_memsize>0 {
+		s1="TOTAL_MEMORY: "+js_memsize+","
+	}
+	strrep outbuf, "$$$memoptions$$$", s1
+
+
 	notesel outbuf
 	notesave htmlname
 	buf+="["+htmlname+"]を作成しました.\n"
@@ -1403,9 +1429,6 @@ hspproj.xcodeproj\\project.pbxproj"}
 	notesel outbuf
 	s1 = dir_exe+"\\hsp3js\\"+hspjsname
 	noteload s1
-
-	strrep outbuf, "c[6394]=320", "c[6394]="+dishwx
-	strrep outbuf, "c[6396]=480", "c[6396]="+dishwy
 
 	notesave hspjsname
 	buf+="["+hspjsname+"]を作成しました.\n"

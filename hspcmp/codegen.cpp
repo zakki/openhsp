@@ -2099,7 +2099,7 @@ void CToken::GenerateCodePP( char *buf )
 		if ( ttype == TK_STRING ) {
 			strcpy ( cg_orgfile, cg_str );
 			if ( cg_debug ) {
-				i = PutDS( cg_str );
+				i = PutDSBuf( cg_str );
 				PutDI( 254, i, cg_orgline );				// ファイル名をデバッグ情報として登録
 			}
 		} else {
@@ -2491,19 +2491,38 @@ int CToken::GetCS( void )
 
 int CToken::PutDS( char *str )
 {
-	//		Register strings to data segment
+	//		Register strings to data segment (script string)
+	//
+	return PutDS( str, (int)strlen(str)+1 );
+}
+
+
+int CToken::PutDSBuf( char *str )
+{
+	//		Register strings to data segment (direct)
 	//
 	int i;
 	i = ds_buf->GetSize();
 	ds_buf->PutStr( str );
-	ds_buf->Put( (char)0 );;
+	ds_buf->Put( (char)0 );
 	return i;
 }
 
 
 int CToken::PutDS( char *str, int size )
 {
-	//		Register strings to data segment
+	//		Register strings to data segment (script string)
+	//
+	int i;
+	i = ds_buf->GetSize();
+	ds_buf->PutData( str, size );
+	return i;
+}
+
+
+int CToken::PutDSBuf( char *str, int size )
+{
+	//		Register strings to data segment (direct)
 	//
 	int i;
 	i = ds_buf->GetSize();
@@ -2608,7 +2627,7 @@ void CToken::PutDIVars( void )
 				p = lab->name;
 				break;
 			}
-			i = PutDS( p );
+			i = PutDSBuf( p );
 			PutDI( 253, i, lab->opt );
 		}
 	}
@@ -2631,7 +2650,7 @@ void CToken::PutDILabels( void )
 	for (int i = 0; i < num; i ++) {
 		if (table[i] == -1) continue;
 		char *name = lb->GetName(table[i]);
-		int dsPos = PutDS(name);
+		int dsPos = PutDSBuf(name);
 		PutDI(251, dsPos, i);
 	}
 	delete[] table;
@@ -2647,7 +2666,7 @@ void CToken::PutDIParams( void )
 			int id = lb->GetOpt(i);
 			if (id < 0) continue;
 			char *name = lb->GetName(i);
-			int dsPos = PutDS(name);
+			int dsPos = PutDSBuf(name);
 			PutDI(251, dsPos, id);
 		}
 	}
@@ -2690,7 +2709,7 @@ int CToken::PutLIB( int flag, char *name )
 				}
 				l++;
 			}
-			i = PutDS( name );
+			i = PutDSBuf( name );
 		} else {
 			i = -1;
 		}
@@ -2698,7 +2717,7 @@ int CToken::PutLIB( int flag, char *name )
 	if ( flag == LIBDAT_FLAG_COMOBJ ) {
 		COM_GUID guid;
 		if ( ConvertIID( &guid, name ) ) return -1;
-		i = PutDS( (char *)&guid, sizeof(COM_GUID) );
+		i = PutDSBuf( (char *)&guid, sizeof(COM_GUID) );
 	}
 
 	lib.flag = flag;
@@ -2720,7 +2739,7 @@ void CToken::SetLIBIID( int id, char *clsid )
 	if ( *clsid == 0 ) {
 		l->clsid = -1;
 	} else {
-		l->clsid = PutDS( clsid );
+		l->clsid = PutDSBuf( clsid );
 	}
 }
 
@@ -2822,7 +2841,7 @@ int CToken::PutStructEnd( int i, char *name, int libindex, int otindex, int func
 	//
 	STRUCTDAT st;
 	st.index = libindex;
-	st.nameidx = PutDS( name );
+	st.nameidx = PutDSBuf( name );
 	st.subid = i;
 	st.prmindex = cg_stptr;
 	st.prmmax = cg_stnum;
@@ -2858,7 +2877,7 @@ int CToken::PutStructEndDll( char *name, int libindex, int subid, int otindex )
 	if ( name[0] == '*' ) {
 		st.nameidx = -1;
 	} else {
-		st.nameidx = PutDS( name );
+		st.nameidx = PutDSBuf( name );
 	}
 	st.subid = subid;
 	st.prmindex = cg_stptr;
@@ -2877,8 +2896,8 @@ void CToken::PutHPI( short flag, short option, char *libname, char *funcname )
 	HPIDAT hpi;
 	hpi.flag = flag;
 	hpi.option = option;
-	hpi.libname = PutDS( libname );
-	hpi.funcname = PutDS( funcname );
+	hpi.libname = PutDSBuf( libname );
+	hpi.funcname = PutDSBuf( funcname );
 	hpi.libptr = NULL;
 	hpi_buf->PutData( &hpi, sizeof(HPIDAT) );
 }
@@ -2918,6 +2937,7 @@ int CToken::GenerateCode( CMemBuf *srcbuf, char *oname, int mode )
 	bakbuf.PutStr( srcbuf->GetBuffer() );				// プリプロセッサソースを保存する
 
 	cg_debug = mode & COMP_MODE_DEBUG;
+	cg_utf8out = mode & COMP_MODE_UTF8;
 	cg_putvars = hed_cmpmode & CMPMODE_PUTVARS;
 	res = GenerateCodeMain( srcbuf );
 	if ( res ) {

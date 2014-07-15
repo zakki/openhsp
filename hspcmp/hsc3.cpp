@@ -133,6 +133,7 @@ int CHsc3::PreProcess( char *fname, char *outname, int option, char *rname, void
 	//			         bit2=make packfile(ON)
 	//					 bit3=read AHT file(on)
 	//					 bit4=write AHT file(on)
+	//					 bit5=UTF8(on)
 	//
 	int res;
 	char mm[512];

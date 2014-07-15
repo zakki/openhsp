@@ -139,6 +139,7 @@ CToken::CToken( void )
 	packbuf = NULL;
 	ahtmodel = NULL;
 	ahtbuf = NULL;
+	scnvbuf = NULL;
 	ResetCompiler();
 }
 
@@ -154,12 +155,15 @@ CToken::CToken( char *buf )
 	packbuf = NULL;
 	ahtmodel = NULL;
 	ahtbuf = NULL;
+	scnvbuf = NULL;
 	ResetCompiler();
 }
 
 
 CToken::~CToken( void )
 {
+	if ( scnvbuf!=NULL ) InitSCNV(-1);
+
 	if ( tstack!=NULL ) { delete tstack; tstack = NULL; }
 	if ( lb!=NULL ) { delete lb; lb = NULL; }
 	if ( s3 != NULL ) { free( s3 );s3 = NULL; }
@@ -3655,6 +3659,37 @@ int CToken::GetLabelBufferSize( void )
 	//		ラベルバッファサイズを得る
 	//
 	return lb->GetSymbolSize();
+}
+
+
+void CToken::InitSCNV( int size )
+{
+	//		文字コード変換の初期化
+	//		(size<0の場合はメモリを破棄)
+	//
+	if ( scnvbuf != NULL ) {
+		free( scnvbuf );
+		scnvbuf = NULL;
+	}
+	if ( size <= 0 ) return;
+	scnvbuf = (char *)malloc(size);
+	scnvsize = size;
+}
+
+
+char *CToken::ExecSCNV( char *srcbuf, int opt )
+{
+	//		文字コード変換
+	//
+	int ressize;
+	int size;
+
+	if ( scnvbuf == NULL ) InitSCNV( SCNVBUF_DEFAULTSIZE );
+
+	size = (int)strlen( srcbuf );
+	strcpy( scnvbuf, srcbuf );
+
+	return scnvbuf;
 }
 
 
