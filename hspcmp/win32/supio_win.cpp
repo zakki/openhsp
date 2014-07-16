@@ -76,6 +76,13 @@ jobov:
 	return rval;
 }
 
+
+static inline int issjisleadbyte( unsigned char c )
+{
+	return ( c >= 0x81 && c <= 0x9F ) || ( c >= 0xE0 && c <= 0xFC );
+}
+
+
 void strcase( char *str )
 {
 	//	string case to lower
@@ -624,4 +631,45 @@ void Alertf( const char *format, ... )
 }
 
 #endif
+
+
+
+
+/*----------------------------------------------------------*/
+
+//
+//		Character Code Convert
+//
+
+int ConvSJis2Utf8( char *pSource, char *pDist, int buffersize )
+{
+	int size = 0;
+ 
+   //ShiftJIS‚©‚çUTF-16‚Ö•ÏŠ·
+   const int nSize = ::MultiByteToWideChar( CP_ACP, 0, (LPCSTR)pSource, -1, NULL, 0 );
+ 
+   BYTE* buffUtf16 = new BYTE[ nSize * 2 + 2 ];
+   ::MultiByteToWideChar( CP_ACP, 0, (LPCSTR)pSource, -1, (LPWSTR)buffUtf16, nSize );
+ 
+   //UTF-16‚©‚çUTF-8‚Ö•ÏŠ·
+   const int nSizeUtf8 = ::WideCharToMultiByte( CP_UTF8, 0, (LPCWSTR)buffUtf16, -1, NULL, 0, NULL, NULL );
+   if( pDist == NULL ){
+       delete buffUtf16;
+       return -1;
+   }
+ 
+   BYTE* buffUtf8 = new BYTE[ nSizeUtf8 * 2 ];
+   ZeroMemory( buffUtf8, nSizeUtf8 * 2 );
+   ::WideCharToMultiByte( CP_UTF8, 0, (LPCWSTR)buffUtf16, -1, (LPSTR)buffUtf8, nSizeUtf8, NULL, NULL );
+ 
+   size = lstrlen( (char*)buffUtf8 ) + 1;
+   if ( size > buffersize ) size = buffersize;
+
+   memcpy( pDist, buffUtf8, size );
+ 
+   delete buffUtf16;
+   delete buffUtf8;
+ 
+   return size;
+}
 

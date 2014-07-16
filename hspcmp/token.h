@@ -111,6 +111,8 @@ class CStrNote;
 class AHTMODEL;
 
 #define SCNVBUF_DEFAULTSIZE 0x8000
+#define SCNV_OPT_NONE 0
+#define SCNV_OPT_SJISUTF8 1
 
 //  token analysis class
 class CToken {
@@ -178,7 +180,6 @@ public:
 	void PutCS( int type, double value, int exflg );
 	int PutOT( int value );
 	int PutDS( char *str );
-	int PutDS( char *str, int size );
 	int PutDSBuf( char *str );
 	int PutDSBuf( char *str, int size );
 	char *GetDS( int ptr );

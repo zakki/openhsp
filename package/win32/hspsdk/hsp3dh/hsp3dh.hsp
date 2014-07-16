@@ -644,7 +644,7 @@
 
 	hsc_ini s1
 	hsc_objname objname
-	hsc_comp 0 ; コンパイル
+	hsc_comp hspcomp_mode ; コンパイル
 	res=stat
 	hsc_getmes buf
 	return
@@ -655,7 +655,7 @@
 	;	(out) hspcnv_res 0=ok,1=error
 	;
 	hspcnv_res=0
-
+	hspcomp_mode=0
 	gosub *hspcomp
 	if res!=0 : dialog "エラーが発生しました。" : hspcnv_res=1 : return
 
@@ -1338,6 +1338,7 @@ hspproj.xcodeproj\\project.pbxproj"}
 	if js_fname="" : mes "ファイルが指定されていません。" : goto *cnv_jsok
 
 	s1=js_fname
+	hspcomp_mode=4
 	gosub *hspcomp
 	if res!=0 : dialog "エラーが発生しました。" : goto *cnv_jsok
 
@@ -1433,7 +1434,7 @@ hspproj.xcodeproj\\project.pbxproj"}
 	notesave hspjsname
 	buf+="["+hspjsname+"]を作成しました.\n"
 
-	buf+="※作成された3ファイルをwebブラウザで閲覧可能なサーバーにアップロードしてください。\n"
+	buf+="※作成されたファイルをwebブラウザで閲覧可能なサーバーにアップロードしてください。\n"
 
 *cnv_jsok
 	sdim outbuf,64

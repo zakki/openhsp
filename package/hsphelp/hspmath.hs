@@ -1,9 +1,9 @@
 %dll
 hspmath
+%ver
+3.4
 %date
 2011/05/10
-%note
-hspmath.as
 %group
 数学関数
 %port
@@ -13,6 +13,8 @@ Cli
 Let
 %author
 HSPWiki
+%note
+hspmath.asをインクルードすること。
 
 
 

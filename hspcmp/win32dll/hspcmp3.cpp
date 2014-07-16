@@ -232,8 +232,10 @@ EXPORT BOOL WINAPI hsc_comp ( int p1, int p2, int p3, int p4 )
 	//		hsc_comp mode,ppopt,dbgopt  (type0)
 	//			( mode: 1=debug/0=no debug )
 	//			(       2=preprocessor only )
+	//			(       4=UTF8 output mode )
 	//			( ppopt = preprocessor option )
 	//			(       0=default/1=ver2.6 mode )
+	//			(       32=UTF8 input mode )
 	//			( dbgopt = debug window option )
 	//			(       0=default/1=debug mode )
 /*
@@ -260,18 +262,24 @@ EXPORT BOOL WINAPI hsc_comp ( int p1, int p2, int p3, int p4 )
 	if ( p2&4 ) ppopt|=HSC3_OPT_MAKEPACK;
 	if ( p2&8 ) ppopt|=HSC3_OPT_READAHT;
 	if ( p2&16 ) ppopt|=HSC3_OPT_MAKEAHT;
+	if ( p2&32 ) ppopt|=HSC3_OPT_UTF8IN;
+
+	if ( p1 & 4 ) ppopt|=HSC3_OPT_UTF8OUT;
+
 	st = hsc3->PreProcess( fname, fname2, ppopt, rname );
 	if ( st != 0 ) {
 		hsc3->PreProcessEnd();
 		return st;
 	}
-	if ( p1 == 2 ) {
+	if ( p1 & 2 ) {
 		hsc3->PreProcessEnd();
 		return 0;
 	}
 
 	cmpmode = p1 & HSC3_MODE_DEBUG;
+	if ( p1 & 4 ) cmpmode |= HSC3_MODE_UTF8;
 	if ( p3 ) cmpmode |= HSC3_MODE_DEBUGWIN;
+
 	st = hsc3->Compile( fname2, oname, cmpmode );
 	hsc3->PreProcessEnd();
 	if ( st != 0 ) return st;

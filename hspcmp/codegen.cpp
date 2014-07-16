@@ -2493,7 +2493,22 @@ int CToken::PutDS( char *str )
 {
 	//		Register strings to data segment (script string)
 	//
-	return PutDS( str, (int)strlen(str)+1 );
+	int i;
+	int size;
+	char *p;
+	i = ds_buf->GetSize();
+
+	// output as UTF8 format
+	if ( cg_utf8out ) {
+		p = ExecSCNV( str, SCNV_OPT_SJISUTF8 );
+		size = (int)strlen(p) + 1;
+		ds_buf->PutData( p, size );
+		return i;
+	}
+
+	ds_buf->PutStr( str );
+	ds_buf->Put( (char)0 );
+	return i;
 }
 
 
@@ -2505,17 +2520,6 @@ int CToken::PutDSBuf( char *str )
 	i = ds_buf->GetSize();
 	ds_buf->PutStr( str );
 	ds_buf->Put( (char)0 );
-	return i;
-}
-
-
-int CToken::PutDS( char *str, int size )
-{
-	//		Register strings to data segment (script string)
-	//
-	int i;
-	i = ds_buf->GetSize();
-	ds_buf->PutData( str, size );
 	return i;
 }
 

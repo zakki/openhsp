@@ -6,7 +6,7 @@
 %type
 拡張命令
 %ver
-3.31
+3.4
 %note
 hspinet.asをインクルードすること。
 

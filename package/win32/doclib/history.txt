@@ -5,14 +5,20 @@ Hot Soup Processor ver3.4                           HSP : Hot Soup Processor
 
 ・hsp3関連 更新履歴
 
+	2014/07/16 3.4rc1
+
+	HSP3DishスクリプトをWEBブラウザ(WebGL)上で動作させるhsp3dish.jsを同梱
+	HSP3Dish helperによるhsp3dish.jsサポートを追加
+	hspcmp.dllプラグインのhsc_comp命令にUTF8出力オプションを追加
+	hspsockプラグインでサーバーが同一ポートを共有できるように修正
+	[HSP3Dish][android] 一部のandroid端末で画面枠外にゴミが描画される不具合を修正
+
 	2014/07/04 3.4β5
 
 	userdef.as及びhspdef.asの定義が多い場合にエディタが起動できなくなる不具合を修正
-	hspsockプラグインでサーバーが同一ポートを共有できるように修正
 	変数名に付加された全角スペースが無視されない不具合を修正
 	[HSP3Dish][Win] hsp3dish.iniファイルが空の場合に落ちる不具合を修正
 	[HSP3Dish][iOS] β4版で画面スケーリングの設定が正しく行なわれない不具合を修正
-	[HSP3Dish][android] 一部のandroid端末で画面枠外にゴミが描画される不具合を修正
 	[HSP3Dish][android] β3でレジューム時のテクスチャ復帰がおかしくなっていたのを修正
 	[HSP3Dish][android] コンパイルのアーキテクチャ設定を標準でARMv7となるように修正(浮動小数演算などが高速化されます)
 	[HSP3Dish][android] 初回のサウンド再生時、冒頭の音が重複して再生されることがある不具合を修正

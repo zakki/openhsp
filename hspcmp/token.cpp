@@ -3687,7 +3687,21 @@ char *CToken::ExecSCNV( char *srcbuf, int opt )
 	if ( scnvbuf == NULL ) InitSCNV( SCNVBUF_DEFAULTSIZE );
 
 	size = (int)strlen( srcbuf );
-	strcpy( scnvbuf, srcbuf );
+	switch( opt ) {
+	case SCNV_OPT_NONE:
+		strcpy( scnvbuf, srcbuf );
+		break;
+	case SCNV_OPT_SJISUTF8:
+#ifdef HSPWIN
+		ConvSJis2Utf8( srcbuf, scnvbuf, scnvsize );
+#else
+		strcpy( scnvbuf, srcbuf );
+#endif
+		break;
+	default:
+		*scnvbuf = 0;
+		break;
+	}
 
 	return scnvbuf;
 }

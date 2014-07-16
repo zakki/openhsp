@@ -41,7 +41,6 @@ void Alert( const char *mes );
 void AlertV( const char *mes, int val );
 void Alertf( const char *format, ... );
 
-inline int issjisleadbyte( unsigned char c )
-{
-	return ( c >= 0x81 && c <= 0x9F ) || ( c >= 0xE0 && c <= 0xFC );
-}
+int ConvSJis2Utf8( char *pSource, char *pDist, int buffersize );
+
+
