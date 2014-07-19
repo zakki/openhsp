@@ -1,6 +1,6 @@
 ------------------------------------------------------------------------------
-HSPDB ver3.3  REFERENCE MANUAL                      HSP : Hot Soup Processor  
-ＨＳＰ拡張DLLリファレンス             copyright 2004-2011 (c) onion software  
+HSPDB ver3.4  REFERENCE MANUAL                      HSP : Hot Soup Processor  
+ＨＳＰ拡張DLLリファレンス             copyright 2004-2014 (c) onion software  
 ------------------------------------------------------------------------------
 
 ・はじめに

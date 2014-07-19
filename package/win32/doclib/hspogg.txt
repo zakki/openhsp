@@ -1,6 +1,6 @@
 ------------------------------------------------------------------------------
-HSPOGG ver3.3 REFERENCE MANUAL                      HSP : Hot Soup Processor  
-ＨＳＰ拡張拡張DLLリファレンス         copyright 2007-2011 (c) onion software  
+HSPOGG ver3.4 REFERENCE MANUAL                      HSP : Hot Soup Processor  
+ＨＳＰ拡張拡張DLLリファレンス         copyright 2007-2014 (c) onion software  
 ------------------------------------------------------------------------------
 
 ・はじめに

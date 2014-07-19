@@ -1,6 +1,6 @@
 ------------------------------------------------------------------------------
-HSPINET ver3.3 REFERENCE MANUAL                     HSP : Hot Soup Processor  
-ＨＳＰ拡張拡張DLLリファレンス         copyright 2005-2012 (c) onion software  
+HSPINET ver3.4 REFERENCE MANUAL                     HSP : Hot Soup Processor  
+ＨＳＰ拡張拡張DLLリファレンス         copyright 2005-2014 (c) onion software  
 ------------------------------------------------------------------------------
 
 ・はじめに

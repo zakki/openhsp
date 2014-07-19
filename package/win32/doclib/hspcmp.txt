@@ -1,6 +1,6 @@
 ------------------------------------------------------------------------------
-HSPCMP.DLL ver3.3                                   HSP : Hot Soup Processor  
-ＨＳＰ拡張DLLリファレンス             copyright 1999-2011 (c) onion software  
+HSPCMP.DLL ver3.4                                   HSP : Hot Soup Processor  
+ＨＳＰ拡張DLLリファレンス             copyright 1999-2014 (c) onion software  
 ------------------------------------------------------------------------------
 
 ・はじめに

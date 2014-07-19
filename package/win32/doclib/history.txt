@@ -5,7 +5,7 @@ Hot Soup Processor ver3.4                           HSP : Hot Soup Processor
 
 ・hsp3関連 更新履歴
 
-	2014/07/16 3.4rc1
+	2014/07/19 3.4rc1
 
 	HSP3DishスクリプトをWEBブラウザ(WebGL)上で動作させるhsp3dish.jsを同梱
 	HSP3Dish helperによるhsp3dish.jsサポートを追加

@@ -1,6 +1,6 @@
 ------------------------------------------------------------------------------
-HSPDA ver3.3 REFERENCE MANUAL                       HSP : Hot Soup Processor  
-ＨＳＰ拡張DLLリファレンス             copyright 1999-2011 (c) onion software  
+HSPDA ver3.4 REFERENCE MANUAL                       HSP : Hot Soup Processor  
+ＨＳＰ拡張DLLリファレンス             copyright 1999-2014 (c) onion software  
 ------------------------------------------------------------------------------
 
 ・はじめに

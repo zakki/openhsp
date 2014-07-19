@@ -1,6 +1,6 @@
 ------------------------------------------------------------------------------
-HSPTV API ver3.3 REFERENCE MANUAL                   HSP : Hot Soup Processor  
-ＨＳＰ拡張モジュールリファレンス           copyright 2011 (c) onion software  
+HSPTV API ver3.4 REFERENCE MANUAL                   HSP : Hot Soup Processor  
+ＨＳＰ拡張モジュールリファレンス           copyright 2014 (c) onion software  
 ------------------------------------------------------------------------------
 
 ・はじめに

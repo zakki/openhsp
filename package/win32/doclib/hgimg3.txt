@@ -1,6 +1,6 @@
 ------------------------------------------------------------------------------
-HGIMG ver3.32   REFERENCE MANUAL       High Performance Graphic Image Plugin  
-ＨＳＰ拡張DLLリファレンス             copyright 2001-2013 (c) onion software  
+HGIMG ver3.4    REFERENCE MANUAL       High Performance Graphic Image Plugin  
+ＨＳＰ拡張DLLリファレンス             copyright 2001-2014 (c) onion software  
 ------------------------------------------------------------------------------
 
 ・はじめに
@@ -75,7 +75,7 @@ HGIMG ver3.32   REFERENCE MANUAL       High Performance Graphic Image Plugin
 
 	--------------------------------------------------------------------------------
 	HGIMG3 : Made with base technology of OpenHSP
-	Copyright (C) 1997-2012, Onion Software/onitama.
+	Copyright (C) 1997-2014, Onion Software/onitama.
 	All rights reserved.
 	OggVorvis形式のファイルデコードに以下のライブラリを使用しています
 	libvorbis : Copyright (c) 2002-2004 Xiph.org Foundation
@@ -2247,11 +2247,6 @@ HGIMG ver3.32   REFERENCE MANUAL       High Performance Graphic Image Plugin
 	３２×３２に分割されたメッシュマップに地形テクスチャ(mapbg4.bmp)を
 	自動的に貼り付けます。
 
-	地形テクスチャ及び、画像マップの反映に関する機能は、おちゃっこ氏が
-	作成したEasy3Dの機能(E3DLoadGroundBMP)と互換性があります。
-	(Easy3Dについては、おちゃっこLAB(http://www5d.biglobe.ne.jp/~ochikko/)
-	を参照してください。)
-
 	■メッシュマップ上の移動
 
 	起伏のあるメッシュマップ上にオブジェクトを配置して、手軽に移動させる
@@ -2805,14 +2800,6 @@ HGIMG ver3.32   REFERENCE MANUAL       High Performance Graphic Image Plugin
 
 	直感的に3Dのモデリングを行うことのできるフリーソフト3DACEが公開されて
 	います。MX形式、X形式での出力に対応しています。
-
-	[おちゃっこLAB]
-	http://ochakkolab.moo.jp/
-
-	ボーンによるモーションを付けるためのツール、RokDeBone2が公開されています。
-	Metasequoiaと六角大王のデータを利用することができ、IKにも対応しています。
-	フリーでワンスキンモーションの作成が可能になります。
-	データは、X形式(DirectX)で出力することが可能です。
 
 	[metaseq.net]
 	http://www.metaseq.net/
