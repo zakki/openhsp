@@ -5,6 +5,8 @@
 #ifndef __mmman_h
 #define __mmman_h
 
+#include <memory>
+
 //	flags
 //
 enum
@@ -44,7 +46,7 @@ public:
 	void ResumeBank( MMM *mmm );
 //	void SeekBank( MMM *mmm, int pos, SLuint32 seekMode );
 	int BankLoad( MMM *mmm, char *fname );
-	void SetLoopBank( MMM *mmm, int flag );
+//	void SetLoopBank( MMM *mmm, int flag );
 
 	void GetInfo( int bank, char **fname, int *num, int *flag, int *opt );
 	int GetBusy( void );
@@ -57,23 +59,9 @@ public:
 
 private:
 	int mm_cur;
-/*
+
 	MMM *mem_snd;
-	int curmus;			// current playing MIDI (-1=none)
-	char res[256];
-	void *hwm;
-	void *avi_wnd;
-	int	avi_x, avi_y,avi_sx,avi_sy;
-	char avi_wh[64];
-
-	int engine_flag;
-    SLObjectItf engineObject;
-    SLEngineItf engineEngine;
-    SLObjectItf outputMixObject;
-
-	SLuint32 GetState( MMM *mmm );
-	void SetState( MMM *mmm, SLuint32 state );
-*/
+	bool engine_flag;
 };
 
 

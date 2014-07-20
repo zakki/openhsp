@@ -82,7 +82,6 @@ static int wildcard( char *text, char *wc )
 //
 //		basic C I/O support
 //
-static FILE *fp;
 
 char *mem_ini( int size ) {
 	return (char *)calloc(size,1);

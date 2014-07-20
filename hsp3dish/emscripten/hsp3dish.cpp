@@ -133,7 +133,7 @@ static void hsp3dish_initwindow( engine* engine, int sx, int sy, char *windowtit
 void hsp3dish_dialog( char *mes )
 {
 	//MessageBox( NULL, mes, "Error",MB_ICONEXCLAMATION | MB_OK );
-	printf( mes );
+	printf( "%s\n", mes );
 }
 
 
@@ -339,8 +339,6 @@ int hsp3dish_init( char *startfile )
 	int a,orgexe, mode;
 	int hsp_sum, hsp_dec;
 	char a1;
-//	char fname[_MAX_PATH+1];
-	char *ss;
 #ifdef HSPDEBUG
 	int i;
 #endif
@@ -396,7 +394,7 @@ int hsp3dish_init( char *startfile )
 		}
 	}
 
-	float sx, sy;
+	float sx = 0, sy = 0;
 
 	char *env_sx = getenv( "HSP_SX" );
 	if ( env_sx ) {
