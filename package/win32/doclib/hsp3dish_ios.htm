@@ -34,6 +34,7 @@
 		<li><a href="#RETINA">Retinaディスプレイ対応について</a></li>
 		<li><a href="#UNIVERSAL">Universalアプリ対応について</a></li>
 		<li><a href="#DEVCONTROL">デバイスコントロールについて</a></li>
+		<li><a href="#SIGNING">エラー時の対応について</a></li>
 		<li><a href="#RELEASE">AppStoreへの登録について</a></li>
 		<li><a href="#IAD">iAdの対応について</a></li>
 		<li><a href="#ADMOB">AdMobの対応について</a></li>
@@ -432,6 +433,23 @@
 	パラメーターの数値を変えることにより、様々な組み込みサウンドを再生可能です。
 	(サウンドIDは、1000～1017が指定できます。詳しくは、iOSのAudioServicesPlaySystemSound関数リファレンスを参照してください。)
 	</p>
+
+	<h2 id="SIGNING">エラー時の対応について</h2>
+	<p>
+	実機デバイスの転送時や、コンパイル時にCode Signing Errorが発生する場合があります。
+	これは多くの場合、Provisioning Profileと、Bundle Identifierが一致しない時に発生します。
+	iOS開発の登録を行なった際に、Provisioning Profileが必要になりますが、その際に指定したAppIDが持つIdentifier(onionsoftware.*などのアプリ識別名)と一致しているかを確認してください。
+	</p>
+	<img src="hsp3dish/ios_signing1.jpg"><br>
+	<p>
+	プロジェクトのTARGETS->Build Settings->Code Signing Error項目にある、Code Signing Identity及び、Provisioning Profileが正しく指定されていない場合、エラーが発生します。
+	</p>
+	<img src="hsp3dish/ios_signing2.jpg"><br>
+	<p>
+	Provisioning Profileがデバイスに正しくインストールされていない場合にも、転送時にエラーが発生します。
+	この場合は、デバイスの登録が正しいか、暗号キーの設定などが正しいか見直して再度コンパイルを行なってください。
+	</p>
+
 
 	<h2 id="RELEASE">AppStoreへの登録について</h2>
 	<p>
