@@ -176,14 +176,14 @@
 #cmd selefx $44
 #cmd selwork $45
 
-#define selcpos selpos HGOBJ_CAMERA
-#define selcang selang HGOBJ_CAMERA
-#define selcint seldir HGOBJ_CAMERA
+#define global selcpos selpos HGOBJ_CAMERA
+#define global selcang selang HGOBJ_CAMERA
+#define global selcint seldir HGOBJ_CAMERA
 
-#define sellpos selpos HGOBJ_LIGHT
-#define sellang selang HGOBJ_LIGHT
-#define sellcolor selscale HGOBJ_LIGHT
-#define sellambient seldir HGOBJ_LIGHT
+#define global sellpos selpos HGOBJ_LIGHT
+#define global sellang selang HGOBJ_LIGHT
+#define global sellcolor selscale HGOBJ_LIGHT
+#define global sellambient seldir HGOBJ_LIGHT
 
 #cmd objset1 $48
 #cmd objsetf1 $48
@@ -283,10 +283,10 @@
 #cmd fvinner $a8
 #cmd fvface $a9
 
-#define fsin(%1,%2) %1=sin(%2)
-#define fcos(%1,%2) %1=cos(%2)
-#define fsqr(%1,%2) %1=sqrt(%2)
-#define froti(%1,%2) %1=%2/6433.98175455188992
+#define global fsin(%1,%2) %1=sin(%2)
+#define global fcos(%1,%2) %1=cos(%2)
+#define global fsqr(%1,%2) %1=sqrt(%2)
+#define global froti(%1,%2) %1=%2/6433.98175455188992
 
 #cmd fv2str $aa
 #cmd f2str $ab
