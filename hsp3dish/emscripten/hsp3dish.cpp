@@ -45,6 +45,8 @@ static char optmes[] = "HSPHED~~\0_1_________2_________3______";
 
 static int hsp_wx, hsp_wy, hsp_wd, hsp_ss;
 static int drawflag;
+static int hsp_fps;
+static int hsp_limit_step_per_frame;
 
 //static	HWND m_hWnd;
 
@@ -419,6 +421,18 @@ int hsp3dish_init( char *startfile )
 		autoscale = atoi( env_autoscale );
 	}
 
+	char *env_fps = getenv( "HSP_FPS" );
+	hsp_fps = 0;
+	if ( env_fps ) {
+		hsp_fps = atoi( env_fps );
+	}
+
+	char *env_step = getenv( "HSP_LIMIT_STEP" );
+	hsp_limit_step_per_frame = 5000;
+	if ( env_step ) {
+		hsp_limit_step_per_frame = atoi( env_step );
+	}
+
 	printf("Screen %f %f\n", sx, sy);
 
 	if ( hsp->Reset( mode ) ) {
@@ -537,7 +551,7 @@ void hsp3dish_exec_one( void )
 	static int code_execcmd_state = 0;
 	int runmode;
 	bool stop = false;
-	for (int i = 0; !stop && i < 5000; i++) {
+	for (int i = 0; !stop && i < hsp_limit_step_per_frame; i++) {
 	//for (int i = 0; !stop; i++) {
 		runmode = code_execcmd_one(code_execcmd_state);
 		switch ( ctx->runmode ){
@@ -577,5 +591,5 @@ int hsp3dish_exec( void )
 
 	//		é¿çsÇÃäJén
 	//
-	emscripten_set_main_loop(hsp3dish_exec_one, 60, 1);
+	emscripten_set_main_loop(hsp3dish_exec_one, hsp_fps, 1);
 }
