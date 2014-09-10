@@ -52,6 +52,7 @@
 #include "SDL/SDL_opengl.h"
 
 #include "appengine.h"
+extern bool get_key_state(int sym);
 #endif
 
 #include "../supio.h"
@@ -628,7 +629,18 @@ int hgio_stick( int actsw )
 {
 	int ckey = 0;
 	if ( mouse_btn ) ckey|=256;	// mouse_l
-    return ckey;
+#ifdef HSPEMSCRIPTEN
+	if ( get_key_state(SDLK_LEFT) )  ckey|=1;		// [left]
+	if ( get_key_state(SDLK_UP) )    ckey|=2;		// [up]
+	if ( get_key_state(SDLK_RIGHT) ) ckey|=4;		// [right]
+	if ( get_key_state(SDLK_DOWN) )  ckey|=8;		// [down]
+	if ( get_key_state(SDLK_SPACE) ) ckey|=16;		// [spc]
+	if ( get_key_state(SDLK_RETURN) )ckey|=32;		// [ent]
+	if ( get_key_state(SDLK_LCTRL) ) ckey|=64;		// [ctrl]
+	if ( get_key_state(SDLK_ESCAPE) )ckey|=128;	// [esc]
+	if ( get_key_state(SDLK_TAB) )   ckey|=1024;	// [tab]
+#endif
+	return ckey;
 }
 
 
