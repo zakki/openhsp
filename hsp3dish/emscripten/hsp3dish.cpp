@@ -559,9 +559,12 @@ void hsp3dish_exec_one( void )
 			break;
 		case RUNMODE_WAIT:
 		case RUNMODE_AWAIT:
+			return;
+		case RUNMODE_END:
+		case RUNMODE_ERROR:
 			//printf("BREAK #%d %d %d\n", i, runmode, ctx->runmode);
 			stop = true;
-			return;
+			break;
 		}
 	}
 	//exit(-1);
@@ -575,6 +578,7 @@ void hsp3dish_exec_one( void )
 		}
 		catch( ... ) {
 		}
+		emscripten_cancel_main_loop();
 		exit(-1);
 		return;
 	}
