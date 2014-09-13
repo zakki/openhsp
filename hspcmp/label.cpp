@@ -339,6 +339,8 @@ void CLabel::DisposeSymbolBuffer( void )
 char *CLabel::ExpandSymbolBuffer( int size )
 {
 	char *p;
+	int nsize = ((size + 7) >> 3)  << 3;
+	size = nsize;
 	p = symbol + symcur;
 	symcur += size;
 	if ( symcur >= maxsymbol ) {
