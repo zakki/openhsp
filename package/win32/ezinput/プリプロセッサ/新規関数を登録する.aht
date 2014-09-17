@@ -7,6 +7,6 @@
 #aht helpkw "#defcfunc"
 
 #define 登録する関数の名前	""	;;str
-#define バラメータタイプ名・エイリアス名	""	;;str
+#define パラメータタイプ名・エイリアス名	""	;;str
 
-#ahtmes "#defcfunc "+登録する関数の名前+" , "+バラメータタイプ名・エイリアス名+
+#ahtmes "#defcfunc "+登録する関数の名前+" "+パラメータタイプ名・エイリアス名+

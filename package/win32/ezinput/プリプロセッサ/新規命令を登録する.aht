@@ -7,6 +7,6 @@
 #aht helpkw "#deffunc"
 
 #define 割り当てられる命令の名前	""	;;str
-#define バラメータタイプ名・エイリアス名	""	;;str
+#define パラメータタイプ名・エイリアス名	""	;;str
 
-#ahtmes "#deffunc "+割り当てられる命令の名前+" , "+バラメータタイプ名・エイリアス名+
+#ahtmes "#deffunc "+割り当てられる命令の名前+" "+パラメータタイプ名・エイリアス名+

@@ -5,12 +5,15 @@ Hot Soup Processor ver3.4                           HSP : Hot Soup Processor
 
 ・hsp3関連 更新履歴
 
-	2014/08/04 3.4rc2
+	2014/09/17 3.4rc2
 
+	[HGIMG3] SYSREQ_MAXTEXの指定が正常に反映されない不具合を修正
 	[HGIMG3] settoonedge命令で正しく輪郭線の色が指定できなかった不具合を修正
 	[HGIMG3] addxfile,addxanim命令でエラーを正常に返さない不具合を修正
 	[HGIMG3] selcposなどのマクロ命令すべてにglobal指定を追加
 	[HGIMG3] ヘルプに補足の追記を行ないました
+	スクリプトエディタの「HSPプログラミング・マニュアルを開く」項目が機能していない不具合を修正
+	かんたん入力のプリプロセッサ命令で区切り記号が間違っていたものを修正
 
 	2014/07/19 3.4rc1
 

@@ -6,5 +6,7 @@
 #aht iconid 0
 #aht helpkw "#const"
 
+#define 登録するマクロ名	""	;;str
+#define 置き換える内容	""	;;str
 
-#ahtmes "#const "+
+#ahtmes "#const "+登録するマクロ名+" "+置き換える内容+

@@ -2521,7 +2521,7 @@ LRESULT CALLBACK EditProc (HWND hwnd, UINT iMsg, WPARAM wParam, LPARAM lParam)
 					return 0;
 
                 case IDM_HSPMAN1 :
-					wsprintf( helpopt,"%s\\docs\\hspprog.htm", szExeDir );
+					wsprintf( helpopt,"%s\\doclib\\hspprog.htm", szExeDir );
 					ShellExecute( NULL, NULL, helpopt, NULL, NULL, SW_SHOW );
 					return 0 ;
 

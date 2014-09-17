@@ -8,6 +8,6 @@
 
 #define 命令として認識されるキーワード名	""	;;str
 #define メソッドindex値	""	;;str
-#define 引数のタイプを	""	;;str
+#define 引数のタイプ	""	;;str
 
-#ahtmes "#comfunc "+命令として認識されるキーワード名+" , "+メソッドindex値+" , "+引数のタイプを+
+#ahtmes "#comfunc "+命令として認識されるキーワード名+" "+メソッドindex値+" "+引数のタイプ+

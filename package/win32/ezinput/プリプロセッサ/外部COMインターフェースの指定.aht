@@ -10,4 +10,4 @@
 #define COMのインターフェースを示すIID文字列	""	;;str
 #define COMのクラスを示すIID文字列	""	;;str
 
-#ahtmes "#usecom "+インターフェースを識別するキーワード+" , "+COMのインターフェースを示すIID文字列+" , "+COMのクラスを示すIID文字列+
+#ahtmes "#usecom "+インターフェースを識別するキーワード+" "+COMのインターフェースを示すIID文字列+" "+COMのクラスを示すIID文字列+

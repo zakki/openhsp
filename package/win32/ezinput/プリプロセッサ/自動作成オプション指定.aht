@@ -9,4 +9,4 @@
 #define キーワード	""	;;str
 #define 設定内容	""	;;str
 
-#ahtmes "#packopt "+キーワード+" , "+設定内容+
+#ahtmes "#packopt "+キーワード+" "+設定内容+

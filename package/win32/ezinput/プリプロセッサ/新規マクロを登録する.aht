@@ -7,4 +7,7 @@
 #aht helpkw "#define"
 
 
-#ahtmes "#define "+
+#define 登録するマクロ名	""	;;str
+#define 置き換える内容	""	;;str
+
+#ahtmes "#define "+登録するマクロ名+" "+置き換える内容+

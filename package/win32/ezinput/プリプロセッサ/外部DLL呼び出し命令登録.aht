@@ -6,5 +6,8 @@
 #aht iconid 0
 #aht helpkw "#func"
 
+#define 追加されるキーワード	""	;;str
+#define パラメーターリスト	""	;;str
 
-#ahtmes "#func "+
+#ahtmes "#func "+追加されるキーワード+" "+パラメーターリスト+
+
