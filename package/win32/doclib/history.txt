@@ -5,8 +5,9 @@ Hot Soup Processor ver3.4                           HSP : Hot Soup Processor
 
 ・hsp3関連 更新履歴
 
-	2014/09/17 3.4rc2
+	2014/09/19 3.4rc2
 
+	hsp3dish.jsを最新版に更新
 	[HGIMG3] SYSREQ_MAXTEXの指定が正常に反映されない不具合を修正
 	[HGIMG3] settoonedge命令で正しく輪郭線の色が指定できなかった不具合を修正
 	[HGIMG3] addxfile,addxanim命令でエラーを正常に返さない不具合を修正

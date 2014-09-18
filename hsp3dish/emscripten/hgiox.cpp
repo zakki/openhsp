@@ -1977,7 +1977,7 @@ char *hgio_getstorage( char *fname )
 	strcat( my_storage_path, fname );
 	return my_storage_path;
 #endif
-    return "";
+	return fname;
 }
 
 
