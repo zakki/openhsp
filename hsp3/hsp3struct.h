@@ -92,6 +92,13 @@ typedef struct HSPHED
 	int		bootoption;			// bootup options
 	int		runtime;			// ptr to runtime name
 
+	//		HSP3.5 extra header structure
+	//
+	int		pt_sr;				// ptr to SysReq Segment
+	int		max_sr;				// size of SR
+	int		opt1;				// option (reserved)
+	int		opt2;				// option (reserved)
+
 } HSPHED;
 
 //#define HSPHED_BOOTOPT_WINHIDE 2			// 起動時ウインドゥ非表示

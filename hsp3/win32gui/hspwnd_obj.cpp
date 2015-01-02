@@ -48,11 +48,11 @@ static void UpdateCustomButton( HWND hwnd, int flag )
 	Bmscr *bm;
 	HSPOBJINFO *obj;
 
-	hw = (HWND)GetWindowLong( hwnd , GWL_HWNDPARENT );
-	id = GetWindowLong( hw, GWL_USERDATA );
+	hw = (HWND)GetClassLongPtr( hwnd , GWLP_HWNDPARENT );
+	id = (int)GetClassLongPtr( hw, GWLP_USERDATA );
 	bm = curwnd->GetBmscrSafe( id );
 
-	id = GetWindowLong( hwnd, GWL_USERDATA );
+	id = (int)GetClassLongPtr( hwnd, GWLP_USERDATA );
 	obj = bm->GetHSPObjectSafe( id );
 	if ( obj->owmode == HSPOBJ_NONE ) return;
 	if ( hwnd != obj->hCld ) return;
@@ -457,7 +457,7 @@ HSPOBJINFO *Bmscr::AddHSPJumpEventObject( int id, HWND handle, int mode, int val
 	obj->varset.ptr = ptr;
 	obj->func_notice = Object_JumpEvent;
 
-	SetWindowLong( handle, GWL_USERDATA, id );
+	SetWindowLongPtr( handle, GWLP_USERDATA, id );
 
 	return obj;
 }
@@ -475,9 +475,9 @@ void Bmscr::SetButtonImage( int id, int bufid, int x1, int y1, int x2, int y2, i
 	obj->owid = bufid;
 	SetWindowLong( obj->hCld, GWL_STYLE, GetWindowLong( obj->hCld, GWL_STYLE ) | BS_OWNERDRAW );
 
-	DefButtonProc = (WNDPROC)GetWindowLong( obj->hCld , GWL_WNDPROC );
+	DefButtonProc = (WNDPROC)GetWindowLongPtr( obj->hCld , GWLP_WNDPROC );
 	if ( DefButtonProc != MyButtonProc ) {
-		SetWindowLong( obj->hCld , GWL_WNDPROC , (LONG)MyButtonProc );
+		SetWindowLongPtr( obj->hCld , GWLP_WNDPROC , (LONG)MyButtonProc );
 	}
 
 	bset = (HSP3BTNSET *)(&obj->varset);
@@ -779,8 +779,8 @@ int Bmscr::AddHSPObjectInput( PVal *pval, APTR aptr, int sizex, int sizey, char 
 					hwnd, reinterpret_cast< HMENU >( static_cast< WORD >( MESSAGE_HSPOBJ + id ) ), hInst, NULL );
 
 	if ( subcl ) {
-		DefEditProc = (WNDPROC)GetWindowLong( hwedit , GWL_WNDPROC );
-		SetWindowLong( hwedit , GWL_WNDPROC , (LONG)MyEditProc );
+		DefEditProc = (WNDPROC)GetWindowLongPtr( hwedit , GWLP_WNDPROC );
+		SetWindowLongPtr( hwedit , GWLP_WNDPROC , (LONG)MyEditProc );
 	}
 
 	obj = AddHSPVarEventObject( id, hwedit, tabstop|HSPOBJ_OPTION_SETFONT, pval, aptr, type, (void *)&bmscr_obj_ival );

@@ -317,6 +317,12 @@ void Hsp3ExtLibTerm( void )
 	mingw(gcc) 用のコード追加
 */
 #if defined( _MSC_VER )
+#ifdef HSP64
+int __cdecl call_extfunc( void *proc, int *prm, int prms )
+{
+	return 0;
+}
+#else
 
 __declspec( naked ) int __cdecl call_extfunc( void *proc, int *prm, int prms )
 {
@@ -350,6 +356,7 @@ __declspec( naked ) int __cdecl call_extfunc( void *proc, int *prm, int prms )
 		ret
 	}
 }
+#endif
 
 #elif defined( __GNUC__ )
 

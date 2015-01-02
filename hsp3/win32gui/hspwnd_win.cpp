@@ -88,7 +88,7 @@ HspWnd::~HspWnd()
 Bmscr *TrackBmscr( HWND hwnd )
 {
 	int id;
-	id = GetWindowLong( hwnd, GWL_USERDATA );
+	id = (int)GetWindowLongPtr( hwnd, GWLP_USERDATA );
 	if ( id < 0 ) return NULL;
 	return curwnd->GetBmscr( id );
 }
@@ -114,7 +114,7 @@ LRESULT CALLBACK WndProc( HWND hwnd, UINT uMessage, WPARAM wParam, LPARAM lParam
 	Bmscr *bm;
 
 	if ( code_isuserirq() ) {
-		if ( code_checkirq( GetWindowLong( hwnd, GWL_USERDATA ), (int)uMessage, (int)wParam, (int)lParam ) ) {
+		if ( code_checkirq( (int)GetWindowLongPtr( hwnd, GWLP_USERDATA ), (int)uMessage, (int)wParam, (int)lParam ) ) {
 			if ( code_irqresult( &retval ) ) return retval;
 		}
 	}
@@ -122,7 +122,7 @@ LRESULT CALLBACK WndProc( HWND hwnd, UINT uMessage, WPARAM wParam, LPARAM lParam
 	switch (uMessage)
 	{
 	case WM_CREATE:
-		SetWindowLong( hwnd, GWL_USERDATA, -1 );
+		SetWindowLongPtr( hwnd, GWLP_USERDATA, -1 );
 		return 0;
 
 	case WM_PALETTECHANGED:
@@ -197,7 +197,7 @@ LRESULT CALLBACK WndProc( HWND hwnd, UINT uMessage, WPARAM wParam, LPARAM lParam
 		break;
 	case WM_COMMAND:
 		if ( wParam & MESSAGE_HSPOBJ ) {
-			id = GetWindowLong( hwnd, GWL_USERDATA );
+			id = (int)GetWindowLongPtr( hwnd, GWLP_USERDATA );
 			bm =curwnd->GetBmscr( id );
 			//Alertf( "%d,%x,%x (%d)",id,wParam,lParam , ( wParam & (MESSAGE_HSPOBJ-1)) );
 			bm->SendHSPObjectNotice( (int)wParam );
@@ -212,7 +212,7 @@ LRESULT CALLBACK WndProc( HWND hwnd, UINT uMessage, WPARAM wParam, LPARAM lParam
 
 	case WM_QUERYENDSESSION:
 	case WM_CLOSE:
-		id = GetWindowLong( hwnd, GWL_USERDATA );
+		id = (int)GetWindowLongPtr( hwnd, GWLP_USERDATA );
 		if ( code_isirq( HSPIRQ_ONEXIT ) ) {
 			int iparam = 0;
 			if ( uMessage == WM_QUERYENDSESSION ) iparam++;
@@ -226,7 +226,7 @@ LRESULT CALLBACK WndProc( HWND hwnd, UINT uMessage, WPARAM wParam, LPARAM lParam
 
 	case WM_DRAWITEM:
 		if ( wParam & MESSAGE_HSPOBJ ) {
-			id = GetWindowLong( hwnd, GWL_USERDATA );
+			id = (int)GetWindowLongPtr( hwnd, GWLP_USERDATA );
 			bm =curwnd->GetBmscr( id );
 			bm->SendHSPObjectDraw( (int)wParam, (LPDRAWITEMSTRUCT)lParam );
 		}
@@ -486,7 +486,7 @@ void HspWnd::MakeBmscrWnd( int id, int type, int xx, int yy, int wx, int wy, int
 		SetWindowLong( hwnd, GWL_EXSTYLE, exstyle );
 	}
 
-	SetWindowLong( hwnd, GWL_USERDATA, id );
+	SetWindowLongPtr( hwnd, GWLP_USERDATA, id );
 
 	Bmscr * bm = new Bmscr;
 	mem_bm[ id ] = bm;
