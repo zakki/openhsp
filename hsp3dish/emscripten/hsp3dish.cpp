@@ -54,7 +54,7 @@ static int hsp_limit_step_per_frame;
 static int hsp_sscnt, hsp_ssx, hsp_ssy;
 #endif
 
-static bool keys[1000];
+static bool keys[SDLK_LAST];
 
 /*----------------------------------------------------------*/
 void handleEvent() {
@@ -457,6 +457,10 @@ int hsp3dish_init( char *startfile )
 	if ( hsp->Reset( mode ) ) {
 		hsp3dish_dialog( "Startup failed." );
 		return 1;
+	}
+
+	for (int i = 0; i < SDLK_LAST; i++) {
+		keys[i] = false;
 	}
 
 	ctx = &hsp->hspctx;
