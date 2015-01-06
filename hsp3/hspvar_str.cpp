@@ -52,7 +52,7 @@ static void *HspVarStr_Cnv( const void *buffer, int flag )
 	switch( flag ) {
 	case HSPVAR_FLAG_INT:
 #ifdef HSPWIN
-		itoa( *(int *)buffer, conv, 10 );
+		_itoa( *(int *)buffer, conv, 10 );
 #else
 		sprintf( conv, "%d", *(int*)buffer);
 #endif

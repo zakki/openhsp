@@ -3323,7 +3323,7 @@ void code_adddbg( char *name, int val )
 {
 	char tmp[32];
 #ifdef HSPWIN
-	itoa( val, tmp, 10 );
+	_itoa( val, tmp, 10 );
 #else
 	sprintf( tmp, "%d", val);
 #endif
@@ -3335,7 +3335,7 @@ void code_adddbg2( char *name, int val )
 {
 	char tmp[32];
 #ifdef HSPWIN
-	itoa( val, tmp, 10 );
+	_itoa( val, tmp, 10 );
 #else
 	sprintf( tmp, "%d", val);
 #endif
