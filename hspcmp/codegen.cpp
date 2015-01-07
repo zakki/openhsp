@@ -3019,7 +3019,7 @@ int CToken::GenerateCode( CMemBuf *srcbuf, char *oname, int mode )
 		hsphed.h2='S';
 		hsphed.h3='P';
 		hsphed.h4='3';
-		hsphed.version = 0x0301;						// version3.1
+		hsphed.version = 0x0350;						// version3.5
 		hsphed.max_val = cg_valcnt;						// max count of VAL Object
 		hsphed.allsize  = sz_hed + cs_size + ds_size + ot_size + di_size;
 		hsphed.allsize += li_size + fi_size + mi_size + fi2_size + hpi_size;
@@ -3048,6 +3048,12 @@ int CToken::GenerateCode( CMemBuf *srcbuf, char *oname, int mode )
 		hsphed.pt_hpidat = hsphed.pt_finfo2 + fi2_size;	// ptr to Debug Info
 		hsphed.max_hpi = hpi_size;						// size of HPIDAT
 		hsphed.max_varhpi = cg_varhpi;					// Num of Vartype Plugins
+
+		hsphed.pt_sr = 0;								// ptr to SysReq Segment
+		hsphed.max_sr = 0;								// size of SysReq Segment
+		hsphed.opt1 = 0;
+		hsphed.opt2 = 0;
+
 
 		axbuf.PutData( &hsphed, sizeof(HSPHED) );
 		if ( sz_opt ) axbuf.PutData( optbuf.GetBuffer(), sz_opt );

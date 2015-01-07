@@ -99,11 +99,20 @@ int hsp3win_debugopen( void )
 	//
 #ifdef HSPDEBUG
 	if ( h_dbgwin != NULL ) return 0;
-	h_dbgwin = LoadLibrary( "hsp3debug.dll" );
+#ifdef HSP64
+	h_dbgwin = LoadLibrary( "hsp3debug_64.dll" );
+#else
+	h_dbgwin = LoadLibrary("hsp3debug.dll");
+#endif
 	if ( h_dbgwin != NULL ) {
-		dbgwin = (HSP3DBGFUNC)GetProcAddress( h_dbgwin, "_debugini@16" );
-		dbgnotice = (HSP3DBGFUNC)GetProcAddress( h_dbgwin, "_debug_notice@16" );
-		if (( dbgwin == NULL )||( dbgnotice == NULL )) h_dbgwin = NULL;
+#ifdef HSP64
+		dbgwin = (HSP3DBGFUNC)GetProcAddress(h_dbgwin, "debugini");
+		dbgnotice = (HSP3DBGFUNC)GetProcAddress( h_dbgwin, "debug_notice" );
+#else
+		dbgwin = (HSP3DBGFUNC)GetProcAddress(h_dbgwin, "_debugini@16");
+		dbgnotice = (HSP3DBGFUNC)GetProcAddress(h_dbgwin, "_debug_notice@16");
+#endif
+		if ((dbgwin == NULL) || (dbgnotice == NULL)) h_dbgwin = NULL;
 	}
 	if ( h_dbgwin == NULL ) {
 		hsp3win_dialog( "No debug module." );
