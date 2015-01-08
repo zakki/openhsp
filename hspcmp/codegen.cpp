@@ -3049,8 +3049,8 @@ int CToken::GenerateCode( CMemBuf *srcbuf, char *oname, int mode )
 		hsphed.max_hpi = hpi_size;						// size of HPIDAT
 		hsphed.max_varhpi = cg_varhpi;					// Num of Vartype Plugins
 
-		hsphed.pt_sr = 0;								// ptr to SysReq Segment
-		hsphed.max_sr = 0;								// size of SysReq Segment
+		hsphed.pt_sr = sizeof(HSPHED);					// ptr to Option Segment
+		hsphed.max_sr = sz_opt;							// size of Option Segment
 		hsphed.opt1 = 0;
 		hsphed.opt2 = 0;
 

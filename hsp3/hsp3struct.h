@@ -94,8 +94,8 @@ typedef struct HSPHED
 
 	//		HSP3.5 extra header structure
 	//
-	int		pt_sr;				// ptr to SysReq Segment
-	int		max_sr;				// size of SR
+	int		pt_sr;				// ptr to Option Segment
+	int		max_sr;				// size of Option Segment
 	int		opt1;				// option (reserved)
 	int		opt2;				// option (reserved)
 
