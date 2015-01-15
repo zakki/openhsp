@@ -91,9 +91,13 @@ typedef struct MACDEF {
 #define COMP_MODE_DEBUGWIN 2
 #define COMP_MODE_UTF8 4
 
-#define HEDINFO_RUNTIME 0x1000		// runtime指定用のヘッダ情報
-
 #define SWSTACK_MAX 32
+
+#define HEDINFO_RUNTIME 0x1000		// 動的ランタイムを有効にする
+#define HEDINFO_NOMMTIMER 0x2000	// マルチメディアタイマーを無効にする
+#define HEDINFO_NODXSOUND 0x4000	// DirectXによるサウンド再生を無効にする
+#define HEDINFO_FLOAT32 0x8000		// 実数を32bit floatとして処理する
+#define HEDINFO_ORGRND 0x10000		// 標準の乱数発生を使用する
 
 enum ppresult_t {
 	PPRESULT_SUCCESS,				// 成功
@@ -244,6 +248,7 @@ private:
 	ppresult_t PP_Aht( void );
 	ppresult_t PP_Ahtout( void );
 	ppresult_t PP_Ahtmes( void );
+	ppresult_t PP_BootOpt( void );
 
 	void SetModuleName( char *name );
 	char *GetModuleName( void );
@@ -436,6 +441,7 @@ private:
 	int hed_option;
 	char hed_runtime[64];
 	int hed_cmpmode;
+	int hed_autoopt_timer;
 
 	//		for Struct
 	int	cg_stnum;

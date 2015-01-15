@@ -103,9 +103,13 @@ typedef struct HSPHED
 
 //#define HSPHED_BOOTOPT_WINHIDE 2			// 起動時ウインドゥ非表示
 //#define HSPHED_BOOTOPT_DIRSAVE 4			// 起動時カレントディレクトリ変更なし
-#define HSPHED_BOOTOPT_DEBUGWIN 1			// 起動時デバッグウインドゥ表示
 //#define HSPHED_BOOTOPT_SAVER 0x100			// スクリーンセーバー
+#define HSPHED_BOOTOPT_DEBUGWIN 1			// 起動時デバッグウインドゥ表示
 #define HSPHED_BOOTOPT_RUNTIME 0x1000		// 動的ランタイムを有効にする
+#define HSPHED_BOOTOPT_NOMMTIMER 0x2000		// マルチメディアタイマーを無効にする
+#define HSPHED_BOOTOPT_NODXSOUND 0x4000		// DirectXによるサウンド再生を無効にする
+#define HSPHED_BOOTOPT_FLOAT32 0x8000		// 実数を32bit floatとして処理する
+#define HSPHED_BOOTOPT_ORGRND 0x10000		// 標準の乱数発生を使用する
 
 #define HPIDAT_FLAG_TYPEFUNC 0
 #define HPIDAT_FLAG_VARFUNC 1

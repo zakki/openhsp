@@ -399,14 +399,14 @@ int hsp3win_init( HINSTANCE hInstance, char *startfile )
 
 	// timerGetTime関数による精度アップ(μ秒単位)
 	timer_period = -1;
-#if 1
-	TIMECAPS caps;
-	if (timeGetDevCaps(&caps,sizeof(TIMECAPS)) == TIMERR_NOERROR){
-		// マルチメディアタイマーのサービス精度を最大に
-		timer_period = caps.wPeriodMin;
-		timeBeginPeriod( timer_period );
+	if (( ctx->hsphed->bootoption & HSPHED_BOOTOPT_NOMMTIMER ) == 0 ) {
+		TIMECAPS caps;
+		if ( timeGetDevCaps(&caps,sizeof(TIMECAPS)) == TIMERR_NOERROR ){
+			// マルチメディアタイマーのサービス精度を最大に
+			timer_period = caps.wPeriodMin;
+			timeBeginPeriod( timer_period );
+		}
 	}
-#endif
 
 	//		Initalize GUI System
 	//

@@ -1330,6 +1330,11 @@ void CToken::CheckInternalProgCMD( int opt, int orgcs )
 		PutCS( lb->GetType(i), lb->GetOpt(i), EXFLG_2 );
 		break;
 
+	case 0x08:					// await
+		//	await命令の出現をカウントする(HEDINFO_NOMMTIMER自動設定のため)
+		if ( hed_autoopt_timer >= 0 ) hed_autoopt_timer++;
+		break;
+
 	case 0x09:					// dim
 	case 0x0a:					// sdim
 	case 0x0d:					// dimtype
@@ -3003,6 +3008,18 @@ int CToken::GenerateCode( CMemBuf *srcbuf, char *oname, int mode )
 
 		//		デバッグウインドゥ表示
 		if ( mode & COMP_MODE_DEBUGWIN ) hsphed.bootoption |= HSPHED_BOOTOPT_DEBUGWIN;
+		//		起動オプションの設定
+		if (hed_autoopt_timer >= 0) {
+			// awaitが使用されていない場合はマルチメディアタイマーを無効にする(自動設定)
+			if (hed_autoopt_timer == 0) hsphed.bootoption |= HSPHED_BOOTOPT_NOMMTIMER;
+		} else {
+			// 設定されたオプションに従ってマルチメディアタイマーを無効にする
+			if (hed_option & HEDINFO_NOMMTIMER) hsphed.bootoption |= HSPHED_BOOTOPT_NOMMTIMER;
+		}
+
+		if (hed_option & HEDINFO_NODXSOUND) hsphed.bootoption |= HSPHED_BOOTOPT_NODXSOUND;	// DirectXによるサウンド再生を無効にする
+		if (hed_option & HEDINFO_FLOAT32) hsphed.bootoption |= HSPHED_BOOTOPT_FLOAT32;		// 実数を32bit floatとして処理する
+		if (hed_option & HEDINFO_ORGRND) hsphed.bootoption |= HSPHED_BOOTOPT_ORGRND;		// 標準の乱数発生を使用する
 
 		cs_size = cs_buf->GetSize();
 		ds_size = ds_buf->GetSize();

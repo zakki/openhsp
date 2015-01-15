@@ -103,6 +103,12 @@ char 	s_rec[1]= "", *hsp_prestr[] =
 	"$02a 8 split",					// (3.2)
 	"$02b 8 strrep",				// (3.4)
 	"$02c 8 setease",				// (3.4)
+	"$02d 8 sortval",				// (3.5)
+	"$02e 8 sortstr",				// (3.5)
+	"$02f 8 sortnote",				// (3.5)
+	"$030 8 sortget",				// (3.5)
+	"$031 8 xnotesel",				// (3.5)
+	"$032 8 xnoteadd",				// (3.5)
 
 	//	enhanced command (ver2.2)
 
@@ -185,6 +191,19 @@ char 	s_rec[1]= "", *hsp_prestr[] =
 	"$03d 9 celdiv",				// (ver3.2)
 	"$03e 9 celput",				// (ver3.2)
 
+	"$03f 9 gfilter",				// (ver3.5)
+	"$040 9 setreq",				// (ver3.5)
+	"$041 9 getreq",				// (ver3.5)
+	"$042 9 mmvol",					// (ver3.5)
+	"$043 9 mmpan",					// (ver3.5)
+	"$044 9 mmstat",				// (ver3.5)
+	"$045 9 mtlist",				// (ver3.5)
+	"$046 9 mtinfo",				// (ver3.5)
+	"$047 9 devinfo",				// (ver3.5)
+	"$048 9 devinfoi",				// (ver3.5)
+	"$049 9 devprm",				// (ver3.5)
+	"$04a 9 devcontrol",			// (ver3.5)
+
 	//	enhanced command (ver3.0)
 
 	"$000 17 newcom",
@@ -263,6 +282,7 @@ char 	s_rec[1]= "", *hsp_prestr[] =
 	"$189 13 limitf",
 	"$18a 13 powf",						// (3.3)
 	"$18b 13 geteasef",					// (3.4)
+	"$18c 13 rndf",						// (3.5)
 
 	//	3.0 external sysvar,function
 
@@ -322,31 +342,7 @@ char 	*hsp_prepp[] =
 	"$000 0 #defint",					// (3.3)
 	"$000 0 #defdouble",
 	"$000 0 #defnone",
-
-#if 0
-	"$000 1 and",
-	"$000 1 or",
-	"$000 1 xor",
-	"$000 1 not",
-	"$000 1 do",
-	"$000 1 until",
-	"$000 1 while",
-	"$000 1 wend",
-	"$000 1 for",
-	"$000 1 next",
-
-	"$000 1 _break",
-	"$000 1 _continue",
-	"$000 1 switch",
-	"$000 1 case",
-	"$000 1 default",
-	"$000 1 swbreak",
-	"$000 1 swend",
-
-	"$000 1 alloc",
-	"$000 1 ddim",
-	"$000 1 ldim",					// (3.2)
-#endif
+	"$000 0 #bootopt",					// (3.5)
 
 	"*"
 };

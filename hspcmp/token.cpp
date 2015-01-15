@@ -207,6 +207,7 @@ void CToken::ResetCompiler( void )
 	//		reset header info
 	hed_option = 0;
 	hed_runtime[0] = 0;
+	hed_autoopt_timer = 0;
 }
 
 
@@ -2887,6 +2888,56 @@ ppresult_t CToken::PP_RuntimeOpt( void )
 }
 
 
+
+ppresult_t CToken::PP_BootOpt(void)
+{
+	//		#bootoptâêÕ
+	//
+	int i;
+	char optname[1024];
+
+	i = GetToken();
+	if (i != TK_OBJ) {
+		SetError("illegal option name"); return PPRESULT_ERROR;
+	}
+	strcase2((char *)s3, optname);
+
+	i = GetToken();
+	if (i != TK_NUM) {
+		SetError("illegal option parameter"); return PPRESULT_ERROR;
+	}
+
+	i = 0;
+	if (tstrcmp(optname, "notimer")) {			// No MMTimer sw
+		i = HEDINFO_NOMMTIMER;
+		hed_autoopt_timer = -1;
+	}
+	if (tstrcmp(optname, "nodxsound")) {		// No DirectSound sw
+		i = HEDINFO_NODXSOUND;
+	}
+	if (tstrcmp(optname, "float32")) {			// float32 sw
+		i = HEDINFO_FLOAT32;
+	}
+	if (tstrcmp(optname, "orgrnd")) {			// standard random sw
+		i = HEDINFO_ORGRND;
+	}
+
+	if (i == 0) {
+		SetError("illegal option name"); return PPRESULT_ERROR;
+	}
+
+	if (val) {
+		hed_option |= i;
+	}
+	else {
+		hed_option &= ~i;
+	}
+	return PPRESULT_SUCCESS;
+}
+
+
+
+
 void CToken::PreprocessCommentCheck( char *str )
 {
 	int qmode;
@@ -3147,7 +3198,11 @@ ppresult_t CToken::Preprocess( char *str )
 		res = PP_RuntimeOpt();
 		return res;
 	}
-	if (tstrcmp(word,"cmpopt")) {		// compile option process
+	if (tstrcmp(word, "bootopt")) {		// boot option process
+		res = PP_BootOpt();
+		return res;
+	}
+	if (tstrcmp(word, "cmpopt")) {		// compile option process
 		res = PP_CmpOpt();
 		return res;
 	}
@@ -3681,7 +3736,7 @@ char *CToken::ExecSCNV( char *srcbuf, int opt )
 {
 	//		ï∂éöÉRÅ[Éhïœä∑
 	//
-	int ressize;
+	//int ressize;
 	int size;
 
 	if ( scnvbuf == NULL ) InitSCNV( SCNVBUF_DEFAULTSIZE );
