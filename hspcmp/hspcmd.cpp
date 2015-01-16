@@ -107,8 +107,6 @@ char 	s_rec[1]= "", *hsp_prestr[] =
 	"$02e 8 sortstr",				// (3.5)
 	"$02f 8 sortnote",				// (3.5)
 	"$030 8 sortget",				// (3.5)
-	"$031 8 xnotesel",				// (3.5)
-	"$032 8 xnoteadd",				// (3.5)
 
 	//	enhanced command (ver2.2)
 
@@ -261,6 +259,7 @@ char 	s_rec[1]= "", *hsp_prestr[] =
 	"$010 13 abs",						// (3.0)
 	"$011 13 limit",					// (3.0)
 	"$012 13 getease",					// (3.4)
+	"$013 13 notefind",					// (3.5)
 
 	//	3.0 string function
 	"$100 13 str",
@@ -282,7 +281,6 @@ char 	s_rec[1]= "", *hsp_prestr[] =
 	"$189 13 limitf",
 	"$18a 13 powf",						// (3.3)
 	"$18b 13 geteasef",					// (3.4)
-	"$18c 13 rndf",						// (3.5)
 
 	//	3.0 external sysvar,function
 

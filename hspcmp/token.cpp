@@ -2912,8 +2912,8 @@ ppresult_t CToken::PP_BootOpt(void)
 		i = HEDINFO_NOMMTIMER;
 		hed_autoopt_timer = -1;
 	}
-	if (tstrcmp(optname, "nodxsound")) {		// No DirectSound sw
-		i = HEDINFO_NODXSOUND;
+	if (tstrcmp(optname, "nogdip")) {			// No GDI+ sw
+		i = HEDINFO_NOGDIP;
 	}
 	if (tstrcmp(optname, "float32")) {			// float32 sw
 		i = HEDINFO_FLOAT32;

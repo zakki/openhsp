@@ -95,7 +95,7 @@ typedef struct MACDEF {
 
 #define HEDINFO_RUNTIME 0x1000		// 動的ランタイムを有効にする
 #define HEDINFO_NOMMTIMER 0x2000	// マルチメディアタイマーを無効にする
-#define HEDINFO_NODXSOUND 0x4000	// DirectXによるサウンド再生を無効にする
+#define HEDINFO_NOGDIP 0x4000		// GDI+による描画を無効にする
 #define HEDINFO_FLOAT32 0x8000		// 実数を32bit floatとして処理する
 #define HEDINFO_ORGRND 0x10000		// 標準の乱数発生を使用する
 

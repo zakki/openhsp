@@ -3017,7 +3017,7 @@ int CToken::GenerateCode( CMemBuf *srcbuf, char *oname, int mode )
 			if (hed_option & HEDINFO_NOMMTIMER) hsphed.bootoption |= HSPHED_BOOTOPT_NOMMTIMER;
 		}
 
-		if (hed_option & HEDINFO_NODXSOUND) hsphed.bootoption |= HSPHED_BOOTOPT_NODXSOUND;	// DirectXによるサウンド再生を無効にする
+		if (hed_option & HEDINFO_NOGDIP) hsphed.bootoption |= HSPHED_BOOTOPT_NOGDIP;		// GDI+による描画を無効にする
 		if (hed_option & HEDINFO_FLOAT32) hsphed.bootoption |= HSPHED_BOOTOPT_FLOAT32;		// 実数を32bit floatとして処理する
 		if (hed_option & HEDINFO_ORGRND) hsphed.bootoption |= HSPHED_BOOTOPT_ORGRND;		// 標準の乱数発生を使用する
 
