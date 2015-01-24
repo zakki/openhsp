@@ -1,3 +1,7 @@
+#if defined(OPENGL_ES) || defined(GL_ES)
+precision highp float;
+#endif
+
 #define LIGHTING
 
 // Attributes
