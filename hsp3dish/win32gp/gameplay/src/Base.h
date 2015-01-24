@@ -175,6 +175,9 @@ extern void print(const char* format, ...);
 #elif __APPLE__
 #include <OpenAL/al.h>
 #include <OpenAL/alc.h>
+#elif EMSCRIPTEN
+#include <AL/al.h>
+#include <AL/alc.h>
 #endif
 //#include <vorbis/vorbisfile.h>
 
@@ -251,6 +254,10 @@ using std::va_list;
     #else
         #error "Unsupported Apple Device"
     #endif
+#elif EMSCRIPTEN
+    #define GLEW_STATIC
+    #include <GL/glew.h>
+    #define USE_VAO
 #endif
 
 // Graphics (GLSL)

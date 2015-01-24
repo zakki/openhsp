@@ -315,7 +315,7 @@ Bundle::Reference* Bundle::seekTo(const char* id, unsigned int type)
 
     if (ref->type != type)
     {
-        GP_ERROR("Object '%s' in bundle '%s' has type %d (expected type %d).", id, _path.c_str(), (int)ref->type, (int)type);
+        GP_WARN("Object '%s' in bundle '%s' has type %d (expected type %d).", id, _path.c_str(), (int)ref->type, (int)type);
         return NULL;
     }
 
