@@ -9,12 +9,24 @@
 
 #define STRICT
 
+#ifdef HSPWIN
 #include <windows.h>
 #include <mmsystem.h>
 #include <string.h>
 #include <objbase.h>
 #include <commctrl.h>
 #include <shellapi.h>
+#endif
+
+#ifdef HSPEMSCRIPTEN
+#define GL_GLEXT_PROTOTYPES
+#include <GL/gl.h>
+#include <GL/glext.h>
+//#include <GL/glut.h>
+#include "SDL/SDL.h"
+#include "SDL/SDL_image.h"
+#include "SDL/SDL_opengl.h"
+#endif
 
 #include "../../hsp3/hsp3config.h"
 #include "../hgio.h"
@@ -23,6 +35,7 @@
 
 #define RELEASE(x) 	if(x){x->Release();x=NULL;}
 
+#ifdef HSPWIN
 #pragma comment(lib, "d3d8.lib")
 #pragma comment(lib, "dxguid.lib")
 
@@ -36,10 +49,26 @@
 #pragma comment(lib, "BulletCollision.lib")
 #pragma comment(lib, "LinearMath.lib")
 
+#define M_PI	(3.14159265358979323846f)
+#endif
+
 extern gamehsp *game;
 extern gameplay::Platform *platform;
 
-#define M_PI	(3.14159265358979323846f)
+#ifdef HSPEMSCRIPTEN
+static int		mouse_x;
+static int		mouse_y;
+static int		mouse_btn;
+static int   _originX; 	//原点X
+static int   _originY; 	//原点Y
+static float _scaleX;	// スケールX
+static float _scaleY;	// スケールY
+static float _rateX;	// 1/スケールX
+static float _rateY;	// 1/スケールY
+
+extern bool get_key_state(int sym);
+#endif
+
 
 /*------------------------------------------------------------*/
 /*
@@ -97,7 +126,9 @@ void CloseMemFilePtr( void )
 static		int nDestWidth;		// 描画座標幅
 static		int nDestHeight;	// 描画座標高さ
 
+#ifdef HSPWIN
 static		HWND master_wnd;	// 表示対象Window
+#endif
 static		int drawflag;		// レンダー開始フラグ
 static		BMSCR mestexbm;		// テキスト表示用ダミーBMSCR
 
@@ -134,11 +165,22 @@ void hgio_init( int mode, int sx, int sy, void *hwnd )
 	SetSysReq( SYSREQ_RESULT, 0 );
 	SetSysReq( SYSREQ_RESVMODE, 0 );
 
+#ifdef HSPWIN
 	master_wnd = (HWND)hwnd;
+#endif
 	mainbm = NULL;
 	drawflag = 0;
 	nDestWidth = sx;
 	nDestHeight = sy;
+
+#ifdef HSPEMSCRIPTEN
+	_originX = 0;
+	_originY = 0;
+	_scaleX = 1.0f;
+	_scaleY = 1.0f;
+	_rateX = 1.0f;
+	_rateY = 1.0f;
+#endif
 
 	//		infovalをリセット
 	//
@@ -174,6 +216,7 @@ void hgio_resume( void )
 
 int hgio_render_end( void )
 {
+	//printf("hgio_render_end\n");
 	int res;
 
 	if ( drawflag == 0 ) return 0;
@@ -189,6 +232,7 @@ int hgio_render_end( void )
 
 int hgio_render_start( void )
 {
+	//printf("hgio_render_start\n");
 	if ( drawflag ) {
 		hgio_render_end();
 	}
@@ -247,6 +291,7 @@ void hgio_term( void )
 
 int hgio_stick( int actsw )
 {
+#ifdef HSPWIN
 	//		stick用の入力を返す
 	//
 	HWND hwnd;
@@ -269,6 +314,22 @@ int hgio_stick( int actsw )
 	if ( GetAsyncKeyState(2)&0x8000 )  ckey|=512;	// mouse_r
 	if ( GetAsyncKeyState(9)&0x8000 )  ckey|=1024;	// [tab]
 	return ckey;
+#endif
+
+#ifdef HSPEMSCRIPTEN
+	int ckey = 0;
+	if ( mouse_btn ) ckey|=256;	// mouse_l
+	if ( get_key_state(SDLK_LEFT) )  ckey|=1;		// [left]
+	if ( get_key_state(SDLK_UP) )    ckey|=2;		// [up]
+	if ( get_key_state(SDLK_RIGHT) ) ckey|=4;		// [right]
+	if ( get_key_state(SDLK_DOWN) )  ckey|=8;		// [down]
+	if ( get_key_state(SDLK_SPACE) ) ckey|=16;		// [spc]
+	if ( get_key_state(SDLK_RETURN) )ckey|=32;		// [ent]
+	if ( get_key_state(SDLK_LCTRL) ) ckey|=64;		// [ctrl]
+	if ( get_key_state(SDLK_ESCAPE) )ckey|=128;	// [esc]
+	if ( get_key_state(SDLK_TAB) )   ckey|=1024;	// [tab]
+	return ckey;
+#endif
 }
 
 
@@ -293,12 +354,17 @@ int hgio_dialog( int mode, char *str1, char *str2 )
 {
 	//		dialog表示
 	//
+#ifdef HSPWIN
 	int i,res;
 	i = 0;
 	if (mode&1) i|=MB_ICONEXCLAMATION; else i|=MB_ICONINFORMATION;
 	if (mode&2) i|=MB_YESNO; else i|=MB_OK;
 	res = MessageBox( master_wnd, str1, str2, i );
 	return res;
+#endif
+#ifdef HSPEMSCRIPTEN
+	return 0;
+#endif
 }
 
 
@@ -306,7 +372,9 @@ int hgio_title( char *str1 )
 {
 	//		title変更
 	//
+#ifdef HSPWIN
 	SetWindowText( master_wnd, str1 );
+#endif
 	return 0;
 }
 
@@ -1061,12 +1129,32 @@ void hgio_square( BMSCR *bm, int *posx, int *posy, int *color )
 
 int hgio_gettick( void )
 {
+#ifdef HSPWIN
 	return timeGetTime();
+#endif
+
+#ifdef HSPEMSCRIPTEN
+	int i;
+	timespec ts;
+	double nsec;
+	static bool init = false;
+	static int initTime = 0;
+	clock_gettime(CLOCK_REALTIME,&ts);
+	nsec = (double)(ts.tv_nsec) * 0.001 * 0.001;
+	i = (int)ts.tv_sec * 1000 + (int)nsec;
+	if (!init) {
+		init = true;
+		initTime = i;
+	}
+
+	return i - initTime;
+#endif
 }
 
 
 int hgio_exec( char *stmp, char *option, int mode )
 {
+#ifdef HSPWIN
 	int i,j;
 	j=SW_SHOWDEFAULT;if (mode&2) j=SW_SHOWMINIMIZED;
 
@@ -1093,6 +1181,7 @@ int hgio_exec( char *stmp, char *option, int mode )
 		i=WinExec( stmp,j );
 	}
 	if (i<32) throw HSPERR_EXTERNAL_EXECUTE;
+#endif
 	return 0;
 }
 
@@ -1120,6 +1209,7 @@ char *hgio_sysinfo( int p2, int *res, char *outbuf )
 {
 	//		System strings get
 	//
+#if HSPWIN
 	int fl;
 	char pp[128];
 	char *p1;
@@ -1174,12 +1264,34 @@ char *hgio_sysinfo( int p2, int *res, char *outbuf )
 	}
 	*res = fl;
 	return p1;
+#else
+	int fl;
+	char *p1;
+	fl = HSPVAR_FLAG_STR;
+	p1 = outbuf;
+	*p1=0;
+
+	switch(p2) {
+	case 0:
+		break;
+	case 1:
+		break;
+	case 2:
+		break;
+	default:
+		return NULL;
+	}
+	*res = fl;
+	return p1;
+#endif
 }
 
+#ifdef HSPWIN
 HWND hgio_gethwnd( void )
 {
 	return master_wnd;
 }
+#endif
 
 
 /*------------------------------------------------------------*/
@@ -1227,6 +1339,32 @@ void hgio_text_render( void )
 {
 }
 
+
+
+#endif
+
+#ifdef HSPEMSCRIPTEN
+
+char *hgio_getstorage( char *fname )
+{
+	return fname;
+}
+
+void hgio_touch( int xx, int yy, int button )
+{
+    Bmscr *bm;
+	mouse_x = ( xx - _originX ) * _rateX;
+	mouse_y = ( yy - _originY ) * _rateY;
+	mouse_btn = button;
+    if ( mainbm != NULL ) {
+        mainbm->savepos[BMSCR_SAVEPOS_MOSUEX] = mouse_x;
+        mainbm->savepos[BMSCR_SAVEPOS_MOSUEY] = mouse_y;
+        mainbm->tapstat = button;
+        bm = (Bmscr *)mainbm;
+        bm->UpdateAllObjects();
+        bm->setMTouchByPointId( 0, mouse_x, mouse_y, button!=0 );
+    }
+}
 
 
 #endif

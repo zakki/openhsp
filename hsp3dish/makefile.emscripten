@@ -1,12 +1,23 @@
 CC = em++
 #CFLAGS = -Wall -DHSPDISH -DHSPEMSCRIPTEN -DHSPDEBUG -fpermissive -g4 --js-opts 0 -s SAFE_HEAP=1 -s USE_TYPED_ARRAYS=2 -s LEGACY_GL_EMULATION=1
 #CFLAGS = -Wall -DHSPDISH -DHSPEMSCRIPTEN -DHSPDEBUG -fpermissive -g4 -s USE_TYPED_ARRAYS=2 -s LEGACY_GL_EMULATION=1
-CFLAGS = -Wall -DHSPDISH -DHSPEMSCRIPTEN -DHSPDEBUG \
-	   -fpermissive -O2 \
-	   -s USE_TYPED_ARRAYS=2 -s LEGACY_GL_EMULATION=1 -s DISABLE_EXCEPTION_CATCHING=0 --memory-init-file 0
-# -O2 -s DISABLE_EXCEPTION_CATCHING=0
 
-OBJS = ../hsp3/dpmread.bc \
+CFLAGS_CORE = -Wall -DHSPDISH -DHSPEMSCRIPTEN -DHSPDEBUG \
+	   -fpermissive \
+	   -s USE_TYPED_ARRAYS=2 -s DISABLE_EXCEPTION_CATCHING=0 \
+	   --memory-init-file 0
+CFLAGS_DEBUG =
+#CFLAGS_DEBUG = -g4 --js-opts 0
+
+CFLAGS = $(CFLAGS_CORE) $(CFLAGS_DEBUG) \
+	   -s LEGACY_GL_EMULATION=1 -O3
+
+CFLAGS_GP = $(CFLAGS_CORE) $(CFLAGS_DEBUG) \
+		  -s FULL_ES2=1 -O3 \
+		  -DHSPDISHGP -I emscripten/extlib/include -I win32gp/gameplay/src -I win32gp
+
+OBJS = \
+	../hsp3/dpmread.bc \
 	geometry.bc \
 	hgdx.bc \
 	hgemitter.bc \
@@ -39,13 +50,178 @@ OBJS = ../hsp3/dpmread.bc \
 	emscripten/stb_image.bc \
 	emscripten/supio_emscripten.bc
 
-TARGET = emscripten/hsp3dish.js
+OBJS_GP = \
+	../hsp3/dpmread.gp.bc \
+	geometry.gp.bc \
+	hgdx.gp.bc \
+	hgemitter.gp.bc \
+	hgevent.gp.bc \
+	hgmodel.gp.bc \
+	hgobj.gp.bc \
+	../hsp3/hsp3.gp.bc \
+	../hsp3/hsp3code.gp.bc \
+	../hsp3/hsp3debug_utf8.gp.bc \
+	hsp3gr_dish.gp.bc \
+	../hsp3/hsp3int.gp.bc \
+	../hsp3/hspvar_core.gp.bc \
+	../hsp3/hspvar_double.gp.bc \
+	../hsp3/hspvar_int.gp.bc \
+	../hsp3/hspvar_label.gp.bc \
+	../hsp3/hspvar_str.gp.bc \
+	../hsp3/hspvar_struct.gp.bc \
+	hspwnd_dish.gp.bc \
+	hspwnd_obj.gp.bc \
+	random.gp.bc \
+	../hsp3/stack.gp.bc \
+	../hsp3/strbuf.gp.bc \
+	../hsp3/strnote.gp.bc \
+	sysreq.gp.bc \
+	win32gp/gamehsp.gp.bc \
+	win32gp/gpcam.gp.bc \
+	win32gp/gplgt.gp.bc \
+	win32gp/gpmat.gp.bc \
+	win32gp/gpphy.gp.bc \
+	win32gp/gameplay/src/AbsoluteLayout.gp.bc \
+	win32gp/gameplay/src/AIAgent.gp.bc \
+	win32gp/gameplay/src/AIController.gp.bc \
+	win32gp/gameplay/src/AIMessage.gp.bc \
+	win32gp/gameplay/src/AIState.gp.bc \
+	win32gp/gameplay/src/AIStateMachine.gp.bc \
+	win32gp/gameplay/src/Animation.gp.bc \
+	win32gp/gameplay/src/AnimationClip.gp.bc \
+	win32gp/gameplay/src/AnimationController.gp.bc \
+	win32gp/gameplay/src/AnimationTarget.gp.bc \
+	win32gp/gameplay/src/AnimationValue.gp.bc \
+	win32gp/gameplay/src/AudioController.gp.bc \
+	win32gp/gameplay/src/AudioListener.gp.bc \
+	win32gp/gameplay/src/BoundingBox.gp.bc \
+	win32gp/gameplay/src/BoundingSphere.gp.bc \
+	win32gp/gameplay/src/Bundle.gp.bc \
+	win32gp/gameplay/src/Button.gp.bc \
+	win32gp/gameplay/src/Camera.gp.bc \
+	win32gp/gameplay/src/CheckBox.gp.bc \
+	win32gp/gameplay/src/Container.gp.bc \
+	win32gp/gameplay/src/Control.gp.bc \
+	win32gp/gameplay/src/Curve.gp.bc \
+	win32gp/gameplay/src/DebugNew.gp.bc \
+	win32gp/gameplay/src/DepthStencilTarget.gp.bc \
+	win32gp/gameplay/src/Effect.gp.bc \
+	win32gp/gameplay/src/FileSystem.gp.bc \
+	win32gp/gameplay/src/FlowLayout.gp.bc \
+	win32gp/gameplay/src/Font.gp.bc \
+	win32gp/gameplay/src/Form.gp.bc \
+	win32gp/gameplay/src/FrameBuffer.gp.bc \
+	win32gp/gameplay/src/Frustum.gp.bc \
+	win32gp/gameplay/src/Game.gp.bc \
+	win32gp/gameplay/src/Gamepad.gp.bc \
+	win32gp/gameplay/src/gameplay-main-android.gp.bc \
+	win32gp/gameplay/src/gameplay-main-blackberry.gp.bc \
+	win32gp/gameplay/src/gameplay-main-linux.gp.bc \
+	win32gp/gameplay/src/gameplay-main-windows.gp.bc \
+	win32gp/gameplay/src/HeightField.gp.bc \
+	win32gp/gameplay/src/Image.gp.bc \
+	win32gp/gameplay/src/ImageControl.gp.bc \
+	win32gp/gameplay/src/Joint.gp.bc \
+	win32gp/gameplay/src/Joystick.gp.bc \
+	win32gp/gameplay/src/Label.gp.bc \
+	win32gp/gameplay/src/Layout.gp.bc \
+	win32gp/gameplay/src/Light.gp.bc \
+	win32gp/gameplay/src/Logger.gp.bc \
+	win32gp/gameplay/src/Material.gp.bc \
+	win32gp/gameplay/src/MaterialParameter.gp.bc \
+	win32gp/gameplay/src/MathUtil.gp.bc \
+	win32gp/gameplay/src/Matrix.gp.bc \
+	win32gp/gameplay/src/Mesh.gp.bc \
+	win32gp/gameplay/src/MeshBatch.gp.bc \
+	win32gp/gameplay/src/MeshPart.gp.bc \
+	win32gp/gameplay/src/MeshSkin.gp.bc \
+	win32gp/gameplay/src/Model.gp.bc \
+	win32gp/gameplay/src/Node.gp.bc \
+	win32gp/gameplay/src/ParticleEmitter.gp.bc \
+	win32gp/gameplay/src/Pass.gp.bc \
+	win32gp/gameplay/src/PhysicsCharacter.gp.bc \
+	win32gp/gameplay/src/PhysicsCollisionObject.gp.bc \
+	win32gp/gameplay/src/PhysicsCollisionShape.gp.bc \
+	win32gp/gameplay/src/PhysicsConstraint.gp.bc \
+	win32gp/gameplay/src/PhysicsController.gp.bc \
+	win32gp/gameplay/src/PhysicsFixedConstraint.gp.bc \
+	win32gp/gameplay/src/PhysicsGenericConstraint.gp.bc \
+	win32gp/gameplay/src/PhysicsGhostObject.gp.bc \
+	win32gp/gameplay/src/PhysicsHingeConstraint.gp.bc \
+	win32gp/gameplay/src/PhysicsRigidBody.gp.bc \
+	win32gp/gameplay/src/PhysicsSocketConstraint.gp.bc \
+	win32gp/gameplay/src/PhysicsSpringConstraint.gp.bc \
+	win32gp/gameplay/src/PhysicsVehicle.gp.bc \
+	win32gp/gameplay/src/PhysicsVehicleWheel.gp.bc \
+	win32gp/gameplay/src/Plane.gp.bc \
+	win32gp/gameplay/src/Platform.gp.bc \
+	win32gp/gameplay/src/PlatformAndroid.gp.bc \
+	win32gp/gameplay/src/PlatformBlackBerry.gp.bc \
+	win32gp/gameplay/src/PlatformEmscripten.gp.bc \
+	win32gp/gameplay/src/PlatformLinux.gp.bc \
+	win32gp/gameplay/src/PlatformWindows.gp.bc \
+	win32gp/gameplay/src/Properties.gp.bc \
+	win32gp/gameplay/src/Quaternion.gp.bc \
+	win32gp/gameplay/src/RadioButton.gp.bc \
+	win32gp/gameplay/src/Ray.gp.bc \
+	win32gp/gameplay/src/Rectangle.gp.bc \
+	win32gp/gameplay/src/Ref.gp.bc \
+	win32gp/gameplay/src/RenderState.gp.bc \
+	win32gp/gameplay/src/RenderTarget.gp.bc \
+	win32gp/gameplay/src/Scene.gp.bc \
+	win32gp/gameplay/src/SceneLoader.gp.bc \
+	win32gp/gameplay/src/ScreenDisplayer.gp.bc \
+	win32gp/gameplay/src/ScriptController.gp.bc \
+	win32gp/gameplay/src/ScriptTarget.gp.bc \
+	win32gp/gameplay/src/Slider.gp.bc \
+	win32gp/gameplay/src/SpriteBatch.gp.bc \
+	win32gp/gameplay/src/Technique.gp.bc \
+	win32gp/gameplay/src/Terrain.gp.bc \
+	win32gp/gameplay/src/TerrainPatch.gp.bc \
+	win32gp/gameplay/src/TextBox.gp.bc \
+	win32gp/gameplay/src/Texture.gp.bc \
+	win32gp/gameplay/src/Theme.gp.bc \
+	win32gp/gameplay/src/ThemeStyle.gp.bc \
+	win32gp/gameplay/src/Transform.gp.bc \
+	win32gp/gameplay/src/Vector2.gp.bc \
+	win32gp/gameplay/src/Vector3.gp.bc \
+	win32gp/gameplay/src/Vector4.gp.bc \
+	win32gp/gameplay/src/VertexAttributeBinding.gp.bc \
+	win32gp/gameplay/src/VertexFormat.gp.bc \
+	win32gp/gameplay/src/VerticalLayout.gp.bc \
+	emscripten/hgtex.gp.bc \
+	win32gp/hgiox.gp.bc \
+	emscripten/hsp3dish.gp.bc \
+	emscripten/main.gp.bc \
+	emscripten/mmman.gp.bc \
+	emscripten/stb_image.gp.bc \
+	emscripten/supio_emscripten.gp.bc
 
 LIBS =
+LIBS_GP = \
+	emscripten/extlib/lib/libz.so \
+	emscripten/extlib/lib/libpng16.a \
+	emscripten/extlib/lib/libBulletDynamics.a \
+	emscripten/extlib/lib/libBulletCollision.a \
+	emscripten/extlib/lib/libLinearMath.a
+
+
+TARGETS = emscripten/hsp3dish.js emscripten/hsp3dish-gp.js
+
+LIBS =
+
+all: $(TARGETS)
+
 .SUFFIXES: .cpp
-$(TARGET): $(OBJS) emscripten/license.js
-	$(CC) $(CFLAGS) $(OBJS) -o tmp.js $(LIBS)
-	cat emscripten/license.js tmp.js > $@
+
+emscripten/hsp3dish.js: $(OBJS) emscripten/license.js
+	$(CC) $(CFLAGS) $(OBJS) -o hsp3dish.js $(LIBS)
+	cat emscripten/license.js hsp3dish.js > $@
+
+emscripten/hsp3dish-gp.js: $(OBJS_GP) emscripten/license.js
+	$(CC) $(CFLAGS_GP) $(OBJS_GP) -o hsp3dish-gp.js $(LIBS_GP)
+	cat emscripten/license.js hsp3dish-gp.js > $@
+
 %.bc: %.c
 	echo $(CC) $(CFLAGS) -c $< -o $*.bc
 	$(CC) $(CFLAGS) -c $< -o $*.bc
@@ -53,12 +229,16 @@ $(TARGET): $(OBJS) emscripten/license.js
 	echo $(CC) $(CFLAGS) -c $< -o $*.bc
 	$(CC) $(CFLAGS) -c $< -o $*.bc
 
-clean:
-	rm -f $(OBJS) $(TARGET)
 
-release:
-	make clean
-	make "CFLAGS = -O3 -Wall --input-charset=cp932 --exec-charset=cp932 -DHSPEMSCRIPTEN"
+%.gp.bc: %.c
+	echo $(CC) $(CFLAGS_GP) -c $< -o $*.gp.bc
+	$(CC) $(CFLAGS_GP) -c $< -o $*.gp.bc
+%.gp.bc: %.cpp
+	echo $(CC) $(CFLAGS_GP) -c $< -o $*.gp.bc
+	$(CC) $(CFLAGS_GP) -c $< -o $*.gp.bc
+
+clean:
+	rm -f $(OBJS) $(OBJS_GP) $(TARGETS)
 
 ../hsp3/hsp3debug_utf8.cpp: ../hsp3/hsp3debug.cpp
 	iconv -f cp932 -t utf-8 $< > $@

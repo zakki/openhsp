@@ -10,6 +10,10 @@
 #include <ctype.h>
 #endif
 
+#ifdef HSPDISHGP
+#include "gamehsp.h"
+#endif
+
 #include "hsp3dish.h"
 #include "../../hsp3/hsp3config.h"
 #include "../../hsp3/strbuf.h"
@@ -56,6 +60,25 @@ static int hsp_sscnt, hsp_ssx, hsp_ssy;
 
 static bool keys[SDLK_LAST];
 
+#ifdef HSPDISHGP
+gamehsp *game;
+gameplay::Platform *platform;
+
+//-------------------------------------------------------------
+//             gameplay Log
+//-------------------------------------------------------------
+
+static char gplog[1024];
+
+extern "C" {
+	static void logfunc( gameplay::Logger::Level level, const char *msg )
+	{
+		printf( "[GamePlay3D] %s\n", gplog );
+		strcat( gplog, msg );
+	}
+}
+#endif
+
 /*----------------------------------------------------------*/
 void handleEvent() {
 	SDL_Event event;
@@ -67,7 +90,12 @@ void handleEvent() {
 				if ( exinfo != NULL ) {
 					SDL_MouseMotionEvent *m = (SDL_MouseMotionEvent*)&event;
 					int x, y;
+#ifdef HSPDISHGP
+					x = m->x;
+					y = m->y;
+#else
 					hgio_scale_point( m->x, m->y, x, y );
+#endif
 
 					bm = (Bmscr *)exinfo->HspFunc_getbmscr(0);
 					bm->savepos[BMSCR_SAVEPOS_MOSUEX] = x;
@@ -365,6 +393,13 @@ int hsp3dish_init( char *startfile )
 #endif
 	InitSysReq();
 
+#ifdef HSPDISHGP
+	SetSysReq( SYSREQ_MAXMATERIAL, 64 );            // マテリアルのデフォルト値
+
+	game = NULL;
+	platform = NULL;
+#endif
+
 	//		HSP関連の初期化
 	//
 	hsp = new Hsp3();
@@ -377,8 +412,13 @@ int hsp3dish_init( char *startfile )
 	//
 	mode = 0;
 	orgexe=0;
+#ifdef HSPEMSCRIPTEN
+	hsp_wx = 960;
+	hsp_wy = 640;
+#else
 	hsp_wx = 320;
 	hsp_wy = 480;
+#endif
 //	hsp_wx = 640;
 //	hsp_wy = 480;
 	hsp_wd = 0;
@@ -475,13 +515,34 @@ int hsp3dish_init( char *startfile )
 	hsp3dish_initwindow( NULL, sx, sy, "HSPDish ver" hspver );
 
 	if ( sx != hsp_wx || sy != hsp_wy ) {
+#ifndef HSPDISHGP
 		hgio_view( hsp_wx, hsp_wy );
 		hgio_size( sx, sy );
 		hgio_autoscale( autoscale );
+#endif
 	}
 
 //	hsp3typeinit_dllcmd( code_gettypeinfo( TYPE_DLLFUNC ) );
 //	hsp3typeinit_dllctrl( code_gettypeinfo( TYPE_DLLCTRL ) );
+
+#ifdef HSPDISHGP
+	//		Initalize gameplay
+	//
+	game = new gamehsp;
+
+	gplog[0] = 0;
+	gameplay::Logger::set( gameplay::Logger::LEVEL_ERROR, logfunc );
+
+	//	platform = gameplay::Platform::create( game, NULL, hsp_wx, hsp_wy, false );
+	platform = gameplay::Platform::create( game, NULL, hsp_wx, hsp_wy, false );
+	if ( platform == NULL ) {
+		hsp3dish_dialog( gplog );
+		hsp3dish_dialog( "OpenGL initalize failed." );
+		return 1;
+	}
+	platform->enterMessagePump();
+	game->frame();
+#endif
 
 	//		Initalize GUI System
 	//
@@ -513,6 +574,18 @@ static void hsp3dish_bye( void )
 	//		タイマーの開放
 	//
 	emscripten_cancel_main_loop();
+
+#ifdef HSPDISHGP
+	//		gameplay関連の解放
+	//
+	if ( platform != NULL ) {
+		platform->shutdownInternal();
+		delete platform;
+	}
+	if ( game != NULL ) {
+		delete game;
+	}
+#endif
 
 	//		HSP関連の解放
 	//
