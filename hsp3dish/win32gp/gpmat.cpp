@@ -11,6 +11,8 @@
 #define SPRITECOL_VSH "res/shaders/spritecol.vert"
 #define SPRITECOL_FSH "res/shaders/spritecol.frag"
 
+bool hasParameter( Material* material, const char* name );
+
 /*------------------------------------------------------------*/
 /*
 		gameplay Material Obj
@@ -139,7 +141,6 @@ Material *gamehsp::getMaterial( int matid )
 	return mat->_material;
 }
 
-
 void gamehsp::setMaterialDefaultBinding( Material* material, int icolor, int matopt )
 {
 	// These parameters are normally set in a .material file but this example sets them programmatically.
@@ -153,31 +154,40 @@ void gamehsp::setMaterialDefaultBinding( Material* material, int icolor, int mat
 //	material->getParameter("u_inverseTransposeWorldViewMatrix")->bindValue( _camera, &Node::getInverseTransposeWorldViewMatrix );
 //	material->getParameter("u_cameraPosition")->bindValue( _camera, &Node::getTranslation );
 
-	material->setParameterAutoBinding("u_cameraPosition", "CAMERA_WORLD_POSITION");
-	material->setParameterAutoBinding("u_worldViewProjectionMatrix", "WORLD_VIEW_PROJECTION_MATRIX");
-	material->setParameterAutoBinding("u_inverseTransposeWorldViewMatrix", "INVERSE_TRANSPOSE_WORLD_VIEW_MATRIX");
+	if ( hasParameter( material, "u_cameraPosition" ) )
+		material->setParameterAutoBinding("u_cameraPosition", "CAMERA_WORLD_POSITION");
+	if ( hasParameter( material, "u_worldViewProjectionMatrix" ) )
+		material->setParameterAutoBinding("u_worldViewProjectionMatrix", "WORLD_VIEW_PROJECTION_MATRIX");
+	if ( hasParameter( material, "u_inverseTransposeWorldViewMatrix" ) )
+		material->setParameterAutoBinding("u_inverseTransposeWorldViewMatrix", "INVERSE_TRANSPOSE_WORLD_VIEW_MATRIX");
 
 	Vector4 color;
 	Node *light_node;
 
 	if ( _curlight < 0 ) {
 		//	カレントライトなし(シーンを参照)
-		material->setParameterAutoBinding("u_ambientColor", "SCENE_AMBIENT_COLOR");
-		material->setParameterAutoBinding("u_lightDirection", "SCENE_LIGHT_DIRECTION");
-		material->setParameterAutoBinding("u_lightColor", "SCENE_LIGHT_COLOR");
+		if ( hasParameter( material, "u_ambientColor" ) )
+			material->setParameterAutoBinding("u_ambientColor", "SCENE_AMBIENT_COLOR");
+		if ( hasParameter( material, "u_lightDirection" ) )
+			material->setParameterAutoBinding("u_lightDirection", "SCENE_LIGHT_DIRECTION");
+		if ( hasParameter( material, "u_lightColor" ) )
+			material->setParameterAutoBinding("u_lightColor", "SCENE_LIGHT_COLOR");
 	} else {
 		//	カレントライトを反映させる
 		gpobj *lgt;
 		lgt = getObj( _curlight );
 		light_node = lgt->_node;
-	    // ライトの方向設定
-	    material->getParameter("u_lightDirection")->bindValue(light_node, &Node::getForwardVectorView);
-	    // ライトの色設定
+		// ライトの方向設定
+		if ( hasParameter( material, "u_lightDirection" ) )
+			material->getParameter("u_lightDirection")->bindValue(light_node, &Node::getForwardVectorView);
+		// ライトの色設定
 		// (リアルタイムに変更を反映させる場合は再設定が必要。現在は未対応)
 		Vector3 *vambient;
 		vambient = (Vector3 *)&lgt->_vec[GPOBJ_USERVEC_WORK];
-	    material->getParameter("u_lightColor")->setValue(light_node->getLight()->getColor());
-		material->getParameter("u_ambientColor")->setValue( vambient );
+		if ( hasParameter( material, "u_lightColor" ) )
+			material->getParameter("u_lightColor")->setValue(light_node->getLight()->getColor());
+		if ( hasParameter( material, "u_ambientColor" ) )
+			material->getParameter("u_ambientColor")->setValue( vambient );
 	}
 
 	//material->setParameterAutoBinding("u_ambientColor", "SCENE_AMBIENT_COLOR");
@@ -185,10 +195,12 @@ void gamehsp::setMaterialDefaultBinding( Material* material, int icolor, int mat
 	//material->setParameterAutoBinding("u_lightColor", "SCENE_LIGHT_COLOR");
 
 	colorVector3( icolor, color );
-	material->getParameter("u_diffuseColor")->setValue(color);
+	if ( hasParameter( material, "u_diffuseColor" ) )
+		material->getParameter("u_diffuseColor")->setValue(color);
 
 	gameplay::MaterialParameter *prm_modalpha;
-	prm_modalpha = material->getParameter("u_modulateAlpha");
+	if ( hasParameter( material, "u_modulateAlpha" ) )
+		prm_modalpha = material->getParameter("u_modulateAlpha");
 	if ( prm_modalpha ) { prm_modalpha->setValue( 1.0f ); }
 
 	RenderState::StateBlock *state;
@@ -414,4 +426,20 @@ int gamehsp::getTextureHeight( void )
 	return _tex_height;
 }
 
-
+bool hasParameter( Material* material, const char* name )
+{
+	int mc = material->getTechniqueCount();
+	for (unsigned int i = 0; i < mc; ++i)
+	{
+		Technique *tech = material->getTechniqueByIndex( i );
+		int pc = tech->getPassCount();
+		for (unsigned int j = 0; j < pc; ++j)
+		{
+			Pass *pass = tech->getPassByIndex(j);
+			Effect *effect = pass->getEffect();
+			if (effect->getUniform( name ) != NULL)
+				return true;
+		}
+	}
+	return false;
+}

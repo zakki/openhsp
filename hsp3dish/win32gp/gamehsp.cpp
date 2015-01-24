@@ -19,6 +19,8 @@ CLSMODE_BLUR,
 CLSMODE_MAX,
 };
 
+extern bool hasParameter( Material* material, const char* name );
+
 /*------------------------------------------------------------*/
 /*
 		gameplay Node Obj
@@ -124,7 +126,8 @@ void gpobj::updateParameter( Material *mat )
 	_prm_modalpha = NULL;
 	if ( _flag == 0 ) return;
 	if ( mat ) {
-		_prm_modalpha = mat->getParameter("u_modulateAlpha");
+		if ( hasParameter( mat, "u_modulateAlpha" ) )
+			_prm_modalpha = mat->getParameter("u_modulateAlpha");
 	}
 }
 
@@ -1234,9 +1237,15 @@ int gamehsp::makeModelNode( char *fname, char *idname )
 
 	Material* boxMaterial = Material::create( fn2 );
 
-	MaterialParameter *ambientColorParam = boxMaterial->getParameter("u_ambientColor");
-	MaterialParameter *lightDirectionParam = boxMaterial->getParameter("u_lightDirection");
-	MaterialParameter *lightColorParam = boxMaterial->getParameter("u_lightColor");
+	MaterialParameter *ambientColorParam =
+		hasParameter( boxMaterial, "u_ambientColor" ) ?
+		boxMaterial->getParameter("u_ambientColor") : NULL;
+	MaterialParameter *lightDirectionParam =
+		hasParameter( boxMaterial, "u_lightDirection" ) ?
+		boxMaterial->getParameter("u_lightDirection") : NULL;
+	MaterialParameter *lightColorParam =
+		hasParameter( boxMaterial, "u_lightColor" ) ?
+		boxMaterial->getParameter("u_lightColor") : NULL;
 
 	if ( _curlight >= 0 ) {
 		//	カレントライトを反映させる
