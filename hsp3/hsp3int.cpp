@@ -12,6 +12,10 @@
 
 #include "hsp3config.h"
 
+#ifdef HSPRANDMT
+#include <random>
+#endif
+
 #ifdef HSPWIN
 #include <windows.h>
 #include <direct.h>
@@ -37,6 +41,9 @@ static int *val;
 static HSPCTX *ctx;			// Current Context
 static HSPEXINFO *exinfo;	// Info for Plugins
 static CStrNote note;
+#ifdef HSPRANDMT
+static std::mt19937 mt;
+#endif
 
 
 /*------------------------------------------------------------*/
@@ -850,7 +857,11 @@ static int cmdfunc_intcmd( int cmd )
 		p2 = (int)time(0);			// Windows以外のランダムシード値
 #endif
 		p1 = code_getdi( p2 );
+#ifdef HSPRANDMT
+		mt.seed( p1 );
+#else
 		srand( p1 );
+#endif
 		break;
 	case 0x28:								// noteunsel
 		ctx->note_aptr = ctx->notep_aptr;
@@ -1026,7 +1037,14 @@ static void *reffunc_intfunc( int *type_res, int arg )
 	case 0x001:								// rnd
 		ival = code_geti();
 		if ( ival == 0 ) throw HSPERR_DIVIDED_BY_ZERO;
+#ifdef HSPRANDMT
+		{
+			std::uniform_int_distribution<int> dist( 0, ival - 1 );
+			reffunc_intfunc_ivalue = dist( mt );
+		}
+#else
 		reffunc_intfunc_ivalue = rand()%ival;
+#endif
 		break;
 	case 0x002:								// strlen
 		sval = code_gets();

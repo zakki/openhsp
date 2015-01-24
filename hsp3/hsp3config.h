@@ -76,6 +76,9 @@
 #define HSPUTF8			// UTF8使用フラグ
 #endif
 
+#if defined(HSPEMSCRIPTEN)
+#define HSPRANDMT // Use std::mt19937
+#endif
 
 //
 //		移植用の定数
