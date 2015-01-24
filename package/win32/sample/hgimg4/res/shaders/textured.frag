@@ -1,8 +1,8 @@
-#define LIGHTING
-
-#ifdef OPENGL_ES
+#if defined(OPENGL_ES) || defined(GL_ES)
 precision highp float;
 #endif
+
+#define LIGHTING
 
 // Uniforms
 uniform sampler2D u_diffuseTexture;             // Diffuse map texture

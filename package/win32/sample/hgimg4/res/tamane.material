@@ -1,10 +1,12 @@
 material Textured
 {
+    u_cameraPosition = CAMERA_WORLD_POSITION
     u_inverseTransposeWorldViewMatrix = INVERSE_TRANSPOSE_WORLD_VIEW_MATRIX
     u_lightColor = SCENE_LIGHT_COLOR
     u_lightDirection = SCENE_LIGHT_DIRECTION
     u_worldViewProjectionMatrix = WORLD_VIEW_PROJECTION_MATRIX
     u_ambientColor = 0.4, 0.4, 0.4
+    u_specularExponent = 50
     
     sampler u_diffuseTexture
     {
