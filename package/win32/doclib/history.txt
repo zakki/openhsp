@@ -5,7 +5,16 @@ Hot Soup Processor ver3.4                           HSP : Hot Soup Processor
 
 ・hsp3関連 更新履歴
 
-	2014/09/19 3.4rc2
+	2015/01/29 3.5 beta1
+
+	64bit(x64)版ランタイム、hsp3_64を追加
+	HSP3Dishのnote系命令で行数を間違える不具合を修正
+	新規プリプロセッサ命令、#bootoptを追加
+	#bootopt命令によるタイマー精度の設定変更に対応
+	[HSP3Dish][android] NDK r10、AdMobの更新に対応
+	[HSP3Dish][android] HSP3Dish Helperの更新
+
+	2014/09/19 3.4(rc2)
 
 	hsp3dish.jsを最新版に更新
 	[HGIMG3] SYSREQ_MAXTEXの指定が正常に反映されない不具合を修正

@@ -9,13 +9,13 @@
 #include "mod_appconfig.as"
 
 #define APPTITLE "HSP3Dish helper"
-#define APPVER "1.0"
+#define APPVER "1.1"
 #define APP_CONF "\\hsp3dh.cfg"
 
 #uselib "shell32.dll"
 #cfunc SHBrowseForFolder "SHBrowseForFolder" int
 #func SHGetPathFromIDList "SHGetPathFromIDList" int,int
-#func SHFileOperation "SHFileOperationA" int
+#func SHFileOperation "SHFileOperation" sptr
 #uselib "ole32.dll"
 #func CoTaskMemFree "CoTaskMemFree" int
 #uselib "KERNEL32.DLL"
@@ -33,7 +33,9 @@
 	;	tool初期化
 	;
 	sdim s1,256:sdim s2,256:sdim s3,256
-	wx=480:wy=240	; ウィンドウサイズ
+	wx=480:wy=320	; ウィンドウサイズ
+	tooly=184+80	; ツールボタン座標
+	dir_gps="google-play-services_lib"
 	;
 	app_winx=-1
 	app_winy=-1
@@ -49,6 +51,7 @@
 	and_pack=""
 	and_fname=""
 	and_keystore=""
+
 	js_pack=""
 	js_fname=""
 	js_memopt=""
@@ -60,6 +63,8 @@
 	ios_ident="onionsoft.hsptv"
 
 	flag_admob=0
+	flag_arm=0
+	flag_hgimg=0
 
 	get_hsp_appdata_path app_dir
 
@@ -81,10 +86,12 @@
 		and_fname=cfg_getvar("and_fname")
 		and_keystore=cfg_getvar("and_keystore")
 		flag_admob = 0+cfg_getvar("flag_admob")
+		flag_arm = 0+cfg_getvar("flag_arm")
+		flag_hgimg = 0+cfg_getvar("flag_hgimg")
 		ios_org=cfg_getvar("ios_org")
 		ios_ident=cfg_getvar("ios_ident")
 	}
-	if and_targetid="" : and_targetid="\"android-17\""
+	if and_targetid="" : and_targetid="\"android-19\""
 	if and_keystore="" : and_keystore="hspapp"
 
 	if app_winx<0 : app_winx = -1
@@ -100,7 +107,7 @@
 	sdim buftxt,$10000
 	sdim tmp,$10000
 	sdim outbuf,$10000
-	sdim ln,4096
+	sdim ln,$10000
 	sdim fname,1024
 	sdim and_package, 256
 
@@ -194,8 +201,33 @@
 	return 0
 #endif
 
+//  DirCopy src, dest, モード(1= 移動 2= コピー 3= 削除 4= リネーム(同一Disc内))
+#deffunc DirCopy str FromFolder,str ToFolder,int mode
+	From= FromFolder : To= ToFolder
+	SHFILEOPSTRUCT = hwnd, mode, varptr.From, varptr.To, $150, -1, 0, 0
+	SHFileOperation varptr.SHFILEOPSTRUCT
+	return
+
 
 ;--------------------------------------------------------------------------------
+;	.ini module
+
+#deffunc ini_load str _p1
+
+	return
+
+#deffunc ini_bye
+
+	return
+
+#defcfunc ini_prm str _p1
+
+	res=""
+	return res
+
+
+;--------------------------------------------------------------------------------
+
 
 *boot
 	;	アプリケーション開始
@@ -249,7 +281,7 @@
 	objsize 160,48
 	button "変換",*mksrc
 
-	y=184
+	y=tooly
 	objsize 148,48
 	color 190,190,240:boxf 8,y,8+144,y+46
 	pos 8+34,y+16:color 0,0,0
@@ -299,6 +331,9 @@
 	objsize 160,24
 	pos 8,110
 	chkbox "AdMobを使用する",flag_admob
+	chkbox "ARM7最適化を無効",flag_arm
+	chkbox "HGIMG4を使用する",flag_hgimg
+	objenable stat,0
 
 	x=ginfo_sx-150:y=114
 	objsize 140,32
@@ -394,7 +429,7 @@
 		button "新規プロジェクト",*go_newproj
 	}
 
-	y=184
+	y=tooly
 	objsize 148,48
 	pos 8,y
 	button "ソース変換/iOS",*srcmenu
@@ -451,7 +486,7 @@
 	objsize 160,48
 	button "変換",*cnv_js
 
-	y=184
+	y=tooly
 	objsize 148,48
 	pos 8,y
 	button "ソース変換/iOS",*srcmenu
@@ -519,9 +554,32 @@
 	pos 408,y:button "参照...",*selpath_proj
 	y+=30
 
-	pos 8,200
-	objsize 160,24
-	button "メインメニュー",*topmenu
+	objsize 128,32
+	pos 8,y
+	button "SDKマネージャー",*exec_sdkman
+	pos 8+138,y
+	button "AdMobセットアップ",*exec_admob
+	pos 8+138*2,y
+	button "Deviceモニター",*exec_devmon
+
+	y=tooly
+	objsize 148,48
+	pos 8,y
+	button "ソース変換/iOS",*srcmenu
+
+	objsize 96,48
+	pos 8+158+104,y
+	button "hsp3dish.js",*go_hsp3js
+
+	objsize 96,48
+	pos 8+158,y
+	button "android",*go_andmenu
+
+	color 190,190,240
+	boxf 8+158+104*2,y,8+158+104*2+96,y+46
+	pos 8+158+104*2+26,y+18:color 0,0,0
+	mes "オプション"
+
 *optmenu_1
 	stop
 
@@ -583,6 +641,8 @@
 	cfg_sets "and_fname",and_fname
 	cfg_sets "and_keystore",and_keystore
 	cfg_seti "flag_admob",flag_admob
+	cfg_seti "flag_arm",flag_arm
+	cfg_seti "flag_hgimg",flag_hgimg
 
 	cfg_sets "ios_org",ios_org
 	cfg_sets "ios_ident",ios_ident
@@ -750,6 +810,7 @@
 	return
 *bat_save
 	chdir app_dir
+	wait 1
 	notesave "go.bat"
 	return
 
@@ -799,6 +860,14 @@
 	if and_package="" {
 		and_package=strf("hsp%04d%02d%02d",gettime(0),gettime(1),gettime(3) )+"."+and_name
 		;mes "パッケージ名が無効です" : goto *and_fin
+	}
+
+	if flag_admob {
+		gosub *check_admob
+		if res {
+			mes "AdMob(GooglePlayServices)が設定されていません。"
+			goto *and_fin
+		}
 	}
 
 	basedir=path_proj+"\\"+and_name+"\\"
@@ -911,30 +980,34 @@ res\\drawable-mdpi\\ic_launcher.png"}
 		s1 = basedir+"src\\tv\\hsp\\HspActivity.java"
 		s2 = dir_exe+"\\android\\hspproj\\src\\tv\\hsp\\HspActivityAdMob.java"
 		bcopy s2,s1
+		s1 = basedir+"libs\\android-support-v4.jar"
+		s2=path_sdk+"\\extras\\android\\support\\v4\\android-support-v4.jar"
+		exist s2
+		if strsize>0 : bcopy s2,s1
 	}
 
 	s1=basedir+"AndroidManifest.xml"
 	notesel tmp
 	noteload s1
 	noteadd "    <uses-sdk android:minSdkVersion=\"10\" />",5,0
-	noteadd "    <application android:icon=\"@drawable/ic_launcher\" android:label=\"@string/app_name\">",6,1
+	noteadd "	<uses-permission android:name=\"android.permission.ACCESS_NETWORK_STATE\"/>",15,0
+	noteadd "	<uses-permission android:name=\"android.permission.INTERNET\"/>",15,0
+	noteadd "	<uses-permission android:name=\"android.permission.VIBRATE\"/>",15,0
+
+
 	noteadd "        <activity android:name=\"tv.hsp.HspActivity\"",7,1
 	noteadd "                  android:screenOrientation=\"portrait\"",8,0
 	noteadd "                  android:theme=\"@android:style/Theme.Black.NoTitleBar.Fullscreen\"",9,0
 	noteadd "            <meta-data android:name=\"android.app.lib_name\"",11,0
 	noteadd "                    android:value=\""+and_name+"\" />",12,0
-	noteadd "	<uses-permission android:name=\"android.permission.VIBRATE\"/>",19,0
 
 	if flag_admob {
-	noteadd "	<activity android:name=\"com.google.ads.AdActivity\"",18,0
-	noteadd "              android:configChanges=\"keyboard|keyboardHidden|orientation|screenLayout|uiMode|screenSize|smallestScreenSize\"/>",19,0
-	noteadd "	<uses-permission android:name=\"android.permission.ACCESS_NETWORK_STATE\"/>",22,0
-	noteadd "	<uses-permission android:name=\"android.permission.INTERNET\"/>",22,0
+	noteadd "        <meta-data android:name=\"com.google.android.gms.version\"",7,0
+	noteadd "            android:value=\"@integer/google_play_services_version\"/>",8,0
+	noteadd "        <activity android:name=\"com.google.android.gms.ads.AdActivity\"",9,0
+	noteadd "                android:configChanges=\"keyboard|keyboardHidden|orientation|screenLayout|uiMode|screenSize|smallestScreenSize\" />",10,0
 	}
 	notesave s1
-
-
-
 
 	s1=basedir+"jni\\Android.mk"
 	notesel tmp
@@ -965,6 +1038,17 @@ res\\drawable-mdpi\\ic_launcher.png"}
 	gsel 1
 	if errflag : mes "エラーのため処理を中断しました" : goto *and_fin
 
+	if flag_admob {
+		outbuf=buf
+		gosub *bat_init
+		tmp+="android update project --target "+and_targetid+" --path ./"+and_name+" --library ../google-play-services_lib\n"
+		gosub *bat_save
+		execcmd "go.bat"
+		if stat : goto *and_fin
+		buf=outbuf+buf
+	}
+
+	gsel 1
 	objprm 0,buf
 	mes "終了しました。"
 
@@ -1505,3 +1589,87 @@ hspproj.xcodeproj\\project.pbxproj"}
 	return
 
 
+*exec_sdkman
+	;	SDKマネージャー起動
+	s1=path_sdk+"\\SDK Manager.exe"
+	exist s1
+	if strsize<=0 {
+		dialog "SDKフォルダが正しく設定されていません。"
+		stop
+	}
+	exec s1
+	stop
+
+*exec_devmon
+	;	Deviceモニター起動
+	s1=path_sdk+"\\tools\\monitor.bat"
+	exist s1
+	if strsize<=0 {
+		dialog "SDKフォルダが正しく設定されていません。"
+		stop
+	}
+	exec s1
+	stop
+
+*exec_admob
+	;	AdMob(GooglePlayServices)設定
+	gosub *check_admob
+	if res=0 {
+		dialog "AdMob(GooglePlayServices)は正常に設定されています。"
+		stop
+	}
+	;
+	initsub
+	gsel 1
+
+	mes "処理中..."
+
+	basedir=path_proj+"\\"+dir_gps
+
+	s2=path_sdk+"\\extras\\android\\support\\v4\\android-support-v4.jar"
+	exist s2
+	if strsize<=0 {
+		dialog "Android Support Libraryがありません。\nSDKマネージャーからインストールしてください。"
+		goto *exec_admob_done
+	}
+
+	s2=path_sdk+"\\extras\\google\\google_play_services\\libproject\\"+dir_gps
+	dirlist s1,s2,5
+	if stat=0 {
+		dialog "Google Play Servicesがありません。\nSDKマネージャーからインストールしてください。"
+		goto *exec_admob_done
+	}
+
+	;DirCopy s2, basedir, 2
+	;mes "ライブラリの準備中..."
+
+	gosub *bat_init
+	tmp+="XCOPY \""+s2+"\" \""+basedir+"\" /S /E /Y /I\n"
+	tmp+="CD "+basedir+"\n"
+	tmp+="android update project --path ./ --target 1 --subprojects\n"
+
+	gosub *bat_save
+
+	execcmd "go.bat"
+	if stat : goto *exec_admob_done
+
+	gsel 1
+	mes "設定完了"
+*exec_admob_done
+	gsel 0
+	stop
+
+*check_admob
+	;	AdMob(GooglePlayServices)が設定されているか?
+	;	res=0の場合はOK、それ以外は設定なし
+	res=-1
+	;
+	basedir=path_proj+"\\"+dir_gps
+	dirlist s1,basedir,5
+	if stat=0 : return
+	;
+	exist basedir+"\\build.xml"
+	if strsize<=0 : return
+	;
+	res=0
+	return

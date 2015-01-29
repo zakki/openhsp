@@ -53,7 +53,7 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 
-import com.google.ads.*;
+import com.google.android.gms.ads.*;
 
 public class HspActivity extends NativeActivity {
 
@@ -244,14 +244,15 @@ public class HspActivity extends NativeActivity {
 
 
 	// for AdMob
-	AdView adView;
-	PopupWindow popUp;
-	HspActivity _activity;
-	LinearLayout layout;
-	LinearLayout mainLayout;
-	boolean adsinited = false;
-	int disp_width = 0;
-	int disp_height = 0;
+	private static AdView adView;
+	private static AdRequest.Builder _request;
+	private static PopupWindow popUp;
+	private static HspActivity _activity;
+	private static LinearLayout layout;
+	private static LinearLayout mainLayout;
+	private static boolean adsinited = false;
+	private static int disp_width = 0;
+	private static int disp_height = 0;
 
 	public void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
@@ -263,9 +264,21 @@ public class HspActivity extends NativeActivity {
 		Display disp = windowmanager.getDefaultDisplay();
 		disp_width = disp.getWidth();
 		disp_height = disp.getHeight();
-	       	//Log.i("HspActivity","size"+disp_width+"x"+disp_height);
+	       	Log.i("HspActivity","size"+disp_width+"x"+disp_height);
 		// Create our ad view here
-		adView = new AdView(_activity, AdSize.BANNER, "publisherID");
+
+		adView = new AdView(_activity);
+		adView.setAdUnitId("ca-app-pub-???????????????????????????");
+		adView.setAdSize(AdSize.BANNER);
+		//adView = new AdView(_activity, AdSize.BANNER, "publisherID");
+		if(adView!=null)  {
+		       	Log.i("HspActivity","done adView initalizing.");
+
+			_request = new AdRequest.Builder();
+			_request.addTestDevice(AdRequest.DEVICE_ID_EMULATOR);
+			adView.loadAd( _request.build() );
+		}
+	       	Log.i("HspActivity","adView initalized.");
 	}
 
 	// Our popup window, you will call it from your C/C++ code later
@@ -274,6 +287,7 @@ public class HspActivity extends NativeActivity {
 			return -1;
 		}
 		if(adView!=null)  {
+		       	Log.i("HspActivity","callAdMob.");
 			_activity.runOnUiThread(new Runnable()  {
 			@Override
 			public void run()  {
@@ -296,16 +310,20 @@ public class HspActivity extends NativeActivity {
 				layout.addView(adView, params);
 				popUp.setContentView(layout);
 				_activity.setContentView(mainLayout, params);
-				AdRequest adRequest = new AdRequest();
+
+				//AdRequest adRequest = new AdRequest();
 				// Enable this if your are testing AdMob, otherwise you'll risk to be banned!
 				//adRequest.addTestDevice(AdRequest.TEST_EMULATOR);
 				//adRequest.addTestDevice("********************************");
-				_activity.adView.loadAd(adRequest);
+				//_activity.adView.loadAd(_request);
+			       	Log.i("HspActivity","loadAd.");
 				// Show our popup window
 				popUp.showAtLocation(mainLayout, Gravity.BOTTOM, 0, 0);
 				popUp.update();
 				}});
 
+		} else {
+		       	Log.i("HspActivity","callAdMob failed.");
 		}
 		return 0;
 	}

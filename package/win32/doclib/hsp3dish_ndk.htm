@@ -14,7 +14,7 @@
 <body>
 	<div id="CONTAINER">
 	<!-- ヘッダー -->
-	<p id="COPY">HSP : HSP3Dish / onion software 2014(c)</p>
+	<p id="COPY">HSP : HSP3Dish / onion software 2015(c)</p>
 	<img src="hsp3dish.jpg" width="640" height="200" alt="タイトル">
 	<h1>HSP3Dish android(NDK)版プログラミングガイド</h1>
 
@@ -64,21 +64,24 @@
 	<ul>
 	<li>android開発環境(SDK) → <a href="http://developer.android.com/sdk/index.html" target="_blank">[ダウンロードサイト]</a>
 	<ul><p>
-	最新版のWindows版zipアーカイブまたはインストーラー版を任意のフォルダに解凍してください。推奨フォルダは、「c:\android\android-sdk～」です。
+	<a href="http://developer.android.com/sdk/index.html#Other" target="_blank">Other Download Options</a>から、SDK Tools Only(Windows版)をダウンロードします。
+	zipアーカイブまたはインストーラー版を任意のフォルダにインストールしてください。推奨フォルダは、「c:\android\android-sdk～」です。
 	(インストールするSDKは基本的に32bit版を推奨します。64bit版での動作は確認していません。)
 	</p></ul>
-	<li>JDK(Java Development Kit) → <a href="http://java.sun.com/javase/ja/6/download.html" target="_blank">[ダウンロードサイト]</a>
+	<li>JDK(Java Development Kit) → <a href="http://www.oracle.com/technetwork/java/index.html" target="_blank">[ダウンロードサイト]</a>
 	<ul><p>
-	JDK (Java Development Kit)をインストールしてください。x86(32bit)版のJRE6+JDK6を推奨します。JDK7(ver1.7)は、apkファイルの署名が正しく行なわれないため推奨されません。
+	JDK (Java Development Kit)をインストールしてください。x86(32bit)版のJRE6+JDK6、またはJRE8+JDK8を推奨します。<br>
+	JDK7(ver1.7)は、apkファイルの署名が正しく行なわれないため推奨されません。
 	</p></ul>
 	<li>Android NDK（Native Development Kit）開発環境 → <a href="http://developer.android.com/sdk/ndk/index.html" target="_blank">[ダウンロードサイト]</a>
 	<ul><p>
-	最新版のWindows版zipアーカイブを任意のフォルダに解凍してください。推奨フォルダは、「c:\android\android-ndk～」です。
-	(動作確認済みのバージョンは、r10です)
+	最新版のWindows版zipアーカイブ(32bit版)を任意のフォルダに解凍してください。推奨フォルダは、「c:\android\android-ndk～」です。
+	(動作確認済みのバージョンは、r10です。r10よりも古いバージョンには対応していません)
 	</p></ul>
 	<li>Apache Ant(開発補助ツール) → <a href="http://www.jajakarta.org/ant/ant-1.6.1/docs/ja/" target="_blank">[ダウンロードサイト]</a>
 	<ul><p>
-	最新版のzipアーカイブを任意のフォルダに解凍してください。推奨フォルダは、「c:\android\apache-ant～」です。
+	最新版のzipアーカイブを任意のフォルダに解凍してください。推奨フォルダは、「c:\android\apache-ant～」です。<br>
+	推奨するantのバージョンは、1.8.4または、1.9.4です。
 	</p></ul>
 	</ul>
 	</p>
@@ -86,24 +89,6 @@
 	<br>
 	<p>
 	推奨するフォルダにアーカイブを解凍した場合、上のような状態になります。(英文字のみ、スペースを含まないフォルダ名を使用してください)
-	</p>
-
-	<h2 id="SDKSETUP">Platform APIインストール</h2>
-	<p>
-	ビルドに必要なPlatform APIのインストールを行ないます。
-	android開発環境(SDK)フォルダ内にある、「SDK Manager.exe」を実行してください。
-	</p>
-	<ul><img src="hsp3dish/s_and3.jpg"><br></ul>
-	<br>
-	<p>
-	このツールにより、必要なAPIをインストールすることができます。(ネットに接続されている必要があります)
-	<br>
-	「Android 4.2.2 (API 17)」のような形で、それぞれのバージョンに対応したAPIのチェックボックスが表示されます。
-	この中で、「Tools」「Android 4.2.2 (API 17)」はチェックを入れて必ずインストールするようにしてください。
-	それ以外のバージョンは必要に応じてインストールして頂いて構いません。
-	<br>
-	「Install packages...」のボタンを押すことで、ダウンロードとインストールが行なわれます。
-	インストールされた項目は、「Installed」の表示が付加されます。
 	</p>
 
 	<h2 id="DHSETUP">HSP3Dish Helperの設定</h2>
@@ -124,6 +109,29 @@
 	最後の「プロジェクト」フォルダ設定は、android用にアプリをビルドする際に作成されるプロジェクトフォルダの起点になる位置を示します。推奨フォルダは、「c:\android」です。
 	</p>
 
+	<h2 id="SDKSETUP">Platform APIインストール</h2>
+	<p>
+	ビルドに必要なPlatform APIのインストールを行ないます。
+	android開発環境(SDK)フォルダ内にある、「SDK Manager.exe」を実行してください。
+	(SDKマネージャーは、HSP3Dish Helperの、「オプション」タブの「SDKマネージャー」ボタンからでも起動できます)
+	</p>
+	<ul><img src="hsp3dish/s_and3.jpg"><br></ul>
+	<br>
+	<p>
+	このツールにより、必要なAPIをインストールすることができます。(ネットに接続されている必要があります)
+	<br>
+	「Android 4.4.2 (API 19)」のような形で、それぞれのバージョンに対応したAPIのチェックボックスが表示されます。
+	この中で、「Tools」「Android 4.4.2 (API 19)」はチェックを入れて必ずインストールするようにしてください。
+	それ以外のバージョンは必要に応じてインストールして頂いて構いません。
+	<br>
+	「Install packages...」のボタンを押すことで、ダウンロードとインストールが行なわれます。
+	インストールされた項目は、「Installed」の表示が付加されます。
+	<br>
+	<br>
+	(何らかの理由でネット接続ができない環境で使用する場合は、一時的にネット接続可能な場所で
+	インストールを行なった後、android開発環境(SDK)フォルダそのものを用意すれば、ビルドには問題ありません。)
+	</p>
+
 	<h2 id="DHNEWPROJ">新規プロジェクトの作成</h2>
 	<p>
 	HSP3Dish Helper(hsp3dh.exe)を起動して、中央下にある「android」ボタンを押して、androidビルドのモードにします。
@@ -142,7 +150,7 @@
 	プロジェクトのタイトル名となります。スペースを含まない英文字のみで指定してください。
 	</p>
 	<li>ID</li><br><p>
-	ビルドのターゲットIDを設定します。ターゲットIDは、SDKのAPIバージョンを指定するための番号になります。デフォルトで「"android-17"」(4.2.2)が指定されています。
+	ビルドのターゲットIDを設定します。ターゲットIDは、SDKのAPIバージョンを指定するための番号になります。デフォルトで「"android-19"」(4.4.2)が指定されています。
 	</p>
 	<ul><img src="hsp3dish/s_and8.jpg"><br></ul>
 	<p>
@@ -157,7 +165,12 @@
 	</p>
 	<li>AdMobを使用する</li><br><p>
 	AdMobによる広告配信アプリを作成する場合にチェックを入れてください。
-	AdMobのライブラリ及びSDK4.2.2以降が必要となります。詳しくは、「AdMobによる広告配信」を参照してください。
+	Google Play Services及びAndroid Support Libraryが必要となります。詳しくは、「AdMobによる広告配信」を参照してください。
+	</p>
+	<li>ARM7最適化を無効</li><br><p>
+	チェックを入れることでARM7に最適化されたコードの生成を無効にします。
+	通常は、チェックを入れない状態(ARMv7コードに最適化)で使用してください。最適化を行なうことで、実行速度が向上します。
+	ARMv7を持たない古いAndroid端末で実行させる場合には、チェックを入れることで古いARMでも実行できるコードが生成されます。
 	</p>
 	</ul>
 
@@ -178,8 +191,11 @@
 	</p>
 	<ul>
 	<li>ソーススクリプト</li><br><p>
-	実行するためのHSPスクリプト(.hsp)を指定します。必ずHSP3Dish用に記述されたスクリプトでなければなりません。「参照」ボタンを押すことで、ファイル選択ダイアログを開くことができます。<br>
-	この項目を空欄にした場合は、プロジェクトフォルダ以下の「hspフォルダ」内にある.hspファイルを対象のスクリプトとします。「hspフォルダ」が存在しない場合は、ソーススクリプトの変換は行なわれません。
+	通常は、この項目は空欄のままで、プロジェクトが使用するHSPスクリプト(.hsp)は、プロジェクトフォルダ以下の「hsp」フォルダ内に配置してください。
+	(HSPスクリプトが複数ある場合は、「main.hsp」という名前のファイルが優先されます。)
+	「hsp」フォルダを使わずに、直接スクリプトファイルを指定する場合は、ソーススクリプト項目の「参照」ボタンを押して、ファイルを選択することができます。<br>
+	いずれの場合も、HSPスクリプト(.hsp)は、必ずHSP3Dish用に記述されたスクリプトでなければなりません。
+	対象となるスクリプトが存在しない場合は、ソーススクリプトの変換は行なわれません。
 	</p>
 	<li>データファイル(dpm)</li><br><p>
 	スクリプトから参照されるデータが格納されているdpmファイルを指定します。dpmファイルは、HSPで使用している形式で、複数のファイルが1つのdpmファイルにパックされています。(「作成...」ボタンを押すことで、指定したフォルダ内にあるすべてのファイルをdata.dpmというファイルにパックして、そのファイルを指定することができます。)
@@ -425,6 +441,16 @@
 
 	<h2 id="ADMOB">AdMobによる広告配信</h2>
 	<ul>
+	<li>従来のAdMobからの更新について</li><br>
+	<p>
+	HSP3Dish 3.4版までは、従来の(古い)AdMobライブラリを使用していましたが、
+	Googleの更新により、2014/8/1以降は、古いAdMobライブラリを使用したアプリの更新、及び新規追加はできなくなっています。(既に登録されているアプリに影響はありません。)<br>
+	HSP3Dish 3.5版では、Google Play Servicesを使用した新しいAdMobライブラリに切り替えているので、この制限はありません。
+	古いAdMobライブラリを使用するプロジェクトを更新する場合は、新規でプロジェクトを作成し直してください。
+	</p>
+	</ul>
+
+	<ul>
 	<li>広告配信のための準備</li><br>
 	<p>
 	HSP3DishではAdMobを使った広告配信モデルのアプリを作成することが可能です。
@@ -437,53 +463,48 @@
 	アカウントを登録し、支払い情報などの必要事項を記入します。<br>
 	<a href="http://www.google.co.jp/ads/admob/" target="_blank">http://www.google.co.jp/ads/admob/</a>
 <br><br>
-	2. パブリッシャーIDの取得
+	2. ユニットIDの取得
 <br><br>
-	AdMobのwebページにログインし、サイト/アプリケーションの追加を行ないます。
+	AdMobのwebページにログインし、「新しいアプリの収益化」を行ないます。
 	(アプリがまだGoogle Playで公開されていない段階でも可能です)<br>
-	Androidアプリケーションを選択し、App名、パッケージURL、ジャンル、説明等の
-	必要事項を記入することで、パブリッシャーIDを取得することができます。
-	パッケージURLは、「market://details?id=net.onionsoft.****」のような
-	アプリのパッケージ名を指定してください。
+	必要事項を記入することで、ユニットIDを取得することができます。
 <br><br>
-	3. AdMob SDKのダウンロード
+	3. Google Play Services, Android Support Libraryのダウンロード
 <br><br>
-	最新版のAdMob SDKが必要になりますので、ダウンロードしておきましょう。<br>
-	<a href="https://developers.google.com/mobile-ads-sdk/download?hl=ja" target="_blank">https://developers.google.com/mobile-ads-sdk/download?hl=ja</a>
+	SDKマネージャーを起動して、Extras内にある「Google Play Services」「Android Support Library」の最新版をインストールしてください。
+	(SDKマネージャーは、HSP3Dish Helperの、「オプション」タブの「SDKマネージャー」ボタンから起動できます)
 <br><br>
-	5. 最新のAndroid APIライブラリのダウンロード
+	4. AdMobのセットアップ
+<br><br>
+	HSP3Dish Helperの、「オプション」タブの「AdMobのセットアップ」ボタンを押して、
+	AdMobビルドのためのファイルを準備してください。
+	この操作は、Google Play Services, Android Support Libraryのダウンロード後に1度行なえば完了します。
+<br><br>
+	5. 最新のAndroid APIライブラリの確認
 <br><br>
 	AdMob SDKをビルドするために、Android APIライブラリの最新版を使用できる状態にする必要があります。
-	"android-17"(Android 4.2 (API 17))が利用可能かどうかを確認しておいてください。
-	Android APIライブラリのダウンロードは、SDKフォルダ内のSDK Manager.exeを起動して行ないます。
-	(Android SDKをインストールしたフォルダ内にSDK Manager.exeがあるはずです)
-	このツールで、Android 4.2 (API 17)の項目にチェックを入れてアップデートを行なってください。
+	"android-19"(Android 4.4.2 (API 19))が利用可能かどうかを確認しておいてください。
 <br><br>
 	HSP3Dish helperを起動して、androidタブの「新規プロジェクト」モードの「ID...」ボタンを押すと、
-	インストールされているAPIの一覧が表示されます。この中に、"android-17"が存在してれば問題ありません。
+	インストールされているAPIの一覧が表示されます。この中に、"android-19"が存在してれば問題ありません。
 <br><br>
 	6. AdMobを使用するプロジェクトの作成
 <br><br>
 	新規プロジェクトを作成します。その際に、必ず「AdMobを使用する」のチェックボックスをONにしておいてください。
 	それ以外の設定は、通常の新規プロジェクト作成と変わりありません。
 <br><br>
-	7. AdMob SDKのコピー
-<br><br>
-	AdMob SDKのライブラリをプロジェクトフォルダにコピーする必要があります。
-	プロジェクトのフォルダ内にある、libsフォルダにAdMob SDKのjarファイル( GoogleAdMobAdsSdkAndroid-6.4.1の場合は、「GoogleAdMobAdsSdk-6.4.1.jar」)をコピーしてください。
-<br><br>
-	8. パブリッシャーIDの登録
+	7. ユニットIDの登録
 <br><br>
 	プロジェクトのフォルダ以下の「src/tv/hsp/HspActivity.java」ファイルを編集します。
 	</p>
 <pre>
-		adView = new AdView(_activity, AdSize.BANNER, "publisherID");
+		adView.setAdUnitId("ca-app-pub-???????????????????????????");
 </pre>
 	<p>
-	の行を探してください。このpublisherIDの部分を、AdMobのwebページで取得したパブリッシャーID文字列に置き換えてください。
-	このパブリッシャーIDにより、広告の配信者が特定されます。
+	の行を探してください。このpublisherIDの部分を、AdMobのwebページで取得したユニットID文字列に置き換えてください。
+	このユニットIDにより、広告の配信者が特定されます。
 <br><br>
-	9. AdMob表示スクリプトの追加
+	8. AdMob表示スクリプトの追加
 <br><br>
 	スクリプト実行時の適切なタイミングでAdMobを有効にしてください。
 	タイトル画面や、ゲームメニューなど画像や音声のリソース読み込みが落ち着いた後に有効にすることを推奨します。
@@ -528,26 +549,18 @@
 	以下の行があることを確認してください。
 	</p>
 <pre>
-		//adRequest.addTestDevice(AdRequest.TEST_EMULATOR);
-		//adRequest.addTestDevice("********************************");
+		_request.addTestDevice(AdRequest.DEVICE_ID_EMULATOR);
 </pre>
 	<p>
-	先頭が「//」になっている行はコメントとして扱われます。
-	「//」を取り除くことで機能します。
+	この行は、エミュレーターデバイス上の動作チェック用のコードです。
+	以下のように「"」記号で囲まれた文字列を指定することで、実際のデバイスをテスト機として登録することができます。
 	</p>
 <pre>
-		adRequest.addTestDevice(AdRequest.TEST_EMULATOR);
+		_request.addTestDevice("********************************");
 </pre>
 	<p>
-	の行は、エミュレーターデバイス上の動作チェック用のコードです。
-	</p>
-<pre>
-		adRequest.addTestDevice("********************************");
-</pre>
-	<p>
-	の行は、実機デバイス上の動作チェック用のコードです。
 	"****～"の部分に、デバイスIDを記入する必要があります。
-	デバイスIDは、AdMob表示時にAndroidログ(ddmsツール等で表示可能です)内に、
+	デバイスIDは、AdMob表示時にデバイスモニタ内のログに、
 	</p>
 <pre>
 	「 To get test ads on this device, call adRequest.addTestDevice("********************************");」
@@ -555,6 +568,8 @@
 	<p>
 	というメッセージが流れますので、そこで確認することができます。
 	(広告の表示エラーや、問題に関するメッセージも表示されます)
+	デバイスモニタは、HSP3Dish Helperの、「オプション」タブの「Deviceモニター」ボタンを押して起動させることができます。
+	LogCatよりも詳細なログが表示されます。
 	</p>
 	</ul>
 
@@ -568,7 +583,6 @@
 	サイズや位置などは、src/tv/hsp/HspActivity.javaファイルのソースを変更することで調整可能です。
 	</p>
 <pre>
-
 		popUp.setWidth(disp_width+4);		// 横サイズ(disp_widthは画面全体)
 		popUp.setHeight(77);			// 縦サイズ
 </pre>
