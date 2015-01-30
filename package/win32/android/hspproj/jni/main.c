@@ -192,9 +192,9 @@ static void engine_handle_cmd(struct android_app* app, int32_t cmd) {
 				HSPCTX *ctx;
 				InitSysReq();
 			    hgio_init( 0, engine->width, engine->height, engine );
-				//hgio_view( 320, 480 );
-				//hgio_scale( 1.0f, 1.0f );
-				//hgio_autoscale( 0 );
+				//hgio_view( 320, 480 );	// screen size
+				//hgio_scale( 1.0f, 1.0f );	// scale value
+				//hgio_autoscale( 0 );		// auto scale value
 				hsp3eb_init();
 				ctx = hsp3eb_getctx();
 				engine->hspctx = ctx;

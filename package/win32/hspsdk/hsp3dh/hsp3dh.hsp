@@ -212,17 +212,36 @@
 ;--------------------------------------------------------------------------------
 ;	.ini module
 
-#deffunc ini_load str _p1
-
-	return
-
 #deffunc ini_bye
 
+	sdim inibuf,$1000
+	sdim iniln,$100
 	return
+
+#deffunc ini_load str _p1
+
+	ini_bye
+	exist _p1
+	if strsize<=0 : return -1
+
+	notesel inibuf
+	noteload _p1
+	return 0
 
 #defcfunc ini_prm str _p1
 
 	res=""
+	notesel inibuf
+	repeat notemax
+		noteget iniln,cnt
+		if peek(iniln,0)=';' : continue
+		inipt=instr(iniln,0,"=")
+		if inipt<0 : continue
+		inival=strmid(iniln,inipt+1,255)
+		poke iniln,inipt,0
+		if iniln=_p1 : res = inival : break
+	loop
+
 	return res
 
 
@@ -814,6 +833,40 @@
 	notesave "go.bat"
 	return
 
+*xml_init
+	;	ndroidManifest.xmlを操作する
+	xmlfile = path_proj+"\\"+and_name+"\\AndroidManifest.xml"
+	gosub *xml_initfile
+	;
+	return
+
+*xml_initfile
+	;	xmlfileを操作する(テキストファイル汎用)
+	tmp=""
+	sdim xml_ln,$100
+	notesel tmp
+	exist xmlfile:if strsize<=0 : return
+	noteload xmlfile	
+	;
+	return
+
+*xml_search
+	;	s1を含む行を探す
+	;	res:-1=NG/0～=index
+	notesel tmp
+	res=-1
+	repeat notemax
+		noteget xml_ln,cnt
+		if instr(xml_ln,0,s1)>=0 : res=cnt : break
+	loop
+	return
+
+*xml_save
+	notesel tmp
+	notesave xmlfile
+	return
+
+
 *view_ids
 	initsub
 	gsel 1
@@ -1048,6 +1101,16 @@ res\\drawable-mdpi\\ic_launcher.png"}
 		buf=outbuf+buf
 	}
 
+	if flag_arm {
+		xmlfile=path_proj+"\\"+and_name+"\\jni\\Application.mk"
+		gosub *xml_initfile
+		if tmp!="" {
+			s1="APP_ABI :=":gosub *xml_search
+			if res>0 : noteadd "",res,1		; APP_ABIの追加を無効にする
+			gosub *xml_save
+		}
+	}
+
 	gsel 1
 	objprm 0,buf
 	mes "終了しました。"
@@ -1193,9 +1256,9 @@ res\\drawable-mdpi\\ic_launcher.png"}
 	buf=""
 	hsplog=""
 
+	s3 = path_proj+"\\"+and_name+"\\hsp"
 	if and_fname!="" : goto *andhsp_conv
 
-	s3 = path_proj+"\\"+and_name+"\\hsp"
 	dirlist tmp, s3, 5
 	if stat=0 : goto *nohsp_conv		; hspフォルダが無い場合スキップ
 
@@ -1211,6 +1274,8 @@ res\\drawable-mdpi\\ic_launcher.png"}
 
 *andhsp_conv
 	s1=and_fname
+
+
 *andhsp_conv2
 	gsel 1
 	mes "ソーススクリプト:"+getpath(s1,8)
@@ -1222,6 +1287,53 @@ res\\drawable-mdpi\\ic_launcher.png"}
 
 	basedir=path_proj+"\\"+and_name+"\\jni\\hsp3embed\\"
 	bcopy cppname, basedir+"hspsource.cpp"
+
+
+	;	hsp3dish設定の反映
+	;
+	ini_load s3+"\\hsp3dish.ini"
+	if stat=0 {
+		dish_wx=0+ini_prm("wx"):if dish_wx<=0 : dish_wx=320
+		dish_wy=0+ini_prm("wy"):if dish_wy<=0 : dish_wy=480
+		dish_screenp=1	; ポートレートフラグ
+		if dish_wx>dish_wy : dish_screenp=0	; 横長の場合
+		s1=ini_prm("autoscale"):if s1="" : s1="-1"
+		dish_autoscale=0+s1
+
+		gosub *xml_init		; AndroidManifest.xmlを書き換える
+		if tmp!="" {
+			s1="                  android:screenOrientation="
+			gosub *xml_search
+			s2="landscape"
+			if dish_screenp : s2="portrait"
+			if res>0 : noteadd s1+"\""+s2+"\"",res,1
+
+			gosub *xml_save
+		}
+
+		; main.cを書き換える
+		xmlfile=path_proj+"\\"+and_name+"\\jni\\main.c"
+		gosub *xml_initfile
+		if tmp!="" {
+			s1="// screen size":gosub *xml_search
+			if res>0 {
+				s1="				hgio_view( "+dish_wx+", "+dish_wy+" );	// screen size"
+				noteadd s1,res,1
+			}
+
+			if dish_autoscale>=0 {
+				s1="// auto scale value":gosub *xml_search
+				if res>0 {
+					s1="				hgio_autoscale( "+dish_autoscale+" );	// auto scale value"
+					noteadd s1,res,1
+				}
+			}
+
+			gosub *xml_save
+		}
+
+	}
+
 	goto *nohsp_conv
 
 *nohsp_conv
