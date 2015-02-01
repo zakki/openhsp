@@ -5,6 +5,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <string>
 
 #if defined( __GNUC__ )
 #include <ctype.h>
@@ -51,6 +52,8 @@ static int hsp_wx, hsp_wy, hsp_wd, hsp_ss;
 static int drawflag;
 static int hsp_fps;
 static int hsp_limit_step_per_frame;
+static std::string syncdir;
+static bool fs_initialized = false;
 
 //static	HWND m_hWnd;
 
@@ -346,6 +349,18 @@ static int hsp3dish_devprm( char *name, char *value )
 
 static int hsp3dish_devcontrol( char *cmd, int p1, int p2, int p3 )
 {
+	if ( strcmp( cmd, "syncfs" )==0 ) {
+		if (syncdir.size() > 0) {
+			// IDBに保存
+			EM_ASM_({
+				var dir = Pointer_stringify($0);
+				FS.syncfs(function (err) {
+					console.log("syncfs", err);
+					});
+				}, syncdir.c_str());
+			return 0;
+		}
+	}
 	return -1;
 }
 
@@ -496,6 +511,11 @@ int hsp3dish_init( char *startfile )
 
 	printf("Screen %f %f\n", sx, sy);
 
+	char *env_syncdir = getenv( "HSP_SYNC_DIR" );
+	if ( env_syncdir ) {
+		syncdir = env_syncdir;
+	}
+
 	if ( hsp->Reset( mode ) ) {
 		hsp3dish_dialog( "Startup failed." );
 		return 1;
@@ -629,6 +649,10 @@ extern int code_execcmd_one( int& prev );
 
 void hsp3dish_exec_one( void )
 {
+	if (!fs_initialized) {
+		printf("Sync\n");
+		return;
+	}
 	// hgio_test();
 	// return;
 	int tick;
@@ -685,8 +709,32 @@ void hsp3dish_exec_one( void )
 	exit(0);
 }
 
+extern "C"
+{
+void EMSCRIPTEN_KEEPALIVE hsp3dish_sync_done( void )
+{
+	fs_initialized = true;
+}
+}
+
 int hsp3dish_exec( void )
 {
+	if (syncdir.size() > 0) {
+		// IDBから読み込み
+		fs_initialized = false;
+		EM_ASM_({
+			var dir = Pointer_stringify($0);
+			FS.mkdir(dir);
+			FS.mount(IDBFS, {}, dir);
+			FS.syncfs(true, function (err) {
+					console.log(err);
+					ccall('hsp3dish_sync_done', 'v', '', []);
+				});
+			}, syncdir.c_str());
+	} else {
+		fs_initialized = true;
+	}
+
 	//		実行メインを呼び出す
 	//
 	hsp3dish_msgfunc( ctx );
@@ -694,4 +742,6 @@ int hsp3dish_exec( void )
 	//		実行の開始
 	//
 	emscripten_set_main_loop(hsp3dish_exec_one, hsp_fps, 1);
+
+	return 0;
 }
