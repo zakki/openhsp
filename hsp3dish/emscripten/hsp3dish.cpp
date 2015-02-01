@@ -73,7 +73,9 @@ static char gplog[1024];
 extern "C" {
 	static void logfunc( gameplay::Logger::Level level, const char *msg )
 	{
-		printf( "[GamePlay3D] %s\n", gplog );
+		printf( "[GamePlay3D] %s\n", msg );
+		if (strlen(gplog) + strlen(msg) + 1 > sizeof(gplog))
+			gplog[0] = 0;
 		strcat( gplog, msg );
 	}
 }
