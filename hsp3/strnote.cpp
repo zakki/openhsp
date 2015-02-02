@@ -161,7 +161,7 @@ int CStrNote::GetMaxLine( void )
 		a1=*nn++;if (a1==0) break;
 #if defined(HSPLINUX) || defined(HSPDISH)
 		if ((a1==13)||(a1==10)) {
-			if (a1=13&&*p1==10) nn++;
+			if (a1=13&&*nn==10) nn++;
 #else
 		if (a1==13) {
 			if (*nn==10) nn++;

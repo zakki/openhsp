@@ -1096,13 +1096,13 @@ static void *reffunc_intfunc( int *type_res, int arg )
 		STRUCTDAT *st;
 		if ( *type == TYPE_DLLFUNC ) {
 			st = &(ctx->mem_finfo[ *val ]);
-			reffunc_intfunc_ivalue = (int)(st->proc);
+			reffunc_intfunc_ivalue = (int)(size_t)(st->proc);
 			code_next();
 			break;
 		}
 		aptr = code_getva( &pval );
 		pdat = HspVarCorePtrAPTR( pval, aptr );
-		reffunc_intfunc_ivalue = (int)(pdat);
+		reffunc_intfunc_ivalue = (int)(size_t)(pdat);
 		break;
 		}
 	case 0x00d:								// varuse
