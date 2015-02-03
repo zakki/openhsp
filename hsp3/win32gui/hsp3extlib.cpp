@@ -220,22 +220,24 @@ static int Hsp3ExtAddPlugin( void )
 		funcname = strp(hpi->funcname);
 		info = code_gettypeinfo(-1);
 
-	 	hd = DllManager().load_library( libname );
-		if ( hd == NULL ) {
-			sprintf( tmp,"No DLL:%s",libname );
-			hsp3win_dialog( tmp );
-			return 1;
+		if ( hpi->flag == HPIDAT_FLAG_TYPEFUNC ) {
+		 	hd = DllManager().load_library( libname );
+			if ( hd == NULL ) {
+				sprintf( tmp,"No DLL:%s",libname );
+				hsp3win_dialog( tmp );
+				return 1;
+			}
+			hpi->libptr = (void *)hd;
+			func = (DLLFUNC)GetProcAddress( hd, funcname );
+			if ( func == NULL ) {
+				sprintf( tmp,"No DLL:%s:%s", libname, funcname );
+				hsp3win_dialog( tmp );
+				return 1;
+			}
+			func( info );
+			code_enable_typeinfo( info );
+			//Alertf( "%d_%d [%s][%s]", i, info->type, libname, funcname );
 		}
-		hpi->libptr = (void *)hd;
-		func = (DLLFUNC)GetProcAddress( hd, funcname );
-		if ( func == NULL ) {
-			sprintf( tmp,"No DLL:%s:%s", libname, funcname );
-			hsp3win_dialog( tmp );
-			return 1;
-		}
-		func( info );
-		code_enable_typeinfo( info );
-		//Alertf( "%d_%d [%s][%s]", i, info->type, libname, funcname );
 		hpi++;
 	}
 	return 0;

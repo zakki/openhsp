@@ -1473,6 +1473,7 @@ void CToken::GenerateCodePP_regcmd( void )
 		cg_typecnt++;
 		break;
 	case TK_NUM:
+		PutHPI( HPIDAT_FLAG_SELFFUNC, 0, "", "" );
 		cg_pptype = val;
 		break;
 	default:

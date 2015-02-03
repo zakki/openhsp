@@ -480,11 +480,20 @@ int hsp3dish_debugopen( void )
 	//
 #ifdef HSPDEBUG
 	if ( h_dbgwin != NULL ) return 0;
-	h_dbgwin = LoadLibrary( "hsp3debug.dll" );
+#ifdef HSP64
+	h_dbgwin = LoadLibrary( "hsp3debug_64.dll" );
+#else
+	h_dbgwin = LoadLibrary("hsp3debug.dll");
+#endif
 	if ( h_dbgwin != NULL ) {
-		dbgwin = (HSP3DBGFUNC)GetProcAddress( h_dbgwin, "_debugini@16" );
-		dbgnotice = (HSP3DBGFUNC)GetProcAddress( h_dbgwin, "_debug_notice@16" );
-		if (( dbgwin == NULL )||( dbgnotice == NULL )) h_dbgwin = NULL;
+#ifdef HSP64
+		dbgwin = (HSP3DBGFUNC)GetProcAddress(h_dbgwin, "debugini");
+		dbgnotice = (HSP3DBGFUNC)GetProcAddress( h_dbgwin, "debug_notice" );
+#else
+		dbgwin = (HSP3DBGFUNC)GetProcAddress(h_dbgwin, "_debugini@16");
+		dbgnotice = (HSP3DBGFUNC)GetProcAddress(h_dbgwin, "_debug_notice@16");
+#endif
+		if ((dbgwin == NULL) || (dbgnotice == NULL)) h_dbgwin = NULL;
 	}
 	if ( h_dbgwin == NULL ) {
 		hsp3dish_dialog( "No debug module." );
@@ -865,25 +874,23 @@ int hsp3dish_init( HINSTANCE hInstance, char *startfile )
 	hsp3dish_initwindow( hInstance, hsp_wx, hsp_wy, "HSPDish ver" hspver );
 
 
-	//		Start Timer
-	//
-	// timerGetTime関数による精度アップ(μ秒単位)
-	timer_period = -1;
-#if 1
-	TIMECAPS caps;
-	if (timeGetDevCaps(&caps,sizeof(TIMECAPS)) == TIMERR_NOERROR){
-		// マルチメディアタイマーのサービス精度を最大に
-		timer_period = caps.wPeriodMin;
-		timeBeginPeriod( timer_period );
-		//timerid = timeSetEvent( timer_period, caps.wPeriodMin, TimerFunc, 0, (UINT)TIME_PERIODIC );
-		timecnt = 0;
-	}
-#endif
-
 #ifndef HSP_COM_UNSUPPORTED
 //	HspVarCoreRegisterType( TYPE_COMOBJ, HspVarComobj_Init );
 //	HspVarCoreRegisterType( TYPE_VARIANT, HspVarVariant_Init );
 #endif
+
+	//		Start Timer
+	//
+	// timerGetTime関数による精度アップ(μ秒単位)
+	timer_period = -1;
+	if (( ctx->hsphed->bootoption & HSPHED_BOOTOPT_NOMMTIMER ) == 0 ) {
+		TIMECAPS caps;
+		if ( timeGetDevCaps(&caps,sizeof(TIMECAPS)) == TIMERR_NOERROR ){
+			// マルチメディアタイマーのサービス精度を最大に
+			timer_period = caps.wPeriodMin;
+			timeBeginPeriod( timer_period );
+		}
+	}
 
 //	hsp3typeinit_dllcmd( code_gettypeinfo( TYPE_DLLFUNC ) );
 //	hsp3typeinit_dllctrl( code_gettypeinfo( TYPE_DLLCTRL ) );
@@ -922,10 +929,6 @@ static void hsp3dish_bye( void )
 	//		タイマーの開放
 	//
 	if ( timer_period != -1 ) {
-//		if( timerid != 0 ) {
-//			timeKillEvent( timerid );
-//			timerid = 0;
-//		}
 		timeEndPeriod( timer_period );
 		timer_period = -1;
 	}

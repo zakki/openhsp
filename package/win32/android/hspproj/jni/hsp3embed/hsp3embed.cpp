@@ -14,10 +14,10 @@
 #include "../hsp3/hsp3gr.h"
 #include "../hsp3/supio.h"
 
-#include "../obaq/hsp3dw.h"
-
 #include "hsp3r.h"
 #include "hsp3embed.h"
+
+#include "hsp3dw.h"
 
 extern void __HspInit( Hsp3r *hsp3 );
 //typedef BOOL (*HSP3DBGFUNC)(HSP3DEBUG *,int,int,int);
@@ -118,13 +118,13 @@ int hsp3eb_init( void )
 
 //	hsp3typeinit_dllcmd( code_gettypeinfo( TYPE_DLLFUNC ) );
 //	hsp3typeinit_dllctrl( code_gettypeinfo( TYPE_DLLCTRL ) );
+    
 	hsp3typeinit_extcmd( code_gettypeinfo( TYPE_EXTCMD )  );
 	hsp3typeinit_extfunc( code_gettypeinfo( TYPE_EXTSYSVAR ) );
 
-	hsp3typeinit_dw_extcmd( code_gettypeinfo( TYPE_DLLFUNC ) );
-	hsp3typeinit_dw_extfunc( code_gettypeinfo( TYPE_DLLCTRL ) );
-
-
+    hsp3typeinit_dw_extcmd( code_gettypeinfo( TYPE_DLLFUNC ) );
+    hsp3typeinit_dw_extfunc( code_gettypeinfo( TYPE_DLLCTRL ) );
+    
 	//		Utility setup
 	VarUtilInit();
 

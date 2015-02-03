@@ -1919,8 +1919,8 @@ static int cmdfunc_prog( int cmd )
 		lop=GETLOP(hspctx->looplev);
 		lop->cnt = p2;
 		lop->time = p1;
-		mem_loopppt[hspctx->looplev] = (int)label;
-		mem_loopppt2[hspctx->looplev] = (int)label2;
+		mem_loopppt[hspctx->looplev] = (int)(size_t)label;
+		mem_loopppt2[hspctx->looplev] = (int)(size_t)label2;
 		code_setpc( label );
 		break;
 		}
@@ -2427,7 +2427,7 @@ void code_setpc( const unsigned short *pc )
 	//
 	//mcs = (unsigned short *)pc;
 	//code_next();
-	TaskSwitch( (int)pc );
+	TaskSwitch( (int)(size_t)pc );
 	hspctx->runmode = RUNMODE_RUN;
 }
 
@@ -2862,6 +2862,9 @@ int code_execcmd( void )
 			if ( hspctx->runmode != 0 ) {
 				if ( hspctx->runmode != RUNMODE_RETURN ) {
 					hspctx->msgfunc( hspctx );
+				}
+				if ( hspctx->runmode == RUNMODE_END ) {
+					break;
 				}
             }
 		}

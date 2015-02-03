@@ -113,6 +113,7 @@ typedef struct HSPHED
 #define HSPHED_BOOTOPT_ORGRND 0x10000		// •W€‚Ì—””­¶‚ğg—p‚·‚é
 
 #define HPIDAT_FLAG_TYPEFUNC 0
+#define HPIDAT_FLAG_SELFFUNC -1
 #define HPIDAT_FLAG_VARFUNC 1
 #define HPIDAT_FLAG_DLLFUNC 2
 
