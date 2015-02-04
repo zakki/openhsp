@@ -23,8 +23,14 @@
 #include "../supio.h"
 #include "../hgio.h"
 #include "../sysreq.h"
-//#include "../hsp3ext.h"
+#include "../hsp3ext.h"
 #include "../../hsp3/strnote.h"
+
+#ifndef HSP_COM_UNSUPPORTED
+#include "hsp3extlib.h"
+#include "hspvar_comobj.h"
+#include "hspvar_variant.h"
+#endif
 
 #define USE_OBAQ
 
@@ -869,14 +875,16 @@ int hsp3dish_init( HINSTANCE hInstance, char *startfile )
 	drawflag = 0;
 	ctx->msgfunc = hsp3dish_msgfunc;
 
+
 	//		Initalize Window
 	//
 	hsp3dish_initwindow( hInstance, hsp_wx, hsp_wy, "HSPDish ver" hspver );
 
 
+
 #ifndef HSP_COM_UNSUPPORTED
-//	HspVarCoreRegisterType( TYPE_COMOBJ, HspVarComobj_Init );
-//	HspVarCoreRegisterType( TYPE_VARIANT, HspVarVariant_Init );
+	HspVarCoreRegisterType( TYPE_COMOBJ, HspVarComobj_Init );
+	HspVarCoreRegisterType( TYPE_VARIANT, HspVarVariant_Init );
 #endif
 
 	//		Start Timer
@@ -892,8 +900,10 @@ int hsp3dish_init( HINSTANCE hInstance, char *startfile )
 		}
 	}
 
-//	hsp3typeinit_dllcmd( code_gettypeinfo( TYPE_DLLFUNC ) );
-//	hsp3typeinit_dllctrl( code_gettypeinfo( TYPE_DLLCTRL ) );
+	//		Initalize external DLL System
+	//
+	hsp3typeinit_dllcmd( code_gettypeinfo( TYPE_DLLFUNC ) );
+	hsp3typeinit_dllctrl( code_gettypeinfo( TYPE_DLLCTRL ) );
 
 	//		Initalize GUI System
 	//
@@ -901,8 +911,8 @@ int hsp3dish_init( HINSTANCE hInstance, char *startfile )
 	hsp3typeinit_extfunc( code_gettypeinfo( TYPE_EXTSYSVAR ) );
 
 #ifdef USE_OBAQ
-	hsp3typeinit_dw_extcmd( code_gettypeinfo( TYPE_DLLFUNC ) );
-	hsp3typeinit_dw_extfunc( code_gettypeinfo( TYPE_DLLCTRL ) );
+	hsp3typeinit_dw_extcmd( code_gettypeinfo( TYPE_USERDEF ) );
+	//hsp3typeinit_dw_extfunc( code_gettypeinfo( TYPE_USERDEF+1 ) );
 #endif
 
 	exinfo = ctx->exinfo2;
@@ -911,7 +921,6 @@ int hsp3dish_init( HINSTANCE hInstance, char *startfile )
 	HSP3DEVINFO *devinfo;
 	devinfo = hsp3extcmd_getdevinfo();
 	hsp3dish_setdevinfo( devinfo );
-
 
 #ifdef HSPDEBUG
 	dbginfo = code_getdbg();

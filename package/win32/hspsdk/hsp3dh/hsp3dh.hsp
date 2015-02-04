@@ -276,7 +276,7 @@
 	objsize 160,24
 	pos 8,68
 	chkbox "出力ソースをUTF-8に変換",flag_utf8
-	chkbox "XCode5用プロジェクトを生成",flag_xcode
+	chkbox "XCode6用プロジェクトを生成",flag_xcode
 
 	objsize 130,24
 	pos 20,126
@@ -703,6 +703,7 @@
 	gsel 1
 	mes "終了しました。"
 *fin
+	gsel 1
 	objprm 0,buf
 
 	;button "OK",*topmenu
@@ -736,9 +737,10 @@
 	hspcnv_res=0
 	hspcomp_mode=0
 	gosub *hspcomp
-	if res!=0 : dialog "エラーが発生しました。" : hspcnv_res=1 : return
+	if res!=0 : dialog "HSPコンパイル中にエラーが発生しました。" : hspcnv_res=1 : return
 
-	cmd = dir_exe+"\\hsp3cnv "+myfile
+	tmp=""
+	cmd = dir_exe+"\\hsp3cnv -d "+myfile
 	pipeexec tmp,cmd,1
 	if stat : dialog "hsp3cnvを実行できませんでした" : hspcnv_res=1 : return
 
@@ -746,16 +748,17 @@
 	gsel 1
 	mes "HSP変換処理中..."
 
+	ln=""
 	repeat
 	pipeget ln
 	if stat=0 : break
 	;buf+=ln
 	await 10
 	loop
+	buf+=ln
 
-	;mes buf
 	exist cppname
-	if strsize<=0 : dialog "hsp3cnvの変換でエラーが発生しました" : hspcnv_res=1 : return
+	if strsize<=0 : dialog "HSPソース変換中にエラーが発生しました。" : hspcnv_res=1 : return
 
 	if flag_utf8=0 : return
 
@@ -1391,7 +1394,7 @@ res\\drawable-mdpi\\ic_launcher.png"}
 
 *mkxcode5
 	;
-	;	xcode5ファイル出力
+	;	xcodeファイル出力
 	;
 	;	create project後にフォルダを改変
 	;
@@ -1420,7 +1423,7 @@ hspproj\\main.m
 hspproj.xcodeproj\\project.xcworkspace\\contents.xcworkspacedata
 hspproj.xcodeproj\\project.pbxproj"}
 
-	buf+="XCode5プロジェクトの生成中...\n"
+	buf+="XCodeプロジェクトの生成中...\n"
 
 	errflag=0
 

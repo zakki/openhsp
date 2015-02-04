@@ -1424,3 +1424,12 @@ int CHsp3::MakeSource( int option, void *ref )
 }
 
 
+int CHsp3::CheckExtLibrary( void )
+{
+	if ( GetLInfoCount() > 0 ) {
+		return -1;
+	}
+	return 0;
+}
+
+

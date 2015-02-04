@@ -14,7 +14,7 @@
 <body>
 	<div id="CONTAINER">
 	<!-- ヘッダー -->
-	<p id="COPY">HSP : HSP3Dish / onion software 2014(c)</p>
+	<p id="COPY">HSP : HSP3Dish / onion software 2015(c)</p>
 	<img src="hsp3dish.jpg" width="640" height="200" alt="タイトル">
 	<h1>HSP3Dish iOS版プログラミングガイド</h1>
 
@@ -53,7 +53,7 @@
 
 	<h2 id="PREPARE">環境の準備</h2>
 	<p>
-	現状ではiPhone/iPadの実機上で動作させるためには、MacOSX環境及び開発ツールXcode、iOS Developer Program(有償)が必要になります。<br>
+	現状ではiPhone/iPadの実機上で動作させるためには、MacOSX環境及び開発ツールXcode(6.1以降)、iOS Developer Program(有償)が必要になります。<br>
 	ここまでに必要なプロセスは、通常のiPhone/iPadの開発と変わりません。詳しくは、iOS Developer Programのホームページなど各種資料を参照してください。
 	</p>
 	<pre>
@@ -61,10 +61,10 @@
 	<a href="http://developer.apple.com/jp/programs/ios/">http://developer.apple.com/jp/programs/ios/</a>
 	</pre>
 	<p>
-	このドキュメントでは、Xcode5以降が実際に動作し、iPhone/iPadの実機にプログラムが転送できることを前提として、HSP3Dishの導入方法を解説します。
+	このドキュメントでは、Xcodeが実際に動作し、iPhone/iPadの実機にプログラムが転送できることを前提として、HSP3Dishの導入方法を解説します。
 	それまでの準備については、既存のマニュアル等をご覧ください。
 	<br>
-	使用するターゲットSDKのバージョンは、4.3以降を想定しています。
+	使用するSDKのバージョンは、iOS8以降、動作環境はiOS5.1以降を想定しています。
 	</p>
 
 	<h2 id="SAMPLE">サンプルプロジェクト</h2>
@@ -95,20 +95,20 @@
 
 	<ul>
 	<li>ソーススクリプト - 動作させるためのHSPソーススクリプト。「参照」ボタンでファイルダイアログから選択することができます。</li>
-	<li>プロジェクト名 - XCode5上のプロジェクト名になります。半角英数字のみ(空白を含まない)で指定する必要があります。</li>
-	<li>Organization - XCode5上のプロジェクトに指定されるOrganization名になります。製作者または団体名を入力してください。。</li>
-	<li>Identifier - XCode5上のプロジェクトに指定されるIdentifier(製作者識別名)名になります。半角英数字のみ(空白を含まない)で指定する必要があります。他の製作者と重複しない文字列を指定する必要があります。通常はURLを逆にしたような表記で、「net.onionsoft」のように指定します。このIdentifierにプロジェクト名を付加したものが、AppID(Bundle Identifier)になります。AppIDは実機で動作させたりAppStoreに登録する際に、必ず必要になりますので、あらかじめ準備しておいてください。
+	<li>プロジェクト名 - XCode上のプロジェクト名になります。半角英数字のみ(空白を含まない)で指定する必要があります。</li>
+	<li>Organization - XCode上のプロジェクトに指定されるOrganization名になります。製作者または団体名を入力してください。。</li>
+	<li>Identifier - XCode上のプロジェクトに指定されるIdentifier(製作者識別名)名になります。半角英数字のみ(空白を含まない)で指定する必要があります。他の製作者と重複しない文字列を指定する必要があります。通常はURLを逆にしたような表記で、「net.onionsoft」のように指定します。このIdentifierにプロジェクト名を付加したものが、AppID(Bundle Identifier)になります。AppIDは実機で動作させたりAppStoreに登録する際に、必ず必要になりますので、あらかじめ準備しておいてください。
 (たとえば、Identifierが「net.onionsoft」で、プロジェクト名が「block3」だった場合には、AppIDは「net.onionsoft.block3」になります。)</li>
 	</ul>
 	<p>
 	上記の指定ができたら、「変換」ボタンを押してください。
-	この時、「XCode5用プロジェクトを生成」「出力ソースをUTF-8に変換」のチェックをONにしておくのを忘れないでください。
+	この時、「XCode用プロジェクトを生成」「出力ソースをUTF-8に変換」のチェックをONにしておくのを忘れないでください。
 	</p>
 	<p>
 	<img src="hsp3dish/s_and1.jpg"><br>
 	</p>
 	<p>
-	正常に終了するとスクリプトと同じフォルダにXCode5用プロジェクトフォルダ(プロジェクト名で指定したフォルダ名になります)が作成されます。
+	正常に終了するとスクリプトと同じフォルダにXCode用プロジェクトフォルダ(プロジェクト名で指定したフォルダ名になります)が作成されます。
 	これでスクリプト及びプロジェクトの準備は完了です。
 	</p>
 
@@ -116,8 +116,8 @@
 	<h2 id="RUNPROJ">HSP3Dishの実行と設定</h2>
 
 	<p>
-	実際にiOS上で動作させる場合には、XCode5上でプロジェクトをコンパイルする必要があります。<br>
-	<a href="#MAKECPP">スクリプトの準備</a>で出力した、XCode5用プロジェクトフォルダと、「iHSP20」フォルダ(HSPアーカイブ内のiOSフォルダに同梱されています。)をMacOSX上にコピーしてください。<br>
+	実際にiOS上で動作させる場合には、XCode上でプロジェクトをコンパイルする必要があります。<br>
+	<a href="#MAKECPP">スクリプトの準備</a>で出力した、XCode用プロジェクトフォルダと、「iHSP20」フォルダ(HSPアーカイブ内のiOSフォルダに同梱されています。)をMacOSX上にコピーしてください。<br>
 	※Xcode5を使用して手動でプロジェクトを作成する場合は<a href="hsp3dish_xcode5.htm">こちらを参照してください</a>。
 	</p>
 	<p>

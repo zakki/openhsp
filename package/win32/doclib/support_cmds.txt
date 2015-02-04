@@ -253,6 +253,11 @@ onerror	,sys|func
 
 dupptr	,sys|func
 
+sendmsg	,sys|func|1
+#regcmd	,pre|func
+#uselib	,pre|func
+#func	,pre|func
+#cfunc	,pre|func
 
 
 HSP3Dishサポート外コマンド
@@ -273,7 +278,6 @@ cnvstow	,sys|func|1
 comres	,sys|func|1
 axobj	,sys|func|1
 winobj	,sys|func|1
-sendmsg	,sys|func|1
 comevent	,sys|func|1
 comevarg	,sys|func|1
 sarrayconv	,sys|func|1
@@ -309,12 +313,8 @@ strrep	,sys|func
 objskip	,sys|func
 objmode	,sys|func
 
-#regcmd	,pre|func
 #usecom	,pre|func
-#uselib	,pre|func
 #defint	,pre|func
-#func	,pre|func
-#cfunc	,pre|func
 #defdouble	,pre|func
 #defnone	,pre|func
 #modfunc	,pre|func

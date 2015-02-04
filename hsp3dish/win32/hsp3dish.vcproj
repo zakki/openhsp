@@ -124,7 +124,7 @@
 			<Tool
 				Name="VCCLCompilerTool"
 				AdditionalIncludeDirectories="lib/include/"
-				PreprocessorDefinitions="WIN32;HSPWIN;HSPDISH;HSPDEBUG;NDEBUG;_WINDOWS;_CRT_SECURE_NO_WARNINGS"
+				PreprocessorDefinitions="WIN32;HSPWIN;HSPDISH;HSPDEBUG;NDEBUG;HSP_COM_UNSUPPORTED;_WINDOWS;_CRT_SECURE_NO_WARNINGS"
 				RuntimeLibrary="0"
 				BufferSecurityCheck="false"
 				UsePrecompiledHeader="0"
@@ -397,6 +397,14 @@
 					>
 				</File>
 				<File
+					RelativePath=".\hsp3ext_win.cpp"
+					>
+				</File>
+				<File
+					RelativePath=".\hsp3extlib.cpp"
+					>
+				</File>
+				<File
 					RelativePath=".\main.cpp"
 					>
 				</File>
@@ -406,6 +414,42 @@
 				</File>
 				<File
 					RelativePath=".\supio_win.cpp"
+					>
+				</File>
+			</Filter>
+			<Filter
+				Name="obaq"
+				>
+				<File
+					RelativePath="..\obaq\physics\explosion.cpp"
+					>
+				</File>
+				<File
+					RelativePath="..\obaq\game.cpp"
+					>
+				</File>
+				<File
+					RelativePath="..\obaq\physics\grain.cpp"
+					>
+				</File>
+				<File
+					RelativePath="..\obaq\hsp3dw.cpp"
+					>
+				</File>
+				<File
+					RelativePath="..\hsp3embed\misc.cpp"
+					>
+				</File>
+				<File
+					RelativePath="..\obaq\omkedraw.cpp"
+					>
+				</File>
+				<File
+					RelativePath="..\obaq\physics\rock.cpp"
+					>
+				</File>
+				<File
+					RelativePath="..\obaq\physics\spuvessel.cpp"
 					>
 				</File>
 			</Filter>
@@ -547,11 +591,63 @@
 					>
 				</File>
 				<File
+					RelativePath=".\hsp3ext_win.h"
+					>
+				</File>
+				<File
+					RelativePath=".\hsp3extlib.h"
+					>
+				</File>
+				<File
 					RelativePath=".\mmman.h"
 					>
 				</File>
 				<File
 					RelativePath=".\supio_win.h"
+					>
+				</File>
+			</Filter>
+			<Filter
+				Name="obaq"
+				>
+				<File
+					RelativePath="..\obaq\physics\explosion.h"
+					>
+				</File>
+				<File
+					RelativePath="..\obaq\game.h"
+					>
+				</File>
+				<File
+					RelativePath="..\obaq\physics\gamePhysics.h"
+					>
+				</File>
+				<File
+					RelativePath="..\obaq\physics\grain.h"
+					>
+				</File>
+				<File
+					RelativePath="..\obaq\hsp3dw.h"
+					>
+				</File>
+				<File
+					RelativePath="..\hsp3embed\misc.h"
+					>
+				</File>
+				<File
+					RelativePath="..\obaq\omkedraw.h"
+					>
+				</File>
+				<File
+					RelativePath="..\obaq\physics\ptttypes.h"
+					>
+				</File>
+				<File
+					RelativePath="..\obaq\physics\rock.h"
+					>
+				</File>
+				<File
+					RelativePath="..\obaq\physics\spuvessel.h"
 					>
 				</File>
 			</Filter>

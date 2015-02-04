@@ -72,20 +72,6 @@
 #define global ginfo_accy ginfo(0x101)
 #define global ginfo_accz ginfo(0x102)
 
-#regcmd 9
-#cmd gfilter $3f
-#cmd setreq $40
-#cmd getreq $41
-#cmd mmvol $42
-#cmd mmpan $43
-#cmd mmstat $44
-#cmd mtlist $45
-#cmd mtinfo $46
-#cmd devinfo $47
-#cmd devinfoi $48
-#cmd devprm $49
-#cmd devcontrol $4a
-
 #endif
 
 ;
@@ -94,7 +80,7 @@
 #ifndef __obaq__
 #define __obaq__
 
-#regcmd 16
+#regcmd 18
 #cmd qreset $00							// qreset
 #cmd qterm $01							// qterm
 #cmd qexec $02							// qexec
@@ -145,6 +131,7 @@
 #cmd qgetinertia $2f						// qgetinertia
 #cmd qgetversion $30						// qgetversion
 #cmd qinner $31							// qinner
+
 
 ;
 ;	type define

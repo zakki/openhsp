@@ -40,6 +40,7 @@ void usage1( void )
 static 	char *p[] = {
 	"usage: hsp3cnv [options] [filename]",
 	"       -o??? set output file to ???",
+	"       -d hsp3dish check",
 	NULL };
 	int i;
 
@@ -55,14 +56,14 @@ static 	char *p[] = {
 int main( int argc, char *argv[] )
 {
 	int st;
-	int cmpopt,ppopt;
+	int cmpopt,ppopt,dishmode;
 	char fname[_MAX_PATH];
 	char fname2[_MAX_PATH];
 	char oname[_MAX_PATH];
 
 	//	check switch and prm
 
-	st = 0; ppopt = 0; cmpopt = 0;
+	st = 0; ppopt = 0; cmpopt = 0; dishmode = 0;
 	fname[0]=0;
 	fname2[0]=0;
 	oname[0]=0;
@@ -81,6 +82,9 @@ int main( int argc, char *argv[] )
 			switch (a2) {
 			case 'o':
 				strcpy( oname,argv[b]+2 );
+				break;
+			case 'd':
+				dishmode = 1;
 				break;
 			default:
 				st=1;break;
@@ -111,6 +115,15 @@ int main( int argc, char *argv[] )
 			return 1;
 		}
 		hsp3.MakeSource( 0, NULL );
+
+		if ( dishmode ) {
+			printf( "use HSP3Dish mode.\n" );
+			if ( hsp3.CheckExtLibrary() ) {
+				printf( "HSP3Dish portability error.[%s]\n", fname );
+				return 2;
+			}
+		}
+
 
 #ifndef HSP3CNV_DEBUG
 		hsp3.SaveOutBuf( oname );
