@@ -1354,8 +1354,47 @@ static int cmdfunc_extcmd( int cmd )
 		bmscr->cx += putsx;
 		break;
 		}
-
 #endif
+
+	case 0x3f:								// gfilter
+	case 0x40:								// setreq
+	case 0x41:								// getreq
+		// HSP3Dish用の機能
+		throw HSPERR_UNSUPPORTED_FUNCTION;
+		break;
+
+	case 0x42:								// mmvol
+		p1 = code_getdi( 0 );
+		p2 = code_getdi( 0 );
+		mmman->SetVol( p1, p2 );
+		break;
+	case 0x43:								// mmpan
+		p1 = code_getdi( 0 );
+		p2 = code_getdi( 0 );
+		mmman->SetPan( p1, p2 );
+		break;
+	case 0x44:								// mmstat
+		{
+		PVal *p_pval;
+		APTR p_aptr;
+		p_aptr = code_getva( &p_pval );
+		p1 = code_getdi( 0 );
+		p2 = code_getdi( 0 );
+		p3 = mmman->GetStatus( p1, p2 );
+		code_setva( p_pval, p_aptr, HSPVAR_FLAG_INT, &p3 );
+		break;
+		}
+	case 0x45:								// mtlist
+	case 0x46:								// mtinfo
+	case 0x47:								// devinfo
+	case 0x48:								// devinfoi
+	case 0x49:								// devprm
+	case 0x4a:								// devcontrol
+		// HSP3Dish用の機能
+		throw HSPERR_UNSUPPORTED_FUNCTION;
+		break;
+
+
 
 	default:
 		throw HSPERR_UNSUPPORTED_FUNCTION;

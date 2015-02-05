@@ -95,6 +95,8 @@ MMM *MMMan::SetBank( int num, int flag, int opt, void *mempt, char *fname )
 	m->flag = flag;
 	m->opt = opt;
 	m->num = num;
+	m->vol = 0;
+	m->pan = 0;
 	m->mempt = mempt;
 	m->fname = NULL;
 
@@ -321,6 +323,8 @@ int MMMan::Play( int num )
 	SendMCI( ss );
 	curmus = num;
 
+	if ( mmm->vol != 0 ) { SetVol( num, mmm->vol ); }
+
 	return 0;
 }
 
@@ -364,5 +368,85 @@ int MMMan::GetBusy( void )
 	return 0;
 }
 */
+
+
+void MMMan::SetVol( int num, int vol )
+{
+	MMM *mmm;
+	int bank,flg;
+	char ss[1024];
+	bank = SearchBank( num );
+	if ( bank < 0 ) return;
+
+	mmm=&mem_snd[bank];
+	mmm->vol = vol;
+	if ( mmm->vol > 0 ) mmm->vol = 0;
+	if ( mmm->vol < -1000 ) mmm->vol = -1000;
+
+	flg=mmm->flag;
+	switch(flg) {
+	case MMDATA_INTWAVE:							// when "WAV"
+		//
+		break;
+	case MMDATA_MCIVOICE:							// when "MID" file
+	case MMDATA_MCIVIDEO:							// when "AVI" file
+	case MMDATA_MPEGVIDEO:							// when "MPG" file
+		if ( curmus != -1 ) {
+			int mcivol;
+			mcivol = mmm->vol + 1000;
+			sprintf( ss,"setaudio myid volume to %d",mcivol );
+			SendMCI( ss );
+		}
+		break;
+	}
+}
+
+
+void MMMan::SetPan( int num, int pan )
+{
+	MMM *mmm;
+	int bank,flg;
+	bank = SearchBank( num );
+	if ( bank < 0 ) return;
+
+	mmm=&mem_snd[bank];
+	flg=mmm->flag;
+	switch(flg) {
+	case MMDATA_INTWAVE:							// when "WAV"
+		//
+		break;
+	}
+}
+
+
+int MMMan::GetStatus( int num, int infoid )
+{
+	MMM *mmm;
+	int bank,flg;
+	int res;
+	bank = SearchBank( num );
+	if ( bank < 0 ) return 0;
+
+	mmm=&mem_snd[bank];
+	flg=mmm->flag;
+	res = 0;
+	switch( infoid ) {
+	case 0:
+		res = mmm->opt;
+		break;
+	case 1:
+		res = mmm->vol;
+		break;
+	case 2:
+		res = mmm->pan;
+		break;
+	case 16:
+		if (( flg == MMDATA_MCIVOICE )||( flg == MMDATA_MCIVIDEO )||( flg == MMDATA_MPEGVIDEO )) {
+			if (curmus!=-1) res = 1;
+		}
+		break;
+	}
+	return res;
+}
 
 
