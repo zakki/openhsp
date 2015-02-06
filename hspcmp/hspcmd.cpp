@@ -201,6 +201,8 @@ char 	s_rec[1]= "", *hsp_prestr[] =
 	"$048 9 devinfoi",				// (ver3.5)
 	"$049 9 devprm",				// (ver3.5)
 	"$04a 9 devcontrol",			// (ver3.5)
+	"$04b 9 httpload",				// (ver3.5)
+	"$04c 9 httpinfo",				// (ver3.5)
 
 	//	enhanced command (ver3.0)
 
