@@ -123,6 +123,7 @@ int CLabel::Regist( char *name, int type, int opt )
 	lab->rel = NULL;
 	lab->init = LAB_INIT_NO;
 	lab->typefix = LAB_TYPEFIX_NONE;
+	labels.insert(std::make_pair(lab->name, a));
 	return a;
 }
 
@@ -205,28 +206,17 @@ int CLabel::Search( char *oname )
 {
 	//		object name search
 	//
-	char as;
-	int a;
-	int hash;
-	char *str1,*str2;
 	if (cur==0) return -1;
 
-	hash = StrCase( oname );
-	LABOBJ *lab = mem_lab;
-	for(a=0;a<cur;a++) {
-		if ( lab->flag >= 0 ) {
-			if ( hash == lab->hash ) {
-				str1=oname;
-				str2=lab->name;
-				while(1) {
-					as=*str1;
-					if (as!=*str2) break;
-					if (as==0) return a;
-					str1++;str2++;
-				}
+	int hash = StrCase( oname );
+	if (*oname != 0) {
+		std::pair<LabelMap::iterator, LabelMap::iterator> r = labels.equal_range( oname );
+		for(LabelMap::iterator it = r.first; it != r.second; ++it) {
+			LABOBJ *lab = mem_lab + it->second;
+			if ( lab->flag >= 0 ) {
+				return it->second;
 			}
 		}
-		lab++;
 	}
 	return -1;
 }
@@ -236,35 +226,27 @@ int CLabel::SearchLocal( char *oname, char *loname )
 {
 	//		object name search ( for local )
 	//
-	char as;
-	int a;
-	int hash,hash2,myhash;
-	char *str1,*str2;
-	if (cur==0) return -1;
+	int hash, hash2;
+	if (cur == 0) return -1;
 
-	hash = StrCase( oname );
-	hash2 = GetHash( loname );
-	LABOBJ *lab = mem_lab;
-	for(a=0;a<cur;a++) {
-		if ( lab->flag >= 0 ) {
-			if (lab->eternal) {
-				str1 = oname;
-				myhash = hash;
-			} else {
-				str1 = loname;
-				myhash = hash2;
-			}
-			if ( lab->hash == myhash ) {
-				str2=lab->name;
-				while(1) {
-					as=*str1;
-					if (as!=*str2) break;
-					if (as==0) return a;
-					str1++;str2++;
-				}
+	hash = StrCase(oname);
+	hash2 = GetHash(loname);
+	if (*oname != 0) {
+		std::pair<LabelMap::iterator, LabelMap::iterator> r = labels.equal_range( oname );
+		for(LabelMap::iterator it = r.first; it != r.second; ++it) {
+			LABOBJ *lab = mem_lab + it->second;
+			if (lab->flag >= 0 && lab->eternal) {
+				return it->second;
 			}
 		}
-		lab++;
+
+		std::pair<LabelMap::iterator, LabelMap::iterator> r2 = labels.equal_range( loname );
+		for(LabelMap::iterator it = r2.first; it != r2.second; ++it) {
+			LABOBJ *lab = mem_lab + it->second;
+			if (lab->flag >= 0 && !lab->eternal) {
+				return it->second;
+			}
+		}
 	}
 	return -1;
 }
@@ -300,6 +282,7 @@ void CLabel::Reset( void )
 {
 	int i;
 	cur = 0;
+	labels.clear();
 	for(i=0;i<maxlab;i++) { mem_lab[i].flag = -1; }
 	DisposeSymbolBuffer();
 	MakeSymbolBuffer();

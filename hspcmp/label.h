@@ -5,6 +5,9 @@
 #ifndef __label_h
 #define __label_h
 
+#include <string>
+#include <map>
+
 #define	maxname	256				// label name max
 #define def_maxsymbol 0x10000	// Symbol Table Size (default)
 #define def_maxblock 128		// Symbol Table Block max (default)
@@ -41,7 +44,7 @@
 #define LAB_TYPEFIX_INT 4
 #define LAB_TYPEFIX_DOUBLE 3
 
-
+typedef std::multimap<std::string, int> LabelMap;
 typedef struct LABREL LABREL;
 
 struct LABREL {
@@ -133,6 +136,8 @@ private:
 	int maxlab;							// Max Label Size
 	char token[64];						// Token for RegistList
 	int casemode;						// Case sensitive (0=none/other=ON)
+
+	LabelMap labels;		    		// Lookup table
 };
 
 
