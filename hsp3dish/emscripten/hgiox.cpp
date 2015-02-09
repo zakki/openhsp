@@ -191,7 +191,7 @@ static void gluPerspective(double fovy, double aspect, double zNear, double zFar
     ymin = -ymax;
     xmin = ymin * aspect;
     xmax = ymax * aspect;
-    glFrustum(xmin, xmax, ymin, ymax, zNear, zFar);
+    glFrustumf(xmin, xmax, ymin, ymax, zNear, zFar);
 }
 #endif
 
@@ -354,7 +354,13 @@ void hgio_reset( void )
 	_rateY = 1.0f / _scaleY;
 	ox = (float)_bgsx;
 	oy = (float)_bgsy;
+
+#ifndef HSPEMSCRIPTEN
+	glOrthof( 0, ox, -oy, 0,-100,100);
+#else
 	glOrtho( 0, ox, -oy, 0,-100,100);
+#endif
+
 //    glOrthof( 0, 320.0f, -480.0f, 0,-100,100);
 //    glOrthof( 0, _bgsx * _scaleX, -_bgsy * _scaleY, 0,-100,100);
     //glTranslatef(engine->width/2,engine->height/2,0);
@@ -519,18 +525,49 @@ void hgio_setBlendMode( int mode, int aval )
 
 void hgio_setBlendModeFlat( int mode )
 {
-    //ブレンドモード設定
+    //ブレンドモード設定(単色)
     switch( mode ) {
         case 0:                     //no blend
             glDisable(GL_BLEND);
             break;
-        case 3:                     //blend+alpha
-        case 4:                     //blend+alpha
+        case 5:                     //add
+            glEnable(GL_BLEND);
+#ifdef HSPIOS
+            glBlendEquationOES(GL_FUNC_ADD_OES);
+#endif
+            glBlendFunc(GL_SRC_ALPHA,GL_ONE);
+            break;
+        case 6:                     //sub
+            glEnable(GL_BLEND);
+#ifdef HSPIOS
+            glBlendEquationOES(GL_FUNC_REVERSE_SUBTRACT_OES);
+#endif
+            glBlendFunc(GL_SRC_ALPHA,GL_ONE);
+            break;
+        default:                    //normal blend
             glEnable(GL_BLEND);
 #ifdef HSPIOS
             glBlendEquationOES(GL_FUNC_ADD_OES);
 #endif
             glBlendFunc(GL_ONE,GL_ONE_MINUS_SRC_ALPHA);
+            break;
+    }
+}
+
+void hgio_setBlendModeFlatAlpha( int mode )
+{
+    //ブレンドモード設定(単色+Alpha)
+    switch( mode ) {
+        case 0:                     //no blend
+            glDisable(GL_BLEND);
+            break;
+        case 3:                     //blend
+        case 4:                     //blend
+            glEnable(GL_BLEND);
+#ifdef HSPIOS
+            glBlendEquationOES(GL_FUNC_ADD_OES);
+#endif
+            glBlendFunc(GL_SRC_ALPHA,GL_ONE_MINUS_SRC_ALPHA);
             break;
         case 5:                     //add
             glEnable(GL_BLEND);
@@ -1012,7 +1049,7 @@ void hgio_fillrot( BMSCR *bm, float x, float y, float sx, float sy, float ang )
 
     glVertexPointer(2,GL_FLOAT,0,vertf2D);
 	hgio_panelcolor( bm->color, bm->gfrate );
-	hgio_setBlendModeFlat( bm->gmode );
+	hgio_setBlendModeFlatAlpha( bm->gmode );
 
     glDrawArrays(GL_TRIANGLE_STRIP,0,4);
 }
@@ -1361,7 +1398,7 @@ void hgio_square( BMSCR *bm, int *posx, int *posy, int *color )
 	hgio_panelcolor_direct( 2, color[1], arate );
 	hgio_panelcolor_direct( 3, color[2], arate );
 
-	hgio_setBlendModeFlat( bm->gmode );
+	hgio_setBlendModeFlatAlpha( bm->gmode );
 
     glDrawArrays(GL_TRIANGLE_STRIP,0,4);
 }

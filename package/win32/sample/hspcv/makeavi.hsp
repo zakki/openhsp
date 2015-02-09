@@ -7,7 +7,7 @@ cvmakeavi "test.avi",,,1
 
 repeat 360
 
-cvcopy 1,0,0,0
+cvcopy 0,0,0,1
 cvrotate cnt,1,0,0,,1
 cvputavi
 cvgetimg 1

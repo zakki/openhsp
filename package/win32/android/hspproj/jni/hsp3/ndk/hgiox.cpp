@@ -12,7 +12,11 @@
 
 #include "stb_image.h"
 
+#ifdef HSPEMSCRIPTEN
+#include "../../hsp3/hsp3config.h"
+#else
 #include "../hsp3config.h"
+#endif
 
 #ifdef HSPNDK
 #define USE_JAVA_FONT
@@ -30,6 +34,25 @@
 #include <CoreFoundation/CoreFoundation.h>
 #include "iOSBridge.h"
 #include "appengine.h"
+#endif
+
+#ifdef HSPEMSCRIPTEN
+#define USE_JAVA_FONT
+#define FONT_TEX_SX 512
+#define FONT_TEX_SY 128
+//#include <GLES2/gl2.h>
+//#include <EGL/egl.h>
+#define GL_GLEXT_PROTOTYPES
+#include <GL/gl.h>
+#include <GL/glext.h>
+//#include <GL/glut.h>
+
+#include "SDL/SDL.h"
+#include "SDL/SDL_image.h"
+#include "SDL/SDL_opengl.h"
+
+#include "appengine.h"
+extern bool get_key_state(int sym);
 #endif
 
 #include "../supio.h"
@@ -161,6 +184,7 @@ static GLfloat uvf2D[]={
     1.0f, 1.0f, //右下
 };
 
+#ifndef HSPEMSCRIPTEN
 static void gluPerspective(double fovy, double aspect, double zNear, double zFar) {
     GLfloat xmin, xmax, ymin, ymax;
     ymax = zNear * tan(fovy * M_PI / 360.0);
@@ -169,6 +193,7 @@ static void gluPerspective(double fovy, double aspect, double zNear, double zFar
     xmax = ymax * aspect;
     glFrustumf(xmin, xmax, ymin, ymax, zNear, zFar);
 }
+#endif
 
 /*-------------------------------------------------------------------------------*/
 /*
@@ -223,7 +248,7 @@ void hgio_init( int mode, int sx, int sy, void *hwnd )
 	Alertf( "Init:HGIOScreen(%d,%d)",sx,sy );
 
 	//フォント準備
-#ifdef HSPNDK
+#if defined(HSPNDK) || defined(HSPEMSCRIPTEN)
 	#ifdef USE_JAVA_FONT
 	//font_texid = MakeEmptyTex( FONT_TEX_SX, FONT_TEX_SY );
 	#else
@@ -329,7 +354,13 @@ void hgio_reset( void )
 	_rateY = 1.0f / _scaleY;
 	ox = (float)_bgsx;
 	oy = (float)_bgsy;
-    glOrthof( 0, ox, -oy, 0,-100,100);
+
+#ifndef HSPEMSCRIPTEN
+	glOrthof( 0, ox, -oy, 0,-100,100);
+#else
+	glOrtho( 0, ox, -oy, 0,-100,100);
+#endif
+
 //    glOrthof( 0, 320.0f, -480.0f, 0,-100,100);
 //    glOrthof( 0, _bgsx * _scaleX, -_bgsy * _scaleY, 0,-100,100);
     //glTranslatef(engine->width/2,engine->height/2,0);
@@ -364,7 +395,12 @@ void hgio_reset( void )
         
     //テクスチャの設定
     glEnableClientState(GL_TEXTURE_COORD_ARRAY);
+#if defined(HSPEMSCRIPTEN)
+	glDisable(GL_TEXTURE_2D);
+#else
     glEnable(GL_TEXTURE_2D);
+#endif
+
         
     //ブレンドの設定
     glEnable(GL_BLEND);
@@ -386,7 +422,7 @@ void hgio_reset( void )
 	TexReset();
 
 	//フォント描画リセット
-#ifdef HSPNDK
+#if defined(HSPNDK) || defined(HSPEMSCRIPTEN)
 #ifdef USE_JAVA_FONT
 	TexProc();
 #endif
@@ -409,7 +445,7 @@ void hgio_resume( void )
 	//テクスチャ初期化
 	TexInit();
 
-#ifdef HSPNDK
+#if defined(HSPNDK) || defined(HSPEMSCRIPTEN)
 	#ifdef USE_JAVA_FONT
 	//font_texid = MakeEmptyTex( FONT_TEX_SX, FONT_TEX_SY );
 	#else
@@ -489,18 +525,49 @@ void hgio_setBlendMode( int mode, int aval )
 
 void hgio_setBlendModeFlat( int mode )
 {
-    //ブレンドモード設定
+    //ブレンドモード設定(単色)
     switch( mode ) {
         case 0:                     //no blend
             glDisable(GL_BLEND);
             break;
-        case 3:                     //blend+alpha
-        case 4:                     //blend+alpha
+        case 5:                     //add
+            glEnable(GL_BLEND);
+#ifdef HSPIOS
+            glBlendEquationOES(GL_FUNC_ADD_OES);
+#endif
+            glBlendFunc(GL_SRC_ALPHA,GL_ONE);
+            break;
+        case 6:                     //sub
+            glEnable(GL_BLEND);
+#ifdef HSPIOS
+            glBlendEquationOES(GL_FUNC_REVERSE_SUBTRACT_OES);
+#endif
+            glBlendFunc(GL_SRC_ALPHA,GL_ONE);
+            break;
+        default:                    //normal blend
             glEnable(GL_BLEND);
 #ifdef HSPIOS
             glBlendEquationOES(GL_FUNC_ADD_OES);
 #endif
             glBlendFunc(GL_ONE,GL_ONE_MINUS_SRC_ALPHA);
+            break;
+    }
+}
+
+void hgio_setBlendModeFlatAlpha( int mode )
+{
+    //ブレンドモード設定(単色+Alpha)
+    switch( mode ) {
+        case 0:                     //no blend
+            glDisable(GL_BLEND);
+            break;
+        case 3:                     //blend
+        case 4:                     //blend
+            glEnable(GL_BLEND);
+#ifdef HSPIOS
+            glBlendEquationOES(GL_FUNC_ADD_OES);
+#endif
+            glBlendFunc(GL_SRC_ALPHA,GL_ONE_MINUS_SRC_ALPHA);
             break;
         case 5:                     //add
             glEnable(GL_BLEND);
@@ -555,6 +622,12 @@ void hgio_setOrigin( int x, int y )
     _originY=y;
 }
 
+void hgio_scale_point( int xx, int yy, int &x, int & y )
+{
+	x = ( xx - _originX ) * _rateX;
+	y = ( yy - _originY ) * _rateY;
+}
+
 /*-------------------------------------------------------------------------------*/
 
 void hgio_clsmode( int mode, int color, int tex )
@@ -593,7 +666,18 @@ int hgio_stick( int actsw )
 {
 	int ckey = 0;
 	if ( mouse_btn ) ckey|=256;	// mouse_l
-    return ckey;
+#ifdef HSPEMSCRIPTEN
+	if ( get_key_state(SDLK_LEFT) )  ckey|=1;		// [left]
+	if ( get_key_state(SDLK_UP) )    ckey|=2;		// [up]
+	if ( get_key_state(SDLK_RIGHT) ) ckey|=4;		// [right]
+	if ( get_key_state(SDLK_DOWN) )  ckey|=8;		// [down]
+	if ( get_key_state(SDLK_SPACE) ) ckey|=16;		// [spc]
+	if ( get_key_state(SDLK_RETURN) )ckey|=32;		// [ent]
+	if ( get_key_state(SDLK_LCTRL) ) ckey|=64;		// [ctrl]
+	if ( get_key_state(SDLK_ESCAPE) )ckey|=128;	// [esc]
+	if ( get_key_state(SDLK_TAB) )   ckey|=1024;	// [tab]
+#endif
+	return ckey;
 }
 
 
@@ -610,7 +694,7 @@ int hgio_font( char *fontname, int size, int style )
 
 int hgio_mes( BMSCR *bm, char *str1 )
 {
-#ifdef HSPNDK
+#if defined(HSPNDK) || defined(HSPEMSCRIPTEN)
 	hgio_putTexFont( bm->cx, bm->cy, str1, bm->color );
 	bm->printsizex = mes_sx;
 	bm->printsizey = mes_sy;
@@ -965,7 +1049,7 @@ void hgio_fillrot( BMSCR *bm, float x, float y, float sx, float sy, float ang )
 
     glVertexPointer(2,GL_FLOAT,0,vertf2D);
 	hgio_panelcolor( bm->color, bm->gfrate );
-	hgio_setBlendModeFlat( bm->gmode );
+	hgio_setBlendModeFlatAlpha( bm->gmode );
 
     glDrawArrays(GL_TRIANGLE_STRIP,0,4);
 }
@@ -1026,6 +1110,7 @@ void hgio_fcopy( float distx, float disty, short xx, short yy, short srcsx, shor
     *flp++ = x2;
     *flp++ = y2;
 
+	glEnable(GL_TEXTURE_2D);
 	ChangeTex( tex->texid );
 //    glBindTexture( GL_TEXTURE_2D, tex->texid );
     glVertexPointer( 2, GL_FLOAT,0,vertf2D );
@@ -1036,6 +1121,7 @@ void hgio_fcopy( float distx, float disty, short xx, short yy, short srcsx, shor
 	
 //    glDisableClientState(GL_COLOR_ARRAY);
     glDrawArrays(GL_TRIANGLE_STRIP,0,4);
+	glDisable(GL_TEXTURE_2D);
 }
 
 
@@ -1312,7 +1398,7 @@ void hgio_square( BMSCR *bm, int *posx, int *posy, int *color )
 	hgio_panelcolor_direct( 2, color[1], arate );
 	hgio_panelcolor_direct( 3, color[2], arate );
 
-	hgio_setBlendModeFlat( bm->gmode );
+	hgio_setBlendModeFlatAlpha( bm->gmode );
 
     glDrawArrays(GL_TRIANGLE_STRIP,0,4);
 }
@@ -1342,6 +1428,23 @@ int hgio_gettick( void )
 #ifdef HSPIOS
     return (int)(total_tick * 1000.0 );
     //return (int)( CFAbsoluteTimeGetCurrent() * 1000.0 );
+#endif
+
+#ifdef HSPEMSCRIPTEN
+	int i;
+	timespec ts;
+	double nsec;
+	static bool init = false;
+	static int initTime = 0;
+	clock_gettime(CLOCK_REALTIME,&ts);
+	nsec = (double)(ts.tv_nsec) * 0.001 * 0.001;
+	i = (int)ts.tv_sec * 1000 + (int)nsec;
+	if (!init) {
+		init = true;
+		initTime = i;
+	}
+
+	return i - initTime;
 #endif
 }
 
@@ -1494,7 +1597,7 @@ int hgio_getmousebtn( void )
 
 /*-------------------------------------------------------------------------------*/
 
-#ifdef HSPNDK
+#if defined(HSPNDK) || defined(HSPEMSCRIPTEN)
 
 void hgio_putTexFont( int x, int y, char *msg, int color )
 {
@@ -1544,11 +1647,12 @@ void hgio_test(void)
     //hgio_clear();
     
 	hgio_setColor( 0xff00ff );
-	hgio_boxfill( 100,100,200,50 );
+	hgio_boxfill( 100.1,100.2,200.5,50.2 );
+	//hgio_boxfill( 100,200,100,10 );
 	//hgio_setColor( 0xffffff );
 	//hgio_line( 0,0,400,300 );
-	hgio_setColor( 0xffff00 );
-	hgio_circleFill( 640,400,200,200 );
+	//hgio_setColor( 0xffff00 );
+	//hgio_circleFill( 640,400,200,200 );
 
 	//hgio_putTexFont( 0,0, (char *)"This is Android Test." );
 	//hgio_fcopy( 0,0,  0, 0, 256, 128, font_texid );
@@ -1766,6 +1870,14 @@ int hgio_render_start( void )
 	}
 #endif
 
+#ifdef HSPEMSCRIPTEN
+	if ( GetSysReq( SYSREQ_CLSMODE ) == CLSMODE_SOLID ) {
+		int ccol = GetSysReq( SYSREQ_CLSCOLOR );
+		hgio_setClear( (ccol>>16)&0xff, (ccol>>8)&0xff, (ccol)&0xff );
+		hgio_clear();
+	}
+#endif
+
 	hgio_reset();
 
 
@@ -1795,6 +1907,10 @@ int hgio_render_end( void )
         return 0;
     }
     eglSwapBuffers(appengine->display, appengine->surface);
+#endif
+
+#ifdef HSPEMSCRIPTEN
+	SDL_GL_SwapBuffers();
 #endif
 
 	drawflag = 0;
@@ -1898,7 +2014,7 @@ char *hgio_getstorage( char *fname )
 	strcat( my_storage_path, fname );
 	return my_storage_path;
 #endif
-    return "";
+	return fname;
 }
 
 
