@@ -27,8 +27,9 @@
 		<li><a href="#GMODE">gmode命令について</a></li>
 		<li><a href="#GFILTER">gfilter命令について</a></li>
 		<li><a href="#SYSREQ">setreq、getreq命令について</a></li>
-		<li><a href="#MTOUCH">マルチタッチ情報の取得について(new)</a></li>
-		<li><a href="#SOUND">サウンド機能について(new)</a></li>
+		<li><a href="#MTOUCH">マルチタッチ情報の取得について</a></li>
+		<li><a href="#SOUND">サウンド機能について</a></li>
+		<li><a href="#HTTP">http通信機能について(new)</a></li>
 		<li><a href="#SAMPLE">サンプルスクリプト</a></li>
 		<li><a href="#CMDLIST">HSP3Dishコマンドリスト</a></li>
 		<li><a href="#WINHRT">Windows上での実行ファイル作成</a></li>
@@ -283,7 +284,7 @@
 	</pre>
 
 
-	<h2 id="MTOUCH">マルチタッチ情報の取得について(new)</h2>
+	<h2 id="MTOUCH">マルチタッチ情報の取得について</h2>
 	<p>
 	hsp3dish ver3.4b1から、マルチタッチ情報の取得を行なうmtlist、mtinfo命令が追加されています。
 	これにより、スマートフォン(iOS,Android)上で複数のポイントにタッチされている情報を得ることが可能です。
@@ -326,7 +327,7 @@
 	</p>
 
 
-	<h2 id="SOUND">サウンド機能について(new)</h2>
+	<h2 id="SOUND">サウンド機能について</h2>
 	<p>
 	HSP3Dishでは、標準のHSPの上位互換となるメディア再生機能を持っています。
 	ただし、Windows固有の機能であるmci命令は、他のデバイスではサポートされません。
@@ -345,6 +346,25 @@
 	<p>
 	HSP標準命令と異なり、wav形式による波形再生は、複数のサウンドを多重に鳴らすことが可能です。
 	長い音声の再生(.mp3形式)は、負荷軽減のため多重に再生することはできません。
+	<br>
+	それぞれの命令の詳細については、HSP Document Libraryによる命令ヘルプを参照してください。
+	</p>
+
+
+	<h2 id="HTTP">http通信機能について</h2>
+	<p>
+	HSP3Dishでは、簡易的なhttp通信機能を持っています。<br>
+	これにより、web(HTTP)サーバーへのネットワークアクセス及び、データの取得を行なうことができます。
+	あくまでも、基本的なhttp通信機能をサポートするもので、すべてのwebサーバーとの通信を保証するものではありません。<br>
+	<b>現在のバージョン(3.5β1)では、Windowsプラットフォームのみサポートされています。今後のバージョンでは、他のプラットフォームもサポートされる予定です。</b>
+	</p>
+	<pre>
+		httpload (HTTP通信の開始)
+		httpinfo (HTTP通信の情報取得)
+	</pre>
+	<p>
+	上記の命令により、web(HTTP)サーバーに対して、標準的なGET,POSTメソッドによるリクエストを行なうことが可能です。
+	webページの取得、CGIやWEBAPIの呼び出しといった用途に使用することができます。
 	<br>
 	それぞれの命令の詳細については、HSP Document Libraryによる命令ヘルプを参照してください。
 	</p>

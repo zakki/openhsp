@@ -29,11 +29,13 @@
 #include "hgio.h"
 #include "supio.h"
 #include "sysreq.h"
+#include "webtask.h"
 
 #ifdef HSPWIN
 #include "win32/dxsnd.h"
 #endif
 
+#define USE_WEBTASK
 #define USE_MMAN
 //#define USE_DGOBJ
 
@@ -74,6 +76,10 @@ static MMMan *mmman;
 #endif
 
 static int dxsnd_flag;
+
+#ifdef USE_WEBTASK
+static WebTask *webtask;
+#endif
 
 
 /*----------------------------------------------------------*/
@@ -1229,6 +1235,51 @@ static int cmdfunc_extcmd( int cmd )
 		ctx->stat = p_res;
 		break;
 		}
+
+	case 0x4b:								// httpload
+		{
+		char *ss;
+		char *ss_post;
+		ss = code_stmpstr( code_gets() );			// パラメータ1:文字列
+		ss_post = code_getds( "" );					// パラメータ2:文字列
+		if ( *ss_post == 0 ) ss_post = NULL;
+		ctx->stat = webtask->Request( ss, ss_post );
+		break;
+		}
+	case 0x4c:								// httpinfo
+		{
+		PVal *pv;
+		APTR ap;
+		char *ss;
+		char *dst;
+		int size;
+		ap = code_getva( &pv );					// パラメータ1:変数
+		p1 = code_getdi( 0 );					// パラメータ2:数値
+		if ( p1 & 16 ) {
+			ss = webtask->getData( p1 );
+			if ( p1 == HTTPINFO_DATA ) {
+				//	結果データをバイナリで取得する
+				if ( pv->flag != HSPVAR_FLAG_STR ) {
+					code_setva( pv, ap, TYPE_STRING, "" );
+				}
+				size = webtask->getStatus( HTTPINFO_SIZE );
+				dst = (char *)HspVarCorePtrAPTR( pv, ap );
+				HspVarCoreAllocBlock( pv, (PDAT *)dst, size+1 );
+				dst = (char *)HspVarCorePtrAPTR( pv, ap );
+				memcpy( dst, ss, size );
+				dst[size] = 0;
+				webtask->setData( HTTPINFO_DATA, "" );	// 受信データを破棄する
+				break;
+			}
+			code_setva( pv, ap, HSPVAR_FLAG_STR, ss );	// 変数に値を代入
+		} else {
+			p2 = webtask->getStatus( p1 );
+			code_setva( pv, ap, HSPVAR_FLAG_INT, &p2 );	// 変数に値を代入
+		}
+		break;
+		}
+
+
 #ifdef HSPDISHGP
 
 	case 0x4b:								// setcls
@@ -3530,6 +3581,9 @@ static int termfunc_extcmd( int option )
 #ifdef USE_MMAN
 	delete mmman;
 #endif
+#ifdef USE_WEBTASK
+	delete webtask;
+#endif
 #ifdef USE_DGOBJ
 	if ( hg != NULL ) delete hg;
 #endif
@@ -3552,6 +3606,9 @@ void hsp3typeinit_extcmd( HSP3TYPEINFO *info )
 #ifdef USE_MMAN
 	mmman = new MMMan;
 	mmman->Reset( ctx->wnd_parent );
+#endif
+#ifdef USE_WEBTASK
+	webtask = new WebTask;
 #endif
 
 #ifdef USE_DGOBJ

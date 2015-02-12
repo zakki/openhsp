@@ -416,6 +416,10 @@
 					RelativePath=".\supio_win.cpp"
 					>
 				</File>
+				<File
+					RelativePath=".\webtask_win.cpp"
+					>
+				</File>
 			</Filter>
 			<Filter
 				Name="obaq"
@@ -570,6 +574,10 @@
 					RelativePath="..\sysreq.h"
 					>
 				</File>
+				<File
+					RelativePath="..\webtask.h"
+					>
+				</File>
 			</Filter>
 			<Filter
 				Name="win"
@@ -604,6 +612,10 @@
 				</File>
 				<File
 					RelativePath=".\supio_win.h"
+					>
+				</File>
+				<File
+					RelativePath=".\webtask_win.h"
 					>
 				</File>
 			</Filter>

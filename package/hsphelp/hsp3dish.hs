@@ -6,12 +6,12 @@
 %type
 拡張命令
 %ver
-3.4
+3.5
 %note
 hsp3dish.asをインクルードすること。
 
 %date
-2013/07/01
+2015/02/12
 %author
 onitama
 %dll
@@ -340,5 +340,116 @@ celputm命令の実行後、実際に表示されたセルの数がシステム変数statに代入されます。
 
 %href
 celput
+
+
+%index
+httpload
+http通信の開始
+%group
+拡張入出力制御命令
+%prm
+"url","postdata"
+"url" : リクエストを行なうファイル名
+"postdata" : POSTを行なう際の文字列データ
+
+%inst
+指定されたURLに対して、http通信を開始します。
+この命令は、通信のリクエストを開始するだけで、すぐに結果は取得されません。
+通信の結果は、httpinfo命令を使用して正しくデータを受信したことを確認した上で、取得する必要があります。
+^
+httploadは、通常は"url"の指定でリクエストを行なうURLスキーム(「http://www.onionsoft.net/about.html」のような文字列)を指定することで、HTTP通信を開始します。
+^p
+;例:
+;	URLを指定して通信を開始する
+httpload "http://www.onionsoft.net/about.html"
+^p
+CGIやWebAPIなどにアクセスするために、POST形式で通信を行なう場合は、"postdata"にパラメーター文字列を指定してください。
+("postdata"の指定を省略した場合は、通常のGET形式によるHTTP通信が行なわれます。)
+^p
+;例:
+;	URLを指定してPOST形式の通信を開始する
+httpload "http://www.onionsoft.net/hsp/beta/betabbs.cgi","mode=find&cond=and&log=0&word=script"
+^p
+POST形式の通信は、"postdata"の形式や仕様については、CGIやhttpリクエストについての知識がある人に向けて用意されているものです。
+httpload命令が実行された後は、システム変数statにリクエスト処理が行なわれたかを示す数値が代入されます。
+システム変数statが、0の場合は正しくリクエストが完了しています。システム変数statが、0以外の場合は、エラーによりリクエストができなかったことを示しています。
+httpload命令で正常にhttp通信を開始した後は、httpinfo命令による受信確認とデータ取得処理をスクリプト側で行なう必要があります。
+。
+^p
+;例:
+	;	URLを指定して通信を開始する
+	httpload "http://www.onionsoft.net/about.html"
+	if stat : goto *bad	; 正しくリクエストができなかった
+*main
+	;	結果待ちのためのループ
+	httpinfo res,HTTPINFO_MODE		; 現在のモードを取得
+	if res = HTTPMODE_READY : goto *ok	; 通信が終了した
+	if res <= HTTPMODE_NONE : goto *bad	; エラーが発生した
+	await 50				; 時間待ちを行なう
+	goto *main
+*bad
+	;	エラー
+	httpinfo estr,HTTPINFO_ERROR		; エラー文字列を取得する
+	dialog "ERROR "+estr
+	stop
+*ok
+	;	完了
+	httpinfo buf,HTTPINFO_DATA		; 結果データを取得する
+	httpinfo size,HTTPINFO_SIZE		; データサイズを取得する
+^p
+http通信によって取得されるデータは、変数が持つメモリに格納されます。
+大きなファイルを取得した場合は、そのサイズだけメモリが消費するので注意してください。
+あくまでも、メモリ上に取得できる範囲のサイズを想定した簡易的な通信の仕組みであることをご理解の上使用してください。
+Windows上であれば、HSPINETプラグインにより、さらに詳細なHTTP通信を行なうことが可能です。
+
+%href
+httpinfo
+
+
+%index
+httpinfo
+http通信の情報を取得
+%group
+拡張入出力制御命令
+%prm
+p1,p2
+p1    : データが代入される変数
+p2(0) : データの種別ID
+
+%inst
+http通信に関する情報を取得します。
+httpload命令による、http通信を行なった結果などを取得することができます。
+p2で指定された取得モードに対応する内容を、p1で指定された変数に代入します。
+取得モードの値は、以下の通りです。
+^p
+	  種別ID              内容
+	------------------------------------------------------
+	HTTPINFO_MODE 0       現在の通信モード
+	HTTPINFO_SIZE 1       データサイズ
+	HTTPINFO_DATA 16      取得データ(*)
+	HTTPINFO_ERROR 17     エラー文字列(*)
+
+(*)の項目は、文字列型変数として代入されます。
+^p
+受信データ(HTTPINFO_DATA)の読み出しを行なうと、受信データの内容はクリアされるので注意してください。
+無効な種別IDが指定された場合は、0または""(空の文字列)が返されます。
+^
+通信モードの値は、以下の内容になっています。
+^p
+	  通信モード値        内容
+	------------------------------------------------------
+	HTTPMODE_NONE         通信初期化エラー
+	HTTPMODE_READY        通信可能状態
+	HTTPMODE_REQUEST      リクエスト通信準備
+	HTTPMODE_SEND         リクエスト送信
+	HTTPMODE_DATAWAIT     通信結果待機中
+	HTTPMODE_DATAEND      通信終了
+	HTTPMODE_ERROR        エラー発生
+^p
+
+%href
+httpload
+
+
 
 
