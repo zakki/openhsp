@@ -220,7 +220,7 @@ static size_t DataToNoteLen( DATA *data, int num )
 	int i;
 	for (i = 0; i < num; i++) {
 		char *s = data[i].as.skey;
-		len += lstrlen(s) + 2;	// lstrlen("\r\n")
+		len += strlen(s) + 2;	// strlen("\r\n")
 	}
 	return len;
 }
@@ -234,8 +234,8 @@ static void DataToNote( DATA *data, char *adr, int num )
 	p=adr;
 	for(a=0;a<num;a++) {
 		s=data[a].as.skey;
-		lstrcpy( p, s );
-		p+=lstrlen( s );
+		strcpy( p, s );
+		p+=strlen( s );
 		*p++=13; *p++=10;			// Add CR/LF
 	}
 	*p=0;
@@ -263,7 +263,7 @@ static void DataToStr( DATA *data, char *adr, int num, int len )
 	p=adr;
 	for(a=0;a<num;a++) {
 		s=data[a].as.skey;
-		lstrcpyn( p, s, len );
+		strncpy( p, s, len );
 		p+=len;
 	}
 }

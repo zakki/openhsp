@@ -1236,6 +1236,7 @@ static int cmdfunc_extcmd( int cmd )
 		break;
 		}
 
+#ifdef USE_WEBTASK
 	case 0x4b:								// httpload
 		{
 		char *ss;
@@ -1278,7 +1279,7 @@ static int cmdfunc_extcmd( int cmd )
 		}
 		break;
 		}
-
+#endif
 
 #ifdef HSPDISHGP
 
