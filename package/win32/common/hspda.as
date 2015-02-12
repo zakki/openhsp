@@ -4,11 +4,6 @@
 #cmpopt varname 1
 
 #uselib "hspda.dll"
-#func sortval sortval $202
-#func sortstr sortstr $202
-#func sortnote sortnote $202
-#func sortget sortget $202
-#func sortbye sortbye $100
 
 #func csvstr csvstr $202
 #func csvnote csvnote $87
