@@ -311,7 +311,7 @@ void AlertV( char *mes, int val )
 
 
 
-void addext( char *st, char *exstr )
+void addext( char *st, const char *exstr )
 {
 	//	add extension of filename
 

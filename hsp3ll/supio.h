@@ -2,28 +2,29 @@
 //
 //	supio.cpp functions
 //
+#ifndef __supio_h
+#define __supio_h
 
-char *mem_ini( int size );
-void mem_bye( void *ptr );
-int mem_load( char *fname, void *mem, int msize );
-int mem_save( char *fname, void *mem, int msize );
-int filecopy( char *fname, char *sname );
+#ifdef HSPWIN
+#include "../hsp3/win32gui/supio_win.h"
+#endif
 
-//void prtini( char *mes );
-//void prt( char *mes );
+#ifdef HSPIOS
+#include "ios/supio_ios.h"
+#endif
 
-int tstrcmp( char *str1, char *str2 );
-void strcase( char *str );
-void strcase2( char *str, char *str2 );
-void addext( char *st, char *exstr );
-void cutlast( char *st );
-void cutlast2( char *st );
+#ifdef HSPNDK
+#include "ndk/supio_ndk.h"
+#endif
 
-void strsp_ini( void );
-int strsp_getptr( void );
-int strsp_get( char *srcstr, char *dststr, char splitchr, int len );
+#ifdef HSPLINUX
+#include "linux/supio_linux.h"
+#endif
 
-char *strstr2( char *target, char *src );
+#ifdef HSPEMSCRIPTEN
+#include "emscripten/supio_emscripten.h"
+#endif
 
-void Alert( char *mes );
-void AlertV( char *mes, int val );
+
+#endif
+
