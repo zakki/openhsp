@@ -12,7 +12,7 @@ bb:		; preds = %bb, %entry
 
 return:		; preds = %bb
 	ret void
-; CHECK: @test1
+; CHECK-LABEL: @test1(
 ; CHECK: icmp
 }
 
@@ -31,7 +31,7 @@ bb:		; preds = %bb, %entry
 
 return:		; preds = %bb
 	ret void
-; CHECK: @test2
+; CHECK-LABEL: @test2(
 ; CHECK: icmp
 }
 
@@ -49,7 +49,7 @@ bb:		; preds = %bb, %entry
 
 return:
 	ret void
-; CHECK: @test3
+; CHECK-LABEL: @test3(
 ; CHECK: fcmp
 }
 
@@ -66,8 +66,9 @@ bb:		; preds = %bb, %entry
 
 return:
 	ret void
-; CHECK: @test4
-; CHECK: fcmp
+; CHECK-LABEL: @test4(
+; CHECK-NOT: cmp
+; CHECK: br i1 false
 }
 
 ; PR6761
@@ -84,9 +85,8 @@ define void @test5() nounwind {
 
 exit:
   ret void
-  
-; CHECK: @test5
-; CHECK: icmp eq i32 {{.*}}, 10
+
+; CHECK-LABEL: @test5(
+; CHECK: icmp slt i32 {{.*}}, 0
 ; CHECK-NEXT: br i1
 }
-

@@ -1,5 +1,4 @@
-// RUN: tblgen %s
-// XFAIL: vg_leak
+// RUN: llvm-tblgen %s
 
 class test<code C> {
   code Code = C;

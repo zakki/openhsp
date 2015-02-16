@@ -13,21 +13,20 @@
 //===----------------------------------------------------------------------===//
 
 #include "DifferenceEngine.h"
-
-#include "llvm/Function.h"
-#include "llvm/Instructions.h"
-#include "llvm/Module.h"
 #include "llvm/ADT/DenseMap.h"
 #include "llvm/ADT/DenseSet.h"
 #include "llvm/ADT/SmallVector.h"
 #include "llvm/ADT/StringRef.h"
 #include "llvm/ADT/StringSet.h"
-#include "llvm/Support/CallSite.h"
-#include "llvm/Support/CFG.h"
+#include "llvm/IR/CFG.h"
+#include "llvm/IR/CallSite.h"
+#include "llvm/IR/Constants.h"
+#include "llvm/IR/Function.h"
+#include "llvm/IR/Instructions.h"
+#include "llvm/IR/Module.h"
 #include "llvm/Support/ErrorHandling.h"
 #include "llvm/Support/raw_ostream.h"
 #include "llvm/Support/type_traits.h"
-
 #include <utility>
 
 using namespace llvm;
@@ -194,12 +193,10 @@ class FunctionDifferenceEngine {
     DifferenceEngine::Context C(Engine, L, R);
 
     BasicBlock::iterator LI = L->begin(), LE = L->end();
-    BasicBlock::iterator RI = R->begin(), RE = R->end();
-
-    llvm::SmallVector<std::pair<Instruction*,Instruction*>, 20> TentativePairs;
+    BasicBlock::iterator RI = R->begin();
 
     do {
-      assert(LI != LE && RI != RE);
+      assert(LI != LE && RI != R->end());
       Instruction *LeftI = &*LI, *RightI = &*RI;
 
       // If the instructions differ, start the more sophisticated diff
@@ -266,7 +263,7 @@ class FunctionDifferenceEngine {
     } else if (isa<PHINode>(L)) {
       // FIXME: implement.
 
-      // This is really wierd;  type uniquing is broken?
+      // This is really weird;  type uniquing is broken?
       if (L->getType() != R->getType()) {
         if (!L->getType()->isPointerTy() || !R->getType()->isPointerTy()) {
           if (Complain) Engine.log("different phi types");
@@ -318,15 +315,19 @@ class FunctionDifferenceEngine {
       bool Difference = false;
 
       DenseMap<ConstantInt*,BasicBlock*> LCases;
-      for (unsigned I = 1, E = LI->getNumCases(); I != E; ++I)
-        LCases[LI->getCaseValue(I)] = LI->getSuccessor(I);
-      for (unsigned I = 1, E = RI->getNumCases(); I != E; ++I) {
-        ConstantInt *CaseValue = RI->getCaseValue(I);
+      
+      for (SwitchInst::CaseIt I = LI->case_begin(), E = LI->case_end();
+           I != E; ++I)
+        LCases[I.getCaseValue()] = I.getCaseSuccessor();
+        
+      for (SwitchInst::CaseIt I = RI->case_begin(), E = RI->case_end();
+           I != E; ++I) {
+        ConstantInt *CaseValue = I.getCaseValue();
         BasicBlock *LCase = LCases[CaseValue];
         if (LCase) {
-          if (TryUnify) tryUnify(LCase, RI->getSuccessor(I));
+          if (TryUnify) tryUnify(LCase, I.getCaseSuccessor());
           LCases.erase(CaseValue);
-        } else if (!Difference) {
+        } else if (Complain || !Difference) {
           if (Complain)
             Engine.logf("right switch has extra case %r") << CaseValue;
           Difference = true;
@@ -506,30 +507,30 @@ void FunctionDifferenceEngine::runBlockDiff(BasicBlock::iterator LStart,
   for (unsigned I = 0; I != NL+1; ++I) {
     Cur[I].Cost = I * LeftCost;
     for (unsigned J = 0; J != I; ++J)
-      Cur[I].Path.push_back(DifferenceEngine::DC_left);
+      Cur[I].Path.push_back(DC_left);
   }
 
   for (BasicBlock::iterator RI = RStart; RI != RE; ++RI) {
     // Initialize the first row.
     Next[0] = Cur[0];
     Next[0].Cost += RightCost;
-    Next[0].Path.push_back(DifferenceEngine::DC_right);
+    Next[0].Path.push_back(DC_right);
 
     unsigned Index = 1;
     for (BasicBlock::iterator LI = LStart; LI != LE; ++LI, ++Index) {
       if (matchForBlockDiff(&*LI, &*RI)) {
         Next[Index] = Cur[Index-1];
         Next[Index].Cost += MatchCost;
-        Next[Index].Path.push_back(DifferenceEngine::DC_match);
+        Next[Index].Path.push_back(DC_match);
         TentativeValues.insert(std::make_pair(&*LI, &*RI));
       } else if (Next[Index-1].Cost <= Cur[Index].Cost) {
         Next[Index] = Next[Index-1];
         Next[Index].Cost += LeftCost;
-        Next[Index].Path.push_back(DifferenceEngine::DC_left);
+        Next[Index].Path.push_back(DC_left);
       } else {
         Next[Index] = Cur[Index];
         Next[Index].Cost += RightCost;
-        Next[Index].Path.push_back(DifferenceEngine::DC_right);
+        Next[Index].Path.push_back(DC_right);
       }
     }
 
@@ -543,23 +544,23 @@ void FunctionDifferenceEngine::runBlockDiff(BasicBlock::iterator LStart,
   SmallVectorImpl<char> &Path = Cur[NL].Path;
   BasicBlock::iterator LI = LStart, RI = RStart;
 
-  DifferenceEngine::DiffLogBuilder Diff(Engine);
+  DiffLogBuilder Diff(Engine.getConsumer());
 
   // Drop trailing matches.
-  while (Path.back() == DifferenceEngine::DC_match)
+  while (Path.back() == DC_match)
     Path.pop_back();
 
   // Skip leading matches.
   SmallVectorImpl<char>::iterator
     PI = Path.begin(), PE = Path.end();
-  while (PI != PE && *PI == DifferenceEngine::DC_match) {
+  while (PI != PE && *PI == DC_match) {
     unify(&*LI, &*RI);
     ++PI, ++LI, ++RI;
   }
 
   for (; PI != PE; ++PI) {
-    switch (static_cast<DifferenceEngine::DiffChange>(*PI)) {
-    case DifferenceEngine::DC_match:
+    switch (static_cast<DiffChange>(*PI)) {
+    case DC_match:
       assert(LI != LE && RI != RE);
       {
         Instruction *L = &*LI, *R = &*RI;
@@ -569,13 +570,13 @@ void FunctionDifferenceEngine::runBlockDiff(BasicBlock::iterator LStart,
       ++LI; ++RI;
       break;
 
-    case DifferenceEngine::DC_left:
+    case DC_left:
       assert(LI != LE);
       Diff.addLeft(&*LI);
       ++LI;
       break;
 
-    case DifferenceEngine::DC_right:
+    case DC_right:
       assert(RI != RE);
       Diff.addRight(&*RI);
       ++RI;
@@ -626,6 +627,8 @@ void FunctionDifferenceEngine::runBlockDiff(BasicBlock::iterator LStart,
 }
 
 }
+
+void DifferenceEngine::Oracle::anchor() { }
 
 void DifferenceEngine::diff(Function *L, Function *R) {
   Context C(*this, L, R);

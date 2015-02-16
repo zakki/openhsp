@@ -35,16 +35,13 @@ foo:
 // CHECK: .globl "a 3"
         .globl "a 3"
 
-// CHECK: .weak "a 4"
-        .weak "a 4"
-
 // CHECK: .desc "a 5",1
         .desc "a 5", 1
 
 // CHECK: .comm "a 6",1
         .comm "a 6", 1
 
-// CHECK: .zerofill __DATA,__bss,"a 7",1,0
+// CHECK: .lcomm "a 7",1
         .lcomm "a 7", 1
 
 // FIXME: We don't bother to support .lsym.

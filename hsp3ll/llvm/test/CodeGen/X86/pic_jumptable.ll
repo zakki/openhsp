@@ -1,11 +1,16 @@
-; RUN: llc < %s -relocation-model=pic -mtriple=i386-linux-gnu -asm-verbose=false | not grep -F .text
-; RUN: llc < %s -relocation-model=pic -mtriple=i686-apple-darwin -asm-verbose=false | FileCheck %s
+; RUN: llc < %s -relocation-model=pic -mtriple=i386-linux-gnu -asm-verbose=false \
+; RUN:   | FileCheck %s --check-prefix=CHECK-LINUX
+; RUN: llc < %s -relocation-model=pic -mark-data-regions -mtriple=i686-apple-darwin -asm-verbose=false \
+; RUN:   | FileCheck %s --check-prefix=CHECK-DATA
+; RUN: llc < %s -relocation-model=pic -mtriple=i686-apple-darwin -asm-verbose=false \
+; RUN:   | FileCheck %s
 ; RUN: llc < %s                       -mtriple=x86_64-apple-darwin | not grep 'lJTI'
 ; rdar://6971437
 ; rdar://7738756
 
 declare void @_Z3bari(i32)
 
+; CHECK-LINUX: .text._Z3fooILi1EEvi,"axG",@progbits,_Z3fooILi1EEvi,comdat
 define linkonce void @_Z3fooILi1EEvi(i32 %Y) nounwind {
 entry:
 ; CHECK:       L0$pb
@@ -13,6 +18,16 @@ entry:
 ; CHECK:       Ltmp0 = LJTI0_0-L0$pb
 ; CHECK-NEXT:  addl Ltmp0(%eax,%ecx,4)
 ; CHECK-NEXT:  jmpl *%eax
+
+;; When data-in-code markers are enabled, we should see them around the jump
+;; table.
+; CHECK-DATA: .data_region jt32
+; CHECK-DATA: LJTI0_0
+; CHECK-DATA: .end_data_region
+
+;; When they're not enabled, make sure we don't see them at all.
+; CHECK-NOT: .data_region
+; CHECK-LINUX-NOT: .data_region
 	%Y_addr = alloca i32		; <i32*> [#uses=2]
 	%"alloca point" = bitcast i32 0 to i32		; <i32> [#uses=0]
 	store i32 %Y, i32* %Y_addr

@@ -8,3 +8,49 @@ define i1 @test1(double %X, double %Y) {
         ret i1 %bothcond
 ; CHECK:  fcmp ord double %Y, %X
 }
+
+define i1 @test2(i1 %X, i1 %Y) {
+  %a = and i1 %X, %Y
+  %b = and i1 %a, %X
+  ret i1 %b
+; CHECK-LABEL: @test2(
+; CHECK-NEXT: and i1 %X, %Y
+; CHECK-NEXT: ret
+}
+
+define i32 @test3(i32 %X, i32 %Y) {
+  %a = and i32 %X, %Y
+  %b = and i32 %Y, %a
+  ret i32 %b
+; CHECK-LABEL: @test3(
+; CHECK-NEXT: and i32 %X, %Y
+; CHECK-NEXT: ret
+}
+
+define i1 @test4(i32 %X) {
+  %a = icmp ult i32 %X, 31
+  %b = icmp slt i32 %X, 0
+  %c = and i1 %a, %b
+  ret i1 %c
+; CHECK-LABEL: @test4(
+; CHECK-NEXT: ret i1 false
+}
+
+; Make sure we don't go into an infinite loop with this test
+define <4 x i32> @test5(<4 x i32> %A) {
+  %1 = xor <4 x i32> %A, <i32 1, i32 2, i32 3, i32 4>
+  %2 = and <4 x i32> <i32 1, i32 2, i32 3, i32 4>, %1
+  ret <4 x i32> %2
+}
+
+; Check that we combine "if x!=0 && x!=-1" into "if x+1u>1"
+define i32 @test6(i64 %x) nounwind {
+; CHECK: @test6
+; CHECK-NEXT: add i64 %x, 1
+; CHECK-NEXT: icmp ugt i64 %x.off, 1
+  %cmp1 = icmp ne i64 %x, -1
+  %not.cmp = icmp ne i64 %x, 0
+  %.cmp1 = and i1 %cmp1, %not.cmp
+  %land.ext = zext i1 %.cmp1 to i32
+  ret i32 %land.ext
+}

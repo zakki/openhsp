@@ -37,87 +37,80 @@ namespace ISD {
   /// and getMachineOpcode() member functions of SDNode.
   ///
   enum NodeType {
-    // DELETED_NODE - This is an illegal value that is used to catch
-    // errors.  This opcode is not a legal opcode for any node.
+    /// DELETED_NODE - This is an illegal value that is used to catch
+    /// errors.  This opcode is not a legal opcode for any node.
     DELETED_NODE,
 
-    // EntryToken - This is the marker used to indicate the start of the region.
+    /// EntryToken - This is the marker used to indicate the start of a region.
     EntryToken,
 
-    // TokenFactor - This node takes multiple tokens as input and produces a
-    // single token result.  This is used to represent the fact that the operand
-    // operators are independent of each other.
+    /// TokenFactor - This node takes multiple tokens as input and produces a
+    /// single token result. This is used to represent the fact that the operand
+    /// operators are independent of each other.
     TokenFactor,
 
-    // AssertSext, AssertZext - These nodes record if a register contains a
-    // value that has already been zero or sign extended from a narrower type.
-    // These nodes take two operands.  The first is the node that has already
-    // been extended, and the second is a value type node indicating the width
-    // of the extension
+    /// AssertSext, AssertZext - These nodes record if a register contains a
+    /// value that has already been zero or sign extended from a narrower type.
+    /// These nodes take two operands.  The first is the node that has already
+    /// been extended, and the second is a value type node indicating the width
+    /// of the extension
     AssertSext, AssertZext,
 
-    // Various leaf nodes.
-    BasicBlock, VALUETYPE, CONDCODE, Register,
+    /// Various leaf nodes.
+    BasicBlock, VALUETYPE, CONDCODE, Register, RegisterMask,
     Constant, ConstantFP,
     GlobalAddress, GlobalTLSAddress, FrameIndex,
     JumpTable, ConstantPool, ExternalSymbol, BlockAddress,
 
-    // The address of the GOT
+    /// The address of the GOT
     GLOBAL_OFFSET_TABLE,
 
-    // FRAMEADDR, RETURNADDR - These nodes represent llvm.frameaddress and
-    // llvm.returnaddress on the DAG.  These nodes take one operand, the index
-    // of the frame or return address to return.  An index of zero corresponds
-    // to the current function's frame or return address, an index of one to the
-    // parent's frame or return address, and so on.
+    /// FRAMEADDR, RETURNADDR - These nodes represent llvm.frameaddress and
+    /// llvm.returnaddress on the DAG.  These nodes take one operand, the index
+    /// of the frame or return address to return.  An index of zero corresponds
+    /// to the current function's frame or return address, an index of one to
+    /// the parent's frame or return address, and so on.
     FRAMEADDR, RETURNADDR,
 
-    // FRAME_TO_ARGS_OFFSET - This node represents offset from frame pointer to
-    // first (possible) on-stack argument. This is needed for correct stack
-    // adjustment during unwind.
+    /// READ_REGISTER, WRITE_REGISTER - This node represents llvm.register on
+    /// the DAG, which implements the named register global variables extension.
+    READ_REGISTER,
+    WRITE_REGISTER,
+
+    /// FRAME_TO_ARGS_OFFSET - This node represents offset from frame pointer to
+    /// first (possible) on-stack argument. This is needed for correct stack
+    /// adjustment during unwind.
     FRAME_TO_ARGS_OFFSET,
 
-    // RESULT, OUTCHAIN = EXCEPTIONADDR(INCHAIN) - This node represents the
-    // address of the exception block on entry to an landing pad block.
-    EXCEPTIONADDR,
-
-    // RESULT, OUTCHAIN = LSDAADDR(INCHAIN) - This node represents the
-    // address of the Language Specific Data Area for the enclosing function.
-    LSDAADDR,
-
-    // RESULT, OUTCHAIN = EHSELECTION(INCHAIN, EXCEPTION) - This node represents
-    // the selection index of the exception thrown.
-    EHSELECTION,
-
-    // OUTCHAIN = EH_RETURN(INCHAIN, OFFSET, HANDLER) - This node represents
-    // 'eh_return' gcc dwarf builtin, which is used to return from
-    // exception. The general meaning is: adjust stack by OFFSET and pass
-    // execution to HANDLER. Many platform-related details also :)
+    /// OUTCHAIN = EH_RETURN(INCHAIN, OFFSET, HANDLER) - This node represents
+    /// 'eh_return' gcc dwarf builtin, which is used to return from
+    /// exception. The general meaning is: adjust stack by OFFSET and pass
+    /// execution to HANDLER. Many platform-related details also :)
     EH_RETURN,
 
-    // OUTCHAIN = EH_SJLJ_SETJMP(INCHAIN, buffer)
-    // This corresponds to the eh.sjlj.setjmp intrinsic.
-    // It takes an input chain and a pointer to the jump buffer as inputs
-    // and returns an outchain.
+    /// RESULT, OUTCHAIN = EH_SJLJ_SETJMP(INCHAIN, buffer)
+    /// This corresponds to the eh.sjlj.setjmp intrinsic.
+    /// It takes an input chain and a pointer to the jump buffer as inputs
+    /// and returns an outchain.
     EH_SJLJ_SETJMP,
 
-    // OUTCHAIN = EH_SJLJ_LONGJMP(INCHAIN, buffer)
-    // This corresponds to the eh.sjlj.longjmp intrinsic.
-    // It takes an input chain and a pointer to the jump buffer as inputs
-    // and returns an outchain.
+    /// OUTCHAIN = EH_SJLJ_LONGJMP(INCHAIN, buffer)
+    /// This corresponds to the eh.sjlj.longjmp intrinsic.
+    /// It takes an input chain and a pointer to the jump buffer as inputs
+    /// and returns an outchain.
     EH_SJLJ_LONGJMP,
 
-    // TargetConstant* - Like Constant*, but the DAG does not do any folding,
-    // simplification, or lowering of the constant. They are used for constants
-    // which are known to fit in the immediate fields of their users, or for
-    // carrying magic numbers which are not values which need to be materialized
-    // in registers.
+    /// TargetConstant* - Like Constant*, but the DAG does not do any folding,
+    /// simplification, or lowering of the constant. They are used for constants
+    /// which are known to fit in the immediate fields of their users, or for
+    /// carrying magic numbers which are not values which need to be
+    /// materialized in registers.
     TargetConstant,
     TargetConstantFP,
 
-    // TargetGlobalAddress - Like GlobalAddress, but the DAG does no folding or
-    // anything else with this node, and this is valid in the target-specific
-    // dag, turning into a GlobalAddress operand.
+    /// TargetGlobalAddress - Like GlobalAddress, but the DAG does no folding or
+    /// anything else with this node, and this is valid in the target-specific
+    /// dag, turning into a GlobalAddress operand.
     TargetGlobalAddress,
     TargetGlobalTLSAddress,
     TargetFrameIndex,
@@ -125,6 +118,11 @@ namespace ISD {
     TargetConstantPool,
     TargetExternalSymbol,
     TargetBlockAddress,
+
+    /// TargetIndex - Like a constant pool entry, but with completely
+    /// target-dependent semantics. Holds target flags, a 32-bit index, and a
+    /// 64-bit index. Targets can use this however they like.
+    TargetIndex,
 
     /// RESULT = INTRINSIC_WO_CHAIN(INTRINSICID, arg1, arg2, ...)
     /// This node represents a target intrinsic function with no side effects.
@@ -148,93 +146,94 @@ namespace ISD {
     /// namespace.  The operands to the intrinsic follow.
     INTRINSIC_VOID,
 
-    // CopyToReg - This node has three operands: a chain, a register number to
-    // set to this value, and a value.
+    /// CopyToReg - This node has three operands: a chain, a register number to
+    /// set to this value, and a value.
     CopyToReg,
 
-    // CopyFromReg - This node indicates that the input value is a virtual or
-    // physical register that is defined outside of the scope of this
-    // SelectionDAG.  The register is available from the RegisterSDNode object.
+    /// CopyFromReg - This node indicates that the input value is a virtual or
+    /// physical register that is defined outside of the scope of this
+    /// SelectionDAG.  The register is available from the RegisterSDNode object.
     CopyFromReg,
 
-    // UNDEF - An undefined node
+    /// UNDEF - An undefined node.
     UNDEF,
 
-    // EXTRACT_ELEMENT - This is used to get the lower or upper (determined by
-    // a Constant, which is required to be operand #1) half of the integer or
-    // float value specified as operand #0.  This is only for use before
-    // legalization, for values that will be broken into multiple registers.
+    /// EXTRACT_ELEMENT - This is used to get the lower or upper (determined by
+    /// a Constant, which is required to be operand #1) half of the integer or
+    /// float value specified as operand #0.  This is only for use before
+    /// legalization, for values that will be broken into multiple registers.
     EXTRACT_ELEMENT,
 
-    // BUILD_PAIR - This is the opposite of EXTRACT_ELEMENT in some ways.  Given
-    // two values of the same integer value type, this produces a value twice as
-    // big.  Like EXTRACT_ELEMENT, this can only be used before legalization.
+    /// BUILD_PAIR - This is the opposite of EXTRACT_ELEMENT in some ways.
+    /// Given two values of the same integer value type, this produces a value
+    /// twice as big.  Like EXTRACT_ELEMENT, this can only be used before
+    /// legalization.
     BUILD_PAIR,
 
-    // MERGE_VALUES - This node takes multiple discrete operands and returns
-    // them all as its individual results.  This nodes has exactly the same
-    // number of inputs and outputs. This node is useful for some pieces of the
-    // code generator that want to think about a single node with multiple
-    // results, not multiple nodes.
+    /// MERGE_VALUES - This node takes multiple discrete operands and returns
+    /// them all as its individual results.  This nodes has exactly the same
+    /// number of inputs and outputs. This node is useful for some pieces of the
+    /// code generator that want to think about a single node with multiple
+    /// results, not multiple nodes.
     MERGE_VALUES,
 
-    // Simple integer binary arithmetic operators.
+    /// Simple integer binary arithmetic operators.
     ADD, SUB, MUL, SDIV, UDIV, SREM, UREM,
 
-    // SMUL_LOHI/UMUL_LOHI - Multiply two integers of type iN, producing
-    // a signed/unsigned value of type i[2*N], and return the full value as
-    // two results, each of type iN.
+    /// SMUL_LOHI/UMUL_LOHI - Multiply two integers of type iN, producing
+    /// a signed/unsigned value of type i[2*N], and return the full value as
+    /// two results, each of type iN.
     SMUL_LOHI, UMUL_LOHI,
 
-    // SDIVREM/UDIVREM - Divide two integers and produce both a quotient and
-    // remainder result.
+    /// SDIVREM/UDIVREM - Divide two integers and produce both a quotient and
+    /// remainder result.
     SDIVREM, UDIVREM,
 
-    // CARRY_FALSE - This node is used when folding other nodes,
-    // like ADDC/SUBC, which indicate the carry result is always false.
+    /// CARRY_FALSE - This node is used when folding other nodes,
+    /// like ADDC/SUBC, which indicate the carry result is always false.
     CARRY_FALSE,
 
-    // Carry-setting nodes for multiple precision addition and subtraction.
-    // These nodes take two operands of the same value type, and produce two
-    // results.  The first result is the normal add or sub result, the second
-    // result is the carry flag result.
+    /// Carry-setting nodes for multiple precision addition and subtraction.
+    /// These nodes take two operands of the same value type, and produce two
+    /// results.  The first result is the normal add or sub result, the second
+    /// result is the carry flag result.
     ADDC, SUBC,
 
-    // Carry-using nodes for multiple precision addition and subtraction.  These
-    // nodes take three operands: The first two are the normal lhs and rhs to
-    // the add or sub, and the third is the input carry flag.  These nodes
-    // produce two results; the normal result of the add or sub, and the output
-    // carry flag.  These nodes both read and write a carry flag to allow them
-    // to them to be chained together for add and sub of arbitrarily large
-    // values.
+    /// Carry-using nodes for multiple precision addition and subtraction. These
+    /// nodes take three operands: The first two are the normal lhs and rhs to
+    /// the add or sub, and the third is the input carry flag.  These nodes
+    /// produce two results; the normal result of the add or sub, and the output
+    /// carry flag.  These nodes both read and write a carry flag to allow them
+    /// to them to be chained together for add and sub of arbitrarily large
+    /// values.
     ADDE, SUBE,
 
-    // RESULT, BOOL = [SU]ADDO(LHS, RHS) - Overflow-aware nodes for addition.
-    // These nodes take two operands: the normal LHS and RHS to the add. They
-    // produce two results: the normal result of the add, and a boolean that
-    // indicates if an overflow occured (*not* a flag, because it may be stored
-    // to memory, etc.).  If the type of the boolean is not i1 then the high
-    // bits conform to getBooleanContents.
-    // These nodes are generated from the llvm.[su]add.with.overflow intrinsics.
+    /// RESULT, BOOL = [SU]ADDO(LHS, RHS) - Overflow-aware nodes for addition.
+    /// These nodes take two operands: the normal LHS and RHS to the add. They
+    /// produce two results: the normal result of the add, and a boolean that
+    /// indicates if an overflow occurred (*not* a flag, because it may be store
+    /// to memory, etc.).  If the type of the boolean is not i1 then the high
+    /// bits conform to getBooleanContents.
+    /// These nodes are generated from llvm.[su]add.with.overflow intrinsics.
     SADDO, UADDO,
 
-    // Same for subtraction
+    /// Same for subtraction.
     SSUBO, USUBO,
 
-    // Same for multiplication
+    /// Same for multiplication.
     SMULO, UMULO,
 
-    // Simple binary floating point operators.
-    FADD, FSUB, FMUL, FDIV, FREM,
+    /// Simple binary floating point operators.
+    FADD, FSUB, FMUL, FMA, FDIV, FREM,
 
-    // FCOPYSIGN(X, Y) - Return the value of X with the sign of Y.  NOTE: This
-    // DAG node does not require that X and Y have the same type, just that they
-    // are both floating point.  X and the result must have the same type.
-    // FCOPYSIGN(f32, f64) is allowed.
+    /// FCOPYSIGN(X, Y) - Return the value of X with the sign of Y.  NOTE: This
+    /// DAG node does not require that X and Y have the same type, just that the
+    /// are both floating point.  X and the result must have the same type.
+    /// FCOPYSIGN(f32, f64) is allowed.
     FCOPYSIGN,
 
-    // INT = FGETSIGN(FP) - Return the sign bit of the specified floating point
-    // value as an integer 0/1 value.
+    /// INT = FGETSIGN(FP) - Return the sign bit of the specified floating point
+    /// value as an integer 0/1 value.
     FGETSIGN,
 
     /// BUILD_VECTOR(ELT0, ELT1, ELT2, ELT3,...) - Return a vector with the
@@ -262,16 +261,24 @@ namespace ISD {
     /// lengths of the input vectors.
     CONCAT_VECTORS,
 
+    /// INSERT_SUBVECTOR(VECTOR1, VECTOR2, IDX) - Returns a vector
+    /// with VECTOR2 inserted into VECTOR1 at the (potentially
+    /// variable) element number IDX, which must be a multiple of the
+    /// VECTOR2 vector length.  The elements of VECTOR1 starting at
+    /// IDX are overwritten with VECTOR2.  Elements IDX through
+    /// vector_length(VECTOR2) must be valid VECTOR1 indices.
+    INSERT_SUBVECTOR,
+
     /// EXTRACT_SUBVECTOR(VECTOR, IDX) - Returns a subvector from VECTOR (an
-    /// vector value) starting with the (potentially variable) element number
-    /// IDX, which must be a multiple of the result vector length.
+    /// vector value) starting with the element number IDX, which must be a
+    /// constant multiple of the result vector length.
     EXTRACT_SUBVECTOR,
 
-    /// VECTOR_SHUFFLE(VEC1, VEC2) - Returns a vector, of the same type as 
+    /// VECTOR_SHUFFLE(VEC1, VEC2) - Returns a vector, of the same type as
     /// VEC1/VEC2.  A VECTOR_SHUFFLE node also contains an array of constant int
     /// values that indicate which value (or undef) each result element will
-    /// get.  These constant ints are accessible through the 
-    /// ShuffleVectorSDNode class.  This is quite similar to the Altivec 
+    /// get.  These constant ints are accessible through the
+    /// ShuffleVectorSDNode class.  This is quite similar to the Altivec
     /// 'vperm' instruction, except that the indices must be constants and are
     /// in terms of the element size of VEC1/VEC2, not in terms of bytes.
     VECTOR_SHUFFLE,
@@ -284,77 +291,124 @@ namespace ISD {
     /// than the vector element type, and is implicitly truncated to it.
     SCALAR_TO_VECTOR,
 
-    // MULHU/MULHS - Multiply high - Multiply two integers of type iN, producing
-    // an unsigned/signed value of type i[2*N], then return the top part.
+    /// MULHU/MULHS - Multiply high - Multiply two integers of type iN,
+    /// producing an unsigned/signed value of type i[2*N], then return the top
+    /// part.
     MULHU, MULHS,
 
-    // Bitwise operators - logical and, logical or, logical xor, shift left,
-    // shift right algebraic (shift in sign bits), shift right logical (shift in
-    // zeroes), rotate left, rotate right, and byteswap.
-    AND, OR, XOR, SHL, SRA, SRL, ROTL, ROTR, BSWAP,
+    /// Bitwise operators - logical and, logical or, logical xor.
+    AND, OR, XOR,
 
-    // Counting operators
-    CTTZ, CTLZ, CTPOP,
+    /// Shift and rotation operations.  After legalization, the type of the
+    /// shift amount is known to be TLI.getShiftAmountTy().  Before legalization
+    /// the shift amount can be any type, but care must be taken to ensure it is
+    /// large enough.  TLI.getShiftAmountTy() is i8 on some targets, but before
+    /// legalization, types like i1024 can occur and i8 doesn't have enough bits
+    /// to represent the shift amount.
+    /// When the 1st operand is a vector, the shift amount must be in the same
+    /// type. (TLI.getShiftAmountTy() will return the same type when the input
+    /// type is a vector.)
+    SHL, SRA, SRL, ROTL, ROTR,
 
-    // Select(COND, TRUEVAL, FALSEVAL).  If the type of the boolean COND is not
-    // i1 then the high bits must conform to getBooleanContents.
+    /// Byte Swap and Counting operators.
+    BSWAP, CTTZ, CTLZ, CTPOP,
+
+    /// Bit counting operators with an undefined result for zero inputs.
+    CTTZ_ZERO_UNDEF, CTLZ_ZERO_UNDEF,
+
+    /// Select(COND, TRUEVAL, FALSEVAL).  If the type of the boolean COND is not
+    /// i1 then the high bits must conform to getBooleanContents.
     SELECT,
 
-    // Select with condition operator - This selects between a true value and
-    // a false value (ops #2 and #3) based on the boolean result of comparing
-    // the lhs and rhs (ops #0 and #1) of a conditional expression with the
-    // condition code in op #4, a CondCodeSDNode.
+    /// Select with a vector condition (op #0) and two vector operands (ops #1
+    /// and #2), returning a vector result.  All vectors have the same length.
+    /// Much like the scalar select and setcc, each bit in the condition selects
+    /// whether the corresponding result element is taken from op #1 or op #2.
+    /// At first, the VSELECT condition is of vXi1 type. Later, targets may
+    /// change the condition type in order to match the VSELECT node using a
+    /// pattern. The condition follows the BooleanContent format of the target.
+    VSELECT,
+
+    /// Select with condition operator - This selects between a true value and
+    /// a false value (ops #2 and #3) based on the boolean result of comparing
+    /// the lhs and rhs (ops #0 and #1) of a conditional expression with the
+    /// condition code in op #4, a CondCodeSDNode.
     SELECT_CC,
 
-    // SetCC operator - This evaluates to a true value iff the condition is
-    // true.  If the result value type is not i1 then the high bits conform
-    // to getBooleanContents.  The operands to this are the left and right
-    // operands to compare (ops #0, and #1) and the condition code to compare
-    // them with (op #2) as a CondCodeSDNode.
+    /// SetCC operator - This evaluates to a true value iff the condition is
+    /// true.  If the result value type is not i1 then the high bits conform
+    /// to getBooleanContents.  The operands to this are the left and right
+    /// operands to compare (ops #0, and #1) and the condition code to compare
+    /// them with (op #2) as a CondCodeSDNode. If the operands are vector types
+    /// then the result type must also be a vector type.
     SETCC,
 
-    // RESULT = VSETCC(LHS, RHS, COND) operator - This evaluates to a vector of
-    // integer elements with all bits of the result elements set to true if the
-    // comparison is true or all cleared if the comparison is false.  The
-    // operands to this are the left and right operands to compare (LHS/RHS) and
-    // the condition code to compare them with (COND) as a CondCodeSDNode.
-    VSETCC,
-
-    // SHL_PARTS/SRA_PARTS/SRL_PARTS - These operators are used for expanded
-    // integer shift operations, just like ADD/SUB_PARTS.  The operation
-    // ordering is:
-    //       [Lo,Hi] = op [LoLHS,HiLHS], Amt
+    /// SHL_PARTS/SRA_PARTS/SRL_PARTS - These operators are used for expanded
+    /// integer shift operations, just like ADD/SUB_PARTS.  The operation
+    /// ordering is:
+    ///       [Lo,Hi] = op [LoLHS,HiLHS], Amt
     SHL_PARTS, SRA_PARTS, SRL_PARTS,
 
-    // Conversion operators.  These are all single input single output
-    // operations.  For all of these, the result type must be strictly
-    // wider or narrower (depending on the operation) than the source
-    // type.
+    /// Conversion operators.  These are all single input single output
+    /// operations.  For all of these, the result type must be strictly
+    /// wider or narrower (depending on the operation) than the source
+    /// type.
 
-    // SIGN_EXTEND - Used for integer types, replicating the sign bit
-    // into new bits.
+    /// SIGN_EXTEND - Used for integer types, replicating the sign bit
+    /// into new bits.
     SIGN_EXTEND,
 
-    // ZERO_EXTEND - Used for integer types, zeroing the new bits.
+    /// ZERO_EXTEND - Used for integer types, zeroing the new bits.
     ZERO_EXTEND,
 
-    // ANY_EXTEND - Used for integer types.  The high bits are undefined.
+    /// ANY_EXTEND - Used for integer types.  The high bits are undefined.
     ANY_EXTEND,
 
-    // TRUNCATE - Completely drop the high bits.
+    /// TRUNCATE - Completely drop the high bits.
     TRUNCATE,
 
-    // [SU]INT_TO_FP - These operators convert integers (whose interpreted sign
-    // depends on the first letter) to floating point.
+    /// [SU]INT_TO_FP - These operators convert integers (whose interpreted sign
+    /// depends on the first letter) to floating point.
     SINT_TO_FP,
     UINT_TO_FP,
 
-    // SIGN_EXTEND_INREG - This operator atomically performs a SHL/SRA pair to
-    // sign extend a small value in a large integer register (e.g. sign
-    // extending the low 8 bits of a 32-bit register to fill the top 24 bits
-    // with the 7th bit).  The size of the smaller type is indicated by the 1th
-    // operand, a ValueType node.
+    /// SIGN_EXTEND_INREG - This operator atomically performs a SHL/SRA pair to
+    /// sign extend a small value in a large integer register (e.g. sign
+    /// extending the low 8 bits of a 32-bit register to fill the top 24 bits
+    /// with the 7th bit).  The size of the smaller type is indicated by the 1th
+    /// operand, a ValueType node.
     SIGN_EXTEND_INREG,
+
+    /// ANY_EXTEND_VECTOR_INREG(Vector) - This operator represents an
+    /// in-register any-extension of the low lanes of an integer vector. The
+    /// result type must have fewer elements than the operand type, and those
+    /// elements must be larger integer types such that the total size of the
+    /// operand type and the result type match. Each of the low operand
+    /// elements is any-extended into the corresponding, wider result
+    /// elements with the high bits becoming undef.
+    ANY_EXTEND_VECTOR_INREG,
+
+    /// SIGN_EXTEND_VECTOR_INREG(Vector) - This operator represents an
+    /// in-register sign-extension of the low lanes of an integer vector. The
+    /// result type must have fewer elements than the operand type, and those
+    /// elements must be larger integer types such that the total size of the
+    /// operand type and the result type match. Each of the low operand
+    /// elements is sign-extended into the corresponding, wider result
+    /// elements.
+    // FIXME: The SIGN_EXTEND_INREG node isn't specifically limited to
+    // scalars, but it also doesn't handle vectors well. Either it should be
+    // restricted to scalars or this node (and its handling) should be merged
+    // into it.
+    SIGN_EXTEND_VECTOR_INREG,
+
+    /// ZERO_EXTEND_VECTOR_INREG(Vector) - This operator represents an
+    /// in-register zero-extension of the low lanes of an integer vector. The
+    /// result type must have fewer elements than the operand type, and those
+    /// elements must be larger integer types such that the total size of the
+    /// operand type and the result type match. Each of the low operand
+    /// elements is zero-extended into the corresponding, wider result
+    /// elements.
+    ZERO_EXTEND_VECTOR_INREG,
 
     /// FP_TO_[US]INT - Convert a floating point value to a signed or unsigned
     /// integer.
@@ -374,12 +428,12 @@ namespace ISD {
     /// FP_EXTEND(FP_ROUND(X,0)) because the extra bits aren't removed.
     FP_ROUND,
 
-    // FLT_ROUNDS_ - Returns current rounding mode:
-    // -1 Undefined
-    //  0 Round to 0
-    //  1 Round to nearest
-    //  2 Round to +inf
-    //  3 Round to -inf
+    /// FLT_ROUNDS_ - Returns current rounding mode:
+    /// -1 Undefined
+    ///  0 Round to 0
+    ///  1 Round to nearest
+    ///  2 Round to +inf
+    ///  3 Round to -inf
     FLT_ROUNDS_,
 
     /// X = FP_ROUND_INREG(Y, VT) - This operator takes an FP register, and
@@ -392,197 +446,223 @@ namespace ISD {
     /// X = FP_EXTEND(Y) - Extend a smaller FP type into a larger FP type.
     FP_EXTEND,
 
-    // BIT_CONVERT - This operator converts between integer, vector and FP
-    // values, as if the value was stored to memory with one type and loaded
-    // from the same address with the other type (or equivalently for vector
-    // format conversions, etc).  The source and result are required to have
-    // the same bit size (e.g.  f32 <-> i32).  This can also be used for
-    // int-to-int or fp-to-fp conversions, but that is a noop, deleted by
-    // getNode().
-    BIT_CONVERT,
+    /// BITCAST - This operator converts between integer, vector and FP
+    /// values, as if the value was stored to memory with one type and loaded
+    /// from the same address with the other type (or equivalently for vector
+    /// format conversions, etc).  The source and result are required to have
+    /// the same bit size (e.g.  f32 <-> i32).  This can also be used for
+    /// int-to-int or fp-to-fp conversions, but that is a noop, deleted by
+    /// getNode().
+    BITCAST,
 
-    // CONVERT_RNDSAT - This operator is used to support various conversions
-    // between various types (float, signed, unsigned and vectors of those
-    // types) with rounding and saturation. NOTE: Avoid using this operator as
-    // most target don't support it and the operator might be removed in the
-    // future. It takes the following arguments:
-    //   0) value
-    //   1) dest type (type to convert to)
-    //   2) src type (type to convert from)
-    //   3) rounding imm
-    //   4) saturation imm
-    //   5) ISD::CvtCode indicating the type of conversion to do
+    /// ADDRSPACECAST - This operator converts between pointers of different
+    /// address spaces.
+    ADDRSPACECAST,
+
+    /// CONVERT_RNDSAT - This operator is used to support various conversions
+    /// between various types (float, signed, unsigned and vectors of those
+    /// types) with rounding and saturation. NOTE: Avoid using this operator as
+    /// most target don't support it and the operator might be removed in the
+    /// future. It takes the following arguments:
+    ///   0) value
+    ///   1) dest type (type to convert to)
+    ///   2) src type (type to convert from)
+    ///   3) rounding imm
+    ///   4) saturation imm
+    ///   5) ISD::CvtCode indicating the type of conversion to do
     CONVERT_RNDSAT,
 
-    // FP16_TO_FP32, FP32_TO_FP16 - These operators are used to perform
-    // promotions and truncation for half-precision (16 bit) floating
-    // numbers. We need special nodes since FP16 is a storage-only type with
-    // special semantics of operations.
-    FP16_TO_FP32, FP32_TO_FP16,
+    /// FP16_TO_FP, FP_TO_FP16 - These operators are used to perform promotions
+    /// and truncation for half-precision (16 bit) floating numbers. These nodes
+    /// form a semi-softened interface for dealing with f16 (as an i16), which
+    /// is often a storage-only type but has native conversions.
+    FP16_TO_FP, FP_TO_FP16,
 
-    // FNEG, FABS, FSQRT, FSIN, FCOS, FPOWI, FPOW,
-    // FLOG, FLOG2, FLOG10, FEXP, FEXP2,
-    // FCEIL, FTRUNC, FRINT, FNEARBYINT, FFLOOR - Perform various unary floating
-    // point operations. These are inspired by libm.
+    /// FNEG, FABS, FSQRT, FSIN, FCOS, FPOWI, FPOW,
+    /// FLOG, FLOG2, FLOG10, FEXP, FEXP2,
+    /// FCEIL, FTRUNC, FRINT, FNEARBYINT, FROUND, FFLOOR - Perform various unary
+    /// floating point operations. These are inspired by libm.
     FNEG, FABS, FSQRT, FSIN, FCOS, FPOWI, FPOW,
     FLOG, FLOG2, FLOG10, FEXP, FEXP2,
-    FCEIL, FTRUNC, FRINT, FNEARBYINT, FFLOOR,
+    FCEIL, FTRUNC, FRINT, FNEARBYINT, FROUND, FFLOOR,
+    
+    /// FSINCOS - Compute both fsin and fcos as a single operation.
+    FSINCOS,
 
-    // LOAD and STORE have token chains as their first operand, then the same
-    // operands as an LLVM load/store instruction, then an offset node that
-    // is added / subtracted from the base pointer to form the address (for
-    // indexed memory ops).
+    /// LOAD and STORE have token chains as their first operand, then the same
+    /// operands as an LLVM load/store instruction, then an offset node that
+    /// is added / subtracted from the base pointer to form the address (for
+    /// indexed memory ops).
     LOAD, STORE,
 
-    // DYNAMIC_STACKALLOC - Allocate some number of bytes on the stack aligned
-    // to a specified boundary.  This node always has two return values: a new
-    // stack pointer value and a chain. The first operand is the token chain,
-    // the second is the number of bytes to allocate, and the third is the
-    // alignment boundary.  The size is guaranteed to be a multiple of the stack
-    // alignment, and the alignment is guaranteed to be bigger than the stack
-    // alignment (if required) or 0 to get standard stack alignment.
+    /// DYNAMIC_STACKALLOC - Allocate some number of bytes on the stack aligned
+    /// to a specified boundary.  This node always has two return values: a new
+    /// stack pointer value and a chain. The first operand is the token chain,
+    /// the second is the number of bytes to allocate, and the third is the
+    /// alignment boundary.  The size is guaranteed to be a multiple of the
+    /// stack alignment, and the alignment is guaranteed to be bigger than the
+    /// stack alignment (if required) or 0 to get standard stack alignment.
     DYNAMIC_STACKALLOC,
 
-    // Control flow instructions.  These all have token chains.
+    /// Control flow instructions.  These all have token chains.
 
-    // BR - Unconditional branch.  The first operand is the chain
-    // operand, the second is the MBB to branch to.
+    /// BR - Unconditional branch.  The first operand is the chain
+    /// operand, the second is the MBB to branch to.
     BR,
 
-    // BRIND - Indirect branch.  The first operand is the chain, the second
-    // is the value to branch to, which must be of the same type as the target's
-    // pointer type.
+    /// BRIND - Indirect branch.  The first operand is the chain, the second
+    /// is the value to branch to, which must be of the same type as the
+    /// target's pointer type.
     BRIND,
 
-    // BR_JT - Jumptable branch. The first operand is the chain, the second
-    // is the jumptable index, the last one is the jumptable entry index.
+    /// BR_JT - Jumptable branch. The first operand is the chain, the second
+    /// is the jumptable index, the last one is the jumptable entry index.
     BR_JT,
 
-    // BRCOND - Conditional branch.  The first operand is the chain, the
-    // second is the condition, the third is the block to branch to if the
-    // condition is true.  If the type of the condition is not i1, then the
-    // high bits must conform to getBooleanContents.
+    /// BRCOND - Conditional branch.  The first operand is the chain, the
+    /// second is the condition, the third is the block to branch to if the
+    /// condition is true.  If the type of the condition is not i1, then the
+    /// high bits must conform to getBooleanContents.
     BRCOND,
 
-    // BR_CC - Conditional branch.  The behavior is like that of SELECT_CC, in
-    // that the condition is represented as condition code, and two nodes to
-    // compare, rather than as a combined SetCC node.  The operands in order are
-    // chain, cc, lhs, rhs, block to branch to if condition is true.
+    /// BR_CC - Conditional branch.  The behavior is like that of SELECT_CC, in
+    /// that the condition is represented as condition code, and two nodes to
+    /// compare, rather than as a combined SetCC node.  The operands in order
+    /// are chain, cc, lhs, rhs, block to branch to if condition is true.
     BR_CC,
 
-    // INLINEASM - Represents an inline asm block.  This node always has two
-    // return values: a chain and a flag result.  The inputs are as follows:
-    //   Operand #0   : Input chain.
-    //   Operand #1   : a ExternalSymbolSDNode with a pointer to the asm string.
-    //   Operand #2   : a MDNodeSDNode with the !srcloc metadata.
-    //   After this, it is followed by a list of operands with this format:
-    //     ConstantSDNode: Flags that encode whether it is a mem or not, the
-    //                     of operands that follow, etc.  See InlineAsm.h.
-    //     ... however many operands ...
-    //   Operand #last: Optional, an incoming flag.
-    //
-    // The variable width operands are required to represent target addressing
-    // modes as a single "operand", even though they may have multiple
-    // SDOperands.
+    /// INLINEASM - Represents an inline asm block.  This node always has two
+    /// return values: a chain and a flag result.  The inputs are as follows:
+    ///   Operand #0  : Input chain.
+    ///   Operand #1  : a ExternalSymbolSDNode with a pointer to the asm string.
+    ///   Operand #2  : a MDNodeSDNode with the !srcloc metadata.
+    ///   Operand #3  : HasSideEffect, IsAlignStack bits.
+    ///   After this, it is followed by a list of operands with this format:
+    ///     ConstantSDNode: Flags that encode whether it is a mem or not, the
+    ///                     of operands that follow, etc.  See InlineAsm.h.
+    ///     ... however many operands ...
+    ///   Operand #last: Optional, an incoming flag.
+    ///
+    /// The variable width operands are required to represent target addressing
+    /// modes as a single "operand", even though they may have multiple
+    /// SDOperands.
     INLINEASM,
 
-    // EH_LABEL - Represents a label in mid basic block used to track
-    // locations needed for debug and exception handling tables.  These nodes
-    // take a chain as input and return a chain.
+    /// EH_LABEL - Represents a label in mid basic block used to track
+    /// locations needed for debug and exception handling tables.  These nodes
+    /// take a chain as input and return a chain.
     EH_LABEL,
 
-    // STACKSAVE - STACKSAVE has one operand, an input chain.  It produces a
-    // value, the same type as the pointer type for the system, and an output
-    // chain.
+    /// STACKSAVE - STACKSAVE has one operand, an input chain.  It produces a
+    /// value, the same type as the pointer type for the system, and an output
+    /// chain.
     STACKSAVE,
 
-    // STACKRESTORE has two operands, an input chain and a pointer to restore to
-    // it returns an output chain.
+    /// STACKRESTORE has two operands, an input chain and a pointer to restore
+    /// to it returns an output chain.
     STACKRESTORE,
 
-    // CALLSEQ_START/CALLSEQ_END - These operators mark the beginning and end of
-    // a call sequence, and carry arbitrary information that target might want
-    // to know.  The first operand is a chain, the rest are specified by the
-    // target and not touched by the DAG optimizers.
-    // CALLSEQ_START..CALLSEQ_END pairs may not be nested.
+    /// CALLSEQ_START/CALLSEQ_END - These operators mark the beginning and end
+    /// of a call sequence, and carry arbitrary information that target might
+    /// want to know.  The first operand is a chain, the rest are specified by
+    /// the target and not touched by the DAG optimizers.
+    /// CALLSEQ_START..CALLSEQ_END pairs may not be nested.
     CALLSEQ_START,  // Beginning of a call sequence
     CALLSEQ_END,    // End of a call sequence
 
-    // VAARG - VAARG has four operands: an input chain, a pointer, a SRCVALUE,
-    // and the alignment. It returns a pair of values: the vaarg value and a
-    // new chain.
+    /// VAARG - VAARG has four operands: an input chain, a pointer, a SRCVALUE,
+    /// and the alignment. It returns a pair of values: the vaarg value and a
+    /// new chain.
     VAARG,
 
-    // VACOPY - VACOPY has five operands: an input chain, a destination pointer,
-    // a source pointer, a SRCVALUE for the destination, and a SRCVALUE for the
-    // source.
+    /// VACOPY - VACOPY has 5 operands: an input chain, a destination pointer,
+    /// a source pointer, a SRCVALUE for the destination, and a SRCVALUE for the
+    /// source.
     VACOPY,
 
-    // VAEND, VASTART - VAEND and VASTART have three operands: an input chain, a
-    // pointer, and a SRCVALUE.
+    /// VAEND, VASTART - VAEND and VASTART have three operands: an input chain,
+    /// pointer, and a SRCVALUE.
     VAEND, VASTART,
 
-    // SRCVALUE - This is a node type that holds a Value* that is used to
-    // make reference to a value in the LLVM IR.
+    /// SRCVALUE - This is a node type that holds a Value* that is used to
+    /// make reference to a value in the LLVM IR.
     SRCVALUE,
-    
-    // MDNODE_SDNODE - This is a node that holdes an MDNode*, which is used to
-    // reference metadata in the IR.
+
+    /// MDNODE_SDNODE - This is a node that holdes an MDNode*, which is used to
+    /// reference metadata in the IR.
     MDNODE_SDNODE,
 
-    // PCMARKER - This corresponds to the pcmarker intrinsic.
+    /// PCMARKER - This corresponds to the pcmarker intrinsic.
     PCMARKER,
 
-    // READCYCLECOUNTER - This corresponds to the readcyclecounter intrinsic.
-    // The only operand is a chain and a value and a chain are produced.  The
-    // value is the contents of the architecture specific cycle counter like
-    // register (or other high accuracy low latency clock source)
+    /// READCYCLECOUNTER - This corresponds to the readcyclecounter intrinsic.
+    /// The only operand is a chain and a value and a chain are produced.  The
+    /// value is the contents of the architecture specific cycle counter like
+    /// register (or other high accuracy low latency clock source)
     READCYCLECOUNTER,
 
-    // HANDLENODE node - Used as a handle for various purposes.
+    /// HANDLENODE node - Used as a handle for various purposes.
     HANDLENODE,
 
-    // TRAMPOLINE - This corresponds to the init_trampoline intrinsic.
-    // It takes as input a token chain, the pointer to the trampoline,
-    // the pointer to the nested function, the pointer to pass for the
-    // 'nest' parameter, a SRCVALUE for the trampoline and another for
-    // the nested function (allowing targets to access the original
-    // Function*).  It produces the result of the intrinsic and a token
-    // chain as output.
-    TRAMPOLINE,
+    /// INIT_TRAMPOLINE - This corresponds to the init_trampoline intrinsic.  It
+    /// takes as input a token chain, the pointer to the trampoline, the pointer
+    /// to the nested function, the pointer to pass for the 'nest' parameter, a
+    /// SRCVALUE for the trampoline and another for the nested function
+    /// (allowing targets to access the original Function*).
+    /// It produces a token chain as output.
+    INIT_TRAMPOLINE,
 
-    // TRAP - Trapping instruction
+    /// ADJUST_TRAMPOLINE - This corresponds to the adjust_trampoline intrinsic.
+    /// It takes a pointer to the trampoline and produces a (possibly) new
+    /// pointer to the same trampoline with platform-specific adjustments
+    /// applied.  The pointer it returns points to an executable block of code.
+    ADJUST_TRAMPOLINE,
+
+    /// TRAP - Trapping instruction
     TRAP,
 
-    // PREFETCH - This corresponds to a prefetch intrinsic. It takes chains are
-    // their first operand. The other operands are the address to prefetch,
-    // read / write specifier, and locality specifier.
+    /// DEBUGTRAP - Trap intended to get the attention of a debugger.
+    DEBUGTRAP,
+
+    /// PREFETCH - This corresponds to a prefetch intrinsic. The first operand
+    /// is the chain.  The other operands are the address to prefetch,
+    /// read / write specifier, locality specifier and instruction / data cache
+    /// specifier.
     PREFETCH,
 
-    // OUTCHAIN = MEMBARRIER(INCHAIN, load-load, load-store, store-load,
-    //                       store-store, device)
-    // This corresponds to the memory.barrier intrinsic.
-    // it takes an input chain, 4 operands to specify the type of barrier, an
-    // operand specifying if the barrier applies to device and uncached memory
-    // and produces an output chain.
-    MEMBARRIER,
+    /// OUTCHAIN = ATOMIC_FENCE(INCHAIN, ordering, scope)
+    /// This corresponds to the fence instruction. It takes an input chain, and
+    /// two integer constants: an AtomicOrdering and a SynchronizationScope.
+    ATOMIC_FENCE,
 
-    // Val, OUTCHAIN = ATOMIC_CMP_SWAP(INCHAIN, ptr, cmp, swap)
-    // this corresponds to the atomic.lcs intrinsic.
-    // cmp is compared to *ptr, and if equal, swap is stored in *ptr.
-    // the return is always the original value in *ptr
+    /// Val, OUTCHAIN = ATOMIC_LOAD(INCHAIN, ptr)
+    /// This corresponds to "load atomic" instruction.
+    ATOMIC_LOAD,
+
+    /// OUTCHAIN = ATOMIC_STORE(INCHAIN, ptr, val)
+    /// This corresponds to "store atomic" instruction.
+    ATOMIC_STORE,
+
+    /// Val, OUTCHAIN = ATOMIC_CMP_SWAP(INCHAIN, ptr, cmp, swap)
+    /// For double-word atomic operations:
+    /// ValLo, ValHi, OUTCHAIN = ATOMIC_CMP_SWAP(INCHAIN, ptr, cmpLo, cmpHi,
+    ///                                          swapLo, swapHi)
+    /// This corresponds to the cmpxchg instruction.
     ATOMIC_CMP_SWAP,
 
-    // Val, OUTCHAIN = ATOMIC_SWAP(INCHAIN, ptr, amt)
-    // this corresponds to the atomic.swap intrinsic.
-    // amt is stored to *ptr atomically.
-    // the return is always the original value in *ptr
-    ATOMIC_SWAP,
+    /// Val, Success, OUTCHAIN
+    ///     = ATOMIC_CMP_SWAP_WITH_SUCCESS(INCHAIN, ptr, cmp, swap)
+    /// N.b. this is still a strong cmpxchg operation, so
+    /// Success == "Val == cmp".
+    ATOMIC_CMP_SWAP_WITH_SUCCESS,
 
-    // Val, OUTCHAIN = ATOMIC_LOAD_[OpName](INCHAIN, ptr, amt)
-    // this corresponds to the atomic.load.[OpName] intrinsic.
-    // op(*ptr, amt) is stored to *ptr atomically.
-    // the return is always the original value in *ptr
+    /// Val, OUTCHAIN = ATOMIC_SWAP(INCHAIN, ptr, amt)
+    /// Val, OUTCHAIN = ATOMIC_LOAD_[OpName](INCHAIN, ptr, amt)
+    /// For double-word atomic operations:
+    /// ValLo, ValHi, OUTCHAIN = ATOMIC_SWAP(INCHAIN, ptr, amtLo, amtHi)
+    /// ValLo, ValHi, OUTCHAIN = ATOMIC_LOAD_[OpName](INCHAIN, ptr, amtLo, amtHi)
+    /// These correspond to the atomicrmw instruction.
+    ATOMIC_SWAP,
     ATOMIC_LOAD_ADD,
     ATOMIC_LOAD_SUB,
     ATOMIC_LOAD_AND,
@@ -594,6 +674,10 @@ namespace ISD {
     ATOMIC_LOAD_UMIN,
     ATOMIC_LOAD_UMAX,
 
+    /// This corresponds to the llvm.lifetime.* intrinsics. The first operand
+    /// is the chain and the second operand is the alloca pointer.
+    LIFETIME_START, LIFETIME_END,
+
     /// BUILTIN_OP_END - This must be the last enum value in this list.
     /// The target-specific pre-isel opcode values start here.
     BUILTIN_OP_END
@@ -603,7 +687,7 @@ namespace ISD {
   /// which do not reference a specific memory location should be less than
   /// this value. Those that do must not be less than this value, and can
   /// be used with SelectionDAG::getMemIntrinsicNode.
-  static const int FIRST_TARGET_MEMORY_OPCODE = BUILTIN_OP_END+150;
+  static const int FIRST_TARGET_MEMORY_OPCODE = BUILTIN_OP_END+180;
 
   //===--------------------------------------------------------------------===//
   /// MemIndexedMode enum - This enum defines the load / store indexed
@@ -659,6 +743,8 @@ namespace ISD {
     ZEXTLOAD,
     LAST_LOADEXT_TYPE
   };
+
+  NodeType getExtForLoadExtType(LoadExtType);
 
   //===--------------------------------------------------------------------===//
   /// ISD::CondCode enum - These are ordered carefully to make the bitfields
@@ -756,16 +842,16 @@ namespace ISD {
   /// CvtCode enum - This enum defines the various converts CONVERT_RNDSAT
   /// supports.
   enum CvtCode {
-    CVT_FF,     // Float from Float
-    CVT_FS,     // Float from Signed
-    CVT_FU,     // Float from Unsigned
-    CVT_SF,     // Signed from Float
-    CVT_UF,     // Unsigned from Float
-    CVT_SS,     // Signed from Signed
-    CVT_SU,     // Signed from Unsigned
-    CVT_US,     // Unsigned from Signed
-    CVT_UU,     // Unsigned from Unsigned
-    CVT_INVALID // Marker - Invalid opcode
+    CVT_FF,     /// Float from Float
+    CVT_FS,     /// Float from Signed
+    CVT_FU,     /// Float from Unsigned
+    CVT_SF,     /// Signed from Float
+    CVT_UF,     /// Unsigned from Float
+    CVT_SS,     /// Signed from Signed
+    CVT_SU,     /// Signed from Unsigned
+    CVT_US,     /// Unsigned from Signed
+    CVT_UU,     /// Unsigned from Unsigned
+    CVT_INVALID /// Marker - Invalid opcode
   };
 
 } // end llvm::ISD namespace

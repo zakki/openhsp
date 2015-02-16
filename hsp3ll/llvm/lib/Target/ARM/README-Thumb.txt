@@ -68,7 +68,7 @@ LPCRELL0:
 
 //===---------------------------------------------------------------------===//
 
-We compiles the following:
+We compile the following:
 
 define i16 @func_entry_2E_ce(i32 %i) {
         switch i32 %i, label %bb12.exitStub [
@@ -173,7 +173,6 @@ GCC is doing a couple of clever things here:
         mov r1, #1
         lsl r1, r1, #8
         tst r2, r1
-  
 
 //===---------------------------------------------------------------------===//
 
@@ -196,7 +195,6 @@ This is especially bad when dynamic alloca is used. The all fixed size stack
 objects are referenced off the frame pointer with negative offsets. See
 oggenc for an example.
 
-
 //===---------------------------------------------------------------------===//
 
 Poor codegen test/CodeGen/ARM/select.ll f7:
@@ -214,10 +212,6 @@ LPC0:
 
 Make register allocator / spiller smarter so we can re-materialize "mov r, imm",
 etc. Almost all Thumb instructions clobber condition code.
-
-//===---------------------------------------------------------------------===//
-
-Add ldmia, stmia support.
 
 //===---------------------------------------------------------------------===//
 
@@ -246,3 +240,22 @@ Thumb2.
 Rather than having tBR_JTr print a ".align 2" and constant island pass pad it,
 add a target specific ALIGN instruction instead. That way, GetInstSizeInBytes
 won't have to over-estimate. It can also be used for loop alignment pass.
+
+//===---------------------------------------------------------------------===//
+
+We generate conditional code for icmp when we don't need to. This code:
+
+  int foo(int s) {
+    return s == 1;
+  }
+
+produces:
+
+foo:
+        cmp     r0, #1
+        mov.w   r0, #0
+        it      eq
+        moveq   r0, #1
+        bx      lr
+
+when it could use subs + adcs. This is GCC PR46975.

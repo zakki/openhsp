@@ -17,7 +17,7 @@ using namespace llvm;
 
 char IntervalPartition::ID = 0;
 INITIALIZE_PASS(IntervalPartition, "intervals",
-                "Interval Partition Construction", true, true);
+                "Interval Partition Construction", true, true)
 
 //===----------------------------------------------------------------------===//
 // IntervalPartition Implementation
@@ -29,7 +29,7 @@ void IntervalPartition::releaseMemory() {
     delete Intervals[i];
   IntervalMap.clear();
   Intervals.clear();
-  RootInterval = 0;
+  RootInterval = nullptr;
 }
 
 void IntervalPartition::print(raw_ostream &O, const Module*) const {

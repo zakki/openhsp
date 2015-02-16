@@ -1,7 +1,8 @@
+; REQUIRES: asserts
 ; RUN: opt -regions -analyze < %s | FileCheck %s
-; RUN: opt -regions -stats < %s |& FileCheck -check-prefix=STAT %s
-; RUN: opt -regions -print-region-style=bb  -analyze < %s |& FileCheck -check-prefix=BBIT %s
-; RUN: opt -regions -print-region-style=rn  -analyze < %s |& FileCheck -check-prefix=RNIT %s
+; RUN: opt -regions -stats < %s 2>&1 | FileCheck -check-prefix=STAT %s
+; RUN: opt -regions -print-region-style=bb  -analyze < %s 2>&1 | FileCheck -check-prefix=BBIT %s
+; RUN: opt -regions -print-region-style=rn  -analyze < %s 2>&1 | FileCheck -check-prefix=RNIT %s
 
 define void @MAIN__() nounwind {
 entry:
@@ -32,8 +33,8 @@ __label_000020:                                   ; preds = %__label_002001, %bb
 ; CHECK-NOT: =>
 ; CHECK: [0] entry => <Function Return>
 ; CHECK-NEXT:  [1] __label_002001.outer => __label_000020
-; CHECK-NEXT;      [2] bb197 => bb229
-; CHECK-NEXT;            [3] bb224 => bb229
+; CHECK-NEXT:      [2] bb197 => bb229
+; CHECK-NEXT:            [3] bb224 => bb229
 
 ; STAT: 4 region - The # of regions
 ; STAT: 1 region - The # of simple regions

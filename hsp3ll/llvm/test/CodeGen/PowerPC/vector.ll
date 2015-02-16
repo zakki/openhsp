@@ -1,6 +1,6 @@
 ; Test that vectors are scalarized/lowered correctly.
 ; RUN: llc < %s -march=ppc32 -mcpu=g5 > %t
-; RUN: llc < %s -march=ppc32 -mcpu=g3 > %t
+; RUN: llc < %s -march=ppc32 -mcpu=g3 >> %t
 
 %d8 = type <8 x double>
 %f1 = type <1 x float>
@@ -55,6 +55,14 @@ define void @test_div(%f8* %P, %f8* %Q, %f8* %S) {
         %p = load %f8* %P               ; <%f8> [#uses=1]
         %q = load %f8* %Q               ; <%f8> [#uses=1]
         %R = fdiv %f8 %p, %q            ; <%f8> [#uses=1]
+        store %f8 %R, %f8* %S
+        ret void
+}
+
+define void @test_rem(%f8* %P, %f8* %Q, %f8* %S) {
+        %p = load %f8* %P               ; <%f8> [#uses=1]
+        %q = load %f8* %Q               ; <%f8> [#uses=1]
+        %R = frem %f8 %p, %q            ; <%f8> [#uses=1]
         store %f8 %R, %f8* %S
         ret void
 }

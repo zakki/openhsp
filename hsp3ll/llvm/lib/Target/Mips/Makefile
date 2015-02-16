@@ -12,13 +12,14 @@ LIBRARYNAME = LLVMMipsCodeGen
 TARGET = Mips
 
 # Make sure that tblgen is run, first thing.
-BUILT_SOURCES = MipsGenRegisterInfo.h.inc MipsGenRegisterNames.inc \
-                MipsGenRegisterInfo.inc MipsGenInstrNames.inc \
-                MipsGenInstrInfo.inc MipsGenAsmWriter.inc \
+BUILT_SOURCES = MipsGenRegisterInfo.inc MipsGenInstrInfo.inc \
+                MipsGenAsmWriter.inc MipsGenFastISel.inc MipsGenCodeEmitter.inc \
                 MipsGenDAGISel.inc MipsGenCallingConv.inc \
-                MipsGenSubtarget.inc
+                MipsGenSubtargetInfo.inc MipsGenMCCodeEmitter.inc \
+                MipsGenDisassemblerTables.inc \
+                MipsGenMCPseudoLowering.inc MipsGenAsmMatcher.inc
 
-DIRS = AsmPrinter TargetInfo
+DIRS = InstPrinter Disassembler AsmParser TargetInfo MCTargetDesc
 
 include $(LEVEL)/Makefile.common
 

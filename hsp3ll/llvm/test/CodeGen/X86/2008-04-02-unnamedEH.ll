@@ -11,6 +11,8 @@ define internal void @""() {
 	call i32 @_Z3barv( )		; <i32>:4 [#uses=1]
 	ret void
 }
-; CHECK: unnamed_1.eh
+
+; CHECK:      ___unnamed_1:
+; CHECK-NEXT: .cfi_startproc
 
 declare i32 @_Z3barv()

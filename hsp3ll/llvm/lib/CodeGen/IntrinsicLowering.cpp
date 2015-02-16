@@ -11,25 +11,25 @@
 //
 //===----------------------------------------------------------------------===//
 
-#include "llvm/Constants.h"
-#include "llvm/DerivedTypes.h"
-#include "llvm/Module.h"
-#include "llvm/Type.h"
 #include "llvm/CodeGen/IntrinsicLowering.h"
-#include "llvm/Support/CallSite.h"
-#include "llvm/Support/ErrorHandling.h"
-#include "llvm/Support/IRBuilder.h"
-#include "llvm/Support/raw_ostream.h"
-#include "llvm/Target/TargetData.h"
 #include "llvm/ADT/SmallVector.h"
+#include "llvm/IR/CallSite.h"
+#include "llvm/IR/Constants.h"
+#include "llvm/IR/DataLayout.h"
+#include "llvm/IR/DerivedTypes.h"
+#include "llvm/IR/IRBuilder.h"
+#include "llvm/IR/Module.h"
+#include "llvm/IR/Type.h"
+#include "llvm/Support/ErrorHandling.h"
+#include "llvm/Support/raw_ostream.h"
 using namespace llvm;
 
 template <class ArgIt>
 static void EnsureFunctionExists(Module &M, const char *Name,
                                  ArgIt ArgBegin, ArgIt ArgEnd,
-                                 const Type *RetTy) {
+                                 Type *RetTy) {
   // Insert a correctly-typed definition now.
-  std::vector<const Type *> ParamTys;
+  std::vector<Type *> ParamTys;
   for (ArgIt I = ArgBegin; I != ArgEnd; ++I)
     ParamTys.push_back(I->getType());
   M.getOrInsertFunction(Name, FunctionType::get(RetTy, ParamTys, false));
@@ -64,12 +64,12 @@ static void EnsureFPIntrinsicsExist(Module &M, Function *Fn,
 template <class ArgIt>
 static CallInst *ReplaceCallWith(const char *NewFn, CallInst *CI,
                                  ArgIt ArgBegin, ArgIt ArgEnd,
-                                 const Type *RetTy) {
+                                 Type *RetTy) {
   // If we haven't already looked up this function, check to see if the
   // program already contains a function with this name.
   Module *M = CI->getParent()->getParent()->getParent();
   // Get or insert the definition now.
-  std::vector<const Type *> ParamTys;
+  std::vector<Type *> ParamTys;
   for (ArgIt I = ArgBegin; I != ArgEnd; ++I)
     ParamTys.push_back((*I)->getType());
   Constant* FCache = M->getOrInsertFunction(NewFn,
@@ -77,7 +77,7 @@ static CallInst *ReplaceCallWith(const char *NewFn, CallInst *CI,
 
   IRBuilder<> Builder(CI->getParent(), CI);
   SmallVector<Value *, 8> Args(ArgBegin, ArgEnd);
-  CallInst *NewCI = Builder.CreateCall(FCache, Args.begin(), Args.end());
+  CallInst *NewCI = Builder.CreateCall(FCache, Args);
   NewCI->setName(CI->getName());
   if (!CI->use_empty())
     CI->replaceAllUsesWith(NewCI);
@@ -85,9 +85,11 @@ static CallInst *ReplaceCallWith(const char *NewFn, CallInst *CI,
 }
 
 // VisualStudio defines setjmp as _setjmp
-#if defined(_MSC_VER) && defined(setjmp)
-#define setjmp_undefined_for_visual_studio
-#undef setjmp
+#if defined(_MSC_VER) && defined(setjmp) && \
+                         !defined(setjmp_undefined_for_msvc)
+#  pragma push_macro("setjmp")
+#  undef setjmp
+#  define setjmp_undefined_for_msvc
 #endif
 
 void IntrinsicLowering::AddPrototypes(Module &M) {
@@ -113,21 +115,21 @@ void IntrinsicLowering::AddPrototypes(Module &M) {
           Type::getInt8PtrTy(Context),
                               Type::getInt8PtrTy(Context), 
                               Type::getInt8PtrTy(Context), 
-                              TD.getIntPtrType(Context), (Type *)0);
+                              DL.getIntPtrType(Context), nullptr);
         break;
       case Intrinsic::memmove:
         M.getOrInsertFunction("memmove",
           Type::getInt8PtrTy(Context),
                               Type::getInt8PtrTy(Context), 
                               Type::getInt8PtrTy(Context), 
-                              TD.getIntPtrType(Context), (Type *)0);
+                              DL.getIntPtrType(Context), nullptr);
         break;
       case Intrinsic::memset:
         M.getOrInsertFunction("memset",
           Type::getInt8PtrTy(Context),
                               Type::getInt8PtrTy(Context), 
                               Type::getInt32Ty(M.getContext()), 
-                              TD.getIntPtrType(Context), (Type *)0);
+                              DL.getIntPtrType(Context), nullptr);
         break;
       case Intrinsic::sqrt:
         EnsureFPIntrinsicsExist(M, I, "sqrtf", "sqrt", "sqrtl");
@@ -351,6 +353,13 @@ void IntrinsicLowering::LowerIntrinsicCall(CallInst *CI) {
     report_fatal_error("Code generator does not support intrinsic function '"+
                       Callee->getName()+"'!");
 
+  case Intrinsic::expect: {
+    // Just replace __builtin_expect(exp, c) with EXP.
+    Value *V = CI->getArgOperand(0);
+    CI->replaceAllUsesWith(V);
+    break;
+  }
+
     // The setjmp/longjmp intrinsics should only exist in the code if it was
     // never optimized (ie, right out of the CFE), or if it has been hacked on
     // by the lowerinvoke pass.  In both cases, the right thing to do is to
@@ -439,21 +448,22 @@ void IntrinsicLowering::LowerIntrinsicCall(CallInst *CI) {
   case Intrinsic::dbg_declare:
     break;    // Simply strip out debugging intrinsics
 
-  case Intrinsic::eh_exception:
-  case Intrinsic::eh_selector:
-    CI->replaceAllUsesWith(Constant::getNullValue(CI->getType()));
-    break;
-
   case Intrinsic::eh_typeid_for:
     // Return something different to eh_selector.
     CI->replaceAllUsesWith(ConstantInt::get(CI->getType(), 1));
+    break;
+
+  case Intrinsic::annotation:
+  case Intrinsic::ptr_annotation:
+    // Just drop the annotation, but forward the value
+    CI->replaceAllUsesWith(CI->getOperand(0));
     break;
 
   case Intrinsic::var_annotation:
     break;   // Strip out annotate intrinsic
     
   case Intrinsic::memcpy: {
-    const IntegerType *IntPtr = TD.getIntPtrType(Context);
+    Type *IntPtr = DL.getIntPtrType(Context);
     Value *Size = Builder.CreateIntCast(CI->getArgOperand(2), IntPtr,
                                         /* isSigned */ false);
     Value *Ops[3];
@@ -464,7 +474,7 @@ void IntrinsicLowering::LowerIntrinsicCall(CallInst *CI) {
     break;
   }
   case Intrinsic::memmove: {
-    const IntegerType *IntPtr = TD.getIntPtrType(Context);
+    Type *IntPtr = DL.getIntPtrType(Context);
     Value *Size = Builder.CreateIntCast(CI->getArgOperand(2), IntPtr,
                                         /* isSigned */ false);
     Value *Ops[3];
@@ -475,11 +485,12 @@ void IntrinsicLowering::LowerIntrinsicCall(CallInst *CI) {
     break;
   }
   case Intrinsic::memset: {
-    const IntegerType *IntPtr = TD.getIntPtrType(Context);
+    Value *Op0 = CI->getArgOperand(0);
+    Type *IntPtr = DL.getIntPtrType(Op0->getType());
     Value *Size = Builder.CreateIntCast(CI->getArgOperand(2), IntPtr,
                                         /* isSigned */ false);
     Value *Ops[3];
-    Ops[0] = CI->getArgOperand(0);
+    Ops[0] = Op0;
     // Extend the amount to i32.
     Ops[1] = Builder.CreateIntCast(CI->getArgOperand(1),
                                    Type::getInt32Ty(Context),
@@ -535,4 +546,27 @@ void IntrinsicLowering::LowerIntrinsicCall(CallInst *CI) {
   assert(CI->use_empty() &&
          "Lowering should have eliminated any uses of the intrinsic call!");
   CI->eraseFromParent();
+}
+
+bool IntrinsicLowering::LowerToByteSwap(CallInst *CI) {
+  // Verify this is a simple bswap.
+  if (CI->getNumArgOperands() != 1 ||
+      CI->getType() != CI->getArgOperand(0)->getType() ||
+      !CI->getType()->isIntegerTy())
+    return false;
+
+  IntegerType *Ty = dyn_cast<IntegerType>(CI->getType());
+  if (!Ty)
+    return false;
+
+  // Okay, we can do this xform, do so now.
+  Module *M = CI->getParent()->getParent()->getParent();
+  Constant *Int = Intrinsic::getDeclaration(M, Intrinsic::bswap, Ty);
+
+  Value *Op = CI->getArgOperand(0);
+  Op = CallInst::Create(Int, Op, CI->getName(), CI);
+
+  CI->replaceAllUsesWith(Op);
+  CI->eraseFromParent();
+  return true;
 }

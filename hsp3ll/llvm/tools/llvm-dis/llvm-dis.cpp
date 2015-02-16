@@ -16,18 +16,23 @@
 //
 //===----------------------------------------------------------------------===//
 
-#include "llvm/LLVMContext.h"
-#include "llvm/Module.h"
-#include "llvm/Type.h"
+#include "llvm/IR/LLVMContext.h"
 #include "llvm/Bitcode/ReaderWriter.h"
-#include "llvm/Assembly/AssemblyAnnotationWriter.h"
+#include "llvm/IR/AssemblyAnnotationWriter.h"
+#include "llvm/IR/DebugInfo.h"
+#include "llvm/IR/IntrinsicInst.h"
+#include "llvm/IR/Module.h"
+#include "llvm/IR/Type.h"
 #include "llvm/Support/CommandLine.h"
+#include "llvm/Support/DataStream.h"
+#include "llvm/Support/FileSystem.h"
 #include "llvm/Support/FormattedStream.h"
 #include "llvm/Support/ManagedStatic.h"
 #include "llvm/Support/MemoryBuffer.h"
 #include "llvm/Support/PrettyStackTrace.h"
-#include "llvm/Support/raw_ostream.h"
-#include "llvm/System/Signals.h"
+#include "llvm/Support/Signals.h"
+#include "llvm/Support/ToolOutputFile.h"
+#include <system_error>
 using namespace llvm;
 
 static cl::opt<std::string>
@@ -48,45 +53,98 @@ ShowAnnotations("show-annotations",
                 cl::desc("Add informational comments to the .ll file"));
 
 namespace {
-  
+
+static void printDebugLoc(const DebugLoc &DL, formatted_raw_ostream &OS) {
+  OS << DL.getLine() << ":" << DL.getCol();
+  if (MDNode *N = DL.getInlinedAt(getGlobalContext())) {
+    DebugLoc IDL = DebugLoc::getFromDILocation(N);
+    if (!IDL.isUnknown()) {
+      OS << "@";
+      printDebugLoc(IDL,OS);
+    }
+  }
+}
 class CommentWriter : public AssemblyAnnotationWriter {
 public:
   void emitFunctionAnnot(const Function *F,
-                         formatted_raw_ostream &OS) {
+                         formatted_raw_ostream &OS) override {
     OS << "; [#uses=" << F->getNumUses() << ']';  // Output # uses
     OS << '\n';
   }
-  void printInfoComment(const Value &V, formatted_raw_ostream &OS) {
-    if (V.getType()->isVoidTy()) return;
-      
-    OS.PadToColumn(50);
-    OS << "; [#uses=" << V.getNumUses() << ']';  // Output # uses
+  void printInfoComment(const Value &V, formatted_raw_ostream &OS) override {
+    bool Padded = false;
+    if (!V.getType()->isVoidTy()) {
+      OS.PadToColumn(50);
+      Padded = true;
+      OS << "; [#uses=" << V.getNumUses() << " type=" << *V.getType() << "]";  // Output # uses and type
+    }
+    if (const Instruction *I = dyn_cast<Instruction>(&V)) {
+      const DebugLoc &DL = I->getDebugLoc();
+      if (!DL.isUnknown()) {
+        if (!Padded) {
+          OS.PadToColumn(50);
+          Padded = true;
+          OS << ";";
+        }
+        OS << " [debug line = ";
+        printDebugLoc(DL,OS);
+        OS << "]";
+      }
+      if (const DbgDeclareInst *DDI = dyn_cast<DbgDeclareInst>(I)) {
+        DIVariable Var(DDI->getVariable());
+        if (!Padded) {
+          OS.PadToColumn(50);
+          OS << ";";
+        }
+        OS << " [debug variable = " << Var.getName() << "]";
+      }
+      else if (const DbgValueInst *DVI = dyn_cast<DbgValueInst>(I)) {
+        DIVariable Var(DVI->getVariable());
+        if (!Padded) {
+          OS.PadToColumn(50);
+          OS << ";";
+        }
+        OS << " [debug variable = " << Var.getName() << "]";
+      }
+    }
   }
 };
-  
+
 } // end anon namespace
 
 int main(int argc, char **argv) {
   // Print a stack trace if we signal out.
   sys::PrintStackTraceOnErrorSignal();
   PrettyStackTraceProgram X(argc, argv);
-  
+
   LLVMContext &Context = getGlobalContext();
   llvm_shutdown_obj Y;  // Call llvm_shutdown() on exit.
-  
-  
+
+
   cl::ParseCommandLineOptions(argc, argv, "llvm .bc -> .ll disassembler\n");
 
   std::string ErrorMessage;
-  std::auto_ptr<Module> M;
- 
-  if (MemoryBuffer *Buffer
-         = MemoryBuffer::getFileOrSTDIN(InputFilename, &ErrorMessage)) {
-    M.reset(ParseBitcodeFile(Buffer, Context, &ErrorMessage));
-    delete Buffer;
+  std::unique_ptr<Module> M;
+
+  // Use the bitcode streaming interface
+  DataStreamer *streamer = getDataFileStreamer(InputFilename, &ErrorMessage);
+  if (streamer) {
+    std::string DisplayFilename;
+    if (InputFilename == "-")
+      DisplayFilename = "<stdin>";
+    else
+      DisplayFilename = InputFilename;
+    M.reset(getStreamedBitcodeModule(DisplayFilename, streamer, Context,
+                                     &ErrorMessage));
+    if(M.get()) {
+      if (std::error_code EC = M->materializeAllPermanently()) {
+        ErrorMessage = EC.message();
+        M.reset();
+      }
+    }
   }
 
-  if (M.get() == 0) {
+  if (!M.get()) {
     errs() << argv[0] << ": ";
     if (ErrorMessage.size())
       errs() << ErrorMessage << "\n";
@@ -94,11 +152,11 @@ int main(int argc, char **argv) {
       errs() << "bitcode didn't read correctly.\n";
     return 1;
   }
-  
+
   // Just use stdout.  We won't actually print anything on it.
   if (DontPrint)
     OutputFilename = "-";
-  
+
   if (OutputFilename.empty()) { // Unspecified output, infer it.
     if (InputFilename == "-") {
       OutputFilename = "-";
@@ -114,18 +172,17 @@ int main(int argc, char **argv) {
   }
 
   std::string ErrorInfo;
-  OwningPtr<tool_output_file> 
-  Out(new tool_output_file(OutputFilename.c_str(), ErrorInfo,
-                           raw_fd_ostream::F_Binary));
+  std::unique_ptr<tool_output_file> Out(
+      new tool_output_file(OutputFilename.c_str(), ErrorInfo, sys::fs::F_None));
   if (!ErrorInfo.empty()) {
     errs() << ErrorInfo << '\n';
     return 1;
   }
 
-  OwningPtr<AssemblyAnnotationWriter> Annotator;
+  std::unique_ptr<AssemblyAnnotationWriter> Annotator;
   if (ShowAnnotations)
     Annotator.reset(new CommentWriter());
-  
+
   // All that llvm-dis does is write the assembly to a file.
   if (!DontPrint)
     M->print(Out->os(), Annotator.get());
@@ -135,4 +192,3 @@ int main(int argc, char **argv) {
 
   return 0;
 }
-

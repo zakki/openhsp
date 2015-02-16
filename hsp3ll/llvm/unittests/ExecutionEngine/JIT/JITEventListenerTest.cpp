@@ -8,21 +8,17 @@
 //===----------------------------------------------------------------------===//
 
 #include "llvm/ExecutionEngine/JITEventListener.h"
-
-#include "llvm/LLVMContext.h"
-#include "llvm/Instructions.h"
-#include "llvm/Module.h"
-#include "llvm/ADT/OwningPtr.h"
 #include "llvm/CodeGen/MachineCodeInfo.h"
 #include "llvm/ExecutionEngine/JIT.h"
-#include "llvm/Support/TypeBuilder.h"
-#include "llvm/Target/TargetSelect.h"
+#include "llvm/IR/Instructions.h"
+#include "llvm/IR/LLVMContext.h"
+#include "llvm/IR/Module.h"
+#include "llvm/IR/TypeBuilder.h"
+#include "llvm/Support/TargetSelect.h"
 #include "gtest/gtest.h"
 #include <vector>
 
 using namespace llvm;
-
-int dummy;
 
 namespace {
 
@@ -45,7 +41,7 @@ struct RecordingJITEventListener : public JITEventListener {
   std::vector<FunctionEmittedEvent> EmittedEvents;
   std::vector<FunctionFreedEvent> FreedEvents;
 
-  int NextIndex;
+  unsigned NextIndex;
 
   RecordingJITEventListener() : NextIndex(0) {}
 
@@ -72,9 +68,11 @@ class JITEventListenerTest : public testing::Test {
   }
 
   Module *M;
-  const OwningPtr<ExecutionEngine> EE;
+  const std::unique_ptr<ExecutionEngine> EE;
 };
 
+// Tests on SystemZ disabled as we're running the old JIT
+#if !defined(__s390__) && !defined(__aarch64__)
 Function *buildFunction(Module *M) {
   Function *Result = Function::Create(
       TypeBuilder<int32_t(int32_t), false>::get(getGlobalContext()),
@@ -225,6 +223,7 @@ TEST_F(JITEventListenerTest, MatchesMachineCodeInfo) {
   EXPECT_EQ(1U, Listener.FreedEvents[0].Index);
   EXPECT_EQ(F_addr, Listener.FreedEvents[0].Code);
 }
+#endif
 
 class JITEnvironment : public testing::Environment {
   virtual void SetUp() {

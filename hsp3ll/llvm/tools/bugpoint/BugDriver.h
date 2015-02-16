@@ -16,9 +16,10 @@
 #ifndef BUGDRIVER_H
 #define BUGDRIVER_H
 
-#include "llvm/ADT/ValueMap.h"
-#include <vector>
+#include "llvm/IR/ValueMap.h"
+#include "llvm/Transforms/Utils/ValueMapper.h"
 #include <string>
+#include <vector>
 
 namespace llvm {
 
@@ -190,7 +191,7 @@ public:
   /// this function.
   ///
   bool createReferenceFile(Module *M, const std::string &Filename
-                                            = "bugpoint.reference.out");
+                                            = "bugpoint.reference.out-%%%%%%%");
 
   /// diffProgram - This method executes the specified module and diffs the
   /// output against the file specified by ReferenceOutputFile.  If the output
@@ -201,7 +202,7 @@ public:
                    const std::string &BitcodeFile = "",
                    const std::string &SharedObj = "",
                    bool RemoveBitcode = false,
-                   std::string *Error = 0) const;
+                   std::string *Error = nullptr) const;
 
   /// EmitProgressBitcode - This function is used to output M to a file named
   /// "bugpoint-ID.bc".
@@ -243,7 +244,7 @@ public:
   /// this method will never return null.
   Module *runPassesOn(Module *M, const std::vector<std::string> &Passes,
                       bool AutoDebugCrashes = false, unsigned NumExtraArgs = 0,
-                      const char * const *ExtraArgs = NULL);
+                      const char * const *ExtraArgs = nullptr);
 
   /// runPasses - Run the specified passes on Program, outputting a bitcode
   /// file and writting the filename into OutputFile if successful.  If the
@@ -258,7 +259,7 @@ public:
                  const std::vector<std::string> &PassesToRun,
                  std::string &OutputFilename, bool DeleteOutput = false,
                  bool Quiet = false, unsigned NumExtraArgs = 0,
-                 const char * const *ExtraArgs = NULL) const;
+                 const char * const *ExtraArgs = nullptr) const;
                  
   /// runManyPasses - Take the specified pass list and create different 
   /// combinations of passes to compile the program with. Compile the program with
@@ -274,6 +275,8 @@ public:
   /// bitcode file.  If an error occurs, true is returned.
   ///
   bool writeProgramToFile(const std::string &Filename, const Module *M) const;
+  bool writeProgramToFile(const std::string &Filename, int FD,
+                          const Module *M) const;
 
 private:
   /// runPasses - Just like the method above, but this just returns true or
@@ -322,7 +325,7 @@ void DeleteFunctionBody(Function *F);
 /// module, split the functions OUT of the specified module, and place them in
 /// the new module.
 Module *SplitFunctionsOutOfModule(Module *M, const std::vector<Function*> &F,
-                                  ValueMap<const Value*, Value*> &VMap);
+                                  ValueToValueMapTy &VMap);
 
 } // End llvm namespace
 

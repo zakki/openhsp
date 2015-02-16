@@ -1,4 +1,4 @@
-; RUN: llc < %s -march=x86 | FileCheck %s
+; RUN: llc < %s -mcpu=generic -march=x86 | FileCheck %s
 	%struct._obstack_chunk = type { i8*, %struct._obstack_chunk*, [4 x i8] }
 	%struct.obstack = type { i32, %struct._obstack_chunk*, i8*, i8*, i8*, i32, i32, %struct._obstack_chunk* (...)*, void (...)*, i8*, i8 }
 @stmt_obstack = external global %struct.obstack		; <%struct.obstack*> [#uses=1]
@@ -38,10 +38,36 @@ L:
 
   store i16 %A, i16* %Q
   ret i32 %D
-  
-; CHECK: test2:
+
+; CHECK-LABEL: test2:
 ; CHECK: 	movl	4(%esp), %eax
-; CHECK-NEXT:	movzwl	(%eax), %ecx
+; CHECK-NEXT:	movzwl	(%eax), %e{{..}}
 
 }
 
+; rdar://10554090
+; xor in exit block will be CSE'ed and load will be folded to xor in entry.
+define i1 @test3(i32* %P, i32* %Q) nounwind {
+; CHECK-LABEL: test3:
+; CHECK: movl 8(%esp), %e
+; CHECK: movl 4(%esp), %e
+; CHECK: xorl (%e
+; CHECK: j
+entry:
+  %0 = load i32* %P, align 4
+  %1 = load i32* %Q, align 4
+  %2 = xor i32 %0, %1
+  %3 = and i32 %2, 89947
+  %4 = icmp eq i32 %3, 0
+  br i1 %4, label %exit, label %land.end
+
+exit:
+  %shr.i.i19 = xor i32 %1, %0
+  %5 = and i32 %shr.i.i19, 3456789123
+  %6 = icmp eq i32 %5, 0
+  br label %land.end
+
+land.end:
+  %7 = phi i1 [ %6, %exit ], [ false, %entry ]
+  ret i1 %7
+}

@@ -27,7 +27,6 @@
 #include "llvm/CodeGen/MachineFrameInfo.h"
 #include "llvm/CodeGen/MachineInstrBuilder.h"
 #include "llvm/CodeGen/MachineMemOperand.h"
-#include "llvm/CodeGen/PseudoSourceValue.h"
 
 namespace llvm {
 
@@ -53,8 +52,34 @@ struct X86AddressMode {
   unsigned GVOpFlags;
 
   X86AddressMode()
-    : BaseType(RegBase), Scale(1), IndexReg(0), Disp(0), GV(0), GVOpFlags(0) {
+    : BaseType(RegBase), Scale(1), IndexReg(0), Disp(0), GV(nullptr),
+      GVOpFlags(0) {
     Base.Reg = 0;
+  }
+
+
+  void getFullAddress(SmallVectorImpl<MachineOperand> &MO) {
+    assert(Scale == 1 || Scale == 2 || Scale == 4 || Scale == 8);
+
+    if (BaseType == X86AddressMode::RegBase)
+      MO.push_back(MachineOperand::CreateReg(Base.Reg, false, false,
+                                             false, false, false, 0, false));
+    else {
+      assert(BaseType == X86AddressMode::FrameIndexBase);
+      MO.push_back(MachineOperand::CreateFI(Base.FrameIndex));
+    }
+
+    MO.push_back(MachineOperand::CreateImm(Scale));
+    MO.push_back(MachineOperand::CreateReg(IndexReg, false, false,
+                                           false, false, false, 0, false));
+
+    if (GV)
+      MO.push_back(MachineOperand::CreateGA(GV, Disp, GVOpFlags));
+    else
+      MO.push_back(MachineOperand::CreateImm(Disp));
+
+    MO.push_back(MachineOperand::CreateReg(0, false, false,
+                                           false, false, false, 0, false));
   }
 };
 
@@ -98,19 +123,20 @@ static inline const MachineInstrBuilder &
 addFullAddress(const MachineInstrBuilder &MIB,
                const X86AddressMode &AM) {
   assert(AM.Scale == 1 || AM.Scale == 2 || AM.Scale == 4 || AM.Scale == 8);
-  
+
   if (AM.BaseType == X86AddressMode::RegBase)
     MIB.addReg(AM.Base.Reg);
-  else if (AM.BaseType == X86AddressMode::FrameIndexBase)
+  else {
+    assert(AM.BaseType == X86AddressMode::FrameIndexBase);
     MIB.addFrameIndex(AM.Base.FrameIndex);
-  else
-    assert (0);
+  }
+
   MIB.addImm(AM.Scale).addReg(AM.IndexReg);
   if (AM.GV)
     MIB.addGlobalAddress(AM.GV, AM.Disp, AM.GVOpFlags);
   else
     MIB.addImm(AM.Disp);
-    
+
   return MIB.addReg(0);
 }
 
@@ -124,16 +150,15 @@ addFrameReference(const MachineInstrBuilder &MIB, int FI, int Offset = 0) {
   MachineInstr *MI = MIB;
   MachineFunction &MF = *MI->getParent()->getParent();
   MachineFrameInfo &MFI = *MF.getFrameInfo();
-  const TargetInstrDesc &TID = MI->getDesc();
+  const MCInstrDesc &MCID = MI->getDesc();
   unsigned Flags = 0;
-  if (TID.mayLoad())
+  if (MCID.mayLoad())
     Flags |= MachineMemOperand::MOLoad;
-  if (TID.mayStore())
+  if (MCID.mayStore())
     Flags |= MachineMemOperand::MOStore;
   MachineMemOperand *MMO =
-    MF.getMachineMemOperand(PseudoSourceValue::getFixedStack(FI),
-                            Flags, Offset,
-                            MFI.getObjectSize(FI),
+    MF.getMachineMemOperand(MachinePointerInfo::getFixedStack(FI, Offset),
+                            Flags, MFI.getObjectSize(FI),
                             MFI.getObjectAlignment(FI));
   return addOffset(MIB.addFrameIndex(FI), Offset)
             .addMemOperand(MMO);

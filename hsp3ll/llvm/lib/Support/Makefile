@@ -11,7 +11,13 @@ LEVEL = ../..
 LIBRARYNAME = LLVMSupport
 BUILD_ARCHIVE = 1
 
-## FIXME: This only requires RTTI because tblgen uses it.  Fix that.
-REQUIRES_RTTI = 1
+EXTRA_DIST = Unix Win32 README.txt
 
 include $(LEVEL)/Makefile.common
+
+CompileCommonOpts := $(filter-out -pedantic,$(CompileCommonOpts))
+CompileCommonOpts := $(filter-out -Wno-long-long,$(CompileCommonOpts))
+
+ifdef LLVM_VERSION_INFO
+CompileCommonOpts += -DLLVM_VERSION_INFO='"$(LLVM_VERSION_INFO)"'
+endif

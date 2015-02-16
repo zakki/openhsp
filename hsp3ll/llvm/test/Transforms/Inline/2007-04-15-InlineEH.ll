@@ -1,4 +1,4 @@
-; RUN: opt < %s -inline -S | not grep {invoke void asm}
+; RUN: opt < %s -inline -S | not grep "invoke void asm"
 ; PR1335
 
 target datalayout = "e-p:32:32:32-i1:8:8-i8:8:8-i16:16:16-i32:32:32-i64:32:64-f32:32:32-f64:32:64-v64:64:64-v128:128:128-a0:0:64"
@@ -33,8 +33,12 @@ invcont67:		; preds = %invcont65
 	ret void
 
 cleanup144:		; preds = %invcont65, %invcont64, %invcont, %entry
-	unwind
+        %exn = landingpad {i8*, i32} personality i32 (...)* @__gxx_personality_v0
+                 cleanup
+	resume { i8*, i32 } %exn
 }
+
+declare i32 @__gxx_personality_v0(...)
 
 declare void @gnat__os_lib__getenv(%struct.gnat__strings__string_access*)
 

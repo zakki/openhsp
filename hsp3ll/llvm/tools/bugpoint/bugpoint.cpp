@@ -15,21 +15,26 @@
 
 #include "BugDriver.h"
 #include "ToolRunner.h"
+#include "llvm/IR/LLVMContext.h"
+#include "llvm/IR/LegacyPassNameParser.h"
+#include "llvm/LinkAllIR.h"
 #include "llvm/LinkAllPasses.h"
-#include "llvm/LLVMContext.h"
-#include "llvm/Support/PassNameParser.h"
+#include "llvm/PassManager.h"
 #include "llvm/Support/CommandLine.h"
 #include "llvm/Support/ManagedStatic.h"
 #include "llvm/Support/PluginLoader.h"
 #include "llvm/Support/PrettyStackTrace.h"
-#include "llvm/Support/StandardPasses.h"
-#include "llvm/System/Process.h"
-#include "llvm/System/Signals.h"
-#include "llvm/System/Valgrind.h"
-#include "llvm/LinkAllVMCore.h"
+#include "llvm/Support/Process.h"
+#include "llvm/Support/Signals.h"
+#include "llvm/Support/Valgrind.h"
+#include "llvm/Transforms/IPO/PassManagerBuilder.h"
+
+//Enable this macro to debug bugpoint itself.
+//#define DEBUG_BUGPOINT 1
+
 using namespace llvm;
 
-static cl::opt<bool> 
+static cl::opt<bool>
 FindBugs("find-bugs", cl::desc("Run many different optimization sequences "
                                "on program to find bugs"), cl::init(false));
 
@@ -44,8 +49,8 @@ TimeoutValue("timeout", cl::init(300), cl::value_desc("seconds"),
 
 static cl::opt<int>
 MemoryLimit("mlimit", cl::init(-1), cl::value_desc("MBytes"),
-             cl::desc("Maximum amount of memory to use. 0 disables check."
-                      " Defaults to 100MB (800MB under valgrind)."));
+            cl::desc("Maximum amount of memory to use. 0 disables check."
+                     " Defaults to 300MB (800MB under valgrind)."));
 
 static cl::opt<bool>
 UseValgrind("enable-valgrind",
@@ -58,12 +63,24 @@ static cl::list<const PassInfo*, bool, PassNameParser>
 PassList(cl::desc("Passes available:"), cl::ZeroOrMore);
 
 static cl::opt<bool>
-StandardCompileOpts("std-compile-opts", 
+StandardCompileOpts("std-compile-opts",
                    cl::desc("Include the standard compile time optimizations"));
 
 static cl::opt<bool>
-StandardLinkOpts("std-link-opts", 
+StandardLinkOpts("std-link-opts",
                  cl::desc("Include the standard link time optimizations"));
+
+static cl::opt<bool>
+OptLevelO1("O1",
+           cl::desc("Optimization level 1. Identical to 'opt -O1'"));
+
+static cl::opt<bool>
+OptLevelO2("O2",
+           cl::desc("Optimization level 2. Identical to 'opt -O2'"));
+
+static cl::opt<bool>
+OptLevelO3("O3",
+           cl::desc("Optimization level 3. Identical to 'opt -O3'"));
 
 static cl::opt<std::string>
 OverrideTriple("mtriple", cl::desc("Override target triple for module"));
@@ -71,18 +88,20 @@ OverrideTriple("mtriple", cl::desc("Override target triple for module"));
 /// BugpointIsInterrupted - Set to true when the user presses ctrl-c.
 bool llvm::BugpointIsInterrupted = false;
 
+#ifndef DEBUG_BUGPOINT
 static void BugpointInterruptFunction() {
   BugpointIsInterrupted = true;
 }
+#endif
 
 // Hack to capture a pass list.
 namespace {
-  class AddToDriver : public PassManager {
+  class AddToDriver : public FunctionPassManager {
     BugDriver &D;
   public:
-    AddToDriver(BugDriver &_D) : D(_D) {}
-    
-    virtual void add(Pass *P) {
+    AddToDriver(BugDriver &_D) : FunctionPassManager(nullptr), D(_D) {}
+
+    void add(Pass *P) override {
       const void *ID = P->getPassID();
       const PassInfo *PI = PassRegistry::getPassRegistry()->getPassInfo(ID);
       D.addPass(PI->getPassArgument());
@@ -90,15 +109,44 @@ namespace {
   };
 }
 
+#ifdef LINK_POLLY_INTO_TOOLS
+namespace polly {
+void initializePollyPasses(llvm::PassRegistry &Registry);
+}
+#endif
+
 int main(int argc, char **argv) {
+#ifndef DEBUG_BUGPOINT
   llvm::sys::PrintStackTraceOnErrorSignal();
   llvm::PrettyStackTraceProgram X(argc, argv);
   llvm_shutdown_obj Y;  // Call llvm_shutdown() on exit.
+#endif
+
+  // Initialize passes
+  PassRegistry &Registry = *PassRegistry::getPassRegistry();
+  initializeCore(Registry);
+  initializeScalarOpts(Registry);
+  initializeObjCARCOpts(Registry);
+  initializeVectorization(Registry);
+  initializeIPO(Registry);
+  initializeAnalysis(Registry);
+  initializeIPA(Registry);
+  initializeTransformUtils(Registry);
+  initializeInstCombine(Registry);
+  initializeInstrumentation(Registry);
+  initializeTarget(Registry);
+
+#ifdef LINK_POLLY_INTO_TOOLS
+  polly::initializePollyPasses(Registry);
+#endif
+
   cl::ParseCommandLineOptions(argc, argv,
                               "LLVM automatic testcase reducer. See\nhttp://"
                               "llvm.org/cmds/bugpoint.html"
                               " for more information.\n");
+#ifndef DEBUG_BUGPOINT
   sys::SetInterruptFunction(BugpointInterruptFunction);
+#endif
 
   LLVMContext& Context = getGlobalContext();
   // If we have an override, set it and then track the triple we want Modules
@@ -114,29 +162,41 @@ int main(int argc, char **argv) {
     if (sys::RunningOnValgrind() || UseValgrind)
       MemoryLimit = 800;
     else
-      MemoryLimit = 100;
+      MemoryLimit = 300;
   }
 
   BugDriver D(argv[0], FindBugs, TimeoutValue, MemoryLimit,
               UseValgrind, Context);
   if (D.addSources(InputFilenames)) return 1;
-  
+
   AddToDriver PM(D);
   if (StandardCompileOpts) {
-    createStandardModulePasses(&PM, 3,
-                               /*OptimizeSize=*/ false,
-                               /*UnitAtATime=*/ true,
-                               /*UnrollLoops=*/ true,
-                               /*SimplifyLibCalls=*/ true,
-                               /*HaveExceptions=*/ true,
-                               createFunctionInliningPass());
+    PassManagerBuilder Builder;
+    Builder.OptLevel = 3;
+    Builder.Inliner = createFunctionInliningPass();
+    Builder.populateModulePassManager(PM);
   }
-      
-  if (StandardLinkOpts)
-    createStandardLTOPasses(&PM, /*Internalize=*/true,
-                            /*RunInliner=*/true,
-                            /*VerifyEach=*/false);
 
+  if (StandardLinkOpts) {
+    PassManagerBuilder Builder;
+    Builder.populateLTOPassManager(PM, /*Internalize=*/true,
+                                   /*RunInliner=*/true);
+  }
+
+  if (OptLevelO1 || OptLevelO2 || OptLevelO3) {
+    PassManagerBuilder Builder;
+    if (OptLevelO1)
+      Builder.Inliner = createAlwaysInlinerPass();
+    else if (OptLevelO2)
+      Builder.Inliner = createFunctionInliningPass(225);
+    else
+      Builder.Inliner = createFunctionInliningPass(275);
+
+    // Note that although clang/llvm-gcc use two separate passmanagers
+    // here, it shouldn't normally make a difference.
+    Builder.populateFunctionPassManager(PM);
+    Builder.populateModulePassManager(PM);
+  }
 
   for (std::vector<const PassInfo*>::iterator I = PassList.begin(),
          E = PassList.end();
@@ -147,7 +207,9 @@ int main(int argc, char **argv) {
 
   // Bugpoint has the ability of generating a plethora of core files, so to
   // avoid filling up the disk, we prevent it
+#ifndef DEBUG_BUGPOINT
   sys::Process::PreventCoreFiles();
+#endif
 
   std::string Error;
   bool Failure = D.run(Error);

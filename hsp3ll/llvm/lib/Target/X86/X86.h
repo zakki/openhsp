@@ -15,29 +15,33 @@
 #ifndef TARGET_X86_H
 #define TARGET_X86_H
 
-#include "llvm/Target/TargetMachine.h"
+#include "llvm/Support/CodeGen.h"
 
 namespace llvm {
 
 class FunctionPass;
+class ImmutablePass;
 class JITCodeEmitter;
-class MCCodeEmitter;
-class MCContext;
-class MachineCodeEmitter;
-class Target;
-class TargetAsmBackend;
 class X86TargetMachine;
-class formatted_raw_ostream;
 
-/// createX86ISelDag - This pass converts a legalized DAG into a 
+/// createX86AtomicExpandPass - This pass expands atomic operations that cannot
+/// be handled natively in terms of a loop using cmpxchg.
+FunctionPass *createX86AtomicExpandPass(const X86TargetMachine *TM);
+
+/// createX86ISelDag - This pass converts a legalized DAG into a
 /// X86-specific DAG, ready for instruction scheduling.
 ///
 FunctionPass *createX86ISelDag(X86TargetMachine &TM,
                                CodeGenOpt::Level OptLevel);
 
-/// createGlobalBaseRegPass - This pass initializes a global base
+/// createX86GlobalBaseRegPass - This pass initializes a global base
 /// register for PIC on x86-32.
-FunctionPass* createGlobalBaseRegPass();
+FunctionPass* createX86GlobalBaseRegPass();
+
+/// createCleanupLocalDynamicTLSPass() - This pass combines multiple accesses
+/// to local-dynamic TLS variables so that the TLS base address for the module
+/// is only fetched once per execution path through the function.
+FunctionPass *createCleanupLocalDynamicTLSPass();
 
 /// createX86FloatingPointStackifierPass - This function returns a pass which
 /// converts floating point register references and pseudo instructions into
@@ -45,22 +49,15 @@ FunctionPass* createGlobalBaseRegPass();
 ///
 FunctionPass *createX86FloatingPointStackifierPass();
 
-/// createSSEDomainFixPass - This pass twiddles SSE opcodes to prevent domain
-/// crossings.
-FunctionPass *createSSEDomainFixPass();
+/// createX86IssueVZeroUpperPass - This pass inserts AVX vzeroupper instructions
+/// before each call to avoid transition penalty between functions encoded with
+/// AVX and SSE.
+FunctionPass *createX86IssueVZeroUpperPass();
 
 /// createX86CodeEmitterPass - Return a pass that emits the collected X86 code
 /// to the specified MCE object.
 FunctionPass *createX86JITCodeEmitterPass(X86TargetMachine &TM,
                                           JITCodeEmitter &JCE);
-
-MCCodeEmitter *createX86_32MCCodeEmitter(const Target &, TargetMachine &TM,
-                                         MCContext &Ctx);
-MCCodeEmitter *createX86_64MCCodeEmitter(const Target &, TargetMachine &TM,
-                                         MCContext &Ctx);
-
-TargetAsmBackend *createX86_32AsmBackend(const Target &, const std::string &);
-TargetAsmBackend *createX86_64AsmBackend(const Target &, const std::string &);
 
 /// createX86EmitCodeToMemory - Returns a pass that converts a register
 /// allocated function into raw machine code in a dynamically
@@ -68,23 +65,18 @@ TargetAsmBackend *createX86_64AsmBackend(const Target &, const std::string &);
 ///
 FunctionPass *createEmitX86CodeToMemory();
 
-/// createX86MaxStackAlignmentHeuristicPass - This function returns a pass
-/// which determines whether the frame pointer register should be
-/// reserved in case dynamic stack alignment is later required.
-///
-FunctionPass *createX86MaxStackAlignmentHeuristicPass();
+/// \brief Creates an X86-specific Target Transformation Info pass.
+ImmutablePass *createX86TargetTransformInfoPass(const X86TargetMachine *TM);
 
-extern Target TheX86_32Target, TheX86_64Target;
+/// createX86PadShortFunctions - Return a pass that pads short functions
+/// with NOOPs. This will prevent a stall when returning on the Atom.
+FunctionPass *createX86PadShortFunctions();
+/// createX86FixupLEAs - Return a a pass that selectively replaces
+/// certain instructions (like add, sub, inc, dec, some shifts,
+/// and some multiplies) by equivalent LEA instructions, in order
+/// to eliminate execution delays in some Atom processors.
+FunctionPass *createX86FixupLEAs();
 
 } // End llvm namespace
-
-// Defines symbolic names for X86 registers.  This defines a mapping from
-// register name to register number.
-//
-#include "X86GenRegisterNames.inc"
-
-// Defines symbolic names for the X86 instructions.
-//
-#include "X86GenInstrNames.inc"
 
 #endif

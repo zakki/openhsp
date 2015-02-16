@@ -14,8 +14,9 @@
 #ifndef LLVM_SUPPORT_MANAGED_STATIC_H
 #define LLVM_SUPPORT_MANAGED_STATIC_H
 
-#include "llvm/System/Atomic.h"
-#include "llvm/System/Threading.h"
+#include "llvm/Support/Atomic.h"
+#include "llvm/Support/Threading.h"
+#include "llvm/Support/Valgrind.h"
 
 namespace llvm {
 
@@ -46,7 +47,7 @@ protected:
   void RegisterManagedStatic(void *(*creator)(), void (*deleter)(void*)) const;
 public:
   /// isConstructed - Return true if this object has not been created yet.
-  bool isConstructed() const { return Ptr != 0; }
+  bool isConstructed() const { return Ptr != nullptr; }
 
   void destroy() const;
 };
@@ -65,6 +66,7 @@ public:
     void* tmp = Ptr;
     if (llvm_is_multithreaded()) sys::MemoryFence();
     if (!tmp) RegisterManagedStatic(object_creator<C>, object_deleter<C>::call);
+    TsanHappensAfter(this);
 
     return *static_cast<C*>(Ptr);
   }
@@ -72,6 +74,7 @@ public:
     void* tmp = Ptr;
     if (llvm_is_multithreaded()) sys::MemoryFence();
     if (!tmp) RegisterManagedStatic(object_creator<C>, object_deleter<C>::call);
+    TsanHappensAfter(this);
 
     return static_cast<C*>(Ptr);
   }
@@ -79,6 +82,7 @@ public:
     void* tmp = Ptr;
     if (llvm_is_multithreaded()) sys::MemoryFence();
     if (!tmp) RegisterManagedStatic(object_creator<C>, object_deleter<C>::call);
+    TsanHappensAfter(this);
 
     return *static_cast<C*>(Ptr);
   }
@@ -86,28 +90,19 @@ public:
     void* tmp = Ptr;
     if (llvm_is_multithreaded()) sys::MemoryFence();
     if (!tmp) RegisterManagedStatic(object_creator<C>, object_deleter<C>::call);
+    TsanHappensAfter(this);
 
     return static_cast<C*>(Ptr);
   }
 };
 
-template<void (*CleanupFn)(void*)>
-class ManagedCleanup : public ManagedStaticBase {
-public:
-  void Register() { RegisterManagedStatic(0, CleanupFn); }
-};
-
 /// llvm_shutdown - Deallocate and destroy all ManagedStatic variables.
 void llvm_shutdown();
-
 
 /// llvm_shutdown_obj - This is a simple helper class that calls
 /// llvm_shutdown() when it is destroyed.
 struct llvm_shutdown_obj {
   llvm_shutdown_obj() { }
-  explicit llvm_shutdown_obj(bool multithreaded) {
-    if (multithreaded) llvm_start_multithreaded();
-  }
   ~llvm_shutdown_obj() { llvm_shutdown(); }
 };
 

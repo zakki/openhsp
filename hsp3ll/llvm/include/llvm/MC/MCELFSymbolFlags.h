@@ -21,12 +21,13 @@
 
 namespace llvm {
   enum {
-    ELF_STT_Shift = 0, // Shift value for STT_* flags.
-    ELF_STB_Shift = 4, // Shift value for STB_* flags.
-    ELF_STV_Shift = 8  // Shift value ofr STV_* flags.
+    ELF_STT_Shift   = 0,  // Shift value for STT_* flags.
+    ELF_STB_Shift   = 4,  // Shift value for STB_* flags.
+    ELF_STV_Shift   = 8,  // Shift value for STV_* flags.
+    ELF_STO_Shift   = 10  // Shift value for STO_* flags.
   };
 
-  enum SymbolFlags {
+  enum ELFSymbolFlags {
     ELF_STB_Local     = (ELF::STB_LOCAL     << ELF_STB_Shift),
       ELF_STB_Global    = (ELF::STB_GLOBAL    << ELF_STB_Shift),
       ELF_STB_Weak      = (ELF::STB_WEAK      << ELF_STB_Shift),
@@ -40,6 +41,7 @@ namespace llvm {
       ELF_STT_File      = (ELF::STT_FILE      << ELF_STT_Shift),
       ELF_STT_Common    = (ELF::STT_COMMON    << ELF_STT_Shift),
       ELF_STT_Tls       = (ELF::STT_TLS       << ELF_STT_Shift),
+      ELF_STT_GnuIFunc  = (ELF::STT_GNU_IFUNC << ELF_STT_Shift),
       ELF_STT_Loproc    = (ELF::STT_LOPROC    << ELF_STT_Shift),
       ELF_STT_Hiproc    = (ELF::STT_HIPROC    << ELF_STT_Shift),
 

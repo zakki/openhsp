@@ -8,10 +8,8 @@
 ##===----------------------------------------------------------------------===##
 
 LEVEL = ../..
-TOOLNAME = tblgen
-USEDLIBS = LLVMSupport.a LLVMSystem.a
-REQUIRES_EH := 1
-REQUIRES_RTTI := 1
+TOOLNAME = llvm-tblgen
+USEDLIBS = LLVMTableGen.a LLVMSupport.a
 
 # This tool has no plugins, optimize startup time.
 TOOL_NO_EXPORTS = 1

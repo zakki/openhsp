@@ -1,4 +1,4 @@
-//===-- SystemZRegisterInfo.h - SystemZ Register Information ----*- C++ -*-===//
+//===-- SystemZRegisterInfo.h - SystemZ register information ----*- C++ -*-===//
 //
 //                     The LLVM Compiler Infrastructure
 //
@@ -6,62 +6,51 @@
 // License. See LICENSE.TXT for details.
 //
 //===----------------------------------------------------------------------===//
-//
-// This file contains the SystemZ implementation of the TargetRegisterInfo class.
-//
-//===----------------------------------------------------------------------===//
 
 #ifndef SystemZREGISTERINFO_H
 #define SystemZREGISTERINFO_H
 
+#include "SystemZ.h"
 #include "llvm/Target/TargetRegisterInfo.h"
-#include "SystemZGenRegisterInfo.h.inc"
+
+#define GET_REGINFO_HEADER
+#include "SystemZGenRegisterInfo.inc"
 
 namespace llvm {
 
-class SystemZSubtarget;
-class SystemZInstrInfo;
-class Type;
+namespace SystemZ {
+// Return the subreg to use for referring to the even and odd registers
+// in a GR128 pair.  Is32Bit says whether we want a GR32 or GR64.
+inline unsigned even128(bool Is32bit) {
+  return Is32bit ? subreg_hl32 : subreg_h64;
+}
+inline unsigned odd128(bool Is32bit) {
+  return Is32bit ? subreg_l32 : subreg_l64;
+}
+} // end namespace SystemZ
 
 struct SystemZRegisterInfo : public SystemZGenRegisterInfo {
-  SystemZTargetMachine &TM;
-  const SystemZInstrInfo &TII;
+public:
+  SystemZRegisterInfo();
 
-  SystemZRegisterInfo(SystemZTargetMachine &tm, const SystemZInstrInfo &tii);
-
-  /// Code Generation virtual methods...
-  const unsigned *getCalleeSavedRegs(const MachineFunction *MF = 0) const;
-
-  BitVector getReservedRegs(const MachineFunction &MF) const;
-
-  bool hasReservedCallFrame(const MachineFunction &MF) const { return true; }
-  bool hasFP(const MachineFunction &MF) const;
-
-  int getFrameIndexOffset(const MachineFunction &MF, int FI) const;
-
-  void eliminateCallFramePseudoInstr(MachineFunction &MF,
-                                     MachineBasicBlock &MBB,
-                                     MachineBasicBlock::iterator I) const;
-
-  void eliminateFrameIndex(MachineBasicBlock::iterator II,
-                           int SPAdj, RegScavenger *RS = NULL) const;
-
-
-  void processFunctionBeforeCalleeSavedScan(MachineFunction &MF,
-                                            RegScavenger *RS) const;
-
-  void emitPrologue(MachineFunction &MF) const;
-  void emitEpilogue(MachineFunction &MF, MachineBasicBlock &MBB) const;
-
-  // Debug information queries.
-  unsigned getRARegister() const;
-  unsigned getFrameRegister(const MachineFunction &MF) const;
-
-  // Exception handling queries.
-  unsigned getEHExceptionRegister() const;
-  unsigned getEHHandlerRegister() const;
-
-  int getDwarfRegNum(unsigned RegNum, bool isEH) const;
+  // Override TargetRegisterInfo.h.
+  bool requiresRegisterScavenging(const MachineFunction &MF) const override {
+    return true;
+  }
+  bool requiresFrameIndexScavenging(const MachineFunction &MF) const override {
+    return true;
+  }
+  bool trackLivenessAfterRegAlloc(const MachineFunction &MF) const override {
+    return true;
+  }
+  const MCPhysReg *getCalleeSavedRegs(const MachineFunction *MF = nullptr) const
+    override;
+  const uint32_t *getCallPreservedMask(CallingConv::ID CC) const override;
+  BitVector getReservedRegs(const MachineFunction &MF) const override;
+  void eliminateFrameIndex(MachineBasicBlock::iterator MI,
+                           int SPAdj, unsigned FIOperandNum,
+                           RegScavenger *RS) const override;
+  unsigned getFrameRegister(const MachineFunction &MF) const override;
 };
 
 } // end namespace llvm

@@ -54,8 +54,9 @@
 #include "regex2.h"
 
 /* macros for manipulating states, small version */
-#define	states	long
-#define	states1	states		/* for later use in llvm_regexec() decision */
+/* FIXME: 'states' is assumed as 'long' on small version. */
+#define	states1	long		/* for later use in llvm_regexec() decision */
+#define	states	states1
 #define	CLEAR(v)	((v) = 0)
 #define	SET0(v, n)	((v) &= ~((unsigned long)1 << (n)))
 #define	SET1(v, n)	((v) |= (unsigned long)1 << (n))
@@ -68,7 +69,7 @@
 #define	SETUP(v)	((v) = 0)
 #define	onestate	long
 #define	INIT(o, n)	((o) = (unsigned long)1 << (n))
-#define	INC(o)		((o) <<= 1)
+#define	INC(o)		((o) = (unsigned long)(o) << 1)
 #define	ISSTATEIN(v, o)	(((v) & (o)) != 0)
 /* some abbreviations; note that some of these know variable names! */
 /* do "if I'm here, I can also be there" etc without branches */

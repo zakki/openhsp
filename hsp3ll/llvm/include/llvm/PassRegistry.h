@@ -8,20 +8,23 @@
 //===----------------------------------------------------------------------===//
 //
 // This file defines PassRegistry, a class that is used in the initialization
-// and registration of passes.  At initialization, passes are registered with
-// the PassRegistry, which is later provided to the PassManager for dependency
-// resolution and similar tasks.
+// and registration of passes.  At application startup, passes are registered
+// with the PassRegistry, which is later provided to the PassManager for 
+// dependency resolution and similar tasks.
 //
 //===----------------------------------------------------------------------===//
 
 #ifndef LLVM_PASSREGISTRY_H
 #define LLVM_PASSREGISTRY_H
 
+#include "llvm-c/Core.h"
+#include "llvm/ADT/DenseMap.h"
+#include "llvm/ADT/SmallPtrSet.h"
 #include "llvm/ADT/StringMap.h"
-#include "llvm/System/DataTypes.h"
-#include "llvm/System/Mutex.h"
-#include <map>
-#include <set>
+#include "llvm/ADT/StringRef.h"
+#include "llvm/PassInfo.h"
+#include "llvm/Support/CBindingWrapping.h"
+#include "llvm/Support/RWMutex.h"
 #include <vector>
 
 namespace llvm {
@@ -29,12 +32,17 @@ namespace llvm {
 class PassInfo;
 struct PassRegistrationListener;
 
+/// PassRegistry - This class manages the registration and intitialization of
+/// the pass subsystem as application startup, and assists the PassManager
+/// in resolving pass dependencies.
+/// NOTE: PassRegistry is NOT thread-safe.  If you want to use LLVM on multiple
+/// threads simultaneously, you will need to use a separate PassRegistry on
+/// each thread.
 class PassRegistry {
-  /// Guards the contents of this class.
-  mutable sys::SmartMutex<true> Lock;
-  
+  mutable sys::SmartRWMutex<true> Lock;
+
   /// PassInfoMap - Keep track of the PassInfo object for each registered pass.
-  typedef std::map<const void*, const PassInfo*> MapType;
+  typedef DenseMap<const void*, const PassInfo*> MapType;
   MapType PassInfoMap;
   
   typedef StringMap<const PassInfo*> StringMapType;
@@ -42,29 +50,60 @@ class PassRegistry {
   
   /// AnalysisGroupInfo - Keep track of information for each analysis group.
   struct AnalysisGroupInfo {
-    std::set<const PassInfo *> Implementations;
+    SmallPtrSet<const PassInfo *, 8> Implementations;
   };
-  std::map<const PassInfo*, AnalysisGroupInfo> AnalysisGroupInfoMap;
+  DenseMap<const PassInfo*, AnalysisGroupInfo> AnalysisGroupInfoMap;
   
+  std::vector<std::unique_ptr<const PassInfo>> ToFree;
   std::vector<PassRegistrationListener*> Listeners;
-
+   
 public:
+  PassRegistry() { }
+  ~PassRegistry();
+  
+  /// getPassRegistry - Access the global registry object, which is 
+  /// automatically initialized at application launch and destroyed by
+  /// llvm_shutdown.
   static PassRegistry *getPassRegistry();
   
+  /// getPassInfo - Look up a pass' corresponding PassInfo, indexed by the pass'
+  /// type identifier (&MyPass::ID).
   const PassInfo *getPassInfo(const void *TI) const;
+  
+  /// getPassInfo - Look up a pass' corresponding PassInfo, indexed by the pass'
+  /// argument string.
   const PassInfo *getPassInfo(StringRef Arg) const;
   
-  void registerPass(const PassInfo &PI);
+  /// registerPass - Register a pass (by means of its PassInfo) with the 
+  /// registry.  Required in order to use the pass with a PassManager.
+  void registerPass(const PassInfo &PI, bool ShouldFree = false);
+  
+  /// registerPass - Unregister a pass (by means of its PassInfo) with the 
+  /// registry.
   void unregisterPass(const PassInfo &PI);
   
-  /// Analysis Group Mechanisms.
+  /// registerAnalysisGroup - Register an analysis group (or a pass implementing
+  // an analysis group) with the registry.  Like registerPass, this is required 
+  // in order for a PassManager to be able to use this group/pass.
   void registerAnalysisGroup(const void *InterfaceID, const void *PassID,
-                             PassInfo& Registeree, bool isDefault);
+                             PassInfo& Registeree, bool isDefault,
+                             bool ShouldFree = false);
   
+  /// enumerateWith - Enumerate the registered passes, calling the provided
+  /// PassRegistrationListener's passEnumerate() callback on each of them.
   void enumerateWith(PassRegistrationListener *L);
-  void addRegistrationListener(PassRegistrationListener* L);
+  
+  /// addRegistrationListener - Register the given PassRegistrationListener
+  /// to receive passRegistered() callbacks whenever a new pass is registered.
+  void addRegistrationListener(PassRegistrationListener *L);
+  
+  /// removeRegistrationListener - Unregister a PassRegistrationListener so that
+  /// it no longer receives passRegistered() callbacks.
   void removeRegistrationListener(PassRegistrationListener *L);
 };
+
+// Create wrappers for C Binding types (see CBindingWrapping.h).
+DEFINE_STDCXX_CONVERSION_FUNCTIONS(PassRegistry, LLVMPassRegistryRef)
 
 }
 

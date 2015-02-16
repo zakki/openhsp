@@ -1,20 +1,20 @@
-; RUN: opt -S -dse < %s | FileCheck %s
+; RUN: opt -S -basicaa -dse < %s | FileCheck %s
 
 target datalayout = "E-p:64:64:64-a0:0:8-f32:32:32-f64:64:64-i1:8:8-i8:8:8-i16:16:16-i32:32:32-i64:32:64-v64:64:64-v128:128:128"
 
 declare void @llvm.lifetime.start(i64, i8* nocapture) nounwind
 declare void @llvm.lifetime.end(i64, i8* nocapture) nounwind
-declare void @llvm.memset.i8(i8*, i8, i8, i32)
+declare void @llvm.memset.p0i8.i8(i8* nocapture, i8, i8, i32, i1) nounwind
 
 define void @test1() {
-; CHECK: @test1
+; CHECK-LABEL: @test1(
   %A = alloca i8
 
   store i8 0, i8* %A  ;; Written to by memset
   call void @llvm.lifetime.end(i64 1, i8* %A)
 ; CHECK: lifetime.end
 
-  call void @llvm.memset.i8(i8* %A, i8 0, i8 -1, i32 0)
+  call void @llvm.memset.p0i8.i8(i8* %A, i8 0, i8 -1, i32 0, i1 false)
 ; CHECK-NOT: memset
 
   ret void

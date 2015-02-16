@@ -1,9 +1,14 @@
-; RUN: llc < %s -march=x86 | grep {subl	\$4, %esp}
+; RUN: llc < %s -march=x86 | FileCheck %s
 
 target triple = "i686-pc-linux-gnu"
 @str = internal constant [9 x i8] c"%f+%f*i\0A\00"              ; <[9 x i8]*> [#uses=1]
 
 define i32 @main() {
+; CHECK-LABEL: main:
+; CHECK-NOT: ret
+; CHECK: subl $4, %{{.*}}
+; CHECK: ret
+
 entry:
         %retval = alloca i32, align 4           ; <i32*> [#uses=1]
         %tmp = alloca { double, double }, align 16              ; <{ double, double }*> [#uses=4]
@@ -47,8 +52,8 @@ entry:
         %tmp21 = load double* %tmp20            ; <double> [#uses=1]
         %tmp.upgrd.6 = getelementptr [9 x i8]* @str, i32 0, i64 0               ; <i8*> [#uses=1]
         %tmp.upgrd.7 = call i32 (i8*, ...)* @printf( i8* %tmp.upgrd.6, double %tmp21, double %tmp19 )           ; <i32> [#uses=0]
-        br label %return
-return:         ; preds = %entry
+        br label %finish
+finish:
         %retval.upgrd.8 = load i32* %retval             ; <i32> [#uses=1]
         ret i32 %retval.upgrd.8
 }

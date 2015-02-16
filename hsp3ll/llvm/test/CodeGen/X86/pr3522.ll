@@ -1,4 +1,5 @@
-; RUN: llc < %s -march=x86 -stats |& not grep machine-sink
+; REQUIRES: asserts
+; RUN: llc < %s -march=x86 -stats 2>&1 | not grep "instructions sunk"
 ; PR3522
 
 target triple = "i386-pc-linux-gnu"
@@ -21,6 +22,8 @@ return:		; preds = %lpad
 	ret void
 
 lpad:		; preds = %entry
+        %exn = landingpad {i8*, i32} personality i32 (...)* @__gxx_personality_v0
+                 cleanup
 	%2 = icmp eq i8 %1, 90		; <i1> [#uses=1]
 	br i1 %2, label %return, label %bb22
 }
@@ -28,3 +31,5 @@ lpad:		; preds = %entry
 declare void @__gnat_rcheck_12(i8*, i32) noreturn
 
 declare i32 @report__ident_int(i32)
+
+declare i32 @__gxx_personality_v0(...)

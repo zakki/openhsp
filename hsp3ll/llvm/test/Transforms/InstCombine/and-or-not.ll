@@ -1,10 +1,10 @@
 ; RUN: opt < %s -instcombine -S | grep xor | count 4
 ; RUN: opt < %s -instcombine -S | not grep and
-; RUN: opt < %s -instcombine -S | not grep { or}
+; RUN: opt < %s -instcombine -S | not grep " or"
 
 ; PR1510
 
-; These are all equivelent to A^B
+; These are all equivalent to A^B
 
 define i32 @test1(i32 %a, i32 %b) {
 entry:

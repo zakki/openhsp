@@ -11,21 +11,23 @@
 //
 //===----------------------------------------------------------------------===//
 
-#define DEBUG_TYPE "pre-RA-sched"
-#include "ScheduleDAGSDNodes.h"
-#include "llvm/InlineAsm.h"
 #include "llvm/CodeGen/SchedulerRegistry.h"
-#include "llvm/CodeGen/SelectionDAGISel.h"
-#include "llvm/Target/TargetRegisterInfo.h"
-#include "llvm/Target/TargetData.h"
-#include "llvm/Target/TargetInstrInfo.h"
-#include "llvm/Support/Debug.h"
+#include "InstrEmitter.h"
+#include "ScheduleDAGSDNodes.h"
+#include "llvm/ADT/STLExtras.h"
 #include "llvm/ADT/SmallSet.h"
 #include "llvm/ADT/Statistic.h"
-#include "llvm/ADT/STLExtras.h"
+#include "llvm/CodeGen/SelectionDAGISel.h"
+#include "llvm/IR/DataLayout.h"
+#include "llvm/IR/InlineAsm.h"
+#include "llvm/Support/Debug.h"
 #include "llvm/Support/ErrorHandling.h"
 #include "llvm/Support/raw_ostream.h"
+#include "llvm/Target/TargetInstrInfo.h"
+#include "llvm/Target/TargetRegisterInfo.h"
 using namespace llvm;
+
+#define DEBUG_TYPE "pre-RA-sched"
 
 STATISTIC(NumUnfolds,    "Number of nodes unfolded");
 STATISTIC(NumDups,       "Number of duplicated nodes");
@@ -34,6 +36,10 @@ STATISTIC(NumPRCopies,   "Number of physical copies");
 static RegisterScheduler
   fastDAGScheduler("fast", "Fast suboptimal list scheduling",
                    createFastDAGScheduler);
+static RegisterScheduler
+  linearizeDAGScheduler("linearize", "Linearize DAG, no scheduling",
+                        createDAGLinearizer);
+
 
 namespace {
   /// FastPriorityQueue - A degenerate priority queue that considers
@@ -43,13 +49,13 @@ namespace {
     SmallVector<SUnit *, 16> Queue;
 
     bool empty() const { return Queue.empty(); }
-    
+
     void push(SUnit *U) {
       Queue.push_back(U);
     }
 
     SUnit *pop() {
-      if (empty()) return NULL;
+      if (empty()) return nullptr;
       SUnit *V = Queue.back();
       Queue.pop_back();
       return V;
@@ -75,7 +81,7 @@ public:
   ScheduleDAGFast(MachineFunction &mf)
     : ScheduleDAGSDNodes(mf) {}
 
-  void Schedule();
+  void Schedule() override;
 
   /// AddPred - adds a predecessor edge to SUnit SU.
   /// This returns true if this is a new predecessor.
@@ -97,12 +103,12 @@ private:
   void InsertCopiesAndMoveSuccs(SUnit*, unsigned,
                                 const TargetRegisterClass*,
                                 const TargetRegisterClass*,
-                                SmallVector<SUnit*, 2>&);
-  bool DelayForLiveRegsBottomUp(SUnit*, SmallVector<unsigned, 4>&);
+                                SmallVectorImpl<SUnit*>&);
+  bool DelayForLiveRegsBottomUp(SUnit*, SmallVectorImpl<unsigned>&);
   void ListScheduleBottomUp();
 
-  /// ForceUnitLatencies - The fast scheduler doesn't care about real latencies.
-  bool ForceUnitLatencies() const { return true; }
+  /// forceUnitLatencies - The fast scheduler doesn't care about real latencies.
+  bool forceUnitLatencies() const override { return true; }
 };
 }  // end anonymous namespace
 
@@ -112,11 +118,11 @@ void ScheduleDAGFast::Schedule() {
   DEBUG(dbgs() << "********** List Scheduling **********\n");
 
   NumLiveRegs = 0;
-  LiveRegDefs.resize(TRI->getNumRegs(), NULL);  
+  LiveRegDefs.resize(TRI->getNumRegs(), nullptr);
   LiveRegCycles.resize(TRI->getNumRegs(), 0);
 
   // Build the scheduling graph.
-  BuildSchedGraph(NULL);
+  BuildSchedGraph(nullptr);
 
   DEBUG(for (unsigned su = 0, e = SUnits.size(); su != e; ++su)
           SUnits[su].dumpAll(this));
@@ -139,7 +145,7 @@ void ScheduleDAGFast::ReleasePred(SUnit *SU, SDep *PredEdge) {
     dbgs() << "*** Scheduling failed! ***\n";
     PredSU->dump(this);
     dbgs() << " has been released too many times!\n";
-    llvm_unreachable(0);
+    llvm_unreachable(nullptr);
   }
 #endif
   --PredSU->NumSuccsLeft;
@@ -159,7 +165,7 @@ void ScheduleDAGFast::ReleasePredecessors(SUnit *SU, unsigned CurCycle) {
     ReleasePred(SU, &*I);
     if (I->isAssignedRegDep()) {
       // This is a physical register dependency and it's impossible or
-      // expensive to copy the register. Make sure nothing that can 
+      // expensive to copy the register. Make sure nothing that can
       // clobber the register is scheduled between the predecessor and
       // this node.
       if (!LiveRegDefs[I->getReg()]) {
@@ -193,7 +199,7 @@ void ScheduleDAGFast::ScheduleNodeBottomUp(SUnit *SU, unsigned CurCycle) {
         assert(LiveRegDefs[I->getReg()] == SU &&
                "Physical register dependency violated?");
         --NumLiveRegs;
-        LiveRegDefs[I->getReg()] = NULL;
+        LiveRegDefs[I->getReg()] = nullptr;
         LiveRegCycles[I->getReg()] = 0;
       }
     }
@@ -205,33 +211,33 @@ void ScheduleDAGFast::ScheduleNodeBottomUp(SUnit *SU, unsigned CurCycle) {
 /// CopyAndMoveSuccessors - Clone the specified node and move its scheduled
 /// successors to the newly created node.
 SUnit *ScheduleDAGFast::CopyAndMoveSuccessors(SUnit *SU) {
-  if (SU->getNode()->getFlaggedNode())
-    return NULL;
+  if (SU->getNode()->getGluedNode())
+    return nullptr;
 
   SDNode *N = SU->getNode();
   if (!N)
-    return NULL;
+    return nullptr;
 
   SUnit *NewSU;
   bool TryUnfold = false;
   for (unsigned i = 0, e = N->getNumValues(); i != e; ++i) {
     EVT VT = N->getValueType(i);
-    if (VT == MVT::Flag)
-      return NULL;
+    if (VT == MVT::Glue)
+      return nullptr;
     else if (VT == MVT::Other)
       TryUnfold = true;
   }
   for (unsigned i = 0, e = N->getNumOperands(); i != e; ++i) {
     const SDValue &Op = N->getOperand(i);
     EVT VT = Op.getNode()->getValueType(Op.getResNo());
-    if (VT == MVT::Flag)
-      return NULL;
+    if (VT == MVT::Glue)
+      return nullptr;
   }
 
   if (TryUnfold) {
     SmallVector<SDNode*, 2> NewNodes;
     if (!TII->unfoldMemoryOperand(*DAG, N, NewNodes))
-      return NULL;
+      return nullptr;
 
     DEBUG(dbgs() << "Unfolding SU # " << SU->NodeNum << "\n");
     assert(NewNodes.size() == 2 && "Expected a load folding node!");
@@ -245,18 +251,18 @@ SUnit *ScheduleDAGFast::CopyAndMoveSuccessors(SUnit *SU) {
     DAG->ReplaceAllUsesOfValueWith(SDValue(SU->getNode(), OldNumVals-1),
                                    SDValue(LoadNode, 1));
 
-    SUnit *NewSU = NewSUnit(N);
+    SUnit *NewSU = newSUnit(N);
     assert(N->getNodeId() == -1 && "Node already inserted!");
     N->setNodeId(NewSU->NodeNum);
-      
-    const TargetInstrDesc &TID = TII->get(N->getMachineOpcode());
-    for (unsigned i = 0; i != TID.getNumOperands(); ++i) {
-      if (TID.getOperandConstraint(i, TOI::TIED_TO) != -1) {
+
+    const MCInstrDesc &MCID = TII->get(N->getMachineOpcode());
+    for (unsigned i = 0; i != MCID.getNumOperands(); ++i) {
+      if (MCID.getOperandConstraint(i, MCOI::TIED_TO) != -1) {
         NewSU->isTwoAddress = true;
         break;
       }
     }
-    if (TID.isCommutable())
+    if (MCID.isCommutable())
       NewSU->isCommutable = true;
 
     // LoadNode may already exist. This can happen when there is another
@@ -268,7 +274,7 @@ SUnit *ScheduleDAGFast::CopyAndMoveSuccessors(SUnit *SU) {
       LoadSU = &SUnits[LoadNode->getNodeId()];
       isNewLoad = false;
     } else {
-      LoadSU = NewSUnit(LoadNode);
+      LoadSU = newSUnit(LoadNode);
       LoadNode->setNodeId(LoadSU->NodeNum);
     }
 
@@ -329,9 +335,11 @@ SUnit *ScheduleDAGFast::CopyAndMoveSuccessors(SUnit *SU) {
         D.setSUnit(LoadSU);
         AddPred(SuccDep, D);
       }
-    } 
+    }
     if (isNewLoad) {
-      AddPred(NewSU, SDep(LoadSU, SDep::Order, LoadSU->Latency));
+      SDep D(LoadSU, SDep::Barrier);
+      D.setLatency(LoadSU->Latency);
+      AddPred(NewSU, D);
     }
 
     ++NumUnfolds;
@@ -380,12 +388,12 @@ SUnit *ScheduleDAGFast::CopyAndMoveSuccessors(SUnit *SU) {
 void ScheduleDAGFast::InsertCopiesAndMoveSuccs(SUnit *SU, unsigned Reg,
                                               const TargetRegisterClass *DestRC,
                                               const TargetRegisterClass *SrcRC,
-                                               SmallVector<SUnit*, 2> &Copies) {
-  SUnit *CopyFromSU = NewSUnit(static_cast<SDNode *>(NULL));
+                                              SmallVectorImpl<SUnit*> &Copies) {
+  SUnit *CopyFromSU = newSUnit(static_cast<SDNode *>(nullptr));
   CopyFromSU->CopySrcRC = SrcRC;
   CopyFromSU->CopyDstRC = DestRC;
 
-  SUnit *CopyToSU = NewSUnit(static_cast<SDNode *>(NULL));
+  SUnit *CopyToSU = newSUnit(static_cast<SDNode *>(nullptr));
   CopyToSU->CopySrcRC = DestRC;
   CopyToSU->CopyDstRC = SrcRC;
 
@@ -407,9 +415,12 @@ void ScheduleDAGFast::InsertCopiesAndMoveSuccs(SUnit *SU, unsigned Reg,
   for (unsigned i = 0, e = DelDeps.size(); i != e; ++i) {
     RemovePred(DelDeps[i].first, DelDeps[i].second);
   }
-
-  AddPred(CopyFromSU, SDep(SU, SDep::Data, SU->Latency, Reg));
-  AddPred(CopyToSU, SDep(CopyFromSU, SDep::Data, CopyFromSU->Latency, 0));
+  SDep FromDep(SU, SDep::Data, Reg);
+  FromDep.setLatency(SU->Latency);
+  AddPred(CopyFromSU, FromDep);
+  SDep ToDep(CopyFromSU, SDep::Data, 0);
+  ToDep.setLatency(CopyFromSU->Latency);
+  AddPred(CopyToSU, ToDep);
 
   Copies.push_back(CopyFromSU);
   Copies.push_back(CopyToSU);
@@ -422,10 +433,10 @@ void ScheduleDAGFast::InsertCopiesAndMoveSuccs(SUnit *SU, unsigned Reg,
 /// FIXME: Move to SelectionDAG?
 static EVT getPhysicalRegisterVT(SDNode *N, unsigned Reg,
                                  const TargetInstrInfo *TII) {
-  const TargetInstrDesc &TID = TII->get(N->getMachineOpcode());
-  assert(TID.ImplicitDefs && "Physical reg def must be in implicit def list!");
-  unsigned NumRes = TID.getNumDefs();
-  for (const unsigned *ImpDef = TID.getImplicitDefs(); *ImpDef; ++ImpDef) {
+  const MCInstrDesc &MCID = TII->get(N->getMachineOpcode());
+  assert(MCID.ImplicitDefs && "Physical reg def must be in implicit def list!");
+  unsigned NumRes = MCID.getNumDefs();
+  for (const uint16_t *ImpDef = MCID.getImplicitDefs(); *ImpDef; ++ImpDef) {
     if (Reg == *ImpDef)
       break;
     ++NumRes;
@@ -438,22 +449,17 @@ static EVT getPhysicalRegisterVT(SDNode *N, unsigned Reg,
 static bool CheckForLiveRegDef(SUnit *SU, unsigned Reg,
                                std::vector<SUnit*> &LiveRegDefs,
                                SmallSet<unsigned, 4> &RegAdded,
-                               SmallVector<unsigned, 4> &LRegs,
+                               SmallVectorImpl<unsigned> &LRegs,
                                const TargetRegisterInfo *TRI) {
   bool Added = false;
-  if (LiveRegDefs[Reg] && LiveRegDefs[Reg] != SU) {
-    if (RegAdded.insert(Reg)) {
-      LRegs.push_back(Reg);
-      Added = true;
-    }
-  }
-  for (const unsigned *Alias = TRI->getAliasSet(Reg); *Alias; ++Alias)
-    if (LiveRegDefs[*Alias] && LiveRegDefs[*Alias] != SU) {
-      if (RegAdded.insert(*Alias)) {
-        LRegs.push_back(*Alias);
+  for (MCRegAliasIterator AI(Reg, TRI, true); AI.isValid(); ++AI) {
+    if (LiveRegDefs[*AI] && LiveRegDefs[*AI] != SU) {
+      if (RegAdded.insert(*AI)) {
+        LRegs.push_back(*AI);
         Added = true;
       }
     }
+  }
   return Added;
 }
 
@@ -462,7 +468,7 @@ static bool CheckForLiveRegDef(SUnit *SU, unsigned Reg,
 /// If the specific node is the last one that's available to schedule, do
 /// whatever is necessary (i.e. backtracking or cloning) to make it possible.
 bool ScheduleDAGFast::DelayForLiveRegsBottomUp(SUnit *SU,
-                                               SmallVector<unsigned, 4> &LRegs){
+                                              SmallVectorImpl<unsigned> &LRegs){
   if (NumLiveRegs == 0)
     return false;
 
@@ -476,12 +482,12 @@ bool ScheduleDAGFast::DelayForLiveRegsBottomUp(SUnit *SU,
     }
   }
 
-  for (SDNode *Node = SU->getNode(); Node; Node = Node->getFlaggedNode()) {
+  for (SDNode *Node = SU->getNode(); Node; Node = Node->getGluedNode()) {
     if (Node->getOpcode() == ISD::INLINEASM) {
       // Inline asm can clobber physical defs.
       unsigned NumOps = Node->getNumOperands();
-      if (Node->getOperand(NumOps-1).getValueType() == MVT::Flag)
-        --NumOps;  // Ignore the flag operand.
+      if (Node->getOperand(NumOps-1).getValueType() == MVT::Glue)
+        --NumOps;  // Ignore the glue operand.
 
       for (unsigned i = InlineAsm::Op_FirstOperand; i != NumOps;) {
         unsigned Flags =
@@ -490,7 +496,8 @@ bool ScheduleDAGFast::DelayForLiveRegsBottomUp(SUnit *SU,
 
         ++i; // Skip the ID value.
         if (InlineAsm::isRegDefKind(Flags) ||
-            InlineAsm::isRegDefEarlyClobberKind(Flags)) {
+            InlineAsm::isRegDefEarlyClobberKind(Flags) ||
+            InlineAsm::isClobberKind(Flags)) {
           // Check for def of register or earlyclobber register.
           for (; NumVals; --NumVals, ++i) {
             unsigned Reg = cast<RegisterSDNode>(Node->getOperand(i))->getReg();
@@ -504,10 +511,10 @@ bool ScheduleDAGFast::DelayForLiveRegsBottomUp(SUnit *SU,
     }
     if (!Node->isMachineOpcode())
       continue;
-    const TargetInstrDesc &TID = TII->get(Node->getMachineOpcode());
-    if (!TID.ImplicitDefs)
+    const MCInstrDesc &MCID = TII->get(Node->getMachineOpcode());
+    if (!MCID.ImplicitDefs)
       continue;
-    for (const unsigned *Reg = TID.ImplicitDefs; *Reg; ++Reg) {
+    for (const uint16_t *Reg = MCID.getImplicitDefs(); *Reg; ++Reg) {
       CheckForLiveRegDef(SU, *Reg, LiveRegDefs, RegAdded, LRegs, TRI);
     }
   }
@@ -561,7 +568,7 @@ void ScheduleDAGFast::ListScheduleBottomUp() {
         // "expensive to copy" values to break the dependency. In case even
         // that doesn't work, insert cross class copies.
         SUnit *TrySU = NotReady[0];
-        SmallVector<unsigned, 4> &LRegs = LRegsMap[TrySU];
+        SmallVectorImpl<unsigned> &LRegs = LRegsMap[TrySU];
         assert(LRegs.size() == 1 && "Can't handle this yet!");
         unsigned Reg = LRegs[0];
         SUnit *LRDef = LiveRegDefs[Reg];
@@ -570,31 +577,34 @@ void ScheduleDAGFast::ListScheduleBottomUp() {
           TRI->getMinimalPhysRegClass(Reg, VT);
         const TargetRegisterClass *DestRC = TRI->getCrossCopyRegClass(RC);
 
-        // If cross copy register class is null, then it must be possible copy
-        // the value directly. Do not try duplicate the def.
-        SUnit *NewDef = 0;
-        if (DestRC)
+        // If cross copy register class is the same as RC, then it must be
+        // possible copy the value directly. Do not try duplicate the def.
+        // If cross copy register class is not the same as RC, then it's
+        // possible to copy the value but it require cross register class copies
+        // and it is expensive.
+        // If cross copy register class is null, then it's not possible to copy
+        // the value at all.
+        SUnit *NewDef = nullptr;
+        if (DestRC != RC) {
           NewDef = CopyAndMoveSuccessors(LRDef);
-        else
-          DestRC = RC;
+          if (!DestRC && !NewDef)
+            report_fatal_error("Can't handle live physical "
+                               "register dependency!");
+        }
         if (!NewDef) {
           // Issue copies, these can be expensive cross register class copies.
           SmallVector<SUnit*, 2> Copies;
           InsertCopiesAndMoveSuccs(LRDef, Reg, DestRC, RC, Copies);
           DEBUG(dbgs() << "Adding an edge from SU # " << TrySU->NodeNum
                        << " to SU #" << Copies.front()->NodeNum << "\n");
-          AddPred(TrySU, SDep(Copies.front(), SDep::Order, /*Latency=*/1,
-                              /*Reg=*/0, /*isNormalMemory=*/false,
-                              /*isMustAlias=*/false, /*isArtificial=*/true));
+          AddPred(TrySU, SDep(Copies.front(), SDep::Artificial));
           NewDef = Copies.back();
         }
 
         DEBUG(dbgs() << "Adding an edge from SU # " << NewDef->NodeNum
                      << " to SU #" << TrySU->NodeNum << "\n");
         LiveRegDefs[Reg] = NewDef;
-        AddPred(NewDef, SDep(TrySU, SDep::Order, /*Latency=*/1,
-                             /*Reg=*/0, /*isNormalMemory=*/false,
-                             /*isMustAlias=*/false, /*isArtificial=*/true));
+        AddPred(NewDef, SDep(TrySU, SDep::Artificial));
         TrySU->isAvailable = false;
         CurSU = NewDef;
       }
@@ -622,8 +632,158 @@ void ScheduleDAGFast::ListScheduleBottomUp() {
   std::reverse(Sequence.begin(), Sequence.end());
 
 #ifndef NDEBUG
-  VerifySchedule(/*isBottomUp=*/true);
+  VerifyScheduledSequence(/*isBottomUp=*/true);
 #endif
+}
+
+
+namespace {
+//===----------------------------------------------------------------------===//
+// ScheduleDAGLinearize - No scheduling scheduler, it simply linearize the
+// DAG in topological order.
+// IMPORTANT: this may not work for targets with phyreg dependency.
+//
+class ScheduleDAGLinearize : public ScheduleDAGSDNodes {
+public:
+  ScheduleDAGLinearize(MachineFunction &mf) : ScheduleDAGSDNodes(mf) {}
+
+  void Schedule() override;
+
+  MachineBasicBlock *
+    EmitSchedule(MachineBasicBlock::iterator &InsertPos) override;
+
+private:
+  std::vector<SDNode*> Sequence;
+  DenseMap<SDNode*, SDNode*> GluedMap;  // Cache glue to its user
+
+  void ScheduleNode(SDNode *N);
+};
+} // end anonymous namespace
+
+void ScheduleDAGLinearize::ScheduleNode(SDNode *N) {
+  if (N->getNodeId() != 0)
+    llvm_unreachable(nullptr);
+
+  if (!N->isMachineOpcode() &&
+      (N->getOpcode() == ISD::EntryToken || isPassiveNode(N)))
+    // These nodes do not need to be translated into MIs.
+    return;
+
+  DEBUG(dbgs() << "\n*** Scheduling: ");
+  DEBUG(N->dump(DAG));
+  Sequence.push_back(N);
+
+  unsigned NumOps = N->getNumOperands();
+  if (unsigned NumLeft = NumOps) {
+    SDNode *GluedOpN = nullptr;
+    do {
+      const SDValue &Op = N->getOperand(NumLeft-1);
+      SDNode *OpN = Op.getNode();
+
+      if (NumLeft == NumOps && Op.getValueType() == MVT::Glue) {
+        // Schedule glue operand right above N.
+        GluedOpN = OpN;
+        assert(OpN->getNodeId() != 0 && "Glue operand not ready?");
+        OpN->setNodeId(0);
+        ScheduleNode(OpN);
+        continue;
+      }
+
+      if (OpN == GluedOpN)
+        // Glue operand is already scheduled.
+        continue;
+
+      DenseMap<SDNode*, SDNode*>::iterator DI = GluedMap.find(OpN);
+      if (DI != GluedMap.end() && DI->second != N)
+        // Users of glues are counted against the glued users.
+        OpN = DI->second;
+
+      unsigned Degree = OpN->getNodeId();
+      assert(Degree > 0 && "Predecessor over-released!");
+      OpN->setNodeId(--Degree);
+      if (Degree == 0)
+        ScheduleNode(OpN);
+    } while (--NumLeft);
+  }
+}
+
+/// findGluedUser - Find the representative use of a glue value by walking
+/// the use chain.
+static SDNode *findGluedUser(SDNode *N) {
+  while (SDNode *Glued = N->getGluedUser())
+    N = Glued;
+  return N;
+}
+
+void ScheduleDAGLinearize::Schedule() {
+  DEBUG(dbgs() << "********** DAG Linearization **********\n");
+
+  SmallVector<SDNode*, 8> Glues;
+  unsigned DAGSize = 0;
+  for (SelectionDAG::allnodes_iterator I = DAG->allnodes_begin(),
+         E = DAG->allnodes_end(); I != E; ++I) {
+    SDNode *N = I;
+
+    // Use node id to record degree.
+    unsigned Degree = N->use_size();
+    N->setNodeId(Degree);
+    unsigned NumVals = N->getNumValues();
+    if (NumVals && N->getValueType(NumVals-1) == MVT::Glue &&
+        N->hasAnyUseOfValue(NumVals-1)) {
+      SDNode *User = findGluedUser(N);
+      if (User) {
+        Glues.push_back(N);
+        GluedMap.insert(std::make_pair(N, User));
+      }
+    }
+
+    if (N->isMachineOpcode() ||
+        (N->getOpcode() != ISD::EntryToken && !isPassiveNode(N)))
+      ++DAGSize;
+  }
+
+  for (unsigned i = 0, e = Glues.size(); i != e; ++i) {
+    SDNode *Glue = Glues[i];
+    SDNode *GUser = GluedMap[Glue];
+    unsigned Degree = Glue->getNodeId();
+    unsigned UDegree = GUser->getNodeId();
+
+    // Glue user must be scheduled together with the glue operand. So other
+    // users of the glue operand must be treated as its users.
+    SDNode *ImmGUser = Glue->getGluedUser();
+    for (SDNode::use_iterator ui = Glue->use_begin(), ue = Glue->use_end();
+         ui != ue; ++ui)
+      if (*ui == ImmGUser)
+        --Degree;
+    GUser->setNodeId(UDegree + Degree);
+    Glue->setNodeId(1);
+  }
+
+  Sequence.reserve(DAGSize);
+  ScheduleNode(DAG->getRoot().getNode());
+}
+
+MachineBasicBlock*
+ScheduleDAGLinearize::EmitSchedule(MachineBasicBlock::iterator &InsertPos) {
+  InstrEmitter Emitter(BB, InsertPos);
+  DenseMap<SDValue, unsigned> VRBaseMap;
+
+  DEBUG({
+      dbgs() << "\n*** Final schedule ***\n";
+    });
+
+  // FIXME: Handle dbg_values.
+  unsigned NumNodes = Sequence.size();
+  for (unsigned i = 0; i != NumNodes; ++i) {
+    SDNode *N = Sequence[NumNodes-i-1];
+    DEBUG(N->dump(DAG));
+    Emitter.EmitNode(N, false, false, VRBaseMap);
+  }
+
+  DEBUG(dbgs() << '\n');
+
+  InsertPos = Emitter.getInsertPos();
+  return Emitter.getBlock();
 }
 
 //===----------------------------------------------------------------------===//
@@ -633,4 +793,9 @@ void ScheduleDAGFast::ListScheduleBottomUp() {
 llvm::ScheduleDAGSDNodes *
 llvm::createFastDAGScheduler(SelectionDAGISel *IS, CodeGenOpt::Level) {
   return new ScheduleDAGFast(*IS->MF);
+}
+
+llvm::ScheduleDAGSDNodes *
+llvm::createDAGLinearizer(SelectionDAGISel *IS, CodeGenOpt::Level) {
+  return new ScheduleDAGLinearize(*IS->MF);
 }

@@ -7,15 +7,12 @@
 # 
 ##===----------------------------------------------------------------------===##
 
-LEVEL = ../..
-TOOLNAME = llc
+LEVEL := ../..
+TOOLNAME := llc
+LINK_COMPONENTS := all-targets bitreader asmparser irreader
 
-# Include this here so we can get the configuration of the targets
-# that have been configured for construction. We have to do this 
-# early so we can set up LINK_COMPONENTS before including Makefile.rules
-include $(LEVEL)/Makefile.config
+# Support plugins.
+NO_DEAD_STRIP := 1
 
-LINK_COMPONENTS := $(TARGETS_TO_BUILD) bitreader asmparser
-
-include $(LLVM_SRC_ROOT)/Makefile.rules
+include $(LEVEL)/Makefile.common
 

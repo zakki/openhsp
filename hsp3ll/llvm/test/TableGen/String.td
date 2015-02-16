@@ -1,5 +1,5 @@
-// RUN: tblgen %s 
-// XFAIL: vg_leak
+// RUN: llvm-tblgen %s 
+
 class x {
   string y = "missing terminating '\"' character";
 }

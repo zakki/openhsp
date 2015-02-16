@@ -23,24 +23,24 @@
 //
 //===----------------------------------------------------------------------===//
 
-#include "llvm/LLVMContext.h"
-#include "llvm/Module.h"
-#include "llvm/DerivedTypes.h"
-#include "llvm/Constants.h"
-#include "llvm/Instructions.h"
-#include "llvm/Analysis/Verifier.h"
-#include "llvm/ExecutionEngine/JIT.h"
-#include "llvm/ExecutionEngine/Interpreter.h"
+#include "llvm/IR/Verifier.h"
 #include "llvm/ExecutionEngine/GenericValue.h"
+#include "llvm/ExecutionEngine/Interpreter.h"
+#include "llvm/ExecutionEngine/JIT.h"
+#include "llvm/IR/Constants.h"
+#include "llvm/IR/DerivedTypes.h"
+#include "llvm/IR/Instructions.h"
+#include "llvm/IR/LLVMContext.h"
+#include "llvm/IR/Module.h"
+#include "llvm/Support/TargetSelect.h"
 #include "llvm/Support/raw_ostream.h"
-#include "llvm/Target/TargetSelect.h"
 using namespace llvm;
 
 static Function *CreateFibFunction(Module *M, LLVMContext &Context) {
-  // Create the fib function and insert it into module M.  This function is said
+  // Create the fib function and insert it into module M. This function is said
   // to return an int and take an int parameter.
   Function *FibF =
-    cast<Function>(M->getOrInsertFunction("fib", Type::getInt32Ty(Context), 
+    cast<Function>(M->getOrInsertFunction("fib", Type::getInt32Ty(Context),
                                           Type::getInt32Ty(Context),
                                           (Type *)0));
 
@@ -94,9 +94,9 @@ int main(int argc, char **argv) {
 
   InitializeNativeTarget();
   LLVMContext Context;
-  
+
   // Create some module to put our function into it.
-  OwningPtr<Module> M(new Module("test", Context));
+  std::unique_ptr<Module> M(new Module("test", Context));
 
   // We are about to create the "fib" function:
   Function *FibF = CreateFibFunction(M.get(), Context);
@@ -132,6 +132,6 @@ int main(int argc, char **argv) {
 
   // import result of execution
   outs() << "Result: " << GV.IntVal << "\n";
-  
+
   return 0;
 }

@@ -12,22 +12,22 @@
 //===----------------------------------------------------------------------===//
 
 #include "BugDriver.h"
-#include "ToolRunner.h"
 #include "ListReducer.h"
-#include "llvm/Constants.h"
-#include "llvm/DerivedTypes.h"
-#include "llvm/Instructions.h"
-#include "llvm/Module.h"
+#include "ToolRunner.h"
+#include "llvm/ADT/SmallPtrSet.h"
+#include "llvm/IR/CFG.h"
+#include "llvm/IR/Constants.h"
+#include "llvm/IR/DerivedTypes.h"
+#include "llvm/IR/Instructions.h"
+#include "llvm/IR/Module.h"
+#include "llvm/IR/ValueSymbolTable.h"
+#include "llvm/IR/Verifier.h"
 #include "llvm/Pass.h"
 #include "llvm/PassManager.h"
-#include "llvm/ValueSymbolTable.h"
-#include "llvm/ADT/SmallPtrSet.h"
-#include "llvm/Analysis/Verifier.h"
-#include "llvm/Support/CFG.h"
+#include "llvm/Support/CommandLine.h"
+#include "llvm/Support/FileUtilities.h"
 #include "llvm/Transforms/Scalar.h"
 #include "llvm/Transforms/Utils/Cloning.h"
-#include "llvm/Support/FileUtilities.h"
-#include "llvm/Support/CommandLine.h"
 #include <set>
 using namespace llvm;
 
@@ -52,9 +52,9 @@ namespace llvm {
     // running the "Kept" passes fail when run on the output of the "removed"
     // passes.  If we return true, we update the current module of bugpoint.
     //
-    virtual TestResult doTest(std::vector<std::string> &Removed,
-                              std::vector<std::string> &Kept,
-                              std::string &Error);
+    TestResult doTest(std::vector<std::string> &Removed,
+                      std::vector<std::string> &Kept,
+                      std::string &Error) override;
   };
 }
 
@@ -62,25 +62,23 @@ ReducePassList::TestResult
 ReducePassList::doTest(std::vector<std::string> &Prefix,
                        std::vector<std::string> &Suffix,
                        std::string &Error) {
-  sys::Path PrefixOutput;
-  Module *OrigProgram = 0;
+  std::string PrefixOutput;
+  Module *OrigProgram = nullptr;
   if (!Prefix.empty()) {
     outs() << "Checking to see if these passes crash: "
            << getPassesString(Prefix) << ": ";
-    std::string PfxOutput;
-    if (BD.runPasses(BD.getProgram(), Prefix, PfxOutput))
+    if (BD.runPasses(BD.getProgram(), Prefix, PrefixOutput))
       return KeepPrefix;
 
-    PrefixOutput.set(PfxOutput);
     OrigProgram = BD.Program;
 
-    BD.Program = ParseInputFile(PrefixOutput.str(), BD.getContext());
-    if (BD.Program == 0) {
+    BD.Program = ParseInputFile(PrefixOutput, BD.getContext());
+    if (BD.Program == nullptr) {
       errs() << BD.getToolName() << ": Error reading bitcode file '"
-             << PrefixOutput.str() << "'!\n";
+             << PrefixOutput << "'!\n";
       exit(1);
     }
-    PrefixOutput.eraseFromDisk();
+    sys::fs::remove(PrefixOutput);
   }
 
   outs() << "Checking to see if these passes crash: "
@@ -112,9 +110,9 @@ namespace {
                                   bool (*testFn)(const BugDriver &, Module *))
       : BD(bd), TestFn(testFn) {}
 
-    virtual TestResult doTest(std::vector<GlobalVariable*> &Prefix,
-                              std::vector<GlobalVariable*> &Kept,
-                              std::string &Error) {
+    TestResult doTest(std::vector<GlobalVariable*> &Prefix,
+                      std::vector<GlobalVariable*> &Kept,
+                      std::string &Error) override {
       if (!Kept.empty() && TestGlobalVariables(Kept))
         return KeepSuffix;
       if (!Prefix.empty() && TestGlobalVariables(Prefix))
@@ -130,7 +128,7 @@ bool
 ReduceCrashingGlobalVariables::TestGlobalVariables(
                               std::vector<GlobalVariable*> &GVs) {
   // Clone the program to try hacking it apart...
-  ValueMap<const Value*, Value*> VMap;
+  ValueToValueMapTy VMap;
   Module *M = CloneModule(BD.getProgram(), VMap);
 
   // Convert list to set for fast lookup...
@@ -151,7 +149,7 @@ ReduceCrashingGlobalVariables::TestGlobalVariables(
   for (Module::global_iterator I = M->global_begin(), E = M->global_end();
        I != E; ++I)
     if (I->hasInitializer() && !GVSet.count(I)) {
-      I->setInitializer(0);
+      I->setInitializer(nullptr);
       I->setLinkage(GlobalValue::ExternalLinkage);
     }
 
@@ -169,7 +167,7 @@ ReduceCrashingGlobalVariables::TestGlobalVariables(
   return false;
 }
 
-namespace llvm {
+namespace {
   /// ReduceCrashingFunctions reducer - This works by removing functions and
   /// seeing if the program still crashes. If it does, then keep the newer,
   /// smaller program.
@@ -182,9 +180,9 @@ namespace llvm {
                             bool (*testFn)(const BugDriver &, Module *))
       : BD(bd), TestFn(testFn) {}
 
-    virtual TestResult doTest(std::vector<Function*> &Prefix,
-                              std::vector<Function*> &Kept,
-                              std::string &Error) {
+    TestResult doTest(std::vector<Function*> &Prefix,
+                      std::vector<Function*> &Kept,
+                      std::string &Error) override {
       if (!Kept.empty() && TestFuncs(Kept))
         return KeepSuffix;
       if (!Prefix.empty() && TestFuncs(Prefix))
@@ -197,14 +195,14 @@ namespace llvm {
 }
 
 bool ReduceCrashingFunctions::TestFuncs(std::vector<Function*> &Funcs) {
-
-  //if main isn't present, claim there is no problem
-  if (KeepMain && find(Funcs.begin(), Funcs.end(),
-                       BD.getProgram()->getFunction("main")) == Funcs.end())
+  // If main isn't present, claim there is no problem.
+  if (KeepMain && std::find(Funcs.begin(), Funcs.end(),
+                            BD.getProgram()->getFunction("main")) ==
+                      Funcs.end())
     return false;
 
   // Clone the program to try hacking it apart...
-  ValueMap<const Value*, Value*> VMap;
+  ValueToValueMapTy VMap;
   Module *M = CloneModule(BD.getProgram(), VMap);
 
   // Convert list to set for fast lookup...
@@ -255,9 +253,9 @@ namespace {
                          bool (*testFn)(const BugDriver &, Module *))
       : BD(bd), TestFn(testFn) {}
 
-    virtual TestResult doTest(std::vector<const BasicBlock*> &Prefix,
-                              std::vector<const BasicBlock*> &Kept,
-                              std::string &Error) {
+    TestResult doTest(std::vector<const BasicBlock*> &Prefix,
+                      std::vector<const BasicBlock*> &Kept,
+                      std::string &Error) override {
       if (!Kept.empty() && TestBlocks(Kept))
         return KeepSuffix;
       if (!Prefix.empty() && TestBlocks(Prefix))
@@ -271,7 +269,7 @@ namespace {
 
 bool ReduceCrashingBlocks::TestBlocks(std::vector<const BasicBlock*> &BBs) {
   // Clone the program to try hacking it apart...
-  ValueMap<const Value*, Value*> VMap;
+  ValueToValueMapTy VMap;
   Module *M = CloneModule(BD.getProgram(), VMap);
 
   // Convert list to set for fast lookup...
@@ -364,9 +362,9 @@ namespace {
                                bool (*testFn)(const BugDriver &, Module *))
       : BD(bd), TestFn(testFn) {}
 
-    virtual TestResult doTest(std::vector<const Instruction*> &Prefix,
-                              std::vector<const Instruction*> &Kept,
-                              std::string &Error) {
+    TestResult doTest(std::vector<const Instruction*> &Prefix,
+                      std::vector<const Instruction*> &Kept,
+                      std::string &Error) override {
       if (!Kept.empty() && TestInsts(Kept))
         return KeepSuffix;
       if (!Prefix.empty() && TestInsts(Prefix))
@@ -381,7 +379,7 @@ namespace {
 bool ReduceCrashingInstructions::TestInsts(std::vector<const Instruction*>
                                            &Insts) {
   // Clone the program to try hacking it apart...
-  ValueMap<const Value*, Value*> VMap;
+  ValueToValueMapTy VMap;
   Module *M = CloneModule(BD.getProgram(), VMap);
 
   // Convert list to set for fast lookup...
@@ -401,7 +399,8 @@ bool ReduceCrashingInstructions::TestInsts(std::vector<const Instruction*>
     for (Function::iterator FI = MI->begin(), FE = MI->end(); FI != FE; ++FI)
       for (BasicBlock::iterator I = FI->begin(), E = FI->end(); I != E;) {
         Instruction *Inst = I++;
-        if (!Instructions.count(Inst) && !isa<TerminatorInst>(Inst)) {
+        if (!Instructions.count(Inst) && !isa<TerminatorInst>(Inst) &&
+            !isa<LandingPadInst>(Inst)) {
           if (!Inst->getType()->isVoidTy())
             Inst->replaceAllUsesWith(UndefValue::get(Inst->getType()));
           Inst->eraseFromParent();
@@ -411,6 +410,7 @@ bool ReduceCrashingInstructions::TestInsts(std::vector<const Instruction*>
   // Verify that this is still valid.
   PassManager Passes;
   Passes.add(createVerifierPass());
+  Passes.add(createDebugInfoVerifierPass());
   Passes.run(*M);
 
   // Try running on the hacked up program...
@@ -447,7 +447,7 @@ static bool DebugACrash(BugDriver &BD,
     for (Module::global_iterator I = M->global_begin(), E = M->global_end();
          I != E; ++I)
       if (I->hasInitializer()) {
-        I->setInitializer(0);
+        I->setInitializer(nullptr);
         I->setLinkage(GlobalValue::ExternalLinkage);
         DeletedInit = true;
       }
@@ -568,11 +568,14 @@ static bool DebugACrash(BugDriver &BD,
         for (Function::const_iterator BI = FI->begin(), E = FI->end(); BI != E;
              ++BI)
           for (BasicBlock::const_iterator I = BI->begin(), E = --BI->end();
-               I != E; ++I, ++CurInstructionNum)
+               I != E; ++I, ++CurInstructionNum) {
             if (InstructionsToSkipBeforeDeleting) {
               --InstructionsToSkipBeforeDeleting;
             } else {
               if (BugpointIsInterrupted) goto ExitLoops;
+
+              if (isa<LandingPadInst>(I))
+                continue;
 
               outs() << "Checking instruction: " << *I;
               Module *M = BD.deleteInstructionFromProgram(I, Simplification);
@@ -590,6 +593,7 @@ static bool DebugACrash(BugDriver &BD,
               // one.
               delete M;
             }
+          }
 
     if (InstructionsToSkipBeforeDeleting) {
       InstructionsToSkipBeforeDeleting = 0;

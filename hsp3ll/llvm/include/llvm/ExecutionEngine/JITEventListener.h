@@ -12,67 +12,119 @@
 //
 //===----------------------------------------------------------------------===//
 
-#ifndef LLVM_EXECUTION_ENGINE_JIT_EVENTLISTENER_H
-#define LLVM_EXECUTION_ENGINE_JIT_EVENTLISTENER_H
+#ifndef LLVM_EXECUTIONENGINE_JITEVENTLISTENER_H
+#define LLVM_EXECUTIONENGINE_JITEVENTLISTENER_H
 
-#include "llvm/System/DataTypes.h"
-#include "llvm/Support/DebugLoc.h"
-
+#include "llvm/Config/llvm-config.h"
+#include "llvm/IR/DebugLoc.h"
+#include "llvm/Support/DataTypes.h"
 #include <vector>
 
 namespace llvm {
 class Function;
 class MachineFunction;
+class OProfileWrapper;
+class IntelJITEventsWrapper;
+class ObjectImage;
 
-/// Empty for now, but this object will contain all details about the
-/// generated machine code that a Listener might care about.
+/// JITEvent_EmittedFunctionDetails - Helper struct for containing information
+/// about a generated machine code function.
 struct JITEvent_EmittedFunctionDetails {
-  const MachineFunction *MF;
-
   struct LineStart {
-    // The address at which the current line changes.
+    /// The address at which the current line changes.
     uintptr_t Address;
-    // The new location information.  These can be translated to
-    // DebugLocTuples using MF->getDebugLocTuple().
+
+    /// The new location information.  These can be translated to DebugLocTuples
+    /// using MF->getDebugLocTuple().
     DebugLoc Loc;
   };
-  // This holds line boundary information sorted by address.
+
+  /// The machine function the struct contains information for.
+  const MachineFunction *MF;
+
+  /// The list of line boundary information, sorted by address.
   std::vector<LineStart> LineStarts;
 };
 
-/// JITEventListener - This interface is used by the JIT to notify clients about
-/// significant events during compilation.  For example, we could have
-/// implementations for profilers and debuggers that need to know where
-/// functions have been emitted.
+/// JITEventListener - Abstract interface for use by the JIT to notify clients
+/// about significant events during compilation. For example, to notify
+/// profilers and debuggers that need to know where functions have been emitted.
 ///
-/// Each method defaults to doing nothing, so you only need to override the ones
-/// you care about.
+/// The default implementation of each method does nothing.
 class JITEventListener {
 public:
-  JITEventListener() {}
-  virtual ~JITEventListener();  // Defined in JIT.cpp.
-
   typedef JITEvent_EmittedFunctionDetails EmittedFunctionDetails;
+
+public:
+  JITEventListener() {}
+  virtual ~JITEventListener();
+
   /// NotifyFunctionEmitted - Called after a function has been successfully
   /// emitted to memory.  The function still has its MachineFunction attached,
   /// if you should happen to need that.
-  virtual void NotifyFunctionEmitted(const Function &F,
-                                     void *Code, size_t Size,
-                                     const EmittedFunctionDetails &Details) {}
+  virtual void NotifyFunctionEmitted(const Function &,
+                                     void *, size_t,
+                                     const EmittedFunctionDetails &) {}
 
-  /// NotifyFreeingMachineCode - This is called inside of
-  /// freeMachineCodeForFunction(), after the global mapping is removed, but
-  /// before the machine code is returned to the allocator.  OldPtr is the
-  /// address of the machine code and will be the same as the Code parameter to
-  /// a previous NotifyFunctionEmitted call.  The Function passed to
-  /// NotifyFunctionEmitted may have been destroyed by the time of the matching
-  /// NotifyFreeingMachineCode call.
-  virtual void NotifyFreeingMachineCode(void *OldPtr) {}
+  /// NotifyFreeingMachineCode - Called from freeMachineCodeForFunction(), after
+  /// the global mapping is removed, but before the machine code is returned to
+  /// the allocator.
+  ///
+  /// OldPtr is the address of the machine code and will be the same as the Code
+  /// parameter to a previous NotifyFunctionEmitted call.  The Function passed
+  /// to NotifyFunctionEmitted may have been destroyed by the time of the
+  /// matching NotifyFreeingMachineCode call.
+  virtual void NotifyFreeingMachineCode(void *) {}
+
+  /// NotifyObjectEmitted - Called after an object has been successfully
+  /// emitted to memory.  NotifyFunctionEmitted will not be called for
+  /// individual functions in the object.
+  ///
+  /// ELF-specific information
+  /// The ObjectImage contains the generated object image
+  /// with section headers updated to reflect the address at which sections
+  /// were loaded and with relocations performed in-place on debug sections.
+  virtual void NotifyObjectEmitted(const ObjectImage &Obj) {}
+
+  /// NotifyFreeingObject - Called just before the memory associated with
+  /// a previously emitted object is released.
+  virtual void NotifyFreeingObject(const ObjectImage &Obj) {}
+
+#if LLVM_USE_INTEL_JITEVENTS
+  // Construct an IntelJITEventListener
+  static JITEventListener *createIntelJITEventListener();
+
+  // Construct an IntelJITEventListener with a test Intel JIT API implementation
+  static JITEventListener *createIntelJITEventListener(
+                                      IntelJITEventsWrapper* AlternativeImpl);
+#else
+  static JITEventListener *createIntelJITEventListener() { return nullptr; }
+
+  static JITEventListener *createIntelJITEventListener(
+                                      IntelJITEventsWrapper* AlternativeImpl) {
+    return nullptr;
+  }
+#endif // USE_INTEL_JITEVENTS
+
+#if LLVM_USE_OPROFILE
+  // Construct an OProfileJITEventListener
+  static JITEventListener *createOProfileJITEventListener();
+
+  // Construct an OProfileJITEventListener with a test opagent implementation
+  static JITEventListener *createOProfileJITEventListener(
+                                      OProfileWrapper* AlternativeImpl);
+#else
+
+  static JITEventListener *createOProfileJITEventListener() { return nullptr; }
+
+  static JITEventListener *createOProfileJITEventListener(
+                                      OProfileWrapper* AlternativeImpl) {
+    return nullptr;
+  }
+#endif // USE_OPROFILE
+
 };
-
-// This returns NULL if support isn't available.
-JITEventListener *createOProfileJITEventListener();
 
 } // end namespace llvm.
 
-#endif
+#endif // defined LLVM_EXECUTIONENGINE_JITEVENTLISTENER_H

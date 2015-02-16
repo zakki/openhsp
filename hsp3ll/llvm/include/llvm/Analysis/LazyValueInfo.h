@@ -19,20 +19,24 @@
 
 namespace llvm {
   class Constant;
-  class TargetData;
+  class DataLayout;
+  class TargetLibraryInfo;
   class Value;
   
 /// LazyValueInfo - This pass computes, caches, and vends lazy value constraint
 /// information.
 class LazyValueInfo : public FunctionPass {
-  class TargetData *TD;
+  const DataLayout *DL;
+  class TargetLibraryInfo *TLI;
   void *PImpl;
-  LazyValueInfo(const LazyValueInfo&); // DO NOT IMPLEMENT.
-  void operator=(const LazyValueInfo&); // DO NOT IMPLEMENT.
+  LazyValueInfo(const LazyValueInfo&) LLVM_DELETED_FUNCTION;
+  void operator=(const LazyValueInfo&) LLVM_DELETED_FUNCTION;
 public:
   static char ID;
-  LazyValueInfo() : FunctionPass(ID), PImpl(0) {}
-  ~LazyValueInfo() { assert(PImpl == 0 && "releaseMemory not called"); }
+  LazyValueInfo() : FunctionPass(ID), PImpl(nullptr) {
+    initializeLazyValueInfoPass(*PassRegistry::getPassRegistry());
+  }
+  ~LazyValueInfo() { assert(!PImpl && "releaseMemory not called"); }
 
   /// Tristate - This is used to return true/false/dunno results.
   enum Tristate {
@@ -65,12 +69,10 @@ public:
   void eraseBlock(BasicBlock *BB);
   
   // Implementation boilerplate.
-  
-  virtual void getAnalysisUsage(AnalysisUsage &AU) const {
-    AU.setPreservesAll();
-  }
-  virtual void releaseMemory();
-  virtual bool runOnFunction(Function &F);
+
+  void getAnalysisUsage(AnalysisUsage &AU) const override;
+  void releaseMemory() override;
+  bool runOnFunction(Function &F) override;
 };
 
 }  // end namespace llvm

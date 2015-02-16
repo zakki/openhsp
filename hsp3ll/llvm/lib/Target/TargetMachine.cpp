@@ -11,294 +11,188 @@
 //
 //===----------------------------------------------------------------------===//
 
-#include "llvm/CodeGen/MachineFunction.h"
-#include "llvm/CodeGen/MachineFrameInfo.h"
-#include "llvm/MC/MCAsmInfo.h"
 #include "llvm/Target/TargetMachine.h"
-#include "llvm/Target/TargetOptions.h"
+#include "llvm/CodeGen/MachineFunction.h"
+#include "llvm/IR/Function.h"
+#include "llvm/IR/GlobalAlias.h"
+#include "llvm/IR/GlobalValue.h"
+#include "llvm/IR/GlobalVariable.h"
+#include "llvm/IR/Mangler.h"
+#include "llvm/MC/MCAsmInfo.h"
+#include "llvm/MC/MCCodeGenInfo.h"
+#include "llvm/MC/MCContext.h"
+#include "llvm/MC/MCTargetOptions.h"
+#include "llvm/MC/SectionKind.h"
 #include "llvm/Support/CommandLine.h"
+#include "llvm/Target/TargetLowering.h"
+#include "llvm/Target/TargetLoweringObjectFile.h"
 using namespace llvm;
 
-//---------------------------------------------------------------------------
-// Command-line options that tend to be useful on more than one back-end.
-//
-
-namespace llvm {
-  bool LessPreciseFPMADOption;
-  bool PrintMachineCode;
-  bool NoFramePointerElim;
-  bool NoFramePointerElimNonLeaf;
-  bool NoExcessFPPrecision;
-  bool UnsafeFPMath;
-  bool NoInfsFPMath;
-  bool NoNaNsFPMath;
-  bool HonorSignDependentRoundingFPMathOption;
-  bool UseSoftFloat;
-  FloatABI::ABIType FloatABIType;
-  bool NoImplicitFloat;
-  bool NoZerosInBSS;
-  bool JITExceptionHandling;
-  bool JITEmitDebugInfo;
-  bool JITEmitDebugInfoToDisk;
-  bool UnwindTablesMandatory;
-  Reloc::Model RelocationModel;
-  CodeModel::Model CMModel;
-  bool GuaranteedTailCallOpt;
-  unsigned StackAlignment;
-  bool RealignStack;
-  bool DisableJumpTables;
-  bool StrongPHIElim;
-  bool AsmVerbosityDefault(false);
-}
-
-static cl::opt<bool, true>
-PrintCode("print-machineinstrs",
-  cl::desc("Print generated machine code"),
-  cl::location(PrintMachineCode), cl::init(false));
-static cl::opt<bool, true>
-DisableFPElim("disable-fp-elim",
-  cl::desc("Disable frame pointer elimination optimization"),
-  cl::location(NoFramePointerElim),
-  cl::init(false));
-static cl::opt<bool, true>
-DisableFPElimNonLeaf("disable-non-leaf-fp-elim",
-  cl::desc("Disable frame pointer elimination optimization for non-leaf funcs"),
-  cl::location(NoFramePointerElimNonLeaf),
-  cl::init(false));
-static cl::opt<bool, true>
-DisableExcessPrecision("disable-excess-fp-precision",
-  cl::desc("Disable optimizations that may increase FP precision"),
-  cl::location(NoExcessFPPrecision),
-  cl::init(false));
-static cl::opt<bool, true>
-EnableFPMAD("enable-fp-mad",
-  cl::desc("Enable less precise MAD instructions to be generated"),
-  cl::location(LessPreciseFPMADOption),
-  cl::init(false));
-static cl::opt<bool, true>
-EnableUnsafeFPMath("enable-unsafe-fp-math",
-  cl::desc("Enable optimizations that may decrease FP precision"),
-  cl::location(UnsafeFPMath),
-  cl::init(false));
-static cl::opt<bool, true>
-EnableNoInfsFPMath("enable-no-infs-fp-math",
-  cl::desc("Enable FP math optimizations that assume no +-Infs"),
-  cl::location(NoInfsFPMath),
-  cl::init(false));
-static cl::opt<bool, true>
-EnableNoNaNsFPMath("enable-no-nans-fp-math",
-  cl::desc("Enable FP math optimizations that assume no NaNs"),
-  cl::location(NoNaNsFPMath),
-  cl::init(false));
-static cl::opt<bool, true>
-EnableHonorSignDependentRoundingFPMath("enable-sign-dependent-rounding-fp-math",
-  cl::Hidden,
-  cl::desc("Force codegen to assume rounding mode can change dynamically"),
-  cl::location(HonorSignDependentRoundingFPMathOption),
-  cl::init(false));
-static cl::opt<bool, true>
-GenerateSoftFloatCalls("soft-float",
-  cl::desc("Generate software floating point library calls"),
-  cl::location(UseSoftFloat),
-  cl::init(false));
-static cl::opt<llvm::FloatABI::ABIType, true>
-FloatABIForCalls("float-abi",
-  cl::desc("Choose float ABI type"),
-  cl::location(FloatABIType),
-  cl::init(FloatABI::Default),
-  cl::values(
-    clEnumValN(FloatABI::Default, "default",
-               "Target default float ABI type"),
-    clEnumValN(FloatABI::Soft, "soft",
-               "Soft float ABI (implied by -soft-float)"),
-    clEnumValN(FloatABI::Hard, "hard",
-               "Hard float ABI (uses FP registers)"),
-    clEnumValEnd));
-static cl::opt<bool, true>
-DontPlaceZerosInBSS("nozero-initialized-in-bss",
-  cl::desc("Don't place zero-initialized symbols into bss section"),
-  cl::location(NoZerosInBSS),
-  cl::init(false));
-static cl::opt<bool, true>
-EnableJITExceptionHandling("jit-enable-eh",
-  cl::desc("Emit exception handling information"),
-  cl::location(JITExceptionHandling),
-  cl::init(false));
-// In debug builds, make this default to true.
-#ifdef NDEBUG
-#define EMIT_DEBUG false
-#else
-#define EMIT_DEBUG true
-#endif
-static cl::opt<bool, true>
-EmitJitDebugInfo("jit-emit-debug",
-  cl::desc("Emit debug information to debugger"),
-  cl::location(JITEmitDebugInfo),
-  cl::init(EMIT_DEBUG));
-#undef EMIT_DEBUG
-static cl::opt<bool, true>
-EmitJitDebugInfoToDisk("jit-emit-debug-to-disk",
-  cl::Hidden,
-  cl::desc("Emit debug info objfiles to disk"),
-  cl::location(JITEmitDebugInfoToDisk),
-  cl::init(false));
-static cl::opt<bool, true>
-EnableUnwindTables("unwind-tables",
-  cl::desc("Generate unwinding tables for all functions"),
-  cl::location(UnwindTablesMandatory),
-  cl::init(false));
-
-static cl::opt<llvm::Reloc::Model, true>
-DefRelocationModel("relocation-model",
-  cl::desc("Choose relocation model"),
-  cl::location(RelocationModel),
-  cl::init(Reloc::Default),
-  cl::values(
-    clEnumValN(Reloc::Default, "default",
-               "Target default relocation model"),
-    clEnumValN(Reloc::Static, "static",
-               "Non-relocatable code"),
-    clEnumValN(Reloc::PIC_, "pic",
-               "Fully relocatable, position independent code"),
-    clEnumValN(Reloc::DynamicNoPIC, "dynamic-no-pic",
-               "Relocatable external references, non-relocatable code"),
-    clEnumValEnd));
-static cl::opt<llvm::CodeModel::Model, true>
-DefCodeModel("code-model",
-  cl::desc("Choose code model"),
-  cl::location(CMModel),
-  cl::init(CodeModel::Default),
-  cl::values(
-    clEnumValN(CodeModel::Default, "default",
-               "Target default code model"),
-    clEnumValN(CodeModel::Small, "small",
-               "Small code model"),
-    clEnumValN(CodeModel::Kernel, "kernel",
-               "Kernel code model"),
-    clEnumValN(CodeModel::Medium, "medium",
-               "Medium code model"),
-    clEnumValN(CodeModel::Large, "large",
-               "Large code model"),
-    clEnumValEnd));
-static cl::opt<bool, true>
-EnableGuaranteedTailCallOpt("tailcallopt",
-  cl::desc("Turn fastcc calls into tail calls by (potentially) changing ABI."),
-  cl::location(GuaranteedTailCallOpt),
-  cl::init(false));
-static cl::opt<unsigned, true>
-OverrideStackAlignment("stack-alignment",
-  cl::desc("Override default stack alignment"),
-  cl::location(StackAlignment),
-  cl::init(0));
-static cl::opt<bool, true>
-EnableRealignStack("realign-stack",
-  cl::desc("Realign stack if needed"),
-  cl::location(RealignStack),
-  cl::init(true));
-static cl::opt<bool, true>
-DisableSwitchTables(cl::Hidden, "disable-jump-tables", 
-  cl::desc("Do not generate jump tables."),
-  cl::location(DisableJumpTables),
-  cl::init(false));
-static cl::opt<bool, true>
-EnableStrongPHIElim(cl::Hidden, "strong-phi-elim",
-  cl::desc("Use strong PHI elimination."),
-  cl::location(StrongPHIElim),
-  cl::init(false));
-static cl::opt<bool>
-DataSections("fdata-sections",
-  cl::desc("Emit data into separate sections"),
-  cl::init(false));
-static cl::opt<bool>
-FunctionSections("ffunction-sections",
-  cl::desc("Emit functions into separate sections"),
-  cl::init(false));
 //---------------------------------------------------------------------------
 // TargetMachine Class
 //
 
-TargetMachine::TargetMachine(const Target &T) 
-  : TheTarget(T), AsmInfo(0),
-    MCRelaxAll(false) {
-  // Typically it will be subtargets that will adjust FloatABIType from Default
-  // to Soft or Hard.
-  if (UseSoftFloat)
-    FloatABIType = FloatABI::Soft;
+TargetMachine::TargetMachine(const Target &T,
+                             StringRef TT, StringRef CPU, StringRef FS,
+                             const TargetOptions &Options)
+  : TheTarget(T), TargetTriple(TT), TargetCPU(CPU), TargetFS(FS),
+    CodeGenInfo(nullptr), AsmInfo(nullptr),
+    RequireStructuredCFG(false),
+    Options(Options) {
 }
 
 TargetMachine::~TargetMachine() {
+  delete CodeGenInfo;
   delete AsmInfo;
+}
+
+/// \brief Reset the target options based on the function's attributes.
+void TargetMachine::resetTargetOptions(const MachineFunction *MF) const {
+  const Function *F = MF->getFunction();
+  TargetOptions &TO = MF->getTarget().Options;
+
+#define RESET_OPTION(X, Y)                                              \
+  do {                                                                  \
+    if (F->hasFnAttribute(Y))                                           \
+      TO.X =                                                            \
+        (F->getAttributes().                                            \
+           getAttribute(AttributeSet::FunctionIndex,                    \
+                        Y).getValueAsString() == "true");               \
+  } while (0)
+
+  RESET_OPTION(NoFramePointerElim, "no-frame-pointer-elim");
+  RESET_OPTION(LessPreciseFPMADOption, "less-precise-fpmad");
+  RESET_OPTION(UnsafeFPMath, "unsafe-fp-math");
+  RESET_OPTION(NoInfsFPMath, "no-infs-fp-math");
+  RESET_OPTION(NoNaNsFPMath, "no-nans-fp-math");
+  RESET_OPTION(UseSoftFloat, "use-soft-float");
+  RESET_OPTION(DisableTailCalls, "disable-tail-calls");
+
+  TO.MCOptions.SanitizeAddress = F->hasFnAttribute(Attribute::SanitizeAddress);
 }
 
 /// getRelocationModel - Returns the code generation relocation model. The
 /// choices are static, PIC, and dynamic-no-pic, and target default.
-Reloc::Model TargetMachine::getRelocationModel() {
-  return RelocationModel;
-}
-
-/// setRelocationModel - Sets the code generation relocation model.
-void TargetMachine::setRelocationModel(Reloc::Model Model) {
-  RelocationModel = Model;
+Reloc::Model TargetMachine::getRelocationModel() const {
+  if (!CodeGenInfo)
+    return Reloc::Default;
+  return CodeGenInfo->getRelocationModel();
 }
 
 /// getCodeModel - Returns the code model. The choices are small, kernel,
 /// medium, large, and target default.
-CodeModel::Model TargetMachine::getCodeModel() {
-  return CMModel;
+CodeModel::Model TargetMachine::getCodeModel() const {
+  if (!CodeGenInfo)
+    return CodeModel::Default;
+  return CodeGenInfo->getCodeModel();
 }
 
-/// setCodeModel - Sets the code model.
-void TargetMachine::setCodeModel(CodeModel::Model Model) {
-  CMModel = Model;
+/// Get the IR-specified TLS model for Var.
+static TLSModel::Model getSelectedTLSModel(const GlobalValue *GV) {
+  switch (GV->getThreadLocalMode()) {
+  case GlobalVariable::NotThreadLocal:
+    llvm_unreachable("getSelectedTLSModel for non-TLS variable");
+    break;
+  case GlobalVariable::GeneralDynamicTLSModel:
+    return TLSModel::GeneralDynamic;
+  case GlobalVariable::LocalDynamicTLSModel:
+    return TLSModel::LocalDynamic;
+  case GlobalVariable::InitialExecTLSModel:
+    return TLSModel::InitialExec;
+  case GlobalVariable::LocalExecTLSModel:
+    return TLSModel::LocalExec;
+  }
+  llvm_unreachable("invalid TLS model");
 }
 
-bool TargetMachine::getAsmVerbosityDefault() {
-  return AsmVerbosityDefault;
+TLSModel::Model TargetMachine::getTLSModel(const GlobalValue *GV) const {
+  bool isLocal = GV->hasLocalLinkage();
+  bool isDeclaration = GV->isDeclaration();
+  bool isPIC = getRelocationModel() == Reloc::PIC_;
+  bool isPIE = Options.PositionIndependentExecutable;
+  // FIXME: what should we do for protected and internal visibility?
+  // For variables, is internal different from hidden?
+  bool isHidden = GV->hasHiddenVisibility();
+
+  TLSModel::Model Model;
+  if (isPIC && !isPIE) {
+    if (isLocal || isHidden)
+      Model = TLSModel::LocalDynamic;
+    else
+      Model = TLSModel::GeneralDynamic;
+  } else {
+    if (!isDeclaration || isHidden)
+      Model = TLSModel::LocalExec;
+    else
+      Model = TLSModel::InitialExec;
+  }
+
+  // If the user specified a more specific model, use that.
+  TLSModel::Model SelectedModel = getSelectedTLSModel(GV);
+  if (SelectedModel > Model)
+    return SelectedModel;
+
+  return Model;
+}
+
+/// getOptLevel - Returns the optimization level: None, Less,
+/// Default, or Aggressive.
+CodeGenOpt::Level TargetMachine::getOptLevel() const {
+  if (!CodeGenInfo)
+    return CodeGenOpt::Default;
+  return CodeGenInfo->getOptLevel();
+}
+
+void TargetMachine::setOptLevel(CodeGenOpt::Level Level) const {
+  if (CodeGenInfo)
+    CodeGenInfo->setOptLevel(Level);
+}
+
+bool TargetMachine::getAsmVerbosityDefault() const {
+  return Options.MCOptions.AsmVerbose;
 }
 
 void TargetMachine::setAsmVerbosityDefault(bool V) {
-  AsmVerbosityDefault = V;
+  Options.MCOptions.AsmVerbose = V;
 }
 
-bool TargetMachine::getFunctionSections() {
-  return FunctionSections;
+bool TargetMachine::getFunctionSections() const {
+  return Options.FunctionSections;
 }
 
-bool TargetMachine::getDataSections() {
-  return DataSections;
+bool TargetMachine::getDataSections() const {
+  return Options.DataSections;
 }
 
 void TargetMachine::setFunctionSections(bool V) {
-  FunctionSections = V;
+  Options.FunctionSections = V;
 }
 
 void TargetMachine::setDataSections(bool V) {
-  DataSections = V;
+  Options.DataSections = V;
 }
 
-namespace llvm {
-  /// DisableFramePointerElim - This returns true if frame pointer elimination
-  /// optimization should be disabled for the given machine function.
-  bool DisableFramePointerElim(const MachineFunction &MF) {
-    // Check to see if we should eliminate non-leaf frame pointers and then
-    // check to see if we should eliminate all frame pointers.
-    if (NoFramePointerElimNonLeaf && !NoFramePointerElim) {
-      const MachineFrameInfo *MFI = MF.getFrameInfo();
-      return MFI->hasCalls();
-    }
-
-    return NoFramePointerElim;
+void TargetMachine::getNameWithPrefix(SmallVectorImpl<char> &Name,
+                                      const GlobalValue *GV, Mangler &Mang,
+                                      bool MayAlwaysUsePrivate) const {
+  if (MayAlwaysUsePrivate || !GV->hasPrivateLinkage()) {
+    // Simple case: If GV is not private, it is not important to find out if
+    // private labels are legal in this case or not.
+    Mang.getNameWithPrefix(Name, GV, false);
+    return;
   }
+  SectionKind GVKind = TargetLoweringObjectFile::getKindForGlobal(GV, *this);
+  const TargetLoweringObjectFile &TLOF =
+      getTargetLowering()->getObjFileLowering();
+  const MCSection *TheSection = TLOF.SectionForGlobal(GV, GVKind, Mang, *this);
+  bool CannotUsePrivateLabel = TLOF.isSectionAtomizableBySymbols(*TheSection);
+  Mang.getNameWithPrefix(Name, GV, CannotUsePrivateLabel);
+}
 
-  /// LessPreciseFPMAD - This flag return true when -enable-fp-mad option
-  /// is specified on the command line.  When this flag is off(default), the
-  /// code generator is not allowed to generate mad (multiply add) if the
-  /// result is "less precise" than doing those operations individually.
-  bool LessPreciseFPMAD() { return UnsafeFPMath || LessPreciseFPMADOption; }
-
-  /// HonorSignDependentRoundingFPMath - Return true if the codegen must assume
-  /// that the rounding mode of the FPU can change from its default.
-  bool HonorSignDependentRoundingFPMath() {
-    return !UnsafeFPMath && HonorSignDependentRoundingFPMathOption;
-  }
+MCSymbol *TargetMachine::getSymbol(const GlobalValue *GV, Mangler &Mang) const {
+  SmallString<60> NameStr;
+  getNameWithPrefix(NameStr, GV, Mang);
+  const TargetLoweringObjectFile &TLOF =
+      getTargetLowering()->getObjFileLowering();
+  return TLOF.getContext().GetOrCreateSymbol(NameStr.str());
 }

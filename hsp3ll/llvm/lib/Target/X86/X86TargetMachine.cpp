@@ -11,145 +11,32 @@
 //
 //===----------------------------------------------------------------------===//
 
-#include "X86MCAsmInfo.h"
 #include "X86TargetMachine.h"
 #include "X86.h"
-#include "llvm/PassManager.h"
-#include "llvm/CodeGen/MachineFunction.h"
 #include "llvm/CodeGen/Passes.h"
-#include "llvm/MC/MCCodeEmitter.h"
-#include "llvm/MC/MCStreamer.h"
+#include "llvm/PassManager.h"
+#include "llvm/Support/CommandLine.h"
 #include "llvm/Support/FormattedStream.h"
+#include "llvm/Support/TargetRegistry.h"
 #include "llvm/Target/TargetOptions.h"
-#include "llvm/Target/TargetRegistry.h"
 using namespace llvm;
 
-static MCAsmInfo *createMCAsmInfo(const Target &T, StringRef TT) {
-  Triple TheTriple(TT);
-  switch (TheTriple.getOS()) {
-  case Triple::Darwin:
-    return new X86MCAsmInfoDarwin(TheTriple);
-  case Triple::MinGW32:
-  case Triple::MinGW64:
-  case Triple::Cygwin:
-  case Triple::Win32:
-    return new X86MCAsmInfoCOFF(TheTriple);
-  default:
-    return new X86ELFMCAsmInfo(TheTriple);
-  }
-}
-
-static MCStreamer *createMCStreamer(const Target &T, const std::string &TT,
-                                    MCContext &Ctx, TargetAsmBackend &TAB,
-                                    raw_ostream &_OS,
-                                    MCCodeEmitter *_Emitter,
-                                    bool RelaxAll) {
-  Triple TheTriple(TT);
-  switch (TheTriple.getOS()) {
-  case Triple::Darwin:
-    return createMachOStreamer(Ctx, TAB, _OS, _Emitter, RelaxAll);
-  case Triple::MinGW32:
-  case Triple::MinGW64:
-  case Triple::Cygwin:
-  case Triple::Win32:
-    return createWinCOFFStreamer(Ctx, TAB, *_Emitter, _OS, RelaxAll);
-  default:
-    return createELFStreamer(Ctx, TAB, _OS, _Emitter, RelaxAll);
-  }
-}
-
-extern "C" void LLVMInitializeX86Target() { 
+extern "C" void LLVMInitializeX86Target() {
   // Register the target.
-  RegisterTargetMachine<X86_32TargetMachine> X(TheX86_32Target);
-  RegisterTargetMachine<X86_64TargetMachine> Y(TheX86_64Target);
-
-  // Register the target asm info.
-  RegisterAsmInfoFn A(TheX86_32Target, createMCAsmInfo);
-  RegisterAsmInfoFn B(TheX86_64Target, createMCAsmInfo);
-
-  // Register the code emitter.
-  TargetRegistry::RegisterCodeEmitter(TheX86_32Target,
-                                      createX86_32MCCodeEmitter);
-  TargetRegistry::RegisterCodeEmitter(TheX86_64Target,
-                                      createX86_64MCCodeEmitter);
-
-  // Register the asm backend.
-  TargetRegistry::RegisterAsmBackend(TheX86_32Target,
-                                     createX86_32AsmBackend);
-  TargetRegistry::RegisterAsmBackend(TheX86_64Target,
-                                     createX86_64AsmBackend);
-
-  // Register the object streamer.
-  TargetRegistry::RegisterObjectStreamer(TheX86_32Target,
-                                         createMCStreamer);
-  TargetRegistry::RegisterObjectStreamer(TheX86_64Target,
-                                         createMCStreamer);
+  RegisterTargetMachine<X86TargetMachine> X(TheX86_32Target);
+  RegisterTargetMachine<X86TargetMachine> Y(TheX86_64Target);
 }
 
-
-X86_32TargetMachine::X86_32TargetMachine(const Target &T, const std::string &TT,
-                                         const std::string &FS)
-  : X86TargetMachine(T, TT, FS, false) {
-}
-
-
-X86_64TargetMachine::X86_64TargetMachine(const Target &T, const std::string &TT,
-                                         const std::string &FS)
-  : X86TargetMachine(T, TT, FS, true) {
-}
+void X86TargetMachine::anchor() { }
 
 /// X86TargetMachine ctor - Create an X86 target.
 ///
-X86TargetMachine::X86TargetMachine(const Target &T, const std::string &TT, 
-                                   const std::string &FS, bool is64Bit)
-  : LLVMTargetMachine(T, TT), 
-    Subtarget(TT, FS, is64Bit),
-    DataLayout(Subtarget.getDataLayout()),
-    FrameInfo(TargetFrameInfo::StackGrowsDown,
-              Subtarget.getStackAlignment(),
-              (Subtarget.isTargetWin64() ? -40 :
-               (Subtarget.is64Bit() ? -8 : -4))),
-    InstrInfo(*this), JITInfo(*this), TLInfo(*this), TSInfo(*this),
-    ELFWriterInfo(*this) {
-  DefRelocModel = getRelocationModel();
-
-  // If no relocation model was picked, default as appropriate for the target.
-  if (getRelocationModel() == Reloc::Default) {
-    // Darwin defaults to PIC in 64 bit mode and dynamic-no-pic in 32 bit mode.
-    // Win64 requires rip-rel addressing, thus we force it to PIC. Otherwise we
-    // use static relocation model by default.
-    if (Subtarget.isTargetDarwin()) {
-      if (Subtarget.is64Bit())
-        setRelocationModel(Reloc::PIC_);
-      else
-        setRelocationModel(Reloc::DynamicNoPIC);
-    } else if (Subtarget.isTargetWin64())
-      setRelocationModel(Reloc::PIC_);
-    else
-      setRelocationModel(Reloc::Static);
-  }
-
-  assert(getRelocationModel() != Reloc::Default &&
-         "Relocation mode not picked");
-
-  // ELF and X86-64 don't have a distinct DynamicNoPIC model.  DynamicNoPIC
-  // is defined as a model for code which may be used in static or dynamic
-  // executables but not necessarily a shared library. On X86-32 we just
-  // compile in -static mode, in x86-64 we use PIC.
-  if (getRelocationModel() == Reloc::DynamicNoPIC) {
-    if (is64Bit)
-      setRelocationModel(Reloc::PIC_);
-    else if (!Subtarget.isTargetDarwin())
-      setRelocationModel(Reloc::Static);
-  }
-
-  // If we are on Darwin, disallow static relocation model in X86-64 mode, since
-  // the Mach-O file format doesn't support it.
-  if (getRelocationModel() == Reloc::Static &&
-      Subtarget.isTargetDarwin() &&
-      is64Bit)
-    setRelocationModel(Reloc::PIC_);
-
+X86TargetMachine::X86TargetMachine(const Target &T, StringRef TT, StringRef CPU,
+                                   StringRef FS, const TargetOptions &Options,
+                                   Reloc::Model RM, CodeModel::Model CM,
+                                   CodeGenOpt::Level OL)
+    : LLVMTargetMachine(T, TT, CPU, FS, Options, RM, CM, OL),
+      Subtarget(TT, CPU, FS, *this, Options.StackAlignmentOverride) {
   // Determine the PICStyle based on the target selected.
   if (getRelocationModel() == Reloc::Static) {
     // Unless we're in PIC or DynamicNoPIC mode, set the PIC style to None.
@@ -157,7 +44,7 @@ X86TargetMachine::X86TargetMachine(const Target &T, const std::string &TT,
   } else if (Subtarget.is64Bit()) {
     // PIC in 64 bit mode is always rip-rel.
     Subtarget.setPICStyle(PICStyles::RIPRel);
-  } else if (Subtarget.isTargetCygMing()) {
+  } else if (Subtarget.isTargetCOFF()) {
     Subtarget.setPICStyle(PICStyles::None);
   } else if (Subtarget.isTargetDarwin()) {
     if (getRelocationModel() == Reloc::PIC_)
@@ -170,81 +57,130 @@ X86TargetMachine::X86TargetMachine(const Target &T, const std::string &TT,
     Subtarget.setPICStyle(PICStyles::GOT);
   }
 
-  // Finally, if we have "none" as our PIC style, force to static mode.
-  if (Subtarget.getPICStyle() == PICStyles::None)
-    setRelocationModel(Reloc::Static);
+  // default to hard float ABI
+  if (Options.FloatABIType == FloatABI::Default)
+    this->Options.FloatABIType = FloatABI::Hard;
+
+  // Windows stack unwinder gets confused when execution flow "falls through"
+  // after a call to 'noreturn' function.
+  // To prevent that, we emit a trap for 'unreachable' IR instructions.
+  // (which on X86, happens to be the 'ud2' instruction)
+  if (Subtarget.isTargetWin64())
+    this->Options.TrapUnreachable = true;
+
+  initAsmInfo();
 }
+
+//===----------------------------------------------------------------------===//
+// Command line options for x86
+//===----------------------------------------------------------------------===//
+static cl::opt<bool>
+UseVZeroUpper("x86-use-vzeroupper", cl::Hidden,
+  cl::desc("Minimize AVX to SSE transition penalty"),
+  cl::init(true));
+
+//===----------------------------------------------------------------------===//
+// X86 Analysis Pass Setup
+//===----------------------------------------------------------------------===//
+
+void X86TargetMachine::addAnalysisPasses(PassManagerBase &PM) {
+  // Add first the target-independent BasicTTI pass, then our X86 pass. This
+  // allows the X86 pass to delegate to the target independent layer when
+  // appropriate.
+  PM.add(createBasicTargetTransformInfoPass(this));
+  PM.add(createX86TargetTransformInfoPass(this));
+}
+
 
 //===----------------------------------------------------------------------===//
 // Pass Pipeline Configuration
 //===----------------------------------------------------------------------===//
 
-bool X86TargetMachine::addInstSelector(PassManagerBase &PM,
-                                       CodeGenOpt::Level OptLevel) {
-  // Install an instruction selector.
-  PM.add(createX86ISelDag(*this, OptLevel));
+namespace {
+/// X86 Code Generator Pass Configuration Options.
+class X86PassConfig : public TargetPassConfig {
+public:
+  X86PassConfig(X86TargetMachine *TM, PassManagerBase &PM)
+    : TargetPassConfig(TM, PM) {}
 
-  // For 32-bit, prepend instructions to set the "global base reg" for PIC.
-  if (!Subtarget.is64Bit())
-    PM.add(createGlobalBaseRegPass());
+  X86TargetMachine &getX86TargetMachine() const {
+    return getTM<X86TargetMachine>();
+  }
+
+  const X86Subtarget &getX86Subtarget() const {
+    return *getX86TargetMachine().getSubtargetImpl();
+  }
+
+  void addIRPasses() override;
+  bool addInstSelector() override;
+  bool addILPOpts() override;
+  bool addPreRegAlloc() override;
+  bool addPostRegAlloc() override;
+  bool addPreEmitPass() override;
+};
+} // namespace
+
+TargetPassConfig *X86TargetMachine::createPassConfig(PassManagerBase &PM) {
+  return new X86PassConfig(this, PM);
+}
+
+void X86PassConfig::addIRPasses() {
+  addPass(createX86AtomicExpandPass(&getX86TargetMachine()));
+
+  TargetPassConfig::addIRPasses();
+}
+
+bool X86PassConfig::addInstSelector() {
+  // Install an instruction selector.
+  addPass(createX86ISelDag(getX86TargetMachine(), getOptLevel()));
+
+  // For ELF, cleanup any local-dynamic TLS accesses.
+  if (getX86Subtarget().isTargetELF() && getOptLevel() != CodeGenOpt::None)
+    addPass(createCleanupLocalDynamicTLSPass());
+
+  addPass(createX86GlobalBaseRegPass());
 
   return false;
 }
 
-bool X86TargetMachine::addPreRegAlloc(PassManagerBase &PM,
-                                      CodeGenOpt::Level OptLevel) {
-  PM.add(createX86MaxStackAlignmentHeuristicPass());
+bool X86PassConfig::addILPOpts() {
+  addPass(&EarlyIfConverterID);
+  return true;
+}
+
+bool X86PassConfig::addPreRegAlloc() {
   return false;  // -print-machineinstr shouldn't print after this.
 }
 
-bool X86TargetMachine::addPostRegAlloc(PassManagerBase &PM,
-                                       CodeGenOpt::Level OptLevel) {
-  PM.add(createX86FloatingPointStackifierPass());
+bool X86PassConfig::addPostRegAlloc() {
+  addPass(createX86FloatingPointStackifierPass());
   return true;  // -print-machineinstr should print after this.
 }
 
-bool X86TargetMachine::addPreEmitPass(PassManagerBase &PM,
-                                      CodeGenOpt::Level OptLevel) {
-  if (OptLevel != CodeGenOpt::None && Subtarget.hasSSE2()) {
-    PM.add(createSSEDomainFixPass());
-    return true;
+bool X86PassConfig::addPreEmitPass() {
+  bool ShouldPrint = false;
+  if (getOptLevel() != CodeGenOpt::None && getX86Subtarget().hasSSE2()) {
+    addPass(createExecutionDependencyFixPass(&X86::VR128RegClass));
+    ShouldPrint = true;
   }
-  return false;
+
+  if (UseVZeroUpper) {
+    addPass(createX86IssueVZeroUpperPass());
+    ShouldPrint = true;
+  }
+
+  if (getOptLevel() != CodeGenOpt::None) {
+    addPass(createX86PadShortFunctions());
+    addPass(createX86FixupLEAs());
+    ShouldPrint = true;
+  }
+
+  return ShouldPrint;
 }
 
 bool X86TargetMachine::addCodeEmitter(PassManagerBase &PM,
-                                      CodeGenOpt::Level OptLevel,
                                       JITCodeEmitter &JCE) {
-  // FIXME: Move this to TargetJITInfo!
-  // On Darwin, do not override 64-bit setting made in X86TargetMachine().
-  if (DefRelocModel == Reloc::Default && 
-      (!Subtarget.isTargetDarwin() || !Subtarget.is64Bit())) {
-    setRelocationModel(Reloc::Static);
-    Subtarget.setPICStyle(PICStyles::None);
-  }
-  
-
   PM.add(createX86JITCodeEmitterPass(*this, JCE));
 
   return false;
-}
-
-void X86TargetMachine::setCodeModelForStatic() {
-
-    if (getCodeModel() != CodeModel::Default) return;
-
-    // For static codegen, if we're not already set, use Small codegen.
-    setCodeModel(CodeModel::Small);
-}
-
-
-void X86TargetMachine::setCodeModelForJIT() {
-
-  if (getCodeModel() != CodeModel::Default) return;
-
-  // 64-bit JIT places everything in the same buffer except external functions.
-  if (Subtarget.is64Bit())
-    setCodeModel(CodeModel::Large);
-  else
-    setCodeModel(CodeModel::Small);
 }

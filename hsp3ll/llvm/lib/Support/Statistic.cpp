@@ -22,12 +22,13 @@
 //===----------------------------------------------------------------------===//
 
 #include "llvm/ADT/Statistic.h"
+#include "llvm/ADT/StringExtras.h"
 #include "llvm/Support/CommandLine.h"
 #include "llvm/Support/Debug.h"
+#include "llvm/Support/Format.h"
 #include "llvm/Support/ManagedStatic.h"
+#include "llvm/Support/Mutex.h"
 #include "llvm/Support/raw_ostream.h"
-#include "llvm/System/Mutex.h"
-#include "llvm/ADT/StringExtras.h"
 #include <algorithm>
 #include <cstring>
 using namespace llvm;
@@ -39,7 +40,9 @@ namespace llvm { extern raw_ostream *CreateInfoOutputFile(); }
 /// what they did.
 ///
 static cl::opt<bool>
-Enabled("stats", cl::desc("Enable statistics output from program"));
+Enabled(
+    "stats",
+    cl::desc("Enable statistics output from program (available with Asserts)"));
 
 
 namespace {
@@ -72,24 +75,13 @@ void Statistic::RegisterStatistic() {
     if (Enabled)
       StatInfo->addStatistic(this);
 
+    TsanHappensBefore(this);
     sys::MemoryFence();
     // Remember we have been registered.
+    TsanIgnoreWritesBegin();
     Initialized = true;
+    TsanIgnoreWritesEnd();
   }
-}
-
-namespace {
-
-struct NameCompare {
-  bool operator()(const Statistic *LHS, const Statistic *RHS) const {
-    int Cmp = std::strcmp(LHS->getName(), RHS->getName());
-    if (Cmp != 0) return Cmp < 0;
-
-    // Secondary key is the description.
-    return std::strcmp(LHS->getDesc(), RHS->getDesc()) < 0;
-  }
-};
-
 }
 
 // Print information when destroyed, iff command line option is specified.
@@ -99,6 +91,10 @@ StatisticInfo::~StatisticInfo() {
 
 void llvm::EnableStatistics() {
   Enabled.setValue(true);
+}
+
+bool llvm::AreStatisticsEnabled() {
+  return Enabled;
 }
 
 void llvm::PrintStatistics(raw_ostream &OS) {
@@ -114,7 +110,14 @@ void llvm::PrintStatistics(raw_ostream &OS) {
   }
 
   // Sort the fields by name.
-  std::stable_sort(Stats.Stats.begin(), Stats.Stats.end(), NameCompare());
+  std::stable_sort(Stats.Stats.begin(), Stats.Stats.end(),
+                   [](const Statistic *LHS, const Statistic *RHS) {
+    if (int Cmp = std::strcmp(LHS->getName(), RHS->getName()))
+      return Cmp < 0;
+
+    // Secondary key is the description.
+    return std::strcmp(LHS->getDesc(), RHS->getDesc()) < 0;
+  });
 
   // Print out the statistics header...
   OS << "===" << std::string(73, '-') << "===\n"
@@ -122,13 +125,11 @@ void llvm::PrintStatistics(raw_ostream &OS) {
      << "===" << std::string(73, '-') << "===\n\n";
 
   // Print all of the statistics.
-  for (size_t i = 0, e = Stats.Stats.size(); i != e; ++i) {
-    std::string CountStr = utostr(Stats.Stats[i]->getValue());
-    OS << std::string(MaxValLen-CountStr.size(), ' ')
-       << CountStr << " " << Stats.Stats[i]->getName()
-       << std::string(MaxNameLen-std::strlen(Stats.Stats[i]->getName()), ' ')
-       << " - " << Stats.Stats[i]->getDesc() << "\n";
-  }
+  for (size_t i = 0, e = Stats.Stats.size(); i != e; ++i)
+    OS << format("%*u %-*s - %s\n",
+                 MaxValLen, Stats.Stats[i]->getValue(),
+                 MaxNameLen, Stats.Stats[i]->getName(),
+                 Stats.Stats[i]->getDesc());
 
   OS << '\n';  // Flush the output stream.
   OS.flush();
@@ -136,6 +137,7 @@ void llvm::PrintStatistics(raw_ostream &OS) {
 }
 
 void llvm::PrintStatistics() {
+#if !defined(NDEBUG) || defined(LLVM_ENABLE_STATS)
   StatisticInfo &Stats = *StatInfo;
 
   // Statistics not enabled?
@@ -145,4 +147,17 @@ void llvm::PrintStatistics() {
   raw_ostream &OutStream = *CreateInfoOutputFile();
   PrintStatistics(OutStream);
   delete &OutStream;   // Close the file.
+#else
+  // Check if the -stats option is set instead of checking
+  // !Stats.Stats.empty().  In release builds, Statistics operators
+  // do nothing, so stats are never Registered.
+  if (Enabled) {
+    // Get the stream to write to.
+    raw_ostream &OutStream = *CreateInfoOutputFile();
+    OutStream << "Statistics are disabled.  "
+            << "Build with asserts or with -DLLVM_ENABLE_STATS\n";
+    OutStream.flush();
+    delete &OutStream;   // Close the file.
+  }
+#endif
 }

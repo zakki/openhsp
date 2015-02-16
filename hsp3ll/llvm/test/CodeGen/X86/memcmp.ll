@@ -1,4 +1,6 @@
-; RUN: llc %s -o - -march=x86-64 | FileCheck %s
+; RUN: llc < %s -mtriple=x86_64-linux | FileCheck %s
+; RUN: llc < %s -disable-simplify-libcalls -mtriple=x86_64-linux | FileCheck %s --check-prefix=NOBUILTIN
+; RUN: llc < %s -mtriple=x86_64-win32 | FileCheck %s
 
 ; This tests codegen time inlining/optimization of memcmp
 ; rdar://6480398
@@ -19,9 +21,12 @@ bb:                                               ; preds = %entry
 
 return:                                           ; preds = %entry
   ret void
-; CHECK: memcmp2:
-; CHECK: movw    (%rsi), %ax
-; CHECK: cmpw    %ax, (%rdi)
+; CHECK-LABEL: memcmp2:
+; CHECK: movzwl
+; CHECK-NEXT: movzwl
+; CHECK-NEXT: cmpl
+; NOBUILTIN-LABEL: memcmp2:
+; NOBUILTIN: callq
 }
 
 define void @memcmp2a(i8* %X, i32* nocapture %P) nounwind {
@@ -36,8 +41,9 @@ bb:                                               ; preds = %entry
 
 return:                                           ; preds = %entry
   ret void
-; CHECK: memcmp2a:
-; CHECK: cmpw    $28527, (%rdi)
+; CHECK-LABEL: memcmp2a:
+; CHECK: movzwl
+; CHECK-NEXT: cmpl    $28527,
 }
 
 
@@ -53,9 +59,9 @@ bb:                                               ; preds = %entry
 
 return:                                           ; preds = %entry
   ret void
-; CHECK: memcmp4:
-; CHECK: movl    (%rsi), %eax
-; CHECK: cmpl    %eax, (%rdi)
+; CHECK-LABEL: memcmp4:
+; CHECK: movl
+; CHECK-NEXT: cmpl
 }
 
 define void @memcmp4a(i8* %X, i32* nocapture %P) nounwind {
@@ -70,8 +76,8 @@ bb:                                               ; preds = %entry
 
 return:                                           ; preds = %entry
   ret void
-; CHECK: memcmp4a:
-; CHECK: cmpl $1869573999, (%rdi)
+; CHECK-LABEL: memcmp4a:
+; CHECK: cmpl $1869573999,
 }
 
 define void @memcmp8(i8* %X, i8* %Y, i32* nocapture %P) nounwind {
@@ -86,9 +92,9 @@ bb:                                               ; preds = %entry
 
 return:                                           ; preds = %entry
   ret void
-; CHECK: memcmp8:
-; CHECK: movq    (%rsi), %rax
-; CHECK: cmpq    %rax, (%rdi)
+; CHECK-LABEL: memcmp8:
+; CHECK: movq
+; CHECK: cmpq
 }
 
 define void @memcmp8a(i8* %X, i32* nocapture %P) nounwind {
@@ -103,8 +109,8 @@ bb:                                               ; preds = %entry
 
 return:                                           ; preds = %entry
   ret void
-; CHECK: memcmp8a:
-; CHECK: movabsq $8029759185026510694, %rax
-; CHECK: cmpq	%rax, (%rdi)
+; CHECK-LABEL: memcmp8a:
+; CHECK: movabsq $8029759185026510694,
+; CHECK: cmpq
 }
 

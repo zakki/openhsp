@@ -33,166 +33,120 @@ namespace llvm {
 
 
 class TargetLoweringObjectFileELF : public TargetLoweringObjectFile {
-protected:
-  /// TLSDataSection - Section directive for Thread Local data.
-  ///
-  const MCSection *TLSDataSection;        // Defaults to ".tdata".
+  bool UseInitArray;
 
-  /// TLSBSSSection - Section directive for Thread Local uninitialized data.
-  /// Null if this target doesn't support a BSS section.
-  ///
-  const MCSection *TLSBSSSection;         // Defaults to ".tbss".
-
-  const MCSection *DataRelSection;
-  const MCSection *DataRelLocalSection;
-  const MCSection *DataRelROSection;
-  const MCSection *DataRelROLocalSection;
-
-  const MCSection *MergeableConst4Section;
-  const MCSection *MergeableConst8Section;
-  const MCSection *MergeableConst16Section;
 public:
-  TargetLoweringObjectFileELF() {}
-  ~TargetLoweringObjectFileELF() {}
+  virtual ~TargetLoweringObjectFileELF() {}
 
-  virtual void Initialize(MCContext &Ctx, const TargetMachine &TM);
+  void emitPersonalityValue(MCStreamer &Streamer, const TargetMachine &TM,
+                            const MCSymbol *Sym) const override;
 
-  const MCSection *getDataRelSection() const { return DataRelSection; }
+  /// Given a constant with the SectionKind, return a section that it should be
+  /// placed in.
+  const MCSection *getSectionForConstant(SectionKind Kind,
+                                         const Constant *C) const override;
 
-  /// getSectionForConstant - Given a constant with the SectionKind, return a
-  /// section that it should be placed in.
-  virtual const MCSection *getSectionForConstant(SectionKind Kind) const;
+  const MCSection *getExplicitSectionGlobal(const GlobalValue *GV,
+                                        SectionKind Kind, Mangler &Mang,
+                                        const TargetMachine &TM) const override;
 
+  const MCSection *SelectSectionForGlobal(const GlobalValue *GV,
+                                        SectionKind Kind, Mangler &Mang,
+                                        const TargetMachine &TM) const override;
 
-  virtual const MCSection *
-  getExplicitSectionGlobal(const GlobalValue *GV, SectionKind Kind,
-                           Mangler *Mang, const TargetMachine &TM) const;
+  /// Return an MCExpr to use for a reference to the specified type info global
+  /// variable from exception handling information.
+  const MCExpr *
+  getTTypeGlobalReference(const GlobalValue *GV, unsigned Encoding,
+                          Mangler &Mang, const TargetMachine &TM,
+                          MachineModuleInfo *MMI,
+                          MCStreamer &Streamer) const override;
 
-  virtual const MCSection *
-  SelectSectionForGlobal(const GlobalValue *GV, SectionKind Kind,
-                         Mangler *Mang, const TargetMachine &TM) const;
+  // The symbol that gets passed to .cfi_personality.
+  MCSymbol *getCFIPersonalitySymbol(const GlobalValue *GV, Mangler &Mang,
+                                    const TargetMachine &TM,
+                                    MachineModuleInfo *MMI) const override;
 
-  /// getExprForDwarfGlobalReference - Return an MCExpr to use for a reference
-  /// to the specified global variable from exception handling information.
-  ///
-  virtual const MCExpr *
-  getExprForDwarfGlobalReference(const GlobalValue *GV, Mangler *Mang,
-                                 MachineModuleInfo *MMI, unsigned Encoding,
-                                 MCStreamer &Streamer) const;
+  void InitializeELF(bool UseInitArray_);
+  const MCSection *getStaticCtorSection(unsigned Priority,
+                                        const MCSymbol *KeySym) const override;
+  const MCSection *getStaticDtorSection(unsigned Priority,
+                                        const MCSymbol *KeySym) const override;
 };
 
 
 
 class TargetLoweringObjectFileMachO : public TargetLoweringObjectFile {
-  /// TLSDataSection - Section for thread local data.
-  ///
-  const MCSection *TLSDataSection;        // Defaults to ".tdata".
-
-  /// TLSBSSSection - Section for thread local uninitialized data.
-  ///
-  const MCSection *TLSBSSSection;         // Defaults to ".tbss".
-  
-  /// TLSTLVSection - Section for thread local structure infomation.
-  /// Contains the source code name of the variable, visibility and a pointer
-  /// to the initial value (.tdata or .tbss).
-  const MCSection *TLSTLVSection;         // Defaults to ".tlv".
-  
-  /// TLSThreadInitSection - Section for thread local data initialization
-  /// functions.
-  const MCSection *TLSThreadInitSection;  // Defaults to ".thread_init_func".
-  
-  const MCSection *CStringSection;
-  const MCSection *UStringSection;
-  const MCSection *TextCoalSection;
-  const MCSection *ConstTextCoalSection;
-  const MCSection *ConstDataSection;
-  const MCSection *DataCoalSection;
-  const MCSection *DataCommonSection;
-  const MCSection *DataBSSSection;
-  const MCSection *FourByteConstantSection;
-  const MCSection *EightByteConstantSection;
-  const MCSection *SixteenByteConstantSection;
-
-  const MCSection *LazySymbolPointerSection;
-  const MCSection *NonLazySymbolPointerSection;
 public:
-  TargetLoweringObjectFileMachO() {}
-  ~TargetLoweringObjectFileMachO() {}
+  virtual ~TargetLoweringObjectFileMachO() {}
 
-  virtual void Initialize(MCContext &Ctx, const TargetMachine &TM);
+  /// Extract the dependent library name from a linker option string. Returns
+  /// StringRef() if the option does not specify a library.
+  StringRef getDepLibFromLinkerOpt(StringRef LinkerOption) const override;
 
-  virtual const MCSection *
-  SelectSectionForGlobal(const GlobalValue *GV, SectionKind Kind,
-                         Mangler *Mang, const TargetMachine &TM) const;
+  /// Emit the module flags that specify the garbage collection information.
+  void emitModuleFlags(MCStreamer &Streamer,
+                       ArrayRef<Module::ModuleFlagEntry> ModuleFlags,
+                       Mangler &Mang, const TargetMachine &TM) const override;
 
-  virtual const MCSection *
-  getExplicitSectionGlobal(const GlobalValue *GV, SectionKind Kind,
-                           Mangler *Mang, const TargetMachine &TM) const;
+  bool isSectionAtomizableBySymbols(const MCSection &Section) const override;
 
-  virtual const MCSection *getSectionForConstant(SectionKind Kind) const;
+  const MCSection *
+    SelectSectionForGlobal(const GlobalValue *GV,
+                           SectionKind Kind, Mangler &Mang,
+                           const TargetMachine &TM) const override;
 
-  /// shouldEmitUsedDirectiveFor - This hook allows targets to selectively
-  /// decide not to emit the UsedDirective for some symbols in llvm.used.
-  /// FIXME: REMOVE this (rdar://7071300)
-  virtual bool shouldEmitUsedDirectiveFor(const GlobalValue *GV,
-                                          Mangler *) const;
+  const MCSection *
+    getExplicitSectionGlobal(const GlobalValue *GV,
+                             SectionKind Kind, Mangler &Mang,
+                             const TargetMachine &TM) const override;
 
-  /// getTextCoalSection - Return the "__TEXT,__textcoal_nt" section we put weak
-  /// text symbols into.
-  const MCSection *getTextCoalSection() const {
-    return TextCoalSection;
-  }
+  const MCSection *getSectionForConstant(SectionKind Kind,
+                                         const Constant *C) const override;
 
-  /// getConstTextCoalSection - Return the "__TEXT,__const_coal" section
-  /// we put weak read-only symbols into.
-  const MCSection *getConstTextCoalSection() const {
-    return ConstTextCoalSection;
-  }
+  /// The mach-o version of this method defaults to returning a stub reference.
+  const MCExpr *
+  getTTypeGlobalReference(const GlobalValue *GV, unsigned Encoding,
+                          Mangler &Mang, const TargetMachine &TM,
+                          MachineModuleInfo *MMI,
+                          MCStreamer &Streamer) const override;
 
-  /// getLazySymbolPointerSection - Return the section corresponding to
-  /// the .lazy_symbol_pointer directive.
-  const MCSection *getLazySymbolPointerSection() const {
-    return LazySymbolPointerSection;
-  }
-
-  /// getNonLazySymbolPointerSection - Return the section corresponding to
-  /// the .non_lazy_symbol_pointer directive.
-  const MCSection *getNonLazySymbolPointerSection() const {
-    return NonLazySymbolPointerSection;
-  }
-
-  /// getExprForDwarfGlobalReference - The mach-o version of this method
-  /// defaults to returning a stub reference.
-  virtual const MCExpr *
-  getExprForDwarfGlobalReference(const GlobalValue *GV, Mangler *Mang,
-                                 MachineModuleInfo *MMI, unsigned Encoding,
-                                 MCStreamer &Streamer) const;
-
-  virtual unsigned getPersonalityEncoding() const;
-  virtual unsigned getLSDAEncoding() const;
-  virtual unsigned getFDEEncoding() const;
-  virtual unsigned getTTypeEncoding() const;
+  // The symbol that gets passed to .cfi_personality.
+  MCSymbol *getCFIPersonalitySymbol(const GlobalValue *GV, Mangler &Mang,
+                                    const TargetMachine &TM,
+                                    MachineModuleInfo *MMI) const override;
 };
 
 
 
 class TargetLoweringObjectFileCOFF : public TargetLoweringObjectFile {
-  const MCSection *DrectveSection;
 public:
-  TargetLoweringObjectFileCOFF() {}
-  ~TargetLoweringObjectFileCOFF() {}
+  virtual ~TargetLoweringObjectFileCOFF() {}
 
-  virtual void Initialize(MCContext &Ctx, const TargetMachine &TM);
+  const MCSection *
+    getExplicitSectionGlobal(const GlobalValue *GV,
+                             SectionKind Kind, Mangler &Mang,
+                             const TargetMachine &TM) const override;
 
-  virtual const MCSection *getDrectveSection() const { return DrectveSection; }
+  const MCSection *
+    SelectSectionForGlobal(const GlobalValue *GV,
+                           SectionKind Kind, Mangler &Mang,
+                           const TargetMachine &TM) const override;
 
-  virtual const MCSection *
-  getExplicitSectionGlobal(const GlobalValue *GV, SectionKind Kind,
-                           Mangler *Mang, const TargetMachine &TM) const;
+  /// Extract the dependent library name from a linker option string. Returns
+  /// StringRef() if the option does not specify a library.
+  StringRef getDepLibFromLinkerOpt(StringRef LinkerOption) const override;
 
-  virtual const MCSection *
-  SelectSectionForGlobal(const GlobalValue *GV, SectionKind Kind,
-                         Mangler *Mang, const TargetMachine &TM) const;
+  /// Emit Obj-C garbage collection and linker options. Only linker option
+  /// emission is implemented for COFF.
+  void emitModuleFlags(MCStreamer &Streamer,
+                       ArrayRef<Module::ModuleFlagEntry> ModuleFlags,
+                       Mangler &Mang, const TargetMachine &TM) const override;
+
+  const MCSection *getStaticCtorSection(unsigned Priority,
+                                        const MCSymbol *KeySym) const override;
+  const MCSection *getStaticDtorSection(unsigned Priority,
+                                        const MCSymbol *KeySym) const override;
 };
 
 } // end namespace llvm

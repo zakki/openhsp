@@ -1,6 +1,6 @@
-; RUN: llc < %s -march=thumb
-; RUN: llc < %s -mtriple=thumb-linux | grep pop | count 2
-; RUN: llc < %s -mtriple=thumb-darwin | grep pop | count 2
+; RUN: llc -mtriple=thumb-eabi %s -o /dev/null
+; RUN: llc -mtriple=thumb-linux %s -o - | FileCheck %s
+; RUN: llc -mtriple=thumb-darwin %s -o - | FileCheck %s
 
 @str = internal constant [4 x i8] c"%d\0A\00"           ; <[4 x i8]*> [#uses=1]
 
@@ -13,9 +13,9 @@ entry:
 
 bb:             ; preds = %bb, %entry
         %a_addr.0 = phi i32 [ %a, %entry ], [ %tmp5, %bb ]              ; <i32> [#uses=2]
-        %tmp = volatile load i8** %va           ; <i8*> [#uses=2]
+        %tmp = load volatile i8** %va           ; <i8*> [#uses=2]
         %tmp2 = getelementptr i8* %tmp, i32 4           ; <i8*> [#uses=1]
-        volatile store i8* %tmp2, i8** %va
+        store volatile i8* %tmp2, i8** %va
         %tmp5 = add i32 %a_addr.0, -1           ; <i32> [#uses=1]
         %tmp.upgrd.2 = icmp eq i32 %a_addr.0, 1         ; <i1> [#uses=1]
         br i1 %tmp.upgrd.2, label %bb7, label %bb
@@ -34,3 +34,8 @@ declare void @llvm.va_start(i8*)
 declare i32 @printf(i8*, ...)
 
 declare void @llvm.va_end(i8*)
+
+; CHECK: pop
+; CHECK: pop
+; CHECK-NOT: pop
+

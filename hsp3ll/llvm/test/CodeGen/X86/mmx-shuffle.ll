@@ -5,12 +5,12 @@ target datalayout = "e-p:32:32:32-i1:8:8-i8:8:8-i16:16:16-i32:32:32-i64:32:64-f3
 target triple = "i686-pc-linux-gnu"
 	%struct.DrawHelper = type { void (i32, %struct.QT_FT_Span*, i8*)*, void (i32, %struct.QT_FT_Span*, i8*)*, void (%struct.QRasterBuffer*, i32, i32, i32, i8*, i32, i32, i32)*, void (%struct.QRasterBuffer*, i32, i32, i32, i8*, i32, i32, i32)*, void (%struct.QRasterBuffer*, i32, i32, i32, i32, i32)* }
 	%struct.QBasicAtomic = type { i32 }
-	%struct.QClipData = type { i32, "struct.QClipData::ClipLine"*, i32, i32, %struct.QT_FT_Span*, i32, i32, i32, i32 }
-	"struct.QClipData::ClipLine" = type { i32, %struct.QT_FT_Span* }
+	%struct.QClipData = type { i32, %"struct.QClipData::ClipLine"*, i32, i32, %struct.QT_FT_Span*, i32, i32, i32, i32 }
+	%"struct.QClipData::ClipLine" = type { i32, %struct.QT_FT_Span* }
 	%struct.QRasterBuffer = type { %struct.QRect, %struct.QRegion, %struct.QClipData*, %struct.QClipData*, i8, i32, i32, %struct.DrawHelper*, i32, i32, i32, i8* }
 	%struct.QRect = type { i32, i32, i32, i32 }
-	%struct.QRegion = type { "struct.QRegion::QRegionData"* }
-	"struct.QRegion::QRegionData" = type { %struct.QBasicAtomic, %struct._XRegion*, i8*, %struct.QRegionPrivate* }
+	%struct.QRegion = type { %"struct.QRegion::QRegionData"* }
+	%"struct.QRegion::QRegionData" = type { %struct.QBasicAtomic, %struct._XRegion*, i8*, %struct.QRegionPrivate* }
 	%struct.QRegionPrivate = type opaque
 	%struct.QT_FT_Span = type { i16, i16, i16, i8 }
 	%struct._XRegion = type opaque
@@ -22,8 +22,10 @@ entry:
 	%tmp542 = bitcast <2 x i32> %tmp529 to <4 x i16>		; <<4 x i16>> [#uses=1]
 	%tmp543 = add <4 x i16> %tmp542, < i16 0, i16 16448, i16 24672, i16 28784 >		; <<4 x i16>> [#uses=1]
 	%tmp555 = bitcast <4 x i16> %tmp543 to <8 x i8>		; <<8 x i8>> [#uses=1]
-	tail call void @llvm.x86.mmx.maskmovq( <8 x i8> zeroinitializer, <8 x i8> %tmp555, i8* null )
+        %tmp556 = bitcast <8 x i8> %tmp555 to x86_mmx
+        %tmp557 = bitcast <8 x i8> zeroinitializer to x86_mmx
+	tail call void @llvm.x86.mmx.maskmovq( x86_mmx %tmp557, x86_mmx %tmp556, i8* null )
 	ret void
 }
 
-declare void @llvm.x86.mmx.maskmovq(<8 x i8>, <8 x i8>, i8*)
+declare void @llvm.x86.mmx.maskmovq(x86_mmx, x86_mmx, i8*)

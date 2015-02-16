@@ -15,7 +15,7 @@
 #ifndef LLVM_SUPPORT_MUTEXGUARD_H
 #define LLVM_SUPPORT_MUTEXGUARD_H
 
-#include "llvm/System/Mutex.h"
+#include "llvm/Support/Mutex.h"
 
 namespace llvm {
   /// Instances of this class acquire a given Mutex Lock when constructed and
@@ -26,8 +26,8 @@ namespace llvm {
   /// @brief Guard a section of code with a Mutex.
   class MutexGuard {
     sys::Mutex &M;
-    MutexGuard(const MutexGuard &);    // DO NOT IMPLEMENT
-    void operator=(const MutexGuard &); // DO NOT IMPLEMENT
+    MutexGuard(const MutexGuard &) LLVM_DELETED_FUNCTION;
+    void operator=(const MutexGuard &) LLVM_DELETED_FUNCTION;
   public:
     MutexGuard(sys::Mutex &m) : M(m) { M.acquire(); }
     ~MutexGuard() { M.release(); }

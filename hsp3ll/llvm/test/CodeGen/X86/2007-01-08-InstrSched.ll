@@ -1,5 +1,5 @@
 ; PR1075
-; RUN: llc < %s -mtriple=x86_64-apple-darwin -O3 | FileCheck %s
+; RUN: llc < %s -mcpu=generic -mtriple=x86_64-apple-darwin -O3 | FileCheck %s
 
 define float @foo(float %x) nounwind {
     %tmp1 = fmul float %x, 3.000000e+00
@@ -13,10 +13,10 @@ define float @foo(float %x) nounwind {
 
 ; CHECK: mulss
 ; CHECK: mulss
-; CHECK: addss
+; CHECK: mulss
 ; CHECK: mulss
 ; CHECK: addss
-; CHECK: mulss
+; CHECK: addss
 ; CHECK: addss
 ; CHECK: ret
 }

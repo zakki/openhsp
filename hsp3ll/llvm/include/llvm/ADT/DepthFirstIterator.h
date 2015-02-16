@@ -33,9 +33,10 @@
 #ifndef LLVM_ADT_DEPTHFIRSTITERATOR_H
 #define LLVM_ADT_DEPTHFIRSTITERATOR_H
 
+#include "llvm/ADT/iterator_range.h"
 #include "llvm/ADT/GraphTraits.h"
-#include "llvm/ADT/SmallPtrSet.h"
 #include "llvm/ADT/PointerIntPair.h"
+#include "llvm/ADT/SmallPtrSet.h"
 #include <set>
 #include <vector>
 
@@ -143,8 +144,7 @@ public:
   static inline _Self end(const GraphT& G, SetType &S) { return _Self(S); }
 
   inline bool operator==(const _Self& x) const {
-    return VisitStack.size() == x.VisitStack.size() &&
-           VisitStack == x.VisitStack;
+    return VisitStack == x.VisitStack;
   }
   inline bool operator!=(const _Self& x) const { return !operator==(x); }
 
@@ -188,7 +188,7 @@ public:
   /// current node, counting both nodes.
   unsigned getPathLength() const { return VisitStack.size(); }
 
-  /// getPath - Return the n'th node in the path from the the entry node to the
+  /// getPath - Return the n'th node in the path from the entry node to the
   /// current node.
   NodeType *getPath(unsigned n) const {
     return VisitStack[n].first.getPointer();
@@ -206,6 +206,12 @@ df_iterator<T> df_begin(const T& G) {
 template <class T>
 df_iterator<T> df_end(const T& G) {
   return df_iterator<T>::end(G);
+}
+
+// Provide an accessor method to use them in range-based patterns.
+template <class T>
+iterator_range<df_iterator<T>> depth_first(const T& G) {
+  return iterator_range<df_iterator<T>>(df_begin(G), df_end(G));
 }
 
 // Provide global definitions of external depth first iterators...
@@ -243,6 +249,12 @@ idf_iterator<T> idf_begin(const T& G) {
 template <class T>
 idf_iterator<T> idf_end(const T& G){
   return idf_iterator<T>::end(Inverse<T>(G));
+}
+
+// Provide an accessor method to use them in range-based patterns.
+template <class T>
+iterator_range<idf_iterator<T>> inverse_depth_first(const T& G) {
+  return iterator_range<idf_iterator<T>>(idf_begin(G), idf_end(G));
 }
 
 // Provide global definitions of external inverse depth first iterators...

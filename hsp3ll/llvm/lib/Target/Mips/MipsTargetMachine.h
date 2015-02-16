@@ -1,4 +1,4 @@
-//===-- MipsTargetMachine.h - Define TargetMachine for Mips -00--*- C++ -*-===//
+//===-- MipsTargetMachine.h - Define TargetMachine for Mips -----*- C++ -*-===//
 //
 //                     The LLVM Compiler Infrastructure
 //
@@ -15,61 +15,89 @@
 #define MIPSTARGETMACHINE_H
 
 #include "MipsSubtarget.h"
-#include "MipsInstrInfo.h"
-#include "MipsISelLowering.h"
-#include "MipsSelectionDAGInfo.h"
+#include "llvm/CodeGen/Passes.h"
+#include "llvm/CodeGen/SelectionDAGISel.h"
+#include "llvm/Target/TargetFrameLowering.h"
 #include "llvm/Target/TargetMachine.h"
-#include "llvm/Target/TargetData.h"
-#include "llvm/Target/TargetFrameInfo.h"
 
 namespace llvm {
-  class formatted_raw_ostream;
-  
-  class MipsTargetMachine : public LLVMTargetMachine {
-    MipsSubtarget       Subtarget;
-    const TargetData    DataLayout; // Calculates type size & alignment
-    MipsInstrInfo       InstrInfo;
-    TargetFrameInfo     FrameInfo;
-    MipsTargetLowering  TLInfo;
-    MipsSelectionDAGInfo TSInfo;
-  public:
-    MipsTargetMachine(const Target &T, const std::string &TT,
-                      const std::string &FS, bool isLittle);
-    
-    virtual const MipsInstrInfo   *getInstrInfo()     const 
-    { return &InstrInfo; }
-    virtual const TargetFrameInfo *getFrameInfo()     const 
-    { return &FrameInfo; }
-    virtual const MipsSubtarget   *getSubtargetImpl() const 
-    { return &Subtarget; }
-    virtual const TargetData      *getTargetData()    const 
-    { return &DataLayout;}
+class formatted_raw_ostream;
+class MipsRegisterInfo;
 
-    virtual const MipsRegisterInfo *getRegisterInfo()  const {
-      return &InstrInfo.getRegisterInfo();
-    }
+class MipsTargetMachine : public LLVMTargetMachine {
+  MipsSubtarget *Subtarget;
+  MipsSubtarget DefaultSubtarget;
+  MipsSubtarget NoMips16Subtarget;
+  MipsSubtarget Mips16Subtarget;
 
-    virtual const MipsTargetLowering *getTargetLowering() const { 
-      return &TLInfo;
-    }
+public:
+  MipsTargetMachine(const Target &T, StringRef TT, StringRef CPU, StringRef FS,
+                    const TargetOptions &Options, Reloc::Model RM,
+                    CodeModel::Model CM, CodeGenOpt::Level OL, bool isLittle);
 
-    virtual const MipsSelectionDAGInfo* getSelectionDAGInfo() const {
-      return &TSInfo;
-    }
+  virtual ~MipsTargetMachine() {}
 
-    // Pass Pipeline Configuration
-    virtual bool addInstSelector(PassManagerBase &PM,
-                                 CodeGenOpt::Level OptLevel);
-    virtual bool addPreEmitPass(PassManagerBase &PM,
-                                CodeGenOpt::Level OptLevel);
-  };
+  void addAnalysisPasses(PassManagerBase &PM) override;
 
-/// MipselTargetMachine - Mipsel target machine.
+  const MipsInstrInfo *getInstrInfo() const override {
+    return getSubtargetImpl()->getInstrInfo();
+  }
+  const TargetFrameLowering *getFrameLowering() const override {
+    return getSubtargetImpl()->getFrameLowering();
+  }
+  const MipsSubtarget *getSubtargetImpl() const override {
+    if (Subtarget)
+      return Subtarget;
+    return &DefaultSubtarget;
+  }
+  const InstrItineraryData *getInstrItineraryData() const override {
+    return Subtarget->inMips16Mode()
+               ? nullptr
+               : &getSubtargetImpl()->getInstrItineraryData();
+  }
+  MipsJITInfo *getJITInfo() override {
+    return Subtarget->getJITInfo();
+  }
+  const MipsRegisterInfo *getRegisterInfo()  const override {
+    return getSubtargetImpl()->getRegisterInfo();
+  }
+  const MipsTargetLowering *getTargetLowering() const override {
+    return getSubtargetImpl()->getTargetLowering();
+  }
+  const DataLayout *getDataLayout() const override {
+    return getSubtargetImpl()->getDataLayout();
+  }
+  const MipsSelectionDAGInfo* getSelectionDAGInfo() const override {
+    return getSubtargetImpl()->getSelectionDAGInfo();
+  }
+  /// \brief Reset the subtarget for the Mips target.
+  void resetSubtarget(MachineFunction *MF);
+
+  // Pass Pipeline Configuration
+  TargetPassConfig *createPassConfig(PassManagerBase &PM) override;
+  bool addCodeEmitter(PassManagerBase &PM, JITCodeEmitter &JCE) override;
+};
+
+/// MipsebTargetMachine - Mips32/64 big endian target machine.
+///
+class MipsebTargetMachine : public MipsTargetMachine {
+  virtual void anchor();
+public:
+  MipsebTargetMachine(const Target &T, StringRef TT,
+                      StringRef CPU, StringRef FS, const TargetOptions &Options,
+                      Reloc::Model RM, CodeModel::Model CM,
+                      CodeGenOpt::Level OL);
+};
+
+/// MipselTargetMachine - Mips32/64 little endian target machine.
 ///
 class MipselTargetMachine : public MipsTargetMachine {
+  virtual void anchor();
 public:
-  MipselTargetMachine(const Target &T, const std::string &TT,
-                      const std::string &FS);
+  MipselTargetMachine(const Target &T, StringRef TT,
+                      StringRef CPU, StringRef FS, const TargetOptions &Options,
+                      Reloc::Model RM, CodeModel::Model CM,
+                      CodeGenOpt::Level OL);
 };
 
 } // End llvm namespace

@@ -1,9 +1,9 @@
-; RUN: llc < %s -mtriple=x86_64-apple-darwin10 | FileCheck %s
+; RUN: llc < %s -mtriple=x86_64-apple-darwin10 -disable-cgp-select2branch | FileCheck %s
 target datalayout = "e-p:64:64:64-i1:8:8-i8:8:8-i16:16:16-i32:32:32-i64:64:64-f32:32:32-f64:64:64-v64:64:64-v128:128:128-a0:0:64-s0:64:64-f80:128:128"
 
 define i32 @test1(i32 %x, i32 %n, i32 %w, i32* %vp) nounwind readnone {
 entry:
-; CHECK: test1:
+; CHECK-LABEL: test1:
 ; CHECK: btl
 ; CHECK-NEXT: movl	$12, %eax
 ; CHECK-NEXT: cmovael	(%rcx), %eax
@@ -18,7 +18,7 @@ entry:
 }
 define i32 @test2(i32 %x, i32 %n, i32 %w, i32* %vp) nounwind readnone {
 entry:
-; CHECK: test2:
+; CHECK-LABEL: test2:
 ; CHECK: btl
 ; CHECK-NEXT: movl	$12, %eax
 ; CHECK-NEXT: cmovbl	(%rcx), %eax
@@ -40,9 +40,9 @@ entry:
 declare void @bar(i64) nounwind
 
 define void @test3(i64 %a, i64 %b, i1 %p) nounwind {
-; CHECK: test3:
-; CHECK:      cmovnel %edi, %esi
-; CHECK-NEXT: movl    %esi, %edi
+; CHECK-LABEL: test3:
+; CHECK:      cmov{{n?}}el %[[R1:e..]], %[[R2:e..]]
+; CHECK-NEXT: movl    %[[R2]], %{{e..}}
 
   %c = trunc i64 %a to i32
   %d = trunc i64 %b to i32
@@ -84,15 +84,15 @@ entry:
   br i1 %3, label %func_4.exit.i, label %bb.i.i.i
 
 bb.i.i.i:                                         ; preds = %entry
-  %4 = volatile load i8* @g_100, align 1          ; <i8> [#uses=0]
+  %4 = load volatile i8* @g_100, align 1          ; <i8> [#uses=0]
   br label %func_4.exit.i
 
-; CHECK: test4:
+; CHECK-LABEL: test4:
 ; CHECK: g_100
 ; CHECK: testb
-; CHECK: testb %al, %al
-; CHECK-NEXT: setne %al
-; CHECK-NEXT: testb
+; CHECK-NOT: xor
+; CHECK: setne
+; CHECK: testb
 
 func_4.exit.i:                                    ; preds = %bb.i.i.i, %entry
   %.not.i = xor i1 %2, true                       ; <i1> [#uses=1]
@@ -101,7 +101,7 @@ func_4.exit.i:                                    ; preds = %bb.i.i.i, %entry
   br i1 %brmerge.i, label %func_1.exit, label %bb.i.i
 
 bb.i.i:                                           ; preds = %func_4.exit.i
-  %5 = volatile load i8* @g_100, align 1          ; <i8> [#uses=0]
+  %5 = load volatile i8* @g_100, align 1          ; <i8> [#uses=0]
   br label %func_1.exit
 
 func_1.exit:                                      ; preds = %bb.i.i, %func_4.exit.i
@@ -119,7 +119,7 @@ declare i32 @printf(i8* nocapture, ...) nounwind
 ; rdar://6668608
 define i32 @test5(i32* nocapture %P) nounwind readonly {
 entry:
-; CHECK: test5:
+; CHECK-LABEL: test5:
 ; CHECK: 	setg	%al
 ; CHECK:	movzbl	%al, %eax
 ; CHECK:	orl	$-2, %eax
@@ -133,7 +133,7 @@ entry:
 
 define i32 @test6(i32* nocapture %P) nounwind readonly {
 entry:
-; CHECK: test6:
+; CHECK-LABEL: test6:
 ; CHECK: 	setl	%al
 ; CHECK:	movzbl	%al, %eax
 ; CHECK:	leal	4(%rax,%rax,8), %eax
@@ -148,7 +148,7 @@ entry:
 ; Don't try to use a 16-bit conditional move to do an 8-bit select,
 ; because it isn't worth it. Just use a branch instead.
 define i8 @test7(i1 inreg %c, i8 inreg %a, i8 inreg %b) nounwind {
-; CHECK: test7:
+; CHECK-LABEL: test7:
 ; CHECK:     testb	$1, %dil
 ; CHECK-NEXT:     jne	LBB
 

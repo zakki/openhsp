@@ -13,18 +13,20 @@
 //
 //===----------------------------------------------------------------------===//
 
-#ifndef LLVM_CODEGEN_LIVESTACK_ANALYSIS_H
-#define LLVM_CODEGEN_LIVESTACK_ANALYSIS_H
+#ifndef LLVM_CODEGEN_LIVESTACKANALYSIS_H
+#define LLVM_CODEGEN_LIVESTACKANALYSIS_H
 
-#include "llvm/CodeGen/MachineFunctionPass.h"
 #include "llvm/CodeGen/LiveInterval.h"
-#include "llvm/Target/TargetRegisterInfo.h"
+#include "llvm/CodeGen/MachineFunctionPass.h"
 #include "llvm/Support/Allocator.h"
+#include "llvm/Target/TargetRegisterInfo.h"
 #include <map>
 
 namespace llvm {
 
   class LiveStacks : public MachineFunctionPass {
+    const TargetRegisterInfo *TRI;
+
     /// Special pool allocator for VNInfo's (LiveInterval val#).
     ///
     VNInfo::Allocator VNInfoAllocator;
@@ -39,7 +41,9 @@ namespace llvm {
     
   public:
     static char ID; // Pass identification, replacement for typeid
-    LiveStacks() : MachineFunctionPass(ID) {}
+    LiveStacks() : MachineFunctionPass(ID) {
+      initializeLiveStacksPass(*PassRegistry::getPassRegistry());
+    }
 
     typedef SS2IntervalMap::iterator iterator;
     typedef SS2IntervalMap::const_iterator const_iterator;
@@ -50,19 +54,7 @@ namespace llvm {
 
     unsigned getNumIntervals() const { return (unsigned)S2IMap.size(); }
 
-    LiveInterval &getOrCreateInterval(int Slot, const TargetRegisterClass *RC) {
-      assert(Slot >= 0 && "Spill slot indice must be >= 0");
-      SS2IntervalMap::iterator I = S2IMap.find(Slot);
-      if (I == S2IMap.end()) {
-        I = S2IMap.insert(I,std::make_pair(Slot, LiveInterval(Slot,0.0F,true)));
-        S2RCMap.insert(std::make_pair(Slot, RC));
-      } else {
-        // Use the largest common subclass register class.
-        const TargetRegisterClass *OldRC = S2RCMap[Slot];
-        S2RCMap[Slot] = getCommonSubClass(OldRC, RC);
-      }
-      return I->second;
-    }
+    LiveInterval &getOrCreateInterval(int Slot, const TargetRegisterClass *RC);
 
     LiveInterval &getInterval(int Slot) {
       assert(Slot >= 0 && "Spill slot indice must be >= 0");
@@ -93,14 +85,14 @@ namespace llvm {
 
     VNInfo::Allocator& getVNInfoAllocator() { return VNInfoAllocator; }
 
-    virtual void getAnalysisUsage(AnalysisUsage &AU) const;
-    virtual void releaseMemory();
+    void getAnalysisUsage(AnalysisUsage &AU) const override;
+    void releaseMemory() override;
 
     /// runOnMachineFunction - pass entry point
-    virtual bool runOnMachineFunction(MachineFunction&);
+    bool runOnMachineFunction(MachineFunction&) override;
 
     /// print - Implement the dump method.
-    virtual void print(raw_ostream &O, const Module* = 0) const;
+    void print(raw_ostream &O, const Module* = nullptr) const override;
   };
 }
 

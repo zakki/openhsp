@@ -7,19 +7,22 @@
 //
 //===----------------------------------------------------------------------===//
 
-#define DEBUG_TYPE "mcexpr"
 #include "llvm/MC/MCExpr.h"
 #include "llvm/ADT/Statistic.h"
 #include "llvm/ADT/StringSwitch.h"
+#include "llvm/MC/MCAsmInfo.h"
 #include "llvm/MC/MCAsmLayout.h"
 #include "llvm/MC/MCAssembler.h"
 #include "llvm/MC/MCContext.h"
+#include "llvm/MC/MCObjectWriter.h"
 #include "llvm/MC/MCSymbol.h"
 #include "llvm/MC/MCValue.h"
 #include "llvm/Support/Debug.h"
+#include "llvm/Support/ErrorHandling.h"
 #include "llvm/Support/raw_ostream.h"
-#include "llvm/Target/TargetAsmBackend.h"
 using namespace llvm;
+
+#define DEBUG_TYPE "mcexpr"
 
 namespace {
 namespace stats {
@@ -38,22 +41,20 @@ void MCExpr::print(raw_ostream &OS) const {
   case MCExpr::SymbolRef: {
     const MCSymbolRefExpr &SRE = cast<MCSymbolRefExpr>(*this);
     const MCSymbol &Sym = SRE.getSymbol();
-
-    if (SRE.getKind() == MCSymbolRefExpr::VK_ARM_HI16 ||
-        SRE.getKind() == MCSymbolRefExpr::VK_ARM_LO16)
-      OS << MCSymbolRefExpr::getVariantKindName(SRE.getKind());
-
     // Parenthesize names that start with $ so that they don't look like
     // absolute names.
-    if (Sym.getName()[0] == '$')
+    bool UseParens = Sym.getName()[0] == '$';
+    if (UseParens)
       OS << '(' << Sym << ')';
     else
       OS << Sym;
 
-    if (SRE.getKind() != MCSymbolRefExpr::VK_None &&
-        SRE.getKind() != MCSymbolRefExpr::VK_ARM_HI16 &&
-        SRE.getKind() != MCSymbolRefExpr::VK_ARM_LO16)
-      OS << '@' << MCSymbolRefExpr::getVariantKindName(SRE.getKind());
+    if (SRE.getKind() != MCSymbolRefExpr::VK_None) {
+      if (SRE.getMCAsmInfo().useParensForSymbolVariant())
+        OS << '(' << MCSymbolRefExpr::getVariantKindName(SRE.getKind()) << ')';
+      else
+        OS << '@' << MCSymbolRefExpr::getVariantKindName(SRE.getKind());
+    }
 
     return;
   }
@@ -61,7 +62,6 @@ void MCExpr::print(raw_ostream &OS) const {
   case MCExpr::Unary: {
     const MCUnaryExpr &UE = cast<MCUnaryExpr>(*this);
     switch (UE.getOpcode()) {
-    default: assert(0 && "Invalid opcode!");
     case MCUnaryExpr::LNot:  OS << '!'; break;
     case MCUnaryExpr::Minus: OS << '-'; break;
     case MCUnaryExpr::Not:   OS << '~'; break;
@@ -82,7 +82,6 @@ void MCExpr::print(raw_ostream &OS) const {
     }
 
     switch (BE.getOpcode()) {
-    default: assert(0 && "Invalid opcode!");
     case MCBinaryExpr::Add:
       // Print "X-42" instead of "X+-42".
       if (const MCConstantExpr *RHSC = dyn_cast<MCConstantExpr>(BE.getRHS())) {
@@ -123,13 +122,15 @@ void MCExpr::print(raw_ostream &OS) const {
   }
   }
 
-  assert(0 && "Invalid expression kind!");
+  llvm_unreachable("Invalid expression kind!");
 }
 
+#if !defined(NDEBUG) || defined(LLVM_ENABLE_DUMP)
 void MCExpr::dump() const {
   print(dbgs());
   dbgs() << '\n';
 }
+#endif
 
 /* *** */
 
@@ -152,7 +153,7 @@ const MCConstantExpr *MCConstantExpr::Create(int64_t Value, MCContext &Ctx) {
 const MCSymbolRefExpr *MCSymbolRefExpr::Create(const MCSymbol *Sym,
                                                VariantKind Kind,
                                                MCContext &Ctx) {
-  return new (Ctx) MCSymbolRefExpr(Sym, Kind);
+  return new (Ctx) MCSymbolRefExpr(Sym, Kind, Ctx.getAsmInfo());
 }
 
 const MCSymbolRefExpr *MCSymbolRefExpr::Create(StringRef Name, VariantKind Kind,
@@ -162,7 +163,6 @@ const MCSymbolRefExpr *MCSymbolRefExpr::Create(StringRef Name, VariantKind Kind,
 
 StringRef MCSymbolRefExpr::getVariantKindName(VariantKind Kind) {
   switch (Kind) {
-  default:
   case VK_Invalid: return "<<invalid>>";
   case VK_None: return "<<none>>";
 
@@ -172,38 +172,304 @@ StringRef MCSymbolRefExpr::getVariantKindName(VariantKind Kind) {
   case VK_GOTTPOFF: return "GOTTPOFF";
   case VK_INDNTPOFF: return "INDNTPOFF";
   case VK_NTPOFF: return "NTPOFF";
+  case VK_GOTNTPOFF: return "GOTNTPOFF";
   case VK_PLT: return "PLT";
   case VK_TLSGD: return "TLSGD";
+  case VK_TLSLD: return "TLSLD";
+  case VK_TLSLDM: return "TLSLDM";
   case VK_TPOFF: return "TPOFF";
-  case VK_ARM_HI16: return ":upper16:";
-  case VK_ARM_LO16: return ":lower16:";
+  case VK_DTPOFF: return "DTPOFF";
   case VK_TLVP: return "TLVP";
+  case VK_TLVPPAGE: return "TLVPPAGE";
+  case VK_TLVPPAGEOFF: return "TLVPPAGEOFF";
+  case VK_PAGE: return "PAGE";
+  case VK_PAGEOFF: return "PAGEOFF";
+  case VK_GOTPAGE: return "GOTPAGE";
+  case VK_GOTPAGEOFF: return "GOTPAGEOFF";
+  case VK_SECREL: return "SECREL32";
+  case VK_WEAKREF: return "WEAKREF";
+  case VK_ARM_NONE: return "none";
+  case VK_ARM_TARGET1: return "target1";
+  case VK_ARM_TARGET2: return "target2";
+  case VK_ARM_PREL31: return "prel31";
+  case VK_ARM_TLSLDO: return "tlsldo";
+  case VK_ARM_TLSCALL: return "tlscall";
+  case VK_ARM_TLSDESC: return "tlsdesc";
+  case VK_ARM_TLSDESCSEQ: return "tlsdescseq";
+  case VK_PPC_LO: return "l";
+  case VK_PPC_HI: return "h";
+  case VK_PPC_HA: return "ha";
+  case VK_PPC_HIGHER: return "higher";
+  case VK_PPC_HIGHERA: return "highera";
+  case VK_PPC_HIGHEST: return "highest";
+  case VK_PPC_HIGHESTA: return "highesta";
+  case VK_PPC_GOT_LO: return "got@l";
+  case VK_PPC_GOT_HI: return "got@h";
+  case VK_PPC_GOT_HA: return "got@ha";
+  case VK_PPC_TOCBASE: return "tocbase";
+  case VK_PPC_TOC: return "toc";
+  case VK_PPC_TOC_LO: return "toc@l";
+  case VK_PPC_TOC_HI: return "toc@h";
+  case VK_PPC_TOC_HA: return "toc@ha";
+  case VK_PPC_DTPMOD: return "dtpmod";
+  case VK_PPC_TPREL: return "tprel";
+  case VK_PPC_TPREL_LO: return "tprel@l";
+  case VK_PPC_TPREL_HI: return "tprel@h";
+  case VK_PPC_TPREL_HA: return "tprel@ha";
+  case VK_PPC_TPREL_HIGHER: return "tprel@higher";
+  case VK_PPC_TPREL_HIGHERA: return "tprel@highera";
+  case VK_PPC_TPREL_HIGHEST: return "tprel@highest";
+  case VK_PPC_TPREL_HIGHESTA: return "tprel@highesta";
+  case VK_PPC_DTPREL: return "dtprel";
+  case VK_PPC_DTPREL_LO: return "dtprel@l";
+  case VK_PPC_DTPREL_HI: return "dtprel@h";
+  case VK_PPC_DTPREL_HA: return "dtprel@ha";
+  case VK_PPC_DTPREL_HIGHER: return "dtprel@higher";
+  case VK_PPC_DTPREL_HIGHERA: return "dtprel@highera";
+  case VK_PPC_DTPREL_HIGHEST: return "dtprel@highest";
+  case VK_PPC_DTPREL_HIGHESTA: return "dtprel@highesta";
+  case VK_PPC_GOT_TPREL: return "got@tprel";
+  case VK_PPC_GOT_TPREL_LO: return "got@tprel@l";
+  case VK_PPC_GOT_TPREL_HI: return "got@tprel@h";
+  case VK_PPC_GOT_TPREL_HA: return "got@tprel@ha";
+  case VK_PPC_GOT_DTPREL: return "got@dtprel";
+  case VK_PPC_GOT_DTPREL_LO: return "got@dtprel@l";
+  case VK_PPC_GOT_DTPREL_HI: return "got@dtprel@h";
+  case VK_PPC_GOT_DTPREL_HA: return "got@dtprel@ha";
+  case VK_PPC_TLS: return "tls";
+  case VK_PPC_GOT_TLSGD: return "got@tlsgd";
+  case VK_PPC_GOT_TLSGD_LO: return "got@tlsgd@l";
+  case VK_PPC_GOT_TLSGD_HI: return "got@tlsgd@h";
+  case VK_PPC_GOT_TLSGD_HA: return "got@tlsgd@ha";
+  case VK_PPC_TLSGD: return "tlsgd";
+  case VK_PPC_GOT_TLSLD: return "got@tlsld";
+  case VK_PPC_GOT_TLSLD_LO: return "got@tlsld@l";
+  case VK_PPC_GOT_TLSLD_HI: return "got@tlsld@h";
+  case VK_PPC_GOT_TLSLD_HA: return "got@tlsld@ha";
+  case VK_PPC_TLSLD: return "tlsld";
+  case VK_Mips_GPREL: return "GPREL";
+  case VK_Mips_GOT_CALL: return "GOT_CALL";
+  case VK_Mips_GOT16: return "GOT16";
+  case VK_Mips_GOT: return "GOT";
+  case VK_Mips_ABS_HI: return "ABS_HI";
+  case VK_Mips_ABS_LO: return "ABS_LO";
+  case VK_Mips_TLSGD: return "TLSGD";
+  case VK_Mips_TLSLDM: return "TLSLDM";
+  case VK_Mips_DTPREL_HI: return "DTPREL_HI";
+  case VK_Mips_DTPREL_LO: return "DTPREL_LO";
+  case VK_Mips_GOTTPREL: return "GOTTPREL";
+  case VK_Mips_TPREL_HI: return "TPREL_HI";
+  case VK_Mips_TPREL_LO: return "TPREL_LO";
+  case VK_Mips_GPOFF_HI: return "GPOFF_HI";
+  case VK_Mips_GPOFF_LO: return "GPOFF_LO";
+  case VK_Mips_GOT_DISP: return "GOT_DISP";
+  case VK_Mips_GOT_PAGE: return "GOT_PAGE";
+  case VK_Mips_GOT_OFST: return "GOT_OFST";
+  case VK_Mips_HIGHER:   return "HIGHER";
+  case VK_Mips_HIGHEST:  return "HIGHEST";
+  case VK_Mips_GOT_HI16: return "GOT_HI16";
+  case VK_Mips_GOT_LO16: return "GOT_LO16";
+  case VK_Mips_CALL_HI16: return "CALL_HI16";
+  case VK_Mips_CALL_LO16: return "CALL_LO16";
+  case VK_Mips_PCREL_HI16: return "PCREL_HI16";
+  case VK_Mips_PCREL_LO16: return "PCREL_LO16";
+  case VK_COFF_IMGREL32: return "IMGREL32";
   }
+  llvm_unreachable("Invalid variant kind");
 }
 
 MCSymbolRefExpr::VariantKind
 MCSymbolRefExpr::getVariantKindForName(StringRef Name) {
   return StringSwitch<VariantKind>(Name)
     .Case("GOT", VK_GOT)
+    .Case("got", VK_GOT)
     .Case("GOTOFF", VK_GOTOFF)
+    .Case("gotoff", VK_GOTOFF)
     .Case("GOTPCREL", VK_GOTPCREL)
+    .Case("gotpcrel", VK_GOTPCREL)
+    .Case("GOT_PREL", VK_GOTPCREL)
+    .Case("got_prel", VK_GOTPCREL)
     .Case("GOTTPOFF", VK_GOTTPOFF)
+    .Case("gottpoff", VK_GOTTPOFF)
     .Case("INDNTPOFF", VK_INDNTPOFF)
+    .Case("indntpoff", VK_INDNTPOFF)
     .Case("NTPOFF", VK_NTPOFF)
+    .Case("ntpoff", VK_NTPOFF)
+    .Case("GOTNTPOFF", VK_GOTNTPOFF)
+    .Case("gotntpoff", VK_GOTNTPOFF)
     .Case("PLT", VK_PLT)
+    .Case("plt", VK_PLT)
     .Case("TLSGD", VK_TLSGD)
+    .Case("tlsgd", VK_TLSGD)
+    .Case("TLSLD", VK_TLSLD)
+    .Case("tlsld", VK_TLSLD)
+    .Case("TLSLDM", VK_TLSLDM)
+    .Case("tlsldm", VK_TLSLDM)
     .Case("TPOFF", VK_TPOFF)
+    .Case("tpoff", VK_TPOFF)
+    .Case("DTPOFF", VK_DTPOFF)
+    .Case("dtpoff", VK_DTPOFF)
     .Case("TLVP", VK_TLVP)
+    .Case("tlvp", VK_TLVP)
+    .Case("TLVPPAGE", VK_TLVPPAGE)
+    .Case("tlvppage", VK_TLVPPAGE)
+    .Case("TLVPPAGEOFF", VK_TLVPPAGEOFF)
+    .Case("tlvppageoff", VK_TLVPPAGEOFF)
+    .Case("PAGE", VK_PAGE)
+    .Case("page", VK_PAGE)
+    .Case("PAGEOFF", VK_PAGEOFF)
+    .Case("pageoff", VK_PAGEOFF)
+    .Case("GOTPAGE", VK_GOTPAGE)
+    .Case("gotpage", VK_GOTPAGE)
+    .Case("GOTPAGEOFF", VK_GOTPAGEOFF)
+    .Case("gotpageoff", VK_GOTPAGEOFF)
+    .Case("IMGREL", VK_COFF_IMGREL32)
+    .Case("imgrel", VK_COFF_IMGREL32)
+    .Case("SECREL32", VK_SECREL)
+    .Case("secrel32", VK_SECREL)
+    .Case("L", VK_PPC_LO)
+    .Case("l", VK_PPC_LO)
+    .Case("H", VK_PPC_HI)
+    .Case("h", VK_PPC_HI)
+    .Case("HA", VK_PPC_HA)
+    .Case("ha", VK_PPC_HA)
+    .Case("HIGHER", VK_PPC_HIGHER)
+    .Case("higher", VK_PPC_HIGHER)
+    .Case("HIGHERA", VK_PPC_HIGHERA)
+    .Case("highera", VK_PPC_HIGHERA)
+    .Case("HIGHEST", VK_PPC_HIGHEST)
+    .Case("highest", VK_PPC_HIGHEST)
+    .Case("HIGHESTA", VK_PPC_HIGHESTA)
+    .Case("highesta", VK_PPC_HIGHESTA)
+    .Case("GOT@L", VK_PPC_GOT_LO)
+    .Case("got@l", VK_PPC_GOT_LO)
+    .Case("GOT@H", VK_PPC_GOT_HI)
+    .Case("got@h", VK_PPC_GOT_HI)
+    .Case("GOT@HA", VK_PPC_GOT_HA)
+    .Case("got@ha", VK_PPC_GOT_HA)
+    .Case("TOCBASE", VK_PPC_TOCBASE)
+    .Case("tocbase", VK_PPC_TOCBASE)
+    .Case("TOC", VK_PPC_TOC)
+    .Case("toc", VK_PPC_TOC)
+    .Case("TOC@L", VK_PPC_TOC_LO)
+    .Case("toc@l", VK_PPC_TOC_LO)
+    .Case("TOC@H", VK_PPC_TOC_HI)
+    .Case("toc@h", VK_PPC_TOC_HI)
+    .Case("TOC@HA", VK_PPC_TOC_HA)
+    .Case("toc@ha", VK_PPC_TOC_HA)
+    .Case("TLS", VK_PPC_TLS)
+    .Case("tls", VK_PPC_TLS)
+    .Case("DTPMOD", VK_PPC_DTPMOD)
+    .Case("dtpmod", VK_PPC_DTPMOD)
+    .Case("TPREL", VK_PPC_TPREL)
+    .Case("tprel", VK_PPC_TPREL)
+    .Case("TPREL@L", VK_PPC_TPREL_LO)
+    .Case("tprel@l", VK_PPC_TPREL_LO)
+    .Case("TPREL@H", VK_PPC_TPREL_HI)
+    .Case("tprel@h", VK_PPC_TPREL_HI)
+    .Case("TPREL@HA", VK_PPC_TPREL_HA)
+    .Case("tprel@ha", VK_PPC_TPREL_HA)
+    .Case("TPREL@HIGHER", VK_PPC_TPREL_HIGHER)
+    .Case("tprel@higher", VK_PPC_TPREL_HIGHER)
+    .Case("TPREL@HIGHERA", VK_PPC_TPREL_HIGHERA)
+    .Case("tprel@highera", VK_PPC_TPREL_HIGHERA)
+    .Case("TPREL@HIGHEST", VK_PPC_TPREL_HIGHEST)
+    .Case("tprel@highest", VK_PPC_TPREL_HIGHEST)
+    .Case("TPREL@HIGHESTA", VK_PPC_TPREL_HIGHESTA)
+    .Case("tprel@highesta", VK_PPC_TPREL_HIGHESTA)
+    .Case("DTPREL", VK_PPC_DTPREL)
+    .Case("dtprel", VK_PPC_DTPREL)
+    .Case("DTPREL@L", VK_PPC_DTPREL_LO)
+    .Case("dtprel@l", VK_PPC_DTPREL_LO)
+    .Case("DTPREL@H", VK_PPC_DTPREL_HI)
+    .Case("dtprel@h", VK_PPC_DTPREL_HI)
+    .Case("DTPREL@HA", VK_PPC_DTPREL_HA)
+    .Case("dtprel@ha", VK_PPC_DTPREL_HA)
+    .Case("DTPREL@HIGHER", VK_PPC_DTPREL_HIGHER)
+    .Case("dtprel@higher", VK_PPC_DTPREL_HIGHER)
+    .Case("DTPREL@HIGHERA", VK_PPC_DTPREL_HIGHERA)
+    .Case("dtprel@highera", VK_PPC_DTPREL_HIGHERA)
+    .Case("DTPREL@HIGHEST", VK_PPC_DTPREL_HIGHEST)
+    .Case("dtprel@highest", VK_PPC_DTPREL_HIGHEST)
+    .Case("DTPREL@HIGHESTA", VK_PPC_DTPREL_HIGHESTA)
+    .Case("dtprel@highesta", VK_PPC_DTPREL_HIGHESTA)
+    .Case("GOT@TPREL", VK_PPC_GOT_TPREL)
+    .Case("got@tprel", VK_PPC_GOT_TPREL)
+    .Case("GOT@TPREL@L", VK_PPC_GOT_TPREL_LO)
+    .Case("got@tprel@l", VK_PPC_GOT_TPREL_LO)
+    .Case("GOT@TPREL@H", VK_PPC_GOT_TPREL_HI)
+    .Case("got@tprel@h", VK_PPC_GOT_TPREL_HI)
+    .Case("GOT@TPREL@HA", VK_PPC_GOT_TPREL_HA)
+    .Case("got@tprel@ha", VK_PPC_GOT_TPREL_HA)
+    .Case("GOT@DTPREL", VK_PPC_GOT_DTPREL)
+    .Case("got@dtprel", VK_PPC_GOT_DTPREL)
+    .Case("GOT@DTPREL@L", VK_PPC_GOT_DTPREL_LO)
+    .Case("got@dtprel@l", VK_PPC_GOT_DTPREL_LO)
+    .Case("GOT@DTPREL@H", VK_PPC_GOT_DTPREL_HI)
+    .Case("got@dtprel@h", VK_PPC_GOT_DTPREL_HI)
+    .Case("GOT@DTPREL@HA", VK_PPC_GOT_DTPREL_HA)
+    .Case("got@dtprel@ha", VK_PPC_GOT_DTPREL_HA)
+    .Case("GOT@TLSGD", VK_PPC_GOT_TLSGD)
+    .Case("got@tlsgd", VK_PPC_GOT_TLSGD)
+    .Case("GOT@TLSGD@L", VK_PPC_GOT_TLSGD_LO)
+    .Case("got@tlsgd@l", VK_PPC_GOT_TLSGD_LO)
+    .Case("GOT@TLSGD@H", VK_PPC_GOT_TLSGD_HI)
+    .Case("got@tlsgd@h", VK_PPC_GOT_TLSGD_HI)
+    .Case("GOT@TLSGD@HA", VK_PPC_GOT_TLSGD_HA)
+    .Case("got@tlsgd@ha", VK_PPC_GOT_TLSGD_HA)
+    .Case("GOT@TLSLD", VK_PPC_GOT_TLSLD)
+    .Case("got@tlsld", VK_PPC_GOT_TLSLD)
+    .Case("GOT@TLSLD@L", VK_PPC_GOT_TLSLD_LO)
+    .Case("got@tlsld@l", VK_PPC_GOT_TLSLD_LO)
+    .Case("GOT@TLSLD@H", VK_PPC_GOT_TLSLD_HI)
+    .Case("got@tlsld@h", VK_PPC_GOT_TLSLD_HI)
+    .Case("GOT@TLSLD@HA", VK_PPC_GOT_TLSLD_HA)
+    .Case("got@tlsld@ha", VK_PPC_GOT_TLSLD_HA)
+    .Case("NONE", VK_ARM_NONE)
+    .Case("none", VK_ARM_NONE)
+    .Case("TARGET1", VK_ARM_TARGET1)
+    .Case("target1", VK_ARM_TARGET1)
+    .Case("TARGET2", VK_ARM_TARGET2)
+    .Case("target2", VK_ARM_TARGET2)
+    .Case("PREL31", VK_ARM_PREL31)
+    .Case("prel31", VK_ARM_PREL31)
+    .Case("TLSLDO", VK_ARM_TLSLDO)
+    .Case("tlsldo", VK_ARM_TLSLDO)
+    .Case("TLSCALL", VK_ARM_TLSCALL)
+    .Case("tlscall", VK_ARM_TLSCALL)
+    .Case("TLSDESC", VK_ARM_TLSDESC)
+    .Case("tlsdesc", VK_ARM_TLSDESC)
     .Default(VK_Invalid);
 }
 
 /* *** */
 
-void MCTargetExpr::Anchor() {}
+void MCTargetExpr::anchor() {}
 
 /* *** */
 
-bool MCExpr::EvaluateAsAbsolute(int64_t &Res, const MCAsmLayout *Layout) const {
+bool MCExpr::EvaluateAsAbsolute(int64_t &Res) const {
+  return EvaluateAsAbsolute(Res, nullptr, nullptr, nullptr);
+}
+
+bool MCExpr::EvaluateAsAbsolute(int64_t &Res,
+                                const MCAsmLayout &Layout) const {
+  return EvaluateAsAbsolute(Res, &Layout.getAssembler(), &Layout, nullptr);
+}
+
+bool MCExpr::EvaluateAsAbsolute(int64_t &Res,
+                                const MCAsmLayout &Layout,
+                                const SectionAddrMap &Addrs) const {
+  return EvaluateAsAbsolute(Res, &Layout.getAssembler(), &Layout, &Addrs);
+}
+
+bool MCExpr::EvaluateAsAbsolute(int64_t &Res, const MCAssembler &Asm) const {
+  return EvaluateAsAbsolute(Res, &Asm, nullptr, nullptr);
+}
+
+bool MCExpr::EvaluateAsAbsolute(int64_t &Res, const MCAssembler *Asm,
+                                const MCAsmLayout *Layout,
+                                const SectionAddrMap *Addrs) const {
   MCValue Value;
 
   // Fast path constants.
@@ -212,37 +478,176 @@ bool MCExpr::EvaluateAsAbsolute(int64_t &Res, const MCAsmLayout *Layout) const {
     return true;
   }
 
-  if (!EvaluateAsRelocatable(Value, Layout) || !Value.isAbsolute())
-    return false;
+  // FIXME: The use if InSet = Addrs is a hack. Setting InSet causes us
+  // absolutize differences across sections and that is what the MachO writer
+  // uses Addrs for.
+  bool IsRelocatable =
+      EvaluateAsRelocatableImpl(Value, Asm, Layout, Addrs, /*InSet*/ Addrs,
+                                /*ForceVarExpansion*/ false);
 
+  // Record the current value.
   Res = Value.getConstant();
-  return true;
+
+  return IsRelocatable && Value.isAbsolute();
 }
 
-static bool EvaluateSymbolicAdd(const MCValue &LHS,const MCSymbolRefExpr *RHS_A,
+/// \brief Helper method for \see EvaluateSymbolAdd().
+static void AttemptToFoldSymbolOffsetDifference(const MCAssembler *Asm,
+                                                const MCAsmLayout *Layout,
+                                                const SectionAddrMap *Addrs,
+                                                bool InSet,
+                                                const MCSymbolRefExpr *&A,
+                                                const MCSymbolRefExpr *&B,
+                                                int64_t &Addend) {
+  if (!A || !B)
+    return;
+
+  const MCSymbol &SA = A->getSymbol();
+  const MCSymbol &SB = B->getSymbol();
+
+  if (SA.isUndefined() || SB.isUndefined())
+    return;
+
+  if (!Asm->getWriter().IsSymbolRefDifferenceFullyResolved(*Asm, A, B, InSet))
+    return;
+
+  const MCSymbolData &AD = Asm->getSymbolData(SA);
+  const MCSymbolData &BD = Asm->getSymbolData(SB);
+
+  if (AD.getFragment() == BD.getFragment()) {
+    Addend += (AD.getOffset() - BD.getOffset());
+
+    // Pointers to Thumb symbols need to have their low-bit set to allow
+    // for interworking.
+    if (Asm->isThumbFunc(&SA))
+      Addend |= 1;
+
+    // Clear the symbol expr pointers to indicate we have folded these
+    // operands.
+    A = B = nullptr;
+    return;
+  }
+
+  if (!Layout)
+    return;
+
+  const MCSectionData &SecA = *AD.getFragment()->getParent();
+  const MCSectionData &SecB = *BD.getFragment()->getParent();
+
+  if ((&SecA != &SecB) && !Addrs)
+    return;
+
+  // Eagerly evaluate.
+  Addend += (Layout->getSymbolOffset(&Asm->getSymbolData(A->getSymbol())) -
+             Layout->getSymbolOffset(&Asm->getSymbolData(B->getSymbol())));
+  if (Addrs && (&SecA != &SecB))
+    Addend += (Addrs->lookup(&SecA) - Addrs->lookup(&SecB));
+
+  // Pointers to Thumb symbols need to have their low-bit set to allow
+  // for interworking.
+  if (Asm->isThumbFunc(&SA))
+    Addend |= 1;
+
+  // Clear the symbol expr pointers to indicate we have folded these
+  // operands.
+  A = B = nullptr;
+}
+
+/// \brief Evaluate the result of an add between (conceptually) two MCValues.
+///
+/// This routine conceptually attempts to construct an MCValue:
+///   Result = (Result_A - Result_B + Result_Cst)
+/// from two MCValue's LHS and RHS where
+///   Result = LHS + RHS
+/// and
+///   Result = (LHS_A - LHS_B + LHS_Cst) + (RHS_A - RHS_B + RHS_Cst).
+///
+/// This routine attempts to aggresively fold the operands such that the result
+/// is representable in an MCValue, but may not always succeed.
+///
+/// \returns True on success, false if the result is not representable in an
+/// MCValue.
+
+/// NOTE: It is really important to have both the Asm and Layout arguments.
+/// They might look redundant, but this function can be used before layout
+/// is done (see the object streamer for example) and having the Asm argument
+/// lets us avoid relaxations early.
+static bool EvaluateSymbolicAdd(const MCAssembler *Asm,
+                                const MCAsmLayout *Layout,
+                                const SectionAddrMap *Addrs,
+                                bool InSet,
+                                const MCValue &LHS,const MCSymbolRefExpr *RHS_A,
                                 const MCSymbolRefExpr *RHS_B, int64_t RHS_Cst,
                                 MCValue &Res) {
-  // We can't add or subtract two symbols.
-  if ((LHS.getSymA() && RHS_A) ||
-      (LHS.getSymB() && RHS_B))
+  // FIXME: This routine (and other evaluation parts) are *incredibly* sloppy
+  // about dealing with modifiers. This will ultimately bite us, one day.
+  const MCSymbolRefExpr *LHS_A = LHS.getSymA();
+  const MCSymbolRefExpr *LHS_B = LHS.getSymB();
+  int64_t LHS_Cst = LHS.getConstant();
+
+  // Fold the result constant immediately.
+  int64_t Result_Cst = LHS_Cst + RHS_Cst;
+
+  assert((!Layout || Asm) &&
+         "Must have an assembler object if layout is given!");
+
+  // If we have a layout, we can fold resolved differences.
+  if (Asm) {
+    // First, fold out any differences which are fully resolved. By
+    // reassociating terms in
+    //   Result = (LHS_A - LHS_B + LHS_Cst) + (RHS_A - RHS_B + RHS_Cst).
+    // we have the four possible differences:
+    //   (LHS_A - LHS_B),
+    //   (LHS_A - RHS_B),
+    //   (RHS_A - LHS_B),
+    //   (RHS_A - RHS_B).
+    // Since we are attempting to be as aggressive as possible about folding, we
+    // attempt to evaluate each possible alternative.
+    AttemptToFoldSymbolOffsetDifference(Asm, Layout, Addrs, InSet, LHS_A, LHS_B,
+                                        Result_Cst);
+    AttemptToFoldSymbolOffsetDifference(Asm, Layout, Addrs, InSet, LHS_A, RHS_B,
+                                        Result_Cst);
+    AttemptToFoldSymbolOffsetDifference(Asm, Layout, Addrs, InSet, RHS_A, LHS_B,
+                                        Result_Cst);
+    AttemptToFoldSymbolOffsetDifference(Asm, Layout, Addrs, InSet, RHS_A, RHS_B,
+                                        Result_Cst);
+  }
+
+  // We can't represent the addition or subtraction of two symbols.
+  if ((LHS_A && RHS_A) || (LHS_B && RHS_B))
     return false;
 
-  const MCSymbolRefExpr *A = LHS.getSymA() ? LHS.getSymA() : RHS_A;
-  const MCSymbolRefExpr *B = LHS.getSymB() ? LHS.getSymB() : RHS_B;
-  if (B) {
-    // If we have a negated symbol, then we must have also have a non-negated
-    // symbol in order to encode the expression. We can do this check later to
-    // permit expressions which eventually fold to a representable form -- such
-    // as (a + (0 - b)) -- if necessary.
-    if (!A)
-      return false;
-  }
-  Res = MCValue::get(A, B, LHS.getConstant() + RHS_Cst);
+  // At this point, we have at most one additive symbol and one subtractive
+  // symbol -- find them.
+  const MCSymbolRefExpr *A = LHS_A ? LHS_A : RHS_A;
+  const MCSymbolRefExpr *B = LHS_B ? LHS_B : RHS_B;
+
+  // If we have a negated symbol, then we must have also have a non-negated
+  // symbol in order to encode the expression.
+  if (B && !A)
+    return false;
+
+  Res = MCValue::get(A, B, Result_Cst);
   return true;
 }
 
 bool MCExpr::EvaluateAsRelocatable(MCValue &Res,
                                    const MCAsmLayout *Layout) const {
+  MCAssembler *Assembler = Layout ? &Layout->getAssembler() : nullptr;
+  return EvaluateAsRelocatableImpl(Res, Assembler, Layout, nullptr, false,
+                                   /*ForceVarExpansion*/ false);
+}
+
+bool MCExpr::EvaluateAsValue(MCValue &Res, const MCAsmLayout *Layout) const {
+  MCAssembler *Assembler = Layout ? &Layout->getAssembler() : nullptr;
+  return EvaluateAsRelocatableImpl(Res, Assembler, Layout, nullptr, false,
+                                   /*ForceVarExpansion*/ true);
+}
+
+bool MCExpr::EvaluateAsRelocatableImpl(MCValue &Res, const MCAssembler *Asm,
+                                       const MCAsmLayout *Layout,
+                                       const SectionAddrMap *Addrs, bool InSet,
+                                       bool ForceVarExpansion) const {
   ++stats::MCExprEvaluate;
 
   switch (getKind()) {
@@ -256,31 +661,35 @@ bool MCExpr::EvaluateAsRelocatable(MCValue &Res,
   case SymbolRef: {
     const MCSymbolRefExpr *SRE = cast<MCSymbolRefExpr>(this);
     const MCSymbol &Sym = SRE->getSymbol();
+    const MCAsmInfo &MCAsmInfo = SRE->getMCAsmInfo();
 
     // Evaluate recursively if this is a variable.
-    if (Sym.isVariable()) {
-      if (!Sym.getVariableValue()->EvaluateAsRelocatable(Res, Layout))
-        return false;
+    if (Sym.isVariable() && SRE->getKind() == MCSymbolRefExpr::VK_None) {
+      if (Sym.getVariableValue()->EvaluateAsRelocatableImpl(
+              Res, Asm, Layout, Addrs, true, ForceVarExpansion)) {
+        const MCSymbolRefExpr *A = Res.getSymA();
+        const MCSymbolRefExpr *B = Res.getSymB();
 
-      // Absolutize symbol differences between defined symbols when we have a
-      // layout object and the target requests it.
-      if (Layout && Res.getSymB() &&
-          Layout->getAssembler().getBackend().hasAbsolutizedSet() &&
-          Res.getSymA()->getSymbol().isDefined() &&
-          Res.getSymB()->getSymbol().isDefined()) {
-        MCSymbolData &A =
-          Layout->getAssembler().getSymbolData(Res.getSymA()->getSymbol());
-        MCSymbolData &B =
-          Layout->getAssembler().getSymbolData(Res.getSymB()->getSymbol());
-        Res = MCValue::get(+ Layout->getSymbolAddress(&A)
-                           - Layout->getSymbolAddress(&B)
-                           + Res.getConstant());
+        if (MCAsmInfo.hasSubsectionsViaSymbols()) {
+          // FIXME: This is small hack. Given
+          // a = b + 4
+          // .long a
+          // the OS X assembler will completely drop the 4. We should probably
+          // include it in the relocation or produce an error if that is not
+          // possible.
+          if (!A && !B)
+            return true;
+        } else {
+          if (ForceVarExpansion)
+            return true;
+          bool IsSymbol = A && A->getSymbol().isDefined();
+          if (!IsSymbol)
+            return true;
+        }
       }
-
-      return true;
     }
 
-    Res = MCValue::get(SRE, 0, 0);
+    Res = MCValue::get(SRE, nullptr, 0);
     return true;
   }
 
@@ -288,7 +697,8 @@ bool MCExpr::EvaluateAsRelocatable(MCValue &Res,
     const MCUnaryExpr *AUE = cast<MCUnaryExpr>(this);
     MCValue Value;
 
-    if (!AUE->getSubExpr()->EvaluateAsRelocatable(Value, Layout))
+    if (!AUE->getSubExpr()->EvaluateAsRelocatableImpl(Value, Asm, Layout, Addrs,
+                                                      InSet, ForceVarExpansion))
       return false;
 
     switch (AUE->getOpcode()) {
@@ -321,8 +731,10 @@ bool MCExpr::EvaluateAsRelocatable(MCValue &Res,
     const MCBinaryExpr *ABE = cast<MCBinaryExpr>(this);
     MCValue LHSValue, RHSValue;
 
-    if (!ABE->getLHS()->EvaluateAsRelocatable(LHSValue, Layout) ||
-        !ABE->getRHS()->EvaluateAsRelocatable(RHSValue, Layout))
+    if (!ABE->getLHS()->EvaluateAsRelocatableImpl(LHSValue, Asm, Layout, Addrs,
+                                                  InSet, ForceVarExpansion) ||
+        !ABE->getRHS()->EvaluateAsRelocatableImpl(RHSValue, Asm, Layout, Addrs,
+                                                  InSet, ForceVarExpansion))
       return false;
 
     // We only support a few operations on non-constant expressions, handle
@@ -333,13 +745,13 @@ bool MCExpr::EvaluateAsRelocatable(MCValue &Res,
         return false;
       case MCBinaryExpr::Sub:
         // Negate RHS and add.
-        return EvaluateSymbolicAdd(LHSValue,
+        return EvaluateSymbolicAdd(Asm, Layout, Addrs, InSet, LHSValue,
                                    RHSValue.getSymB(), RHSValue.getSymA(),
                                    -RHSValue.getConstant(),
                                    Res);
 
       case MCBinaryExpr::Add:
-        return EvaluateSymbolicAdd(LHSValue,
+        return EvaluateSymbolicAdd(Asm, Layout, Addrs, InSet, LHSValue,
                                    RHSValue.getSymA(), RHSValue.getSymB(),
                                    RHSValue.getConstant(),
                                    Res);
@@ -377,6 +789,46 @@ bool MCExpr::EvaluateAsRelocatable(MCValue &Res,
   }
   }
 
-  assert(0 && "Invalid assembly expression kind!");
-  return false;
+  llvm_unreachable("Invalid assembly expression kind!");
+}
+
+const MCSection *MCExpr::FindAssociatedSection() const {
+  switch (getKind()) {
+  case Target:
+    // We never look through target specific expressions.
+    return cast<MCTargetExpr>(this)->FindAssociatedSection();
+
+  case Constant:
+    return MCSymbol::AbsolutePseudoSection;
+
+  case SymbolRef: {
+    const MCSymbolRefExpr *SRE = cast<MCSymbolRefExpr>(this);
+    const MCSymbol &Sym = SRE->getSymbol();
+
+    if (Sym.isDefined())
+      return &Sym.getSection();
+
+    return nullptr;
+  }
+
+  case Unary:
+    return cast<MCUnaryExpr>(this)->getSubExpr()->FindAssociatedSection();
+
+  case Binary: {
+    const MCBinaryExpr *BE = cast<MCBinaryExpr>(this);
+    const MCSection *LHS_S = BE->getLHS()->FindAssociatedSection();
+    const MCSection *RHS_S = BE->getRHS()->FindAssociatedSection();
+
+    // If either section is absolute, return the other.
+    if (LHS_S == MCSymbol::AbsolutePseudoSection)
+      return RHS_S;
+    if (RHS_S == MCSymbol::AbsolutePseudoSection)
+      return LHS_S;
+
+    // Otherwise, return the first non-null section.
+    return LHS_S ? LHS_S : RHS_S;
+  }
+  }
+
+  llvm_unreachable("Invalid assembly expression kind!");
 }

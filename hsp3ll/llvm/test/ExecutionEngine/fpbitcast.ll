@@ -1,6 +1,6 @@
-; RUN: llvm-as < %s > %t.bc
-; RUN: lli -force-interpreter=true %t.bc | grep 40091eb8
-;
+; RUN: %lli -force-interpreter=true %s | FileCheck %s
+; CHECK: 40091eb8
+
 define i32 @test(double %x) {
 entry:
 	%x46.i = bitcast double %x to i64	

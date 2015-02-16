@@ -13,14 +13,14 @@
 //===----------------------------------------------------------------------===//
 
 #include "llvm/Support/FileUtilities.h"
-#include "llvm/Support/MemoryBuffer.h"
-#include "llvm/Support/raw_ostream.h"
-#include "llvm/System/Path.h"
-#include "llvm/ADT/OwningPtr.h"
 #include "llvm/ADT/SmallString.h"
+#include "llvm/Support/MemoryBuffer.h"
+#include "llvm/Support/Path.h"
+#include "llvm/Support/raw_ostream.h"
+#include <cctype>
 #include <cstdlib>
 #include <cstring>
-#include <cctype>
+#include <system_error>
 using namespace llvm;
 
 static bool isSignedChar(char C) {
@@ -86,9 +86,9 @@ static bool CompareNumbers(const char *&F1P, const char *&F2P,
 
   // If one of the positions is at a space and the other isn't, chomp up 'til
   // the end of the space.
-  while (isspace(*F1P) && F1P != F1End)
+  while (isspace(static_cast<unsigned char>(*F1P)) && F1P != F1End)
     ++F1P;
-  while (isspace(*F2P) && F2P != F2End)
+  while (isspace(static_cast<unsigned char>(*F2P)) && F2P != F2End)
     ++F2P;
 
   // If we stop on numbers, compare their difference.
@@ -108,17 +108,17 @@ static bool CompareNumbers(const char *&F1P, const char *&F2P,
       SmallString<200> StrTmp(F1P, EndOfNumber(F1NumEnd)+1);
       // Strange exponential notation!
       StrTmp[static_cast<unsigned>(F1NumEnd-F1P)] = 'e';
-      
+
       V1 = strtod(&StrTmp[0], const_cast<char**>(&F1NumEnd));
       F1NumEnd = F1P + (F1NumEnd-&StrTmp[0]);
     }
-    
+
     if (*F2NumEnd == 'D' || *F2NumEnd == 'd') {
       // Copy string into tmp buffer to replace the 'D' with an 'e'.
       SmallString<200> StrTmp(F2P, EndOfNumber(F2NumEnd)+1);
       // Strange exponential notation!
       StrTmp[static_cast<unsigned>(F2NumEnd-F2P)] = 'e';
-      
+
       V2 = strtod(&StrTmp[0], const_cast<char**>(&F2NumEnd));
       F2NumEnd = F2P + (F2NumEnd-&StrTmp[0]);
     }
@@ -170,40 +170,28 @@ static bool CompareNumbers(const char *&F1P, const char *&F2P,
 /// error occurs, allowing the caller to distinguish between a failed diff and a
 /// file system error.
 ///
-int llvm::DiffFilesWithTolerance(const sys::PathWithStatus &FileA,
-                                 const sys::PathWithStatus &FileB,
+int llvm::DiffFilesWithTolerance(StringRef NameA,
+                                 StringRef NameB,
                                  double AbsTol, double RelTol,
                                  std::string *Error) {
-  const sys::FileStatus *FileAStat = FileA.getFileStatus(false, Error);
-  if (!FileAStat)
-    return 2;
-  const sys::FileStatus *FileBStat = FileB.getFileStatus(false, Error);
-  if (!FileBStat)
-    return 2;
-
-  // Check for zero length files because some systems croak when you try to
-  // mmap an empty file.
-  size_t A_size = FileAStat->getSize();
-  size_t B_size = FileBStat->getSize();
-
-  // If they are both zero sized then they're the same
-  if (A_size == 0 && B_size == 0)
-    return 0;
-
-  // If only one of them is zero sized then they can't be the same
-  if ((A_size == 0 || B_size == 0)) {
-    if (Error)
-      *Error = "Files differ: one is zero-sized, the other isn't";
-    return 1;
-  }
-
-  // Now its safe to mmap the files into memory becasue both files
+  // Now its safe to mmap the files into memory because both files
   // have a non-zero size.
-  OwningPtr<MemoryBuffer> F1(MemoryBuffer::getFile(FileA.c_str(), Error));
-  OwningPtr<MemoryBuffer> F2(MemoryBuffer::getFile(FileB.c_str(), Error));
-  if (F1 == 0 || F2 == 0)
+  ErrorOr<std::unique_ptr<MemoryBuffer>> F1OrErr = MemoryBuffer::getFile(NameA);
+  if (std::error_code EC = F1OrErr.getError()) {
+    if (Error)
+      *Error = EC.message();
     return 2;
-  
+  }
+  std::unique_ptr<MemoryBuffer> F1 = std::move(F1OrErr.get());
+
+  ErrorOr<std::unique_ptr<MemoryBuffer>> F2OrErr = MemoryBuffer::getFile(NameB);
+  if (std::error_code EC = F2OrErr.getError()) {
+    if (Error)
+      *Error = EC.message();
+    return 2;
+  }
+  std::unique_ptr<MemoryBuffer> F2 = std::move(F2OrErr.get());
+
   // Okay, now that we opened the files, scan them for the first difference.
   const char *File1Start = F1->getBufferStart();
   const char *File2Start = F2->getBufferStart();
@@ -211,6 +199,8 @@ int llvm::DiffFilesWithTolerance(const sys::PathWithStatus &FileA,
   const char *File2End = F2->getBufferEnd();
   const char *F1P = File1Start;
   const char *F2P = File2Start;
+  uint64_t A_size = F1->getBufferSize();
+  uint64_t B_size = F2->getBufferSize();
 
   // Are the buffers identical?  Common case: Handle this efficiently.
   if (A_size == B_size &&

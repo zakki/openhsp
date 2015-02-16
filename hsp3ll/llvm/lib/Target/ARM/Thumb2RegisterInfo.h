@@ -15,27 +15,23 @@
 #ifndef THUMB2REGISTERINFO_H
 #define THUMB2REGISTERINFO_H
 
-#include "ARM.h"
-#include "ARMRegisterInfo.h"
-#include "llvm/Target/TargetRegisterInfo.h"
+#include "ARMBaseRegisterInfo.h"
 
 namespace llvm {
-  class ARMSubtarget;
-  class ARMBaseInstrInfo;
-  class Type;
+
+class ARMSubtarget;
 
 struct Thumb2RegisterInfo : public ARMBaseRegisterInfo {
 public:
-  Thumb2RegisterInfo(const ARMBaseInstrInfo &tii, const ARMSubtarget &STI);
+  Thumb2RegisterInfo(const ARMSubtarget &STI);
 
   /// emitLoadConstPool - Emits a load from constpool to materialize the
   /// specified immediate.
-  void emitLoadConstPool(MachineBasicBlock &MBB,
-                         MachineBasicBlock::iterator &MBBI,
-                         DebugLoc dl,
-                         unsigned DestReg, unsigned SubIdx, int Val,
-                         ARMCC::CondCodes Pred = ARMCC::AL,
-                         unsigned PredReg = 0) const;
+  void
+  emitLoadConstPool(MachineBasicBlock &MBB, MachineBasicBlock::iterator &MBBI,
+                    DebugLoc dl, unsigned DestReg, unsigned SubIdx, int Val,
+                    ARMCC::CondCodes Pred = ARMCC::AL, unsigned PredReg = 0,
+                    unsigned MIFlags = MachineInstr::NoFlags) const override;
 };
 }
 

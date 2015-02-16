@@ -14,14 +14,14 @@
 #ifndef LLI_INTERPRETER_H
 #define LLI_INTERPRETER_H
 
-#include "llvm/Function.h"
 #include "llvm/ExecutionEngine/ExecutionEngine.h"
 #include "llvm/ExecutionEngine/GenericValue.h"
-#include "llvm/Target/TargetData.h"
-#include "llvm/Support/CallSite.h"
-#include "llvm/System/DataTypes.h"
+#include "llvm/IR/CallSite.h"
+#include "llvm/IR/DataLayout.h"
+#include "llvm/IR/Function.h"
+#include "llvm/IR/InstVisitor.h"
+#include "llvm/Support/DataTypes.h"
 #include "llvm/Support/ErrorHandling.h"
-#include "llvm/Support/InstVisitor.h"
 #include "llvm/Support/raw_ostream.h"
 namespace llvm {
 
@@ -82,7 +82,7 @@ struct ExecutionContext {
 //
 class Interpreter : public ExecutionEngine, public InstVisitor<Interpreter> {
   GenericValue ExitValue;          // The return value of the called function
-  TargetData TD;
+  DataLayout TD;
   IntrinsicLowering *IL;
 
   // The runtime stack of executing code.  The top of the stack is the current
@@ -108,23 +108,29 @@ public:
   
   /// create - Create an interpreter ExecutionEngine. This can never fail.
   ///
-  static ExecutionEngine *create(Module *M, std::string *ErrorStr = 0);
+  static ExecutionEngine *create(Module *M, std::string *ErrorStr = nullptr);
 
   /// run - Start execution with the specified function and arguments.
   ///
-  virtual GenericValue runFunction(Function *F,
-                                   const std::vector<GenericValue> &ArgValues);
+  GenericValue runFunction(Function *F,
+                           const std::vector<GenericValue> &ArgValues) override;
+
+  void *getPointerToNamedFunction(const std::string &Name,
+                                  bool AbortOnFailure = true) override {
+    // FIXME: not implemented.
+    return nullptr;
+  }
 
   /// recompileAndRelinkFunction - For the interpreter, functions are always
   /// up-to-date.
   ///
-  virtual void *recompileAndRelinkFunction(Function *F) {
+  void *recompileAndRelinkFunction(Function *F) override {
     return getPointerToFunction(F);
   }
 
   /// freeMachineCodeForFunction - The interpreter does not generate any code.
   ///
-  void freeMachineCodeForFunction(Function *F) { }
+  void freeMachineCodeForFunction(Function *F) override { }
 
   // Methods used to execute code:
   // Place a call on the stack
@@ -165,7 +171,6 @@ public:
   void visitCallSite(CallSite CS);
   void visitCallInst(CallInst &I) { visitCallSite (CallSite (&I)); }
   void visitInvokeInst(InvokeInst &I) { visitCallSite (CallSite (&I)); }
-  void visitUnwindInst(UnwindInst &I);
   void visitUnreachableInst(UnreachableInst &I);
 
   void visitShl(BinaryOperator &I);
@@ -173,8 +178,15 @@ public:
   void visitAShr(BinaryOperator &I);
 
   void visitVAArgInst(VAArgInst &I);
+  void visitExtractElementInst(ExtractElementInst &I);
+  void visitInsertElementInst(InsertElementInst &I);
+  void visitShuffleVectorInst(ShuffleVectorInst &I);
+
+  void visitExtractValueInst(ExtractValueInst &I);
+  void visitInsertValueInst(InsertValueInst &I);
+
   void visitInstruction(Instruction &I) {
-    errs() << I;
+    errs() << I << "\n";
     llvm_unreachable("Instruction not interpretable yet!");
   }
 
@@ -200,40 +212,40 @@ private:  // Helper functions
   //
   void SwitchToNewBasicBlock(BasicBlock *Dest, ExecutionContext &SF);
 
-  void *getPointerToFunction(Function *F) { return (void*)F; }
-  void *getPointerToBasicBlock(BasicBlock *BB) { return (void*)BB; }
+  void *getPointerToFunction(Function *F) override { return (void*)F; }
+  void *getPointerToBasicBlock(BasicBlock *BB) override { return (void*)BB; }
 
   void initializeExecutionEngine() { }
   void initializeExternalFunctions();
   GenericValue getConstantExprValue(ConstantExpr *CE, ExecutionContext &SF);
   GenericValue getOperandValue(Value *V, ExecutionContext &SF);
-  GenericValue executeTruncInst(Value *SrcVal, const Type *DstTy,
+  GenericValue executeTruncInst(Value *SrcVal, Type *DstTy,
                                 ExecutionContext &SF);
-  GenericValue executeSExtInst(Value *SrcVal, const Type *DstTy,
+  GenericValue executeSExtInst(Value *SrcVal, Type *DstTy,
                                ExecutionContext &SF);
-  GenericValue executeZExtInst(Value *SrcVal, const Type *DstTy,
+  GenericValue executeZExtInst(Value *SrcVal, Type *DstTy,
                                ExecutionContext &SF);
-  GenericValue executeFPTruncInst(Value *SrcVal, const Type *DstTy,
+  GenericValue executeFPTruncInst(Value *SrcVal, Type *DstTy,
                                   ExecutionContext &SF);
-  GenericValue executeFPExtInst(Value *SrcVal, const Type *DstTy,
+  GenericValue executeFPExtInst(Value *SrcVal, Type *DstTy,
                                 ExecutionContext &SF);
-  GenericValue executeFPToUIInst(Value *SrcVal, const Type *DstTy,
+  GenericValue executeFPToUIInst(Value *SrcVal, Type *DstTy,
                                  ExecutionContext &SF);
-  GenericValue executeFPToSIInst(Value *SrcVal, const Type *DstTy,
+  GenericValue executeFPToSIInst(Value *SrcVal, Type *DstTy,
                                  ExecutionContext &SF);
-  GenericValue executeUIToFPInst(Value *SrcVal, const Type *DstTy,
+  GenericValue executeUIToFPInst(Value *SrcVal, Type *DstTy,
                                  ExecutionContext &SF);
-  GenericValue executeSIToFPInst(Value *SrcVal, const Type *DstTy,
+  GenericValue executeSIToFPInst(Value *SrcVal, Type *DstTy,
                                  ExecutionContext &SF);
-  GenericValue executePtrToIntInst(Value *SrcVal, const Type *DstTy,
+  GenericValue executePtrToIntInst(Value *SrcVal, Type *DstTy,
                                    ExecutionContext &SF);
-  GenericValue executeIntToPtrInst(Value *SrcVal, const Type *DstTy,
+  GenericValue executeIntToPtrInst(Value *SrcVal, Type *DstTy,
                                    ExecutionContext &SF);
-  GenericValue executeBitCastInst(Value *SrcVal, const Type *DstTy,
+  GenericValue executeBitCastInst(Value *SrcVal, Type *DstTy,
                                   ExecutionContext &SF);
   GenericValue executeCastOperation(Instruction::CastOps opcode, Value *SrcVal, 
-                                    const Type *Ty, ExecutionContext &SF);
-  void popStackAndReturnValueToCaller(const Type *RetTy, GenericValue Result);
+                                    Type *Ty, ExecutionContext &SF);
+  void popStackAndReturnValueToCaller(Type *RetTy, GenericValue Result);
 
 };
 

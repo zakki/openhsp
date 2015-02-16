@@ -1,4 +1,4 @@
-; RUN: llc < %s -mtriple=i686-apple-darwin -mattr=+sse2 | not grep movaps
+; RUN: llc < %s -mtriple=i686-apple-darwin -mcpu=corei7-avx -mattr=+sse2 | not grep movaps
 ; PR1877
 
 @NNTOT = weak global i32 0		; <i32*> [#uses=1]
@@ -21,6 +21,6 @@ bb:		; preds = %bb, %entry
 	br i1 %exitcond, label %bb13, label %bb
 
 bb13:		; preds = %bb
-	volatile store float %tmp6, float* @G, align 4
+	store volatile float %tmp6, float* @G, align 4
 	ret void
 }

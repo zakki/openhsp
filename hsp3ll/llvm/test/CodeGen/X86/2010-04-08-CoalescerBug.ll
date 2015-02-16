@@ -1,4 +1,4 @@
-; RUN: llc < %s -mtriple=x86_64-apple-darwin | FileCheck %s
+; RUN: llc < %s -mtriple=x86_64-apple-darwin -mcpu=core2 | FileCheck %s
 ; rdar://7842028
 
 ; Do not delete partially dead copy instructions.
@@ -11,7 +11,7 @@
 
 define void @t(%struct.F* %this) nounwind {
 entry:
-; CHECK: t:
+; CHECK-LABEL: t:
 ; CHECK: addq $12, %rsi
   %BitValueArray = alloca [32 x i32], align 4
   %tmp2 = getelementptr inbounds %struct.F* %this, i64 0, i32 0

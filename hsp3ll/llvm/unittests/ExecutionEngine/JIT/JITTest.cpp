@@ -7,44 +7,62 @@
 //
 //===----------------------------------------------------------------------===//
 
-#include "gtest/gtest.h"
-#include "llvm/ADT/OwningPtr.h"
-#include "llvm/ADT/SmallPtrSet.h"
-#include "llvm/Assembly/Parser.h"
-#include "llvm/BasicBlock.h"
-#include "llvm/Bitcode/ReaderWriter.h"
-#include "llvm/Constant.h"
-#include "llvm/Constants.h"
-#include "llvm/DerivedTypes.h"
 #include "llvm/ExecutionEngine/JIT.h"
+#include "llvm/ADT/SmallPtrSet.h"
+#include "llvm/AsmParser/Parser.h"
+#include "llvm/Bitcode/ReaderWriter.h"
 #include "llvm/ExecutionEngine/JITMemoryManager.h"
-#include "llvm/Function.h"
-#include "llvm/GlobalValue.h"
-#include "llvm/GlobalVariable.h"
-#include "llvm/LLVMContext.h"
-#include "llvm/Module.h"
-#include "llvm/Support/IRBuilder.h"
+#include "llvm/IR/BasicBlock.h"
+#include "llvm/IR/Constant.h"
+#include "llvm/IR/Constants.h"
+#include "llvm/IR/DerivedTypes.h"
+#include "llvm/IR/Function.h"
+#include "llvm/IR/GlobalValue.h"
+#include "llvm/IR/GlobalVariable.h"
+#include "llvm/IR/IRBuilder.h"
+#include "llvm/IR/LLVMContext.h"
+#include "llvm/IR/Module.h"
+#include "llvm/IR/Type.h"
+#include "llvm/IR/TypeBuilder.h"
 #include "llvm/Support/MemoryBuffer.h"
 #include "llvm/Support/SourceMgr.h"
-#include "llvm/Support/TypeBuilder.h"
-#include "llvm/Target/TargetSelect.h"
-#include "llvm/Type.h"
-
+#include "llvm/Support/TargetSelect.h"
+#include "gtest/gtest.h"
 #include <vector>
 
 using namespace llvm;
 
+// This variable is intentionally defined differently in the statically-compiled
+// program from the IR input to the JIT to assert that the JIT doesn't use its
+// definition.  Note that this variable must be defined even on platforms where
+// JIT tests are disabled as it is referenced from the .def file.
+extern "C" int32_t JITTest_AvailableExternallyGlobal;
+int32_t JITTest_AvailableExternallyGlobal LLVM_ATTRIBUTE_USED = 42;
+
+// This function is intentionally defined differently in the statically-compiled
+// program from the IR input to the JIT to assert that the JIT doesn't use its
+// definition.  Note that this function must be defined even on platforms where
+// JIT tests are disabled as it is referenced from the .def file.
+extern "C" int32_t JITTest_AvailableExternallyFunction() LLVM_ATTRIBUTE_USED;
+extern "C" int32_t JITTest_AvailableExternallyFunction() {
+  return 42;
+}
+
 namespace {
 
+// Tests on ARM, PowerPC and SystemZ disabled as we're running the old jit
+#if !defined(__arm__) && !defined(__powerpc__) && !defined(__s390__) \
+                      && !defined(__aarch64__)
+
 Function *makeReturnGlobal(std::string Name, GlobalVariable *G, Module *M) {
-  std::vector<const Type*> params;
-  const FunctionType *FTy = FunctionType::get(G->getType()->getElementType(),
+  std::vector<Type*> params;
+  FunctionType *FTy = FunctionType::get(G->getType()->getElementType(),
                                               params, false);
   Function *F = Function::Create(FTy, GlobalValue::ExternalLinkage, Name, M);
   BasicBlock *Entry = BasicBlock::Create(M->getContext(), "entry", F);
   IRBuilder<> builder(Entry);
   Value *Load = builder.CreateLoad(G);
-  const Type *GTy = G->getType()->getElementType();
+  Type *GTy = G->getType()->getElementType();
   Value *Add = builder.CreateAdd(Load, ConstantInt::get(GTy, 1LL));
   builder.CreateStore(Add, G);
   builder.CreateRet(Add);
@@ -58,11 +76,16 @@ std::string DumpFunction(const Function *F) {
 }
 
 class RecordingJITMemoryManager : public JITMemoryManager {
-  const OwningPtr<JITMemoryManager> Base;
+  const std::unique_ptr<JITMemoryManager> Base;
+
 public:
   RecordingJITMemoryManager()
     : Base(JITMemoryManager::CreateDefaultMemManager()) {
     stubsAllocated = 0;
+  }
+  virtual void *getPointerToNamedFunction(const std::string &Name,
+                                          bool AbortOnFailure = true) {
+    return Base->getPointerToNamedFunction(Name, AbortOnFailure);
   }
 
   virtual void setMemoryWritable() { Base->setMemoryWritable(); }
@@ -91,8 +114,8 @@ public:
     return Result;
   }
   int stubsAllocated;
-  virtual uint8_t *allocateStub(const GlobalValue* F, unsigned StubSize,
-                                unsigned Alignment) {
+  uint8_t *allocateStub(const GlobalValue *F, unsigned StubSize,
+                        unsigned Alignment) override {
     stubsAllocated++;
     return Base->allocateStub(F, StubSize, Alignment);
   }
@@ -113,6 +136,19 @@ public:
       EndFunctionBodyCall(F, FunctionStart, FunctionEnd));
     Base->endFunctionBody(F, FunctionStart, FunctionEnd);
   }
+  virtual uint8_t *allocateDataSection(
+    uintptr_t Size, unsigned Alignment, unsigned SectionID,
+    StringRef SectionName, bool IsReadOnly) {
+    return Base->allocateDataSection(
+      Size, Alignment, SectionID, SectionName, IsReadOnly);
+  }
+  virtual uint8_t *allocateCodeSection(
+    uintptr_t Size, unsigned Alignment, unsigned SectionID,
+    StringRef SectionName) {
+    return Base->allocateCodeSection(
+      Size, Alignment, SectionID, SectionName);
+  }
+  virtual bool finalizeMemory(std::string *ErrMsg) { return false; }
   virtual uint8_t *allocateSpace(intptr_t Size, unsigned Alignment) {
     return Base->allocateSpace(Size, Alignment);
   }
@@ -128,78 +164,36 @@ public:
     deallocateFunctionBodyCalls.push_back(DeallocateFunctionBodyCall(Body));
     Base->deallocateFunctionBody(Body);
   }
-  struct DeallocateExceptionTableCall {
-    DeallocateExceptionTableCall(const void *ET) : ET(ET) {}
-    const void *ET;
-  };
-  std::vector<DeallocateExceptionTableCall> deallocateExceptionTableCalls;
-  virtual void deallocateExceptionTable(void *ET) {
-    deallocateExceptionTableCalls.push_back(DeallocateExceptionTableCall(ET));
-    Base->deallocateExceptionTable(ET);
-  }
-  struct StartExceptionTableCall {
-    StartExceptionTableCall(uint8_t *Result, const Function *F,
-                            uintptr_t ActualSize, uintptr_t ActualSizeResult)
-      : Result(Result), F(F), F_dump(DumpFunction(F)),
-        ActualSize(ActualSize), ActualSizeResult(ActualSizeResult) {}
-    uint8_t *Result;
-    const Function *F;
-    std::string F_dump;
-    uintptr_t ActualSize;
-    uintptr_t ActualSizeResult;
-  };
-  std::vector<StartExceptionTableCall> startExceptionTableCalls;
-  virtual uint8_t* startExceptionTable(const Function* F,
-                                       uintptr_t &ActualSize) {
-    uintptr_t InitialActualSize = ActualSize;
-    uint8_t *Result = Base->startExceptionTable(F, ActualSize);
-    startExceptionTableCalls.push_back(
-      StartExceptionTableCall(Result, F, InitialActualSize, ActualSize));
-    return Result;
-  }
-  struct EndExceptionTableCall {
-    EndExceptionTableCall(const Function *F, uint8_t *TableStart,
-                          uint8_t *TableEnd, uint8_t* FrameRegister)
-      : F(F), F_dump(DumpFunction(F)),
-        TableStart(TableStart), TableEnd(TableEnd),
-        FrameRegister(FrameRegister) {}
-    const Function *F;
-    std::string F_dump;
-    uint8_t *TableStart;
-    uint8_t *TableEnd;
-    uint8_t *FrameRegister;
-  };
-  std::vector<EndExceptionTableCall> endExceptionTableCalls;
-  virtual void endExceptionTable(const Function *F, uint8_t *TableStart,
-                                 uint8_t *TableEnd, uint8_t* FrameRegister) {
-      endExceptionTableCalls.push_back(
-          EndExceptionTableCall(F, TableStart, TableEnd, FrameRegister));
-    return Base->endExceptionTable(F, TableStart, TableEnd, FrameRegister);
-  }
 };
 
 bool LoadAssemblyInto(Module *M, const char *assembly) {
   SMDiagnostic Error;
   bool success =
-    NULL != ParseAssemblyString(assembly, M, Error, M->getContext());
+    nullptr != ParseAssemblyString(assembly, M, Error, M->getContext());
   std::string errMsg;
   raw_string_ostream os(errMsg);
-  Error.Print("", os);
+  Error.print("", os);
   EXPECT_TRUE(success) << os.str();
   return success;
 }
 
 class JITTest : public testing::Test {
  protected:
+  virtual RecordingJITMemoryManager *createMemoryManager() {
+    return new RecordingJITMemoryManager;
+  }
+
   virtual void SetUp() {
     M = new Module("<main>", Context);
-    RJMM = new RecordingJITMemoryManager;
+    RJMM = createMemoryManager();
     RJMM->setPoisonMemory(true);
     std::string Error;
+    TargetOptions Options;
     TheJIT.reset(EngineBuilder(M).setEngineKind(EngineKind::JIT)
                  .setJITMemoryManager(RJMM)
-                 .setErrorStr(&Error).create());
-    ASSERT_TRUE(TheJIT.get() != NULL) << Error;
+                 .setErrorStr(&Error)
+                 .setTargetOptions(Options).create());
+    ASSERT_TRUE(TheJIT.get() != nullptr) << Error;
   }
 
   void LoadAssembly(const char *assembly) {
@@ -209,7 +203,7 @@ class JITTest : public testing::Test {
   LLVMContext Context;
   Module *M;  // Owned by ExecutionEngine.
   RecordingJITMemoryManager *RJMM;
-  OwningPtr<ExecutionEngine> TheJIT;
+  std::unique_ptr<ExecutionEngine> TheJIT;
 };
 
 // Regression test for a bug.  The JIT used to allocate globals inside the same
@@ -226,17 +220,17 @@ TEST(JIT, GlobalInFunction) {
   // memory is more easily tested.
   MemMgr->setPoisonMemory(true);
   std::string Error;
-  OwningPtr<ExecutionEngine> JIT(EngineBuilder(M)
-                                 .setEngineKind(EngineKind::JIT)
-                                 .setErrorStr(&Error)
-                                 .setJITMemoryManager(MemMgr)
-                                 // The next line enables the fix:
-                                 .setAllocateGVsWithCode(false)
-                                 .create());
+  std::unique_ptr<ExecutionEngine> JIT(EngineBuilder(M)
+                                           .setEngineKind(EngineKind::JIT)
+                                           .setErrorStr(&Error)
+                                           .setJITMemoryManager(MemMgr)
+                                           // The next line enables the fix:
+                                           .setAllocateGVsWithCode(false)
+                                           .create());
   ASSERT_EQ(Error, "");
 
   // Create a global variable.
-  const Type *GTy = Type::getInt32Ty(context);
+  Type *GTy = Type::getInt32Ty(context);
   GlobalVariable *G = new GlobalVariable(
       *M,
       GTy,
@@ -255,7 +249,7 @@ TEST(JIT, GlobalInFunction) {
 
   // Since F1 was codegen'd, a pointer to G should be available.
   int32_t *GPtr = (int32_t*)JIT->getPointerToGlobalIfAvailable(G);
-  ASSERT_NE((int32_t*)NULL, GPtr);
+  ASSERT_NE((int32_t*)nullptr, GPtr);
   EXPECT_EQ(0, *GPtr);
 
   // F1() should increment G.
@@ -320,11 +314,11 @@ TEST_F(JITTest, FarCallToKnownFunction) {
 TEST_F(JITTest, NonLazyCompilationStillNeedsStubs) {
   TheJIT->DisableLazyCompilation(true);
 
-  const FunctionType *Func1Ty =
+  FunctionType *Func1Ty =
       cast<FunctionType>(TypeBuilder<void(void), false>::get(Context));
-  std::vector<const Type*> arg_types;
+  std::vector<Type*> arg_types;
   arg_types.push_back(Type::getInt1Ty(Context));
-  const FunctionType *FuncTy = FunctionType::get(
+  FunctionType *FuncTy = FunctionType::get(
       Type::getVoidTy(Context), arg_types, false);
   Function *Func1 = Function::Create(Func1Ty, Function::ExternalLinkage,
                                      "func1", M);
@@ -377,7 +371,7 @@ TEST_F(JITTest, NonLazyLeaksNoStubs) {
   TheJIT->DisableLazyCompilation(true);
 
   // Create two functions with a single basic block each.
-  const FunctionType *FuncTy =
+  FunctionType *FuncTy =
       cast<FunctionType>(TypeBuilder<int(), false>::get(Context));
   Function *Func1 = Function::Create(FuncTy, Function::ExternalLinkage,
                                      "func1", M);
@@ -439,33 +433,13 @@ TEST_F(JITTest, ModuleDeletion) {
   }
   EXPECT_EQ(RJMM->startFunctionBodyCalls.size(),
             RJMM->deallocateFunctionBodyCalls.size());
-
-  SmallPtrSet<const void*, 2> ExceptionTablesDeallocated;
-  unsigned NumTablesDeallocated = 0;
-  for (unsigned i = 0, e = RJMM->deallocateExceptionTableCalls.size();
-       i != e; ++i) {
-    ExceptionTablesDeallocated.insert(
-        RJMM->deallocateExceptionTableCalls[i].ET);
-    if (RJMM->deallocateExceptionTableCalls[i].ET != NULL) {
-        // If JITEmitDebugInfo is off, we'll "deallocate" NULL, which doesn't
-        // appear in startExceptionTableCalls.
-        NumTablesDeallocated++;
-    }
-  }
-  for (unsigned i = 0, e = RJMM->startExceptionTableCalls.size(); i != e; ++i) {
-    EXPECT_TRUE(ExceptionTablesDeallocated.count(
-                  RJMM->startExceptionTableCalls[i].Result))
-      << "Function's exception table leaked: \n"
-      << RJMM->startExceptionTableCalls[i].F_dump;
-  }
-  EXPECT_EQ(RJMM->startExceptionTableCalls.size(),
-            NumTablesDeallocated);
 }
 
-// ARM and PPC still emit stubs for calls since the target may be too far away
-// to call directly.  This #if can probably be removed when
+// ARM, MIPS and PPC still emit stubs for calls since the target may be
+// too far away to call directly.  This #if can probably be removed when
 // http://llvm.org/PR5201 is fixed.
-#if !defined(__arm__) && !defined(__powerpc__) && !defined(__ppc__)
+#if !defined(__arm__) && !defined(__mips__) && \
+    !defined(__powerpc__) && !defined(__ppc__) && !defined(__aarch64__)
 typedef int (*FooPtr) ();
 
 TEST_F(JITTest, NoStubs) {
@@ -539,9 +513,9 @@ TEST_F(JITTest, FunctionPointersOutliveTheirCreator) {
 #endif
 }
 
-// ARM doesn't have an implementation of replaceMachineCodeForFunction(), so
-// recompileAndRelinkFunction doesn't work.
-#if !defined(__arm__)
+// ARM does not have an implementation of replaceMachineCodeForFunction(),
+// so recompileAndRelinkFunction doesn't work.
+#if !defined(__arm__) && !defined(__aarch64__)
 TEST_F(JITTest, FunctionIsRecompiledAndRelinked) {
   Function *F = Function::Create(TypeBuilder<int(void), false>::get(Context),
                                  GlobalValue::ExternalLinkage, "test", M);
@@ -574,14 +548,6 @@ TEST_F(JITTest, FunctionIsRecompiledAndRelinked) {
 }
 #endif  // !defined(__arm__)
 
-}  // anonymous namespace
-// This variable is intentionally defined differently in the statically-compiled
-// program from the IR input to the JIT to assert that the JIT doesn't use its
-// definition.
-extern "C" int32_t JITTest_AvailableExternallyGlobal;
-int32_t JITTest_AvailableExternallyGlobal = 42;
-namespace {
-
 TEST_F(JITTest, AvailableExternallyGlobalIsntEmitted) {
   TheJIT->DisableLazyCompilation(true);
   LoadAssembly("@JITTest_AvailableExternallyGlobal = "
@@ -598,15 +564,6 @@ TEST_F(JITTest, AvailableExternallyGlobalIsntEmitted) {
   EXPECT_EQ(42, loader()) << "func should return 42 from the external global,"
                           << " not 7 from the IR version.";
 }
-
-}  // anonymous namespace
-// This function is intentionally defined differently in the statically-compiled
-// program from the IR input to the JIT to assert that the JIT doesn't use its
-// definition.
-extern "C" int32_t JITTest_AvailableExternallyFunction() {
-  return 42;
-}
-namespace {
 
 TEST_F(JITTest, AvailableExternallyFunctionIsntCompiled) {
   TheJIT->DisableLazyCompilation(true);
@@ -675,22 +632,23 @@ ExecutionEngine *getJITFromBitcode(
   // c_str() is null-terminated like MemoryBuffer::getMemBuffer requires.
   MemoryBuffer *BitcodeBuffer =
     MemoryBuffer::getMemBuffer(Bitcode, "Bitcode for test");
-  std::string errMsg;
-  M = getLazyBitcodeModule(BitcodeBuffer, Context, &errMsg);
-  if (M == NULL) {
-    ADD_FAILURE() << errMsg;
+  ErrorOr<Module*> ModuleOrErr = getLazyBitcodeModule(BitcodeBuffer, Context);
+  if (std::error_code EC = ModuleOrErr.getError()) {
+    ADD_FAILURE() << EC.message();
     delete BitcodeBuffer;
-    return NULL;
+    return nullptr;
   }
+  M = ModuleOrErr.get();
+  std::string errMsg;
   ExecutionEngine *TheJIT = EngineBuilder(M)
     .setEngineKind(EngineKind::JIT)
     .setErrorStr(&errMsg)
     .create();
-  if (TheJIT == NULL) {
+  if (TheJIT == nullptr) {
     ADD_FAILURE() << errMsg;
     delete M;
-    M = NULL;
-    return NULL;
+    M = nullptr;
+    return nullptr;
   }
   return TheJIT;
 }
@@ -711,7 +669,8 @@ TEST(LazyLoadedJITTest, MaterializableAvailableExternallyFunctionIsntCompiled) {
                       "} ");
   ASSERT_FALSE(Bitcode.empty()) << "Assembling failed";
   Module *M;
-  OwningPtr<ExecutionEngine> TheJIT(getJITFromBitcode(Context, Bitcode, M));
+  std::unique_ptr<ExecutionEngine> TheJIT(
+      getJITFromBitcode(Context, Bitcode, M));
   ASSERT_TRUE(TheJIT.get()) << "Failed to create JIT.";
   TheJIT->DisableLazyCompilation(true);
 
@@ -750,7 +709,8 @@ TEST(LazyLoadedJITTest, EagerCompiledRecursionThroughGhost) {
                       "} ");
   ASSERT_FALSE(Bitcode.empty()) << "Assembling failed";
   Module *M;
-  OwningPtr<ExecutionEngine> TheJIT(getJITFromBitcode(Context, Bitcode, M));
+  std::unique_ptr<ExecutionEngine> TheJIT(
+      getJITFromBitcode(Context, Bitcode, M));
   ASSERT_TRUE(TheJIT.get()) << "Failed to create JIT.";
   TheJIT->DisableLazyCompilation(true);
 
@@ -763,17 +723,6 @@ TEST(LazyLoadedJITTest, EagerCompiledRecursionThroughGhost) {
     (intptr_t)TheJIT->getPointerToFunction(recur1IR));
   EXPECT_EQ(3, recur1(4));
 }
-
-// This code is copied from JITEventListenerTest, but it only runs once for all
-// the tests in this directory.  Everything seems fine, but that's strange
-// behavior.
-class JITEnvironment : public testing::Environment {
-  virtual void SetUp() {
-    // Required to create a JIT.
-    InitializeNativeTarget();
-  }
-};
-testing::Environment* const jit_env =
-  testing::AddGlobalTestEnvironment(new JITEnvironment);
+#endif // !defined(__arm__) && !defined(__powerpc__) && !defined(__s390__)
 
 }

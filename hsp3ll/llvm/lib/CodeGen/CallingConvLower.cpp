@@ -13,29 +13,34 @@
 //===----------------------------------------------------------------------===//
 
 #include "llvm/CodeGen/CallingConvLower.h"
+#include "llvm/CodeGen/MachineFrameInfo.h"
+#include "llvm/IR/DataLayout.h"
 #include "llvm/Support/Debug.h"
 #include "llvm/Support/ErrorHandling.h"
 #include "llvm/Support/raw_ostream.h"
-#include "llvm/Target/TargetRegisterInfo.h"
-#include "llvm/Target/TargetData.h"
+#include "llvm/Target/TargetLowering.h"
 #include "llvm/Target/TargetMachine.h"
+#include "llvm/Target/TargetRegisterInfo.h"
 using namespace llvm;
 
-CCState::CCState(CallingConv::ID CC, bool isVarArg, const TargetMachine &tm,
-                 SmallVector<CCValAssign, 16> &locs, LLVMContext &C)
-  : CallingConv(CC), IsVarArg(isVarArg), TM(tm),
-    TRI(*TM.getRegisterInfo()), Locs(locs), Context(C) {
+CCState::CCState(CallingConv::ID CC, bool isVarArg, MachineFunction &mf,
+                 const TargetMachine &tm, SmallVectorImpl<CCValAssign> &locs,
+                 LLVMContext &C)
+  : CallingConv(CC), IsVarArg(isVarArg), MF(mf), TM(tm),
+    TRI(*TM.getRegisterInfo()), Locs(locs), Context(C),
+    CallOrPrologue(Unknown) {
   // No stack is used.
   StackOffset = 0;
-  
+
+  clearByValRegsInfo();
   UsedRegs.resize((TRI.getNumRegs()+31)/32);
 }
 
-// HandleByVal - Allocate a stack slot large enough to pass an argument by
-// value. The size and alignment information of the argument is encoded in its
-// parameter attribute.
-void CCState::HandleByVal(unsigned ValNo, EVT ValVT,
-                          EVT LocVT, CCValAssign::LocInfo LocInfo,
+// HandleByVal - Allocate space on the stack large enough to pass an argument
+// by value. The size and alignment information of the argument is encoded in
+// its parameter attribute.
+void CCState::HandleByVal(unsigned ValNo, MVT ValVT,
+                          MVT LocVT, CCValAssign::LocInfo LocInfo,
                           int MinSize, int MinAlign,
                           ISD::ArgFlagsTy ArgFlags) {
   unsigned Align = ArgFlags.getByValAlign();
@@ -44,18 +49,16 @@ void CCState::HandleByVal(unsigned ValNo, EVT ValVT,
     Size = MinSize;
   if (MinAlign > (int)Align)
     Align = MinAlign;
+  MF.getFrameInfo()->ensureMaxAlignment(Align);
+  TM.getTargetLowering()->HandleByVal(this, Size, Align);
   unsigned Offset = AllocateStack(Size, Align);
-
   addLoc(CCValAssign::getMem(ValNo, ValVT, Offset, LocVT, LocInfo));
 }
 
 /// MarkAllocated - Mark a register and all of its aliases as allocated.
 void CCState::MarkAllocated(unsigned Reg) {
-  UsedRegs[Reg/32] |= 1 << (Reg&31);
-  
-  if (const unsigned *RegAliases = TRI.getAliasSet(Reg))
-    for (; (Reg = *RegAliases); ++RegAliases)
-      UsedRegs[Reg/32] |= 1 << (Reg&31);
+  for (MCRegAliasIterator AI(Reg, &TRI, true); AI.isValid(); ++AI)
+    UsedRegs[*AI/32] |= 1 << (*AI&31);
 }
 
 /// AnalyzeFormalArguments - Analyze an array of argument values,
@@ -66,14 +69,14 @@ CCState::AnalyzeFormalArguments(const SmallVectorImpl<ISD::InputArg> &Ins,
   unsigned NumArgs = Ins.size();
 
   for (unsigned i = 0; i != NumArgs; ++i) {
-    EVT ArgVT = Ins[i].VT;
+    MVT ArgVT = Ins[i].VT;
     ISD::ArgFlagsTy ArgFlags = Ins[i].Flags;
     if (Fn(i, ArgVT, ArgVT, CCValAssign::Full, ArgFlags, *this)) {
 #ifndef NDEBUG
       dbgs() << "Formal argument #" << i << " has unhandled type "
-             << ArgVT.getEVTString();
+             << EVT(ArgVT).getEVTString() << '\n';
 #endif
-      llvm_unreachable(0);
+      llvm_unreachable(nullptr);
     }
   }
 }
@@ -84,7 +87,7 @@ bool CCState::CheckReturn(const SmallVectorImpl<ISD::OutputArg> &Outs,
                           CCAssignFn Fn) {
   // Determine which register each value should be copied into.
   for (unsigned i = 0, e = Outs.size(); i != e; ++i) {
-    EVT VT = Outs[i].VT;
+    MVT VT = Outs[i].VT;
     ISD::ArgFlagsTy ArgFlags = Outs[i].Flags;
     if (Fn(i, VT, VT, CCValAssign::Full, ArgFlags, *this))
       return false;
@@ -98,14 +101,14 @@ void CCState::AnalyzeReturn(const SmallVectorImpl<ISD::OutputArg> &Outs,
                             CCAssignFn Fn) {
   // Determine which register each value should be copied into.
   for (unsigned i = 0, e = Outs.size(); i != e; ++i) {
-    EVT VT = Outs[i].VT;
+    MVT VT = Outs[i].VT;
     ISD::ArgFlagsTy ArgFlags = Outs[i].Flags;
     if (Fn(i, VT, VT, CCValAssign::Full, ArgFlags, *this)) {
 #ifndef NDEBUG
       dbgs() << "Return operand #" << i << " has unhandled type "
-             << VT.getEVTString();
+             << EVT(VT).getEVTString() << '\n';
 #endif
-      llvm_unreachable(0);
+      llvm_unreachable(nullptr);
     }
   }
 }
@@ -116,33 +119,33 @@ void CCState::AnalyzeCallOperands(const SmallVectorImpl<ISD::OutputArg> &Outs,
                                   CCAssignFn Fn) {
   unsigned NumOps = Outs.size();
   for (unsigned i = 0; i != NumOps; ++i) {
-    EVT ArgVT = Outs[i].VT;
+    MVT ArgVT = Outs[i].VT;
     ISD::ArgFlagsTy ArgFlags = Outs[i].Flags;
     if (Fn(i, ArgVT, ArgVT, CCValAssign::Full, ArgFlags, *this)) {
 #ifndef NDEBUG
       dbgs() << "Call operand #" << i << " has unhandled type "
-             << ArgVT.getEVTString();
+             << EVT(ArgVT).getEVTString() << '\n';
 #endif
-      llvm_unreachable(0);
+      llvm_unreachable(nullptr);
     }
   }
 }
 
 /// AnalyzeCallOperands - Same as above except it takes vectors of types
 /// and argument flags.
-void CCState::AnalyzeCallOperands(SmallVectorImpl<EVT> &ArgVTs,
+void CCState::AnalyzeCallOperands(SmallVectorImpl<MVT> &ArgVTs,
                                   SmallVectorImpl<ISD::ArgFlagsTy> &Flags,
                                   CCAssignFn Fn) {
   unsigned NumOps = ArgVTs.size();
   for (unsigned i = 0; i != NumOps; ++i) {
-    EVT ArgVT = ArgVTs[i];
+    MVT ArgVT = ArgVTs[i];
     ISD::ArgFlagsTy ArgFlags = Flags[i];
     if (Fn(i, ArgVT, ArgVT, CCValAssign::Full, ArgFlags, *this)) {
 #ifndef NDEBUG
       dbgs() << "Call operand #" << i << " has unhandled type "
-             << ArgVT.getEVTString();
+             << EVT(ArgVT).getEVTString() << '\n';
 #endif
-      llvm_unreachable(0);
+      llvm_unreachable(nullptr);
     }
   }
 }
@@ -152,26 +155,26 @@ void CCState::AnalyzeCallOperands(SmallVectorImpl<EVT> &ArgVTs,
 void CCState::AnalyzeCallResult(const SmallVectorImpl<ISD::InputArg> &Ins,
                                 CCAssignFn Fn) {
   for (unsigned i = 0, e = Ins.size(); i != e; ++i) {
-    EVT VT = Ins[i].VT;
+    MVT VT = Ins[i].VT;
     ISD::ArgFlagsTy Flags = Ins[i].Flags;
     if (Fn(i, VT, VT, CCValAssign::Full, Flags, *this)) {
 #ifndef NDEBUG
       dbgs() << "Call result #" << i << " has unhandled type "
-             << VT.getEVTString();
+             << EVT(VT).getEVTString() << '\n';
 #endif
-      llvm_unreachable(0);
+      llvm_unreachable(nullptr);
     }
   }
 }
 
 /// AnalyzeCallResult - Same as above except it's specialized for calls which
 /// produce a single value.
-void CCState::AnalyzeCallResult(EVT VT, CCAssignFn Fn) {
+void CCState::AnalyzeCallResult(MVT VT, CCAssignFn Fn) {
   if (Fn(0, VT, VT, CCValAssign::Full, ISD::ArgFlagsTy(), *this)) {
 #ifndef NDEBUG
     dbgs() << "Call result has unhandled type "
-           << VT.getEVTString();
+           << EVT(VT).getEVTString() << '\n';
 #endif
-    llvm_unreachable(0);
+    llvm_unreachable(nullptr);
   }
 }

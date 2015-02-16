@@ -15,8 +15,8 @@
 #define LIB_ASMPARSER_LLLEXER_H
 
 #include "LLToken.h"
-#include "llvm/ADT/APSInt.h"
 #include "llvm/ADT/APFloat.h"
+#include "llvm/ADT/APSInt.h"
 #include "llvm/Support/SourceMgr.h"
 #include <string>
 
@@ -38,11 +38,10 @@ namespace llvm {
     lltok::Kind CurKind;
     std::string StrVal;
     unsigned UIntVal;
-    const Type *TyVal;
+    Type *TyVal;
     APFloat APFloatVal;
     APSInt  APSIntVal;
 
-    std::string TheError;
   public:
     explicit LLLexer(MemoryBuffer *StartBuf, SourceMgr &SM, SMDiagnostic &,
                      LLVMContext &C);
@@ -56,14 +55,18 @@ namespace llvm {
     LocTy getLoc() const { return SMLoc::getFromPointer(TokStart); }
     lltok::Kind getKind() const { return CurKind; }
     const std::string &getStrVal() const { return StrVal; }
-    const Type *getTyVal() const { return TyVal; }
+    Type *getTyVal() const { return TyVal; }
     unsigned getUIntVal() const { return UIntVal; }
     const APSInt &getAPSIntVal() const { return APSIntVal; }
     const APFloat &getAPFloatVal() const { return APFloatVal; }
 
 
-    bool Error(LocTy L, const std::string &Msg) const;
-    bool Error(const std::string &Msg) const { return Error(getLoc(), Msg); }
+    bool Error(LocTy L, const Twine &Msg) const;
+    bool Error(const Twine &Msg) const { return Error(getLoc(), Msg); }
+
+    void Warning(LocTy WarningLoc, const Twine &Msg) const;
+    void Warning(const Twine &Msg) const { return Warning(getLoc(), Msg); }
+
     std::string getFilename() const;
 
   private:
@@ -71,14 +74,19 @@ namespace llvm {
 
     int getNextChar();
     void SkipLineComment();
+    lltok::Kind ReadString(lltok::Kind kind);
+    bool ReadVarName();
+
     lltok::Kind LexIdentifier();
     lltok::Kind LexDigitOrNegative();
     lltok::Kind LexPositive();
     lltok::Kind LexAt();
+    lltok::Kind LexDollar();
     lltok::Kind LexExclaim();
     lltok::Kind LexPercent();
     lltok::Kind LexQuote();
     lltok::Kind Lex0x();
+    lltok::Kind LexHash();
 
     uint64_t atoull(const char *Buffer, const char *End);
     uint64_t HexIntToVal(const char *Buffer, const char *End);

@@ -1,4 +1,4 @@
-//===-- llvm/Target/X86/X86TargetObjectFile.h - X86 Object Info -*- C++ -*-===//
+//===-- X86TargetObjectFile.h - X86 Object Info -----------------*- C++ -*-===//
 //
 //                     The LLVM Compiler Infrastructure
 //
@@ -11,42 +11,46 @@
 #define LLVM_TARGET_X86_TARGETOBJECTFILE_H
 
 #include "llvm/CodeGen/TargetLoweringObjectFileImpl.h"
-#include "llvm/Target/TargetMachine.h"
 #include "llvm/Target/TargetLoweringObjectFile.h"
 
 namespace llvm {
-  class X86TargetMachine;
 
-  /// X8664_MachoTargetObjectFile - This TLOF implementation is used for Darwin
+  /// X86_64MachoTargetObjectFile - This TLOF implementation is used for Darwin
   /// x86-64.
-  class X8664_MachoTargetObjectFile : public TargetLoweringObjectFileMachO {
+  class X86_64MachoTargetObjectFile : public TargetLoweringObjectFileMachO {
   public:
-    virtual const MCExpr *
-    getExprForDwarfGlobalReference(const GlobalValue *GV, Mangler *Mang,
-                                   MachineModuleInfo *MMI, unsigned Encoding,
-                                   MCStreamer &Streamer) const;
+    const MCExpr *
+    getTTypeGlobalReference(const GlobalValue *GV, unsigned Encoding,
+                            Mangler &Mang, const TargetMachine &TM,
+                            MachineModuleInfo *MMI,
+                            MCStreamer &Streamer) const override;
+
+    // getCFIPersonalitySymbol - The symbol that gets passed to
+    // .cfi_personality.
+    MCSymbol *getCFIPersonalitySymbol(const GlobalValue *GV, Mangler &Mang,
+                                      const TargetMachine &TM,
+                                      MachineModuleInfo *MMI) const override;
   };
 
-  class X8632_ELFTargetObjectFile : public TargetLoweringObjectFileELF {
-    const X86TargetMachine &TM;
-  public:
-    X8632_ELFTargetObjectFile(const X86TargetMachine &tm)
-      :TM(tm) { }
-    virtual unsigned getPersonalityEncoding() const;
-    virtual unsigned getLSDAEncoding() const;
-    virtual unsigned getFDEEncoding() const;
-    virtual unsigned getTTypeEncoding() const;
+  /// X86LinuxTargetObjectFile - This implementation is used for linux x86
+  /// and x86-64.
+  class X86LinuxTargetObjectFile : public TargetLoweringObjectFileELF {
+    void Initialize(MCContext &Ctx, const TargetMachine &TM) override;
+
+    /// \brief Describe a TLS variable address within debug info.
+    const MCExpr *getDebugThreadLocalSymbol(const MCSymbol *Sym) const override;
   };
 
-  class X8664_ELFTargetObjectFile : public TargetLoweringObjectFileELF {
-    const X86TargetMachine &TM;
-  public:
-    X8664_ELFTargetObjectFile(const X86TargetMachine &tm)
-      :TM(tm) { }
-    virtual unsigned getPersonalityEncoding() const;
-    virtual unsigned getLSDAEncoding() const;
-    virtual unsigned getFDEEncoding() const;
-    virtual unsigned getTTypeEncoding() const;
+  /// \brief This implementation is used for Windows targets on x86 and x86-64.
+  class X86WindowsTargetObjectFile : public TargetLoweringObjectFileCOFF {
+    const MCExpr *
+    getExecutableRelativeSymbol(const ConstantExpr *CE, Mangler &Mang,
+                                const TargetMachine &TM) const override;
+
+    /// \brief Given a mergeable constant with the specified size and relocation
+    /// information, return a section that it should be placed in.
+    const MCSection *getSectionForConstant(SectionKind Kind,
+                                           const Constant *C) const override;
   };
 
 } // end namespace llvm

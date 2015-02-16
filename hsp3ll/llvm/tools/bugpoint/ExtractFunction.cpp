@@ -13,27 +13,28 @@
 //===----------------------------------------------------------------------===//
 
 #include "BugDriver.h"
-#include "llvm/Constants.h"
-#include "llvm/DerivedTypes.h"
-#include "llvm/LLVMContext.h"
-#include "llvm/Module.h"
-#include "llvm/PassManager.h"
+#include "llvm/IR/Constants.h"
+#include "llvm/IR/DataLayout.h"
+#include "llvm/IR/DerivedTypes.h"
+#include "llvm/IR/LLVMContext.h"
+#include "llvm/IR/Module.h"
+#include "llvm/IR/Verifier.h"
 #include "llvm/Pass.h"
-#include "llvm/Analysis/Verifier.h"
-#include "llvm/Assembly/Writer.h"
-#include "llvm/Transforms/IPO.h"
-#include "llvm/Transforms/Scalar.h"
-#include "llvm/Transforms/Utils/Cloning.h"
-#include "llvm/Transforms/Utils/FunctionUtils.h"
-#include "llvm/Target/TargetData.h"
+#include "llvm/PassManager.h"
 #include "llvm/Support/CommandLine.h"
 #include "llvm/Support/Debug.h"
 #include "llvm/Support/FileUtilities.h"
-#include "llvm/Support/raw_ostream.h"
-#include "llvm/System/Path.h"
-#include "llvm/System/Signals.h"
+#include "llvm/Support/Path.h"
+#include "llvm/Support/Signals.h"
+#include "llvm/Support/ToolOutputFile.h"
+#include "llvm/Transforms/IPO.h"
+#include "llvm/Transforms/Scalar.h"
+#include "llvm/Transforms/Utils/Cloning.h"
+#include "llvm/Transforms/Utils/CodeExtractor.h"
 #include <set>
 using namespace llvm;
+
+#define DEBUG_TYPE "bugpoint"
 
 namespace llvm {
   bool DisableSimplifyCFG = false;
@@ -47,7 +48,39 @@ namespace {
   cl::opt<bool, true>
   NoSCFG("disable-simplifycfg", cl::location(DisableSimplifyCFG),
          cl::desc("Do not use the -simplifycfg pass to reduce testcases"));
-}
+
+  Function* globalInitUsesExternalBA(GlobalVariable* GV) {
+    if (!GV->hasInitializer())
+      return nullptr;
+
+    Constant *I = GV->getInitializer();
+
+    // walk the values used by the initializer
+    // (and recurse into things like ConstantExpr)
+    std::vector<Constant*> Todo;
+    std::set<Constant*> Done;
+    Todo.push_back(I);
+
+    while (!Todo.empty()) {
+      Constant* V = Todo.back();
+      Todo.pop_back();
+      Done.insert(V);
+
+      if (BlockAddress *BA = dyn_cast<BlockAddress>(V)) {
+        Function *F = BA->getFunction();
+        if (F->isDeclaration())
+          return F;
+      }
+
+      for (User::op_iterator i = V->op_begin(), e = V->op_end(); i != e; ++i) {
+        Constant *C = dyn_cast<Constant>(*i);
+        if (C && !isa<GlobalValue>(C) && !Done.count(C))
+          Todo.push_back(C);
+      }
+    }
+    return nullptr;
+  }
+}  // end anonymous namespace
 
 /// deleteInstructionFromProgram - This method clones the current Program and
 /// deletes the specified instruction from the cloned module.  It then runs a
@@ -116,10 +149,8 @@ Module *BugDriver::performFinalCleanups(Module *M, bool MayModifySemantics) {
   else
     CleanupPasses.push_back("deadargelim");
 
-  CleanupPasses.push_back("deadtypeelim");
-
   Module *New = runPassesOn(M, CleanupPasses);
-  if (New == 0) {
+  if (!New) {
     errs() << "Final cleanups failed.  Sorry. :(  Please report a bug!\n";
     return M;
   }
@@ -136,11 +167,11 @@ Module *BugDriver::ExtractLoop(Module *M) {
   LoopExtractPasses.push_back("loop-extract-single");
 
   Module *NewM = runPassesOn(M, LoopExtractPasses);
-  if (NewM == 0) {
+  if (!NewM) {
     outs() << "*** Loop extraction failed: ";
     EmitProgressBitcode(M, "loopextraction", true);
     outs() << "*** Sorry. :(  Please report a bug!\n";
-    return 0;
+    return nullptr;
   }
 
   // Check to see if we created any new functions.  If not, no loops were
@@ -149,7 +180,7 @@ Module *BugDriver::ExtractLoop(Module *M) {
   static unsigned NumExtracted = 32;
   if (M->size() == NewM->size() || --NumExtracted == 0) {
     delete NewM;
-    return 0;
+    return nullptr;
   } else {
     assert(M->size() < NewM->size() && "Loop extract removed functions?");
     Module::iterator MI = NewM->begin();
@@ -175,13 +206,16 @@ void llvm::DeleteFunctionBody(Function *F) {
 static Constant *GetTorInit(std::vector<std::pair<Function*, int> > &TorList) {
   assert(!TorList.empty() && "Don't create empty tor list!");
   std::vector<Constant*> ArrayElts;
+  Type *Int32Ty = Type::getInt32Ty(TorList[0].first->getContext());
+  
+  StructType *STy =
+    StructType::get(Int32Ty, TorList[0].first->getType(), NULL);
   for (unsigned i = 0, e = TorList.size(); i != e; ++i) {
-    std::vector<Constant*> Elts;
-    Elts.push_back(ConstantInt::get(
-          Type::getInt32Ty(TorList[i].first->getContext()), TorList[i].second));
-    Elts.push_back(TorList[i].first);
-    ArrayElts.push_back(ConstantStruct::get(TorList[i].first->getContext(),
-                                            Elts, false));
+    Constant *Elts[] = {
+      ConstantInt::get(Int32Ty, TorList[i].second),
+      TorList[i].first
+    };
+    ArrayElts.push_back(ConstantStruct::get(STy, Elts));
   }
   return ConstantArray::get(ArrayType::get(ArrayElts[0]->getType(), 
                                            ArrayElts.size()),
@@ -193,7 +227,7 @@ static Constant *GetTorInit(std::vector<std::pair<Function*, int> > &TorList) {
 /// static ctors/dtors, we need to add an llvm.global_[cd]tors global to M2, and
 /// prune appropriate entries out of M1s list.
 static void SplitStaticCtorDtor(const char *GlobalName, Module *M1, Module *M2,
-                                ValueMap<const Value*, Value*> &VMap) {
+                                ValueToValueMapTy &VMap) {
   GlobalVariable *GV = M1->getNamedGlobal(GlobalName);
   if (!GV || GV->isDeclaration() || GV->hasLocalLinkage() ||
       !GV->use_empty()) return;
@@ -256,7 +290,7 @@ static void SplitStaticCtorDtor(const char *GlobalName, Module *M1, Module *M2,
 Module *
 llvm::SplitFunctionsOutOfModule(Module *M,
                                 const std::vector<Function*> &F,
-                                ValueMap<const Value*, Value*> &VMap) {
+                                ValueToValueMapTy &VMap) {
   // Make sure functions & globals are all external so that linkage
   // between the two modules will work.
   for (Module::iterator I = M->begin(), E = M->end(); I != E; ++I)
@@ -268,20 +302,15 @@ llvm::SplitFunctionsOutOfModule(Module *M,
     I->setLinkage(GlobalValue::ExternalLinkage);
   }
 
-  ValueMap<const Value*, Value*> NewVMap;
+  ValueToValueMapTy NewVMap;
   Module *New = CloneModule(M, NewVMap);
-
-  // Make sure global initializers exist only in the safe module (CBE->.so)
-  for (Module::global_iterator I = New->global_begin(), E = New->global_end();
-       I != E; ++I)
-    I->setInitializer(0);  // Delete the initializer to make it external
 
   // Remove the Test functions from the Safe module
   std::set<Function *> TestFunctions;
   for (unsigned i = 0, e = F.size(); i != e; ++i) {
     Function *TNOF = cast<Function>(VMap[F[i]]);
     DEBUG(errs() << "Removing function ");
-    DEBUG(WriteAsOperand(errs(), TNOF, false));
+    DEBUG(TNOF->printAsOperand(errs(), false));
     DEBUG(errs() << "\n");
     TestFunctions.insert(cast<Function>(NewVMap[TNOF]));
     DeleteFunctionBody(TNOF);       // Function is now external in this module!
@@ -293,6 +322,27 @@ llvm::SplitFunctionsOutOfModule(Module *M,
     if (!TestFunctions.count(I))
       DeleteFunctionBody(I);
   
+
+  // Try to split the global initializers evenly
+  for (Module::global_iterator I = M->global_begin(), E = M->global_end();
+       I != E; ++I) {
+    GlobalVariable *GV = cast<GlobalVariable>(NewVMap[I]);
+    if (Function *TestFn = globalInitUsesExternalBA(I)) {
+      if (Function *SafeFn = globalInitUsesExternalBA(GV)) {
+        errs() << "*** Error: when reducing functions, encountered "
+                  "the global '";
+        GV->printAsOperand(errs(), false);
+        errs() << "' with an initializer that references blockaddresses "
+                  "from safe function '" << SafeFn->getName()
+               << "' and from test function '" << TestFn->getName() << "'.\n";
+        exit(1);
+      }
+      I->setInitializer(nullptr);  // Delete the initializer to make it external
+    } else {
+      // If we keep it in the safe module, then delete it in the test module
+      GV->setInitializer(nullptr);
+    }
+  }
 
   // Make sure that there is a global ctor/dtor array in both halves of the
   // module if they both have static ctor/dtor functions.
@@ -314,54 +364,48 @@ llvm::SplitFunctionsOutOfModule(Module *M,
 Module *BugDriver::ExtractMappedBlocksFromModule(const
                                                  std::vector<BasicBlock*> &BBs,
                                                  Module *M) {
-  sys::Path uniqueFilename(OutputPrefix + "-extractblocks");
-  std::string ErrMsg;
-  if (uniqueFilename.createTemporaryFileOnDisk(true, &ErrMsg)) {
+  SmallString<128> Filename;
+  int FD;
+  std::error_code EC = sys::fs::createUniqueFile(
+      OutputPrefix + "-extractblocks%%%%%%%", FD, Filename);
+  if (EC) {
     outs() << "*** Basic Block extraction failed!\n";
-    errs() << "Error creating temporary file: " << ErrMsg << "\n";
+    errs() << "Error creating temporary file: " << EC.message() << "\n";
     EmitProgressBitcode(M, "basicblockextractfail", true);
-    return 0;
+    return nullptr;
   }
-  sys::RemoveFileOnSignal(uniqueFilename);
+  sys::RemoveFileOnSignal(Filename);
 
-  std::string ErrorInfo;
-  tool_output_file BlocksToNotExtractFile(uniqueFilename.c_str(), ErrorInfo);
-  if (!ErrorInfo.empty()) {
-    outs() << "*** Basic Block extraction failed!\n";
-    errs() << "Error writing list of blocks to not extract: " << ErrorInfo
-           << "\n";
-    EmitProgressBitcode(M, "basicblockextractfail", true);
-    return 0;
-  }
+  tool_output_file BlocksToNotExtractFile(Filename.c_str(), FD);
   for (std::vector<BasicBlock*>::const_iterator I = BBs.begin(), E = BBs.end();
        I != E; ++I) {
     BasicBlock *BB = *I;
     // If the BB doesn't have a name, give it one so we have something to key
     // off of.
     if (!BB->hasName()) BB->setName("tmpbb");
-    BlocksToNotExtractFile.os() << BB->getParent()->getNameStr() << " "
+    BlocksToNotExtractFile.os() << BB->getParent()->getName() << " "
                                 << BB->getName() << "\n";
   }
   BlocksToNotExtractFile.os().close();
   if (BlocksToNotExtractFile.os().has_error()) {
-    errs() << "Error writing list of blocks to not extract: " << ErrorInfo
-           << "\n";
+    errs() << "Error writing list of blocks to not extract\n";
     EmitProgressBitcode(M, "basicblockextractfail", true);
     BlocksToNotExtractFile.os().clear_error();
-    return 0;
+    return nullptr;
   }
   BlocksToNotExtractFile.keep();
 
-  std::string uniqueFN = "--extract-blocks-file=" + uniqueFilename.str();
+  std::string uniqueFN = "--extract-blocks-file=";
+  uniqueFN += Filename.str();
   const char *ExtraArg = uniqueFN.c_str();
 
   std::vector<std::string> PI;
   PI.push_back("extract-blocks");
   Module *Ret = runPassesOn(M, PI, false, 1, &ExtraArg);
 
-  uniqueFilename.eraseFromDisk(); // Free disk space
+  sys::fs::remove(Filename.c_str());
 
-  if (Ret == 0) {
+  if (!Ret) {
     outs() << "*** Basic Block extraction failed, please report a bug!\n";
     EmitProgressBitcode(M, "basicblockextractfail", true);
   }

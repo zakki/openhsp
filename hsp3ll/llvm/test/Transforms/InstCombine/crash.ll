@@ -132,10 +132,14 @@ define i32 @test5a() {
 }
 
 define void @test5() {
-       store i1 true, i1* undef
-       %1 = invoke i32 @test5a() to label %exit unwind label %exit
+  store i1 true, i1* undef
+  %r = invoke i32 @test5a() to label %exit unwind label %unwind
+unwind:
+  %exn = landingpad {i8*, i32} personality i32 (...)* @__gxx_personality_v0
+          cleanup
+  br label %exit
 exit:
-       ret void
+  ret void
 }
 
 
@@ -163,20 +167,19 @@ entry:
   br i1 %tobool, label %cond.end, label %cond.false
 
 terminate.handler:                                ; preds = %ehcleanup
-  %exc = call i8* @llvm.eh.exception()            ; <i8*> [#uses=1]
-  %0 = call i32 (i8*, i8*, ...)* @llvm.eh.selector(i8* %exc, i8* bitcast (i32 (...)* @__gxx_personality_v0 to i8*), i32 1) ; <i32> [#uses=0]
+  %exc = landingpad { i8*, i32 } personality i8* bitcast (i32 (...)* @__gxx_personality_v0 to i8*)
+           cleanup
   call void @_ZSt9terminatev() noreturn nounwind
   unreachable
 
 ehcleanup:                                        ; preds = %cond.false
-  %exc1 = call i8* @llvm.eh.exception()           ; <i8*> [#uses=2]
-  %1 = call i32 (i8*, i8*, ...)* @llvm.eh.selector(i8* %exc1, i8* bitcast (i32 (...)* @__gxx_personality_v0 to i8*), i8* null) ; <i32> [#uses=0]
+  %exc1 = landingpad { i8*, i32 } personality i8* bitcast (i32 (...)* @__gxx_personality_v0 to i8*)
+           catch i8* null
   invoke void @_ZN6UStackD1Ev(%class.UStack* %breaks)
           to label %cont unwind label %terminate.handler
 
 cont:                                             ; preds = %ehcleanup
-  call void @_Unwind_Resume_or_Rethrow(i8* %exc1)
-  unreachable
+  resume { i8*, i32 } %exc1
 
 cond.false:                                       ; preds = %entry
   %tmp4 = getelementptr inbounds %class.RuleBasedBreakIterator* %this, i32 0, i32 0 ; <i64 ()**> [#uses=1]
@@ -197,10 +200,6 @@ declare void @_ZN6UStackD1Ev(%class.UStack*)
 
 declare i32 @__gxx_personality_v0(...)
 
-declare i8* @llvm.eh.exception() nounwind readonly
-
-declare i32 @llvm.eh.selector(i8*, i8*, ...) nounwind
-
 declare void @_ZSt9terminatev()
 
 declare void @_Unwind_Resume_or_Rethrow(i8*)
@@ -219,6 +218,8 @@ invoke.cont:                                      ; preds = %entry
   unreachable
 
 try.handler:                                      ; preds = %entry
+  %exn = landingpad {i8*, i32} personality i32 (...)* @__gxx_personality_v0
+           catch i8* null
   ret i8* %self
 }
 
@@ -251,4 +252,147 @@ entry:
   %cmp5 = icmp ugt i32 undef, %or                 ; <i1> [#uses=1]
   %conv6 = zext i1 %cmp5 to i32                   ; <i32> [#uses=0]
   ret void
+}
+
+%s1 = type { %s2, %s2, [6 x %s2], i32, i32, i32, [1 x i32], [0 x i8] }
+%s2 = type { i64 }
+define void @test13() nounwind ssp {
+entry:
+  %0 = getelementptr inbounds %s1* null, i64 0, i32 2, i64 0, i32 0
+  %1 = bitcast i64* %0 to i32*
+  %2 = getelementptr inbounds %s1* null, i64 0, i32 2, i64 1, i32 0
+  %.pre = load i32* %1, align 8
+  %3 = lshr i32 %.pre, 19
+  %brmerge = or i1 undef, undef
+  %4 = and i32 %3, 3
+  %5 = add nsw i32 %4, 1
+  %6 = shl i32 %5, 19
+  %7 = add i32 %6, 1572864
+  %8 = and i32 %7, 1572864
+  %9 = load i64* %2, align 8
+  %trunc156 = trunc i64 %9 to i32
+  %10 = and i32 %trunc156, -1537
+  %11 = and i32 %10, -6145
+  %12 = or i32 %11, 2048
+  %13 = and i32 %12, -24577
+  %14 = or i32 %13, 16384
+  %15 = or i32 %14, 98304
+  store i32 %15, i32* undef, align 8
+  %16 = and i32 %15, -1572865
+  %17 = or i32 %16, %8
+  store i32 %17, i32* undef, align 8
+  %18 = and i32 %17, -449
+  %19 = or i32 %18, 64
+  store i32 %19, i32* undef, align 8
+  unreachable
+}
+
+
+; PR8807
+declare i32 @test14f(i8* (i8*)*) nounwind
+
+define void @test14() nounwind readnone {
+entry:
+  %tmp = bitcast i32 (i8* (i8*)*)* @test14f to i32 (i32*)*
+  %call10 = call i32 %tmp(i32* byval undef)
+  ret void
+}
+
+
+; PR8896
+@g_54 = external global [7 x i16]
+
+define void @test15(i32* %p_92) nounwind {
+entry:
+%0 = load i32* %p_92, align 4
+%1 = icmp ne i32 %0, 0
+%2 = zext i1 %1 to i32
+%3 = call i32 @func_14() nounwind
+%4 = trunc i32 %3 to i16
+%5 = sext i16 %4 to i32
+%6 = trunc i32 %5 to i16
+br i1 undef, label %"3", label %"5"
+
+"3":                                              ; preds = %entry
+%7 = sext i16 %6 to i32
+%8 = ashr i32 %7, -1649554541
+%9 = trunc i32 %8 to i16
+br label %"5"
+
+"5":                                              ; preds = %"3", %entry
+%10 = phi i16 [ %9, %"3" ], [ %6, %entry ]
+%11 = sext i16 %10 to i32
+%12 = xor i32 %2, %11
+%13 = sext i32 %12 to i64
+%14 = icmp ne i64 %13, 0
+br i1 %14, label %return, label %"7"
+
+"7":                                              ; preds = %"5"
+ret void
+
+return:                                           ; preds = %"5"
+ret void
+}
+
+declare i32 @func_14()
+
+
+define double @test16(i32 %a) nounwind {
+  %cmp = icmp slt i32 %a, 2
+  %select = select i1 %cmp, double 2.000000e+00, double 3.141592e+00
+  ret double %select
+}
+
+
+; PR8983
+%struct.basic_ios = type { i8 }
+
+define %struct.basic_ios *@test17() ssp {
+entry:
+  %add.ptr.i = getelementptr i8* null, i64 undef
+  %0 = bitcast i8* %add.ptr.i to %struct.basic_ios*
+  ret %struct.basic_ios* %0
+}
+
+; PR9013
+define void @test18() nounwind ssp {
+entry:
+  br label %for.cond
+
+for.cond:                                         ; preds = %for.inc, %entry
+  %l_197.0 = phi i32 [ 0, %entry ], [ %sub.i, %for.inc ]
+  br label %for.inc
+
+for.inc:                                          ; preds = %for.cond
+  %conv = and i32 %l_197.0, 255
+  %sub.i = add nsw i32 %conv, -1
+  br label %for.cond
+
+return:                                           ; No predecessors!
+  ret void
+}
+
+; PR11275
+declare void @test18b() noreturn
+declare void @test18foo(double**)
+declare void @test18a() noreturn
+define fastcc void @test18x(i8* %t0, i1 %b) uwtable align 2 {
+entry:
+  br i1 %b, label %e1, label %e2
+e1:
+  %t2 = bitcast i8* %t0 to double**
+  invoke void @test18b() noreturn
+          to label %u unwind label %lpad
+e2:
+  %t4 = bitcast i8* %t0 to double**
+  invoke void @test18a() noreturn
+          to label %u unwind label %lpad
+lpad:
+  %t5 = phi double** [ %t2, %e1 ], [ %t4, %e2 ]
+  %lpad.nonloopexit262 = landingpad { i8*, i32 } personality i32 (...)* @__gxx_personality_v0
+          cleanup
+  call void @test18foo(double** %t5)
+  unreachable
+u:
+  unreachable
 }

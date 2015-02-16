@@ -18,16 +18,18 @@
 #ifndef LLVM_CODEGEN_MACHINEFUNCTION_H
 #define LLVM_CODEGEN_MACHINEFUNCTION_H
 
-#include "llvm/CodeGen/MachineBasicBlock.h"
 #include "llvm/ADT/ilist.h"
-#include "llvm/Support/DebugLoc.h"
+#include "llvm/CodeGen/MachineBasicBlock.h"
+#include "llvm/IR/DebugLoc.h"
 #include "llvm/Support/Allocator.h"
+#include "llvm/Support/ArrayRecycler.h"
 #include "llvm/Support/Recycler.h"
 
 namespace llvm {
 
 class Value;
 class Function;
+class GCModuleInfo;
 class MachineRegisterInfo;
 class MachineFrameInfo;
 class MachineConstantPool;
@@ -37,6 +39,7 @@ class MCContext;
 class Pass;
 class TargetMachine;
 class TargetRegisterClass;
+struct MachinePointerInfo;
 
 template <>
 struct ilist_traits<MachineBasicBlock>
@@ -74,6 +77,7 @@ class MachineFunction {
   const TargetMachine &Target;
   MCContext &Ctx;
   MachineModuleInfo &MMI;
+  GCModuleInfo *GMI;
   
   // RegInfo - Information about each register in use in the function.
   MachineRegisterInfo *RegInfo;
@@ -102,6 +106,9 @@ class MachineFunction {
   // Allocation management for instructions in function.
   Recycler<MachineInstr> InstructionRecycler;
 
+  // Allocation management for operand arrays on instructions.
+  ArrayRecycler<MachineOperand> OperandRecycler;
+
   // Allocation management for basic blocks in function.
   Recycler<MachineBasicBlock> BasicBlockRecycler;
 
@@ -117,29 +124,40 @@ class MachineFunction {
   /// Alignment - The alignment of the function.
   unsigned Alignment;
 
-  /// CallsSetJmp - True if the function calls setjmp or sigsetjmp. This is used
-  /// to limit optimizations which cannot reason about the control flow of
-  /// setjmp.
-  bool CallsSetJmp;
+  /// ExposesReturnsTwice - True if the function calls setjmp or related
+  /// functions with attribute "returns twice", but doesn't have
+  /// the attribute itself.
+  /// This is used to limit optimizations which cannot reason
+  /// about the control flow of such functions.
+  bool ExposesReturnsTwice;
 
-  MachineFunction(const MachineFunction &); // DO NOT IMPLEMENT
-  void operator=(const MachineFunction&);   // DO NOT IMPLEMENT
+  /// True if the function includes any inline assembly.
+  bool HasInlineAsm;
+
+  MachineFunction(const MachineFunction &) LLVM_DELETED_FUNCTION;
+  void operator=(const MachineFunction&) LLVM_DELETED_FUNCTION;
 public:
   MachineFunction(const Function *Fn, const TargetMachine &TM,
-                  unsigned FunctionNum, MachineModuleInfo &MMI);
+                  unsigned FunctionNum, MachineModuleInfo &MMI,
+                  GCModuleInfo* GMI);
   ~MachineFunction();
 
   MachineModuleInfo &getMMI() const { return MMI; }
+  GCModuleInfo *getGMI() const { return GMI; }
   MCContext &getContext() const { return Ctx; }
-  
+
   /// getFunction - Return the LLVM function that this machine code represents
   ///
   const Function *getFunction() const { return Fn; }
 
+  /// getName - Return the name of the corresponding LLVM function.
+  ///
+  StringRef getName() const;
+
   /// getFunctionNumber - Return a unique ID for the current function.
   ///
   unsigned getFunctionNumber() const { return FunctionNumber; }
-  
+
   /// getTarget - Return the target machine this machine code is compiled with
   ///
   const TargetMachine &getTarget() const { return Target; }
@@ -182,34 +200,41 @@ public:
   ///
   void setAlignment(unsigned A) { Alignment = A; }
 
-  /// EnsureAlignment - Make sure the function is at least 'A' bits aligned.
-  void EnsureAlignment(unsigned A) {
+  /// ensureAlignment - Make sure the function is at least 1 << A bytes aligned.
+  void ensureAlignment(unsigned A) {
     if (Alignment < A) Alignment = A;
   }
 
-  /// callsSetJmp - Returns true if the function calls setjmp or sigsetjmp.
-  bool callsSetJmp() const {
-    return CallsSetJmp;
+  /// exposesReturnsTwice - Returns true if the function calls setjmp or
+  /// any other similar functions with attribute "returns twice" without
+  /// having the attribute itself.
+  bool exposesReturnsTwice() const {
+    return ExposesReturnsTwice;
   }
 
-  /// setCallsSetJmp - Set a flag that indicates if there's a call to setjmp or
-  /// sigsetjmp.
-  void setCallsSetJmp(bool B) {
-    CallsSetJmp = B;
+  /// setCallsSetJmp - Set a flag that indicates if there's a call to
+  /// a "returns twice" function.
+  void setExposesReturnsTwice(bool B) {
+    ExposesReturnsTwice = B;
   }
-  
+
+  /// Returns true if the function contains any inline assembly.
+  bool hasInlineAsm() const {
+    return HasInlineAsm;
+  }
+
+  /// Set a flag that indicates that the function contains inline assembly.
+  void setHasInlineAsm(bool B) {
+    HasInlineAsm = B;
+  }
+
   /// getInfo - Keep track of various per-function pieces of information for
   /// backends that would like to do so.
   ///
   template<typename Ty>
   Ty *getInfo() {
-    if (!MFInfo) {
-        // This should be just `new (Allocator.Allocate<Ty>()) Ty(*this)', but
-        // that apparently breaks GCC 3.3.
-        Ty *Loc = static_cast<Ty*>(Allocator.Allocate(sizeof(Ty),
-                                                      AlignOf<Ty>::Alignment));
-        MFInfo = new (Loc) Ty(*this);
-    }
+    if (!MFInfo)
+      MFInfo = new (Allocator.Allocate<Ty>()) Ty(*this);
     return static_cast<Ty*>(MFInfo);
   }
 
@@ -229,6 +254,9 @@ public:
     return MBBNumbering[N];
   }
 
+  /// Should we be emitting segmented stack stuff for the function
+  bool shouldSplitStack();
+
   /// getNumBlockIDs - Return the number of MBB ID's allocated.
   ///
   unsigned getNumBlockIDs() const { return (unsigned)MBBNumbering.size(); }
@@ -238,12 +266,12 @@ public:
   /// dense, and match the ordering of the blocks within the function.  If a
   /// specific MachineBasicBlock is specified, only that block and those after
   /// it are renumbered.
-  void RenumberBlocks(MachineBasicBlock *MBBFrom = 0);
+  void RenumberBlocks(MachineBasicBlock *MBBFrom = nullptr);
   
   /// print - Print out the MachineFunction in a format suitable for debugging
   /// to the specified stream.
   ///
-  void print(raw_ostream &OS) const;
+  void print(raw_ostream &OS, SlotIndexes* = nullptr) const;
 
   /// viewCFG - This function is meant for use from the debugger.  You can just
   /// say 'call F->viewCFG()' and a ghostview window should pop up from the
@@ -266,7 +294,7 @@ public:
 
   /// verify - Run the current MachineFunction through the machine code
   /// verifier, useful for debugger use.
-  void verify(Pass *p=NULL) const;
+  void verify(Pass *p = nullptr, const char *Banner = nullptr) const;
 
   // Provide accessors for the MachineBasicBlock list...
   typedef BasicBlockListType::iterator iterator;
@@ -321,8 +349,8 @@ public:
   // Internal functions used to automatically number MachineBasicBlocks
   //
 
-  /// getNextMBBNumber - Returns the next unique number to be assigned
-  /// to a MachineBasicBlock in this MachineFunction.
+  /// \brief Adds the MBB to the internal numbering. Returns the unique number
+  /// assigned to the MBB.
   ///
   unsigned addToMBBNumbering(MachineBasicBlock *MBB) {
     MBBNumbering.push_back(MBB);
@@ -334,13 +362,13 @@ public:
   /// implementation.
   void removeFromMBBNumbering(unsigned N) {
     assert(N < MBBNumbering.size() && "Illegal basic block #");
-    MBBNumbering[N] = 0;
+    MBBNumbering[N] = nullptr;
   }
 
   /// CreateMachineInstr - Allocate a new MachineInstr. Use this instead
   /// of `new MachineInstr'.
   ///
-  MachineInstr *CreateMachineInstr(const TargetInstrDesc &TID,
+  MachineInstr *CreateMachineInstr(const MCInstrDesc &MCID,
                                    DebugLoc DL,
                                    bool NoImp = false);
 
@@ -359,7 +387,7 @@ public:
   /// CreateMachineBasicBlock - Allocate a new MachineBasicBlock. Use this
   /// instead of `new MachineBasicBlock'.
   ///
-  MachineBasicBlock *CreateMachineBasicBlock(const BasicBlock *bb = 0);
+  MachineBasicBlock *CreateMachineBasicBlock(const BasicBlock *bb = nullptr);
 
   /// DeleteMachineBasicBlock - Delete the given MachineBasicBlock.
   ///
@@ -368,16 +396,42 @@ public:
   /// getMachineMemOperand - Allocate a new MachineMemOperand.
   /// MachineMemOperands are owned by the MachineFunction and need not be
   /// explicitly deallocated.
-  MachineMemOperand *getMachineMemOperand(const Value *v, unsigned f,
-                                          int64_t o, uint64_t s,
-                                          unsigned base_alignment);
-
+  MachineMemOperand *getMachineMemOperand(MachinePointerInfo PtrInfo,
+                                          unsigned f, uint64_t s,
+                                          unsigned base_alignment,
+                                          const MDNode *TBAAInfo = nullptr,
+                                          const MDNode *Ranges = nullptr);
+  
   /// getMachineMemOperand - Allocate a new MachineMemOperand by copying
   /// an existing one, adjusting by an offset and using the given size.
   /// MachineMemOperands are owned by the MachineFunction and need not be
   /// explicitly deallocated.
   MachineMemOperand *getMachineMemOperand(const MachineMemOperand *MMO,
                                           int64_t Offset, uint64_t Size);
+
+  typedef ArrayRecycler<MachineOperand>::Capacity OperandCapacity;
+
+  /// Allocate an array of MachineOperands. This is only intended for use by
+  /// internal MachineInstr functions.
+  MachineOperand *allocateOperandArray(OperandCapacity Cap) {
+    return OperandRecycler.allocate(Cap, Allocator);
+  }
+
+  /// Dellocate an array of MachineOperands and recycle the memory. This is
+  /// only intended for use by internal MachineInstr functions.
+  /// Cap must be the same capacity that was used to allocate the array.
+  void deallocateOperandArray(OperandCapacity Cap, MachineOperand *Array) {
+    OperandRecycler.deallocate(Cap, Array);
+  }
+
+  /// \brief Allocate and initialize a register mask with @p NumRegister bits.
+  uint32_t *allocateRegisterMask(unsigned NumRegister) {
+    unsigned Size = (NumRegister + 31) / 32;
+    uint32_t *Mask = Allocator.Allocate<uint32_t>(Size);
+    for (unsigned i = 0; i != Size; ++i)
+      Mask[i] = 0;
+    return Mask;
+  }
 
   /// allocateMemRefsArray - Allocate an array to hold MachineMemOperand
   /// pointers.  This array is owned by the MachineFunction.
@@ -406,6 +460,10 @@ public:
   /// normal 'L' label is returned.
   MCSymbol *getJTISymbol(unsigned JTI, MCContext &Ctx, 
                          bool isLinkerPrivate = false) const;
+  
+  /// getPICBaseSymbol - Return a function-local symbol to represent the PIC
+  /// base.
+  MCSymbol *getPICBaseSymbol() const;
 };
 
 //===--------------------------------------------------------------------===//
@@ -427,6 +485,7 @@ template <> struct GraphTraits<MachineFunction*> :
   typedef MachineFunction::iterator nodes_iterator;
   static nodes_iterator nodes_begin(MachineFunction *F) { return F->begin(); }
   static nodes_iterator nodes_end  (MachineFunction *F) { return F->end(); }
+  static unsigned       size       (MachineFunction *F) { return F->size(); }
 };
 template <> struct GraphTraits<const MachineFunction*> :
   public GraphTraits<const MachineBasicBlock*> {
@@ -441,6 +500,9 @@ template <> struct GraphTraits<const MachineFunction*> :
   }
   static nodes_iterator nodes_end  (const MachineFunction *F) {
     return F->end();
+  }
+  static unsigned       size       (const MachineFunction *F)  {
+    return F->size();
   }
 };
 

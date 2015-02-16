@@ -1,13 +1,12 @@
-; RUN: opt < %s -analyze -scalar-evolution \
-; RUN:   -scalar-evolution-max-iterations=0 | grep {backedge-taken count is 10000}
+; RUN: opt < %s -analyze -scalar-evolution -scalar-evolution-max-iterations=0 | FileCheck %s
 ; PR1101
 
 @A = weak global [1000 x i32] zeroinitializer, align 32         
 
+; CHECK: backedge-taken count is 10000
 
 define void @test(i32 %N) {
 entry:
-        "alloca point" = bitcast i32 0 to i32           ; <i32> [#uses=0]
         br label %bb3
 
 bb:             ; preds = %bb3

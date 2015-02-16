@@ -14,8 +14,8 @@
 #ifndef LLVM_ANALYSIS_FINDUSEDTYPES_H
 #define LLVM_ANALYSIS_FINDUSEDTYPES_H
 
+#include "llvm/ADT/SetVector.h"
 #include "llvm/Pass.h"
-#include <set>
 
 namespace llvm {
 
@@ -23,27 +23,29 @@ class Type;
 class Value;
 
 class FindUsedTypes : public ModulePass {
-  std::set<const Type *> UsedTypes;
+  SetVector<Type *> UsedTypes;
 public:
   static char ID; // Pass identification, replacement for typeid
-  FindUsedTypes() : ModulePass(ID) {}
+  FindUsedTypes() : ModulePass(ID) {
+    initializeFindUsedTypesPass(*PassRegistry::getPassRegistry());
+  }
 
   /// getTypes - After the pass has been run, return the set containing all of
   /// the types used in the module.
   ///
-  const std::set<const Type *> &getTypes() const { return UsedTypes; }
+  const SetVector<Type *> &getTypes() const { return UsedTypes; }
 
   /// Print the types found in the module.  If the optional Module parameter is
   /// passed in, then the types are printed symbolically if possible, using the
   /// symbol table from the module.
   ///
-  void print(raw_ostream &o, const Module *M) const;
+  void print(raw_ostream &o, const Module *M) const override;
 
 private:
   /// IncorporateType - Incorporate one type and all of its subtypes into the
   /// collection of used types.
   ///
-  void IncorporateType(const Type *Ty);
+  void IncorporateType(Type *Ty);
 
   /// IncorporateValue - Incorporate all of the types used by this value.
   ///
@@ -51,10 +53,10 @@ private:
 
 public:
   /// run - This incorporates all types used by the specified module
-  bool runOnModule(Module &M);
+  bool runOnModule(Module &M) override;
 
   /// getAnalysisUsage - We do not modify anything.
-  virtual void getAnalysisUsage(AnalysisUsage &AU) const {
+  void getAnalysisUsage(AnalysisUsage &AU) const override {
     AU.setPreservesAll();
   }
 };

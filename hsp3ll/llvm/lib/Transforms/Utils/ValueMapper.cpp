@@ -13,155 +13,198 @@
 //===----------------------------------------------------------------------===//
 
 #include "llvm/Transforms/Utils/ValueMapper.h"
-#include "llvm/Type.h"
-#include "llvm/Constants.h"
-#include "llvm/Function.h"
-#include "llvm/Metadata.h"
-#include "llvm/ADT/SmallVector.h"
+#include "llvm/IR/Constants.h"
+#include "llvm/IR/Function.h"
+#include "llvm/IR/InlineAsm.h"
+#include "llvm/IR/Instructions.h"
+#include "llvm/IR/Metadata.h"
 using namespace llvm;
 
-Value *llvm::MapValue(const Value *V, ValueToValueMapTy &VM,
-                      bool ModuleLevelChanges) {
-  Value *&VMSlot = VM[V];
-  if (VMSlot) return VMSlot;      // Does it exist in the map yet?
+// Out of line method to get vtable etc for class.
+void ValueMapTypeRemapper::anchor() {}
+void ValueMaterializer::anchor() {}
+
+Value *llvm::MapValue(const Value *V, ValueToValueMapTy &VM, RemapFlags Flags,
+                      ValueMapTypeRemapper *TypeMapper,
+                      ValueMaterializer *Materializer) {
+  ValueToValueMapTy::iterator I = VM.find(V);
   
-  // NOTE: VMSlot can be invalidated by any reference to VM, which can grow the
-  // DenseMap.  This includes any recursive calls to MapValue.
+  // If the value already exists in the map, use it.
+  if (I != VM.end() && I->second) return I->second;
+  
+  // If we have a materializer and it can materialize a value, use that.
+  if (Materializer) {
+    if (Value *NewV = Materializer->materializeValueFor(const_cast<Value*>(V)))
+      return VM[V] = NewV;
+  }
 
   // Global values do not need to be seeded into the VM if they
   // are using the identity mapping.
-  if (isa<GlobalValue>(V) || isa<InlineAsm>(V) || isa<MDString>(V) ||
-      (isa<MDNode>(V) && !cast<MDNode>(V)->isFunctionLocal() &&
-       !ModuleLevelChanges))
-    return VMSlot = const_cast<Value*>(V);
+  if (isa<GlobalValue>(V) || isa<MDString>(V))
+    return VM[V] = const_cast<Value*>(V);
+  
+  if (const InlineAsm *IA = dyn_cast<InlineAsm>(V)) {
+    // Inline asm may need *type* remapping.
+    FunctionType *NewTy = IA->getFunctionType();
+    if (TypeMapper) {
+      NewTy = cast<FunctionType>(TypeMapper->remapType(NewTy));
+
+      if (NewTy != IA->getFunctionType())
+        V = InlineAsm::get(NewTy, IA->getAsmString(), IA->getConstraintString(),
+                           IA->hasSideEffects(), IA->isAlignStack());
+    }
+    
+    return VM[V] = const_cast<Value*>(V);
+  }
+  
 
   if (const MDNode *MD = dyn_cast<MDNode>(V)) {
-    // Start by assuming that we'll use the identity mapping.
-    VMSlot = const_cast<Value*>(V);
-
+    // If this is a module-level metadata and we know that nothing at the module
+    // level is changing, then use an identity mapping.
+    if (!MD->isFunctionLocal() && (Flags & RF_NoModuleLevelChanges))
+      return VM[V] = const_cast<Value*>(V);
+    
+    // Create a dummy node in case we have a metadata cycle.
+    MDNode *Dummy = MDNode::getTemporary(V->getContext(), None);
+    VM[V] = Dummy;
+    
     // Check all operands to see if any need to be remapped.
     for (unsigned i = 0, e = MD->getNumOperands(); i != e; ++i) {
       Value *OP = MD->getOperand(i);
-      if (!OP || MapValue(OP, VM, ModuleLevelChanges) == OP) continue;
+      if (!OP) continue;
+      Value *Mapped_OP = MapValue(OP, VM, Flags, TypeMapper, Materializer);
+      // Use identity map if Mapped_Op is null and we can ignore missing
+      // entries.
+      if (Mapped_OP == OP ||
+          (Mapped_OP == nullptr && (Flags & RF_IgnoreMissingEntries)))
+        continue;
 
-      // Ok, at least one operand needs remapping.
-      MDNode *Dummy = MDNode::getTemporary(V->getContext(), 0, 0);
-      VM[V] = Dummy;
+      // Ok, at least one operand needs remapping.  
       SmallVector<Value*, 4> Elts;
       Elts.reserve(MD->getNumOperands());
-      for (i = 0; i != e; ++i)
-        Elts.push_back(MD->getOperand(i) ? 
-                       MapValue(MD->getOperand(i), VM, ModuleLevelChanges) : 0);
-      MDNode *NewMD = MDNode::get(V->getContext(), Elts.data(), Elts.size());
+      for (i = 0; i != e; ++i) {
+        Value *Op = MD->getOperand(i);
+        if (!Op)
+          Elts.push_back(nullptr);
+        else {
+          Value *Mapped_Op = MapValue(Op, VM, Flags, TypeMapper, Materializer);
+          // Use identity map if Mapped_Op is null and we can ignore missing
+          // entries.
+          if (Mapped_Op == nullptr && (Flags & RF_IgnoreMissingEntries))
+            Mapped_Op = Op;
+          Elts.push_back(Mapped_Op);
+        }
+      }
+      MDNode *NewMD = MDNode::get(V->getContext(), Elts);
       Dummy->replaceAllUsesWith(NewMD);
+      VM[V] = NewMD;
       MDNode::deleteTemporary(Dummy);
-      return VM[V] = NewMD;
+      return NewMD;
     }
 
-    // No operands needed remapping; keep the identity map.
+    VM[V] = const_cast<Value*>(V);
+    MDNode::deleteTemporary(Dummy);
+
+    // No operands needed remapping.  Use an identity mapping.
     return const_cast<Value*>(V);
   }
 
+  // Okay, this either must be a constant (which may or may not be mappable) or
+  // is something that is not in the mapping table.
   Constant *C = const_cast<Constant*>(dyn_cast<Constant>(V));
-  if (C == 0)
-    return 0;
+  if (!C)
+    return nullptr;
   
-  if (isa<ConstantInt>(C) || isa<ConstantFP>(C) ||
-      isa<ConstantPointerNull>(C) || isa<ConstantAggregateZero>(C) ||
-      isa<UndefValue>(C))
-    return VMSlot = C;           // Primitive constants map directly
+  if (BlockAddress *BA = dyn_cast<BlockAddress>(C)) {
+    Function *F = 
+      cast<Function>(MapValue(BA->getFunction(), VM, Flags, TypeMapper, Materializer));
+    BasicBlock *BB = cast_or_null<BasicBlock>(MapValue(BA->getBasicBlock(), VM,
+                                                       Flags, TypeMapper, Materializer));
+    return VM[V] = BlockAddress::get(F, BB ? BB : BA->getBasicBlock());
+  }
   
-  if (ConstantArray *CA = dyn_cast<ConstantArray>(C)) {
-    for (User::op_iterator b = CA->op_begin(), i = b, e = CA->op_end();
-         i != e; ++i) {
-      Value *MV = MapValue(*i, VM, ModuleLevelChanges);
-      if (MV != *i) {
-        // This array must contain a reference to a global, make a new array
-        // and return it.
-        //
-        std::vector<Constant*> Values;
-        Values.reserve(CA->getNumOperands());
-        for (User::op_iterator j = b; j != i; ++j)
-          Values.push_back(cast<Constant>(*j));
-        Values.push_back(cast<Constant>(MV));
-        for (++i; i != e; ++i)
-          Values.push_back(cast<Constant>(MapValue(*i, VM,
-                                                   ModuleLevelChanges)));
-        return VM[V] = ConstantArray::get(CA->getType(), Values);
-      }
-    }
+  // Otherwise, we have some other constant to remap.  Start by checking to see
+  // if all operands have an identity remapping.
+  unsigned OpNo = 0, NumOperands = C->getNumOperands();
+  Value *Mapped = nullptr;
+  for (; OpNo != NumOperands; ++OpNo) {
+    Value *Op = C->getOperand(OpNo);
+    Mapped = MapValue(Op, VM, Flags, TypeMapper, Materializer);
+    if (Mapped != C) break;
+  }
+  
+  // See if the type mapper wants to remap the type as well.
+  Type *NewTy = C->getType();
+  if (TypeMapper)
+    NewTy = TypeMapper->remapType(NewTy);
+
+  // If the result type and all operands match up, then just insert an identity
+  // mapping.
+  if (OpNo == NumOperands && NewTy == C->getType())
     return VM[V] = C;
+  
+  // Okay, we need to create a new constant.  We've already processed some or
+  // all of the operands, set them all up now.
+  SmallVector<Constant*, 8> Ops;
+  Ops.reserve(NumOperands);
+  for (unsigned j = 0; j != OpNo; ++j)
+    Ops.push_back(cast<Constant>(C->getOperand(j)));
+  
+  // If one of the operands mismatch, push it and the other mapped operands.
+  if (OpNo != NumOperands) {
+    Ops.push_back(cast<Constant>(Mapped));
+  
+    // Map the rest of the operands that aren't processed yet.
+    for (++OpNo; OpNo != NumOperands; ++OpNo)
+      Ops.push_back(MapValue(cast<Constant>(C->getOperand(OpNo)), VM,
+                             Flags, TypeMapper, Materializer));
   }
   
-  if (ConstantStruct *CS = dyn_cast<ConstantStruct>(C)) {
-    for (User::op_iterator b = CS->op_begin(), i = b, e = CS->op_end();
-         i != e; ++i) {
-      Value *MV = MapValue(*i, VM, ModuleLevelChanges);
-      if (MV != *i) {
-        // This struct must contain a reference to a global, make a new struct
-        // and return it.
-        //
-        std::vector<Constant*> Values;
-        Values.reserve(CS->getNumOperands());
-        for (User::op_iterator j = b; j != i; ++j)
-          Values.push_back(cast<Constant>(*j));
-        Values.push_back(cast<Constant>(MV));
-        for (++i; i != e; ++i)
-          Values.push_back(cast<Constant>(MapValue(*i, VM,
-                                                   ModuleLevelChanges)));
-        return VM[V] = ConstantStruct::get(CS->getType(), Values);
-      }
-    }
-    return VM[V] = C;
-  }
-  
-  if (ConstantExpr *CE = dyn_cast<ConstantExpr>(C)) {
-    std::vector<Constant*> Ops;
-    for (User::op_iterator i = CE->op_begin(), e = CE->op_end(); i != e; ++i)
-      Ops.push_back(cast<Constant>(MapValue(*i, VM, ModuleLevelChanges)));
-    return VM[V] = CE->getWithOperands(Ops);
-  }
-  
-  if (ConstantVector *CV = dyn_cast<ConstantVector>(C)) {
-    for (User::op_iterator b = CV->op_begin(), i = b, e = CV->op_end();
-         i != e; ++i) {
-      Value *MV = MapValue(*i, VM, ModuleLevelChanges);
-      if (MV != *i) {
-        // This vector value must contain a reference to a global, make a new
-        // vector constant and return it.
-        //
-        std::vector<Constant*> Values;
-        Values.reserve(CV->getNumOperands());
-        for (User::op_iterator j = b; j != i; ++j)
-          Values.push_back(cast<Constant>(*j));
-        Values.push_back(cast<Constant>(MV));
-        for (++i; i != e; ++i)
-          Values.push_back(cast<Constant>(MapValue(*i, VM,
-                                                   ModuleLevelChanges)));
-        return VM[V] = ConstantVector::get(Values);
-      }
-    }
-    return VM[V] = C;
-  }
-  
-  BlockAddress *BA = cast<BlockAddress>(C);
-  Function *F = cast<Function>(MapValue(BA->getFunction(), VM,
-                                        ModuleLevelChanges));
-  BasicBlock *BB = cast_or_null<BasicBlock>(MapValue(BA->getBasicBlock(),VM,
-                                             ModuleLevelChanges));
-  return VM[V] = BlockAddress::get(F, BB ? BB : BA->getBasicBlock());
+  if (ConstantExpr *CE = dyn_cast<ConstantExpr>(C))
+    return VM[V] = CE->getWithOperands(Ops, NewTy);
+  if (isa<ConstantArray>(C))
+    return VM[V] = ConstantArray::get(cast<ArrayType>(NewTy), Ops);
+  if (isa<ConstantStruct>(C))
+    return VM[V] = ConstantStruct::get(cast<StructType>(NewTy), Ops);
+  if (isa<ConstantVector>(C))
+    return VM[V] = ConstantVector::get(Ops);
+  // If this is a no-operand constant, it must be because the type was remapped.
+  if (isa<UndefValue>(C))
+    return VM[V] = UndefValue::get(NewTy);
+  if (isa<ConstantAggregateZero>(C))
+    return VM[V] = ConstantAggregateZero::get(NewTy);
+  assert(isa<ConstantPointerNull>(C));
+  return VM[V] = ConstantPointerNull::get(cast<PointerType>(NewTy));
 }
 
 /// RemapInstruction - Convert the instruction operands from referencing the
 /// current values into those specified by VMap.
 ///
 void llvm::RemapInstruction(Instruction *I, ValueToValueMapTy &VMap,
-                            bool ModuleLevelChanges) {
+                            RemapFlags Flags, ValueMapTypeRemapper *TypeMapper,
+                            ValueMaterializer *Materializer){
   // Remap operands.
   for (User::op_iterator op = I->op_begin(), E = I->op_end(); op != E; ++op) {
-    Value *V = MapValue(*op, VMap, ModuleLevelChanges);
-    assert(V && "Referenced value not in value map!");
-    *op = V;
+    Value *V = MapValue(*op, VMap, Flags, TypeMapper, Materializer);
+    // If we aren't ignoring missing entries, assert that something happened.
+    if (V)
+      *op = V;
+    else
+      assert((Flags & RF_IgnoreMissingEntries) &&
+             "Referenced value not in value map!");
+  }
+
+  // Remap phi nodes' incoming blocks.
+  if (PHINode *PN = dyn_cast<PHINode>(I)) {
+    for (unsigned i = 0, e = PN->getNumIncomingValues(); i != e; ++i) {
+      Value *V = MapValue(PN->getIncomingBlock(i), VMap, Flags);
+      // If we aren't ignoring missing entries, assert that something happened.
+      if (V)
+        PN->setIncomingBlock(i, cast<BasicBlock>(V));
+      else
+        assert((Flags & RF_IgnoreMissingEntries) &&
+               "Referenced block not in value map!");
+    }
   }
 
   // Remap attached metadata.
@@ -169,9 +212,13 @@ void llvm::RemapInstruction(Instruction *I, ValueToValueMapTy &VMap,
   I->getAllMetadata(MDs);
   for (SmallVectorImpl<std::pair<unsigned, MDNode *> >::iterator
        MI = MDs.begin(), ME = MDs.end(); MI != ME; ++MI) {
-    Value *Old = MI->second;
-    Value *New = MapValue(Old, VMap, ModuleLevelChanges);
+    MDNode *Old = MI->second;
+    MDNode *New = MapValue(Old, VMap, Flags, TypeMapper, Materializer);
     if (New != Old)
-      I->setMetadata(MI->first, cast<MDNode>(New));
+      I->setMetadata(MI->first, New);
   }
+  
+  // If the instruction's type is being remapped, do so now.
+  if (TypeMapper)
+    I->mutateType(TypeMapper->remapType(I->getType()));
 }

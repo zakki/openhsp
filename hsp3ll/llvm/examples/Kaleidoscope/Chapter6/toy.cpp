@@ -1,17 +1,19 @@
-#include "llvm/DerivedTypes.h"
+#include "llvm/Analysis/Passes.h"
 #include "llvm/ExecutionEngine/ExecutionEngine.h"
 #include "llvm/ExecutionEngine/JIT.h"
-#include "llvm/LLVMContext.h"
-#include "llvm/Module.h"
+#include "llvm/IR/DataLayout.h"
+#include "llvm/IR/DerivedTypes.h"
+#include "llvm/IR/IRBuilder.h"
+#include "llvm/IR/LLVMContext.h"
+#include "llvm/IR/Module.h"
+#include "llvm/IR/Verifier.h"
 #include "llvm/PassManager.h"
-#include "llvm/Analysis/Verifier.h"
-#include "llvm/Target/TargetData.h"
-#include "llvm/Target/TargetSelect.h"
+#include "llvm/Support/TargetSelect.h"
 #include "llvm/Transforms/Scalar.h"
-#include "llvm/Support/IRBuilder.h"
+#include <cctype>
 #include <cstdio>
-#include <string>
 #include <map>
+#include <string>
 #include <vector>
 using namespace llvm;
 
@@ -99,7 +101,7 @@ static int gettok() {
 //===----------------------------------------------------------------------===//
 // Abstract Syntax Tree (aka Parse Tree)
 //===----------------------------------------------------------------------===//
-
+namespace {
 /// ExprAST - Base class for all expression nodes.
 class ExprAST {
 public:
@@ -209,6 +211,7 @@ public:
   
   Function *Codegen();
 };
+} // end anonymous namespace
 
 //===----------------------------------------------------------------------===//
 // Parser
@@ -588,7 +591,7 @@ Value *BinaryExprAST::Codegen() {
   assert(F && "binary operator not found!");
   
   Value *Ops[] = { L, R };
-  return Builder.CreateCall(F, Ops, Ops+2, "binop");
+  return Builder.CreateCall(F, Ops, "binop");
 }
 
 Value *CallExprAST::Codegen() {
@@ -607,7 +610,7 @@ Value *CallExprAST::Codegen() {
     if (ArgsV.back() == 0) return 0;
   }
   
-  return Builder.CreateCall(CalleeF, ArgsV.begin(), ArgsV.end(), "calltmp");
+  return Builder.CreateCall(CalleeF, ArgsV, "calltmp");
 }
 
 Value *IfExprAST::Codegen() {
@@ -653,7 +656,7 @@ Value *IfExprAST::Codegen() {
   // Emit merge block.
   TheFunction->getBasicBlockList().push_back(MergeBB);
   Builder.SetInsertPoint(MergeBB);
-  PHINode *PN = Builder.CreatePHI(Type::getDoubleTy(getGlobalContext()),
+  PHINode *PN = Builder.CreatePHI(Type::getDoubleTy(getGlobalContext()), 2,
                                   "iftmp");
   
   PN->addIncoming(ThenV, ThenBB);
@@ -695,7 +698,7 @@ Value *ForExprAST::Codegen() {
   Builder.SetInsertPoint(LoopBB);
   
   // Start the PHI node with an entry for Start.
-  PHINode *Variable = Builder.CreatePHI(Type::getDoubleTy(getGlobalContext()), VarName.c_str());
+  PHINode *Variable = Builder.CreatePHI(Type::getDoubleTy(getGlobalContext()), 2, VarName.c_str());
   Variable->addIncoming(StartVal, PreheaderBB);
   
   // Within the loop, the variable is defined equal to the PHI node.  If it
@@ -756,8 +759,8 @@ Value *ForExprAST::Codegen() {
 
 Function *PrototypeAST::Codegen() {
   // Make the function type:  double(double,double) etc.
-  std::vector<const Type*> Doubles(Args.size(),
-                                   Type::getDoubleTy(getGlobalContext()));
+  std::vector<Type*> Doubles(Args.size(),
+                             Type::getDoubleTy(getGlobalContext()));
   FunctionType *FT = FunctionType::get(Type::getDoubleTy(getGlobalContext()),
                                        Doubles, false);
   
@@ -946,7 +949,10 @@ int main() {
 
   // Set up the optimizer pipeline.  Start with registering info about how the
   // target lays out data structures.
-  OurFPM.add(new TargetData(*TheExecutionEngine->getTargetData()));
+  TheModule->setDataLayout(TheExecutionEngine->getDataLayout());
+  OurFPM.add(new DataLayoutPass(TheModule));
+  // Provide basic AliasAnalysis support for GVN.
+  OurFPM.add(createBasicAliasAnalysisPass());
   // Do simple "peephole" optimizations and bit-twiddling optzns.
   OurFPM.add(createInstructionCombiningPass());
   // Reassociate expressions.

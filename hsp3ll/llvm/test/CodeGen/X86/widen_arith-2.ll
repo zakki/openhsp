@@ -1,5 +1,5 @@
-; RUN: llc < %s -march=x86 -mattr=+sse42 -disable-mmx  | FileCheck %s
-; CHECK: paddb
+; RUN: llc < %s -march=x86 -mattr=+sse4.2 | FileCheck %s
+; CHECK: padd
 ; CHECK: pand
 
 ; widen v8i8 to v16i8 (checks even power of 2 widening with add & and)

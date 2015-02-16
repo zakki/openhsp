@@ -1,4 +1,4 @@
-//===- Thumb2InstrInfo.h - Thumb-2 Instruction Information ------*- C++ -*-===//
+//===-- Thumb2InstrInfo.h - Thumb-2 Instruction Information -----*- C++ -*-===//
 //
 //                     The LLVM Compiler Infrastructure
 //
@@ -14,9 +14,7 @@
 #ifndef THUMB2INSTRUCTIONINFO_H
 #define THUMB2INSTRUCTIONINFO_H
 
-#include "llvm/Target/TargetInstrInfo.h"
-#include "ARM.h"
-#include "ARMInstrInfo.h"
+#include "ARMBaseInstrInfo.h"
 #include "Thumb2RegisterInfo.h"
 
 namespace llvm {
@@ -28,51 +26,41 @@ class Thumb2InstrInfo : public ARMBaseInstrInfo {
 public:
   explicit Thumb2InstrInfo(const ARMSubtarget &STI);
 
+  /// getNoopForMachoTarget - Return the noop instruction to use for a noop.
+  void getNoopForMachoTarget(MCInst &NopInst) const override;
+
   // Return the non-pre/post incrementing version of 'Opc'. Return 0
   // if there is not such an opcode.
-  unsigned getUnindexedOpcode(unsigned Opc) const;
+  unsigned getUnindexedOpcode(unsigned Opc) const override;
 
   void ReplaceTailWithBranchTo(MachineBasicBlock::iterator Tail,
-                               MachineBasicBlock *NewDest) const;
+                               MachineBasicBlock *NewDest) const override;
 
   bool isLegalToSplitMBBAt(MachineBasicBlock &MBB,
-                           MachineBasicBlock::iterator MBBI) const;
-
-  bool isProfitableToIfCvt(MachineBasicBlock &MBB, unsigned NumInstrs) const;
-  
-  bool isProfitableToIfCvt(MachineBasicBlock &TMBB, unsigned NumTInstrs,
-                           MachineBasicBlock &FMBB, unsigned NumFInstrs) const;
+                           MachineBasicBlock::iterator MBBI) const override;
 
   void copyPhysReg(MachineBasicBlock &MBB,
                    MachineBasicBlock::iterator I, DebugLoc DL,
                    unsigned DestReg, unsigned SrcReg,
-                   bool KillSrc) const;
+                   bool KillSrc) const override;
 
   void storeRegToStackSlot(MachineBasicBlock &MBB,
                            MachineBasicBlock::iterator MBBI,
                            unsigned SrcReg, bool isKill, int FrameIndex,
                            const TargetRegisterClass *RC,
-                           const TargetRegisterInfo *TRI) const;
+                           const TargetRegisterInfo *TRI) const override;
 
   void loadRegFromStackSlot(MachineBasicBlock &MBB,
                             MachineBasicBlock::iterator MBBI,
                             unsigned DestReg, int FrameIndex,
                             const TargetRegisterClass *RC,
-                            const TargetRegisterInfo *TRI) const;
-
-  /// scheduleTwoAddrSource - Schedule the copy / re-mat of the source of the
-  /// two-addrss instruction inserted by two-address pass.
-  void scheduleTwoAddrSource(MachineInstr *SrcMI, MachineInstr *UseMI,
-                             const TargetRegisterInfo &TRI) const;
+                            const TargetRegisterInfo *TRI) const override;
 
   /// getRegisterInfo - TargetInstrInfo is a superset of MRegister info.  As
   /// such, whenever a client has an instance of instruction info, it should
   /// always be able to get register info as well (through this method).
   ///
-  const Thumb2RegisterInfo &getRegisterInfo() const { return RI; }
-
-  ScheduleHazardRecognizer *
-  CreateTargetPostRAHazardRecognizer(const InstrItineraryData &II) const;
+  const Thumb2RegisterInfo &getRegisterInfo() const override { return RI; }
 };
 
 /// getITInstrPredicate - Valid only in Thumb2 mode. This function is identical

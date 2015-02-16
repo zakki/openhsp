@@ -7,120 +7,86 @@
 //
 //===----------------------------------------------------------------------===//
 //
-// This file provides a template class that determines if a type is a class or
-// not. The basic mechanism, based on using the pointer to member function of
-// a zero argument to a function was "boosted" from the boost type_traits
-// library. See http://www.boost.org/ for all the gory details.
+// This file provides useful additions to the standard type_traits library.
 //
 //===----------------------------------------------------------------------===//
 
 #ifndef LLVM_SUPPORT_TYPE_TRAITS_H
 #define LLVM_SUPPORT_TYPE_TRAITS_H
 
+#include <type_traits>
 #include <utility>
 
-// This is actually the conforming implementation which works with abstract
-// classes.  However, enough compilers have trouble with it that most will use
-// the one in boost/type_traits/object_traits.hpp. This implementation actually
-// works with VC7.0, but other interactions seem to fail when we use it.
+#ifndef __has_feature
+#define LLVM_DEFINED_HAS_FEATURE
+#define __has_feature(x) 0
+#endif
 
 namespace llvm {
-  
-namespace dont_use
-{
-    // These two functions should never be used. They are helpers to
-    // the is_class template below. They cannot be located inside
-    // is_class because doing so causes at least GCC to think that
-    // the value of the "value" enumerator is not constant. Placing
-    // them out here (for some strange reason) allows the sizeof
-    // operator against them to magically be constant. This is
-    // important to make the is_class<T>::value idiom zero cost. it
-    // evaluates to a constant 1 or 0 depending on whether the
-    // parameter T is a class or not (respectively).
-    template<typename T> char is_class_helper(void(T::*)());
-    template<typename T> double is_class_helper(...);
-}
 
-template <typename T>
-struct is_class
-{
-  // is_class<> metafunction due to Paul Mensonides (leavings@attbi.com). For
-  // more details:
-  // http://groups.google.com/groups?hl=en&selm=000001c1cc83%24e154d5e0%247772e50c%40c161550a&rnum=1
- public:
-    enum { value = sizeof(char) == sizeof(dont_use::is_class_helper<T>(0)) };
-};
-  
-  
 /// isPodLike - This is a type trait that is used to determine whether a given
 /// type can be copied around with memcpy instead of running ctors etc.
 template <typename T>
 struct isPodLike {
+#if __has_feature(is_trivially_copyable)
+  // If the compiler supports the is_trivially_copyable trait use it, as it
+  // matches the definition of isPodLike closely.
+  static const bool value = __is_trivially_copyable(T);
+#else
   // If we don't know anything else, we can (at least) assume that all non-class
   // types are PODs.
-  static const bool value = !is_class<T>::value;
+  static const bool value = !std::is_class<T>::value;
+#endif
 };
 
 // std::pair's are pod-like if their elements are.
 template<typename T, typename U>
 struct isPodLike<std::pair<T, U> > {
-  static const bool value = isPodLike<T>::value & isPodLike<U>::value;
-};
-  
-
-/// \brief Metafunction that determines whether the two given types are 
-/// equivalent.
-template<typename T, typename U>
-struct is_same {
-  static const bool value = false;
+  static const bool value = isPodLike<T>::value && isPodLike<U>::value;
 };
 
-template<typename T>
-struct is_same<T, T> {
-  static const bool value = true;
+/// \brief Metafunction that determines whether the given type is either an
+/// integral type or an enumeration type.
+///
+/// Note that this accepts potentially more integral types than is_integral
+/// because it is based on merely being convertible implicitly to an integral
+/// type.
+template <typename T> class is_integral_or_enum {
+  typedef typename std::remove_reference<T>::type UnderlyingT;
+
+public:
+  static const bool value =
+      !std::is_class<UnderlyingT>::value && // Filter conversion operators.
+      !std::is_pointer<UnderlyingT>::value &&
+      !std::is_floating_point<UnderlyingT>::value &&
+      std::is_convertible<UnderlyingT, unsigned long long>::value;
 };
-  
-// enable_if_c - Enable/disable a template based on a metafunction
-template<bool Cond, typename T = void>
-struct enable_if_c {
+
+/// \brief If T is a pointer, just return it. If it is not, return T&.
+template<typename T, typename Enable = void>
+struct add_lvalue_reference_if_not_pointer { typedef T &type; };
+
+template <typename T>
+struct add_lvalue_reference_if_not_pointer<
+    T, typename std::enable_if<std::is_pointer<T>::value>::type> {
   typedef T type;
 };
 
-template<typename T> struct enable_if_c<false, T> { };
-  
-// enable_if - Enable/disable a template based on a metafunction
-template<typename Cond, typename T = void>
-struct enable_if : public enable_if_c<Cond::value, T> { };
+/// \brief If T is a pointer to X, return a pointer to const X. If it is not,
+/// return const T.
+template<typename T, typename Enable = void>
+struct add_const_past_pointer { typedef const T type; };
 
-namespace dont_use {
-  template<typename Base> char base_of_helper(const volatile Base*);
-  template<typename Base> double base_of_helper(...);
-}
-
-/// is_base_of - Metafunction to determine whether one type is a base class of
-/// (or identical to) another type.
-template<typename Base, typename Derived>
-struct is_base_of {
-  static const bool value 
-    = is_class<Base>::value && is_class<Derived>::value &&
-      sizeof(char) == sizeof(dont_use::base_of_helper<Base>((Derived*)0));
+template <typename T>
+struct add_const_past_pointer<
+    T, typename std::enable_if<std::is_pointer<T>::value>::type> {
+  typedef const typename std::remove_pointer<T>::type *type;
 };
 
-// remove_pointer - Metafunction to turn Foo* into Foo.  Defined in
-// C++0x [meta.trans.ptr].
-template <typename T> struct remove_pointer { typedef T type; };
-template <typename T> struct remove_pointer<T*> { typedef T type; };
-template <typename T> struct remove_pointer<T*const> { typedef T type; };
-template <typename T> struct remove_pointer<T*volatile> { typedef T type; };
-template <typename T> struct remove_pointer<T*const volatile> {
-    typedef T type; };
-
-template <bool, typename T, typename F>
-struct conditional { typedef T type; };
-
-template <typename T, typename F>
-struct conditional<false, T, F> { typedef F type; };
-
 }
+
+#ifdef LLVM_DEFINED_HAS_FEATURE
+#undef __has_feature
+#endif
 
 #endif

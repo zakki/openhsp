@@ -1,4 +1,4 @@
-//===-- X86/X86CodeEmitter.cpp - Convert X86 code to machine code ---------===//
+//===-- X86CodeEmitter.cpp - Convert X86 code to machine code -------------===//
 //
 //                     The LLVM Compiler Infrastructure
 //
@@ -12,30 +12,30 @@
 //
 //===----------------------------------------------------------------------===//
 
-#define DEBUG_TYPE "x86-emitter"
+#include "X86.h"
 #include "X86InstrInfo.h"
 #include "X86JITInfo.h"
+#include "X86Relocations.h"
 #include "X86Subtarget.h"
 #include "X86TargetMachine.h"
-#include "X86Relocations.h"
-#include "X86.h"
-#include "llvm/LLVMContext.h"
-#include "llvm/PassManager.h"
+#include "llvm/ADT/Statistic.h"
 #include "llvm/CodeGen/JITCodeEmitter.h"
 #include "llvm/CodeGen/MachineFunctionPass.h"
 #include "llvm/CodeGen/MachineInstr.h"
 #include "llvm/CodeGen/MachineModuleInfo.h"
 #include "llvm/CodeGen/Passes.h"
-#include "llvm/Function.h"
-#include "llvm/ADT/Statistic.h"
+#include "llvm/IR/LLVMContext.h"
 #include "llvm/MC/MCCodeEmitter.h"
 #include "llvm/MC/MCExpr.h"
 #include "llvm/MC/MCInst.h"
+#include "llvm/PassManager.h"
 #include "llvm/Support/Debug.h"
 #include "llvm/Support/ErrorHandling.h"
 #include "llvm/Support/raw_ostream.h"
 #include "llvm/Target/TargetOptions.h"
 using namespace llvm;
+
+#define DEBUG_TYPE "x86-emitter"
 
 STATISTIC(NumEmitted, "Number of machine instructions emitted");
 
@@ -43,7 +43,7 @@ namespace {
   template<class CodeEmitter>
   class Emitter : public MachineFunctionPass {
     const X86InstrInfo  *II;
-    const TargetData    *TD;
+    const DataLayout    *TD;
     X86TargetMachine    &TM;
     CodeEmitter         &MCE;
     MachineModuleInfo   *MMI;
@@ -53,25 +53,31 @@ namespace {
   public:
     static char ID;
     explicit Emitter(X86TargetMachine &tm, CodeEmitter &mce)
-      : MachineFunctionPass(ID), II(0), TD(0), TM(tm), 
-      MCE(mce), PICBaseOffset(0), Is64BitMode(false),
-      IsPIC(TM.getRelocationModel() == Reloc::PIC_) {}
-    Emitter(X86TargetMachine &tm, CodeEmitter &mce,
-            const X86InstrInfo &ii, const TargetData &td, bool is64)
-      : MachineFunctionPass(ID), II(&ii), TD(&td), TM(tm), 
-      MCE(mce), PICBaseOffset(0), Is64BitMode(is64),
-      IsPIC(TM.getRelocationModel() == Reloc::PIC_) {}
+      : MachineFunctionPass(ID), II(nullptr), TD(nullptr), TM(tm),
+        MCE(mce), PICBaseOffset(0), Is64BitMode(false),
+        IsPIC(TM.getRelocationModel() == Reloc::PIC_) {}
 
-    bool runOnMachineFunction(MachineFunction &MF);
+    bool runOnMachineFunction(MachineFunction &MF) override;
 
-    virtual const char *getPassName() const {
+    const char *getPassName() const override {
       return "X86 Machine Code Emitter";
     }
 
-    void emitInstruction(const MachineInstr &MI,
-                         const TargetInstrDesc *Desc);
-    
-    void getAnalysisUsage(AnalysisUsage &AU) const {
+    void emitOpcodePrefix(uint64_t TSFlags, int MemOperand,
+                          const MachineInstr &MI,
+                          const MCInstrDesc *Desc) const;
+
+    void emitVEXOpcodePrefix(uint64_t TSFlags, int MemOperand,
+                             const MachineInstr &MI,
+                             const MCInstrDesc *Desc) const;
+
+    void emitSegmentOverridePrefix(uint64_t TSFlags,
+                                   int MemOperand,
+                                   const MachineInstr &MI) const;
+
+    void emitInstruction(MachineInstr &MI, const MCInstrDesc *Desc);
+
+    void getAnalysisUsage(AnalysisUsage &AU) const override {
       AU.setPreservesAll();
       AU.addRequired<MachineModuleInfo>();
       MachineFunctionPass::getAnalysisUsage(AU);
@@ -100,7 +106,13 @@ namespace {
                           unsigned Op, unsigned RegOpcodeField,
                           intptr_t PCAdj = 0);
 
-    unsigned getX86RegNum(unsigned RegNo) const;
+    unsigned getX86RegNum(unsigned RegNo) const {
+      const TargetRegisterInfo *TRI = TM.getRegisterInfo();
+      return TRI->getEncodingValue(RegNo) & 0x7;
+    }
+
+    unsigned char getVEXRegisterEncoding(const MachineInstr &MI,
+                                         unsigned OpNum) const;
   };
 
 template<class CodeEmitter>
@@ -108,7 +120,7 @@ template<class CodeEmitter>
 } // end anonymous namespace.
 
 /// createX86CodeEmitterPass - Return a pass that emits the collected X86 code
-/// to the specified templated MachineCodeEmitter object.
+/// to the specified JITCodeEmitter object.
 FunctionPass *llvm::createX86JITCodeEmitterPass(X86TargetMachine &TM,
                                                 JITCodeEmitter &JCE) {
   return new Emitter<JITCodeEmitter>(TM, JCE);
@@ -118,22 +130,21 @@ template<class CodeEmitter>
 bool Emitter<CodeEmitter>::runOnMachineFunction(MachineFunction &MF) {
   MMI = &getAnalysis<MachineModuleInfo>();
   MCE.setModuleInfo(MMI);
-  
+
   II = TM.getInstrInfo();
-  TD = TM.getTargetData();
+  TD = TM.getDataLayout();
   Is64BitMode = TM.getSubtarget<X86Subtarget>().is64Bit();
   IsPIC = TM.getRelocationModel() == Reloc::PIC_;
-  
+
   do {
-    DEBUG(dbgs() << "JITTing function '" 
-          << MF.getFunction()->getName() << "'\n");
+    DEBUG(dbgs() << "JITTing function '" << MF.getName() << "'\n");
     MCE.startFunction(MF);
-    for (MachineFunction::iterator MBB = MF.begin(), E = MF.end(); 
+    for (MachineFunction::iterator MBB = MF.begin(), E = MF.end();
          MBB != E; ++MBB) {
       MCE.StartMachineBasicBlock(MBB);
-      for (MachineBasicBlock::const_iterator I = MBB->begin(), E = MBB->end();
+      for (MachineBasicBlock::iterator I = MBB->begin(), E = MBB->end();
            I != E; ++I) {
-        const TargetInstrDesc &Desc = I->getDesc();
+        const MCInstrDesc &Desc = I->getDesc();
         emitInstruction(*I, &Desc);
         // MOVPC32r is basically a call plus a pop instruction.
         if (Desc.getOpcode() == X86::MOVPC32r)
@@ -151,35 +162,31 @@ bool Emitter<CodeEmitter>::runOnMachineFunction(MachineFunction &MF) {
 /// size, and 3) use of X86-64 extended registers.
 static unsigned determineREX(const MachineInstr &MI) {
   unsigned REX = 0;
-  const TargetInstrDesc &Desc = MI.getDesc();
-  
+  const MCInstrDesc &Desc = MI.getDesc();
+
   // Pseudo instructions do not need REX prefix byte.
   if ((Desc.TSFlags & X86II::FormMask) == X86II::Pseudo)
     return 0;
   if (Desc.TSFlags & X86II::REX_W)
     REX |= 1 << 3;
-  
+
   unsigned NumOps = Desc.getNumOperands();
   if (NumOps) {
     bool isTwoAddr = NumOps > 1 &&
-    Desc.getOperandConstraint(1, TOI::TIED_TO) != -1;
-    
+      Desc.getOperandConstraint(1, MCOI::TIED_TO) != -1;
+
     // If it accesses SPL, BPL, SIL, or DIL, then it requires a 0x40 REX prefix.
     unsigned i = isTwoAddr ? 1 : 0;
     for (unsigned e = NumOps; i != e; ++i) {
       const MachineOperand& MO = MI.getOperand(i);
       if (MO.isReg()) {
         unsigned Reg = MO.getReg();
-        if (X86InstrInfo::isX86_64NonExtLowByteReg(Reg))
+        if (X86II::isX86_64NonExtLowByteReg(Reg))
           REX |= 0x40;
       }
     }
-    
+
     switch (Desc.TSFlags & X86II::FormMask) {
-      case X86II::MRMInitReg:
-        if (X86InstrInfo::isX86_64ExtendedReg(MI.getOperand(0)))
-          REX |= (1 << 0) | (1 << 2);
-        break;
       case X86II::MRMSrcReg: {
         if (X86InstrInfo::isX86_64ExtendedReg(MI.getOperand(0)))
           REX |= 1 << 2;
@@ -206,6 +213,7 @@ static unsigned determineREX(const MachineInstr &MI) {
         }
         break;
       }
+      case X86II::MRMXm:
       case X86II::MRM0m: case X86II::MRM1m:
       case X86II::MRM2m: case X86II::MRM3m:
       case X86II::MRM4m: case X86II::MRM5m:
@@ -347,11 +355,6 @@ void Emitter<CodeEmitter>::emitJumpTableAddress(unsigned JTI, unsigned Reloc,
     MCE.emitWordLE(0);
 }
 
-template<class CodeEmitter>
-unsigned Emitter<CodeEmitter>::getX86RegNum(unsigned RegNo) const {
-  return X86RegisterInfo::getX86RegNum(RegNo);
-}
-
 inline static unsigned char ModRMByte(unsigned Mod, unsigned RegOpcode,
                                       unsigned RM) {
   assert(Mod < 4 && RegOpcode < 8 && RM < 8 && "ModRM Fields out of range!");
@@ -370,7 +373,7 @@ void Emitter<CodeEmitter>::emitRegModRMByte(unsigned RegOpcodeFld) {
 }
 
 template<class CodeEmitter>
-void Emitter<CodeEmitter>::emitSIBByte(unsigned SS, 
+void Emitter<CodeEmitter>::emitSIBByte(unsigned SS,
                                        unsigned Index,
                                        unsigned Base) {
   // SIB byte is in the same format as the ModRMByte...
@@ -386,8 +389,8 @@ void Emitter<CodeEmitter>::emitConstant(uint64_t Val, unsigned Size) {
   }
 }
 
-/// isDisp8 - Return true if this signed displacement fits in a 8-bit 
-/// sign-extended field. 
+/// isDisp8 - Return true if this signed displacement fits in a 8-bit
+/// sign-extended field.
 static bool isDisp8(int Value) {
   return Value == (signed char)Value;
 }
@@ -396,10 +399,10 @@ static bool gvNeedsNonLazyPtr(const MachineOperand &GVOp,
                               const TargetMachine &TM) {
   // For Darwin-64, simulate the linktime GOT by using the same non-lazy-pointer
   // mechanism as 32-bit mode.
-  if (TM.getSubtarget<X86Subtarget>().is64Bit() && 
+  if (TM.getSubtarget<X86Subtarget>().is64Bit() &&
       !TM.getSubtarget<X86Subtarget>().isTargetDarwin())
     return false;
-  
+
   // Return true if this is a reference to a stub containing the address of the
   // global, not the global itself.
   return isGlobalStubReference(GVOp.getTargetFlags());
@@ -425,7 +428,7 @@ void Emitter<CodeEmitter>::emitDisplacementField(const MachineOperand *RelocOp,
   if (RelocOp->isGlobal()) {
     // In 64-bit static small code model, we could potentially emit absolute.
     // But it's probably not beneficial. If the MCE supports using RIP directly
-    // do it, otherwise fallback to absolute (this is determined by IsPCRel). 
+    // do it, otherwise fallback to absolute (this is determined by IsPCRel).
     //  89 05 00 00 00 00     mov    %eax,0(%rip)  # PC-relative
     //  89 04 25 00 00 00 00  mov    %eax,0x0      # Absolute
     bool Indirect = gvNeedsNonLazyPtr(*RelocOp, TM);
@@ -448,8 +451,8 @@ void Emitter<CodeEmitter>::emitMemModRMByte(const MachineInstr &MI,
                                             intptr_t PCAdj) {
   const MachineOperand &Op3 = MI.getOperand(Op+3);
   int DispVal = 0;
-  const MachineOperand *DispForReloc = 0;
-  
+  const MachineOperand *DispForReloc = nullptr;
+
   // Figure out what sort of displacement we have to handle here.
   if (Op3.isGlobal()) {
     DispForReloc = &Op3;
@@ -477,7 +480,7 @@ void Emitter<CodeEmitter>::emitMemModRMByte(const MachineInstr &MI,
   const MachineOperand &IndexReg = MI.getOperand(Op+2);
 
   unsigned BaseReg = Base.getReg();
-  
+
   // Handle %rip relative addressing.
   if (BaseReg == X86::RIP ||
       (Is64BitMode && DispForReloc)) { // [disp32+RIP] in X86-64 mode
@@ -494,7 +497,7 @@ void Emitter<CodeEmitter>::emitMemModRMByte(const MachineInstr &MI,
   bool IsPCRel = MCE.earlyResolveAddresses() ? true : false;
 
   // Is a SIB byte needed?
-  // If no BaseReg, issue a RIP relative instruction only if the MCE can 
+  // If no BaseReg, issue a RIP relative instruction only if the MCE can
   // resolve addresses on-the-fly, otherwise use SIB (Intel Manual 2A, table
   // 2-7) and absolute references.
   unsigned BaseRegNo = -1U;
@@ -502,7 +505,7 @@ void Emitter<CodeEmitter>::emitMemModRMByte(const MachineInstr &MI,
     BaseRegNo = getX86RegNum(BaseReg);
 
   if (// The SIB byte must be used if there is an index register.
-      IndexReg.getReg() == 0 && 
+      IndexReg.getReg() == 0 &&
       // The SIB byte must be used if the base is ESP/RSP/R12, all of which
       // encode to an R/M value of 4, which indicates that a SIB byte is
       // present.
@@ -516,7 +519,7 @@ void Emitter<CodeEmitter>::emitMemModRMByte(const MachineInstr &MI,
       emitDisplacementField(DispForReloc, DispVal, PCAdj, true);
       return;
     }
-    
+
     // If the base is not EBP/ESP and there is no displacement, use simple
     // indirect register encoding, this handles addresses like [EAX].  The
     // encoding for [EBP] with no displacement means [disp32] so we handle it
@@ -525,20 +528,20 @@ void Emitter<CodeEmitter>::emitMemModRMByte(const MachineInstr &MI,
       MCE.emitByte(ModRMByte(0, RegOpcodeField, BaseRegNo));
       return;
     }
-    
+
     // Otherwise, if the displacement fits in a byte, encode as [REG+disp8].
     if (!DispForReloc && isDisp8(DispVal)) {
       MCE.emitByte(ModRMByte(1, RegOpcodeField, BaseRegNo));
       emitConstant(DispVal, 1);
       return;
     }
-    
+
     // Otherwise, emit the most general non-SIB encoding: [REG+disp32]
     MCE.emitByte(ModRMByte(2, RegOpcodeField, BaseRegNo));
     emitDisplacementField(DispForReloc, DispVal, PCAdj, IsPCRel);
     return;
   }
-  
+
   // Otherwise we need a SIB byte, so start by outputting the ModR/M byte first.
   assert(IndexReg.getReg() != X86::ESP &&
          IndexReg.getReg() != X86::RSP && "Cannot use ESP as index reg!");
@@ -567,11 +570,11 @@ void Emitter<CodeEmitter>::emitMemModRMByte(const MachineInstr &MI,
   }
 
   // Calculate what the SS field value should be...
-  static const unsigned SSTable[] = { ~0, 0, 1, ~0, 2, ~0, ~0, ~0, 3 };
+  static const unsigned SSTable[] = { ~0U, 0, 1, ~0U, 2, ~0U, ~0U, ~0U, 3 };
   unsigned SS = SSTable[Scale.getImm()];
 
   if (BaseReg == 0) {
-    // Handle the SIB byte for the case where there is no base, see Intel 
+    // Handle the SIB byte for the case where there is no base, see Intel
     // Manual 2A, table 2-7. The displacement has already been output.
     unsigned IndexRegNo;
     if (IndexReg.getReg())
@@ -597,71 +600,76 @@ void Emitter<CodeEmitter>::emitMemModRMByte(const MachineInstr &MI,
   }
 }
 
+static const MCInstrDesc *UpdateOp(MachineInstr &MI, const X86InstrInfo *II,
+                                   unsigned Opcode) {
+  const MCInstrDesc *Desc = &II->get(Opcode);
+  MI.setDesc(*Desc);
+  return Desc;
+}
+
+/// Is16BitMemOperand - Return true if the specified instruction has
+/// a 16-bit memory operand. Op specifies the operand # of the memoperand.
+static bool Is16BitMemOperand(const MachineInstr &MI, unsigned Op) {
+  const MachineOperand &BaseReg  = MI.getOperand(Op+X86::AddrBaseReg);
+  const MachineOperand &IndexReg = MI.getOperand(Op+X86::AddrIndexReg);
+
+  if ((BaseReg.getReg() != 0 &&
+       X86MCRegisterClasses[X86::GR16RegClassID].contains(BaseReg.getReg())) ||
+      (IndexReg.getReg() != 0 &&
+       X86MCRegisterClasses[X86::GR16RegClassID].contains(IndexReg.getReg())))
+    return true;
+  return false;
+}
+
+/// Is32BitMemOperand - Return true if the specified instruction has
+/// a 32-bit memory operand. Op specifies the operand # of the memoperand.
+static bool Is32BitMemOperand(const MachineInstr &MI, unsigned Op) {
+  const MachineOperand &BaseReg  = MI.getOperand(Op+X86::AddrBaseReg);
+  const MachineOperand &IndexReg = MI.getOperand(Op+X86::AddrIndexReg);
+
+  if ((BaseReg.getReg() != 0 &&
+       X86MCRegisterClasses[X86::GR32RegClassID].contains(BaseReg.getReg())) ||
+      (IndexReg.getReg() != 0 &&
+       X86MCRegisterClasses[X86::GR32RegClassID].contains(IndexReg.getReg())))
+    return true;
+  return false;
+}
+
+/// Is64BitMemOperand - Return true if the specified instruction has
+/// a 64-bit memory operand. Op specifies the operand # of the memoperand.
+#ifndef NDEBUG
+static bool Is64BitMemOperand(const MachineInstr &MI, unsigned Op) {
+  const MachineOperand &BaseReg  = MI.getOperand(Op+X86::AddrBaseReg);
+  const MachineOperand &IndexReg = MI.getOperand(Op+X86::AddrIndexReg);
+
+  if ((BaseReg.getReg() != 0 &&
+       X86MCRegisterClasses[X86::GR64RegClassID].contains(BaseReg.getReg())) ||
+      (IndexReg.getReg() != 0 &&
+       X86MCRegisterClasses[X86::GR64RegClassID].contains(IndexReg.getReg())))
+    return true;
+  return false;
+}
+#endif
+
 template<class CodeEmitter>
-void Emitter<CodeEmitter>::emitInstruction(const MachineInstr &MI,
-                                           const TargetInstrDesc *Desc) {
-  DEBUG(dbgs() << MI);
-
-  MCE.processDebugLoc(MI.getDebugLoc(), true);
-
-  unsigned Opcode = Desc->Opcode;
-
-  // Emit the lock opcode prefix as needed.
-  if (Desc->TSFlags & X86II::LOCK)
-    MCE.emitByte(0xF0);
-
-  // Emit segment override opcode prefix as needed.
-  switch (Desc->TSFlags & X86II::SegOvrMask) {
-  case X86II::FS:
-    MCE.emitByte(0x64);
-    break;
-  case X86II::GS:
-    MCE.emitByte(0x65);
-    break;
-  default: llvm_unreachable("Invalid segment!");
-  case 0: break;  // No segment override!
-  }
-
-  // Emit the repeat opcode prefix as needed.
-  if ((Desc->TSFlags & X86II::Op0Mask) == X86II::REP)
-    MCE.emitByte(0xF3);
-
+void Emitter<CodeEmitter>::emitOpcodePrefix(uint64_t TSFlags,
+                                            int MemOperand,
+                                            const MachineInstr &MI,
+                                            const MCInstrDesc *Desc) const {
   // Emit the operand size opcode prefix as needed.
-  if (Desc->TSFlags & X86II::OpSize)
+  if (((TSFlags & X86II::OpSizeMask) >> X86II::OpSizeShift) == X86II::OpSize16)
     MCE.emitByte(0x66);
 
-  // Emit the address size opcode prefix as needed.
-  if (Desc->TSFlags & X86II::AdSize)
-    MCE.emitByte(0x67);
-
-  bool Need0FPrefix = false;
-  switch (Desc->TSFlags & X86II::Op0Mask) {
-  case X86II::TB:  // Two-byte opcode prefix
-  case X86II::T8:  // 0F 38
-  case X86II::TA:  // 0F 3A
-    Need0FPrefix = true;
+  switch (Desc->TSFlags & X86II::OpPrefixMask) {
+  case X86II::PD:   // 66
+    MCE.emitByte(0x66);
     break;
-  case X86II::TF: // F2 0F 38
-    MCE.emitByte(0xF2);
-    Need0FPrefix = true;
-    break;
-  case X86II::REP: break; // already handled.
-  case X86II::XS:   // F3 0F
+  case X86II::XS:   // F3
     MCE.emitByte(0xF3);
-    Need0FPrefix = true;
     break;
-  case X86II::XD:   // F2 0F
+  case X86II::XD:   // F2
     MCE.emitByte(0xF2);
-    Need0FPrefix = true;
     break;
-  case X86II::D8: case X86II::D9: case X86II::DA: case X86II::DB:
-  case X86II::DC: case X86II::DD: case X86II::DE: case X86II::DF:
-    MCE.emitByte(0xD8+
-                 (((Desc->TSFlags & X86II::Op0Mask)-X86II::D8)
-                                   >> X86II::Op0Shift));
-    break; // Two-byte opcode prefix
-  default: llvm_unreachable("Invalid prefix!");
-  case 0: break;  // No prefix!
   }
 
   // Handle REX prefix.
@@ -671,11 +679,15 @@ void Emitter<CodeEmitter>::emitInstruction(const MachineInstr &MI,
   }
 
   // 0x0F escape code must be emitted just before the opcode.
-  if (Need0FPrefix)
+  switch (Desc->TSFlags & X86II::OpMapMask) {
+  case X86II::TB:  // Two-byte opcode map
+  case X86II::T8:  // 0F 38
+  case X86II::TA:  // 0F 3A
     MCE.emitByte(0x0F);
+    break;
+  }
 
-  switch (Desc->TSFlags & X86II::Op0Mask) {
-  case X86II::TF:    // F2 0F 38
+  switch (Desc->TSFlags & X86II::OpMapMask) {
   case X86II::T8:    // 0F 38
     MCE.emitByte(0x38);
     break;
@@ -683,49 +695,452 @@ void Emitter<CodeEmitter>::emitInstruction(const MachineInstr &MI,
     MCE.emitByte(0x3A);
     break;
   }
+}
+
+// On regular x86, both XMM0-XMM7 and XMM8-XMM15 are encoded in the range
+// 0-7 and the difference between the 2 groups is given by the REX prefix.
+// In the VEX prefix, registers are seen sequencially from 0-15 and encoded
+// in 1's complement form, example:
+//
+//  ModRM field => XMM9 => 1
+//  VEX.VVVV    => XMM9 => ~9
+//
+// See table 4-35 of Intel AVX Programming Reference for details.
+template<class CodeEmitter>
+unsigned char
+Emitter<CodeEmitter>::getVEXRegisterEncoding(const MachineInstr &MI,
+                                             unsigned OpNum) const {
+  unsigned SrcReg = MI.getOperand(OpNum).getReg();
+  unsigned SrcRegNum = getX86RegNum(MI.getOperand(OpNum).getReg());
+  if (X86II::isX86_64ExtendedReg(SrcReg))
+    SrcRegNum |= 8;
+
+  // The registers represented through VEX_VVVV should
+  // be encoded in 1's complement form.
+  return (~SrcRegNum) & 0xf;
+}
+
+/// EmitSegmentOverridePrefix - Emit segment override opcode prefix as needed
+template<class CodeEmitter>
+void Emitter<CodeEmitter>::emitSegmentOverridePrefix(uint64_t TSFlags,
+                                                 int MemOperand,
+                                                 const MachineInstr &MI) const {
+  if (MemOperand < 0)
+    return; // No memory operand
+
+  // Check for explicit segment override on memory operand.
+  switch (MI.getOperand(MemOperand+X86::AddrSegmentReg).getReg()) {
+  default: llvm_unreachable("Unknown segment register!");
+  case 0: break;
+  case X86::CS: MCE.emitByte(0x2E); break;
+  case X86::SS: MCE.emitByte(0x36); break;
+  case X86::DS: MCE.emitByte(0x3E); break;
+  case X86::ES: MCE.emitByte(0x26); break;
+  case X86::FS: MCE.emitByte(0x64); break;
+  case X86::GS: MCE.emitByte(0x65); break;
+  }
+}
+
+template<class CodeEmitter>
+void Emitter<CodeEmitter>::emitVEXOpcodePrefix(uint64_t TSFlags,
+                                               int MemOperand,
+                                               const MachineInstr &MI,
+                                               const MCInstrDesc *Desc) const {
+  unsigned char Encoding = (TSFlags & X86II::EncodingMask) >>
+                           X86II::EncodingShift;
+  bool HasVEX_4V = (TSFlags >> X86II::VEXShift) & X86II::VEX_4V;
+  bool HasVEX_4VOp3 = (TSFlags >> X86II::VEXShift) & X86II::VEX_4VOp3;
+  bool HasMemOp4 = (TSFlags >> X86II::VEXShift) & X86II::MemOp4;
+
+  // VEX_R: opcode externsion equivalent to REX.R in
+  // 1's complement (inverted) form
+  //
+  //  1: Same as REX_R=0 (must be 1 in 32-bit mode)
+  //  0: Same as REX_R=1 (64 bit mode only)
+  //
+  unsigned char VEX_R = 0x1;
+
+  // VEX_X: equivalent to REX.X, only used when a
+  // register is used for index in SIB Byte.
+  //
+  //  1: Same as REX.X=0 (must be 1 in 32-bit mode)
+  //  0: Same as REX.X=1 (64-bit mode only)
+  unsigned char VEX_X = 0x1;
+
+  // VEX_B:
+  //
+  //  1: Same as REX_B=0 (ignored in 32-bit mode)
+  //  0: Same as REX_B=1 (64 bit mode only)
+  //
+  unsigned char VEX_B = 0x1;
+
+  // VEX_W: opcode specific (use like REX.W, or used for
+  // opcode extension, or ignored, depending on the opcode byte)
+  unsigned char VEX_W = 0;
+
+  // VEX_5M (VEX m-mmmmm field):
+  //
+  //  0b00000: Reserved for future use
+  //  0b00001: implied 0F leading opcode
+  //  0b00010: implied 0F 38 leading opcode bytes
+  //  0b00011: implied 0F 3A leading opcode bytes
+  //  0b00100-0b11111: Reserved for future use
+  //  0b01000: XOP map select - 08h instructions with imm byte
+  //  0b01001: XOP map select - 09h instructions with no imm byte
+  //  0b01010: XOP map select - 0Ah instructions with imm dword
+  unsigned char VEX_5M = 0;
+
+  // VEX_4V (VEX vvvv field): a register specifier
+  // (in 1's complement form) or 1111 if unused.
+  unsigned char VEX_4V = 0xf;
+
+  // VEX_L (Vector Length):
+  //
+  //  0: scalar or 128-bit vector
+  //  1: 256-bit vector
+  //
+  unsigned char VEX_L = 0;
+
+  // VEX_PP: opcode extension providing equivalent
+  // functionality of a SIMD prefix
+  //
+  //  0b00: None
+  //  0b01: 66
+  //  0b10: F3
+  //  0b11: F2
+  //
+  unsigned char VEX_PP = 0;
+
+  if ((TSFlags >> X86II::VEXShift) & X86II::VEX_W)
+    VEX_W = 1;
+
+  if ((TSFlags >> X86II::VEXShift) & X86II::VEX_L)
+    VEX_L = 1;
+
+  switch (TSFlags & X86II::OpPrefixMask) {
+  default: break; // VEX_PP already correct
+  case X86II::PD: VEX_PP = 0x1; break; // 66
+  case X86II::XS: VEX_PP = 0x2; break; // F3
+  case X86II::XD: VEX_PP = 0x3; break; // F2
+  }
+
+  switch (TSFlags & X86II::OpMapMask) {
+  default: llvm_unreachable("Invalid prefix!");
+  case X86II::TB:   VEX_5M = 0x1; break; // 0F
+  case X86II::T8:   VEX_5M = 0x2; break; // 0F 38
+  case X86II::TA:   VEX_5M = 0x3; break; // 0F 3A
+  case X86II::XOP8: VEX_5M = 0x8; break;
+  case X86II::XOP9: VEX_5M = 0x9; break;
+  case X86II::XOPA: VEX_5M = 0xA; break;
+  }
+
+  // Classify VEX_B, VEX_4V, VEX_R, VEX_X
+  unsigned NumOps = Desc->getNumOperands();
+  unsigned CurOp = 0;
+  if (NumOps > 1 && Desc->getOperandConstraint(1, MCOI::TIED_TO) == 0)
+    ++CurOp;
+  else if (NumOps > 3 && Desc->getOperandConstraint(2, MCOI::TIED_TO) == 0) {
+    assert(Desc->getOperandConstraint(NumOps - 1, MCOI::TIED_TO) == 1);
+    // Special case for GATHER with 2 TIED_TO operands
+    // Skip the first 2 operands: dst, mask_wb
+    CurOp += 2;
+  }
+
+  switch (TSFlags & X86II::FormMask) {
+    default: llvm_unreachable("Unexpected form in emitVEXOpcodePrefix!");
+    case X86II::RawFrm:
+      break;
+    case X86II::MRMDestMem: {
+      // MRMDestMem instructions forms:
+      //  MemAddr, src1(ModR/M)
+      //  MemAddr, src1(VEX_4V), src2(ModR/M)
+      //  MemAddr, src1(ModR/M), imm8
+      //
+      if (X86II::isX86_64ExtendedReg(MI.getOperand(X86::AddrBaseReg).getReg()))
+        VEX_B = 0x0;
+      if (X86II::isX86_64ExtendedReg(MI.getOperand(X86::AddrIndexReg).getReg()))
+        VEX_X = 0x0;
+
+      CurOp = X86::AddrNumOperands;
+      if (HasVEX_4V)
+        VEX_4V = getVEXRegisterEncoding(MI, CurOp++);
+
+      const MachineOperand &MO = MI.getOperand(CurOp);
+      if (MO.isReg() && X86II::isX86_64ExtendedReg(MO.getReg()))
+        VEX_R = 0x0;
+      break;
+    }
+    case X86II::MRMSrcMem:
+      // MRMSrcMem instructions forms:
+      //  src1(ModR/M), MemAddr
+      //  src1(ModR/M), src2(VEX_4V), MemAddr
+      //  src1(ModR/M), MemAddr, imm8
+      //  src1(ModR/M), MemAddr, src2(VEX_I8IMM)
+      //
+      //  FMA4:
+      //  dst(ModR/M.reg), src1(VEX_4V), src2(ModR/M), src3(VEX_I8IMM)
+      //  dst(ModR/M.reg), src1(VEX_4V), src2(VEX_I8IMM), src3(ModR/M),
+      if (X86II::isX86_64ExtendedReg(MI.getOperand(CurOp).getReg()))
+        VEX_R = 0x0;
+      CurOp++;
+
+      if (HasVEX_4V) {
+        VEX_4V = getVEXRegisterEncoding(MI, CurOp);
+        CurOp++;
+      }
+
+      if (X86II::isX86_64ExtendedReg(
+                          MI.getOperand(MemOperand+X86::AddrBaseReg).getReg()))
+        VEX_B = 0x0;
+      if (X86II::isX86_64ExtendedReg(
+                          MI.getOperand(MemOperand+X86::AddrIndexReg).getReg()))
+        VEX_X = 0x0;
+
+      if (HasVEX_4VOp3)
+        VEX_4V = getVEXRegisterEncoding(MI, CurOp+X86::AddrNumOperands);
+      break;
+    case X86II::MRM0m: case X86II::MRM1m:
+    case X86II::MRM2m: case X86II::MRM3m:
+    case X86II::MRM4m: case X86II::MRM5m:
+    case X86II::MRM6m: case X86II::MRM7m: {
+      // MRM[0-9]m instructions forms:
+      //  MemAddr
+      //  src1(VEX_4V), MemAddr
+      if (HasVEX_4V)
+        VEX_4V = getVEXRegisterEncoding(MI, CurOp++);
+
+      if (X86II::isX86_64ExtendedReg(
+                          MI.getOperand(MemOperand+X86::AddrBaseReg).getReg()))
+        VEX_B = 0x0;
+      if (X86II::isX86_64ExtendedReg(
+                          MI.getOperand(MemOperand+X86::AddrIndexReg).getReg()))
+        VEX_X = 0x0;
+      break;
+    }
+    case X86II::MRMSrcReg:
+      // MRMSrcReg instructions forms:
+      //  dst(ModR/M), src1(VEX_4V), src2(ModR/M), src3(VEX_I8IMM)
+      //  dst(ModR/M), src1(ModR/M)
+      //  dst(ModR/M), src1(ModR/M), imm8
+      //
+      if (X86II::isX86_64ExtendedReg(MI.getOperand(CurOp).getReg()))
+        VEX_R = 0x0;
+      CurOp++;
+
+      if (HasVEX_4V)
+        VEX_4V = getVEXRegisterEncoding(MI, CurOp++);
+
+      if (HasMemOp4) // Skip second register source (encoded in I8IMM)
+        CurOp++;
+
+      if (X86II::isX86_64ExtendedReg(MI.getOperand(CurOp).getReg()))
+        VEX_B = 0x0;
+      CurOp++;
+      if (HasVEX_4VOp3)
+        VEX_4V = getVEXRegisterEncoding(MI, CurOp);
+      break;
+    case X86II::MRMDestReg:
+      // MRMDestReg instructions forms:
+      //  dst(ModR/M), src(ModR/M)
+      //  dst(ModR/M), src(ModR/M), imm8
+      //  dst(ModR/M), src1(VEX_4V), src2(ModR/M)
+      if (X86II::isX86_64ExtendedReg(MI.getOperand(CurOp).getReg()))
+        VEX_B = 0x0;
+      CurOp++;
+
+      if (HasVEX_4V)
+        VEX_4V = getVEXRegisterEncoding(MI, CurOp++);
+
+      if (X86II::isX86_64ExtendedReg(MI.getOperand(CurOp).getReg()))
+        VEX_R = 0x0;
+      break;
+    case X86II::MRM0r: case X86II::MRM1r:
+    case X86II::MRM2r: case X86II::MRM3r:
+    case X86II::MRM4r: case X86II::MRM5r:
+    case X86II::MRM6r: case X86II::MRM7r:
+      // MRM0r-MRM7r instructions forms:
+      //  dst(VEX_4V), src(ModR/M), imm8
+      VEX_4V = getVEXRegisterEncoding(MI, CurOp);
+      CurOp++;
+
+      if (X86II::isX86_64ExtendedReg(MI.getOperand(CurOp).getReg()))
+        VEX_B = 0x0;
+      break;
+  }
+
+  // Emit segment override opcode prefix as needed.
+  emitSegmentOverridePrefix(TSFlags, MemOperand, MI);
+
+  // VEX opcode prefix can have 2 or 3 bytes
+  //
+  //  3 bytes:
+  //    +-----+ +--------------+ +-------------------+
+  //    | C4h | | RXB | m-mmmm | | W | vvvv | L | pp |
+  //    +-----+ +--------------+ +-------------------+
+  //  2 bytes:
+  //    +-----+ +-------------------+
+  //    | C5h | | R | vvvv | L | pp |
+  //    +-----+ +-------------------+
+  //
+  //  XOP uses a similar prefix:
+  //    +-----+ +--------------+ +-------------------+
+  //    | 8Fh | | RXB | m-mmmm | | W | vvvv | L | pp |
+  //    +-----+ +--------------+ +-------------------+
+  unsigned char LastByte = VEX_PP | (VEX_L << 2) | (VEX_4V << 3);
+
+  // Can this use the 2 byte VEX prefix?
+  if (Encoding == X86II::VEX && VEX_B && VEX_X && !VEX_W && (VEX_5M == 1)) {
+    MCE.emitByte(0xC5);
+    MCE.emitByte(LastByte | (VEX_R << 7));
+    return;
+  }
+
+  // 3 byte VEX prefix
+  MCE.emitByte(Encoding == X86II::XOP ? 0x8F : 0xC4);
+  MCE.emitByte(VEX_R << 7 | VEX_X << 6 | VEX_B << 5 | VEX_5M);
+  MCE.emitByte(LastByte | (VEX_W << 7));
+}
+
+template<class CodeEmitter>
+void Emitter<CodeEmitter>::emitInstruction(MachineInstr &MI,
+                                           const MCInstrDesc *Desc) {
+  DEBUG(dbgs() << MI);
+
+  // If this is a pseudo instruction, lower it.
+  switch (Desc->getOpcode()) {
+  case X86::ADD16rr_DB:      Desc = UpdateOp(MI, II, X86::OR16rr); break;
+  case X86::ADD32rr_DB:      Desc = UpdateOp(MI, II, X86::OR32rr); break;
+  case X86::ADD64rr_DB:      Desc = UpdateOp(MI, II, X86::OR64rr); break;
+  case X86::ADD16ri_DB:      Desc = UpdateOp(MI, II, X86::OR16ri); break;
+  case X86::ADD32ri_DB:      Desc = UpdateOp(MI, II, X86::OR32ri); break;
+  case X86::ADD64ri32_DB:    Desc = UpdateOp(MI, II, X86::OR64ri32); break;
+  case X86::ADD16ri8_DB:     Desc = UpdateOp(MI, II, X86::OR16ri8); break;
+  case X86::ADD32ri8_DB:     Desc = UpdateOp(MI, II, X86::OR32ri8); break;
+  case X86::ADD64ri8_DB:     Desc = UpdateOp(MI, II, X86::OR64ri8); break;
+  case X86::ACQUIRE_MOV8rm:  Desc = UpdateOp(MI, II, X86::MOV8rm); break;
+  case X86::ACQUIRE_MOV16rm: Desc = UpdateOp(MI, II, X86::MOV16rm); break;
+  case X86::ACQUIRE_MOV32rm: Desc = UpdateOp(MI, II, X86::MOV32rm); break;
+  case X86::ACQUIRE_MOV64rm: Desc = UpdateOp(MI, II, X86::MOV64rm); break;
+  case X86::RELEASE_MOV8mr:  Desc = UpdateOp(MI, II, X86::MOV8mr); break;
+  case X86::RELEASE_MOV16mr: Desc = UpdateOp(MI, II, X86::MOV16mr); break;
+  case X86::RELEASE_MOV32mr: Desc = UpdateOp(MI, II, X86::MOV32mr); break;
+  case X86::RELEASE_MOV64mr: Desc = UpdateOp(MI, II, X86::MOV64mr); break;
+  }
+
+
+  MCE.processDebugLoc(MI.getDebugLoc(), true);
+
+  unsigned Opcode = Desc->Opcode;
 
   // If this is a two-address instruction, skip one of the register operands.
   unsigned NumOps = Desc->getNumOperands();
   unsigned CurOp = 0;
-  if (NumOps > 1 && Desc->getOperandConstraint(1, TOI::TIED_TO) != -1)
+  if (NumOps > 1 && Desc->getOperandConstraint(1, MCOI::TIED_TO) == 0)
     ++CurOp;
-  else if (NumOps > 2 && Desc->getOperandConstraint(NumOps-1, TOI::TIED_TO)== 0)
-    // Skip the last source operand that is tied_to the dest reg. e.g. LXADD32
-    --NumOps;
+  else if (NumOps > 3 && Desc->getOperandConstraint(2, MCOI::TIED_TO) == 0) {
+    assert(Desc->getOperandConstraint(NumOps - 1, MCOI::TIED_TO) == 1);
+    // Special case for GATHER with 2 TIED_TO operands
+    // Skip the first 2 operands: dst, mask_wb
+    CurOp += 2;
+  }
+
+  uint64_t TSFlags = Desc->TSFlags;
+
+  // Encoding type for this instruction.
+  unsigned char Encoding = (TSFlags & X86II::EncodingMask) >>
+                           X86II::EncodingShift;
+
+  // It uses the VEX.VVVV field?
+  bool HasVEX_4V = (TSFlags >> X86II::VEXShift) & X86II::VEX_4V;
+  bool HasVEX_4VOp3 = (TSFlags >> X86II::VEXShift) & X86II::VEX_4VOp3;
+  bool HasMemOp4 = (TSFlags >> X86II::VEXShift) & X86II::MemOp4;
+  const unsigned MemOp4_I8IMMOperand = 2;
+
+  // Determine where the memory operand starts, if present.
+  int MemoryOperand = X86II::getMemoryOperandNo(TSFlags, Opcode);
+  if (MemoryOperand != -1) MemoryOperand += CurOp;
+
+  // Emit the lock opcode prefix as needed.
+  if (Desc->TSFlags & X86II::LOCK)
+    MCE.emitByte(0xF0);
+
+  // Emit segment override opcode prefix as needed.
+  emitSegmentOverridePrefix(TSFlags, MemoryOperand, MI);
+
+  // Emit the repeat opcode prefix as needed.
+  if (Desc->TSFlags & X86II::REP)
+    MCE.emitByte(0xF3);
+
+  // Emit the address size opcode prefix as needed.
+  bool need_address_override;
+  if (TSFlags & X86II::AdSize) {
+    need_address_override = true;
+  } else if (MemoryOperand < 0) {
+    need_address_override = false;
+  } else if (Is64BitMode) {
+    assert(!Is16BitMemOperand(MI, MemoryOperand));
+    need_address_override = Is32BitMemOperand(MI, MemoryOperand);
+  } else {
+    assert(!Is64BitMemOperand(MI, MemoryOperand));
+    need_address_override = Is16BitMemOperand(MI, MemoryOperand);
+  }
+
+  if (need_address_override)
+    MCE.emitByte(0x67);
+
+  if (Encoding == 0)
+    emitOpcodePrefix(TSFlags, MemoryOperand, MI, Desc);
+  else
+    emitVEXOpcodePrefix(TSFlags, MemoryOperand, MI, Desc);
 
   unsigned char BaseOpcode = X86II::getBaseOpcodeFor(Desc->TSFlags);
-  switch (Desc->TSFlags & X86II::FormMask) {
+  switch (TSFlags & X86II::FormMask) {
   default:
     llvm_unreachable("Unknown FormMask value in X86 MachineCodeEmitter!");
   case X86II::Pseudo:
     // Remember the current PC offset, this is the PIC relocation
     // base address.
     switch (Opcode) {
-    default: 
+    default:
       llvm_unreachable("pseudo instructions should be removed before code"
                        " emission");
-      break;
     // Do nothing for Int_MemBarrier - it's just a comment.  Add a debug
     // to make it slightly easier to see.
     case X86::Int_MemBarrier:
       DEBUG(dbgs() << "#MEMBARRIER\n");
       break;
-    
+
     case TargetOpcode::INLINEASM:
       // We allow inline assembler nodes with empty bodies - they can
       // implicitly define registers, which is ok for JIT.
-      if (MI.getOperand(0).getSymbolName()[0])
+      if (MI.getOperand(0).getSymbolName()[0]) {
+        DebugLoc DL = MI.getDebugLoc();
+        DL.print(MI.getParent()->getParent()->getFunction()->getContext(),
+                 llvm::errs());
         report_fatal_error("JIT does not support inline asm!");
+      }
       break;
-    case TargetOpcode::PROLOG_LABEL:
+    case TargetOpcode::DBG_VALUE:
+    case TargetOpcode::CFI_INSTRUCTION:
+      break;
     case TargetOpcode::GC_LABEL:
     case TargetOpcode::EH_LABEL:
       MCE.emitLabel(MI.getOperand(0).getMCSymbol());
       break;
-    
+
     case TargetOpcode::IMPLICIT_DEF:
     case TargetOpcode::KILL:
       break;
+
+    case X86::SEH_PushReg:
+    case X86::SEH_SaveReg:
+    case X86::SEH_SaveXMM:
+    case X86::SEH_StackAlloc:
+    case X86::SEH_SetFrame:
+    case X86::SEH_PushFrame:
+    case X86::SEH_EndPrologue:
+      break;
+
     case X86::MOVPC32r: {
       // This emits the "call" portion of this pseudo instruction.
       MCE.emitByte(BaseOpcode);
@@ -744,7 +1159,7 @@ void Emitter<CodeEmitter>::emitInstruction(const MachineInstr &MI,
 
     if (CurOp == NumOps)
       break;
-      
+
     const MachineOperand &MO = MI.getOperand(CurOp++);
 
     DEBUG(dbgs() << "RawFrm CurOp " << CurOp << "\n");
@@ -757,13 +1172,13 @@ void Emitter<CodeEmitter>::emitInstruction(const MachineInstr &MI,
       emitPCRelativeBlockAddress(MO.getMBB());
       break;
     }
-    
+
     if (MO.isGlobal()) {
       emitGlobalAddress(MO.getGlobal(), X86::reloc_pcrel_word,
                         MO.getOffset(), 0);
       break;
     }
-    
+
     if (MO.isSymbol()) {
       emitExternalSymbolAddress(MO.getSymbolName(), X86::reloc_pcrel_word);
       break;
@@ -774,10 +1189,9 @@ void Emitter<CodeEmitter>::emitInstruction(const MachineInstr &MI,
       emitJumpTableAddress(MO.getIndex(), X86::reloc_pcrel_word);
       break;
     }
-    
+
     assert(MO.isImm() && "Unknown RawFrm operand!");
-    if (Opcode == X86::CALLpcrel32 || Opcode == X86::CALL64pcrel32 ||
-        Opcode == X86::WINCALL64pcrel32) {
+    if (Opcode == X86::CALLpcrel32 || Opcode == X86::CALL64pcrel32) {
       // Fix up immediate operand for pc relative calls.
       intptr_t Imm = (intptr_t)MO.getImm();
       Imm = Imm - MCE.getCurrentPCValue() - 4;
@@ -786,23 +1200,24 @@ void Emitter<CodeEmitter>::emitInstruction(const MachineInstr &MI,
       emitConstant(MO.getImm(), X86II::getSizeOfImm(Desc->TSFlags));
     break;
   }
-      
+
   case X86II::AddRegFrm: {
-    MCE.emitByte(BaseOpcode + getX86RegNum(MI.getOperand(CurOp++).getReg()));
-    
+    MCE.emitByte(BaseOpcode +
+                 getX86RegNum(MI.getOperand(CurOp++).getReg()));
+
     if (CurOp == NumOps)
       break;
-      
+
     const MachineOperand &MO1 = MI.getOperand(CurOp++);
     unsigned Size = X86II::getSizeOfImm(Desc->TSFlags);
     if (MO1.isImm()) {
       emitConstant(MO1.getImm(), Size);
       break;
     }
-    
+
     unsigned rt = Is64BitMode ? X86::reloc_pcrel_word
       : (IsPIC ? X86::reloc_picrel_word : X86::reloc_absolute_word);
-    if (Opcode == X86::MOV64ri64i32)
+    if (Opcode == X86::MOV32ri64)
       rt = X86::reloc_absolute_word;  // FIXME: add X86II flag?
     // This should not occur on Darwin for relocatable objects.
     if (Opcode == X86::MOV64ri)
@@ -822,70 +1237,90 @@ void Emitter<CodeEmitter>::emitInstruction(const MachineInstr &MI,
 
   case X86II::MRMDestReg: {
     MCE.emitByte(BaseOpcode);
+
+    unsigned SrcRegNum = CurOp+1;
+    if (HasVEX_4V) // Skip 1st src (which is encoded in VEX_VVVV)
+      SrcRegNum++;
+
     emitRegModRMByte(MI.getOperand(CurOp).getReg(),
-                     getX86RegNum(MI.getOperand(CurOp+1).getReg()));
-    CurOp += 2;
-    if (CurOp != NumOps)
-      emitConstant(MI.getOperand(CurOp++).getImm(),
-                   X86II::getSizeOfImm(Desc->TSFlags));
+                     getX86RegNum(MI.getOperand(SrcRegNum).getReg()));
+    CurOp = SrcRegNum + 1;
     break;
   }
   case X86II::MRMDestMem: {
     MCE.emitByte(BaseOpcode);
+
+    unsigned SrcRegNum = CurOp + X86::AddrNumOperands;
+    if (HasVEX_4V) // Skip 1st src (which is encoded in VEX_VVVV)
+      SrcRegNum++;
     emitMemModRMByte(MI, CurOp,
-                     getX86RegNum(MI.getOperand(CurOp + X86::AddrNumOperands)
-                                  .getReg()));
-    CurOp +=  X86::AddrNumOperands + 1;
-    if (CurOp != NumOps)
-      emitConstant(MI.getOperand(CurOp++).getImm(),
-                   X86II::getSizeOfImm(Desc->TSFlags));
+                     getX86RegNum(MI.getOperand(SrcRegNum).getReg()));
+    CurOp = SrcRegNum + 1;
     break;
   }
 
-  case X86II::MRMSrcReg:
+  case X86II::MRMSrcReg: {
     MCE.emitByte(BaseOpcode);
-    emitRegModRMByte(MI.getOperand(CurOp+1).getReg(),
-                     getX86RegNum(MI.getOperand(CurOp).getReg()));
-    CurOp += 2;
-    if (CurOp != NumOps)
-      emitConstant(MI.getOperand(CurOp++).getImm(),
-                   X86II::getSizeOfImm(Desc->TSFlags));
-    break;
 
+    unsigned SrcRegNum = CurOp+1;
+    if (HasVEX_4V) // Skip 1st src (which is encoded in VEX_VVVV)
+      ++SrcRegNum;
+
+    if (HasMemOp4) // Skip 2nd src (which is encoded in I8IMM)
+      ++SrcRegNum;
+
+    emitRegModRMByte(MI.getOperand(SrcRegNum).getReg(),
+                     getX86RegNum(MI.getOperand(CurOp).getReg()));
+    // 2 operands skipped with HasMemOp4, compensate accordingly
+    CurOp = HasMemOp4 ? SrcRegNum : SrcRegNum + 1;
+    if (HasVEX_4VOp3)
+      ++CurOp;
+    break;
+  }
   case X86II::MRMSrcMem: {
     int AddrOperands = X86::AddrNumOperands;
+    unsigned FirstMemOp = CurOp+1;
+    if (HasVEX_4V) {
+      ++AddrOperands;
+      ++FirstMemOp;  // Skip the register source (which is encoded in VEX_VVVV).
+    }
+    if (HasMemOp4) // Skip second register source (encoded in I8IMM)
+      ++FirstMemOp;
+
+    MCE.emitByte(BaseOpcode);
 
     intptr_t PCAdj = (CurOp + AddrOperands + 1 != NumOps) ?
       X86II::getSizeOfImm(Desc->TSFlags) : 0;
-
-    MCE.emitByte(BaseOpcode);
-    emitMemModRMByte(MI, CurOp+1, getX86RegNum(MI.getOperand(CurOp).getReg()),
-                     PCAdj);
+    emitMemModRMByte(MI, FirstMemOp,
+                     getX86RegNum(MI.getOperand(CurOp).getReg()),PCAdj);
     CurOp += AddrOperands + 1;
-    if (CurOp != NumOps)
-      emitConstant(MI.getOperand(CurOp++).getImm(),
-                   X86II::getSizeOfImm(Desc->TSFlags));
+    if (HasVEX_4VOp3)
+      ++CurOp;
     break;
   }
 
+  case X86II::MRMXr:
   case X86II::MRM0r: case X86II::MRM1r:
   case X86II::MRM2r: case X86II::MRM3r:
   case X86II::MRM4r: case X86II::MRM5r:
   case X86II::MRM6r: case X86II::MRM7r: {
+    if (HasVEX_4V) // Skip the register dst (which is encoded in VEX_VVVV).
+      ++CurOp;
     MCE.emitByte(BaseOpcode);
+    uint64_t Form = (Desc->TSFlags & X86II::FormMask);
     emitRegModRMByte(MI.getOperand(CurOp++).getReg(),
-                     (Desc->TSFlags & X86II::FormMask)-X86II::MRM0r);
+                     (Form == X86II::MRMXr) ? 0 : Form-X86II::MRM0r);
 
     if (CurOp == NumOps)
       break;
-    
+
     const MachineOperand &MO1 = MI.getOperand(CurOp++);
     unsigned Size = X86II::getSizeOfImm(Desc->TSFlags);
     if (MO1.isImm()) {
       emitConstant(MO1.getImm(), Size);
       break;
     }
-    
+
     unsigned rt = Is64BitMode ? X86::reloc_pcrel_word
       : (IsPIC ? X86::reloc_picrel_word : X86::reloc_absolute_word);
     if (Opcode == X86::MOV64ri32)
@@ -903,29 +1338,33 @@ void Emitter<CodeEmitter>::emitInstruction(const MachineInstr &MI,
     break;
   }
 
+  case X86II::MRMXm:
   case X86II::MRM0m: case X86II::MRM1m:
   case X86II::MRM2m: case X86II::MRM3m:
   case X86II::MRM4m: case X86II::MRM5m:
   case X86II::MRM6m: case X86II::MRM7m: {
+    if (HasVEX_4V) // Skip the register dst (which is encoded in VEX_VVVV).
+      ++CurOp;
     intptr_t PCAdj = (CurOp + X86::AddrNumOperands != NumOps) ?
-      (MI.getOperand(CurOp+X86::AddrNumOperands).isImm() ? 
+      (MI.getOperand(CurOp+X86::AddrNumOperands).isImm() ?
           X86II::getSizeOfImm(Desc->TSFlags) : 4) : 0;
 
     MCE.emitByte(BaseOpcode);
-    emitMemModRMByte(MI, CurOp, (Desc->TSFlags & X86II::FormMask)-X86II::MRM0m,
+    uint64_t Form = (Desc->TSFlags & X86II::FormMask);
+    emitMemModRMByte(MI, CurOp, (Form==X86II::MRMXm) ? 0 : Form - X86II::MRM0m,
                      PCAdj);
     CurOp += X86::AddrNumOperands;
 
     if (CurOp == NumOps)
       break;
-    
+
     const MachineOperand &MO = MI.getOperand(CurOp++);
     unsigned Size = X86II::getSizeOfImm(Desc->TSFlags);
     if (MO.isImm()) {
       emitConstant(MO.getImm(), Size);
       break;
     }
-    
+
     unsigned rt = Is64BitMode ? X86::reloc_pcrel_word
       : (IsPIC ? X86::reloc_picrel_word : X86::reloc_absolute_word);
     if (Opcode == X86::MOV64mi32)
@@ -943,41 +1382,116 @@ void Emitter<CodeEmitter>::emitInstruction(const MachineInstr &MI,
     break;
   }
 
-  case X86II::MRMInitReg:
+  case X86II::MRM_C0: case X86II::MRM_C1: case X86II::MRM_C2:
+  case X86II::MRM_C3: case X86II::MRM_C4: case X86II::MRM_C8:
+  case X86II::MRM_C9: case X86II::MRM_CA: case X86II::MRM_CB:
+  case X86II::MRM_D0: case X86II::MRM_D1: case X86II::MRM_D4:
+  case X86II::MRM_D5: case X86II::MRM_D6: case X86II::MRM_D8:
+  case X86II::MRM_D9: case X86II::MRM_DA: case X86II::MRM_DB:
+  case X86II::MRM_DC: case X86II::MRM_DD: case X86II::MRM_DE:
+  case X86II::MRM_DF: case X86II::MRM_E0: case X86II::MRM_E1:
+  case X86II::MRM_E2: case X86II::MRM_E3: case X86II::MRM_E4:
+  case X86II::MRM_E5: case X86II::MRM_E8: case X86II::MRM_E9:
+  case X86II::MRM_EA: case X86II::MRM_EB: case X86II::MRM_EC:
+  case X86II::MRM_ED: case X86II::MRM_EE: case X86II::MRM_F0:
+  case X86II::MRM_F1: case X86II::MRM_F2: case X86II::MRM_F3:
+  case X86II::MRM_F4: case X86II::MRM_F5: case X86II::MRM_F6:
+  case X86II::MRM_F7: case X86II::MRM_F8: case X86II::MRM_F9:
+  case X86II::MRM_FA: case X86II::MRM_FB: case X86II::MRM_FC:
+  case X86II::MRM_FD: case X86II::MRM_FE: case X86II::MRM_FF:
     MCE.emitByte(BaseOpcode);
-    // Duplicate register, used by things like MOV8r0 (aka xor reg,reg).
-    emitRegModRMByte(MI.getOperand(CurOp).getReg(),
-                     getX86RegNum(MI.getOperand(CurOp).getReg()));
-    ++CurOp;
-    break;
-      
-  case X86II::MRM_C1:
-    MCE.emitByte(BaseOpcode);
-    MCE.emitByte(0xC1);
-    break;
-  case X86II::MRM_C8:
-    MCE.emitByte(BaseOpcode);
-    MCE.emitByte(0xC8);
-    break;
-  case X86II::MRM_C9:
-    MCE.emitByte(BaseOpcode);
-    MCE.emitByte(0xC9);
-    break;
-  case X86II::MRM_E8:
-    MCE.emitByte(BaseOpcode);
-    MCE.emitByte(0xE8);
-    break;
-  case X86II::MRM_F0:
-    MCE.emitByte(BaseOpcode);
-    MCE.emitByte(0xF0);
+
+    unsigned char MRM;
+    switch (TSFlags & X86II::FormMask) {
+    default: llvm_unreachable("Invalid Form");
+    case X86II::MRM_C0: MRM = 0xC0; break;
+    case X86II::MRM_C1: MRM = 0xC1; break;
+    case X86II::MRM_C2: MRM = 0xC2; break;
+    case X86II::MRM_C3: MRM = 0xC3; break;
+    case X86II::MRM_C4: MRM = 0xC4; break;
+    case X86II::MRM_C8: MRM = 0xC8; break;
+    case X86II::MRM_C9: MRM = 0xC9; break;
+    case X86II::MRM_CA: MRM = 0xCA; break;
+    case X86II::MRM_CB: MRM = 0xCB; break;
+    case X86II::MRM_D0: MRM = 0xD0; break;
+    case X86II::MRM_D1: MRM = 0xD1; break;
+    case X86II::MRM_D4: MRM = 0xD4; break;
+    case X86II::MRM_D5: MRM = 0xD5; break;
+    case X86II::MRM_D6: MRM = 0xD6; break;
+    case X86II::MRM_D8: MRM = 0xD8; break;
+    case X86II::MRM_D9: MRM = 0xD9; break;
+    case X86II::MRM_DA: MRM = 0xDA; break;
+    case X86II::MRM_DB: MRM = 0xDB; break;
+    case X86II::MRM_DC: MRM = 0xDC; break;
+    case X86II::MRM_DD: MRM = 0xDD; break;
+    case X86II::MRM_DE: MRM = 0xDE; break;
+    case X86II::MRM_DF: MRM = 0xDF; break;
+    case X86II::MRM_E0: MRM = 0xE0; break;
+    case X86II::MRM_E1: MRM = 0xE1; break;
+    case X86II::MRM_E2: MRM = 0xE2; break;
+    case X86II::MRM_E3: MRM = 0xE3; break;
+    case X86II::MRM_E4: MRM = 0xE4; break;
+    case X86II::MRM_E5: MRM = 0xE5; break;
+    case X86II::MRM_E8: MRM = 0xE8; break;
+    case X86II::MRM_E9: MRM = 0xE9; break;
+    case X86II::MRM_EA: MRM = 0xEA; break;
+    case X86II::MRM_EB: MRM = 0xEB; break;
+    case X86II::MRM_EC: MRM = 0xEC; break;
+    case X86II::MRM_ED: MRM = 0xED; break;
+    case X86II::MRM_EE: MRM = 0xEE; break;
+    case X86II::MRM_F0: MRM = 0xF0; break;
+    case X86II::MRM_F1: MRM = 0xF1; break;
+    case X86II::MRM_F2: MRM = 0xF2; break;
+    case X86II::MRM_F3: MRM = 0xF3; break;
+    case X86II::MRM_F4: MRM = 0xF4; break;
+    case X86II::MRM_F5: MRM = 0xF5; break;
+    case X86II::MRM_F6: MRM = 0xF6; break;
+    case X86II::MRM_F7: MRM = 0xF7; break;
+    case X86II::MRM_F8: MRM = 0xF8; break;
+    case X86II::MRM_F9: MRM = 0xF9; break;
+    case X86II::MRM_FA: MRM = 0xFA; break;
+    case X86II::MRM_FB: MRM = 0xFB; break;
+    case X86II::MRM_FC: MRM = 0xFC; break;
+    case X86II::MRM_FD: MRM = 0xFD; break;
+    case X86II::MRM_FE: MRM = 0xFE; break;
+    case X86II::MRM_FF: MRM = 0xFF; break;
+    }
+    MCE.emitByte(MRM);
     break;
   }
 
-  if (!Desc->isVariadic() && CurOp != NumOps) {
+  while (CurOp != NumOps && NumOps - CurOp <= 2) {
+    // The last source register of a 4 operand instruction in AVX is encoded
+    // in bits[7:4] of a immediate byte.
+    if ((TSFlags >> X86II::VEXShift) & X86II::VEX_I8IMM) {
+      const MachineOperand &MO = MI.getOperand(HasMemOp4 ? MemOp4_I8IMMOperand
+                                                         : CurOp);
+      ++CurOp;
+      unsigned RegNum = getX86RegNum(MO.getReg()) << 4;
+      if (X86II::isX86_64ExtendedReg(MO.getReg()))
+        RegNum |= 1 << 7;
+      // If there is an additional 5th operand it must be an immediate, which
+      // is encoded in bits[3:0]
+      if (CurOp != NumOps) {
+        const MachineOperand &MIMM = MI.getOperand(CurOp++);
+        if (MIMM.isImm()) {
+          unsigned Val = MIMM.getImm();
+          assert(Val < 16 && "Immediate operand value out of range");
+          RegNum |= Val;
+        }
+      }
+      emitConstant(RegNum, 1);
+    } else {
+      emitConstant(MI.getOperand(CurOp++).getImm(),
+                   X86II::getSizeOfImm(Desc->TSFlags));
+    }
+  }
+
+  if (!MI.isVariadic() && CurOp != NumOps) {
 #ifndef NDEBUG
     dbgs() << "Cannot encode all operands of: " << MI << "\n";
 #endif
-    llvm_unreachable(0);
+    llvm_unreachable(nullptr);
   }
 
   MCE.processDebugLoc(MI.getDebugLoc(), false);

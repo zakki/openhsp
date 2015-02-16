@@ -17,16 +17,17 @@
 #define LLVM_CODEGEN_CRITICALANTIDEPBREAKER_H
 
 #include "AntiDepBreaker.h"
+#include "llvm/ADT/BitVector.h"
 #include "llvm/CodeGen/MachineBasicBlock.h"
 #include "llvm/CodeGen/MachineFrameInfo.h"
 #include "llvm/CodeGen/MachineFunction.h"
 #include "llvm/CodeGen/MachineRegisterInfo.h"
+#include "llvm/CodeGen/RegisterClassInfo.h"
 #include "llvm/CodeGen/ScheduleDAG.h"
-#include "llvm/ADT/BitVector.h"
-#include "llvm/ADT/SmallSet.h"
 #include <map>
 
 namespace llvm {
+class RegisterClassInfo;
 class TargetInstrInfo;
 class TargetRegisterInfo;
 
@@ -35,6 +36,7 @@ class TargetRegisterInfo;
     MachineRegisterInfo &MRI;
     const TargetInstrInfo *TII;
     const TargetRegisterInfo *TRI;
+    const RegisterClassInfo &RegClassInfo;
 
     /// AllocatableSet - The set of allocatable registers.
     /// We'll be ignoring anti-dependencies on non-allocatable registers,
@@ -48,27 +50,29 @@ class TargetRegisterInfo;
     /// pointer.
     std::vector<const TargetRegisterClass*> Classes;
 
-    /// RegRegs - Map registers to all their references within a live range.
+    /// RegRefs - Map registers to all their references within a live range.
     std::multimap<unsigned, MachineOperand *> RegRefs;
+    typedef std::multimap<unsigned, MachineOperand *>::const_iterator
+      RegRefIter;
 
-    /// KillIndices - The index of the most recent kill (proceding bottom-up),
+    /// KillIndices - The index of the most recent kill (proceeding bottom-up),
     /// or ~0u if the register is not live.
     std::vector<unsigned> KillIndices;
 
-    /// DefIndices - The index of the most recent complete def (proceding bottom
-    /// up), or ~0u if the register is live.
+    /// DefIndices - The index of the most recent complete def (proceeding
+    /// bottom up), or ~0u if the register is live.
     std::vector<unsigned> DefIndices;
 
     /// KeepRegs - A set of registers which are live and cannot be changed to
     /// break anti-dependencies.
-    SmallSet<unsigned, 4> KeepRegs;
+    BitVector KeepRegs;
 
   public:
-    CriticalAntiDepBreaker(MachineFunction& MFi);
+    CriticalAntiDepBreaker(MachineFunction& MFi, const RegisterClassInfo&);
     ~CriticalAntiDepBreaker();
 
     /// Start - Initialize anti-dep breaking for a new basic block.
-    void StartBlock(MachineBasicBlock *BB);
+    void StartBlock(MachineBasicBlock *BB) override;
 
     /// BreakAntiDependencies - Identifiy anti-dependencies along the critical
     /// path
@@ -77,23 +81,30 @@ class TargetRegisterInfo;
     unsigned BreakAntiDependencies(const std::vector<SUnit>& SUnits,
                                    MachineBasicBlock::iterator Begin,
                                    MachineBasicBlock::iterator End,
-                                   unsigned InsertPosIndex);
+                                   unsigned InsertPosIndex,
+                                   DbgValueVector &DbgValues) override;
 
     /// Observe - Update liveness information to account for the current
     /// instruction, which will not be scheduled.
     ///
-    void Observe(MachineInstr *MI, unsigned Count, unsigned InsertPosIndex);
+    void Observe(MachineInstr *MI, unsigned Count,
+                 unsigned InsertPosIndex) override;
 
     /// Finish - Finish anti-dep breaking for a basic block.
-    void FinishBlock();
+    void FinishBlock() override;
 
   private:
     void PrescanInstruction(MachineInstr *MI);
     void ScanInstruction(MachineInstr *MI, unsigned Count);
-    unsigned findSuitableFreeRegister(MachineInstr *MI,
+    bool isNewRegClobberedByRefs(RegRefIter RegRefBegin,
+                                 RegRefIter RegRefEnd,
+                                 unsigned NewReg);
+    unsigned findSuitableFreeRegister(RegRefIter RegRefBegin,
+                                      RegRefIter RegRefEnd,
                                       unsigned AntiDepReg,
                                       unsigned LastNewReg,
-                                      const TargetRegisterClass *);
+                                      const TargetRegisterClass *RC,
+                                      SmallVectorImpl<unsigned> &Forbid);
   };
 }
 

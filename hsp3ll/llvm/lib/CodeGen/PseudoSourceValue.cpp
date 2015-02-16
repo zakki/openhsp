@@ -11,14 +11,14 @@
 //
 //===----------------------------------------------------------------------===//
 
-#include "llvm/CodeGen/MachineFrameInfo.h"
 #include "llvm/CodeGen/PseudoSourceValue.h"
-#include "llvm/DerivedTypes.h"
-#include "llvm/LLVMContext.h"
+#include "llvm/CodeGen/MachineFrameInfo.h"
+#include "llvm/IR/DerivedTypes.h"
+#include "llvm/IR/LLVMContext.h"
 #include "llvm/Support/ErrorHandling.h"
 #include "llvm/Support/ManagedStatic.h"
+#include "llvm/Support/Mutex.h"
 #include "llvm/Support/raw_ostream.h"
-#include "llvm/System/Mutex.h"
 #include <map>
 using namespace llvm;
 
@@ -58,13 +58,9 @@ static const char *const PSVNames[] = {
   "ConstantPool"
 };
 
-// FIXME: THIS IS A HACK!!!!
-// Eventually these should be uniqued on LLVMContext rather than in a managed
-// static.  For now, we can safely use the global context for the time being to
-// squeak by.
-PseudoSourceValue::PseudoSourceValue(enum ValueTy Subclass) :
-  Value(Type::getInt8PtrTy(getGlobalContext()),
-        Subclass) {}
+PseudoSourceValue::PseudoSourceValue(bool isFixed) : isFixed(isFixed) {}
+
+PseudoSourceValue::~PseudoSourceValue() {}
 
 void PseudoSourceValue::printCustom(raw_ostream &O) const {
   O << PSVNames[this - PSVGlobals->PSVs];
@@ -87,7 +83,6 @@ bool PseudoSourceValue::isConstant(const MachineFrameInfo *) const {
       this == getJumpTable())
     return true;
   llvm_unreachable("Unknown PseudoSourceValue!");
-  return false;
 }
 
 bool PseudoSourceValue::isAliased(const MachineFrameInfo *MFI) const {
@@ -97,7 +92,6 @@ bool PseudoSourceValue::isAliased(const MachineFrameInfo *MFI) const {
       this == getJumpTable())
     return false;
   llvm_unreachable("Unknown PseudoSourceValue!");
-  return true;
 }
 
 bool PseudoSourceValue::mayAlias(const MachineFrameInfo *MFI) const {

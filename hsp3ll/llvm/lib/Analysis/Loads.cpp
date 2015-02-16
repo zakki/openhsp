@@ -13,10 +13,13 @@
 
 #include "llvm/Analysis/Loads.h"
 #include "llvm/Analysis/AliasAnalysis.h"
-#include "llvm/Target/TargetData.h"
-#include "llvm/GlobalAlias.h"
-#include "llvm/GlobalVariable.h"
-#include "llvm/IntrinsicInst.h"
+#include "llvm/Analysis/ValueTracking.h"
+#include "llvm/IR/DataLayout.h"
+#include "llvm/IR/GlobalAlias.h"
+#include "llvm/IR/GlobalVariable.h"
+#include "llvm/IR/IntrinsicInst.h"
+#include "llvm/IR/LLVMContext.h"
+#include "llvm/IR/Operator.h"
 using namespace llvm;
 
 /// AreEquivalentAddressValues - Test if A and B will obviously have the same
@@ -30,7 +33,7 @@ using namespace llvm;
 static bool AreEquivalentAddressValues(const Value *A, const Value *B) {
   // Test if the values are trivially equivalent.
   if (A == B) return true;
-  
+
   // Test if the values come from identical arithmetic instructions.
   // Use isIdenticalToWhenDefined instead of isIdenticalTo because
   // this function is only used when one address use dominates the
@@ -41,41 +44,9 @@ static bool AreEquivalentAddressValues(const Value *A, const Value *B) {
     if (const Instruction *BI = dyn_cast<Instruction>(B))
       if (cast<Instruction>(A)->isIdenticalToWhenDefined(BI))
         return true;
-  
+
   // Otherwise they may not be equivalent.
   return false;
-}
-
-/// getUnderlyingObjectWithOffset - Strip off up to MaxLookup GEPs and
-/// bitcasts to get back to the underlying object being addressed, keeping
-/// track of the offset in bytes from the GEPs relative to the result.
-/// This is closely related to Value::getUnderlyingObject but is located
-/// here to avoid making VMCore depend on TargetData.
-static Value *getUnderlyingObjectWithOffset(Value *V, const TargetData *TD,
-                                            uint64_t &ByteOffset,
-                                            unsigned MaxLookup = 6) {
-  if (!V->getType()->isPointerTy())
-    return V;
-  for (unsigned Count = 0; MaxLookup == 0 || Count < MaxLookup; ++Count) {
-    if (GEPOperator *GEP = dyn_cast<GEPOperator>(V)) {
-      if (!GEP->hasAllConstantIndices())
-        return V;
-      SmallVector<Value*, 8> Indices(GEP->op_begin() + 1, GEP->op_end());
-      ByteOffset += TD->getIndexedOffset(GEP->getPointerOperandType(),
-                                         &Indices[0], Indices.size());
-      V = GEP->getPointerOperand();
-    } else if (Operator::getOpcode(V) == Instruction::BitCast) {
-      V = cast<Operator>(V)->getOperand(0);
-    } else if (GlobalAlias *GA = dyn_cast<GlobalAlias>(V)) {
-      if (GA->mayBeOverridden())
-        return V;
-      V = GA->getAliasee();
-    } else {
-      return V;
-    }
-    assert(V->getType()->isPointerTy() && "Unexpected operand type!");
-  }
-  return V;
 }
 
 /// isSafeToLoadUnconditionally - Return true if we know that executing a load
@@ -83,22 +54,24 @@ static Value *getUnderlyingObjectWithOffset(Value *V, const TargetData *TD,
 /// specified pointer, we do a quick local scan of the basic block containing
 /// ScanFrom, to determine if the address is already accessed.
 bool llvm::isSafeToLoadUnconditionally(Value *V, Instruction *ScanFrom,
-                                       unsigned Align, const TargetData *TD) {
-  uint64_t ByteOffset = 0;
+                                       unsigned Align, const DataLayout *TD) {
+  int64_t ByteOffset = 0;
   Value *Base = V;
-  if (TD)
-    Base = getUnderlyingObjectWithOffset(V, TD, ByteOffset);
+  Base = GetPointerBaseWithConstantOffset(V, ByteOffset, TD);
 
-  const Type *BaseType = 0;
+  if (ByteOffset < 0) // out of bounds
+    return false;
+
+  Type *BaseType = nullptr;
   unsigned BaseAlign = 0;
   if (const AllocaInst *AI = dyn_cast<AllocaInst>(Base)) {
     // An alloca is safe to load from as load as it is suitably aligned.
     BaseType = AI->getAllocatedType();
     BaseAlign = AI->getAlignment();
-  } else if (const GlobalValue *GV = dyn_cast<GlobalValue>(Base)) {
+  } else if (const GlobalVariable *GV = dyn_cast<GlobalVariable>(Base)) {
     // Global variables are safe to load from but their size cannot be
     // guaranteed if they are overridden.
-    if (!isa<GlobalAlias>(GV) && !GV->mayBeOverridden()) {
+    if (!GV->mayBeOverridden()) {
       BaseType = GV->getType()->getElementType();
       BaseAlign = GV->getAlignment();
     }
@@ -113,7 +86,7 @@ bool llvm::isSafeToLoadUnconditionally(Value *V, Instruction *ScanFrom,
         return true; // Loading directly from an alloca or global is OK.
 
       // Check if the load is within the bounds of the underlying object.
-      const PointerType *AddrTy = cast<PointerType>(V->getType());
+      PointerType *AddrTy = cast<PointerType>(V->getType());
       uint64_t LoadSize = TD->getTypeStoreSize(AddrTy->getElementType());
       if (ByteOffset + LoadSize <= TD->getTypeAllocSize(BaseType) &&
           (Align == 0 || (ByteOffset % Align) == 0))
@@ -159,16 +132,21 @@ bool llvm::isSafeToLoadUnconditionally(Value *V, Instruction *ScanFrom,
 /// MaxInstsToScan specifies the maximum instructions to scan in the block.  If
 /// it is set to 0, it will scan the whole block. You can also optionally
 /// specify an alias analysis implementation, which makes this more precise.
+///
+/// If TBAATag is non-null and a load or store is found, the TBAA tag from the
+/// load or store is recorded there.  If there is no TBAA tag or if no access
+/// is found, it is left unmodified.
 Value *llvm::FindAvailableLoadedValue(Value *Ptr, BasicBlock *ScanBB,
                                       BasicBlock::iterator &ScanFrom,
                                       unsigned MaxInstsToScan,
-                                      AliasAnalysis *AA) {
+                                      AliasAnalysis *AA,
+                                      MDNode **TBAATag) {
   if (MaxInstsToScan == 0) MaxInstsToScan = ~0U;
 
   // If we're using alias analysis to disambiguate get the size of *Ptr.
-  unsigned AccessSize = 0;
+  uint64_t AccessSize = 0;
   if (AA) {
-    const Type *AccessTy = cast<PointerType>(Ptr->getType())->getElementType();
+    Type *AccessTy = cast<PointerType>(Ptr->getType())->getElementType();
     AccessSize = AA->getTypeStoreSize(AccessTy);
   }
   
@@ -183,18 +161,26 @@ Value *llvm::FindAvailableLoadedValue(Value *Ptr, BasicBlock *ScanBB,
     ScanFrom++;
    
     // Don't scan huge blocks.
-    if (MaxInstsToScan-- == 0) return 0;
+    if (MaxInstsToScan-- == 0) return nullptr;
     
     --ScanFrom;
     // If this is a load of Ptr, the loaded value is available.
+    // (This is true even if the load is volatile or atomic, although
+    // those cases are unlikely.)
     if (LoadInst *LI = dyn_cast<LoadInst>(Inst))
-      if (AreEquivalentAddressValues(LI->getOperand(0), Ptr))
+      if (AreEquivalentAddressValues(LI->getOperand(0), Ptr)) {
+        if (TBAATag) *TBAATag = LI->getMetadata(LLVMContext::MD_tbaa);
         return LI;
+      }
     
     if (StoreInst *SI = dyn_cast<StoreInst>(Inst)) {
       // If this is a store through Ptr, the value is available!
-      if (AreEquivalentAddressValues(SI->getOperand(1), Ptr))
+      // (This is true even if the store is volatile or atomic, although
+      // those cases are unlikely.)
+      if (AreEquivalentAddressValues(SI->getOperand(1), Ptr)) {
+        if (TBAATag) *TBAATag = SI->getMetadata(LLVMContext::MD_tbaa);
         return SI->getOperand(0);
+      }
       
       // If Ptr is an alloca and this is a store to a different alloca, ignore
       // the store.  This is a trivial form of alias analysis that is important
@@ -212,7 +198,7 @@ Value *llvm::FindAvailableLoadedValue(Value *Ptr, BasicBlock *ScanBB,
       
       // Otherwise the store that may or may not alias the pointer, bail out.
       ++ScanFrom;
-      return 0;
+      return nullptr;
     }
     
     // If this is some other instruction that may clobber Ptr, bail out.
@@ -225,11 +211,11 @@ Value *llvm::FindAvailableLoadedValue(Value *Ptr, BasicBlock *ScanBB,
       
       // May modify the pointer, bail out.
       ++ScanFrom;
-      return 0;
+      return nullptr;
     }
   }
   
   // Got to the start of the block, we didn't find it, but are done for this
   // block.
-  return 0;
+  return nullptr;
 }

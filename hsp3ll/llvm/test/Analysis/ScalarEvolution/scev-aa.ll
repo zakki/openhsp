@@ -1,5 +1,5 @@
 ; RUN: opt < %s -scev-aa -aa-eval -print-all-alias-modref-info \
-; RUN:   |& FileCheck %s
+; RUN:   2>&1 | FileCheck %s
 
 ; At the time of this writing, -basicaa misses the example of the form
 ; A[i+(j+1)] != A[i+j], which can arise from multi-dimensional array references,
@@ -190,9 +190,8 @@ define void @bar() {
   ret void
 }
 
-; TODO: This is theoretically provable to be NoAlias.
 ; CHECK: Function: nonnegative: 2 pointers, 0 call sites
-; CHECK: MayAlias:  i64* %arrayidx, i64* %p
+; CHECK: NoAlias:  i64* %arrayidx, i64* %p
 
 define void @nonnegative(i64* %p) nounwind {
 entry:
@@ -211,6 +210,6 @@ for.end:                                          ; preds = %for.body, %entry
   ret void
 }
 
-; CHECK: 13 no alias responses
-; CHECK: 27 may alias responses
+; CHECK: 14 no alias responses
+; CHECK: 26 may alias responses
 ; CHECK: 18 must alias responses

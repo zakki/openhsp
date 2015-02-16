@@ -5,7 +5,6 @@
 ;; Create mode-specific tables.
 (defvar llvm-mode-syntax-table nil
   "Syntax table used while in LLVM mode.")
-
 (defvar llvm-font-lock-keywords
   (list
    ;; Comments
@@ -19,7 +18,7 @@
    ;; Unnamed variable slots
    '("%[-]?[0-9]+" . font-lock-variable-name-face)
    ;; Types
-   '("\\bvoid\\b\\|\\bi[0-9]+\\b\\|\\float\\b\\|\\bdouble\\b\\|\\btype\\b\\|\\blabel\\b\\|\\bopaque\\b" . font-lock-type-face)
+   `(,(regexp-opt '("void" "i[0-9]+" "float" "double" "type" "label" "opaque") 'words) . font-lock-type-face)
    ;; Integer literals
    '("\\b[-]?[0-9]+\\b" . font-lock-preprocessor-face)
    ;; Floating point constants
@@ -27,15 +26,29 @@
    ;; Hex constants
    '("\\b0x[0-9A-Fa-f]+\\b" . font-lock-preprocessor-face)
    ;; Keywords
-   '("\\bbegin\\b\\|\\bend\\b\\|\\btrue\\b\\|\\bfalse\\b\\|\\bzeroinitializer\\b\\|\\bdeclare\\b\\|\\bdefine\\b\\|\\bglobal\\b\\|\\bconstant\\b\\|\\bconst\\b\\|\\binternal\\b\\|\\blinkonce\\b\\|\\blinkonce_odr\\b\\|\\bweak\\b\\|\\bweak_odr\\b\\|\\bappending\\b\\|\\buninitialized\\b\\|\\bimplementation\\b\\|\\b\\.\\.\\.\\b\\|\\bnull\\b\\|\\bundef\\b\\|\\bto\\b\\|\\bexcept\\b\\|\\bnot\\b\\|\\btarget\\b\\|\\bendian\\b\\|\\blittle\\b\\|\\bbig\\b\\|\\bpointersize\\b\\|\\bdeplibs\\b\\|\\bvolatile\\b\\|\\bfastcc\\b\\|\\bcoldcc\\b\\|\\bcc\\b" . font-lock-keyword-face)
+   `(,(regexp-opt '("begin" "end" "true" "false" "zeroinitializer" "declare"
+                    "define" "global" "constant" "const" "internal" "linkonce" "linkonce_odr"
+                    "weak" "weak_odr" "appending" "uninitialized" "implementation" "..."
+                    "null" "undef" "to" "except" "not" "target" "endian" "little" "big"
+                    "pointersize" "volatile" "fastcc" "coldcc" "cc") 'words) . font-lock-keyword-face)
    ;; Arithmetic and Logical Operators
-   '("\\badd\\b\\|\\bsub\\b\\|\\bmul\\b\\|\\bdiv\\b\\|\\brem\\b\\|\\band\\b\\|\\bor\\b\\|\\bxor\\b\\|\\bset\\(ne\\b\\|\\beq\\b\\|\\blt\\b\\|\\bgt\\b\\|\\ble\\b\\|\\bge\\b\\)" . font-lock-keyword-face)
+   `(,(regexp-opt '("add" "sub" "mul" "sdiv" "udiv" "urem" "srem" "and" "or" "xor"
+                    "setne" "seteq" "setlt" "setgt" "setle" "setge") 'words) . font-lock-keyword-face)
+   ;; Floating-point operators
+   `(,(regexp-opt '("fadd" "fsub" "fmul" "fdiv" "frem") 'words) . font-lock-keyword-face)
    ;; Special instructions
-   '("\\bphi\\b\\|\\btail\\b\\|\\bcall\\b\\|\\bcast\\b\\|\\bselect\\b\\|\\bto\\b\\|\\bshl\\b\\|\\bshr\\b\\|\\bvaarg\\b\\|\\bvanext\\b" . font-lock-keyword-face)
+   `(,(regexp-opt '("phi" "tail" "call" "select" "to" "shl" "lshr" "ashr" "fcmp" "icmp" "va_arg" "landingpad") 'words) . font-lock-keyword-face)
    ;; Control instructions
-   '("\\bret\\b\\|\\bbr\\b\\|\\bswitch\\b\\|\\binvoke\\b\\|\\bunwind\\b\\|\\bunreachable\\b" . font-lock-keyword-face)
+   `(,(regexp-opt '("ret" "br" "switch" "invoke" "resume" "unwind" "unreachable" "indirectbr") 'words) . font-lock-keyword-face)
    ;; Memory operators
-   '("\\bmalloc\\b\\|\\balloca\\b\\|\\bfree\\b\\|\\bload\\b\\|\\bstore\\b\\|\\bgetelementptr\\b" . font-lock-keyword-face)
+   `(,(regexp-opt '("malloc" "alloca" "free" "load" "store" "getelementptr" "fence" "cmpxchg" "atomicrmw") 'words) . font-lock-keyword-face)
+   ;; Casts
+   `(,(regexp-opt '("bitcast" "inttoptr" "ptrtoint" "trunc" "zext" "sext" "fptrunc" "fpext" "fptoui" "fptosi" "uitofp" "sitofp" "addrspacecast") 'words) . font-lock-keyword-face)
+   ;; Vector ops
+   `(,(regexp-opt '("extractelement" "insertelement" "shufflevector") 'words) . font-lock-keyword-face)
+   ;; Aggregate ops
+   `(,(regexp-opt '("extractvalue" "insertvalue") 'words) . font-lock-keyword-face)
+
    )
   "Syntax highlighting for LLVM"
   )
@@ -106,7 +119,7 @@
   (interactive)
   (kill-all-local-variables)
   (use-local-map llvm-mode-map)         ; Provides the local keymap.
-  (setq major-mode 'llvm-mode)          
+  (setq major-mode 'llvm-mode)
 
   (make-local-variable 'font-lock-defaults)
   (setq major-mode 'llvm-mode           ; This is how describe-mode

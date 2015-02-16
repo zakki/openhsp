@@ -96,10 +96,9 @@ if ($PEROBJ) {
     $libpath =~ s/^AsmPrinter/CodeGen\/AsmPrinter/;
     $libpath =~ s/^BitReader/Bitcode\/Reader/;
     $libpath =~ s/^BitWriter/Bitcode\/Writer/;
-    $libpath =~ s/^CBackend/Target\/CBackend/;
     $libpath =~ s/^CppBackend/Target\/CppBackend/;
     $libpath =~ s/^MSIL/Target\/MSIL/;
-    $libpath =~ s/^Core/VMCore/;
+    $libpath =~ s/^Core/IR/;
     $libpath =~ s/^Instrumentation/Transforms\/Instrumentation/;
     $libpath =~ s/^Interpreter/ExecutionEngine\/Interpreter/;
     $libpath =~ s/^JIT/ExecutionEngine\/JIT/;
@@ -107,7 +106,6 @@ if ($PEROBJ) {
     $libpath =~ s/^TransformUtils/Transforms\/Utils/;
     $libpath =~ s/^ipa/Analysis\/IPA/;
     $libpath =~ s/^ipo/Transforms\/IPO/;
-    $libpath =~ s/^pic16passes/Target\/PIC16\/PIC16Passes/;
     $libpath = "lib/".$libpath."/";
     open DEFS, "$nmPath -sg $Directory/$lib|";
     while (<DEFS>) {
@@ -139,7 +137,6 @@ if ($PEROBJ) {
     $libpath =~ s/^AsmPrinter/CodeGen\/AsmPrinter/;
     $libpath =~ s/^BitReader/Bitcode\/Reader/;
     $libpath =~ s/^BitWriter/Bitcode\/Writer/;
-    $libpath =~ s/^CBackend/Target\/CBackend/;
     $libpath =~ s/^CppBackend/Target\/CppBackend/;
     $libpath =~ s/^MSIL/Target\/MSIL/;
     $libpath =~ s/^Core/VMCore/;
@@ -150,7 +147,6 @@ if ($PEROBJ) {
     $libpath =~ s/^TransformUtils/Transforms\/Utils/;
     $libpath =~ s/^ipa/Analysis\/IPA/;
     $libpath =~ s/^ipo/Transforms\/IPO/;
-    $libpath =~ s/^pic16passes/Target\/PIC16\/PIC16Passes/;
     $libpath = "lib/".$libpath."/";
     open UDEFS, "$nmPath -Aup $Directory/$lib|";
     while (<UDEFS>) {
@@ -204,7 +200,7 @@ sub gen_one_entry {
     print "$lib:";
     if ($WHY) { print "\n"; }
   } else {
-    print "  <dt><b>$lib</b</dt><dd><ul>\n";
+    print "  <dt><b>$lib</b></dt><dd><ul>\n";
   }
   open UNDEFS, 
     "$nmPath -u $Directory/$lib | sed -e 's/^[ 0]* U //' | sort | uniq |";

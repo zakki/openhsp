@@ -30,29 +30,46 @@ namespace lltok {
     lparen, rparen,    // (  )
     backslash,         // \    (not /)
     exclaim,           // !
+    hash,              // #
 
     kw_x,
-    kw_begin,   kw_end,
     kw_true,    kw_false,
     kw_declare, kw_define,
     kw_global,  kw_constant,
 
-    kw_private, kw_linker_private, kw_linker_private_weak,
-    kw_linker_private_weak_def_auto, kw_internal,
-    kw_linkonce, kw_linkonce_odr, kw_weak, kw_weak_odr, kw_appending,
+    kw_private,
+    kw_internal,
+    kw_linker_private,          // NOTE: deprecated, for parser compatibility
+    kw_linker_private_weak,     // NOTE: deprecated, for parser compatibility
+    kw_linkonce, kw_linkonce_odr,
+    kw_weak, // Used as a linkage, and a modifier for "cmpxchg".
+    kw_weak_odr, kw_appending,
     kw_dllimport, kw_dllexport, kw_common, kw_available_externally,
     kw_default, kw_hidden, kw_protected,
+    kw_unnamed_addr,
+    kw_externally_initialized,
     kw_extern_weak,
     kw_external, kw_thread_local,
+    kw_localdynamic, kw_initialexec, kw_localexec,
     kw_zeroinitializer,
     kw_undef, kw_null,
     kw_to,
     kw_tail,
+    kw_musttail,
     kw_target,
     kw_triple,
-    kw_deplibs,
+    kw_unwind,
+    kw_deplibs,                 // FIXME: Remove in 4.0
     kw_datalayout,
     kw_volatile,
+    kw_atomic,
+    kw_unordered, kw_monotonic, kw_acquire, kw_release, kw_acq_rel, kw_seq_cst,
+    kw_singlethread,
+    kw_nnan,
+    kw_ninf,
+    kw_nsz,
+    kw_arcp,
+    kw_fast,
     kw_nuw,
     kw_nsw,
     kw_exact,
@@ -65,43 +82,82 @@ namespace lltok {
     kw_asm,
     kw_sideeffect,
     kw_alignstack,
+    kw_inteldialect,
     kw_gc,
+    kw_prefix,
     kw_c,
 
     kw_cc, kw_ccc, kw_fastcc, kw_coldcc,
+    kw_intel_ocl_bicc,
     kw_x86_stdcallcc, kw_x86_fastcallcc, kw_x86_thiscallcc,
     kw_arm_apcscc, kw_arm_aapcscc, kw_arm_aapcs_vfpcc,
     kw_msp430_intrcc,
+    kw_ptx_kernel, kw_ptx_device,
+    kw_spir_kernel, kw_spir_func,
+    kw_x86_64_sysvcc, kw_x86_64_win64cc,
+    kw_webkit_jscc, kw_anyregcc,
+    kw_preserve_mostcc, kw_preserve_allcc,
 
-    kw_signext,
-    kw_zeroext,
-    kw_inreg,
-    kw_sret,
-    kw_nounwind,
-    kw_noreturn,
-    kw_noalias,
-    kw_nocapture,
+    // Attributes:
+    kw_attributes,
+    kw_alwaysinline,
+    kw_sanitize_address,
+    kw_builtin,
     kw_byval,
+    kw_inalloca,
+    kw_cold,
+    kw_dereferenceable,
+    kw_inlinehint,
+    kw_inreg,
+    kw_jumptable,
+    kw_minsize,
+    kw_naked,
     kw_nest,
+    kw_noalias,
+    kw_nobuiltin,
+    kw_nocapture,
+    kw_noduplicate,
+    kw_noimplicitfloat,
+    kw_noinline,
+    kw_nonlazybind,
+    kw_nonnull,
+    kw_noredzone,
+    kw_noreturn,
+    kw_nounwind,
+    kw_optnone,
+    kw_optsize,
     kw_readnone,
     kw_readonly,
-
-    kw_inlinehint,
-    kw_noinline,
-    kw_alwaysinline,
-    kw_optsize,
+    kw_returned,
+    kw_returns_twice,
+    kw_signext,
     kw_ssp,
     kw_sspreq,
-    kw_noredzone,
-    kw_noimplicitfloat,
-    kw_naked,
+    kw_sspstrong,
+    kw_sret,
+    kw_sanitize_thread,
+    kw_sanitize_memory,
+    kw_uwtable,
+    kw_zeroext,
 
     kw_type,
     kw_opaque,
 
+    kw_comdat,
+
+    // Comdat types
+    kw_any,
+    kw_exactmatch,
+    kw_largest,
+    kw_noduplicates,
+    kw_samesize,
+
     kw_eq, kw_ne, kw_slt, kw_sgt, kw_sle, kw_sge, kw_ult, kw_ugt, kw_ule,
     kw_uge, kw_oeq, kw_one, kw_olt, kw_ogt, kw_ole, kw_oge, kw_ord, kw_uno,
     kw_ueq, kw_une,
+
+    // atomicrmw operations that aren't also instruction keywords.
+    kw_xchg, kw_nand, kw_max, kw_min, kw_umax, kw_umin,
 
     // Instruction Opcodes (Opcode in UIntVal).
     kw_add,  kw_fadd, kw_sub,  kw_fsub, kw_mul,  kw_fmul,
@@ -112,23 +168,29 @@ namespace lltok {
     kw_phi, kw_call,
     kw_trunc, kw_zext, kw_sext, kw_fptrunc, kw_fpext, kw_uitofp, kw_sitofp,
     kw_fptoui, kw_fptosi, kw_inttoptr, kw_ptrtoint, kw_bitcast,
+    kw_addrspacecast,
     kw_select, kw_va_arg,
 
-    kw_ret, kw_br, kw_switch, kw_indirectbr, kw_invoke, kw_unwind,
+    kw_landingpad, kw_personality, kw_cleanup, kw_catch, kw_filter,
+
+    kw_ret, kw_br, kw_switch, kw_indirectbr, kw_invoke, kw_resume,
     kw_unreachable,
 
-    kw_malloc, kw_alloca, kw_free, kw_load, kw_store, kw_getelementptr,
+    kw_alloca, kw_load, kw_store, kw_fence, kw_cmpxchg, kw_atomicrmw,
+    kw_getelementptr,
 
-    kw_extractelement, kw_insertelement, kw_shufflevector, kw_getresult,
+    kw_extractelement, kw_insertelement, kw_shufflevector,
     kw_extractvalue, kw_insertvalue, kw_blockaddress,
 
     // Unsigned Valued tokens (UIntVal).
     GlobalID,          // @42
     LocalVarID,        // %42
+    AttrGrpID,         // #42
 
     // String valued tokens (StrVal).
     LabelStr,          // foo:
     GlobalVar,         // @foo @"foo"
+    ComdatVar,         // $foo
     LocalVar,          // %foo %"foo"
     MetadataVar,       // !foo
     StringConstant,    // "foo"

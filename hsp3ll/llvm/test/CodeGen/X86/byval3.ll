@@ -1,5 +1,28 @@
-; RUN: llc < %s -march=x86-64 | grep rep.movsq | count 2
-; RUN: llc < %s -march=x86 | grep rep.movsl | count 2
+; RUN: llc < %s -mtriple=x86_64-linux -mattr=-avx | FileCheck %s -check-prefix=X64
+; X64-NOT:     movsq
+; X64:     rep
+; X64-NOT:     rep
+; X64:     movsq
+; X64-NOT:     movsq
+; X64:     rep
+; X64-NOT:     rep
+; X64:     movsq
+; X64-NOT:     rep
+; X64-NOT:     movsq
+
+; Win64 has not supported byval yet.
+
+; RUN: llc < %s -march=x86 -mattr=-avx | FileCheck %s -check-prefix=X32
+; X32-NOT:     movsl
+; X32:     rep
+; X32-NOT:     rep
+; X32:     movsl
+; X32-NOT:     movsl
+; X32:     rep
+; X32-NOT:     rep
+; X32:     movsl
+; X32-NOT:     rep
+; X32-NOT:     movsl
 
 %struct.s = type { i32, i32, i32, i32, i32, i32, i32, i32,
                    i32, i32, i32, i32, i32, i32, i32, i32,
@@ -22,8 +45,8 @@ entry:
         store i32 %a5, i32* %tmp8, align 16
         %tmp10 = getelementptr %struct.s* %d, i32 0, i32 5
         store i32 %a6, i32* %tmp10, align 16
-        call void @f( %struct.s* %d byval)
-        call void @f( %struct.s* %d byval)
+        call void @f( %struct.s* byval %d)
+        call void @f( %struct.s* byval %d)
         ret void
 }
 

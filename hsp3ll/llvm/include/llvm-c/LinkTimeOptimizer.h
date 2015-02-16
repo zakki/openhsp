@@ -4,21 +4,28 @@
 //
 // This file is distributed under the University of Illinois Open Source
 // License. See LICENSE.TXT for details.
-// 
+//
 //===----------------------------------------------------------------------===//
 //
 // This header provides a C API to use the LLVM link time optimization
-// library. This is inteded to be used by linkers which are C-only in
+// library. This is intended to be used by linkers which are C-only in
 // their implementation for performing LTO.
 //
 //===----------------------------------------------------------------------===//
 
-#ifndef __LTO_CAPI_H__
-#define __LTO_CAPI_H__
+#ifndef LLVM_C_LINKTIMEOPTIMIZER_H
+#define LLVM_C_LINKTIMEOPTIMIZER_H
 
 #ifdef __cplusplus
 extern "C" {
 #endif
+
+/**
+ * @defgroup LLVMCLinkTimeOptimizer Link Time Optimization
+ * @ingroup LLVMC
+ *
+ * @{
+ */
 
   /// This provides a dummy type for pointers to the LTO object.
   typedef void* llvm_lto_t;
@@ -39,7 +46,7 @@ extern "C" {
     //  Added C-specific error codes
     LLVM_LTO_NULL_OBJECT
   } llvm_lto_status_t;
- 
+
   /// This provides C interface to initialize link time optimizer. This allows
   /// linker to use dlopen() interface to dynamically load LinkTimeOptimizer.
   /// extern "C" helps, because dlopen() interface uses name to find the symbol.
@@ -50,6 +57,10 @@ extern "C" {
     (llvm_lto_t lto, const char* input_filename);
   extern llvm_lto_status_t llvm_optimize_modules
     (llvm_lto_t lto, const char* output_filename);
+
+/**
+ * @}
+ */
 
 #ifdef __cplusplus
 }

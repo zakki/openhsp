@@ -15,27 +15,25 @@
 #ifndef TARGET_XCORE_H
 #define TARGET_XCORE_H
 
+#include "MCTargetDesc/XCoreMCTargetDesc.h"
 #include "llvm/Target/TargetMachine.h"
 
 namespace llvm {
   class FunctionPass;
+  class ModulePass;
   class TargetMachine;
   class XCoreTargetMachine;
   class formatted_raw_ostream;
 
-  FunctionPass *createXCoreISelDag(XCoreTargetMachine &TM);
+  void initializeXCoreLowerThreadLocalPass(PassRegistry &p);
 
-  extern Target TheXCoreTarget;
+  FunctionPass *createXCoreFrameToArgsOffsetEliminationPass();
+  FunctionPass *createXCoreISelDag(XCoreTargetMachine &TM,
+                                   CodeGenOpt::Level OptLevel);
+  ModulePass *createXCoreLowerThreadLocalPass();
+
+  ImmutablePass *createXCoreTargetTransformInfoPass(const XCoreTargetMachine *TM);
 
 } // end namespace llvm;
-
-// Defines symbolic names for XCore registers.  This defines a mapping from
-// register name to register number.
-//
-#include "XCoreGenRegisterNames.inc"
-
-// Defines symbolic names for the XCore instructions.
-//
-#include "XCoreGenInstrNames.inc"
 
 #endif

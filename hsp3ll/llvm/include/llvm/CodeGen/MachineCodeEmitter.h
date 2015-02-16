@@ -17,8 +17,9 @@
 #ifndef LLVM_CODEGEN_MACHINECODEEMITTER_H
 #define LLVM_CODEGEN_MACHINECODEEMITTER_H
 
-#include "llvm/System/DataTypes.h"
-#include "llvm/Support/DebugLoc.h"
+#include "llvm/IR/DebugLoc.h"
+#include "llvm/Support/DataTypes.h"
+#include <string>
 
 namespace llvm {
 
@@ -34,7 +35,7 @@ class Function;
 class MCSymbol;
 
 /// MachineCodeEmitter - This class defines two sorts of methods: those for
-/// emitting the actual bytes of machine code, and those for emitting auxillary
+/// emitting the actual bytes of machine code, and those for emitting auxiliary
 /// structures, such as jump tables, relocations, etc.
 ///
 /// Emission of machine code is complicated by the fact that we don't (in
@@ -49,12 +50,13 @@ class MCSymbol;
 /// occurred, more memory is allocated, and we reemit the code into it.
 /// 
 class MachineCodeEmitter {
+  virtual void anchor();
 protected:
   /// BufferBegin/BufferEnd - Pointers to the start and end of the memory
   /// allocated for this code buffer.
   uint8_t *BufferBegin, *BufferEnd;
   /// CurBufferPtr - Pointer to the next byte of memory to fill when emitting
-  /// code.  This is guranteed to be in the range [BufferBegin,BufferEnd].  If
+  /// code.  This is guaranteed to be in the range [BufferBegin,BufferEnd].  If
   /// this pointer is at BufferEnd, it will never move due to code emission, and
   /// all code emission requests will be ignored (this is the buffer overflow
   /// condition).
@@ -260,7 +262,7 @@ public:
     // Check for buffer overflow.
     if (Size >= (uintptr_t)(BufferEnd-CurBufferPtr)) {
       CurBufferPtr = BufferEnd;
-      Result = 0;
+      Result = nullptr;
     } else {
       // Allocate the space.
       Result = CurBufferPtr;

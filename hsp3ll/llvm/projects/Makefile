@@ -14,12 +14,13 @@ include $(LEVEL)/Makefile.config
 # Before 2008.06.24 it lived in llvm-test, so exclude that as well for now.
 DIRS:= $(filter-out llvm-test test-suite,$(patsubst $(PROJ_SRC_DIR)/%/Makefile,%,$(wildcard $(PROJ_SRC_DIR)/*/Makefile)))
 
-# Don't build compiler-rt either, it isn't designed to be built directly.
+# Don't build compiler-rt, it isn't designed to be built directly.
 DIRS := $(filter-out compiler-rt,$(DIRS))
 
-# Sparc cannot link shared libraries (libtool problem?)
-ifeq ($(ARCH), Sparc)
-DIRS := $(filter-out sample, $(DIRS))
-endif
+# Don't build libcxx, it isn't designed to be built directly.
+DIRS := $(filter-out libcxx,$(DIRS))
+
+# DragonEgg may be checked out here but doesn't (yet) build directly.
+DIRS := $(filter-out dragonegg,$(DIRS))
 
 include $(PROJ_SRC_ROOT)/Makefile.rules

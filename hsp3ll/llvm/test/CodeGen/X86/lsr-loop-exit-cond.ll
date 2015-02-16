@@ -1,7 +1,15 @@
-; RUN: llc -march=x86-64 < %s | FileCheck %s
+; RUN: llc -mtriple=x86_64-darwin -mcpu=generic < %s | FileCheck %s
+; RUN: llc -mtriple=x86_64-darwin -mcpu=atom < %s | FileCheck -check-prefix=ATOM %s
 
-; CHECK: decq
+; CHECK-LABEL: t:
+; CHECK: movl (%r9,%rax,4), %e{{..}}
+; CHECK-NEXT: decq
 ; CHECK-NEXT: jne
+
+; ATOM-LABEL: t:
+; ATOM: movl (%r9,%r{{.+}},4), %e{{..}}
+; ATOM-NEXT: decq
+; ATOM-NEXT: jne
 
 @Te0 = external global [256 x i32]		; <[256 x i32]*> [#uses=5]
 @Te1 = external global [256 x i32]		; <[256 x i32]*> [#uses=4]
@@ -134,4 +142,51 @@ bb2:		; preds = %bb
 	%93 = getelementptr i8* %out, i64 5		; <i8*> [#uses=1]
 	store i8 %92, i8* %93, align 1
 	ret void
+}
+
+; Check that DAGCombiner doesn't mess up the IV update when the exiting value
+; is equal to the stride.
+; It must not fold (cmp (add iv, 1), 1) --> (cmp iv, 0).
+
+; CHECK-LABEL: f:
+; CHECK: %for.body
+; CHECK: incl [[IV:%e..]]
+; CHECK: cmpl $1, [[IV]]
+; CHECK: jne
+; CHECK: ret
+
+; ATOM-LABEL: f:
+; ATOM: %for.body
+; ATOM: incl [[IV:%e..]]
+; ATOM: cmpl $1, [[IV]]
+; ATOM: jne
+; ATOM: ret
+
+define i32 @f(i32 %i, i32* nocapture %a) nounwind uwtable readonly ssp {
+entry:
+  %cmp4 = icmp eq i32 %i, 1
+  br i1 %cmp4, label %for.end, label %for.body.lr.ph
+
+for.body.lr.ph:                                   ; preds = %entry
+  %0 = sext i32 %i to i64
+  br label %for.body
+
+for.body:                                         ; preds = %for.body.lr.ph, %for.body
+  %indvars.iv = phi i64 [ %0, %for.body.lr.ph ], [ %indvars.iv.next, %for.body ]
+  %bi.06 = phi i32 [ 0, %for.body.lr.ph ], [ %i.addr.0.bi.0, %for.body ]
+  %b.05 = phi i32 [ 0, %for.body.lr.ph ], [ %.b.0, %for.body ]
+  %arrayidx = getelementptr inbounds i32* %a, i64 %indvars.iv
+  %1 = load i32* %arrayidx, align 4
+  %cmp1 = icmp ugt i32 %1, %b.05
+  %.b.0 = select i1 %cmp1, i32 %1, i32 %b.05
+  %2 = trunc i64 %indvars.iv to i32
+  %i.addr.0.bi.0 = select i1 %cmp1, i32 %2, i32 %bi.06
+  %indvars.iv.next = add i64 %indvars.iv, 1
+  %lftr.wideiv = trunc i64 %indvars.iv.next to i32
+  %exitcond = icmp eq i32 %lftr.wideiv, 1
+  br i1 %exitcond, label %for.end, label %for.body
+
+for.end:                                          ; preds = %for.body, %entry
+  %bi.0.lcssa = phi i32 [ 0, %entry ], [ %i.addr.0.bi.0, %for.body ]
+  ret i32 %bi.0.lcssa
 }

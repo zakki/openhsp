@@ -15,12 +15,19 @@
 #define LLVM_SUPPORT_RAW_OSTREAM_H
 
 #include "llvm/ADT/StringRef.h"
-#include "llvm/System/DataTypes.h"
+#include "llvm/Support/Compiler.h"
+#include "llvm/Support/DataTypes.h"
 
 namespace llvm {
   class format_object_base;
   template <typename T>
   class SmallVectorImpl;
+
+  namespace sys {
+    namespace fs {
+      enum OpenFlags : unsigned;
+    }
+  }
 
 /// raw_ostream - This class implements an extremely fast bulk output stream
 /// that can *only* output to a stream.  It does not support seeking, reopening,
@@ -28,9 +35,8 @@ namespace llvm {
 /// a chunk at a time.
 class raw_ostream {
 private:
-  // Do not implement. raw_ostream is noncopyable.
-  void operator=(const raw_ostream &);
-  raw_ostream(const raw_ostream &);
+  void operator=(const raw_ostream &) LLVM_DELETED_FUNCTION;
+  raw_ostream(const raw_ostream &) LLVM_DELETED_FUNCTION;
 
   /// The buffer is handled in such a way that the buffer is
   /// uninitialized, unbuffered, or out of space when OutBufCur >=
@@ -75,7 +81,7 @@ public:
   explicit raw_ostream(bool unbuffered=false)
     : BufferMode(unbuffered ? Unbuffered : InternalBuffer) {
     // Start out ready to flush.
-    OutBufStart = OutBufEnd = OutBufCur = 0;
+    OutBufStart = OutBufEnd = OutBufCur = nullptr;
   }
 
   virtual ~raw_ostream();
@@ -101,7 +107,7 @@ public:
   size_t GetBufferSize() const {
     // If we're supposed to be buffered but haven't actually gotten around
     // to allocating the buffer yet, return the value that would be used.
-    if (BufferMode != Unbuffered && OutBufStart == 0)
+    if (BufferMode != Unbuffered && OutBufStart == nullptr)
       return preferred_buffer_size();
 
     // Otherwise just return the size of the allocated buffer.
@@ -114,7 +120,7 @@ public:
   /// set to unbuffered.
   void SetUnbuffered() {
     flush();
-    SetBufferAndMode(0, 0, Unbuffered);
+    SetBufferAndMode(nullptr, 0, Unbuffered);
   }
 
   size_t GetNumBytesInBuffer() const {
@@ -156,7 +162,7 @@ public:
     size_t Size = Str.size();
 
     // Make sure we can use the fast path.
-    if (OutBufCur+Size > OutBufEnd)
+    if (Size > (size_t)(OutBufEnd - OutBufCur))
       return write(Str.data(), Size);
 
     memcpy(OutBufCur, Str.data(), Size);
@@ -165,7 +171,7 @@ public:
   }
 
   raw_ostream &operator<<(const char *Str) {
-    // Inline fast path, particulary for constant strings where a sufficiently
+    // Inline fast path, particularly for constant strings where a sufficiently
     // smart compiler will simplify strlen.
 
     return this->operator<<(StringRef(Str));
@@ -191,12 +197,12 @@ public:
 
   raw_ostream &operator<<(double N);
 
-  /// write_hex - Output \arg N in hexadecimal, without any prefix or padding.
+  /// write_hex - Output \p N in hexadecimal, without any prefix or padding.
   raw_ostream &write_hex(unsigned long long N);
 
-  /// write_escaped - Output \arg Str, turning '\\', '\t', '\n', '"', and
+  /// write_escaped - Output \p Str, turning '\\', '\t', '\n', '"', and
   /// anything that doesn't satisfy std::isprint into an escape sequence.
-  raw_ostream &write_escaped(StringRef Str);
+  raw_ostream &write_escaped(StringRef Str, bool UseHexEscapes = false);
 
   raw_ostream &write(unsigned char C);
   raw_ostream &write(const char *Ptr, size_t Size);
@@ -210,22 +216,34 @@ public:
 
   /// Changes the foreground color of text that will be output from this point
   /// forward.
-  /// @param colors ANSI color to use, the special SAVEDCOLOR can be used to
+  /// @param Color ANSI color to use, the special SAVEDCOLOR can be used to
   /// change only the bold attribute, and keep colors untouched
-  /// @param bold bold/brighter text, default false
-  /// @param bg if true change the background, default: change foreground
+  /// @param Bold bold/brighter text, default false
+  /// @param BG if true change the background, default: change foreground
   /// @returns itself so it can be used within << invocations
-  virtual raw_ostream &changeColor(enum Colors, bool = false, bool = false) {
-    return *this; }
+  virtual raw_ostream &changeColor(enum Colors Color,
+                                   bool Bold = false,
+                                   bool BG = false) {
+    (void)Color;
+    (void)Bold;
+    (void)BG;
+    return *this;
+  }
 
   /// Resets the colors to terminal defaults. Call this when you are done
   /// outputting colored text, or before program exit.
   virtual raw_ostream &resetColor() { return *this; }
 
+  /// Reverses the forground and background colors.
+  virtual raw_ostream &reverseColor() { return *this; }
+
   /// This function determines if this stream is connected to a "tty" or
   /// "console" window. That is, the output would be displayed to the user
   /// rather than being put on a pipe or stored in a file.
   virtual bool is_displayed() const { return false; }
+
+  /// This function determines if this stream is displayed and supports colors.
+  virtual bool has_colors() const { return is_displayed(); }
 
   //===--------------------------------------------------------------------===//
   // Subclass Interface
@@ -233,15 +251,16 @@ public:
 
 private:
   /// write_impl - The is the piece of the class that is implemented
-  /// by subclasses.  This writes the \args Size bytes starting at
-  /// \arg Ptr to the underlying stream.
+  /// by subclasses.  This writes the \p Size bytes starting at
+  /// \p Ptr to the underlying stream.
   ///
   /// This function is guaranteed to only be called at a point at which it is
   /// safe for the subclass to install a new buffer via SetBuffer.
   ///
-  /// \arg Ptr - The start of the data to be written. For buffered streams this
+  /// \param Ptr The start of the data to be written. For buffered streams this
   /// is guaranteed to be the start of the buffer.
-  /// \arg Size - The number of bytes to be written.
+  ///
+  /// \param Size The number of bytes to be written.
   ///
   /// \invariant { Size > 0 }
   virtual void write_impl(const char *Ptr, size_t Size) = 0;
@@ -301,39 +320,27 @@ class raw_fd_ostream : public raw_ostream {
   ///
   bool Error;
 
+  /// Controls whether the stream should attempt to use atomic writes, when
+  /// possible.
+  bool UseAtomicWrites;
+
   uint64_t pos;
 
   /// write_impl - See raw_ostream::write_impl.
-  virtual void write_impl(const char *Ptr, size_t Size);
+  void write_impl(const char *Ptr, size_t Size) override;
 
   /// current_pos - Return the current position within the stream, not
   /// counting the bytes currently in the buffer.
-  virtual uint64_t current_pos() const { return pos; }
+  uint64_t current_pos() const override { return pos; }
 
   /// preferred_buffer_size - Determine an efficient buffer size.
-  virtual size_t preferred_buffer_size() const;
+  size_t preferred_buffer_size() const override;
 
   /// error_detected - Set the flag indicating that an output error has
   /// been encountered.
   void error_detected() { Error = true; }
 
 public:
-
-  enum {
-    /// F_Excl - When opening a file, this flag makes raw_fd_ostream
-    /// report an error if the file already exists.
-    F_Excl  = 1,
-
-    /// F_Append - When opening a file, if it already exists append to the
-    /// existing file instead of returning an error.  This may not be specified
-    /// with F_Excl.
-    F_Append = 2,
-
-    /// F_Binary - The file should be opened in binary mode on platforms that
-    /// make this distinction.
-    F_Binary = 4
-  };
-
   /// raw_fd_ostream - Open the specified file for writing. If an error occurs,
   /// information about the error is put into ErrorInfo, and the stream should
   /// be immediately destroyed; the string will be empty if no error occurred.
@@ -345,14 +352,11 @@ public:
   /// file descriptor when it is done (this is necessary to detect
   /// output errors).
   raw_fd_ostream(const char *Filename, std::string &ErrorInfo,
-                 unsigned Flags = 0);
+                 sys::fs::OpenFlags Flags);
 
   /// raw_fd_ostream ctor - FD is the file descriptor that this writes to.  If
   /// ShouldClose is true, this closes the file when the stream is destroyed.
-  raw_fd_ostream(int fd, bool shouldClose,
-                 bool unbuffered=false) : raw_ostream(unbuffered), FD(fd),
-                                          ShouldClose(shouldClose),
-                                          Error(false) {}
+  raw_fd_ostream(int fd, bool shouldClose, bool unbuffered=false);
 
   ~raw_fd_ostream();
 
@@ -361,19 +365,33 @@ public:
   void close();
 
   /// seek - Flushes the stream and repositions the underlying file descriptor
-  /// positition to the offset specified from the beginning of the file.
+  /// position to the offset specified from the beginning of the file.
   uint64_t seek(uint64_t off);
 
-  virtual raw_ostream &changeColor(enum Colors colors, bool bold=false,
-                                   bool bg=false);
-  virtual raw_ostream &resetColor();
+  /// SetUseAtomicWrite - Set the stream to attempt to use atomic writes for
+  /// individual output routines where possible.
+  ///
+  /// Note that because raw_ostream's are typically buffered, this flag is only
+  /// sensible when used on unbuffered streams which will flush their output
+  /// immediately.
+  void SetUseAtomicWrites(bool Value) {
+    UseAtomicWrites = Value;
+  }
 
-  virtual bool is_displayed() const;
+  raw_ostream &changeColor(enum Colors colors, bool bold=false,
+                           bool bg=false) override;
+  raw_ostream &resetColor() override;
+
+  raw_ostream &reverseColor() override;
+
+  bool is_displayed() const override;
+
+  bool has_colors() const override;
 
   /// has_error - Return the value of the flag in this raw_fd_ostream indicating
   /// whether an output error has been encountered.
   /// This doesn't implicitly flush any pending output.  Also, it doesn't
-  /// guarantee to detect all errors unless the the stream has been closed.
+  /// guarantee to detect all errors unless the stream has been closed.
   bool has_error() const {
     return Error;
   }
@@ -414,11 +432,11 @@ class raw_string_ostream : public raw_ostream {
   std::string &OS;
 
   /// write_impl - See raw_ostream::write_impl.
-  virtual void write_impl(const char *Ptr, size_t Size);
+  void write_impl(const char *Ptr, size_t Size) override;
 
   /// current_pos - Return the current position within the stream, not
   /// counting the bytes currently in the buffer.
-  virtual uint64_t current_pos() const { return OS.size(); }
+  uint64_t current_pos() const override { return OS.size(); }
 public:
   explicit raw_string_ostream(std::string &O) : OS(O) {}
   ~raw_string_ostream();
@@ -438,15 +456,15 @@ class raw_svector_ostream : public raw_ostream {
   SmallVectorImpl<char> &OS;
 
   /// write_impl - See raw_ostream::write_impl.
-  virtual void write_impl(const char *Ptr, size_t Size);
+  void write_impl(const char *Ptr, size_t Size) override;
 
   /// current_pos - Return the current position within the stream, not
   /// counting the bytes currently in the buffer.
-  virtual uint64_t current_pos() const;
+  uint64_t current_pos() const override;
 public:
   /// Construct a new raw_svector_ostream.
   ///
-  /// \arg O - The vector to write to; this should generally have at least 128
+  /// \param O The vector to write to; this should generally have at least 128
   /// bytes free to avoid any extraneous memory overhead.
   explicit raw_svector_ostream(SmallVectorImpl<char> &O);
   ~raw_svector_ostream();
@@ -464,54 +482,15 @@ public:
 /// raw_null_ostream - A raw_ostream that discards all output.
 class raw_null_ostream : public raw_ostream {
   /// write_impl - See raw_ostream::write_impl.
-  virtual void write_impl(const char *Ptr, size_t size);
+  void write_impl(const char *Ptr, size_t size) override;
 
   /// current_pos - Return the current position within the stream, not
   /// counting the bytes currently in the buffer.
-  virtual uint64_t current_pos() const;
+  uint64_t current_pos() const override;
 
 public:
   explicit raw_null_ostream() {}
   ~raw_null_ostream();
-};
-
-/// tool_output_file - This class contains a raw_fd_ostream and adds a
-/// few extra features commonly needed for compiler-like tool output files:
-///   - The file is automatically deleted if the process is killed.
-///   - The file is automatically deleted when the tool_output_file
-///     object is destroyed unless the client calls keep().
-class tool_output_file {
-  /// Installer - This class is declared before the raw_fd_ostream so that
-  /// it is constructed before the raw_fd_ostream is constructed and
-  /// destructed after the raw_fd_ostream is destructed. It installs
-  /// cleanups in its constructor and uninstalls them in its destructor.
-  class CleanupInstaller {
-    /// Filename - The name of the file.
-    std::string Filename;
-  public:
-    /// Keep - The flag which indicates whether we should not delete the file.
-    bool Keep;
-
-    explicit CleanupInstaller(const char *filename);
-    ~CleanupInstaller();
-  } Installer;
-
-  /// OS - The contained stream. This is intentionally declared after
-  /// Installer.
-  raw_fd_ostream OS;
-
-public:
-  /// tool_output_file - This constructor's arguments are passed to
-  /// to raw_fd_ostream's constructor.
-  tool_output_file(const char *filename, std::string &ErrorInfo,
-                   unsigned Flags = 0);
-
-  /// os - Return the contained raw_fd_ostream.
-  raw_fd_ostream &os() { return OS; }
-
-  /// keep - Indicate that the tool's job wrt this output file has been
-  /// successful and the file should not be deleted.
-  void keep() { Installer.Keep = true; }
 };
 
 } // end llvm namespace

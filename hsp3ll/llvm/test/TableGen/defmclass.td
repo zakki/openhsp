@@ -1,4 +1,4 @@
-// RUN: tblgen %s | FileCheck %s
+// RUN: llvm-tblgen %s | FileCheck %s
 // XFAIL: vg_leak
 
 class XD { bits<4> Prefix = 11; }
@@ -36,3 +36,15 @@ multiclass Y {
 
 // CHECK: int check = 0;
 defm Instr : Y, VEX;
+
+
+// Anonymous defm.
+
+multiclass SomeAnonymous<int x> {
+  def rm;
+  def mr;
+}
+
+// These multiclasses shouldn't conflict.
+defm : SomeAnonymous<1>;
+defm : SomeAnonymous<2>;

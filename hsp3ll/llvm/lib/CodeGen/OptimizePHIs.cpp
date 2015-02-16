@@ -12,16 +12,17 @@
 //
 //===----------------------------------------------------------------------===//
 
-#define DEBUG_TYPE "phi-opt"
 #include "llvm/CodeGen/Passes.h"
+#include "llvm/ADT/SmallPtrSet.h"
+#include "llvm/ADT/Statistic.h"
 #include "llvm/CodeGen/MachineFunctionPass.h"
 #include "llvm/CodeGen/MachineInstr.h"
 #include "llvm/CodeGen/MachineRegisterInfo.h"
+#include "llvm/IR/Function.h"
 #include "llvm/Target/TargetInstrInfo.h"
-#include "llvm/Function.h"
-#include "llvm/ADT/SmallPtrSet.h"
-#include "llvm/ADT/Statistic.h"
 using namespace llvm;
+
+#define DEBUG_TYPE "phi-opt"
 
 STATISTIC(NumPHICycles, "Number of PHI cycles replaced");
 STATISTIC(NumDeadPHICycles, "Number of dead PHI cycles");
@@ -33,11 +34,13 @@ namespace {
 
   public:
     static char ID; // Pass identification
-    OptimizePHIs() : MachineFunctionPass(ID) {}
+    OptimizePHIs() : MachineFunctionPass(ID) {
+      initializeOptimizePHIsPass(*PassRegistry::getPassRegistry());
+    }
 
-    virtual bool runOnMachineFunction(MachineFunction &MF);
+    bool runOnMachineFunction(MachineFunction &MF) override;
 
-    virtual void getAnalysisUsage(AnalysisUsage &AU) const {
+    void getAnalysisUsage(AnalysisUsage &AU) const override {
       AU.setPreservesCFG();
       MachineFunctionPass::getAnalysisUsage(AU);
     }
@@ -54,12 +57,14 @@ namespace {
 }
 
 char OptimizePHIs::ID = 0;
+char &llvm::OptimizePHIsID = OptimizePHIs::ID;
 INITIALIZE_PASS(OptimizePHIs, "opt-phis",
-                "Optimize machine instruction PHIs", false, false);
-
-FunctionPass *llvm::createOptimizePHIsPass() { return new OptimizePHIs(); }
+                "Optimize machine instruction PHIs", false, false)
 
 bool OptimizePHIs::runOnMachineFunction(MachineFunction &Fn) {
+  if (skipOptnoneFunction(*Fn.getFunction()))
+    return false;
+
   MRI = &Fn.getRegInfo();
   TII = Fn.getTarget().getInstrInfo();
 
@@ -138,10 +143,8 @@ bool OptimizePHIs::IsDeadPHICycle(MachineInstr *MI, InstrSet &PHIsInCycle) {
   if (PHIsInCycle.size() == 16)
     return false;
 
-  for (MachineRegisterInfo::use_iterator I = MRI->use_begin(DstReg),
-         E = MRI->use_end(); I != E; ++I) {
-    MachineInstr *UseMI = &*I;
-    if (!UseMI->isPHI() || !IsDeadPHICycle(UseMI, PHIsInCycle))
+  for (MachineInstr &UseMI : MRI->use_instructions(DstReg)) {
+    if (!UseMI.isPHI() || !IsDeadPHICycle(&UseMI, PHIsInCycle))
       return false;
   }
 
@@ -163,7 +166,11 @@ bool OptimizePHIs::OptimizeBB(MachineBasicBlock &MBB) {
     InstrSet PHIsInCycle;
     if (IsSingleValuePHICycle(MI, SingleValReg, PHIsInCycle) &&
         SingleValReg != 0) {
-      MRI->replaceRegWith(MI->getOperand(0).getReg(), SingleValReg);
+      unsigned OldReg = MI->getOperand(0).getReg();
+      if (!MRI->constrainRegClass(SingleValReg, MRI->getRegClass(OldReg)))
+        continue;
+
+      MRI->replaceRegWith(OldReg, SingleValReg);
       MI->eraseFromParent();
       ++NumPHICycles;
       Changed = true;

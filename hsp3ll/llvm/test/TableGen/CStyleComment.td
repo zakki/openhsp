@@ -1,6 +1,6 @@
 // Test that multiline, nested, comments work correctly.
 //
-// RUN: tblgen < %s
+// RUN: llvm-tblgen < %s
 
 /* Foo
   bar

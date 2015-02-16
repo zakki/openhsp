@@ -16,21 +16,21 @@
 #ifndef LLVM_CODEGEN_INTRINSICLOWERING_H
 #define LLVM_CODEGEN_INTRINSICLOWERING_H
 
-#include "llvm/Intrinsics.h"
+#include "llvm/IR/Intrinsics.h"
 
 namespace llvm {
   class CallInst;
   class Module;
-  class TargetData;
+  class DataLayout;
 
   class IntrinsicLowering {
-    const TargetData& TD;
+    const DataLayout& DL;
 
     
     bool Warned;
   public:
-    explicit IntrinsicLowering(const TargetData &td) :
-      TD(td), Warned(false) {}
+    explicit IntrinsicLowering(const DataLayout &DL) :
+      DL(DL), Warned(false) {}
 
     /// AddPrototypes - This method, if called, causes all of the prototypes
     /// that might be needed by an intrinsic lowering implementation to be
@@ -48,6 +48,11 @@ namespace llvm {
     /// be capable of handling this kind of change.
     ///
     void LowerIntrinsicCall(CallInst *CI);
+
+    /// LowerToByteSwap - Replace a call instruction into a call to bswap
+    /// intrinsic. Return false if it has determined the call is not a
+    /// simple integer bswap.
+    static bool LowerToByteSwap(CallInst *CI);
   };
 }
 

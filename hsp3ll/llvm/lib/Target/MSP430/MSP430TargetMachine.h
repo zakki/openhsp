@@ -1,4 +1,4 @@
-//==-- MSP430TargetMachine.h - Define TargetMachine for MSP430 ---*- C++ -*-==//
+//===-- MSP430TargetMachine.h - Define TargetMachine for MSP430 -*- C++ -*-===//
 //
 //                     The LLVM Compiler Infrastructure
 //
@@ -15,13 +15,8 @@
 #ifndef LLVM_TARGET_MSP430_TARGETMACHINE_H
 #define LLVM_TARGET_MSP430_TARGETMACHINE_H
 
-#include "MSP430InstrInfo.h"
-#include "MSP430ISelLowering.h"
-#include "MSP430SelectionDAGInfo.h"
-#include "MSP430RegisterInfo.h"
 #include "MSP430Subtarget.h"
-#include "llvm/Target/TargetData.h"
-#include "llvm/Target/TargetFrameInfo.h"
+#include "llvm/Target/TargetFrameLowering.h"
 #include "llvm/Target/TargetMachine.h"
 
 namespace llvm {
@@ -30,38 +25,35 @@ namespace llvm {
 ///
 class MSP430TargetMachine : public LLVMTargetMachine {
   MSP430Subtarget        Subtarget;
-  const TargetData       DataLayout;       // Calculates type size & alignment
-  MSP430InstrInfo        InstrInfo;
-  MSP430TargetLowering   TLInfo;
-  MSP430SelectionDAGInfo TSInfo;
-
-  // MSP430 does not have any call stack frame, therefore not having
-  // any MSP430 specific FrameInfo class.
-  TargetFrameInfo       FrameInfo;
 
 public:
-  MSP430TargetMachine(const Target &T, const std::string &TT,
-                      const std::string &FS);
+  MSP430TargetMachine(const Target &T, StringRef TT,
+                      StringRef CPU, StringRef FS, const TargetOptions &Options,
+                      Reloc::Model RM, CodeModel::Model CM,
+                      CodeGenOpt::Level OL);
 
-  virtual const TargetFrameInfo *getFrameInfo() const { return &FrameInfo; }
-  virtual const MSP430InstrInfo *getInstrInfo() const  { return &InstrInfo; }
-  virtual const TargetData *getTargetData() const     { return &DataLayout;}
-  virtual const MSP430Subtarget *getSubtargetImpl() const { return &Subtarget; }
-
-  virtual const TargetRegisterInfo *getRegisterInfo() const {
-    return &InstrInfo.getRegisterInfo();
+  const TargetFrameLowering *getFrameLowering() const override {
+    return getSubtargetImpl()->getFrameLowering();
   }
-
-  virtual const MSP430TargetLowering *getTargetLowering() const {
-    return &TLInfo;
+  const MSP430InstrInfo *getInstrInfo() const override {
+    return getSubtargetImpl()->getInstrInfo();
   }
-
-  virtual const MSP430SelectionDAGInfo* getSelectionDAGInfo() const {
-    return &TSInfo;
+  const DataLayout *getDataLayout() const override {
+    return getSubtargetImpl()->getDataLayout();
   }
-
-  virtual bool addInstSelector(PassManagerBase &PM, CodeGenOpt::Level OptLevel);
-  virtual bool addPreEmitPass(PassManagerBase &PM, CodeGenOpt::Level OptLevel);
+  const MSP430Subtarget *getSubtargetImpl() const override {
+    return &Subtarget;
+  }
+  const TargetRegisterInfo *getRegisterInfo() const override {
+    return getSubtargetImpl()->getRegisterInfo();
+  }
+  const MSP430TargetLowering *getTargetLowering() const override {
+    return getSubtargetImpl()->getTargetLowering();
+  }
+  const MSP430SelectionDAGInfo *getSelectionDAGInfo() const override {
+    return getSubtargetImpl()->getSelectionDAGInfo();
+  }
+  TargetPassConfig *createPassConfig(PassManagerBase &PM) override;
 }; // MSP430TargetMachine.
 
 } // end namespace llvm

@@ -1,10 +1,10 @@
-; RUN: not llvm-as < %s |& grep {return type does not match operand type}
+; RUN: not llvm-as < %s 2>&1 | FileCheck %s
 
-; Verify the the operand type of the ret instructions in a function match the
-; delcared return type of the function they live in.
+; Verify the operand type of the ret instructions in a function match the
+; declared return type of the function they live in.
+; CHECK: value doesn't match function result type 'i32'
 ;
 
-define i32 @testfunc()
-begin
+define i32 @testfunc() {
 	ret i32* null
-end
+}

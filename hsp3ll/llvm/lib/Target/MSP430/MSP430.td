@@ -1,4 +1,4 @@
-//===- MSP430.td - Describe the MSP430 Target Machine ---------*- tblgen -*-==//
+//===-- MSP430.td - Describe the MSP430 Target Machine -----*- tablegen -*-===//
 //
 //                     The LLVM Compiler Infrastructure
 //
@@ -50,16 +50,11 @@ include "MSP430InstrInfo.td"
 
 def MSP430InstrInfo : InstrInfo;
 
-def MSP430InstPrinter : AsmWriter {
-  string AsmWriterClassName  = "InstPrinter";
-}
-
 //===----------------------------------------------------------------------===//
 // Target Declaration
 //===----------------------------------------------------------------------===//
 
 def MSP430 : Target {
   let InstructionSet = MSP430InstrInfo;
-  let AssemblyWriters = [MSP430InstPrinter];
 }
 

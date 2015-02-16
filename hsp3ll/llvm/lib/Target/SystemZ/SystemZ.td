@@ -1,61 +1,62 @@
-//===- SystemZ.td - Describe the SystemZ Target Machine ------*- tblgen -*-==//
+//===-- SystemZ.td - Describe the SystemZ target machine -----*- tblgen -*-===//
 //
 //                     The LLVM Compiler Infrastructure
 //
-// This file is distributed under the University of Illinois Open Source 
+// This file is distributed under the University of Illinois Open Source
 // License. See LICENSE.TXT for details.
 //
 //===----------------------------------------------------------------------===//
-// This is the top level entry point for the SystemZ target.
-//===----------------------------------------------------------------------===//
 
 //===----------------------------------------------------------------------===//
-// Target-independent interfaces
+// Target-independent interfaces which we are implementing
 //===----------------------------------------------------------------------===//
 
 include "llvm/Target/Target.td"
 
 //===----------------------------------------------------------------------===//
-// Subtarget Features. 
+// SystemZ supported processors and features
 //===----------------------------------------------------------------------===//
-def FeatureZ10 : SubtargetFeature<"z10", "HasZ10Insts", "true",
-                                  "Support Z10 instructions">;
+
+include "SystemZProcessors.td"
 
 //===----------------------------------------------------------------------===//
-// SystemZ supported processors.
-//===----------------------------------------------------------------------===//
-class Proc<string Name, list<SubtargetFeature> Features>
- : Processor<Name, NoItineraries, Features>;
-
-def : Proc<"z9",  []>;
-def : Proc<"z10", [FeatureZ10]>;
-
-//===----------------------------------------------------------------------===//
-// Register File Description
+// Register file description
 //===----------------------------------------------------------------------===//
 
 include "SystemZRegisterInfo.td"
 
 //===----------------------------------------------------------------------===//
-// Calling Convention Description
+// Calling convention description
 //===----------------------------------------------------------------------===//
 
 include "SystemZCallingConv.td"
 
 //===----------------------------------------------------------------------===//
-// Instruction Descriptions
+// Instruction descriptions
 //===----------------------------------------------------------------------===//
 
+include "SystemZOperators.td"
+include "SystemZOperands.td"
+include "SystemZPatterns.td"
+include "SystemZInstrFormats.td"
 include "SystemZInstrInfo.td"
 include "SystemZInstrFP.td"
 
-def SystemZInstrInfo : InstrInfo {} 
+def SystemZInstrInfo : InstrInfo {}
 
 //===----------------------------------------------------------------------===//
-// Target Declaration
+// Assembly parser
+//===----------------------------------------------------------------------===//
+
+def SystemZAsmParser : AsmParser {
+  let ShouldEmitMatchRegisterName = 0;
+}
+
+//===----------------------------------------------------------------------===//
+// Top-level target declaration
 //===----------------------------------------------------------------------===//
 
 def SystemZ : Target {
   let InstructionSet = SystemZInstrInfo;
+  let AssemblyParsers = [SystemZAsmParser];
 }
-

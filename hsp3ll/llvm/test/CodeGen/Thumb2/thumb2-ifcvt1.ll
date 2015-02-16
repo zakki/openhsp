@@ -1,9 +1,12 @@
 ; RUN: llc < %s -mtriple=thumbv7-apple-darwin | FileCheck %s
-
+; RUN: llc < %s -mtriple=thumbv7-apple-darwin -arm-default-it | FileCheck %s
+; RUN: llc < %s -mtriple=thumbv8 -arm-no-restrict-it |FileCheck %s
 define i32 @t1(i32 %a, i32 %b, i32 %c, i32 %d) nounwind {
-; CHECK: t1:
-; CHECK: it ne
+; CHECK-LABEL: t1:
+; CHECK: ittt ne
 ; CHECK: cmpne
+; CHECK: addne
+; CHECK: bxne lr
 	switch i32 %c, label %cond_next [
 		 i32 1, label %cond_true
 		 i32 7, label %cond_true
@@ -19,13 +22,13 @@ cond_next:
 	ret i32 %tmp15
 }
 
-; FIXME: Check for # of unconditional branch after adding branch folding post ifcvt.
 define i32 @t2(i32 %a, i32 %b) nounwind {
 entry:
-; CHECK: t2:
-; CHECK: ite gt
-; CHECK: subgt
-; CHECK: suble
+; Do not if-convert when branches go to the different loops.
+; CHECK-LABEL: t2:
+; CHECK-NOT: ite gt
+; CHECK-NOT: subgt
+; CHECK-NOT: suble
 	%tmp1434 = icmp eq i32 %a, %b		; <i1> [#uses=1]
 	br i1 %tmp1434, label %bb17, label %bb.outer
 
@@ -69,9 +72,10 @@ entry:
 
 define void @t3(i32 %a, i32 %b) nounwind {
 entry:
-; CHECK: t3:
-; CHECK: it lt
-; CHECK: poplt {r7, pc}
+; CHECK-LABEL: t3:
+; CHECK: itt ge
+; CHECK: movge r0, r1
+; CHECK: blge  {{_?}}foo
 	%tmp1 = icmp sgt i32 %a, 10		; <i1> [#uses=1]
 	br i1 %tmp1, label %cond_true, label %UnifiedReturnBlock
 

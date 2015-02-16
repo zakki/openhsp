@@ -1,4 +1,4 @@
-; RUN: llc -march=thumb -mattr=+v6t2 < %s | FileCheck %s
+; RUN: llc -mtriple=thumb-eabi -mattr=+v6t2 %s -o - | FileCheck %s
 
 %struct.F = type { [3 x i8], i8 }
 
@@ -30,11 +30,32 @@ entry:
 define i32 @f3(i32 %A, i32 %B) nounwind readnone optsize {
 entry:
 ; CHECK: f3
-; CHECK: lsrs  r2, r0, #7
-; CHECK: mov r0, r1
-; CHECK: bfi r0, r2, #7, #16
+; CHECK: lsrs {{.*}}, #7
+; CHECK: bfi {{.*}}, #7, #16
   %and = and i32 %A, 8388480                      ; <i32> [#uses=1]
   %and2 = and i32 %B, -8388481                    ; <i32> [#uses=1]
   %or = or i32 %and2, %and                        ; <i32> [#uses=1]
   ret i32 %or
+}
+
+; rdar://8752056
+define i32 @f4(i32 %a) nounwind {
+; CHECK: f4
+; CHECK: movw [[R1:r[0-9]+]], #3137
+; CHECK: bfi [[R1]], {{.*}}, #15, #5
+  %1 = shl i32 %a, 15
+  %ins7 = and i32 %1, 1015808
+  %ins12 = or i32 %ins7, 3137
+  ret i32 %ins12
+}
+
+; rdar://9177502
+define i32 @f5(i32 %a, i32 %b) nounwind readnone {
+entry:
+; CHECK: f5
+; CHECK-NOT: bfi r0, r2, #0, #1
+%and = and i32 %a, 2
+%b.masked = and i32 %b, -2
+%and3 = or i32 %b.masked, %and
+ret i32 %and3
 }

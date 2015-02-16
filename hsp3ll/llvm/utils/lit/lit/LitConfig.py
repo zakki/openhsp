@@ -1,3 +1,13 @@
+from __future__ import absolute_import
+import inspect
+import os
+import sys
+
+import lit.Test
+import lit.formats
+import lit.TestingConfig
+import lit.util
+
 class LitConfig:
     """LitConfig - Configuration data for a 'lit' test runner instance, shared
     across all tests.
@@ -8,44 +18,39 @@ class LitConfig:
     easily.
     """
 
-    # Provide access to built-in formats.
-    import LitFormats as formats
-
-    # Provide access to built-in utility functions.
-    import Util as util
-
     def __init__(self, progname, path, quiet,
                  useValgrind, valgrindLeakCheck, valgrindArgs,
-                 useTclAsSh,
                  noExecute, debug, isWindows,
-                 params):
+                 params, config_prefix = None):
         # The name of the test runner.
         self.progname = progname
         # The items to add to the PATH environment variable.
-        self.path = list(map(str, path))
+        self.path = [str(p) for p in path]
         self.quiet = bool(quiet)
         self.useValgrind = bool(useValgrind)
         self.valgrindLeakCheck = bool(valgrindLeakCheck)
         self.valgrindUserArgs = list(valgrindArgs)
-        self.useTclAsSh = bool(useTclAsSh)
         self.noExecute = noExecute
         self.debug = debug
         self.isWindows = bool(isWindows)
         self.params = dict(params)
         self.bashPath = None
 
+        # Configuration files to look for when discovering test suites.
+        self.config_prefix = config_prefix or 'lit'
+        self.config_name = '%s.cfg' % (self.config_prefix,)
+        self.site_config_name = '%s.site.cfg' % (self.config_prefix,)
+        self.local_config_name = '%s.local.cfg' % (self.config_prefix,)
+
         self.numErrors = 0
         self.numWarnings = 0
 
         self.valgrindArgs = []
-        self.valgrindTriple = ""
         if self.useValgrind:
-            self.valgrindTriple = "-vg"
             self.valgrindArgs = ['valgrind', '-q', '--run-libc-freeres=no',
                                  '--tool=memcheck', '--trace-children=yes',
                                  '--error-exitcode=123']
             if self.valgrindLeakCheck:
-                self.valgrindTriple += "_leak"
                 self.valgrindArgs.append('--leak-check=full')
             else:
                 # The default is 'summary'.
@@ -56,35 +61,42 @@ class LitConfig:
     def load_config(self, config, path):
         """load_config(config, path) - Load a config object from an alternate
         path."""
-        from TestingConfig import TestingConfig
-        return TestingConfig.frompath(path, config.parent, self,
-                                      mustExist = True,
-                                      config = config)
+        if self.debug:
+            self.note('load_config from %r' % path)
+        config.load_from_path(path, self)
+        return config
 
     def getBashPath(self):
         """getBashPath - Get the path to 'bash'"""
-        import os, Util
-
         if self.bashPath is not None:
             return self.bashPath
 
-        self.bashPath = Util.which('bash', os.pathsep.join(self.path))
+        self.bashPath = lit.util.which('bash', os.pathsep.join(self.path))
         if self.bashPath is None:
-            # Check some known paths.
-            for path in ('/bin/bash', '/usr/bin/bash', '/usr/local/bin/bash'):
-                if os.path.exists(path):
-                    self.bashPath = path
-                    break
+            self.bashPath = lit.util.which('bash')
 
         if self.bashPath is None:
-            self.warning("Unable to find 'bash', running Tcl tests internally.")
+            self.warning("Unable to find 'bash'.")
             self.bashPath = ''
 
         return self.bashPath
 
-    def _write_message(self, kind, message):
-        import inspect, os, sys
+    def getToolsPath(self, dir, paths, tools):
+        if dir is not None and os.path.isabs(dir) and os.path.isdir(dir):
+            if not lit.util.checkToolsPath(dir, tools):
+                return None
+        else:
+            dir = lit.util.whichTools(tools, paths)
 
+        # bash
+        self.bashPath = lit.util.which('bash', dir)
+        if self.bashPath is None:
+            self.note("Unable to find 'bash.exe'.")
+            self.bashPath = ''
+
+        return dir
+
+    def _write_message(self, kind, message):
         # Get the file/line where this message was generated.
         f = inspect.currentframe()
         # Step out of _write_message, and then out of wrapper.
@@ -92,8 +104,8 @@ class LitConfig:
         file,line,_,_,_ = inspect.getframeinfo(f)
         location = '%s:%d' % (os.path.basename(file), line)
 
-        print >>sys.stderr, '%s: %s: %s: %s' % (self.progname, location,
-                                                kind, message)
+        sys.stderr.write('%s: %s: %s: %s\n' % (self.progname, location,
+                                               kind, message))
 
     def note(self, message):
         self._write_message('note', message)
@@ -107,6 +119,5 @@ class LitConfig:
         self.numErrors += 1
 
     def fatal(self, message):
-        import sys
         self._write_message('fatal', message)
         sys.exit(2)

@@ -12,12 +12,13 @@ LIBRARYNAME = LLVMPowerPCCodeGen
 TARGET = PPC
 
 # Make sure that tblgen is run, first thing.
-BUILT_SOURCES = PPCGenInstrNames.inc PPCGenRegisterNames.inc \
+BUILT_SOURCES = PPCGenRegisterInfo.inc PPCGenAsmMatcher.inc \
                 PPCGenAsmWriter.inc  PPCGenCodeEmitter.inc \
-                PPCGenRegisterInfo.h.inc PPCGenRegisterInfo.inc \
                 PPCGenInstrInfo.inc PPCGenDAGISel.inc \
-                PPCGenSubtarget.inc PPCGenCallingConv.inc
+                PPCGenSubtargetInfo.inc PPCGenCallingConv.inc \
+                PPCGenMCCodeEmitter.inc PPCGenFastISel.inc \
+                PPCGenDisassemblerTables.inc
 
-DIRS = AsmPrinter TargetInfo
+DIRS = AsmParser Disassembler InstPrinter TargetInfo MCTargetDesc
 
 include $(LEVEL)/Makefile.common

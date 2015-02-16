@@ -9,9 +9,9 @@ add_llvm_library(LLVMInstCombine
   InstCombineMulDivRem.cpp
   InstCombinePHI.cpp
   InstCombineSelect.cpp
-  InstCombineShifts.cpp 
+  InstCombineShifts.cpp
   InstCombineSimplifyDemanded.cpp
   InstCombineVectorOps.cpp
   )
 
-target_link_libraries (LLVMInstCombine LLVMTransformUtils)
+add_dependencies(LLVMInstCombine intrinsics_gen)

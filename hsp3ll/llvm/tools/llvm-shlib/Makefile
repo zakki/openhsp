@@ -7,32 +7,36 @@
 # 
 ##===----------------------------------------------------------------------===##
 
-LEVEL = ../..
+LEVEL := ../..
 
-LIBRARYNAME = LLVM-$(LLVMVersion)
+LIBRARYNAME = LLVM-$(LLVM_VERSION_MAJOR).$(LLVM_VERSION_MINOR)$(LLVM_VERSION_SUFFIX)
+LIBRARYALIASNAME = LLVM-$(LLVMVersion)
 
-NO_BUILD_ARCHIVE = 1
-LINK_LIBS_IN_SHARED = 1
-SHARED_LIBRARY = 1
+NO_BUILD_ARCHIVE := 1
+LINK_LIBS_IN_SHARED := 1
+SHARED_LIBRARY := 1
+SHARED_ALIAS := 1
 
 include $(LEVEL)/Makefile.config
 
 ifeq ($(HOST_OS), $(filter $(HOST_OS), Cygwin MingW))
-    EXPORTED_SYMBOL_FILE = $(ObjDir)/$(LIBRARYNAME).exports
+  EXPORTED_SYMBOL_FILE = $(ObjDir)/$(LIBRARYNAME).exports
 
+  ifeq (1,$(ENABLE_EMBED_STDCXX))
     # It is needed to force static-stdc++.a linked.
-    # FIXME: It should be omitted when configure detects system's stdc++.dll.
     SHLIB_FRAG_NAMES += stdc++.a.o
+  endif
 
 endif
 
 include $(LEVEL)/Makefile.common
 
 # Include all archives in libLLVM.(so|dylib) except the ones that have
-# their own dynamic libraries.
+# their own dynamic libraries and TableGen.
 Archives := $(wildcard $(LibDir)/libLLVM*.a)
 SharedLibraries := $(wildcard $(LibDir)/libLLVM*$(SHLIBEXT))
-IncludeInLibLlvm := $(filter-out $(basename $(SharedLibraries)).a, $(Archives))
+ExcludeFromLibLlvm := $(basename $(SharedLibraries)).a %/libLLVMTableGen.a
+IncludeInLibLlvm := $(filter-out $(ExcludeFromLibLlvm), $(Archives))
 LLVMLibsOptions := $(IncludeInLibLlvm:$(LibDir)/lib%.a=-l%)
 LLVMLibsPaths   := $(IncludeInLibLlvm)
 
@@ -47,26 +51,27 @@ ifeq ($(HOST_OS),Darwin)
     endif
     # Include everything from the .a's into the shared library.
     LLVMLibsOptions    := $(LLVMLibsOptions) -all_load
-    # extra options to override libtool defaults 
-    LLVMLibsOptions    := $(LLVMLibsOptions)  \
-                         -Wl,-dead_strip \
-                         -Wl,-seg1addr -Wl,0xE0000000 
-
-    # Mac OS X 10.4 and earlier tools do not allow a second -install_name on command line
-    DARWIN_VERS := $(shell echo $(TARGET_TRIPLE) | sed 's/.*darwin\([0-9]*\).*/\1/')
-    ifneq ($(DARWIN_VERS),8)
-       LLVMLibsOptions    := $(LLVMLibsOptions)  \
-                            -Wl,-install_name \
-                            -Wl,"@executable_path/../lib/lib$(LIBRARYNAME)$(SHLIBEXT)"
-    endif
 endif
 
-ifeq ($(HOST_OS), Linux)
+ifeq ($(HOST_OS), $(filter $(HOST_OS), DragonFly Linux FreeBSD GNU/kFreeBSD OpenBSD GNU Bitrig))
     # Include everything from the .a's into the shared library.
     LLVMLibsOptions := -Wl,--whole-archive $(LLVMLibsOptions) \
                        -Wl,--no-whole-archive
+endif
+
+ifeq ($(HOST_OS), $(filter $(HOST_OS), DragonFly Linux FreeBSD GNU/kFreeBSD GNU))
+    # Add soname to the library.
+    LLVMLibsOptions += -Wl,--soname,lib$(LIBRARYNAME)$(SHLIBEXT)
+endif
+
+ifeq ($(HOST_OS), $(filter $(HOST_OS), Linux GNU GNU/kFreeBSD))
     # Don't allow unresolved symbols.
     LLVMLibsOptions += -Wl,--no-undefined
+endif
+
+ifeq ($(HOST_OS),SunOS)
+    # add -z allextract ahead of other libraries on Solaris
+    LLVMLibsOptions := -Wl,-z -Wl,allextract $(LLVMLibsOptions)
 endif
 
 ifeq ($(HOST_OS), $(filter $(HOST_OS), Cygwin MingW))

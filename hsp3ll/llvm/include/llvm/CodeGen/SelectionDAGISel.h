@@ -12,13 +12,13 @@
 //
 //===----------------------------------------------------------------------===//
 
-#ifndef LLVM_CODEGEN_SELECTIONDAG_ISEL_H
-#define LLVM_CODEGEN_SELECTIONDAG_ISEL_H
+#ifndef LLVM_CODEGEN_SELECTIONDAGISEL_H
+#define LLVM_CODEGEN_SELECTIONDAGISEL_H
 
-#include "llvm/BasicBlock.h"
-#include "llvm/Pass.h"
-#include "llvm/CodeGen/SelectionDAG.h"
 #include "llvm/CodeGen/MachineFunctionPass.h"
+#include "llvm/CodeGen/SelectionDAG.h"
+#include "llvm/IR/BasicBlock.h"
+#include "llvm/Pass.h"
 
 namespace llvm {
   class FastISel;
@@ -29,18 +29,19 @@ namespace llvm {
   class MachineFunction;
   class MachineInstr;
   class TargetLowering;
-  class TargetInstrInfo;
+  class TargetLibraryInfo;
   class FunctionLoweringInfo;
   class ScheduleHazardRecognizer;
   class GCFunctionInfo;
   class ScheduleDAGSDNodes;
- 
+  class LoadInst;
+
 /// SelectionDAGISel - This is the common base class used for SelectionDAG-based
 /// pattern-matching instruction selectors.
 class SelectionDAGISel : public MachineFunctionPass {
 public:
-  const TargetMachine &TM;
-  const TargetLowering &TLI;
+  TargetMachine &TM;
+  const TargetLibraryInfo *LibInfo;
   FunctionLoweringInfo *FuncInfo;
   MachineFunction *MF;
   MachineRegisterInfo *RegInfo;
@@ -51,29 +52,31 @@ public:
   CodeGenOpt::Level OptLevel;
   static char ID;
 
-  explicit SelectionDAGISel(const TargetMachine &tm,
+  explicit SelectionDAGISel(TargetMachine &tm,
                             CodeGenOpt::Level OL = CodeGenOpt::Default);
   virtual ~SelectionDAGISel();
-  
-  const TargetLowering &getTargetLowering() { return TLI; }
 
-  virtual void getAnalysisUsage(AnalysisUsage &AU) const;
+  const TargetLowering *getTargetLowering() const {
+    return TM.getTargetLowering();
+  }
 
-  virtual bool runOnMachineFunction(MachineFunction &MF);
+  void getAnalysisUsage(AnalysisUsage &AU) const override;
+
+  bool runOnMachineFunction(MachineFunction &MF) override;
 
   virtual void EmitFunctionEntryCode() {}
-  
+
   /// PreprocessISelDAG - This hook allows targets to hack on the graph before
   /// instruction selection starts.
   virtual void PreprocessISelDAG() {}
-  
+
   /// PostprocessISelDAG() - This hook allows the target to hack on the graph
   /// right after selection.
   virtual void PostprocessISelDAG() {}
-  
+
   /// Select - Main hook targets implement to select a node.
   virtual SDNode *Select(SDNode *N) = 0;
-  
+
   /// SelectInlineAsmMemoryOperand - Select the specified address as a target
   /// addressing mode, according to the specified constraint code.  If this does
   /// not match or is not implemented, return true.  The resultant operands
@@ -91,28 +94,25 @@ public:
 
   /// IsLegalToFold - Returns true if the specific operand node N of
   /// U can be folded during instruction selection that starts at Root.
-  /// FIXME: This is a static member function because the PIC16 target,
-  /// which uses it during lowering.
+  /// FIXME: This is a static member function because the MSP430/X86
+  /// targets, which uses it during isel.  This could become a proper member.
   static bool IsLegalToFold(SDValue N, SDNode *U, SDNode *Root,
                             CodeGenOpt::Level OptLevel,
                             bool IgnoreChains = false);
 
-  /// CreateTargetHazardRecognizer - Return a newly allocated hazard recognizer
-  /// to use for this target when scheduling the DAG.
-  virtual ScheduleHazardRecognizer *CreateTargetHazardRecognizer();
-  
-  
   // Opcodes used by the DAG state machine:
   enum BuiltinOpcodes {
     OPC_Scope,
     OPC_RecordNode,
-    OPC_RecordChild0, OPC_RecordChild1, OPC_RecordChild2, OPC_RecordChild3, 
+    OPC_RecordChild0, OPC_RecordChild1, OPC_RecordChild2, OPC_RecordChild3,
     OPC_RecordChild4, OPC_RecordChild5, OPC_RecordChild6, OPC_RecordChild7,
     OPC_RecordMemRef,
-    OPC_CaptureFlagInput,
+    OPC_CaptureGlueInput,
     OPC_MoveChild,
     OPC_MoveParent,
     OPC_CheckSame,
+    OPC_CheckChild0Same, OPC_CheckChild1Same,
+    OPC_CheckChild2Same, OPC_CheckChild3Same,
     OPC_CheckPatternPredicate,
     OPC_CheckPredicate,
     OPC_CheckOpcode,
@@ -123,14 +123,17 @@ public:
     OPC_CheckChild3Type, OPC_CheckChild4Type, OPC_CheckChild5Type,
     OPC_CheckChild6Type, OPC_CheckChild7Type,
     OPC_CheckInteger,
+    OPC_CheckChild0Integer, OPC_CheckChild1Integer, OPC_CheckChild2Integer,
+    OPC_CheckChild3Integer, OPC_CheckChild4Integer,
     OPC_CheckCondCode,
     OPC_CheckValueType,
     OPC_CheckComplexPat,
     OPC_CheckAndImm, OPC_CheckOrImm,
     OPC_CheckFoldableChainNode,
-    
+
     OPC_EmitInteger,
     OPC_EmitRegister,
+    OPC_EmitRegister2,
     OPC_EmitConvertToTarget,
     OPC_EmitMergeInputChains,
     OPC_EmitMergeInputChains1_0,
@@ -139,15 +142,15 @@ public:
     OPC_EmitNodeXForm,
     OPC_EmitNode,
     OPC_MorphNodeTo,
-    OPC_MarkFlagResults,
+    OPC_MarkGlueResults,
     OPC_CompleteMatch
   };
-  
+
   enum {
-    OPFL_None       = 0,     // Node has no chain or flag input and isn't variadic.
+    OPFL_None       = 0,  // Node has no chain or glue input and isn't variadic.
     OPFL_Chain      = 1,     // Node has a chain input.
-    OPFL_FlagInput  = 2,     // Node has a flag input.
-    OPFL_FlagOutput = 4,     // Node has a flag output.
+    OPFL_GlueInput  = 2,     // Node has a glue input.
+    OPFL_GlueOutput = 4,     // Node has a glue output.
     OPFL_MemRefs    = 8,     // Node gets accumulated MemRefs.
     OPFL_Variadic0  = 1<<4,  // Node is variadic, root has 0 fixed inputs.
     OPFL_Variadic1  = 2<<4,  // Node is variadic, root has 1 fixed inputs.
@@ -156,92 +159,61 @@ public:
     OPFL_Variadic4  = 5<<4,  // Node is variadic, root has 4 fixed inputs.
     OPFL_Variadic5  = 6<<4,  // Node is variadic, root has 5 fixed inputs.
     OPFL_Variadic6  = 7<<4,  // Node is variadic, root has 6 fixed inputs.
-    
+
     OPFL_VariadicInfo = OPFL_Variadic6
   };
-  
+
   /// getNumFixedFromVariadicInfo - Transform an EmitNode flags word into the
   /// number of fixed arity values that should be skipped when copying from the
   /// root.
   static inline int getNumFixedFromVariadicInfo(unsigned Flags) {
     return ((Flags&OPFL_VariadicInfo) >> 4)-1;
   }
-  
-  
+
+
 protected:
   /// DAGSize - Size of DAG being instruction selected.
   ///
   unsigned DAGSize;
-  
-  /// ISelPosition - Node iterator marking the current position of
-  /// instruction selection as it procedes through the topologically-sorted
-  /// node list.
-  SelectionDAG::allnodes_iterator ISelPosition;
 
-  
-  /// ISelUpdater - helper class to handle updates of the 
-  /// instruction selection graph.
-  class ISelUpdater : public SelectionDAG::DAGUpdateListener {
-    SelectionDAG::allnodes_iterator &ISelPosition;
-  public:
-    explicit ISelUpdater(SelectionDAG::allnodes_iterator &isp)
-      : ISelPosition(isp) {}
-    
-    /// NodeDeleted - Handle nodes deleted from the graph. If the
-    /// node being deleted is the current ISelPosition node, update
-    /// ISelPosition.
-    ///
-    virtual void NodeDeleted(SDNode *N, SDNode *E) {
-      if (ISelPosition == SelectionDAG::allnodes_iterator(N))
-        ++ISelPosition;
-    }
-    
-    /// NodeUpdated - Ignore updates for now.
-    virtual void NodeUpdated(SDNode *N) {}
-  };
-  
   /// ReplaceUses - replace all uses of the old node F with the use
   /// of the new node T.
   void ReplaceUses(SDValue F, SDValue T) {
-    ISelUpdater ISU(ISelPosition);
-    CurDAG->ReplaceAllUsesOfValueWith(F, T, &ISU);
+    CurDAG->ReplaceAllUsesOfValueWith(F, T);
   }
-  
+
   /// ReplaceUses - replace all uses of the old nodes F with the use
   /// of the new nodes T.
   void ReplaceUses(const SDValue *F, const SDValue *T, unsigned Num) {
-    ISelUpdater ISU(ISelPosition);
-    CurDAG->ReplaceAllUsesOfValuesWith(F, T, Num, &ISU);
+    CurDAG->ReplaceAllUsesOfValuesWith(F, T, Num);
   }
-  
+
   /// ReplaceUses - replace all uses of the old node F with the use
   /// of the new node T.
   void ReplaceUses(SDNode *F, SDNode *T) {
-    ISelUpdater ISU(ISelPosition);
-    CurDAG->ReplaceAllUsesWith(F, T, &ISU);
+    CurDAG->ReplaceAllUsesWith(F, T);
   }
-  
+
 
   /// SelectInlineAsmMemoryOperands - Calls to this are automatically generated
   /// by tblgen.  Others should not call it.
   void SelectInlineAsmMemoryOperands(std::vector<SDValue> &Ops);
 
-  
+
 public:
   // Calls to these predicates are generated by tblgen.
   bool CheckAndMask(SDValue LHS, ConstantSDNode *RHS,
                     int64_t DesiredMaskS) const;
   bool CheckOrMask(SDValue LHS, ConstantSDNode *RHS,
                     int64_t DesiredMaskS) const;
-  
-  
+
+
   /// CheckPatternPredicate - This function is generated by tblgen in the
   /// target.  It runs the specified pattern predicate and returns true if it
   /// succeeds or false if it fails.  The number is a private implementation
   /// detail to the code tblgen produces.
   virtual bool CheckPatternPredicate(unsigned PredNo) const {
-    assert(0 && "Tblgen should generate the implementation of this!");
-    return 0;
+    llvm_unreachable("Tblgen should generate the implementation of this!");
   }
 
   /// CheckNodePredicate - This function is generated by tblgen in the target.
@@ -249,47 +221,56 @@ public:
   /// false if it fails.  The number is a private implementation
   /// detail to the code tblgen produces.
   virtual bool CheckNodePredicate(SDNode *N, unsigned PredNo) const {
-    assert(0 && "Tblgen should generate the implementation of this!");
-    return 0;
+    llvm_unreachable("Tblgen should generate the implementation of this!");
   }
-  
-  virtual bool CheckComplexPattern(SDNode *Root, SDValue N, unsigned PatternNo,
-                                   SmallVectorImpl<SDValue> &Result) {
-    assert(0 && "Tblgen should generate the implementation of this!");
-    return false;
+
+  virtual bool CheckComplexPattern(SDNode *Root, SDNode *Parent, SDValue N,
+                                   unsigned PatternNo,
+                        SmallVectorImpl<std::pair<SDValue, SDNode*> > &Result) {
+    llvm_unreachable("Tblgen should generate the implementation of this!");
   }
-  
+
   virtual SDValue RunSDNodeXForm(SDValue V, unsigned XFormNo) {
-    assert(0 && "Tblgen shoudl generate this!");
-    return SDValue();
+    llvm_unreachable("Tblgen should generate this!");
   }
 
   SDNode *SelectCodeCommon(SDNode *NodeToMatch,
                            const unsigned char *MatcherTable,
                            unsigned TableSize);
-  
+
 private:
-  
+
   // Calls to these functions are generated by tblgen.
   SDNode *Select_INLINEASM(SDNode *N);
+  SDNode *Select_READ_REGISTER(SDNode *N);
+  SDNode *Select_WRITE_REGISTER(SDNode *N);
   SDNode *Select_UNDEF(SDNode *N);
   void CannotYetSelect(SDNode *N);
 
 private:
   void DoInstructionSelection();
   SDNode *MorphNode(SDNode *Node, unsigned TargetOpc, SDVTList VTs,
-                    const SDValue *Ops, unsigned NumOps, unsigned EmitNodeInfo);
-  
-  void PrepareEHLandingPad();
-  void SelectAllBasicBlocks(const Function &Fn);
-  void FinishBasicBlock();
+                    ArrayRef<SDValue> Ops, unsigned EmitNodeInfo);
 
+  void PrepareEHLandingPad();
+
+  /// \brief Perform instruction selection on all basic blocks in the function.
+  void SelectAllBasicBlocks(const Function &Fn);
+
+  /// \brief Perform instruction selection on a single basic block, for
+  /// instructions between \p Begin and \p End.  \p HadTailCall will be set
+  /// to true if a call in the block was translated as a tail call.
   void SelectBasicBlock(BasicBlock::const_iterator Begin,
                         BasicBlock::const_iterator End,
                         bool &HadTailCall);
+  void FinishBasicBlock();
+
   void CodeGenAndEmitDAG();
-  void LowerArguments(const BasicBlock *BB);
-  
+
+  /// \brief Generate instructions for lowering the incoming arguments of the
+  /// given function.
+  void LowerArguments(const Function &F);
+
   void ComputeLiveOutVRegInfo();
 
   /// Create the scheduler. If a specific scheduler was specified
@@ -297,18 +278,18 @@ private:
   /// one preferred by the target.
   ///
   ScheduleDAGSDNodes *CreateScheduler();
-  
+
   /// OpcodeOffset - This is a cache used to dispatch efficiently into isel
   /// state machines that start with a OPC_SwitchOpcode node.
   std::vector<unsigned> OpcodeOffset;
-  
-  void UpdateChainsAndFlags(SDNode *NodeToMatch, SDValue InputChain,
-                            const SmallVectorImpl<SDNode*> &ChainNodesMatched,
-                            SDValue InputFlag,const SmallVectorImpl<SDNode*> &F,
-                            bool isMorphNodeTo);
-    
+
+  void UpdateChainsAndGlue(SDNode *NodeToMatch, SDValue InputChain,
+                           const SmallVectorImpl<SDNode*> &ChainNodesMatched,
+                           SDValue InputGlue, const SmallVectorImpl<SDNode*> &F,
+                           bool isMorphNodeTo);
+
 };
 
 }
 
-#endif /* LLVM_CODEGEN_SELECTIONDAG_ISEL_H */
+#endif /* LLVM_CODEGEN_SELECTIONDAGISEL_H */

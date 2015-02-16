@@ -21,38 +21,40 @@
 //===----------------------------------------------------------------------===//
 
 #include "llvm/CodeGen/Passes.h"
-#include "llvm/Constant.h"
-#include "llvm/Instructions.h"
-#include "llvm/Function.h"
-#include "llvm/Pass.h"
-#include "llvm/Type.h"
-#include "llvm/Analysis/ProfileInfo.h"
-#include "llvm/CodeGen/MachineDominators.h"
-#include "llvm/CodeGen/MachineFunctionPass.h"
-#include "llvm/CodeGen/MachineModuleInfo.h"
-#include "llvm/CodeGen/MachineLoopInfo.h"
-#include "llvm/CodeGen/MachineRegisterInfo.h"
-#include "llvm/Support/CFG.h"
-#include "llvm/Target/TargetInstrInfo.h"
 #include "llvm/ADT/DepthFirstIterator.h"
 #include "llvm/ADT/SmallPtrSet.h"
+#include "llvm/CodeGen/MachineDominators.h"
+#include "llvm/CodeGen/MachineFunctionPass.h"
+#include "llvm/CodeGen/MachineLoopInfo.h"
+#include "llvm/CodeGen/MachineModuleInfo.h"
+#include "llvm/CodeGen/MachineRegisterInfo.h"
+#include "llvm/IR/CFG.h"
+#include "llvm/IR/Constant.h"
+#include "llvm/IR/Dominators.h"
+#include "llvm/IR/Function.h"
+#include "llvm/IR/Instructions.h"
+#include "llvm/IR/Type.h"
+#include "llvm/Pass.h"
+#include "llvm/Target/TargetInstrInfo.h"
 using namespace llvm;
 
 namespace {
   class UnreachableBlockElim : public FunctionPass {
-    virtual bool runOnFunction(Function &F);
+    bool runOnFunction(Function &F) override;
   public:
     static char ID; // Pass identification, replacement for typeid
-    UnreachableBlockElim() : FunctionPass(ID) {}
+    UnreachableBlockElim() : FunctionPass(ID) {
+      initializeUnreachableBlockElimPass(*PassRegistry::getPassRegistry());
+    }
 
-    virtual void getAnalysisUsage(AnalysisUsage &AU) const {
-      AU.addPreserved<ProfileInfo>();
+    void getAnalysisUsage(AnalysisUsage &AU) const override {
+      AU.addPreserved<DominatorTreeWrapperPass>();
     }
   };
 }
 char UnreachableBlockElim::ID = 0;
 INITIALIZE_PASS(UnreachableBlockElim, "unreachableblockelim",
-                "Remove unreachable blocks from the CFG", false, false);
+                "Remove unreachable blocks from the CFG", false, false)
 
 FunctionPass *llvm::createUnreachableBlockEliminationPass() {
   return new UnreachableBlockElim();
@@ -83,9 +85,7 @@ bool UnreachableBlockElim::runOnFunction(Function &F) {
     }
 
   // Actually remove the blocks now.
-  ProfileInfo *PI = getAnalysisIfAvailable<ProfileInfo>();
   for (unsigned i = 0, e = DeadBlocks.size(); i != e; ++i) {
-    if (PI) PI->removeBlock(DeadBlocks[i]);
     DeadBlocks[i]->eraseFromParent();
   }
 
@@ -95,8 +95,8 @@ bool UnreachableBlockElim::runOnFunction(Function &F) {
 
 namespace {
   class UnreachableMachineBlockElim : public MachineFunctionPass {
-    virtual bool runOnMachineFunction(MachineFunction &F);
-    virtual void getAnalysisUsage(AnalysisUsage &AU) const;
+    bool runOnMachineFunction(MachineFunction &F) override;
+    void getAnalysisUsage(AnalysisUsage &AU) const override;
     MachineModuleInfo *MMI;
   public:
     static char ID; // Pass identification, replacement for typeid
@@ -106,7 +106,7 @@ namespace {
 char UnreachableMachineBlockElim::ID = 0;
 
 INITIALIZE_PASS(UnreachableMachineBlockElim, "unreachable-mbb-elimination",
-  "Remove unreachable machine basic blocks", false, false);
+  "Remove unreachable machine basic blocks", false, false)
 
 char &llvm::UnreachableMachineBlockElimID = UnreachableMachineBlockElim::ID;
 
@@ -118,6 +118,7 @@ void UnreachableMachineBlockElim::getAnalysisUsage(AnalysisUsage &AU) const {
 
 bool UnreachableMachineBlockElim::runOnMachineFunction(MachineFunction &F) {
   SmallPtrSet<MachineBasicBlock*, 8> Reachable;
+  bool ModifiedPHI = false;
 
   MMI = getAnalysisIfAvailable<MachineModuleInfo>();
   MachineDominatorTree *MDT = getAnalysisIfAvailable<MachineDominatorTree>();
@@ -179,6 +180,7 @@ bool UnreachableMachineBlockElim::runOnMachineFunction(MachineFunction &F) {
         if (!preds.count(phi->getOperand(i).getMBB())) {
           phi->RemoveOperand(i);
           phi->RemoveOperand(i-1);
+          ModifiedPHI = true;
         }
 
       if (phi->getNumOperands() == 3) {
@@ -188,9 +190,13 @@ bool UnreachableMachineBlockElim::runOnMachineFunction(MachineFunction &F) {
         MachineInstr* temp = phi;
         ++phi;
         temp->eraseFromParent();
+        ModifiedPHI = true;
 
-        if (Input != Output)
-          F.getRegInfo().replaceRegWith(Output, Input);
+        if (Input != Output) {
+          MachineRegisterInfo &MRI = F.getRegInfo();
+          MRI.constrainRegClass(Input, MRI.getRegClass(Output));
+          MRI.replaceRegWith(Output, Input);
+        }
 
         continue;
       }
@@ -201,5 +207,5 @@ bool UnreachableMachineBlockElim::runOnMachineFunction(MachineFunction &F) {
 
   F.RenumberBlocks();
 
-  return DeadBlocks.size();
+  return (DeadBlocks.size() || ModifiedPHI);
 }

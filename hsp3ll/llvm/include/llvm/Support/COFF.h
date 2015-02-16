@@ -11,7 +11,7 @@
 //
 // Structures and enums defined within this file where created using
 // information from Microsoft's publicly available PE/COFF format document:
-// 
+//
 // Microsoft Portable Executable and Common Object File Format Specification
 // Revision 8.1 - February 15, 2008
 //
@@ -20,14 +20,21 @@
 //
 //===----------------------------------------------------------------------===//
 
-#ifndef LLVM_SUPPORT_WIN_COFF_H
-#define LLVM_SUPPORT_WIN_COFF_H
+#ifndef LLVM_SUPPORT_COFF_H
+#define LLVM_SUPPORT_COFF_H
 
-#include "llvm/System/DataTypes.h"
+#include "llvm/Support/DataTypes.h"
+#include <cassert>
 #include <cstring>
 
 namespace llvm {
 namespace COFF {
+
+  // The maximum number of sections that a COFF object can have (inclusive).
+  const int MaxNumberOfSections = 65299;
+
+  // The PE signature bytes that follows the DOS stub header.
+  static const char PEMagic[] = { 'P', 'E', '\0', '\0' };
 
   // Sizes in bytes of various things in the COFF format.
   enum {
@@ -49,16 +56,77 @@ namespace COFF {
   };
 
   enum MachineTypes {
-    IMAGE_FILE_MACHINE_I386 = 0x14C,
-    IMAGE_FILE_MACHINE_AMD64 = 0x8664
+    MT_Invalid = 0xffff,
+
+    IMAGE_FILE_MACHINE_UNKNOWN   = 0x0,
+    IMAGE_FILE_MACHINE_AM33      = 0x13,
+    IMAGE_FILE_MACHINE_AMD64     = 0x8664,
+    IMAGE_FILE_MACHINE_ARM       = 0x1C0,
+    IMAGE_FILE_MACHINE_ARMNT     = 0x1C4,
+    IMAGE_FILE_MACHINE_EBC       = 0xEBC,
+    IMAGE_FILE_MACHINE_I386      = 0x14C,
+    IMAGE_FILE_MACHINE_IA64      = 0x200,
+    IMAGE_FILE_MACHINE_M32R      = 0x9041,
+    IMAGE_FILE_MACHINE_MIPS16    = 0x266,
+    IMAGE_FILE_MACHINE_MIPSFPU   = 0x366,
+    IMAGE_FILE_MACHINE_MIPSFPU16 = 0x466,
+    IMAGE_FILE_MACHINE_POWERPC   = 0x1F0,
+    IMAGE_FILE_MACHINE_POWERPCFP = 0x1F1,
+    IMAGE_FILE_MACHINE_R4000     = 0x166,
+    IMAGE_FILE_MACHINE_SH3       = 0x1A2,
+    IMAGE_FILE_MACHINE_SH3DSP    = 0x1A3,
+    IMAGE_FILE_MACHINE_SH4       = 0x1A6,
+    IMAGE_FILE_MACHINE_SH5       = 0x1A8,
+    IMAGE_FILE_MACHINE_THUMB     = 0x1C2,
+    IMAGE_FILE_MACHINE_WCEMIPSV2 = 0x169
+  };
+
+  enum Characteristics {
+    C_Invalid = 0,
+
+    /// The file does not contain base relocations and must be loaded at its
+    /// preferred base. If this cannot be done, the loader will error.
+    IMAGE_FILE_RELOCS_STRIPPED         = 0x0001,
+    /// The file is valid and can be run.
+    IMAGE_FILE_EXECUTABLE_IMAGE        = 0x0002,
+    /// COFF line numbers have been stripped. This is deprecated and should be
+    /// 0.
+    IMAGE_FILE_LINE_NUMS_STRIPPED      = 0x0004,
+    /// COFF symbol table entries for local symbols have been removed. This is
+    /// deprecated and should be 0.
+    IMAGE_FILE_LOCAL_SYMS_STRIPPED     = 0x0008,
+    /// Aggressively trim working set. This is deprecated and must be 0.
+    IMAGE_FILE_AGGRESSIVE_WS_TRIM      = 0x0010,
+    /// Image can handle > 2GiB addresses.
+    IMAGE_FILE_LARGE_ADDRESS_AWARE     = 0x0020,
+    /// Little endian: the LSB precedes the MSB in memory. This is deprecated
+    /// and should be 0.
+    IMAGE_FILE_BYTES_REVERSED_LO       = 0x0080,
+    /// Machine is based on a 32bit word architecture.
+    IMAGE_FILE_32BIT_MACHINE           = 0x0100,
+    /// Debugging info has been removed.
+    IMAGE_FILE_DEBUG_STRIPPED          = 0x0200,
+    /// If the image is on removable media, fully load it and copy it to swap.
+    IMAGE_FILE_REMOVABLE_RUN_FROM_SWAP = 0x0400,
+    /// If the image is on network media, fully load it and copy it to swap.
+    IMAGE_FILE_NET_RUN_FROM_SWAP       = 0x0800,
+    /// The image file is a system file, not a user program.
+    IMAGE_FILE_SYSTEM                  = 0x1000,
+    /// The image file is a DLL.
+    IMAGE_FILE_DLL                     = 0x2000,
+    /// This file should only be run on a uniprocessor machine.
+    IMAGE_FILE_UP_SYSTEM_ONLY          = 0x4000,
+    /// Big endian: the MSB precedes the LSB in memory. This is deprecated
+    /// and should be 0.
+    IMAGE_FILE_BYTES_REVERSED_HI       = 0x8000
   };
 
   struct symbol {
     char     Name[NameSize];
     uint32_t Value;
+    uint16_t SectionNumber;
     uint16_t Type;
     uint8_t  StorageClass;
-    uint16_t SectionNumber;
     uint8_t  NumberOfAuxSymbols;
   };
 
@@ -69,17 +137,19 @@ namespace COFF {
     SF_ClassMask = 0x00FF0000,
     SF_ClassShift = 16,
 
-    SF_WeakReference = 0x01000000
+    SF_WeakExternal = 0x01000000
   };
 
   enum SymbolSectionNumber {
-    IMAGE_SYM_DEBUG     = -2,
-    IMAGE_SYM_ABSOLUTE  = -1,
+    IMAGE_SYM_DEBUG     = 0xFFFE,
+    IMAGE_SYM_ABSOLUTE  = 0xFFFF,
     IMAGE_SYM_UNDEFINED = 0
   };
 
   /// Storage class tells where and what the symbol represents
   enum SymbolStorageClass {
+    SSC_Invalid = 0xff,
+
     IMAGE_SYM_CLASS_END_OF_FUNCTION  = -1,  ///< Physical end of function
     IMAGE_SYM_CLASS_NULL             = 0,   ///< No symbol
     IMAGE_SYM_CLASS_AUTOMATIC        = 1,   ///< Stack variable
@@ -133,13 +203,17 @@ namespace COFF {
   };
 
   enum SymbolComplexType {
-    IMAGE_SYM_DTYPE_NULL     = 0, ///< No complex type; simple scalar variable. 
+    IMAGE_SYM_DTYPE_NULL     = 0, ///< No complex type; simple scalar variable.
     IMAGE_SYM_DTYPE_POINTER  = 1, ///< A pointer to base type.
     IMAGE_SYM_DTYPE_FUNCTION = 2, ///< A function that returns a base type.
     IMAGE_SYM_DTYPE_ARRAY    = 3, ///< An array of base type.
-    
+
     /// Type is formed as (base + (derived << SCT_COMPLEX_TYPE_SHIFT))
-    SCT_COMPLEX_TYPE_SHIFT   = 8
+    SCT_COMPLEX_TYPE_SHIFT   = 4
+  };
+
+  enum AuxSymbolType {
+    IMAGE_AUX_SYMBOL_TYPE_TOKEN_DEF = 1
   };
 
   struct section {
@@ -155,7 +229,9 @@ namespace COFF {
     uint32_t Characteristics;
   };
 
-  enum SectionCharacteristics {
+  enum SectionCharacteristics : uint32_t {
+    SC_Invalid = 0xffffffff,
+
     IMAGE_SCN_TYPE_NO_PAD            = 0x00000008,
     IMAGE_SCN_CNT_CODE               = 0x00000020,
     IMAGE_SCN_CNT_INITIALIZED_DATA   = 0x00000040,
@@ -199,7 +275,7 @@ namespace COFF {
     uint16_t Type;
   };
 
-  enum RelocationTypeX86 {
+  enum RelocationTypeI386 {
     IMAGE_REL_I386_ABSOLUTE = 0x0000,
     IMAGE_REL_I386_DIR16    = 0x0001,
     IMAGE_REL_I386_REL16    = 0x0002,
@@ -210,8 +286,10 @@ namespace COFF {
     IMAGE_REL_I386_SECREL   = 0x000B,
     IMAGE_REL_I386_TOKEN    = 0x000C,
     IMAGE_REL_I386_SECREL7  = 0x000D,
-    IMAGE_REL_I386_REL32    = 0x0014,
+    IMAGE_REL_I386_REL32    = 0x0014
+  };
 
+  enum RelocationTypeAMD64 {
     IMAGE_REL_AMD64_ABSOLUTE  = 0x0000,
     IMAGE_REL_AMD64_ADDR64    = 0x0001,
     IMAGE_REL_AMD64_ADDR32    = 0x0002,
@@ -231,13 +309,32 @@ namespace COFF {
     IMAGE_REL_AMD64_SSPAN32   = 0x0010
   };
 
+  enum RelocationTypesARM {
+    IMAGE_REL_ARM_ABSOLUTE  = 0x0000,
+    IMAGE_REL_ARM_ADDR32    = 0x0001,
+    IMAGE_REL_ARM_ADDR32NB  = 0x0002,
+    IMAGE_REL_ARM_BRANCH24  = 0x0003,
+    IMAGE_REL_ARM_BRANCH11  = 0x0004,
+    IMAGE_REL_ARM_TOKEN     = 0x0005,
+    IMAGE_REL_ARM_BLX24     = 0x0008,
+    IMAGE_REL_ARM_BLX11     = 0x0009,
+    IMAGE_REL_ARM_SECTION   = 0x000E,
+    IMAGE_REL_ARM_SECREL    = 0x000F,
+    IMAGE_REL_ARM_MOV32A    = 0x0010,
+    IMAGE_REL_ARM_MOV32T    = 0x0011,
+    IMAGE_REL_ARM_BRANCH20T = 0x0012,
+    IMAGE_REL_ARM_BRANCH24T = 0x0014,
+    IMAGE_REL_ARM_BLX23T    = 0x0015
+  };
+
   enum COMDATType {
     IMAGE_COMDAT_SELECT_NODUPLICATES = 1,
     IMAGE_COMDAT_SELECT_ANY,
     IMAGE_COMDAT_SELECT_SAME_SIZE,
     IMAGE_COMDAT_SELECT_EXACT_MATCH,
     IMAGE_COMDAT_SELECT_ASSOCIATIVE,
-    IMAGE_COMDAT_SELECT_LARGEST
+    IMAGE_COMDAT_SELECT_LARGEST,
+    IMAGE_COMDAT_SELECT_NEWEST
   };
 
   // Auxiliary Symbol Formats
@@ -246,7 +343,7 @@ namespace COFF {
     uint32_t TotalSize;
     uint32_t PointerToLinenumber;
     uint32_t PointerToNextFunction;
-    uint8_t  unused[2];
+    char     unused[2];
   };
 
   struct AuxiliarybfAndefSymbol {
@@ -281,7 +378,14 @@ namespace COFF {
     uint32_t CheckSum;
     uint16_t Number;
     uint8_t  Selection;
-    uint8_t  unused[3];
+    char     unused[3];
+  };
+
+  struct AuxiliaryCLRToken {
+    uint8_t  AuxType;
+    uint8_t  unused1;
+    uint32_t SymbolTableIndex;
+    char     unused2[12];
   };
 
   union Auxiliary {
@@ -292,7 +396,262 @@ namespace COFF {
     AuxiliarySectionDefinition  SectionDefinition;
   };
 
-} // End namespace llvm.
+  /// @brief The Import Directory Table.
+  ///
+  /// There is a single array of these and one entry per imported DLL.
+  struct ImportDirectoryTableEntry {
+    uint32_t ImportLookupTableRVA;
+    uint32_t TimeDateStamp;
+    uint32_t ForwarderChain;
+    uint32_t NameRVA;
+    uint32_t ImportAddressTableRVA;
+  };
+
+  /// @brief The PE32 Import Lookup Table.
+  ///
+  /// There is an array of these for each imported DLL. It represents either
+  /// the ordinal to import from the target DLL, or a name to lookup and import
+  /// from the target DLL.
+  ///
+  /// This also happens to be the same format used by the Import Address Table
+  /// when it is initially written out to the image.
+  struct ImportLookupTableEntry32 {
+    uint32_t data;
+
+    /// @brief Is this entry specified by ordinal, or name?
+    bool isOrdinal() const { return data & 0x80000000; }
+
+    /// @brief Get the ordinal value of this entry. isOrdinal must be true.
+    uint16_t getOrdinal() const {
+      assert(isOrdinal() && "ILT entry is not an ordinal!");
+      return data & 0xFFFF;
+    }
+
+    /// @brief Set the ordinal value and set isOrdinal to true.
+    void setOrdinal(uint16_t o) {
+      data = o;
+      data |= 0x80000000;
+    }
+
+    /// @brief Get the Hint/Name entry RVA. isOrdinal must be false.
+    uint32_t getHintNameRVA() const {
+      assert(!isOrdinal() && "ILT entry is not a Hint/Name RVA!");
+      return data;
+    }
+
+    /// @brief Set the Hint/Name entry RVA and set isOrdinal to false.
+    void setHintNameRVA(uint32_t rva) { data = rva; }
+  };
+
+  /// @brief The DOS compatible header at the front of all PEs.
+  struct DOSHeader {
+    uint16_t Magic;
+    uint16_t UsedBytesInTheLastPage;
+    uint16_t FileSizeInPages;
+    uint16_t NumberOfRelocationItems;
+    uint16_t HeaderSizeInParagraphs;
+    uint16_t MinimumExtraParagraphs;
+    uint16_t MaximumExtraParagraphs;
+    uint16_t InitialRelativeSS;
+    uint16_t InitialSP;
+    uint16_t Checksum;
+    uint16_t InitialIP;
+    uint16_t InitialRelativeCS;
+    uint16_t AddressOfRelocationTable;
+    uint16_t OverlayNumber;
+    uint16_t Reserved[4];
+    uint16_t OEMid;
+    uint16_t OEMinfo;
+    uint16_t Reserved2[10];
+    uint32_t AddressOfNewExeHeader;
+  };
+
+  struct PE32Header {
+    enum {
+      PE32 = 0x10b,
+      PE32_PLUS = 0x20b
+    };
+
+    uint16_t Magic;
+    uint8_t  MajorLinkerVersion;
+    uint8_t  MinorLinkerVersion;
+    uint32_t SizeOfCode;
+    uint32_t SizeOfInitializedData;
+    uint32_t SizeOfUninitializedData;
+    uint32_t AddressOfEntryPoint; // RVA
+    uint32_t BaseOfCode; // RVA
+    uint32_t BaseOfData; // RVA
+    uint32_t ImageBase;
+    uint32_t SectionAlignment;
+    uint32_t FileAlignment;
+    uint16_t MajorOperatingSystemVersion;
+    uint16_t MinorOperatingSystemVersion;
+    uint16_t MajorImageVersion;
+    uint16_t MinorImageVersion;
+    uint16_t MajorSubsystemVersion;
+    uint16_t MinorSubsystemVersion;
+    uint32_t Win32VersionValue;
+    uint32_t SizeOfImage;
+    uint32_t SizeOfHeaders;
+    uint32_t CheckSum;
+    uint16_t Subsystem;
+    uint16_t DLLCharacteristics;
+    uint32_t SizeOfStackReserve;
+    uint32_t SizeOfStackCommit;
+    uint32_t SizeOfHeapReserve;
+    uint32_t SizeOfHeapCommit;
+    uint32_t LoaderFlags;
+    uint32_t NumberOfRvaAndSize;
+  };
+
+  struct DataDirectory {
+    uint32_t RelativeVirtualAddress;
+    uint32_t Size;
+  };
+
+  enum DataDirectoryIndex {
+    EXPORT_TABLE = 0,
+    IMPORT_TABLE,
+    RESOURCE_TABLE,
+    EXCEPTION_TABLE,
+    CERTIFICATE_TABLE,
+    BASE_RELOCATION_TABLE,
+    DEBUG,
+    ARCHITECTURE,
+    GLOBAL_PTR,
+    TLS_TABLE,
+    LOAD_CONFIG_TABLE,
+    BOUND_IMPORT,
+    IAT,
+    DELAY_IMPORT_DESCRIPTOR,
+    CLR_RUNTIME_HEADER
+  };
+
+  enum WindowsSubsystem {
+    IMAGE_SUBSYSTEM_UNKNOWN = 0, ///< An unknown subsystem.
+    IMAGE_SUBSYSTEM_NATIVE = 1, ///< Device drivers and native Windows processes
+    IMAGE_SUBSYSTEM_WINDOWS_GUI = 2, ///< The Windows GUI subsystem.
+    IMAGE_SUBSYSTEM_WINDOWS_CUI = 3, ///< The Windows character subsystem.
+    IMAGE_SUBSYSTEM_OS2_CUI = 5, ///< The OS/2 character subsytem.
+    IMAGE_SUBSYSTEM_POSIX_CUI = 7, ///< The POSIX character subsystem.
+    IMAGE_SUBSYSTEM_NATIVE_WINDOWS = 8, ///< Native Windows 9x driver.
+    IMAGE_SUBSYSTEM_WINDOWS_CE_GUI = 9, ///< Windows CE.
+    IMAGE_SUBSYSTEM_EFI_APPLICATION = 10, ///< An EFI application.
+    IMAGE_SUBSYSTEM_EFI_BOOT_SERVICE_DRIVER = 11, ///< An EFI driver with boot
+                                                  ///  services.
+    IMAGE_SUBSYSTEM_EFI_RUNTIME_DRIVER = 12, ///< An EFI driver with run-time
+                                             ///  services.
+    IMAGE_SUBSYSTEM_EFI_ROM = 13, ///< An EFI ROM image.
+    IMAGE_SUBSYSTEM_XBOX = 14, ///< XBOX.
+    IMAGE_SUBSYSTEM_WINDOWS_BOOT_APPLICATION = 16 ///< A BCD application.
+  };
+
+  enum DLLCharacteristics {
+    /// ASLR with 64 bit address space.
+    IMAGE_DLL_CHARACTERISTICS_HIGH_ENTROPY_VA = 0x0020,
+    /// DLL can be relocated at load time.
+    IMAGE_DLL_CHARACTERISTICS_DYNAMIC_BASE = 0x0040,
+    /// Code integrity checks are enforced.
+    IMAGE_DLL_CHARACTERISTICS_FORCE_INTEGRITY = 0x0080,
+    ///< Image is NX compatible.
+    IMAGE_DLL_CHARACTERISTICS_NX_COMPAT = 0x0100,
+    /// Isolation aware, but do not isolate the image.
+    IMAGE_DLL_CHARACTERISTICS_NO_ISOLATION = 0x0200,
+    /// Does not use structured exception handling (SEH). No SEH handler may be
+    /// called in this image.
+    IMAGE_DLL_CHARACTERISTICS_NO_SEH = 0x0400,
+    /// Do not bind the image.
+    IMAGE_DLL_CHARACTERISTICS_NO_BIND = 0x0800,
+    ///< Image should execute in an AppContainer.
+    IMAGE_DLL_CHARACTERISTICS_APPCONTAINER = 0x1000,
+    ///< A WDM driver.
+    IMAGE_DLL_CHARACTERISTICS_WDM_DRIVER = 0x2000,
+    ///< Image supports Control Flow Guard.
+    IMAGE_DLL_CHARACTERISTICS_GUARD_CF = 0x4000,
+    /// Terminal Server aware.
+    IMAGE_DLL_CHARACTERISTICS_TERMINAL_SERVER_AWARE = 0x8000
+  };
+
+  enum DebugType {
+    IMAGE_DEBUG_TYPE_UNKNOWN       = 0,
+    IMAGE_DEBUG_TYPE_COFF          = 1,
+    IMAGE_DEBUG_TYPE_CODEVIEW      = 2,
+    IMAGE_DEBUG_TYPE_FPO           = 3,
+    IMAGE_DEBUG_TYPE_MISC          = 4,
+    IMAGE_DEBUG_TYPE_EXCEPTION     = 5,
+    IMAGE_DEBUG_TYPE_FIXUP         = 6,
+    IMAGE_DEBUG_TYPE_OMAP_TO_SRC   = 7,
+    IMAGE_DEBUG_TYPE_OMAP_FROM_SRC = 8,
+    IMAGE_DEBUG_TYPE_BORLAND       = 9,
+    IMAGE_DEBUG_TYPE_CLSID         = 11
+  };
+
+  enum BaseRelocationType {
+    IMAGE_REL_BASED_ABSOLUTE       = 0,
+    IMAGE_REL_BASED_HIGH           = 1,
+    IMAGE_REL_BASED_LOW            = 2,
+    IMAGE_REL_BASED_HIGHLOW        = 3,
+    IMAGE_REL_BASED_HIGHADJ        = 4,
+    IMAGE_REL_BASED_MIPS_JMPADDR   = 5,
+    IMAGE_REL_BASED_ARM_MOV32A     = 5,
+    IMAGE_REL_BASED_ARM_MOV32T     = 7,
+    IMAGE_REL_BASED_MIPS_JMPADDR16 = 9,
+    IMAGE_REL_BASED_DIR64          = 10
+  };
+
+  enum ImportType {
+    IMPORT_CODE  = 0,
+    IMPORT_DATA  = 1,
+    IMPORT_CONST = 2
+  };
+
+  enum ImportNameType {
+    /// Import is by ordinal. This indicates that the value in the Ordinal/Hint
+    /// field of the import header is the import's ordinal. If this constant is
+    /// not specified, then the Ordinal/Hint field should always be interpreted
+    /// as the import's hint.
+    IMPORT_ORDINAL         = 0,
+    /// The import name is identical to the public symbol name
+    IMPORT_NAME            = 1,
+    /// The import name is the public symbol name, but skipping the leading ?,
+    /// @, or optionally _.
+    IMPORT_NAME_NOPREFIX   = 2,
+    /// The import name is the public symbol name, but skipping the leading ?,
+    /// @, or optionally _, and truncating at the first @.
+    IMPORT_NAME_UNDECORATE = 3
+  };
+
+  struct ImportHeader {
+    uint16_t Sig1; ///< Must be IMAGE_FILE_MACHINE_UNKNOWN (0).
+    uint16_t Sig2; ///< Must be 0xFFFF.
+    uint16_t Version;
+    uint16_t Machine;
+    uint32_t TimeDateStamp;
+    uint32_t SizeOfData;
+    uint16_t OrdinalHint;
+    uint16_t TypeInfo;
+
+    ImportType getType() const {
+      return static_cast<ImportType>(TypeInfo & 0x3);
+    }
+
+    ImportNameType getNameType() const {
+      return static_cast<ImportNameType>((TypeInfo & 0x1C) >> 3);
+    }
+  };
+
+  enum CodeViewLineTableIdentifiers {
+    DEBUG_SECTION_MAGIC           = 0x4,
+    DEBUG_LINE_TABLE_SUBSECTION   = 0xF2,
+    DEBUG_STRING_TABLE_SUBSECTION = 0xF3,
+    DEBUG_INDEX_SUBSECTION        = 0xF4
+  };
+
+  inline bool isReservedSectionNumber(int N) {
+    return N == IMAGE_SYM_UNDEFINED || N > MaxNumberOfSections;
+  }
+
 } // End namespace COFF.
+} // End namespace llvm.
 
 #endif

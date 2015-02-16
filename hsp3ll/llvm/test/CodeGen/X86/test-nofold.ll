@@ -39,4 +39,3 @@ entry:
 	%retval = select i1 %tmp4, i32 %tmp2, i32 42		; <i32> [#uses=1]
 	ret i32 %retval
 }
-

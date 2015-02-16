@@ -1,4 +1,4 @@
-//===---- InstrEmitter.h - Emit MachineInstrs for the SelectionDAG class ---==//
+//===- InstrEmitter.h - Emit MachineInstrs for the SelectionDAG -*- C++ -*--==//
 //
 //                     The LLVM Compiler Infrastructure
 //
@@ -16,13 +16,14 @@
 #ifndef INSTREMITTER_H
 #define INSTREMITTER_H
 
-#include "llvm/CodeGen/SelectionDAG.h"
-#include "llvm/CodeGen/MachineBasicBlock.h"
 #include "llvm/ADT/DenseMap.h"
+#include "llvm/CodeGen/MachineBasicBlock.h"
+#include "llvm/CodeGen/SelectionDAG.h"
 
 namespace llvm {
 
-class TargetInstrDesc;
+class MachineInstrBuilder;
+class MCInstrDesc;
 class SDDbgValue;
 
 class InstrEmitter {
@@ -48,8 +49,9 @@ class InstrEmitter {
   unsigned getDstOfOnlyCopyToRegUse(SDNode *Node,
                                     unsigned ResNo) const;
 
-  void CreateVirtualRegisters(SDNode *Node, MachineInstr *MI,
-                              const TargetInstrDesc &II,
+  void CreateVirtualRegisters(SDNode *Node,
+                              MachineInstrBuilder &MIB,
+                              const MCInstrDesc &II,
                               bool IsClone, bool IsCloned,
                               DenseMap<SDValue, unsigned> &VRBaseMap);
 
@@ -61,9 +63,10 @@ class InstrEmitter {
   /// AddRegisterOperand - Add the specified register as an operand to the
   /// specified machine instr. Insert register copies if the register is
   /// not in the required register class.
-  void AddRegisterOperand(MachineInstr *MI, SDValue Op,
+  void AddRegisterOperand(MachineInstrBuilder &MIB,
+                          SDValue Op,
                           unsigned IIOpNum,
-                          const TargetInstrDesc *II,
+                          const MCInstrDesc *II,
                           DenseMap<SDValue, unsigned> &VRBaseMap,
                           bool IsDebug, bool IsClone, bool IsCloned);
 
@@ -71,11 +74,18 @@ class InstrEmitter {
   /// specifies the instruction information for the node, and IIOpNum is the
   /// operand number (in the II) that we are adding. IIOpNum and II are used for
   /// assertions only.
-  void AddOperand(MachineInstr *MI, SDValue Op,
+  void AddOperand(MachineInstrBuilder &MIB,
+                  SDValue Op,
                   unsigned IIOpNum,
-                  const TargetInstrDesc *II,
+                  const MCInstrDesc *II,
                   DenseMap<SDValue, unsigned> &VRBaseMap,
                   bool IsDebug, bool IsClone, bool IsCloned);
+
+  /// ConstrainForSubReg - Try to constrain VReg to a register class that
+  /// supports SubIdx sub-registers.  Emit a copy if that isn't possible.
+  /// Return the virtual register to use.
+  unsigned ConstrainForSubReg(unsigned VReg, unsigned SubIdx,
+                              MVT VT, DebugLoc DL);
 
   /// EmitSubregNode - Generate machine code for subreg nodes.
   ///
@@ -98,12 +108,6 @@ public:
   /// operands first, then an optional chain, and optional flag operands
   /// (which do not go into the machine instrs.)
   static unsigned CountResults(SDNode *Node);
-
-  /// CountOperands - The inputs to target nodes have any actual inputs first,
-  /// followed by an optional chain operand, then flag operands.  Compute
-  /// the number of actual operands that will go into the resulting
-  /// MachineInstr.
-  static unsigned CountOperands(SDNode *Node);
 
   /// EmitDbgValue - Generate machine instruction for a dbg_value node.
   ///

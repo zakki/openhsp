@@ -18,7 +18,7 @@ bb13:		; preds = %bb
 	br label %bb
 
 bb110:		; preds = %bb
-	%mrv_gr124 = getresult %struct.system__secondary_stack__mark_id %tmp120, 1		; <i64> [#uses=0]
+	%mrv_gr124 = extractvalue %struct.system__secondary_stack__mark_id %tmp120, 1		; <i64> [#uses=0]
 	unreachable
 }
 
@@ -399,7 +399,7 @@ if.then237:
   br label %lbl_664
 
 lbl_596:                                          ; preds = %lbl_664, %for.end37
-  volatile store i64 undef, i64* undef, align 4
+  store volatile i64 undef, i64* undef, align 4
   br label %for.cond111
 
 for.cond111:                                      ; preds = %safe_sub_func_int64_t_s_s.exit, %lbl_596
@@ -484,3 +484,83 @@ bb269.us.us:
 bb288.bb289.loopexit_crit_edge:
   unreachable
 }
+
+; PR 8247
+%struct.S1 = type { i8, i8 }
+@func_89.l_245 = internal constant %struct.S1 { i8 33, i8 6 }, align 1
+define void @func_89(i16 zeroext %p_90, %struct.S1* nocapture %p_91, i32* nocapture %p_92) nounwind ssp {
+entry:
+  store i32 0, i32* %p_92, align 4
+  br i1 false, label %lbl_260, label %if.else
+
+if.else:                                          ; preds = %entry
+  br label %for.cond
+
+for.cond:                                         ; preds = %lbl_260, %if.else
+  %l_245.0 = phi i16 [ %l_245.1, %lbl_260 ], [ 33, %if.else ]
+  %l_261.0 = phi i32 [ %and, %lbl_260 ], [ 255, %if.else ]
+  %tobool21 = icmp ult i16 %l_245.0, 256
+  br i1 %tobool21, label %if.end, label %lbl_260
+
+lbl_260:                                          ; preds = %for.cond, %entry
+  %l_245.1 = phi i16 [ 1569, %entry ], [ %l_245.0, %for.cond ]
+  %l_261.1 = phi i32 [ 255, %entry ], [ %l_261.0, %for.cond ]
+  %and = and i32 %l_261.1, 1
+  br label %for.cond
+
+if.end:                                           ; preds = %for.cond
+  ret void
+}
+
+define void @PR14233(i1 %cmp, i1 %cmp2, i1 %cmp3, i1 %cmp4) {
+entry:
+  br i1 %cmp, label %cond.true, label %cond.false
+
+cond.true:
+  br label %if.end
+
+cond.false:
+  br label %if.end
+
+if.end:
+  %A = phi i64 [ 0, %cond.true ], [ 1, %cond.false ]
+  br i1 %cmp2, label %bb, label %if.end2
+
+bb:
+  br label %if.end2
+
+if.end2:
+  %B = phi i64 [ ptrtoint (i8* ()* @PR14233.f1 to i64), %bb ], [ %A, %if.end ]
+  %cmp.ptr = icmp eq i64 %B, ptrtoint (i8* ()* @PR14233.f2 to i64)
+  br i1 %cmp.ptr, label %cond.true2, label %if.end3
+
+cond.true2:
+  br i1 %cmp3, label %bb2, label %ur
+
+bb2:
+  br i1 %cmp4, label %if.end4, label %if.end3
+
+if.end4:
+  unreachable
+
+if.end3:
+  %cmp.ptr2 = icmp eq i64 %B, ptrtoint (i8* ()* @PR14233.f2 to i64)
+  br i1 %cmp.ptr2, label %ur, label %if.then601
+
+if.then601:
+  %C = icmp eq i64 %B, 0
+  br i1 %C, label %bb3, label %bb4
+
+bb3:
+  unreachable
+
+bb4:
+  unreachable
+
+ur:
+  unreachable
+}
+
+declare i8* @PR14233.f1()
+
+declare i8* @PR14233.f2()

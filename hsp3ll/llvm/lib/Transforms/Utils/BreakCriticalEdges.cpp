@@ -11,40 +11,40 @@
 // inserting a dummy basic block.  This pass may be "required" by passes that
 // cannot deal with critical edges.  For this usage, the structure type is
 // forward declared.  This pass obviously invalidates the CFG, but can update
-// forward dominator (set, immediate dominators, tree, and frontier)
-// information.
+// dominator trees.
 //
 //===----------------------------------------------------------------------===//
 
-#define DEBUG_TYPE "break-crit-edges"
 #include "llvm/Transforms/Scalar.h"
-#include "llvm/Transforms/Utils/BasicBlockUtils.h"
-#include "llvm/Analysis/Dominators.h"
-#include "llvm/Analysis/LoopInfo.h"
-#include "llvm/Analysis/ProfileInfo.h"
-#include "llvm/Function.h"
-#include "llvm/Instructions.h"
-#include "llvm/Type.h"
-#include "llvm/Support/CFG.h"
-#include "llvm/Support/ErrorHandling.h"
 #include "llvm/ADT/SmallVector.h"
 #include "llvm/ADT/Statistic.h"
+#include "llvm/Analysis/CFG.h"
+#include "llvm/Analysis/LoopInfo.h"
+#include "llvm/IR/CFG.h"
+#include "llvm/IR/Dominators.h"
+#include "llvm/IR/Function.h"
+#include "llvm/IR/Instructions.h"
+#include "llvm/IR/Type.h"
+#include "llvm/Support/ErrorHandling.h"
+#include "llvm/Transforms/Utils/BasicBlockUtils.h"
 using namespace llvm;
+
+#define DEBUG_TYPE "break-crit-edges"
 
 STATISTIC(NumBroken, "Number of blocks inserted");
 
 namespace {
   struct BreakCriticalEdges : public FunctionPass {
     static char ID; // Pass identification, replacement for typeid
-    BreakCriticalEdges() : FunctionPass(ID) {}
+    BreakCriticalEdges() : FunctionPass(ID) {
+      initializeBreakCriticalEdgesPass(*PassRegistry::getPassRegistry());
+    }
 
-    virtual bool runOnFunction(Function &F);
+    bool runOnFunction(Function &F) override;
 
-    virtual void getAnalysisUsage(AnalysisUsage &AU) const {
-      AU.addPreserved<DominatorTree>();
-      AU.addPreserved<DominanceFrontier>();
+    void getAnalysisUsage(AnalysisUsage &AU) const override {
+      AU.addPreserved<DominatorTreeWrapperPass>();
       AU.addPreserved<LoopInfo>();
-      AU.addPreserved<ProfileInfo>();
 
       // No loop canonicalization guarantees are broken by this pass.
       AU.addPreservedID(LoopSimplifyID);
@@ -54,9 +54,9 @@ namespace {
 
 char BreakCriticalEdges::ID = 0;
 INITIALIZE_PASS(BreakCriticalEdges, "break-crit-edges",
-                "Break critical edges in CFG", false, false);
+                "Break critical edges in CFG", false, false)
 
-// Publically exposed interface to pass...
+// Publicly exposed interface to pass...
 char &llvm::BreakCriticalEdgesID = BreakCriticalEdges::ID;
 FunctionPass *llvm::createBreakCriticalEdgesPass() {
   return new BreakCriticalEdges();
@@ -84,82 +84,53 @@ bool BreakCriticalEdges::runOnFunction(Function &F) {
 //    Implementation of the external critical edge manipulation functions
 //===----------------------------------------------------------------------===//
 
-// isCriticalEdge - Return true if the specified edge is a critical edge.
-// Critical edges are edges from a block with multiple successors to a block
-// with multiple predecessors.
-//
-bool llvm::isCriticalEdge(const TerminatorInst *TI, unsigned SuccNum,
-                          bool AllowIdenticalEdges) {
-  assert(SuccNum < TI->getNumSuccessors() && "Illegal edge specification!");
-  if (TI->getNumSuccessors() == 1) return false;
-
-  const BasicBlock *Dest = TI->getSuccessor(SuccNum);
-  const_pred_iterator I = pred_begin(Dest), E = pred_end(Dest);
-
-  // If there is more than one predecessor, this is a critical edge...
-  assert(I != E && "No preds, but we have an edge to the block?");
-  const BasicBlock *FirstPred = *I;
-  ++I;        // Skip one edge due to the incoming arc from TI.
-  if (!AllowIdenticalEdges)
-    return I != E;
-  
-  // If AllowIdenticalEdges is true, then we allow this edge to be considered
-  // non-critical iff all preds come from TI's block.
-  while (I != E) {
-    const BasicBlock *P = *I;
-    if (P != FirstPred)
-      return true;
-    // Note: leave this as is until no one ever compiles with either gcc 4.0.1
-    // or Xcode 2. This seems to work around the pred_iterator assert in PR 2207
-    E = pred_end(P);
-    ++I;
-  }
-  return false;
-}
-
-/// CreatePHIsForSplitLoopExit - When a loop exit edge is split, LCSSA form
+/// createPHIsForSplitLoopExit - When a loop exit edge is split, LCSSA form
 /// may require new PHIs in the new exit block. This function inserts the
-/// new PHIs, as needed.  Preds is a list of preds inside the loop, SplitBB
+/// new PHIs, as needed. Preds is a list of preds inside the loop, SplitBB
 /// is the new loop exit block, and DestBB is the old loop exit, now the
 /// successor of SplitBB.
-static void CreatePHIsForSplitLoopExit(SmallVectorImpl<BasicBlock *> &Preds,
+static void createPHIsForSplitLoopExit(ArrayRef<BasicBlock *> Preds,
                                        BasicBlock *SplitBB,
                                        BasicBlock *DestBB) {
   // SplitBB shouldn't have anything non-trivial in it yet.
-  assert(SplitBB->getFirstNonPHI() == SplitBB->getTerminator() &&
-         "SplitBB has non-PHI nodes!");
+  assert((SplitBB->getFirstNonPHI() == SplitBB->getTerminator() ||
+          SplitBB->isLandingPad()) && "SplitBB has non-PHI nodes!");
 
-  // For each PHI in the destination block...
+  // For each PHI in the destination block.
   for (BasicBlock::iterator I = DestBB->begin();
        PHINode *PN = dyn_cast<PHINode>(I); ++I) {
     unsigned Idx = PN->getBasicBlockIndex(SplitBB);
     Value *V = PN->getIncomingValue(Idx);
+
     // If the input is a PHI which already satisfies LCSSA, don't create
     // a new one.
     if (const PHINode *VP = dyn_cast<PHINode>(V))
       if (VP->getParent() == SplitBB)
         continue;
+
     // Otherwise a new PHI is needed. Create one and populate it.
-    PHINode *NewPN = PHINode::Create(PN->getType(), "split",
-                                     SplitBB->getTerminator());
+    PHINode *NewPN =
+      PHINode::Create(PN->getType(), Preds.size(), "split",
+                      SplitBB->isLandingPad() ?
+                      SplitBB->begin() : SplitBB->getTerminator());
     for (unsigned i = 0, e = Preds.size(); i != e; ++i)
       NewPN->addIncoming(V, Preds[i]);
+
     // Update the original PHI.
     PN->setIncomingValue(Idx, NewPN);
   }
 }
 
 /// SplitCriticalEdge - If this edge is a critical edge, insert a new node to
-/// split the critical edge.  This will update DominatorTree and
-/// DominatorFrontier information if it is available, thus calling this pass
-/// will not invalidate either of them. This returns the new block if the edge
-/// was split, null otherwise.
+/// split the critical edge.  This will update DominatorTree information if it
+/// is available, thus calling this pass will not invalidate either of them.
+/// This returns the new block if the edge was split, null otherwise.
 ///
 /// If MergeIdenticalEdges is true (not the default), *all* edges from TI to the
-/// specified successor will be merged into the same critical edge block.  
-/// This is most commonly interesting with switch instructions, which may 
+/// specified successor will be merged into the same critical edge block.
+/// This is most commonly interesting with switch instructions, which may
 /// have many edges to any one destination.  This ensures that all edges to that
-/// dest go to one block instead of each going to a different block, but isn't 
+/// dest go to one block instead of each going to a different block, but isn't
 /// the standard definition of a "critical edge".
 ///
 /// It is invalid to call this function on a critical edge that starts at an
@@ -168,20 +139,27 @@ static void CreatePHIsForSplitLoopExit(SmallVectorImpl<BasicBlock *> &Preds,
 /// to.
 ///
 BasicBlock *llvm::SplitCriticalEdge(TerminatorInst *TI, unsigned SuccNum,
-                                    Pass *P, bool MergeIdenticalEdges) {
-  if (!isCriticalEdge(TI, SuccNum, MergeIdenticalEdges)) return 0;
-  
+                                    Pass *P, bool MergeIdenticalEdges,
+                                    bool DontDeleteUselessPhis,
+                                    bool SplitLandingPads) {
+  if (!isCriticalEdge(TI, SuccNum, MergeIdenticalEdges)) return nullptr;
+
   assert(!isa<IndirectBrInst>(TI) &&
          "Cannot split critical edge from IndirectBrInst");
-  
+
   BasicBlock *TIBB = TI->getParent();
   BasicBlock *DestBB = TI->getSuccessor(SuccNum);
+
+  // Splitting the critical edge to a landing pad block is non-trivial. Don't do
+  // it in this generic function.
+  if (DestBB->isLandingPad()) return nullptr;
 
   // Create a new basic block, linking it into the CFG.
   BasicBlock *NewBB = BasicBlock::Create(TI->getContext(),
                       TIBB->getName() + "." + DestBB->getName() + "_crit_edge");
   // Create our unconditional branch.
-  BranchInst::Create(DestBB, NewBB);
+  BranchInst *NewBI = BranchInst::Create(DestBB, NewBB);
+  NewBI->setDebugLoc(TI->getDebugLoc());
 
   // Branch to the new block, breaking the edge.
   TI->setSuccessor(SuccNum, NewBB);
@@ -190,77 +168,55 @@ BasicBlock *llvm::SplitCriticalEdge(TerminatorInst *TI, unsigned SuccNum,
   Function &F = *TIBB->getParent();
   Function::iterator FBBI = TIBB;
   F.getBasicBlockList().insert(++FBBI, NewBB);
-  
+
   // If there are any PHI nodes in DestBB, we need to update them so that they
   // merge incoming values from NewBB instead of from TIBB.
-  if (PHINode *APHI = dyn_cast<PHINode>(DestBB->begin())) {
-    // This conceptually does:
-    //  foreach (PHINode *PN in DestBB)
-    //    PN->setIncomingBlock(PN->getIncomingBlock(TIBB), NewBB);
-    // but is optimized for two cases.
-    
-    if (APHI->getNumIncomingValues() <= 8) {  // Small # preds case.
-      unsigned BBIdx = 0;
-      for (BasicBlock::iterator I = DestBB->begin(); isa<PHINode>(I); ++I) {
-        // We no longer enter through TIBB, now we come in through NewBB.
-        // Revector exactly one entry in the PHI node that used to come from
-        // TIBB to come from NewBB.
-        PHINode *PN = cast<PHINode>(I);
-        
-        // Reuse the previous value of BBIdx if it lines up.  In cases where we
-        // have multiple phi nodes with *lots* of predecessors, this is a speed
-        // win because we don't have to scan the PHI looking for TIBB.  This
-        // happens because the BB list of PHI nodes are usually in the same
-        // order.
-        if (PN->getIncomingBlock(BBIdx) != TIBB)
-          BBIdx = PN->getBasicBlockIndex(TIBB);
-        PN->setIncomingBlock(BBIdx, NewBB);
-      }
-    } else {
-      // However, the foreach loop is slow for blocks with lots of predecessors
-      // because PHINode::getIncomingBlock is O(n) in # preds.  Instead, walk
-      // the user list of TIBB to find the PHI nodes.
-      SmallPtrSet<PHINode*, 16> UpdatedPHIs;
-    
-      for (Value::use_iterator UI = TIBB->use_begin(), E = TIBB->use_end();
-           UI != E; ) {
-        Value::use_iterator Use = UI++;
-        if (PHINode *PN = dyn_cast<PHINode>(*Use)) {
-          // Remove one entry from each PHI.
-          if (PN->getParent() == DestBB && UpdatedPHIs.insert(PN))
-            PN->setOperand(Use.getOperandNo(), NewBB);
-        }
-      }
+  {
+    unsigned BBIdx = 0;
+    for (BasicBlock::iterator I = DestBB->begin(); isa<PHINode>(I); ++I) {
+      // We no longer enter through TIBB, now we come in through NewBB.
+      // Revector exactly one entry in the PHI node that used to come from
+      // TIBB to come from NewBB.
+      PHINode *PN = cast<PHINode>(I);
+
+      // Reuse the previous value of BBIdx if it lines up.  In cases where we
+      // have multiple phi nodes with *lots* of predecessors, this is a speed
+      // win because we don't have to scan the PHI looking for TIBB.  This
+      // happens because the BB list of PHI nodes are usually in the same
+      // order.
+      if (PN->getIncomingBlock(BBIdx) != TIBB)
+        BBIdx = PN->getBasicBlockIndex(TIBB);
+      PN->setIncomingBlock(BBIdx, NewBB);
     }
   }
-   
+
   // If there are any other edges from TIBB to DestBB, update those to go
   // through the split block, making those edges non-critical as well (and
   // reducing the number of phi entries in the DestBB if relevant).
   if (MergeIdenticalEdges) {
     for (unsigned i = SuccNum+1, e = TI->getNumSuccessors(); i != e; ++i) {
       if (TI->getSuccessor(i) != DestBB) continue;
-      
+
       // Remove an entry for TIBB from DestBB phi nodes.
-      DestBB->removePredecessor(TIBB);
-      
+      DestBB->removePredecessor(TIBB, DontDeleteUselessPhis);
+
       // We found another edge to DestBB, go to NewBB instead.
       TI->setSuccessor(i, NewBB);
     }
   }
-  
-  
+
+
 
   // If we don't have a pass object, we can't update anything...
-  if (P == 0) return NewBB;
-  
-  DominatorTree *DT = P->getAnalysisIfAvailable<DominatorTree>();
-  DominanceFrontier *DF = P->getAnalysisIfAvailable<DominanceFrontier>();
+  if (!P) return NewBB;
+
+  DominatorTreeWrapperPass *DTWP =
+      P->getAnalysisIfAvailable<DominatorTreeWrapperPass>();
+  DominatorTree *DT = DTWP ? &DTWP->getDomTree() : nullptr;
   LoopInfo *LI = P->getAnalysisIfAvailable<LoopInfo>();
-  ProfileInfo *PI = P->getAnalysisIfAvailable<ProfileInfo>();
-  
+
   // If we have nothing to update, just return.
-  if (DT == 0 && DF == 0 && LI == 0 && PI == 0)
+  if (!DT && !LI)
     return NewBB;
 
   // Now update analysis information.  Since the only predecessor of NewBB is
@@ -281,12 +237,12 @@ BasicBlock *llvm::SplitCriticalEdge(TerminatorInst *TI, unsigned SuccNum,
          I != E; ++I) {
       BasicBlock *P = *I;
       if (P != NewBB)
-          OtherPreds.push_back(P);
+        OtherPreds.push_back(P);
     }
   }
 
   bool NewBBDominatesDestBB = true;
-  
+
   // Should we update DominatorTree information?
   if (DT) {
     DomTreeNode *TINode = DT->getNode(TIBB);
@@ -296,8 +252,8 @@ BasicBlock *llvm::SplitCriticalEdge(TerminatorInst *TI, unsigned SuccNum,
     //
     if (TINode) {       // Don't break unreachable code!
       DomTreeNode *NewBBNode = DT->addNewBlock(NewBB, TIBB);
-      DomTreeNode *DestBBNode = 0;
-     
+      DomTreeNode *DestBBNode = nullptr;
+
       // If NewBBDominatesDestBB hasn't been computed yet, do so with DT.
       if (!OtherPreds.empty()) {
         DestBBNode = DT->getNode(DestBB);
@@ -308,7 +264,7 @@ BasicBlock *llvm::SplitCriticalEdge(TerminatorInst *TI, unsigned SuccNum,
         }
         OtherPreds.clear();
       }
-      
+
       // If NewBBDominatesDestBB, then NewBB dominates DestBB, otherwise it
       // doesn't dominate anything.
       if (NewBBDominatesDestBB) {
@@ -318,40 +274,6 @@ BasicBlock *llvm::SplitCriticalEdge(TerminatorInst *TI, unsigned SuccNum,
     }
   }
 
-  // Should we update DominanceFrontier information?
-  if (DF) {
-    // If NewBBDominatesDestBB hasn't been computed yet, do so with DF.
-    if (!OtherPreds.empty()) {
-      // FIXME: IMPLEMENT THIS!
-      llvm_unreachable("Requiring domfrontiers but not idom/domtree/domset."
-                       " not implemented yet!");
-    }
-    
-    // Since the new block is dominated by its only predecessor TIBB,
-    // it cannot be in any block's dominance frontier.  If NewBB dominates
-    // DestBB, its dominance frontier is the same as DestBB's, otherwise it is
-    // just {DestBB}.
-    DominanceFrontier::DomSetType NewDFSet;
-    if (NewBBDominatesDestBB) {
-      DominanceFrontier::iterator I = DF->find(DestBB);
-      if (I != DF->end()) {
-        DF->addBasicBlock(NewBB, I->second);
-        
-        if (I->second.count(DestBB)) {
-          // However NewBB's frontier does not include DestBB.
-          DominanceFrontier::iterator NF = DF->find(NewBB);
-          DF->removeFromFrontier(NF, DestBB);
-        }
-      }
-      else
-        DF->addBasicBlock(NewBB, DominanceFrontier::DomSetType());
-    } else {
-      DominanceFrontier::DomSetType NewDFSet;
-      NewDFSet.insert(DestBB);
-      DF->addBasicBlock(NewBB, NewDFSet);
-    }
-  }
-  
   // Update LoopInfo if it is around.
   if (LI) {
     if (Loop *TIL = LI->getLoopFor(TIBB)) {
@@ -378,50 +300,46 @@ BasicBlock *llvm::SplitCriticalEdge(TerminatorInst *TI, unsigned SuccNum,
             P->addBasicBlockToLoop(NewBB, LI->getBase());
         }
       }
-      // If TIBB is in a loop and DestBB is outside of that loop, split the
-      // other exit blocks of the loop that also have predecessors outside
-      // the loop, to maintain a LoopSimplify guarantee.
+      // If TIBB is in a loop and DestBB is outside of that loop, we may need
+      // to update LoopSimplify form and LCSSA form.
       if (!TIL->contains(DestBB) &&
           P->mustPreserveAnalysisID(LoopSimplifyID)) {
         assert(!TIL->contains(NewBB) &&
                "Split point for loop exit is contained in loop!");
 
         // Update LCSSA form in the newly created exit block.
-        if (P->mustPreserveAnalysisID(LCSSAID)) {
-          SmallVector<BasicBlock *, 1> OrigPred;
-          OrigPred.push_back(TIBB);
-          CreatePHIsForSplitLoopExit(OrigPred, NewBB, DestBB);
-        }
+        if (P->mustPreserveAnalysisID(LCSSAID))
+          createPHIsForSplitLoopExit(TIBB, NewBB, DestBB);
 
-        // For each unique exit block...
-        SmallVector<BasicBlock *, 4> ExitBlocks;
-        TIL->getExitBlocks(ExitBlocks);
-        for (unsigned i = 0, e = ExitBlocks.size(); i != e; ++i) {
-          // Collect all the preds that are inside the loop, and note
-          // whether there are any preds outside the loop.
-          SmallVector<BasicBlock *, 4> Preds;
-          bool HasPredOutsideOfLoop = false;
-          BasicBlock *Exit = ExitBlocks[i];
-          for (pred_iterator I = pred_begin(Exit), E = pred_end(Exit);
-               I != E; ++I) {
-            BasicBlock *P = *I;
-            if (TIL->contains(P))
-              Preds.push_back(P);
-            else
-              HasPredOutsideOfLoop = true;
+        // The only that we can break LoopSimplify form by splitting a critical
+        // edge is if after the split there exists some edge from TIL to DestBB
+        // *and* the only edge into DestBB from outside of TIL is that of
+        // NewBB. If the first isn't true, then LoopSimplify still holds, NewBB
+        // is the new exit block and it has no non-loop predecessors. If the
+        // second isn't true, then DestBB was not in LoopSimplify form prior to
+        // the split as it had a non-loop predecessor. In both of these cases,
+        // the predecessor must be directly in TIL, not in a subloop, or again
+        // LoopSimplify doesn't hold.
+        SmallVector<BasicBlock *, 4> LoopPreds;
+        for (pred_iterator I = pred_begin(DestBB), E = pred_end(DestBB); I != E;
+             ++I) {
+          BasicBlock *P = *I;
+          if (P == NewBB)
+            continue; // The new block is known.
+          if (LI->getLoopFor(P) != TIL) {
+            // No need to re-simplify, it wasn't to start with.
+            LoopPreds.clear();
+            break;
           }
-          // If there are any preds not in the loop, we'll need to split
-          // the edges. The Preds.empty() check is needed because a block
-          // may appear multiple times in the list. We can't use
-          // getUniqueExitBlocks above because that depends on LoopSimplify
-          // form, which we're in the process of restoring!
-          if (!Preds.empty() && HasPredOutsideOfLoop) {
-            BasicBlock *NewExitBB =
-              SplitBlockPredecessors(Exit, Preds.data(), Preds.size(),
-                                     "split", P);
-            if (P->mustPreserveAnalysisID(LCSSAID))
-              CreatePHIsForSplitLoopExit(Preds, NewExitBB, Exit);
-          }
+          LoopPreds.push_back(P);
+        }
+        if (!LoopPreds.empty()) {
+          assert(!DestBB->isLandingPad() &&
+                 "We don't split edges to landing pads!");
+          BasicBlock *NewExitBB =
+              SplitBlockPredecessors(DestBB, LoopPreds, "split", P);
+          if (P->mustPreserveAnalysisID(LCSSAID))
+            createPHIsForSplitLoopExit(LoopPreds, NewExitBB, DestBB);
         }
       }
       // LCSSA form was updated above for the case where LoopSimplify is
@@ -434,10 +352,6 @@ BasicBlock *llvm::SplitCriticalEdge(TerminatorInst *TI, unsigned SuccNum,
              "without LoopSimplify!");
     }
   }
-
-  // Update ProfileInfo if it is around.
-  if (PI)
-    PI->splitEdge(TIBB, DestBB, NewBB, MergeIdenticalEdges);
 
   return NewBB;
 }

@@ -1,9 +1,9 @@
-; RUN: llc -march=x86-64 < %s | FileCheck %s
+; RUN: llc -mtriple=x86_64-linux < %s | FileCheck %s
 
 ; Commute the comparison to avoid a move.
 ; PR7500.
 
-; CHECK: a:
+; CHECK-LABEL: a:
 ; CHECK-NOT: mov
 ; CHECK:     pcmpeqd
 define <2 x double> @a(<2 x double>, <2 x double>) nounwind readnone {

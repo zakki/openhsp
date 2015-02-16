@@ -1,8 +1,23 @@
-; RUN: llc < %s
+; RUN: llc -mcpu=g5 < %s | FileCheck %s
+; RUN: llc -mcpu=g5 -addr-sink-using-gep=1 < %s | FileCheck %s
 ;; Formerly crashed, see PR 1508
 target datalayout = "E-p:64:64:64-i1:8:8-i8:8:8-i16:16:16-i32:32:32-i64:32:64-f32:32:32-f64:32:64-v64:64:64-v128:128:128-a0:0:64-f128:64:128"
 target triple = "powerpc64-apple-darwin8"
 	%struct.Range = type { i64, i64 }
+
+; CHECK: .cfi_startproc
+; CHECK: .cfi_personality 155, L___gxx_personality_v0$non_lazy_ptr
+; CHECK: .cfi_lsda 16, Lexception0
+; CHECK: .cfi_def_cfa_offset 176
+; CHECK: .cfi_offset r31, -8
+; CHECK: .cfi_offset lr, 16
+; CHECK: .cfi_def_cfa_register r31
+; CHECK: .cfi_offset r27, -16
+; CHECK: .cfi_offset r28, -24
+; CHECK: .cfi_offset r29, -32
+; CHECK: .cfi_offset r30, -40
+; CHECK: .cfi_endproc
+
 
 define void @Bork(i64 %range.0.0, i64 %range.0.1, i64 %size) {
 entry:
@@ -18,11 +33,10 @@ bb30.preheader:		; preds = %entry
 	br label %bb30
 
 unwind:		; preds = %cond_true, %entry
-	%eh_ptr = call i8* @llvm.eh.exception()		; <i8*> [#uses=2]
-	%eh_select = call i64 (i8*, i8*, ...)* @llvm.eh.selector.i64(i8* %eh_ptr, i8* bitcast (void ()* @__gxx_personality_v0 to i8*), i8* null)		; <i64> [#uses=0]
+        %exn = landingpad {i8*, i32} personality i32 (...)* @__gxx_personality_v0
+                 catch i8* null
 	call void @llvm.stackrestore(i8* %tmp4)
-	call void @_Unwind_Resume(i8* %eh_ptr)
-	unreachable
+        resume { i8*, i32 } %exn
 
 invcont23:		; preds = %cond_true
 	%tmp27 = load i64* %tmp26, align 8		; <i64> [#uses=1]
@@ -46,14 +60,8 @@ declare i8* @llvm.stacksave() nounwind
 
 declare void @Foo(i8**)
 
-declare i8* @llvm.eh.exception() nounwind
-
-declare i64 @llvm.eh.selector.i64(i8*, i8*, ...) nounwind
-
-declare void @__gxx_personality_v0()
-
-declare void @_Unwind_Resume(i8*)
-
 declare void @Bar(i64, %struct.Range*)
 
 declare void @llvm.stackrestore(i8*) nounwind
+
+declare i32 @__gxx_personality_v0(...)

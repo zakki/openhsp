@@ -11,10 +11,22 @@
 #
 ##===----------------------------------------------------------------------===##
 
+ifndef MAKEFILE_UNITTEST_NO_INCLUDE_COMMON
+include $(LEVEL)/Makefile.common
+endif
+
+# Clean up out-of-tree stray unittests for Lit not to pick one up.
+.PHONY: cleanup-local
+cleanup-local:
+	-$(Verb) $(FIND) $(filter-out $(PARALLEL_DIRS), $(wildcard *)) -type f \
+	  -path '*/$(BuildMode)/*Tests$(EXEEXT)' \
+	  -exec rm -f '{}' \;
+
+all:: cleanup-local
+clean:: cleanup-local
+
 # Set up variables for building a unit test.
 ifdef TESTNAME
-
-include $(LEVEL)/Makefile.common
 
 LLVMUnitTestExe = $(BuildMode)/$(TESTNAME)Tests$(EXEEXT)
 
@@ -32,15 +44,14 @@ ifneq ($(HAVE_PTHREAD), 1)
   CPP.Flags += -DGTEST_HAS_PTHREAD=0
 endif
 
-TESTLIBS = -lGoogleTest -lUnitTestMain
+TESTLIBS = -lgtest -lgtest_main
 
 ifeq ($(ENABLE_SHARED), 1)
-  # Add the absolute path to the dynamic library.  This is ok because
-  # we'll never install unittests.
-  LD.Flags += $(RPATH) -Wl,$(SharedLibDir)
-  # Also set {DYLD,LD}_LIBRARY_PATH because OSX ignores the rpath most
-  # of the time.
-  Run.Shared := $(SHLIBPATH_VAR)="$(SharedLibDir)$${$(SHLIBPATH_VAR):+:}$$$(SHLIBPATH_VAR)"
+  ifneq (,$(RPATH))
+    # Add the absolute path to the dynamic library.  This is ok because
+    # we'll never install unittests.
+    LD.Flags += $(RPATH) -Wl,$(SharedLibDir)
+  endif
 endif
 
 $(LLVMUnitTestExe): $(ObjectsO) $(ProjLibsPaths) $(LLVMLibsPaths)
@@ -53,6 +64,6 @@ $(LLVMUnitTestExe): $(ObjectsO) $(ProjLibsPaths) $(LLVMLibsPaths)
 all:: $(LLVMUnitTestExe)
 
 unitcheck:: $(LLVMUnitTestExe)
-	$(Run.Shared) $(LLVMUnitTestExe)
+	$(LLVMUnitTestExe)
 
 endif

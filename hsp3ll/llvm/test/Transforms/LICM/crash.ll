@@ -1,4 +1,4 @@
-; RUN: opt -licm %s -disable-output
+; RUN: opt -licm -disable-output < %s
 
 target datalayout = "e-p:64:64:64-i1:8:8-i8:8:8-i16:16:16-i32:32:32-i64:64:64-f32:32:32-f64:64:64-v64:64:64-v128:128:128-a0:0:64-s0:64:64-f80:128:128-n8:16:32:64"
 target triple = "x86_64-apple-darwin10.0.0"
@@ -59,3 +59,16 @@ for.end:                                          ; preds = %for.cond, %entry
 }
 
 declare i32* @test3helper(i32*)
+
+
+; PR8602
+@g_47 = external global i32, align 4
+
+define void @test4() noreturn nounwind {
+  br label %1
+
+; <label>:1                                       ; preds = %1, %0
+  store volatile i32* @g_47, i32** undef, align 8
+  store i32 undef, i32* @g_47, align 4
+  br label %1
+}

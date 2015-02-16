@@ -9,51 +9,66 @@
 
 LEVEL := ..
 
+include $(LEVEL)/Makefile.config
+
 # Build clang if present.
-OPTIONAL_PARALLEL_DIRS := clang
+
+ifneq ($(CLANG_SRC_ROOT),)
+  OPTIONAL_PARALLEL_DIRS := $(CLANG_SRC_ROOT)
+else
+  OPTIONAL_PARALLEL_DIRS := clang
+endif
+
+# Build LLD and LLDB if present. Note LLDB must be built last as it depends on
+# the wider LLVM infrastructure (including Clang).
+OPTIONAL_DIRS := lld lldb
 
 # NOTE: The tools are organized into five groups of four consisting of one
 # large and three small executables. This is done to minimize memory load
 # in parallel builds.  Please retain this ordering.
-DIRS := llvm-config 
-PARALLEL_DIRS := opt llvm-as llvm-dis \
-                 llc llvm-ranlib llvm-ar llvm-nm \
-                 llvm-ld llvm-prof llvm-link \
-                 lli llvm-extract llvm-mc \
-                 bugpoint llvm-bcanalyzer llvm-stub \
-                 llvmc llvm-diff
+DIRS := llvm-config
+PARALLEL_DIRS := opt llvm-as llvm-dis llc llvm-ar llvm-nm llvm-link \
+                 lli llvm-extract llvm-mc bugpoint llvm-bcanalyzer llvm-diff \
+                 macho-dump llvm-objdump llvm-readobj llvm-rtdyld \
+                 llvm-dwarfdump llvm-cov llvm-size llvm-stress llvm-mcmarkup \
+                 llvm-profdata llvm-symbolizer obj2yaml yaml2obj llvm-c-test
+
+# If Intel JIT Events support is configured, build an extra tool to test it.
+ifeq ($(USE_INTEL_JITEVENTS), 1)
+  PARALLEL_DIRS += llvm-jitlistener
+endif
 
 # Let users override the set of tools to build from the command line.
 ifdef ONLY_TOOLS
   OPTIONAL_PARALLEL_DIRS :=
-  PARALLEL_DIRS := $(ONLY_TOOLS)
+  OPTIONAL_DIRS := $(findstring lldb,$(ONLY_TOOLS))
+  PARALLEL_DIRS := $(filter-out lldb,$(ONLY_TOOLS))
 endif
-
-include $(LEVEL)/Makefile.config
-
 
 # These libraries build as dynamic libraries (.dylib /.so), they can only be
 # built if ENABLE_PIC is set.
+ifndef ONLY_TOOLS
 ifeq ($(ENABLE_PIC),1)
-  # No support for dynamic libraries on windows targets.
-  ifneq ($(TARGET_OS), $(filter $(TARGET_OS), Cygwin MingW))
-    # gold only builds if binutils is around.  It requires "lto" to build before
-    # it so it is added to DIRS.
-    ifdef BINUTILS_INCDIR
-      DIRS += lto gold
-    else
-      PARALLEL_DIRS += lto
-    endif
+  # gold only builds if binutils is around.  It requires "lto" to build before
+  # it so it is added to DIRS. llvm-lto also requires lto
+  DIRS += lto llvm-lto
+  ifdef BINUTILS_INCDIR
+    DIRS += gold
+  endif
 
-    PARALLEL_DIRS += bugpoint-passes
+  PARALLEL_DIRS += bugpoint-passes
+endif
 
-    # The edis library is only supported if ARM and/or X86 are enabled, and if
-    # LLVM is being built PIC on platforms that support dylibs.
-    ifneq ($(DISABLE_EDIS),1)
-    ifneq ($(filter $(TARGETS_TO_BUILD), X86 ARM),)
-      PARALLEL_DIRS += edis
-    endif
-    endif
+ifdef LLVM_HAS_POLLY
+  PARALLEL_DIRS += polly
+endif
+endif
+
+# On Win32, loadable modules can be built with ENABLE_SHARED.
+ifneq ($(ENABLE_SHARED),1)
+  ifneq (,$(filter $(HOST_OS), Cygwin MingW))
+    PARALLEL_DIRS := $(filter-out bugpoint-passes, \
+                        $(PARALLEL_DIRS))
   endif
 endif
 

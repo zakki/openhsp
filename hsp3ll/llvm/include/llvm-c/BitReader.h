@@ -25,10 +25,16 @@
 extern "C" {
 #endif
 
+/**
+ * @defgroup LLVMCBitReader Bit Reader
+ * @ingroup LLVMC
+ *
+ * @{
+ */
 
 /* Builds a module from the bitcode in the specified memory buffer, returning a
    reference to the module via the OutModule parameter. Returns 0 on success.
-   Optionally returns a human-readable error message via OutMessage. */ 
+   Optionally returns a human-readable error message via OutMessage. */
 LLVMBool LLVMParseBitcode(LLVMMemoryBufferRef MemBuf,
                           LLVMModuleRef *OutModule, char **OutMessage);
 
@@ -38,7 +44,7 @@ LLVMBool LLVMParseBitcodeInContext(LLVMContextRef ContextRef,
 
 /** Reads a module from the specified path, returning via the OutMP parameter
     a module provider which performs lazy deserialization. Returns 0 on success.
-    Optionally returns a human-readable error message via OutMessage. */ 
+    Optionally returns a human-readable error message via OutMessage. */
 LLVMBool LLVMGetBitcodeModuleInContext(LLVMContextRef ContextRef,
                                        LLVMMemoryBufferRef MemBuf,
                                        LLVMModuleRef *OutM,
@@ -58,6 +64,10 @@ LLVMBool LLVMGetBitcodeModuleProviderInContext(LLVMContextRef ContextRef,
 LLVMBool LLVMGetBitcodeModuleProvider(LLVMMemoryBufferRef MemBuf,
                                       LLVMModuleProviderRef *OutMP,
                                       char **OutMessage);
+
+/**
+ * @}
+ */
 
 #ifdef __cplusplus
 }

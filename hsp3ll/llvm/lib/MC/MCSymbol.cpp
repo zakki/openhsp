@@ -26,11 +26,11 @@ static bool isAcceptableChar(char C) {
   return true;
 }
 
-/// NameNeedsQuoting - Return true if the identifier \arg Str needs quotes to be
+/// NameNeedsQuoting - Return true if the identifier \p Str needs quotes to be
 /// syntactically correct.
 static bool NameNeedsQuoting(StringRef Str) {
   assert(!Str.empty() && "Cannot create an empty MCSymbol");
-  
+
   // If any of the characters in the string is an unacceptable character, force
   // quotes.
   for (unsigned i = 0, e = Str.size(); i != e; ++i)
@@ -39,29 +39,56 @@ static bool NameNeedsQuoting(StringRef Str) {
   return false;
 }
 
+const MCSymbol &MCSymbol::AliasedSymbol() const {
+  const MCSymbol *S = this;
+  while (S->isVariable()) {
+    const MCExpr *Value = S->getVariableValue();
+    if (Value->getKind() != MCExpr::SymbolRef)
+      return *S;
+    const MCSymbolRefExpr *Ref = static_cast<const MCSymbolRefExpr*>(Value);
+    S = &Ref->getSymbol();
+  }
+  return *S;
+}
+
 void MCSymbol::setVariableValue(const MCExpr *Value) {
+  assert(!IsUsed && "Cannot set a variable that has already been used.");
   assert(Value && "Invalid variable value!");
-  assert((isUndefined() || (isAbsolute() && isa<MCConstantExpr>(Value))) &&
-         "Invalid redefinition!");
   this->Value = Value;
 
-  // Mark the variable as absolute as appropriate.
-  if (isa<MCConstantExpr>(Value))
-    setAbsolute();
+  // Variables should always be marked as in the same "section" as the value.
+  const MCSection *Section = Value->FindAssociatedSection();
+  if (Section)
+    setSection(*Section);
+  else
+    setUndefined();
 }
 
 void MCSymbol::print(raw_ostream &OS) const {
   // The name for this MCSymbol is required to be a valid target name.  However,
   // some targets support quoting names with funny characters.  If the name
   // contains a funny character, then print it quoted.
-  if (!NameNeedsQuoting(getName())) {
-    OS << getName();
+  StringRef Name = getName();
+  if (!NameNeedsQuoting(Name)) {
+    OS << Name;
     return;
   }
-    
-  OS << '"' << getName() << '"';
+
+  OS << '"';
+  for (unsigned I = 0, E = Name.size(); I != E; ++I) {
+    char C = Name[I];
+    if (C == '\n')
+      OS << "\\n";
+    else if (C == '"')
+      OS << "\\\"";
+    else
+      OS << C;
+  }
+  OS << '"';
 }
 
+#if !defined(NDEBUG) || defined(LLVM_ENABLE_DUMP)
 void MCSymbol::dump() const {
   print(dbgs());
 }
+#endif

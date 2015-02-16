@@ -17,17 +17,17 @@
 // call into the JIT at the same time (or the best possible approximation of the
 // same time). This test had assertion errors until I got the locking right.
 
-#include <pthread.h>
-#include "llvm/LLVMContext.h"
-#include "llvm/Module.h"
-#include "llvm/Constants.h"
-#include "llvm/DerivedTypes.h"
-#include "llvm/Instructions.h"
-#include "llvm/ExecutionEngine/JIT.h"
-#include "llvm/ExecutionEngine/Interpreter.h"
 #include "llvm/ExecutionEngine/GenericValue.h"
-#include "llvm/Target/TargetSelect.h"
+#include "llvm/ExecutionEngine/Interpreter.h"
+#include "llvm/ExecutionEngine/JIT.h"
+#include "llvm/IR/Constants.h"
+#include "llvm/IR/DerivedTypes.h"
+#include "llvm/IR/Instructions.h"
+#include "llvm/IR/LLVMContext.h"
+#include "llvm/IR/Module.h"
+#include "llvm/Support/TargetSelect.h"
 #include <iostream>
+#include <pthread.h>
 using namespace llvm;
 
 static Function* createAdd1(Module *M) {
@@ -139,6 +139,7 @@ public:
   ~WaitForThreads()
   {
     int result = pthread_cond_destroy( &condition );
+    (void)result;
     assert( result == 0 );
 
     result = pthread_mutex_destroy( &mutex );
@@ -149,6 +150,7 @@ public:
   void block()
   {
     int result = pthread_mutex_lock( &mutex );
+    (void)result;
     assert( result == 0 );
     n ++;
     //~ std::cout << "block() n " << n << " waitFor " << waitFor << std::endl;
@@ -178,6 +180,7 @@ public:
   void releaseThreads( size_t num )
   {
     int result = pthread_mutex_lock( &mutex );
+    (void)result;
     assert( result == 0 );
 
     if ( n >= num ) {
@@ -209,7 +212,8 @@ private:
     waitFor = 0;
 
     int result = pthread_cond_broadcast( &condition );
-    assert(result == 0); result=result;
+    (void)result;
+    assert(result == 0);
   }
 
   size_t n;

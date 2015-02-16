@@ -42,6 +42,8 @@
 #include <map>
 using namespace llvm;
 
+#define DEBUG_TYPE "dag-delta"
+
 namespace {
 
 class DAGDeltaAlgorithmImpl {
@@ -122,7 +124,7 @@ private:
     DDA.UpdatedSearchState(Changes, Sets, Required);
   }
 
-  /// ExecuteOneTest - Execute a single test predicate on the change set \arg S.
+  /// ExecuteOneTest - Execute a single test predicate on the change set \p S.
   bool ExecuteOneTest(const changeset_ty &S) {
     // Check dependencies invariant.
     DEBUG({
@@ -143,8 +145,8 @@ public:
 
   changeset_ty Run();
 
-  /// GetTestResult - Get the test result for the active set \arg Changes with
-  /// \arg Required changes from the cache, executing the test if necessary.
+  /// GetTestResult - Get the test result for the active set \p Changes with
+  /// \p Required changes from the cache, executing the test if necessary.
   ///
   /// \param Changes - The set of active changes being minimized, which should
   /// have their pred closure included in the test.
@@ -162,12 +164,12 @@ class DeltaActiveSetHelper : public DeltaAlgorithm {
 
 protected:
   /// UpdatedSearchState - Callback used when the search state changes.
-  virtual void UpdatedSearchState(const changeset_ty &Changes,
-                                  const changesetlist_ty &Sets) {
+  void UpdatedSearchState(const changeset_ty &Changes,
+                                  const changesetlist_ty &Sets) override {
     DDAI.UpdatedSearchState(Changes, Sets, Required);
   }
 
-  virtual bool ExecuteOneTest(const changeset_ty &S) {
+  bool ExecuteOneTest(const changeset_ty &S) override {
     return DDAI.GetTestResult(S, Required);
   }
 
@@ -348,6 +350,9 @@ DAGDeltaAlgorithmImpl::Run() {
   }
 
   return Required;
+}
+
+void DAGDeltaAlgorithm::anchor() {
 }
 
 DAGDeltaAlgorithm::changeset_ty

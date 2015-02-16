@@ -1,7 +1,14 @@
-; RUN: llc -march=x86 -mattr=+sse42 < %s -disable-mmx | FileCheck %s
-; CHECK: paddw
-; CHECK: pextrd
-; CHECK: movd
+; RUN: llc -march=x86 -mcpu=generic -mattr=+sse4.2 < %s | FileCheck %s
+; RUN: llc -march=x86 -mcpu=atom < %s | FileCheck -check-prefix=ATOM %s
+
+; CHECK: movl
+; CHECK: paddd
+; CHECK: movlpd
+
+; Scheduler causes produce a different instruction order
+; ATOM: movl
+; ATOM: paddd
+; ATOM: movlpd
 
 ; bitcast a v4i16 to v2i32
 

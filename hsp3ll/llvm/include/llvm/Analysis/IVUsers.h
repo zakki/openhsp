@@ -17,17 +17,17 @@
 
 #include "llvm/Analysis/LoopPass.h"
 #include "llvm/Analysis/ScalarEvolutionNormalization.h"
-#include "llvm/Support/ValueHandle.h"
+#include "llvm/IR/ValueHandle.h"
 
 namespace llvm {
 
 class DominatorTree;
 class Instruction;
 class Value;
-class IVUsers;
 class ScalarEvolution;
 class SCEV;
 class IVUsers;
+class DataLayout;
 
 /// IVStrideUse - Keep track of one use of a strided induction variable.
 /// The Expr member keeps track of the expression, User is the actual user
@@ -86,7 +86,7 @@ private:
 
   /// Deleted - Implementation of CallbackVH virtual function to
   /// receive notification when the User is deleted.
-  virtual void deleted();
+  void deleted() override;
 };
 
 template<> struct ilist_traits<IVStrideUse>
@@ -122,21 +122,24 @@ class IVUsers : public LoopPass {
   LoopInfo *LI;
   DominatorTree *DT;
   ScalarEvolution *SE;
+  const DataLayout *DL;
   SmallPtrSet<Instruction*,16> Processed;
 
   /// IVUses - A list of all tracked IV uses of induction variable expressions
   /// we are interested in.
   ilist<IVStrideUse> IVUses;
 
-  virtual void getAnalysisUsage(AnalysisUsage &AU) const;
+  void getAnalysisUsage(AnalysisUsage &AU) const override;
 
-  virtual bool runOnLoop(Loop *L, LPPassManager &LPM);
+  bool runOnLoop(Loop *L, LPPassManager &LPM) override;
 
-  virtual void releaseMemory();
+  void releaseMemory() override;
 
 public:
   static char ID; // Pass ID, replacement for typeid
   IVUsers();
+
+  Loop *getLoop() const { return L; }
 
   /// AddUsersIfInteresting - Inspect the specified Instruction.  If it is a
   /// reducible SCEV, recursively add its users to the IVUsesByStride set and
@@ -162,10 +165,16 @@ public:
   const_iterator end() const   { return IVUses.end(); }
   bool empty() const { return IVUses.empty(); }
 
-  void print(raw_ostream &OS, const Module* = 0) const;
+  bool isIVUserOrOperand(Instruction *Inst) const {
+    return Processed.count(Inst);
+  }
+
+  void print(raw_ostream &OS, const Module* = nullptr) const override;
 
   /// dump - This method is used for debugging.
   void dump() const;
+protected:
+  bool AddUsersImpl(Instruction *I, SmallPtrSet<Loop*,16> &SimpleLoopNests);
 };
 
 Pass *createIVUsersPass();

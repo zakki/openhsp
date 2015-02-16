@@ -1,4 +1,4 @@
-//===-- Analysis.cpp - CodeGen LLVM IR Analysis Utilities --*- C++ ------*-===//
+//===-- Analysis.cpp - CodeGen LLVM IR Analysis Utilities -----------------===//
 //
 //                     The LLVM Compiler Infrastructure
 //
@@ -7,30 +7,31 @@
 //
 //===----------------------------------------------------------------------===//
 //
-// This file defines several CodeGen-specific LLVM IR analysis utilties.
+// This file defines several CodeGen-specific LLVM IR analysis utilities.
 //
 //===----------------------------------------------------------------------===//
 
 #include "llvm/CodeGen/Analysis.h"
-#include "llvm/DerivedTypes.h"
-#include "llvm/Function.h"
-#include "llvm/Instructions.h"
-#include "llvm/IntrinsicInst.h"
-#include "llvm/LLVMContext.h"
-#include "llvm/Module.h"
+#include "llvm/Analysis/ValueTracking.h"
 #include "llvm/CodeGen/MachineFunction.h"
-#include "llvm/Target/TargetData.h"
-#include "llvm/Target/TargetLowering.h"
-#include "llvm/Target/TargetOptions.h"
+#include "llvm/CodeGen/SelectionDAG.h"
+#include "llvm/IR/DataLayout.h"
+#include "llvm/IR/DerivedTypes.h"
+#include "llvm/IR/Function.h"
+#include "llvm/IR/Instructions.h"
+#include "llvm/IR/IntrinsicInst.h"
+#include "llvm/IR/LLVMContext.h"
+#include "llvm/IR/Module.h"
 #include "llvm/Support/ErrorHandling.h"
 #include "llvm/Support/MathExtras.h"
+#include "llvm/Target/TargetLowering.h"
 using namespace llvm;
 
 /// ComputeLinearIndex - Given an LLVM IR aggregate type and a sequence
 /// of insertvalue or extractvalue indices that identify a member, return
 /// the linearized index of the start of the member.
 ///
-unsigned llvm::ComputeLinearIndex(const TargetLowering &TLI, const Type *Ty,
+unsigned llvm::ComputeLinearIndex(Type *Ty,
                                   const unsigned *Indices,
                                   const unsigned *IndicesEnd,
                                   unsigned CurIndex) {
@@ -39,24 +40,24 @@ unsigned llvm::ComputeLinearIndex(const TargetLowering &TLI, const Type *Ty,
     return CurIndex;
 
   // Given a struct type, recursively traverse the elements.
-  if (const StructType *STy = dyn_cast<StructType>(Ty)) {
+  if (StructType *STy = dyn_cast<StructType>(Ty)) {
     for (StructType::element_iterator EB = STy->element_begin(),
                                       EI = EB,
                                       EE = STy->element_end();
         EI != EE; ++EI) {
       if (Indices && *Indices == unsigned(EI - EB))
-        return ComputeLinearIndex(TLI, *EI, Indices+1, IndicesEnd, CurIndex);
-      CurIndex = ComputeLinearIndex(TLI, *EI, 0, 0, CurIndex);
+        return ComputeLinearIndex(*EI, Indices+1, IndicesEnd, CurIndex);
+      CurIndex = ComputeLinearIndex(*EI, nullptr, nullptr, CurIndex);
     }
     return CurIndex;
   }
   // Given an array type, recursively traverse the elements.
-  else if (const ArrayType *ATy = dyn_cast<ArrayType>(Ty)) {
-    const Type *EltTy = ATy->getElementType();
+  else if (ArrayType *ATy = dyn_cast<ArrayType>(Ty)) {
+    Type *EltTy = ATy->getElementType();
     for (unsigned i = 0, e = ATy->getNumElements(); i != e; ++i) {
       if (Indices && *Indices == i)
-        return ComputeLinearIndex(TLI, EltTy, Indices+1, IndicesEnd, CurIndex);
-      CurIndex = ComputeLinearIndex(TLI, EltTy, 0, 0, CurIndex);
+        return ComputeLinearIndex(EltTy, Indices+1, IndicesEnd, CurIndex);
+      CurIndex = ComputeLinearIndex(EltTy, nullptr, nullptr, CurIndex);
     }
     return CurIndex;
   }
@@ -71,13 +72,13 @@ unsigned llvm::ComputeLinearIndex(const TargetLowering &TLI, const Type *Ty,
 /// If Offsets is non-null, it points to a vector to be filled in
 /// with the in-memory offsets of each of the individual values.
 ///
-void llvm::ComputeValueVTs(const TargetLowering &TLI, const Type *Ty,
+void llvm::ComputeValueVTs(const TargetLowering &TLI, Type *Ty,
                            SmallVectorImpl<EVT> &ValueVTs,
                            SmallVectorImpl<uint64_t> *Offsets,
                            uint64_t StartingOffset) {
   // Given a struct type, recursively traverse the elements.
-  if (const StructType *STy = dyn_cast<StructType>(Ty)) {
-    const StructLayout *SL = TLI.getTargetData()->getStructLayout(STy);
+  if (StructType *STy = dyn_cast<StructType>(Ty)) {
+    const StructLayout *SL = TLI.getDataLayout()->getStructLayout(STy);
     for (StructType::element_iterator EB = STy->element_begin(),
                                       EI = EB,
                                       EE = STy->element_end();
@@ -87,9 +88,9 @@ void llvm::ComputeValueVTs(const TargetLowering &TLI, const Type *Ty,
     return;
   }
   // Given an array type, recursively traverse the elements.
-  if (const ArrayType *ATy = dyn_cast<ArrayType>(Ty)) {
-    const Type *EltTy = ATy->getElementType();
-    uint64_t EltSize = TLI.getTargetData()->getTypeAllocSize(EltTy);
+  if (ArrayType *ATy = dyn_cast<ArrayType>(Ty)) {
+    Type *EltTy = ATy->getElementType();
+    uint64_t EltSize = TLI.getDataLayout()->getTypeAllocSize(EltTy);
     for (unsigned i = 0, e = ATy->getNumElements(); i != e; ++i)
       ComputeValueVTs(TLI, EltTy, ValueVTs, Offsets,
                       StartingOffset + i * EltSize);
@@ -125,7 +126,7 @@ GlobalVariable *llvm::ExtractTypeInfo(Value *V) {
 /// hasInlineAsmMemConstraint - Return true if the inline asm instruction being
 /// processed uses a memory 'm' constraint.
 bool
-llvm::hasInlineAsmMemConstraint(std::vector<InlineAsm::ConstraintInfo> &CInfos,
+llvm::hasInlineAsmMemConstraint(InlineAsm::ConstraintInfoVector &CInfos,
                                 const TargetLowering &TLI) {
   for (unsigned i = 0, e = CInfos.size(); i != e; ++i) {
     InlineAsm::ConstraintInfo &CI = CInfos[i];
@@ -148,33 +149,37 @@ llvm::hasInlineAsmMemConstraint(std::vector<InlineAsm::ConstraintInfo> &CInfos,
 /// consideration of global floating-point math flags.
 ///
 ISD::CondCode llvm::getFCmpCondCode(FCmpInst::Predicate Pred) {
-  ISD::CondCode FPC, FOC;
   switch (Pred) {
-  case FCmpInst::FCMP_FALSE: FOC = FPC = ISD::SETFALSE; break;
-  case FCmpInst::FCMP_OEQ:   FOC = ISD::SETEQ; FPC = ISD::SETOEQ; break;
-  case FCmpInst::FCMP_OGT:   FOC = ISD::SETGT; FPC = ISD::SETOGT; break;
-  case FCmpInst::FCMP_OGE:   FOC = ISD::SETGE; FPC = ISD::SETOGE; break;
-  case FCmpInst::FCMP_OLT:   FOC = ISD::SETLT; FPC = ISD::SETOLT; break;
-  case FCmpInst::FCMP_OLE:   FOC = ISD::SETLE; FPC = ISD::SETOLE; break;
-  case FCmpInst::FCMP_ONE:   FOC = ISD::SETNE; FPC = ISD::SETONE; break;
-  case FCmpInst::FCMP_ORD:   FOC = FPC = ISD::SETO;   break;
-  case FCmpInst::FCMP_UNO:   FOC = FPC = ISD::SETUO;  break;
-  case FCmpInst::FCMP_UEQ:   FOC = ISD::SETEQ; FPC = ISD::SETUEQ; break;
-  case FCmpInst::FCMP_UGT:   FOC = ISD::SETGT; FPC = ISD::SETUGT; break;
-  case FCmpInst::FCMP_UGE:   FOC = ISD::SETGE; FPC = ISD::SETUGE; break;
-  case FCmpInst::FCMP_ULT:   FOC = ISD::SETLT; FPC = ISD::SETULT; break;
-  case FCmpInst::FCMP_ULE:   FOC = ISD::SETLE; FPC = ISD::SETULE; break;
-  case FCmpInst::FCMP_UNE:   FOC = ISD::SETNE; FPC = ISD::SETUNE; break;
-  case FCmpInst::FCMP_TRUE:  FOC = FPC = ISD::SETTRUE; break;
-  default:
-    llvm_unreachable("Invalid FCmp predicate opcode!");
-    FOC = FPC = ISD::SETFALSE;
-    break;
+  case FCmpInst::FCMP_FALSE: return ISD::SETFALSE;
+  case FCmpInst::FCMP_OEQ:   return ISD::SETOEQ;
+  case FCmpInst::FCMP_OGT:   return ISD::SETOGT;
+  case FCmpInst::FCMP_OGE:   return ISD::SETOGE;
+  case FCmpInst::FCMP_OLT:   return ISD::SETOLT;
+  case FCmpInst::FCMP_OLE:   return ISD::SETOLE;
+  case FCmpInst::FCMP_ONE:   return ISD::SETONE;
+  case FCmpInst::FCMP_ORD:   return ISD::SETO;
+  case FCmpInst::FCMP_UNO:   return ISD::SETUO;
+  case FCmpInst::FCMP_UEQ:   return ISD::SETUEQ;
+  case FCmpInst::FCMP_UGT:   return ISD::SETUGT;
+  case FCmpInst::FCMP_UGE:   return ISD::SETUGE;
+  case FCmpInst::FCMP_ULT:   return ISD::SETULT;
+  case FCmpInst::FCMP_ULE:   return ISD::SETULE;
+  case FCmpInst::FCMP_UNE:   return ISD::SETUNE;
+  case FCmpInst::FCMP_TRUE:  return ISD::SETTRUE;
+  default: llvm_unreachable("Invalid FCmp predicate opcode!");
   }
-  if (NoNaNsFPMath)
-    return FOC;
-  else
-    return FPC;
+}
+
+ISD::CondCode llvm::getFCmpCodeWithoutNaN(ISD::CondCode CC) {
+  switch (CC) {
+    case ISD::SETOEQ: case ISD::SETUEQ: return ISD::SETEQ;
+    case ISD::SETONE: case ISD::SETUNE: return ISD::SETNE;
+    case ISD::SETOLT: case ISD::SETULT: return ISD::SETLT;
+    case ISD::SETOLE: case ISD::SETULE: return ISD::SETLE;
+    case ISD::SETOGT: case ISD::SETUGT: return ISD::SETGT;
+    case ISD::SETOGE: case ISD::SETUGE: return ISD::SETGE;
+    default: return CC;
+  }
 }
 
 /// getICmpCondCode - Return the ISD condition code corresponding to
@@ -194,9 +199,275 @@ ISD::CondCode llvm::getICmpCondCode(ICmpInst::Predicate Pred) {
   case ICmpInst::ICMP_UGT: return ISD::SETUGT;
   default:
     llvm_unreachable("Invalid ICmp predicate opcode!");
-    return ISD::SETNE;
   }
 }
+
+static bool isNoopBitcast(Type *T1, Type *T2,
+                          const TargetLoweringBase& TLI) {
+  return T1 == T2 || (T1->isPointerTy() && T2->isPointerTy()) ||
+         (isa<VectorType>(T1) && isa<VectorType>(T2) &&
+          TLI.isTypeLegal(EVT::getEVT(T1)) && TLI.isTypeLegal(EVT::getEVT(T2)));
+}
+
+/// Look through operations that will be free to find the earliest source of
+/// this value.
+///
+/// @param ValLoc If V has aggegate type, we will be interested in a particular
+/// scalar component. This records its address; the reverse of this list gives a
+/// sequence of indices appropriate for an extractvalue to locate the important
+/// value. This value is updated during the function and on exit will indicate
+/// similar information for the Value returned.
+///
+/// @param DataBits If this function looks through truncate instructions, this
+/// will record the smallest size attained.
+static const Value *getNoopInput(const Value *V,
+                                 SmallVectorImpl<unsigned> &ValLoc,
+                                 unsigned &DataBits,
+                                 const TargetLoweringBase &TLI) {
+  while (true) {
+    // Try to look through V1; if V1 is not an instruction, it can't be looked
+    // through.
+    const Instruction *I = dyn_cast<Instruction>(V);
+    if (!I || I->getNumOperands() == 0) return V;
+    const Value *NoopInput = nullptr;
+
+    Value *Op = I->getOperand(0);
+    if (isa<BitCastInst>(I)) {
+      // Look through truly no-op bitcasts.
+      if (isNoopBitcast(Op->getType(), I->getType(), TLI))
+        NoopInput = Op;
+    } else if (isa<GetElementPtrInst>(I)) {
+      // Look through getelementptr
+      if (cast<GetElementPtrInst>(I)->hasAllZeroIndices())
+        NoopInput = Op;
+    } else if (isa<IntToPtrInst>(I)) {
+      // Look through inttoptr.
+      // Make sure this isn't a truncating or extending cast.  We could
+      // support this eventually, but don't bother for now.
+      if (!isa<VectorType>(I->getType()) &&
+          TLI.getPointerTy().getSizeInBits() ==
+          cast<IntegerType>(Op->getType())->getBitWidth())
+        NoopInput = Op;
+    } else if (isa<PtrToIntInst>(I)) {
+      // Look through ptrtoint.
+      // Make sure this isn't a truncating or extending cast.  We could
+      // support this eventually, but don't bother for now.
+      if (!isa<VectorType>(I->getType()) &&
+          TLI.getPointerTy().getSizeInBits() ==
+          cast<IntegerType>(I->getType())->getBitWidth())
+        NoopInput = Op;
+    } else if (isa<TruncInst>(I) &&
+               TLI.allowTruncateForTailCall(Op->getType(), I->getType())) {
+      DataBits = std::min(DataBits, I->getType()->getPrimitiveSizeInBits());
+      NoopInput = Op;
+    } else if (isa<CallInst>(I)) {
+      // Look through call (skipping callee)
+      for (User::const_op_iterator i = I->op_begin(), e = I->op_end() - 1;
+           i != e; ++i) {
+        unsigned attrInd = i - I->op_begin() + 1;
+        if (cast<CallInst>(I)->paramHasAttr(attrInd, Attribute::Returned) &&
+            isNoopBitcast((*i)->getType(), I->getType(), TLI)) {
+          NoopInput = *i;
+          break;
+        }
+      }
+    } else if (isa<InvokeInst>(I)) {
+      // Look through invoke (skipping BB, BB, Callee)
+      for (User::const_op_iterator i = I->op_begin(), e = I->op_end() - 3;
+           i != e; ++i) {
+        unsigned attrInd = i - I->op_begin() + 1;
+        if (cast<InvokeInst>(I)->paramHasAttr(attrInd, Attribute::Returned) &&
+            isNoopBitcast((*i)->getType(), I->getType(), TLI)) {
+          NoopInput = *i;
+          break;
+        }
+      }
+    } else if (const InsertValueInst *IVI = dyn_cast<InsertValueInst>(V)) {
+      // Value may come from either the aggregate or the scalar
+      ArrayRef<unsigned> InsertLoc = IVI->getIndices();
+      if (std::equal(InsertLoc.rbegin(), InsertLoc.rend(),
+                     ValLoc.rbegin())) {
+        // The type being inserted is a nested sub-type of the aggregate; we
+        // have to remove those initial indices to get the location we're
+        // interested in for the operand.
+        ValLoc.resize(ValLoc.size() - InsertLoc.size());
+        NoopInput = IVI->getInsertedValueOperand();
+      } else {
+        // The struct we're inserting into has the value we're interested in, no
+        // change of address.
+        NoopInput = Op;
+      }
+    } else if (const ExtractValueInst *EVI = dyn_cast<ExtractValueInst>(V)) {
+      // The part we're interested in will inevitably be some sub-section of the
+      // previous aggregate. Combine the two paths to obtain the true address of
+      // our element.
+      ArrayRef<unsigned> ExtractLoc = EVI->getIndices();
+      std::copy(ExtractLoc.rbegin(), ExtractLoc.rend(),
+                std::back_inserter(ValLoc));
+      NoopInput = Op;
+    }
+    // Terminate if we couldn't find anything to look through.
+    if (!NoopInput)
+      return V;
+
+    V = NoopInput;
+  }
+}
+
+/// Return true if this scalar return value only has bits discarded on its path
+/// from the "tail call" to the "ret". This includes the obvious noop
+/// instructions handled by getNoopInput above as well as free truncations (or
+/// extensions prior to the call).
+static bool slotOnlyDiscardsData(const Value *RetVal, const Value *CallVal,
+                                 SmallVectorImpl<unsigned> &RetIndices,
+                                 SmallVectorImpl<unsigned> &CallIndices,
+                                 bool AllowDifferingSizes,
+                                 const TargetLoweringBase &TLI) {
+
+  // Trace the sub-value needed by the return value as far back up the graph as
+  // possible, in the hope that it will intersect with the value produced by the
+  // call. In the simple case with no "returned" attribute, the hope is actually
+  // that we end up back at the tail call instruction itself.
+  unsigned BitsRequired = UINT_MAX;
+  RetVal = getNoopInput(RetVal, RetIndices, BitsRequired, TLI);
+
+  // If this slot in the value returned is undef, it doesn't matter what the
+  // call puts there, it'll be fine.
+  if (isa<UndefValue>(RetVal))
+    return true;
+
+  // Now do a similar search up through the graph to find where the value
+  // actually returned by the "tail call" comes from. In the simple case without
+  // a "returned" attribute, the search will be blocked immediately and the loop
+  // a Noop.
+  unsigned BitsProvided = UINT_MAX;
+  CallVal = getNoopInput(CallVal, CallIndices, BitsProvided, TLI);
+
+  // There's no hope if we can't actually trace them to (the same part of!) the
+  // same value.
+  if (CallVal != RetVal || CallIndices != RetIndices)
+    return false;
+
+  // However, intervening truncates may have made the call non-tail. Make sure
+  // all the bits that are needed by the "ret" have been provided by the "tail
+  // call". FIXME: with sufficiently cunning bit-tracking, we could look through
+  // extensions too.
+  if (BitsProvided < BitsRequired ||
+      (!AllowDifferingSizes && BitsProvided != BitsRequired))
+    return false;
+
+  return true;
+}
+
+/// For an aggregate type, determine whether a given index is within bounds or
+/// not.
+static bool indexReallyValid(CompositeType *T, unsigned Idx) {
+  if (ArrayType *AT = dyn_cast<ArrayType>(T))
+    return Idx < AT->getNumElements();
+
+  return Idx < cast<StructType>(T)->getNumElements();
+}
+
+/// Move the given iterators to the next leaf type in depth first traversal.
+///
+/// Performs a depth-first traversal of the type as specified by its arguments,
+/// stopping at the next leaf node (which may be a legitimate scalar type or an
+/// empty struct or array).
+///
+/// @param SubTypes List of the partial components making up the type from
+/// outermost to innermost non-empty aggregate. The element currently
+/// represented is SubTypes.back()->getTypeAtIndex(Path.back() - 1).
+///
+/// @param Path Set of extractvalue indices leading from the outermost type
+/// (SubTypes[0]) to the leaf node currently represented.
+///
+/// @returns true if a new type was found, false otherwise. Calling this
+/// function again on a finished iterator will repeatedly return
+/// false. SubTypes.back()->getTypeAtIndex(Path.back()) is either an empty
+/// aggregate or a non-aggregate
+static bool advanceToNextLeafType(SmallVectorImpl<CompositeType *> &SubTypes,
+                                  SmallVectorImpl<unsigned> &Path) {
+  // First march back up the tree until we can successfully increment one of the
+  // coordinates in Path.
+  while (!Path.empty() && !indexReallyValid(SubTypes.back(), Path.back() + 1)) {
+    Path.pop_back();
+    SubTypes.pop_back();
+  }
+
+  // If we reached the top, then the iterator is done.
+  if (Path.empty())
+    return false;
+
+  // We know there's *some* valid leaf now, so march back down the tree picking
+  // out the left-most element at each node.
+  ++Path.back();
+  Type *DeeperType = SubTypes.back()->getTypeAtIndex(Path.back());
+  while (DeeperType->isAggregateType()) {
+    CompositeType *CT = cast<CompositeType>(DeeperType);
+    if (!indexReallyValid(CT, 0))
+      return true;
+
+    SubTypes.push_back(CT);
+    Path.push_back(0);
+
+    DeeperType = CT->getTypeAtIndex(0U);
+  }
+
+  return true;
+}
+
+/// Find the first non-empty, scalar-like type in Next and setup the iterator
+/// components.
+///
+/// Assuming Next is an aggregate of some kind, this function will traverse the
+/// tree from left to right (i.e. depth-first) looking for the first
+/// non-aggregate type which will play a role in function return.
+///
+/// For example, if Next was {[0 x i64], {{}, i32, {}}, i32} then we would setup
+/// Path as [1, 1] and SubTypes as [Next, {{}, i32, {}}] to represent the first
+/// i32 in that type.
+static bool firstRealType(Type *Next,
+                          SmallVectorImpl<CompositeType *> &SubTypes,
+                          SmallVectorImpl<unsigned> &Path) {
+  // First initialise the iterator components to the first "leaf" node
+  // (i.e. node with no valid sub-type at any index, so {} does count as a leaf
+  // despite nominally being an aggregate).
+  while (Next->isAggregateType() &&
+         indexReallyValid(cast<CompositeType>(Next), 0)) {
+    SubTypes.push_back(cast<CompositeType>(Next));
+    Path.push_back(0);
+    Next = cast<CompositeType>(Next)->getTypeAtIndex(0U);
+  }
+
+  // If there's no Path now, Next was originally scalar already (or empty
+  // leaf). We're done.
+  if (Path.empty())
+    return true;
+
+  // Otherwise, use normal iteration to keep looking through the tree until we
+  // find a non-aggregate type.
+  while (SubTypes.back()->getTypeAtIndex(Path.back())->isAggregateType()) {
+    if (!advanceToNextLeafType(SubTypes, Path))
+      return false;
+  }
+
+  return true;
+}
+
+/// Set the iterator data-structures to the next non-empty, non-aggregate
+/// subtype.
+static bool nextRealType(SmallVectorImpl<CompositeType *> &SubTypes,
+                         SmallVectorImpl<unsigned> &Path) {
+  do {
+    if (!advanceToNextLeafType(SubTypes, Path))
+      return false;
+
+    assert(!Path.empty() && "found a leaf but didn't set the path?");
+  } while (SubTypes.back()->getTypeAtIndex(Path.back())->isAggregateType());
+
+  return true;
+}
+
 
 /// Test if the given instruction is in a position to be optimized
 /// with a tail-call. This roughly means that it's in a block with
@@ -204,13 +475,11 @@ ISD::CondCode llvm::getICmpCondCode(ICmpInst::Predicate Pred) {
 /// between it and the return.
 ///
 /// This function only tests target-independent requirements.
-bool llvm::isInTailCallPosition(ImmutableCallSite CS, Attributes CalleeRetAttr,
-                                const TargetLowering &TLI) {
+bool llvm::isInTailCallPosition(ImmutableCallSite CS, const TargetMachine &TM) {
   const Instruction *I = CS.getInstruction();
   const BasicBlock *ExitBB = I->getParent();
   const TerminatorInst *Term = ExitBB->getTerminator();
   const ReturnInst *Ret = dyn_cast<ReturnInst>(Term);
-  const Function *F = ExitBB->getParent();
 
   // The block must end in a return statement or unreachable.
   //
@@ -221,24 +490,32 @@ bool llvm::isInTailCallPosition(ImmutableCallSite CS, Attributes CalleeRetAttr,
   // longjmp on x86), it can end up causing miscompilation that has not
   // been fully understood.
   if (!Ret &&
-      (!GuaranteedTailCallOpt || !isa<UnreachableInst>(Term))) return false;
+      (!TM.Options.GuaranteedTailCallOpt || !isa<UnreachableInst>(Term)))
+    return false;
 
   // If I will have a chain, make sure no other instruction that will have a
   // chain interposes between I and the return.
   if (I->mayHaveSideEffects() || I->mayReadFromMemory() ||
-      !I->isSafeToSpeculativelyExecute())
-    for (BasicBlock::const_iterator BBI = prior(prior(ExitBB->end())); ;
-         --BBI) {
+      !isSafeToSpeculativelyExecute(I))
+    for (BasicBlock::const_iterator BBI = std::prev(ExitBB->end(), 2);; --BBI) {
       if (&*BBI == I)
         break;
       // Debug info intrinsics do not get in the way of tail call optimization.
       if (isa<DbgInfoIntrinsic>(BBI))
         continue;
       if (BBI->mayHaveSideEffects() || BBI->mayReadFromMemory() ||
-          !BBI->isSafeToSpeculativelyExecute())
+          !isSafeToSpeculativelyExecute(BBI))
         return false;
     }
 
+  return returnTypeIsEligibleForTailCall(ExitBB->getParent(), I, Ret,
+                                         *TM.getTargetLowering());
+}
+
+bool llvm::returnTypeIsEligibleForTailCall(const Function *F,
+                                           const Instruction *I,
+                                           const ReturnInst *Ret,
+                                           const TargetLoweringBase &TLI) {
   // If the block ends with a void return or unreachable, it doesn't matter
   // what the call's return type is.
   if (!Ret || Ret->getNumOperands() == 0) return true;
@@ -247,39 +524,85 @@ bool llvm::isInTailCallPosition(ImmutableCallSite CS, Attributes CalleeRetAttr,
   // return type is.
   if (isa<UndefValue>(Ret->getOperand(0))) return true;
 
-  // Conservatively require the attributes of the call to match those of
-  // the return. Ignore noalias because it doesn't affect the call sequence.
-  unsigned CallerRetAttr = F->getAttributes().getRetAttributes();
-  if ((CalleeRetAttr ^ CallerRetAttr) & ~Attribute::NoAlias)
-    return false;
+  // Make sure the attributes attached to each return are compatible.
+  AttrBuilder CallerAttrs(F->getAttributes(),
+                          AttributeSet::ReturnIndex);
+  AttrBuilder CalleeAttrs(cast<CallInst>(I)->getAttributes(),
+                          AttributeSet::ReturnIndex);
 
-  // It's not safe to eliminate the sign / zero extension of the return value.
-  if ((CallerRetAttr & Attribute::ZExt) || (CallerRetAttr & Attribute::SExt))
-    return false;
+  // Noalias is completely benign as far as calling convention goes, it
+  // shouldn't affect whether the call is a tail call.
+  CallerAttrs = CallerAttrs.removeAttribute(Attribute::NoAlias);
+  CalleeAttrs = CalleeAttrs.removeAttribute(Attribute::NoAlias);
 
-  // Otherwise, make sure the unmodified return value of I is the return value.
-  for (const Instruction *U = dyn_cast<Instruction>(Ret->getOperand(0)); ;
-       U = dyn_cast<Instruction>(U->getOperand(0))) {
-    if (!U)
+  bool AllowDifferingSizes = true;
+  if (CallerAttrs.contains(Attribute::ZExt)) {
+    if (!CalleeAttrs.contains(Attribute::ZExt))
       return false;
-    if (!U->hasOneUse())
+
+    AllowDifferingSizes = false;
+    CallerAttrs.removeAttribute(Attribute::ZExt);
+    CalleeAttrs.removeAttribute(Attribute::ZExt);
+  } else if (CallerAttrs.contains(Attribute::SExt)) {
+    if (!CalleeAttrs.contains(Attribute::SExt))
       return false;
-    if (U == I)
-      break;
-    // Check for a truly no-op truncate.
-    if (isa<TruncInst>(U) &&
-        TLI.isTruncateFree(U->getOperand(0)->getType(), U->getType()))
-      continue;
-    // Check for a truly no-op bitcast.
-    if (isa<BitCastInst>(U) &&
-        (U->getOperand(0)->getType() == U->getType() ||
-         (U->getOperand(0)->getType()->isPointerTy() &&
-          U->getType()->isPointerTy())))
-      continue;
-    // Otherwise it's not a true no-op.
-    return false;
+
+    AllowDifferingSizes = false;
+    CallerAttrs.removeAttribute(Attribute::SExt);
+    CalleeAttrs.removeAttribute(Attribute::SExt);
   }
+
+  // If they're still different, there's some facet we don't understand
+  // (currently only "inreg", but in future who knows). It may be OK but the
+  // only safe option is to reject the tail call.
+  if (CallerAttrs != CalleeAttrs)
+    return false;
+
+  const Value *RetVal = Ret->getOperand(0), *CallVal = I;
+  SmallVector<unsigned, 4> RetPath, CallPath;
+  SmallVector<CompositeType *, 4> RetSubTypes, CallSubTypes;
+
+  bool RetEmpty = !firstRealType(RetVal->getType(), RetSubTypes, RetPath);
+  bool CallEmpty = !firstRealType(CallVal->getType(), CallSubTypes, CallPath);
+
+  // Nothing's actually returned, it doesn't matter what the callee put there
+  // it's a valid tail call.
+  if (RetEmpty)
+    return true;
+
+  // Iterate pairwise through each of the value types making up the tail call
+  // and the corresponding return. For each one we want to know whether it's
+  // essentially going directly from the tail call to the ret, via operations
+  // that end up not generating any code.
+  //
+  // We allow a certain amount of covariance here. For example it's permitted
+  // for the tail call to define more bits than the ret actually cares about
+  // (e.g. via a truncate).
+  do {
+    if (CallEmpty) {
+      // We've exhausted the values produced by the tail call instruction, the
+      // rest are essentially undef. The type doesn't really matter, but we need
+      // *something*.
+      Type *SlotType = RetSubTypes.back()->getTypeAtIndex(RetPath.back());
+      CallVal = UndefValue::get(SlotType);
+    }
+
+    // The manipulations performed when we're looking through an insertvalue or
+    // an extractvalue would happen at the front of the RetPath list, so since
+    // we have to copy it anyway it's more efficient to create a reversed copy.
+    using std::copy;
+    SmallVector<unsigned, 4> TmpRetPath, TmpCallPath;
+    copy(RetPath.rbegin(), RetPath.rend(), std::back_inserter(TmpRetPath));
+    copy(CallPath.rbegin(), CallPath.rend(), std::back_inserter(TmpCallPath));
+
+    // Finally, we can check whether the value produced by the tail call at this
+    // index is compatible with the value we return.
+    if (!slotOnlyDiscardsData(RetVal, CallVal, TmpRetPath, TmpCallPath,
+                              AllowDifferingSizes, TLI))
+      return false;
+
+    CallEmpty  = !nextRealType(CallSubTypes, CallPath);
+  } while(nextRealType(RetSubTypes, RetPath));
 
   return true;
 }
-

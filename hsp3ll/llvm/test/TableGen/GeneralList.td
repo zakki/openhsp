@@ -1,5 +1,4 @@
-// RUN: tblgen %s
-// XFAIL: vg_leak
+// RUN: llvm-tblgen %s
 //
 // Test to make sure that lists work with any data-type
 

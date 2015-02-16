@@ -1,4 +1,4 @@
-/*===-- executionengine_ocaml.c - LLVM Ocaml Glue ---------------*- C++ -*-===*\
+/*===-- executionengine_ocaml.c - LLVM OCaml Glue ---------------*- C++ -*-===*\
 |*                                                                            *|
 |*                     The LLVM Compiler Infrastructure                       *|
 |*                                                                            *|
@@ -7,7 +7,7 @@
 |*                                                                            *|
 |*===----------------------------------------------------------------------===*|
 |*                                                                            *|
-|* This file glues LLVM's ocaml interface to its C interface. These functions *|
+|* This file glues LLVM's OCaml interface to its C interface. These functions *|
 |* are by and large transparent wrappers to the corresponding C functions.    *|
 |*                                                                            *|
 |* Note that these functions intentionally take liberties with the CAMLparamX *|
@@ -75,6 +75,9 @@ static struct custom_operations generic_value_ops = {
   custom_hash_default,
   custom_serialize_default,
   custom_deserialize_default
+#ifdef custom_compare_ext_default
+  , custom_compare_ext_default
+#endif
 };
 
 static value alloc_generic_value(LLVMGenericValueRef Ref) {
@@ -321,3 +324,18 @@ CAMLprim value llvm_ee_free_machine_code(LLVMValueRef F,
   return Val_unit;
 }
 
+extern value llvm_alloc_data_layout(LLVMTargetDataRef TargetData);
+
+/* ExecutionEngine.t -> Llvm_target.DataLayout.t */
+CAMLprim value llvm_ee_get_data_layout(LLVMExecutionEngineRef EE) {
+  value DataLayout;
+  LLVMTargetDataRef OrigDataLayout;
+  OrigDataLayout = LLVMGetExecutionEngineTargetData(EE);
+
+  char* TargetDataCStr;
+  TargetDataCStr = LLVMCopyStringRepOfTargetData(OrigDataLayout);
+  DataLayout = llvm_alloc_data_layout(LLVMCreateTargetData(TargetDataCStr));
+  LLVMDisposeMessage(TargetDataCStr);
+
+  return DataLayout;
+}

@@ -60,22 +60,22 @@ variables (LLVM_USE_CRT_DEBUG, etc) instead.")
 
   make_crt_regex(MSVC_CRT_REGEX ${MSVC_CRT})
 
-  foreach(build_type ${CMAKE_CONFIGURATION_TYPES})
+  foreach(build_type ${CMAKE_CONFIGURATION_TYPES} ${CMAKE_BUILD_TYPE})
     string(TOUPPER "${build_type}" build)
     if (NOT LLVM_USE_CRT_${build})
       get_current_crt(LLVM_USE_CRT_${build}
-	MSVC_CRT_REGEX
-	CMAKE_CXX_FLAGS_${build})
+        MSVC_CRT_REGEX
+        CMAKE_CXX_FLAGS_${build})
       set(LLVM_USE_CRT_${build}
-	"${LLVM_USE_CRT_${build}}"
-	CACHE STRING "Specify VC++ CRT to use for ${build_type} configurations."
-	FORCE)
+        "${LLVM_USE_CRT_${build}}"
+        CACHE STRING "Specify VC++ CRT to use for ${build_type} configurations."
+        FORCE)
       set_property(CACHE LLVM_USE_CRT_${build}
-	PROPERTY STRINGS "";${${MSVC_CRT}})
+        PROPERTY STRINGS ;${${MSVC_CRT}})
     endif(NOT LLVM_USE_CRT_${build})
   endforeach(build_type)
 
-  foreach(build_type ${CMAKE_CONFIGURATION_TYPES})
+  foreach(build_type ${CMAKE_CONFIGURATION_TYPES} ${CMAKE_BUILD_TYPE})
     string(TOUPPER "${build_type}" build)
     if ("${LLVM_USE_CRT_${build}}" STREQUAL "")
       set(flag_string " ")
@@ -84,7 +84,7 @@ variables (LLVM_USE_CRT_DEBUG, etc) instead.")
       list(FIND ${MSVC_CRT} ${LLVM_USE_CRT_${build}} idx)
       if (idx LESS 0)
         message(FATAL_ERROR
-	  "Invalid value for LLVM_USE_CRT_${build}: ${LLVM_USE_CRT_${build}}. Valid options are one of: ${${MSVC_CRT}}")
+          "Invalid value for LLVM_USE_CRT_${build}: ${LLVM_USE_CRT_${build}}. Valid options are one of: ${${MSVC_CRT}}")
       endif (idx LESS 0)
       message(STATUS "Using ${build_type} VC++ CRT: ${LLVM_USE_CRT_${build}}")
     endif()

@@ -11,7 +11,7 @@ LEVEL = ../../..
 
 include $(LEVEL)/Makefile.config
 
-LIBRARYNAME = UnitTestMain
+LIBRARYNAME = gtest_main
 BUILD_ARCHIVE = 1
 REQUIRES_RTTI = 1
 
@@ -26,5 +26,7 @@ CPP.Flags += -DGTEST_USE_OWN_TR1_TUPLE
 ifneq ($(HAVE_PTHREAD), 1)
   CPP.Flags += -DGTEST_HAS_PTHREAD=0
 endif
+
+NO_INSTALL = 1
 
 include $(LEVEL)/Makefile.common

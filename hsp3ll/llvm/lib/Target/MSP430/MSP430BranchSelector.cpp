@@ -1,4 +1,4 @@
-//===-- MSP430BranchSelector.cpp - Emit long conditional branches--*- C++ -*-=//
+//===-- MSP430BranchSelector.cpp - Emit long conditional branches ---------===//
 //
 //                     The LLVM Compiler Infrastructure
 //
@@ -15,15 +15,16 @@
 //
 //===----------------------------------------------------------------------===//
 
-#define DEBUG_TYPE "msp430-branch-select"
 #include "MSP430.h"
 #include "MSP430InstrInfo.h"
-#include "llvm/CodeGen/MachineInstrBuilder.h"
-#include "llvm/CodeGen/MachineFunctionPass.h"
-#include "llvm/Target/TargetMachine.h"
 #include "llvm/ADT/Statistic.h"
+#include "llvm/CodeGen/MachineFunctionPass.h"
+#include "llvm/CodeGen/MachineInstrBuilder.h"
 #include "llvm/Support/MathExtras.h"
+#include "llvm/Target/TargetMachine.h"
 using namespace llvm;
+
+#define DEBUG_TYPE "msp430-branch-select"
 
 STATISTIC(NumExpanded, "Number of branches expanded to long format");
 
@@ -35,9 +36,9 @@ namespace {
     /// BlockSizes - The sizes of the basic blocks in the function.
     std::vector<unsigned> BlockSizes;
 
-    virtual bool runOnMachineFunction(MachineFunction &Fn);
+    bool runOnMachineFunction(MachineFunction &Fn) override;
 
-    virtual const char *getPassName() const {
+    const char *getPassName() const override {
       return "MSP430 Branch Selector";
     }
   };

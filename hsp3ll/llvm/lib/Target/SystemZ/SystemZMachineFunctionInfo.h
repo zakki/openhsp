@@ -6,10 +6,6 @@
 // License. See LICENSE.TXT for details.
 //
 //===----------------------------------------------------------------------===//
-//
-// This file declares SystemZ-specific per-machine-function information.
-//
-//===----------------------------------------------------------------------===//
 
 #ifndef SYSTEMZMACHINEFUNCTIONINFO_H
 #define SYSTEMZMACHINEFUNCTIONINFO_H
@@ -18,34 +14,55 @@
 
 namespace llvm {
 
-/// SystemZMachineFunctionInfo - This class is derived from MachineFunction and
-/// contains private SystemZ target-specific information for each MachineFunction.
 class SystemZMachineFunctionInfo : public MachineFunctionInfo {
-  /// CalleeSavedFrameSize - Size of the callee-saved register portion of the
-  /// stack frame in bytes.
-  unsigned CalleeSavedFrameSize;
+  virtual void anchor();
+  unsigned LowSavedGPR;
+  unsigned HighSavedGPR;
+  unsigned VarArgsFirstGPR;
+  unsigned VarArgsFirstFPR;
+  unsigned VarArgsFrameIndex;
+  unsigned RegSaveFrameIndex;
+  bool ManipulatesSP;
 
-  /// LowReg - Low register of range of callee-saved registers to store.
-  unsigned LowReg;
-
-  /// HighReg - High register of range of callee-saved registers to store.
-  unsigned HighReg;
 public:
-  SystemZMachineFunctionInfo() : CalleeSavedFrameSize(0) {}
-
   explicit SystemZMachineFunctionInfo(MachineFunction &MF)
-    : CalleeSavedFrameSize(0) {}
+    : LowSavedGPR(0), HighSavedGPR(0), VarArgsFirstGPR(0), VarArgsFirstFPR(0),
+      VarArgsFrameIndex(0), RegSaveFrameIndex(0), ManipulatesSP(false) {}
 
-  unsigned getCalleeSavedFrameSize() const { return CalleeSavedFrameSize; }
-  void setCalleeSavedFrameSize(unsigned bytes) { CalleeSavedFrameSize = bytes; }
+  // Get and set the first call-saved GPR that should be saved and restored
+  // by this function.  This is 0 if no GPRs need to be saved or restored.
+  unsigned getLowSavedGPR() const { return LowSavedGPR; }
+  void setLowSavedGPR(unsigned Reg) { LowSavedGPR = Reg; }
 
-  unsigned getLowReg() const { return LowReg; }
-  void setLowReg(unsigned Reg) { LowReg = Reg; }
+  // Get and set the last call-saved GPR that should be saved and restored
+  // by this function.
+  unsigned getHighSavedGPR() const { return HighSavedGPR; }
+  void setHighSavedGPR(unsigned Reg) { HighSavedGPR = Reg; }
 
-  unsigned getHighReg() const { return HighReg; }
-  void setHighReg(unsigned Reg) { HighReg = Reg; }
+  // Get and set the number of fixed (as opposed to variable) arguments
+  // that are passed in GPRs to this function.
+  unsigned getVarArgsFirstGPR() const { return VarArgsFirstGPR; }
+  void setVarArgsFirstGPR(unsigned GPR) { VarArgsFirstGPR = GPR; }
+
+  // Likewise FPRs.
+  unsigned getVarArgsFirstFPR() const { return VarArgsFirstFPR; }
+  void setVarArgsFirstFPR(unsigned FPR) { VarArgsFirstFPR = FPR; }
+
+  // Get and set the frame index of the first stack vararg.
+  unsigned getVarArgsFrameIndex() const { return VarArgsFrameIndex; }
+  void setVarArgsFrameIndex(unsigned FI) { VarArgsFrameIndex = FI; }
+
+  // Get and set the frame index of the register save area
+  // (i.e. the incoming stack pointer).
+  unsigned getRegSaveFrameIndex() const { return RegSaveFrameIndex; }
+  void setRegSaveFrameIndex(unsigned FI) { RegSaveFrameIndex = FI; }
+
+  // Get and set whether the function directly manipulates the stack pointer,
+  // e.g. through STACKSAVE or STACKRESTORE.
+  bool getManipulatesSP() const { return ManipulatesSP; }
+  void setManipulatesSP(bool MSP) { ManipulatesSP = MSP; }
 };
 
-} // End llvm namespace
+} // end namespace llvm
 
 #endif

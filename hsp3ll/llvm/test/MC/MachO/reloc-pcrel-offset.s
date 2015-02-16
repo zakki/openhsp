@@ -4,11 +4,14 @@
 // CHECK: (('word-0', 0x1),
 // CHECK: ('word-1', 0x5000002)),
 // CHECK-NEXT: ])
-// CHECK: ('_section_data', '\xe8\xfb\xff\xff\xff')
+// CHECK: ('_section_data', 'e8fbffff ff')
 
         .data
         .long 0
 
         .text
 _a:
+_b:
         call _a
+
+        .subsections_via_symbols

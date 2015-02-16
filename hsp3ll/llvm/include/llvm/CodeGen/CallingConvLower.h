@@ -16,30 +16,40 @@
 #define LLVM_CODEGEN_CALLINGCONVLOWER_H
 
 #include "llvm/ADT/SmallVector.h"
-#include "llvm/CodeGen/ValueTypes.h"
+#include "llvm/CodeGen/MachineFrameInfo.h"
+#include "llvm/CodeGen/MachineFunction.h"
+#include "llvm/IR/CallingConv.h"
 #include "llvm/Target/TargetCallingConv.h"
-#include "llvm/CallingConv.h"
 
 namespace llvm {
-  class TargetRegisterInfo;
-  class TargetMachine;
-  class CCState;
+class CCState;
+class MVT;
+class TargetMachine;
+class TargetRegisterInfo;
 
 /// CCValAssign - Represent assignment of one arg/retval to a location.
 class CCValAssign {
 public:
   enum LocInfo {
-    Full,   // The value fills the full location.
-    SExt,   // The value is sign extended in the location.
-    ZExt,   // The value is zero extended in the location.
-    AExt,   // The value is extended with undefined upper bits.
-    BCvt,   // The value is bit-converted in the location.
-    VExt,   // The value is vector-widened in the location.
-            // FIXME: Not implemented yet. Code that uses AExt to mean
-            // vector-widen should be fixed to use VExt instead.
-    Indirect // The location contains pointer to the value.
+    Full,      // The value fills the full location.
+    SExt,      // The value is sign extended in the location.
+    ZExt,      // The value is zero extended in the location.
+    AExt,      // The value is extended with undefined upper bits.
+    BCvt,      // The value is bit-converted in the location.
+    VExt,      // The value is vector-widened in the location.
+               // FIXME: Not implemented yet. Code that uses AExt to mean
+               // vector-widen should be fixed to use VExt instead.
+    FPExt,     // The floating-point value is fp-extended in the location.
+    Indirect,  // The location contains pointer to the value.
+    SExtUpper, // The value is in the upper bits of the location and should be
+               // sign extended when retrieved.
+    ZExtUpper, // The value is in the upper bits of the location and should be
+               // zero extended when retrieved.
+    AExtUpper  // The value is in the upper bits of the location and should be
+               // extended with undefined upper bits when retrieved.
     // TODO: a subset of the value is in the location.
   };
+
 private:
   /// ValNo - This is the value number begin assigned (e.g. an argument number).
   unsigned ValNo;
@@ -48,23 +58,23 @@ private:
   unsigned Loc;
 
   /// isMem - True if this is a memory loc, false if it is a register loc.
-  bool isMem : 1;
+  unsigned isMem : 1;
 
   /// isCustom - True if this arg/retval requires special handling.
-  bool isCustom : 1;
+  unsigned isCustom : 1;
 
   /// Information about how the value is assigned.
   LocInfo HTP : 6;
 
   /// ValVT - The type of the value being assigned.
-  EVT ValVT;
+  MVT ValVT;
 
   /// LocVT - The type of the location being assigned to.
-  EVT LocVT;
+  MVT LocVT;
 public:
 
-  static CCValAssign getReg(unsigned ValNo, EVT ValVT,
-                            unsigned RegNo, EVT LocVT,
+  static CCValAssign getReg(unsigned ValNo, MVT ValVT,
+                            unsigned RegNo, MVT LocVT,
                             LocInfo HTP) {
     CCValAssign Ret;
     Ret.ValNo = ValNo;
@@ -77,8 +87,8 @@ public:
     return Ret;
   }
 
-  static CCValAssign getCustomReg(unsigned ValNo, EVT ValVT,
-                                  unsigned RegNo, EVT LocVT,
+  static CCValAssign getCustomReg(unsigned ValNo, MVT ValVT,
+                                  unsigned RegNo, MVT LocVT,
                                   LocInfo HTP) {
     CCValAssign Ret;
     Ret = getReg(ValNo, ValVT, RegNo, LocVT, HTP);
@@ -86,8 +96,8 @@ public:
     return Ret;
   }
 
-  static CCValAssign getMem(unsigned ValNo, EVT ValVT,
-                            unsigned Offset, EVT LocVT,
+  static CCValAssign getMem(unsigned ValNo, MVT ValVT,
+                            unsigned Offset, MVT LocVT,
                             LocInfo HTP) {
     CCValAssign Ret;
     Ret.ValNo = ValNo;
@@ -100,8 +110,8 @@ public:
     return Ret;
   }
 
-  static CCValAssign getCustomMem(unsigned ValNo, EVT ValVT,
-                                  unsigned Offset, EVT LocVT,
+  static CCValAssign getCustomMem(unsigned ValNo, MVT ValVT,
+                                  unsigned Offset, MVT LocVT,
                                   LocInfo HTP) {
     CCValAssign Ret;
     Ret = getMem(ValNo, ValVT, Offset, LocVT, HTP);
@@ -109,8 +119,25 @@ public:
     return Ret;
   }
 
+  // There is no need to differentiate between a pending CCValAssign and other
+  // kinds, as they are stored in a different list.
+  static CCValAssign getPending(unsigned ValNo, MVT ValVT, MVT LocVT,
+                                LocInfo HTP) {
+    return getReg(ValNo, ValVT, 0, LocVT, HTP);
+  }
+
+  void convertToReg(unsigned RegNo) {
+    Loc = RegNo;
+    isMem = false;
+  }
+
+  void convertToMem(unsigned Offset) {
+    Loc = Offset;
+    isMem = true;
+  }
+
   unsigned getValNo() const { return ValNo; }
-  EVT getValVT() const { return ValVT; }
+  MVT getValVT() const { return ValVT; }
 
   bool isRegLoc() const { return !isMem; }
   bool isMemLoc() const { return isMem; }
@@ -119,44 +146,110 @@ public:
 
   unsigned getLocReg() const { assert(isRegLoc()); return Loc; }
   unsigned getLocMemOffset() const { assert(isMemLoc()); return Loc; }
-  EVT getLocVT() const { return LocVT; }
+  MVT getLocVT() const { return LocVT; }
 
   LocInfo getLocInfo() const { return HTP; }
   bool isExtInLoc() const {
     return (HTP == AExt || HTP == SExt || HTP == ZExt);
   }
 
+  bool isUpperBitsInLoc() const {
+    return HTP == AExtUpper || HTP == SExtUpper || HTP == ZExtUpper;
+  }
 };
 
 /// CCAssignFn - This function assigns a location for Val, updating State to
-/// reflect the change.
-typedef bool CCAssignFn(unsigned ValNo, EVT ValVT,
-                        EVT LocVT, CCValAssign::LocInfo LocInfo,
+/// reflect the change.  It returns 'true' if it failed to handle Val.
+typedef bool CCAssignFn(unsigned ValNo, MVT ValVT,
+                        MVT LocVT, CCValAssign::LocInfo LocInfo,
                         ISD::ArgFlagsTy ArgFlags, CCState &State);
 
 /// CCCustomFn - This function assigns a location for Val, possibly updating
 /// all args to reflect changes and indicates if it handled it. It must set
 /// isCustom if it handles the arg and returns true.
-typedef bool CCCustomFn(unsigned &ValNo, EVT &ValVT,
-                        EVT &LocVT, CCValAssign::LocInfo &LocInfo,
+typedef bool CCCustomFn(unsigned &ValNo, MVT &ValVT,
+                        MVT &LocVT, CCValAssign::LocInfo &LocInfo,
                         ISD::ArgFlagsTy &ArgFlags, CCState &State);
+
+/// ParmContext - This enum tracks whether calling convention lowering is in
+/// the context of prologue or call generation. Not all backends make use of
+/// this information.
+typedef enum { Unknown, Prologue, Call } ParmContext;
 
 /// CCState - This class holds information needed while lowering arguments and
 /// return values.  It captures which registers are already assigned and which
 /// stack slots are used.  It provides accessors to allocate these values.
 class CCState {
+private:
   CallingConv::ID CallingConv;
   bool IsVarArg;
+  MachineFunction &MF;
   const TargetMachine &TM;
   const TargetRegisterInfo &TRI;
-  SmallVector<CCValAssign, 16> &Locs;
+  SmallVectorImpl<CCValAssign> &Locs;
   LLVMContext &Context;
 
   unsigned StackOffset;
   SmallVector<uint32_t, 16> UsedRegs;
+  SmallVector<CCValAssign, 4> PendingLocs;
+
+  // ByValInfo and SmallVector<ByValInfo, 4> ByValRegs:
+  //
+  // Vector of ByValInfo instances (ByValRegs) is introduced for byval registers
+  // tracking.
+  // Or, in another words it tracks byval parameters that are stored in
+  // general purpose registers.
+  //
+  // For 4 byte stack alignment,
+  // instance index means byval parameter number in formal
+  // arguments set. Assume, we have some "struct_type" with size = 4 bytes,
+  // then, for function "foo":
+  //
+  // i32 foo(i32 %p, %struct_type* %r, i32 %s, %struct_type* %t)
+  //
+  // ByValRegs[0] describes how "%r" is stored (Begin == r1, End == r2)
+  // ByValRegs[1] describes how "%t" is stored (Begin == r3, End == r4).
+  //
+  // In case of 8 bytes stack alignment,
+  // ByValRegs may also contain information about wasted registers.
+  // In function shown above, r3 would be wasted according to AAPCS rules.
+  // And in that case ByValRegs[1].Waste would be "true".
+  // ByValRegs vector size still would be 2,
+  // while "%t" goes to the stack: it wouldn't be described in ByValRegs.
+  //
+  // Supposed use-case for this collection:
+  // 1. Initially ByValRegs is empty, InRegsParamsProcessed is 0.
+  // 2. HandleByVal fillups ByValRegs.
+  // 3. Argument analysis (LowerFormatArguments, for example). After
+  // some byval argument was analyzed, InRegsParamsProcessed is increased.
+  struct ByValInfo {
+    ByValInfo(unsigned B, unsigned E, bool IsWaste = false) :
+      Begin(B), End(E), Waste(IsWaste) {}
+    // First register allocated for current parameter.
+    unsigned Begin;
+
+    // First after last register allocated for current parameter.
+    unsigned End;
+
+    // Means that current range of registers doesn't belong to any
+    // parameters. It was wasted due to stack alignment rules.
+    // For more information see:
+    // AAPCS, 5.5 Parameter Passing, Stage C, C.3.
+    bool Waste;
+  };
+  SmallVector<ByValInfo, 4 > ByValRegs;
+
+  // InRegsParamsProcessed - shows how many instances of ByValRegs was proceed
+  // during argument analysis.
+  unsigned InRegsParamsProcessed;
+
+protected:
+  ParmContext CallOrPrologue;
+
 public:
-  CCState(CallingConv::ID CC, bool isVarArg, const TargetMachine &TM,
-          SmallVector<CCValAssign, 16> &locs, LLVMContext &C);
+  CCState(CallingConv::ID CC, bool isVarArg, MachineFunction &MF,
+          const TargetMachine &TM, SmallVectorImpl<CCValAssign> &locs,
+          LLVMContext &C);
 
   void addLoc(const CCValAssign &V) {
     Locs.push_back(V);
@@ -164,6 +257,7 @@ public:
 
   LLVMContext &getContext() const { return Context; }
   const TargetMachine &getTarget() const { return TM; }
+  MachineFunction &getMachineFunction() const { return MF; }
   CallingConv::ID getCallingConv() const { return CallingConv; }
   bool isVarArg() const { return IsVarArg; }
 
@@ -198,7 +292,7 @@ public:
 
   /// AnalyzeCallOperands - Same as above except it takes vectors of types
   /// and argument flags.
-  void AnalyzeCallOperands(SmallVectorImpl<EVT> &ArgVTs,
+  void AnalyzeCallOperands(SmallVectorImpl<MVT> &ArgVTs,
                            SmallVectorImpl<ISD::ArgFlagsTy> &Flags,
                            CCAssignFn Fn);
 
@@ -209,11 +303,11 @@ public:
 
   /// AnalyzeCallResult - Same as above except it's specialized for calls which
   /// produce a single value.
-  void AnalyzeCallResult(EVT VT, CCAssignFn Fn);
+  void AnalyzeCallResult(MVT VT, CCAssignFn Fn);
 
   /// getFirstUnallocated - Return the first unallocated register in the set, or
   /// NumRegs if they are all allocated.
-  unsigned getFirstUnallocated(const unsigned *Regs, unsigned NumRegs) const {
+  unsigned getFirstUnallocated(const MCPhysReg *Regs, unsigned NumRegs) const {
     for (unsigned i = 0; i != NumRegs; ++i)
       if (!isAllocated(Regs[i]))
         return i;
@@ -240,7 +334,7 @@ public:
   /// AllocateReg - Attempt to allocate one of the specified registers.  If none
   /// are available, return zero.  Otherwise, return the first one available,
   /// marking it and any aliases as allocated.
-  unsigned AllocateReg(const unsigned *Regs, unsigned NumRegs) {
+  unsigned AllocateReg(const MCPhysReg *Regs, unsigned NumRegs) {
     unsigned FirstUnalloc = getFirstUnallocated(Regs, NumRegs);
     if (FirstUnalloc == NumRegs)
       return 0;    // Didn't find the reg.
@@ -251,8 +345,33 @@ public:
     return Reg;
   }
 
+  /// AllocateRegBlock - Attempt to allocate a block of RegsRequired consecutive
+  /// registers. If this is not possible, return zero. Otherwise, return the first
+  /// register of the block that were allocated, marking the entire block as allocated.
+  unsigned AllocateRegBlock(const uint16_t *Regs, unsigned NumRegs, unsigned RegsRequired) {
+    for (unsigned StartIdx = 0; StartIdx <= NumRegs - RegsRequired; ++StartIdx) {
+      bool BlockAvailable = true;
+      // Check for already-allocated regs in this block
+      for (unsigned BlockIdx = 0; BlockIdx < RegsRequired; ++BlockIdx) {
+        if (isAllocated(Regs[StartIdx + BlockIdx])) {
+          BlockAvailable = false;
+          break;
+        }
+      }
+      if (BlockAvailable) {
+        // Mark the entire block as allocated
+        for (unsigned BlockIdx = 0; BlockIdx < RegsRequired; ++BlockIdx) {
+          MarkAllocated(Regs[StartIdx + BlockIdx]);
+        }
+        return Regs[StartIdx];
+      }
+    }
+    // No block was available
+    return 0;
+  }
+
   /// Version of AllocateReg with list of registers to be shadowed.
-  unsigned AllocateReg(const unsigned *Regs, const unsigned *ShadowRegs,
+  unsigned AllocateReg(const MCPhysReg *Regs, const MCPhysReg *ShadowRegs,
                        unsigned NumRegs) {
     unsigned FirstUnalloc = getFirstUnallocated(Regs, NumRegs);
     if (FirstUnalloc == NumRegs)
@@ -272,6 +391,7 @@ public:
     StackOffset = ((StackOffset + Align-1) & ~(Align-1));
     unsigned Result = StackOffset;
     StackOffset += Size;
+    MF.getFrameInfo()->ensureMaxAlignment(Align);
     return Result;
   }
 
@@ -281,12 +401,73 @@ public:
     return AllocateStack(Size, Align);
   }
 
+  /// Version of AllocateStack with list of extra registers to be shadowed.
+  /// Note that, unlike AllocateReg, this shadows ALL of the shadow registers.
+  unsigned AllocateStack(unsigned Size, unsigned Align,
+                         const MCPhysReg *ShadowRegs, unsigned NumShadowRegs) {
+    for (unsigned i = 0; i < NumShadowRegs; ++i)
+      MarkAllocated(ShadowRegs[i]);
+    return AllocateStack(Size, Align);
+  }
+
   // HandleByVal - Allocate a stack slot large enough to pass an argument by
   // value. The size and alignment information of the argument is encoded in its
   // parameter attribute.
-  void HandleByVal(unsigned ValNo, EVT ValVT,
-                   EVT LocVT, CCValAssign::LocInfo LocInfo,
+  void HandleByVal(unsigned ValNo, MVT ValVT,
+                   MVT LocVT, CCValAssign::LocInfo LocInfo,
                    int MinSize, int MinAlign, ISD::ArgFlagsTy ArgFlags);
+
+  // Returns count of byval arguments that are to be stored (even partly)
+  // in registers.
+  unsigned getInRegsParamsCount() const { return ByValRegs.size(); }
+
+  // Returns count of byval in-regs arguments proceed.
+  unsigned getInRegsParamsProcessed() const { return InRegsParamsProcessed; }
+
+  // Get information about N-th byval parameter that is stored in registers.
+  // Here "ByValParamIndex" is N.
+  void getInRegsParamInfo(unsigned InRegsParamRecordIndex,
+                          unsigned& BeginReg, unsigned& EndReg) const {
+    assert(InRegsParamRecordIndex < ByValRegs.size() &&
+           "Wrong ByVal parameter index");
+
+    const ByValInfo& info = ByValRegs[InRegsParamRecordIndex];
+    BeginReg = info.Begin;
+    EndReg = info.End;
+  }
+
+  // Add information about parameter that is kept in registers.
+  void addInRegsParamInfo(unsigned RegBegin, unsigned RegEnd) {
+    ByValRegs.push_back(ByValInfo(RegBegin, RegEnd));
+  }
+
+  // Goes either to next byval parameter (excluding "waste" record), or
+  // to the end of collection.
+  // Returns false, if end is reached.
+  bool nextInRegsParam() {
+    unsigned e = ByValRegs.size();
+    if (InRegsParamsProcessed < e)
+      ++InRegsParamsProcessed;
+    return InRegsParamsProcessed < e;
+  }
+
+  // Clear byval registers tracking info.
+  void clearByValRegsInfo() {
+    InRegsParamsProcessed = 0;
+    ByValRegs.clear();
+  }
+
+  // Rewind byval registers tracking info.
+  void rewindByValRegsInfo() {
+    InRegsParamsProcessed = 0;
+  }
+
+  ParmContext getCallOrPrologue() const { return CallOrPrologue; }
+
+  // Get list of pending assignments
+  SmallVectorImpl<llvm::CCValAssign> &getPendingLocs() {
+    return PendingLocs;
+  }
 
 private:
   /// MarkAllocated - Mark a register and all of its aliases as allocated.

@@ -11,18 +11,19 @@
 //
 //===----------------------------------------------------------------------===//
 
-#define DEBUG_TYPE "jit"
 #include "X86JITInfo.h"
 #include "X86Relocations.h"
 #include "X86Subtarget.h"
 #include "X86TargetMachine.h"
-#include "llvm/Function.h"
+#include "llvm/IR/Function.h"
 #include "llvm/Support/Compiler.h"
 #include "llvm/Support/ErrorHandling.h"
-#include "llvm/System/Valgrind.h"
+#include "llvm/Support/Valgrind.h"
 #include <cstdlib>
 #include <cstring>
 using namespace llvm;
+
+#define DEBUG_TYPE "jit"
 
 // Determine the platform we're running on
 #if defined (__x86_64__) || defined (_M_AMD64) || defined (_M_X64)
@@ -79,7 +80,7 @@ static TargetJITInfo::JITCompilerFn JITCompilerFunction;
 # define CFI(x)
 #endif
 
-// Provide a wrapper for X86CompilationCallback2 that saves non-traditional
+// Provide a wrapper for LLVMX86CompilationCallback2 that saves non-traditional
 // callee saved registers, for the fastcc calling convention.
 extern "C" {
 #if defined(X86_64_JIT)
@@ -127,9 +128,17 @@ extern "C" {
     "movaps  %xmm6, 96(%rsp)\n"
     "movaps  %xmm7, 112(%rsp)\n"
     // JIT callee
+#if defined(_WIN64) || defined(__CYGWIN__)
+    "subq    $32, %rsp\n"
+    "movq    %rbp, %rcx\n"    // Pass prev frame and return address
+    "movq    8(%rbp), %rdx\n"
+    "call    " ASMPREFIX "LLVMX86CompilationCallback2\n"
+    "addq    $32, %rsp\n"
+#else
     "movq    %rbp, %rdi\n"    // Pass prev frame and return address
     "movq    8(%rbp), %rsi\n"
-    "call    " ASMPREFIX "X86CompilationCallback2\n"
+    "call    " ASMPREFIX "LLVMX86CompilationCallback2\n"
+#endif
     // Restore all XMM arg registers
     "movaps  112(%rsp), %xmm7\n"
     "movaps  96(%rsp), %xmm6\n"
@@ -205,7 +214,7 @@ extern "C" {
     "movl    4(%ebp), %eax\n" // Pass prev frame and return address
     "movl    %eax, 4(%esp)\n"
     "movl    %ebp, (%esp)\n"
-    "call    " ASMPREFIX "X86CompilationCallback2\n"
+    "call    " ASMPREFIX "LLVMX86CompilationCallback2\n"
     "movl    %ebp, %esp\n"    // Restore ESP
     CFI(".cfi_def_cfa_register %esp\n")
     "subl    $12, %esp\n"
@@ -261,7 +270,7 @@ extern "C" {
     "movl    4(%ebp), %eax\n" // Pass prev frame and return address
     "movl    %eax, 4(%esp)\n"
     "movl    %ebp, (%esp)\n"
-    "call    " ASMPREFIX "X86CompilationCallback2\n"
+    "call    " ASMPREFIX "LLVMX86CompilationCallback2\n"
     "addl    $16, %esp\n"
     "movaps  48(%esp), %xmm3\n"
     CFI(".cfi_restore %xmm3\n")
@@ -292,7 +301,7 @@ extern "C" {
     SIZE(X86CompilationCallback_SSE)
   );
 # else
-  void X86CompilationCallback2(intptr_t *StackPtr, intptr_t RetAddr);
+  void LLVMX86CompilationCallback2(intptr_t *StackPtr, intptr_t RetAddr);
 
   _declspec(naked) void X86CompilationCallback(void) {
     __asm {
@@ -306,7 +315,7 @@ extern "C" {
       mov   eax, dword ptr [ebp+4]
       mov   dword ptr [esp+4], eax
       mov   dword ptr [esp], ebp
-      call  X86CompilationCallback2
+      call  LLVMX86CompilationCallback2
       mov   esp, ebp
       sub   esp, 12
       pop   ecx
@@ -326,20 +335,18 @@ extern "C" {
 #endif
 }
 
-/// X86CompilationCallback2 - This is the target-specific function invoked by the
+/// This is the target-specific function invoked by the
 /// function stub when we did not know the real target of a call.  This function
 /// must locate the start of the stub or call site and pass it into the JIT
 /// compiler function.
 extern "C" {
-#if !(defined (X86_64_JIT) && defined(_MSC_VER))
- // the following function is called only from this translation unit,
- // unless we are under 64bit Windows with MSC, where there is 
- // no support for inline assembly
-static
-#endif
-void ATTRIBUTE_USED
-X86CompilationCallback2(intptr_t *StackPtr, intptr_t RetAddr) {
+LLVM_ATTRIBUTE_USED // Referenced from inline asm.
+LLVM_LIBRARY_VISIBILITY void LLVMX86CompilationCallback2(intptr_t *StackPtr,
+                                                         intptr_t RetAddr) {
   intptr_t *RetAddrLoc = &StackPtr[1];
+  // We are reading raw stack data here. Tell MemorySanitizer that it is
+  // sufficiently initialized.
+  __msan_unpoison(RetAddrLoc, sizeof(*RetAddrLoc));
   assert(*RetAddrLoc == RetAddr &&
          "Could not find return address on the stack!");
 
@@ -416,20 +423,27 @@ X86CompilationCallback2(intptr_t *StackPtr, intptr_t RetAddr) {
 
 TargetJITInfo::LazyResolverFn
 X86JITInfo::getLazyResolverFunction(JITCompilerFn F) {
+  TsanIgnoreWritesBegin();
   JITCompilerFunction = F;
+  TsanIgnoreWritesEnd();
 
 #if defined (X86_32_JIT) && !defined (_MSC_VER)
-  if (Subtarget->hasSSE1())
+#if defined(__SSE__)
+  // SSE Callback should be called for SSE-enabled LLVM.
+  return X86CompilationCallback_SSE;
+#else
+  if (useSSE)
     return X86CompilationCallback_SSE;
+#endif
 #endif
 
   return X86CompilationCallback;
 }
 
-X86JITInfo::X86JITInfo(X86TargetMachine &tm) : TM(tm) {
-  Subtarget = &TM.getSubtarget<X86Subtarget>();
+X86JITInfo::X86JITInfo(bool UseSSE) {
+  useSSE = UseSSE;
   useGOT = 0;
-  TLSOffset = 0;
+  TLSOffset = nullptr;
 }
 
 void *X86JITInfo::emitGlobalValueIndirectSym(const GlobalValue* GV, void *ptr,
@@ -462,7 +476,7 @@ TargetJITInfo::StubLayout X86JITInfo::getStubLayout() {
 
 void *X86JITInfo::emitFunctionStub(const Function* F, void *Target,
                                    JITCodeEmitter &JCE) {
-  // Note, we cast to intptr_t here to silence a -pedantic warning that 
+  // Note, we cast to intptr_t here to silence a -pedantic warning that
   // complains about casting a function pointer to a normal pointer.
 #if defined (X86_32_JIT) && !defined (_MSC_VER)
   bool NotCC = (Target != (void*)(intptr_t)X86CompilationCallback &&
@@ -504,7 +518,7 @@ void *X86JITInfo::emitFunctionStub(const Function* F, void *Target,
 
   // This used to use 0xCD, but that value is used by JITMemoryManager to
   // initialize the buffer with garbage, which means it may follow a
-  // noreturn function call, confusing X86CompilationCallback2.  PR 4929.
+  // noreturn function call, confusing LLVMX86CompilationCallback2.  PR 4929.
   JCE.emitByte(0xCE);   // Interrupt - Just a marker identifying the stub!
   return Result;
 }
@@ -517,6 +531,15 @@ uintptr_t X86JITInfo::getPICJumpTableEntry(uintptr_t BB, uintptr_t Entry) {
 #else
   return BB - PICBase;
 #endif
+}
+
+template<typename T> static void addUnaligned(void *Pos, T Delta) {
+  T Value;
+  std::memcpy(reinterpret_cast<char*>(&Value), reinterpret_cast<char*>(Pos),
+              sizeof(T));
+  Value += Delta;
+  std::memcpy(reinterpret_cast<char*>(Pos), reinterpret_cast<char*>(&Value),
+              sizeof(T));
 }
 
 /// relocate - Before the JIT can run a block of code that has been emitted,
@@ -532,24 +555,24 @@ void X86JITInfo::relocate(void *Function, MachineRelocation *MR,
       // PC relative relocation, add the relocated value to the value already in
       // memory, after we adjust it for where the PC is.
       ResultPtr = ResultPtr -(intptr_t)RelocPos - 4 - MR->getConstantVal();
-      *((unsigned*)RelocPos) += (unsigned)ResultPtr;
+      addUnaligned<unsigned>(RelocPos, ResultPtr);
       break;
     }
     case X86::reloc_picrel_word: {
       // PIC base relative relocation, add the relocated value to the value
       // already in memory, after we adjust it for where the PIC base is.
       ResultPtr = ResultPtr - ((intptr_t)Function + MR->getConstantVal());
-      *((unsigned*)RelocPos) += (unsigned)ResultPtr;
+      addUnaligned<unsigned>(RelocPos, ResultPtr);
       break;
     }
     case X86::reloc_absolute_word:
     case X86::reloc_absolute_word_sext:
       // Absolute relocation, just add the relocated value to the value already
       // in memory.
-      *((unsigned*)RelocPos) += (unsigned)ResultPtr;
+      addUnaligned<unsigned>(RelocPos, ResultPtr);
       break;
     case X86::reloc_absolute_dword:
-      *((intptr_t*)RelocPos) += ResultPtr;
+      addUnaligned<intptr_t>(RelocPos, ResultPtr);
       break;
     }
   }
@@ -561,6 +584,5 @@ char* X86JITInfo::allocateThreadLocalMemory(size_t size) {
   return TLSOffset;
 #else
   llvm_unreachable("Cannot allocate thread local storage on this arch!");
-  return 0;
 #endif
 }

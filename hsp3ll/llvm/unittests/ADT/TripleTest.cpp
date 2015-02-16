@@ -79,16 +79,55 @@ TEST(TripleTest, ParsedIDs) {
   EXPECT_EQ(Triple::x86, T.getArch());
   EXPECT_EQ(Triple::Apple, T.getVendor());
   EXPECT_EQ(Triple::Darwin, T.getOS());
+  EXPECT_EQ(Triple::UnknownEnvironment, T.getEnvironment());
 
   T = Triple("x86_64-pc-linux-gnu");
   EXPECT_EQ(Triple::x86_64, T.getArch());
   EXPECT_EQ(Triple::PC, T.getVendor());
   EXPECT_EQ(Triple::Linux, T.getOS());
+  EXPECT_EQ(Triple::GNU, T.getEnvironment());
+
+  T = Triple("powerpc-bgp-linux");
+  EXPECT_EQ(Triple::ppc, T.getArch());
+  EXPECT_EQ(Triple::BGP, T.getVendor());
+  EXPECT_EQ(Triple::Linux, T.getOS());
+  EXPECT_EQ(Triple::UnknownEnvironment, T.getEnvironment());
+
+  T = Triple("powerpc-bgp-cnk");
+  EXPECT_EQ(Triple::ppc, T.getArch());
+  EXPECT_EQ(Triple::BGP, T.getVendor());
+  EXPECT_EQ(Triple::CNK, T.getOS());
+  EXPECT_EQ(Triple::UnknownEnvironment, T.getEnvironment());
+
+  T = Triple("powerpc64-bgq-linux");
+  EXPECT_EQ(Triple::ppc64, T.getArch());
+  EXPECT_EQ(Triple::BGQ, T.getVendor());
+  EXPECT_EQ(Triple::Linux, T.getOS());
+  EXPECT_EQ(Triple::UnknownEnvironment, T.getEnvironment());
+
+  T = Triple("powerpc-ibm-aix");
+  EXPECT_EQ(Triple::ppc, T.getArch());
+  EXPECT_EQ(Triple::IBM, T.getVendor());
+  EXPECT_EQ(Triple::AIX, T.getOS());
+  EXPECT_EQ(Triple::UnknownEnvironment, T.getEnvironment());
+
+  T = Triple("powerpc64-ibm-aix");
+  EXPECT_EQ(Triple::ppc64, T.getArch());
+  EXPECT_EQ(Triple::IBM, T.getVendor());
+  EXPECT_EQ(Triple::AIX, T.getOS());
+  EXPECT_EQ(Triple::UnknownEnvironment, T.getEnvironment());
 
   T = Triple("powerpc-dunno-notsure");
   EXPECT_EQ(Triple::ppc, T.getArch());
   EXPECT_EQ(Triple::UnknownVendor, T.getVendor());
   EXPECT_EQ(Triple::UnknownOS, T.getOS());
+  EXPECT_EQ(Triple::UnknownEnvironment, T.getEnvironment());
+
+  T = Triple("arm-none-none-eabi");
+  EXPECT_EQ(Triple::arm, T.getArch());
+  EXPECT_EQ(Triple::UnknownVendor, T.getVendor());
+  EXPECT_EQ(Triple::UnknownOS, T.getOS());
+  EXPECT_EQ(Triple::EABI, T.getEnvironment());
 
   T = Triple("huh");
   EXPECT_EQ(Triple::UnknownArch, T.getArch());
@@ -105,6 +144,7 @@ static std::string Join(StringRef A, StringRef B, StringRef C, StringRef D) {
 }
 
 TEST(TripleTest, Normalization) {
+
   EXPECT_EQ("", Triple::normalize(""));
   EXPECT_EQ("-", Triple::normalize("-"));
   EXPECT_EQ("--", Triple::normalize("--"));
@@ -119,10 +159,12 @@ TEST(TripleTest, Normalization) {
   EXPECT_EQ("i386-b-c", Triple::normalize("i386-b-c"));
   EXPECT_EQ("i386-a-c", Triple::normalize("a-i386-c"));
   EXPECT_EQ("i386-a-b", Triple::normalize("a-b-i386"));
+  EXPECT_EQ("i386-a-b-c", Triple::normalize("a-b-c-i386"));
 
   EXPECT_EQ("a-pc-c", Triple::normalize("a-pc-c"));
   EXPECT_EQ("-pc-b-c", Triple::normalize("pc-b-c"));
   EXPECT_EQ("a-pc-b", Triple::normalize("a-b-pc"));
+  EXPECT_EQ("a-pc-b-c", Triple::normalize("a-b-c-pc"));
 
   EXPECT_EQ("a-b-linux", Triple::normalize("a-b-linux"));
   EXPECT_EQ("--linux-b-c", Triple::normalize("linux-b-c"));
@@ -137,28 +179,24 @@ TEST(TripleTest, Normalization) {
   EXPECT_EQ("-pc", Triple::normalize("pc"));
   EXPECT_EQ("--linux", Triple::normalize("linux"));
 
+  EXPECT_EQ("x86_64--linux-gnu", Triple::normalize("x86_64-gnu-linux"));
+
   // Check that normalizing a permutated set of valid components returns a
   // triple with the unpermuted components.
   StringRef C[4];
-  C[3] = "environment";
-  for (int Arch = 1+Triple::UnknownArch; Arch < Triple::InvalidArch; ++Arch) {
+  for (int Arch = 1+Triple::UnknownArch; Arch <= Triple::amdil; ++Arch) {
     C[0] = Triple::getArchTypeName(Triple::ArchType(Arch));
     for (int Vendor = 1+Triple::UnknownVendor; Vendor <= Triple::PC;
          ++Vendor) {
       C[1] = Triple::getVendorTypeName(Triple::VendorType(Vendor));
       for (int OS = 1+Triple::UnknownOS; OS <= Triple::Minix; ++OS) {
+        if (OS == Triple::Cygwin || OS == Triple::MinGW32 || OS == Triple::Win32)
+          continue;
+
         C[2] = Triple::getOSTypeName(Triple::OSType(OS));
 
         std::string E = Join(C[0], C[1], C[2]);
-        std::string F = Join(C[0], C[1], C[2], C[3]);
         EXPECT_EQ(E, Triple::normalize(Join(C[0], C[1], C[2])));
-        EXPECT_EQ(F, Triple::normalize(Join(C[0], C[1], C[2], C[3])));
-
-        // If a value has multiple interpretations, then the permutation
-        // test will inevitably fail.  Currently this is only the case for
-        // "psp" which parses as both an architecture and an O/S.
-        if (OS == Triple::Psp)
-          continue;
 
         EXPECT_EQ(E, Triple::normalize(Join(C[0], C[2], C[1])));
         EXPECT_EQ(E, Triple::normalize(Join(C[1], C[2], C[0])));
@@ -166,43 +204,49 @@ TEST(TripleTest, Normalization) {
         EXPECT_EQ(E, Triple::normalize(Join(C[2], C[0], C[1])));
         EXPECT_EQ(E, Triple::normalize(Join(C[2], C[1], C[0])));
 
-        EXPECT_EQ(F, Triple::normalize(Join(C[0], C[1], C[3], C[2])));
-        EXPECT_EQ(F, Triple::normalize(Join(C[0], C[2], C[3], C[1])));
-        EXPECT_EQ(F, Triple::normalize(Join(C[0], C[2], C[1], C[3])));
-        EXPECT_EQ(F, Triple::normalize(Join(C[0], C[3], C[1], C[2])));
-        EXPECT_EQ(F, Triple::normalize(Join(C[0], C[3], C[2], C[1])));
-        EXPECT_EQ(F, Triple::normalize(Join(C[1], C[2], C[3], C[0])));
-        EXPECT_EQ(F, Triple::normalize(Join(C[1], C[2], C[0], C[3])));
-        EXPECT_EQ(F, Triple::normalize(Join(C[1], C[3], C[0], C[2])));
-        EXPECT_EQ(F, Triple::normalize(Join(C[1], C[3], C[2], C[0])));
-        EXPECT_EQ(F, Triple::normalize(Join(C[1], C[0], C[2], C[3])));
-        EXPECT_EQ(F, Triple::normalize(Join(C[1], C[0], C[3], C[2])));
-        EXPECT_EQ(F, Triple::normalize(Join(C[2], C[3], C[0], C[1])));
-        EXPECT_EQ(F, Triple::normalize(Join(C[2], C[3], C[1], C[0])));
-        EXPECT_EQ(F, Triple::normalize(Join(C[2], C[0], C[1], C[3])));
-        EXPECT_EQ(F, Triple::normalize(Join(C[2], C[0], C[3], C[1])));
-        EXPECT_EQ(F, Triple::normalize(Join(C[2], C[1], C[3], C[0])));
-        EXPECT_EQ(F, Triple::normalize(Join(C[2], C[1], C[0], C[3])));
-        EXPECT_EQ(F, Triple::normalize(Join(C[3], C[0], C[1], C[2])));
-        EXPECT_EQ(F, Triple::normalize(Join(C[3], C[0], C[2], C[1])));
-        EXPECT_EQ(F, Triple::normalize(Join(C[3], C[1], C[2], C[0])));
-        EXPECT_EQ(F, Triple::normalize(Join(C[3], C[1], C[0], C[2])));
-        EXPECT_EQ(F, Triple::normalize(Join(C[3], C[2], C[0], C[1])));
-        EXPECT_EQ(F, Triple::normalize(Join(C[3], C[2], C[1], C[0])));
+        for (int Env = 1 + Triple::UnknownEnvironment; Env <= Triple::Android;
+             ++Env) {
+          C[3] = Triple::getEnvironmentTypeName(Triple::EnvironmentType(Env));
+
+          std::string F = Join(C[0], C[1], C[2], C[3]);
+          EXPECT_EQ(F, Triple::normalize(Join(C[0], C[1], C[2], C[3])));
+
+          EXPECT_EQ(F, Triple::normalize(Join(C[0], C[1], C[3], C[2])));
+          EXPECT_EQ(F, Triple::normalize(Join(C[0], C[2], C[3], C[1])));
+          EXPECT_EQ(F, Triple::normalize(Join(C[0], C[2], C[1], C[3])));
+          EXPECT_EQ(F, Triple::normalize(Join(C[0], C[3], C[1], C[2])));
+          EXPECT_EQ(F, Triple::normalize(Join(C[0], C[3], C[2], C[1])));
+          EXPECT_EQ(F, Triple::normalize(Join(C[1], C[2], C[3], C[0])));
+          EXPECT_EQ(F, Triple::normalize(Join(C[1], C[2], C[0], C[3])));
+          EXPECT_EQ(F, Triple::normalize(Join(C[1], C[3], C[0], C[2])));
+          EXPECT_EQ(F, Triple::normalize(Join(C[1], C[3], C[2], C[0])));
+          EXPECT_EQ(F, Triple::normalize(Join(C[1], C[0], C[2], C[3])));
+          EXPECT_EQ(F, Triple::normalize(Join(C[1], C[0], C[3], C[2])));
+          EXPECT_EQ(F, Triple::normalize(Join(C[2], C[3], C[0], C[1])));
+          EXPECT_EQ(F, Triple::normalize(Join(C[2], C[3], C[1], C[0])));
+          EXPECT_EQ(F, Triple::normalize(Join(C[2], C[0], C[1], C[3])));
+          EXPECT_EQ(F, Triple::normalize(Join(C[2], C[0], C[3], C[1])));
+          EXPECT_EQ(F, Triple::normalize(Join(C[2], C[1], C[3], C[0])));
+          EXPECT_EQ(F, Triple::normalize(Join(C[2], C[1], C[0], C[3])));
+          EXPECT_EQ(F, Triple::normalize(Join(C[3], C[0], C[1], C[2])));
+          EXPECT_EQ(F, Triple::normalize(Join(C[3], C[0], C[2], C[1])));
+          EXPECT_EQ(F, Triple::normalize(Join(C[3], C[1], C[2], C[0])));
+          EXPECT_EQ(F, Triple::normalize(Join(C[3], C[1], C[0], C[2])));
+          EXPECT_EQ(F, Triple::normalize(Join(C[3], C[2], C[0], C[1])));
+          EXPECT_EQ(F, Triple::normalize(Join(C[3], C[2], C[1], C[0])));
+        }
       }
     }
   }
 
-  EXPECT_EQ("a-b-psp", Triple::normalize("a-b-psp"));
-  EXPECT_EQ("psp-b-c", Triple::normalize("psp-b-c"));
-
   // Various real-world funky triples.  The value returned by GCC's config.sub
   // is given in the comment.
-  EXPECT_EQ("i386--mingw32", Triple::normalize("i386-mingw32")); // i386-pc-mingw32
+  EXPECT_EQ("i386--windows-gnu", Triple::normalize("i386-mingw32")); // i386-pc-mingw32
   EXPECT_EQ("x86_64--linux-gnu", Triple::normalize("x86_64-linux-gnu")); // x86_64-pc-linux-gnu
   EXPECT_EQ("i486--linux-gnu", Triple::normalize("i486-linux-gnu")); // i486-pc-linux-gnu
   EXPECT_EQ("i386-redhat-linux", Triple::normalize("i386-redhat-linux")); // i386-redhat-linux-gnu
   EXPECT_EQ("i686--linux", Triple::normalize("i686-linux")); // i686-pc-linux-gnu
+  EXPECT_EQ("arm-none--eabi", Triple::normalize("arm-none-eabi")); // arm-none-eabi
 }
 
 TEST(TripleTest, MutateName) {
@@ -210,6 +254,7 @@ TEST(TripleTest, MutateName) {
   EXPECT_EQ(Triple::UnknownArch, T.getArch());
   EXPECT_EQ(Triple::UnknownVendor, T.getVendor());
   EXPECT_EQ(Triple::UnknownOS, T.getOS());
+  EXPECT_EQ(Triple::UnknownEnvironment, T.getEnvironment());
 
   T.setArchName("i386");
   EXPECT_EQ(Triple::x86, T.getArch());
@@ -243,6 +288,292 @@ TEST(TripleTest, MutateName) {
   EXPECT_EQ(Triple::PC, T.getVendor());
   EXPECT_EQ(Triple::Darwin, T.getOS());
   EXPECT_EQ("i386-pc-darwin", T.getTriple());
+
 }
 
+TEST(TripleTest, BitWidthPredicates) {
+  Triple T;
+  EXPECT_FALSE(T.isArch16Bit());
+  EXPECT_FALSE(T.isArch32Bit());
+  EXPECT_FALSE(T.isArch64Bit());
+
+  T.setArch(Triple::arm);
+  EXPECT_FALSE(T.isArch16Bit());
+  EXPECT_TRUE(T.isArch32Bit());
+  EXPECT_FALSE(T.isArch64Bit());
+
+  T.setArch(Triple::hexagon);
+  EXPECT_FALSE(T.isArch16Bit());
+  EXPECT_TRUE(T.isArch32Bit());
+  EXPECT_FALSE(T.isArch64Bit());
+
+  T.setArch(Triple::mips);
+  EXPECT_FALSE(T.isArch16Bit());
+  EXPECT_TRUE(T.isArch32Bit());
+  EXPECT_FALSE(T.isArch64Bit());
+
+  T.setArch(Triple::mips64);
+  EXPECT_FALSE(T.isArch16Bit());
+  EXPECT_FALSE(T.isArch32Bit());
+  EXPECT_TRUE(T.isArch64Bit());
+
+  T.setArch(Triple::msp430);
+  EXPECT_TRUE(T.isArch16Bit());
+  EXPECT_FALSE(T.isArch32Bit());
+  EXPECT_FALSE(T.isArch64Bit());
+
+  T.setArch(Triple::ppc);
+  EXPECT_FALSE(T.isArch16Bit());
+  EXPECT_TRUE(T.isArch32Bit());
+  EXPECT_FALSE(T.isArch64Bit());
+
+  T.setArch(Triple::ppc64);
+  EXPECT_FALSE(T.isArch16Bit());
+  EXPECT_FALSE(T.isArch32Bit());
+  EXPECT_TRUE(T.isArch64Bit());
+
+  T.setArch(Triple::x86);
+  EXPECT_FALSE(T.isArch16Bit());
+  EXPECT_TRUE(T.isArch32Bit());
+  EXPECT_FALSE(T.isArch64Bit());
+
+  T.setArch(Triple::x86_64);
+  EXPECT_FALSE(T.isArch16Bit());
+  EXPECT_FALSE(T.isArch32Bit());
+  EXPECT_TRUE(T.isArch64Bit());
+}
+
+TEST(TripleTest, BitWidthArchVariants) {
+  Triple T;
+  EXPECT_EQ(Triple::UnknownArch, T.get32BitArchVariant().getArch());
+  EXPECT_EQ(Triple::UnknownArch, T.get64BitArchVariant().getArch());
+
+  T.setArch(Triple::UnknownArch);
+  EXPECT_EQ(Triple::UnknownArch, T.get32BitArchVariant().getArch());
+  EXPECT_EQ(Triple::UnknownArch, T.get64BitArchVariant().getArch());
+
+  T.setArch(Triple::mips);
+  EXPECT_EQ(Triple::mips, T.get32BitArchVariant().getArch());
+  EXPECT_EQ(Triple::mips64, T.get64BitArchVariant().getArch());
+
+  T.setArch(Triple::mipsel);
+  EXPECT_EQ(Triple::mipsel, T.get32BitArchVariant().getArch());
+  EXPECT_EQ(Triple::mips64el, T.get64BitArchVariant().getArch());
+
+  T.setArch(Triple::ppc);
+  EXPECT_EQ(Triple::ppc, T.get32BitArchVariant().getArch());
+  EXPECT_EQ(Triple::ppc64, T.get64BitArchVariant().getArch());
+
+  T.setArch(Triple::nvptx);
+  EXPECT_EQ(Triple::nvptx, T.get32BitArchVariant().getArch());
+  EXPECT_EQ(Triple::nvptx64, T.get64BitArchVariant().getArch());
+
+  T.setArch(Triple::sparc);
+  EXPECT_EQ(Triple::sparc, T.get32BitArchVariant().getArch());
+  EXPECT_EQ(Triple::sparcv9, T.get64BitArchVariant().getArch());
+
+  T.setArch(Triple::x86);
+  EXPECT_EQ(Triple::x86, T.get32BitArchVariant().getArch());
+  EXPECT_EQ(Triple::x86_64, T.get64BitArchVariant().getArch());
+
+  T.setArch(Triple::mips64);
+  EXPECT_EQ(Triple::mips, T.get32BitArchVariant().getArch());
+  EXPECT_EQ(Triple::mips64, T.get64BitArchVariant().getArch());
+
+  T.setArch(Triple::mips64el);
+  EXPECT_EQ(Triple::mipsel, T.get32BitArchVariant().getArch());
+  EXPECT_EQ(Triple::mips64el, T.get64BitArchVariant().getArch());
+
+  T.setArch(Triple::ppc64);
+  EXPECT_EQ(Triple::ppc, T.get32BitArchVariant().getArch());
+  EXPECT_EQ(Triple::ppc64, T.get64BitArchVariant().getArch());
+
+  T.setArch(Triple::nvptx64);
+  EXPECT_EQ(Triple::nvptx, T.get32BitArchVariant().getArch());
+  EXPECT_EQ(Triple::nvptx64, T.get64BitArchVariant().getArch());
+
+  T.setArch(Triple::sparcv9);
+  EXPECT_EQ(Triple::sparc, T.get32BitArchVariant().getArch());
+  EXPECT_EQ(Triple::sparcv9, T.get64BitArchVariant().getArch());
+
+  T.setArch(Triple::x86_64);
+  EXPECT_EQ(Triple::x86, T.get32BitArchVariant().getArch());
+  EXPECT_EQ(Triple::x86_64, T.get64BitArchVariant().getArch());
+}
+
+TEST(TripleTest, getOSVersion) {
+  Triple T;
+  unsigned Major, Minor, Micro;
+
+  T = Triple("i386-apple-darwin9");
+  EXPECT_TRUE(T.isMacOSX());
+  EXPECT_FALSE(T.isiOS());
+  EXPECT_FALSE(T.isArch16Bit());
+  EXPECT_TRUE(T.isArch32Bit());
+  EXPECT_FALSE(T.isArch64Bit());
+  T.getMacOSXVersion(Major, Minor, Micro);
+  EXPECT_EQ((unsigned)10, Major);
+  EXPECT_EQ((unsigned)5, Minor);
+  EXPECT_EQ((unsigned)0, Micro);
+  T.getiOSVersion(Major, Minor, Micro);
+  EXPECT_EQ((unsigned)5, Major);
+  EXPECT_EQ((unsigned)0, Minor);
+  EXPECT_EQ((unsigned)0, Micro);
+
+  T = Triple("x86_64-apple-darwin9");
+  EXPECT_TRUE(T.isMacOSX());
+  EXPECT_FALSE(T.isiOS());
+  EXPECT_FALSE(T.isArch16Bit());
+  EXPECT_FALSE(T.isArch32Bit());
+  EXPECT_TRUE(T.isArch64Bit());
+  T.getMacOSXVersion(Major, Minor, Micro);
+  EXPECT_EQ((unsigned)10, Major);
+  EXPECT_EQ((unsigned)5, Minor);
+  EXPECT_EQ((unsigned)0, Micro);
+  T.getiOSVersion(Major, Minor, Micro);
+  EXPECT_EQ((unsigned)5, Major);
+  EXPECT_EQ((unsigned)0, Minor);
+  EXPECT_EQ((unsigned)0, Micro);
+
+  T = Triple("x86_64-apple-macosx");
+  EXPECT_TRUE(T.isMacOSX());
+  EXPECT_FALSE(T.isiOS());
+  EXPECT_FALSE(T.isArch16Bit());
+  EXPECT_FALSE(T.isArch32Bit());
+  EXPECT_TRUE(T.isArch64Bit());
+  T.getMacOSXVersion(Major, Minor, Micro);
+  EXPECT_EQ((unsigned)10, Major);
+  EXPECT_EQ((unsigned)4, Minor);
+  EXPECT_EQ((unsigned)0, Micro);
+  T.getiOSVersion(Major, Minor, Micro);
+  EXPECT_EQ((unsigned)5, Major);
+  EXPECT_EQ((unsigned)0, Minor);
+  EXPECT_EQ((unsigned)0, Micro);
+
+  T = Triple("x86_64-apple-macosx10.7");
+  EXPECT_TRUE(T.isMacOSX());
+  EXPECT_FALSE(T.isiOS());
+  EXPECT_FALSE(T.isArch16Bit());
+  EXPECT_FALSE(T.isArch32Bit());
+  EXPECT_TRUE(T.isArch64Bit());
+  T.getMacOSXVersion(Major, Minor, Micro);
+  EXPECT_EQ((unsigned)10, Major);
+  EXPECT_EQ((unsigned)7, Minor);
+  EXPECT_EQ((unsigned)0, Micro);
+  T.getiOSVersion(Major, Minor, Micro);
+  EXPECT_EQ((unsigned)5, Major);
+  EXPECT_EQ((unsigned)0, Minor);
+  EXPECT_EQ((unsigned)0, Micro);
+
+  T = Triple("armv7-apple-ios");
+  EXPECT_FALSE(T.isMacOSX());
+  EXPECT_TRUE(T.isiOS());
+  EXPECT_FALSE(T.isArch16Bit());
+  EXPECT_TRUE(T.isArch32Bit());
+  EXPECT_FALSE(T.isArch64Bit());
+  T.getMacOSXVersion(Major, Minor, Micro);
+  EXPECT_EQ((unsigned)10, Major);
+  EXPECT_EQ((unsigned)4, Minor);
+  EXPECT_EQ((unsigned)0, Micro);
+  T.getiOSVersion(Major, Minor, Micro);
+  EXPECT_EQ((unsigned)5, Major);
+  EXPECT_EQ((unsigned)0, Minor);
+  EXPECT_EQ((unsigned)0, Micro);
+
+  T = Triple("armv7-apple-ios7.0");
+  EXPECT_FALSE(T.isMacOSX());
+  EXPECT_TRUE(T.isiOS());
+  EXPECT_FALSE(T.isArch16Bit());
+  EXPECT_TRUE(T.isArch32Bit());
+  EXPECT_FALSE(T.isArch64Bit());
+  T.getMacOSXVersion(Major, Minor, Micro);
+  EXPECT_EQ((unsigned)10, Major);
+  EXPECT_EQ((unsigned)4, Minor);
+  EXPECT_EQ((unsigned)0, Micro);
+  T.getiOSVersion(Major, Minor, Micro);
+  EXPECT_EQ((unsigned)7, Major);
+  EXPECT_EQ((unsigned)0, Minor);
+  EXPECT_EQ((unsigned)0, Micro);
+}
+
+TEST(TripleTest, FileFormat) {
+  EXPECT_EQ(Triple::ELF, Triple("i686-unknown-linux-gnu").getObjectFormat());
+  EXPECT_EQ(Triple::ELF, Triple("i686-unknown-freebsd").getObjectFormat());
+  EXPECT_EQ(Triple::ELF, Triple("i686-unknown-netbsd").getObjectFormat());
+  EXPECT_EQ(Triple::ELF, Triple("i686--win32-elf").getObjectFormat());
+  EXPECT_EQ(Triple::ELF, Triple("i686---elf").getObjectFormat());
+
+  EXPECT_EQ(Triple::MachO, Triple("i686-apple-macosx").getObjectFormat());
+  EXPECT_EQ(Triple::MachO, Triple("i686-apple-ios").getObjectFormat());
+  EXPECT_EQ(Triple::MachO, Triple("i686---macho").getObjectFormat());
+
+  EXPECT_EQ(Triple::COFF, Triple("i686--win32").getObjectFormat());
+
+  EXPECT_EQ(Triple::ELF, Triple("i686-pc-windows-msvc-elf").getObjectFormat());
+  EXPECT_EQ(Triple::ELF, Triple("i686-pc-cygwin-elf").getObjectFormat());
+
+  Triple MSVCNormalized(Triple::normalize("i686-pc-windows-msvc-elf"));
+  EXPECT_EQ(Triple::ELF, MSVCNormalized.getObjectFormat());
+
+  Triple GNUWindowsNormalized(Triple::normalize("i686-pc-windows-gnu-elf"));
+  EXPECT_EQ(Triple::ELF, GNUWindowsNormalized.getObjectFormat());
+
+  Triple CygnusNormalised(Triple::normalize("i686-pc-windows-cygnus-elf"));
+  EXPECT_EQ(Triple::ELF, CygnusNormalised.getObjectFormat());
+
+  Triple CygwinNormalized(Triple::normalize("i686-pc-cygwin-elf"));
+  EXPECT_EQ(Triple::ELF, CygwinNormalized.getObjectFormat());
+
+  Triple T = Triple("");
+  T.setObjectFormat(Triple::ELF);
+  EXPECT_EQ(Triple::ELF, T.getObjectFormat());
+}
+
+TEST(TripleTest, NormalizeWindows) {
+  EXPECT_EQ("i686-pc-windows-msvc", Triple::normalize("i686-pc-win32"));
+  EXPECT_EQ("i686--windows-msvc", Triple::normalize("i686-win32"));
+  EXPECT_EQ("i686-pc-windows-gnu", Triple::normalize("i686-pc-mingw32"));
+  EXPECT_EQ("i686--windows-gnu", Triple::normalize("i686-mingw32"));
+  EXPECT_EQ("i686-pc-windows-gnu", Triple::normalize("i686-pc-mingw32-w64"));
+  EXPECT_EQ("i686--windows-gnu", Triple::normalize("i686-mingw32-w64"));
+  EXPECT_EQ("i686-pc-windows-cygnus", Triple::normalize("i686-pc-cygwin"));
+  EXPECT_EQ("i686--windows-cygnus", Triple::normalize("i686-cygwin"));
+
+  EXPECT_EQ("x86_64-pc-windows-msvc", Triple::normalize("x86_64-pc-win32"));
+  EXPECT_EQ("x86_64--windows-msvc", Triple::normalize("x86_64-win32"));
+  EXPECT_EQ("x86_64-pc-windows-gnu", Triple::normalize("x86_64-pc-mingw32"));
+  EXPECT_EQ("x86_64--windows-gnu", Triple::normalize("x86_64-mingw32"));
+  EXPECT_EQ("x86_64-pc-windows-gnu", Triple::normalize("x86_64-pc-mingw32-w64"));
+  EXPECT_EQ("x86_64--windows-gnu", Triple::normalize("x86_64-mingw32-w64"));
+
+  EXPECT_EQ("i686-pc-windows-elf", Triple::normalize("i686-pc-win32-elf"));
+  EXPECT_EQ("i686--windows-elf", Triple::normalize("i686-win32-elf"));
+  EXPECT_EQ("i686-pc-windows-macho", Triple::normalize("i686-pc-win32-macho"));
+  EXPECT_EQ("i686--windows-macho", Triple::normalize("i686-win32-macho"));
+
+  EXPECT_EQ("x86_64-pc-windows-elf", Triple::normalize("x86_64-pc-win32-elf"));
+  EXPECT_EQ("x86_64--windows-elf", Triple::normalize("x86_64-win32-elf"));
+  EXPECT_EQ("x86_64-pc-windows-macho", Triple::normalize("x86_64-pc-win32-macho"));
+  EXPECT_EQ("x86_64--windows-macho", Triple::normalize("x86_64-win32-macho"));
+
+  EXPECT_EQ("i686-pc-windows-cygnus",
+            Triple::normalize("i686-pc-windows-cygnus"));
+  EXPECT_EQ("i686-pc-windows-gnu", Triple::normalize("i686-pc-windows-gnu"));
+  EXPECT_EQ("i686-pc-windows-itanium", Triple::normalize("i686-pc-windows-itanium"));
+  EXPECT_EQ("i686-pc-windows-msvc", Triple::normalize("i686-pc-windows-msvc"));
+
+  EXPECT_EQ("i686-pc-windows-elf", Triple::normalize("i686-pc-windows-elf-elf"));
+}
+
+TEST(TripleTest, getARMCPUForArch) {
+  {
+    llvm::Triple Triple("armv7s-apple-ios7");
+    EXPECT_STREQ("swift", Triple.getARMCPUForArch());
+  }
+  {
+    llvm::Triple Triple("armv7-apple-ios7");
+    EXPECT_STREQ("cortex-a8", Triple.getARMCPUForArch());
+    EXPECT_STREQ("swift", Triple.getARMCPUForArch("armv7s"));
+  }
+}
 }

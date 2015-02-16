@@ -6,7 +6,7 @@
 #
 # You can specify TARGETS=ppc (or i386) on the buildit command line to limit the
 # build to just one target. The default is for ppc and i386. The compiler
-# targetted at this host gets built anyway, but not installed unless it's listed
+# targeted at this host gets built anyway, but not installed unless it's listed
 # in TARGETS.
 
 # Include the set of standard Apple makefile definitions.
@@ -32,7 +32,7 @@ DSTROOT = $(OBJROOT)/../dst
 
 #######################################################################
 
-PREFIX = /Developer/usr/local
+PREFIX = /usr/local
 
 # Unless assertions are forced on in the GMAKE command line, disable them.
 ifndef ENABLE_ASSERTIONS
@@ -45,9 +45,6 @@ LLVM_OPTIMIZED := no
 else
 LLVM_OPTIMIZED := yes
 endif
-
-# Default to not install libLTO.dylib.
-INSTALL_LIBLTO := no
 
 # Default to do a native build, not a cross-build for an ARM host or simulator.
 ARM_HOSTED_BUILD := no
@@ -66,7 +63,7 @@ install: $(OBJROOT) $(SYMROOT) $(DSTROOT)
 	cd $(OBJROOT) && \
 	  $(SRC)/utils/buildit/build_llvm "$(RC_ARCHS)" "$(TARGETS)" \
 	    $(SRC) $(PREFIX) $(DSTROOT) $(SYMROOT) \
-	    $(ENABLE_ASSERTIONS) $(LLVM_OPTIMIZED) $(INSTALL_LIBLTO) \
+	    $(ENABLE_ASSERTIONS) $(LLVM_OPTIMIZED) \
 	    $(ARM_HOSTED_BUILD) $(IOS_SIM_BUILD) \
 	    $(RC_ProjectSourceVersion) $(RC_ProjectSourceSubversion) 
 
@@ -79,6 +76,10 @@ EmbeddedHosted:
 EmbeddedSim:
 	export MACOSX_DEPLOYMENT_TARGET=`sw_vers -productVersion`; \
 	$(MAKE) IOS_SIM_BUILD=yes PREFIX=$(SDKROOT)/usr/local install
+
+Embedded:
+	ARM_PLATFORM=`xcodebuild -version -sdk iphoneos PlatformPath` && \
+	$(MAKE) DSTROOT=$(DSTROOT)$$ARM_PLATFORM/Developer install
 
 # installhdrs does nothing, because the headers aren't useful until
 # the compiler is installed.
@@ -128,4 +129,4 @@ clean:
 $(OBJROOT) $(SYMROOT) $(DSTROOT):
 	mkdir -p $@
 
-.PHONY: install installsrc clean EmbeddedHosted EmbeddedSim
+.PHONY: install installsrc clean EmbeddedHosted EmbeddedSim Embedded

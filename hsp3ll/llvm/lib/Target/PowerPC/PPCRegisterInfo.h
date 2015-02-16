@@ -1,4 +1,4 @@
-//===- PPCRegisterInfo.h - PowerPC Register Information Impl -----*- C++ -*-==//
+//===-- PPCRegisterInfo.h - PowerPC Register Information Impl ---*- C++ -*-===//
 //
 //                     The LLVM Compiler Infrastructure
 //
@@ -16,8 +16,10 @@
 #define POWERPC32_REGISTERINFO_H
 
 #include "PPC.h"
-#include "PPCGenRegisterInfo.h.inc"
-#include <map>
+#include "llvm/ADT/DenseMap.h"
+
+#define GET_REGINFO_HEADER
+#include "PPCGenRegisterInfo.inc"
 
 namespace llvm {
 class PPCSubtarget;
@@ -25,68 +27,85 @@ class TargetInstrInfo;
 class Type;
 
 class PPCRegisterInfo : public PPCGenRegisterInfo {
-  std::map<unsigned, unsigned> ImmToIdxMap;
+  DenseMap<unsigned, unsigned> ImmToIdxMap;
   const PPCSubtarget &Subtarget;
-  const TargetInstrInfo &TII;
 public:
-  PPCRegisterInfo(const PPCSubtarget &SubTarget, const TargetInstrInfo &tii);
+  PPCRegisterInfo(const PPCSubtarget &SubTarget);
   
-  /// getRegisterNumbering - Given the enum value for some register, e.g.
-  /// PPC::F14, return the number that it corresponds to (e.g. 14).
-  static unsigned getRegisterNumbering(unsigned RegEnum);
-
   /// getPointerRegClass - Return the register class to use to hold pointers.
   /// This is used for addressing modes.
-  virtual const TargetRegisterClass *getPointerRegClass(unsigned Kind=0) const;  
+  const TargetRegisterClass *
+  getPointerRegClass(const MachineFunction &MF, unsigned Kind=0) const override;
+
+  unsigned getRegPressureLimit(const TargetRegisterClass *RC,
+                               MachineFunction &MF) const override;
+
+  const TargetRegisterClass*
+  getLargestLegalSuperClass(const TargetRegisterClass *RC) const override;
 
   /// Code Generation virtual methods...
-  const unsigned *getCalleeSavedRegs(const MachineFunction* MF = 0) const;
+  const MCPhysReg *
+  getCalleeSavedRegs(const MachineFunction* MF =nullptr) const override;
+  const uint32_t *getCallPreservedMask(CallingConv::ID CC) const override;
+  const uint32_t *getNoPreservedMask() const;
 
-  BitVector getReservedRegs(const MachineFunction &MF) const;
+  BitVector getReservedRegs(const MachineFunction &MF) const override;
 
-  /// targetHandlesStackFrameRounding - Returns true if the target is
-  /// responsible for rounding up the stack frame (probably at emitPrologue
-  /// time).
-  bool targetHandlesStackFrameRounding() const { return true; }
+  /// We require the register scavenger.
+  bool requiresRegisterScavenging(const MachineFunction &MF) const override {
+    return true;
+  }
 
-  /// requiresRegisterScavenging - We require a register scavenger.
-  /// FIXME (64-bit): Should be inlined.
-  bool requiresRegisterScavenging(const MachineFunction &MF) const;
+  bool requiresFrameIndexScavenging(const MachineFunction &MF) const override {
+    return true;
+  }
 
-  bool hasFP(const MachineFunction &MF) const;
+  bool trackLivenessAfterRegAlloc(const MachineFunction &MF) const override {
+    return true;
+  }
 
-  void eliminateCallFramePseudoInstr(MachineFunction &MF,
-                                     MachineBasicBlock &MBB,
-                                     MachineBasicBlock::iterator I) const;
+  bool requiresVirtualBaseRegisters(const MachineFunction &MF) const override {
+    return true;
+  }
 
-  void lowerDynamicAlloc(MachineBasicBlock::iterator II,
-                         int SPAdj, RegScavenger *RS) const;
-  void lowerCRSpilling(MachineBasicBlock::iterator II, unsigned FrameIndex,
-                       int SPAdj, RegScavenger *RS) const;
+  void lowerDynamicAlloc(MachineBasicBlock::iterator II) const;
+  void lowerCRSpilling(MachineBasicBlock::iterator II,
+                       unsigned FrameIndex) const;
+  void lowerCRRestore(MachineBasicBlock::iterator II,
+                      unsigned FrameIndex) const;
+  void lowerCRBitSpilling(MachineBasicBlock::iterator II,
+                          unsigned FrameIndex) const;
+  void lowerCRBitRestore(MachineBasicBlock::iterator II,
+                         unsigned FrameIndex) const;
+  void lowerVRSAVESpilling(MachineBasicBlock::iterator II,
+                           unsigned FrameIndex) const;
+  void lowerVRSAVERestore(MachineBasicBlock::iterator II,
+                          unsigned FrameIndex) const;
+
+  bool hasReservedSpillSlot(const MachineFunction &MF, unsigned Reg,
+			    int &FrameIdx) const override;
   void eliminateFrameIndex(MachineBasicBlock::iterator II,
-                           int SPAdj, RegScavenger *RS = NULL) const;
+                           int SPAdj, unsigned FIOperandNum,
+                           RegScavenger *RS = nullptr) const override;
 
-  /// determineFrameLayout - Determine the size of the frame and maximum call
-  /// frame size.
-  void determineFrameLayout(MachineFunction &MF) const;
-
-  void processFunctionBeforeCalleeSavedScan(MachineFunction &MF,
-                                            RegScavenger *RS = NULL) const;
-  void processFunctionBeforeFrameFinalized(MachineFunction &MF) const;
-
-  void emitPrologue(MachineFunction &MF) const;
-  void emitEpilogue(MachineFunction &MF, MachineBasicBlock &MBB) const;
+  // Support for virtual base registers.
+  bool needsFrameBaseReg(MachineInstr *MI, int64_t Offset) const override;
+  void materializeFrameBaseRegister(MachineBasicBlock *MBB,
+                                    unsigned BaseReg, int FrameIdx,
+                                    int64_t Offset) const override;
+  void resolveFrameIndex(MachineInstr &MI, unsigned BaseReg,
+                         int64_t Offset) const override;
+  bool isFrameOffsetLegal(const MachineInstr *MI,
+                          int64_t Offset) const override;
 
   // Debug information queries.
-  unsigned getRARegister() const;
-  unsigned getFrameRegister(const MachineFunction &MF) const;
-  void getInitialFrameState(std::vector<MachineMove> &Moves) const;
+  unsigned getFrameRegister(const MachineFunction &MF) const override;
 
-  // Exception handling queries.
-  unsigned getEHExceptionRegister() const;
-  unsigned getEHHandlerRegister() const;
-
-  int getDwarfRegNum(unsigned RegNum, bool isEH) const;
+  // Base pointer (stack realignment) support.
+  unsigned getBaseRegister(const MachineFunction &MF) const;
+  bool hasBasePointer(const MachineFunction &MF) const;
+  bool canRealignStack(const MachineFunction &MF) const;
+  bool needsStackRealignment(const MachineFunction &MF) const override;
 };
 
 } // end namespace llvm

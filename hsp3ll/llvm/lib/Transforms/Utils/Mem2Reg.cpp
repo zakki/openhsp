@@ -12,33 +12,33 @@
 //
 //===----------------------------------------------------------------------===//
 
-#define DEBUG_TYPE "mem2reg"
 #include "llvm/Transforms/Scalar.h"
+#include "llvm/ADT/Statistic.h"
+#include "llvm/IR/Dominators.h"
+#include "llvm/IR/Function.h"
+#include "llvm/IR/Instructions.h"
 #include "llvm/Transforms/Utils/PromoteMemToReg.h"
 #include "llvm/Transforms/Utils/UnifyFunctionExitNodes.h"
-#include "llvm/Analysis/Dominators.h"
-#include "llvm/Instructions.h"
-#include "llvm/Function.h"
-#include "llvm/ADT/Statistic.h"
 using namespace llvm;
+
+#define DEBUG_TYPE "mem2reg"
 
 STATISTIC(NumPromoted, "Number of alloca's promoted");
 
 namespace {
   struct PromotePass : public FunctionPass {
     static char ID; // Pass identification, replacement for typeid
-    PromotePass() : FunctionPass(ID) {}
+    PromotePass() : FunctionPass(ID) {
+      initializePromotePassPass(*PassRegistry::getPassRegistry());
+    }
 
     // runOnFunction - To run this pass, first we calculate the alloca
     // instructions that are safe for promotion, then we promote each one.
     //
-    virtual bool runOnFunction(Function &F);
+    bool runOnFunction(Function &F) override;
 
-    // getAnalysisUsage - We need dominance frontiers
-    //
-    virtual void getAnalysisUsage(AnalysisUsage &AU) const {
-      AU.addRequired<DominatorTree>();
-      AU.addRequired<DominanceFrontier>();
+    void getAnalysisUsage(AnalysisUsage &AU) const override {
+      AU.addRequired<DominatorTreeWrapperPass>();
       AU.setPreservesCFG();
       // This is a cluster of orthogonal Transforms
       AU.addPreserved<UnifyFunctionExitNodes>();
@@ -49,8 +49,11 @@ namespace {
 }  // end of anonymous namespace
 
 char PromotePass::ID = 0;
-INITIALIZE_PASS(PromotePass, "mem2reg", "Promote Memory to Register",
-                false, false);
+INITIALIZE_PASS_BEGIN(PromotePass, "mem2reg", "Promote Memory to Register",
+                false, false)
+INITIALIZE_PASS_DEPENDENCY(DominatorTreeWrapperPass)
+INITIALIZE_PASS_END(PromotePass, "mem2reg", "Promote Memory to Register",
+                false, false)
 
 bool PromotePass::runOnFunction(Function &F) {
   std::vector<AllocaInst*> Allocas;
@@ -59,8 +62,7 @@ bool PromotePass::runOnFunction(Function &F) {
 
   bool Changed  = false;
 
-  DominatorTree &DT = getAnalysis<DominatorTree>();
-  DominanceFrontier &DF = getAnalysis<DominanceFrontier>();
+  DominatorTree &DT = getAnalysis<DominatorTreeWrapperPass>().getDomTree();
 
   while (1) {
     Allocas.clear();
@@ -74,7 +76,7 @@ bool PromotePass::runOnFunction(Function &F) {
 
     if (Allocas.empty()) break;
 
-    PromoteMemToReg(Allocas, DT, DF);
+    PromoteMemToReg(Allocas, DT);
     NumPromoted += Allocas.size();
     Changed = true;
   }

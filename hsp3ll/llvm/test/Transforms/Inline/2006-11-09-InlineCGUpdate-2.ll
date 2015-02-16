@@ -2,7 +2,6 @@
 ; PR993
 target datalayout = "e-p:32:32"
 target triple = "i386-unknown-openbsd3.9"
-deplibs = [ "stdc++", "c", "crtend" ]
 	%"struct.__gnu_cxx::__normal_iterator<char*,std::basic_string<char, std::char_traits<char>, std::allocator<char> > >" = type { i8* }
 	%"struct.__gnu_cxx::char_producer<char>" = type { i32 (...)** }
 	%struct.__sFILE = type { i8*, i32, i32, i16, i16, %struct.__sbuf, i32, i8*, i32 (i8*)*, i32 (i8*, i8*, i32)*, i64 (i8*, i64, i32)*, i32 (i8*, i8*, i32)*, %struct.__sbuf, i8*, i32, [3 x i8], [1 x i8], %struct.__sbuf, i32, i64 }
@@ -114,7 +113,7 @@ entry:
 define fastcc void @_ZSt19__throw_ios_failurePKc() {
 entry:
 	call fastcc void @_ZNSsC1EPKcRKSaIcE( )
-	unwind
+	unreachable
 }
 
 define void @_GLOBAL__D__ZSt23lexicographical_compareIPKaS1_EbT_S2_T0_S3_() {
@@ -133,10 +132,12 @@ entry:
 			to label %try_exit.0 unwind label %try_catch.0
 
 try_catch.0:		; preds = %entry
-	unreachable
+        %exn = landingpad {i8*, i32} personality i32 (...)* @__gxx_personality_v0
+                 catch i8* null
+	resume { i8*, i32 } %exn
 
 try_exit.0:		; preds = %entry
-	unwind
+	unreachable
 }
 
 define fastcc void @_ZNSt11logic_errorC1ERKSs() {
@@ -153,7 +154,7 @@ entry:
 define fastcc void @_ZSt20__throw_length_errorPKc() {
 entry:
 	call fastcc void @_ZNSt12length_errorC1ERKSs( )
-	unwind
+	unreachable
 }
 
 define fastcc void @_ZNSt12length_errorC1ERKSs() {
@@ -162,7 +163,9 @@ entry:
 			to label %_ZNSt11logic_errorC2ERKSs.exit unwind label %invoke_catch.i
 
 invoke_catch.i:		; preds = %entry
-	unwind
+        %exn = landingpad {i8*, i32} personality i32 (...)* @__gxx_personality_v0
+                 catch i8* null
+	resume { i8*, i32 } %exn
 
 _ZNSt11logic_errorC2ERKSs.exit:		; preds = %entry
 	ret void
@@ -199,8 +202,10 @@ entry:
 			to label %invoke_cont.1 unwind label %invoke_catch.1
 
 invoke_catch.1:		; preds = %entry
+        %exn = landingpad {i8*, i32} personality i32 (...)* @__gxx_personality_v0
+                 catch i8* null
 	call fastcc void @_ZNSaIcED1Ev( )
-	unwind
+	resume { i8*, i32 } %exn
 
 invoke_cont.1:		; preds = %entry
 	call fastcc void @_ZNSaIcEC2ERKS_( )
@@ -243,3 +248,5 @@ define fastcc void @_ZN9__gnu_cxx12__pool_allocILb1ELi0EE9_S_refillEj() {
 entry:
 	unreachable
 }
+
+declare i32 @__gxx_personality_v0(...)

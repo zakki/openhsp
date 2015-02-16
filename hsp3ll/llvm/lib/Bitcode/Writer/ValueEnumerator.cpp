@@ -12,29 +12,20 @@
 //===----------------------------------------------------------------------===//
 
 #include "ValueEnumerator.h"
-#include "llvm/Constants.h"
-#include "llvm/DerivedTypes.h"
-#include "llvm/Module.h"
-#include "llvm/TypeSymbolTable.h"
-#include "llvm/ValueSymbolTable.h"
-#include "llvm/Instructions.h"
+#include "llvm/ADT/STLExtras.h"
+#include "llvm/ADT/SmallPtrSet.h"
+#include "llvm/IR/Constants.h"
+#include "llvm/IR/DerivedTypes.h"
+#include "llvm/IR/Instructions.h"
+#include "llvm/IR/Module.h"
+#include "llvm/IR/ValueSymbolTable.h"
+#include "llvm/Support/Debug.h"
+#include "llvm/Support/raw_ostream.h"
 #include <algorithm>
 using namespace llvm;
 
-static bool isSingleValueType(const std::pair<const llvm::Type*,
-                              unsigned int> &P) {
-  return P.first->isSingleValueType();
-}
-
-static bool isIntegerValue(const std::pair<const Value*, unsigned> &V) {
-  return V.first->getType()->isIntegerTy();
-}
-
-static bool CompareByFrequency(const std::pair<const llvm::Type*,
-                               unsigned int> &P1,
-                               const std::pair<const llvm::Type*,
-                               unsigned int> &P2) {
-  return P1.second > P2.second;
+static bool isIntOrIntVectorValue(const std::pair<const Value*, unsigned> &V) {
+  return V.first->getType()->isIntOrIntVectorTy();
 }
 
 /// ValueEnumerator - Enumerate module-level information.
@@ -69,10 +60,12 @@ ValueEnumerator::ValueEnumerator(const Module *M) {
        I != E; ++I)
     EnumerateValue(I->getAliasee());
 
-  // Enumerate types used by the type symbol table.
-  EnumerateTypeSymbolTable(M->getTypeSymbolTable());
+  // Enumerate the prefix data constants.
+  for (Module::const_iterator I = M->begin(), E = M->end(); I != E; ++I)
+    if (I->hasPrefixData())
+      EnumerateValue(I->getPrefixData());
 
-  // Insert constants and metadata that are named at module level into the slot 
+  // Insert constants and metadata that are named at module level into the slot
   // pool so that the module symbol table can refer to them...
   EnumerateValueSymbolTable(M->getValueSymbolTable());
   EnumerateNamedMetadata(M);
@@ -80,37 +73,34 @@ ValueEnumerator::ValueEnumerator(const Module *M) {
   SmallVector<std::pair<unsigned, MDNode*>, 8> MDs;
 
   // Enumerate types used by function bodies and argument lists.
-  for (Module::const_iterator F = M->begin(), E = M->end(); F != E; ++F) {
+  for (const Function &F : *M) {
+    for (const Argument &A : F.args())
+      EnumerateType(A.getType());
 
-    for (Function::const_arg_iterator I = F->arg_begin(), E = F->arg_end();
-         I != E; ++I)
-      EnumerateType(I->getType());
-
-    for (Function::const_iterator BB = F->begin(), E = F->end(); BB != E; ++BB)
-      for (BasicBlock::const_iterator I = BB->begin(), E = BB->end(); I!=E;++I){
-        for (User::const_op_iterator OI = I->op_begin(), E = I->op_end();
-             OI != E; ++OI) {
-          if (MDNode *MD = dyn_cast<MDNode>(*OI))
+    for (const BasicBlock &BB : F)
+      for (const Instruction &I : BB) {
+        for (const Use &Op : I.operands()) {
+          if (MDNode *MD = dyn_cast<MDNode>(&Op))
             if (MD->isFunctionLocal() && MD->getFunction())
               // These will get enumerated during function-incorporation.
               continue;
-          EnumerateOperandType(*OI);
+          EnumerateOperandType(Op);
         }
-        EnumerateType(I->getType());
-        if (const CallInst *CI = dyn_cast<CallInst>(I))
+        EnumerateType(I.getType());
+        if (const CallInst *CI = dyn_cast<CallInst>(&I))
           EnumerateAttributes(CI->getAttributes());
-        else if (const InvokeInst *II = dyn_cast<InvokeInst>(I))
+        else if (const InvokeInst *II = dyn_cast<InvokeInst>(&I))
           EnumerateAttributes(II->getAttributes());
 
         // Enumerate metadata attached with this instruction.
         MDs.clear();
-        I->getAllMetadataOtherThanDebugLoc(MDs);
+        I.getAllMetadataOtherThanDebugLoc(MDs);
         for (unsigned i = 0, e = MDs.size(); i != e; ++i)
           EnumerateMetadata(MDs[i].second);
-        
-        if (!I->getDebugLoc().isUnknown()) {
+
+        if (!I.getDebugLoc().isUnknown()) {
           MDNode *Scope, *IA;
-          I->getDebugLoc().getScopeAndInlinedAt(Scope, IA, I->getContext());
+          I.getDebugLoc().getScopeAndInlinedAt(Scope, IA, I.getContext());
           if (Scope) EnumerateMetadata(Scope);
           if (IA) EnumerateMetadata(IA);
         }
@@ -119,25 +109,18 @@ ValueEnumerator::ValueEnumerator(const Module *M) {
 
   // Optimize constant ordering.
   OptimizeConstants(FirstConstant, Values.size());
-
-  // Sort the type table by frequency so that most commonly used types are early
-  // in the table (have low bit-width).
-  std::stable_sort(Types.begin(), Types.end(), CompareByFrequency);
-
-  // Partition the Type ID's so that the single-value types occur before the
-  // aggregate types.  This allows the aggregate types to be dropped from the
-  // type table after parsing the global variable initializers.
-  std::partition(Types.begin(), Types.end(), isSingleValueType);
-
-  // Now that we rearranged the type table, rebuild TypeMap.
-  for (unsigned i = 0, e = Types.size(); i != e; ++i)
-    TypeMap[Types[i].first] = i+1;
 }
 
 unsigned ValueEnumerator::getInstructionID(const Instruction *Inst) const {
   InstructionMapType::const_iterator I = InstructionMap.find(Inst);
-  assert (I != InstructionMap.end() && "Instruction is not mapped!");
+  assert(I != InstructionMap.end() && "Instruction is not mapped!");
   return I->second;
+}
+
+unsigned ValueEnumerator::getComdatID(const Comdat *C) const {
+  unsigned ComdatID = Comdats.idFor(C);
+  assert(ComdatID && "Comdat not found!");
+  return ComdatID;
 }
 
 void ValueEnumerator::setInstructionID(const Instruction *I) {
@@ -156,48 +139,67 @@ unsigned ValueEnumerator::getValueID(const Value *V) const {
   return I->second-1;
 }
 
-// Optimize constant ordering.
-namespace {
-  struct CstSortPredicate {
-    ValueEnumerator &VE;
-    explicit CstSortPredicate(ValueEnumerator &ve) : VE(ve) {}
-    bool operator()(const std::pair<const Value*, unsigned> &LHS,
-                    const std::pair<const Value*, unsigned> &RHS) {
-      // Sort by plane.
-      if (LHS.first->getType() != RHS.first->getType())
-        return VE.getTypeID(LHS.first->getType()) <
-               VE.getTypeID(RHS.first->getType());
-      // Then by frequency.
-      return LHS.second > RHS.second;
+void ValueEnumerator::dump() const {
+  print(dbgs(), ValueMap, "Default");
+  dbgs() << '\n';
+  print(dbgs(), MDValueMap, "MetaData");
+  dbgs() << '\n';
+}
+
+void ValueEnumerator::print(raw_ostream &OS, const ValueMapType &Map,
+                            const char *Name) const {
+
+  OS << "Map Name: " << Name << "\n";
+  OS << "Size: " << Map.size() << "\n";
+  for (ValueMapType::const_iterator I = Map.begin(),
+         E = Map.end(); I != E; ++I) {
+
+    const Value *V = I->first;
+    if (V->hasName())
+      OS << "Value: " << V->getName();
+    else
+      OS << "Value: [null]\n";
+    V->dump();
+
+    OS << " Uses(" << std::distance(V->use_begin(),V->use_end()) << "):";
+    for (const Use &U : V->uses()) {
+      if (&U != &*V->use_begin())
+        OS << ",";
+      if(U->hasName())
+        OS << " " << U->getName();
+      else
+        OS << " [null]";
+
     }
-  };
+    OS <<  "\n\n";
+  }
 }
 
 /// OptimizeConstants - Reorder constant pool for denser encoding.
 void ValueEnumerator::OptimizeConstants(unsigned CstStart, unsigned CstEnd) {
   if (CstStart == CstEnd || CstStart+1 == CstEnd) return;
 
-  CstSortPredicate P(*this);
-  std::stable_sort(Values.begin()+CstStart, Values.begin()+CstEnd, P);
+  std::stable_sort(Values.begin() + CstStart, Values.begin() + CstEnd,
+                   [this](const std::pair<const Value *, unsigned> &LHS,
+                          const std::pair<const Value *, unsigned> &RHS) {
+    // Sort by plane.
+    if (LHS.first->getType() != RHS.first->getType())
+      return getTypeID(LHS.first->getType()) < getTypeID(RHS.first->getType());
+    // Then by frequency.
+    return LHS.second > RHS.second;
+  });
 
-  // Ensure that integer constants are at the start of the constant pool.  This
-  // is important so that GEP structure indices come before gep constant exprs.
+  // Ensure that integer and vector of integer constants are at the start of the
+  // constant pool.  This is important so that GEP structure indices come before
+  // gep constant exprs.
   std::partition(Values.begin()+CstStart, Values.begin()+CstEnd,
-                 isIntegerValue);
+                 isIntOrIntVectorValue);
 
   // Rebuild the modified portion of ValueMap.
   for (; CstStart != CstEnd; ++CstStart)
     ValueMap[Values[CstStart].first] = CstStart+1;
 }
 
-
-/// EnumerateTypeSymbolTable - Insert all of the types in the specified symbol
-/// table.
-void ValueEnumerator::EnumerateTypeSymbolTable(const TypeSymbolTable &TST) {
-  for (TypeSymbolTable::const_iterator TI = TST.begin(), TE = TST.end();
-       TI != TE; ++TI)
-    EnumerateType(TI->second);
-}
 
 /// EnumerateValueSymbolTable - Insert all of the values in the specified symbol
 /// table into the values table.
@@ -311,16 +313,16 @@ void ValueEnumerator::EnumerateValue(const Value *V) {
     return;
   }
 
+  if (auto *GO = dyn_cast<GlobalObject>(V))
+    if (const Comdat *C = GO->getComdat())
+      Comdats.insert(C);
+
   // Enumerate the type of this value.
   EnumerateType(V->getType());
 
   if (const Constant *C = dyn_cast<Constant>(V)) {
     if (isa<GlobalValue>(C)) {
       // Initializers for globals are handled explicitly elsewhere.
-    } else if (isa<ConstantArray>(C) && cast<ConstantArray>(C)->isString()) {
-      // Do not enumerate the initializers for an array of simple characters.
-      // The initializers just polute the value table, and we emit the strings
-      // specially.
     } else if (C->getNumOperands()) {
       // If a constant has operands, enumerate them.  This makes sure that if a
       // constant has uses (for example an array of const ints), that they are
@@ -349,30 +351,48 @@ void ValueEnumerator::EnumerateValue(const Value *V) {
 }
 
 
-void ValueEnumerator::EnumerateType(const Type *Ty) {
-  unsigned &TypeID = TypeMap[Ty];
+void ValueEnumerator::EnumerateType(Type *Ty) {
+  unsigned *TypeID = &TypeMap[Ty];
 
-  if (TypeID) {
-    // If we've already seen this type, just increase its occurrence count.
-    Types[TypeID-1].second++;
+  // We've already seen this type.
+  if (*TypeID)
     return;
-  }
 
-  // First time we saw this type, add it.
-  Types.push_back(std::make_pair(Ty, 1U));
-  TypeID = Types.size();
+  // If it is a non-anonymous struct, mark the type as being visited so that we
+  // don't recursively visit it.  This is safe because we allow forward
+  // references of these in the bitcode reader.
+  if (StructType *STy = dyn_cast<StructType>(Ty))
+    if (!STy->isLiteral())
+      *TypeID = ~0U;
 
-  // Enumerate subtypes.
+  // Enumerate all of the subtypes before we enumerate this type.  This ensures
+  // that the type will be enumerated in an order that can be directly built.
   for (Type::subtype_iterator I = Ty->subtype_begin(), E = Ty->subtype_end();
        I != E; ++I)
     EnumerateType(*I);
+
+  // Refresh the TypeID pointer in case the table rehashed.
+  TypeID = &TypeMap[Ty];
+
+  // Check to see if we got the pointer another way.  This can happen when
+  // enumerating recursive types that hit the base case deeper than they start.
+  //
+  // If this is actually a struct that we are treating as forward ref'able,
+  // then emit the definition now that all of its contents are available.
+  if (*TypeID && *TypeID != ~0U)
+    return;
+
+  // Add this type now that its contents are all happily enumerated.
+  Types.push_back(Ty);
+
+  *TypeID = Types.size();
 }
 
 // Enumerate the types for the specified value.  If the value is a constant,
 // walk through it, enumerating the types of the constant.
 void ValueEnumerator::EnumerateOperandType(const Value *V) {
   EnumerateType(V->getType());
-  
+
   if (const Constant *C = dyn_cast<Constant>(V)) {
     // If this constant is already enumerated, ignore it, we know its type must
     // be enumerated.
@@ -381,12 +401,12 @@ void ValueEnumerator::EnumerateOperandType(const Value *V) {
     // This constant may have operands, make sure to enumerate the types in
     // them.
     for (unsigned i = 0, e = C->getNumOperands(); i != e; ++i) {
-      const User *Op = C->getOperand(i);
-      
+      const Value *Op = C->getOperand(i);
+
       // Don't enumerate basic blocks here, this happens as operands to
       // blockaddress.
       if (isa<BasicBlock>(Op)) continue;
-      
+
       EnumerateOperandType(Op);
     }
 
@@ -399,17 +419,27 @@ void ValueEnumerator::EnumerateOperandType(const Value *V) {
     EnumerateMetadata(V);
 }
 
-void ValueEnumerator::EnumerateAttributes(const AttrListPtr &PAL) {
+void ValueEnumerator::EnumerateAttributes(AttributeSet PAL) {
   if (PAL.isEmpty()) return;  // null is always 0.
+
   // Do a lookup.
-  unsigned &Entry = AttributeMap[PAL.getRawPointer()];
+  unsigned &Entry = AttributeMap[PAL];
   if (Entry == 0) {
     // Never saw this before, add it.
-    Attributes.push_back(PAL);
-    Entry = Attributes.size();
+    Attribute.push_back(PAL);
+    Entry = Attribute.size();
+  }
+
+  // Do lookups for all attribute groups.
+  for (unsigned i = 0, e = PAL.getNumSlots(); i != e; ++i) {
+    AttributeSet AS = PAL.getSlotAttributes(i);
+    unsigned &Entry = AttributeGroupMap[AS];
+    if (Entry == 0) {
+      AttributeGroups.push_back(AS);
+      Entry = AttributeGroups.size();
+    }
   }
 }
-
 
 void ValueEnumerator::incorporateFunction(const Function &F) {
   InstructionCount = 0;
@@ -464,7 +494,7 @@ void ValueEnumerator::incorporateFunction(const Function &F) {
         if (N->isFunctionLocal() && N->getFunction())
           FnLocalMDVector.push_back(N);
       }
-        
+
       if (!I->getType()->isVoidTy())
         EnumerateValue(I);
     }

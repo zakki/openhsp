@@ -5,11 +5,11 @@
 
 ;      CHECK: movabsq $2305843009482129440, %r
 ; CHECK-NEXT: btq %rax, %r
-; CHECK-NEXT: jb
-; CHECK-NEXT: movl  $671088640, %e
+; CHECK-NEXT: jae
+;     CHECK: movl  $671088640, %e
 ; CHECK-NEXT: btq %rax, %r
-; CHECK-NEXT: jb
-; CHECK-NEXT: testq %rax, %r
+; CHECK-NEXT: jae
+;      CHECK: testq %rax, %r
 ; CHECK-NEXT: j
 
 define void @test(i8* %l) nounwind {
@@ -49,3 +49,53 @@ sw.epilog:                                        ; preds = %sw.default, %sw.bb4
 }
 
 declare void @foo(i32)
+
+; Don't zero extend the test operands to pointer type if it can be avoided.
+; rdar://8781238
+define void @test2(i32 %x) nounwind ssp {
+; CHECK-LABEL: test2:
+; CHECK: cmpl $6
+; CHECK: ja
+
+; CHECK-NEXT: movl $91
+; CHECK-NOT: movl
+; CHECK-NEXT: btl
+; CHECK-NEXT: jae
+entry:
+  switch i32 %x, label %if.end [
+    i32 6, label %if.then
+    i32 4, label %if.then
+    i32 3, label %if.then
+    i32 1, label %if.then
+    i32 0, label %if.then
+  ]
+
+if.then:                                          ; preds = %entry, %entry, %entry, %entry, %entry
+  tail call void @bar() nounwind
+  ret void
+
+if.end:                                           ; preds = %entry
+  ret void
+}
+
+declare void @bar()
+
+define void @test3(i32 %x) nounwind {
+; CHECK-LABEL: test3:
+; CHECK: cmpl $5
+; CHECK: ja
+; CHECK: cmpl $4
+; CHECK: je
+  switch i32 %x, label %if.end [
+    i32 0, label %if.then
+    i32 1, label %if.then
+    i32 2, label %if.then
+    i32 3, label %if.then
+    i32 5, label %if.then
+  ]
+if.then:
+  tail call void @bar() nounwind
+  ret void
+if.end:
+  ret void
+}

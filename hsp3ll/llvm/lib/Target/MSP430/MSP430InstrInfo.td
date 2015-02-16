@@ -1,4 +1,4 @@
-//===- MSP430InstrInfo.td - MSP430 Instruction defs -----------*- tblgen-*-===//
+//===-- MSP430InstrInfo.td - MSP430 Instruction defs -------*- tablegen -*-===//
 //
 //                     The LLVM Compiler Infrastructure
 //
@@ -40,28 +40,28 @@ def SDT_MSP430Shift        : SDTypeProfile<1, 2, [SDTCisSameAs<0, 1>,
 // MSP430 Specific Node Definitions.
 //===----------------------------------------------------------------------===//
 def MSP430retflag  : SDNode<"MSP430ISD::RET_FLAG", SDTNone,
-                       [SDNPHasChain, SDNPOptInFlag]>;
+                       [SDNPHasChain, SDNPOptInGlue, SDNPVariadic]>;
 def MSP430retiflag : SDNode<"MSP430ISD::RETI_FLAG", SDTNone,
-                       [SDNPHasChain, SDNPOptInFlag]>;
+                       [SDNPHasChain, SDNPOptInGlue, SDNPVariadic]>;
 
 def MSP430rra     : SDNode<"MSP430ISD::RRA", SDTIntUnaryOp, []>;
 def MSP430rla     : SDNode<"MSP430ISD::RLA", SDTIntUnaryOp, []>;
 def MSP430rrc     : SDNode<"MSP430ISD::RRC", SDTIntUnaryOp, []>;
 
 def MSP430call    : SDNode<"MSP430ISD::CALL", SDT_MSP430Call,
-                     [SDNPHasChain, SDNPOutFlag, SDNPOptInFlag, SDNPVariadic]>;
+                     [SDNPHasChain, SDNPOutGlue, SDNPOptInGlue, SDNPVariadic]>;
 def MSP430callseq_start :
                  SDNode<"ISD::CALLSEQ_START", SDT_MSP430CallSeqStart,
-                        [SDNPHasChain, SDNPOutFlag]>;
+                        [SDNPHasChain, SDNPOutGlue]>;
 def MSP430callseq_end :
                  SDNode<"ISD::CALLSEQ_END",   SDT_MSP430CallSeqEnd,
-                        [SDNPHasChain, SDNPOptInFlag, SDNPOutFlag]>;
+                        [SDNPHasChain, SDNPOptInGlue, SDNPOutGlue]>;
 def MSP430Wrapper : SDNode<"MSP430ISD::Wrapper", SDT_MSP430Wrapper>;
-def MSP430cmp     : SDNode<"MSP430ISD::CMP", SDT_MSP430Cmp, [SDNPOutFlag]>;
+def MSP430cmp     : SDNode<"MSP430ISD::CMP", SDT_MSP430Cmp, [SDNPOutGlue]>;
 def MSP430brcc    : SDNode<"MSP430ISD::BR_CC", SDT_MSP430BrCC,
-                            [SDNPHasChain, SDNPInFlag]>;
+                            [SDNPHasChain, SDNPInGlue]>;
 def MSP430selectcc: SDNode<"MSP430ISD::SELECT_CC", SDT_MSP430SelectCC,
-                            [SDNPInFlag]>;
+                            [SDNPInGlue]>;
 def MSP430shl     : SDNode<"MSP430ISD::SHL", SDT_MSP430Shift, []>;
 def MSP430sra     : SDNode<"MSP430ISD::SRA", SDT_MSP430Shift, []>;
 def MSP430srl     : SDNode<"MSP430ISD::SRL", SDT_MSP430Shift, []>;
@@ -183,10 +183,10 @@ let isBarrier = 1 in {
                     "br\t$brdst",
                     [(brind tblockaddress:$brdst)]>;
     def Br  : I16rr<0, (outs), (ins GR16:$brdst),
-                    "mov.w\t{$brdst, pc}",
+                    "br\t$brdst",
                     [(brind GR16:$brdst)]>;
     def Bm  : I16rm<0, (outs), (ins memsrc:$brdst),
-                    "mov.w\t{$brdst, pc}",
+                    "br\t$brdst",
                     [(brind (load addr:$brdst))]>;
   }
 }
@@ -210,13 +210,13 @@ let isCall = 1 in
   let Defs = [R12W, R13W, R14W, R15W, SRW],
       Uses = [SPW] in {
     def CALLi     : II16i<0x0,
-                          (outs), (ins i16imm:$dst, variable_ops),
+                          (outs), (ins i16imm:$dst),
                           "call\t$dst", [(MSP430call imm:$dst)]>;
     def CALLr     : II16r<0x0,
-                          (outs), (ins GR16:$dst, variable_ops),
+                          (outs), (ins GR16:$dst),
                           "call\t$dst", [(MSP430call GR16:$dst)]>;
     def CALLm     : II16m<0x0,
-                          (outs), (ins memsrc:$dst, variable_ops),
+                          (outs), (ins memsrc:$dst),
                           "call\t${dst:mem}", [(MSP430call (load addr:$dst))]>;
   }
 

@@ -20,7 +20,28 @@ __m128i shift_right(__m128i value, unsigned long offset) {
 //===---------------------------------------------------------------------===//
 
 SSE has instructions for doing operations on complex numbers, we should pattern
-match them.  Compiling this:
+match them.   For example, this should turn into a horizontal add:
+
+typedef float __attribute__((vector_size(16))) v4f32;
+float f32(v4f32 A) {
+  return A[0]+A[1]+A[2]+A[3];
+}
+
+Instead we get this:
+
+_f32:                                   ## @f32
+	pshufd	$1, %xmm0, %xmm1        ## xmm1 = xmm0[1,0,0,0]
+	addss	%xmm0, %xmm1
+	pshufd	$3, %xmm0, %xmm2        ## xmm2 = xmm0[3,0,0,0]
+	movhlps	%xmm0, %xmm0            ## xmm0 = xmm0[1,1]
+	movaps	%xmm0, %xmm3
+	addss	%xmm1, %xmm3
+	movdqa	%xmm2, %xmm0
+	addss	%xmm3, %xmm0
+	ret
+
+Also, there are cases where some simple local SLP would improve codegen a bit.
+compiling this:
 
 _Complex float f32(_Complex float A, _Complex float B) {
   return A+B;
@@ -28,19 +49,17 @@ _Complex float f32(_Complex float A, _Complex float B) {
 
 into:
 
-_f32:
+_f32:                                   ## @f32
 	movdqa	%xmm0, %xmm2
 	addss	%xmm1, %xmm2
-	pshufd	$16, %xmm2, %xmm2
-	pshufd	$1, %xmm1, %xmm1
-	pshufd	$1, %xmm0, %xmm0
-	addss	%xmm1, %xmm0
-	pshufd	$16, %xmm0, %xmm1
-	movdqa	%xmm2, %xmm0
-	unpcklps	%xmm1, %xmm0
+	pshufd	$1, %xmm1, %xmm1        ## xmm1 = xmm1[1,0,0,0]
+	pshufd	$1, %xmm0, %xmm3        ## xmm3 = xmm0[1,0,0,0]
+	addss	%xmm1, %xmm3
+	movaps	%xmm2, %xmm0
+	unpcklps	%xmm3, %xmm0    ## xmm0 = xmm0[0],xmm3[0],xmm0[1],xmm3[1]
 	ret
 
-seems silly. 
+seems silly when it could just be one addps.
 
 
 //===---------------------------------------------------------------------===//
@@ -475,11 +494,6 @@ is memory.
 
 //===---------------------------------------------------------------------===//
 
-SSE4 extract-to-mem ops aren't being pattern matched because of the AssertZext
-sitting between the truncate and the extract.
-
-//===---------------------------------------------------------------------===//
-
 INSERTPS can match any insert (extract, imm1), imm2 for 4 x float, and insert
 any number of 0.0 simultaneously.  Currently we only use it for simple
 insertions.
@@ -495,37 +509,6 @@ legal, it'll just take a few extra patterns written in the .td file.
 Note: this is not a code quality issue; the custom lowered code happens to be
 right, but we shouldn't have to custom lower anything.  This is probably related
 to <2 x i64> ops being so bad.
-
-//===---------------------------------------------------------------------===//
-
-'select' on vectors and scalars could be a whole lot better.  We currently 
-lower them to conditional branches.  On x86-64 for example, we compile this:
-
-double test(double a, double b, double c, double d) { return a<b ? c : d; }
-
-to:
-
-_test:
-	ucomisd	%xmm0, %xmm1
-	ja	LBB1_2	# entry
-LBB1_1:	# entry
-	movapd	%xmm3, %xmm2
-LBB1_2:	# entry
-	movapd	%xmm2, %xmm0
-	ret
-
-instead of:
-
-_test:
-	cmpltsd	%xmm1, %xmm0
-	andpd	%xmm0, %xmm2
-	andnpd	%xmm3, %xmm0
-	orpd	%xmm2, %xmm0
-	ret
-
-For unpredictable branches, the later is much more efficient.  This should
-just be a matter of having scalar sse map to SELECT_CC and custom expanding
-or iseling it.
 
 //===---------------------------------------------------------------------===//
 
@@ -843,7 +826,7 @@ define float @bar(float %x) nounwind {
 
 This IR (from PR6194):
 
-target datalayout = "e-p:64:64:64-i1:8:8-i8:8:8-i16:16:16-i32:32:32-i64:64:64-f32:32:32-f64:64:64-v64:64:64-v128:128:128-a0:0:64-s0:64:64-f80:128:128-n8:16:32:64"
+target datalayout = "e-p:64:64:64-i1:8:8-i8:8:8-i16:16:16-i32:32:32-i64:64:64-f32:32:32-f64:64:64-v64:64:64-v128:128:128-a0:0:64-s0:64:64-f80:128:128-n8:16:32:64-S128"
 target triple = "x86_64-apple-darwin10.0.0"
 
 %0 = type { double, double }
@@ -904,4 +887,42 @@ The insertps's of $0 are pointless complex copies.
 
 //===---------------------------------------------------------------------===//
 
+[UNSAFE FP]
 
+void foo(double, double, double);
+void norm(double x, double y, double z) {
+  double scale = __builtin_sqrt(x*x + y*y + z*z);
+  foo(x/scale, y/scale, z/scale);
+}
+
+We currently generate an sqrtsd and 3 divsd instructions. This is bad, fp div is
+slow and not pipelined. In -ffast-math mode we could compute "1.0/scale" first
+and emit 3 mulsd in place of the divs. This can be done as a target-independent
+transform.
+
+If we're dealing with floats instead of doubles we could even replace the sqrtss
+and inversion with an rsqrtss instruction, which computes 1/sqrt faster at the
+cost of reduced accuracy.
+
+//===---------------------------------------------------------------------===//
+
+This function should be matched to haddpd when the appropriate CPU is enabled:
+
+#include <x86intrin.h>
+double f (__m128d p) {
+  return p[0] + p[1];
+}
+
+similarly, v[0]-v[1] should match to hsubpd, and {v[0]-v[1], w[0]-w[1]} should
+turn into hsubpd also.
+
+//===---------------------------------------------------------------------===//
+
+define <2 x i32> @foo(<2 x double> %in) {
+  %x = fptosi <2 x double> %in to <2 x i32>
+  ret <2 x i32> %x
+}
+
+Should compile into cvttpd2dq instead of being scalarized into 2 cvttsd2si.
+
+//===---------------------------------------------------------------------===//

@@ -1,4 +1,4 @@
-; RUN: opt < %s -instcombine -S | grep {align 16} | count 1
+; RUN: opt < %s -instcombine -S | grep "align 16" | count 1
 target datalayout = "E-p:64:64:64-a0:0:8-f32:32:32-f64:64:64-i1:8:8-i8:8:8-i16:16:16-i32:32:32-i64:32:64-v64:64:64-v128:128:128"
 
 ; A multi-dimensional array in a nested loop doing vector stores that
@@ -31,7 +31,7 @@ bb1:
   store <2 x double><double 0.0, double 0.0>, <2 x double>* %r, align 8
 
   %indvar.next = add i64 %j, 2
-  %exitcond = icmp eq i64 %indvar.next, 557
+  %exitcond = icmp eq i64 %indvar.next, 556
   br i1 %exitcond, label %bb11, label %bb1
 
 bb11:

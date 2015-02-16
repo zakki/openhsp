@@ -14,7 +14,7 @@ entry:
 
 ; Do turn other calls into infinite loops though.
 
-; CHECK: define double @foo
+; CHECK-LABEL: define double @foo(
 ; CHECK-NOT: call
 ; CHECK: }
 define double @foo(double %f) {
@@ -22,7 +22,7 @@ define double @foo(double %f) {
         ret double %t
 }
 
-; CHECK: define float @fabsf
+; CHECK-LABEL: define float @fabsf(
 ; CHECK-NOT: call
 ; CHECK: }
 define float @fabsf(float %f) {
@@ -30,5 +30,4 @@ define float @fabsf(float %f) {
         ret float %t
 }
 
-declare float @fabsf(float %f)
 declare x86_fp80 @fabsl(x86_fp80 %f)

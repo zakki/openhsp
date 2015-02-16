@@ -1,4 +1,4 @@
-; RUN: llc -enable-correct-eh-support < %s
+; RUN: llc < %s
 ; PR7716
 target datalayout = "e-p:32:32:32-i1:8:32-i8:8:32-i16:16:32-i32:32:32-i64:32:32-f32:32:32-f64:32:32-v64:64:64-v128:128:128-a0:0:32-n32"
 target triple = "thumbv7-apple-darwin10.0.0"
@@ -21,11 +21,7 @@ declare i32 @printf(i8* nocapture, ...) nounwind
 
 declare i8* @__cxa_allocate_exception(i32)
 
-declare i8* @llvm.eh.exception() nounwind readonly
-
 declare i32 @__gxx_personality_sj0(...)
-
-declare i32 @llvm.eh.selector(i8*, i8*, ...) nounwind
 
 declare i32 @llvm.eh.typeid.for(i8*) nounwind
 
@@ -75,8 +71,11 @@ try.cont:                                         ; preds = %lpad
   ret i32 %conv
 
 lpad:                                             ; preds = %entry
-  %exn = tail call i8* @llvm.eh.exception() nounwind ; <i8*> [#uses=4]
-  %eh.selector = tail call i32 (i8*, i8*, ...)* @llvm.eh.selector(i8* %exn, i8* bitcast (i32 (...)* @__gxx_personality_sj0 to i8*), i8* bitcast (%0* @_ZTI1A to i8*), i8* null) nounwind ; <i32> [#uses=1]
+  %exn.ptr = landingpad { i8*, i32 } personality i8* bitcast (i32 (...)* @__gxx_personality_sj0 to i8*)
+           catch i8* bitcast (%0* @_ZTI1A to i8*)
+           catch i8* null
+  %exn = extractvalue { i8*, i32 } %exn.ptr, 0
+  %eh.selector = extractvalue { i8*, i32 } %exn.ptr, 1
   %2 = tail call i32 @llvm.eh.typeid.for(i8* bitcast (%0* @_ZTI1A to i8*)) nounwind ; <i32> [#uses=1]
   %3 = icmp eq i32 %eh.selector, %2               ; <i1> [#uses=1]
   br i1 %3, label %try.cont, label %eh.resume

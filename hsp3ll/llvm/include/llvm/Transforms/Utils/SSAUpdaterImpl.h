@@ -15,8 +15,18 @@
 #ifndef LLVM_TRANSFORMS_UTILS_SSAUPDATERIMPL_H
 #define LLVM_TRANSFORMS_UTILS_SSAUPDATERIMPL_H
 
+#include "llvm/ADT/DenseMap.h"
+#include "llvm/ADT/SmallVector.h"
+#include "llvm/IR/ValueHandle.h"
+#include "llvm/Support/Allocator.h"
+#include "llvm/Support/Debug.h"
+
 namespace llvm {
 
+#define DEBUG_TYPE "ssaupdater"
+
+class CastInst;
+class PHINode;
 template<typename T> class SSAUpdaterTraits;
 
 template<typename UpdaterT>
@@ -44,8 +54,8 @@ private:
     PhiT *PHITag;      // Marker for existing PHIs that match.
 
     BBInfo(BlkT *ThisBB, ValT V)
-      : BB(ThisBB), AvailableVal(V), DefBB(V ? this : 0), BlkNum(0), IDom(0),
-      NumPreds(0), Preds(0), PHITag(0) { }
+      : BB(ThisBB), AvailableVal(V), DefBB(V ? this : nullptr), BlkNum(0),
+        IDom(nullptr), NumPreds(0), Preds(nullptr), PHITag(nullptr) {}
   };
 
   typedef DenseMap<BlkT*, ValT> AvailableValsTy;
@@ -107,7 +117,7 @@ public:
       Traits::FindPredecessorBlocks(Info->BB, &Preds);
       Info->NumPreds = Preds.size();
       if (Info->NumPreds == 0)
-        Info->Preds = 0;
+        Info->Preds = nullptr;
       else
         Info->Preds = static_cast<BBInfo**>
           (Allocator.Allocate(Info->NumPreds * sizeof(BBInfo*),
@@ -140,7 +150,7 @@ public:
     // Now that we know what blocks are backwards-reachable from the starting
     // block, do a forward depth-first traversal to assign postorder numbers
     // to those blocks.
-    BBInfo *PseudoEntry = new (Allocator) BBInfo(0, 0);
+    BBInfo *PseudoEntry = new (Allocator) BBInfo(nullptr, 0);
     unsigned BlkNum = 1;
 
     // Initialize the worklist with the roots from the backward traversal.
@@ -223,7 +233,7 @@ public:
       for (typename BlockListTy::reverse_iterator I = BlockList->rbegin(),
              E = BlockList->rend(); I != E; ++I) {
         BBInfo *Info = *I;
-        BBInfo *NewIDom = 0;
+        BBInfo *NewIDom = nullptr;
 
         // Iterate through the block's predecessors.
         for (unsigned p = 0; p != Info->NumPreds; ++p) {
@@ -372,13 +382,13 @@ public:
       if (!SomePHI)
         break;
       if (CheckIfPHIMatches(SomePHI)) {
-        RecordMatchingPHI(SomePHI);
+        RecordMatchingPHIs(BlockList);
         break;
       }
       // Match failed: clear all the PHITag values.
       for (typename BlockListTy::iterator I = BlockList->begin(),
              E = BlockList->end(); I != E; ++I)
-        (*I)->PHITag = 0;
+        (*I)->PHITag = nullptr;
     }
   }
 
@@ -429,40 +439,21 @@ public:
     return true;
   }
 
-  /// RecordMatchingPHI - For a PHI node that matches, record it and its input
-  /// PHIs in both the BBMap and the AvailableVals mapping.
-  void RecordMatchingPHI(PhiT *PHI) {
-    SmallVector<PhiT*, 20> WorkList;
-    WorkList.push_back(PHI);
-
-    // Record this PHI.
-    BlkT *BB = PHI->getParent();
-    ValT PHIVal = Traits::GetPHIValue(PHI);
-    (*AvailableVals)[BB] = PHIVal;
-    BBMap[BB]->AvailableVal = PHIVal;
-
-    while (!WorkList.empty()) {
-      PHI = WorkList.pop_back_val();
-
-      // Iterate through the PHI's incoming values.
-      for (typename Traits::PHI_iterator I = Traits::PHI_begin(PHI),
-             E = Traits::PHI_end(PHI); I != E; ++I) {
-        ValT IncomingVal = I.getIncomingValue();
-        PhiT *IncomingPHI = Traits::ValueIsPHI(IncomingVal, Updater);
-        if (!IncomingPHI) continue;
-        BB = IncomingPHI->getParent();
-        BBInfo *Info = BBMap[BB];
-        if (!Info || Info->AvailableVal)
-          continue;
-
-        // Record the PHI and add it to the worklist.
-        (*AvailableVals)[BB] = IncomingVal;
-        Info->AvailableVal = IncomingVal;
-        WorkList.push_back(IncomingPHI);
+  /// RecordMatchingPHIs - For each PHI node that matches, record it in both
+  /// the BBMap and the AvailableVals mapping.
+  void RecordMatchingPHIs(BlockListTy *BlockList) {
+    for (typename BlockListTy::iterator I = BlockList->begin(),
+           E = BlockList->end(); I != E; ++I)
+      if (PhiT *PHI = (*I)->PHITag) {
+        BlkT *BB = PHI->getParent();
+        ValT PHIVal = Traits::GetPHIValue(PHI);
+        (*AvailableVals)[BB] = PHIVal;
+        BBMap[BB]->AvailableVal = PHIVal;
       }
-    }
   }
 };
+
+#undef DEBUG_TYPE // "ssaupdater"
 
 } // End llvm namespace
 

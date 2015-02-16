@@ -1,4 +1,4 @@
-//===- ARMInstrInfo.h - ARM Instruction Information -------------*- C++ -*-===//
+//===-- ARMInstrInfo.h - ARM Instruction Information ------------*- C++ -*-===//
 //
 //                     The LLVM Compiler Infrastructure
 //
@@ -14,11 +14,8 @@
 #ifndef ARMINSTRUCTIONINFO_H
 #define ARMINSTRUCTIONINFO_H
 
-#include "llvm/Target/TargetInstrInfo.h"
 #include "ARMBaseInstrInfo.h"
 #include "ARMRegisterInfo.h"
-#include "ARMSubtarget.h"
-#include "ARM.h"
 
 namespace llvm {
   class ARMSubtarget;
@@ -28,20 +25,18 @@ class ARMInstrInfo : public ARMBaseInstrInfo {
 public:
   explicit ARMInstrInfo(const ARMSubtarget &STI);
 
+  /// getNoopForMachoTarget - Return the noop instruction to use for a noop.
+  void getNoopForMachoTarget(MCInst &NopInst) const override;
+
   // Return the non-pre/post incrementing version of 'Opc'. Return 0
   // if there is not such an opcode.
-  unsigned getUnindexedOpcode(unsigned Opc) const;
-
-  void reMaterialize(MachineBasicBlock &MBB, MachineBasicBlock::iterator MI,
-                     unsigned DestReg, unsigned SubIdx,
-                     const MachineInstr *Orig,
-                     const TargetRegisterInfo &TRI) const;
+  unsigned getUnindexedOpcode(unsigned Opc) const override;
 
   /// getRegisterInfo - TargetInstrInfo is a superset of MRegister info.  As
   /// such, whenever a client has an instance of instruction info, it should
   /// always be able to get register info as well (through this method).
   ///
-  const ARMRegisterInfo &getRegisterInfo() const { return RI; }
+  const ARMRegisterInfo &getRegisterInfo() const override { return RI; }
 };
 
 }

@@ -18,18 +18,20 @@
 #define LLVM_CODEGEN_AGGRESSIVEANTIDEPBREAKER_H
 
 #include "AntiDepBreaker.h"
+#include "llvm/ADT/BitVector.h"
+#include "llvm/ADT/SmallSet.h"
 #include "llvm/CodeGen/MachineBasicBlock.h"
 #include "llvm/CodeGen/MachineFrameInfo.h"
 #include "llvm/CodeGen/MachineFunction.h"
 #include "llvm/CodeGen/MachineRegisterInfo.h"
 #include "llvm/CodeGen/ScheduleDAG.h"
-#include "llvm/Target/TargetSubtarget.h"
 #include "llvm/Target/TargetRegisterInfo.h"
-#include "llvm/ADT/BitVector.h"
-#include "llvm/ADT/SmallSet.h"
+#include "llvm/Target/TargetSubtargetInfo.h"
 #include <map>
 
 namespace llvm {
+class RegisterClassInfo;
+
   /// Class AggressiveAntiDepState
   /// Contains all the state necessary for anti-dep breaking.
   class AggressiveAntiDepState {
@@ -117,11 +119,7 @@ namespace llvm {
     MachineRegisterInfo &MRI;
     const TargetInstrInfo *TII;
     const TargetRegisterInfo *TRI;
-
-    /// AllocatableSet - The set of allocatable registers.
-    /// We'll be ignoring anti-dependencies on non-allocatable registers,
-    /// because they may not be safe to break.
-    const BitVector AllocatableSet;
+    const RegisterClassInfo &RegClassInfo;
 
     /// CriticalPathSet - The set of registers that should only be
     /// renamed if they are on the critical path.
@@ -133,11 +131,12 @@ namespace llvm {
 
   public:
     AggressiveAntiDepBreaker(MachineFunction& MFi,
-                             TargetSubtarget::RegClassVector& CriticalPathRCs);
+                          const RegisterClassInfo &RCI,
+                          TargetSubtargetInfo::RegClassVector& CriticalPathRCs);
     ~AggressiveAntiDepBreaker();
 
     /// Start - Initialize anti-dep breaking for a new basic block.
-    void StartBlock(MachineBasicBlock *BB);
+    void StartBlock(MachineBasicBlock *BB) override;
 
     /// BreakAntiDependencies - Identifiy anti-dependencies along the critical
     /// path
@@ -146,19 +145,21 @@ namespace llvm {
     unsigned BreakAntiDependencies(const std::vector<SUnit>& SUnits,
                                    MachineBasicBlock::iterator Begin,
                                    MachineBasicBlock::iterator End,
-                                   unsigned InsertPosIndex);
+                                   unsigned InsertPosIndex,
+                                   DbgValueVector &DbgValues) override;
 
     /// Observe - Update liveness information to account for the current
     /// instruction, which will not be scheduled.
     ///
-    void Observe(MachineInstr *MI, unsigned Count, unsigned InsertPosIndex);
+    void Observe(MachineInstr *MI, unsigned Count,
+                 unsigned InsertPosIndex) override;
 
     /// Finish - Finish anti-dep breaking for a basic block.
-    void FinishBlock();
+    void FinishBlock() override;
 
   private:
-    typedef std::map<const TargetRegisterClass *,
-                     TargetRegisterClass::const_iterator> RenameOrderType;
+    /// Keep track of a position in the allocation order for each regclass.
+    typedef std::map<const TargetRegisterClass *, unsigned> RenameOrderType;
 
     /// IsImplicitDefUse - Return true if MO represents a register
     /// that is both implicitly used and defined in MI
@@ -169,7 +170,8 @@ namespace llvm {
     void GetPassthruRegs(MachineInstr *MI, std::set<unsigned>& PassthruRegs);
 
     void HandleLastUse(unsigned Reg, unsigned KillIdx, const char *tag,
-                       const char *header =NULL, const char *footer =NULL);
+                       const char *header = nullptr,
+                       const char *footer = nullptr);
 
     void PrescanInstruction(MachineInstr *MI, unsigned Count,
                             std::set<unsigned>& PassthruRegs);

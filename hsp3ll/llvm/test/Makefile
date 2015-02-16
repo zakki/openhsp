@@ -12,9 +12,6 @@ DIRS  =
 
 all:: check-local
 
-# 'lit' is the default test runner.
-check-local:: check-local-lit
-
 # Include other test rules
 include Makefile.tests
 
@@ -27,7 +24,6 @@ $(warning GREP_OPTIONS environment variable may interfere with test results)
 endif
 
 ifdef VERBOSE
-RUNTESTFLAGS := $(VERBOSE)
 LIT_ARGS := -v
 else
 LIT_ARGS := -s -v
@@ -35,44 +31,54 @@ endif
 
 ifdef TESTSUITE
 LIT_TESTSUITE := $(TESTSUITE)
-CLEANED_TESTSUITE := $(patsubst %/,%,$(TESTSUITE))
-CLEANED_TESTSUITE := $(patsubst test/%,%,$(CLEANED_TESTSUITE))
-RUNTESTFLAGS += --tool $(CLEANED_TESTSUITE)
 else
 LIT_TESTSUITE := .
-endif
-
-ifdef VG
-VALGRIND := valgrind --tool=memcheck --quiet --trace-children=yes --error-exitcode=3 --leak-check=full $(VALGRIND_EXTRA_ARGS)
 endif
 
 # Check what to run for -all.
 LIT_ALL_TESTSUITES := $(LIT_TESTSUITE)
 
-extra-lit-site-cfgs::
-.PHONY: extra-lit-site-cfgs
+extra-site-cfgs::
+.PHONY: extra-site-cfgs
 
 ifneq ($(strip $(filter check-local-all,$(MAKECMDGOALS))),)
 ifndef TESTSUITE
-ifeq ($(shell test -d $(PROJ_SRC_DIR)/../tools/clang && echo OK), OK)
+ifeq ($(shell test -f $(PROJ_OBJ_DIR)/../tools/clang/Makefile && echo OK), OK)
 LIT_ALL_TESTSUITES += $(PROJ_OBJ_DIR)/../tools/clang/test
 
 # Force creation of Clang's lit.site.cfg.
-clang-lit-site-cfg: FORCE
-	$(MAKE) -C $(PROJ_OBJ_DIR)/../tools/clang/test lit.site.cfg
-extra-lit-site-cfgs:: clang-lit-site-cfg
-endif
-endif
+clang-site-cfg: FORCE
+	$(MAKE) -C $(PROJ_OBJ_DIR)/../tools/clang/test lit.site.cfg Unit/lit.site.cfg
+extra-site-cfgs:: clang-site-cfg
 endif
 
-IGNORE_TESTS :=
+ifeq ($(shell test -f $(PROJ_OBJ_DIR)/../tools/clang/tools/extra/Makefile && echo OK), OK)
+LIT_ALL_TESTSUITES += $(PROJ_OBJ_DIR)/../tools/clang/tools/extra/test
 
-ifndef RUNLLVM2CPP
-IGNORE_TESTS += llvm2cpp.exp
+# Force creation of Clang Tools' lit.site.cfg.
+clang-tools-site-cfg: FORCE
+	$(MAKE) -C $(PROJ_OBJ_DIR)/../tools/clang/tools/extra/test lit.site.cfg
+extra-site-cfgs:: clang-tools-site-cfg
 endif
 
-ifdef IGNORE_TESTS
-RUNTESTFLAGS += --ignore "$(strip $(IGNORE_TESTS))"
+ifeq ($(shell test -f $(PROJ_OBJ_DIR)/../tools/lld/Makefile && echo OK), OK)
+LIT_ALL_TESTSUITES += $(PROJ_OBJ_DIR)/../tools/lld/test
+
+# Force creation of lld's lit.site.cfg.
+lld-site-cfg: FORCE
+	$(MAKE) -C $(PROJ_OBJ_DIR)/../tools/lld/test lit.site.cfg Unit/lit.site.cfg
+extra-site-cfgs:: lld-site-cfg
+endif
+
+ifeq ($(shell test -f $(PROJ_OBJ_DIR)/../tools/polly/Makefile && echo OK), OK)
+LIT_ALL_TESTSUITES += $(PROJ_OBJ_DIR)/../tools/polly/test
+
+# Force creation of Polly's lit.site.cfg.
+polly-tools-site-cfg: FORCE
+	$(MAKE) -C $(PROJ_OBJ_DIR)/../tools/polly/test lit.site.cfg
+extra-site-cfgs:: polly-tools-site-cfg
+endif
+endif
 endif
 
 # ulimits like these are redundantly enforced by the buildbots, so
@@ -84,43 +90,27 @@ else # !SunOS
 ifeq ($(HOST_OS),AuroraUX)
 ULIMIT=ulimit -t 600 ; ulimit -d 512000 ; ulimit -v 512000 ;
 else # !AuroraUX
-# Fedora 13 x86-64 python fails with -v 76800
-ULIMIT=ulimit -t 600 ; ulimit -d 512000 ; ulimit -m 512000 ; ulimit -v 1024000 ;
+# Newer versions of python try to allocate an insane amount of address space for
+# its thread-local storage, don't set a limit here.
+# When -v is not used, then -s has to be used to limit the stack size.
+# FIXME: Those limits should be enforced by lit instead of globally.
+ULIMIT=ulimit -t 600 ; ulimit -d 512000 ; ulimit -m 512000 ; ulimit -s 8192 ;
 endif # AuroraUX
 endif # SunOS
 
-ifneq ($(RUNTEST),)
-check-local-dg:: site.exp
+check-local:: lit.site.cfg Unit/lit.site.cfg
 	( $(ULIMIT) \
-	  PATH="$(LLVMToolDir):$(LLVM_SRC_ROOT)/test/Scripts:$(LLVMGCCDIR)/bin:$(PATH)" \
-	  $(RUNTEST) $(RUNTESTFLAGS) )
-else
-check-local-dg:: site.exp
-	@echo "*** dejagnu not found.  Make sure 'runtest' is in your PATH, then reconfigure LLVM."
-endif
+	  $(PYTHON) $(LLVM_SRC_ROOT)/utils/lit/lit.py $(LIT_ARGS) $(LIT_TESTSUITE) )
 
-check-local-lit:: lit.site.cfg Unit/lit.site.cfg
-	( $(ULIMIT) \
-	  $(LLVM_SRC_ROOT)/utils/lit/lit.py $(LIT_ARGS) $(LIT_TESTSUITE) )
+# This is a legacy alias dating from when both DejaGNU and lit were in use.
+check-local-lit:: check-local
 
-check-local-all:: lit.site.cfg Unit/lit.site.cfg extra-lit-site-cfgs
+check-local-all:: lit.site.cfg Unit/lit.site.cfg extra-site-cfgs
 	( $(ULIMIT) \
-	  $(LLVM_SRC_ROOT)/utils/lit/lit.py $(LIT_ARGS) $(LIT_ALL_TESTSUITES) )
+	  $(PYTHON) $(LLVM_SRC_ROOT)/utils/lit/lit.py $(LIT_ARGS) $(LIT_ALL_TESTSUITES) )
 
 clean::
 	$(RM) -rf `find $(LLVM_OBJ_ROOT)/test -name Output -type d -print`
-
-# dsymutil is used on the Darwin to manipulate DWARF debugging information.
-ifeq ($(TARGET_OS),Darwin)
-DSYMUTIL=dsymutil
-else
-DSYMUTIL=true
-endif
-ifdef TargetCommonOpts
-BUGPOINT_TOPTS="-gcc-tool-args $(TargetCommonOpts)"
-else
-BUGPOINT_TOPTS=""
-endif
 
 ifneq ($(OCAMLOPT),)
 CC_FOR_OCAMLOPT := $(shell $(OCAMLOPT) -config | grep native_c_compiler | sed -e 's/native_c_compiler: //')
@@ -129,57 +119,43 @@ endif
 
 FORCE:
 
-site.exp: FORCE
-	@echo 'Making a new site.exp file...'
-	@echo '## Autogenerated by LLVM configuration.' > site.tmp
-	@echo '# Do not edit!' >> site.tmp
-	@echo 'set target_triplet "$(TARGET_TRIPLE)"' >> site.tmp
-	@echo 'set TARGETS_TO_BUILD "$(TARGETS_TO_BUILD)"' >> site.tmp
-	@echo 'set llvmgcc_langs "$(LLVMGCC_LANGS)"' >> site.tmp
-	@echo 'set llvmtoolsdir "$(ToolDir)"' >>site.tmp
-	@echo 'set llvmlibsdir "$(LibDir)"' >>site.tmp
-	@echo 'set llvm_bindings "$(BINDINGS_TO_BUILD)"' >> site.tmp
-	@echo 'set srcroot "$(LLVM_SRC_ROOT)"' >>site.tmp
-	@echo 'set objroot "$(LLVM_OBJ_ROOT)"' >>site.tmp
-	@echo 'set srcdir "$(LLVM_SRC_ROOT)/test"' >>site.tmp
-	@echo 'set objdir "$(LLVM_OBJ_ROOT)/test"' >>site.tmp
-	@echo 'set gccpath "$(CC)"' >>site.tmp
-	@echo 'set gxxpath "$(CXX)"' >>site.tmp
-	@echo 'set compile_c "' $(CC) $(CPP.Flags) $(TargetCommonOpts) $(CompileCommonOpts) -c '"' >>site.tmp
-	@echo 'set compile_cxx "' $(CXX) $(CPP.Flags) $(CXX.Flags) $(TargetCommonOpts) $(CompileCommonOpts) -c -x c++ '"' >> site.tmp
-	@echo 'set link "' $(CXX) $(CPP.Flags) $(CXX.Flags) $(TargetCommonOpts) $(CompileCommonOpts) $(LD.Flags) '"' >>site.tmp
-	@echo 'set llvmgcc "$(LLVMGCC) $(TargetCommonOpts) $(EXTRA_OPTIONS)"' >> site.tmp
-	@echo 'set llvmgxx "$(LLVMGCC) $(TargetCommonOpts) $(EXTRA_OPTIONS)"' >> site.tmp
-	@echo 'set bugpoint_topts $(BUGPOINT_TOPTS)' >> site.tmp
-	@echo 'set shlibext "$(SHLIBEXT)"' >> site.tmp
-	@echo 'set ocamlopt "$(OCAMLOPT) -cc \"$(CXX_FOR_OCAMLOPT)\" -I $(LibDir)/ocaml"' >> site.tmp
-	@echo 'set valgrind "$(VALGRIND)"' >> site.tmp
-	@echo 'set grep "$(GREP)"' >>site.tmp
-	@echo 'set gas "$(GAS)"' >>site.tmp
-	@echo 'set llvmdsymutil "$(DSYMUTIL)"' >>site.tmp
-	@echo '## All variables above are generated by configure. Do Not Edit ## ' >>site.tmp
-	@test ! -f site.exp || \
-	sed '1,/^## All variables above are.*##/ d' site.exp >> site.tmp
-	@-rm -f site.bak
-	@test ! -f site.exp || mv site.exp site.bak
-	@mv site.tmp site.exp
+ifeq ($(DISABLE_ASSERTIONS),1)
+ENABLE_ASSERTIONS=0
+else
+ENABLE_ASSERTIONS=1
+endif
 
-lit.site.cfg: site.exp
+lit.site.cfg: FORCE
 	@echo "Making LLVM 'lit.site.cfg' file..."
-	@sed -e "s#@LLVM_SOURCE_DIR@#$(LLVM_SRC_ROOT)#g" \
-	     -e "s#@LLVM_BINARY_DIR@#$(LLVM_OBJ_ROOT)#g" \
-	     -e "s#@LLVM_TOOLS_DIR@#$(ToolDir)#g" \
-	     -e "s#@LLVMGCCDIR@#$(LLVMGCCDIR)#g" \
-	     $(PROJ_SRC_DIR)/lit.site.cfg.in > $@
+	@$(ECHOPATH) s=@LLVM_HOST_TRIPLE@=$(HOST_TRIPLE)=g > lit.tmp
+	@$(ECHOPATH) s=@TARGET_TRIPLE@=$(TARGET_TRIPLE)=g >> lit.tmp
+	@$(ECHOPATH) s=@LLVM_SOURCE_DIR@=$(LLVM_SRC_ROOT)=g >> lit.tmp
+	@$(ECHOPATH) s=@LLVM_BINARY_DIR@=$(LLVM_OBJ_ROOT)=g >> lit.tmp
+	@$(ECHOPATH) s=@LLVM_TOOLS_DIR@=$(ToolDir)=g >> lit.tmp
+	@$(ECHOPATH) s=@SHLIBDIR@=$(SharedLibDir)=g >> lit.tmp
+	@$(ECHOPATH) s=@SHLIBEXT@=$(SHLIBEXT)=g >> lit.tmp
+	@$(ECHOPATH) s=@EXEEXT@=$(EXEEXT)=g >> lit.tmp
+	@$(ECHOPATH) s=@PYTHON_EXECUTABLE@=$(PYTHON)=g >> lit.tmp
+	@$(ECHOPATH) s=@OCAMLOPT@=$(OCAMLOPT) -cc $(subst *,'\\\"',*$(subst =,"\\=",$(CXX_FOR_OCAMLOPT))*) -cclib -L$(LibDir) -I $(LibDir)/ocaml=g >> lit.tmp
+	@$(ECHOPATH) s=@ENABLE_SHARED@=$(ENABLE_SHARED)=g >> lit.tmp
+	@$(ECHOPATH) s=@ENABLE_ASSERTIONS@=$(ENABLE_ASSERTIONS)=g >> lit.tmp
+	@$(ECHOPATH) s=@TARGETS_TO_BUILD@=$(TARGETS_TO_BUILD)=g >> lit.tmp
+	@$(ECHOPATH) s=@LLVM_BINDINGS@=$(BINDINGS_TO_BUILD)=g >> lit.tmp
+	@$(ECHOPATH) s=@HOST_OS@=$(HOST_OS)=g >> lit.tmp
+	@$(ECHOPATH) s=@HOST_ARCH@=$(HOST_ARCH)=g >> lit.tmp
+	@$(ECHOPATH) s=@HAVE_LIBZ@=$(HAVE_LIBZ)=g >> lit.tmp
+	@sed -f lit.tmp $(PROJ_SRC_DIR)/lit.site.cfg.in > $@
+	@-rm -f lit.tmp
 
 Unit/lit.site.cfg: $(PROJ_OBJ_DIR)/Unit/.dir FORCE
 	@echo "Making LLVM unittest 'lit.site.cfg' file..."
-	@sed -e "s#@LLVM_SOURCE_DIR@#$(LLVM_SRC_ROOT)#g" \
-	     -e "s#@LLVM_BINARY_DIR@#$(LLVM_OBJ_ROOT)#g" \
-	     -e "s#@LLVM_TOOLS_DIR@#$(ToolDir)#g" \
-	     -e "s#@LLVMGCCDIR@#$(LLVMGCCDIR)#g" \
-	     -e "s#@LLVM_BUILD_MODE@#$(BuildMode)#g" \
-	     -e "s#@ENABLE_SHARED@#$(ENABLE_SHARED)#g" \
-	     -e "s#@SHLIBPATH_VAR@#$(SHLIBPATH_VAR)#g" \
-	     $(PROJ_SRC_DIR)/Unit/lit.site.cfg.in > $@
-
+	@$(ECHOPATH) s=@LLVM_SOURCE_DIR@=$(LLVM_SRC_ROOT)=g > unit.tmp
+	@$(ECHOPATH) s=@LLVM_BINARY_DIR@=$(LLVM_OBJ_ROOT)=g >> unit.tmp
+	@$(ECHOPATH) s=@LLVM_TOOLS_DIR@=$(ToolDir)=g >> unit.tmp
+	@$(ECHOPATH) s=@LLVM_BUILD_MODE@=$(BuildMode)=g >> unit.tmp
+	@$(ECHOPATH) s=@ENABLE_SHARED@=$(ENABLE_SHARED)=g >> unit.tmp
+	@$(ECHOPATH) s=@SHLIBDIR@=$(SharedLibDir)=g >> unit.tmp
+	@$(ECHOPATH) s=@HOST_OS@=$(HOST_OS)=g >> unit.tmp
+	@$(ECHOPATH) s=@HOST_ARCH@=$(HOST_ARCH)=g >> lit.tmp
+	@sed -f unit.tmp $(PROJ_SRC_DIR)/Unit/lit.site.cfg.in > $@
+	@-rm -f unit.tmp

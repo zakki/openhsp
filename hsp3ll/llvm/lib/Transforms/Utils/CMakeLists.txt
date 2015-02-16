@@ -1,28 +1,41 @@
 add_llvm_library(LLVMTransformUtils
-  AddrModeMatcher.cpp
+  AddDiscriminators.cpp
+  ASanStackFrameLayout.cpp
   BasicBlockUtils.cpp
-  BasicInliner.cpp
   BreakCriticalEdges.cpp
   BuildLibCalls.cpp
+  BypassSlowDivision.cpp
+  CtorUtils.cpp
   CloneFunction.cpp
-  CloneLoop.cpp
   CloneModule.cpp
+  CmpInstAnalysis.cpp
   CodeExtractor.cpp
   DemoteRegToStack.cpp
+  GlobalStatus.cpp
   InlineFunction.cpp
   InstructionNamer.cpp
+  IntegerDivision.cpp
   LCSSA.cpp
   Local.cpp
   LoopSimplify.cpp
   LoopUnroll.cpp
+  LoopUnrollRuntime.cpp
+  LowerExpectIntrinsic.cpp
   LowerInvoke.cpp
   LowerSwitch.cpp
   Mem2Reg.cpp
+  MetaRenamer.cpp
+  ModuleUtils.cpp
   PromoteMemoryToRegister.cpp
   SSAUpdater.cpp
   SimplifyCFG.cpp
+  FlattenCFG.cpp
+  SimplifyIndVar.cpp
+  SimplifyInstructions.cpp
+  SimplifyLibCalls.cpp
   UnifyFunctionExitNodes.cpp
+  Utils.cpp
   ValueMapper.cpp
   )
 
-target_link_libraries (LLVMTransformUtils LLVMSupport)
+add_dependencies(LLVMTransformUtils intrinsics_gen)

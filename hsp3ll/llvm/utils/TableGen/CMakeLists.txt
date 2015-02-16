@@ -1,46 +1,35 @@
-add_executable(tblgen
-  ARMDecoderEmitter.cpp
+set(LLVM_LINK_COMPONENTS Support)
+
+add_tablegen(llvm-tblgen LLVM
   AsmMatcherEmitter.cpp
   AsmWriterEmitter.cpp
   AsmWriterInst.cpp
   CallingConvEmitter.cpp
-  ClangASTNodesEmitter.cpp
-  ClangAttrEmitter.cpp
-  ClangDiagnosticsEmitter.cpp
   CodeEmitterGen.cpp
   CodeGenDAGPatterns.cpp
   CodeGenInstruction.cpp
+  CodeGenMapTable.cpp
+  CodeGenRegisters.cpp
+  CodeGenSchedule.cpp
   CodeGenTarget.cpp
   DAGISelEmitter.cpp
   DAGISelMatcherEmitter.cpp
   DAGISelMatcherGen.cpp
   DAGISelMatcherOpt.cpp
   DAGISelMatcher.cpp
+  DFAPacketizerEmitter.cpp
   DisassemblerEmitter.cpp
-  EDEmitter.cpp
   FastISelEmitter.cpp
-  InstrEnumEmitter.cpp
+  FixedLenDecoderEmitter.cpp
   InstrInfoEmitter.cpp
   IntrinsicEmitter.cpp
-  LLVMCConfigurationEmitter.cpp
-  NeonEmitter.cpp
   OptParserEmitter.cpp
-  Record.cpp
+  PseudoLoweringEmitter.cpp
   RegisterInfoEmitter.cpp
   SubtargetEmitter.cpp
-  TGLexer.cpp
-  TGParser.cpp
-  TGValueTypes.cpp
   TableGen.cpp
-  TableGenBackend.cpp
   X86DisassemblerTables.cpp
+  X86ModRMFilters.cpp
   X86RecognizableInstr.cpp
+  CTagsEmitter.cpp
   )
-
-target_link_libraries(tblgen LLVMSupport LLVMSystem)
-if( MINGW )
-  target_link_libraries(tblgen imagehlp psapi)
-endif( MINGW )
-if( LLVM_ENABLE_THREADS AND HAVE_LIBPTHREAD AND NOT BEOS )
-  target_link_libraries(tblgen pthread)
-endif()

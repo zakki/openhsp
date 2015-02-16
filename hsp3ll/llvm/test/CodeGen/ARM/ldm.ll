@@ -1,10 +1,13 @@
-; RUN: llc < %s -mtriple=arm-apple-darwin | FileCheck %s
+; RUN: llc < %s -mtriple=armv7-apple-ios3.0 | FileCheck %s
+; RUN: llc < %s -mtriple=armv4t-apple-ios3.0 | FileCheck %s -check-prefix=V4T
 
 @X = external global [0 x i32]          ; <[0 x i32]*> [#uses=5]
 
 define i32 @t1() {
-; CHECK: t1:
-; CHECK: ldmia
+; CHECK-LABEL: t1:
+; CHECK: pop
+; V4T-LABEL: t1:
+; V4T: pop
         %tmp = load i32* getelementptr ([0 x i32]* @X, i32 0, i32 0)            ; <i32> [#uses=1]
         %tmp3 = load i32* getelementptr ([0 x i32]* @X, i32 0, i32 1)           ; <i32> [#uses=1]
         %tmp4 = tail call i32 @f1( i32 %tmp, i32 %tmp3 )                ; <i32> [#uses=1]
@@ -12,8 +15,10 @@ define i32 @t1() {
 }
 
 define i32 @t2() {
-; CHECK: t2:
-; CHECK: ldmia
+; CHECK-LABEL: t2:
+; CHECK: pop
+; V4T-LABEL: t2:
+; V4T: pop
         %tmp = load i32* getelementptr ([0 x i32]* @X, i32 0, i32 2)            ; <i32> [#uses=1]
         %tmp3 = load i32* getelementptr ([0 x i32]* @X, i32 0, i32 3)           ; <i32> [#uses=1]
         %tmp5 = load i32* getelementptr ([0 x i32]* @X, i32 0, i32 4)           ; <i32> [#uses=1]
@@ -22,9 +27,13 @@ define i32 @t2() {
 }
 
 define i32 @t3() {
-; CHECK: t3:
+; CHECK-LABEL: t3:
 ; CHECK: ldmib
-; CHECK: ldmia sp!
+; CHECK: pop
+; V4T-LABEL: t3:
+; V4T: ldmib
+; V4T: pop
+; V4T-NEXT: bx lr
         %tmp = load i32* getelementptr ([0 x i32]* @X, i32 0, i32 1)            ; <i32> [#uses=1]
         %tmp3 = load i32* getelementptr ([0 x i32]* @X, i32 0, i32 2)           ; <i32> [#uses=1]
         %tmp5 = load i32* getelementptr ([0 x i32]* @X, i32 0, i32 3)           ; <i32> [#uses=1]

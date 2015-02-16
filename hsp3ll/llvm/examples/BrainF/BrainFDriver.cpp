@@ -21,22 +21,22 @@
 // ./BrainF           prog.bf          #Write as BitCode
 //
 // lli prog.bf.bc                      #Run generated BitCode
-// llvm-ld -native -o=prog prog.bf.bc  #Compile BitCode into native executable
 //
 //===--------------------------------------------------------------------===//
 
 #include "BrainF.h"
-#include "llvm/Constants.h"
-#include "llvm/Analysis/Verifier.h"
 #include "llvm/Bitcode/ReaderWriter.h"
 #include "llvm/ExecutionEngine/GenericValue.h"
 #include "llvm/ExecutionEngine/JIT.h"
-#include "llvm/Target/TargetSelect.h"
+#include "llvm/IR/Constants.h"
+#include "llvm/IR/Verifier.h"
 #include "llvm/Support/CommandLine.h"
+#include "llvm/Support/FileSystem.h"
 #include "llvm/Support/ManagedStatic.h"
+#include "llvm/Support/TargetSelect.h"
 #include "llvm/Support/raw_ostream.h"
-#include <iostream>
 #include <fstream>
+#include <iostream>
 using namespace llvm;
 
 //Command line options
@@ -109,7 +109,7 @@ int main(int argc, char **argv) {
     if (OutputFilename != "-") {
       std::string ErrInfo;
       out = new raw_fd_ostream(OutputFilename.c_str(), ErrInfo,
-                               raw_fd_ostream::F_Binary);
+                               sys::fs::F_None);
     }
   }
 

@@ -1,6 +1,5 @@
-; RUN: llc < %s -march=x86 -mattr=+sse42 -disable-mmx | FileCheck %s
-; CHECK: pshufd
-; CHECK: paddd
+; RUN: llc < %s -march=x86 -mattr=+sse4.2 | FileCheck %s
+; CHECK: paddq
 
 ; truncate v2i64 to v2i32
 

@@ -11,16 +11,17 @@
 //
 //===----------------------------------------------------------------------===//
 
-#define DEBUG_TYPE "instcount"
 #include "llvm/Analysis/Passes.h"
+#include "llvm/ADT/Statistic.h"
+#include "llvm/IR/Function.h"
+#include "llvm/IR/InstVisitor.h"
 #include "llvm/Pass.h"
-#include "llvm/Function.h"
 #include "llvm/Support/Debug.h"
 #include "llvm/Support/ErrorHandling.h"
-#include "llvm/Support/InstVisitor.h"
 #include "llvm/Support/raw_ostream.h"
-#include "llvm/ADT/Statistic.h"
 using namespace llvm;
+
+#define DEBUG_TYPE "instcount"
 
 STATISTIC(TotalInsts , "Number of instructions (of all types)");
 STATISTIC(TotalBlocks, "Number of basic blocks");
@@ -30,7 +31,7 @@ STATISTIC(TotalMemInst, "Number of memory instructions");
 #define HANDLE_INST(N, OPCODE, CLASS) \
   STATISTIC(Num ## OPCODE ## Inst, "Number of " #OPCODE " insts");
 
-#include "llvm/Instruction.def"
+#include "llvm/IR/Instruction.def"
 
 
 namespace {
@@ -43,29 +44,31 @@ namespace {
 #define HANDLE_INST(N, OPCODE, CLASS) \
     void visit##OPCODE(CLASS &) { ++Num##OPCODE##Inst; ++TotalInsts; }
 
-#include "llvm/Instruction.def"
+#include "llvm/IR/Instruction.def"
 
     void visitInstruction(Instruction &I) {
       errs() << "Instruction Count does not know about " << I;
-      llvm_unreachable(0);
+      llvm_unreachable(nullptr);
     }
   public:
     static char ID; // Pass identification, replacement for typeid
-    InstCount() : FunctionPass(ID) {}
+    InstCount() : FunctionPass(ID) {
+      initializeInstCountPass(*PassRegistry::getPassRegistry());
+    }
 
-    virtual bool runOnFunction(Function &F);
+    bool runOnFunction(Function &F) override;
 
-    virtual void getAnalysisUsage(AnalysisUsage &AU) const {
+    void getAnalysisUsage(AnalysisUsage &AU) const override {
       AU.setPreservesAll();
     }
-    virtual void print(raw_ostream &O, const Module *M) const {}
+    void print(raw_ostream &O, const Module *M) const override {}
 
   };
 }
 
 char InstCount::ID = 0;
 INITIALIZE_PASS(InstCount, "instcount",
-                "Counts the various types of Instructions", false, true);
+                "Counts the various types of Instructions", false, true)
 
 FunctionPass *llvm::createInstCountPass() { return new InstCount(); }
 

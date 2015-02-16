@@ -1,4 +1,4 @@
-; RUN: opt < %s -gvn -disable-output
+; RUN: opt < %s -basicaa -gvn -disable-output
 ; PR1782
 
 target datalayout = "e-p:64:64:64-i1:8:8-i8:8:8-i16:16:16-i32:32:32-i64:64:64-f32:32:32-f64:64:64-v64:64:64-v128:128:128-a0:0:64-s0:64:64-f80:128:128"
@@ -7,7 +7,7 @@ target triple = "x86_64-unknown-linux-gnu"
 	%struct.pci_device_id = type { i32, i32, i32, i32, i32, i32, i64 }
 	%struct.usb_bus = type { %struct.device* }
 	%struct.usb_hcd = type { %struct.usb_bus, [0 x i64] }
-@pci_ids = external constant [1 x %struct.pci_device_id]		; <[1 x %struct.pci_device_id]*> [#uses=1]
+@pci_ids = constant [1 x %struct.pci_device_id] zeroinitializer
 
 @__mod_pci_device_table = alias [1 x %struct.pci_device_id]* @pci_ids		; <[1 x %struct.pci_device_id]*> [#uses=0]
 

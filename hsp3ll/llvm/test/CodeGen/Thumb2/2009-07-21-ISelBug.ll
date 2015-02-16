@@ -1,11 +1,11 @@
-; RUN: llc < %s -mtriple=thumbv7-apple-darwin9 -mattr=+vfp2,+thumb2 | FileCheck %s
+; RUN: llc < %s -mtriple=thumbv7-apple-ios -mattr=+vfp2,+thumb2 | FileCheck %s
 ; rdar://7076238
 
 @"\01LC" = external constant [36 x i8], align 1		; <[36 x i8]*> [#uses=1]
 
 define i32 @t(i32, ...) nounwind {
 entry:
-; CHECK: t:
+; CHECK-LABEL: t:
 ; CHECK: add r7, sp, #12
 	%1 = load i8** undef, align 4		; <i8*> [#uses=3]
 	%2 = getelementptr i8* %1, i32 4		; <i8*> [#uses=1]

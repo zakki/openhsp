@@ -15,9 +15,9 @@
 #ifndef LLVM_CODEGEN_LINKALLCODEGENCOMPONENTS_H
 #define LLVM_CODEGEN_LINKALLCODEGENCOMPONENTS_H
 
+#include "llvm/CodeGen/GCs.h"
 #include "llvm/CodeGen/Passes.h"
 #include "llvm/CodeGen/SchedulerRegistry.h"
-#include "llvm/CodeGen/GCs.h"
 #include "llvm/Target/TargetMachine.h"
 #include <cstdlib>
 
@@ -31,24 +31,24 @@ namespace {
       if (std::getenv("bar") != (char*) -1)
         return;
 
-      (void) llvm::createDeadMachineInstructionElimPass();
-
       (void) llvm::createFastRegisterAllocator();
-      (void) llvm::createLinearScanRegisterAllocator();
-      (void) llvm::createPBQPRegisterAllocator();
+      (void) llvm::createBasicRegisterAllocator();
+      (void) llvm::createGreedyRegisterAllocator();
+      (void) llvm::createDefaultPBQPRegisterAllocator();
 
-      (void) llvm::createSimpleRegisterCoalescer();
-      
       llvm::linkOcamlGC();
+      llvm::linkErlangGC();
       llvm::linkShadowStackGC();
-      
-      (void) llvm::createBURRListDAGScheduler(NULL, llvm::CodeGenOpt::Default);
-      (void) llvm::createTDRRListDAGScheduler(NULL, llvm::CodeGenOpt::Default);
-      (void) llvm::createSourceListDAGScheduler(NULL,llvm::CodeGenOpt::Default);
-      (void) llvm::createHybridListDAGScheduler(NULL,llvm::CodeGenOpt::Default);
-      (void) llvm::createTDListDAGScheduler(NULL, llvm::CodeGenOpt::Default);
-      (void) llvm::createFastDAGScheduler(NULL, llvm::CodeGenOpt::Default);
-      (void) llvm::createDefaultScheduler(NULL, llvm::CodeGenOpt::Default);
+
+      (void) llvm::createBURRListDAGScheduler(nullptr,
+                                              llvm::CodeGenOpt::Default);
+      (void) llvm::createSourceListDAGScheduler(nullptr,
+                                                llvm::CodeGenOpt::Default);
+      (void) llvm::createHybridListDAGScheduler(nullptr,
+                                                llvm::CodeGenOpt::Default);
+      (void) llvm::createFastDAGScheduler(nullptr, llvm::CodeGenOpt::Default);
+      (void) llvm::createDefaultScheduler(nullptr, llvm::CodeGenOpt::Default);
+      (void) llvm::createVLIWDAGScheduler(nullptr, llvm::CodeGenOpt::Default);
 
     }
   } ForceCodegenLinking; // Force link by creating a global definition.

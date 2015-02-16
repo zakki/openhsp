@@ -1,13 +1,14 @@
-//===- SystemZRegisterInfo.td - The PowerPC Register File ------*- tablegen -*-===//
-// 
+//==- SystemZRegisterInfo.td - SystemZ register definitions -*- tablegen -*-==//
+//
 //                     The LLVM Compiler Infrastructure
 //
 // This file is distributed under the University of Illinois Open Source
 // License. See LICENSE.TXT for details.
-// 
+//
 //===----------------------------------------------------------------------===//
-//
-//
+
+//===----------------------------------------------------------------------===//
+// Class definitions.
 //===----------------------------------------------------------------------===//
 
 class SystemZReg<string n> : Register<n> {
@@ -19,460 +20,171 @@ class SystemZRegWithSubregs<string n, list<Register> subregs>
   let Namespace = "SystemZ";
 }
 
-// We identify all our registers with a 4-bit ID, for consistency's sake.
-
-// GPR32 - Lower 32 bits of one of the 16 64-bit general-purpose registers
-class GPR32<bits<4> num, string n> : SystemZReg<n> {
-  field bits<4> Num = num;
-}
-
-// GPR64 - One of the 16 64-bit general-purpose registers
-class GPR64<bits<4> num, string n, list<Register> subregs,
-            list<Register> aliases = []>
- : SystemZRegWithSubregs<n, subregs> {
-  field bits<4> Num = num;
-  let Aliases = aliases;
-}
-
-// GPR128 - 8 even-odd register pairs
-class GPR128<bits<4> num, string n, list<Register> subregs,
-             list<Register> aliases = []>
- : SystemZRegWithSubregs<n, subregs> {
-  field bits<4> Num = num;
-  let Aliases = aliases;
-}
-
-// FPRS - Lower 32 bits of one of the 16 64-bit floating-point registers
-class FPRS<bits<4> num, string n> : SystemZReg<n> {
-  field bits<4> Num = num;
-}
-
-// FPRL - One of the 16 64-bit floating-point registers
-class FPRL<bits<4> num, string n, list<Register> subregs>
- : SystemZRegWithSubregs<n, subregs> {
-  field bits<4> Num = num;
-}
-
 let Namespace = "SystemZ" in {
-def subreg_32bit  : SubRegIndex;
-def subreg_odd32  : SubRegIndex;
-def subreg_even   : SubRegIndex;
-def subreg_odd    : SubRegIndex;
+def subreg_l32   : SubRegIndex<32, 0>;  // Also acts as subreg_ll32.
+def subreg_h32   : SubRegIndex<32, 32>; // Also acts as subreg_lh32.
+def subreg_l64   : SubRegIndex<64, 0>;
+def subreg_h64   : SubRegIndex<64, 64>;
+def subreg_hh32  : ComposedSubRegIndex<subreg_h64, subreg_h32>;
+def subreg_hl32  : ComposedSubRegIndex<subreg_h64, subreg_l32>;
+}
+
+// Define a register class that contains values of type TYPE and an
+// associated operand called NAME.  SIZE is the size and alignment
+// of the registers and REGLIST is the list of individual registers.
+multiclass SystemZRegClass<string name, ValueType type, int size, dag regList> {
+  def AsmOperand : AsmOperandClass {
+    let Name = name;
+    let ParserMethod = "parse"##name;
+    let RenderMethod = "addRegOperands";
+  }
+  def Bit : RegisterClass<"SystemZ", [type], size, regList> {
+    let Size = size;
+  }
+  def "" : RegisterOperand<!cast<RegisterClass>(name##"Bit")> {
+    let ParserMatchClass = !cast<AsmOperandClass>(name##"AsmOperand");
+  }
+}
+
+//===----------------------------------------------------------------------===//
+// General-purpose registers
+//===----------------------------------------------------------------------===//
+
+// Lower 32 bits of one of the 16 64-bit general-purpose registers
+class GPR32<bits<16> num, string n> : SystemZReg<n> {
+  let HWEncoding = num;
+}
+
+// One of the 16 64-bit general-purpose registers.
+class GPR64<bits<16> num, string n, GPR32 low, GPR32 high>
+ : SystemZRegWithSubregs<n, [low, high]> {
+  let HWEncoding = num;
+  let SubRegIndices = [subreg_l32, subreg_h32];
+}
+
+// 8 even-odd pairs of GPR64s.
+class GPR128<bits<16> num, string n, GPR64 low, GPR64 high>
+ : SystemZRegWithSubregs<n, [low, high]> {
+  let HWEncoding = num;
+  let SubRegIndices = [subreg_l64, subreg_h64];
 }
 
 // General-purpose registers
-def R0W  : GPR32< 0,  "r0">, DwarfRegNum<[0]>;
-def R1W  : GPR32< 1,  "r1">, DwarfRegNum<[1]>;
-def R2W  : GPR32< 2,  "r2">, DwarfRegNum<[2]>;
-def R3W  : GPR32< 3,  "r3">, DwarfRegNum<[3]>;
-def R4W  : GPR32< 4,  "r4">, DwarfRegNum<[4]>;
-def R5W  : GPR32< 5,  "r5">, DwarfRegNum<[5]>;
-def R6W  : GPR32< 6,  "r6">, DwarfRegNum<[6]>;
-def R7W  : GPR32< 7,  "r7">, DwarfRegNum<[7]>;
-def R8W  : GPR32< 8,  "r8">, DwarfRegNum<[8]>;
-def R9W  : GPR32< 9,  "r9">, DwarfRegNum<[9]>;
-def R10W : GPR32<10, "r10">, DwarfRegNum<[10]>;
-def R11W : GPR32<11, "r11">, DwarfRegNum<[11]>;
-def R12W : GPR32<12, "r12">, DwarfRegNum<[12]>;
-def R13W : GPR32<13, "r13">, DwarfRegNum<[13]>;
-def R14W : GPR32<14, "r14">, DwarfRegNum<[14]>;
-def R15W : GPR32<15, "r15">, DwarfRegNum<[15]>;
-
-let SubRegIndices = [subreg_32bit] in {
-def R0D  : GPR64< 0,  "r0", [R0W]>,  DwarfRegNum<[0]>;
-def R1D  : GPR64< 1,  "r1", [R1W]>,  DwarfRegNum<[1]>;
-def R2D  : GPR64< 2,  "r2", [R2W]>,  DwarfRegNum<[2]>;
-def R3D  : GPR64< 3,  "r3", [R3W]>,  DwarfRegNum<[3]>;
-def R4D  : GPR64< 4,  "r4", [R4W]>,  DwarfRegNum<[4]>;
-def R5D  : GPR64< 5,  "r5", [R5W]>,  DwarfRegNum<[5]>;
-def R6D  : GPR64< 6,  "r6", [R6W]>,  DwarfRegNum<[6]>;
-def R7D  : GPR64< 7,  "r7", [R7W]>,  DwarfRegNum<[7]>;
-def R8D  : GPR64< 8,  "r8", [R8W]>,  DwarfRegNum<[8]>;
-def R9D  : GPR64< 9,  "r9", [R9W]>,  DwarfRegNum<[9]>;
-def R10D : GPR64<10, "r10", [R10W]>, DwarfRegNum<[10]>;
-def R11D : GPR64<11, "r11", [R11W]>, DwarfRegNum<[11]>;
-def R12D : GPR64<12, "r12", [R12W]>, DwarfRegNum<[12]>;
-def R13D : GPR64<13, "r13", [R13W]>, DwarfRegNum<[13]>;
-def R14D : GPR64<14, "r14", [R14W]>, DwarfRegNum<[14]>;
-def R15D : GPR64<15, "r15", [R15W]>, DwarfRegNum<[15]>;
+foreach I = 0-15 in {
+  def R#I#L : GPR32<I, "r"#I>;
+  def R#I#H : GPR32<I, "r"#I>;
+  def R#I#D : GPR64<I, "r"#I, !cast<GPR32>("R"#I#"L"), !cast<GPR32>("R"#I#"H")>,
+                    DwarfRegNum<[I]>;
 }
 
-// Register pairs
-let SubRegIndices = [subreg_32bit, subreg_odd32] in {
-def R0P  : GPR64< 0,  "r0", [R0W,  R1W],  [R0D,  R1D]>,  DwarfRegNum<[0]>;
-def R2P  : GPR64< 2,  "r2", [R2W,  R3W],  [R2D,  R3D]>,  DwarfRegNum<[2]>;
-def R4P  : GPR64< 4,  "r4", [R4W,  R5W],  [R4D,  R5D]>,  DwarfRegNum<[4]>;
-def R6P  : GPR64< 6,  "r6", [R6W,  R7W],  [R6D,  R7D]>,  DwarfRegNum<[6]>;
-def R8P  : GPR64< 8,  "r8", [R8W,  R9W],  [R8D,  R9D]>,  DwarfRegNum<[8]>;
-def R10P : GPR64<10, "r10", [R10W, R11W], [R10D, R11D]>, DwarfRegNum<[10]>;
-def R12P : GPR64<12, "r12", [R12W, R13W], [R12D, R13D]>, DwarfRegNum<[12]>;
-def R14P : GPR64<14, "r14", [R14W, R15W], [R14D, R15D]>, DwarfRegNum<[14]>;
+foreach I = [0, 2, 4, 6, 8, 10, 12, 14] in {
+  def R#I#Q : GPR128<I, "r"#I, !cast<GPR64>("R"#!add(I, 1)#"D"),
+                     !cast<GPR64>("R"#I#"D")>;
 }
 
-let SubRegIndices = [subreg_even, subreg_odd],
- CompositeIndices = [(subreg_odd32  subreg_odd,  subreg_32bit)] in {
-def R0Q  : GPR128< 0,  "r0", [R0D,  R1D],  [R0P]>,  DwarfRegNum<[0]>;
-def R2Q  : GPR128< 2,  "r2", [R2D,  R3D],  [R2P]>,  DwarfRegNum<[2]>;
-def R4Q  : GPR128< 4,  "r4", [R4D,  R5D],  [R4P]>,  DwarfRegNum<[4]>;
-def R6Q  : GPR128< 6,  "r6", [R6D,  R7D],  [R6P]>,  DwarfRegNum<[6]>;
-def R8Q  : GPR128< 8,  "r8", [R8D,  R9D],  [R8P]>,  DwarfRegNum<[8]>;
-def R10Q : GPR128<10, "r10", [R10D, R11D], [R10P]>, DwarfRegNum<[10]>;
-def R12Q : GPR128<12, "r12", [R12D, R13D], [R12P]>, DwarfRegNum<[12]>;
-def R14Q : GPR128<14, "r14", [R14D, R15D], [R14P]>, DwarfRegNum<[14]>;
+/// Allocate the callee-saved R6-R13 backwards. That way they can be saved
+/// together with R14 and R15 in one prolog instruction.
+defm GR32  : SystemZRegClass<"GR32",  i32, 32, (add (sequence "R%uL",  0, 5),
+                                                    (sequence "R%uL", 15, 6))>;
+defm GRH32 : SystemZRegClass<"GRH32", i32, 32, (add (sequence "R%uH",  0, 5),
+                                                    (sequence "R%uH", 15, 6))>;
+defm GR64  : SystemZRegClass<"GR64",  i64, 64, (add (sequence "R%uD",  0, 5),
+                                                    (sequence "R%uD", 15, 6))>;
+
+// Combine the low and high GR32s into a single class.  This can only be
+// used for virtual registers if the high-word facility is available.
+defm GRX32 : SystemZRegClass<"GRX32", i32, 32,
+                             (add (sequence "R%uL",  0, 5),
+                                  (sequence "R%uH",  0, 5),
+                                  R15L, R15H, R14L, R14H, R13L, R13H,
+                                  R12L, R12H, R11L, R11H, R10L, R10H,
+                                  R9L, R9H, R8L, R8H, R7L, R7H, R6L, R6H)>;
+
+// The architecture doesn't really have any i128 support, so model the
+// register pairs as untyped instead.
+defm GR128 : SystemZRegClass<"GR128", untyped, 128, (add R0Q, R2Q, R4Q,
+                                                         R12Q, R10Q, R8Q, R6Q,
+                                                         R14Q)>;
+
+// Base and index registers.  Everything except R0, which in an address
+// context evaluates as 0.
+defm ADDR32 : SystemZRegClass<"ADDR32", i32, 32, (sub GR32Bit, R0L)>;
+defm ADDR64 : SystemZRegClass<"ADDR64", i64, 64, (sub GR64Bit, R0D)>;
+
+// Not used directly, but needs to exist for ADDR32 and ADDR64 subregs
+// of a GR128.
+defm ADDR128 : SystemZRegClass<"ADDR128", untyped, 128, (sub GR128Bit, R0Q)>;
+
+//===----------------------------------------------------------------------===//
+// Floating-point registers
+//===----------------------------------------------------------------------===//
+
+// Maps FPR register numbers to their DWARF encoding.
+class DwarfMapping<int id> { int Id = id; }
+
+def F0Dwarf  : DwarfMapping<16>;
+def F2Dwarf  : DwarfMapping<17>;
+def F4Dwarf  : DwarfMapping<18>;
+def F6Dwarf  : DwarfMapping<19>;
+
+def F1Dwarf  : DwarfMapping<20>;
+def F3Dwarf  : DwarfMapping<21>;
+def F5Dwarf  : DwarfMapping<22>;
+def F7Dwarf  : DwarfMapping<23>;
+
+def F8Dwarf  : DwarfMapping<24>;
+def F10Dwarf : DwarfMapping<25>;
+def F12Dwarf : DwarfMapping<26>;
+def F14Dwarf : DwarfMapping<27>;
+
+def F9Dwarf  : DwarfMapping<28>;
+def F11Dwarf : DwarfMapping<29>;
+def F13Dwarf : DwarfMapping<30>;
+def F15Dwarf : DwarfMapping<31>;
+
+// Lower 32 bits of one of the 16 64-bit floating-point registers
+class FPR32<bits<16> num, string n> : SystemZReg<n> {
+  let HWEncoding = num;
+}
+
+// One of the 16 64-bit floating-point registers
+class FPR64<bits<16> num, string n, FPR32 low>
+ : SystemZRegWithSubregs<n, [low]> {
+  let HWEncoding = num;
+  let SubRegIndices = [subreg_h32];
+}
+
+// 8 pairs of FPR64s, with a one-register gap inbetween.
+class FPR128<bits<16> num, string n, FPR64 low, FPR64 high>
+ : SystemZRegWithSubregs<n, [low, high]> {
+  let HWEncoding = num;
+  let SubRegIndices = [subreg_l64, subreg_h64];
 }
 
 // Floating-point registers
-def F0S  : FPRS< 0,  "f0">, DwarfRegNum<[16]>;
-def F1S  : FPRS< 1,  "f1">, DwarfRegNum<[17]>;
-def F2S  : FPRS< 2,  "f2">, DwarfRegNum<[18]>;
-def F3S  : FPRS< 3,  "f3">, DwarfRegNum<[19]>;
-def F4S  : FPRS< 4,  "f4">, DwarfRegNum<[20]>;
-def F5S  : FPRS< 5,  "f5">, DwarfRegNum<[21]>;
-def F6S  : FPRS< 6,  "f6">, DwarfRegNum<[22]>;
-def F7S  : FPRS< 7,  "f7">, DwarfRegNum<[23]>;
-def F8S  : FPRS< 8,  "f8">, DwarfRegNum<[24]>;
-def F9S  : FPRS< 9,  "f9">, DwarfRegNum<[25]>;
-def F10S : FPRS<10, "f10">, DwarfRegNum<[26]>;
-def F11S : FPRS<11, "f11">, DwarfRegNum<[27]>;
-def F12S : FPRS<12, "f12">, DwarfRegNum<[28]>;
-def F13S : FPRS<13, "f13">, DwarfRegNum<[29]>;
-def F14S : FPRS<14, "f14">, DwarfRegNum<[30]>;
-def F15S : FPRS<15, "f15">, DwarfRegNum<[31]>;
-
-let SubRegIndices = [subreg_32bit] in {
-def F0L  : FPRL< 0,  "f0", [F0S]>,  DwarfRegNum<[16]>;
-def F1L  : FPRL< 1,  "f1", [F1S]>,  DwarfRegNum<[17]>;
-def F2L  : FPRL< 2,  "f2", [F2S]>,  DwarfRegNum<[18]>;
-def F3L  : FPRL< 3,  "f3", [F3S]>,  DwarfRegNum<[19]>;
-def F4L  : FPRL< 4,  "f4", [F4S]>,  DwarfRegNum<[20]>;
-def F5L  : FPRL< 5,  "f5", [F5S]>,  DwarfRegNum<[21]>;
-def F6L  : FPRL< 6,  "f6", [F6S]>,  DwarfRegNum<[22]>;
-def F7L  : FPRL< 7,  "f7", [F7S]>,  DwarfRegNum<[23]>;
-def F8L  : FPRL< 8,  "f8", [F8S]>,  DwarfRegNum<[24]>;
-def F9L  : FPRL< 9,  "f9", [F9S]>,  DwarfRegNum<[25]>;
-def F10L : FPRL<10, "f10", [F10S]>, DwarfRegNum<[26]>;
-def F11L : FPRL<11, "f11", [F11S]>, DwarfRegNum<[27]>;
-def F12L : FPRL<12, "f12", [F12S]>, DwarfRegNum<[28]>;
-def F13L : FPRL<13, "f13", [F13S]>, DwarfRegNum<[29]>;
-def F14L : FPRL<14, "f14", [F14S]>, DwarfRegNum<[30]>;
-def F15L : FPRL<15, "f15", [F15S]>, DwarfRegNum<[31]>;
+foreach I = 0-15 in {
+  def F#I#S : FPR32<I, "f"#I>;
+  def F#I#D : FPR64<I, "f"#I, !cast<FPR32>("F"#I#"S")>,
+              DwarfRegNum<[!cast<DwarfMapping>("F"#I#"Dwarf").Id]>;
 }
 
-// Status register
-def PSW : SystemZReg<"psw">;
-
-/// Register classes
-def GR32 : RegisterClass<"SystemZ", [i32], 32,
-   // Volatile registers
-  [R0W, R1W, R2W, R3W, R4W, R5W, R6W, R7W, R8W, R9W, R10W, R12W, R13W,
-   // Frame pointer, sometimes allocable
-   R11W,
-   // Volatile, but not allocable
-   R14W, R15W]>
-{
-  let MethodProtos = [{
-    iterator allocation_order_begin(const MachineFunction &MF) const;
-    iterator allocation_order_end(const MachineFunction &MF) const;
-  }];
-  let MethodBodies = [{
-    static const unsigned SystemZ_REG32[] = {
-      SystemZ::R1W,  SystemZ::R2W,  SystemZ::R3W,  SystemZ::R4W,
-      SystemZ::R5W,  SystemZ::R0W,  SystemZ::R12W, SystemZ::R11W,
-      SystemZ::R10W, SystemZ::R9W,  SystemZ::R8W,  SystemZ::R7W,
-      SystemZ::R6W,  SystemZ::R14W, SystemZ::R13W
-    };
-    static const unsigned SystemZ_REG32_nofp[] = {
-      SystemZ::R1W,  SystemZ::R2W,  SystemZ::R3W,  SystemZ::R4W,
-      SystemZ::R5W,  SystemZ::R0W,  SystemZ::R12W, /* No R11W */
-      SystemZ::R10W, SystemZ::R9W,  SystemZ::R8W,  SystemZ::R7W,
-      SystemZ::R6W,  SystemZ::R14W, SystemZ::R13W
-    };
-    GR32Class::iterator
-    GR32Class::allocation_order_begin(const MachineFunction &MF) const {
-      const TargetMachine &TM = MF.getTarget();
-      const TargetRegisterInfo *RI = TM.getRegisterInfo();
-      if (RI->hasFP(MF))
-        return SystemZ_REG32_nofp;
-      else
-        return SystemZ_REG32;
-    }
-    GR32Class::iterator
-    GR32Class::allocation_order_end(const MachineFunction &MF) const {
-      const TargetMachine &TM = MF.getTarget();
-      const TargetRegisterInfo *RI = TM.getRegisterInfo();
-      if (RI->hasFP(MF))
-        return SystemZ_REG32_nofp + (sizeof(SystemZ_REG32_nofp) / sizeof(unsigned));
-      else
-        return SystemZ_REG32 + (sizeof(SystemZ_REG32) / sizeof(unsigned));
-    }
-  }];
+foreach I = [0, 1, 4, 5, 8, 9, 12, 13] in {
+  def F#I#Q  : FPR128<I, "f"#I, !cast<FPR64>("F"#!add(I, 2)#"D"),
+                     !cast<FPR64>("F"#I#"D")>;
 }
 
-/// Registers used to generate address. Everything except R0.
-def ADDR32 : RegisterClass<"SystemZ", [i32], 32,
-   // Volatile registers
-  [R1W, R2W, R3W, R4W, R5W, R6W, R7W, R8W, R9W, R10W, R12W, R13W,
-   // Frame pointer, sometimes allocable
-   R11W,
-   // Volatile, but not allocable
-   R14W, R15W]>
-{
-  let MethodProtos = [{
-    iterator allocation_order_begin(const MachineFunction &MF) const;
-    iterator allocation_order_end(const MachineFunction &MF) const;
-  }];
-  let MethodBodies = [{
-    static const unsigned SystemZ_ADDR32[] = {
-      SystemZ::R1W,  SystemZ::R2W,  SystemZ::R3W,  SystemZ::R4W,
-      SystemZ::R5W,  /* No R0W */   SystemZ::R12W, SystemZ::R11W,
-      SystemZ::R10W, SystemZ::R9W,  SystemZ::R8W,  SystemZ::R7W,
-      SystemZ::R6W,  SystemZ::R14W, SystemZ::R13W
-    };
-    static const unsigned SystemZ_ADDR32_nofp[] = {
-      SystemZ::R1W,  SystemZ::R2W,  SystemZ::R3W,  SystemZ::R4W,
-      SystemZ::R5W,  /* No R0W */   SystemZ::R12W, /* No R11W */
-      SystemZ::R10W, SystemZ::R9W,  SystemZ::R8W,  SystemZ::R7W,
-      SystemZ::R6W,  SystemZ::R14W, SystemZ::R13W
-    };
-    ADDR32Class::iterator
-    ADDR32Class::allocation_order_begin(const MachineFunction &MF) const {
-      const TargetMachine &TM = MF.getTarget();
-      const TargetRegisterInfo *RI = TM.getRegisterInfo();
-      if (RI->hasFP(MF))
-        return SystemZ_ADDR32_nofp;
-      else
-        return SystemZ_ADDR32;
-    }
-    ADDR32Class::iterator
-    ADDR32Class::allocation_order_end(const MachineFunction &MF) const {
-      const TargetMachine &TM = MF.getTarget();
-      const TargetRegisterInfo *RI = TM.getRegisterInfo();
-      if (RI->hasFP(MF))
-        return SystemZ_ADDR32_nofp + (sizeof(SystemZ_ADDR32_nofp) / sizeof(unsigned));
-      else
-        return SystemZ_ADDR32 + (sizeof(SystemZ_ADDR32) / sizeof(unsigned));
-    }
-  }];
-}
+// There's no store-multiple instruction for FPRs, so we're not fussy
+// about the order in which call-saved registers are allocated.
+defm FP32  : SystemZRegClass<"FP32", f32, 32, (sequence "F%uS", 0, 15)>;
+defm FP64  : SystemZRegClass<"FP64", f64, 64, (sequence "F%uD", 0, 15)>;
+defm FP128 : SystemZRegClass<"FP128", f128, 128, (add F0Q, F1Q, F4Q, F5Q,
+                                                      F8Q, F9Q, F12Q, F13Q)>;
 
-def GR64 : RegisterClass<"SystemZ", [i64], 64,
-   // Volatile registers
-  [R0D, R1D, R2D, R3D, R4D, R5D, R6D, R7D, R8D, R9D, R10D, R12D, R13D,
-   // Frame pointer, sometimes allocable
-   R11D,
-   // Volatile, but not allocable
-   R14D, R15D]>
-{
-  let SubRegClasses = [(GR32 subreg_32bit)];
-  let MethodProtos = [{
-    iterator allocation_order_begin(const MachineFunction &MF) const;
-    iterator allocation_order_end(const MachineFunction &MF) const;
-  }];
-  let MethodBodies = [{
-    static const unsigned SystemZ_REG64[] = {
-      SystemZ::R1D,  SystemZ::R2D,  SystemZ::R3D,  SystemZ::R4D,
-      SystemZ::R5D,  SystemZ::R0D,  SystemZ::R12D, SystemZ::R11D,
-      SystemZ::R10D, SystemZ::R9D,  SystemZ::R8D,  SystemZ::R7D,
-      SystemZ::R6D,  SystemZ::R14D, SystemZ::R13D
-    };
-    static const unsigned SystemZ_REG64_nofp[] = {
-      SystemZ::R1D,  SystemZ::R2D,  SystemZ::R3D,  SystemZ::R4D,
-      SystemZ::R5D,  SystemZ::R0D,  SystemZ::R12D, /* No R11D */
-      SystemZ::R10D, SystemZ::R9D,  SystemZ::R8D,  SystemZ::R7D,
-      SystemZ::R6D,  SystemZ::R14D, SystemZ::R13D
-    };
-    GR64Class::iterator
-    GR64Class::allocation_order_begin(const MachineFunction &MF) const {
-      const TargetMachine &TM = MF.getTarget();
-      const TargetRegisterInfo *RI = TM.getRegisterInfo();
-      if (RI->hasFP(MF))
-        return SystemZ_REG64_nofp;
-      else
-        return SystemZ_REG64;
-    }
-    GR64Class::iterator
-    GR64Class::allocation_order_end(const MachineFunction &MF) const {
-      const TargetMachine &TM = MF.getTarget();
-      const TargetRegisterInfo *RI = TM.getRegisterInfo();
-      if (RI->hasFP(MF))
-        return SystemZ_REG64_nofp + (sizeof(SystemZ_REG64_nofp) / sizeof(unsigned));
-      else
-        return SystemZ_REG64 + (sizeof(SystemZ_REG64) / sizeof(unsigned));
-    }
-  }];
-}
+//===----------------------------------------------------------------------===//
+// Other registers
+//===----------------------------------------------------------------------===//
 
-def ADDR64 : RegisterClass<"SystemZ", [i64], 64,
-   // Volatile registers
-  [R1D, R2D, R3D, R4D, R5D, R6D, R7D, R8D, R9D, R10D, R12D, R13D,
-   // Frame pointer, sometimes allocable
-   R11D,
-   // Volatile, but not allocable
-   R14D, R15D]>
-{
-  let SubRegClasses = [(ADDR32 subreg_32bit)];
-  let MethodProtos = [{
-    iterator allocation_order_begin(const MachineFunction &MF) const;
-    iterator allocation_order_end(const MachineFunction &MF) const;
-  }];
-  let MethodBodies = [{
-    static const unsigned SystemZ_ADDR64[] = {
-      SystemZ::R1D,  SystemZ::R2D,  SystemZ::R3D,  SystemZ::R4D,
-      SystemZ::R5D,  /* No R0D */   SystemZ::R12D, SystemZ::R11D,
-      SystemZ::R10D, SystemZ::R9D,  SystemZ::R8D,  SystemZ::R7D,
-      SystemZ::R6D,  SystemZ::R14D, SystemZ::R13D
-    };
-    static const unsigned SystemZ_ADDR64_nofp[] = {
-      SystemZ::R1D,  SystemZ::R2D,  SystemZ::R3D,  SystemZ::R4D,
-      SystemZ::R5D,  /* No R0D */   SystemZ::R12D, /* No R11D */
-      SystemZ::R10D, SystemZ::R9D,  SystemZ::R8D,  SystemZ::R7D,
-      SystemZ::R6D,  SystemZ::R14D, SystemZ::R13D
-    };
-    ADDR64Class::iterator
-    ADDR64Class::allocation_order_begin(const MachineFunction &MF) const {
-      const TargetMachine &TM = MF.getTarget();
-      const TargetRegisterInfo *RI = TM.getRegisterInfo();
-      if (RI->hasFP(MF))
-        return SystemZ_ADDR64_nofp;
-      else
-        return SystemZ_ADDR64;
-    }
-    ADDR64Class::iterator
-    ADDR64Class::allocation_order_end(const MachineFunction &MF) const {
-      const TargetMachine &TM = MF.getTarget();
-      const TargetRegisterInfo *RI = TM.getRegisterInfo();
-      if (RI->hasFP(MF))
-        return SystemZ_ADDR64_nofp + (sizeof(SystemZ_ADDR64_nofp) / sizeof(unsigned));
-      else
-        return SystemZ_ADDR64 + (sizeof(SystemZ_ADDR64) / sizeof(unsigned));
-    }
-  }];
-}
-
-// Even-odd register pairs
-def GR64P : RegisterClass<"SystemZ", [v2i32], 64,
-  [R0P, R2P, R4P, R6P, R8P, R10P, R12P, R14P]>
-{
-  let SubRegClasses = [(GR32 subreg_32bit, subreg_odd32)];
-  let MethodProtos = [{
-    iterator allocation_order_begin(const MachineFunction &MF) const;
-    iterator allocation_order_end(const MachineFunction &MF) const;
-  }];
-  let MethodBodies = [{
-    static const unsigned SystemZ_REG64P[] = {
-      SystemZ::R0P,  SystemZ::R2P,  SystemZ::R4P, SystemZ::R10P,
-      SystemZ::R8P,  SystemZ::R6P };
-    static const unsigned SystemZ_REG64P_nofp[] = {
-      SystemZ::R0P,  SystemZ::R2P,  SystemZ::R4P, /* NO R10P */
-      SystemZ::R8P,  SystemZ::R6P };
-    GR64PClass::iterator
-    GR64PClass::allocation_order_begin(const MachineFunction &MF) const {
-      const TargetMachine &TM = MF.getTarget();
-      const TargetRegisterInfo *RI = TM.getRegisterInfo();
-      if (RI->hasFP(MF))
-        return SystemZ_REG64P_nofp;
-      else
-        return SystemZ_REG64P;
-    }
-    GR64PClass::iterator
-    GR64PClass::allocation_order_end(const MachineFunction &MF) const {
-      const TargetMachine &TM = MF.getTarget();
-      const TargetRegisterInfo *RI = TM.getRegisterInfo();
-      if (RI->hasFP(MF))
-        return SystemZ_REG64P_nofp + (sizeof(SystemZ_REG64P_nofp) / sizeof(unsigned));
-      else
-        return SystemZ_REG64P + (sizeof(SystemZ_REG64P) / sizeof(unsigned));
-    }
-  }];
-}
-
-def GR128 : RegisterClass<"SystemZ", [v2i64], 128,
-  [R0Q, R2Q, R4Q, R6Q, R8Q, R10Q, R12Q, R14Q]>
-{
-  let SubRegClasses = [(GR32 subreg_32bit, subreg_odd32),
-                         (GR64 subreg_even, subreg_odd)];
-  let MethodProtos = [{
-    iterator allocation_order_begin(const MachineFunction &MF) const;
-    iterator allocation_order_end(const MachineFunction &MF) const;
-  }];
-  let MethodBodies = [{
-    static const unsigned SystemZ_REG128[] = {
-      SystemZ::R0Q,  SystemZ::R2Q,  SystemZ::R4Q,  SystemZ::R10Q,
-      SystemZ::R8Q,  SystemZ::R6Q };
-    static const unsigned SystemZ_REG128_nofp[] = {
-      SystemZ::R0Q,  SystemZ::R2Q,  SystemZ::R4Q, /* NO R10Q */
-      SystemZ::R8Q,  SystemZ::R6Q };
-    GR128Class::iterator
-    GR128Class::allocation_order_begin(const MachineFunction &MF) const {
-      const TargetMachine &TM = MF.getTarget();
-      const TargetRegisterInfo *RI = TM.getRegisterInfo();
-      if (RI->hasFP(MF))
-        return SystemZ_REG128_nofp;
-      else
-        return SystemZ_REG128;
-    }
-    GR128Class::iterator
-    GR128Class::allocation_order_end(const MachineFunction &MF) const {
-      const TargetMachine &TM = MF.getTarget();
-      const TargetRegisterInfo *RI = TM.getRegisterInfo();
-      if (RI->hasFP(MF))
-        return SystemZ_REG128_nofp + (sizeof(SystemZ_REG128_nofp) / sizeof(unsigned));
-      else
-        return SystemZ_REG128 + (sizeof(SystemZ_REG128) / sizeof(unsigned));
-    }
-  }];
-}
-
-def FP32 : RegisterClass<"SystemZ", [f32], 32,
- [F0S, F1S,  F2S,  F3S,  F4S,  F5S,  F6S,  F7S,
-  F8S, F9S, F10S, F11S, F12S, F13S, F14S, F15S]> {
-  let MethodProtos = [{
-    iterator allocation_order_begin(const MachineFunction &MF) const;
-    iterator allocation_order_end(const MachineFunction &MF) const;
-  }];
-  let MethodBodies = [{
-    static const unsigned SystemZ_REGFP32[] = {
-      SystemZ::F0S,  SystemZ::F2S,  SystemZ::F4S,  SystemZ::F6S,
-      SystemZ::F1S,  SystemZ::F3S,  SystemZ::F5S,  SystemZ::F7S,
-      SystemZ::F8S,  SystemZ::F9S,  SystemZ::F10S, SystemZ::F11S,
-      SystemZ::F12S, SystemZ::F13S, SystemZ::F14S, SystemZ::F15S };
-    FP32Class::iterator
-    FP32Class::allocation_order_begin(const MachineFunction &MF) const {
-      return SystemZ_REGFP32;
-    }
-    FP32Class::iterator
-    FP32Class::allocation_order_end(const MachineFunction &MF) const {
-      return SystemZ_REGFP32 + (sizeof(SystemZ_REGFP32) / sizeof(unsigned));
-    }
-  }];
-}
-
-def FP64 : RegisterClass<"SystemZ", [f64], 64,
- [F0L, F1L,  F2L,  F3L,  F4L,  F5L,  F6L,  F7L, 
-  F8L, F9L, F10L, F11L, F12L, F13L, F14L, F15L]> {
-  let SubRegClasses = [(FP32 subreg_32bit)];
-  let MethodProtos = [{
-    iterator allocation_order_begin(const MachineFunction &MF) const;
-    iterator allocation_order_end(const MachineFunction &MF) const;
-  }];
-  let MethodBodies = [{
-    static const unsigned SystemZ_REGFP64[] = {
-      SystemZ::F0L,  SystemZ::F2L,  SystemZ::F4L,  SystemZ::F6L,
-      SystemZ::F1L,  SystemZ::F3L,  SystemZ::F5L,  SystemZ::F7L,
-      SystemZ::F8L,  SystemZ::F9L,  SystemZ::F10L, SystemZ::F11L,
-      SystemZ::F12L, SystemZ::F13L, SystemZ::F14L, SystemZ::F15L };
-    FP64Class::iterator
-    FP64Class::allocation_order_begin(const MachineFunction &MF) const {
-      return SystemZ_REGFP64;
-    }
-    FP64Class::iterator
-    FP64Class::allocation_order_end(const MachineFunction &MF) const {
-      return SystemZ_REGFP64 + (sizeof(SystemZ_REGFP64) / sizeof(unsigned));
-    }
-  }];
-}
-
-// Status flags registers.
-def CCR : RegisterClass<"SystemZ", [i64], 64, [PSW]> {
-  let CopyCost = -1;  // Don't allow copying of status registers.
-}
+// The 2-bit condition code field of the PSW.  Every register named in an
+// inline asm needs a class associated with it.
+def CC : SystemZReg<"cc">;
+def CCRegs : RegisterClass<"SystemZ", [i32], 32, (add CC)>;

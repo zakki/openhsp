@@ -1,8 +1,6 @@
 //===- README.txt - Notes for improving PowerPC-specific code gen ---------===//
 
 TODO:
-* gpr0 allocation
-* implement do-loop -> bdnz transform
 * lmw/stmw pass a la arm load store optimizer for prolog/epilog
 
 ===-------------------------------------------------------------------------===
@@ -37,6 +35,31 @@ _f3:
 	ori r3, r2, 65535
 	blr 
 
+===-------------------------------------------------------------------------===
+
+This code:
+
+unsigned add32carry(unsigned sum, unsigned x) {
+ unsigned z = sum + x;
+ if (sum + x < x)
+     z++;
+ return z;
+}
+
+Should compile to something like:
+
+	addc r3,r3,r4
+	addze r3,r3
+
+instead we get:
+
+	add r3, r4, r3
+	cmplw cr7, r3, r4
+	mfcr r4 ; 1
+	rlwinm r4, r4, 29, 31, 31
+	add r3, r3, r4
+
+Ick.
 
 ===-------------------------------------------------------------------------===
 
@@ -103,25 +126,6 @@ produced this with bdnz, the loop would be a single dispatch group.
 
 ===-------------------------------------------------------------------------===
 
-Compile:
-
-void foo(int *P) {
- if (P)  *P = 0;
-}
-
-into:
-
-_foo:
-        cmpwi cr0,r3,0
-        beqlr cr0
-        li r0,0
-        stw r0,0(r3)
-        blr
-
-This is effectively a simple form of predication.
-
-===-------------------------------------------------------------------------===
-
 Lump the constant pool for each function into ONE pic object, and reference
 pieces of it as offsets from the start.  For functions like this (contrived
 to have lots of constants obviously):
@@ -177,12 +181,6 @@ of the GOT on targets with one).
 
 Note that this is discussed here for GCC:
 http://gcc.gnu.org/ml/gcc-patches/2006-02/msg00133.html
-
-===-------------------------------------------------------------------------===
-
-Implement Newton-Rhapson method for improving estimate instructions to the
-correct accuracy, and implementing divide as multiply by reciprocal when it has
-more than one use.  Itanium would want this too.
 
 ===-------------------------------------------------------------------------===
 
@@ -260,8 +258,8 @@ including having this work sanely.
 Fix Darwin FP-In-Integer Registers ABI
 
 Darwin passes doubles in structures in integer registers, which is very very 
-bad.  Add something like a BIT_CONVERT to LLVM, then do an i-p transformation 
-that percolates these things out of functions.
+bad.  Add something like a BITCAST to LLVM, then do an i-p transformation that
+percolates these things out of functions.
 
 Check out how horrible this is:
 http://gcc.gnu.org/ml/gcc/2005-10/msg01036.html
@@ -509,20 +507,6 @@ void func(unsigned int *ret, float dx, float dy, float dz, float dw) {
   if(dz > dw)  code |= 32;
   *ret = code;
 }
-
-===-------------------------------------------------------------------------===
-
-Complete the signed i32 to FP conversion code using 64-bit registers
-transformation, good for PI.  See PPCISelLowering.cpp, this comment:
-
-     // FIXME: disable this lowered code.  This generates 64-bit register values,
-     // and we don't model the fact that the top part is clobbered by calls.  We
-     // need to flag these together so that the value isn't live across a call.
-     //setOperationAction(ISD::SINT_TO_FP, MVT::i32, Custom);
-
-Also, if the registers are spilled to the stack, we have to ensure that all
-64-bits of them are save/restored, otherwise we will miscompile the code.  It
-sounds like we need to get the 64-bit register classes going.
 
 ===-------------------------------------------------------------------------===
 

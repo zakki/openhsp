@@ -18,10 +18,10 @@ target triple = "x86_64-unknown-linux-gnu"
 @_dm_offset_addr_mask = external global [1 x i64], align 64 ; <[1 x i64]*> [#uses=0]
 
 define void @leaf() nounwind {
-; CHECK: leaf:
+; CHECK-LABEL: leaf:
 ; CHECK-NOT: -8(%rsp)
 ; CHECK: leaq link_ptr@TLSGD
-; CHECK: call __tls_get_addr@PLT
+; CHECK: callq __tls_get_addr@PLT
 "file foo2.c, line 14, bb1":
   %p = alloca %test*, align 8                     ; <%test**> [#uses=4]
   br label %"file foo2.c, line 14, bb2"

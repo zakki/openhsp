@@ -1,4 +1,4 @@
-##===- lib/Target/SystemZ/Makefile ---------------------------*- Makefile -*-===##
+##===- lib/Target/SystemZ/Makefile -------------------------*- Makefile -*-===##
 #
 #                     The LLVM Compiler Infrastructure
 #
@@ -12,12 +12,18 @@ LIBRARYNAME = LLVMSystemZCodeGen
 TARGET = SystemZ
 
 # Make sure that tblgen is run, first thing.
-BUILT_SOURCES = SystemZGenRegisterInfo.h.inc SystemZGenRegisterNames.inc \
-                SystemZGenRegisterInfo.inc SystemZGenInstrNames.inc \
-                SystemZGenInstrInfo.inc SystemZGenAsmWriter.inc \
-                SystemZGenDAGISel.inc SystemZGenSubtarget.inc SystemZGenCallingConv.inc
+BUILT_SOURCES = SystemZGenRegisterInfo.inc \
+		SystemZGenAsmWriter.inc \
+		SystemZGenAsmMatcher.inc \
+		SystemZGenCodeEmitter.inc \
+		SystemZGenDisassemblerTables.inc \
+		SystemZGenInstrInfo.inc \
+		SystemZGenDAGISel.inc \
+		SystemZGenSubtargetInfo.inc \
+		SystemZGenCallingConv.inc \
+		SystemZGenMCCodeEmitter.inc
 
-DIRS = AsmPrinter TargetInfo
+DIRS = InstPrinter AsmParser Disassembler TargetInfo MCTargetDesc
 
 include $(LEVEL)/Makefile.common
 

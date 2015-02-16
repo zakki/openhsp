@@ -1,4 +1,4 @@
-// RUN: tblgen < %s
+// RUN: llvm-tblgen < %s
 
 /* foo
 

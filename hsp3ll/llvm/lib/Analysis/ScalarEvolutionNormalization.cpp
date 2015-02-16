@@ -12,7 +12,7 @@
 //
 //===----------------------------------------------------------------------===//
 
-#include "llvm/Analysis/Dominators.h"
+#include "llvm/IR/Dominators.h"
 #include "llvm/Analysis/LoopInfo.h"
 #include "llvm/Analysis/ScalarEvolutionExpressions.h"
 #include "llvm/Analysis/ScalarEvolutionNormalization.h"
@@ -60,20 +60,40 @@ static bool IVUseShouldUsePostIncValue(Instruction *User, Value *Operand,
   return true;
 }
 
-const SCEV *llvm::TransformForPostIncUse(TransformKind Kind,
-                                         const SCEV *S,
-                                         Instruction *User,
-                                         Value *OperandValToReplace,
-                                         PostIncLoopSet &Loops,
-                                         ScalarEvolution &SE,
-                                         DominatorTree &DT) {
-  if (isa<SCEVConstant>(S) || isa<SCEVUnknown>(S))
-    return S;
+namespace {
+
+/// Hold the state used during post-inc expression transformation, including a
+/// map of transformed expressions.
+class PostIncTransform {
+  TransformKind Kind;
+  PostIncLoopSet &Loops;
+  ScalarEvolution &SE;
+  DominatorTree &DT;
+
+  DenseMap<const SCEV*, const SCEV*> Transformed;
+
+public:
+  PostIncTransform(TransformKind kind, PostIncLoopSet &loops,
+                   ScalarEvolution &se, DominatorTree &dt):
+    Kind(kind), Loops(loops), SE(se), DT(dt) {}
+
+  const SCEV *TransformSubExpr(const SCEV *S, Instruction *User,
+                               Value *OperandValToReplace);
+
+protected:
+  const SCEV *TransformImpl(const SCEV *S, Instruction *User,
+                            Value *OperandValToReplace);
+};
+
+} // namespace
+
+/// Implement post-inc transformation for all valid expression types.
+const SCEV *PostIncTransform::
+TransformImpl(const SCEV *S, Instruction *User, Value *OperandValToReplace) {
 
   if (const SCEVCastExpr *X = dyn_cast<SCEVCastExpr>(S)) {
     const SCEV *O = X->getOperand();
-    const SCEV *N = TransformForPostIncUse(Kind, O, User, OperandValToReplace,
-                                           Loops, SE, DT);
+    const SCEV *N = TransformSubExpr(O, User, OperandValToReplace);
     if (O != N)
       switch (S->getSCEVType()) {
       case scZeroExtend: return SE.getZeroExtendExpr(N, S->getType());
@@ -93,18 +113,27 @@ const SCEV *llvm::TransformForPostIncUse(TransformKind Kind,
     // Transform each operand.
     for (SCEVNAryExpr::op_iterator I = AR->op_begin(), E = AR->op_end();
          I != E; ++I) {
-      const SCEV *O = *I;
-      const SCEV *N = TransformForPostIncUse(Kind, O, LUser, 0, Loops, SE, DT);
-      Operands.push_back(N);
+      Operands.push_back(TransformSubExpr(*I, LUser, nullptr));
     }
-    const SCEV *Result = SE.getAddRecExpr(Operands, L);
+    // Conservatively use AnyWrap until/unless we need FlagNW.
+    const SCEV *Result = SE.getAddRecExpr(Operands, L, SCEV::FlagAnyWrap);
     switch (Kind) {
-    default: llvm_unreachable("Unexpected transform name!");
     case NormalizeAutodetect:
-      if (IVUseShouldUsePostIncValue(User, OperandValToReplace, L, &DT)) {
+      // Normalize this SCEV by subtracting the expression for the final step.
+      // We only allow affine AddRecs to be normalized, otherwise we would not
+      // be able to correctly denormalize.
+      // e.g. {1,+,3,+,2} == {-2,+,1,+,2} + {3,+,2}
+      // Normalized form:   {-2,+,1,+,2}
+      // Denormalized form: {1,+,3,+,2}
+      //
+      // However, denormalization would use the a different step expression than
+      // normalization (see getPostIncExpr), generating the wrong final
+      // expression: {-2,+,1,+,2} + {1,+,2} => {-1,+,3,+,2}
+      if (AR->isAffine() &&
+          IVUseShouldUsePostIncValue(User, OperandValToReplace, L, &DT)) {
         const SCEV *TransformedStep =
-          TransformForPostIncUse(Kind, AR->getStepRecurrence(SE),
-                                 User, OperandValToReplace, Loops, SE, DT);
+          TransformSubExpr(AR->getStepRecurrence(SE),
+                           User, OperandValToReplace);
         Result = SE.getMinusSCEV(Result, TransformedStep);
         Loops.insert(L);
       }
@@ -113,30 +142,46 @@ const SCEV *llvm::TransformForPostIncUse(TransformKind Kind,
       // sometimes fails to canonicalize two equal SCEVs to exactly the same
       // form. It's possibly a pessimization when this happens, but it isn't a
       // correctness problem, so disable this assert for now.
-      assert(S == TransformForPostIncUse(Denormalize, Result,
-                                         User, OperandValToReplace,
-                                         Loops, SE, DT) &&
+      assert(S == TransformSubExpr(Result, User, OperandValToReplace) &&
              "SCEV normalization is not invertible!");
 #endif
       break;
     case Normalize:
+      // We want to normalize step expression, because otherwise we might not be
+      // able to denormalize to the original expression.
+      //
+      // Here is an example what will happen if we don't normalize step:
+      //  ORIGINAL ISE:
+      //    {(100 /u {1,+,1}<%bb16>),+,(100 /u {1,+,1}<%bb16>)}<%bb25>
+      //  NORMALIZED ISE:
+      //    {((-1 * (100 /u {1,+,1}<%bb16>)) + (100 /u {0,+,1}<%bb16>)),+,
+      //     (100 /u {0,+,1}<%bb16>)}<%bb25>
+      //  DENORMALIZED BACK ISE:
+      //    {((2 * (100 /u {1,+,1}<%bb16>)) + (-1 * (100 /u {2,+,1}<%bb16>))),+,
+      //     (100 /u {1,+,1}<%bb16>)}<%bb25>
+      //  Note that the initial value changes after normalization +
+      //  denormalization, which isn't correct.
       if (Loops.count(L)) {
         const SCEV *TransformedStep =
-          TransformForPostIncUse(Kind, AR->getStepRecurrence(SE),
-                                 User, OperandValToReplace, Loops, SE, DT);
+          TransformSubExpr(AR->getStepRecurrence(SE),
+                           User, OperandValToReplace);
         Result = SE.getMinusSCEV(Result, TransformedStep);
       }
 #if 0
       // See the comment on the assert above.
-      assert(S == TransformForPostIncUse(Denormalize, Result,
-                                         User, OperandValToReplace,
-                                         Loops, SE, DT) &&
+      assert(S == TransformSubExpr(Result, User, OperandValToReplace) &&
              "SCEV normalization is not invertible!");
 #endif
       break;
     case Denormalize:
-      if (Loops.count(L))
-        Result = cast<SCEVAddRecExpr>(Result)->getPostIncExpr(SE);
+      // Here we want to normalize step expressions for the same reasons, as
+      // stated above.
+      if (Loops.count(L)) {
+        const SCEV *TransformedStep =
+          TransformSubExpr(AR->getStepRecurrence(SE),
+                           User, OperandValToReplace);
+        Result = SE.getAddExpr(Result, TransformedStep);
+      }
       break;
     }
     return Result;
@@ -149,8 +194,7 @@ const SCEV *llvm::TransformForPostIncUse(TransformKind Kind,
     for (SCEVNAryExpr::op_iterator I = X->op_begin(), E = X->op_end();
          I != E; ++I) {
       const SCEV *O = *I;
-      const SCEV *N = TransformForPostIncUse(Kind, O, User, OperandValToReplace,
-                                             Loops, SE, DT);
+      const SCEV *N = TransformSubExpr(O, User, OperandValToReplace);
       Changed |= N != O;
       Operands.push_back(N);
     }
@@ -169,15 +213,42 @@ const SCEV *llvm::TransformForPostIncUse(TransformKind Kind,
   if (const SCEVUDivExpr *X = dyn_cast<SCEVUDivExpr>(S)) {
     const SCEV *LO = X->getLHS();
     const SCEV *RO = X->getRHS();
-    const SCEV *LN = TransformForPostIncUse(Kind, LO, User, OperandValToReplace,
-                                            Loops, SE, DT);
-    const SCEV *RN = TransformForPostIncUse(Kind, RO, User, OperandValToReplace,
-                                            Loops, SE, DT);
+    const SCEV *LN = TransformSubExpr(LO, User, OperandValToReplace);
+    const SCEV *RN = TransformSubExpr(RO, User, OperandValToReplace);
     if (LO != LN || RO != RN)
       return SE.getUDivExpr(LN, RN);
     return S;
   }
 
   llvm_unreachable("Unexpected SCEV kind!");
-  return 0;
+}
+
+/// Manage recursive transformation across an expression DAG. Revisiting
+/// expressions would lead to exponential recursion.
+const SCEV *PostIncTransform::
+TransformSubExpr(const SCEV *S, Instruction *User, Value *OperandValToReplace) {
+
+  if (isa<SCEVConstant>(S) || isa<SCEVUnknown>(S))
+    return S;
+
+  const SCEV *Result = Transformed.lookup(S);
+  if (Result)
+    return Result;
+
+  Result = TransformImpl(S, User, OperandValToReplace);
+  Transformed[S] = Result;
+  return Result;
+}
+
+/// Top level driver for transforming an expression DAG into its requested
+/// post-inc form (either "Normalized" or "Denormalized").
+const SCEV *llvm::TransformForPostIncUse(TransformKind Kind,
+                                         const SCEV *S,
+                                         Instruction *User,
+                                         Value *OperandValToReplace,
+                                         PostIncLoopSet &Loops,
+                                         ScalarEvolution &SE,
+                                         DominatorTree &DT) {
+  PostIncTransform Transform(Kind, Loops, SE, DT);
+  return Transform.TransformSubExpr(S, User, OperandValToReplace);
 }

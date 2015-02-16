@@ -13,83 +13,56 @@
 
 #ifndef X86TARGETMACHINE_H
 #define X86TARGETMACHINE_H
-
-#include "llvm/Target/TargetMachine.h"
-#include "llvm/Target/TargetData.h"
-#include "llvm/Target/TargetFrameInfo.h"
-#include "X86.h"
-#include "X86ELFWriterInfo.h"
 #include "X86InstrInfo.h"
-#include "X86JITInfo.h"
 #include "X86Subtarget.h"
-#include "X86ISelLowering.h"
-#include "X86SelectionDAGInfo.h"
+#include "llvm/IR/DataLayout.h"
+#include "llvm/Target/TargetMachine.h"
 
 namespace llvm {
-  
-class formatted_raw_ostream;
 
-class X86TargetMachine : public LLVMTargetMachine {
-  X86Subtarget      Subtarget;
-  const TargetData  DataLayout; // Calculates type size & alignment
-  TargetFrameInfo   FrameInfo;
-  X86InstrInfo      InstrInfo;
-  X86JITInfo        JITInfo;
-  X86TargetLowering TLInfo;
-  X86SelectionDAGInfo TSInfo;
-  X86ELFWriterInfo  ELFWriterInfo;
-  Reloc::Model      DefRelocModel; // Reloc model before it's overridden.
+class StringRef;
 
-private:
-  // We have specific defaults for X86.
-  virtual void setCodeModelForJIT();
-  virtual void setCodeModelForStatic();
-  
+class X86TargetMachine final : public LLVMTargetMachine {
+  virtual void anchor();
+  X86Subtarget       Subtarget;
+
 public:
-  X86TargetMachine(const Target &T, const std::string &TT, 
-                   const std::string &FS, bool is64Bit);
+  X86TargetMachine(const Target &T, StringRef TT,
+                   StringRef CPU, StringRef FS, const TargetOptions &Options,
+                   Reloc::Model RM, CodeModel::Model CM,
+                   CodeGenOpt::Level OL);
 
-  virtual const X86InstrInfo     *getInstrInfo() const { return &InstrInfo; }
-  virtual const TargetFrameInfo  *getFrameInfo() const { return &FrameInfo; }
-  virtual       X86JITInfo       *getJITInfo()         { return &JITInfo; }
-  virtual const X86Subtarget     *getSubtargetImpl() const{ return &Subtarget; }
-  virtual const X86TargetLowering *getTargetLowering() const { 
-    return &TLInfo;
+  const DataLayout *getDataLayout() const override {
+    return getSubtargetImpl()->getDataLayout();
   }
-  virtual const X86SelectionDAGInfo *getSelectionDAGInfo() const { 
-    return &TSInfo;
+  const X86InstrInfo *getInstrInfo() const override {
+    return getSubtargetImpl()->getInstrInfo();
   }
-  virtual const X86RegisterInfo  *getRegisterInfo() const {
-    return &InstrInfo.getRegisterInfo();
+  const TargetFrameLowering *getFrameLowering() const override {
+    return getSubtargetImpl()->getFrameLowering();
   }
-  virtual const TargetData       *getTargetData() const { return &DataLayout; }
-  virtual const X86ELFWriterInfo *getELFWriterInfo() const {
-    return Subtarget.isTargetELF() ? &ELFWriterInfo : 0;
+  X86JITInfo *getJITInfo() override { return Subtarget.getJITInfo(); }
+  const X86Subtarget *getSubtargetImpl() const override { return &Subtarget; }
+  const X86TargetLowering *getTargetLowering() const override {
+    return getSubtargetImpl()->getTargetLowering();
   }
+  const X86SelectionDAGInfo *getSelectionDAGInfo() const override {
+    return getSubtargetImpl()->getSelectionDAGInfo();
+  }
+  const X86RegisterInfo  *getRegisterInfo() const override {
+    return &getInstrInfo()->getRegisterInfo();
+  }
+  const InstrItineraryData *getInstrItineraryData() const override {
+    return &getSubtargetImpl()->getInstrItineraryData();
+  }
+
+  /// \brief Register X86 analysis passes with a pass manager.
+  void addAnalysisPasses(PassManagerBase &PM) override;
 
   // Set up the pass pipeline.
-  virtual bool addInstSelector(PassManagerBase &PM, CodeGenOpt::Level OptLevel);
-  virtual bool addPreRegAlloc(PassManagerBase &PM, CodeGenOpt::Level OptLevel);
-  virtual bool addPostRegAlloc(PassManagerBase &PM, CodeGenOpt::Level OptLevel);
-  virtual bool addPreEmitPass(PassManagerBase &PM, CodeGenOpt::Level OptLevel);
-  virtual bool addCodeEmitter(PassManagerBase &PM, CodeGenOpt::Level OptLevel,
-                              JITCodeEmitter &JCE);
-};
+  TargetPassConfig *createPassConfig(PassManagerBase &PM) override;
 
-/// X86_32TargetMachine - X86 32-bit target machine.
-///
-class X86_32TargetMachine : public X86TargetMachine {
-public:
-  X86_32TargetMachine(const Target &T, const std::string &M,
-                      const std::string &FS);
-};
-
-/// X86_64TargetMachine - X86 64-bit target machine.
-///
-class X86_64TargetMachine : public X86TargetMachine {
-public:
-  X86_64TargetMachine(const Target &T, const std::string &TT,
-                      const std::string &FS);
+  bool addCodeEmitter(PassManagerBase &PM, JITCodeEmitter &JCE) override;
 };
 
 } // End llvm namespace

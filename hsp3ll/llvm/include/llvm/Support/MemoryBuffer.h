@@ -14,13 +14,16 @@
 #ifndef LLVM_SUPPORT_MEMORYBUFFER_H
 #define LLVM_SUPPORT_MEMORYBUFFER_H
 
-#include "llvm/ADT/StringRef.h"
-#include "llvm/System/DataTypes.h"
-#include <string>
-#include <sys/stat.h>
+#include "llvm-c/Support.h"
+#include "llvm/ADT/Twine.h"
+#include "llvm/Support/CBindingWrapping.h"
+#include "llvm/Support/Compiler.h"
+#include "llvm/Support/DataTypes.h"
+#include "llvm/Support/ErrorOr.h"
+#include <memory>
+#include <system_error>
 
 namespace llvm {
-
 /// MemoryBuffer - This interface provides simple read-only access to a block
 /// of memory, and provides simple methods for reading files and standard input
 /// into a memory buffer.  In addition to basic access to the characters in the
@@ -35,11 +38,12 @@ class MemoryBuffer {
   const char *BufferStart; // Start of the buffer.
   const char *BufferEnd;   // End of the buffer.
 
-  MemoryBuffer(const MemoryBuffer &); // DO NOT IMPLEMENT
-  MemoryBuffer &operator=(const MemoryBuffer &); // DO NOT IMPLEMENT
+  MemoryBuffer(const MemoryBuffer &) LLVM_DELETED_FUNCTION;
+  MemoryBuffer &operator=(const MemoryBuffer &) LLVM_DELETED_FUNCTION;
 protected:
   MemoryBuffer() {}
-  void init(const char *BufStart, const char *BufEnd);
+  void init(const char *BufStart, const char *BufEnd,
+            bool RequiresNullTerminator);
 public:
   virtual ~MemoryBuffer();
 
@@ -47,8 +51,8 @@ public:
   const char *getBufferEnd() const   { return BufferEnd; }
   size_t getBufferSize() const { return BufferEnd-BufferStart; }
 
-  StringRef getBuffer() const { 
-    return StringRef(BufferStart, getBufferSize()); 
+  StringRef getBuffer() const {
+    return StringRef(BufferStart, getBufferSize());
   }
 
   /// getBufferIdentifier - Return an identifier for this buffer, typically the
@@ -57,27 +61,48 @@ public:
     return "Unknown buffer";
   }
 
-  /// getFile - Open the specified file as a MemoryBuffer, returning a new
-  /// MemoryBuffer if successful, otherwise returning null.  If FileSize is
-  /// specified, this means that the client knows that the file exists and that
-  /// it has the specified size.
-  static MemoryBuffer *getFile(StringRef Filename,
-                               std::string *ErrStr = 0,
-                               int64_t FileSize = -1,
-                               struct stat *FileInfo = 0);
-  static MemoryBuffer *getFile(const char *Filename,
-                               std::string *ErrStr = 0,
-                               int64_t FileSize = -1,
-                               struct stat *FileInfo = 0);
+  /// Open the specified file as a MemoryBuffer, returning a new MemoryBuffer
+  /// if successful, otherwise returning null. If FileSize is specified, this
+  /// means that the client knows that the file exists and that it has the
+  /// specified size.
+  ///
+  /// \param IsVolatileSize Set to true to indicate that the file size may be
+  /// changing, e.g. when libclang tries to parse while the user is
+  /// editing/updating the file.
+  static ErrorOr<std::unique_ptr<MemoryBuffer>>
+  getFile(Twine Filename, int64_t FileSize = -1,
+          bool RequiresNullTerminator = true, bool IsVolatileSize = false);
+
+  /// Given an already-open file descriptor, map some slice of it into a
+  /// MemoryBuffer. The slice is specified by an \p Offset and \p MapSize.
+  /// Since this is in the middle of a file, the buffer is not null terminated.
+  ///
+  /// \param IsVolatileSize Set to true to indicate that the file size may be
+  /// changing, e.g. when libclang tries to parse while the user is
+  /// editing/updating the file.
+  static ErrorOr<std::unique_ptr<MemoryBuffer>>
+  getOpenFileSlice(int FD, const char *Filename, uint64_t MapSize,
+                   int64_t Offset, bool IsVolatileSize = false);
+
+  /// Given an already-open file descriptor, read the file and return a
+  /// MemoryBuffer.
+  ///
+  /// \param IsVolatileSize Set to true to indicate that the file size may be
+  /// changing, e.g. when libclang tries to parse while the user is
+  /// editing/updating the file.
+  static ErrorOr<std::unique_ptr<MemoryBuffer>>
+  getOpenFile(int FD, const char *Filename, uint64_t FileSize,
+              bool RequiresNullTerminator = true, bool IsVolatileSize = false);
 
   /// getMemBuffer - Open the specified memory range as a MemoryBuffer.  Note
-  /// that EndPtr[0] must be a null byte and be accessible!
+  /// that InputData must be null terminated if RequiresNullTerminator is true.
   static MemoryBuffer *getMemBuffer(StringRef InputData,
-                                    StringRef BufferName = "");
+                                    StringRef BufferName = "",
+                                    bool RequiresNullTerminator = true);
 
   /// getMemBufferCopy - Open the specified memory range as a MemoryBuffer,
-  /// copying the contents and taking ownership of it.  This has no requirements
-  /// on EndPtr[0].
+  /// copying the contents and taking ownership of it.  InputData does not
+  /// have to be null terminated.
   static MemoryBuffer *getMemBufferCopy(StringRef InputData,
                                         StringRef BufferName = "");
 
@@ -94,23 +119,31 @@ public:
   static MemoryBuffer *getNewUninitMemBuffer(size_t Size,
                                              StringRef BufferName = "");
 
-  /// getSTDIN - Read all of stdin into a file buffer, and return it.
-  /// If an error occurs, this returns null and fills in *ErrStr with a reason.
-  static MemoryBuffer *getSTDIN(std::string *ErrStr = 0);
+  /// Read all of stdin into a file buffer, and return it.
+  static ErrorOr<std::unique_ptr<MemoryBuffer>> getSTDIN();
 
+  /// Open the specified file as a MemoryBuffer, or open stdin if the Filename
+  /// is "-".
+  static ErrorOr<std::unique_ptr<MemoryBuffer>>
+  getFileOrSTDIN(StringRef Filename, int64_t FileSize = -1);
 
-  /// getFileOrSTDIN - Open the specified file as a MemoryBuffer, or open stdin
-  /// if the Filename is "-".  If an error occurs, this returns null and fills
-  /// in *ErrStr with a reason.
-  static MemoryBuffer *getFileOrSTDIN(StringRef Filename,
-                                      std::string *ErrStr = 0,
-                                      int64_t FileSize = -1,
-                                      struct stat *FileInfo = 0);
-  static MemoryBuffer *getFileOrSTDIN(const char *Filename,
-                                      std::string *ErrStr = 0,
-                                      int64_t FileSize = -1,
-                                      struct stat *FileInfo = 0);
+  //===--------------------------------------------------------------------===//
+  // Provided for performance analysis.
+  //===--------------------------------------------------------------------===//
+
+  /// The kind of memory backing used to support the MemoryBuffer.
+  enum BufferKind {
+    MemoryBuffer_Malloc,
+    MemoryBuffer_MMap
+  };
+
+  /// Return information on the memory mechanism used to support the
+  /// MemoryBuffer.
+  virtual BufferKind getBufferKind() const = 0;  
 };
+
+// Create wrappers for C Binding types (see CBindingWrapping.h).
+DEFINE_SIMPLE_CONVERSION_FUNCTIONS(MemoryBuffer, LLVMMemoryBufferRef)
 
 } // end namespace llvm
 

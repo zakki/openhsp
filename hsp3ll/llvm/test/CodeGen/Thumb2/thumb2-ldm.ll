@@ -1,10 +1,11 @@
-; RUN: llc < %s -mtriple=thumbv7-apple-darwin -mattr=+thumb2 | FileCheck %s
+; RUN: llc < %s -mtriple=thumbv7-apple-ios -mattr=+thumb2 | FileCheck %s
 
 @X = external global [0 x i32]          ; <[0 x i32]*> [#uses=5]
 
 define i32 @t1() {
-; CHECK: t1:
+; CHECK-LABEL: t1:
 ; CHECK: push {r7, lr}
+; CHECK: ldrd
 ; CHECK: pop {r7, pc}
         %tmp = load i32* getelementptr ([0 x i32]* @X, i32 0, i32 0)            ; <i32> [#uses=1]
         %tmp3 = load i32* getelementptr ([0 x i32]* @X, i32 0, i32 1)           ; <i32> [#uses=1]
@@ -13,9 +14,9 @@ define i32 @t1() {
 }
 
 define i32 @t2() {
-; CHECK: t2:
+; CHECK-LABEL: t2:
 ; CHECK: push {r7, lr}
-; CHECK: ldmia
+; CHECK: ldm
 ; CHECK: pop {r7, pc}
         %tmp = load i32* getelementptr ([0 x i32]* @X, i32 0, i32 2)            ; <i32> [#uses=1]
         %tmp3 = load i32* getelementptr ([0 x i32]* @X, i32 0, i32 3)           ; <i32> [#uses=1]
@@ -25,8 +26,9 @@ define i32 @t2() {
 }
 
 define i32 @t3() {
-; CHECK: t3:
+; CHECK-LABEL: t3:
 ; CHECK: push {r7, lr}
+; CHECK: ldm
 ; CHECK: pop {r7, pc}
         %tmp = load i32* getelementptr ([0 x i32]* @X, i32 0, i32 1)            ; <i32> [#uses=1]
         %tmp3 = load i32* getelementptr ([0 x i32]* @X, i32 0, i32 2)           ; <i32> [#uses=1]

@@ -35,8 +35,8 @@
 
 #include <iosfwd>
 #include <vector>
-#include <gtest/internal/gtest-internal.h>
-#include <gtest/internal/gtest-string.h>
+#include "gtest/internal/gtest-internal.h"
+#include "gtest/internal/gtest-string.h"
 
 namespace testing {
 
@@ -142,7 +142,7 @@ class GTEST_API_ TestPartResultArray {
 // This interface knows how to report a test part result.
 class TestPartResultReporterInterface {
  public:
-  virtual ~TestPartResultReporterInterface() {}
+  virtual ~TestPartResultReporterInterface();
 
   virtual void ReportTestPartResult(const TestPartResult& result) = 0;
 };

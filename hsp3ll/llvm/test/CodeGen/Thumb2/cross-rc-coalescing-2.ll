@@ -1,6 +1,7 @@
-; RUN: llc < %s -mtriple=thumbv7-apple-darwin9 -mcpu=cortex-a8 | grep vmov.f32 | count 1
+; RUN: llc < %s -mtriple=thumbv7-apple-darwin9 -mcpu=cortex-a8 -arm-atomic-cfg-tidy=0 | FileCheck %s
 
 define void @fht(float* nocapture %fz, i16 signext %n) nounwind {
+; CHECK-LABEL: fht:
 entry:
   br label %bb5
 
@@ -10,6 +11,8 @@ bb5:                                              ; preds = %bb5, %entry
 bb.nph:                                           ; preds = %bb5
   br label %bb7
 
+; Loop preheader
+; CHECK: vmov.f32
 bb7:                                              ; preds = %bb9, %bb.nph
   %s1.02 = phi float [ undef, %bb.nph ], [ %35, %bb9 ] ; <float> [#uses=3]
   %tmp79 = add i32 undef, undef                   ; <i32> [#uses=1]
@@ -19,6 +22,9 @@ bb7:                                              ; preds = %bb9, %bb.nph
   br label %bb8
 
 bb8:                                              ; preds = %bb8, %bb7
+; CHECK: %bb8
+; CHECK-NOT: vmov.f32
+; CHECK: blt
   %tmp54 = add i32 0, %tmp53                      ; <i32> [#uses=0]
   %fi.1 = getelementptr float* %fz, i32 undef     ; <float*> [#uses=2]
   %tmp80 = add i32 0, %tmp79                      ; <i32> [#uses=1]

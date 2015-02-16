@@ -1,15 +1,15 @@
 ; Base should not be i*3, it should be i*2.
 ; RUN: opt < %s -loop-reduce -S | \
-; RUN:   not grep {mul.*%i, 3}
+; RUN:   not grep "mul.*%i, 3"
 
 ; Indvar should not start at zero:
 ; RUN: opt < %s -loop-reduce -S | \
-; RUN:   not grep {phi i32 .* 0}
+; RUN:   not grep "phi i32 .* 0"
 ; END.
 
 ; mul uint %i, 3
 
-target datalayout = "e-p:32:32"
+target datalayout = "e-p:32:32-n32"
 target triple = "i686-apple-darwin8"
 @flags2 = external global [8193 x i8], align 32		; <[8193 x i8]*> [#uses=1]
 

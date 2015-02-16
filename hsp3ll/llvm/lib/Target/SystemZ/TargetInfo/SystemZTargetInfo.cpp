@@ -1,4 +1,4 @@
-//===-- SystemZTargetInfo.cpp - SystemZ Target Implementation -------------===//
+//===-- SystemZTargetInfo.cpp - SystemZ target implementation -------------===//
 //
 //                     The LLVM Compiler Infrastructure
 //
@@ -8,12 +8,13 @@
 //===----------------------------------------------------------------------===//
 
 #include "SystemZ.h"
-#include "llvm/Module.h"
-#include "llvm/Target/TargetRegistry.h"
+#include "llvm/Support/TargetRegistry.h"
+
 using namespace llvm;
 
 Target llvm::TheSystemZTarget;
 
 extern "C" void LLVMInitializeSystemZTargetInfo() {
-  RegisterTarget<Triple::systemz> X(TheSystemZTarget, "systemz", "SystemZ");
+  RegisterTarget<Triple::systemz, /*HasJIT=*/true>
+    X(TheSystemZTarget, "systemz", "SystemZ");
 }

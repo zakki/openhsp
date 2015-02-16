@@ -1,6 +1,10 @@
-(* RUN: %ocamlopt -warn-error A unix.cmxa llvm.cmxa llvm_bitwriter.cmxa %s -o %t
+(* RUN: rm -rf %t.builddir
+ * RUN: mkdir -p %t.builddir
+ * RUN: cp %s %t.builddir
+ * RUN: %ocamlopt -warn-error A unix.cmxa llvm.cmxa llvm_bitwriter.cmxa %t.builddir/bitwriter.ml -o %t
  * RUN: %t %t.bc
- * RUN: llvm-dis < %t.bc | grep caml_int_ty
+ * RUN: llvm-dis < %t.bc
+ * XFAIL: vg_leak
  *)
 
 (* Note that this takes a moment to link, so it's best to keep the number of
@@ -36,8 +40,6 @@ let temp_bitcode ?unbuffered m =
 let _ =
   let m = Llvm.create_module context "ocaml_test_module" in
   
-  ignore (Llvm.define_type_name "caml_int_ty" (Llvm.i32_type context) m);
-
   test (Llvm_bitwriter.write_bitcode_file m Sys.argv.(1));
   let file_buf = read_file Sys.argv.(1) in
 

@@ -11,23 +11,35 @@
 //
 //===----------------------------------------------------------------------===//
 
-#define DEBUG_TYPE "jit"
 #include "llvm/ExecutionEngine/JITMemoryManager.h"
 #include "llvm/ADT/SmallPtrSet.h"
 #include "llvm/ADT/Statistic.h"
 #include "llvm/ADT/Twine.h"
-#include "llvm/GlobalValue.h"
+#include "llvm/Config/config.h"
+#include "llvm/IR/GlobalValue.h"
 #include "llvm/Support/Allocator.h"
 #include "llvm/Support/Compiler.h"
 #include "llvm/Support/Debug.h"
+#include "llvm/Support/DynamicLibrary.h"
 #include "llvm/Support/ErrorHandling.h"
+#include "llvm/Support/Memory.h"
 #include "llvm/Support/raw_ostream.h"
-#include "llvm/System/Memory.h"
-#include <vector>
 #include <cassert>
 #include <climits>
 #include <cstring>
+#include <vector>
+
+#if defined(__linux__)
+#if defined(HAVE_SYS_STAT_H)
+#include <sys/stat.h>
+#endif
+#include <fcntl.h>
+#include <unistd.h>
+#endif
+
 using namespace llvm;
+
+#define DEBUG_TYPE "jit"
 
 STATISTIC(NumSlabs, "Number of slabs of memory allocated by the JIT");
 
@@ -61,15 +73,20 @@ namespace {
     /// getBlockAfter - Return the memory block immediately after this one.
     ///
     MemoryRangeHeader &getBlockAfter() const {
-      return *(MemoryRangeHeader*)((char*)this+BlockSize);
+      return *reinterpret_cast<MemoryRangeHeader *>(
+                reinterpret_cast<char*>(
+                  const_cast<MemoryRangeHeader *>(this))+BlockSize);
     }
 
     /// getFreeBlockBefore - If the block before this one is free, return it,
     /// otherwise return null.
     FreeRangeHeader *getFreeBlockBefore() const {
-      if (PrevAllocated) return 0;
-      intptr_t PrevSize = ((intptr_t *)this)[-1];
-      return (FreeRangeHeader*)((char*)this-PrevSize);
+      if (PrevAllocated) return nullptr;
+      intptr_t PrevSize = reinterpret_cast<intptr_t *>(
+                            const_cast<MemoryRangeHeader *>(this))[-1];
+      return reinterpret_cast<FreeRangeHeader *>(
+               reinterpret_cast<char*>(
+                 const_cast<MemoryRangeHeader *>(this))-PrevSize);
     }
 
     /// FreeBlock - Turn an allocated block into a free block, adjusting
@@ -158,7 +175,7 @@ FreeRangeHeader *MemoryRangeHeader::FreeBlock(FreeRangeHeader *FreeList) {
     // coalesce with it, update our notion of what the free list is.
     if (&FollowingFreeBlock == FreeList) {
       FreeList = FollowingFreeBlock.Next;
-      FreeListToReturn = 0;
+      FreeListToReturn = nullptr;
       assert(&FollowingFreeBlock != FreeList && "No tombstone block?");
     }
     FollowingFreeBlock.RemoveFromFreeList();
@@ -253,13 +270,12 @@ namespace {
 
   class DefaultJITMemoryManager;
 
-  class JITSlabAllocator : public SlabAllocator {
+  class JITAllocator {
     DefaultJITMemoryManager &JMM;
   public:
-    JITSlabAllocator(DefaultJITMemoryManager &jmm) : JMM(jmm) { }
-    virtual ~JITSlabAllocator() { }
-    virtual MemSlab *Allocate(size_t Size);
-    virtual void Deallocate(MemSlab *Slab);
+    JITAllocator(DefaultJITMemoryManager &jmm) : JMM(jmm) { }
+    void *Allocate(size_t Size, size_t /*Alignment*/);
+    void Deallocate(void *Slab, size_t Size);
   };
 
   /// DefaultJITMemoryManager - Manage memory for the JIT code generation.
@@ -269,7 +285,21 @@ namespace {
   /// middle of emitting a function, and we don't know how large the function we
   /// are emitting is.
   class DefaultJITMemoryManager : public JITMemoryManager {
+  public:
+    /// DefaultCodeSlabSize - When we have to go map more memory, we allocate at
+    /// least this much unless more is requested. Currently, in 512k slabs.
+    static const size_t DefaultCodeSlabSize = 512 * 1024;
 
+    /// DefaultSlabSize - Allocate globals and stubs into slabs of 64K (probably
+    /// 16 pages) unless we get an allocation above SizeThreshold.
+    static const size_t DefaultSlabSize = 64 * 1024;
+
+    /// DefaultSizeThreshold - For any allocation larger than 16K (probably
+    /// 4 pages), we should allocate a separate slab to avoid wasted space at
+    /// the end of a normal slab.
+    static const size_t DefaultSizeThreshold = 16 * 1024;
+
+  private:
     // Whether to poison freed memory.
     bool PoisonMemory;
 
@@ -283,9 +313,10 @@ namespace {
     // Memory slabs allocated by the JIT.  We refer to them as slabs so we don't
     // confuse them with the blocks of memory described above.
     std::vector<sys::MemoryBlock> CodeSlabs;
-    JITSlabAllocator BumpSlabAllocator;
-    BumpPtrAllocator StubAllocator;
-    BumpPtrAllocator DataAllocator;
+    BumpPtrAllocatorImpl<JITAllocator, DefaultSlabSize,
+                         DefaultSizeThreshold> StubAllocator;
+    BumpPtrAllocatorImpl<JITAllocator, DefaultSlabSize,
+                         DefaultSizeThreshold> DataAllocator;
 
     // Circular list of free blocks.
     FreeRangeHeader *FreeMemoryList;
@@ -302,32 +333,26 @@ namespace {
     /// last slab it allocated, so that subsequent allocations follow it.
     sys::MemoryBlock allocateNewSlab(size_t size);
 
-    /// DefaultCodeSlabSize - When we have to go map more memory, we allocate at
-    /// least this much unless more is requested.
-    static const size_t DefaultCodeSlabSize;
+    /// getPointerToNamedFunction - This method returns the address of the
+    /// specified function by using the dlsym function call.
+    void *getPointerToNamedFunction(const std::string &Name,
+                                    bool AbortOnFailure = true) override;
 
-    /// DefaultSlabSize - Allocate data into slabs of this size unless we get
-    /// an allocation above SizeThreshold.
-    static const size_t DefaultSlabSize;
-
-    /// DefaultSizeThreshold - For any allocation larger than this threshold, we
-    /// should allocate a separate slab.
-    static const size_t DefaultSizeThreshold;
-
-    void AllocateGOT();
+    void AllocateGOT() override;
 
     // Testing methods.
-    virtual bool CheckInvariants(std::string &ErrorStr);
-    size_t GetDefaultCodeSlabSize() { return DefaultCodeSlabSize; }
-    size_t GetDefaultDataSlabSize() { return DefaultSlabSize; }
-    size_t GetDefaultStubSlabSize() { return DefaultSlabSize; }
-    unsigned GetNumCodeSlabs() { return CodeSlabs.size(); }
-    unsigned GetNumDataSlabs() { return DataAllocator.GetNumSlabs(); }
-    unsigned GetNumStubSlabs() { return StubAllocator.GetNumSlabs(); }
+    bool CheckInvariants(std::string &ErrorStr) override;
+    size_t GetDefaultCodeSlabSize() override { return DefaultCodeSlabSize; }
+    size_t GetDefaultDataSlabSize() override { return DefaultSlabSize; }
+    size_t GetDefaultStubSlabSize() override { return DefaultSlabSize; }
+    unsigned GetNumCodeSlabs() override { return CodeSlabs.size(); }
+    unsigned GetNumDataSlabs() override { return DataAllocator.GetNumSlabs(); }
+    unsigned GetNumStubSlabs() override { return StubAllocator.GetNumSlabs(); }
 
     /// startFunctionBody - When a function starts, allocate a block of free
     /// executable memory, returning a pointer to it and its actual size.
-    uint8_t *startFunctionBody(const Function *F, uintptr_t &ActualSize) {
+    uint8_t *startFunctionBody(const Function *F,
+                               uintptr_t &ActualSize) override {
 
       FreeRangeHeader* candidateBlock = FreeMemoryList;
       FreeRangeHeader* head = FreeMemoryList;
@@ -401,7 +426,7 @@ namespace {
     /// endFunctionBody - The function F is now allocated, and takes the memory
     /// in the range [FunctionStart,FunctionEnd).
     void endFunctionBody(const Function *F, uint8_t *FunctionStart,
-                         uint8_t *FunctionEnd) {
+                         uint8_t *FunctionEnd) override {
       assert(FunctionEnd > FunctionStart);
       assert(FunctionStart == (uint8_t *)(CurBlock+1) &&
              "Mismatched function start/end!");
@@ -414,7 +439,7 @@ namespace {
 
     /// allocateSpace - Allocate a memory block of the given size.  This method
     /// cannot be called between calls to startFunctionBody and endFunctionBody.
-    uint8_t *allocateSpace(intptr_t Size, unsigned Alignment) {
+    uint8_t *allocateSpace(intptr_t Size, unsigned Alignment) override {
       CurBlock = FreeMemoryList;
       FreeMemoryList = FreeMemoryList->AllocateBlock();
 
@@ -432,36 +457,74 @@ namespace {
 
     /// allocateStub - Allocate memory for a function stub.
     uint8_t *allocateStub(const GlobalValue* F, unsigned StubSize,
-                          unsigned Alignment) {
+                          unsigned Alignment) override {
       return (uint8_t*)StubAllocator.Allocate(StubSize, Alignment);
     }
 
     /// allocateGlobal - Allocate memory for a global.
-    uint8_t *allocateGlobal(uintptr_t Size, unsigned Alignment) {
+    uint8_t *allocateGlobal(uintptr_t Size, unsigned Alignment) override {
       return (uint8_t*)DataAllocator.Allocate(Size, Alignment);
     }
 
-    /// startExceptionTable - Use startFunctionBody to allocate memory for the
-    /// function's exception table.
-    uint8_t* startExceptionTable(const Function* F, uintptr_t &ActualSize) {
-      return startFunctionBody(F, ActualSize);
-    }
+    /// allocateCodeSection - Allocate memory for a code section.
+    uint8_t *allocateCodeSection(uintptr_t Size, unsigned Alignment,
+                                 unsigned SectionID,
+                                 StringRef SectionName) override {
+      // Grow the required block size to account for the block header
+      Size += sizeof(*CurBlock);
 
-    /// endExceptionTable - The exception table of F is now allocated,
-    /// and takes the memory in the range [TableStart,TableEnd).
-    void endExceptionTable(const Function *F, uint8_t *TableStart,
-                           uint8_t *TableEnd, uint8_t* FrameRegister) {
-      assert(TableEnd > TableStart);
-      assert(TableStart == (uint8_t *)(CurBlock+1) &&
-             "Mismatched table start/end!");
+      // Alignment handling.
+      if (!Alignment)
+        Alignment = 16;
+      Size += Alignment - 1;
 
-      uintptr_t BlockSize = TableEnd - (uint8_t *)CurBlock;
+      FreeRangeHeader* candidateBlock = FreeMemoryList;
+      FreeRangeHeader* head = FreeMemoryList;
+      FreeRangeHeader* iter = head->Next;
 
+      uintptr_t largest = candidateBlock->BlockSize;
+
+      // Search for the largest free block.
+      while (iter != head) {
+        if (iter->BlockSize > largest) {
+          largest = iter->BlockSize;
+          candidateBlock = iter;
+        }
+        iter = iter->Next;
+      }
+
+      largest = largest - sizeof(MemoryRangeHeader);
+
+      // If this block isn't big enough for the allocation desired, allocate
+      // another block of memory and add it to the free list.
+      if (largest < Size || largest <= FreeRangeHeader::getMinBlockSize()) {
+        DEBUG(dbgs() << "JIT: Allocating another slab of memory for function.");
+        candidateBlock = allocateNewCodeSlab((size_t)Size);
+      }
+
+      // Select this candidate block for allocation
+      CurBlock = candidateBlock;
+
+      // Allocate the entire memory block.
+      FreeMemoryList = candidateBlock->AllocateBlock();
       // Release the memory at the end of this block that isn't needed.
-      FreeMemoryList =CurBlock->TrimAllocationToSize(FreeMemoryList, BlockSize);
+      FreeMemoryList = CurBlock->TrimAllocationToSize(FreeMemoryList, Size);
+      uintptr_t unalignedAddr = (uintptr_t)CurBlock + sizeof(*CurBlock);
+      return (uint8_t*)RoundUpToAlignment((uint64_t)unalignedAddr, Alignment);
     }
 
-    uint8_t *getGOTBase() const {
+    /// allocateDataSection - Allocate memory for a data section.
+    uint8_t *allocateDataSection(uintptr_t Size, unsigned Alignment,
+                                 unsigned SectionID, StringRef SectionName,
+                                 bool IsReadOnly) override {
+      return (uint8_t*)DataAllocator.Allocate(Size, Alignment);
+    }
+
+    bool finalizeMemory(std::string *ErrMsg) override {
+      return false;
+    }
+
+    uint8_t *getGOTBase() const override {
       return GOTBase;
     }
 
@@ -481,63 +544,49 @@ namespace {
 
     /// deallocateFunctionBody - Deallocate all memory for the specified
     /// function body.
-    void deallocateFunctionBody(void *Body) {
+    void deallocateFunctionBody(void *Body) override {
       if (Body) deallocateBlock(Body);
-    }
-
-    /// deallocateExceptionTable - Deallocate memory for the specified
-    /// exception table.
-    void deallocateExceptionTable(void *ET) {
-      if (ET) deallocateBlock(ET);
     }
 
     /// setMemoryWritable - When code generation is in progress,
     /// the code pages may need permissions changed.
-    void setMemoryWritable()
-    {
+    void setMemoryWritable() override {
       for (unsigned i = 0, e = CodeSlabs.size(); i != e; ++i)
         sys::Memory::setWritable(CodeSlabs[i]);
     }
     /// setMemoryExecutable - When code generation is done and we're ready to
     /// start execution, the code pages may need permissions changed.
-    void setMemoryExecutable()
-    {
+    void setMemoryExecutable() override {
       for (unsigned i = 0, e = CodeSlabs.size(); i != e; ++i)
         sys::Memory::setExecutable(CodeSlabs[i]);
     }
 
     /// setPoisonMemory - Controls whether we write garbage over freed memory.
     ///
-    void setPoisonMemory(bool poison) {
+    void setPoisonMemory(bool poison) override {
       PoisonMemory = poison;
     }
   };
 }
 
-MemSlab *JITSlabAllocator::Allocate(size_t Size) {
+void *JITAllocator::Allocate(size_t Size, size_t /*Alignment*/) {
   sys::MemoryBlock B = JMM.allocateNewSlab(Size);
-  MemSlab *Slab = (MemSlab*)B.base();
-  Slab->Size = B.size();
-  Slab->NextPtr = 0;
-  return Slab;
+  return B.base();
 }
 
-void JITSlabAllocator::Deallocate(MemSlab *Slab) {
-  sys::MemoryBlock B(Slab, Slab->Size);
+void JITAllocator::Deallocate(void *Slab, size_t Size) {
+  sys::MemoryBlock B(Slab, Size);
   sys::Memory::ReleaseRWX(B);
 }
 
 DefaultJITMemoryManager::DefaultJITMemoryManager()
-  :
+    :
 #ifdef NDEBUG
-    PoisonMemory(false),
+      PoisonMemory(false),
 #else
-    PoisonMemory(true),
+      PoisonMemory(true),
 #endif
-    LastSlab(0, 0),
-    BumpSlabAllocator(*this),
-    StubAllocator(DefaultSlabSize, DefaultSizeThreshold, BumpSlabAllocator),
-    DataAllocator(DefaultSlabSize, DefaultSizeThreshold, BumpSlabAllocator) {
+      LastSlab(nullptr, 0), StubAllocator(*this), DataAllocator(*this) {
 
   // Allocate space for code.
   sys::MemoryBlock MemBlock = allocateNewSlab(DefaultCodeSlabSize);
@@ -590,11 +639,11 @@ DefaultJITMemoryManager::DefaultJITMemoryManager()
   // Start out with the freelist pointing to Mem0.
   FreeMemoryList = Mem0;
 
-  GOTBase = NULL;
+  GOTBase = nullptr;
 }
 
 void DefaultJITMemoryManager::AllocateGOT() {
-  assert(GOTBase == 0 && "Cannot allocate the got multiple times");
+  assert(!GOTBase && "Cannot allocate the got multiple times");
   GOTBase = new uint8_t[sizeof(void*) * 8192];
   HasGOT = true;
 }
@@ -609,9 +658,9 @@ DefaultJITMemoryManager::~DefaultJITMemoryManager() {
 sys::MemoryBlock DefaultJITMemoryManager::allocateNewSlab(size_t size) {
   // Allocate a new block close to the last one.
   std::string ErrMsg;
-  sys::MemoryBlock *LastSlabPtr = LastSlab.base() ? &LastSlab : 0;
+  sys::MemoryBlock *LastSlabPtr = LastSlab.base() ? &LastSlab : nullptr;
   sys::MemoryBlock B = sys::Memory::AllocateRWX(size, LastSlabPtr, &ErrMsg);
-  if (B.base() == 0) {
+  if (!B.base()) {
     report_fatal_error("Allocation failed when allocating new memory in the"
                        " JIT\n" + Twine(ErrMsg));
   }
@@ -672,7 +721,7 @@ bool DefaultJITMemoryManager::CheckInvariants(std::string &ErrorStr) {
     char *End = Start + I->size();
 
     // Check each memory range.
-    for (MemoryRangeHeader *Hdr = (MemoryRangeHeader*)Start, *LastHdr = NULL;
+    for (MemoryRangeHeader *Hdr = (MemoryRangeHeader*)Start, *LastHdr = nullptr;
          Start <= (char*)Hdr && (char*)Hdr < End;
          Hdr = &Hdr->getBlockAfter()) {
       if (Hdr->ThisAllocated == 0) {
@@ -713,15 +762,143 @@ bool DefaultJITMemoryManager::CheckInvariants(std::string &ErrorStr) {
   return true;
 }
 
+//===----------------------------------------------------------------------===//
+// getPointerToNamedFunction() implementation.
+//===----------------------------------------------------------------------===//
+
+// AtExitHandlers - List of functions to call when the program exits,
+// registered with the atexit() library function.
+static std::vector<void (*)()> AtExitHandlers;
+
+/// runAtExitHandlers - Run any functions registered by the program's
+/// calls to atexit(3), which we intercept and store in
+/// AtExitHandlers.
+///
+static void runAtExitHandlers() {
+  while (!AtExitHandlers.empty()) {
+    void (*Fn)() = AtExitHandlers.back();
+    AtExitHandlers.pop_back();
+    Fn();
+  }
+}
+
+//===----------------------------------------------------------------------===//
+// Function stubs that are invoked instead of certain library calls
+//
+// Force the following functions to be linked in to anything that uses the
+// JIT. This is a hack designed to work around the all-too-clever Glibc
+// strategy of making these functions work differently when inlined vs. when
+// not inlined, and hiding their real definitions in a separate archive file
+// that the dynamic linker can't see. For more info, search for
+// 'libc_nonshared.a' on Google, or read http://llvm.org/PR274.
+#if defined(__linux__) && defined(__GLIBC__)
+/* stat functions are redirecting to __xstat with a version number.  On x86-64
+ * linking with libc_nonshared.a and -Wl,--export-dynamic doesn't make 'stat'
+ * available as an exported symbol, so we have to add it explicitly.
+ */
+namespace {
+class StatSymbols {
+public:
+  StatSymbols() {
+    sys::DynamicLibrary::AddSymbol("stat", (void*)(intptr_t)stat);
+    sys::DynamicLibrary::AddSymbol("fstat", (void*)(intptr_t)fstat);
+    sys::DynamicLibrary::AddSymbol("lstat", (void*)(intptr_t)lstat);
+    sys::DynamicLibrary::AddSymbol("stat64", (void*)(intptr_t)stat64);
+    sys::DynamicLibrary::AddSymbol("\x1stat64", (void*)(intptr_t)stat64);
+    sys::DynamicLibrary::AddSymbol("\x1open64", (void*)(intptr_t)open64);
+    sys::DynamicLibrary::AddSymbol("\x1lseek64", (void*)(intptr_t)lseek64);
+    sys::DynamicLibrary::AddSymbol("fstat64", (void*)(intptr_t)fstat64);
+    sys::DynamicLibrary::AddSymbol("lstat64", (void*)(intptr_t)lstat64);
+    sys::DynamicLibrary::AddSymbol("atexit", (void*)(intptr_t)atexit);
+    sys::DynamicLibrary::AddSymbol("mknod", (void*)(intptr_t)mknod);
+  }
+};
+}
+static StatSymbols initStatSymbols;
+#endif // __linux__
+
+// jit_exit - Used to intercept the "exit" library call.
+static void jit_exit(int Status) {
+  runAtExitHandlers();   // Run atexit handlers...
+  exit(Status);
+}
+
+// jit_atexit - Used to intercept the "atexit" library call.
+static int jit_atexit(void (*Fn)()) {
+  AtExitHandlers.push_back(Fn);    // Take note of atexit handler...
+  return 0;  // Always successful
+}
+
+static int jit_noop() {
+  return 0;
+}
+
+//===----------------------------------------------------------------------===//
+//
+/// getPointerToNamedFunction - This method returns the address of the specified
+/// function by using the dynamic loader interface.  As such it is only useful
+/// for resolving library symbols, not code generated symbols.
+///
+void *DefaultJITMemoryManager::getPointerToNamedFunction(const std::string &Name,
+                                                         bool AbortOnFailure) {
+  // Check to see if this is one of the functions we want to intercept.  Note,
+  // we cast to intptr_t here to silence a -pedantic warning that complains
+  // about casting a function pointer to a normal pointer.
+  if (Name == "exit") return (void*)(intptr_t)&jit_exit;
+  if (Name == "atexit") return (void*)(intptr_t)&jit_atexit;
+
+  // We should not invoke parent's ctors/dtors from generated main()!
+  // On Mingw and Cygwin, the symbol __main is resolved to
+  // callee's(eg. tools/lli) one, to invoke wrong duplicated ctors
+  // (and register wrong callee's dtors with atexit(3)).
+  // We expect ExecutionEngine::runStaticConstructorsDestructors()
+  // is called before ExecutionEngine::runFunctionAsMain() is called.
+  if (Name == "__main") return (void*)(intptr_t)&jit_noop;
+
+  const char *NameStr = Name.c_str();
+  // If this is an asm specifier, skip the sentinal.
+  if (NameStr[0] == 1) ++NameStr;
+
+  // If it's an external function, look it up in the process image...
+  void *Ptr = sys::DynamicLibrary::SearchForAddressOfSymbol(NameStr);
+  if (Ptr) return Ptr;
+
+  // If it wasn't found and if it starts with an underscore ('_') character,
+  // try again without the underscore.
+  if (NameStr[0] == '_') {
+    Ptr = sys::DynamicLibrary::SearchForAddressOfSymbol(NameStr+1);
+    if (Ptr) return Ptr;
+  }
+
+  // Darwin/PPC adds $LDBLStub suffixes to various symbols like printf.  These
+  // are references to hidden visibility symbols that dlsym cannot resolve.
+  // If we have one of these, strip off $LDBLStub and try again.
+#if defined(__APPLE__) && defined(__ppc__)
+  if (Name.size() > 9 && Name[Name.size()-9] == '$' &&
+      memcmp(&Name[Name.size()-8], "LDBLStub", 8) == 0) {
+    // First try turning $LDBLStub into $LDBL128. If that fails, strip it off.
+    // This mirrors logic in libSystemStubs.a.
+    std::string Prefix = std::string(Name.begin(), Name.end()-9);
+    if (void *Ptr = getPointerToNamedFunction(Prefix+"$LDBL128", false))
+      return Ptr;
+    if (void *Ptr = getPointerToNamedFunction(Prefix, false))
+      return Ptr;
+  }
+#endif
+
+  if (AbortOnFailure) {
+    report_fatal_error("Program used external function '"+Name+
+                      "' which could not be resolved!");
+  }
+  return nullptr;
+}
+
+
+
 JITMemoryManager *JITMemoryManager::CreateDefaultMemManager() {
   return new DefaultJITMemoryManager();
 }
 
-// Allocate memory for code in 512K slabs.
-const size_t DefaultJITMemoryManager::DefaultCodeSlabSize = 512 * 1024;
-
-// Allocate globals and stubs in slabs of 64K.  (probably 16 pages)
-const size_t DefaultJITMemoryManager::DefaultSlabSize = 64 * 1024;
-
-// Waste at most 16K at the end of each bump slab.  (probably 4 pages)
-const size_t DefaultJITMemoryManager::DefaultSizeThreshold = 16 * 1024;
+const size_t DefaultJITMemoryManager::DefaultCodeSlabSize;
+const size_t DefaultJITMemoryManager::DefaultSlabSize;
+const size_t DefaultJITMemoryManager::DefaultSizeThreshold;

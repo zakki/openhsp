@@ -1,6 +1,6 @@
 ; Tests for SSE1 and below, without SSE2+.
 ; RUN: llc < %s -march=x86 -mcpu=pentium3 -O3 | FileCheck %s
-; RUN: llc < %s -march=x86-64 -mcpu=pentium3 -O3 | FileCheck %s
+; RUN: llc < %s -march=x86-64 -mattr=-sse2,+sse -O3 | FileCheck %s
 
 define <8 x i16> @test1(<8 x i32> %a) nounwind {
 ; CHECK: test1
@@ -33,7 +33,7 @@ entry:
   %tmp11 = insertelement <2 x float> undef, float %add.r, i32 0
   %tmp9 = insertelement <2 x float> %tmp11, float %add.i, i32 1
   ret <2 x float> %tmp9
-; CHECK: test4:
+; CHECK-LABEL: test4:
 ; CHECK-NOT: shufps	$16
 ; CHECK: shufps	$1, 
 ; CHECK-NOT: shufps	$16
@@ -42,4 +42,18 @@ entry:
 ; CHECK: unpcklps
 ; CHECK-NOT: shufps	$16
 ; CHECK: ret
+}
+
+; We used to get stuck in type legalization for this example when lowering the
+; vselect. With SSE1 v4f32 is a legal type but v4i1 (or any vector integer type)
+; is not. We used to ping pong between splitting the vselect for the v4i
+; condition operand and widening the resulting vselect for the v4f32 result.
+; PR18036
+
+; CHECK-LABEL: vselect
+define <4 x float> @vselect(<4 x float>*%p, <4 x i32> %q) {
+entry:
+  %a1 = icmp eq <4 x i32> %q, zeroinitializer
+  %a14 = select <4 x i1> %a1, <4 x float> <float 1.000000e+00, float 2.000000e+00, float 3.000000e+00, float 4.000000e+0> , <4 x float> zeroinitializer
+  ret <4 x float> %a14
 }

@@ -1,4 +1,4 @@
-/*===-- llvm_ocaml.c - LLVM Ocaml Glue --------------------------*- C++ -*-===*\
+/*===-- llvm_ocaml.c - LLVM OCaml Glue --------------------------*- C++ -*-===*\
 |*                                                                            *|
 |*                     The LLVM Compiler Infrastructure                       *|
 |*                                                                            *|
@@ -7,7 +7,7 @@
 |*                                                                            *|
 |*===----------------------------------------------------------------------===*|
 |*                                                                            *|
-|* This file glues LLVM's ocaml interface to its C interface. These functions *|
+|* This file glues LLVM's OCaml interface to its C interface. These functions *|
 |* are by and large transparent wrappers to the corresponding C functions.    *|
 |*                                                                            *|
 |* Note that these functions intentionally take liberties with the CAMLparamX *|
@@ -21,9 +21,9 @@
 #include "caml/memory.h"
 #include "caml/fail.h"
 #include "caml/callback.h"
-#include "llvm/Config/config.h"
 #include <assert.h>
 #include <stdlib.h>
+#include <string.h>
 
 
 /* Can't use the recommended caml_named_value mechanism for backwards
@@ -33,6 +33,7 @@ static value llvm_ioerror_exn;
 CAMLprim value llvm_register_core_exns(value IoError) {
   llvm_ioerror_exn = Field(IoError, 0);
   register_global_root(&llvm_ioerror_exn);
+
   return Val_unit;
 }
 
@@ -48,6 +49,30 @@ static void llvm_raise(value Prototype, char *Message) {
 #ifdef CAMLnoreturn
   CAMLnoreturn; /* Silences warnings, but is missing in some versions. */
 #endif
+}
+
+static value llvm_fatal_error_handler;
+
+static void llvm_fatal_error_trampoline(const char *Reason) {
+  callback(llvm_fatal_error_handler, copy_string(Reason));
+}
+
+CAMLprim value llvm_install_fatal_error_handler(value Handler) {
+  LLVMInstallFatalErrorHandler(llvm_fatal_error_trampoline);
+  llvm_fatal_error_handler = Handler;
+  caml_register_global_root(&llvm_fatal_error_handler);
+  return Val_unit;
+}
+
+CAMLprim value llvm_reset_fatal_error_handler(value Unit) {
+  caml_remove_global_root(&llvm_fatal_error_handler);
+  LLVMResetFatalErrorHandler();
+  return Val_unit;
+}
+
+CAMLprim value llvm_enable_pretty_stacktrace(value Unit) {
+  LLVMEnablePrettyStackTrace();
+  return Val_unit;
 }
 
 static value alloc_variant(int tag, void *Value) {
@@ -152,34 +177,31 @@ CAMLprim value llvm_set_data_layout(value Layout, LLVMModuleRef M) {
   return Val_unit;
 }
 
-/* string -> lltype -> llmodule -> bool */
-CAMLprim value llvm_add_type_name(value Name, LLVMTypeRef Ty, LLVMModuleRef M) {
-  int res = LLVMAddTypeName(M, String_val(Name), Ty);
-  return Val_bool(res == 0);
-}
-
-/* string -> llmodule -> unit */
-CAMLprim value llvm_delete_type_name(value Name, LLVMModuleRef M) {
-  LLVMDeleteTypeName(M, String_val(Name));
-  return Val_unit;
-}
-
-/* llmodule -> string -> lltype option */
-CAMLprim value llvm_type_by_name(LLVMModuleRef M, value Name) {
-  CAMLparam1(Name);
-  LLVMTypeRef T;
-  if ((T = LLVMGetTypeByName(M, String_val(Name)))) {
-    value Option = alloc(1, 0);
-    Field(Option, 0) = (value) T;
-    CAMLreturn(Option);
-  }
-  CAMLreturn(Val_int(0));
-}
-
 /* llmodule -> unit */
 CAMLprim value llvm_dump_module(LLVMModuleRef M) {
   LLVMDumpModule(M);
   return Val_unit;
+}
+
+/* string -> llmodule -> unit */
+CAMLprim value llvm_print_module(value Filename, LLVMModuleRef M) {
+  char* Message;
+  if(LLVMPrintModuleToFile(M, String_val(Filename), &Message)) {
+    llvm_raise(llvm_ioerror_exn, Message);
+  }
+
+  return Val_unit;
+}
+
+/* llmodule -> string */
+CAMLprim value llvm_string_of_llmodule(LLVMModuleRef M) {
+  char* ModuleCStr;
+  ModuleCStr = LLVMPrintModuleToString(M);
+
+  value ModuleStr = caml_copy_string(ModuleCStr);
+  LLVMDisposeMessage(ModuleCStr);
+
+  return ModuleStr;
 }
 
 /* llmodule -> string -> unit */
@@ -195,9 +217,30 @@ CAMLprim value llvm_classify_type(LLVMTypeRef Ty) {
   return Val_int(LLVMGetTypeKind(Ty));
 }
 
+CAMLprim value llvm_type_is_sized(LLVMTypeRef Ty) {
+    return Val_bool(LLVMTypeIsSized(Ty));
+}
+
 /* lltype -> llcontext */
 CAMLprim LLVMContextRef llvm_type_context(LLVMTypeRef Ty) {
   return LLVMGetTypeContext(Ty);
+}
+
+/* lltype -> unit */
+CAMLprim value llvm_dump_type(LLVMTypeRef Val) {
+  LLVMDumpType(Val);
+  return Val_unit;
+}
+
+/* lltype -> string */
+CAMLprim value llvm_string_of_lltype(LLVMTypeRef M) {
+  char* TypeCStr;
+  TypeCStr = LLVMPrintTypeToString(M);
+
+  value TypeStr = caml_copy_string(TypeCStr);
+  LLVMDisposeMessage(TypeCStr);
+
+  return TypeStr;
 }
 
 /*--... Operations on integer types ........................................--*/
@@ -306,6 +349,34 @@ CAMLprim LLVMTypeRef llvm_packed_struct_type(LLVMContextRef C,
                                  Wosize_val(ElementTypes), 1);
 }
 
+/* llcontext -> string -> lltype */
+CAMLprim LLVMTypeRef llvm_named_struct_type(LLVMContextRef C,
+                                            value Name) {
+  return LLVMStructCreateNamed(C, String_val(Name));
+}
+
+CAMLprim value llvm_struct_set_body(LLVMTypeRef Ty,
+                                    value ElementTypes,
+                                    value Packed) {
+  LLVMStructSetBody(Ty, (LLVMTypeRef *) ElementTypes,
+                    Wosize_val(ElementTypes), Bool_val(Packed));
+  return Val_unit;
+}
+
+/* lltype -> string option */
+CAMLprim value llvm_struct_name(LLVMTypeRef Ty)
+{
+  CAMLparam0();
+  const char *C = LLVMGetStructName(Ty);
+  if (C) {
+    CAMLlocal1(result);
+    result = caml_alloc_small(1, 0);
+    Store_field(result, 0, caml_copy_string(C));
+    CAMLreturn(result);
+  }
+  CAMLreturn(Val_int(0));
+}
+
 /* lltype -> lltype array */
 CAMLprim value llvm_struct_element_types(LLVMTypeRef StructTy) {
   value Tys = alloc(LLVMCountStructElementTypes(StructTy), 0);
@@ -316,6 +387,11 @@ CAMLprim value llvm_struct_element_types(LLVMTypeRef StructTy) {
 /* lltype -> bool */
 CAMLprim value llvm_is_packed(LLVMTypeRef StructTy) {
   return Val_bool(LLVMIsPackedStruct(StructTy));
+}
+
+/* lltype -> bool */
+CAMLprim value llvm_is_opaque(LLVMTypeRef StructTy) {
+  return Val_bool(LLVMIsOpaqueStruct(StructTy));
 }
 
 /*--... Operations on array, pointer, and vector types .....................--*/
@@ -369,48 +445,94 @@ CAMLprim LLVMTypeRef llvm_label_type(LLVMContextRef Context) {
 }
 
 /* llcontext -> lltype */
-CAMLprim LLVMTypeRef llvm_opaque_type(LLVMContextRef Context) {
-  return LLVMOpaqueTypeInContext(Context);
+CAMLprim LLVMTypeRef llvm_x86_mmx_type(LLVMContextRef Context) {
+  return LLVMX86MMXTypeInContext(Context);
 }
 
-/*--... Operations on type handles .........................................--*/
-
-#define Typehandle_val(v)  (*(LLVMTypeHandleRef *)(Data_custom_val(v)))
-
-static void llvm_finalize_handle(value TH) {
-  LLVMDisposeTypeHandle(Typehandle_val(TH));
+CAMLprim value llvm_type_by_name(LLVMModuleRef M, value Name)
+{
+  CAMLparam1(Name);
+  LLVMTypeRef Ty = LLVMGetTypeByName(M, String_val(Name));
+  if (Ty) {
+    value Option = alloc(1, 0);
+    Field(Option, 0) = (value) Ty;
+    CAMLreturn(Option);
+  }
+  CAMLreturn(Val_int(0));
 }
-
-static struct custom_operations typehandle_ops = {
-  (char *) "LLVMTypeHandle",
-  llvm_finalize_handle,
-  custom_compare_default,
-  custom_hash_default,
-  custom_serialize_default,
-  custom_deserialize_default
-};
-
-CAMLprim value llvm_handle_to_type(LLVMTypeRef PATy) {
-  value TH = alloc_custom(&typehandle_ops, sizeof(LLVMBuilderRef), 0, 1);
-  Typehandle_val(TH) = LLVMCreateTypeHandle(PATy);
-  return TH;
-}
-
-CAMLprim LLVMTypeRef llvm_type_of_handle(value TH) {
-  return LLVMResolveTypeHandle(Typehandle_val(TH));
-}
-
-CAMLprim value llvm_refine_type(LLVMTypeRef AbstractTy, LLVMTypeRef ConcreteTy){
-  LLVMRefineType(AbstractTy, ConcreteTy);
-  return Val_unit;
-}
-
 
 /*===-- VALUES ------------------------------------------------------------===*/
 
 /* llvalue -> lltype */
 CAMLprim LLVMTypeRef llvm_type_of(LLVMValueRef Val) {
   return LLVMTypeOf(Val);
+}
+
+/* keep in sync with ValueKind.t */
+enum ValueKind {
+  NullValue=0,
+  Argument,
+  BasicBlock,
+  InlineAsm,
+  MDNode,
+  MDString,
+  BlockAddress,
+  ConstantAggregateZero,
+  ConstantArray,
+  ConstantDataArray,
+  ConstantDataVector,
+  ConstantExpr,
+  ConstantFP,
+  ConstantInt,
+  ConstantPointerNull,
+  ConstantStruct,
+  ConstantVector,
+  Function,
+  GlobalAlias,
+  GlobalVariable,
+  UndefValue,
+  Instruction
+};
+
+/* llvalue -> ValueKind.t */
+#define DEFINE_CASE(Val, Kind) \
+    do {if (LLVMIsA##Kind(Val)) CAMLreturn(Val_int(Kind));} while(0)
+
+CAMLprim value llvm_classify_value(LLVMValueRef Val) {
+  CAMLparam0();
+  if (!Val)
+    CAMLreturn(Val_int(NullValue));
+  if (LLVMIsAConstant(Val)) {
+    DEFINE_CASE(Val, BlockAddress);
+    DEFINE_CASE(Val, ConstantAggregateZero);
+    DEFINE_CASE(Val, ConstantArray);
+    DEFINE_CASE(Val, ConstantDataArray);
+    DEFINE_CASE(Val, ConstantDataVector);
+    DEFINE_CASE(Val, ConstantExpr);
+    DEFINE_CASE(Val, ConstantFP);
+    DEFINE_CASE(Val, ConstantInt);
+    DEFINE_CASE(Val, ConstantPointerNull);
+    DEFINE_CASE(Val, ConstantStruct);
+    DEFINE_CASE(Val, ConstantVector);
+  }
+  if (LLVMIsAInstruction(Val)) {
+    CAMLlocal1(result);
+    result = caml_alloc_small(1, 0);
+    Store_field(result, 0, Val_int(LLVMGetInstructionOpcode(Val)));
+    CAMLreturn(result);
+  }
+  if (LLVMIsAGlobalValue(Val)) {
+    DEFINE_CASE(Val, Function);
+    DEFINE_CASE(Val, GlobalAlias);
+    DEFINE_CASE(Val, GlobalVariable);
+  }
+  DEFINE_CASE(Val, Argument);
+  DEFINE_CASE(Val, BasicBlock);
+  DEFINE_CASE(Val, InlineAsm);
+  DEFINE_CASE(Val, MDNode);
+  DEFINE_CASE(Val, MDString);
+  DEFINE_CASE(Val, UndefValue);
+  failwith("Unknown Value class");
 }
 
 /* llvalue -> string */
@@ -427,6 +549,24 @@ CAMLprim value llvm_set_value_name(value Name, LLVMValueRef Val) {
 /* llvalue -> unit */
 CAMLprim value llvm_dump_value(LLVMValueRef Val) {
   LLVMDumpValue(Val);
+  return Val_unit;
+}
+
+/* llvalue -> string */
+CAMLprim value llvm_string_of_llvalue(LLVMValueRef M) {
+  char* ValueCStr;
+  ValueCStr = LLVMPrintValueToString(M);
+
+  value ValueStr = caml_copy_string(ValueCStr);
+  LLVMDisposeMessage(ValueCStr);
+
+  return ValueStr;
+}
+
+/* llvalue -> llvalue -> unit */
+CAMLprim value llvm_replace_all_uses_with(LLVMValueRef OldVal,
+                                          LLVMValueRef NewVal) {
+  LLVMReplaceAllUsesWith(OldVal, NewVal);
   return Val_unit;
 }
 
@@ -463,6 +603,12 @@ CAMLprim value llvm_is_null(LLVMValueRef Val) {
 /* llvalue -> bool */
 CAMLprim value llvm_is_undef(LLVMValueRef Val) {
   return Val_bool(LLVMIsUndef(Val));
+}
+
+/* llvalue -> Opcode.t */
+CAMLprim value llvm_constexpr_get_opcode(LLVMValueRef Val) {
+  return LLVMIsAConstantExpr(Val) ?
+      Val_int(LLVMGetConstOpcode(Val)) : Val_int(0);
 }
 
 /*--... Operations on instructions .........................................--*/
@@ -511,6 +657,40 @@ CAMLprim LLVMValueRef llvm_mdnode(LLVMContextRef C, value ElementVals) {
                              Wosize_val(ElementVals));
 }
 
+/* llvalue -> string option */
+CAMLprim value llvm_get_mdstring(LLVMValueRef V) {
+  CAMLparam0();
+  const char *S;
+  unsigned Len;
+
+  if ((S = LLVMGetMDString(V, &Len))) {
+    CAMLlocal2(Option, Str);
+
+    Str = caml_alloc_string(Len);
+    memcpy(String_val(Str), S, Len);
+    Option = alloc(1,0);
+    Store_field(Option, 0, Str);
+    CAMLreturn(Option);
+  }
+  CAMLreturn(Val_int(0));
+}
+
+/* llmodule -> string -> llvalue array */
+CAMLprim value llvm_get_namedmd(LLVMModuleRef M, value Name)
+{
+  CAMLparam1(Name);
+  CAMLlocal1(Nodes);
+  Nodes = alloc(LLVMGetNamedMetadataNumOperands(M, String_val(Name)), 0);
+  LLVMGetNamedMetadataOperands(M, String_val(Name), (LLVMValueRef *) Nodes);
+  CAMLreturn(Nodes);
+}
+
+/* llmodule -> string -> llvalue -> unit */
+CAMLprim value llvm_append_namedmd(LLVMModuleRef M, value Name, LLVMValueRef Val) {
+  LLVMAddNamedMetadataOperand(M, String_val(Name), Val);
+  return Val_unit;
+}
+
 /*--... Operations on scalar constants .....................................--*/
 
 /* lltype -> int -> llvalue */
@@ -522,6 +702,19 @@ CAMLprim LLVMValueRef llvm_const_int(LLVMTypeRef IntTy, value N) {
 CAMLprim LLVMValueRef llvm_const_of_int64(LLVMTypeRef IntTy, value N,
                                           value SExt) {
   return LLVMConstInt(IntTy, Int64_val(N), Bool_val(SExt));
+}
+
+/* llvalue -> Int64.t */
+CAMLprim value llvm_int64_of_const(LLVMValueRef Const)
+{
+  CAMLparam0();
+  if (LLVMIsAConstantInt(Const) &&
+      LLVMGetIntTypeWidth(LLVMTypeOf(Const)) <= 64) {
+    value Option = alloc(1, 0);
+    Field(Option, 0) = caml_copy_int64(LLVMConstIntGetSExtValue(Const));
+    CAMLreturn(Option);
+  }
+  CAMLreturn(Val_int(0));
 }
 
 /* lltype -> string -> int -> llvalue */
@@ -571,6 +764,11 @@ CAMLprim LLVMValueRef llvm_const_struct(LLVMContextRef C, value ElementVals) {
                                   Wosize_val(ElementVals), 0);
 }
 
+/* lltype -> llvalue array -> llvalue */
+CAMLprim LLVMValueRef llvm_const_named_struct(LLVMTypeRef Ty, value ElementVals) {
+    return LLVMConstNamedStruct(Ty, (LLVMValueRef *) Op_val(ElementVals),  Wosize_val(ElementVals));
+}
+
 /* llcontext -> llvalue array -> llvalue */
 CAMLprim LLVMValueRef llvm_const_packed_struct(LLVMContextRef C,
                                                value ElementVals) {
@@ -611,6 +809,12 @@ CAMLprim LLVMValueRef llvm_const_in_bounds_gep(LLVMValueRef ConstantVal,
                                                value Indices) {
   return LLVMConstInBoundsGEP(ConstantVal, (LLVMValueRef*) Op_val(Indices),
                               Wosize_val(Indices));
+}
+
+/* llvalue -> lltype -> is_signed:bool -> llvalue */
+CAMLprim LLVMValueRef llvm_const_intcast(LLVMValueRef CV, LLVMTypeRef T,
+                                         value IsSigned) {
+  return LLVMConstIntCast(CV, T, Bool_val(IsSigned));
 }
 
 /* llvalue -> int array -> llvalue */
@@ -772,7 +976,8 @@ CAMLprim LLVMValueRef llvm_declare_qualified_global(LLVMTypeRef Ty, value Name,
                               LLVMPointerType(Ty, Int_val(AddressSpace)));
     return GlobalVar;
   }
-  return LLVMAddGlobal(M, Ty, String_val(Name));
+  return LLVMAddGlobalInAddressSpace(M, Ty, String_val(Name),
+                                     Int_val(AddressSpace));
 }
 
 /* string -> llmodule -> llvalue option */
@@ -837,6 +1042,30 @@ CAMLprim value llvm_is_thread_local(LLVMValueRef GlobalVar) {
 CAMLprim value llvm_set_thread_local(value IsThreadLocal,
                                      LLVMValueRef GlobalVar) {
   LLVMSetThreadLocal(GlobalVar, Bool_val(IsThreadLocal));
+  return Val_unit;
+}
+
+/* llvalue -> ThreadLocalMode.t */
+CAMLprim value llvm_thread_local_mode(LLVMValueRef GlobalVar) {
+  return Val_int(LLVMGetThreadLocalMode(GlobalVar));
+}
+
+/* ThreadLocalMode.t -> llvalue -> unit */
+CAMLprim value llvm_set_thread_local_mode(value ThreadLocalMode,
+                                          LLVMValueRef GlobalVar) {
+  LLVMSetThreadLocalMode(GlobalVar, Int_val(ThreadLocalMode));
+  return Val_unit;
+}
+
+/* llvalue -> bool */
+CAMLprim value llvm_is_externally_initialized(LLVMValueRef GlobalVar) {
+  return Val_bool(LLVMIsExternallyInitialized(GlobalVar));
+}
+
+/* bool -> llvalue -> unit */
+CAMLprim value llvm_set_externally_initialized(value IsExternallyInitialized,
+                                               LLVMValueRef GlobalVar) {
+  LLVMSetExternallyInitialized(GlobalVar, Bool_val(IsExternallyInitialized));
   return Val_unit;
 }
 
@@ -940,15 +1169,29 @@ CAMLprim value llvm_set_gc(value GC, LLVMValueRef Fn) {
   return Val_unit;
 }
 
-/* llvalue -> Attribute.t -> unit */
+/* llvalue -> int32 -> unit */
 CAMLprim value llvm_add_function_attr(LLVMValueRef Arg, value PA) {
-  LLVMAddFunctionAttr(Arg, Int_val(PA));
+  LLVMAddFunctionAttr(Arg, Int32_val(PA));
   return Val_unit;
 }
 
-/* llvalue -> Attribute.t -> unit */
+/* llvalue -> string -> string -> unit */
+CAMLprim value llvm_add_target_dependent_function_attr(
+                  LLVMValueRef Arg, value A, value V) {
+  LLVMAddTargetDependentFunctionAttr(Arg, String_val(A), String_val(V));
+  return Val_unit;
+}
+
+/* llvalue -> int32 */
+CAMLprim value llvm_function_attr(LLVMValueRef Fn)
+{
+    CAMLparam0();
+    CAMLreturn(caml_copy_int32(LLVMGetFunctionAttr(Fn)));
+}
+
+/* llvalue -> int32 -> unit */
 CAMLprim value llvm_remove_function_attr(LLVMValueRef Arg, value PA) {
-  LLVMRemoveFunctionAttr(Arg, Int_val(PA));
+  LLVMRemoveFunctionAttr(Arg, Int32_val(PA));
   return Val_unit;
 }
 /*--... Operations on parameters ...........................................--*/
@@ -960,6 +1203,13 @@ CAMLprim LLVMValueRef llvm_param(LLVMValueRef Fn, value Index) {
   return LLVMGetParam(Fn, Int_val(Index));
 }
 
+/* llvalue -> int */
+CAMLprim value llvm_param_attr(LLVMValueRef Param)
+{
+    CAMLparam0();
+    CAMLreturn(caml_copy_int32(LLVMGetAttribute(Param)));
+}
+
 /* llvalue -> llvalue */
 CAMLprim value llvm_params(LLVMValueRef Fn) {
   value Params = alloc(LLVMCountParams(Fn), 0);
@@ -967,15 +1217,15 @@ CAMLprim value llvm_params(LLVMValueRef Fn) {
   return Params;
 }
 
-/* llvalue -> Attribute.t -> unit */
+/* llvalue -> int32 -> unit */
 CAMLprim value llvm_add_param_attr(LLVMValueRef Arg, value PA) {
-  LLVMAddAttribute(Arg, Int_val(PA));
+  LLVMAddAttribute(Arg, Int32_val(PA));
   return Val_unit;
 }
 
-/* llvalue -> Attribute.t -> unit */
+/* llvalue -> int32 -> unit */
 CAMLprim value llvm_remove_param_attr(LLVMValueRef Arg, value PA) {
-  LLVMRemoveAttribute(Arg, Int_val(PA));
+  LLVMRemoveAttribute(Arg, Int32_val(PA));
   return Val_unit;
 }
 
@@ -990,6 +1240,19 @@ CAMLprim value llvm_set_param_alignment(LLVMValueRef Arg, value align) {
 DEFINE_ITERATORS(
   block, BasicBlock, LLVMValueRef, LLVMBasicBlockRef, LLVMGetBasicBlockParent)
 
+/* llbasicblock -> llvalue option */
+CAMLprim value llvm_block_terminator(LLVMBasicBlockRef Block)
+{
+  CAMLparam0();
+  LLVMValueRef Term = LLVMGetBasicBlockTerminator(Block);
+  if (Term) {
+    value Option = alloc(1, 0);
+    Field(Option, 0) = (value) Term;
+    CAMLreturn(Option);
+  }
+  CAMLreturn(Val_int(0));
+}
+
 /* llvalue -> llbasicblock array */
 CAMLprim value llvm_basic_blocks(LLVMValueRef Fn) {
   value MLArray = alloc(LLVMCountBasicBlocks(Fn), 0);
@@ -1000,6 +1263,24 @@ CAMLprim value llvm_basic_blocks(LLVMValueRef Fn) {
 /* llbasicblock -> unit */
 CAMLprim value llvm_delete_block(LLVMBasicBlockRef BB) {
   LLVMDeleteBasicBlock(BB);
+  return Val_unit;
+}
+
+/* llbasicblock -> unit */
+CAMLprim value llvm_remove_block(LLVMBasicBlockRef BB) {
+  LLVMRemoveBasicBlockFromParent(BB);
+  return Val_unit;
+}
+
+/* llbasicblock -> llbasicblock -> unit */
+CAMLprim value llvm_move_block_before(LLVMBasicBlockRef Pos, LLVMBasicBlockRef BB) {
+  LLVMMoveBasicBlockBefore(BB, Pos);
+  return Val_unit;
+}
+
+/* llbasicblock -> llbasicblock -> unit */
+CAMLprim value llvm_move_block_after(LLVMBasicBlockRef Pos, LLVMBasicBlockRef BB) {
+  LLVMMoveBasicBlockAfter(BB, Pos);
   return Val_unit;
 }
 
@@ -1025,6 +1306,28 @@ CAMLprim value llvm_value_is_block(LLVMValueRef Val) {
 DEFINE_ITERATORS(instr, Instruction, LLVMBasicBlockRef, LLVMValueRef,
                  LLVMGetInstructionParent)
 
+/* llvalue -> Opcode.t */
+CAMLprim value llvm_instr_get_opcode(LLVMValueRef Inst) {
+  LLVMOpcode o;
+  if (!LLVMIsAInstruction(Inst))
+      failwith("Not an instruction");
+  o = LLVMGetInstructionOpcode(Inst);
+  assert (o <= LLVMLandingPad);
+  return Val_int(o);
+}
+
+/* llvalue -> ICmp.t option */
+CAMLprim value llvm_instr_icmp_predicate(LLVMValueRef Val) {
+  CAMLparam0();
+  int x = LLVMGetICmpPredicate(Val);
+  if (x) {
+    value Option = alloc(1, 0);
+    Field(Option, 0) = Val_int(x - LLVMIntEQ);
+    CAMLreturn(Option);
+  }
+  CAMLreturn(Val_int(0));
+}
+
 
 /*--... Operations on call sites ...........................................--*/
 
@@ -1039,19 +1342,19 @@ CAMLprim value llvm_set_instruction_call_conv(value CC, LLVMValueRef Inst) {
   return Val_unit;
 }
 
-/* llvalue -> int -> Attribute.t -> unit */
+/* llvalue -> int -> int32 -> unit */
 CAMLprim value llvm_add_instruction_param_attr(LLVMValueRef Instr,
                                                value index,
                                                value PA) {
-  LLVMAddInstrAttribute(Instr, Int_val(index), Int_val(PA));
+  LLVMAddInstrAttribute(Instr, Int_val(index), Int32_val(PA));
   return Val_unit;
 }
 
-/* llvalue -> int -> Attribute.t -> unit */
+/* llvalue -> int -> int32 -> unit */
 CAMLprim value llvm_remove_instruction_param_attr(LLVMValueRef Instr,
                                                   value index,
                                                   value PA) {
-  LLVMRemoveInstrAttribute(Instr, Int_val(index), Int_val(PA));
+  LLVMRemoveInstrAttribute(Instr, Int_val(index), Int32_val(PA));
   return Val_unit;
 }
 
@@ -1066,6 +1369,20 @@ CAMLprim value llvm_is_tail_call(LLVMValueRef CallInst) {
 CAMLprim value llvm_set_tail_call(value IsTailCall,
                                   LLVMValueRef CallInst) {
   LLVMSetTailCall(CallInst, Bool_val(IsTailCall));
+  return Val_unit;
+}
+
+/*--... Operations on load/store instructions (only)........................--*/
+
+/* llvalue -> bool */
+CAMLprim value llvm_is_volatile(LLVMValueRef MemoryInst) {
+  return Val_bool(LLVMGetVolatile(MemoryInst));
+}
+
+/* bool -> llvalue -> unit */
+CAMLprim value llvm_set_volatile(value IsVolatile,
+                                  LLVMValueRef MemoryInst) {
+  LLVMSetVolatile(MemoryInst, Bool_val(IsVolatile));
   return Val_unit;
 }
 
@@ -1102,6 +1419,11 @@ CAMLprim value llvm_incoming(LLVMValueRef PhiNode) {
   CAMLreturn(Tl);
 }
 
+/* llvalue -> unit */
+CAMLprim value llvm_delete_instruction(LLVMValueRef Instruction) {
+  LLVMInstructionEraseFromParent(Instruction);
+  return Val_unit;
+}
 
 /*===-- Instruction builders ----------------------------------------------===*/
 
@@ -1112,12 +1434,15 @@ static void llvm_finalize_builder(value B) {
 }
 
 static struct custom_operations builder_ops = {
-  (char *) "IRBuilder",
+  (char *) "LLVMIRBuilder",
   llvm_finalize_builder,
   custom_compare_default,
   custom_hash_default,
   custom_serialize_default,
   custom_deserialize_default
+#ifdef custom_compare_ext_default
+  , custom_compare_ext_default
+#endif
 };
 
 static value alloc_builder(LLVMBuilderRef B) {
@@ -1229,6 +1554,27 @@ CAMLprim LLVMValueRef llvm_build_switch(LLVMValueRef Of,
   return LLVMBuildSwitch(Builder_val(B), Of, Else, Int_val(EstimatedCount));
 }
 
+/* lltype -> string -> llbuilder -> llvalue */
+CAMLprim LLVMValueRef llvm_build_malloc(LLVMTypeRef Ty, value Name,
+                                        value B)
+{
+  return LLVMBuildMalloc(Builder_val(B), Ty, String_val(Name));
+}
+
+/* lltype -> llvalue -> string -> llbuilder -> llvalue */
+CAMLprim LLVMValueRef llvm_build_array_malloc(LLVMTypeRef Ty,
+                                              LLVMValueRef Val,
+                                              value Name, value B)
+{
+  return LLVMBuildArrayMalloc(Builder_val(B), Ty, Val, String_val(Name));
+}
+
+/* llvalue -> llbuilder -> llvalue */
+CAMLprim LLVMValueRef llvm_build_free(LLVMValueRef P, value B)
+{
+  return LLVMBuildFree(Builder_val(B), P);
+}
+
 /* llvalue -> llvalue -> llbasicblock -> unit */
 CAMLprim value llvm_add_case(LLVMValueRef Switch, LLVMValueRef OnVal,
                              LLVMBasicBlockRef Dest) {
@@ -1269,9 +1615,33 @@ CAMLprim LLVMValueRef llvm_build_invoke_bc(value Args[], int NumArgs) {
                                Args[4], Args[5]);
 }
 
-/* llbuilder -> llvalue */
-CAMLprim LLVMValueRef llvm_build_unwind(value B) {
-  return LLVMBuildUnwind(Builder_val(B));
+/* lltype -> llvalue -> int -> string -> llbuilder -> llvalue */
+CAMLprim LLVMValueRef llvm_build_landingpad(LLVMTypeRef Ty, LLVMValueRef PersFn,
+                                            value NumClauses,  value Name,
+                                            value B) {
+    return LLVMBuildLandingPad(Builder_val(B), Ty, PersFn, Int_val(NumClauses),
+                               String_val(Name));
+}
+
+/* llvalue -> llvalue -> unit */
+CAMLprim value llvm_add_clause(LLVMValueRef LandingPadInst, LLVMValueRef ClauseVal)
+{
+    LLVMAddClause(LandingPadInst, ClauseVal);
+    return Val_unit;
+}
+
+
+/* llvalue -> bool -> unit */
+CAMLprim value llvm_set_cleanup(LLVMValueRef LandingPadInst, value flag)
+{
+    LLVMSetCleanup(LandingPadInst, Bool_val(flag));
+    return Val_unit;
+}
+
+/* llvalue -> llbuilder -> llvalue */
+CAMLprim LLVMValueRef llvm_build_resume(LLVMValueRef Exn, value B)
+{
+    return LLVMBuildResume(Builder_val(B), Exn);
 }
 
 /* llbuilder -> llvalue */
@@ -1485,6 +1855,24 @@ CAMLprim LLVMValueRef llvm_build_load(LLVMValueRef Pointer,
 CAMLprim LLVMValueRef llvm_build_store(LLVMValueRef Value, LLVMValueRef Pointer,
                                        value B) {
   return LLVMBuildStore(Builder_val(B), Value, Pointer);
+}
+
+/* AtomicRMWBinOp.t -> llvalue -> llvalue -> AtomicOrdering.t ->
+   bool -> llbuilder -> llvalue */
+CAMLprim LLVMValueRef llvm_build_atomicrmw_native(value BinOp, LLVMValueRef Ptr,
+                                                  LLVMValueRef Val, value Ord,
+                                                  value ST, value Name, value B) {
+  LLVMValueRef Instr;
+  Instr = LLVMBuildAtomicRMW(Builder_val(B), Int_val(BinOp),
+                             Ptr, Val, Int_val(Ord), Bool_val(ST));
+  LLVMSetValueName(Instr, String_val(Name));
+  return Instr;
+}
+
+CAMLprim LLVMValueRef llvm_build_atomicrmw_bytecode(value *argv, int argn) {
+  return llvm_build_atomicrmw_native(argv[0], (LLVMValueRef) argv[1],
+                                     (LLVMValueRef) argv[2], argv[3],
+                                     argv[4], argv[5], argv[6]);
 }
 
 /* llvalue -> llvalue array -> string -> llbuilder -> llvalue */
@@ -1753,7 +2141,6 @@ CAMLprim LLVMValueRef llvm_build_ptrdiff(LLVMValueRef LHS, LLVMValueRef RHS,
   return LLVMBuildPtrDiff(Builder_val(B), LHS, RHS, String_val(Name));
 }
 
-
 /*===-- Memory buffers ----------------------------------------------------===*/
 
 /* string -> llmemorybuffer
@@ -1780,6 +2167,30 @@ CAMLprim LLVMMemoryBufferRef llvm_memorybuffer_of_stdin(value Unit) {
     llvm_raise(llvm_ioerror_exn, Message);
   
   return MemBuf;
+}
+
+/* ?name:string -> string -> llmemorybuffer */
+CAMLprim LLVMMemoryBufferRef llvm_memorybuffer_of_string(value Name, value String) {
+  const char *NameCStr;
+  if(Name == Val_int(0))
+    NameCStr = "";
+  else
+    NameCStr = String_val(Field(Name, 0));
+
+  LLVMMemoryBufferRef MemBuf;
+  MemBuf = LLVMCreateMemoryBufferWithMemoryRangeCopy(
+                String_val(String), caml_string_length(String), NameCStr);
+
+  return MemBuf;
+}
+
+/* llmemorybuffer -> string */
+CAMLprim value llvm_memorybuffer_as_string(LLVMMemoryBufferRef MemBuf) {
+  value String = caml_alloc_string(LLVMGetBufferSize(MemBuf));
+  memcpy(String_val(String), LLVMGetBufferStart(MemBuf),
+         LLVMGetBufferSize(MemBuf));
+
+  return String;
 }
 
 /* llmemorybuffer -> unit */

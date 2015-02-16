@@ -5,6 +5,10 @@
 
 import sys, re, time
 
+def to_bytes(str):
+    # Encode to Latin1 to get binary data.
+    return str.encode('ISO-8859-1')
+
 class TerminalController:
     """
     A class that can be used to portably generate formatted output to
@@ -16,13 +20,13 @@ class TerminalController:
     output to the terminal:
 
         >>> term = TerminalController()
-        >>> print 'This is '+term.GREEN+'green'+term.NORMAL
+        >>> print('This is '+term.GREEN+'green'+term.NORMAL)
 
     Alternatively, the `render()` method can used, which replaces
     '${action}' with the string required to perform 'action':
 
         >>> term = TerminalController()
-        >>> print term.render('This is ${GREEN}green${NORMAL}')
+        >>> print(term.render('This is ${GREEN}green${NORMAL}'))
 
     If the terminal doesn't support a given action, then the value of
     the corresponding instance variable will be set to ''.  As a
@@ -34,7 +38,7 @@ class TerminalController:
 
         >>> term = TerminalController()
         >>> if term.CLEAR_SCREEN:
-        ...     print 'This terminal supports clearning the screen.'
+        ...     print('This terminal supports clearning the screen.')
 
     Finally, if the width and height of the terminal are known, then
     they will be stored in the `COLS` and `LINES` attributes.
@@ -105,6 +109,7 @@ class TerminalController:
         # Look up numeric capabilities.
         self.COLS = curses.tigetnum('cols')
         self.LINES = curses.tigetnum('lines')
+        self.XN = curses.tigetflag('xenl')
         
         # Look up string capabilities.
         for capability in self._STRING_CAPABILITIES:
@@ -115,26 +120,34 @@ class TerminalController:
         set_fg = self._tigetstr('setf')
         if set_fg:
             for i,color in zip(range(len(self._COLORS)), self._COLORS):
-                setattr(self, color, curses.tparm(set_fg, i) or '')
+                setattr(self, color, self._tparm(set_fg, i))
         set_fg_ansi = self._tigetstr('setaf')
         if set_fg_ansi:
             for i,color in zip(range(len(self._ANSICOLORS)), self._ANSICOLORS):
-                setattr(self, color, curses.tparm(set_fg_ansi, i) or '')
+                setattr(self, color, self._tparm(set_fg_ansi, i))
         set_bg = self._tigetstr('setb')
         if set_bg:
             for i,color in zip(range(len(self._COLORS)), self._COLORS):
-                setattr(self, 'BG_'+color, curses.tparm(set_bg, i) or '')
+                setattr(self, 'BG_'+color, self._tparm(set_bg, i))
         set_bg_ansi = self._tigetstr('setab')
         if set_bg_ansi:
             for i,color in zip(range(len(self._ANSICOLORS)), self._ANSICOLORS):
-                setattr(self, 'BG_'+color, curses.tparm(set_bg_ansi, i) or '')
+                setattr(self, 'BG_'+color, self._tparm(set_bg_ansi, i))
+
+    def _tparm(self, arg, index):
+        import curses
+        return curses.tparm(to_bytes(arg), index).decode('ascii') or ''
 
     def _tigetstr(self, cap_name):
         # String capabilities can include "delays" of the form "$<2>".
         # For any modern terminal, we should be able to just ignore
         # these, so strip them out.
         import curses
-        cap = curses.tigetstr(cap_name) or ''
+        cap = curses.tigetstr(cap_name)
+        if cap is None:
+            cap = ''
+        else:
+            cap = cap.decode('ascii')
         return re.sub(r'\$<\d+>[/*]?', '', cap)
 
     def render(self, template):
@@ -205,7 +218,7 @@ class ProgressBar:
     The progress bar is colored, if the terminal supports color
     output; and adjusts to the width of the terminal.
     """
-    BAR = '%s${GREEN}[${BOLD}%s%s${NORMAL}${GREEN}]${NORMAL}%s\n'
+    BAR = '%s${GREEN}[${BOLD}%s%s${NORMAL}${GREEN}]${NORMAL}%s'
     HEADER = '${BOLD}${CYAN}%s${NORMAL}\n\n'
         
     def __init__(self, term, header, useETA=True):
@@ -213,7 +226,15 @@ class ProgressBar:
         if not (self.term.CLEAR_EOL and self.term.UP and self.term.BOL):
             raise ValueError("Terminal isn't capable enough -- you "
                              "should use a simpler progress dispaly.")
-        self.width = self.term.COLS or 75
+        self.BOL = self.term.BOL # BoL from col#79
+        self.XNL = "\n" # Newline from col#79
+        if self.term.COLS:
+            self.width = self.term.COLS
+            if not self.term.XN:
+                self.BOL = self.term.UP + self.term.BOL
+                self.XNL = "" # Cursor must be fed to the next line
+        else:
+            self.width = 75
         self.bar = term.render(self.BAR)
         self.header = self.term.render(self.HEADER % header.center(self.width))
         self.cleared = 1 #: true if we haven't drawn the bar yet.
@@ -244,19 +265,22 @@ class ProgressBar:
         else:
             message = '... ' + message[-(self.width-4):]
         sys.stdout.write(
-            self.term.BOL + self.term.UP + self.term.CLEAR_EOL +
+            self.BOL + self.term.UP + self.term.CLEAR_EOL +
             (self.bar % (prefix, '='*n, '-'*(barWidth-n), suffix)) +
+            self.XNL +
             self.term.CLEAR_EOL + message)
+        if not self.term.XN:
+            sys.stdout.flush()
 
     def clear(self):
         if not self.cleared:
-            sys.stdout.write(self.term.BOL + self.term.CLEAR_EOL +
+            sys.stdout.write(self.BOL + self.term.CLEAR_EOL +
                              self.term.UP + self.term.CLEAR_EOL +
                              self.term.UP + self.term.CLEAR_EOL)
+            sys.stdout.flush()
             self.cleared = 1
 
 def test():
-    import time
     tc = TerminalController()
     p = ProgressBar(tc, 'Tests')
     for i in range(101):

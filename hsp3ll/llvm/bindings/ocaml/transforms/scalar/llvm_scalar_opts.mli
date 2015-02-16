@@ -1,4 +1,4 @@
-(*===-- llvm_scalar_opts.mli - LLVM Ocaml Interface ------------*- OCaml -*-===*
+(*===-- llvm_scalar_opts.mli - LLVM OCaml Interface ------------*- OCaml -*-===*
  *
  *                     The LLVM Compiler Infrastructure
  *
@@ -9,10 +9,10 @@
 
 (** Scalar Transforms.
 
-    This interface provides an ocaml API for LLVM scalar transforms, the
+    This interface provides an OCaml API for LLVM scalar transforms, the
     classes in the [LLVMScalarOpts] library. *)
 
-(** See the [llvm::createConstantPropogationPass] function. *)
+(** See the [llvm::createConstantPropagationPass] function. *)
 external add_constant_propagation : [<Llvm.PassManager.any] Llvm.PassManager.t
                                     -> unit
                                   = "llvm_add_constant_propagation"
@@ -34,6 +34,17 @@ external add_aggressive_dce : [<Llvm.PassManager.any] Llvm.PassManager.t -> unit
 external
 add_scalar_repl_aggregation : [<Llvm.PassManager.any] Llvm.PassManager.t -> unit
                             = "llvm_add_scalar_repl_aggregation"
+
+(** See the [llvm::createScalarReplAggregatesPassSSA] function. *)
+external
+add_scalar_repl_aggregation_ssa : [<Llvm.PassManager.any] Llvm.PassManager.t -> unit
+                            = "llvm_add_scalar_repl_aggregation_ssa"
+
+(** See the [llvm::createScalarReplAggregatesWithThreshold] function. *)
+external
+add_scalar_repl_aggregation_with_threshold : int -> [<Llvm.PassManager.any] Llvm.PassManager.t
+                                             -> unit
+                            = "llvm_add_scalar_repl_aggregation_with_threshold"
 
 (** See the [llvm::createIndVarSimplifyPass] function. *)
 external add_ind_var_simplification : [<Llvm.PassManager.any] Llvm.PassManager.t
@@ -65,11 +76,6 @@ external add_loop_unroll : [<Llvm.PassManager.any] Llvm.PassManager.t
 external add_loop_rotation : [<Llvm.PassManager.any] Llvm.PassManager.t
                              -> unit
                            = "llvm_add_loop_rotation"
-
-(** See the [llvm::createLoopIndexSplitPass] function. *)
-external add_loop_index_split : [<Llvm.PassManager.any] Llvm.PassManager.t
-                                -> unit
-                              = "llvm_add_loop_index_split"
 
 (** See the [llvm::createPromoteMemoryToRegisterPass] function. *)
 external
@@ -117,7 +123,46 @@ external add_loop_deletion : [<Llvm.PassManager.any] Llvm.PassManager.t
                              -> unit
                            = "llvm_add_loop_deletion"
 
+external add_loop_idiom : [<Llvm.PassManager.any] Llvm.PassManager.t
+                             -> unit
+                           = "llvm_add_loop_idiom"
+
 (** See the [llvm::createSimplifyLibCallsPass] function. *)
 external
 add_lib_call_simplification : [<Llvm.PassManager.any] Llvm.PassManager.t -> unit
                             = "llvm_add_lib_call_simplification"
+
+(** See the [llvm::createVerifierPass] function. *)
+external
+add_verifier : [<Llvm.PassManager.any] Llvm.PassManager.t -> unit
+        = "llvm_add_verifier"
+
+(** See the [llvm::createCorrelatedValuePropagationPass] function. *)
+external
+add_correlated_value_propagation : [<Llvm.PassManager.any] Llvm.PassManager.t -> unit
+        = "llvm_add_correlated_value_propagation"
+
+(** See the [llvm::createEarlyCSE] function. *)
+external
+add_early_cse : [<Llvm.PassManager.any] Llvm.PassManager.t -> unit
+        = "llvm_add_early_cse"
+
+(** See the [llvm::createLowerExpectIntrinsicPass] function. *)
+external
+add_lower_expect_intrinsic : [<Llvm.PassManager.any] Llvm.PassManager.t -> unit
+        = "llvm_add_lower_expect_intrinsic"
+
+(** See the [llvm::createTypeBasedAliasAnalysisPass] function. *)
+external
+add_type_based_alias_analysis : [<Llvm.PassManager.any] Llvm.PassManager.t -> unit
+        = "llvm_add_type_based_alias_analysis"
+
+(** See the [llvm::createBasicAliasAnalysisPass] function. *)
+external
+add_basic_alias_analysis : [<Llvm.PassManager.any] Llvm.PassManager.t -> unit
+        = "llvm_add_basic_alias_analysis"
+
+(** See the [llvm::createPartiallyInlineLibCallsPass] function. *)
+external
+add_partially_inline_lib_calls : [<Llvm.PassManager.any] Llvm.PassManager.t -> unit
+        = "llvm_add_partially_inline_lib_calls"

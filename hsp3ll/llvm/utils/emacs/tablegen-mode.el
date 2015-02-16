@@ -12,13 +12,11 @@
 (make-face 'td-decorators-face)
 
 (defvar tablegen-font-lock-keywords
-  (let ((kw (mapconcat 'identity
-                       '("class" "defm" "def" "field" "include" "in"
-                         "let" "multiclass")
-                       "\\|"))
-        (type-kw (mapconcat 'identity
-                            '("bit" "bits" "code" "dag" "int" "list" "string")
-                            "\\|"))
+  (let ((kw (regexp-opt '("class" "defm" "def" "field" "include" "in"
+                         "let" "multiclass" "foreach")
+                        'words))
+        (type-kw (regexp-opt '("bit" "bits" "code" "dag" "int" "list" "string")
+                             'words))
         )
     (list
      ;; Comments
@@ -36,10 +34,10 @@
 
      '("^[ \t]*\\(@.+\\)" 1 'td-decorators-face)
      ;; Keywords
-     (cons (concat "\\<\\(" kw "\\)\\>[ \n\t(]") 1)
+     (cons (concat kw "[ \n\t(]") 1)
 
      ;; Type keywords
-     (cons (concat "\\<\\(" type-kw "\\)[ \n\t(]") 1)
+     (cons (concat type-kw "[ \n\t(]") 1)
      ))
   "Additional expressions to highlight in TableGen mode.")
 (put 'tablegen-mode 'font-lock-defaults '(tablegen-font-lock-keywords))
@@ -114,6 +112,7 @@
   (set-syntax-table tablegen-mode-syntax-table)
   (make-local-variable 'comment-start)
   (setq comment-start "//")
+  (setq indent-tabs-mode nil)
   (run-hooks 'tablegen-mode-hook))       ; Finally, this permits the user to
                                          ;   customize the mode with a hook.
 

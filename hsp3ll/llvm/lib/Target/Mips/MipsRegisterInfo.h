@@ -1,4 +1,4 @@
-//===- MipsRegisterInfo.h - Mips Register Information Impl ------*- C++ -*-===//
+//===-- MipsRegisterInfo.h - Mips Register Information Impl -----*- C++ -*-===//
 //
 //                     The LLVM Compiler Infrastructure
 //
@@ -16,18 +16,20 @@
 
 #include "Mips.h"
 #include "llvm/Target/TargetRegisterInfo.h"
-#include "MipsGenRegisterInfo.h.inc"
+
+#define GET_REGINFO_HEADER
+#include "MipsGenRegisterInfo.inc"
 
 namespace llvm {
 class MipsSubtarget;
-class TargetInstrInfo;
 class Type;
 
-struct MipsRegisterInfo : public MipsGenRegisterInfo {
+class MipsRegisterInfo : public MipsGenRegisterInfo {
+protected:
   const MipsSubtarget &Subtarget;
-  const TargetInstrInfo &TII;
-  
-  MipsRegisterInfo(const MipsSubtarget &Subtarget, const TargetInstrInfo &tii);
+
+public:
+  MipsRegisterInfo(const MipsSubtarget &Subtarget);
 
   /// getRegisterNumbering - Given the enum value for some register, e.g.
   /// Mips::RA, return the number that it corresponds to (e.g. 31).
@@ -40,34 +42,40 @@ struct MipsRegisterInfo : public MipsGenRegisterInfo {
   void adjustMipsStackFrame(MachineFunction &MF) const;
 
   /// Code Generation virtual methods...
-  const unsigned *getCalleeSavedRegs(const MachineFunction* MF = 0) const;
+  const TargetRegisterClass *getPointerRegClass(const MachineFunction &MF,
+                                                unsigned Kind) const override;
 
-  BitVector getReservedRegs(const MachineFunction &MF) const;
+  unsigned getRegPressureLimit(const TargetRegisterClass *RC,
+                               MachineFunction &MF) const override;
+  const MCPhysReg *
+  getCalleeSavedRegs(const MachineFunction *MF = nullptr) const override;
+  const uint32_t *getCallPreservedMask(CallingConv::ID) const override;
+  static const uint32_t *getMips16RetHelperMask();
 
-  bool hasFP(const MachineFunction &MF) const;
+  BitVector getReservedRegs(const MachineFunction &MF) const override;
 
-  void eliminateCallFramePseudoInstr(MachineFunction &MF,
-                                     MachineBasicBlock &MBB,
-                                     MachineBasicBlock::iterator I) const;
+  bool requiresRegisterScavenging(const MachineFunction &MF) const override;
+
+  bool trackLivenessAfterRegAlloc(const MachineFunction &MF) const override;
 
   /// Stack Frame Processing Methods
   void eliminateFrameIndex(MachineBasicBlock::iterator II,
-                           int SPAdj, RegScavenger *RS = NULL) const;
+                           int SPAdj, unsigned FIOperandNum,
+                           RegScavenger *RS = nullptr) const override;
 
-  void processFunctionBeforeFrameFinalized(MachineFunction &MF) const;
+  void processFunctionBeforeFrameFinalized(MachineFunction &MF,
+                                       RegScavenger *RS = nullptr) const;
 
-  void emitPrologue(MachineFunction &MF) const;
-  void emitEpilogue(MachineFunction &MF, MachineBasicBlock &MBB) const;
-  
   /// Debug information queries.
-  unsigned getRARegister() const;
-  unsigned getFrameRegister(const MachineFunction &MF) const;
+  unsigned getFrameRegister(const MachineFunction &MF) const override;
 
-  /// Exception handling queries.
-  unsigned getEHExceptionRegister() const;
-  unsigned getEHHandlerRegister() const;
+  /// \brief Return GPR register class.
+  virtual const TargetRegisterClass *intRegClass(unsigned Size) const = 0;
 
-  int getDwarfRegNum(unsigned RegNum, bool isEH) const;
+private:
+  virtual void eliminateFI(MachineBasicBlock::iterator II, unsigned OpNo,
+                           int FrameIndex, uint64_t StackSize,
+                           int64_t SPOffset) const = 0;
 };
 
 } // end namespace llvm

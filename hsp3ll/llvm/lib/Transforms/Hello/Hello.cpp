@@ -12,12 +12,13 @@
 //
 //===----------------------------------------------------------------------===//
 
-#define DEBUG_TYPE "hello"
-#include "llvm/Pass.h"
-#include "llvm/Function.h"
-#include "llvm/Support/raw_ostream.h"
 #include "llvm/ADT/Statistic.h"
+#include "llvm/IR/Function.h"
+#include "llvm/Pass.h"
+#include "llvm/Support/raw_ostream.h"
 using namespace llvm;
+
+#define DEBUG_TYPE "hello"
 
 STATISTIC(HelloCounter, "Counts number of functions greeted");
 
@@ -27,7 +28,7 @@ namespace {
     static char ID; // Pass identification, replacement for typeid
     Hello() : FunctionPass(ID) {}
 
-    virtual bool runOnFunction(Function &F) {
+    bool runOnFunction(Function &F) override {
       ++HelloCounter;
       errs() << "Hello: ";
       errs().write_escaped(F.getName()) << '\n';
@@ -37,7 +38,7 @@ namespace {
 }
 
 char Hello::ID = 0;
-INITIALIZE_PASS(Hello, "hello", "Hello World Pass", false, false);
+static RegisterPass<Hello> X("hello", "Hello World Pass");
 
 namespace {
   // Hello2 - The second implementation with getAnalysisUsage implemented.
@@ -45,21 +46,20 @@ namespace {
     static char ID; // Pass identification, replacement for typeid
     Hello2() : FunctionPass(ID) {}
 
-    virtual bool runOnFunction(Function &F) {
+    bool runOnFunction(Function &F) override {
       ++HelloCounter;
       errs() << "Hello: ";
       errs().write_escaped(F.getName()) << '\n';
       return false;
     }
 
-    // We don't modify the program, so we preserve all analyses
-    virtual void getAnalysisUsage(AnalysisUsage &AU) const {
+    // We don't modify the program, so we preserve all analyses.
+    void getAnalysisUsage(AnalysisUsage &AU) const override {
       AU.setPreservesAll();
     }
   };
 }
 
 char Hello2::ID = 0;
-INITIALIZE_PASS(Hello2, "hello2",
-                "Hello World Pass (with getAnalysisUsage implemented)",
-                false, false);
+static RegisterPass<Hello2>
+Y("hello2", "Hello World Pass (with getAnalysisUsage implemented)");

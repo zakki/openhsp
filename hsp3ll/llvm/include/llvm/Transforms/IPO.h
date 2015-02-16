@@ -15,7 +15,7 @@
 #ifndef LLVM_TRANSFORMS_IPO_H
 #define LLVM_TRANSFORMS_IPO_H
 
-#include <vector>
+#include "llvm/ADT/ArrayRef.h"
 
 namespace llvm {
 
@@ -34,7 +34,7 @@ ModulePass *createStripSymbolsPass(bool OnlyDebugInfo = false);
 
 //===----------------------------------------------------------------------===//
 //
-// These functions strips symbols from functions and modules.  
+// These functions strips symbols from functions and modules.
 // Only debugging information is not stripped.
 //
 ModulePass *createStripNonDebugSymbolsPass();
@@ -50,13 +50,6 @@ ModulePass *createStripDebugDeclarePass();
 ModulePass *createStripDeadDebugInfoPass();
 
 //===----------------------------------------------------------------------===//
-/// createLowerSetJmpPass - This function lowers the setjmp/longjmp intrinsics
-/// to invoke/unwind instructions.  This should really be part of the C/C++
-/// front-end, but it's so much easier to write transformations in LLVM proper.
-///
-ModulePass *createLowerSetJmpPass();
-
-//===----------------------------------------------------------------------===//
 /// createConstantMergePass - This function returns a new pass that merges
 /// duplicate global constants together into a single constant that is shared.
 /// This is useful because some passes (ie TraceValues) insert a lot of string
@@ -65,20 +58,11 @@ ModulePass *createLowerSetJmpPass();
 ///
 ModulePass *createConstantMergePass();
 
-
 //===----------------------------------------------------------------------===//
 /// createGlobalOptimizerPass - This function returns a new pass that optimizes
 /// non-address taken internal globals.
 ///
 ModulePass *createGlobalOptimizerPass();
-
-
-//===----------------------------------------------------------------------===//
-/// createDeadTypeEliminationPass - Return a new pass that eliminates symbol
-/// table entries for types that are never used.
-///
-ModulePass *createDeadTypeEliminationPass();
-
 
 //===----------------------------------------------------------------------===//
 /// createGlobalDCEPass - This transform is designed to eliminate unreachable
@@ -86,26 +70,32 @@ ModulePass *createDeadTypeEliminationPass();
 ///
 ModulePass *createGlobalDCEPass();
 
-
 //===----------------------------------------------------------------------===//
-/// createGVExtractionPass - If deleteFn is true, this pass deletes as
+/// createGVExtractionPass - If deleteFn is true, this pass deletes
 /// the specified global values. Otherwise, it deletes as much of the module as
 /// possible, except for the global values specified.
 ///
-ModulePass *createGVExtractionPass(std::vector<GlobalValue*>& GVs, bool 
+ModulePass *createGVExtractionPass(std::vector<GlobalValue*>& GVs, bool
                                    deleteFn = false);
 
 //===----------------------------------------------------------------------===//
 /// createFunctionInliningPass - Return a new pass object that uses a heuristic
 /// to inline direct function calls to small functions.
 ///
+/// The Threshold can be passed directly, or asked to be computed from the
+/// given optimization and size optimization arguments.
+///
+/// The -inline-threshold command line option takes precedence over the
+/// threshold given here.
 Pass *createFunctionInliningPass();
 Pass *createFunctionInliningPass(int Threshold);
+Pass *createFunctionInliningPass(unsigned OptLevel, unsigned SizeOptLevel);
 
 //===----------------------------------------------------------------------===//
-/// createAlwaysInlinerPass - Return a new pass object that inlines only 
+/// createAlwaysInlinerPass - Return a new pass object that inlines only
 /// functions that are marked as "always_inline".
 Pass *createAlwaysInlinerPass();
+Pass *createAlwaysInlinerPass(bool InsertLifetime);
 
 //===----------------------------------------------------------------------===//
 /// createPruneEHPass - Return a new pass object which transforms invoke
@@ -115,23 +105,18 @@ Pass *createPruneEHPass();
 
 //===----------------------------------------------------------------------===//
 /// createInternalizePass - This pass loops over all of the functions in the
-/// input module, internalizing all globals (functions and variables) not part
-/// of the api.  If a list of symbols is specified with the
-/// -internalize-public-api-* command line options, those symbols are not
-/// internalized and all others are.  Otherwise if AllButMain is set and the
-/// main function is found, all other globals are marked as internal. If no api
-/// is supplied and AllButMain is not set, or no main function is found, nothing
-/// is internalized.
+/// input module, internalizing all globals (functions and variables) it can.
+////
+/// The symbols in \p ExportList are never internalized.
 ///
-ModulePass *createInternalizePass(bool AllButMain);
-
-/// createInternalizePass - This pass loops over all of the functions in the
-/// input module, internalizing all globals (functions and variables) not in the
-/// given exportList.
+/// The symbol in DSOList are internalized if it is safe to drop them from
+/// the symbol table.
 ///
 /// Note that commandline options that are used with the above function are not
-/// used now! Also, when exportList is empty, nothing is internalized.
-ModulePass *createInternalizePass(const std::vector<const char *> &exportList);
+/// used now!
+ModulePass *createInternalizePass(ArrayRef<const char *> ExportList);
+/// createInternalizePass - Same as above, but with an empty exportList.
+ModulePass *createInternalizePass();
 
 //===----------------------------------------------------------------------===//
 /// createDeadArgEliminationPass - This pass removes arguments from functions
@@ -150,7 +135,6 @@ ModulePass *createDeadArgHackingPass();
 /// equal to maxElements (maxElements == 0 means always promote).
 ///
 Pass *createArgumentPromotionPass(unsigned maxElements = 3);
-Pass *createStructRetPromotionPass();
 
 //===----------------------------------------------------------------------===//
 /// createIPConstantPropagationPass - This pass propagates constants from call
@@ -187,12 +171,6 @@ ModulePass *createBlockExtractorPass();
 ModulePass *createStripDeadPrototypesPass();
 
 //===----------------------------------------------------------------------===//
-/// createPartialSpecializationPass - This pass specializes functions for
-/// constant arguments.
-///
-ModulePass *createPartialSpecializationPass();
-
-//===----------------------------------------------------------------------===//
 /// createFunctionAttrsPass - This pass discovers functions that do not access
 /// memory, or only read memory, and gives them the readnone/readonly attribute.
 /// It also discovers function arguments that are not captured by the function
@@ -210,6 +188,16 @@ ModulePass *createMergeFunctionsPass();
 /// createPartialInliningPass - This pass inlines parts of functions.
 ///
 ModulePass *createPartialInliningPass();
+
+//===----------------------------------------------------------------------===//
+// createMetaRenamerPass - Rename everything with metasyntatic names.
+//
+ModulePass *createMetaRenamerPass();
+
+//===----------------------------------------------------------------------===//
+/// createBarrierNoopPass - This pass is purely a module pass barrier in a pass
+/// manager.
+ModulePass *createBarrierNoopPass();
 
 } // End llvm namespace
 

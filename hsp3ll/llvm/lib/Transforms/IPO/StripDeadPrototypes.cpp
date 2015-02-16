@@ -14,12 +14,13 @@
 //
 //===----------------------------------------------------------------------===//
 
-#define DEBUG_TYPE "strip-dead-prototypes"
 #include "llvm/Transforms/IPO.h"
-#include "llvm/Pass.h"
-#include "llvm/Module.h"
 #include "llvm/ADT/Statistic.h"
+#include "llvm/IR/Module.h"
+#include "llvm/Pass.h"
 using namespace llvm;
+
+#define DEBUG_TYPE "strip-dead-prototypes"
 
 STATISTIC(NumDeadPrototypes, "Number of dead prototypes removed");
 
@@ -29,15 +30,17 @@ namespace {
 class StripDeadPrototypesPass : public ModulePass {
 public:
   static char ID; // Pass identification, replacement for typeid
-  StripDeadPrototypesPass() : ModulePass(ID) { }
-  virtual bool runOnModule(Module &M);
+  StripDeadPrototypesPass() : ModulePass(ID) {
+    initializeStripDeadPrototypesPassPass(*PassRegistry::getPassRegistry());
+  }
+  bool runOnModule(Module &M) override;
 };
 
 } // end anonymous namespace
 
 char StripDeadPrototypesPass::ID = 0;
 INITIALIZE_PASS(StripDeadPrototypesPass, "strip-dead-prototypes",
-                "Strip Unused Function Prototypes", false, false);
+                "Strip Unused Function Prototypes", false, false)
 
 bool StripDeadPrototypesPass::runOnModule(Module &M) {
   bool MadeChange = false;

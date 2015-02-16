@@ -17,12 +17,12 @@
 
 #include "llvm/ADT/ilist.h"
 #include "llvm/ADT/ilist_node.h"
-#include "llvm/System/DataTypes.h"
+#include "llvm/Support/DataTypes.h"
+#include "llvm/Support/ErrorHandling.h"
 #include "llvm/Support/MathExtras.h"
 #include "llvm/Support/raw_ostream.h"
 #include <cassert>
 #include <climits>
-#include <cstring>
 
 namespace llvm {
 
@@ -45,6 +45,7 @@ struct SparseBitVectorElement
   : public ilist_node<SparseBitVectorElement<ElementSize> > {
 public:
   typedef unsigned long BitWord;
+  typedef unsigned size_type;
   enum {
     BITWORD_SIZE = sizeof(BitWord) * CHAR_BIT,
     BITWORDS_PER_ELEMENT = (ElementSize + BITWORD_SIZE - 1) / BITWORD_SIZE,
@@ -120,7 +121,7 @@ public:
     return Bits[Idx / BITWORD_SIZE] & (1L << (Idx % BITWORD_SIZE));
   }
 
-  unsigned count() const {
+  size_type count() const {
     unsigned NumBits = 0;
     for (unsigned i = 0; i < BITWORDS_PER_ELEMENT; ++i)
       if (sizeof(BitWord) == 4)
@@ -128,7 +129,7 @@ public:
       else if (sizeof(BitWord) == 8)
         NumBits += CountPopulation_64(Bits[i]);
       else
-        assert(0 && "Unsupported!");
+        llvm_unreachable("Unsupported!");
     return NumBits;
   }
 
@@ -137,14 +138,12 @@ public:
     for (unsigned i = 0; i < BITWORDS_PER_ELEMENT; ++i)
       if (Bits[i] != 0) {
         if (sizeof(BitWord) == 4)
-          return i * BITWORD_SIZE + CountTrailingZeros_32(Bits[i]);
-        else if (sizeof(BitWord) == 8)
-          return i * BITWORD_SIZE + CountTrailingZeros_64(Bits[i]);
-        else
-          assert(0 && "Unsupported!");
+          return i * BITWORD_SIZE + countTrailingZeros(Bits[i]);
+        if (sizeof(BitWord) == 8)
+          return i * BITWORD_SIZE + countTrailingZeros(Bits[i]);
+        llvm_unreachable("Unsupported!");
       }
-    assert(0 && "Illegal empty element");
-    return 0; // Not reached
+    llvm_unreachable("Illegal empty element");
   }
 
   /// find_next - Returns the index of the next set bit starting from the
@@ -160,26 +159,24 @@ public:
             && "Word Position outside of element");
 
     // Mask off previous bits.
-    Copy &= ~0L << BitPos;
+    Copy &= ~0UL << BitPos;
 
     if (Copy != 0) {
       if (sizeof(BitWord) == 4)
-        return WordPos * BITWORD_SIZE + CountTrailingZeros_32(Copy);
-      else if (sizeof(BitWord) == 8)
-        return WordPos * BITWORD_SIZE + CountTrailingZeros_64(Copy);
-      else
-        assert(0 && "Unsupported!");
+        return WordPos * BITWORD_SIZE + countTrailingZeros(Copy);
+      if (sizeof(BitWord) == 8)
+        return WordPos * BITWORD_SIZE + countTrailingZeros(Copy);
+      llvm_unreachable("Unsupported!");
     }
 
     // Check subsequent words.
     for (unsigned i = WordPos+1; i < BITWORDS_PER_ELEMENT; ++i)
       if (Bits[i] != 0) {
         if (sizeof(BitWord) == 4)
-          return i * BITWORD_SIZE + CountTrailingZeros_32(Bits[i]);
-        else if (sizeof(BitWord) == 8)
-          return i * BITWORD_SIZE + CountTrailingZeros_64(Bits[i]);
-        else
-          assert(0 && "Unsupported!");
+          return i * BITWORD_SIZE + countTrailingZeros(Bits[i]);
+        if (sizeof(BitWord) == 8)
+          return i * BITWORD_SIZE + countTrailingZeros(Bits[i]);
+        llvm_unreachable("Unsupported!");
       }
     return -1;
   }
@@ -264,15 +261,22 @@ public:
     }
     BecameZero = allzero;
   }
+};
 
-  // Get a hash value for this element;
-  uint64_t getHashValue() const {
-    uint64_t HashVal = 0;
-    for (unsigned i = 0; i < BITWORDS_PER_ELEMENT; ++i) {
-      HashVal ^= Bits[i];
-    }
-    return HashVal;
-  }
+template <unsigned ElementSize>
+struct ilist_traits<SparseBitVectorElement<ElementSize> >
+  : public ilist_default_traits<SparseBitVectorElement<ElementSize> > {
+  typedef SparseBitVectorElement<ElementSize> Element;
+
+  Element *createSentinel() const { return static_cast<Element *>(&Sentinel); }
+  static void destroySentinel(Element *) {}
+
+  Element *provideInitialHead() const { return createSentinel(); }
+  Element *ensureHead(Element *) const { return createSentinel(); }
+  static void noteHead(Element *, Element *) {}
+
+private:
+  mutable ilist_half_node<Element> Sentinel;
 };
 
 template <unsigned ElementSize = 128>
@@ -379,7 +383,7 @@ class SparseBitVector {
             AtEnd = true;
             return;
           }
-          // Set up for next non zero word in bitmap.
+          // Set up for next non-zero word in bitmap.
           BitNumber = Iter->index() * ElementSize;
           NextSetBitNumber = Iter->find_first();
           BitNumber += NextSetBitNumber;
@@ -812,18 +816,6 @@ public:
 
   iterator end() const {
     return iterator(this, true);
-  }
-
-  // Get a hash value for this bitmap.
-  uint64_t getHashValue() const {
-    uint64_t HashVal = 0;
-    for (ElementListConstIter Iter = Elements.begin();
-         Iter != Elements.end();
-         ++Iter) {
-      HashVal ^= Iter->index();
-      HashVal ^= Iter->getHashValue();
-    }
-    return HashVal;
   }
 };
 

@@ -1,18 +1,9 @@
-; RUN: llc < %s -march=x86 -mattr=+sse42 -disable-mmx | FileCheck %s
-; CHECK: sarb
-; CHECK: sarb
-; CHECK: sarb
-; CHECK: sarb
-; CHECK: sarb
-; CHECK: sarb
-; CHECK: sarb
-; CHECK: sarb
-
-; v8i8 that is widen to v16i8 then split
-; FIXME: This is widen to v16i8 and split to 16 and we then rebuild the vector.
-; Unfortunately, we don't split the store so we don't get the code we want.
+; RUN: llc < %s -march=x86 -mattr=+sse4.2 | FileCheck %s
+; RUN: llc < %s -march=x86 -mattr=+sse4.2 -x86-experimental-vector-widening-legalization | FileCheck %s --check-prefix=CHECK-WIDE
 
 define void @update(i64* %dst_i, i64* %src_i, i32 %n) nounwind {
+; CHECK-LABEL: update:
+; CHECK-WIDE-LABEL: update:
 entry:
 	%dst_i.addr = alloca i64*		; <i64**> [#uses=2]
 	%src_i.addr = alloca i64*		; <i64**> [#uses=2]
@@ -54,6 +45,26 @@ forbody:		; preds = %forcond
 	%shr = ashr <8 x i8> %add, < i8 2, i8 2, i8 2, i8 2, i8 2, i8 2, i8 2, i8 2 >		; <<8 x i8>> [#uses=1]
 	store <8 x i8> %shr, <8 x i8>* %arrayidx10
 	br label %forinc
+; CHECK: %forbody
+; CHECK:      pmovzxbw
+; CHECK-NEXT: paddw
+; CHECK-NEXT: psllw $8
+; CHECK-NEXT: psraw $8
+; CHECK-NEXT: psraw $2
+; CHECK-NEXT: pshufb
+; CHECK-NEXT: movlpd
+;
+; FIXME: We shouldn't require both a movd and an insert.
+; CHECK-WIDE: %forbody
+; CHECK-WIDE:      movd
+; CHECK-WIDE-NEXT: pinsrd
+; CHECK-WIDE-NEXT: paddb
+; CHECK-WIDE-NEXT: psrlw $2
+; CHECK-WIDE-NEXT: pand
+; CHECK-WIDE-NEXT: pxor
+; CHECK-WIDE-NEXT: psubb
+; CHECK-WIDE-NEXT: pextrd
+; CHECK-WIDE-NEXT: movd
 
 forinc:		; preds = %forbody
 	%tmp15 = load i32* %i		; <i32> [#uses=1]

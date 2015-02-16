@@ -8,7 +8,7 @@
 ##===----------------------------------------------------------------------===##
 
 LEVEL      := ..
-DIRS       := CommandGuide tutorial
+DIRS       :=
 
 ifdef BUILD_FOR_WEBSITE
 PROJ_OBJ_DIR = .
@@ -19,17 +19,21 @@ $(PROJ_OBJ_DIR)/doxygen.cfg: doxygen.cfg.in
 	  -e 's/@abs_top_srcdir@/../g' \
 	  -e 's/@DOT@/dot/g' \
 	  -e 's/@PACKAGE_VERSION@/mainline/' \
-	  -e 's/@abs_top_builddir@/../g' > $@
+	  -e 's/@abs_top_builddir@/../g' \
+	  -e 's/@enable_searchengine@/NO/g' \
+	  -e 's/@searchengine_url@//g' \
+	  -e 's/@enable_server_based_search@/NO/g' \
+	  -e 's/@enable_external_search@/NO/g' \
+	  -e 's/@extra_search_mappings@//g' > $@
 endif
 
 include $(LEVEL)/Makefile.common
 
 HTML       := $(wildcard $(PROJ_SRC_DIR)/*.html) \
               $(wildcard $(PROJ_SRC_DIR)/*.css)
-IMAGES     := $(wildcard $(PROJ_SRC_DIR)/img/*.*)
 DOXYFILES  := doxygen.cfg.in doxygen.css doxygen.footer doxygen.header \
               doxygen.intro
-EXTRA_DIST := $(HTML) $(DOXYFILES) llvm.css CommandGuide img
+EXTRA_DIST := $(HTML) $(DOXYFILES) llvm.css CommandGuide
 
 .PHONY: install-html install-doxygen doxygen install-ocamldoc ocamldoc generated
 
@@ -37,21 +41,26 @@ install_targets := install-html
 ifeq ($(ENABLE_DOXYGEN),1)
 install_targets += install-doxygen
 endif
+ifdef OCAMLDOC
 ifneq (,$(filter ocaml,$(BINDINGS_TO_BUILD)))
 install_targets += install-ocamldoc
 endif
+endif
 install-local:: $(install_targets)
+
+generated_targets := doxygen
+ifdef OCAMLDOC
+generated_targets += ocamldoc
+endif
 
 # Live documentation is generated for the web site using this target:
 # 'make generated BUILD_FOR_WEBSITE=1'
-generated:: doxygen ocamldoc
+generated:: $(generated_targets)
 
 install-html: $(PROJ_OBJ_DIR)/html.tar.gz
 	$(Echo) Installing HTML documentation
 	$(Verb) $(MKDIR) $(DESTDIR)$(PROJ_docsdir)/html
-	$(Verb) $(MKDIR) $(DESTDIR)$(PROJ_docsdir)/html/img
 	$(Verb) $(DataInstall) $(HTML) $(DESTDIR)$(PROJ_docsdir)/html
-	$(Verb) $(DataInstall) $(IMAGES) $(DESTDIR)$(PROJ_docsdir)/html/img
 	$(Verb) $(DataInstall) $(PROJ_OBJ_DIR)/html.tar.gz $(DESTDIR)$(PROJ_docsdir)
 
 $(PROJ_OBJ_DIR)/html.tar.gz: $(HTML)
@@ -59,7 +68,7 @@ $(PROJ_OBJ_DIR)/html.tar.gz: $(HTML)
 	$(Verb) $(RM) -rf $@ $(PROJ_OBJ_DIR)/html.tar
 	$(Verb) cd $(PROJ_SRC_DIR) && \
 	  $(TAR) cf $(PROJ_OBJ_DIR)/html.tar *.html
-	$(Verb) $(GZIP) $(PROJ_OBJ_DIR)/html.tar
+	$(Verb) $(GZIPBIN) $(PROJ_OBJ_DIR)/html.tar
 
 install-doxygen: doxygen
 	$(Echo) Installing doxygen documentation
@@ -73,16 +82,14 @@ doxygen: regendoc $(PROJ_OBJ_DIR)/doxygen.tar.gz
 
 regendoc:
 	$(Echo) Building doxygen documentation
-	$(Verb) if test -e $(PROJ_OBJ_DIR)/doxygen ; then \
-	  $(RM) -rf $(PROJ_OBJ_DIR)/doxygen ; \
-	fi
+	$(Verb) $(RM) -rf $(PROJ_OBJ_DIR)/doxygen
 	$(Verb) $(DOXYGEN) $(PROJ_OBJ_DIR)/doxygen.cfg
 
 $(PROJ_OBJ_DIR)/doxygen.tar.gz: $(DOXYFILES) $(PROJ_OBJ_DIR)/doxygen.cfg
 	$(Echo) Packaging doxygen documentation
 	$(Verb) $(RM) -rf $@ $(PROJ_OBJ_DIR)/doxygen.tar
 	$(Verb) $(TAR) cf $(PROJ_OBJ_DIR)/doxygen.tar doxygen
-	$(Verb) $(GZIP) $(PROJ_OBJ_DIR)/doxygen.tar
+	$(Verb) $(GZIPBIN) $(PROJ_OBJ_DIR)/doxygen.tar
 	$(Verb) $(CP) $(PROJ_OBJ_DIR)/doxygen.tar.gz $(PROJ_OBJ_DIR)/doxygen/html/
 
 userloc: $(LLVM_SRC_ROOT)/docs/userloc.html
@@ -104,14 +111,12 @@ ocamldoc: regen-ocamldoc
 	$(Echo) Packaging ocamldoc documentation
 	$(Verb) $(RM) -rf $(PROJ_OBJ_DIR)/ocamldoc.tar*
 	$(Verb) $(TAR) cf $(PROJ_OBJ_DIR)/ocamldoc.tar ocamldoc
-	$(Verb) $(GZIP) $(PROJ_OBJ_DIR)/ocamldoc.tar
+	$(Verb) $(GZIPBIN) $(PROJ_OBJ_DIR)/ocamldoc.tar
 	$(Verb) $(CP) $(PROJ_OBJ_DIR)/ocamldoc.tar.gz $(PROJ_OBJ_DIR)/ocamldoc/html/
 
 regen-ocamldoc:
 	$(Echo) Building ocamldoc documentation
-	$(Verb) if test -e $(PROJ_OBJ_DIR)/ocamldoc ; then \
-		$(RM) -rf $(PROJ_OBJ_DIR)/ocamldoc ; \
-	fi
+	$(Verb) $(RM) -rf $(PROJ_OBJ_DIR)/ocamldoc
 	$(Verb) $(MAKE) -C $(LEVEL)/bindings/ocaml ocamldoc
 	$(Verb) $(MKDIR) $(PROJ_OBJ_DIR)/ocamldoc/html
 	$(Verb) \

@@ -7,9 +7,8 @@
 //
 //===----------------------------------------------------------------------===//
 
-#include "X86.h"
-#include "llvm/Module.h"
-#include "llvm/Target/TargetRegistry.h"
+#include "MCTargetDesc/X86MCTargetDesc.h"
+#include "llvm/Support/TargetRegistry.h"
 using namespace llvm;
 
 Target llvm::TheX86_32Target, llvm::TheX86_64Target;

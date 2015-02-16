@@ -11,10 +11,10 @@
 //
 //===----------------------------------------------------------------------===//
 
-#ifndef LLVM_ANALYSIS_POST_DOMINATORS_H
-#define LLVM_ANALYSIS_POST_DOMINATORS_H
+#ifndef LLVM_ANALYSIS_POSTDOMINATORS_H
+#define LLVM_ANALYSIS_POSTDOMINATORS_H
 
-#include "llvm/Analysis/Dominators.h"
+#include "llvm/IR/Dominators.h"
 
 namespace llvm {
 
@@ -26,14 +26,15 @@ struct PostDominatorTree : public FunctionPass {
   DominatorTreeBase<BasicBlock>* DT;
 
   PostDominatorTree() : FunctionPass(ID) {
+    initializePostDominatorTreePass(*PassRegistry::getPassRegistry());
     DT = new DominatorTreeBase<BasicBlock>(true);
   }
 
   ~PostDominatorTree();
 
-  virtual bool runOnFunction(Function &F);
+  bool runOnFunction(Function &F) override;
 
-  virtual void getAnalysisUsage(AnalysisUsage &AU) const {
+  void getAnalysisUsage(AnalysisUsage &AU) const override {
     AU.setPreservesAll();
   }
 
@@ -73,11 +74,22 @@ struct PostDominatorTree : public FunctionPass {
     return DT->findNearestCommonDominator(A, B);
   }
 
-  virtual void releaseMemory() {
+  inline const BasicBlock *findNearestCommonDominator(const BasicBlock *A,
+                                                      const BasicBlock *B) {
+    return DT->findNearestCommonDominator(A, B);
+  }
+
+  /// Get all nodes post-dominated by R, including R itself.
+  void getDescendants(BasicBlock *R,
+                      SmallVectorImpl<BasicBlock *> &Result) const {
+    DT->getDescendants(R, Result);
+  }
+
+  void releaseMemory() override {
     DT->releaseMemory();
   }
 
-  virtual void print(raw_ostream &OS, const Module*) const;
+  void print(raw_ostream &OS, const Module*) const override;
 };
 
 FunctionPass* createPostDomTree();
@@ -99,35 +111,6 @@ template <> struct GraphTraits<PostDominatorTree*>
     return df_end(getEntryNode(N));
   }
 };
-
-/// PostDominanceFrontier Class - Concrete subclass of DominanceFrontier that is
-/// used to compute the a post-dominance frontier.
-///
-struct PostDominanceFrontier : public DominanceFrontierBase {
-  static char ID;
-  PostDominanceFrontier()
-    : DominanceFrontierBase(ID, true) {}
-
-  virtual bool runOnFunction(Function &) {
-    Frontiers.clear();
-    PostDominatorTree &DT = getAnalysis<PostDominatorTree>();
-    Roots = DT.getRoots();
-    if (const DomTreeNode *Root = DT.getRootNode())
-      calculate(DT, Root);
-    return false;
-  }
-
-  virtual void getAnalysisUsage(AnalysisUsage &AU) const {
-    AU.setPreservesAll();
-    AU.addRequired<PostDominatorTree>();
-  }
-
-private:
-  const DomSetType &calculate(const PostDominatorTree &DT,
-                              const DomTreeNode *Node);
-};
-
-FunctionPass* createPostDomFrontier();
 
 } // End llvm namespace
 

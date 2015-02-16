@@ -33,9 +33,12 @@
 #ifndef LLVM_CODEGEN_GCMETADATA_H
 #define LLVM_CODEGEN_GCMETADATA_H
 
-#include "llvm/Pass.h"
 #include "llvm/ADT/DenseMap.h"
 #include "llvm/ADT/StringMap.h"
+#include "llvm/IR/DebugLoc.h"
+#include "llvm/Pass.h"
+
+#include <memory>
 
 namespace llvm {
   class AsmPrinter;
@@ -47,28 +50,31 @@ namespace llvm {
     /// PointKind - The type of a collector-safe point.
     ///
     enum PointKind {
-      Loop,    //< Instr is a loop (backwards branch).
-      Return,  //< Instr is a return instruction.
-      PreCall, //< Instr is a call instruction.
-      PostCall //< Instr is the return address of a call.
+      Loop,    ///< Instr is a loop (backwards branch).
+      Return,  ///< Instr is a return instruction.
+      PreCall, ///< Instr is a call instruction.
+      PostCall ///< Instr is the return address of a call.
     };
   }
 
   /// GCPoint - Metadata for a collector-safe point in machine code.
   ///
   struct GCPoint {
-    GC::PointKind Kind; //< The kind of the safe point.
-    MCSymbol *Label;    //< A label.
+    GC::PointKind Kind; ///< The kind of the safe point.
+    MCSymbol *Label;    ///< A label.
+    DebugLoc Loc;
 
-    GCPoint(GC::PointKind K, MCSymbol *L) : Kind(K), Label(L) {}
+    GCPoint(GC::PointKind K, MCSymbol *L, DebugLoc DL)
+        : Kind(K), Label(L), Loc(DL) {}
   };
 
   /// GCRoot - Metadata for a pointer to an object managed by the garbage
   /// collector.
   struct GCRoot {
-    int Num;            //< Usually a frame index.
-    int StackOffset;    //< Offset from the stack pointer.
-    const Constant *Metadata;//< Metadata straight from the call to llvm.gcroot.
+    int Num;            ///< Usually a frame index.
+    int StackOffset;    ///< Offset from the stack pointer.
+    const Constant *Metadata; ///< Metadata straight from the call
+                              ///< to llvm.gcroot.
 
     GCRoot(int N, const Constant *MD) : Num(N), StackOffset(-1), Metadata(MD) {}
   };
@@ -118,11 +124,16 @@ namespace llvm {
       Roots.push_back(GCRoot(Num, Metadata));
     }
 
+    /// removeStackRoot - Removes a root.
+    roots_iterator removeStackRoot(roots_iterator position) {
+      return Roots.erase(position);
+    }
+
     /// addSafePoint - Notes the existence of a safe point. Num is the ID of the
     /// label just prior to the safe point (if the code generator is using
     /// MachineModuleInfo).
-    void addSafePoint(GC::PointKind Kind, MCSymbol *Label) {
-      SafePoints.push_back(GCPoint(Kind, Label));
+    void addSafePoint(GC::PointKind Kind, MCSymbol *Label, DebugLoc DL) {
+      SafePoints.push_back(GCPoint(Kind, Label, DL));
     }
 
     /// getFrameSize/setFrameSize - Records the function's frame size.
@@ -154,7 +165,7 @@ namespace llvm {
   ///
   class GCModuleInfo : public ImmutablePass {
     typedef StringMap<GCStrategy*> strategy_map_type;
-    typedef std::vector<GCStrategy*> list_type;
+    typedef std::vector<std::unique_ptr<GCStrategy>> list_type;
     typedef DenseMap<const Function*,GCFunctionInfo*> finfo_map_type;
 
     strategy_map_type StrategyMap;
@@ -169,9 +180,9 @@ namespace llvm {
     static char ID;
 
     GCModuleInfo();
-    ~GCModuleInfo();
 
-    /// clear - Resets the pass. The metadata deleter pass calls this.
+    /// clear - Resets the pass. Any pass, which uses GCModuleInfo, should
+    /// call it in doFinalization().
     ///
     void clear();
 

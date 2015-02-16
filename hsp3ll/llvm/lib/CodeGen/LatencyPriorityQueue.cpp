@@ -13,10 +13,12 @@
 //
 //===----------------------------------------------------------------------===//
 
-#define DEBUG_TYPE "scheduler"
 #include "llvm/CodeGen/LatencyPriorityQueue.h"
 #include "llvm/Support/Debug.h"
+#include "llvm/Support/raw_ostream.h"
 using namespace llvm;
+
+#define DEBUG_TYPE "scheduler"
 
 bool latency_sort::operator()(const SUnit *LHS, const SUnit *RHS) const {
   // The isScheduleHigh flag allows nodes with wraparound dependencies that
@@ -35,24 +37,24 @@ bool latency_sort::operator()(const SUnit *LHS, const SUnit *RHS) const {
   unsigned RHSLatency = PQ->getLatency(RHSNum);
   if (LHSLatency < RHSLatency) return true;
   if (LHSLatency > RHSLatency) return false;
-  
+
   // After that, if two nodes have identical latencies, look to see if one will
   // unblock more other nodes than the other.
   unsigned LHSBlocked = PQ->getNumSolelyBlockNodes(LHSNum);
   unsigned RHSBlocked = PQ->getNumSolelyBlockNodes(RHSNum);
   if (LHSBlocked < RHSBlocked) return true;
   if (LHSBlocked > RHSBlocked) return false;
-  
+
   // Finally, just to provide a stable ordering, use the node number as a
   // deciding factor.
-  return LHSNum < RHSNum;
+  return RHSNum < LHSNum;
 }
 
 
 /// getSingleUnscheduledPred - If there is exactly one unscheduled predecessor
 /// of SU, return it, otherwise return null.
 SUnit *LatencyPriorityQueue::getSingleUnscheduledPred(SUnit *SU) {
-  SUnit *OnlyAvailablePred = 0;
+  SUnit *OnlyAvailablePred = nullptr;
   for (SUnit::const_pred_iterator I = SU->Preds.begin(), E = SU->Preds.end();
        I != E; ++I) {
     SUnit &Pred = *I->getSUnit();
@@ -60,11 +62,11 @@ SUnit *LatencyPriorityQueue::getSingleUnscheduledPred(SUnit *SU) {
       // We found an available, but not scheduled, predecessor.  If it's the
       // only one we have found, keep track of it... otherwise give up.
       if (OnlyAvailablePred && OnlyAvailablePred != &Pred)
-        return 0;
+        return nullptr;
       OnlyAvailablePred = &Pred;
     }
   }
-      
+
   return OnlyAvailablePred;
 }
 
@@ -78,16 +80,16 @@ void LatencyPriorityQueue::push(SUnit *SU) {
       ++NumNodesBlocking;
   }
   NumNodesSolelyBlocking[SU->NodeNum] = NumNodesBlocking;
-  
+
   Queue.push_back(SU);
 }
 
 
-// ScheduledNode - As nodes are scheduled, we look to see if there are any
+// scheduledNode - As nodes are scheduled, we look to see if there are any
 // successor nodes that have a single unscheduled predecessor.  If so, that
 // single predecessor has a higher priority, since scheduling it will make
 // the node available.
-void LatencyPriorityQueue::ScheduledNode(SUnit *SU) {
+void LatencyPriorityQueue::scheduledNode(SUnit *SU) {
   for (SUnit::const_succ_iterator I = SU->Succs.begin(), E = SU->Succs.end();
        I != E; ++I) {
     AdjustPriorityOfUnscheduledPreds(I->getSUnit());
@@ -102,10 +104,10 @@ void LatencyPriorityQueue::ScheduledNode(SUnit *SU) {
 /// node of the same priority that will not make a node available.
 void LatencyPriorityQueue::AdjustPriorityOfUnscheduledPreds(SUnit *SU) {
   if (SU->isAvailable) return;  // All preds scheduled.
-  
+
   SUnit *OnlyAvailablePred = getSingleUnscheduledPred(SU);
-  if (OnlyAvailablePred == 0 || !OnlyAvailablePred->isAvailable) return;
-  
+  if (!OnlyAvailablePred || !OnlyAvailablePred->isAvailable) return;
+
   // Okay, we found a single predecessor that is available, but not scheduled.
   // Since it is available, it must be in the priority queue.  First remove it.
   remove(OnlyAvailablePred);
@@ -116,14 +118,14 @@ void LatencyPriorityQueue::AdjustPriorityOfUnscheduledPreds(SUnit *SU) {
 }
 
 SUnit *LatencyPriorityQueue::pop() {
-  if (empty()) return NULL;
+  if (empty()) return nullptr;
   std::vector<SUnit *>::iterator Best = Queue.begin();
-  for (std::vector<SUnit *>::iterator I = llvm::next(Queue.begin()),
+  for (std::vector<SUnit *>::iterator I = std::next(Queue.begin()),
        E = Queue.end(); I != E; ++I)
     if (Picker(*Best, *I))
       Best = I;
   SUnit *V = *Best;
-  if (Best != prior(Queue.end()))
+  if (Best != std::prev(Queue.end()))
     std::swap(*Best, Queue.back());
   Queue.pop_back();
   return V;
@@ -132,7 +134,20 @@ SUnit *LatencyPriorityQueue::pop() {
 void LatencyPriorityQueue::remove(SUnit *SU) {
   assert(!Queue.empty() && "Queue is empty!");
   std::vector<SUnit *>::iterator I = std::find(Queue.begin(), Queue.end(), SU);
-  if (I != prior(Queue.end()))
+  if (I != std::prev(Queue.end()))
     std::swap(*I, Queue.back());
   Queue.pop_back();
 }
+
+#ifdef NDEBUG
+void LatencyPriorityQueue::dump(ScheduleDAG *DAG) const {}
+#else
+void LatencyPriorityQueue::dump(ScheduleDAG *DAG) const {
+  LatencyPriorityQueue q = *this;
+  while (!q.empty()) {
+    SUnit *su = q.pop();
+    dbgs() << "Height " << su->getHeight() << ": ";
+    su->dump(DAG);
+  }
+}
+#endif

@@ -6,21 +6,17 @@
 // License. See LICENSE.TXT for details.
 //
 //===----------------------------------------------------------------------===//
-//
-// This file defines three classes: Timer, TimeRegion, and TimerGroup,
-// documented below.
-//
-//===----------------------------------------------------------------------===//
 
 #ifndef LLVM_SUPPORT_TIMER_H
 #define LLVM_SUPPORT_TIMER_H
 
-#include "llvm/System/DataTypes.h"
 #include "llvm/ADT/StringRef.h"
+#include "llvm/Support/Compiler.h"
+#include "llvm/Support/DataTypes.h"
 #include <cassert>
 #include <string>
-#include <vector>
 #include <utility>
+#include <vector>
 
 namespace llvm {
 
@@ -77,7 +73,7 @@ public:
 /// invocations of its startTimer()/stopTimer() methods.  Given appropriate OS
 /// support it can also keep track of the RSS of the program at various points.
 /// By default, the Timer will print the amount of time it has captured to
-/// standard error when the laster timer is destroyed, otherwise it is printed
+/// standard error when the last timer is destroyed, otherwise it is printed
 /// when its TimerGroup is destroyed.  Timers do not print their information
 /// if they are never started.
 ///
@@ -89,24 +85,24 @@ class Timer {
   
   Timer **Prev, *Next;   // Doubly linked list of timers in the group.
 public:
-  explicit Timer(StringRef N) : TG(0) { init(N); }
-  Timer(StringRef N, TimerGroup &tg) : TG(0) { init(N, tg); }
-  Timer(const Timer &RHS) : TG(0) {
-    assert(RHS.TG == 0 && "Can only copy uninitialized timers");
+  explicit Timer(StringRef N) : TG(nullptr) { init(N); }
+  Timer(StringRef N, TimerGroup &tg) : TG(nullptr) { init(N, tg); }
+  Timer(const Timer &RHS) : TG(nullptr) {
+    assert(!RHS.TG && "Can only copy uninitialized timers");
   }
   const Timer &operator=(const Timer &T) {
-    assert(TG == 0 && T.TG == 0 && "Can only assign uninit timers");
+    assert(!TG && !T.TG && "Can only assign uninit timers");
     return *this;
   }
   ~Timer();
 
   // Create an uninitialized timer, client must use 'init'.
-  explicit Timer() : TG(0) {}
+  explicit Timer() : TG(nullptr) {}
   void init(StringRef N);
   void init(StringRef N, TimerGroup &tg);
   
   const std::string &getName() const { return Name; }
-  bool isInitialized() const { return TG != 0; }
+  bool isInitialized() const { return TG != nullptr; }
   
   /// startTimer - Start the timer running.  Time between calls to
   /// startTimer/stopTimer is counted by the Timer class.  Note that these calls
@@ -125,12 +121,12 @@ private:
 
 /// The TimeRegion class is used as a helper class to call the startTimer() and
 /// stopTimer() methods of the Timer class.  When the object is constructed, it
-/// starts the timer specified as it's argument.  When it is destroyed, it stops
+/// starts the timer specified as its argument.  When it is destroyed, it stops
 /// the relevant timer.  This makes it easy to time a region of code.
 ///
 class TimeRegion {
   Timer *T;
-  TimeRegion(const TimeRegion &); // DO NOT IMPLEMENT
+  TimeRegion(const TimeRegion &) LLVM_DELETED_FUNCTION;
 public:
   explicit TimeRegion(Timer &t) : T(&t) {
     T->startTimer();
@@ -168,8 +164,8 @@ class TimerGroup {
   std::vector<std::pair<TimeRecord, std::string> > TimersToPrint;
   
   TimerGroup **Prev, *Next; // Doubly linked list of TimerGroup's.
-  TimerGroup(const TimerGroup &TG);      // DO NOT IMPLEMENT
-  void operator=(const TimerGroup &TG);  // DO NOT IMPLEMENT
+  TimerGroup(const TimerGroup &TG) LLVM_DELETED_FUNCTION;
+  void operator=(const TimerGroup &TG) LLVM_DELETED_FUNCTION;
 public:
   explicit TimerGroup(StringRef name);
   ~TimerGroup();
