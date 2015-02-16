@@ -12,32 +12,22 @@
 #include <boost/ptr_container/ptr_vector.hpp>
 #include <boost/format.hpp>
 
-#include "llvm/LLVMContext.h"
-#include "llvm/Module.h"
-#include "llvm/Constants.h"
-#include "llvm/DerivedTypes.h"
-#include "llvm/Instructions.h"
+#include "llvm/IR/LLVMContext.h"
+#include "llvm/IR/Module.h"
 #include "llvm/PassManager.h"
-#include "llvm/Assembly/Parser.h"
-#include "llvm/Analysis/Verifier.h"
-#include "llvm/Bitcode/ReaderWriter.h"
-#include "llvm/ExecutionEngine/JIT.h"
-#include "llvm/ExecutionEngine/Interpreter.h"
-#include "llvm/ExecutionEngine/GenericValue.h"
-#include "llvm/Target/TargetData.h"
-#include "llvm/Target/TargetSelect.h"
-#include "llvm/Transforms/Scalar.h"
-#include "llvm/Support/SourceMgr.h"
-#include "llvm/Support/TypeBuilder.h"
-#include "llvm/Support/ManagedStatic.h"
-#include "llvm/Support/raw_ostream.h"
-#include "llvm/Support/IRBuilder.h"
+#include "llvm/IR/TypeBuilder.h"
+#include "llvm/IR/Verifier.h"
 
-#include "llvm/Analysis/Dominators.h"
+#include "llvm/ExecutionEngine/GenericValue.h"
+#include "llvm/ExecutionEngine/Interpreter.h"
+#include "llvm/ExecutionEngine/JIT.h"
+#include "llvm/ExecutionEngine/JITEventListener.h"
+#include "llvm/ExecutionEngine/JITMemoryManager.h"
+
 #include "llvm/Analysis/Passes.h"
-#include "llvm/Analysis/Verifier.h"
-#include "llvm/Transforms/IPO.h"
-#include "llvm/Support/StandardPasses.h"
+#include "llvm/Transforms/Scalar.h"
+
+#include "llvm/Support/FileSystem.h"
 
 #include "supio.h"
 #include "chsp3op.h"
@@ -124,7 +114,7 @@ static CompileContext *sCC;
 
 static ExecutionEngine *EE;
 static FunctionPassManager *TheFPM;
-static PassManager *Passes;
+static legacy::PassManager *Passes;
 
 static int sMaxVar;
 static int sMaxHpi;
@@ -475,9 +465,9 @@ static BasicBlock *CompileOp( CHsp3Op *hsp, Function *func, BasicBlock *bb, Basi
 	LLVMContext &Context = getGlobalContext();
 	sCC->Builder.SetInsertPoint( bb );
 
-	const Type *tyPI8 = TypeBuilder<types::i<8>*, false>::get(Context);
-	const Type *tyPI32 = TypeBuilder<types::i<32>*, false>::get(Context);
-	const Type *tyPD = TypeBuilder<types::ieee_double*, false>::get(Context);
+	Type *tyPI8 = TypeBuilder<types::i<8>*, false>::get(Context);
+	Type *tyPI32 = TypeBuilder<types::i<32>*, false>::get(Context);
+	Type *tyPD = TypeBuilder<types::ieee_double*, false>::get(Context);
 
 	switch ( op->GetOpCode() ) {
 	case PUSH_VAR_OP:
@@ -569,7 +559,7 @@ static BasicBlock *CompileOp( CHsp3Op *hsp, Function *func, BasicBlock *bb, Basi
 					sCC->Builder.CreateBr( uniBB );
 					
 					sCC->Builder.SetInsertPoint( uniBB );
-					PHINode *ofsPhi = sCC->Builder.CreatePHI( Type::getInt32Ty( Context ) );
+					PHINode *ofsPhi = sCC->Builder.CreatePHI( Type::getInt32Ty( Context ), 2 );
 					ofsPhi->addIncoming(ofs1, inBB);
 					ofsPhi->addIncoming(lofs, outBB);
 					ofs = ofsPhi;
@@ -747,7 +737,7 @@ static BasicBlock *CompileOp( CHsp3Op *hsp, Function *func, BasicBlock *bb, Basi
 					for ( int i = 0; i < op->operands.size() - 1; ++i ) {
 						args.push_back( static_cast<Value*>(op->operands[i]->llValue) );
 					}
-					op->llValue = sCC->Builder.CreateCall( f, args.begin(), args.end() );
+					op->llValue = sCC->Builder.CreateCall( f, makeArrayRef( args ) );
 					return bb;
 				}
 
@@ -1095,7 +1085,7 @@ static BasicBlock *GenerateDefaultCode( CHsp3Op *hsp, Function *func,
 										 o->GetArrayDim() ));
 
 		sCC->Builder.SetInsertPoint( bb );
-		sCC->Builder.CreateCall(f, args.begin(), args.end());
+		sCC->Builder.CreateCall( f, makeArrayRef(args) );
 
 		return bb;
 	}
@@ -1114,7 +1104,7 @@ static BasicBlock *GenerateDefaultCode( CHsp3Op *hsp, Function *func,
 										 o->GetArrayDim() ));
 
 		sCC->Builder.SetInsertPoint( bb );
-		sCC->Builder.CreateCall(f, args.begin(), args.end());
+		sCC->Builder.CreateCall( f, makeArrayRef( args ) );
 
 		return bb;
 	}
@@ -1127,7 +1117,7 @@ static BasicBlock *GenerateDefaultCode( CHsp3Op *hsp, Function *func,
 		args.push_back(ConstantFP::get( Type::getDoubleTy( Context ), o->GetValue() ));
 
 		sCC->Builder.SetInsertPoint( bb );
-		sCC->Builder.CreateCall( f, args.begin(), args.end() );
+		sCC->Builder.CreateCall( f, makeArrayRef(args) );
 
 		return bb;
 	}
@@ -1157,7 +1147,7 @@ static BasicBlock *GenerateDefaultCode( CHsp3Op *hsp, Function *func,
 		args.push_back(ptr);
 
 		sCC->Builder.SetInsertPoint( bb );
-		sCC->Builder.CreateCall(f, args.begin(), args.end());
+		sCC->Builder.CreateCall(f, makeArrayRef(args));
 
 		return bb;
 	}
@@ -1235,7 +1225,7 @@ static BasicBlock *GenerateDefaultCode( CHsp3Op *hsp, Function *func,
 		args.push_back(ConstantInt::get( Type::getInt32Ty( Context ),
 										 o->GetCmdPNum() ));
 
-		sCC->Builder.CreateCall(f, args.begin(), args.end());
+		sCC->Builder.CreateCall(f, makeArrayRef(args));
 
 		return bb;
 	}
@@ -1257,7 +1247,7 @@ static BasicBlock *GenerateDefaultCode( CHsp3Op *hsp, Function *func,
 		args.push_back(ConstantInt::get( Type::getInt32Ty( Context ),
 										 o->GetArrayDim() ));
 
-		sCC->Builder.CreateCall(f, args.begin(), args.end());
+		sCC->Builder.CreateCall(f, makeArrayRef(args));
 
 		return bb;
 	}
@@ -1279,7 +1269,7 @@ static BasicBlock *GenerateDefaultCode( CHsp3Op *hsp, Function *func,
 		args.push_back(ConstantInt::get( Type::getInt32Ty( Context ),
 										 o->GetArrayDim() ));
 
-		sCC->Builder.CreateCall(f, args.begin(), args.end());
+		sCC->Builder.CreateCall(f, makeArrayRef(args));
 
 		return bb;
 	}
@@ -1307,7 +1297,7 @@ static BasicBlock *GenerateDefaultCode( CHsp3Op *hsp, Function *func,
 		args.push_back(ConstantInt::get( Type::getInt32Ty( Context ),
 										 o->GetCalcOp() ));
 
-		sCC->Builder.CreateCall(f, args.begin(), args.end());
+		sCC->Builder.CreateCall(f, makeArrayRef(args));
 
 		return bb;
 	}
@@ -1661,7 +1651,7 @@ static void TraceTaskProc()
 		task.func = func;
 
 		string ErrMsg;
-		if ( verifyModule( *sCC->M, ReturnStatusAction, &ErrMsg ) ) {
+		if ( verifyModule( *sCC->M, &raw_string_ostream(ErrMsg) ) ) {
 			Alert( (char*)ErrMsg.c_str() );
 		}
 
@@ -1701,7 +1691,7 @@ static void TraceTaskProc()
 			string ErrorInfo;
 			std::auto_ptr<raw_fd_ostream>
 				Out(new raw_fd_ostream("dump_jit.ll", ErrorInfo,
-									   raw_fd_ostream::F_Binary));
+									   sys::fs::F_None));
 			if (!ErrorInfo.empty()) {
 				errs() << ErrorInfo << '\n';
 			} else {
@@ -1711,7 +1701,7 @@ static void TraceTaskProc()
 		}
 
 		string ErrMsg;
-		if ( verifyModule( *sCC->M, ReturnStatusAction, &ErrMsg ) ) {
+		if ( verifyModule( *sCC->M, &raw_string_ostream(ErrMsg) ) ) {
 			Alert( (char*)ErrMsg.c_str() );
 		}
 
@@ -1722,7 +1712,7 @@ static void TraceTaskProc()
 			string ErrorInfo;
 			std::auto_ptr<raw_fd_ostream>
 				Out(new raw_fd_ostream("dump_jit.ll", ErrorInfo,
-									   raw_fd_ostream::F_Binary));
+									   sys::fs::F_None));
 			if (!ErrorInfo.empty()) {
 				errs() << ErrorInfo << '\n';
 			} else {
@@ -1746,7 +1736,7 @@ void DumpResult()
 	string ErrorInfo;
 	std::auto_ptr<raw_fd_ostream>
 		Out( new raw_fd_ostream( "dump.txt", ErrorInfo,
-								 raw_fd_ostream::F_Binary ) );
+								 sys::fs::F_None ) );
 
 	for (int i=0; i<sLabMax+1; i++) {
 		if ( __Task.is_null(i) )
@@ -1907,7 +1897,7 @@ void __HspSetup( Hsp3r *hsp3r )
 			sCC->Builder.CreateRet( ConstantInt::get( Type::getInt32Ty( Context ), -1 ) );
 
 			string ErrMsg;
-			if ( verifyModule( *sCC->M, ReturnStatusAction, &ErrMsg ) ) {
+			if ( verifyModule( *sCC->M, &raw_string_ostream(ErrMsg) ) ) {
 				Alert( (char*)ErrMsg.c_str() );
 			}
 			task.func = func;
@@ -1918,7 +1908,7 @@ void __HspSetup( Hsp3r *hsp3r )
 	string ErrorInfo;
 	std::auto_ptr<raw_fd_ostream>
 		Out(new raw_fd_ostream("dump0.ll", ErrorInfo,
-							   raw_fd_ostream::F_Binary));
+							   sys::fs::F_None));
 	if (!ErrorInfo.empty()) {
 		errs() << ErrorInfo << '\n';
 		return;
@@ -1941,7 +1931,7 @@ void __HspEntry( void )
 	t(1);
 }
 
-int MakeSource( CHsp3Op *hsp, int option, void *ref )
+int MakeSource(CHsp3Op *hsp, int option, void *ref)
 {
 	//	コンパイル処理
 	//
@@ -1952,7 +1942,7 @@ int MakeSource( CHsp3Op *hsp, int option, void *ref )
 	sCC = new CompileContext();
 
 	// Create some module to put our function into it.
-	sCC->M = new Module( "test", Context );
+	sCC->M = new Module("test", Context);
 
 	sMaxVar = hsp->GetHSPHed()->max_val;
 	sMaxHpi = hsp->GetHSPHed()->max_hpi;
@@ -1962,33 +1952,33 @@ int MakeSource( CHsp3Op *hsp, int option, void *ref )
 	// 関数の準備
 	sCC->LoadLLRuntime();
 
-	const Type *pvalType = sCC->GetPValType();
+	Type *pvalType = sCC->GetPValType();
 
 	// 変数の準備
 	sVariables = new GlobalVariable*[maxvar];
-	for(i=0;i<maxvar;i++) {
-		Constant *constInt = ConstantInt::get(Type::getInt32Ty( Context ), (int)0);
-		Constant *constPtr = ConstantExpr::getIntToPtr( constInt, pvalType );
+	for (i = 0; i < maxvar; i++) {
+		Constant *constInt = ConstantInt::get(Type::getInt32Ty(Context), (int)0);
+		Constant *constPtr = ConstantExpr::getIntToPtr(constInt, pvalType);
 
-//		sVariables[i] = new GlobalVariable(ppvalType, false, GlobalValue::ExternalLinkage, constPtr,
-//										   CPPHED_HSPVAR + GetHSPVarName( i ), M);
-		sVariables[i] = (GlobalVariable*)sCC->M->getOrInsertGlobal(CPPHED_HSPVAR + hsp->GetHSPVarName( i ), pvalType);
+		//		sVariables[i] = new GlobalVariable(ppvalType, false, GlobalValue::ExternalLinkage, constPtr,
+		//										   CPPHED_HSPVAR + GetHSPVarName( i ), M);
+		sVariables[i] = (GlobalVariable*)sCC->M->getOrInsertGlobal(CPPHED_HSPVAR + hsp->GetHSPVarName(i), pvalType);
 	}
 
-	sDsBase = (GlobalVariable*)sCC->M->getOrInsertGlobal("ds_base", Type::getInt32Ty( Context ));
+	sDsBase = (GlobalVariable*)sCC->M->getOrInsertGlobal("ds_base", Type::getInt32Ty(Context));
 
 
 	//		タスク(ラベル)テーブルを作成する
 	//
 	sLabMax = hsp->GetLabMax();
-	sDsBasePtr = hsp->GetDS( 0 );
+	sDsBasePtr = hsp->GetDS(0);
 
 	sProgram.blocks = hsp->GetBlocks();
-	sProgram.entryPoint  =sProgram.blocks["__HspEntry"];
-	AnalyzeProgram( &sProgram );
+	sProgram.entryPoint = sProgram.blocks["__HspEntry"];
+	AnalyzeProgram(&sProgram);
 
-	__Task.resize( sLabMax + 1 );
-	for(std::map<string, Block*>::iterator it = sProgram.blocks.begin();
+	__Task.resize(sLabMax + 1);
+	for (std::map<string, Block*>::iterator it = sProgram.blocks.begin();
 		it != sProgram.blocks.end(); ++it) {
 		Task *task = new Task();
 		Block *block = it->second;
@@ -1996,7 +1986,7 @@ int MakeSource( CHsp3Op *hsp, int option, void *ref )
 		__Task.replace(task->block->id, task);
 
 		for (std::set<VarId>::iterator it2 = block->usedVariables.begin();
-			 it2 != block->usedVariables.end(); ++it2) {
+			it2 != block->usedVariables.end(); ++it2) {
 			if (sVarStatics.find(*it2) != sVarStatics.end())
 				continue;
 			VarStatics *var = new VarStatics();
@@ -2010,7 +2000,7 @@ int MakeSource( CHsp3Op *hsp, int option, void *ref )
 		string errorInfo;
 		std::auto_ptr<raw_fd_ostream>
 			out(new raw_fd_ostream("dump.ll", errorInfo,
-								   raw_fd_ostream::F_Binary));
+			sys::fs::F_None));
 		if (!errorInfo.empty()) {
 			errs() << errorInfo << '\n';
 			return -1;
@@ -2023,41 +2013,125 @@ int MakeSource( CHsp3Op *hsp, int option, void *ref )
 		std::ofstream out("dump2.txt");
 
 		char mes[256];
-		for (int i=0;i<sLabMax+1;i++) {
-			if ( __Task.is_null(i) )
+		for (int i = 0; i < sLabMax + 1; i++) {
+			if (__Task.is_null(i))
 				continue;
 
 			Task &task = __Task[i];
 			out << "#" << task.block->name << std::endl;
-			PrettyPrint( out, task.block );
+			PrettyPrint(out, task.block);
 		}
 	}
 
 	string ErrMsg;
-	if ( verifyModule( *sCC->M, ReturnStatusAction, &ErrMsg ) ) {
-		Alert( (char*)ErrMsg.c_str() );
+	if (verifyModule(*sCC->M, &raw_string_ostream(ErrMsg))) {
+		Alert((char*)ErrMsg.c_str());
 	}
 
-	EE = EngineBuilder( sCC->M )
-		.setEngineKind( EngineKind::JIT )
-		.setOptLevel( CodeGenOpt::Default )
+	EE = EngineBuilder(sCC->M)
+		.setEngineKind(EngineKind::JIT)
+        .setUseMCJIT(true)
+		.setOptLevel(CodeGenOpt::Aggressive)
 		.create();
 
-	EE->InstallLazyFunctionCreator( HspLazyFunctionCreator );
+	EE->InstallLazyFunctionCreator(HspLazyFunctionCreator);
 
-	TargetData *TD = new TargetData(*EE->getTargetData());
+#define REGISTER_RT(t, func) \
+	{\
+		Function *KnownFunction = Function::Create(\
+		TypeBuilder<t, false>::get(Context),\
+			GlobalValue::ExternalLinkage, #func,\
+			sCC->M);\
+		EE->addGlobalMapping(KnownFunction, (void*)(intptr_t)func);\
+	} while (false);
 
-	Passes = new PassManager();
+	REGISTER_RT(void(int, int), Prgcmd);
+	REGISTER_RT(void(int, int), Modcmd);
+	REGISTER_RT(void(void*, int, int), VarSet);
 
-	Passes->add(TD);
-	createStandardLTOPasses( Passes, false, true, true );
+	REGISTER_RT(void(int), PushInt);
+	REGISTER_RT(void(double), PushDouble);
+	REGISTER_RT(void(char*), PushStr);
+	REGISTER_RT(void(int), PushLabel);
+	REGISTER_RT(void(void*, int), PushVar);
+	REGISTER_RT(void(void*, int), PushVAP);
+	REGISTER_RT(void(), PushDefault);
+
+	REGISTER_RT(void(), PushFuncEnd);
+
+	REGISTER_RT(void(int), PushFuncPrm1);
+	REGISTER_RT(void(int), PushFuncPrmI);
+	REGISTER_RT(void(int), PushFuncPrmD);
+	REGISTER_RT(void(int, int), PushFuncPrm);
+	REGISTER_RT(void(int, int), PushFuncPAP);
+	REGISTER_RT(void*(int), FuncPrm);
+	REGISTER_RT(void*(int), LocalPrm);
+
+	REGISTER_RT(int(int), FuncPrmI);
+	REGISTER_RT(double(int), FuncPrmD);
+
+	REGISTER_RT(void(), CalcAddI);
+	REGISTER_RT(void(), CalcSubI);
+	REGISTER_RT(void(), CalcMulI);
+	REGISTER_RT(void(), CalcDivI);
+	REGISTER_RT(void(), CalcModI);
+	REGISTER_RT(void(), CalcAndI);
+	REGISTER_RT(void(), CalcOrI);
+	REGISTER_RT(void(), CalcXorI);
+	REGISTER_RT(void(), CalcEqI);
+	REGISTER_RT(void(), CalcNeI);
+	REGISTER_RT(void(), CalcGtI);
+	REGISTER_RT(void(), CalcLtI);
+	REGISTER_RT(void(), CalcGtEqI);
+	REGISTER_RT(void(), CalcLtEqI);
+	REGISTER_RT(void(), CalcRrI);
+	REGISTER_RT(void(), CalcLrI);
+
+	REGISTER_RT(void(int, int), PushIntfunc);
+	REGISTER_RT(void(void*, int, int), VarCalc);
+	REGISTER_RT(void(void*, int), VarInc);
+	REGISTER_RT(void(int), TaskSwitch);
+	REGISTER_RT(char(), HspIf);
+	REGISTER_RT(void(int, int), PushSysvar);
+	REGISTER_RT(void(int, int), PushExtvar);
+	REGISTER_RT(void(int, int), PushDllfunc);
+	REGISTER_RT(void(int, int), PushModcmd);
+	REGISTER_RT(void(int, int), Extcmd);
+	REGISTER_RT(void(int, int), Intcmd);
+	REGISTER_RT(int(), GetCurTaskId);
+	//REGISTER_RT(int(Hsp3r*, int, int), Hsp3rReset);
+	REGISTER_RT(void(void*, int), HspVarCoreArray2);
+
+	REGISTER_RT(double(int, int), CallDoubleIntfunc);
+	REGISTER_RT(int(int, int), CallIntIntfunc);
+	REGISTER_RT(double(int, int), CallDoubleSysvar);
+	REGISTER_RT(int(int, int), CallIntSysvar);
+
+	//REGISTER_RT(char(), HspIf);
+	//REGISTER_RT(void(int, int), PushSysvar);
+#undef REGISTER_RT
+
+
+	//TargetData *TD = new TargetData(*EE->getTargetData());
+
+	Passes = new legacy::PassManager();
+
+	//Passes->add(TD);
+	//createStandardLTOPasses( Passes, false, true, true );
 
 
 	TheFPM = new FunctionPassManager( sCC->M );
 
 	// Set up the optimizer pipeline.  Start with registering info about how the
 	// target lays out data structures.
-	TheFPM->add(TD);
+	sCC->M->setDataLayout(EE->getDataLayout());
+	TheFPM->add(new DataLayoutPass(sCC->M));
+	//TheFPM->add(TD);
+
+	// Provide basic AliasAnalysis support for GVN.
+	TheFPM->add(createBasicAliasAnalysisPass());
+	// Promote allocas to registers.
+	TheFPM->add(createPromoteMemoryToRegisterPass());
 	// Do simple "peephole" optimizations and bit-twiddling optzns.
 	TheFPM->add(createInstructionCombiningPass());
 	// Reassociate expressions.

@@ -6,13 +6,17 @@
 #define __compilecontext_h
 
 #include <string>
-#include "llvm/LLVMContext.h"
+#include "llvm/IR/LLVMContext.h"
+#include "llvm/IR/IRBuilder.h"
+
+/*
 #include "llvm/Module.h"
 #include "llvm/PassManager.h"
 #include "llvm/ExecutionEngine/JIT.h"
 #include "llvm/ExecutionEngine/Interpreter.h"
 #include "llvm/Support/TypeBuilder.h"
 #include "llvm/Support/IRBuilder.h"
+*/
 
 class CHsp3Op;
 
@@ -24,7 +28,7 @@ public:
 	CompileContext();
 	~CompileContext();
 
-	const llvm::StructType* GetPValType();
+	llvm::StructType* GetPValType();
 
 	llvm::Value* CreateCalcI( int code, llvm::Value *a, llvm::Value *b );
 	llvm::Value* CreateCalcD( int code, llvm::Value *a, llvm::Value *b );

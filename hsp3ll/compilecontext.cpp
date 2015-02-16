@@ -14,27 +14,25 @@
 #include <boost/ptr_container/ptr_vector.hpp>
 #include <boost/format.hpp>
 
-#include "llvm/Constants.h"
-#include "llvm/DerivedTypes.h"
-#include "llvm/Instructions.h"
-#include "llvm/Assembly/Parser.h"
-#include "llvm/Analysis/Verifier.h"
+
+#include "llvm/IR/LLVMContext.h"
+#include "llvm/IR/Module.h"
+#include "llvm/PassManager.h"
+#include "llvm/IR/TypeBuilder.h"
+#include "llvm/IR/Verifier.h"
+
+#include "llvm/AsmParser/Parser.h"
 #include "llvm/Bitcode/ReaderWriter.h"
 #include "llvm/ExecutionEngine/JIT.h"
 #include "llvm/ExecutionEngine/Interpreter.h"
 #include "llvm/ExecutionEngine/GenericValue.h"
-#include "llvm/Target/TargetData.h"
-#include "llvm/Target/TargetSelect.h"
 #include "llvm/Transforms/Scalar.h"
 #include "llvm/Support/SourceMgr.h"
 #include "llvm/Support/ManagedStatic.h"
 #include "llvm/Support/raw_ostream.h"
 
-#include "llvm/Analysis/Dominators.h"
 #include "llvm/Analysis/Passes.h"
-#include "llvm/Analysis/Verifier.h"
 #include "llvm/Transforms/IPO.h"
-#include "llvm/Support/StandardPasses.h"
 
 #include "supio.h"
 #include "chsp3op.h"
@@ -112,7 +110,7 @@ Value* CompileContext::MakeImmidiateCPPName( CHsp3Op* hsp, BasicBlock* bb, int t
 // LLVM utilities
 //
 
-const StructType* CompileContext::GetPValType()
+StructType* CompileContext::GetPValType()
 {
 	LLVMContext &Context = getGlobalContext();
 
@@ -130,7 +128,7 @@ Value* CompileContext::CreateCallImm( BasicBlock *bblock, const string& name )
 	std::vector<Value*> args;
 
 	Builder.SetInsertPoint( bblock );
-	return Builder.CreateCall( f, args.begin(), args.end() );
+	return Builder.CreateCall( f, makeArrayRef(args) );
 }
 
 Value* CompileContext::CreateCallImm( BasicBlock *bblock, const string& name, int a )
@@ -145,7 +143,7 @@ Value* CompileContext::CreateCallImm( BasicBlock *bblock, const string& name, in
 	args.push_back( ConstantInt::get( Type::getInt32Ty( Context ), a ) );
 
 	Builder.SetInsertPoint( bblock );
-	return Builder.CreateCall( f, args.begin(), args.end() );
+	return Builder.CreateCall(f, makeArrayRef(args));
 }
 
 Value* CompileContext::CreateCallImm( BasicBlock *bblock, const string& name, int a, int b )
@@ -161,7 +159,7 @@ Value* CompileContext::CreateCallImm( BasicBlock *bblock, const string& name, in
 	args.push_back(ConstantInt::get( Type::getInt32Ty( Context ), b ) );
 
 	Builder.SetInsertPoint( bblock );
-	return Builder.CreateCall( f, args.begin(), args.end() );
+	return Builder.CreateCall(f, makeArrayRef(args));
 }
 
 void CompileContext::LoadLLRuntime()
