@@ -1,11 +1,11 @@
 ------------------------------------------------------------------------------
 HGIMG4 REFERENCE MANUAL                High Performance Graphic Image Plugin  
-ＨＳＰ拡張ランタイムリファレンス      copyright 2001-2014 (c) onion software  
+ＨＳＰ拡張ランタイムリファレンス      copyright 2001-2015 (c) onion software  
 ------------------------------------------------------------------------------
 
 ・はじめに
 
-	HGIMG4は、Hot Soup Processor ver3.4以降とともに使用することで、
+	HGIMG4は、Hot Soup Processor ver3.5以降とともに使用することで、
 	画面の描画に関する様々な機能拡張を提供します。
 
 	HGIMG4の特徴
@@ -193,7 +193,7 @@ HGIMG4 REFERENCE MANUAL                High Performance Graphic Image Plugin
 
 	HGIMG4は、HSP3Dishランタイムを拡張する形で実装されています。
 	HSP3Dishが持つ命令をすべてサポートしているほか、いくつかの拡張が行なわれています。
-	ただし、HSP3Dishによる制約(外部DLL/プラグインの使用不可、出力は単一のスクリーンなど)も
+	ただし、HSP3Dishによる制約(COMオブジェクト、各種配置オブジェクトの使用不可、出力は単一のスクリーンなど)も
 	同様に発生します。基本的な文法、プログラム制御はHSP3と同様です。
 	HSP3Dishについての詳細は、HSP3Dish プログラミングマニュアル・基本仕様ガイド(hsp3dish_prog.htm)を
 	参照してください。
@@ -1160,7 +1160,7 @@ Advanced Micro Devices, Inc.
 http://bulletphysics.org
 
 OpenHSP
-Copyright (C) 1997-2013, ONION Software/onitama.
+Copyright (C) 1997-2015, ONION Software/onitama.
 http://hsp.tv
 
 Disclaimer

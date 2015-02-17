@@ -5,7 +5,7 @@ Hot Soup Processor ver3.5                           HSP : Hot Soup Processor
 
 ・hsp3関連 更新履歴
 
-	2015/02/12 3.5 beta1
+	2015/02/18 3.5 beta1
 
 	64bit(x64)版ランタイム、hsp3_64を追加
 	HSP3Dishのnote系命令で行数を間違える不具合を修正
@@ -18,7 +18,7 @@ Hot Soup Processor ver3.5                           HSP : Hot Soup Processor
 	[HSP3Dish][android] hsp3dish.iniの設定取り込みに対応
 	[HSP3Dish][android] HSP3Dish Helperの更新
 	[HSP3Dish][Windows] httpload,httpinfo命令を追加
-	[HSP3Dish][Windows] (Windows版のみ)プラグイン・外部DLL使用を可能に修正
+	[HSP3Dish][HGIMG4][Windows] (Windows版のみ)プラグイン・外部DLL使用を可能に修正
 	長いソースのコンパイル高速化(zakki)
 
 	2014/09/19 3.4(rc2)

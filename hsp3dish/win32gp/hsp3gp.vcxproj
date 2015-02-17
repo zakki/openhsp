@@ -99,7 +99,7 @@
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <ClCompile>
       <AdditionalIncludeDirectories>lib/include/;extlib/include/;gameplay/src/;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
-      <PreprocessorDefinitions>WIN32;HSPWIN;HSPDISHGP;HSPDEBUG;NDEBUG;_WINDOWS;_CRT_SECURE_NO_WARNINGS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>WIN32;HSPWIN;HSPDISH;HSPDISHGP;HSPDEBUG;HSP_COM_UNSUPPORTED;NDEBUG;_WINDOWS;_CRT_SECURE_NO_WARNINGS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
       <BufferSecurityCheck>false</BufferSecurityCheck>
       <PrecompiledHeader>
@@ -128,7 +128,7 @@
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='hsprt|Win32'">
     <ClCompile>
       <AdditionalIncludeDirectories>lib/include/;extlib/include/;gameplay/src/;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
-      <PreprocessorDefinitions>WIN32;HSPWIN;HSPDISHGP;NDEBUG;_WINDOWS;_CRT_SECURE_NO_WARNINGS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>WIN32;HSPWIN;HSPDISHGP;HSPDISH;HSP_COM_UNSUPPORTED;NDEBUG;_WINDOWS;_CRT_SECURE_NO_WARNINGS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
       <BufferSecurityCheck>false</BufferSecurityCheck>
       <PrecompiledHeader>
@@ -174,6 +174,9 @@
     <ClCompile Include="..\..\hsp3\strbuf.cpp" />
     <ClCompile Include="..\..\hsp3\strnote.cpp" />
     <ClCompile Include="..\sysreq.cpp" />
+    <ClCompile Include="..\win32\hsp3extlib.cpp" />
+    <ClCompile Include="..\win32\hsp3ext_win.cpp" />
+    <ClCompile Include="..\win32\webtask_win.cpp" />
     <ClCompile Include="dxsnd.cpp" />
     <ClCompile Include="gamehsp.cpp" />
     <ClCompile Include="gpcam.cpp" />
@@ -208,6 +211,9 @@
     <ClInclude Include="..\..\hsp3\strnote.h" />
     <ClInclude Include="..\supio.h" />
     <ClInclude Include="..\sysreq.h" />
+    <ClInclude Include="..\win32\hsp3extlib.h" />
+    <ClInclude Include="..\win32\hsp3ext_win.h" />
+    <ClInclude Include="..\win32\webtask_win.h" />
     <ClInclude Include="dxsnd.h" />
     <ClInclude Include="gamehsp.h" />
     <ClInclude Include="gpcam.h" />
