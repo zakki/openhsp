@@ -1283,14 +1283,14 @@ static int cmdfunc_extcmd( int cmd )
 
 #ifdef HSPDISHGP
 
-	case 0x4b:								// setcls
+	case 0x5e:								// setcls
 		p1 = code_getdi( 0 );
 		p2 = code_getdi( 0 );
 		p3 = code_getdi( -1 );
 		hgio_clsmode( p1, p2, p3 );
 		break;
 
-	case 0x4c:								// celputm
+	case 0x5f:								// celputm
 		int *p_ptr1;
 		int *p_ptr2;
 		int *p_ptr3;

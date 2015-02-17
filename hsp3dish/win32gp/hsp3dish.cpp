@@ -22,7 +22,6 @@
 #endif
 
 
-
 #include "hsp3dish.h"
 #include "../../hsp3/hsp3config.h"
 #include "../../hsp3/strbuf.h"
@@ -31,8 +30,15 @@
 #include "../supio.h"
 #include "../hgio.h"
 #include "../sysreq.h"
-//#include "../hsp3ext.h"
+#include "../hsp3ext.h"
 #include "../../hsp3/strnote.h"
+
+#include "../win32/hsp3extlib.h"
+
+#ifndef HSP_COM_UNSUPPORTED
+#include "../win32/hspvar_comobj.h"
+#include "../win32/hspvar_variant.h"
+#endif
 
 typedef BOOL (CALLBACK *HSP3DBGFUNC)(HSP3DEBUG *,int,int,int);
 
@@ -497,11 +503,20 @@ int hsp3dish_debugopen( void )
 	//
 #ifdef HSPDEBUG
 	if ( h_dbgwin != NULL ) return 0;
-	h_dbgwin = LoadLibrary( "hsp3debug.dll" );
+#ifdef HSP64
+	h_dbgwin = LoadLibrary( "hsp3debug_64.dll" );
+#else
+	h_dbgwin = LoadLibrary("hsp3debug.dll");
+#endif
 	if ( h_dbgwin != NULL ) {
-		dbgwin = (HSP3DBGFUNC)GetProcAddress( h_dbgwin, "_debugini@16" );
-		dbgnotice = (HSP3DBGFUNC)GetProcAddress( h_dbgwin, "_debug_notice@16" );
-		if (( dbgwin == NULL )||( dbgnotice == NULL )) h_dbgwin = NULL;
+#ifdef HSP64
+		dbgwin = (HSP3DBGFUNC)GetProcAddress(h_dbgwin, "debugini");
+		dbgnotice = (HSP3DBGFUNC)GetProcAddress( h_dbgwin, "debug_notice" );
+#else
+		dbgwin = (HSP3DBGFUNC)GetProcAddress(h_dbgwin, "_debugini@16");
+		dbgnotice = (HSP3DBGFUNC)GetProcAddress(h_dbgwin, "_debug_notice@16");
+#endif
+		if ((dbgwin == NULL) || (dbgnotice == NULL)) h_dbgwin = NULL;
 	}
 	if ( h_dbgwin == NULL ) {
 		hsp3dish_dialog( "No debug module." );
@@ -718,7 +733,7 @@ static void hsp3dish_setdevinfo( HSP3DEVINFO *devinfo )
 {
 	//		Initalize DEVINFO
 	mem_devinfo = devinfo;
-	devinfo->devname = "win32dev";
+	devinfo->devname = "win32opengl";
 	devinfo->error = "";
 	devinfo->devprm = hsp3dish_devprm;
 	devinfo->devcontrol = hsp3dish_devcontrol;
@@ -886,28 +901,28 @@ int hsp3dish_init( HINSTANCE hInstance, char *startfile )
 	hsp3dish_initwindow( hInstance, hsp_wx, hsp_wy, "HGIMG4 ver" hspver );
 
 
+#ifndef HSP_COM_UNSUPPORTED
+	HspVarCoreRegisterType( TYPE_COMOBJ, HspVarComobj_Init );
+	HspVarCoreRegisterType( TYPE_VARIANT, HspVarVariant_Init );
+#endif
+
 	//		Start Timer
 	//
 	// timerGetTime関数による精度アップ(μ秒単位)
 	timer_period = -1;
-#if 1
-	TIMECAPS caps;
-	if (timeGetDevCaps(&caps,sizeof(TIMECAPS)) == TIMERR_NOERROR){
-		// マルチメディアタイマーのサービス精度を最大に
-		timer_period = caps.wPeriodMin;
-		timeBeginPeriod( timer_period );
-		//timerid = timeSetEvent( timer_period, caps.wPeriodMin, TimerFunc, 0, (UINT)TIME_PERIODIC );
-		timecnt = 0;
+	if (( ctx->hsphed->bootoption & HSPHED_BOOTOPT_NOMMTIMER ) == 0 ) {
+		TIMECAPS caps;
+		if ( timeGetDevCaps(&caps,sizeof(TIMECAPS)) == TIMERR_NOERROR ){
+			// マルチメディアタイマーのサービス精度を最大に
+			timer_period = caps.wPeriodMin;
+			timeBeginPeriod( timer_period );
+		}
 	}
-#endif
 
-#ifndef HSP_COM_UNSUPPORTED
-//	HspVarCoreRegisterType( TYPE_COMOBJ, HspVarComobj_Init );
-//	HspVarCoreRegisterType( TYPE_VARIANT, HspVarVariant_Init );
-#endif
-
-//	hsp3typeinit_dllcmd( code_gettypeinfo( TYPE_DLLFUNC ) );
-//	hsp3typeinit_dllctrl( code_gettypeinfo( TYPE_DLLCTRL ) );
+	//		Initalize external DLL System
+	//
+	hsp3typeinit_dllcmd( code_gettypeinfo( TYPE_DLLFUNC ) );
+	hsp3typeinit_dllctrl( code_gettypeinfo( TYPE_DLLCTRL ) );
 
 	//		Initalize gameplay
 	//
@@ -954,10 +969,6 @@ static void hsp3dish_bye( void )
 	//		タイマーの開放
 	//
 	if ( timer_period != -1 ) {
-//		if( timerid != 0 ) {
-//			timeKillEvent( timerid );
-//			timerid = 0;
-//		}
 		timeEndPeriod( timer_period );
 		timer_period = -1;
 	}
@@ -988,13 +999,13 @@ static void hsp3dish_bye( void )
 	if ( h_dbgwin != NULL ) { FreeLibrary( h_dbgwin ); h_dbgwin = NULL; }
 #endif
 
-//	DllManager().free_all_library();
+	DllManager().free_all_library();
 
 	//		システム関連の解放
 	//
 #ifndef HSP_COM_UNSUPPORTED
-//	OleUninitialize();
-//	CoUninitialize();
+	OleUninitialize();
+	CoUninitialize();
 #endif
 
 

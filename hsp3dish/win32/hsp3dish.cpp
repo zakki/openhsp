@@ -26,8 +26,9 @@
 #include "../hsp3ext.h"
 #include "../../hsp3/strnote.h"
 
-#ifndef HSP_COM_UNSUPPORTED
 #include "hsp3extlib.h"
+
+#ifndef HSP_COM_UNSUPPORTED
 #include "hspvar_comobj.h"
 #include "hspvar_variant.h"
 #endif
@@ -958,13 +959,13 @@ static void hsp3dish_bye( void )
 	if ( h_dbgwin != NULL ) { FreeLibrary( h_dbgwin ); h_dbgwin = NULL; }
 #endif
 
-//	DllManager().free_all_library();
+	DllManager().free_all_library();
 
 	//		システム関連の解放
 	//
 #ifndef HSP_COM_UNSUPPORTED
-//	OleUninitialize();
-//	CoUninitialize();
+	OleUninitialize();
+	CoUninitialize();
 #endif
 }
 

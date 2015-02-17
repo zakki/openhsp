@@ -132,20 +132,9 @@
 #define global SYSREQ_DEBUG $10000
 
 #regcmd 9
-#cmd gfilter $3f
-#cmd setreq $40
-#cmd getreq $41
-#cmd mmvol $42
-#cmd mmpan $43
-#cmd mmstat $44
-#cmd mtlist $45
-#cmd mtinfo $46
-#cmd devinfo $47
-#cmd devinfoi $48
-#cmd devprm $49
-#cmd devcontrol $4a
-#cmd setcls $4b
-#cmd celputm $4c
+
+#cmd setcls $5e
+#cmd celputm $5f
 
 #cmd gpreset $60
 #cmd gpdraw $61
