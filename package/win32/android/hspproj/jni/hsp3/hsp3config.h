@@ -8,9 +8,9 @@
 //		システム関連ラベル
 //
 #define HSPTITLE "Hot Soup Processor ver."
-#define hspver "3.4beta5"
-#define mvscode 5		// minor version code
-#define vercode 0x3405	// version code
+#define hspver "3.5beta1"
+#define mvscode 1		// minor version code
+#define vercode 0x3501	// version code
 
 #define HSPERR_HANDLE		// HSPエラー例外を有効にします
 #define SYSERR_HANDLE		// システムエラー例外を有効にします
@@ -43,6 +43,8 @@
 #define HSPDISH		// HSP3Dish flag
 //#define HSPDISHGP		// HSP3Dish(HGIMG4) flag
 #define HSPEMBED		// HSP3 Embed runtime flag
+//#define HSPEMSCRIPTEN	// EMSCRIPTEN version flag
+//#define HSP64			// 64bit compile flag
 
 //
 //		環境フラグに付加されるオプション
@@ -57,14 +59,26 @@
 //
 #define HSPREAL double
 
+//		HSPが使用する64bit整数値型
+//
+#ifdef HSP64
+#define HSPLPTR long
+#else
+#define HSPLPTR int
+#endif
+
+
 //
 //		gcc使用のチェック
 //
-#if defined(HSPMAC)|defined(HSPIOS)|defined(HSPNDK)|defined(HSPLINUX)
+#if defined(HSPMAC)|defined(HSPIOS)|defined(HSPNDK)|defined(HSPLINUX)|defined(HSPEMSCRIPTEN)
 #define HSPGCC			// GCC使用フラグ
 #define HSPUTF8			// UTF8使用フラグ
 #endif
 
+#if defined(HSPEMSCRIPTEN)
+#define HSPRANDMT // Use std::mt19937
+#endif
 
 //
 //		移植用の定数
@@ -72,7 +86,8 @@
 #ifdef HSPWIN
 #define HSP_MAX_PATH	260
 #define HSP_PATH_SEPARATOR '\\'
-#else
+#endif
+#ifdef HSPGCC
 #define HSP_MAX_PATH	256
 #define HSP_PATH_SEPARATOR '/'
 #endif

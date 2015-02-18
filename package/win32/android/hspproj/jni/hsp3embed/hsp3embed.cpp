@@ -17,7 +17,11 @@
 #include "hsp3r.h"
 #include "hsp3embed.h"
 
-#include "hsp3dw.h"
+#define USE_OBAQ
+
+#ifdef USE_OBAQ
+#include "../obaq/hsp3dw.h"
+#endif
 
 extern void __HspInit( Hsp3r *hsp3 );
 //typedef BOOL (*HSP3DBGFUNC)(HSP3DEBUG *,int,int,int);
@@ -118,13 +122,14 @@ int hsp3eb_init( void )
 
 //	hsp3typeinit_dllcmd( code_gettypeinfo( TYPE_DLLFUNC ) );
 //	hsp3typeinit_dllctrl( code_gettypeinfo( TYPE_DLLCTRL ) );
-    
 	hsp3typeinit_extcmd( code_gettypeinfo( TYPE_EXTCMD )  );
 	hsp3typeinit_extfunc( code_gettypeinfo( TYPE_EXTSYSVAR ) );
 
-    hsp3typeinit_dw_extcmd( code_gettypeinfo( TYPE_DLLFUNC ) );
-    hsp3typeinit_dw_extfunc( code_gettypeinfo( TYPE_DLLCTRL ) );
-    
+#ifdef USE_OBAQ
+	hsp3typeinit_dw_extcmd( code_gettypeinfo( -1 ) ); // TYPE_USERDEF
+	//hsp3typeinit_dw_extfunc( code_gettypeinfo( TYPE_USERDEF+1 ) );
+#endif
+
 	//		Utility setup
 	VarUtilInit();
 

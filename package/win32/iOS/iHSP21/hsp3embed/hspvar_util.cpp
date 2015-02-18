@@ -59,6 +59,7 @@ static	HSP3TYPEINFO *progfunc_info;
 static	HSP3TYPEINFO *modfunc_info;
 static	HSP3TYPEINFO *dllfunc_info;
 static	HSP3TYPEINFO *dllctrl_info;
+static	HSP3TYPEINFO *usrfunc_info;
 
 static	HSP3_CMDFUNC intcmd_func;
 static	HSP3_CMDFUNC extcmd_func;
@@ -66,6 +67,7 @@ static	HSP3_CMDFUNC progcmd_func;
 static	HSP3_CMDFUNC modcmd_func;
 static	HSP3_CMDFUNC dllcmd_func;
 static	HSP3_CMDFUNC dllctl_func;
+static	HSP3_CMDFUNC usrcmd_func;
 
 /*------------------------------------------------------------*/
 
@@ -250,14 +252,16 @@ void VarUtilInit( void )
 	modfunc_info = code_gettypeinfo( TYPE_MODCMD );
 	dllfunc_info = code_gettypeinfo( TYPE_DLLFUNC );
 	dllctrl_info = code_gettypeinfo( TYPE_DLLCTRL );
+	usrfunc_info = code_gettypeinfo( TYPE_USERDEF );
 
 	//		実行用関数を抽出
 	intcmd_func = intcmd_info->cmdfunc;
 	extcmd_func = extcmd_info->cmdfunc;
 	progcmd_func = progfunc_info->cmdfunc;
 	modcmd_func = modfunc_info->cmdfunc;
-	dllcmd_func = dllfunc_info->cmdfunc;
-	dllctl_func = dllctrl_info->cmdfunc;
+	if ( dllfunc_info ) dllcmd_func = dllfunc_info->cmdfunc;
+	if ( dllctrl_info ) dllctl_func = dllctrl_info->cmdfunc;
+	if ( usrfunc_info ) usrcmd_func = usrfunc_info->cmdfunc;
 
 	//		最初のタスク実行関数をセット
 	curtask = (CHSP3_TASK)__HspEntry;
@@ -499,6 +503,27 @@ void PushDllctrl( int val, int pnum )
 	*c_val = '(';
 	prmstacks = pnum;
 	ptr = (char *)dllctrl_info->reffunc( &resflag, val );						// タイプごとの関数振り分け
+	StackPop();																	// PushFuncEndを取り除く
+	//code_next();
+	if ( resflag == HSPVAR_FLAG_INT ) {
+		StackPushi( *(int *)ptr );
+	} else {
+		basesize = HspVarCoreGetProc( resflag )->GetSize( (PDAT *)ptr );
+		StackPush( resflag, ptr, basesize );
+	}
+}
+
+
+void PushUsrfunc( int val, int pnum )
+{
+	char *ptr;
+	int resflag;
+	int basesize;
+
+	*c_type = TYPE_MARK;
+	*c_val = '(';
+	prmstacks = pnum;
+	ptr = (char *)usrfunc_info->reffunc( &resflag, val );						// タイプごとの関数振り分け
 	StackPop();																	// PushFuncEndを取り除く
 	//code_next();
 	if ( resflag == HSPVAR_FLAG_INT ) {
@@ -1477,6 +1502,12 @@ void Dllfunc( int cmd, int pnum )
 void Dllctrl( int cmd, int pnum )
 {
 	if ( dllctl_func( cmd ) ) HspPostExec();
+}
+
+
+void Usrfunc( int cmd, int pnum )
+{
+	if ( usrcmd_func( cmd ) ) HspPostExec();
 }
 
 

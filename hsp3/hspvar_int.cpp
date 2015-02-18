@@ -6,6 +6,9 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+
+#include "hsp3config.h"
+
 #include "hspvar_core.h"
 #include "hsp3debug.h"
 #include "strbuf.h"

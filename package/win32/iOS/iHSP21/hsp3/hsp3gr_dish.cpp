@@ -4,6 +4,10 @@
 //	(GUI関連コマンド・関数処理)
 //	onion software/onitama 2011/3
 //
+#ifdef HSPDISHGP
+#include "win32gp/gamehsp.h"
+#endif
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -25,11 +29,13 @@
 #include "hgio.h"
 #include "supio.h"
 #include "sysreq.h"
+#include "webtask.h"
 
 #ifdef HSPWIN
 #include "win32/dxsnd.h"
 #endif
 
+//#define USE_WEBTASK
 #define USE_MMAN
 //#define USE_DGOBJ
 
@@ -62,12 +68,23 @@ extern int resY0, resY1;
 #ifdef HSPNDK
 #include "ndk/mmman.h"
 #endif
+#ifdef HSPEMSCRIPTEN
+#include "emscripten/mmman.h"
+#endif
 
 static MMMan *mmman;
 #endif
 
 static int dxsnd_flag;
 
+#ifdef USE_WEBTASK
+static WebTask *webtask;
+#endif
+
+
+/*----------------------------------------------------------*/
+//					HSPDG system support
+/*----------------------------------------------------------*/
 
 #ifdef USE_DGOBJ
 #include "hgdx.h"
@@ -86,6 +103,36 @@ static VECTOR p_vec2;
 #define MOVEMODE_SPLINE 1
 #define MOVEMODE_LINEAR_REL 2
 #define MOVEMODE_SPLINE_REL 3
+
+#endif
+
+
+/*----------------------------------------------------------*/
+//					HGIMG4 system support
+/*----------------------------------------------------------*/
+
+#ifdef HSPDISHGP
+
+extern gamehsp *game;
+extern gameplay::Platform *platform;
+
+#define CnvIntRot(val) ((float)val)*(PI2/256.0f)
+#define CnvRotInt(val) ((int)(val*(256.0f/PI2)))
+
+#define MOVEMODE_LINEAR 0
+#define MOVEMODE_SPLINE 1
+#define MOVEMODE_LINEAR_REL 2
+#define MOVEMODE_SPLINE_REL 3
+
+static float fp1,fp2,fp3,fp4;
+static HSPREAL *p_vec;
+static gameplay::Vector4 p_vec1;
+static gameplay::Vector4 p_vec2;
+
+static	HSPREAL dp1,dp2,dp3;
+
+static int select_objid;
+static int select_objmoc;
 
 #endif
 
@@ -235,6 +282,85 @@ void ex_mref( PVal *pval, int prm )
 		HSP Array support
 */
 /*------------------------------------------------------------*/
+
+#ifdef HSPDISHGP
+
+static void code_getvec( gameplay::Vector4 *vec )
+{
+	vec->x = (float)code_getdd( 0.0 );
+	vec->y = (float)code_getdd( 0.0 );
+	vec->z = (float)code_getdd( 0.0 );
+	vec->w = 1.0f;
+}
+
+static void code_setvec( HSPREAL *ptr, VECTOR *vec )
+{
+	ptr[0] = (HSPREAL)vec->x;
+	ptr[1] = (HSPREAL)vec->y;
+	ptr[2] = (HSPREAL)vec->z;
+	ptr[3] = (HSPREAL)vec->w;
+}
+
+static void code_setivec( int *ptr, VECTOR *vec )
+{
+	ptr[0] = (int)vec->x;
+	ptr[1] = (int)vec->y;
+	ptr[2] = (int)vec->z;
+	ptr[3] = (int)vec->w;
+}
+
+static HSPREAL *code_getvvec( void )
+{
+	PVal *pval;
+	int size,inisize;
+	HSPREAL dummy;
+	HSPREAL *v;
+
+	v = (HSPREAL *)code_getvptr( &pval, &size );
+	dummy = (HSPREAL)0.0;
+	if ( pval->flag != HSPVAR_FLAG_DOUBLE ) {
+		code_setva( pval, 0, HSPVAR_FLAG_DOUBLE, &dummy );
+	}
+	inisize = pval->len[1];
+	if ( inisize < 4 ) {
+			pval->len[1] = 4;						// ちょっと強引に配列を拡張
+			pval->size = 4 * sizeof(HSPREAL);
+			code_setva( pval, 3, HSPVAR_FLAG_DOUBLE, &dummy );
+			if ( inisize < 3 ) code_setva( pval, 2, HSPVAR_FLAG_DOUBLE, &dummy );
+			if ( inisize < 2 ) code_setva( pval, 1, HSPVAR_FLAG_DOUBLE, &dummy );
+	}
+	v = (HSPREAL *)HspVarCorePtrAPTR( pval, 0 );
+
+	return v;
+}
+
+static int *code_getivec( void )
+{
+	PVal *pval;
+	int dummy;
+	int size,inisize;
+	int *v;
+
+	v = (int *)code_getvptr( &pval, &size );
+	dummy = 0;
+	if ( pval->flag != HSPVAR_FLAG_INT ) {
+		code_setva( pval, 0, HSPVAR_FLAG_INT, &dummy );
+	}
+	inisize = pval->len[1];
+	if ( inisize < 4 ) {
+			pval->len[1] = 4;						// ちょっと強引に配列を拡張
+			pval->size = 4 * sizeof(int);
+			code_setva( pval, 3, HSPVAR_FLAG_INT, &dummy );
+			if ( inisize < 3 ) code_setva( pval, 2, HSPVAR_FLAG_INT, &dummy );
+			if ( inisize < 2 ) code_setva( pval, 1, HSPVAR_FLAG_INT, &dummy );
+	}
+	v = (int *)HspVarCorePtrAPTR( pval, 0 );
+	return v;
+}
+
+
+
+#endif
 
 #ifdef USE_DGOBJ
 static void code_getvec( VECTOR *vec )
@@ -543,33 +669,33 @@ static int cmdfunc_extcmd( int cmd )
 		p3 = code_getdi( 0 );
 		bmscr->Setcolor(p1,p2,p3);
 		break;
-        case 0x1b:								// redraw
-            p1 = code_getdi( 1 );
-            p2 = code_getdi( 0 );
-            p3 = code_getdi( 0 );
-            p4 = code_getdi( 0 );
-            p5 = code_getdi( 0 );
-            if ( p1&1 ) {
-                if (( p1 & 16 ) == 0 ) {
-                    bmscr->DrawAllObjects();	// オブジェクトを描画する
-                    bmscr->SetDefaultFont();	// フォントを元に戻す
+	case 0x1b:								// redraw
+		p1 = code_getdi( 1 );
+		p2 = code_getdi( 0 );
+		p3 = code_getdi( 0 );
+		p4 = code_getdi( 0 );
+		p5 = code_getdi( 0 );
+		if ( p1&1 ) {
+			if (( p1 & 16 ) == 0 ) {
+				bmscr->DrawAllObjects();	// オブジェクトを描画する
+				bmscr->SetDefaultFont();	// フォントを元に戻す
 #ifdef HSPWIN
-                    hgio_text_render();
+				hgio_text_render();
 #endif
-                }
-            } else {
-                if ( p1 & 16 ) {
-                    bmscr->DrawAllObjects();	// オブジェクトを描画する
-                    bmscr->SetDefaultFont();	// フォントを元に戻す
+			}
+		} else {
+			if ( p1 & 16 ) {
+				bmscr->DrawAllObjects();	// オブジェクトを描画する
+				bmscr->SetDefaultFont();	// フォントを元に戻す
 #ifdef HSPWIN
-                    hgio_text_render();
+				hgio_text_render();
 #endif
-                    break;
-                }
-            }
-            ctx->stat = hgio_redraw( (BMSCR *)bmscr, p1 );
-            break;
-            
+				break;
+			}
+		}
+		ctx->stat = hgio_redraw( (BMSCR *)bmscr, p1 );
+		break;
+
 	case 0x1c:								// width
 		p1 = code_getdi( -1 );
 		p2 = code_getdi( -1 );
@@ -941,7 +1067,7 @@ static int cmdfunc_extcmd( int cmd )
 	case 0x3e:								// celput
 		{
 		Bmscr *bm2;
-		double zx,zy,rot;
+		HSPREAL zx,zy,rot;
 
 		p1=code_getdi(1);
 		p2=code_getdi(0);
@@ -969,6 +1095,9 @@ static int cmdfunc_extcmd( int cmd )
 	case 0x40:								// setreq
 		p1 = code_getdi( 0 );
 		p2 = code_getdi( 0 );
+#ifdef HSPDISHGP
+		game->hookSetSysReq( p1, p2 );
+#endif
 		SetSysReq( p1, p2 );
 		break;
 	case 0x41:								// getreq
@@ -981,6 +1110,9 @@ static int cmdfunc_extcmd( int cmd )
 //			code_setva( p_pval, p_aptr, HSPVAR_FLAG_STR, GetDebug() );
 //			break;
 //		}
+#ifdef HSPDISHGP
+		game->hookGetSysReq( p1 );
+#endif
 		p2 = GetSysReq( p1 );
 		code_setva( p_pval, p_aptr, HSPVAR_FLAG_INT, &p2 );
 		break;
@@ -1103,6 +1235,889 @@ static int cmdfunc_extcmd( int cmd )
 		ctx->stat = p_res;
 		break;
 		}
+
+#ifdef USE_WEBTASK
+	case 0x4b:								// httpload
+		{
+		char *ss;
+		char *ss_post;
+		ss = code_stmpstr( code_gets() );			// パラメータ1:文字列
+		ss_post = code_getds( "" );					// パラメータ2:文字列
+		if ( *ss_post == 0 ) ss_post = NULL;
+		ctx->stat = webtask->Request( ss, ss_post );
+		break;
+		}
+	case 0x4c:								// httpinfo
+		{
+		PVal *pv;
+		APTR ap;
+		char *ss;
+		char *dst;
+		int size;
+		ap = code_getva( &pv );					// パラメータ1:変数
+		p1 = code_getdi( 0 );					// パラメータ2:数値
+		if ( p1 & 16 ) {
+			ss = webtask->getData( p1 );
+			if ( p1 == HTTPINFO_DATA ) {
+				//	結果データをバイナリで取得する
+				if ( pv->flag != HSPVAR_FLAG_STR ) {
+					code_setva( pv, ap, TYPE_STRING, "" );
+				}
+				size = webtask->getStatus( HTTPINFO_SIZE );
+				dst = (char *)HspVarCorePtrAPTR( pv, ap );
+				HspVarCoreAllocBlock( pv, (PDAT *)dst, size+1 );
+				dst = (char *)HspVarCorePtrAPTR( pv, ap );
+				memcpy( dst, ss, size );
+				dst[size] = 0;
+				webtask->setData( HTTPINFO_DATA, "" );	// 受信データを破棄する
+				break;
+			}
+			code_setva( pv, ap, HSPVAR_FLAG_STR, ss );	// 変数に値を代入
+		} else {
+			p2 = webtask->getStatus( p1 );
+			code_setva( pv, ap, HSPVAR_FLAG_INT, &p2 );	// 変数に値を代入
+		}
+		break;
+		}
+#endif
+
+#ifdef HSPDISHGP
+
+	case 0x5e:								// setcls
+		p1 = code_getdi( 0 );
+		p2 = code_getdi( 0 );
+		p3 = code_getdi( -1 );
+		hgio_clsmode( p1, p2, p3 );
+		break;
+
+	case 0x5f:								// celputm
+		int *p_ptr1;
+		int *p_ptr2;
+		int *p_ptr3;
+		int p_res;
+		Bmscr *bm2;
+		p_ptr1 = code_getiv();
+		p_ptr2 = code_getiv();
+		p_ptr3 = code_getiv();
+		p1 = code_getdi( 0 );
+		p2 = code_getdi( 1 );
+
+		bm2 = wnd->GetBmscrSafe( p1 );	// 転送元のBMSCRを取得
+		p_res = hgio_celputmulti( (BMSCR *)bmscr, p_ptr1, p_ptr2, p_ptr3, p2, (BMSCR *)bm2 );
+		ctx->stat = p_res;
+		break;
+
+	case 0x60:								// gpreset
+		p1 = code_getdi( 0 );
+		game->resetScreen( p1 );
+		break;
+	case 0x61:								// gpdraw
+		p1 = code_getdi( -1 );
+		if ( p1 & GPDRAW_OPT_OBJUPDATE ) {
+			game->updateAll();
+		}
+		game->drawAll( p1 );
+
+		if ( p1 & GPDRAW_OPT_DRAW2D ) {
+			hgio_draw_gpsprite( bmscr, false );
+		}
+		if ( p1 & GPDRAW_OPT_DRAW2D_LATE ) {
+			hgio_draw_gpsprite( bmscr, true );
+		}
+		break;
+	case 0x62:								// gpusescene
+		p1 = code_getdi( 0 );
+		game->selectScene( p1 );
+		break;
+	case 0x63:								// gpsetprm
+		p1 = code_getdi( 0 );
+		p2 = code_getdi( 0 );
+		p3 = code_getdi( 0 );
+		p4 = game->setObjectPrm( p1, p2, p3 );
+		if ( p4 < 0 ) throw HSPERR_ILLEGAL_FUNCTION;
+		break;
+	case 0x64:								// gpgetprm
+		{
+		PVal *p_pval;
+		APTR p_aptr;
+		p_aptr = code_getva( &p_pval );
+		p1 = code_getdi( 0 );
+		p2 = code_getdi( 0 );
+		p4 = game->getObjectPrm( p1, p2, &p6 );
+		if ( p4 < 0 ) throw HSPERR_ILLEGAL_FUNCTION;
+		code_setva( p_pval, p_aptr, HSPVAR_FLAG_INT, &p6 );
+		break;
+		}
+	case 0x65:								// gppostefx
+		break;
+	case 0x66:								// gpuselight
+		p1 = code_getdi( 0 );
+		game->selectLight( p1 );
+		break;
+	case 0x67:								// gpusecamera
+		p1 = code_getdi( 0 );
+		game->selectCamera( p1 );
+		break;
+	case 0x68:								// gpmatprm
+		{
+		char fname[256];
+		char *ps;
+		gpmat *mat;
+		p1 = code_getdi( 0 );
+		ps = code_gets();
+		strncpy( fname, ps, 256 );
+		code_getvec( &p_vec1 );
+		mat = game->getMat( p1 );
+		if ( mat == NULL ) throw HSPERR_ILLEGAL_FUNCTION;
+		mat->setParameter( fname, (gameplay::Vector3 *)&p_vec1 );
+		break;
+		}
+	case 0x69:								// gpmatstate
+		{
+		char fname[256];
+		char *ps;
+		gpmat *mat;
+		p1 = code_getdi( 0 );
+		ps = code_gets();
+		strncpy( fname, ps, 256 );
+		ps = code_gets();
+		mat = game->getMat( p1 );
+		if ( mat == NULL ) throw HSPERR_ILLEGAL_FUNCTION;
+		mat->setState( fname, ps );
+		break;
+		}
+	case 0x6a:								// gpviewport
+		p1 = code_getdi( 0 );
+		p2 = code_getdi( 0 );
+		p3 = code_getdi( bmscr->sx );
+		p4 = code_getdi( bmscr->sy );
+		game->updateViewport( p1, p2, p3, p4 );
+		break;
+	case 0x6b:								// setobjname
+		{
+		gameplay::Node *node;
+		char *ps;
+		p1 = code_getdi( 0 );
+		ps = code_gets();
+		node = game->getNode( p1 );
+		if ( node == NULL ) throw HSPERR_ILLEGAL_FUNCTION;
+		node->setId( (const char *)ps );
+		break;
+		}
+	case 0x6c:								// getobjname
+		{
+		gameplay::Node *node;
+		PVal *p_pval;
+		APTR p_aptr;
+		char *str;
+		p_aptr = code_getva( &p_pval );
+		p1 = code_getdi( 0 );
+		node = game->getNode( p1 );
+		if ( node == NULL ) throw HSPERR_ILLEGAL_FUNCTION;
+		str = (char *)node->getId();
+		code_setva( p_pval, p_aptr, HSPVAR_FLAG_STR, &str );
+		break;
+		}
+	case 0x6d:								// setborder
+		{
+		float x,y,z;
+		gameplay::Vector3 v1;
+		gameplay::Vector3 v2;
+		code_getvec( &p_vec1 );
+		p1 = code_getdi( 0 );
+		switch( p1 ) {
+		case 0:
+			x = p_vec1.x * 0.5f;
+			y = p_vec1.y * 0.5f;
+			z = p_vec1.z * 0.5f;
+			game->setBorder( -x, x, -y, y, -z, z );
+			break;
+		case 1:
+			game->getBorder( &v1, &v2 );
+			game->setBorder( p_vec1.x, v2.x, p_vec1.y, v2.y, p_vec1.z, v2.z );
+			break;
+		case 2:
+			game->getBorder( &v1, &v2 );
+			game->setBorder( v1.x, p_vec1.x, v1.y, p_vec1.y, v1.z, p_vec1.z );
+			break;
+		}
+		break;
+		}
+	case 0x6e:								// findobj
+		p1 = code_getdi( 0 );
+		p2 = code_getdi( 0 );
+		game->findeObj( p1, p2 );
+		break;
+	case 0x6f:								// nextobj
+		{
+		PVal *p_pval;
+		APTR p_aptr;
+		gpobj *obj;
+		p_aptr = code_getva( &p_pval );
+		obj = game->getNextObj();
+		if ( obj ) { p1 = obj->_id; } else { p1 = -1; }
+		code_setva( p_pval, p_aptr, HSPVAR_FLAG_INT, &p1 );
+		break;
+		}
+
+	case 0x70:								// gpdelobj
+		p1 = code_getdi( 0 );
+		game->deleteObjectID( p1 );
+		break;
+	case 0x71:								// gpcolormat
+		{
+		gameplay::Material *mat;
+		PVal *p_pval;
+		APTR p_aptr;
+		p_aptr = code_getva( &p_pval );
+		p1 = code_getdi( -1 );
+		p2 = code_getdi( 0 );
+		mat = game->makeMaterialColor( p1, p2 );
+		if ( mat == NULL ) throw HSPERR_ILLEGAL_FUNCTION;
+		p6 = game->makeNewMat( mat );
+		code_setva( p_pval, p_aptr, HSPVAR_FLAG_INT, &p6 );
+		break;
+		}
+	case 0x72:								// gptexmat
+		{
+		gameplay::Material *mat;
+		char fname[HSP_MAX_PATH];
+		char *ps;
+		PVal *p_pval;
+		APTR p_aptr;
+		p_aptr = code_getva( &p_pval );
+		ps = code_gets();
+		strncpy( fname, ps, HSP_MAX_PATH );
+		p1 = code_getdi( 0 );
+		mat = game->makeMaterialTexture( fname, p1 );
+		if ( mat == NULL ) throw HSPERR_ILLEGAL_FUNCTION;
+		p6 = game->makeNewMat( mat );
+		code_setva( p_pval, p_aptr, HSPVAR_FLAG_INT, &p6 );
+		break;
+		}
+	case 0x73:								// gpusermat
+		{
+		gameplay::Material *mat;
+		char vshname[HSP_MAX_PATH];
+		char fshname[HSP_MAX_PATH];
+		char defname[512];
+		char *ps;
+		PVal *p_pval;
+		APTR p_aptr;
+		p_aptr = code_getva( &p_pval );
+		ps = code_gets();
+		strncpy( vshname, ps, HSP_MAX_PATH );
+		ps = code_gets();
+		strncpy( fshname, ps, HSP_MAX_PATH );
+		ps = code_gets();
+		strncpy( defname, ps, 512 );
+		p1 = code_getdi( -1 );
+		p2 = code_getdi( 0 );
+		mat = game->makeMaterialFromShader( vshname, fshname, defname );
+		if ( mat == NULL ) throw HSPERR_ILLEGAL_FUNCTION;
+		game->setMaterialDefaultBinding( mat, p1, p2 );
+		p6 = game->makeNewMat( mat );
+		code_setva( p_pval, p_aptr, HSPVAR_FLAG_INT, &p6 );
+		break;
+		}
+	case 0x74:								// gpclone
+		{
+		PVal *p_pval;
+		APTR p_aptr;
+		p_aptr = code_getva( &p_pval );
+		p1 = code_getdi( 0 );
+		p6 = game->makeCloneNode( p1 );
+		code_setva( p_pval, p_aptr, HSPVAR_FLAG_INT, &p6 );
+		break;
+		}
+	case 0x75:								// gpload
+		{
+		PVal *p_pval;
+		APTR p_aptr;
+		char fname[HSP_MAX_PATH];
+		char *ps;
+		p_aptr = code_getva( &p_pval );
+		ps = code_gets();
+		strncpy( fname, ps, HSP_MAX_PATH );
+		ps = code_getds("");
+		if ( *ps == 0 ) { ps = NULL; }
+		p6 = game->makeModelNode( fname, ps );
+		code_setva( p_pval, p_aptr, HSPVAR_FLAG_INT, &p6 );
+		break;
+		}
+	case 0x76:								// gpplate
+		{
+		PVal *p_pval;
+		APTR p_aptr;
+		p_aptr = code_getva( &p_pval );
+		fp1 = (float)code_getdd( 1.0 );
+		fp2 = (float)code_getdd( 1.0 );
+		p1 = code_getdi( -1 );
+		p2 = code_getdi( -1 );
+		p6 = game->makePlateNode( fp1, fp2, p1, p2 );
+		code_setva( p_pval, p_aptr, HSPVAR_FLAG_INT, &p6 );
+		break;
+		}
+	case 0x77:								// gpfloor
+		{
+		PVal *p_pval;
+		APTR p_aptr;
+		p_aptr = code_getva( &p_pval );
+		fp1 = (float)code_getdd( 1.0 );
+		fp2 = (float)code_getdd( 1.0 );
+		p1 = code_getdi( -1 );
+		p2 = code_getdi( -1 );
+		p6 = game->makeFloorNode( fp1, fp2, p1, p2 );
+		code_setva( p_pval, p_aptr, HSPVAR_FLAG_INT, &p6 );
+		break;
+		}
+	case 0x78:								// gpbox
+		{
+		PVal *p_pval;
+		APTR p_aptr;
+		p_aptr = code_getva( &p_pval );
+		fp1 = (float)code_getdd( 1.0 );
+		p1 = code_getdi( -1 );
+		p2 = code_getdi( -1 );
+		p6 = game->makeBoxNode( fp1, p1, p2 );
+		code_setva( p_pval, p_aptr, HSPVAR_FLAG_INT, &p6 );
+		break;
+		}
+	case 0x79:								// gpspr
+		{
+		Bmscr *bm2;
+		PVal *p_pval;
+		APTR p_aptr;
+		p_aptr = code_getva( &p_pval );
+		p1 = code_getdi( 0 );
+		p2 = code_getdi( 0 );
+		p3 = code_getdi( 3 );
+		bm2 = wnd->GetBmscrSafe( p1 );	// 転送元のBMSCRを取得
+		if ( bm2 == NULL ) code_puterror( HSPERR_ILLEGAL_FUNCTION );
+		p6 = game->makeSpriteObj( p2, p3, bm2 );
+		code_setva( p_pval, p_aptr, HSPVAR_FLAG_INT, &p6 );
+		break;
+		}
+	case 0x7a:								// gplight
+		p1 = code_getdi( 0 );
+		p2 = code_getdi( 0 );
+		fp1 = (float)code_getdd( 1.0 );
+		fp2 = (float)code_getdd( 0.5 );
+		fp3 = (float)code_getdd( 1.0 );
+		p6 = game->makeNewLgt( p1, p2, fp1, fp2, fp3 );
+		if ( p6 < 0 ) code_puterror( HSPERR_ILLEGAL_FUNCTION );
+		break;
+	case 0x7b:								// setobjmode
+		{
+		gpobj *o;
+		p1 = code_getdi( 0 );
+		p2 = code_getdi( 0 );
+		p3 = code_getdi( 0 );
+		o = game->getObj( p1 );
+		if ( o == NULL ) code_puterror( HSPERR_ILLEGAL_FUNCTION );
+		ctx->stat = o->_mode;
+		switch(p3) {
+		case 0:
+			o->_mode |= p2;
+			break;
+		case 1:
+			o->_mode &= ~p2;
+			break;
+		default:
+			o->_mode = p2;
+			break;
+		}
+		break;
+		}
+	case 0x7c:								// gplookat
+		p1 = code_getdi( 0 );
+		code_getvec( &p_vec1 );
+		p6 = game->lookAtObject( p1, &p_vec1 );
+		if ( p6 < 0 ) throw HSPERR_ILLEGAL_FUNCTION;
+		break;
+	case 0x7d:								// gppbind
+		p1 = code_getdi( 0 );
+		fp1 = (float)code_getdd( 1.0 );
+		fp2 = (float)code_getdd( 0.5 );
+		ctx->stat = game->setObjectBindPhysics( p1, fp1, fp2 );
+		break;
+	case 0x7e:								// gpcamera
+		p1 = code_getdi( 0 );
+		fp1 = (float)code_getdd( 45.0 );
+		fp2 = (float)code_getdd( 1.5 );
+		fp3 = (float)code_getdd( 0.5 );
+		fp4 = (float)code_getdd( 768.0 );
+		p6 = game->makeNewCam( p1, fp1, fp2, fp3, fp4 );
+		if ( p6 < 0 ) code_puterror( HSPERR_ILLEGAL_FUNCTION );
+		break;
+	case 0x7f:								// gpnull
+		{
+		PVal *p_pval;
+		APTR p_aptr;
+		p_aptr = code_getva( &p_pval );
+		p6 = game->makeNullNode();
+		code_setva( p_pval, p_aptr, HSPVAR_FLAG_INT, &p6 );
+		break;
+		}
+
+
+	case 0x80:								// getpos
+	case 0x81:								// getquat
+	case 0x82:								// getscale
+	case 0x83:								// getdir
+	case 0x84:								// getefx
+	case 0x85:								// getcolor
+	case 0x86:								// getwork
+	case 0x87:								// getwork2
+		{
+		PVal *pv1;
+		PVal *pv2;
+		PVal *pv3;
+		APTR aptr1;
+		APTR aptr2;
+		APTR aptr3;
+		gameplay::Vector4 v;
+		HSPREAL dp1,dp2,dp3;
+		p1 = code_getdi( 0 );
+		aptr1 = code_getva( &pv1 );
+		aptr2 = code_getva( &pv2 );
+		aptr3 = code_getva( &pv3 );
+		p6 = game->getObjectVector( p1, cmd - 0x80, &v );
+		if ( p6 < 0 ) code_puterror( HSPERR_ILLEGAL_FUNCTION );
+		dp1 = (HSPREAL)v.x;
+		dp2 = (HSPREAL)v.y;
+		dp3 = (HSPREAL)v.z;
+		code_setva( pv1, aptr1, HSPVAR_FLAG_DOUBLE, &dp1 );
+		code_setva( pv2, aptr2, HSPVAR_FLAG_DOUBLE, &dp2 );
+		code_setva( pv3, aptr3, HSPVAR_FLAG_DOUBLE, &dp3 );
+		break;
+		}
+
+	case 0x90:								// getposi
+	case 0x91:								// getquati
+	case 0x92:								// getscalei
+	case 0x93:								// getdiri
+	case 0x94:								// getefxi
+	case 0x95:								// getcolori
+	case 0x96:								// getworki
+	case 0x97:								// getwork2i
+		{
+		PVal *pv1;
+		PVal *pv2;
+		PVal *pv3;
+		APTR aptr1;
+		APTR aptr2;
+		APTR aptr3;
+		gameplay::Vector4 v;
+		p1 = code_getdi( 0 );
+		aptr1 = code_getva( &pv1 );
+		aptr2 = code_getva( &pv2 );
+		aptr3 = code_getva( &pv3 );
+		p6 = game->getObjectVector( p1, cmd - 0x90, &v );
+		if ( p6 < 0 ) code_puterror( HSPERR_ILLEGAL_FUNCTION );
+		p1 = (int)v.x;
+		p2 = (int)v.y;
+		p3 = (int)v.z;
+		code_setva( pv1, aptr1, HSPVAR_FLAG_INT, &p1 );
+		code_setva( pv2, aptr2, HSPVAR_FLAG_INT, &p2 );
+		code_setva( pv3, aptr3, HSPVAR_FLAG_INT, &p3 );
+		break;
+		}
+
+	case 0xa0:								// selpos
+	case 0xa1:								// selquat
+	case 0xa2:								// selscale
+	case 0xa3:								// seldir
+	case 0xa4:								// selefx
+	case 0xa5:								// selcolor
+	case 0xa6:								// selwork
+	case 0xa7:								// selwork2
+		p1 = code_getdi( 0 );
+		select_objid = p1;
+		select_objmoc = cmd - 0xa0;
+		break;
+
+	case 0xb0:								// setpos
+	case 0xb1:								// setquat
+	case 0xb2:								// setscale
+	case 0xb3:								// setdir
+	case 0xb4:								// setefx
+	case 0xb5:								// setcolor
+	case 0xb6:								// setwork
+	case 0xb7:								// setwork2
+	case 0xb8:								// setaxang
+	case 0xb9:								// setangx
+	case 0xba:								// setangy
+	case 0xbb:								// setangz
+		p1 = code_getdi( 0 );
+		code_getvec( &p_vec1 );
+		p6 = game->setObjectVector( p1, cmd - 0xb0, &p_vec1 );
+		if ( p6 < 0 ) throw HSPERR_ILLEGAL_FUNCTION;
+		break;
+
+	case 0xc0:								// addpos
+	case 0xc1:								// addquat
+	case 0xc2:								// addscale
+	case 0xc3:								// adddir
+	case 0xc4:								// addefx
+	case 0xc5:								// addcolor
+	case 0xc6:								// addwork
+	case 0xc7:								// addwork2
+	case 0xc8:								// addaxang
+	case 0xc9:								// addangx
+	case 0xca:								// addangy
+	case 0xcc:								// addangz
+		p1 = code_getdi( 0 );
+		code_getvec( &p_vec1 );
+		p6 = game->addObjectVector( p1, cmd - 0xc0, &p_vec1 );
+		if ( p6 < 0 ) throw HSPERR_ILLEGAL_FUNCTION;
+		break;
+
+	case 0xd0:								// objset3
+		code_getvec( &p_vec1 );
+		p6 = game->setObjectVector( select_objid, select_objmoc, &p_vec1 );
+		if ( p6 < 0 ) throw HSPERR_ILLEGAL_FUNCTION;
+		break;
+	case 0xd1:								// objadd3
+		code_getvec( &p_vec1 );
+		p6 = game->addObjectVector( select_objid, select_objmoc, &p_vec1 );
+		if ( p6 < 0 ) throw HSPERR_ILLEGAL_FUNCTION;
+		break;
+	case 0xd2:								// objsetfv
+		p_vec = code_getvvec();
+		p_vec2.set( (float)p_vec[0],(float)p_vec[1],(float)p_vec[2], 1.0f );
+		p6 = game->setObjectVector( select_objid, select_objmoc, &p_vec2 );
+		if ( p6 < 0 ) throw HSPERR_ILLEGAL_FUNCTION;
+		break;
+	case 0xd3:								// objaddfv
+		p_vec = code_getvvec();
+		p_vec2.set( (float)p_vec[0],(float)p_vec[1],(float)p_vec[2], 1.0f );
+		p6 = game->addObjectVector( select_objid, select_objmoc, &p_vec2 );
+		if ( p6 < 0 ) throw HSPERR_ILLEGAL_FUNCTION;
+		break;
+	case 0xd4:								// objgetfv
+		{
+		gameplay::Vector4 v;
+		p_vec = code_getvvec();
+		p6 = game->getObjectVector( select_objid, select_objmoc, &v );
+		if ( p6 < 0 ) code_puterror( HSPERR_ILLEGAL_FUNCTION );
+		code_setvec( p_vec, (VECTOR *)&v );
+		break;
+		}
+
+	case 0xd5:								// setangr
+	case 0xd6:								// addangr
+		{
+		Vector4 vec;
+		p1 = code_getdi( 0 );
+		vec.x = CnvIntRot( code_getdi( 0 ) );
+		vec.y = CnvIntRot( code_getdi( 0 ) );
+		vec.z = CnvIntRot( code_getdi( 0 ) );
+		vec.w = 1.0f;
+
+		if ( cmd == 0xd5 ) {
+			p6 = game->setObjectVector( p1, MOC_ANGX, &vec );
+			if ( p6 < 0 ) throw HSPERR_ILLEGAL_FUNCTION;
+		} else {
+			p6 = game->addObjectVector( p1, MOC_ANGX, &vec );
+			if ( p6 < 0 ) throw HSPERR_ILLEGAL_FUNCTION;
+		}
+		break;
+		}
+	case 0xd7:								// selmoc
+		p1 = code_getdi( 0 );
+		p2 = code_getdi( 0 );
+		select_objid = p1;
+		select_objmoc = p2;
+		break;
+	case 0xd8:								// gpcnvaxis
+		break;
+	case 0xd9:								// getcoli
+		{
+		PVal *p_pval;
+		APTR p_aptr;
+		p_aptr = code_getva( &p_pval );
+		p1 = code_getdi( 0 );
+		fp1 = (float)code_getdd( 1.0 );
+		p2 = code_getdi( 0 );
+		p6 = game->updateObjColi( p1, fp1, p2 );
+		code_setva( p_pval, p_aptr, HSPVAR_FLAG_INT, &p6 );
+		break;
+		}
+	case 0xda:								// setcoli
+		{
+		gpobj *obj;
+		p1 = code_getdi( 0 );
+		p2 = code_getdi( 0 );
+		p3 = code_getdi( 0 );
+		obj = game->getObj( p1 );
+		if ( obj == NULL ) throw HSPERR_ILLEGAL_FUNCTION;
+		obj->_mygroup = p2;
+		obj->_colgroup = p3;
+		break;
+		}
+	case 0xdb:								// getobjcoli
+		{
+		PVal *p_pval;
+		APTR p_aptr;
+		gpobj *obj;
+		p_aptr = code_getva( &p_pval );
+		p1 = code_getdi( 0 );
+		obj = game->getObj( p1 );
+		if ( obj == NULL ) code_puterror( HSPERR_ILLEGAL_FUNCTION );
+		p1 = obj->_mygroup;
+		code_setva( p_pval, p_aptr, HSPVAR_FLAG_INT, &p1 );
+		break;
+		}
+	case 0xdc:								// objexist
+		{
+		gpobj *obj;
+		p1 = code_getdi( 0 );
+		p2 = 0;
+		obj = game->getObj( p1 );
+		if ( obj == NULL ) p2 = -1;
+		ctx->stat = p2;
+		break;
+		}
+
+
+	case 0xe0:								// fvset
+		p_vec = code_getvvec();
+		code_getvec( &p_vec1 );
+		code_setvec( p_vec, (VECTOR *)&p_vec1 );
+		break;
+	case 0xe1:								// fvadd
+		p_vec = code_getvvec();
+		code_getvec( &p_vec1 );
+		p_vec2.set( (float)p_vec[0],(float)p_vec[1],(float)p_vec[2], 1.0f );
+		p_vec2.add( p_vec1 );
+		code_setvec( p_vec, (VECTOR *)&p_vec2 );
+		break;
+	case 0xe2:								// fvsub
+		p_vec = code_getvvec();
+		code_getvec( &p_vec1 );
+		p_vec2.set( (float)p_vec[0],(float)p_vec[1],(float)p_vec[2], 1.0f );
+		p_vec2.subtract( p_vec1 );
+		code_setvec( p_vec, (VECTOR *)&p_vec2 );
+		break;
+	case 0xe3:								// fvmul
+		p_vec = code_getvvec();
+		code_getvec( &p_vec1 );
+		p_vec2.set( (float)p_vec[0] * p_vec1.x,(float)p_vec[1] * p_vec1.y,(float)p_vec[2] * p_vec1.z, 1.0f );
+		code_setvec( p_vec, (VECTOR *)&p_vec2 );
+		break;
+	case 0xe4:								// fvdiv
+		p_vec = code_getvvec();
+		code_getvec( &p_vec1 );
+		p_vec2.set( (float)p_vec[0] / p_vec1.x,(float)p_vec[1] / p_vec1.y,(float)p_vec[2] / p_vec1.z, 1.0f );
+		code_setvec( p_vec, (VECTOR *)&p_vec2 );
+		break;
+	case 0xe5:								// fvdir
+		{
+/*
+		VECTOR v;
+		VECTOR ang;
+		p_vec = code_getvvec();
+		code_getvec( &v );
+		p1 = code_getdi( 0 );
+		SetVector( &ang, (float)p_vec[0], (float)p_vec[1], (float)p_vec[2], 1.0f );
+		InitMatrix();
+		switch( p1 ) {
+		case HGMODEL_ROTORDER_ZYX:
+			RotZ( ang.z );
+			RotY( ang.y );
+			RotX( ang.x );
+			break;
+		case HGMODEL_ROTORDER_XYZ:
+			RotX( ang.x );
+			RotY( ang.y );
+			RotZ( ang.z );
+			break;
+		case HGMODEL_ROTORDER_YXZ:
+			RotY( ang.y );
+			RotX( ang.x );
+			RotZ( ang.z );
+			break;
+		}
+		ApplyMatrix( &ang, &v );
+		code_setvec( p_vec, &ang );
+*/
+		break;
+		}
+	case 0xe6:								// fvmin
+		p_vec = code_getvvec();
+		dp1 = code_getdd( 0.0 );
+		dp2 = code_getdd( 0.0 );
+		dp3 = code_getdd( 0.0 );
+		if ( p_vec[0] < dp1 ) p_vec[0] = dp1;
+		if ( p_vec[1] < dp2 ) p_vec[1] = dp2;
+		if ( p_vec[2] < dp3 ) p_vec[2] = dp3;
+		break;
+	case 0xe7:								// fvmax
+		p_vec = code_getvvec();
+		dp1 = code_getdd( 0.0 );
+		dp2 = code_getdd( 0.0 );
+		dp3 = code_getdd( 0.0 );
+		if ( p_vec[0] > dp1 ) p_vec[0] = dp1;
+		if ( p_vec[1] > dp2 ) p_vec[1] = dp2;
+		if ( p_vec[2] > dp3 ) p_vec[2] = dp3;
+		break;
+	case 0xe8:								// fvunit
+		{
+		VECTOR v;
+		p_vec = code_getvvec();
+		SetVector( &v, (float)p_vec[0], (float)p_vec[1], (float)p_vec[2], 1.0f );
+		UnitVector( &v );
+		code_setvec( p_vec, &v );
+		break;
+		}
+	case 0xe9:								// fvouter
+		{
+		VECTOR v;
+		VECTOR v1;
+		gameplay::Vector4 v2;
+		p_vec = code_getvvec();
+		code_getvec( &v2 );
+		SetVector( &v1, (float)p_vec[0], (float)p_vec[1], (float)p_vec[2], 1.0f );
+		OuterProduct( &v, &v1, (VECTOR *)&v2 );
+		code_setvec( p_vec, &v );
+		break;
+		}
+	case 0xea:								// fvinner
+		{
+		VECTOR v;
+		gameplay::Vector4 v2;
+		p_vec = code_getvvec();
+		code_getvec( &v2 );
+		SetVector( &v, (float)p_vec[0], (float)p_vec[1], (float)p_vec[2], 1.0f );
+		p_vec[0] = (double)InnerProduct( &v, (VECTOR *)&v2 );
+		break;
+		}
+	case 0xeb:								// fvface
+		{
+		VECTOR v;
+		gameplay::Vector4 v2;
+		p_vec = code_getvvec();
+		code_getvec( &v2 );
+		SetVector( &v, (float)p_vec[0], (float)p_vec[1], (float)p_vec[2], 1.0f );
+		GetTargetAngle( &v, &v, (VECTOR *)&v2 );
+		code_setvec( p_vec, &v );
+		break;
+		}
+
+
+	case 0xec:								// fv2str
+		p_vec = code_getvvec();
+		sprintf( ctx->refstr, "%f,%f,%f",p_vec[0],p_vec[1],p_vec[2] );
+		break;
+	case 0xed:								// f2str
+		{
+		PVal *p_pval;
+		APTR p_aptr;
+		char str[64];
+		p_aptr = code_getva( &p_pval );
+		dp1 = code_getdd( 0.0 );
+		sprintf( str, "%f", dp1 );
+		code_setva( p_pval, p_aptr, HSPVAR_FLAG_STR, &str );
+		break;
+		}
+	case 0xee:								// str2fv
+		{
+		VECTOR v;
+		char *ps;
+		p_vec = code_getvvec();
+		ps = code_gets();
+		sscanf( ps,"%f,%f,%f",&v.x,&v.y,&v.z );
+		code_setvec( p_vec, &v );
+		break;
+		}
+	case 0xef:								// str2f
+		{
+		float fp;
+		char *ps;
+		PVal *p_pval;
+		APTR p_aptr;
+		p_aptr = code_getva( &p_pval );
+		ps = code_gets();
+		sscanf( ps, "%f", &fp );
+		dp1 = (double)fp;
+		code_setva( p_pval, p_aptr, HSPVAR_FLAG_DOUBLE, &dp1 );
+		break;
+		}
+
+
+	case 0xf0:								// gppset
+		{
+		gpphy *phy;
+		p1 = code_getdi( 0 );
+		p2 = code_getdi( 0 );
+		code_getvec( &p_vec1 );
+		phy = game->getPhy( p1 );
+		if ( phy == NULL ) throw HSPERR_ILLEGAL_FUNCTION;
+		ctx->stat = phy->setParameter( p2, (Vector3 *)&p_vec1 );
+		break;
+		}
+
+	case 0xf1:								// gpobjpool
+		p1 = code_getdi( 0 );
+		p2 = code_getdi( -1 );
+		p3 = game->setObjectPool( p1, p2 );
+		if ( p3 < 0 ) throw HSPERR_ILLEGAL_FUNCTION;
+		break;
+
+	case 0xf2:								// gppapply
+		p1 = code_getdi( 0 );
+		p2 = code_getdi( 0 );
+		code_getvec( &p_vec1 );
+		p3 = game->objectPhysicsApply( p1, p2, (Vector3 *)&p_vec1 );
+		if ( p3 < 0 ) throw HSPERR_ILLEGAL_FUNCTION;
+		break;
+
+	case 0xf3:								// setalpha
+		{
+		gpobj *obj;
+		p1 = code_getdi( 0 );
+		p2 = code_getdi( 255 );
+		obj = game->getObj( p1 );
+		if ( obj == NULL ) throw HSPERR_ILLEGAL_FUNCTION;
+		if ( p2 < 0 ) p2 = 0;
+		if ( p2 > 255 ) p2 = 255;
+		obj->_transparent = p2;
+		break;
+		}
+	case 0xf4:								// gpmatprm1
+		{
+		char fname[256];
+		char *ps;
+		gpmat *mat;
+		p1 = code_getdi( 0 );
+		ps = code_gets();
+		strncpy( fname, ps, 256 );
+		dp1 = code_getdd( 0.0 );
+		mat = game->getMat( p1 );
+		if ( mat == NULL ) throw HSPERR_ILLEGAL_FUNCTION;
+		mat->setParameter( fname, dp1 );
+		break;
+		}
+	case 0xf5:								// gpmatprm4
+		{
+		char fname[256];
+		char *ps;
+		gpmat *mat;
+		p1 = code_getdi( 0 );
+		ps = code_gets();
+		strncpy( fname, ps, 256 );
+		code_getvec( &p_vec1 );
+		dp1 = code_getdd( 0.0 );
+		mat = game->getMat( p1 );
+		if ( mat == NULL ) throw HSPERR_ILLEGAL_FUNCTION;
+		p_vec1.w = (float)dp1;
+		mat->setParameter( fname, &p_vec1 );
+		break;
+		}
+
+
+#endif
 
 
 #ifdef USE_DGOBJ
@@ -2391,7 +3406,8 @@ static int get_ginfo( int arg )
 		//	return i;
 		//}
 	case 26:
-		return hgio_getWidth();
+		return bmscr->sx;
+		//return hgio_getWidth();
 		//return bmscr->sx;
 	case 13:
 		//if ( bmscr->type != HSPWND_TYPE_BUFFER ) {
@@ -2399,7 +3415,8 @@ static int get_ginfo( int arg )
 		//	return j;
 		//}
 	case 27:
-		return hgio_getHeight();
+		return bmscr->sy;
+		//return hgio_getHeight();
 		//return bmscr->sy;
 	case 14:
 		return bmscr->printsizex;
@@ -2422,11 +3439,11 @@ static int get_ginfo( int arg )
 //		return i;
 		return 0;
 	case 20:
+		return hgio_getWidth();
 		//return GetSystemMetrics( SM_CXSCREEN );
-		return bmscr->sx;
 	case 21:
+		return hgio_getHeight();
 		//return GetSystemMetrics( SM_CYSCREEN );
-		return bmscr->sy;
 	case 22:
 		return bmscr->cx;
 	case 23:
@@ -2565,6 +3582,9 @@ static int termfunc_extcmd( int option )
 #ifdef USE_MMAN
 	delete mmman;
 #endif
+#ifdef USE_WEBTASK
+	delete webtask;
+#endif
 #ifdef USE_DGOBJ
 	if ( hg != NULL ) delete hg;
 #endif
@@ -2587,6 +3607,9 @@ void hsp3typeinit_extcmd( HSP3TYPEINFO *info )
 #ifdef USE_MMAN
 	mmman = new MMMan;
 	mmman->Reset( ctx->wnd_parent );
+#endif
+#ifdef USE_WEBTASK
+	webtask = new WebTask;
 #endif
 
 #ifdef USE_DGOBJ

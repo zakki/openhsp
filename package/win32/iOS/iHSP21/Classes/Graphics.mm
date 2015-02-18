@@ -100,6 +100,8 @@ static GLbyte panelColors[]={
 
     //ポイントの設定
     glEnable(GL_POINT_SMOOTH);
+    
+    glCullFace(GL_FRONT_AND_BACK);
 }
 
 //クリア

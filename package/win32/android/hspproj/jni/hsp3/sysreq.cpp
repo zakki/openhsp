@@ -10,9 +10,9 @@
 #include "hgio.h"
 #include "supio.h"
 
-static int	sysreq[SYSREQ_MAX];		// åˆæœŸè¨­å®šãƒ‡ãƒ¼ã‚¿ãƒ—ãƒ¼ãƒ«
-static float sysreqf[SYSREQ_MAX];		// åˆæœŸè¨­å®šãƒ‡ãƒ¼ã‚¿ãƒ—ãƒ¼ãƒ«
-static char dbgmsg[512];			// ãƒ‡ãƒãƒƒã‚°ç”¨ãƒ¡ãƒƒã‚»ãƒ¼ã‚¸ãƒ—ãƒ¼ãƒ«
+static int	sysreq[SYSREQ_MAX];		// ‰ŠúÝ’èƒf[ƒ^ƒv[ƒ‹
+static float sysreqf[SYSREQ_MAX];		// ‰ŠúÝ’èƒf[ƒ^ƒv[ƒ‹
+static char dbgmsg[512];			// ƒfƒoƒbƒO—pƒƒbƒZ[ƒWƒv[ƒ‹
 
 void SetSysReq( int reqid, int val )
 {
@@ -93,7 +93,10 @@ void InitSysReq( void )
 #ifdef HSPNDK
     sysreq[ SYSREQ_PLATFORM ] = PLATFORM_ANDROID;
 #endif    
-    
+#ifdef HSPEMSCRIPTEN
+	sysreq[ SYSREQ_PLATFORM ] = PLATFORM_EMSCRIPTEN;
+#endif
+
 	dbgmsg[0] = 0;
 }
 

@@ -11,7 +11,6 @@
 #endif
 
 void Alertf( const char* pszFormat, ...);
-void Alert( const char *msg );
 
 int sgn(int i);
 

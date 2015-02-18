@@ -26,6 +26,7 @@ static int hsp3dish_devprm( char *name, char *value )
 
 static int hsp3dish_devcontrol( char *cmd, int p1, int p2, int p3 )
 {
+    
 	if ( strcmp( cmd, "vibrate" )==0 ) {
         AudioServicesPlayAlertSound(kSystemSoundID_Vibrate);
 		return 0;
@@ -36,10 +37,6 @@ static int hsp3dish_devcontrol( char *cmd, int p1, int p2, int p3 )
 	}
 	if ( strcmp( cmd, "iAd" )==0 ) {
         [hspview_controller controlBanner:p1];
-		return 0;
-	}
-	if ( strcmp( cmd, "AdMob" )==0 ) {
-        [hspview_controller controlAdMobBanner:p1];
 		return 0;
 	}
 	return -1;
@@ -85,7 +82,7 @@ static void hsp3dish_setdevinfo( void )
 @implementation HspView
 
 //フレームの初期化
-- (id)initWithFrame:(CGRect)frame {
+- (id)initWithFrameOrg:(CGRect)frame {
     if (self=[super initWithFrame:frame]) {
         InitSysReq();
         //グラフィックスの生成
@@ -109,6 +106,18 @@ static void hsp3dish_setdevinfo( void )
     }
     act_mode = 0;
     return self;
+}
+
+//フレームの初期化(横画面)
+- (id)initWithFrameSide:(CGRect)frame {
+    CGRect side = CGRectMake( frame.origin.x, frame.origin.y, frame.size.height, frame.size.width );
+    return [self initWithFrameOrg:side ];
+}
+
+//フレームの初期化(縦画面)
+- (id)initWithFrame:(CGRect)frame {
+
+    return [self initWithFrameOrg:frame ];
 }
 
 //メモリ解放
@@ -217,7 +226,7 @@ static void hsp3dish_setdevinfo( void )
             break;
         case 3:
             tf = CGAffineTransformMakeRotation(M_PI * 0.5f);
-            tf = CGAffineTransformTranslate( tf, adj, adj );
+            //tf = CGAffineTransformTranslate( tf, adj, adj );
             self.transform = tf;
             break;
         default:
@@ -433,6 +442,7 @@ static void hsp3dish_setdevinfo( void )
 {
     parent = controller;
     hspview_controller = (HspViewController *)controller;
+	NSLog(@"---%x", controller );
 }
 
 @end

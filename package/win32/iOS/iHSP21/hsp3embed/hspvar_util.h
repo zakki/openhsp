@@ -63,6 +63,7 @@ void PushSysvar( int val, int pnum );
 void PushDllfunc( int val, int pnum );
 void PushDllctrl( int val, int pnum );
 void PushModcmd( int val, int pnum );
+void PushUsrfunc( int val, int pnum );
 
 void CalcAddI( void );
 void CalcSubI( void );
@@ -97,5 +98,6 @@ void Dllfunc( int cmd, int pnum );
 void Dllctrl( int cmd, int pnum );
 void Prgcmd( int cmd, int pnum );
 void Intcmd( int cmd, int pnum );
+void Usrfunc( int cmd, int pnum );
 
 #endif
