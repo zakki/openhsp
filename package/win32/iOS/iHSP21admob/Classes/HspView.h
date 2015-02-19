@@ -40,8 +40,6 @@
 - (void)useMultiTouch;
 - (void)useRetina;
 - (void)setParent:(UIViewController *)controller;
-- (id)initWithFrameSide:(CGRect)frame;
-- (id)initWithFrameOrg:(CGRect)frame;
 
 
 @end

@@ -253,7 +253,7 @@
     
     //ラベルの生成
     UILabel* label=[[[UILabel alloc] init] autorelease]; 
-	CGSize size=[text sizeWithFont:font constrainedToSize:CGSizeMake(1024,CGFLOAT_MAX)
+	CGSize size=[text sizeWithFont:font constrainedToSize:CGSizeMake(512,512) 
         lineBreakMode:UILineBreakModeWordWrap];
 
     sizex = size.width;

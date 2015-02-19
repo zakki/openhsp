@@ -12,6 +12,10 @@
 
 #include "hsp3config.h"
 
+#ifdef HSPRANDMT
+#include <random>
+#endif
+
 #ifdef HSPWIN
 #include <windows.h>
 #include <direct.h>
@@ -37,6 +41,276 @@ static int *val;
 static HSPCTX *ctx;			// Current Context
 static HSPEXINFO *exinfo;	// Info for Plugins
 static CStrNote note;
+#ifdef HSPRANDMT
+static std::mt19937 mt;
+#endif
+
+
+
+/*------------------------------------------------------------*/
+/*
+		Sort Routines
+*/
+/*------------------------------------------------------------*/
+
+static int qsort_order;
+
+typedef struct {
+	union {
+		int ikey;
+		double dkey;
+		char *skey;
+	} as;
+	int info;
+} DATA;
+
+static void swap(DATA *a, DATA *b)
+{
+    DATA t;
+    t = *a;
+    *a = *b;
+    *b = t;
+}
+
+static void rquickSort(DATA *data, int asdes, int first, int last)
+{
+	//		クイックソート
+	//
+    int i, j, x;
+
+    i = first;
+    j = last;
+	x = (data[i].as.ikey + data[j].as.ikey)/2; 
+
+    while (1) {
+        if (asdes == 0) {
+            while (data[i].as.ikey < x) i++;
+            while (data[j].as.ikey > x) j--;
+        } else {
+            while (data[i].as.ikey > x) i++;
+            while (data[j].as.ikey < x) j--;
+        }
+
+        if (i >= j) break;
+        swap(&data[i], &data[j]);
+        i++;
+        j--;
+    }
+    if (first < i - 1) rquickSort(data, asdes, first, i - 1);
+    if (last  > j + 1) rquickSort(data, asdes, j + 1, last);
+}
+
+static void QuickSort( DATA *data, int nmem, int asdes )
+{
+    if (nmem <= 1) return;
+    rquickSort(data, asdes, 0, nmem - 1);
+}
+
+
+static int compare_int( const void *a, const void *b )
+{
+    const DATA *data_a = (DATA *)a;
+    const DATA *data_b = (DATA *)b;
+
+    return data_a->as.ikey > data_b->as.ikey ? 1 : data_a->as.ikey == data_b->as.ikey ? 0 : -1;
+}
+
+
+static int compare_intr( const void *a, const void *b )
+{
+    const DATA *data_a = (DATA *)a;
+    const DATA *data_b = (DATA *)b;
+
+	return data_b->as.ikey > data_a->as.ikey ? 1 : data_a->as.ikey == data_b->as.ikey ? 0 : -1;
+}
+
+
+static void QuickSort2( DATA *data, int nmem, int asdes )
+{
+    if (nmem <= 1) return;
+	if ( asdes == 0 ) {
+		qsort( data, nmem, sizeof(DATA), compare_int );
+	} else {
+		qsort( data, nmem, sizeof(DATA), compare_intr );
+	}
+}
+
+
+static void BubbleSortStr( DATA *data, int nmem, int asdes )
+{
+	int i, j;
+	for (i = 0; i < nmem - 1; i++) {
+	  for (j = nmem - 1; j >= i + 1; j--) {
+	    if (asdes == 0) {
+		  if ( strcmp( data[j].as.skey, data[j-1].as.skey)<0 )
+				swap(&data[j], &data[j-1]);
+		}
+		else {
+		  if ( strcmp( data[j].as.skey, data[j-1].as.skey)>0 )
+				swap(&data[j], &data[j-1]);
+		}
+	  }
+	}
+}
+
+
+static void BubbleSortDouble( DATA *data, int nmem, int asdes )
+{
+	int i, j;
+	for (i = 0; i < nmem - 1; i++) {
+	  for (j = nmem - 1; j >= i + 1; j--) {
+	    if (asdes == 0) {
+			if ( data[j].as.dkey < data[j-1].as.dkey ) swap(&data[j], &data[j-1]);
+		}
+		else {
+			if ( data[j].as.dkey > data[j-1].as.dkey ) swap(&data[j], &data[j-1]);
+		}
+	  }
+	}
+}
+
+
+static int NoteToData( char *adr, DATA *data )
+{
+	char *p = adr;
+	int line = 0;
+	while (*p != '\0') {
+		data[line].as.skey=p;
+		data[line].info=line;
+		while (*p != '\0') {
+			char c = *p;
+			if (c == '\n' || c == '\r') {
+				*p = '\0';
+			}
+			p ++;
+			if (c == '\n') break;
+			if (c == '\r') {
+				if (*p == '\n') p++;
+				break;
+			}
+		}
+		line ++;
+	}
+	return line;
+}
+
+
+static int GetNoteLines( char *adr )
+{
+	int line = 0;
+	char *p = adr;
+	while (*p != '\0') {
+		while (*p != '\0') {
+			char c = *p++;
+			if (c == '\n') break;
+			if (c == '\r') {
+				if (*p == '\n') p ++;
+				break;
+			}
+		}
+		line ++;
+	}
+	return line;
+}
+
+
+static size_t DataToNoteLen( DATA *data, int num )
+{
+	size_t len = 0;
+	int i;
+	for (i = 0; i < num; i++) {
+		char *s = data[i].as.skey;
+		len += strlen(s) + 2;	// strlen("\r\n")
+	}
+	return len;
+}
+
+
+static void DataToNote( DATA *data, char *adr, int num )
+{
+	int a;
+	char *p;
+	char *s;
+	p=adr;
+	for(a=0;a<num;a++) {
+		s=data[a].as.skey;
+		strcpy( p, s );
+		p+=strlen( s );
+		*p++=13; *p++=10;			// Add CR/LF
+	}
+	*p=0;
+}
+
+
+static void StrToData( char *adr, int num, int len, DATA *data )
+{
+	int a;
+	char *p;
+	p=adr;
+	for(a=0;a<num;a++) {
+		data[a].as.skey=p;
+		data[a].info=a;
+		p+=len;
+	}
+}
+
+
+static void DataToStr( DATA *data, char *adr, int num, int len )
+{
+	int a;
+	char *p;
+	char *s;
+	p=adr;
+	for(a=0;a<num;a++) {
+		s=data[a].as.skey;
+		strncpy( p, s, len );
+		p+=len;
+	}
+}
+
+
+/*------------------------------------------------------------*/
+/*
+		Sort Interface
+*/
+/*------------------------------------------------------------*/
+
+static	DATA *dtmp = NULL;
+static	int dtmp_size;
+
+static void DataBye( void )
+{
+	if (dtmp!=NULL) {
+		mem_bye(dtmp);
+	}
+}
+
+static void DataIni( int size )
+{
+	DataBye();
+	dtmp=(DATA *)mem_ini( sizeof(DATA)*size );
+	dtmp_size = size;
+}
+
+static void DataExpand( int size )
+{
+	if (size <= dtmp_size) return;
+	int new_size = dtmp_size;
+	if (new_size < 16) new_size = 16;
+	while (size > new_size) {
+		new_size *= 2;
+	}
+	dtmp = (DATA *)realloc( dtmp, sizeof(DATA)*new_size );
+	memset( dtmp + dtmp_size, 0, sizeof(DATA)*(new_size - dtmp_size) );
+	dtmp_size = new_size;
+}
+
+
+static void DataInc( int n )
+{
+	DataExpand( n + 1 );
+	dtmp[n].info ++;
+}
 
 
 /*------------------------------------------------------------*/
@@ -798,14 +1072,12 @@ static int cmdfunc_intcmd( int cmd )
 		size = (int)strlen( ps ) + 8;
 		HspVarCoreAllocBlock( ctx->note_pval, (PDAT *)np, (int)strlen(np) + size );
 
-		tmp = sbAlloc( size );
-		strcpy( tmp, ps );
+		tmp = code_stmpstr( ps );
 
 		p1 = code_getdi( -1 );
 		p2 = code_getdi( 0 );
 		np = note_update();
 		note.PutLine( tmp, p1, p2 );
-		sbFree( tmp );
 		break;
 		}
 	case 0x24:								// notedel
@@ -850,7 +1122,11 @@ static int cmdfunc_intcmd( int cmd )
 		p2 = (int)time(0);			// Windows以外のランダムシード値
 #endif
 		p1 = code_getdi( p2 );
+#ifdef HSPRANDMT
+		mt.seed( p1 );
+#else
 		srand( p1 );
+#endif
 		break;
 	case 0x28:								// noteunsel
 		ctx->note_aptr = ctx->notep_aptr;
@@ -962,6 +1238,135 @@ static int cmdfunc_intcmd( int cmd )
 		break;
 		}
 
+	case 0x02d:								// sortval
+		{
+		int a,i;
+		int *p;
+		double *dp;
+		PVal *p1;
+		APTR ap;
+		int order;
+
+		ap = code_getva( &p1 );		// パラメータ1:変数
+		order = code_getdi( 0 );	// パラメータ2:数値
+
+		i=p1->len[1];
+		if (i<=0) throw HSPERR_ILLEGAL_FUNCTION;
+		switch(p1->flag) {
+		case 3:						// double
+			dp=(double *)p1->pt;
+			DataIni( i );
+			for(a=0;a<i;a++) {
+				dtmp[a].as.dkey=dp[a];
+				dtmp[a].info=a;
+			}
+			BubbleSortDouble( dtmp, i, order );
+			for(a=0;a<i;a++) {
+				code_setva( p1, a, HSPVAR_FLAG_DOUBLE, &(dtmp[a].as.dkey) );	// 変数に値を代入
+			}
+			break;
+		case 4:						// int
+			p=(int *)p1->pt;
+			DataIni( i );
+			for(a=0;a<i;a++) {
+				dtmp[a].as.ikey=p[a];
+				dtmp[a].info=a;
+			}
+			QuickSort2( dtmp, i, order );
+			for(a=0;a<i;a++) {
+				p[a]=dtmp[a].as.ikey;
+			}
+			break;
+		default:
+			throw HSPERR_ILLEGAL_FUNCTION;
+		}
+		break;
+		}
+
+	case 0x02e:								// sortstr
+		{
+		int i,len,sflag;
+		char *p;
+		PVal *pv;
+		APTR ap;
+		HspVarProc *proc;
+		char **pvstr;
+
+		ap = code_getva( &pv );		// パラメータ1:変数
+		sflag = code_getdi( 0 );	// パラメータ2:数値
+
+		if ( pv->flag != 2 ) throw HSPERR_TYPE_MISMATCH;
+		if (( pv->len[2] != 0 )||( ap != 0 )) throw HSPERR_ILLEGAL_FUNCTION;
+
+		proc = HspVarCoreGetProc( pv->flag );
+
+		len = pv->len[1];
+		DataIni( len );
+
+		for(i=0;i<len;i++) {
+			p = (char *)HspVarCorePtrAPTR( pv, i );
+			dtmp[i].as.skey = p;
+			dtmp[i].info = i;
+		}
+
+		BubbleSortStr( dtmp, len, sflag );
+
+		pvstr = (char **)(pv->master);	// 変数に直接sbポインタを書き戻す
+		for(i=0;i<len;i++) {
+			if ( i == 0 ) {
+				pv->pt = dtmp[i].as.skey;
+			}
+			pvstr[i] = dtmp[i].as.skey;
+		}
+		break;
+		}
+
+	case 0x02f:								// sortnote
+		{
+		int i,sflag;
+		char *p;
+		char *stmp;
+		PVal *pv;
+		APTR ap;
+
+		ap = code_getva( &pv );		// パラメータ1:変数
+		sflag = code_getdi( 0 );	// パラメータ2:数値
+
+		p = (char *)HspVarCorePtrAPTR( pv, ap );
+		i = GetNoteLines(p);
+		if ( i <= 0 ) throw HSPERR_ILLEGAL_FUNCTION;
+
+		DataIni( i );
+
+		NoteToData( p, dtmp );
+		BubbleSortStr( dtmp, i, sflag );
+		stmp = code_stmp( DataToNoteLen( dtmp, i ) + 1 );
+		DataToNote( dtmp, stmp, i );
+
+		code_setva( pv, ap, HSPVAR_FLAG_STR, stmp );	// 変数に値を代入
+
+		break;
+		}
+
+	case 0x030:								// sortget
+		{
+		PVal *pv;
+		APTR ap;
+		int result;
+		int n;
+
+		ap = code_getva( &pv );
+		n = code_getdi( 0 );
+
+		if ( dtmp == NULL ) throw HSPERR_ILLEGAL_FUNCTION;
+		if (0 <= n && n < dtmp_size ) {
+			result=dtmp[n].info;
+		} else {
+			result=0;
+		}
+		code_setva( pv, ap, HSPVAR_FLAG_INT, &result );
+		break;
+		}
 
 	default:
 		throw HSPERR_UNSUPPORTED_FUNCTION;
@@ -1026,7 +1431,14 @@ static void *reffunc_intfunc( int *type_res, int arg )
 	case 0x001:								// rnd
 		ival = code_geti();
 		if ( ival == 0 ) throw HSPERR_DIVIDED_BY_ZERO;
+#ifdef HSPRANDMT
+		{
+			std::uniform_int_distribution<int> dist( 0, ival - 1 );
+			reffunc_intfunc_ivalue = dist( mt );
+		}
+#else
 		reffunc_intfunc_ivalue = rand()%ival;
+#endif
 		break;
 	case 0x002:								// strlen
 		sval = code_gets();
@@ -1176,6 +1588,18 @@ static void *reffunc_intfunc( int *type_res, int arg )
 		p2 = code_getdi(-1);
 		reffunc_intfunc_ivalue = getEaseInt( p1, p2 );
 		break;
+
+	case 0x013:								// notefind
+		{
+		char *ps;
+		char *p;
+		int findopt;
+		ps = code_gets();
+		p = code_stmpstr( ps );
+		findopt = code_getdi(0);
+		reffunc_intfunc_ivalue = 0;
+		break;
+		}
 
 
 	// str function

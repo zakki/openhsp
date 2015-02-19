@@ -75,7 +75,7 @@
 	iOSフォルダには、HSP3Dishランタイム及びxcode用のサンプルプロジェクトが含まれています。
 
 	<ul>
-	<li>iHSP20フォルダ - HSP3Dishランタイム本体</li>
+	<li>iHSP21フォルダ - HSP3Dishランタイム本体</li>
 	<li>hspprojフォルダ - HSP3Dishサンプル(hsplogo.hsp)</li>
 	</ul>
 
@@ -117,11 +117,11 @@
 
 	<p>
 	実際にiOS上で動作させる場合には、XCode上でプロジェクトをコンパイルする必要があります。<br>
-	<a href="#MAKECPP">スクリプトの準備</a>で出力した、XCode用プロジェクトフォルダと、「iHSP20」フォルダ(HSPアーカイブ内のiOSフォルダに同梱されています。)をMacOSX上にコピーしてください。<br>
+	<a href="#MAKECPP">スクリプトの準備</a>で出力した、XCode用プロジェクトフォルダと、「iHSP21」フォルダ(HSPアーカイブ内のiOSフォルダに同梱されています。)をMacOSX上にコピーしてください。<br>
 	※Xcode5を使用して手動でプロジェクトを作成する場合は<a href="hsp3dish_xcode5.htm">こちらを参照してください</a>。
 	</p>
 	<p>
-	必ず作成されたプロジェクトのフォルダと同じ階層に、「iHSP20」フォルダを配置してください。
+	必ず作成されたプロジェクトのフォルダと同じ階層に、「iHSP21」フォルダを配置してください。
 	</p>
 	<p>
 	<img src="hsp3dish/s_folder.jpg"><br>
@@ -495,12 +495,12 @@
 	<h2 id="ADMOB">AdMobの対応について</h2>
 	<p>
 	アプリ内に広告を表示するAdMobのシステムに仮対応しています。<br>
-	標準的なHSP3Dishランタイム(iHSP20フォルダ)と合わせて、AdMob対応のランタイム(iHSP20AdMobフォルダ)を
-	同梱しています。AdMobを使用する際には、iHSP20ではなくiHSP20AdMobフォルダをプロジェクトに追加してください。<br>
+	標準的なHSP3Dishランタイム(iHSP21フォルダ)と合わせて、AdMob対応のランタイム(iHSP21AdMobフォルダ)を
+	同梱しています。AdMobを使用する際には、iHSP21ではなくiHSP21AdMobフォルダをプロジェクトに追加してください。<br>
 	また、AppDelegate.m内の#import部分のコードを、以下のように修正する必要があります。
 	</p>
 	<pre>
-	    #import "../../iHSP20AdMob/Classes/HspView.h"
+	    #import "../../iHSP21AdMob/Classes/HspView.h"
 	</pre>
 	<p>
 	さらに、以下のフレームワークをプロジェクトに追加してください。
@@ -517,7 +517,7 @@
 	</ul>
 	<p>
 	最後に、ユーザーが個別に取得するAdMobパブリッシャーIDを指定します。
-	「iHSP20admob/Classes/HspViewController.mm」ファイル内のコードを直接修正してください。
+	「iHSP21admob/Classes/HspViewController.mm」ファイル内のコードを直接修正してください。
 	</p>
 	<pre>
 		// 広告の「ユニット ID」を指定する。これは AdMob パブリッシャーID です。

@@ -7,18 +7,16 @@ void Alertf( const char* pszFormat, ...)
 	va_start(argp, pszFormat);
 	vsprintf(pszBuf, pszFormat, argp);
 	va_end(argp);
-
-//	if(dg) {
-//		MessageBox(NULL, pszBuf, "debug info", MB_OK);
-//	} else {
-//		OutputDebugString(pszBuf);
-//	}
-
-//	NSLog(@"test. %d", cc);
-
 	NSString *nsstr = [[NSString alloc] initWithUTF8String:pszBuf];
 	NSLog(nsstr);
 	[nsstr release];
+}
+
+void Alert( const char* msg )
+{
+    NSString *nsstr = [[NSString alloc] initWithUTF8String:msg];
+    NSLog(nsstr);
+    [nsstr release];
 }
 
 int sgn(int i)
@@ -31,15 +29,6 @@ int sgn(int i)
 	}
 	return 0;
 }
-
-
-void Alert( const char *msg )
-{
-	NSString *nsstr = [[NSString alloc] initWithUTF8String:msg];
-	NSLog(nsstr);
-	[nsstr release];
-}
-
 
 /*void strScan(FILE* fp, char* str)
 {

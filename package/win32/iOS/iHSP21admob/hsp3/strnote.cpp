@@ -161,6 +161,7 @@ int CStrNote::GetMaxLine( void )
 		a1=*nn++;if (a1==0) break;
 #ifdef HSPLINUX
 		if ((a1==13)||(a1==10)) {
+			if (a1=13&&*p1==10) nn++;
 #else
 		if (a1==13) {
 			if (*nn==10) nn++;
@@ -213,6 +214,7 @@ int CStrNote::PutLine( char *nstr2, int line, int ovr )
 			a++;
 #ifdef HSPLINUX
 			if ((a1==13)||(a1==10)) {
+			if (a1=13&&*p1==10) { p1++;a++; }
 #else
 			if (a1==13) {
 				if (*p1==10) { p1++;a++; }
