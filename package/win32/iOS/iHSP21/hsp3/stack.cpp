@@ -136,6 +136,18 @@ void StackPushTypeVal( int type, int val, int val2 )
 	stm_cur++;
 }
 
+void StackPushVar( void *pval, int aptr )
+{
+    STMDATA *stm;
+    //	if ( stm_cur >= stm_maxptr ) throw HSPERR_STACK_OVERFLOW;
+    stm = stm_cur;
+    stm->type = -1;         // HSPVAR_FLAG_VAR
+    //	stm->mode = STMMODE_SELF;
+    stm->pval = pval;
+    stm->ival = aptr;
+    stm_cur++;
+}
+
 void StackPushType( int type )
 {
 	StackPushTypeVal( type, 0, 0 );

@@ -732,7 +732,7 @@ DEF</pre>
 			notemaxとrepeat～loop命令を使うことで、すべての行に対しての処理を効率的に
 			記述できます。たとえば、
 		</p>
-		<pre>    a="ABC\nDEF\GHI"
+		<pre>    a="ABC\nDEF\nGHI"
     notesel a
     repeat notemax
         noteget b,cnt
@@ -751,7 +751,7 @@ DEF</pre>
 			notesave命令は、テキストファイルを保存する場合に使います。
 			たとえば、
 		</p>
-		<pre>    a="ABC\nDEF\GHI"
+		<pre>    a="ABC\nDEF\nGHI"
     notesel a
     notesave "a.txt"</pre>
 		<p>

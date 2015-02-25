@@ -592,6 +592,7 @@ int CHsp3Cpp::AnalysisCPPCalcParam( PRMAINFO *cp1, PRMAINFO *cp2, CMemBuf *eout,
 			break;
 		}
 		eout->PutStr( mes );
+		eout->Put( 0 );
 		break;
 	default:
 		return 0;

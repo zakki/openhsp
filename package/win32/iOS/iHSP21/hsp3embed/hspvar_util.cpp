@@ -346,7 +346,7 @@ void PushVAP( PVal *pval, int aval )
 	//PDAT *ptr;
 	aptr = CheckArray( pval, aval );
 	//ptr = HspVarCorePtrAPTR( pval, aptr );
-	StackPushTypeVal( HSPVAR_FLAG_VAR, (int)(size_t)pval, (int)(size_t)aptr );
+	StackPushVar( pval, aptr );
 }
 
 
@@ -1327,12 +1327,12 @@ void PushFuncPAP( int num, int aval )
 	case TYPE_EX_LOCAL_VARS:
 		pval = (PVal *)( stm->ptr );
 		aptr = CheckArray( pval, aval );
-		StackPushTypeVal( HSPVAR_FLAG_VAR, (int)(size_t)pval, (int)(size_t)aptr );
+		StackPushVar( pval, aptr );
 		break;
 	case HSPVAR_FLAG_VAR:
 		pval = (PVal *)( stm->ival );
 		aptr = CheckArray( pval, aval );
-		StackPushTypeVal( HSPVAR_FLAG_VAR, (int)(size_t)pval, (int)(size_t)aptr );
+		StackPushVar( pval, aptr );
 		break;
 	default:
 		throw HSPVAR_ERROR_INVALID;

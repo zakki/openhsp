@@ -13,7 +13,7 @@ HGIMG4 REFERENCE MANUAL                High Performance Graphic Image Plugin
 	・OpenGL/ESによる描画、シェーダー言語サポート
 	・シーン管理と統合化された物理エンジン(Bullet)サポート
 	・FBX形式のモデルファイル読み込み、アニメーションサポート
-	・マルチテクスチャ、バップマップ、ハイトマップ、LODをサポート
+	・マルチテクスチャ、バンプマップ、ハイトマップ、LODをサポート
 	・フォントデータ(TTF)のレンダリングサポート
 	・オフスクリーンレンダリング及び各種ポストエフェクトサポート
 	・WindowsだけでなくiOS,Android上での動作をサポート予定
