@@ -73,7 +73,7 @@ private:
 
 	int MakeCPPVarForHSP( void );
 	void MakeCPPVarName( char *outbuf, int varid );
-	int MakeCPPVarExpression( CMemBuf *arname );
+	int MakeCPPVarExpression( CMemBuf *arname, bool flag_array = false );
 	int MakeImmidiateCPPName( char *mes, int type, int val, char *opt=NULL );
 	void MakeCPPProgramInfoFuncParam( int structid );
 	int MakeCPPParamForVar( char *varname, int va, char *arrayname );

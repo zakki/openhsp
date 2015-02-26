@@ -5,8 +5,9 @@ Hot Soup Processor ver3.5                           HSP : Hot Soup Processor
 
 ・hsp3関連 更新履歴
 
-	2015/02/25 3.5 beta2
+	2015/02/26 3.5 beta2
 
+	HSP3ソースコンバーターで配列展開に失敗する不具合を修正(Mantis:0000011)
 	HSP3ソースコンバーターで演算の最適化時にスタックに不整合が起こる不具合を修正
 	スクリプトエディタのSDK機能の一部(HSED_GETCARETLINEとHSED_GETCARETPOS)を有効化
 	[HSP3Dish][iOS] 64bit環境の実行時にEXC_BAD_ACCESSが発生する不具合を修正

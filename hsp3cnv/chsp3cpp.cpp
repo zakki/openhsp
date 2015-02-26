@@ -317,7 +317,7 @@ int CHsp3Cpp::GetCPPExpressionSub( CMemBuf *eout )
 			MakeImmidiateCPPName( varname, cstype, csval );
 			getCS();
 			//		配列要素を付加する
-			va = MakeCPPVarExpression( &arname );
+			va = MakeCPPVarExpression( &arname, true );
 			eout->PutStr( arname.GetBuffer() );
 			sprintf( mes,"PushVar(%s,%d); ", varname, va );
 			eout->PutStr( mes );
@@ -354,7 +354,7 @@ int CHsp3Cpp::GetCPPExpressionSub( CMemBuf *eout )
 			case MPTYPE_LOCALVAR:
 				prmid = prmcnv_locvar[csval - curprmindex];
 				getCS();
-				va = MakeCPPVarExpression( &arname );
+				va = MakeCPPVarExpression( &arname, true );
 				eout->PutStr( arname.GetBuffer() );
 				sprintf( mes,"PushFuncPrm(%d,%d); ", prmid, va );
 				vflag = 1;
@@ -364,7 +364,7 @@ int CHsp3Cpp::GetCPPExpressionSub( CMemBuf *eout )
 			case MPTYPE_SINGLEVAR:
 				prmid = csval - curprmindex + curprmlocal;
 				getCS();
-				va = MakeCPPVarExpression( &arname );
+				va = MakeCPPVarExpression( &arname, true );
 				eout->PutStr( arname.GetBuffer() );
 				sprintf( mes,"PushFuncPrm(%d,%d); ", prmid, va );
 				vflag = 1;
@@ -926,10 +926,11 @@ int CHsp3Cpp::MakeCPPVarForHSP( void )
 }
 
 
-int CHsp3Cpp::MakeCPPVarExpression( CMemBuf *arname )
+int CHsp3Cpp::MakeCPPVarExpression( CMemBuf *arname,  bool flag_array )
 {
 	//	変数名直後に続くパラメーター(配列)を展開する
 	//	arname : 配列設定展開用のバッファ
+	//	flag_array : 配列変数設定フラグ(true=配列要素解析中)
 	//	ret : 0=配列なし/1～=配列あり
 	//
 	int i;
@@ -959,25 +960,26 @@ int CHsp3Cpp::MakeCPPVarExpression( CMemBuf *arname )
 					tmpbuf.PutStr( "PushDefault();" );
 				}
 
-				switch( result ) {			// 単一項で変数が指定されていた場合のチェック
-				case TYPE_VAR:
-					p = tmpbuf.GetBuffer() + tmpbuf.GetIndex( curidx );
-					p = strstr2( p, "PushVa" );
-					if ( p != NULL ) {
-						p[5] = 'A'; p[6] = 'P';			// PushVar -> PushVAPに直す
+				if ( flag_array == false ) {
+					switch( result ) {			// 単一項で変数が指定されていた場合のチェック
+					case TYPE_VAR:
+						p = tmpbuf.GetBuffer() + tmpbuf.GetIndex( curidx );
+						p = strstr2( p, "PushVa" );
+						if ( p != NULL ) {
+							p[5] = 'A'; p[6] = 'P';			// PushVar -> PushVAPに直す
+						}
+						break;
+					case TYPE_STRUCT:
+						p = tmpbuf.GetBuffer() + tmpbuf.GetIndex( curidx );
+						p = strstr2( p, "PushFuncPrm" );
+						if ( p != NULL ) {
+							p[9] = 'A'; p[10] = 'P';		// PushFuncPrm -> PushFuncPAPに直す
+						}
+						break;
+					default:
+						break;
 					}
-					break;
-				case TYPE_STRUCT:
-					p = tmpbuf.GetBuffer() + tmpbuf.GetIndex( curidx );
-					p = strstr2( p, "PushFuncPrm" );
-					if ( p != NULL ) {
-						p[9] = 'A'; p[10] = 'P';		// PushFuncPrm -> PushFuncPAPに直す
-					}
-					break;
-				default:
-					break;
 				}
-
 				if ( i > 0 ) break;
 				prm++;
 			}
@@ -1283,7 +1285,7 @@ int CHsp3Cpp::MakeCPPMain( void )
 			op = MakeCPPVarForHSP();
 			SetContext( &ctxbak );
 			MakeImmidiateCPPName( mes, cmdtype, cmdval );
-			va = MakeCPPVarExpression( &arname );
+			va = MakeCPPVarExpression( &arname, true );
 			getCS();
 
 			switch( op ) {
