@@ -232,7 +232,6 @@ static LRESULT InterfaceProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 			return nRet + 1;
 
 		case HSED_GETCARETPOS:
-			return 0;	// 2008-02-17 Shark++ ‘ã‘Ö‹@”\–¢ŽÀ‘•
 			Footy2GetCaretPosition(footy_defid, NULL, (size_t*)&nRet);
 			return nRet + 1;
 

@@ -1192,7 +1192,7 @@ static int code_callfunc( int cmd )
 	int size;
 	char *p;
 
-	st = &hspctx->mem_finfo[cmd];
+	st = &hspctx->mem_finfo[cmd]; 
 
 	size = sizeof(HSPROUTINE) + st->size;
 	r = (HSPROUTINE *)StackPushSize( TYPE_EX_CUSTOMFUNC, size );
@@ -1282,7 +1282,7 @@ void code_expandstruct( char *p, STRUCTDAT *st, int option )
 
 	for(i=0;i<st->prmmax;i++) {							// パラメーターを取得
 		out = p + prm->offset;
-		//Alertf( "(%d)type%d index%d offset%d", st->subid, prm->mptype, st->prmindex+i,prm->offset );
+		//Alertf("(%d)type%d index%d/%d offset%d", st->subid, prm->mptype, st->prmindex + i, st->prmmax, prm->offset);
 		switch( prm->mptype ) {
 		case MPTYPE_INUM:
 			*(int *)out = code_getdi(0);
@@ -1966,24 +1966,25 @@ static int cmdfunc_prog( int cmd )
 		STRUCTPRM *prm;
 		if ( cmd == 0x12 ) {
 			pval = code_getpval();
-			aptr = code_newstruct( pval );
-		} else {
+			aptr = code_newstruct(pval);
+		}
+		else {
 			aptr = code_getva( &pval );
 		}
 		st = code_getstruct();
-		fv = code_setvs( pval, aptr, NULL, st->size, st->prmindex );
+		fv = code_setvs(pval, aptr, NULL, st->size, st->prmindex);
 		fv->type = FLEXVAL_TYPE_ALLOC;
 		p = sbAlloc( fv->size );
 		fv->ptr = (void *)p;
 		prm = &hspctx->mem_minfo[ st->prmindex ];
 		if ( prm->mptype != MPTYPE_STRUCTTAG ) throw HSPERR_STRUCT_REQUIRED;
-		code_expandstruct( p, st, CODE_EXPANDSTRUCT_OPT_NONE );
-		if ( prm->offset != -1 ) {
+		code_expandstruct(p, st, CODE_EXPANDSTRUCT_OPT_NONE);
+		if (prm->offset != -1) {
 			modvar_init.magic = MODVAR_MAGICCODE;
 			modvar_init.subid = prm->subid;
 			modvar_init.pval = pval;
 			modvar_init.aptr = aptr;
-			return code_callfunc( prm->offset );
+			return code_callfunc(prm->offset);
 		}
 		break;
 		}
