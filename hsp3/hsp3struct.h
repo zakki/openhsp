@@ -15,9 +15,9 @@
 #include "hsp3debug.h"
 
 #ifdef _WIN64
-#define PTR64BIT		//	ポインタは64bit
+#define PTR64BIT        //  ポインタは64bit
 #else
-#define PTR32BIT		//	ポインタは32bit
+#define PTR32BIT        //  ポインタは32bit
 #endif
 
 // command type
@@ -123,21 +123,29 @@ typedef struct HSPHED
 #define HPIDAT_FLAG_VARFUNC 1
 #define HPIDAT_FLAG_DLLFUNC 2
 
+typedef struct MEM_HPIDAT {		// native HPIDAT
+
+	short	flag;				// flag info
+	short	option;
+	int		libname;			// lib name index (DS)
+	int		funcname;			// function name index (DS)
+	void	*libptr;			// lib handle
+
+} MEM_HPIDAT;
+
+#ifdef PTR64BIT
 typedef struct HPIDAT {
 
 	short	flag;				// flag info
 	short	option;
 	int		libname;			// lib name index (DS)
-
 	int		funcname;			// function name index (DS)
-	int		hpiopt;				// HPI option (reserved)
-
-	void	*libptr;			// lib handle
-#ifdef PTR32BIT
-	int		libptr_dummy;		// 64bit pointer padding
-#endif
+	int		p_libptr;			// lib handle
 
 } HPIDAT;
+#else
+typedef MEM_HPIDAT HPIDAT;
+#endif
 
 
 #define LIBDAT_FLAG_NONE 0
@@ -152,13 +160,24 @@ typedef struct LIBDAT {
 	int		nameidx;			// function name index (DS)
 								// Interface IID ( Com Object )
 	void	*hlib;				// Lib handle
-#ifdef PTR32BIT
-	int		hlib_dummy;			// 64bit pointer padding
-#endif
 	int		clsid;				// CLSID (DS) ( Com Object )
-	int		libopt;				// Lib option (reserved)
 
 } LIBDAT;
+
+#ifdef PTR64BIT
+typedef struct HED_LIBDAT {
+
+	int		flag;				// initalize flag
+	int		nameidx;			// function name index (DS)
+								// Interface IID ( Com Object )
+	int		p_hlib;				// Lib handle
+	int		clsid;				// CLSID (DS) ( Com Object )
+
+} HED_LIBDAT;
+#else
+typedef LIBDAT HED_LIBDAT;
+#endif
+
 
 // multi parameter type
 #define MPTYPE_NONE 0
@@ -226,49 +245,61 @@ typedef struct STRUCTPRM {
 #define STRUCTDAT_FUNCFLAG_CLEANUP 0x10000
 
 // function,module specific data
+
+#ifdef PTR64BIT
 typedef struct STRUCTDAT {
 	short	index;				// base LIBDAT index
 	short	subid;				// struct index
 	int		prmindex;			// STRUCTPRM index(MINFO)
-
 	int		prmmax;				// number of STRUCTPRM
 	int		nameidx;			// name index (DS)
-
 	int		size;				// struct size (stack)
 	int		otindex;			// OT index(Module) / cleanup flag(Dll)
-
 	void	*proc;				// proc address
-#ifdef PTR32BIT
-	int		proc_dummy;			// 64bit pointer padding
+	int		funcflag;			// function flags(Module)
+} STRUCTDAT;
+
+typedef struct HED_STRUCTDAT {
+	short	index;				// base LIBDAT index
+	short	subid;				// struct index
+	int		prmindex;			// STRUCTPRM index(MINFO)
+	int		prmmax;				// number of STRUCTPRM
+	int		nameidx;			// name index (DS)
+	int		size;				// struct size (stack)
+	int		otindex;			// OT index(Module) / cleanup flag(Dll)
+	int		funcflag;			// function flags(Module)
+} HED_STRUCTDAT;
+
+#else
+typedef struct STRUCTDAT {
+	short	index;				// base LIBDAT index
+	short	subid;				// struct index
+	int		prmindex;			// STRUCTPRM index(MINFO)
+	int		prmmax;				// number of STRUCTPRM
+	int		nameidx;			// name index (DS)
+	int		size;				// struct size (stack)
+	int		otindex;			// OT index(Module) / cleanup flag(Dll)
+	union {
+		void	*proc;				// proc address
+		int		funcflag;			// function flags(Module)
+	};
+} STRUCTDAT;
+typedef STRUCTDAT HED_STRUCTDAT;
 #endif
 
-	int		funcflag;			// function flags(Module)
-#ifdef PTR32BIT
-	int		proc_dummy2;		// 64bit pointer padding
-#endif
-} STRUCTDAT;
 
 //	Var Data for Multi Parameter
 typedef struct MPVarData {
 	PVal	*pval;
-#ifdef PTR32BIT
-	int		pval_dummy;			// 64bit pointer padding
-#endif
 	APTR	aptr;
-#ifdef PTR32BIT
-	int		pval_dummy2;		// 64bit pointer padding
-#endif
 } MPVarData;
 
 //	Var Data for Module Function
 typedef struct MPModVarData {
-	PVal	*pval;
-#ifdef PTR32BIT
-	int		pval_dummy;			// 64bit pointer padding
-#endif
-	APTR	aptr;
 	short subid;
 	short magic;
+	PVal	*pval;
+	APTR	aptr;
 } MPModVarData;
 #define MODVAR_MAGICCODE 0x55aa
 
@@ -278,6 +309,7 @@ typedef struct MPModVarData {
 #define IRQ_OPT_GOTO 0
 #define IRQ_OPT_GOSUB 1
 #define IRQ_OPT_CALLBACK 2
+
 
 typedef struct IRQDAT {
 	short	flag;								// flag

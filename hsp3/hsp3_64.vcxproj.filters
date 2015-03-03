@@ -214,4 +214,9 @@
   <ItemGroup>
     <Xml Include="win32gui\XPStyle.xml" />
   </ItemGroup>
+  <ItemGroup>
+    <MASM Include="call_extfunc64.asm">
+      <Filter>ソース ファイル</Filter>
+    </MASM>
+  </ItemGroup>
 </Project>

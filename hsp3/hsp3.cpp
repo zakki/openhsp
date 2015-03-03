@@ -18,19 +18,6 @@
 
 static char startax[]={ 'S'-40,'T'-40,'A'-40,'R'-40,'T'-40,
 			 '.'-40,'A'-40,'X'-40, 0 };
-/*------------------------------------------------------------*/
-/*
-		util
-*/
-/*------------------------------------------------------------*/
-
-static void* copy(char* ptr, size_t size)
-{
-	void* dst = malloc( size );
-	memcpy( dst, ptr, size );
-	return dst;
-}
-
 
 /*------------------------------------------------------------*/
 /*
@@ -174,14 +161,14 @@ int Hsp3::Reset( int mode )
 
 	maxvar = hsphed->max_val;
 	hspctx.hsphed = hsphed;
-	hspctx.mem_mcs = (unsigned short *)copy( ptr + hsphed->pt_cs, hsphed->max_cs );
+	hspctx.mem_mcs = (unsigned short *)copy_DAT(ptr + hsphed->pt_cs, hsphed->max_cs);
 	hspctx.mem_mds = (char *)( ptr + hsphed->pt_ds );
-	hspctx.mem_ot = (int *)copy( ptr + hsphed->pt_ot, hsphed->max_ot );
-	hspctx.mem_di = (unsigned char *)copy( ptr + hsphed->pt_dinfo, hsphed->max_dinfo );
+	hspctx.mem_ot = (int *)copy_DAT(ptr + hsphed->pt_ot, hsphed->max_ot);
+	hspctx.mem_di = (unsigned char *)copy_DAT(ptr + hsphed->pt_dinfo, hsphed->max_dinfo);
 
-	hspctx.mem_linfo = (LIBDAT *)copy( ptr + hsphed->pt_linfo, hsphed->max_linfo );
-	hspctx.mem_minfo = (STRUCTPRM *)copy( ptr + hsphed->pt_minfo, hsphed->max_minfo );
-	hspctx.mem_finfo = (STRUCTDAT *)copy( ptr + hsphed->pt_finfo, hsphed->max_finfo );
+	hspctx.mem_linfo = (LIBDAT *)copy_LIBDAT(hsphed, ptr + hsphed->pt_linfo, hsphed->max_linfo);
+	hspctx.mem_minfo = (STRUCTPRM *)copy_DAT(ptr + hsphed->pt_minfo, hsphed->max_minfo);
+	hspctx.mem_finfo = (STRUCTDAT *)copy_STRUCTDAT(hsphed, ptr + hsphed->pt_finfo, hsphed->max_finfo);
 
 	HspVarCoreResetVartype( hsphed->max_varhpi );		// å^ÇÃèâä˙âª
 	code_resetctx( &hspctx );		// hsp3code setup
@@ -212,6 +199,87 @@ void Hsp3::SetPackValue( int sum, int dec )
 {
 	hsp_sum = sum;
 	hsp_dec = dec;
+}
+
+
+/*------------------------------------------------------------*/
+/*
+util
+*/
+/*------------------------------------------------------------*/
+
+void* Hsp3::copy_DAT(char *ptr, size_t size)
+{
+	if (size <= 0) return ptr;
+
+	void* dst = malloc(size);
+	memcpy(dst, ptr, size);
+	return dst;
+}
+
+
+LIBDAT *Hsp3::copy_LIBDAT(HSPHED *hsphed, void *ptr, size_t size )
+{
+	//	libdatÇÃèÄîı
+	int i,max;
+	int newsize;
+	LIBDAT *mem_dst;
+	LIBDAT *dst;
+	HED_LIBDAT *org_dat;
+
+	max = (int)( size / sizeof(HED_LIBDAT));
+	if (max <= 0) return (LIBDAT *)ptr;
+	newsize = sizeof(LIBDAT)*max;
+	mem_dst = (LIBDAT *)malloc( newsize );
+	dst = mem_dst;
+	org_dat = (HED_LIBDAT *)ptr;
+	for (i = 0; i < max; i++) {
+
+		dst->flag = org_dat->flag;
+		dst->nameidx = org_dat->nameidx;
+		dst->clsid = org_dat->clsid;
+		dst->hlib = NULL;
+
+		dst++;
+		org_dat++;
+	}
+	hsphed->max_linfo = newsize;
+	return mem_dst;
+}
+
+
+STRUCTDAT *Hsp3::copy_STRUCTDAT(HSPHED *hsphed, void *ptr, size_t size)
+{
+	//	structdatÇÃèÄîı
+	int i, max;
+	int newsize;
+	STRUCTDAT *mem_dst;
+	STRUCTDAT *dst;
+	HED_STRUCTDAT *org_dat;
+	max = (int)(size / sizeof(HED_STRUCTDAT));
+	if (max <= 0) return (STRUCTDAT *)ptr;
+	newsize = sizeof(STRUCTDAT)*max;
+	mem_dst = (STRUCTDAT *)malloc(sizeof(STRUCTDAT)*max);
+	dst = mem_dst;
+	org_dat = (HED_STRUCTDAT *)ptr;
+	for (i = 0; i < max; i++) {
+
+		dst->index = org_dat->index;
+		dst->subid = org_dat->subid;
+		dst->prmindex = org_dat->prmindex;
+		dst->prmmax = org_dat->prmmax;
+		dst->nameidx = org_dat->nameidx;
+		dst->size = org_dat->size;
+		dst->otindex = org_dat->otindex;
+		dst->funcflag = org_dat->funcflag;
+#ifdef PTR64BIT
+		dst->proc = NULL;
+#endif
+		dst++;
+		org_dat++;
+	}
+	hsphed->max_finfo = newsize;
+	return mem_dst;
 }
 
 

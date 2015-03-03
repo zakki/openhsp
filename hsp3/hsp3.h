@@ -36,6 +36,12 @@ public:
 	int axtype;									// axファイルの設定(hsp3imp用)
 
 private:
+
+	void *copy_DAT(char* ptr, size_t size);
+	LIBDAT *copy_LIBDAT(HSPHED *hsphed, void *ptr, size_t size);
+	STRUCTDAT *copy_STRUCTDAT(HSPHED *hsphed, void *ptr, size_t size);
+
+
 };
 
 

@@ -33,7 +33,7 @@ static HSPEXINFO *exinfo;	// Info for Plugins
 static PVal **pmpval;
 
 static int libmax, prmmax, hpimax;
-static HPIDAT *hpidat;
+static MEM_HPIDAT *hpidat;
 
 #define GetPRM(id) (&hspctx->mem_finfo[id])
 #define GetLIB(id) (&hspctx->mem_linfo[id])
@@ -41,6 +41,13 @@ static HPIDAT *hpidat;
 
 typedef void (CALLBACK *DLLFUNC)(HSP3TYPEINFO *);
 static DLLFUNC func;
+
+// 64bit dll call
+#ifdef HSP64
+__declspec(align(16)) extern "C" INT64 __fastcall call_extfunc64(void *proc, INT64 *prm, INT64 *pinfo, INT64 prms);
+__declspec(align(16)) extern "C" double __fastcall call_extfunc64d(void *proc, INT64 *prm, INT64 *pinfo, INT64 prms);
+__declspec(align(16)) extern "C" float __fastcall call_extfunc64f(void *proc, INT64 *prm, INT64 *pinfo, INT64 prms);
+#endif
 
 //------------------------------------------------------------//
 
@@ -195,8 +202,10 @@ static void ExitFunc( STRUCTDAT *st )
 	pFn = (FARPROC)st->proc;
 	if ( pFn == NULL ) return;
 	p[0] = p[1] = p[2] = p[3] = 0;
-
-	call_extfunc( pFn, p, st->size / 4 );
+#ifdef HSP64
+	p[4] = p[5] = p[6] = p[7] = 0;
+#endif
+	call_extfunc(pFn, p, st->size / 4);
 }
 
 
@@ -209,15 +218,28 @@ static int Hsp3ExtAddPlugin( void )
 	char *ptr;
 	char *libname;
 	char *funcname;
-	HPIDAT *hpi;
+	HPIDAT *org_hpi;
+	MEM_HPIDAT *hpi;
 	HSP3TYPEINFO *info;
 	HINSTANCE hd;
 	char tmp[512];
 
 	hed = hspctx->hsphed; ptr = (char *)hed;
-	hpi = hpidat = (HPIDAT *)( ptr + hed->pt_hpidat );
-	hpimax = hed->max_hpi / sizeof( HPIDAT );
+	org_hpi = (HPIDAT *)(ptr + hed->pt_hpidat);
+	hpimax = hed->max_hpi / sizeof(HPIDAT);
+
+	if ( hpimax == 0 ) return 0;
+	hpidat = (MEM_HPIDAT *)malloc(hpimax * sizeof(MEM_HPIDAT));
+	hpi = hpidat;
+
 	for ( i=0;i<hpimax;i++ ) {
+
+		hpi->flag = org_hpi->flag;
+		hpi->option = org_hpi->option;
+		hpi->libname = org_hpi->libname;
+		hpi->funcname = org_hpi->funcname;
+		hpi->libptr = NULL;
+
 		libname = strp(hpi->libname);
 		funcname = strp(hpi->funcname);
 		info = code_gettypeinfo(-1);
@@ -241,6 +263,7 @@ static int Hsp3ExtAddPlugin( void )
 			//Alertf( "%d_%d [%s][%s]", i, info->type, libname, funcname );
 		}
 		hpi++;
+		org_hpi++;
 	}
 	return 0;
 }
@@ -279,6 +302,8 @@ int Hsp3ExtLibInit( HSP3TYPEINFO *info )
 	libmax = hspctx->hsphed->max_linfo / sizeof(LIBDAT);
 	prmmax = hspctx->hsphed->max_finfo / sizeof(STRUCTDAT);
 
+	hpidat = NULL;
+
 	if ( Hsp3ExtAddPlugin() ) return 1;
 
 	for(i=0;i<prmmax;i++) {
@@ -306,6 +331,10 @@ void Hsp3ExtLibTerm( void )
 			}
 		}
 	}
+
+	//	HPIDATの解放
+	if (hpidat != NULL) { free( hpidat); hpidat = NULL; }
+
 }
 
 
@@ -323,7 +352,27 @@ void Hsp3ExtLibTerm( void )
 #ifdef HSP64
 int __cdecl call_extfunc( void *proc, int *prm, int prms )
 {
-	return 0;
+	// int64に変換
+	//INT64 *prm64 = new INT64[prms];
+	INT64 *prm64 = (INT64 *)prm;
+	INT64 *pinfo64 = new INT64[prms];
+
+	for (int i = 0; i < prms; i++){
+		// 引数データ
+		//prm64[i] = *(prm + i);
+		// 引数の型情報
+		// pinfo64[i] = 0 : 整数型
+		// pinfo64[i] = 1 : 浮動小数点型
+		pinfo64[i] = 0;
+	}
+
+	INT64 ret = call_extfunc64(proc, prm64, pinfo64, (INT64) prms);
+	// call_extfunc64d -> 戻り値がdouble型
+	// call_extfunc64f -> 戻り値がfloat型
+
+	//delete [] prm64;
+	delete [] pinfo64;
+	return (int)ret;
 }
 #else
 
@@ -442,7 +491,12 @@ int code_expand_and_call( const STRUCTDAT *st )
 	//	おかなければなりません（ BindFUNC() により）。
 	//
 	int result;
-	char *prmbuf = sbAlloc( st->size );
+
+#ifdef HSP64
+	char *prmbuf = sbAlloc(st->size*2);
+#else
+	char *prmbuf = sbAlloc(st->size);
+#endif
 
 	try {
 		result = code_expand_next( prmbuf, st, 0 );
@@ -469,7 +523,7 @@ static int code_expand_next( char *prmbuf, const STRUCTDAT *st, int index )
 		case STRUCTPRM_SUBID_OLDDLL:
 		case STRUCTPRM_SUBID_OLDDLLINIT:
 			// 外部 DLL 関数の呼び出し
-			result = call_extfunc( st->proc, (int*)prmbuf, (st->size / 4) );
+			result = call_extfunc(st->proc, (int*)prmbuf, (st->size / 4));
 			break;
 #ifndef HSP_COM_UNSUPPORTED
 		case STRUCTPRM_SUBID_COMOBJ:
@@ -484,7 +538,12 @@ static int code_expand_next( char *prmbuf, const STRUCTDAT *st, int index )
 	}
 
 	STRUCTPRM *prm = &hspctx->mem_minfo[ st->prmindex + index ];
-	void *out = prmbuf + prm->offset;
+	void *out;
+#ifdef HSP64
+	out = prmbuf + prm->offset * 2;
+#else
+	out = prmbuf + prm->offset;
+#endif
 
 	int srcsize;
 	PVal *pval_dst, *mpval;
@@ -498,7 +557,11 @@ static int code_expand_next( char *prmbuf, const STRUCTDAT *st, int index )
 	switch ( prm->mptype ) {
 
 	case MPTYPE_INUM:
+#ifdef HSP64
+		*(INT64 *)out = (INT64)code_getdi(0);
+#else
 		*(int *)out = code_getdi(0);
+#endif
 		break;
 	case MPTYPE_PVARPTR:
 		aptr = code_getva( &pval );
