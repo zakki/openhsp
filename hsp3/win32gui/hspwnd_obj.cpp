@@ -780,7 +780,11 @@ int Bmscr::AddHSPObjectInput( PVal *pval, APTR aptr, int sizex, int sizey, char 
 
 	if ( subcl ) {
 		DefEditProc = (WNDPROC)GetWindowLongPtr( hwedit , GWLP_WNDPROC );
-		SetWindowLongPtr( hwedit , GWLP_WNDPROC , (LONG)MyEditProc );
+#ifdef HSP64
+		SetWindowLongPtr(hwedit, GWLP_WNDPROC, (LONG_PTR)MyEditProc);
+#else
+		SetWindowLongPtr(hwedit, GWLP_WNDPROC, (LONG)MyEditProc);
+#endif
 	}
 
 	obj = AddHSPVarEventObject( id, hwedit, tabstop|HSPOBJ_OPTION_SETFONT, pval, aptr, type, (void *)&bmscr_obj_ival );

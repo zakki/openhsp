@@ -712,8 +712,8 @@ static int cmdfunc_ctrlcmd( int cmd )
 		// HSPのウインドゥオブジェクトとして登録する
 		ShowWindow( hwnd, SW_SHOW );
 		id = AddHSPObject( hwnd, HSPOBJ_TAB_SKIP, sy );
-	#ifdef HSP_COMOBJ_DEBUG
-		COM_DBG_MSG( "axobj : pObj=%p : &pObj=%p\n", *ppunk, ppunk);
+#ifdef HSP_COMOBJ_DEBUG
+		Alertf( "axobj : pObj=%p : &pObj=%p\n", *ppunk, ppunk);
 	#endif
 		break;
 		}

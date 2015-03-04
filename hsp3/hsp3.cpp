@@ -19,6 +19,11 @@
 static char startax[]={ 'S'-40,'T'-40,'A'-40,'R'-40,'T'-40,
 			 '.'-40,'A'-40,'X'-40, 0 };
 
+
+#define GetPRM(id) (&hspctx.mem_finfo[id])
+#define strp(dsptr) &hspctx.mem_mds[dsptr]
+
+
 /*------------------------------------------------------------*/
 /*
 		constructor
@@ -275,6 +280,25 @@ STRUCTDAT *Hsp3::copy_STRUCTDAT(HSPHED *hsphed, void *ptr, size_t size)
 #ifdef PTR64BIT
 		dst->proc = NULL;
 #endif
+
+#ifdef HSP64
+		if ((dst->index == STRUCTDAT_INDEX_FUNC) ||
+			(dst->index == STRUCTDAT_INDEX_CFUNC) ||
+			(dst->index == STRUCTDAT_INDEX_STRUCT)) {
+			//	STRUCT‚Ìoffset,size’l‚ð’²®‚·‚é
+			int j;
+			STRUCTPRM *prm;
+			prm = &hspctx.mem_minfo[dst->prmindex];
+			dst->size *= 2;
+			for (j = 0; j < dst->prmmax; j++) {
+				if (prm->mptype == MPTYPE_STRUCTTAG) continue;
+				//Alertf("INIT: type%d: subid:%d offset:%d", prm->mptype, prm->subid, prm->offset);
+				prm->offset *= 2;
+				prm++;
+			}
+		}
+#endif
+
 		dst++;
 		org_dat++;
 	}

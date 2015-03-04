@@ -355,23 +355,14 @@ int __cdecl call_extfunc( void *proc, int *prm, int prms )
 	// int64‚É•ÏŠ·
 	//INT64 *prm64 = new INT64[prms];
 	INT64 *prm64 = (INT64 *)prm;
-	INT64 *pinfo64 = new INT64[prms];
-
-	for (int i = 0; i < prms; i++){
-		// ˆø”ƒf[ƒ^
-		//prm64[i] = *(prm + i);
-		// ˆø”‚ÌŒ^î•ñ
-		// pinfo64[i] = 0 : ®”Œ^
-		// pinfo64[i] = 1 : •‚“®¬”“_Œ^
-		pinfo64[i] = 0;
-	}
+	INT64 *pinfo64 = (INT64 *)( prm + prms*2 );
 
 	INT64 ret = call_extfunc64(proc, prm64, pinfo64, (INT64) prms);
 	// call_extfunc64d -> –ß‚è’l‚ªdoubleŒ^
 	// call_extfunc64f -> –ß‚è’l‚ªfloatŒ^
 
 	//delete [] prm64;
-	delete [] pinfo64;
+	//delete [] pinfo64;
 	return (int)ret;
 }
 #else
@@ -493,7 +484,8 @@ int code_expand_and_call( const STRUCTDAT *st )
 	int result;
 
 #ifdef HSP64
-	char *prmbuf = sbAlloc(st->size*2);
+	char *prmbuf = sbAlloc(st->size*4);
+	memset(prmbuf, 0, (st->size * 4));
 #else
 	char *prmbuf = sbAlloc(st->size);
 #endif
@@ -580,6 +572,9 @@ static int code_expand_next( char *prmbuf, const STRUCTDAT *st, int index )
 		break;
 	case MPTYPE_FLOAT:
 		*(float *)out = (float)code_getdd(0.0);
+#ifdef HSP64
+		*((char *)out + st->size * 2) = 1;					// floatƒtƒ‰ƒO‚ð—§‚Ä‚é
+#endif
 		break;
 	case MPTYPE_PPVAL:
 		aptr = code_getva( &pval );
