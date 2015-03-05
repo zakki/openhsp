@@ -1340,7 +1340,7 @@ static int cmdfunc_intcmd( int cmd )
 
 		NoteToData( p, dtmp );
 		BubbleSortStr( dtmp, i, sflag );
-		stmp = code_stmp( DataToNoteLen( dtmp, i ) + 1 );
+		stmp = code_stmp( (int)DataToNoteLen( dtmp, i ) + 1 );
 		DataToNote( dtmp, stmp, i );
 
 		code_setva( pv, ap, HSPVAR_FLAG_STR, stmp );	// •Ï”‚É’l‚ğ‘ã“ü
@@ -1597,7 +1597,8 @@ static void *reffunc_intfunc( int *type_res, int arg )
 		ps = code_gets();
 		p = code_stmpstr( ps );
 		findopt = code_getdi(0);
-		reffunc_intfunc_ivalue = 0;
+		note_update();
+		reffunc_intfunc_ivalue = note.FindLine( p, findopt );
 		break;
 		}
 

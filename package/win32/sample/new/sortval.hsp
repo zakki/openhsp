@@ -1,6 +1,4 @@
 
-	#include "hspda.as"
-
 	;	配列変数のソート
 	;
 	kaz=20

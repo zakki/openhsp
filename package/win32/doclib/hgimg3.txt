@@ -1,11 +1,11 @@
 ------------------------------------------------------------------------------
-HGIMG ver3.4    REFERENCE MANUAL       High Performance Graphic Image Plugin  
-ＨＳＰ拡張DLLリファレンス             copyright 2001-2014 (c) onion software  
+HGIMG ver3.5    REFERENCE MANUAL       High Performance Graphic Image Plugin  
+ＨＳＰ拡張DLLリファレンス             copyright 2001-2015 (c) onion software  
 ------------------------------------------------------------------------------
 
 ・はじめに
 
-	HGIMG3は、Hot Soup Processor ver3.3以降とともに使用することで、
+	HGIMG3は、Hot Soup Processor ver3.5以降とともに使用することで、
 	画面の描画に関する様々な機能拡張を提供します。
 	HGIMG3は、Windows98、Me、2000、XP、Vista、7以降のDirectX8以上が
 	インストールされた環境で動作します。
@@ -75,7 +75,7 @@ HGIMG ver3.4    REFERENCE MANUAL       High Performance Graphic Image Plugin
 
 	--------------------------------------------------------------------------------
 	HGIMG3 : Made with base technology of OpenHSP
-	Copyright (C) 1997-2014, Onion Software/onitama.
+	Copyright (C) 1997-2015, Onion Software/onitama.
 	All rights reserved.
 	OggVorvis形式のファイルデコードに以下のライブラリを使用しています
 	libvorbis : Copyright (c) 2002-2004 Xiph.org Foundation
@@ -2601,7 +2601,7 @@ HGIMG ver3.4    REFERENCE MANUAL       High Performance Graphic Image Plugin
 		使用することで、DirectX APIを直接利用することが可能です。
 
 
-・OggVorbisストリーム再生について(new)
+・OggVorbisストリーム再生について
 
 	OggVorbis形式は、ライセンスフリーの圧縮音声ファイルフォーマットです。
 	mp3形式などに比べて、ライセンスの問題がなく、OS環境に左右されずに
@@ -2742,7 +2742,7 @@ HGIMG ver3.4    REFERENCE MANUAL       High Performance Graphic Image Plugin
 		hgini
 
 
-・サウンドに関する詳細設定について(new)
+・サウンドに関する詳細設定について
 
 	サウンドの再生機能に関する詳細設定をhgsetreq命令で行なうことが可能です。
 	hgsetreq命令には、以下の設定項目が用意されています。
@@ -2788,6 +2788,36 @@ HGIMG ver3.4    REFERENCE MANUAL       High Performance Graphic Image Plugin
 		hgsetreq SYSREQ_DSGLOBAL,1	; フォーカス外でもサウンドを再生するフラグ(1=ON,0=OFF)
 		hgsetreq SYSREQ_DSSOFTWARE,1	; ソフトウェアバッファを使用するフラグ(1=ON,0=OFF)
 		dmmini
+
+
+・デバイスロストについて
+
+	HGIMG3が使用しているDirectXは、コンピューターのスリープや、意図しない
+	画面モードの変更によって、描画デバイスの消失(デバイスロスト)が発生する
+	ことがあります。
+	HGIMG3では、できる限りデバイスロストからの復旧を試みますが、
+	復旧に失敗した場合は、画面の初期化するところからやり直す必要が出てきます。
+	通常の使用でデバイスロストが発生することはありませんが、
+	不慮の動作に備えて、デバイスロストに対応することで、より親切なソフトを
+	作成することができます。
+	デバイスロストを検知するには、hggetreq命令によりSYSREQ_DEVLOSTの値を
+	取得してください。この値が、0以外の場合はデバイスロストが発生しています。
+
+		hgini
+	*main
+		hggetreq devlost,SYSREQ_DEVLOST
+		if devlost : goto *lost
+		hgdraw				; 描画
+		hgsync 16
+		goto *main
+	*lost
+		;	デバイスロストが発生した
+		hgini
+		;	～ 必要な初期化の処理 ～
+		goto *main
+
+	上のように、描画の直前にデバイスロストの確認を行ない、
+	初期化が必要な場合は適宜、プログラムを記述するようにしてください。
 
 
 ・HGIMG3対応ツールについて

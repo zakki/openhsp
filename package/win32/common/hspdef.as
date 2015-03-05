@@ -130,6 +130,10 @@
 #define global ease_shake_inout (15)
 #define global ease_loop (4096)
 
+#define global notefind_match (0)
+#define global notefind_first (1)
+#define global notefind_instr (2)
+
 
 #ifndef _DEBUG
 #undef assert

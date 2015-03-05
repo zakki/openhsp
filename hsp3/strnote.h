@@ -4,6 +4,10 @@
 #ifndef __strnote_h
 #define __strnote_h
 
+#define STRNOTE_FIND_MATCH 0	// Š®‘Sˆê’v
+#define STRNOTE_FIND_FIRST 1	// ‘O•ûˆê’v
+#define STRNOTE_FIND_INSTR 2	// •”•ªˆê’v
+
 //  class
 class CStrNote {
 public:
@@ -19,15 +23,18 @@ public:
 	int PutLine( char *nstr, int line, int ovr );
 	char *GetLineDirect( int line );
 	void ResumeLineDirect( void );
+	int FindLine( char *nstr, int mode );
 
 private:
 	int nnget( char *nbase, int line );
+	int FindLineSub( char *nstr, int mode );
 
 	char *base;
 	int lastcr;
 	char *nn;
 	char *lastnn;
 	char lastcode;
+	char *baseline;
 	char nulltmp[4];
 };
 

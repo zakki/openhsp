@@ -6,11 +6,11 @@
 %type
 内蔵命令
 %ver
-3.4
+3.5
 %note
-ver3.4標準命令
+ver3.5標準命令
 %date
-2013/12/09
+2015/03/05
 %author
 onitama
 %url
@@ -223,6 +223,7 @@ notedel
 noteinfo
 notemax
 notesize
+notefind
 
 %sample
 notesel a
@@ -293,6 +294,7 @@ p1で指定した文字列型変数の中に、"string"で指定した文字列があるかどうか調べて、イ
 %href
 strmid
 strrep
+notefind
 
 
 
@@ -347,6 +349,7 @@ notedel
 noteinfo
 notemax
 notesize
+notefind
 
 
 %index
@@ -618,4 +621,41 @@ p1で指定した文字列型変数の内容すべてにおいて、
 
 %href
 instr
+
+
+
+%index
+notefind
+メモリノートパッド検索
+%group
+文字列操作関数
+%prm
+("string",p1)
+"string" : 検索する文字列
+p1(0)    : 検索モード
+
+%inst
+現在対象となっているメモリノートパッドの中から、特定の文字列を含む行を検索します。
+p1で検索モードを指定します。それぞれのモードに対応したマクロが定義されています。
+^p
+   モード : マクロ            内容
+ -----------------------------------------------------------
+      0   : notefind_match    "string"と完全に一致した行を検索
+      1   : notefind_first    "string"で始まる行を検索
+      2   : notefind_instr    "string"を含む行を検索
+^p
+メモリノートパッドのすべての行から、指定された文字列と一致する行(インデックス)が戻り値となります。
+検索に一致する行がない場合は、-1が返されます。
+^
+notefind関数を使用するためには、最初にnotesel命令で対象となるバッファを設定しなければなりません。
+
+%href
+notesel
+noteget
+notedel
+notemax
+notesize
+
+
+
 

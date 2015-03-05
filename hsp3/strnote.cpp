@@ -1,11 +1,22 @@
 
 /*----------------------------------------------------------------*/
 //		notepad object related routines
-//		(Linux対応のためCR/LFだけでなくLFにも対応した版)
+//		(CR/LFだけでなくLFにも対応した版)
 /*----------------------------------------------------------------*/
 
 #include <string.h>
+#include "hsp3config.h"
 #include "strnote.h"
+#include "supio.h"
+
+#if defined(HSPLINUX) || defined(HSPMAC) || defined(HSPIOS) || defined(HSPNDK) || defined(HSPEMSCRIPTEN)
+// LFを改行として扱う
+#define MATCH_LF
+#define CRSTR "\n"
+#else
+// CR/LFを改行として扱う
+#define CRSTR "\r\n"
+#endif
 
 //-------------------------------------------------------------
 //		Interfaces
@@ -41,6 +52,12 @@ int CStrNote::GetSize( void )
 
 int CStrNote::nnget( char *nbase, int line )
 {
+	//	指定した行の先頭ポインタを求める
+	//		nn = 先頭ポインタ
+	//		lastcr : CR/LFで終了している
+	//		line   : line number(-1=最終行)
+	//		result:0=ok/1=no line
+	//
 	int a,i;
 	char a1;
 	a=0;
@@ -56,7 +73,7 @@ int CStrNote::nnget( char *nbase, int line )
 		while(1) {
 			a1=*nn;if (a1==0) return 1;
 			nn++;
-#if defined(HSPLINUX) || defined(HSPDISH)
+#ifdef MATCH_LF
 			if (a1==10) {
 				a++;if (a==line) break;
 			}
@@ -85,7 +102,7 @@ int CStrNote::GetLine( char *nres, int line )
 	while(1) {
 		a1=*nn++;
 		if ((a1==0)||(a1==13)) break;
-#if defined(HSPLINUX) || defined(HSPDISH)
+#ifdef MATCH_LF
 		if (a1==10) break;
 #endif
 		*pp++=a1;
@@ -111,7 +128,7 @@ int CStrNote::GetLine( char *nres, int line, int max )
 		if ( cnt>=max ) break;
 		a1=*nn++;
 		if ((a1==0)||(a1==13)) break;
-#if defined(HSPLINUX) || defined(HSPDISH)
+#ifdef MATCH_LF
 		if (a1==10) break;
 #endif
 		*pp++=a1;
@@ -132,7 +149,7 @@ char *CStrNote::GetLineDirect( int line )
 	while(1) {
 		a1=*lastnn;
 		if ((a1==0)||(a1==13)) break;
-#if defined(HSPLINUX) || defined(HSPDISH)
+#ifdef MATCH_LF
 		if (a1==10) break;
 #endif
 		lastnn++;
@@ -153,13 +170,15 @@ void CStrNote::ResumeLineDirect( void )
 
 int CStrNote::GetMaxLine( void )
 {
+	//		Get total lines
+	//
 	int a,b;
 	char a1;
 	a=1;b=0;
 	nn=base;
 	while(1) {
 		a1=*nn++;if (a1==0) break;
-#if defined(HSPLINUX) || defined(HSPDISH)
+#ifdef MATCH_LF
 		if ((a1==13)||(a1==10)) {
 			if (a1=13&&*nn==10) nn++;
 #else
@@ -180,12 +199,6 @@ int CStrNote::PutLine( char *nstr2, int line, int ovr )
 	//		Pet specified line to note
 	//				result:0=ok/1=no line
 	//
-/*
-	rev 43
-	mingw : warning : a は代入前に使われる。
-	に対処
-	if(ovr)が偽で、if(ln>=0)が偽の場合。実際にはおこりえない。
-*/
 	int a = 0,ln,la,lw;
 	char a1;
 	char *pp;
@@ -195,24 +208,24 @@ int CStrNote::PutLine( char *nstr2, int line, int ovr )
 	if ( nnget( base,line ) ) return 1;
 	if (lastcr==0) {
 		if ( nn != base ) {
-			strcat( base,"\r\n" );nn+=2;
+			strcat( base, CRSTR );nn+=2;
 		}
 	}
 	nstr = nstr2;
 	if ( nstr == NULL ) { nstr=""; }
 
 	pp=nstr;
-	if ( nstr2 != NULL ) strcat(nstr,"\r\n");
+	if ( nstr2 != NULL ) strcat(nstr, CRSTR );
 	ln=(int)strlen(nstr);			// base new str + cr/lf
 	la=(int)strlen(base);
-	lw=la-(nn-base)+1;
+	lw=la-(int)(nn-base)+1;
 	//
 	if (ovr) {						// when overwrite mode
 		p1=nn;a=0;
 		while(1) {
 			a1=*p1++;if (a1==0) break;
 			a++;
-#if defined(HSPLINUX) || defined(HSPDISH)
+#ifdef MATCH_LF
 			if ((a1==13)||(a1==10)) {
 			if (a1=13&&*p1==10) { p1++;a++; }
 #else
@@ -241,4 +254,92 @@ int CStrNote::PutLine( char *nstr2, int line, int ovr )
 	}
 	return 0;
 }
+
+
+int CStrNote::FindLine( char *nstr, int mode )
+{
+	//		Search string from note
+	//				nstr:search string
+	//				mode:STRNOTE_FIND_*
+	//				result:line number(-1:no match)
+	//
+	char a1;
+	int curline, len, res;
+
+	nn=base;
+	curline = 0; len = 0;
+
+	baseline = nn;			// 行の先頭ポインタ
+
+	while(1) {
+		a1=*nn;if (a1==0) break;
+#ifdef MATCH_LF
+		if (a1==10) {
+			if ( len ) {
+				lastcode = a1; *nn = 0;
+				res = FindLineSub( nstr, mode );
+				*nn = lastcode;
+				if ( res ) return curline;
+			}
+			nn++;
+			curline++;len=0;
+			baseline = nn;
+			continue;
+		}
+#endif
+		if (a1==13) {
+			if ( len ) {
+				lastcode = a1; *nn = 0;
+				res = FindLineSub( nstr, mode );
+				*nn = lastcode;
+				if ( res ) return curline;
+			}
+			nn++;
+			curline++;len=0;
+			if (*nn==10) nn++;		// LFをスキップ
+			baseline = nn;
+			continue;
+		}
+		nn++;
+		len++;
+	}
+
+	//	最終行に文字列があればサーチ
+	if ( len ) {
+		if ( FindLineSub( nstr, mode ) ) return curline;
+	}
+
+	return -1;
+}
+
+
+int CStrNote::FindLineSub( char *nstr, int mode )
+{
+	//		全体サーチ用文字列比較
+	//		mode : STRNOTE_FIND_MATCH = 完全一致
+	//		       STRNOTE_FIND_FIRST = 前方一致
+	//		       STRNOTE_FIND_INSTR = 部分一致
+	//
+	switch( mode ) {
+	case STRNOTE_FIND_MATCH:	// 完全一致
+		if ( strcmp( baseline, nstr ) == 0 ) return 1;
+		break;
+	case STRNOTE_FIND_FIRST:	// 前方一致
+		{
+		char *p = strstr2( baseline, nstr );
+		if ( p != NULL ) {
+			if ( p == baseline ) return 1;
+		}
+		break;
+		}
+	case STRNOTE_FIND_INSTR:	// 部分一致
+		if ( strstr2( baseline, nstr ) != NULL ) return 1;
+		break;
+	default:
+		break;
+	}
+	return 0;
+}
+
+
 

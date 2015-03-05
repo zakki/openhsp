@@ -7,6 +7,9 @@ Hot Soup Processor ver3.5                           HSP : Hot Soup Processor
 
 	2015/03/04 3.5 beta2
 
+	複数行文字列から特定の文字列を持つ行を検索するnotefind関数を追加
+	いくつかのサンプルスクリプトを追加
+	PNG画像デコーダーstb_imageを2.02に更新
 	64bit(x64)版ランタイムのDLL呼び出しに対応
 	64bit(x64)版ランタイムのinput命令でエラーが発生する不具合を修正
 	64bit(x64)版ランタイムでモジュール変数使用時にエラーが発生する不具合を修正
