@@ -1,9 +1,9 @@
 
 //
 //	HSP3 string support
-//	(おおらかなメモリ管理をするバッファマネージャー)
-//	(sbAllocでSTRBUF_BLOCKSIZEのバッファを確保します)
-//	(あとはsbCopy,sbAddで自動的にバッファの再確保を行ないます)
+//	(�����炩�ȃ������Ǘ�������o�b�t�@�}�l�[�W���[)
+//	(sbAlloc��STRBUF_BLOCKSIZE�̃o�b�t�@���m�ۂ��܂�)
+//	(���Ƃ�sbCopy,sbAdd�Ŏ����I�Ƀo�b�t�@�̍Ċm�ۂ��s�Ȃ��܂�)
 //	onion software/onitama 2004/6
 //
 #include <stdio.h>
@@ -35,7 +35,7 @@ static int slot_len;
 
 static STRBUF *freelist;
 
-// STRINF_FLAG_NONE のとき STRINF::extptr を free list の次のポインタに使う
+// STRINF_FLAG_NONE �̂Ƃ� STRINF::extptr �� free list �̎��̃|�C���^�Ɏg��
 #define STRINF_NEXT(inf) ((inf).extptr)
 #define STRBUF_NEXT(buf) STRINF_NEXT((buf)->inf)
 
@@ -78,7 +78,7 @@ static void BlockPtrPrepare( void )
 
 static STRBUF *BlockEntry( void )
 {
-	//		空きエントリーブロックを探す
+	//		�󂫃G���g���[�u���b�N��T��
 	//
 	if ( freelist == NULL ) {
 		BlockPtrPrepare();
@@ -261,13 +261,13 @@ void sbAdd( char **pptr, char *data, int size, int mode )
 	st = (STRBUF *)( ptr - sizeof(STRINF) );
 	p = st->inf.ptr;
 	if ( mode ) {
-		sz = (int)strlen( p );					// 文字列データ
+		sz = (int)strlen( p );					// ������f�[�^
 	} else {
-		sz = st->inf.size;						// 通常データ
+		sz = st->inf.size;						// �ʏ�f�[�^
 	}
 	newsize = sz + size;
 	if ( newsize > (st->inf.size) ) {
-		newsize = ( newsize + 0xfff ) & 0xfffff000;						// 8K単位で確保
+		newsize = ( newsize + 0xfff ) & 0xfffff000;						// 8K�P�ʂŊm��
 		//Alertf( "#Alloc%d",newsize );
 		p = BlockRealloc( st, newsize );
 		*pptr = p;

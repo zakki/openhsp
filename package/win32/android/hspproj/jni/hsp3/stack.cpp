@@ -1,8 +1,8 @@
 
 //
 //	HSP3 stack support
-//	(æ±ç”¨ã‚¹ã‚¿ãƒƒã‚¯ãƒãƒãƒ¼ã‚¸ãƒ£ãƒ¼)
-//	(int,double,stringãªã©ã®å¯å¤‰é•·ãƒ‡ãƒ¼ã‚¿ã‚’push,popã§ãã¾ã™)
+//	(”Ä—pƒXƒ^ƒbƒNƒ}ƒl[ƒWƒƒ[)
+//	(int,double,string‚È‚Ç‚Ì‰Â•Ï’·ƒf[ƒ^‚ğpush,pop‚Å‚«‚Ü‚·)
 //	onion software/onitama 2004/6
 //
 #include <stdio.h>
@@ -87,8 +87,9 @@ void StackPush( int type, char *data, int size )
 		stm_cur++;
 		return;
 	case HSPVAR_FLAG_DOUBLE:
-		dptr = (double *)&stm->ival;
-		*dptr = *(double *)data;
+		//dptr = (double *)&stm->ival;
+		//*dptr = *(double *)data;
+		memcpy(&stm->ival, data, sizeof(double));
 //		stm->mode = STMMODE_SELF;
 //		stm->ptr = (char *)dptr;
 		stm_cur++;
@@ -134,6 +135,18 @@ void StackPushTypeVal( int type, int val, int val2 )
 	iptr = (int *)stm->itemp;
 	*iptr = val2;
 	stm_cur++;
+}
+
+void StackPushVar( void *pval, int aptr )
+{
+    STMDATA *stm;
+    //	if ( stm_cur >= stm_maxptr ) throw HSPERR_STACK_OVERFLOW;
+    stm = stm_cur;
+    stm->type = -1;         // HSPVAR_FLAG_VAR
+    //	stm->mode = STMMODE_SELF;
+    stm->pval = pval;
+    stm->ival = aptr;
+    stm_cur++;
 }
 
 void StackPushType( int type )

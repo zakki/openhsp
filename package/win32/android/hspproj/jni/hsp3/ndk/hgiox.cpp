@@ -1110,7 +1110,10 @@ void hgio_fcopy( float distx, float disty, short xx, short yy, short srcsx, shor
     *flp++ = x2;
     *flp++ = y2;
 
+#if defined(HSPEMSCRIPTEN)
 	glEnable(GL_TEXTURE_2D);
+#endif
+
 	ChangeTex( tex->texid );
 //    glBindTexture( GL_TEXTURE_2D, tex->texid );
     glVertexPointer( 2, GL_FLOAT,0,vertf2D );
@@ -1121,7 +1124,10 @@ void hgio_fcopy( float distx, float disty, short xx, short yy, short srcsx, shor
 	
 //    glDisableClientState(GL_COLOR_ARRAY);
     glDrawArrays(GL_TRIANGLE_STRIP,0,4);
+
+#if defined(HSPEMSCRIPTEN)
 	glDisable(GL_TEXTURE_2D);
+#endif
 }
 
 
