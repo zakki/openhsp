@@ -5,8 +5,9 @@ Hot Soup Processor ver3.5                           HSP : Hot Soup Processor
 
 ・hsp3関連 更新履歴
 
-	2015/03/13 3.5 beta2
+	2015/03/18 3.5 beta2
 
+	beta1でobjimage命令が正しく動作しない不具合を修正
 	複数行文字列から特定の文字列を持つ行を検索するnotefind関数を追加
 	いくつかのサンプルスクリプトを追加
 	画像ファイルデコーダーを更新、1,2,4bit PNGに対応

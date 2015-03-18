@@ -48,11 +48,11 @@ static void UpdateCustomButton( HWND hwnd, int flag )
 	Bmscr *bm;
 	HSPOBJINFO *obj;
 
-	hw = (HWND)GetClassLongPtr( hwnd , GWLP_HWNDPARENT );
-	id = (int)GetClassLongPtr( hw, GWLP_USERDATA );
+	hw = (HWND)GetWindowLongPtr( hwnd , GWLP_HWNDPARENT );
+	id = (int)GetWindowLongPtr( hw, GWLP_USERDATA );
 	bm = curwnd->GetBmscrSafe( id );
 
-	id = (int)GetClassLongPtr( hwnd, GWLP_USERDATA );
+	id = (int)GetWindowLongPtr( hwnd, GWLP_USERDATA );
 	obj = bm->GetHSPObjectSafe( id );
 	if ( obj->owmode == HSPOBJ_NONE ) return;
 	if ( hwnd != obj->hCld ) return;
