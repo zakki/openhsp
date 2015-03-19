@@ -21,7 +21,6 @@
 #include <ctype.h>
 #endif
 
-
 #include "hsp3dish.h"
 #include "../../hsp3/hsp3config.h"
 #include "../../hsp3/strbuf.h"
@@ -33,11 +32,11 @@
 #include "../hsp3ext.h"
 #include "../../hsp3/strnote.h"
 
-#include "../win32/hsp3extlib.h"
+#include "hsp3extlib.h"
 
 #ifndef HSP_COM_UNSUPPORTED
-#include "../win32/hspvar_comobj.h"
-#include "../win32/hspvar_variant.h"
+#include "hspvar_comobj.h"
+#include "hspvar_variant.h"
 #endif
 
 typedef BOOL (CALLBACK *HSP3DBGFUNC)(HSP3DEBUG *,int,int,int);
@@ -945,6 +944,12 @@ int hsp3dish_init( HINSTANCE hInstance, char *startfile )
 	//
 	hsp3typeinit_extcmd( code_gettypeinfo( TYPE_EXTCMD ) );
 	hsp3typeinit_extfunc( code_gettypeinfo( TYPE_EXTSYSVAR ) );
+
+	//		Initalize external DLL System
+	//
+	hsp3typeinit_dllcmd(code_gettypeinfo(TYPE_DLLFUNC));
+	hsp3typeinit_dllctrl(code_gettypeinfo(TYPE_DLLCTRL));
+
 	exinfo = ctx->exinfo2;
 
 	//		Initalize DEVINFO

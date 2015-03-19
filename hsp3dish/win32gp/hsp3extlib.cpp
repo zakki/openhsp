@@ -18,7 +18,7 @@
 #include "hsp3extlib.h"
 #include "../hspwnd.h"
 
-#ifdef HSPDISH||HSPDISHGP
+#if defined(HSPDISH)||defined(HSPDISHGP)
 #include "../../hsp3/dpmread.h"
 #include "../../hsp3/strbuf.h"
 #else
