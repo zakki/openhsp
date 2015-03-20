@@ -673,7 +673,8 @@ void hsp3dish_exec_one( void )
 	static int code_execcmd_state = 0;
 	int runmode;
 	bool stop = false;
-	for (int i = 0; !stop && i < hsp_limit_step_per_frame; i++) {
+	int i;
+	for (i = 0; !stop && i < hsp_limit_step_per_frame; i++) {
 	//for (int i = 0; !stop; i++) {
 		runmode = code_execcmd_one(code_execcmd_state);
 		switch ( ctx->runmode ){
@@ -688,6 +689,9 @@ void hsp3dish_exec_one( void )
 			stop = true;
 			break;
 		}
+	}
+	if (i == hsp_limit_step_per_frame) {
+		fprintf(stderr, "OVER HSP_LIMIT_STEP %d\n", hsp_limit_step_per_frame);
 	}
 	//exit(-1);
 	//printf("RUN %d %d\n", runmode, ctx->runmode);

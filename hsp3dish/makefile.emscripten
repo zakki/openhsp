@@ -47,6 +47,7 @@ OBJS = \
 	emscripten/hsp3dish.bc \
 	emscripten/main.bc \
 	emscripten/mmman.bc \
+	emscripten/webtask_emscripten.bc \
 	emscripten/stb_image.bc \
 	emscripten/supio_emscripten.bc
 
@@ -194,6 +195,7 @@ OBJS_GP = \
 	emscripten/hsp3dish.gp.bc \
 	emscripten/main.gp.bc \
 	emscripten/mmman.gp.bc \
+	emscripten/webtask_emscripten.gp.bc \
 	emscripten/stb_image.gp.bc \
 	emscripten/supio_emscripten.gp.bc
 

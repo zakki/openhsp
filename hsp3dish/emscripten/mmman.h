@@ -1,6 +1,6 @@
 
 //
-//	mmman.cpp functions (iOS)
+//	mmman.cpp functions (Emscripten)
 //
 #ifndef __mmman_h
 #define __mmman_h

@@ -1,6 +1,6 @@
 
 //
-//	supio.cpp functions (linux)
+//	supio.cpp functions (Emscripten)
 //
 
 char *mem_ini( int size );

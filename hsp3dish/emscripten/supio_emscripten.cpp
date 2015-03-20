@@ -1,6 +1,6 @@
 
 //
-//	supio.cpp functions (for Linux)
+//	supio.cpp functions (for Emscripten)
 //	Linux用のsupio.cppを別ファイルとして作成しました。
 //
 //	Special thanks to Charlotte at HSP開発wiki

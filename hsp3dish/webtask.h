@@ -22,7 +22,7 @@
 #endif
 
 #ifdef HSPEMSCRIPTEN
-//#include "emscripten/webtask_emscripten.h"
+#include "emscripten/webtask_emscripten.h"
 #endif
 
 #endif
