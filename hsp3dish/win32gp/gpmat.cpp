@@ -410,7 +410,6 @@ Material *gamehsp::makeMaterialTex2D( char *fname, int matopt )
 	state->setBlendDst(RenderState::BLEND_ONE_MINUS_SRC_ALPHA);
 
 	SAFE_RELEASE( texture );
-    SAFE_RELEASE( _spriteEffect );
 	return mesh_material;
 }
 
@@ -428,11 +427,11 @@ int gamehsp::getTextureHeight( void )
 
 bool hasParameter( Material* material, const char* name )
 {
-	int mc = material->getTechniqueCount();
+	unsigned int mc = material->getTechniqueCount();
 	for (unsigned int i = 0; i < mc; ++i)
 	{
 		Technique *tech = material->getTechniqueByIndex( i );
-		int pc = tech->getPassCount();
+		unsigned int pc = tech->getPassCount();
 		for (unsigned int j = 0; j < pc; ++j)
 		{
 			Pass *pass = tech->getPassByIndex(j);
