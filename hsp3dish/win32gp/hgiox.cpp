@@ -41,10 +41,11 @@
 
 #pragma comment(lib, "OpenGL32.lib")
 #pragma comment(lib, "GLU32.lib")
-//#pragma comment(lib, "glew32.lib")
-#pragma comment(lib, "libpng16.lib")
-#pragma comment(lib, "zlib.lib")
 #pragma comment(lib, "gameplay.lib")
+
+//#pragma comment(lib, "glew32.lib")
+//#pragma comment(lib, "libpng16.lib")
+//#pragma comment(lib, "zlib.lib")
 //#pragma comment(lib, "BulletDynamics.lib")
 //#pragma comment(lib, "BulletCollision.lib")
 //#pragma comment(lib, "LinearMath.lib")
