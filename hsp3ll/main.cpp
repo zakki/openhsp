@@ -18,6 +18,7 @@
 extern void DumpResult();
 
 CHsp3Op* hsp3;
+bool printDebugDump = false;
 
 /*----------------------------------------------------------*/
 
@@ -92,11 +93,24 @@ int APIENTRY WinMain ( HINSTANCE hInstance,
 					   LPSTR lpCmdParam,
 					   int iCmdShow )
 {
-	initHsp(lpCmdParam);
+	char *p = nullptr;
+	if ( __argc <= 1 ) {
+		return 1;
+	} else {
+		for (int i = 0; i < __argc; ++i) {
+			if (strcmp("--debug-dump", __argv[i]) == 0) {
+				printDebugDump = true;
+			} else {
+				p = __argv[i];
+			}
+		}
+	}
+
+	initHsp(p);
 
 	int res;
 //#ifdef HSPDEBUG
-	res = hsp3win_init( hInstance, lpCmdParam );
+	res = hsp3win_init( hInstance, p );
 //#else
 //	res = hsp3win_init( hInstance, NULL );
 //#endif

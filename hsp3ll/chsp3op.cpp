@@ -895,3 +895,102 @@ int CHsp3Op::MakeSource( int option, void *ref )
 //sDsBasePtr = GetDS( 0 );
 	return 0;
 }
+
+void CHsp3Op::UpdateOpType(Block *block, const std::map<VarId, int>& varTypes) const
+{
+	for (auto op : block->operations) {
+		op->compile = DEFAULT;
+		op->flag = HSPVAR_FLAG_MAX;
+	}
+
+	for (auto op : block->operations) {
+		switch (op->GetOpCode()) {
+		case PUSH_VAR_OP:
+		{
+			const VarId &varId = ((PushVarOp*)op)->GetVarId();
+			op->flag = varTypes.find(varId)->second;
+			break;
+		}
+		case PUSH_VAR_PTR_OP:
+		{
+			const VarId &varId = ((PushVarPtrOp*)op)->GetVarId();
+			op->flag = varTypes.find(varId)->second;
+			break;
+		}
+		case PUSH_DNUM_OP:
+			op->flag = HSPVAR_FLAG_DOUBLE;
+			break;
+		case PUSH_INUM_OP:
+			op->flag = HSPVAR_FLAG_INT;
+			break;
+		case PUSH_LABEL_OP:
+			op->flag = HSPVAR_FLAG_LABEL;
+			break;
+		case PUSH_STR_OP:
+			op->flag = HSPVAR_FLAG_STR;
+			break;
+		case PUSH_FUNC_END_OP:
+		case PUSH_FUNC_PARAM_PTR_OP:
+			break;
+		case PUSH_FUNC_PARAM_OP:
+		{
+			PushFuncPrmOp *prmop = (PushFuncPrmOp*)op;
+			const VarId &varId = prmop->GetVarId();
+			const STRUCTPRM *st = GetMInfo(prmop->GetVarNo());
+			switch (st->mptype) {
+			case MPTYPE_LOCALVAR:
+				break;
+			case MPTYPE_VAR:
+			case MPTYPE_ARRAYVAR:
+			case MPTYPE_SINGLEVAR:
+				op->flag = varTypes.find(varId)->second;
+				break;
+			case MPTYPE_DNUM:
+				op->flag = HSPVAR_FLAG_DOUBLE;
+				break;
+			case MPTYPE_INUM:
+				op->flag = HSPVAR_FLAG_INT;
+				break;
+			}
+			break;
+		}
+		case PUSH_CMD_OP:
+		{
+			PushCmdOp *pcop = (PushCmdOp*)op;
+			int retType = GetFuncTypeRet(pcop->GetCmdType(),
+				pcop->GetCmdVal(),
+				pcop->GetCmdPNum());
+			op->flag = retType;
+			break;
+		}
+		case CALC_OP:
+		{
+			CalcOp *calc = (CalcOp*)op;
+			int tflag = GetOpTypeRet(calc->GetCalcOp(),
+				op->operands[1]->flag,
+				op->operands[0]->flag);
+			op->flag = tflag;
+		}
+			break;
+
+		case VAR_INC_OP:
+		case VAR_DEC_OP:
+			break;
+
+		case VAR_CALC_OP:
+			break;
+		case VAR_SET_OP:
+			break;
+		case COMPARE_OP:
+			break;
+		case CMD_OP:
+			break;
+		case MODCMD_OP:
+			break;
+		case TASK_SWITCH_OP:
+			break;
+		default:
+			break;
+		}
+	}
+}

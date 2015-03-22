@@ -122,6 +122,7 @@ void UpdateOperands( Block *task )
 		}
 	}
 
+	std::set<VarId> usedVariables;
 	// アクセスしている変数をリストアップ
 	for ( auto op : task->operations ) {
 		switch ( op->GetOpCode() ) {
@@ -135,12 +136,16 @@ void UpdateOperands( Block *task )
 		case VAR_CALC_OP:
 			{
 				VarRefOp *vr = (VarRefOp*)op;
-				task->usedVariables.insert( vr->GetVarId() );
+				usedVariables.insert( vr->GetVarId() );
 			}
 			break;
 		default:
 			break;
 		}
+	}
+
+	for (auto& var : usedVariables) {
+		task->usedVariables.push_back(var);
 	}
 
 	for ( auto op : task->operations ) {
@@ -381,6 +386,35 @@ std::ostream& operator<< (std::ostream &out, const Op &op) {
 		break;
 	default:
 		out << "[?]";
+		break;
+	}
+	switch (op.flag) {
+	case HSPVAR_FLAG_NONE:
+		out << "[NONE]";
+		break;
+	case HSPVAR_FLAG_LABEL:
+		out << "[LABEL]";
+		break;
+	case HSPVAR_FLAG_STR:
+		out << "[STR]";
+		break;
+	case HSPVAR_FLAG_DOUBLE:
+		out << "[DOUBLE]";
+		break;
+	case HSPVAR_FLAG_INT:
+		out << "[INT]";
+		break;
+	case HSPVAR_FLAG_STRUCT:
+		out << "[STRUCT]";
+		break;
+	case HSPVAR_FLAG_COMSTRUCT:
+		out << "[COMSTRUCT]";
+		break;
+	case HSPVAR_FLAG_MAX:
+		out << "[?]";
+		break;
+	default:
+		out << "[#" << op.flag << "]";
 		break;
 	}
 

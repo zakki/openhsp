@@ -48,6 +48,7 @@ using std::string;
 using boost::format;
 
 extern CHsp3Op *hsp3;
+extern bool printDebugDump;
 
 class Task;
 
@@ -77,6 +78,7 @@ public:
 	int numCurCall;
 	int numChange;
 	long long time;
+	std::vector<VarStatics*> varStatics;
 	std::map<VarId, Value*> llVariables;
 	std::set<BasicBlock*> returnBlocks;
 
@@ -170,14 +172,6 @@ static string GetTaskFuncName(const Task *task)
 	return (format("%1%_%2%") % task->block->name % task->numCall).str();
 }
 
-static VarStatics *GetTaskVar(Task *task, const VarId& id)
-{
-	if (task->block->usedVariables.find(id) != task->block->usedVariables.end())
-		return sVarStatics[id];
-	else
-		return NULL;
-}
-
 static bool CheckCompileType(Task *task, Op *op, CHsp3Op *hsp, const std::map<VarId, int>& varTypes)
 {
 	switch (op->GetOpCode()) {
@@ -202,7 +196,6 @@ static bool CheckCompileType(Task *task, Op *op, CHsp3Op *hsp, const std::map<Va
 	{
 		//PushVarPtrOp *pv = (PushVarPtrOp*)op;
 		//const VarId &varId = pv->GetVarId();
-		//VarStatics *var = GetTaskVar( task, varId );
 		//PVal& pval = mem_var[varId.val()];
 		//op->flag = pval.flag;
 	}
@@ -375,105 +368,6 @@ static void MarkCompile(Op *op, COMPILE_TYPE comp)
 	}
 }
 
-static void CheckType(CHsp3Op *hsp, Task *task,
-	const std::map<VarId, int>& varTypes)
-{
-	for (auto op : task->block->operations) {
-		op->compile = DEFAULT;
-		op->flag = HSPVAR_FLAG_MAX;
-	}
-
-	for (auto op : task->block->operations) {
-		switch (op->GetOpCode()) {
-		case PUSH_VAR_OP:
-		{
-			const VarId &varId = ((PushVarOp*)op)->GetVarId();
-			op->flag = varTypes.find(varId)->second;
-			break;
-		}
-		case PUSH_VAR_PTR_OP:
-		{
-			const VarId &varId = ((PushVarPtrOp*)op)->GetVarId();
-			op->flag = varTypes.find(varId)->second;
-			break;
-		}
-		case PUSH_DNUM_OP:
-			op->flag = HSPVAR_FLAG_DOUBLE;
-			break;
-		case PUSH_INUM_OP:
-			op->flag = HSPVAR_FLAG_INT;
-			break;
-		case PUSH_LABEL_OP:
-			op->flag = HSPVAR_FLAG_LABEL;
-			break;
-		case PUSH_STR_OP:
-			op->flag = HSPVAR_FLAG_STR;
-			break;
-		case PUSH_FUNC_END_OP:
-		case PUSH_FUNC_PARAM_PTR_OP:
-			break;
-		case PUSH_FUNC_PARAM_OP:
-		{
-			PushFuncPrmOp *prmop = (PushFuncPrmOp*)op;
-			const VarId &varId = prmop->GetVarId();
-			const STRUCTPRM *st = hsp->GetMInfo(prmop->GetVarNo());
-			switch (st->mptype) {
-			case MPTYPE_LOCALVAR:
-				break;
-			case MPTYPE_VAR:
-			case MPTYPE_ARRAYVAR:
-			case MPTYPE_SINGLEVAR:
-				op->flag = varTypes.find(varId)->second;
-				break;
-			case MPTYPE_DNUM:
-				op->flag = HSPVAR_FLAG_DOUBLE;
-				break;
-			case MPTYPE_INUM:
-				op->flag = HSPVAR_FLAG_INT;
-				break;
-			}
-			break;
-		}
-		case PUSH_CMD_OP:
-		{
-			PushCmdOp *pcop = (PushCmdOp*)op;
-			int retType = GetFuncTypeRet(pcop->GetCmdType(),
-				pcop->GetCmdVal(),
-				pcop->GetCmdPNum());
-			op->flag = retType;
-			break;
-		}
-		case CALC_OP:
-		{
-			CalcOp *calc = (CalcOp*)op;
-			int tflag = GetOpTypeRet(calc->GetCalcOp(),
-				op->operands[1]->flag,
-				op->operands[0]->flag);
-			op->flag = tflag;
-		}
-			break;
-
-		case VAR_INC_OP:
-		case VAR_DEC_OP:
-			break;
-
-		case VAR_CALC_OP:
-			break;
-		case VAR_SET_OP:
-			break;
-		case COMPARE_OP:
-			break;
-		case CMD_OP:
-			break;
-		case MODCMD_OP:
-			break;
-		case TASK_SWITCH_OP:
-			break;
-		default:
-			break;
-		}
-	}
-}
 
 //TODO –¾Ž¦“I‚É•Ï”‚ÌŒ^î•ñ‚ð“n‚· -> CheckType
 static BasicBlock *CompileOp(CHsp3Op *hsp, Function *func, BasicBlock *bb, BasicBlock *retBB, Task *task, Op *op)
@@ -492,7 +386,6 @@ static BasicBlock *CompileOp(CHsp3Op *hsp, Function *func, BasicBlock *bb, Basic
 	{
 		PushVarOp *pv = (PushVarOp*)op;
 		const VarId &varId = pv->GetVarId();
-		VarStatics *var = GetTaskVar(task, varId);
 		PVal& pval = mem_var[varId.val()];
 		Value *lpvar;
 		string varname(hsp->MakeImmidiateCPPVarName(pv->GetVarType(), pv->GetVarNo()));
@@ -642,8 +535,6 @@ static BasicBlock *CompileOp(CHsp3Op *hsp, Function *func, BasicBlock *bb, Basic
 		{
 			//PushVarOp *pv = (PushVarOp*)op;
 			const VarId &varId = prmop->GetVarId();
-			VarStatics *var = GetTaskVar(task, varId);
-			//PVal& pval = mem_var[varId.val()];
 			PVal &pval = *FuncPrm(varId.prm());
 			Value *lpvar;
 			string varname(hsp->MakeImmidiateCPPVarName(varId.type(), varId.val()));
@@ -875,7 +766,6 @@ static BasicBlock *CompileOp(CHsp3Op *hsp, Function *func, BasicBlock *bb, Basic
 	{
 		VarCalcOp *vs = (VarCalcOp*)op;
 		const VarId &varId = vs->GetVarId();
-		VarStatics *var = GetTaskVar(task, varId);
 		PVal& pval = mem_var[varId.val()];
 
 		if (vs->useRegister) {
@@ -984,7 +874,6 @@ static BasicBlock *CompileOp(CHsp3Op *hsp, Function *func, BasicBlock *bb, Basic
 	{
 		VarSetOp *vs = (VarSetOp*)op;
 		const VarId &varId = vs->GetVarId();
-		VarStatics *var = GetTaskVar(task, varId);
 
 		if (vs->compile == VALUE) {
 			if (vs->useRegister) {
@@ -1384,7 +1273,7 @@ static void CompileTask(CHsp3Op *hsp, Task *task, Function *func, BasicBlock *re
 	LLVMContext &context = cctx->context;
 
 	std::map<VarId, int> varTypes;
-	for (auto var : task->block->usedVariables) {
+	for (auto& var : task->block->usedVariables) {
 		if (var.type() == TYPE_STRUCT) {
 			try {
 				const STRUCTPRM *st = hsp->GetMInfo(var.val());
@@ -1427,7 +1316,7 @@ static void CompileTask(CHsp3Op *hsp, Task *task, Function *func, BasicBlock *re
 		}
 	}
 
-	CheckType(hsp, task, varTypes);
+	hsp->UpdateOpType(task->block, varTypes);
 
 	string buf(GetTaskFuncName(task));
 
@@ -1485,7 +1374,7 @@ static void CompileTask(CHsp3Op *hsp, Task *task, Function *func, BasicBlock *re
 			break;
 		}
 	}
-	for (auto var : task->block->usedVariables) {
+	for (auto& var : task->block->usedVariables) {
 		VarStatics *stat = sVarStatics[var];
 		VarInfo *info = sProgram.varInfos[var];
 		if (!info->localVar)
@@ -1568,11 +1457,11 @@ static void CompileTaskGeneral(CHsp3Op *hsp, Task *task, Function *func, BasicBl
 	LLVMContext &Context = cctx->context;
 
 	std::map<VarId, int> varTypes;
-	for (auto var : task->block->usedVariables) {
+	for (auto& var : task->block->usedVariables) {
 		varTypes[var] = HSPVAR_FLAG_MAX;
 	}
 
-	CheckType(hsp, task, varTypes);
+	hsp->UpdateOpType(task->block, varTypes);
 
 	auto curBB = BasicBlock::Create(Context,
 		task->block->name + "_entry",
@@ -1633,8 +1522,11 @@ static void TraceTaskProc()
 	task.numCall++;
 
 	bool change = false;
-	for (auto var : task.block->usedVariables) {
-		VarStatics *stat = sVarStatics[var];
+	auto varSize = task.block->usedVariables.size();
+	for (auto i = 0; i < varSize; ++i) {
+		auto& var = task.block->usedVariables[i];
+		auto stat = task.varStatics[i];
+		//VarStatics *stat = sVarStatics[var];
 
 		switch (var.type()) {
 		case TYPE_VAR:
@@ -1693,7 +1585,7 @@ static void TraceTaskProc()
 			CompileTask(hsp3, &task, func, funcRet);
 		});
 
-		if (true) {
+		if (printDebugDump) {
 			auto fname = (format("dump_jit_%1$x.ll") % cur).str();
 			DumpModule(fname.c_str(), *cctx->module);
 		}
@@ -1707,7 +1599,7 @@ static void TraceTaskProc()
 		cctx->Passes->run(*cctx->module);
 		//Passes->run(*cctx->module);
 
-		if (true) {
+		if (printDebugDump) {
 			auto fname = (format("dump_jit_opt_%1$x.ll") % cur).str();
 			DumpModule(fname.c_str(), *cctx->module);
 		}
@@ -1740,7 +1632,7 @@ void DumpResult()
 			task.numCall, task.numCurCall, task.numChange, task.time);
 		*Out << buf;
 
-		for (auto var : task.block->usedVariables) {
+		for (auto& var : task.block->usedVariables) {
 			VarStatics *stat = sVarStatics[var];
 			VarInfo *info = sProgram.varInfos[var];
 			switch (var.type()) {
@@ -1779,7 +1671,9 @@ void __HspSetup(Hsp3r *hsp3r)
 		__HspTaskFunc = new CHSP3_TASK[sLabMax];
 	}
 
-	Alert("HspSetup");
+	if (printDebugDump) {
+		Alert("HspSetup");
+	}
 	for (int i = 0; i < sLabMax + 1; i++) {
 		if (!__Task[i]) {
 			__HspTaskFunc[i] = NULL;
@@ -1789,8 +1683,10 @@ void __HspSetup(Hsp3r *hsp3r)
 			//__Task[i] = task;
 			task.setup();
 
-			auto fname = (format("dump_%1$x.ll") % i).str();
-			DumpModule(fname.c_str(), *task.cctx->module);
+			if (printDebugDump) {
+				auto fname = (format("dump_%1$x.ll") % i).str();
+				DumpModule(fname.c_str(), *task.cctx->module);
+			}
 
 			task.funcPtr = (CHSP3_TASK)task.cctx->EE->getPointerToFunction(task.func);
 			__HspTaskFunc[i] = TraceTaskProc;//task.funcPtr;
@@ -1803,9 +1699,6 @@ void __HspEntry(void)
 	sHspctx = &sHsp3r->hspctx;
 
 	Task &task = *__Task[sLabMax];
-
-	//	GlobalVariable *ctx = (GlobalVariable*)task.cctx->module->getGlobalVariable("hspctx");
-	//	task.EE->updateGlobalMapping(ctx, (void*)&sHspctx);
 
 	void *fp = task.cctx->EE->getPointerToFunction(task.func);
 	CHSP3_TASK t = (CHSP3_TASK)fp;
@@ -1850,26 +1743,31 @@ int MakeSource(CHsp3Op *hsp, int option, void *ref)
 	for (auto it = sProgram.blocks.begin(); it != sProgram.blocks.end(); ++it) {
 		Task *task = new Task(it->second);
 		__Task[task->block->id] = task;
-
-		for (auto var : task->block->usedVariables) {
-			if (sVarStatics.find(var) != sVarStatics.end())
-				continue;
-			sVarStatics[var] = new VarStatics();
+		task->varStatics.resize(task->block->usedVariables.size());
+		for (auto i = 0; i < task->block->usedVariables.size(); i++) {
+			auto& var = task->block->usedVariables[i];
+			if (sVarStatics.find(var) == sVarStatics.end()) {
+				sVarStatics[var] = new VarStatics();
+			}
+			task->varStatics[i] = sVarStatics[var];
 		}
 	}
 
 	// Œ‹‰Ê‚ðƒ_ƒ“ƒv
 	//
-	//DumpModule("dump.ll", *cctx->module);
-
-	{
+	if (printDebugDump) {
 		std::ofstream out("dump2.txt");
+		std::map<VarId, int> varTypes;
 
 		for (int i = 0; i < sLabMax + 1; i++) {
 			if (!__Task[i])
 				continue;
 
 			Task &task = *__Task[i];
+			for (auto& v : task.block->usedVariables) {
+				varTypes[v] = HSPVAR_FLAG_MAX;
+			}
+			hsp->UpdateOpType(task.block, varTypes);
 			out << "#" << task.block->name << std::endl;
 			PrettyPrint(out, task.block);
 		}

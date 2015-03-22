@@ -533,7 +533,7 @@ class Block {
 public:
 	int id;
 	std::string name;
-	std::set<VarId> usedVariables;
+	std::vector<VarId> usedVariables;
 	op_list operations;
 	std::vector<int> nextTasks;
 

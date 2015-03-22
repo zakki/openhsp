@@ -28,6 +28,8 @@ public:
 		return tasks;
 	}
 
+	void UpdateOpType(Block *block, const std::map<VarId, int>& varTypes) const;
+
 private:
 	//		Settings
 	//
