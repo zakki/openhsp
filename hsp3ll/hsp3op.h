@@ -17,7 +17,6 @@
 
 #include "supio.h"
 #include "chsp3.h"
-//#include "hsp3r.h"
 
 class VarId : public boost::tuple<int, int, int> {
 public:

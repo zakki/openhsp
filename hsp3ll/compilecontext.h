@@ -6,39 +6,50 @@
 #define __compilecontext_h
 
 #include <string>
+#include <memory>
+#include <vector>
 #include "llvm/IR/LLVMContext.h"
 #include "llvm/IR/IRBuilder.h"
-
-/*
-#include "llvm/Module.h"
+#include "llvm/ExecutionEngine/ExecutionEngine.h"
 #include "llvm/PassManager.h"
-#include "llvm/ExecutionEngine/JIT.h"
-#include "llvm/ExecutionEngine/Interpreter.h"
-#include "llvm/Support/TypeBuilder.h"
-#include "llvm/Support/IRBuilder.h"
-*/
+
+#include "../hsp3/hspvar_core.h"
 
 class CHsp3Op;
+class VarId;
+struct HSPCTX;
 
 class CompileContext {
 public:
-	llvm::Module *M;
-	llvm::IRBuilder<> Builder;
+	CHsp3Op* hsp;
+	llvm::LLVMContext& context;
+	llvm::IRBuilder<> builder;
+	llvm::Module* module;
+	std::unique_ptr<llvm::ExecutionEngine> EE;
+	std::unique_ptr<llvm::FunctionPassManager> FPM;
+	std::unique_ptr<llvm::PassManager> Passes;
+	llvm::GlobalVariable **variables;
+	llvm::GlobalVariable *dsBase;
 
-	CompileContext();
+	explicit CompileContext(CHsp3Op* hsp);
 	~CompileContext();
+
+	void ResetModule(HSPCTX **hspctx, PVal **hspVars, void *dsBasePtr);
+	void CreateEE();
 
 	llvm::StructType* GetPValType();
 
-	llvm::Value* CreateCalcI( int code, llvm::Value *a, llvm::Value *b );
-	llvm::Value* CreateCalcD( int code, llvm::Value *a, llvm::Value *b );
+	llvm::Value* CreateCalcI(int code, llvm::Value *a, llvm::Value *b);
+	llvm::Value* CreateCalcD(int code, llvm::Value *a, llvm::Value *b);
 
-	llvm::Value* MakeImmidiateCPPName( CHsp3Op* hsp, llvm::BasicBlock* bb, int type,
-								 int val, int prm, char *opt=NULL );
+	llvm::Value* GetValue(llvm::BasicBlock* bb, int type, int val, int prm, char *opt = NULL);
+	llvm::Value* GetValue(llvm::BasicBlock* bb, const VarId& id, char *opt = NULL);
 
-	llvm::Value* CreateCallImm( llvm::BasicBlock *bblock, const std::string& name );
-	llvm::Value* CreateCallImm( llvm::BasicBlock *bblock, const std::string& name, int a );
-	llvm::Value* CreateCallImm( llvm::BasicBlock *bblock, const std::string& name, int a, int b );
-	void LoadLLRuntime();
+	llvm::Value* CreateCallImm(llvm::BasicBlock *bblock, const std::string& name);
+	llvm::Value* CreateCallImm(llvm::BasicBlock *bblock, const std::string& name, int a);
+	llvm::Value* CreateCallImm(llvm::BasicBlock *bblock, const std::string& name, int a, int b);
 };
+
+bool DumpModule(const char *name, const llvm::Module& M);
+
 #endif

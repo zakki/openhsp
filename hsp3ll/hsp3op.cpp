@@ -19,9 +19,7 @@ void UpdateOperands( Block *task )
 {
 	std::stack<Op*> stack;
 
-	for ( op_list::iterator it=task->operations.begin();
-		 it != task->operations.end(); it++ ) {
-		Op *op = *it;
+	for ( auto op : task->operations ) {
 		op->operands.clear();
 		switch ( op->GetOpCode() ) {
 		case PUSH_VAR_OP:
@@ -125,10 +123,7 @@ void UpdateOperands( Block *task )
 	}
 
 	// アクセスしている変数をリストアップ
-	for ( op_list::iterator it=task->operations.begin();
-		 it != task->operations.end(); it++ ) {
-		Op *op = *it;
-
+	for ( auto op : task->operations ) {
 		switch ( op->GetOpCode() ) {
 		case PUSH_VAR_OP:
 		case PUSH_VAR_PTR_OP:
@@ -148,11 +143,8 @@ void UpdateOperands( Block *task )
 		}
 	}
 
-	for ( op_list::iterator it=task->operations.begin();
-		 it != task->operations.end(); it++ ) {
-		Op *op = *it;
-		for(int k=0; k<op->operands.size(); k++) {
-			Op* o = op->operands[k];
+	for ( auto op : task->operations ) {
+		for( auto o : op->operands) {
 			o->refer = op;
 		}
 	}
@@ -165,9 +157,7 @@ void AnalyzeTask( Program* program, Block *block )
 	// 代入の右辺が変数へのポインタの場合、値に置き換える
 	while ( true ) {
 		bool changed = false;
-		for ( op_list::iterator it = block->operations.begin();
-			  it != block->operations.end() && !changed; it++ ) {
-			Op *op = *it;
+		for ( auto op : block->operations ) {
 			switch ( op->GetOpCode() ) {
 			case VAR_INC_OP:
 			case VAR_DEC_OP:
@@ -197,9 +187,7 @@ void AnalyzeTask( Program* program, Block *block )
 	}
 
 	//	使っている変数
-	for ( op_list::iterator it=block->operations.begin();
-		 it != block->operations.end(); it++ ) {
-		Op *op = *it;
+	for ( auto op : block->operations ) {
 		switch ( op->GetOpCode() ) {
 		case PUSH_VAR_OP:
 		case PUSH_VAR_PTR_OP:
@@ -233,9 +221,7 @@ void AnalyzeTask( Program* program, Block *block )
 	}
 
 	// コントロールフロー
-	for ( op_list::iterator it=block->operations.begin();
-		 it!=block->operations.end(); it++ ) {
-		Op *op = *it;
+	for ( auto op : block->operations ) {
 		switch ( op->GetOpCode() ) {
 		case PUSH_VAR_OP:
 		case PUSH_VAR_PTR_OP:
@@ -301,37 +287,32 @@ void AnalyzeProgram( Program* program ) {
 	var_task_map& varTaskMap = program->varTaskMap;
 	var_info_map& varInfos = program->varInfos;
 
-	for(block_map::iterator it = blocks.begin(); it != blocks.end(); ++it) {
-		Block *block = it->second;
+	for ( auto& elm : blocks ) {
+		Block *block = elm.second;
 		AnalyzeTask( program, block );
 
-		for (std::set<VarId>::iterator it2 = block->usedVariables.begin();
-			 it2 != block->usedVariables.end(); ++it2) {
-			if (varInfos.find(*it2) != varInfos.end())
+		for (auto& id : block->usedVariables) {
+			if (varInfos.find(id) != varInfos.end())
 				continue;
-			VarInfo *var = new VarInfo();
-			varInfos[*it2] = var;
+			varInfos[id] = new VarInfo();
 		}
 	}
 
-	for(var_task_map::iterator it = varTaskMap.begin();
-		it != varTaskMap.end(); ++it) {
-		if ( it->second.size() == 0 )
+	for ( auto t : varTaskMap ) {
+		const VarId& id = t.first;
+		auto& taskIds = t.second;
+		if (taskIds.size() == 0)
 			continue;
-		const VarId& id = it->first;
 
 		bool localVar = true;
 
 		// 書き込んでから読み込むタスクだけかチェック
-		for(std::set<std::string>::iterator it2 = it->second.begin();
-			 it2 != it->second.end(); ++it2) {
-			Block *block = program->blocks[*it2];
+		for ( auto taskId : taskIds) {
+			Block *block = program->blocks[taskId];
 			VarInfo *var = varInfos[id];
 			VarRefOp* firstAccessOp = NULL;
 
-			for(op_list::iterator it2 = block->operations.begin();
-				it2 != block->operations.end(); it2++) {
-				Op *op = *it2;
+			for(auto op : block->operations) {
 				switch ( op->GetOpCode() ) {
 				case PUSH_VAR_PTR_OP:
 				case PUSH_VAR_OP:
@@ -376,10 +357,9 @@ void AnalyzeProgram( Program* program ) {
 			}
 		}
 
-		for (std::set<std::string>::iterator it2 = it->second.begin();
-			 it2 != it->second.end(); ++it2) {
-			Block *task = blocks[*it2];
-			VarInfo *var = varInfos[it->first];
+		for ( auto id : t.second ) {
+			Block *task = blocks[id];
+			VarInfo *var = varInfos[t.first];
 
 			var->localVar = localVar;
 		}
@@ -392,7 +372,7 @@ std::ostream& operator<< (std::ostream &out, const Op &op) {
 		<< op.GetName()
 		<< op.GetParam();
 
-	switch ( op.compile ) {
+	switch (op.compile) {
 	case DEFAULT:
 		out << "[D]";
 		break;
@@ -412,8 +392,7 @@ void PrettyPrint( std::ostream &out, const Op *op, int depth ) {
 		out << "  ";
 	}
 	out << *op << std::endl;
-	for(int k=0; k<op->operands.size(); k++) {
-		Op* o = op->operands[k];
+	for ( auto o : op->operands) {
 		PrettyPrint( out, o, depth+1 );
 	}
 }
@@ -422,30 +401,24 @@ void PrettyPrint( std::ostream &out, const Block *block ) {
 
 	out << "block:" << block->name << std::endl;
 
-
 	out << "out:";
-	for ( std::vector<int>::const_iterator it=block->nextTasks.begin();
-		  it != block->nextTasks.end(); ++it ) {
-		out << *it << ", ";
+	for ( auto id : block->nextTasks ) {
+		out << id << ", ";
 	}
 	out  << std::endl;;
 
 	int id = 0;
-	for ( op_list::const_iterator it=block->operations.begin();
+	for ( auto it = block->operations.begin();
 		  it != block->operations.end(); ++it, ++id ) {
 		(*it)->id = id;
 	}
 
-	for ( op_list::const_iterator it=block->operations.begin();
-		  it != block->operations.end(); it++ ) {
-		Op *op = *it;
+	for ( auto op : block->operations ) {
 		out << *op << std::endl;
 	}
 	out << std::endl;
 
-	for ( op_list::const_iterator it=block->operations.begin();
-		  it != block->operations.end(); ++it ) {
-		Op *op = *it;
+	for ( auto op : block->operations ) {
 		if ( !op->refer ) {
 			PrettyPrint( out, op, 0 );
 		}

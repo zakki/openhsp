@@ -4,13 +4,6 @@
 //				   onion software 2008/4
 //
 
-#include "llvm/ExecutionEngine/JIT.h"
-#include "llvm/ExecutionEngine/Interpreter.h"
-#include "llvm/ExecutionEngine/GenericValue.h"
-#include "llvm/Support/TargetSelect.h"
-#include "llvm/Support/ManagedStatic.h"
-#include "llvm/Support/raw_ostream.h"
-
 #include <stdio.h>
 #include <windows.h>
 #include <direct.h>
@@ -20,8 +13,6 @@
 #include "chsp3llvm.h"
 #include "../hsp3/win32gui/hsp3win.h"
 
-
-using namespace llvm;
 
 //#define HSP3CNV_DEBUG			// デバッグモード用
 extern void DumpResult();
@@ -63,85 +54,25 @@ static char *p[] = {
 }
 
 
-int readAx( char *fname )
+static int initHsp( char *fname )
 {
-	int st;
-	int cmpopt,ppopt;
-	//char fname[_MAX_PATH];
-	char fname2[_MAX_PATH];
-	char oname[_MAX_PATH];
-	//char oname2[_MAX_PATH];
+	int st = 0;
 
-	//	check switch and prm
-
-	st = 0; ppopt = 0; cmpopt = 0;
-//	fname[0]=0;
-	fname2[0]=0;
-	oname[0]=0;
-
-#ifndef HSP3CNV_DEBUG
-
-	int b;
-	char a1,a2;
-
-	if (fname[0]==0) { printf("No file name selected.\n"); return 1; }
-#else
-	strcpy( fname,"test" );
-#endif
-
-	if (oname[0]==0) {
-		memset(oname, 0, _MAX_PATH);
-		for (char* dest = oname, *src = fname; *src && *src != '.';)
-			*(dest++) = *(src++);
-		addext( oname,"hs" );
-
-/*
-		memset(oname2, 0, _MAX_PATH);
-		for (char* dest = oname2, *src = fname; *src && *src != '.';)
-			*(dest++) = *(src++);
-		addext( oname2,"cpp" );
-*/
+	if (fname[0]==0) {
+		printf("No file name selected.\n");
+		return 1;
 	}
-	strcpy( fname2, fname ); addext( fname2,"hsp" );
-	addext( fname,"ax" );
 
-	//		call main
-	if (false) {
-		int i;
-//		CHsp3Cpp hsp3;
-		CHsp3 hsp3;
-		i = hsp3.LoadObjectFile( fname );
-		if (i) {
-			char buffer[1024];
-			sprintf(buffer,  "File open error.[%s](%d)\n", fname, i );
-			MessageBox(NULL , buffer, TEXT("hsp") , MB_ICONINFORMATION);
-			return 1;
-		}
-		hsp3.MakeSource( 0, NULL );
-
-
-//	MessageBox(NULL , fname, TEXT("hsp") , MB_ICONINFORMATION);
-//	MessageBox(NULL , oname, TEXT("hsp") , MB_ICONINFORMATION);
-#ifndef HSP3CNV_DEBUG
-		//		hsp3.SaveOutBuf( oname );
-#else
-		hsp3.SaveOutBuf( "test.cpp" );
-		puts( hsp3.GetOutBuf() );
-#endif
-
+	hsp3 = new CHsp3Op();
+	int i = hsp3->LoadObjectFile( fname );
+	if (i) {
+		char buffer[1024];
+		sprintf(buffer,  "File open error.[%s](%d)\n", fname, i );
+		MessageBox(NULL , buffer, TEXT("hsp") , MB_ICONINFORMATION);
+		return 1;
 	}
-	{
-		int i;
-		hsp3 = new CHsp3Op();
-		i = hsp3->LoadObjectFile( fname );
-		if (i) {
-			char buffer[1024];
-			sprintf(buffer,  "File open error.[%s](%d)\n", fname, i );
-			MessageBox(NULL , buffer, TEXT("hsp") , MB_ICONINFORMATION);
-			return 1;
-		}
-		hsp3->MakeSource( 0, NULL );
-		MakeSource( hsp3, 0, NULL );
+	hsp3->MakeSource( 0, NULL );
+	MakeSource( hsp3, 0, NULL );
 /*
 #ifndef HSP3CNV_DEBUG
 		hsp3->SaveOutBuf( oname2 );
@@ -150,8 +81,6 @@ int readAx( char *fname )
 		puts( hsp3->GetOutBuf() );
 #endif
 */
-	}
-
 	return st;
 }
 
@@ -163,10 +92,7 @@ int APIENTRY WinMain ( HINSTANCE hInstance,
 					   LPSTR lpCmdParam,
 					   int iCmdShow )
 {
-
-	InitializeNativeTarget();
-
-	readAx(lpCmdParam);
+	initHsp(lpCmdParam);
 
 	int res;
 //#ifdef HSPDEBUG

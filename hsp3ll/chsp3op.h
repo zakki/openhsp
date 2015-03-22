@@ -11,7 +11,7 @@
 
 #define CPPHED_HSPVAR "Var_"
 
-//	HSP3(.ax)->C++(.cpp) conversion class
+//	HSP3(.ax) -> Intermediate representation conversion class
 //
 class CHsp3Op : public CHsp3 {
 public:
@@ -19,18 +19,11 @@ public:
 	CHsp3Op();
 	int MakeSource( int option, void *ref );
 	std::string MakeImmidiateCPPVarName( int type, int val, char *opt=NULL );
-	//int MakeImmidiateCPPName( char *mes, int type, int val, char *opt=NULL );
-	void MakeCPPProgramInfoFuncParam( int structid );
-	int GetLocalPrm( int val ) const {
-		return prmcnv_locvar[val - curprmindex];
-	}
-	int GetFuncPrm( int val ) const {
-		return val - curprmindex + curprmlocal;
-	}
+
 	int GetLabMax() const {
 		return max_lab;
 	}
-	const block_map& GetBlocks()
+	const block_map& GetBlocks() const
 	{
 		return tasks;
 	}
@@ -63,6 +56,13 @@ private:
 	int GetVarExpressionOp( void );
 	int MakeCPPVarExpression( bool process, int flg=0 );
 
+	void MakeCPPProgramInfoFuncParam( int structid );
+	int GetLocalPrm( int val ) const {
+		return prmcnv_locvar[val - curprmindex];
+	}
+	int GetFuncPrm( int val ) const {
+		return val - curprmindex + curprmlocal;
+	}
 };
 
 

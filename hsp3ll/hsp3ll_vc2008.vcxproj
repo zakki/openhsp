@@ -57,7 +57,7 @@
       <PreprocessorDefinitions>WIN32;_DEBUG;_WINDOWS;HSPWIN;HSPWINGUI;_CRT_SECURE_NO_WARNINGS;USE_WINDOWS_API;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <MinimalRebuild>true</MinimalRebuild>
       <BasicRuntimeChecks>EnableFastChecks</BasicRuntimeChecks>
-      <RuntimeLibrary>MultiThreadedDLL</RuntimeLibrary>
+      <RuntimeLibrary>MultiThreadedDebugDLL</RuntimeLibrary>
       <PrecompiledHeader>
       </PrecompiledHeader>
       <WarningLevel>Level3</WarningLevel>
@@ -66,14 +66,14 @@
     </ClCompile>
     <Link>
       <AdditionalOptions> /STACK:10000000 /machine:X86 /debug %(AdditionalOptions)</AdditionalOptions>
-      <AdditionalDependencies>comctl32.lib;LLVMJIT.lib;LLVMInterpreter.lib;LLVMX86CodeGen.lib;LLVMExecutionEngine.lib;LLVMSelectionDAG.lib;LLVMX86Info.lib;LLVMAsmPrinter.lib;LLVMAsmParser.lib;LLVMCodeGen.lib;LLVMScalarOpts.lib;LLVMInstCombine.lib;LLVMTransformUtils.lib;LLVMipa.lib;LLVMAnalysis.lib;LLVMTarget.lib;LLVMCore.lib;LLVMMC.lib;LLVMSupport.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>comctl32.lib;LLVMAnalysis.lib;LLVMCore.lib;LLVMExecutionEngine.lib;LLVMInstCombine.lib;LLVMJIT.lib;LLVMMC.lib;LLVMScalarOpts.lib;LLVMSupport.lib;LLVMTransformUtils.lib;LLVMX86CodeGen.lib;LLVMX86Desc.lib;LLVMX86Info.lib;LLVMObject.lib;LLVMBitReader.lib;LLVMAsmPrinter.lib;LLVMMCParser.lib;LLVMSelectionDAG.lib;LLVMCodeGen.lib;LLVMipa.lib;LLVMipo.lib;LLVMTarget.lib;LLVMX86AsmPrinter.lib;LLVMX86Utils.lib;LLVMInterpreter.lib;LLVMAsmParser.lib;LLVMVectorize.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <SubSystem>Windows</SubSystem>
       <RandomizedBaseAddress>false</RandomizedBaseAddress>
       <DataExecutionPrevention>
       </DataExecutionPrevention>
       <TargetMachine>MachineX86</TargetMachine>
-      <AdditionalLibraryDirectories>lib\lib\$(Configuration);%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalLibraryDirectories>lib\lib\$(Configuration)\lib;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
@@ -87,7 +87,7 @@
       <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
     </ClCompile>
     <Link>
-      <AdditionalDependencies>comctl32.lib;LLVMAnalysis.lib;LLVMCore.lib;LLVMExecutionEngine.lib;LLVMInstCombine.lib;LLVMJIT.lib;LLVMMC.lib;LLVMScalarOpts.lib;LLVMSupport.lib;LLVMTransformUtils.lib;LLVMX86CodeGen.lib;LLVMX86Desc.lib;LLVMX86Info.lib;LLVMObject.lib;LLVMBitReader.lib;LLVMAsmPrinter.lib;LLVMMCParser.lib;LLVMSelectionDAG.lib;LLVMCodeGen.lib;LLVMipa.lib;LLVMTarget.lib;LLVMX86AsmPrinter.lib;LLVMX86Utils.lib;LLVMInterpreter.lib;LLVMAsmParser.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>comctl32.lib;LLVMAnalysis.lib;LLVMCore.lib;LLVMExecutionEngine.lib;LLVMInstCombine.lib;LLVMJIT.lib;LLVMMC.lib;LLVMScalarOpts.lib;LLVMSupport.lib;LLVMTransformUtils.lib;LLVMX86CodeGen.lib;LLVMX86Desc.lib;LLVMX86Info.lib;LLVMObject.lib;LLVMBitReader.lib;LLVMAsmPrinter.lib;LLVMMCParser.lib;LLVMSelectionDAG.lib;LLVMCodeGen.lib;LLVMipa.lib;LLVMipo.lib;LLVMTarget.lib;LLVMX86AsmPrinter.lib;LLVMX86Utils.lib;LLVMInterpreter.lib;LLVMAsmParser.lib;LLVMVectorize.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <AdditionalLibraryDirectories>lib\lib\$(Configuration)\lib;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <SubSystem>Windows</SubSystem>

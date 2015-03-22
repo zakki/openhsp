@@ -9,7 +9,6 @@
 #include <vector>
 #include <stack>
 #include <boost/format.hpp>
-#include <boost/lexical_cast.hpp>
 
 #include "supio.h"
 #include "hsp3r.h"
@@ -21,15 +20,7 @@
 #endif
 
 
-namespace llvm {
-	class Function;
-	class BasicBlock;
-	class Value;
-};
-
-using namespace llvm;
 using std::string;
-using boost::lexical_cast;
 using boost::format;
 
 /*------------------------------------------------------------*/
@@ -53,9 +44,9 @@ string CHsp3Op::MakeImmidiateCPPVarName( int type, int val, char *opt )
 		{
 			const STRUCTPRM *prm = GetMInfo( val );
 			if ( prm->subid != STRUCTPRM_SUBID_STACK ) {
-				return "_modprm" + lexical_cast<string>( val - curprmindex );
+				return "_modprm" + std::to_string( val - curprmindex );
 			} else {
-				return "_prm" + lexical_cast<string>( val - curprmindex );
+				return "_prm" + std::to_string( val - curprmindex );
 			}
 		}
 	default:
@@ -275,7 +266,7 @@ int CHsp3Op::GetCPPExpressionSub( bool addop, int flg )
 			const STRUCTPRM *prm = GetMInfo( csval );
 			switch( prm->mptype ) {
 			case MPTYPE_LOCALVAR:
-				prmid = prmcnv_locvar[csval - curprmindex];
+				prmid = GetLocalPrm(csval);
 				getCS();
 				va = MakeCPPVarExpression( addop );
 				vflag = 1;
@@ -283,15 +274,13 @@ int CHsp3Op::GetCPPExpressionSub( bool addop, int flg )
 			case MPTYPE_VAR:
 			case MPTYPE_ARRAYVAR:
 			case MPTYPE_SINGLEVAR:
-				prmid = csval - curprmindex + curprmlocal;
-				prmid = prmcnv_locvar[csval - curprmindex];
+				prmid = GetLocalPrm(csval);
 				getCS();
 				va = MakeCPPVarExpression( addop );
 				vflag = 1;
 				break;
 			default:
-				prmid = csval - curprmindex + curprmlocal;
-				prmid = prmcnv_locvar[csval - curprmindex];
+				prmid = GetLocalPrm(csval);
 				getCS();
 				break;
 			}
@@ -657,15 +646,15 @@ int CHsp3Op::MakeCPPMain( void )
 				const STRUCTPRM *prm = GetMInfo( csval );
 				switch( prm->mptype ) {
 				case MPTYPE_LOCALVAR:
-					varid = prmcnv_locvar[cmdval - curprmindex];
+					varid = GetLocalPrm(cmdval);
 					break;
 				case MPTYPE_VAR:
 				case MPTYPE_ARRAYVAR:
 				case MPTYPE_SINGLEVAR:
-					varid = cmdval - curprmindex + curprmlocal;
+					varid = GetFuncPrm(cmdval);
 					break;
 				default:
-					varid = cmdval - curprmindex + curprmlocal;
+					varid = GetFuncPrm(cmdval);
 					break;
 				}
 				break;
