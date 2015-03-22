@@ -379,10 +379,16 @@ std::ostream& operator<< (std::ostream &out, const Op &op) {
 
 	switch (op.compile) {
 	case DEFAULT:
-		out << "[D]";
+		out << "[DS]";
 		break;
-	case VALUE:
-		out << "[V]";
+	case OPT_STACK:
+		out << "[OS]";
+		break;
+	case DEFAULT_VALUE:
+		out << "[DV]";
+		break;
+	case OPT_VALUE:
+		out << "[OV]";
 		break;
 	default:
 		out << "[?]";
@@ -421,40 +427,51 @@ std::ostream& operator<< (std::ostream &out, const Op &op) {
 	return out;
 }
 
-void PrettyPrint( std::ostream &out, const Op *op, int depth ) {
-	for ( int i=0; i<depth; ++i ) {
+static void PrettyPrint(std::ostream &out, const Op *op, const CHsp3* hsp, int depth) {
+	for (int i = 0; i < depth; ++i) {
 		out << "  ";
 	}
-	out << *op << std::endl;
-	for ( auto o : op->operands) {
-		PrettyPrint( out, o, depth+1 );
+	out << *op;
+	switch (op->GetOpCode()) {
+	case PUSH_CMD_OP:
+	case CMD_OP:
+	case MODCMD_OP:
+	{
+		auto call = static_cast<const CallOp*>(op);
+		out << "; " << hsp->GetHSPName(call->GetCmdType(), call->GetCmdVal());
+		break;
+	}
+	}
+	out << std::endl;
+	for (auto o : op->operands) {
+		PrettyPrint(out, o, hsp, depth + 1);
 	}
 }
 
-void PrettyPrint( std::ostream &out, const Block *block ) {
+void PrettyPrint(std::ostream &out, const Block *block, const CHsp3* hsp) {
 
 	out << "block:" << block->name << std::endl;
 
 	out << "out:";
-	for ( auto id : block->nextTasks ) {
+	for (auto id : block->nextTasks) {
 		out << id << ", ";
 	}
-	out  << std::endl;;
+	out << std::endl;;
 
 	int id = 0;
-	for ( auto it = block->operations.begin();
-		  it != block->operations.end(); ++it, ++id ) {
+	for (auto it = block->operations.begin();
+		it != block->operations.end(); ++it, ++id) {
 		(*it)->id = id;
 	}
 
-	for ( auto op : block->operations ) {
+	for (auto op : block->operations) {
 		out << *op << std::endl;
 	}
 	out << std::endl;
 
-	for ( auto op : block->operations ) {
-		if ( !op->refer ) {
-			PrettyPrint( out, op, 0 );
+	for (auto op : block->operations) {
+		if (!op->refer) {
+			PrettyPrint(out, op, hsp, 0);
 		}
 	}
 	out << std::endl << std::endl;

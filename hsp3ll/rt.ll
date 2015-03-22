@@ -17,6 +17,8 @@
 declare void @Prgcmd(i32, i32)
 declare void @Modcmd(i32, i32)
 declare void @VarSet(%struct.PVal*, i32, i32)
+declare void @VarSet1(%struct.PVal*, i32)
+declare void @VarSet2(%struct.PVal*, i32, i32)
 
 declare void @PushInt(i32)
 declare void @PushDouble(double)
@@ -261,9 +263,43 @@ UnifiedReturnBlock:                               ; preds = %entry
   ret i32 %ivalue
 }
 
+
+declare double @sin(double)
+
+define double @llvmRtIntfunc_180(double %dval) {
+entry:
+  %tmp2 = tail call double @sin(double %dval)     ; <double> [#uses=1]
+  ret double %tmp2
+}
+
+declare double @cos(double)
+
+define double @llvmRtIntfunc_181(double %dval) {
+entry:
+  %tmp2 = tail call double @cos(double %dval)     ; <double> [#uses=1]
+  ret double %tmp2
+}
+
+declare double @tan(double)
+
 define double @llvmRtIntfunc_182(double %dval) {
 entry:
-  ret double %dval
+  %tmp2 = tail call double @tan(double %dval)
+  ret double %tmp2
+}
+
+declare double @sqrt(double)
+
+define double @llvmRtIntfunc_184(double %dval) {
+entry:
+  %tmp2 = tail call double @sqrt(double %dval)    ; <double> [#uses=1]
+  ret double %tmp2
+}
+
+define double @llvmRtIntfunc_185(i32 %ival) {
+entry:
+  %tmp2 = sitofp i32 %ival to double
+  ret double %tmp2
 }
 
 define double @llvmRtIntfunc_186(double %dval) {
@@ -279,6 +315,22 @@ UnifiedReturnBlock:                               ; preds = %entry
   ret double %dval
 }
 
+declare double @exp(double)
+
+define double @llvmRtIntfunc_187(double %dval) {
+entry:
+  %tmp2 = tail call double @exp(double %dval)     ; <double> [#uses=1]
+  ret double %tmp2
+}
+
+declare double @log(double)
+
+define double @llvmRtIntfunc_188(double %dval) {
+entry:
+  %tmp2 = tail call double @log(double %dval)     ; <double> [#uses=1]
+  ret double %tmp2
+}
+
 define double @llvmRtIntfunc_189(double %d1, double %d2, double %d3) {
 entry:
   %tmp3 = fcmp olt double %d1, %d2                ; <i1> [#uses=1]
@@ -287,44 +339,3 @@ entry:
   %retval = select i1 %tmp9, double %d3, double %d1_addr.0 ; <double> [#uses=1]
   ret double %retval
 }
-
-define double @llvmRtIntfunc_188(double %dval) {
-entry:
-  %tmp2 = tail call double @log(double %dval)     ; <double> [#uses=1]
-  ret double %tmp2
-}
-
-declare double @log(double)
-
-define double @llvmRtIntfunc_187(double %dval) {
-entry:
-  %tmp2 = tail call double @exp(double %dval)     ; <double> [#uses=1]
-  ret double %tmp2
-}
-
-declare double @exp(double)
-
-define double @llvmRtIntfunc_184(double %dval) {
-entry:
-  %tmp2 = tail call double @sqrt(double %dval)    ; <double> [#uses=1]
-  ret double %tmp2
-}
-
-declare double @sqrt(double)
-
-define double @llvmRtIntfunc_181(double %dval) {
-entry:
-  %tmp2 = tail call double @cos(double %dval)     ; <double> [#uses=1]
-  ret double %tmp2
-}
-
-declare double @cos(double)
-
-define double @llvmRtIntfunc_180(double %dval) {
-entry:
-  %tmp2 = tail call double @sin(double %dval)     ; <double> [#uses=1]
-  ret double %tmp2
-}
-
-declare double @sin(double)
-

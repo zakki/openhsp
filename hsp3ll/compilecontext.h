@@ -39,15 +39,15 @@ public:
 
 	llvm::StructType* GetPValType();
 
-	llvm::Value* CreateCalcI(int code, llvm::Value *a, llvm::Value *b);
-	llvm::Value* CreateCalcD(int code, llvm::Value *a, llvm::Value *b);
+	llvm::Value* CreateCalcI(int code, llvm::Value *a, llvm::Value *b, const llvm::Twine &name = "");
+	llvm::Value* CreateCalcD(int code, llvm::Value *a, llvm::Value *b, const llvm::Twine &name = "");
 
 	llvm::Value* GetValue(llvm::BasicBlock* bb, int type, int val, int prm, char *opt = NULL);
 	llvm::Value* GetValue(llvm::BasicBlock* bb, const VarId& id, char *opt = NULL);
 
-	llvm::Value* CreateCallImm(llvm::BasicBlock *bblock, const std::string& name);
-	llvm::Value* CreateCallImm(llvm::BasicBlock *bblock, const std::string& name, int a);
-	llvm::Value* CreateCallImm(llvm::BasicBlock *bblock, const std::string& name, int a, int b);
+	llvm::Value* CreateCallImm(llvm::BasicBlock *bblock, const std::string& name, const llvm::Twine &vname = "");
+	llvm::Value* CreateCallImm(llvm::BasicBlock *bblock, const std::string& name, int a, const llvm::Twine &vname = "");
+	llvm::Value* CreateCallImm(llvm::BasicBlock *bblock, const std::string& name, int a, int b, const llvm::Twine &vname = "");
 };
 
 bool DumpModule(const char *name, const llvm::Module& M);

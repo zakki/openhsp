@@ -87,12 +87,15 @@ void CalcRrI( void );
 void CalcLrI( void );
 
 void VarSet( PVal *pv, int aval, int pnum );
+void VarSet1( PVal *pv, int i0 );
+void VarSet2( PVal *pv, int i0, int i1 );
 void VarInc( PVal *pv, int aval );
 void VarDec( PVal *pv, int aval );
 void VarCalc( PVal *pv, int aval, int op );
 
 int GetOpTypeRet( int op, int tflagA, int tflagB );
 int GetFuncTypeRet( int type, int val, int pnum );
-
+int PopInt( void );
+double PopDouble( void );
 
 #endif

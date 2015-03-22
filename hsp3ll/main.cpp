@@ -19,6 +19,9 @@ extern void DumpResult();
 
 CHsp3Op* hsp3;
 bool printDebugDump = false;
+int llSkipTypeCheckLimit = -1;
+bool llProfile = false;
+bool llNoOpt = false;
 
 /*----------------------------------------------------------*/
 
@@ -100,6 +103,17 @@ int APIENTRY WinMain ( HINSTANCE hInstance,
 		for (int i = 0; i < __argc; ++i) {
 			if (strcmp("--debug-dump", __argv[i]) == 0) {
 				printDebugDump = true;
+			} else if (strcmp("--profile", __argv[i]) == 0) {
+				llProfile = true;
+			} else if (strcmp("--no-opt", __argv[i]) == 0) {
+				llNoOpt = true;
+			} else if (strcmp("--skip-type-check", __argv[i]) == 0) {
+				i++;
+				llSkipTypeCheckLimit = atoi(__argv[i]);
+				if (llSkipTypeCheckLimit <= 0) {
+					printf("--skip-type-check n (n > 0)\n");;
+					return 1;
+				}
 			} else {
 				p = __argv[i];
 			}
@@ -118,7 +132,8 @@ int APIENTRY WinMain ( HINSTANCE hInstance,
 		res = hsp3win_exec();
 	}
 
-	DumpResult();
+	if (printDebugDump)
+		DumpResult();
 
 	return res;
 }
