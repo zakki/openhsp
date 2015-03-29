@@ -35,6 +35,7 @@
 #include "chsp3llvm.h"
 #include "hsp3r.h"
 #include "hsp3op.h"
+#include "hspvar_util.h"
 #include "compilecontext.h"
 
 #ifdef HSPWIN
@@ -192,7 +193,6 @@ static HSPCTX *sHspctx;
 static Hsp3r *sHsp3r;
 static PVal **Var__HspVars;
 
-extern int GetCurTaskId();
 extern void HspVarCoreArray2(PVal *pval, int offset);
 extern CHsp3Op *hsp3;
 
@@ -983,7 +983,7 @@ static BasicBlock* CompileOp(CHsp3Op *hsp, Function *func, BasicBlock *bb, Basic
 		const VarId &varId = vs->GetVarId();
 
 		if (vs->GetArrayDim() == 1 && op->operands.size() == 2) {
-			Function *f = cctx->module->getFunction("VarSet1");
+			Function *f = cctx->module->getFunction("VarSetIndex1");
 			const FunctionType *ft = f->getFunctionType();
 
 			std::vector<Value*> args;
@@ -995,7 +995,7 @@ static BasicBlock* CompileOp(CHsp3Op *hsp, Function *func, BasicBlock *bb, Basic
 			builder.CreateCall(f, makeArrayRef(args));
 			return bb;
 		} else if (vs->GetArrayDim() == 2 && op->operands.size() == 3) {
-			Function *f = cctx->module->getFunction("VarSet2");
+			Function *f = cctx->module->getFunction("VarSetIndex2");
 			const FunctionType *ft = f->getFunctionType();
 
 			std::vector<Value*> args;
@@ -1631,7 +1631,7 @@ static void CompileTaskGeneral(CHsp3Op *hsp, Task *task, Function *func, BasicBl
 
 static void ProfileTaskProc()
 {
-	int cur = GetCurTaskId();
+	int cur = GetTaskID();
 	//OutputDebugString((format("Profile Task %1$x\n") % cur).str().c_str());
 	Task &task = *__Task[cur];
 	Timer timer(&task);
@@ -1642,7 +1642,7 @@ static void ProfileTaskProc()
 
 static void TraceTaskProc()
 {
-	int cur = GetCurTaskId();
+	int cur = GetTaskID();
 	Task &task = *__Task[cur];
 	Timer timer(&task);
 

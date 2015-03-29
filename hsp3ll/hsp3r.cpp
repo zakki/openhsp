@@ -13,6 +13,8 @@
 #include "../hsp3/supio.h"
 
 
+extern void code_reset_(); // FIXME
+
 static char startax[]={ 'S'-40,'T'-40,'A'-40,'R'-40,'T'-40,
 			 '.'-40,'A'-40,'X'-40, 0 };
 
@@ -195,6 +197,8 @@ int Hsp3r::Reset( int ext_vars, int ext_hpi )
 #endif
 	code_resetctx( &hspctx );		// hsp3code setup
 	HspVarCoreResetVartype( max_varhpi );		// Œ^‚Ì‰Šú‰»
+
+	code_reset_();//FIXME
 
 	//		HspVar setup
 	hspctx.mem_var = NULL;

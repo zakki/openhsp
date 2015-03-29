@@ -23,6 +23,8 @@ void VarUtilTerm( void );
 
 void TaskExec( void );
 void TaskSwitch( int label );
+void HspPostExec( void );
+int GetTaskID( void );
 
 bool HspIf( void );
 
@@ -54,20 +56,10 @@ void PushFuncPAP( int num, int aval );
 PVal *FuncPrm( int num );
 PVal *LocalPrm( int num );
 
-int FuncPrmI( int num );
-double FuncPrmD( int num );
-
 void PushExtvar( int val, int pnum );
 void PushIntfunc( int val, int pnum );
 void PushSysvar( int val, int pnum );
-void PushDllfunc( int val, int pnum );
 void PushModcmd( int val, int pnum );
-
-double CallDoubleIntfunc( int val, int pnum );
-int CallIntIntfunc( int val, int pnum );
-
-double CallDoubleSysvar( int val, int pnum );
-int CallIntSysvar( int val, int pnum );
 
 void CalcAddI( void );
 void CalcSubI( void );
@@ -87,11 +79,21 @@ void CalcRrI( void );
 void CalcLrI( void );
 
 void VarSet( PVal *pv, int aval, int pnum );
-void VarSet1( PVal *pv, int i0 );
-void VarSet2( PVal *pv, int i0, int i1 );
 void VarInc( PVal *pv, int aval );
 void VarDec( PVal *pv, int aval );
 void VarCalc( PVal *pv, int aval, int op );
+
+void VarSetIndex1( PVal *pv, int i0 );
+void VarSetIndex2( PVal *pv, int i0, int i1 );
+
+int FuncPrmI( int num );
+double FuncPrmD( int num );
+
+double CallDoubleIntfunc( int val, int pnum );
+int CallIntIntfunc( int val, int pnum );
+
+double CallDoubleSysvar( int val, int pnum );
+int CallIntSysvar( int val, int pnum );
 
 int GetOpTypeRet( int op, int tflagA, int tflagB );
 int GetFuncTypeRet( int type, int val, int pnum );

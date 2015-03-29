@@ -301,6 +301,22 @@ int CHsp3Op::GetCPPExpressionSub( bool addop, int flg )
 			}
 			getCS();
 			break;
+#if 0
+			// TODO
+		case TYPE_MODCMD:
+			{
+			//		モジュール関数呼び出し
+			//
+			}
+#endif
+		case TYPE_SYSVAR:
+			//		システム変数として展開する
+			//
+			if ( reachable && addop ) {
+				curTask->operations.push_back( new PushCmdOp( cstype, csval, 0 ) );
+			}
+			getCS();
+			break;
 		default:
 			{
 			//		関数として展開する

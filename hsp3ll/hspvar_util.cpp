@@ -5,12 +5,19 @@
 //
 #include <stdio.h>
 #include <stdlib.h>
-#include <vector>
+#include <string.h>
+
+#ifdef HSPWIN
+#include <windows.h>
+#endif
+
+#include "../hsp3/hsp3config.h"
 
 #include "../hsp3/hsp3struct.h"
 #include "../hsp3/stack.h"
 #include "../hsp3/strbuf.h"
 #include "../hsp3/hsp3code.h"
+#include "../hsp3/supio.h"
 #include "hspvar_util.h"
 
 /*------------------------------------------------------------*/
@@ -26,19 +33,23 @@
 /*------------------------------------------------------------*/
 
 extern CHSP3_TASK *__HspTaskFunc;		// hsp3cnvで生成されるタスク関数リスト
-extern CHSP3_TASK *__HspTaskModFunc;	// hsp3cnvで生成されるユーザー定義関数リスト
-extern void __HspEntry( void );			// hsp3cnvで生成されるエントリーポイント
+void __HspEntry( void );			// hsp3cnvで生成されるエントリーポイント
 extern HSPCTX *code_getctx( void );
+
+extern char *__HspFuncName[];			// hsp3cnvで生成される定義文字列リスト
 
 static	HSPCTX *hspctx;					// HSPのコンテキスト
 static	CHSP3_TASK curtask;				// 次に実行されるタスク関数
-static int curtaskId;
 static int *c_type;
 static int *c_val;
 static HSPEXINFO *exinfo;				// Info for Plugins
+static int lasttask;
 
 PVal *mem_var;							// 変数用のメモリ
 int	prmstacks;							// パラメータースタック数(モジュール呼び出し用)
+
+PVal var_proxy;							// 代理変数用のメモリ
+
 
 static	HSP3TYPEINFO *intcmd_info;
 static	HSP3TYPEINFO *extcmd_info;
@@ -47,11 +58,15 @@ static	HSP3TYPEINFO *intfunc_info;
 static	HSP3TYPEINFO *sysvar_info;
 static	HSP3TYPEINFO *progfunc_info;
 static	HSP3TYPEINFO *modfunc_info;
+static	HSP3TYPEINFO *dllfunc_info;
+static	HSP3TYPEINFO *dllctrl_info;
 
 static	HSP3_CMDFUNC intcmd_func;
 static	HSP3_CMDFUNC extcmd_func;
 static	HSP3_CMDFUNC progcmd_func;
 static	HSP3_CMDFUNC modcmd_func;
+static	HSP3_CMDFUNC dllcmd_func;
+static	HSP3_CMDFUNC dllctl_func;
 
 /*------------------------------------------------------------*/
 
@@ -90,15 +105,27 @@ void HspVarCoreArray2( PVal *pval, int offset )
 }
 
 
-static inline char * PrepareCalc( void )
+static char *PrepareCalc( void )
 {
 	//		スタックから２項目取り出し計算の準備を行なう
 	//
 	char *calc_ptr;
 
+#if 0
+	if ( StackGetLevel < 2 ) {
+		Alertf("Stack underflow(%d)",StackGetLevel);
+	}
+#endif
+
 	stm2 = StackPeek;
 	stm1 = StackPeek2;
 	tflag = stm1->type;
+
+	if ( tflag == HSPVAR_FLAG_INT ) {
+		if ( stm2->type == HSPVAR_FLAG_INT ) {					// HSPVAR_FLAG_INT のみ高速化
+			return NULL;
+		}
+	}
 
 	mpval = HspVarCoreGetPVal( tflag );
 	varproc = HspVarCoreGetProc( tflag );
@@ -125,7 +152,7 @@ static inline char * PrepareCalc( void )
 }
 
 
-static inline void AfterCalc( void )
+static void AfterCalc( void )
 {
 	//		計算後のスタック処理
 	//
@@ -173,7 +200,7 @@ static inline void code_arrayint2( PVal *pval, int offset )
 }
 
 
-static APTR CheckArray( PVal *pval, int ar )
+static inline APTR CheckArray( PVal *pval, int ar )
 {
 	//		Check PVal Array information
 	//		(配列要素(int)の取り出し)
@@ -183,6 +210,8 @@ static APTR CheckArray( PVal *pval, int ar )
 	PVal temp;
 	arrayobj_flag = 0;
 	HspVarCoreReset( pval );							// 配列ポインタをリセットする
+	if ( ar == 0 ) return 0;
+
 	if ( pval->support & HSPVAR_SUPPORT_MISCTYPE ) {	// 連想配列の場合
 		return 0;
 	}
@@ -196,24 +225,6 @@ static APTR CheckArray( PVal *pval, int ar )
 		val = *(int *)(mpval->pt);
 		HspVarCoreArray2( pval, val );					// 配列要素指定(整数)
 	}
-	return HspVarCoreGetAPTR( pval );
-}
-
-
-static APTR CheckArrayIndex( PVal *pval, const int* index, size_t size )
-{
-	//		Check PVal Array information
-	//		(配列要素(int)の取り出し)
-	//
-	arrayobj_flag = 0;
-	HspVarCoreReset( pval );							// 配列ポインタをリセットする
-	if ( pval->support & HSPVAR_SUPPORT_MISCTYPE ) {	// 連想配列の場合
-		return 0;
-	}
-
-	for (auto i = 0; i < size; i++)
-		HspVarCoreArray2( pval, index[i] );					// 配列要素指定(整数)
-
 	return HspVarCoreGetAPTR( pval );
 }
 
@@ -238,16 +249,23 @@ void VarUtilInit( void )
 	sysvar_info = code_gettypeinfo( TYPE_SYSVAR );
 	progfunc_info = code_gettypeinfo( TYPE_PROGCMD );
 	modfunc_info = code_gettypeinfo( TYPE_MODCMD );
+	dllfunc_info = code_gettypeinfo( TYPE_DLLFUNC );
+	dllctrl_info = code_gettypeinfo( TYPE_DLLCTRL );
 
 	//		実行用関数を抽出
 	intcmd_func = intcmd_info->cmdfunc;
 	extcmd_func = extcmd_info->cmdfunc;
 	progcmd_func = progfunc_info->cmdfunc;
 	modcmd_func = modfunc_info->cmdfunc;
+	dllcmd_func = dllfunc_info->cmdfunc;
+	dllctl_func = dllctrl_info->cmdfunc;
 
 	//		最初のタスク実行関数をセット
 	curtask = (CHSP3_TASK)__HspEntry;
-	curtaskId = -1;
+	lasttask = -1;
+
+	//		代理変数を初期化(パラメーター渡し用)
+	var_proxy.offset = 0;
 }
 
 
@@ -275,15 +293,15 @@ void PushDouble( double val )
 	StackPushd( val );
 }
 
-void PushStr( char *st )
-{
-	StackPushStr( st );
-}
-
 void PushLabel( int val )
 {
 	//StackPush( HSPVAR_FLAG_LABEL, (char *)&val, sizeof(int)  );
 	StackPushl( val );
+}
+
+void PushStr( char *st )
+{
+	StackPushStr( st );
 }
 
 
@@ -295,9 +313,20 @@ void PushVar( PVal *pval, int aval )
 	PDAT *ptr;
 
 	aptr = CheckArray( pval, aval );
-	ptr = HspVarCorePtrAPTR( pval, aptr );
 
 	tflag = pval->flag;
+	if ( tflag == HSPVAR_FLAG_INT ) {
+		ptr = (PDAT *)(( (int *)(pval->pt))+ aptr );		// 自前で計算
+		StackPushi( *(int *)ptr );
+		return;
+	}
+	if ( tflag == HSPVAR_FLAG_DOUBLE ) {
+		ptr = (PDAT *)(( (double *)(pval->pt))+ aptr );		// 自前で計算
+		StackPushd( *(double *)ptr );
+		return;
+	}
+
+	ptr = HspVarCorePtrAPTR( pval, aptr );
 	varproc = HspVarCoreGetProc( tflag );
 	basesize = varproc->basesize;
 	if ( basesize < 0 ) { basesize = varproc->GetSize( ptr ); }
@@ -313,6 +342,35 @@ void PushVAP( PVal *pval, int aval )
 	aptr = CheckArray( pval, aval );
 	//ptr = HspVarCorePtrAPTR( pval, aptr );
 	StackPushTypeVal( HSPVAR_FLAG_VAR, (int)pval, (int)aptr );
+}
+
+
+void PushVarFromVAP( PVal *pval, int aval )
+{
+	//	PushVAPされている変数の値をpushする
+	int basesize;
+	APTR aptr;
+	PDAT *ptr;
+
+	aptr = (APTR)aval;
+
+	tflag = pval->flag;
+	if ( tflag == HSPVAR_FLAG_INT ) {
+		ptr = (PDAT *)(( (int *)(pval->pt))+ aptr );		// 自前で計算
+		StackPushi( *(int *)ptr );
+		return;
+	}
+	if ( tflag == HSPVAR_FLAG_DOUBLE ) {
+		ptr = (PDAT *)(( (double *)(pval->pt))+ aptr );		// 自前で計算
+		StackPushd( *(double *)ptr );
+		return;
+	}
+
+	ptr = HspVarCorePtrAPTR( pval, aptr );
+	varproc = HspVarCoreGetProc( tflag );
+	basesize = varproc->basesize;
+	if ( basesize < 0 ) { basesize = varproc->GetSize( ptr ); }
+	StackPush( tflag, (char *)ptr, basesize );
 }
 
 
@@ -337,7 +395,7 @@ void PushExtvar( int val, int pnum )
 	*c_type = TYPE_MARK;
 	*c_val = '(';
 	ptr = (char *)extsysvar_info->reffunc( &resflag, val );						// タイプごとの関数振り分け
-	StackPop();																	// PushFuncEndを取り除く
+	StackPop();																// PushFuncEndを取り除く
 	//code_next();
 	if ( resflag == HSPVAR_FLAG_INT ) {
 		StackPushi( *(int *)ptr );
@@ -367,36 +425,6 @@ void PushIntfunc( int val, int pnum )
 	}
 }
 
-double CallDoubleIntfunc( int val, int pnum )
-{
-	char *ptr;
-	int resflag;
-	int basesize;
-
-	*c_type = TYPE_MARK;
-	*c_val = '(';
-	ptr = (char *)intfunc_info->reffunc( &resflag, val );						// タイプごとの関数振り分け
-	StackPop();																	// PushFuncEndを取り除く
-	//code_next();
-	basesize = HspVarCoreGetProc( resflag )->GetSize( (PDAT *)ptr );
-	return *(double*)ptr;
-}
-
-int CallIntIntfunc( int val, int pnum )
-{
-	char *ptr;
-	int resflag;
-	int basesize;
-
-	*c_type = TYPE_MARK;
-	*c_val = '(';
-	ptr = (char *)intfunc_info->reffunc( &resflag, val );						// タイプごとの関数振り分け
-	StackPop();																	// PushFuncEndを取り除く
-	//code_next();
-	basesize = HspVarCoreGetProc( resflag )->GetSize( (PDAT *)ptr );
-	return *(int*)ptr;
-}
-
 
 void PushSysvar( int val, int pnum )
 {
@@ -407,49 +435,14 @@ void PushSysvar( int val, int pnum )
 	*c_type = TYPE_MARK;
 	*c_val = '(';
 	ptr = (char *)sysvar_info->reffunc( &resflag, val );						// タイプごとの関数振り分け
-	StackPop();																	// PushFuncEndを取り除く
+	//StackPop();																// PushFuncEndを取り除く
 	//code_next();
-	basesize = HspVarCoreGetProc( resflag )->GetSize( (PDAT *)ptr );
-	StackPush( resflag, ptr, basesize );
-}
-
-int CallIntSysvar( int val, int pnum )
-{
-	char *ptr;
-	int resflag;
-	int basesize;
-
-	*c_type = TYPE_MARK;
-	*c_val = '(';
-	ptr = (char *)sysvar_info->reffunc( &resflag, val );						// タイプごとの関数振り分け
-	StackPop();																	// PushFuncEndを取り除く
-	//code_next();
-	basesize = HspVarCoreGetProc( resflag )->GetSize( (PDAT *)ptr );
-	return *(int*)ptr;
-}
-
-double CallDoubleSysvar( int val, int pnum )
-{
-	char *ptr;
-	int resflag;
-	int basesize;
-
-	*c_type = TYPE_MARK;
-	*c_val = '(';
-	ptr = (char *)sysvar_info->reffunc( &resflag, val );						// タイプごとの関数振り分け
-	StackPop();																	// PushFuncEndを取り除く
-	//code_next();
-	basesize = HspVarCoreGetProc( resflag )->GetSize( (PDAT *)ptr );
-	return *(double*)ptr;
-}
-
-void PushDllfunc( int val, int pnum )
-{
-}
-
-
-void PushModule( int val )
-{
+	if ( resflag == HSPVAR_FLAG_INT ) {
+		StackPushi( *(int *)ptr );
+	} else {
+		basesize = HspVarCoreGetProc( resflag )->GetSize( (PDAT *)ptr );
+		StackPush( resflag, ptr, basesize );
+	}
 }
 
 
@@ -464,7 +457,7 @@ void PushModcmd( int val, int pnum )
 	prmstacks = pnum;
 	ptr = (char *)modfunc_info->reffunc( &resflag, val );						// タイプごとの関数振り分け
 	if ( pnum > 1 )//FIXME
-		StackPop();																	// PushFuncEndを取り除く
+	StackPop();																	// PushFuncEndを取り除く
 	//code_next();
 	if ( resflag == HSPVAR_FLAG_INT ) {
 		StackPushi( *(int *)ptr );
@@ -475,10 +468,65 @@ void PushModcmd( int val, int pnum )
 }
 
 
+void PushDllfunc( int val, int pnum )
+{
+	char *ptr;
+	int resflag;
+	int basesize;
+
+	*c_type = TYPE_MARK;
+	*c_val = '(';
+	prmstacks = pnum;
+	ptr = (char *)dllfunc_info->reffunc( &resflag, val );						// タイプごとの関数振り分け
+	StackPop();																	// PushFuncEndを取り除く
+	//code_next();
+	if ( resflag == HSPVAR_FLAG_INT ) {
+		StackPushi( *(int *)ptr );
+	} else {
+		basesize = HspVarCoreGetProc( resflag )->GetSize( (PDAT *)ptr );
+		StackPush( resflag, ptr, basesize );
+	}
+}
+
+
+void PushDllctrl( int val, int pnum )
+{
+	char *ptr;
+	int resflag;
+	int basesize;
+
+	*c_type = TYPE_MARK;
+	*c_val = '(';
+	prmstacks = pnum;
+	ptr = (char *)dllctrl_info->reffunc( &resflag, val );						// タイプごとの関数振り分け
+	StackPop();																	// PushFuncEndを取り除く
+	//code_next();
+	if ( resflag == HSPVAR_FLAG_INT ) {
+		StackPushi( *(int *)ptr );
+	} else {
+		basesize = HspVarCoreGetProc( resflag )->GetSize( (PDAT *)ptr );
+		StackPush( resflag, ptr, basesize );
+	}
+}
+
+
+void PushVarOffset( PVal *pval )
+{
+	//	変数のoffset値をpushする
+	//
+	StackPushi( pval->offset );
+}
+
+
 void CalcAddI( void )
 {
 	char *ptr;
 	ptr = PrepareCalc();
+	if ( ptr == NULL ) {									// 高速化のため
+		stm1->ival += stm2->ival;
+		StackDecLevel;
+		return;
+	}
 	varproc->AddI( (PDAT *)mpval->pt, ptr );
 	AfterCalc();
 }
@@ -488,6 +536,11 @@ void CalcSubI( void )
 {
 	char *ptr;
 	ptr = PrepareCalc();
+	if ( ptr == NULL ) {									// 高速化のため
+		stm1->ival -= stm2->ival;
+		StackDecLevel;
+		return;
+	}
 	varproc->SubI( (PDAT *)mpval->pt, ptr );
 	AfterCalc();
 }
@@ -497,6 +550,11 @@ void CalcMulI( void )
 {
 	char *ptr;
 	ptr = PrepareCalc();
+	if ( ptr == NULL ) {									// 高速化のため
+		stm1->ival *= stm2->ival;
+		StackDecLevel;
+		return;
+	}
 	varproc->MulI( (PDAT *)mpval->pt, ptr );
 	AfterCalc();
 }
@@ -506,6 +564,12 @@ void CalcDivI( void )
 {
 	char *ptr;
 	ptr = PrepareCalc();
+	if ( ptr == NULL ) {									// 高速化のため
+		if ( stm2->ival == 0 ) throw( HSPVAR_ERROR_DIVZERO );
+		stm1->ival /= stm2->ival;
+		StackDecLevel;
+		return;
+	}
 	varproc->DivI( (PDAT *)mpval->pt, ptr );
 	AfterCalc();
 }
@@ -515,6 +579,12 @@ void CalcModI( void )
 {
 	char *ptr;
 	ptr = PrepareCalc();
+	if ( ptr == NULL ) {									// 高速化のため
+		if ( stm2->ival == 0 ) throw( HSPVAR_ERROR_DIVZERO );
+		stm1->ival %= stm2->ival;
+		StackDecLevel;
+		return;
+	}
 	varproc->ModI( (PDAT *)mpval->pt, ptr );
 	AfterCalc();
 }
@@ -524,6 +594,11 @@ void CalcAndI( void )
 {
 	char *ptr;
 	ptr = PrepareCalc();
+	if ( ptr == NULL ) {									// 高速化のため
+		stm1->ival &= stm2->ival;
+		StackDecLevel;
+		return;
+	}
 	varproc->AndI( (PDAT *)mpval->pt, ptr );
 	AfterCalc();
 }
@@ -533,6 +608,11 @@ void CalcOrI( void )
 {
 	char *ptr;
 	ptr = PrepareCalc();
+	if ( ptr == NULL ) {									// 高速化のため
+		stm1->ival |= stm2->ival;
+		StackDecLevel;
+		return;
+	}
 	varproc->OrI( (PDAT *)mpval->pt, ptr );
 	AfterCalc();
 }
@@ -542,6 +622,11 @@ void CalcXorI( void )
 {
 	char *ptr;
 	ptr = PrepareCalc();
+	if ( ptr == NULL ) {									// 高速化のため
+		stm1->ival ^= stm2->ival;
+		StackDecLevel;
+		return;
+	}
 	varproc->XorI( (PDAT *)mpval->pt, ptr );
 	AfterCalc();
 }
@@ -551,6 +636,11 @@ void CalcEqI( void )
 {
 	char *ptr;
 	ptr = PrepareCalc();
+	if ( ptr == NULL ) {									// 高速化のため
+		stm1->ival = ( stm1->ival == stm2->ival );
+		StackDecLevel;
+		return;
+	}
 	varproc->EqI( (PDAT *)mpval->pt, ptr );
 	AfterCalc();
 }
@@ -560,6 +650,11 @@ void CalcNeI( void )
 {
 	char *ptr;
 	ptr = PrepareCalc();
+	if ( ptr == NULL ) {									// 高速化のため
+		stm1->ival = ( stm1->ival != stm2->ival );
+		StackDecLevel;
+		return;
+	}
 	varproc->NeI( (PDAT *)mpval->pt, ptr );
 	AfterCalc();
 }
@@ -569,6 +664,11 @@ void CalcGtI( void )
 {
 	char *ptr;
 	ptr = PrepareCalc();
+	if ( ptr == NULL ) {									// 高速化のため
+		stm1->ival = ( stm1->ival > stm2->ival );
+		StackDecLevel;
+		return;
+	}
 	varproc->GtI( (PDAT *)mpval->pt, ptr );
 	AfterCalc();
 }
@@ -578,6 +678,11 @@ void CalcLtI( void )
 {
 	char *ptr;
 	ptr = PrepareCalc();
+	if ( ptr == NULL ) {									// 高速化のため
+		stm1->ival = ( stm1->ival < stm2->ival );
+		StackDecLevel;
+		return;
+	}
 	varproc->LtI( (PDAT *)mpval->pt, ptr );
 	AfterCalc();
 }
@@ -587,6 +692,11 @@ void CalcGtEqI( void )
 {
 	char *ptr;
 	ptr = PrepareCalc();
+	if ( ptr == NULL ) {									// 高速化のため
+		stm1->ival = ( stm1->ival >= stm2->ival );
+		StackDecLevel;
+		return;
+	}
 	varproc->GtEqI( (PDAT *)mpval->pt, ptr );
 	AfterCalc();
 }
@@ -596,6 +706,11 @@ void CalcLtEqI( void )
 {
 	char *ptr;
 	ptr = PrepareCalc();
+	if ( ptr == NULL ) {									// 高速化のため
+		stm1->ival = ( stm1->ival <= stm2->ival );
+		StackDecLevel;
+		return;
+	}
 	varproc->LtEqI( (PDAT *)mpval->pt, ptr );
 	AfterCalc();
 }
@@ -605,6 +720,11 @@ void CalcRrI( void )
 {
 	char *ptr;
 	ptr = PrepareCalc();
+	if ( ptr == NULL ) {									// 高速化のため
+		stm1->ival >>= stm2->ival;
+		StackDecLevel;
+		return;
+	}
 	varproc->RrI( (PDAT *)mpval->pt, ptr );
 	AfterCalc();
 }
@@ -614,13 +734,75 @@ void CalcLrI( void )
 {
 	char *ptr;
 	ptr = PrepareCalc();
+	if ( ptr == NULL ) {									// 高速化のため
+		stm1->ival <<= stm2->ival;
+		StackDecLevel;
+		return;
+	}
 	varproc->LrI( (PDAT *)mpval->pt, ptr );
 	AfterCalc();
 }
 
 
 
-void VarSet( PVal *pval, int aval, int pnum )
+void VarSet( PVal *m_pval, int aval )
+{
+	//	変数代入(var=???)
+	//		aval=配列要素のスタック数
+	//
+	int chk;
+	PVal *pval;
+	HspVarProc *proc;
+	APTR aptr;
+	void *ptr;
+	PDAT *dst;
+	//int pleft;
+	//int baseaptr;
+	int tflag;
+
+	if ( m_pval == &var_proxy ) {
+		STMDATA *stm = (STMDATA *)m_pval->master;
+		pval = (PVal *)( stm->ival );
+		aptr = *(int *)stm->itemp;
+		if ( aval != 0 ) throw HSPERR_SYNTAX;
+	} else {
+		pval = m_pval;
+		aptr = CheckArray( pval, aval );
+	}
+	dst = HspVarCorePtrAPTR( pval, aptr );
+	tflag = pval->flag;
+
+	chk = code_get();									// パラメーター値を取得
+	if ( chk != PARAM_OK ) { throw HSPERR_SYNTAX; }
+
+	ptr = mpval->pt;
+
+	if ( tflag != mpval->flag ) {
+
+		proc = HspVarCoreGetProc( tflag );
+		if ( pval->support & HSPVAR_SUPPORT_NOCONVERT ) {	// 型変換なしの場合
+			if ( arrayobj_flag ) {
+				proc->ObjectWrite( pval, ptr, mpval->flag );
+				return;
+			}
+		}
+		if ( aptr != 0 ) throw HSPERR_INVALID_ARRAYSTORE;	// 型変更の場合は配列要素0のみ
+		HspVarCoreClear( pval, mpval->flag );		// 最小サイズのメモリを確保
+		proc = HspVarCoreGetProc( pval->flag );
+		dst = proc->GetPtr( pval );					// PDATポインタを取得
+
+	} else {
+		if ( tflag == HSPVAR_FLAG_INT ) {
+			*(int *)dst = *(int *)ptr;
+			return;
+		}
+		proc = HspVarCoreGetProc( tflag );
+	}
+	proc->Set( pval, dst, ptr );
+}
+
+
+void VarSet( PVal *m_pval, int aval, int pnum )
 {
 	//	変数代入(var=???)
 	//		aval=配列要素のスタック数
@@ -633,10 +815,19 @@ void VarSet( PVal *pval, int aval, int pnum )
 	PDAT *dst;
 	int pleft;
 	int baseaptr;
+	PVal *pval;
 
-	aptr = CheckArray( pval, aval );
-	proc = HspVarCoreGetProc( pval->flag );
+	if ( m_pval == &var_proxy ) {
+		STMDATA *stm = (STMDATA *)m_pval->master;
+		pval = (PVal *)( stm->ival );
+		aptr = *(int *)stm->itemp;
+		if ( aval != 0 ) throw HSPERR_SYNTAX;
+	} else {
+		pval = m_pval;
+		aptr = CheckArray( pval, aval );
+	}
 	dst = HspVarCorePtrAPTR( pval, aptr );
+	proc = HspVarCoreGetProc( pval->flag );
 
 	chk = code_get();									// パラメーター値を取得
 	if ( chk != PARAM_OK ) { throw HSPERR_SYNTAX; }
@@ -688,148 +879,49 @@ void VarSet( PVal *pval, int aval, int pnum )
 }
 
 
-void VarSet( PVal *pval, int aval )
+void VarSet2( PVal *pval )
 {
-	//	変数代入(var=???)
-	//		aval=配列要素のスタック数
+	//	変数代入(連続代入用)(var=???)
 	//
 	int chk;
 	HspVarProc *proc;
-	APTR aptr;
+	//APTR aptr;
 	void *ptr;
 	PDAT *dst;
-	int pleft;
 	int baseaptr;
+	STMDATA *stm;
+	int *iptr;
+	int tflag;
 
-	aptr = CheckArray( pval, aval );
 	proc = HspVarCoreGetProc( pval->flag );
-	dst = HspVarCorePtrAPTR( pval, aptr );
 
-	chk = code_get();									// パラメーター値を取得
+	chk = code_get();							// パラメーター値を取得
 	if ( chk != PARAM_OK ) { throw HSPERR_SYNTAX; }
-
-	ptr = mpval->pt;
 	if ( pval->flag != mpval->flag ) {
-
-		if ( pval->support & HSPVAR_SUPPORT_NOCONVERT ) {	// 型変換なしの場合
-			if ( arrayobj_flag ) {
-				proc->ObjectWrite( pval, ptr, mpval->flag );
-				return;
-			}
-		}
-		if ( aptr != 0 ) throw HSPERR_INVALID_ARRAYSTORE;	// 型変更の場合は配列要素0のみ
-		HspVarCoreClear( pval, mpval->flag );		// 最小サイズのメモリを確保
-		proc = HspVarCoreGetProc( pval->flag );
-		dst = proc->GetPtr( pval );					// PDATポインタを取得
+			throw HSPERR_INVALID_ARRAYSTORE;	// 型変更はできない
 	}
+	ptr = mpval->pt;
 
-	proc->Set( pval, dst, ptr );
+	stm = StackPeek;
+	tflag = stm->type;
+	if ( tflag != HSPVAR_FLAG_INT ) { throw HSPERR_SYNTAX; }
+	iptr = (int *)STM_GETPTR(stm);
+	baseaptr = *iptr;							// PushVarOffsetであらかじめ入れてあるoffset値
+	StackDecLevel;
+	code_next();
+
+	baseaptr++;
+
+	pval->arraycnt = 0;							// 配列指定カウンタをリセット
+	pval->offset = 0;
+	code_arrayint2( pval, baseaptr );			// 配列チェック
+
+	dst = HspVarCorePtr( pval );
+	proc->Set( pval, dst, ptr );				// 次の配列にたたき込む
 }
 
 
-void VarSet1( PVal *pval, int i0 )
-{
-	//	変数代入(var=???)
-	//		i0=配列要素のインデックス
-	//
-	int chk;
-	HspVarProc *proc;
-	APTR aptr;
-	void *ptr;
-	PDAT *dst;
-	int pleft;
-	int baseaptr;
-
-#if 0
-	int index[] = { i0 };
-	aptr = CheckArrayIndex( pval, index, 1 );
-#else
-	arrayobj_flag = 0;
-	HspVarCoreReset(pval);							// 配列ポインタをリセットする
-	if (pval->support & HSPVAR_SUPPORT_MISCTYPE) {	// 連想配列の場合
-		aptr = 0;
-	}
-	else {
-		HspVarCoreArray2(pval, i0);
-		aptr = HspVarCoreGetAPTR(pval);
-	}
-#endif
-	proc = HspVarCoreGetProc( pval->flag );
-	dst = HspVarCorePtrAPTR( pval, aptr );
-
-	chk = code_get();									// パラメーター値を取得
-	if ( chk != PARAM_OK ) { throw HSPERR_SYNTAX; }
-
-	ptr = mpval->pt;
-	if ( pval->flag != mpval->flag ) {
-
-		if ( pval->support & HSPVAR_SUPPORT_NOCONVERT ) {	// 型変換なしの場合
-			if ( arrayobj_flag ) {
-				proc->ObjectWrite( pval, ptr, mpval->flag );
-				return;
-			}
-		}
-		if ( aptr != 0 ) throw HSPERR_INVALID_ARRAYSTORE;	// 型変更の場合は配列要素0のみ
-		HspVarCoreClear( pval, mpval->flag );		// 最小サイズのメモリを確保
-		proc = HspVarCoreGetProc( pval->flag );
-		dst = proc->GetPtr( pval );					// PDATポインタを取得
-	}
-	proc->Set( pval, dst, ptr );
-}
-
-void VarSet2( PVal *pval, int i0, int i1 )
-{
-	//	変数代入(var=???)
-	//		i0=配列要素のインデックス
-	//
-	int chk;
-	HspVarProc *proc;
-	APTR aptr;
-	void *ptr;
-	PDAT *dst;
-	int pleft;
-	int baseaptr;
-
-#if 0
-	int index[] = { i0, i1 };
-	aptr = CheckArrayIndex( pval, index, 2 );
-#else
-	arrayobj_flag = 0;
-	HspVarCoreReset(pval);							// 配列ポインタをリセットする
-	if (pval->support & HSPVAR_SUPPORT_MISCTYPE) {	// 連想配列の場合
-		aptr = 0;
-	}
-	else {
-		HspVarCoreArray2(pval, i0);
-		HspVarCoreArray2(pval, i1);
-		aptr = HspVarCoreGetAPTR(pval);
-	}
-#endif
-	proc = HspVarCoreGetProc( pval->flag );
-	dst = HspVarCorePtrAPTR( pval, aptr );
-
-	chk = code_get();									// パラメーター値を取得
-	if ( chk != PARAM_OK ) { throw HSPERR_SYNTAX; }
-
-	ptr = mpval->pt;
-	if ( pval->flag != mpval->flag ) {
-
-		if ( pval->support & HSPVAR_SUPPORT_NOCONVERT ) {	// 型変換なしの場合
-			if ( arrayobj_flag ) {
-				proc->ObjectWrite( pval, ptr, mpval->flag );
-				return;
-			}
-		}
-		if ( aptr != 0 ) throw HSPERR_INVALID_ARRAYSTORE;	// 型変更の場合は配列要素0のみ
-		HspVarCoreClear( pval, mpval->flag );		// 最小サイズのメモリを確保
-		proc = HspVarCoreGetProc( pval->flag );
-		dst = proc->GetPtr( pval );					// PDATポインタを取得
-	}
-	proc->Set( pval, dst, ptr );
-}
-
-
-void VarInc( PVal *pval, int aval )
+void VarInc( PVal *m_pval, int aval )
 {
 	//	変数インクリメント(var++)
 	//
@@ -838,9 +930,19 @@ void VarInc( PVal *pval, int aval )
 	int incval;
 	void *ptr;
 	PDAT *dst;
+	PVal *pval;
 
-	aptr = CheckArray( pval, aval );
+	if ( m_pval == &var_proxy ) {
+		STMDATA *stm = (STMDATA *)m_pval->master;
+		pval = (PVal *)( stm->ival );
+		aptr = *(int *)stm->itemp;
+		if ( aval != 0 ) throw HSPERR_SYNTAX;
+	} else {
+		pval = m_pval;
+		aptr = CheckArray( pval, aval );
+	}
 	proc = HspVarCoreGetProc( pval->flag );
+
 	incval = 1;
 	if ( pval->flag == HSPVAR_FLAG_INT ) { ptr = &incval; } else {
 		ptr = (int *)proc->Cnv( &incval, HSPVAR_FLAG_INT );	// 型がINTでない場合は変換
@@ -850,7 +952,7 @@ void VarInc( PVal *pval, int aval )
 }
 
 
-void VarDec( PVal *pval, int aval )
+void VarDec( PVal *m_pval, int aval )
 {
 	//	変数デクリメント(var--)
 	//
@@ -859,9 +961,19 @@ void VarDec( PVal *pval, int aval )
 	int incval;
 	void *ptr;
 	PDAT *dst;
+	PVal *pval;
 
-	aptr = CheckArray( pval, aval );
+	if ( m_pval == &var_proxy ) {
+		STMDATA *stm = (STMDATA *)m_pval->master;
+		pval = (PVal *)( stm->ival );
+		aptr = *(int *)stm->itemp;
+		if ( aval != 0 ) throw HSPERR_SYNTAX;
+	} else {
+		pval = m_pval;
+		aptr = CheckArray( pval, aval );
+	}
 	proc = HspVarCoreGetProc( pval->flag );
+
 	incval = 1;
 	if ( pval->flag == HSPVAR_FLAG_INT ) { ptr = &incval; } else {
 		ptr = (int *)proc->Cnv( &incval, HSPVAR_FLAG_INT );	// 型がINTでない場合は変換
@@ -923,7 +1035,7 @@ static inline int calcprmf( int mval, int exp, int p )
 }
 
 
-void VarCalc( PVal *pval, int aval, int op )
+void VarCalc( PVal *m_pval, int aval, int op )
 {
 	//	変数演算代入(var*=???等)
 	//		aval=配列要素のスタック数
@@ -934,8 +1046,18 @@ void VarCalc( PVal *pval, int aval, int op )
 	APTR aptr;
 	void *ptr;
 	PDAT *dst;
+	int *iptr;
+	PVal *pval;
 
-	aptr = CheckArray( pval, aval );
+	if ( m_pval == &var_proxy ) {
+		STMDATA *stm = (STMDATA *)m_pval->master;
+		pval = (PVal *)( stm->ival );
+		aptr = *(int *)stm->itemp;
+		if ( aval != 0 ) throw HSPERR_SYNTAX;
+	} else {
+		pval = m_pval;
+		aptr = CheckArray( pval, aval );
+	}
 
 	proc = HspVarCoreGetProc( pval->flag );
 	dst = HspVarCorePtrAPTR( pval, aptr );
@@ -946,6 +1068,11 @@ void VarCalc( PVal *pval, int aval, int op )
 	ptr = mpval->pt;
 	if ( pval->flag != mpval->flag ) {					// 型が一致しない場合は変換
 		ptr = HspVarCoreCnvPtr( mpval, pval->flag );
+	}
+	if ( pval->flag == HSPVAR_FLAG_INT ) {
+		iptr = (int *)dst;
+		*iptr = calcprmf( *iptr, op, *(int *)ptr );
+		return;
 	}
 
 	switch(op) {
@@ -1019,7 +1146,7 @@ void PushFuncPrm1( int num )
 	STMDATA *stm;
 	int tflag, basesize;
 	char *ptr;
-	HspVarProc *proc;
+	//HspVarProc *proc;
 
 	stm = (STMDATA *)hspctx->prmstack;
 	if ( stm == NULL ) throw HSPERR_INVALID_FUNCPARAM;
@@ -1028,7 +1155,7 @@ void PushFuncPrm1( int num )
 
 	tflag = stm->type;
 	if ( tflag == HSPVAR_FLAG_VAR ) {
-		PushVar( (PVal *)( stm->ival ), *(int *)stm->itemp );
+		PushVarFromVAP( (PVal *)( stm->ival ), *(int *)stm->itemp );
 		//PushVAP( (PVal *)( stm->ival ), *(int *)stm->itemp );
 		return;
 	}
@@ -1155,6 +1282,443 @@ void PushFuncPrm( int num, int aval )
 	StackPush( tflag, (char *)ptr, basesize );
 }
 
+
+void PushFuncPAP( int num, int aval )
+{
+	//		ローカル変数の引数(num)をスタックにpushする
+	//		(PushVAP相当)
+	STMDATA *stm;
+	int tflag;
+	PVal *pval;
+	APTR aptr;
+
+	stm = (STMDATA *)hspctx->prmstack;
+	if ( stm == NULL ) throw HSPERR_INVALID_FUNCPARAM;
+	if ( num >= hspctx->prmstack_max ) throw HSPERR_INVALID_FUNCPARAM;
+	stm -= num;
+	tflag = stm->type;
+
+	switch( tflag ) {
+	case TYPE_EX_LOCAL_VARS:
+		pval = (PVal *)( stm->ptr );
+		aptr = CheckArray( pval, aval );
+		StackPushTypeVal( HSPVAR_FLAG_VAR, (int)pval, (int)aptr );
+		break;
+	case HSPVAR_FLAG_VAR:
+		pval = (PVal *)( stm->ival );
+		aptr = CheckArray( pval, aval );
+		StackPushTypeVal( HSPVAR_FLAG_VAR, (int)pval, (int)aptr );
+		break;
+	default:
+		throw HSPVAR_ERROR_INVALID;
+	}
+}
+
+
+PVal *FuncPrmVA( int num )
+{
+	//		変数の引数(num)を得る(var用)
+	//
+	STMDATA *stm;
+	int tflag;
+	//char *ptr;
+
+	stm = (STMDATA *)hspctx->prmstack;
+	if ( stm == NULL ) throw HSPERR_INVALID_FUNCPARAM;
+	if ( num >= hspctx->prmstack_max ) throw HSPERR_INVALID_FUNCPARAM;
+	stm -= num;
+
+	tflag = stm->type;
+	if ( tflag != HSPVAR_FLAG_VAR ) throw HSPVAR_ERROR_INVALID;
+
+	//ptr = stm->itemp;
+
+	var_proxy.master = stm;
+	return &var_proxy;
+
+	//return (PVal *)( stm->ival );
+}
+
+
+PVal *FuncPrm( int num )
+{
+	//		変数の引数(num)を得る
+	//
+	STMDATA *stm;
+	int tflag;
+	//char *ptr;
+
+	stm = (STMDATA *)hspctx->prmstack;
+	if ( stm == NULL ) throw HSPERR_INVALID_FUNCPARAM;
+	if ( num >= hspctx->prmstack_max ) throw HSPERR_INVALID_FUNCPARAM;
+	stm -= num;
+
+	tflag = stm->type;
+	if ( tflag != HSPVAR_FLAG_VAR ) throw HSPVAR_ERROR_INVALID;
+
+	//ptr = stm->itemp;
+	return (PVal *)( stm->ival );
+}
+
+
+PVal *LocalPrm( int num )
+{
+	//		ローカル変数の引数(num)を得る
+	//
+	STMDATA *stm;
+	int tflag;
+
+	stm = (STMDATA *)hspctx->prmstack;
+	if ( stm == NULL ) throw HSPERR_INVALID_FUNCPARAM;
+	if ( num >= hspctx->prmstack_max ) throw HSPERR_INVALID_FUNCPARAM;
+	stm -= num;
+
+	tflag = stm->type;
+	if ( tflag != TYPE_EX_LOCAL_VARS ) throw HSPVAR_ERROR_INVALID;
+
+	return (PVal *)( stm->ptr );
+}
+
+
+/*------------------------------------------------------------*/
+/*
+		Program Control Process
+*/
+/*------------------------------------------------------------*/
+
+
+void TaskSwitch( int label )
+{
+	//		次のタスク関数をセット
+	//		(label=タスク関数ID)
+	//
+#if 0
+	{
+	//char ss[128];
+	//sprintf( ss,"[%d]\n",label );
+	//DebugMsg( ss );
+	Alertf( "[%d]\n",label );
+	}
+#endif
+
+	lasttask = label;
+	curtask = __HspTaskFunc[label];
+}
+
+void TaskExec( void )
+{
+	//		セットされたタスク関数を実行する
+	//
+	curtask();
+}
+
+
+int GetTaskID( void )
+{
+	//		タスク関数IDを取得
+	//
+	return lasttask;
+}
+
+
+/*------------------------------------------------------------*/
+/*
+		Normal HSP Process
+*/
+/*------------------------------------------------------------*/
+
+void HspPostExec( void )
+{
+	//		コマンド実行後の処理
+	//
+#if 0
+	if ( hspctx->runmode == RUNMODE_RETURN ) {
+		//cmdfunc_return();
+	} else {
+		hspctx->msgfunc( hspctx );
+	}
+#endif
+}
+
+bool HspIf( void )
+{
+	//		スタックから値を取り出して真偽を返す
+	//		(真偽が逆になっているので注意)
+	//
+	int i;
+	i = code_geti();
+	return (i==0);
+}
+
+
+void Extcmd( int cmd, int pnum )
+{
+	//if ( extcmd_info->cmdfunc( cmd ) ) HspPostExec();
+	if ( extcmd_func( cmd ) ) HspPostExec();
+}
+
+
+void Modcmd( int cmd, int pnum )
+{
+	//int i;
+	//if ( modfunc_info->cmdfunc( cmd ) ) HspPostExec();
+	//Alertf("CMD=%d (lev%d)", cmd, StackGetLevel );
+	prmstacks = pnum;							// hsp3codeに渡すパラメーター数
+	if ( modcmd_func( cmd ) ) HspPostExec();
+}
+
+
+void Dllfunc( int cmd, int pnum )
+{
+	if ( dllcmd_func( cmd ) ) HspPostExec();
+}
+
+
+void Dllctrl( int cmd, int pnum )
+{
+	if ( dllctl_func( cmd ) ) HspPostExec();
+}
+
+
+void Prgcmd( int cmd, int pnum )
+{
+	//if ( progfunc_info->cmdfunc( cmd ) ) HspPostExec();
+	if ( progcmd_func( cmd ) ) HspPostExec();
+}
+
+
+void Intcmd( int cmd, int pnum )
+{
+	//if ( intcmd_info->cmdfunc( cmd ) ) HspPostExec();
+	if ( intcmd_func( cmd ) ) HspPostExec();
+}
+
+/*------------------------------------------------------------*/
+/*
+		For Debug
+*/
+/*------------------------------------------------------------*/
+
+void DebugStackPeek( void )
+{
+	STMDATA *stm;
+	char s1[256];
+	char dbg[4096];
+	char *p;
+	int i;
+	i = 0;
+	p = dbg; *p = 0;
+	stm = mem_stm;
+	while(1) {
+		if ( stm >= stm_cur ) break;
+		sprintf( s1, "STM#%d type:%d mode:%d ival:%d\r\n", i, stm->type, stm->mode, stm->ival );
+		i++;
+		strcpy( p, s1 );
+		p+=strlen(s1);
+		stm++;
+	}
+	//Alertf( "%s", dbg );
+}
+
+void DebugMsg( char *msg )
+{
+#ifdef HSPWIN
+	OutputDebugString( msg );
+	//Alertf( "%s", msg );
+#else
+	Alertf( "%s", msg );
+#endif
+}
+
+
+/*------------------------------------------------------------*/
+/*
+		For JIT
+*/
+/*------------------------------------------------------------*/
+
+
+
+static APTR CheckArrayIndex( PVal *pval, const int* index, size_t size )
+{
+	//		Check PVal Array information
+	//		(配列要素(int)の取り出し)
+	//
+	arrayobj_flag = 0;
+	HspVarCoreReset( pval );							// 配列ポインタをリセットする
+	if ( pval->support & HSPVAR_SUPPORT_MISCTYPE ) {	// 連想配列の場合
+		return 0;
+	}
+
+	for (auto i = 0; i < size; i++)
+		HspVarCoreArray2( pval, index[i] );					// 配列要素指定(整数)
+
+	return HspVarCoreGetAPTR( pval );
+}
+
+void VarSetIndex1( PVal *pval, int i0 )
+{
+	//	変数代入(var=???)
+	//		i0=配列要素のインデックス
+	//
+	int chk;
+	HspVarProc *proc;
+	APTR aptr;
+	void *ptr;
+	PDAT *dst;
+	int pleft;
+	int baseaptr;
+
+#if 0
+	int index[] = { i0 };
+	aptr = CheckArrayIndex( pval, index, 1 );
+#else
+	arrayobj_flag = 0;
+	HspVarCoreReset(pval);							// 配列ポインタをリセットする
+	if (pval->support & HSPVAR_SUPPORT_MISCTYPE) {	// 連想配列の場合
+		aptr = 0;
+	}
+	else {
+		HspVarCoreArray2(pval, i0);
+		aptr = HspVarCoreGetAPTR(pval);
+	}
+#endif
+	proc = HspVarCoreGetProc( pval->flag );
+	dst = HspVarCorePtrAPTR( pval, aptr );
+
+	chk = code_get();									// パラメーター値を取得
+	if ( chk != PARAM_OK ) { throw HSPERR_SYNTAX; }
+
+	ptr = mpval->pt;
+	if ( pval->flag != mpval->flag ) {
+
+		if ( pval->support & HSPVAR_SUPPORT_NOCONVERT ) {	// 型変換なしの場合
+			if ( arrayobj_flag ) {
+				proc->ObjectWrite( pval, ptr, mpval->flag );
+				return;
+			}
+		}
+		if ( aptr != 0 ) throw HSPERR_INVALID_ARRAYSTORE;	// 型変更の場合は配列要素0のみ
+		HspVarCoreClear( pval, mpval->flag );		// 最小サイズのメモリを確保
+		proc = HspVarCoreGetProc( pval->flag );
+		dst = proc->GetPtr( pval );					// PDATポインタを取得
+	}
+	proc->Set( pval, dst, ptr );
+}
+
+void VarSetIndex2( PVal *pval, int i0, int i1 )
+{
+	//	変数代入(var=???)
+	//		i0=配列要素のインデックス
+	//
+	int chk;
+	HspVarProc *proc;
+	APTR aptr;
+	void *ptr;
+	PDAT *dst;
+	int pleft;
+	int baseaptr;
+
+#if 0
+	int index[] = { i0, i1 };
+	aptr = CheckArrayIndex( pval, index, 2 );
+#else
+	arrayobj_flag = 0;
+	HspVarCoreReset(pval);							// 配列ポインタをリセットする
+	if (pval->support & HSPVAR_SUPPORT_MISCTYPE) {	// 連想配列の場合
+		aptr = 0;
+	}
+	else {
+		HspVarCoreArray2(pval, i0);
+		HspVarCoreArray2(pval, i1);
+		aptr = HspVarCoreGetAPTR(pval);
+	}
+#endif
+	proc = HspVarCoreGetProc( pval->flag );
+	dst = HspVarCorePtrAPTR( pval, aptr );
+
+	chk = code_get();									// パラメーター値を取得
+	if ( chk != PARAM_OK ) { throw HSPERR_SYNTAX; }
+
+	ptr = mpval->pt;
+	if ( pval->flag != mpval->flag ) {
+
+		if ( pval->support & HSPVAR_SUPPORT_NOCONVERT ) {	// 型変換なしの場合
+			if ( arrayobj_flag ) {
+				proc->ObjectWrite( pval, ptr, mpval->flag );
+				return;
+			}
+		}
+		if ( aptr != 0 ) throw HSPERR_INVALID_ARRAYSTORE;	// 型変更の場合は配列要素0のみ
+		HspVarCoreClear( pval, mpval->flag );		// 最小サイズのメモリを確保
+		proc = HspVarCoreGetProc( pval->flag );
+		dst = proc->GetPtr( pval );					// PDATポインタを取得
+	}
+	proc->Set( pval, dst, ptr );
+}
+
+
+double CallDoubleIntfunc( int val, int pnum )
+{
+	char *ptr;
+	int resflag;
+	int basesize;
+
+	*c_type = TYPE_MARK;
+	*c_val = '(';
+	ptr = (char *)intfunc_info->reffunc( &resflag, val );						// タイプごとの関数振り分け
+	StackPop();																	// PushFuncEndを取り除く
+	//code_next();
+	basesize = HspVarCoreGetProc( resflag )->GetSize( (PDAT *)ptr );
+	return *(double*)ptr;
+}
+
+int CallIntIntfunc( int val, int pnum )
+{
+	char *ptr;
+	int resflag;
+	int basesize;
+
+	*c_type = TYPE_MARK;
+	*c_val = '(';
+	ptr = (char *)intfunc_info->reffunc( &resflag, val );						// タイプごとの関数振り分け
+	StackPop();																	// PushFuncEndを取り除く
+	//code_next();
+	basesize = HspVarCoreGetProc( resflag )->GetSize( (PDAT *)ptr );
+	return *(int*)ptr;
+}
+
+
+int CallIntSysvar( int val, int pnum )
+{
+	char *ptr;
+	int resflag;
+	int basesize;
+
+	*c_type = TYPE_MARK;
+	*c_val = '(';
+	ptr = (char *)sysvar_info->reffunc( &resflag, val );						// タイプごとの関数振り分け
+	//StackPop();																// PushFuncEndを取り除く
+	//code_next();
+	basesize = HspVarCoreGetProc( resflag )->GetSize( (PDAT *)ptr );
+	return *(int*)ptr;
+}
+
+double CallDoubleSysvar( int val, int pnum )
+{
+	char *ptr;
+	int resflag;
+	int basesize;
+
+	*c_type = TYPE_MARK;
+	*c_val = '(';
+	ptr = (char *)sysvar_info->reffunc( &resflag, val );						// タイプごとの関数振り分け
+	//StackPop();																	// PushFuncEndを取り除く
+	//code_next();
+	basesize = HspVarCoreGetProc( resflag )->GetSize( (PDAT *)ptr );
+	return *(double*)ptr;
+}
+
 int FuncPrmI( int num )
 {
 	//		引数(num)をスタックにpushする(int)
@@ -1222,174 +1786,6 @@ double FuncPrmD( int num )
 		ptr = &d_val;
 	}
 	return *ptr;
-}
-
-void PushFuncPAP( int num, int aval )
-{
-	//		ローカル変数の引数(num)をスタックにpushする
-	//		(PushVAP相当)
-	STMDATA *stm;
-	int tflag;
-	PVal *pval;
-	APTR aptr;
-
-	stm = (STMDATA *)hspctx->prmstack;
-	if ( stm == NULL ) throw HSPERR_INVALID_FUNCPARAM;
-	if ( num >= hspctx->prmstack_max ) throw HSPERR_INVALID_FUNCPARAM;
-	stm -= num;
-	tflag = stm->type;
-
-	switch( tflag ) {
-	case TYPE_EX_LOCAL_VARS:
-		pval = (PVal *)( stm->ptr );
-		aptr = CheckArray( pval, aval );
-		StackPushTypeVal( HSPVAR_FLAG_VAR, (int)pval, (int)aptr );
-		break;
-	case HSPVAR_FLAG_VAR:
-		pval = (PVal *)( stm->ival );
-		aptr = CheckArray( pval, aval );
-		StackPushTypeVal( HSPVAR_FLAG_VAR, (int)pval, (int)aptr );
-		break;
-	default:
-		throw HSPVAR_ERROR_INVALID;
-	}
-}
-
-
-PVal *FuncPrm( int num )
-{
-	//		変数の引数(num)を得る
-	//
-	STMDATA *stm;
-	int tflag;
-	//char *ptr;
-
-	stm = (STMDATA *)hspctx->prmstack;
-	if ( stm == NULL )
-		throw HSPERR_INVALID_FUNCPARAM;
-	if ( num >= hspctx->prmstack_max )
-		throw HSPERR_INVALID_FUNCPARAM;
-	stm -= num;
-
-	tflag = stm->type;
-	if ( tflag != HSPVAR_FLAG_VAR )
-		throw HSPVAR_ERROR_INVALID;
-
-	//ptr = stm->itemp;
-	return (PVal *)( stm->ival );
-}
-
-
-PVal *LocalPrm( int num )
-{
-	//		ローカル変数の引数(num)を得る
-	//
-	STMDATA *stm;
-	int tflag;
-
-	stm = (STMDATA *)hspctx->prmstack;
-	if ( stm == NULL ) throw HSPERR_INVALID_FUNCPARAM;
-	if ( num >= hspctx->prmstack_max ) throw HSPERR_INVALID_FUNCPARAM;
-	stm -= num;
-
-	tflag = stm->type;
-	if ( tflag != TYPE_EX_LOCAL_VARS )
-		throw HSPVAR_ERROR_INVALID;
-
-	return (PVal *)( stm->ptr );
-}
-
-
-/*------------------------------------------------------------*/
-/*
-		Program Control Process
-*/
-/*------------------------------------------------------------*/
-
-
-void TaskSwitch( int label )
-{
-	//		次のタスク関数をセット
-	//		(label=タスク関数ID)
-	//
-	curtask = __HspTaskFunc[label];
-	curtaskId = label;
-}
-
-void TaskExec( void )
-{
-	//		セットされたタスク関数を実行する
-	//
-	curtask();
-}
-
-int GetCurTaskId()
-{
-	return curtaskId;
-}
-
-
-/*------------------------------------------------------------*/
-/*
-		Normal HSP Process
-*/
-/*------------------------------------------------------------*/
-
-static void HspPostExec( void )
-{
-	//		コマンド実行後の処理
-	//
-	if ( hspctx->runmode == RUNMODE_RETURN ) {
-		//cmdfunc_return();
-	} else {
-		hspctx->msgfunc( hspctx );
-	}
-}
-
-bool HspIf( void )
-{
-	//		スタックから値を取り出して真偽を返す
-	//		(真偽が逆になっているので注意)
-	//
-	int i;
-	i = code_geti();
-	return (i==0);
-}
-
-
-void Extcmd( int cmd, int pnum )
-{
-	//if ( extcmd_info->cmdfunc( cmd ) ) HspPostExec();
-	if ( extcmd_func( cmd ) ) HspPostExec();
-}
-
-
-void Modcmd( int cmd, int pnum )
-{
-	int i;
-	//if ( modfunc_info->cmdfunc( cmd ) ) HspPostExec();
-	//Alertf("CMD=%d (lev%d)", cmd, StackGetLevel );
-	prmstacks = pnum;							// hsp3codeに渡すパラメーター数
-	if ( modcmd_func( cmd ) ) HspPostExec();
-}
-
-
-void Dllcmd( int cmd, int pnum )
-{
-}
-
-
-void Prgcmd( int cmd, int pnum )
-{
-	//if ( progfunc_info->cmdfunc( cmd ) ) HspPostExec();
-	if ( progcmd_func( cmd ) ) HspPostExec();
-}
-
-
-void Intcmd( int cmd, int pnum )
-{
-	//if ( intcmd_info->cmdfunc( cmd ) ) HspPostExec();
-	if ( intcmd_func( cmd ) ) HspPostExec();
 }
 
 

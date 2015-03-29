@@ -64,14 +64,21 @@ void UpdateOperands( Block *task )
 			break;
 
 		case PUSH_CMD_OP:
-			while ( stack.top()->GetOpCode() != PUSH_FUNC_END_OP ) {
-				op->operands.push_back( stack.top() );
+		{
+			PushCmdOp *pcop = (PushCmdOp*)op;
+			if (pcop->GetCmdType() == TYPE_SYSVAR) {
+				assert(pcop->GetCmdPNum() == 0);
+			} else {
+				while (stack.top()->GetOpCode() != PUSH_FUNC_END_OP) {
+					op->operands.push_back(stack.top());
+					stack.pop();
+				}
+				op->operands.push_back(stack.top());
 				stack.pop();
 			}
-			op->operands.push_back( stack.top() );
-			stack.pop();
-			stack.push( op );
+			stack.push(op);
 			break;
+		}
 
 		case CALC_OP:
 			op->operands.push_back( stack.top() );

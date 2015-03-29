@@ -53,7 +53,6 @@ using namespace llvm;
 using std::string;
 using boost::format;
 
-extern int GetCurTaskId();
 extern void HspVarCoreArray2(PVal *pval, int offset);
 void* HspLazyFunctionCreator(const string &name);
 
@@ -365,8 +364,8 @@ void CompileContext::CreateEE()
 	REGISTER_RT(void(int, int), Prgcmd);
 	REGISTER_RT(void(int, int), Modcmd);
 	REGISTER_RT(void(void*, int, int), VarSet);
-	REGISTER_RT(void(void*, int), VarSet1);
-	REGISTER_RT(void(void*, int, int), VarSet2);
+	REGISTER_RT(void(void*, int), VarSetIndex1);
+	REGISTER_RT(void(void*, int, int), VarSetIndex2);
 
 	REGISTER_RT(void(int), PushInt);
 	REGISTER_RT(void(double), PushDouble);
@@ -413,11 +412,10 @@ void CompileContext::CreateEE()
 	REGISTER_RT(char(), HspIf);
 	REGISTER_RT(void(int, int), PushSysvar);
 	REGISTER_RT(void(int, int), PushExtvar);
-	REGISTER_RT(void(int, int), PushDllfunc);
 	REGISTER_RT(void(int, int), PushModcmd);
 	REGISTER_RT(void(int, int), Extcmd);
 	REGISTER_RT(void(int, int), Intcmd);
-	REGISTER_RT(int(), GetCurTaskId);
+	REGISTER_RT(int(), GetTaskID);
 	//REGISTER_RT(int(Hsp3r*, int, int), Hsp3rReset);
 	REGISTER_RT(void(void*, int), HspVarCoreArray2);
 
@@ -464,8 +462,8 @@ void* HspLazyFunctionCreator(const string &name)
 	RESOLVE_FUNC(Prgcmd);
 	RESOLVE_FUNC(Modcmd);
 	RESOLVE_FUNC(VarSet);
-	RESOLVE_FUNC(VarSet1);
-	RESOLVE_FUNC(VarSet2);
+	RESOLVE_FUNC(VarSetIndex1);
+	RESOLVE_FUNC(VarSetIndex2);
 	RESOLVE_FUNC(PushInt);
 	RESOLVE_FUNC(PushDouble);
 	RESOLVE_FUNC(PushStr);
@@ -509,11 +507,10 @@ void* HspLazyFunctionCreator(const string &name)
 	RESOLVE_FUNC(HspIf);
 	RESOLVE_FUNC(PushSysvar);
 	RESOLVE_FUNC(PushExtvar);
-	RESOLVE_FUNC(PushDllfunc);
 	RESOLVE_FUNC(PushModcmd);
 	RESOLVE_FUNC(Extcmd);
 	RESOLVE_FUNC(Intcmd);
-	RESOLVE_FUNC(GetCurTaskId);
+	RESOLVE_FUNC(GetTaskID);
 	//RESOLVE_FUNC(Hsp3rReset);
 	RESOLVE_FUNC(HspVarCoreArray2);
 	RESOLVE_FUNC(CallDoubleIntfunc);
