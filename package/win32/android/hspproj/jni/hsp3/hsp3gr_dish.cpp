@@ -5,7 +5,18 @@
 //	onion software/onitama 2011/3
 //
 #ifdef HSPDISHGP
+#ifdef HSPWIN
 #include "win32gp/gamehsp.h"
+#endif
+#ifdef HSPIOS
+#include "win32gp/gamehsp.h"
+#endif
+#ifdef HSPNDK
+#include "ndkgp/gamehsp.h"
+#endif
+#ifdef HSPEMSCRIPTEN
+#include "win32gp/gamehsp.h"
+#endif
 #endif
 
 #include <stdio.h>

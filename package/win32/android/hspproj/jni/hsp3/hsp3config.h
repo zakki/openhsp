@@ -39,10 +39,10 @@
 //#define HSPMAC		// Macintosh version flag
 //#define HSPLINUX		// Linux(CLI) version flag
 //#define HSPIOS		// iOS version flag
-#define HSPNDK		// android NDK version flag
-#define HSPDISH		// HSP3Dish flag
+//#define HSPNDK		// android NDK version flag
+//#define HSPDISH		// HSP3Dish flag
 //#define HSPDISHGP		// HSP3Dish(HGIMG4) flag
-#define HSPEMBED		// HSP3 Embed runtime flag
+//#define HSPEMBED		// HSP3 Embed runtime flag
 //#define HSPEMSCRIPTEN	// EMSCRIPTEN version flag
 //#define HSP64			// 64bit compile flag
 

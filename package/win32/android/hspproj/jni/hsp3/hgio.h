@@ -5,7 +5,11 @@
 #ifndef __hgio_h
 #define __hgio_h
 
+#if defined(HSPWIN) || defined(HSPEMSCRIPTEN)
 #include "../hsp3/hsp3config.h"
+#else
+#include "hsp3config.h"
+#endif
 #include "../hsp3/dpmread.h"
 #include "hspwnd_dish.h"
 #include "geometry.h"
@@ -52,6 +56,8 @@ void hgio_copy( BMSCR *bm, short xx, short yy, short srcsx, short srcsy, BMSCR *
 void hgio_copyrot( BMSCR *bm, short xx, short yy, short srcsx, short srcsy, float ofsx, float ofsy, BMSCR *bmsrc, float psx, float psy, float ang );
 void hgio_fillrot( BMSCR *bm, float x, float y, float sx, float sy, float ang );
 
+int hgio_celputmulti( BMSCR *bm, int *xpos, int *ypos, int *cel, int count, BMSCR *bmsrc );
+
 void hgio_setcenter( float x, float y );
 void hgio_drawsprite( hgmodel *mdl, HGMODEL_DRAWPRM *prm );
 
@@ -71,6 +77,9 @@ HSPREAL hgio_getinfo( int type );
 char *hgio_sysinfo( int p2, int *res, char *outbuf );
 void hgio_setstorage( char *path );
 char *hgio_getstorage( char *fname );
+
+// for HGIMG4
+void hgio_draw_gpsprite( Bmscr *bmscr, bool lateflag );
 
 
 #ifdef __cplusplus

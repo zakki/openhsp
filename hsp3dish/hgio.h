@@ -122,10 +122,6 @@ CLSMODE_MAX,
 #include "linux/hgiox.h"
 #endif
 
-#ifdef HSPEMSCRIPTEN
-#include "emscripten/hgiox.h"
-#endif
-
 
 #endif
 
