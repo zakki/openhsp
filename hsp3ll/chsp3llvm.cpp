@@ -1679,29 +1679,52 @@ static void TraceTaskProc()
 		auto stat = task.varStatics[i];
 		//VarStatics *stat = sVarStatics[var];
 
+		int tflag = HSPVAR_FLAG_MAX;
 		switch (var.type()) {
 		case TYPE_VAR:
 		{
 			PVal& pval = mem_var[var.val()];
-			if (stat->tflag != pval.flag) {
-				stat->num = 1;
-				stat->change++;
-				change = true;
-			}
-			else {
-				stat->num++;
-			}
-			stat->tflag = pval.flag;
+			tflag = pval.flag;
 			break;
 		}
 		case TYPE_STRUCT:
 		{
+			const STRUCTPRM *st = hsp3->GetMInfo(var.val());
+			switch (st->mptype) {
+			case MPTYPE_LOCALVAR:
+				break;
+			case MPTYPE_VAR:
+			case MPTYPE_ARRAYVAR:
+			case MPTYPE_SINGLEVAR:
+			{
+				PVal *pval = FuncPrm(var.prm());
+				tflag = pval->flag;
+				break;
+			}
+			case MPTYPE_DNUM:
+				tflag = HSPVAR_FLAG_DOUBLE;
+				break;
+			case MPTYPE_INUM:
+				tflag = HSPVAR_FLAG_INT;
+				break;
+			defalut:
+				break;
+			}
 			break;
 		}
 		case TYPE_LABEL:
 			break;
 		default:
 			break;
+		}
+		if (stat->tflag != tflag) {
+			stat->num = 1;
+			stat->change++;
+			stat->tflag = tflag;
+			change = true;
+		}
+		else {
+			stat->num++;
 		}
 	}
 	if (!task.func) {
@@ -1796,6 +1819,16 @@ void DumpResult()
 				sprintf(buf, "\tvar%d type %d, num %d, change %d local %d\r\n",
 					var.val(), stat->tflag, stat->num, stat->change,
 					(int)info->localVar);
+				*Out << buf;
+				break;
+			case TYPE_STRUCT:
+				sprintf(buf, "\tstruct %d type %d, num %d, change %d local %d\r\n",
+					var.val(), stat->tflag, stat->num, stat->change,
+					(int)info->localVar);
+				*Out << buf;
+				break;
+			case TYPE_LABEL:
+				sprintf(buf, "\tlabel%d\r\n", var.type());
 				*Out << buf;
 				break;
 			default:
