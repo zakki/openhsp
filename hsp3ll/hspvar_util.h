@@ -104,4 +104,6 @@ int GetFuncTypeRet( int type, int val, int pnum );
 int PopInt( void );
 double PopDouble( void );
 
+bool IsFuncValueParam( int type, int val );
+
 #endif

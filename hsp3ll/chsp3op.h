@@ -52,11 +52,11 @@ private:
 	void MakeCPPTask( int nexttask );
 	void MakeCPPTask2( int nexttask, int newtask );
 	void MakeCPPTask( int id, const std::string& name, int nexttask=-1 );
-	int MakeCPPParam( bool process, int addprm=0 );
+	int MakeCPPParam( bool process, int addprm=0, bool varval=false );
 	int GetCPPExpression( int *result, bool process, int flg=0 );
 	int GetCPPExpressionSub( bool process, int flg=0 );
 	int GetVarExpressionOp( void );
-	int MakeCPPVarExpression( bool process, int flg=0 );
+	int MakeCPPVarExpression( bool process, int flg=0, bool varval=false );
 
 	void MakeCPPProgramInfoFuncParam( int structid );
 	int GetLocalPrm( int val ) const {

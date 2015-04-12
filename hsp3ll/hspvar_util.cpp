@@ -1940,3 +1940,57 @@ double PopDouble( void )
 	StackDecLevel;
 	return val;
 }
+
+bool IsFuncValueParam( int type, int val )
+{
+	switch ( type ) {
+	case TYPE_INTFUNC:
+		switch ( val ) {
+		//	int function
+		case 0x000:								// int
+		case 0x001:								// rnd
+		//case 0x002:								// strlen
+		//case 0x003:								// length(3.0)
+		//case 0x004:								// length2(3.0)
+		//case 0x005:								// length3(3.0)
+		//case 0x006:								// length4(3.0)
+		//case 0x007:								// vartype(3.0)
+		case 0x008:								// gettime
+		//case 0x009:								// peek
+		//case 0x00a:								// wpeek
+		//case 0x00b:								// lpeek
+		//case 0x00c:								// varptr
+		//case 0x00d:								// varuse
+		case 0x00e:								// noteinfo
+		//case 0x00f:								// instr
+		case 0x010:								// abs
+		case 0x011:								// limit
+		case 0x012:								// getease
+		//case 0x013:								// notefind
+
+		// str function
+		case 0x100:								// str
+		//case 0x101:								// strmid
+		//case 0x103:								// strf
+		//case 0x104:								// getpath
+		//case 0x105:								// strtrim
+
+		//	double function
+		case 0x180:								// sin
+		case 0x181:								// cos
+		case 0x182:								// tan
+		case 0x183:								// atan
+		case 0x184:								// sqrt
+		case 0x185:								// double
+		case 0x186:								// absf
+		case 0x187:								// expf
+		case 0x188:								// logf
+		case 0x189:								// limitf
+		case 0x18a:								// powf
+		case 0x18b:								// geteasef
+			return true;
+			break;
+		}
+	}
+	return false;
+}

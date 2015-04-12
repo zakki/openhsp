@@ -332,7 +332,7 @@ int CHsp3Op::GetCPPExpressionSub( bool addop, int flg )
 				curTask->operations.push_back( new PushFuncEndOp() );
 			}
 
-			va = MakeCPPVarExpression( addop, 1 );
+			va = MakeCPPVarExpression( addop, 1, IsFuncValueParam( fnctype, fncval ) );
 
 			if ( reachable && addop ) {
 				curTask->operations.push_back( new PushCmdOp( fnctype, fncval, va ) );
@@ -407,7 +407,7 @@ int CHsp3Op::GetCPPExpression( int *result, bool addop, int flg )
 }
 
 
-int CHsp3Op::MakeCPPParam( bool addop, int addprm )
+int CHsp3Op::MakeCPPParam( bool addop, int addprm, bool varval )
 {
 	//		パラメーターのトレース
 	//
@@ -463,7 +463,7 @@ int CHsp3Op::MakeCPPParam( bool addop, int addprm )
 				curTask->operations.push_back( new PushDefaultOp() );
 			}
 		} else {
-			if ( p.second == TYPE_VAR || p.second == TYPE_STRUCT ) {			// 単一項で変数が指定されていた場合
+			if ( !varval && (p.second == TYPE_VAR || p.second == TYPE_STRUCT) ) {			// 単一項で変数が指定されていた場合
 				i = GetCPPExpression( &result, addop, 1 );
 			} else {
 				i = GetCPPExpression( &result, addop );
@@ -507,7 +507,7 @@ int CHsp3Op::GetVarExpressionOp( void )
 }
 
 
-int CHsp3Op::MakeCPPVarExpression( bool addop, int flg )
+int CHsp3Op::MakeCPPVarExpression( bool addop, int flg, bool varval )
 {
 	//	変数名直後に続くパラメーター(配列)を展開する
 	//	ret : 0=配列なし/1～=配列あり
@@ -549,7 +549,7 @@ int CHsp3Op::MakeCPPVarExpression( bool addop, int flg )
 				} else {
 					SetContext( &p.first );
 //					if ( p.second == TYPE_VAR ) {			// 単一項で変数が指定されていた場合
-					if ( p.second != -1 && flg ) {
+					if ( !varval && p.second != -1 && flg ) {
 						i = GetCPPExpression( &result, addop, 1 );
 					} else {
 						i = GetCPPExpression( &result, addop );
@@ -585,7 +585,7 @@ void CHsp3Op::MakeCPPSub( int cmdtype, int cmdval )
 	int pnum;
 
 	getCS();
-	pnum = MakeCPPParam( true );
+	pnum = MakeCPPParam( true, 0, IsFuncValueParam( cmdtype, cmdval ) );
 
 	if ( reachable ) {
 		curTask->operations.push_back( new CmdOp( cmdtype, cmdval, pnum ) );
