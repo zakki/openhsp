@@ -282,6 +282,7 @@ void VarUtilTerm( void )
 */
 /*------------------------------------------------------------*/
 
+#if 0
 void PushInt( int val )
 {
 	StackPushi( val );
@@ -298,6 +299,8 @@ void PushLabel( int val )
 	//StackPush( HSPVAR_FLAG_LABEL, (char *)&val, sizeof(int)  );
 	StackPushl( val );
 }
+#endif
+
 
 void PushStr( char *st )
 {

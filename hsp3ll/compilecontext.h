@@ -30,6 +30,7 @@ public:
 	std::unique_ptr<llvm::PassManager> Passes;
 	llvm::GlobalVariable **variables;
 	llvm::GlobalVariable *dsBase;
+	llvm::GlobalVariable *stmCur;
 
 	explicit CompileContext(CHsp3Op* hsp);
 	~CompileContext();

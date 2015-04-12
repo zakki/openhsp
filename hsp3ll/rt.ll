@@ -10,7 +10,7 @@
 %struct.STRUCTDAT = type { i16, i16, i32, i32, i32, i32, i32, %"struct.STRUCTDAT::._34" }
 %"struct.STRUCTDAT::._34" = type { i8* }
 %struct.STRUCTPRM = type { i16, i16, i32 }
-%struct.STMDATA = type { i16, i16, i8*, i32, [60 x i8] }
+%struct.STMDATA = type { i16, i16, i8*, i8*, i32, [60 x i8] }
 
 %struct.Hsp3 = type { %struct.HSPCTX, i8*, i8*, i32, i32, i32, i32 }
 
@@ -20,10 +20,7 @@ declare void @VarSet(%struct.PVal*, i32, i32)
 declare void @VarSetIndex1(%struct.PVal*, i32)
 declare void @VarSetIndex2(%struct.PVal*, i32, i32)
 
-declare void @PushInt(i32)
-declare void @PushDouble(double)
 declare void @PushStr(i8*)
-declare void @PushLabel(i32)
 declare void @PushVar(%struct.PVal*, i32)
 declare void @PushVAP(%struct.PVal*, i32)
 declare void @PushDefault()
@@ -82,6 +79,7 @@ define void @ThrowCppException(i32) {
 }
 
 @hspctx = external global %struct.HSPCTX*
+@stm_cur = external global %struct.STMDATA*
 
 define void @HspVarCoreReset(%struct.PVal* %a) {
   %1 = getelementptr %struct.PVal* %a, i32 0, i32 8
@@ -150,6 +148,58 @@ bb68:                                             ; preds = %bb31
 
 UnifiedReturnBlock:                               ; preds = %bb31, %bb12, %bb9, %entry
   ret i32 7
+}
+
+define void @PushInt(i32 %val) #0 {
+  %1 = alloca i32, align 4
+  store i32 %val, i32* %1, align 4
+  %2 = load %struct.STMDATA** @stm_cur, align 8
+  %3 = getelementptr inbounds %struct.STMDATA* %2, i32 0, i32 0
+  store i16 4, i16* %3, align 2
+  %4 = load i32* %1, align 4
+  %5 = load %struct.STMDATA** @stm_cur, align 8
+  %6 = getelementptr inbounds %struct.STMDATA* %5, i32 0, i32 4
+  store i32 %4, i32* %6, align 4
+  %7 = load %struct.STMDATA** @stm_cur, align 8
+  %8 = getelementptr inbounds %struct.STMDATA* %7, i32 1
+  store %struct.STMDATA* %8, %struct.STMDATA** @stm_cur, align 8
+  ret void
+}
+
+define void @PushLabel(i32 %val) #0 {
+  %1 = alloca i32, align 4
+  store i32 %val, i32* %1, align 4
+  %2 = load %struct.STMDATA** @stm_cur, align 8
+  %3 = getelementptr inbounds %struct.STMDATA* %2, i32 0, i32 0
+  store i16 1, i16* %3, align 2
+  %4 = load i32* %1, align 4
+  %5 = load %struct.STMDATA** @stm_cur, align 8
+  %6 = getelementptr inbounds %struct.STMDATA* %5, i32 0, i32 4
+  store i32 %4, i32* %6, align 4
+  %7 = load %struct.STMDATA** @stm_cur, align 8
+  %8 = getelementptr inbounds %struct.STMDATA* %7, i32 1
+  store %struct.STMDATA* %8, %struct.STMDATA** @stm_cur, align 8
+  ret void
+}
+
+define void @PushDouble(double %val) #0 {
+  %1 = alloca double, align 8
+  %dptr = alloca double*, align 8
+  store double %val, double* %1, align 8
+  %2 = load %struct.STMDATA** @stm_cur, align 8
+  %3 = getelementptr inbounds %struct.STMDATA* %2, i32 0, i32 0
+  store i16 3, i16* %3, align 2
+  %4 = load %struct.STMDATA** @stm_cur, align 8
+  %5 = getelementptr inbounds %struct.STMDATA* %4, i32 0, i32 4
+  %6 = bitcast i32* %5 to double*
+  store double* %6, double** %dptr, align 8
+  %7 = load double* %1, align 8
+  %8 = load double** %dptr, align 8
+  store double %7, double* %8, align 8
+  %9 = load %struct.STMDATA** @stm_cur, align 8
+  %10 = getelementptr inbounds %struct.STMDATA* %9, i32 1
+  store %struct.STMDATA* %10, %struct.STMDATA** @stm_cur, align 8
+  ret void
 }
 
 define void @Nop() {

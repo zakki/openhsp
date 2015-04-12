@@ -86,6 +86,8 @@ void LoadLLRuntime()
 	SMDiagnostic err;
 	rtModule.reset(ParseAssemblyString((char*)p, nullptr, err, context));
 	FreeResource(hrc);
+	if (!rtModule)
+		Alert(err.getMessage().data());
 #else
 #error
 #endif
@@ -125,6 +127,9 @@ void CompileContext::ResetModule(HSPCTX **hspctx, PVal **hspVars, void *dsBasePt
 		EE->updateGlobalMapping(variables[i], hspVars[i]);
 	}
 	EE->updateGlobalMapping(dsBase, dsBasePtr);
+
+	stmCur = (GlobalVariable*)module->getGlobalVariable("stm_cur");
+	EE->updateGlobalMapping(stmCur, (void*)&stm_cur);
 
 	GlobalVariable *ctx = (GlobalVariable*)module->getGlobalVariable("hspctx");
 	EE->updateGlobalMapping(ctx, (void*)hspctx);
@@ -352,14 +357,16 @@ void CompileContext::CreateEE()
 
 	EE->InstallLazyFunctionCreator(HspLazyFunctionCreator);
 
-#define REGISTER_RT(t, func) \
+#define REGISTER_RT_(t, name, func) \
 	do {\
 		Function *KnownFunction = Function::Create(\
 		TypeBuilder<t, false>::get(context),\
-			GlobalValue::ExternalLinkage, #func,\
+			GlobalValue::ExternalLinkage, name,\
 			module);\
 		EE->addGlobalMapping(KnownFunction, (void*)(intptr_t)func);\
 	} while (false);
+
+#define REGISTER_RT(t, func) REGISTER_RT_(t, #func, func)
 
 	REGISTER_RT(void(int, int), Prgcmd);
 	REGISTER_RT(void(int, int), Modcmd);
@@ -367,10 +374,13 @@ void CompileContext::CreateEE()
 	REGISTER_RT(void(void*, int), VarSetIndex1);
 	REGISTER_RT(void(void*, int, int), VarSetIndex2);
 
-	REGISTER_RT(void(int), PushInt);
-	REGISTER_RT(void(double), PushDouble);
+	REGISTER_RT(void(int), StackPushi);
+	REGISTER_RT_(void(int), "PushInt", StackPushi);
+	REGISTER_RT(void(int), StackPushd);
+	REGISTER_RT_(void(double), "PushDouble", StackPushd);
+	REGISTER_RT(void(int), StackPushl);
+	REGISTER_RT_(void(int), "PushLabel", StackPushl);
 	REGISTER_RT(void(char*), PushStr);
-	REGISTER_RT(void(int), PushLabel);
 	REGISTER_RT(void(void*, int), PushVar);
 	REGISTER_RT(void(void*, int), PushVAP);
 	REGISTER_RT(void(), PushDefault);
@@ -464,10 +474,13 @@ void* HspLazyFunctionCreator(const string &name)
 	RESOLVE_FUNC(VarSet);
 	RESOLVE_FUNC(VarSetIndex1);
 	RESOLVE_FUNC(VarSetIndex2);
-	RESOLVE_FUNC(PushInt);
-	RESOLVE_FUNC(PushDouble);
+	RESOLVE_FUNC(StackPushi);
+	if ("PushInt" == name) return StackPushi;
+	RESOLVE_FUNC(StackPushd);
+	if ("PushDouble" == name) return StackPushd;
 	RESOLVE_FUNC(PushStr);
-	RESOLVE_FUNC(PushLabel);
+	RESOLVE_FUNC(StackPushl);
+	if ("PushLabel" == name) return StackPushl;
 	RESOLVE_FUNC(PushVar);
 	RESOLVE_FUNC(PushVAP);
 	RESOLVE_FUNC(PushDefault);
