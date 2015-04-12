@@ -373,6 +373,10 @@ void CompileContext::CreateEE()
 	REGISTER_RT(void(void*, int, int), VarSet);
 	REGISTER_RT(void(void*, int), VarSetIndex1);
 	REGISTER_RT(void(void*, int, int), VarSetIndex2);
+	REGISTER_RT(void(void*, int, int), VarSetIndex1i);
+	REGISTER_RT(void(void*, int, int, int), VarSetIndex2i);
+	REGISTER_RT(void(void*, double, int), VarSetIndex1d);
+	REGISTER_RT(void(void*, double, int, int), VarSetIndex2d);
 
 	REGISTER_RT(void(int), StackPushi);
 	REGISTER_RT_(void(int), "PushInt", StackPushi);
@@ -474,6 +478,10 @@ void* HspLazyFunctionCreator(const string &name)
 	RESOLVE_FUNC(VarSet);
 	RESOLVE_FUNC(VarSetIndex1);
 	RESOLVE_FUNC(VarSetIndex2);
+	RESOLVE_FUNC(VarSetIndex1i);
+	RESOLVE_FUNC(VarSetIndex2i);
+	RESOLVE_FUNC(VarSetIndex1d);
+	RESOLVE_FUNC(VarSetIndex2d);
 	RESOLVE_FUNC(StackPushi);
 	if ("PushInt" == name) return StackPushi;
 	RESOLVE_FUNC(StackPushd);

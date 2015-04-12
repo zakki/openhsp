@@ -20,6 +20,11 @@ declare void @VarSet(%struct.PVal*, i32, i32)
 declare void @VarSetIndex1(%struct.PVal*, i32)
 declare void @VarSetIndex2(%struct.PVal*, i32, i32)
 
+declare void @VarSetIndex1i(%struct.PVal*, i32, i32)
+declare void @VarSetIndex2i(%struct.PVal*, i32, i32, i32)
+declare void @VarSetIndex1d(%struct.PVal*, double, i32)
+declare void @VarSetIndex2d(%struct.PVal*, double, i32, i32)
+
 declare void @PushStr(i8*)
 declare void @PushVar(%struct.PVal*, i32)
 declare void @PushVAP(%struct.PVal*, i32)
@@ -203,6 +208,50 @@ define void @PushDouble(double %val) #0 {
 }
 
 define void @Nop() {
+  ret void
+}
+
+define void @UnsafeVarSetIndex1i(%struct.PVal* %pval, i32 %v, i32 %i0) #0 {
+  %1 = alloca %struct.PVal*, align 8
+  %2 = alloca i32, align 4
+  %3 = alloca i32, align 4
+  %dst = alloca i32*, align 8
+  store %struct.PVal* %pval, %struct.PVal** %1, align 8
+  store i32 %v, i32* %2, align 4
+  store i32 %i0, i32* %3, align 4
+  %4 = load %struct.PVal** %1, align 8
+  %5 = getelementptr inbounds %struct.PVal* %4, i32 0, i32 4
+  %6 = load i8** %5, align 8
+  %7 = bitcast i8* %6 to i32*
+  %8 = load i32* %3, align 4
+  %9 = sext i32 %8 to i64
+  %10 = getelementptr inbounds i32* %7, i64 %9
+  store i32* %10, i32** %dst, align 8
+  %11 = load i32* %2, align 4
+  %12 = load i32** %dst, align 8
+  store i32 %11, i32* %12, align 4
+  ret void
+}
+
+define void @UnsafeVarSetIndex1d(%struct.PVal* %pval, double %v, i32 %i0) #0 {
+  %1 = alloca %struct.PVal*, align 8
+  %2 = alloca double, align 8
+  %3 = alloca i32, align 4
+  %dst = alloca double*, align 8
+  store %struct.PVal* %pval, %struct.PVal** %1, align 8
+  store double %v, double* %2, align 8
+  store i32 %i0, i32* %3, align 4
+  %4 = load %struct.PVal** %1, align 8
+  %5 = getelementptr inbounds %struct.PVal* %4, i32 0, i32 4
+  %6 = load i8** %5, align 8
+  %7 = bitcast i8* %6 to double*
+  %8 = load i32* %3, align 4
+  %9 = sext i32 %8 to i64
+  %10 = getelementptr inbounds double* %7, i64 %9
+  store double* %10, double** %dst, align 8
+  %11 = load double* %2, align 8
+  %12 = load double** %dst, align 8
+  store double %11, double* %12, align 8
   ret void
 }
 

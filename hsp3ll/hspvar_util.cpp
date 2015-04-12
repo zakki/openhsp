@@ -50,6 +50,7 @@ int	prmstacks;							// パラメータースタック数(モジュール呼び出し用)
 
 PVal var_proxy;							// 代理変数用のメモリ
 
+extern bool llNoRangeCheck;
 
 static	HSP3TYPEINFO *intcmd_info;
 static	HSP3TYPEINFO *extcmd_info;
@@ -1661,6 +1662,142 @@ void VarSetIndex2( PVal *pval, int i0, int i1 )
 }
 
 
+void VarSetIndex1i( PVal *pval, int v, int i0 )
+{
+	//	変数代入(var=???)
+	//		i0=配列要素のインデックス
+	//
+	int chk;
+	HspVarProc *proc;
+	APTR aptr;
+	void *ptr;
+	int *dst;
+	int pleft;
+	int baseaptr;
+
+	if ( pval->flag != HSPVAR_FLAG_INT ) {
+		throw HSPERR_TYPE_MISMATCH;
+	}
+
+	if (llNoRangeCheck) {
+		dst = (((int *)(pval->pt))+i0);
+	} else {
+		arrayobj_flag = 0;
+		HspVarCoreReset(pval);							// 配列ポインタをリセットする
+		if (pval->support & HSPVAR_SUPPORT_MISCTYPE) {	// 連想配列の場合
+			aptr = 0;
+		}
+		else {
+			HspVarCoreArray2(pval, i0);
+			aptr = HspVarCoreGetAPTR(pval);
+		}
+
+		dst = (int *)HspVarCorePtrAPTR(pval, aptr);
+	}
+	*dst = v;
+}
+
+
+void VarSetIndex1d( PVal *pval, double v, int i0 )
+{
+	//	変数代入(var=???)
+	//		i0=配列要素のインデックス
+	//
+	int chk;
+	HspVarProc *proc;
+	APTR aptr;
+	void *ptr;
+	double *dst;
+	int pleft;
+	int baseaptr;
+
+	if ( pval->flag != HSPVAR_FLAG_DOUBLE ) {
+		throw HSPERR_TYPE_MISMATCH;
+	}
+
+	if (llNoRangeCheck) {
+		dst = (((double *)(pval->pt))+i0);
+	} else {
+		arrayobj_flag = 0;
+		HspVarCoreReset(pval);							// 配列ポインタをリセットする
+		if (pval->support & HSPVAR_SUPPORT_MISCTYPE) {	// 連想配列の場合
+			aptr = 0;
+		}
+		else {
+			HspVarCoreArray2(pval, i0);
+			aptr = HspVarCoreGetAPTR(pval);
+		}
+
+		dst = (double *)HspVarCorePtrAPTR(pval, aptr);
+	}
+	*dst = v;
+}
+
+
+void VarSetIndex2i( PVal *pval, int v, int i0, int i1 )
+{
+	//	変数代入(var=???)
+	//		i0=配列要素のインデックス
+	//
+	int chk;
+	HspVarProc *proc;
+	APTR aptr;
+	void *ptr;
+	PDAT *dst;
+	int pleft;
+	int baseaptr;
+
+	arrayobj_flag = 0;
+	HspVarCoreReset(pval);							// 配列ポインタをリセットする
+	if (pval->support & HSPVAR_SUPPORT_MISCTYPE) {	// 連想配列の場合
+		aptr = 0;
+	}
+	else {
+		HspVarCoreArray2(pval, i0);
+		HspVarCoreArray2(pval, i1);
+		aptr = HspVarCoreGetAPTR(pval);
+	}
+
+	if ( pval->flag != HSPVAR_FLAG_INT ) {
+		throw HSPERR_TYPE_MISMATCH;
+	}
+	dst = HspVarCorePtrAPTR( pval, aptr );
+	*(int *)dst = v;
+}
+
+
+void VarSetIndex2d( PVal *pval, double v, int i0, int i1 )
+{
+	//	変数代入(var=???)
+	//		i0=配列要素のインデックス
+	//
+	int chk;
+	HspVarProc *proc;
+	APTR aptr;
+	void *ptr;
+	PDAT *dst;
+	int pleft;
+	int baseaptr;
+
+	arrayobj_flag = 0;
+	HspVarCoreReset(pval);							// 配列ポインタをリセットする
+	if (pval->support & HSPVAR_SUPPORT_MISCTYPE) {	// 連想配列の場合
+		aptr = 0;
+	}
+	else {
+		HspVarCoreArray2(pval, i0);
+		HspVarCoreArray2(pval, i1);
+		aptr = HspVarCoreGetAPTR(pval);
+	}
+
+	if ( pval->flag != HSPVAR_FLAG_DOUBLE ) {
+		throw HSPERR_TYPE_MISMATCH;
+	}
+	dst = HspVarCorePtrAPTR( pval, aptr );
+	*(double *)dst = v;
+}
+
+
 double CallDoubleIntfunc( int val, int pnum )
 {
 	char *ptr;
@@ -1915,9 +2052,18 @@ int PopInt( void )
 	int tflag = stm->type;
 	int val = stm->ival;
 	auto proc = HspVarCoreGetProc(HSPVAR_FLAG_INT);
+	char *ptr;
+
+	if (tflag == HSPVAR_FLAG_VAR) {
+		PVal *pval = (PVal *)(stm->ival);
+		tflag = pval->flag;
+		ptr = (char*)HspVarCorePtrAPTR(pval, *(int *)stm->itemp);
+	} else {
+		ptr = stm->ptr;
+	}
 
 	if ( tflag != HSPVAR_FLAG_INT ) {
-		val = *(int *)proc->Cnv(stm->ptr, tflag);
+		val = *(int *)proc->Cnv(ptr, tflag);
 	}
 	StackDecLevel;
 	return val;
@@ -1931,11 +2077,20 @@ double PopDouble( void )
 	int tflag = stm->type;
 	double val;
 	auto proc = HspVarCoreGetProc(HSPVAR_FLAG_DOUBLE);
+	char *ptr;
+
+	if (tflag == HSPVAR_FLAG_VAR) {
+		PVal *pval = (PVal *)(stm->ival);
+		tflag = pval->flag;
+		ptr = (char*)HspVarCorePtrAPTR(pval, *(int *)stm->itemp);
+	} else {
+		ptr = stm->ptr;
+	}
 
 	if ( tflag == HSPVAR_FLAG_DOUBLE ) {
-		val = *(double *)stm->ptr;
+		val = *(double *)ptr;
 	} else {
-		val = *(double *)proc->Cnv( stm->ptr, tflag );
+		val = *(double *)proc->Cnv( ptr, tflag );
 	}
 	StackDecLevel;
 	return val;

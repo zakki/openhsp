@@ -51,6 +51,7 @@ extern bool printDebugDump;
 extern int llSkipTypeCheckLimit;
 extern bool llProfile;
 extern bool llNoOpt;
+extern bool llNoRangeCheck;
 
 class Task;
 
@@ -198,7 +199,8 @@ extern CHsp3Op *hsp3;
 
 static BasicBlock *CompileOp(CHsp3Op *hsp, Function *func,
 	BasicBlock *bb, BasicBlock *retBB,
-	Task *task, Op *op);
+	Task *task, Op *op,
+	const std::map<VarId, int>& varTypes);
 static BasicBlock *GenerateDefaultCode(CHsp3Op *hsp, Function *func,
 	BasicBlock *bb, BasicBlock *retBB,
 	Task *task, Op *op);
@@ -421,12 +423,23 @@ static void CheckCompileType(Task *task, Op *op, CHsp3Op *hsp, const std::map<Va
 		case VAR_SET_OP:
 		{
 			VarSetOp *vs = (VarSetOp*)op;
+			int tflag = varTypes.find(vs->GetVarId())->second;
 			if (vs->GetArrayDim() == 0 && op->operands.size() == 1) {
 				CheckCompileType(task, op->operands[0], hsp, varTypes, true);
 			}
 			else if (vs->GetArrayDim() == 1 && op->operands.size() == 2) {
 				CheckCompileType(task, op->operands[0], hsp, varTypes, true);
-				CheckCompileType(task, op->operands[1], hsp, varTypes, false);
+				bool optSet = false;
+				if (tflag == HSPVAR_FLAG_INT && op->operands[1]->flag == HSPVAR_FLAG_INT) {
+					optSet = true;
+					op->compileSubType = 1;
+				} else if (tflag == HSPVAR_FLAG_DOUBLE && op->operands[1]->flag == HSPVAR_FLAG_DOUBLE) {
+					optSet = true;
+					op->compileSubType = 2;
+				} else {
+					op->compileSubType = 3;
+				}
+				CheckCompileType(task, op->operands[1], hsp, varTypes, optSet);
 			}
 			else if (vs->GetArrayDim() == 2 && op->operands.size() == 3) {
 				CheckCompileType(task, op->operands[0], hsp, varTypes, true);
@@ -500,8 +513,7 @@ static BasicBlock* GenOptStack(Task *task, Op *op, BasicBlock *bb, int flag)
 	}
 }
 
-//TODO 明示的に変数の型情報を渡す -> CheckType
-static BasicBlock* CompileOp(CHsp3Op *hsp, Function *func, BasicBlock *bb, BasicBlock *retBB, Task *task, Op *op)
+static BasicBlock* CompileOp(CHsp3Op *hsp, Function *func, BasicBlock *bb, BasicBlock *retBB, Task *task, Op *op, const std::map<VarId, int>& varTypes)
 {
 	auto cctx = task->cctx;
 	LLVMContext &context = cctx->context;
@@ -562,22 +574,38 @@ static BasicBlock* CompileOp(CHsp3Op *hsp, Function *func, BasicBlock *bb, Basic
 			if (pv->GetArrayDim() == 1) {
 				// 1次元配列の場合はインラインで範囲チェック
 				builder.SetInsertPoint(curBB);
-				Function *pArray2 = cctx->module->getFunction("HspVarCoreArray1D");
-				ofs1 = builder.CreateCall2(pArray2, pvc.pval,
-					static_cast<Value*>(pv->operands[0]->llValue));
+				if (llNoRangeCheck) {
+					ofs1 = static_cast<Value*>(pv->operands[0]->llValue);
 
-				Value *cond = builder.CreateICmpSGE(ofs1,
-					ConstantInt::get(Type::getInt32Ty(context), 0), GetOpPrefix(op));
+					Value *cond = ConstantInt::get(Type::getInt1Ty(context), 1);
 
-				inBB = BasicBlock::Create(context, GetOpPrefix(op) + "in", func);
-				outBB = BasicBlock::Create(context, GetOpPrefix(op) + "out", func);
-				uniBB = BasicBlock::Create(context, GetOpPrefix(op) + "uni", func);
-				builder.CreateCondBr(cond, inBB, outBB);
+					inBB = BasicBlock::Create(context, GetOpPrefix(op) + "in", func);
+					outBB = BasicBlock::Create(context, GetOpPrefix(op) + "out", func);
+					uniBB = BasicBlock::Create(context, GetOpPrefix(op) + "uni", func);
+					builder.CreateCondBr(cond, inBB, outBB);
 
-				builder.SetInsertPoint(inBB);
-				builder.CreateBr(uniBB);
+					builder.SetInsertPoint(inBB);
+					builder.CreateBr(uniBB);
 
-				curBB = outBB;
+					curBB = outBB;
+				} else {
+					Function *pArray2 = cctx->module->getFunction("HspVarCoreArray1D");
+					ofs1 = builder.CreateCall2(pArray2, pvc.pval,
+						static_cast<Value*>(pv->operands[0]->llValue));
+
+					Value *cond = builder.CreateICmpSGE(ofs1,
+						ConstantInt::get(Type::getInt32Ty(context), 0), GetOpPrefix(op));
+
+					inBB = BasicBlock::Create(context, GetOpPrefix(op) + "in", func);
+					outBB = BasicBlock::Create(context, GetOpPrefix(op) + "out", func);
+					uniBB = BasicBlock::Create(context, GetOpPrefix(op) + "uni", func);
+					builder.CreateCondBr(cond, inBB, outBB);
+
+					builder.SetInsertPoint(inBB);
+					builder.CreateBr(uniBB);
+
+					curBB = outBB;
+				}
 			}
 			builder.SetInsertPoint(curBB);
 			Function *pReset = cctx->module->getFunction("HspVarCoreReset");
@@ -593,7 +621,6 @@ static BasicBlock* CompileOp(CHsp3Op *hsp, Function *func, BasicBlock *bb, Basic
 			Value* ofs;
 			if (pv->GetArrayDim() == 1) {
 				builder.CreateBr(uniBB);
-
 				builder.SetInsertPoint(uniBB);
 				PHINode *ofsPhi = builder.CreatePHI(Type::getInt32Ty(context), 2, GetOpPrefix(op));
 				ofsPhi->addIncoming(ofs1, inBB);
@@ -874,12 +901,13 @@ static BasicBlock* CompileOp(CHsp3Op *hsp, Function *func, BasicBlock *bb, Basic
 	{
 		VarCalcOp *vs = (VarCalcOp*)op;
 		const VarId &varId = vs->GetVarId();
-		PVal& pval = mem_var[varId.val()];
+		//PVal& pval = mem_var[varId.val()];
+		int flag = varTypes.find(varId)->second;
 
 		if (vs->useRegister) {
 			auto it = task->llVariables.find(vs->GetVarId());
 
-			if (pval.flag == HSPVAR_FLAG_INT) {
+			if (flag == HSPVAR_FLAG_INT) {
 				Value *rhs;
 				if (op->operands[0]->flag == HSPVAR_FLAG_INT) {
 					rhs = static_cast<Value*>(op->operands[0]->llValue);
@@ -898,7 +926,7 @@ static BasicBlock* CompileOp(CHsp3Op *hsp, Function *func, BasicBlock *bb, Basic
 					return NULL;
 				op->llValue = result;
 			}
-			else if (pval.flag == HSPVAR_FLAG_DOUBLE) {
+			else if (flag == HSPVAR_FLAG_DOUBLE) {
 				Value *rhs;
 				if (op->operands[0]->flag == HSPVAR_FLAG_DOUBLE) {
 					rhs = static_cast<Value*>(op->operands[0]->llValue);
@@ -927,14 +955,14 @@ static BasicBlock* CompileOp(CHsp3Op *hsp, Function *func, BasicBlock *bb, Basic
 			builder.SetInsertPoint(bb);
 			builder.CreateCall(pNop);
 
-			return GenOptStack(task, op, bb, pval.flag);
+			return GenOptStack(task, op, bb, flag);
 		}
 
 		Value *lpvar = cctx->GetValue(bb, vs->GetVarId());
 		Value *lpval = builder.CreateConstGEP2_32(lpvar, 0, 4);
 		LoadInst *lptr = builder.CreateLoad(lpval, "ptr");
 
-		if (pval.flag == HSPVAR_FLAG_INT) {
+		if (flag == HSPVAR_FLAG_INT) {
 			Value *lp = builder.CreateBitCast(lptr, tyPI32);
 			Value *lhs = builder.CreateLoad(lp);
 			Value *rhs;
@@ -956,7 +984,7 @@ static BasicBlock* CompileOp(CHsp3Op *hsp, Function *func, BasicBlock *bb, Basic
 				return NULL;
 			op->llValue = builder.CreateStore(result, lp);
 		}
-		else if (pval.flag == HSPVAR_FLAG_DOUBLE) {
+		else if (flag == HSPVAR_FLAG_DOUBLE) {
 			Value *lp = builder.CreateBitCast(lptr, tyPD);
 			Value *lhs = builder.CreateLoad(lp);
 			Value *rhs;
@@ -989,12 +1017,64 @@ static BasicBlock* CompileOp(CHsp3Op *hsp, Function *func, BasicBlock *bb, Basic
 		const VarId &varId = vs->GetVarId();
 
 		if (vs->GetArrayDim() == 1 && op->operands.size() == 2) {
+			Value *var = cctx->GetValue(bb, vs->GetVarId());
+			//PVal& pval = mem_var[varId.val()];
+			int flag = varTypes.find(varId)->second;
+
+			if (op->compileSubType == 1) {
+				if (!op->operands[1]->llValue || flag != HSPVAR_FLAG_INT) {
+					Alert("VAR_SET_OP Error INT");
+					return NULL;
+				}
+				Function *f;
+				if (llNoRangeCheck)
+					f = cctx->module->getFunction("UnsafeVarSetIndex1i");
+				else
+					f = cctx->module->getFunction("VarSetIndex1i");
+				const FunctionType *ft = f->getFunctionType();
+
+				std::vector<Value*> args;
+
+				args.push_back(var);
+				args.push_back(static_cast<Value*>(op->operands[1]->llValue));
+				args.push_back(static_cast<Value*>(op->operands[0]->llValue));
+
+				builder.CreateCall(f, makeArrayRef(args));
+				return bb;
+			}
+
+			if (op->compileSubType == 2) {
+				if (!op->operands[1]->llValue || flag != HSPVAR_FLAG_DOUBLE) {
+					Alert("VAR_SET_OP Error DOUBLE");
+					return NULL;
+				}
+				Function *f;
+				if (llNoRangeCheck)
+					f = cctx->module->getFunction("UnsafeVarSetIndex1d");
+				else
+					f = cctx->module->getFunction("VarSetIndex1d");
+				const FunctionType *ft = f->getFunctionType();
+
+				std::vector<Value*> args;
+
+				args.push_back(var);
+				args.push_back(static_cast<Value*>(op->operands[1]->llValue));
+				args.push_back(static_cast<Value*>(op->operands[0]->llValue));
+
+				builder.CreateCall(f, makeArrayRef(args));
+				return bb;
+			}
+
+			if (op->compileSubType != 3) {
+				Alert("VAR_SET_OP Error 1");
+				return NULL;
+			}
+
 			Function *f = cctx->module->getFunction("VarSetIndex1");
 			const FunctionType *ft = f->getFunctionType();
 
 			std::vector<Value*> args;
 
-			Value *var = cctx->GetValue(bb, vs->GetVarId());
 			args.push_back(var);
 			args.push_back(static_cast<Value*>(op->operands[0]->llValue));
 
@@ -1025,12 +1105,13 @@ static BasicBlock* CompileOp(CHsp3Op *hsp, Function *func, BasicBlock *bb, Basic
 				return bb;
 			}
 
-			PVal& pval = mem_var[varId.val()];
+			//PVal& pval = mem_var[varId.val()];
+			int flag = varTypes.find(varId)->second;
 			Value *lpvar = cctx->GetValue(bb, vs->GetVarId());
 			Value *lpval = builder.CreateConstGEP2_32(lpvar, 0, 4);
 			LoadInst *lptr = builder.CreateLoad(lpval, "ptr");
 
-			if (pval.flag == HSPVAR_FLAG_INT) {
+			if (flag == HSPVAR_FLAG_INT) {
 				Value *lp = builder.CreateBitCast(lptr, tyPI32);
 				Value *rhs;
 				if (op->operands[0]->flag == HSPVAR_FLAG_INT) {
@@ -1046,7 +1127,7 @@ static BasicBlock* CompileOp(CHsp3Op *hsp, Function *func, BasicBlock *bb, Basic
 				}
 				op->llValue = builder.CreateStore(rhs, lp);
 			}
-			else if (pval.flag == HSPVAR_FLAG_DOUBLE) {
+			else if (flag == HSPVAR_FLAG_DOUBLE) {
 				Value *lp = builder.CreateBitCast(lptr, tyPD);
 
 				Value *rhs;
@@ -1592,7 +1673,7 @@ static void CompileTask(CHsp3Op *hsp, Task *task, Function *func, BasicBlock *re
 		else if (op->compile == DEFAULT_VALUE) {
 			curBB = GenerateDefaultValueCode(hsp, func, curBB, retBB, task, op);
 		} else {
-			curBB = CompileOp(hsp, func, curBB, retBB, task, op);
+			curBB = CompileOp(hsp, func, curBB, retBB, task, op, varTypes);
 		}
 		if (!curBB) {
 			Alert((char*)(buf + op->GetName() + "@" + std::to_string(op->id)).c_str());
@@ -1640,7 +1721,7 @@ static void ProfileTaskProc()
 	int cur = GetTaskID();
 	//OutputDebugString((format("Profile Task %1$x\n") % cur).str().c_str());
 	Task &task = *__Task[cur];
-	Timer timer(&task);
+	auto timer = llProfile ? std::make_unique<Timer>(&task) : std::unique_ptr<Timer>();
 
 	task.numCall++;
 	task.funcPtr();
@@ -1650,7 +1731,7 @@ static void TraceTaskProc()
 {
 	int cur = GetTaskID();
 	Task &task = *__Task[cur];
-	Timer timer(&task);
+	auto timer = llProfile ? std::make_unique<Timer>(&task) : std::unique_ptr<Timer>();
 
 	//OutputDebugString((format("Trace Task %1$x\n") % cur).str().c_str());
 	if (task.numChange > 5) {

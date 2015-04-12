@@ -90,6 +90,11 @@ void VarCalc( PVal *pv, int aval, int op );
 void VarSetIndex1( PVal *pv, int i0 );
 void VarSetIndex2( PVal *pv, int i0, int i1 );
 
+void VarSetIndex1i( PVal *pv, int v, int i0 );
+void VarSetIndex2i( PVal *pv, int v, int i0, int i1 );
+void VarSetIndex1d( PVal *pv, double v, int i0 );
+void VarSetIndex2d( PVal *pv, double v, int i0, int i1 );
+
 int FuncPrmI( int num );
 double FuncPrmD( int num );
 

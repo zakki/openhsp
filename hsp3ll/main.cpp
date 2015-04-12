@@ -22,6 +22,7 @@ bool printDebugDump = false;
 int llSkipTypeCheckLimit = -1;
 bool llProfile = false;
 bool llNoOpt = false;
+bool llNoRangeCheck = false;
 
 /*----------------------------------------------------------*/
 
@@ -107,6 +108,8 @@ int APIENTRY WinMain ( HINSTANCE hInstance,
 				llProfile = true;
 			} else if (strcmp("--no-opt", __argv[i]) == 0) {
 				llNoOpt = true;
+			} else if (strcmp("--no-range-check", __argv[i]) == 0) {
+				llNoRangeCheck = true;
 			} else if (strcmp("--skip-type-check", __argv[i]) == 0) {
 				i++;
 				llSkipTypeCheckLimit = atoi(__argv[i]);

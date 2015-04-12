@@ -54,6 +54,7 @@ typedef std::vector<Op*> op_list;
 class Op {
 public:
 	COMPILE_TYPE compile;
+	int compileSubType;
 	int flag;
 	void *llValue;
 	int id;
@@ -61,7 +62,7 @@ public:
 
 	op_list operands;
 
-	Op() : flag(-1), llValue(NULL), refer(NULL)
+	Op() : flag(-1), llValue(NULL), refer(NULL), compileSubType(0)
 	{
 	}
 	virtual ~Op() {}
