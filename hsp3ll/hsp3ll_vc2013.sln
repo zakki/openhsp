@@ -3,7 +3,7 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 2013
 VisualStudioVersion = 12.0.30501.0
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "hsp3ll", "hsp3ll_vc2008.vcxproj", "{1359A0F2-846F-4003-8B86-6703B821031C}"
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "hsp3ll", "hsp3ll_vc2013.vcxproj", "{1359A0F2-846F-4003-8B86-6703B821031C}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -18,8 +18,5 @@ Global
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
-	EndGlobalSection
-	GlobalSection(Performance) = preSolution
-		HasPerformanceSessions = true
 	EndGlobalSection
 EndGlobal
