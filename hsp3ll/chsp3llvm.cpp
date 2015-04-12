@@ -373,15 +373,12 @@ static bool CanOptimize(const Task *task, const Op *op, CHsp3Op *hsp, const std:
 		break;
 	case COMPARE_OP:
 	{
-#if 0
 		CompareOp *comp = (CompareOp*)op;
 		if (op->operands[0]->flag == HSPVAR_FLAG_INT) {
 			if (CanOptimize(task, op->operands[0], hsp, varTypes)) {
-				op->compile = VALUE;
-				MarkCompile(op, VALUE);
+				return true;
 			}
 		}
-#endif
 		break;
 	}
 	case CMD_OP:
@@ -744,8 +741,13 @@ static BasicBlock* CompileOp(CHsp3Op *hsp, Function *func, BasicBlock *bb, Basic
 			% pcop->GetCmdVal()).str();
 		Function *f = cctx->module->getFunction(funcname);
 		if (f) {
-			if (f->getArgumentList().size() != op->operands.size() - 1)
-				goto NOTMATCH;
+			if (f->getArgumentList().size() == 0) {
+				if (op->operands.size() != 0)
+					goto NOTMATCH;
+			} else {
+				if (f->getArgumentList().size() != op->operands.size() - 1)
+					goto NOTMATCH;
+			}
 			int n = 0;
 			for (auto it = f->arg_begin(); it != f->arg_end(); ++it, ++n) {
 				const Type *t = it->getType();
@@ -765,11 +767,15 @@ static BasicBlock* CompileOp(CHsp3Op *hsp, Function *func, BasicBlock *bb, Basic
 			}
 
 			{
-				std::vector<Value*> args;
-				for (int i = 0; i < op->operands.size() - 1; ++i) {
-					args.push_back(static_cast<Value*>(op->operands[i]->llValue));
+				if (f->getArgumentList().size() > 0) {
+					std::vector<Value*> args;
+					for (int i = 0; i < op->operands.size() - 1; ++i) {
+						args.push_back(static_cast<Value*>(op->operands[i]->llValue));
+					}
+					op->llValue = builder.CreateCall(f, makeArrayRef(args), GetOpPrefix(op));
+				} else {
+					op->llValue = builder.CreateCall(f, GetOpPrefix(op));
 				}
-				op->llValue = builder.CreateCall(f, makeArrayRef(args), GetOpPrefix(op));
 				return GenOptStack(task, op, bb, retType);
 			}
 
@@ -1080,7 +1086,7 @@ static BasicBlock* CompileOp(CHsp3Op *hsp, Function *func, BasicBlock *bb, Basic
 		builder.CreateCondBr(cond, thenBB, elseBB);
 
 		builder.SetInsertPoint(thenBB);
-		cctx->CreateCallImm(thenBB, "TaskSwitch", comp->GetNextTask(), GetOpPrefix(op));
+		cctx->CreateCallImm(thenBB, "TaskSwitch", comp->GetNextTask());
 		builder.CreateBr(retBB);
 		task->returnBlocks.insert(thenBB);
 

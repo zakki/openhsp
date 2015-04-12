@@ -106,4 +106,6 @@ double PopDouble( void );
 
 bool IsFuncValueParam( int type, int val );
 
+#define IsStackEmpty (stm_cur <= mem_stm)
+
 #endif

@@ -21,6 +21,7 @@
 #include "../hsp3/hsp3code.h"
 #include "../hsp3/hsp3debug.h"
 #include "../hsp3/hsp3int.h"
+#include "hspvar_util.h"
 
 #define strp(dsptr) &hspctx->mem_mds[dsptr]
 
@@ -77,7 +78,7 @@ inline void code_next( void )
 	//		Get 1 command block
 	//		(ver3.0à»ç~óp)
 	//
-	if ( StackGetLevel <= 0 ) return;
+	if ( IsStackEmpty ) return;
 	next_stm = StackPeek;
 	type = next_stm->type;
 
@@ -538,7 +539,7 @@ int code_get( void )
 	char *ptr;
 	HspVarProc *varproc;
 
-	if ( StackGetLevel <= 0 ) return PARAM_END;
+	if ( IsStackEmpty ) return PARAM_END;
 
 	//stm = next_stm;
 	//tflag = type;
@@ -937,7 +938,7 @@ APTR code_getva( PVal **pval )
 	PVal temp;
 	APTR aptr;
 
-	if ( StackGetLevel <= 0 ) { throw HSPERR_VARIABLE_REQUIRED; }
+	if ( IsStackEmpty ) { throw HSPERR_VARIABLE_REQUIRED; }
 	stm = StackPeek;
 	tflag = stm->type;
 	if ( tflag != HSPVAR_FLAG_VAR ) { throw HSPERR_VARIABLE_REQUIRED; }
@@ -994,7 +995,7 @@ unsigned short *code_getlb( void )
 	char *ptr;
 	HspVarProc *varproc;
 
-	if ( StackGetLevel <= 0 ) throw HSPERR_LABEL_REQUIRED;
+	if ( IsStackEmpty ) throw HSPERR_LABEL_REQUIRED;
 
 	stm = StackPeek;
 	tflag = stm->type;
@@ -1191,7 +1192,7 @@ static void cmdfunc_return( void )
 	PVal *pval;
 	int i,typ,lev;
 
-	if ( StackGetLevel == 0 ) throw HSPERR_RETURN_WITHOUT_GOSUB;
+	if ( IsStackEmpty ) throw HSPERR_RETURN_WITHOUT_GOSUB;
 
 	//DebugStackPeek();
 

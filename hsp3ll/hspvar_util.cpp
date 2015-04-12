@@ -1909,7 +1909,7 @@ int GetFuncTypeRet( int type, int val, int pnum )
 
 int PopInt( void )
 {
-	if ( StackGetLevel <= 0 ) return PARAM_END;
+	if ( IsStackEmpty ) return PARAM_END;
 
 	STMDATA* stm = StackPeek;
 	int tflag = stm->type;
@@ -1925,7 +1925,7 @@ int PopInt( void )
 
 double PopDouble( void )
 {
-	if ( StackGetLevel <= 0 ) return PARAM_END;
+	if ( IsStackEmpty ) return PARAM_END;
 
 	STMDATA* stm = StackPeek;
 	int tflag = stm->type;
