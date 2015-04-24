@@ -741,12 +741,11 @@ int hsp3dish_init( HINSTANCE hInstance, char *startfile )
 	int i;
 #endif
 
-#ifndef HSP_COM_UNSUPPORTED
 	if ( FAILED( CoInitializeEx( NULL, COINIT_APARTMENTTHREADED) ) ) {
 		return 1;
 	}
 	OleInitialize( NULL );
-#endif
+
 	InitCommonControls();
 	InitSysReq();
 
