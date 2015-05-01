@@ -329,8 +329,8 @@ int hsp3win_init( HINSTANCE hInstance, char *startfile )
 	HspVarCoreRegisterType( TYPE_VARIANT, HspVarVariant_Init );
 #endif
 
-//	hsp3typeinit_dllcmd( code_gettypeinfo( TYPE_DLLFUNC ) );
-//	hsp3typeinit_dllctrl( code_gettypeinfo( TYPE_DLLCTRL ) );
+	hsp3typeinit_dllcmd( code_gettypeinfo( TYPE_DLLFUNC ) );
+	hsp3typeinit_dllctrl( code_gettypeinfo( TYPE_DLLCTRL ) );
 	hsp3typeinit_extcmd( code_gettypeinfo( TYPE_EXTCMD ), hsp_wx, hsp_wy, hsp_wd, -1, -1 );
 	hsp3typeinit_extfunc( code_gettypeinfo( TYPE_EXTSYSVAR ) );
 

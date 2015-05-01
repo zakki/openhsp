@@ -64,6 +64,8 @@ void PushExtvar( int val, int pnum );
 void PushIntfunc( int val, int pnum );
 void PushSysvar( int val, int pnum );
 void PushModcmd( int val, int pnum );
+void PushDllfunc( int val, int pnum );
+void PushDllctrl( int val, int pnum );
 
 void CalcAddI( void );
 void CalcSubI( void );

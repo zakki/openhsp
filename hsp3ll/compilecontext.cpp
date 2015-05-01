@@ -429,6 +429,8 @@ void CompileContext::CreateEE()
 	REGISTER_RT(void(int, int), PushModcmd);
 	REGISTER_RT(void(int, int), Extcmd);
 	REGISTER_RT(void(int, int), Intcmd);
+	REGISTER_RT(void(int, int), PushDllfunc);
+	REGISTER_RT(void(int, int), PushDllctrl);
 	REGISTER_RT(int(), GetTaskID);
 	//REGISTER_RT(int(Hsp3r*, int, int), Hsp3rReset);
 	REGISTER_RT(void(void*, int), HspVarCoreArray2);
@@ -531,6 +533,8 @@ void* HspLazyFunctionCreator(const string &name)
 	RESOLVE_FUNC(PushModcmd);
 	RESOLVE_FUNC(Extcmd);
 	RESOLVE_FUNC(Intcmd);
+	RESOLVE_FUNC(PushDllfunc);
+	RESOLVE_FUNC(PushDllctrl);
 	RESOLVE_FUNC(GetTaskID);
 	//RESOLVE_FUNC(Hsp3rReset);
 	RESOLVE_FUNC(HspVarCoreArray2);
