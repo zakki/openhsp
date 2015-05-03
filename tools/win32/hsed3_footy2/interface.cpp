@@ -401,14 +401,11 @@ static inline LRESULT GetText(int nFootyID, HANDLE hPipe)
 	lpBuffer = (char *)malloc(dwSize + 1);
 	if(lpBuffer == NULL) return -1;
 	nRet = Footy2GetText(nFootyID, lpBuffer, LM_CRLF, dwSize);
-	if(nRet == FOOTY2ERR_NONE){
-		if(!WriteFile(hPipe, lpBuffer, dwSize, &dwNumberOfBytesWritten, NULL)){
-			free(lpBuffer);
-			return -3;
-		}
-	} else {
+	if (nRet == FOOTY2ERR_NONE && !WriteFile(hPipe, lpBuffer, dwSize, &dwNumberOfBytesWritten, NULL)){
 		free(lpBuffer);
+		return -3;
 	}
+	free(lpBuffer);
 
 	switch(nRet){
 		case FOOTY2ERR_NONE:   return 0;
