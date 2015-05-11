@@ -39,9 +39,15 @@
 #pragma comment(lib, "d3d8.lib")
 #pragma comment(lib, "dxguid.lib")
 
+#ifdef GP_USE_ANGLE
+#pragma comment(lib, "libEGL.lib")
+#pragma comment(lib, "libGLESv2.lib")
+#pragma comment(lib, "gameplay_angle.lib")
+#else
 #pragma comment(lib, "OpenGL32.lib")
 #pragma comment(lib, "GLU32.lib")
 #pragma comment(lib, "gameplay.lib")
+#endif
 
 //#pragma comment(lib, "glew32.lib")
 //#pragma comment(lib, "libpng16.lib")

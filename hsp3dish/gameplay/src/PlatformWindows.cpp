@@ -7,7 +7,12 @@
 #include "Form.h"
 #include "Vector2.h"
 #include "ScriptController.h"
+#if defined(GP_USE_ANGLE)
+#include <EGL/egl.h>
+#include <EGL/eglext.h>
+#else
 #include <GL/wglew.h>
+#endif
 #include <windowsx.h>
 #include <shellapi.h>
 #ifdef USE_XINPUT
@@ -37,6 +42,44 @@ static POINT __mouseCapturePoint = { 0, 0 };
 static bool __multiSampling = false;
 static bool __cursorVisible = true;
 static unsigned int __gamepadsConnected = 0;
+
+#if defined(GP_USE_ANGLE)
+static EGLDisplay __eglDisplay = EGL_NO_DISPLAY;
+static EGLContext __eglContext = EGL_NO_CONTEXT;
+static EGLSurface __eglSurface = EGL_NO_SURFACE;
+static EGLConfig __eglConfig = 0;
+static const char* __glExtensions;
+PFNGLBINDVERTEXARRAYOESPROC glBindVertexArray = NULL;
+PFNGLDELETEVERTEXARRAYSOESPROC glDeleteVertexArrays = NULL;
+PFNGLGENVERTEXARRAYSOESPROC glGenVertexArrays = NULL;
+PFNGLISVERTEXARRAYOESPROC glIsVertexArray = NULL;
+
+static EGLenum checkErrorEGL(const char* msg)
+{
+	GP_ASSERT(msg);
+	static const char* errmsg[] =
+	{
+		"EGL function succeeded",
+		"EGL is not initialized, or could not be initialized, for the specified display",
+		"EGL cannot access a requested resource",
+		"EGL failed to allocate resources for the requested operation",
+		"EGL fail to access an unrecognized attribute or attribute value was passed in an attribute list",
+		"EGLConfig argument does not name a valid EGLConfig",
+		"EGLContext argument does not name a valid EGLContext",
+		"EGL current surface of the calling thread is no longer valid",
+		"EGLDisplay argument does not name a valid EGLDisplay",
+		"EGL arguments are inconsistent",
+		"EGLNativePixmapType argument does not refer to a valid native pixmap",
+		"EGLNativeWindowType argument does not refer to a valid native window",
+		"EGL one or more argument values are invalid",
+		"EGLSurface argument does not name a valid surface configured for rendering",
+		"EGL power management event has occurred",
+	};
+	EGLenum error = eglGetError();
+	print("%s: %s.", msg, errmsg[error - EGL_SUCCESS]);
+	return error;
+}
+#endif
 
 #ifdef USE_XINPUT
 static const unsigned int XINPUT_BUTTON_COUNT = 14;
@@ -631,6 +674,150 @@ bool initializeGL(WindowCreationParams* params)
         return false;
     }
 
+#if defined(GP_USE_ANGLE)
+    // Hard-coded to 32-bit/OpenGL ES 2.0.
+    // NOTE: EGL_SAMPLE_BUFFERS, EGL_SAMPLES and EGL_DEPTH_SIZE MUST remain at the beginning of the attribute list
+    // since they are expected to be at indices 0-5 in config fallback code later.
+    // EGL_DEPTH_SIZE is also expected to
+    EGLint eglConfigAttrs[] =
+    {
+        EGL_SAMPLE_BUFFERS, params ? (params->samples > 0 ? 1 : 0) : 0,
+        EGL_SAMPLES, params ? params->samples : 0,
+        EGL_DEPTH_SIZE, 24,
+        EGL_RED_SIZE, 8,
+        EGL_GREEN_SIZE, 8,
+        EGL_BLUE_SIZE, 8,
+        EGL_ALPHA_SIZE, 8,
+        EGL_STENCIL_SIZE, 8,
+        EGL_SURFACE_TYPE, EGL_WINDOW_BIT,
+        EGL_RENDERABLE_TYPE, EGL_OPENGL_ES2_BIT,
+        EGL_NONE
+    };
+    __multiSampling = params && params->samples > 0;
+
+    EGLint eglConfigCount;
+    const EGLint eglContextAttrs[] =
+    {
+        EGL_CONTEXT_CLIENT_VERSION, 2,
+        EGL_NONE
+    };
+
+    const EGLint eglSurfaceAttrs[] =
+    {
+        EGL_RENDER_BUFFER, EGL_BACK_BUFFER,
+        EGL_NONE
+    };
+
+    if (__eglDisplay == EGL_NO_DISPLAY && __eglContext == EGL_NO_CONTEXT)
+    {
+        // Get the EGL display and initialize.
+        __eglDisplay = eglGetDisplay(EGL_DEFAULT_DISPLAY);
+        if (__eglDisplay == EGL_NO_DISPLAY)
+        {
+            DestroyWindow(hwnd);
+            GP_ERROR("eglGetDisplay");
+            return false;
+        }
+
+        if (eglInitialize(__eglDisplay, NULL, NULL) != EGL_TRUE)
+        {
+            DestroyWindow(hwnd);
+            GP_ERROR("eglInitialize");
+            return false;
+        }
+
+        // Try both 24 and 16-bit depth sizes since some hardware (i.e. Tegra) does not support 24-bit depth
+        bool validConfig = false;
+        EGLint depthSizes[] = { 24, 16 };
+        for (unsigned int i = 0; i < 2; ++i)
+        {
+            eglConfigAttrs[1] = params ? (params->samples > 0 ? 1 : 0) : 0;
+            eglConfigAttrs[3] = params ? params->samples : 0;
+            eglConfigAttrs[5] = depthSizes[i];
+
+            if (eglChooseConfig(__eglDisplay, eglConfigAttrs, &__eglConfig, 1, &eglConfigCount) == EGL_TRUE && eglConfigCount > 0)
+            {
+                validConfig = true;
+                break;
+            }
+
+            if (params && params->samples > 0)
+            {
+                // Try lowering the MSAA sample size until we find a  config
+                int sampleCount = params->samples;
+                while (sampleCount)
+                {
+                    GP_WARN("No EGL config found for depth_size=%d and samples=%d. Trying samples=%d instead.", depthSizes[i], sampleCount, sampleCount / 2);
+                    sampleCount /= 2;
+                    eglConfigAttrs[1] = sampleCount > 0 ? 1 : 0;
+                    eglConfigAttrs[3] = sampleCount;
+                    if (eglChooseConfig(__eglDisplay, eglConfigAttrs, &__eglConfig, 1, &eglConfigCount) == EGL_TRUE && eglConfigCount > 0)
+                    {
+                        validConfig = true;
+                        break;
+                    }
+                }
+
+                __multiSampling = sampleCount > 0;
+
+                if (validConfig)
+                    break;
+            }
+            else
+            {
+                GP_WARN("No EGL config found for depth_size=%d.", depthSizes[i]);
+            }
+        }
+
+        if (!validConfig)
+        {
+            DestroyWindow(hwnd);
+            GP_ERROR("eglChooseConfig");
+            return false;
+        }
+
+        __eglContext = eglCreateContext(__eglDisplay, __eglConfig, EGL_NO_CONTEXT, eglContextAttrs);
+        if (__eglContext == EGL_NO_CONTEXT)
+        {
+            DestroyWindow(hwnd);
+            GP_ERROR("eglCreateContext");
+            return false;
+        }
+    }
+
+    __eglSurface = eglCreateWindowSurface(__eglDisplay, __eglConfig, hwnd, eglSurfaceAttrs);
+    if (__eglSurface == EGL_NO_SURFACE)
+    {
+        DestroyWindow(hwnd);
+        GP_ERROR("eglCreateWindowSurface");
+        return false;
+    }
+
+    if (eglMakeCurrent(__eglDisplay, __eglSurface, __eglSurface, __eglContext) != EGL_TRUE)
+    {
+        DestroyWindow(hwnd);
+        GP_ERROR("eglMakeCurrent");
+        return false;
+    }
+
+    __hwnd = hwnd;
+    __hdc = hdc;
+
+    // Set vsync.
+    eglSwapInterval(__eglDisplay, WINDOW_VSYNC ? 1 : 0);
+
+    // Initialize OpenGL ES extensions.
+    __glExtensions = (const char*)glGetString(GL_EXTENSIONS);
+
+    if (strstr(__glExtensions, "GL_OES_vertex_array_object") || strstr(__glExtensions, "GL_ARB_vertex_array_object"))
+    {
+        // Disable VAO extension for now.
+        glBindVertexArray = (PFNGLBINDVERTEXARRAYOESPROC)eglGetProcAddress("glBindVertexArrayOES");
+        glDeleteVertexArrays = (PFNGLDELETEVERTEXARRAYSOESPROC)eglGetProcAddress("glDeleteVertexArraysOES");
+        glGenVertexArrays = (PFNGLGENVERTEXARRAYSOESPROC)eglGetProcAddress("glGenVertexArraysOES");
+        glIsVertexArray = (PFNGLISVERTEXARRAYOESPROC)eglGetProcAddress("glIsVertexArrayOES");
+    }
+#else
     HGLRC tempContext = wglCreateContext(hdc);
     if (!tempContext)
     {
@@ -747,7 +934,11 @@ bool initializeGL(WindowCreationParams* params)
     }
 
     // Vertical sync.
-    wglSwapIntervalEXT(__vsync ? 1 : 0);
+    if (wglSwapIntervalEXT)
+        wglSwapIntervalEXT(__vsync ? 1 : 0);
+    else
+        __vsync = false;
+#endif
 
     return true;
 }
@@ -955,7 +1146,11 @@ int Platform::enterMessagePump()
     GP_ASSERT(__timeTicksPerMillis);
     __timeStart = queryTime.QuadPart / __timeTicksPerMillis;
 
+#if defined(GP_USE_ANGLE)
+    eglSwapBuffers(__eglDisplay, __eglSurface);
+#else
     SwapBuffers(__hdc);
+#endif
 
     if (_game->getState() != Game::RUNNING)
         _game->run();
@@ -999,7 +1194,11 @@ int Platform::enterMessagePump()
             }
 #endif
             _game->frame();
+#if defined(GP_USE_ANGLE)
+            eglSwapBuffers(__eglDisplay, __eglSurface);
+#else
             SwapBuffers(__hdc);
+#endif
         }
 
         // If we are done, then exit.
@@ -1055,14 +1254,24 @@ bool Platform::isVsync()
 
 void Platform::setVsync(bool enable)
 {
-     wglSwapIntervalEXT(enable ? 1 : 0);
-    __vsync = enable;
+#if defined(GP_USE_ANGLE)
+    eglSwapInterval(__eglDisplay, __vsync ? 1 : 0);
+#else
+    if (wglSwapIntervalEXT)
+        wglSwapIntervalEXT(__vsync ? 1 : 0);
+    else
+        __vsync = false;
+#endif
 }
 
 void Platform::swapBuffers()
 {
+#if defined(GP_USE_ANGLE)
+    eglSwapBuffers(__eglDisplay, __eglSurface);
+#else
     if (__hdc)
         SwapBuffers(__hdc);
+#endif
 }
 
 void Platform::sleep(long ms)
@@ -1076,7 +1285,7 @@ void Platform::setMultiSampling(bool enabled)
     {
         return;
     }
-
+#if !defined(GP_USE_ANGLE)
     if (enabled)
     {
         glEnable(GL_MULTISAMPLE);
@@ -1085,6 +1294,7 @@ void Platform::setMultiSampling(bool enabled)
     {
         glDisable(GL_MULTISAMPLE);
     }
+#endif
 
     __multiSampling = enabled;
 }

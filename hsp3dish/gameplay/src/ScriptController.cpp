@@ -73,51 +73,61 @@ void ScriptUtil::addStringFromEnumConversionFunction(luaStringEnumConversionFunc
 ScriptUtil::LuaArray<bool> ScriptUtil::getBoolPointer(int index)
 {
     GENERATE_LUA_GET_POINTER(bool, luaCheckBool);
+	return 0;
 }
 
 ScriptUtil::LuaArray<short> ScriptUtil::getShortPointer(int index)
 {
     GENERATE_LUA_GET_POINTER(short, (short)luaL_checkint);
+	return 0;
 }
 
 ScriptUtil::LuaArray<int> ScriptUtil::getIntPointer(int index)
 {
     GENERATE_LUA_GET_POINTER(int, (int)luaL_checkint);
+	return 0;
 }
 
 ScriptUtil::LuaArray<long> ScriptUtil::getLongPointer(int index)
 {
     GENERATE_LUA_GET_POINTER(long, (long)luaL_checkint);
+	return 0;
 }
 
 ScriptUtil::LuaArray<unsigned char> ScriptUtil::getUnsignedCharPointer(int index)
 {
     GENERATE_LUA_GET_POINTER(unsigned char, (unsigned char)luaL_checkunsigned);
+	return 0;
 }
 
 ScriptUtil::LuaArray<unsigned short> ScriptUtil::getUnsignedShortPointer(int index)
 {
     GENERATE_LUA_GET_POINTER(unsigned short, (unsigned short)luaL_checkunsigned);
+	return 0;
 }
 
 ScriptUtil::LuaArray<unsigned int> ScriptUtil::getUnsignedIntPointer(int index)
 {
     GENERATE_LUA_GET_POINTER(unsigned int, (unsigned int)luaL_checkunsigned);
+	return 0;
 }
 
 ScriptUtil::LuaArray<unsigned long> ScriptUtil::getUnsignedLongPointer(int index)
 {
     GENERATE_LUA_GET_POINTER(unsigned long, (unsigned long)luaL_checkunsigned);
+	return 0;
 }
 
 ScriptUtil::LuaArray<float> ScriptUtil::getFloatPointer(int index)
 {
     GENERATE_LUA_GET_POINTER(float, (float)luaL_checknumber);
+	return 0;
 }
 
 ScriptUtil::LuaArray<double> ScriptUtil::getDoublePointer(int index)
 {
     GENERATE_LUA_GET_POINTER(double, (double)luaL_checknumber);
+	return 0;
 }
 
 const char* ScriptUtil::getString(int index, bool isStdString)

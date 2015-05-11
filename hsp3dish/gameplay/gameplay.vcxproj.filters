@@ -786,9 +786,6 @@
     <ClCompile Include="..\extlib\src\BulletCollision\NarrowPhaseCollision\btVoronoiSimplexSolver.cpp">
       <Filter>ソース ファイル\bullet\BulletCollision\NarrowPhaseCollision</Filter>
     </ClCompile>
-    <ClCompile Include="..\extlib\src\GL\glew.c">
-      <Filter>ソース ファイル\glew</Filter>
-    </ClCompile>
     <ClCompile Include="..\extlib\src\libpng\png.c">
       <Filter>ソース ファイル\libpng</Filter>
     </ClCompile>
@@ -878,6 +875,9 @@
     </ClCompile>
     <ClCompile Include="..\extlib\src\zlib\zutil.c">
       <Filter>ソース ファイル\zlib</Filter>
+    </ClCompile>
+    <ClCompile Include="..\extlib\src\glew\GL\glew.c">
+      <Filter>ソース ファイル\glew</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
