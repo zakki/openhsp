@@ -1677,3 +1677,62 @@ HWND hgio_gethwnd( void )
 }
 
 #endif
+
+
+int hgio_celputmulti( BMSCR *bm, int *xpos, int *ypos, int *cel, int count, BMSCR *bmsrc )
+{
+	//		マルチ画像コピー
+	//		int配列内のX,Y,CelIDを元に等倍コピーを行なう(count=個数)
+	//		カレントポジション、描画モードはBMSCRから取得
+	//
+	int psx,psy;
+	float f_psx,f_psy;
+	int i;
+	int id;
+	int *p_xpos;
+	int *p_ypos;
+	int *p_cel;
+	int xx,yy;
+	int total;
+
+	if ( bm == NULL ) return 0;
+	if ( bm->type != HSPWND_TYPE_MAIN ) throw HSPERR_UNSUPPORTED_FUNCTION;
+
+	total =0;
+
+	p_xpos = xpos;
+	p_ypos = ypos;
+	p_cel = cel;
+
+	psx = bmsrc->divsx;
+	psy = bmsrc->divsy;
+	f_psx = (float)psx;
+	f_psy = (float)psy;
+
+	for(i=0;i<count;i++) {
+
+		id = *p_cel;
+
+		if ( id >= 0 ) {
+
+			xx = ( id % bmsrc->divx ) * psx;
+			yy = ( id / bmsrc->divx ) * psy;
+
+			bm->cx = *p_xpos;
+			bm->cy = *p_ypos;
+
+			hgio_copy( bm, xx, yy, psx, psy, bmsrc, f_psx, f_psy );
+
+			total++;
+		}
+
+		p_xpos++;
+		p_ypos++;
+		p_cel++;
+
+	}
+
+	return total;
+}
+
+

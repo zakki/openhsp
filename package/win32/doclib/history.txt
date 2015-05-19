@@ -9,6 +9,7 @@ Hot Soup Processor ver3.5                           HSP : Hot Soup Processor
 
 	[HGIMG4] テクスチャを複数読み込んだ際に落ちる不具合を修正
 	[HGIMG4] DirectX9 API使用のランタイム(hsp3gpdx)を追加
+	[HSP3Dish] HGIMG4と同等のsetcls、celputm命令をサポート
 	[HSP3Dish][Windows] β1版でwavファイルが再生されないことがある不具合を修正
 	beta1でobjimage命令が正しく動作しない不具合を修正
 	複数行文字列から特定の文字列を持つ行を検索するnotefind関数を追加

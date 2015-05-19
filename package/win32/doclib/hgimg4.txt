@@ -10,7 +10,7 @@ HGIMG4 REFERENCE MANUAL                High Performance Graphic Image Plugin
 
 	HGIMG4の特徴
 
-	・OpenGL/ESによる描画、シェーダー言語サポート
+	・OpenGL/ESまたはDirectX9による描画、シェーダー言語サポート
 	・シーン管理と統合化された物理エンジン(Bullet)サポート
 	・FBX形式のモデルファイル読み込み、アニメーションサポート
 	・マルチテクスチャ、バンプマップ、ハイトマップ、LODをサポート
@@ -19,14 +19,27 @@ HGIMG4 REFERENCE MANUAL                High Performance Graphic Image Plugin
 	・WindowsだけでなくiOS,Android上での動作をサポート予定
 	・HSP及びHSP3Dishと同様のライセンス規約、オープンソース 
 
-	HGIMG4は、Windows2000以降で、OpenGLバージョン3.1以上がインストールされた環境で動作します。
 
+・動作環境
 
-・インストール
+	HGIMG4は、OpenGL版とDirectX9(angle)版を選択することができます。
+	OpenGL版は、Windows7以降で、OpenGLバージョン3.1以上がインストールされた環境で動作します。
+	DirectX9(angle)版は、Windows7以降で、DirectX9最新版のランタイムがインストールされた環境で動作します。
+	DirectX9(angle)版は、実行にあたって以下のDLLを必要とします。
+	(このDLLは、HSPインストールフォルダに付属しています。
+	ユーザーが製作したアプリケーションを配布する場合は、このDLLも配布する
+	必要があります)
 
-	HGIMG4は、以下のようなファイル構成になっています。
+		d3dcompiler_47.dll	追加DLL
+		libEGL.dll		追加DLL
+		libGLESv2.dll		追加DLL
 
-		hsp3gp.exe (実行用ランタイム)
+	これらのDLLは、OpenGL版を使用する場合は必要ありません。
+
+	HGIMG4は、以下のようなファイルを使用します。
+
+		hsp3gp.exe (OpenGL実行用ランタイム)
+		hsp3gpdx.exe (DirectX実行用ランタイム)
 
 		docs/hgimg4.txt (このファイル)
 		commonフォルダ (HGIMG4ヘッダファイル)
@@ -34,10 +47,28 @@ HGIMG4 REFERENCE MANUAL                High Performance Graphic Image Plugin
 		runtimeフォルダ (HGIMG4カスタムランタイム)
 		sampleフォルダ (HGIMG4サンプルスクリプト & データ)
 
+
+・使用方法
+
 	HGIMG4を使用したスクリプトを作成する場合には、スクリプトの先頭に
-	必ず「#include "hgimg4.as"」という行を追加してください。
+
+	#include "hgimg4.as"
+
+	という行を追加してください。
 	以上で、HSPの機能が拡張され、このリファレンスで説明をしている命令を
 	使用することができるようになります。
+
+	HGIMG4 DirectX9版ランタイムを使用する場合には、
+
+	#include "hgimg4dx.as"
+
+	をスクリプトの先頭に記述してください。
+
+	#include "hgimg4.as"
+
+	を記述した場合は、OpenGL版ランタイムが使用されます。
+	どちらのランタイムも使用できる機能に違いはありません。
+
 	まず最初に、付属のサンプルスクリプトを実行してみてください。
 	拡張された機能の簡単な使用例を見ることができるはずです。
 	サンプルスクリプトは、HSPインストールフォルダ以下のsample/hgimg4
@@ -51,7 +82,11 @@ HGIMG4 REFERENCE MANUAL                High Performance Graphic Image Plugin
 	必ず、HGIMG4のランタイムに対応したバージョンのコンパイラ
 	(hspcmp.dll)やスクリプトエディタをご使用下さい。
 	また、HSP3は実行ランタイムに対応したコードジェネレーター(hspcmp.dll)
-	をご使用ください。(HSP3.4以上を推奨)
+	をご使用ください。(HSP3.5以上を推奨)
+
+	DirectX9版ランタイムの実行ファイル作成時には、「d3dcompiler_47.dll」
+	「libEGL.dll」「libGLESv2.dll」の3ファイルが実行ファイルと同じフォルダに
+	必要となりますので注意してください。
 
 
 ・命令一覧(メイン)
@@ -183,13 +218,10 @@ HGIMG4 REFERENCE MANUAL                High Performance Graphic Image Plugin
 	str2fv fv,"x,y,z"				文字列をベクトルに変換
 
 
-・HGIMG4の使用方法
+・HGIMG4の制限
 
 	HGIMG4は、Windows上で動作するHSP3のスクリプトエディタなど通常のHSP環境をそのまま 使用して開発を行ないます。
-	必ずHSP3.4以降のHSPで作成を行なってください。 HGIMG4環境で動作するスクリプトを作成する場合は、
-	最初の行に、以下のコードを追加する必要があります。
-
-	#include "hgimg4.as"
+	(必ずHSP3.5以降のHSPで作成を行なってください。)
 
 	HGIMG4は、HSP3Dishランタイムを拡張する形で実装されています。
 	HSP3Dishが持つ命令をすべてサポートしているほか、いくつかの拡張が行なわれています。
@@ -1138,11 +1170,15 @@ HGIMG4 REFERENCE MANUAL                High Performance Graphic Image Plugin
 	HSP3Dishをベースに作成されているHGIMG4は、これらの端末上での動作も
 	視野に入れて開発されており、今後Windowsでも普及が進むと考えられる
 	OpenGLを全面的に採用しています。
-	DirectXと異なる環境に戸惑うユーザーの方もいるかと思いますが、
-	互換性などの情報も含めて、今後情報などを提供していきたいと考えています。
 
 
-・ライセンスについて
+・謝辞
+
+DirectX9(angle)版のランタイムは、zakkiさんが製作されたものを同梱させていただきました。
+zakkiさん及び、ご意見をお寄せいただいた多くの方々に感謝致します。
+
+
+・著作権とライセンス
 
 ユーザーがHGIMG4を使って作成したオリジナルのソフトウェア(実行ファイル)の権利は、それを作成したユーザーに属します。
 ユーザーがHGIMG4を使って作成したオリジナルのソフトウェア(実行ファイル)を、
@@ -1185,6 +1221,46 @@ Neither the name of the Onion Software nor the names of its contributors may be 
 ・書面による特別の許可なしに、本ソフトウェアから派生した製品の宣伝または販売促進に、Onion Softwareの名前またはコントリビューターの名前を使用してはならない。 
 
 本ソフトウェアは、著作権者およびコントリビューターによって「現状のまま」提供されており、明示黙示を問わず、商業的な使用可能性、および特定の目的に対する適合性に関する暗黙の保証も含め、またそれに限定されない、いかなる保証もありません。著作権者もコントリビューターも、事由のいかんを問わず、 損害発生の原因いかんを問わず、かつ責任の根拠が契約であるか厳格責任であるか（過失その他の）不法行為であるかを問わず、仮にそのような損害が発生する可能性を知らされていたとしても、本ソフトウェアの使用によって発生した（代替品または代用サービスの調達、使用の喪失、データの喪失、利益の喪失、業務の中断も含め、またそれに限定されない）直接損害、間接損害、偶発的な損害、特別損害、懲罰的損害、または結果損害について、一切責任を負わないものとします。 
+
+
+・DirectX9版のライセンスについて
+
+HGIMG4 DirectX9版ランタイム及び付属のDLLは、ANGLE Projectの
+ソースをもとに作成されています。再配布を行なう場合は、
+以下のコピーライト表示か、または「ANGLE Project_LICENSE.txt」を
+同梱するようにしてください。
+
+Copyright (C) 2002-2013 The ANGLE Project Authors. 
+All rights reserved.
+Redistribution and use in source and binary forms, with or without
+modification, are permitted provided that the following conditions
+are met:
+
+    Redistributions of source code must retain the above copyright
+    notice, this list of conditions and the following disclaimer.
+
+    Redistributions in binary form must reproduce the above 
+    copyright notice, this list of conditions and the following
+    disclaimer in the documentation and/or other materials provided
+    with the distribution.
+
+    Neither the name of TransGaming Inc., Google Inc., 3DLabs Inc.
+    Ltd., nor the names of their contributors may be used to endorse
+    or promote products derived from this software without specific
+    prior written permission.
+
+THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
+"AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT 
+LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS
+FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE
+COPYRIGHT OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT,
+INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING,
+BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
+LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER
+CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT
+LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN
+ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
+POSSIBILITY OF SUCH DAMAGE.
 
 
 -------------------------------------------------------------------------------

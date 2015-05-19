@@ -133,9 +133,6 @@
 
 #regcmd 9
 
-#cmd setcls $5e
-#cmd celputm $5f
-
 #cmd gpreset $60
 #cmd gpdraw $61
 #cmd gpusescene $62
