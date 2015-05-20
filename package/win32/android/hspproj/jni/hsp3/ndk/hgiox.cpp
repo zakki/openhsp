@@ -130,6 +130,8 @@ static int		drawflag;
 static engine	*appengine;
 static BMSCR    *mainbm = NULL;
 
+static		BMSCR *backbm;		// 背景消去用のBMSCR(null=NC)
+
 static int		mouse_x;
 static int		mouse_y;
 static int		mouse_btn;
@@ -232,6 +234,7 @@ void hgio_init( int mode, int sx, int sy, void *hwnd )
 	_filter = GL_NEAREST;
 	drawflag = 0;
 	mainbm = NULL;
+	backbm = NULL;
 	appengine = (engine *)hwnd;
 	hgio_touch( 0,0,0 );
 
@@ -452,6 +455,15 @@ void hgio_resume( void )
 	font_texid = RegistTexMem( font_data, font_data_size );
 	#endif
 #endif
+}
+
+
+void hgio_setback( BMSCR *bm )
+{
+	//		背景画像の設定
+	//		(NULL=なし)
+	//
+	backbm = bm;
 }
 
 
@@ -1410,6 +1422,65 @@ void hgio_square( BMSCR *bm, int *posx, int *posy, int *color )
 }
 
 
+int hgio_celputmulti( BMSCR *bm, int *xpos, int *ypos, int *cel, int count, BMSCR *bmsrc )
+{
+	//		マルチ画像コピー
+	//		int配列内のX,Y,CelIDを元に等倍コピーを行なう(count=個数)
+	//		カレントポジション、描画モードはBMSCRから取得
+	//
+	int psx,psy;
+	float f_psx,f_psy;
+	int i;
+	int id;
+	int *p_xpos;
+	int *p_ypos;
+	int *p_cel;
+	int xx,yy;
+	int total;
+
+	if ( bm == NULL ) return 0;
+	if ( bm->type != HSPWND_TYPE_MAIN ) throw HSPERR_UNSUPPORTED_FUNCTION;
+
+	total =0;
+
+	p_xpos = xpos;
+	p_ypos = ypos;
+	p_cel = cel;
+
+	psx = bmsrc->divsx;
+	psy = bmsrc->divsy;
+	f_psx = (float)psx;
+	f_psy = (float)psy;
+
+	for(i=0;i<count;i++) {
+
+		id = *p_cel;
+
+		if ( id >= 0 ) {
+
+			xx = ( id % bmsrc->divx ) * psx;
+			yy = ( id / bmsrc->divx ) * psy;
+
+			bm->cx = *p_xpos;
+			bm->cy = *p_ypos;
+
+			hgio_copy( bm, xx, yy, psx, psy, bmsrc, f_psx, f_psy );
+
+			total++;
+		}
+
+		p_xpos++;
+		p_ypos++;
+		p_cel++;
+
+	}
+
+	return total;
+}
+
+/*-------------------------------------------------------------------------------*/
+
+
 int hgio_gettick( void )
 {
 #ifdef HSPNDK
@@ -1868,23 +1939,24 @@ int hgio_render_start( void )
     gb_render_start();
 #endif
     
-#ifdef HSPNDK
+#if defined(HSPNDK) || defined(HSPEMSCRIPTEN)
 	if ( GetSysReq( SYSREQ_CLSMODE ) == CLSMODE_SOLID ) {
+		//指定カラーで消去
 		int ccol = GetSysReq( SYSREQ_CLSCOLOR );
 		hgio_setClear( (ccol>>16)&0xff, (ccol>>8)&0xff, (ccol)&0xff );
 		hgio_clear();
 	}
 #endif
 
-#ifdef HSPEMSCRIPTEN
-	if ( GetSysReq( SYSREQ_CLSMODE ) == CLSMODE_SOLID ) {
-		int ccol = GetSysReq( SYSREQ_CLSCOLOR );
-		hgio_setClear( (ccol>>16)&0xff, (ccol>>8)&0xff, (ccol)&0xff );
-		hgio_clear();
-	}
-#endif
 
 	hgio_reset();
+
+
+#if defined(HSPNDK) || defined(HSPEMSCRIPTEN)
+	if ( GetSysReq( SYSREQ_CLSMODE ) == CLSMODE_TEXTURE ) {
+		//テクスチャで消去
+	}
+#endif
 
 
 	drawflag = 1;

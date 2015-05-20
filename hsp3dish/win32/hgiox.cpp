@@ -93,6 +93,8 @@ static		int m_tsize;		// テキスト使用フォントのサイズ
 static		int m_tstyle;		// テキスト使用フォントのスタイル指定
 static		float center_x, center_y;
 
+static		BMSCR *backbm;		// 背景消去用のBMSCR(null=NC)
+
 static		HSPREAL infoval[HGIO_INFO_MAX];
 
 //		DirectX objects
@@ -552,6 +554,7 @@ void hgio_init( int mode, int sx, int sy, void *hwnd )
 
 	master_wnd = (HWND)hwnd;
 	mainbm = NULL;
+	backbm = NULL;
 	drawflag = 0;
 	nDestWidth = sx;
 	nDestHeight = sy;
@@ -692,7 +695,9 @@ int hgio_render_start( void )
 	}
 
 	//	画面クリア
-	ClearDest( GetSysReq( SYSREQ_CLSMODE ), GetSysReq( SYSREQ_CLSCOLOR ), GetSysReq( SYSREQ_CLSTEX ) );
+	int bgtex = -1;
+	if ( backbm != NULL ) { bgtex = backbm->texid; }
+	ClearDest( GetSysReq( SYSREQ_CLSMODE ), GetSysReq( SYSREQ_CLSCOLOR ), bgtex );
 
 	//	デバイス初期化
 	InitDraw();
@@ -703,6 +708,15 @@ int hgio_render_start( void )
 	drawflag = 1;
 	mestexflag = 0;
 	return 0;
+}
+
+
+void hgio_setback( BMSCR *bm )
+{
+	//		背景画像の設定
+	//		(NULL=なし)
+	//
+	backbm = bm;
 }
 
 

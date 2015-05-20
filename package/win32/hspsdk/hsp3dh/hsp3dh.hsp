@@ -9,7 +9,7 @@
 #include "mod_appconfig.as"
 
 #define APPTITLE "HSP3Dish helper"
-#define APPVER "1.1"
+#define APPVER "1.2"
 #define APP_CONF "\\hsp3dh.cfg"
 
 #uselib "shell32.dll"
@@ -1367,7 +1367,20 @@ res\\drawable-mdpi\\ic_launcher.png"}
 	exist and_pack
 	if strsize<=0 : mes "data.dpm‚ª‚ ‚è‚Ü‚¹‚ñ" : goto *and_fin
 
-	basedir=path_proj+"\\"+and_name+"\\libs\\armeabi\\"
+	;	ARMV7‚ð”»’è‚·‚é
+	armv7flag=0
+	xmlfile=path_proj+"\\"+and_name+"\\jni\\Application.mk"
+	gosub *xml_initfile
+	if tmp!="" {
+		s1="APP_ABI :=":gosub *xml_search
+		if res>0 : armv7flag=1
+	}
+	basedir=path_proj+"\\"+and_name+"\\libs\\"
+	if armv7flag {
+		basedir+="armeabi-v7a\\"
+	} else {
+		basedir+="armeabi\\"
+	}
 
 	mes "make ["+basedir+"libhsp3dish.so] ..."
 	bcopy and_pack, basedir+"libhsp3dish.so"

@@ -5,18 +5,7 @@
 //	onion software/onitama 2011/3
 //
 #ifdef HSPDISHGP
-#ifdef HSPWIN
 #include "win32gp/gamehsp.h"
-#endif
-#ifdef HSPIOS
-#include "win32gp/gamehsp.h"
-#endif
-#ifdef HSPNDK
-#include "ndkgp/gamehsp.h"
-#endif
-#ifdef HSPEMSCRIPTEN
-#include "win32gp/gamehsp.h"
-#endif
 #endif
 
 #include <stdio.h>
@@ -46,7 +35,7 @@
 #include "win32/dxsnd.h"
 #endif
 
-//#define USE_WEBTASK
+#define USE_WEBTASK
 #define USE_MMAN
 //#define USE_DGOBJ
 
@@ -681,6 +670,9 @@ static int cmdfunc_extcmd( int cmd )
 		bmscr->Setcolor(p1,p2,p3);
 		break;
 	case 0x1b:								// redraw
+		{
+		Bmscr *src;
+		int bgtex;
 		p1 = code_getdi( 1 );
 		p2 = code_getdi( 0 );
 		p3 = code_getdi( 0 );
@@ -704,8 +696,16 @@ static int cmdfunc_extcmd( int cmd )
 				break;
 			}
 		}
+		bgtex = GetSysReq( SYSREQ_CLSTEX );
+		if ( bgtex >= 0 ) {
+			src = wnd->GetBmscrSafe( bgtex );
+		} else {
+			src = NULL;
+		}
+		hgio_setback( (BMSCR *)src );
 		ctx->stat = hgio_redraw( (BMSCR *)bmscr, p1 );
 		break;
+		}
 
 	case 0x1c:								// width
 		p1 = code_getdi( -1 );
@@ -1292,8 +1292,6 @@ static int cmdfunc_extcmd( int cmd )
 		}
 #endif
 
-#ifdef HSPDISHGP
-
 	case 0x5e:								// setcls
 		p1 = code_getdi( 0 );
 		p2 = code_getdi( 0 );
@@ -1317,6 +1315,8 @@ static int cmdfunc_extcmd( int cmd )
 		p_res = hgio_celputmulti( (BMSCR *)bmscr, p_ptr1, p_ptr2, p_ptr3, p2, (BMSCR *)bm2 );
 		ctx->stat = p_res;
 		break;
+
+#ifdef HSPDISHGP
 
 	case 0x60:								// gpreset
 		p1 = code_getdi( 0 );

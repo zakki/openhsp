@@ -11,7 +11,10 @@
 #const global FILTER_LINEAR 1
 #const global FILTER_LINEAR2 2
 
-;
+#const global CLSMODE_NONE 0
+#const global CLSMODE_SOLID 1
+#const global CLSMODE_TEXTURE 2
+
 ;	system request
 ;
 #enum global SYSREQ_MAXMODEL=1

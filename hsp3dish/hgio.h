@@ -40,6 +40,7 @@ void hgio_screen( BMSCR *bm );
 void hgio_delscreen( BMSCR *bm );
 int hgio_redraw( BMSCR *bm, int flag );
 int hgio_texload( BMSCR *bm, char *fname );
+void hgio_setback( BMSCR *bm );
 
 int hgio_dialog( int mode, char *str1, char *str2 );
 int hgio_title( char *str1 );

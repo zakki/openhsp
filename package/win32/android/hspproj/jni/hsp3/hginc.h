@@ -6,17 +6,17 @@
 #include "geometry.h"
 
 
-// é ‚ç‚¹ãƒ•ã‚©ãƒ¼ãƒãƒƒãƒˆ(T&L support)
+// ’¸“_ƒtƒH[ƒ}ƒbƒg(T&L support)
 typedef struct _AXP4GX {
-	// D3DEXVERTEXã¨åŒã˜ãƒ•ã‚©ãƒ¼ãƒãƒƒãƒˆ
+	// D3DEXVERTEX‚Æ“¯‚¶ƒtƒH[ƒ}ƒbƒg
 	float x,y,z;
 	int color;
 	float tu,tv;
 }AXP4GX;
 
-// é ‚ç‚¹ãƒ•ã‚©ãƒ¼ãƒãƒƒãƒˆ(T&L support)
+// ’¸“_ƒtƒH[ƒ}ƒbƒg(T&L support)
 typedef struct _AXP4GS {
-	// D3DLNVERTEXã¨åŒã˜ãƒ•ã‚©ãƒ¼ãƒãƒƒãƒˆ
+	// D3DLNVERTEX‚Æ“¯‚¶ƒtƒH[ƒ}ƒbƒg
 	float x,y,z;
 	float nx,ny,nz;
 	float tu,tv;
@@ -28,8 +28,8 @@ typedef struct _AXP4GS {
 
 // plain primitive
 typedef struct _P_PLAIN {
-void *list_prev;	// å‰ã®ãƒªã‚¹ãƒˆ
-void *list_next;	// æ¬¡ã®ãƒªã‚¹ãƒˆ
+void *list_prev;	// ‘O‚ÌƒŠƒXƒg
+void *list_next;	// Ÿ‚ÌƒŠƒXƒg
 short code;			// primitive code
 short attr;			// attr SW
 } P_PLAIN;
@@ -64,7 +64,7 @@ int xx,yy;			// XY Vertices
 } P_BGSPR;
 
 
-// å››è§’å½¢ãƒãƒªã‚´ãƒ³primitive
+// lŠpŒ`ƒ|ƒŠƒSƒ“primitive
 #define POLY4N 4
 typedef struct
 {
@@ -80,7 +80,7 @@ float zattr;			// Z priority
 } POLY4;
 
 
-// å››è§’å½¢3Dãƒãƒªã‚´ãƒ³primitive(HGMODEL_FLAG_POLY4)
+// lŠpŒ`3Dƒ|ƒŠƒSƒ“primitive(HGMODEL_FLAG_POLY4)
 typedef struct
 {
 short code;				// primitive code
@@ -91,13 +91,13 @@ AXP4GX v[4];			// vertices info
 } POLY4GX;
 
 
-//		attrã‚³ãƒ¼ãƒ‰
+//		attrƒR[ƒh
 //
 #define NODE_ATTR_NONE 0
 #define NODE_ATTR_COLKEY 0x8000
 #define NODE_ATTR_USEALPHA 0x4000
-#define NODE_ATTR_USEMATERIAL 0x400	// MaterialID(bit0-10)ã‚’å‚ç…§ã™ã‚‹
-#define NODE_ATTR_GLOBALMAT 0x800	// ã‚°ãƒ­ãƒ¼ãƒãƒ«ã®MaterialIDã‚’ä½¿ç”¨ã™ã‚‹
+#define NODE_ATTR_USEMATERIAL 0x400	// MaterialID(bit0-10)‚ğQÆ‚·‚é
+#define NODE_ATTR_GLOBALMAT 0x800	// ƒOƒ[ƒoƒ‹‚ÌMaterialID‚ğg—p‚·‚é
 #define NODE_ATTR_USEREPEAT 0x200
 #define NODE_ATTR_SHADE_NONE 0
 #define NODE_ATTR_SHADE_FLAT 1
