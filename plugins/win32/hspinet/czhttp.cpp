@@ -515,10 +515,11 @@ void CzHttp::AllocFlexBuf( int size )
 void CzHttp::AddFlexBuf( char *data, int size )
 {
 	int i;
+	int req_size;
 	i = pt_cur + size + 1;
 	if ( i > pt_size ) {
-		pt_size = ( i + 0x0fff ) & 0x7ffff000;
-		AllocFlexBuf( pt_size );
+		req_size = ( i + 0x0fff ) & 0x7ffff000;
+		AllocFlexBuf( req_size );
 	}
 	memcpy( pt + pt_cur, data, size );
 	pt_cur += size;
