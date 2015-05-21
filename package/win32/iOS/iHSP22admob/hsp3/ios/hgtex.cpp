@@ -362,7 +362,6 @@ void TexProc( void )
 	}
 }
 
-
 #ifdef HSPNDK
 int GetCacheMesTextureID( char *msg, int font_size, int font_style )
 {

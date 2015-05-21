@@ -141,6 +141,7 @@ static		BMSCR mestexbm;		// テキスト表示用ダミーBMSCR
 
 static		BMSCR *mainbm;		// メインスクリーンのBMSCR
 static		HSPREAL infoval[HGIO_INFO_MAX];
+static		BMSCR *backbm;		// 背景消去用のBMSCR(null=NC)
 
 static		char m_tfont[256];	// テキスト使用フォント
 static		int m_tsize;		// テキスト使用フォントのサイズ
@@ -176,6 +177,7 @@ void hgio_init( int mode, int sx, int sy, void *hwnd )
 	master_wnd = (HWND)hwnd;
 #endif
 	mainbm = NULL;
+	backbm = NULL;
 	drawflag = 0;
 	nDestWidth = sx;
 	nDestHeight = sy;
@@ -265,7 +267,16 @@ void hgio_screen( BMSCR *bm )
 }
 
 
-void hgio_delscreen( BMSCR *bm )
+void hgio_setback(BMSCR *bm)
+{
+	//		背景画像の設定
+	//		(NULL=なし)
+	//
+	backbm = bm;
+}
+
+
+void hgio_delscreen(BMSCR *bm)
 {
 	//		スクリーンを破棄
 	//		(Bmscrクラスのdelete時)

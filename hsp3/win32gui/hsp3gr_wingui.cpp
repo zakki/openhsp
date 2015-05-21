@@ -38,7 +38,6 @@ static HSPCTX *ctx;
 static int *type;
 static int *val;
 static int cur_window;
-static int p1,p2,p3,p4,p5,p6;
 static int ckey,cklast,cktrg;
 static int msact;
 static int dispflg;
@@ -571,6 +570,7 @@ static void cmdfunc_dialog( void )
 {
 	// dialog
 	int i;
+	int p1,p2;
 	char *ptr;
 	char *ps;
 	char stmp[0x4000];
@@ -613,6 +613,8 @@ static int cmdfunc_extcmd( int cmd )
 	//		cmdfunc : TYPE_EXTCMD
 	//		(内蔵GUIコマンド)
 	//
+	int p1,p2,p3,p4,p5,p6;
+
 	code_next();							// 次のコードを取得(最初に必ず必要です)
 	switch( cmd ) {							// サブコマンドごとの分岐
 
@@ -1494,6 +1496,7 @@ static int reffunc_intfunc_ivalue;
 static void *reffunc_function( int *type_res, int arg )
 {
 	void *ptr;
+	int p1,p2;
 
 	//		返値のタイプを設定する
 	//
