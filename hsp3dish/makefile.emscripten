@@ -398,15 +398,19 @@ emscripten/hsp3dish-gp.js: $(OBJS_GP) $(LIBS_GP) emscripten/license.js
 	cat emscripten/license.js hsp3dish-gp.js > $@
 
 emscripten/libgameplay.a: $(OBJS_GAMEPLAY)
+	rm -f $@
 	$(AR) rcs $@ $(OBJS_GAMEPLAY)
 
 emscripten/libBulletCollision.a: $(OBJS_BULLET_COLLISION)
+	rm -f $@
 	$(AR) rcs $@ $(OBJS_BULLET_COLLISION)
 
 emscripten/libBulletDynamics.a: $(OBJS_BULLET_DYNAMICS)
+	rm -f $@
 	$(AR) rcs $@ $(OBJS_BULLET_DYNAMICS)
 
 emscripten/libLinearMath.a: $(OBJS_LINEAR_MATH)
+	rm -f $@
 	$(AR) rcs $@ $(OBJS_LINEAR_MATH)
 
 %.bc: %.c
