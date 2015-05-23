@@ -192,11 +192,11 @@ static void engine_handle_cmd(struct android_app* app, int32_t cmd) {
 				HSPCTX *ctx;
 				InitSysReq();
 			    hgio_init( 0, engine->width, engine->height, engine );
-				//hgio_view( 320, 480 );	// screen size
+				//hgio_view( 480, 800 );	// screen size
 				//hgio_scale( 1.0f, 1.0f );	// scale value
-				//hgio_autoscale( 0 );		// auto scale value
+				//hgio_autoscale( 0 );	// auto scale value
 				hsp3eb_init();
-				ctx = hsp3eb_getctx();
+				ctx = hsp3eb_getctx(); 
 				engine->hspctx = ctx;
 				p_runmode = &(ctx->runmode);
 				hgio_setstorage( j_getinfo(JAVAFUNC_INFO_FILESDIR) );
@@ -306,7 +306,7 @@ void android_main(struct android_app* state) {
             // 破棄要求があったか
             if (state->destroyRequested != 0) {
 //				LOGI("[END Request]");
-				*p_runmode = RUNMODE_END;
+				if ( p_runmode != NULL ) *p_runmode = RUNMODE_END;
 				break;
             }
         }

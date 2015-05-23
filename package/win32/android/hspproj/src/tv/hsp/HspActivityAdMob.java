@@ -79,23 +79,12 @@ public class HspActivity extends NativeActivity {
     return path;
   }
 
+  // Nativeへの通知
+  public native void nativepoke(int val, int val2);
+
   public int callVibrator( int val ) {
     Vibrator vibrator = (Vibrator)getSystemService(VIBRATOR_SERVICE);
     if (vibrator != null) vibrator.vibrate(val);
-    return 0;
-  }
-  public int ui_dispDialog( String msg1, String msg2, int type ) {
-
-    AlertDialog.Builder alert = new AlertDialog.Builder(this);
-    alert.setMessage( msg1 );
-    alert.setTitle( msg2 );
-    alert.setPositiveButton( "OK", null );
-    if (( type & 1 ) > 0 ) {
-        alert.setIcon(android.R.drawable.ic_dialog_alert);
-    } else {
-        alert.setIcon(android.R.drawable.ic_dialog_info);
-    }
-    alert.show();
     return 0;
   }
 
@@ -126,6 +115,7 @@ public class HspActivity extends NativeActivity {
     return res;
   }
 
+
   public int callActivity( String msg1, String msg2, int type ) {
     if ( type == 16 ) {
     	Uri uri = Uri.parse( msg1 );
@@ -148,21 +138,101 @@ public class HspActivity extends NativeActivity {
     return 0;
   }
 
-    public int dispDialog( String msg1, String msg2, int type ) {
+    public int ui_dispDialog( String msg1, String msg2, int type ) {
+	//	OKダイアログ
 	final int addtype;
 	final String s_msg1;
 	final String s_msg2;
+	final HspActivity myActivity;
 
 	addtype = type;
+	myActivity = this;
 	s_msg1 = msg1;
 	s_msg2 = msg2;
-        this.runOnUiThread( new Runnable() {
-    		public void run() 
-                {
-			ui_dispDialog( s_msg1, s_msg2, addtype );
-                }
-        } );
+
+	this.runOnUiThread( new Runnable()
+		{
+	        @Override
+	        public void run()
+	        {
+			AlertDialog.Builder alert = new AlertDialog.Builder(myActivity);
+			alert.setMessage( s_msg1 );
+			alert.setTitle( s_msg2 );
+			if (( addtype & 1 ) > 0 ) {
+				alert.setIcon(android.R.drawable.ic_dialog_alert);
+			} else {
+				alert.setIcon(android.R.drawable.ic_dialog_info);
+			}
+	        	alert.setPositiveButton( "OK", new DialogInterface.OnClickListener()
+	        	{
+			@Override
+			public void onClick(DialogInterface dialog, int which)
+			{
+				nativepoke( 0, 0 );
+			}
+		    });
+	        	alert.create().show();
+	        }
+	    } );
+
    	return 0;
+    }
+
+    public int ui_dispDialogYN( String msg1, String msg2, int type ) {
+	//	YES/NOダイアログ
+	final int addtype;
+	final String s_msg1;
+	final String s_msg2;
+	final HspActivity myActivity;
+
+	addtype = type;
+	myActivity = this;
+	s_msg1 = msg1;
+	s_msg2 = msg2;
+
+	this.runOnUiThread( new Runnable()
+		{
+	        @Override
+	        public void run()
+	        {
+			AlertDialog.Builder alert = new AlertDialog.Builder(myActivity);
+			alert.setMessage( s_msg1 );
+			alert.setTitle( s_msg2 );
+			if (( addtype & 1 ) > 0 ) {
+				alert.setIcon(android.R.drawable.ic_dialog_alert);
+			} else {
+				alert.setIcon(android.R.drawable.ic_dialog_info);
+			}
+	        	alert.setPositiveButton( "Yes", new DialogInterface.OnClickListener()
+	        	{
+			@Override
+			public void onClick(DialogInterface dialog, int which)
+			{
+				nativepoke( 0, 6 );
+			}
+		    });
+	        	alert.setNegativeButton( "No", new DialogInterface.OnClickListener()
+	        	{
+	                @Override
+	                public void onClick(DialogInterface dialog, int which)
+	                {
+	                	nativepoke( 0, 7 );
+	                }
+	            });
+
+	        	alert.create().show();
+	        }
+	    } );
+
+   	return 0;
+    }
+
+    public int dispDialog( String msg1, String msg2, int type ) {
+	if ( type >= 4 ) return -1;
+	if (( type & 2 ) > 0 ) {
+		return ui_dispDialogYN( msg1, msg2, type );
+	}
+	return ui_dispDialog( msg1, msg2, type );
     }
     
     public int addWindowFlag( int type ) {
@@ -195,9 +265,6 @@ public class HspActivity extends NativeActivity {
         } );
    	return 0;
     }
-
-
-  public native void nativepoke(int val, int val2);
 
 
 	//	conversion ByteText->String
@@ -241,6 +308,9 @@ public class HspActivity extends NativeActivity {
 	        canvas.drawText(text,0, offsetY,paint);
 	        return bitmap;
 	}
+
+
+}
 
 
 	// for AdMob

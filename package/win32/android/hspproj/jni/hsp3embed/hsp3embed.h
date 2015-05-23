@@ -19,6 +19,7 @@ void *hsp3eb_getDevInfo( void );
 char *hsp3eb_stmp( char *str );
 void hsp3eb_pause( void );
 void hsp3eb_resume( void );
+int hsp3eb_gettask( void );
 
 #ifdef __cplusplus
 }

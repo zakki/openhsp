@@ -100,7 +100,16 @@ static int jcall_SSI_int( const char *name, char *str1, char *str2, int val ) {
 
 JNIEXPORT void JNICALL nativepoke( JNIEnv* env, jobject thiz, jint value, jint value2 )
 {
-	LOGI( "[Java->Native Ready(%d)(%d)]",value,value2 );
+	//		Callback from Java
+	//
+	HSPCTX *ctx;
+	ctx = hsp3eb_getctx(); 
+	ctx->runmode = RUNMODE_RUN;
+	hsp3eb_setstat( (int)value2 );
+
+	//int i;
+	//i = hsp3eb_gettask();
+	//LOGI( "[nativepoke(%d)(%d)] %d",value,value2, i );
 }
 
 //--------------------------------------------------------------------------
@@ -168,6 +177,10 @@ int j_callVibrator( int val )
 
 int j_dispDialog( char *msg1, char *msg2, int type )
 {
+	HSPCTX *ctx;
+	ctx = hsp3eb_getctx(); 
+	ctx->runmode = RUNMODE_STOP;
+
 	return jcall_SSI_int( "dispDialog", msg1, msg2, type );
 }
 
@@ -176,7 +189,6 @@ int j_callActivity( char *msg1, char *msg2, int type )
 {
 	int res;
 	res = jcall_SSI_int( "callActivity", msg1, msg2, type );
-	//LOGI( "RES[%d]", res );
 	return res;
 }
 

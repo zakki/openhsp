@@ -542,10 +542,10 @@ static int cmdfunc_extcmd( int cmd )
 		}
 
 	case 0x03:								// dialog
-		cmdfunc_dialog();
         ctx->waitcount = 0;
         ctx->runmode = RUNMODE_WAIT;
-        return RUNMODE_WAIT;
+		cmdfunc_dialog();
+        return ctx->runmode;
 
 #ifdef USE_MMAN
 	case 0x08:								// mmload

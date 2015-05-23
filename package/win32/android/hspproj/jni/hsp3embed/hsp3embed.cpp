@@ -231,8 +231,9 @@ int hsp3eb_exectime( int tick )
 	//		(time=経過時間)
 	//
 	switch( ctx->runmode ) {
-	case RUNMODE_STOP:
-			break;
+		case RUNMODE_STOP:
+		case RUNMODE_ASSERT:
+			return ctx->runmode;
 		case RUNMODE_WAIT:
 			//	高精度タイマー
 			ctx->runmode = hsp3eb_wait( tick );
@@ -246,9 +247,7 @@ int hsp3eb_exectime( int tick )
 		case RUNMODE_END:
 			return ctx->runmode;
 		case RUNMODE_INTJUMP:
-		case RUNMODE_ASSERT:
-			ctx->runmode = RUNMODE_STOP;
-			return ctx->runmode;
+			break;
 		default:
 			break;
 		}
@@ -303,5 +302,12 @@ void hsp3eb_resume( void )
 	//
 	hsp3extcmd_resume();
 }
+
+
+int hsp3eb_gettask( void )
+{
+	return GetTaskID();
+}
+
 
 
