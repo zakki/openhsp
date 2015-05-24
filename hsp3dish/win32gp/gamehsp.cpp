@@ -176,6 +176,7 @@ void gamehsp::deleteAll( void )
 	//
 	if ( _scene ) {
 		_scene->removeAllNodes();
+		_scene->setActiveCamera(NULL);
 	}
 
 	if ( _gpobj ) {
