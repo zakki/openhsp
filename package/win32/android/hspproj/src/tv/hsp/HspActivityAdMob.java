@@ -53,6 +53,24 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 
+import org.apache.http.Header;
+import org.apache.http.HttpEntity;
+import org.apache.http.HttpResponse;
+import org.apache.http.HttpStatus;
+import org.apache.http.HttpVersion;
+import org.apache.http.NameValuePair;
+import org.apache.http.client.ClientProtocolException;
+import org.apache.http.client.ResponseHandler;
+import org.apache.http.client.entity.UrlEncodedFormEntity;
+import org.apache.http.client.methods.HttpGet;
+import org.apache.http.client.methods.HttpPost;
+import org.apache.http.impl.client.DefaultHttpClient;
+import org.apache.http.message.BasicNameValuePair;
+import org.apache.http.params.HttpConnectionParams;
+import org.apache.http.params.HttpParams;
+import org.apache.http.params.HttpProtocolParams;
+import org.apache.http.util.EntityUtils;
+
 import com.google.android.gms.ads.*;
 
 public class HspActivity extends NativeActivity {
@@ -308,6 +326,90 @@ public class HspActivity extends NativeActivity {
 	        canvas.drawText(text,0, offsetY,paint);
 	        return bitmap;
 	}
+
+    //		http network task
+    private String _httpResult;
+    private ArrayList <NameValuePair> _httpParams;
+
+    public String getHttpResult() {
+	return _httpResult;
+    }
+
+    public int httpParamSet( String prm1, String prm2, int type ) {
+	if ( type < 0 ) {
+		return -1;
+	}
+	if ( type == 0 ) {
+		_httpParams = new ArrayList <NameValuePair>();
+		return 0;
+	}
+	_httpParams.add( new BasicNameValuePair( prm1, prm2 ) );
+	return 0;
+    }
+
+    public int httpRequestGET( String url, String optstr, int type ) {
+
+	DefaultHttpClient httpClient = new DefaultHttpClient();
+	HttpParams params = httpClient.getParams();
+	HttpConnectionParams.setConnectionTimeout( params, 5000 );
+	HttpConnectionParams.setSoTimeout( params, 3000 );
+
+	StringBuilder uri = new StringBuilder( url );
+	HttpGet request = new HttpGet(uri.toString());
+	HttpResponse httpResponse;
+	_httpResult = "";
+	try {
+		httpResponse = httpClient.execute(request);
+	} catch (Exception e) {
+		return -1;
+	}
+
+	int status = httpResponse.getStatusLine().getStatusCode();
+	try {
+		_httpResult = EntityUtils.toString( httpResponse.getEntity(), "UTF-8" );
+	} catch (Exception e) {
+		return -1;
+	}
+
+	httpClient.getConnectionManager().shutdown();
+	if ( status != HttpStatus.SC_OK ) {
+		return status;
+	}
+	return 0;
+    }
+
+    public int httpRequestPOST( String url, String optstr, int type ) {
+
+	DefaultHttpClient httpClient = new DefaultHttpClient();
+	HttpParams params = httpClient.getParams();
+	HttpConnectionParams.setConnectionTimeout( params, 5000 );
+	HttpConnectionParams.setSoTimeout( params, 3000 );
+
+	StringBuilder uri = new StringBuilder( url );
+	HttpPost request = new HttpPost(uri.toString());
+	HttpResponse httpResponse;
+	_httpResult = "";
+	try {
+		request.setEntity( new UrlEncodedFormEntity( _httpParams, "UTF-8" ) );
+		httpResponse = httpClient.execute(request);
+	} catch (Exception e) {
+		return -1;
+	}
+
+	int status = httpResponse.getStatusLine().getStatusCode();
+	try {
+		//_httpResult = EntityUtils.toString( httpResponse.getEntity(), "SHIFT-JIS" );
+		_httpResult = EntityUtils.toString( httpResponse.getEntity(), "UTF-8" );
+	} catch (Exception e) {
+		return -1;
+	}
+
+	httpClient.getConnectionManager().shutdown();
+	if ( status != HttpStatus.SC_OK ) {
+		return status;
+	}
+	return 0;
+    }
 
 
 }

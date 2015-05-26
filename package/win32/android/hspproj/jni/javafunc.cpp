@@ -274,6 +274,115 @@ char *j_callFontBitmap( const char *in_str, int fontSize, int style, int *o_widt
 
 //--------------------------------------------------------------------------
 
+static void makePostParam( char *pair )
+{
+	unsigned char *p;
+	unsigned char *st1;
+	unsigned char *st2;
+	unsigned char a1;
+	unsigned char a2;
+	unsigned char bak_a1;
+
+	p = (unsigned char *)pair;
+	st1 = p;
+	st2 = NULL;
+
+	while(1) {
+		a1 = *p;
+		if ( a1 == 0 ) break;
+		if ( a1 == '=' ) {
+			bak_a1 = a1; *p = 0;		// 終端を仮設定
+			st2 = p + 1;
+			break;
+		}
+/*		
+		if (a1&128) {					// UTF8チェック
+			while(1) {
+				a2 = *p;
+				if ( a2==0 ) break;
+				if ( ( a2 & 0xc0 ) != 0x80 ) break;
+				p++;
+			}
+		} else {
+			p++;
+		}
+*/
+		p++;
+	}
+
+	if ( st2 == NULL ) {
+		jcall_SSI_int( "httpParamSet", (char *)st1, "", 1 );
+		return;
+	}
+	//Alertf( "%s:%s", (char *)st1, (char *)st2 );
+	jcall_SSI_int( "httpParamSet", (char *)st1, (char *)st2, 1 );
+	*p = bak_a1;
+}
+
+
+static void makePostParamPair( char *param )
+{
+	int spcur;
+	unsigned char *p;
+	unsigned char *st;
+	unsigned char a1;
+	unsigned char a2;
+	unsigned char bak_a1;
+
+
+	p = (unsigned char *)param;
+	st = p;
+	spcur = 0;
+	jcall_SSI_int( "httpParamSet", "", "", 0 );	// パラメーターをリセット
+
+	while(1) {
+		a1 = *p;
+		if ( a1 == 0 ) break;
+		if ( a1 == '&' ) {
+			bak_a1 = a1; *p = 0;		// 終端を仮設定
+			makePostParam( (char *)st );
+			*p = bak_a1;
+			p++; st = p; spcur = 0;		// 終端を戻す
+			continue;
+		}
+/*		
+		if (a1&128) {					// UTF8チェック
+			while(1) {
+				a2 = *p;
+				if ( a2==0 ) break;
+				if ( ( a2 & 0xc0 ) != 0x80 ) break;
+				p++; spcur++;
+			}
+		} else {
+			p++; spcur++;
+		}
+*/
+		p++; spcur++;
+	}
+
+	if ( spcur > 0 ) {
+		makePostParam( (char *)st );
+	}
+}
+
+
+int j_httpRequest( char *msg1, char *msg2, int type )
+{
+	if ( msg2 == NULL ) {
+		return jcall_SSI_int( "httpRequestGET", msg1, "", type );
+	}
+
+	makePostParamPair( msg2 );
+	return jcall_SSI_int( "httpRequestPOST", msg1, "", type );
+}
+
+char *j_getHttpInfo( void )
+{
+	return jcall_void_str( "getHttpResult" );
+}
+
+//--------------------------------------------------------------------------
+
 int j_callAdMob( int val )
 {
 		return jcall_int_int( "callAdMob", val );

@@ -26,6 +26,9 @@ int j_addWindowFlag( int val );
 int j_clearWindowFlag( int val );
 char *j_callFontBitmap( const char *in_str, int fontSize, int style, int *o_width, int *o_height );
 
+char *j_getHttpInfo( void );
+int j_httpRequest( char *msg1, char *msg2, int type );
+
 
 #ifdef __cplusplus
 }
