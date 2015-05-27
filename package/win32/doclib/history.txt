@@ -5,12 +5,14 @@ Hot Soup Processor ver3.5                           HSP : Hot Soup Processor
 
 ・hsp3関連 更新履歴
 
-	2015/05/23 3.5 beta2
+	2015/05/27 3.5 beta2
 
 	[HGIMG4] テクスチャを複数読み込んだ際にエラーが発生する不具合を修正
+	[HGIMG4] カメラ経由で解放済みオブジェクトにアクセスしてクラッシュする問題の修正
 	[HGIMG4] DirectX9 API使用のランタイム(hsp3gpdx)を追加
 	[HSP3Dish] HGIMG4と同等のsetcls、celputm命令をサポート
 	[HSP3Dish][Windows] β1版でwavファイルが再生されないことがある不具合を修正
+	[hspinet] ftpdirlist命令でメモリが正しく確保されない不具合を修正
 	命令の第2パラメーター以降でsysinfo関数を使った際に第1パラメーターの値が変更される不具合を修正
 	beta1でobjimage命令が正しく動作しない不具合を修正
 	複数行文字列から特定の文字列を持つ行を検索するnotefind関数を追加
