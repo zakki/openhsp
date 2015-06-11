@@ -80,6 +80,12 @@
 #define HSPRANDMT // Use std::mt19937
 #endif
 
+#ifdef HSPEMSCRIPTEN
+#define HSP_ALIGN_DOUBLE __attribute__ ((aligned (8)))
+#else
+#define HSP_ALIGN_DOUBLE
+#endif
+
 //
 //		ˆÚA—p‚Ì’è”
 //

@@ -223,60 +223,60 @@ void* Hsp3::copy_DAT(char *ptr, size_t size)
 }
 
 
-LIBDAT *Hsp3::copy_LIBDAT(HSPHED *hsphed, void *ptr, size_t size )
+LIBDAT *Hsp3::copy_LIBDAT(HSPHED *hsphed, char *ptr, size_t size )
 {
 	//	libdatÇÃèÄîı
 	int i,max;
 	int newsize;
 	LIBDAT *mem_dst;
 	LIBDAT *dst;
-	HED_LIBDAT *org_dat;
+	HED_LIBDAT org_dat;
 
 	max = (int)( size / sizeof(HED_LIBDAT));
 	if (max <= 0) return (LIBDAT *)ptr;
 	newsize = sizeof(LIBDAT)*max;
 	mem_dst = (LIBDAT *)malloc( newsize );
 	dst = mem_dst;
-	org_dat = (HED_LIBDAT *)ptr;
 	for (i = 0; i < max; i++) {
+		memcpy(&org_dat, ptr, sizeof(HED_LIBDAT));
 
-		dst->flag = org_dat->flag;
-		dst->nameidx = org_dat->nameidx;
-		dst->clsid = org_dat->clsid;
+		dst->flag = org_dat.flag;
+		dst->nameidx = org_dat.nameidx;
+		dst->clsid = org_dat.clsid;
 		dst->hlib = NULL;
 
 		dst++;
-		org_dat++;
+		ptr += sizeof(HED_LIBDAT);
 	}
 	hsphed->max_linfo = newsize;
 	return mem_dst;
 }
 
 
-STRUCTDAT *Hsp3::copy_STRUCTDAT(HSPHED *hsphed, void *ptr, size_t size)
+STRUCTDAT *Hsp3::copy_STRUCTDAT(HSPHED *hsphed, char *ptr, size_t size)
 {
 	//	structdatÇÃèÄîı
 	int i, max;
 	int newsize;
 	STRUCTDAT *mem_dst;
 	STRUCTDAT *dst;
-	HED_STRUCTDAT *org_dat;
+	HED_STRUCTDAT org_dat;
 	max = (int)(size / sizeof(HED_STRUCTDAT));
 	if (max <= 0) return (STRUCTDAT *)ptr;
 	newsize = sizeof(STRUCTDAT)*max;
 	mem_dst = (STRUCTDAT *)malloc(sizeof(STRUCTDAT)*max);
 	dst = mem_dst;
-	org_dat = (HED_STRUCTDAT *)ptr;
 	for (i = 0; i < max; i++) {
+		memcpy(&org_dat, ptr, sizeof(HED_STRUCTDAT));
 
-		dst->index = org_dat->index;
-		dst->subid = org_dat->subid;
-		dst->prmindex = org_dat->prmindex;
-		dst->prmmax = org_dat->prmmax;
-		dst->nameidx = org_dat->nameidx;
-		dst->size = org_dat->size;
-		dst->otindex = org_dat->otindex;
-		dst->funcflag = org_dat->funcflag;
+		dst->index = org_dat.index;
+		dst->subid = org_dat.subid;
+		dst->prmindex = org_dat.prmindex;
+		dst->prmmax = org_dat.prmmax;
+		dst->nameidx = org_dat.nameidx;
+		dst->size = org_dat.size;
+		dst->otindex = org_dat.otindex;
+		dst->funcflag = org_dat.funcflag;
 #ifdef PTR64BIT
 		dst->proc = NULL;
 #endif
@@ -300,7 +300,7 @@ STRUCTDAT *Hsp3::copy_STRUCTDAT(HSPHED *hsphed, void *ptr, size_t size)
 #endif
 
 		dst++;
-		org_dat++;
+		ptr += sizeof(HED_STRUCTDAT);
 	}
 	hsphed->max_finfo = newsize;
 	return mem_dst;

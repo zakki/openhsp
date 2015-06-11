@@ -5,6 +5,8 @@
 #ifndef __strbuf_h
 #define __strbuf_h
 
+#include "hsp3config.h"
+
 #define STRBUF_BLOCKSIZE 64
 #define STRBUF_BLOCK_DEFAULT 0x400
 #define STRBUF_SEGMENT_DEFAULT 0x1000
@@ -37,7 +39,7 @@ struct STRBUF
 	//	String Data structure
 	//
 	STRINF inf;						// バッファ情報
-	char data[STRBUF_BLOCKSIZE];	// 内部バッファ
+	char data[STRBUF_BLOCKSIZE] HSP_ALIGN_DOUBLE;	// 内部バッファ
 };
 
 void sbInit( void );
