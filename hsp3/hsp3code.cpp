@@ -433,6 +433,7 @@ static char *code_checkarray_obj( PVal *pval, int *mptype )
 	}
 */
 
+	*mptype = pval->flag;
 	HspVarCoreReset( pval );										// 配列ポインタをリセットする
 
 	if ( type == TYPE_MARK ) {
@@ -481,6 +482,9 @@ char *code_get_proxyvar( char *ptr, int *mptype )
 	case MPTYPE_LOCALSTRING:
 		*mptype = MPTYPE_STRING;
 		return *(char **)ptr;
+	case MPTYPE_LABEL:
+		*mptype = HSPVAR_FLAG_LABEL;
+		return ptr;
 	case MPTYPE_ARRAYVAR:
 		var = (MPVarData *)ptr;
 		getv_pval = var->pval;
@@ -1316,6 +1320,9 @@ void code_expandstruct( char *p, STRUCTDAT *st, int option )
 			var->aptr = refap;
 			break;
 			}
+		case MPTYPE_LABEL:
+			*(unsigned short **)out = code_getlb2();
+			break;
 		case MPTYPE_DNUM:
 			{
 			//*(double *)out = code_getd();
