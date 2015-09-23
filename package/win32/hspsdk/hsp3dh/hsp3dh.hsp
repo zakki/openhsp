@@ -9,7 +9,7 @@
 #include "mod_appconfig.as"
 
 #define APPTITLE "HSP3Dish helper"
-#define APPVER "1.2"
+#define APPVER "1.3"
 #define APP_CONF "\\hsp3dh.cfg"
 
 #uselib "shell32.dll"
@@ -36,6 +36,9 @@
 	wx=480:wy=320	; ウィンドウサイズ
 	tooly=184+80	; ツールボタン座標
 	dir_gps="google-play-services_lib"
+	dir_gplib="gameplay"
+	dir_extlib="extlib"
+	dir_hsplib="hsplib35b3"
 	;
 	app_winx=-1
 	app_winy=-1
@@ -352,7 +355,7 @@
 	chkbox "AdMobを使用する",flag_admob
 	chkbox "ARM7最適化を無効",flag_arm
 	chkbox "HGIMG4を使用する",flag_hgimg
-	objenable stat,0
+	;objenable stat,0
 
 	x=ginfo_sx-150:y=114
 	objsize 140,32
@@ -918,19 +921,44 @@
 		;mes "パッケージ名が無効です" : goto *and_fin
 	}
 
+	gosub *check_hsplib
+	if res=0 {
+		mes "HSPlibフォルダを確認しています..."
+	} else {
+		mes "HSPlibフォルダを設定しています..."
+		gosub *setup_hsplib
+		if res {
+			dialog "HSPlibフォルダが作成できません。\n「オプション」のプロジェクトフォルダを正しく設定してください。"
+		}
+	}
+
 	if flag_admob {
 		gosub *check_admob
 		if res {
-			mes "AdMob(GooglePlayServices)が設定されていません。"
+			dialog "AdMob(GooglePlayServices)が設定されていません"
 			goto *and_fin
 		}
 	}
 
+	if flag_hgimg {
+		gosub *check_hspgp
+		if res=0 {
+			mes "gameplayフォルダを確認しています..."
+		} else {
+			mes "gameplayフォルダを設定しています..."
+			gosub *setup_hspgp
+			if res {
+				dialog "gameplayフォルダが作成できません"
+				goto *and_fin
+			}
+		}
+	}
+
+	mes "処理中..."
+
 	basedir=path_proj+"\\"+and_name+"\\"
 	dirlist s1,basedir+"*.*"
 	if stat : mes "すでにプロジェクトが存在しています" : goto *and_fin	
-
-	mes "処理中..."
 
 	gosub *bat_init
 	tmp+="android create project --target "+and_targetid+" --path ./"+and_name+" --activity "+and_name+" --package "+and_package+"\n"
@@ -951,8 +979,6 @@ libs\\armeabi
 libs\\armeabi-v7a
 libs\\x86
 jni
-jni\\hsp3
-jni\\hsp3\\ndk
 jni\\hsp3embed
 res\\drawable-xhdpi
 res\\drawable-hdpi
@@ -960,49 +986,14 @@ res\\drawable-ldpi
 res\\drawable-mdpi"}
 
 	prj_flist={"jni\\Android.mk
-jni\\appengine.h
 jni\\Application.mk
-jni\\main.c
-jni\\hsp_native_app_glue.c
-jni\\hsp_native_app_glue.h
-jni\\javafunc.cpp
-jni\\javafunc.h
-jni\\hsp3\\dpmread.h
-jni\\hsp3\\geometry.h
-jni\\hsp3\\hgio.h
-jni\\hsp3\\hgio_dg.h
-jni\\hsp3\\hsp3code.h
-jni\\hsp3\\hsp3config.h
-jni\\hsp3\\hsp3debug.h
-jni\\hsp3\\hsp3ext.h
-jni\\hsp3\\hsp3gr.h
-jni\\hsp3\\hsp3gr_dish.h
-jni\\hsp3\\hsp3int.h
-jni\\hsp3\\hsp3struct.h
-jni\\hsp3\\hspvar_core.h
-jni\\hsp3\\hspvar_label.h
-jni\\hsp3\\hspwnd.h
-jni\\hsp3\\hspwnd_dish.h
-jni\\hsp3\\random.h
-jni\\hsp3\\stack.h
-jni\\hsp3\\strbuf.h
-jni\\hsp3\\strnote.h
-jni\\hsp3\\supio.h
-jni\\hsp3\\sysreq.h
-jni\\hsp3\\ndk\\hgiox.h
-jni\\hsp3\\ndk\\hsp3ext_ndk.h
-jni\\hsp3\\ndk\\mmman.h
-jni\\hsp3\\ndk\\supio_ndk.h
-jni\\hsp3embed\\hsp3embed.h
 jni\\hsp3embed\\hsp3r.cpp
 jni\\hsp3embed\\hsp3r.h
 jni\\hsp3embed\\hspsource.cpp
-jni\\hsp3embed\\hspvar_util.h
-jni\\hsp3embed\\misc.h
 src\\tv\\hsp\\HspActivity.java
-libs\\armeabi\\libhsp3lib.a
-libs\\armeabi-v7a\\libhsp3lib.a
-libs\\x86\\libhsp3lib.a
+libs\\armeabi\\libobaqlib.a
+libs\\armeabi-v7a\\libobaqlib.a
+libs\\x86\\libobaqlib.a
 res\\drawable-xhdpi\\ic_launcher.png
 res\\drawable-hdpi\\ic_launcher.png
 res\\drawable-ldpi\\ic_launcher.png
@@ -1749,8 +1740,7 @@ hspproj.xcodeproj\\project.pbxproj"}
 	;
 	initsub
 	gsel 1
-
-	mes "処理中..."
+	mes "AdMobの設定中..."
 
 	basedir=path_proj+"\\"+dir_gps
 
@@ -1798,6 +1788,91 @@ hspproj.xcodeproj\\project.pbxproj"}
 	;
 	exist basedir+"\\build.xml"
 	if strsize<=0 : return
+	;
+	res=0
+	return
+
+
+*setup_hsplib
+	;	HSPLibフォルダを設定する
+	;	res=0の場合はOK、それ以外はエラー
+	res=-1
+	;
+	basedir=path_proj+"\\"+dir_hsplib
+	dirlist s1,basedir,5
+	if stat=0 : mkdir basedir	; フォルダを作成
+	;
+	gosub *bat_init
+	s2 = dir_exe+"\\android\\hsplib"
+	tmp+="XCOPY \""+s2+"\" \""+basedir+"\" /S /E /Y /I\n"
+	;
+	gosub *bat_save
+	;
+	execcmd "go.bat"
+	if stat : return
+	;
+	res=0
+	return
+
+*check_hsplib
+	;	HSPLibフォルダが設定されているか?
+	;	res=0の場合はOK、それ以外は設定なし
+	res=-1
+	;
+	basedir=path_proj+"\\"+dir_hsplib
+	dirlist s1,basedir,5
+	if stat=0 : return
+	;
+	exist basedir+"\\main.c"
+	if strsize<=0 : return
+	;
+	res=0
+	return
+
+*setup_hspgp
+	;	gameplayフォルダを設定する
+	;	res=0の場合はOK、それ以外はエラー
+	res=-1
+	;
+	basedir=path_proj+"\\"+dir_gplib
+	dirlist s1,basedir,5
+	if stat=0 : mkdir basedir	; フォルダを作成
+	;
+	gosub *bat_init
+	s2 = dir_exe+"\\android\\gameplay"
+	tmp+="XCOPY \""+s2+"\" \""+basedir+"\" /S /E /Y /I\n"
+	;
+	basedir=path_proj+"\\"+dir_extlib
+	dirlist s1,basedir,5
+	if stat=0 : mkdir basedir	; フォルダを作成
+	;
+	gosub *bat_init
+	s2 = dir_exe+"\\android\\extlib"
+	tmp+="XCOPY \""+s2+"\" \""+basedir+"\" /S /E /Y /I\n"
+	;
+	gosub *bat_save
+	;
+	execcmd "go.bat"
+	if stat : return
+	;
+	res=0
+	return
+
+*check_hspgp
+	;	gameplayフォルダが設定されているか?
+	;	res=0の場合はOK、それ以外は設定なし
+	res=-1
+	;
+	basedir=path_proj+"\\"+dir_gplib
+	dirlist s1,basedir,5
+	if stat=0 : return
+	;
+	exist basedir+"\\src\\Base.h"
+	if strsize<=0 : return
+	;
+	basedir=path_proj+"\\"+dir_extlib
+	dirlist s1,basedir,5
+	if stat=0 : return
 	;
 	res=0
 	return

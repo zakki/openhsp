@@ -412,9 +412,6 @@ public class HspActivity extends NativeActivity {
     }
 
 
-}
-
-
 	// for AdMob
 	private static AdView adView;
 	private static AdRequest.Builder _request;
