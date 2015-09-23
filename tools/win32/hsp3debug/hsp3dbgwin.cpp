@@ -26,7 +26,7 @@ static HINSTANCE myinst;
 #define ID_BTN2 1001
 #define ID_BTN3 1002
 
-#define TABDLGMAX 3
+#define TABDLGMAX 4
 #define myClass "HSP3DEBUG"
 
 #define DIALOG_X0 5
@@ -53,6 +53,9 @@ static HWND g_hSttCtrl;
 
 static HWND g_hLogPage;
 static HWND g_hLogEdit;
+
+static HWND g_hCallstackPage;
+static HWND g_hCallstackEdit;
 
 typedef BOOL (CALLBACK *HSP3DBGFUNC)(HSP3DEBUG *,int,int,int);
 
@@ -144,11 +147,17 @@ static void CurrnetUpdate( void )
 {
 	char tmp[512];
 	char *fn;
+	char *p;
+
 	g_debug->dbg_curinf();
 	fn = g_debug->fname;
 	if ( fn == NULL ) fn = "???";
 	sprintf( tmp,"%s\n( line:%d )", fn, g_debug->line );
 	SetWindowText( g_hSttCtrl, tmp );
+
+	p = g_debug->dbg_callstack();
+	SetWindowText( g_hCallstackEdit, p );
+	g_debug->dbg_close( p );
 }
 
 
@@ -283,6 +292,19 @@ LRESULT CALLBACK TabLogProc(HWND hDlg, UINT msg, WPARAM wp, LPARAM lp)
 	return FALSE;
 }
 
+LRESULT CALLBACK TabCallstackProc(HWND hDlg, UINT msg, WPARAM wp, LPARAM lp)
+{
+	//      Callstackタブ
+	//
+	switch (msg) {
+	case WM_INITDIALOG:
+		g_hCallstackPage = hDlg;
+		g_hCallstackEdit = GetDlgItem( hDlg, IDC_EDIT1 );
+		return TRUE;
+	}
+	return FALSE;
+}
+
 
 // 親ダイアログのコールバック関数
 LRESULT CALLBACK DlgProc(HWND hDlg, UINT msg, WPARAM wp, LPARAM lp)
@@ -322,6 +344,12 @@ LRESULT CALLBACK DlgProc(HWND hDlg, UINT msg, WPARAM wp, LPARAM lp)
 		TabCtrl_InsertItem(g_hTabCtrl , 2, &tc);
 		g_hTabSheet[2] = CreateDialog( myinst, "T_LOG",
 			hDlg, (DLGPROC) TabLogProc );
+
+		tc.mask = TCIF_TEXT;
+		tc.pszText = "コールスタック";
+		TabCtrl_InsertItem(g_hTabCtrl , 3, &tc);
+		g_hTabSheet[3] = CreateDialog( myinst, "T_CALL",
+			hDlg, (DLGPROC) TabCallstackProc );
 
 		//GetClientRect(g_hTabCtrl, &rt);
 		SetRect( &rt, 8, DIALOG_Y2+4, DIALOG_X1+8, DIALOG_Y1+4 );
