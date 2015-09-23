@@ -27,7 +27,7 @@ static int *notice_ptr;
 
 void SetObjectEventNoticePtr( int *ptr )
 {
-	//		ƒCƒxƒ“ƒg‚Ì’lƒ|ƒCƒ“ƒ^‚ğİ’è
+	//		ã‚¤ãƒ™ãƒ³ãƒˆæ™‚ã®å€¤ãƒã‚¤ãƒ³ã‚¿ã‚’è¨­å®š
 	//
 	notice_ptr = ptr;
 }
@@ -73,7 +73,7 @@ static void Object_ButtonDraw( HSPOBJINFO *info )
 	tcol = 0xff000000;
 	//tcol = 0xffffffff;
 	if ( info->srcid < 0 ) {
-		//	ƒOƒ‰ƒf[ƒVƒ‡ƒ“‚É‚æ‚é•W€ƒ{ƒ^ƒ“
+		//	ã‚°ãƒ©ãƒ‡ãƒ¼ã‚·ãƒ§ãƒ³ã«ã‚ˆã‚‹æ¨™æº–ãƒœã‚¿ãƒ³
 		if ( info->enableflag ) {
 			if ( info->tapflag == 1 ) {
 				col1 = 0xff909090; col2 = 0xffc0c0c0;
@@ -95,7 +95,7 @@ static void Object_ButtonDraw( HSPOBJINFO *info )
 		bm->Line( x1, y2 );
 		bm->Line( x1, y1 );
 	} else {
-		//	‰æ‘œ‚É‚æ‚éƒ{ƒ^ƒ“
+		//	ç”»åƒã«ã‚ˆã‚‹ãƒœã‚¿ãƒ³
 		col1 = btn->normal_x; col2 = btn->normal_y;
 		if ( info->enableflag ) {
 			if ( info->tapflag == 1 ) {
@@ -129,7 +129,7 @@ static void Object_ButtonDraw( HSPOBJINFO *info )
 
 void Bmscr::ResetHSPObject( void )
 {
-	//		‚·‚×‚Ä‚ÌObject‚ğƒŠƒZƒbƒg‚·‚é
+	//		ã™ã¹ã¦ã®Objectã‚’ãƒªã‚»ãƒƒãƒˆã™ã‚‹
 	//
 	int i;
 	if ( mem_obj != NULL ) {
@@ -166,7 +166,7 @@ void Bmscr::SetObjectMode( int id, int owmode )
 
 int Bmscr::NewHSPObject( void )
 {
-	//		‹ó‚«ID‚ğ’T‚·
+	//		ç©ºãIDã‚’æ¢ã™
 	//
 	int i,id;
 	id = 0;
@@ -229,7 +229,7 @@ HSPOBJINFO *Bmscr::GetHSPObjectSafe( int id )
 
 void Bmscr::DeleteHSPObject( int id )
 {
-	//		ƒIƒuƒWƒFƒNƒgíœ
+	//		ã‚ªãƒ–ã‚¸ã‚§ã‚¯ãƒˆå‰Šé™¤
 	//
 	HSPOBJINFO *obj;
 	obj = GetHSPObjectSafe( id );
@@ -301,7 +301,7 @@ void Bmscr::SetButtonImage( int id, int bufid, int x1, int y1, int x2, int y2, i
 int Bmscr::DrawAllObjects( void )
 {
 
-	//		DishSystemObject‚ğ•`‰æ‚·‚é
+	//		DishSystemObjectã‚’æç”»ã™ã‚‹
 	//
 	int i;
 	HSPOBJINFO *info;
@@ -320,7 +320,7 @@ int Bmscr::DrawAllObjects( void )
 
 int Bmscr::UpdateAllObjects( void )
 {
-	//		DishSystemObject‚ğXV‚·‚é
+	//		DishSystemObjectã‚’æ›´æ–°ã™ã‚‹
 	//
 	int i,x,y,msx,msy,tap;
 	HSPOBJINFO *info;
@@ -332,14 +332,14 @@ int Bmscr::UpdateAllObjects( void )
 	msx = savepos[BMSCR_SAVEPOS_MOSUEX];
 	msy = savepos[BMSCR_SAVEPOS_MOSUEY];
 
-	if ( this->tapinvalid ) {				// ƒ{ƒ^ƒ“‚Ì‚È‚¢êŠ‚Å‰Ÿ‚µ‚½Œã‚Í—£‚·‚Ü‚Å‘Ò‚Â
+	if ( this->tapinvalid ) {				// ãƒœã‚¿ãƒ³ã®ãªã„å ´æ‰€ã§æŠ¼ã—ãŸå¾Œã¯é›¢ã™ã¾ã§å¾…ã¤
 		if ( this->tapstat == 0 ) {
 			this->tapinvalid = 0;
 		}
 		return -1;
 	}
 
-	if ( this->cur_obj != NULL ) {			// ƒ{ƒ^ƒ“‚ÉƒtƒH[ƒJƒX‚µ‚Ä‚¢‚é(‰Ÿ‚µ‚½Œã)
+	if ( this->cur_obj != NULL ) {			// ãƒœã‚¿ãƒ³ã«ãƒ•ã‚©ãƒ¼ã‚«ã‚¹ã—ã¦ã„ã‚‹æ™‚(æŠ¼ã—ãŸå¾Œ)
 
 		//Alertf( "[BtnHold]%d,%d,%d",msx,msy,tapstat );
 
@@ -362,7 +362,7 @@ int Bmscr::UpdateAllObjects( void )
 		return -1;
 	}
 
-	//		‚Ü‚¾‰½‚à‰Ÿ‚µ‚Ä‚¢‚È‚¢ó‘Ô
+	//		ã¾ã ä½•ã‚‚æŠ¼ã—ã¦ã„ãªã„çŠ¶æ…‹
 	//
 	focus = NULL;
 	focustap = 0;
@@ -386,7 +386,7 @@ int Bmscr::UpdateAllObjects( void )
 
 	//Alertf( "[BtnPush][%x,%d]%d,%d,%d",focus,msx,msy,tapstat );
 
-	//		‰Ÿ‚µ‚½ƒ{ƒ^ƒ“‚Ì”»’è
+	//		æŠ¼ã—ãŸãƒœã‚¿ãƒ³ã®åˆ¤å®š
 	//
 	//if ( info->tapflag == 0 ) {
 		if ( this->tapstat == 1 ) {

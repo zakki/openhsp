@@ -8,6 +8,8 @@ Hot Soup Processor ver3.5                           HSP : Hot Soup Processor
 	2015/09/21 3.5 beta3
 
 	オフィシャル珠音2D素材(tamadot)を同梱
+	[HSP3Dish][android][iOS] エラー発生時に番号とメッセージを出力するように修正
+	[HSP3Dish][android] ビルド時にHSPライブラリフォルダを参照する方法に変更
 
 	ue_daiさんによるOpenHSPバグ修正を反映
 	[hsp3] 連想配列型のarray/local引数エイリアスを添字をつけずに参照したときに落ちるバグを修正

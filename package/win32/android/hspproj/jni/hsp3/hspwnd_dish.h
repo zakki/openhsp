@@ -37,39 +37,39 @@ typedef struct HSP3VARSET
 typedef struct HSP3BTNSET
 {
 	//	HSP3BTNSET structure
-	//	(HSP3VARSET‚Æ“¯ƒTƒCƒY‚É‚·‚é‚±‚Æ)
+	//	(HSP3VARSETã¨åŒã‚µã‚¤ã‚ºã«ã™ã‚‹ã“ã¨)
 	//
 	char name[64];				// button name
 	short messx, messy;			// message rect size
 
-	//	QÆŒ³
-	short normal_x, normal_y;	// ’Êí
-	short push_x, push_y;		// ‰Ÿ‰º
-	short focus_x, focus_y;		// ƒtƒH[ƒJƒX
+	//	å‚ç…§å…ƒ
+	short normal_x, normal_y;	// é€šå¸¸æ™‚
+	short push_x, push_y;		// æŠ¼ä¸‹æ™‚
+	short focus_x, focus_y;		// ãƒ•ã‚©ãƒ¼ã‚«ã‚¹æ™‚
 
 	short jumpmode;				// jump mode
 	short ext;					// dummy
-	void *ptr;					// jump ŒÄ‚Ño‚µæ
+	void *ptr;					// jump å‘¼ã³å‡ºã—å…ˆ
 } HSP3BTNSET;
 
 typedef struct HSPOBJINFO
 {
 	//		Object Info (3.0)
 	//
-	short	owmode;		// object‚Ìmode
-	short	enableflag;	// object‚Ì—LŒøƒtƒ‰ƒO
+	short	owmode;		// objectã®mode
+	short	enableflag;	// objectã®æœ‰åŠ¹ãƒ•ãƒ©ã‚°
 
-	void	*bm;		// object‚ª”z’u‚³‚ê‚Ä‚¢‚éBMSCR\‘¢‘Ì‚Ìƒ|ƒCƒ“ƒ^
-	void	*hCld;		// object‚Ìhandle
-	int		owid;		// object‚ÌValue(”Ä—p)
-	int		owsize;		// object‚Ìg—pƒTƒCƒY(”Ä—p)
+	void	*bm;		// objectãŒé…ç½®ã•ã‚Œã¦ã„ã‚‹BMSCRæ§‹é€ ä½“ã®ãƒã‚¤ãƒ³ã‚¿
+	void	*hCld;		// objectã®handle
+	int		owid;		// objectã®Value(æ±ç”¨)
+	int		owsize;		// objectã®ä½¿ç”¨ã‚µã‚¤ã‚º(æ±ç”¨)
 
-	short x,y;			// ¶ãÀ•W
-	short sx,sy;		// ƒTƒCƒY
-	short tapflag;		// ƒ^ƒbƒvƒtƒ‰ƒO
-	short srcid;		// QÆBufferID
+	short x,y;			// å·¦ä¸Šåº§æ¨™
+	short sx,sy;		// ã‚µã‚¤ã‚º
+	short tapflag;		// ã‚¿ãƒƒãƒ—ãƒ•ãƒ©ã‚°
+	short srcid;		// å‚ç…§BufferID
 
-	HSP3BTNSET *btnset;	// object‚©‚çİ’è‚³‚ê‚éî•ñ
+	HSP3BTNSET *btnset;	// objectã‹ã‚‰è¨­å®šã•ã‚Œã‚‹æƒ…å ±
 
 	//		callback function
 	void	(*func_draw)( struct HSPOBJINFO * );
@@ -111,18 +111,18 @@ BMSCR_SAVEPOS_MAX,
 };
 
 typedef struct {
-	//	ƒfƒoƒCƒX‚²‚Æ‚Ìî•ñ
-	//	(*‚Ì€–Ú‚ÍAeƒAƒvƒŠƒP[ƒVƒ‡ƒ“‚Åİ’è‚³‚ê‚Ü‚·)
+	//	ãƒ‡ãƒã‚¤ã‚¹ã”ã¨ã®æƒ…å ±
+	//	(*ã®é …ç›®ã¯ã€è¦ªã‚¢ãƒ—ãƒªã‚±ãƒ¼ã‚·ãƒ§ãƒ³ã§è¨­å®šã•ã‚Œã¾ã™)
 	//
-	char *devname;				// *ƒfƒoƒCƒXƒ‰ƒ“ƒ^ƒCƒ€–¼
-	char *error;				// *ƒGƒ‰[ƒƒbƒZ[ƒW
+	char *devname;				// *ãƒ‡ãƒã‚¤ã‚¹ãƒ©ãƒ³ã‚¿ã‚¤ãƒ å
+	char *error;				// *ã‚¨ãƒ©ãƒ¼ãƒ¡ãƒƒã‚»ãƒ¼ã‚¸
 
-	//	ƒtƒ@ƒ“ƒNƒVƒ‡ƒ“î•ñ
+	//	ãƒ•ã‚¡ãƒ³ã‚¯ã‚·ãƒ§ãƒ³æƒ…å ±
 	//
-	int (*devprm)( char *name, char *value );	// ƒpƒ‰ƒ[ƒ^[İ’èƒtƒ@ƒ“ƒNƒVƒ‡ƒ“
-	int (*devcontrol)( char *cmd, int p1, int p2, int p3 );	// ƒRƒ}ƒ“ƒhó‚¯æ‚èƒtƒ@ƒ“ƒNƒVƒ‡ƒ“
-	int *(*devinfoi)( char *name, int *size );	// intî•ñó‚¯æ‚èƒtƒ@ƒ“ƒNƒVƒ‡ƒ“
-	char *(*devinfo)( char *name );				// strî•ñó‚¯æ‚èƒtƒ@ƒ“ƒNƒVƒ‡ƒ“
+	int (*devprm)( char *name, char *value );	// ãƒ‘ãƒ©ãƒ¡ãƒ¼ã‚¿ãƒ¼è¨­å®šãƒ•ã‚¡ãƒ³ã‚¯ã‚·ãƒ§ãƒ³
+	int (*devcontrol)( char *cmd, int p1, int p2, int p3 );	// ã‚³ãƒãƒ³ãƒ‰å—ã‘å–ã‚Šãƒ•ã‚¡ãƒ³ã‚¯ã‚·ãƒ§ãƒ³
+	int *(*devinfoi)( char *name, int *size );	// intæƒ…å ±å—ã‘å–ã‚Šãƒ•ã‚¡ãƒ³ã‚¯ã‚·ãƒ§ãƒ³
+	char *(*devinfo)( char *name );				// stræƒ…å ±å—ã‘å–ã‚Šãƒ•ã‚¡ãƒ³ã‚¯ã‚·ãƒ§ãƒ³
 
 } HSP3DEVINFO;
 
@@ -285,7 +285,7 @@ public:
 	int		mtouch_num;					// Active Multi-Touch points
 	HSP3MTOUCH mtouch[BMSCR_MAX_MTOUCH];	// Multi-Touch Info
 
-	float	colorvalue[4];				// ColorRGB value each 0.0`1.0
+	float	colorvalue[4];				// ColorRGB value each 0.0ï½1.0
 
 	char	font_curname[RESNAME_MAX];	// Current Font Name
 	int		font_cursize;				// Current Font Size
@@ -434,7 +434,7 @@ typedef struct BMSCR
 	int		mtouch_num;					// Active Multi-Touch points
 	HSP3MTOUCH mtouch[BMSCR_MAX_MTOUCH];	// Multi-Touch Info
 
-	float	colorvalue[4];				// ColorRGB value each 0.0`1.0
+	float	colorvalue[4];				// ColorRGB value each 0.0ï½1.0
 
 } BMSCR;
 

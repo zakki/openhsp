@@ -23,7 +23,11 @@
 */
 /*------------------------------------------------------------*/
 
-#ifdef HSPDEBUG
+#if defined(HSPDEBUG)|defined(HSPDISH)|defined(HSPMAC)|defined(HSPLINUX)|defined(HSPEMSCRIPTEN)
+#define ENABLE_ERRMSG
+#endif
+
+#ifdef ENABLE_ERRMSG
 #ifdef JPNMSG
 static char *err[]={
 	"",												// 0
@@ -121,7 +125,7 @@ static char *err[]={
 char *hspd_geterror( HSPERROR error )
 {
 	if ((error<0)||(error>=HSPERR_MAX)) return err[0];
-	return err[error];
+	return err[(int)error];
 }
 
 #else

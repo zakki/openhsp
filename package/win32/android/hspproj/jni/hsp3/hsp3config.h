@@ -8,9 +8,9 @@
 //		システム関連ラベル
 //
 #define HSPTITLE "Hot Soup Processor ver."
-#define hspver "3.5beta2"
-#define mvscode 2		// minor version code
-#define vercode 0x3502	// version code
+#define hspver "3.5beta3"
+#define mvscode 3		// minor version code
+#define vercode 0x3503	// version code
 
 #define HSPERR_HANDLE		// HSPエラー例外を有効にします
 #define SYSERR_HANDLE		// システムエラー例外を有効にします
@@ -20,7 +20,7 @@
 //		移植用のラベル
 //
 #define JPN			// IME use flag
-#define JPNMSG		// japanese message flag
+//#define JPNMSG		// japanese message flag
 
 //
 //	Debug mode functions
@@ -78,6 +78,12 @@
 
 #if defined(HSPEMSCRIPTEN)
 #define HSPRANDMT // Use std::mt19937
+#endif
+
+#ifdef HSPEMSCRIPTEN
+#define HSP_ALIGN_DOUBLE __attribute__ ((aligned (8)))
+#else
+#define HSP_ALIGN_DOUBLE
 #endif
 
 //

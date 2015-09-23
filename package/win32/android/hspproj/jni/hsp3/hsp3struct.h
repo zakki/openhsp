@@ -14,6 +14,12 @@
 */
 #include "hsp3debug.h"
 
+#ifdef _WIN64
+#define PTR64BIT        //  ポインタは64bit
+#else
+#define PTR32BIT        //  ポインタは32bit
+#endif
+
 // command type
 #define TYPE_MARK 0
 #define TYPE_VAR 1
@@ -92,19 +98,32 @@ typedef struct HSPHED
 	int		bootoption;			// bootup options
 	int		runtime;			// ptr to runtime name
 
+	//		HSP3.5 extra header structure
+	//
+	int		pt_sr;				// ptr to Option Segment
+	int		max_sr;				// size of Option Segment
+	int		opt1;				// option (reserved)
+	int		opt2;				// option (reserved)
+
 } HSPHED;
 
-//#define HSPHED_BOOTOPT_WINHIDE 2			// 起動時ウインドゥ非表示
-//#define HSPHED_BOOTOPT_DIRSAVE 4			// 起動時カレントディレクトリ変更なし
 #define HSPHED_BOOTOPT_DEBUGWIN 1			// 起動時デバッグウインドゥ表示
-//#define HSPHED_BOOTOPT_SAVER 0x100			// スクリーンセーバー
+#define HSPHED_BOOTOPT_WINHIDE 2			// 起動時ウインドゥ非表示
+#define HSPHED_BOOTOPT_DIRSAVE 4			// 起動時カレントディレクトリ変更なし
+#define HSPHED_BOOTOPT_SAVER 0x100			// スクリーンセーバー
+
 #define HSPHED_BOOTOPT_RUNTIME 0x1000		// 動的ランタイムを有効にする
+#define HSPHED_BOOTOPT_NOMMTIMER 0x2000		// マルチメディアタイマーを無効にする
+#define HSPHED_BOOTOPT_NOGDIP 0x4000		// GDI+による描画を無効にする
+#define HSPHED_BOOTOPT_FLOAT32 0x8000		// 実数を32bit floatとして処理する
+#define HSPHED_BOOTOPT_ORGRND 0x10000		// 標準の乱数発生を使用する
 
 #define HPIDAT_FLAG_TYPEFUNC 0
+#define HPIDAT_FLAG_SELFFUNC -1
 #define HPIDAT_FLAG_VARFUNC 1
 #define HPIDAT_FLAG_DLLFUNC 2
 
-typedef struct HPIDAT {
+typedef struct MEM_HPIDAT {		// native HPIDAT
 
 	short	flag;				// flag info
 	short	option;
@@ -112,7 +131,21 @@ typedef struct HPIDAT {
 	int		funcname;			// function name index (DS)
 	void	*libptr;			// lib handle
 
+} MEM_HPIDAT;
+
+#ifdef PTR64BIT
+typedef struct HPIDAT {
+
+	short	flag;				// flag info
+	short	option;
+	int		libname;			// lib name index (DS)
+	int		funcname;			// function name index (DS)
+	int		p_libptr;			// lib handle
+
 } HPIDAT;
+#else
+typedef MEM_HPIDAT HPIDAT;
+#endif
 
 
 #define LIBDAT_FLAG_NONE 0
@@ -130,6 +163,21 @@ typedef struct LIBDAT {
 	int		clsid;				// CLSID (DS) ( Com Object )
 
 } LIBDAT;
+
+#ifdef PTR64BIT
+typedef struct HED_LIBDAT {
+
+	int		flag;				// initalize flag
+	int		nameidx;			// function name index (DS)
+								// Interface IID ( Com Object )
+	int		p_hlib;				// Lib handle
+	int		clsid;				// CLSID (DS) ( Com Object )
+
+} HED_LIBDAT;
+#else
+typedef LIBDAT HED_LIBDAT;
+#endif
+
 
 // multi parameter type
 #define MPTYPE_NONE 0
@@ -197,6 +245,32 @@ typedef struct STRUCTPRM {
 #define STRUCTDAT_FUNCFLAG_CLEANUP 0x10000
 
 // function,module specific data
+
+#ifdef PTR64BIT
+typedef struct STRUCTDAT {
+	short	index;				// base LIBDAT index
+	short	subid;				// struct index
+	int		prmindex;			// STRUCTPRM index(MINFO)
+	int		prmmax;				// number of STRUCTPRM
+	int		nameidx;			// name index (DS)
+	int		size;				// struct size (stack)
+	int		otindex;			// OT index(Module) / cleanup flag(Dll)
+	void	*proc;				// proc address
+	int		funcflag;			// function flags(Module)
+} STRUCTDAT;
+
+typedef struct HED_STRUCTDAT {
+	short	index;				// base LIBDAT index
+	short	subid;				// struct index
+	int		prmindex;			// STRUCTPRM index(MINFO)
+	int		prmmax;				// number of STRUCTPRM
+	int		nameidx;			// name index (DS)
+	int		size;				// struct size (stack)
+	int		otindex;			// OT index(Module) / cleanup flag(Dll)
+	int		funcflag;			// function flags(Module)
+} HED_STRUCTDAT;
+
+#else
 typedef struct STRUCTDAT {
 	short	index;				// base LIBDAT index
 	short	subid;				// struct index
@@ -206,10 +280,13 @@ typedef struct STRUCTDAT {
 	int		size;				// struct size (stack)
 	int		otindex;			// OT index(Module) / cleanup flag(Dll)
 	union {
-	void	*proc;				// proc address
-	int		funcflag;			// function flags(Module)
+		void	*proc;				// proc address
+		int		funcflag;			// function flags(Module)
 	};
 } STRUCTDAT;
+typedef STRUCTDAT HED_STRUCTDAT;
+#endif
+
 
 //	Var Data for Multi Parameter
 typedef struct MPVarData {
@@ -232,14 +309,6 @@ typedef struct MPModVarData {
 #define IRQ_OPT_GOTO 0
 #define IRQ_OPT_GOSUB 1
 #define IRQ_OPT_CALLBACK 2
-
-//	Stack info for DLL Parameter
-typedef struct MPStack {
-	char *prmbuf;
-	char **prmstk;
-	int curstk;
-	void *vptr;
-} MPStack;
 
 
 typedef struct IRQDAT {

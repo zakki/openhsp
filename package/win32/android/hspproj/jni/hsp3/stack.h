@@ -5,6 +5,8 @@
 #ifndef __stack_h
 #define __stack_h
 
+#include "hsp3config.h"
+
 #define STM_MAX_DEFAULT 512
 #define STM_STRSIZE_DEFAULT 64
 
@@ -23,8 +25,8 @@ typedef struct
 	short type;
 	short mode;
 	char *ptr;
-    void *pval;
-	int ival;
+	void *pval;
+	int ival HSP_ALIGN_DOUBLE;
 	char itemp[STM_STRSIZE_DEFAULT-4];		// data area padding
 } STMDATA;
 
