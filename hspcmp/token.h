@@ -6,9 +6,6 @@
 #define __token_h
 
 #include <vector>
-#include <string>
-#include <unordered_map>
-#include <memory>
 
 // token type
 #define TK_NONE 0
@@ -445,9 +442,6 @@ private:
 	CMemBuf *mi_buf;
 	CMemBuf *fi2_buf;
 	CMemBuf *hpi_buf;
-
-	std::unique_ptr<std::unordered_map<double, int>> double_literal_table; // ’è”ƒv[ƒ‹—p
-	std::unique_ptr<std::unordered_map<std::string, int>> string_literal_table;
 
 	//		for Header info
 	int hed_option;

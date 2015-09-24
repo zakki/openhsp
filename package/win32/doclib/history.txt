@@ -27,7 +27,6 @@ Hot Soup Processor ver3.5                           HSP : Hot Soup Processor
 	[hspcmp] 未使用モジュールのコード削除が不完全だった部分を修正
 	[hspcmp] シンボルの多重定義エラーで定義された位置を出力するように修正
 	[hspcmp] よく見るエラーメッセージの日本語化
-	[hspcmp] 文字列や実数値の重複データ削減による出力サイズの最適化を実装
 
 	2015/05/27 3.5 beta2
 
