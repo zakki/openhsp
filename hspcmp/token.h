@@ -6,6 +6,9 @@
 #define __token_h
 
 #include <vector>
+#include <string>
+#include <map>
+#include <memory>
 
 // token type
 #define TK_NONE 0
@@ -442,6 +445,11 @@ private:
 	CMemBuf *mi_buf;
 	CMemBuf *fi2_buf;
 	CMemBuf *hpi_buf;
+
+#ifdef HSP_DS_POOL
+	std::map<double, int> double_literal_table; // ’è”ƒv[ƒ‹—p
+	std::map<std::string, int> string_literal_table;
+#endif
 
 	//		for Header info
 	int hed_option;
