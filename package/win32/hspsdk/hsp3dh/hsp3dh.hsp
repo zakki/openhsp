@@ -898,7 +898,7 @@
 	mes "ˆ—’†..."
 
 	gosub *bat_init
-	tmp+="keytool -genkey -keystore "+and_keystore+".keystore -alias "+and_keystore+" -validity 10000\n"
+	tmp+="keytool -genkey -keystore "+and_keystore+".keystore -alias "+and_keystore+" -keyalg RSA -keysize 2048 -validity 10000\n"
 
 	gosub *bat_save
 
@@ -1154,7 +1154,7 @@ res\\drawable-mdpi\\ic_launcher.png"}
 
 	gosub *bat_init
 	tmp+="CD "+and_name+"\n"
-	tmp+="jarsigner -verbose -keystore ..\\"+and_keystore+".keystore bin\\"+and_name+"-release-unsigned.apk "+and_keystore+"\n"
+	tmp+="jarsigner -verbose -sigalg SHA1withRSA -digestalg SHA1 -keystore ..\\"+and_keystore+".keystore bin\\"+and_name+"-release-unsigned.apk "+and_keystore+"\n"
 	tmp+="zipalign -v 4 bin\\"+and_name+"-release-unsigned.apk bin\\"+and_name+".apk\n"
 	gosub *bat_save
 
