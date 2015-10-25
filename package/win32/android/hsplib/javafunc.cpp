@@ -15,7 +15,7 @@
 #include "hsp3/strbuf.h"
 #include "hsp3/hsp3gr.h"
 #include "hsp3/supio.h"
-#include "hsp3embed/hsp3embed.h"
+#include "hsp3ndk.h"
 
 /*
 static int jniRegisterNativeMethods(JNIEnv* env, const char* className,
@@ -53,7 +53,7 @@ static char *jcall_void_str( const char *name ) {
     jstring jstr = (jstring)env->CallObjectMethod(m_engine->app->activity->clazz, methodj);
     if (jstr != NULL) {
         char* str = (char *)env->GetStringUTFChars(jstr, NULL);
-        p = hsp3eb_stmp( str );
+        p = hsp3ndk_stmp( str );
         env->ReleaseStringUTFChars(jstr, str);
     }
 	env->DeleteLocalRef( clazz );
@@ -103,12 +103,12 @@ JNIEXPORT void JNICALL nativepoke( JNIEnv* env, jobject thiz, jint value, jint v
 	//		Callback from Java
 	//
 	HSPCTX *ctx;
-	ctx = hsp3eb_getctx(); 
+	ctx = hsp3ndk_getctx(); 
 	ctx->runmode = RUNMODE_RUN;
-	hsp3eb_setstat( (int)value2 );
+	hsp3ndk_setstat( (int)value2 );
 
 	//int i;
-	//i = hsp3eb_gettask();
+	//i = hsp3ndk_gettask();
 	//LOGI( "[nativepoke(%d)(%d)] %d",value,value2, i );
 }
 
@@ -178,7 +178,7 @@ int j_callVibrator( int val )
 int j_dispDialog( char *msg1, char *msg2, int type )
 {
 	HSPCTX *ctx;
-	ctx = hsp3eb_getctx(); 
+	ctx = hsp3ndk_getctx(); 
 	ctx->runmode = RUNMODE_STOP;
 
 	return jcall_SSI_int( "dispDialog", msg1, msg2, type );

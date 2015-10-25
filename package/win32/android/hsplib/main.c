@@ -10,7 +10,7 @@
 #include "hsp3/hsp3config.h"
 #include "hsp3/hsp3struct.h"
 #include "hsp3/hsp3ext.h"
-#include "hsp3embed/hsp3embed.h"
+#include "hsp3ndk.h"
 
 static int *p_runmode;
 
@@ -184,7 +184,7 @@ static void engine_handle_cmd(struct android_app* app, int32_t cmd) {
         engine->app->savedStateSize = sizeof(struct saved_state);
         break;
     case APP_CMD_INIT_WINDOW:
-       	//LOGI("***CMD_INIT_WINDOW(%x)",engine->app->window);
+		//LOGI("***CMD_INIT_WINDOW(%x)",engine->app->window);
         if (engine->app->window != NULL) {
 			javafunc_init( engine );
             engine_init_display(engine);
@@ -195,8 +195,8 @@ static void engine_handle_cmd(struct android_app* app, int32_t cmd) {
 				//hgio_view( 480, 800 );	// screen size
 				//hgio_scale( 1.0f, 1.0f );	// scale value
 				//hgio_autoscale( 0 );	// auto scale value
-				hsp3eb_init();
-				ctx = hsp3eb_getctx(); 
+				hsp3ndk_init( "start.ax" );
+				ctx = hsp3ndk_getctx(); 
 				engine->hspctx = ctx;
 				p_runmode = &(ctx->runmode);
 				hgio_setstorage( j_getinfo(JAVAFUNC_INFO_FILESDIR) );
@@ -204,7 +204,7 @@ static void engine_handle_cmd(struct android_app* app, int32_t cmd) {
 
 			} else {
 		       	LOGI("[HSP Resume]");
-		        hsp3eb_resume();
+		        hsp3ndk_resume();
 		        engine->animating = 1;
 			}
             //engine_draw_frame(engine);
@@ -215,7 +215,7 @@ static void engine_handle_cmd(struct android_app* app, int32_t cmd) {
        	//LOGI("***CMD_TERM_WINDOW");
         engine->animating = 0;
         engine_term_display(engine);
-        hsp3eb_pause();
+        hsp3ndk_pause();
         break;
     case APP_CMD_GAINED_FOCUS:
         engine->animating = 1;
@@ -313,8 +313,8 @@ void android_main(struct android_app* state) {
 
         if (engine.animating) {
             // 画面描画
-			hsp3eb_exectime( hgio_gettick() );
-			//hsp3eb_exec();
+			hsp3ndk_exectime( hgio_gettick() );
+			//hsp3ndk_exec();
 			//engine_draw_frame(&engine);
         }
         
@@ -331,7 +331,7 @@ void android_main(struct android_app* state) {
 
     // 破棄
 //	LOGI("[HSP Close]");
-	hsp3eb_bye();
+	hsp3ndk_bye();
     hgio_term();
 	engine_term_display(&engine);
 	exit(0);

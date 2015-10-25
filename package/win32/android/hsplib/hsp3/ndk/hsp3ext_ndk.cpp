@@ -12,7 +12,7 @@
 
 #include "../hgio.h"
 #include "../sysreq.h"
-#include "../../hsp3embed/hsp3embed.h"
+#include "../../hsp3ndk.h"
 #include "../../javafunc.h"
 
 /*----------------------------------------------------------*/
@@ -74,7 +74,7 @@ void hsp3dish_setdevinfo( void )
 {
 	//		Initalize DEVINFO
     HSP3DEVINFO *devinfo;
-    devinfo = (HSP3DEVINFO *)hsp3eb_getDevInfo();
+    devinfo = (HSP3DEVINFO *)hsp3ndk_getDevInfo();
     mem_devinfo = devinfo;
 	devinfo_dummy = 0;
     devres_none = (char *)&devinfo_dummy;

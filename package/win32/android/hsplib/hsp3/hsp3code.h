@@ -68,6 +68,7 @@ char *code_getsptr( int *type );
 
 int code_debug_init( void );
 int code_getdebug_line( void );
+int code_getdebug_line( unsigned short *pt );
 char *code_getdebug_name( void );
 int code_getdebug_seekvar( const char *name );
 char *code_getdebug_varname( int val_id );
@@ -102,6 +103,7 @@ char *code_dbgvarinf( char *target, int option );
 void code_dbgcurinf( void );
 void code_dbgclose( char *buf );
 int code_dbgset( int id );
+char *code_dbgcallstack( void );
 void code_dbgtrace( void );
 
 void code_delstruct( PVal *in_pval, APTR in_aptr );
