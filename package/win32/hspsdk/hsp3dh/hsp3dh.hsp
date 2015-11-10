@@ -114,6 +114,7 @@
 	sdim fname,1024
 	sdim and_package, 256
 
+	tool_zipalign=path_sdk+"\\tools\\zipalign.exe"
 	return
 
 #deffunc initwnd
@@ -987,6 +988,8 @@ res\\drawable-mdpi"}
 
 	prj_flist={"jni\\Android.mk
 jni\\Application.mk
+jni\\main.c
+jni\\javafunc.cpp
 jni\\hsp3embed\\hsp3r.cpp
 jni\\hsp3embed\\hsp3r.h
 jni\\hsp3embed\\hspsource.cpp
@@ -1133,6 +1136,9 @@ res\\drawable-mdpi\\ic_launcher.png"}
 	;
 	gosub *get_prjname
 	if and_name="" : dialog "プロジェクトが指定されていません" : goto *topmenu
+
+	exist tool_zipalign
+	if strsize<=0 : dialog "SDKのtoolsフォルダにzipalignツールがありません。\nbuild-toolsフォルダからコピーする必要があります。" : goto *topmenu
 
 	initsub
 

@@ -2,15 +2,13 @@ LOCAL_PATH := $(call my-dir)
 
 include $(CLEAR_VARS)
 
-LOCAL_MODULE    := block5
+LOCAL_MODULE    := hspproj
 LOCAL_CFLAGS := -D__ANDROID__ -Wno-psabi -DHSPNDK -DHSPEMBED -DHSPDISH
 LOCAL_CPPFLAGS  += -fexceptions
 LOCAL_C_INCLUDES += ../hsplib35b3
 
-LOCAL_SRC_FILES := hsp3embed/hsp3r.cpp hsp3embed/hspsource.cpp \
+LOCAL_SRC_FILES := hsp3embed/hsp3r.cpp hsp3embed/hspsource.cpp javafunc.cpp main.c \
 ../../hsplib35b3/hsp_native_app_glue.c \
-../../hsplib35b3/javafunc.cpp \
-../../hsplib35b3/main.c \
 ../../hsplib35b3/hsp3embed/hsp3code.cpp \
 ../../hsplib35b3/hsp3embed/hsp3embed.cpp \
 ../../hsplib35b3/hsp3embed/hspvar_util.cpp \

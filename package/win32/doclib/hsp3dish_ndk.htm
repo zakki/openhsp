@@ -467,6 +467,9 @@
 	ファイルを更新する場合は、再度リリースビルドを行なって、apkファイルを差し替えた後にactivate(有効化)してください。
 	ただし、更新を行なうためには、バージョン番号を上げる必要があります。プロジェクトが使用している「AndroidManifest.xml」ファイルの、android:versionCode、android:versionName項目の数値を更新してから、リリースビルドを行なうようにしてください。
 	</p>
+	<br><p><b>
+	※androidの新しいSDKでは、署名に使用されるzipalignツールが異なるフォルダに収録されています。「リリース」ボタンを押した際に「zipalignツールがありません。」というエラーが出る場合は、SDKフォルダのbuild-tools以下にある最新の「zipalign.exe」ファイルを、SDKフォルダのtools以下にコピーしてください。
+	</b></p>
 	</ul>
 
 

@@ -173,6 +173,16 @@ public class HspActivity extends NativeActivity {
 	        public void run()
 	        {
 			AlertDialog.Builder alert = new AlertDialog.Builder(myActivity);
+			// ダイアログ外で閉じた場合
+			alert.setOnCancelListener(new DialogInterface.OnCancelListener()
+			{
+			@Override
+			public void onCancel(DialogInterface dialog)
+			{
+				nativepoke( 0, 0 );
+			}
+			});
+
 			alert.setMessage( s_msg1 );
 			alert.setTitle( s_msg2 );
 			if (( addtype & 1 ) > 0 ) {
@@ -185,7 +195,7 @@ public class HspActivity extends NativeActivity {
 			@Override
 			public void onClick(DialogInterface dialog, int which)
 			{
-				nativepoke( 0, 0 );
+				nativepoke( 0, 1 );
 			}
 		    });
 	        	alert.create().show();
@@ -213,6 +223,16 @@ public class HspActivity extends NativeActivity {
 	        public void run()
 	        {
 			AlertDialog.Builder alert = new AlertDialog.Builder(myActivity);
+			// ダイアログ外で閉じた場合
+			alert.setOnCancelListener(new DialogInterface.OnCancelListener()
+			{
+			@Override
+			public void onCancel(DialogInterface dialog)
+			{
+				nativepoke( 0, 0 );
+			}
+			});
+
 			alert.setMessage( s_msg1 );
 			alert.setTitle( s_msg2 );
 			if (( addtype & 1 ) > 0 ) {
