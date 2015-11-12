@@ -12,6 +12,8 @@
 	<title>拡張プラグイン・モジュール一覧</title>
 </head>
 <!--
+	2015/11/12
+		・ 非推奨のプラグイン・モジュールを分離
 	2010/02/16
 		・ 同梱モジュールの説明を追加
 	2009/05/19
@@ -35,12 +37,11 @@
 					<li><a href="#HSPEXT">HSPEXT.DLL</a></li>
 					<li><a href="#HSPINET">HSPINET.DLL</a></li>
 					<li><a href="#HGIMG3">HGIMG3.hrt</a></li>
-					<li><a href="#E3DHSP3">E3DHSP.DLL</a></li>
+					<li><a href="#HGIMG4">HGIMG4.hrt</a></li>
 					<li><a href="#OBAQ">OBAQ.DLL</a></li>
 					<li><a href="#HSPCV">HSPCV.DLL</a></li>
 					<li><a href="#HSPDB">HSPDB.DLL</a></li>
 					<li><a href="#HSPDA">HSPDA.DLL</a></li>
-					<li><a href="#HSPDX">HSPDX.DLL</a></li>
 					<li><a href="#HSPCMP">HSPCMP.DLL</a></li>
 					<li><a href="#HSP3IMP">HSP3IMP.DLL</a></li>
 					<li><a href="#HSPOGG">HSPOGG.DLL</a></li>
@@ -56,7 +57,6 @@
 					<li><a href="#Artlet2D">Artlet2D</a></li>
 					<li><a href="#HSP3DISH">HSP3DISH.hrt</a></li>
 					<li><a href="#SQLele">SQLele</a></li>
-					<li><a href="#llmod3">llmod3</a></li>
 					<li><a href="#hsp3util">hsp3util.as</a></li>
 					<li><a href="#hsp261cmp">hsp261cmp.as</a></li>
 					<li><a href="#form_decode">form_decode.as</a></li>
@@ -73,6 +73,7 @@
 					<li><a href="#winapi">Win32API定義</a></li>
 				</ol>
 			</li>
+			<li><a href="#OBSOLATE">非推奨のプラグイン・モジュール</a></li>
 			<li><a href="#OTHER_PLUGIN">その他の拡張プラグイン</a></li>
 			<li><a href="#SHIYOU">拡張プラグインの仕様</a></li>
 		</ol>
@@ -205,6 +206,43 @@
 				</td>
 			</tr>
 		</table>
+		<h3 id="HGIMG4">HGIMG4.hrt</h3>
+		<table summary="拡張ランタイムHGIMG4の紹介です。" class="pluginlist">
+			<caption>HGIMG4.hrtの紹介</caption>
+			<tr>
+				<th width="20%">拡張ランタイム</th>
+				<th width="30%">HGIMG4.hrt</th>
+				<th width="5%">Ver3.4</th>
+				<th width="25%">作者:おにたま</th>
+				<th width="20%"><a href="http://www.onionsoft.net/">作者のページ</a></th>
+			</tr>
+			<tr>
+				<td colspan="5">
+					<p>
+						HGIMG3の後継にあたる、高機能2D・3D画像処理ランタイムです。
+						2D・3Dグラフィック表示をサポートし、物理エンジンなどを内包しています。
+					</p>
+					<p>
+						スプライトを使用した2Dゲームから、3Dモデルを使った本格的なソフトまで幅広く
+						利用することができます。
+						HSP3HG.hrtで追加される主な機能は以下の通りです。
+					</p>
+					<ul>
+							<li>OpenGL/ESまたはDirectX9による描画、シェーダー言語サポート</li>
+							<li>シーン管理と統合化された物理エンジン(Bullet)サポート</li>
+							<li>FBX形式のモデルファイル読み込み、アニメーションサポート</li>
+							<li>マルチテクスチャ、バンプマップ、ハイトマップ、LODをサポート</li>
+							<li>フォントデータ(TTF)のレンダリングサポート</li>
+							<li>オフスクリーンレンダリング及び各種ポストエフェクトサポート</li>
+							<li>WindowsだけでなくiOS,Android上での動作をサポート予定</li>
+							<li>HSP及びHSP3Dishと同様のライセンス規約、オープンソース </li>
+					</ul>
+					<p>
+						詳しくは、別途ドキュメント「<a href="hgimg4.txt">hgimg4.txt</a>」を参照してください。
+					</p>
+				</td>
+			</tr>
+		</table>
 		<h3 id="OBAQ">OBAQ.DLL</h3>
 		<table summary="拡張プラグインOBAQの紹介です。" class="pluginlist">
 			<caption>OBAQ for HSP3の紹介</caption>
@@ -326,37 +364,6 @@
 					</p>
 					<p>
 						詳しくは、別途ドキュメント「<a href="hspda.txt">hspda.txt</a>」を参照してください。
-					</p>
-				</td>
-			</tr>
-		</table>
-		<h3 id="HSPDX">HSPDX.DLL</h3>
-		<table summary="拡張プラグインHSPDXの紹介です。" class="pluginlist">
-			<caption>HSPDX.DLLの紹介</caption>
-			<tr>
-				<th width="20%">拡張プラグイン</th>
-				<th width="30%">HSPDX.DLL</th>
-				<th width="5%">Ver3.1</th>
-				<th width="25%">作者:おにたま/Shinagawa</th>
-				<th width="20%"><a href="http://www.hspdx.net/">作者のページ</a></th>
-			</tr>
-			<tr>
-				<td colspan="5">
-					<p>
-						DirectX対応の2D描画プラグインです。
-					</p>
-					<p>
-						豊富なスプライト制御命令を持っているので、面倒な角度ごとの移動、自由落下、衝突判定などを
-						1つの命令で実行できます。
-						これにより、2Dキャラクタを使ったゲーム、デモなどの作成を手軽に行なうことができます。
-					</p>
-					<p>
-						このプラグインは、Shinagawa氏が改変、更新したものをHSP本体に同梱しています。
-						プラグインについてのご意見や感想などは、onion softwareではなく、
-						Sinagawa氏にフィードバックされるようお願いします。
-					</p>
-					<p>
-						詳しくは、別途ドキュメント「<a href="hspdx.txt">hspdx.txt</a>」を参照してください。
 					</p>
 				</td>
 			</tr>
@@ -710,49 +717,6 @@
 		</table>
 
 
-		<h3 id="llmod3">llmod3</h3>
-		<table summary="拡張モジュールの紹介です。" class="pluginlist">
-			<caption>llmod3の紹介</caption>
-			<tr>
-				<th width="20%">拡張モジュール</th>
-				<th width="30%">llmod3</th>
-				<th width="5%">Ver3.3</th>
-				<th width="25%">作者:tom/芝やん/OpenHSP</th>
-				<th width="20%"><a href="http://www.s-software.net/">作者のページ</a></th>
-			</tr>
-			<tr>
-				<td colspan="5">
-					<p>
-					HSP3.0以前に使用されていたllmod(tomさん作)の命令群をHSP3で使用可能にするモジュールです。
-					拡張オブジェクトからシステムの設定など多くの機能をサポートしています。
-					llmod3は、common/llmod3フォルダにある以下のファイルから構成されています。
-					<ul>
-					<li>about.as	aboutモジュール
-					<li>msgdlg.as	dialog(type 0)拡張モジュール
-					<li>unicode.as	Unicode関連のモジュール
-					<li>winver.as	Version取得モジュール
-					<li>multiopen.as	dialog(type 16,17)拡張モジュール(複数のファイル名を取得できるようにしたもの)
-					<li>scrsvr.as	スクリーンセーバー関連モジュール
-					<li>obj.as		オブジェクト関連モジュール
-					<li>img.as		イメージ関連のモジュール
-					<li>treebox.as	ツリーボックス作成モジュール
-					<li>progbox.as	プログレスボックス作成モジュール
-					<li>trackbox.as	トラックボックス作成モジュール
-					<li>udbtn.as	アップダウンボックス作成モジュール
-					<li>listview.as	リストビュー作成モジュール
-					<li>console.as	コンソールウィンドウ作成モジュール
-					<li>dragdrop.as	ドラッグ&ドロップモジュール
-					<li>ime.as		IME関連のモジュール
-					<li>input.as	インプット関連のモジュール
-					<li>misc.as		その他
-					</ul>
-					</p>
-					<p>
-					詳しくは、モジュールのソーススクリプト及び命令ヘルプを参照してください。
-					</p>
-				</td>
-			</tr>
-		</table>
 		<h3 id="hsp3util">hsp3util.as</h3>
 		<table summary="拡張モジュールの紹介です。" class="pluginlist">
 			<caption>hsp3util.asの紹介</caption>
@@ -1077,7 +1041,89 @@
 			</tr>
 		</table>
 
-		<h2 id="OTHER_PLUGI">その他の拡張プラグイン</h2>
+		<h2 id="OBSOLATE">非推奨のプラグイン・モジュール</h2>
+		<p>
+			以下のプラグイン・モジュールは、開発が終了して時間が経過しているため、非推奨としています。
+			これらは、将来のバージョンでパッケージから削除される可能性がありますのでご了承ください。
+		</p>
+
+		<h3 id="HSPDX">HSPDX.DLL</h3>
+		<table summary="拡張プラグインHSPDXの紹介です。" class="pluginlist">
+			<caption>HSPDX.DLLの紹介</caption>
+			<tr>
+				<th width="20%">拡張プラグイン</th>
+				<th width="30%">HSPDX.DLL</th>
+				<th width="5%">Ver3.1</th>
+				<th width="25%">作者:おにたま/Shinagawa</th>
+				<th width="20%"><a href="http://www.hspdx.net/">作者のページ</a></th>
+			</tr>
+			<tr>
+				<td colspan="5">
+					<p>
+						DirectX対応の2D描画プラグインです。
+					</p>
+					<p>
+						豊富なスプライト制御命令を持っているので、面倒な角度ごとの移動、自由落下、衝突判定などを
+						1つの命令で実行できます。
+						これにより、2Dキャラクタを使ったゲーム、デモなどの作成を手軽に行なうことができます。
+					</p>
+					<p>
+						このプラグインは、Shinagawa氏が改変、更新したものをHSP本体に同梱しています。
+						プラグインについてのご意見や感想などは、onion softwareではなく、
+						Sinagawa氏にフィードバックされるようお願いします。
+					</p>
+					<p>
+						詳しくは、別途ドキュメント「<a href="hspdx.txt">hspdx.txt</a>」を参照してください。
+					</p>
+				</td>
+			</tr>
+		</table>
+		<h3 id="llmod3">llmod3</h3>
+		<table summary="拡張モジュールの紹介です。" class="pluginlist">
+			<caption>llmod3の紹介</caption>
+			<tr>
+				<th width="20%">拡張モジュール</th>
+				<th width="30%">llmod3</th>
+				<th width="5%">Ver3.3</th>
+				<th width="25%">作者:tom/芝やん/OpenHSP</th>
+				<th width="20%"><a href="http://www.s-software.net/">作者のページ</a></th>
+			</tr>
+			<tr>
+				<td colspan="5">
+					<p>
+					HSP3.0以前に使用されていたllmod(tomさん作)の命令群をHSP3で使用可能にするモジュールです。
+					拡張オブジェクトからシステムの設定など多くの機能をサポートしています。
+					llmod3は、common/llmod3フォルダにある以下のファイルから構成されています。
+					<ul>
+					<li>about.as	aboutモジュール
+					<li>msgdlg.as	dialog(type 0)拡張モジュール
+					<li>unicode.as	Unicode関連のモジュール
+					<li>winver.as	Version取得モジュール
+					<li>multiopen.as	dialog(type 16,17)拡張モジュール(複数のファイル名を取得できるようにしたもの)
+					<li>scrsvr.as	スクリーンセーバー関連モジュール
+					<li>obj.as		オブジェクト関連モジュール
+					<li>img.as		イメージ関連のモジュール
+					<li>treebox.as	ツリーボックス作成モジュール
+					<li>progbox.as	プログレスボックス作成モジュール
+					<li>trackbox.as	トラックボックス作成モジュール
+					<li>udbtn.as	アップダウンボックス作成モジュール
+					<li>listview.as	リストビュー作成モジュール
+					<li>console.as	コンソールウィンドウ作成モジュール
+					<li>dragdrop.as	ドラッグ&ドロップモジュール
+					<li>ime.as		IME関連のモジュール
+					<li>input.as	インプット関連のモジュール
+					<li>misc.as		その他
+					</ul>
+					</p>
+					<p>
+					詳しくは、モジュールのソーススクリプト及び命令ヘルプを参照してください。
+					</p>
+				</td>
+			</tr>
+		</table>
+
+
+		<h2 id="OTHER_PLUGIN">その他の拡張プラグイン</h2>
 		<p>
 			HSP拡張プラグインは、仕様が公開されていて、ユーザーの方たちが制作した
 			多くのプラグインが存在します。

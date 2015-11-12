@@ -36,7 +36,7 @@ HGIMG4 REFERENCE MANUAL                High Performance Graphic Image Plugin
 
 	これらのDLLは、OpenGL版を使用する場合は必要ありません。
 
-	HGIMG4は、以下のようなファイルを使用します。
+	HGIMG4は、以下のようなファイルで構成されています。
 
 		hsp3gp.exe (OpenGL実行用ランタイム)
 		hsp3gpdx.exe (DirectX実行用ランタイム)
@@ -73,6 +73,36 @@ HGIMG4 REFERENCE MANUAL                High Performance Graphic Image Plugin
 	拡張された機能の簡単な使用例を見ることができるはずです。
 	サンプルスクリプトは、HSPインストールフォルダ以下のsample/hgimg4
 	に用意されています。
+
+
+・リソースフォルダについて
+
+	HGIMG4では、起動時に実行するスクリプトと同じフォルダにある
+	「res」フォルダから必要なリソースを読み込みます。
+	リソースファイルは、「sample/hgimg4/res」のフォルダに含まれています。
+	以下のファイルは、起動のために必要ですので、実行ファイル作成時なども必ず入れておいてください。
+
+	res/font.gpb
+	res/shaders/colored.frag
+	res/shaders/colored.vert
+	res/shaders/colored-unlit.frag
+	res/shaders/colored-unlit.vert
+	res/shaders/font.frag
+	res/shaders/font.vert
+	res/shaders/form.frag
+	res/shaders/form.vert
+	res/shaders/sprite.frag
+	res/shaders/sprite.vert
+	res/shaders/spritecol.frag
+	res/shaders/spritecol.vert
+	res/shaders/terrain.frag
+	res/shaders/terrain.vert
+	res/shaders/textured.frag
+	res/shaders/textured.vert
+	res/shaders/textured-bumped.frag
+	res/shaders/textured-bumped.vert
+	res/shaders/textured-unlit.frag
+	res/shaders/textured-unlit.vert
 
 
 ・注意点
