@@ -125,11 +125,32 @@
 #enum global SYSREQ_VSYNC
 #enum global SYSREQ_MAXMATERIAL
 
+#const global PLATFORM_WINDOWS 0
+#const global PLATFORM_IOS 1
+#const global PLATFORM_ANDROID 2
+#const global PLATFORM_WEBGL 3
+
+#define global SYSREQ_DEBUG $10000
+
 #define global ginfo_accx ginfo(0x100)
 #define global ginfo_accy ginfo(0x101)
 #define global ginfo_accz ginfo(0x102)
 
-#define global SYSREQ_DEBUG $10000
+;
+;	http value
+;
+#enum global HTTPMODE_NONE=0
+#enum global HTTPMODE_READY
+#enum global HTTPMODE_REQUEST
+#enum global HTTPMODE_SEND
+#enum global HTTPMODE_DATAWAIT
+#enum global HTTPMODE_DATAEND
+#define global HTTPMODE_ERROR (-1)
+
+#define global HTTPINFO_MODE 0		; 現在のモード
+#define global HTTPINFO_SIZE 1		; データサイズ
+#define global HTTPINFO_DATA 16		; 取得データ
+#define global HTTPINFO_ERROR 17	; エラー文字列
 
 #regcmd 9
 
