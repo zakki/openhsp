@@ -203,6 +203,7 @@ char 	s_rec[1]= "", *hsp_prestr[] =
 	"$04a 9 devcontrol",			// (ver3.5)
 	"$04b 9 httpload",				// (ver3.5)
 	"$04c 9 httpinfo",				// (ver3.5)
+	"$05d 9 gmulcolor",				// (ver3.5)
 	"$05e 9 setcls",				// (ver3.5)
 	"$05f 9 celputm",				// (ver3.5)
 

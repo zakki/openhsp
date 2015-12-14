@@ -1293,6 +1293,12 @@ static int cmdfunc_extcmd( int cmd )
 		}
 #endif
 
+	case 0x5d:								// gmulcolor
+		p1 = code_getdi( 255 );
+		p2 = code_getdi( 255 );
+		p3 = code_getdi( 255 );
+		bmscr->SetMulcolor(p1,p2,p3);
+		break;
 	case 0x5e:								// setcls
 		p1 = code_getdi( 0 );
 		p2 = code_getdi( 0 );

@@ -692,7 +692,7 @@ void hgio_copy( BMSCR *bm, short xx, short yy, short srcsx, short srcsy, BMSCR *
 
 	float a_val = game->setMaterialBlend( mat->_material, bm->gmode, bm->gfrate );
 
-	game->setPolyDiffuseTex2D( 1.0f, 1.0f, 1.0f, a_val );
+	game->setPolyDiffuseTex2D(bm->mulcolorvalue[0], bm->mulcolorvalue[1], bm->mulcolorvalue[2], a_val);
 
 	if ( s_psx < 0.0 ) {
 		psx = -s_psx;
@@ -777,7 +777,7 @@ int hgio_celputmulti( BMSCR *bm, int *xpos, int *ypos, int *cel, int count, BMSC
 	if ( master_v == NULL ) throw HSPERR_ILLEGAL_FUNCTION;
 
 	float a_val = game->setMaterialBlend( mat->_material, bm->gmode, bm->gfrate );
-	game->setPolyDiffuseTex2D( 1.0f, 1.0f, 1.0f, a_val );
+	game->setPolyDiffuseTex2D(bm->mulcolorvalue[0], bm->mulcolorvalue[1], bm->mulcolorvalue[2], a_val);
 
 	total =0;
 
@@ -866,7 +866,7 @@ void hgio_copyrot( BMSCR *bm, short xx, short yy, short srcsx, short srcsy, floa
 
 	float a_val = game->setMaterialBlend( mat->_material, bm->gmode, bm->gfrate );
 
-	game->setPolyDiffuseTex2D( 1.0f, 1.0f, 1.0f, a_val );
+	game->setPolyDiffuseTex2D(bm->mulcolorvalue[0], bm->mulcolorvalue[1], bm->mulcolorvalue[2], a_val);
 
 	mx0=-(float)sin( ang );
 	my0=(float)cos( ang );

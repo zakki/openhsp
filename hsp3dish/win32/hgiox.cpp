@@ -648,11 +648,17 @@ void hgio_text_render( void )
 {
 	//	テキスト画面描画
 	if ( mestexflag ) {
+		int bak_mulcolor;
+
+		bak_mulcolor = mainbm->mulcolor;
+		mainbm->mulcolor = 0xffffff;			// 乗算カラーを標準に戻す
+
 		mainbm->gfrate = 255;
 		mainbm->gmode = 3;
 		mainbm->cx = 0;
 		mainbm->cy = 0;
 		hgio_copy( mainbm, 0, 0, nDestWidth, nDestHeight, &mestexbm, (float)nDestWidth, (float)nDestHeight );
+		mainbm->mulcolor = bak_mulcolor;		// 乗算カラーを元に戻す
 	}
 }
 
@@ -1217,7 +1223,7 @@ void hgio_copy( BMSCR *bm, short xx, short yy, short srcsx, short srcsy, BMSCR *
 	ty1 *= sy;
 
 	v = vertex2D;
-	v[0].color = v[1].color = v[2].color = v[3].color = GetCopyTexAlpha( bm ) | 0xffffff;
+	v[0].color = v[1].color = v[2].color = v[3].color = GetCopyTexAlpha( bm ) | ( bm->mulcolor );
 
 	v[3].x = x1;
 	v[3].y = y1;
@@ -1300,7 +1306,7 @@ void hgio_copyrot( BMSCR *bm, short xx, short yy, short srcsx, short srcsy, floa
 	ty1 = ((float)(texpy)) * sy;
 
 	v = vertex2D;
-	v[0].color = v[1].color = v[2].color = v[3].color = GetCopyTexAlpha( bm ) | 0xffffff;
+	v[0].color = v[1].color = v[2].color = v[3].color = GetCopyTexAlpha( bm ) |  ( bm->mulcolor );
 
 	/*-------------------------------*/
 
@@ -1748,5 +1754,3 @@ int hgio_celputmulti( BMSCR *bm, int *xpos, int *ypos, int *cel, int count, BMSC
 
 	return total;
 }
-
-

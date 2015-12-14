@@ -47,7 +47,7 @@ void gpmat::reset( int id )
 int gpmat::setParameter( char *name, Vector4 *value )
 {
 	if ( _material == NULL ) return -1;
-    _material->getParameter( name )->setValue( *value );
+    _material->getParameter( name )->setValue( value );
 
 	return 0;
 }
@@ -56,7 +56,7 @@ int gpmat::setParameter( char *name, Vector4 *value )
 int gpmat::setParameter( char *name, Vector3 *value )
 {
 	if ( _material == NULL ) return -1;
-    _material->getParameter( name )->setValue( *value );
+    _material->getParameter( name )->setValue( value );
 
 	return 0;
 }

@@ -304,9 +304,13 @@ int Bmscr::DrawAllObjects( void )
 	//		DishSystemObjectを描画する
 	//
 	int i;
+	int bak_mulcolor;
 	HSPOBJINFO *info;
 	info = this->mem_obj;
 	if ( info == NULL ) return -1;
+
+	bak_mulcolor = this->mulcolor;
+	SetMulcolor( 255,255,255 );				// 乗算カラーを標準に戻す
 
 	for( i=0;i<this->objmax;i++ ) {
 		if ( info->owmode != HSPOBJ_NONE ) {
@@ -314,6 +318,8 @@ int Bmscr::DrawAllObjects( void )
 		}
 		info++;
 	}
+
+	SetMulcolor( (bak_mulcolor>>16)&0xff, (bak_mulcolor>>8)&0xff, (bak_mulcolor)&0xff );				// 乗算カラーを元に戻す
 	return -1;
 }
 
