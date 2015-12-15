@@ -329,7 +329,6 @@ int hgio_stick( int actsw )
 {
 	//		stick—p‚Ì“ü—Í‚ð•Ô‚·
 	//
-	HWND hwnd;
 	int ckey = 0;
 
 #ifdef HSPNDK
@@ -337,6 +336,7 @@ int hgio_stick( int actsw )
 #endif
 
 #ifdef HSPWIN
+	HWND hwnd;
 	if ( actsw ) {
 		hwnd = GetActiveWindow();
 		if ( hwnd != master_wnd ) return 0;
@@ -356,7 +356,6 @@ int hgio_stick( int actsw )
 #endif
 
 #ifdef HSPEMSCRIPTEN
-	int ckey = 0;
 	if ( mouse_btn ) ckey|=256;	// mouse_l
 	if ( get_key_state(SDLK_LEFT) )  ckey|=1;		// [left]
 	if ( get_key_state(SDLK_UP) )    ckey|=2;		// [up]
