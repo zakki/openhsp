@@ -27,13 +27,13 @@ public:
 	int setParameter( char *name, Vector4 *value );
 	int setState( char *name, char *value );
 
-	short _flag;						// ‘¶İƒtƒ‰ƒO
-	short _mark;						// ƒ}[ƒNˆ——p
-	int _mode;							// ƒ‚[ƒh(GPMAT_MODE_*)
-	int _id;							// ƒ}ƒeƒŠƒAƒ‹ƒIƒuƒWƒFƒNƒgID
-	Material *_material;				// ¶¬‚³‚ê‚½Material
-	MeshBatch *_mesh;					// MeshBatch(2D—p)
-	int _sx,_sy;						// Texture X,Y Size(2D—p)
+	short _flag;						// å­˜åœ¨ãƒ•ãƒ©ã‚°
+	short _mark;						// ãƒãƒ¼ã‚¯å‡¦ç†ç”¨
+	int _mode;							// ãƒ¢ãƒ¼ãƒ‰(GPMAT_MODE_*)
+	int _id;							// ãƒãƒ†ãƒªã‚¢ãƒ«ã‚ªãƒ–ã‚¸ã‚§ã‚¯ãƒˆID
+	Material *_material;				// ç”Ÿæˆã•ã‚ŒãŸMaterial
+	MeshBatch *_mesh;					// MeshBatch(2Dç”¨)
+	int _sx,_sy;						// Texture X,Y Size(2Dç”¨)
 	float _texratex;					// Texture UV rate (1.0/xsize)
 	float _texratey;					// Texture UV rate (1.0/ysize)
 };

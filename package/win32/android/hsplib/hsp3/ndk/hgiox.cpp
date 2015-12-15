@@ -505,6 +505,7 @@ void hgio_setFilterMode( int mode )
 void hgio_setBlendMode( int mode, int aval )
 {
     //ブレンドモード設定
+
     switch( mode ) {
         case 0:                     //no blend
         case 1:                     //no blend
@@ -533,12 +534,40 @@ void hgio_setBlendMode( int mode, int aval )
             //glBlendFunc(GL_ONE,GL_ONE_MINUS_SRC_ALPHA);
             break;
     }
-    if ( mode >= 3 ) {
-        panelColorsTex[3] = panelColorsTex[4+3] = panelColorsTex[8+3] = panelColorsTex[12+3] = aval;
+    if ( mode <= 1 ) {
+        glDisableClientState(GL_COLOR_ARRAY);
+	} else {
+	    int *i_panelcolor;
+		int mulcolor;
+	    if ( mode >= 2 ) {
+		    if ( mode >= 3 ) {
+				mulcolor = ( aval<<24 );
+			} else {
+				mulcolor = 0xff000000;
+			}
+			if ( mainbm != NULL ) {
+			    int rval,gval,bval;
+				GLbyte *colbyte;
+			    rval = (( mainbm->mulcolor )>>16)&0xff;
+			    gval = (( mainbm->mulcolor )>>8)&0xff;
+			    bval = (( mainbm->mulcolor ))&0xff;
+				colbyte = (GLbyte *)&mulcolor;
+				*colbyte++ = rval;
+				*colbyte++ = gval;
+				*colbyte++ = bval;
+			} else {
+				mulcolor |= 0xffffff;
+			}
+		} else {
+			mulcolor = 0xffffffff;
+		}
+		i_panelcolor = (int *)panelColorsTex;
+		*i_panelcolor++ = mulcolor;
+		*i_panelcolor++ = mulcolor;
+		*i_panelcolor++ = mulcolor;
+		*i_panelcolor++ = mulcolor;
         glEnableClientState(GL_COLOR_ARRAY);
         glColorPointer(4,GL_UNSIGNED_BYTE,0,panelColorsTex);
-    } else {
-        glDisableClientState(GL_COLOR_ARRAY);
     }
     glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_MAG_FILTER,_filter); 
     glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_MIN_FILTER,_filter); 

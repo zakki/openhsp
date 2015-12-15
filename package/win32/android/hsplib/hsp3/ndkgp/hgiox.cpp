@@ -48,9 +48,15 @@
 #pragma comment(lib, "d3d8.lib")
 #pragma comment(lib, "dxguid.lib")
 
+#ifdef GP_USE_ANGLE
+#pragma comment(lib, "libEGL.lib")
+#pragma comment(lib, "libGLESv2.lib")
+#pragma comment(lib, "gameplay_angle.lib")
+#else
 #pragma comment(lib, "OpenGL32.lib")
 #pragma comment(lib, "GLU32.lib")
 #pragma comment(lib, "gameplay.lib")
+#endif
 
 //#pragma comment(lib, "glew32.lib")
 //#pragma comment(lib, "libpng16.lib")
@@ -68,12 +74,12 @@ extern gameplay::Platform *platform;
 static int		mouse_x;
 static int		mouse_y;
 static int		mouse_btn;
-static int   _originX; 	//Œ´“_X
-static int   _originY; 	//Œ´“_Y
-static float _scaleX;	// ƒXƒP[ƒ‹X
-static float _scaleY;	// ƒXƒP[ƒ‹Y
-static float _rateX;	// 1/ƒXƒP[ƒ‹X
-static float _rateY;	// 1/ƒXƒP[ƒ‹Y
+static int   _originX; 	//åŸç‚¹X
+static int   _originY; 	//åŸç‚¹Y
+static float _scaleX;	// ã‚¹ã‚±ãƒ¼ãƒ«X
+static float _scaleY;	// ã‚¹ã‚±ãƒ¼ãƒ«Y
+static float _rateX;	// 1/ã‚¹ã‚±ãƒ¼ãƒ«X
+static float _rateY;	// 1/ã‚¹ã‚±ãƒ¼ãƒ«Y
 
 #ifdef HSPNDK
 static engine	*appengine;
@@ -104,12 +110,12 @@ void InitMemFile( void )
 int OpenMemFilePtr( char *fname )
 {
 	int fsize;
-	fsize = dpm_exist( fname );		// ƒtƒ@ƒCƒ‹‚ÌƒTƒCƒY‚ğæ“¾
+	fsize = dpm_exist( fname );		// ãƒ•ã‚¡ã‚¤ãƒ«ã®ã‚µã‚¤ã‚ºã‚’å–å¾—
 	if ( fsize <= 0 ) return -1;
 	mfptr_depth++;
 	if ( mfptr_depth >= MFPTR_MAX ) return -1;
 	mfptr[mfptr_depth] = (char *)malloc( fsize );
-	dpm_read( fname, mfptr[mfptr_depth], fsize, 0 );	// ƒtƒ@ƒCƒ‹“Ç‚İ‚İ
+	dpm_read( fname, mfptr[mfptr_depth], fsize, 0 );	// ãƒ•ã‚¡ã‚¤ãƒ«èª­ã¿è¾¼ã¿
 	return fsize;
 }
 
@@ -137,21 +143,22 @@ void CloseMemFilePtr( void )
 
 //		Settings
 //
-static		int nDestWidth;		// •`‰æÀ•W•
-static		int nDestHeight;	// •`‰æÀ•W‚‚³
+static		int nDestWidth;		// æç”»åº§æ¨™å¹…
+static		int nDestHeight;	// æç”»åº§æ¨™é«˜ã•
 
 #ifdef HSPWIN
-static		HWND master_wnd;	// •\¦‘ÎÛWindow
+static		HWND master_wnd;	// è¡¨ç¤ºå¯¾è±¡Window
 #endif
-static		int drawflag;		// ƒŒƒ“ƒ_[ŠJnƒtƒ‰ƒO
-static		BMSCR mestexbm;		// ƒeƒLƒXƒg•\¦—pƒ_ƒ~[BMSCR
+static		int drawflag;		// ãƒ¬ãƒ³ãƒ€ãƒ¼é–‹å§‹ãƒ•ãƒ©ã‚°
+static		BMSCR mestexbm;		// ãƒ†ã‚­ã‚¹ãƒˆè¡¨ç¤ºç”¨ãƒ€ãƒŸãƒ¼BMSCR
 
-static		BMSCR *mainbm;		// ƒƒCƒ“ƒXƒNƒŠ[ƒ“‚ÌBMSCR
+static		BMSCR *mainbm;		// ãƒ¡ã‚¤ãƒ³ã‚¹ã‚¯ãƒªãƒ¼ãƒ³ã®BMSCR
 static		HSPREAL infoval[HGIO_INFO_MAX];
+static		BMSCR *backbm;		// èƒŒæ™¯æ¶ˆå»ç”¨ã®BMSCR(null=NC)
 
-static		char m_tfont[256];	// ƒeƒLƒXƒgg—pƒtƒHƒ“ƒg
-static		int m_tsize;		// ƒeƒLƒXƒgg—pƒtƒHƒ“ƒg‚ÌƒTƒCƒY
-static		int m_tstyle;		// ƒeƒLƒXƒgg—pƒtƒHƒ“ƒg‚ÌƒXƒ^ƒCƒ‹w’è
+static		char m_tfont[256];	// ãƒ†ã‚­ã‚¹ãƒˆä½¿ç”¨ãƒ•ã‚©ãƒ³ãƒˆ
+static		int m_tsize;		// ãƒ†ã‚­ã‚¹ãƒˆä½¿ç”¨ãƒ•ã‚©ãƒ³ãƒˆã®ã‚µã‚¤ã‚º
+static		int m_tstyle;		// ãƒ†ã‚­ã‚¹ãƒˆä½¿ç”¨ãƒ•ã‚©ãƒ³ãƒˆã®ã‚¹ã‚¿ã‚¤ãƒ«æŒ‡å®š
 
 static		float center_x,center_y;
 static		float linebasex,linebasey;
@@ -170,11 +177,11 @@ static		float linebasex,linebasey;
 
 void hgio_init( int mode, int sx, int sy, void *hwnd )
 {
-	//		ƒtƒ@ƒCƒ‹ƒT[ƒrƒXİ’è
+	//		ãƒ•ã‚¡ã‚¤ãƒ«ã‚µãƒ¼ãƒ“ã‚¹è¨­å®š
 	//
 	InitMemFile();
 
-	//		İ’è‚Ì‰Šú‰»
+	//		è¨­å®šã®åˆæœŸåŒ–
 	//
 	SetSysReq( SYSREQ_RESULT, 0 );
 	SetSysReq( SYSREQ_RESVMODE, 0 );
@@ -188,6 +195,7 @@ void hgio_init( int mode, int sx, int sy, void *hwnd )
 #endif
 
 	mainbm = NULL;
+	backbm = NULL;
 	drawflag = 0;
 	nDestWidth = sx;
 	nDestHeight = sy;
@@ -201,7 +209,7 @@ void hgio_init( int mode, int sx, int sy, void *hwnd )
 	_rateY = 1.0f;
 #endif
 
-	//		infoval‚ğƒŠƒZƒbƒg
+	//		infovalã‚’ãƒªã‚»ãƒƒãƒˆ
 	//
 	int i;
 	for(i=0;i<HGIO_INFO_MAX;i++) {
@@ -220,7 +228,7 @@ void hgio_clsmode( int mode, int color, int tex )
 
 int hgio_device_restore( void )
 {
-	//	ƒfƒoƒCƒX‚ÌC•œ
+	//	ãƒ‡ãƒã‚¤ã‚¹ã®ä¿®å¾©
 	//		(0=OK/1=NG)
 	//
 	return 0;
@@ -256,10 +264,10 @@ int hgio_render_start( void )
 		hgio_render_end();
 	}
 
-	//	‰æ–ÊƒNƒŠƒA
+	//	ç”»é¢ã‚¯ãƒªã‚¢
 	//ClearDest( GetSysReq( SYSREQ_CLSMODE ), GetSysReq( SYSREQ_CLSCOLOR ), GetSysReq( SYSREQ_CLSTEX ) );
 
-	//ƒV[ƒ“ƒŒƒ“ƒ_[ŠJn
+	//ã‚·ãƒ¼ãƒ³ãƒ¬ãƒ³ãƒ€ãƒ¼é–‹å§‹
 	if ( game ) game->frame();
 
 	drawflag = 1;
@@ -269,18 +277,27 @@ int hgio_render_start( void )
 
 void hgio_screen( BMSCR *bm )
 {
-	//		ƒXƒNƒŠ[ƒ“Äİ’è
-	//		(cls‘Š“–)
+	//		ã‚¹ã‚¯ãƒªãƒ¼ãƒ³å†è¨­å®š
+	//		(clsç›¸å½“)
 	//
 	mainbm = bm;
 	hgio_font( DEFAULT_FONT_NAME, DEFAULT_FONT_SIZE, DEFAULT_FONT_STYLE );
 }
 
 
-void hgio_delscreen( BMSCR *bm )
+void hgio_setback(BMSCR *bm)
 {
-	//		ƒXƒNƒŠ[ƒ“‚ğ”jŠü
-	//		(BmscrƒNƒ‰ƒX‚Ìdelete)
+	//		èƒŒæ™¯ç”»åƒã®è¨­å®š
+	//		(NULL=ãªã—)
+	//
+	backbm = bm;
+}
+
+
+void hgio_delscreen(BMSCR *bm)
+{
+	//		ã‚¹ã‚¯ãƒªãƒ¼ãƒ³ã‚’ç ´æ£„
+	//		(Bmscrã‚¯ãƒ©ã‚¹ã®deleteæ™‚)
 	//
 	if ( bm->flag == BMSCR_FLAG_NOUSE ) return;
 	if ( bm->texid != -1 ) {
@@ -310,8 +327,9 @@ void hgio_term( void )
 
 int hgio_stick( int actsw )
 {
-	//		stick—p‚Ì“ü—Í‚ğ•Ô‚·
+	//		stickç”¨ã®å…¥åŠ›ã‚’è¿”ã™
 	//
+	HWND hwnd;
 	int ckey = 0;
 
 #ifdef HSPNDK
@@ -319,8 +337,6 @@ int hgio_stick( int actsw )
 #endif
 
 #ifdef HSPWIN
-	HWND hwnd;
-
 	if ( actsw ) {
 		hwnd = GetActiveWindow();
 		if ( hwnd != master_wnd ) return 0;
@@ -358,8 +374,8 @@ int hgio_stick( int actsw )
 
 int hgio_redraw( BMSCR *bm, int flag )
 {
-	//		redrawƒ‚[ƒhİ’è
-	//		(•K‚¸redraw 0`redraw 1‚ğƒyƒA‚É‚·‚é‚±‚Æ)
+	//		redrawãƒ¢ãƒ¼ãƒ‰è¨­å®š
+	//		(å¿…ãšredraw 0ï½redraw 1ã‚’ãƒšã‚¢ã«ã™ã‚‹ã“ã¨)
 	//
 	if ( bm == NULL ) return -1;
 	if ( bm->type != HSPWND_TYPE_MAIN ) throw HSPERR_UNSUPPORTED_FUNCTION;
@@ -375,7 +391,7 @@ int hgio_redraw( BMSCR *bm, int flag )
 
 int hgio_dialog( int mode, char *str1, char *str2 )
 {
-	//		dialog•\¦
+	//		dialogè¡¨ç¤º
 	//
 #ifdef HSPWIN
 	int i,res;
@@ -394,7 +410,7 @@ int hgio_dialog( int mode, char *str1, char *str2 )
 
 int hgio_title( char *str1 )
 {
-	//		title•ÏX
+	//		titleå¤‰æ›´
 	//
 #ifdef HSPWIN
 	SetWindowText( master_wnd, str1 );
@@ -405,7 +421,7 @@ int hgio_title( char *str1 )
 
 int hgio_texload( BMSCR *bm, char *fname )
 {
-	//		ƒeƒNƒXƒ`ƒƒ“Ç‚İ‚İ
+	//		ãƒ†ã‚¯ã‚¹ãƒãƒ£èª­ã¿è¾¼ã¿
 	//
 	gpmat *mat;
 
@@ -423,7 +439,7 @@ int hgio_texload( BMSCR *bm, char *fname )
 
 int hgio_mes( BMSCR *bm, char *str1 )
 {
-	//		mes,print •¶š•\¦
+	//		mes,print æ–‡å­—è¡¨ç¤º
 	//
 	if ( bm->type != HSPWND_TYPE_MAIN ) throw HSPERR_UNSUPPORTED_FUNCTION;
 
@@ -447,7 +463,7 @@ int hgio_mes( BMSCR *bm, char *str1 )
 
 int hgio_font( char *fontname, int size, int style )
 {
-	//		•¶šƒtƒHƒ“ƒgw’è
+	//		æ–‡å­—ãƒ•ã‚©ãƒ³ãƒˆæŒ‡å®š
 	//
 	strncpy( m_tfont, fontname, 254 );
 	m_tsize = size;
@@ -464,10 +480,10 @@ int hgio_font( char *fontname, int size, int style )
 
 void hgio_line( BMSCR *bm, float x, float y )
 {
-	//		ƒ‰ƒCƒ“•`‰æ
-	//		(bm!=NULL ‚Ìê‡Aƒ‰ƒCƒ“•`‰æŠJn)
-	//		(bm==NULL ‚Ìê‡Aƒ‰ƒCƒ“•`‰æŠ®—¹)
-	//		(ƒ‰ƒCƒ“‚ÌÀ•W‚Í•K—v‚È”‚¾‚¯hgio_line2‚ğŒÄ‚Ño‚·)
+	//		ãƒ©ã‚¤ãƒ³æç”»
+	//		(bm!=NULL ã®å ´åˆã€ãƒ©ã‚¤ãƒ³æç”»é–‹å§‹)
+	//		(bm==NULL ã®å ´åˆã€ãƒ©ã‚¤ãƒ³æç”»å®Œäº†)
+	//		(ãƒ©ã‚¤ãƒ³ã®åº§æ¨™ã¯å¿…è¦ãªæ•°ã ã‘hgio_line2ã‚’å‘¼ã³å‡ºã™)
 	//
 	if ( bm == NULL ) {
 		return;
@@ -486,8 +502,8 @@ void hgio_line( BMSCR *bm, float x, float y )
 
 void hgio_line2( float x, float y )
 {
-	//		ƒ‰ƒCƒ“•`‰æ
-	//		(hgio_line‚ÅŠJnŒã‚É•K—v‚È‰ñ”ŒÄ‚ÔAhgio_line(NULL)‚ÅI—¹‚·‚é‚±‚Æ)
+	//		ãƒ©ã‚¤ãƒ³æç”»
+	//		(hgio_lineã§é–‹å§‹å¾Œã«å¿…è¦ãªå›æ•°å‘¼ã¶ã€hgio_line(NULL)ã§çµ‚äº†ã™ã‚‹ã“ã¨)
 	//
 
 	float *v = game->startLineColor2D();
@@ -505,7 +521,7 @@ void hgio_line2( float x, float y )
 
 void hgio_boxf( BMSCR *bm, float x1, float y1, float x2, float y2 )
 {
-	//		‹éŒ`•`‰æ
+	//		çŸ©å½¢æç”»
 	//
 	if ( bm == NULL ) return;
 	if ( bm->type != HSPWND_TYPE_MAIN ) throw HSPERR_UNSUPPORTED_FUNCTION;
@@ -537,7 +553,7 @@ void hgio_boxf( BMSCR *bm, float x1, float y1, float x2, float y2 )
 
 void hgio_circle( BMSCR *bm, float x1, float y1, float x2, float y2, int mode )
 {
-	//		‰~•`‰æ
+	//		å††æç”»
 	//
 	float x,y,rx,ry,sx,sy,rate;
 	if ( bm == NULL ) return;
@@ -613,9 +629,9 @@ void hgio_circle( BMSCR *bm, float x1, float y1, float x2, float y2, int mode )
 		v++;
 	}
 
-	//ƒfƒoƒCƒX‚Ég—p‚·‚é’¸“_ƒtƒH[ƒ}ƒbƒg‚ğƒZƒbƒg‚·‚é
+	//ãƒ‡ãƒã‚¤ã‚¹ã«ä½¿ç”¨ã™ã‚‹é ‚ç‚¹ãƒ•ã‚©ãƒ¼ãƒãƒƒãƒˆã‚’ã‚»ãƒƒãƒˆã™ã‚‹
 	d3ddev->SetVertexShader(D3DFVF_TLVERTEXC);
-	// ‚Æ‚è‚ ‚¦‚¸’¼Ú•`‰æ(lŠpŒ`)
+	// ã¨ã‚Šã‚ãˆãšç›´æ¥æç”»(å››è§’å½¢)
 	d3ddev->SetRenderState( D3DRS_CULLMODE, D3DCULL_CCW );
 	d3ddev->DrawPrimitiveUP(D3DPT_TRIANGLEFAN,CIRCLE_DIV,arScreen,sizeof(D3DTLVERTEXC));
 	d3ddev->SetRenderState( D3DRS_CULLMODE, D3DCULL_CW );
@@ -625,7 +641,7 @@ void hgio_circle( BMSCR *bm, float x1, float y1, float x2, float y2, int mode )
 
 void hgio_fillrot( BMSCR *bm, float x, float y, float sx, float sy, float ang )
 {
-	//		‹éŒ`(‰ñ“])•`‰æ
+	//		çŸ©å½¢(å›è»¢)æç”»
 	//
 	if ( bm == NULL ) return;
 	if ( bm->type != HSPWND_TYPE_MAIN ) throw HSPERR_UNSUPPORTED_FUNCTION;
@@ -679,9 +695,9 @@ void hgio_fillrot( BMSCR *bm, float x, float y, float sx, float sy, float ang )
 
 void hgio_copy( BMSCR *bm, short xx, short yy, short srcsx, short srcsy, BMSCR *bmsrc, float s_psx, float s_psy )
 {
-	//		‰æ‘œƒRƒs[
-	//		texid“à‚Ì(xx,yy)-(xx+srcsx,yy+srcsy)‚ğŒ»İ‚Ì‰æ–Ê‚É(psx,psy)ƒTƒCƒY‚ÅƒRƒs[
-	//		ƒJƒŒƒ“ƒgƒ|ƒWƒVƒ‡ƒ“A•`‰æƒ‚[ƒh‚ÍBMSCR‚©‚çæ“¾
+	//		ç”»åƒã‚³ãƒ”ãƒ¼
+	//		texidå†…ã®(xx,yy)-(xx+srcsx,yy+srcsy)ã‚’ç¾åœ¨ã®ç”»é¢ã«(psx,psy)ã‚µã‚¤ã‚ºã§ã‚³ãƒ”ãƒ¼
+	//		ã‚«ãƒ¬ãƒ³ãƒˆãƒã‚¸ã‚·ãƒ§ãƒ³ã€æç”»ãƒ¢ãƒ¼ãƒ‰ã¯BMSCRã‹ã‚‰å–å¾—
 	//
 	float psx,psy;
 	float x1,y1,x2,y2,sx,sy;
@@ -698,7 +714,7 @@ void hgio_copy( BMSCR *bm, short xx, short yy, short srcsx, short srcsy, BMSCR *
 
 	float a_val = game->setMaterialBlend( mat->_material, bm->gmode, bm->gfrate );
 
-	game->setPolyDiffuseTex2D( 1.0f, 1.0f, 1.0f, a_val );
+	game->setPolyDiffuseTex2D(bm->mulcolorvalue[0], bm->mulcolorvalue[1], bm->mulcolorvalue[2], a_val);
 
 	if ( s_psx < 0.0 ) {
 		psx = -s_psx;
@@ -755,9 +771,9 @@ void hgio_copy( BMSCR *bm, short xx, short yy, short srcsx, short srcsy, BMSCR *
 
 int hgio_celputmulti( BMSCR *bm, int *xpos, int *ypos, int *cel, int count, BMSCR *bmsrc )
 {
-	//		ƒ}ƒ‹ƒ`‰æ‘œƒRƒs[
-	//		int”z—ñ“à‚ÌX,Y,CelID‚ğŒ³‚É“™”{ƒRƒs[‚ğs‚È‚¤(count=ŒÂ”)
-	//		ƒJƒŒƒ“ƒgƒ|ƒWƒVƒ‡ƒ“A•`‰æƒ‚[ƒh‚ÍBMSCR‚©‚çæ“¾
+	//		ãƒãƒ«ãƒç”»åƒã‚³ãƒ”ãƒ¼
+	//		inté…åˆ—å†…ã®X,Y,CelIDã‚’å…ƒã«ç­‰å€ã‚³ãƒ”ãƒ¼ã‚’è¡Œãªã†(count=å€‹æ•°)
+	//		ã‚«ãƒ¬ãƒ³ãƒˆãƒã‚¸ã‚·ãƒ§ãƒ³ã€æç”»ãƒ¢ãƒ¼ãƒ‰ã¯BMSCRã‹ã‚‰å–å¾—
 	//
 	int psx,psy;
 	float f_psx,f_psy;
@@ -783,7 +799,7 @@ int hgio_celputmulti( BMSCR *bm, int *xpos, int *ypos, int *cel, int count, BMSC
 	if ( master_v == NULL ) throw HSPERR_ILLEGAL_FUNCTION;
 
 	float a_val = game->setMaterialBlend( mat->_material, bm->gmode, bm->gfrate );
-	game->setPolyDiffuseTex2D( 1.0f, 1.0f, 1.0f, a_val );
+	game->setPolyDiffuseTex2D(bm->mulcolorvalue[0], bm->mulcolorvalue[1], bm->mulcolorvalue[2], a_val);
 
 	total =0;
 
@@ -854,9 +870,9 @@ int hgio_celputmulti( BMSCR *bm, int *xpos, int *ypos, int *cel, int count, BMSC
 
 void hgio_copyrot( BMSCR *bm, short xx, short yy, short srcsx, short srcsy, float s_ofsx, float s_ofsy, BMSCR *bmsrc, float psx, float psy, float ang )
 {
-	//		‰æ‘œƒRƒs[
-	//		texid“à‚Ì(xx,yy)-(xx+srcsx,yy+srcsy)‚ğŒ»İ‚Ì‰æ–Ê‚É(psx,psy)ƒTƒCƒY‚ÅƒRƒs[
-	//		ƒJƒŒƒ“ƒgƒ|ƒWƒVƒ‡ƒ“A•`‰æƒ‚[ƒh‚ÍBMSCR‚©‚çæ“¾
+	//		ç”»åƒã‚³ãƒ”ãƒ¼
+	//		texidå†…ã®(xx,yy)-(xx+srcsx,yy+srcsy)ã‚’ç¾åœ¨ã®ç”»é¢ã«(psx,psy)ã‚µã‚¤ã‚ºã§ã‚³ãƒ”ãƒ¼
+	//		ã‚«ãƒ¬ãƒ³ãƒˆãƒã‚¸ã‚·ãƒ§ãƒ³ã€æç”»ãƒ¢ãƒ¼ãƒ‰ã¯BMSCRã‹ã‚‰å–å¾—
 	//
 	float x,y,x0,y0,x1,y1,ofsx,ofsy,mx0,mx1,my0,my1;
 	float tx0,ty0,tx1,ty1,sx,sy;
@@ -872,7 +888,7 @@ void hgio_copyrot( BMSCR *bm, short xx, short yy, short srcsx, short srcsy, floa
 
 	float a_val = game->setMaterialBlend( mat->_material, bm->gmode, bm->gfrate );
 
-	game->setPolyDiffuseTex2D( 1.0f, 1.0f, 1.0f, a_val );
+	game->setPolyDiffuseTex2D(bm->mulcolorvalue[0], bm->mulcolorvalue[1], bm->mulcolorvalue[2], a_val);
 
 	mx0=-(float)sin( ang );
 	my0=(float)cos( ang );
@@ -886,11 +902,11 @@ void hgio_copyrot( BMSCR *bm, short xx, short yy, short srcsx, short srcsy, floa
 	x1 = mx1 * ofsx;
 	y1 = my1 * ofsx;
 
-	//		Šî“_‚ÌZo
+	//		åŸºç‚¹ã®ç®—å‡º
 	x = ( (float)bm->cx - (-x0+x1) );
 	y = ( (float)bm->cy - (-y0+y1) );
 
-	//		‰ñ“]À•W‚ÌZo
+	//		å›è»¢åº§æ¨™ã®ç®—å‡º
 	ofsx = -psx;
 	ofsy = -psy;
 	x0 = mx0 * ofsy;
@@ -973,9 +989,9 @@ void hgio_setcenter( float x, float y )
 
 void hgio_drawsprite( hgmodel *mdl, HGMODEL_DRAWPRM *prm )
 {
-	//		‰æ‘œƒRƒs[(DG—p)
-	//		texid“à‚Ì(xx,yy)-(xx+srcsx,yy+srcsy)‚ğŒ»İ‚Ì‰æ–Ê‚É(psx,psy)ƒTƒCƒY‚ÅƒRƒs[
-	//		ƒJƒŒƒ“ƒgƒ|ƒWƒVƒ‡ƒ“A•`‰æƒ‚[ƒh‚ÍBMSCR‚©‚çæ“¾
+	//		ç”»åƒã‚³ãƒ”ãƒ¼(DGç”¨)
+	//		texidå†…ã®(xx,yy)-(xx+srcsx,yy+srcsy)ã‚’ç¾åœ¨ã®ç”»é¢ã«(psx,psy)ã‚µã‚¤ã‚ºã§ã‚³ãƒ”ãƒ¼
+	//		ã‚«ãƒ¬ãƒ³ãƒˆãƒã‚¸ã‚·ãƒ§ãƒ³ã€æç”»ãƒ¢ãƒ¼ãƒ‰ã¯BMSCRã‹ã‚‰å–å¾—
 	//
 	/*
 	D3DTLVERTEX *v;
@@ -998,11 +1014,11 @@ void hgio_drawsprite( hgmodel *mdl, HGMODEL_DRAWPRM *prm )
 	x1 = mx1 * ofsx;
 	y1 = my1 * ofsx;
 
-	//		Šî“_‚ÌZo
+	//		åŸºç‚¹ã®ç®—å‡º
 	x = ( prm->pos.x - (-x0+x1) ) + center_x;
 	y = ( prm->pos.y - (-y0+y1) ) + center_y;
 
-	//		‰ñ“]À•W‚ÌZo
+	//		å›è»¢åº§æ¨™ã®ç®—å‡º
 	ofsx = -( mdl->sizex * (prm->scale.x) );
 	ofsy = -( mdl->sizey * (prm->scale.y) );
 	x0 = mx0 * ofsy;
@@ -1052,9 +1068,9 @@ void hgio_drawsprite( hgmodel *mdl, HGMODEL_DRAWPRM *prm )
 	v->tv0 = ty1;
 	v++;
 
-	//ƒfƒoƒCƒX‚Ég—p‚·‚é’¸“_ƒtƒH[ƒ}ƒbƒg‚ğƒZƒbƒg‚·‚é
+	//ãƒ‡ãƒã‚¤ã‚¹ã«ä½¿ç”¨ã™ã‚‹é ‚ç‚¹ãƒ•ã‚©ãƒ¼ãƒãƒƒãƒˆã‚’ã‚»ãƒƒãƒˆã™ã‚‹
 	d3ddev->SetVertexShader(D3DFVF_TLVERTEX);
-	// ‚Æ‚è‚ ‚¦‚¸’¼Ú•`‰æ(lŠpŒ`)
+	// ã¨ã‚Šã‚ãˆãšç›´æ¥æç”»(å››è§’å½¢)
 	d3ddev->DrawPrimitiveUP(D3DPT_TRIANGLEFAN,2,vertex2D,sizeof(D3DTLVERTEX));
 	*/
 }
@@ -1062,7 +1078,7 @@ void hgio_drawsprite( hgmodel *mdl, HGMODEL_DRAWPRM *prm )
 
 void hgio_square_tex( BMSCR *bm, int *posx, int *posy, BMSCR *bmsrc, int *uvx, int *uvy )
 {
-	//		lŠpŒ`(square)ƒeƒNƒXƒ`ƒƒ•`‰æ
+	//		å››è§’å½¢(square)ãƒ†ã‚¯ã‚¹ãƒãƒ£æç”»
 	//
 	float sx,sy;
 	if ( bm == NULL ) return;
@@ -1114,7 +1130,7 @@ void hgio_square_tex( BMSCR *bm, int *posx, int *posy, BMSCR *bmsrc, int *uvx, i
 
 void hgio_square( BMSCR *bm, int *posx, int *posy, int *color )
 {
-	//		lŠpŒ`(square)’PF•`‰æ
+	//		å››è§’å½¢(square)å˜è‰²æç”»
 	//
 	if ( bm == NULL ) return;
 	if ( bm->type != HSPWND_TYPE_MAIN ) throw HSPERR_UNSUPPORTED_FUNCTION;
@@ -1184,7 +1200,6 @@ int hgio_gettick( void )
     //return ((double)(ts.tv_sec) + (double)(ts.tv_nsec) * 0.001 * 0.001 * 0.001);
 	return i;
 #endif
-
 }
 
 
@@ -1358,10 +1373,10 @@ void hgio_draw_gpsprite( Bmscr *bmscr, bool lateflag )
 			bmscr->gfrate = obj->_transparent;
 
 			if (( rot == 0.0f )&&( zx == 1.0f )&&( zy == 1.0f )) {
-				//	•ÏŒ`‚È‚µ
+				//	å¤‰å½¢ãªã—
 				bmscr->CelPut( (Bmscr *)spr->_bmscr, spr->_celid );
 			} else {
-				//	•ÏŒ`‚ ‚è
+				//	å¤‰å½¢ã‚ã‚Š
 				bmscr->CelPut( (Bmscr *)spr->_bmscr, spr->_celid, zx, zy, rot );
 			}
 		}
@@ -1375,9 +1390,9 @@ void hgio_text_render( void )
 {
 }
 
-
-
 #endif
+
+
 
 #ifdef HSPNDK
 //

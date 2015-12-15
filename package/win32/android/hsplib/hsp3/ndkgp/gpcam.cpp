@@ -58,7 +58,7 @@ void gamehsp::selectCamera( int camid )
 
 	_curcamera = camid;
 	_cameraDefault = obj->_camera;
-	_scene->setActiveCamera( _cameraDefault );	// ƒJƒƒ‰Ý’è
+	_scene->setActiveCamera( _cameraDefault );	// ã‚«ãƒ¡ãƒ©è¨­å®š
 }
 
 

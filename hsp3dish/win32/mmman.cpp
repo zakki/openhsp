@@ -458,10 +458,10 @@ void MMMan::SetVol( int num, int vol )
 		}
 		maxvol = 1000.0;
 		myvol = (double)(mmm->vol + 1000);
-		if ( myvol == 0.0 ) {
-			myvol = -10000.0;
+		if ( myvol <= 0.005 ) {
+			myvol = 10000.0;
 		} else {
-			myvol = ( 10.0 * (log10( myvol / maxvol ))) * 1000.0;
+			myvol = ( 20.0 * log10( myvol / maxvol )) * 100.0;
 		}
 		SndSetVolume( mmm->track, (int)myvol );
 		}

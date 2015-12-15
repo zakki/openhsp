@@ -21,7 +21,7 @@ bool hasParameter( Material* material, const char* name );
 
 gpmat::gpmat()
 {
-	// ƒRƒ“ƒXƒgƒ‰ƒNƒ^
+	// ã‚³ãƒ³ã‚¹ãƒˆãƒ©ã‚¯ã‚¿
 	_flag = GPMAT_FLAG_NONE;
 }
 
@@ -165,7 +165,7 @@ void gamehsp::setMaterialDefaultBinding( Material* material, int icolor, int mat
 	Node *light_node;
 
 	if ( _curlight < 0 ) {
-		//	ƒJƒŒƒ“ƒgƒ‰ƒCƒg‚È‚µ(ƒV[ƒ“‚ðŽQÆ)
+		//	ã‚«ãƒ¬ãƒ³ãƒˆãƒ©ã‚¤ãƒˆãªã—(ã‚·ãƒ¼ãƒ³ã‚’å‚ç…§)
 		if ( hasParameter( material, "u_ambientColor" ) )
 			material->setParameterAutoBinding("u_ambientColor", "SCENE_AMBIENT_COLOR");
 		if ( hasParameter( material, "u_lightDirection" ) )
@@ -173,15 +173,15 @@ void gamehsp::setMaterialDefaultBinding( Material* material, int icolor, int mat
 		if ( hasParameter( material, "u_lightColor" ) )
 			material->setParameterAutoBinding("u_lightColor", "SCENE_LIGHT_COLOR");
 	} else {
-		//	ƒJƒŒƒ“ƒgƒ‰ƒCƒg‚ð”½‰f‚³‚¹‚é
+		//	ã‚«ãƒ¬ãƒ³ãƒˆãƒ©ã‚¤ãƒˆã‚’åæ˜ ã•ã›ã‚‹
 		gpobj *lgt;
 		lgt = getObj( _curlight );
 		light_node = lgt->_node;
-		// ƒ‰ƒCƒg‚Ì•ûŒüÝ’è
+		// ãƒ©ã‚¤ãƒˆã®æ–¹å‘è¨­å®š
 		if ( hasParameter( material, "u_lightDirection" ) )
 			material->getParameter("u_lightDirection")->bindValue(light_node, &Node::getForwardVectorView);
-		// ƒ‰ƒCƒg‚ÌFÝ’è
-		// (ƒŠƒAƒ‹ƒ^ƒCƒ€‚É•ÏX‚ð”½‰f‚³‚¹‚éê‡‚ÍÄÝ’è‚ª•K—vBŒ»Ý‚Í–¢‘Î‰ž)
+		// ãƒ©ã‚¤ãƒˆã®è‰²è¨­å®š
+		// (ãƒªã‚¢ãƒ«ã‚¿ã‚¤ãƒ ã«å¤‰æ›´ã‚’åæ˜ ã•ã›ã‚‹å ´åˆã¯å†è¨­å®šãŒå¿…è¦ã€‚ç¾åœ¨ã¯æœªå¯¾å¿œ)
 		Vector3 *vambient;
 		vambient = (Vector3 *)&lgt->_vec[GPOBJ_USERVEC_WORK];
 		if ( hasParameter( material, "u_lightColor" ) )
@@ -224,17 +224,17 @@ void gamehsp::setMaterialDefaultBinding( Material* material, int icolor, int mat
 
 float gamehsp::setMaterialBlend( Material* material, int gmode, int gfrate )
 {
-	//	ƒvƒŒƒ“ƒh•`‰æÝ’è
-	//	gmdoe : HSP‚Ìgmode’l
-	//	gfrate : HSP‚Ìgfrate’l
-	//	(–ß‚è’l=alpha’l(0.0`1.0))
+	//	ãƒ—ãƒ¬ãƒ³ãƒ‰æç”»è¨­å®š
+	//	gmdoe : HSPã®gmodeå€¤
+	//	gfrate : HSPã®gfrateå€¤
+	//	(æˆ»ã‚Šå€¤=alphaå€¤(0.0ï½ž1.0))
 	//
 	RenderState::StateBlock *state;
 	float alpha;
 
 	state = material->getStateBlock();
 
-    //ƒuƒŒƒ“ƒhƒ‚[ƒhÝ’è
+    //ãƒ–ãƒ¬ãƒ³ãƒ‰ãƒ¢ãƒ¼ãƒ‰è¨­å®š
     switch( gmode ) {
         case 0:                     //no blend
 			state->setBlendSrc(RenderState::BLEND_ONE);
@@ -337,7 +337,6 @@ Material *gamehsp::makeMaterialTexture( char *fname, int matopt )
 	Material *material;
 	bool mipmap;
 	mipmap = (matopt & GPOBJ_MATOPT_NOMIPMAP ) == 0;
-
 	if ( matopt & GPOBJ_MATOPT_NOLIGHT ) {
 		material = makeMaterialFromShader( "res/shaders/textured-unlit.vert", "res/shaders/textured-unlit.frag", "MODULATE_ALPHA" );
 	} else {
@@ -346,9 +345,7 @@ Material *gamehsp::makeMaterialTexture( char *fname, int matopt )
 	if ( material == NULL ) return NULL;
 
 	setMaterialDefaultBinding( material, -1, matopt );
-
 	material->getParameter("u_diffuseTexture")->setValue( fname, mipmap );
-
 	return material;
 }
 

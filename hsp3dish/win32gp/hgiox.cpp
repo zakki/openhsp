@@ -18,6 +18,15 @@
 #include <shellapi.h>
 #endif
 
+#ifdef HSPNDK
+//#define USE_JAVA_FONT
+#define FONT_TEX_SX 512
+#define FONT_TEX_SY 128
+#include "../../appengine.h"
+#include "../../javafunc.h"
+//#include "font_data.h"
+#endif
+
 #ifdef HSPEMSCRIPTEN
 #define GL_GLEXT_PROTOTYPES
 #include <GL/gl.h>
@@ -62,7 +71,6 @@
 extern gamehsp *game;
 extern gameplay::Platform *platform;
 
-#ifdef HSPEMSCRIPTEN
 static int		mouse_x;
 static int		mouse_y;
 static int		mouse_btn;
@@ -73,6 +81,11 @@ static float _scaleY;	// スケールY
 static float _rateX;	// 1/スケールX
 static float _rateY;	// 1/スケールY
 
+#ifdef HSPNDK
+static engine	*appengine;
+#endif
+
+#ifdef HSPEMSCRIPTEN
 extern bool get_key_state(int sym);
 #endif
 
@@ -176,13 +189,18 @@ void hgio_init( int mode, int sx, int sy, void *hwnd )
 #ifdef HSPWIN
 	master_wnd = (HWND)hwnd;
 #endif
+
+#ifdef HSPNDK
+	appengine = (engine *)hwnd;
+#endif
+
 	mainbm = NULL;
 	backbm = NULL;
 	drawflag = 0;
 	nDestWidth = sx;
 	nDestHeight = sy;
 
-#ifdef HSPEMSCRIPTEN
+#if defined(HSPNDK) || defined(HSPEMSCRIPTEN)
 	_originX = 0;
 	_originY = 0;
 	_scaleX = 1.0f;
@@ -309,12 +327,16 @@ void hgio_term( void )
 
 int hgio_stick( int actsw )
 {
-#ifdef HSPWIN
 	//		stick用の入力を返す
 	//
 	HWND hwnd;
 	int ckey = 0;
 
+#ifdef HSPNDK
+	if ( mouse_btn ) ckey|=256;	// mouse_l
+#endif
+
+#ifdef HSPWIN
 	if ( actsw ) {
 		hwnd = GetActiveWindow();
 		if ( hwnd != master_wnd ) return 0;
@@ -331,7 +353,6 @@ int hgio_stick( int actsw )
 	if ( GetAsyncKeyState(1)&0x8000 )  ckey|=256;	// mouse_l
 	if ( GetAsyncKeyState(2)&0x8000 )  ckey|=512;	// mouse_r
 	if ( GetAsyncKeyState(9)&0x8000 )  ckey|=1024;	// [tab]
-	return ckey;
 #endif
 
 #ifdef HSPEMSCRIPTEN
@@ -346,8 +367,9 @@ int hgio_stick( int actsw )
 	if ( get_key_state(SDLK_LCTRL) ) ckey|=64;		// [ctrl]
 	if ( get_key_state(SDLK_ESCAPE) )ckey|=128;	// [esc]
 	if ( get_key_state(SDLK_TAB) )   ckey|=1024;	// [tab]
-	return ckey;
 #endif
+
+	return ckey;
 }
 
 
@@ -383,6 +405,7 @@ int hgio_dialog( int mode, char *str1, char *str2 )
 #ifdef HSPEMSCRIPTEN
 	return 0;
 #endif
+	return 0;
 }
 
 
@@ -1167,6 +1190,17 @@ int hgio_gettick( void )
 
 	return i - initTime;
 #endif
+
+#ifdef HSPNDK
+	int i;
+	timespec ts;
+	double nsec;
+    clock_gettime(CLOCK_REALTIME,&ts);
+    nsec = (double)(ts.tv_nsec) * 0.001 * 0.001;
+    i = (int)ts.tv_sec * 1000 + (int)nsec;
+    //return ((double)(ts.tv_sec) + (double)(ts.tv_nsec) * 0.001 * 0.001 * 0.001);
+	return i;
+#endif
 }
 
 
@@ -1357,9 +1391,160 @@ void hgio_text_render( void )
 {
 }
 
+#endif
 
+
+
+#ifdef HSPNDK
+//
+//		FILE I/O Service
+//
+static char storage_path[256];
+static char my_storage_path[256+64];
+
+int hgio_file_exist( char *fname )
+{
+	int size;
+	AAssetManager* mgr = appengine->app->activity->assetManager;
+	if (mgr == NULL) return -1;
+	AAsset* asset = AAssetManager_open(mgr, (const char *)fname, AASSET_MODE_UNKNOWN);
+	if (asset == NULL) return -1;
+    size = (int)AAsset_getLength(asset);
+    AAsset_close(asset);
+	//Alertf( "[EXIST]%s:%d",fname,size );
+    return size;
+}
+
+
+int hgio_file_read( char *fname, void *ptr, int size, int offset )
+{
+	int readsize;
+	AAssetManager* mgr = appengine->app->activity->assetManager;
+	if (mgr == NULL) return -1;
+	AAsset* asset = AAssetManager_open(mgr, (const char *)fname, AASSET_MODE_UNKNOWN);
+	if (asset == NULL) return -1;
+    readsize = (int)AAsset_getLength(asset);
+	if ( readsize > size ) readsize = size;
+	if ( offset>0 ) AAsset_seek( asset, offset, SEEK_SET );
+	AAsset_read( asset, ptr, readsize );
+    AAsset_close(asset);
+    return readsize;
+}
+
+
+void hgio_setstorage( char *path )
+{
+	int i;
+	*storage_path = 0;
+	i = strlen(path);if (( i<=0 )||( i>=255 )) return;
+	strcpy( storage_path, path );
+	if ( storage_path[i-1]!='/' ) {
+		storage_path[i] = '/';
+		storage_path[i+1] = 0;
+	}
+}
+
+
+char *hgio_getstorage( char *fname )
+{
+	strcpy( my_storage_path, storage_path );
+	strcat( my_storage_path, fname );
+	return my_storage_path;
+}
+
+
+/*-------------------------------------------------------------------------------*/
+
+void hgio_touch( int xx, int yy, int button )
+{
+    Bmscr *bm;
+	mouse_x = ( xx - _originX ) * _rateX;
+	mouse_y = ( yy - _originY ) * _rateY;
+	mouse_btn = button;
+    if ( mainbm != NULL ) {
+        mainbm->savepos[BMSCR_SAVEPOS_MOSUEX] = mouse_x;
+        mainbm->savepos[BMSCR_SAVEPOS_MOSUEY] = mouse_y;
+        mainbm->tapstat = button;
+        bm = (Bmscr *)mainbm;
+        bm->UpdateAllObjects();
+        bm->setMTouchByPointId( 0, mouse_x, mouse_y, button!=0 );
+    }
+}
+
+void hgio_mtouch( int old_x, int old_y, int xx, int yy, int button, int opt )
+{
+    Bmscr *bm;
+    int x,y,old_x2,old_y2;
+    if ( mainbm == NULL ) return;
+    bm = (Bmscr *)mainbm;
+	x = ( xx - _originX ) * _rateX;
+	y = ( yy - _originY ) * _rateY;
+    if ( opt == 0) {
+        mouse_x = x;
+        mouse_y = y;
+        mouse_btn = button;
+        mainbm->savepos[BMSCR_SAVEPOS_MOSUEX] = mouse_x;
+        mainbm->savepos[BMSCR_SAVEPOS_MOSUEY] = mouse_y;
+        mainbm->tapstat = button;
+        bm->UpdateAllObjects();
+    }
+    if ( old_x >= 0 ) {
+        old_x2 = ( old_x - _originX ) * _rateX;
+    } else {
+        old_x2 = old_x;
+    }
+    if ( old_y >= 0 ) {
+        old_y2 = ( old_y - _originY ) * _rateY;
+    } else {
+        old_y2 = old_y;
+    }
+    bm->setMTouchByPoint( old_x2, old_y2, x, y, button!=0 );
+}
+
+void hgio_mtouchid( int pointid, int xx, int yy, int button, int opt )
+{
+    Bmscr *bm;
+    int x,y;
+
+    if ( mainbm == NULL ) return;
+    bm = (Bmscr *)mainbm;
+	x = ( xx - _originX ) * _rateX;
+	y = ( yy - _originY ) * _rateY;
+    if ( opt == 0 ) {
+        mouse_x = x;
+        mouse_y = y;
+        mouse_btn = button;
+        mainbm->savepos[BMSCR_SAVEPOS_MOSUEX] = mouse_x;
+        mainbm->savepos[BMSCR_SAVEPOS_MOSUEY] = mouse_y;
+        mainbm->tapstat = button;
+        bm->UpdateAllObjects();
+    }
+    bm->setMTouchByPointId( pointid, x, y, button!=0 );
+}
+
+int hgio_getmousex( void )
+{
+	return mouse_x;
+}
+
+
+int hgio_getmousey( void )
+{
+	return mouse_y;
+}
+
+
+int hgio_getmousebtn( void )
+{
+	return mouse_btn;
+}
+
+/*-------------------------------------------------------------------------------*/
 
 #endif
+
+
+
 
 #ifdef HSPEMSCRIPTEN
 

@@ -29,7 +29,7 @@ extern bool hasParameter( Material* material, const char* name );
 
 gpobj::gpobj()
 {
-	// ƒRƒ“ƒXƒgƒ‰ƒNƒ^
+	// ã‚³ãƒ³ã‚¹ãƒˆãƒ©ã‚¯ã‚¿
 	_flag = GPOBJ_FLAG_NONE;
 }
 
@@ -63,16 +63,16 @@ void gpobj::reset( int id )
 	for(i=0;i<GPOBJ_USERVEC_MAX;i++) {
 		_vec[i].set( Vector4::zero() );
 	}
-	Alertf("objreset %d",id);
+
 }
 
 
 bool gpobj::isVisible( void )
 {
-	//	•\¦‰Â”\‚©’²‚×‚é
+	//	è¡¨ç¤ºå¯èƒ½ã‹èª¿ã¹ã‚‹
 	//
 	if ( _flag == 0 ) return false;
-	if ( _mode & GPOBJ_MODE_HIDE ) {		// ”ñ•\¦İ’è
+	if ( _mode & GPOBJ_MODE_HIDE ) {		// éè¡¨ç¤ºè¨­å®š
 		return false;
 	}
 	return true;
@@ -81,26 +81,26 @@ bool gpobj::isVisible( void )
 
 bool gpobj::isVisible( bool lateflag )
 {
-	//	•\¦‰Â”\‚©’²‚×‚é
-	//  ( GPOBJ_MODE_LATEw’è‚©A”¼“§–¾‚Íè‘O‚Ì—Dæ“x‚Æ‚µ‚Ä”F¯‚³‚ê‚é )
-	//	( lateflag : true=è‘O‚Ì•`‰æ—Dæ“x )
+	//	è¡¨ç¤ºå¯èƒ½ã‹èª¿ã¹ã‚‹
+	//  ( GPOBJ_MODE_LATEæŒ‡å®šæ™‚ã‹ã€åŠé€æ˜æ™‚ã¯æ‰‹å‰ã®å„ªå…ˆåº¦ã¨ã—ã¦èªè­˜ã•ã‚Œã‚‹ )
+	//	( lateflag : true=æ‰‹å‰ã®æç”»å„ªå…ˆåº¦ )
 	//
 	bool curflag;
 	if ( _flag == 0 ) return false;
 
-	if ( _mode & GPOBJ_MODE_HIDE ) {		// ”ñ•\¦İ’è
+	if ( _mode & GPOBJ_MODE_HIDE ) {		// éè¡¨ç¤ºè¨­å®š
 		return false;
 	}
-	if ( _transparent <= 0 ) {				// Š®‘S‚È“§–¾
+	if ( _transparent <= 0 ) {				// å®Œå…¨ãªé€æ˜
 		return false;
 	}
 	if ( _mode & GPOBJ_MODE_LATE ) {
-		curflag = true;						// è‘O‚ğ‹­§
+		curflag = true;						// æ‰‹å‰ã‚’å¼·åˆ¶
 	} else {
 		if ( _transparent >= 255 ) {
-			curflag = false;				// ’Êí‚Ì—Dæ‡ˆÊ
+			curflag = false;				// é€šå¸¸ã®å„ªå…ˆé †ä½
 		} else {
-			curflag = true;					// “§–¾‚ğŠÜ‚Ş
+			curflag = true;					// é€æ˜ã‚’å«ã‚€
 		}
 	}
 
@@ -110,8 +110,8 @@ bool gpobj::isVisible( bool lateflag )
 
 float gpobj::getAlphaRate( void )
 {
-	// Alpha’l‚ğæ“¾‚·‚é
-	// ( _transparent’l‚ğ0.0`1.0‚É•ÏŠ·‚·‚é)
+	// Alphaå€¤ã‚’å–å¾—ã™ã‚‹
+	// ( _transparentå€¤ã‚’0.0ï½1.0ã«å¤‰æ›ã™ã‚‹)
 	if ( _transparent >= 255 ) return 1.0f;
 	if ( _transparent <= 0 ) return 0.0f;
 	return ( 1.0f / 255.0f ) * (float)_transparent;
@@ -120,8 +120,8 @@ float gpobj::getAlphaRate( void )
 
 void gpobj::updateParameter( Material *mat )
 {
-	//	ƒ}ƒeƒŠƒAƒ‹İ’èŒãˆ—‚ğs‚È‚¤
-	//	ƒpƒ‰ƒ[ƒ^[‚Ìƒ|ƒCƒ“ƒ^İ’è‚È‚ÇAƒ‚ƒfƒ‹Šm’èŒã‚Égpobj‚Å•K—v‚Èˆ—‚ğs‚È‚¤
+	//	ãƒãƒ†ãƒªã‚¢ãƒ«è¨­å®šå¾Œå‡¦ç†ã‚’è¡Œãªã†
+	//	ãƒ‘ãƒ©ãƒ¡ãƒ¼ã‚¿ãƒ¼ã®ãƒã‚¤ãƒ³ã‚¿è¨­å®šãªã©ã€ãƒ¢ãƒ‡ãƒ«ç¢ºå®šå¾Œã«gpobjã§å¿…è¦ãªå‡¦ç†ã‚’è¡Œãªã†
 	//
 	_prm_modalpha = NULL;
 	if ( _flag == 0 ) return;
@@ -140,7 +140,7 @@ void gpobj::updateParameter( Material *mat )
 
 gamehsp::gamehsp()
 {
-	// ƒRƒ“ƒXƒgƒ‰ƒNƒ^
+	// ã‚³ãƒ³ã‚¹ãƒˆãƒ©ã‚¯ã‚¿
 	mFont = NULL;
 	_maxobj = 0;
 	_gpobj = NULL;
@@ -155,7 +155,7 @@ gamehsp::gamehsp()
 
 void gamehsp::initialize()
 {
-	// ƒtƒHƒ“ƒgì¬
+	// ãƒ•ã‚©ãƒ³ãƒˆä½œæˆ
 	mFont = Font::create("res/font.gpb");
 	resetScreen();
 }
@@ -176,6 +176,7 @@ void gamehsp::deleteAll( void )
 	//
 	if ( _scene ) {
 		_scene->removeAllNodes();
+		_scene->setActiveCamera(NULL);
 	}
 
 	if ( _gpobj ) {
@@ -246,7 +247,7 @@ void gamehsp::touchEvent(Touch::TouchEvent evt, int x, int y, unsigned int conta
 
 void gamehsp::hookSetSysReq( int reqid, int value )
 {
-	//	HGIMG4—p‚ÌSetSysReq
+	//	HGIMG4ç”¨ã®SetSysReq
 	//
 	switch( reqid ) {
 	case SYSREQ_VSYNC:
@@ -260,7 +261,7 @@ void gamehsp::hookSetSysReq( int reqid, int value )
 
 void gamehsp::hookGetSysReq( int reqid )
 {
-	//	HGIMG4—p‚ÌGetSysReq
+	//	HGIMG4ç”¨ã®GetSysReq
 	//
 	switch( reqid ) {
 	case SYSREQ_FPS:
@@ -274,47 +275,45 @@ void gamehsp::hookGetSysReq( int reqid )
 
 void gamehsp::resetScreen( int opt )
 {
-	Alertf("resetScreen");
-
 	if ( opt == 1 ) {
 		_scene->removeAllNodes();
 		return;
 	}
 
-	// ‰æ–Ê‚Ì‰Šú‰»
+	// ç”»é¢ã®åˆæœŸåŒ–
 	deleteAll();
 
-	// VSYNC‚Ìİ’è
+	// VSYNCã®è¨­å®š
 	setVsync( GetSysReq( SYSREQ_VSYNC )!=0 );
 
-	// gpobjì¬
+	// gpobjä½œæˆ
 	_maxobj = GetSysReq( SYSREQ_MAXOBJ );
 	_gpobj = new gpobj[ _maxobj ];
 	setObjectPool( 0, -1 );
 
-	// gpmatì¬
+	// gpmatä½œæˆ
 	_maxmat = GetSysReq( SYSREQ_MAXMATERIAL );
 	_gpmat = new gpmat[ _maxmat ];
 
-	// ƒV[ƒ“ì¬
+	// ã‚·ãƒ¼ãƒ³ä½œæˆ
 	_scene = Scene::create();
 	_curscene = 0;
 
-	// ƒJƒƒ‰ì¬
+	// ã‚«ãƒ¡ãƒ©ä½œæˆ
 	//Camera*	camera = Camera::createPerspective(45.0f, getAspectRatio(), 0.01f, 20.0f );
 	//Camera*	camera = Camera::createPerspective(0.25f*3.141592654f, getAspectRatio(), 0.5f, 768.0f );
 	//_cameraDefault = Camera::createPerspective( 45.0f, getAspectRatio(), 0.5f, 768.0f );
 
-	_defcamera = makeNewCam( -1, 45.0f, getAspectRatio(), 0.5f, 768.0f );		// ƒJƒƒ‰‚ğ¶¬
+	_defcamera = makeNewCam( -1, 45.0f, getAspectRatio(), 0.5f, 768.0f );		// ã‚«ãƒ¡ãƒ©ã‚’ç”Ÿæˆ
 	selectCamera( _defcamera );
 
 //	_camera = _scene->addNode("camera");
 //	_camera->setCamera( _cameraDefault );
-//	_scene->setActiveCamera( _cameraDefault );	// ƒJƒƒ‰İ’è
+//	_scene->setActiveCamera( _cameraDefault );	// ã‚«ãƒ¡ãƒ©è¨­å®š
 //	_camera->translate(0, 0, 100);
 //	SAFE_RELEASE(camera);
 
-	// ƒV[ƒ“ƒ‰ƒCƒgì¬
+	// ã‚·ãƒ¼ãƒ³ãƒ©ã‚¤ãƒˆä½œæˆ
 	_scene->setLightColor( 1.0f, 1.0f, 1.0f );
 
 	Vector3 ldir;
@@ -322,22 +321,23 @@ void gamehsp::resetScreen( int opt )
 	_scene->setLightDirection( ldir );
 	_scene->setAmbientColor( 0.25f, 0.25f, 0.25f );
 
-	// ƒ‰ƒCƒgì¬
+	// ãƒ©ã‚¤ãƒˆä½œæˆ
 	_deflight = makeNewLgt( -1, GPLGT_OPT_NORMAL );
 	selectLight( _deflight );
 
-	// ƒ{[ƒ_[‰Šú‰»
+	// ãƒœãƒ¼ãƒ€ãƒ¼åˆæœŸåŒ–
 	border1.set( -50.0f, 0.0f, -50.0f );
 	border2.set( 50.0f, 100.0f,  50.0f );
 
-	// 2D‰Šú‰»
+	// 2DåˆæœŸåŒ–
 	init2DRender();
 
 	//makeFloorNode( 20.0f, 20.0f, 0x404040 );
 	//makeModelNode( "res/mikuA","mikuA_root" );
 
-	// ƒrƒ…[ƒ|[ƒg‰Šú‰»
+	// ãƒ“ãƒ¥ãƒ¼ãƒãƒ¼ãƒˆåˆæœŸåŒ–
 	updateViewport( 0, 0, getWidth(), getHeight() );
+
 }
 
 
@@ -365,8 +365,8 @@ void gamehsp::getBorder( Vector3 *v1, Vector3 *v2 )
 
 void gamehsp::deleteObjectID( int id )
 {
-	//	w’è‚³‚ê‚½ID‚ÌƒIƒuƒWƒFƒNƒg‚ğíœ‚·‚é
-	//	(gpobj,gpmat,gplgt,gpcam,gpphy‚Åg—p‰Â”\)
+	//	æŒ‡å®šã•ã‚ŒãŸIDã®ã‚ªãƒ–ã‚¸ã‚§ã‚¯ãƒˆã‚’å‰Šé™¤ã™ã‚‹
+	//	(gpobj,gpmat,gplgt,gpcam,gpphyã§ä½¿ç”¨å¯èƒ½)
 	//
 	int flag_id;
 	int base_id;
@@ -385,18 +385,17 @@ void gamehsp::deleteObjectID( int id )
 
 bool gamehsp::init2DRender( void )
 {
-	// 2D—p‚Ì‰Šú‰»
+	// 2Dç”¨ã®åˆæœŸåŒ–
 	//
 
-	// 2D—p‚ÌƒvƒƒWƒFƒNƒVƒ‡ƒ“
+	// 2Dç”¨ã®ãƒ—ãƒ­ã‚¸ã‚§ã‚¯ã‚·ãƒ§ãƒ³
 	//Matrix::createOrthographic(getWidth(), getHeight(), -1.0f, 1.0f, &_projectionMatrix2D);
 	Matrix::createOrthographicOffCenter( 0.0f, getWidth(), getHeight(), 0.0f, -1.0f, 1.0f, &_projectionMatrix2D);
-	_projectionMatrix2D.translate( 0.5f, 0.0f, 0.0f );						// À•WŒë·C³‚Ì‚½‚ß0.5ƒhƒbƒg‚¸‚ç‚·
+	_projectionMatrix2D.translate( 0.5f, 0.0f, 0.0f );						// åº§æ¨™èª¤å·®ä¿®æ­£ã®ãŸã‚0.5ãƒ‰ãƒƒãƒˆãšã‚‰ã™
 
-	// ƒXƒvƒ‰ƒCƒg—p‚Ìshader
+	// ã‚¹ãƒ—ãƒ©ã‚¤ãƒˆç”¨ã®shader
 	_spriteEffect = Effect::createFromFile(SPRITE_VSH, SPRITE_FSH);
 	if ( _spriteEffect == NULL ) {
-		Alertf( "2D shader initalize failed." );
         GP_ERROR("2D shader initalize failed.");
         return false;
 	}
@@ -589,7 +588,7 @@ int gamehsp::addObjectVector( int objid, int moc, Vector4 *prm )
 		return -1;
 	}
 
-	//	GPOBJ_ID_EXFLAG‚Ìê‡
+	//	GPOBJ_ID_EXFLAGã®å ´åˆ
 	switch( objid ) {
 	case GPOBJ_ID_SCENE:
 		addSceneVector( moc, prm );
@@ -782,7 +781,7 @@ int gamehsp::setObjectVector( int objid, int moc, Vector4 *prm )
 		return -1;
 	}
 
-	//	GPOBJ_ID_EXFLAG‚Ìê‡
+	//	GPOBJ_ID_EXFLAGã®å ´åˆ
 	switch( objid ) {
 	case GPOBJ_ID_SCENE:
 		setSceneVector( moc, prm );
@@ -920,16 +919,16 @@ void gamehsp::drawNode( Node *node )
 
 void gamehsp::drawAll( int option )
 {
-	// ‚·‚×‚Ä‚Ìƒm[ƒh‚ğ•`‰æ
+	// ã™ã¹ã¦ã®ãƒãƒ¼ãƒ‰ã‚’æç”»
 	//
 
-	// ƒrƒ‹ƒ{[ƒh—p‚ÌŒü‚«‚ğì¬
+	// ãƒ“ãƒ«ãƒœãƒ¼ãƒ‰ç”¨ã®å‘ãã‚’ä½œæˆ
 	Matrix m;
 	Camera* camera = _scene->getActiveCamera();
 	m = camera->getNode()->getMatrix();
 	m.getRotation(&_qcam_billboard);
 
-	//	gpobj‚Ì3DƒV[ƒ“•`‰æ
+	//	gpobjã®3Dã‚·ãƒ¼ãƒ³æç”»
 	//
 	if ( option & GPDRAW_OPT_DRAWSCENE ) {
 		_scenedraw_lateflag = false;
@@ -944,7 +943,7 @@ void gamehsp::drawAll( int option )
 
 bool gamehsp::updateNodeMaterial( Node* node, Material *material )
 {
-	//	Ä‹A“I‚Éƒm[ƒh‚Ìƒ}ƒeƒŠƒAƒ‹‚ğİ’è
+	//	å†å¸°çš„ã«ãƒãƒ¼ãƒ‰ã®ãƒãƒ†ãƒªã‚¢ãƒ«ã‚’è¨­å®š
 	//
 	Node *sub_node;
 	sub_node = node->getFirstChild();
@@ -981,13 +980,13 @@ bool gamehsp::drawScene(Node* node)
 			if (node->getBoundingSphere().intersects(_cameraDefault->getFrustum()) == false ) return false;
 		}
 
-		//	Alpha‚Ìƒ‚ƒWƒ…ƒŒ[ƒgİ’è
+		//	Alphaã®ãƒ¢ã‚¸ãƒ¥ãƒ¬ãƒ¼ãƒˆè¨­å®š
 		gameplay::MaterialParameter *prm_modalpha = obj->_prm_modalpha;
 		if ( prm_modalpha ) { prm_modalpha->setValue( obj->getAlphaRate() ); }
 
 		if ( model ) {
 
-			if ( mode & GPOBJ_MODE_WIRE ) {			// ƒƒCƒ„[ƒtƒŒ[ƒ€•`‰æ
+			if ( mode & GPOBJ_MODE_WIRE ) {			// ãƒ¯ã‚¤ãƒ¤ãƒ¼ãƒ•ãƒ¬ãƒ¼ãƒ æç”»æ™‚
 				model->draw(true);
 				return true;
 			}
@@ -1092,7 +1091,7 @@ int gamehsp::makeFloorNode( float xsize, float ysize, int color, int matid )
 	gpobj *obj = addObj();
 	if ( obj == NULL ) return -1;
 
-    // •½–Êì¬
+    // å¹³é¢ä½œæˆ
 	Mesh* floorMesh = Mesh::createQuad(
 		Vector3( -xsize * 0.5f , 0, -ysize * 0.5f ), Vector3( -xsize * 0.5f , 0, ysize * 0.5f ), 
 		Vector3( xsize * 0.5f ,  0, -ysize * 0.5f ), Vector3( xsize * 0.5f , 0, ysize * 0.5f ));
@@ -1109,17 +1108,17 @@ int gamehsp::makeFloorNode( float xsize, float ysize, int color, int matid )
 	}
 	makeNewModel( obj, floorMesh, material );
 
-    // ƒƒbƒVƒ…íœ
+    // ãƒ¡ãƒƒã‚·ãƒ¥å‰Šé™¤
     SAFE_RELEASE(floorMesh);
 
-	// ‰Šú‰»ƒpƒ‰ƒ[ƒ^[‚ğ•Û‘¶
+	// åˆæœŸåŒ–ãƒ‘ãƒ©ãƒ¡ãƒ¼ã‚¿ãƒ¼ã‚’ä¿å­˜
 	obj->_shape = GPOBJ_SHAPE_FLOOR;
 	obj->_sizevec.set( xsize, 0, ysize );
 
 /*
-	// •¨—İ’è
+	// ç‰©ç†è¨­å®š
 	PhysicsRigidBody::Parameters rigParams;
-	rigParams.mass = 0.0f;	// d‚³
+	rigParams.mass = 0.0f;	// é‡ã•
     rigParams.friction = 0.5;
     rigParams.restitution = 0.75;
     rigParams.linearDamping = 0.025;
@@ -1141,7 +1140,7 @@ int gamehsp::makePlateNode( float xsize, float ysize, int color, int matid )
 	gpobj *obj = addObj();
 	if ( obj == NULL ) return -1;
 
-    // •½–Êì¬
+    // å¹³é¢ä½œæˆ
 	Mesh* floorMesh = Mesh::createQuad(
 		Vector3( -xsize * 0.5f , ysize * 0.5f, 0 ), Vector3( -xsize * 0.5f , -ysize * 0.5f, 0 ), 
 		Vector3( xsize * 0.5f ,  ysize * 0.5f, 0 ), Vector3( xsize * 0.5f , -ysize * 0.5f, 0 ));
@@ -1158,10 +1157,10 @@ int gamehsp::makePlateNode( float xsize, float ysize, int color, int matid )
 	}
 	makeNewModel( obj, floorMesh, material );
 
-    // ƒƒbƒVƒ…íœ
+    // ãƒ¡ãƒƒã‚·ãƒ¥å‰Šé™¤
     SAFE_RELEASE(floorMesh);
 
-	// ‰Šú‰»ƒpƒ‰ƒ[ƒ^[‚ğ•Û‘¶
+	// åˆæœŸåŒ–ãƒ‘ãƒ©ãƒ¡ãƒ¼ã‚¿ãƒ¼ã‚’ä¿å­˜
 	obj->_shape = GPOBJ_SHAPE_PLATE;
 	obj->_sizevec.set( xsize, ysize, 0 );
 
@@ -1191,17 +1190,17 @@ int gamehsp::makeBoxNode( float size, int color, int matid )
 	}
 	makeNewModel( obj, mesh, material );
 
-	// ‰Šú‰»ƒpƒ‰ƒ[ƒ^[‚ğ•Û‘¶
+	// åˆæœŸåŒ–ãƒ‘ãƒ©ãƒ¡ãƒ¼ã‚¿ãƒ¼ã‚’ä¿å­˜
 	obj->_shape = GPOBJ_SHAPE_BOX;
 	obj->_sizevec.set( size, size, size );
 
-    // ƒƒbƒVƒ…íœ
+    // ãƒ¡ãƒƒã‚·ãƒ¥å‰Šé™¤
     SAFE_RELEASE(mesh);
 
 /*
-	// •¨—İ’è
+	// ç‰©ç†è¨­å®š
 	PhysicsRigidBody::Parameters rigParams;
-	rigParams.mass = 1.0f;	// d‚³
+	rigParams.mass = 1.0f;	// é‡ã•
 	rigParams.friction = 0.5;
 	rigParams.restitution = 0.5;
 	rigParams.linearDamping = 0.1;
@@ -1215,6 +1214,7 @@ int gamehsp::makeBoxNode( float size, int color, int matid )
 	}
 
 	BoundingSphere bound = obj->_node->getBoundingSphere();
+
 	return obj->_id;
 }
 
@@ -1249,18 +1249,18 @@ int gamehsp::makeModelNode( char *fname, char *idname )
 		boxMaterial->getParameter("u_lightColor") : NULL;
 
 	if ( _curlight >= 0 ) {
-		//	ƒJƒŒƒ“ƒgƒ‰ƒCƒg‚ğ”½‰f‚³‚¹‚é
+		//	ã‚«ãƒ¬ãƒ³ãƒˆãƒ©ã‚¤ãƒˆã‚’åæ˜ ã•ã›ã‚‹
 		gpobj *lgt;
 		Node *light_node;
 		lgt = getObj( _curlight );
 		light_node = lgt->_node;
 
-		// ƒ‰ƒCƒg‚Ì•ûŒüİ’è
+		// ãƒ©ã‚¤ãƒˆã®æ–¹å‘è¨­å®š
 		if ( lightDirectionParam ) {
 			lightDirectionParam->bindValue(light_node, &Node::getForwardVectorView);
 		}
-	    // ƒ‰ƒCƒg‚ÌFİ’è
-		// (ƒŠƒAƒ‹ƒ^ƒCƒ€‚É•ÏX‚ğ”½‰f‚³‚¹‚éê‡‚ÍÄİ’è‚ª•K—vBŒ»İ‚Í–¢‘Î‰)
+	    // ãƒ©ã‚¤ãƒˆã®è‰²è¨­å®š
+		// (ãƒªã‚¢ãƒ«ã‚¿ã‚¤ãƒ ã«å¤‰æ›´ã‚’åæ˜ ã•ã›ã‚‹å ´åˆã¯å†è¨­å®šãŒå¿…è¦ã€‚ç¾åœ¨ã¯æœªå¯¾å¿œ)
 		if ( ambientColorParam ) {
 			Vector3 *vambient;
 			vambient = (Vector3 *)&lgt->_vec[GPOBJ_USERVEC_WORK];
@@ -1349,7 +1349,7 @@ int gamehsp::makeModelNode( char *fname, char *idname )
 	rootNode->setUserPointer( obj, NULL );
 	obj->_node = rootNode;
 
-	// ‰Šú‰»ƒpƒ‰ƒ[ƒ^[‚ğ•Û‘¶
+	// åˆæœŸåŒ–ãƒ‘ãƒ©ãƒ¡ãƒ¼ã‚¿ãƒ¼ã‚’ä¿å­˜
 	obj->_shape = GPOBJ_SHAPE_MODEL;
 
 	return obj->_id;
@@ -1358,10 +1358,10 @@ int gamehsp::makeModelNode( char *fname, char *idname )
 
 void gamehsp::makeNewModel( gpobj *obj, Mesh *mesh, Material *material )
 {
-	//	gpobj‚ÉV‹Kƒ‚ƒfƒ‹‚ğ’Ç‰Á‚µ‚ÄƒƒbƒVƒ…‚Æƒ}ƒeƒŠƒAƒ‹‚ğİ’è‚·‚é
+	//	gpobjã«æ–°è¦ãƒ¢ãƒ‡ãƒ«ã‚’è¿½åŠ ã—ã¦ãƒ¡ãƒƒã‚·ãƒ¥ã¨ãƒãƒ†ãƒªã‚¢ãƒ«ã‚’è¨­å®šã™ã‚‹
 	//
 	Model *model;
-	model = Model::create(mesh);	// ƒ‚ƒfƒ‹ì¬
+	model = Model::create(mesh);	// ãƒ¢ãƒ‡ãƒ«ä½œæˆ
 	model->setMaterial( material );
 
 	Node *node = obj->_node;
@@ -1379,8 +1379,8 @@ void gamehsp::makeNewModel( gpobj *obj, Mesh *mesh, Material *material )
 
 int gamehsp::makeNewModelWithMat( gpobj *obj, Mesh *mesh, int matid )
 {
-	//	gpobj‚ÉV‹Kƒ‚ƒfƒ‹‚ğ’Ç‰Á‚µ‚ÄƒƒbƒVƒ…‚Æƒ}ƒeƒŠƒAƒ‹‚ğİ’è‚·‚é
-	//  (ƒ}ƒeƒŠƒAƒ‹ID‚ğg—p)
+	//	gpobjã«æ–°è¦ãƒ¢ãƒ‡ãƒ«ã‚’è¿½åŠ ã—ã¦ãƒ¡ãƒƒã‚·ãƒ¥ã¨ãƒãƒ†ãƒªã‚¢ãƒ«ã‚’è¨­å®šã™ã‚‹
+	//  (ãƒãƒ†ãƒªã‚¢ãƒ«IDã‚’ä½¿ç”¨)
 	//
 	gpmat *mat = getMat( matid );
 	if ( mat == NULL ) return -1;
@@ -1424,7 +1424,7 @@ int gamehsp::deleteObj( int id )
 	if ( model ) {
 		if ( obj->_usegpmat < 0 ) {
 			material = model->getMaterial();
-			material->release();		// “Æ©‚Écreate‚µ‚½QÆƒJƒEƒ“ƒg‚ğŒ¸‚ç‚·
+			material->release();		// ç‹¬è‡ªã«createã—ãŸå‚ç…§ã‚«ã‚¦ãƒ³ãƒˆã‚’æ¸›ã‚‰ã™
 		}
 	}
     SAFE_RELEASE( obj->_node );
@@ -1454,7 +1454,7 @@ int gamehsp::setObjectPool( int startid, int num )
 
 gpobj *gamehsp::addObj( void )
 {
-	//	‹ó‚Ìgpobj‚ğ¶¬‚·‚é
+	//	ç©ºã®gpobjã‚’ç”Ÿæˆã™ã‚‹
 	//
 	int i;
 	gpobj *obj = _gpobj;
@@ -1472,8 +1472,8 @@ gpobj *gamehsp::addObj( void )
 
 Node *gamehsp::getNode( int objid )
 {
-	//	w’è‚³‚ê‚½ID‚Ì‚Âƒm[ƒh‚ğ•Ô‚·
-	//	(gpobj,gplgt,camera‚Åg—p‰Â”\)
+	//	æŒ‡å®šã•ã‚ŒãŸIDã®æŒã¤ãƒãƒ¼ãƒ‰ã‚’è¿”ã™
+	//	(gpobj,gplgt,cameraã§ä½¿ç”¨å¯èƒ½)
 	//
 	int flag_id;
 	gpobj *obj;
@@ -1489,7 +1489,7 @@ Node *gamehsp::getNode( int objid )
 		return NULL;
 	}
 
-	//	GPOBJ_ID_EXFLAG‚Ìê‡
+	//	GPOBJ_ID_EXFLAGã®å ´åˆ
 	switch( objid ) {
 //	case GPOBJ_ID_SCENE:
 	case GPOBJ_ID_CAMERA:
@@ -1513,7 +1513,7 @@ int gamehsp::makeCloneNode( int objid )
 	if ( obj == NULL ) return -1;
 
 	if ( obj->_spr ) {
-		// 2DƒXƒvƒ‰ƒCƒg‚Ìê‡
+		// 2Dã‚¹ãƒ—ãƒ©ã‚¤ãƒˆã®å ´åˆ
 		return makeSpriteObj( obj->_spr->_celid, obj->_spr->_gmode, obj->_spr->_bmscr );
 	}
 	
@@ -1554,7 +1554,7 @@ int gamehsp::makeCloneNode( int objid )
 
 int gamehsp::updateObjBorder( int mode, Vector3 *pos, Vector4 *dir )
 {
-	//		©“®”ÍˆÍƒNƒŠƒbƒv
+	//		è‡ªå‹•ç¯„å›²ã‚¯ãƒªãƒƒãƒ—
 	//
 	int cflag,thru;
 	cflag = 0;
@@ -1639,7 +1639,7 @@ int gamehsp::updateObjBorder( int mode, Vector3 *pos, Vector4 *dir )
 
 void gamehsp::updateObj( gpobj *obj )
 {
-	//		gpobj‚ÌXV
+	//		gpobjã®æ›´æ–°
 	//
 	int mode = obj->_mode;
 	if ( mode & ( GPOBJ_MODE_MOVE|GPOBJ_MODE_BORDER) ) {
@@ -1657,7 +1657,7 @@ void gamehsp::updateObj( gpobj *obj )
 		}
 		if ( mode & GPOBJ_MODE_BORDER ) {
 			cflag = updateObjBorder( mode, &pos, dir );
-			if ( cflag ) {												// Á‹ƒtƒ‰ƒO
+			if ( cflag ) {												// æ¶ˆå»ãƒ•ãƒ©ã‚°
 				deleteObj( obj->_id );
 				return;
 			}
@@ -1710,7 +1710,7 @@ int gamehsp::updateObjColi( int objid, float size, int addcol )
 	}
 
 	spr = obj->_spr;
-	if ( spr ) {									// 2DƒXƒvƒ‰ƒCƒg‚Ìˆ—
+	if ( spr ) {									// 2Dã‚¹ãƒ—ãƒ©ã‚¤ãƒˆæ™‚ã®å‡¦ç†
 		gpspr *atspr;
 		pos = (Vector3 *)&spr->_pos;
 		atobj = _gpobj;
@@ -1737,7 +1737,7 @@ int gamehsp::updateObjColi( int objid, float size, int addcol )
 
 	vpos = obj->_node->getTranslation();
 	bound = obj->_node->getBoundingSphere();
-	bound.radius *= size;							// ©•ª‚ÌƒTƒCƒY‚ğ’²®‚·‚é
+	bound.radius *= size;							// è‡ªåˆ†ã®ã‚µã‚¤ã‚ºã‚’èª¿æ•´ã™ã‚‹
 	atobj = _gpobj;
 
 	for(i=0;i<_maxobj;i++) {
@@ -1803,7 +1803,7 @@ int gpspr::getDistanceHit( Vector3 *v, float size )
 
 gpspr *gamehsp::getSpriteObj( int objid )
 {
-	//	ƒXƒvƒ‰ƒCƒgî•ñ‚ğ•Ô‚·
+	//	ã‚¹ãƒ—ãƒ©ã‚¤ãƒˆæƒ…å ±ã‚’è¿”ã™
 	//
 	gpobj *obj = getObj( objid );
 	if ( obj == NULL ) return NULL;
@@ -1977,12 +1977,12 @@ void gamehsp::finishPolyColor2D( void )
 
 void gamehsp::setPolyDiffuse2D( float r, float g, float b, float a )
 {
-	//	Vertex‚ÌƒJƒ‰[ƒR[ƒh‚Ì‚İ‚ğİ’è‚·‚é
+	//	Vertexã®ã‚«ãƒ©ãƒ¼ã‚³ãƒ¼ãƒ‰ã®ã¿ã‚’è¨­å®šã™ã‚‹
 	//
 	int i;
 	float *v = _bufPolyColor;
 	for(i=0;i<4;i++) {
-		v += 3;						// Pos‚ğ”ò‚Î‚·
+		v += 3;						// Posã‚’é£›ã°ã™
 		*v++ = r;
 		*v++ = g;
 		*v++ = b;
@@ -2077,12 +2077,12 @@ void gamehsp::finishPolyTex2D( gpmat *mat )
 
 void gamehsp::setPolyDiffuseTex2D( float r, float g, float b, float a )
 {
-	//	Vertex‚ÌƒJƒ‰[ƒR[ƒh‚Ì‚İ‚ğİ’è‚·‚é
+	//	Vertexã®ã‚«ãƒ©ãƒ¼ã‚³ãƒ¼ãƒ‰ã®ã¿ã‚’è¨­å®šã™ã‚‹
 	//
 	int i;
 	float *v = _bufPolyTex;
 	for(i=0;i<4;i++) {
-		v += 3 + 2;					// Pos,UV‚ğ”ò‚Î‚·
+		v += 3 + 2;					// Pos,UVã‚’é£›ã°ã™
 		*v++ = r;
 		*v++ = g;
 		*v++ = b;
@@ -2093,8 +2093,8 @@ void gamehsp::setPolyDiffuseTex2D( float r, float g, float b, float a )
 
 float gamehsp::setPolyColorBlend( int gmode, int gfrate )
 {
-	//	2DƒJƒ‰[•`‰æİ’è
-	//	(–ß‚è’l=alpha’l(0.0`1.0))
+	//	2Dã‚«ãƒ©ãƒ¼æç”»è¨­å®š
+	//	(æˆ»ã‚Šå€¤=alphaå€¤(0.0ï½1.0))
 	//
 	Material *material;
 	material = _meshBatch->getMaterial();
@@ -2166,7 +2166,7 @@ Material* gamehsp::make2DMaterialForMesh( void )
 
 int gamehsp::drawFont( int x, int y, char *text, Vector4 *p_color, int size )
 {
-	// ƒtƒHƒ“ƒg‚Å•`‰æ
+	// ãƒ•ã‚©ãƒ³ãƒˆã§æç”»
 	int xsize;
 	if ( mFont == NULL ) return 0;
 
