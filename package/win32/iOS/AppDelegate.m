@@ -5,7 +5,7 @@
 //
 
 #import "AppDelegate.h"
-#import "../../iHSP22/Classes/HspView.h"
+#import "../../iHSP23/Classes/HspView.h"
 
 @implementation AppDelegate
 
