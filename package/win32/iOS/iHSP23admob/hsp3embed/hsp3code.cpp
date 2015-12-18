@@ -560,11 +560,9 @@ int code_get( void )
 	ptr = STM_GETPTR(stm);
 	if ( tflag == HSPVAR_FLAG_VAR ) {
 		PVal *pval;
-		int *iptr;
-		iptr = (int *)stm->itemp;
-		pval = (PVal *)val;
+		pval = (PVal *)stm->pval;
 		tflag = pval->flag;
-		ptr = (char *)HspVarCorePtrAPTR( pval, *iptr );
+		ptr = (char *)HspVarCorePtrAPTR( pval, stm->ival );
 	}
 
 	if ( tflag == HSPVAR_FLAG_INT ) {
@@ -931,10 +929,9 @@ APTR code_getva( PVal **pval )
 	//
 	PVal *getv_pval;
 	STMDATA *stm;
-	int *iptr;
 	int tflag;
-	int chk, i;
-	PVal temp;
+//	int chk, i;
+//	PVal temp;
 	APTR aptr;
 
 	if ( StackGetLevel <= 0 ) { throw HSPERR_VARIABLE_REQUIRED; }
@@ -942,9 +939,8 @@ APTR code_getva( PVal **pval )
 	tflag = stm->type;
 	if ( tflag != HSPVAR_FLAG_VAR ) { throw HSPERR_VARIABLE_REQUIRED; }
 
-	iptr = (int *)stm->itemp;
-	aptr = *iptr;										// aptrを得る
-	getv_pval = (PVal *)stm->ival;
+	aptr = stm->ival;										// aptrを得る
+	getv_pval = (PVal *)stm->pval;
 	StackPop();
 	*pval = getv_pval;
 
@@ -1002,11 +998,10 @@ unsigned short *code_getlb( void )
 
 	if ( tflag == HSPVAR_FLAG_VAR ) {	// 変数指定ならば内容を取得する
 		PVal *pval;
-		int *iptr;
-		iptr = (int *)stm->itemp;
-		pval = (PVal *)val;
+        int *iptr;
+		pval = (PVal *)stm->pval;
 		tflag = pval->flag;
-		iptr = (int *)HspVarCorePtrAPTR( pval, *iptr );
+		iptr = (int *)HspVarCorePtrAPTR( pval, stm->ival );
 		val = *iptr;
 	}
 

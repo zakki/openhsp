@@ -346,7 +346,8 @@ void PushVAP( PVal *pval, int aval )
 	//PDAT *ptr;
 	aptr = CheckArray( pval, aval );
 	//ptr = HspVarCorePtrAPTR( pval, aptr );
-	StackPushTypeVal( HSPVAR_FLAG_VAR, (int)(size_t)pval, (int)(size_t)aptr );
+	//StackPushTypeVal( HSPVAR_FLAG_VAR, (int)(size_t)pval, (int)(size_t)aptr );
+    StackPushVar( pval, aptr );
 }
 
 
@@ -787,8 +788,8 @@ void VarSet( PVal *m_pval, int aval )
 
 	if ( m_pval == &var_proxy ) {
 		STMDATA *stm = (STMDATA *)m_pval->master;
-		pval = (PVal *)( stm->ival );
-		aptr = *(int *)stm->itemp;
+		pval = (PVal *)( stm->pval );
+		aptr = stm->ival;
 		if ( aval != 0 ) throw HSPERR_SYNTAX;
 	} else {
 		pval = m_pval;
@@ -844,8 +845,8 @@ void VarSet( PVal *m_pval, int aval, int pnum )
 
 	if ( m_pval == &var_proxy ) {
 		STMDATA *stm = (STMDATA *)m_pval->master;
-		pval = (PVal *)( stm->ival );
-		aptr = *(int *)stm->itemp;
+		pval = (PVal *)( stm->pval );
+		aptr = stm->ival;
 		if ( aval != 0 ) throw HSPERR_SYNTAX;
 	} else {
 		pval = m_pval;
@@ -959,8 +960,8 @@ void VarInc( PVal *m_pval, int aval )
 
 	if ( m_pval == &var_proxy ) {
 		STMDATA *stm = (STMDATA *)m_pval->master;
-		pval = (PVal *)( stm->ival );
-		aptr = *(int *)stm->itemp;
+		pval = (PVal *)( stm->pval );
+		aptr = stm->ival;
 		if ( aval != 0 ) throw HSPERR_SYNTAX;
 	} else {
 		pval = m_pval;
@@ -990,8 +991,8 @@ void VarDec( PVal *m_pval, int aval )
 
 	if ( m_pval == &var_proxy ) {
 		STMDATA *stm = (STMDATA *)m_pval->master;
-		pval = (PVal *)( stm->ival );
-		aptr = *(int *)stm->itemp;
+		pval = (PVal *)( stm->pval );
+		aptr = stm->ival;
 		if ( aval != 0 ) throw HSPERR_SYNTAX;
 	} else {
 		pval = m_pval;
@@ -1076,8 +1077,8 @@ void VarCalc( PVal *m_pval, int aval, int op )
 
 	if ( m_pval == &var_proxy ) {
 		STMDATA *stm = (STMDATA *)m_pval->master;
-		pval = (PVal *)( stm->ival );
-		aptr = *(int *)stm->itemp;
+		pval = (PVal *)( stm->pval );
+		aptr = stm->ival;
 		if ( aval != 0 ) throw HSPERR_SYNTAX;
 	} else {
 		pval = m_pval;
@@ -1180,7 +1181,7 @@ void PushFuncPrm( int num )
 
 	tflag = stm->type;
 	if ( tflag == HSPVAR_FLAG_VAR ) {
-		PushVarFromVAP( (PVal *)( stm->ival ), *(int *)stm->itemp );
+		PushVarFromVAP( (PVal *)( stm->pval ), stm->ival );
 		//PushVAP( (PVal *)( stm->ival ), *(int *)stm->itemp );
 		return;
 	}
@@ -1212,9 +1213,9 @@ void PushFuncPrmI( int num )
 
 	tflag = stm->type;
 	if ( tflag == HSPVAR_FLAG_VAR ) {
-		pval = (PVal *)( stm->ival );
+		pval = (PVal *)( stm->pval );
 		tflag = pval->flag;
-		ptr = (int *)HspVarCorePtrAPTR( pval, *(int *)stm->itemp );
+		ptr = (int *)HspVarCorePtrAPTR( pval, stm->ival );
 	} else {
 		ptr = (int *)stm->ptr;
 	}
@@ -1249,9 +1250,9 @@ void PushFuncPrmD( int num )
 
 	tflag = stm->type;
 	if ( tflag == HSPVAR_FLAG_VAR ) {
-		pval = (PVal *)( stm->ival );
+		pval = (PVal *)( stm->pval );
 		tflag = pval->flag;
-		ptr = (double *)HspVarCorePtrAPTR( pval, *(int *)stm->itemp );
+		ptr = (double *)HspVarCorePtrAPTR( pval, stm->ival );
 	} else {
 		ptr = (double *)stm->ptr;
 	}
@@ -1287,7 +1288,7 @@ void PushFuncPrm( int num, int aval )
 		pval = (PVal *)( stm->ptr );
 		break;
 	case HSPVAR_FLAG_VAR:
-		pval = (PVal *)( stm->ival );
+		pval = (PVal *)( stm->pval );
 		break;
 	default:
 		throw HSPVAR_ERROR_INVALID;
@@ -1327,12 +1328,14 @@ void PushFuncPAP( int num, int aval )
 	case TYPE_EX_LOCAL_VARS:
 		pval = (PVal *)( stm->ptr );
 		aptr = CheckArray( pval, aval );
-		StackPushTypeVal( HSPVAR_FLAG_VAR, (int)(size_t)pval, (int)(size_t)aptr );
+		//StackPushTypeVal( HSPVAR_FLAG_VAR, (int)(size_t)pval, (int)(size_t)aptr );
+        StackPushVar( pval, aptr );
 		break;
 	case HSPVAR_FLAG_VAR:
-		pval = (PVal *)( stm->ival );
+		pval = (PVal *)( stm->pval );
 		aptr = CheckArray( pval, aval );
-		StackPushTypeVal( HSPVAR_FLAG_VAR, (int)(size_t)pval, (int)(size_t)aptr );
+		//StackPushTypeVal( HSPVAR_FLAG_VAR, (int)(size_t)pval, (int)(size_t)aptr );
+        StackPushVar( pval, aptr );
 		break;
 	default:
 		throw HSPVAR_ERROR_INVALID;
@@ -1382,7 +1385,7 @@ PVal *FuncPrm( int num )
 	if ( tflag != HSPVAR_FLAG_VAR ) throw HSPVAR_ERROR_INVALID;
 
 	//ptr = stm->itemp;
-	return (PVal *)( stm->ival );
+	return (PVal *)( stm->pval );
 }
 
 

@@ -288,7 +288,7 @@ p3で取得するモードを指定することができます。
 ^p
 
 %href
-dmmplay
+mmplay
 
 
 %index
