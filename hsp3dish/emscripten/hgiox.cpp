@@ -377,14 +377,20 @@ void hgio_reset( void )
 //	glViewport(_originX,_originY, ox, oy );
 //	glViewport(_originX,-_originY, _sizex, _sizey );
     
+
+
+
     //モデリング変換
     glMatrixMode(GL_MODELVIEW);
     glLoadIdentity();
 
     glDisable(GL_LIGHTING);
     glDisable(GL_CULL_FACE);
-    glDisable(GL_DEPTH_BUFFER_BIT);
     glDisable(GL_DEPTH_TEST);
+#if defined(HSPIOS) || defined(HSPEMSCRIPTEN)
+    glDisable(GL_DEPTH_BUFFER_BIT);
+#endif
+
     //glClearColor(.7f, .7f, .9f, 1.f);
     //glShadeModel(GL_SMOOTH);
 
@@ -398,6 +404,8 @@ void hgio_reset( void )
         
     //テクスチャの設定
     glEnableClientState(GL_TEXTURE_COORD_ARRAY);
+
+
 #if defined(HSPEMSCRIPTEN)
 	glDisable(GL_TEXTURE_2D);
 #else
@@ -430,6 +438,7 @@ void hgio_reset( void )
 	TexProc();
 #endif
 #endif
+
 
 }
 
@@ -496,6 +505,7 @@ void hgio_setFilterMode( int mode )
 void hgio_setBlendMode( int mode, int aval )
 {
     //ブレンドモード設定
+
     switch( mode ) {
         case 0:                     //no blend
         case 1:                     //no blend
@@ -524,12 +534,40 @@ void hgio_setBlendMode( int mode, int aval )
             //glBlendFunc(GL_ONE,GL_ONE_MINUS_SRC_ALPHA);
             break;
     }
-    if ( mode >= 3 ) {
-        panelColorsTex[3] = panelColorsTex[4+3] = panelColorsTex[8+3] = panelColorsTex[12+3] = aval;
+    if ( mode <= 1 ) {
+        glDisableClientState(GL_COLOR_ARRAY);
+	} else {
+	    int *i_panelcolor;
+		int mulcolor;
+	    if ( mode >= 2 ) {
+		    if ( mode >= 3 ) {
+				mulcolor = ( aval<<24 );
+			} else {
+				mulcolor = 0xff000000;
+			}
+			if ( mainbm != NULL ) {
+			    int rval,gval,bval;
+				GLbyte *colbyte;
+			    rval = (( mainbm->mulcolor )>>16)&0xff;
+			    gval = (( mainbm->mulcolor )>>8)&0xff;
+			    bval = (( mainbm->mulcolor ))&0xff;
+				colbyte = (GLbyte *)&mulcolor;
+				*colbyte++ = rval;
+				*colbyte++ = gval;
+				*colbyte++ = bval;
+			} else {
+				mulcolor |= 0xffffff;
+			}
+		} else {
+			mulcolor = 0xffffffff;
+		}
+		i_panelcolor = (int *)panelColorsTex;
+		*i_panelcolor++ = mulcolor;
+		*i_panelcolor++ = mulcolor;
+		*i_panelcolor++ = mulcolor;
+		*i_panelcolor++ = mulcolor;
         glEnableClientState(GL_COLOR_ARRAY);
         glColorPointer(4,GL_UNSIGNED_BYTE,0,panelColorsTex);
-    } else {
-        glDisableClientState(GL_COLOR_ARRAY);
     }
     glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_MAG_FILTER,_filter); 
     glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_MIN_FILTER,_filter); 
@@ -704,14 +742,79 @@ int hgio_font( char *fontname, int size, int style )
 }
 
 
+static void hgio_messub( BMSCR *bm, char *str1 )
+{
+	// print per line
+	if ( bm->cy >= bm->sy ) return;
+	hgio_putTexFont( bm->cx, bm->cy, str1, bm->color );
+	if ( mes_sx > bm->printsizex ) bm->printsizex = mes_sx;
+	bm->printsizey += mes_sy;
+	bm->cy += mes_sy;
+}
+
+
 int hgio_mes( BMSCR *bm, char *str1 )
 {
 #if defined(HSPNDK) || defined(HSPEMSCRIPTEN)
-	hgio_putTexFont( bm->cx, bm->cy, str1, bm->color );
-	bm->printsizex = mes_sx;
-	bm->printsizey = mes_sy;
-	//LOGI( str1 );
+
+	int spcur;
+	int org_cy;
+	unsigned char *p;
+	unsigned char *st;
+	unsigned char a1;
+	unsigned char a2;
+	unsigned char bak_a1;
+
+	org_cy = bm->cy;
+	bm->printsizex = 0;
+	bm->printsizey = 0;
+
+	p = (unsigned char *)str1;
+	st = p;
+	spcur = 0;
+
+	while(1) {
+		a1 = *p;
+		if ( a1 == 0 ) break;
+		if ( a1 == 13 ) {
+			bak_a1 = a1; *p = 0;		// 終端を仮設定
+			hgio_messub( bm, (char *)st );
+			*p = bak_a1;
+			p++; st = p; spcur = 0;		// 終端を戻す
+			a1 = *p;
+			if ( a1 == 10 ) p++;
+			continue;
+		}
+		if ( a1 == 10 ) {
+			bak_a1 = a1; *p = 0;		// 終端を仮設定
+			hgio_messub( bm, (char *)st );
+			*p = bak_a1;
+			p++; st = p; spcur = 0;		// 終端を戻す
+			continue;
+		}
+/*		
+		if (a1&128) {					// UTF8チェック
+			while(1) {
+				a2 = *p;
+				if ( a2==0 ) break;
+				if ( ( a2 & 0xc0 ) != 0x80 ) break;
+				p++; spcur++;
+			}
+		} else {
+			p++; spcur++;
+		}
+*/
+		p++; spcur++;
+	}
+
+	if ( spcur > 0 ) {
+		hgio_messub( bm, (char *)st );
+	}
+
+	bm->cy = org_cy;
+
 #endif
+
 #ifdef HSPIOS
     gb_mes( bm, str1 );
 #endif
