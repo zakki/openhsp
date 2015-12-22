@@ -329,7 +329,6 @@ int hgio_stick( int actsw )
 {
 	//		stick用の入力を返す
 	//
-	HWND hwnd;
 	int ckey = 0;
 
 #ifdef HSPNDK
@@ -337,6 +336,7 @@ int hgio_stick( int actsw )
 #endif
 
 #ifdef HSPWIN
+	HWND hwnd;
 	if ( actsw ) {
 		hwnd = GetActiveWindow();
 		if ( hwnd != master_wnd ) return 0;
@@ -1343,6 +1343,33 @@ HWND hgio_gethwnd( void )
 	return master_wnd;
 }
 #endif
+
+
+
+
+void hgio_size( int sx, int sy )
+{
+}
+
+
+void hgio_view( int sx, int sy )
+{
+}
+
+
+void hgio_scale( float xx, float yy )
+{
+}
+
+
+void hgio_autoscale( int mode )
+{
+}
+
+
+void hgio_uvfix( int mode )
+{
+}
 
 
 /*------------------------------------------------------------*/

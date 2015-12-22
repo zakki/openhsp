@@ -23,6 +23,35 @@
 #include "../obaq/hsp3dw.h"
 #endif
 
+
+#ifdef HSPDISHGP
+#ifdef HSPWIN
+#include "../hsp3/win32gp/gamehsp.h"
+#endif
+#ifdef HSPNDK
+#include "../hsp3/ndkgp/gamehsp.h"
+#endif
+#endif
+
+#ifdef HSPDISHGP
+gamehsp *game;
+gameplay::Platform *platform;
+
+//-------------------------------------------------------------
+//		gameplay Log
+//-------------------------------------------------------------
+
+static char gplog[1024];
+
+extern "C" {
+	static void logfunc( gameplay::Logger::Level level, const char *msg )
+	{
+		strcat( gplog, msg );
+	}
+}
+
+#endif
+
 extern void __HspInit( Hsp3r *hsp3 );
 //typedef BOOL (*HSP3DBGFUNC)(HSP3DEBUG *,int,int,int);
 
