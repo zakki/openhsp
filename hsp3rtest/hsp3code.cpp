@@ -102,7 +102,9 @@ void code_puterror( HSPERROR error )
 	if ( error == HSPERR_NONE ) {
 		hspctx->runmode = RUNMODE_END;
 	}
+#if !defined(HSPLIB)
 	throw error;
+#endif
 }
 
 
@@ -2874,7 +2876,22 @@ int code_execcmd2( void )
 	return code_execcmd();
 }
 
+void code_msgfunc()
+{
+	if (hspctx->runmode == RUNMODE_ERROR) {
+		code_puterror(HSPERR_NONE);
+	}
 
+	if (hspctx->runmode != 0) {
+		if (hspctx->runmode != RUNMODE_RETURN) {
+			hspctx->msgfunc(hspctx);
+		}
+	}
+
+	if (hspctx->runmode == RUNMODE_ERROR) {
+		code_puterror(HSPERR_NONE);
+	}
+}
 
 /*------------------------------------------------------------*/
 /*

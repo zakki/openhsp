@@ -3,7 +3,7 @@
 //	[test.ax]
 //
 #include "hsp3r.h"
-
+#if !defined(HSPLIB)
 #define _HSP3CNV_DATE "2011/03/04"
 #define _HSP3CNV_TIME "19:32:56"
 #define _HSP3CNV_MAXVAR 84
@@ -1355,4 +1355,29 @@ void __HspInit( Hsp3r *hsp3 ) {
 }
 
 /*-----------------------------------------------------------*/
+#else
+#include "hsplib.h"
 
+
+static void WAIT(void) {
+	// await 0
+	PushInt(0);
+	Prgcmd(8, 1);
+	TaskSwitch(0);
+}
+
+CHSP3_TASK __HspTaskFunc[] = {
+	WAIT
+};
+
+hsp::Runtime hsp::rt;
+
+void __HspInit(Hsp3r *hsp3) {
+	hsp3->Reset(0, 0);
+	hsp3->SetDataName(0);
+	hsp3->SetFInfo(0, 0);
+	hsp3->SetLInfo(0, 0);
+	hsp3->SetMInfo(0, 0);
+}
+
+#endif
