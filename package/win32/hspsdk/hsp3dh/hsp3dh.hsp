@@ -153,7 +153,8 @@
 
 #deffunc execcmd str _p1
 
-	sdim tmp,$20000
+	sdim tmp,$40000
+	sdim buf,$10000
 	cmd = app_dir+"\\"+_p1
 	pipeexec tmp,cmd,1
 	if stat : dialog "コマンドラインの実行に失敗しました" : return -1
