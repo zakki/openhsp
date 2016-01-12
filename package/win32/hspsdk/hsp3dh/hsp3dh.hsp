@@ -9,8 +9,10 @@
 #include "mod_appconfig.as"
 
 #define APPTITLE "HSP3Dish helper"
-#define APPVER "1.3"
+#define APPVER "1.4"
 #define APP_CONF "\\hsp3dh.cfg"
+
+#define AND_LIBVER 100			; android HSPランタイムの内部バージョン
 
 #uselib "shell32.dll"
 #cfunc SHBrowseForFolder "SHBrowseForFolder" int
@@ -54,6 +56,7 @@
 	and_pack=""
 	and_fname=""
 	and_keystore=""
+	and_copylib=0
 
 	js_pack=""
 	js_fname=""
@@ -88,13 +91,14 @@
 		;and_targetid = cfg_getvar("and_target")
 		and_fname=cfg_getvar("and_fname")
 		and_keystore=cfg_getvar("and_keystore")
+		and_copylib=0+cfg_getvar("and_copylib")
 		flag_admob = 0+cfg_getvar("flag_admob")
 		flag_arm = 0+cfg_getvar("flag_arm")
 		flag_hgimg = 0+cfg_getvar("flag_hgimg")
 		ios_org=cfg_getvar("ios_org")
 		ios_ident=cfg_getvar("ios_ident")
 	}
-	if and_targetid="" : and_targetid="\"android-19\""
+	if and_targetid="" : and_targetid="\"android-21\""
 	if and_keystore="" : and_keystore="hspapp"
 
 	if app_winx<0 : app_winx = -1
@@ -664,6 +668,8 @@
 	cfg_sets "and_target",and_targetid
 	cfg_sets "and_fname",and_fname
 	cfg_sets "and_keystore",and_keystore
+	cfg_seti "and_copylib",and_copylib
+
 	cfg_seti "flag_admob",flag_admob
 	cfg_seti "flag_arm",flag_arm
 	cfg_seti "flag_hgimg",flag_hgimg
@@ -1740,10 +1746,10 @@ hspproj.xcodeproj\\project.pbxproj"}
 *exec_admob
 	;	AdMob(GooglePlayServices)設定
 	gosub *check_admob
-	if res=0 {
-		dialog "AdMob(GooglePlayServices)は正常に設定されています。"
-		stop
-	}
+	;if res=0 {
+	;	dialog "AdMob(GooglePlayServices)は正常に設定されています。"
+	;	stop
+	;}
 	;
 	initsub
 	gsel 1
@@ -1771,7 +1777,8 @@ hspproj.xcodeproj\\project.pbxproj"}
 	gosub *bat_init
 	tmp+="XCOPY \""+s2+"\" \""+basedir+"\" /S /E /Y /I\n"
 	tmp+="CD "+basedir+"\n"
-	tmp+="android update project --path ./ --target 1 --subprojects\n"
+	tmp+="android update project --path ./ --target android-21 --subprojects\n"
+	;tmp+="android update project --path ./ --target 1 --subprojects\n"
 
 	gosub *bat_save
 
@@ -1818,6 +1825,7 @@ hspproj.xcodeproj\\project.pbxproj"}
 	execcmd "go.bat"
 	if stat : return
 	;
+	and_copylib=AND_LIBVER
 	res=0
 	return
 
@@ -1832,6 +1840,8 @@ hspproj.xcodeproj\\project.pbxproj"}
 	;
 	exist basedir+"\\main.c"
 	if strsize<=0 : return
+	;
+	if and_copylib!=AND_LIBVER : return	; 内部バージョンのチェック
 	;
 	res=0
 	return

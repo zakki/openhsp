@@ -14,7 +14,7 @@
 <body>
 	<div id="CONTAINER">
 	<!-- ヘッダー -->
-	<p id="COPY">HSP : HSP3Dish / onion software 2015(c)</p>
+	<p id="COPY">HSP : HSP3Dish / onion software 2016(c)</p>
 	<img src="hsp3dish.jpg" width="640" height="200" alt="タイトル">
 	<h1>HSP3Dish iOS版プログラミングガイド</h1>
 
@@ -33,6 +33,7 @@
 		<li><a href="#DIALOG">dialog命令のサポートについて</a></li>
 		<li><a href="#RETINA">Retinaディスプレイ対応について</a></li>
 		<li><a href="#UNIVERSAL">Universalアプリ対応について</a></li>
+		<li><a href="#ROTATE">画面の回転について</a></li>
 		<li><a href="#DEVCONTROL">デバイスコントロールについて</a></li>
 		<li><a href="#SIGNING">エラー時の対応について</a></li>
 		<li><a href="#RELEASE">AppStoreへの登録について</a></li>
@@ -53,7 +54,7 @@
 
 	<h2 id="PREPARE">環境の準備</h2>
 	<p>
-	現状ではiPhone/iPadの実機上で動作させるためには、MacOSX環境及び開発ツールXcode(6.2以降)、iOS Developer Program(有償)が必要になります。<br>
+	現状ではiPhone/iPadの実機上で動作させるためには、MacOSX環境及び開発ツールXcode6.2以降またはXcode7以降、iOS Developer Program(有償)が必要になります。<br>
 	ここまでに必要なプロセスは、通常のiPhone/iPadの開発と変わりません。詳しくは、iOS Developer Programのホームページなど各種資料を参照してください。
 	</p>
 	<pre>
@@ -75,7 +76,7 @@
 	iOSフォルダには、HSP3Dishランタイム及びxcode用のサンプルプロジェクトが含まれています。
 
 	<ul>
-	<li>iHSP22フォルダ - HSP3Dishランタイム本体</li>
+	<li>iHSP23フォルダ - HSP3Dishランタイム本体</li>
 	<li>hspprojフォルダ - HSP3Dishサンプル(hsplogo.hsp)</li>
 	</ul>
 
@@ -117,11 +118,11 @@
 
 	<p>
 	実際にiOS上で動作させる場合には、XCode上でプロジェクトをコンパイルする必要があります。<br>
-	<a href="#MAKECPP">スクリプトの準備</a>で出力した、XCode用プロジェクトフォルダと、「iHSP22」フォルダ(HSPアーカイブ内のiOSフォルダに同梱されています。)をMacOSX上にコピーしてください。<br>
+	<a href="#MAKECPP">スクリプトの準備</a>で出力した、XCode用プロジェクトフォルダと、「iHSP23」フォルダ(HSPアーカイブ内のiOSフォルダに同梱されています。)をMacOSX上にコピーしてください。<br>
 	※Xcode5を使用して手動でプロジェクトを作成する場合は<a href="hsp3dish_xcode5.htm">こちらを参照してください</a>。
 	</p>
 	<p>
-	必ず作成されたプロジェクトのフォルダと同じ階層に、「iHSP22」フォルダを配置してください。
+	必ず作成されたプロジェクトのフォルダと同じ階層に、「iHSP23」フォルダを配置してください。
 	</p>
 	<p>
 	<img src="hsp3dish/s_folder.jpg"><br>
@@ -206,21 +207,6 @@
 	(あらかじめ、640×960などの高解像度でアプリを作成しておく必要があります)
 	Retinaディスプレイを搭載していない機種では、通常通りの解像度を維持します。
 	意図的にRetinaディスプレイを使用したくない場合は、コメント「//」を入れて無効にしてください。
-	</p>
-	<pre>
-	    [view dispRotate:3];
-	</pre>
-	<p>
-	この設定を追加することにより、画面全体を回転して表示させることが可能です。<br>
-	指定する値は、0～3の範囲で90度単位(時計回り)に回転の角度を指定することができます。
-	1または、3の場合は横長の画面になります。その場合は、「ビューの生成と追加」部分の初期化コードにある「initWithFrame」を「initWithFrameSide」に変更してください。
-	</p>
-	<pre>
-		    //ビューの生成と追加
-		    HspView* view=[[HspView alloc] initWithFrameSide:[[UIScreen mainScreen] applicationFrame]];
-	</pre>
-	<p>
-	これにより横長画面のスケーリングを正しく行なうことができるようになります。
 	</p>
 	<pre>
 	    [view useMultiTouch];
@@ -400,6 +386,16 @@
 	<img src="hsp3dish/s_universal.jpg"><br>
 
 
+	<h2 id="ROTATE">画面の回転について</h2>
+	<p>
+	現在のバージョンでは、実行中の画面自動回転には対応していません。必ず、縦・横画面を固定して動作する仕様で作成してください。<br>
+	hspprojの設定項目で、TARGETS->General内にあるDevice Orientationのチェックボックスで画面の方向を設定することができます。
+	縦長画面(Portrait,Upside Down)または横長(Landscape Left,Landscape Right)のどちらかにチェックを入れるようにしてください。<br>
+	以前のバージョンでは、AppDelegate.m内の設定で、「view dispRotate:」を設定することで回転の設定を行なっていました。
+	「view dispRotate:」による設定も互換性のため残されていますが、XCode6以降では、Device Orientationにより設定を行なってください。
+
+	</p>
+
 	<h2 id="DEVCONTROL">デバイスコントロールについて</h2>
 	<p>
 	iOSデバイス固有の機能にdevcontrolなどの命令でアクセスすることが可能です。<br>
@@ -482,6 +478,11 @@
 	既に、HSP3Dishによる作品が少しずつAppStoreにも登場してきています。
 	全世界のマーケットを対象に作品を公開することができますので、是非あなたもチャレンジしてみてください。
 	</p>
+	<p>
+	※Appleの規約により、64bitコードが含まれないバイナリは申請ができなくなっています。必ず、HSP3Dish 3.5β3以降のランタイムを使用してファイルを作成してください。
+	また、プロジェクトのビルド設定で「Build Active Architecture Only」に「No」を設定するようにしてください。「Build Active Architecture Only」は、PROJECTとTARGETSそれぞれに設定があるので、どちらも「No」が設定されていることを確認してください。
+	また、Architecturesの項目も、「Standard Architectures」(armv7,arm64)が選択されていることを確認してください。
+	</p>
 
 	<h2 id="IAD">iAdの対応について</h2>
 	<p>
@@ -500,12 +501,12 @@
 	<h2 id="ADMOB">AdMobの対応について</h2>
 	<p>
 	アプリ内に広告を表示するAdMobのシステムに仮対応しています。<br>
-	標準的なHSP3Dishランタイム(iHSP22フォルダ)と合わせて、AdMob対応のランタイム(iHSP22AdMobフォルダ)を
-	同梱しています。AdMobを使用する際には、iHSP22ではなくiHSP22AdMobフォルダをプロジェクトに追加してください。<br>
+	標準的なHSP3Dishランタイム(iHSP23フォルダ)と合わせて、AdMob対応のランタイム(iHSP23AdMobフォルダ)を
+	同梱しています。AdMobを使用する際には、iHSP23ではなくiHSP23AdMobフォルダをプロジェクトに追加してください。<br>
 	また、AppDelegate.m内の#import部分のコードを、以下のように修正する必要があります。
 	</p>
 	<pre>
-	    #import "../../iHSP22AdMob/Classes/HspView.h"
+	    #import "../../iHSP23AdMob/Classes/HspView.h"
 	</pre>
 	<p>
 	さらに、以下のフレームワークをプロジェクトに追加してください。
@@ -522,7 +523,7 @@
 	</ul>
 	<p>
 	最後に、ユーザーが個別に取得するAdMobパブリッシャーIDを指定します。
-	「iHSP22admob/Classes/HspViewController.mm」ファイル内のコードを直接修正してください。
+	「iHSP23admob/Classes/HspViewController.mm」ファイル内のコードを直接修正してください。
 	</p>
 	<pre>
 		// 広告の「ユニット ID」を指定する。これは AdMob パブリッシャーID です。
