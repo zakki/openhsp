@@ -25,12 +25,7 @@
 
 
 #ifdef HSPDISHGP
-#ifdef HSPWIN
-#include "../hsp3/win32gp/gamehsp.h"
-#endif
-#ifdef HSPNDK
 #include "../hsp3/ndkgp/gamehsp.h"
-#endif
 #endif
 
 #ifdef HSPDISHGP
@@ -134,16 +129,49 @@ int hsp3eb_init( void )
 	hsp = new Hsp3r();
 	__HspInit( hsp );
 
+
 	//		実行ファイルかデバッグ中かを調べる
 	//
 //	mode = 0;
 //	orgexe=0;
-	hsp_wx = 640;
-	hsp_wy = 480;
+	hsp_wx = 480;
+	hsp_wy = 640;
 	hsp_wd = 0;
 	hsp_ss = 0;
 
 	ctx = &hsp->hspctx;
+
+#ifdef HSPDISHGP
+	//		Initalize gameplay
+	//
+    game = new gamehsp;
+
+	gplog[0] = 0;
+	gameplay::Logger::set( gameplay::Logger::LEVEL_ERROR, logfunc );
+	
+	platform = gameplay::Platform::create( game, NULL, hsp_wx, hsp_wy, false );
+//	platform = gameplay::Platform::create( game, m_hWnd, hsp_wx, hsp_wy, false );
+	if ( platform == NULL ) {
+//		Alertf( gplog );
+		Alertf( "OpenGL initalize failed." );
+		return 1;
+	}
+	Alertf( "---Init HSP3***\n" );
+	platform->enterMessagePump();
+	Alertf( "---enterMessagePump OK\n" );
+
+       if (Game::getInstance()->getState() == Game::UNINITIALIZED)
+            {
+                Game::getInstance()->run();
+            }
+            else
+            {
+                Game::getInstance()->resume();
+            }
+
+
+	game->frame();
+#endif
 
 	//		Register Type
 	//
@@ -178,6 +206,18 @@ int hsp3eb_init( void )
 
 void hsp3eb_bye( void )
 {
+#ifdef HSPDISHGP
+	//		gameplay関連の解放
+	//
+	if ( platform != NULL ) {
+		platform->shutdownInternal();
+	    delete platform;
+	}
+	if ( game != NULL ) {
+	    delete game;
+	}
+#endif
+
 	//		HSP関連の解放
 	//
 	if ( hsp != NULL ) { delete hsp; hsp = NULL; }
@@ -259,6 +299,7 @@ int hsp3eb_exectime( int tick )
 	//		実行メインを呼び出す
 	//		(time=経過時間)
 	//
+	//Alertf( "hsp3eb_exectime=%d",ctx->runmode );
 	switch( ctx->runmode ) {
 		case RUNMODE_STOP:
 		case RUNMODE_ASSERT:

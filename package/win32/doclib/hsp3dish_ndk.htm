@@ -25,6 +25,7 @@
 		<li><a href="#SDKSETUP">Platform APIインストール</a></li>
 		<li><a href="#DHSETUP">HSP3Dish Helperの設定</a></li>
 		<li><a href="#DHNEWPROJ">新規プロジェクトの作成</a></li>
+		<li><a href="#LIBFOLDER">ライブラリフォルダについて</a></li>
 		<li><a href="#DHPROJ">プロジェクトのビルド</a></li>
 		<li><a href="#SAMPLE">サンプルプロジェクト</a></li>
 		<li><a href="#RUNPROJ">実機への転送と実行</a></li>
@@ -34,6 +35,7 @@
 		<li><a href="#DISHINI">hsp3dish.ini設定ファイルについて</a></li>
 		<li><a href="#SCALE">マニュアル設定項目について</a></li>
 		<li><a href="#RELEASE">リリースビルド</a></li>
+		<li><a href="#HGIMG4">HGIMG4プロジェクトについて</a></li>
 		<li><a href="#DEVCONTROL">デバイスコントロールについて</a></li>
 		<li><a href="#ADMOB">AdMobによる広告配信</a></li>
 		<li><a href="#FONTMES">mes,print命令について</a></li>
@@ -150,7 +152,7 @@
 	プロジェクトのタイトル名となります。スペースを含まない英文字のみで指定してください。
 	</p>
 	<li>ID</li><br><p>
-	ビルドのターゲットIDを設定します。ターゲットIDは、SDKのAPIバージョンを指定するための番号になります。デフォルトで「"android-19"」(4.4.2)が指定されています。
+	ビルドのターゲットIDを設定します。ターゲットIDは、SDKのAPIバージョンを指定するための番号になります。デフォルトで「"android-21"」(5.0.1)が指定されています。
 	</p>
 	<ul><img src="hsp3dish/s_and8.jpg"><br></ul>
 	<p>
@@ -172,7 +174,35 @@
 	通常は、チェックを入れない状態(ARMv7コードに最適化)で使用してください。最適化を行なうことで、実行速度が向上します。
 	ARMv7を持たない古いAndroid端末で実行させる場合には、チェックを入れることで古いARMでも実行できるコードが生成されます。
 	</p>
+	<li>HGIMG4を使用する</li><br><p>
+	HGIMG4向けに作られたスクリプトを使用する場合にチェックを入れてください。
+	HGIMG4のプロジェクト作成については、「HGIMG4プロジェクトについて」の項目を参照してください。
+	</p>
 	</ul>
+
+
+	<h2 id="LIBFOLDER">ライブラリフォルダについて</h2>
+	<p>
+	新規プロジェクト作成時に、ビルドに必要となるライブラリフォルダが作成されます。ライブラリフォルダは、オプションに設定されたプロジェクトの基本(ルート)フォルダ内に作成されます。<br>
+	ライブラリフォルダとして作成されるものは、以下の通りです。
+	</p>
+	<ul>
+	<li>hsplib35～フォルダ</li><br><p>
+	HSP3Dishのビルドに必要なランタイムのソースが含まれています。
+	古いライブラリとの競合を防ぐため、「hsplib35b3」のようにHSPのバージョンごとに異なるフォルダ名が使用されます。
+	</p>
+	<li>gameplayフォルダ</li><br><p>
+	HGIMG4のビルドに必要なgameplayランタイムのソースが含まれています。
+	</p>
+	<li>extlibフォルダ</li><br><p>
+	HGIMG4のビルドに必要な各種ライブラリのソースが含まれています。
+	</p>
+	</ul>
+	<p>
+	hsplib35～フォルダ内のソースには、各プロジェクトから共有されるHSP3Dishランタイムのソースが含まれます。
+	ユーザーが独自にソースを変更することもできますが、HSP3Dish helperのアップデート等でソースが上書き更新されてしまうことがありますので、注意してください。
+	</p>
+
 
 	<h2 id="DHPROJ">プロジェクトのビルド</h2>
 	<p>
@@ -370,36 +400,6 @@
 	カッコ内の数値が0以外の場合は補正がONになります。0の場合は補正がOFFになります。
 	</p>
 
-	<h2 id="DEVCONTROL">デバイスコントロールについて</h2>
-	<p>
-	Androidデバイス固有の機能にdevcontrolなどの命令でアクセスすることが可能です。<br>
-	</p>
-	<pre>
-		devcontrol "コントロールコマンド",パラメーター1,パラメーター2,パラメーター3
-	</pre>
-	<p>
-	上のような書式で、デバイスコントロールを行ないます。
-	Androidデバイス上では、文字列として指定するコントロールコマンドは、以下を認識します。
-	(コントロールコマンドの文字列は、大文字小文字も含めて完全に一致する必要があります。)<br>
-	認識しないコントロールコマンドを記述した場合もエラーは発生しませんので注意してください。
-	</p>
-	<pre>
-	コントロールコマンド    内容
-	-------------------------------------------
-	vibrate			バイブ(振動)動作(パラメーター1)
-	AdMob			AdMobによる広告の表示
-	</pre>
-	<p>
-	たとえば、
-	</p>
-	<pre>
-		devcontrol "vibrate",400
-	</pre>
-	<p>
-	は、バイブ(振動)動作を行なうようデバイスに指示を出します。<br>
-	パラメーターの数値を変えることにより、振動の長さ(ミリ秒単位)を変えることができます。
-	</p>
-
 	<h2 id="RELEASE">リリースビルド</h2>
 	<p>
 	HSP3Dish Helperからリリースビルドを行なうと、署名入りのapkファイルを生成することができます。これにより、Google Play(Android マーケット)に作成したアプリを登録することが可能になります。
@@ -471,6 +471,88 @@
 	※androidの新しいSDKでは、署名に使用されるzipalignツールが異なるフォルダに収録されています。「リリース」ボタンを押した際に「zipalignツールがありません。」というエラーが出る場合は、SDKフォルダのbuild-tools以下にある最新の「zipalign.exe」ファイルを、SDKフォルダのtools以下にコピーしてください。
 	</b></p>
 	</ul>
+
+
+	<h2 id="HGIMG4">HGIMG4プロジェクトについて</h2>
+	<p>
+	HSP3.5β3からHGIMG4スクリプトのビルドに対応しています。<br>
+	現在はβ対応となっていて、様々な機能が制限されていますのでご了承の上、ご使用ください。
+	HGIMG4プロジェクトは、初回のビルドに非常に時間がかかります。
+	また、android端末の環境や機種によっては、動作しないことがあります。(今後、幅広い端末でのサポートを目指していきますので、今しばらくお待ちください)<br>
+	HGIMG4では、起動時に必ずresフォルダ及びシェーダー等のファイルが必要になります。
+	HSPの「sample/hgimg4」フォルダにある「resフォルダ」からandroid用のHGIMG4プロジェクトフォルダの
+	「assets」以下にコピーしてください。(「assets/res/…」というフォルダ構成になります)<br>
+	最低限必要なファイルは以下になります。
+	</p>
+	<pre>
+		res/font.gpb
+		res/shaders/colored-unlit.frag
+		res/shaders/colored-unlit.vert
+		res/shaders/colored.frag
+		res/shaders/colored.vert
+		res/shaders/font.frag
+		res/shaders/font.vert
+		res/shaders/form.frag
+		res/shaders/form.vert
+		res/shaders/lighting-directional.frag
+		res/shaders/lighting-directional.vert
+		res/shaders/lighting-point.frag
+		res/shaders/lighting-point.vert
+		res/shaders/lighting-spot.frag
+		res/shaders/lighting-spot.vert
+		res/shaders/lighting.frag
+		res/shaders/skinning-none.vert
+		res/shaders/skinning.vert
+		res/shaders/sprite.frag
+		res/shaders/sprite.vert
+		res/shaders/spritecol.frag
+		res/shaders/spritecol.vert
+		res/shaders/terrain.frag
+		res/shaders/terrain.vert
+		res/shaders/textured-bumped.frag
+		res/shaders/textured-bumped.vert
+		res/shaders/textured-unlit.frag
+		res/shaders/textured-unlit.vert
+		res/shaders/textured.frag
+		res/shaders/textured.vert
+	</pre>
+	<p>
+	以下の機能については、未対応なので注意してください。将来のバージョンで対応する予定です。
+	</p>
+	<ul>
+	<li>画面のサイズ指定、スケーリングに対応していません(hgio_view/hgio_scale等のマニュアル設定項目も機能しません)</li><br>
+	<li>AdMobの表示に非対応です</li><br>
+	</ul>
+
+	<h2 id="DEVCONTROL">デバイスコントロールについて</h2>
+	<p>
+	Androidデバイス固有の機能にdevcontrolなどの命令でアクセスすることが可能です。<br>
+	</p>
+	<pre>
+		devcontrol "コントロールコマンド",パラメーター1,パラメーター2,パラメーター3
+	</pre>
+	<p>
+	上のような書式で、デバイスコントロールを行ないます。
+	Androidデバイス上では、文字列として指定するコントロールコマンドは、以下を認識します。
+	(コントロールコマンドの文字列は、大文字小文字も含めて完全に一致する必要があります。)<br>
+	認識しないコントロールコマンドを記述した場合もエラーは発生しませんので注意してください。
+	</p>
+	<pre>
+	コントロールコマンド    内容
+	-------------------------------------------
+	vibrate			バイブ(振動)動作(パラメーター1)
+	AdMob			AdMobによる広告の表示
+	</pre>
+	<p>
+	たとえば、
+	</p>
+	<pre>
+		devcontrol "vibrate",400
+	</pre>
+	<p>
+	は、バイブ(振動)動作を行なうようデバイスに指示を出します。<br>
+	パラメーターの数値を変えることにより、振動の長さ(ミリ秒単位)を変えることができます。
+	</p>
 
 
 	<h2 id="ADMOB">AdMobによる広告配信</h2>
@@ -739,7 +821,6 @@
 	<li>dialog命令によるダイアログ表示サポート</li>
 	<li>各種システム情報取得</li>
 	<li>カメラ、ブラウザの呼び出しサポート</li>
-	<li>HGIMG4のサポート</li>
 	</ul>
 	<p>
 	バージョンアップの告知は、HSPオフィシャルサイトHSPTV!にて行なわれますので、随時ご確認ください。

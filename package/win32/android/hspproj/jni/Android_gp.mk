@@ -9,7 +9,7 @@ LOCAL_C_INCLUDES += ../hsplib35b3
 LOCAL_C_INCLUDES += ../gameplay/src
 LOCAL_C_INCLUDES += ../extlib/src
 
-LOCAL_SRC_FILES := hsp3embed/hsp3r.cpp hsp3embed/hspsource.cpp javafunc.cpp main.c \
+LOCAL_SRC_FILES := hsp3embed/hsp3r.cpp hsp3embed/hspsource.cpp javafunc.cpp maingp.c \
 PlatformAndroid.cpp \
 ../../hsplib35b3/hsp_native_app_glue.c \
 ../../hsplib35b3/hsp3embed/hsp3code.cpp \

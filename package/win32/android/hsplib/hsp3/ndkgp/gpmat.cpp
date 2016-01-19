@@ -337,6 +337,7 @@ Material *gamehsp::makeMaterialTexture( char *fname, int matopt )
 	Material *material;
 	bool mipmap;
 	mipmap = (matopt & GPOBJ_MATOPT_NOMIPMAP ) == 0;
+
 	if ( matopt & GPOBJ_MATOPT_NOLIGHT ) {
 		material = makeMaterialFromShader( "res/shaders/textured-unlit.vert", "res/shaders/textured-unlit.frag", "MODULATE_ALPHA" );
 	} else {
@@ -345,7 +346,9 @@ Material *gamehsp::makeMaterialTexture( char *fname, int matopt )
 	if ( material == NULL ) return NULL;
 
 	setMaterialDefaultBinding( material, -1, matopt );
+
 	material->getParameter("u_diffuseTexture")->setValue( fname, mipmap );
+
 	return material;
 }
 

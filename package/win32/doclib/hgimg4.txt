@@ -1,6 +1,6 @@
 ------------------------------------------------------------------------------
 HGIMG4 REFERENCE MANUAL                High Performance Graphic Image Plugin  
-ＨＳＰ拡張ランタイムリファレンス      copyright 2001-2015 (c) onion software  
+ＨＳＰ拡張ランタイムリファレンス      copyright 2001-2016 (c) onion software  
 ------------------------------------------------------------------------------
 
 ・はじめに
@@ -1179,7 +1179,7 @@ HGIMG4 REFERENCE MANUAL                High Performance Graphic Image Plugin
 	・日本語フォントのサポート
 	・パーティクルとエミッターの詳細設定
 	・マルチテクスチャ、バップマップ、ハイトマップ、LODサポート
-	・マルチプラットフォーム化(iOS、Android)
+	・マルチプラットフォーム化(iOS)
 
 
 ・OpenGLについて

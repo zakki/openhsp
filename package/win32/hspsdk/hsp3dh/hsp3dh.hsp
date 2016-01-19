@@ -12,7 +12,7 @@
 #define APPVER "1.4"
 #define APP_CONF "\\hsp3dh.cfg"
 
-#define AND_LIBVER 100			; android HSPランタイムの内部バージョン
+#define AND_LIBVER 102			; android HSPランタイムの内部バージョン
 
 #uselib "shell32.dll"
 #cfunc SHBrowseForFolder "SHBrowseForFolder" int
@@ -996,6 +996,7 @@ res\\drawable-mdpi"}
 	prj_flist={"jni\\Android.mk
 jni\\Application.mk
 jni\\main.c
+jni\\maingp.c
 jni\\javafunc.cpp
 jni\\hsp3embed\\hsp3r.cpp
 jni\\hsp3embed\\hsp3r.h
@@ -1032,6 +1033,23 @@ res\\drawable-mdpi\\ic_launcher.png"}
 		if strsize<=0 : dialog "ファイル["+s1+"]がありません。" : errflag++ : break
 		bcopy s2,basedir+s1
 	loop
+
+	if flag_hgimg {
+		s1="jni\\Android.mk"	; HGIMG4用のandroid.mk
+		s2 = dir_exe+"\\android\\hspproj\\jni\\Android_gp.mk"
+		buf+="Copying "+s1+"...\n"
+		exist s2
+		if strsize>0 {
+			bcopy s2,basedir+s1
+		}
+		s1="jni\\PlatformAndroid.cpp"	; HGIMG4用のPlatformAndroid.cpp
+		s2 = dir_exe+"\\android\\hspproj\\"+s1
+		buf+="Copying "+s1+"...\n"
+		exist s2
+		if strsize>0 {
+			bcopy s2,basedir+s1
+		}
+	}
 
 	if flag_admob {
 		s1 = basedir+"src\\tv\\hsp\\HspActivity.java"
