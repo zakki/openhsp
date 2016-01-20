@@ -1018,6 +1018,8 @@ int Platform::enterMessagePump()
 
     // Get the android application's activity.
     ANativeActivity* activity = __state->activity;
+
+#if 0
     JavaVM* jvm = __state->activity->vm;
     JNIEnv* env = NULL;
     jvm->GetEnv((void **)&env, JNI_VERSION_1_6);
@@ -1057,7 +1059,8 @@ int Platform::enterMessagePump()
     // Release string data
     env->ReleaseStringUTFChars(stringExternalPath, externalPath);
     jvm->DetachCurrentThread();
-    
+#endif
+
     // Get the asset manager to get the resources from the .apk file.
     __assetManager = activity->assetManager; 
     
