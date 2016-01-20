@@ -1881,7 +1881,6 @@ hspproj.xcodeproj\\project.pbxproj"}
 	dirlist s1,basedir,5
 	if stat=0 : mkdir basedir	; ƒtƒHƒ‹ƒ_‚ğì¬
 	;
-	gosub *bat_init
 	s2 = dir_exe+"\\android\\extlib"
 	tmp+="XCOPY \""+s2+"\" \""+basedir+"\" /S /E /Y /I\n"
 	;
