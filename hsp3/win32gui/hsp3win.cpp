@@ -329,7 +329,7 @@ int hsp3win_init( HINSTANCE hInstance, char *startfile )
 		hsp_dec=*(int *)(optmes+32);
 		hsp->SetPackValue( hsp_sum, hsp_dec );
 	}
-
+#ifndef HSPWINGUIDLL
 	//		起動ファイルのディレクトリをカレントにする
 	//
 #ifndef HSPDEBUG
@@ -339,7 +339,7 @@ int hsp3win_init( HINSTANCE hInstance, char *startfile )
 		changedir( fname );
 	}
 #endif
-
+#endif
 	if ( hsp->Reset( mode ) ) {
 		hsp3win_dialog( "Startup failed." );
 		return 1;
@@ -421,8 +421,7 @@ int hsp3win_init( HINSTANCE hInstance, char *startfile )
 	return 0;
 }
 
-
-static void hsp3win_bye( void )
+void hsp3win_bye( void )
 {
 	//		HSP関連の解放
 	//

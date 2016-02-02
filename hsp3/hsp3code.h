@@ -19,6 +19,8 @@ HSPCTX *code_getctx( void );
 void code_setpc( const unsigned short *pc );
 void code_setpci( const unsigned short *pc );
 void code_call( const unsigned short *pc );
+void cmdfunc_return( void );
+unsigned short *code_getpcbak( void );
 
 int code_execcmd( void );
 int code_execcmd2( void );
@@ -92,6 +94,7 @@ void code_enableirq( int id, int sw );
 HSP3TYPEINFO *code_gettypeinfo( int type );
 void code_enable_typeinfo( HSP3TYPEINFO *info );
 
+int code_getdbgmode( void );
 HSP3DEBUG *code_getdbg( void );
 char *code_inidbg( void );
 void code_adddbg( char *name, int val );

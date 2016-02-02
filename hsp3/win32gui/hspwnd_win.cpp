@@ -210,6 +210,12 @@ LRESULT CALLBACK WndProc( HWND hwnd, UINT uMessage, WPARAM wParam, LPARAM lParam
 		}
 		return 0;
 
+#ifdef HSPWINGUIDLL
+	case WM_QUERYENDSESSION:
+		return TRUE;
+	case WM_CLOSE:
+		return 0;
+#else
 	case WM_QUERYENDSESSION:
 	case WM_CLOSE:
 		id = (int)GetWindowLongPtr( hwnd, GWLP_USERDATA );
@@ -223,6 +229,7 @@ LRESULT CALLBACK WndProc( HWND hwnd, UINT uMessage, WPARAM wParam, LPARAM lParam
 		code_puterror( HSPERR_NONE );
 		PostQuitMessage(0);
 		return (uMessage == WM_QUERYENDSESSION) ? true : false;
+#endif
 
 	case WM_DRAWITEM:
 		if ( wParam & MESSAGE_HSPOBJ ) {

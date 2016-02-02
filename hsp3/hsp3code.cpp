@@ -1108,8 +1108,7 @@ static void customstack_delete( STRUCTDAT *st, char *stackptr )
 	}
 }
 
-
-static void cmdfunc_return( void )
+void cmdfunc_return( void )
 {
 	//		return execute
 	//
@@ -2308,6 +2307,10 @@ void code_resetctx( HSPCTX *ctx )
 	ctx->msgfunc = code_def_msgfunc;
 }
 
+HSPCTX *code_getctx( void )
+{
+	return hspctx;
+}
 
 void code_enable_typeinfo( HSP3TYPEINFO *info )
 {
@@ -2360,6 +2363,11 @@ void code_call( const unsigned short *pc )
 	hspctx->runmode = RUNMODE_RUN;
 }
 
+unsigned short *code_getpcbak( void )
+{
+	//mcsbak‚ð•Ô‚·
+	return mcsbak;
+}
 
 //
 //		Error report routines
@@ -3290,6 +3298,11 @@ void code_execirq( IRQDAT *irq, int wparam, int lparam )
 /*------------------------------------------------------------*/
 
 #ifdef HSPDEBUG
+
+int code_getdbgmode( void )
+{
+	return dbgmode;
+}
 
 static char *dbgbuf;
 

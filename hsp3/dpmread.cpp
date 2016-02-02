@@ -14,6 +14,9 @@
 
 #ifdef HSPWIN
 #include <windows.h>
+#ifdef HSPWINDLL
+extern HINSTANCE hDllInstance;
+#endif
 #endif
 
 #include "hsp3config.h"
@@ -200,7 +203,11 @@ int dpm_ini( char *fname, long dpmofs, int chksum, int deckey )
 
 #ifdef HSPWIN
 	if ( *fname == 0 ) {
+#ifndef HSPWINDLL
 		GetModuleFileName( NULL,dpmfile,_MAX_PATH );
+#else
+		GetModuleFileName( hDllInstance,dpmfile,_MAX_PATH );
+#endif
 	} else {
 		strcpy( dpmfile, fname );
 	}
