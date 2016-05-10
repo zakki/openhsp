@@ -9,6 +9,7 @@
 #include <string.h>
 #include "hsp3config.h"
 #include "hsp3debug.h"
+#include "supio.h"
 
 /*------------------------------------------------------------*/
 /*

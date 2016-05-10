@@ -6,6 +6,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <tchar.h>
 
 #include "../hsp3config.h"
 #include "../hsp3debug.h"
@@ -135,7 +136,7 @@ static void Object_IntInput( HSPOBJINFO *info, int wparam )
 {
 	HWND hwnd;
 	BMSCR *bm;
-	char minp[64];
+	TCHAR minp[64];
 	int val, cid, notify;
 
 	bm = (BMSCR *)info->bm;
@@ -147,7 +148,7 @@ static void Object_IntInput( HSPOBJINFO *info, int wparam )
 	if ( val == 0 ) {
 		bmscr_obj_ival = 0;
 	} else {
-		bmscr_obj_ival = atoi( minp );
+		bmscr_obj_ival = _ttoi( minp );
 	}
 	info->varset.ptr = (void *)&bmscr_obj_ival;
 	Object_SendSetVar( info );
@@ -157,7 +158,7 @@ static void Object_DoubleInput( HSPOBJINFO *info, int wparam )
 {
 	HWND hwnd;
 	BMSCR *bm;
-	char minp[64];
+	TCHAR minp[64];
 	int val, cid, notify;
 
 	bm = (BMSCR *)info->bm;
@@ -169,7 +170,7 @@ static void Object_DoubleInput( HSPOBJINFO *info, int wparam )
 	if ( val == 0 ) {
 		bmscr_obj_dval = 0.0;
 	} else {
-		bmscr_obj_dval = atof( minp );
+		bmscr_obj_dval = _tstof( minp );
 	}
 	info->varset.ptr = (void *)&bmscr_obj_dval;
 	Object_SendSetVar( info );
@@ -179,8 +180,9 @@ static void Object_StrInput( HSPOBJINFO *info, int wparam )
 {
 	HWND hwnd;
 	BMSCR *bm;
-	char minp[0x8000];
+	TCHAR minp[0x8000];
 	int val, cid, notify;
+	HSPCHAR *hctmp1;
 
 	bm = (BMSCR *)info->bm;
 	hwnd = bm->hwnd;
@@ -194,9 +196,11 @@ static void Object_StrInput( HSPOBJINFO *info, int wparam )
 		bmscr_obj_ival = 0;
 		info->varset.ptr = (void *)&bmscr_obj_ival;
 	} else {
-		info->varset.ptr = minp;
+		apichartohspchar(minp,&hctmp1);
+		info->varset.ptr = hctmp1;
 	}
 	Object_SendSetVar( info );
+	freehc(&hctmp1);
 }
 
 static void Object_ComboBox( HSPOBJINFO *info, int wparam )
@@ -221,6 +225,9 @@ static void Object_SetMultiBox( HSPOBJINFO *info, int type, void *ptr )
 	UINT m_ini,m_add;
 	HWND hw;
 	CStrNote note;
+	char *p;
+	int plen;
+	HSPAPICHAR *hactmp1;
 
 	hw = info->hCld;
 
@@ -233,13 +240,16 @@ static void Object_SetMultiBox( HSPOBJINFO *info, int type, void *ptr )
 			m_ini=LB_RESETCONTENT;
 			m_add=LB_ADDSTRING;
 		}
-		note.Select( (char *)ptr );
+		apichartohspchar((HSPAPICHAR*)ptr,&p);
+		note.Select( p );
 		max = note.GetMaxLine();
 		SendMessage( hw, m_ini, 0, 0L );
 		for( i=0;i<max;i++ ) {
 			note.GetLine( res, i, 255 );
-			SendMessage( hw, m_add, 0, (long)res );
+			SendMessage( hw, m_add, 0, (long)chartoapichar(res,&hactmp1) );
+			freehac(&hactmp1);
 		}
+		freehc(&p);
 		break;
 	case TYPE_INUM:
 		if ( info->owid ) {
@@ -260,14 +270,17 @@ static void Object_SetMultiBox( HSPOBJINFO *info, int type, void *ptr )
 static void Object_SetInputBox( HSPOBJINFO *info, int type, void *ptr )
 {
 	HWND hw;
+	HSPAPICHAR *hactmp1;
 	hw = info->hCld;
 	switch( type ) {
 	case TYPE_STRING:
-		SetWindowText( hw, (char *)ptr );
+		SetWindowText( hw, chartoapichar((char*)ptr,&hactmp1) );
+		freehac(&hactmp1);
 		break;
 	case TYPE_INUM:
 	case TYPE_DNUM:
-		SetWindowText( hw, (char *)HspVarCoreCnv( type, TYPE_STRING, ptr ) );
+		SetWindowText( hw, chartoapichar((char *)HspVarCoreCnv( type, TYPE_STRING, ptr ),&hactmp1) );
+		freehac(&hactmp1);
 		break;
 	default:
 		throw HSPERR_TYPE_MISMATCH;
@@ -287,9 +300,11 @@ static void Object_SetInputMesBox( HSPOBJINFO *info, int type, void *ptr )
 static void Object_SetCheckBox( HSPOBJINFO *info, int type, void *ptr )
 {
 	HWND const hw = info->hCld;
+	HSPAPICHAR *hactmp1;
 	switch ( type ) {
 	case HSPVAR_FLAG_STR:
-		SetWindowText( hw, static_cast< char * >( ptr ) );
+		SetWindowText( hw, 
+			chartoapichar(static_cast< char * >( ptr ),&hactmp1) );
 		break;
 	case HSPVAR_FLAG_INT:
 		SendMessage( hw, BM_SETCHECK,
@@ -607,6 +622,7 @@ void Bmscr::DrawHSPCustomButton( HSPOBJINFO *obj, HDC drawhdc, int flag )
 	RECT rect;
 	HFONT hFont;
 	COLORREF col;
+	HSPAPICHAR *hactmp1;
 
 	char msgtmp[256];
 
@@ -645,7 +661,8 @@ void Bmscr::DrawHSPCustomButton( HSPOBJINFO *obj, HDC drawhdc, int flag )
 	col = RGB(0,0,0);
 	SetBkMode( drawhdc,TRANSPARENT );
 	SetTextColor( drawhdc, col );
-	DrawText( drawhdc, msgtmp, -1, &rect, DT_CENTER|DT_VCENTER|DT_SINGLELINE );
+	DrawText( drawhdc, chartoapichar(msgtmp,&hactmp1), -1, &rect, DT_CENTER|DT_VCENTER|DT_SINGLELINE );
+	freehac(&hactmp1);
 	SelectObject( drawhdc, hFont );
 }
 
@@ -683,6 +700,7 @@ int Bmscr::AddHSPObjectButton( char *name, int flag, void *callptr )
 	HWND hw;
 	int id,ws;
 	HSPOBJINFO *obj;
+	HSPAPICHAR *hactmp1;
 
 	id = NewHSPObject();
 	ws = objstyle | BS_PUSHBUTTON;
@@ -692,9 +710,10 @@ int Bmscr::AddHSPObjectButton( char *name, int flag, void *callptr )
 	に対処
 	以降4ヶ所も同様。
 */
-	hw = CreateWindow( "button", name, ws,
+	hw = CreateWindow( TEXT("button"), chartoapichar(name,&hactmp1), ws,
 				cx, cy, ox, oy, hwnd,
 				reinterpret_cast< HMENU >( static_cast< WORD >( MESSAGE_HSPOBJ + id ) ), hInst, NULL );
+	freehac(&hactmp1);
 
 	// ダブルクリックの受付を抑制 
 	SetClassLong( hw, GCL_STYLE, GetClassLong(hw, GCL_STYLE) & ~CS_DBLCLKS );
@@ -715,12 +734,14 @@ int Bmscr::AddHSPObjectCheckBox( char *name, PVal *pval, APTR aptr )
 	int id,ws;
 	int *iptr;
 	HSPOBJINFO *obj;
+	HSPAPICHAR *hactmp1;
 
 	id = NewHSPObject();
 	ws = objstyle | BS_AUTOCHECKBOX;
-	hw = CreateWindow( "button", name, ws,
+	hw = CreateWindow( TEXT("button"), chartoapichar(name,&hactmp1), ws,
 				cx, cy, ox, oy, hwnd,
 				reinterpret_cast< HMENU >( static_cast< WORD >( MESSAGE_HSPOBJ + id ) ), hInst, NULL );
+	freehac(&hactmp1);
 
 	obj = AddHSPVarEventObject( id, hw, HSPOBJ_TAB_ENABLE|HSPOBJ_OPTION_SETFONT, pval, aptr, TYPE_INUM, (void *)&bmscr_obj_ival );
 	obj->func_notice = Object_CheckBox;
@@ -742,6 +763,7 @@ int Bmscr::AddHSPObjectInput( PVal *pval, APTR aptr, int sizex, int sizey, char 
 	HWND hwedit;
 	int id,ws,ws2,max,tabstop,type,subcl;
 	HSPOBJINFO *obj;
+	HSPAPICHAR *hactmp1;
 
 	id = NewHSPObject();
 	ws = objstyle;
@@ -774,7 +796,7 @@ int Bmscr::AddHSPObjectInput( PVal *pval, APTR aptr, int sizex, int sizey, char 
 		ws|=WS_TABSTOP;
 	}
 
-	hwedit = CreateWindowEx( ws2, "edit", NULL, ws,
+	hwedit = CreateWindowEx( ws2, TEXT("edit"), NULL, ws,
 					cx, cy, sizex, sizey,
 					hwnd, reinterpret_cast< HMENU >( static_cast< WORD >( MESSAGE_HSPOBJ + id ) ), hInst, NULL );
 
@@ -812,7 +834,8 @@ int Bmscr::AddHSPObjectInput( PVal *pval, APTR aptr, int sizex, int sizey, char 
 	Posinc( sizey );
 
 	SendMessage( hwedit, EM_LIMITTEXT, limit, 0L );
-	SetWindowText( hwedit,defval );
+	SetWindowText( hwedit,chartoapichar(defval,&hactmp1) );
+	freehac(&hactmp1);
 	if ( focflg == 0 ) {
 		ActivateHSPObject( id );
 	}
@@ -836,13 +859,13 @@ int Bmscr::AddHSPObjectMultiBox( PVal *pval, APTR aptr, int psize, char *defval,
 	iptr = (int *)HspVarCorePtrAPTR( pval, aptr );
 
 	if ( mode ) {
-		hw = CreateWindowEx( WS_EX_CLIENTEDGE, "combobox", "",
+		hw = CreateWindowEx( WS_EX_CLIENTEDGE, TEXT("combobox"), TEXT(""),
 			objstyle|WS_VSCROLL|CBS_DROPDOWNLIST,
 			cx, cy, sizex, sizey + psize, hwnd,
 			reinterpret_cast< HMENU >( static_cast< WORD >( MESSAGE_HSPOBJ + id ) ), hInst, NULL );
 	} else {
 		sizey += psize;
-		hw = CreateWindowEx( WS_EX_CLIENTEDGE, "listbox", "",
+		hw = CreateWindowEx( WS_EX_CLIENTEDGE, TEXT("listbox"), TEXT(""),
 			objstyle|WS_VSCROLL|LBS_NOTIFY,
 			cx, cy, sizex, sizey, hwnd,
 			reinterpret_cast< HMENU >( static_cast< WORD >( MESSAGE_HSPOBJ + id ) ), hInst, NULL );

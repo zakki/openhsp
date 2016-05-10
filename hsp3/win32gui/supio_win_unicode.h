@@ -1,18 +1,20 @@
 
-#define HSPAPICHAR char
+#pragma execution_character_set ("utf-8")
+
+#define HSPAPICHAR wchar_t
 #define HSPCHAR char
 
 //
 //	supio.cpp functions
 //
 
-HSPAPICHAR *chartoapichar( const HSPCHAR*,HSPAPICHAR** );
+HSPAPICHAR *chartoapichar( const char*,HSPAPICHAR** );
 void freehac( HSPAPICHAR** );
 HSPCHAR *apichartohspchar( const HSPAPICHAR*,HSPCHAR** );
 void freehc( HSPCHAR** );
-HSPAPICHAR *ansichartoapichar(const char *, HSPAPICHAR **);
-char *apichartoansichar(const HSPAPICHAR *, char **);
-void freeac(char **);
+HSPAPICHAR *ansichartoapichar(const char*, HSPAPICHAR**);
+char *apichartoansichar(const HSPAPICHAR*, char**);
+void freeac(char**);
 
 char *mem_ini( int size );
 void mem_bye( void *ptr );
@@ -26,6 +28,7 @@ int filecopy( const char *fname, const char *sname );
 
 int tstrcmp( const char *str1, const char *str2 );
 void strcase( char *str );
+void strcaseW( HSPAPICHAR *str );
 void strcase2( char *str, char *str2 );
 void addext( char *st, const char *exstr );
 void cutext( char *st );
@@ -43,10 +46,9 @@ void ExecFile( char *stmp, char *ps, int mode );
 void dirinfo( char *p, int id );
 
 void Alert( const char *mes );
-#define AlertW Alert
+void AlertW( const HSPAPICHAR *mes );
 void AlertV( const char *mes, int val );
-void Alertf( const char *format, ... );
-#define AlertfW Alertf
+void AlertfW( const HSPAPICHAR *format, ... );
 
 inline int issjisleadbyte( unsigned char c )
 {
@@ -69,7 +71,7 @@ int strsp_get( char *srcstr, char *dststr, char splitchr, int len );
 int GetLimit( int num, int min, int max );
 void CutLastChr( char *p, char code );
 char *strsp_cmds( char *srcstr );
-#define strsp_cmdsW strsp_cmds
+wchar_t *strsp_cmdsW( wchar_t *srcstr );
 int htoi( char *str );
 
 int SecurityCheck( char *name );

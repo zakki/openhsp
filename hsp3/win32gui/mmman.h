@@ -66,6 +66,8 @@ public:
 	void SetPan( int bank, int pan );
 	int GetStatus( int bank, int infoid );
 
+	void SendMCIT(TCHAR*);
+
 private:
 	int mm_cur;
 	MMM *mem_snd;

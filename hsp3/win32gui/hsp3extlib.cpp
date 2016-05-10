@@ -10,6 +10,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <objbase.h>
+#include <tchar.h>
 
 #include <algorithm>
 
@@ -147,6 +148,7 @@ static void BindLIB( LIBDAT *lib, char *name )
 	int i;
 	char *n;
 	HINSTANCE hd;
+	HSPAPICHAR *hactmp1;
 	if ( lib->flag != LIBDAT_FLAG_DLL ) return;
 	i = lib->nameidx;
 	if ( i < 0 ) {
@@ -155,7 +157,8 @@ static void BindLIB( LIBDAT *lib, char *name )
 	} else {
 		n = strp(i);
 	}
- 	hd = DllManager().load_library( n );
+ 	hd = DllManager().load_library( chartoapichar(n,&hactmp1) );
+	freehac(&hactmp1);
 	if ( hd == NULL ) return;
 	lib->hlib = (void *)hd;
 	lib->flag = LIBDAT_FLAG_DLLINIT;
@@ -171,6 +174,8 @@ static int BindFUNC( STRUCTDAT *st, char *name )
 	char *n;
 	LIBDAT *lib;
 	HINSTANCE hd;
+	HSPAPICHAR *hactmp1;
+	char tmp1[512];
 	if (( st->subid != STRUCTPRM_SUBID_DLL )&&( st->subid != STRUCTPRM_SUBID_OLDDLL )) return 4;
 	i = st->nameidx;
 	if ( i < 0 ) {
@@ -185,7 +190,10 @@ static int BindFUNC( STRUCTDAT *st, char *name )
 		if ( lib->flag != LIBDAT_FLAG_DLLINIT ) return 2;
 	}
 	hd = (HINSTANCE)(lib->hlib);
-	st->proc = (void *)GetProcAddress( hd, n );
+	chartoapichar(n,&hactmp1);
+	cnvsjis(tmp1,(char*)hactmp1,512);
+	freehac(&hactmp1);
+	st->proc = (void *)GetProcAddress( hd, tmp1 );
 	if ( hd == NULL ) return 1;
 	st->subid--;
 	return 0;
@@ -222,7 +230,10 @@ static int Hsp3ExtAddPlugin( void )
 	MEM_HPIDAT *hpi;
 	HSP3TYPEINFO *info;
 	HINSTANCE hd;
-	char tmp[512];
+	TCHAR tmp[512];
+	HSPAPICHAR *hacfuncname;
+	HSPAPICHAR *haclibname;
+	char tmp2[512];
 
 	hed = hspctx->hsphed; ptr = (char *)hed;
 	org_hpi = (HPIDAT *)(ptr + hed->pt_hpidat);
@@ -245,19 +256,23 @@ static int Hsp3ExtAddPlugin( void )
 		info = code_gettypeinfo(-1);
 
 		if ( hpi->flag == HPIDAT_FLAG_TYPEFUNC ) {
-		 	hd = DllManager().load_library( libname );
+		 	hd = DllManager().load_library( chartoapichar(libname,&haclibname) );
 			if ( hd == NULL ) {
-				sprintf( tmp,"No DLL:%s",libname );
-				Alert( tmp );
+				_stprintf( tmp,TEXT("No DLL:%s"),haclibname );
+				freehac( &haclibname );
+				AlertW( tmp );
 				return 1;
 			}
 			hpi->libptr = (void *)hd;
-			func = (DLLFUNC)GetProcAddress( hd, funcname );
+			chartoapichar(funcname,&hacfuncname);
+			cnvsjis(tmp2,(char*)hacfuncname,512);
+			func = (DLLFUNC)GetProcAddress( hd, tmp2 );
 			if ( func == NULL ) {
-				sprintf( tmp,"No DLL:%s:%s", libname, funcname );
-				Alert( tmp );
+				_stprintf( tmp,TEXT("No DLL:%s:%s"), haclibname, hacfuncname );
+				AlertW( tmp );
 				return 1;
 			}
+			freehac(&haclibname);
 			func( info );
 			code_enable_typeinfo( info );
 			//Alertf( "%d_%d [%s][%s]", i, info->type, libname, funcname );
@@ -447,6 +462,12 @@ int cnvsjis( void *out, char *in, int bufsize )
 	return WideCharToMultiByte( CP_ACP, 0, (LPCWSTR)in, -1, (LPSTR)out, bufsize, NULL, NULL);
 }
 
+int cnvu8(void *out, char *in, int bufsize)
+{
+	//  unicode->utf8に変換
+	//
+	return WideCharToMultiByte(CP_UTF8, 0, (LPCWSTR)in, -1, (LPSTR)out, bufsize, NULL, NULL);
+}
 
 
 static char *prepare_localstr( char *src, int mode )
@@ -506,6 +527,8 @@ static int code_expand_next( char *prmbuf, const STRUCTDAT *st, int index )
 	//	次のパラメータを取得（および関数呼び出し）（再帰処理）
 	//
 	int result;
+	HSPAPICHAR *hactmp1;
+	char *actmp1;
 	if ( index == st->prmmax ) {
 		// 関数（またはメソッド）の呼び出し
 		//if ( !code_getexflg() ) throw HSPERR_TOO_MANY_PARAMETERS;
@@ -560,11 +583,17 @@ static int code_expand_next( char *prmbuf, const STRUCTDAT *st, int index )
 		*(void **)out = HspVarCorePtrAPTR( pval, aptr );
 		break;
 	case MPTYPE_LOCALSTRING:
-		localbuf = prepare_localstr( code_gets(), 0 );
+		apichartoansichar(chartoapichar(code_gets(), &hactmp1), &actmp1);
+		localbuf = sbAlloc(strlen(actmp1));
+		strcpy((char*)localbuf, actmp1);
+		freeac(&actmp1);
+		freehac(&hactmp1);
 		*(void **)out = localbuf;
 		break;
 	case MPTYPE_LOCALWSTR:
-		localbuf = prepare_localstr( code_gets(), 1 );
+		chartoapichar(code_gets(),&hactmp1);
+		localbuf = sbAlloc(_tcslen(hactmp1));
+		_tcscpy((HSPAPICHAR*)localbuf,hactmp1);
 		*(void **)out = localbuf;
 		break;
 	case MPTYPE_DNUM:
@@ -603,7 +632,18 @@ static int code_expand_next( char *prmbuf, const STRUCTDAT *st, int index )
 			*(int *)out = *(int *)(mpval->pt);
 			break;
 		case HSPVAR_FLAG_STR:
-			localbuf = prepare_localstr( mpval->pt, (prm->mptype==MPTYPE_FLEXWPTR) );
+			if (prm->mptype==MPTYPE_FLEXWPTR) {
+				chartoapichar(mpval->pt,&hactmp1);
+				localbuf = sbAlloc(_tcslen(hactmp1));
+				_tcscpy((HSPAPICHAR*)localbuf, hactmp1);
+				freehac(&hactmp1);
+			}else{
+				apichartoansichar(chartoapichar(mpval->pt,&hactmp1), &actmp1);
+				localbuf = sbAlloc(strlen(actmp1));
+				strcpy((char*)localbuf, actmp1);
+				freeac(&actmp1);
+				freehac(&hactmp1);
+			}
 			*(void **)out = localbuf;
 			break;
 		default:

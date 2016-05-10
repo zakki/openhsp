@@ -100,7 +100,7 @@ int Hsp3::Reset( int mode )
 	//
 	axtype = HSP3_AXTYPE_NONE;
 	if ( mode ) {									// "start.ax"‚ğŒÄ‚Ño‚·
-		i = dpm_ini( "", mode, hsp_sum, hsp_dec );	// customized EXE mode
+		i = dpm_ini("", mode, hsp_sum, hsp_dec);	// customized EXE mode
 		//axname = NULL;
 	} else {
 		dpm_ini( "data.dpm",0,-1,-1 );				// original EXE mode
@@ -143,14 +143,15 @@ int Hsp3::Reset( int mode )
 		*p = 0;
 		if ( sum != 0x6cced385 ) return -1;
 		if ( mode ) {
-			if ( dpm_filebase( fname ) != 1 ) return -1;	// DPM,packfile‚©‚ç‚Ì‚İstart.ax‚ğ“Ç‚İ‚Ş
+			if (dpm_filebase(fname) != 1) return -1;	// DPM,packfile‚©‚ç‚Ì‚İstart.ax‚ğ“Ç‚İ‚Ş
 		}
-	} else {
+	}
+	else {
 		strcpy( fname, axname );
 	}
 
-	ptr = dpm_readalloc( fname );
-	if ( ptr == NULL ) return -1;
+	ptr = dpm_readalloc(fname);
+	if (ptr == NULL) return -1;
 #endif
 
 	axfile = ptr;

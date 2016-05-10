@@ -23,12 +23,20 @@ extern HINSTANCE hDllInstance;
 #include "dpmread.h"
 #include "supio.h"
 
+#ifdef HSPUNICODE
+#pragma execution_character_set("utf-8")
+#endif
+
 static int dpm_flag = 0;			// 0=none/1=packed
 static int memf_flag = 0;			// 0=none/1=on memory
 static unsigned char *mem_dpm = NULL;
 static unsigned char *nameptr;
 static unsigned char buf[0x80];
+#ifndef HSPUNICODE
 static char dpm_file[HSP_MAX_PATH];
+#else
+static wchar_t dpm_file[HSP_MAX_PATH];
+#endif
 static long dpm_ofs,optr,fs,fptr;
 static int dpm_fenc, dpm_enc1, dpm_enc2;
 static int dpm_opmode;
@@ -69,6 +77,9 @@ static int dpmchk( char *fname )
 	char f1[HSP_MAX_PATH];
 	char *ss;
 	unsigned char *uc;
+#ifdef HSPUNICODE
+	HSPAPICHAR *hactmp1;
+#endif
 
 	dpm_opmode = 0;
 	dpm_fenc = 0;
@@ -95,7 +106,12 @@ static int dpmchk( char *fname )
 
 	fs = getdw( d_fsiz );
 	fptr = getdw( d_fent );
+#ifdef HSPUNICODE
+	fp=_wfopen( dpm_file,L"rb");freehac(&hactmp1);
+	if (fp==NULL) return -1;
+#else
 	fp=fopen( dpm_file,"rb" );if (fp==NULL) return -1;
+#endif
 
 	fseek( fp,fptr+optr,SEEK_SET );
 	dpm_fenc = getdw( d_fenc );
@@ -136,6 +152,9 @@ static int dpm_chkmemf( char *fname )
 
 FILE *dpm_open( char *fname )
 {
+#ifdef HSPUNICODE
+	HSPAPICHAR *hactmp1;
+#endif
 	dpm_chkmemf( fname );
 	if ( memf_flag ) {
 		memfile.cur = 0;
@@ -147,7 +166,12 @@ FILE *dpm_open( char *fname )
 			return fp;
 		}
 	}
+#ifdef HSPUNICODE
+	fp=_wfopen( chartoapichar(fname,&hactmp1),L"rb" );
+	freehac(&hactmp1);//
+#else
 	fp=fopen( fname,"rb" );
+#endif
 	return fp;
 }
 
@@ -192,8 +216,13 @@ int dpm_ini( char *fname, long dpmofs, int chksum, int deckey )
 	int dirsize;
 	int sum,sumseed,sumsize;
 	int a1;
+#ifndef HSPUNICODE
 	char dpmfile[HSP_MAX_PATH];
+#else
+	WCHAR dpmfile[HSP_MAX_PATH];
+#endif
 	unsigned char *dec;
+	HSPAPICHAR *hactmp1;
 
 	optr=0;
 	dpm_flag=0;
@@ -209,13 +238,22 @@ int dpm_ini( char *fname, long dpmofs, int chksum, int deckey )
 		GetModuleFileName( hDllInstance,dpmfile,_MAX_PATH );
 #endif
 	} else {
+#ifndef HSPUNICODE
 		strcpy( dpmfile, fname );
+#else
+		wcscpy(dpmfile, chartoapichar(fname,&hactmp1));
+		freehac(&hactmp1);
+#endif
 	}
 #else
 	strcpy( dpmfile, fname );
 #endif
 
+#ifdef HSPUNICODE
+	fp=_wfopen( dpmfile,L"rb" );
+#else
 	fp=fopen( dpmfile,"rb" );
+#endif
 	if (fp==NULL) return -1;
 
 	if (dpmofs>0) fseek( fp, dpmofs, SEEK_SET );
@@ -237,17 +275,26 @@ int dpm_ini( char *fname, long dpmofs, int chksum, int deckey )
 
 	//		内部バッファにDPMヘッダを読み込む
 	//
+#ifdef HSPUNICODE
+	fp=_wfopen( dpmfile,L"rb" );
+
+#else
 	fp=fopen( dpmfile,"rb" );
-	if (dpmofs>0) fseek( fp, dpmofs, SEEK_SET );
-	fread( mem_dpm, hedsize, 1, fp );
+#endif
+	if (dpmofs>0) fseek(fp, dpmofs, SEEK_SET);
+	fread(mem_dpm, hedsize, 1, fp);
 	fclose(fp);
 
 	//		DPMのチェックサムを検証する
 	//
 	sum = 0; sumsize = 0;
 	sumseed = ((deckey>>24)&0xff)/7;
-	if ( chksum != -1 ) {
+	if (chksum != -1) {
+#ifdef HSPUNICODE
+		fp=_wfopen( dpmfile,L"rb" );
+#else
 		fp=fopen( dpmfile,"rb" );
+#endif
 		if (dpmofs>0) fseek( fp, dpmofs, SEEK_SET );
 		while(1) {
 			a1=fgetc(fp);if (a1<0) break;
@@ -255,14 +302,21 @@ int dpm_ini( char *fname, long dpmofs, int chksum, int deckey )
 		}
 		fclose(fp);
 		sum &= 0xffff;				// lower 16bit sum
-		if ( chksum != sum ) return -2;
+		if ( chksum != sum ) {
+			return -2;
+		}
 		sumsize -= hedsize;
 	}
 
 	//		DPMモードにする
 	//
 	dpm_flag = 1;
+#ifndef HSPUNICODE
 	strcpy(dpm_file,dpmfile);
+#else
+	wcscpy(dpm_file, dpmfile);
+#endif
+
 	return 0;
 }
 
@@ -281,9 +335,11 @@ int dpm_read( char *fname, void *readmem, int rlen, int seekofs )
 	int a1;
 	int seeksize;
 	int filesize;
+#ifdef HSPUNICODE
+	HSPAPICHAR *hactmp1;
+#endif
 
 	dpm_chkmemf( fname );
-
 	seeksize=seekofs;
 	if (seeksize<0) seeksize=0;
 
@@ -304,7 +360,12 @@ int dpm_read( char *fname, void *readmem, int rlen, int seekofs )
 
 			//	Read DPM file
 
+#ifdef HSPUNICODE
+			ff = _wfopen( dpm_file,L"rb" );
+			freehac(&hactmp1);
+#else
 			ff = fopen( dpm_file,"rb" );
+#endif
 			if ( ff == NULL ) return -1;
 			fseek( ff, optr+fptr+seeksize, SEEK_SET );
 			if ( rlen < filesize ) filesize = rlen;
@@ -315,7 +376,12 @@ int dpm_read( char *fname, void *readmem, int rlen, int seekofs )
 	}
 
 	//	Read normal file
+#ifdef HSPUNICODE
+	ff = _wfopen( chartoapichar(fname,&hactmp1),L"rb" );
+	freehac(&hactmp1);
+#else
 	ff = fopen( fname, "rb" );
+#endif
 	if ( ff == NULL ) return -1;
 	if ( seekofs>=0 ) fseek( ff, seeksize, SEEK_SET );
 	a1 = (int)fread( lpRd, 1, rlen, ff );
@@ -328,6 +394,9 @@ int dpm_exist( char *fname )
 {
 	FILE *ff;
 	int length;
+#ifdef HSPUNICODE
+	HSPAPICHAR *hactmp1;
+#endif
 
 	dpm_chkmemf( fname );
 	if ( memf_flag ) {					// メモリストリーム時
@@ -340,7 +409,12 @@ int dpm_exist( char *fname )
 			return fs;					// dpm file size
 		}
 	}
+#ifdef HSPUNICODE
+	ff=_wfopen( chartoapichar(fname,&hactmp1),L"rb" );
+	freehac(&hactmp1);
+#else
 	ff=fopen( fname,"rb" );
+#endif
 	if (ff==NULL) return -1;
 	fseek( ff,0,SEEK_END );
 	length=(int)ftell( ff );			// normal file size
@@ -356,6 +430,9 @@ int dpm_filebase( char *fname )
 	//		(-1:error/0=file/1=dpm/2=memory)
 	//
 	FILE *ff;
+#ifdef HSPUNICODE
+	HSPAPICHAR *hactmp1;
+#endif
 	dpm_chkmemf( fname );
 	if ( memf_flag ) {
 		return 2;
@@ -366,7 +443,11 @@ int dpm_filebase( char *fname )
 			return 1;
 		}
 	}
+#ifdef HSPUNICODE
+	ff=_wfopen( chartoapichar(fname,&hactmp1),L"rb" );
+#else
 	ff=fopen( fname,"rb" );
+#endif
 	if (ff==NULL) return -1;
 	fclose(ff);
 	return 0;
@@ -376,6 +457,10 @@ int dpm_filebase( char *fname )
 void dpm_getinf( char *inf )
 {
 	long a;
+#ifdef HSPUNICODE
+	HSPAPICHAR *hactmp1;
+	HSPAPICHAR *hactmp2;
+#endif
 	a=dpm_ofs;
 	if (dpm_flag==0) a=-1;
 /*
@@ -383,7 +468,11 @@ void dpm_getinf( char *inf )
 	mingw : warning : 仮引数:int 実引数:long
 	に対処
 */
+#ifdef HSPUNICODE
+	swprintf( chartoapichar(inf,&hactmp1),L"%s%d",dpm_file,static_cast< int >( a ) );
+#else
 	sprintf(inf,"%s,%d",dpm_file, static_cast< int >( a ) );
+#endif
 }
 
 
@@ -396,12 +485,21 @@ int dpm_filecopy( char *fname, char *sname )
 	int xlen;
 	int max=0x8000;
 	char *mem;
+#ifdef HSPUNICODE
+	HSPAPICHAR *hactmp1;
+#endif
 
 	dpm_chkmemf( fname );
 	flen=dpm_exist(fname);
 	if (flen<0) return 1;
 
+#ifdef HSPUNICODE
+	fp2=_wfopen(chartoapichar(sname,&hactmp1),L"wb");
+	freehac(&hactmp1);
+	if (fp2==NULL) return 1;
+#else
 	fp2=fopen(sname,"wb");if (fp2==NULL) return 1;
+#endif
 	fp1=dpm_open(fname);
 
 		mem=(char *)malloc(max);
@@ -437,8 +535,8 @@ char *dpm_readalloc( char *fname )
 	int len;
 	len = dpm_exist( fname );
 	if ( len < 0 ) return NULL;
-	p = mem_ini( len+1 );
-	dpm_read( fname, p, len, 0 );
+	p = mem_ini(len + 1);
+	dpm_read(fname, p, len, 0);
 	p[len] = 0;
 	return p;
 }

@@ -292,7 +292,7 @@ private:
 	int bmscr_res;
 	int wfx,wfy,wbx,wby;
 	int *resptr;
-	char defcls[32];			// Default Window Class
+	TCHAR defcls[32];			// Default Window Class
 	void *wnd_parent;			// Parent Window Handle
 };
 

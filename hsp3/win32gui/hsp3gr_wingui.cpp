@@ -9,6 +9,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <math.h>
+#include <tchar.h>
 #include <direct.h>
 #include <shlobj.h>
 
@@ -24,6 +25,10 @@
 #include "../hsp3gr.h"
 #include "../hsp3code.h"
 #include "../hsp3debug.h"
+
+#ifdef HSPUNICODE
+#pragma execution_character_set("utf-8")
+#endif
 
 /*------------------------------------------------------------*/
 /*
@@ -55,6 +60,10 @@ extern int resY0, resY1;				// "fcpoly.h"のパラメーター
 static void ExecFile( char *stmp, char *ps, int mode )
 {
 	int i,j;
+	HSPAPICHAR *hactmp1;
+	HSPAPICHAR *hactmp2;
+	int plen;
+	char *p;
 	j=SW_SHOWDEFAULT;if (mode&2) j=SW_SHOWMINIMIZED;
 
 	if ( *ps != 0 ) {
@@ -63,21 +72,33 @@ static void ExecFile( char *stmp, char *ps, int mode )
 		exinfo.cbSize = sizeof(SHELLEXECUTEINFO);
 		exinfo.fMask = SEE_MASK_INVOKEIDLIST;
 		exinfo.hwnd = bmscr->hwnd;
-		exinfo.lpVerb = ps;
-		exinfo.lpFile = stmp;
+		exinfo.lpVerb = chartoapichar(ps,&hactmp1);
+		exinfo.lpFile = chartoapichar(stmp,&hactmp2);
 		exinfo.nShow = SW_SHOWNORMAL;
-		if ( ShellExecuteEx( &exinfo ) == false ) throw HSPERR_EXTERNAL_EXECUTE;
+		if ( ShellExecuteEx( &exinfo ) == false ) {
+					freehac(&hactmp1);
+					freehac(&hactmp2);
+					throw HSPERR_EXTERNAL_EXECUTE;
+		}
+		freehac(&hactmp1);
+		freehac(&hactmp2);
 		return;
 	}
 		
 	if ( mode&16 ) {
-		i = (int)ShellExecute( NULL,NULL,stmp,"","",j );
+		i = (int)ShellExecute( NULL,NULL,chartoapichar(stmp,&hactmp1),TEXT(""),TEXT(""),j );
+		freehac(&hactmp1);
 	}
 	else if ( mode&32 ) {
-		i = (int)ShellExecute( NULL,"print",stmp,"","",j );
+		i = (int)ShellExecute( NULL,TEXT("print"),chartoapichar(stmp,&hactmp1),TEXT(""),TEXT(""),j );
+		freehac(&hactmp1);
 	}
 	else {
-		i=WinExec( stmp,j );
+		apichartohspchar(chartoapichar(stmp,&hactmp1),&p);
+		freehac(&hactmp1);
+		i=WinExec( p,j );
+		freehc(&p);
+		
 	}
 	if (i<32) throw HSPERR_EXTERNAL_EXECUTE;
 }
@@ -122,23 +143,25 @@ static char *getdir( int id )
 	//		dirinfo命令の内容をstmpに設定する
 	//
 	char *p;
+	TCHAR pw[_MAX_PATH+1];
 	char *ss;
-	char fname[_MAX_PATH+1];
+	TCHAR fname[_MAX_PATH+1];
+	char *resp8;
 	p = ctx->stmp;
 
 	switch( id ) {
 	case 0:				//    カレント(現在の)ディレクトリ
-		_getcwd( p, _MAX_PATH );
+		_tgetcwd( pw, _MAX_PATH );
 		break;
 	case 1:				//    HSPの実行ファイルがあるディレクトリ
 		GetModuleFileName( NULL,fname,_MAX_PATH );
-		getpath( fname, p, 32 );
+		getpathW( fname, pw, 32 );
 		break;
 	case 2:				//    Windowsディレクトリ
-		GetWindowsDirectory( p, _MAX_PATH );
+		GetWindowsDirectory( pw, _MAX_PATH );
 		break;
 	case 3:				//    Windowsのシステムディレクトリ
-		GetSystemDirectory( p, _MAX_PATH );
+		GetSystemDirectory( pw, _MAX_PATH );
 		break;
 	case 4:				//    コマンドライン文字列
 		ss = ctx->cmdline;
@@ -148,7 +171,9 @@ static char *getdir( int id )
 	case 5:				//    HSPTV素材があるディレクトリ
 #if defined(HSPDEBUG)||defined(HSP3IMP)
 		GetModuleFileName( NULL,fname,_MAX_PATH );
-		getpath( fname, p, 32 );
+		apichartohspchar(fname,&resp8);
+		getpath( resp8, p, 32 );
+		freehc(&resp8);
 		CutLastChr( p, '\\' );
 		strcat( p, "\\hsptv\\" );
 		return p;
@@ -159,12 +184,15 @@ static char *getdir( int id )
 		break;
 	default:
 		if ( id & 0x10000 ) {
-			SHGetSpecialFolderPath( NULL, p, id & 0xffff, FALSE );
+			SHGetSpecialFolderPath( NULL, pw, id & 0xffff, FALSE );
 			break;
 		}
 		throw HSPERR_ILLEGAL_FUNCTION;
 	}
-
+	apichartohspchar(pw,&resp8);
+	sbStrCopy( &(ctx->stmp),resp8);
+	freehc(&resp8);
+	p=ctx->stmp;
 	//		最後の'\\'を取り除く
 	//
 	CutLastChr( p, '\\' );
@@ -177,17 +205,20 @@ static int sysinfo( int p2 )
 	//		System strings get
 	//
 	int fl;
-	char pp[128];
-	char *p1;
+	TCHAR pp[128];
+	LPTSTR p1;
+	char *p3;
 	BOOL success;
 	DWORD version;
 	DWORD size;
 	DWORD *mss;
 	SYSTEM_INFO si;
 	MEMORYSTATUS ms;
+	int plen;
+	char *p;
 
 	fl = HSPVAR_FLAG_INT;
-	p1 = ctx->stmp;
+	p3 = ctx->stmp;
 	size = _MAX_PATH;
 
 	if (p2&16) {
@@ -202,32 +233,44 @@ static int sysinfo( int p2 )
 
 	switch(p2) {
 	case 0:
-		strcpy(p1,"Windows");
+		_tcscpy(p1,TEXT("Windows"));
 		version = GetVersion();
-		if ((version & 0x80000000) == 0) strcat(p1,"NT");
-									else strcat(p1,"9X");
+		if ((version & 0x80000000) == 0) _tcscat(p1,TEXT("NT"));
+									else _tcscat(p1,TEXT("9X"));
 /*
 	rev 43
 	mingw : warning : 仮引数int 実引数long unsigned
 	に対処
 */
-		sprintf( pp," ver%d.%d", static_cast< int >( version&0xff ), static_cast< int >( (version&0xff00)>>8 ) );
-		strcat( p1, pp );
+		_stprintf( pp,TEXT(" ver%d.%d"), static_cast< int >( version&0xff ), static_cast< int >( (version&0xff00)>>8 ) );
+		_tcscat( p1, pp );
+		apichartohspchar(p1,&p);
+		plen = strlen(p);
+		memcpy(p3,p,plen);
+		freehc(&p);
 		fl=HSPVAR_FLAG_STR;
 		break;
 	case 1:
 		success = GetUserName( p1,&size );
+		apichartohspchar(p1,&p);
+		plen = strlen(p);
+		memcpy(p3,p,plen);
+		freehc(&p);
 		fl = HSPVAR_FLAG_STR;
 		break;
 	case 2:
 		success = GetComputerName(p1, &size );
+		apichartohspchar(p1,&p);
+		plen = strlen(p);
+		memcpy(p3,p,plen);
+		freehc(&p);
 		fl = HSPVAR_FLAG_STR;
 		break;
 	case 16:
-		*(int *)p1 = (int)si.dwProcessorType;
+		*(int *)p3 = (int)si.dwProcessorType;
 		break;
 	case 17:
-		*(int *)p1 = (int)si.dwNumberOfProcessors;
+		*(int *)p3 = (int)si.dwNumberOfProcessors;
 		break;
 	default:
 		throw HSPERR_ILLEGAL_FUNCTION;
@@ -574,6 +617,8 @@ static void cmdfunc_dialog( void )
 	char *ptr;
 	char *ps;
 	char stmp[0x4000];
+	HSPAPICHAR *hactmp1;
+	HSPAPICHAR *hactmp2;
 	ptr = code_getdsi( "" );
 	strncpy( stmp, ptr, 0x4000-1 );
 	p1 = code_getdi( 0 );
@@ -603,7 +648,10 @@ static void cmdfunc_dialog( void )
 		i=0;
 		if (p1&1) i|=MB_ICONEXCLAMATION; else i|=MB_ICONINFORMATION;
 		if (p1&2) i|=MB_YESNO; else i|=MB_OK;
-		ctx->stat = MessageBox( bmscr->hwnd, stmp, ps, i );
+		ctx->stat = MessageBox( bmscr->hwnd, 
+			chartoapichar(stmp,&hactmp1), chartoapichar(ps,&hactmp2), i );
+		freehac(&hactmp1);
+		freehac(&hactmp2);
 	}
 }
 

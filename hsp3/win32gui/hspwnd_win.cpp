@@ -6,6 +6,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <tchar.h>
 
 #include "../hsp3config.h"
 #include "../hsp3debug.h"
@@ -325,8 +326,10 @@ void HspWnd::Reset( HANDLE instance, char *wndcls )
 	//
 	int i;
 	WNDCLASS    wndclass ;
+	HSPAPICHAR *hactmp1;
 	hInst=(HINSTANCE)instance;
-	strcpy( defcls, wndcls );
+	_tcscpy( defcls, chartoapichar(wndcls,&hactmp1) );
+	freehac(&hactmp1);
 
 	//		alloc Bmscr
 	//
@@ -421,6 +424,7 @@ void HspWnd::MakeBmscrOff( int id, int sx, int sy, int mode )
 
 void HspWnd::MakeBmscrWnd( int id, int type, int xx, int yy, int wx, int wy, int sx, int sy, int mode )
 {
+	HSPAPICHAR *hactmp1;
 	//		Bmscr(ウィンドウ)生成
 	//
 	ExpandScreen( id );
@@ -466,7 +470,7 @@ void HspWnd::MakeBmscrWnd( int id, int type, int xx, int yy, int wx, int wy, int
 
 		hwnd = CreateWindowEx( exstyle,				// extra window style
 		                       defcls,				// window class name
-		                       pc,					// window caption
+		                       chartoapichar(pc,&hactmp1),	// window caption
 		                       style,				// window style
 		                       ( xx != -1 ? xx : CW_USEDEFAULT ),
 		                       		// initial x position
@@ -478,6 +482,7 @@ void HspWnd::MakeBmscrWnd( int id, int type, int xx, int yy, int wx, int wy, int
 		                       NULL,				// window menu handle
 		                       hInst,				// program instance handle
 		                       NULL );				// creation parameters
+		freehac(&hactmp1);
 
 	} else {
 		hwnd = mem_bm[ id ]->hwnd;
@@ -891,8 +896,10 @@ void Bmscr::Update( void )
 
 void Bmscr::Title( char *str )
 {
+	HSPAPICHAR *hactmp1;
 	if ( type < HSPWND_TYPE_MAIN ) return;
-	SetWindowText( hwnd, str );
+	SetWindowText( hwnd, chartoapichar(str,&hactmp1) );
+	freehac(&hactmp1);
 }
 
 
@@ -995,9 +1002,11 @@ int Bmscr::Newfont( char *fonname, int fpts, int fopt, int angle )
 	PLOGFONT pLogFont;			// logical FONT ptr
 	unsigned char chk;
 	HFONT hf_new;
+	HSPAPICHAR *hactmp1;
 
 	pLogFont=(PLOGFONT) &logfont;
-	strcpy( pLogFont->lfFaceName, fonname );
+	_tcscpy( pLogFont->lfFaceName, chartoapichar(fonname,&hactmp1) );
+	freehac(&hactmp1);
 	pLogFont->lfHeight			= -fpts;
 	pLogFont->lfWidth			= 0;
 	pLogFont->lfOutPrecision	= 0 ;
@@ -1199,6 +1208,7 @@ void Bmscr::Print( char *mes )
 	int a;
 	long res;
 	SIZE *size;
+	HSPAPICHAR *hactmp1;
 	size = &printsize;
 	a=(int)strlen(mes);
 	if (a) {
@@ -1208,8 +1218,10 @@ void Bmscr::Print( char *mes )
 		//HFONT holdfontwnd = (HFONT)SelectObject( hdcwnd, hfont );
 
 		//TextOut( hdc, cx, cy , mes, a );
+		chartoapichar(mes,&hactmp1);
 
-		res = TabbedTextOut( hdc, cx, cy, mes, a, 0, NULL, 0 );
+		res = TabbedTextOut( hdc, cx, cy, hactmp1 , _tcslen(hactmp1), 0, NULL, 0 );
+		freehac(&hactmp1);
 		size->cx = res & 0xffff;
 		size->cy = res>>16;
 
@@ -1218,7 +1230,7 @@ void Bmscr::Print( char *mes )
 
 		Send( cx, cy, size->cx, size->cy );
 	} else {
-		GetTextExtentPoint32( hdc, " ", 1, size );
+		GetTextExtentPoint32( hdc, TEXT(" "), 1, size );
 	}
 	Posinc( size->cy );
 }
@@ -1571,8 +1583,10 @@ int Bmscr::BmpSave( char *fname )
 	BITMAPFILEHEADER bmFH;
 	FILE *fp;
 	int bsize;
+	HSPAPICHAR *hactmp1;
 	bsize = bmpsize;
-	fp=fopen( fname, "wb" );
+	fp=_tfopen( chartoapichar(fname,&hactmp1), TEXT("wb") );
+	freehac(&hactmp1);
 	if (fp==NULL) return -1;
 	bmFH.bfType = 0x4d42;
 	bmFH.bfSize = (infsize) + (bsize) + sizeof(BITMAPFILEHEADER);

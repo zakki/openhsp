@@ -10,6 +10,7 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
+#include <tchar.h>
 
 /*
 	rev 43
@@ -34,8 +35,20 @@
 #pragma comment(lib,"winmm.lib")
 #endif
 
+#ifdef HSPUNICODE
+#pragma execution_character_set("utf-8")
+#endif
+
+
 #define sndbank(a) (char *)(mem_snd[a].mempt)
 
+void MMMan::SendMCIT(TCHAR *ss)
+{
+	char *ss8;
+	apichartohspchar(ss,&ss8);
+	SendMCI( ss8 );
+	freehc(&ss8);
+}
 
 MMMan::MMMan()
 {
@@ -151,7 +164,11 @@ void MMMan::Reset( HWND hwnd )
 int MMMan::SendMCI( char *mci_commands )
 {
 	int a;
-	a=mciSendString( mci_commands,res,256,hwm );
+	HSPAPICHAR *hactmp1;
+	HSPAPICHAR *hactmp2;
+	a=mciSendString( chartoapichar(mci_commands,&hactmp1),chartoapichar(res,&hactmp2),256,hwm );
+	freehac(&hactmp1);
+	freehac(&hactmp2);
 	if (a) return -1;
 	return atoi(res);
 }
@@ -254,9 +271,10 @@ int MMMan::Play( int num )
 	int a,i,j,flg;
 	int prm;
 	int bank;
-	char ss[1024];
-	char fpath[MAX_PATH];
+	TCHAR ss[1024];
+	TCHAR fpath[MAX_PATH];
 	MMM *mmm;
+	HSPAPICHAR *hactmp1;
 
 	bank = SearchBank( num );
 	if ( bank < 0 ) return 1;
@@ -273,34 +291,42 @@ int MMMan::Play( int num )
 			if (a==0) prm|=SND_ASYNC;
 			if (a==1) prm|=SND_LOOP | SND_ASYNC;
 			if (a==2) prm|=SND_SYNC;
+#ifdef HSPUNICODE
+			sndPlaySound( chartoapichar((char*)mmm->mempt,&hactmp1),prm );
+			freehac(&hactmp1);
+#else
 			sndPlaySound( (LPCSTR)mmm->mempt,prm);
+#endif
 			return 0;
 
 		case MMDATA_MCIVOICE:							// when "MID" file
 		case MMDATA_MCIVIDEO:							// when "AVI" file
 		case MMDATA_MPEGVIDEO:							// when "MPG" file
 
-			if ( GetShortPathName( mmm->fname, fpath, MAX_PATH ) == 0 ) {
+			if ( GetShortPathName( chartoapichar(mmm->fname,&hactmp1), fpath, MAX_PATH ) == 0 ) {
+				freehac(&hactmp1);
 				return 1;
 			}
+			freehac(&hactmp1);
 			if ( flg!=MMDATA_MPEGVIDEO ) {
-				sprintf( ss,"open %s alias myid",fpath );
+				_stprintf( ss,TEXT("open %s alias myid"),fpath );
 			} else {
-				sprintf( ss,"open %s type MPEGVIDEO alias myid",fpath );
+				_stprintf( ss,TEXT("open %s type MPEGVIDEO alias myid"),fpath );
 			}
-			SendMCI( ss );
+			SendMCIT( ss );
 			if (flg!=MMDATA_MCIVOICE) {
 				if ( SendMCI( "where myid source" )==0 ) strcpy( avi_wh,res+4 );
 				if ( a&16 ) {
 					sprintf( avi_wh,"%d %d",avi_sx,avi_sy );
 					avi_x=0;avi_y=0;
 				}
-				sprintf( ss,"window myid handle %d", (int)avi_wnd );
-				SendMCI( ss );
-				sprintf( ss,"put myid destination at %d %d %s",avi_x,avi_y,avi_wh );
-				SendMCI( ss );
+				_stprintf( ss,TEXT("window myid handle %d"), (int)avi_wnd );
+				SendMCIT( ss );
+				_stprintf( ss,TEXT("put myid destination at %d %d %s"),avi_x,avi_y,chartoapichar(avi_wh,&hactmp1) );
+				freehac(&hactmp1);
+				SendMCIT( ss );
 			}
-			strcpy( ss,"play myid from 0" );
+			_tcscpy( ss,TEXT("play myid from 0") );
 			break;
 
 		case MMDATA_CDAUDIO:							// when "CD audio"
@@ -310,17 +336,17 @@ int MMMan::Play( int num )
 
 			i=mmm->track;j=mmm->lasttrk;
 			if ((i==j)||(a==3)) {
-				sprintf( ss,"play myid from %d",i );
+				_stprintf( ss,TEXT("play myid from %d"),i );
 			} else {
-				sprintf( ss,"play myid from %d to %d",i,i+1 );
+				_stprintf( ss,TEXT("play myid from %d to %d"),i,i+1 );
 			}
 			break;
 	}
 
 	a&=15;
-	if (a==1) strcat( ss," notify" );
-	if (a==2) strcat( ss," wait" );
-	SendMCI( ss );
+	if (a==1) _tcscat( ss,TEXT(" notify") );
+	if (a==2) _tcscat( ss,TEXT(" wait") );
+	SendMCIT(ss);
 	curmus = num;
 
 	if ( mmm->vol != 0 ) { SetVol( num, mmm->vol ); }

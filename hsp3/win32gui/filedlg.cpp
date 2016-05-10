@@ -7,12 +7,15 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
+#include <tchar.h>
 #include "../hsp3debug.h"
+#include "../supio.h"
 
 static HWND hwbak;
 static OPENFILENAME ofn ;
-static char szFileName[_MAX_PATH + 1] ;
-static char szTitleName[_MAX_PATH + 1] ;
+static TCHAR szFileName[_MAX_PATH + 1] ;
+static TCHAR szTitleName[_MAX_PATH + 1] ;
+static char FileName8[(_MAX_PATH + 1)*6] ;
 //static char szFilter[128];
 
 
@@ -57,25 +60,25 @@ void fd_ini( HWND hwnd, char *extname, char *extinfo )
 	// 　 ってことで"ﾌｧｲﾙ" は "ファイル" にしました。
 
 #define realloc_filter_buffer()                        \
-	pszFilterPtr = (char*)realloc(pszFilter, nFilterLen + 1); \
+	pszFilterPtr = (LPTSTR)realloc(pszFilter, (nFilterLen + 1)*sizeof(TCHAR)); \
 	if( NULL == pszFilterPtr ) goto out_of_memory;     \
 	pszFilter = pszFilterPtr
 
 	// 区切り文字
 	// "|"区切り
-	static const char DELIMITER_PIPE[]  = "|";
+	static const TCHAR DELIMITER_PIPE[]  = TEXT("|");
 	static const int  DELIMITER_PIPE_LEN= 1;
 	// "\n"区切り
-	static const char DELIMITER_CR[]    = "\r\n";
+	static const TCHAR DELIMITER_CR[]    = TEXT("\r\n");
 	static const int  DELIMITER_CR_LEN  = 2;
-	static const char DEFAULT_DESC[]    = "ファイル";
-	static const char ALL_FILE_FILTER[] = "すべてのファイル (*.*)";
+	static const TCHAR DEFAULT_DESC[]    = TEXT("ファイル");
+	static const TCHAR ALL_FILE_FILTER[] = TEXT("すべてのファイル (*.*)");
 
-	char *pszFilter = NULL, *pszFilterPtr;
+	LPTSTR pszFilter = NULL, pszFilterPtr;
 	int nFilterLen;
 	int nFilterSeek;
-	char *fext = NULL, *fext_next;
-	char *finf = NULL, *finf_next;
+	LPTSTR fext = NULL, fext_next;
+	LPTSTR finf = NULL, finf_next;
 	int fext_len;
 	int finf_len;
 	bool no_aster;
@@ -84,8 +87,8 @@ void fd_ini( HWND hwnd, char *extname, char *extinfo )
 	szFileName[0]=0;
 	szTitleName[0]=0;
 
-	fext = extname;
-	finf = extinfo;
+	chartoapichar(extname,&fext);
+	chartoapichar(extinfo,&finf);
 
 	nFilterLen = 0;
 	nFilterSeek = 0;
@@ -99,16 +102,20 @@ void fd_ini( HWND hwnd, char *extname, char *extinfo )
 		for(fext_next = fext; *fext_next &&
 			*DELIMITER_PIPE != *fext_next && *DELIMITER_CR != *fext_next;
 			fext_next++) {
+#ifndef HSPUNICODE
 			// SJISの1バイト目チェック＆2文字目を飛ばすときの'\0'チェック
 			if( is_sjis1(*fext_next) && fext_next[1] )
 				fext_next++;
+#endif
 		}
 		for(finf_next = finf; *finf_next &&
 			*DELIMITER_PIPE != *finf_next && *DELIMITER_CR != *finf_next;
 			finf_next++) {
+#ifndef HSPUNICODE
 			// SJISの1バイト目チェック＆2文字目を飛ばすときの'\0'チェック
 			if( is_sjis1(*finf_next) && finf_next[1] )
 				finf_next++;
+#endif
 		}
 		if( fext_next == fext && finf_next == finf ) {
 			break;
@@ -123,14 +130,14 @@ void fd_ini( HWND hwnd, char *extname, char *extinfo )
 			finf_next -= DELIMITER_PIPE_LEN;
 
 		// 拡張子の先頭に';'があった場合は"*."を先頭につけないモードにする
-		no_aster = (';' == *fext);
+		no_aster = (TEXT(';') == *fext);
 		if( no_aster ) {
 			fext++;
 			fext_len--;
 		}
 
 		if( 0 == fext_len ||
-			('*' == *fext && 1 == fext_len) )
+			(TEXT('*') == *fext && 1 == fext_len) )
 		{
 			// 拡張子指定が空文字 or "*" の場合はフィルタに登録をしない
 			continue;
@@ -139,8 +146,8 @@ void fd_ini( HWND hwnd, char *extname, char *extinfo )
 		// デフォルトファイル名指定
 		if( 0 == nFilterIndex ) {
 			if( !no_aster )
-				strcat(szFileName, "*.");
-			strncat(szFileName, fext, min((size_t)fext_len, sizeof(szFileName)/sizeof(szFileName[0]) - 3/* strlen("*.")+sizeof('\0') */));
+				_tcscat(szFileName, TEXT("*."));
+			_tcsncat(szFileName, fext, min((size_t)fext_len, sizeof(szFileName)/sizeof(szFileName[0]) - 3/* strlen("*.")+sizeof('\0') */));
 		}
 
 		// finf + "(" + "*." + fext + ")" + "\0" + "*." + fext + "\0"
@@ -149,49 +156,49 @@ void fd_ini( HWND hwnd, char *extname, char *extinfo )
 		if( 0 == finf_len ) {
 			// ファイルの説明が空文字の場合は拡張子+"ファイル"に
 			nFilterLen += fext_len;
-			nFilterLen += (int)strlen(DEFAULT_DESC); // ※
+			nFilterLen += (int)_tcslen(DEFAULT_DESC); // ※
 		}
 		realloc_filter_buffer();
 
 		pszFilterPtr = pszFilter + nFilterSeek;
-		*pszFilterPtr = '\0';
+		*pszFilterPtr = TEXT('\0');
 
 		// フィルタ説明
 		if( 0 == finf_len ) {
-			strncat(pszFilterPtr, fext, (size_t)fext_len);
-			strcat(pszFilterPtr, DEFAULT_DESC); // ※
+			_tcsncat(pszFilterPtr, fext, (size_t)fext_len);
+			_tcscat(pszFilterPtr, DEFAULT_DESC); // ※
 		} else {
-			strncat(pszFilterPtr, finf, (size_t)finf_len);
+			_tcsncat(pszFilterPtr, finf, (size_t)finf_len);
 		}
 
-		strcat(pszFilterPtr,  no_aster ? "(" : "(*.");
-		strncat(pszFilterPtr, fext, (size_t)fext_len);
-		strcat(pszFilterPtr,  ")");
-		strcat(pszFilterPtr,  DELIMITER_PIPE);
+		_tcscat(pszFilterPtr,  no_aster ? TEXT("(") : TEXT("(*."));
+		_tcsncat(pszFilterPtr, fext, (size_t)fext_len);
+		_tcscat(pszFilterPtr,  TEXT(")"));
+		_tcscat(pszFilterPtr,  DELIMITER_PIPE);
 
 		// フィルタ拡張子
 		if( !no_aster )
-			strcat(pszFilterPtr, "*.");
-		strncat(pszFilterPtr, fext, (size_t)fext_len);
-		strcat(pszFilterPtr,  DELIMITER_PIPE);
+			_tcscat(pszFilterPtr, TEXT("*."));
+		_tcsncat(pszFilterPtr, fext, (size_t)fext_len);
+		_tcscat(pszFilterPtr,  DELIMITER_PIPE);
 	}
 
 	// "すべてのファイル (*.*)" + "\0" + "*.*" + "\0" + "\0"
 	nFilterSeek = nFilterLen;
-	nFilterLen += (int)strlen(ALL_FILE_FILTER) + 1 + (int)strlen("*.*") + 1 + 1;
+	nFilterLen += (int)_tcslen(ALL_FILE_FILTER) + 1 + (int)_tcslen(TEXT("*.*")) + 1 + 1;
 	realloc_filter_buffer();
 
 	pszFilterPtr = pszFilter + nFilterSeek;
-	*pszFilterPtr = '\0';
+	*pszFilterPtr = TEXT('\0');
 
 	// フィルタ説明
-	strcat(pszFilterPtr, ALL_FILE_FILTER); // ※
-	strcat(pszFilterPtr, DELIMITER_PIPE);
+	_tcscat(pszFilterPtr, ALL_FILE_FILTER); // ※
+	_tcscat(pszFilterPtr, DELIMITER_PIPE);
 
 	// フィルタ拡張子
-	strcat(pszFilterPtr, "*.*");
-	strcat(pszFilterPtr, DELIMITER_PIPE);
-	strcat(pszFilterPtr, DELIMITER_PIPE);
+	_tcscat(pszFilterPtr, TEXT("*.*"));
+	_tcscat(pszFilterPtr, DELIMITER_PIPE);
+	_tcscat(pszFilterPtr, DELIMITER_PIPE);
 
 //	for(int i = 0; i < nFilterLen-1; i++) if('\0'==pszFilter[i]) pszFilter[i] = '|';
 //	MessageBox(NULL,pszFilter,"",0);
@@ -199,14 +206,22 @@ void fd_ini( HWND hwnd, char *extname, char *extinfo )
 	// 区切り文字を'\0'に変換
 	pszFilterPtr = pszFilter;
 	for(nFilterSeek = 0; nFilterSeek < nFilterLen; pszFilterPtr++, nFilterSeek++) {
+#ifndef HSPUNICODE
 		if( is_sjis1(*pszFilterPtr) )
 			pszFilterPtr++, nFilterSeek++;
 		else if( *DELIMITER_PIPE == *pszFilterPtr )
-			*pszFilterPtr = '\0';
+			*pszFilterPtr = TEXT('\0');
+#else
+		if (*DELIMITER_PIPE == *pszFilterPtr )
+			*pszFilterPtr = TEXT('\0');
+#endif
 	}
 	
 	PopFileInitialize(hwnd);
 	ofn.lpstrFilter = pszFilter;
+
+	freehac(&fext);
+	freehac(&finf);
 
 #undef realloc_filter_buffer
 
@@ -219,7 +234,11 @@ out_of_memory:
 
 char *fd_getfname( void )
 {
-	return szFileName;
+	HSPCHAR *hctmp1;
+	apichartohspchar(szFileName,&hctmp1);
+	memcpy(FileName8,hctmp1,strlen(hctmp1));
+	freehc(&hctmp1);
+	return FileName8;
 }
 
 BOOL fd_dialog( HWND hwnd, int mode, char *fext, char *finf )

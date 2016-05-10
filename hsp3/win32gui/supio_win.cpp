@@ -19,6 +19,48 @@
 #include "../dpmread.h"
 #include "../strbuf.h"
 
+HSPAPICHAR *chartoapichar( const char *orig,HSPAPICHAR **pphac)
+{
+	*pphac = (HSPAPICHAR*)orig;
+	return (HSPAPICHAR*)orig;
+}
+
+void freehac(HSPAPICHAR **pphac)
+{
+	*pphac = 0;
+	return;
+}
+
+HSPCHAR *apichartohspchar( const HSPAPICHAR *orig,HSPCHAR **pphc)
+{
+	*pphc = (HSPAPICHAR*)orig;
+	return (HSPCHAR*)orig;
+}
+
+void freehc(HSPCHAR **pphc)
+{
+	*pphc = 0;
+	return;
+}
+
+HSPAPICHAR *ansichartoapichar(const char *orig, HSPAPICHAR **pphac)
+{
+	*pphac = (HSPAPICHAR*)orig;
+	return (HSPAPICHAR*)orig;
+}
+
+char *apichartoansichar(const HSPAPICHAR *orig, char **ppc)
+{
+	*ppc = (char*)orig;
+	return (char*)orig;
+}
+
+void freeac(char **ppc)
+{
+	*ppc = 0;
+	return;
+}
+
 //
 //		basic C I/O support
 //
@@ -187,6 +229,10 @@ void getpath( char *stmp, char *outbuf, int p2 )
 	}
 }
 
+void getpathW( HSPAPICHAR *stmp, HSPAPICHAR *outbuf, int p2 )
+{
+	getpath(stmp,outbuf,p2);
+}
 
 int makedir( char *name )
 {
@@ -207,6 +253,10 @@ int changedir( char *name )
 #endif
 }
 
+int changedirW( HSPAPICHAR *name)
+{
+	return changedir(name);
+}
 
 int delfile( char *name )
 {

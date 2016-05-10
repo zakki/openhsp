@@ -8,6 +8,7 @@
 #include <windows.h>
 #include <stdio.h>
 #include <string.h>
+#include <tchar.h>
 #include <objbase.h>
 #include <commctrl.h>
 
@@ -62,7 +63,9 @@ static int	timerid = 0;
 
 void hsp3win_dialog( char *mes )
 {
-	MessageBox( NULL, mes, "Error",MB_ICONEXCLAMATION | MB_OK );
+	HSPAPICHAR *hactmp1;
+	MessageBox( NULL, chartoapichar(mes,&hactmp1), TEXT("Error"),MB_ICONEXCLAMATION | MB_OK );
+	freehac(&hactmp1);
 }
 
 
@@ -102,7 +105,11 @@ int hsp3win_debugopen( void )
 #ifdef HSP64
 	h_dbgwin = LoadLibrary( "hsp3debug_64.dll" );
 #else
-	h_dbgwin = LoadLibrary("hsp3debug.dll");
+#ifndef HSPUNICODE
+	h_dbgwin = LoadLibrary(TEXT("hsp3debug.dll"));
+#else
+	h_dbgwin = LoadLibrary(TEXT("hsp3debug_u8.dll"));
+#endif
 #endif
 	if ( h_dbgwin != NULL ) {
 #ifdef HSP64
@@ -265,8 +272,13 @@ int hsp3win_init( HINSTANCE hInstance, char *startfile )
 	int a,orgexe, mode;
 	int hsp_sum, hsp_dec;
 	char a1;
-	char fname[_MAX_PATH+1];
+	char *fname;
+	TCHAR fnamew[_MAX_PATH+1];
+	TCHAR fnamew2[_MAX_PATH + 1];
+	int fnamelen;
 	char *ss;
+	LPTSTR cl;
+	int sslen;
 #ifdef HSPDEBUG
 	int i;
 #endif
@@ -300,8 +312,8 @@ int hsp3win_init( HINSTANCE hInstance, char *startfile )
 		hsp->SetFileName( fname );
 	}
 #else
-	if ( startfile != NULL ) {
-		hsp->SetFileName( startfile );
+	if (startfile != NULL) {
+		hsp->SetFileName(startfile);
 	}
 #endif
 
@@ -334,9 +346,9 @@ int hsp3win_init( HINSTANCE hInstance, char *startfile )
 	//
 #ifndef HSPDEBUG
 	if (( hsp_wd & 2 ) == 0 ) {
-		GetModuleFileName( NULL, fname, _MAX_PATH );
-		getpath( fname, fname, 32 );
-		changedir( fname );
+		GetModuleFileName( NULL, fnamew, _MAX_PATH );
+		getpathW( fnamew, fnamew2, 32 );
+		changedirW( fnamew2 );
 	}
 #endif
 #endif
@@ -349,11 +361,12 @@ int hsp3win_init( HINSTANCE hInstance, char *startfile )
 
 	{
 	//		コマンドライン関連
-	ss = GetCommandLine();
-	ss = strsp_cmds( ss );
+	cl = GetCommandLine();
+	cl = strsp_cmdsW( cl );
 #ifdef HSPDEBUG
-	ss = strsp_cmds( ss );
+	cl = strsp_cmdsW( cl );
 #endif
+	apichartohspchar(cl,&ss);
 	sbStrCopy( &ctx->cmdline, ss );					// コマンドラインパラメーターを保存
 	}
 
@@ -361,24 +374,25 @@ int hsp3win_init( HINSTANCE hInstance, char *startfile )
 	//
 #ifndef HSPDEBUG
 	if ( hsp_ss ) {
-		ss = GetCommandLine();
-		ss = strsp_cmds( ss );
+		cl = GetCommandLine();
+		cl = strsp_cmdsW( cl );
 		hsp_sscnt = 30;
-		a1=tolower(*(ss+1));
-		if( FindWindow("oniwndp",NULL) != NULL ) {
+		a1=tolower(*(cl+1));
+		if (FindWindow(TEXT("oniwndp"), NULL) != NULL) {
+			freehc(&ss);
 			return 2;
 		}
-		if (a1=='p') {
+		if (a1==TEXT('p')) {
 			HWND s_hwnd;
 			RECT rPic;
-			s_hwnd = (HWND)atoi( ss+3 );
+			s_hwnd = (HWND)_tstoi( cl+3 );
 			GetWindowRect( s_hwnd, &rPic );
 			hsp_wx = rPic.right-rPic.left;
 			hsp_wy = rPic.bottom-rPic.top;
 			hsp_wd = 0x100;
 			ctx->wnd_parent = s_hwnd;
 		}
-		if (a1=='s') {
+		if (a1==TEXT('s')) {
 			ShowCursor(FALSE);
 		} else {
 			hsp_ss = 0;								// スクリーンセーバー時以外はモードOFF
@@ -386,7 +400,7 @@ int hsp3win_init( HINSTANCE hInstance, char *startfile )
 		ctx->hspstat |= hsp_ss;
 	}
 #endif
-
+	freehc(&ss);
 	//		Register Type
 	//
 	ctx->msgfunc = hsp3win_msgfunc;

@@ -60,7 +60,7 @@ typedef HRESULT (CALLBACK *_ATXDLL_GETCTRL)( HWND, void **res );
 static _ATXDLL_INIT fn_atxinit = NULL;
 static _ATXDLL_GETCTRL fn_atxgetctrl = NULL;
 static HINSTANCE hinst_atxdll = NULL;
-static char *atxwndclass = NULL;
+static LPTSTR atxwndclass = NULL;
 
 #endif	// !defined(HSP_COM_UNSUPPORTED)
 
@@ -81,13 +81,13 @@ static void InitAtxDll( void )
 {
 	if ( hinst_atxdll != NULL ) return;
 
-	hinst_atxdll = LoadLibrary( "Atl71.dll" );
+	hinst_atxdll = LoadLibrary( TEXT("Atl71.dll") );
 	if ( hinst_atxdll ) {
-		atxwndclass = "AtlAxWin71";
+		atxwndclass = TEXT("AtlAxWin71");
 	} else {
-		hinst_atxdll = LoadLibrary( "Atl.dll" );
+		hinst_atxdll = LoadLibrary( TEXT("Atl.dll") );
 		if ( hinst_atxdll == NULL ) return;
-		atxwndclass = "AtlAxWin";
+		atxwndclass = TEXT("AtlAxWin");
 	}
 
 	fn_atxinit = (_ATXDLL_INIT)GetProcAddress( hinst_atxdll, "AtlAxWinInit" );
@@ -648,7 +648,8 @@ static int cmdfunc_ctrlcmd( int cmd )
 		BMSCR *bm;
 		HWND hwnd;
 		int id,sx,sy;
-		char clsid_name[1024];
+		char clsid_name8[1024];
+		HSPAPICHAR *clsid_name;
 		IUnknown **ppunk, *punkObj, *punkObj2;
 		STRUCTDAT *st;
 		LIBDAT *lib;
@@ -671,11 +672,11 @@ static int cmdfunc_ctrlcmd( int cmd )
 			lib = &hspctx->mem_linfo[ st->index ];
 			piid = (IID *)strp( lib->nameidx );
 			if ( lib->clsid == -1 ) throw ( HSPERR_INVALID_PARAMETER );
-			strncpy( clsid_name, strp(lib->clsid), sizeof(clsid_name)-1 );
+			strncpy( clsid_name8, strp(lib->clsid), sizeof(clsid_name8)-1 );
 		} else {
 			// 第２パラメータ：文字列 CLSID or ProgID を取得 (IID は IDispatch)
 			piid = &IID_IDispatch;
-			strncpy( clsid_name, code_gets(), sizeof(clsid_name)-1 );
+			strncpy( clsid_name8, code_gets(), sizeof(clsid_name8)-1 );
 		}
 
 		// コントロールのサイズ
@@ -685,10 +686,11 @@ static int cmdfunc_ctrlcmd( int cmd )
 		//		ActiveXとしてロード
 		//
 		if ( fn_atxinit == NULL ) throw ( HSPERR_UNSUPPORTED_FUNCTION );
-		hwnd = CreateWindow( atxwndclass, clsid_name,
+		hwnd = CreateWindow( atxwndclass, chartoapichar(clsid_name8,&clsid_name),
 				WS_CHILD, 			// 最初は WS_VISIBLE なし (後で ShowWindow() )
 				bm->cx, bm->cy, sx, sy,
 				bm->hwnd, (HMENU)0, (HINSTANCE)hspctx->instance, NULL );
+		freehac(&clsid_name);
 
 		punkObj2 = NULL;
 		if ( hwnd ) {
@@ -724,16 +726,18 @@ static int cmdfunc_ctrlcmd( int cmd )
 #ifdef HSPDISH
 		throw ( HSPERR_UNSUPPORTED_FUNCTION );
 #else
-		char clsname[1024];
-		char winname[1024];
+		char clsname8[1024];
+		HSPAPICHAR *clsname;
+		char winname8[1024];
+		HSPAPICHAR *winname;
 		HWND hwnd;
 		char *ps;
 		BMSCR *bm;
 		int i;
 		int prm[6];
 
-		ps = code_gets(); strncpy( clsname, ps, 1023 );
-		ps = code_gets(); strncpy( winname, ps, 1023 );
+		ps = code_gets(); strncpy( clsname8, ps, 1023 );
+		ps = code_gets(); strncpy( winname8, ps, 1023 );
 
 		bm = GetBMSCR();
 		for(i=0;i<6;i++) {
@@ -744,8 +748,8 @@ static int cmdfunc_ctrlcmd( int cmd )
 
 		hwnd = CreateWindowEx(
 		    (DWORD) prm[0],			// 拡張ウィンドウスタイル
-		    clsname,				// ウィンドウクラス名
-		    winname,				// ウィンドウ名
+		    chartoapichar(clsname8,&clsname),	// ウィンドウクラス名
+		    chartoapichar(winname8,&winname),	// ウィンドウ名
 		    (DWORD) prm[1],			// ウィンドウスタイル
 			bm->cx, bm->cy, prm[2], prm[3],		// X,Y,SIZEX,SIZEY
 			bm->hwnd,				// 親ウィンドウのハンドル
@@ -753,6 +757,8 @@ static int cmdfunc_ctrlcmd( int cmd )
 			bm->hInst,				// インスタンスハンドル
 		    (PVOID) prm[5]			// ウィンドウ作成データ
 			);
+			freehac(&clsname);
+			freehac(&winname);
 
 		// AddHSPObject( hwnd, HSPOBJ_TAB_SKIP, prm[3], NULL, 0 );			// HSPのウインドゥオブジェクトとして登録する
 		AddHSPObject( hwnd, HSPOBJ_TAB_SKIP, prm[3] );
@@ -764,25 +770,29 @@ static int cmdfunc_ctrlcmd( int cmd )
 		{
 		int hw,p1,p2,p3,p4,fl,sz;
 		char *vptr;
+		HSPAPICHAR *hactmp1 = 0;
+		HSPAPICHAR *hactmp2 = 0;
 		hw = code_getdi(0);
 		p1 = code_getdi(0);
 
 		vptr = code_getsptr( &fl );
 		if ( fl == TYPE_STRING ) {
-			p2 = (int)code_stmpstr( vptr );
+			p2 = (int)chartoapichar(code_stmpstr( vptr ),&hactmp1);
 		} else {
 			p2 = *(int *)vptr;
 		}
 
 		vptr = code_getsptr( &fl );
 		if ( fl == TYPE_STRING ) {
-			p3 = (int)vptr;
+			p3 = (int)chartoapichar(vptr,&hactmp2);
 		} else {
 			p3 = *(int *)vptr;
 		}
 
 		//Alertf( "SEND[%x][%x][%x]",p1,p2,p3 );
 		hspctx->stat = (int)SendMessage( (HWND)hw, p1, p2, p3 );
+		freehac(&hactmp1);
+		freehac(&hactmp2);
 		break;
 		}
 
@@ -965,7 +975,33 @@ static int cmdfunc_ctrlcmd( int cmd )
 		break;
 		}
 #endif	// HSP_COM_UNSUPPORTED
-
+#ifndef HSPUNICODE
+		throw (HSPERR_UNSUPPORTED_FUNCTION);
+#else
+	case 0x0c:								//  cnv8tow
+		{
+		PVal *pval;
+		char *ptr;
+		char *ps;
+		int size;
+		int sizew;
+		HSPAPICHAR *hactmp1;
+		ptr = code_getvptr(&pval, &size);
+		ps = code_gets();
+		chartoapichar(ps, &hactmp1);
+		sizew = wcslen(hactmp1);
+		if (size < sizew*sizeof(HSPAPICHAR)){
+			memcpy(ptr, hactmp1, size);
+			hspctx->stat = -sizew*sizeof(HSPAPICHAR);
+		}
+		else{
+			memcpy(ptr, hactmp1, sizew*sizeof(HSPAPICHAR));
+			hspctx->stat = sizew;
+		}
+		freehac(&hactmp1);
+		break;
+		}
+#endif
 	default:
 		throw ( HSPERR_SYNTAX );
 	}
@@ -1059,6 +1095,23 @@ static void *reffunc_ctrlfunc( int *type_res, int arg )
 		reffunc_intfunc_ivalue = (int)st;
 		break;
 		}
+
+	case 0x104:								//  cnvwto8
+#ifndef HSPUNICODE
+		throw (HSPERR_UNSUPPORTED_FUNCTION);
+#else
+		{
+			PVal *pval;
+			char *sptr;
+			int size;
+			sptr = code_getvptr(&pval, &size);
+			hspctx->stmp = sbExpand(hspctx->stmp, size*3);
+			ptr = hspctx->stmp;
+			cnvu8(ptr, sptr, size*3);
+			*type_res = HSPVAR_FLAG_STR;
+			break;
+		}
+#endif
 
 	default:
 		throw ( HSPERR_SYNTAX );
