@@ -958,10 +958,10 @@ static void ExecMkDPM( void )
 }
 
 
-static void ExecCnvSrc( void )
+static void ExecPaint( void )
 {
 	char tmpfn[2048];
-	wsprintf( tmpfn, "\"%s\\hsp3.exe\" \"%s\\cnvsrc.ax\"", szExeDir, szExeDir );
+	wsprintf( tmpfn, "mspaint" );
 	WinExec( tmpfn, SW_SHOW );
 }
 
@@ -2510,8 +2510,18 @@ LRESULT CALLBACK EditProc (HWND hwnd, UINT iMsg, WPARAM wParam, LPARAM lParam)
 					return 0;
 
                 case IDM_SRCCNV:
-					ExecCnvSrc();
+					wsprintf( tmpfn, "\"%s\\hsp3dh.exe\"", szExeDir );
+					WinExec( tmpfn, SW_SHOW );
 					return 0;
+
+                case IDM_PAINT:
+					ExecPaint();
+					return 0;
+
+				case IDM_HGIMG4TOOL:
+					wsprintf( tmpfn, "\"%s\\gpbconv.exe\"", szExeDir );
+					WinExec( tmpfn, SW_SHOW );
+					return 0 ;
 
 				// Messages from Help menu
 
@@ -2526,7 +2536,7 @@ LRESULT CALLBACK EditProc (HWND hwnd, UINT iMsg, WPARAM wParam, LPARAM lParam)
 					return 0 ;
 
                 case IDM_HSPMAN2 :
-					wsprintf( tmpfn, "\"%s\\hsphelp\\helpman.exe\"", szExeDir );
+					wsprintf( tmpfn, "\"%s\\hdl.exe\"", szExeDir );
 					WinExec( tmpfn, SW_SHOW );
 					return 0 ;
 

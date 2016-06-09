@@ -63,6 +63,9 @@
 #define IDM_HSPMAN2                     1803
 #define IDM_HSPMAN3                     1804
 #define IDM_ABOUT                       1805
+#define IDM_PAINT                       1900
+#define IDM_HGIMG4TOOL                  1901
+#define IDM_REGACYTOOL                  1902
 #define IDM_OPENIME                     2000
 #define IDM_RECONVERT                   2001
 #define IDM_SAVETABAS                   2100
@@ -93,6 +96,9 @@
 #define IDM_DIRDPM                      2931
 #define ID_SRCCNV                       2932
 #define IDM_SRCCNV                      2932
+#define ID_2933                         2933
+#define ID_2934                         2934
+#define ID_2935                         2935
 #define IDCM_ADD                        3000
 #define IDCM_ALLSEL                     3001
 #define IDCM_BYE                        3002
@@ -183,7 +189,7 @@
 #ifndef APSTUDIO_READONLY_SYMBOLS
 #define _APS_NO_MFC                     1
 #define _APS_NEXT_RESOURCE_VALUE        5010
-#define _APS_NEXT_COMMAND_VALUE         2933
+#define _APS_NEXT_COMMAND_VALUE         2936
 #define _APS_NEXT_CONTROL_VALUE         4057
 #define _APS_NEXT_SYMED_VALUE           6003
 #endif
