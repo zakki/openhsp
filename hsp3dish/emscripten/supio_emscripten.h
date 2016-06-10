@@ -36,7 +36,7 @@ void Alert( const char *mes );
 void AlertV( char *mes, int val );
 void Alertf( const char *format, ... );
 
-void ReplaceSetMatch( char *src, char *match );
+void ReplaceSetMatch( char *src, char *match, char *result, int in_src, int in_match, int in_result );
 char *ReplaceStr( char *repstr );
 int ReplaceDone( void );
 

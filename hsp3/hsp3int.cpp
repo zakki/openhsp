@@ -1121,7 +1121,11 @@ static int cmdfunc_intcmd( int cmd )
 		char *ss;
 		char *s_rep;
 		char *s_buffer;
+		char *s_match;
 		char *s_result;
+		int len_match;
+		int len_result;
+		int len_buffer;
 
 		aptr = code_getva( &pval );
 		if ( pval->flag != HSPVAR_FLAG_STR ) throw HSPERR_TYPE_MISMATCH;
@@ -1129,12 +1133,25 @@ static int cmdfunc_intcmd( int cmd )
 
 		ss = code_gets();
 		if ( *ss == 0 ) throw HSPERR_ILLEGAL_FUNCTION;
-		ReplaceSetMatch( s_buffer, ss );
+		len_match = (int)strlen( ss );
+		s_match = sbAlloc( len_match + 1 );
+		memcpy( s_match, ss, len_match + 1 );
+
+		len_buffer = (int)strlen( s_buffer );
+		len_result = len_buffer + 0x4000;
+		if ( len_result < 0x8000 ) len_result = 0x8000;
+		s_result = sbAlloc( len_result );
+		*s_result = 0;
 
 		s_rep = code_gets();
-		s_result = ReplaceStr( s_rep );
+
+		ReplaceSetMatch( s_buffer, s_match, s_result, len_buffer, len_match, len_result );
+		ReplaceStr( s_rep );
+
 		code_setva( pval, aptr, TYPE_STRING, s_result );
 		ctx->stat = ReplaceDone();
+		sbFree( s_match );
+		sbFree( s_result );
 		break;
 		}
 

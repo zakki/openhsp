@@ -653,6 +653,7 @@ void TrimCodeL( char *p, int code )
 
 //
 //		文字列置き換え
+//		(入れ子になることがあるので、バッファの確保をhsp3int側で行なうように修正)
 //
 static	char *s_match;
 static	int len_match;
@@ -664,20 +665,17 @@ static	char *s_result;
 static	int len_result;
 static	int reptime;
 
-void ReplaceSetMatch( char *src, char *match )
+void ReplaceSetMatch( char *src, char *match, char *result, int in_src, int in_match, int in_result )
 {
 	//		置き換え元、置き換え対象のセット
+	//		(あらかじめメモリバッファの確保が必要)
 	//
 	s_buffer = src;
-	len_buffer = (int)strlen( s_buffer );
-	len_result = len_buffer + 0x4000;
-	if ( len_result < 0x8000 ) len_result = 0x8000;
-	s_result = sbAlloc( len_result );
-	*s_result = 0;
-
-	len_match = (int)strlen( match );
-	s_match = sbAlloc( len_match + 1 );
-	memcpy( s_match, match, len_match + 1 );
+	s_match = match;
+	s_result = result;
+	len_buffer = in_src;
+	len_match = in_match;
+	len_result = in_result;
 }
 
 
@@ -749,9 +747,8 @@ char *ReplaceStr( char *repstr )
 int ReplaceDone( void )
 {
 	//		置き換えの後処理
+	//		(呼び出し前に確保したメモリバッファは解放すること)
 	//
-	sbFree( s_match );
-	sbFree( s_result );
 	return reptime;
 }
 

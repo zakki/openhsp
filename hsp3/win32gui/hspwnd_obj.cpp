@@ -181,7 +181,8 @@ static void Object_StrInput( HSPOBJINFO *info, int wparam )
 	HWND hwnd;
 	BMSCR *bm;
 	TCHAR minp[0x8000];
-	int val, cid, notify;
+	TCHAR *bigbuf;
+	int val, cid, notify, size;
 	HSPCHAR *hctmp1;
 
 	bm = (BMSCR *)info->bm;
@@ -189,8 +190,16 @@ static void Object_StrInput( HSPOBJINFO *info, int wparam )
 	notify = wparam>>16;
 	if ( notify != EN_UPDATE ) return;
 
+	size = (int)SendMessage( info->hCld, WM_GETTEXTLENGTH,0,0L );
 	cid = GetDlgCtrlID( info->hCld );
-	val = GetDlgItemText( hwnd, cid, minp, 0x7fff );
+	
+	if ( size < 0x8000 ) {
+		bigbuf = minp;
+		val = GetDlgItemText( hwnd, cid, minp, 0x7fff );
+	} else {
+		bigbuf = sbAlloc( size+1 );
+		val = GetDlgItemText( hwnd, cid, bigbuf, size );
+	}
 
 	if ( val == 0 ) {
 		bmscr_obj_ival = 0;
@@ -200,6 +209,8 @@ static void Object_StrInput( HSPOBJINFO *info, int wparam )
 		info->varset.ptr = hctmp1;
 	}
 	Object_SendSetVar( info );
+
+	if ( bigbuf != NULL ) sbFree( bigbuf );
 	freehc(&hctmp1);
 }
 
@@ -208,13 +219,13 @@ static void Object_ComboBox( HSPOBJINFO *info, int wparam )
 	int notify;
 	notify = wparam>>16;
 	if ( notify != CBN_SELENDOK ) return;
-	bmscr_obj_ival = (int)SendMessage( info->hCld, CB_GETCURSEL,0,0L );;
+	bmscr_obj_ival = (int)SendMessage( info->hCld, CB_GETCURSEL,0,0L );
 	Object_SendSetVar( info );
 }
 
 static void Object_ListBox( HSPOBJINFO *info, int wparam )
 {
-	bmscr_obj_ival = (int)SendMessage( info->hCld, LB_GETCURSEL,0,0L );;
+	bmscr_obj_ival = (int)SendMessage( info->hCld, LB_GETCURSEL,0,0L );
 	Object_SendSetVar( info );
 }
 

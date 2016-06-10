@@ -1,14 +1,9 @@
 
-#regcmd 9
-#cmd hyoji $0f		; mesと同じコードを展開
-
 #regcmd "_hsp3cmdinit@4","hpi3sample.dll"
 #cmd newcmd $000
 #cmd newcmd2 $001
 #cmd newcmd3 $002
 #cmd newcmd4 $003
-
-hyoji "mes命令の代わりにhyojiを使っています。"
 
 a=0
 
