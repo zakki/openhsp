@@ -6,7 +6,7 @@
 %type
 拡張命令
 %ver
-3.4
+3.5
 %note
 hspext.asをインクルードすること。
 %dll
@@ -461,6 +461,7 @@ comclose
 comput
 comget
 computc
+computb
 comgetc
 comstat
 comcontrol
@@ -498,11 +499,13 @@ comput
 命令の実行後、システム変数statに結果が返されます。
 システム変数 statが0ならば通信に失敗し送信されていないことを示します。
 1以上の場合は、送信に成功したバイト数(文字数)が代入されています。
+この命令は文字列を送信するものです。文字列以外の(バイナリ)データを送信する場合は、computb命令をお使いください。
 
 %href
 comopen
 comclose
 computc
+computb
 
 
 %index
@@ -524,6 +527,32 @@ p1で指定された1バイトの数値データをシリアルポートに送出します。
 comopen
 comclose
 comput
+computb
+
+
+%index
+computb
+シリアルポートにバイナリ送信
+%group
+通信制御命令
+%prm
+p1,p2
+p1=変数    : バイナリデータが格納される変数名
+p2=0～     : 送信データサイズ
+
+%inst
+p1で指定された文字列型変数のバッファ内容をバイナリデータとしてシリアルポートに送出します。
+p2で送信データサイズを指定します。p2の指定を省略した場合は、変数バッファ全体のサイズが使用されます。
+シリアルポートに文字列を送信する場合は、comput命令をお使いください。
+^
+命令の実行後、システム変数statに結果が返されます。
+システム変数 statが0ならば通信に失敗し送信されていないことを示します。
+
+%href
+comopen
+comclose
+comput
+computc
 
 
 %index

@@ -13,6 +13,7 @@
 #func comclose comclose 0
 #func comput comput 6
 #func computc computc 0
+#func computb computb $202
 #func comget comget 1
 #func comgetc comgetc 1
 #func comstat comstat 1

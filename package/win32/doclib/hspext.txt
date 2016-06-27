@@ -1,6 +1,6 @@
 ------------------------------------------------------------------------------
-HSPEXT ver3.4  REFERENCE MANUAL                     HSP : Hot Soup Processor  
-ＨＳＰ拡張DLLリファレンス             copyright 1999-2014 (c) onion software  
+HSPEXT ver3.5  REFERENCE MANUAL                     HSP : Hot Soup Processor  
+ＨＳＰ拡張DLLリファレンス             copyright 1999-2016 (c) onion software  
 ------------------------------------------------------------------------------
 
 ・はじめに
@@ -29,6 +29,10 @@ HSPEXT ver3.4  REFERENCE MANUAL                     HSP : Hot Soup Processor
 
 
 ・更新履歴
+
+	2016/6/27
+
+		シリアルポートに任意のバイナリデータを送信するcomputb命令を追加
 
 	2009/3/09
 
@@ -155,6 +159,7 @@ HSPEXT ver3.4  REFERENCE MANUAL                     HSP : Hot Soup Processor
 	comopen p1,"protocol"			シリアルポートを初期化
 	comclose						シリアルポートを解放
 	computc p1					シリアルポートに送信
+	computb var,size				シリアルポートにバイナリ送信
 	comput "send-string"			シリアルポートに送信
 	comgetc p1						シリアルポートから受信
 	comget p1,p2					シリアルポートから文字列を受信

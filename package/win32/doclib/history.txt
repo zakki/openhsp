@@ -5,8 +5,9 @@ Hot Soup Processor ver3.5                           HSP : Hot Soup Processor
 
 ・hsp3関連 更新履歴
 
-	2016/06/10 3.5 beta4
+	2016/06/27 3.5 beta4
 
+	hspextプラグインにバイナリデータを送信を行なうcomputb命令を追加
 	スクリプトエディタのツールメニューを整理(非推奨機能をサブメニューに移動)
 	拡張プラグインサンプルhpi3sample.asが動作しない不具合を修正
 	mesbox,input命令による入力ボックスから32767以上の文字列を取得できない不具合を修正

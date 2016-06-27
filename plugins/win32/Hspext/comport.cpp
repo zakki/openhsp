@@ -12,7 +12,7 @@
 #include <shlobj.h>
 #include <stdio.h>
 
-#include "hspdll.h"
+#include "../hpi3sample/hsp3plugin.h"
 
 
 /*------------------------------------------------------------*/
@@ -22,6 +22,20 @@
 /*------------------------------------------------------------*/
 
 static	HANDLE comHandle = NULL;
+
+static void *Hsp3GetBlockSize( HSPEXINFO *hei, PVal *pv, APTR ap, int *size )
+{
+	//		(HSP3用)
+	//		pv,apからメモリブロックを取得する
+	//
+	PDAT *pd;
+	HspVarProc *proc;
+	proc = hei->HspFunc_getproc( pv->flag );
+	pv->offset = ap;
+	pd =  proc->GetPtr( pv );
+	return proc->GetBlockSize( pv,pd,size );
+}
+
 
 EXPORT BOOL WINAPI comopen( int p1, char *p2, int p3, int p4 )
 {
@@ -122,6 +136,31 @@ EXPORT BOOL WINAPI computc( int p1, int p2, int p3, int p4 )
 	sd[0] = p1;
 	sd[1] = 0;
 	success = WriteFile(comHandle, sd, 1, &numWrite, 0);
+	if (!success) return 0;
+	return -(int)numWrite;
+}
+
+
+EXPORT BOOL WINAPI computb( HSPEXINFO *hei, int p1, int p2, int p3 )
+{
+	//
+	//		send binary (type$202)
+	//			computb var, size
+	//
+	DWORD numWrite;
+	BOOL success;
+	PVal *pv;
+	APTR ap;
+	char *sd;
+	int size;
+	int _p2;
+
+	ap = hei->HspFunc_prm_getva( &pv );		// パラメータ1:変数
+	sd = (char *)Hsp3GetBlockSize( hei, pv, ap, &size );
+	_p2 = hei->HspFunc_prm_getdi(size-1);	// パラメータ2:整数値
+	if ( _p2 >= size ) _p2=size-1;
+
+	success = WriteFile(comHandle, sd, _p2, &numWrite, 0);
 	if (!success) return 0;
 	return -(int)numWrite;
 }
