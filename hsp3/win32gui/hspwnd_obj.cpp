@@ -205,12 +205,12 @@ static void Object_StrInput( HSPOBJINFO *info, int wparam )
 		bmscr_obj_ival = 0;
 		info->varset.ptr = (void *)&bmscr_obj_ival;
 	} else {
-		apichartohspchar(minp,&hctmp1);
+		apichartohspchar(bigbuf,&hctmp1);
 		info->varset.ptr = hctmp1;
 	}
 	Object_SendSetVar( info );
 
-	if ( bigbuf != NULL ) sbFree( bigbuf );
+	if ( size >= 0x8000 ) sbFree( bigbuf );
 	freehc(&hctmp1);
 }
 
