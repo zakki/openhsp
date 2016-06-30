@@ -1,0 +1,61 @@
+#include "arduino.as"
+
+	;	arduino デジタル入力テスト
+	;	COMポートにarduinoを接続して、必ずポート番号を指定してください
+	;
+	comport = 10		; COMポート番号
+
+	; arduino初期化 (COMポート番号、ボーレート)
+	arduino_init comport, 57600
+	if stat {
+		; エラーがあれば終了
+		dialog arduino_error
+		end
+	}
+
+*startup
+	; 起動チェック
+	arduino_exec
+	if stat {
+		; エラーがあれば終了
+		dialog arduino_error
+		end
+	}
+	wait 1
+	if arduino_ready=0 : goto *startup
+
+	; 起動に成功
+
+	button "終了",*owari
+
+	id=7			; 入力するPin
+
+	pinmode id, MODE_INPUT
+
+*main
+	arduino_exec		; arduinoからの通知を処理する
+	if stat {
+		dialog arduino_error
+		end
+	}
+	value=digitalRead(id)	; 値を取得する
+
+	redraw 0
+	color 255,255,255:boxf
+	color 0,0,0:pos 0,30
+	mes "arduinoに接続しました("+arduino_firm_ver+")"
+	mes "analogInput#0の内容を表示します。"
+	mes "Pin"+id+" = "+value	; 値を表示する
+	redraw 1
+
+	delay 100
+	goto *main
+
+*owari
+	; 通信を終了する
+	arduino_bye
+	end
+
+
+
+

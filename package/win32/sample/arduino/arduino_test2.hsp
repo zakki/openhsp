@@ -1,0 +1,58 @@
+#include "arduino.as"
+
+	;	arduino LED点滅テスト
+	;	COMポートにarduinoを接続して、必ずポート番号を指定してください
+	;
+	comport = 10		; COMポート番号
+
+	; arduino初期化 (COMポート番号、ボーレート)
+	arduino_init comport, 57600
+	if stat {
+		; エラーがあれば終了
+		dialog arduino_error
+		end
+	}
+
+*startup
+	; 起動チェック
+	arduino_exec
+	if stat {
+		; エラーがあれば終了
+		dialog arduino_error
+		end
+	}
+	wait 1
+	if arduino_ready=0 : goto *startup
+
+	; 起動に成功
+	mes "arduinoに接続しました("+arduino_firm_ver+")"
+
+	button "終了",*owari
+
+	led = 13		; LED接続されたpin番号
+
+	mes "#"+led+"のLEDを点滅させます。"
+
+	pinmode led, MODE_OUTPUT
+
+*main
+	arduino_exec		; arduinoからの通知を処理する
+	if stat {
+		dialog arduino_error
+		end
+	}
+
+	digitalWrite led, D_HIGH	; D_HIGH = 255を設定する
+	delay 1000
+	digitalWrite led, D_LOW		; D_+OW = 0を設定する
+	delay 1000
+	goto *main
+
+*owari
+	; 通信を終了する
+	arduino_bye
+	end
+
+
+
+

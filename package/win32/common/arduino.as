@@ -25,6 +25,12 @@
 #define global MODE_PULLUP   (0x0B)
 #define global MODE_IGNORE   (0x7F)
 
+#define global D_LOW   (0)
+#define global D_HIGH  (255)
+
+#define global A_LOW   (0)
+#define global A_HIGH  (1023)
+
 #define START_SYSEX             0xF0 // start a Sysex message
 #define END_SYSEX               0xF7 // end a Sysex message
 #define PIN_MODE_QUERY          0x72 // ask for current and supported pin modes
@@ -63,10 +69,7 @@
 	poke wbuf,2,END_SYSEX
 	computb wbuf,3
 
-	;	デジタルポートの通知をONにする
-	digitalReport 0,1
-	digitalReport 1,1
-	return
+	return arduino_stat@
 
 
 #deffunc arduino_bye
@@ -92,6 +95,12 @@
 	poke wbuf,4,CAPABILITY_QUERY
 	poke wbuf,5,END_SYSEX
 	computb wbuf,6
+	return
+
+
+#deffunc delay int ms
+
+	await ms
 	return
 
 
@@ -127,7 +136,9 @@
 
 #defcfunc digitalRead int pin
 
-	return (pin_digital(pin>>3)>>(pin&7))&1
+	pinbit=pin&7
+	dvalue=peek( pin_digital, pin>>3 )
+	return (dvalue>>pinbit)&1
 
 #defcfunc analogRead int analogpin
 
@@ -226,7 +237,7 @@
 	comgetc data2 : if stat=0 : return
 	data|=data2<<7
 	poke pin_digital, id, data
-	;mes strf("digital : %d : %d",id,data)
+	;title strf("digital : %d : %x",id,data)
 	return
 
 *rep_analog
@@ -289,6 +300,9 @@
 		arduino_firm_ver@="Version "+peek( buf, 0 )+"."+peek( buf, 1 )
 		;mes arduino_firm_ver@
 		arduino_ready@=1
+		;	デジタルポートの通知をONにする
+		digitalReport 0,1
+		digitalReport 1,1
 		return
 	}
 
