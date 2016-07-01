@@ -138,7 +138,8 @@
 
 	pinbit=pin&7
 	dvalue=peek( pin_digital, pin>>3 )
-	return (dvalue>>pinbit)&1
+	if (dvalue>>pinbit)&1 : return D_HIGH
+	return 0
 
 #defcfunc analogRead int analogpin
 

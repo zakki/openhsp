@@ -1,0 +1,198 @@
+------------------------------------------------------------------------------
+HSP REFERENCE MANUAL                                HSP : Hot Soup Processor  
+ＨＳＰ拡張モジュールリファレンス                          (c) onion software  
+------------------------------------------------------------------------------
+
+・はじめに
+
+	arduino.asは、USB接続されたarduinoデバイスとfirmataプロトコルによる
+	シリアル通信を行なうことで各種ハードウェアの制御を行なうための
+	拡張モジュールです。
+
+	arduino.asにより、arduinoデバイスの機能をHSP3から呼び出すことができ、
+	各種制御をHSPのスクリプトで記述できるようになります。
+
+	arduinoについての詳細は、以下のページを参照してください。
+	https://www.arduino.cc/
+
+
+・利用するための準備
+
+	このモジュールを使用するためには、あらかじめWindowsとUSB接続された
+	arduinoデバイスを適切に設定する必要があります。
+	(arduinoについての基本的な情報、操作方法についてはここでは説明していません。)
+
+	1. arduinoデバイスを用意する
+
+	何はなくともデバイス(基板)が必要です。
+	arduino及び、arduino uno、arduino megaほかArduino IDEで使用可能な
+	互換基板を用意して、Windowsに接続できるようにしてください。
+
+	2. シリアル接続の準備
+
+	arduinoの公式ツールであるArduino IDEをインストールすることで、
+	USB接続されたarduinoデバイスとシリアル通信を行なうことができます。
+	(互換ボードの場合は、別途ドライバーのインストールが必要な場合があります)
+	Windowsの接続する際に、シリアルのCOMポートが割り当てられます。
+	COM4やCOM5など、環境に合わせた番号が付けられるので覚えておいてください。
+
+	3. デバイスにfirmataをアップロードする
+
+	arduinoデバイスがfirmataプロトコルで動作するように、
+	スケッチをアップロードしてください。
+	Arduino IDEから、「ファイル」→「スケッチの例」→「Firmata」→
+	「StandardFirmata」を準備して、アップロード(マイコンボードに書き込む)を
+	行なってください。
+
+	以上で、Windows及びarduinoデバイスの準備が完了します。
+
+
+・利用方法
+
+	arduino.asは、以下のファイルを使用します。
+	それぞれのファイルが最新版になっていることを確認してください。
+
+	hspext.dll  → HSP3インストールフォルダ(hsp3.exeと同じ階層)
+	arduino.as  → HSP3インストールフォルダのcommon内
+
+	hspext.dllは、arduino.asと同時に使用されるプラグインファイルです。
+	スクリプトを実行ファイルにする際には、hspext.dllを同じフォルダに置いて
+	おく必要がありますので注意してください。
+	使用するHSPは、ver3.4以上をお使い下さい。ver2.61やそれ以前のHSPには
+	対応していませんのでご注意下さい。(packfileにDLLを追加することはできません。)
+	EXEファイルを作成した場合でも、hidmon.dllをEXEファイルと同じフォルダ
+	に置かないと動作しません。
+
+	モジュールを利用する場合は、スクリプトの先頭に以下の宣言を追加してください。
+
+		#include "arduino.as"
+
+	以降は、以下の機能を使用することができます。
+
+		arduino_init port, baud		arduino通信の初期化
+		arduino_bye			arduino通信の終了
+		arduino_exec			arduino受信処理の実行
+		delay ms			時間待ち
+		pinmode pin, outmode		ピンのモード設定
+		digitalWrite pin, value		デジタルデータの出力
+		analogWrite pin, value		アナログデータの出力
+		digitalRead pin			デジタルデータの読み出し
+		analogRead analogpin		アナログデータの読み出し
+		analogReport pin, sw		アナログデータの読み出し設定
+		digitalReport port, sw		デジタルデータの読み出し設定
+		analogInterval pin, ms		アナログデータの読み出し間隔設定
+	arduino.asを使用する際には、最初に必ずarduino_initを呼び出して下さい。
+	arduino_init命令には、COMポート番号とボーレートのパラメーターを
+	正しく指定する必要があります。
+	Arduino IDEで通信を行なっているCOMポート番号、及びfirmataで
+	使用しているボーレート(通常は57600)を適切に記述してください。
+
+	arduino_init命令により、USBを経由したシリアル通信が初期化されます。
+	初期化の結果が、システム変数statに反映されます。
+	statが0の場合は、初期化が正常に終了したことを示します。
+	それ以外の場合は、エラーが発生しています。
+	以下のような手順で初期化を行なってください。
+
+		; arduino初期化 (COMポート番号、ボーレート)
+		arduino_init 5, 57600
+		if stat {
+			; エラーがあれば終了
+			dialog arduino_error
+			end
+		}
+		; 起動チェック
+	*startup
+		arduino_exec
+		if stat {
+			; エラーがあれば終了
+			dialog arduino_error
+			end
+		}
+		wait 1
+		if arduino_ready=0 : goto *startup
+
+	; 起動に成功
+	mes "arduinoに接続しました("+arduino_firm_ver+")"
+
+
+	arduino_exec命令は、シリアル通信を監視して、arduinoからのメッセージを
+	処理します。アプリケーションの動作中は、一定時間ごとに実行するようにしてください。
+
+	初期化した後は、pinmode,digitalWrite,analogWriteなどの命令を使用して
+	各種出力を行なうことができます。
+	命令の仕様は、arduino及びfirmataに準拠したものになっています。
+
+	digitalWriteは、以下ように記述します。
+
+		digitalWrite pin, value
+
+	たとえば、「digitalWrite 13, D_HIGH」は、13番のピンをONに設定します。
+	9番のピンをPWMモードでアナログ出力を行なう場合は、以下のようになります。
+
+		pinmode 9, MODE_PWM
+		analogWrite 9, 255
+
+	pinmode命令は、firmataで規定されたいくつかのモードを指定することができます。
+	以下のモードがマクロとして定義されています。
+
+		モード名       内容
+		--------------------------------
+		MODE_INPUT    デジタル入力
+		MODE_OUTPUT   デジタル出力
+		MODE_ANALOG   アナログ出力
+		MODE_PWM      PWM制御(出力)
+		MODE_SERVO    サーボ制御(出力)
+
+	analogWrite命令の出力値は、0～255までの1byte値を指定します。
+	出力用のマクロ定義として、「D_LOW」(0)、「D_HIGH」(255)が定義されています。
+
+	digitalRead関数は、デジタル入力ピンの内容を読み出す関数です。
+	以下のように関数として変数に値を読み出すことが可能です。
+
+		value=digitalRead(10)
+
+	上の例では、ピン10番の入力状態を変数に取得します。
+	結果は、255(ON)か0(OFF)の値になります。
+
+	analogRead関数は、アナログ入力ピンの内容を読み出す関数です。
+
+		analogReport 0, 1	; アナログポート0を読み出す設定
+		value=analogRead(0)	; 実際の値を読み出す
+
+	初期化の後に、analogReport命令を使って指定されたポートの読み出しを
+	開始する必要があるので注意してください。
+	また、analogInterval命令によりアナログポート読み出しの周期を設定することも可能です。
+
+	arduino_bye命令によってUSB制御終了処理を行ないます。
+	これはプログラム終了時に自動的に実行されるため、通常は呼び出す必要は
+	ありません。
+
+
+・注意点
+
+	arduino Firmataは、version2.5を基準として作成されています。
+	それよりも古いFirmataの場合は、正しく動作しない可能性があります。
+
+	arduino IDEのスクリプトに近い命令体系で作られていますが、
+	完全な互換ではありませんので注意してください。
+	不要な通知を避けるため、デフォルトではanalogRead関数によるアナログピン
+	読み出しの通知がOFFになっています。必ず、analogReport命令を使って
+	アナログポートの読み出しを開始する必要があるので注意してください。
+
+
+・更新履歴
+
+	2016/6/28 ver0.1
+
+		最初のバージョン。
+
+
+・著作権とライセンス
+
+	arduino.as及びサンプルは、ONION software/onitamaによって作成されました。
+	最新版は、HSPTV!やOpenHSP等から入手することができます。
+	サンプルやモジュールの改変・配布・公開は制限なく自由に行なって頂いて構いません。
+
+	arduino Firmata
+	https://www.arduino.cc/en/Reference/Firmata
+
