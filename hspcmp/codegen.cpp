@@ -2990,7 +2990,8 @@ int CToken::GenerateCode( char *fname, char *oname, int mode )
 int CToken::GenerateCode( CMemBuf *srcbuf, char *oname, int mode )
 {
 	//		ファイルをHSP3Codeに展開する
-	//		mode			Debug code (0=off 1=on)
+	//		mode			COMP_MODE_DEBUG Debug code (0=off 1=on)
+	//						COMP_MODE_UTF8  utf-8 out (0=off 1=on)
 	//
 	int i,orgcs,res;
 	int adjsize;
@@ -3011,6 +3012,9 @@ int CToken::GenerateCode( CMemBuf *srcbuf, char *oname, int mode )
 
 	cg_debug = mode & COMP_MODE_DEBUG;
 	cg_utf8out = mode & COMP_MODE_UTF8;
+
+
+
 	cg_putvars = hed_cmpmode & CMPMODE_PUTVARS;
 	res = GenerateCodeMain( srcbuf );
 	if ( res ) {

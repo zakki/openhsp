@@ -91,7 +91,6 @@ BEGIN
         MENUITEM SEPARATOR
         MENUITEM "起動オプション(&O)...",              IDM_CMDOPT
         MENUITEM "Debugウインドゥ表示(&D)",            IDM_DEBUG
-		MENUITEM "UTF8で出力(&U)",                IDM_UTF8OUT
     END
     POPUP "ツール(&T)"
     BEGIN

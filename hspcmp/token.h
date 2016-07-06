@@ -38,6 +38,7 @@
 #define CMPMODE_VARINIT 32
 #define CMPMODE_OPTPRM 64
 #define CMPMODE_SKIPJPSPC 128
+#define CMPMODE_UTF8OUT 256
 
 #define CG_FLAG_ENABLE 0
 #define CG_FLAG_DISABLE 1
@@ -101,6 +102,8 @@ typedef struct MACDEF {
 #define HEDINFO_NOGDIP 0x4000		// GDI+による描画を無効にする
 #define HEDINFO_FLOAT32 0x8000		// 実数を32bit floatとして処理する
 #define HEDINFO_ORGRND 0x10000		// 標準の乱数発生を使用する
+#define HEDINFO_UTF8 0x20000		// UTF8ランタイムを使用する(コード識別用)
+#define HEDINFO_HSP64 0x40000		// 64bitランタイムを使用する(コード識別用)
 
 enum ppresult_t {
 	PPRESULT_SUCCESS,				// 成功

@@ -110,7 +110,7 @@ int CHsc3::PreProcessAht( char *fname, void *ahtoption, int mode )
 		tk.SetAHTBuffer( ahtbuf );
 	}
 
-	sprintf( mm,"#AHT processor ver%s / onion software 1997-2015(c)", hspver );
+	sprintf( mm,"#AHT processor ver%s / onion software 1997-2016(c)", hspver );
 	tk.Mes( mm );
 	res = tk.ExpandFile( outbuf, fname, fname );
 	if ( res < 0 ) return -1;
@@ -133,7 +133,7 @@ int CHsc3::PreProcess( char *fname, char *outname, int option, char *rname, void
 	//			         bit2=make packfile(ON)
 	//					 bit3=read AHT file(on)
 	//					 bit4=write AHT file(on)
-	//					 bit5=UTF8(on)
+	//					 bit5=UTF8(input)(入力ソースがUTF8であることを示す)
 	//
 	int res;
 	char mm[512];
@@ -157,7 +157,7 @@ int CHsc3::PreProcess( char *fname, char *outname, int option, char *rname, void
 		tk.SetAHT( (AHTMODEL *)ahtoption );
 	}
 
-	sprintf( mm,"#%s ver%s / onion software 1997-2015(c)", HSC3TITLE, hspver );
+	sprintf( mm,"#%s ver%s / onion software 1997-2016(c)", HSC3TITLE, hspver );
 	tk.Mes( mm );
 	tk.SetAdditionMode( 1 );
 
@@ -208,6 +208,8 @@ int CHsc3::PreProcess( char *fname, char *outname, int option, char *rname, void
 	}
 
 	hed_option = tk.GetHeaderOption();
+	if ( cmpopt & CMPMODE_UTF8OUT ) hed_option |= HEDINFO_UTF8;
+
 	strcpy( hed_runtime, tk.GetHeaderRuntimeName() );
 	lb_info = tk.GetLabelInfo();
 
@@ -240,8 +242,13 @@ int CHsc3::Compile( char *fname, char *outname, int mode )
 	//res = tcomp_main( fname, outname, errbuf, mode, "" );
 
 	int res;
+	int genmode;
 	char mm[512];
 	CToken tk;
+
+	genmode = mode;
+	if ( cmpopt & CMPMODE_UTF8OUT ) genmode |= HSC3_MODE_UTF8;
+
 	if ( lb_info != NULL ) tk.SetLabelInfo( lb_info );		// プリプロセッサのラベル情報
 
 	tk.SetErrorBuf( errbuf );
@@ -250,13 +257,16 @@ int CHsc3::Compile( char *fname, char *outname, int mode )
 	tk.SetHeaderOption( hed_option, hed_runtime );
 	tk.SetCmpOption( cmpopt );
 
-	sprintf( mm,"#%s ver%s / onion software 1997-2015(c)", HSC3TITLE2, hspver );
+	sprintf( mm,"#%s ver%s / onion software 1997-2016(c)", HSC3TITLE2, hspver );
 	tk.Mes( mm );
+	if ( genmode & HSC3_MODE_UTF8 ) {
+		tk.Mes( "#use UTF-8 strings." );
+	}
 
 	if ( outbuf != NULL ) {
-		res = tk.GenerateCode( outbuf, outname, mode );
+		res = tk.GenerateCode( outbuf, outname, genmode );
 	} else {
-		res = tk.GenerateCode( fname, outname, mode );
+		res = tk.GenerateCode( fname, outname, genmode );
 	}
 
 	return res;

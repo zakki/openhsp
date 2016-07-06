@@ -1368,8 +1368,13 @@ static void set_labellist( HWND hList, HWND /*hwndEdit*/ )
 					';' != *wp && ('/' != *wp || '*' != wp[1]) && ('/' != *wp || '/' != wp[1]); wp++)
 				{
 					if( '\"' == *wp && !bEscape ) {
+						bool bDameChk = false;
+						// ダメ文字チェック
+						if (wp - 2 >= buffer)
+							bDameChk = IsDBCSLeadByte((unsigned char) *(wp - 2));
 						// 文字列読み飛ばし
-						if( '{' == *(wp - 1) ) { // 複数行文字列
+						if( ('{' == *(wp - 1)) && (!bDameChk)) { // 複数行文字列
+						//if( '{' == *(wp - 1) ) { // 複数行文字列
 							wp += 2;
 							for(bool bEscape = false; *wp && ('\"' != *wp || '}' != wp[1] || bEscape); ) {
 								if( '\\' == *wp ) {

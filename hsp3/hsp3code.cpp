@@ -2089,7 +2089,7 @@ static int cmdfunc_prog( int cmd )
 		break;
 		}
 	case 0x1c:								// logmes
-		code_stmpstr( code_gets() );
+		code_stmpstr( code_getdsi("") );
 		hspctx->runmode = RUNMODE_LOGMES;
 		return RUNMODE_LOGMES;
 
@@ -3134,7 +3134,10 @@ void code_enableirq( int id, int sw )
 	//
 	IRQDAT *irq;
 	irq = code_getirq( id );
-	if ( sw == 0 ) {
+	if ( sw == 0
+		|| (irq->opt == IRQ_OPT_CALLBACK && irq->callback == NULL)
+		|| (irq->opt != IRQ_OPT_CALLBACK && irq->ptr == NULL)
+	) {
 		irq->flag = IRQ_FLAG_DISABLE;
 	} else {
 		irq->flag = IRQ_FLAG_ENABLE;

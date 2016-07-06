@@ -117,6 +117,8 @@ typedef struct HSPHED
 #define HSPHED_BOOTOPT_NOGDIP 0x4000		// GDI+による描画を無効にする
 #define HSPHED_BOOTOPT_FLOAT32 0x8000		// 実数を32bit floatとして処理する
 #define HSPHED_BOOTOPT_ORGRND 0x10000		// 標準の乱数発生を使用する
+#define HSPHED_BOOTOPT_UTF8 0x20000			// UTF8ランタイムを使用する(コード識別用)
+#define HSPHED_BOOTOPT_HSP64 0x40000		// 64bitランタイムを使用する(コード識別用)
 
 #define HPIDAT_FLAG_TYPEFUNC 0
 #define HPIDAT_FLAG_SELFFUNC -1

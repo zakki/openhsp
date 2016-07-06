@@ -438,7 +438,7 @@ int CToken::GetToken( void )
 	if ((a1>=0x5b)&&(a1<=0x5e)) rval=TK_NONE;
 	if ((a1>=0x7b)&&(a1<=0x7f)) rval=TK_NONE;
 
-	if (a1==':' || a1 == '{' || a1 == '}') {   // multi statement
+	if (a1==':') {   // multi statement
 		wp++;
 		return TK_SEPARATE;
 	}
@@ -2881,6 +2881,9 @@ ppresult_t CToken::PP_CmpOpt( void )
 	if (tstrcmp(optname,"skipjpspc")) {		// skip Japanese Space Code sw
 		i = CMPMODE_SKIPJPSPC;
 	}
+	if (tstrcmp(optname,"utf8")) {			// UTF-8 string output sw
+		i = CMPMODE_UTF8OUT;
+	}
 
 	if ( i == 0 ) {
 		SetError("illegal option name"); return PPRESULT_ERROR;
@@ -2953,6 +2956,12 @@ ppresult_t CToken::PP_BootOpt(void)
 	}
 	if (tstrcmp(optname, "orgrnd")) {			// standard random sw
 		i = HEDINFO_ORGRND;
+	}
+	if (tstrcmp(optname, "utf8")) {				// UTF-8 string sw
+		i = HEDINFO_UTF8;
+	}
+	if (tstrcmp(optname, "hsp64")) {			// 64bit runtime sw
+		i = HEDINFO_HSP64;
 	}
 
 	if (i == 0) {

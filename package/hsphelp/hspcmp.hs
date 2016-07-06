@@ -6,12 +6,12 @@
 %type
 拡張命令
 %ver
-3.4
+3.5
 %note
 hspcmp.asをインクルードすること。
 
 %date
-2014/07/16
+2016/07/06
 %author
 onitama
 %dll

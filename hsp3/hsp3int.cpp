@@ -1471,6 +1471,7 @@ static void *reffunc_intfunc( int *type_res, int arg )
 		aptr = code_getva( &pval );
 		pdat = HspVarCorePtrAPTR( pval, aptr );
 		reffunc_intfunc_ivalue = (int)(size_t)(pdat);
+		HspVarCoreGetBlockSize(pval, pdat, &ctx->strsize);
 		break;
 		}
 	case 0x00d:								// varuse
@@ -1534,8 +1535,8 @@ static void *reffunc_intfunc( int *type_res, int arg )
 
 	case 0x011:								// limit
 		p1 = code_geti();
-		p2 = code_geti();
-		p3 = code_geti();
+		p2 = code_getdi(INT_MIN);
+		p3 = code_getdi(INT_MAX);
 		reffunc_intfunc_ivalue = GetLimit( p1, p2, p3 );
 		break;
 
@@ -1693,8 +1694,8 @@ static void *reffunc_intfunc( int *type_res, int arg )
 		{
 		HSPREAL d1,d2,d3;
 		d1 = code_getd();
-		d2 = code_getd();
-		d3 = code_getd();
+		d2 = code_getdd(-INFINITY);
+		d3 = code_getdd(INFINITY);
 		if ( d1 < d2 ) d1 = d2;
 		if ( d1 > d3 ) d1 = d3;
 		reffunc_intfunc_value = d1;
