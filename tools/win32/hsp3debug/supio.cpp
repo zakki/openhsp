@@ -9,7 +9,47 @@
 #include <string.h>
 #include <stdarg.h>
 #include <direct.h>
+#include <tchar.h>
 #include "supio.h"
+
+//
+//		API用の文字エンコードへ変換
+//
+HSPAPICHAR *chartoapichar(const char *orig, HSPAPICHAR **pphac)
+{
+
+	int reslen;
+	wchar_t *resw;
+	reslen = MultiByteToWideChar(CP_UTF8, 0, orig, -1, (LPWSTR)NULL, 0);
+	resw = (wchar_t*)calloc(reslen + 1, sizeof(wchar_t));
+	MultiByteToWideChar(CP_UTF8, 0, orig, -1, resw, reslen);
+	*pphac = resw;
+	return resw;
+}
+
+void freehac(HSPAPICHAR **pphac)
+{
+	free(*pphac);
+	*pphac = 0;
+}
+
+HSPCHAR *apichartohspchar(const HSPAPICHAR *orig, HSPCHAR **pphc)
+{
+	int plen;
+	HSPCHAR *p;
+	plen = WideCharToMultiByte(CP_UTF8, NULL, orig, -1, NULL, 0, NULL, NULL);
+	p = (HSPCHAR *)calloc(plen + 1, sizeof(HSPCHAR*));
+	WideCharToMultiByte(CP_UTF8, NULL, orig, -1, p, plen, NULL, NULL);
+	*pphc = p;
+	return p;
+}
+
+void freehc(HSPCHAR **pphc)
+{
+	free(*pphc);
+	*pphc = 0;
+}
+
 
 //
 //		basic C I/O support
@@ -25,16 +65,16 @@ void mem_bye( void *ptr ) {
 }
 
 
-int mem_save( char *fname, void *mem, int msize, int seekofs )
+int mem_save( LPTSTR fname, void *mem, int msize, int seekofs )
 {
 	FILE *fp;
 	int flen;
 
 	if (seekofs<0) {
-		fp=fopen(fname,"wb");
+		fp=_tfopen(fname,TEXT("wb"));
 	}
 	else {
-		fp=fopen(fname,"r+b");
+		fp=_tfopen(fname,TEXT("r+b"));
 	}
 	if (fp==NULL) return -1;
 	if ( seekofs>=0 ) fseek( fp, seekofs, SEEK_SET );
@@ -147,7 +187,7 @@ char *dpm_readalloc( char *fname )
 }
 */
 
-void strcase( char *target )
+void strcase( LPTSTR target )
 {
 	//		strをすべて小文字に(全角対応版)
 	//
@@ -158,20 +198,22 @@ void strcase( char *target )
 		a1=*p;if ( a1==0 ) break;
 		*p=tolower(a1);
 		p++;							// 検索位置を移動
+#ifndef HSPUNICODE
 		if (a1>=129) {					// 全角文字チェック
 			if ((a1<=159)||(a1>=224)) p++;
 		}
+#endif
 	}
 }
 
 
-int strcpy2( char *str1, char *str2 )
+int strcpy2( LPTSTR str1, LPTSTR str2 )
 {
 	//	string copy (ret:length)
 	//
-	char *p;
-	char *src;
-	char a1;
+	LPTSTR p;
+	LPTSTR src;
+	TCHAR a1;
 	src = str2;
 	p = str1;
 	while(1) {
@@ -183,12 +225,12 @@ int strcpy2( char *str1, char *str2 )
 }
 
 
-int strcat2( char *str1, char *str2 )
+int strcat2( LPTSTR str1, LPTSTR str2 )
 {
 	//	string cat (ret:length)
 	//
-	char *src;
-	char a1;
+	TCHAR *src;
+	TCHAR a1;
 	int i;
 	src = str1;
 	while(1) {
@@ -200,7 +242,7 @@ int strcat2( char *str1, char *str2 )
 }
 
 
-char *strstr2( char *target, char *src )
+char *strstr2( LPTSTR target, LPTSTR src )
 {
 	//		strstr関数の全角対応版
 	//
@@ -222,15 +264,17 @@ char *strstr2( char *target, char *src )
 			if (a2!=a3) break;
 		}
 		p++;							// 検索位置を移動
+#ifndef HSPUNICODE
 		if (a1>=129) {					// 全角文字チェック
 			if ((a1<=159)||(a1>=224)) p++;
 		}
+#endif
 	}
 	return NULL;
 }
 
 
-char *strchr2( char *target, char code )
+char *strchr2( LPTSTR target, TCHAR code )
 {
 	//		str中最後のcode位置を探す(全角対応版)
 	//
@@ -243,59 +287,61 @@ char *strchr2( char *target, char code )
 		a1=*p;if ( a1==0 ) break;
 		if ( a1==code ) res=(char *)p;
 		p++;							// 検索位置を移動
+#ifndef HSPUNICODE
 		if (a1>=129) {					// 全角文字チェック
 			if ((a1<=159)||(a1>=224)) p++;
 		}
+#endif
 	}
 	return res;
 }
 
 
-void getpath( char *stmp, char *outbuf, int p2 )
+void getpath( LPTSTR stmp, LPTSTR outbuf, int p2 )
 {
-	char *p;
-	char p_drive[_MAX_PATH];
-	char p_dir[_MAX_DIR];
-	char p_fname[_MAX_FNAME];
-	char p_ext[_MAX_EXT];
+	LPTSTR p;
+	TCHAR p_drive[_MAX_PATH];
+	TCHAR p_dir[_MAX_DIR];
+	TCHAR p_fname[_MAX_FNAME];
+	TCHAR p_ext[_MAX_EXT];
 
 	p = outbuf;
 	if (p2&16) strcase( stmp );
-	_splitpath( stmp, p_drive, p_dir, p_fname, p_ext );
-	strcat( p_drive, p_dir );
+	_tsplitpath( stmp, p_drive, p_dir, p_fname, p_ext );
+	_tcscat( p_drive, p_dir );
 	if ( p2&8 ) {
-		strcpy( stmp, p_fname ); strcat( stmp, p_ext );
+		_tcscpy( stmp, p_fname ); _tcscat( stmp, p_ext );
 	} else if ( p2&32 ) {
-		strcpy( stmp, p_drive );
+		_tcscpy( stmp, p_drive );
 	}
 	switch( p2&7 ) {
 	case 1:			// Name only ( without ext )
-		stmp[ strlen(stmp)-strlen(p_ext) ] = 0;
-		strcpy( p, stmp );
+		stmp[ _tcslen(stmp)-_tcslen(p_ext) ] = 0;
+		_tcscpy( p, stmp );
 		break;
 	case 2:			// Ext only
-		strcpy( p, p_ext );
+		_tcscpy( p, p_ext );
 		break;
 	default:		// Direct Copy
-		strcpy( p, stmp );
+		_tcscpy( p, stmp );
 		break;
 	}
 }
 
 
-int makedir( char *name )
+int makedir( LPTSTR name )
 {
-	return _mkdir( name );
+	return _tmkdir( name );
 }
 
 
-int changedir( char *name )
+int changedir( LPTSTR name )
 {
-	return _chdir( name );
+	return _tchdir( name );
 }
 
 
-int delfile( char *name )
+int delfile( LPTSTR name )
 {
 	return DeleteFile( name );
 }
@@ -335,12 +381,12 @@ int strsp_getptr( void )
 	return splc;
 }
 
-int strsp_get( char *srcstr, char *dststr, char splitchr, int len )
+int strsp_get( LPTSTR srcstr, LPTSTR dststr, TCHAR splitchr, int len )
 {
 	//		split string with parameters
 	//
-	char a1;
-	char a2;
+	TCHAR a1;
+	TCHAR a2;
 	int a;
 	int sjflg;
 	a=0;sjflg=0;
@@ -349,8 +395,10 @@ int strsp_get( char *srcstr, char *dststr, char splitchr, int len )
 		a1=srcstr[splc];
 		if (a1==0) break;
 		splc++;
+#ifndef HSPUNICODE
 		if (a1>=0x81) if (a1<0xa0) sjflg++;
 		if (a1>=0xe0) sjflg++;
+#endif
 
 		if (a1==splitchr) break;
 		if (a1==13) {
@@ -359,9 +407,11 @@ int strsp_get( char *srcstr, char *dststr, char splitchr, int len )
 			break;
 		}
 		dststr[a++]=a1;
+#ifndef HSPUNICODE
 		if (sjflg) {
 			dststr[a++]=srcstr[splc++];
 		}
+#endif
 		if ( a>=len ) break;
 	}
 	dststr[a]=0;
@@ -382,26 +432,26 @@ int GetLimit( int num, int min, int max )
 //		windows debug support
 //
 
-void Alert( char *mes )
+void Alert( LPTSTR mes )
 {
-	MessageBox( NULL, mes, "error",MB_ICONINFORMATION | MB_OK );
+	MessageBox( NULL, mes, TEXT("error"),MB_ICONINFORMATION | MB_OK );
 }
 
-void AlertV( char *mes, int val )
+void AlertV( LPTSTR *mes, int val )
 {
-	char ss[128];
-	sprintf( ss, "%s%d",mes,val );
-	MessageBox( NULL, ss, "error",MB_ICONINFORMATION | MB_OK );
+	TCHAR ss[128];
+	_stprintf( ss, TEXT("%s%d"),mes,val );
+	MessageBox( NULL, ss, TEXT("error"),MB_ICONINFORMATION | MB_OK );
 }
 
-void Alertf( char *format, ... )
+void Alertf( LPTSTR format, ... )
 {
-	char textbf[1024];
+	TCHAR textbf[1024];
 	va_list args;
 	va_start(args, format);
-	vsprintf(textbf, format, args);
+	_vstprintf(textbf, format, args);
 	va_end(args);
-	MessageBox( NULL, textbf, "error",MB_ICONINFORMATION | MB_OK );
+	MessageBox( NULL, textbf, TEXT("error"),MB_ICONINFORMATION | MB_OK );
 }
 
 

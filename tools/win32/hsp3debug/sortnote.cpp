@@ -7,6 +7,7 @@
 #include <stdio.h>
 #include <string.h>
 #include <windows.h>
+#include <tchar.h>
 #include "supio.h"
 
 typedef struct {
@@ -35,11 +36,11 @@ static void BubbleSortStr( SORTDATA *data, int nmem, int asdes )
 	for (i = 0; i < nmem - 1; i++) {
 	  for (j = nmem - 1; j >= i + 1; j--) {
 	    if (asdes == 0) {
-		  if ( lstrcmp( (char *)data[j].key, (char *)data[j-1].key)<=0 )
+		  if ( lstrcmp( (LPTSTR)data[j].key, (LPTSTR)data[j-1].key)<=0 )
 				swap(&data[j], &data[j-1]);
 		}
 		else {
-		  if ( lstrcmp( (char *)data[j].key, (char *)data[j-1].key)>=0 )
+		  if ( lstrcmp( (LPTSTR)data[j].key, (LPTSTR)data[j-1].key)>=0 )
 				swap(&data[j], &data[j-1]);
 		}
 	  }
@@ -47,11 +48,11 @@ static void BubbleSortStr( SORTDATA *data, int nmem, int asdes )
 }
 
 
-static int NoteToData( char *adr, SORTDATA *data )
+static int NoteToData( LPTSTR adr, SORTDATA *data )
 {
 	int line;
-	char *p;
-	char a1;
+	LPTSTR p;
+	TCHAR a1;
 	p=adr;
 	line=0;
 	data[line].key=(int)p;
@@ -74,11 +75,11 @@ static int NoteToData( char *adr, SORTDATA *data )
 }
 
 
-static int GetNoteLines( char *adr )
+static int GetNoteLines( LPTSTR adr )
 {
 	int line;
-	char *p;
-	char a1;
+	LPTSTR p;
+	TCHAR a1;
 	p=adr;
 	line=0;
 
@@ -96,15 +97,15 @@ static int GetNoteLines( char *adr )
 }
 
 
-static void DataToNote( SORTDATA *data, char *adr, int num )
+static void DataToNote( SORTDATA *data, LPTSTR adr, int num )
 {
 	int a;
 	int len;
-	char *p;
-	char *s;
+	LPTSTR p;
+	LPTSTR s;
 	p=adr;
 	for(a=0;a<num;a++) {
-		s=(char *)data[a].key;
+		s=(LPTSTR)data[a].key;
 		len=lstrlen( s );
 		if ( len>0 ) {
 			lstrcpy( p, s );
@@ -132,20 +133,20 @@ static void DataIni( int size )
 }
 
 
-void SortNote( char *str )
+void SortNote( LPTSTR str )
 {
 	int i,len;
-	char *p;
-	char *stmp;
+	LPTSTR p;
+	LPTSTR stmp;
 
 	p = str;
-	len = (int)strlen(str)+4;
+	len = (int)_tcslen(str)+4;
 
 	i=GetNoteLines(p);
 	if (i<=0) return;
 
 	DataIni( i );
-	stmp=(char *)malloc( len );
+	stmp=(LPTSTR)malloc( len );
 
 	i = NoteToData( p, dtmp );
 	BubbleSortStr( dtmp, i, 1 );

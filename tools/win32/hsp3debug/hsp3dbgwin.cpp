@@ -10,6 +10,7 @@
 #include <windows.h>
 #include <windowsx.h>
 #include <commctrl.h>
+#include <tchar.h>
 
 #include "supio.h"
 #include "resource.h"
@@ -27,7 +28,7 @@ static HINSTANCE myinst;
 #define ID_BTN3 1002
 
 #define TABDLGMAX 4
-#define myClass "HSP3DEBUG"
+#define myClass TEXT("HSP3DEBUG")
 
 #define DIALOG_X0 5
 #define DIALOG_Y0 5
@@ -77,7 +78,7 @@ int WINAPI DllMain (HINSTANCE hInstance, DWORD fdwReason, PVOID pvReserved) {
 
 //----------------------------------------------------------
 
-static HWND GenerateObj( HWND parent, char *name, char *ttl, int x, int y, int sx, int sy, int menu, HFONT font )
+static HWND GenerateObj( HWND parent, LPTSTR name, LPTSTR ttl, int x, int y, int sx, int sy, int menu, HFONT font )
 {
 	HWND h;
 	h = CreateWindow( name, ttl,
@@ -99,12 +100,12 @@ static void TabGeneralInit( void )
 	col.mask = LVCF_FMT | LVCF_TEXT | LVCF_WIDTH | LVCF_SUBITEM;
 	col.fmt = LVCFMT_LEFT;
 	col.cx = 100;
-	col.pszText = "項目";
+	col.pszText = TEXT("項目");
 	col.iSubItem = 0;
 	ListView_InsertColumn( g_hGenList , 0 , &col);
 	col.cx = 400;
 	col.iSubItem = 1;
-	col.pszText = "内容";
+	col.pszText = TEXT("内容");
 	ListView_InsertColumn( g_hGenList , 1 , &col);
 }
 
@@ -113,14 +114,17 @@ static void TabGeneralReset( void )
 {
 	LV_ITEM item;
 	int chk, tgmax;
-	char *p;
-	char name[256];
-	char val[512];
+	char *p0;
+	LPTSTR p;
+	TCHAR name[256];
+	TCHAR val[512];
+	HSPAPICHAR *hactmp1;
 
 	ListView_DeleteAllItems( g_hGenList );
 	tgmax = 0;
 
-	p = g_debug->get_value( DEBUGINFO_GENERAL );		// HSP側に問い合わせ
+	p0 = g_debug->get_value(DEBUGINFO_GENERAL);
+	p = chartoapichar(p0,&hactmp1);		// HSP側に問い合わせ
 	strsp_ini();
 	while(1) {
 		chk = strsp_get( p, name, 0, 255 );
@@ -139,25 +143,30 @@ static void TabGeneralReset( void )
 
 		tgmax++;
 	}
-	g_debug->dbg_close( p );
+	g_debug->dbg_close( p0 );
+	freehac(&hactmp1);
 }
 
 
 static void CurrnetUpdate( void )
 {
-	char tmp[512];
-	char *fn;
-	char *p;
+	TCHAR tmp[512];
+	LPTSTR fn;
+	char *p0;
+	LPTSTR p;
+	HSPAPICHAR *hactmp1;
 
 	g_debug->dbg_curinf();
-	fn = g_debug->fname;
-	if ( fn == NULL ) fn = "???";
-	sprintf( tmp,"%s\n( line:%d )", fn, g_debug->line );
+	fn = chartoapichar(g_debug->fname,&hactmp1);
+	if ( fn == NULL ) fn = TEXT("???");
+	_stprintf( tmp,TEXT("%s\n( line:%d )"), fn, g_debug->line );
 	SetWindowText( g_hSttCtrl, tmp );
+	freehac(&hactmp1);
 
-	p = g_debug->dbg_callstack();
-	SetWindowText( g_hCallstackEdit, p );
-	g_debug->dbg_close( p );
+	p0 = g_debug->dbg_callstack();
+	SetWindowText( g_hCallstackEdit, chartoapichar(p0,&hactmp1) );
+	g_debug->dbg_close( p0 );
+	freehac(&hactmp1);
 }
 
 
@@ -175,8 +184,9 @@ static int GetTabVarsOption( void )
 
 static void TabVarsReset( void )
 {
-	char *p;
-	char name[256];
+	char *p0;
+	LPTSTR p;
+	TCHAR name[256];
 	int chk;
 	int opt;
 
@@ -188,7 +198,8 @@ static void TabVarsReset( void )
 	SetWindowLong( g_hVarList, GWL_STYLE, style );
 */
 	SendMessage( g_hVarList, LB_RESETCONTENT, 0, 0L );
-	p = g_debug->get_varinf( NULL, opt );					// HSP側に問い合わせ
+	p0 = g_debug->get_varinf( NULL, opt );					// HSP側に問い合わせ
+	chartoapichar(p0, &p);
 	if ( opt & 1 ) SortNote( p );
 
 	strsp_ini();
@@ -197,25 +208,30 @@ static void TabVarsReset( void )
 		if ( chk == 0 ) break;
 		SendMessage( g_hVarList, LB_INSERTSTRING, 0, (long)name );
 	}
-	g_debug->dbg_close( p );
+	freehac(&p);
+	g_debug->dbg_close( p0 );
 }
 
 
 static void TabVarsUpdate( void )
 {
-	char tmp[256];
+	TCHAR tmp[256];
 	char *p;
 	int i;
+	HSPCHAR *hctmp1;
+	HSPAPICHAR *hactmp1;
 	i = (int)SendMessage( g_hVarList, LB_GETCURSEL,0,0L );
 	if ( i < 0 ) return;
 	SendMessage( g_hVarList, LB_GETTEXT, i, (LPARAM)tmp );
-	p = g_debug->get_varinf( tmp, GetTabVarsOption() );		// HSP側に問い合わせ
-	SetWindowText( g_hVarEdit, p );
+	p = g_debug->get_varinf( apichartohspchar(tmp,&hctmp1), GetTabVarsOption() );		// HSP側に問い合わせ
+	freehc(&hctmp1);
+	SetWindowText( g_hVarEdit, chartoapichar(p,&hactmp1) );
+	freehac(&hactmp1);
 	g_debug->dbg_close( p );
 }
 
 
-static void TabLogAdd( char *str )
+static void TabLogAdd( LPTSTR str )
 {
 	int size;
 	size = Edit_GetTextLength( g_hLogEdit );
@@ -321,34 +337,34 @@ LRESULT CALLBACK DlgProc(HWND hDlg, UINT msg, WPARAM wp, LPARAM lp)
 	case WM_CREATE:
 
 		hf = (HFONT)GetStockObject( DEFAULT_GUI_FONT );
-		g_hTabCtrl = GenerateObj( hDlg, WC_TABCONTROL, "", DIALOG_X0, DIALOG_Y0, DIALOG_X1, DIALOG_Y2, IDU_TAB, hf );
-		g_hSttCtrl = GenerateObj( hDlg, "static", "", DIALOG_X0+180, DIALOG_Y1+4, DIALOG_X1-180, 48, 0, hf );
-		g_hBtn1 = GenerateObj( hDlg, "button", "実行", DIALOG_X0+8, DIALOG_Y1+4, 80, 24, ID_BTN1, hf );
-		g_hBtn2 = GenerateObj( hDlg, "button", "次行", DIALOG_X0+88, DIALOG_Y1+4, 40, 24, ID_BTN2, hf );
-		g_hBtn3 = GenerateObj( hDlg, "button", "停止", DIALOG_X0+128, DIALOG_Y1+4, 40, 24, ID_BTN3, hf );
+		g_hTabCtrl = GenerateObj( hDlg, WC_TABCONTROL, TEXT(""), DIALOG_X0, DIALOG_Y0, DIALOG_X1, DIALOG_Y2, IDU_TAB, hf );
+		g_hSttCtrl = GenerateObj( hDlg, TEXT("static"), TEXT(""), DIALOG_X0+180, DIALOG_Y1+4, DIALOG_X1-180, 48, 0, hf );
+		g_hBtn1 = GenerateObj( hDlg, TEXT("button"), TEXT("実行"), DIALOG_X0+8, DIALOG_Y1+4, 80, 24, ID_BTN1, hf );
+		g_hBtn2 = GenerateObj( hDlg, TEXT("button"), TEXT("次行"), DIALOG_X0+88, DIALOG_Y1+4, 40, 24, ID_BTN2, hf );
+		g_hBtn3 = GenerateObj( hDlg, TEXT("button"), TEXT("停止"), DIALOG_X0+128, DIALOG_Y1+4, 40, 24, ID_BTN3, hf );
 
 		tc.mask = TCIF_TEXT;
-		tc.pszText = "全般";
+		tc.pszText = TEXT("全般");
 		TabCtrl_InsertItem(g_hTabCtrl , 0, &tc);
-		g_hTabSheet[0] = CreateDialog( myinst, "T_GENERAL",
+		g_hTabSheet[0] = CreateDialog( myinst, TEXT("T_GENERAL"),
 			hDlg, (DLGPROC) TabGeneralProc );
 
 		tc.mask = TCIF_TEXT;
-		tc.pszText = "変数";
+		tc.pszText = TEXT("変数");
 		TabCtrl_InsertItem(g_hTabCtrl , 1, &tc);
-		g_hTabSheet[1] = CreateDialog( myinst, "T_VAR",
+		g_hTabSheet[1] = CreateDialog( myinst, TEXT("T_VAR"),
 			hDlg, (DLGPROC) TabVarsProc );
 
 		tc.mask = TCIF_TEXT;
-		tc.pszText = "ログ";
+		tc.pszText = TEXT("ログ");
 		TabCtrl_InsertItem(g_hTabCtrl , 2, &tc);
-		g_hTabSheet[2] = CreateDialog( myinst, "T_LOG",
+		g_hTabSheet[2] = CreateDialog( myinst, TEXT("T_LOG"),
 			hDlg, (DLGPROC) TabLogProc );
 
 		tc.mask = TCIF_TEXT;
-		tc.pszText = "コールスタック";
+		tc.pszText = TEXT("コールスタック");
 		TabCtrl_InsertItem(g_hTabCtrl , 3, &tc);
-		g_hTabSheet[3] = CreateDialog( myinst, "T_CALL",
+		g_hTabSheet[3] = CreateDialog( myinst, TEXT("T_CALL"),
 			hDlg, (DLGPROC) TabCallstackProc );
 
 		//GetClientRect(g_hTabCtrl, &rt);
@@ -384,11 +400,11 @@ LRESULT CALLBACK DlgProc(HWND hDlg, UINT msg, WPARAM wp, LPARAM lp)
 		switch (LOWORD(wp)) {
 		case ID_BTN1:
 			g_debug->dbg_set( HSPDEBUG_RUN );
-			SetWindowText( g_hSttCtrl, "" );
+			SetWindowText( g_hSttCtrl, TEXT("") );
 			break;
 		case ID_BTN2:
 			g_debug->dbg_set( HSPDEBUG_STEPIN );
-			SetWindowText( g_hSttCtrl, "" );
+			SetWindowText( g_hSttCtrl, TEXT("") );
 			break;
 		case ID_BTN3:
 			g_debug->dbg_set( HSPDEBUG_STOP );
@@ -434,7 +450,7 @@ EXPORT BOOL WINAPI debugini ( HSP3DEBUG *p1, int p2, int p3, int p4 )
 	RegisterClass(&wndclass);
 
 	hDlgWnd = CreateWindow( myClass,
-		"Debug Window",
+		TEXT("Debug Window"),
 		WS_CAPTION | WS_OVERLAPPED | WS_BORDER | WS_VISIBLE,
 		dispx-WND_SX, 0,
 		WND_SX, WND_SY,
@@ -447,7 +463,7 @@ EXPORT BOOL WINAPI debugini ( HSP3DEBUG *p1, int p2, int p3, int p4 )
 
 	//hDlgWnd = CreateDialog( myinst, "HSP3DEBUG", NULL, (DLGPROC)DlgProc );
 	if ( hDlgWnd == NULL ) {
-		MessageBox( NULL, "Debug window initalizing failed.", "Error", 0 );
+		MessageBox( NULL, TEXT("Debug window initalizing failed."), TEXT("Error"), 0 );
 	}
 	ShowWindow( hDlgWnd, SW_SHOW );
     UpdateWindow( hDlgWnd );
@@ -465,11 +481,13 @@ EXPORT BOOL WINAPI debug_notice ( HSP3DEBUG *p1, int p2, int p3, int p4 )
 	//
 	int cur;
 	HSPCTX *ctx;
+	HSPAPICHAR *hactmp1;
 
 	if ( p2 == 1 ) {
 		ctx = (HSPCTX *)p1->hspctx;
 		strcat( ctx->stmp, "\r\n" );
-		TabLogAdd( ctx->stmp );
+		TabLogAdd( chartoapichar(ctx->stmp,&hactmp1) );
+		freehac(&hactmp1);
 		return 0;
 	}
 

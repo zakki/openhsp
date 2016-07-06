@@ -46,6 +46,7 @@
 #define IDM_DEBUG                       1512
 #define IDM_HSPEXTMACRO                 1513
 #define IDM_HSPCLMODE                   1514
+#define IDM_UTF8OUT                     1515
 #define IDM_PACKED                      1600
 #define IDM_PACKGO                      1601
 #define IDM_MKEXE1                      1602

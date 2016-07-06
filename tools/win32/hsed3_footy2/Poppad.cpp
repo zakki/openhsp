@@ -324,6 +324,7 @@ int		hsp_wy;
 int		hsp_wd;
 int		hsp_orgpath;
 int		hsp_debug;
+int		hsp_utf8out;
 int		hsp_extobj;
 int		hsp_helpmode;
 
@@ -724,7 +725,7 @@ static int mkobjfile( char *fname )
 	hsc_ini( 0,(int)srcfn, 0,0 );
 	hsc_refname( 0,(int)myfile(), 0,0 );
 	hsc_objname( 0,(int)tmpst, 0,0 );
-	a=hsc_comp( 0,0,0,0 );
+	a=hsc_comp( hsp_utf8out,0,0,0 );
 	//a=tcomp_main( myfile(), srcfn, tmpst, errbuf, 0 );
 	return a;
 }
@@ -743,7 +744,7 @@ static int mkobjfile2( char *fname )
 	hsc_ini( 0,(int)srcfn, 0,0 );
 	hsc_refname( 0,(int)myfile(), 0,0 );
 	hsc_objname( 0,(int)tmpst, 0,0 );
-	a=hsc_comp( 0,0,0,0 );
+	a=hsc_comp( hsp_utf8out,0,0,0 );
 	//a=tcomp_main( myfile(), srcfn, tmpst, errbuf, 0 );
 	return a;
 }
@@ -763,7 +764,7 @@ static int mkexefile2( char *fname )
 	hsc_ini( 0,(int)srcfn, 0,0 );
 	hsc_refname( 0,(int)myfile(), 0,0 );
 	hsc_objname( 0,(int)tmpst, 0,0 );
-	a=hsc_comp( 0,4,0,0 );
+	a=hsc_comp( hsp_utf8out,4,0,0 );
 	if ( a ) return a;
 
 	sprintf( ftmp, "%s\\%s.dpm", szExeDir, srcfn );
@@ -1890,6 +1891,8 @@ int poppad_menupop( WPARAM wParam, LPARAM lParam )
 			CheckMenuItem ((HMENU) wParam, IDM_FULLSCR, iEnable) ;
 			iEnable = hsp_debug ? MF_CHECKED : MF_UNCHECKED ;
 			CheckMenuItem ((HMENU) wParam, IDM_DEBUG, iEnable) ;
+			iEnable = hsp_utf8out ? MF_CHECKED : MF_UNCHECKED ;
+			CheckMenuItem ((HMENU) wParam, IDM_UTF8OUT, iEnable) ;
 //			iEnable = hsp_extmacro ? MF_CHECKED : MF_UNCHECKED ;
 //			CheckMenuItem ((HMENU) wParam, IDM_HSPEXTMACRO, iEnable) ;
 			iEnable = hsp_clmode ? MF_CHECKED : MF_UNCHECKED ;
@@ -2370,7 +2373,7 @@ LRESULT CALLBACK EditProc (HWND hwnd, UINT iMsg, WPARAM wParam, LPARAM lParam)
 					hsc_refname( 0,(int)compfile, 0,0 );
 					strcpy( objname,"obj" );
 					hsc_objname( 0,(int)objname, 0,0 );
-					a=hsc_comp( 1, 0, hsp_debug, 0 );
+					a=hsc_comp( 1 | hsp_utf8out, 0, hsp_debug, 0 );
 					if (a) {
 						err_prt(hwnd);
 						return 0;
@@ -2401,7 +2404,7 @@ LRESULT CALLBACK EditProc (HWND hwnd, UINT iMsg, WPARAM wParam, LPARAM lParam)
 						strcat( hsp_extstr,".hsp" );
 						hsc_ini( 0,(int)hsp_extstr, 0,0 );
 						hsc_objname( 0,(int)objname, 0,0 );
-						a=hsc_comp( 0,0,0,0 );
+						a=hsc_comp( hsp_utf8out,0,0,0 );
 						//a=tcomp_main( hsp_extstr, hsp_extstr, objname, errbuf,0 );
 						if (a) { err_prt(hwnd);return 0; }
 #ifdef JPNMSG
@@ -2415,7 +2418,7 @@ LRESULT CALLBACK EditProc (HWND hwnd, UINT iMsg, WPARAM wParam, LPARAM lParam)
 					strcat( hsp_extstr,".hsp" );
 					hsc_ini( 0,(int)hsp_extstr, 0,0 );
 					hsc_objname( 0,(int)objname, 0,0 );
-					a=hsc_comp( 1, 0, hsp_debug, 0 );
+					a=hsc_comp( 1 | hsp_utf8out, 0, hsp_debug, 0 );
 					//a=tcomp_main( hsp_extstr, hsp_extstr, objname, errbuf,1 );
 					if (a) { err_prt(hwnd);return 0; }
 					if (hsp_clmode==0) { hsprun(objname); } else { hsprun_cl(objname); }
@@ -2458,6 +2461,10 @@ LRESULT CALLBACK EditProc (HWND hwnd, UINT iMsg, WPARAM wParam, LPARAM lParam)
 
 				case IDM_DEBUG:
 					hsp_debug^=1;
+					return 0;
+
+				case IDM_UTF8OUT:
+					hsp_utf8out^=4;
 					return 0;
 
 				case IDM_CMDOPT:

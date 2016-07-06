@@ -2,7 +2,7 @@
 #ifndef __sortnote_h
 #define __sortnote_h
 
-void SortNote( char *str );
+void SortNote( LPTSTR str );
 
 #endif
 
