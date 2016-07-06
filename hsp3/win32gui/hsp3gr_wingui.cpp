@@ -26,7 +26,7 @@
 #include "../hsp3code.h"
 #include "../hsp3debug.h"
 
-#ifdef HSPUNICODE
+#ifdef HSPUTF8
 #pragma execution_character_set("utf-8")
 #endif
 
@@ -62,7 +62,6 @@ static void ExecFile( char *stmp, char *ps, int mode )
 	int i,j;
 	HSPAPICHAR *hactmp1;
 	HSPAPICHAR *hactmp2;
-	int plen;
 	char *p;
 	j=SW_SHOWDEFAULT;if (mode&2) j=SW_SHOWMINIMIZED;
 
@@ -206,7 +205,6 @@ static int sysinfo( int p2 )
 	//
 	int fl;
 	TCHAR pp[128];
-	LPTSTR p1;
 	char *p3;
 	BOOL success;
 	DWORD version;
@@ -227,42 +225,48 @@ static int sysinfo( int p2 )
 	if (p2&32) {
 		GlobalMemoryStatus(&ms);
 		mss=(DWORD *)&ms;
-		*(int *)p1 = (int)mss[p2&15];
+		*(int *)p3 = (int)mss[p2&15];
 		return fl;
 	}
 
 	switch(p2) {
 	case 0:
-		_tcscpy(p1,TEXT("Windows"));
+		_tcscpy((TCHAR*)p3,TEXT("Windows"));
 		version = GetVersion();
-		if ((version & 0x80000000) == 0) _tcscat(p1,TEXT("NT"));
-									else _tcscat(p1,TEXT("9X"));
+		if ((version & 0x80000000) == 0) _tcscat((TCHAR*)p3,TEXT("NT"));
+									else _tcscat((TCHAR*)p3,TEXT("9X"));
 /*
 	rev 43
 	mingw : warning : âºà¯êîint é¿à¯êîlong unsigned
 	Ç…ëŒèà
 */
 		_stprintf( pp,TEXT(" ver%d.%d"), static_cast< int >( version&0xff ), static_cast< int >( (version&0xff00)>>8 ) );
-		_tcscat( p1, pp );
-		apichartohspchar(p1,&p);
+		_tcscat( (TCHAR*)p3, pp );
+		apichartohspchar((TCHAR*)p3,&p);
 		plen = strlen(p);
-		memcpy(p3,p,plen);
+		if (p3 != p){
+			memcpy(p3, p, plen);
+		}
 		freehc(&p);
 		fl=HSPVAR_FLAG_STR;
 		break;
 	case 1:
-		success = GetUserName( p1,&size );
-		apichartohspchar(p1,&p);
+		success = GetUserName( (TCHAR*)p3,&size );
+		apichartohspchar((TCHAR*)p3,&p);
 		plen = strlen(p);
-		memcpy(p3,p,plen);
+		if (p3 != p){
+			memcpy(p3, p, plen);
+		}
 		freehc(&p);
 		fl = HSPVAR_FLAG_STR;
 		break;
 	case 2:
-		success = GetComputerName(p1, &size );
-		apichartohspchar(p1,&p);
+		success = GetComputerName((TCHAR*)p3, &size );
+		apichartohspchar((TCHAR*)p3,&p);
 		plen = strlen(p);
-		memcpy(p3,p,plen);
+		if (p3 != p){
+			memcpy(p3, p, plen);
+		}
 		freehc(&p);
 		fl = HSPVAR_FLAG_STR;
 		break;

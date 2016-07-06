@@ -46,7 +46,6 @@
 //#define HSPEMSCRIPTEN	// EMSCRIPTEN version flag
 //#define HSP64			// 64bit compile flag
 //#define HSPUTF8		// UTF8使用フラグ
-//#define HSPUNICODE	// Unicode使用フラグ
 
 //
 //		環境フラグに付加されるオプション

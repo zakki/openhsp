@@ -35,7 +35,7 @@
 #pragma comment(lib,"winmm.lib")
 #endif
 
-#ifdef HSPUNICODE
+#ifdef HSPUTF8
 #pragma execution_character_set("utf-8")
 #endif
 
@@ -291,7 +291,7 @@ int MMMan::Play( int num )
 			if (a==0) prm|=SND_ASYNC;
 			if (a==1) prm|=SND_LOOP | SND_ASYNC;
 			if (a==2) prm|=SND_SYNC;
-#ifdef HSPUNICODE
+#ifdef HSPUTF8
 			sndPlaySound( chartoapichar((char*)mmm->mempt,&hactmp1),prm );
 			freehac(&hactmp1);
 #else

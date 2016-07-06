@@ -975,7 +975,7 @@ static int cmdfunc_ctrlcmd( int cmd )
 		break;
 		}
 #endif	// HSP_COM_UNSUPPORTED
-#ifndef HSPUNICODE
+#ifndef HSPUTF8
 		throw (HSPERR_UNSUPPORTED_FUNCTION);
 #else
 	case 0x0c:								//  cnv8tow
@@ -990,7 +990,7 @@ static int cmdfunc_ctrlcmd( int cmd )
 		ps = code_gets();
 		chartoapichar(ps, &hactmp1);
 		sizew = wcslen(hactmp1);
-		if (size < sizew*sizeof(HSPAPICHAR)){
+		if (size < sizew*(int)sizeof(HSPAPICHAR)){
 			memcpy(ptr, hactmp1, size);
 			hspctx->stat = -sizew*sizeof(HSPAPICHAR);
 		}
@@ -1097,7 +1097,7 @@ static void *reffunc_ctrlfunc( int *type_res, int arg )
 		}
 
 	case 0x104:								//  cnvwto8
-#ifndef HSPUNICODE
+#ifndef HSPUTF8
 		throw (HSPERR_UNSUPPORTED_FUNCTION);
 #else
 		{

@@ -105,7 +105,7 @@ int hsp3win_debugopen( void )
 #ifdef HSP64
 	h_dbgwin = LoadLibrary( "hsp3debug_64.dll" );
 #else
-#ifndef HSPUNICODE
+#ifndef HSPUTF8
 	h_dbgwin = LoadLibrary(TEXT("hsp3debug.dll"));
 #else
 	h_dbgwin = LoadLibrary(TEXT("hsp3debug_u8.dll"));
@@ -272,10 +272,13 @@ int hsp3win_init( HINSTANCE hInstance, char *startfile )
 	int a,orgexe, mode;
 	int hsp_sum, hsp_dec;
 	char a1;
-	char *fname;
+#ifdef HSPDEBUG
+	char fname[_MAX_PATH + 1];
+#endif
+#ifndef HSPDEBUG
 	TCHAR fnamew[_MAX_PATH+1];
 	TCHAR fnamew2[_MAX_PATH + 1];
-	int fnamelen;
+#endif
 	char *ss;
 	LPTSTR cl;
 	int sslen;

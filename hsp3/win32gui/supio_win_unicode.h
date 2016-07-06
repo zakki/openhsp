@@ -81,7 +81,7 @@ void TrimCode( char *p, int code );
 void TrimCodeL( char *p, int code );
 void TrimCodeR( char *p, int code );
 
-void ReplaceSetMatch( char *src, char *match );
+void ReplaceSetMatch(char *src, char *match, char *result, int in_src, int in_match, int in_result);
 char *ReplaceStr( char *repstr );
 int ReplaceDone( void );
 

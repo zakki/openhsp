@@ -197,7 +197,7 @@ static void Object_StrInput( HSPOBJINFO *info, int wparam )
 		bigbuf = minp;
 		val = GetDlgItemText( hwnd, cid, minp, 0x7fff );
 	} else {
-		bigbuf = sbAlloc( size+1 );
+		bigbuf = (HSPAPICHAR*)sbAlloc( size+1 );
 		val = GetDlgItemText( hwnd, cid, bigbuf, size );
 	}
 
@@ -236,8 +236,6 @@ static void Object_SetMultiBox( HSPOBJINFO *info, int type, void *ptr )
 	UINT m_ini,m_add;
 	HWND hw;
 	CStrNote note;
-	char *p;
-	int plen;
 	HSPAPICHAR *hactmp1;
 
 	hw = info->hCld;
@@ -251,8 +249,7 @@ static void Object_SetMultiBox( HSPOBJINFO *info, int type, void *ptr )
 			m_ini=LB_RESETCONTENT;
 			m_add=LB_ADDSTRING;
 		}
-		apichartohspchar((HSPAPICHAR*)ptr,&p);
-		note.Select( p );
+		note.Select( (HSPCHAR*)ptr );
 		max = note.GetMaxLine();
 		SendMessage( hw, m_ini, 0, 0L );
 		for( i=0;i<max;i++ ) {
@@ -260,7 +257,6 @@ static void Object_SetMultiBox( HSPOBJINFO *info, int type, void *ptr )
 			SendMessage( hw, m_add, 0, (long)chartoapichar(res,&hactmp1) );
 			freehac(&hactmp1);
 		}
-		freehc(&p);
 		break;
 	case TYPE_INUM:
 		if ( info->owid ) {

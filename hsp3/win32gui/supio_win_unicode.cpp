@@ -20,7 +20,7 @@
 #include "../dpmread.h"
 #include "../strbuf.h"
 
-#ifdef HSPUNICODE
+#ifdef HSPUTF8
 #pragma execution_character_set("utf-8")
 #endif
 
@@ -789,22 +789,18 @@ static	char *s_result;
 static	int len_result;
 static	int reptime;
 
-void ReplaceSetMatch( char *src, char *match )
+void ReplaceSetMatch(char *src, char *match, char *result, int in_src, int in_match, int in_result)
 {
 	//		置き換え元、置き換え対象のセット
+	//		(あらかじめメモリバッファの確保が必要)
 	//
 	s_buffer = src;
-	len_buffer = (int)strlen( s_buffer );
-	len_result = len_buffer + 0x4000;
-	if ( len_result < 0x8000 ) len_result = 0x8000;
-	s_result = sbAlloc( len_result );
-	*s_result = 0;
-
-	len_match = (int)strlen( match );
-	s_match = sbAlloc( len_match + 1 );
-	memcpy( s_match, match, len_match + 1 );
+	s_match = match;
+	s_result = result;
+	len_buffer = in_src;
+	len_match = in_match;
+	len_result = in_result;
 }
-
 
 char *ReplaceStr( char *repstr )
 {
@@ -829,7 +825,6 @@ char *ReplaceStr( char *repstr )
 		a1 = (unsigned char)*p;
 		if ( a1 == 0 ) break;
 
-#ifndef HSPUTF8
 		utf8cnt=0;
 		if (a1>=128) {					// 多バイト文字チェック
 			if (a1>=192) utf8cnt++;
@@ -838,7 +833,6 @@ char *ReplaceStr( char *repstr )
 			if (a1>=248) utf8cnt++;
 			if (a1>=252) utf8cnt++;
 		}
-#endif
 
 		//	比較する
 		psize = 0; csize = 1;
@@ -866,14 +860,12 @@ char *ReplaceStr( char *repstr )
 		} else {					// 置き換えなし
 			s_result[cursize++] = a1;
 			p++;
-#ifndef HSPUTF8
 			if ( utf8cnt>0 ) {
 				while (utf8cnt>0){
 					s_result[cursize++] = *p++;
 					utf8cnt--;
 				}
 			}
-#endif
 		}
 
 	}
@@ -885,8 +877,6 @@ int ReplaceDone( void )
 {
 	//		置き換えの後処理
 	//
-	sbFree( s_match );
-	sbFree( s_result );
 	return reptime;
 }
 

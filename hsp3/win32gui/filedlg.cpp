@@ -102,7 +102,7 @@ void fd_ini( HWND hwnd, char *extname, char *extinfo )
 		for(fext_next = fext; *fext_next &&
 			*DELIMITER_PIPE != *fext_next && *DELIMITER_CR != *fext_next;
 			fext_next++) {
-#ifndef HSPUNICODE
+#ifndef HSPUTF8
 			// SJISの1バイト目チェック＆2文字目を飛ばすときの'\0'チェック
 			if( is_sjis1(*fext_next) && fext_next[1] )
 				fext_next++;
@@ -111,7 +111,7 @@ void fd_ini( HWND hwnd, char *extname, char *extinfo )
 		for(finf_next = finf; *finf_next &&
 			*DELIMITER_PIPE != *finf_next && *DELIMITER_CR != *finf_next;
 			finf_next++) {
-#ifndef HSPUNICODE
+#ifndef HSPUTF8
 			// SJISの1バイト目チェック＆2文字目を飛ばすときの'\0'チェック
 			if( is_sjis1(*finf_next) && finf_next[1] )
 				finf_next++;
@@ -206,7 +206,7 @@ void fd_ini( HWND hwnd, char *extname, char *extinfo )
 	// 区切り文字を'\0'に変換
 	pszFilterPtr = pszFilter;
 	for(nFilterSeek = 0; nFilterSeek < nFilterLen; pszFilterPtr++, nFilterSeek++) {
-#ifndef HSPUNICODE
+#ifndef HSPUTF8
 		if( is_sjis1(*pszFilterPtr) )
 			pszFilterPtr++, nFilterSeek++;
 		else if( *DELIMITER_PIPE == *pszFilterPtr )

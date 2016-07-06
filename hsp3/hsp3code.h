@@ -112,11 +112,6 @@ void code_dbgtrace( void );
 void code_delstruct( PVal *in_pval, APTR in_aptr );
 void code_delstruct_all( PVal *pval );
 
-/*
-	rev 43
-	mingw�ł̃G���[�ɑΏ��B
-//  �֐��|�C���^ -> void *�@�ւ̕ϊ��p�B 
-*/
 #define fpconv( fp )  ( reinterpret_cast< void * >( reinterpret_cast< long >( fp ) ) )
 
 #endif

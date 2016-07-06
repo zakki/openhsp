@@ -6,7 +6,7 @@
 #define __supio_h
 
 #ifdef HSPWIN
-#ifdef HSPUNICODE
+#ifdef HSPUTF8
 #include "win32gui/supio_win_unicode.h"
 #else
 #include "win32gui/supio_win.h"
