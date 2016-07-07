@@ -510,34 +510,36 @@ int MMMan::GetStatus( int num, int infoid )
 {
 	MMM *mmm;
 	int bank,flg;
-	int res;
+	int resv;
 	bank = SearchBank( num );
 	if ( bank < 0 ) return 0;
 
 	mmm=&mem_snd[bank];
 	flg=mmm->flag;
-	res = 0;
+	resv = 0;
 	switch( infoid ) {
 	case 0:
-		res = mmm->opt;
+		resv = mmm->opt;
 		break;
 	case 1:
-		res = mmm->vol;
+		resv = mmm->vol;
 		break;
 	case 2:
-		res = mmm->pan;
+		resv = mmm->pan;
 		break;
 	case 16:
 #ifdef MMMAN_USE_DXSND
-		res = SndGetStatus( mmm->track, 16 );
-#else
-		if (( flg == MMDATA_MCIVOICE )||( flg == MMDATA_MCIVIDEO )||( flg == MMDATA_MPEGVIDEO )) {
-			if (curmus!=-1) res = 1;
+		if ( flg == MMDATA_INTWAVE ) {
+			resv = SndGetStatus( mmm->track, 16 );
+			break;
 		}
 #endif
+		SendMCI("status myid mode");
+		if ( strcmp(res,"playing") == 0 ) resv = 1;
+
 		break;
 	}
-	return res;
+	return resv;
 }
 
 
