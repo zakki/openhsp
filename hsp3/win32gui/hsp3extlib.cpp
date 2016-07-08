@@ -74,10 +74,20 @@ CDllManager::~CDllManager()
 }
 
 
-HMODULE CDllManager::load_library( LPCTSTR lpFileName )
+HMODULE CDllManager::load_library( const char *lpFileName )
 {
 	mError = NULL;
-	HMODULE h = LoadLibrary( lpFileName );
+	HMODULE h;
+
+#ifdef HSPUTF8
+	HSPAPICHAR *hactmp1;
+	chartoapichar( lpFileName, &hactmp1);
+	h = LoadLibrary(hactmp1);
+	freehac(&hactmp1);
+#else
+	h = LoadLibrary( lpFileName );
+#endif
+
 	try {
 		if ( h != NULL ) mModules.push_front( h );
 	}
@@ -148,7 +158,6 @@ static void BindLIB( LIBDAT *lib, char *name )
 	int i;
 	char *n;
 	HINSTANCE hd;
-	HSPAPICHAR *hactmp1;
 	if ( lib->flag != LIBDAT_FLAG_DLL ) return;
 	i = lib->nameidx;
 	if ( i < 0 ) {
@@ -157,8 +166,7 @@ static void BindLIB( LIBDAT *lib, char *name )
 	} else {
 		n = strp(i);
 	}
- 	hd = DllManager().load_library( chartoapichar(n,&hactmp1) );
-	freehac(&hactmp1);
+ 	hd = DllManager().load_library( n );
 	if ( hd == NULL ) return;
 	lib->hlib = (void *)hd;
 	lib->flag = LIBDAT_FLAG_DLLINIT;
@@ -174,8 +182,6 @@ static int BindFUNC( STRUCTDAT *st, char *name )
 	char *n;
 	LIBDAT *lib;
 	HINSTANCE hd;
-	HSPAPICHAR *hactmp1;
-	char tmp1[512];
 	if (( st->subid != STRUCTPRM_SUBID_DLL )&&( st->subid != STRUCTPRM_SUBID_OLDDLL )) return 4;
 	i = st->nameidx;
 	if ( i < 0 ) {
@@ -190,11 +196,18 @@ static int BindFUNC( STRUCTDAT *st, char *name )
 		if ( lib->flag != LIBDAT_FLAG_DLLINIT ) return 2;
 	}
 	hd = (HINSTANCE)(lib->hlib);
+	if ( hd == NULL ) return 1;
+#ifdef HSPUTF8
+	HSPAPICHAR *hactmp1;
+	char tmp1[512];
 	chartoapichar(n,&hactmp1);
 	cnvsjis(tmp1,(char*)hactmp1,512);
-	freehac(&hactmp1);
 	st->proc = (void *)GetProcAddress( hd, tmp1 );
-	if ( hd == NULL ) return 1;
+	freehac(&hactmp1);
+#else
+	st->proc = (void *)GetProcAddress( hd, n );
+#endif
+	if ( st->proc == NULL ) return 1;
 	st->subid--;
 	return 0;
 }
@@ -231,9 +244,6 @@ static int Hsp3ExtAddPlugin( void )
 	HSP3TYPEINFO *info;
 	HINSTANCE hd;
 	TCHAR tmp[512];
-	HSPAPICHAR *hacfuncname;
-	HSPAPICHAR *haclibname;
-	char tmp2[512];
 
 	hed = hspctx->hsphed; ptr = (char *)hed;
 	org_hpi = (HPIDAT *)(ptr + hed->pt_hpidat);
@@ -256,26 +266,50 @@ static int Hsp3ExtAddPlugin( void )
 		info = code_gettypeinfo(-1);
 
 		if ( hpi->flag == HPIDAT_FLAG_TYPEFUNC ) {
-		 	hd = DllManager().load_library( chartoapichar(libname,&haclibname) );
+		 	hd = DllManager().load_library( libname );
 			if ( hd == NULL ) {
-				_stprintf( tmp,TEXT("No DLL:%s"),haclibname );
-				freehac( &haclibname );
-				AlertW( tmp );
+#ifdef HSPUTF8
+				TCHAR tmp[512];
+				HSPAPICHAR *haclibname;
+				chartoapichar(libname, &haclibname);
+				_stprintf(tmp, TEXT("No DLL:%s"), haclibname);
+				freehac(&haclibname);
+				AlertW(tmp);
+#else
+				Alertf( "No DLL:%s", libname );
+#endif
 				return 1;
 			}
 			hpi->libptr = (void *)hd;
+#ifdef HSPUTF8
+			HSPAPICHAR *hacfuncname;
+			char tmp2[512];
 			chartoapichar(funcname,&hacfuncname);
 			cnvsjis(tmp2,(char*)hacfuncname,512);
 			func = (DLLFUNC)GetProcAddress( hd, tmp2 );
+#else
+			func = (DLLFUNC)GetProcAddress( hd, funcname );
+#endif
 			if ( func == NULL ) {
-				_stprintf( tmp,TEXT("No DLL:%s:%s"), haclibname, hacfuncname );
-				AlertW( tmp );
+#ifdef HSPUTF8
+				TCHAR tmp[512];
+				HSPAPICHAR *haclibname;
+				chartoapichar(libname, &haclibname);
+				_stprintf(tmp, TEXT("No DLL:%s:%s"), haclibname, hacfuncname);
+				freehac(&haclibname);
+				AlertW(tmp);
+				freehac(&hacfuncname);
+#else
+				Alertf("No DLL:%s:%s", libname, funcname);
+#endif
 				return 1;
 			}
-			freehac(&haclibname);
 			func( info );
 			code_enable_typeinfo( info );
 			//Alertf( "%d_%d [%s][%s]", i, info->type, libname, funcname );
+#ifdef HSPUTF8
+			freehac(&hacfuncname);
+#endif
 		}
 		hpi++;
 		org_hpi++;

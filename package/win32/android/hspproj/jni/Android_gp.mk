@@ -5,45 +5,45 @@ include $(CLEAR_VARS)
 LOCAL_MODULE    := hg4test
 LOCAL_CFLAGS := -D__ANDROID__ -Wno-psabi -DHSPNDK -DHSPEMBED -DHSPDISH -DHSPDISHGP
 LOCAL_CPPFLAGS  += -fexceptions
-LOCAL_C_INCLUDES += ../hsplib35b3
+LOCAL_C_INCLUDES += ../hsplib35b4
 LOCAL_C_INCLUDES += ../gameplay/src
 LOCAL_C_INCLUDES += ../extlib/src
 
 LOCAL_SRC_FILES := hsp3embed/hsp3r.cpp hsp3embed/hspsource.cpp javafunc.cpp maingp.c \
 PlatformAndroid.cpp \
-../../hsplib35b3/hsp_native_app_glue.c \
-../../hsplib35b3/hsp3embed/hsp3code.cpp \
-../../hsplib35b3/hsp3embed/hsp3embed.cpp \
-../../hsplib35b3/hsp3embed/hspvar_util.cpp \
-../../hsplib35b3/hsp3embed/misc.cpp \
-../../hsplib35b3/hsp3/dpmread.cpp \
-../../hsplib35b3/hsp3/hsp3debug.cpp \
-../../hsplib35b3/hsp3/hsp3gr_dish.cpp \
-../../hsplib35b3/hsp3/hsp3int.cpp \
-../../hsplib35b3/hsp3/hspvar_core.cpp \
-../../hsplib35b3/hsp3/hspvar_double.cpp \
-../../hsplib35b3/hsp3/hspvar_int.cpp \
-../../hsplib35b3/hsp3/hspvar_label.cpp \
-../../hsplib35b3/hsp3/hspvar_str.cpp \
-../../hsplib35b3/hsp3/hspvar_struct.cpp \
-../../hsplib35b3/hsp3/hspwnd_dish.cpp \
-../../hsplib35b3/hsp3/hspwnd_obj.cpp \
-../../hsplib35b3/hsp3/random.cpp \
-../../hsplib35b3/hsp3/stack.cpp \
-../../hsplib35b3/hsp3/strbuf.cpp \
-../../hsplib35b3/hsp3/strnote.cpp \
-../../hsplib35b3/hsp3/sysreq.cpp \
-../../hsplib35b3/hsp3/ndk/supio_ndk.cpp \
-../../hsplib35b3/hsp3/ndk/hsp3ext_ndk.cpp \
-../../hsplib35b3/hsp3/ndk/webtask_ndk.cpp \
-../../hsplib35b3/hsp3/ndk/mmman.cpp \
-../../hsplib35b3/hsp3/ndkgp/gamehsp.cpp \
-../../hsplib35b3/hsp3/ndkgp/gpcam.cpp \
-../../hsplib35b3/hsp3/ndkgp/gplgt.cpp \
-../../hsplib35b3/hsp3/ndkgp/gpmat.cpp \
-../../hsplib35b3/hsp3/ndkgp/gpphy.cpp \
-../../hsplib35b3/hsp3/ndkgp/hgiox.cpp \
-../../hsplib35b3/hsp3/geometry.cpp \
+../../hsplib35b4/hsp_native_app_glue.c \
+../../hsplib35b4/hsp3embed/hsp3code.cpp \
+../../hsplib35b4/hsp3embed/hsp3embed.cpp \
+../../hsplib35b4/hsp3embed/hspvar_util.cpp \
+../../hsplib35b4/hsp3embed/misc.cpp \
+../../hsplib35b4/hsp3/dpmread.cpp \
+../../hsplib35b4/hsp3/hsp3debug.cpp \
+../../hsplib35b4/hsp3/hsp3gr_dish.cpp \
+../../hsplib35b4/hsp3/hsp3int.cpp \
+../../hsplib35b4/hsp3/hspvar_core.cpp \
+../../hsplib35b4/hsp3/hspvar_double.cpp \
+../../hsplib35b4/hsp3/hspvar_int.cpp \
+../../hsplib35b4/hsp3/hspvar_label.cpp \
+../../hsplib35b4/hsp3/hspvar_str.cpp \
+../../hsplib35b4/hsp3/hspvar_struct.cpp \
+../../hsplib35b4/hsp3/hspwnd_dish.cpp \
+../../hsplib35b4/hsp3/hspwnd_obj.cpp \
+../../hsplib35b4/hsp3/random.cpp \
+../../hsplib35b4/hsp3/stack.cpp \
+../../hsplib35b4/hsp3/strbuf.cpp \
+../../hsplib35b4/hsp3/strnote.cpp \
+../../hsplib35b4/hsp3/sysreq.cpp \
+../../hsplib35b4/hsp3/ndk/supio_ndk.cpp \
+../../hsplib35b4/hsp3/ndk/hsp3ext_ndk.cpp \
+../../hsplib35b4/hsp3/ndk/webtask_ndk.cpp \
+../../hsplib35b4/hsp3/ndk/mmman.cpp \
+../../hsplib35b4/hsp3/ndkgp/gamehsp.cpp \
+../../hsplib35b4/hsp3/ndkgp/gpcam.cpp \
+../../hsplib35b4/hsp3/ndkgp/gplgt.cpp \
+../../hsplib35b4/hsp3/ndkgp/gpmat.cpp \
+../../hsplib35b4/hsp3/ndkgp/gpphy.cpp \
+../../hsplib35b4/hsp3/ndkgp/hgiox.cpp \
+../../hsplib35b4/hsp3/geometry.cpp \
     ../../gameplay/src/AbsoluteLayout.cpp \
     ../../gameplay/src/AIAgent.cpp \
     ../../gameplay/src/AIController.cpp \

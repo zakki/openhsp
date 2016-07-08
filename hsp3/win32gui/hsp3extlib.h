@@ -30,7 +30,7 @@ public:
 	CDllManager();
 	~CDllManager();
 
-	HMODULE load_library( LPCTSTR lpFileName );
+	HMODULE load_library( const char *lpFileName );
 	BOOL free_library( HMODULE hModule );
 	BOOL free_all_library();
 	HMODULE get_error() const;
