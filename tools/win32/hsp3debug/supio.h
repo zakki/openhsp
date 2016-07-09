@@ -3,7 +3,7 @@
 //	supio.cpp functions
 //
 
-#ifdef HSPUNICODE
+#ifdef HSPUTF8
 #define HSPAPICHAR wchar_t
 #define HSPCHAR char
 #else

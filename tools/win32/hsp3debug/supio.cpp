@@ -15,6 +15,7 @@
 //
 //		API用の文字エンコードへ変換
 //
+#ifdef HSPUTF8
 HSPAPICHAR *chartoapichar(const char *orig, HSPAPICHAR **pphac)
 {
 
@@ -49,6 +50,32 @@ void freehc(HSPCHAR **pphc)
 	free(*pphc);
 	*pphc = 0;
 }
+#else
+HSPAPICHAR *chartoapichar( const char *orig,HSPAPICHAR **pphac)
+{
+    *pphac = (HSPAPICHAR*)orig;
+    return (HSPAPICHAR*)orig;
+}
+
+void freehac(HSPAPICHAR **pphac)
+{
+    *pphac = 0;
+    return;
+}
+
+HSPCHAR *apichartohspchar( const HSPAPICHAR *orig,HSPCHAR **pphc)
+{
+    *pphc = (HSPAPICHAR*)orig;
+    return (HSPCHAR*)orig;
+}
+
+void freehc(HSPCHAR **pphc)
+{
+    *pphc = 0;
+    return;
+}
+#endif
+
 
 
 //
@@ -198,7 +225,7 @@ void strcase( LPTSTR target )
 		a1=*p;if ( a1==0 ) break;
 		*p=tolower(a1);
 		p++;							// 検索位置を移動
-#ifndef HSPUNICODE
+#ifndef HSPUTF8
 		if (a1>=129) {					// 全角文字チェック
 			if ((a1<=159)||(a1>=224)) p++;
 		}
@@ -264,7 +291,7 @@ char *strstr2( LPTSTR target, LPTSTR src )
 			if (a2!=a3) break;
 		}
 		p++;							// 検索位置を移動
-#ifndef HSPUNICODE
+#ifndef HSPUTF8
 		if (a1>=129) {					// 全角文字チェック
 			if ((a1<=159)||(a1>=224)) p++;
 		}
@@ -287,7 +314,7 @@ char *strchr2( LPTSTR target, TCHAR code )
 		a1=*p;if ( a1==0 ) break;
 		if ( a1==code ) res=(char *)p;
 		p++;							// 検索位置を移動
-#ifndef HSPUNICODE
+#ifndef HSPUTF8
 		if (a1>=129) {					// 全角文字チェック
 			if ((a1<=159)||(a1>=224)) p++;
 		}
@@ -395,7 +422,7 @@ int strsp_get( LPTSTR srcstr, LPTSTR dststr, TCHAR splitchr, int len )
 		a1=srcstr[splc];
 		if (a1==0) break;
 		splc++;
-#ifndef HSPUNICODE
+#ifndef HSPUTF8
 		if (a1>=0x81) if (a1<0xa0) sjflg++;
 		if (a1>=0xe0) sjflg++;
 #endif
@@ -407,7 +434,7 @@ int strsp_get( LPTSTR srcstr, LPTSTR dststr, TCHAR splitchr, int len )
 			break;
 		}
 		dststr[a++]=a1;
-#ifndef HSPUNICODE
+#ifndef HSPUTF8
 		if (sjflg) {
 			dststr[a++]=srcstr[splc++];
 		}

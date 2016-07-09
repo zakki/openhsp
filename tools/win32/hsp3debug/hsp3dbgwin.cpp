@@ -153,7 +153,6 @@ static void CurrnetUpdate( void )
 	TCHAR tmp[512];
 	LPTSTR fn;
 	char *p0;
-	LPTSTR p;
 	HSPAPICHAR *hactmp1;
 
 	g_debug->dbg_curinf();
