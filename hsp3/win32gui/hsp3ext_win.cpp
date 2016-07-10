@@ -975,10 +975,10 @@ static int cmdfunc_ctrlcmd( int cmd )
 		break;
 		}
 #endif	// HSP_COM_UNSUPPORTED
+	case 0x0c:								//  cnv8tow
 #ifndef HSPUTF8
 		throw (HSPERR_UNSUPPORTED_FUNCTION);
 #else
-	case 0x0c:								//  cnv8tow
 		{
 		PVal *pval;
 		char *ptr;
