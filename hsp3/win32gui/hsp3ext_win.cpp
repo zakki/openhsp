@@ -613,6 +613,7 @@ static int cmdfunc_ctrlcmd( int cmd )
 
 	case 0x03:								// 	cnvstow
 		{
+#ifndef HSPUTF8
 		PVal *pval;
 		char *ptr;
 		char *ps;
@@ -621,6 +622,30 @@ static int cmdfunc_ctrlcmd( int cmd )
 		ps = code_gets();
 		cnvwstr( ptr, ps, size/2 );
 		break;
+#else
+        PVal *pval;
+        char *ptr;
+        char *ps;
+        int size;
+        int sizew;
+        HSPAPICHAR *hactmp1;
+        ptr = code_getvptr(&pval, &size);
+        ps = code_gets();
+        chartoapichar(ps, &hactmp1);
+        sizew = wcslen(hactmp1) + 1;
+        if (size <= sizew*(int)sizeof(HSPAPICHAR)){
+            memcpy(ptr, hactmp1, size);
+			((HSPAPICHAR*)ptr)[size - 1] = TEXT('\0');
+            hspctx->stat = -sizew*sizeof(HSPAPICHAR);
+		}
+        else{
+            memcpy(ptr, hactmp1, (sizew - 1)*sizeof(HSPAPICHAR));
+			((HSPAPICHAR*)ptr)[sizew - 1] = TEXT('\0');
+            hspctx->stat = sizew;
+		}
+        freehac(&hactmp1);
+        break;
+#endif
 		}
 
 	case 0x04:								// 	comres
@@ -975,7 +1000,7 @@ static int cmdfunc_ctrlcmd( int cmd )
 		break;
 		}
 #endif	// HSP_COM_UNSUPPORTED
-	case 0x0c:								//  cnv8tow
+	case 0x0c:								//  cnvstoa
 #ifndef HSPUTF8
 		throw (HSPERR_UNSUPPORTED_FUNCTION);
 #else
@@ -984,20 +1009,25 @@ static int cmdfunc_ctrlcmd( int cmd )
 		char *ptr;
 		char *ps;
 		int size;
-		int sizew;
+		int sizea;
 		HSPAPICHAR *hactmp1;
+		char *actmp1;
 		ptr = code_getvptr(&pval, &size);
 		ps = code_gets();
 		chartoapichar(ps, &hactmp1);
-		sizew = wcslen(hactmp1);
-		if (size < sizew*(int)sizeof(HSPAPICHAR)){
-			memcpy(ptr, hactmp1, size);
-			hspctx->stat = -sizew*sizeof(HSPAPICHAR);
+		apichartoansichar(hactmp1, &actmp1);
+		sizea = strlen(actmp1) + 1;
+		if (size <= sizea){
+			memcpy(ptr, actmp1, size - 1);
+			((char*)ptr)[size - 1] = '\0';
+			hspctx->stat = -sizea;
 		}
 		else{
-			memcpy(ptr, hactmp1, sizew*sizeof(HSPAPICHAR));
-			hspctx->stat = sizew;
+			memcpy(ptr, actmp1, sizea - 1);
+			((char*)ptr)[sizea - 1] = '\0';
+			hspctx->stat = sizea;
 		}
+		freeac(&actmp1);
 		freehac(&hactmp1);
 		break;
 		}
@@ -1040,6 +1070,7 @@ static void *reffunc_ctrlfunc( int *type_res, int arg )
 		}
 	case 0x101:								// cnvwtos
 		{
+#ifndef HSPUTF8
 		PVal *pval;
 		char *sptr;
 		int size;
@@ -1049,6 +1080,17 @@ static void *reffunc_ctrlfunc( int *type_res, int arg )
 		cnvsjis( ptr, sptr, size  );
 		*type_res = HSPVAR_FLAG_STR;
 		break;
+#else
+        PVal *pval;
+        wchar_t *sptr;
+        int size;
+        sptr = (wchar_t*)code_getvptr(&pval, &size);
+        hspctx->stmp = sbExpand(hspctx->stmp, size*3);
+        ptr = hspctx->stmp;
+        cnvu8(ptr, sptr, size*3);
+        *type_res = HSPVAR_FLAG_STR;
+        break;
+#endif
 		}
 
 	case 0x102:								// 	comevdisp
@@ -1096,7 +1138,7 @@ static void *reffunc_ctrlfunc( int *type_res, int arg )
 		break;
 		}
 
-	case 0x104:								//  cnvwto8
+	case 0x104:								//  cnvatos
 #ifndef HSPUTF8
 		throw (HSPERR_UNSUPPORTED_FUNCTION);
 #else
@@ -1104,10 +1146,13 @@ static void *reffunc_ctrlfunc( int *type_res, int arg )
 			PVal *pval;
 			char *sptr;
 			int size;
+			HSPAPICHAR *hactmp1;
 			sptr = code_getvptr(&pval, &size);
+			ansichartoapichar(sptr, &hactmp1);
 			hspctx->stmp = sbExpand(hspctx->stmp, size*3);
 			ptr = hspctx->stmp;
-			cnvu8(ptr, sptr, size*3);
+			cnvu8(ptr, hactmp1, size*3);
+			freehac(&hactmp1);
 			*type_res = HSPVAR_FLAG_STR;
 			break;
 		}

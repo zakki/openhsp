@@ -246,6 +246,7 @@ static int sysinfo( int p2 )
 		plen = strlen(p);
 		if (p3 != p){
 			memcpy(p3, p, plen);
+			p3[plen] = '\0';
 		}
 		freehc(&p);
 		fl=HSPVAR_FLAG_STR;
@@ -256,6 +257,7 @@ static int sysinfo( int p2 )
 		plen = strlen(p);
 		if (p3 != p){
 			memcpy(p3, p, plen);
+			p3[plen] = '\0';
 		}
 		freehc(&p);
 		fl = HSPVAR_FLAG_STR;
@@ -266,6 +268,7 @@ static int sysinfo( int p2 )
 		plen = strlen(p);
 		if (p3 != p){
 			memcpy(p3, p, plen);
+			p3[plen] = '\0';
 		}
 		freehc(&p);
 		fl = HSPVAR_FLAG_STR;

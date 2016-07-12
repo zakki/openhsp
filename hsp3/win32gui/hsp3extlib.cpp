@@ -496,7 +496,7 @@ int cnvsjis( void *out, char *in, int bufsize )
 	return WideCharToMultiByte( CP_ACP, 0, (LPCWSTR)in, -1, (LPSTR)out, bufsize, NULL, NULL);
 }
 
-int cnvu8(void *out, char *in, int bufsize)
+int cnvu8(void *out, wchar_t *in, int bufsize)
 {
 	//  unicode->utf8‚É•ÏŠ·
 	//

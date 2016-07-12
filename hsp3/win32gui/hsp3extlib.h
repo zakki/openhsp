@@ -70,6 +70,6 @@ int __cdecl call_extfunc( void *proc, int *prm, int prms );
  
 int cnvwstr( void *out, char *in, int bufsize );
 int cnvsjis( void *out, char *in, int bufsize );
-int cnvu8( void *out, char *in, int bufsize);
+int cnvu8( void *out, wchar_t *in, int bufsize);
 
 #endif

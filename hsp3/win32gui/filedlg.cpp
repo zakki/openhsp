@@ -235,8 +235,11 @@ out_of_memory:
 char *fd_getfname( void )
 {
 	HSPCHAR *hctmp1;
+	int hclen;
 	apichartohspchar(szFileName,&hctmp1);
-	memcpy(FileName8,hctmp1,strlen(hctmp1));
+	hclen = strlen(hctmp1);
+	memcpy(FileName8,hctmp1,hclen);
+	FileName8[hclen] = '\0';
 	freehc(&hctmp1);
 	return FileName8;
 }

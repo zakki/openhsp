@@ -74,21 +74,21 @@ HSPAPICHAR *ansichartoapichar(const char *orig, HSPAPICHAR **pphac)
 	return resw;
 }
 
-char *apichartoansichar(const HSPAPICHAR *orig, char **pphc)
+char *apichartoansichar(const HSPAPICHAR *orig, char **ppac)
 {
 	int plen;
 	HSPCHAR *p;
 	plen = WideCharToMultiByte(CP_ACP, NULL, orig, -1, NULL, 0, NULL, NULL);
 	p = (char *)calloc(plen + 1, sizeof(char*));
 	WideCharToMultiByte(CP_ACP,NULL, orig, -1, p, plen, NULL, NULL);
-	*pphc = p;
+	*ppac = p;
 	return p;
 }
 
-void freeac(char **pphc)
+void freeac(char **ppac)
 {
-	free(*pphc);
-	*pphc = 0;
+	free(*ppac);
+	*ppac = 0;
 }
 
 //
