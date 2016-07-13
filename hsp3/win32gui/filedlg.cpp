@@ -77,8 +77,8 @@ void fd_ini( HWND hwnd, char *extname, char *extinfo )
 	LPTSTR pszFilter = NULL, pszFilterPtr;
 	int nFilterLen;
 	int nFilterSeek;
-	LPTSTR fext = NULL, fext_next;
-	LPTSTR finf = NULL, finf_next;
+	LPTSTR fext_bak = NULL,fext = NULL, fext_next;
+	LPTSTR finf_bak = NULL,finf = NULL, finf_next;
 	int fext_len;
 	int finf_len;
 	bool no_aster;
@@ -87,8 +87,10 @@ void fd_ini( HWND hwnd, char *extname, char *extinfo )
 	szFileName[0]=0;
 	szTitleName[0]=0;
 
-	chartoapichar(extname,&fext);
-	chartoapichar(extinfo,&finf);
+	chartoapichar(extname,&fext_bak);
+	chartoapichar(extinfo,&finf_bak);
+	fext = fext_bak;
+	finf = finf_bak;
 
 	nFilterLen = 0;
 	nFilterSeek = 0;
@@ -220,8 +222,8 @@ void fd_ini( HWND hwnd, char *extname, char *extinfo )
 	PopFileInitialize(hwnd);
 	ofn.lpstrFilter = pszFilter;
 
-	freehac(&fext);
-	freehac(&finf);
+	freehac(&fext_bak);
+	freehac(&finf_bak);
 
 #undef realloc_filter_buffer
 
@@ -256,7 +258,7 @@ BOOL fd_dialog( HWND hwnd, int mode, char *fext, char *finf )
 		ofn.lpstrFilter = NULL;
 		break;
 	case 1:
-		fd_ini( hwnd, fext, finf );
+		fd_ini(hwnd, fext, finf);
 		ofn.Flags = OFN_OVERWRITEPROMPT | OFN_HIDEREADONLY;
 		bResult = GetSaveFileName (&ofn) ;
 		free((void*)ofn.lpstrFilter);
