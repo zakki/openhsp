@@ -10,7 +10,7 @@
 %note
 ver3.5標準命令
 %date
-2015/03/05
+2016/07/13
 %author
 onitama
 %url
@@ -476,11 +476,13 @@ unicodeを通常文字列に変換
 p1=変数 : 内容を読み出す元の変数名
 
 %inst
-変数に保存されたデータをunicodeとして読み取り、 通常の文字列に変換したものを返します。
+変数に保存されたデータをunicode(UTF-16)として読み取り、 通常の文字列に変換したものを返します。
 unicodeデータを扱う場合や、外部DLL、 COMオブジェクトとのデータ変換などで使用することができます。
 
 %href
 cnvstow
+cnvstoa
+cnvatos
 str
 %port-
 Let
@@ -499,16 +501,17 @@ p1=変数  : 結果を書き込む変数名
 "string" : 変換元の文字列
 
 %inst
-"文字列"で指定されたデータをunicode文字列に変換して変数バッファに保存します。
+"文字列"で指定されたデータをunicode(UTF-16)文字列に変換して変数バッファに保存します。
+p1で指定される変数には、あらかじめ文字列型として変換に十分なバッファサイズを確保しておく必要があります。
 unicodeデータを扱う場合や、外部DLL、 COMオブジェクトへのデータ変換などで使用することができます。
 
 %href
 cnvwtos
+cnvstoa
+cnvatos
 str
 %port-
 Let
-
-
 
 
 %index
@@ -655,6 +658,59 @@ noteget
 notedel
 notemax
 notesize
+
+
+
+%index
+cnvatos
+ANSI文字列を通常文字列に変換
+%note
+hsp3utf.asをインクルードすること。
+%group
+文字列操作関数
+%prm
+(p1)
+p1=変数 : 内容を読み出す元の変数名
+
+%inst
+変数に保存されたデータをANSI(ShiftJIS)文字列として読み取り、 通常の文字列に変換したものを返します。
+この命令は、UTF-8を標準の文字列コードとして扱うランタイム(hsp3utf)上でのみ動作します。標準のHSP3ではエラーとなりますので注意してください。
+
+
+%href
+cnvstow
+cnvwtos
+cnvstoa
+str
+%port-
+Let
+
+
+
+%index
+cnvstoa
+通常文字列をANSI文字列に変換
+%note
+hsp3utf.asをインクルードすること。
+%group
+文字列操作命令
+%prm
+p1,"string"
+p1=変数  : 結果を書き込む変数名
+"string" : 変換元の文字列
+
+%inst
+"文字列"で指定されたデータをANSI(ShiftJIS)文字列に変換して変数バッファに保存します。
+p1で指定される変数には、あらかじめ文字列型として変換に十分なバッファサイズを確保しておく必要があります。
+この命令は、UTF-8を標準の文字列コードとして扱うランタイム(hsp3utf)上でのみ動作します。標準のHSP3ではエラーとなりますので注意してください。
+
+%href
+cnvstow
+cnvwtos
+cnvatos
+str
+%port-
+Let
 
 
 

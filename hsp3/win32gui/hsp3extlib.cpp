@@ -14,15 +14,18 @@
 
 #include <algorithm>
 
+#include "../hsp3config.h"
+
 #include "../supio.h"
 #include "../hsp3ext.h"
 #include "hsp3extlib.h"
-#include "../hspwnd.h"
 
 #ifdef HSPDISH
+#include "../../hsp3dish/hspwnd.h"
 #include "../../hsp3/dpmread.h"
 #include "../../hsp3/strbuf.h"
 #else
+#include "../hspwnd.h"
 //#include "hspvar_comobj.h"
 //#include "hsp3win.h"
 #include "../dpmread.h"

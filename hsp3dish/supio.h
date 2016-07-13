@@ -6,7 +6,7 @@
 #define __supio_h
 
 #ifdef HSPWIN
-#include "win32/supio_win.h"
+#include "../hsp3/win32gui/supio_win.h"
 #endif
 
 #ifdef HSPIOS

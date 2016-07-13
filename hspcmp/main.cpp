@@ -25,6 +25,8 @@ static 	char *p[] = {
 	"       -d    add debug information",
 	"       -p    preprocessor only",
 	"       -c    HSP2.55 compatible mode",
+	"       -u    output UTF-8 strings",
+	"       -w    force debug window on",
 	"       --compath=??? set common path to ???",
 	NULL };
 	int i;
@@ -38,7 +40,7 @@ int main( int argc, char *argv[] )
 {
 	char a1,a2;
 	int b,st;
-	int cmpopt,ppopt;
+	int cmpopt,ppopt,utfopt,pponly;
 	char fname[HSP_MAX_PATH];
 	char fname2[HSP_MAX_PATH];
 	char oname[HSP_MAX_PATH];
@@ -49,7 +51,7 @@ int main( int argc, char *argv[] )
 
 	if (argc<2) { usage1();return -1; }
 
-	st = 0; ppopt = 0; cmpopt = 0;
+	st = 0; ppopt = 0; cmpopt = 0; utfopt = 0; pponly = 0;
 	fname[0]=0;
 	fname2[0]=0;
 	oname[0]=0;
@@ -75,11 +77,15 @@ int main( int argc, char *argv[] )
 			}
 			switch (a2) {
 			case 'c':
-				ppopt=1;break;
+				ppopt |= HSC3_OPT_NOHSPDEF; break;
 			case 'p':
-				cmpopt=2;break;
+				pponly=1; break;
 			case 'd':
-				cmpopt=1;break;
+				ppopt |= HSC3_OPT_DEBUGMODE; cmpopt|=HSC3_MODE_DEBUG; break;
+			case 'u':
+				utfopt=1; cmpopt|=HSC3_MODE_UTF8; break;
+			case 'w':
+				cmpopt|=HSC3_MODE_DEBUGWIN; break;
 			case 'o':
 				strcpy( oname,argv[b]+2 );
 				break;
@@ -106,7 +112,7 @@ int main( int argc, char *argv[] )
 	hsc3->SetCommonPath( compath );
 
 	st = hsc3->PreProcess( fname, fname2, ppopt, fname );
-	if (( cmpopt < 2 )&&( st == 0 )) {
+	if (( pponly == 0 )&&( st == 0 )) {
 		st = hsc3->Compile( fname2, oname, cmpopt );
 	}
 	puts( hsc3->GetError() );

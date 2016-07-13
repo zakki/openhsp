@@ -16,9 +16,11 @@ Hot Soup Processor ver3.5                           HSP : Hot Soup Processor
 	strrep命令を入れ子にすると意図した動作をしない不具合を修正(HSP3BT#17)
 	文字列をUTF8で出力するオプションを#cmdopt命令に追加
 	[HSP3Dish][Windows] mmstat命令でwavファイル以外の再生状態取得ができなかった不具合を修正
+	[hsp3utf] UTF-8版hsp3ランタイム(hsp3utf)を同梱
+	[hsp3utf] UTF-8とANSI(SJIS)の相互変換を行なうcnvstoa命令、cnvatos関数を追加
+	Win32コマンドライン版コードコンパイラ(hspcmp)を同梱
 
 	tds12さんによるOpenHSP修正を反映
-	UTF8版hsp3ランタイムを同梱
 	デバッグウィンドウをUTF8文字コードに対応
 
 	ue_daiさんによるOpenHSPバグ修正と機能拡張を反映

@@ -221,13 +221,13 @@ char 	s_rec[1]= "", *hsp_prestr[] =
 	"$009 17 comevarg",
 	"$00a 17 sarrayconv",
 	//"$00b 17 variantref",
-	"$00c 17 cnvstoa",
+	"$00c 17 cnvstoa",				// (ver3.5)
 
 	"$100 17 callfunc",
 	"$101 17 cnvwtos",
 	"$102 17 comevdisp",
 	"$103 17 libptr",
-	"$104 17 cnvatos",
+	"$104 17 cnvatos",				// (ver3.5)
 
 	//	3.0 system vals
 

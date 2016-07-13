@@ -1,0 +1,16 @@
+#include "hsp3utf.as"
+
+fname = "utf-8.txt"
+
+mes "テキストファイル["+fname+"]の内容を表示します。"
+mes "------------------------------------"
+
+notesel utftext
+noteload fname
+
+repeat notemax
+	noteget s1,cnt
+	mes s1
+loop
+
+

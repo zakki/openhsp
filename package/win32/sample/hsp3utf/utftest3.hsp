@@ -1,0 +1,27 @@
+#include "hsp3utf.as"
+
+	objsize 100,25
+	pos 0,0:button "END",*bye
+	pos 110,0:button "SAVE",*save
+
+	sdim utftext, $10000
+	utftext="UTF-8形式で保存されるテキストエディタです。"
+
+	pos 0,30
+	mesbox utftext,640,450
+
+	stop
+
+*save
+	dialog "txt",17
+	if stat {
+		fname = refstr
+		exname=getpath(fname,2)		; ファイル名の拡張子を取得
+		if exname="" : fname+=".txt"	; 拡張子がなければ.txtを追加
+		notesel utftext
+		notesave fname			; テキストファイルをセーブ
+	}
+	stop
+
+*bye
+	end

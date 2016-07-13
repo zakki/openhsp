@@ -26,7 +26,7 @@
 #include "../hsp3ext.h"
 #include "../../hsp3/strnote.h"
 
-#include "hsp3extlib.h"
+#include "../../hsp3/win32gui/hsp3extlib.h"
 
 #ifndef HSP_COM_UNSUPPORTED
 #include "hspvar_comobj.h"

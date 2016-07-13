@@ -397,11 +397,11 @@
 					>
 				</File>
 				<File
-					RelativePath=".\hsp3ext_win.cpp"
+					RelativePath="..\..\hsp3\win32gui\hsp3ext_win.cpp"
 					>
 				</File>
 				<File
-					RelativePath=".\hsp3extlib.cpp"
+					RelativePath="..\..\hsp3\win32gui\hsp3extlib.cpp"
 					>
 				</File>
 				<File
@@ -413,7 +413,7 @@
 					>
 				</File>
 				<File
-					RelativePath=".\supio_win.cpp"
+					RelativePath="..\..\hsp3\win32gui\supio_win.cpp"
 					>
 				</File>
 				<File
@@ -599,11 +599,11 @@
 					>
 				</File>
 				<File
-					RelativePath=".\hsp3ext_win.h"
+					RelativePath="..\..\hsp3\win32gui\hsp3ext_win.h"
 					>
 				</File>
 				<File
-					RelativePath=".\hsp3extlib.h"
+					RelativePath="..\..\hsp3\win32gui\hsp3extlib.h"
 					>
 				</File>
 				<File
@@ -611,7 +611,7 @@
 					>
 				</File>
 				<File
-					RelativePath=".\supio_win.h"
+					RelativePath="..\..\hsp3\win32gui\supio_win.h"
 					>
 				</File>
 				<File

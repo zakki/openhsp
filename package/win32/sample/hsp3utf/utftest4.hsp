@@ -1,0 +1,22 @@
+#include "hsp3utf.as"
+
+	;
+	;	ANSI(SJIS)で書かれているスクリプトを
+	;	UTF-8のランタイムで読み込んでいます
+	;
+	objsize 100,25
+	pos 0,0:button "END",*bye
+
+	notesel ansitext
+	noteload "utftest4.hsp"
+
+	sdim utftext, $10000
+	utftext = cnvatos(ansitext)
+
+	pos 0,30
+	mesbox utftext,640,450
+
+	stop
+
+*bye
+	end

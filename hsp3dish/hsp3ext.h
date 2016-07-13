@@ -6,7 +6,7 @@
 #define __hsp3ext_h
 
 #ifdef HSPWIN
-#include "win32/hsp3ext_win.h"
+#include "../hsp3/win32gui/hsp3ext_win.h"
 #endif
 
 #ifdef HSPIOS
