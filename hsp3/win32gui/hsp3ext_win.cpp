@@ -641,7 +641,7 @@ static int cmdfunc_ctrlcmd( int cmd )
         else{
             memcpy(ptr, hactmp1, (sizew - 1)*sizeof(HSPAPICHAR));
 			((HSPAPICHAR*)ptr)[sizew - 1] = TEXT('\0');
-            hspctx->stat = sizew;
+            hspctx->stat = sizew*sizeof(HSPAPICHAR);
 		}
         freehac(&hactmp1);
         break;
@@ -1084,10 +1084,12 @@ static void *reffunc_ctrlfunc( int *type_res, int arg )
         PVal *pval;
         wchar_t *sptr;
         int size;
+		int len;
         sptr = (wchar_t*)code_getvptr(&pval, &size);
-        hspctx->stmp = sbExpand(hspctx->stmp, size*3);
+		len = lstrlen(sptr) * 6 + 1;
+        hspctx->stmp = sbExpand(hspctx->stmp, len);
         ptr = hspctx->stmp;
-        cnvu8(ptr, sptr, size*3);
+        cnvu8(ptr, sptr, len);
         *type_res = HSPVAR_FLAG_STR;
         break;
 #endif
@@ -1147,11 +1149,13 @@ static void *reffunc_ctrlfunc( int *type_res, int arg )
 			char *sptr;
 			int size;
 			HSPAPICHAR *hactmp1;
+			int len;
 			sptr = code_getvptr(&pval, &size);
 			ansichartoapichar(sptr, &hactmp1);
-			hspctx->stmp = sbExpand(hspctx->stmp, size*3);
+			len = lstrlen(hactmp1) * 6 + 1;
+			hspctx->stmp = sbExpand(hspctx->stmp, len);
 			ptr = hspctx->stmp;
-			cnvu8(ptr, hactmp1, size*3);
+			cnvu8(ptr, hactmp1, len);
 			freehac(&hactmp1);
 			*type_res = HSPVAR_FLAG_STR;
 			break;
