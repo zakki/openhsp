@@ -157,6 +157,10 @@ int CHsc3::PreProcess( char *fname, char *outname, int option, char *rname, void
 		tk.SetAHT( (AHTMODEL *)ahtoption );
 	}
 
+	if ( option & HSC3_OPT_UTF8IN ) {
+		tk.SetUTF8Input( 1 );
+	}
+
 	sprintf( mm,"#%s ver%s / onion software 1997-2016(c)", HSC3TITLE, hspver );
 	tk.Mes( mm );
 	tk.SetAdditionMode( 1 );
@@ -256,6 +260,10 @@ int CHsc3::Compile( char *fname, char *outname, int mode )
 	tk.LabelRegist( hsp_prestr, 1 );
 	tk.SetHeaderOption( hed_option, hed_runtime );
 	tk.SetCmpOption( cmpopt );
+
+	if ( process_option & HSC3_OPT_UTF8IN ) {
+		tk.SetUTF8Input( 1 );
+	}
 
 	sprintf( mm,"#%s ver%s / onion software 1997-2016(c)", HSC3TITLE2, hspver );
 	tk.Mes( mm );

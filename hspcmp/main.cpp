@@ -25,6 +25,7 @@ static 	char *p[] = {
 	"       -d    add debug information",
 	"       -p    preprocessor only",
 	"       -c    HSP2.55 compatible mode",
+	"       -i    input UTF-8 source code",
 	"       -u    output UTF-8 strings",
 	"       -w    force debug window on",
 	"       --compath=??? set common path to ???",
@@ -82,6 +83,8 @@ int main( int argc, char *argv[] )
 				pponly=1; break;
 			case 'd':
 				ppopt |= HSC3_OPT_DEBUGMODE; cmpopt|=HSC3_MODE_DEBUG; break;
+			case 'i':
+				ppopt |= HSC3_OPT_UTF8IN; utfopt=1; cmpopt|=HSC3_MODE_UTF8; break;
 			case 'u':
 				utfopt=1; cmpopt|=HSC3_MODE_UTF8; break;
 			case 'w':

@@ -133,9 +133,6 @@ public:
 	CLabel *GetLabelInfo( void );
 	void SetLabelInfo( CLabel *lbinfo );
 
-	void InitSCNV( int size );
-	char *ExecSCNV( char *srcbuf, int opt );
-
 	void Error( char *mes );
 	void LineError( char *mes, int line, char *fname );
 	void SetError( char *mes );
@@ -150,6 +147,7 @@ public:
 	int PeekToken( void );
 	int Calc( CALCVAR &val );
 	char *CheckValidWord( void );
+	
 
 	//		For preprocess
 	//
@@ -177,6 +175,12 @@ public:
 	int RegistExtMacro( char *keyword, int val );
 	void SetPackfileOut( CMemBuf *pack );
 	int AddPackfile( char *name, int mode );
+
+	void InitSCNV( int size );
+	char *ExecSCNV( char *srcbuf, int opt );
+	int CheckByteSJIS( unsigned char byte );
+	int CheckByteUTF8( unsigned char byte );
+	int SkipMultiByte( unsigned char byte );
 
 
 	//		For Code Generate
@@ -218,6 +222,7 @@ public:
 	void SetHeaderOption( int opt, char *name ) { hed_option=opt; strcpy( hed_runtime, name ); }
 	int GetCmpOption( void ) { return hed_cmpmode; }
 	void SetCmpOption( int cmpmode ) { hed_cmpmode = cmpmode; }
+	void SetUTF8Input( int utf8mode ) { pp_utf8 = utf8mode; }
 
 private:
 	//		For preprocess
@@ -404,6 +409,7 @@ private:
 	int cs_lastptr;					// パラメーターの初期CS位置
 	int cs_lasttype;				// パラメーターのタイプ(単一時)
 	int calccount;					// パラメーター個数
+	int pp_utf8;					// ソースコードをUTF-8として処理する(0=無効)
 
 	//		for CodeGenerator
 	//

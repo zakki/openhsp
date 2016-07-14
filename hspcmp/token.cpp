@@ -208,6 +208,7 @@ void CToken::ResetCompiler( void )
 	hed_option = 0;
 	hed_runtime[0] = 0;
 	hed_autoopt_timer = 0;
+	pp_utf8 = 0;
 }
 
 
@@ -318,6 +319,7 @@ char *CToken::Pickstr2( char *str )
 	unsigned char *vs;
 	unsigned char *pp;
 	unsigned char a1;
+	int skip,i;
 	vs = (unsigned char *)str;
 	pp = s3;
 
@@ -342,8 +344,10 @@ char *CToken::Pickstr2( char *str )
 				break;
 			}
 		}
-		if (a1>=129) {					// 全角文字チェック
-			if ((a1<=159)||(a1>=224)) {
+
+		skip = SkipMultiByte( a1 );
+		if ( skip ) {					// 全角文字チェック
+			for(i=0;i<skip;i++) {
 				*pp++ = a1;
 				vs++;
 				a1=*vs;
@@ -372,11 +376,9 @@ int CToken::CheckModuleName( char *name )
 		if ((a1>=0x3a)&&(a1<=0x3f)) break;
 		if ((a1>=0x5b)&&(a1<=0x5e)) break;
 		if ((a1>=0x7b)&&(a1<=0x7f)) break;
-		if (a1>=129) {						// 全角文字チェック
-			if (a1<=159) { p++;a1=*p; }
-			else if (a1>=224) { p++;a1=*p; }
-		}
+
 		p++;
+		p += SkipMultiByte( a1 );		// 全角文字チェック
 	}
 	return -1;
 }
@@ -604,6 +606,7 @@ int CToken::GetToken( void )
 	}
 
 	while(1) {								// normal object name
+		int skip,i;
 		a1=*wp;
 		if (a1==0) { wp=NULL;break; }
 		if (a1<0x30) break;
@@ -613,8 +616,8 @@ int CToken::GetToken( void )
 
 		if ( a>=OBJNAME_MAX ) break;
 
-		if (a1>=129) {						// 全角文字チェック
-
+		skip = SkipMultiByte( a1 );	// 全角文字チェック
+		if ( skip ) {
 #ifdef HSPWIN
 			if ( hed_cmpmode & CMPMODE_SKIPJPSPC ) {
 				if ( a1 == 0x81 ) {
@@ -624,8 +627,9 @@ int CToken::GetToken( void )
 				}
 			}
 #endif
-			if (a1<=159) { s3[a++]=a1;wp++;a1=*wp; }
-			else if (a1>=224) { s3[a++]=a1;wp++;a1=*wp; }
+			for(i=0;i<skip;i++) {
+				s3[a++]=a1;wp++;a1=*wp;
+			}
 		}
 		s3[a++]=a1;wp++;
 	}
@@ -857,6 +861,7 @@ char *CToken::ExpandStr( char *str, int opt )
 	unsigned char *vs;
 	unsigned char a1;
 	unsigned char sep;
+	int skip,i;
 	vs = (unsigned char *)str;
 	a = 0;
 	sep = 0;
@@ -873,8 +878,10 @@ char *CToken::ExpandStr( char *str, int opt )
 		if (a1==0x5c) {					// '\'チェック
 			s3[a++] = *vs++;
 		}
-		if (a1>=129) {					// 全角文字チェック
-			if ((a1<=159)||(a1>=224)) {
+
+		skip = SkipMultiByte( a1 );	// 全角文字チェック
+		if ( skip ) {
+			for( i=0;i<skip;i++ ) {
 				s3[a++] = *vs++;
 			}
 		}
@@ -915,6 +922,7 @@ char *CToken::ExpandStrEx( char *str )
 	int a;
 	unsigned char *vs;
 	unsigned char a1;
+	int skip,i;
 	vs = (unsigned char *)str;
 	a = 0;
 	//s3[a++]=0x22;
@@ -952,11 +960,14 @@ char *CToken::ExpandStrEx( char *str )
 		if (a1==0x5c) {					// '\'チェック
 			if (*vs>=32) { s3[a++] = *vs; vs++; }
 		}
-		if (a1>=129) {					// 全角文字チェック
-			if ((a1<=159)||(a1>=224)) {
+
+		skip = SkipMultiByte( a1 );	// 全角文字チェック
+		if ( skip ) {
+			for(i=0;i<skip;i++) {
 				s3[a++] = *vs++;
 			}
 		}
+
 	}
 	//s3[a++]=0x22;
 	s3[a]=0;
@@ -989,9 +1000,7 @@ char *CToken::ExpandStrComment( char *str, int opt )
 			continue;
 		}
 		vs++;
-		if (a1>=129) {					// 全角文字チェック
-			if ((a1<=159)||(a1>=224)) vs++;
-		}
+		vs+=SkipMultiByte( a1 );	// 全角文字チェック
 	}
 	s3[a]=0;
 	if ( opt==0 ) if (wrtbuf!=NULL) wrtbuf->PutData( s3, a );
@@ -1232,10 +1241,13 @@ char *CToken::ExpandToken( char *str, int *type, int ppmode )
 	//	 シンボル取り出し
 	//
 	while(1) {
+		int skip,i;
 		a1=*vs;
 		//if ((a1>='A')&&(a1<='Z')) a1+=0x20;		// to lower case
 
-		if (a1>=129) {				// 全角文字チェック
+		skip = SkipMultiByte( a1 );					// 全角文字チェック
+		if ( skip ) {
+
 #ifdef HSPWIN
 			if ( hed_cmpmode & CMPMODE_SKIPJPSPC ) {
 				if ( a1 == 0x81 && vs[1] == 0x40 ) {	// 全角スペースは終端と判断
@@ -1243,18 +1255,17 @@ char *CToken::ExpandToken( char *str, int *type, int ppmode )
 				}
 			}
 #endif
-			if ((a1<=159)||(a1>=224)) {
+			for(i=0;i<(skip+1);i++) {
 				if ( a<OBJNAME_MAX ) {
 					s2[a++]=a1;
 					vs++;
 					a1=*vs;
-					//if (a1>=32) { s2[a++] = a1; vs++; }
-					s2[a++] = a1; vs++;
 				} else {
-					vs+=2;
+					vs++;
 				}
-				continue;
 			}
+			continue;
+
 		}
 
 		chk=0;
@@ -2063,11 +2074,7 @@ char *CToken::CheckValidWord( void )
 			if ( a1==qqchr ) qqflg=0;
 		}
 		
-		if (a1>=129) {					// 全角文字チェック
-			if ((a1<=159)||(a1>=224)) {
-				p++;
-			}
-		}
+		p += SkipMultiByte( a1 );			// 全角文字チェック
 		p++;
 	}
 	return res;
@@ -2998,11 +3005,7 @@ void CToken::PreprocessCommentCheck( char *str )
 			}
 		}
 		if (a1==0x22) qmode^=1;
-		if (a1>=129) {					// 全角文字チェック
-			if ((a1<=159)||(a1>=224)) {
-				vs++;
-			}
-		}
+		vs += SkipMultiByte( a1 );			// 全角文字チェック
 	}
 }
 
@@ -3827,3 +3830,42 @@ void CToken::SetErrorSymbolOverdefined(char* keyword, int label_id)
 #endif
 	SetError(strtmp);
 }
+
+
+int CToken::CheckByteSJIS( unsigned char c )
+{
+	//	SJISの全角1バイト目を判定する
+	//  (戻り値は以降に続くbyte数)
+	if (((c>=0x81)&&(c<=0x9f))||((c>=0xe0)&&(c<=0xfc))) return 1;
+	return 0;
+}
+
+
+int CToken::CheckByteUTF8( unsigned char c )
+{
+	//	UTF8の全角1バイト目を判定する
+	//  (戻り値は以降に続くbyte数)
+
+	if ( c <= 0x7f ) return 0;
+
+	if ((c >= 0xc2) && (c <= 0xdf)) return 1;
+	if ((c >= 0xe0) && (c <= 0xef)) return 2;
+	if ((c >= 0xf0) && (c <= 0xf7)) return 3;
+	if ((c >= 0xf8) && (c <= 0xfb)) return 4;
+	if ((c >= 0xfc) && (c <= 0xfd)) return 5;
+	return 0;
+}
+
+
+int CToken::SkipMultiByte( unsigned char byte )
+{
+	//	マルチバイトコードの2byte目以降をスキップする
+	//  ( 1バイト目のcharを渡すと、2byte目以降スキップするbyte数を返す )
+	//	( pp_utf8のフラグによってUTF-8とSJISを判断する )
+	//
+	if ( pp_utf8 ) {
+		return CheckByteUTF8( byte );
+	}
+	return CheckByteSJIS( byte );
+}
+

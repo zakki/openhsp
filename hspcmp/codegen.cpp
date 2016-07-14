@@ -353,6 +353,7 @@ char *CToken::PickStringCG( char *str, int sep )
 	unsigned char *vs;
 	unsigned char *pp;
 	unsigned char a1;
+	int skip,i;
 	vs = (unsigned char *)str;
 	pp = vs;
 
@@ -377,8 +378,9 @@ char *CToken::PickStringCG( char *str, int sep )
 				break;
 			}
 		}
-		if (a1>=129) {					// 全角文字チェック
-			if ((a1<=159)||(a1>=224)) {
+		skip = SkipMultiByte( a1 );		// 全角文字チェック
+		if ( skip ) {
+			for(i=0;i<skip;i++) {
 				*pp++ = a1;
 				vs++;
 				a1=*vs;
@@ -400,6 +402,7 @@ char *CToken::PickStringCG2( char *str, char **strsrc )
 	unsigned char *vs;
 	unsigned char *pp;
 	unsigned char a1;
+	int skip,i;
 	vs = (unsigned char *)*strsrc;
 	pp = (unsigned char *)str;
 
@@ -433,8 +436,9 @@ char *CToken::PickStringCG2( char *str, char **strsrc )
 				break;
 			}
 		}
-		if (a1>=129) {					// 全角文字チェック
-			if ((a1<=159)||(a1>=224)) {
+		skip = SkipMultiByte( a1 );		// 全角文字チェック
+		if ( skip ) {
+			for(i=0;i<skip;i++) {
 				*pp++ = a1;
 				vs++;
 				a1=*vs;
@@ -485,6 +489,7 @@ char *CToken::GetTokenCG( char *str, int option )
 	unsigned char a1;
 	unsigned char a2;
 	int a,b,chk,labmode;
+	int skip,i;
 
 	vs = (unsigned char *)str;
 	if ( vs==NULL ) {
@@ -702,18 +707,19 @@ char *CToken::GetTokenCG( char *str, int option )
 	a=0;
 	while(1) {								// シンボル取り出し
 		a1=*vs;
-		if (a1>=129) {				// 全角文字チェック
-			if ((a1<=159)||(a1>=224)) {
+
+		skip = SkipMultiByte( a1 );			// 全角文字チェック
+		if ( skip ) {
+			for(i=0;i<(skip+1);i++) {
 				if ( a<OBJNAME_MAX ) {
 					s2[a++]=a1;
 					vs++;
 					a1=*vs;
-					s2[a++] = a1; vs++;
 				} else {
-					vs+=2;
+					vs++;
 				}
-				continue;
 			}
+			continue;
 		}
 
 		chk=0;
@@ -746,6 +752,7 @@ char *CToken::GetSymbolCG( char *str )
 	unsigned char *vs;
 	unsigned char a1;
 	int a,chk,labmode;
+	int skip,i;
 
 	vs = (unsigned char *)str;
 	if ( vs==NULL ) return NULL;			// already end
@@ -776,18 +783,19 @@ char *CToken::GetSymbolCG( char *str )
 	a=0;
 	while(1) {								// シンボル取り出し
 		a1=*vs;
-		if (a1>=129) {				// 全角文字チェック
-			if ((a1<=159)||(a1>=224)) {
+
+		skip = SkipMultiByte( a1 );			// 全角文字チェック
+		if ( skip ) {
+			for(i=0;i<(skip+1);i++) {
 				if ( a<OBJNAME_MAX ) {
 					s2[a++]=a1;
 					vs++;
 					a1=*vs;
-					s2[a++] = a1; vs++;
 				} else {
-					vs+=2;
+					vs++;
 				}
-				continue;
 			}
+			continue;
 		}
 
 		chk=0;
@@ -2258,6 +2266,7 @@ char *CToken::GetLineCG( void )
 	char *pp;
 	unsigned char *p;
 	unsigned char a1;
+	int skip;
 	p = cg_wp;
 	if ( p == NULL ) return NULL;
 
@@ -2266,12 +2275,13 @@ char *CToken::GetLineCG( void )
 	if ( a1 == 0 ) { cg_wp = NULL; return NULL; }
 	while(1) {
 		a1=*p;
-		if (a1>=129) {						// 全角文字チェック
-			if ((a1<=159)||(a1>=224)) {
-				p++;
-				if ( *p >= 32 ) { p++; continue; }
-			}
+
+		skip = SkipMultiByte( a1 );			// 全角文字チェック
+		if ( skip ) {
+			p += skip+1;
+			continue;
 		}
+
 		if ( a1 == 0 ) break;
 		if ( a1 == 13 ) {
 			*p = 0; p++; line++;
@@ -3012,8 +3022,7 @@ int CToken::GenerateCode( CMemBuf *srcbuf, char *oname, int mode )
 
 	cg_debug = mode & COMP_MODE_DEBUG;
 	cg_utf8out = mode & COMP_MODE_UTF8;
-
-
+	if ( pp_utf8 ) cg_utf8out = 0;						// ソースコードがUTF-8の場合は変換は必要ない
 
 	cg_putvars = hed_cmpmode & CMPMODE_PUTVARS;
 	res = GenerateCodeMain( srcbuf );
