@@ -176,7 +176,7 @@ EXPORT BOOL hsc_comp ( int p1, int p2, int p3, int p4 )
 	strcat( fname2, ".i" );
 	printf("common:%s\n", compath);
 	hsc3->SetCommonPath( compath );
-	ppopt = 0;
+	ppopt = HSC3_OPT_UTF8IN;
 	if ( p1 ) ppopt|=HSC3_OPT_DEBUGMODE;
 	if ( p2&1 ) ppopt|=HSC3_OPT_NOHSPDEF;
 	if ( p2&4 ) ppopt|=HSC3_OPT_MAKEPACK;
@@ -194,6 +194,7 @@ EXPORT BOOL hsc_comp ( int p1, int p2, int p3, int p4 )
 	}
 
 	cmpmode = p1 & HSC3_MODE_DEBUG;
+	cmpmode |= HSC3_MODE_UTF8;
 	if ( p3 ) cmpmode |= HSC3_MODE_DEBUGWIN;
 	printf("fname2:%s, oname:%s\n", fname2, oname);
 	st = hsc3->Compile( fname2, oname, cmpmode );
