@@ -1,6 +1,6 @@
 
 	tamadot=ginfo_newid
-	celload dir_tv+"tamadot.bmp",tamadot
+	celload dir_tv+"tamadot.bmp",tamadot		; ‘fŞƒtƒHƒ‹ƒ_‚©‚ç“Ç‚İ‚İ‚Ü‚·
 	tama_sx=64:tama_sy=64
 	celdiv tamadot,tama_sx,tama_sy
 
