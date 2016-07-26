@@ -1,6 +1,6 @@
 ------------------------------------------------------------------------------
-HSPTV API ver3.4 REFERENCE MANUAL                   HSP : Hot Soup Processor  
-ＨＳＰ拡張モジュールリファレンス           copyright 2014 (c) onion software  
+HSPTV API ver3.5 REFERENCE MANUAL                   HSP : Hot Soup Processor  
+ＨＳＰ拡張モジュールリファレンス           copyright 2016 (c) onion software  
 ------------------------------------------------------------------------------
 
 ・はじめに
@@ -32,7 +32,7 @@ HSPTV API ver3.4 REFERENCE MANUAL                   HSP : Hot Soup Processor
 	以下のスクリプトで画像を読み込むことが可能です。
 
 		;	HSPTVブラウザ用・標準イメージを読み込む
-		celload dir_exe+"\\hsptv\\hsptv_img.bmp",1
+		celload dir_tv+"hsptv_img.bmp",1
 
 	上の例では、画像バッファ1に、標準イメージ(hsptv_img.bmp)を読み込みます。	hsptv_img.bmpファイルは、ユーザーが改変・削除・変更しないようにしてください。
 	イメージの内容については、実際に画像ファイルを直接ご確認ください。

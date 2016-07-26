@@ -5,8 +5,9 @@ Hot Soup Processor ver3.5                           HSP : Hot Soup Processor
 
 ・hsp3関連 更新履歴
 
-	2016/07/07 3.5 beta4
+	2016/07/26 3.5 beta4
 
+	オフィシャル珠音2D素材(tamaface)とサンプルゲームを追加
 	シリアル接続によるarduino制御のためのモジュール、arduino.asを追加
 	hspextプラグインにバイナリデータを送信を行なうcomputb命令を追加
 	スクリプトエディタのツールメニューを整理(非推奨機能をサブメニューに移動)
