@@ -5,7 +5,7 @@
 //	onion software/onitama 2011/3
 //
 #ifdef HSPDISHGP
-#ifdef HSPWIN
+#if defined(HSPWIN)|defined(HSPEMSCRIPTEN)
 #include "win32gp/gamehsp.h"
 #endif
 #ifdef HSPNDK
