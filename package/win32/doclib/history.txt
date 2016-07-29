@@ -5,7 +5,7 @@ Hot Soup Processor ver3.5                           HSP : Hot Soup Processor
 
 ・hsp3関連 更新履歴
 
-	2016/07/26 3.5 beta4
+	2016/07/29 3.5 beta4
 
 	オフィシャル珠音2D素材(tamaface)とサンプルゲームを追加
 	シリアル接続によるarduino制御のためのモジュール、arduino.asを追加
