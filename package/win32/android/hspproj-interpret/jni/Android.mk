@@ -40,7 +40,7 @@ LOCAL_SRC_FILES := \
 ../../hsplib-interpret/hsp3/ndk/mmman.cpp \
 ../../hsplib-interpret/hsp3/ndk/webtask_ndk.cpp
 
-LOCAL_LDLIBS    := -llog -landroid -lEGL -lGLESv1_CM -lOpenSLES -ljnigraphics -Llibs/$(TARGET_ARCH_ABI)
+LOCAL_LDLIBS    := -llog -landroid -lEGL -lGLESv1_CM -lGLESv2 -lOpenSLES -ljnigraphics -Llibs/$(TARGET_ARCH_ABI)
 #-lobaqlib
 #LOCAL_STATIC_LIBRARIES := obaqlib
 

@@ -197,6 +197,7 @@ int HspWnd::Picload( int id, char *fname, int mode )
 	case HSPWND_TYPE_MAIN:
 		break;
 	case HSPWND_TYPE_BUFFER:
+	case HSPWND_TYPE_FB:
 		MakeBmscrFromResource( id, fname );
 		break;
 	default:
@@ -314,6 +315,8 @@ void Bmscr::Init( int p_sx, int p_sy )
 	fl_udraw = 1;
 
 	resname[0] = 0;
+	if ( type == HSPWND_TYPE_FB )
+		InitFB();
 }
 
 
@@ -327,6 +330,23 @@ void Bmscr::Init( char *fname )
 	Init( sx, sy );
 	strncpy( resname, fname, RESNAME_MAX-1 );
 	//Alertf( "(%d,%d)",sx,sy );
+}
+
+
+void Bmscr::InitFB()
+{
+	int i;
+	i = hgio_initfb( (BMSCR *)this, sy, sy );
+	if ( i < 0 ) {
+		throw HSPERR_PICTURE_MISSING;
+	}
+	//Alertf( "(%d,%d)",sx,sy );
+}
+
+
+void Bmscr::Bind()
+{
+	hgio_resetfb( (BMSCR *)this );
 }
 
 

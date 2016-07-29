@@ -726,6 +726,7 @@ static int cmdfunc_extcmd( int cmd )
 		p2 = code_getdi( 0 );
 
 		bmscr = wnd->GetBmscrSafe( p1 );
+		bmscr->Bind();
 		cur_window = p1;
 		break;
 
@@ -897,7 +898,10 @@ static int cmdfunc_extcmd( int cmd )
 
 		if ( cmd == 0x29 ) {
 			if ( p1 == 0 ) throw HSPERR_ILLEGAL_FUNCTION;
-			wnd->MakeBmscr( p1, HSPWND_TYPE_BUFFER, p5, p6, p2, p3 );
+			if ( (p4 & 64) != 0 )
+				wnd->MakeBmscr( p1, HSPWND_TYPE_FB, p5, p6, p2, p3 );
+			else
+				wnd->MakeBmscr( p1, HSPWND_TYPE_BUFFER, p5, p6, p2, p3 );
 		}
 		bmscr = wnd->GetBmscr( p1 );
 		cur_window = p1;

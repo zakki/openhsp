@@ -171,6 +171,7 @@ static int SetTex( int sel, short mode, short opt, short sx, short sy, short wid
 
 static int Get2N( int val )
 {
+	return val;//XXX
 	int res = 1;
 	while(1) {
 		if ( res >= val ) break;
@@ -257,7 +258,7 @@ int RegistTex( char *fname )
 }
 
 
-int MakeEmptyTex( int width, int height )
+int MakeEmptyTex( int width, int height, int format, short mode )
 {
 	//		メッセージ用の空テクスチャを作成する
 	//
@@ -272,8 +273,10 @@ int MakeEmptyTex( int width, int height )
 	glGenTextures( 1, &id );
 	glBindTexture( GL_TEXTURE_2D, id );
 
-	glTexImage2D( GL_TEXTURE_2D, 0, GL_ALPHA, sx, sy, 0, GL_ALPHA, GL_UNSIGNED_BYTE, NULL );
-	texid = SetTex( -1, TEXMODE_MES8, 0, sx, sy, width, height, id );
+	//glTexImage2D( GL_TEXTURE_2D, 0, GL_ALPHA, sx, sy, 0, GL_ALPHA, GL_UNSIGNED_BYTE, NULL );
+	//texid = SetTex( -1, TEXMODE_MES8, 0, sx, sy, width, height, id );
+	glTexImage2D( GL_TEXTURE_2D, 0, format, sx, sy, 0, format, GL_UNSIGNED_BYTE, NULL );
+	texid = SetTex( -1, mode, 0, sx, sy, width, height, id );
 	Alertf( "Tex:ID%d (%d,%d) Clear",texid,sx,sy );
 	return texid;
 }
@@ -389,7 +392,7 @@ int GetCacheMesTextureID( char *msg, int font_size, int font_style )
 
 	//		キャッシュが存在しないので作成
 	pImg = (unsigned char *)j_callFontBitmap( msg, font_size, font_style, &tsx, &tsy );
-	texid = MakeEmptyTex( tsx, tsy );
+	texid = MakeEmptyTex( tsx, tsy, GL_ALPHA, TEXMODE_MES8 );
 	if ( texid < 0 ) return -1;
 
 	t = GetTex( texid );

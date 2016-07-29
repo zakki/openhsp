@@ -53,6 +53,7 @@ void hgio_copyrot( struct BMSCR *bm, short xx, short yy, short srcsx, short srcs
 
 void hgio_clear( void );
 void hgio_reset( void );
+void hgio_resetfb( BMSCR *bm );
 
 void hgio_setClear( int rval, int gval ,int bval );
 void hgio_setFilterMode( int mode );

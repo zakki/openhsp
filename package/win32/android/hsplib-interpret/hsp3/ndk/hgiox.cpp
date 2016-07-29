@@ -25,6 +25,7 @@
 #include "../../appengine.h"
 #include "../../javafunc.h"
 #include "font_data.h"
+#include <GLES2/gl2.h>
 #endif
 
 #ifdef HSPIOS
@@ -67,6 +68,20 @@ static		HSPREAL infoval[HGIO_INFO_MAX];
 #define DEFAULT_FONT_NAME ""
 #define DEFAULT_FONT_SIZE 14
 #define DEFAULT_FONT_STYLE 0
+
+
+#ifdef HSPNDK
+//#ifdef NDEBUG
+//#define GL_ASSERT( gl_code ) gl_code
+//#else
+#define GL_ASSERT( gl_code ) do \
+    { \
+        gl_code; \
+        GLenum __gl_error_code = glGetError(); \
+        if (__gl_error_code != GL_NO_ERROR) Alertf("%d, %s", __gl_error_code, #gl_code); \
+    } while(0)
+//#endif
+#endif
 
 //色
 typedef struct{
@@ -125,6 +140,7 @@ static float _scaleY;	// スケールY
 static float _rateX;	// 1/スケールX
 static float _rateY;	// 1/スケールY
 static int _uvfix;		// UVFix
+static GLint default_fb;
 
 static int		drawflag;
 static engine	*appengine;
@@ -237,6 +253,7 @@ void hgio_init( int mode, int sx, int sy, void *hwnd )
 	backbm = NULL;
 	appengine = (engine *)hwnd;
 	hgio_touch( 0,0,0 );
+	glGetIntegerv(GL_FRAMEBUFFER_BINDING, &default_fb);
 
 	//		設定の初期化
 	//
@@ -428,6 +445,104 @@ void hgio_reset( void )
 //    glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_MIN_FILTER,GL_LINEAR); 
     glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_MAG_FILTER,GL_NEAREST); 
     glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_MIN_FILTER,GL_NEAREST); 
+
+	//テクスチャ設定リセット
+	TexReset();
+
+	//フォント描画リセット
+#if defined(HSPNDK) || defined(HSPEMSCRIPTEN)
+#ifdef USE_JAVA_FONT
+	TexProc();
+#endif
+#endif
+
+
+}
+
+
+void hgio_resetfb( BMSCR *bm )
+{
+	if ( bm == NULL ) return;
+	switch ( bm->type ) {
+	case HSPWND_TYPE_MAIN:
+		GL_ASSERT(glBindFramebuffer( GL_FRAMEBUFFER, default_fb ));
+		break;
+	case HSPWND_TYPE_FB:
+	{
+		TEXINF *tex = GetTex( bm->texid );
+		if ( tex->fbid < 0 )
+			throw HSPERR_UNSUPPORTED_FUNCTION;
+		GL_ASSERT(glBindFramebuffer( GL_FRAMEBUFFER, tex->fbid ));
+		//GL_ASSERT(glClearColor(0.0f, 1.0f, 0.0f, 1.0f));
+		//GL_ASSERT(glClear(GL_COLOR_BUFFER_BIT));
+		break;
+	}
+	default:
+		throw HSPERR_UNSUPPORTED_FUNCTION;
+	}
+
+    //投影変換
+    glMatrixMode(GL_PROJECTION);
+    glLoadIdentity();
+
+	float ox = (float)bm->sx;
+	float oy = (float)bm->sy;
+
+#ifndef HSPEMSCRIPTEN
+	glOrthof(0,ox,0,-oy,-100,100);
+#else
+	glOrtho(0,ox,0,-oy,-100,100);
+#endif
+
+    //ビューポート変換
+    glViewport(0,0,ox,oy);
+
+    //モデリング変換
+    glMatrixMode(GL_MODELVIEW);
+    glLoadIdentity();
+
+    glDisable(GL_LIGHTING);
+    glDisable(GL_CULL_FACE);
+    glDisable(GL_DEPTH_TEST);
+#if defined(HSPIOS) || defined(HSPEMSCRIPTEN)
+    glDisable(GL_DEPTH_BUFFER_BIT);
+#endif
+
+    //glClearColor(.7f, .7f, .9f, 1.f);
+    //glShadeModel(GL_SMOOTH);
+
+    
+    //頂点配列の設定
+    glVertexPointer(2,GL_FLOAT,0,panelVertices);
+    glEnableClientState(GL_VERTEX_ARRAY);
+
+    //UVの設定
+    glTexCoordPointer(2,GL_FLOAT,0,panelUVs);
+
+    //テクスチャの設定
+    glEnableClientState(GL_TEXTURE_COORD_ARRAY);
+
+#if defined(HSPEMSCRIPTEN)
+	glDisable(GL_TEXTURE_2D);
+#else
+    glEnable(GL_TEXTURE_2D);
+#endif
+
+    //ブレンドの設定
+    glEnable(GL_BLEND);
+#ifdef HSPIOS
+    glBlendEquationOES(GL_FUNC_ADD_OES);
+#endif
+    glBlendFunc(GL_ONE,GL_ONE_MINUS_SRC_ALPHA);
+
+    //ポイントの設定
+    glEnable(GL_POINT_SMOOTH);
+
+    //前処理
+//    glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_MAG_FILTER,GL_LINEAR);
+//    glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_MIN_FILTER,GL_LINEAR);
+    glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_MAG_FILTER,GL_NEAREST);
+    glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_MIN_FILTER,GL_NEAREST);
 
 	//テクスチャ設定リセット
 	TexReset();
@@ -842,6 +957,40 @@ int hgio_texload( BMSCR *bm, char *fname )
 	return texid;
 }
 
+
+int hgio_initfb( BMSCR *bm, int sx, int sy )
+{
+	TEXINF *t;
+	int texid;
+
+	hgio_delscreen( bm );
+
+	texid = MakeEmptyTex( sx, sy, GL_RGBA, TEXMODE_NORMAL );
+	if ( texid < 0 ) return -1;
+
+	t = GetTex( texid );
+	if ( t->mode == TEXMODE_NONE ) return -1;
+
+	GLuint fbid, depthid;
+	GL_ASSERT(glGenFramebuffers( 1, &fbid ));
+	t->fbid = (int) fbid;
+	//glGenRenderbuffers( 1, &depthid );
+	//t->depthid = (int) depthid;
+
+	//glBindRenderbuffer( GL_RENDERBUFFER, depthid );
+	//glRenderbufferStorage( GL_RENDERBUFFER, GL_DEPTH_COMPONENT16, t->sx, t->sy );
+	GL_ASSERT(glBindFramebuffer( GL_FRAMEBUFFER, fbid ));
+	GL_ASSERT(glFramebufferTexture2D( GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, t->texid, 0 ));
+	LOGI("Init frame buffer %d %d\n", fbid, t->texid);
+	//glFramebufferRenderbuffer( GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_RENDERBUFFER, t->depthid );
+
+	bm->sx = t->width;
+	bm->sy = t->height;
+	bm->texid = texid;
+
+	return texid;
+}
+
 /*-------------------------------------------------------------------------------*/
 
 //ポイントカラー設定
@@ -1042,7 +1191,7 @@ void hgio_line( BMSCR *bm, float x, float y )
 	//		(ラインの座標は必要な数だけhgio_line2を呼び出す)
 	//
 	if ( bm == NULL ) return;
-	if ( bm->type != HSPWND_TYPE_MAIN ) throw HSPERR_UNSUPPORTED_FUNCTION;
+	if ( bm->type != HSPWND_TYPE_MAIN && bm->type != HSPWND_TYPE_FB ) throw HSPERR_UNSUPPORTED_FUNCTION;
 
 	hgio_setColor( bm->color );
 
@@ -1090,7 +1239,7 @@ void hgio_boxf( BMSCR *bm, float x1, float y1, float x2, float y2 )
 	//		矩形描画
 	//
 	if ( bm == NULL ) return;
-	if ( bm->type != HSPWND_TYPE_MAIN ) throw HSPERR_UNSUPPORTED_FUNCTION;
+	if ( bm->type != HSPWND_TYPE_MAIN && bm->type != HSPWND_TYPE_FB ) throw HSPERR_UNSUPPORTED_FUNCTION;
 
 	ChangeTex( -1 );
 	hgio_setColor( bm->color );
@@ -1104,7 +1253,7 @@ void hgio_circle( BMSCR *bm, float x1, float y1, float x2, float y2, int mode )
 	//
 	float xx,yy,rx,ry;
 	if ( bm == NULL ) return;
-	if ( bm->type != HSPWND_TYPE_MAIN ) throw HSPERR_UNSUPPORTED_FUNCTION;
+	if ( bm->type != HSPWND_TYPE_MAIN && bm->type != HSPWND_TYPE_FB ) throw HSPERR_UNSUPPORTED_FUNCTION;
 
 	rx = ((float)abs(x2-x1))*0.5f;
 	ry = ((float)abs(y2-y1))*0.5f;
@@ -1126,7 +1275,7 @@ void hgio_circle( BMSCR *bm, float x1, float y1, float x2, float y2, int mode )
 void hgio_fillrot( BMSCR *bm, float x, float y, float sx, float sy, float ang )
 {
 	if ( bm == NULL ) return;
-	if ( bm->type != HSPWND_TYPE_MAIN ) throw HSPERR_UNSUPPORTED_FUNCTION;
+	if ( bm->type != HSPWND_TYPE_MAIN && bm->type != HSPWND_TYPE_FB ) throw HSPERR_UNSUPPORTED_FUNCTION;
     
     GLfloat *flp;
 	GLfloat x0,y0,x1,y1,ofsx,ofsy;
@@ -1253,7 +1402,7 @@ void hgio_copy( BMSCR *bm, short xx, short yy, short srcsx, short srcsy, BMSCR *
 	//		カレントポジション、描画モードはBMSCRから取得
 	//
 	if ( bm == NULL ) return;
-	if ( bm->type != HSPWND_TYPE_MAIN ) throw HSPERR_UNSUPPORTED_FUNCTION;
+	if ( bm->type != HSPWND_TYPE_MAIN && bm->type != HSPWND_TYPE_FB ) throw HSPERR_UNSUPPORTED_FUNCTION;
 
 	TEXINF *tex = GetTex( bmsrc->texid );
 	if ( tex->mode == TEXMODE_NONE ) return;
@@ -1339,7 +1488,7 @@ void hgio_copyrot( BMSCR *bm, short xx, short yy, short srcsx, short srcsy, floa
 	//		カレントポジション、描画モードはBMSCRから取得
 	//
 	if ( bm == NULL ) return;
-	if ( bm->type != HSPWND_TYPE_MAIN ) throw HSPERR_UNSUPPORTED_FUNCTION;
+	if ( bm->type != HSPWND_TYPE_MAIN && bm->type != HSPWND_TYPE_FB ) throw HSPERR_UNSUPPORTED_FUNCTION;
 
 	TEXINF *tex = GetTex( bmsrc->texid );
 	if ( tex->mode == TEXMODE_NONE ) return;
@@ -1444,7 +1593,7 @@ void hgio_square_tex( BMSCR *bm, int *posx, int *posy, BMSCR *bmsrc, int *uvx, i
 	//		四角形(square)テクスチャ描画
 	//
 	if ( bm == NULL ) return;
-	if ( bm->type != HSPWND_TYPE_MAIN ) throw HSPERR_UNSUPPORTED_FUNCTION;
+	if ( bm->type != HSPWND_TYPE_MAIN && bm->type != HSPWND_TYPE_FB ) throw HSPERR_UNSUPPORTED_FUNCTION;
 
 	TEXINF *tex = GetTex( bmsrc->texid );
 	if ( tex->mode == TEXMODE_NONE ) return;
@@ -1495,7 +1644,7 @@ void hgio_square( BMSCR *bm, int *posx, int *posy, int *color )
     int arate;
 
 	if ( bm == NULL ) return;
-	if ( bm->type != HSPWND_TYPE_MAIN ) throw HSPERR_UNSUPPORTED_FUNCTION;
+	if ( bm->type != HSPWND_TYPE_MAIN && bm->type != HSPWND_TYPE_FB ) throw HSPERR_UNSUPPORTED_FUNCTION;
 
     flp = vertf2D;
 
@@ -1542,7 +1691,7 @@ int hgio_celputmulti( BMSCR *bm, int *xpos, int *ypos, int *cel, int count, BMSC
 	int total;
 
 	if ( bm == NULL ) return 0;
-	if ( bm->type != HSPWND_TYPE_MAIN ) throw HSPERR_UNSUPPORTED_FUNCTION;
+	if ( bm->type != HSPWND_TYPE_MAIN && bm->type != HSPWND_TYPE_FB ) throw HSPERR_UNSUPPORTED_FUNCTION;
 
 	total =0;
 
@@ -2122,8 +2271,27 @@ int hgio_redraw( BMSCR *bm, int flag )
 	if ( bm->type != HSPWND_TYPE_MAIN ) throw HSPERR_UNSUPPORTED_FUNCTION;
 
 	if ( flag & 1 ) {
+		// if ( bm->type == HSPWND_TYPE_MAIN ) {
+		// } else if ( bm->type == HSPWND_TYPE_FB ) {
+		// 	drawflag = 0;
+		// 	return 0;
+		// } else {
+		// 	throw HSPERR_UNSUPPORTED_FUNCTION;
+		// }
 		hgio_render_end();
 	} else {
+		// if ( bm->type == HSPWND_TYPE_MAIN ) {
+		// 	GL_ASSERT(glBindFramebuffer( GL_FRAMEBUFFER, default_fb ));
+		// } else if ( bm->type == HSPWND_TYPE_FB ) {
+		// 	TEXINF *tex = GetTex( bm->texid );
+		// 	if ( tex->fbid < 0 )
+		// 		throw HSPERR_UNSUPPORTED_FUNCTION;
+		// 	GL_ASSERT(glBindFramebuffer( GL_FRAMEBUFFER, tex->fbid ));
+		// 	GL_ASSERT(glClearColor(0.0f, 1.0f, 0.0f, 1.0f));
+		// 	GL_ASSERT(glClear(GL_COLOR_BUFFER_BIT));
+		// } else {
+		// 	throw HSPERR_UNSUPPORTED_FUNCTION;
+		// }
 		hgio_render_start();
 	}
 	return 0;

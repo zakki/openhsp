@@ -89,6 +89,7 @@ typedef struct HSPOBJINFO
 #define HSPWND_TYPE_MAIN 2
 #define HSPWND_TYPE_BGSCR 3
 #define HSPWND_TYPE_SSPREVIEW 4
+#define HSPWND_TYPE_FB 5
 
 #define BMSCR_MAX_MTOUCH	16		// Max Points of Multi-Touch
 typedef struct HSP3MTOUCH
@@ -141,6 +142,7 @@ public:
 	void *GetBMSCR( void ) { return (void *)(&this->flag); };
 	void Init( int p_sx, int p_sy );
 	void Init( char *fname );
+	void InitFB( void );
 	void Cls( int mode );
 
 	void Posinc( int pp );
@@ -201,6 +203,8 @@ public:
 	HSP3MTOUCH *getMTouchNew( void );
 	void resetMTouch( void );
 	int listMTouch( int *outbuf );
+
+	void Bind();
 
 
 	//

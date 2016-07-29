@@ -22,6 +22,8 @@ short sy;			// y-size
 short width;		// real x-size
 short height;		// real y-size
 int texid;			// OpenGL TexID(GLuint)
+int fbid;			// OpenGL FbID(GLuint)
+int depthid;			// OpenGL FbID(GLuint)
 float ratex;		// 1/sx
 float ratey;		// 1/sy
 
@@ -55,7 +57,7 @@ void TexProc( void );
 
 int RegistTexMem( unsigned char *ptr, int size );
 int RegistTex( char *fname );
-int MakeEmptyTex( int width, int height );
+int MakeEmptyTex( int width, int height, int format, short mode );
 
 int GetCacheMesTextureID( char *msg, int font_size, int font_style );
 
