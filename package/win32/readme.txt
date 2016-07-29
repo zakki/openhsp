@@ -38,7 +38,7 @@ hsp35betaフォルダ以下にあるスクリプトエディタ(hsed3.exe)を始めとする各種ツールを
 「ダウンロード」から全体のアーカイブ(hsp35betaフォルダの内容)を取得可能です。
 
 HSP3.5β版(OneDrive)
-http://1drv.ms/1QjSlJ4
+https://onedrive.live.com/embed?cid=EC425522ED849DA7&resid=EC425522ED849DA7%211229&authkey=AB-pNztAqBp6BcU
 
 
 ・#bootopt命令について
@@ -112,6 +112,7 @@ http://1drv.ms/1QjSlJ4
 
 	iOS版	  : XCode6.3以降用 iOS8,64bit対応
 	android版 : Android SDK 5.0.1 (API 21)、NDK r10以降用
+	(r11、r12のバージョンはWindows上でのビルドに不具合があるため現時点では対応していません)
 		    AdMob(Google Play Services)対応
 
 	それぞれ対応したバージョンのSDKや開発環境が必要となります。
@@ -135,6 +136,22 @@ http://1drv.ms/1QjSlJ4
 	詳しくは、命令ヘルプ及び、HSP3Dishマニュアルを参照してください。
 
 		doclib/hsp3dish_prog.htm#HTTP
+
+
+・HSP3UTF(UTF-8)版ランタイムについて
+
+HSP3の標準ランタイムをunicode(UTF-8)文字ベースで動作させるための
+HSP3UTFランタイム(hsp3utf.exe)が同梱されています。
+
+通常のHSP3ランタイムと同等の機能を持っていますが、文字列の扱いのみ
+unicode(UTF-8)となっています。
+SJISの文字コードを扱う標準のHSPでは表現できない文字を扱うことのできる
+新しいHSP3として今後も進化を続ける予定です。
+使用する場合は、スクリプトの先頭に以下の行を指定してください。
+
+	#include "hsp3utf.as"
+
+詳しくは、ドキュメント hsp3utf.txtをご覧ください。
 
 
 ・64bit(x64)版ランタイムについて
@@ -196,7 +213,6 @@ http://1drv.ms/1QjSlJ4
 	HSP3.5リリース版では、いくつかの古いプラグイン・ランタイムの同梱を終了する予定です。
 		・HSPLetランタイム
 		・HGIMG/HGIMGXプラグイン
-		・HSPDXプラグイン
 		・llmod3モジュール
 
 	これらは長い期間更新がなく、古いシステムに依存しているため新しく使用することは推奨できません。
@@ -204,6 +220,37 @@ http://1drv.ms/1QjSlJ4
 
 
 ・更新履歴
+
+	2016/07/29 3.5 beta4
+
+	オフィシャル珠音2D素材(tamaface)とサンプルゲームを追加
+	シリアル接続によるarduino制御のためのモジュール、arduino.asを追加
+	hspextプラグインにバイナリデータを送信を行なうcomputb命令を追加
+	スクリプトエディタのツールメニューを整理(非推奨機能をサブメニューに移動)
+	ソースに全角文字がある際にスクリプトエディタのラベル一覧で正しくラベルが検出されなくなる不具合を修正
+	拡張プラグインサンプルhpi3sample.asが動作しない不具合を修正
+	mesbox,input命令による入力ボックスから32767以上の文字列を取得できない不具合を修正
+	strrep命令を入れ子にすると意図した動作をしない不具合を修正(HSP3BT#17)
+	文字列をUTF8で出力するオプションを#cmdopt命令に追加
+	[HSP3Dish][Windows] mmstat命令でwavファイル以外の再生状態取得ができなかった不具合を修正
+	[hsp3utf] UTF-8版hsp3ランタイム(hsp3utf)を同梱
+	[hsp3utf] UTF-8とANSI(SJIS)の相互変換を行なうcnvstoa命令、cnvatos関数を追加
+	Win32コマンドライン版コードコンパイラ(hspcmp)を同梱
+
+	tds12さんによるOpenHSP修正を反映
+	デバッグウィンドウをUTF8文字コードに対応
+
+	ue_daiさんによるOpenHSPバグ修正と機能拡張を反映
+	[hsp3][Windows] oncmd命令で未登録のウインドウメッセージが有効化できる不具合を修正
+	[hsp3][Windows] stick,getkey命令をシステムのマウスクリックの左右反転設定に対応
+	[hsp3] logmes命令がmes命令と同様に任意の型の値を受け取るように修正
+	[hsp3] limit,limitf関数の下限、上限のパラメータを省略可能に修正
+	[hsp3] 配列変数の要素拡張を高速化
+	[hsp3] varptr関数実行時に変数のバッファサイズをシステム変数strsizeに返すように修正
+	[hsp3_64] モジュール変数のデータ(STRUCTPRM)が破損する問題を修正
+	[hspcmp] β3のプリプロセッサーが「{」「}」を文の区切り記号として解釈する変更を取り消し(ソース非互換が発生するため)
+	[hspcmp] β3のコンパイラでエラーが発生することがある不具合を修正
+	スクリプトエディタのフォント設定がASCII文字にしか適用されていなかった問題を修正
 
 	2016/01/19 3.5 beta3
 
