@@ -69,7 +69,7 @@ https://onedrive.live.com/embed?cid=EC425522ED849DA7&resid=EC425522ED849DA7%2112
 	以下の例では、高精度タイマーの使用を抑制します。
 
 	例 :
-		#cmpopt notimer 1
+		#bootopt notimer 1
 
 
 ・ソート機能の標準化について
