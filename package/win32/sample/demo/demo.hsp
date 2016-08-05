@@ -1,5 +1,5 @@
 ;------------------------------------------------------
-;	HSP3 demo for ver3.4 ( sample script )
+;	HSP3 demo for ver3.5 ( sample script )
 ;------------------------------------------------------
 
 #include "hspogg.as"
@@ -226,7 +226,7 @@
 *boot
 	;	デモ開始
 	;
-	title "HSP3.4 Demonstration"
+	title "HSP3.5 Demonstration"
 
 #ifdef RELEASE
 	chdir dir_exe+"\\sample\\demo\\"
@@ -653,7 +653,7 @@
 
 	gsel 3
 	font msgothic,32,1+16
-	a="・HSP3.4の主要機能"
+	a="・HSP3.5の主要機能"
 	x=240:y=32
 	pos x+2,y+2:color 0,0,0:mes a
 	pos x,y:color 192,192,255:mes a

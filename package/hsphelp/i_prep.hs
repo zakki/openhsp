@@ -1233,7 +1233,7 @@ Let
 以下の例では、高精度タイマーの使用を抑制します。
 ^p
 例 :
-	#cmpopt notimer 1
+	#bootopt notimer 1
 ^p
 
 %href
