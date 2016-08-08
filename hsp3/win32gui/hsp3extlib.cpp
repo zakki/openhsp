@@ -620,17 +620,25 @@ static int code_expand_next( char *prmbuf, const STRUCTDAT *st, int index )
 		*(void **)out = HspVarCorePtrAPTR( pval, aptr );
 		break;
 	case MPTYPE_LOCALSTRING:
+#ifdef HSPUTF8
 		apichartoansichar(chartoapichar(code_gets(), &hactmp1), &actmp1);
 		localbuf = sbAlloc(strlen(actmp1));
 		strcpy((char*)localbuf, actmp1);
 		freeac(&actmp1);
 		freehac(&hactmp1);
+#else
+		localbuf = prepare_localstr( code_gets(), 0 );
+#endif
 		*(void **)out = localbuf;
 		break;
 	case MPTYPE_LOCALWSTR:
+#ifdef HSPUTF8
 		chartoapichar(code_gets(),&hactmp1);
 		localbuf = sbAlloc(_tcslen(hactmp1));
 		_tcscpy((HSPAPICHAR*)localbuf,hactmp1);
+#else
+		localbuf = prepare_localstr( code_gets(), 1 );
+#endif
 		*(void **)out = localbuf;
 		break;
 	case MPTYPE_DNUM:
@@ -669,6 +677,7 @@ static int code_expand_next( char *prmbuf, const STRUCTDAT *st, int index )
 			*(int *)out = *(int *)(mpval->pt);
 			break;
 		case HSPVAR_FLAG_STR:
+#ifdef HSPUTF8
 			if (prm->mptype==MPTYPE_FLEXWPTR) {
 				chartoapichar(mpval->pt,&hactmp1);
 				localbuf = sbAlloc(_tcslen(hactmp1));
@@ -681,6 +690,9 @@ static int code_expand_next( char *prmbuf, const STRUCTDAT *st, int index )
 				freeac(&actmp1);
 				freehac(&hactmp1);
 			}
+#else
+			localbuf = prepare_localstr( mpval->pt, (prm->mptype==MPTYPE_FLEXWPTR) );
+#endif
 			*(void **)out = localbuf;
 			break;
 		default:
