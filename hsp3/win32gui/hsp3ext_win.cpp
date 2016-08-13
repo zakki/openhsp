@@ -214,10 +214,18 @@ void *comget_variant( VARIANT *var, int *restype, BOOL fvariantret /* = FALSE*/ 
 		// 文字列全体を返すため、ANSI文字列をバイナリデータBSTRとして格納
 		ptr = comconv_var.bstrVal;
 		if ( ptr == NULL ) ptr = L"";
+#ifndef HSPUTF8
 		size = cnvsjis( NULL, (char *)ptr, 0 );
+#else
+		size = cnvu8( NULL, (HSPAPICHAR *)ptr, 0);
+#endif
 		bstr = SysAllocStringByteLen( NULL, size );
 		if ( bstr == NULL ) throw HSPERR_OUT_OF_MEMORY;
+#ifndef HSPUTF8
 		cnvsjis( (char *)bstr, (char *)ptr, size );
+#else
+		cnvu8( (char *)bstr, (HSPAPICHAR *)ptr, 0);
+#endif
 		SysFreeString( comconv_var.bstrVal );
 		comconv_var.bstrVal = bstr;
 		*restype = HSPVAR_FLAG_STR;

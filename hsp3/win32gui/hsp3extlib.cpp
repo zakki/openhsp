@@ -486,9 +486,13 @@ int __cdecl call_extfunc( void * proc, int * prm, int prms )
 
 int cnvwstr( void *out, char *in, int bufsize )
 {
-	//	sjis->unicode ‚É•ÏŠ·
+	//	hspchar->unicode ‚É•ÏŠ·
 	//
+#ifndef HSPUTF8
 	return MultiByteToWideChar( CP_ACP, 0, in, -1, (LPWSTR)out, bufsize );
+#else
+	return MultiByteToWideChar(CP_UTF8, 0, in, -1, (LPWSTR)out, bufsize);
+#endif
 }
 
 
