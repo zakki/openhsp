@@ -23,7 +23,7 @@ extern HINSTANCE hDllInstance;
 #include "dpmread.h"
 #include "supio.h"
 
-#ifdef HSPUTF8
+#if (defined HSPUTF8 && defined HSPWIN)
 #pragma execution_character_set("utf-8")
 #endif
 
@@ -32,7 +32,7 @@ static int memf_flag = 0;			// 0=none/1=on memory
 static unsigned char *mem_dpm = NULL;
 static unsigned char *nameptr;
 static unsigned char buf[0x80];
-#ifndef HSPUTF8
+#if !(defined HSPUTF8 && defined HSPWIN)
 static char dpm_file[HSP_MAX_PATH];
 #else
 static wchar_t dpm_file[HSP_MAX_PATH];
@@ -77,7 +77,7 @@ static int dpmchk( char *fname )
 	char f1[HSP_MAX_PATH];
 	char *ss;
 	unsigned char *uc;
-#ifdef HSPUTF8
+#if (defined HSPUTF8 && defined HSPWIN)
 	HSPAPICHAR *hactmp1;
 #endif
 
@@ -106,7 +106,7 @@ static int dpmchk( char *fname )
 
 	fs = getdw( d_fsiz );
 	fptr = getdw( d_fent );
-#ifdef HSPUTF8
+#if (defined HSPUTF8 && defined HSPWIN)
 	fp=_wfopen( dpm_file,L"rb");freehac(&hactmp1);
 	if (fp==NULL) return -1;
 #else
@@ -152,7 +152,7 @@ static int dpm_chkmemf( char *fname )
 
 FILE *dpm_open( char *fname )
 {
-#ifdef HSPUTF8
+#if (defined HSPUTF8 && defined HSPWIN)
 	HSPAPICHAR *hactmp1;
 #endif
 	dpm_chkmemf( fname );
@@ -166,7 +166,7 @@ FILE *dpm_open( char *fname )
 			return fp;
 		}
 	}
-#ifdef HSPUTF8
+#if (defined HSPUTF8 && defined HSPWIN)
 	fp=_wfopen( chartoapichar(fname,&hactmp1),L"rb" );
 	freehac(&hactmp1);//
 #else
@@ -216,7 +216,7 @@ int dpm_ini( char *fname, long dpmofs, int chksum, int deckey )
 	int dirsize;
 	int sum,sumseed,sumsize;
 	int a1;
-#ifndef HSPUTF8
+#if !(defined HSPUTF8 && defined HSPWIN)
 	char dpmfile[HSP_MAX_PATH];
 #else
 	WCHAR dpmfile[HSP_MAX_PATH];
@@ -238,7 +238,7 @@ int dpm_ini( char *fname, long dpmofs, int chksum, int deckey )
 		GetModuleFileName( hDllInstance,dpmfile,_MAX_PATH );
 #endif
 	} else {
-#ifndef HSPUTF8
+#if !(defined HSPUTF8 && defined HSPWIN)
 		strcpy( dpmfile, fname );
 #else
 		wcscpy(dpmfile, chartoapichar(fname,&hactmp1));
@@ -249,7 +249,7 @@ int dpm_ini( char *fname, long dpmofs, int chksum, int deckey )
 	strcpy( dpmfile, fname );
 #endif
 
-#ifdef HSPUTF8
+#if (defined HSPUTF8 && defined HSPWIN)
 	fp=_wfopen( dpmfile,L"rb" );
 #else
 	fp=fopen( dpmfile,"rb" );
@@ -275,7 +275,7 @@ int dpm_ini( char *fname, long dpmofs, int chksum, int deckey )
 
 	//		内部バッファにDPMヘッダを読み込む
 	//
-#ifdef HSPUTF8
+#if (defined HSPUTF8 && defined HSPWIN)
 	fp=_wfopen( dpmfile,L"rb" );
 
 #else
@@ -290,7 +290,7 @@ int dpm_ini( char *fname, long dpmofs, int chksum, int deckey )
 	sum = 0; sumsize = 0;
 	sumseed = ((deckey>>24)&0xff)/7;
 	if (chksum != -1) {
-#ifdef HSPUTF8
+#if (defined HSPUTF8 && defined HSPWIN)
 		fp=_wfopen( dpmfile,L"rb" );
 #else
 		fp=fopen( dpmfile,"rb" );
@@ -311,7 +311,7 @@ int dpm_ini( char *fname, long dpmofs, int chksum, int deckey )
 	//		DPMモードにする
 	//
 	dpm_flag = 1;
-#ifndef HSPUTF8
+#if !(defined HSPUTF8 && defined HSPWIN)
 	strcpy(dpm_file,dpmfile);
 #else
 	wcscpy(dpm_file, dpmfile);
@@ -335,7 +335,7 @@ int dpm_read( char *fname, void *readmem, int rlen, int seekofs )
 	int a1;
 	int seeksize;
 	int filesize;
-#ifdef HSPUTF8
+#if (defined HSPUTF8 && defined HSPWIN)
 	HSPAPICHAR *hactmp1;
 #endif
 
@@ -360,7 +360,7 @@ int dpm_read( char *fname, void *readmem, int rlen, int seekofs )
 
 			//	Read DPM file
 
-#ifdef HSPUTF8
+#if (defined HSPUTF8 && defined HSPWIN)
 			ff = _wfopen( dpm_file,L"rb" );
 			freehac(&hactmp1);
 #else
@@ -376,7 +376,7 @@ int dpm_read( char *fname, void *readmem, int rlen, int seekofs )
 	}
 
 	//	Read normal file
-#ifdef HSPUTF8
+#if (defined HSPUTF8 && defined HSPWIN)
 	ff = _wfopen( chartoapichar(fname,&hactmp1),L"rb" );
 	freehac(&hactmp1);
 #else
@@ -394,7 +394,7 @@ int dpm_exist( char *fname )
 {
 	FILE *ff;
 	int length;
-#ifdef HSPUTF8
+#if (defined HSPUTF8 && defined HSPWIN)
 	HSPAPICHAR *hactmp1;
 #endif
 
@@ -409,7 +409,7 @@ int dpm_exist( char *fname )
 			return fs;					// dpm file size
 		}
 	}
-#ifdef HSPUTF8
+#if (defined HSPUTF8 && defined HSPWIN)
 	ff=_wfopen( chartoapichar(fname,&hactmp1),L"rb" );
 	freehac(&hactmp1);
 #else
@@ -430,7 +430,7 @@ int dpm_filebase( char *fname )
 	//		(-1:error/0=file/1=dpm/2=memory)
 	//
 	FILE *ff;
-#ifdef HSPUTF8
+#if (defined HSPUTF8 && defined HSPWIN)
 	HSPAPICHAR *hactmp1;
 #endif
 	dpm_chkmemf( fname );
@@ -443,7 +443,7 @@ int dpm_filebase( char *fname )
 			return 1;
 		}
 	}
-#ifdef HSPUTF8
+#if (defined HSPUTF8 && defined HSPWIN)
 	ff=_wfopen( chartoapichar(fname,&hactmp1),L"rb" );
 #else
 	ff=fopen( fname,"rb" );
@@ -457,7 +457,7 @@ int dpm_filebase( char *fname )
 void dpm_getinf( char *inf )
 {
 	long a;
-#ifdef HSPUTF8
+#if (defined HSPUTF8 && defined HSPWIN)
 	HSPAPICHAR *hactmp1;
 #endif
 	a=dpm_ofs;
@@ -467,7 +467,7 @@ void dpm_getinf( char *inf )
 	mingw : warning : 仮引数:int 実引数:long
 	に対処
 */
-#ifdef HSPUTF8
+#if (defined HSPUTF8 && defined HSPWIN)
 	swprintf( chartoapichar(inf,&hactmp1),L"%s%d",dpm_file,static_cast< int >( a ) );
 #else
 	sprintf(inf,"%s,%d",dpm_file, static_cast< int >( a ) );
@@ -484,7 +484,7 @@ int dpm_filecopy( char *fname, char *sname )
 	int xlen;
 	int max=0x8000;
 	char *mem;
-#ifdef HSPUTF8
+#if (defined HSPUTF8 && defined HSPWIN)
 	HSPAPICHAR *hactmp1;
 #endif
 
@@ -492,7 +492,7 @@ int dpm_filecopy( char *fname, char *sname )
 	flen=dpm_exist(fname);
 	if (flen<0) return 1;
 
-#ifdef HSPUTF8
+#if (defined HSPUTF8 && defined HSPWIN)
 	fp2=_wfopen(chartoapichar(sname,&hactmp1),L"wb");
 	freehac(&hactmp1);
 	if (fp2==NULL) return 1;
