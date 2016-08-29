@@ -224,7 +224,7 @@ void *comget_variant( VARIANT *var, int *restype, BOOL fvariantret /* = FALSE*/ 
 #ifndef HSPUTF8
 		cnvsjis( (char *)bstr, (char *)ptr, size );
 #else
-		cnvu8( (char *)bstr, (HSPAPICHAR *)ptr, 0);
+		cnvu8( (char *)bstr, (HSPAPICHAR *)ptr, size);
 #endif
 		SysFreeString( comconv_var.bstrVal );
 		comconv_var.bstrVal = bstr;
