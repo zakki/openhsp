@@ -18,6 +18,16 @@
 
 #include <Commctrl.h>
 
+
+#ifndef _tstof
+#ifdef HSPUTF8
+#define _tstof(prm)		_wtof(prm)
+#else
+#define _tstof(prm)		atof(prm)
+#endif
+#endif
+
+
 /*------------------------------------------------------------*/
 /*
 		Object callback interface
@@ -244,7 +254,7 @@ static void Object_SetMultiBox( HSPOBJINFO *info, int type, void *ptr )
 	case TYPE_STRING:
 		if ( info->owid ) {
 			m_ini=CB_RESETCONTENT;
-	        m_add=CB_ADDSTRING;
+			m_add=CB_ADDSTRING;
 		} else {
 			m_ini=LB_RESETCONTENT;
 			m_add=LB_ADDSTRING;
@@ -254,7 +264,7 @@ static void Object_SetMultiBox( HSPOBJINFO *info, int type, void *ptr )
 		SendMessage( hw, m_ini, 0, 0L );
 		for( i=0;i<max;i++ ) {
 			note.GetLine( res, i, 255 );
-			SendMessage( hw, m_add, 0, (long)chartoapichar(res,&hactmp1) );
+			SendMessage( hw, m_add, 0, (LPARAM)chartoapichar(res,&hactmp1) );
 			freehac(&hactmp1);
 		}
 		break;
@@ -498,8 +508,9 @@ void Bmscr::SetButtonImage( int id, int bufid, int x1, int y1, int x2, int y2, i
 	SetWindowLong( obj->hCld, GWL_STYLE, GetWindowLong( obj->hCld, GWL_STYLE ) | BS_OWNERDRAW );
 
 	DefButtonProc = (WNDPROC)GetWindowLongPtr( obj->hCld , GWLP_WNDPROC );
+
 	if ( DefButtonProc != MyButtonProc ) {
-		SetWindowLongPtr( obj->hCld , GWLP_WNDPROC , (LONG)MyButtonProc );
+		SetWindowLongPtr( obj->hCld , GWLP_WNDPROC , (LONG_PTR)MyButtonProc );
 	}
 
 	bset = (HSP3BTNSET *)(&obj->varset);
@@ -809,11 +820,7 @@ int Bmscr::AddHSPObjectInput( PVal *pval, APTR aptr, int sizex, int sizey, char 
 
 	if ( subcl ) {
 		DefEditProc = (WNDPROC)GetWindowLongPtr( hwedit , GWLP_WNDPROC );
-#ifdef HSP64
 		SetWindowLongPtr(hwedit, GWLP_WNDPROC, (LONG_PTR)MyEditProc);
-#else
-		SetWindowLongPtr(hwedit, GWLP_WNDPROC, (LONG)MyEditProc);
-#endif
 	}
 
 	obj = AddHSPVarEventObject( id, hwedit, tabstop|HSPOBJ_OPTION_SETFONT, pval, aptr, type, (void *)&bmscr_obj_ival );

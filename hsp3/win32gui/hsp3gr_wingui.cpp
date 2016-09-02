@@ -57,7 +57,7 @@ extern int resY0, resY1;				// "fcpoly.h"のパラメーター
 //					HSP system support
 /*----------------------------------------------------------*/
 
-static void ExecFile( char *stmp, char *ps, int mode )
+void ExecFile( char *stmp, char *ps, int mode )
 {
 	int i,j;
 	HSPAPICHAR *hactmp1;
@@ -85,11 +85,11 @@ static void ExecFile( char *stmp, char *ps, int mode )
 	}
 		
 	if ( mode&16 ) {
-		i = (int)ShellExecute( NULL,NULL,chartoapichar(stmp,&hactmp1),TEXT(""),TEXT(""),j );
+		i = (int)(INT_PTR)ShellExecute( NULL,NULL,chartoapichar(stmp,&hactmp1),TEXT(""),TEXT(""),j );
 		freehac(&hactmp1);
 	}
 	else if ( mode&32 ) {
-		i = (int)ShellExecute( NULL,TEXT("print"),chartoapichar(stmp,&hactmp1),TEXT(""),TEXT(""),j );
+		i = (int)(INT_PTR)ShellExecute( NULL,TEXT("print"),chartoapichar(stmp,&hactmp1),TEXT(""),TEXT(""),j );
 		freehac(&hactmp1);
 	}
 	else {
@@ -101,7 +101,7 @@ static void ExecFile( char *stmp, char *ps, int mode )
 	}
 	if (i<32) throw HSPERR_EXTERNAL_EXECUTE;
 }
-		
+
 
 
 /*
@@ -177,7 +177,7 @@ static char *getdir( int id )
 		strcat( p, "\\hsptv\\" );
 		return p;
 #else
-		*p = 0;
+		p[0] = '\0';
 		return p;
 #endif
 		break;
@@ -347,6 +347,8 @@ static int chgdisp( int mode, int sx, int sy )
 		for polygon process interface
 */
 /*------------------------------------------------------------*/
+
+#ifndef HSP_COMPACT
 
 static POLY4 mem_poly4;
 
@@ -609,6 +611,7 @@ static int *code_getiv( void )
 	return (int *)HspVarCorePtrAPTR( pval, 0 );
 }
 
+#endif
 
 /*------------------------------------------------------------*/
 /*
@@ -1182,7 +1185,7 @@ static int cmdfunc_extcmd( int cmd )
 			VK_TAB
 		};
 
-		for ( int i = 0; i < sizeof(stick_keys) / sizeof(int); i++ ) {
+		for ( size_t i = 0; i < sizeof(stick_keys) / sizeof(int); i++ ) {
 			if ( GetAsyncKeyState(stick_keys[i]) & 0x8000 ) { ckey |= 1 << i; }
 		}
 		cktrg = (ckey^cklast)&ckey;
@@ -1752,7 +1755,9 @@ static int termfunc_extcmd( int option )
 	//		termfunc : TYPE_EXTCMD
 	//		(内蔵GUI)
 	//
+#ifndef HSP_COMPACT
 	hgiof_term();
+#endif
 	delete wnd;
 	chgdisp( 0, 0, 0 );
 	delete mmman;
@@ -1800,7 +1805,9 @@ void hsp3typeinit_extcmd( HSP3TYPEINFO *info, int sx, int sy, int wd, int xx, in
 	dispflg = 0;
 	bmscr = wnd->GetBmscr( 0 );
 	mmman->Reset( bmscr->hwnd );
+#ifndef HSP_COMPACT
 	hgiof_init();
+#endif
 
 	//		function register
 	//

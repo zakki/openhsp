@@ -1,7 +1,9 @@
-
 //
 //	supio.cpp functions
 //
+
+#ifndef HSPUTF8
+
 #include "../hsp3config.h"
 
 #ifdef HSPWIN
@@ -730,3 +732,4 @@ void Alertf( const char *format, ... )
 	MessageBox( NULL, textbf, "error",MB_ICONINFORMATION | MB_OK );
 }
 
+#endif

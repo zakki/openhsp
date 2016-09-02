@@ -801,29 +801,33 @@ static int cmdfunc_ctrlcmd( int cmd )
 
 	case 0x07:								// 	sendmsg
 		{
-		int hw,p1,p2,p3,p4,fl,sz;
+		int p1;
+		WPARAM p2;
+		LPARAM p3;
+		HWND hw;
+		int fl;
 		char *vptr;
-		HSPAPICHAR *hactmp1 = 0;
-		HSPAPICHAR *hactmp2 = 0;
-		hw = code_getdi(0);
+		HSPAPICHAR *hactmp1;
+		HSPAPICHAR *hactmp2;
+		hw = (HWND)code_getdi(0);
 		p1 = code_getdi(0);
 
 		vptr = code_getsptr( &fl );
 		if ( fl == TYPE_STRING ) {
-			p2 = (int)chartoapichar(code_stmpstr( vptr ),&hactmp1);
+			p2 = (WPARAM)chartoapichar(vptr,&hactmp2);
 		} else {
-			p2 = *(int *)vptr;
+			p2 = *(WPARAM *)vptr;
 		}
 
 		vptr = code_getsptr( &fl );
 		if ( fl == TYPE_STRING ) {
-			p3 = (int)chartoapichar(vptr,&hactmp2);
+			p3 = (LPARAM)chartoapichar(vptr,&hactmp2);
 		} else {
-			p3 = *(int *)vptr;
+			p3 = *(LPARAM *)vptr;
 		}
 
 		//Alertf( "SEND[%x][%x][%x]",p1,p2,p3 );
-		hspctx->stat = (int)SendMessage( (HWND)hw, p1, p2, p3 );
+		hspctx->stat = (int)SendMessage( hw, p1, p2, p3 );
 		freehac(&hactmp1);
 		freehac(&hactmp2);
 		break;
@@ -1144,7 +1148,7 @@ static void *reffunc_ctrlfunc( int *type_res, int arg )
 		code_next();
 		st = GetPRM( p1 );
 		//lib = &hspctx->mem_linfo[ st->index ];
-		reffunc_intfunc_ivalue = (int)st;
+		reffunc_intfunc_ivalue = (int)((INT_PTR)st);
 		break;
 		}
 

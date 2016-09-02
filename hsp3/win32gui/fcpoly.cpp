@@ -2,6 +2,10 @@
 //		Polygon draw lib (full color)
 //			onion software/onitama 2001/6
 //
+
+// hsp3c‚Å‚Í‘S‘Ì‚ð–³Ž‹
+#ifndef HSP_COMPACT
+
 #include <stdio.h>
 #include <windows.h>
 #include <math.h>
@@ -1099,3 +1103,5 @@ void SetPolySource( void *src, int sx, int sy )
 }
 
 
+
+#endif

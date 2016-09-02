@@ -46,13 +46,6 @@ static MEM_HPIDAT *hpidat;
 typedef void (CALLBACK *DLLFUNC)(HSP3TYPEINFO *);
 static DLLFUNC func;
 
-// 64bit dll call
-#ifdef HSP64
-__declspec(align(16)) extern "C" INT64 __fastcall call_extfunc64(void *proc, INT64 *prm, INT64 *pinfo, INT64 prms);
-__declspec(align(16)) extern "C" double __fastcall call_extfunc64d(void *proc, INT64 *prm, INT64 *pinfo, INT64 prms);
-__declspec(align(16)) extern "C" float __fastcall call_extfunc64f(void *proc, INT64 *prm, INT64 *pinfo, INT64 prms);
-#endif
-
 //------------------------------------------------------------//
 
 namespace hsp3 {
@@ -229,7 +222,7 @@ static void ExitFunc( STRUCTDAT *st )
 #ifdef HSP64
 	p[4] = p[5] = p[6] = p[7] = 0;
 #endif
-	call_extfunc(pFn, p, st->size / 4);
+	call_extfunc(fpconv(pFn), p, st->size / 4);
 }
 
 
@@ -400,24 +393,10 @@ void Hsp3ExtLibTerm( void )
 	rev 43
 	mingw(gcc) 用のコード追加
 */
-#if defined( _MSC_VER )
-#ifdef HSP64
-int __cdecl call_extfunc( void *proc, int *prm, int prms )
-{
-	// int64に変換
-	//INT64 *prm64 = new INT64[prms];
-	INT64 *prm64 = (INT64 *)prm;
-	INT64 *pinfo64 = (INT64 *)( prm + prms*2 );
 
-	INT64 ret = call_extfunc64(proc, prm64, pinfo64, (INT64) prms);
-	// call_extfunc64d -> 戻り値がdouble型
-	// call_extfunc64f -> 戻り値がfloat型
+#ifndef HSP64
 
-	//delete [] prm64;
-	//delete [] pinfo64;
-	return (int)ret;
-}
-#else
+#ifdef _MSC_VER
 
 __declspec( naked ) int __cdecl call_extfunc( void *proc, int *prm, int prms )
 {
@@ -451,7 +430,6 @@ __declspec( naked ) int __cdecl call_extfunc( void *proc, int *prm, int prms )
 		ret
 	}
 }
-#endif
 
 #elif defined( __GNUC__ )
 
@@ -481,6 +459,15 @@ int __cdecl call_extfunc( void * proc, int * prm, int prms )
     return ret;
 }
 
+#else
+
+int __cdecl call_extfunc( void * proc, int * prm, int prms )
+{
+	return 0;
+}
+
+#endif
+
 #endif
 
 
@@ -488,10 +475,10 @@ int cnvwstr( void *out, char *in, int bufsize )
 {
 	//	hspchar->unicode に変換
 	//
-#ifndef HSPUTF8
+#ifndef HSPUTF8 
 	return MultiByteToWideChar( CP_ACP, 0, in, -1, (LPWSTR)out, bufsize );
 #else
-	return MultiByteToWideChar(CP_UTF8, 0, in, -1, (LPWSTR)out, bufsize);
+	return MultiByteToWideChar(CP_UTF8, 0, in, -1, (LPWSTR)out, bufsize); 
 #endif
 }
 
@@ -520,14 +507,35 @@ static char *prepare_localstr( char *src, int mode )
 	//
 	int srcsize;
 	char *dst;
+
+#ifndef HSPUTF8
+
 	if ( mode ) {
-		srcsize = (int)(( strlen(src) + 1 ) * 2);		// unicodeのサイズを概算
-		dst = sbAlloc( srcsize );
+		dst = sbAlloc( (srcsize = cnvwstr(NULL, src, 0)) * sizeof(wchar_t) );
 		cnvwstr( dst, src, srcsize );
 	} else {
 		dst = sbAlloc( (int)strlen(src)+1 );
 		strcpy( dst, src );
 	}
+
+#else
+
+	dst = sbAlloc( (srcsize = cnvwstr(NULL, src, 0)) * sizeof(wchar_t) );
+	cnvwstr( dst, src, srcsize );
+
+	if (mode == 0) {
+		int bufferSize;
+		char * buffer;
+
+		buffer = sbAlloc(bufferSize = cnvsjis(NULL, dst, 0));
+		cnvsjis(buffer, dst, bufferSize);
+
+		sbFree(dst);
+		dst = buffer;
+	}
+
+#endif
+
 	return dst;
 }
 
@@ -546,8 +554,7 @@ int code_expand_and_call( const STRUCTDAT *st )
 	int result;
 
 #ifdef HSP64
-	char *prmbuf = sbAlloc(st->size*4);
-	memset(prmbuf, 0, (st->size * 4));
+	char *prmbuf = sbAlloc(st->prmmax * sizeof(INT_PTR));
 #else
 	char *prmbuf = sbAlloc(st->size);
 #endif
@@ -579,7 +586,11 @@ static int code_expand_next( char *prmbuf, const STRUCTDAT *st, int index )
 		case STRUCTPRM_SUBID_OLDDLL:
 		case STRUCTPRM_SUBID_OLDDLLINIT:
 			// 外部 DLL 関数の呼び出し
-			result = call_extfunc(st->proc, (int*)prmbuf, (st->size / 4));
+#ifdef HSP64
+			result = call_extfunc(st->proc, (INT_PTR *)prmbuf, st->prmmax);
+#else
+			result = call_extfunc(st->proc, (INT_PTR *)prmbuf, st->size / sizeof(intptr_t));
+#endif
 			break;
 #ifndef HSP_COM_UNSUPPORTED
 		case STRUCTPRM_SUBID_COMOBJ:
@@ -596,7 +607,7 @@ static int code_expand_next( char *prmbuf, const STRUCTDAT *st, int index )
 	STRUCTPRM *prm = &hspctx->mem_minfo[ st->prmindex + index ];
 	void *out;
 #ifdef HSP64
-	out = prmbuf + prm->offset * 2;
+	out = &((INT_PTR *)prmbuf)[index];
 #else
 	out = prmbuf + prm->offset;
 #endif
@@ -714,7 +725,7 @@ static int code_expand_next( char *prmbuf, const STRUCTDAT *st, int index )
 		*(void **)out = hspctx->refstr;
 		break;
 	case MPTYPE_NULLPTR:
-		*(int *)out = 0;
+		*(void **)out = NULL;
 		break;
 #ifndef HSP_COM_UNSUPPORTED
 	case MPTYPE_IOBJECTVAR:
