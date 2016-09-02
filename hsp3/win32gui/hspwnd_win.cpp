@@ -15,9 +15,9 @@
 #include "../strbuf.h"
 #include "../strnote.h"
 #include "../supio.h"
-#include "fcpoly.h"
 
 #ifndef HSP_COMPACT
+#include "fcpoly.h"
 #define USE_STBIMAGE
 #endif
 
@@ -37,20 +37,28 @@
 	mingw : warning : WM_MOUSEWHEELの再定義
 	に対処
 */
+
+/*
+* WM_MOUSEWHEELはWindows NT 4.0以降で有効で、Windows 95で有効でない。
+*/
+
 #if !defined( WM_MOUSEWHEEL )
 #define WM_MOUSEWHEEL 0x020A
 #endif
 
-#define MM_MCINOTIFY    0x03B9
-#define MCI_NOTIFY_SUCCESSFUL   1
 
+#if !defined(HSP_COMPACT)
 #if defined( _MSC_VER )
 #pragma comment(lib,"msimg32.lib")
+#endif
 #endif
 
 HspWnd *curwnd;
 static MM_NOTIFY_FUNC notifyfunc;
+
+#if !defined(HSP_COMPACT)
 extern int resY0, resY1;				// "fcpoly.h"のパラメーター
+#endif
 
 /*------------------------------------------------------------*/
 /*
@@ -1686,6 +1694,8 @@ void Bmscr::CnvRGB16( PTRIVERTEX target, DWORD src )
 
 void Bmscr::GradFill( int x, int y, int sx, int sy, int mode, DWORD col1, DWORD col2 )
 {
+
+#ifndef HSP_COMPACT
 	//		グラデーション塗りつぶし
 	//
 	TRIVERTEX axis[2];
@@ -1702,6 +1712,13 @@ void Bmscr::GradFill( int x, int y, int sx, int sy, int mode, DWORD col1, DWORD 
 
 	GradientFill( hdc, axis, 2, &grad_rect, 1, mode );
 	Send( x,y,sx,sy );
+
+#else
+
+	throw HSPERR_ILLEGAL_FUNCTION;
+
+#endif
+
 }
 
 
@@ -1737,13 +1754,15 @@ int Bmscr::GetAlphaOperation( void )
 
 void Bmscr::GradFillEx( int *vx, int *vy, int *vcol )
 {
+
+#ifndef HSP_COMPACT
 	//		グラデーション塗りつぶし(gsquare用)
-	//
+	//		Windows 2000以降
 	TRIVERTEX axis[4];
 	PTRIVERTEX vtx;
+	static GRADIENT_TRIANGLE grad_square[2] = { {0, 1, 2}, {0, 2, 3} };		// 右上、左下 (正の値の場合)
 	int i;
 	int minx,miny,maxx,maxy, ax,ay;
-	static int grad_square[6] = { 0, 1, 2, 0, 2, 3 };
 	minx = sx;
 	miny = sy;
 	maxx = maxy = 0;
@@ -1760,6 +1779,13 @@ void Bmscr::GradFillEx( int *vx, int *vy, int *vcol )
 	GradientFill( hdc, axis, 4, &grad_square, 2, GRADIENT_FILL_TRIANGLE );
 	ax = maxx - minx + 1; ay = maxy - miny + 1;
 	if (( ax > 0 )&&( ay > 0 )) { Send( minx,miny,ax,ay ); }
+
+#else
+
+	throw HSPERR_ILLEGAL_FUNCTION;
+
+#endif
+
 }
 
 

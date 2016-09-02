@@ -2,8 +2,8 @@
 //
 //	hsp3code.cpp header
 //
-#ifndef __hsp3code_h
-#define __hsp3code_h
+#ifndef HSP3OCDE_H
+#define HSP3CODE_H
 
 #include "hsp3debug.h"
 #include "hsp3struct.h"
@@ -112,6 +112,6 @@ void code_dbgtrace( void );
 void code_delstruct( PVal *in_pval, APTR in_aptr );
 void code_delstruct_all( PVal *pval );
 
-#define fpconv( fp )  ( reinterpret_cast< void * >( reinterpret_cast< long >( fp ) ) )
+#define fpconv( fp )  ( reinterpret_cast< void * >(fp) )
 
 #endif

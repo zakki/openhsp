@@ -62,12 +62,22 @@ int cmdfunc_dllcmd( int cmd );
 int exec_dllcmd( int cmd, int mask );
 int code_expand_and_call( const STRUCTDAT *st );
 
+#ifdef HSP64
+
+extern "C" INT_PTR CallFunc64(INT_PTR *, FARPROC, int);
+#define call_extfunc(externalFunction, arguments, numberOfArguments)	CallFunc64((INT_PTR *)arguments, (FARPROC)externalFunction, numberOfArguments)
+
+#else
+
 #if defined( __GNUC__ )
 int __cdecl call_extfunc( void *proc, int *prm, int prms ) __attribute__(( noinline ));
 #else
 int __cdecl call_extfunc( void *proc, int *prm, int prms );
 #endif
- 
+
+#endif
+
+
 int cnvwstr( void *out, char *in, int bufsize );
 int cnvsjis( void *out, char *in, int bufsize );
 int cnvu8( void *out, wchar_t *in, int bufsize);

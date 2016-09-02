@@ -11,6 +11,10 @@
 #include "../hsp3debug.h"
 #include "../supio.h"
 
+#ifndef min
+#define min(prm0, prm1) (((prm0) > (prm1)) ? (prm1) : (prm0))
+#endif
+
 static HWND hwbak;
 static OPENFILENAME ofn ;
 static TCHAR szFileName[_MAX_PATH + 1] ;

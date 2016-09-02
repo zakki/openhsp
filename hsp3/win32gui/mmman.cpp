@@ -320,7 +320,7 @@ int MMMan::Play( int num )
 					sprintf( avi_wh,"%d %d",avi_sx,avi_sy );
 					avi_x=0;avi_y=0;
 				}
-				_stprintf( ss,TEXT("window myid handle %d"), (int)avi_wnd );
+				_stprintf( ss,TEXT("window myid handle %u"), (unsigned)HandleToUlong(avi_wnd) );
 				SendMCIT( ss );
 				_stprintf( ss,TEXT("put myid destination at %d %d %s"),avi_x,avi_y,chartoapichar(avi_wh,&hactmp1) );
 				freehac(&hactmp1);

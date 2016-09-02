@@ -2,11 +2,12 @@
 //
 //	hspwnd.cpp header
 //
-#ifndef __hspwnd_win_h
-#define __hspwnd_win_h
+#ifndef HSPWND_WIN_H
+#define HSPWND_WIN_H
 
 #define WIN32_LEAN_AND_MEAN		// Exclude rarely-used stuff from Windows headers
 #include <windows.h>
+#include <mmsystem.h>	// WIN32_LEAN_AND_MEAN
 #include "../hsp3code.h"
 
 //	Window Object Info

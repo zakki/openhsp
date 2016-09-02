@@ -2,8 +2,8 @@
 //
 //	hsp3gr.cpp header
 //
-#ifndef __hsp3gr_wingui_h
-#define __hsp3gr_wingui_h
+#ifndef HSP3GR_WINGUI_H
+#define HSP3GR_WINGUI_H
 
 #include "../hsp3struct.h"
 

@@ -1478,7 +1478,6 @@ char *code_getsptr( int *type )
 */
 /*------------------------------------------------------------*/
 
-static int p1,p2,p3,p4,p5,p6;
 static int reffunc_intfunc_ivalue;
 
 /*
@@ -1746,6 +1745,9 @@ static int cmdfunc_prog( int cmd )
 {
 	//		cmdfunc : TYPE_PROGCMD
 	//
+
+	int p1,p2,p3,p4,p5;
+
 	code_next();							// 次のコードを取得(最初に必ず必要です)
 
 	switch( cmd ) {							// サブコマンドごとの分岐
@@ -2019,7 +2021,7 @@ static int cmdfunc_prog( int cmd )
 		{
 		PVal *pval_m;
 		pval_m = code_getpval();
-		p1 = code_geti();
+		p1 = code_getdi(0);
 		cmdfunc_mref( pval_m, p1 );
 		break;
 		}
@@ -3435,7 +3437,7 @@ static void code_dbgvarinf_ext( PVal *pv, void *src, char *buf )
 	//
 	switch( pv->flag ) {
 	case HSPVAR_FLAG_LABEL:
-		sprintf( buf,"LABEL $%08x", *(int *)src ); 
+		sprintf( buf,"LABEL $%p", *(void **)src ); 
 		break;
 	case HSPVAR_FLAG_STRUCT:
 		{
@@ -3444,13 +3446,15 @@ static void code_dbgvarinf_ext( PVal *pv, void *src, char *buf )
 		if ( fv->type == FLEXVAL_TYPE_NONE ) {
 			sprintf( buf,"STRUCT (Empty)" ); 
 		} else {
-			sprintf( buf,"STRUCT ID%d-%d PTR$%08x SIZE%d(%d)", fv->myid, fv->customid, (int)fv->ptr, fv->size, fv->type ); 
+			sprintf( buf,"STRUCT ID%d-%d PTR$%p SIZE%d(%d)", fv->myid, fv->customid, (void *)(fv->ptr), fv->size, fv->type ); 
 		}
 		break;
 		}
+#ifndef HSP_COM_UNSUPPORTED
 	case HSPVAR_FLAG_COMSTRUCT:
-		sprintf( buf,"COMPTR $%08x", *(int *)src ); 
+		sprintf( buf,"COMPTR $%p", *(void **)src ); 
 		break;
+#endif
 	default:
 		strcpy( buf, "Unknown" );
 		break;
