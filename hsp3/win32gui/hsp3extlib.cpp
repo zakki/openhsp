@@ -589,7 +589,7 @@ static int code_expand_next( char *prmbuf, const STRUCTDAT *st, int index )
 #ifdef HSP64
 			result = call_extfunc(st->proc, (INT_PTR *)prmbuf, st->prmmax);
 #else
-			result = call_extfunc(st->proc, (INT_PTR *)prmbuf, st->size / sizeof(intptr_t));
+			result = call_extfunc(st->proc, (INT_PTR *)prmbuf, st->size / sizeof(INT_PTR));
 #endif
 			break;
 #ifndef HSP_COM_UNSUPPORTED
@@ -624,46 +624,21 @@ static int code_expand_next( char *prmbuf, const STRUCTDAT *st, int index )
 	switch ( prm->mptype ) {
 
 	case MPTYPE_INUM:
-#ifdef HSP64
-		*(INT64 *)out = (INT64)code_getdi(0);
-#else
-		*(int *)out = code_getdi(0);
-#endif
+		*(UINT_PTR *)out = (UINT_PTR)code_getdi(0);
 		break;
 	case MPTYPE_PVARPTR:
 		aptr = code_getva( &pval );
 		*(void **)out = HspVarCorePtrAPTR( pval, aptr );
 		break;
 	case MPTYPE_LOCALSTRING:
-#ifdef HSPUTF8
-		apichartoansichar(chartoapichar(code_gets(), &hactmp1), &actmp1);
-		localbuf = sbAlloc(strlen(actmp1));
-		strcpy((char*)localbuf, actmp1);
-		freeac(&actmp1);
-		freehac(&hactmp1);
-#else
-		localbuf = prepare_localstr( code_gets(), 0 );
-#endif
-		*(void **)out = localbuf;
-		break;
 	case MPTYPE_LOCALWSTR:
-#ifdef HSPUTF8
-		chartoapichar(code_gets(),&hactmp1);
-		localbuf = sbAlloc(_tcslen(hactmp1));
-		_tcscpy((HSPAPICHAR*)localbuf,hactmp1);
-#else
-		localbuf = prepare_localstr( code_gets(), 1 );
-#endif
-		*(void **)out = localbuf;
+		*(void **)out = localbuf = prepare_localstr( code_gets(), prm->mptype == MPTYPE_LOCALWSTR );
 		break;
 	case MPTYPE_DNUM:
 		*(double *)out = code_getdd(0.0);
 		break;
 	case MPTYPE_FLOAT:
 		*(float *)out = (float)code_getdd(0.0);
-#ifdef HSP64
-		*((char *)out + st->size * 2) = 1;					// floatƒtƒ‰ƒO‚ð—§‚Ä‚é
-#endif
 		break;
 	case MPTYPE_PPVAL:
 		aptr = code_getva( &pval );
@@ -689,26 +664,10 @@ static int code_expand_next( char *prmbuf, const STRUCTDAT *st, int index )
 		mpval = *pmpval;
 		switch( mpval->flag ) {
 		case HSPVAR_FLAG_INT:
-			*(int *)out = *(int *)(mpval->pt);
+			*(UINT_PTR *)out = (UINT_PTR)(*(int *)(mpval->pt));
 			break;
 		case HSPVAR_FLAG_STR:
-#ifdef HSPUTF8
-			if (prm->mptype==MPTYPE_FLEXWPTR) {
-				chartoapichar(mpval->pt,&hactmp1);
-				localbuf = sbAlloc(_tcslen(hactmp1));
-				_tcscpy((HSPAPICHAR*)localbuf, hactmp1);
-				freehac(&hactmp1);
-			}else{
-				apichartoansichar(chartoapichar(mpval->pt,&hactmp1), &actmp1);
-				localbuf = sbAlloc(strlen(actmp1));
-				strcpy((char*)localbuf, actmp1);
-				freeac(&actmp1);
-				freehac(&hactmp1);
-			}
-#else
-			localbuf = prepare_localstr( mpval->pt, (prm->mptype==MPTYPE_FLEXWPTR) );
-#endif
-			*(void **)out = localbuf;
+			*(void ** )out = localbuf = prepare_localstr( mpval->pt, prm->mptype == MPTYPE_FLEXWPTR );
 			break;
 		default:
 			throw ( HSPERR_TYPE_MISMATCH );
