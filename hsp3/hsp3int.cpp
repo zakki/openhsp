@@ -1401,7 +1401,7 @@ static void *reffunc_intfunc( int *type_res, int arg )
 		break;
 	case 0x002:								// strlen
 		sval = code_gets();
-		reffunc_intfunc_ivalue = (int) strlen( sval );
+		reffunc_intfunc_ivalue = (int) STRLEN( sval );
 		break;
 
 	case 0x003:								// length(3.0)

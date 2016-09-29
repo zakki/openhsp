@@ -103,21 +103,21 @@ int hsp3win_debugopen( void )
 #ifdef HSPDEBUG
 	if ( h_dbgwin != NULL ) return 0;
 #ifdef HSP64
-	h_dbgwin = LoadLibrary( "hsp3debug_64.dll" );
+	h_dbgwin = LoadLibrary( HSP3DEBUG_MODULE "_64.dll" );
 #else
 #ifndef HSPUTF8
-	h_dbgwin = LoadLibrary(TEXT("hsp3debug.dll"));
+	h_dbgwin = LoadLibrary(TEXT( HSP3DEBUG_MODULE ".dll" ));
 #else
-	h_dbgwin = LoadLibrary(TEXT("hsp3debug_u8.dll"));
+	h_dbgwin = LoadLibrary(TEXT( HSP3DEBUG_MODULE "_u8.dll"));
 #endif
 #endif
 	if ( h_dbgwin != NULL ) {
 #ifdef HSP64
-		dbgwin = (HSP3DBGFUNC)GetProcAddress(h_dbgwin, "debugini");
-		dbgnotice = (HSP3DBGFUNC)GetProcAddress( h_dbgwin, "debug_notice" );
+		dbgwin = (HSP3DBGFUNC)GetProcAddress(h_dbgwin, HSP3DEBUG_INIT );
+		dbgnotice = (HSP3DBGFUNC)GetProcAddress( h_dbgwin, HSP3DEBUG_NOTICE );
 #else
-		dbgwin = (HSP3DBGFUNC)GetProcAddress(h_dbgwin, "_debugini@16");
-		dbgnotice = (HSP3DBGFUNC)GetProcAddress(h_dbgwin, "_debug_notice@16");
+		dbgwin = (HSP3DBGFUNC)GetProcAddress(h_dbgwin, "_" HSP3DEBUG_INIT "@16");
+		dbgnotice = (HSP3DBGFUNC)GetProcAddress(h_dbgwin, "_" HSP3DEBUG_NOTICE "@16");
 #endif
 		if ((dbgwin == NULL) || (dbgnotice == NULL)) h_dbgwin = NULL;
 	}

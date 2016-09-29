@@ -129,6 +129,30 @@ int mem_save( char *fname8, void *mem, int msize, int seekofs )
 }
 
 
+size_t utf8strlen( const char *target )
+{
+	//		UTF8文字列の長さを得る
+	//
+	unsigned char *p;
+	unsigned char *base;
+	unsigned char a1;
+	p = (unsigned char *)target;
+	base = p;
+	while(1) {
+		a1=*p;if ( a1==0 ) break;
+		p++;							// 検索位置を移動
+		if (a1>=128) {					// 多バイト文字チェック
+			if (a1>=192) p++;
+			if (a1>=224) p++;
+			if (a1>=240) p++;
+			if (a1>=248) p++;
+			if (a1>=252) p++;
+		}
+	}
+	return (size_t)(p-base);
+}
+
+
 void strcase( char *target )
 {
 	//		strをすべて小文字に(utf8対応版)
