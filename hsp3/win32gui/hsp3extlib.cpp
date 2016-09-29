@@ -203,7 +203,6 @@ static int BindFUNC( STRUCTDAT *st, char *name )
 #else
 	st->proc = (void *)GetProcAddress( hd, n );
 #endif
-	if ( st->proc == NULL ) return 1;
 	st->subid--;
 	return 0;
 }

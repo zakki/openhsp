@@ -26,6 +26,8 @@ int filecopy( const char *fname, const char *sname );
 //void prtini( char *mes );
 //void prt( char *mes );
 
+size_t utf8strlen(const char *target);
+
 int tstrcmp( const char *str1, const char *str2 );
 void strcase( char *str );
 void strcaseW( HSPAPICHAR *str );

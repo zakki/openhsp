@@ -45,7 +45,7 @@ extern int resY0, resY1;
 //					HSP system support
 /*----------------------------------------------------------*/
 
-static void ExecFile( char *stmp, char *ps, int mode )
+void ExecFile( char *stmp, char *ps, int mode )
 {
 	int i,j;
 	j=SW_SHOWDEFAULT;if (p1&2) j=SW_SHOWMINIMIZED;
@@ -64,17 +64,16 @@ static void ExecFile( char *stmp, char *ps, int mode )
 	}
 		
 	if ( mode&16 ) {
-		i = (int)ShellExecute( NULL,NULL,stmp,"","",j );
+		i = (int)((INT_PTR)ShellExecute( NULL,NULL,stmp,"","",j ));
 	}
 	else if ( mode&32 ) {
-		i = (int)ShellExecute( NULL,"print",stmp,"","",j );
+		i = (int)((INT_PTR)ShellExecute( NULL,"print",stmp,"","",j ));
 	}
 	else {
 		i=WinExec( stmp,j );
 	}
 	if (i<32) throw HSPERR_EXTERNAL_EXECUTE;
 }
-		
 
 
 /*
@@ -328,7 +327,6 @@ static int cmdfunc_extcmd( int cmd )
 
 	case 0x0f:								// mes,print
 		{
-		//char stmp[1024];
 		char *ptr;
 		int chk;
 		chk = code_get();
@@ -340,13 +338,8 @@ static int cmdfunc_extcmd( int cmd )
 		if ( mpval->flag != HSPVAR_FLAG_STR ) {
 			ptr = (char *)HspVarCoreCnv( mpval->flag, HSPVAR_FLAG_STR, ptr );	// å^Ç™àÍívÇµÇ»Ç¢èÍçáÇÕïœä∑
 		}
-		printf( "%s\n",ptr );
-		//strsp_ini();
-		//while(1) {
-		//	chk = strsp_get( ptr, stmp, 0, 1022 );
-		//	printf( "%s\n",stmp );
-		//	if ( chk == 0 ) break;
-		//}
+		fputs(ptr, stdout);
+		if (code_getdi(0) == 0) fputs("\n", stdout);
 		break;
 		}
 
