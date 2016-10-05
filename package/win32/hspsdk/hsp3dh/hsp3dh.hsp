@@ -9,7 +9,7 @@
 #include "mod_appconfig.as"
 
 #define APPTITLE "HSP3Dish helper"
-#define APPVER "1.41"
+#define APPVER "1.42"
 #define APP_CONF "\\hsp3dh.cfg"
 
 #define AND_LIBVER 103			; android HSPランタイムの内部バージョン
@@ -157,8 +157,8 @@
 
 #deffunc execcmd str _p1
 
-	sdim tmp,$40000
-	sdim buf,$10000
+	sdim tmp,$20000
+	sdim buf,$20000
 	cmd = app_dir+"\\"+_p1
 	pipeexec tmp,cmd,1
 	if stat : dialog "コマンドラインの実行に失敗しました" : return -1
@@ -171,18 +171,24 @@
 	;	if ln!=lnbak : buf+=ln
 	;	lnbak=ln
 	;}
+	if strlen(tmp)>=$1f000 {	; オーバーフロー対策
+		buf+=tmp
+		tmp=""
+	}
 	await 10
 	loop
+	buf+=tmp
 
-	buf=""
+	tmp=""
 	i=0
 	repeat
-		getstr s1,tmp,i,10
+		getstr s1,buf,i,10
 		if strsize=0 : break
 		i+=strsize
-		buf+=s1
-		buf+="\n"
+		tmp+=s1
+		tmp+="\n"
 	loop
+	buf = tmp
 
 	gsel 1
 	objprm 0,buf
