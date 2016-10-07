@@ -777,13 +777,20 @@ static int cmdfunc_extcmd( int cmd )
 	case 0x0f:								// mes,print
 		{
 		int chk;
+		int sw,x,y;
 		char *ptr;
 		ptr = code_getdsi( "" );
+		sw = code_getdi(0);
 		strsp_ini();
 		while(1) {
 			chk = strsp_get( ptr, ctx->stmp, 0, 1022 );
+			x = bmscr->cx; y = bmscr->cy;
 			bmscr->Print( ctx->stmp );
 			if ( chk == 0 ) break;
+		}
+		if ( sw ) {		// ‰üs‚µ‚È‚¢
+			bmscr->cx = x + bmscr->printsize.cx;
+			bmscr->cy = y;
 		}
 		break;
 		}

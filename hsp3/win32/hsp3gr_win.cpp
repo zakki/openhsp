@@ -328,16 +328,7 @@ static int cmdfunc_extcmd( int cmd )
 	case 0x0f:								// mes,print
 		{
 		char *ptr;
-		int chk;
-		chk = code_get();
-		if ( chk<=PARAM_END ) {
-			printf( "\n" );
-			break;
-		}
-		ptr = (char *)(HspVarCorePtr(mpval));
-		if ( mpval->flag != HSPVAR_FLAG_STR ) {
-			ptr = (char *)HspVarCoreCnv( mpval->flag, HSPVAR_FLAG_STR, ptr );	// Œ^‚ªˆê’v‚µ‚È‚¢ê‡‚Í•ÏŠ·
-		}
+		ptr = code_getdsi( "" );
 		fputs(ptr, stdout);
 		if (code_getdi(0) == 0) fputs("\n", stdout);
 		break;
