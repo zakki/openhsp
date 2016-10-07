@@ -5,7 +5,7 @@
 //	onion software/onitama 2011/3
 //
 #ifdef HSPDISHGP
-#if defined(HSPWIN)|defined(HSPEMSCRIPTEN)
+#ifdef HSPWIN
 #include "win32gp/gamehsp.h"
 #endif
 #ifdef HSPNDK
@@ -593,27 +593,22 @@ static int cmdfunc_extcmd( int cmd )
 
 	case 0x0f:								// mes,print
 		{
-		//char stmp[1024];
-		char *ptr;
 		int chk;
-		chk = code_get();
-		if ( chk<=PARAM_END ) {
-			//printf( "\n" );
-			break;
+		int sw,x,y;
+		char *ptr;
+		ptr = code_getdsi( "" );
+		sw = code_getdi(0);
+		strsp_ini();
+		while(1) {
+			chk = strsp_get( ptr, ctx->stmp, 0, 1022 );
+			x = bmscr->cx; y = bmscr->cy;
+			bmscr->Print( ctx->stmp );
+			if ( chk == 0 ) break;
 		}
-		ptr = (char *)(HspVarCorePtr(mpval));
-		if ( mpval->flag != HSPVAR_FLAG_STR ) {
-			ptr = (char *)HspVarCoreCnv( mpval->flag, HSPVAR_FLAG_STR, ptr );	// Œ^‚ªˆê’v‚µ‚È‚¢ê‡‚Í•ÏŠ·
+		if ( sw ) {		// ‰üs‚µ‚È‚¢
+			bmscr->cx = x + bmscr->printsizex;
+			bmscr->cy = y;
 		}
-		bmscr->Print( ptr );
-		//Alertf( "%s\n",ptr );
-		//strsp_ini();
-		//while(1) {
-		//	chk = strsp_get( ptr, stmp, 0, 1022 );
-		//	bmscr->Print( stmp );
-		//	  printf( "%s\n",stmp );
-		//	if ( chk == 0 ) break;
-		//}
 		break;
 		}
 	case 0x10:								// title

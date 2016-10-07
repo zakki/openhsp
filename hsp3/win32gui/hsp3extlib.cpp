@@ -203,6 +203,7 @@ static int BindFUNC( STRUCTDAT *st, char *name )
 #else
 	st->proc = (void *)GetProcAddress( hd, n );
 #endif
+	if ( st->proc == NULL ) return 1;
 	st->subid--;
 	return 0;
 }
@@ -352,10 +353,7 @@ int Hsp3ExtLibInit( HSP3TYPEINFO *info )
 
 	for(i=0;i<prmmax;i++) {
 		st = GetPRM(i);
-		if ( BindFUNC( st, NULL ) == 1 ) {
-			sprintf( tmp,"No FUNC:%s",strp(st->nameidx) );
-			Alert( tmp );
-		}
+		BindFUNC( st, NULL );
 	}
 	return 0;
 }
