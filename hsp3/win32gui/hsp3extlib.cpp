@@ -76,7 +76,7 @@ HMODULE CDllManager::load_library( const char *lpFileName )
 	HMODULE h;
 
 #ifdef HSPUTF8
-	HSPAPICHAR *hactmp1;
+	HSPAPICHAR *hactmp1 = 0;
 	chartoapichar( lpFileName, &hactmp1);
 	h = LoadLibrary(hactmp1);
 	freehac(&hactmp1);
@@ -194,7 +194,7 @@ static int BindFUNC( STRUCTDAT *st, char *name )
 	hd = (HINSTANCE)(lib->hlib);
 	if ( hd == NULL ) return 1;
 #ifdef HSPUTF8
-	HSPAPICHAR *hactmp1;
+	HSPAPICHAR *hactmp1 = 0;
 	char tmp1[512];
 	chartoapichar(n,&hactmp1);
 	cnvsjis(tmp1,(char*)hactmp1,512);
@@ -266,7 +266,7 @@ static int Hsp3ExtAddPlugin( void )
 			if ( hd == NULL ) {
 #ifdef HSPUTF8
 				TCHAR tmp[512];
-				HSPAPICHAR *haclibname;
+				HSPAPICHAR *haclibname = 0;
 				chartoapichar(libname, &haclibname);
 				_stprintf(tmp, TEXT("No DLL:%s"), haclibname);
 				freehac(&haclibname);
@@ -278,7 +278,7 @@ static int Hsp3ExtAddPlugin( void )
 			}
 			hpi->libptr = (void *)hd;
 #ifdef HSPUTF8
-			HSPAPICHAR *hacfuncname;
+			HSPAPICHAR *hacfuncname = 0;
 			char tmp2[512];
 			chartoapichar(funcname,&hacfuncname);
 			cnvsjis(tmp2,(char*)hacfuncname,512);
@@ -289,7 +289,7 @@ static int Hsp3ExtAddPlugin( void )
 			if ( func == NULL ) {
 #ifdef HSPUTF8
 				TCHAR tmp[512];
-				HSPAPICHAR *haclibname;
+				HSPAPICHAR *haclibname = 0;
 				chartoapichar(libname, &haclibname);
 				_stprintf(tmp, TEXT("No DLL:%s:%s"), haclibname, hacfuncname);
 				freehac(&haclibname);
@@ -572,8 +572,7 @@ static int code_expand_next( char *prmbuf, const STRUCTDAT *st, int index )
 	//	次のパラメータを取得（および関数呼び出し）（再帰処理）
 	//
 	int result;
-	HSPAPICHAR *hactmp1;
-	char *actmp1;
+	HSPAPICHAR *hactmp1 = 0;
 	if ( index == st->prmmax ) {
 		// 関数（またはメソッド）の呼び出し
 		//if ( !code_getexflg() ) throw HSPERR_TOO_MANY_PARAMETERS;

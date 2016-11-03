@@ -636,7 +636,7 @@ static int cmdfunc_ctrlcmd( int cmd )
         char *ps;
         int size;
         int sizew;
-        HSPAPICHAR *hactmp1;
+		HSPAPICHAR *hactmp1 = 0;
         ptr = code_getvptr(&pval, &size);
         ps = code_gets();
         chartoapichar(ps, &hactmp1);
@@ -682,7 +682,7 @@ static int cmdfunc_ctrlcmd( int cmd )
 		HWND hwnd;
 		int id,sx,sy;
 		char clsid_name8[1024];
-		HSPAPICHAR *clsid_name;
+		HSPAPICHAR *clsid_name = 0;
 		IUnknown **ppunk, *punkObj, *punkObj2;
 		STRUCTDAT *st;
 		LIBDAT *lib;
@@ -760,9 +760,9 @@ static int cmdfunc_ctrlcmd( int cmd )
 		throw ( HSPERR_UNSUPPORTED_FUNCTION );
 #else
 		char clsname8[1024];
-		HSPAPICHAR *clsname;
+		HSPAPICHAR *clsname = 0;
 		char winname8[1024];
-		HSPAPICHAR *winname;
+		HSPAPICHAR *winname = 0;
 		HWND hwnd;
 		char *ps;
 		BMSCR *bm;
@@ -807,8 +807,8 @@ static int cmdfunc_ctrlcmd( int cmd )
 		HWND hw;
 		int fl;
 		char *vptr;
-		HSPAPICHAR *hactmp1;
-		HSPAPICHAR *hactmp2;
+		HSPAPICHAR *hactmp1 = 0;
+		HSPAPICHAR *hactmp2 = 0;
 		hw = (HWND)code_getdi(0);
 		p1 = code_getdi(0);
 
@@ -1022,8 +1022,8 @@ static int cmdfunc_ctrlcmd( int cmd )
 		char *ps;
 		int size;
 		int sizea;
-		HSPAPICHAR *hactmp1;
-		char *actmp1;
+		HSPAPICHAR *hactmp1 = 0;
+		char *actmp1 = 0;
 		ptr = code_getvptr(&pval, &size);
 		ps = code_gets();
 		chartoapichar(ps, &hactmp1);
@@ -1160,7 +1160,7 @@ static void *reffunc_ctrlfunc( int *type_res, int arg )
 			PVal *pval;
 			char *sptr;
 			int size;
-			HSPAPICHAR *hactmp1;
+			HSPAPICHAR *hactmp1 = 0;
 			int len;
 			sptr = code_getvptr(&pval, &size);
 			ansichartoapichar(sptr, &hactmp1);

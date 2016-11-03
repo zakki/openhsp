@@ -78,7 +78,7 @@ static int dpmchk( char *fname )
 	char *ss;
 	unsigned char *uc;
 #if (defined HSPUTF8 && defined HSPWIN)
-	HSPAPICHAR *hactmp1;
+	HSPAPICHAR *hactmp1 = 0;
 #endif
 
 	dpm_opmode = 0;
@@ -153,7 +153,7 @@ static int dpm_chkmemf( char *fname )
 FILE *dpm_open( char *fname )
 {
 #if (defined HSPUTF8 && defined HSPWIN)
-	HSPAPICHAR *hactmp1;
+	HSPAPICHAR *hactmp1 = 0;
 #endif
 	dpm_chkmemf( fname );
 	if ( memf_flag ) {
@@ -222,7 +222,7 @@ int dpm_ini( char *fname, long dpmofs, int chksum, int deckey )
 	WCHAR dpmfile[HSP_MAX_PATH];
 #endif
 	unsigned char *dec;
-	HSPAPICHAR *hactmp1;
+	HSPAPICHAR *hactmp1 = 0;
 
 	optr=0;
 	dpm_flag=0;
@@ -336,7 +336,7 @@ int dpm_read( char *fname, void *readmem, int rlen, int seekofs )
 	int seeksize;
 	int filesize;
 #if (defined HSPUTF8 && defined HSPWIN)
-	HSPAPICHAR *hactmp1;
+	HSPAPICHAR *hactmp1 = 0;
 #endif
 
 	dpm_chkmemf( fname );
@@ -362,7 +362,6 @@ int dpm_read( char *fname, void *readmem, int rlen, int seekofs )
 
 #if (defined HSPUTF8 && defined HSPWIN)
 			ff = _wfopen( dpm_file,L"rb" );
-			freehac(&hactmp1);
 #else
 			ff = fopen( dpm_file,"rb" );
 #endif
@@ -395,7 +394,7 @@ int dpm_exist( char *fname )
 	FILE *ff;
 	int length;
 #if (defined HSPUTF8 && defined HSPWIN)
-	HSPAPICHAR *hactmp1;
+	HSPAPICHAR *hactmp1 = 0;
 #endif
 
 	dpm_chkmemf( fname );
@@ -431,7 +430,7 @@ int dpm_filebase( char *fname )
 	//
 	FILE *ff;
 #if (defined HSPUTF8 && defined HSPWIN)
-	HSPAPICHAR *hactmp1;
+	HSPAPICHAR *hactmp1 = 0;
 #endif
 	dpm_chkmemf( fname );
 	if ( memf_flag ) {
@@ -458,7 +457,7 @@ void dpm_getinf( char *inf )
 {
 	long a;
 #if (defined HSPUTF8 && defined HSPWIN)
-	HSPAPICHAR *hactmp1;
+	HSPAPICHAR *hactmp1 = 0;
 #endif
 	a=dpm_ofs;
 	if (dpm_flag==0) a=-1;
@@ -485,7 +484,7 @@ int dpm_filecopy( char *fname, char *sname )
 	int max=0x8000;
 	char *mem;
 #if (defined HSPUTF8 && defined HSPWIN)
-	HSPAPICHAR *hactmp1;
+	HSPAPICHAR *hactmp1 = 0;
 #endif
 
 	dpm_chkmemf( fname );

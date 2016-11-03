@@ -50,7 +50,7 @@ void freehac(HSPAPICHAR **pphac)
 HSPCHAR *apichartohspchar( const HSPAPICHAR *orig,HSPCHAR **pphc)
 {
 	int plen;
-	HSPCHAR *p;
+	HSPCHAR *p = 0;
 	plen=WideCharToMultiByte(CP_UTF8,NULL,orig,-1,NULL,0,NULL,NULL);
 	p = (HSPCHAR *)calloc(plen+1,sizeof(HSPCHAR*));
 	WideCharToMultiByte(CP_UTF8,NULL,orig,-1,p,plen,NULL,NULL);
@@ -79,7 +79,7 @@ HSPAPICHAR *ansichartoapichar(const char *orig, HSPAPICHAR **pphac)
 char *apichartoansichar(const HSPAPICHAR *orig, char **ppac)
 {
 	int plen;
-	HSPCHAR *p;
+	HSPCHAR *p = 0;
 	plen = WideCharToMultiByte(CP_ACP, NULL, orig, -1, NULL, 0, NULL, NULL);
 	p = (char *)calloc(plen + 1, sizeof(char*));
 	WideCharToMultiByte(CP_ACP,NULL, orig, -1, p, plen, NULL, NULL);
@@ -111,7 +111,7 @@ int mem_save( char *fname8, void *mem, int msize, int seekofs )
 {
 	FILE *fp;
 	int flen;
-	HSPAPICHAR *fnamew;
+	HSPAPICHAR *fnamew = 0;
 
 	if (seekofs<0) {
 		fp=_tfopen(chartoapichar(fname8,&fnamew),TEXT("wb"));
@@ -178,7 +178,7 @@ void strcaseW( HSPAPICHAR *target )
 {
 	//		str‚ð‚·‚×‚Ä¬•¶Žš‚É(API—p)
 	//
-	HSPAPICHAR *p;
+	HSPAPICHAR *p = 0;
 	HSPAPICHAR a1;
 	p=(HSPAPICHAR *)target;
 	while(1) {
@@ -317,7 +317,7 @@ void getpath( char *stmp, char *outbuf, int p2 )
 
 void getpathW( HSPAPICHAR *stmp, HSPAPICHAR *outbuf, int p2 )
 {
-	HSPAPICHAR *p;
+	HSPAPICHAR *p = 0;
 	HSPAPICHAR p_drive[_MAX_PATH];
 	HSPAPICHAR p_dir[_MAX_DIR];
 	HSPAPICHAR p_fname[_MAX_FNAME];
@@ -349,7 +349,7 @@ void getpathW( HSPAPICHAR *stmp, HSPAPICHAR *outbuf, int p2 )
 int makedir( char *name8 )
 {
 #ifdef HSPWIN
-	HSPAPICHAR *namew;
+	HSPAPICHAR *namew = 0;
 	int res;
 
 	res = _tmkdir( chartoapichar(name8,&namew) );
@@ -364,7 +364,7 @@ int makedir( char *name8 )
 int changedir( char *name8 )
 {
 #ifdef HSPWIN
-	HSPAPICHAR *namew;
+	HSPAPICHAR *namew = 0;
 	int res;
 	res = _tchdir( chartoapichar(name8,&namew) );
 	freehac( &namew );
@@ -389,7 +389,7 @@ int changedirW( HSPAPICHAR *name )
 int delfile( char *name8 )
 {
 #ifdef HSPWIN
-	HSPAPICHAR *namew;
+	HSPAPICHAR *namew = 0;
 	int res;
 
 	res = DeleteFile( chartoapichar(name8,&namew) );
@@ -412,7 +412,7 @@ int dirlist( char *fname8, char **target, int p3 )
 	WIN32_FIND_DATA fd;
 	DWORD fmask;
 	BOOL ff;
-	HSPAPICHAR *fnamew;
+	HSPAPICHAR *fnamew = 0;
 
 	chartoapichar(fname8,&fnamew);
 
@@ -937,7 +937,7 @@ int SecurityCheck( char *name )
 //
 void Alert( const char *mes8 )
 {
-	HSPAPICHAR *mesw;
+	HSPAPICHAR *mesw = 0;
 
 	MessageBox( NULL, chartoapichar(mes8,&mesw), TEXT("error"),MB_ICONINFORMATION | MB_OK );
 	free(mesw);
@@ -950,7 +950,7 @@ void AlertW( const HSPAPICHAR *mes )
 void AlertV( const char *mes8, int val )
 {
 	wchar_t ss[1024];
-	HSPAPICHAR *mesw;
+	HSPAPICHAR *mesw = 0;
 
 	wsprintf( ss, TEXT("%s%d"),chartoapichar(mes8,&mesw),val );
 	MessageBoxW( NULL, ss, TEXT("error"),MB_ICONINFORMATION | MB_OK );

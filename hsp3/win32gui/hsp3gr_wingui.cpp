@@ -60,8 +60,8 @@ extern int resY0, resY1;				// "fcpoly.h"のパラメーター
 void ExecFile( char *stmp, char *ps, int mode )
 {
 	int i,j;
-	HSPAPICHAR *hactmp1;
-	HSPAPICHAR *hactmp2;
+	HSPAPICHAR *hactmp1 = 0;
+	HSPAPICHAR *hactmp2 = 0;
 	char *p;
 	j=SW_SHOWDEFAULT;if (mode&2) j=SW_SHOWMINIMIZED;
 
@@ -627,8 +627,8 @@ static void cmdfunc_dialog( void )
 	char *ptr;
 	char *ps;
 	char stmp[0x4000];
-	HSPAPICHAR *hactmp1;
-	HSPAPICHAR *hactmp2;
+	HSPAPICHAR *hactmp1 = 0;
+	HSPAPICHAR *hactmp2 = 0;
 	ptr = code_getdsi( "" );
 	strncpy( stmp, ptr, 0x4000-1 );
 	p1 = code_getdi( 0 );

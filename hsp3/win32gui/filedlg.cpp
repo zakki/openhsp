@@ -240,7 +240,7 @@ out_of_memory:
 
 char *fd_getfname( void )
 {
-	HSPCHAR *hctmp1;
+	HSPCHAR *hctmp1 = 0;
 	int hclen;
 	apichartohspchar(szFileName,&hctmp1);
 	hclen = strlen(hctmp1);

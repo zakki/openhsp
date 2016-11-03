@@ -63,7 +63,7 @@ static int	timerid = 0;
 
 void hsp3win_dialog( char *mes )
 {
-	HSPAPICHAR *hactmp1;
+	HSPAPICHAR *hactmp1 = 0;
 	MessageBox( NULL, chartoapichar(mes,&hactmp1), TEXT("Error"),MB_ICONEXCLAMATION | MB_OK );
 	freehac(&hactmp1);
 }
