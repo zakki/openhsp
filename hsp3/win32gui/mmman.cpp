@@ -164,8 +164,8 @@ void MMMan::Reset( HWND hwnd )
 int MMMan::SendMCI( char *mci_commands )
 {
 	int a;
-	HSPAPICHAR *hactmp1;
-	HSPAPICHAR *hactmp2;
+	HSPAPICHAR *hactmp1 = 0;
+	HSPAPICHAR *hactmp2 = 0;
 	a=mciSendString( chartoapichar(mci_commands,&hactmp1),chartoapichar(res,&hactmp2),256,hwm );
 	freehac(&hactmp1);
 	freehac(&hactmp2);
@@ -274,7 +274,7 @@ int MMMan::Play( int num )
 	TCHAR ss[1024];
 	TCHAR fpath[MAX_PATH];
 	MMM *mmm;
-	HSPAPICHAR *hactmp1;
+	HSPAPICHAR *hactmp1 = 0;
 
 	bank = SearchBank( num );
 	if ( bank < 0 ) return 1;

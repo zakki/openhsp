@@ -334,7 +334,7 @@ void HspWnd::Reset( HANDLE instance, char *wndcls )
 	//
 	int i;
 	WNDCLASS    wndclass ;
-	HSPAPICHAR *hactmp1;
+	HSPAPICHAR *hactmp1 = 0;
 	hInst=(HINSTANCE)instance;
 	_tcscpy( defcls, chartoapichar(wndcls,&hactmp1) );
 	freehac(&hactmp1);
@@ -432,7 +432,7 @@ void HspWnd::MakeBmscrOff( int id, int sx, int sy, int mode )
 
 void HspWnd::MakeBmscrWnd( int id, int type, int xx, int yy, int wx, int wy, int sx, int sy, int mode )
 {
-	HSPAPICHAR *hactmp1;
+	HSPAPICHAR *hactmp1 = 0;
 	//		Bmscr(ウィンドウ)生成
 	//
 	ExpandScreen( id );
@@ -904,7 +904,7 @@ void Bmscr::Update( void )
 
 void Bmscr::Title( char *str )
 {
-	HSPAPICHAR *hactmp1;
+	HSPAPICHAR *hactmp1 = 0;
 	if ( type < HSPWND_TYPE_MAIN ) return;
 	SetWindowText( hwnd, chartoapichar(str,&hactmp1) );
 	freehac(&hactmp1);
@@ -1010,7 +1010,7 @@ int Bmscr::Newfont( char *fonname, int fpts, int fopt, int angle )
 	PLOGFONT pLogFont;			// logical FONT ptr
 	unsigned char chk;
 	HFONT hf_new;
-	HSPAPICHAR *hactmp1;
+	HSPAPICHAR *hactmp1 = 0;
 
 	pLogFont=(PLOGFONT) &logfont;
 	_tcscpy( pLogFont->lfFaceName, chartoapichar(fonname,&hactmp1) );
@@ -1216,7 +1216,7 @@ void Bmscr::Print( char *mes )
 	int a;
 	long res;
 	SIZE *size;
-	HSPAPICHAR *hactmp1;
+	HSPAPICHAR *hactmp1 = 0;
 	size = &printsize;
 	a=(int)strlen(mes);
 	if (a) {
@@ -1591,7 +1591,7 @@ int Bmscr::BmpSave( char *fname )
 	BITMAPFILEHEADER bmFH;
 	FILE *fp;
 	int bsize;
-	HSPAPICHAR *hactmp1;
+	HSPAPICHAR *hactmp1 = 0;
 	bsize = bmpsize;
 	fp=_tfopen( chartoapichar(fname,&hactmp1), TEXT("wb") );
 	freehac(&hactmp1);

@@ -193,7 +193,7 @@ static void Object_StrInput( HSPOBJINFO *info, int wparam )
 	TCHAR minp[0x8000];
 	TCHAR *bigbuf;
 	int val, cid, notify, size;
-	HSPCHAR *hctmp1;
+	HSPCHAR *hctmp1 = 0;
 
 	bm = (BMSCR *)info->bm;
 	hwnd = bm->hwnd;
@@ -246,7 +246,7 @@ static void Object_SetMultiBox( HSPOBJINFO *info, int type, void *ptr )
 	UINT m_ini,m_add;
 	HWND hw;
 	CStrNote note;
-	HSPAPICHAR *hactmp1;
+	HSPAPICHAR *hactmp1 = 0;
 
 	hw = info->hCld;
 
@@ -287,7 +287,7 @@ static void Object_SetMultiBox( HSPOBJINFO *info, int type, void *ptr )
 static void Object_SetInputBox( HSPOBJINFO *info, int type, void *ptr )
 {
 	HWND hw;
-	HSPAPICHAR *hactmp1;
+	HSPAPICHAR *hactmp1 = 0;
 	hw = info->hCld;
 	switch( type ) {
 	case TYPE_STRING:
@@ -317,7 +317,7 @@ static void Object_SetInputMesBox( HSPOBJINFO *info, int type, void *ptr )
 static void Object_SetCheckBox( HSPOBJINFO *info, int type, void *ptr )
 {
 	HWND const hw = info->hCld;
-	HSPAPICHAR *hactmp1;
+	HSPAPICHAR *hactmp1 = 0;
 	switch ( type ) {
 	case HSPVAR_FLAG_STR:
 		SetWindowText( hw, 
@@ -640,7 +640,7 @@ void Bmscr::DrawHSPCustomButton( HSPOBJINFO *obj, HDC drawhdc, int flag )
 	RECT rect;
 	HFONT hFont;
 	COLORREF col;
-	HSPAPICHAR *hactmp1;
+	HSPAPICHAR *hactmp1 = 0;
 
 	char msgtmp[256];
 
@@ -718,7 +718,7 @@ int Bmscr::AddHSPObjectButton( char *name, int flag, void *callptr )
 	HWND hw;
 	int id,ws;
 	HSPOBJINFO *obj;
-	HSPAPICHAR *hactmp1;
+	HSPAPICHAR *hactmp1 = 0;
 
 	id = NewHSPObject();
 	ws = objstyle | BS_PUSHBUTTON;
@@ -752,7 +752,7 @@ int Bmscr::AddHSPObjectCheckBox( char *name, PVal *pval, APTR aptr )
 	int id,ws;
 	int *iptr;
 	HSPOBJINFO *obj;
-	HSPAPICHAR *hactmp1;
+	HSPAPICHAR *hactmp1 = 0;
 
 	id = NewHSPObject();
 	ws = objstyle | BS_AUTOCHECKBOX;
@@ -781,7 +781,7 @@ int Bmscr::AddHSPObjectInput( PVal *pval, APTR aptr, int sizex, int sizey, char 
 	HWND hwedit;
 	int id,ws,ws2,max,tabstop,type,subcl;
 	HSPOBJINFO *obj;
-	HSPAPICHAR *hactmp1;
+	HSPAPICHAR *hactmp1 = 0;
 
 	id = NewHSPObject();
 	ws = objstyle;
