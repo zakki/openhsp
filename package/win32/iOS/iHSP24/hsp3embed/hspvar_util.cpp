@@ -1332,8 +1332,13 @@ void PushFuncPAP( int num, int aval )
         StackPushVar( pval, aptr );
 		break;
 	case HSPVAR_FLAG_VAR:
-		pval = (PVal *)( stm->pval );
-		aptr = CheckArray( pval, aval );
+		if ( aval == 0 ) {
+			pval = (PVal *)( stm->pval );
+			aptr = stm->ival;
+		} else {
+			pval = (PVal *)( stm->pval );
+			aptr = CheckArray( pval, aval );
+		}
 		//StackPushTypeVal( HSPVAR_FLAG_VAR, (int)(size_t)pval, (int)(size_t)aptr );
         StackPushVar( pval, aptr );
 		break;
