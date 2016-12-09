@@ -964,14 +964,14 @@ int CHsp3Cpp::MakeCPPVarExpression( CMemBuf *arname,  bool flag_array )
 					switch( result ) {			// 単一項で変数が指定されていた場合のチェック
 					case TYPE_VAR:
 						p = tmpbuf.GetBuffer() + tmpbuf.GetIndex( curidx );
-						p = strstr2( p, "PushVa" );
+						p = strstr2rev( p, "PushVa" );
 						if ( p != NULL ) {
 							p[5] = 'A'; p[6] = 'P';			// PushVar -> PushVAPに直す
 						}
 						break;
 					case TYPE_STRUCT:
 						p = tmpbuf.GetBuffer() + tmpbuf.GetIndex( curidx );
-						p = strstr2( p, "PushFuncPrm" );
+						p = strstr2rev( p, "PushFuncPrm" );
 						if ( p != NULL ) {
 							p[9] = 'A'; p[10] = 'P';		// PushFuncPrm -> PushFuncPAPに直す
 						}
