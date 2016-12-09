@@ -1293,7 +1293,11 @@ void PushFuncPrm( int num, int aval )
 	default:
 		throw HSPVAR_ERROR_INVALID;
 	}
-	aptr = CheckArray( pval, aval );
+	if ( aval == 0 ) {
+		aptr = stm->ival;
+	} else {
+		aptr = CheckArray( pval, aval );
+	}
 	ptr = HspVarCorePtrAPTR( pval, aptr );
 
 	tflag = pval->flag;
