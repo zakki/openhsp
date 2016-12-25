@@ -146,7 +146,7 @@ void SortNote( LPTSTR str )
 	if (i<=0) return;
 
 	DataIni( i );
-	stmp=(LPTSTR)malloc( len );
+	stmp=(LPTSTR)malloc( len*sizeof(TCHAR) );
 
 	i = NoteToData( p, dtmp );
 	BubbleSortStr( dtmp, i, 1 );
