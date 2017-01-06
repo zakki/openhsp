@@ -464,6 +464,10 @@ typedef struct HSPEXINFO
 	char *(*HspFunc_varname)( int id );
 	int (*HspFunc_seekvar)( const char *name );
 
+	//
+	char *(*HspFunc_prm_getns)(void);
+	char *(*HspFunc_prm_getnds)(const char *defstr);
+
 } HSPEXINFO;
 
 
