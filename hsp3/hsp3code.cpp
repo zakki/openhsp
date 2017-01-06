@@ -740,6 +740,44 @@ char *code_getds( const char *defval )
 	return (mpval->pt);
 }
 
+char *code_getas(void)
+{
+#ifdef HSPUTF8
+	HSPCHAR *s;
+	HSPAPICHAR *hactmp1 = 0;
+	char *actmp1 = 0;
+	s = code_gets();
+	chartoapichar(s, &hactmp1);
+	apichartoansichar(hactmp1, &actmp1);
+	freehac(&hactmp1);
+	sbCopy(&hspctx->stmp,actmp1,strlen(actmp1)+1);
+	freeac(&actmp1);
+	return hspctx->stmp;
+#else
+	return code_gets();
+#endif
+}
+
+char *code_getads(const char *defval)
+{
+#ifdef HSPUTF8
+	HSPCHAR *s;
+	HSPAPICHAR *hactmp1 = 0;
+	char *actmp1 = 0;
+	s = code_getds(defval);
+	if (s == defval){
+		return s;
+	}
+	chartoapichar(s, &hactmp1);
+	apichartoansichar(hactmp1, &actmp1);
+	freehac(&hactmp1);
+	sbCopy(&hspctx->stmp,actmp1,strlen(actmp1)+1);
+	freeac(&actmp1);
+	return hspctx->stmp;
+#else
+	return code_getds( defval );
+#endif
+}
 
 char *code_getdsi( const char *defval )
 {
@@ -2602,8 +2640,8 @@ void code_init( void )
 
 	exinfo->HspFunc_prm_geti = code_geti;
 	exinfo->HspFunc_prm_getdi = code_getdi;
-	exinfo->HspFunc_prm_gets = code_gets;
-	exinfo->HspFunc_prm_getds = code_getds;
+	exinfo->HspFunc_prm_gets = code_getas;
+	exinfo->HspFunc_prm_getds = code_getads;
 	exinfo->HspFunc_getbmscr = NULL;
 	exinfo->HspFunc_addobj = NULL;
 	exinfo->HspFunc_setobj = NULL;
@@ -2643,6 +2681,8 @@ void code_init( void )
 	exinfo->HspFunc_varname = code_getdebug_varname;
 	exinfo->HspFunc_seekvar = code_getdebug_seekvar;
 
+	exinfo->HspFunc_prm_getns = code_gets;
+	exinfo->HspFunc_prm_getnds = code_getds;
 	//		HSPCTX‚ÉƒRƒs[‚·‚é
 	//
 	memcpy( &hspctx->exinfo, exinfo, sizeof(HSPEXINFO30) );
