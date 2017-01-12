@@ -2970,6 +2970,9 @@ ppresult_t CToken::PP_BootOpt(void)
 	if (tstrcmp(optname, "hsp64")) {			// 64bit runtime sw
 		i = HEDINFO_HSP64;
 	}
+	if (tstrcmp(optname, "ioresume")) {			// File I/O resume sw
+		i = HEDINFO_IORESUME;
+	}
 
 	if (i == 0) {
 		SetError("illegal option name"); return PPRESULT_ERROR;

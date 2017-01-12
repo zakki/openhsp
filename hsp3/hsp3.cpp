@@ -179,6 +179,40 @@ int Hsp3::Reset( int mode )
 	HspVarCoreResetVartype( hsphed->max_varhpi );		// å^ÇÃèâä˙âª
 	code_resetctx( &hspctx );		// hsp3code setup
 
+	//		hspstat check
+#ifdef HSPWIN
+#ifndef HSPWINGUI
+	hspctx.hspstat |= HSPSTAT_CONSOLE;
+#endif
+#endif
+
+#ifdef HSPMAC
+	hspctx.hspstat |= HSPSTAT_MAC;
+#endif
+
+#ifdef HSPLINUX
+	hspctx.hspstat |= HSPSTAT_LINUX;
+#ifndef HSPLINUXGUI
+	hspctx.hspstat |= HSPSTAT_CONSOLE;
+#endif
+#endif
+
+#ifdef HSPDISH
+	hspctx.hspstat |= HSPSTAT_DISH;
+#endif
+
+#ifdef HSPDISH
+	hspctx.hspstat |= HSPSTAT_DISH;
+#endif
+
+#ifdef HSPUTF8
+	hspctx.hspstat |= HSPSTAT_UTF8;
+#endif
+
+#ifdef HSP64
+	hspctx.hspstat |= HSPSTAT_HSP64;
+#endif
+
 	//		HspVar setup
 	hspctx.mem_var = NULL;
 	if ( maxvar ) {
