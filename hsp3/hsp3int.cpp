@@ -1562,6 +1562,24 @@ static void *reffunc_intfunc( int *type_res, int arg )
 		break;
 		}
 
+	case 0x014:								// varsize
+		{
+		PVal *pval;
+		APTR aptr;
+		PDAT *pdat;
+		STRUCTDAT *st;
+		if ( *type == TYPE_DLLFUNC ) {
+			st = &(ctx->mem_finfo[ *val ]);
+			reffunc_intfunc_ivalue = (int)(st->size);
+			code_next();
+			break;
+		}
+		aptr = code_getva( &pval );
+		pdat = HspVarCorePtrAPTR( pval, aptr );
+		HspVarCoreGetBlockSize(pval, pdat, &reffunc_intfunc_ivalue);
+		break;
+		}
+
 
 	// str function
 	case 0x100:								// str

@@ -104,6 +104,7 @@ typedef struct MACDEF {
 #define HEDINFO_ORGRND 0x10000		// 標準の乱数発生を使用する
 #define HEDINFO_UTF8 0x20000		// UTF8ランタイムを使用する(コード識別用)
 #define HEDINFO_HSP64 0x40000		// 64bitランタイムを使用する(コード識別用)
+#define HEDINFO_IORESUME 0x80000	// ファイルI/Oエラーを無視して処理を続行する
 
 enum ppresult_t {
 	PPRESULT_SUCCESS,				// 成功

@@ -206,7 +206,13 @@ void hsp3win_msgfunc( HSPCTX *hspctx )
 			MsgWaitForMultipleObjects(0, NULL, FALSE, 1000, QS_ALLINPUT );
 			break;
 		case RUNMODE_WAIT:
-			tick = GetTickCount();
+			if ( timer_period == -1 ) {
+				//	通常のタイマー
+				tick = GetTickCount();
+			} else {
+				//	高精度タイマー
+				tick = timeGetTime();
+			}
 			hspctx->runmode = code_exec_wait( tick );
 		case RUNMODE_AWAIT:
 			if ( timer_period == -1 ) {
@@ -281,7 +287,6 @@ int hsp3win_init( HINSTANCE hInstance, char *startfile )
 #endif
 	char *ss;
 	LPTSTR cl;
-	int sslen;
 #ifdef HSPDEBUG
 	int i;
 #endif

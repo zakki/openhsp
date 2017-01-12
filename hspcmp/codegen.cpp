@@ -3081,6 +3081,8 @@ int CToken::GenerateCode( CMemBuf *srcbuf, char *oname, int mode )
 			hsphed.bootoption |= HSPHED_BOOTOPT_RUNTIME;
 			hsphed.runtime = sz_hed;
 			sz_hed += sz_opt;
+			if (hed_option & HEDINFO_UTF8) hsphed.bootoption |= HSPHED_BOOTOPT_UTF8;		// ランタイムはUTF8を使用する
+			if (hed_option & HEDINFO_HSP64) hsphed.bootoption |= HSPHED_BOOTOPT_HSP64;		// ランタイムは64bitで動作する
 		}
 
 		//		デバッグウインドゥ表示
@@ -3097,6 +3099,7 @@ int CToken::GenerateCode( CMemBuf *srcbuf, char *oname, int mode )
 		if (hed_option & HEDINFO_NOGDIP) hsphed.bootoption |= HSPHED_BOOTOPT_NOGDIP;		// GDI+による描画を無効にする
 		if (hed_option & HEDINFO_FLOAT32) hsphed.bootoption |= HSPHED_BOOTOPT_FLOAT32;		// 実数を32bit floatとして処理する
 		if (hed_option & HEDINFO_ORGRND) hsphed.bootoption |= HSPHED_BOOTOPT_ORGRND;		// 標準の乱数発生を使用する
+		if (hed_option & HEDINFO_IORESUME) hsphed.bootoption |= HSPHED_BOOTOPT_IORESUME;	// ファイルI/Oエラーを無視して処理を続行する
 
 		cs_size = cs_buf->GetSize();
 		ds_size = ds_buf->GetSize();
