@@ -3,6 +3,7 @@
 
 #include <set>
 #include "Vector3.h"
+#include "Font.h"
 
 namespace gameplay
 {
@@ -17,9 +18,10 @@ public:
     enum FileFormat
     {
         FILEFORMAT_UNKNOWN,
-        FILEFORMAT_DAE,
         FILEFORMAT_FBX,
+        FILEFORMAT_TMX,
         FILEFORMAT_TTF,
+        FILEFORMAT_OTF,
         FILEFORMAT_GPB,
         FILEFORMAT_PNG,
         FILEFORMAT_RAW
@@ -74,9 +76,20 @@ public:
     const std::string& getFilePath() const;
 
     /**
+     * Returns the path/folder.
+     * Example: "C:/dir"
+     */
+    const std::string getFileDirPath() const;
+
+    /**
      * Returns the char pointer to the file path string.
      */
     const char* getFilePathPointer() const;
+
+    /**
+     * Get the file name of the input file.
+     */
+    const std::string getFileName() const;
 
     /**
      * Returns the output path/folder.
@@ -151,14 +164,21 @@ public:
      */
     void printUsage() const;
 
+    std::vector<unsigned int> getFontSizes() const;
+
     bool fontPreviewEnabled() const;
+
+    Font::FontFormat getFontFormat() const;
+
     bool textOutputEnabled() const;
+
     bool optimizeAnimationsEnabled() const;
+
     bool outputMaterialEnabled() const;
 
-    const char* getNodeId() const;
-    unsigned int getFontSize() const;
+    bool generateTextureGutter() const;
 
+    const char* getNodeId() const;
 
     static std::string getRealPath(const std::string& filepath);
 
@@ -192,18 +212,19 @@ private:
     std::string _fileOutputPath;
     std::string _nodeId;
 
-    unsigned int _fontSize;
-
     bool _normalMap;
     Vector3 _heightmapWorldSize;
     int _heightmapResolution[2];
 
     bool _parseError;
+    std::vector<unsigned int> _fontSizes;
     bool _fontPreview;
+    Font::FontFormat _fontFormat;
     bool _textOutput;
     bool _optimizeAnimations;
     AnimationGroupOption _animationGrouping;
     bool _outputMaterial;
+    bool _generateTextureGutter;
 
     std::vector<std::string> _groupAnimationNodeId;
     std::vector<std::string> _groupAnimationAnimationId;

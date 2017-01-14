@@ -1,35 +1,70 @@
 #include "Base.h"
 #include "FBXSceneEncoder.h"
+//#include "TMXSceneEncoder.h"
 #include "TTFFontEncoder.h"
 #include "GPBDecoder.h"
 #include "EncoderArguments.h"
 #include "NormalMapGenerator.h"
+#include "Font.h"
 
 using namespace gameplay;
+
+#define FONT_SIZE_DISTANCEFIELD 48
 
 /**
  * Prompts the user for a font size until a valid font size is entered.
  * 
  * @return A valid font size.
  */
-static unsigned int promptUserFontSize()
+static std::vector<unsigned int> promptUserFontSize()
 {
     static const int lowerBound = 8;
-    static const int upperBound = 500;
-    unsigned int fontSize = 0;
-    char buffer[80];
+    static const int upperBound = 96;
+    std::vector<unsigned int> fontSizes;
+    bool parseError = false;
+    char buffer[4096];
     do
     {
-        printf("Enter font size (between %d and %d):\n", lowerBound, upperBound);
-        std::cin.getline(buffer, 80);
-        int i = atoi(buffer);
-        if (i >= lowerBound && i <= upperBound)
+        parseError = false;
+        fontSizes.clear();
+
+        // Prompt for font sizes
+        printf("Enter a comma-separated list of font sizes (pixels) to generate:\n");
+        std::cin.getline(buffer, 4096);
+
+        // Parse comma-separated list of fonts sizes and validate
+        char* ptr = const_cast<char*>(buffer);
+        std::string sizeStr;
+        while (ptr)
         {
-            fontSize = (unsigned int)i;
+            char* end = strchr(ptr, ',');
+            if (end)
+            {
+                sizeStr = std::string(ptr, end - ptr);
+                ptr = end + 1;
+            }
+            else
+            {
+                sizeStr = ptr;
+                ptr = NULL;
+            }
+            if (sizeStr.length() > 0)
+            {
+                int size = atoi(sizeStr.c_str());
+                if (size < lowerBound || size > upperBound)
+                {
+                    printf("Invalid font size: %d. Must be between %d-%d.\n", size, lowerBound, upperBound);
+                    parseError = true;
+                    continue;
+                }
+                fontSizes.push_back((unsigned int)size);
+            }
         }
-    } while (fontSize == 0);
-    return fontSize;
+    } while (parseError);
+
+    return fontSizes;
 }
+
 
 /**
  * Main application entry point.
@@ -65,11 +100,6 @@ int main(int argc, const char** argv)
 
     switch (arguments.getFileFormat())
     {
-    case EncoderArguments::FILEFORMAT_DAE:
-        {
-            LOG(1, "Error: Collada support has been removed. Convert your DAE file to FBX.\n");
-            return -1;
-        }
     case EncoderArguments::FILEFORMAT_FBX:
         {
             std::string realpath(arguments.getFilePath());
@@ -77,15 +107,35 @@ int main(int argc, const char** argv)
             fbxEncoder.write(realpath, arguments);
             break;
         }
+//    case EncoderArguments::FILEFORMAT_TMX:
+//        {
+//            TMXSceneEncoder tmxEncoder;
+//            tmxEncoder.write(arguments);
+//            break;
+//        }
     case EncoderArguments::FILEFORMAT_TTF:
+    case EncoderArguments::FILEFORMAT_OTF:
         {
-            unsigned int fontSize = arguments.getFontSize();
-            if (fontSize == 0)
+            std::vector<unsigned int> fontSizes = arguments.getFontSizes();
+            
+            Font::FontFormat fontFormat = arguments.getFontFormat();
+            if (fontFormat == Font::BITMAP)
             {
-                fontSize = promptUserFontSize();
+                if (fontSizes.size() == 0)
+                {
+                    fontSizes = promptUserFontSize();
+                }
+            }
+            else
+            {
+                // Distance fields use size
+                if (fontSizes.size() == 0)
+                {
+                    fontSizes.push_back(FONT_SIZE_DISTANCEFIELD);
+                }
             }
             std::string id = getBaseName(arguments.getFilePath());
-            writeFont(arguments.getFilePath().c_str(), arguments.getOutputFilePath().c_str(), fontSize, id.c_str(), arguments.fontPreviewEnabled());
+            writeFont(arguments.getFilePath().c_str(), arguments.getOutputFilePath().c_str(), fontSizes, id.c_str(), arguments.fontPreviewEnabled(), fontFormat);
             break;
         }
     case EncoderArguments::FILEFORMAT_GPB:
