@@ -11,6 +11,7 @@
 #ifdef HSPNDK
 #include "ndkgp/gamehsp.h"
 #endif
+char *hsp3dish_getlog(void);		// for gameplay3d log
 #endif
 
 #include <stdio.h>
@@ -43,6 +44,7 @@
 #define USE_WEBTASK
 #define USE_MMAN
 //#define USE_DGOBJ
+
 
 /*------------------------------------------------------------*/
 /*
@@ -2133,7 +2135,16 @@ static int cmdfunc_extcmd( int cmd )
 		mat->setParameter( fname, &p_vec1 );
 		break;
 		}
-
+	case 0xf6:								// gpgetlog
+		{
+		PVal *p_pval;
+		APTR p_aptr;
+		char *ps;
+		p_aptr = code_getva(&p_pval);
+		ps = hsp3dish_getlog();
+		code_setva(p_pval, p_aptr, HSPVAR_FLAG_STR, ps);
+		break;
+		}
 
 #endif
 

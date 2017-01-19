@@ -29,7 +29,7 @@
 ** ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF
 ** THE POSSIBILITY OF SUCH DAMAGE.
 */
-#if 0
+
 #define GLEW_STATIC
 
 #include <GL/glew.h>
@@ -19630,4 +19630,3 @@ GLboolean glxewIsSupported (const char* name)
 }
 
 #endif /* _WIN32 */
-#endif

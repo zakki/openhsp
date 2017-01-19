@@ -4,7 +4,9 @@
 namespace gameplay
 {
 /**
- * Math utility class. Used for internal math optimizations.
+ * Defines a math utility class.
+ *
+ * This is primarily used for optimized internal math operations.
  */
 class MathUtil
 {
@@ -71,7 +73,7 @@ private:
 
 #define MATRIX_SIZE ( sizeof(float) * 16)
 
-#ifdef USE_NEON
+#ifdef GP_USE_NEON
 #include "MathUtilNeon.inl"
 #else
 #include "MathUtil.inl"

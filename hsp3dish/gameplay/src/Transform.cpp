@@ -12,33 +12,37 @@ std::vector<Transform*> Transform::_transformsChanged;
 Transform::Transform()
     : _matrixDirtyBits(0), _listeners(NULL)
 {
+    GP_REGISTER_SCRIPT_EVENTS();
+
     _targetType = AnimationTarget::TRANSFORM;
     _scale.set(Vector3::one());
-    addScriptEvent("transformChanged", "<Transform>");
 }
 
 Transform::Transform(const Vector3& scale, const Quaternion& rotation, const Vector3& translation)
     : _matrixDirtyBits(0), _listeners(NULL)
 {
+    GP_REGISTER_SCRIPT_EVENTS();
+
     _targetType = AnimationTarget::TRANSFORM;
     set(scale, rotation, translation);
-    addScriptEvent("transformChanged", "<Transform>");
 }
 
 Transform::Transform(const Vector3& scale, const Matrix& rotation, const Vector3& translation)
     : _matrixDirtyBits(0), _listeners(NULL)
 {
+    GP_REGISTER_SCRIPT_EVENTS();
+
     _targetType = AnimationTarget::TRANSFORM;
     set(scale, rotation, translation);
-    addScriptEvent("transformChanged", "<Transform>");
 }
 
 Transform::Transform(const Transform& copy)
     : _matrixDirtyBits(0), _listeners(NULL)
 {
+    GP_REGISTER_SCRIPT_EVENTS();
+
     _targetType = AnimationTarget::TRANSFORM;
     set(copy);
-    addScriptEvent("transformChanged", "<Transform>");
 }
 
 Transform::~Transform()
@@ -88,45 +92,34 @@ bool Transform::isTransformChangedSuspended()
     return (_suspendTransformChanged > 0);
 }
 
+const char* Transform::getTypeName() const
+{
+    return "Transform";
+}
+
 const Matrix& Transform::getMatrix() const
 {
-    if (_matrixDirtyBits)
+    if (_matrixDirtyBits & (DIRTY_TRANSLATION | DIRTY_ROTATION | DIRTY_SCALE))
     {
         if (!isStatic())
         {
-            bool hasTranslation = !_translation.isZero();
             bool hasScale = !_scale.isOne();
             bool hasRotation = !_rotation.isIdentity();
 
             // Compose the matrix in TRS order since we use column-major matrices with column vectors and
             // multiply M*v (as opposed to XNA and DirectX that use row-major matrices with row vectors and multiply v*M).
-            if (hasTranslation || (_matrixDirtyBits & DIRTY_TRANSLATION) == DIRTY_TRANSLATION)
+            Matrix::createTranslation(_translation, &_matrix);
+            if (hasRotation)
             {
-                Matrix::createTranslation(_translation, &_matrix);
-                if (hasRotation || (_matrixDirtyBits & DIRTY_ROTATION) == DIRTY_ROTATION)
-                {
-                    _matrix.rotate(_rotation);
-                }
-                if (hasScale || (_matrixDirtyBits & DIRTY_SCALE) == DIRTY_SCALE)
-                {
-                    _matrix.scale(_scale);
-                }
+                _matrix.rotate(_rotation);
             }
-            else if (hasRotation || (_matrixDirtyBits & DIRTY_ROTATION) == DIRTY_ROTATION)
+            if (hasScale)
             {
-                Matrix::createRotation(_rotation, &_matrix);
-                if (hasScale || (_matrixDirtyBits & DIRTY_SCALE) == DIRTY_SCALE)
-                {
-                    _matrix.scale(_scale);
-                }
-            }
-            else if (hasScale || (_matrixDirtyBits & DIRTY_SCALE) == DIRTY_SCALE)
-            {
-                Matrix::createScale(_scale, &_matrix);
+                _matrix.scale(_scale);
             }
         }
 
-        _matrixDirtyBits &= ~DIRTY_TRANSLATION & ~DIRTY_ROTATION & ~DIRTY_SCALE;
+        _matrixDirtyBits &= ~(DIRTY_TRANSLATION | DIRTY_ROTATION | DIRTY_SCALE);
     }
 
     return _matrix;
@@ -991,7 +984,7 @@ void Transform::transformChanged()
             l.listener->transformChanged(this, l.cookie);
         }
     }
-    fireScriptEvent<void>("transformChanged", this);
+    fireScriptEvent<void>(GP_GET_SCRIPT_EVENT(Transform, transformChanged), dynamic_cast<void*>(this));
 }
 
 void Transform::cloneInto(Transform* transform, NodeCloneContext &context) const

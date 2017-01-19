@@ -80,7 +80,7 @@ void gpphy::bindNodeAsBox( Node *node, Vector3 &size, PhysicsRigidBody::Paramete
 	PhysicsCollisionObject *pco;
 	pco =node->setCollisionObject(PhysicsCollisionObject::RIGID_BODY, 
 			PhysicsCollisionShape::box( size ), rigParams );
-	_colObj = pco->asRigidBody();
+	_colObj = dynamic_cast<PhysicsRigidBody*>(pco);
 }
 
 
@@ -89,7 +89,7 @@ void gpphy::bindNodeAsSphere( Node *node, float radius, Vector3 &center, Physics
 	PhysicsCollisionObject *pco;
 	pco = node->setCollisionObject(PhysicsCollisionObject::RIGID_BODY, 
 			PhysicsCollisionShape::sphere( radius, center ), rigParams );
-	_colObj = pco->asRigidBody();
+	_colObj = dynamic_cast<PhysicsRigidBody*>(pco);
 }
 
 

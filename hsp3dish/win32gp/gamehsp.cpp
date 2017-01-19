@@ -289,6 +289,7 @@ void gamehsp::resetScreen( int opt )
 	// gpobj作成
 	_maxobj = GetSysReq( SYSREQ_MAXOBJ );
 	_gpobj = new gpobj[ _maxobj ];
+	for(int i=0;i<_maxobj;i++) { _gpobj[i].addRef(); }
 	setObjectPool( 0, -1 );
 
 	// gpmat作成
@@ -313,13 +314,16 @@ void gamehsp::resetScreen( int opt )
 //	_camera->translate(0, 0, 100);
 //	SAFE_RELEASE(camera);
 
-	// シーンライト作成
+#if 0
 	_scene->setLightColor( 1.0f, 1.0f, 1.0f );
 
 	Vector3 ldir;
 	ldir.set( -0.5f, 0.0f, -0.3f );
 	_scene->setLightDirection( ldir );
-	_scene->setAmbientColor( 0.25f, 0.25f, 0.25f );
+#endif
+
+	// シーンライト作成
+	_scene->setAmbientColor(0.25f, 0.25f, 0.25f);
 
 	// ライト作成
 	_deflight = makeNewLgt( -1, GPLGT_OPT_NORMAL );
@@ -910,9 +914,9 @@ int gamehsp::getObjectVector( int objid, int moc, Vector4 *prm )
 
 void gamehsp::drawNode( Node *node )
 {
-	Model* model = node->getModel(); 
-	if (model) {
-		model->draw();
+	Drawable* drawable = node->getDrawable(); 
+	if (drawable) {
+		drawable->draw();
 	}
 }
 
@@ -955,7 +959,8 @@ bool gamehsp::updateNodeMaterial( Node* node, Material *material )
 		updateNodeMaterial( sub_node, material );
 	}
 
-	Model* model = node->getModel(); 
+	Drawable* drawable = node->getDrawable();
+	Model* model = dynamic_cast<Model*>(drawable);
     if (model)
     {
 		model->setMaterial( material );
@@ -967,8 +972,9 @@ bool gamehsp::updateNodeMaterial( Node* node, Material *material )
 bool gamehsp::drawScene(Node* node)
 {
     // If the node visited contains a model, draw it
-	gpobj *obj = (gpobj *)node->getUserPointer();
-    Model* model = node->getModel(); 
+	gpobj *obj = (gpobj *)node->getUserObject();
+	Drawable* drawable = node->getDrawable();
+	Model* model = dynamic_cast<Model*>(drawable);
 	if ( obj ) {
 		if ( obj->isVisible( _scenedraw_lateflag ) == false ) return false;
 
@@ -1063,7 +1069,8 @@ int gamehsp::makeNullNode( void )
 
 	node = Node::create();
 	obj->_node = node;
-	node->setUserPointer( obj, NULL );
+	node->setUserObject( obj );
+	obj->addRef();
 
 	if ( _curscene >= 0 ) {
 		_scene->addNode( obj->_node );
@@ -1073,7 +1080,7 @@ int gamehsp::makeNullNode( void )
 }
 
 
-int gamehsp::makeSpriteObj( int celid, int gmode, void *bmscr )
+int gamehsp::makeSpriteObj(int celid, int gmode, void *bmscr)
 {
 	gpobj *obj = addObj();
 	if ( obj == NULL ) return -1;
@@ -1219,67 +1226,131 @@ int gamehsp::makeBoxNode( float size, int color, int matid )
 }
 
 
-int gamehsp::makeModelNode( char *fname, char *idname )
+bool gamehsp::makeModelNodeSub(Node *rootnode, int nest)
+{
+	Node *node = rootnode;
+	Material *mat;
+	int part,tecs,prms;
+	Vector3 directionalLightVector;
+
+	while (node != NULL) {
+		part = 0;
+		mat = NULL;
+		Drawable* drawable = node->getDrawable();
+		Model* model = dynamic_cast<Model*>(drawable);
+		if (model){
+			Technique *tec = NULL;
+			mat = model->getMaterial(0);
+			part = model->getMeshPartCount();
+			tecs = 0; prms = 0;
+			if (mat) {
+				tecs = mat->getTechniqueCount();
+				if (tecs) {
+					tec = mat->getTechniqueByIndex(0);
+					prms = tec->getParameterCount();
+				}
+			}
+			//Alertf("Node(%s) part%d mat%x tec%d prm%d: %d", node->getId(), part, mat, tecs, prms, nest);
+			//	カレントライトを反映させる
+			gpobj *lgt;
+			Node *light_node;
+			lgt = getObj(_curlight);
+			light_node = lgt->_node;
+			directionalLightVector = light_node->getForwardVector();
+			for (int i = 0; i < prms; i++){
+				MaterialParameter *prm = tec->getParameterByIndex(i);
+				//Alertf( "prm(%s) %x",prm->getName(), prm->getSampler()  );
+			}
+			if (part) {
+				for (int i = 0; i < part; i++){
+					mat = model->getMaterial(i);
+					if (mat) {
+						tec = mat->getTechniqueByIndex(0);
+						tec->getParameter("u_directionalLightColor[0]")->setValue(Vector3(1, 1, 1));
+						tec->getParameter("u_directionalLightDirection[0]")->setValue(&directionalLightVector);
+						tec->getParameter("u_lightDirection")->setValue(&directionalLightVector);
+
+					}
+				}
+			}
+
+		}
+		node = node->getNextSibling();
+	}
+
+	node = rootnode->getFirstChild();
+	if (node != NULL) {
+		makeModelNodeSub(node, nest + 1);
+	}
+	return true;
+}
+
+
+int gamehsp::makeModelNode(char *fname, char *idname)
 {
 	char fn[512];
 	char fn2[512];
 	gpobj *obj = addObj();
-	if ( obj == NULL ) return -1;
+	if (obj == NULL) return -1;
 
-	getpath( fname, fn, 1 );
+	getpath(fname, fn, 1);
 	//strcpy( fn, fname );
-	strcpy( fn2, fn );
-	strcat( fn, ".gpb" );
-	strcat( fn2, ".material" );
+	strcpy(fn2, fn);
+	strcat(fn, ".gpb");
+	strcat(fn2, ".material");
 
-    Bundle *bundle = Bundle::create( fn );
+	Bundle *bundle = Bundle::create(fn);
 	Node *rootNode;
 	Node *node;
 
-	Material* boxMaterial = Material::create( fn2 );
+	Material* boxMaterial = Material::create(fn2);
 
 	MaterialParameter *ambientColorParam =
-		hasParameter( boxMaterial, "u_ambientColor" ) ?
+		hasParameter(boxMaterial, "u_ambientColor") ?
 		boxMaterial->getParameter("u_ambientColor") : NULL;
-	MaterialParameter *lightDirectionParam =
-		hasParameter( boxMaterial, "u_lightDirection" ) ?
-		boxMaterial->getParameter("u_lightDirection") : NULL;
-	MaterialParameter *lightColorParam =
-		hasParameter( boxMaterial, "u_lightColor" ) ?
-		boxMaterial->getParameter("u_lightColor") : NULL;
+	MaterialParameter *lightDirectionParam = NULL;
+		//hasParameter(boxMaterial, "u_lightDirection") ?
+	lightDirectionParam = boxMaterial->getTechnique()->getParameter("u_lightDirection");
+	MaterialParameter *lightColorParam = NULL;
+		//hasParameter(boxMaterial, "u_lightColor") ?
+	lightColorParam = boxMaterial->getTechnique()->getParameter("u_lightColor");
 
-	if ( _curlight >= 0 ) {
+	Vector3 directionalLightVector;
+
+	if (_curlight >= 0) {
 		//	カレントライトを反映させる
 		gpobj *lgt;
 		Node *light_node;
-		lgt = getObj( _curlight );
+		lgt = getObj(_curlight);
 		light_node = lgt->_node;
+		directionalLightVector = light_node->getForwardVector();
 
 		// ライトの方向設定
-		if ( lightDirectionParam ) {
+		if (lightDirectionParam) {
 			lightDirectionParam->bindValue(light_node, &Node::getForwardVectorView);
 		}
-	    // ライトの色設定
+		// ライトの色設定
 		// (リアルタイムに変更を反映させる場合は再設定が必要。現在は未対応)
-		if ( ambientColorParam ) {
+		if (ambientColorParam) {
 			Vector3 *vambient;
 			vambient = (Vector3 *)&lgt->_vec[GPOBJ_USERVEC_WORK];
-			ambientColorParam->setValue( vambient );
+			ambientColorParam->setValue(vambient);
 		}
-		if ( lightColorParam ) {
+		if (lightColorParam) {
 			lightColorParam->setValue(light_node->getLight()->getColor());
 		}
 	}
 
-	if ( idname ) {
-		rootNode = bundle->loadNode( idname );
-		if ( rootNode == NULL ) {
-			Alertf( "Node not found.(%s#%s)",fname,idname );
+	if (idname) {
+		rootNode = bundle->loadNode(idname);
+		if (rootNode == NULL) {
+			Alertf("Node not found.(%s#%s)", fname, idname);
 			return -1;
 		}
-		updateNodeMaterial( rootNode, boxMaterial );
+		updateNodeMaterial(rootNode, boxMaterial);
 
-	} else {
+	}
+	else {
 		unsigned int i;
 
 		Scene *scene;
@@ -1290,63 +1361,74 @@ int gamehsp::makeModelNode( char *fname, char *idname )
 		rootid = NULL;
 
 		scene = bundle->loadScene();
-		if ( scene ) {
+		if (scene) {
 			node = scene->getFirstNode();
 			animation = node->getAnimation("animations");
 			if (animation) {
 				rootid = (char *)node->getId();
 				//Alertf( "Found Power Scene Node(%s) Clip count: %d", node->getId(), animation->getClipCount() );
 			}
-
+		}
+		else {
+			Alertf("Scene not found.(%s)", fname);
 		}
 
-		for(i=0;i<bundle->getObjectCount();i++) {
-			node = bundle->loadNode( bundle->getObjectId(i) );
-			if ( node ) {
-				Model* model = node->getModel();
-			    if (model) {
-					model->setMaterial( boxMaterial );
-			    }
+		for (i = 0; i<bundle->getObjectCount(); i++) {
+			node = bundle->loadNode(bundle->getObjectId(i));
+			if (node) {
+				Drawable* drawable = node->getDrawable();
+				Model* model = dynamic_cast<Model*>(drawable);
+				if (model) {
+					model->setMaterial(boxMaterial);
+
+					Material*m = model->getMaterial();
+					m->getTechnique()->getParameter("u_directionalLightColor[0]")->setValue(Vector3(1, 1, 1));
+					m->getTechnique()->getParameter("u_directionalLightDirection[0]")->setValue(Vector3(0, 0, -1));
+
+				}
 				//Alertf( "#%d %s",i, bundle->getObjectId(i) );
 
 				animation = node->getAnimation("animations");
 				if (animation) {
-					if (  strcmp( node->getId() ,rootid ) == 0 ) {
+					if (strcmp(node->getId(), rootid) == 0) {
 						AnimationClip *aclip;
-						aclip = animation->createClip( "idle", 0, animation->getDuration() );
-						aclip->setRepeatCount( AnimationClip::REPEAT_INDEFINITE );
+						aclip = animation->createClip("idle", 0, animation->getDuration());
+						aclip->setRepeatCount(AnimationClip::REPEAT_INDEFINITE);
 						animation->play("idle");
 						//animation->createClips("zombie.animation");
 						//Alertf( "(%s) Clip count: %d Dur:%ld", node->getId(), animation->getClipCount(), animation->getDuration() );
-						rootNode->addChild( node );
+						rootNode->addChild(node);
 					}
-				} else {
-					rootNode->addChild( node );
+				}
+				else {
+					rootNode->addChild(node);
 				}
 
 				SAFE_RELEASE(node);
 			}
 		}
 
+		//makeModelNodeSub(rootNode, 0);
 
 		SAFE_RELEASE(scene);
 
 
 	}
 
-	obj->updateParameter( boxMaterial );
+	obj->updateParameter(boxMaterial);
 
-	if ( _curscene >= 0 ) {
-		_scene->addNode( rootNode );
+	if (_curscene >= 0) {
+		_scene->addNode(rootNode);
 	}
 
 	//model->setMaterial( boxMaterial );
 
 	SAFE_RELEASE(bundle);
-    SAFE_RELEASE(boxMaterial);
+	SAFE_RELEASE(boxMaterial);
 
 	//nodetemp = mCubeNode;
-	rootNode->setUserPointer( obj, NULL );
+	rootNode->setUserObject(obj);
+	obj->addRef();
 	obj->_node = rootNode;
 
 	// 初期化パラメーターを保存
@@ -1369,8 +1451,9 @@ void gamehsp::makeNewModel( gpobj *obj, Mesh *mesh, Material *material )
 		node = Node::create();
 		obj->_node = node;
 	}
-	node->setModel(model);
-	node->setUserPointer( obj, NULL );
+	node->setDrawable(model);
+	node->setUserObject( obj );
+	obj->addRef();
 	obj->_model = model;
 	obj->updateParameter( material );
 	SAFE_RELEASE(model);
@@ -1530,17 +1613,18 @@ int gamehsp::makeCloneNode( int objid )
 	newobj->_shape = obj->_shape;
 	newobj->_sizevec = obj->_sizevec;
 
-	node->setUserPointer( NULL, NULL );
+	node->setUserObject( NULL );
 
 	newobj->_node = node->clone();
 
-	newobj->_node->setUserPointer( newobj, NULL );
+	newobj->_node->setUserObject( newobj );
+	newobj->addRef();
 
 	if ( _curscene >= 0 ) {
 		_scene->addNode( newobj->_node );
 	}
 
-	node->setUserPointer( obj, NULL );
+	node->setUserObject( obj );
 
 	return newobj->_id;
 }
@@ -2150,7 +2234,7 @@ Material* gamehsp::make2DMaterialForMesh( void )
 	Material* mesh_material = Material::create( SPRITECOL_VSH, SPRITECOL_FSH, NULL );
 	if ( mesh_material == NULL ) {
         GP_ERROR("2D initalize failed.");
-        return false;
+        return NULL;
 	}
     mesh_material->getParameter("u_projectionMatrix")->setValue(_projectionMatrix2D);
 	state = mesh_material->getStateBlock();
