@@ -126,7 +126,7 @@ public:
 
 
 //  HGIMG4 Node Object
-class gpobj {
+class gpobj : public Ref {
 public:
 	gpobj();
 	~gpobj();
@@ -230,10 +230,13 @@ public:
 	int makeNewModelWithMat( gpobj *obj, Mesh *mesh, int matid );
 
 	int makeNullNode( void );
-	int makeFloorNode( float xsize, float ysize, int color, int matid=-1 );
+	int makeFloorNode(float xsize, float ysize, int color, int matid = -1);
 	int makePlateNode( float xsize, float ysize, int color, int matid=-1 );
 	int makeBoxNode( float size, int color, int matid=-1 );
 	int makeModelNode( char *fname, char *idname );
+
+	bool makeModelNodeSub(Node *node, int nest);
+
 	int makeCloneNode( int objid );
 	int makeSpriteObj( int celid, int gmode, void *bmscr );
 

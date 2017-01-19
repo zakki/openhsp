@@ -138,9 +138,9 @@ void Animation::createClips(const char* url)
     SAFE_DELETE(properties);
 }
 
-AnimationClip* Animation::createClip(const char* id, unsigned long start, unsigned long end)
+AnimationClip* Animation::createClip(const char* id, unsigned long begin, unsigned long end)
 {
-    AnimationClip* clip = new AnimationClip(id, this, start, end);
+    AnimationClip* clip = new AnimationClip(id, this, begin, end);
     addClip(clip);
     return clip;
 }
@@ -238,6 +238,7 @@ bool Animation::targets(AnimationTarget* target) const
     return false;
 }
 
+
 void Animation::createDefaultClip()
 {
     _defaultClip = new AnimationClip("default_clip", this, 0.0f, _duration);
@@ -298,11 +299,10 @@ AnimationClip* Animation::findClip(const char* id) const
 {
     if (_clips)
     {
-        AnimationClip* clip = NULL;
         size_t clipCount = _clips->size();
         for (size_t i = 0; i < clipCount; i++)
         {
-            clip = _clips->at(i);
+            AnimationClip* clip = _clips->at(i);
             GP_ASSERT(clip);
             if (clip->_id.compare(id) == 0)
             {
@@ -436,6 +436,7 @@ void Animation::setTransformRotationOffset(Curve* curve, unsigned int propertyId
     case Transform::ANIMATE_ROTATE_TRANSLATE:
         curve->setQuaternionOffset(ANIMATION_ROTATE_OFFSET);
         return;
+    case Transform::ANIMATE_SCALE_ROTATE:
     case Transform::ANIMATE_SCALE_ROTATE_TRANSLATE:
         curve->setQuaternionOffset(ANIMATION_SRT_OFFSET);
         return;

@@ -32,7 +32,7 @@
 #include "../hsp3ext.h"
 #include "../../hsp3/strnote.h"
 
-#include "hsp3extlib.h"
+#include "../../hsp3/win32gui/hsp3extlib.h"
 
 #ifndef HSP_COM_UNSUPPORTED
 #include "hspvar_comobj.h"
@@ -91,12 +91,12 @@ static void CALLBACK TimerFunc( UINT wID, UINT wUser, DWORD dwUser, DWORD dw1, D
 //		gameplay Log
 //-------------------------------------------------------------
 
-static char gplog[1024];
+static std::string gplog;
 
 extern "C" {
 	static void logfunc( gameplay::Logger::Level level, const char *msg )
 	{
-		strcat( gplog, msg );
+		gplog += msg;
 	}
 }
 
@@ -926,13 +926,14 @@ int hsp3dish_init( HINSTANCE hInstance, char *startfile )
 	//
     game = new gamehsp;
 
-	gplog[0] = 0;
-	gameplay::Logger::set( gameplay::Logger::LEVEL_ERROR, logfunc );
-	
+	gameplay::Logger::set(gameplay::Logger::LEVEL_INFO, logfunc);
+	gameplay::Logger::set(gameplay::Logger::LEVEL_WARN, logfunc);
+	gameplay::Logger::set(gameplay::Logger::LEVEL_ERROR, logfunc);
+
 //	platform = gameplay::Platform::create( game, NULL, hsp_wx, hsp_wy, false );
 	platform = gameplay::Platform::create( game, m_hWnd, hsp_wx, hsp_wy, false );
 	if ( platform == NULL ) {
-		hsp3dish_dialog( gplog );
+		hsp3dish_dialog( (char *)gplog.c_str() );
 		hsp3dish_dialog( "OpenGL initalize failed." );
 		return 1;
 	}
@@ -1013,6 +1014,12 @@ static void hsp3dish_bye( void )
 #endif
 
 
+}
+
+
+char *hsp3dish_getlog(void)
+{
+	return (char *)gplog.c_str();
 }
 
 

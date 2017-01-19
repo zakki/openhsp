@@ -75,321 +75,6 @@
     </Filter>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="src\AbsoluteLayout.cpp">
-      <Filter>ソース ファイル\gameplay</Filter>
-    </ClCompile>
-    <ClCompile Include="src\AIAgent.cpp">
-      <Filter>ソース ファイル\gameplay</Filter>
-    </ClCompile>
-    <ClCompile Include="src\AIController.cpp">
-      <Filter>ソース ファイル\gameplay</Filter>
-    </ClCompile>
-    <ClCompile Include="src\AIMessage.cpp">
-      <Filter>ソース ファイル\gameplay</Filter>
-    </ClCompile>
-    <ClCompile Include="src\AIState.cpp">
-      <Filter>ソース ファイル\gameplay</Filter>
-    </ClCompile>
-    <ClCompile Include="src\AIStateMachine.cpp">
-      <Filter>ソース ファイル\gameplay</Filter>
-    </ClCompile>
-    <ClCompile Include="src\Animation.cpp">
-      <Filter>ソース ファイル\gameplay</Filter>
-    </ClCompile>
-    <ClCompile Include="src\AnimationClip.cpp">
-      <Filter>ソース ファイル\gameplay</Filter>
-    </ClCompile>
-    <ClCompile Include="src\AnimationController.cpp">
-      <Filter>ソース ファイル\gameplay</Filter>
-    </ClCompile>
-    <ClCompile Include="src\AnimationTarget.cpp">
-      <Filter>ソース ファイル\gameplay</Filter>
-    </ClCompile>
-    <ClCompile Include="src\AnimationValue.cpp">
-      <Filter>ソース ファイル\gameplay</Filter>
-    </ClCompile>
-    <ClCompile Include="src\AudioController.cpp">
-      <Filter>ソース ファイル\gameplay</Filter>
-    </ClCompile>
-    <ClCompile Include="src\AudioListener.cpp">
-      <Filter>ソース ファイル\gameplay</Filter>
-    </ClCompile>
-    <ClCompile Include="src\AudioSource.cpp">
-      <Filter>ソース ファイル\gameplay</Filter>
-    </ClCompile>
-    <ClCompile Include="src\BoundingBox.cpp">
-      <Filter>ソース ファイル\gameplay</Filter>
-    </ClCompile>
-    <ClCompile Include="src\BoundingSphere.cpp">
-      <Filter>ソース ファイル\gameplay</Filter>
-    </ClCompile>
-    <ClCompile Include="src\Bundle.cpp">
-      <Filter>ソース ファイル\gameplay</Filter>
-    </ClCompile>
-    <ClCompile Include="src\Button.cpp">
-      <Filter>ソース ファイル\gameplay</Filter>
-    </ClCompile>
-    <ClCompile Include="src\Camera.cpp">
-      <Filter>ソース ファイル\gameplay</Filter>
-    </ClCompile>
-    <ClCompile Include="src\CheckBox.cpp">
-      <Filter>ソース ファイル\gameplay</Filter>
-    </ClCompile>
-    <ClCompile Include="src\Container.cpp">
-      <Filter>ソース ファイル\gameplay</Filter>
-    </ClCompile>
-    <ClCompile Include="src\Control.cpp">
-      <Filter>ソース ファイル\gameplay</Filter>
-    </ClCompile>
-    <ClCompile Include="src\Curve.cpp">
-      <Filter>ソース ファイル\gameplay</Filter>
-    </ClCompile>
-    <ClCompile Include="src\DebugNew.cpp">
-      <Filter>ソース ファイル\gameplay</Filter>
-    </ClCompile>
-    <ClCompile Include="src\DepthStencilTarget.cpp">
-      <Filter>ソース ファイル\gameplay</Filter>
-    </ClCompile>
-    <ClCompile Include="src\Effect.cpp">
-      <Filter>ソース ファイル\gameplay</Filter>
-    </ClCompile>
-    <ClCompile Include="src\FileSystem.cpp">
-      <Filter>ソース ファイル\gameplay</Filter>
-    </ClCompile>
-    <ClCompile Include="src\FlowLayout.cpp">
-      <Filter>ソース ファイル\gameplay</Filter>
-    </ClCompile>
-    <ClCompile Include="src\Font.cpp">
-      <Filter>ソース ファイル\gameplay</Filter>
-    </ClCompile>
-    <ClCompile Include="src\Form.cpp">
-      <Filter>ソース ファイル\gameplay</Filter>
-    </ClCompile>
-    <ClCompile Include="src\FrameBuffer.cpp">
-      <Filter>ソース ファイル\gameplay</Filter>
-    </ClCompile>
-    <ClCompile Include="src\Frustum.cpp">
-      <Filter>ソース ファイル\gameplay</Filter>
-    </ClCompile>
-    <ClCompile Include="src\Game.cpp">
-      <Filter>ソース ファイル\gameplay</Filter>
-    </ClCompile>
-    <ClCompile Include="src\Gamepad.cpp">
-      <Filter>ソース ファイル\gameplay</Filter>
-    </ClCompile>
-    <ClCompile Include="src\gameplay-main-android.cpp">
-      <Filter>ソース ファイル\gameplay</Filter>
-    </ClCompile>
-    <ClCompile Include="src\gameplay-main-blackberry.cpp">
-      <Filter>ソース ファイル\gameplay</Filter>
-    </ClCompile>
-    <ClCompile Include="src\gameplay-main-linux.cpp">
-      <Filter>ソース ファイル\gameplay</Filter>
-    </ClCompile>
-    <ClCompile Include="src\gameplay-main-windows.cpp">
-      <Filter>ソース ファイル\gameplay</Filter>
-    </ClCompile>
-    <ClCompile Include="src\HeightField.cpp">
-      <Filter>ソース ファイル\gameplay</Filter>
-    </ClCompile>
-    <ClCompile Include="src\Image.cpp">
-      <Filter>ソース ファイル\gameplay</Filter>
-    </ClCompile>
-    <ClCompile Include="src\ImageControl.cpp">
-      <Filter>ソース ファイル\gameplay</Filter>
-    </ClCompile>
-    <ClCompile Include="src\Joint.cpp">
-      <Filter>ソース ファイル\gameplay</Filter>
-    </ClCompile>
-    <ClCompile Include="src\Joystick.cpp">
-      <Filter>ソース ファイル\gameplay</Filter>
-    </ClCompile>
-    <ClCompile Include="src\Label.cpp">
-      <Filter>ソース ファイル\gameplay</Filter>
-    </ClCompile>
-    <ClCompile Include="src\Layout.cpp">
-      <Filter>ソース ファイル\gameplay</Filter>
-    </ClCompile>
-    <ClCompile Include="src\Light.cpp">
-      <Filter>ソース ファイル\gameplay</Filter>
-    </ClCompile>
-    <ClCompile Include="src\Logger.cpp">
-      <Filter>ソース ファイル\gameplay</Filter>
-    </ClCompile>
-    <ClCompile Include="src\Material.cpp">
-      <Filter>ソース ファイル\gameplay</Filter>
-    </ClCompile>
-    <ClCompile Include="src\MaterialParameter.cpp">
-      <Filter>ソース ファイル\gameplay</Filter>
-    </ClCompile>
-    <ClCompile Include="src\MathUtil.cpp">
-      <Filter>ソース ファイル\gameplay</Filter>
-    </ClCompile>
-    <ClCompile Include="src\Matrix.cpp">
-      <Filter>ソース ファイル\gameplay</Filter>
-    </ClCompile>
-    <ClCompile Include="src\Mesh.cpp">
-      <Filter>ソース ファイル\gameplay</Filter>
-    </ClCompile>
-    <ClCompile Include="src\MeshBatch.cpp">
-      <Filter>ソース ファイル\gameplay</Filter>
-    </ClCompile>
-    <ClCompile Include="src\MeshPart.cpp">
-      <Filter>ソース ファイル\gameplay</Filter>
-    </ClCompile>
-    <ClCompile Include="src\MeshSkin.cpp">
-      <Filter>ソース ファイル\gameplay</Filter>
-    </ClCompile>
-    <ClCompile Include="src\Model.cpp">
-      <Filter>ソース ファイル\gameplay</Filter>
-    </ClCompile>
-    <ClCompile Include="src\Node.cpp">
-      <Filter>ソース ファイル\gameplay</Filter>
-    </ClCompile>
-    <ClCompile Include="src\ParticleEmitter.cpp">
-      <Filter>ソース ファイル\gameplay</Filter>
-    </ClCompile>
-    <ClCompile Include="src\Pass.cpp">
-      <Filter>ソース ファイル\gameplay</Filter>
-    </ClCompile>
-    <ClCompile Include="src\PhysicsCharacter.cpp">
-      <Filter>ソース ファイル\gameplay</Filter>
-    </ClCompile>
-    <ClCompile Include="src\PhysicsCollisionObject.cpp">
-      <Filter>ソース ファイル\gameplay</Filter>
-    </ClCompile>
-    <ClCompile Include="src\PhysicsCollisionShape.cpp">
-      <Filter>ソース ファイル\gameplay</Filter>
-    </ClCompile>
-    <ClCompile Include="src\PhysicsConstraint.cpp">
-      <Filter>ソース ファイル\gameplay</Filter>
-    </ClCompile>
-    <ClCompile Include="src\PhysicsController.cpp">
-      <Filter>ソース ファイル\gameplay</Filter>
-    </ClCompile>
-    <ClCompile Include="src\PhysicsFixedConstraint.cpp">
-      <Filter>ソース ファイル\gameplay</Filter>
-    </ClCompile>
-    <ClCompile Include="src\PhysicsGenericConstraint.cpp">
-      <Filter>ソース ファイル\gameplay</Filter>
-    </ClCompile>
-    <ClCompile Include="src\PhysicsGhostObject.cpp">
-      <Filter>ソース ファイル\gameplay</Filter>
-    </ClCompile>
-    <ClCompile Include="src\PhysicsHingeConstraint.cpp">
-      <Filter>ソース ファイル\gameplay</Filter>
-    </ClCompile>
-    <ClCompile Include="src\PhysicsRigidBody.cpp">
-      <Filter>ソース ファイル\gameplay</Filter>
-    </ClCompile>
-    <ClCompile Include="src\PhysicsSocketConstraint.cpp">
-      <Filter>ソース ファイル\gameplay</Filter>
-    </ClCompile>
-    <ClCompile Include="src\PhysicsSpringConstraint.cpp">
-      <Filter>ソース ファイル\gameplay</Filter>
-    </ClCompile>
-    <ClCompile Include="src\PhysicsVehicle.cpp">
-      <Filter>ソース ファイル\gameplay</Filter>
-    </ClCompile>
-    <ClCompile Include="src\PhysicsVehicleWheel.cpp">
-      <Filter>ソース ファイル\gameplay</Filter>
-    </ClCompile>
-    <ClCompile Include="src\Plane.cpp">
-      <Filter>ソース ファイル\gameplay</Filter>
-    </ClCompile>
-    <ClCompile Include="src\Platform.cpp">
-      <Filter>ソース ファイル\gameplay</Filter>
-    </ClCompile>
-    <ClCompile Include="src\PlatformWindows.cpp">
-      <Filter>ソース ファイル\gameplay</Filter>
-    </ClCompile>
-    <ClCompile Include="src\Properties.cpp">
-      <Filter>ソース ファイル\gameplay</Filter>
-    </ClCompile>
-    <ClCompile Include="src\Quaternion.cpp">
-      <Filter>ソース ファイル\gameplay</Filter>
-    </ClCompile>
-    <ClCompile Include="src\RadioButton.cpp">
-      <Filter>ソース ファイル\gameplay</Filter>
-    </ClCompile>
-    <ClCompile Include="src\Ray.cpp">
-      <Filter>ソース ファイル\gameplay</Filter>
-    </ClCompile>
-    <ClCompile Include="src\Rectangle.cpp">
-      <Filter>ソース ファイル\gameplay</Filter>
-    </ClCompile>
-    <ClCompile Include="src\Ref.cpp">
-      <Filter>ソース ファイル\gameplay</Filter>
-    </ClCompile>
-    <ClCompile Include="src\RenderState.cpp">
-      <Filter>ソース ファイル\gameplay</Filter>
-    </ClCompile>
-    <ClCompile Include="src\RenderTarget.cpp">
-      <Filter>ソース ファイル\gameplay</Filter>
-    </ClCompile>
-    <ClCompile Include="src\Scene.cpp">
-      <Filter>ソース ファイル\gameplay</Filter>
-    </ClCompile>
-    <ClCompile Include="src\SceneLoader.cpp">
-      <Filter>ソース ファイル\gameplay</Filter>
-    </ClCompile>
-    <ClCompile Include="src\ScreenDisplayer.cpp">
-      <Filter>ソース ファイル\gameplay</Filter>
-    </ClCompile>
-    <ClCompile Include="src\ScriptController.cpp">
-      <Filter>ソース ファイル\gameplay</Filter>
-    </ClCompile>
-    <ClCompile Include="src\ScriptTarget.cpp">
-      <Filter>ソース ファイル\gameplay</Filter>
-    </ClCompile>
-    <ClCompile Include="src\Slider.cpp">
-      <Filter>ソース ファイル\gameplay</Filter>
-    </ClCompile>
-    <ClCompile Include="src\SpriteBatch.cpp">
-      <Filter>ソース ファイル\gameplay</Filter>
-    </ClCompile>
-    <ClCompile Include="src\Technique.cpp">
-      <Filter>ソース ファイル\gameplay</Filter>
-    </ClCompile>
-    <ClCompile Include="src\Terrain.cpp">
-      <Filter>ソース ファイル\gameplay</Filter>
-    </ClCompile>
-    <ClCompile Include="src\TerrainPatch.cpp">
-      <Filter>ソース ファイル\gameplay</Filter>
-    </ClCompile>
-    <ClCompile Include="src\TextBox.cpp">
-      <Filter>ソース ファイル\gameplay</Filter>
-    </ClCompile>
-    <ClCompile Include="src\Texture.cpp">
-      <Filter>ソース ファイル\gameplay</Filter>
-    </ClCompile>
-    <ClCompile Include="src\Theme.cpp">
-      <Filter>ソース ファイル\gameplay</Filter>
-    </ClCompile>
-    <ClCompile Include="src\ThemeStyle.cpp">
-      <Filter>ソース ファイル\gameplay</Filter>
-    </ClCompile>
-    <ClCompile Include="src\Transform.cpp">
-      <Filter>ソース ファイル\gameplay</Filter>
-    </ClCompile>
-    <ClCompile Include="src\Vector2.cpp">
-      <Filter>ソース ファイル\gameplay</Filter>
-    </ClCompile>
-    <ClCompile Include="src\Vector3.cpp">
-      <Filter>ソース ファイル\gameplay</Filter>
-    </ClCompile>
-    <ClCompile Include="src\Vector4.cpp">
-      <Filter>ソース ファイル\gameplay</Filter>
-    </ClCompile>
-    <ClCompile Include="src\VertexAttributeBinding.cpp">
-      <Filter>ソース ファイル\gameplay</Filter>
-    </ClCompile>
-    <ClCompile Include="src\VertexFormat.cpp">
-      <Filter>ソース ファイル\gameplay</Filter>
-    </ClCompile>
-    <ClCompile Include="src\VerticalLayout.cpp">
-      <Filter>ソース ファイル\gameplay</Filter>
-    </ClCompile>
     <ClCompile Include="..\extlib\src\LinearMath\btAlignedAllocator.cpp">
       <Filter>ソース ファイル\bullet\LinearMath</Filter>
     </ClCompile>
@@ -879,335 +564,344 @@
     <ClCompile Include="..\extlib\src\glew\GL\glew.c">
       <Filter>ソース ファイル\glew</Filter>
     </ClCompile>
+    <ClCompile Include="src\AbsoluteLayout.cpp">
+      <Filter>ソース ファイル\gameplay</Filter>
+    </ClCompile>
+    <ClCompile Include="src\AIAgent.cpp">
+      <Filter>ソース ファイル\gameplay</Filter>
+    </ClCompile>
+    <ClCompile Include="src\AIController.cpp">
+      <Filter>ソース ファイル\gameplay</Filter>
+    </ClCompile>
+    <ClCompile Include="src\AIMessage.cpp">
+      <Filter>ソース ファイル\gameplay</Filter>
+    </ClCompile>
+    <ClCompile Include="src\AIState.cpp">
+      <Filter>ソース ファイル\gameplay</Filter>
+    </ClCompile>
+    <ClCompile Include="src\AIStateMachine.cpp">
+      <Filter>ソース ファイル\gameplay</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Animation.cpp">
+      <Filter>ソース ファイル\gameplay</Filter>
+    </ClCompile>
+    <ClCompile Include="src\AnimationClip.cpp">
+      <Filter>ソース ファイル\gameplay</Filter>
+    </ClCompile>
+    <ClCompile Include="src\AnimationController.cpp">
+      <Filter>ソース ファイル\gameplay</Filter>
+    </ClCompile>
+    <ClCompile Include="src\AnimationTarget.cpp">
+      <Filter>ソース ファイル\gameplay</Filter>
+    </ClCompile>
+    <ClCompile Include="src\AnimationValue.cpp">
+      <Filter>ソース ファイル\gameplay</Filter>
+    </ClCompile>
+    <ClCompile Include="src\AudioController.cpp">
+      <Filter>ソース ファイル\gameplay</Filter>
+    </ClCompile>
+    <ClCompile Include="src\AudioListener.cpp">
+      <Filter>ソース ファイル\gameplay</Filter>
+    </ClCompile>
+    <ClCompile Include="src\AudioSource.cpp">
+      <Filter>ソース ファイル\gameplay</Filter>
+    </ClCompile>
+    <ClCompile Include="src\BoundingBox.cpp">
+      <Filter>ソース ファイル\gameplay</Filter>
+    </ClCompile>
+    <ClCompile Include="src\BoundingSphere.cpp">
+      <Filter>ソース ファイル\gameplay</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Bundle.cpp">
+      <Filter>ソース ファイル\gameplay</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Button.cpp">
+      <Filter>ソース ファイル\gameplay</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Camera.cpp">
+      <Filter>ソース ファイル\gameplay</Filter>
+    </ClCompile>
+    <ClCompile Include="src\CheckBox.cpp">
+      <Filter>ソース ファイル\gameplay</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Container.cpp">
+      <Filter>ソース ファイル\gameplay</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Control.cpp">
+      <Filter>ソース ファイル\gameplay</Filter>
+    </ClCompile>
+    <ClCompile Include="src\ControlFactory.cpp">
+      <Filter>ソース ファイル\gameplay</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Curve.cpp">
+      <Filter>ソース ファイル\gameplay</Filter>
+    </ClCompile>
+    <ClCompile Include="src\DebugNew.cpp">
+      <Filter>ソース ファイル\gameplay</Filter>
+    </ClCompile>
+    <ClCompile Include="src\DepthStencilTarget.cpp">
+      <Filter>ソース ファイル\gameplay</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Drawable.cpp">
+      <Filter>ソース ファイル\gameplay</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Effect.cpp">
+      <Filter>ソース ファイル\gameplay</Filter>
+    </ClCompile>
+    <ClCompile Include="src\FileSystem.cpp">
+      <Filter>ソース ファイル\gameplay</Filter>
+    </ClCompile>
+    <ClCompile Include="src\FlowLayout.cpp">
+      <Filter>ソース ファイル\gameplay</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Font.cpp">
+      <Filter>ソース ファイル\gameplay</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Form.cpp">
+      <Filter>ソース ファイル\gameplay</Filter>
+    </ClCompile>
+    <ClCompile Include="src\FrameBuffer.cpp">
+      <Filter>ソース ファイル\gameplay</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Frustum.cpp">
+      <Filter>ソース ファイル\gameplay</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Game.cpp">
+      <Filter>ソース ファイル\gameplay</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Gamepad.cpp">
+      <Filter>ソース ファイル\gameplay</Filter>
+    </ClCompile>
+    <ClCompile Include="src\gameplay-main-android.cpp">
+      <Filter>ソース ファイル\gameplay</Filter>
+    </ClCompile>
+    <ClCompile Include="src\gameplay-main-linux.cpp">
+      <Filter>ソース ファイル\gameplay</Filter>
+    </ClCompile>
+    <ClCompile Include="src\gameplay-main-windows.cpp">
+      <Filter>ソース ファイル\gameplay</Filter>
+    </ClCompile>
+    <ClCompile Include="src\HeightField.cpp">
+      <Filter>ソース ファイル\gameplay</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Image.cpp">
+      <Filter>ソース ファイル\gameplay</Filter>
+    </ClCompile>
+    <ClCompile Include="src\ImageControl.cpp">
+      <Filter>ソース ファイル\gameplay</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Joint.cpp">
+      <Filter>ソース ファイル\gameplay</Filter>
+    </ClCompile>
+    <ClCompile Include="src\JoystickControl.cpp">
+      <Filter>ソース ファイル\gameplay</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Label.cpp">
+      <Filter>ソース ファイル\gameplay</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Layout.cpp">
+      <Filter>ソース ファイル\gameplay</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Light.cpp">
+      <Filter>ソース ファイル\gameplay</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Logger.cpp">
+      <Filter>ソース ファイル\gameplay</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Material.cpp">
+      <Filter>ソース ファイル\gameplay</Filter>
+    </ClCompile>
+    <ClCompile Include="src\MaterialParameter.cpp">
+      <Filter>ソース ファイル\gameplay</Filter>
+    </ClCompile>
+    <ClCompile Include="src\MathUtil.cpp">
+      <Filter>ソース ファイル\gameplay</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Matrix.cpp">
+      <Filter>ソース ファイル\gameplay</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Mesh.cpp">
+      <Filter>ソース ファイル\gameplay</Filter>
+    </ClCompile>
+    <ClCompile Include="src\MeshBatch.cpp">
+      <Filter>ソース ファイル\gameplay</Filter>
+    </ClCompile>
+    <ClCompile Include="src\MeshPart.cpp">
+      <Filter>ソース ファイル\gameplay</Filter>
+    </ClCompile>
+    <ClCompile Include="src\MeshSkin.cpp">
+      <Filter>ソース ファイル\gameplay</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Model.cpp">
+      <Filter>ソース ファイル\gameplay</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Node.cpp">
+      <Filter>ソース ファイル\gameplay</Filter>
+    </ClCompile>
+    <ClCompile Include="src\ParticleEmitter.cpp">
+      <Filter>ソース ファイル\gameplay</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Pass.cpp">
+      <Filter>ソース ファイル\gameplay</Filter>
+    </ClCompile>
+    <ClCompile Include="src\PhysicsCharacter.cpp">
+      <Filter>ソース ファイル\gameplay</Filter>
+    </ClCompile>
+    <ClCompile Include="src\PhysicsCollisionObject.cpp">
+      <Filter>ソース ファイル\gameplay</Filter>
+    </ClCompile>
+    <ClCompile Include="src\PhysicsCollisionShape.cpp">
+      <Filter>ソース ファイル\gameplay</Filter>
+    </ClCompile>
+    <ClCompile Include="src\PhysicsConstraint.cpp">
+      <Filter>ソース ファイル\gameplay</Filter>
+    </ClCompile>
+    <ClCompile Include="src\PhysicsController.cpp">
+      <Filter>ソース ファイル\gameplay</Filter>
+    </ClCompile>
+    <ClCompile Include="src\PhysicsFixedConstraint.cpp">
+      <Filter>ソース ファイル\gameplay</Filter>
+    </ClCompile>
+    <ClCompile Include="src\PhysicsGenericConstraint.cpp">
+      <Filter>ソース ファイル\gameplay</Filter>
+    </ClCompile>
+    <ClCompile Include="src\PhysicsGhostObject.cpp">
+      <Filter>ソース ファイル\gameplay</Filter>
+    </ClCompile>
+    <ClCompile Include="src\PhysicsHingeConstraint.cpp">
+      <Filter>ソース ファイル\gameplay</Filter>
+    </ClCompile>
+    <ClCompile Include="src\PhysicsRigidBody.cpp">
+      <Filter>ソース ファイル\gameplay</Filter>
+    </ClCompile>
+    <ClCompile Include="src\PhysicsSocketConstraint.cpp">
+      <Filter>ソース ファイル\gameplay</Filter>
+    </ClCompile>
+    <ClCompile Include="src\PhysicsSpringConstraint.cpp">
+      <Filter>ソース ファイル\gameplay</Filter>
+    </ClCompile>
+    <ClCompile Include="src\PhysicsVehicle.cpp">
+      <Filter>ソース ファイル\gameplay</Filter>
+    </ClCompile>
+    <ClCompile Include="src\PhysicsVehicleWheel.cpp">
+      <Filter>ソース ファイル\gameplay</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Plane.cpp">
+      <Filter>ソース ファイル\gameplay</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Platform.cpp">
+      <Filter>ソース ファイル\gameplay</Filter>
+    </ClCompile>
+    <ClCompile Include="src\PlatformAndroid.cpp">
+      <Filter>ソース ファイル\gameplay</Filter>
+    </ClCompile>
+    <ClCompile Include="src\PlatformEmscripten.cpp">
+      <Filter>ソース ファイル\gameplay</Filter>
+    </ClCompile>
+    <ClCompile Include="src\PlatformLinux.cpp">
+      <Filter>ソース ファイル\gameplay</Filter>
+    </ClCompile>
+    <ClCompile Include="src\PlatformWindows.cpp">
+      <Filter>ソース ファイル\gameplay</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Properties.cpp">
+      <Filter>ソース ファイル\gameplay</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Quaternion.cpp">
+      <Filter>ソース ファイル\gameplay</Filter>
+    </ClCompile>
+    <ClCompile Include="src\RadioButton.cpp">
+      <Filter>ソース ファイル\gameplay</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Ray.cpp">
+      <Filter>ソース ファイル\gameplay</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Rectangle.cpp">
+      <Filter>ソース ファイル\gameplay</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Ref.cpp">
+      <Filter>ソース ファイル\gameplay</Filter>
+    </ClCompile>
+    <ClCompile Include="src\RenderState.cpp">
+      <Filter>ソース ファイル\gameplay</Filter>
+    </ClCompile>
+    <ClCompile Include="src\RenderTarget.cpp">
+      <Filter>ソース ファイル\gameplay</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Scene.cpp">
+      <Filter>ソース ファイル\gameplay</Filter>
+    </ClCompile>
+    <ClCompile Include="src\SceneLoader.cpp">
+      <Filter>ソース ファイル\gameplay</Filter>
+    </ClCompile>
+    <ClCompile Include="src\ScreenDisplayer.cpp">
+      <Filter>ソース ファイル\gameplay</Filter>
+    </ClCompile>
+    <ClCompile Include="src\ScriptController.cpp">
+      <Filter>ソース ファイル\gameplay</Filter>
+    </ClCompile>
+    <ClCompile Include="src\ScriptTarget.cpp">
+      <Filter>ソース ファイル\gameplay</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Slider.cpp">
+      <Filter>ソース ファイル\gameplay</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Sprite.cpp">
+      <Filter>ソース ファイル\gameplay</Filter>
+    </ClCompile>
+    <ClCompile Include="src\SpriteBatch.cpp">
+      <Filter>ソース ファイル\gameplay</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Technique.cpp">
+      <Filter>ソース ファイル\gameplay</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Terrain.cpp">
+      <Filter>ソース ファイル\gameplay</Filter>
+    </ClCompile>
+    <ClCompile Include="src\TerrainPatch.cpp">
+      <Filter>ソース ファイル\gameplay</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Text.cpp">
+      <Filter>ソース ファイル\gameplay</Filter>
+    </ClCompile>
+    <ClCompile Include="src\TextBox.cpp">
+      <Filter>ソース ファイル\gameplay</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Texture.cpp">
+      <Filter>ソース ファイル\gameplay</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Theme.cpp">
+      <Filter>ソース ファイル\gameplay</Filter>
+    </ClCompile>
+    <ClCompile Include="src\ThemeStyle.cpp">
+      <Filter>ソース ファイル\gameplay</Filter>
+    </ClCompile>
+    <ClCompile Include="src\TileSet.cpp">
+      <Filter>ソース ファイル\gameplay</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Transform.cpp">
+      <Filter>ソース ファイル\gameplay</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Vector2.cpp">
+      <Filter>ソース ファイル\gameplay</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Vector3.cpp">
+      <Filter>ソース ファイル\gameplay</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Vector4.cpp">
+      <Filter>ソース ファイル\gameplay</Filter>
+    </ClCompile>
+    <ClCompile Include="src\VertexAttributeBinding.cpp">
+      <Filter>ソース ファイル\gameplay</Filter>
+    </ClCompile>
+    <ClCompile Include="src\VertexFormat.cpp">
+      <Filter>ソース ファイル\gameplay</Filter>
+    </ClCompile>
+    <ClCompile Include="src\VerticalLayout.cpp">
+      <Filter>ソース ファイル\gameplay</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="src\AbsoluteLayout.h">
-      <Filter>ヘッダー ファイル\gameplay</Filter>
-    </ClInclude>
-    <ClInclude Include="src\AIAgent.h">
-      <Filter>ヘッダー ファイル\gameplay</Filter>
-    </ClInclude>
-    <ClInclude Include="src\AIController.h">
-      <Filter>ヘッダー ファイル\gameplay</Filter>
-    </ClInclude>
-    <ClInclude Include="src\AIMessage.h">
-      <Filter>ヘッダー ファイル\gameplay</Filter>
-    </ClInclude>
-    <ClInclude Include="src\AIState.h">
-      <Filter>ヘッダー ファイル\gameplay</Filter>
-    </ClInclude>
-    <ClInclude Include="src\AIStateMachine.h">
-      <Filter>ヘッダー ファイル\gameplay</Filter>
-    </ClInclude>
-    <ClInclude Include="src\Animation.h">
-      <Filter>ヘッダー ファイル\gameplay</Filter>
-    </ClInclude>
-    <ClInclude Include="src\AnimationClip.h">
-      <Filter>ヘッダー ファイル\gameplay</Filter>
-    </ClInclude>
-    <ClInclude Include="src\AnimationController.h">
-      <Filter>ヘッダー ファイル\gameplay</Filter>
-    </ClInclude>
-    <ClInclude Include="src\AnimationTarget.h">
-      <Filter>ヘッダー ファイル\gameplay</Filter>
-    </ClInclude>
-    <ClInclude Include="src\AnimationValue.h">
-      <Filter>ヘッダー ファイル\gameplay</Filter>
-    </ClInclude>
-    <ClInclude Include="src\AudioBuffer.h">
-      <Filter>ヘッダー ファイル\gameplay</Filter>
-    </ClInclude>
-    <ClInclude Include="src\AudioController.h">
-      <Filter>ヘッダー ファイル\gameplay</Filter>
-    </ClInclude>
-    <ClInclude Include="src\AudioListener.h">
-      <Filter>ヘッダー ファイル\gameplay</Filter>
-    </ClInclude>
-    <ClInclude Include="src\AudioSource.h">
-      <Filter>ヘッダー ファイル\gameplay</Filter>
-    </ClInclude>
-    <ClInclude Include="src\Base.h">
-      <Filter>ヘッダー ファイル\gameplay</Filter>
-    </ClInclude>
-    <ClInclude Include="src\BoundingBox.h">
-      <Filter>ヘッダー ファイル\gameplay</Filter>
-    </ClInclude>
-    <ClInclude Include="src\BoundingSphere.h">
-      <Filter>ヘッダー ファイル\gameplay</Filter>
-    </ClInclude>
-    <ClInclude Include="src\Bundle.h">
-      <Filter>ヘッダー ファイル\gameplay</Filter>
-    </ClInclude>
-    <ClInclude Include="src\Button.h">
-      <Filter>ヘッダー ファイル\gameplay</Filter>
-    </ClInclude>
-    <ClInclude Include="src\Camera.h">
-      <Filter>ヘッダー ファイル\gameplay</Filter>
-    </ClInclude>
-    <ClInclude Include="src\CheckBox.h">
-      <Filter>ヘッダー ファイル\gameplay</Filter>
-    </ClInclude>
-    <ClInclude Include="src\Container.h">
-      <Filter>ヘッダー ファイル\gameplay</Filter>
-    </ClInclude>
-    <ClInclude Include="src\Control.h">
-      <Filter>ヘッダー ファイル\gameplay</Filter>
-    </ClInclude>
-    <ClInclude Include="src\Curve.h">
-      <Filter>ヘッダー ファイル\gameplay</Filter>
-    </ClInclude>
-    <ClInclude Include="src\DebugNew.h">
-      <Filter>ヘッダー ファイル\gameplay</Filter>
-    </ClInclude>
-    <ClInclude Include="src\DepthStencilTarget.h">
-      <Filter>ヘッダー ファイル\gameplay</Filter>
-    </ClInclude>
-    <ClInclude Include="src\Effect.h">
-      <Filter>ヘッダー ファイル\gameplay</Filter>
-    </ClInclude>
-    <ClInclude Include="src\FileSystem.h">
-      <Filter>ヘッダー ファイル\gameplay</Filter>
-    </ClInclude>
-    <ClInclude Include="src\FlowLayout.h">
-      <Filter>ヘッダー ファイル\gameplay</Filter>
-    </ClInclude>
-    <ClInclude Include="src\Font.h">
-      <Filter>ヘッダー ファイル\gameplay</Filter>
-    </ClInclude>
-    <ClInclude Include="src\Form.h">
-      <Filter>ヘッダー ファイル\gameplay</Filter>
-    </ClInclude>
-    <ClInclude Include="src\FrameBuffer.h">
-      <Filter>ヘッダー ファイル\gameplay</Filter>
-    </ClInclude>
-    <ClInclude Include="src\Frustum.h">
-      <Filter>ヘッダー ファイル\gameplay</Filter>
-    </ClInclude>
-    <ClInclude Include="src\Game.h">
-      <Filter>ヘッダー ファイル\gameplay</Filter>
-    </ClInclude>
-    <ClInclude Include="src\Gamepad.h">
-      <Filter>ヘッダー ファイル\gameplay</Filter>
-    </ClInclude>
-    <ClInclude Include="src\gameplay.h">
-      <Filter>ヘッダー ファイル\gameplay</Filter>
-    </ClInclude>
-    <ClInclude Include="src\Gesture.h">
-      <Filter>ヘッダー ファイル\gameplay</Filter>
-    </ClInclude>
-    <ClInclude Include="src\HeightField.h">
-      <Filter>ヘッダー ファイル\gameplay</Filter>
-    </ClInclude>
-    <ClInclude Include="src\Image.h">
-      <Filter>ヘッダー ファイル\gameplay</Filter>
-    </ClInclude>
-    <ClInclude Include="src\ImageControl.h">
-      <Filter>ヘッダー ファイル\gameplay</Filter>
-    </ClInclude>
-    <ClInclude Include="src\Joint.h">
-      <Filter>ヘッダー ファイル\gameplay</Filter>
-    </ClInclude>
-    <ClInclude Include="src\Joystick.h">
-      <Filter>ヘッダー ファイル\gameplay</Filter>
-    </ClInclude>
-    <ClInclude Include="src\Keyboard.h">
-      <Filter>ヘッダー ファイル\gameplay</Filter>
-    </ClInclude>
-    <ClInclude Include="src\Label.h">
-      <Filter>ヘッダー ファイル\gameplay</Filter>
-    </ClInclude>
-    <ClInclude Include="src\Layout.h">
-      <Filter>ヘッダー ファイル\gameplay</Filter>
-    </ClInclude>
-    <ClInclude Include="src\Light.h">
-      <Filter>ヘッダー ファイル\gameplay</Filter>
-    </ClInclude>
-    <ClInclude Include="src\Logger.h">
-      <Filter>ヘッダー ファイル\gameplay</Filter>
-    </ClInclude>
-    <ClInclude Include="src\Material.h">
-      <Filter>ヘッダー ファイル\gameplay</Filter>
-    </ClInclude>
-    <ClInclude Include="src\MaterialParameter.h">
-      <Filter>ヘッダー ファイル\gameplay</Filter>
-    </ClInclude>
-    <ClInclude Include="src\MathUtil.h">
-      <Filter>ヘッダー ファイル\gameplay</Filter>
-    </ClInclude>
-    <ClInclude Include="src\Matrix.h">
-      <Filter>ヘッダー ファイル\gameplay</Filter>
-    </ClInclude>
-    <ClInclude Include="src\Mesh.h">
-      <Filter>ヘッダー ファイル\gameplay</Filter>
-    </ClInclude>
-    <ClInclude Include="src\MeshBatch.h">
-      <Filter>ヘッダー ファイル\gameplay</Filter>
-    </ClInclude>
-    <ClInclude Include="src\MeshPart.h">
-      <Filter>ヘッダー ファイル\gameplay</Filter>
-    </ClInclude>
-    <ClInclude Include="src\MeshSkin.h">
-      <Filter>ヘッダー ファイル\gameplay</Filter>
-    </ClInclude>
-    <ClInclude Include="src\Model.h">
-      <Filter>ヘッダー ファイル\gameplay</Filter>
-    </ClInclude>
-    <ClInclude Include="src\Mouse.h">
-      <Filter>ヘッダー ファイル\gameplay</Filter>
-    </ClInclude>
-    <ClInclude Include="src\Node.h">
-      <Filter>ヘッダー ファイル\gameplay</Filter>
-    </ClInclude>
-    <ClInclude Include="src\ParticleEmitter.h">
-      <Filter>ヘッダー ファイル\gameplay</Filter>
-    </ClInclude>
-    <ClInclude Include="src\Pass.h">
-      <Filter>ヘッダー ファイル\gameplay</Filter>
-    </ClInclude>
-    <ClInclude Include="src\PhysicsCharacter.h">
-      <Filter>ヘッダー ファイル\gameplay</Filter>
-    </ClInclude>
-    <ClInclude Include="src\PhysicsCollisionObject.h">
-      <Filter>ヘッダー ファイル\gameplay</Filter>
-    </ClInclude>
-    <ClInclude Include="src\PhysicsCollisionShape.h">
-      <Filter>ヘッダー ファイル\gameplay</Filter>
-    </ClInclude>
-    <ClInclude Include="src\PhysicsConstraint.h">
-      <Filter>ヘッダー ファイル\gameplay</Filter>
-    </ClInclude>
-    <ClInclude Include="src\PhysicsController.h">
-      <Filter>ヘッダー ファイル\gameplay</Filter>
-    </ClInclude>
-    <ClInclude Include="src\PhysicsFixedConstraint.h">
-      <Filter>ヘッダー ファイル\gameplay</Filter>
-    </ClInclude>
-    <ClInclude Include="src\PhysicsGenericConstraint.h">
-      <Filter>ヘッダー ファイル\gameplay</Filter>
-    </ClInclude>
-    <ClInclude Include="src\PhysicsGhostObject.h">
-      <Filter>ヘッダー ファイル\gameplay</Filter>
-    </ClInclude>
-    <ClInclude Include="src\PhysicsHingeConstraint.h">
-      <Filter>ヘッダー ファイル\gameplay</Filter>
-    </ClInclude>
-    <ClInclude Include="src\PhysicsRigidBody.h">
-      <Filter>ヘッダー ファイル\gameplay</Filter>
-    </ClInclude>
-    <ClInclude Include="src\PhysicsSocketConstraint.h">
-      <Filter>ヘッダー ファイル\gameplay</Filter>
-    </ClInclude>
-    <ClInclude Include="src\PhysicsSpringConstraint.h">
-      <Filter>ヘッダー ファイル\gameplay</Filter>
-    </ClInclude>
-    <ClInclude Include="src\PhysicsVehicle.h">
-      <Filter>ヘッダー ファイル\gameplay</Filter>
-    </ClInclude>
-    <ClInclude Include="src\PhysicsVehicleWheel.h">
-      <Filter>ヘッダー ファイル\gameplay</Filter>
-    </ClInclude>
-    <ClInclude Include="src\Plane.h">
-      <Filter>ヘッダー ファイル\gameplay</Filter>
-    </ClInclude>
-    <ClInclude Include="src\Platform.h">
-      <Filter>ヘッダー ファイル\gameplay</Filter>
-    </ClInclude>
-    <ClInclude Include="src\Properties.h">
-      <Filter>ヘッダー ファイル\gameplay</Filter>
-    </ClInclude>
-    <ClInclude Include="src\Quaternion.h">
-      <Filter>ヘッダー ファイル\gameplay</Filter>
-    </ClInclude>
-    <ClInclude Include="src\RadioButton.h">
-      <Filter>ヘッダー ファイル\gameplay</Filter>
-    </ClInclude>
-    <ClInclude Include="src\Ray.h">
-      <Filter>ヘッダー ファイル\gameplay</Filter>
-    </ClInclude>
-    <ClInclude Include="src\Rectangle.h">
-      <Filter>ヘッダー ファイル\gameplay</Filter>
-    </ClInclude>
-    <ClInclude Include="src\Ref.h">
-      <Filter>ヘッダー ファイル\gameplay</Filter>
-    </ClInclude>
-    <ClInclude Include="src\RenderState.h">
-      <Filter>ヘッダー ファイル\gameplay</Filter>
-    </ClInclude>
-    <ClInclude Include="src\RenderTarget.h">
-      <Filter>ヘッダー ファイル\gameplay</Filter>
-    </ClInclude>
-    <ClInclude Include="src\Scene.h">
-      <Filter>ヘッダー ファイル\gameplay</Filter>
-    </ClInclude>
-    <ClInclude Include="src\SceneLoader.h">
-      <Filter>ヘッダー ファイル\gameplay</Filter>
-    </ClInclude>
-    <ClInclude Include="src\ScreenDisplayer.h">
-      <Filter>ヘッダー ファイル\gameplay</Filter>
-    </ClInclude>
-    <ClInclude Include="src\ScriptController.h">
-      <Filter>ヘッダー ファイル\gameplay</Filter>
-    </ClInclude>
-    <ClInclude Include="src\ScriptTarget.h">
-      <Filter>ヘッダー ファイル\gameplay</Filter>
-    </ClInclude>
-    <ClInclude Include="src\Slider.h">
-      <Filter>ヘッダー ファイル\gameplay</Filter>
-    </ClInclude>
-    <ClInclude Include="src\SpriteBatch.h">
-      <Filter>ヘッダー ファイル\gameplay</Filter>
-    </ClInclude>
-    <ClInclude Include="src\Stream.h">
-      <Filter>ヘッダー ファイル\gameplay</Filter>
-    </ClInclude>
-    <ClInclude Include="src\Technique.h">
-      <Filter>ヘッダー ファイル\gameplay</Filter>
-    </ClInclude>
-    <ClInclude Include="src\Terrain.h">
-      <Filter>ヘッダー ファイル\gameplay</Filter>
-    </ClInclude>
-    <ClInclude Include="src\TerrainPatch.h">
-      <Filter>ヘッダー ファイル\gameplay</Filter>
-    </ClInclude>
-    <ClInclude Include="src\TextBox.h">
-      <Filter>ヘッダー ファイル\gameplay</Filter>
-    </ClInclude>
-    <ClInclude Include="src\Texture.h">
-      <Filter>ヘッダー ファイル\gameplay</Filter>
-    </ClInclude>
-    <ClInclude Include="src\Theme.h">
-      <Filter>ヘッダー ファイル\gameplay</Filter>
-    </ClInclude>
-    <ClInclude Include="src\ThemeStyle.h">
-      <Filter>ヘッダー ファイル\gameplay</Filter>
-    </ClInclude>
-    <ClInclude Include="src\TimeListener.h">
-      <Filter>ヘッダー ファイル\gameplay</Filter>
-    </ClInclude>
-    <ClInclude Include="src\Touch.h">
-      <Filter>ヘッダー ファイル\gameplay</Filter>
-    </ClInclude>
-    <ClInclude Include="src\Transform.h">
-      <Filter>ヘッダー ファイル\gameplay</Filter>
-    </ClInclude>
-    <ClInclude Include="src\Vector2.h">
-      <Filter>ヘッダー ファイル\gameplay</Filter>
-    </ClInclude>
-    <ClInclude Include="src\Vector3.h">
-      <Filter>ヘッダー ファイル\gameplay</Filter>
-    </ClInclude>
-    <ClInclude Include="src\Vector4.h">
-      <Filter>ヘッダー ファイル\gameplay</Filter>
-    </ClInclude>
-    <ClInclude Include="src\VertexAttributeBinding.h">
-      <Filter>ヘッダー ファイル\gameplay</Filter>
-    </ClInclude>
-    <ClInclude Include="src\VertexFormat.h">
-      <Filter>ヘッダー ファイル\gameplay</Filter>
-    </ClInclude>
-    <ClInclude Include="src\VerticalLayout.h">
-      <Filter>ヘッダー ファイル\gameplay</Filter>
-    </ClInclude>
     <ClInclude Include="..\extlib\src\LinearMath\btAabbUtil2.h">
       <Filter>ソース ファイル\bullet\LinearMath</Filter>
     </ClInclude>
@@ -1859,70 +1553,364 @@
     <ClInclude Include="..\extlib\src\zlib\zutil.h">
       <Filter>ソース ファイル\zlib</Filter>
     </ClInclude>
+    <ClInclude Include="src\AbsoluteLayout.h">
+      <Filter>ソース ファイル\gameplay</Filter>
+    </ClInclude>
+    <ClInclude Include="src\AIAgent.h">
+      <Filter>ソース ファイル\gameplay</Filter>
+    </ClInclude>
+    <ClInclude Include="src\AIController.h">
+      <Filter>ソース ファイル\gameplay</Filter>
+    </ClInclude>
+    <ClInclude Include="src\AIMessage.h">
+      <Filter>ソース ファイル\gameplay</Filter>
+    </ClInclude>
+    <ClInclude Include="src\AIState.h">
+      <Filter>ソース ファイル\gameplay</Filter>
+    </ClInclude>
+    <ClInclude Include="src\AIStateMachine.h">
+      <Filter>ソース ファイル\gameplay</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Animation.h">
+      <Filter>ソース ファイル\gameplay</Filter>
+    </ClInclude>
+    <ClInclude Include="src\AnimationClip.h">
+      <Filter>ソース ファイル\gameplay</Filter>
+    </ClInclude>
+    <ClInclude Include="src\AnimationController.h">
+      <Filter>ソース ファイル\gameplay</Filter>
+    </ClInclude>
+    <ClInclude Include="src\AnimationTarget.h">
+      <Filter>ソース ファイル\gameplay</Filter>
+    </ClInclude>
+    <ClInclude Include="src\AnimationValue.h">
+      <Filter>ソース ファイル\gameplay</Filter>
+    </ClInclude>
+    <ClInclude Include="src\AudioController.h">
+      <Filter>ソース ファイル\gameplay</Filter>
+    </ClInclude>
+    <ClInclude Include="src\AudioListener.h">
+      <Filter>ソース ファイル\gameplay</Filter>
+    </ClInclude>
+    <ClInclude Include="src\AudioSource.h">
+      <Filter>ソース ファイル\gameplay</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Base.h">
+      <Filter>ソース ファイル\gameplay</Filter>
+    </ClInclude>
+    <ClInclude Include="src\BoundingBox.h">
+      <Filter>ソース ファイル\gameplay</Filter>
+    </ClInclude>
+    <ClInclude Include="src\BoundingSphere.h">
+      <Filter>ソース ファイル\gameplay</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Bundle.h">
+      <Filter>ソース ファイル\gameplay</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Button.h">
+      <Filter>ソース ファイル\gameplay</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Camera.h">
+      <Filter>ソース ファイル\gameplay</Filter>
+    </ClInclude>
+    <ClInclude Include="src\CheckBox.h">
+      <Filter>ソース ファイル\gameplay</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Container.h">
+      <Filter>ソース ファイル\gameplay</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Control.h">
+      <Filter>ソース ファイル\gameplay</Filter>
+    </ClInclude>
+    <ClInclude Include="src\ControlFactory.h">
+      <Filter>ソース ファイル\gameplay</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Curve.h">
+      <Filter>ソース ファイル\gameplay</Filter>
+    </ClInclude>
+    <ClInclude Include="src\DebugNew.h">
+      <Filter>ソース ファイル\gameplay</Filter>
+    </ClInclude>
+    <ClInclude Include="src\DepthStencilTarget.h">
+      <Filter>ソース ファイル\gameplay</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Drawable.h">
+      <Filter>ソース ファイル\gameplay</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Effect.h">
+      <Filter>ソース ファイル\gameplay</Filter>
+    </ClInclude>
+    <ClInclude Include="src\FileSystem.h">
+      <Filter>ソース ファイル\gameplay</Filter>
+    </ClInclude>
+    <ClInclude Include="src\FlowLayout.h">
+      <Filter>ソース ファイル\gameplay</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Font.h">
+      <Filter>ソース ファイル\gameplay</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Form.h">
+      <Filter>ソース ファイル\gameplay</Filter>
+    </ClInclude>
+    <ClInclude Include="src\FrameBuffer.h">
+      <Filter>ソース ファイル\gameplay</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Frustum.h">
+      <Filter>ソース ファイル\gameplay</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Game.h">
+      <Filter>ソース ファイル\gameplay</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Gamepad.h">
+      <Filter>ソース ファイル\gameplay</Filter>
+    </ClInclude>
+    <ClInclude Include="src\gameplay.h">
+      <Filter>ソース ファイル\gameplay</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Gesture.h">
+      <Filter>ソース ファイル\gameplay</Filter>
+    </ClInclude>
+    <ClInclude Include="src\HeightField.h">
+      <Filter>ソース ファイル\gameplay</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Image.h">
+      <Filter>ソース ファイル\gameplay</Filter>
+    </ClInclude>
+    <ClInclude Include="src\ImageControl.h">
+      <Filter>ソース ファイル\gameplay</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Joint.h">
+      <Filter>ソース ファイル\gameplay</Filter>
+    </ClInclude>
+    <ClInclude Include="src\JoystickControl.h">
+      <Filter>ソース ファイル\gameplay</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Keyboard.h">
+      <Filter>ソース ファイル\gameplay</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Label.h">
+      <Filter>ソース ファイル\gameplay</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Layout.h">
+      <Filter>ソース ファイル\gameplay</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Light.h">
+      <Filter>ソース ファイル\gameplay</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Logger.h">
+      <Filter>ソース ファイル\gameplay</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Material.h">
+      <Filter>ソース ファイル\gameplay</Filter>
+    </ClInclude>
+    <ClInclude Include="src\MaterialParameter.h">
+      <Filter>ソース ファイル\gameplay</Filter>
+    </ClInclude>
+    <ClInclude Include="src\MathUtil.h">
+      <Filter>ソース ファイル\gameplay</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Matrix.h">
+      <Filter>ソース ファイル\gameplay</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Mesh.h">
+      <Filter>ソース ファイル\gameplay</Filter>
+    </ClInclude>
+    <ClInclude Include="src\MeshBatch.h">
+      <Filter>ソース ファイル\gameplay</Filter>
+    </ClInclude>
+    <ClInclude Include="src\MeshPart.h">
+      <Filter>ソース ファイル\gameplay</Filter>
+    </ClInclude>
+    <ClInclude Include="src\MeshSkin.h">
+      <Filter>ソース ファイル\gameplay</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Model.h">
+      <Filter>ソース ファイル\gameplay</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Mouse.h">
+      <Filter>ソース ファイル\gameplay</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Node.h">
+      <Filter>ソース ファイル\gameplay</Filter>
+    </ClInclude>
+    <ClInclude Include="src\ParticleEmitter.h">
+      <Filter>ソース ファイル\gameplay</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Pass.h">
+      <Filter>ソース ファイル\gameplay</Filter>
+    </ClInclude>
+    <ClInclude Include="src\PhysicsCharacter.h">
+      <Filter>ソース ファイル\gameplay</Filter>
+    </ClInclude>
+    <ClInclude Include="src\PhysicsCollisionObject.h">
+      <Filter>ソース ファイル\gameplay</Filter>
+    </ClInclude>
+    <ClInclude Include="src\PhysicsCollisionShape.h">
+      <Filter>ソース ファイル\gameplay</Filter>
+    </ClInclude>
+    <ClInclude Include="src\PhysicsConstraint.h">
+      <Filter>ソース ファイル\gameplay</Filter>
+    </ClInclude>
+    <ClInclude Include="src\PhysicsController.h">
+      <Filter>ソース ファイル\gameplay</Filter>
+    </ClInclude>
+    <ClInclude Include="src\PhysicsFixedConstraint.h">
+      <Filter>ソース ファイル\gameplay</Filter>
+    </ClInclude>
+    <ClInclude Include="src\PhysicsGenericConstraint.h">
+      <Filter>ソース ファイル\gameplay</Filter>
+    </ClInclude>
+    <ClInclude Include="src\PhysicsGhostObject.h">
+      <Filter>ソース ファイル\gameplay</Filter>
+    </ClInclude>
+    <ClInclude Include="src\PhysicsHingeConstraint.h">
+      <Filter>ソース ファイル\gameplay</Filter>
+    </ClInclude>
+    <ClInclude Include="src\PhysicsRigidBody.h">
+      <Filter>ソース ファイル\gameplay</Filter>
+    </ClInclude>
+    <ClInclude Include="src\PhysicsSocketConstraint.h">
+      <Filter>ソース ファイル\gameplay</Filter>
+    </ClInclude>
+    <ClInclude Include="src\PhysicsSpringConstraint.h">
+      <Filter>ソース ファイル\gameplay</Filter>
+    </ClInclude>
+    <ClInclude Include="src\PhysicsVehicle.h">
+      <Filter>ソース ファイル\gameplay</Filter>
+    </ClInclude>
+    <ClInclude Include="src\PhysicsVehicleWheel.h">
+      <Filter>ソース ファイル\gameplay</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Plane.h">
+      <Filter>ソース ファイル\gameplay</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Platform.h">
+      <Filter>ソース ファイル\gameplay</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Properties.h">
+      <Filter>ソース ファイル\gameplay</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Quaternion.h">
+      <Filter>ソース ファイル\gameplay</Filter>
+    </ClInclude>
+    <ClInclude Include="src\RadioButton.h">
+      <Filter>ソース ファイル\gameplay</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Ray.h">
+      <Filter>ソース ファイル\gameplay</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Rectangle.h">
+      <Filter>ソース ファイル\gameplay</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Ref.h">
+      <Filter>ソース ファイル\gameplay</Filter>
+    </ClInclude>
+    <ClInclude Include="src\RenderState.h">
+      <Filter>ソース ファイル\gameplay</Filter>
+    </ClInclude>
+    <ClInclude Include="src\RenderTarget.h">
+      <Filter>ソース ファイル\gameplay</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Scene.h">
+      <Filter>ソース ファイル\gameplay</Filter>
+    </ClInclude>
+    <ClInclude Include="src\SceneLoader.h">
+      <Filter>ソース ファイル\gameplay</Filter>
+    </ClInclude>
+    <ClInclude Include="src\ScreenDisplayer.h">
+      <Filter>ソース ファイル\gameplay</Filter>
+    </ClInclude>
+    <ClInclude Include="src\ScriptController.h">
+      <Filter>ソース ファイル\gameplay</Filter>
+    </ClInclude>
+    <ClInclude Include="src\ScriptTarget.h">
+      <Filter>ソース ファイル\gameplay</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Slider.h">
+      <Filter>ソース ファイル\gameplay</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Sprite.h">
+      <Filter>ソース ファイル\gameplay</Filter>
+    </ClInclude>
+    <ClInclude Include="src\SpriteBatch.h">
+      <Filter>ソース ファイル\gameplay</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Stream.h">
+      <Filter>ソース ファイル\gameplay</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Technique.h">
+      <Filter>ソース ファイル\gameplay</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Terrain.h">
+      <Filter>ソース ファイル\gameplay</Filter>
+    </ClInclude>
+    <ClInclude Include="src\TerrainPatch.h">
+      <Filter>ソース ファイル\gameplay</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Text.h">
+      <Filter>ソース ファイル\gameplay</Filter>
+    </ClInclude>
+    <ClInclude Include="src\TextBox.h">
+      <Filter>ソース ファイル\gameplay</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Texture.h">
+      <Filter>ソース ファイル\gameplay</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Theme.h">
+      <Filter>ソース ファイル\gameplay</Filter>
+    </ClInclude>
+    <ClInclude Include="src\ThemeStyle.h">
+      <Filter>ソース ファイル\gameplay</Filter>
+    </ClInclude>
+    <ClInclude Include="src\TileSet.h">
+      <Filter>ソース ファイル\gameplay</Filter>
+    </ClInclude>
+    <ClInclude Include="src\TimeListener.h">
+      <Filter>ソース ファイル\gameplay</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Touch.h">
+      <Filter>ソース ファイル\gameplay</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Transform.h">
+      <Filter>ソース ファイル\gameplay</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Vector2.h">
+      <Filter>ソース ファイル\gameplay</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Vector3.h">
+      <Filter>ソース ファイル\gameplay</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Vector4.h">
+      <Filter>ソース ファイル\gameplay</Filter>
+    </ClInclude>
+    <ClInclude Include="src\VertexAttributeBinding.h">
+      <Filter>ソース ファイル\gameplay</Filter>
+    </ClInclude>
+    <ClInclude Include="src\VertexFormat.h">
+      <Filter>ソース ファイル\gameplay</Filter>
+    </ClInclude>
+    <ClInclude Include="src\VerticalLayout.h">
+      <Filter>ソース ファイル\gameplay</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
-    <None Include="src\BoundingBox.inl">
-      <Filter>ヘッダー ファイル\gameplay</Filter>
-    </None>
-    <None Include="src\BoundingSphere.inl">
-      <Filter>ヘッダー ファイル\gameplay</Filter>
-    </None>
-    <None Include="src\Game.inl">
-      <Filter>ヘッダー ファイル\gameplay</Filter>
-    </None>
     <None Include="src\Image.inl">
-      <Filter>ヘッダー ファイル\gameplay</Filter>
-    </None>
-    <None Include="src\Joystick.inl">
-      <Filter>ヘッダー ファイル\gameplay</Filter>
+      <Filter>ソース ファイル\gameplay</Filter>
     </None>
     <None Include="src\MathUtil.inl">
-      <Filter>ヘッダー ファイル\gameplay</Filter>
-    </None>
-    <None Include="src\MathUtilNeon.inl">
-      <Filter>ヘッダー ファイル\gameplay</Filter>
+      <Filter>ソース ファイル\gameplay</Filter>
     </None>
     <None Include="src\Matrix.inl">
-      <Filter>ヘッダー ファイル\gameplay</Filter>
-    </None>
-    <None Include="src\MeshBatch.inl">
-      <Filter>ヘッダー ファイル\gameplay</Filter>
-    </None>
-    <None Include="src\PhysicsConstraint.inl">
-      <Filter>ヘッダー ファイル\gameplay</Filter>
-    </None>
-    <None Include="src\PhysicsFixedConstraint.inl">
-      <Filter>ヘッダー ファイル\gameplay</Filter>
-    </None>
-    <None Include="src\PhysicsGenericConstraint.inl">
-      <Filter>ヘッダー ファイル\gameplay</Filter>
-    </None>
-    <None Include="src\PhysicsRigidBody.inl">
-      <Filter>ヘッダー ファイル\gameplay</Filter>
-    </None>
-    <None Include="src\PhysicsSpringConstraint.inl">
-      <Filter>ヘッダー ファイル\gameplay</Filter>
-    </None>
-    <None Include="src\Plane.inl">
-      <Filter>ヘッダー ファイル\gameplay</Filter>
-    </None>
-    <None Include="src\Quaternion.inl">
-      <Filter>ヘッダー ファイル\gameplay</Filter>
-    </None>
-    <None Include="src\Ray.inl">
-      <Filter>ヘッダー ファイル\gameplay</Filter>
-    </None>
-    <None Include="src\ScriptController.inl">
-      <Filter>ヘッダー ファイル\gameplay</Filter>
+      <Filter>ソース ファイル\gameplay</Filter>
     </None>
     <None Include="src\Vector2.inl">
-      <Filter>ヘッダー ファイル\gameplay</Filter>
+      <Filter>ソース ファイル\gameplay</Filter>
     </None>
     <None Include="src\Vector3.inl">
-      <Filter>ヘッダー ファイル\gameplay</Filter>
+      <Filter>ソース ファイル\gameplay</Filter>
     </None>
     <None Include="src\Vector4.inl">
-      <Filter>ヘッダー ファイル\gameplay</Filter>
+      <Filter>ソース ファイル\gameplay</Filter>
     </None>
   </ItemGroup>
 </Project>

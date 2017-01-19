@@ -98,7 +98,7 @@
       <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
       <BufferSecurityCheck>false</BufferSecurityCheck>
       <AdditionalIncludeDirectories>..\extlib\src;..\extlib\src\glew;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
-      <PreprocessorDefinitions>WIN32;_LIB;_CRT_SECURE_NO_WARNINGS;_MBCS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>HSPDISH;WIN32;_LIB;_CRT_SECURE_NO_WARNINGS;_MBCS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
     </ClCompile>
     <Link>
       <GenerateDebugInformation>true</GenerateDebugInformation>
@@ -116,7 +116,7 @@
       <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
       <BufferSecurityCheck>false</BufferSecurityCheck>
       <AdditionalIncludeDirectories>..\extlib\src;..\extlib\src\angle;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
-      <PreprocessorDefinitions>WIN32;_LIB;_CRT_SECURE_NO_WARNINGS;GP_USE_ANGLE;_MBCS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>HSPDISH;WIN32;_LIB;_CRT_SECURE_NO_WARNINGS;GP_USE_ANGLE;_MBCS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
     </ClCompile>
     <Link>
       <GenerateDebugInformation>true</GenerateDebugInformation>
@@ -333,9 +333,11 @@
     <ClCompile Include="src\CheckBox.cpp" />
     <ClCompile Include="src\Container.cpp" />
     <ClCompile Include="src\Control.cpp" />
+    <ClCompile Include="src\ControlFactory.cpp" />
     <ClCompile Include="src\Curve.cpp" />
     <ClCompile Include="src\DebugNew.cpp" />
     <ClCompile Include="src\DepthStencilTarget.cpp" />
+    <ClCompile Include="src\Drawable.cpp" />
     <ClCompile Include="src\Effect.cpp" />
     <ClCompile Include="src\FileSystem.cpp" />
     <ClCompile Include="src\FlowLayout.cpp" />
@@ -346,14 +348,13 @@
     <ClCompile Include="src\Game.cpp" />
     <ClCompile Include="src\Gamepad.cpp" />
     <ClCompile Include="src\gameplay-main-android.cpp" />
-    <ClCompile Include="src\gameplay-main-blackberry.cpp" />
     <ClCompile Include="src\gameplay-main-linux.cpp" />
     <ClCompile Include="src\gameplay-main-windows.cpp" />
     <ClCompile Include="src\HeightField.cpp" />
     <ClCompile Include="src\Image.cpp" />
     <ClCompile Include="src\ImageControl.cpp" />
     <ClCompile Include="src\Joint.cpp" />
-    <ClCompile Include="src\Joystick.cpp" />
+    <ClCompile Include="src\JoystickControl.cpp" />
     <ClCompile Include="src\Label.cpp" />
     <ClCompile Include="src\Layout.cpp" />
     <ClCompile Include="src\Light.cpp" />
@@ -386,6 +387,9 @@
     <ClCompile Include="src\PhysicsVehicleWheel.cpp" />
     <ClCompile Include="src\Plane.cpp" />
     <ClCompile Include="src\Platform.cpp" />
+    <ClCompile Include="src\PlatformAndroid.cpp" />
+    <ClCompile Include="src\PlatformEmscripten.cpp" />
+    <ClCompile Include="src\PlatformLinux.cpp" />
     <ClCompile Include="src\PlatformWindows.cpp" />
     <ClCompile Include="src\Properties.cpp" />
     <ClCompile Include="src\Quaternion.cpp" />
@@ -401,14 +405,17 @@
     <ClCompile Include="src\ScriptController.cpp" />
     <ClCompile Include="src\ScriptTarget.cpp" />
     <ClCompile Include="src\Slider.cpp" />
+    <ClCompile Include="src\Sprite.cpp" />
     <ClCompile Include="src\SpriteBatch.cpp" />
     <ClCompile Include="src\Technique.cpp" />
     <ClCompile Include="src\Terrain.cpp" />
     <ClCompile Include="src\TerrainPatch.cpp" />
+    <ClCompile Include="src\Text.cpp" />
     <ClCompile Include="src\TextBox.cpp" />
     <ClCompile Include="src\Texture.cpp" />
     <ClCompile Include="src\Theme.cpp" />
     <ClCompile Include="src\ThemeStyle.cpp" />
+    <ClCompile Include="src\TileSet.cpp" />
     <ClCompile Include="src\Transform.cpp" />
     <ClCompile Include="src\Vector2.cpp" />
     <ClCompile Include="src\Vector3.cpp" />
@@ -646,7 +653,6 @@
     <ClInclude Include="src\AnimationController.h" />
     <ClInclude Include="src\AnimationTarget.h" />
     <ClInclude Include="src\AnimationValue.h" />
-    <ClInclude Include="src\AudioBuffer.h" />
     <ClInclude Include="src\AudioController.h" />
     <ClInclude Include="src\AudioListener.h" />
     <ClInclude Include="src\AudioSource.h" />
@@ -659,9 +665,11 @@
     <ClInclude Include="src\CheckBox.h" />
     <ClInclude Include="src\Container.h" />
     <ClInclude Include="src\Control.h" />
+    <ClInclude Include="src\ControlFactory.h" />
     <ClInclude Include="src\Curve.h" />
     <ClInclude Include="src\DebugNew.h" />
     <ClInclude Include="src\DepthStencilTarget.h" />
+    <ClInclude Include="src\Drawable.h" />
     <ClInclude Include="src\Effect.h" />
     <ClInclude Include="src\FileSystem.h" />
     <ClInclude Include="src\FlowLayout.h" />
@@ -677,7 +685,7 @@
     <ClInclude Include="src\Image.h" />
     <ClInclude Include="src\ImageControl.h" />
     <ClInclude Include="src\Joint.h" />
-    <ClInclude Include="src\Joystick.h" />
+    <ClInclude Include="src\JoystickControl.h" />
     <ClInclude Include="src\Keyboard.h" />
     <ClInclude Include="src\Label.h" />
     <ClInclude Include="src\Layout.h" />
@@ -726,15 +734,18 @@
     <ClInclude Include="src\ScriptController.h" />
     <ClInclude Include="src\ScriptTarget.h" />
     <ClInclude Include="src\Slider.h" />
+    <ClInclude Include="src\Sprite.h" />
     <ClInclude Include="src\SpriteBatch.h" />
     <ClInclude Include="src\Stream.h" />
     <ClInclude Include="src\Technique.h" />
     <ClInclude Include="src\Terrain.h" />
     <ClInclude Include="src\TerrainPatch.h" />
+    <ClInclude Include="src\Text.h" />
     <ClInclude Include="src\TextBox.h" />
     <ClInclude Include="src\Texture.h" />
     <ClInclude Include="src\Theme.h" />
     <ClInclude Include="src\ThemeStyle.h" />
+    <ClInclude Include="src\TileSet.h" />
     <ClInclude Include="src\TimeListener.h" />
     <ClInclude Include="src\Touch.h" />
     <ClInclude Include="src\Transform.h" />
@@ -746,24 +757,9 @@
     <ClInclude Include="src\VerticalLayout.h" />
   </ItemGroup>
   <ItemGroup>
-    <None Include="src\BoundingBox.inl" />
-    <None Include="src\BoundingSphere.inl" />
-    <None Include="src\Game.inl" />
     <None Include="src\Image.inl" />
-    <None Include="src\Joystick.inl" />
     <None Include="src\MathUtil.inl" />
-    <None Include="src\MathUtilNeon.inl" />
     <None Include="src\Matrix.inl" />
-    <None Include="src\MeshBatch.inl" />
-    <None Include="src\PhysicsConstraint.inl" />
-    <None Include="src\PhysicsFixedConstraint.inl" />
-    <None Include="src\PhysicsGenericConstraint.inl" />
-    <None Include="src\PhysicsRigidBody.inl" />
-    <None Include="src\PhysicsSpringConstraint.inl" />
-    <None Include="src\Plane.inl" />
-    <None Include="src\Quaternion.inl" />
-    <None Include="src\Ray.inl" />
-    <None Include="src\ScriptController.inl" />
     <None Include="src\Vector2.inl" />
     <None Include="src\Vector3.inl" />
     <None Include="src\Vector4.inl" />

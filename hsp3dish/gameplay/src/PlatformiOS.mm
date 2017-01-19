@@ -1,3 +1,4 @@
+#ifndef GP_NO_PLATFORM
 #ifdef __APPLE__
 
 #include "Base.h"
@@ -7,7 +8,9 @@
 #include "Form.h"
 #include "ScriptController.h"
 #include <unistd.h>
+#include <sys/time.h>
 #import <UIKit/UIKit.h>
+#import <GameKit/GameKit.h>
 #import <QuartzCore/QuartzCore.h>
 #import <CoreMotion/CoreMotion.h>
 #import <OpenGLES/EAGL.h>
@@ -58,6 +61,15 @@ public:
     }
 };
 
+// gestures
+
+#define GESTURE_LONG_PRESS_DURATION_MIN 0.2
+#define GESTURE_LONG_PRESS_DISTANCE_MIN 10
+
+static CGPoint  __gestureLongPressStartPosition;
+static long __gestureLongTapStartTimestamp = 0;
+static bool __gestureDraging = false;
+
 // more than we'd ever need, to be safe
 #define TOUCH_POINTS_MAX (10)
 static TouchPoint __touchPoints[TOUCH_POINTS_MAX];
@@ -67,7 +79,6 @@ static double __timeAbsolute;
 static bool __vsync = WINDOW_VSYNC;
 static float __pitch;
 static float __roll;
-
 
 double getMachTimeInMilliseconds();
 
@@ -95,6 +106,9 @@ int getUnicode(int key);
     UITapGestureRecognizer *_tapRecognizer;
     UIPinchGestureRecognizer *_pinchRecognizer;
     UISwipeGestureRecognizer *_swipeRecognizer;
+    UILongPressGestureRecognizer *_longPressRecognizer;
+    UILongPressGestureRecognizer *_longTapRecognizer;
+    UILongPressGestureRecognizer *_dragAndDropRecognizer;
 }
 
 @property (readonly, nonatomic, getter=isUpdating) BOOL updating;
@@ -642,6 +656,11 @@ int getUnicode(int key);
             return (_pinchRecognizer != NULL);
         case Gesture::GESTURE_TAP:
             return (_tapRecognizer != NULL);
+        case Gesture::GESTURE_LONG_TAP:
+            return (_longTapRecognizer != NULL);
+        case Gesture::GESTURE_DRAG:
+        case Gesture::GESTURE_DROP:
+            return (_dragAndDropRecognizer != NULL);
         default:
             break;
     }
@@ -684,6 +703,28 @@ int getUnicode(int key);
         _tapRecognizer = [[UITapGestureRecognizer alloc] initWithTarget:self action:@selector(handleTapGesture:)];
         [self addGestureRecognizer:_tapRecognizer];
     }
+    if ((evt & Gesture::GESTURE_LONG_TAP) == Gesture::GESTURE_LONG_TAP && _longTapRecognizer == NULL)
+    {
+        if (_longPressRecognizer == NULL)
+        {
+            _longPressRecognizer =[[UILongPressGestureRecognizer alloc] initWithTarget:self action:@selector(handleLongPressGestures:)];
+            _longPressRecognizer.minimumPressDuration = GESTURE_LONG_PRESS_DURATION_MIN;
+            _longPressRecognizer.allowableMovement = CGFLOAT_MAX;
+            [self addGestureRecognizer:_longPressRecognizer];
+        }
+        _longTapRecognizer = _longPressRecognizer;
+    }
+    if (((evt & Gesture::GESTURE_DRAG) == Gesture::GESTURE_DRAG || (evt & Gesture::GESTURE_DROP) == Gesture::GESTURE_DROP) && _dragAndDropRecognizer == NULL)
+    {
+        if (_longPressRecognizer == NULL)
+        {
+            _longPressRecognizer =[[UILongPressGestureRecognizer alloc] initWithTarget:self action:@selector(handleLongPressGestures:)];
+            _longPressRecognizer.minimumPressDuration = GESTURE_LONG_PRESS_DURATION_MIN;
+            _longPressRecognizer.allowableMovement = CGFLOAT_MAX;
+            [self addGestureRecognizer:_longPressRecognizer];
+        }
+        _dragAndDropRecognizer = _longPressRecognizer;
+    }
 }
 
 - (void)unregisterGesture: (Gesture::GestureEvent) evt
@@ -706,19 +747,58 @@ int getUnicode(int key);
         [_tapRecognizer release];
         _tapRecognizer = NULL;
     }
+    if((evt & Gesture::GESTURE_LONG_TAP) == Gesture::GESTURE_LONG_TAP && _longTapRecognizer != NULL)
+    {
+        if (_longTapRecognizer == NULL)
+        {
+            [self removeGestureRecognizer:_longTapRecognizer];
+            [_longTapRecognizer release];
+        }
+        _longTapRecognizer = NULL;
+    }
+    if (((evt & Gesture::GESTURE_DRAG) == Gesture::GESTURE_DRAG || (evt & Gesture::GESTURE_DROP) == Gesture::GESTURE_DROP) && _dragAndDropRecognizer != NULL)
+    {
+        if (_dragAndDropRecognizer == NULL)
+        {
+            [self removeGestureRecognizer:_dragAndDropRecognizer];
+            [_dragAndDropRecognizer release];
+        }
+        _dragAndDropRecognizer = NULL;
+    }
 }
 
 - (void)handleTapGesture:(UITapGestureRecognizer*)sender
 {
     CGPoint location = [sender locationInView:self];
-    gameplay::Platform::gestureTapEventInternal(location.x, location.y);
+    gameplay::Platform::gestureTapEventInternal(location.x * WINDOW_SCALE, location.y * WINDOW_SCALE);
+}
+
+- (void)handleLongTapGesture:(UILongPressGestureRecognizer*)sender
+{
+    if (sender.state == UIGestureRecognizerStateBegan)
+    {
+        struct timeval time;
+        
+        gettimeofday(&time, NULL);
+        __gestureLongTapStartTimestamp = (time.tv_sec * 1000) + (time.tv_usec / 1000);
+    }
+    else if (sender.state == UIGestureRecognizerStateEnded)
+    {
+        CGPoint location = [sender locationInView:self];
+        struct timeval time;
+        long currentTimeStamp;
+        
+        gettimeofday(&time, NULL);
+        currentTimeStamp = (time.tv_sec * 1000) + (time.tv_usec / 1000);
+        gameplay::Platform::gestureLongTapEventInternal(location.x * WINDOW_SCALE, location.y * WINDOW_SCALE, currentTimeStamp - __gestureLongTapStartTimestamp);
+    }
 }
 
 - (void)handlePinchGesture:(UIPinchGestureRecognizer*)sender
 {
     CGFloat factor = [sender scale];
     CGPoint location = [sender locationInView:self];
-    gameplay::Platform::gesturePinchEventInternal(location.x, location.y, factor);
+    gameplay::Platform::gesturePinchEventInternal(location.x * WINDOW_SCALE, location.y * WINDOW_SCALE, factor);
 }
 
 - (void)handleSwipeGesture:(UISwipeGestureRecognizer*)sender
@@ -740,7 +820,58 @@ int getUnicode(int key);
             gameplayDirection = Gesture::SWIPE_DIRECTION_DOWN;
             break;
     }
-    gameplay::Platform::gestureSwipeEventInternal(location.x, location.y, gameplayDirection);
+    gameplay::Platform::gestureSwipeEventInternal(location.x * WINDOW_SCALE, location.y * WINDOW_SCALE, gameplayDirection);
+}
+
+- (void)handleLongPressGestures:(UILongPressGestureRecognizer*)sender
+{
+    CGPoint location = [sender locationInView:self];
+    
+    if (sender.state == UIGestureRecognizerStateBegan)
+    {
+        struct timeval time;
+        
+        gettimeofday(&time, NULL);
+        __gestureLongTapStartTimestamp = (time.tv_sec * 1000) + (time.tv_usec / 1000);
+        __gestureLongPressStartPosition = location;
+    }
+    if (sender.state == UIGestureRecognizerStateChanged)
+    {
+        if (__gestureDraging)
+            gameplay::Platform::gestureDragEventInternal(location.x * WINDOW_SCALE, location.y * WINDOW_SCALE);
+        else
+        {
+            float delta = sqrt(pow(__gestureLongPressStartPosition.x - location.x, 2) + pow(__gestureLongPressStartPosition.y - location.y, 2));
+        
+            if (delta >= GESTURE_LONG_PRESS_DISTANCE_MIN)
+            {
+                __gestureDraging = true;
+                gameplay::Platform::gestureDragEventInternal(__gestureLongPressStartPosition.x * WINDOW_SCALE, __gestureLongPressStartPosition.y * WINDOW_SCALE);
+            }
+        }
+    }
+    if (sender.state == UIGestureRecognizerStateEnded)
+    {
+        if (__gestureDraging)
+        {
+            gameplay::Platform::gestureDropEventInternal(location.x * WINDOW_SCALE, location.y * WINDOW_SCALE);
+            __gestureDraging = false;
+        }
+        else
+        {
+            struct timeval time;
+            long currentTimeStamp;
+        
+            gettimeofday(&time, NULL);
+            currentTimeStamp = (time.tv_sec * 1000) + (time.tv_usec / 1000);
+            gameplay::Platform::gestureLongTapEventInternal(location.x * WINDOW_SCALE, location.y * WINDOW_SCALE, currentTimeStamp - __gestureLongTapStartTimestamp);
+        }
+    }
+    if ((sender.state == UIGestureRecognizerStateCancelled || sender.state == UIGestureRecognizerStateFailed) && __gestureDraging)
+    {
+        gameplay::Platform::gestureDropEventInternal(location.x * WINDOW_SCALE, location.y * WINDOW_SCALE);
+        __gestureDraging = false;
+    }
 }
 
 @end
@@ -749,6 +880,7 @@ int getUnicode(int key);
 @interface ViewController : UIViewController
 - (void)startUpdating;
 - (void)stopUpdating;
+- (void)gameCenterViewControllerDidFinish:(GKGameCenterViewController *)gameCenterViewController;
 @end
 
 
@@ -821,6 +953,10 @@ int getUnicode(int key);
     [(View*)self.view stopUpdating];
 }
 
+- (void)gameCenterViewControllerDidFinish:(GKGameCenterViewController *)gameCenterViewController
+{
+    [self dismissViewControllerAnimated:YES completion:nil];
+}
 @end
 
 
@@ -860,6 +996,11 @@ int getUnicode(int key);
     viewController = [[ViewController alloc] init];
     [window setRootViewController:viewController];
     [window makeKeyAndVisible];
+    return YES;
+}
+
+- (BOOL)prefersStatusBarHidden
+{
     return YES;
 }
 
@@ -1328,6 +1469,11 @@ extern void print(const char* format, ...)
     va_end(argptr);
 }
 
+extern int strcmpnocase(const char* s1, const char* s2)
+{
+    return strcasecmp(s1, s2);
+}
+
 Platform::Platform(Game* game) : _game(game)
 {
 }
@@ -1336,7 +1482,7 @@ Platform::~Platform()
 {
 }
 
-Platform* Platform::create(Game* game, void* attachToWindow)
+Platform* Platform::create(Game* game)
 {
     Platform* platform = new Platform(game);
     return platform;
@@ -1366,14 +1512,34 @@ bool Platform::canExit()
 
 unsigned int Platform::getDisplayWidth()
 {
-    CGSize size = DeviceOrientedSize([__appDelegate.viewController interfaceOrientation]);
-    return size.width;
+#ifdef NSFoundationVersionNumber_iOS_7_1
+    if (NSFoundationVersionNumber > NSFoundationVersionNumber_iOS_7_1)
+    {
+        //iOS 8+
+        return [[UIScreen mainScreen] bounds].size.width * [[UIScreen mainScreen] scale];
+    }
+    else
+#endif
+    {
+        CGSize size = DeviceOrientedSize([__appDelegate.viewController interfaceOrientation]);
+        return size.width;
+    }
 }
 
 unsigned int Platform::getDisplayHeight()
 {
-    CGSize size = DeviceOrientedSize([__appDelegate.viewController interfaceOrientation]);
-    return size.height;
+#ifdef NSFoundationVersionNumber_iOS_7_1
+    if (NSFoundationVersionNumber > NSFoundationVersionNumber_iOS_7_1)
+    {
+        //iOS 8+
+        return [[UIScreen mainScreen] bounds].size.height * [[UIScreen mainScreen] scale];
+    }
+    else
+#endif
+    {
+        CGSize size = DeviceOrientedSize([__appDelegate.viewController interfaceOrientation]);
+        return size.height;
+    }
 }
 
 double Platform::getAbsoluteTime()
@@ -1417,7 +1583,7 @@ void Platform::getAccelerometerValues(float* pitch, float* roll)
     [__appDelegate getAccelerometerPitch:pitch roll:roll];
 }
 
-void Platform::getRawSensorValues(float* accelX, float* accelY, float* accelZ, float* gyroX, float* gyroY, float* gyroZ)
+void Platform::getSensorValues(float* accelX, float* accelY, float* accelZ, float* gyroX, float* gyroY, float* gyroZ)
 {
     float x, y, z;
     [__appDelegate getRawAccelX:&x Y:&y Z:&z];
@@ -1556,7 +1722,13 @@ bool Platform::launchURL(const char *url)
 
     return [[UIApplication sharedApplication] openURL:[NSURL URLWithString:[NSString stringWithUTF8String: url]]];
 }
-    
+
+std::string Platform::displayFileDialog(size_t mode, const char* title, const char* filterDescription, const char* filterExtensions, const char* initialDirectory)
+{
+    return "";
+}
+ 
 }
 
+#endif
 #endif
