@@ -13,7 +13,7 @@ $(TARGET): $(OBJS)
 	$(CC) $(CFLAGS) -c $< -o $*.o
 .cpp.o:
 	$(CC) $(CFLAGS) -c $< -o $*.o
-linux/Main.o: hsp3cl.h hsp3config.h
+linux/main.o: linux/hsp3cl.h hsp3config.h
 linux/hsp3cl.o: strbuf.h hsp3.h hsp3debug.h \
   hsp3struct.h hspvar_core.h hsp3ext.h hsp3code.h \
   hsp3config.h supio.h hsp3gr.h

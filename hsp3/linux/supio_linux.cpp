@@ -44,6 +44,47 @@
 #define _MAX_FNAME	256
 #endif
 
+HSPAPICHAR *chartoapichar( const char *orig,HSPAPICHAR **pphac)
+{
+	*pphac = (HSPAPICHAR*)orig;
+	return (HSPAPICHAR*)orig;
+}
+
+void freehac(HSPAPICHAR **pphac)
+{
+	*pphac = 0;
+	return;
+}
+
+HSPCHAR *apichartohspchar( const HSPAPICHAR *orig,HSPCHAR **pphc)
+{
+	*pphc = (HSPAPICHAR*)orig;
+	return (HSPCHAR*)orig;
+}
+
+void freehc(HSPCHAR **pphc)
+{
+	*pphc = 0;
+	return;
+}
+
+HSPAPICHAR *ansichartoapichar(const char *orig, HSPAPICHAR **pphac)
+{
+	*pphac = (HSPAPICHAR*)orig;
+	return (HSPAPICHAR*)orig;
+}
+
+char *apichartoansichar(const HSPAPICHAR *orig, char **ppc)
+{
+	*ppc = (char*)orig;
+	return (char*)orig;
+}
+
+void freeac(char **ppc)
+{
+	*ppc = 0;
+	return;
+}
 
 //
 //		Internal function support (without Windows API)
@@ -138,10 +179,33 @@ int mem_save( char *fname, void *mem, int msize, int seekofs )
 }
 
 
+size_t utf8strlen( const char *target )
+{
+	//		UTF8文字列の長さを得る
+	//
+	unsigned char *p;
+	unsigned char *base;
+	unsigned char a1;
+	p = (unsigned char *)target;
+	base = p;
+	while(1) {
+		a1=*p;if ( a1==0 ) break;
+		p++;							// 検索位置を移動
+		if (a1>=128) {					// 多バイト文字チェック
+			if (a1>=192) p++;
+			if (a1>=224) p++;
+			if (a1>=240) p++;
+			if (a1>=248) p++;
+			if (a1>=252) p++;
+		}
+	}
+	return (size_t)(p-base);
+}
+
+
 void strcase( char *target )
 {
-	//		strをすべて小文字に(全角対応版)
-	//		注意! : SJISのみ対応です
+	//		strをすべて小文字に(utf8対応版)
 	//
 	unsigned char *p;
 	unsigned char a1;
@@ -150,12 +214,15 @@ void strcase( char *target )
 		a1=*p;if ( a1==0 ) break;
 		*p=tolower(a1);
 		p++;							// 検索位置を移動
-		if (a1>=129) {					// 全角文字チェック
-			if ((a1<=159)||(a1>=224)) p++;
+		if (a1>=128) {					// 多バイト文字チェック
+			if (a1>=192) p++;
+			if (a1>=224) p++;
+			if (a1>=240) p++;
+			if (a1>=248) p++;
+			if (a1>=252) p++;
 		}
 	}
 }
-
 
 int strcpy2( char *str1, char *str2 )
 {
@@ -194,8 +261,7 @@ int strcat2( char *str1, char *str2 )
 
 char *strstr2( char *target, char *src )
 {
-	//		strstr関数の全角対応版
-	//		注意! : SJISのみ対応です
+	//		strstr関数のutf8対応版
 	//
 	unsigned char *p;
 	unsigned char *s;
@@ -215,8 +281,12 @@ char *strstr2( char *target, char *src )
 			if (a2!=a3) break;
 		}
 		p++;							// 検索位置を移動
-		if (a1>=129) {					// 全角文字チェック
-			if ((a1<=159)||(a1>=224)) p++;
+		if (a1>=128) {					// 多バイト文字チェック
+			if (a1>=192) p++;
+			if (a1>=224) p++;
+			if (a1>=240) p++;
+			if (a1>=248) p++;
+			if (a1>=252) p++;
 		}
 	}
 	return NULL;
@@ -225,8 +295,7 @@ char *strstr2( char *target, char *src )
 
 char *strchr2( char *target, char code )
 {
-	//		str中最後のcode位置を探す(全角対応版)
-	//		注意! : SJISのみ対応です
+	//		str中最後のcode位置を探す(utf8対応版)
 	//
 	unsigned char *p;
 	unsigned char a1;
@@ -237,8 +306,12 @@ char *strchr2( char *target, char code )
 		a1=*p;if ( a1==0 ) break;
 		if ( a1==code ) res=(char *)p;
 		p++;							// 検索位置を移動
-		if (a1>=129) {					// 全角文字チェック
-			if ((a1<=159)||(a1>=224)) p++;
+		if (a1>=128) {					// 多バイト文字チェック
+			if (a1>=192) p++;
+			if (a1>=224) p++;
+			if (a1>=240) p++;
+			if (a1>=248) p++;
+			if (a1>=252) p++;
 		}
 	}
 	return res;
@@ -425,18 +498,29 @@ int strsp_get( char *srcstr, char *dststr, char splitchr, int len )
 {
 	//		split string with parameters
 	//
-	char a1;
-	char a2;
+
+/*
+	rev 44
+	mingw : warning : 比較は常に偽
+	に対処
+*/
+	unsigned char a1;
+	unsigned char a2;
 	int a;
-	int sjflg;
-	a=0;sjflg=0;
+	int utf8cnt;
+	a=0;utf8cnt=0;
 	while(1) {
-		sjflg=0;
+		utf8cnt=0;
 		a1=srcstr[splc];
 		if (a1==0) break;
 		splc++;
-		if (a1>=0x81) if (a1<0xa0) sjflg++;
-		if (a1>=0xe0) sjflg++;
+		if (a1>=128) {					// 多バイト文字チェック
+			if (a1>=192) utf8cnt++;
+			if (a1>=224) utf8cnt++;
+			if (a1>=240) utf8cnt++;
+			if (a1>=248) utf8cnt++;
+			if (a1>=252) utf8cnt++;
+		}
 
 		if (a1==splitchr) break;
 		if (a1==13) {
@@ -444,9 +528,18 @@ int strsp_get( char *srcstr, char *dststr, char splitchr, int len )
 			if (a2==10) splc++;
 			break;
 		}
+#ifdef HSPLINUX
+		if (a1==10) {
+			a2=srcstr[splc];
+			break;
+		}
+#endif
 		dststr[a++]=a1;
-		if (sjflg) {
-			dststr[a++]=srcstr[splc++];
+		if (utf8cnt>0) {
+			while(utf8cnt>0){
+				dststr[a++]=srcstr[splc++];
+				utf8cnt--;
+			}
 		}
 		if ( a>=len ) break;
 	}
@@ -531,7 +624,7 @@ int htoi( char *str )
 
 char *strchr3( char *target, int code, int sw, char **findptr )
 {
-	//		文字列中のcode位置を探す(2バイトコード、全角対応版)
+	//		文字列中のcode位置を探す(2バイトコード、utf8-4バイト分対応版)
 	//		sw = 0 : findptr = 最後に見つかったcode位置
 	//		sw = 1 : findptr = 最初に見つかったcode位置
 	//		sw = 2 : findptr = 最初に見つかったcode位置(最初の文字のみ検索)
@@ -541,12 +634,16 @@ char *strchr3( char *target, int code, int sw, char **findptr )
 	unsigned char a1;
 	unsigned char code1;
 	unsigned char code2;
+	unsigned char code3;
+	unsigned char code4;
 	char *res;
 	char *pres;
 
 	p=(unsigned char *)target;
 	code1 = (unsigned char)(code&0xff);
 	code2 = (unsigned char)(code>>8);
+	code3 = (unsigned char)(code>>16);
+	code4 = (unsigned char)(code>>24);
 
 	res = NULL;
 	pres = NULL;
@@ -555,11 +652,27 @@ char *strchr3( char *target, int code, int sw, char **findptr )
 	while(1) {
 		a1=*p;if ( a1==0 ) break;
 		if ( a1==code1 ) {
-			if ( a1 <129 ) {
+			if ( a1 <128 ) {
 				res=(char *)p;
 			} else {
-				if ((a1<=159)||(a1>=224)) {
-					if ( p[1]==code2 ) {
+				if (a1>=128) {
+					if (a1>=192) {
+						if ( p[1]==code2 ) {
+							if (a1>=224) {
+								if ( p[2]==code3 ) {
+									if (a1>=240) {
+										if ( p[3]==code4 ) {
+											res=(char *)p;
+										}
+									}else{
+										res=(char *)p;
+									}
+								}
+							}else{
+								res=(char *)p;
+							}
+						}
+					}else{
 						res=(char *)p;
 					}
 				} else {
@@ -568,8 +681,12 @@ char *strchr3( char *target, int code, int sw, char **findptr )
 			}
 		}
 		p++;							// 検索位置を移動
-		if (a1>=129) {					// 全角文字チェック
-			if ((a1<=159)||(a1>=224)) p++;
+		if (a1>=128) {					// 多バイト文字チェック
+			if (a1>=192) p++;
+			if (a1>=224) p++;
+			if (a1>=240) p++;
+			if (a1>=248) p++;
+			if (a1>=252) p++;
 		}
 		if ( res != NULL ) { *findptr = res; pres = (char *)p; res = NULL; }
 
@@ -631,10 +748,8 @@ void TrimCodeL( char *p, int code )
 	}
 }
 
-
 //
 //		文字列置き換え
-//		(入れ子になることがあるので、バッファの確保をhsp3int側で行なうように修正)
 //
 static	char *s_match;
 static	int len_match;
@@ -646,8 +761,7 @@ static	char *s_result;
 static	int len_result;
 static	int reptime;
 
-
-void ReplaceSetMatch( char *src, char *match, char *result, int in_src, int in_match, int in_result )
+void ReplaceSetMatch(char *src, char *match, char *result, int in_src, int in_match, int in_result)
 {
 	//		置き換え元、置き換え対象のセット
 	//		(あらかじめメモリバッファの確保が必要)
@@ -660,7 +774,6 @@ void ReplaceSetMatch( char *src, char *match, char *result, int in_src, int in_m
 	len_result = in_result;
 }
 
-
 char *ReplaceStr( char *repstr )
 {
 	//		置き換え実行
@@ -669,7 +782,7 @@ char *ReplaceStr( char *repstr )
 	unsigned char a1;
 	unsigned char a2;
 	int psize, csize, cursize, i;
-	int sjis_flag;
+	int utf8cnt;
 
 	s_rep = repstr;
 	len_rep = (int)strlen( s_rep );
@@ -684,13 +797,14 @@ char *ReplaceStr( char *repstr )
 		a1 = (unsigned char)*p;
 		if ( a1 == 0 ) break;
 
-#ifndef HSPUTF8
-		//	sjisチェック
-		sjis_flag = 0;
-		if ( a1 >= 129 ) {
-			if ((a1<=159)||(a1>=224)) sjis_flag++;
+		utf8cnt=0;
+		if (a1>=128) {					// 多バイト文字チェック
+			if (a1>=192) utf8cnt++;
+			if (a1>=224) utf8cnt++;
+			if (a1>=240) utf8cnt++;
+			if (a1>=248) utf8cnt++;
+			if (a1>=252) utf8cnt++;
 		}
-#endif
 
 		//	比較する
 		psize = 0; csize = 1;
@@ -718,11 +832,12 @@ char *ReplaceStr( char *repstr )
 		} else {					// 置き換えなし
 			s_result[cursize++] = a1;
 			p++;
-#ifndef HSPUTF8
-			if ( sjis_flag ) {
-				s_result[cursize++] = *p++;
+			if ( utf8cnt>0 ) {
+				while (utf8cnt>0){
+					s_result[cursize++] = *p++;
+					utf8cnt--;
+				}
 			}
-#endif
 		}
 
 	}
@@ -733,7 +848,6 @@ char *ReplaceStr( char *repstr )
 int ReplaceDone( void )
 {
 	//		置き換えの後処理
-	//		(呼び出し前に確保したメモリバッファは解放すること)
 	//
 	return reptime;
 }
