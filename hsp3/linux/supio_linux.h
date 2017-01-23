@@ -3,6 +3,11 @@
 //	supio.cpp functions (linux)
 //
 
+#define HSPAPICHAR char
+#define HSPCHAR char
+
+size_t utf8strlen(const char *target);
+
 char *mem_ini( int size );
 void mem_bye( void *ptr );
 int mem_save( char *fname, void *mem, int msize, int seekofs );
@@ -39,4 +44,13 @@ int ReplaceDone( void );
 void Alert( char *mes );
 void AlertV( char *mes, int val );
 void Alertf( char *format, ... );
+
+HSPAPICHAR *chartoapichar( const HSPCHAR*,HSPAPICHAR** );
+void freehac( HSPAPICHAR** );
+HSPCHAR *apichartohspchar( const HSPAPICHAR*,HSPCHAR** );
+void freehc( HSPCHAR** );
+HSPAPICHAR *ansichartoapichar(const char *, HSPAPICHAR **);
+char *apichartoansichar(const HSPAPICHAR *, char **);
+void freeac(char **);
+
 
