@@ -11,6 +11,7 @@
 #include <time.h>
 #include <algorithm>
 #include <limits>
+#include <limits.h>
 
 #include "hsp3config.h"
 
