@@ -5,7 +5,7 @@
 #ifndef __hgio_h
 #define __hgio_h
 
-#if defined(HSPWIN) || defined(HSPEMSCRIPTEN)
+#if defined(HSPWIN) || defined(HSPLINUX) || defined(HSPEMSCRIPTEN)
 #include "../hsp3/hsp3config.h"
 #else
 #include "hsp3config.h"
@@ -120,7 +120,7 @@ CLSMODE_MAX,
 #endif
 
 #ifdef HSPLINUX
-#include "linux/hgiox.h"
+#include "emscripten/hgiox.h"
 #endif
 
 #ifdef HSPEMSCRIPTEN

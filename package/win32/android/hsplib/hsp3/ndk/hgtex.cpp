@@ -12,7 +12,11 @@
 
 #include "stb_image.h"
 
+#if defined(HSPLINUX) || defined(HSPEMSCRIPTEN)
+#include "../../hsp3/hsp3config.h"
+#else
 #include "../hsp3config.h"
+#endif
 
 #ifdef HSPNDK
 #define USE_JAVA_FONT
@@ -30,6 +34,36 @@
 #include <CoreFoundation/CoreFoundation.h>
 #include "iOSBridge.h"
 #include "appengine.h"
+#endif
+
+#ifdef HSPEMSCRIPTEN
+#define USE_JAVA_FONT
+#define FONT_TEX_SX 512
+#define FONT_TEX_SY 128
+#include "appengine.h"
+
+#define GL_GLEXT_PROTOTYPES
+#include <GL/gl.h>
+#include <GL/glext.h>
+
+#include "SDL/SDL.h"
+#include "SDL/SDL_image.h"
+#include "SDL/SDL_opengl.h"
+
+#include <emscripten.h>
+#endif
+
+#ifdef HSPLINUX
+
+#include "appengine.h"
+#define GL_GLEXT_PROTOTYPES
+#include <GL/gl.h>
+#include <GL/glext.h>
+
+#include "SDL/SDL.h"
+#include "SDL/SDL_image.h"
+#include "SDL/SDL_opengl.h"
+
 #endif
 
 #include "../supio.h"
@@ -119,10 +153,16 @@ void ChangeTex( int id )
 	if ( id < 0 ) {
 		curtex = -1;
 	    glBindTexture(GL_TEXTURE_2D,0);
+#if defined(HSPLINUX) || defined(HSPEMSCRIPTEN)
+		glDisable(GL_TEXTURE_2D);
+#endif
 		return;
 	}
 	curtex = id;
     glBindTexture( GL_TEXTURE_2D, id );
+#if defined(HSPLINUX) || defined(HSPEMSCRIPTEN)
+	glEnable(GL_TEXTURE_2D);
+#endif
 }
 
 
@@ -363,13 +403,13 @@ void TexProc( void )
 }
 
 
-#ifdef HSPNDK
 int GetCacheMesTextureID( char *msg, int font_size, int font_style )
 {
 	//		キャッシュ済みのテクスチャIDを返す(OpenGLテクスチャIDを返す)
 	//		(作成されていないメッセージテクスチャは自動的に作成する)
 	//		(作成の必要がない場合は-1を返す)
 	//
+#ifdef HSPNDK
 	GLuint id;
 	int texid;
 	int tsx,tsy;
@@ -437,8 +477,121 @@ int GetCacheMesTextureID( char *msg, int font_size, int font_style )
 	free(pImg);
 
 	return texid;
-}
-
 #endif
 
+#ifdef HSPEMSCRIPTEN
+	GLuint id;
+	int texid;
+	int tsx,tsy;
+	unsigned char *pImg;
 
+	TEXINF *t;
+	int mylen;
+	short mycache;
+
+	mycache = str2hash( msg, &mylen );			// キャッシュを取得
+	if ( mylen <= 0 ) return -1;
+
+	texid = getCache( msg, mycache, font_size, font_style );
+	if ( texid >= 0 ) {
+		return texid;							// キャッシュがあった
+	}
+
+	EM_ASM_({
+		var d = document.getElementById('hsp3dishFontDiv');
+		if (!d) {
+			d = document.createElement("div");
+			d.id = 'hsp3dishFontDiv';
+			d.style.setProperty("width", "auto");
+			d.style.setProperty("height", "auto");
+			d.style.setProperty("position", "absolute");
+			d.style.setProperty("visibility", "hidden");
+		}
+		d.style.setProperty("font", $1 + "px 'sans-serif'");
+		document.body.appendChild(d);
+
+		var t = document.createTextNode(Pointer_stringify($0));
+		if (d.hasChildNodes())
+			d.removeChild(d.firstChild);
+		d.appendChild(t);
+		}, msg, font_size);
+	tsx = EM_ASM_INT_V({
+		var d = document.getElementById('hsp3dishFontDiv');
+		return d.clientWidth;
+	});
+	tsy = EM_ASM_INT_V({
+		var d = document.getElementById('hsp3dishFontDiv');
+		return d.clientHeight;
+	});
+	//printf("texsize %dx%d '%s'\n", tsx, tsy, msg);
+
+	//		キャッシュが存在しないので作成
+	//pImg = (unsigned char *)j_callFontBitmap( msg, font_size, font_style, &tsx, &tsy );
+
+	texid = MakeEmptyTex( tsx, tsy );
+	if ( texid < 0 ) return -1;
+
+	t = GetTex( texid );
+	t->hash = mycache;
+	t->font_size = font_size;
+	t->font_style = font_style;
+
+	if ( curmestex >= GetSysReq(SYSREQ_MESCACHE_MAX) ) {	// エントリ数がオーバーしているものは次のフレームで破棄
+		t->life = 0;
+		t->buf[0] = 0;
+	} else {
+		//		キャッシュの登録
+		if ( mylen >= ( TEXMES_NAME_BUFFER - 1 ) ) {
+			t->text = (char *)malloc( mylen+1 );		// テキストハッシュネーム用バッファを作成する
+			strcpy( t->text, msg );
+		} else {
+			strcpy( t->buf, msg );						// 標準バッファにコピーする
+		}
+	}
+
+	id = (GLuint)t->texid;
+
+	glBindTexture( GL_TEXTURE_2D, id );
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+
+	glPixelStorei( GL_UNPACK_ALIGNMENT, 1);
+
+	EM_ASM_({
+		var canvas = document.getElementById('hsp3dishFontCanvas');
+		if (canvas) {
+			document.body.removeChild(canvas);
+		}
+		canvas = document.createElement("canvas");
+		canvas.id = 'hsp3dishFontCanvas';
+		//canvas.style.setProperty("position", "absolute");
+		canvas.style.setProperty("visibility", "hidden");
+		canvas.width = $2;
+		canvas.height = $3;
+		document.body.appendChild(canvas);
+
+		var context = canvas.getContext("2d");
+		context.font = $1 + "px 'sans-serif'";
+
+		var msg = Pointer_stringify($0);
+		context.clearRect ( 0 , 0 , $2 , $3);
+		//context.fillStyle = 'rgba(0, 0, 255, 255)';
+		context.fillStyle = 'rgba(255, 255, 255, 255)';
+		//context.strokeText(msg, 150, 150);
+		context.fillText(msg, 0, $1);
+		console.log(msg);
+
+		//GLctx.texImage2D(GLctx.TEXTURE_2D, 0, GLctx.ALPHA, GLctx.ALPHA, GLctx.UNSIGNED_BYTE, canvas);
+		GLctx.texImage2D(GLctx.TEXTURE_2D, 0, GLctx.RGBA, GLctx.RGBA, GLctx.UNSIGNED_BYTE, canvas);
+		}, msg, font_size, t->sx, t->sy);
+
+	glBindTexture(GL_TEXTURE_2D, 0);
+	//glTexEnvf(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_MODULATE);
+
+	return texid;
+#endif
+
+#if defined(HSPLINUX)
+	return -1;
+#endif
+}

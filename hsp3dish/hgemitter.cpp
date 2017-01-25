@@ -4,7 +4,7 @@
 //			onion software/onitama 2009/12
 //
 
-#if defined(HSPWIN) || defined(HSPEMSCRIPTEN)
+#if defined(HSPWIN) || defined(HSPLINUX) || defined(HSPEMSCRIPTEN)
 #include "../hsp3/hsp3config.h"
 #else
 #include "hsp3config.h"

@@ -56,7 +56,7 @@ MMMan::MMMan()
 	Mix_ReserveChannels(16);
 
 	int ret = Mix_OpenAudio(0, 0, 0, 0);
-	assert(ret == 0);
+	//assert(ret == 0);
 
 	engine_flag = ret == 0;
 }
