@@ -12,7 +12,7 @@
 
 #include "stb_image.h"
 
-#ifdef HSPEMSCRIPTEN
+#if defined(HSPLINUX) || defined(HSPEMSCRIPTEN)
 #include "../../hsp3/hsp3config.h"
 #else
 #include "../hsp3config.h"
@@ -36,7 +36,7 @@
 #include "appengine.h"
 #endif
 
-#ifdef HSPEMSCRIPTEN
+#if defined(HSPLINUX) || defined(HSPEMSCRIPTEN)
 #define USE_JAVA_FONT
 #define FONT_TEX_SX 512
 #define FONT_TEX_SY 128
@@ -186,7 +186,7 @@ static GLfloat uvf2D[]={
     1.0f, 1.0f, //右下
 };
 
-#ifndef HSPEMSCRIPTEN
+#if defined(HSPEMSCRIPTEN)
 static void gluPerspective(double fovy, double aspect, double zNear, double zFar) {
     GLfloat xmin, xmax, ymin, ymax;
     ymax = zNear * tan(fovy * M_PI / 360.0);
@@ -251,7 +251,7 @@ void hgio_init( int mode, int sx, int sy, void *hwnd )
 	Alertf( "Init:HGIOScreen(%d,%d)",sx,sy );
 
 	//フォント準備
-#if defined(HSPNDK) || defined(HSPEMSCRIPTEN)
+#if defined(HSPNDK) || defined(HSPLINUX) || defined(HSPEMSCRIPTEN)
 	#ifdef USE_JAVA_FONT
 	//font_texid = MakeEmptyTex( FONT_TEX_SX, FONT_TEX_SY );
 	#else
@@ -358,7 +358,7 @@ void hgio_reset( void )
 	ox = (float)_bgsx;
 	oy = (float)_bgsy;
 
-#ifndef HSPEMSCRIPTEN
+#if defined(HSPEMSCRIPTEN)
 	glOrthof( 0, ox, -oy, 0,-100,100);
 #else
 	glOrtho( 0, ox, -oy, 0,-100,100);
@@ -387,7 +387,7 @@ void hgio_reset( void )
     glDisable(GL_LIGHTING);
     glDisable(GL_CULL_FACE);
     glDisable(GL_DEPTH_TEST);
-#if defined(HSPIOS) || defined(HSPEMSCRIPTEN)
+#if defined(HSPIOS) || defined(HSPLINUX) || defined(HSPEMSCRIPTEN)
     glDisable(GL_DEPTH_BUFFER_BIT);
 #endif
 
@@ -406,7 +406,7 @@ void hgio_reset( void )
     glEnableClientState(GL_TEXTURE_COORD_ARRAY);
 
 
-#if defined(HSPEMSCRIPTEN)
+#if defined(HSPLINUX) || defined(HSPEMSCRIPTEN)
 	glDisable(GL_TEXTURE_2D);
 #else
     glEnable(GL_TEXTURE_2D);
@@ -433,7 +433,7 @@ void hgio_reset( void )
 	TexReset();
 
 	//フォント描画リセット
-#if defined(HSPNDK) || defined(HSPEMSCRIPTEN)
+#if defined(HSPNDK) || defined(HSPLINUX) || defined(HSPEMSCRIPTEN)
 #ifdef USE_JAVA_FONT
 	TexProc();
 #endif
@@ -457,7 +457,7 @@ void hgio_resume( void )
 	//テクスチャ初期化
 	TexInit();
 
-#if defined(HSPNDK) || defined(HSPEMSCRIPTEN)
+#if defined(HSPNDK) || defined(HSPLINUX) || defined(HSPEMSCRIPTEN)
 	#ifdef USE_JAVA_FONT
 	//font_texid = MakeEmptyTex( FONT_TEX_SX, FONT_TEX_SY );
 	#else
@@ -708,6 +708,9 @@ void hgio_setfilter( int type, int opt )
 
 int hgio_title( char *str1 )
 {
+#if defined(HSPLINUX) || defined(HSPEMSCRIPTEN)
+	SDL_WM_SetCaption( (const char *)str1, NULL );
+#endif
 	return 0;
 }
 
@@ -716,7 +719,7 @@ int hgio_stick( int actsw )
 {
 	int ckey = 0;
 	if ( mouse_btn ) ckey|=256;	// mouse_l
-#ifdef HSPEMSCRIPTEN
+#if defined(HSPLINUX) || defined(HSPEMSCRIPTEN)
 	if ( get_key_state(SDLK_LEFT) )  ckey|=1;		// [left]
 	if ( get_key_state(SDLK_UP) )    ckey|=2;		// [up]
 	if ( get_key_state(SDLK_RIGHT) ) ckey|=4;		// [right]
@@ -755,7 +758,7 @@ static void hgio_messub( BMSCR *bm, char *str1 )
 
 int hgio_mes( BMSCR *bm, char *str1 )
 {
-#if defined(HSPNDK) || defined(HSPEMSCRIPTEN)
+#if defined(HSPNDK) || defined(HSPLINUX) || defined(HSPEMSCRIPTEN)
 
 	int spcur;
 	int org_cy;
@@ -1225,7 +1228,7 @@ void hgio_fcopy( float distx, float disty, short xx, short yy, short srcsx, shor
     *flp++ = x2;
     *flp++ = y2;
 
-#if defined(HSPEMSCRIPTEN)
+#if defined(HSPLINUX) || defined(HSPEMSCRIPTEN)
 	glEnable(GL_TEXTURE_2D);
 #endif
 
@@ -1240,7 +1243,7 @@ void hgio_fcopy( float distx, float disty, short xx, short yy, short srcsx, shor
 //    glDisableClientState(GL_COLOR_ARRAY);
     glDrawArrays(GL_TRIANGLE_STRIP,0,4);
 
-#if defined(HSPEMSCRIPTEN)
+#if defined(HSPLINUX) || defined(HSPEMSCRIPTEN)
 	glDisable(GL_TEXTURE_2D);
 #endif
 }
@@ -1586,7 +1589,7 @@ int hgio_celputmulti( BMSCR *bm, int *xpos, int *ypos, int *cel, int count, BMSC
 
 int hgio_gettick( void )
 {
-#ifdef HSPNDK
+#if defined(HSPLINUX) || defined(HSPNDK)
 	int i;
 	timespec ts;
 	double nsec;
@@ -1610,7 +1613,7 @@ int hgio_gettick( void )
     //return (int)( CFAbsoluteTimeGetCurrent() * 1000.0 );
 #endif
 
-#ifdef HSPEMSCRIPTEN
+#if defined(HSPEMSCRIPTEN)
 	int i;
 	timespec ts;
 	double nsec;
@@ -1623,7 +1626,6 @@ int hgio_gettick( void )
 		init = true;
 		initTime = i;
 	}
-
 	return i - initTime;
 #endif
 }
@@ -1777,7 +1779,7 @@ int hgio_getmousebtn( void )
 
 /*-------------------------------------------------------------------------------*/
 
-#if defined(HSPNDK) || defined(HSPEMSCRIPTEN)
+#if defined(HSPNDK) || defined(HSPLINUX) || defined(HSPEMSCRIPTEN)
 
 void hgio_putTexFont( int x, int y, char *msg, int color )
 {
@@ -2042,7 +2044,7 @@ int hgio_render_start( void )
     gb_render_start();
 #endif
     
-#if defined(HSPNDK) || defined(HSPEMSCRIPTEN)
+#if defined(HSPNDK) || defined(HSPLINUX) || defined(HSPEMSCRIPTEN)
 	if ( GetSysReq( SYSREQ_CLSMODE ) == CLSMODE_SOLID ) {
 		//指定カラーで消去
 		int ccol = GetSysReq( SYSREQ_CLSCOLOR );
@@ -2055,7 +2057,7 @@ int hgio_render_start( void )
 	hgio_reset();
 
 
-#if defined(HSPNDK) || defined(HSPEMSCRIPTEN)
+#if defined(HSPNDK) || defined(HSPLINUX) || defined(HSPEMSCRIPTEN)
 	if ( GetSysReq( SYSREQ_CLSMODE ) == CLSMODE_TEXTURE ) {
 		//テクスチャで消去
 	}
@@ -2090,7 +2092,7 @@ int hgio_render_end( void )
     eglSwapBuffers(appengine->display, appengine->surface);
 #endif
 
-#ifdef HSPEMSCRIPTEN
+#if defined(HSPLINUX) || defined(HSPEMSCRIPTEN)
 	SDL_GL_SwapBuffers();
 #endif
 

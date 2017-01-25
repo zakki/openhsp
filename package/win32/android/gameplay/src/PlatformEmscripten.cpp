@@ -1,4 +1,4 @@
-#ifdef EMSCRIPTEN
+#if defined(HSPLINUX) || defined(HSPEMSCRIPTEN)
 
 #include "Base.h"
 #include "Platform.h"
@@ -14,7 +14,7 @@
 
 #include "SDL/SDL.h"
 #include "SDL/SDL_image.h"
-#include "SDL/SDL_opengl.h"
+//#include "SDL/SDL_opengl.h"
 
 #define TOUCH_COUNT_MAX     4
 #define MAX_GAMEPADS 4
@@ -46,6 +46,11 @@ namespace gameplay
         vfprintf(stderr, format, argptr);
         va_end(argptr);
     }
+
+	extern int strcmpnocase(const char* s1, const char* s2)
+	{
+		return strcasecmp(s1, s2);
+	}
 
     Platform::Platform(Game* game) : _game(game)
     {
@@ -221,7 +226,7 @@ namespace gameplay
         *roll = 0;
     }
 
-    void Platform::getRawSensorValues(float* accelX, float* accelY, float* accelZ, float* gyroX, float* gyroY, float* gyroZ)
+    void Platform::getSensorValues(float* accelX, float* accelY, float* accelZ, float* gyroX, float* gyroY, float* gyroZ)
     {
         if (accelX)
         {
@@ -339,6 +344,12 @@ namespace gameplay
         // todo
         return false;
     }
+
+	std::string Platform::displayFileDialog(size_t mode, const char* title, const char* filterDescription, const char* filterExtensions, const char* initialDirectory)
+	{
+	    std::string filename = "";
+	    return filename;
+	}
 
 }
 

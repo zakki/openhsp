@@ -1,4 +1,4 @@
-#ifdef EMSCRIPTEN
+#if defined(HSPLINUX) || defined(HSPEMSCRIPTEN)
 
 #include "Base.h"
 #include "Platform.h"
@@ -14,7 +14,7 @@
 
 #include "SDL/SDL.h"
 #include "SDL/SDL_image.h"
-#include "SDL/SDL_opengl.h"
+//#include "SDL/SDL_opengl.h"
 
 #define TOUCH_COUNT_MAX     4
 #define MAX_GAMEPADS 4
@@ -344,6 +344,12 @@ namespace gameplay
         // todo
         return false;
     }
+
+	std::string Platform::displayFileDialog(size_t mode, const char* title, const char* filterDescription, const char* filterExtensions, const char* initialDirectory)
+	{
+	    std::string filename = "";
+	    return filename;
+	}
 
 }
 

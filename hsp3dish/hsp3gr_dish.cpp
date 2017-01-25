@@ -11,6 +11,12 @@
 #ifdef HSPNDK
 #include "ndkgp/gamehsp.h"
 #endif
+#ifdef HSPLINUX
+#include "win32gp/gamehsp.h"
+#endif
+#ifdef HSPEMSCRIPTEN
+#include "win32gp/gamehsp.h"
+#endif
 char *hsp3dish_getlog(void);		// for gameplay3d log
 #endif
 
@@ -73,6 +79,9 @@ extern int resY0, resY1;
 #endif
 #ifdef HSPNDK
 #include "ndk/mmman.h"
+#endif
+#ifdef HSPLINUX
+#include "emscripten/mmman.h"
 #endif
 #ifdef HSPEMSCRIPTEN
 #include "emscripten/mmman.h"

@@ -75,6 +75,7 @@
 #if defined(HSPMAC)|defined(HSPIOS)|defined(HSPNDK)|defined(HSPLINUX)|defined(HSPEMSCRIPTEN)
 #define HSPGCC			// GCC使用フラグ
 #define HSPUTF8			// UTF8使用フラグ
+#undef JPNMSG			// 英語表示にする
 #endif
 
 #if defined(HSPEMSCRIPTEN)
@@ -86,6 +87,7 @@
 #else
 #define HSP_ALIGN_DOUBLE
 #endif
+
 
 //
 //		移植用の定数
