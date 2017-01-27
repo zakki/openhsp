@@ -861,11 +861,12 @@ int ReplaceDone( void )
 void Alert( const char *mes )
 {
 	printf( mes );
+	printf( "\r\n" );
 }
 
 void AlertV( const char *mes, int val )
 {
-	printf( "%s%d",mes,val );
+	printf( "%s%d\r\n",mes,val );
 }
 
 void Alertf( const char *format, ... )
@@ -876,4 +877,5 @@ void Alertf( const char *format, ... )
 	vsprintf(textbf, format, args);
 	va_end(args);
 	printf( textbf );
+	printf( "\r\n" );
 }

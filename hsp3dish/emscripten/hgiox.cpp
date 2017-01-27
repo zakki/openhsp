@@ -40,16 +40,25 @@
 #define USE_JAVA_FONT
 #define FONT_TEX_SX 512
 #define FONT_TEX_SY 128
+
+#ifdef HSPRASPBIAN
+#include "bcm_host.h"
+#include "GLES/gl.h"
+#include "EGL/egl.h"
+#include "EGL/eglext.h"
+#include "SDL/SDL.h"
+
+#else
 //#include <GLES2/gl2.h>
 //#include <EGL/egl.h>
 #define GL_GLEXT_PROTOTYPES
 #include <GL/gl.h>
 #include <GL/glext.h>
 //#include <GL/glut.h>
-
 #include "SDL/SDL.h"
 #include "SDL/SDL_image.h"
 #include "SDL/SDL_opengl.h"
+#endif
 
 #include "appengine.h"
 extern bool get_key_state(int sym);
@@ -358,7 +367,7 @@ void hgio_reset( void )
 	ox = (float)_bgsx;
 	oy = (float)_bgsy;
 
-#if defined(HSPEMSCRIPTEN)
+#if defined(HSPEMSCRIPTEN)||defined(HSPRASPBIAN)
 	glOrthof( 0, ox, -oy, 0,-100,100);
 #else
 	glOrtho( 0, ox, -oy, 0,-100,100);
@@ -708,8 +717,13 @@ void hgio_setfilter( int type, int opt )
 
 int hgio_title( char *str1 )
 {
-#if defined(HSPLINUX) || defined(HSPEMSCRIPTEN)
+#if defined(HSPEMSCRIPTEN)
 	SDL_WM_SetCaption( (const char *)str1, NULL );
+#endif
+#if defined(HSPLINUX)
+#ifndef HSPRASPBIAN
+	SDL_WM_SetCaption( (const char *)str1, NULL );
+#endif
 #endif
 	return 0;
 }
@@ -2079,7 +2093,7 @@ int hgio_render_end( void )
     gb_render_end();
 #endif
 
-#ifdef HSPNDK
+#if defined(HSPLINUX) || defined(HSPNDK)
 
 	//hgio_setColor( 0xffffff );
 	//hgio_fcopy( 0, 100,  0, 0, 118, 22, 1 );
@@ -2092,8 +2106,13 @@ int hgio_render_end( void )
     eglSwapBuffers(appengine->display, appengine->surface);
 #endif
 
-#if defined(HSPLINUX) || defined(HSPEMSCRIPTEN)
+#if defined(HSPEMSCRIPTEN)
 	SDL_GL_SwapBuffers();
+#endif
+#if defined(HSPLINUX)
+#ifndef HSPRASPBIAN
+	SDL_GL_SwapBuffers();
+#endif
 #endif
 
 	drawflag = 0;
