@@ -75,19 +75,17 @@
 #if defined(HSPMAC)|defined(HSPIOS)|defined(HSPNDK)|defined(HSPLINUX)|defined(HSPEMSCRIPTEN)
 #define HSPGCC			// GCC使用フラグ
 #define HSPUTF8			// UTF8使用フラグ
-#undef JPNMSG			// 英語表示にする
 #endif
 
 #if defined(HSPEMSCRIPTEN)
 #define HSPRANDMT // Use std::mt19937
 #endif
 
-#ifdef HSPEMSCRIPTEN
+#if defined(HSPLINUX)|defined(HSPEMSCRIPTEN)
 #define HSP_ALIGN_DOUBLE __attribute__ ((aligned (8)))
 #else
 #define HSP_ALIGN_DOUBLE
 #endif
-
 
 //
 //		移植用の定数
@@ -99,6 +97,9 @@
 #ifdef HSPGCC
 #define HSP_MAX_PATH	256
 #define HSP_PATH_SEPARATOR '/'
+#endif
+#ifdef HSPLINUX
+#undef JPNMSG
 #endif
 
 #endif
