@@ -68,20 +68,18 @@ gamehsp *game;
 gameplay::Platform *platform;
 
 //-------------------------------------------------------------
-//             gameplay Log
+//		gameplay Log
 //-------------------------------------------------------------
 
-static char gplog[1024];
+static std::string gplog;
 
 extern "C" {
 	static void logfunc( gameplay::Logger::Level level, const char *msg )
 	{
-		printf( "[GamePlay3D] %s\n", msg );
-		if (strlen(gplog) + strlen(msg) + 1 > sizeof(gplog))
-			gplog[0] = 0;
-		strcat( gplog, msg );
+		gplog += msg;
 	}
 }
+
 #endif
 
 /*----------------------------------------------------------*/
@@ -552,13 +550,14 @@ int hsp3dish_init( char *startfile )
 	//
 	game = new gamehsp;
 
-	gplog[0] = 0;
-	gameplay::Logger::set( gameplay::Logger::LEVEL_ERROR, logfunc );
+	gameplay::Logger::set(gameplay::Logger::LEVEL_INFO, logfunc);
+	gameplay::Logger::set(gameplay::Logger::LEVEL_WARN, logfunc);
+	gameplay::Logger::set(gameplay::Logger::LEVEL_ERROR, logfunc);
 
 	//	platform = gameplay::Platform::create( game, NULL, hsp_wx, hsp_wy, false );
 	platform = gameplay::Platform::create( game, NULL, hsp_wx, hsp_wy, false );
 	if ( platform == NULL ) {
-		hsp3dish_dialog( gplog );
+		hsp3dish_dialog( (char *)gplog.c_str() );
 		hsp3dish_dialog( "OpenGL initalize failed." );
 		return 1;
 	}
@@ -643,6 +642,15 @@ void hsp3dish_error( void )
 	hsp3dish_dialog( errmsg );
 }
 
+
+char *hsp3dish_getlog(void)
+{
+#ifdef HSPDISHGP
+	return (char *)gplog.c_str();
+#else
+	return "";
+#endif
+}
 
 
 extern int code_execcmd_one( int& prev );

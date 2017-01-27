@@ -202,7 +202,7 @@ static void gluPerspective(double fovy, double aspect, double zNear, double zFar
     ymin = -ymax;
     xmin = ymin * aspect;
     xmax = ymax * aspect;
-    glFrustumf(xmin, xmax, ymin, ymax, zNear, zFar);
+    glFrustum(xmin, xmax, ymin, ymax, zNear, zFar);
 }
 #endif
 
@@ -367,7 +367,7 @@ void hgio_reset( void )
 	ox = (float)_bgsx;
 	oy = (float)_bgsy;
 
-#if defined(HSPEMSCRIPTEN)||defined(HSPRASPBIAN)
+#if defined(HSPRASPBIAN)
 	glOrthof( 0, ox, -oy, 0,-100,100);
 #else
 	glOrtho( 0, ox, -oy, 0,-100,100);

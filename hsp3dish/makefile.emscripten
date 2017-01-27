@@ -16,7 +16,7 @@ CFLAGS = $(CFLAGS_CORE) $(CFLAGS_DEBUG) \
 	   -s LEGACY_GL_EMULATION=1 -O3
 
 CFLAGS_GP = $(CFLAGS_CORE) $(CFLAGS_DEBUG) \
-		  -s FULL_ES2=1 -O3 \
+		  -s FULL_ES2=1 -O3\
 		  -D_LARGEFILE64_SOURCE \
 		  -DHSPDISHGP -I emscripten/extlib/include -I extlib/src -I gameplay/src -I win32gp
 
@@ -35,7 +35,7 @@ OBJS = \
 	hgobj.bc \
 	../hsp3/hsp3.bc \
 	../hsp3/hsp3code.bc \
-	../hsp3/hsp3debug_utf8.bc \
+	../hsp3/hsp3debug.bc \
 	hsp3gr_dish.bc \
 	../hsp3/hsp3int.bc \
 	../hsp3/hspvar_core.bc \
@@ -70,7 +70,7 @@ OBJS_GP = \
 	hgobj.gp.bc \
 	../hsp3/hsp3.gp.bc \
 	../hsp3/hsp3code.gp.bc \
-	../hsp3/hsp3debug_utf8.gp.bc \
+	../hsp3/hsp3debug.gp.bc \
 	hsp3gr_dish.gp.bc \
 	../hsp3/hsp3int.gp.bc \
 	../hsp3/hspvar_core.gp.bc \
@@ -107,9 +107,9 @@ OBJS_GAMEPLAY = \
 	gameplay/src/AIMessage.gp.bc \
 	gameplay/src/AIState.gp.bc \
 	gameplay/src/AIStateMachine.gp.bc \
-	gameplay/src/Animation.gp.bc \
 	gameplay/src/AnimationClip.gp.bc \
 	gameplay/src/AnimationController.gp.bc \
+	gameplay/src/Animation.gp.bc \
 	gameplay/src/AnimationTarget.gp.bc \
 	gameplay/src/AnimationValue.gp.bc \
 	gameplay/src/AudioController.gp.bc \
@@ -122,9 +122,11 @@ OBJS_GAMEPLAY = \
 	gameplay/src/CheckBox.gp.bc \
 	gameplay/src/Container.gp.bc \
 	gameplay/src/Control.gp.bc \
+	gameplay/src/ControlFactory.gp.bc \
 	gameplay/src/Curve.gp.bc \
 	gameplay/src/DebugNew.gp.bc \
 	gameplay/src/DepthStencilTarget.gp.bc \
+	gameplay/src/Drawable.gp.bc \
 	gameplay/src/Effect.gp.bc \
 	gameplay/src/FileSystem.gp.bc \
 	gameplay/src/FlowLayout.gp.bc \
@@ -134,15 +136,11 @@ OBJS_GAMEPLAY = \
 	gameplay/src/Frustum.gp.bc \
 	gameplay/src/Game.gp.bc \
 	gameplay/src/Gamepad.gp.bc \
-	gameplay/src/gameplay-main-android.gp.bc \
-	gameplay/src/gameplay-main-blackberry.gp.bc \
-	gameplay/src/gameplay-main-linux.gp.bc \
-	gameplay/src/gameplay-main-windows.gp.bc \
 	gameplay/src/HeightField.gp.bc \
-	gameplay/src/Image.gp.bc \
 	gameplay/src/ImageControl.gp.bc \
+	gameplay/src/Image.gp.bc \
 	gameplay/src/Joint.gp.bc \
-	gameplay/src/Joystick.gp.bc \
+	gameplay/src/JoystickControl.gp.bc \
 	gameplay/src/Label.gp.bc \
 	gameplay/src/Layout.gp.bc \
 	gameplay/src/Light.gp.bc \
@@ -151,8 +149,8 @@ OBJS_GAMEPLAY = \
 	gameplay/src/MaterialParameter.gp.bc \
 	gameplay/src/MathUtil.gp.bc \
 	gameplay/src/Matrix.gp.bc \
-	gameplay/src/Mesh.gp.bc \
 	gameplay/src/MeshBatch.gp.bc \
+	gameplay/src/Mesh.gp.bc \
 	gameplay/src/MeshPart.gp.bc \
 	gameplay/src/MeshSkin.gp.bc \
 	gameplay/src/Model.gp.bc \
@@ -175,11 +173,7 @@ OBJS_GAMEPLAY = \
 	gameplay/src/PhysicsVehicleWheel.gp.bc \
 	gameplay/src/Plane.gp.bc \
 	gameplay/src/Platform.gp.bc \
-	gameplay/src/PlatformAndroid.gp.bc \
-	gameplay/src/PlatformBlackBerry.gp.bc \
 	gameplay/src/PlatformEmscripten.gp.bc \
-	gameplay/src/PlatformLinux.gp.bc \
-	gameplay/src/PlatformWindows.gp.bc \
 	gameplay/src/Properties.gp.bc \
 	gameplay/src/Quaternion.gp.bc \
 	gameplay/src/RadioButton.gp.bc \
@@ -195,13 +189,16 @@ OBJS_GAMEPLAY = \
 	gameplay/src/ScriptTarget.gp.bc \
 	gameplay/src/Slider.gp.bc \
 	gameplay/src/SpriteBatch.gp.bc \
+	gameplay/src/Sprite.gp.bc \
 	gameplay/src/Technique.gp.bc \
 	gameplay/src/Terrain.gp.bc \
 	gameplay/src/TerrainPatch.gp.bc \
 	gameplay/src/TextBox.gp.bc \
+	gameplay/src/Text.gp.bc \
 	gameplay/src/Texture.gp.bc \
 	gameplay/src/Theme.gp.bc \
 	gameplay/src/ThemeStyle.gp.bc \
+	gameplay/src/TileSet.gp.bc \
 	gameplay/src/Transform.gp.bc \
 	gameplay/src/Vector2.gp.bc \
 	gameplay/src/Vector3.gp.bc \
@@ -423,14 +420,12 @@ emscripten/libLinearMath.a: $(OBJS_LINEAR_MATH)
 
 
 %.gp.bc: %.c
-	echo $(CC) $(CFLAGS_GP) -c $< -o $*.gp.bc
-	$(CC) $(CFLAGS_GP) -c $< -o $*.gp.bc
+	echo $(CC) $(CFLAGS_GP) -std=c11 -c $< -o $*.gp.bc
+	$(CC) $(CFLAGS_GP) -std=c11 -c $< -o $*.gp.bc
 %.gp.bc: %.cpp
-	echo $(CC) $(CFLAGS_GP) -c $< -o $*.gp.bc
-	$(CXX) $(CFLAGS_GP) -c $< -o $*.gp.bc
+	echo $(CC) $(CFLAGS_GP) -std=c++11 -c $< -o $*.gp.bc
+	$(CXX) $(CFLAGS_GP) -std=c++11 -c $< -o $*.gp.bc
 
 clean:
 	rm -f $(OBJS) $(OBJS_GP) $(OBJS_GAMEPLAY) $(TARGETS)
 
-../hsp3/hsp3debug_utf8.cpp: ../hsp3/hsp3debug.cpp
-	iconv -f cp932 -t utf-8 $< > $@
