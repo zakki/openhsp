@@ -1,7 +1,12 @@
 
 //
-//	supio.cpp functions (linux)
+//	supio.cpp functions (Emscripten)
 //
+
+#define HSPAPICHAR char
+#define HSPCHAR char
+
+size_t utf8strlen(const char *target);
 
 char *mem_ini( int size );
 void mem_bye( void *ptr );
@@ -32,11 +37,20 @@ void TrimCode( char *p, int code );
 void TrimCodeL( char *p, int code );
 void TrimCodeR( char *p, int code );
 
+void Alert( const char *mes );
+void AlertV( char *mes, int val );
+void Alertf( const char *format, ... );
+
 void ReplaceSetMatch( char *src, char *match, char *result, int in_src, int in_match, int in_result );
 char *ReplaceStr( char *repstr );
 int ReplaceDone( void );
 
-void Alert( char *mes );
-void AlertV( char *mes, int val );
-void Alertf( char *format, ... );
+HSPAPICHAR *chartoapichar( const HSPCHAR*,HSPAPICHAR** );
+void freehac( HSPAPICHAR** );
+HSPCHAR *apichartohspchar( const HSPAPICHAR*,HSPCHAR** );
+void freehc( HSPCHAR** );
+HSPAPICHAR *ansichartoapichar(const char *, HSPAPICHAR **);
+char *apichartoansichar(const HSPAPICHAR *, char **);
+void freeac(char **);
+
 

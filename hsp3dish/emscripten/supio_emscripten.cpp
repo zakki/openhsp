@@ -46,6 +46,48 @@
 #endif
 
 
+HSPAPICHAR *chartoapichar( const char *orig,HSPAPICHAR **pphac)
+{
+	*pphac = (HSPAPICHAR*)orig;
+	return (HSPAPICHAR*)orig;
+}
+
+void freehac(HSPAPICHAR **pphac)
+{
+	*pphac = 0;
+	return;
+}
+
+HSPCHAR *apichartohspchar( const HSPAPICHAR *orig,HSPCHAR **pphc)
+{
+	*pphc = (HSPAPICHAR*)orig;
+	return (HSPCHAR*)orig;
+}
+
+void freehc(HSPCHAR **pphc)
+{
+	*pphc = 0;
+	return;
+}
+
+HSPAPICHAR *ansichartoapichar(const char *orig, HSPAPICHAR **pphac)
+{
+	*pphac = (HSPAPICHAR*)orig;
+	return (HSPAPICHAR*)orig;
+}
+
+char *apichartoansichar(const HSPAPICHAR *orig, char **ppc)
+{
+	*ppc = (char*)orig;
+	return (char*)orig;
+}
+
+void freeac(char **ppc)
+{
+	*ppc = 0;
+	return;
+}
+
 //
 //		Internal function support (without Windows API)
 //
@@ -113,6 +155,30 @@ int mem_save( char *p_fname, void *mem, int msize, int seekofs )
 	flen = (int)fwrite( mem, 1, msize, fp );
 	fclose(fp);
 	return flen;
+}
+
+
+size_t utf8strlen( const char *target )
+{
+	//		UTF8文字列の長さを得る
+	//
+	unsigned char *p;
+	unsigned char *base;
+	unsigned char a1;
+	p = (unsigned char *)target;
+	base = p;
+	while(1) {
+		a1=*p;if ( a1==0 ) break;
+		p++;							// 検索位置を移動
+		if (a1>=128) {					// 多バイト文字チェック
+			if (a1>=192) p++;
+			if (a1>=224) p++;
+			if (a1>=240) p++;
+			if (a1>=248) p++;
+			if (a1>=252) p++;
+		}
+	}
+	return (size_t)(p-base);
 }
 
 
