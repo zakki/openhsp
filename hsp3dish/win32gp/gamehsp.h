@@ -99,6 +99,7 @@ GPPSET_MAX
 #define GPOBJ_MATOPT_NOZTEST (8)
 #define GPOBJ_MATOPT_NOZWRITE (16)
 #define GPOBJ_MATOPT_BLENDADD (32)
+#define GPOBJ_MATOPT_SPECULAR (64)
 
 #define GPDRAW_OPT_OBJUPDATE (1)
 #define GPDRAW_OPT_DRAWSCENE (2)
@@ -161,6 +162,7 @@ public:
 
 #define BUFSIZE_POLYCOLOR 32
 #define BUFSIZE_POLYTEX 64
+#define BUFSIZE_MULTILIGHT 16
 
 //	gamehsp Object
 class gamehsp: public Game
@@ -314,6 +316,13 @@ public:
 	void addLineColor2D( int num );
 	void finishLineColor2D( void );
 
+	// global light function
+	void setupLightDefines(void);
+	char *getLightDefines(void) { return (char *)light_defines.c_str(); }
+	char *getNoLightDefines(void) { return (char *)nolight_defines.c_str(); }
+	char *getSpecularLightDefines(void) { return (char *)splight_defines.c_str(); }
+
+
 protected:
     /**
      * Internal use
@@ -386,6 +395,14 @@ private:
 	Camera *_cameraDefault;
 	Quaternion _qcam_billboard;
 
+	// Multi Light
+	int _max_dlight;
+	int _max_plight;
+	int _max_slight;
+	int _dir_light[BUFSIZE_MULTILIGHT];
+	int _point_light[BUFSIZE_MULTILIGHT];
+	int _spot_light[BUFSIZE_MULTILIGHT];
+
 	// Obj support value
 	Vector3 border1;		// BORDERç¿ïW1
 	Vector3 border2;		// BORDERç¿ïW2
@@ -399,6 +416,11 @@ private:
 	Effect *_spriteEffect;
 	float _bufPolyColor[BUFSIZE_POLYCOLOR];
 	float _bufPolyTex[BUFSIZE_POLYTEX];
+
+	// preset light defines
+	std::string	light_defines;
+	std::string	nolight_defines;
+	std::string	splight_defines;
 
 	//Node *_nodetemp;
 };

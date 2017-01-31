@@ -29,8 +29,9 @@ gpmat::~gpmat()
 {
 }
 
-void gpmat::reset( int id )
+void gpmat::reset( gamehsp *owner, int id )
 {
+	_owner = owner;
 	_mode = 0;
 	_mark = 0;
 	_material = NULL;
@@ -125,7 +126,7 @@ gpmat *gamehsp::addMat( void )
 	gpmat *mat = _gpmat;
 	for(i=0;i<_maxmat;i++) {
 		if ( mat->_flag == GPMAT_FLAG_NONE ) {
-			mat->reset( i|GPOBJ_ID_MATFLAG );
+			mat->reset( this, i|GPOBJ_ID_MATFLAG );
 			return mat;
 		}
 		mat++;
@@ -164,31 +165,21 @@ void gamehsp::setMaterialDefaultBinding( Material* material, int icolor, int mat
 	Vector4 color;
 	Node *light_node;
 
-	if ( _curlight < 0 ) {
-		//	カレントライトなし(シーンを参照)
-		if ( hasParameter( material, "u_ambientColor" ) )
-			material->setParameterAutoBinding("u_ambientColor", "SCENE_AMBIENT_COLOR");
-		if ( hasParameter( material, "u_lightDirection" ) )
-			material->setParameterAutoBinding("u_lightDirection", "SCENE_LIGHT_DIRECTION");
-		if ( hasParameter( material, "u_lightColor" ) )
-			material->setParameterAutoBinding("u_lightColor", "SCENE_LIGHT_COLOR");
-	} else {
-		//	カレントライトを反映させる
-		gpobj *lgt;
-		lgt = getObj( _curlight );
-		light_node = lgt->_node;
-		// ライトの方向設定
-		if ( hasParameter( material, "u_lightDirection" ) )
-			material->getParameter("u_lightDirection")->bindValue(light_node, &Node::getForwardVectorView);
-		// ライトの色設定
-		// (リアルタイムに変更を反映させる場合は再設定が必要。現在は未対応)
-		Vector3 *vambient;
-		vambient = (Vector3 *)&lgt->_vec[GPOBJ_USERVEC_WORK];
-		if ( hasParameter( material, "u_lightColor" ) )
-			material->getParameter("u_lightColor")->setValue(light_node->getLight()->getColor());
-		if ( hasParameter( material, "u_ambientColor" ) )
-			material->getParameter("u_ambientColor")->setValue( vambient );
-	}
+	//	カレントライトを反映させる
+	gpobj *lgt;
+	lgt = getObj(_curlight);
+	light_node = lgt->_node;
+	// ライトの方向設定
+	if (hasParameter(material, "u_directionalLightDirection[0]"))
+		material->getParameter("u_directionalLightDirection[0]")->bindValue(light_node, &Node::getForwardVectorView);
+	// ライトの色設定
+	// (リアルタイムに変更を反映させる場合は再設定が必要。現在は未対応)
+	Vector3 *vambient;
+	vambient = (Vector3 *)&lgt->_vec[GPOBJ_USERVEC_WORK];
+	if (hasParameter(material, "u_directionalLightColor[0]"))
+		material->getParameter("u_directionalLightColor[0]")->setValue(light_node->getLight()->getColor());
+	if (hasParameter(material, "u_ambientColor"))
+		material->getParameter("u_ambientColor")->setValue(vambient);
 
 	//material->setParameterAutoBinding("u_ambientColor", "SCENE_AMBIENT_COLOR");
 	//material->setParameterAutoBinding("u_lightDirection", "SCENE_LIGHT_DIRECTION");
@@ -317,14 +308,44 @@ Material *gamehsp::makeMaterialFromShader( char *vshd, char *fshd, char *defs )
 }
 
 
+void gamehsp::setupLightDefines(void)
+{
+	//	シェーダー用のdefine定義を作成
+	//
+	light_defines = "MODULATE_ALPHA";
+	nolight_defines = "MODULATE_ALPHA";
+	if (_max_dlight) {
+		light_defines += ";DIRECTIONAL_LIGHT_COUNT ";
+		light_defines += std::to_string(_max_dlight);
+	}
+	if (_max_plight) {
+		light_defines += ";POINT_LIGHT_COUNT ";
+		light_defines += std::to_string(_max_plight);
+	}
+	if (_max_slight) {
+		light_defines += ";SPOT_LIGHT_COUNT ";
+		light_defines += std::to_string(_max_slight);
+	}
+	splight_defines = light_defines + ";SPECULAR";
+}
+
+
 Material *gamehsp::makeMaterialColor( int color, int matopt )
 {
 	Material *material;
-	if ( matopt & GPOBJ_MATOPT_NOLIGHT ) {
-		material = makeMaterialFromShader( "res/shaders/colored-unlit.vert", "res/shaders/colored-unlit.frag", "MODULATE_ALPHA" );
-	} else {
-		material = makeMaterialFromShader( "res/shaders/colored.vert", "res/shaders/colored.frag", "MODULATE_ALPHA" );
+	char *defs;
+	if (matopt & GPOBJ_MATOPT_NOLIGHT){
+		defs = this->getNoLightDefines();
 	}
+	else {
+		if (matopt & GPOBJ_MATOPT_SPECULAR) {
+			defs = this->getSpecularLightDefines();
+		}
+		else {
+			defs = this->getLightDefines();
+		}
+	}
+	material = makeMaterialFromShader("res/shaders/colored.vert", "res/shaders/colored.frag",defs);
 	if ( material == NULL ) return NULL;
 
 	setMaterialDefaultBinding( material, color, matopt );
@@ -336,12 +357,22 @@ Material *gamehsp::makeMaterialTexture( char *fname, int matopt )
 {
 	Material *material;
 	bool mipmap;
-	mipmap = (matopt & GPOBJ_MATOPT_NOMIPMAP ) == 0;
-	if ( matopt & GPOBJ_MATOPT_NOLIGHT ) {
-		material = makeMaterialFromShader( "res/shaders/textured-unlit.vert", "res/shaders/textured-unlit.frag", "MODULATE_ALPHA" );
-	} else {
-		material = makeMaterialFromShader( "res/shaders/textured.vert", "res/shaders/textured.frag", "MODULATE_ALPHA" );
+	char *defs;
+	mipmap = (matopt & GPOBJ_MATOPT_NOMIPMAP) == 0;
+
+	if (matopt & GPOBJ_MATOPT_NOLIGHT){
+		defs = this->getNoLightDefines();
 	}
+	else {
+		if (matopt & GPOBJ_MATOPT_SPECULAR) {
+			defs = this->getSpecularLightDefines();
+		}
+		else {
+			defs = this->getLightDefines();
+		}
+	}
+
+	material = makeMaterialFromShader( "res/shaders/textured.vert", "res/shaders/textured.frag", defs );
 	if ( material == NULL ) return NULL;
 
 	setMaterialDefaultBinding( material, -1, matopt );
