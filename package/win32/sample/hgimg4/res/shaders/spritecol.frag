@@ -1,4 +1,4 @@
-#if defined(OPENGL_ES) || defined(GL_ES)
+#ifdef OPENGL_ES
 precision highp float;
 #endif
 

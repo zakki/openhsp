@@ -326,8 +326,23 @@ void gamehsp::resetScreen( int opt )
 	_scene->setAmbientColor(0.25f, 0.25f, 0.25f);
 
 	// ライト作成
-	_deflight = makeNewLgt( -1, GPLGT_OPT_NORMAL );
-	selectLight( _deflight );
+	_deflight = makeNewLgt(-1, GPLGT_OPT_NORMAL);
+	selectLight(_deflight);
+
+	_max_dlight = GetSysReq(SYSREQ_DLIGHT_MAX);
+	if (_max_dlight > BUFSIZE_MULTILIGHT) _max_dlight = BUFSIZE_MULTILIGHT;
+	for (int i = 0; i<_max_dlight; i++) { _dir_light[i] = _deflight; }
+
+	_max_plight = GetSysReq(SYSREQ_PLIGHT_MAX);
+	if (_max_plight > BUFSIZE_MULTILIGHT) _max_plight = BUFSIZE_MULTILIGHT;
+	for (int i = 0; i<_max_plight; i++) { _point_light[i] = _deflight; }
+
+	_max_slight = GetSysReq(SYSREQ_SLIGHT_MAX);
+	if (_max_slight > BUFSIZE_MULTILIGHT) _max_slight = BUFSIZE_MULTILIGHT;
+	for (int i = 0; i<_max_slight; i++) { _spot_light[i] = _deflight; }
+
+	// シェーダー定義文字列を生成
+	setupLightDefines();
 
 	// ボーダー初期化
 	border1.set( -50.0f, 0.0f, -50.0f );

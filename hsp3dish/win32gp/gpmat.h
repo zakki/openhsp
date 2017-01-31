@@ -16,12 +16,14 @@ using namespace gameplay;
 #define GPMAT_MODE_2D (1)
 #define GPMAT_MODE_3D (2)
 
+class gamehsp;
+
 //  HGIMG4 Material Object
 class gpmat {
 public:
 	gpmat();
 	~gpmat();
-	void reset( int id );
+	void reset(gamehsp *owner, int id);
 	int setParameter( char *name, float value );
 	int setParameter( char *name, Vector3 *value );
 	int setParameter( char *name, Vector4 *value );
@@ -36,6 +38,13 @@ public:
 	int _sx,_sy;						// Texture X,Y Size(2Dóp)
 	float _texratex;					// Texture UV rate (1.0/xsize)
 	float _texratey;					// Texture UV rate (1.0/ysize)
+
+protected:
+	/**
+	* Internal use
+	*/
+	gamehsp *_owner;					// ê∂ê¨å≥ÇÃgamehsp
+
 };
 
 

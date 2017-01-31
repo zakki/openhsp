@@ -1,7 +1,3 @@
-#if defined(OPENGL_ES) || defined(GL_ES)
-precision highp float;
-#endif
-
 // Attributes
 attribute vec3 a_position;
 attribute vec4 a_color;
