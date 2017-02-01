@@ -184,6 +184,10 @@ public:
      */
     void touchEvent(Touch::TouchEvent evt, int x, int y, unsigned int contactIndex);
 
+	/**
+	* for PassCallback
+	*/
+	static std::string passCallback(Pass* pass, void* cookie);
 
 	/*
 		HSP Support Functions
@@ -322,7 +326,6 @@ public:
 	char *getNoLightDefines(void) { return (char *)nolight_defines.c_str(); }
 	char *getSpecularLightDefines(void) { return (char *)splight_defines.c_str(); }
 
-
 protected:
     /**
      * Internal use
@@ -350,7 +353,6 @@ protected:
 
 private:
 
-
     /**
      * update the scene each frame.
      */
@@ -361,6 +363,7 @@ private:
      * Draws the scene each frame.
      */
     bool updateNodeMaterial( Node* node, Material *material );
+	int ApplyMaterialToModel(Material *boxMaterial, Model *model);
 	bool drawScene(Node* node);
 	bool init2DRender( void );
 
