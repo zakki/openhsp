@@ -1043,6 +1043,13 @@ void hsp3dish_error( void )
 	}
 	hsp3dish_debugopen();
 	hsp3dish_dialog( errmsg );
+
+	{
+		// エラーログを記録
+		char *p = (char *)gplog.c_str();
+		mem_save("hsp3gp_error.log", p, strlen(p), -1);
+		//hsp3dish_dialog((char *)gplog.c_str());
+	}
 }
 
 

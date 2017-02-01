@@ -19,6 +19,9 @@ CLSMODE_BLUR,
 CLSMODE_MAX,
 };
 
+// material defines for load model
+static std::string model_defines;
+
 extern bool hasParameter( Material* material, const char* name );
 
 /*------------------------------------------------------------*/
@@ -1301,6 +1304,56 @@ bool gamehsp::makeModelNodeSub(Node *rootnode, int nest)
 }
 
 
+std::string gamehsp::passCallback(Pass* pass, void* cookie)
+{
+	return model_defines;
+}
+
+
+
+int gamehsp::ApplyMaterialToModel(Material *boxMaterial, Model *model)
+{
+	if (boxMaterial == NULL) return -1;
+	model->setMaterial(boxMaterial);
+
+	MaterialParameter *ambientColorParam =
+		hasParameter(boxMaterial, "u_ambientColor") ?
+		boxMaterial->getParameter("u_ambientColor") : NULL;
+	MaterialParameter *lightDirectionParam = NULL;
+	//hasParameter(boxMaterial, "u_lightDirection") ?
+	lightDirectionParam = boxMaterial->getTechnique()->getParameter("u_directionalLightDirection[0]");
+	MaterialParameter *lightColorParam = NULL;
+	//hasParameter(boxMaterial, "u_lightColor") ?
+	lightColorParam = boxMaterial->getTechnique()->getParameter("u_directionalLightColor[0]");
+
+	Vector3 directionalLightVector;
+
+	//	カレントライトを反映させる
+	gpobj *lgt;
+	Node *light_node;
+	lgt = getObj(_curlight);
+	light_node = lgt->_node;
+	directionalLightVector = light_node->getForwardVector();
+
+	// ライトの方向設定
+	if (lightDirectionParam) {
+		//lightDirectionParam->bindValue(light_node, &Node::getForwardVectorView);
+		lightDirectionParam->setValue(Vector3(0, 0, -1));
+	}
+	// ライトの色設定
+	// (リアルタイムに変更を反映させる場合は再設定が必要。現在は未対応)
+	if (ambientColorParam) {
+		Vector3 *vambient;
+		vambient = (Vector3 *)&lgt->_vec[GPOBJ_USERVEC_WORK];
+		ambientColorParam->setValue(vambient);
+	}
+	if (lightColorParam) {
+		lightColorParam->setValue(light_node->getLight()->getColor());
+	}
+	return 0;
+}
+
+
 int gamehsp::makeModelNode(char *fname, char *idname)
 {
 	char fn[512];
@@ -1318,43 +1371,9 @@ int gamehsp::makeModelNode(char *fname, char *idname)
 	Node *rootNode;
 	Node *node;
 
-	Material* boxMaterial = Material::create(fn2);
-
-	MaterialParameter *ambientColorParam =
-		hasParameter(boxMaterial, "u_ambientColor") ?
-		boxMaterial->getParameter("u_ambientColor") : NULL;
-	MaterialParameter *lightDirectionParam = NULL;
-		//hasParameter(boxMaterial, "u_lightDirection") ?
-	lightDirectionParam = boxMaterial->getTechnique()->getParameter("u_lightDirection");
-	MaterialParameter *lightColorParam = NULL;
-		//hasParameter(boxMaterial, "u_lightColor") ?
-	lightColorParam = boxMaterial->getTechnique()->getParameter("u_lightColor");
-
-	Vector3 directionalLightVector;
-
-	if (_curlight >= 0) {
-		//	カレントライトを反映させる
-		gpobj *lgt;
-		Node *light_node;
-		lgt = getObj(_curlight);
-		light_node = lgt->_node;
-		directionalLightVector = light_node->getForwardVector();
-
-		// ライトの方向設定
-		if (lightDirectionParam) {
-			lightDirectionParam->bindValue(light_node, &Node::getForwardVectorView);
-		}
-		// ライトの色設定
-		// (リアルタイムに変更を反映させる場合は再設定が必要。現在は未対応)
-		if (ambientColorParam) {
-			Vector3 *vambient;
-			vambient = (Vector3 *)&lgt->_vec[GPOBJ_USERVEC_WORK];
-			ambientColorParam->setValue(vambient);
-		}
-		if (lightColorParam) {
-			lightColorParam->setValue(light_node->getLight()->getColor());
-		}
-	}
+	model_defines = "DIRECTIONAL_LIGHT_COUNT 1";
+	Material* boxMaterial = Material::create(fn2,gamehsp::passCallback,NULL);
+	if (boxMaterial == NULL) return -1;
 
 	if (idname) {
 		rootNode = bundle->loadNode(idname);
@@ -1394,11 +1413,11 @@ int gamehsp::makeModelNode(char *fname, char *idname)
 				Drawable* drawable = node->getDrawable();
 				Model* model = dynamic_cast<Model*>(drawable);
 				if (model) {
-					model->setMaterial(boxMaterial);
+					ApplyMaterialToModel(boxMaterial, model);
 
-					Material*m = model->getMaterial();
-					m->getTechnique()->getParameter("u_directionalLightColor[0]")->setValue(Vector3(1, 1, 1));
-					m->getTechnique()->getParameter("u_directionalLightDirection[0]")->setValue(Vector3(0, 0, -1));
+					//Material*m = model->getMaterial();
+					//m->getTechnique()->getParameter("u_directionalLightColor[0]")->setValue(Vector3(1, 1, 1));
+					//m->getTechnique()->getParameter("u_directionalLightDirection[0]")->setValue(Vector3(0, 0, -1));
 
 				}
 				//Alertf( "#%d %s",i, bundle->getObjectId(i) );
@@ -1526,7 +1545,6 @@ int gamehsp::deleteObj( int id )
 		}
 	}
     SAFE_RELEASE( obj->_node );
-
     SAFE_RELEASE( obj->_camera );
     SAFE_RELEASE( obj->_light );
 
