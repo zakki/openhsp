@@ -5,7 +5,7 @@ OpenHSP ver3.x                                      HSP : Hot Soup Processor
 
 ・OpenHSPについて
 
-このアーカイブには、OpenHSP ver3.32版が含まれています。
+このアーカイブには、OpenHSP ver3版が含まれています。
 OpenHSPは、ソースをオープンな仕様で公開することにより、さらに多くの
 環境への対応と信頼性、メンテナンス性を向上させることを目指しています。
 
@@ -18,6 +18,16 @@ OpenHSPでは、プログラミング環境であるHSP3のコードジェネレーター、及び
 
 onion softwareが公式に配布しているHSP3及び、hspcmp(コードジェネレーター)と
 ほぼ同等の動作(暗号化とdpmファイルサポートを除く)を行ないます。
+
+
+・ソースコードの管理について
+
+ソースコードは、OpenHSPプロジェクト・ポータル上のTracにて管理されています。
+詳しくは、以下のサイトを参照してください。
+http://dev.onionsoft.net/trac/openhsp
+
+Subversionクライアントから以下のURLを指定してチェックアウトが可能です。
+http://dev.onionsoft.net/svn/openhsp/
 
 
 ・ソースコードのフィードバックについて
@@ -50,6 +60,7 @@ OpenHSPで提供されているソースコードは、以下のコンパイラで動作検証を行なって
 　　■Microsoft Visual C++ 2003
 　　■Microsoft Visual C++ 2005
 　　■Microsoft Visual C++ 2008
+　　■Microsoft Visual C++ 2013
 
 　　Linux版
 
@@ -61,10 +72,11 @@ OpenHSPで提供されているソースコードは、以下のコンパイラで動作検証を行なって
 
 　　■intは、32bit。shortは16bit、doubleは64bit幅として扱っています
 　　■ポインタは32bitであると仮定して32bit int値に変換することがあります
-　　■符号指定なしのcharはsigned charと同じとみなします。
+　　■符号指定なしのcharはsigned charと同じとみなします
 　　■ソースコードの日本語はShiftJISで記述されています
+　　　必要に応じてプラットフォームに最適なエンコードに変換してください
 　　■文字列をShiftJIS(マルチバイト文字)として日本語を判別している部分があります
-　　■多くはC形式のコードですが、C++クラス化されている部分が一部あります
+　　■多くはC形式のコードですが、C++/C++11化されている部分が一部あります
 　　■ランタイム(hsp3)のエラートラップにC++例外処理を使用しています
 
 ・「hspcmp」フォルダ
@@ -107,7 +119,7 @@ HSP3の中間コードを実行するコンソールアプリケーションを作成することができるソース
 
 	・COMコンポーネントのIID取得部分(COMの定義等で使用)
 
-	これ以外の機能は、基本的にHSP3.1と同等の動作となります。
+	これ以外の機能は、基本的にWindows版と同等の動作となります。
 
 	また、実行ファイル作成、DPMファイル作成部分については、OpenHSPでは
 	実装されていません。これらは、今後OpenHSP独自の仕組みを組み込む
@@ -148,11 +160,21 @@ HSP3の中間コードを実行するコンソールアプリケーションを作成することができるソース
 	Windows GUI版を示すラベルです。
 	必ずHSPWINラベルと同時に定義されている必要があります。
 
+	#define HSPDISH		// HSP3Dish flag
+	#define HSPDISHGP	// HSP3Dish(HGIMG4) flag
+
+	HSP3Dishランタイムの動作に関する定義ラベルです。
+	HSPDISHGPが定義されている場合は、HGIMG4拡張機能が選択されます。
+
 	#define HSPMAC		// Macintosh version flag
 	#define HSPLINUX	// Linux version flag
 
 	Macintosh及びLinuxに関する定義ラベルです。
 	移植の際にはこのラベルを利用してソースを改編して頂いて構いません。
+
+	#define HSPEMSCRIPTEN	// EMSCRIPTEN version flag
+
+	EMSCRIPTENに関する定義ラベルです。
 
 	#define JPN		// IME use flag
 
@@ -170,6 +192,17 @@ HSP3の中間コードを実行するコンソールアプリケーションを作成することができるソース
 	識別するラベルです。Windows版であれば、このラベルが定義されている時は、
 	「hsp3.exe」が生成され、定義されていない時は「hsprt」が生成されます。
 
+	#define HSP64			// 64bit compile flag
+
+	ポインタを64bitとして扱うフラグです。
+	ただし、一部でポインタをintに変換している部分があり、
+	変数サイズやポインタ参照など一部で32bitの制限が残っています。
+
+	#define HSPUTF8			// UTF8使用フラグ
+
+	文字列をUTF8として扱うフラグです。
+	Windows環境以外では、基本的にUTF8が選択されます。
+
 
 ・フォーマット仕様書について
 
@@ -183,10 +216,23 @@ OpenHSPでも、同様の方法で本体機能を自由に拡張することが可能です。
 
 ・ソースコードのライセンスについて
 
-OpenHSPが公開するソースコードは、BSDライセンスを基本として自由に改編、複製、
-公開、配布することができます。
-派生物を公開する場合には、「License.txt」または「License_j.txt」に含まれる
-著作権表示を明示するようにしてください。
+OpenHSPが公開するソースコードは、修正BSDライセンス(3-clause BSD license)を基本として自由に改編、複製、公開、配布することができます。
+(ただし、HSPが独自に開発したものではないライブラリのコードについては、
+それぞれのソースコードライセンスに従ってください。)
+HSPが使用するライブラリソースコードは以下の通りです。
+
+	物理エンジンOBAQ      /obaq/physics/OBAQlicense.txt を参照
+	gameplay3d(HGIMG4)    /hsp3dish/gameplay/README.md を参照
+	Bullet(HGIMG4)        /hsp3dish/extlib/src/BulletLicense.txt を参照
+	libpng(HGIMG4)        /hsp3dish/extlib/src/libpng/LICENSE を参照
+	GLEW(HGIMG4)          /hsp3dish/extlib/src/glew/LICENSE.txt を参照
+	zlib(HGIMG4)          /hsp3dish/extlib/src/zlib/README を参照
+
+	Angle Project(hsp3gpdx)    /hsp3dish/extlib/src/angle/LICENSE を参照
+	Footy2(hsed3f)             /tools/win32/hsed3_footy2/Footy2 以下
+
+
+OpenHSPソースコードの派生物を公開する場合には、「License.txt」または「License_j.txt」に含まれる著作権表示を明示するようにしてください。
 また、必要であれば、改編者の著作権表示も付加するようにしてください。
 
 以上を守って頂ければ、商用、非商用を問わず無償で利用することができ、ライセンスの
@@ -230,6 +276,29 @@ Onion Softwareまたはコミュニティへコンタクトして頂きたいと考えています。
 行なっていきたいと考えています。
 
 
+<<<<<<< .mine
+・更新履歴
+
+	2017/2/6 3.5β5
+
+		外部ライブラリについてのライセンス情報を追加しました。
+
+	2008/1/14 3.2β1
+
+		Linux(CUI)版のmakefileを追加しました。
+		Windows(GUI)版のソースを追加しました。
+
+	2007/7/28 3.1リリース版
+
+		ドキュメントを一部修正しました。
+
+	2007/7/15 3.1RC1版
+
+		最初のバージョン。
+
+
+=======
+>>>>>>> .r838
 ・連絡先
 
 OpenHSPに関するお問い合わせ、感想、ご意見などは以下のメールアドレスまでお寄せ下さい。
