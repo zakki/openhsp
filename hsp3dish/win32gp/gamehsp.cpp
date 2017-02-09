@@ -52,6 +52,7 @@ void gpobj::reset( int id )
 	_model = NULL;
 	_camera = NULL;
 	_light = NULL;
+	_animation = NULL;
 	_flag = GPOBJ_FLAG_ENTRY;
 	_id = id;
 	_mygroup = 0;
@@ -160,6 +161,7 @@ void gamehsp::initialize()
 {
 	// フォント作成
 	mFont = Font::create("res/font.gpb");
+
 	resetScreen();
 }
 
@@ -1072,6 +1074,155 @@ int gamehsp::setObjectPrm( int objid, int prmid, int value )
 	return 0;
 }
 
+char *gamehsp::getAnimId(int objid, int index, int option)
+{
+	gpobj *obj;
+	Animation *anim;
+	AnimationClip *clip;
+	obj = getObj(objid);
+	if (obj == NULL) return NULL;
+	anim = obj->_animation;
+	if (anim == NULL) return NULL;
+	int max = anim->getClipCount();
+	if ((index<0)||(index>=max)) return NULL;
+	clip = anim->getClip(index);
+	return (char *)clip->getId();
+}
+
+int gamehsp::getAnimPrm(int objid, int index, int option, int *res)
+{
+	gpobj *obj;
+	Animation *anim;
+	AnimationClip *clip;
+	int p_res = 0;
+	obj = getObj(objid);
+	if (obj == NULL) return -1;
+	anim = obj->_animation;
+	if (anim == NULL) return -1;
+	int max = anim->getClipCount();
+	if ((index<0) || (index >= max)) return -1;
+	clip = anim->getClip(index);
+	switch (option) {
+	case GPANIM_OPT_START_FRAME:
+		p_res = (int)clip->getStartTime();
+		break;
+	case GPANIM_OPT_END_FRAME:
+		p_res = (int)clip->getEndTime();
+		break;
+	case GPANIM_OPT_DURATION:
+		p_res = (int)clip->getDuration();
+		break;
+	case GPANIM_OPT_ELAPSED:
+		p_res = (int)clip->getElapsedTime();
+		break;
+	case GPANIM_OPT_PLAYING:
+		if (clip->isPlaying()) { p_res = 1; }
+		else { p_res = 0; }
+		break;
+	case GPANIM_OPT_BLEND:
+		p_res = (int)( clip->getBlendWeight() * 100.0f );
+		break;
+	case GPANIM_OPT_SPEED:
+		p_res = (int)( clip->getSpeed() * 100.0f );
+		break;
+	default:
+		return -1;
+	}
+	*res = p_res;
+	return 0;
+}
+
+int gamehsp::setAnimPrm(int objid, int index, int option, int value)
+{
+	gpobj *obj;
+	Animation *anim;
+	AnimationClip *clip;
+	obj = getObj(objid);
+	if (obj == NULL) return -1;
+	anim = obj->_animation;
+	if (anim == NULL) return -1;
+	int max = anim->getClipCount();
+	if ((index<0) || (index >= max)) return -1;
+	clip = anim->getClip(index);
+	switch (option) {
+	case GPANIM_OPT_PLAYING:
+		if (value == 0) clip->stop();
+		if (value == 1) clip->play();
+		if (value == 2) clip->pause();
+		break;
+	case GPANIM_OPT_DURATION:
+		clip->setActiveDuration( (unsigned long)value );
+		break;
+	case GPANIM_OPT_BLEND:
+	{
+		float weight = (float)value;
+		weight = weight * 0.01f;
+		clip->setBlendWeight(weight);
+		break;
+	}
+	case GPANIM_OPT_SPEED:
+	{
+		float weight = (float)value;
+		weight = weight * 0.01f;
+		clip->setSpeed(weight);
+		break;
+	}
+	default:
+		return -1;
+	}
+	return 0;
+}
+
+int gamehsp::addAnimId(int objid, char *name, int start, int end, int option)
+{
+	gpobj *obj;
+	Animation *anim;
+	AnimationClip *clip;
+	unsigned long p_end;
+	unsigned long p_start;
+	obj = getObj(objid);
+	if (obj == NULL) return -1;
+	anim = obj->_animation;
+	if (anim == NULL) return -1;
+	if (*name == 0) return -1;
+	clip = anim->getClip(name);
+	if (clip != NULL) return -1;
+
+	p_start = (unsigned long)start;
+	if (end < 0) {
+		p_end = anim->getDuration();
+	}
+	else {
+		p_end = (unsigned long)end;
+	}
+	clip = anim->createClip(name, p_start, p_end);
+	clip->setRepeatCount(AnimationClip::REPEAT_INDEFINITE);
+	return 0;
+}
+
+int gamehsp::playAnimId(int objid, char *name, int option)
+{
+	gpobj *obj;
+	Animation *anim;
+	AnimationClip *clip;
+	obj = getObj(objid);
+	if (obj == NULL) return -1;
+	anim = obj->_animation;
+	if (anim == NULL) return -1;
+	if (*name == 0) {
+		clip = anim->getClip(DEFAULT_ANIM_CLIPNAME);
+	}
+	else {
+		clip = anim->getClip(name);
+	}
+	if (clip == NULL) return -1;
+	if (option == 0) clip->stop();
+	if (option == 1) clip->play();
+	if (option == 2) clip->pause();
+
+	return 0;
+}
+
 
 /*------------------------------------------------------------*/
 /*
@@ -1369,12 +1520,14 @@ int gamehsp::makeModelNode(char *fname, char *idname)
 
 	Bundle *bundle = Bundle::create(fn);
 	Node *rootNode;
+	Animation *animation;
 	Node *node;
 
 	model_defines = "DIRECTIONAL_LIGHT_COUNT 1";
 	Material* boxMaterial = Material::create(fn2,gamehsp::passCallback,NULL);
 	if (boxMaterial == NULL) return -1;
 
+	animation = NULL;
 	if (idname) {
 		rootNode = bundle->loadNode(idname);
 		if (rootNode == NULL) {
@@ -1388,7 +1541,6 @@ int gamehsp::makeModelNode(char *fname, char *idname)
 		unsigned int i;
 
 		Scene *scene;
-		Animation *animation;
 		char *rootid;
 
 		rootNode = Node::create();
@@ -1425,12 +1577,14 @@ int gamehsp::makeModelNode(char *fname, char *idname)
 				animation = node->getAnimation("animations");
 				if (animation) {
 					if (strcmp(node->getId(), rootid) == 0) {
-						AnimationClip *aclip;
-						aclip = animation->createClip("idle", 0, animation->getDuration());
-						aclip->setRepeatCount(AnimationClip::REPEAT_INDEFINITE);
-						animation->play("idle");
+						//AnimationClip *aclip;
+						//aclip = animation->createClip("idle", 0, animation->getDuration());
+						//aclip->setRepeatCount(AnimationClip::REPEAT_INDEFINITE);
+						//animation->play("idle");
 						//animation->createClips("zombie.animation");
-						//Alertf( "(%s) Clip count: %d Dur:%ld", node->getId(), animation->getClipCount(), animation->getDuration() );
+						//aclip = animation->getClip(0);
+						//Alertf("(%s) Clip count: %d Dur:%ld", aclip->getId(), animation->getClipCount(), aclip->getActiveDuration());
+						//animation->play(aclip->getId());
 						rootNode->addChild(node);
 					}
 				}
@@ -1440,6 +1594,14 @@ int gamehsp::makeModelNode(char *fname, char *idname)
 
 				SAFE_RELEASE(node);
 			}
+		}
+
+		animation = rootNode->getAnimation("animations");
+		if (animation) {
+			AnimationClip *aclip;
+			aclip = animation->createClip(DEFAULT_ANIM_CLIPNAME, 0, animation->getDuration());
+			aclip->setRepeatCount(AnimationClip::REPEAT_INDEFINITE);
+			//animation->play(aclip->getId());
 		}
 
 		//makeModelNodeSub(rootNode, 0);
@@ -1464,6 +1626,7 @@ int gamehsp::makeModelNode(char *fname, char *idname)
 	rootNode->setUserObject(obj);
 	obj->addRef();
 	obj->_node = rootNode;
+	obj->_animation = animation;
 
 	// 初期化パラメーターを保存
 	obj->_shape = GPOBJ_SHAPE_MODEL;

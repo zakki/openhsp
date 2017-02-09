@@ -82,6 +82,19 @@
 #const global GPDRAW_OPT_DRAWSCENE_LATE (8)
 #const global GPDRAW_OPT_DRAW2D_LATE (16)
 
+#const global GPACT_STOP (0)
+#const global GPACT_PLAY (1)
+#const global GPACT_PAUSE (2)
+
+#const global GPANIM_OPT_START_FRAME (0)
+#const global GPANIM_OPT_END_FRAME (1)
+#const global GPANIM_OPT_DURATION (2)
+#const global GPANIM_OPT_ELAPSED (3)
+#const global GPANIM_OPT_BLEND (4)
+#const global GPANIM_OPT_PLAYING (5)
+#const global GPANIM_OPT_SPEED (6)
+#const global GPANIM_OPT_NAME (16)
+
 
 ;
 ;	system request
@@ -257,6 +270,11 @@
 #cmd setalpha $f3
 #cmd gpmatprm1 $f4
 #cmd gpmatprm4 $f5
+#cmd gpgetlog $f6
+#cmd gpaddanim $f7
+#cmd gpgetanim $f8
+#cmd gpsetanim $f9
+#cmd gpact $fa
 
 #define fsin(%1,%2) %1=sin(%2)
 #define fcos(%1,%2) %1=cos(%2)

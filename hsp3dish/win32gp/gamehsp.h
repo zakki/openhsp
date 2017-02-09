@@ -107,6 +107,14 @@ GPPSET_MAX
 #define GPDRAW_OPT_DRAWSCENE_LATE (8)
 #define GPDRAW_OPT_DRAW2D_LATE (16)
 
+#define GPANIM_OPT_START_FRAME (0)
+#define GPANIM_OPT_END_FRAME (1)
+#define GPANIM_OPT_DURATION (2)
+#define GPANIM_OPT_ELAPSED (3)
+#define GPANIM_OPT_BLEND (4)
+#define GPANIM_OPT_PLAYING (5)
+#define GPANIM_OPT_SPEED (6)
+
 
 //  HGIMG4 Sprite Object
 class gpspr {
@@ -154,6 +162,7 @@ public:
 	Model *_model;						// 生成されたModel
 	Camera *_camera;					// 生成されたCamera
 	Light *_light;						// 生成されたLight
+	Animation *_animation;				// 生成されたAnimation
 	Vector3 _sizevec;					// 生成されたサイズパラメーター
 	Vector4 _vec[GPOBJ_USERVEC_MAX];	// ワーク用ベクター
 
@@ -163,6 +172,8 @@ public:
 #define BUFSIZE_POLYCOLOR 32
 #define BUFSIZE_POLYTEX 64
 #define BUFSIZE_MULTILIGHT 16
+
+#define DEFAULT_ANIM_CLIPNAME "_idle"
 
 //	gamehsp Object
 class gamehsp: public Game
@@ -213,6 +224,12 @@ public:
 	int *getObjectPrmPtr( int objid, int prmid );
 	int getObjectPrm( int objid, int prmid, int *outptr );
 	int setObjectPrm( int objid, int prmid, int value );
+
+	char *getAnimId(int objid, int index, int option);
+	int getAnimPrm(int objid, int index, int option, int *res);
+	int setAnimPrm(int objid, int index, int option, int value);
+	int addAnimId(int objid, char *name, int start, int end, int option);
+	int playAnimId(int objid, char *name, int option);
 
 	gpmat *getMat( int id );
 	int deleteMat( int id );
@@ -409,7 +426,6 @@ private:
 	// Obj support value
 	Vector3 border1;		// BORDER座標1
 	Vector3 border2;		// BORDER座標2
-
 
 	// preset flat mesh
     Matrix _projectionMatrix2D;

@@ -1,0 +1,268 @@
+/* HDL CSS Format 1.33 */
+
+/* body */
+body {
+	/* ページ全体のフォント設定 */
+	font: 95% 'Arial';
+
+	background: #fff;
+	color: #000;
+	margin: 0;
+	padding: 0;
+}
+
+
+/* hoge */
+table {
+	font-size: 1em;
+}
+
+
+/* anchor default */
+a {
+	color: #00c;
+	text-decoration: none;
+}
+a:hover, a:active {
+	text-decoration: underline;
+}
+
+
+/* navi */
+div.navi {
+	font-size: 85%;
+	margin: 0;
+	padding: 4px 20px;
+}
+div.navi strong {
+	font-style: oblique;
+	font-weight: normal;
+}
+
+
+/* cmenu */
+div.cmenu {
+	padding: 8px 20px 1px 20px;
+	background: #fcfcfc;
+	border: solid 0 #99c;
+	border-width: 1px 0 0 0;
+}
+.citem,
+.citemb {
+	display: block;
+	float: left;
+	height:1.2em;
+
+	font-weight: bold;
+	font-size: 80%;
+	margin: 1px;
+	padding: 1px 5px;
+	white-space: nowrap;
+
+	color: #336;
+	background: #ececec;
+	border: solid 1px #ececec;
+}
+.citemb {
+	color: #fff;
+	background: #559;
+	border-color: #559;
+}
+a.citem:hover, a.citem:active {
+	text-decoration: none;
+	background: #cce;
+	border-color: #559;
+}
+
+
+/* heading default */
+h1 {
+	font-size: 110%;
+	margin: 0;
+	padding: 6px 20px;
+
+	background: #559;
+	color: #fff;
+}
+h2 {
+	font-size: 100%;
+	margin: 10px;
+	padding: 3px 10px;
+
+	color: #336;
+
+	border-style: solid;
+	border-color: #559;
+	border-width: 0 0 1px 0;
+}
+
+
+/* catalog item */
+div.itemsub {
+	font-size: 85%;
+	margin: 3px 20px;
+
+	color: #559;
+}
+div.itemidx {
+	margin: 3px 20px;
+}
+div.item {
+	margin: 10px;
+	padding: 0 10px 10px 10px;
+
+	border: solid #ccc;
+	border-width: 0 0 1px 0;
+
+	line-height: 140%;
+	width: 80%;
+}
+span.url {
+	color: #777;
+}
+
+
+/* anchor special */
+a.find {
+	color: #800;
+}
+
+
+/* paragraph */
+pre {
+	font-family: "ＭＳ ゴシック";
+}
+p,
+pre.para,
+div.para {
+	/* content */
+	margin: 15px 20px;
+	line-height: 133%;
+}
+p.summary {
+	/* サマリー */
+	color: #446;
+	font-weight: bold;
+}
+p.location {
+	/* ロケーション表示 */
+	font-weight: bold;
+	margin: 0;
+	padding: 4px 20px;
+
+	color: #336;
+	background: #fcfcfc;
+
+	border: solid #99c 0;
+	border-width: 0 0 1px 0;
+}
+pre.para {
+	/* pre で自動折り返し */
+	word-wrap: break-word;
+	white-space: -moz-pre-wrap; /* Mozilla */
+	white-space: pre-wrap; /* CSS3 */
+}
+pre.script {
+	/* script view */
+	background: #eee;
+	margin: 10px;
+	padding: 4px;
+	border: solid #99c;
+	border-width: 0 0 0 3px;
+}
+
+
+/* symbol */
+span.symbol {
+	/* シンボル */
+	color: #00c;
+	font-weight: bold;
+}
+span.arg {
+	/* 引数 */
+	color: #060;
+	font-weight: bold;
+}
+
+
+/* table filelist */
+table.filelist {
+	border: solid 2px #669;
+	border-collapse: collapse;
+	width: 95%;
+}
+table.filelist th,
+table.filelist td {
+	border: solid 1px #669;
+	padding: 0 5px;
+}
+table.filelist th {
+	background: #eeeef7;
+}
+
+
+/* table verinf */
+table.verinf {
+	border: solid 2px #669;
+	border-collapse: collapse;
+	width: 33em;
+}
+table.verinf th,
+table.verinf td {
+	border: solid 1px #669;
+	padding: 0 5px;
+}
+table.verinf th {
+	background: #eeeef7;
+}
+table.verinf .grayout {
+	background: #eee;
+}
+
+
+/* thumb */
+img.thumb {
+	border: none;
+	margin: 5px;
+}
+
+
+/* openedit */
+p.openedit {
+	font-weight: bold;
+	margin: 15px 20px;
+	font-size: 120%;
+}
+p.openedit img.thumb {
+	margin: 0px;
+}
+
+
+/* keyword emphasis */
+span.kwd {
+	color: #008;
+	background: #ff0;
+}
+
+
+/* HSP version jpeg */
+#hsp_ttl {
+	background: #eee;
+}
+#hsp_ttl img {
+/*
+	filter: alpha(style=1,startx=99,finishx=100,opacity=100,finishopacity=1);
+*/
+}
+
+
+/* footer */
+#footer {
+	text-align: right;
+	font-size: 80%;
+	margin: 50px 0 0 0;
+	padding: 5px 20px;
+
+	background: #bbd;
+	color: #fff;
+}
