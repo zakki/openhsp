@@ -11,12 +11,6 @@
 #ifdef HSPNDK
 #include "ndkgp/gamehsp.h"
 #endif
-#ifdef HSPLINUX
-#include "win32gp/gamehsp.h"
-#endif
-#ifdef HSPEMSCRIPTEN
-#include "win32gp/gamehsp.h"
-#endif
 char *hsp3dish_getlog(void);		// for gameplay3d log
 #endif
 
@@ -79,9 +73,6 @@ extern int resY0, resY1;
 #endif
 #ifdef HSPNDK
 #include "ndk/mmman.h"
-#endif
-#ifdef HSPLINUX
-#include "emscripten/mmman.h"
 #endif
 #ifdef HSPEMSCRIPTEN
 #include "emscripten/mmman.h"
@@ -2145,7 +2136,7 @@ static int cmdfunc_extcmd( int cmd )
 		break;
 		}
 	case 0xf6:								// gpgetlog
-		{
+	{
 		PVal *p_pval;
 		APTR p_aptr;
 		char *ps;
@@ -2153,7 +2144,71 @@ static int cmdfunc_extcmd( int cmd )
 		ps = hsp3dish_getlog();
 		code_setva(p_pval, p_aptr, HSPVAR_FLAG_STR, ps);
 		break;
+	}
+
+	case 0xf7:								// gpaddanim
+	{
+		char name[256];
+		char *ps;
+		p1 = code_getdi(0);
+		ps = code_gets();
+		strncpy(name, ps, 256);
+		p2 = code_getdi(0);
+		p3 = code_getdi(-1);
+		p4 = code_getdi(0);
+		ctx->stat = game->addAnimId(p1, name, p2, p3, p4);
+		break;
+	}
+
+	case 0xf8:								// gpgetanim
+	{
+		PVal *p_pval;
+		APTR p_aptr;
+		char *ps;
+		p_aptr = code_getva(&p_pval);
+		p1 = code_getdi(0);
+		p2 = code_getdi(0);
+		p3 = code_getdi(0);
+		if (p3 & 16){
+			ps = game->getAnimId(p1,p2,p3&15);
+			if (ps == NULL) {
+				ctx->stat = -1;
+			}
+			else {
+				ctx->stat = 0;
+				code_setva(p_pval, p_aptr, HSPVAR_FLAG_STR, ps);
+			}
 		}
+		else {
+			int res = 0;
+			ctx->stat = game->getAnimPrm(p1, p2, p3, &res);
+			code_setva(p_pval, p_aptr, HSPVAR_FLAG_INT, &res);
+		}
+		break;
+	}
+
+	case 0xf9:								// gpsetanim
+	{
+		p1 = code_getdi(0);
+		p2 = code_getdi(0);
+		p3 = code_getdi(0);
+		p4 = code_getdi(0);
+		ctx->stat = game->setAnimPrm(p1, p2, p3, p4);
+		break;
+	}
+
+	case 0xfa:								// gpact
+	{
+		char name[256];
+		char *ps;
+		p1 = code_getdi(0);
+		ps = code_getds("");
+		strncpy(name, ps, 256);
+		p2 = code_getdi(1);
+		ctx->stat = game->playAnimId(p1, ps, p2);
+		break;
+	}
+
 
 #endif
 

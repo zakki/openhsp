@@ -1,6 +1,6 @@
 ------------------------------------------------------------------------------
 HGIMG4 REFERENCE MANUAL                High Performance Graphic Image Plugin  
-ＨＳＰ拡張ランタイムリファレンス      copyright 2001-2016 (c) onion software  
+ＨＳＰ拡張ランタイムリファレンス      copyright 2001-2017 (c) onion software  
 ------------------------------------------------------------------------------
 
 ・はじめに
@@ -85,12 +85,12 @@ HGIMG4 REFERENCE MANUAL                High Performance Graphic Image Plugin
 	res/font.gpb
 	res/shaders/colored.frag
 	res/shaders/colored.vert
-	res/shaders/colored-unlit.frag
-	res/shaders/colored-unlit.vert
 	res/shaders/font.frag
 	res/shaders/font.vert
-	res/shaders/form.frag
-	res/shaders/form.vert
+	res/shaders/lighting.frag
+	res/shaders/lighting.vert
+	res/shaders/skinning.vert
+	res/shaders/skinning-none.vert
 	res/shaders/sprite.frag
 	res/shaders/sprite.vert
 	res/shaders/spritecol.frag
@@ -99,10 +99,6 @@ HGIMG4 REFERENCE MANUAL                High Performance Graphic Image Plugin
 	res/shaders/terrain.vert
 	res/shaders/textured.frag
 	res/shaders/textured.vert
-	res/shaders/textured-bumped.frag
-	res/shaders/textured-bumped.vert
-	res/shaders/textured-unlit.frag
-	res/shaders/textured-unlit.vert
 
 
 ・注意点
@@ -123,7 +119,7 @@ HGIMG4 REFERENCE MANUAL                High Performance Graphic Image Plugin
 
 	setcls mode,color,tex				画面消去設定
 	gpviewport x,y,sx,sy				ビューポート設定
-	setborder sx,sy,sz,option			オブジェクト有効範囲設定
+	setborder sx,sy,sz,option			オブジェクト有効範囲設定	gpgetlog var					HGIMG4エラーログを取得
 
 	gpreset	option					シーンを描画
 	gppostefx  postid,opt1,opt2			ポストエフェクト生成
@@ -172,6 +168,11 @@ HGIMG4 REFERENCE MANUAL                High Performance Graphic Image Plugin
 
 	celputm vxpos,vypos,vcelid,bufid,count		セルをまとめて描画する
 	gpdraw option					シーン内の全オブジェクトを描画する
+
+	gpaddanim objid,"name",start,end,option		アニメーションクリップを追加
+	gpact objid,"name",option			アニメーションクリップを再生/停止
+	gpgetanim var,objid,index,prmid			アニメーションクリップ設定を取得
+	gpsetanim objid,index,prmid,value		アニメーションクリップ設定を更新
 
 
 ・命令一覧(オブジェクト操作)
@@ -249,9 +250,6 @@ HGIMG4 REFERENCE MANUAL                High Performance Graphic Image Plugin
 
 
 ・HGIMG4の制限
-
-	HGIMG4は、Windows上で動作するHSP3のスクリプトエディタなど通常のHSP環境をそのまま 使用して開発を行ないます。
-	(必ずHSP3.5以降のHSPで作成を行なってください。)
 
 	HGIMG4は、HSP3Dishランタイムを拡張する形で実装されています。
 	HSP3Dishが持つ命令をすべてサポートしているほか、いくつかの拡張が行なわれています。
@@ -1172,7 +1170,6 @@ HGIMG4 REFERENCE MANUAL                High Performance Graphic Image Plugin
 
 	以下の機能は未実装です。将来のバージョンでサポートされる予定です。
 
-	・モデルアニメーションの各種コントロール
 	・コリジョンオブジェクトの詳細な接触判定
 	・HGIMG3相当のイベント機能
 	・ポストエフェクト(マルチパスレンダリング)に関する設定
@@ -1218,7 +1215,7 @@ HGIMG4とそのソースコードは、HSP開発セットと同様の修正BSDライセンスが適用されます
 
 HGIMG4は以下のライブラリを使用して開発されています。
 
-GamePlay3D v1.7.0
+GamePlay3D v3.0.0
 http://www.gameplay3d.org
 
 Bullet Collision Detection and Physics Library
@@ -1226,7 +1223,7 @@ Advanced Micro Devices, Inc.
 http://bulletphysics.org
 
 OpenHSP
-Copyright (C) 1997-2015, ONION Software/onitama.
+Copyright (C) 1997-2017, ONION Software/onitama.
 http://hsp.tv
 
 Disclaimer
