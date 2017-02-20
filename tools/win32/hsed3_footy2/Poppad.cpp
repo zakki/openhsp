@@ -1233,6 +1233,7 @@ static void set_labellist( HWND hList, HWND /*hwndEdit*/ )
 	int mytag = -1;
 	int myline= -2;
 	int ret;
+	char *lastdq=0;
 
 	ListView_DeleteAllItems(hList);
 
@@ -1373,7 +1374,7 @@ static void set_labellist( HWND hList, HWND /*hwndEdit*/ )
 						if (wp - 2 >= buffer)
 							bDameChk = IsDBCSLeadByte((unsigned char) *(wp - 2));
 						// •¶š—ñ“Ç‚İ”ò‚Î‚µ
-						if( ('{' == *(wp - 1)) && (!bDameChk)) { // •¡”s•¶š—ñ
+						if( ('{' == *(wp - 1)) && (!bDameChk) && (wp != lastdq)) { // •¡”s•¶š—ñ
 						//if( '{' == *(wp - 1) ) { // •¡”s•¶š—ñ
 							wp += 2;
 							for(bool bEscape = false; *wp && ('\"' != *wp || '}' != wp[1] || bEscape); ) {
@@ -1390,6 +1391,7 @@ static void set_labellist( HWND hList, HWND /*hwndEdit*/ )
 								}
 								wp += IsDBCSLeadByte(*wp) ? 2 : 1;
 							}
+							lastdq=wp;
 						}
 						wp--;
 						continue;
