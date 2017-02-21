@@ -253,7 +253,7 @@ BEGIN
     CTEXT           "HSP script editor",IDC_STATIC,41,12,67,8
     ICON            "OniPad",IDC_STATIC,8,8,20,20
     CTEXT           "For Windows version 3.5 beta",IDC_STATIC,47,19,89,8
-    CTEXT           "Copyright 1997-2016 onion software",IDC_STATIC,0,37,159,8
+    CTEXT           "Copyright 1997-2017 onion software",IDC_STATIC,0,37,159,8
     DEFPUSHBUTTON   "OK",IDOK,49,101,57,14,WS_GROUP
     CTEXT           "http://hsp.tv/",IDC_STATICLINK,34,85,90,8,SS_NOTIFY
     LTEXT           "Information available at:",IDC_STATIC,30,77,71,8
