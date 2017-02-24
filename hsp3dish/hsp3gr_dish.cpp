@@ -54,6 +54,7 @@ char *hsp3dish_getlog(void);		// for gameplay3d log
 
 static HspWnd *wnd;
 static Bmscr *bmscr;
+static Bmscr *master_bmscr;
 static HSPCTX *ctx;
 static int *type;
 static int *val;
@@ -510,7 +511,7 @@ static int cmdfunc_extcmd( int cmd )
 		int i;
 		char btnname[256];
 		unsigned short *sbr;
-		Bmscr *bmsrc;
+		//Bmscr *bmsrc;
 
 #ifndef HSPEMBED
 		i = 0;
@@ -528,7 +529,7 @@ static int cmdfunc_extcmd( int cmd )
 		ctx->stat = bmscr->AddHSPObjectButton( btnname, i, (void *)sbr );
 		p1 = bmscr->imgbtn;
 		if ( p1 >= 0 ) {
-			bmsrc = wnd->GetBmscrSafe( p1 );
+			//bmsrc = wnd->GetBmscrSafe( p1 );
 			bmscr->SetButtonImage( ctx->stat, p1, bmscr->btn_x1, bmscr->btn_y1, bmscr->btn_x2, bmscr->btn_y2, bmscr->btn_x3, bmscr->btn_y3 );
 		}
 		break;
@@ -724,6 +725,7 @@ static int cmdfunc_extcmd( int cmd )
 
 		bmscr = wnd->GetBmscrSafe( p1 );
 		cur_window = p1;
+		hgio_gsel((BMSCR *)bmscr);
 		break;
 
 	case 0x1e:								// gcopy
@@ -882,7 +884,7 @@ static int cmdfunc_extcmd( int cmd )
 	case 0x2a:								// screen
 	case 0x2b:								// bgscr
 		{
-		int p7,p8;
+		int p7,p8,typeval;
 		p1 = code_getdi( 0 );
 		p2 = code_getdi( 640 );
 		p3 = code_getdi( 480 );
@@ -894,10 +896,13 @@ static int cmdfunc_extcmd( int cmd )
 
 		if ( cmd == 0x29 ) {
 			if ( p1 == 0 ) throw HSPERR_ILLEGAL_FUNCTION;
-			wnd->MakeBmscr( p1, HSPWND_TYPE_BUFFER, p5, p6, p2, p3 );
+			typeval = HSPWND_TYPE_BUFFER;
+			if (p4 & HSPWND_OPTION_OFFSCREEN) typeval = HSPWND_TYPE_OFFSCREEN;
+			wnd->MakeBmscr(p1, typeval, p5, p6, p2, p3, p4);
 		}
 		bmscr = wnd->GetBmscr( p1 );
 		cur_window = p1;
+		hgio_gsel( (BMSCR *)bmscr );
 		//
 		//Alertf("screen---(%x)\n",bmscr);
 		break;
@@ -1508,10 +1513,22 @@ static int cmdfunc_extcmd( int cmd )
 		p_aptr = code_getva( &p_pval );
 		ps = code_gets();
 		strncpy( fname, ps, HSP_MAX_PATH );
-		p1 = code_getdi( 0 );
-		mat = game->makeMaterialTexture( fname, p1 );
-		if ( mat == NULL ) throw HSPERR_ILLEGAL_FUNCTION;
-		p6 = game->makeNewMat( mat );
+		p1 = code_getdi(0);
+		p6 = code_getdi(-1);
+
+		if (p2 < 0) {
+			mat = game->makeMaterialTexture(fname, p1);
+			if (mat == NULL) throw HSPERR_ILLEGAL_FUNCTION;
+			p6 = game->makeNewMat(mat);
+		}
+		else {
+			gpmat *pmat;
+			pmat = game->getMat(p6);
+			if (pmat == NULL) throw HSPERR_ILLEGAL_FUNCTION;
+
+
+
+		}
 		code_setva( p_pval, p_aptr, HSPVAR_FLAG_INT, &p6 );
 		break;
 		}
@@ -1525,11 +1542,11 @@ static int cmdfunc_extcmd( int cmd )
 		PVal *p_pval;
 		APTR p_aptr;
 		p_aptr = code_getva( &p_pval );
-		ps = code_gets();
+		ps = code_getds( game->getUserVSH() );
 		strncpy( vshname, ps, HSP_MAX_PATH );
-		ps = code_gets();
+		ps = code_getds(game->getUserFSH());
 		strncpy( fshname, ps, HSP_MAX_PATH );
-		ps = code_gets();
+		ps = code_getds(game->getUserDefines());
 		strncpy( defname, ps, 512 );
 		p1 = code_getdi( -1 );
 		p2 = code_getdi( 0 );
@@ -2206,6 +2223,89 @@ static int cmdfunc_extcmd( int cmd )
 		strncpy(name, ps, 256);
 		p2 = code_getdi(1);
 		ctx->stat = game->playAnimId(p1, ps, p2);
+		break;
+	}
+
+	case 0xfb:								// gpmatprm16
+	{
+		char fname[256];
+		char *ps;
+		gpmat *mat;
+		p1 = code_getdi(0);
+		ps = code_gets();
+		strncpy(fname, ps, 256);
+		code_getvec(&p_vec1);
+		p2 = code_getdi(1);
+		mat = game->getMat(p1);
+		if (mat == NULL) throw HSPERR_ILLEGAL_FUNCTION;
+		mat->setParameter(fname, (gameplay::Matrix *)&p_vec1,p2);
+		break;
+	}
+
+	case 0xfc:								// gpmatprmt
+	{
+		char fname[256];
+		char texname[256];
+		char *ps;
+		gpmat *mat;
+		p1 = code_getdi(0);
+		ps = code_gets();
+		strncpy(fname, ps, 256);
+		ps = code_gets();
+		strncpy(texname, ps, 256);
+		p2 = code_getdi(0);
+		mat = game->getMat(p1);
+		if (mat == NULL) throw HSPERR_ILLEGAL_FUNCTION;
+		mat->setParameter( fname, texname, p2 );
+		break;
+	}
+
+	case 0xfd:								// gpusershader
+	{
+		char vsh[256];
+		char fsh[256];
+		char *ps;
+		ps = code_gets();
+		strncpy(vsh, ps, 256);
+		ps = code_gets();
+		strncpy(fsh, ps, 256);
+		ps = code_gets();
+		game->setUserShader2D(vsh, fsh, ps);
+		break;
+	}
+
+	case 0xfe:								// gpgetmat
+	{
+		PVal *p_pval;
+		APTR p_aptr;
+		int res = -1;
+
+		p_aptr = code_getva(&p_pval);
+		p1 = code_getdi(0);
+		p2 = code_getdi(0);
+		switch (p2) {
+		case 0:
+		{
+			gpobj *obj;
+			obj = game->getObj(p1);
+			if (obj) {
+				res = obj->_usegpmat;
+			}
+			break;
+		}
+		case 1:
+		{
+			Bmscr *bm2;
+			bm2 = wnd->GetBmscrSafe(p1);	// “]‘—Œ³‚ÌBMSCR‚ðŽæ“¾
+			if (bm2) {
+				res = bm2->texid;
+			}
+			break;
+		}
+		default:
+			throw HSPERR_ILLEGAL_FUNCTION;
+		}
+		code_setva(p_pval, p_aptr, HSPVAR_FLAG_INT, &res);
 		break;
 	}
 

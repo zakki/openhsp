@@ -100,6 +100,7 @@ GPPSET_MAX
 #define GPOBJ_MATOPT_NOZWRITE (16)
 #define GPOBJ_MATOPT_BLENDADD (32)
 #define GPOBJ_MATOPT_SPECULAR (64)
+#define GPOBJ_MATOPT_USERSHADER (128)
 
 #define GPDRAW_OPT_OBJUPDATE (1)
 #define GPDRAW_OPT_DRAWSCENE (2)
@@ -265,17 +266,28 @@ public:
 
 	int makeNewMat( Material* material, int mode = GPMAT_MODE_3D );
 	int makeNewMat2D( char *fname, int matopt );
+	int makeNewMatFromFB(gameplay::FrameBuffer *fb, int matopt);
 	int makeNewLgt( int id, int lgtopt, float range=1.0f, float inner=0.5f, float outer=1.0f );
 	int makeNewCam( int id, float fov, float aspect, float near, float far );
+	void setUserShader2D( char *vsh, char *fsh, char *defines );
+	char *getUserVSH(void) { return (char *)user_vsh.c_str(); };
+	char *getUserFSH(void) { return (char *)user_fsh.c_str(); };
+	char *getUserDefines(void) { return (char *)user_defines.c_str(); };
 
 	Material *makeMaterialColor( int color, int lighting );
 	Material *makeMaterialTexture( char *fname, int matopt );
 	Material *makeMaterialFromShader( char *vshd, char *fshd, char *defs );
 	void setMaterialDefaultBinding( Material* material, int icolor, int matopt );
 	float setMaterialBlend( Material* material, int gmode, int gfrate );
-	Material *makeMaterialTex2D( char *fname, int matopt );
+	Material *makeMaterialTex2D(Texture *texture, int matopt);
 	int getTextureWidth( void );
 	int getTextureHeight( void );
+
+	gameplay::FrameBuffer *makeFremeBuffer(char *name, int sx, int sy);
+	void deleteFrameBuffer(gameplay::FrameBuffer *fb);
+	void selectFrameBuffer(gameplay::FrameBuffer *fb, int sx, int sy);
+	void resumeFrameBuffer(void);
+	void clearFrameBuffer(void);
 
 	void drawTest( int matid );
 	int drawFont( int x, int y, char *text, Vector4 *p_color, int size );
@@ -298,6 +310,7 @@ public:
 	void lookAtNode(Node* node, const Vector3& target );
 
 	void updateLightVector( gpobj *obj, int moc );
+
 
 	// physics
 	gpphy *getPhy( int id );
@@ -338,7 +351,7 @@ public:
 	void finishLineColor2D( void );
 
 	// global light function
-	void setupLightDefines(void);
+	void setupDefines(void);
 	char *getLightDefines(void) { return (char *)light_defines.c_str(); }
 	char *getNoLightDefines(void) { return (char *)nolight_defines.c_str(); }
 	char *getSpecularLightDefines(void) { return (char *)splight_defines.c_str(); }
@@ -414,6 +427,8 @@ private:
 	Scene *_scene;
 	Camera *_cameraDefault;
 	Quaternion _qcam_billboard;
+	int _viewx1, _viewy1, _viewx2, _viewy2;
+	FrameBuffer* _previousFrameBuffer;
 
 	// Multi Light
 	int _max_dlight;
@@ -440,6 +455,10 @@ private:
 	std::string	light_defines;
 	std::string	nolight_defines;
 	std::string	splight_defines;
+
+	std::string	user_vsh;
+	std::string	user_fsh;
+	std::string	user_defines;
 
 	//Node *_nodetemp;
 };

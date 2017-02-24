@@ -27,6 +27,8 @@ extern "C" {
 void hgio_init( int mode, int sx, int sy, void *hwnd );
 void hgio_term( void );
 void hgio_resume( void );
+int hgio_gsel( BMSCR *bm );
+int hgio_buffer(BMSCR *bm);
 
 void hgio_size( int sx, int sy );
 void hgio_view( int sx, int sy );

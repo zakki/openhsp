@@ -9,6 +9,9 @@
 
 #runtime "hsp3gp"
 
+#define global screen_offscreen (32)
+#define global screen_usergcopy (64)
+
 #const global FILTER_NONE 0
 #const global FILTER_LINEAR 1
 #const global FILTER_LINEAR2 2
@@ -40,6 +43,8 @@
 #const global GPOBJ_MATOPT_NOZTEST (8)
 #const global GPOBJ_MATOPT_NOZWRITE (16)
 #const global GPOBJ_MATOPT_BLENDADD (32)
+#const global GPOBJ_MATOPT_SPECULAR (64)
+#const global GPOBJ_MATOPT_USERSHADER (128)
 
 #enum global PRMSET_FLAG = 0
 #enum global PRMSET_MODE
@@ -94,6 +99,9 @@
 #const global GPANIM_OPT_PLAYING (5)
 #const global GPANIM_OPT_SPEED (6)
 #const global GPANIM_OPT_NAME (16)
+
+#const global GPGETMAT_OPT_OBJMAT (0)
+#const global GPGETMAT_OPT_SCRMAT (1)
 
 ;
 ;	system request
@@ -295,6 +303,10 @@
 #cmd gpgetanim $f8
 #cmd gpsetanim $f9
 #cmd gpact $fa
+#cmd gpmatprm16 $fb
+#cmd gpmatprmt $fc
+#cmd gpusershader $fd
+#cmd gpgetmat $fe
 
 #define fsin(%1,%2) %1=sin(%2)
 #define fcos(%1,%2) %1=cos(%2)

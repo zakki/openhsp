@@ -218,20 +218,15 @@ void gamehsp::update(float elapsedTime)
 void gamehsp::render(float elapsedTime)
 {
     // Clear the color and depth buffers
-	Vector4 clscolor;
-	int icolor;
-	int clsmode;
 
-	icolor = GetSysReq( SYSREQ_CLSCOLOR );
-	clsmode = GetSysReq( SYSREQ_CLSMODE );
+	// 描画先をリセット
+	resumeFrameBuffer();
 
-	if ( clsmode == CLSMODE_NONE ) {
-		clear(CLEAR_DEPTH, Vector4::zero(), 1.0f, 0);
-		return;
-	}
+	// ビューポート初期化
+	updateViewport(_viewx1, _viewy1, _viewx2, _viewy2);
 
-	clscolor.set( ( (icolor>>16)&0xff )*_colrate, ( (icolor>>8)&0xff )*_colrate, ( icolor&0xff )*_colrate, 1.0f );
-    clear(CLEAR_COLOR_DEPTH, clscolor, 1.0f, 0);
+	// 画面クリア
+	clearFrameBuffer();
 
     //nodetemp->rotateY(MATH_DEG_TO_RAD((float)elapsedTime / 1000.0f * 180.0f));
 }
@@ -304,6 +299,7 @@ void gamehsp::resetScreen( int opt )
 	// シーン作成
 	_scene = Scene::create();
 	_curscene = 0;
+	_previousFrameBuffer = NULL;
 
 	// カメラ作成
 	//Camera*	camera = Camera::createPerspective(45.0f, getAspectRatio(), 0.01f, 20.0f );
@@ -347,7 +343,7 @@ void gamehsp::resetScreen( int opt )
 	for (int i = 0; i<_max_slight; i++) { _spot_light[i] = _deflight; }
 
 	// シェーダー定義文字列を生成
-	setupLightDefines();
+	setupDefines();
 
 	// ボーダー初期化
 	border1.set( -50.0f, 0.0f, -50.0f );
@@ -368,12 +364,50 @@ void gamehsp::resetScreen( int opt )
 void gamehsp::updateViewport( int x, int y, int w, int h )
 {
 	Rectangle viewport;
-	viewport.set( (float)x, (float)y, (float)w, (float)h );
+	_viewx1 = x; _viewy1 = y;
+	_viewx2 = w; _viewy2 = h;
+	viewport.set((float)x, (float)y, (float)w, (float)h);
 	setViewport( viewport );
 }
 
 
-void gamehsp::setBorder( float x0, float x1, float y0, float y1, float z0, float z1 )
+void gamehsp::selectFrameBuffer(gameplay::FrameBuffer *fb, int sx, int sy)
+{
+	Rectangle viewport;
+	viewport.set(0, 0, (float)sx, (float)sy);
+	setViewport(viewport);
+	_previousFrameBuffer = fb->bind();
+	clearFrameBuffer();
+}
+
+
+void gamehsp::resumeFrameBuffer(void)
+{
+	if (_previousFrameBuffer) {
+		_previousFrameBuffer->bind();
+		_previousFrameBuffer = NULL;
+	}
+}
+
+
+void gamehsp::clearFrameBuffer(void)
+{
+	Vector4 clscolor;
+	int icolor;
+	int clsmode;
+	icolor = GetSysReq(SYSREQ_CLSCOLOR);
+	clsmode = GetSysReq(SYSREQ_CLSMODE);
+
+	if (clsmode == CLSMODE_NONE) {
+		clear(CLEAR_DEPTH, Vector4::zero(), 1.0f, 0);
+		return;
+	}
+	clscolor.set(((icolor >> 16) & 0xff)*_colrate, ((icolor >> 8) & 0xff)*_colrate, (icolor & 0xff)*_colrate, 1.0f);
+	clear(CLEAR_COLOR_DEPTH, clscolor, 1.0f, 0);
+}
+
+
+void gamehsp::setBorder(float x0, float x1, float y0, float y1, float z0, float z1)
 {
 	border1.set( x0, y0, z0 );
 	border2.set( x1, y1, z1 );
@@ -1702,7 +1736,7 @@ int gamehsp::deleteObj( int id )
 	}
 	model = obj->_model;
 	if ( model ) {
-		if ( obj->_usegpmat < 0 ) {
+		if ( obj->_usegpmat >= 0 ) {
 			material = model->getMaterial();
 			material->release();		// 独自にcreateした参照カウントを減らす
 		}
@@ -2456,4 +2490,19 @@ int gamehsp::drawFont( int x, int y, char *text, Vector4 *p_color, int size )
 	return xsize;
 }
 
+
+gameplay::FrameBuffer *gamehsp::makeFremeBuffer(char *name, int sx, int sy)
+{
+	gameplay::FrameBuffer *frameBuffer;
+	frameBuffer = FrameBuffer::create(name, sx, sy);
+	DepthStencilTarget* dst = DepthStencilTarget::create(name, DepthStencilTarget::DEPTH_STENCIL, sx, sy);
+	frameBuffer->setDepthStencilTarget(dst);
+	SAFE_RELEASE(dst);
+	return frameBuffer;
+}
+
+void gamehsp::deleteFrameBuffer(gameplay::FrameBuffer *fb)
+{
+	SAFE_RELEASE(fb);
+}
 

@@ -72,7 +72,26 @@ int gpmat::setParameter( char *name, float value )
 }
 
 
-int gpmat::setState( char *name, char *value )
+int gpmat::setParameter(char *name, const Matrix *value, int count)
+{
+	if (_material == NULL) return -1;
+	_material->getParameter(name)->setValue(value,count);
+
+	return 0;
+}
+
+
+int gpmat::setParameter(char *name, char *fname, int matopt)
+{
+	bool mipmap;
+	if (_material == NULL) return -1;
+	mipmap = (matopt & GPOBJ_MATOPT_NOMIPMAP) == 0;
+	_material->getParameter(name)->setValue( fname, mipmap);
+
+	return 0;
+}
+
+int gpmat::setState(char *name, char *value)
 {
 	RenderState::StateBlock *state;
 
@@ -83,8 +102,6 @@ int gpmat::setState( char *name, char *value )
 
 	return 0;
 }
-
-
 
 
 /*------------------------------------------------------------*/
@@ -273,8 +290,15 @@ int gamehsp::makeNewMat2D( char *fname, int matopt )
 	gpmat *mat = addMat();
 	if ( mat == NULL ) return -1;
 
-	Material *mesh_material = makeMaterialTex2D( fname, matopt );
+	Texture* texture = Texture::create(fname);
+	if (texture == NULL) {
+		Alertf("Texture not found.(%s)", fname);
+		return -1;
+	}
+
+	Material *mesh_material = makeMaterialTex2D(texture, matopt);
 	if ( mesh_material == NULL ) return -1;
+	SAFE_RELEASE(texture);
 
     VertexFormat::Element elements[] =
     {
@@ -297,7 +321,48 @@ int gamehsp::makeNewMat2D( char *fname, int matopt )
 }
 
 
-Material *gamehsp::makeMaterialFromShader( char *vshd, char *fshd, char *defs )
+int gamehsp::makeNewMatFromFB(gameplay::FrameBuffer *fb, int matopt)
+{
+	int tex_width, tex_height;
+	Texture* texture;
+
+	if (fb == NULL) return -1;
+
+	gpmat *mat = addMat();
+	if (mat == NULL) return -1;
+
+	RenderTarget *target = fb->getRenderTarget();
+	if (target == NULL) return -1;
+	texture = target->getTexture();
+
+	Material *mesh_material = makeMaterialTex2D(texture, matopt);
+	if (mesh_material == NULL) return -1;
+
+	tex_width = (int)fb->getWidth();
+	tex_height = (int)fb->getHeight();
+
+	VertexFormat::Element elements[] =
+	{
+		VertexFormat::Element(VertexFormat::POSITION, 3),
+		VertexFormat::Element(VertexFormat::TEXCOORD0, 2),
+		VertexFormat::Element(VertexFormat::COLOR, 4)
+	};
+
+	unsigned int elementCount = sizeof(elements) / sizeof(VertexFormat::Element);
+	MeshBatch *meshBatch = MeshBatch::create(VertexFormat(elements, elementCount), Mesh::TRIANGLE_STRIP, mesh_material, true, 16, 256);
+
+	mat->_mesh = meshBatch;
+	mat->_material = mesh_material;
+	mat->_mode = GPMAT_MODE_2D;
+	mat->_sx = tex_width;
+	mat->_sy = tex_height;
+	mat->_texratex = 1.0f / (float)tex_width;
+	mat->_texratey = 1.0f / (float)tex_height;
+	return mat->_id;
+}
+
+
+Material *gamehsp::makeMaterialFromShader(char *vshd, char *fshd, char *defs)
 {
 	Material *material;
 	material = Material::create( vshd, fshd, defs );
@@ -308,7 +373,7 @@ Material *gamehsp::makeMaterialFromShader( char *vshd, char *fshd, char *defs )
 }
 
 
-void gamehsp::setupLightDefines(void)
+void gamehsp::setupDefines(void)
 {
 	//	シェーダー用のdefine定義を作成
 	//
@@ -327,6 +392,20 @@ void gamehsp::setupLightDefines(void)
 		light_defines += std::to_string(_max_slight);
 	}
 	splight_defines = light_defines + ";SPECULAR";
+
+	// カスタムシェーダーの初期化
+	user_vsh = SPRITE_VSH;
+	user_fsh = SPRITE_FSH;
+	user_defines = "";
+}
+
+
+void gamehsp::setUserShader2D(char *vsh, char *fsh, char *defines)
+{
+	// カスタムシェーダーの設定
+	user_vsh = vsh;
+	user_fsh = fsh;
+	user_defines = defines;
 }
 
 
@@ -381,16 +460,12 @@ Material *gamehsp::makeMaterialTexture( char *fname, int matopt )
 }
 
 
-Material *gamehsp::makeMaterialTex2D( char *fname, int matopt )
+Material *gamehsp::makeMaterialTex2D(Texture *texture, int matopt)
 {
 	bool mipmap;
 	mipmap = (matopt & GPOBJ_MATOPT_NOMIPMAP ) == 0;
 
-    Texture* texture = Texture::create(fname);
-	if ( texture == NULL ) {
-        Alertf("Texture not found.(%s)",fname);
-		return NULL;
-	}
+	if (texture == NULL) return NULL;
 	_tex_width = texture->getWidth();
 	_tex_height = texture->getHeight();
 
@@ -412,9 +487,21 @@ Material *gamehsp::makeMaterialTex2D( char *fname, int matopt )
     }
 
 	RenderState::StateBlock *state;
+	Material* mesh_material = NULL;
 
-	// Wrap the effect in a material
-    Material* mesh_material = Material::create(_spriteEffect); // +ref effect
+	if (matopt & GPOBJ_MATOPT_USERSHADER) {
+		// User custom shader
+		//mesh_material = Material::create(SPRITE_VSH, SPRITE_FSH, NULL);
+		mesh_material = Material::create(user_vsh.c_str(), user_fsh.c_str(), user_defines.c_str());
+	}
+	else {
+		// Wrap the effect in a material
+		mesh_material = Material::create(_spriteEffect); // +ref effect
+	}
+	if (mesh_material == NULL) {
+		GP_ERROR("Can't create material for sprite.");
+		return NULL;
+	}
 
     // Bind the texture to the material as a sampler
     Texture::Sampler* sampler = Texture::Sampler::create(texture); // +ref texture
@@ -440,7 +527,6 @@ Material *gamehsp::makeMaterialTex2D( char *fname, int matopt )
 	state->setBlendSrc(RenderState::BLEND_SRC_ALPHA);
 	state->setBlendDst(RenderState::BLEND_ONE_MINUS_SRC_ALPHA);
 
-	SAFE_RELEASE( texture );
 	return mesh_material;
 }
 
