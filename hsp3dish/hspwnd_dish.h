@@ -5,6 +5,7 @@
 #ifndef __hspwnd_dish_h
 #define __hspwnd_dish_h
 
+#include "../hsp3/hsp3config.h"
 #include "../hsp3/hsp3code.h"
 
 //	Window Object Info
@@ -89,6 +90,10 @@ typedef struct HSPOBJINFO
 #define HSPWND_TYPE_MAIN 2
 #define HSPWND_TYPE_BGSCR 3
 #define HSPWND_TYPE_SSPREVIEW 4
+#define HSPWND_TYPE_OFFSCREEN 5
+
+#define HSPWND_OPTION_OFFSCREEN 32
+#define HSPWND_OPTION_USERSHADER 64
 
 #define BMSCR_MAX_MTOUCH	16		// Max Points of Multi-Touch
 typedef struct HSP3MTOUCH
@@ -295,6 +300,10 @@ public:
 	int		mulcolor;					// Multiplyer Color (RGB)
 	float	mulcolorvalue[4];			// Multiplyer Color value each 0.0Å`1.0
 
+	int		buffer_option;				// buffer options for off-screen
+	void	*master_buffer;				// buffer pointer to off-screen
+	HSPREAL	accel_value[BMSCR_SAVEPOS_MAX];		// Accelerometer sensor value
+
 private:
 //	void Blt( int mode, Bmscr *src, int xx, int yy, int asx, int asy );
 //	void CnvRGB16( PTRIVERTEX target, DWORD src );
@@ -316,7 +325,7 @@ public:
 	void SetMasterSize( int m_sx, int m_sy );
 	void SetMasterInstance( void *m_inst );
 
-	void MakeBmscr( int id, int type, int x, int y, int sx, int sy );
+	void MakeBmscr( int id, int type, int x, int y, int sx, int sy, int option );
 	void MakeBmscrFromResource( int id, char *fname );
 	inline Bmscr *GetBmscr( int id ) { return mem_bm[id]; };
 	Bmscr *GetBmscrSafe( int id );
@@ -446,6 +455,10 @@ typedef struct BMSCR
 
 	int		mulcolor;					// Multiplyer Color (RGB)
 	float	mulcolorvalue[4];			// Multiplyer Color value each 0.0Å`1.0
+
+	int		buffer_option;				// buffer options for off-screen
+	void	*master_buffer;				// buffer pointer to off-screen
+	HSPREAL	accel_value[BMSCR_SAVEPOS_MAX];		// Accelerometer sensor value
 
 } BMSCR;
 

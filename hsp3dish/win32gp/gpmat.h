@@ -27,7 +27,9 @@ public:
 	int setParameter( char *name, float value );
 	int setParameter( char *name, Vector3 *value );
 	int setParameter( char *name, Vector4 *value );
-	int setState( char *name, char *value );
+	int setParameter(char *name, const Matrix *value, int count);
+	int setParameter(char *name, char *fname, int matopt);
+	int setState(char *name, char *value);
 
 	short _flag;						// 存在フラグ
 	short _mark;						// マーク処理用

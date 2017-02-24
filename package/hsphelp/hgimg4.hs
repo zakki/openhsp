@@ -458,6 +458,7 @@ opt(0)    : マテリアルオプション値
 OpenGLのシェーダー言語(GLSL)で記述されたシェーダーファイル名を、"vsh"、"fsh"パラメーターに指定します。
 "defs"パラメーターには、シェーダーコンパイル時に追加されるラベル定義を記述します。
 colorパラメーターでデフォルトのカラーを設定することができます。省略した場合は、白色(0xffffff)が設定されます。
+"vsh","fsh","defs"のパラメーターを省略した場合は、gpusershaderで設定された内容が設定されます。
 optパラメーターにより、マテリアルの設定を変更することができます。
 これらの設定は、gpmatstate命令で別途設定することも可能です。
 ^p
@@ -481,6 +482,7 @@ optパラメーターにより、マテリアルの設定を変更することができます。
 gpmatprm
 gpcolormat
 gptexmat
+gpusershader
 
 
 %index
@@ -1034,6 +1036,7 @@ gpmatprm1命令は、1項目のみの実数パラメーターを指定します。
 gpmat
 gpmatprm
 gpmatprm4
+gpmatprm16
 
 
 %index
@@ -1057,6 +1060,7 @@ gpmatprm4命令は、4項目(x,y,z,w)の実数パラメーターを指定します。
 gpmat
 gpmatprm
 gpmatprm1
+gpmatprm16
 
 
 %index
@@ -1219,5 +1223,103 @@ prmidでどのような情報を設定するかを指定します。prmidで指定できる値は以下の通りで
 %href
 gpaddanim
 gpgetanim
+
+
+%index
+gpmatprm16
+マテリアルのパラメーター設定(マトリクス)
+%group
+拡張画面制御命令
+%prm
+id,"name",var
+id(0)      : マテリアルID
+"name"     : パラメーター名
+var        : 値が代入された配列変数名(実数型)
+count(1)   : 設定されるマトリクスの個数
+%inst
+生成されたマテリアルのシェーダーパラメーターを設定します。
+gpmatprm命令と基本的に同じ機能ですが、gpmatprm16命令は、varで指定された実数型の配列変数に格納された数値を4×4のマトリクス行列として設定します。
+var(0)～var(15)の１６個の実数がマトリクス行列となります。countを指定した場合は、その個数だけ配列変数から値を取り出します。
+%href
+gpmatprm
+gpmatprm1
+gpmatprm4
+
+
+%index
+gpmatprmt
+マテリアルのパラメーター設定(テクスチャ)
+%group
+拡張画面制御命令
+%prm
+id,"name","filename"
+id(0)      : マテリアルID
+"name"     : パラメーター名
+"filename" : 画像ファイル名
+opt(0)     : マテリアルオプション値
+%inst
+生成されたマテリアルのシェーダーパラメーターを設定します。
+gpmatprm命令と基本的に同じ機能ですが、gpmatprmt命令は、"filename"で指定されたファイルをテクスチャ画像として設定します。
+sampler2D型のパラメーターをシェーダーに渡す場合に使用することができます。
+optパラメーターに、GPOBJ_MATOPT_NOMIPMAPを指定した場合は、MIPMAPを生成しません。
+%href
+gpmatprm
+gpmatprm1
+gpmatprm4
+
+
+
+%index
+gpusershader
+ユーザーシェーダーの指定
+%group
+拡張画面制御命令
+%prm
+"vsh","fsh","defs",color,opt
+"vsh"     : バーテックスシェーダーファイル名
+"fsh"     : フラグメントシェーダーファイル名
+"defs"    : 追加のラベル定義
+%inst
+ユーザーが独自に設定するためのシェーダーを指定します。
+バーテックスシェーダー、フラグメントシェーダー及び追加のラベル定義を記述して、使用することができます。
+指定されたシェーダーは、gpusermatのデフォルト値として、buffer命令によるスクリーンバッファのカスタムシェーダー指定時に参照されます。
+%href
+buffer
+gpusermat
+
+
+%index
+gpgetmat
+マテリアルIDの取得
+%group
+拡張画面制御命令
+%prm
+var,id,opt
+var    : マテリアルIDが代入される変数
+id(0)  : 参照されるID
+opt(0) : 取得オプション
+%inst
+指定されたオブジェクト、及び画面バッファで使用されているカスタムマテリアルのIDを取得します。
+optパラメーターで取得オプションを指定します。optで指定できる値は以下の通りです。^p
+        マクロ名                   値     内容
+    ----------------------------------------------------------------------------
+	GPGETMAT_OPT_OBJMAT        0      オブジェクトが持つカスタムマテリアル
+	GPGETMAT_OPT_SCRMAT        1      画面バッファが持つカスタムマテリアル
+^p
+GPGETMAT_OPT_OBJMATを指定した場合は、idパラメーターにオブジェクトIDを指定することで、オブジェクトが持つカスタムマテリアルのIDを取得することができます。
+GPGETMAT_OPT_SCRMATを指定した場合は、idパラメーターに画面バッファIDを指定することで、それぞれの画面バッファが持つカスタムマテリアルのIDを取得することができます。
+
+
+%href
+buffer
+gpmatprm
+gpmatprm1
+gpmatprm4
+gpmatprm16
+
+
+
+
+
 
 
