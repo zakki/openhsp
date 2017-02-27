@@ -83,6 +83,7 @@ char *hgio_getstorage( char *fname );
 
 // for HGIMG4
 void hgio_draw_gpsprite( Bmscr *bmscr, bool lateflag );
+void hgio_draw_all(Bmscr *bmscr, int option);
 
 
 #ifdef __cplusplus

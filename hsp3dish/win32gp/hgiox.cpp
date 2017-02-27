@@ -328,6 +328,7 @@ void hgio_screen( BMSCR *bm )
 	//		スクリーン再設定
 	//		(cls相当)
 	//
+	drawflag = 0;
 	if (bm->type == HSPWND_TYPE_MAIN) {
 		mainbm = bm;
 		gselbm = bm;
@@ -499,6 +500,7 @@ int hgio_mes( BMSCR *bm, char *str1 )
 	//		mes,print 文字表示
 	//
 	if ((bm->type != HSPWND_TYPE_MAIN) && (bm->type != HSPWND_TYPE_OFFSCREEN)) return -1;
+	if (drawflag == 0) hgio_render_start();
 
 	if ( game ) {
 		bm->printsizex = game->drawFont( bm->cx, bm->cy, str1, (gameplay::Vector4 *)bm->colorvalue, m_tsize );
@@ -546,6 +548,7 @@ void hgio_line( BMSCR *bm, float x, float y )
 		return;
 	}
 	if ((bm->type != HSPWND_TYPE_MAIN) && (bm->type != HSPWND_TYPE_OFFSCREEN)) return;
+	if (drawflag == 0) hgio_render_start();
 
 	float r_val = bm->colorvalue[0];
 	float g_val = bm->colorvalue[1];
@@ -582,6 +585,7 @@ void hgio_boxf( BMSCR *bm, float x1, float y1, float x2, float y2 )
 	//
 	if ( bm == NULL ) return;
 	if ((bm->type != HSPWND_TYPE_MAIN) && (bm->type != HSPWND_TYPE_OFFSCREEN)) return;
+	if (drawflag == 0) hgio_render_start();
 
 	float *v = game->startPolyColor2D();
 	float r_val = bm->colorvalue[0];
@@ -615,6 +619,7 @@ void hgio_circle( BMSCR *bm, float x1, float y1, float x2, float y2, int mode )
 	float x,y,rx,ry,sx,sy,rate;
 	if ( bm == NULL ) return;
 	if ((bm->type != HSPWND_TYPE_MAIN) && (bm->type != HSPWND_TYPE_OFFSCREEN)) return;
+	if (drawflag == 0) hgio_render_start();
 
 	float *v;
 	float *v_master = game->startPolyColor2D();
@@ -702,6 +707,7 @@ void hgio_fillrot( BMSCR *bm, float x, float y, float sx, float sy, float ang )
 	//
 	if ( bm == NULL ) return;
 	if ((bm->type != HSPWND_TYPE_MAIN) && (bm->type != HSPWND_TYPE_OFFSCREEN)) return;
+	if (drawflag == 0) hgio_render_start();
 
 	float x0,y0,x1,y1,ofsx,ofsy;
 	float *v = game->startPolyColor2D();
@@ -762,6 +768,7 @@ void hgio_copy( BMSCR *bm, short xx, short yy, short srcsx, short srcsy, BMSCR *
 
 	if ( bm == NULL ) return;
 	if ((bm->type != HSPWND_TYPE_MAIN) && (bm->type != HSPWND_TYPE_OFFSCREEN)) return;
+	if (drawflag == 0) hgio_render_start();
 
 	gpmat *mat = game->getMat( bmsrc->texid );
 	if (mat == NULL) return;
@@ -848,6 +855,7 @@ int hgio_celputmulti( BMSCR *bm, int *xpos, int *ypos, int *cel, int count, BMSC
 
 	if ( bm == NULL ) return 0;
 	if ((bm->type != HSPWND_TYPE_MAIN) && (bm->type != HSPWND_TYPE_OFFSCREEN)) return 0;
+	if (drawflag == 0) hgio_render_start();
 
 	gpmat *mat = game->getMat( bmsrc->texid );
 	if (mat == NULL) return 0;
@@ -936,6 +944,7 @@ void hgio_copyrot( BMSCR *bm, short xx, short yy, short srcsx, short srcsy, floa
 
 	if ( bm == NULL ) return;
 	if ((bm->type != HSPWND_TYPE_MAIN) && (bm->type != HSPWND_TYPE_OFFSCREEN)) return;
+	if (drawflag == 0) hgio_render_start();
 
 	gpmat *mat = game->getMat( bmsrc->texid );
 	if (mat == NULL) return;
@@ -1017,22 +1026,22 @@ void hgio_copyrot( BMSCR *bm, short xx, short yy, short srcsx, short srcsy, floa
 
 void hgio_setfilter( int type, int opt )
 {
-	/*
-	int ft;
+	int curid;
+	if (gselbm == NULL) return;
+
+	curid = gselbm->texid;
+	if (curid < 0) return;
+	gpmat *mat = game->getMat(curid);
+	if (mat == NULL) return;
 	switch( type ) {
 	case HGIO_FILTER_TYPE_LINEAR:
-		ft = D3DTEXF_LINEAR;
-		break;
 	case HGIO_FILTER_TYPE_LINEAR2:
-		ft = D3DTEXF_FLATCUBIC;
+		mat->setFilter(Texture::Filter::LINEAR);
 		break;
 	default:
-		ft = D3DTEXF_POINT;
+		mat->setFilter(Texture::Filter::NEAREST);
 		break;
 	}
-	d3ddev->SetTextureStageState( 0, D3DTSS_MAGFILTER, ft  );
-	d3ddev->SetTextureStageState( 0, D3DTSS_MINFILTER, ft  );
-	*/
 }
 
 
@@ -1140,6 +1149,7 @@ void hgio_square_tex( BMSCR *bm, int *posx, int *posy, BMSCR *bmsrc, int *uvx, i
 	float sx,sy;
 	if ( bm == NULL ) return;
 	if ((bm->type != HSPWND_TYPE_MAIN) && (bm->type != HSPWND_TYPE_OFFSCREEN)) return;
+	if (drawflag == 0) hgio_render_start();
 
 	gpmat *mat = game->getMat( bmsrc->texid );
 	if (mat == NULL) return;
@@ -1191,6 +1201,7 @@ void hgio_square( BMSCR *bm, int *posx, int *posy, int *color )
 	//
 	if ( bm == NULL ) return;
 	if ((bm->type != HSPWND_TYPE_MAIN) && (bm->type != HSPWND_TYPE_OFFSCREEN)) return;
+	if (drawflag == 0) hgio_render_start();
 
 	gameplay::Vector4 colvec;
 	float *v = game->startPolyColor2D();
@@ -1345,7 +1356,7 @@ char *hgio_sysinfo( int p2, int *res, char *outbuf )
 
 	switch(p2) {
 	case 0:
-		strcpy(p1,"Windows");
+		strcpy(p1, "Windows");
 		version = GetVersion();
 		if ((version & 0x80000000) == 0) strcat(p1,"NT");
 									else strcat(p1,"9X");
@@ -1381,6 +1392,13 @@ char *hgio_sysinfo( int p2, int *res, char *outbuf )
 
 	switch(p2) {
 	case 0:
+#ifdef HSPNDK
+		strcpy(p1, "Android");
+#endif
+#ifdef HSPIOS
+		strcpy(p1, "iOs");
+#endif
+		fl=HSPVAR_FLAG_STR;
 		break;
 	case 1:
 		break;
@@ -1413,6 +1431,11 @@ void hgio_draw_gpsprite( Bmscr *bmscr, bool lateflag )
 	float zx,zy,rot;
 	gpobj *obj;
 	gpspr *spr;
+
+	if (bmscr == NULL) return;
+	if ((bmscr->type != HSPWND_TYPE_MAIN) && (bmscr->type != HSPWND_TYPE_OFFSCREEN)) return;
+	if (drawflag == 0) hgio_render_start();
+
 	game->findSpriteObj( lateflag );
 	while(1) {
 		obj = game->getNextSpriteObj();
@@ -1441,6 +1464,15 @@ void hgio_draw_gpsprite( Bmscr *bmscr, bool lateflag )
 
 }
 
+
+void hgio_draw_all(Bmscr *bmscr, int option)
+{
+	if (bmscr == NULL) return;
+	if ((bmscr->type != HSPWND_TYPE_MAIN) && (bmscr->type != HSPWND_TYPE_OFFSCREEN)) return;
+	if (drawflag == 0) hgio_render_start();
+
+	game->drawAll(option);
+}
 
 
 void hgio_text_render( void )
