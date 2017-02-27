@@ -103,6 +103,15 @@ int gpmat::setState(char *name, char *value)
 	return 0;
 }
 
+void gpmat::setFilter(Texture::Filter value)
+{
+	MaterialParameter *mprm = _material->getParameter("u_texture");
+	if (mprm == NULL) return;
+	Texture::Sampler *sampler = mprm->getSampler();
+	if (sampler == NULL) return;
+	sampler->setFilterMode(value, value);
+}
+
 
 /*------------------------------------------------------------*/
 /*

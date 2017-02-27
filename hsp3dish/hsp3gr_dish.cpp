@@ -1341,7 +1341,7 @@ static int cmdfunc_extcmd( int cmd )
 		if ( p1 & GPDRAW_OPT_OBJUPDATE ) {
 			game->updateAll();
 		}
-		game->drawAll( p1 );
+		hgio_draw_all(bmscr, p1);
 
 		if ( p1 & GPDRAW_OPT_DRAW2D ) {
 			hgio_draw_gpsprite( bmscr, false );

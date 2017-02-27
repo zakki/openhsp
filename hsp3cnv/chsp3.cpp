@@ -434,9 +434,9 @@ int CHsp3::GetOTInfo( int index )
 
 void CHsp3::OutMes( char *format, ... )
 {
-	//		outbufに文字列を出力(printf互換)(4096文字まで)
+	//		outbufに文字列を出力(printf互換)(OUTMES_BUFFER_MAXまで)
 	//
-	char textbf[4096];
+	char textbf[OUTMES_BUFFER_MAX];
 	va_list args;
 	va_start(args, format);
 	vsprintf(textbf, format, args);
@@ -447,9 +447,9 @@ void CHsp3::OutMes( char *format, ... )
 
 void CHsp3::OutLine( char *format, ... )
 {
-	//		outbufに文字列を出力(printf互換)(4096文字まで)
+	//		outbufに文字列を出力(printf互換)(OUTMES_BUFFER_MAXまで)
 	//
-	char textbf[4096];
+	char textbf[OUTMES_BUFFER_MAX];
 	va_list args;
 	va_start(args, format);
 	vsprintf(textbf, format, args);
@@ -462,9 +462,9 @@ void CHsp3::OutLine( char *format, ... )
 
 void CHsp3::OutLineBuf( CMemBuf *outbuf, char *format, ... )
 {
-	//		outbufに文字列を出力(printf互換)(4096文字まで)
+	//		outbufに文字列を出力(printf互換)(OUTMES_BUFFER_MAXまで)
 	//
-	char textbf[4096];
+	char textbf[OUTMES_BUFFER_MAX];
 	va_list args;
 	va_start(args, format);
 	vsprintf(textbf, format, args);
@@ -1314,7 +1314,7 @@ void CHsp3::MakeProgramInfo( void )
 	int i;
 	int op;
 	int cmdtype, cmdval;
-	char mes[4096];
+	char mes[OUTMES_BUFFER_MAX];
 	char arbuf[VAREXP_BUFFER_MAX];
 	while(1) {
 		if ( mcs > mcs_end ) break;
