@@ -326,6 +326,11 @@ int gamehsp::makeNewMat2D( char *fname, int matopt )
 	mat->_sy = _tex_height;
 	mat->_texratex = 1.0f / (float)_tex_width;
 	mat->_texratey = 1.0f / (float)_tex_height;
+
+	// 2D用のプロジェクション
+	Matrix::createOrthographicOffCenter(0.0f, (float)_tex_width, (float)_tex_height, 0.0f, -1.0f, 1.0f, &mat->_projectionMatrix2D);
+	mat->_projectionMatrix2D.translate(0.5f, 0.0f, 0.0f);						// 座標誤差修正のため0.5ドットずらす
+
 	return mat->_id;
 }
 
@@ -367,6 +372,11 @@ int gamehsp::makeNewMatFromFB(gameplay::FrameBuffer *fb, int matopt)
 	mat->_sy = tex_height;
 	mat->_texratex = 1.0f / (float)tex_width;
 	mat->_texratey = 1.0f / (float)tex_height;
+
+	// 2D用のプロジェクション
+	Matrix::createOrthographicOffCenter(0.0f, (float)_tex_width, (float)_tex_height, 0.0f, -1.0f, 1.0f, &mat->_projectionMatrix2D);
+	mat->_projectionMatrix2D.translate(0.5f, 0.0f, 0.0f);						// 座標誤差修正のため0.5ドットずらす
+
 	return mat->_id;
 }
 
@@ -525,7 +535,7 @@ Material *gamehsp::makeMaterialTex2D(Texture *texture, int matopt)
 	mesh_material->getParameter("u_diffuseTexture")->setValue( fname, mipmap );
 	*/
 
-	mesh_material->getParameter("u_projectionMatrix")->setValue(_projectionMatrix2D);
+	update2DRenderProjection(mesh_material, &_projectionMatrix2D);
 
 	state = mesh_material->getStateBlock();
 

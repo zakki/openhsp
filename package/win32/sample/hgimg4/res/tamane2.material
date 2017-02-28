@@ -1,10 +1,6 @@
-material Textured
+material textured
 {
-    u_inverseTransposeWorldViewMatrix = INVERSE_TRANSPOSE_WORLD_VIEW_MATRIX
-    u_lightColor = SCENE_LIGHT_COLOR
-    u_lightDirection = SCENE_LIGHT_DIRECTION
     u_worldViewProjectionMatrix = WORLD_VIEW_PROJECTION_MATRIX
-    u_ambientColor = 0.5, 0.5, 0.5
     
     sampler u_diffuseTexture
     {
@@ -25,19 +21,19 @@ material Textured
     {
         pass 
         {
-            vertexShader = res/shaders/textured-unlit.vert
-            fragmentShader = res/shaders/textured-unlit.frag
+            vertexShader = res/shaders/textured.vert
+            fragmentShader = res/shaders/textured.frag
         }
     }
 }
 
-material bodyUV : Textured
+material bodyUV : textured
 {
     u_matrixPalette = MATRIX_PALETTE
     
     sampler u_diffuseTexture
     {
-        path = res/body_SD.png
+        path = body_SD.png
         wrapS = REPEAT
         wrapT = REPEAT
     }
@@ -51,13 +47,14 @@ material bodyUV : Textured
     }
 }
 
-material headUV : Textured
+material headUV : textured
 {
+    u_inverseTransposeWorldViewMatrix = INVERSE_TRANSPOSE_WORLD_VIEW_MATRIX
     u_matrixPalette = MATRIX_PALETTE
     
     sampler u_diffuseTexture
     {
-        path = res/head_SD.png
+        path = head_SD.png
         wrapS = REPEAT
         wrapT = REPEAT
     }

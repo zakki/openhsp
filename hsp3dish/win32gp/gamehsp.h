@@ -356,6 +356,11 @@ public:
 	char *getNoLightDefines(void) { return (char *)nolight_defines.c_str(); }
 	char *getSpecularLightDefines(void) { return (char *)splight_defines.c_str(); }
 
+	/**
+	* update projection parameter
+	*/
+	void update2DRenderProjection(Material* material, Matrix *mat);
+	void update2DRenderProjectionSystem(Matrix *mat);
 protected:
     /**
      * Internal use
@@ -443,7 +448,8 @@ private:
 	Vector3 border2;		// BORDER座標2
 
 	// preset flat mesh
-    Matrix _projectionMatrix2D;
+	int source_material_id;						// コピー参照元となるマテリアルIDの保存用
+    Matrix _projectionMatrix2D;					// 2D projection Matrix (単色のシステム用)
     MeshBatch* _meshBatch;						// MeshBatch for Polygon
     MeshBatch* _meshBatch_line;					// MeshBatch for Line
 

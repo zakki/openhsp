@@ -145,6 +145,20 @@
 #enum global SYSREQ_VSYNC
 #enum global SYSREQ_MAXMATERIAL
 
+#enum global SYSREQ_PHYSICS_RATE
+#enum global SYSREQ_MAXOBAQ
+#enum global SYSREQ_MAXLOG
+#enum global SYSREQ_DEFAULT_WEIGHT
+#enum global SYSREQ_DEFAULT_MOMENT
+#enum global SYSREQ_DEFAULT_DAMPER
+#enum global SYSREQ_DEFAULT_FRICTION
+
+#enum global SYSREQ_MESCACHE_MAX
+#enum global SYSREQ_DLIGHT_MAX
+#enum global SYSREQ_PLIGHT_MAX
+#enum global SYSREQ_SLIGHT_MAX
+#enum global SYSREQ_LOGWRITE
+
 #const global PLATFORM_WINDOWS 0
 #const global PLATFORM_IOS 1
 #const global PLATFORM_ANDROID 2

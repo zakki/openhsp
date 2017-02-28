@@ -225,8 +225,14 @@ void gamehsp::render(float elapsedTime)
 	// ビューポート初期化
 	updateViewport(_viewx1, _viewy1, _viewx2, _viewy2);
 
+	// プロジェクションの初期化
+	update2DRenderProjectionSystem(&_projectionMatrix2D);
+
 	// 画面クリア
 	clearFrameBuffer();
+
+	// テクスチャコピー元をリセット
+	source_material_id = -1;
 
     //nodetemp->rotateY(MATH_DEG_TO_RAD((float)elapsedTime / 1000.0f * 180.0f));
 }
@@ -374,10 +380,11 @@ void gamehsp::updateViewport( int x, int y, int w, int h )
 void gamehsp::selectFrameBuffer(gameplay::FrameBuffer *fb, int sx, int sy)
 {
 	Rectangle viewport;
+	_previousFrameBuffer = fb->bind();
 	viewport.set(0, 0, (float)sx, (float)sy);
 	setViewport(viewport);
-	_previousFrameBuffer = fb->bind();
 	clearFrameBuffer();
+	source_material_id = -1;
 }
 
 
@@ -447,9 +454,8 @@ bool gamehsp::init2DRender( void )
 	//
 
 	// 2D用のプロジェクション
-	//Matrix::createOrthographic(getWidth(), getHeight(), -1.0f, 1.0f, &_projectionMatrix2D);
-	Matrix::createOrthographicOffCenter( 0.0f, getWidth(), getHeight(), 0.0f, -1.0f, 1.0f, &_projectionMatrix2D);
-	_projectionMatrix2D.translate( 0.5f, 0.0f, 0.0f );						// 座標誤差修正のため0.5ドットずらす
+	Matrix::createOrthographicOffCenter(0.0f, getWidth(), getHeight(), 0.0f, -1.0f, 1.0f, &_projectionMatrix2D);
+	_projectionMatrix2D.translate(0.5f, 0.0f, 0.0f);						// 座標誤差修正のため0.5ドットずらす
 
 	// スプライト用のshader
 	_spriteEffect = Effect::createFromFile(SPRITE_VSH, SPRITE_FSH);
@@ -483,6 +489,24 @@ bool gamehsp::init2DRender( void )
 	}
 
 	return true;
+}
+
+
+void gamehsp::update2DRenderProjection(Material* material, Matrix *mat)
+{
+	//	マテリアルのプロジェクションを再設定する
+	MaterialParameter *prm = material->getParameter("u_projectionMatrix");
+	if (prm) {
+		prm->setValue(*mat);
+	}
+}
+
+
+void gamehsp::update2DRenderProjectionSystem(Matrix *mat)
+{
+	//	2Dシステム用のプロジェクションを再設定する
+	update2DRenderProjection(_meshBatch->getMaterial(), mat);
+	update2DRenderProjection(_meshBatch_line->getMaterial(), mat);
 }
 
 
@@ -2343,6 +2367,12 @@ float *gamehsp::startPolyTex2D( gpmat *mat )
         return NULL;
 	}
 
+	if (mat->_id != source_material_id) {
+		//	同一マテリアルIDの場合はプロジェクションを設定しない(高速化のため)
+		source_material_id = mat->_id;
+		update2DRenderProjection(mat->_material, &mat->_projectionMatrix2D);
+	}
+
 	mesh->start();
 	return _bufPolyTex;
 }
@@ -2466,7 +2496,8 @@ Material* gamehsp::make2DMaterialForMesh( void )
         GP_ERROR("2D initalize failed.");
         return NULL;
 	}
-    mesh_material->getParameter("u_projectionMatrix")->setValue(_projectionMatrix2D);
+	update2DRenderProjection(mesh_material, &_projectionMatrix2D);
+
 	state = mesh_material->getStateBlock();
 	state->setCullFace(false);
 	state->setDepthTest(false);

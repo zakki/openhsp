@@ -1,0 +1,198 @@
+#include "hgimg4.as"
+
+title "HGIMG4 Post Effect Test"
+
+	gpreset
+
+	setreq SYSREQ_LOGWRITE,1	; 終了時にログを出力
+
+	setcls CLSMODE_SOLID, 0		; 画面クリア設定
+
+	setpos GPOBJ_CAMERA, 0,2,5	; カメラ位置を設定
+
+	gpload id_model,"res/tamane2"		; モデル読み込み
+	addscale id_model, 0.02,0.02,0.02
+
+	;gpact id_model
+
+	postid = 0
+	postid_max = 8
+
+*start
+	gosub *setup_post
+
+
+*main
+	;	サブ画面
+	gsel 1
+	redraw 0			; 描画開始
+
+	addang id_model,0,0.02		; ノード回転
+	gpdraw				; シーンの描画
+
+	redraw 1			; 描画終了
+
+	;	メイン画面
+	gosub post_prmsub		; ポストエフェクト描画開始
+
+	color 255,255,255
+	pos 8,8:mes "HGIMG4 sample"
+	mes "("+sx+" x "+sy+")"
+	mes "Effect : "+postname
+
+	redraw 1			; 描画終了
+	await 1000/60			; 待ち時間
+
+	;	入力チェック
+	stick key
+	if key&128 : goto *bye
+	if key&256 {
+		postid++
+		if postid>=postid_max : postid=0
+		goto *start
+	}
+
+	goto *main
+
+*bye
+	end
+
+
+*setup_post
+	;	ポストエフェクト初期化
+	postname="None"
+	post_prmsub = *setup_postsub
+	sx=ginfo_sx:sy=ginfo_sy
+
+	if postid=0 : gosub *setup_none
+	if postid=1 : gosub *setup_sepia
+	if postid=2 : gosub *setup_gray
+	if postid=3 : gosub *setup_blur
+	if postid=4 : gosub *setup_mosaic
+	if postid=5 : gosub *setup_sobel
+	if postid=6 : gosub *setup_oldfilm
+	if postid=7 : gosub *setup_glow
+
+	gsel 0
+	return
+
+*setup_postsub
+	return
+
+*exec_copybuf
+	;	buffer1 -> メイン画面にシェーダー描画
+	gsel 0
+	redraw 0			; 描画開始
+	pos 0,0:gmode 0
+	celput 1
+	return
+
+*setup_none
+	;	フィルターなし
+	buffer 1,sx,sy,screen_offscreen
+	post_prmsub = *exec_copybuf
+	return
+
+*setup_sepia
+	;	セピアフィルター
+	postname="Sepia Filter"
+	gpusershader "res/shaders/sprite.vert", "res/shaders/p_sepia.frag", ""
+	buffer 1,sx,sy,screen_offscreen + screen_usergcopy
+	post_prmsub = *exec_copybuf
+	return
+
+*setup_gray
+	;	白黒フィルター
+	postname="Gray Filter"
+	gpusershader "res/shaders/sprite.vert", "res/shaders/p_grayscale.frag", ""
+	buffer 1,sx,sy,screen_offscreen + screen_usergcopy
+	post_prmsub = *exec_copybuf
+	return
+
+*setup_blur
+	;	ぼかしフィルター
+	postname="Blur Filter"
+	gpusershader "res/shaders/sprite.vert", "res/shaders/p_blur.frag", ""
+	buffer 1,sx,sy,screen_offscreen + screen_usergcopy
+	post_prmsub = *exec_blur
+	blur_level=4.0
+	blur_base=1.0/sx
+	gpgetmat blur_mat, 1, GPGETMAT_OPT_SCRMAT
+	return
+
+*exec_blur
+	;	パラメーター更新
+	dd=blur_level*blur_level
+	gpmatprm1 blur_mat, "u_length", blur_base*blur_level
+	gosub *exec_copybuf
+	return
+
+*setup_mosaic
+	;	モザイクフィルター
+	postname="Mosaic Filter"
+	gpusershader "res/shaders/sprite.vert", "res/shaders/p_mosaic.frag", ""
+	buffer 1,sx,sy,screen_offscreen + screen_usergcopy
+	post_prmsub = *exec_copybuf
+	return
+
+*setup_sobel
+	;	輪郭抽出フィルター
+	postname="Sobel Filter"
+	gpusershader "res/shaders/sprite.vert", "res/shaders/p_sobel.frag", ""
+	buffer 1,sx,sy,screen_offscreen + screen_usergcopy
+	post_prmsub = *exec_copybuf
+	gpgetmat sobel_mat, 1, GPGETMAT_OPT_SCRMAT
+	gpmatprm1 sobel_mat, "u_width", 1.0/sx/2
+	gpmatprm1 sobel_mat, "u_height", 1.0/sy/2
+	return
+
+*setup_oldfilm
+	;	古いフィルムフィルター
+	postname="Old Film Filter"
+	gpusershader "res/shaders/sprite.vert", "res/shaders/p_oldfilm.frag", ""
+	buffer 1,sx,sy,screen_offscreen + screen_usergcopy
+	post_prmsub = *exec_oldfilm
+	gpgetmat oldfilm_mat, 1, GPGETMAT_OPT_SCRMAT
+	gpmatprm1 oldfilm_mat, "u_sepiaValue", 0.8
+	gpmatprm1 oldfilm_mat, "u_noiseValue", 0.4
+	gpmatprm1 oldfilm_mat, "u_scratchValue", 0.4
+	gpmatprm1 oldfilm_mat, "u_innerVignetting", 0.9
+	gpmatprm1 oldfilm_mat, "u_outerVignetting", 0.9
+	return
+
+*exec_oldfilm
+	;	パラメーター更新
+	getreq etime,SYSREQ_TIMER
+	gpmatprm1 oldfilm_mat, "u_elapsedTime", etime
+	dd=double(rnd(32768))
+	gpmatprm1 oldfilm_mat, "u_random", dd / 32768
+	gosub *exec_copybuf
+	return
+
+*setup_glow
+	;	グローフィルター
+	postname="Glow Filter"
+	buffer 1,sx,sy,screen_offscreen
+	gpusershader "res/shaders/sprite.vert", "res/shaders/p_blur.frag", ""
+	buffer 2,sx/2,sy/2,screen_offscreen + screen_usergcopy
+	post_prmsub = *exec_glow
+	gpgetmat glow_mat, 2, GPGETMAT_OPT_SCRMAT
+	glow_base=1.0/sx*2
+	gpmatprm1 glow_mat, "u_length", glow_base
+	return
+
+*exec_glow
+	;	buffer1 -> buffer2に縮小してコピー
+	gsel 2
+	redraw 0
+	pos 0,0:gmode 0
+	gzoom sx/2,sy/2, 1, 0,0, sx,sy
+	redraw 1
+	;	buffer1と2を合成して描画
+	gsel 0
+	redraw 0			; 描画開始
+	pos 0,0:gmode 1,,,128
+	gzoom sx,sy, 2, 0,0, sx/2,sy/2
+	pos 0,0:gmode 5,,,128
+	celput 1
+	return

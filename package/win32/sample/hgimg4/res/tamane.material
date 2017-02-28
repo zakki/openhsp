@@ -1,12 +1,6 @@
-material Textured
+material textured
 {
-    u_cameraPosition = CAMERA_WORLD_POSITION
-    u_inverseTransposeWorldViewMatrix = INVERSE_TRANSPOSE_WORLD_VIEW_MATRIX
-    u_lightColor = SCENE_LIGHT_COLOR
-    u_lightDirection = SCENE_LIGHT_DIRECTION
     u_worldViewProjectionMatrix = WORLD_VIEW_PROJECTION_MATRIX
-    u_ambientColor = 0.4, 0.4, 0.4
-    u_specularExponent = 50
     
     sampler u_diffuseTexture
     {
@@ -27,26 +21,20 @@ material Textured
     {
         pass 
         {
-            defines = SPECULAR;MODULATE_ALPHA
             vertexShader = res/shaders/textured.vert
             fragmentShader = res/shaders/textured.frag
         }
     }
 }
 
-material bodyUV : Textured
+material bodyUV : textured
 {
-    u_matrixPalette = MATRIX_PALETTE
-
     u_inverseTransposeWorldViewMatrix = INVERSE_TRANSPOSE_WORLD_VIEW_MATRIX
-    u_lightColor = SCENE_LIGHT_COLOR
-    u_lightDirection = SCENE_LIGHT_DIRECTION
-    u_worldViewProjectionMatrix = WORLD_VIEW_PROJECTION_MATRIX
-    u_ambientColor = 0.4, 0.4, 0.4
-
+    u_matrixPalette = MATRIX_PALETTE
+    
     sampler u_diffuseTexture
     {
-        path = res/body.png
+        path = body.png
         wrapS = REPEAT
         wrapT = REPEAT
     }
@@ -55,24 +43,18 @@ material bodyUV : Textured
     {
         pass 
         {
-            defines = SPECULAR;MODULATE_ALPHA;SKINNING;SKINNING_JOINT_COUNT 16;VERTEX_COLOR
+            defines = SKINNING;SKINNING_JOINT_COUNT 16;VERTEX_COLOR
         }
     }
 }
 
-material faceUV : Textured
+material faceUV : textured
 {
     u_matrixPalette = MATRIX_PALETTE
     
-    u_inverseTransposeWorldViewMatrix = INVERSE_TRANSPOSE_WORLD_VIEW_MATRIX
-    u_lightColor = SCENE_LIGHT_COLOR
-    u_lightDirection = SCENE_LIGHT_DIRECTION
-    u_worldViewProjectionMatrix = WORLD_VIEW_PROJECTION_MATRIX
-    u_ambientColor = 0.4, 0.4, 0.4
-
     sampler u_diffuseTexture
     {
-        path = res/head.png
+        path = head.png
         wrapS = REPEAT
         wrapT = REPEAT
     }
@@ -81,7 +63,7 @@ material faceUV : Textured
     {
         pass 
         {
-            defines = SPECULAR;MODULATE_ALPHA;SKINNING;SKINNING_JOINT_COUNT 16;VERTEX_COLOR
+            defines = SKINNING;SKINNING_JOINT_COUNT 16;VERTEX_COLOR
         }
     }
 }
