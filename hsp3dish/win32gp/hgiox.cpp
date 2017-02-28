@@ -299,6 +299,15 @@ int hgio_gsel(BMSCR *bm)
 	//
 	hgio_render_end();
 	gselbm = bm;
+
+	// プロジェクションの初期化
+	int id = gselbm->texid;
+	if (id >= 0) {
+		gpmat *mat;
+		mat = game->getMat(id);
+		game->update2DRenderProjectionSystem(&mat->_projectionMatrix2D);
+	}
+
 	return 0;
 }
 
@@ -756,44 +765,46 @@ void hgio_fillrot( BMSCR *bm, float x, float y, float sx, float sy, float ang )
 }
 
 
-void hgio_copy( BMSCR *bm, short xx, short yy, short srcsx, short srcsy, BMSCR *bmsrc, float s_psx, float s_psy )
+void hgio_copy(BMSCR *bm, short xx, short yy, short srcsx, short srcsy, BMSCR *bmsrc, float s_psx, float s_psy)
 {
 	//		画像コピー
 	//		texid内の(xx,yy)-(xx+srcsx,yy+srcsy)を現在の画面に(psx,psy)サイズでコピー
 	//		カレントポジション、描画モードはBMSCRから取得
 	//
-	float psx,psy;
-	float x1,y1,x2,y2,sx,sy;
-	float tx0,ty0,tx1,ty1;
+	float psx, psy;
+	float x1, y1, x2, y2, sx, sy;
+	float tx0, ty0, tx1, ty1;
 
-	if ( bm == NULL ) return;
+	if (bm == NULL) return;
 	if ((bm->type != HSPWND_TYPE_MAIN) && (bm->type != HSPWND_TYPE_OFFSCREEN)) return;
 	if (drawflag == 0) hgio_render_start();
 
-	gpmat *mat = game->getMat( bmsrc->texid );
+	gpmat *mat = game->getMat(bmsrc->texid);
 	if (mat == NULL) return;
 
-	float *v = game->startPolyTex2D( mat );
+	float *v = game->startPolyTex2D(mat);
 	if (v == NULL) return;
 
-	float a_val = game->setMaterialBlend( mat->_material, bm->gmode, bm->gfrate );
+	float a_val = game->setMaterialBlend(mat->_material, bm->gmode, bm->gfrate);
 
 	game->setPolyDiffuseTex2D(bm->mulcolorvalue[0], bm->mulcolorvalue[1], bm->mulcolorvalue[2], a_val);
 
-	if ( s_psx < 0.0 ) {
+	if (s_psx < 0.0) {
 		psx = -s_psx;
 		tx1 = ((float)xx);
 		tx0 = ((float)(xx + srcsx));
-	} else {
+	}
+	else {
 		psx = s_psx;
 		tx0 = ((float)xx);
 		tx1 = ((float)(xx + srcsx));
 	}
-	if ( s_psy < 0.0 ) {
+	if (s_psy < 0.0) {
 		psy = -s_psy;
 		ty1 = ((float)yy);
 		ty0 = ((float)(yy + srcsy));
-	} else {
+	}
+	else {
 		psy = s_psy;
 		ty0 = ((float)yy);
 		ty1 = ((float)(yy + srcsy));
@@ -814,26 +825,26 @@ void hgio_copy( BMSCR *bm, short xx, short yy, short srcsx, short srcsy, BMSCR *
 
 	*v++ = x1; *v++ = y2; v++;
 	*v++ = tx0; *v++ = ty1;
-	v+=4;
+	v += 4;
 	//*v++ = c_val; *v++ = c_val; *v++ = c_val; *v++ = a_val;
 	*v++ = x1; *v++ = y1; v++;
 	*v++ = tx0; *v++ = ty0;
-	v+=4;
+	v += 4;
 	//*v++ = c_val; *v++ = c_val; *v++ = c_val; *v++ = a_val;
 	*v++ = x2; *v++ = y2; v++;
 	*v++ = tx1; *v++ = ty1;
-	v+=4;
+	v += 4;
 	//*v++ = c_val; *v++ = c_val; *v++ = c_val; *v++ = a_val;
 	*v++ = x2; *v++ = y1; v++;
 	*v++ = tx1; *v++ = ty0;
 	//v+=4;
 	//*v++ = c_val; *v++ = c_val; *v++ = c_val; *v++ = a_val;
 
-	game->drawPolyTex2D( mat );
+	game->drawPolyTex2D(mat);
 }
 
 
-int hgio_celputmulti( BMSCR *bm, int *xpos, int *ypos, int *cel, int count, BMSCR *bmsrc )
+int hgio_celputmulti(BMSCR *bm, int *xpos, int *ypos, int *cel, int count, BMSCR *bmsrc)
 {
 	//		マルチ画像コピー
 	//		int配列内のX,Y,CelIDを元に等倍コピーを行なう(count=個数)

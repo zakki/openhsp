@@ -1,5 +1,5 @@
 /*--------------------------------------------------------
-	HSP3dish main (Windows DirectX8)
+	HSP3dish main (gameplay3d)
 									  2011/5  onitama
   --------------------------------------------------------*/
 
@@ -16,6 +16,8 @@
 #include <string.h>
 #include <objbase.h>
 #include <commctrl.h>
+
+//#define GP_USE_MEM_LEAK_DETECTION			// Memory Leak Check
 
 #if defined( __GNUC__ )
 #include <ctype.h>
@@ -732,7 +734,11 @@ static void hsp3dish_setdevinfo( HSP3DEVINFO *devinfo )
 {
 	//		Initalize DEVINFO
 	mem_devinfo = devinfo;
+#ifdef GP_USE_ANGLE
+	devinfo->devname = "win32dx9";
+#else
 	devinfo->devname = "win32opengl";
+#endif
 	devinfo->error = "";
 	devinfo->devprm = hsp3dish_devprm;
 	devinfo->devcontrol = hsp3dish_devcontrol;
@@ -741,6 +747,24 @@ static void hsp3dish_setdevinfo( HSP3DEVINFO *devinfo )
 }
 
 /*----------------------------------------------------------*/
+
+static void hsp3dish_savelog( void )
+{
+	//		ログをファイルに出力する
+	//
+	if (game != NULL) {
+		char fname[_MAX_PATH + 1];
+		const char *logs;
+#ifdef GP_USE_MEM_LEAK_DETECTION
+		printMemoryLeaks();
+#endif
+		logs = gplog.c_str();
+		GetModuleFileName(NULL, fname, _MAX_PATH);
+		getpath(fname, fname, 32);
+		changedir(fname);
+		mem_save("hsp3gp.log", (void *)logs, (int)strlen(logs), -1);
+	}
+}
 
 int hsp3dish_init( HINSTANCE hInstance, char *startfile )
 {
@@ -933,8 +957,9 @@ int hsp3dish_init( HINSTANCE hInstance, char *startfile )
 //	platform = gameplay::Platform::create( game, NULL, hsp_wx, hsp_wy, false );
 	platform = gameplay::Platform::create( game, m_hWnd, hsp_wx, hsp_wy, false );
 	if ( platform == NULL ) {
-		hsp3dish_dialog( (char *)gplog.c_str() );
+		//hsp3dish_dialog( (char *)gplog.c_str() );
 		hsp3dish_dialog( "OpenGL initalize failed." );
+		hsp3dish_savelog();
 		return 1;
 	}
 	platform->enterMessagePump();
@@ -957,6 +982,7 @@ int hsp3dish_init( HINSTANCE hInstance, char *startfile )
 	devinfo = hsp3extcmd_getdevinfo();
 	hsp3dish_setdevinfo( devinfo );
 
+	gameplay::Logger::log(gameplay::Logger::LEVEL_INFO, "HGIMG4 %s initalized : %s\n", hspver, devinfo->devname);
 
 #ifdef HSPDEBUG
 	dbginfo = code_getdbg();
@@ -965,7 +991,7 @@ int hsp3dish_init( HINSTANCE hInstance, char *startfile )
 }
 
 
-static void hsp3dish_bye( void )
+static void hsp3dish_bye(void)
 {
 	//		Window関連の解放
 	//
@@ -973,28 +999,34 @@ static void hsp3dish_bye( void )
 
 	//		タイマーの開放
 	//
-	if ( timer_period != -1 ) {
-		timeEndPeriod( timer_period );
+	if (timer_period != -1) {
+		timeEndPeriod(timer_period);
 		timer_period = -1;
 	}
 
 	//		HSP関連の解放
 	//
-	if ( hsp != NULL ) { delete hsp; hsp = NULL; }
+	if (hsp != NULL) { delete hsp; hsp = NULL; }
 
-	if ( m_hWnd != NULL ) {
+	if (m_hWnd != NULL) {
 		hgio_term();
-		DestroyWindow( m_hWnd );
+		DestroyWindow(m_hWnd);
 		m_hWnd = NULL;
 	}
 
 	//		gameplay関連の解放
 	//
-	if ( platform != NULL ) {
+	if (platform != NULL) {
 		platform->shutdownInternal();
-	    delete platform;
+		delete platform;
 	}
-	if ( game != NULL ) {
+
+	if (GetSysReq(SYSREQ_LOGWRITE)) {
+		hsp3dish_savelog();
+	}
+
+	if (game != NULL) {
+		//game->exit();
 	    delete game;
 	}
 

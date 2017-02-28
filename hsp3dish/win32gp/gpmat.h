@@ -36,6 +36,7 @@ public:
 	short _mark;						// マーク処理用
 	int _mode;							// モード(GPMAT_MODE_*)
 	int _id;							// マテリアルオブジェクトID
+	Matrix _projectionMatrix2D;			// 2D用プロジェクションマトリクス
 	Material *_material;				// 生成されたMaterial
 	MeshBatch *_mesh;					// MeshBatch(2D用)
 	int _sx,_sy;						// Texture X,Y Size(2D用)

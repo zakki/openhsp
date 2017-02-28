@@ -553,7 +553,8 @@ extern void print(const char* format, ...)
         char* buf = new char[sz + 1];
         vsprintf(buf, format, argptr);
         buf[sz] = 0;
-		OutputDebugStringA(buf);
+		gameplay::Logger::log(gameplay::Logger::LEVEL_INFO, "%s\n", buf);
+		//OutputDebugStringA(buf);
         SAFE_DELETE_ARRAY(buf);
     }
     va_end(argptr);
