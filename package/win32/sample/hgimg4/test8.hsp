@@ -7,7 +7,6 @@ title "HGIMG4 Test"
 	setcls CLSMODE_SOLID, $404040		; 画面クリア設定
 
 	gpload id_model,"res/sky","sphere"	; モデル読み込み
-	;setobjmode id_model,OBJ_WIRE		; ワイヤーフレーム表示設定
 
 	setpos GPOBJ_CAMERA, 0,0,5		; カメラ位置を設定
 

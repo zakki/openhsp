@@ -257,7 +257,7 @@ public:
 	int makeFloorNode(float xsize, float ysize, int color, int matid = -1);
 	int makePlateNode( float xsize, float ysize, int color, int matid=-1 );
 	int makeBoxNode( float size, int color, int matid=-1 );
-	int makeModelNode( char *fname, char *idname );
+	int makeModelNode( char *fname, char *idname, char *defs );
 
 	bool makeModelNodeSub(Node *node, int nest);
 
@@ -333,7 +333,7 @@ public:
 	void getBorder( Vector3 *v1, Vector3 *v2 );
 
 	// 2D draw function
-	float *startPolyTex2D( gpmat *mat );
+	float *startPolyTex2D( gpmat *mat, int material_id );
 	void drawPolyTex2D( gpmat *mat );
 	void addPolyTex2D( gpmat *mat );
 	void finishPolyTex2D( gpmat *mat );
@@ -359,8 +359,10 @@ public:
 	/**
 	* update projection parameter
 	*/
+	void make2DRenderProjection(Matrix *mat, int sx, int sy);
 	void update2DRenderProjection(Material* material, Matrix *mat);
 	void update2DRenderProjectionSystem(Matrix *mat);
+
 protected:
     /**
      * Internal use
@@ -448,7 +450,6 @@ private:
 	Vector3 border2;		// BORDER座標2
 
 	// preset flat mesh
-	int source_material_id;						// コピー参照元となるマテリアルIDの保存用
     Matrix _projectionMatrix2D;					// 2D projection Matrix (単色のシステム用)
     MeshBatch* _meshBatch;						// MeshBatch for Polygon
     MeshBatch* _meshBatch_line;					// MeshBatch for Line

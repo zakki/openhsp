@@ -5,6 +5,8 @@
 #ifndef __supio_h
 #define __supio_h
 
+#define STRLEN strlen
+
 #ifdef HSPWIN
 #include "../hsp3/win32gui/supio_win.h"
 #endif

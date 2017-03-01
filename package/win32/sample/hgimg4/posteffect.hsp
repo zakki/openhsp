@@ -4,14 +4,14 @@ title "HGIMG4 Post Effect Test"
 
 	gpreset
 
-	setreq SYSREQ_LOGWRITE,1	; 終了時にログを出力
+	;setreq SYSREQ_LOGWRITE,1	; 終了時にログを出力
 
 	setcls CLSMODE_SOLID, 0		; 画面クリア設定
 
 	setpos GPOBJ_CAMERA, 0,2,5	; カメラ位置を設定
 
 	gpload id_model,"res/tamane2"		; モデル読み込み
-	addscale id_model, 0.02,0.02,0.02
+	setscale id_model, 0.02,0.02,0.02
 
 	;gpact id_model
 

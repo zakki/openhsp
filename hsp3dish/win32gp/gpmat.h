@@ -42,6 +42,7 @@ public:
 	int _sx,_sy;						// Texture X,Y Size(2D用)
 	float _texratex;					// Texture UV rate (1.0/xsize)
 	float _texratey;					// Texture UV rate (1.0/ysize)
+	int _target_material_id;			// レンダリング対象のマテリアルID保存用
 
 protected:
 	/**
