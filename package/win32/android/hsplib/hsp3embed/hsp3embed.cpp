@@ -20,7 +20,7 @@
 #define USE_OBAQ
 
 #ifdef USE_OBAQ
-#include "../obaq/hsp3dw.h"
+#include "../hsp3/obaq/hsp3dw.h"
 #endif
 
 

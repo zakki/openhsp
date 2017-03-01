@@ -44,6 +44,48 @@
 #define _MAX_FNAME	256
 #endif
 
+HSPAPICHAR *chartoapichar( const char *orig,HSPAPICHAR **pphac)
+{
+	*pphac = (HSPAPICHAR*)orig;
+	return (HSPAPICHAR*)orig;
+}
+
+void freehac(HSPAPICHAR **pphac)
+{
+	*pphac = 0;
+	return;
+}
+
+HSPCHAR *apichartohspchar( const HSPAPICHAR *orig,HSPCHAR **pphc)
+{
+	*pphc = (HSPAPICHAR*)orig;
+	return (HSPCHAR*)orig;
+}
+
+void freehc(HSPCHAR **pphc)
+{
+	*pphc = 0;
+	return;
+}
+
+HSPAPICHAR *ansichartoapichar(const char *orig, HSPAPICHAR **pphac)
+{
+	*pphac = (HSPAPICHAR*)orig;
+	return (HSPAPICHAR*)orig;
+}
+
+char *apichartoansichar(const HSPAPICHAR *orig, char **ppc)
+{
+	*ppc = (char*)orig;
+	return (char*)orig;
+}
+
+void freeac(char **ppc)
+{
+	*ppc = 0;
+	return;
+}
+
 
 //
 //		Internal function support (without Windows API)

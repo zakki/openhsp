@@ -1,8 +1,9 @@
 #include "Base.h"
 #include "Effect.h"
 #include "FileSystem.h"
+#include "Game.h"
 
-#define OPENGL_ES_DEFINE  "#define OPENGL_ES\n"
+#define OPENGL_ES_DEFINE  "OPENGL_ES"
 
 namespace gameplay
 {
@@ -104,9 +105,31 @@ Effect* Effect::createFromSource(const char* vshSource, const char* fshSource, c
 
 static void replaceDefines(const char* defines, std::string& out)
 {
-    if (defines && strlen(defines) != 0)
+    Properties* graphicsConfig = Game::getInstance()->getConfig()->getNamespace("graphics", true);
+    const char* globalDefines = graphicsConfig ? graphicsConfig->getString("shaderDefines") : NULL;
+
+    // Build full semicolon delimited list of defines
+#ifdef OPENGL_ES
+    out = OPENGL_ES_DEFINE;
+#else
+    out = "";
+#endif
+    if (globalDefines && strlen(globalDefines) > 0)
     {
-        out = defines;
+        if (out.length() > 0)
+            out += ';';
+        out += globalDefines;
+    }
+    if (defines && strlen(defines) > 0)
+    {
+        if (out.length() > 0)
+            out += ';';
+        out += defines;
+    }
+
+    // Replace semicolons
+    if (out.length() > 0)
+    {
         size_t pos;
         out.insert(0, "#define ");
         while ((pos = out.find(';')) != std::string::npos)
@@ -115,9 +138,6 @@ static void replaceDefines(const char* defines, std::string& out)
         }
         out += "\n";
     }
-#ifdef OPENGL_ES
-    out.insert(0, OPENGL_ES_DEFINE);
-#endif
 }
 
 static void replaceIncludes(const char* filepath, const char* source, std::string& out)
@@ -199,7 +219,7 @@ static void writeShaderToErrorFile(const char* filePath, const char* source)
 {
     std::string path = filePath;
     path += ".err";
-    std::auto_ptr<Stream> stream(FileSystem::open(path.c_str(), FileSystem::WRITE));
+    std::unique_ptr<Stream> stream(FileSystem::open(path.c_str(), FileSystem::WRITE));
     if (stream.get() != NULL && stream->canWrite())
     {
         stream->write(source, 1, strlen(source));
@@ -233,8 +253,6 @@ Effect* Effect::createFromSource(const char* vshPath, const char* vshSource, con
         replaceIncludes(vshPath, vshSource, vshSourceStr);
         if (vshSource && strlen(vshSource) != 0)
             vshSourceStr += "\n";
-            
-        //writeShaderToErrorFile(vshPath, vshSourceStr.c_str());   // Debugging
     }
     shaderSource[2] = vshPath ? vshSourceStr.c_str() :  vshSource;
     GL_ASSERT( vertexShader = glCreateShader(GL_VERTEX_SHADER) );
@@ -276,8 +294,6 @@ Effect* Effect::createFromSource(const char* vshPath, const char* vshSource, con
         replaceIncludes(fshPath, fshSource, fshSourceStr);
         if (fshSource && strlen(fshSource) != 0)
             fshSourceStr += "\n";
-
-        //writeShaderToErrorFile(fshPath, fshSourceStr.c_str()); // Debugging
     }
     shaderSource[2] = fshPath ? fshSourceStr.c_str() : fshSource;
     GL_ASSERT( fragmentShader = glCreateShader(GL_FRAGMENT_SHADER) );
@@ -423,7 +439,7 @@ Effect* Effect::createFromSource(const char* vshPath, const char* vshSource, con
                 uniform->_name = uniformName;
                 uniform->_location = uniformLocation;
                 uniform->_type = uniformType;
-                if (uniformType == GL_SAMPLER_2D)
+                if (uniformType == GL_SAMPLER_2D || uniformType == GL_SAMPLER_CUBE)
                 {
                     uniform->_index = samplerIndex;
                     samplerIndex += uniformSize;
@@ -456,7 +472,41 @@ VertexAttribute Effect::getVertexAttribute(const char* name) const
 Uniform* Effect::getUniform(const char* name) const
 {
     std::map<std::string, Uniform*>::const_iterator itr = _uniforms.find(name);
-    return (itr == _uniforms.end() ? NULL : itr->second);
+
+	if (itr != _uniforms.end()) {
+		// Return cached uniform variable
+		return itr->second;
+	}
+
+    GLint uniformLocation;
+    GL_ASSERT( uniformLocation = glGetUniformLocation(_program, name) );
+    if (uniformLocation > -1)
+	{
+		// Check for array uniforms ("u_directionalLightColor[0]" -> "u_directionalLightColor")
+		char* parentname = new char[strlen(name)+1];
+		strcpy(parentname, name);
+		if (strtok(parentname, "[") != NULL) {
+			std::map<std::string, Uniform*>::const_iterator itr = _uniforms.find(parentname);
+			if (itr != _uniforms.end()) {
+				Uniform* puniform = itr->second;
+
+				Uniform* uniform = new Uniform();
+				uniform->_effect = const_cast<Effect*>(this);
+				uniform->_name = name;
+				uniform->_location = uniformLocation;
+				uniform->_index = 0;
+				uniform->_type = puniform->getType();
+				_uniforms[name] = uniform;
+
+				SAFE_DELETE_ARRAY(parentname);
+				return uniform;
+			}
+		}
+		SAFE_DELETE_ARRAY(parentname);
+    }
+
+	// No uniform variable found - return NULL
+	return NULL;
 }
 
 Uniform* Effect::getUniform(unsigned int index) const
@@ -558,8 +608,10 @@ void Effect::setValue(Uniform* uniform, const Vector4* values, unsigned int coun
 void Effect::setValue(Uniform* uniform, const Texture::Sampler* sampler)
 {
     GP_ASSERT(uniform);
-    GP_ASSERT(uniform->_type == GL_SAMPLER_2D);
+    GP_ASSERT(uniform->_type == GL_SAMPLER_2D || uniform->_type == GL_SAMPLER_CUBE);
     GP_ASSERT(sampler);
+    GP_ASSERT((sampler->getTexture()->getType() == Texture::TEXTURE_2D && uniform->_type == GL_SAMPLER_2D) || 
+        (sampler->getTexture()->getType() == Texture::TEXTURE_CUBE && uniform->_type == GL_SAMPLER_CUBE));
 
     GL_ASSERT( glActiveTexture(GL_TEXTURE0 + uniform->_index) );
 
@@ -572,13 +624,15 @@ void Effect::setValue(Uniform* uniform, const Texture::Sampler* sampler)
 void Effect::setValue(Uniform* uniform, const Texture::Sampler** values, unsigned int count)
 {
     GP_ASSERT(uniform);
-    GP_ASSERT(uniform->_type == GL_SAMPLER_2D);
+    GP_ASSERT(uniform->_type == GL_SAMPLER_2D || uniform->_type == GL_SAMPLER_CUBE);
     GP_ASSERT(values);
 
     // Set samplers as active and load texture unit array
     GLint units[32];
     for (unsigned int i = 0; i < count; ++i)
     {
+        GP_ASSERT((const_cast<Texture::Sampler*>(values[i])->getTexture()->getType() == Texture::TEXTURE_2D && uniform->_type == GL_SAMPLER_2D) || 
+            (const_cast<Texture::Sampler*>(values[i])->getTexture()->getType() == Texture::TEXTURE_CUBE && uniform->_type == GL_SAMPLER_CUBE));
         GL_ASSERT( glActiveTexture(GL_TEXTURE0 + uniform->_index + i) );
 
         // Bind the sampler - this binds the texture and applies sampler state
@@ -604,7 +658,7 @@ Effect* Effect::getCurrentEffect()
 }
 
 Uniform::Uniform() :
-    _location(-1), _type(0), _index(0)
+    _location(-1), _type(0), _index(0), _effect(NULL)
 {
 }
 

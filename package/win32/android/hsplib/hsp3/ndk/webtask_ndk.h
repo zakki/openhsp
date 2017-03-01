@@ -9,59 +9,59 @@
 #define INETBUF_MAX 0x10000
 
 enum {
-CZHTTP_MODE_NONE = 0,		// ƒlƒbƒgÚ‘±‚È‚µ
-CZHTTP_MODE_READY,			// ƒlƒbƒgÚ‘±‘Ò‹@
-CZHTTP_MODE_VARREQUEST,		// ƒŠƒNƒGƒXƒg€”õ
-CZHTTP_MODE_VARREQSEND,		// ƒŠƒNƒGƒXƒg‘—M
-CZHTTP_MODE_VARDATAWAIT,	// ƒŠƒNƒGƒXƒgóM’†
-CZHTTP_MODE_VARDATAEND,		// ƒŠƒNƒGƒXƒgóMI—¹
+CZHTTP_MODE_NONE = 0,		// ãƒãƒƒãƒˆæ¥ç¶šãªã—
+CZHTTP_MODE_READY,			// ãƒãƒƒãƒˆæ¥ç¶šå¾…æ©Ÿ
+CZHTTP_MODE_VARREQUEST,		// ãƒªã‚¯ã‚¨ã‚¹ãƒˆæº–å‚™
+CZHTTP_MODE_VARREQSEND,		// ãƒªã‚¯ã‚¨ã‚¹ãƒˆé€ä¿¡
+CZHTTP_MODE_VARDATAWAIT,	// ãƒªã‚¯ã‚¨ã‚¹ãƒˆå—ä¿¡ä¸­
+CZHTTP_MODE_VARDATAEND,		// ãƒªã‚¯ã‚¨ã‚¹ãƒˆå—ä¿¡çµ‚äº†
 CZHTTP_MODE_MAX
 };
 
-#define CZHTTP_MODE_ERROR -1	// ƒGƒ‰[”­¶
+#define CZHTTP_MODE_ERROR -1	// ã‚¨ãƒ©ãƒ¼ç™ºç”Ÿ
 
-#define HTTPINFO_MODE 0		// Œ»İ‚Ìƒ‚[ƒh
-#define HTTPINFO_SIZE 1		// ƒf[ƒ^ƒTƒCƒY
-#define HTTPINFO_DATA 16		// æ“¾ƒf[ƒ^
-#define HTTPINFO_ERROR 17	// ƒGƒ‰[•¶š—ñ
+#define HTTPINFO_MODE 0		// ç¾åœ¨ã®ãƒ¢ãƒ¼ãƒ‰
+#define HTTPINFO_SIZE 1		// ãƒ‡ãƒ¼ã‚¿ã‚µã‚¤ã‚º
+#define HTTPINFO_DATA 16		// å–å¾—ãƒ‡ãƒ¼ã‚¿
+#define HTTPINFO_ERROR 17	// ã‚¨ãƒ©ãƒ¼æ–‡å­—åˆ—
 
 class WebTask {
 public:
 	WebTask();
 	~WebTask();
 
-	int Exec( void );									// –ˆƒtƒŒ[ƒ€‚²‚Æ‚ÉŒÄ‚Î‚ê‚é
-	int	Request( char *url, char *post );				// HTTPƒŠƒNƒGƒXƒg
+	int Exec( void );									// æ¯ãƒ•ãƒ¬ãƒ¼ãƒ ã”ã¨ã«å‘¼ã°ã‚Œã‚‹
+	int	Request( char *url, char *post );				// HTTPãƒªã‚¯ã‚¨ã‚¹ãƒˆ
 
-	//	ŠO•”‚Æ‚ÌƒCƒ“ƒ^[ƒtƒF[ƒX
-	int	getStatus( int id );							// ƒXƒe[ƒ^ƒX’l‚Ìæ“¾
-	char *getData( int id );							// ƒf[ƒ^‚Ìæ“¾
-	void setData( int id, char *str );					// ƒf[ƒ^‚Ìİ’è
+	//	å¤–éƒ¨ã¨ã®ã‚¤ãƒ³ã‚¿ãƒ¼ãƒ•ã‚§ãƒ¼ã‚¹
+	int	getStatus( int id );							// ã‚¹ãƒ†ãƒ¼ã‚¿ã‚¹å€¤ã®å–å¾—
+	char *getData( int id );							// ãƒ‡ãƒ¼ã‚¿ã®å–å¾—
+	void setData( int id, char *str );					// ãƒ‡ãƒ¼ã‚¿ã®è¨­å®š
 
 protected:
 
-	//	“à•”g—p
-	void Terminate( void );								// ”jŠü
-	void Reset( void );									// ƒŠƒZƒbƒg
+	//	å†…éƒ¨ä½¿ç”¨
+	void Terminate( void );								// ç ´æ£„
+	void Reset( void );									// ãƒªã‚»ãƒƒãƒˆ
 
-	char *getVarData( void ) { return vardata; };		// óMƒf[ƒ^ƒ|ƒCƒ“ƒ^‚Ìæ“¾
-	char *getError( void ) { return errstr; };			// ƒGƒ‰[•¶š—ñ‚Ìƒ|ƒCƒ“ƒ^‚ğæ“¾
-	int getMode( void ) { return mode; };				// Œ»İ‚Ìƒ‚[ƒh‚ğ•Ô‚·
-	int	getSize( void ) { return size; };				// óMƒf[ƒ^ƒTƒCƒY‚Ìæ“¾
-	int	getVarSize( void ) { return varsize; };			// óMƒoƒbƒtƒ@ƒTƒCƒY‚Ìæ“¾
-	void SetURL( char *url );							// ƒT[ƒo[‚ÌURL‚ğİ’è
+	char *getVarData( void ) { return vardata; };		// å—ä¿¡ãƒ‡ãƒ¼ã‚¿ãƒã‚¤ãƒ³ã‚¿ã®å–å¾—
+	char *getError( void ) { return errstr; };			// ã‚¨ãƒ©ãƒ¼æ–‡å­—åˆ—ã®ãƒã‚¤ãƒ³ã‚¿ã‚’å–å¾—
+	int getMode( void ) { return mode; };				// ç¾åœ¨ã®ãƒ¢ãƒ¼ãƒ‰ã‚’è¿”ã™
+	int	getSize( void ) { return size; };				// å—ä¿¡ãƒ‡ãƒ¼ã‚¿ã‚µã‚¤ã‚ºã®å–å¾—
+	int	getVarSize( void ) { return varsize; };			// å—ä¿¡ãƒãƒƒãƒ•ã‚¡ã‚µã‚¤ã‚ºã®å–å¾—
+	void SetURL( char *url );							// ã‚µãƒ¼ãƒãƒ¼ã®URLã‚’è¨­å®š
 	void ClearVarData( void );
 	void ClearPostData( void );
 	void SetError( char *mes );	
 	void SetPostData( char *post );
-	void SetVarServerFromURL( char *url );				// URL•¶š—ñ‚ğ‰ğÍ‚·‚é
+	void SetVarServerFromURL( char *url );				// URLæ–‡å­—åˆ—ã‚’è§£æã™ã‚‹
 
-	// ƒIƒvƒVƒ‡ƒ“€–Ú
-	void SetAgent( char *agent );						// ƒG[ƒWƒFƒ“ƒg‚Ìİ’è
-	void SetProxy( char *url, int port, int local );	// ƒvƒƒLƒV‚Ìİ’è
-	void SetHeader( char *header );						// ƒwƒbƒ_•¶š—ñ‚Ìİ’è
+	// ã‚ªãƒ—ã‚·ãƒ§ãƒ³é …ç›®
+	void SetAgent( char *agent );						// ã‚¨ãƒ¼ã‚¸ã‚§ãƒ³ãƒˆã®è¨­å®š
+	void SetProxy( char *url, int port, int local );	// ãƒ—ãƒ­ã‚­ã‚·ã®è¨­å®š
+	void SetHeader( char *header );						// ãƒ˜ãƒƒãƒ€æ–‡å­—åˆ—ã®è¨­å®š
 
-	//	ƒŠƒNƒGƒXƒg
+	//	ãƒªã‚¯ã‚¨ã‚¹ãƒˆ
 	void SetVarRequestGet( char *path );
 	void SetVarRequestPost( char *path, char *post );
 

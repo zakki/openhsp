@@ -3,6 +3,7 @@
 #include "Animation.h"
 #include "Game.h"
 #include "Node.h"
+#include "MaterialParameter.h"
 
 #define ANIMATION_TARGET_INDEFINITE_STR "INDEFINITE"
 
@@ -130,7 +131,7 @@ Animation* AnimationTarget::createAnimation(const char* id, Properties* animatio
     }
 
     // Get animation target property id
-    int propertyId = AnimationTarget::getPropertyId(_targetType, propertyIdStr);
+	int propertyId = getPropertyId(_targetType, propertyIdStr);
     if (propertyId == -1)
     {
         GP_ERROR("Property ID is invalid.");

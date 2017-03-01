@@ -3,7 +3,8 @@
 //		High performance Graphic Image access (emitter)
 //			onion software/onitama 2009/12
 //
-#ifdef HSPWIN
+
+#if defined(HSPWIN) || defined(HSPLINUX) || defined(HSPEMSCRIPTEN)
 #include "../hsp3/hsp3config.h"
 #else
 #include "hsp3config.h"

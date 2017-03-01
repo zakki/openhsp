@@ -21,12 +21,18 @@ namespace gameplay
 class ScriptController;
 
 /**
- * Defines the basic game initialization, logic and platform delegates.
+ * Defines the base class your game will extend for game initialization, logic and platform delegates.
+ *
+ * This represents a running cross-platform game application and provides an abstraction
+ * to most typical platform functionality and events.
+ *
+ * @see http://gameplay3d.github.io/GamePlay/docs/file-formats.html#wiki-Game_Config
  */
 class Game
 {
     friend class Platform;
-	friend class ShutdownListener;
+    friend class Gamepad;
+    friend class ShutdownListener;
 
 public:
     
@@ -53,6 +59,11 @@ public:
         CLEAR_DEPTH_STENCIL = CLEAR_DEPTH | CLEAR_STENCIL,
         CLEAR_COLOR_DEPTH_STENCIL = CLEAR_COLOR | CLEAR_DEPTH | CLEAR_STENCIL
     };
+
+    /**
+     * Constructor.
+     */
+    Game();
 
     /**
      * Destructor.
@@ -218,6 +229,7 @@ public:
      */
     void clear(ClearFlags flags, float red, float green, float blue, float alpha, float clearDepth, int clearStencil);
 
+#ifndef HSPDISH
     /**
      * Gets the audio controller for managing control of audio
      * associated with the game.
@@ -225,6 +237,7 @@ public:
      * @return The audio controller for this game.
      */
     inline AudioController* getAudioController() const;
+#endif
 
     /**
      * Gets the animation controller for managing control of animations
@@ -264,11 +277,6 @@ public:
      * @return The audio listener for this game.
      */
     AudioListener* getAudioListener();
-
-    /**
-     * Menu callback on menu events for platforms with special menu keys or special platform gestures.
-     */
-    virtual void menuEvent();
     
     /**
      * Shows or hides the virtual keyboard (if supported).
@@ -435,12 +443,37 @@ public:
     virtual void gesturePinchEvent(int x, int y, float scale);
 
     /**
+     * Gesture callback on Gesture::LONG_TAP events.
+     *
+     * @param x The x-coordinate of the long tap.
+     * @param y The y-coordinate of the long tap.
+     * @param duration The duration of the long tap in ms.
+     */
+    virtual void gestureLongTapEvent(int x, int y, float duration);
+
+    /**
      * Gesture callback on Gesture::TAP events.
      *
      * @param x The x-coordinate of the tap.
      * @param y The y-coordinate of the tap.
      */
     virtual void gestureTapEvent(int x, int y);
+
+    /**
+     * Gesture callback on Gesture::DRAG events.
+     *
+     * @param x The x-coordinate of the start of the drag event.
+     * @param y The y-coordinate of the start of the drag event.
+     */
+    virtual void gestureDragEvent(int x, int y);
+
+    /**
+     * Gesture callback on Gesture::DROP events.
+     *
+     * @param x The x-coordinate of the drop event.
+     * @param y The y-coordinate of the drop event.
+     */
+    virtual void gestureDropEvent(int x, int y);
 
     /**
      * Gamepad callback on gamepad events.  Override to receive Gamepad::CONNECTED_EVENT 
@@ -476,18 +509,18 @@ public:
     inline Gamepad* getGamepad(unsigned int index, bool preferPhysical = true) const;
 
     /**
-	 * Sets whether multi-sampling is to be enabled/disabled. Default is disabled.
-	 *
-	 * @param enabled true sets multi-sampling to be enabled, false to be disabled.
-	 */
-	inline void setMultiSampling(bool enabled);
+     * Sets whether multi-sampling is to be enabled/disabled. Default is disabled.
+     *
+     * @param enabled true sets multi-sampling to be enabled, false to be disabled.
+     */
+    inline void setMultiSampling(bool enabled);
 
-	/*
-	 * Is multi-sampling enabled.
-	 *
-	 * @return true if multi-sampling is enabled.
-	 */
-	inline bool isMultiSampling() const;
+    /**
+     * Is multi-sampling enabled.
+     *
+     * @return true if multi-sampling is enabled.
+     */
+    inline bool isMultiSampling() const;
 
     /**
      * Sets multi-touch is to be enabled/disabled. Default is disabled.
@@ -528,7 +561,7 @@ public:
     inline void getAccelerometerValues(float* pitch, float* roll);
 
     /**
-     * Gets raw sensor values, if equipped, allowing a distinction between device acceleration
+     * Gets sensor values (raw), if equipped, allowing a distinction between device acceleration
      * and rotation rate. Returns zeros on platforms with no corresponding support. See also
      * hasAccelerometer() and getAccelerometerValues().
      *
@@ -539,7 +572,7 @@ public:
      * @param gyroY The y-coordinate of the raw gyroscope data.
      * @param gyroZ The z-coordinate of the raw gyroscope data.
      */
-    inline void getRawSensorValues(float* accelX, float* accelY, float* accelZ, float* gyroX, float* gyroY, float* gyroZ);
+    inline void getSensorValues(float* accelX, float* accelY, float* accelZ, float* gyroX, float* gyroY, float* gyroZ);
 
     /**
      * Gets the command line arguments.
@@ -565,13 +598,19 @@ public:
      * Schedules a time event to be sent to the given TimeListener a given number of game milliseconds from now.
      * Game time stops while the game is paused. A time offset of zero will fire the time event in the next frame.
      * 
-     * Note: the given Lua function must take a single floating point number, which is the difference between the
-     * current game time and the target time (see TimeListener::timeEvent).
+     * The given script function must take a single floating point number, which is the difference between the
+     * current game time and the target time (see TimeListener::timeEvent). The function will be executed
+     * in the context of the script envionrment that the schedule function was called from.
      * 
      * @param timeOffset The number of game milliseconds in the future to schedule the event to be fired.
-     * @param function The Lua script function that will receive the event.
+     * @param function The script function that will receive the event.
      */
     void schedule(float timeOffset, const char* function);
+
+    /**
+     * Clears all scheduled time events.
+     */
+    void clearSchedule();
 
     /**
      * Opens an URL in an external browser, if available.
@@ -585,19 +624,14 @@ public:
 protected:
 
     /**
-     * Constructor.
-     */
-    Game();
-
-    /**
      * Initialize callback that is called just before the first frame when the game starts.
      */
-    virtual void initialize() = 0;
+    virtual void initialize();
 
     /**
      * Finalize callback that is called when the game on exits.
      */
-    virtual void finalize() = 0;
+    virtual void finalize();
 
     /**
      * Update callback for handling update routines.
@@ -607,7 +641,7 @@ protected:
      *
      * @param elapsedTime The elapsed game time.
      */
-    virtual void update(float elapsedTime) = 0;
+    virtual void update(float elapsedTime);
 
     /**
      * Render callback for handling rendering routines.
@@ -617,7 +651,7 @@ protected:
      *
      * @param elapsedTime The elapsed game time.
      */
-    virtual void render(float elapsedTime) = 0;
+    virtual void render(float elapsedTime);
 
     /**
      * Renders a single frame once and then swaps it to the display.
@@ -629,7 +663,7 @@ protected:
 
     /**
      * Renders a single frame once and then swaps it to the display.
-     * This calls the given Lua function, which should take no parameters and return nothing (void).
+     * This calls the given script function, which should take no parameters and return nothing (void).
      *
      * This is useful for rendering splash screens.
      */
@@ -646,29 +680,10 @@ protected:
 
 private:
 
-    /**
-     * Allows time listener interaction from Lua scripts.
-     */
-    struct ScriptListener : public TimeListener
+    struct ShutdownListener : public TimeListener
     {
-        /**
-         * Constructor.
-         */
-        ScriptListener(const char* url);
-
-        /**
-         * @see TimeListener#timeEvent(long, void*)
-         */
         void timeEvent(long timeDiff, void* cookie);
-
-        /** Holds the name of the Lua script function to call back. */
-        std::string function;
     };
-
-	struct ShutdownListener : public TimeListener
-	{
-		void timeEvent(long timeDiff, void* cookie);
-	};
 
     /**
      * TimeEvent represents the event that is sent to TimeListeners as a result of calling Game::schedule().
@@ -718,6 +733,18 @@ private:
      */
     void loadGamepads();
 
+    void keyEventInternal(Keyboard::KeyEvent evt, int key);
+    void touchEventInternal(Touch::TouchEvent evt, int x, int y, unsigned int contactIndex);
+    bool mouseEventInternal(Mouse::MouseEvent evt, int x, int y, int wheelDelta);
+    void resizeEventInternal(unsigned int width, unsigned int height);
+    void gestureSwipeEventInternal(int x, int y, int direction);
+    void gesturePinchEventInternal(int x, int y, float scale);
+    void gestureTapEventInternal(int x, int y);
+    void gestureLongTapEventInternal(int x, int y, float duration);
+    void gestureDragEventInternal(int x, int y);
+    void gestureDropEventInternal(int x, int y);
+    void gamepadEventInternal(Gamepad::GamepadEvent evt, Gamepad* gamepad);
+
     bool _initialized;                          // If game has initialized yet.
     State _state;                               // The game state.
     unsigned int _pausedCount;                  // Number of times pause() has been called.
@@ -734,13 +761,17 @@ private:
     int _clearStencil;                          // The clear stencil value last used for clearing the stencil buffer.
     Properties* _properties;                    // Game configuration properties object.
     AnimationController* _animationController;  // Controls the scheduling and running of animations.
-    //AudioController* _audioController;          // Controls audio sources that are playing in the game.
+#ifndef HSPDISH
+    AudioController* _audioController;          // Controls audio sources that are playing in the game.
+#endif
     PhysicsController* _physicsController;      // Controls the simulation of a physics scene and entities.
     AIController* _aiController;                // Controls AI simulation.
     AudioListener* _audioListener;              // The audio listener in 3D space.
     std::priority_queue<TimeEvent, std::vector<TimeEvent>, std::less<TimeEvent> >* _timeEvents;     // Contains the scheduled time events.
-    //ScriptController* _scriptController;            // Controls the scripting engine.
-    //std::vector<ScriptListener*>* _scriptListeners; // Lua script listeners.
+#ifndef HSPDISH
+    ScriptController* _scriptController;            // Controls the scripting engine.
+#endif
+    ScriptTarget* _scriptTarget;                // Script target for the game
 
     // Note: Do not add STL object member variables on the stack; this will cause false memory leaks to be reported.
 

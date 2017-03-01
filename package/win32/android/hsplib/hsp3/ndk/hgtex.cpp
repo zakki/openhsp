@@ -12,7 +12,7 @@
 
 #include "stb_image.h"
 
-#if defined(HSPLINUX) || defined(HSPEMSCRIPTEN)
+#ifdef HSPEMSCRIPTEN
 #include "../../hsp3/hsp3config.h"
 #else
 #include "../hsp3config.h"
@@ -40,8 +40,6 @@
 #define USE_JAVA_FONT
 #define FONT_TEX_SX 512
 #define FONT_TEX_SY 128
-#include "appengine.h"
-
 #define GL_GLEXT_PROTOTYPES
 #include <GL/gl.h>
 #include <GL/glext.h>
@@ -50,20 +48,8 @@
 #include "SDL/SDL_image.h"
 #include "SDL/SDL_opengl.h"
 
+#include "appengine.h"
 #include <emscripten.h>
-#endif
-
-#ifdef HSPLINUX
-
-#include "appengine.h"
-#define GL_GLEXT_PROTOTYPES
-#include <GL/gl.h>
-#include <GL/glext.h>
-
-#include "SDL/SDL.h"
-#include "SDL/SDL_image.h"
-#include "SDL/SDL_opengl.h"
-
 #endif
 
 #include "../supio.h"
@@ -153,14 +139,14 @@ void ChangeTex( int id )
 	if ( id < 0 ) {
 		curtex = -1;
 	    glBindTexture(GL_TEXTURE_2D,0);
-#if defined(HSPLINUX) || defined(HSPEMSCRIPTEN)
+#if defined(HSPEMSCRIPTEN)
 		glDisable(GL_TEXTURE_2D);
 #endif
 		return;
 	}
 	curtex = id;
     glBindTexture( GL_TEXTURE_2D, id );
-#if defined(HSPLINUX) || defined(HSPEMSCRIPTEN)
+#if defined(HSPEMSCRIPTEN)
 	glEnable(GL_TEXTURE_2D);
 #endif
 }
@@ -589,9 +575,5 @@ int GetCacheMesTextureID( char *msg, int font_size, int font_style )
 	//glTexEnvf(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_MODULATE);
 
 	return texid;
-#endif
-
-#if defined(HSPLINUX)
-	return -1;
 #endif
 }

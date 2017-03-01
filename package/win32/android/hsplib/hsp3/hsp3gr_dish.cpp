@@ -11,6 +11,7 @@
 #ifdef HSPNDK
 #include "ndkgp/gamehsp.h"
 #endif
+char *hsp3dish_getlog(void);		// for gameplay3d log
 #endif
 
 #include <stdio.h>
@@ -44,6 +45,7 @@
 #define USE_MMAN
 //#define USE_DGOBJ
 
+
 /*------------------------------------------------------------*/
 /*
 		system data
@@ -52,6 +54,7 @@
 
 static HspWnd *wnd;
 static Bmscr *bmscr;
+static Bmscr *master_bmscr;
 static HSPCTX *ctx;
 static int *type;
 static int *val;
@@ -508,7 +511,7 @@ static int cmdfunc_extcmd( int cmd )
 		int i;
 		char btnname[256];
 		unsigned short *sbr;
-		Bmscr *bmsrc;
+		//Bmscr *bmsrc;
 
 #ifndef HSPEMBED
 		i = 0;
@@ -526,7 +529,7 @@ static int cmdfunc_extcmd( int cmd )
 		ctx->stat = bmscr->AddHSPObjectButton( btnname, i, (void *)sbr );
 		p1 = bmscr->imgbtn;
 		if ( p1 >= 0 ) {
-			bmsrc = wnd->GetBmscrSafe( p1 );
+			//bmsrc = wnd->GetBmscrSafe( p1 );
 			bmscr->SetButtonImage( ctx->stat, p1, bmscr->btn_x1, bmscr->btn_y1, bmscr->btn_x2, bmscr->btn_y2, bmscr->btn_x3, bmscr->btn_y3 );
 		}
 		break;
@@ -593,27 +596,22 @@ static int cmdfunc_extcmd( int cmd )
 
 	case 0x0f:								// mes,print
 		{
-		//char stmp[1024];
-		char *ptr;
 		int chk;
-		chk = code_get();
-		if ( chk<=PARAM_END ) {
-			//printf( "\n" );
-			break;
+		int sw,x,y;
+		char *ptr;
+		ptr = code_getdsi( "" );
+		sw = code_getdi(0);
+		strsp_ini();
+		while(1) {
+			chk = strsp_get( ptr, ctx->stmp, 0, 1022 );
+			x = bmscr->cx; y = bmscr->cy;
+			bmscr->Print( ctx->stmp );
+			if ( chk == 0 ) break;
 		}
-		ptr = (char *)(HspVarCorePtr(mpval));
-		if ( mpval->flag != HSPVAR_FLAG_STR ) {
-			ptr = (char *)HspVarCoreCnv( mpval->flag, HSPVAR_FLAG_STR, ptr );	// 型が一致しない場合は変換
+		if ( sw ) {		// 改行しない
+			bmscr->cx = x + bmscr->printsizex;
+			bmscr->cy = y;
 		}
-		bmscr->Print( ptr );
-		//Alertf( "%s\n",ptr );
-		//strsp_ini();
-		//while(1) {
-		//	chk = strsp_get( ptr, stmp, 0, 1022 );
-		//	bmscr->Print( stmp );
-		//	  printf( "%s\n",stmp );
-		//	if ( chk == 0 ) break;
-		//}
 		break;
 		}
 	case 0x10:								// title
@@ -727,6 +725,7 @@ static int cmdfunc_extcmd( int cmd )
 
 		bmscr = wnd->GetBmscrSafe( p1 );
 		cur_window = p1;
+		hgio_gsel((BMSCR *)bmscr);
 		break;
 
 	case 0x1e:								// gcopy
@@ -885,7 +884,7 @@ static int cmdfunc_extcmd( int cmd )
 	case 0x2a:								// screen
 	case 0x2b:								// bgscr
 		{
-		int p7,p8;
+		int p7,p8,typeval;
 		p1 = code_getdi( 0 );
 		p2 = code_getdi( 640 );
 		p3 = code_getdi( 480 );
@@ -897,10 +896,13 @@ static int cmdfunc_extcmd( int cmd )
 
 		if ( cmd == 0x29 ) {
 			if ( p1 == 0 ) throw HSPERR_ILLEGAL_FUNCTION;
-			wnd->MakeBmscr( p1, HSPWND_TYPE_BUFFER, p5, p6, p2, p3 );
+			typeval = HSPWND_TYPE_BUFFER;
+			if (p4 & HSPWND_OPTION_OFFSCREEN) typeval = HSPWND_TYPE_OFFSCREEN;
+			wnd->MakeBmscr(p1, typeval, p5, p6, p2, p3, p4);
 		}
 		bmscr = wnd->GetBmscr( p1 );
 		cur_window = p1;
+		hgio_gsel( (BMSCR *)bmscr );
 		//
 		//Alertf("screen---(%x)\n",bmscr);
 		break;
@@ -1339,7 +1341,7 @@ static int cmdfunc_extcmd( int cmd )
 		if ( p1 & GPDRAW_OPT_OBJUPDATE ) {
 			game->updateAll();
 		}
-		game->drawAll( p1 );
+		hgio_draw_all(bmscr, p1);
 
 		if ( p1 & GPDRAW_OPT_DRAW2D ) {
 			hgio_draw_gpsprite( bmscr, false );
@@ -1508,14 +1510,14 @@ static int cmdfunc_extcmd( int cmd )
 		char *ps;
 		PVal *p_pval;
 		APTR p_aptr;
-		p_aptr = code_getva( &p_pval );
+		p_aptr = code_getva(&p_pval);
 		ps = code_gets();
-		strncpy( fname, ps, HSP_MAX_PATH );
-		p1 = code_getdi( 0 );
-		mat = game->makeMaterialTexture( fname, p1 );
-		if ( mat == NULL ) throw HSPERR_ILLEGAL_FUNCTION;
-		p6 = game->makeNewMat( mat );
-		code_setva( p_pval, p_aptr, HSPVAR_FLAG_INT, &p6 );
+		strncpy(fname, ps, HSP_MAX_PATH);
+		p1 = code_getdi(0);
+		mat = game->makeMaterialTexture(fname, p1);
+		if (mat == NULL) throw HSPERR_ILLEGAL_FUNCTION;
+		p6 = game->makeNewMat(mat);
+		code_setva(p_pval, p_aptr, HSPVAR_FLAG_INT, &p6);
 		break;
 		}
 	case 0x73:								// gpusermat
@@ -1528,11 +1530,11 @@ static int cmdfunc_extcmd( int cmd )
 		PVal *p_pval;
 		APTR p_aptr;
 		p_aptr = code_getva( &p_pval );
-		ps = code_gets();
+		ps = code_getds( game->getUserVSH() );
 		strncpy( vshname, ps, HSP_MAX_PATH );
-		ps = code_gets();
+		ps = code_getds(game->getUserFSH());
 		strncpy( fshname, ps, HSP_MAX_PATH );
-		ps = code_gets();
+		ps = code_getds(game->getUserDefines());
 		strncpy( defname, ps, 512 );
 		p1 = code_getdi( -1 );
 		p2 = code_getdi( 0 );
@@ -1547,7 +1549,7 @@ static int cmdfunc_extcmd( int cmd )
 		{
 		PVal *p_pval;
 		APTR p_aptr;
-		p_aptr = code_getva( &p_pval );
+		p_aptr = code_getva(&p_pval);
 		p1 = code_getdi( 0 );
 		p6 = game->makeCloneNode( p1 );
 		code_setva( p_pval, p_aptr, HSPVAR_FLAG_INT, &p6 );
@@ -1558,13 +1560,18 @@ static int cmdfunc_extcmd( int cmd )
 		PVal *p_pval;
 		APTR p_aptr;
 		char fname[HSP_MAX_PATH];
+		char objfname[512];
 		char *ps;
+		char *defname;
 		p_aptr = code_getva( &p_pval );
 		ps = code_gets();
 		strncpy( fname, ps, HSP_MAX_PATH );
 		ps = code_getds("");
-		if ( *ps == 0 ) { ps = NULL; }
-		p6 = game->makeModelNode( fname, ps );
+		strncpy(objfname, ps, 512);
+		defname = code_getds("");
+		ps = objfname;
+		if (*ps == 0) { ps = NULL; }
+		p6 = game->makeModelNode( fname, ps, defname );
 		code_setva( p_pval, p_aptr, HSPVAR_FLAG_INT, &p6 );
 		break;
 		}
@@ -2138,6 +2145,162 @@ static int cmdfunc_extcmd( int cmd )
 		mat->setParameter( fname, &p_vec1 );
 		break;
 		}
+	case 0xf6:								// gpgetlog
+	{
+		PVal *p_pval;
+		APTR p_aptr;
+		char *ps;
+		p_aptr = code_getva(&p_pval);
+		ps = hsp3dish_getlog();
+		code_setva(p_pval, p_aptr, HSPVAR_FLAG_STR, ps);
+		break;
+	}
+
+	case 0xf7:								// gpaddanim
+	{
+		char name[256];
+		char *ps;
+		p1 = code_getdi(0);
+		ps = code_gets();
+		strncpy(name, ps, 256);
+		p2 = code_getdi(0);
+		p3 = code_getdi(-1);
+		p4 = code_getdi(0);
+		ctx->stat = game->addAnimId(p1, name, p2, p3, p4);
+		break;
+	}
+
+	case 0xf8:								// gpgetanim
+	{
+		PVal *p_pval;
+		APTR p_aptr;
+		char *ps;
+		p_aptr = code_getva(&p_pval);
+		p1 = code_getdi(0);
+		p2 = code_getdi(0);
+		p3 = code_getdi(0);
+		if (p3 & 16){
+			ps = game->getAnimId(p1,p2,p3&15);
+			if (ps == NULL) {
+				ctx->stat = -1;
+			}
+			else {
+				ctx->stat = 0;
+				code_setva(p_pval, p_aptr, HSPVAR_FLAG_STR, ps);
+			}
+		}
+		else {
+			int res = 0;
+			ctx->stat = game->getAnimPrm(p1, p2, p3, &res);
+			code_setva(p_pval, p_aptr, HSPVAR_FLAG_INT, &res);
+		}
+		break;
+	}
+
+	case 0xf9:								// gpsetanim
+	{
+		p1 = code_getdi(0);
+		p2 = code_getdi(0);
+		p3 = code_getdi(0);
+		p4 = code_getdi(0);
+		ctx->stat = game->setAnimPrm(p1, p2, p3, p4);
+		break;
+	}
+
+	case 0xfa:								// gpact
+	{
+		char name[256];
+		char *ps;
+		p1 = code_getdi(0);
+		ps = code_getds("");
+		strncpy(name, ps, 256);
+		p2 = code_getdi(1);
+		ctx->stat = game->playAnimId(p1, ps, p2);
+		break;
+	}
+
+	case 0xfb:								// gpmatprm16
+	{
+		char fname[256];
+		char *ps;
+		gpmat *mat;
+		p1 = code_getdi(0);
+		ps = code_gets();
+		strncpy(fname, ps, 256);
+		code_getvec(&p_vec1);
+		p2 = code_getdi(1);
+		mat = game->getMat(p1);
+		if (mat == NULL) throw HSPERR_ILLEGAL_FUNCTION;
+		mat->setParameter(fname, (gameplay::Matrix *)&p_vec1,p2);
+		break;
+	}
+
+	case 0xfc:								// gpmatprmt
+	{
+		char fname[256];
+		char texname[256];
+		char *ps;
+		gpmat *mat;
+		p1 = code_getdi(0);
+		ps = code_gets();
+		strncpy(fname, ps, 256);
+		ps = code_gets();
+		strncpy(texname, ps, 256);
+		p2 = code_getdi(0);
+		mat = game->getMat(p1);
+		if (mat == NULL) throw HSPERR_ILLEGAL_FUNCTION;
+		mat->setParameter( fname, texname, p2 );
+		break;
+	}
+
+	case 0xfd:								// gpusershader
+	{
+		char vsh[256];
+		char fsh[256];
+		char *ps;
+		ps = code_gets();
+		strncpy(vsh, ps, 256);
+		ps = code_gets();
+		strncpy(fsh, ps, 256);
+		ps = code_gets();
+		game->setUserShader2D(vsh, fsh, ps);
+		break;
+	}
+
+	case 0xfe:								// gpgetmat
+	{
+		PVal *p_pval;
+		APTR p_aptr;
+		int res = -1;
+
+		p_aptr = code_getva(&p_pval);
+		p1 = code_getdi(0);
+		p2 = code_getdi(0);
+		switch (p2) {
+		case 0:
+		{
+			gpobj *obj;
+			obj = game->getObj(p1);
+			if (obj) {
+				res = obj->_usegpmat;
+			}
+			break;
+		}
+		case 1:
+		{
+			Bmscr *bm2;
+			bm2 = wnd->GetBmscrSafe(p1);	// 転送元のBMSCRを取得
+			if (bm2) {
+				res = bm2->texid;
+			}
+			break;
+		}
+		default:
+			throw HSPERR_ILLEGAL_FUNCTION;
+		}
+		code_setva(p_pval, p_aptr, HSPVAR_FLAG_INT, &res);
+		break;
+	}
 
 
 #endif

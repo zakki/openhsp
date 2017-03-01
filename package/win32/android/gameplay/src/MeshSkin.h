@@ -9,11 +9,16 @@ namespace gameplay
 
 class Bundle;
 class Model;
-class Joint;
 class Node;
+class Joint;
 
 /**
- * Represents the skin for a mesh.
+ * Defines the skin for a mesh.
+ *
+ * A skin is used to support skinning otherwise known as 
+ * vertex blending. This allows for a Model's mesh to support
+ * a skeleton on joints that will influence the vertex position
+ * and which the joints can be animated.
  */
 class MeshSkin : public Transform::Listener
 {

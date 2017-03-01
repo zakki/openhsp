@@ -7,7 +7,7 @@
 #include <stdlib.h>
 #include <math.h>
 
-#ifdef HSPWIN
+#if defined(HSPWIN) || defined(HSPLINUX) || defined(HSPEMSCRIPTEN)
 #include "../hsp3/hsp3config.h"
 #else
 #include "hsp3config.h"

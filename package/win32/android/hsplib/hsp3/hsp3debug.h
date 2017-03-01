@@ -107,4 +107,11 @@ typedef struct HSP3DEBUG
 
 } HSP3DEBUG;
 
+// Debug Module
+
+#define HSP3DEBUG_MODULE "hsp3debug"
+#define HSP3DEBUG_INIT "debugini"
+#define HSP3DEBUG_NOTICE "debug_notice"
+
+
 #endif

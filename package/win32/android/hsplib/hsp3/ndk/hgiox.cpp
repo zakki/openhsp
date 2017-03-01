@@ -12,7 +12,7 @@
 
 #include "stb_image.h"
 
-#if defined(HSPLINUX) || defined(HSPEMSCRIPTEN)
+#ifdef HSPEMSCRIPTEN
 #include "../../hsp3/hsp3config.h"
 #else
 #include "../hsp3config.h"
@@ -36,7 +36,7 @@
 #include "appengine.h"
 #endif
 
-#if defined(HSPLINUX) || defined(HSPEMSCRIPTEN)
+#ifdef HSPEMSCRIPTEN
 #define USE_JAVA_FONT
 #define FONT_TEX_SX 512
 #define FONT_TEX_SY 128
@@ -186,7 +186,7 @@ static GLfloat uvf2D[]={
     1.0f, 1.0f, //右下
 };
 
-#if defined(HSPEMSCRIPTEN)
+#ifndef HSPEMSCRIPTEN
 static void gluPerspective(double fovy, double aspect, double zNear, double zFar) {
     GLfloat xmin, xmax, ymin, ymax;
     ymax = zNear * tan(fovy * M_PI / 360.0);
@@ -251,7 +251,7 @@ void hgio_init( int mode, int sx, int sy, void *hwnd )
 	Alertf( "Init:HGIOScreen(%d,%d)",sx,sy );
 
 	//フォント準備
-#if defined(HSPNDK) || defined(HSPLINUX) || defined(HSPEMSCRIPTEN)
+#if defined(HSPNDK) || defined(HSPEMSCRIPTEN)
 	#ifdef USE_JAVA_FONT
 	//font_texid = MakeEmptyTex( FONT_TEX_SX, FONT_TEX_SY );
 	#else
@@ -358,7 +358,7 @@ void hgio_reset( void )
 	ox = (float)_bgsx;
 	oy = (float)_bgsy;
 
-#if defined(HSPEMSCRIPTEN)
+#ifndef HSPEMSCRIPTEN
 	glOrthof( 0, ox, -oy, 0,-100,100);
 #else
 	glOrtho( 0, ox, -oy, 0,-100,100);
@@ -377,20 +377,14 @@ void hgio_reset( void )
 //	glViewport(_originX,_originY, ox, oy );
 //	glViewport(_originX,-_originY, _sizex, _sizey );
     
-
-
-
     //モデリング変換
     glMatrixMode(GL_MODELVIEW);
     glLoadIdentity();
 
     glDisable(GL_LIGHTING);
     glDisable(GL_CULL_FACE);
-    glDisable(GL_DEPTH_TEST);
-#if defined(HSPIOS) || defined(HSPLINUX) || defined(HSPEMSCRIPTEN)
     glDisable(GL_DEPTH_BUFFER_BIT);
-#endif
-
+    glDisable(GL_DEPTH_TEST);
     //glClearColor(.7f, .7f, .9f, 1.f);
     //glShadeModel(GL_SMOOTH);
 
@@ -404,9 +398,7 @@ void hgio_reset( void )
         
     //テクスチャの設定
     glEnableClientState(GL_TEXTURE_COORD_ARRAY);
-
-
-#if defined(HSPLINUX) || defined(HSPEMSCRIPTEN)
+#if defined(HSPEMSCRIPTEN)
 	glDisable(GL_TEXTURE_2D);
 #else
     glEnable(GL_TEXTURE_2D);
@@ -433,12 +425,11 @@ void hgio_reset( void )
 	TexReset();
 
 	//フォント描画リセット
-#if defined(HSPNDK) || defined(HSPLINUX) || defined(HSPEMSCRIPTEN)
+#if defined(HSPNDK) || defined(HSPEMSCRIPTEN)
 #ifdef USE_JAVA_FONT
 	TexProc();
 #endif
 #endif
-
 
 }
 
@@ -457,7 +448,7 @@ void hgio_resume( void )
 	//テクスチャ初期化
 	TexInit();
 
-#if defined(HSPNDK) || defined(HSPLINUX) || defined(HSPEMSCRIPTEN)
+#if defined(HSPNDK) || defined(HSPEMSCRIPTEN)
 	#ifdef USE_JAVA_FONT
 	//font_texid = MakeEmptyTex( FONT_TEX_SX, FONT_TEX_SY );
 	#else
@@ -505,7 +496,6 @@ void hgio_setFilterMode( int mode )
 void hgio_setBlendMode( int mode, int aval )
 {
     //ブレンドモード設定
-
     switch( mode ) {
         case 0:                     //no blend
         case 1:                     //no blend
@@ -534,40 +524,12 @@ void hgio_setBlendMode( int mode, int aval )
             //glBlendFunc(GL_ONE,GL_ONE_MINUS_SRC_ALPHA);
             break;
     }
-    if ( mode <= 1 ) {
-        glDisableClientState(GL_COLOR_ARRAY);
-	} else {
-	    int *i_panelcolor;
-		int mulcolor;
-	    if ( mode >= 2 ) {
-		    if ( mode >= 3 ) {
-				mulcolor = ( aval<<24 );
-			} else {
-				mulcolor = 0xff000000;
-			}
-			if ( mainbm != NULL ) {
-			    int rval,gval,bval;
-				GLbyte *colbyte;
-			    rval = (( mainbm->mulcolor )>>16)&0xff;
-			    gval = (( mainbm->mulcolor )>>8)&0xff;
-			    bval = (( mainbm->mulcolor ))&0xff;
-				colbyte = (GLbyte *)&mulcolor;
-				*colbyte++ = rval;
-				*colbyte++ = gval;
-				*colbyte++ = bval;
-			} else {
-				mulcolor |= 0xffffff;
-			}
-		} else {
-			mulcolor = 0xffffffff;
-		}
-		i_panelcolor = (int *)panelColorsTex;
-		*i_panelcolor++ = mulcolor;
-		*i_panelcolor++ = mulcolor;
-		*i_panelcolor++ = mulcolor;
-		*i_panelcolor++ = mulcolor;
+    if ( mode >= 3 ) {
+        panelColorsTex[3] = panelColorsTex[4+3] = panelColorsTex[8+3] = panelColorsTex[12+3] = aval;
         glEnableClientState(GL_COLOR_ARRAY);
         glColorPointer(4,GL_UNSIGNED_BYTE,0,panelColorsTex);
+    } else {
+        glDisableClientState(GL_COLOR_ARRAY);
     }
     glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_MAG_FILTER,_filter); 
     glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_MIN_FILTER,_filter); 
@@ -708,9 +670,6 @@ void hgio_setfilter( int type, int opt )
 
 int hgio_title( char *str1 )
 {
-#if defined(HSPLINUX) || defined(HSPEMSCRIPTEN)
-	SDL_WM_SetCaption( (const char *)str1, NULL );
-#endif
 	return 0;
 }
 
@@ -719,7 +678,7 @@ int hgio_stick( int actsw )
 {
 	int ckey = 0;
 	if ( mouse_btn ) ckey|=256;	// mouse_l
-#if defined(HSPLINUX) || defined(HSPEMSCRIPTEN)
+#ifdef HSPEMSCRIPTEN
 	if ( get_key_state(SDLK_LEFT) )  ckey|=1;		// [left]
 	if ( get_key_state(SDLK_UP) )    ckey|=2;		// [up]
 	if ( get_key_state(SDLK_RIGHT) ) ckey|=4;		// [right]
@@ -745,79 +704,14 @@ int hgio_font( char *fontname, int size, int style )
 }
 
 
-static void hgio_messub( BMSCR *bm, char *str1 )
-{
-	// print per line
-	if ( bm->cy >= bm->sy ) return;
-	hgio_putTexFont( bm->cx, bm->cy, str1, bm->color );
-	if ( mes_sx > bm->printsizex ) bm->printsizex = mes_sx;
-	bm->printsizey += mes_sy;
-	bm->cy += mes_sy;
-}
-
-
 int hgio_mes( BMSCR *bm, char *str1 )
 {
-#if defined(HSPNDK) || defined(HSPLINUX) || defined(HSPEMSCRIPTEN)
-
-	int spcur;
-	int org_cy;
-	unsigned char *p;
-	unsigned char *st;
-	unsigned char a1;
-	unsigned char a2;
-	unsigned char bak_a1;
-
-	org_cy = bm->cy;
-	bm->printsizex = 0;
-	bm->printsizey = 0;
-
-	p = (unsigned char *)str1;
-	st = p;
-	spcur = 0;
-
-	while(1) {
-		a1 = *p;
-		if ( a1 == 0 ) break;
-		if ( a1 == 13 ) {
-			bak_a1 = a1; *p = 0;		// 終端を仮設定
-			hgio_messub( bm, (char *)st );
-			*p = bak_a1;
-			p++; st = p; spcur = 0;		// 終端を戻す
-			a1 = *p;
-			if ( a1 == 10 ) p++;
-			continue;
-		}
-		if ( a1 == 10 ) {
-			bak_a1 = a1; *p = 0;		// 終端を仮設定
-			hgio_messub( bm, (char *)st );
-			*p = bak_a1;
-			p++; st = p; spcur = 0;		// 終端を戻す
-			continue;
-		}
-/*		
-		if (a1&128) {					// UTF8チェック
-			while(1) {
-				a2 = *p;
-				if ( a2==0 ) break;
-				if ( ( a2 & 0xc0 ) != 0x80 ) break;
-				p++; spcur++;
-			}
-		} else {
-			p++; spcur++;
-		}
-*/
-		p++; spcur++;
-	}
-
-	if ( spcur > 0 ) {
-		hgio_messub( bm, (char *)st );
-	}
-
-	bm->cy = org_cy;
-
+#if defined(HSPNDK) || defined(HSPEMSCRIPTEN)
+	hgio_putTexFont( bm->cx, bm->cy, str1, bm->color );
+	bm->printsizex = mes_sx;
+	bm->printsizey = mes_sy;
+	//LOGI( str1 );
 #endif
-
 #ifdef HSPIOS
     gb_mes( bm, str1 );
 #endif
@@ -1046,6 +940,7 @@ void hgio_line( BMSCR *bm, float x, float y )
 	//
 	if ( bm == NULL ) return;
 	if ( bm->type != HSPWND_TYPE_MAIN ) throw HSPERR_UNSUPPORTED_FUNCTION;
+	if (drawflag == 0) hgio_render_start();
 
 	hgio_setColor( bm->color );
 
@@ -1094,6 +989,7 @@ void hgio_boxf( BMSCR *bm, float x1, float y1, float x2, float y2 )
 	//
 	if ( bm == NULL ) return;
 	if ( bm->type != HSPWND_TYPE_MAIN ) throw HSPERR_UNSUPPORTED_FUNCTION;
+	if (drawflag == 0) hgio_render_start();
 
 	ChangeTex( -1 );
 	hgio_setColor( bm->color );
@@ -1108,6 +1004,7 @@ void hgio_circle( BMSCR *bm, float x1, float y1, float x2, float y2, int mode )
 	float xx,yy,rx,ry;
 	if ( bm == NULL ) return;
 	if ( bm->type != HSPWND_TYPE_MAIN ) throw HSPERR_UNSUPPORTED_FUNCTION;
+	if (drawflag == 0) hgio_render_start();
 
 	rx = ((float)abs(x2-x1))*0.5f;
 	ry = ((float)abs(y2-y1))*0.5f;
@@ -1130,6 +1027,7 @@ void hgio_fillrot( BMSCR *bm, float x, float y, float sx, float sy, float ang )
 {
 	if ( bm == NULL ) return;
 	if ( bm->type != HSPWND_TYPE_MAIN ) throw HSPERR_UNSUPPORTED_FUNCTION;
+	if (drawflag == 0) hgio_render_start();
     
     GLfloat *flp;
 	GLfloat x0,y0,x1,y1,ofsx,ofsy;
@@ -1228,7 +1126,7 @@ void hgio_fcopy( float distx, float disty, short xx, short yy, short srcsx, shor
     *flp++ = x2;
     *flp++ = y2;
 
-#if defined(HSPLINUX) || defined(HSPEMSCRIPTEN)
+#if defined(HSPEMSCRIPTEN)
 	glEnable(GL_TEXTURE_2D);
 #endif
 
@@ -1243,7 +1141,7 @@ void hgio_fcopy( float distx, float disty, short xx, short yy, short srcsx, shor
 //    glDisableClientState(GL_COLOR_ARRAY);
     glDrawArrays(GL_TRIANGLE_STRIP,0,4);
 
-#if defined(HSPLINUX) || defined(HSPEMSCRIPTEN)
+#if defined(HSPEMSCRIPTEN)
 	glDisable(GL_TEXTURE_2D);
 #endif
 }
@@ -1257,6 +1155,7 @@ void hgio_copy( BMSCR *bm, short xx, short yy, short srcsx, short srcsy, BMSCR *
 	//
 	if ( bm == NULL ) return;
 	if ( bm->type != HSPWND_TYPE_MAIN ) throw HSPERR_UNSUPPORTED_FUNCTION;
+	if (drawflag == 0) hgio_render_start();
 
 	TEXINF *tex = GetTex( bmsrc->texid );
 	if ( tex->mode == TEXMODE_NONE ) return;
@@ -1343,6 +1242,7 @@ void hgio_copyrot( BMSCR *bm, short xx, short yy, short srcsx, short srcsy, floa
 	//
 	if ( bm == NULL ) return;
 	if ( bm->type != HSPWND_TYPE_MAIN ) throw HSPERR_UNSUPPORTED_FUNCTION;
+	if (drawflag == 0) hgio_render_start();
 
 	TEXINF *tex = GetTex( bmsrc->texid );
 	if ( tex->mode == TEXMODE_NONE ) return;
@@ -1448,6 +1348,7 @@ void hgio_square_tex( BMSCR *bm, int *posx, int *posy, BMSCR *bmsrc, int *uvx, i
 	//
 	if ( bm == NULL ) return;
 	if ( bm->type != HSPWND_TYPE_MAIN ) throw HSPERR_UNSUPPORTED_FUNCTION;
+	if (drawflag == 0) hgio_render_start();
 
 	TEXINF *tex = GetTex( bmsrc->texid );
 	if ( tex->mode == TEXMODE_NONE ) return;
@@ -1499,6 +1400,7 @@ void hgio_square( BMSCR *bm, int *posx, int *posy, int *color )
 
 	if ( bm == NULL ) return;
 	if ( bm->type != HSPWND_TYPE_MAIN ) throw HSPERR_UNSUPPORTED_FUNCTION;
+	if (drawflag == 0) hgio_render_start();
 
     flp = vertf2D;
 
@@ -1546,6 +1448,7 @@ int hgio_celputmulti( BMSCR *bm, int *xpos, int *ypos, int *cel, int count, BMSC
 
 	if ( bm == NULL ) return 0;
 	if ( bm->type != HSPWND_TYPE_MAIN ) throw HSPERR_UNSUPPORTED_FUNCTION;
+	if (drawflag == 0) hgio_render_start();
 
 	total =0;
 
@@ -1589,7 +1492,7 @@ int hgio_celputmulti( BMSCR *bm, int *xpos, int *ypos, int *cel, int count, BMSC
 
 int hgio_gettick( void )
 {
-#if defined(HSPLINUX) || defined(HSPNDK)
+#ifdef HSPNDK
 	int i;
 	timespec ts;
 	double nsec;
@@ -1613,7 +1516,7 @@ int hgio_gettick( void )
     //return (int)( CFAbsoluteTimeGetCurrent() * 1000.0 );
 #endif
 
-#if defined(HSPEMSCRIPTEN)
+#ifdef HSPEMSCRIPTEN
 	int i;
 	timespec ts;
 	double nsec;
@@ -1626,6 +1529,7 @@ int hgio_gettick( void )
 		init = true;
 		initTime = i;
 	}
+
 	return i - initTime;
 #endif
 }
@@ -1779,7 +1683,7 @@ int hgio_getmousebtn( void )
 
 /*-------------------------------------------------------------------------------*/
 
-#if defined(HSPNDK) || defined(HSPLINUX) || defined(HSPEMSCRIPTEN)
+#if defined(HSPNDK) || defined(HSPEMSCRIPTEN)
 
 void hgio_putTexFont( int x, int y, char *msg, int color )
 {
@@ -2044,7 +1948,7 @@ int hgio_render_start( void )
     gb_render_start();
 #endif
     
-#if defined(HSPNDK) || defined(HSPLINUX) || defined(HSPEMSCRIPTEN)
+#if defined(HSPNDK) || defined(HSPEMSCRIPTEN)
 	if ( GetSysReq( SYSREQ_CLSMODE ) == CLSMODE_SOLID ) {
 		//指定カラーで消去
 		int ccol = GetSysReq( SYSREQ_CLSCOLOR );
@@ -2057,7 +1961,7 @@ int hgio_render_start( void )
 	hgio_reset();
 
 
-#if defined(HSPNDK) || defined(HSPLINUX) || defined(HSPEMSCRIPTEN)
+#if defined(HSPNDK) || defined(HSPEMSCRIPTEN)
 	if ( GetSysReq( SYSREQ_CLSMODE ) == CLSMODE_TEXTURE ) {
 		//テクスチャで消去
 	}
@@ -2092,7 +1996,7 @@ int hgio_render_end( void )
     eglSwapBuffers(appengine->display, appengine->surface);
 #endif
 
-#if defined(HSPLINUX) || defined(HSPEMSCRIPTEN)
+#ifdef HSPEMSCRIPTEN
 	SDL_GL_SwapBuffers();
 #endif
 
@@ -2103,7 +2007,10 @@ int hgio_render_end( void )
 
 void hgio_screen( BMSCR *bm )
 {
-    mainbm = bm;
+	drawflag = 0;
+	if (bm->type == HSPWND_TYPE_MAIN) {
+		mainbm = bm;
+	}
 }
 
 
@@ -2115,6 +2022,23 @@ void hgio_delscreen( BMSCR *bm )
 		//gb_delimage( bm->texid );
 		bm->texid = -1;
 	}
+}
+
+
+int hgio_gsel( BMSCR *bm )
+{
+	//		gsel(描画先変更) 未実装
+	//
+	hgio_render_end();
+	return 0;
+}
+
+
+int hgio_buffer(BMSCR *bm)
+{
+	//		buffer(描画用画面作成) 未実装
+	//
+	return 0;
 }
 
 

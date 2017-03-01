@@ -11,6 +11,7 @@
 #include <time.h>
 #include <algorithm>
 #include <limits>
+#include <limits.h>
 
 #include "hsp3config.h"
 
@@ -1401,7 +1402,7 @@ static void *reffunc_intfunc( int *type_res, int arg )
 		break;
 	case 0x002:								// strlen
 		sval = code_gets();
-		reffunc_intfunc_ivalue = (int) strlen( sval );
+		reffunc_intfunc_ivalue = (int) STRLEN( sval );
 		break;
 
 	case 0x003:								// length(3.0)
@@ -1559,6 +1560,24 @@ static void *reffunc_intfunc( int *type_res, int arg )
 		findopt = code_getdi(0);
 		note_update();
 		reffunc_intfunc_ivalue = note.FindLine( p, findopt );
+		break;
+		}
+
+	case 0x014:								// varsize
+		{
+		PVal *pval;
+		APTR aptr;
+		PDAT *pdat;
+		STRUCTDAT *st;
+		if ( *type == TYPE_DLLFUNC ) {
+			st = &(ctx->mem_finfo[ *val ]);
+			reffunc_intfunc_ivalue = (int)(st->size);
+			code_next();
+			break;
+		}
+		aptr = code_getva( &pval );
+		pdat = HspVarCorePtrAPTR( pval, aptr );
+		HspVarCoreGetBlockSize(pval, pdat, &reffunc_intfunc_ivalue);
 		break;
 		}
 

@@ -9,15 +9,17 @@ namespace gameplay
 {
 
 /**
- * Physics controller class for a game character.
+ * Defines a physics controller class for a game character.
  *
- * This class can be used to control the movements and collisions of a character
+ * This can be used to control the movements and collisions of a character
  * in a game. It interacts with the Physics system to apply gravity and handle
  * collisions, however dynamics are not applied to the character directly by the
  * physics system. Instead, the character's movement is controlled directly by the
  * PhysicsCharacter class. This results in a more responsive and typical game
  * character than would be possible if trying to move a character by applying
  * physical simulation with forces.
+ *
+ * @see http://gameplay3d.github.io/GamePlay/docs/file-formats.html#wiki-Collision_Objects
  */
 class PhysicsCharacter : public PhysicsGhostObject
 {
@@ -112,6 +114,12 @@ public:
     void setVelocity(float x, float y, float z);
 
     /**
+     * Resets the internal velocity state which brings the character to an immediate stop
+     *
+    */
+    void resetVelocityState();
+
+    /**
      * Rotates the character.
      *
      * @param axis Axis of rotation.
@@ -176,8 +184,9 @@ public:
      * Causes the character to jump to the specified height.
      *
      * @param height The amount to jump.
+     * @param force Set true to force the character to jump even if vertical velocity is non-zero
      */
-    void jump(float height);
+    void jump(float height, bool force = false);
 
 protected:
 
@@ -196,8 +205,10 @@ private:
      * @param node Scene node that represents the character.
      * @param shape Physics collision shape definition.
      * @param mass The mass of the character.
+     * @param group Group identifier
+     * @param mask Bitmask field for filtering collisions with this object.
      */
-    PhysicsCharacter(Node* node, const PhysicsCollisionShape::Definition& shape, float mass);
+    PhysicsCharacter(Node* node, const PhysicsCollisionShape::Definition& shape, float mass, int group = PHYSICS_COLLISION_GROUP_DEFAULT, int mask = PHYSICS_COLLISION_MASK_DEFAULT);
 
     /**
      * Destructor.

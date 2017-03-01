@@ -5,7 +5,7 @@
 #ifndef __hgio_h
 #define __hgio_h
 
-#if defined(HSPWIN) || defined(HSPEMSCRIPTEN)
+#if defined(HSPWIN) || defined(HSPLINUX) || defined(HSPEMSCRIPTEN)
 #include "../hsp3/hsp3config.h"
 #else
 #include "hsp3config.h"
@@ -27,6 +27,8 @@ extern "C" {
 void hgio_init( int mode, int sx, int sy, void *hwnd );
 void hgio_term( void );
 void hgio_resume( void );
+int hgio_gsel( BMSCR *bm );
+int hgio_buffer(BMSCR *bm);
 
 void hgio_size( int sx, int sy );
 void hgio_view( int sx, int sy );
@@ -81,6 +83,7 @@ char *hgio_getstorage( char *fname );
 
 // for HGIMG4
 void hgio_draw_gpsprite( Bmscr *bmscr, bool lateflag );
+void hgio_draw_all(Bmscr *bmscr, int option);
 
 
 #ifdef __cplusplus
@@ -120,7 +123,7 @@ CLSMODE_MAX,
 #endif
 
 #ifdef HSPLINUX
-#include "linux/hgiox.h"
+#include "emscripten/hgiox.h"
 #endif
 
 #ifdef HSPEMSCRIPTEN

@@ -9,6 +9,7 @@
 #include "Rectangle.h"
 #include "SpriteBatch.h"
 #include "Properties.h"
+#include "Drawable.h"
 
 namespace gameplay
 {
@@ -17,6 +18,7 @@ class Node;
 
 /**
  * Defines a particle emitter that can be made to simulate and render a particle system.
+ *
  * Once created, the emitter can be set on a node in order to follow an object or be placed
  * within a scene.
  *
@@ -135,20 +137,21 @@ class Node;
  * be set before rendering the particle system and then will be reset to their original
  * values.  Accepts the same symbolic constants as glBlendFunc().
  *
+ * @see http://gameplay3d.github.io/GamePlay/docs/file-formats.html#wiki-Particles
  */
-class ParticleEmitter : public Ref
+class ParticleEmitter : public Ref, public Drawable
 {
     friend class Node;
 
 public:
 
     /**
-     * Defines the types of texture blending 
+     * Defines the types of blend modes
      */
-    enum TextureBlending
+    enum BlendMode
     {
-        BLEND_OPAQUE,
-        BLEND_TRANSPARENT,
+        BLEND_NONE,
+        BLEND_ALPHA,
         BLEND_ADDITIVE,
         BLEND_MULTIPLIED
     };
@@ -179,11 +182,53 @@ public:
      * Creates an uninitialized ParticleEmitter.
      *
      * @param texturePath A path to the image to use as this ParticleEmitter's texture.
-     * @param textureBlending The type of texture blending to be used for the particles emitted.
+     * @param blendMode The blend mode to be used for the particles emitted.
      * @param particleCountMax The maximum number of particles that can be alive at one time in this ParticleEmitter's system.
      * @script{create}
      */
-    static ParticleEmitter* create(const char* texturePath, TextureBlending textureBlending,  unsigned int particleCountMax);
+    static ParticleEmitter* create(const char* texturePath, BlendMode blendMode,  unsigned int particleCountMax);
+
+    /**
+     * Sets a new texture for this particle emitter.
+     *
+     * The current texture's reference count is decreased.
+     *
+     * @param texturePath Path to the new texture to set.
+     * @param blendMode Blend mode for the new texture.
+     */
+    void setTexture(const char* texturePath, BlendMode blendMode);
+
+    /**
+     * Sets a new texture for this particle emitter.
+     *
+     * The reference count of the specified texture is increased, and the 
+     * current texture's reference count is decreased.
+     *
+     * @param texture The new texture to set.
+     * @param blendMode Blend mode for the new texture.
+     */
+    void setTexture(Texture* texture, BlendMode blendMode);
+
+    /**
+     * Returns the texture currently set for this particle emitter.
+     *
+     * @return The current texture.
+     */
+    Texture* getTexture() const;
+
+    /**
+     * Sets the maximum number of particles that can be emitted.
+     *
+     * @param max The maximum number of particles that can be emitted.
+     */
+    void setParticleCountMax(unsigned int max);
+
+    /**
+     * Returns the maximum number of particles that can be emitted.
+     *
+     * @return The maximum number of particles that can be emitted.
+     */
+    unsigned int getParticleCountMax() const;
 
     /**
      * Sets the emission rate, measured in particles per second.
@@ -560,6 +605,20 @@ public:
     long getSpriteFrameDuration() const;
 
     /**
+     * Returns the width of the first frame this particle emitter's sprite.
+     *
+     * @return The width of the first frame of the sprite.
+     */
+    unsigned int getSpriteWidth() const;
+
+    /**
+     * Returns the height of the first frame this particle emitter's sprite.
+     *
+     * @return The height of the first frame of the sprite.
+     */
+    unsigned int getSpriteHeight() const;
+
+    /**
      * Sets the sprite's texture coordinates in texture space.
      *
      * @param frameCount The number of frames to set texture coordinates for.
@@ -590,11 +649,11 @@ public:
     void setSpriteFrameCoords(unsigned int frameCount, int width, int height);
 
     /**
-     * Gets the node that this emitter is attached to.
+     * Returns the current number of frames for the particle emitter's sprite.
      *
-     * @return The node that this emitter is attached to.
+     * @return The current frame count.
      */
-    Node* getNode() const;
+    unsigned int getSpriteFrameCount() const;
 
     /**
      * Sets whether the vector properties of newly emitted particles are rotated around the node's position
@@ -607,6 +666,41 @@ public:
     void setOrbit(bool orbitPosition, bool orbitVelocity, bool orbitAcceleration);
 
     /**
+     * Whether new particle positions are rotated by the node's rotation matrix.
+     *
+     * @return True if orbiting positions, false otherwise.
+     */
+    bool getOrbitPosition() const;
+
+    /**
+     * Whether new particle velocities are rotated by the node's rotation matrix.
+     *
+     * @return True if orbiting velocities, false otherwise.
+     */
+    bool getOrbitVelocity() const;
+
+    /**
+     * Whether new particle accelerations are rotated by the node's rotation matrix.
+     *
+     * @return True if orbiting accelerations, false otherwise.
+     */
+    bool getOrbitAcceleration() const;
+
+    /**
+     * Sets the texture blend mode for this particle emitter.
+     *
+     * @param blendMode The new blend mode.
+     */
+    void setBlendMode(BlendMode blendMode);
+
+    /**
+     * Gets the current texture blend mode for this particle emitter.
+     *
+     * @return The current blend mode.
+     */
+    BlendMode getBlendMode() const;
+
+    /**
      * Updates the particles currently being emitted.
      *
      * @param elapsedTime The amount of time that has passed since the last call to update(), in milliseconds.
@@ -614,26 +708,18 @@ public:
     void update(float elapsedTime);
 
     /**
+     * @see Drawable::draw
+     *
      * Draws the particles currently being emitted.
      */
-    void draw();
-
-    /**
-     * Gets a TextureBlending enum from a corresponding string.
-     */
-    static TextureBlending getTextureBlendingFromString(const char* src);
-
-    /**
-     * Sets a TextureBlending enum from a corresponding string.
-     */
-    void setTextureBlending(TextureBlending blending);
+    unsigned int draw(bool wireframe = false);
 
 private:
 
     /**
      * Constructor.
      */
-    ParticleEmitter(SpriteBatch* batch, unsigned int particlesCount);
+    ParticleEmitter(unsigned int particlesCount);
 
     /**
      * Destructor.
@@ -641,14 +727,24 @@ private:
     ~ParticleEmitter();
 
     /**
+     * @see Drawable::clone
+     */
+    Drawable* clone(NodeCloneContext& context);
+
+    /**
+     * Creates an uninitialized ParticleEmitter.
+     *
+     * @param texture the texture to use.
+     * @param blendMode The blend mode to be used for the particles emitted.
+     * @param particleCountMax The maximum number of particles that can be alive at one time in this ParticleEmitter's system.
+     * @script{create}
+     */
+    static ParticleEmitter* create(Texture* texture, BlendMode blendMode,  unsigned int particleCountMax);
+
+    /**
      * Hidden copy assignment operator.
      */
     ParticleEmitter& operator=(const ParticleEmitter&);
-
-    /**
-     * Sets the node that this emitter is attached to.
-     */
-    void setNode(Node* node);
 
     // Generates a scalar within the range defined by min and max.
     float generateScalar(float min, float max);
@@ -665,6 +761,9 @@ private:
 
     // Generates a color within the domain defined by a base vector and its variance.
     void generateColor(const Vector4& base, const Vector4& variance, Vector4* dst);
+
+    // Gets the blend mode from string.
+    static ParticleEmitter::BlendMode getBlendModeFromString(const char* src);
 
     /**
      * Defines the data for a single particle in the system.
@@ -690,7 +789,6 @@ private:
         float _size;
         unsigned int _frame;
         float _timeOnCurrentFrame;
-        bool _visible;
     };
 
     unsigned int _particleCountMax;
@@ -723,7 +821,7 @@ private:
     Vector3 _rotationAxisVar;
     Matrix _rotation;
     SpriteBatch* _spriteBatch;
-    TextureBlending _spriteTextureBlending;
+    BlendMode _spriteBlendMode;
     float _spriteTextureWidth;
     float _spriteTextureHeight;
     float _spriteTextureWidthRatio;
@@ -736,12 +834,12 @@ private:
     long _spriteFrameDuration;
     float _spriteFrameDurationSecs;
     float _spritePercentPerFrame;
-    Node* _node;
     bool _orbitPosition;
     bool _orbitVelocity;
     bool _orbitAcceleration;
     float _timePerEmission;
-    double _timeRunning;
+    float _emitTime;
+    double _lastUpdated;
 };
 
 }

@@ -4,20 +4,22 @@
 #include "Mesh.h"
 #include "MeshSkin.h"
 #include "Material.h"
+#include "Drawable.h"
 
 namespace gameplay
 {
 
 class Bundle;
 class MeshSkin;
-class Node;
-class NodeCloneContext;
+
 
 /**
- * Defines a Model which is an instance of a Mesh that can be drawn
- * with the specified Materials.
+ * Defines a Model or mesh renderer which is an instance of a Mesh. 
+ *
+ * A model has a mesh that can be drawn with the specified materials for
+ * each of the mesh parts within it.
  */
-class Model : public Ref
+class Model : public Ref, public Drawable
 {
     friend class Node;
     friend class Scene;
@@ -34,14 +36,14 @@ public:
 
     /**
      * Returns the Mesh for this Model.
-     * 
+     *
      * @return The Mesh for this Model.
      */
     Mesh* getMesh() const;
 
     /**
      * Returns the number of parts in the Mesh for this Model.
-     * 
+     *
      * @return The number of parts in the Mesh for this Model.
      */
     unsigned int getMeshPartCount() const;
@@ -53,7 +55,7 @@ public:
      * mesh part, the shared Material will be returned.
      *
      * @param partIndex The index of the mesh part whose Material to return (-1 for shared material).
-     * 
+     *
      * @return The requested Material, or NULL if no Material is set.
      */
     Material* getMaterial(int partIndex = -1);
@@ -84,12 +86,12 @@ public:
      *
      * Mesh parts will use an explicitly set part material, if set; otherwise they
      * will use the globally set material.
-     * 
+     *
      * @param vshPath The path to the vertex shader file.
      * @param fshPath The path to the fragment shader file.
      * @param defines A new-line delimited list of preprocessor defines. May be NULL.
      * @param partIndex The index of the mesh part to set the material for (-1 for shared material).
-     * 
+     *
      * @return The newly created and bound Material, or NULL if the Material could not be created.
      */
     Material* setMaterial(const char* vshPath, const char* fshPath, const char* defines = NULL, int partIndex = -1);
@@ -104,10 +106,10 @@ public:
      *
      * Mesh parts will use an explicitly set part material, if set; otherwise they
      * will use the globally set material.
-     * 
+     *
      * @param materialPath The path to the material file.
      * @param partIndex The index of the mesh part to set the material for (-1 for shared material).
-     * 
+     *
      * @return The newly created and bound Material, or NULL if the Material could not be created.
      */
     Material* setMaterial(const char* materialPath, int partIndex = -1);
@@ -123,41 +125,28 @@ public:
 
     /**
      * Returns the MeshSkin.
-     * 
+     *
      * @return The MeshSkin, or NULL if one is not set.
      */
     MeshSkin* getSkin() const;
 
     /**
-     * Returns the node that is associated with this model.
-     * 
-     * @return The node that is associated with this model.
-     */
-    Node* getNode() const;
-
-    /**
-     * Sets the node that is associated with this model.
+     * @see Drawable::draw
      *
-     * This method is automatically called when a model is attached to a node
-     * and therefore should not normally be called explicitly.
-     * 
-     * @param node The node that is associated with this model.
+     * Binds the vertex buffer and index buffers for the Mesh and
+     * all of its MeshPart's and draws the mesh geometry.
+     * Any other state necessary to render the Mesh, such as
+     * rendering states, shader state, and so on, should be set
+     * up before calling this method.
      */
-    void setNode(Node* node);
-
-    /**
-     * Draws this mesh instance.
-     *
-     * This method binds the vertex buffer and index buffers for the Mesh and
-     * all of its MeshParts and draws the mesh geometry. Any other state
-     * necessary to render the Mesh, such as rendering states, shader state,
-     * and so on, should be set up before calling this method.
-     *
-     * @param wireframe If true, draw the model in wireframe mode.
-     */
-    void draw(bool wireframe = false);
+    unsigned int draw(bool wireframe = false);
 
 private:
+
+    /**
+     * Constructor.
+     */
+    Model();
 
     /**
      * Constructor.
@@ -173,10 +162,20 @@ private:
      * Hidden copy assignment operator.
      */
     Model& operator=(const Model&);
+    
+    /**
+     * @see Drawable::setNode
+     */
+    void setNode(Node* node);
+
+    /**
+     * @see Drawable::clone
+     */
+    Drawable* clone(NodeCloneContext& context);
 
     /**
      * Sets the MeshSkin for this model.
-     * 
+     *
      * @param skin The MeshSkin for this model.
      */
     void setSkin(MeshSkin* skin);
@@ -188,19 +187,10 @@ private:
 
     void validatePartCount();
 
-    /**
-     * Clones the model and returns a new model.
-     * 
-     * @param context The clone context.
-     * @return The new cloned model.
-     */
-    Model* clone(NodeCloneContext &context);
-
     Mesh* _mesh;
     Material* _material;
     unsigned int _partCount;
     Material** _partMaterials;
-    Node* _node;
     MeshSkin* _skin;
 };
 

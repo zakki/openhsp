@@ -9,6 +9,7 @@
 #include <string.h>
 #include "hsp3config.h"
 #include "hsp3debug.h"
+#include "supio.h"
 
 /*------------------------------------------------------------*/
 /*
@@ -23,11 +24,7 @@
 */
 /*------------------------------------------------------------*/
 
-#if defined(HSPDEBUG)|defined(HSPDISH)|defined(HSPMAC)|defined(HSPLINUX)|defined(HSPEMSCRIPTEN)
-#define ENABLE_ERRMSG
-#endif
-
-#ifdef ENABLE_ERRMSG
+#ifdef HSPDEBUG
 #ifdef JPNMSG
 static char *err[]={
 	"",												// 0
@@ -125,7 +122,7 @@ static char *err[]={
 char *hspd_geterror( HSPERROR error )
 {
 	if ((error<0)||(error>=HSPERR_MAX)) return err[0];
-	return err[(int)error];
+	return err[error];
 }
 
 #else

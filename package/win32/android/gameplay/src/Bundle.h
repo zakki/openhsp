@@ -5,12 +5,13 @@
 #include "Font.h"
 #include "Node.h"
 #include "Game.h"
+#include "MeshSkin.h"
 
 namespace gameplay
 {
 
 /**
- * Represents a gameplay bundle file (.gpb) that contains a
+ * Defines a gameplay bundle file (.gpb) that contains a
  * collection of binary game assets that can be loaded.
  */
 class Bundle : public Ref
@@ -29,6 +30,8 @@ public:
      * release() method must be called. Note that calling release() does
      * NOT free any actual game objects created/returned from the Bundle
      * instance and those objects must be released separately.
+     * 
+     * @return The new Bundle or NULL if there was an error.
      * @script{create}
      */
     static Bundle* create(const char* path);
@@ -89,13 +92,27 @@ public:
     unsigned int getObjectCount() const;
 
     /**
-     * Returns the unique identifier of the top-level object at the specified index in this bundle.
+     * Gets the unique identifier of the top-level object at the specified index in this bundle.
      *
      * @param index The index of the object.
      * 
      * @return The ID of the object at the given index, or NULL if index is invalid.
      */
     const char* getObjectId(unsigned int index) const;
+
+    /**
+     * Gets the major version of the loaded bundle.
+     *
+     * @return The major version of the loaded bundle.
+     */
+    unsigned int getVersionMajor() const;
+
+    /**
+     * Gets the minor version of the loaded bundle.
+     *
+     * @return The minor version of the loaded bundle.
+     */
+    unsigned int getVersionMinor() const;
 
 private:
 
@@ -433,6 +450,7 @@ private:
      */
     bool skipNode();
 
+    unsigned char _version[2];
     std::string _path;
     std::string _materialPath;
     unsigned int _referenceCount;
