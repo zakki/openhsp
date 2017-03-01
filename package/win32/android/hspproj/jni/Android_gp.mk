@@ -2,147 +2,156 @@ LOCAL_PATH := $(call my-dir)
 
 include $(CLEAR_VARS)
 
-LOCAL_MODULE    := hg4test
+LOCAL_MODULE    := hsp3gptest4
 LOCAL_CFLAGS := -D__ANDROID__ -Wno-psabi -DHSPNDK -DHSPEMBED -DHSPDISH -DHSPDISHGP
-LOCAL_CPPFLAGS  += -fexceptions
-LOCAL_C_INCLUDES += ../hsplib35b4
+LOCAL_CPPFLAGS  += -fexceptions -std=c++11 -frtti -Wno-switch-enum -Wno-switch
+LOCAL_ARM_MODE := arm
+
+LOCAL_C_INCLUDES += ../hsplib35b5
 LOCAL_C_INCLUDES += ../gameplay/src
 LOCAL_C_INCLUDES += ../extlib/src
 
 LOCAL_SRC_FILES := hsp3embed/hsp3r.cpp hsp3embed/hspsource.cpp javafunc.cpp maingp.c \
 PlatformAndroid.cpp \
-../../hsplib35b4/hsp_native_app_glue.c \
-../../hsplib35b4/hsp3embed/hsp3code.cpp \
-../../hsplib35b4/hsp3embed/hsp3embed.cpp \
-../../hsplib35b4/hsp3embed/hspvar_util.cpp \
-../../hsplib35b4/hsp3embed/misc.cpp \
-../../hsplib35b4/hsp3/dpmread.cpp \
-../../hsplib35b4/hsp3/hsp3debug.cpp \
-../../hsplib35b4/hsp3/hsp3gr_dish.cpp \
-../../hsplib35b4/hsp3/hsp3int.cpp \
-../../hsplib35b4/hsp3/hspvar_core.cpp \
-../../hsplib35b4/hsp3/hspvar_double.cpp \
-../../hsplib35b4/hsp3/hspvar_int.cpp \
-../../hsplib35b4/hsp3/hspvar_label.cpp \
-../../hsplib35b4/hsp3/hspvar_str.cpp \
-../../hsplib35b4/hsp3/hspvar_struct.cpp \
-../../hsplib35b4/hsp3/hspwnd_dish.cpp \
-../../hsplib35b4/hsp3/hspwnd_obj.cpp \
-../../hsplib35b4/hsp3/random.cpp \
-../../hsplib35b4/hsp3/stack.cpp \
-../../hsplib35b4/hsp3/strbuf.cpp \
-../../hsplib35b4/hsp3/strnote.cpp \
-../../hsplib35b4/hsp3/sysreq.cpp \
-../../hsplib35b4/hsp3/ndk/supio_ndk.cpp \
-../../hsplib35b4/hsp3/ndk/hsp3ext_ndk.cpp \
-../../hsplib35b4/hsp3/ndk/webtask_ndk.cpp \
-../../hsplib35b4/hsp3/ndk/mmman.cpp \
-../../hsplib35b4/hsp3/ndkgp/gamehsp.cpp \
-../../hsplib35b4/hsp3/ndkgp/gpcam.cpp \
-../../hsplib35b4/hsp3/ndkgp/gplgt.cpp \
-../../hsplib35b4/hsp3/ndkgp/gpmat.cpp \
-../../hsplib35b4/hsp3/ndkgp/gpphy.cpp \
-../../hsplib35b4/hsp3/ndkgp/hgiox.cpp \
-../../hsplib35b4/hsp3/geometry.cpp \
-    ../../gameplay/src/AbsoluteLayout.cpp \
-    ../../gameplay/src/AIAgent.cpp \
-    ../../gameplay/src/AIController.cpp \
-    ../../gameplay/src/AIMessage.cpp \
-    ../../gameplay/src/AIState.cpp \
-    ../../gameplay/src/AIStateMachine.cpp \
-    ../../gameplay/src/Animation.cpp \
-    ../../gameplay/src/AnimationClip.cpp \
-    ../../gameplay/src/AnimationController.cpp \
-    ../../gameplay/src/AnimationTarget.cpp \
-    ../../gameplay/src/AnimationValue.cpp \
-    ../../gameplay/src/AudioController.cpp \
-    ../../gameplay/src/AudioListener.cpp \
-    ../../gameplay/src/BoundingBox.cpp \
-    ../../gameplay/src/BoundingSphere.cpp \
-    ../../gameplay/src/Bundle.cpp \
-    ../../gameplay/src/Button.cpp \
-    ../../gameplay/src/Camera.cpp \
-    ../../gameplay/src/CheckBox.cpp \
-    ../../gameplay/src/Container.cpp \
-    ../../gameplay/src/Control.cpp \
-    ../../gameplay/src/Curve.cpp \
-    ../../gameplay/src/DebugNew.cpp \
-    ../../gameplay/src/DepthStencilTarget.cpp \
-    ../../gameplay/src/Effect.cpp \
-    ../../gameplay/src/FileSystem.cpp \
-    ../../gameplay/src/FlowLayout.cpp \
-    ../../gameplay/src/Font.cpp \
-    ../../gameplay/src/Form.cpp \
-    ../../gameplay/src/FrameBuffer.cpp \
-    ../../gameplay/src/Frustum.cpp \
-    ../../gameplay/src/Game.cpp \
-    ../../gameplay/src/Gamepad.cpp \
-    ../../gameplay/src/HeightField.cpp \
-    ../../gameplay/src/Image.cpp \
-    ../../gameplay/src/ImageControl.cpp \
-    ../../gameplay/src/Joint.cpp \
-    ../../gameplay/src/Joystick.cpp \
-    ../../gameplay/src/Label.cpp \
-    ../../gameplay/src/Layout.cpp \
-    ../../gameplay/src/Light.cpp \
-    ../../gameplay/src/Logger.cpp \
-    ../../gameplay/src/Material.cpp \
-    ../../gameplay/src/MaterialParameter.cpp \
-    ../../gameplay/src/MathUtil.cpp \
-    ../../gameplay/src/Matrix.cpp \
-    ../../gameplay/src/Mesh.cpp \
-    ../../gameplay/src/MeshBatch.cpp \
-    ../../gameplay/src/MeshPart.cpp \
-    ../../gameplay/src/MeshSkin.cpp \
-    ../../gameplay/src/Model.cpp \
-    ../../gameplay/src/Node.cpp \
-    ../../gameplay/src/ParticleEmitter.cpp \
-    ../../gameplay/src/Pass.cpp \
-    ../../gameplay/src/PhysicsCharacter.cpp \
-    ../../gameplay/src/PhysicsCollisionObject.cpp \
-    ../../gameplay/src/PhysicsCollisionShape.cpp \
-    ../../gameplay/src/PhysicsConstraint.cpp \
-    ../../gameplay/src/PhysicsController.cpp \
-    ../../gameplay/src/PhysicsFixedConstraint.cpp \
-    ../../gameplay/src/PhysicsGenericConstraint.cpp \
-    ../../gameplay/src/PhysicsGhostObject.cpp \
-    ../../gameplay/src/PhysicsHingeConstraint.cpp \
-    ../../gameplay/src/PhysicsRigidBody.cpp \
-    ../../gameplay/src/PhysicsSocketConstraint.cpp \
-    ../../gameplay/src/PhysicsSpringConstraint.cpp \
-    ../../gameplay/src/PhysicsVehicle.cpp \
-    ../../gameplay/src/PhysicsVehicleWheel.cpp \
-    ../../gameplay/src/Plane.cpp \
-    ../../gameplay/src/Platform.cpp \
-    ../../gameplay/src/Properties.cpp \
-    ../../gameplay/src/Quaternion.cpp \
-    ../../gameplay/src/RadioButton.cpp \
-    ../../gameplay/src/Ray.cpp \
-    ../../gameplay/src/Rectangle.cpp \
-    ../../gameplay/src/Ref.cpp \
-    ../../gameplay/src/RenderState.cpp \
-    ../../gameplay/src/RenderTarget.cpp \
-    ../../gameplay/src/Scene.cpp \
-    ../../gameplay/src/SceneLoader.cpp \
-    ../../gameplay/src/ScreenDisplayer.cpp \
-    ../../gameplay/src/ScriptController.cpp \
-    ../../gameplay/src/ScriptTarget.cpp \
-    ../../gameplay/src/Slider.cpp \
-    ../../gameplay/src/SpriteBatch.cpp \
-    ../../gameplay/src/Technique.cpp \
-    ../../gameplay/src/Terrain.cpp \
-    ../../gameplay/src/TerrainPatch.cpp \
-    ../../gameplay/src/TextBox.cpp \
-    ../../gameplay/src/Texture.cpp \
-    ../../gameplay/src/Theme.cpp \
-    ../../gameplay/src/ThemeStyle.cpp \
-    ../../gameplay/src/Transform.cpp \
-    ../../gameplay/src/Vector2.cpp \
-    ../../gameplay/src/Vector3.cpp \
-    ../../gameplay/src/Vector4.cpp \
-    ../../gameplay/src/VertexAttributeBinding.cpp \
-    ../../gameplay/src/VertexFormat.cpp \
-    ../../gameplay/src/VerticalLayout.cpp \
+../../hsplib35b5/hsp_native_app_glue.c \
+../../hsplib35b5/hsp3embed/hsp3code.cpp \
+../../hsplib35b5/hsp3embed/hsp3embed.cpp \
+../../hsplib35b5/hsp3embed/hspvar_util.cpp \
+../../hsplib35b5/hsp3embed/misc.cpp \
+../../hsplib35b5/hsp3/dpmread.cpp \
+../../hsplib35b5/hsp3/hsp3debug.cpp \
+../../hsplib35b5/hsp3/hsp3gr_dish.cpp \
+../../hsplib35b5/hsp3/hsp3int.cpp \
+../../hsplib35b5/hsp3/hspvar_core.cpp \
+../../hsplib35b5/hsp3/hspvar_double.cpp \
+../../hsplib35b5/hsp3/hspvar_int.cpp \
+../../hsplib35b5/hsp3/hspvar_label.cpp \
+../../hsplib35b5/hsp3/hspvar_str.cpp \
+../../hsplib35b5/hsp3/hspvar_struct.cpp \
+../../hsplib35b5/hsp3/hspwnd_dish.cpp \
+../../hsplib35b5/hsp3/hspwnd_obj.cpp \
+../../hsplib35b5/hsp3/random.cpp \
+../../hsplib35b5/hsp3/stack.cpp \
+../../hsplib35b5/hsp3/strbuf.cpp \
+../../hsplib35b5/hsp3/strnote.cpp \
+../../hsplib35b5/hsp3/sysreq.cpp \
+../../hsplib35b5/hsp3/geometry.cpp \
+../../hsplib35b5/hsp3/ndk/supio_ndk.cpp \
+../../hsplib35b5/hsp3/ndk/hsp3ext_ndk.cpp \
+../../hsplib35b5/hsp3/ndk/stb_image.c \
+../../hsplib35b5/hsp3/ndk/mmman.cpp \
+../../hsplib35b5/hsp3/ndk/webtask_ndk.cpp \
+../../hsplib35b5/hsp3/ndkgp/hgiox.cpp \
+../../hsplib35b5/hsp3/ndkgp/gamehsp.cpp \
+../../hsplib35b5/hsp3/ndkgp/gpcam.cpp \
+../../hsplib35b5/hsp3/ndkgp/gplgt.cpp \
+../../hsplib35b5/hsp3/ndkgp/gpmat.cpp \
+../../hsplib35b5/hsp3/ndkgp/gpphy.cpp \
+../../gameplay/src/AbsoluteLayout.cpp \
+../../gameplay/src/AIAgent.cpp \
+../../gameplay/src/AIController.cpp \
+../../gameplay/src/AIMessage.cpp \
+../../gameplay/src/AIState.cpp \
+../../gameplay/src/AIStateMachine.cpp \
+../../gameplay/src/Animation.cpp \
+../../gameplay/src/AnimationClip.cpp \
+../../gameplay/src/AnimationController.cpp \
+../../gameplay/src/AnimationTarget.cpp \
+../../gameplay/src/AnimationValue.cpp \
+../../gameplay/src/AudioController.cpp \
+../../gameplay/src/AudioListener.cpp \
+../../gameplay/src/AudioSource.cpp \
+../../gameplay/src/BoundingBox.cpp \
+../../gameplay/src/BoundingSphere.cpp \
+../../gameplay/src/Bundle.cpp \
+../../gameplay/src/Button.cpp \
+../../gameplay/src/Camera.cpp \
+../../gameplay/src/CheckBox.cpp \
+../../gameplay/src/Container.cpp \
+../../gameplay/src/Control.cpp \
+../../gameplay/src/ControlFactory.cpp \
+../../gameplay/src/Curve.cpp \
+../../gameplay/src/DebugNew.cpp \
+../../gameplay/src/DepthStencilTarget.cpp \
+../../gameplay/src/Drawable.cpp \
+../../gameplay/src/Effect.cpp \
+../../gameplay/src/FileSystem.cpp \
+../../gameplay/src/FlowLayout.cpp \
+../../gameplay/src/Font.cpp \
+../../gameplay/src/Form.cpp \
+../../gameplay/src/FrameBuffer.cpp \
+../../gameplay/src/Frustum.cpp \
+../../gameplay/src/Game.cpp \
+../../gameplay/src/Gamepad.cpp \
+../../gameplay/src/HeightField.cpp \
+../../gameplay/src/Image.cpp \
+../../gameplay/src/ImageControl.cpp \
+../../gameplay/src/Joint.cpp \
+../../gameplay/src/JoystickControl.cpp \
+../../gameplay/src/Label.cpp \
+../../gameplay/src/Layout.cpp \
+../../gameplay/src/Light.cpp \
+../../gameplay/src/Logger.cpp \
+../../gameplay/src/Material.cpp \
+../../gameplay/src/MaterialParameter.cpp \
+../../gameplay/src/MathUtil.cpp \
+../../gameplay/src/Matrix.cpp \
+../../gameplay/src/Mesh.cpp \
+../../gameplay/src/MeshBatch.cpp \
+../../gameplay/src/MeshPart.cpp \
+../../gameplay/src/MeshSkin.cpp \
+../../gameplay/src/Model.cpp \
+../../gameplay/src/Node.cpp \
+../../gameplay/src/ParticleEmitter.cpp \
+../../gameplay/src/Pass.cpp \
+../../gameplay/src/PhysicsCharacter.cpp \
+../../gameplay/src/PhysicsCollisionObject.cpp \
+../../gameplay/src/PhysicsCollisionShape.cpp \
+../../gameplay/src/PhysicsConstraint.cpp \
+../../gameplay/src/PhysicsController.cpp \
+../../gameplay/src/PhysicsFixedConstraint.cpp \
+../../gameplay/src/PhysicsGenericConstraint.cpp \
+../../gameplay/src/PhysicsGhostObject.cpp \
+../../gameplay/src/PhysicsHingeConstraint.cpp \
+../../gameplay/src/PhysicsRigidBody.cpp \
+../../gameplay/src/PhysicsSocketConstraint.cpp \
+../../gameplay/src/PhysicsSpringConstraint.cpp \
+../../gameplay/src/PhysicsVehicle.cpp \
+../../gameplay/src/PhysicsVehicleWheel.cpp \
+../../gameplay/src/Plane.cpp \
+../../gameplay/src/Platform.cpp \
+../../gameplay/src/Properties.cpp \
+../../gameplay/src/Quaternion.cpp \
+../../gameplay/src/RadioButton.cpp \
+../../gameplay/src/Ray.cpp \
+../../gameplay/src/Rectangle.cpp \
+../../gameplay/src/Ref.cpp \
+../../gameplay/src/RenderState.cpp \
+../../gameplay/src/RenderTarget.cpp \
+../../gameplay/src/Scene.cpp \
+../../gameplay/src/SceneLoader.cpp \
+../../gameplay/src/ScreenDisplayer.cpp \
+../../gameplay/src/ScriptController.cpp \
+../../gameplay/src/ScriptTarget.cpp \
+../../gameplay/src/Slider.cpp \
+../../gameplay/src/Sprite.cpp \
+../../gameplay/src/SpriteBatch.cpp \
+../../gameplay/src/Technique.cpp \
+../../gameplay/src/Terrain.cpp \
+../../gameplay/src/TerrainPatch.cpp \
+../../gameplay/src/Text.cpp \
+../../gameplay/src/TextBox.cpp \
+../../gameplay/src/Texture.cpp \
+../../gameplay/src/Theme.cpp \
+../../gameplay/src/ThemeStyle.cpp \
+../../gameplay/src/TileSet.cpp \
+../../gameplay/src/Transform.cpp \
+../../gameplay/src/Vector2.cpp \
+../../gameplay/src/Vector3.cpp \
+../../gameplay/src/Vector4.cpp \
+../../gameplay/src/VertexAttributeBinding.cpp \
+../../gameplay/src/VertexFormat.cpp \
+../../gameplay/src/VerticalLayout.cpp \
     ../../extlib/src/BulletCollision/BroadphaseCollision/btAxisSweep3.cpp \
     ../../extlib/src/BulletCollision/BroadphaseCollision/btBroadphaseProxy.cpp \
     ../../extlib/src/BulletCollision/BroadphaseCollision/btCollisionAlgorithm.cpp \
@@ -306,8 +315,7 @@ PlatformAndroid.cpp \
     ../../extlib/src/libpng/pngwtran.c \
     ../../extlib/src/libpng/pngwutil.c
 
-LOCAL_LDLIBS    := -llog -landroid -lEGL -lGLESv2 -lOpenSLES -ljnigraphics -Llibs/$(TARGET_ARCH_ABI) -lobaqlib
-LOCAL_STATIC_LIBRARIES := obaqlib
+LOCAL_LDLIBS    := -llog -landroid -lEGL -lGLESv2 -lOpenSLES -ljnigraphics -Llibs/$(TARGET_ARCH_ABI)
 
 include $(BUILD_SHARED_LIBRARY)
 
