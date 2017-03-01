@@ -21,8 +21,12 @@ void hsp3eb_pause( void );
 void hsp3eb_resume( void );
 int hsp3eb_gettask( void );
 
+
 #ifdef __cplusplus
 }
 #endif /* __cplusplus */
+
+char *hsp3dish_getlog(void);
+
 
 #endif

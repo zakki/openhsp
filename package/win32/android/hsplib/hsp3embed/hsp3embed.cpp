@@ -17,7 +17,7 @@
 #include "hsp3r.h"
 #include "hsp3embed.h"
 
-#define USE_OBAQ
+//#define USE_OBAQ
 
 #ifdef USE_OBAQ
 #include "../hsp3/obaq/hsp3dw.h"
@@ -36,12 +36,12 @@ gameplay::Platform *platform;
 //		gameplay Log
 //-------------------------------------------------------------
 
-static char gplog[1024];
+static std::string gplog;
 
 extern "C" {
 	static void logfunc( gameplay::Logger::Level level, const char *msg )
 	{
-		strcat( gplog, msg );
+		gplog += msg;
 	}
 }
 
@@ -147,7 +147,9 @@ int hsp3eb_init( void )
     game = new gamehsp;
 
 	gplog[0] = 0;
-	gameplay::Logger::set( gameplay::Logger::LEVEL_ERROR, logfunc );
+	gameplay::Logger::set(gameplay::Logger::LEVEL_INFO, logfunc);
+	gameplay::Logger::set(gameplay::Logger::LEVEL_WARN, logfunc);
+	gameplay::Logger::set(gameplay::Logger::LEVEL_ERROR, logfunc);
 	
 	platform = gameplay::Platform::create( game, NULL, hsp_wx, hsp_wy, false );
 //	platform = gameplay::Platform::create( game, m_hWnd, hsp_wx, hsp_wy, false );
@@ -189,6 +191,9 @@ int hsp3eb_init( void )
 
 	//		Utility setup
 	VarUtilInit();
+
+	//gameplay::Logger::log(gameplay::Logger::LEVEL_INFO, "HGIMG4 %s initalized : %s\n", hspver, devinfo->devname);
+
 
 #ifdef HSPDEBUG
 	dbginfo = code_getdbg();
@@ -236,6 +241,10 @@ void hsp3eb_bye( void )
 
 }
 
+char *hsp3dish_getlog(void)
+{
+	return (char *)gplog.c_str();
+}
 
 void hsp3eb_error( void )
 {

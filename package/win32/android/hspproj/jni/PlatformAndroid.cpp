@@ -177,8 +177,32 @@ static int getRotation()
 }
 
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
+void destroyEGLSurface();
+int initEGL();
+void destroyEGLMain();
+unsigned int getEGLDisplayWidth( void );
+unsigned int getEGLDisplayHeight( void );
+
+#ifdef __cplusplus
+}
+#endif /* __cplusplus */
+
+unsigned int getEGLDisplayWidth( void )
+{
+    return __width;
+}
+    
+unsigned int getEGLDisplayHeight( void )
+{
+    return __height;
+}
+
 // Initialized EGL resources.
-static bool initEGL()
+int initEGL()
 {
     int samples = 0;
     Properties* config = Game::getInstance()->getConfig()->getNamespace("window", true);
@@ -333,13 +357,13 @@ static bool initEGL()
         glIsVertexArray = (PFNGLISVERTEXARRAYOESPROC)eglGetProcAddress("glIsVertexArrayOES");
     }
     
-    return true;
+    return 0;
     
 error:
-    return false;
+    return -1;
 }
 
-static void destroyEGLSurface()
+void destroyEGLSurface()
 {
     if (__eglDisplay != EGL_NO_DISPLAY)
     {
@@ -353,7 +377,7 @@ static void destroyEGLSurface()
     }
 }
 
-static void destroyEGLMain()
+void destroyEGLMain()
 {
     destroyEGLSurface();
 
