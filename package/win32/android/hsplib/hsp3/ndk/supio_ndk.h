@@ -4,6 +4,17 @@
 //
 #include "../../appengine.h"
 
+#define HSPAPICHAR char
+#define HSPCHAR char
+
+HSPAPICHAR *chartoapichar( const HSPCHAR*,HSPAPICHAR** );
+void freehac( HSPAPICHAR** );
+HSPCHAR *apichartohspchar( const HSPAPICHAR*,HSPCHAR** );
+void freehc( HSPCHAR** );
+HSPAPICHAR *ansichartoapichar(const char *, HSPAPICHAR **);
+char *apichartoansichar(const HSPAPICHAR *, char **);
+void freeac(char **);
+
 char *mem_ini( int size );
 void mem_bye( void *ptr );
 int mem_save( char *fname, void *mem, int msize, int seekofs );

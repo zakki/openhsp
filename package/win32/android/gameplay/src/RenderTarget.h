@@ -8,8 +8,8 @@ namespace gameplay
 {
 
 /**
- * Represents a linear area of display memory and usually reside 
- * in the display memory of the display card.
+ * Defines a linear area of display memory and usually resides 
+ * in the display memory of the graphics device.
  */
 class RenderTarget : public Ref
 {
@@ -29,7 +29,7 @@ public:
      * @return A newly created RenderTarget.
      * @script{create}
      */
-    static RenderTarget* create(const char* id, unsigned int width, unsigned int height);
+    static RenderTarget* create(const char* id, unsigned int width, unsigned int height, Texture::Format format = Texture::RGBA);
 
     /**
      * Create a RenderTarget from the given Texture and add it to the list of

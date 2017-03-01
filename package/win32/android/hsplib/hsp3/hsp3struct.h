@@ -119,6 +119,8 @@ typedef struct HSPHED
 #define HSPHED_BOOTOPT_ORGRND 0x10000		// 標準の乱数発生を使用する
 #define HSPHED_BOOTOPT_UTF8 0x20000			// UTF8ランタイムを使用する(コード識別用)
 #define HSPHED_BOOTOPT_HSP64 0x40000		// 64bitランタイムを使用する(コード識別用)
+#define HSPHED_BOOTOPT_IORESUME 0x80000		// ファイルI/Oエラーを無視して処理を続行する
+
 
 #define HPIDAT_FLAG_TYPEFUNC 0
 #define HPIDAT_FLAG_SELFFUNC -1
@@ -464,6 +466,11 @@ typedef struct HSPEXINFO
 	char *(*HspFunc_varname)( int id );
 	int (*HspFunc_seekvar)( const char *name );
 
+	//		Enhanced data (3.5)
+	//
+	char *(*HspFunc_prm_getns)(void);
+	char *(*HspFunc_prm_getnds)(const char *defstr);
+
 } HSPEXINFO;
 
 
@@ -557,6 +564,12 @@ struct HSPCTX
 #define HSPSTAT_NORMAL 0
 #define HSPSTAT_DEBUG 1
 #define HSPSTAT_SSAVER 2
+#define HSPSTAT_CONSOLE 0x10
+#define HSPSTAT_MAC 0x80
+#define HSPSTAT_DISH 0x100
+#define HSPSTAT_LINUX 0x1000
+#define HSPSTAT_UTF8 0x20000
+#define HSPSTAT_HSP64 0x40000
 
 #define TYPE_EX_SUBROUTINE 0x100		// gosub用のスタックタイプ
 #define TYPE_EX_CUSTOMFUNC 0x101		// deffunc呼び出し用のスタックタイプ

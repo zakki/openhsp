@@ -5,12 +5,10 @@
 #ifndef __supio_h
 #define __supio_h
 
+#define STRLEN strlen
+
 #ifdef HSPWIN
-#ifdef HSPUTF8
-#include "win32gui/supio_win_unicode.h"
-#else
-#include "win32gui/supio_win.h"
-#endif
+#include "../hsp3/win32gui/supio_win.h"
 #endif
 
 #ifdef HSPIOS

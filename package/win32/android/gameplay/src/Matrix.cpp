@@ -152,18 +152,14 @@ void Matrix::createOrthographicOffCenter(float left, float right, float bottom, 
     GP_ASSERT(top != bottom);
     GP_ASSERT(zFarPlane != zNearPlane);
 
-    float r_l = 1.0f / (right - left);
-    float t_b = 1.0f / (top - bottom);
-    float f_n = 1.0f / (zFarPlane - zNearPlane);
-
     memset(dst, 0, MATRIX_SIZE);
-    dst->m[0] = 2.0f * r_l;
-    dst->m[5] = 2.0f * t_b;
-    dst->m[10] = -2.0f * f_n;
-    dst->m[12] = (-(right + left)) * r_l;
-    dst->m[13] = (-(top + bottom)) * t_b;
-    dst->m[14] = (-(zFarPlane + zNearPlane)) * f_n;
-    dst->m[15] = 1.0f;
+    dst->m[0] = 2 / (right - left);
+    dst->m[5] = 2 / (top - bottom);
+    dst->m[12] = (left + right) / (left - right);
+    dst->m[10] = 1 / (zNearPlane - zFarPlane);
+    dst->m[13] = (top + bottom) / (bottom - top);
+    dst->m[14] = zNearPlane / (zNearPlane - zFarPlane);
+    dst->m[15] = 1;
 }
     
 void Matrix::createBillboard(const Vector3& objectPosition, const Vector3& cameraPosition,
@@ -397,6 +393,17 @@ void Matrix::createRotationZ(float angle, Matrix* dst)
     dst->m[5] = c;
 }
 
+void Matrix::createFromEuler(float yaw, float pitch, float roll, Matrix* dst)
+{
+	GP_ASSERT(dst);
+
+	memcpy(dst, MATRIX_IDENTITY, MATRIX_SIZE);
+	
+	dst->rotateY(yaw);
+	dst->rotateX(pitch);
+	dst->rotateZ(roll);
+}
+
 void Matrix::createTranslation(const Vector3& translation, Matrix* dst)
 {
     GP_ASSERT(dst);
@@ -510,7 +517,7 @@ bool Matrix::decompose(Vector3* scale, Quaternion* rotation, Vector3* translatio
     // Now calculate the rotation from the resulting matrix (axes).
     float trace = xaxis.x + yaxis.y + zaxis.z + 1.0f;
 
-    if (trace > MATH_EPSILON)
+    if (trace > 1.0f)
     {
         float s = 0.5f / sqrt(trace);
         rotation->w = 0.25f / s;

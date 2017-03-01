@@ -188,13 +188,6 @@ void PhysicsVehicle::initialize()
     body->setActivationState(DISABLE_DEACTIVATION);
     dynamicsWorld->addVehicle(_vehicle);
     _vehicle->setCoordinateSystem(0, 1, 2);
-
-    // Advertise self among ancestor nodes so that wheels can bind to self.
-    // See PhysicsVehicleWheel and Node for more details.
-    for (Node* n = getNode()->getParent(); n; n = n->getParent())
-    {
-        n->addAdvertisedDescendant(getNode());
-    }
 }
 
 PhysicsVehicle::~PhysicsVehicle()
@@ -231,14 +224,14 @@ void PhysicsVehicle::setEnabled(bool enable)
     getRigidBody()->setEnabled(enable);
 }
 
-unsigned int PhysicsVehicle::getNumWheels() const
+unsigned int PhysicsVehicle::getWheelCount() const
 {
     return (unsigned int)_wheels.size();
 }
 
-PhysicsVehicleWheel* PhysicsVehicle::getWheel(unsigned int i)
+PhysicsVehicleWheel* PhysicsVehicle::getWheel(unsigned int index)
 {
-    return _wheels.at(i);
+    return _wheels.at(index);
 }
 
 void PhysicsVehicle::addWheel(PhysicsVehicleWheel* wheel)

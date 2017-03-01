@@ -2,11 +2,15 @@
 #define NODE_H_
 
 #include "Transform.h"
-#include "Camera.h"
-#include "Light.h"
+#include "ScriptTarget.h"
 #include "Model.h"
+#include "Sprite.h"
+#include "TileSet.h"
+#include "Text.h"
 #include "Form.h"
 #include "ParticleEmitter.h"
+#include "Camera.h"
+#include "Light.h"
 #include "PhysicsRigidBody.h"
 #include "PhysicsCollisionObject.h"
 #include "BoundingBox.h"
@@ -15,21 +19,36 @@
 namespace gameplay
 {
 
-class AudioSource;
-class Bundle;
 class Scene;
-class Form;
-class Terrain;
+class Camera;
+class Light;
+class AudioSource;
+class AIAgent;
+class Drawable;
 
 /**
- * Defines a basic hierarchical structure of transformation spaces.
+ * Defines a hierarchical structure of objects in 3D transformation spaces.
+ *
+ * This object allow you to attach components to a scene such as:
+ * Drawable's(Model, Camera, Light, PhysicsCollisionObject, AudioSource, etc.
+ *
+ * @see http://gameplay3d.github.io/GamePlay/docs/file-formats.html#wiki-Node
  */
 class Node : public Transform, public Ref
 {
     friend class Scene;
+    friend class SceneLoader;
     friend class Bundle;
     friend class MeshSkin;
     friend class Light;
+
+    GP_SCRIPT_EVENTS_START();
+    GP_SCRIPT_EVENT(update, "<Node>f");
+    GP_SCRIPT_EVENT(messageReceived, "<Node><AIMessage>");
+    GP_SCRIPT_EVENT(stateEnter, "<Node><AIState>");
+    GP_SCRIPT_EVENT(stateExit, "<Node><AIState>");
+    GP_SCRIPT_EVENT(stateUpdate, "<Node><AIState>f");
+    GP_SCRIPT_EVENTS_END();
 
 public:
 
@@ -49,6 +68,14 @@ public:
      * @script{create}
      */
     static Node* create(const char* id = NULL);
+
+    /**
+     * Extends ScriptTarget::getTypeName() to return the type name of this class.
+     *
+     * @return The type name of this class: "Node"
+     * @see ScriptTarget::getTypeName()
+     */
+    const char* getTypeName() const;
 
     /**
      * Gets the identifier for the node.
@@ -117,72 +144,6 @@ public:
     Node* getParent() const;
 
     /**
-     * Determines if a custom tag with the specified name is set.
-     *
-     * @param name Name of the tag to query.
-     *
-     * @return true if the tag is set, false otherwise.
-     */
-    bool hasTag(const char* name) const;
-
-    /**
-     * Returns the value of the custom tag with the given name.
-     *
-     * @param name Name of the tag to return.
-     *
-     * @return The value of the given tag, or NULL if the tag is not set.
-     */
-    const char* getTag(const char* name) const;
-
-    /**
-     * Sets a custom tag on this Node.
-     *
-     * Custom tags can be used for a variety of purposes within a game. For example,
-     * a tag called "transparent" can be added to nodes, to indicate which nodes in
-     * a scene are transparent. This tag can then be read during rendering to sort
-     * transparent and opaque objects for correct drawing order. Another example
-     * is using a "visible" tag to mark nodes as invisible to be skipped during
-     * rendering.
-     *
-     * Setting a tag to NULL removes the tag from the Node.
-     *
-     * @param name Name of the tag to set.
-     * @param value Optional value of the tag (empty string by default).
-     */
-    void setTag(const char* name, const char* value = "");
-
-    /**
-     * Returns the user pointer for this node.
-     *
-     * @return The user pointer for this node.
-     * @see setUserPointer(void*)
-     * @script{ignore}
-     */
-    void* getUserPointer() const;
-
-    /**
-     * Sets the user pointer for this node.
-     *
-     * The user pointer is initially NULL and can be set to anything.
-     * This is normally used to store game-specific data, such as 
-     * game state for a particular node.  For example, attributes
-     * for a game character, such as hit points, stamina, etc can
-     * be defined in a game structure and stored in this field.
-     *
-     * When a node is deleted, the (optional) cleanup callback
-     * function passed to this function is called to allow the 
-     * user to free any memory associated with the user pointer.
-     *
-     * @param pointer User pointer.
-     * @param cleanupCallback Optional callback that is called when the
-     *      Node is being destroyed (or when the user pointer changes),
-     *      to allow the user to cleanup any memory associated with the
-     *      user pointer.
-     * @script{ignore}
-     */
-    void setUserPointer(void* pointer, void (*cleanupCallback)(void*) = NULL);
-
-    /**
      * Returns the number of direct children of this item.
      *
      * @return The number of children.
@@ -190,9 +151,14 @@ public:
     unsigned int getChildCount() const;
 
     /**
+     * Gets the top level node in this node's parent hierarchy.
+     */
+    Node* getRootNode() const;
+
+    /**
      * Returns the first child node that matches the given ID.
      *
-     * This method checks the specified ID against its immediate child nodes 
+     * This method checks the specified ID against its immediate child nodes
      * but does not check the ID against itself.
      * If recursive is true, it also traverses the Node's hierarchy with a breadth first search.
      *
@@ -200,7 +166,7 @@ public:
      * @param recursive True to search recursively all the node's children, false for only direct children.
      * @param exactMatch true if only nodes whose ID exactly matches the specified ID are returned,
      *        or false if nodes that start with the given ID are returned.
-     * 
+     *
      * @return The Node found or NULL if not found.
      */
     Node* findNode(const char* id, bool recursive = true, bool exactMatch = true) const;
@@ -213,24 +179,85 @@ public:
      * @param recursive true if a recursive search should be performed, false otherwise.
      * @param exactMatch true if only nodes whose ID exactly matches the specified ID are returned,
      *        or false if nodes that start with the given ID are returned.
-     * 
+     *
      * @return The number of matches found.
      * @script{ignore}
      */
     unsigned int findNodes(const char* id, std::vector<Node*>& nodes, bool recursive = true, bool exactMatch = true) const;
 
     /**
-     * Gets the scene.
+     * Gets the scene this node is currenlty within.
      *
      * @return The scene.
      */
     virtual Scene* getScene() const;
 
     /**
-     * Gets the top level node in this node's parent hierarchy.
+     * Sets a tag on this Node.
+     *
+     * tags can be used for a variety of purposes within a game. For example,
+     * a tag called "transparent" can be added to nodes, to indicate which nodes in
+     * a scene are transparent. This tag can then be read during rendering to sort
+     * transparent and opaque objects for correct drawing order.
+     *
+     * Setting a tag to NULL removes the tag from the Node.
+     *
+     * @param name Name of the tag to set.
+     * @param value Optional value of the tag (empty string by default).
      */
-    Node* getRootNode() const;
-    
+    void setTag(const char* name, const char* value = "");
+
+    /**
+     * Returns the value of the custom tag with the given name.
+     *
+     * @param name Name of the tag to return.
+     *
+     * @return The value of the given tag, or NULL if the tag is not set.
+     */
+    const char* getTag(const char* name) const;
+
+    /**
+     * Determines if a custom tag with the specified name is set.
+     *
+     * @param name Name of the tag to query.
+     *
+     * @return true if the tag is set, false otherwise.
+     */
+    bool hasTag(const char* name) const;
+
+    /**
+     * Sets if the node is enabled in the scene.
+     *
+     * @param enabled if the node is enabled in the scene.
+     */
+    void setEnabled(bool enabled);
+
+    /**
+     * Gets if the node is enabled in the scene.
+     *
+     * @return if the node is enabled in the scene.
+     */
+    bool isEnabled() const;
+
+    /**
+     * Gets if the node inherently enabled.
+     *
+     * @return if components attached on this node should be running.
+     */
+    bool isEnabledInHierarchy() const;
+
+    /**
+     * Called to update the state of this Node.
+     *
+     * This method is called by Scene::update(float) to update the state of all active
+     * nodes in a scene. A Node is considered active if Node::isActive() returns true.
+     *
+     * If any scripts are attached to the node, their update event will be fired.
+     *
+     * @param elapsedTime Elapsed time in milliseconds.
+     */
+    void update(float elapsedTime);
+
     /**
      * Returns whether the transformation of this node is static.
      *
@@ -387,32 +414,51 @@ public:
     Animation* getAnimation(const char* id = NULL) const;
 
     /**
-     * Returns the pointer to this node's camera.
+     * Gets the drawable object attached to this node.
      *
-     * @return The pointer to this node's camera or NULL.
+     * @return The drawable component attached to this node.
+     */
+    Drawable* getDrawable() const;
+
+    /**
+     * Set the drawable object to be attached to this node
+     *
+     * This is typically a Model, ParticleEmiiter, Form, Terrrain, Sprite, TileSet or Text.
+     *
+     * This will increase the reference count of the new drawble and decrease
+     * the reference count of the old drawable.
+     *
+     * @param drawable The new drawable component. May be NULL.
+     */
+    void setDrawable(Drawable* drawable);
+
+    /**
+     * Gets the camera attached to this node.
+     *
+     * @return Gets the camera attached to this node.
      */
     Camera* getCamera() const;
 
     /**
-     * Assigns a camera to this node.
-     * 
+     * Attaches a camera to this node.
+     *
      * This will increase the reference count of the new camera and decrease
      * the reference count of the old camera.
      *
-     * @param camera A pointer to a camera. May be NULL.
+     * @param camera The new camera. May be NULL.
      */
     void setCamera(Camera* camera);
 
     /**
-     * Returns the pointer to this node's light.
+     * Get the light attached to this node.
      *
-     * @return The pointer to this node's light or NULL.
+     * @return The light attached to this node.
      */
     Light* getLight() const;
 
     /**
-     * Assigns a light to this node.
-     * 
+     * Attaches a light to this node.
+     *
      * This will increase the reference count of the new light and decrease
      * the reference count of the old light.
      *
@@ -421,86 +467,21 @@ public:
     void setLight(Light* light);
 
     /**
-     * Returns the pointer to this node's model.
-     * 
-     * @return The pointer to this node's model or NULL.
-     */
-    Model* getModel() const;
-
-    /**
-     * Assigns a model to this node.
-     * 
-     * This will increase the reference count of the new model and decrease
-     * the reference count of the old model.
+     * Gets the audio source attached to this node.
      *
-     * @param model The new model. May be NULL.
-     */
-    void setModel(Model* model);
-
-    /**
-     * Returns the pointer to this node's terrain.
-     *
-     * @return The pointer to this node's terrain.
-     */
-    Terrain* getTerrain() const;
-
-    /**
-     * Assigns a terrain to this node.
-     *
-     * This will increase the reference count of the new terrain and decrease
-     * the reference count of the old terrain.
-     *
-     * @param terrain The new terrain. May be NULL.
-     */
-    void setTerrain(Terrain* terrain);
-
-    /**
-     * Returns the pointer to this node's form.
-     * 
-     * @return The pointer to this node's form or NULL.
-     */
-    Form* getForm() const;
-
-    /**
-     * Assigns a form to this node.
-     * 
-     * @param form The form pointer. May be NULL.
-     */
-    void setForm(Form* form);
-
-    /**
-     * Returns the pointer to this node's audio source.
-     *
-     * @return The pointer to this node's audio source or NULL.
+     * @return The audio source attached to this node.
      */
     AudioSource* getAudioSource() const;
 
     /**
-     * Assigns an audio source to this node.
-     * 
+     * Attaches an audio source to this node.
+     *
      * This will increase the reference count of the new audio source and decrease
      * the reference count of the old audio source.
      *
      * @param audio The new audio source. May be NULL.
      */
     void setAudioSource(AudioSource* audio);
-
-    /**
-     * Returns the pointer to this node's particle emitter.
-     *
-     * @return The pointer to this node's particle emitter or NULL.
-     */
-    ParticleEmitter* getParticleEmitter() const;
-
-    /**
-     * Assigns a particle emitter to this node.
-     * 
-     * This will increase the reference count of the new particle emitter and decrease
-     * the reference count of the old particle emitter.
-     *
-     * @param emitter The new particle emitter. May be NULL.
-     */
-    void setParticleEmitter(ParticleEmitter* emitter);
 
     /**
      * Returns the pointer to this node's physics collision object.
@@ -515,7 +496,7 @@ public:
     /**
      * Sets (or disables) the physics collision object for this node.
      *
-     * The supported collision object types include rigid bodies, ghost objects, 
+     * The supported collision object types include rigid bodies, ghost objects,
      * characters, vehicles, and vehicle wheels.
      *
      * Rigid bodies are used to represent most physical objects in a game. The important
@@ -531,7 +512,7 @@ public:
      * Ghost objects are a simple type of collision object that are not simulated. By default
      * they pass through other objects in the scene without affecting them. Ghost objects do
      * receive collision events however, which makes them useful for representing non-simulated
-     * entities in a game that still require collision events, such as volumetric triggers, 
+     * entities in a game that still require collision events, such as volumetric triggers,
      * power-ups, etc.
      *
      * Characters are an extension of ghost objects which provide a number of additional features
@@ -552,63 +533,25 @@ public:
      *        PhysicsCollisionObject::VEHICLE, this must point to a valid rigid body
      *        parameters object containing information about the rigid body;
      *        otherwise, this parameter may be NULL.
+     * @param group Group identifier of the object for collision filtering.
+     * @param mask Bitmask to filter groups of objects to collide with this one.
      */
-    PhysicsCollisionObject* setCollisionObject(PhysicsCollisionObject::Type type, const PhysicsCollisionShape::Definition& shape = PhysicsCollisionShape::box(), 
-                                               PhysicsRigidBody::Parameters* rigidBodyParameters = NULL);
-
+    PhysicsCollisionObject* setCollisionObject(PhysicsCollisionObject::Type type,
+                                               const PhysicsCollisionShape::Definition& shape = PhysicsCollisionShape::box(),
+                                               PhysicsRigidBody::Parameters* rigidBodyParameters = NULL,
+                                               int group = PHYSICS_COLLISION_GROUP_DEFAULT,
+                                               int mask = PHYSICS_COLLISION_MASK_DEFAULT);
     /**
-     * Sets the physics collision object for this node using the data from the Properties object defined at the specified URL, 
+     * Sets the physics collision object for this node using the data from the Properties object defined at the specified URL,
      * where the URL is of the format "<file-path>.<extension>#<namespace-id>/<namespace-id>/.../<namespace-id>"
-     * (and "#<namespace-id>/<namespace-id>/.../<namespace-id>" is optional). 
-     * 
+     * (and "#<namespace-id>/<namespace-id>/.../<namespace-id>" is optional).
+     *
      * @param url The URL pointing to the Properties object defining the physics collision object.
      */
     PhysicsCollisionObject* setCollisionObject(const char* url);
 
     /**
-     * Sets the physics collision object for this node from the given properties object.
-     * 
-     * @param properties The properties object defining the collision object.
-     */
-    PhysicsCollisionObject* setCollisionObject(Properties* properties);
-
-    /**
-     * Returns the number of advertised descendants held in this node.
-     *
-     * Descendant nodes can advertise themselves to others using this
-     * mechanism, such as how the wheels are bound to a physics vehicle
-     * via their common ancestor.
-     *
-     * @return the number of advertised descendants held in this node.
-     */
-    unsigned int getNumAdvertisedDescendants() const;
-
-    /**
-     * Returns the advertised descendant at the specified index.
-     *
-     * Descendant nodes can advertise themselves to others using this
-     * mechanism, such as how the wheels are bound to a physics vehicle
-     * via their common ancestor.
-     *
-     * @param i the index to look-up.
-     *
-     * @return the advertised descendant at the specified index.
-     */
-    Node* getAdvertisedDescendant(unsigned int i) const;
-
-    /**
-     * Adds the specified node to the list of advertised descendants.
-     *
-     * Descendant nodes can advertise themselves to others using this
-     * mechanism, such as how the wheels are bound to a physics vehicle
-     * via their common ancestor.
-     *
-     * @param node the node reference to add.
-     */
-    void addAdvertisedDescendant(Node* node);
-
-    /**
-     * Returns the AI agent assigned to this node.
+     * Gets the AI agent assigned to this node
      *
      * @return The AI agent for this node.
      */
@@ -622,10 +565,24 @@ public:
     void setAgent(AIAgent* agent);
 
     /**
+     * Gets the user object assigned to this node.
+     *
+     * @return The user object assigned object to this node.
+     */
+    Ref* getUserObject() const;
+
+    /**
+    * Sets a user object to be assigned object to this node.
+    *
+    * @param obj The user object assigned object to this node.
+    */
+    void setUserObject(Ref* obj);
+
+    /**
      * Returns the bounding sphere for the Node, in world space.
      *
      * The bounding sphere for a node represents the area, in world
-     * space, that the node contains. This includes the space occupied 
+     * space, that the node contains. This includes the space occupied
      * by any child nodes as well as the space occupied by any data
      * inside the node (such as models).
      *
@@ -644,7 +601,7 @@ public:
 
     /**
      * Clones the node and all of its child nodes.
-     * 
+     *
      * @return A new node.
      * @script{create}
      */
@@ -664,25 +621,25 @@ protected:
 
     /**
      * Clones a single node and its data but not its children.
-     * 
+     *
      * @param context The clone context.
-     * 
+     *
      * @return Pointer to the newly created node.
      */
     virtual Node* cloneSingleNode(NodeCloneContext &context) const;
 
     /**
      * Recursively clones this node and its children.
-     * 
+     *
      * @param context The clone context.
-     * 
+     *
      * @return The newly created node.
      */
     Node* cloneRecursive(NodeCloneContext &context) const;
 
     /**
      * Copies the data from this node into the given node.
-     * 
+     *
      * @param node The node to copy the data to.
      * @param context The clone context.
      */
@@ -720,151 +677,56 @@ private:
      */
     Node& operator=(const Node&);
 
+    PhysicsCollisionObject* setCollisionObject(Properties* properties);
+
 protected:
 
-    /**
-     * Defines a pointer and cleanup callback to custom user data that can be store in a Node.
-     */
-    struct UserData
-    {
-        /**
-         * Constructor.
-         */
-        UserData() : pointer(NULL), cleanupCallback(NULL) {}
-
-        /**
-         * A pointer to custom user data.
-         */
-        void* pointer;
-
-        /** 
-         * Cleanup callback.
-         */
-        void (*cleanupCallback)(void*);
-    };
-
-    /**
-     * The Scene this node belongs to.
-     */
+    /** The scene this node is attached to. */
     Scene* _scene;
-
-    /**
-     * The Node's ID.
-     */ 
+    /** The nodes id. */
     std::string _id;
-
-    /**
-     * Pointer to the Node's first child.
-     */
+    /** The nodes first child. */
     Node* _firstChild;
-    
-    /**
-     * Pointer to the Node's next child.
-     */
+    /** The nodes next sibiling. */
     Node* _nextSibling;
-    
-    /**
-     * Pointer to the Node's previous sibling.
-     */
+    /** The nodes previous sibiling. */
     Node* _prevSibling;
-
-    /**
-     * Pointer to the Node's parent.
-     */
+    /** The nodes parent. */
     Node* _parent;
-
-    /**
-     * The number of children belonging to the Node.
-     */
+    /** The number of child nodes. */
     unsigned int _childCount;
-
-    /**
-     * List of custom tags for a node.
-     */
+    /** If this node is enabled. Maybe different if parent is enabled/disabled. */
+    bool _enabled; 
+    /** Tags assigned to this node. */
     std::map<std::string, std::string>* _tags;
-
-    /**
-     * Pointer to the Camera attached to the Node.
-     */
+    /** The drawble component attached to this node. */
+    Drawable* _drawable;
+    /** The camera component attached to this node. */
     Camera* _camera;
-
-    /**
-     * Pointer to the Light attached to the Node.
-     */ 
+    /** The light component attached to this node. */
     Light* _light;
-
-    /**
-     * Pointer to the Model attached to the Node.
-     */
-    Model* _model;
-
-    /**
-     * Pointer to the Terrain attached to the Node.
-     */
-    Terrain* _terrain;
-
-    /**
-     * Pointer to the Form attached to the Node.
-     */
-    Form* _form;
-    
-    /**
-     * Pointer to the AudioSource attached to the Node.
-     */
+#ifndef HSPDISH
+    /** The audio source component attached to this node. */
     AudioSource* _audioSource;
-    
-    /**
-     * Pointer to the ParticleEmitter attached to the Node.
-     */
-    ParticleEmitter* _particleEmitter;
-    
-    /**
-     * Pointer to the PhysicsCollisionObject attached to the Node.
-     */
+#else
+    char* _audioSource;
+#endif
+    /** The collision object component attached to this node. */
     PhysicsCollisionObject* _collisionObject;
-    
-    /**
-     * Pointer to the AI agent attached to the Node.
-     */
-    AIAgent* _agent;
-
-    /**
-     * World Matrix representation of the Node.
-     */
+    /** The AI agent component attached to this node. */
+    mutable AIAgent* _agent;
+    /** The user object component attached to this node. */
+    Ref* _userObject;
+    /** The world matrix for this node. */
     mutable Matrix _world;
-
-    /**
-     * Dirty bits flag for the Node.
-     */
-    mutable int _dirtyBits;
-    
-    /**
-     * A flag indicating if the Node's hierarchy has changed.
-     */ 
-    bool _notifyHierarchyChanged;
-
-    /**
-     * The Bounding Sphere containing the Node.
-     */
+    /** The bounding sphere for this node. */
     mutable BoundingSphere _bounds;
-
-    /**
-     * Pointer to custom UserData and cleanup call back that can be stored in a Node.
-     */
-    UserData* _userData;
-
-    /**
-     * A linear collection of descendants who wish to advertise themselves, typically
-     * to other descendants. This allows nodes of common ancestry to bond. One example
-     * of this is a physics vehicle and its wheels, which are associated via their
-     * lowest common ancestor.
-     */
-    std::vector<Node*> _advertisedDescendants;
+    /** The dirty bits used for optimization. */
+    mutable int _dirtyBits;
 };
 
 /**
  * NodeCloneContext represents the context data that is kept when cloning a node.
- * 
  * The NodeCloneContext is used to make sure objects don't get cloned twice.
  */
 class NodeCloneContext
@@ -883,16 +745,16 @@ public:
 
     /**
      * Finds the cloned animation of the given animation or NULL if this animation was not registered with this context.
-     * 
+     *
      * @param animation The animation to search for the cloned copy of.
-     * 
+     *
      * @return The cloned animation or NULL if not found.
      */
     Animation* findClonedAnimation(const Animation* animation);
 
     /**
      * Registers the cloned animation with this context so that it doesn't get cloned twice.
-     * 
+     *
      * @param original The pointer to the original animation.
      * @param clone The pointer to the cloned animation.
      */
@@ -900,23 +762,23 @@ public:
 
     /**
      * Finds the cloned node of the given node or NULL if this node was not registered with this context.
-     * 
+     *
      * @param node The node to search for the cloned copy of.
-     * 
+     *
      * @return The cloned node or NULL if not found.
      */
     Node* findClonedNode(const Node* node);
 
     /**
      * Registers the cloned node with this context so that it doens't get cloned twice.
-     * 
+     *
      * @param original The pointer to the original node.
      * @param clone The pointer to the cloned node.
      */
     void registerClonedNode(const Node* original, Node* clone);
 
 private:
-    
+
     /**
      * Hidden copy constructor.
      */

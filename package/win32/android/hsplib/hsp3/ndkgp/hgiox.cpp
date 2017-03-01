@@ -155,6 +155,7 @@ static		BMSCR mestexbm;		// テキスト表示用ダミーBMSCR
 static		BMSCR *mainbm;		// メインスクリーンのBMSCR
 static		HSPREAL infoval[HGIO_INFO_MAX];
 static		BMSCR *backbm;		// 背景消去用のBMSCR(null=NC)
+static		BMSCR *gselbm;		// 描画先のBMSCR
 
 static		char m_tfont[256];	// テキスト使用フォント
 static		int m_tsize;		// テキスト使用フォントのサイズ
@@ -196,18 +197,17 @@ void hgio_init( int mode, int sx, int sy, void *hwnd )
 
 	mainbm = NULL;
 	backbm = NULL;
+	gselbm = NULL;
 	drawflag = 0;
 	nDestWidth = sx;
 	nDestHeight = sy;
 
-#if defined(HSPNDK) || defined(HSPEMSCRIPTEN)
 	_originX = 0;
 	_originY = 0;
 	_scaleX = 1.0f;
 	_scaleY = 1.0f;
 	_rateX = 1.0f;
 	_rateY = 1.0f;
-#endif
 
 	//		infovalをリセット
 	//
@@ -250,7 +250,14 @@ int hgio_render_end( void )
 
 	res = 0;
 
-	if ( platform ) platform->swapBuffers();
+	if (gselbm == mainbm) {
+		// メイン画面の場合はフリップ
+		if (platform) platform->swapBuffers();
+	}
+	else {
+		// オフスクリーンの場合
+		game->resumeFrameBuffer();
+	}
 
 	drawflag = 0;
 	return res;
@@ -264,14 +271,64 @@ int hgio_render_start( void )
 		hgio_render_end();
 	}
 
-	//	画面クリア
-	//ClearDest( GetSysReq( SYSREQ_CLSMODE ), GetSysReq( SYSREQ_CLSCOLOR ), GetSysReq( SYSREQ_CLSTEX ) );
+	if ((gselbm->type != HSPWND_TYPE_MAIN) && (gselbm->type != HSPWND_TYPE_OFFSCREEN)) {
+		return -1;
+	}
 
 	//シーンレンダー開始
-	if ( game ) game->frame();
+	if (game) {
+		if (gselbm == mainbm) {
+			// メイン画面の場合
+			game->frame();
+		}
+		else {
+			// オフスクリーンの場合
+			game->selectFrameBuffer((gameplay::FrameBuffer *)gselbm->master_buffer, gselbm->sx, gselbm->sy);
+		}
+	}
 
 	drawflag = 1;
 	return 0;
+}
+
+
+int hgio_gsel(BMSCR *bm)
+{
+	//		描画先設定
+	//		(gsel相当)
+	//
+	hgio_render_end();
+	gselbm = bm;
+
+	// プロジェクションの初期化
+	int id = gselbm->texid;
+	if (id >= 0) {
+		gpmat *mat;
+		mat = game->getMat(id);
+		game->update2DRenderProjectionSystem(&mat->_projectionMatrix2D);
+	}
+
+	return 0;
+}
+
+
+int hgio_buffer(BMSCR *bm)
+{
+	//		オフスクリーン作成
+	//		(buffer相当)
+	//
+	int option = 0;
+	if (bm->type == HSPWND_TYPE_OFFSCREEN) {
+		bm->master_buffer = game->makeFremeBuffer(bm->resname, bm->sx, bm->sy);
+		if (bm->master_buffer  == NULL) {
+			return -1;
+		}
+		if (bm->buffer_option & HSPWND_OPTION_USERSHADER) option |= GPOBJ_MATOPT_USERSHADER;
+		bm->texid = game->makeNewMatFromFB((gameplay::FrameBuffer *)bm->master_buffer, option);
+		if (bm->texid < 0) return bm->texid;
+		return 0;
+	}
+	return -1;
 }
 
 
@@ -280,7 +337,11 @@ void hgio_screen( BMSCR *bm )
 	//		スクリーン再設定
 	//		(cls相当)
 	//
-	mainbm = bm;
+	drawflag = 0;
+	if (bm->type == HSPWND_TYPE_MAIN) {
+		mainbm = bm;
+		gselbm = bm;
+	}
 	hgio_font( DEFAULT_FONT_NAME, DEFAULT_FONT_SIZE, DEFAULT_FONT_STYLE );
 }
 
@@ -304,6 +365,12 @@ void hgio_delscreen(BMSCR *bm)
 		game->deleteMat( bm->texid );
 		bm->texid = -1;
 	}
+	if (bm->type == HSPWND_TYPE_OFFSCREEN) {
+		if (bm->master_buffer) {
+			game->deleteFrameBuffer((gameplay::FrameBuffer *)bm->master_buffer);
+		}
+	}
+	bm->flag = BMSCR_FLAG_NOUSE;
 }
 
 
@@ -378,7 +445,7 @@ int hgio_redraw( BMSCR *bm, int flag )
 	//		(必ずredraw 0～redraw 1をペアにすること)
 	//
 	if ( bm == NULL ) return -1;
-	if ( bm->type != HSPWND_TYPE_MAIN ) throw HSPERR_UNSUPPORTED_FUNCTION;
+	if ((bm->type != HSPWND_TYPE_MAIN) && (bm->type != HSPWND_TYPE_OFFSCREEN)) return -1;
 
 	if ( flag & 1 ) {
 		hgio_render_end();
@@ -441,7 +508,8 @@ int hgio_mes( BMSCR *bm, char *str1 )
 {
 	//		mes,print 文字表示
 	//
-	if ( bm->type != HSPWND_TYPE_MAIN ) throw HSPERR_UNSUPPORTED_FUNCTION;
+	if ((bm->type != HSPWND_TYPE_MAIN) && (bm->type != HSPWND_TYPE_OFFSCREEN)) return -1;
+	if (drawflag == 0) hgio_render_start();
 
 	if ( game ) {
 		bm->printsizex = game->drawFont( bm->cx, bm->cy, str1, (gameplay::Vector4 *)bm->colorvalue, m_tsize );
@@ -488,7 +556,8 @@ void hgio_line( BMSCR *bm, float x, float y )
 	if ( bm == NULL ) {
 		return;
 	}
-	if ( bm->type != HSPWND_TYPE_MAIN ) throw HSPERR_UNSUPPORTED_FUNCTION;
+	if ((bm->type != HSPWND_TYPE_MAIN) && (bm->type != HSPWND_TYPE_OFFSCREEN)) return;
+	if (drawflag == 0) hgio_render_start();
 
 	float r_val = bm->colorvalue[0];
 	float g_val = bm->colorvalue[1];
@@ -524,7 +593,8 @@ void hgio_boxf( BMSCR *bm, float x1, float y1, float x2, float y2 )
 	//		矩形描画
 	//
 	if ( bm == NULL ) return;
-	if ( bm->type != HSPWND_TYPE_MAIN ) throw HSPERR_UNSUPPORTED_FUNCTION;
+	if ((bm->type != HSPWND_TYPE_MAIN) && (bm->type != HSPWND_TYPE_OFFSCREEN)) return;
+	if (drawflag == 0) hgio_render_start();
 
 	float *v = game->startPolyColor2D();
 	float r_val = bm->colorvalue[0];
@@ -557,7 +627,8 @@ void hgio_circle( BMSCR *bm, float x1, float y1, float x2, float y2, int mode )
 	//
 	float x,y,rx,ry,sx,sy,rate;
 	if ( bm == NULL ) return;
-	if ( bm->type != HSPWND_TYPE_MAIN ) throw HSPERR_UNSUPPORTED_FUNCTION;
+	if ((bm->type != HSPWND_TYPE_MAIN) && (bm->type != HSPWND_TYPE_OFFSCREEN)) return;
+	if (drawflag == 0) hgio_render_start();
 
 	float *v;
 	float *v_master = game->startPolyColor2D();
@@ -644,7 +715,8 @@ void hgio_fillrot( BMSCR *bm, float x, float y, float sx, float sy, float ang )
 	//		矩形(回転)描画
 	//
 	if ( bm == NULL ) return;
-	if ( bm->type != HSPWND_TYPE_MAIN ) throw HSPERR_UNSUPPORTED_FUNCTION;
+	if ((bm->type != HSPWND_TYPE_MAIN) && (bm->type != HSPWND_TYPE_OFFSCREEN)) return;
+	if (drawflag == 0) hgio_render_start();
 
 	float x0,y0,x1,y1,ofsx,ofsy;
 	float *v = game->startPolyColor2D();
@@ -693,43 +765,45 @@ void hgio_fillrot( BMSCR *bm, float x, float y, float sx, float sy, float ang )
 }
 
 
-void hgio_copy( BMSCR *bm, short xx, short yy, short srcsx, short srcsy, BMSCR *bmsrc, float s_psx, float s_psy )
+void hgio_copy(BMSCR *bm, short xx, short yy, short srcsx, short srcsy, BMSCR *bmsrc, float s_psx, float s_psy)
 {
 	//		画像コピー
 	//		texid内の(xx,yy)-(xx+srcsx,yy+srcsy)を現在の画面に(psx,psy)サイズでコピー
 	//		カレントポジション、描画モードはBMSCRから取得
 	//
-	float psx,psy;
-	float x1,y1,x2,y2,sx,sy;
-	float tx0,ty0,tx1,ty1;
+	float psx, psy;
+	float x1, y1, x2, y2, sx, sy;
+	float tx0, ty0, tx1, ty1;
 
-	if ( bm == NULL ) return;
-	if ( bm->type != HSPWND_TYPE_MAIN ) throw HSPERR_UNSUPPORTED_FUNCTION;
+	if (bm == NULL) return;
+	if ((bm->type != HSPWND_TYPE_MAIN) && (bm->type != HSPWND_TYPE_OFFSCREEN)) return;
+	if (drawflag == 0) hgio_render_start();
 
-	gpmat *mat = game->getMat( bmsrc->texid );
-	if ( mat == NULL ) throw HSPERR_ILLEGAL_FUNCTION;
+	gpmat *mat = game->getMat(bmsrc->texid);
+	if (mat == NULL) return;
+	float *v = game->startPolyTex2D(mat, bm->texid);
+	if (v == NULL) return;
 
-	float *v = game->startPolyTex2D( mat );
-	if ( v == NULL ) throw HSPERR_ILLEGAL_FUNCTION;
-
-	float a_val = game->setMaterialBlend( mat->_material, bm->gmode, bm->gfrate );
+	float a_val = game->setMaterialBlend(mat->_material, bm->gmode, bm->gfrate);
 
 	game->setPolyDiffuseTex2D(bm->mulcolorvalue[0], bm->mulcolorvalue[1], bm->mulcolorvalue[2], a_val);
 
-	if ( s_psx < 0.0 ) {
+	if (s_psx < 0.0) {
 		psx = -s_psx;
 		tx1 = ((float)xx);
 		tx0 = ((float)(xx + srcsx));
-	} else {
+	}
+	else {
 		psx = s_psx;
 		tx0 = ((float)xx);
 		tx1 = ((float)(xx + srcsx));
 	}
-	if ( s_psy < 0.0 ) {
+	if (s_psy < 0.0) {
 		psy = -s_psy;
 		ty1 = ((float)yy);
 		ty0 = ((float)(yy + srcsy));
-	} else {
+	}
+	else {
 		psy = s_psy;
 		ty0 = ((float)yy);
 		ty1 = ((float)(yy + srcsy));
@@ -750,26 +824,26 @@ void hgio_copy( BMSCR *bm, short xx, short yy, short srcsx, short srcsy, BMSCR *
 
 	*v++ = x1; *v++ = y2; v++;
 	*v++ = tx0; *v++ = ty1;
-	v+=4;
+	v += 4;
 	//*v++ = c_val; *v++ = c_val; *v++ = c_val; *v++ = a_val;
 	*v++ = x1; *v++ = y1; v++;
 	*v++ = tx0; *v++ = ty0;
-	v+=4;
+	v += 4;
 	//*v++ = c_val; *v++ = c_val; *v++ = c_val; *v++ = a_val;
 	*v++ = x2; *v++ = y2; v++;
 	*v++ = tx1; *v++ = ty1;
-	v+=4;
+	v += 4;
 	//*v++ = c_val; *v++ = c_val; *v++ = c_val; *v++ = a_val;
 	*v++ = x2; *v++ = y1; v++;
 	*v++ = tx1; *v++ = ty0;
 	//v+=4;
 	//*v++ = c_val; *v++ = c_val; *v++ = c_val; *v++ = a_val;
 
-	game->drawPolyTex2D( mat );
+	game->drawPolyTex2D(mat);
 }
 
 
-int hgio_celputmulti( BMSCR *bm, int *xpos, int *ypos, int *cel, int count, BMSCR *bmsrc )
+int hgio_celputmulti(BMSCR *bm, int *xpos, int *ypos, int *cel, int count, BMSCR *bmsrc)
 {
 	//		マルチ画像コピー
 	//		int配列内のX,Y,CelIDを元に等倍コピーを行なう(count=個数)
@@ -790,13 +864,13 @@ int hgio_celputmulti( BMSCR *bm, int *xpos, int *ypos, int *cel, int count, BMSC
 	int total;
 
 	if ( bm == NULL ) return 0;
-	if ( bm->type != HSPWND_TYPE_MAIN ) throw HSPERR_UNSUPPORTED_FUNCTION;
+	if ((bm->type != HSPWND_TYPE_MAIN) && (bm->type != HSPWND_TYPE_OFFSCREEN)) return 0;
+	if (drawflag == 0) hgio_render_start();
 
-	gpmat *mat = game->getMat( bmsrc->texid );
-	if ( mat == NULL ) throw HSPERR_ILLEGAL_FUNCTION;
-
-	master_v = game->startPolyTex2D( mat );
-	if ( master_v == NULL ) throw HSPERR_ILLEGAL_FUNCTION;
+	gpmat *mat = game->getMat(bmsrc->texid);
+	if (mat == NULL) return NULL;
+	master_v = game->startPolyTex2D(mat, bm->texid);
+	if (master_v == NULL) return 0;
 
 	float a_val = game->setMaterialBlend( mat->_material, bm->gmode, bm->gfrate );
 	game->setPolyDiffuseTex2D(bm->mulcolorvalue[0], bm->mulcolorvalue[1], bm->mulcolorvalue[2], a_val);
@@ -878,13 +952,13 @@ void hgio_copyrot( BMSCR *bm, short xx, short yy, short srcsx, short srcsy, floa
 	float tx0,ty0,tx1,ty1,sx,sy;
 
 	if ( bm == NULL ) return;
-	if ( bm->type != HSPWND_TYPE_MAIN ) throw HSPERR_UNSUPPORTED_FUNCTION;
+	if ((bm->type != HSPWND_TYPE_MAIN) && (bm->type != HSPWND_TYPE_OFFSCREEN)) return;
+	if (drawflag == 0) hgio_render_start();
 
-	gpmat *mat = game->getMat( bmsrc->texid );
-	if ( mat == NULL ) throw HSPERR_ILLEGAL_FUNCTION;
-
-	float *v = game->startPolyTex2D( mat );
-	if ( v == NULL ) throw HSPERR_ILLEGAL_FUNCTION;
+	gpmat *mat = game->getMat(bmsrc->texid);
+	if (mat == NULL) return;
+	float *v = game->startPolyTex2D(mat, bm->texid);
+	if (v == NULL) return;
 
 	float a_val = game->setMaterialBlend( mat->_material, bm->gmode, bm->gfrate );
 
@@ -960,22 +1034,22 @@ void hgio_copyrot( BMSCR *bm, short xx, short yy, short srcsx, short srcsy, floa
 
 void hgio_setfilter( int type, int opt )
 {
-	/*
-	int ft;
+	int curid;
+	if (gselbm == NULL) return;
+
+	curid = gselbm->texid;
+	if (curid < 0) return;
+	gpmat *mat = game->getMat(curid);
+	if (mat == NULL) return;
 	switch( type ) {
 	case HGIO_FILTER_TYPE_LINEAR:
-		ft = D3DTEXF_LINEAR;
-		break;
 	case HGIO_FILTER_TYPE_LINEAR2:
-		ft = D3DTEXF_FLATCUBIC;
+		mat->setFilter(Texture::Filter::LINEAR);
 		break;
 	default:
-		ft = D3DTEXF_POINT;
+		mat->setFilter(Texture::Filter::NEAREST);
 		break;
 	}
-	d3ddev->SetTextureStageState( 0, D3DTSS_MAGFILTER, ft  );
-	d3ddev->SetTextureStageState( 0, D3DTSS_MINFILTER, ft  );
-	*/
 }
 
 
@@ -1082,13 +1156,13 @@ void hgio_square_tex( BMSCR *bm, int *posx, int *posy, BMSCR *bmsrc, int *uvx, i
 	//
 	float sx,sy;
 	if ( bm == NULL ) return;
-	if ( bm->type != HSPWND_TYPE_MAIN ) throw HSPERR_UNSUPPORTED_FUNCTION;
+	if ((bm->type != HSPWND_TYPE_MAIN) && (bm->type != HSPWND_TYPE_OFFSCREEN)) return;
+	if (drawflag == 0) hgio_render_start();
 
-	gpmat *mat = game->getMat( bmsrc->texid );
-	if ( mat == NULL ) throw HSPERR_ILLEGAL_FUNCTION;
-
-	float *v = game->startPolyTex2D( mat );
-	if ( v == NULL ) throw HSPERR_ILLEGAL_FUNCTION;
+	gpmat *mat = game->getMat(bmsrc->texid);
+	if (mat == NULL) return;
+	float *v = game->startPolyTex2D(mat, bm->texid);
+	if (v == NULL) return;
 
 	float a_val = game->setMaterialBlend( mat->_material, bm->gmode, bm->gfrate );
 
@@ -1133,7 +1207,8 @@ void hgio_square( BMSCR *bm, int *posx, int *posy, int *color )
 	//		四角形(square)単色描画
 	//
 	if ( bm == NULL ) return;
-	if ( bm->type != HSPWND_TYPE_MAIN ) throw HSPERR_UNSUPPORTED_FUNCTION;
+	if ((bm->type != HSPWND_TYPE_MAIN) && (bm->type != HSPWND_TYPE_OFFSCREEN)) return;
+	if (drawflag == 0) hgio_render_start();
 
 	gameplay::Vector4 colvec;
 	float *v = game->startPolyColor2D();
@@ -1218,7 +1293,7 @@ int hgio_exec( char *stmp, char *option, int mode )
 		exinfo.lpVerb = option;
 		exinfo.lpFile = stmp;
 		exinfo.nShow = SW_SHOWNORMAL;
-		if ( ShellExecuteEx( &exinfo ) == false ) throw HSPERR_EXTERNAL_EXECUTE;
+		if (ShellExecuteEx(&exinfo) == false) return-1;
 		return 0;
 	}
 		
@@ -1231,7 +1306,7 @@ int hgio_exec( char *stmp, char *option, int mode )
 	else {
 		i=WinExec( stmp,j );
 	}
-	if (i<32) throw HSPERR_EXTERNAL_EXECUTE;
+	if (i < 32) return -1;
 #endif
 	return 0;
 }
@@ -1288,7 +1363,7 @@ char *hgio_sysinfo( int p2, int *res, char *outbuf )
 
 	switch(p2) {
 	case 0:
-		strcpy(p1,"Windows");
+		strcpy(p1, "Windows");
 		version = GetVersion();
 		if ((version & 0x80000000) == 0) strcat(p1,"NT");
 									else strcat(p1,"9X");
@@ -1324,6 +1399,13 @@ char *hgio_sysinfo( int p2, int *res, char *outbuf )
 
 	switch(p2) {
 	case 0:
+#ifdef HSPNDK
+		strcpy(p1, "Android");
+#endif
+#ifdef HSPIOS
+		strcpy(p1, "iOs");
+#endif
+		fl=HSPVAR_FLAG_STR;
 		break;
 	case 1:
 		break;
@@ -1345,33 +1427,6 @@ HWND hgio_gethwnd( void )
 #endif
 
 
-
-
-void hgio_size( int sx, int sy )
-{
-}
-
-
-void hgio_view( int sx, int sy )
-{
-}
-
-
-void hgio_scale( float xx, float yy )
-{
-}
-
-
-void hgio_autoscale( int mode )
-{
-}
-
-
-void hgio_uvfix( int mode )
-{
-}
-
-
 /*------------------------------------------------------------*/
 /*
 		HGIMG4 Sprite service
@@ -1383,6 +1438,11 @@ void hgio_draw_gpsprite( Bmscr *bmscr, bool lateflag )
 	float zx,zy,rot;
 	gpobj *obj;
 	gpspr *spr;
+
+	if (bmscr == NULL) return;
+	if ((bmscr->type != HSPWND_TYPE_MAIN) && (bmscr->type != HSPWND_TYPE_OFFSCREEN)) return;
+	if (drawflag == 0) hgio_render_start();
+
 	game->findSpriteObj( lateflag );
 	while(1) {
 		obj = game->getNextSpriteObj();
@@ -1411,6 +1471,15 @@ void hgio_draw_gpsprite( Bmscr *bmscr, bool lateflag )
 
 }
 
+
+void hgio_draw_all(Bmscr *bmscr, int option)
+{
+	if (bmscr == NULL) return;
+	if ((bmscr->type != HSPWND_TYPE_MAIN) && (bmscr->type != HSPWND_TYPE_OFFSCREEN)) return;
+	if (drawflag == 0) hgio_render_start();
+
+	game->drawAll(option);
+}
 
 
 void hgio_text_render( void )

@@ -58,6 +58,7 @@ SpriteBatch* SpriteBatch::create(const char* texturePath, Effect* effect, unsign
 SpriteBatch* SpriteBatch::create(Texture* texture,  Effect* effect, unsigned int initialCapacity)
 {
     GP_ASSERT(texture != NULL);
+    GP_ASSERT(texture->getType() == Texture::TEXTURE_2D);
 
     bool customEffect = (effect != NULL);
     if (!customEffect)
@@ -99,7 +100,7 @@ SpriteBatch* SpriteBatch::create(Texture* texture,  Effect* effect, unsigned int
     }
 
     // Wrap the effect in a material
-    Material* material = Material::create(effect); // +ref effect
+    Material* material = Material::create(effect);
 
     // Set initial material state
     material->getStateBlock()->setBlend(true);
@@ -107,7 +108,7 @@ SpriteBatch* SpriteBatch::create(Texture* texture,  Effect* effect, unsigned int
     material->getStateBlock()->setBlendDst(RenderState::BLEND_ONE_MINUS_SRC_ALPHA);
 
     // Bind the texture to the material as a sampler
-    Texture::Sampler* sampler = Texture::Sampler::create(texture); // +ref texture
+    Texture::Sampler* sampler = Texture::Sampler::create(texture);
     material->getParameter(samplerUniform->getName())->setValue(sampler);
     
     // Define the vertex format for the batch
@@ -133,7 +134,7 @@ SpriteBatch* SpriteBatch::create(Texture* texture,  Effect* effect, unsigned int
 
 	// Bind an ortho projection to the material by default (user can override with setProjectionMatrix)
 	Game* game = Game::getInstance();
-	Matrix::createOrthographicOffCenter(0, game->getWidth(), game->getHeight(), 0, 0, 1, &batch->_projectionMatrix);
+    Matrix::createOrthographicOffCenter(0, game->getViewport().width, game->getViewport().height, 0, 0, 1, &batch->_projectionMatrix);
 	material->getParameter("u_projectionMatrix")->bindValue(batch, &SpriteBatch::getProjectionMatrix);
 	
     return batch;
@@ -142,6 +143,11 @@ SpriteBatch* SpriteBatch::create(Texture* texture,  Effect* effect, unsigned int
 void SpriteBatch::start()
 {
     _batch->start();
+}
+
+bool SpriteBatch::isStarted() const
+{
+    return _batch->isStarted();
 }
 
 void SpriteBatch::draw(const Rectangle& dst, const Rectangle& src, const Vector4& color)
@@ -204,15 +210,18 @@ void SpriteBatch::draw(float x, float y, float z, float width, float height, flo
     Vector2 downRight(x2, y2);
 
     // Rotate points around rotationAxis by rotationAngle.
-    Vector2 pivotPoint(rotationPoint);
-    pivotPoint.x *= width;
-    pivotPoint.y *= height;
-    pivotPoint.x += x;
-    pivotPoint.y += y;
-    upLeft.rotate(pivotPoint, rotationAngle);
-    upRight.rotate(pivotPoint, rotationAngle);
-    downLeft.rotate(pivotPoint, rotationAngle);
-    downRight.rotate(pivotPoint, rotationAngle);
+    if (rotationAngle != 0)
+    {
+        Vector2 pivotPoint(rotationPoint);
+        pivotPoint.x *= width;
+        pivotPoint.y *= height;
+        pivotPoint.x += x;
+        pivotPoint.y += y;
+        upLeft.rotate(pivotPoint, rotationAngle);
+        upRight.rotate(pivotPoint, rotationAngle);
+        downLeft.rotate(pivotPoint, rotationAngle);
+        downRight.rotate(pivotPoint, rotationAngle);
+    }
 
     // Write sprite vertex data.
     static SpriteVertex v[4];
@@ -251,34 +260,34 @@ void SpriteBatch::draw(const Vector3& position, const Vector3& right, const Vect
     p3 += tForward;
 
     // Calculate the rotation point.
-    Vector3 rp = p0;
-    tRight = right;
-    tRight *= width * rotationPoint.x;
-    tForward *= rotationPoint.y;
-    rp += tRight;
-    rp += tForward;
+    if (rotationAngle != 0)
+    {
+        Vector3 rp = p0;
+        tRight = right;
+        tRight *= width * rotationPoint.x;
+        tForward *= rotationPoint.y;
+        rp += tRight;
+        rp += tForward;
 
-    // Rotate all points the specified amount about the given point (about the up vector).
-    static Vector3 u;
-    Vector3::cross(right, forward, &u);
-    static Matrix rotation;
-    Matrix::createRotation(u, rotationAngle, &rotation);
+        // Rotate all points the specified amount about the given point (about the up vector).
+        static Vector3 u;
+        Vector3::cross(right, forward, &u);
+        static Matrix rotation;
+        Matrix::createRotation(u, rotationAngle, &rotation);
+        p0 -= rp;
+        p0 *= rotation;
+        p0 += rp;
+        p1 -= rp;
+        p1 *= rotation;
+        p1 += rp;
+        p2 -= rp;
+        p2 *= rotation;
+        p2 += rp;
+        p3 -= rp;
+        p3 *= rotation;
+        p3 += rp;
+    }
 
-    p0 -= rp;
-    p0 *= rotation;
-    p0 += rp;
-
-    p1 -= rp;
-    p1 *= rotation;
-    p1 += rp;
-
-    p2 -= rp;
-    p2 *= rotation;
-    p2 += rp;
-
-    p3 -= rp;
-    p3 *= rotation;
-    p3 += rp;
 
     // Add the sprite vertex data to the batch.
     static SpriteVertex v[4];
@@ -298,9 +307,16 @@ void SpriteBatch::draw(float x, float y, float width, float height, float u1, fl
 
 void SpriteBatch::draw(float x, float y, float width, float height, float u1, float v1, float u2, float v2, const Vector4& color, const Rectangle& clip)
 {
+    draw(x, y, 0, width, height, u1, v1, u2, v2, color, clip);
+}
+
+void SpriteBatch::draw(float x, float y, float z, float width, float height, float u1, float v1, float u2, float v2, const Vector4& color, const Rectangle& clip)
+{
+    // TODO: Perform software clipping instead of culling the entire sprite.
+
     // Only draw if at least part of the sprite is within the clip region.
     if (clipSprite(clip, x, y, width, height, u1, v1, u2, v2))
-        draw(x, y, 0, width, height, u1, v1, u2, v2, color);
+        draw(x, y, z, width, height, u1, v1, u2, v2, color);
 }
 
 void SpriteBatch::addSprite(float x, float y, float width, float height, float u1, float v1, float u2, float v2, const Vector4& color, SpriteBatch::SpriteVertex* vertices)
@@ -406,17 +422,19 @@ bool SpriteBatch::clipSprite(const Rectangle& clip, float& x, float& y, float& w
         return false;
     }
 
-    const float uvWidth = u2 - u1;
-    const float uvHeight = v2 - v1;
+    float uvWidth = u2 - u1;
+    float uvHeight = v2 - v1;
 
     // Moving x to the right.
     if (x < clip.x)
     {
         const float percent = (clip.x - x) / width;
         const float dx = clip.x - x;
+        const float du = uvWidth * percent;
         x = clip.x;
         width -= dx;
-        u1 += uvWidth * percent;
+        u1 += du;
+        uvWidth -= du;
     }
 
     // Moving y down.
@@ -424,9 +442,11 @@ bool SpriteBatch::clipSprite(const Rectangle& clip, float& x, float& y, float& w
     {
         const float percent = (clip.y - y) / height;
         const float dy = clip.y - y;
+        const float dv = uvHeight * percent;
         y = clip.y;
         height -= dy;
-        v1 += uvHeight * percent;
+        v1 += dv;
+        uvHeight -= dv;
     }
 
     // Moving width to the left.

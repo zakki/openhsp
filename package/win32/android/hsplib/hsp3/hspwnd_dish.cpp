@@ -123,7 +123,7 @@ void HspWnd::Reset( void )
 	sx = hgio_getWidth();
 	sy = hgio_getHeight();
 
-	MakeBmscr( 0, HSPWND_TYPE_MAIN, 0, 0, sx, sy );
+	MakeBmscr( 0, HSPWND_TYPE_MAIN, 0, 0, sx, sy, 0 );
 	
 	//		global vals
 	//
@@ -143,7 +143,7 @@ void HspWnd::Reset( void )
 }
 
 
-void HspWnd::MakeBmscr( int id, int type, int x, int y, int sx, int sy )
+void HspWnd::MakeBmscr( int id, int type, int x, int y, int sx, int sy, int option )
 {
 	//		Bmscr(オフスクリーン)生成
 	//
@@ -160,6 +160,12 @@ void HspWnd::MakeBmscr( int id, int type, int x, int y, int sx, int sy )
 	bm->texid = -1;
 	bm->Init( sx, sy );
 	bm->master_hspwnd = static_cast< void * >( this );
+	bm->buffer_option = option;
+
+	if (type == HSPWND_TYPE_OFFSCREEN) {
+		sprintf( bm->resname, "buffer%d", bm->wid );
+		hgio_buffer( (BMSCR *)bm );
+	}
 }
 
 
@@ -302,6 +308,8 @@ void Bmscr::Init( int p_sx, int p_sy )
 	mem_obj = NULL;
 	sx = p_sx; sy = p_sy;
 	sx2 = sx;
+	master_buffer = NULL;
+	buffer_option = 0;
 
 	Cls(0);
 
@@ -360,7 +368,10 @@ void Bmscr::Cls( int mode )
 	ox=64;oy=32;py=0;
 	gx=32;gy=32;gmode=0;
 	objstyle = 00;
-	for(i=0;i<BMSCR_SAVEPOS_MAX;i++) { savepos[i] = 0; }
+	for (i = 0; i<BMSCR_SAVEPOS_MAX; i++) {
+		savepos[i] = 0;
+		accel_value[i] = (HSPREAL)0.0;
+	}
 
 	//		CEL initalize
 	//
@@ -372,9 +383,7 @@ void Bmscr::Cls( int mode )
 
 	//		Update HGI/O
 	//
-	if ( wid == 0 ) {
-		hgio_screen( (BMSCR *)this );
-	}
+	hgio_screen( (BMSCR *)this );
 
 	//		Multi-Touch Reset
 	resetMTouch();
@@ -764,6 +773,7 @@ int Bmscr::CelPut( Bmscr *src, int id )
 	bak_cy = cy;
 	cx -= src->celofsx;
 	cy -= src->celofsy;
+
 	hgio_copy( (BMSCR *)this, xx, yy, psx, psy, (BMSCR *)src, (float)psx, (float)psy );
 	cx = bak_cx;
 	cy = bak_cy;

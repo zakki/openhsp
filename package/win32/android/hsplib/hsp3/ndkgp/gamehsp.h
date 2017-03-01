@@ -99,12 +99,22 @@ GPPSET_MAX
 #define GPOBJ_MATOPT_NOZTEST (8)
 #define GPOBJ_MATOPT_NOZWRITE (16)
 #define GPOBJ_MATOPT_BLENDADD (32)
+#define GPOBJ_MATOPT_SPECULAR (64)
+#define GPOBJ_MATOPT_USERSHADER (128)
 
 #define GPDRAW_OPT_OBJUPDATE (1)
 #define GPDRAW_OPT_DRAWSCENE (2)
 #define GPDRAW_OPT_DRAW2D (4)
 #define GPDRAW_OPT_DRAWSCENE_LATE (8)
 #define GPDRAW_OPT_DRAW2D_LATE (16)
+
+#define GPANIM_OPT_START_FRAME (0)
+#define GPANIM_OPT_END_FRAME (1)
+#define GPANIM_OPT_DURATION (2)
+#define GPANIM_OPT_ELAPSED (3)
+#define GPANIM_OPT_BLEND (4)
+#define GPANIM_OPT_PLAYING (5)
+#define GPANIM_OPT_SPEED (6)
 
 
 //  HGIMG4 Sprite Object
@@ -126,7 +136,7 @@ public:
 
 
 //  HGIMG4 Node Object
-class gpobj {
+class gpobj : public Ref {
 public:
 	gpobj();
 	~gpobj();
@@ -153,6 +163,7 @@ public:
 	Model *_model;						// 生成されたModel
 	Camera *_camera;					// 生成されたCamera
 	Light *_light;						// 生成されたLight
+	Animation *_animation;				// 生成されたAnimation
 	Vector3 _sizevec;					// 生成されたサイズパラメーター
 	Vector4 _vec[GPOBJ_USERVEC_MAX];	// ワーク用ベクター
 
@@ -161,6 +172,9 @@ public:
 
 #define BUFSIZE_POLYCOLOR 32
 #define BUFSIZE_POLYTEX 64
+#define BUFSIZE_MULTILIGHT 16
+
+#define DEFAULT_ANIM_CLIPNAME "_idle"
 
 //	gamehsp Object
 class gamehsp: public Game
@@ -182,6 +196,10 @@ public:
      */
     void touchEvent(Touch::TouchEvent evt, int x, int y, unsigned int contactIndex);
 
+	/**
+	* for PassCallback
+	*/
+	static std::string passCallback(Pass* pass, void* cookie);
 
 	/*
 		HSP Support Functions
@@ -208,6 +226,12 @@ public:
 	int getObjectPrm( int objid, int prmid, int *outptr );
 	int setObjectPrm( int objid, int prmid, int value );
 
+	char *getAnimId(int objid, int index, int option);
+	int getAnimPrm(int objid, int index, int option, int *res);
+	int setAnimPrm(int objid, int index, int option, int value);
+	int addAnimId(int objid, char *name, int start, int end, int option);
+	int playAnimId(int objid, char *name, int option);
+
 	gpmat *getMat( int id );
 	int deleteMat( int id );
 	gpmat *addMat( void );
@@ -230,26 +254,40 @@ public:
 	int makeNewModelWithMat( gpobj *obj, Mesh *mesh, int matid );
 
 	int makeNullNode( void );
-	int makeFloorNode( float xsize, float ysize, int color, int matid=-1 );
+	int makeFloorNode(float xsize, float ysize, int color, int matid = -1);
 	int makePlateNode( float xsize, float ysize, int color, int matid=-1 );
 	int makeBoxNode( float size, int color, int matid=-1 );
-	int makeModelNode( char *fname, char *idname );
+	int makeModelNode( char *fname, char *idname, char *defs );
+
+	bool makeModelNodeSub(Node *node, int nest);
+
 	int makeCloneNode( int objid );
 	int makeSpriteObj( int celid, int gmode, void *bmscr );
 
 	int makeNewMat( Material* material, int mode = GPMAT_MODE_3D );
 	int makeNewMat2D( char *fname, int matopt );
+	int makeNewMatFromFB(gameplay::FrameBuffer *fb, int matopt);
 	int makeNewLgt( int id, int lgtopt, float range=1.0f, float inner=0.5f, float outer=1.0f );
 	int makeNewCam( int id, float fov, float aspect, float near, float far );
+	void setUserShader2D( char *vsh, char *fsh, char *defines );
+	char *getUserVSH(void) { return (char *)user_vsh.c_str(); };
+	char *getUserFSH(void) { return (char *)user_fsh.c_str(); };
+	char *getUserDefines(void) { return (char *)user_defines.c_str(); };
 
 	Material *makeMaterialColor( int color, int lighting );
 	Material *makeMaterialTexture( char *fname, int matopt );
 	Material *makeMaterialFromShader( char *vshd, char *fshd, char *defs );
 	void setMaterialDefaultBinding( Material* material, int icolor, int matopt );
 	float setMaterialBlend( Material* material, int gmode, int gfrate );
-	Material *makeMaterialTex2D( char *fname, int matopt );
+	Material *makeMaterialTex2D(Texture *texture, int matopt);
 	int getTextureWidth( void );
 	int getTextureHeight( void );
+
+	gameplay::FrameBuffer *makeFremeBuffer(char *name, int sx, int sy);
+	void deleteFrameBuffer(gameplay::FrameBuffer *fb);
+	void selectFrameBuffer(gameplay::FrameBuffer *fb, int sx, int sy);
+	void resumeFrameBuffer(void);
+	void clearFrameBuffer(void);
 
 	void drawTest( int matid );
 	int drawFont( int x, int y, char *text, Vector4 *p_color, int size );
@@ -273,6 +311,7 @@ public:
 
 	void updateLightVector( gpobj *obj, int moc );
 
+
 	// physics
 	gpphy *getPhy( int id );
 	int setObjectBindPhysics( int objid, float mass, float friction );
@@ -294,7 +333,7 @@ public:
 	void getBorder( Vector3 *v1, Vector3 *v2 );
 
 	// 2D draw function
-	float *startPolyTex2D( gpmat *mat );
+	float *startPolyTex2D( gpmat *mat, int material_id );
 	void drawPolyTex2D( gpmat *mat );
 	void addPolyTex2D( gpmat *mat );
 	void finishPolyTex2D( gpmat *mat );
@@ -310,6 +349,19 @@ public:
 	void drawLineColor2D( void );
 	void addLineColor2D( int num );
 	void finishLineColor2D( void );
+
+	// global light function
+	void setupDefines(void);
+	char *getLightDefines(void) { return (char *)light_defines.c_str(); }
+	char *getNoLightDefines(void) { return (char *)nolight_defines.c_str(); }
+	char *getSpecularLightDefines(void) { return (char *)splight_defines.c_str(); }
+
+	/**
+	* update projection parameter
+	*/
+	void make2DRenderProjection(Matrix *mat, int sx, int sy);
+	void update2DRenderProjection(Material* material, Matrix *mat);
+	void update2DRenderProjectionSystem(Matrix *mat);
 
 protected:
     /**
@@ -338,7 +390,6 @@ protected:
 
 private:
 
-
     /**
      * update the scene each frame.
      */
@@ -349,6 +400,7 @@ private:
      * Draws the scene each frame.
      */
     bool updateNodeMaterial( Node* node, Material *material );
+	int ApplyMaterialToModel(Material *boxMaterial, Model *model);
 	bool drawScene(Node* node);
 	bool init2DRender( void );
 
@@ -382,20 +434,38 @@ private:
 	Scene *_scene;
 	Camera *_cameraDefault;
 	Quaternion _qcam_billboard;
+	int _viewx1, _viewy1, _viewx2, _viewy2;
+	FrameBuffer* _previousFrameBuffer;
+
+	// Multi Light
+	int _max_dlight;
+	int _max_plight;
+	int _max_slight;
+	int _dir_light[BUFSIZE_MULTILIGHT];
+	int _point_light[BUFSIZE_MULTILIGHT];
+	int _spot_light[BUFSIZE_MULTILIGHT];
 
 	// Obj support value
 	Vector3 border1;		// BORDER座標1
 	Vector3 border2;		// BORDER座標2
 
-
 	// preset flat mesh
-    Matrix _projectionMatrix2D;
+    Matrix _projectionMatrix2D;					// 2D projection Matrix (単色のシステム用)
     MeshBatch* _meshBatch;						// MeshBatch for Polygon
     MeshBatch* _meshBatch_line;					// MeshBatch for Line
 
 	Effect *_spriteEffect;
 	float _bufPolyColor[BUFSIZE_POLYCOLOR];
 	float _bufPolyTex[BUFSIZE_POLYTEX];
+
+	// preset light defines
+	std::string	light_defines;
+	std::string	nolight_defines;
+	std::string	splight_defines;
+
+	std::string	user_vsh;
+	std::string	user_fsh;
+	std::string	user_defines;
 
 	//Node *_nodetemp;
 };

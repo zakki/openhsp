@@ -87,6 +87,10 @@ void InitSysReq( void )
 
 	SetSysReq( SYSREQ_MESCACHE_MAX, 64 );
 
+	sysreq[SYSREQ_DLIGHT_MAX] = 1;			// number of Directional Light(HGIMG4)
+	sysreq[SYSREQ_PLIGHT_MAX] = 0;			// number of Point Light(HGIMG4)
+	sysreq[SYSREQ_SLIGHT_MAX] = 0;			// number of Spot Light(HGIMG4)
+
 #ifdef HSPIOS
     sysreq[ SYSREQ_PLATFORM ] = PLATFORM_IOS;
 #endif    
@@ -95,6 +99,13 @@ void InitSysReq( void )
 #endif    
 #ifdef HSPEMSCRIPTEN
 	sysreq[ SYSREQ_PLATFORM ] = PLATFORM_EMSCRIPTEN;
+#endif
+#ifdef HSPLINUX
+#ifdef HSPRASPBIAN
+	sysreq[SYSREQ_PLATFORM] = PLATFORM_RASPBIAN;
+#else
+	sysreq[SYSREQ_PLATFORM] = PLATFORM_LINUX;
+#endif
 #endif
 
 	dbgmsg[0] = 0;

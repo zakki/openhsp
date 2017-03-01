@@ -19,6 +19,9 @@ CLSMODE_BLUR,
 CLSMODE_MAX,
 };
 
+// material defines for load model
+static std::string model_defines;
+
 extern bool hasParameter( Material* material, const char* name );
 
 /*------------------------------------------------------------*/
@@ -49,6 +52,7 @@ void gpobj::reset( int id )
 	_model = NULL;
 	_camera = NULL;
 	_light = NULL;
+	_animation = NULL;
 	_flag = GPOBJ_FLAG_ENTRY;
 	_id = id;
 	_mygroup = 0;
@@ -157,6 +161,7 @@ void gamehsp::initialize()
 {
 	// フォント作成
 	mFont = Font::create("res/font.gpb");
+
 	resetScreen();
 }
 
@@ -213,20 +218,18 @@ void gamehsp::update(float elapsedTime)
 void gamehsp::render(float elapsedTime)
 {
     // Clear the color and depth buffers
-	Vector4 clscolor;
-	int icolor;
-	int clsmode;
 
-	icolor = GetSysReq( SYSREQ_CLSCOLOR );
-	clsmode = GetSysReq( SYSREQ_CLSMODE );
+	// 描画先をリセット
+	resumeFrameBuffer();
 
-	if ( clsmode == CLSMODE_NONE ) {
-		clear(CLEAR_DEPTH, Vector4::zero(), 1.0f, 0);
-		return;
-	}
+	// ビューポート初期化
+	updateViewport(_viewx1, _viewy1, _viewx2, _viewy2);
 
-	clscolor.set( ( (icolor>>16)&0xff )*_colrate, ( (icolor>>8)&0xff )*_colrate, ( icolor&0xff )*_colrate, 1.0f );
-    clear(CLEAR_COLOR_DEPTH, clscolor, 1.0f, 0);
+	// プロジェクションの初期化
+	update2DRenderProjectionSystem(&_projectionMatrix2D);
+
+	// 画面クリア
+	clearFrameBuffer();
 
     //nodetemp->rotateY(MATH_DEG_TO_RAD((float)elapsedTime / 1000.0f * 180.0f));
 }
@@ -289,6 +292,7 @@ void gamehsp::resetScreen( int opt )
 	// gpobj作成
 	_maxobj = GetSysReq( SYSREQ_MAXOBJ );
 	_gpobj = new gpobj[ _maxobj ];
+	for(int i=0;i<_maxobj;i++) { _gpobj[i].addRef(); }
 	setObjectPool( 0, -1 );
 
 	// gpmat作成
@@ -298,6 +302,7 @@ void gamehsp::resetScreen( int opt )
 	// シーン作成
 	_scene = Scene::create();
 	_curscene = 0;
+	_previousFrameBuffer = NULL;
 
 	// カメラ作成
 	//Camera*	camera = Camera::createPerspective(45.0f, getAspectRatio(), 0.01f, 20.0f );
@@ -313,17 +318,35 @@ void gamehsp::resetScreen( int opt )
 //	_camera->translate(0, 0, 100);
 //	SAFE_RELEASE(camera);
 
-	// シーンライト作成
+#if 0
 	_scene->setLightColor( 1.0f, 1.0f, 1.0f );
 
 	Vector3 ldir;
 	ldir.set( -0.5f, 0.0f, -0.3f );
 	_scene->setLightDirection( ldir );
-	_scene->setAmbientColor( 0.25f, 0.25f, 0.25f );
+#endif
+
+	// シーンライト作成
+	_scene->setAmbientColor(0.25f, 0.25f, 0.25f);
 
 	// ライト作成
-	_deflight = makeNewLgt( -1, GPLGT_OPT_NORMAL );
-	selectLight( _deflight );
+	_deflight = makeNewLgt(-1, GPLGT_OPT_NORMAL);
+	selectLight(_deflight);
+
+	_max_dlight = GetSysReq(SYSREQ_DLIGHT_MAX);
+	if (_max_dlight > BUFSIZE_MULTILIGHT) _max_dlight = BUFSIZE_MULTILIGHT;
+	for (int i = 0; i<_max_dlight; i++) { _dir_light[i] = _deflight; }
+
+	_max_plight = GetSysReq(SYSREQ_PLIGHT_MAX);
+	if (_max_plight > BUFSIZE_MULTILIGHT) _max_plight = BUFSIZE_MULTILIGHT;
+	for (int i = 0; i<_max_plight; i++) { _point_light[i] = _deflight; }
+
+	_max_slight = GetSysReq(SYSREQ_SLIGHT_MAX);
+	if (_max_slight > BUFSIZE_MULTILIGHT) _max_slight = BUFSIZE_MULTILIGHT;
+	for (int i = 0; i<_max_slight; i++) { _spot_light[i] = _deflight; }
+
+	// シェーダー定義文字列を生成
+	setupDefines();
 
 	// ボーダー初期化
 	border1.set( -50.0f, 0.0f, -50.0f );
@@ -344,12 +367,50 @@ void gamehsp::resetScreen( int opt )
 void gamehsp::updateViewport( int x, int y, int w, int h )
 {
 	Rectangle viewport;
-	viewport.set( (float)x, (float)y, (float)w, (float)h );
+	_viewx1 = x; _viewy1 = y;
+	_viewx2 = w; _viewy2 = h;
+	viewport.set((float)x, (float)y, (float)w, (float)h);
 	setViewport( viewport );
 }
 
 
-void gamehsp::setBorder( float x0, float x1, float y0, float y1, float z0, float z1 )
+void gamehsp::selectFrameBuffer(gameplay::FrameBuffer *fb, int sx, int sy)
+{
+	Rectangle viewport;
+	_previousFrameBuffer = fb->bind();
+	viewport.set(0, 0, (float)sx, (float)sy);
+	setViewport(viewport);
+	clearFrameBuffer();
+}
+
+
+void gamehsp::resumeFrameBuffer(void)
+{
+	if (_previousFrameBuffer) {
+		_previousFrameBuffer->bind();
+		_previousFrameBuffer = NULL;
+	}
+}
+
+
+void gamehsp::clearFrameBuffer(void)
+{
+	Vector4 clscolor;
+	int icolor;
+	int clsmode;
+	icolor = GetSysReq(SYSREQ_CLSCOLOR);
+	clsmode = GetSysReq(SYSREQ_CLSMODE);
+
+	if (clsmode == CLSMODE_NONE) {
+		clear(CLEAR_DEPTH, Vector4::zero(), 1.0f, 0);
+		return;
+	}
+	clscolor.set(((icolor >> 16) & 0xff)*_colrate, ((icolor >> 8) & 0xff)*_colrate, (icolor & 0xff)*_colrate, 1.0f);
+	clear(CLEAR_COLOR_DEPTH, clscolor, 1.0f, 0);
+}
+
+
+void gamehsp::setBorder(float x0, float x1, float y0, float y1, float z0, float z1)
 {
 	border1.set( x0, y0, z0 );
 	border2.set( x1, y1, z1 );
@@ -389,9 +450,7 @@ bool gamehsp::init2DRender( void )
 	//
 
 	// 2D用のプロジェクション
-	//Matrix::createOrthographic(getWidth(), getHeight(), -1.0f, 1.0f, &_projectionMatrix2D);
-	Matrix::createOrthographicOffCenter( 0.0f, getWidth(), getHeight(), 0.0f, -1.0f, 1.0f, &_projectionMatrix2D);
-	_projectionMatrix2D.translate( 0.5f, 0.0f, 0.0f );						// 座標誤差修正のため0.5ドットずらす
+	make2DRenderProjection(&_projectionMatrix2D,getWidth(),getHeight());
 
 	// スプライト用のshader
 	_spriteEffect = Effect::createFromFile(SPRITE_VSH, SPRITE_FSH);
@@ -425,6 +484,32 @@ bool gamehsp::init2DRender( void )
 	}
 
 	return true;
+}
+
+
+void gamehsp::make2DRenderProjection(Matrix *mat,int sx, int sy)
+{
+	//	2Dシステム用のプロジェクションを作成する
+	Matrix::createOrthographicOffCenter(0.0f, (float)sx, (float)sy, 0.0f, -1.0f, 1.0f, mat);
+	mat->translate(0.5f, 0.0f, 0.0f);						// 座標誤差修正のため0.5ドットずらす
+}
+
+
+void gamehsp::update2DRenderProjection(Material* material, Matrix *mat)
+{
+	//	マテリアルのプロジェクションを再設定する
+	MaterialParameter *prm = material->getParameter("u_projectionMatrix");
+	if (prm) {
+		prm->setValue(*mat);
+	}
+}
+
+
+void gamehsp::update2DRenderProjectionSystem(Matrix *mat)
+{
+	//	2Dシステム用のプロジェクションを再設定する
+	update2DRenderProjection(_meshBatch->getMaterial(), mat);
+	update2DRenderProjection(_meshBatch_line->getMaterial(), mat);
 }
 
 
@@ -473,7 +558,12 @@ void gamehsp::addNodeVector( gpobj *obj, Node *node, int moc, Vector4 *prm )
 		break;
 	case MOC_SCALE:
 		if ( node ) {
-			node->scale( prm->x, prm->y, prm->z );
+			Vector3 vec3 = node->getScale();
+			vec3.x += prm->x;
+			vec3.y += prm->y;
+			vec3.z += prm->z;
+			node->setScale(vec3);
+			//node->scale(prm->x, prm->y, prm->z);		// 掛け算だったので修正
 		}
 		break;
 	case MOC_DIR:
@@ -910,9 +1000,9 @@ int gamehsp::getObjectVector( int objid, int moc, Vector4 *prm )
 
 void gamehsp::drawNode( Node *node )
 {
-	Model* model = node->getModel(); 
-	if (model) {
-		model->draw();
+	Drawable* drawable = node->getDrawable(); 
+	if (drawable) {
+		drawable->draw();
 	}
 }
 
@@ -955,7 +1045,8 @@ bool gamehsp::updateNodeMaterial( Node* node, Material *material )
 		updateNodeMaterial( sub_node, material );
 	}
 
-	Model* model = node->getModel(); 
+	Drawable* drawable = node->getDrawable();
+	Model* model = dynamic_cast<Model*>(drawable);
     if (model)
     {
 		model->setMaterial( material );
@@ -967,8 +1058,9 @@ bool gamehsp::updateNodeMaterial( Node* node, Material *material )
 bool gamehsp::drawScene(Node* node)
 {
     // If the node visited contains a model, draw it
-	gpobj *obj = (gpobj *)node->getUserPointer();
-    Model* model = node->getModel(); 
+	gpobj *obj = (gpobj *)node->getUserObject();
+	Drawable* drawable = node->getDrawable();
+	Model* model = dynamic_cast<Model*>(drawable);
 	if ( obj ) {
 		if ( obj->isVisible( _scenedraw_lateflag ) == false ) return false;
 
@@ -1048,6 +1140,155 @@ int gamehsp::setObjectPrm( int objid, int prmid, int value )
 	return 0;
 }
 
+char *gamehsp::getAnimId(int objid, int index, int option)
+{
+	gpobj *obj;
+	Animation *anim;
+	AnimationClip *clip;
+	obj = getObj(objid);
+	if (obj == NULL) return NULL;
+	anim = obj->_animation;
+	if (anim == NULL) return NULL;
+	int max = anim->getClipCount();
+	if ((index<0)||(index>=max)) return NULL;
+	clip = anim->getClip(index);
+	return (char *)clip->getId();
+}
+
+int gamehsp::getAnimPrm(int objid, int index, int option, int *res)
+{
+	gpobj *obj;
+	Animation *anim;
+	AnimationClip *clip;
+	int p_res = 0;
+	obj = getObj(objid);
+	if (obj == NULL) return -1;
+	anim = obj->_animation;
+	if (anim == NULL) return -1;
+	int max = anim->getClipCount();
+	if ((index<0) || (index >= max)) return -1;
+	clip = anim->getClip(index);
+	switch (option) {
+	case GPANIM_OPT_START_FRAME:
+		p_res = (int)clip->getStartTime();
+		break;
+	case GPANIM_OPT_END_FRAME:
+		p_res = (int)clip->getEndTime();
+		break;
+	case GPANIM_OPT_DURATION:
+		p_res = (int)clip->getDuration();
+		break;
+	case GPANIM_OPT_ELAPSED:
+		p_res = (int)clip->getElapsedTime();
+		break;
+	case GPANIM_OPT_PLAYING:
+		if (clip->isPlaying()) { p_res = 1; }
+		else { p_res = 0; }
+		break;
+	case GPANIM_OPT_BLEND:
+		p_res = (int)( clip->getBlendWeight() * 100.0f );
+		break;
+	case GPANIM_OPT_SPEED:
+		p_res = (int)( clip->getSpeed() * 100.0f );
+		break;
+	default:
+		return -1;
+	}
+	*res = p_res;
+	return 0;
+}
+
+int gamehsp::setAnimPrm(int objid, int index, int option, int value)
+{
+	gpobj *obj;
+	Animation *anim;
+	AnimationClip *clip;
+	obj = getObj(objid);
+	if (obj == NULL) return -1;
+	anim = obj->_animation;
+	if (anim == NULL) return -1;
+	int max = anim->getClipCount();
+	if ((index<0) || (index >= max)) return -1;
+	clip = anim->getClip(index);
+	switch (option) {
+	case GPANIM_OPT_PLAYING:
+		if (value == 0) clip->stop();
+		if (value == 1) clip->play();
+		if (value == 2) clip->pause();
+		break;
+	case GPANIM_OPT_DURATION:
+		clip->setActiveDuration( (unsigned long)value );
+		break;
+	case GPANIM_OPT_BLEND:
+	{
+		float weight = (float)value;
+		weight = weight * 0.01f;
+		clip->setBlendWeight(weight);
+		break;
+	}
+	case GPANIM_OPT_SPEED:
+	{
+		float weight = (float)value;
+		weight = weight * 0.01f;
+		clip->setSpeed(weight);
+		break;
+	}
+	default:
+		return -1;
+	}
+	return 0;
+}
+
+int gamehsp::addAnimId(int objid, char *name, int start, int end, int option)
+{
+	gpobj *obj;
+	Animation *anim;
+	AnimationClip *clip;
+	unsigned long p_end;
+	unsigned long p_start;
+	obj = getObj(objid);
+	if (obj == NULL) return -1;
+	anim = obj->_animation;
+	if (anim == NULL) return -1;
+	if (*name == 0) return -1;
+	clip = anim->getClip(name);
+	if (clip != NULL) return -1;
+
+	p_start = (unsigned long)start;
+	if (end < 0) {
+		p_end = anim->getDuration();
+	}
+	else {
+		p_end = (unsigned long)end;
+	}
+	clip = anim->createClip(name, p_start, p_end);
+	clip->setRepeatCount(AnimationClip::REPEAT_INDEFINITE);
+	return 0;
+}
+
+int gamehsp::playAnimId(int objid, char *name, int option)
+{
+	gpobj *obj;
+	Animation *anim;
+	AnimationClip *clip;
+	obj = getObj(objid);
+	if (obj == NULL) return -1;
+	anim = obj->_animation;
+	if (anim == NULL) return -1;
+	if (*name == 0) {
+		clip = anim->getClip(DEFAULT_ANIM_CLIPNAME);
+	}
+	else {
+		clip = anim->getClip(name);
+	}
+	if (clip == NULL) return -1;
+	if (option == 0) clip->stop();
+	if (option == 1) clip->play();
+	if (option == 2) clip->pause();
+
+	return 0;
+}
+
 
 /*------------------------------------------------------------*/
 /*
@@ -1063,7 +1304,8 @@ int gamehsp::makeNullNode( void )
 
 	node = Node::create();
 	obj->_node = node;
-	node->setUserPointer( obj, NULL );
+	node->setUserObject( obj );
+	obj->addRef();
 
 	if ( _curscene >= 0 ) {
 		_scene->addNode( obj->_node );
@@ -1073,7 +1315,7 @@ int gamehsp::makeNullNode( void )
 }
 
 
-int gamehsp::makeSpriteObj( int celid, int gmode, void *bmscr )
+int gamehsp::makeSpriteObj(int celid, int gmode, void *bmscr)
 {
 	gpobj *obj = addObj();
 	if ( obj == NULL ) return -1;
@@ -1219,135 +1461,238 @@ int gamehsp::makeBoxNode( float size, int color, int matid )
 }
 
 
-int gamehsp::makeModelNode( char *fname, char *idname )
+bool gamehsp::makeModelNodeSub(Node *rootnode, int nest)
+{
+	Node *node = rootnode;
+	Material *mat;
+	int part,tecs,prms;
+	Vector3 directionalLightVector;
+
+	while (node != NULL) {
+		part = 0;
+		mat = NULL;
+		Drawable* drawable = node->getDrawable();
+		Model* model = dynamic_cast<Model*>(drawable);
+		if (model){
+			Technique *tec = NULL;
+			mat = model->getMaterial(0);
+			part = model->getMeshPartCount();
+			tecs = 0; prms = 0;
+			if (mat) {
+				tecs = mat->getTechniqueCount();
+				if (tecs) {
+					tec = mat->getTechniqueByIndex(0);
+					prms = tec->getParameterCount();
+				}
+			}
+			//Alertf("Node(%s) part%d mat%x tec%d prm%d: %d", node->getId(), part, mat, tecs, prms, nest);
+			//	カレントライトを反映させる
+			gpobj *lgt;
+			Node *light_node;
+			lgt = getObj(_curlight);
+			light_node = lgt->_node;
+			directionalLightVector = light_node->getForwardVector();
+			for (int i = 0; i < prms; i++){
+				MaterialParameter *prm = tec->getParameterByIndex(i);
+				//Alertf( "prm(%s) %x",prm->getName(), prm->getSampler()  );
+			}
+			if (part) {
+				for (int i = 0; i < part; i++){
+					mat = model->getMaterial(i);
+					if (mat) {
+						tec = mat->getTechniqueByIndex(0);
+						tec->getParameter("u_directionalLightColor[0]")->setValue(Vector3(1, 1, 1));
+						tec->getParameter("u_directionalLightDirection[0]")->setValue(&directionalLightVector);
+						tec->getParameter("u_lightDirection")->setValue(&directionalLightVector);
+
+					}
+				}
+			}
+
+		}
+		node = node->getNextSibling();
+	}
+
+	node = rootnode->getFirstChild();
+	if (node != NULL) {
+		makeModelNodeSub(node, nest + 1);
+	}
+	return true;
+}
+
+
+std::string gamehsp::passCallback(Pass* pass, void* cookie)
+{
+	return model_defines;
+}
+
+
+
+int gamehsp::ApplyMaterialToModel(Material *boxMaterial, Model *model)
+{
+	if (boxMaterial == NULL) return -1;
+	model->setMaterial(boxMaterial);
+
+	MaterialParameter *ambientColorParam =
+		hasParameter(boxMaterial, "u_ambientColor") ?
+		boxMaterial->getParameter("u_ambientColor") : NULL;
+	MaterialParameter *lightDirectionParam = NULL;
+	//hasParameter(boxMaterial, "u_lightDirection") ?
+	lightDirectionParam = boxMaterial->getTechnique()->getParameter("u_directionalLightDirection[0]");
+	MaterialParameter *lightColorParam = NULL;
+	//hasParameter(boxMaterial, "u_lightColor") ?
+	lightColorParam = boxMaterial->getTechnique()->getParameter("u_directionalLightColor[0]");
+
+	Vector3 directionalLightVector;
+
+	//	カレントライトを反映させる
+	gpobj *lgt;
+	Node *light_node;
+	lgt = getObj(_curlight);
+	light_node = lgt->_node;
+	directionalLightVector = light_node->getForwardVector();
+
+	// ライトの方向設定
+	if (lightDirectionParam) {
+		//lightDirectionParam->bindValue(light_node, &Node::getForwardVectorView);
+		lightDirectionParam->setValue(Vector3(0, 0, -1));
+	}
+	// ライトの色設定
+	// (リアルタイムに変更を反映させる場合は再設定が必要。現在は未対応)
+	if (ambientColorParam) {
+		Vector3 *vambient;
+		vambient = (Vector3 *)&lgt->_vec[GPOBJ_USERVEC_WORK];
+		ambientColorParam->setValue(vambient);
+	}
+	if (lightColorParam) {
+		lightColorParam->setValue(light_node->getLight()->getColor());
+	}
+	return 0;
+}
+
+
+int gamehsp::makeModelNode(char *fname, char *idname, char *defs)
 {
 	char fn[512];
 	char fn2[512];
 	gpobj *obj = addObj();
-	if ( obj == NULL ) return -1;
+	if (obj == NULL) return -1;
 
-	getpath( fname, fn, 1 );
+	getpath(fname, fn, 1);
 	//strcpy( fn, fname );
-	strcpy( fn2, fn );
-	strcat( fn, ".gpb" );
-	strcat( fn2, ".material" );
+	strcpy(fn2, fn);
+	strcat(fn, ".gpb");
+	strcat(fn2, ".material");
 
-    Bundle *bundle = Bundle::create( fn );
+	Bundle *bundle = Bundle::create(fn);
 	Node *rootNode;
+	Animation *animation;
 	Node *node;
 
-	Material* boxMaterial = Material::create( fn2 );
+	model_defines = defs;
+	Material* boxMaterial = Material::create(fn2,gamehsp::passCallback,NULL);
+	if (boxMaterial == NULL) return -1;
 
-	MaterialParameter *ambientColorParam =
-		hasParameter( boxMaterial, "u_ambientColor" ) ?
-		boxMaterial->getParameter("u_ambientColor") : NULL;
-	MaterialParameter *lightDirectionParam =
-		hasParameter( boxMaterial, "u_lightDirection" ) ?
-		boxMaterial->getParameter("u_lightDirection") : NULL;
-	MaterialParameter *lightColorParam =
-		hasParameter( boxMaterial, "u_lightColor" ) ?
-		boxMaterial->getParameter("u_lightColor") : NULL;
-
-	if ( _curlight >= 0 ) {
-		//	カレントライトを反映させる
-		gpobj *lgt;
-		Node *light_node;
-		lgt = getObj( _curlight );
-		light_node = lgt->_node;
-
-		// ライトの方向設定
-		if ( lightDirectionParam ) {
-			lightDirectionParam->bindValue(light_node, &Node::getForwardVectorView);
-		}
-	    // ライトの色設定
-		// (リアルタイムに変更を反映させる場合は再設定が必要。現在は未対応)
-		if ( ambientColorParam ) {
-			Vector3 *vambient;
-			vambient = (Vector3 *)&lgt->_vec[GPOBJ_USERVEC_WORK];
-			ambientColorParam->setValue( vambient );
-		}
-		if ( lightColorParam ) {
-			lightColorParam->setValue(light_node->getLight()->getColor());
-		}
-	}
-
-	if ( idname ) {
-		rootNode = bundle->loadNode( idname );
-		if ( rootNode == NULL ) {
-			Alertf( "Node not found.(%s#%s)",fname,idname );
+	animation = NULL;
+	if (idname) {
+		rootNode = bundle->loadNode(idname);
+		if (rootNode == NULL) {
+			Alertf("Node not found.(%s#%s)", fname, idname);
 			return -1;
 		}
-		updateNodeMaterial( rootNode, boxMaterial );
+		updateNodeMaterial(rootNode, boxMaterial);
 
-	} else {
+	}
+	else {
 		unsigned int i;
 
 		Scene *scene;
-		Animation *animation;
 		char *rootid;
 
 		rootNode = Node::create();
 		rootid = NULL;
 
 		scene = bundle->loadScene();
-		if ( scene ) {
+		if (scene) {
 			node = scene->getFirstNode();
 			animation = node->getAnimation("animations");
 			if (animation) {
 				rootid = (char *)node->getId();
 				//Alertf( "Found Power Scene Node(%s) Clip count: %d", node->getId(), animation->getClipCount() );
 			}
-
+		}
+		else {
+			Alertf("Scene not found.(%s)", fname);
 		}
 
-		for(i=0;i<bundle->getObjectCount();i++) {
-			node = bundle->loadNode( bundle->getObjectId(i) );
-			if ( node ) {
-				Model* model = node->getModel();
-			    if (model) {
-					model->setMaterial( boxMaterial );
-			    }
+		for (i = 0; i<bundle->getObjectCount(); i++) {
+			node = bundle->loadNode(bundle->getObjectId(i));
+			if (node) {
+				Drawable* drawable = node->getDrawable();
+				Model* model = dynamic_cast<Model*>(drawable);
+				if (model) {
+					ApplyMaterialToModel(boxMaterial, model);
+
+					//Material*m = model->getMaterial();
+					//m->getTechnique()->getParameter("u_directionalLightColor[0]")->setValue(Vector3(1, 1, 1));
+					//m->getTechnique()->getParameter("u_directionalLightDirection[0]")->setValue(Vector3(0, 0, -1));
+
+				}
 				//Alertf( "#%d %s",i, bundle->getObjectId(i) );
 
 				animation = node->getAnimation("animations");
 				if (animation) {
-					if (  strcmp( node->getId() ,rootid ) == 0 ) {
-						AnimationClip *aclip;
-						aclip = animation->createClip( "idle", 0, animation->getDuration() );
-						aclip->setRepeatCount( AnimationClip::REPEAT_INDEFINITE );
-						animation->play("idle");
+					if (strcmp(node->getId(), rootid) == 0) {
+						//AnimationClip *aclip;
+						//aclip = animation->createClip("idle", 0, animation->getDuration());
+						//aclip->setRepeatCount(AnimationClip::REPEAT_INDEFINITE);
+						//animation->play("idle");
 						//animation->createClips("zombie.animation");
-						//Alertf( "(%s) Clip count: %d Dur:%ld", node->getId(), animation->getClipCount(), animation->getDuration() );
-						rootNode->addChild( node );
+						//aclip = animation->getClip(0);
+						//Alertf("(%s) Clip count: %d Dur:%ld", aclip->getId(), animation->getClipCount(), aclip->getActiveDuration());
+						//animation->play(aclip->getId());
+						rootNode->addChild(node);
 					}
-				} else {
-					rootNode->addChild( node );
+				}
+				else {
+					rootNode->addChild(node);
 				}
 
 				SAFE_RELEASE(node);
 			}
 		}
 
+		animation = rootNode->getAnimation("animations");
+		if (animation) {
+			AnimationClip *aclip;
+			aclip = animation->createClip(DEFAULT_ANIM_CLIPNAME, 0, animation->getDuration());
+			aclip->setRepeatCount(AnimationClip::REPEAT_INDEFINITE);
+			//animation->play(aclip->getId());
+		}
+
+		//makeModelNodeSub(rootNode, 0);
 
 		SAFE_RELEASE(scene);
 
 
 	}
 
-	obj->updateParameter( boxMaterial );
+	obj->updateParameter(boxMaterial);
 
-	if ( _curscene >= 0 ) {
-		_scene->addNode( rootNode );
+	if (_curscene >= 0) {
+		_scene->addNode(rootNode);
 	}
 
 	//model->setMaterial( boxMaterial );
 
 	SAFE_RELEASE(bundle);
-    SAFE_RELEASE(boxMaterial);
+	SAFE_RELEASE(boxMaterial);
 
 	//nodetemp = mCubeNode;
-	rootNode->setUserPointer( obj, NULL );
+	rootNode->setUserObject(obj);
+	obj->addRef();
 	obj->_node = rootNode;
+	obj->_animation = animation;
 
 	// 初期化パラメーターを保存
 	obj->_shape = GPOBJ_SHAPE_MODEL;
@@ -1369,8 +1714,9 @@ void gamehsp::makeNewModel( gpobj *obj, Mesh *mesh, Material *material )
 		node = Node::create();
 		obj->_node = node;
 	}
-	node->setModel(model);
-	node->setUserPointer( obj, NULL );
+	node->setDrawable(model);
+	node->setUserObject( obj );
+	obj->addRef();
 	obj->_model = model;
 	obj->updateParameter( material );
 	SAFE_RELEASE(model);
@@ -1422,13 +1768,12 @@ int gamehsp::deleteObj( int id )
 	}
 	model = obj->_model;
 	if ( model ) {
-		if ( obj->_usegpmat < 0 ) {
+		if ( obj->_usegpmat >= 0 ) {
 			material = model->getMaterial();
 			material->release();		// 独自にcreateした参照カウントを減らす
 		}
 	}
     SAFE_RELEASE( obj->_node );
-
     SAFE_RELEASE( obj->_camera );
     SAFE_RELEASE( obj->_light );
 
@@ -1530,17 +1875,18 @@ int gamehsp::makeCloneNode( int objid )
 	newobj->_shape = obj->_shape;
 	newobj->_sizevec = obj->_sizevec;
 
-	node->setUserPointer( NULL, NULL );
+	node->setUserObject( NULL );
 
 	newobj->_node = node->clone();
 
-	newobj->_node->setUserPointer( newobj, NULL );
+	newobj->_node->setUserObject( newobj );
+	newobj->addRef();
 
 	if ( _curscene >= 0 ) {
 		_scene->addNode( newobj->_node );
 	}
 
-	node->setUserPointer( obj, NULL );
+	node->setUserObject( obj );
 
 	return newobj->_id;
 }
@@ -2021,12 +2367,32 @@ void gamehsp::finishLineColor2D( void )
 }
 
 
-float *gamehsp::startPolyTex2D( gpmat *mat )
+float *gamehsp::startPolyTex2D(gpmat *mat, int material_id )
 {
+	//	テクスチャポリゴン描画開始
+	//		mat : コピー元のマテリアル
+	//		material_id : 描画先のマテリアルID
+	//
 	MeshBatch *mesh = mat->_mesh;
 	if ( mesh == NULL ) {
         GP_ERROR("Bad Material.");
         return NULL;
+	}
+
+	gpmat *targetmat = getMat(material_id);
+	if (targetmat) {
+		if (mat->_target_material_id != material_id) {
+			//	同一マテリアルIDの場合はプロジェクションを設定しない(高速化のため)
+			update2DRenderProjection(mat->_material, &targetmat->_projectionMatrix2D);
+			mat->_target_material_id = material_id;
+		}
+	}
+	else {
+		//	メイン画面用の2Dプロジェクション
+		if (mat->_target_material_id != -2) {
+			update2DRenderProjection(mat->_material, &_projectionMatrix2D);
+			mat->_target_material_id = -2;
+		}
 	}
 
 	mesh->start();
@@ -2150,9 +2516,10 @@ Material* gamehsp::make2DMaterialForMesh( void )
 	Material* mesh_material = Material::create( SPRITECOL_VSH, SPRITECOL_FSH, NULL );
 	if ( mesh_material == NULL ) {
         GP_ERROR("2D initalize failed.");
-        return false;
+        return NULL;
 	}
-    mesh_material->getParameter("u_projectionMatrix")->setValue(_projectionMatrix2D);
+	update2DRenderProjection(mesh_material, &_projectionMatrix2D);
+
 	state = mesh_material->getStateBlock();
 	state->setCullFace(false);
 	state->setDepthTest(false);
@@ -2176,4 +2543,19 @@ int gamehsp::drawFont( int x, int y, char *text, Vector4 *p_color, int size )
 	return xsize;
 }
 
+
+gameplay::FrameBuffer *gamehsp::makeFremeBuffer(char *name, int sx, int sy)
+{
+	gameplay::FrameBuffer *frameBuffer;
+	frameBuffer = FrameBuffer::create(name, sx, sy);
+	DepthStencilTarget* dst = DepthStencilTarget::create(name, DepthStencilTarget::DEPTH_STENCIL, sx, sy);
+	frameBuffer->setDepthStencilTarget(dst);
+	SAFE_RELEASE(dst);
+	return frameBuffer;
+}
+
+void gamehsp::deleteFrameBuffer(gameplay::FrameBuffer *fb)
+{
+	SAFE_RELEASE(fb);
+}
 

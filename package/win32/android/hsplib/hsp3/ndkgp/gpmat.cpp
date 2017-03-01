@@ -29,8 +29,9 @@ gpmat::~gpmat()
 {
 }
 
-void gpmat::reset( int id )
+void gpmat::reset( gamehsp *owner, int id )
 {
+	_owner = owner;
 	_mode = 0;
 	_mark = 0;
 	_material = NULL;
@@ -41,13 +42,14 @@ void gpmat::reset( int id )
 	_sy = 0;
 	_texratex = 0.0f;
 	_texratey = 0.0f;
+	_target_material_id = -1;
 }
 
 
 int gpmat::setParameter( char *name, Vector4 *value )
 {
 	if ( _material == NULL ) return -1;
-    _material->getParameter( name )->setValue( value );
+    _material->getParameter( name )->setValue( *value );
 
 	return 0;
 }
@@ -56,7 +58,7 @@ int gpmat::setParameter( char *name, Vector4 *value )
 int gpmat::setParameter( char *name, Vector3 *value )
 {
 	if ( _material == NULL ) return -1;
-    _material->getParameter( name )->setValue( value );
+    _material->getParameter( name )->setValue( *value );
 
 	return 0;
 }
@@ -71,7 +73,26 @@ int gpmat::setParameter( char *name, float value )
 }
 
 
-int gpmat::setState( char *name, char *value )
+int gpmat::setParameter(char *name, const Matrix *value, int count)
+{
+	if (_material == NULL) return -1;
+	_material->getParameter(name)->setValue(value,count);
+
+	return 0;
+}
+
+
+int gpmat::setParameter(char *name, char *fname, int matopt)
+{
+	bool mipmap;
+	if (_material == NULL) return -1;
+	mipmap = (matopt & GPOBJ_MATOPT_NOMIPMAP) == 0;
+	_material->getParameter(name)->setValue( fname, mipmap);
+
+	return 0;
+}
+
+int gpmat::setState(char *name, char *value)
 {
 	RenderState::StateBlock *state;
 
@@ -83,7 +104,14 @@ int gpmat::setState( char *name, char *value )
 	return 0;
 }
 
-
+void gpmat::setFilter(Texture::Filter value)
+{
+	MaterialParameter *mprm = _material->getParameter("u_texture");
+	if (mprm == NULL) return;
+	Texture::Sampler *sampler = mprm->getSampler();
+	if (sampler == NULL) return;
+	sampler->setFilterMode(value, value);
+}
 
 
 /*------------------------------------------------------------*/
@@ -125,7 +153,7 @@ gpmat *gamehsp::addMat( void )
 	gpmat *mat = _gpmat;
 	for(i=0;i<_maxmat;i++) {
 		if ( mat->_flag == GPMAT_FLAG_NONE ) {
-			mat->reset( i|GPOBJ_ID_MATFLAG );
+			mat->reset( this, i|GPOBJ_ID_MATFLAG );
 			return mat;
 		}
 		mat++;
@@ -164,31 +192,21 @@ void gamehsp::setMaterialDefaultBinding( Material* material, int icolor, int mat
 	Vector4 color;
 	Node *light_node;
 
-	if ( _curlight < 0 ) {
-		//	カレントライトなし(シーンを参照)
-		if ( hasParameter( material, "u_ambientColor" ) )
-			material->setParameterAutoBinding("u_ambientColor", "SCENE_AMBIENT_COLOR");
-		if ( hasParameter( material, "u_lightDirection" ) )
-			material->setParameterAutoBinding("u_lightDirection", "SCENE_LIGHT_DIRECTION");
-		if ( hasParameter( material, "u_lightColor" ) )
-			material->setParameterAutoBinding("u_lightColor", "SCENE_LIGHT_COLOR");
-	} else {
-		//	カレントライトを反映させる
-		gpobj *lgt;
-		lgt = getObj( _curlight );
-		light_node = lgt->_node;
-		// ライトの方向設定
-		if ( hasParameter( material, "u_lightDirection" ) )
-			material->getParameter("u_lightDirection")->bindValue(light_node, &Node::getForwardVectorView);
-		// ライトの色設定
-		// (リアルタイムに変更を反映させる場合は再設定が必要。現在は未対応)
-		Vector3 *vambient;
-		vambient = (Vector3 *)&lgt->_vec[GPOBJ_USERVEC_WORK];
-		if ( hasParameter( material, "u_lightColor" ) )
-			material->getParameter("u_lightColor")->setValue(light_node->getLight()->getColor());
-		if ( hasParameter( material, "u_ambientColor" ) )
-			material->getParameter("u_ambientColor")->setValue( vambient );
-	}
+	//	カレントライトを反映させる
+	gpobj *lgt;
+	lgt = getObj(_curlight);
+	light_node = lgt->_node;
+	// ライトの方向設定
+	if (hasParameter(material, "u_directionalLightDirection[0]"))
+		material->getParameter("u_directionalLightDirection[0]")->bindValue(light_node, &Node::getForwardVectorView);
+	// ライトの色設定
+	// (リアルタイムに変更を反映させる場合は再設定が必要。現在は未対応)
+	Vector3 *vambient;
+	vambient = (Vector3 *)&lgt->_vec[GPOBJ_USERVEC_WORK];
+	if (hasParameter(material, "u_directionalLightColor[0]"))
+		material->getParameter("u_directionalLightColor[0]")->setValue(light_node->getLight()->getColor());
+	if (hasParameter(material, "u_ambientColor"))
+		material->getParameter("u_ambientColor")->setValue(vambient);
 
 	//material->setParameterAutoBinding("u_ambientColor", "SCENE_AMBIENT_COLOR");
 	//material->setParameterAutoBinding("u_lightDirection", "SCENE_LIGHT_DIRECTION");
@@ -282,8 +300,15 @@ int gamehsp::makeNewMat2D( char *fname, int matopt )
 	gpmat *mat = addMat();
 	if ( mat == NULL ) return -1;
 
-	Material *mesh_material = makeMaterialTex2D( fname, matopt );
+	Texture* texture = Texture::create(fname);
+	if (texture == NULL) {
+		Alertf("Texture not found.(%s)", fname);
+		return -1;
+	}
+
+	Material *mesh_material = makeMaterialTex2D(texture, matopt);
 	if ( mesh_material == NULL ) return -1;
+	SAFE_RELEASE(texture);
 
     VertexFormat::Element elements[] =
     {
@@ -302,11 +327,62 @@ int gamehsp::makeNewMat2D( char *fname, int matopt )
 	mat->_sy = _tex_height;
 	mat->_texratex = 1.0f / (float)_tex_width;
 	mat->_texratey = 1.0f / (float)_tex_height;
+
+	// 2D用のプロジェクション
+	make2DRenderProjection(&mat->_projectionMatrix2D, _tex_width, _tex_height);
+	mat->_target_material_id = -1;
+
 	return mat->_id;
 }
 
 
-Material *gamehsp::makeMaterialFromShader( char *vshd, char *fshd, char *defs )
+int gamehsp::makeNewMatFromFB(gameplay::FrameBuffer *fb, int matopt)
+{
+	int tex_width, tex_height;
+	Texture* texture;
+
+	if (fb == NULL) return -1;
+
+	gpmat *mat = addMat();
+	if (mat == NULL) return -1;
+
+	RenderTarget *target = fb->getRenderTarget();
+	if (target == NULL) return -1;
+	texture = target->getTexture();
+
+	Material *mesh_material = makeMaterialTex2D(texture, matopt);
+	if (mesh_material == NULL) return -1;
+
+	tex_width = (int)fb->getWidth();
+	tex_height = (int)fb->getHeight();
+
+	VertexFormat::Element elements[] =
+	{
+		VertexFormat::Element(VertexFormat::POSITION, 3),
+		VertexFormat::Element(VertexFormat::TEXCOORD0, 2),
+		VertexFormat::Element(VertexFormat::COLOR, 4)
+	};
+
+	unsigned int elementCount = sizeof(elements) / sizeof(VertexFormat::Element);
+	MeshBatch *meshBatch = MeshBatch::create(VertexFormat(elements, elementCount), Mesh::TRIANGLE_STRIP, mesh_material, true, 16, 256);
+
+	mat->_mesh = meshBatch;
+	mat->_material = mesh_material;
+	mat->_mode = GPMAT_MODE_2D;
+	mat->_sx = tex_width;
+	mat->_sy = tex_height;
+	mat->_texratex = 1.0f / (float)tex_width;
+	mat->_texratey = 1.0f / (float)tex_height;
+
+	// 2D用のプロジェクション
+	make2DRenderProjection(&mat->_projectionMatrix2D, tex_width, tex_height);
+	mat->_target_material_id = -1;
+
+	return mat->_id;
+}
+
+
+Material *gamehsp::makeMaterialFromShader(char *vshd, char *fshd, char *defs)
 {
 	Material *material;
 	material = Material::create( vshd, fshd, defs );
@@ -317,14 +393,58 @@ Material *gamehsp::makeMaterialFromShader( char *vshd, char *fshd, char *defs )
 }
 
 
+void gamehsp::setupDefines(void)
+{
+	//	シェーダー用のdefine定義を作成
+	//
+	light_defines = "MODULATE_ALPHA";
+	nolight_defines = "MODULATE_ALPHA";
+	if (_max_dlight) {
+		light_defines += ";DIRECTIONAL_LIGHT_COUNT ";
+		light_defines += "1";//std::to_string(_max_dlight);
+	}
+	if (_max_plight) {
+		light_defines += ";POINT_LIGHT_COUNT ";
+		light_defines += "0";//std::to_string(_max_plight);
+	}
+	if (_max_slight) {
+		light_defines += ";SPOT_LIGHT_COUNT ";
+		light_defines += "0";//std::to_string(_max_slight);
+	}
+	splight_defines = light_defines + ";SPECULAR";
+
+	// カスタムシェーダーの初期化
+	user_vsh = SPRITE_VSH;
+	user_fsh = SPRITE_FSH;
+	user_defines = "";
+}
+
+
+void gamehsp::setUserShader2D(char *vsh, char *fsh, char *defines)
+{
+	// カスタムシェーダーの設定
+	user_vsh = vsh;
+	user_fsh = fsh;
+	user_defines = defines;
+}
+
+
 Material *gamehsp::makeMaterialColor( int color, int matopt )
 {
 	Material *material;
-	if ( matopt & GPOBJ_MATOPT_NOLIGHT ) {
-		material = makeMaterialFromShader( "res/shaders/colored-unlit.vert", "res/shaders/colored-unlit.frag", "MODULATE_ALPHA" );
-	} else {
-		material = makeMaterialFromShader( "res/shaders/colored.vert", "res/shaders/colored.frag", "MODULATE_ALPHA" );
+	char *defs;
+	if (matopt & GPOBJ_MATOPT_NOLIGHT){
+		defs = this->getNoLightDefines();
 	}
+	else {
+		if (matopt & GPOBJ_MATOPT_SPECULAR) {
+			defs = this->getSpecularLightDefines();
+		}
+		else {
+			defs = this->getLightDefines();
+		}
+	}
+	material = makeMaterialFromShader("res/shaders/colored.vert", "res/shaders/colored.frag",defs);
 	if ( material == NULL ) return NULL;
 
 	setMaterialDefaultBinding( material, color, matopt );
@@ -336,33 +456,36 @@ Material *gamehsp::makeMaterialTexture( char *fname, int matopt )
 {
 	Material *material;
 	bool mipmap;
-	mipmap = (matopt & GPOBJ_MATOPT_NOMIPMAP ) == 0;
+	char *defs;
+	mipmap = (matopt & GPOBJ_MATOPT_NOMIPMAP) == 0;
 
-	if ( matopt & GPOBJ_MATOPT_NOLIGHT ) {
-		material = makeMaterialFromShader( "res/shaders/textured-unlit.vert", "res/shaders/textured-unlit.frag", "MODULATE_ALPHA" );
-	} else {
-		material = makeMaterialFromShader( "res/shaders/textured.vert", "res/shaders/textured.frag", "MODULATE_ALPHA" );
+	if (matopt & GPOBJ_MATOPT_NOLIGHT){
+		defs = this->getNoLightDefines();
 	}
+	else {
+		if (matopt & GPOBJ_MATOPT_SPECULAR) {
+			defs = this->getSpecularLightDefines();
+		}
+		else {
+			defs = this->getLightDefines();
+		}
+	}
+
+	material = makeMaterialFromShader( "res/shaders/textured.vert", "res/shaders/textured.frag", defs );
 	if ( material == NULL ) return NULL;
 
 	setMaterialDefaultBinding( material, -1, matopt );
-
 	material->getParameter("u_diffuseTexture")->setValue( fname, mipmap );
-
 	return material;
 }
 
 
-Material *gamehsp::makeMaterialTex2D( char *fname, int matopt )
+Material *gamehsp::makeMaterialTex2D(Texture *texture, int matopt)
 {
 	bool mipmap;
 	mipmap = (matopt & GPOBJ_MATOPT_NOMIPMAP ) == 0;
 
-    Texture* texture = Texture::create(fname);
-	if ( texture == NULL ) {
-        Alertf("Texture not found.(%s)",fname);
-		return NULL;
-	}
+	if (texture == NULL) return NULL;
 	_tex_width = texture->getWidth();
 	_tex_height = texture->getHeight();
 
@@ -384,9 +507,21 @@ Material *gamehsp::makeMaterialTex2D( char *fname, int matopt )
     }
 
 	RenderState::StateBlock *state;
+	Material* mesh_material = NULL;
 
-	// Wrap the effect in a material
-    Material* mesh_material = Material::create(_spriteEffect); // +ref effect
+	if (matopt & GPOBJ_MATOPT_USERSHADER) {
+		// User custom shader
+		//mesh_material = Material::create(SPRITE_VSH, SPRITE_FSH, NULL);
+		mesh_material = Material::create(user_vsh.c_str(), user_fsh.c_str(), user_defines.c_str());
+	}
+	else {
+		// Wrap the effect in a material
+		mesh_material = Material::create(_spriteEffect); // +ref effect
+	}
+	if (mesh_material == NULL) {
+		GP_ERROR("Can't create material for sprite.");
+		return NULL;
+	}
 
     // Bind the texture to the material as a sampler
     Texture::Sampler* sampler = Texture::Sampler::create(texture); // +ref texture
@@ -401,7 +536,7 @@ Material *gamehsp::makeMaterialTex2D( char *fname, int matopt )
 	mesh_material->getParameter("u_diffuseTexture")->setValue( fname, mipmap );
 	*/
 
-	mesh_material->getParameter("u_projectionMatrix")->setValue(_projectionMatrix2D);
+	update2DRenderProjection(mesh_material, &_projectionMatrix2D);
 
 	state = mesh_material->getStateBlock();
 
@@ -412,7 +547,6 @@ Material *gamehsp::makeMaterialTex2D( char *fname, int matopt )
 	state->setBlendSrc(RenderState::BLEND_SRC_ALPHA);
 	state->setBlendDst(RenderState::BLEND_ONE_MINUS_SRC_ALPHA);
 
-	SAFE_RELEASE( texture );
 	return mesh_material;
 }
 

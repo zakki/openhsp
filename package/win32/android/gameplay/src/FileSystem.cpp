@@ -2,6 +2,7 @@
 #include "FileSystem.h"
 #include "Properties.h"
 #include "Stream.h"
+#include "Platform.h"
 
 #include <sys/types.h>
 #include <sys/stat.h>
@@ -64,7 +65,6 @@ static void makepath(std::string path, int mode)
             }
         }
     }
-    
     return;
 }
 
@@ -87,6 +87,7 @@ static bool androidFileExists(const char* filePath)
 
 /** @script{ignore} */
 static std::string __resourcePath("./");
+static std::string __assetPath("");
 static std::map<std::string, std::string> __aliases;
 
 /**
@@ -225,6 +226,11 @@ void FileSystem::loadResourceAliases(Properties* properties)
     }
 }
 
+std::string FileSystem::displayFileDialog(size_t dialogMode, const char* title, const char* filterDescription, const char* filterExtensions, const char* initialDirectory)
+{
+    return Platform::displayFileDialog(dialogMode, title, filterDescription, filterExtensions, initialDirectory);
+}
+
 const char* FileSystem::resolvePath(const char* path)
 {
     GP_ASSERT(path);
@@ -338,57 +344,42 @@ bool FileSystem::fileExists(const char* filePath)
 {
     GP_ASSERT(filePath);
 
+    std::string fullPath;
+
 #ifdef __ANDROID__
-    if (androidFileExists(resolvePath(filePath)))
+    fullPath = __assetPath;
+    fullPath += resolvePath(filePath);
+
+    if (androidFileExists(fullPath.c_str()))
     {
         return true;
     }
 #endif
 
-    std::string fullPath;
     getFullPath(filePath, fullPath);
 
     gp_stat_struct s;
-
-#ifdef WIN32
-    if (!isAbsolutePath(filePath) && stat(fullPath.c_str(), &s) != 0)
-    {
-        fullPath = __resourcePath;
-        fullPath += "../../gameplay/";
-        fullPath += filePath;
-        
-        int result = stat(fullPath.c_str(), &s);
-        if (result != 0)
-        {
-            fullPath = __resourcePath;
-            fullPath += "../gameplay/";
-            fullPath += filePath;
-            return stat(fullPath.c_str(), &s) == 0;
-        }
-    }
-    return true;
-#else
     return stat(fullPath.c_str(), &s) == 0;
-#endif
+
 }
 
-Stream* FileSystem::open(const char* path, size_t mode)
+Stream* FileSystem::open(const char* path, size_t streamMode)
 {
     char modeStr[] = "rb";
-    if ((mode & WRITE) != 0)
+    if ((streamMode & WRITE) != 0)
         modeStr[0] = 'w';
 #ifdef __ANDROID__
-    if ((mode & WRITE) != 0)
+    std::string fullPath(__resourcePath);
+    fullPath += resolvePath(path);
+
+    if ((streamMode & WRITE) != 0)
     {
         // Open a file on the SD card
-        std::string fullPath(__resourcePath);
-        fullPath += resolvePath(path);
-
         size_t index = fullPath.rfind('/');
         if (index != std::string::npos)
         {
             std::string directoryPath = fullPath.substr(0, index);
-            struct stat s;
+            gp_stat_struct s;
             if (stat(directoryPath.c_str(), &s) != 0)
                 makepath(directoryPath, 0777);
         }
@@ -396,34 +387,23 @@ Stream* FileSystem::open(const char* path, size_t mode)
     }
     else
     {
-        // Open a file in the read-only asset directory
-        return FileStreamAndroid::create(resolvePath(path), modeStr);
+        // First try the SD card
+        Stream* stream = FileStream::create(fullPath.c_str(), modeStr);
+
+        if (!stream)
+        {
+            // Otherwise fall-back to assets loaded via the AssetManager
+            fullPath = __assetPath;
+            fullPath += resolvePath(path);
+
+            stream = FileStreamAndroid::create(fullPath.c_str(), modeStr);
+        }
+
+        return stream;
     }
 #else
     std::string fullPath;
     getFullPath(path, fullPath);
-    
-#ifdef WIN32
-    gp_stat_struct s;
-    if (!isAbsolutePath(path) && stat(fullPath.c_str(), &s) != 0 && (mode & WRITE) == 0)
-    {
-        fullPath = __resourcePath;
-        fullPath += "../../gameplay/";
-        fullPath += path;
-        
-        int result = stat(fullPath.c_str(), &s);
-        if (result != 0)
-        {
-            fullPath = __resourcePath;
-            fullPath += "../gameplay/";
-            fullPath += path;
-            if (stat(fullPath.c_str(), &s) != 0)
-            {
-                return NULL;
-            }
-        }
-    }
-#endif
     FileStream* stream = FileStream::create(fullPath.c_str(), modeStr);
     return stream;
 #endif
@@ -440,25 +420,6 @@ FILE* FileSystem::openFile(const char* filePath, const char* mode)
     createFileFromAsset(filePath);
     
     FILE* fp = fopen(fullPath.c_str(), mode);
-    
-#ifdef WIN32
-    if (fp == NULL && !isAbsolutePath(filePath))
-    {
-        fullPath = __resourcePath;
-        fullPath += "../../gameplay/";
-        fullPath += filePath;
-        
-        fp = fopen(fullPath.c_str(), mode);
-        if (!fp)
-        {
-            fullPath = __resourcePath;
-            fullPath += "../gameplay/";
-            fullPath += filePath;
-            fp = fopen(fullPath.c_str(), mode);
-        }
-    }
-#endif
-
     return fp;
 }
 
@@ -467,7 +428,7 @@ char* FileSystem::readAll(const char* filePath, int* fileSize)
     GP_ASSERT(filePath);
 
     // Open file for reading.
-    std::auto_ptr<Stream> stream(open(filePath));
+    std::unique_ptr<Stream> stream(open(filePath));
     if (stream.get() == NULL)
     {
         GP_ERROR("Failed to load file: %s", filePath);
@@ -509,6 +470,16 @@ bool FileSystem::isAbsolutePath(const char* filePath)
 #else
     return filePath[0] == '/';
 #endif
+}
+
+void FileSystem::setAssetPath(const char* path)
+{
+    __assetPath = path;
+}
+
+const char* FileSystem::getAssetPath()
+{
+    return __assetPath.c_str();
 }
 
 void FileSystem::createFileFromAsset(const char* path)

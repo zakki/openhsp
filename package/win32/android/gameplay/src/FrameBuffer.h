@@ -4,6 +4,7 @@
 #include "Base.h"
 #include "RenderTarget.h"
 #include "DepthStencilTarget.h"
+#include "Image.h"
 
 namespace gameplay
 {
@@ -12,11 +13,11 @@ namespace gameplay
  * Defines a frame buffer object that may contain one or more render targets and optionally
  * a depth-stencil target.
  *
- * Frame buffers can be created and used for off-screen rendering, which is useful for 
+ * Frame buffers can be created and used for off-screen rendering, which is useful for
  * techniques such as shadow mapping and post-processing. Render targets within a frame
  * buffer can be both written to and read (by calling RenderTarget::getTexture).
  *
- * When binding a custom frame buffer, you should always store the return value of 
+ * When binding a custom frame buffer, you should always store the return value of
  * FrameBuffer::bind and restore it when you are finished drawing to your frame buffer.
  *
  * To bind the default frame buffer, call FrameBuffer::bindDefault.
@@ -58,7 +59,7 @@ public:
      * @return A newly created FrameBuffer.
      * @script{create}
      */
-    static FrameBuffer* create(const char* id, unsigned int width, unsigned int height);
+    static FrameBuffer* create(const char* id, unsigned int width, unsigned int height, Texture::Format format = Texture::RGBA);
 
     /**
      * Get a named FrameBuffer from its ID.
@@ -96,15 +97,24 @@ public:
      * @return The number of color attachments available on the current hardware.
      */
     static unsigned int getMaxRenderTargets();
- 
+
     /**
      * Set a RenderTarget on this FrameBuffer's color attachment at the specified index.
      *
-     * @param target The RenderTarget to set.
+     * @param target The 2D RenderTarget to set.
      * @param index The index of the color attachment to set.
      */
     void setRenderTarget(RenderTarget* target, unsigned int index = 0);
- 
+
+    /**
+    * Set a RenderTarget on this FrameBuffer's color attachment at the specified index.
+    *
+    * @param target The Cubemap RenderTarget to set.
+    * @param face The face of the cubemap to target.
+    * @param index The index of the color attachment to set.
+    */
+    void setRenderTarget(RenderTarget* target, Texture::CubeFace face, unsigned int index = 0);
+
     /**
      * Get the RenderTarget attached to the FrameBuffer's color attachment at the specified index.
      *
@@ -120,43 +130,60 @@ public:
      * @return The number of render targets attached.
      */
     unsigned int getRenderTargetCount() const;
- 
+
     /**
      * Set this FrameBuffer's DepthStencilTarget.
      *
      * @param target The DepthStencilTarget to set on this FrameBuffer.
      */
     void setDepthStencilTarget(DepthStencilTarget* target);
-  
+
     /**
      * Get this FrameBuffer's DepthStencilTarget.
      *
      * @return This FrameBuffer's DepthStencilTarget.
      */
     DepthStencilTarget* getDepthStencilTarget() const;
- 
+
     /**
-     * Determines whether this is the default frame bufffer.
+     * Determines whether this is the default frame buffer.
      *
      * @return true if this is the default frame buffer, false otherwise.
      */
     bool isDefault() const;
 
     /**
-     * Binds this FrameBuffer for off-screen rendering and return you the curently bound one.
+     * Binds this FrameBuffer for off-screen rendering and return you the currently bound one.
      *
      * You should keep the return FrameBuffer and store it and call bind() when you rendering is complete.
      *
      * @ return The currently bound framebuffer.
      */
-    FrameBuffer* bind();
+    FrameBuffer* bind(GLenum type = GL_FRAMEBUFFER);
+
+    /**
+     * Records a screenshot of what is stored on the current FrameBuffer.
+     *
+     * @param format The format the Image should be in.
+     * @return A screenshot of the current framebuffer's content.
+     */
+    static Image* createScreenshot(Image::Format format = Image::RGBA);
+
+    /**
+     * Records a screenshot of what is stored on the current FrameBuffer to an Image.
+     *
+     * The Image must be the same size as the FrameBuffer, otherwise the operation will fail.
+     *
+     * @param image The Image to write the current framebuffer's content to.
+     */
+    static void getScreenshot(Image* image);
 
     /**
      * Binds the default FrameBuffer for rendering to the display.
      *
      * @ return The default framebuffer.
      */
-    static FrameBuffer* bindDefault(); 
+    static FrameBuffer* bindDefault(GLenum type = GL_FRAMEBUFFER);
 
     /**
      * Gets the currently bound FrameBuffer.
@@ -164,7 +191,7 @@ public:
      * @return The currently bound FrameBuffer.
      */
     static FrameBuffer* getCurrent();
-     
+
 private:
 
     /**
@@ -182,6 +209,8 @@ private:
      */
     FrameBuffer& operator=(const FrameBuffer&);
 
+    void setRenderTarget(RenderTarget* target, unsigned int index, GLenum textureTarget);
+
     static void initialize();
 
     static void finalize();
@@ -189,8 +218,6 @@ private:
     static bool isPowerOfTwo(unsigned int value);
 
     std::string _id;
-    unsigned int _width;
-    unsigned int _height;
     FrameBufferHandle _handle;
     RenderTarget** _renderTargets;
     unsigned int _renderTargetCount;

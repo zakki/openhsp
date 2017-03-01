@@ -32,16 +32,16 @@ void WebTask::Reset( void )
 
 WebTask::WebTask( void )
 {
-	//	ƒRƒ“ƒXƒgƒ‰ƒNƒ^
+	//	ã‚³ãƒ³ã‚¹ãƒˆãƒ©ã‚¯ã‚¿
 	//
-	//	‰Šú‰»‚ğs‚¤
+	//	åˆæœŸåŒ–ã‚’è¡Œã†
 	Reset();
 }
 
 
 WebTask::~WebTask( void )
 {
-	//	ƒfƒXƒgƒ‰ƒNƒ^
+	//	ãƒ‡ã‚¹ãƒˆãƒ©ã‚¯ã‚¿
 	//
 	Terminate();
 }
@@ -49,9 +49,9 @@ WebTask::~WebTask( void )
 
 int	WebTask::Request( char *url, char *post )
 {
-	//	HTTPƒŠƒNƒGƒXƒg”­s
-	//	( url:ƒŠƒNƒGƒXƒg‚·‚éURL )
-	//	( post:NULL‚Ìê‡‚ÍGETA•¶š—ñ‚Ìê‡‚ÍPOST‚Å“n‚· )
+	//	HTTPãƒªã‚¯ã‚¨ã‚¹ãƒˆç™ºè¡Œ
+	//	( url:ãƒªã‚¯ã‚¨ã‚¹ãƒˆã™ã‚‹URL )
+	//	( post:NULLã®å ´åˆã¯GETã€æ–‡å­—åˆ—ã®å ´åˆã¯POSTã§æ¸¡ã™ )
 	//
 	int res;
 
@@ -68,7 +68,7 @@ int	WebTask::Request( char *url, char *post )
 
 int	WebTask::getStatus( int id )
 {
-	// ƒXƒe[ƒ^ƒX’l‚Ìæ“¾
+	// ã‚¹ãƒ†ãƒ¼ã‚¿ã‚¹å€¤ã®å–å¾—
 	//
 	switch( id ) {
 	case HTTPINFO_MODE:
@@ -85,18 +85,18 @@ int	WebTask::getStatus( int id )
 
 char *WebTask::getData( int id )
 {
-	// ƒf[ƒ^•¶š—ñ‚Ìæ“¾
+	// ãƒ‡ãƒ¼ã‚¿æ–‡å­—åˆ—ã®å–å¾—
 	//
-	// ƒf[ƒ^•¶š—ñ‚Ìæ“¾
+	// ãƒ‡ãƒ¼ã‚¿æ–‡å­—åˆ—ã®å–å¾—
 	//
 	switch( id ) {
-	case HTTPINFO_DATA:				// Œ‹‰Êƒf[ƒ^
+	case HTTPINFO_DATA:				// çµæœãƒ‡ãƒ¼ã‚¿
 		{
 		char *p = j_getHttpInfo();
 		if ( p != NULL ) return p;
 		break;
 		}
-	case HTTPINFO_ERROR:			// ƒGƒ‰[•¶š—ñ
+	case HTTPINFO_ERROR:			// ã‚¨ãƒ©ãƒ¼æ–‡å­—åˆ—
 //		return getError();
 	default:
 		break;
@@ -107,7 +107,7 @@ char *WebTask::getData( int id )
 
 void WebTask::setData( int id, char *str )
 {
-	// ƒf[ƒ^•¶š—ñ‚Ìİ’è
+	// ãƒ‡ãƒ¼ã‚¿æ–‡å­—åˆ—ã®è¨­å®š
 	//
 	return;
 }
@@ -119,7 +119,7 @@ void WebTask::setData( int id, char *str )
 
 int WebTask::Exec( void )
 {
-	//	–ˆƒtƒŒ[ƒ€Às
+	//	æ¯ãƒ•ãƒ¬ãƒ¼ãƒ å®Ÿè¡Œ
 	//
 	return 0;
 }

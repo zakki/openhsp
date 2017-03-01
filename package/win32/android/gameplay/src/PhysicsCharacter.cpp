@@ -49,11 +49,11 @@ protected:
     btScalar _minSlopeDot;
 };
 
-PhysicsCharacter::PhysicsCharacter(Node* node, const PhysicsCollisionShape::Definition& shape, float mass)
-    : PhysicsGhostObject(node, shape), _moveVelocity(0,0,0), _forwardVelocity(0.0f), _rightVelocity(0.0f),
+PhysicsCharacter::PhysicsCharacter(Node* node, const PhysicsCollisionShape::Definition& shape, float mass, int group, int mask)
+    : PhysicsGhostObject(node, shape, group, mask), _moveVelocity(0,0,0), _forwardVelocity(0.0f), _rightVelocity(0.0f),
     _verticalVelocity(0, 0, 0), _currentVelocity(0,0,0), _normalizedVelocity(0,0,0),
     _colliding(false), _collisionNormal(0,0,0), _currentPosition(0,0,0), _stepHeight(0.1f),
-    _slopeAngle(0.0f), _cosSlopeAngle(0.0f), _physicsEnabled(true), _mass(mass), _actionInterface(NULL)
+    _slopeAngle(0.0f), _cosSlopeAngle(1.0f), _physicsEnabled(true), _mass(mass), _actionInterface(NULL)
 {
     setMaxSlopeAngle(45.0f);
 
@@ -191,6 +191,16 @@ void PhysicsCharacter::setVelocity(float x, float y, float z)
     _moveVelocity.setValue(x, y, z);
 }
 
+void PhysicsCharacter::resetVelocityState()
+{
+    _forwardVelocity = 0.0f;
+    _rightVelocity = 0.0f;
+    _verticalVelocity.setZero();
+    _currentVelocity.setZero();
+    _normalizedVelocity.setZero();
+    _moveVelocity.setZero();
+}
+
 void PhysicsCharacter::rotate(const Vector3& axis, float angle)
 {
     GP_ASSERT(_node);
@@ -234,10 +244,10 @@ Vector3 PhysicsCharacter::getCurrentVelocity() const
     return v;
 }
 
-void PhysicsCharacter::jump(float height)
+void PhysicsCharacter::jump(float height, bool force)
 {
     // TODO: Add support for different jump modes (i.e. double jump, changing direction in air, holding down jump button for extra height, etc)
-    if (!_verticalVelocity.isZero())
+    if (!force && !_verticalVelocity.isZero())
         return;
 
     // v = sqrt(v0^2 + 2 a s)
@@ -245,11 +255,11 @@ void PhysicsCharacter::jump(float height)
     //  a == acceleration (inverse gravity)
     //  s == linear displacement (height)
     GP_ASSERT(Game::getInstance()->getPhysicsController());
-    Vector3 jumpVelocity = -Game::getInstance()->getPhysicsController()->getGravity() * height * 2.0f;
+    Vector3 jumpVelocity = Game::getInstance()->getPhysicsController()->getGravity() * height * 2.0f;
     jumpVelocity.set(
-        jumpVelocity.x == 0 ? 0 : std::sqrt(jumpVelocity.x),
-        jumpVelocity.y == 0 ? 0 : std::sqrt(jumpVelocity.y),
-        jumpVelocity.z == 0 ? 0 : std::sqrt(jumpVelocity.z));
+        jumpVelocity.x == 0 ? 0 : std::sqrt(std::fabs(jumpVelocity.x)) * (jumpVelocity.x > 0 ? 1.0f : -1.0f),
+        jumpVelocity.y == 0 ? 0 : std::sqrt(std::fabs(jumpVelocity.y)) * (jumpVelocity.y < 0 ? 1.0f : -1.0f),
+        jumpVelocity.z == 0 ? 0 : std::sqrt(std::fabs(jumpVelocity.z)) * (jumpVelocity.z > 0 ? 1.0f : -1.0f));
     _verticalVelocity += BV(jumpVelocity);
 }
 
@@ -460,7 +470,7 @@ void PhysicsCharacter::stepDown(btCollisionWorld* collisionWorld, btScalar time)
             normal.normalize();
 
             float dot = normal.dot(Vector3::unitY());
-            if (dot > 1.0f - MATH_EPSILON)
+            if (dot > _cosSlopeAngle - MATH_EPSILON)
             {
                 targetPosition.setInterpolate3(_currentPosition, targetPosition, callback.m_closestHitFraction);
 
@@ -544,7 +554,10 @@ void PhysicsCharacter::updateTargetPositionFromCollision(btVector3& targetPositi
 
         // Disallow the character from moving up during collision recovery (using an arbitrary reasonable epsilon).
         // Note that this will need to be generalized to allow for an arbitrary up axis.
-        if (perpindicularDir.y() < _stepHeight + 0.001)
+        //
+        // TO DO: FIX THIS! Fine tuning of this condition is needed. For now we force it true.
+        bool forceTrue = true;
+        if (forceTrue || perpindicularDir.y() < _stepHeight + 0.001 || collisionNormal.y() > _cosSlopeAngle - MATH_EPSILON)
         {
             btVector3 perpComponent = perpindicularDir * movementLength;
             targetPosition += perpComponent;
@@ -647,6 +660,9 @@ void PhysicsCharacter::ActionInterface::debugDraw(btIDebugDraw* debugDrawer)
 
 void PhysicsCharacter::updateAction(btCollisionWorld* collisionWorld, btScalar deltaTimeStep)
 {
+    if (!isEnabled())
+        return;
+
     GP_ASSERT(_ghostObject);
     GP_ASSERT(_node);
 

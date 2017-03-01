@@ -1,3 +1,4 @@
+#ifndef GP_NO_PLATFORM
 #ifdef WIN32
 
 #include "gameplay.h"
@@ -9,10 +10,10 @@ using namespace gameplay;
     #include <windows.h>
 #endif
 
+#ifndef HSPDISH
 /**
  * Main entry point.
  */
-/*
 extern "C" int APIENTRY WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR cmdLine, int cmdShow)
 {
     Game* game = Game::getInstance();
@@ -22,6 +23,7 @@ extern "C" int APIENTRY WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LP
     delete platform;
     return result;
 }
-*/
+#endif
 
+#endif
 #endif

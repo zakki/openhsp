@@ -32,9 +32,26 @@ public:
     };
 
     /**
+     * Listener interface for camera events.
+     */
+    class Listener
+    {
+    public:
+
+        virtual ~Listener() { }
+
+        /**
+         * Handles when an camera settings change or the transform changed for the node its attached to.
+         *
+         * @param camera The camera that was changed.
+         */
+        virtual void cameraChanged(Camera* camera) = 0;
+    };
+
+    /**
      * Creates a perspective camera.
      *
-     * @param fieldOfView The field of view for the perspective camera (normally in the range of 40-60 degrees).
+     * @param fieldOfView The field of view in degrees for the perspective camera (normally in the range of 40-60 degrees).
      * @param aspectRatio The aspect ratio of the camera (normally the width of the viewport divided by the height of the viewport).
      * @param nearPlane The near plane distance.
      * @param farPlane The far plane distance.
@@ -194,10 +211,10 @@ public:
     /**
      * Sets a custom projection matrix to be used by the camera.
      *
-     * Setting a custom projection matrix results in the internally 
-     * computed projection matrix being completely overriden until
+     * Setting a custom projection matrix results in the internally
+     * computed projection matrix being completely overridden until
      * the resetProjectionMatrix method is called. A custom projection
-     * matrix is normally not neccessary, but can be used for special
+     * matrix is normally not necessary, but can be used for special
      * projection effects, such as setting an oblique view frustum
      * for near plane clipping.
      *
@@ -287,6 +304,20 @@ public:
      */
     void pickRay(const Rectangle& viewport, float x, float y, Ray* dst) const;
 
+    /**
+    * Adds a camera listener.
+    *
+    * @param listener The listener to add.
+    */
+    void addListener(Camera::Listener* listener);
+
+    /**
+     * Removes a camera listener.
+     *
+     * @param listener The listener to remove.
+     */
+    void removeListener(Camera::Listener* listener);
+
 private:
 
     /**
@@ -311,21 +342,23 @@ private:
 
     /**
      * Clones the camera and returns a new camera.
-     * 
+     *
      * @param context The clone context.
      * @return The newly created camera.
      */
-    Camera* clone(NodeCloneContext &context) const;
+    Camera* clone(NodeCloneContext& context);
+
+    /**
+     * Sets the node associated with this camera.
+     */
+    void setNode(Node* node);
 
     /**
      * @see Transform::Listener::transformChanged
      */
     void transformChanged(Transform* transform, long cookie);
 
-    /**
-     * Sets the node associated with this camera.
-     */
-    void setNode(Node* node);
+    void cameraChanged();
 
     Camera::Type _type;
     float _fieldOfView;
@@ -341,6 +374,7 @@ private:
     mutable Frustum _bounds;
     mutable int _bits;
     Node* _node;
+    std::list<Camera::Listener*>* _listeners;
 };
 
 }
