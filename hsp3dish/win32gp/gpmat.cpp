@@ -42,6 +42,7 @@ void gpmat::reset( gamehsp *owner, int id )
 	_sy = 0;
 	_texratex = 0.0f;
 	_texratey = 0.0f;
+	_target_material_id = -1;
 }
 
 
@@ -328,8 +329,8 @@ int gamehsp::makeNewMat2D( char *fname, int matopt )
 	mat->_texratey = 1.0f / (float)_tex_height;
 
 	// 2D用のプロジェクション
-	Matrix::createOrthographicOffCenter(0.0f, (float)_tex_width, (float)_tex_height, 0.0f, -1.0f, 1.0f, &mat->_projectionMatrix2D);
-	mat->_projectionMatrix2D.translate(0.5f, 0.0f, 0.0f);						// 座標誤差修正のため0.5ドットずらす
+	make2DRenderProjection(&mat->_projectionMatrix2D, _tex_width, _tex_height);
+	mat->_target_material_id = -1;
 
 	return mat->_id;
 }
@@ -374,8 +375,8 @@ int gamehsp::makeNewMatFromFB(gameplay::FrameBuffer *fb, int matopt)
 	mat->_texratey = 1.0f / (float)tex_height;
 
 	// 2D用のプロジェクション
-	Matrix::createOrthographicOffCenter(0.0f, (float)_tex_width, (float)_tex_height, 0.0f, -1.0f, 1.0f, &mat->_projectionMatrix2D);
-	mat->_projectionMatrix2D.translate(0.5f, 0.0f, 0.0f);						// 座標誤差修正のため0.5ドットずらす
+	make2DRenderProjection(&mat->_projectionMatrix2D, tex_width, tex_height);
+	mat->_target_material_id = -1;
 
 	return mat->_id;
 }

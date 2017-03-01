@@ -731,7 +731,10 @@ void hgio_screen( BMSCR *bm )
 	//		スクリーン再設定
 	//		(cls相当)
 	//
-	mainbm = bm;
+	drawflag = 0;
+	if (bm->type == HSPWND_TYPE_MAIN) {
+		mainbm = bm;
+	}
 	hgio_font( DEFAULT_FONT_NAME, DEFAULT_FONT_SIZE, DEFAULT_FONT_STYLE );
 }
 
@@ -862,6 +865,7 @@ int hgio_mes( BMSCR *bm, char *str1 )
 	//
 	if ( mestexid < 0 ) return -1;
 	if ( bm->type != HSPWND_TYPE_MAIN ) throw HSPERR_UNSUPPORTED_FUNCTION;
+	if (drawflag == 0) hgio_render_start();
 
 	if ( mestexflag == 0 ) {
 		//	最初の描画時にテキスト画面クリア
@@ -892,6 +896,23 @@ int hgio_font( char *fontname, int size, int style )
 	strncpy( m_tfont, fontname, 254 );
 	m_tsize = size;
 	m_tstyle = style;
+	return 0;
+}
+
+
+int hgio_gsel( BMSCR *bm )
+{
+	//		gsel(描画先変更) 未実装
+	//
+	hgio_render_end();
+	return 0;
+}
+
+
+int hgio_buffer(BMSCR *bm)
+{
+	//		buffer(描画用画面作成) 未実装
+	//
 	return 0;
 }
 
@@ -1005,6 +1026,7 @@ void hgio_line( BMSCR *bm, float x, float y )
 	D3DTLVERTEXC *v;
 	if ( bm == NULL ) return;
 	if ( bm->type != HSPWND_TYPE_MAIN ) throw HSPERR_UNSUPPORTED_FUNCTION;
+	if (drawflag == 0) hgio_render_start();
 
 	ChangeTex( -1 );
 	SetAlphaMode( 0 );
@@ -1051,6 +1073,7 @@ void hgio_boxf( BMSCR *bm, float x1, float y1, float x2, float y2 )
 
 	if ( bm == NULL ) return;
 	if ( bm->type != HSPWND_TYPE_MAIN ) throw HSPERR_UNSUPPORTED_FUNCTION;
+	if (drawflag == 0) hgio_render_start();
 
 	ChangeTex( -1 );
 	SetAlphaMode( 0 );
@@ -1087,6 +1110,7 @@ void hgio_circle( BMSCR *bm, float x1, float y1, float x2, float y2, int mode )
 
 	if ( bm == NULL ) return;
 	if ( bm->type != HSPWND_TYPE_MAIN ) throw HSPERR_UNSUPPORTED_FUNCTION;
+	if (drawflag == 0) hgio_render_start();
 
 	rate = D3DX_PI * 2.0f / (float)CIRCLE_DIV;
 	sx = abs(x2-x1); sy = abs(y2-y1);
@@ -1127,6 +1151,7 @@ void hgio_fillrot( BMSCR *bm, float x, float y, float sx, float sy, float ang )
 
 	if ( bm == NULL ) return;
 	if ( bm->type != HSPWND_TYPE_MAIN ) throw HSPERR_UNSUPPORTED_FUNCTION;
+	if (drawflag == 0) hgio_render_start();
 
 	ofsx = sx;
 	ofsy = sy;
@@ -1185,7 +1210,11 @@ void hgio_copy( BMSCR *bm, short xx, short yy, short srcsx, short srcsy, BMSCR *
 	float tx0,ty0,tx1,ty1;
 
 	if ( bm == NULL ) return;
-	if ( bm->type != HSPWND_TYPE_MAIN ) throw HSPERR_UNSUPPORTED_FUNCTION;
+	if ( bm->type != HSPWND_TYPE_MAIN ) {
+		//Alertf( "type%d #%d",bm->type,bm->wid );
+		throw HSPERR_UNSUPPORTED_FUNCTION;
+	}
+	if (drawflag == 0) hgio_render_start();
 
 	if ( s_psx < 0.0 ) {
 		psx = -s_psx;
@@ -1263,6 +1292,7 @@ void hgio_copyrot( BMSCR *bm, short xx, short yy, short srcsx, short srcsy, floa
 
 	if ( bm == NULL ) return;
 	if ( bm->type != HSPWND_TYPE_MAIN ) throw HSPERR_UNSUPPORTED_FUNCTION;
+	if (drawflag == 0) hgio_render_start();
 
 	mx0=-(float)sin( ang );
 	my0=(float)cos( ang );
@@ -1498,6 +1528,7 @@ void hgio_square_tex( BMSCR *bm, int *posx, int *posy, BMSCR *bmsrc, int *uvx, i
 
 	if ( bm == NULL ) return;
 	if ( bm->type != HSPWND_TYPE_MAIN ) throw HSPERR_UNSUPPORTED_FUNCTION;
+	if (drawflag == 0) hgio_render_start();
 
 	texid = bmsrc->texid;
 	ChangeTex( texid );
@@ -1544,6 +1575,7 @@ void hgio_square( BMSCR *bm, int *posx, int *posy, int *color )
 
 	if ( bm == NULL ) return;
 	if ( bm->type != HSPWND_TYPE_MAIN ) throw HSPERR_UNSUPPORTED_FUNCTION;
+	if (drawflag == 0) hgio_render_start();
 
 	ChangeTex( -1 );
 
@@ -1717,6 +1749,7 @@ int hgio_celputmulti( BMSCR *bm, int *xpos, int *ypos, int *cel, int count, BMSC
 
 	if ( bm == NULL ) return 0;
 	if ( bm->type != HSPWND_TYPE_MAIN ) throw HSPERR_UNSUPPORTED_FUNCTION;
+	if (drawflag == 0) hgio_render_start();
 
 	total =0;
 

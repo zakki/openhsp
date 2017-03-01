@@ -781,8 +781,7 @@ void hgio_copy(BMSCR *bm, short xx, short yy, short srcsx, short srcsy, BMSCR *b
 
 	gpmat *mat = game->getMat(bmsrc->texid);
 	if (mat == NULL) return;
-
-	float *v = game->startPolyTex2D(mat);
+	float *v = game->startPolyTex2D(mat, bm->texid);
 	if (v == NULL) return;
 
 	float a_val = game->setMaterialBlend(mat->_material, bm->gmode, bm->gfrate);
@@ -868,10 +867,9 @@ int hgio_celputmulti(BMSCR *bm, int *xpos, int *ypos, int *cel, int count, BMSCR
 	if ((bm->type != HSPWND_TYPE_MAIN) && (bm->type != HSPWND_TYPE_OFFSCREEN)) return 0;
 	if (drawflag == 0) hgio_render_start();
 
-	gpmat *mat = game->getMat( bmsrc->texid );
-	if (mat == NULL) return 0;
-
-	master_v = game->startPolyTex2D( mat );
+	gpmat *mat = game->getMat(bmsrc->texid);
+	if (mat == NULL) return NULL;
+	master_v = game->startPolyTex2D(mat, bm->texid);
 	if (master_v == NULL) return 0;
 
 	float a_val = game->setMaterialBlend( mat->_material, bm->gmode, bm->gfrate );
@@ -957,10 +955,9 @@ void hgio_copyrot( BMSCR *bm, short xx, short yy, short srcsx, short srcsy, floa
 	if ((bm->type != HSPWND_TYPE_MAIN) && (bm->type != HSPWND_TYPE_OFFSCREEN)) return;
 	if (drawflag == 0) hgio_render_start();
 
-	gpmat *mat = game->getMat( bmsrc->texid );
+	gpmat *mat = game->getMat(bmsrc->texid);
 	if (mat == NULL) return;
-
-	float *v = game->startPolyTex2D( mat );
+	float *v = game->startPolyTex2D(mat, bm->texid);
 	if (v == NULL) return;
 
 	float a_val = game->setMaterialBlend( mat->_material, bm->gmode, bm->gfrate );
@@ -1162,10 +1159,9 @@ void hgio_square_tex( BMSCR *bm, int *posx, int *posy, BMSCR *bmsrc, int *uvx, i
 	if ((bm->type != HSPWND_TYPE_MAIN) && (bm->type != HSPWND_TYPE_OFFSCREEN)) return;
 	if (drawflag == 0) hgio_render_start();
 
-	gpmat *mat = game->getMat( bmsrc->texid );
+	gpmat *mat = game->getMat(bmsrc->texid);
 	if (mat == NULL) return;
-
-	float *v = game->startPolyTex2D( mat );
+	float *v = game->startPolyTex2D(mat, bm->texid);
 	if (v == NULL) return;
 
 	float a_val = game->setMaterialBlend( mat->_material, bm->gmode, bm->gfrate );

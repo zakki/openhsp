@@ -15,11 +15,13 @@
 
 	gpload id_model,"res/tamane"		; モデル読み込み
 
-	addscale id_model, 0.01,0.01,0.01
+	setscale id_model, 0.01,0.01,0.01
 
 	gpfloor id_floor, 8,8, $00ffff		; 床ノードを追加
 
 	setpos GPOBJ_CAMERA, 0,3.5,5		; カメラ位置を設定
+
+	gpact id_model
 
 repeat
 	stick key,15
@@ -38,6 +40,7 @@ repeat
 	;addang id_model,0,0.02		; ノード回転
 	gpdraw				; シーンの描画
 
+	color 255,255,255
 	pos 8,8:mes "HGIMG4 sample"
 
 	redraw 1			; 描画終了

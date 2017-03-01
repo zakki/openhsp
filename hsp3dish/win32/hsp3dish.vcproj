@@ -425,15 +425,7 @@
 				Name="obaq"
 				>
 				<File
-					RelativePath="..\obaq\physics\explosion.cpp"
-					>
-				</File>
-				<File
 					RelativePath="..\obaq\game.cpp"
-					>
-				</File>
-				<File
-					RelativePath="..\obaq\physics\grain.cpp"
 					>
 				</File>
 				<File
@@ -441,19 +433,15 @@
 					>
 				</File>
 				<File
-					RelativePath="..\hsp3embed\misc.cpp"
-					>
-				</File>
-				<File
 					RelativePath="..\obaq\omkedraw.cpp"
 					>
 				</File>
 				<File
-					RelativePath="..\obaq\physics\rock.cpp"
+					RelativePath="..\..\obaq\physics\rock.cpp"
 					>
 				</File>
 				<File
-					RelativePath="..\obaq\physics\spuvessel.cpp"
+					RelativePath="..\..\obaq\physics\vessel.cpp"
 					>
 				</File>
 			</Filter>
@@ -623,19 +611,11 @@
 				Name="obaq"
 				>
 				<File
-					RelativePath="..\obaq\physics\explosion.h"
-					>
-				</File>
-				<File
 					RelativePath="..\obaq\game.h"
 					>
 				</File>
 				<File
-					RelativePath="..\obaq\physics\gamePhysics.h"
-					>
-				</File>
-				<File
-					RelativePath="..\obaq\physics\grain.h"
+					RelativePath="..\..\obaq\physics\gamePhysics.h"
 					>
 				</File>
 				<File
@@ -643,23 +623,19 @@
 					>
 				</File>
 				<File
-					RelativePath="..\hsp3embed\misc.h"
-					>
-				</File>
-				<File
 					RelativePath="..\obaq\omkedraw.h"
 					>
 				</File>
 				<File
-					RelativePath="..\obaq\physics\ptttypes.h"
+					RelativePath="..\..\obaq\physics\ptttypes.h"
 					>
 				</File>
 				<File
-					RelativePath="..\obaq\physics\rock.h"
+					RelativePath="..\..\obaq\physics\rock.h"
 					>
 				</File>
 				<File
-					RelativePath="..\obaq\physics\spuvessel.h"
+					RelativePath="..\..\obaq\physics\vessel.h"
 					>
 				</File>
 			</Filter>

@@ -4,7 +4,7 @@ material sky
 
     sampler u_diffuseTexture
     {
-        path = res/sky.dds
+        path = sky.dds
         mipmap = true
         wrapS = REPEAT
         wrapT = REPEAT
@@ -22,8 +22,8 @@ material sky
     {
         pass
         {
-            vertexShader = res/shaders/textured-unlit.vert
-            fragmentShader = res/shaders/textured-unlit.frag
+            vertexShader = res/shaders/textured.vert
+            fragmentShader = res/shaders/textured.frag
         }
     }
 }

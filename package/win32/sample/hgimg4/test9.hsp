@@ -5,6 +5,7 @@ title "HGIMG4 Test"
 	gpreset
 
 	setcls CLSMODE_SOLID, $404040
+	;setreq SYSREQ_LOGWRITE,1		; 終了時にログを出力
 
 	setcolor GPOBJ_LIGHT, 1,1,1		; ライトカラーを設定
 	setdir GPOBJ_LIGHT, 0.5,0.5,0.5		; アンビエントカラーを設定

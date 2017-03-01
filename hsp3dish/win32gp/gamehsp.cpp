@@ -231,9 +231,6 @@ void gamehsp::render(float elapsedTime)
 	// 画面クリア
 	clearFrameBuffer();
 
-	// テクスチャコピー元をリセット
-	source_material_id = -1;
-
     //nodetemp->rotateY(MATH_DEG_TO_RAD((float)elapsedTime / 1000.0f * 180.0f));
 }
 
@@ -384,7 +381,6 @@ void gamehsp::selectFrameBuffer(gameplay::FrameBuffer *fb, int sx, int sy)
 	viewport.set(0, 0, (float)sx, (float)sy);
 	setViewport(viewport);
 	clearFrameBuffer();
-	source_material_id = -1;
 }
 
 
@@ -454,8 +450,7 @@ bool gamehsp::init2DRender( void )
 	//
 
 	// 2D用のプロジェクション
-	Matrix::createOrthographicOffCenter(0.0f, getWidth(), getHeight(), 0.0f, -1.0f, 1.0f, &_projectionMatrix2D);
-	_projectionMatrix2D.translate(0.5f, 0.0f, 0.0f);						// 座標誤差修正のため0.5ドットずらす
+	make2DRenderProjection(&_projectionMatrix2D,getWidth(),getHeight());
 
 	// スプライト用のshader
 	_spriteEffect = Effect::createFromFile(SPRITE_VSH, SPRITE_FSH);
@@ -489,6 +484,14 @@ bool gamehsp::init2DRender( void )
 	}
 
 	return true;
+}
+
+
+void gamehsp::make2DRenderProjection(Matrix *mat,int sx, int sy)
+{
+	//	2Dシステム用のプロジェクションを作成する
+	Matrix::createOrthographicOffCenter(0.0f, (float)sx, (float)sy, 0.0f, -1.0f, 1.0f, mat);
+	mat->translate(0.5f, 0.0f, 0.0f);						// 座標誤差修正のため0.5ドットずらす
 }
 
 
@@ -555,7 +558,12 @@ void gamehsp::addNodeVector( gpobj *obj, Node *node, int moc, Vector4 *prm )
 		break;
 	case MOC_SCALE:
 		if ( node ) {
-			node->scale( prm->x, prm->y, prm->z );
+			Vector3 vec3 = node->getScale();
+			vec3.x += prm->x;
+			vec3.y += prm->y;
+			vec3.z += prm->z;
+			node->setScale(vec3);
+			//node->scale(prm->x, prm->y, prm->z);		// 掛け算だったので修正
 		}
 		break;
 	case MOC_DIR:
@@ -1563,7 +1571,7 @@ int gamehsp::ApplyMaterialToModel(Material *boxMaterial, Model *model)
 }
 
 
-int gamehsp::makeModelNode(char *fname, char *idname)
+int gamehsp::makeModelNode(char *fname, char *idname, char *defs)
 {
 	char fn[512];
 	char fn2[512];
@@ -1581,7 +1589,7 @@ int gamehsp::makeModelNode(char *fname, char *idname)
 	Animation *animation;
 	Node *node;
 
-	model_defines = "DIRECTIONAL_LIGHT_COUNT 1";
+	model_defines = defs;
 	Material* boxMaterial = Material::create(fn2,gamehsp::passCallback,NULL);
 	if (boxMaterial == NULL) return -1;
 
@@ -2359,18 +2367,32 @@ void gamehsp::finishLineColor2D( void )
 }
 
 
-float *gamehsp::startPolyTex2D( gpmat *mat )
+float *gamehsp::startPolyTex2D(gpmat *mat, int material_id )
 {
+	//	テクスチャポリゴン描画開始
+	//		mat : コピー元のマテリアル
+	//		material_id : 描画先のマテリアルID
+	//
 	MeshBatch *mesh = mat->_mesh;
 	if ( mesh == NULL ) {
         GP_ERROR("Bad Material.");
         return NULL;
 	}
 
-	if (mat->_id != source_material_id) {
-		//	同一マテリアルIDの場合はプロジェクションを設定しない(高速化のため)
-		source_material_id = mat->_id;
-		update2DRenderProjection(mat->_material, &mat->_projectionMatrix2D);
+	gpmat *targetmat = getMat(material_id);
+	if (targetmat) {
+		if (mat->_target_material_id != material_id) {
+			//	同一マテリアルIDの場合はプロジェクションを設定しない(高速化のため)
+			update2DRenderProjection(mat->_material, &targetmat->_projectionMatrix2D);
+			mat->_target_material_id = material_id;
+		}
+	}
+	else {
+		//	メイン画面用の2Dプロジェクション
+		if (mat->_target_material_id != -2) {
+			update2DRenderProjection(mat->_material, &_projectionMatrix2D);
+			mat->_target_material_id = -2;
+		}
 	}
 
 	mesh->start();

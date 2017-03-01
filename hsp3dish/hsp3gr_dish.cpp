@@ -1510,26 +1510,14 @@ static int cmdfunc_extcmd( int cmd )
 		char *ps;
 		PVal *p_pval;
 		APTR p_aptr;
-		p_aptr = code_getva( &p_pval );
+		p_aptr = code_getva(&p_pval);
 		ps = code_gets();
-		strncpy( fname, ps, HSP_MAX_PATH );
+		strncpy(fname, ps, HSP_MAX_PATH);
 		p1 = code_getdi(0);
-		p6 = code_getdi(-1);
-
-		if (p2 < 0) {
-			mat = game->makeMaterialTexture(fname, p1);
-			if (mat == NULL) throw HSPERR_ILLEGAL_FUNCTION;
-			p6 = game->makeNewMat(mat);
-		}
-		else {
-			gpmat *pmat;
-			pmat = game->getMat(p6);
-			if (pmat == NULL) throw HSPERR_ILLEGAL_FUNCTION;
-
-
-
-		}
-		code_setva( p_pval, p_aptr, HSPVAR_FLAG_INT, &p6 );
+		mat = game->makeMaterialTexture(fname, p1);
+		if (mat == NULL) throw HSPERR_ILLEGAL_FUNCTION;
+		p6 = game->makeNewMat(mat);
+		code_setva(p_pval, p_aptr, HSPVAR_FLAG_INT, &p6);
 		break;
 		}
 	case 0x73:								// gpusermat
@@ -1561,7 +1549,7 @@ static int cmdfunc_extcmd( int cmd )
 		{
 		PVal *p_pval;
 		APTR p_aptr;
-		p_aptr = code_getva( &p_pval );
+		p_aptr = code_getva(&p_pval);
 		p1 = code_getdi( 0 );
 		p6 = game->makeCloneNode( p1 );
 		code_setva( p_pval, p_aptr, HSPVAR_FLAG_INT, &p6 );
@@ -1572,13 +1560,18 @@ static int cmdfunc_extcmd( int cmd )
 		PVal *p_pval;
 		APTR p_aptr;
 		char fname[HSP_MAX_PATH];
+		char objfname[512];
 		char *ps;
+		char *defname;
 		p_aptr = code_getva( &p_pval );
 		ps = code_gets();
 		strncpy( fname, ps, HSP_MAX_PATH );
 		ps = code_getds("");
-		if ( *ps == 0 ) { ps = NULL; }
-		p6 = game->makeModelNode( fname, ps );
+		strncpy(objfname, ps, 512);
+		defname = code_getds("");
+		ps = objfname;
+		if (*ps == 0) { ps = NULL; }
+		p6 = game->makeModelNode( fname, ps, defname );
 		code_setva( p_pval, p_aptr, HSPVAR_FLAG_INT, &p6 );
 		break;
 		}
