@@ -68,7 +68,7 @@ extern bool get_key_state(int sym);
 #include "../sysreq.h"
 #include "../hgio.h"
 
-static		HSPREAL infoval[HGIO_INFO_MAX];
+static		HSPREAL infoval[GINFO_EXINFO_MAX];
 
 /*-------------------------------------------------------------------------------*/
 
@@ -273,7 +273,7 @@ void hgio_init( int mode, int sx, int sy, void *hwnd )
 	//		infovalをリセット
 	//
 	int i;
-	for(i=0;i<HGIO_INFO_MAX;i++) {
+	for(i=0;i<GINFO_EXINFO_MAX;i++) {
 		infoval[i] = 0.0;
 	}
 
@@ -482,6 +482,23 @@ void hgio_setback( BMSCR *bm )
 	//		(NULL=なし)
 	//
 	backbm = bm;
+}
+
+
+int hgio_gsel( BMSCR *bm )
+{
+	//		gsel(描画先変更) 未実装
+	//
+	hgio_render_end();
+	return 0;
+}
+
+
+int hgio_buffer(BMSCR *bm)
+{
+	//		buffer(描画用画面作成) 未実装
+	//
+	return 0;
 }
 
 
@@ -2031,8 +2048,8 @@ void hgio_drawsprite( hgmodel *mdl, HGMODEL_DRAWPRM *prm )
 HSPREAL hgio_getinfo( int type )
 {
 	int i;
-	i = type - HGIO_INFO_BASE;
-	if (( i >= 0 )&&( i < HGIO_INFO_MAX)) {
+	i = type - GINFO_EXINFO_BASE;
+	if (( i >= 0 )&&( i < GINFO_EXINFO_MAX)) {
 		return infoval[i];
 	}
 	return 0.0;
@@ -2041,8 +2058,8 @@ HSPREAL hgio_getinfo( int type )
 void hgio_setinfo( int type, HSPREAL val )
 {
 	int i;
-	i = type - HGIO_INFO_BASE;
-	if (( i >= 0 )&&( i < HGIO_INFO_MAX)) {
+	i = type - GINFO_EXINFO_BASE;
+	if (( i >= 0 )&&( i < GINFO_EXINFO_MAX)) {
 		infoval[i] = val;
 	}
 }

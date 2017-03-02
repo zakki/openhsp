@@ -36,6 +36,12 @@
 
 #include <emscripten.h>
 
+//#define USE_OBAQ
+
+#ifdef USE_OBAQ
+#include "../obaq/hsp3dw.h"
+#endif
+
 //typedef BOOL (CALLBACK *HSP3DBGFUNC)(HSP3DEBUG *,int,int,int);
 
 /*----------------------------------------------------------*/
@@ -571,9 +577,10 @@ int hsp3dish_init( char *startfile )
 	hsp3typeinit_extfunc( code_gettypeinfo( TYPE_EXTSYSVAR ) );
 
 #ifdef USE_OBAQ
-	hsp3typeinit_dw_extcmd( code_gettypeinfo( TYPE_DLLFUNC ) );
-	hsp3typeinit_dw_extfunc( code_gettypeinfo( TYPE_DLLCTRL ) );
+	hsp3typeinit_dw_extcmd( code_gettypeinfo( TYPE_USERDEF ) );
+	//hsp3typeinit_dw_extfunc( code_gettypeinfo( TYPE_USERDEF+1 ) );
 #endif
+
 
 	exinfo = ctx->exinfo2;
 
