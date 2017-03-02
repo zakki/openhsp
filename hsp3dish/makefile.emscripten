@@ -12,7 +12,7 @@ CFLAGS_DEBUG =
 #CFLAGS_DEBUG = -g3 --js-opts 0
 #CFLAGS_DEBUG = -g3 --js-opts 0 -s SAFE_HEAP=1
 
-CFLAGS = $(CFLAGS_CORE) $(CFLAGS_DEBUG) \
+CFLAGS = $(CFLAGS_CORE) $(CFLAGS_DEBUG) -DUSE_OBAQ\
 	   -s LEGACY_GL_EMULATION=1 -O3
 
 CFLAGS_GP = $(CFLAGS_CORE) $(CFLAGS_DEBUG) \
@@ -51,6 +51,11 @@ OBJS = \
 	../hsp3/strbuf.bc \
 	../hsp3/strnote.bc \
 	sysreq.bc \
+	obaq/hsp3dw.bc \
+	obaq/omkedraw.bc \
+	obaq/game.bc \
+	../obaq/physics/vessel.bc \
+	../obaq/physics/rock.bc \
 	emscripten/hgtex.bc \
 	emscripten/hgiox.bc \
 	emscripten/hsp3dish.bc \
@@ -107,13 +112,14 @@ OBJS_GAMEPLAY = \
 	gameplay/src/AIMessage.gp.bc \
 	gameplay/src/AIState.gp.bc \
 	gameplay/src/AIStateMachine.gp.bc \
+	gameplay/src/Animation.gp.bc \
 	gameplay/src/AnimationClip.gp.bc \
 	gameplay/src/AnimationController.gp.bc \
-	gameplay/src/Animation.gp.bc \
 	gameplay/src/AnimationTarget.gp.bc \
 	gameplay/src/AnimationValue.gp.bc \
 	gameplay/src/AudioController.gp.bc \
 	gameplay/src/AudioListener.gp.bc \
+	gameplay/src/AudioSource.gp.bc \
 	gameplay/src/BoundingBox.gp.bc \
 	gameplay/src/BoundingSphere.gp.bc \
 	gameplay/src/Bundle.gp.bc \
@@ -137,8 +143,8 @@ OBJS_GAMEPLAY = \
 	gameplay/src/Game.gp.bc \
 	gameplay/src/Gamepad.gp.bc \
 	gameplay/src/HeightField.gp.bc \
-	gameplay/src/ImageControl.gp.bc \
 	gameplay/src/Image.gp.bc \
+	gameplay/src/ImageControl.gp.bc \
 	gameplay/src/Joint.gp.bc \
 	gameplay/src/JoystickControl.gp.bc \
 	gameplay/src/Label.gp.bc \
@@ -149,8 +155,8 @@ OBJS_GAMEPLAY = \
 	gameplay/src/MaterialParameter.gp.bc \
 	gameplay/src/MathUtil.gp.bc \
 	gameplay/src/Matrix.gp.bc \
-	gameplay/src/MeshBatch.gp.bc \
 	gameplay/src/Mesh.gp.bc \
+	gameplay/src/MeshBatch.gp.bc \
 	gameplay/src/MeshPart.gp.bc \
 	gameplay/src/MeshSkin.gp.bc \
 	gameplay/src/Model.gp.bc \
@@ -188,13 +194,13 @@ OBJS_GAMEPLAY = \
 	gameplay/src/ScriptController.gp.bc \
 	gameplay/src/ScriptTarget.gp.bc \
 	gameplay/src/Slider.gp.bc \
-	gameplay/src/SpriteBatch.gp.bc \
 	gameplay/src/Sprite.gp.bc \
+	gameplay/src/SpriteBatch.gp.bc \
 	gameplay/src/Technique.gp.bc \
 	gameplay/src/Terrain.gp.bc \
 	gameplay/src/TerrainPatch.gp.bc \
-	gameplay/src/TextBox.gp.bc \
 	gameplay/src/Text.gp.bc \
+	gameplay/src/TextBox.gp.bc \
 	gameplay/src/Texture.gp.bc \
 	gameplay/src/Theme.gp.bc \
 	gameplay/src/ThemeStyle.gp.bc \
