@@ -158,9 +158,9 @@ int hsp3eb_init( void )
 		Alertf( "OpenGL initalize failed." );
 		return 1;
 	}
-	Alertf( "---Init HSP3***\n" );
+//	Alertf( "---Init HSP3\n" );
 	platform->enterMessagePump();
-	Alertf( "---enterMessagePump OK\n" );
+//	Alertf( "---enterMessagePump OK\n" );
 
        if (Game::getInstance()->getState() == Game::UNINITIALIZED)
             {
@@ -243,7 +243,11 @@ void hsp3eb_bye( void )
 
 char *hsp3dish_getlog(void)
 {
+#ifdef HSPDISHGP
 	return (char *)gplog.c_str();
+#else
+	return "";
+#endif
 }
 
 void hsp3eb_error( void )

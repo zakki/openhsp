@@ -1,5 +1,6 @@
 
 #include <jni.h>
+#include <unistd.h>
 #include <android/sensor.h>
 //#include <android_native_app_glue.h>
 
@@ -7,17 +8,32 @@
 
 #include <stdio.h>
 #include <stdlib.h>
+
+
 #include "hsp3/hsp3config.h"
 #include "hsp3/hsp3struct.h"
 #include "hsp3/hsp3ext.h"
 #include "hsp3embed/hsp3embed.h"
 
+//#define USE_SENSOR
+
 static int *p_runmode;
+
+#ifdef USE_SENSOR
+static ASensorManager* __sensorManager;
+static ASensorEventQueue* __sensorEventQueue;
+static ASensorEvent __sensorEvent;
+static const ASensor* __accelerometerSensor;
+static const ASensor* __gyroscopeSensor;
+#endif
 
 void hgio_view( int sx, int sy );
 void hgio_scale( float xx, float yy );
 void hgio_autoscale( int mode );
 void hgio_setstorage( char *path );
+void hgio_mtouchid( int pointid, int xx, int yy, int button, int opt );
+void hgio_setinfo( int type, HSPREAL val );
+
 
 /**
  * デバイスに対してのEGLコンテキストの初期化
@@ -149,24 +165,6 @@ static int32_t engine_handle_input(struct android_app* app,
 				break;
 			}
 	    }
-/*
-        switch (action & AMOTION_EVENT_ACTION_MASK) {
-		case AMOTION_EVENT_ACTION_DOWN:
-        	//LOGI("***DOWN(%d,%d)",xx,yy);
-			hgio_touch( xx, yy, 1 );
-			break;
-        case AMOTION_EVENT_ACTION_MOVE:
-        	//LOGI("***MOVE(%d,%d)",xx,yy);
-			hgio_touch( xx, yy, 1 );
-			break;
-        case AMOTION_EVENT_ACTION_UP:
-			hgio_touch( xx, yy, 0 );
-			break;
-		}
-*/		
-		
-		
-//		engine->animating = 1;
         return 1;
     }
     return 0;
@@ -191,10 +189,10 @@ static void engine_handle_cmd(struct android_app* app, int32_t cmd) {
             if ( engine->hspctx == NULL ) {
 				HSPCTX *ctx;
 				InitSysReq();
-			    hgio_init( 0, engine->width, engine->height, engine );
-				//hgio_view( 480, 800 );	// screen size
+			    //hgio_init( 0, engine->width, engine->height, engine );
+				//hgio_view( 800, 600 );	// screen size
 				//hgio_scale( 1.0f, 1.0f );	// scale value
-				//hgio_autoscale( 0 );	// auto scale value
+				hgio_autoscale( 0 );	// auto scale value
 				hsp3eb_init();
 				ctx = hsp3eb_getctx(); 
 				engine->hspctx = ctx;
@@ -218,24 +216,38 @@ static void engine_handle_cmd(struct android_app* app, int32_t cmd) {
         hsp3eb_pause();
         break;
     case APP_CMD_GAINED_FOCUS:
-        engine->animating = 1;
-/*
-        if (engine->accelerometerSensor != NULL) {
-            ASensorEventQueue_enableSensor(engine->sensorEventQueue,
-                    engine->accelerometerSensor);
-            ASensorEventQueue_setEventRate(engine->sensorEventQueue,
-                    engine->accelerometerSensor, (1000L / 60) * 1000);
+       	LOGI("***CMD_GAINED_FOCUS");
+#ifdef USE_SENSOR
+        // When our app gains focus, we start monitoring the sensors.
+        if (__accelerometerSensor != NULL) 
+        {
+            ASensorEventQueue_enableSensor(__sensorEventQueue, __accelerometerSensor);
+            // We'd like to get 60 events per second (in microseconds).
+            ASensorEventQueue_setEventRate(__sensorEventQueue, __accelerometerSensor, (1000L/60)*1000);
         }
-        engine_draw_frame(engine);
-*/
+        if (__gyroscopeSensor != NULL)
+        {
+            ASensorEventQueue_enableSensor(__sensorEventQueue, __gyroscopeSensor);
+            // We'd like to get 60 events per second (in microseconds).
+            ASensorEventQueue_setEventRate(__sensorEventQueue, __gyroscopeSensor, (1000L/60)*1000);
+        }
+#endif
+        engine->animating = 1;
         break;
     case APP_CMD_LOST_FOCUS:
-/*
-        if (engine->accelerometerSensor != NULL) {
-            ASensorEventQueue_disableSensor(engine->sensorEventQueue,
-                    engine->accelerometerSensor);
+       	LOGI("***CMD_LOST_FOCUS");
+#ifdef USE_SENSOR
+        // When our app loses focus, we stop monitoring the sensors.
+        // This is to avoid consuming battery while not being used.
+        if (__accelerometerSensor != NULL)
+        {
+            ASensorEventQueue_disableSensor(__sensorEventQueue, __accelerometerSensor);
         }
-*/
+        if (__gyroscopeSensor != NULL)
+        {
+            ASensorEventQueue_disableSensor(__sensorEventQueue, __gyroscopeSensor);
+        }
+#endif
         engine->animating = 0;
         break;
     }
@@ -259,14 +271,14 @@ void android_main(struct android_app* state) {
     p_runmode = NULL;
 
     // センサーからのデータ取得に必要な初期化
-/*
-    engine.sensorManager = ASensorManager_getInstance();
-    engine.accelerometerSensor = ASensorManager_getDefaultSensor(
-            engine.sensorManager, ASENSOR_TYPE_ACCELEROMETER);
-    engine.sensorEventQueue = ASensorManager_createEventQueue(
-            engine.sensorManager, state->looper, LOOPER_ID_USER, NULL,
-            NULL);
-*/
+#ifdef USE_SENSOR
+    // Prepare to monitor accelerometer.
+    __sensorManager = ASensorManager_getInstance();
+    __accelerometerSensor = ASensorManager_getDefaultSensor(__sensorManager, ASENSOR_TYPE_ACCELEROMETER);
+    __gyroscopeSensor = ASensorManager_getDefaultSensor(__sensorManager, ASENSOR_TYPE_GYROSCOPE);
+    __sensorEventQueue = ASensorManager_createEventQueue(__sensorManager, state->looper, LOOPER_ID_USER, NULL, NULL);
+#endif
+
    	//LOGI("***android_main(%x)",state->savedState);
 
     if (state->savedState != NULL) {
@@ -288,20 +300,26 @@ void android_main(struct android_app* state) {
                 source->process(state, source);
             }
 
+#ifdef USE_SENSOR
             // センサーに何かしらのデータが存在したら処理する
-/*
-            if (ident == LOOPER_ID_USER) {
-                if (engine.accelerometerSensor != NULL) {
-                    ASensorEvent event;
-                    while (ASensorEventQueue_getEvents(
-                            engine.sensorEventQueue, &event, 1) > 0) {
-                        LOGI("accelerometer: x=%f y=%f z=%f",
-                                event.acceleration.x, event.acceleration.y,
-                                event.acceleration.z);
-                    }
+            // If a sensor has data, process it now.
+            if (ident == LOOPER_ID_USER && __accelerometerSensor != NULL)
+            {
+                ASensorEventQueue_getEvents(__sensorEventQueue, &__sensorEvent, 1);
+                if (__sensorEvent.type == ASENSOR_TYPE_ACCELEROMETER)
+                {
+                    hgio_setinfo( GINFO_EXINFO_ACCEL_X, __sensorEvent.acceleration.x );
+                    hgio_setinfo( GINFO_EXINFO_ACCEL_Y, __sensorEvent.acceleration.y );
+                    hgio_setinfo( GINFO_EXINFO_ACCEL_Z, __sensorEvent.acceleration.z );
+                }
+                else if (__sensorEvent.type == ASENSOR_TYPE_GYROSCOPE)
+                {
+                    hgio_setinfo( GINFO_EXINFO_GYRO_X, __sensorEvent.vector.x );
+                    hgio_setinfo( GINFO_EXINFO_GYRO_Y, __sensorEvent.vector.y );
+                    hgio_setinfo( GINFO_EXINFO_GYRO_Z, __sensorEvent.vector.z );
                 }
             }
-*/
+#endif
 
             // 破棄要求があったか
             if (state->destroyRequested != 0) {
