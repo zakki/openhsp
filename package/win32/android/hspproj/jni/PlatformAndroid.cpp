@@ -99,8 +99,8 @@ extern void print(const char* format, ...)
     GP_ASSERT(format);
     va_list argptr;
     va_start(argptr, format);
-    __android_log_vprint(ANDROID_LOG_INFO, "gameplay-native-activity", format, argptr);
-    va_end(argptr);
+    __android_log_vprint(ANDROID_LOG_INFO, "native-activity", format, argptr);
+    va_end(argptr); 
 }
 
 extern int strcmpnocase(const char* s1, const char* s2)
@@ -205,12 +205,13 @@ unsigned int getEGLDisplayHeight( void )
 int initEGL()
 {
     int samples = 0;
+/*
     Properties* config = Game::getInstance()->getConfig()->getNamespace("window", true);
     if (config)
     {
         samples = std::max(config->getInt("samples"), 0);
     }
-
+*/
     // Hard-coded to 32-bit/OpenGL ES 2.0.
     // NOTE: EGL_SAMPLE_BUFFERS, EGL_SAMPLES and EGL_DEPTH_SIZE MUST remain at the beginning of the attribute list
     // since they are expected to be at indices 0-5 in config fallback code later.
@@ -1349,7 +1350,6 @@ int Platform::enterMessagePump()
     }
     GP_ASSERT(env);
 
-#ifndef HSPDISH
     /* Get external files directory on Android; this will result in a directory where all app files
      * should be stored, like /mnt/sdcard/android/<package-name>/files/
      */
@@ -1378,11 +1378,11 @@ int Platform::enterMessagePump()
     // Release string data
     env->ReleaseStringUTFChars(stringExternalPath, externalPath);
     jvm->DetachCurrentThread();
-#endif
     
     // Get the asset manager to get the resources from the .apk file.
     __assetManager = activity->assetManager; 
     
+#ifndef HSPDISH
     // Set the event call back functions.
     __state->onAppCmd = engine_handle_cmd;
     __state->onInputEvent = engine_handle_input;
@@ -1395,6 +1395,7 @@ int Platform::enterMessagePump()
     __accelerometerSensor = ASensorManager_getDefaultSensor(__sensorManager, ASENSOR_TYPE_ACCELEROMETER);
     __gyroscopeSensor = ASensorManager_getDefaultSensor(__sensorManager, ASENSOR_TYPE_GYROSCOPE);
     __sensorEventQueue = ASensorManager_createEventQueue(__sensorManager, __state->looper, LOOPER_ID_USER, NULL, NULL);
+#endif
     
     // Get the initial time.
     clock_gettime(CLOCK_REALTIME, &__timespec);

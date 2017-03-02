@@ -56,6 +56,13 @@
 #define global ginfo_sx ginfo(26)
 #define global ginfo_sy ginfo(27)
 
+#define global ginfo_accelx ginfo(256)
+#define global ginfo_accely ginfo(257)
+#define global ginfo_accelz ginfo(258)
+#define global ginfo_gyrox ginfo(259)
+#define global ginfo_gyroy ginfo(260)
+#define global ginfo_gyroz ginfo(261)
+
 #define global ctype objinfo_mode(%1) objinfo(%1,0)
 #define global ctype objinfo_bmscr(%1) objinfo(%1,1)
 #define global ctype objinfo_hwnd(%1) objinfo(%1,2)
