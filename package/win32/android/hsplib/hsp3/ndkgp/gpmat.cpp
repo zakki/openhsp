@@ -1,3 +1,6 @@
+
+#include <stdio.h>
+#include <string.h>
 #include "gamehsp.h"
 
 #include "../../hsp3/hsp3config.h"
@@ -397,19 +400,26 @@ void gamehsp::setupDefines(void)
 {
 	//	シェーダー用のdefine定義を作成
 	//
+	char tmp[8];
 	light_defines = "MODULATE_ALPHA";
 	nolight_defines = "MODULATE_ALPHA";
 	if (_max_dlight) {
 		light_defines += ";DIRECTIONAL_LIGHT_COUNT ";
-		light_defines += "1";//std::to_string(_max_dlight);
+		sprintf(tmp,"%d",_max_dlight);
+		//itoa(_max_dlight,tmp,10);
+		light_defines += tmp;// std::to_string(_max_dlight);
 	}
 	if (_max_plight) {
 		light_defines += ";POINT_LIGHT_COUNT ";
-		light_defines += "0";//std::to_string(_max_plight);
+		sprintf(tmp,"%d",_max_plight);
+		//itoa(_max_plight, tmp, 10);
+		light_defines += tmp;// std::to_string(_max_plight);
 	}
 	if (_max_slight) {
 		light_defines += ";SPOT_LIGHT_COUNT ";
-		light_defines += "0";//std::to_string(_max_slight);
+		sprintf(tmp,"%d",_max_slight);
+		//itoa(_max_slight, tmp, 10);
+		light_defines += tmp;// std::to_string(_max_slight);
 	}
 	splight_defines = light_defines + ";SPECULAR";
 

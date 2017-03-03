@@ -9,10 +9,10 @@
 #include "mod_appconfig.as"
 
 #define APPTITLE "HSP3Dish helper"
-#define APPVER "1.42"
+#define APPVER "1.5"
 #define APP_CONF "\\hsp3dh.cfg"
 
-#define AND_LIBVER 103			; android HSPランタイムの内部バージョン
+#define AND_LIBVER 104			; android HSPランタイムの内部バージョン
 
 #uselib "shell32.dll"
 #cfunc SHBrowseForFolder "SHBrowseForFolder" int
@@ -40,7 +40,7 @@
 	dir_gps="google-play-services_lib"
 	dir_gplib="gameplay"
 	dir_extlib="extlib"
-	dir_hsplib="hsplib35b4"
+	dir_hsplib="hsplib35b5"
 	;
 	app_winx=-1
 	app_winy=-1
@@ -71,6 +71,7 @@
 	flag_admob=0
 	flag_arm=0
 	flag_hgimg=0
+	flag_sensor=0
 
 	get_hsp_appdata_path app_dir
 
@@ -95,6 +96,7 @@
 		flag_admob = 0+cfg_getvar("flag_admob")
 		flag_arm = 0+cfg_getvar("flag_arm")
 		flag_hgimg = 0+cfg_getvar("flag_hgimg")
+		flag_sensor = 0+cfg_getvar("flag_sensor")
 		ios_org=cfg_getvar("ios_org")
 		ios_ident=cfg_getvar("ios_ident")
 	}
@@ -291,7 +293,7 @@
 	objsize 160,24
 	pos 8,68
 	chkbox "出力ソースをUTF-8に変換",flag_utf8
-	chkbox "XCode6用プロジェクトを生成",flag_xcode
+	chkbox "XCode7用プロジェクトを生成",flag_xcode
 
 	objsize 130,24
 	pos 20,126
@@ -367,6 +369,7 @@
 	chkbox "AdMobを使用する",flag_admob
 	chkbox "ARM7最適化を無効",flag_arm
 	chkbox "HGIMG4を使用する",flag_hgimg
+	chkbox "センサーを使用する",flag_sensor
 	;objenable stat,0
 
 	x=ginfo_sx-150:y=114
@@ -588,13 +591,18 @@
 	pos 408,y:button "参照...",*selpath_proj
 	y+=30
 
-	objsize 128,32
+	objsize 102,30
 	pos 8,y
 	button "SDKマネージャー",*exec_sdkman
-	pos 8+138,y
+	pos 8+110,y
 	button "AdMobセットアップ",*exec_admob
-	pos 8+138*2,y
+	pos 8+110*2,y
+	button "ライブラリ更新",*and_libcopy
+
+	pos 8,y+34
 	button "Deviceモニター",*exec_devmon
+	pos 8+110,y+34
+	button "AVDマネージャー",*exec_avdman
 
 	y=tooly
 	objsize 148,48
@@ -679,6 +687,7 @@
 	cfg_seti "flag_admob",flag_admob
 	cfg_seti "flag_arm",flag_arm
 	cfg_seti "flag_hgimg",flag_hgimg
+	cfg_seti "flag_sensor",flag_sensor
 
 	cfg_sets "ios_org",ios_org
 	cfg_sets "ios_ident",ios_ident
@@ -922,6 +931,54 @@
 	mes "終了しました。"
 	goto *and_fin
 
+*and_libcopy
+	;	android lib update
+	;
+	dialog "HSP3Dishシステムライブラリを上書き更新します。よろしいですか?",3
+	if stat!=6 : goto *and_fin
+	;
+	initsub
+	gsel 1
+	;
+	gosub *bat_init
+	tmp+="RMDIR /S /Q \""+path_proj+"\\"+dir_gplib+"\"\n"
+	tmp+="RMDIR /S /Q \""+path_proj+"\\"+dir_extlib+"\"\n"
+	tmp+="RMDIR /S /Q \""+path_proj+"\\"+dir_hsplib+"\"\n"
+	;
+	gosub *bat_save
+	;
+	execcmd "go.bat"
+	if stat {
+		gsel 1
+		mes "エラーが発生しました。フォルダの削除ができません。"
+		goto *and_fin
+	}
+	;
+	await 50
+	;
+	gsel 1
+	mes "HSPlibフォルダを設定しています..."
+	gosub *setup_hsplib
+	if res {
+		gsel 1
+		mes "HSPlibフォルダが作成できません。\n「オプション」のプロジェクトフォルダを正しく設定してください。"
+	}
+	await 50
+	;
+	gsel 1
+	mes "gameplayフォルダを設定しています..."
+	gosub *setup_hspgp
+	if res {
+		gsel 1
+		mes "gameplayフォルダが作成できません"
+		goto *and_fin
+	}
+	;
+	gsel 1
+	mes "終了しました。"
+	goto *and_fin
+
+
 *and_start
 	;	create project
 	;
@@ -1008,9 +1065,6 @@ jni\\hsp3embed\\hsp3r.cpp
 jni\\hsp3embed\\hsp3r.h
 jni\\hsp3embed\\hspsource.cpp
 src\\tv\\hsp\\HspActivity.java
-libs\\armeabi\\libobaqlib.a
-libs\\armeabi-v7a\\libobaqlib.a
-libs\\x86\\libobaqlib.a
 res\\drawable-xhdpi\\ic_launcher.png
 res\\drawable-hdpi\\ic_launcher.png
 res\\drawable-ldpi\\ic_launcher.png
@@ -1074,6 +1128,7 @@ res\\drawable-mdpi\\ic_launcher.png"}
 	noteadd "	<uses-permission android:name=\"android.permission.ACCESS_NETWORK_STATE\"/>",15,0
 	noteadd "	<uses-permission android:name=\"android.permission.INTERNET\"/>",15,0
 	noteadd "	<uses-permission android:name=\"android.permission.VIBRATE\"/>",15,0
+	noteadd "	<uses-permission android:name=\"android.permission.WRITE_EXTERNAL_STORAGE\" />",15,0
 
 
 	noteadd "        <activity android:name=\"tv.hsp.HspActivity\"",7,1
@@ -1139,6 +1194,14 @@ res\\drawable-mdpi\\ic_launcher.png"}
 		}
 	}
 
+	if flag_sensor {
+		;	センサー設定をいじる
+		xmlfile = path_proj+"\\"+and_name+"\\jni\\main.c"
+		gosub *and_modify_sensor_sub
+		xmlfile = path_proj+"\\"+and_name+"\\jni\\maingp.c"
+		gosub *and_modify_sensor_sub
+	}
+
 	gsel 1
 	objprm 0,buf
 	mes "終了しました。"
@@ -1150,6 +1213,18 @@ res\\drawable-mdpi\\ic_launcher.png"}
 *and_fin
 	gsel 0
 	goto *topmenu
+
+
+*and_modify_sensor_sub
+	gosub *xml_initfile
+	s1="#define USE_SENSOR":gosub *xml_search
+	if tmp!="" {
+		if res>=0 {
+			noteadd "#define USE_SENSOR",res,1		; defineを有効にする
+			gosub *xml_save
+		}
+	}
+	return
 
 
 *and_logcat
@@ -1312,7 +1387,11 @@ res\\drawable-mdpi\\ic_launcher.png"}
 	mes "ソーススクリプト:"+getpath(s1,8)
 
 	gosub *hspcnv
-	if hspcnv_res : goto *and_fin
+	if hspcnv_res {
+		gsel 1
+		objprm 0,buf
+		goto *and_fin
+	}
 
 	hsplog=buf
 
@@ -1767,6 +1846,17 @@ hspproj.xcodeproj\\project.pbxproj"}
 	exec s1
 	stop
 
+*exec_avdman
+	;	AVDマネージャー起動
+	s1=path_sdk+"\\AVD Manager.exe"
+	exist s1
+	if strsize<=0 {
+		dialog "SDKフォルダが正しく設定されていません。"
+		stop
+	}
+	exec s1
+	stop
+
 *exec_admob
 	;	AdMob(GooglePlayServices)設定
 	gosub *check_admob
@@ -1875,11 +1965,12 @@ hspproj.xcodeproj\\project.pbxproj"}
 	;	res=0の場合はOK、それ以外はエラー
 	res=-1
 	;
+	gosub *bat_init
+	;
 	basedir=path_proj+"\\"+dir_gplib
 	dirlist s1,basedir,5
 	if stat=0 : mkdir basedir	; フォルダを作成
 	;
-	gosub *bat_init
 	s2 = dir_exe+"\\android\\gameplay"
 	tmp+="XCOPY \""+s2+"\" \""+basedir+"\" /S /E /Y /I\n"
 	;
@@ -1887,7 +1978,6 @@ hspproj.xcodeproj\\project.pbxproj"}
 	dirlist s1,basedir,5
 	if stat=0 : mkdir basedir	; フォルダを作成
 	;
-	gosub *bat_init
 	s2 = dir_exe+"\\android\\extlib"
 	tmp+="XCOPY \""+s2+"\" \""+basedir+"\" /S /E /Y /I\n"
 	;
