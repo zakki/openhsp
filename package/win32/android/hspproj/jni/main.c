@@ -182,17 +182,17 @@ static void engine_handle_cmd(struct android_app* app, int32_t cmd) {
         engine->app->savedStateSize = sizeof(struct saved_state);
         break;
     case APP_CMD_INIT_WINDOW:
-       	//LOGI("***CMD_INIT_WINDOW(%x)",engine->app->window);
+       	LOGI("***CMD_INIT_WINDOW(%x)",engine->app->window);
         if (engine->app->window != NULL) {
 			javafunc_init( engine );
             engine_init_display(engine);
             if ( engine->hspctx == NULL ) {
 				HSPCTX *ctx;
 				InitSysReq();
-			    //hgio_init( 0, engine->width, engine->height, engine );
+			    hgio_init( 0, engine->width, engine->height, engine );
 				//hgio_view( 800, 600 );	// screen size
 				//hgio_scale( 1.0f, 1.0f );	// scale value
-				hgio_autoscale( 0 );	// auto scale value
+				//hgio_autoscale( 0 );	// auto scale value
 				hsp3eb_init();
 				ctx = hsp3eb_getctx(); 
 				engine->hspctx = ctx;
