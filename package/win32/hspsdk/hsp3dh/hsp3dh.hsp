@@ -1032,8 +1032,8 @@
 	if stat : mes "すでにプロジェクトが存在しています" : goto *and_fin	
 
 	gosub *bat_init
-	tmp+="android create project --target "+and_targetid+" --path ./"+and_name+" --activity "+and_name+" --package "+and_package+"\n"
-
+	;tmp+="android create project --target "+and_targetid+" --path ./"+and_name+" --activity "+and_name+" --package "+and_package+"\n"
+	tmp+="android create project --target "+and_targetid+" --path ./"+and_name+" --activity "+and_name+" --package "+and_package+" --gradle -v 1.12\n"
 	gosub *bat_save
 
 	execcmd "go.bat"
