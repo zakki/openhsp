@@ -28,6 +28,7 @@ import android.util.Log;
 import android.view.Display;
 import android.view.Surface;
 import android.view.WindowManager;
+import android.view.View;
 import android.view.ViewGroup;
 import android.view.ViewGroup.LayoutParams;
 import android.view.ViewGroup.MarginLayoutParams;
@@ -39,6 +40,7 @@ import android.widget.PopupWindow;
 import android.widget.LinearLayout;
 import android.widget.Button;
 import android.widget.TextView;
+import android.widget.FrameLayout;
 
 import java.util.List;
 import java.util.ArrayList;
@@ -72,6 +74,7 @@ import org.apache.http.params.HttpProtocolParams;
 import org.apache.http.util.EntityUtils;
 
 import com.google.android.gms.ads.*;
+
 
 public class HspActivity extends NativeActivity {
 
@@ -432,105 +435,205 @@ public class HspActivity extends NativeActivity {
     }
 
 
-	// for AdMob
-	private static AdView adView;
-	private static AdRequest.Builder _request;
-	private static PopupWindow popUp;
-	private static HspActivity _activity;
-	private static LinearLayout layout;
-	private static LinearLayout mainLayout;
-	private static boolean adsinited = false;
-	private static int disp_width = 0;
-	private static int disp_height = 0;
+// for AdMob
 
-	public void onCreate(Bundle savedInstanceState) {
-		super.onCreate(savedInstanceState);
-		// Make your custom init here
-		//getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
-		_activity = this;
+    static AdView _adView;
+    static final String APP_ID = "";
+    static final String BANNER_AD_UNIT_ID = "";
+
+    static InterstitialAd _interstitialAd;
+    static final String INTERSTITIAL_AD_UNIT_ID = "";
+
+    static final String TestDeviceID = "*******";
+
+    static HspActivity _instance;
+
+    private static PopupWindow popUp;
+    private static LinearLayout layout;
+    private static LinearLayout mainLayout;
+    private static boolean adsinited = false;
+    private static boolean bShow = false;
+    private static int disp_width = 0;
+    private static int disp_height = 0;
+
+
+
+    public static HspActivity getInstance(){
+        return _instance;
+    }
+
+    @Override
+    protected void onCreate(Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+        _instance = this;
 
 		WindowManager windowmanager = (WindowManager)getSystemService(WINDOW_SERVICE);
 		Display disp = windowmanager.getDefaultDisplay();
 		disp_width = disp.getWidth();
 		disp_height = disp.getHeight();
 	       	Log.i("HspActivity","size"+disp_width+"x"+disp_height);
-		// Create our ad view here
 
-		adView = new AdView(_activity);
-		adView.setAdUnitId("ca-app-pub-???????????????????????????");
-		adView.setAdSize(AdSize.BANNER);
-		//adView = new AdView(_activity, AdSize.BANNER, "publisherID");
-		if(adView!=null)  {
-		       	Log.i("HspActivity","done adView initalizing.");
+        
+        MobileAds.initialize(getApplicationContext(),APP_ID);
 
-			_request = new AdRequest.Builder();
-			_request.addTestDevice(AdRequest.DEVICE_ID_EMULATOR);
-			adView.loadAd( _request.build() );
-		}
-	       	Log.i("HspActivity","adView initalized.");
+        _adView = new AdView(this);
+        _adView.setAdSize(AdSize.SMART_BANNER);
+        _adView.setAdUnitId(BANNER_AD_UNIT_ID);
+        _adView.setBackgroundColor(Color.TRANSPARENT);
+
+	_adView.setVisibility(View.VISIBLE);
+        _adView.loadAd(
+	        new AdRequest.Builder()
+     		.addTestDevice(TestDeviceID)
+              	.build()
+	);
+
+	layout = new LinearLayout(_instance);
+	mainLayout = new LinearLayout(_instance);
+	// The layout system for the PopupWindow will kill some pixels due to margins/paddings etc(No way to remove it), so padd it to adjust
+	layout.setPadding(-5, -5, -5, -5);
+	layout.setOrientation(LinearLayout.VERTICAL);
+
+
+        //interstitial
+        _interstitialAd = new InterstitialAd(this);
+        _interstitialAd.setAdUnitId(INTERSTITIAL_AD_UNIT_ID);
+
+        _interstitialAd.setAdListener(new AdListener() {
+            @Override
+            public void onAdClosed() {
+                requestNewInterstitial();
+            }
+        });
+
+        requestNewInterstitial();
+    }
+    private void requestNewInterstitial() {
+        AdRequest adRequest = new AdRequest.Builder()
+		//.addTestDevice(AdRequest.DEVICE_ID_EMULATOR)        // All emulators
+                .addTestDevice(TestDeviceID)
+                .build();
+                _interstitialAd.loadAd(adRequest);
+    }
+    public void showIntersAd() {
+        runOnUiThread(new Runnable() {
+            @Override
+            public void run() {
+                if (_interstitialAd.isLoaded()) {
+                    _interstitialAd.show();
+                }
+            }
+        });
+    }
+    public int hideAd() {
+	if(adsinited) {
+	        runOnUiThread(new Runnable() {
+	            @Override
+	            public void run() {
+			_adView.removeView(layout);
+        	        _adView.setVisibility(View.GONE);
+        	        //_adView.setVisibility(View.GONE);
+			//_adView.pause();
+			bShow = false;
+	            }
+	        });
+		return 0;
 	}
+	return -1;
+    }
+    public int showAd() {
 
-	// Our popup window, you will call it from your C/C++ code later
-	public int callAdMob( int val ) {
 		if(adsinited) {
+			if ( bShow == false ) {
+				//layout.setEnabled(true);
+		                //layout.setVisibility(View.VISIBLE);
+				//_adView.resume();
+				//bShow = true;
+			}
 			return -1;
 		}
-		if(adView!=null)  {
+		if(_adView!=null)  {
 		       	Log.i("HspActivity","callAdMob.");
-			_activity.runOnUiThread(new Runnable()  {
+			_instance.runOnUiThread(new Runnable()  {
 			@Override
 			public void run()  {
 				adsinited = true;
 				// Out popup window
-				popUp = new PopupWindow(_activity);
+				popUp = new PopupWindow(_instance);
 				// This is the minimum size for AdMob, we need to set this in case our target device run at 320x480 resolution (Otherwise no ad will be shown, see the padding kill below)
-				//popUp.setWidth(484);
 				popUp.setWidth(disp_width+4);
 				popUp.setHeight(77);
 				popUp.setWindowLayoutMode(LayoutParams.WRAP_CONTENT, LayoutParams.WRAP_CONTENT);
 				popUp.setClippingEnabled(false);
-				layout = new LinearLayout(_activity);
-				mainLayout = new LinearLayout(_activity);
-				// The layout system for the PopupWindow will kill some pixels due to margins/paddings etc(No way to remove it), so padd it to adjust
-				layout.setPadding(-5, -5, -5, -5);
+
 				MarginLayoutParams params = new MarginLayoutParams(LayoutParams.WRAP_CONTENT, LayoutParams.WRAP_CONTENT);
 				params.setMargins(0, 0, 0, 0);
-				layout.setOrientation(LinearLayout.VERTICAL);
-				layout.addView(adView, params);
-				popUp.setContentView(layout);
-				_activity.setContentView(mainLayout, params);
 
-				//AdRequest adRequest = new AdRequest();
-				// Enable this if your are testing AdMob, otherwise you'll risk to be banned!
-				//adRequest.addTestDevice(AdRequest.TEST_EMULATOR);
-				//adRequest.addTestDevice("********************************");
-				//_activity.adView.loadAd(_request);
+				layout.addView(_adView, params);
+				popUp.setContentView(layout);
+				_instance.setContentView(mainLayout, params);
+
 			       	Log.i("HspActivity","loadAd.");
-				// Show our popup window
 				popUp.showAtLocation(mainLayout, Gravity.BOTTOM, 0, 0);
 				popUp.update();
-				}});
+				bShow = true;
+				}
+			});
 
 		} else {
 		       	Log.i("HspActivity","callAdMob failed.");
 		}
 		return 0;
-	}
-
-	// Do some cleanup
-	  @Override
-	  public void onDestroy() {
-	    if (adView != null) {
-	      adView.destroy();
+    }
+    @Override
+    protected void onResume() {
+        super.onResume();
+        if (_adView != null) {
+            _adView.resume();
+        }
+    }
+    @Override
+    protected void onPause() {
+        if (_adView != null) {
+            _adView.pause();
+        }
+        super.onPause();
+    }
+    @Override
+    protected void onDestroy() {
+        if (_adView != null) {
+	    if(adsinited) {
+		popUp.dismiss();
 	    }
-	    super.onDestroy();
-	  }
+            _adView.destroy();
+        }
+        super.onDestroy();
+    }
+
+    public int callAdMob( int val ) {
+	if(_adView!=null)  {
+	       	Log.i("HspActivity","callAdMob.");
+
+		if ( val < 0 ) {
+			hideAd();
+			return 0;
+		}
+		if ( val == 0 ) {
+			showAd();
+			return 0;
+		}
+		if (( val & 16 )==16) {
+			HspActivity.getInstance().showIntersAd();
+			return 0;
+		}
+
+	} else {
+	       	Log.i("HspActivity","callAdMob failed.");
+	}
+	return 0;
+    }
 
 
 
 }
-
-
-
-
 
