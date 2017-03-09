@@ -595,9 +595,9 @@
 	pos 8,y
 	button "SDKマネージャー",*exec_sdkman
 	pos 8+110,y
-	button "AdMobセットアップ",*exec_admob
-	pos 8+110*2,y
 	button "ライブラリ更新",*and_libcopy
+	;pos 8+110*2,y
+	;button "AdMobセットアップ",*exec_admob
 
 	pos 8,y+34
 	button "Deviceモニター",*exec_devmon
@@ -1004,11 +1004,11 @@
 	}
 
 	if flag_admob {
-		gosub *check_admob
-		if res {
-			dialog "AdMob(GooglePlayServices)が設定されていません"
-			goto *and_fin
-		}
+		;gosub *check_admob
+		;if res {
+		;	dialog "AdMob(GooglePlayServices)が設定されていません"
+		;	goto *and_fin
+		;}
 	}
 
 	if flag_hgimg {
@@ -1032,8 +1032,8 @@
 	if stat : mes "すでにプロジェクトが存在しています" : goto *and_fin	
 
 	gosub *bat_init
-	;tmp+="android create project --target "+and_targetid+" --path ./"+and_name+" --activity "+and_name+" --package "+and_package+"\n"
-	tmp+="android create project --target "+and_targetid+" --path ./"+and_name+" --activity "+and_name+" --package "+and_package+" --gradle -v 1.12\n"
+	tmp+="android create project --target "+and_targetid+" --path ./"+and_name+" --activity "+and_name+" --package "+and_package+"\n"
+	;tmp+="android create project --target "+and_targetid+" --path ./"+and_name+" --activity "+and_name+" --package "+and_package+" --gradle -v 1.12\n"
 	gosub *bat_save
 
 	execcmd "go.bat"
@@ -1115,10 +1115,11 @@ res\\drawable-mdpi\\ic_launcher.png"}
 		s1 = basedir+"src\\tv\\hsp\\HspActivity.java"
 		s2 = dir_exe+"\\android\\hspproj\\src\\tv\\hsp\\HspActivityAdMob.java"
 		bcopy s2,s1
-		s1 = basedir+"libs\\android-support-v4.jar"
-		s2=path_sdk+"\\extras\\android\\support\\v4\\android-support-v4.jar"
+		s1 = basedir+"res\\values\\version.xml"
+		s2 = dir_exe+"\\android\\hspproj\\res\\values\\version.xml"
 		exist s2
 		if strsize>0 : bcopy s2,s1
+		gosub *copy_admob		; jarファイルのコピー
 	}
 
 	s1=basedir+"AndroidManifest.xml"
@@ -1138,10 +1139,12 @@ res\\drawable-mdpi\\ic_launcher.png"}
 	noteadd "                    android:value=\""+and_name+"\" />",12,0
 
 	if flag_admob {
+
 	noteadd "        <meta-data android:name=\"com.google.android.gms.version\"",7,0
 	noteadd "            android:value=\"@integer/google_play_services_version\"/>",8,0
 	noteadd "        <activity android:name=\"com.google.android.gms.ads.AdActivity\"",9,0
-	noteadd "                android:configChanges=\"keyboard|keyboardHidden|orientation|screenLayout|uiMode|screenSize|smallestScreenSize\" />",10,0
+	noteadd "            android:theme=\"@android:style/Theme.Translucent\"",10,0
+	noteadd "            android:configChanges=\"keyboard|keyboardHidden|orientation|screenLayout|uiMode|screenSize|smallestScreenSize\"/>",11,0
 	}
 	notesave s1
 
@@ -1174,15 +1177,15 @@ res\\drawable-mdpi\\ic_launcher.png"}
 	gsel 1
 	if errflag : mes "エラーのため処理を中断しました" : goto *and_fin
 
-	if flag_admob {
-		outbuf=buf
-		gosub *bat_init
-		tmp+="android update project --target "+and_targetid+" --path ./"+and_name+" --library ../google-play-services_lib\n"
-		gosub *bat_save
-		execcmd "go.bat"
-		if stat : goto *and_fin
-		buf=outbuf+buf
-	}
+	;if flag_admob {
+	;	outbuf=buf
+	;	gosub *bat_init
+	;	tmp+="android update project --target "+and_targetid+" --path ./"+and_name+" --library ../google-play-services_lib\n"
+	;	gosub *bat_save
+	;	execcmd "go.bat"
+	;	if stat : goto *and_fin
+	;	buf=outbuf+buf
+	;}
 
 	if flag_arm {
 		xmlfile=path_proj+"\\"+and_name+"\\jni\\Application.mk"
@@ -1920,6 +1923,20 @@ hspproj.xcodeproj\\project.pbxproj"}
 	res=0
 	return
 
+*copy_admob
+	;	AdMob(GooglePlayServices)の必要なファイル(jar)をコピー
+	;
+	s1 = basedir+"libs\\"
+	s2 = dir_exe+"\\android\\hspproj\\libs\\firebase_ads\\"
+	sdim admob_jars,4096
+	sdim admob_file,256
+	dirlist admob_jars,s2+"*.*",1
+	notesel admob_jars
+	repeat notemax
+		noteget admob_file,cnt
+		bcopy s2+admob_file,s1+admob_file
+	loop
+	return
 
 *setup_hsplib
 	;	HSPLibフォルダを設定する
