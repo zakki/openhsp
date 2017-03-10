@@ -293,7 +293,7 @@
 	objsize 160,24
 	pos 8,68
 	chkbox "出力ソースをUTF-8に変換",flag_utf8
-	chkbox "XCode7用プロジェクトを生成",flag_xcode
+	chkbox "XCode8用プロジェクトを生成",flag_xcode
 
 	objsize 130,24
 	pos 20,126
@@ -1269,7 +1269,9 @@ res\\drawable-mdpi\\ic_launcher.png"}
 
 	gosub *bat_init
 	tmp+="CD "+and_name+"\n"
-	tmp+="jarsigner -verbose -sigalg SHA1withRSA -digestalg SHA1 -keystore ..\\"+and_keystore+".keystore bin\\"+and_name+"-release-unsigned.apk "+and_keystore+"\n"
+	tmp+="jarsigner -verbose -keystore ..\\"+and_keystore+".keystore bin\\"+and_name+"-release-unsigned.apk "+and_keystore+"\n"
+
+	tmp+="del bin\\"+and_name+".apk\n"
 	tmp+="zipalign -v 4 bin\\"+and_name+"-release-unsigned.apk bin\\"+and_name+".apk\n"
 	gosub *bat_save
 
