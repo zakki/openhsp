@@ -11,6 +11,9 @@
 #ifdef HSPNDK
 #include "ndkgp/gamehsp.h"
 #endif
+#ifdef HSPIOS
+#include "iosgp/gamehsp.h"
+#endif
 char *hsp3dish_getlog(void);		// for gameplay3d log
 #endif
 
