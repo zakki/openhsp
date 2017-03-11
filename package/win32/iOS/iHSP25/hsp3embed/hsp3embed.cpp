@@ -25,7 +25,11 @@
 
 
 #ifdef HSPDISHGP
+#ifdef HSPIOS
+#include "../hsp3/iosgp/gamehsp.h"
+#else
 #include "../hsp3/ndkgp/gamehsp.h"
+#endif
 #endif
 
 #ifdef HSPDISHGP
