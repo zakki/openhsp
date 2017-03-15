@@ -5,7 +5,7 @@ Hot Soup Processor ver3.5                           HSP : Hot Soup Processor
 
 ・hsp3関連 更新履歴
 
-	2017/03/10 3.5 beta5
+	2017/03/15 3.5 beta5
 
 	[HSP3CNV] 長い関数名の使用時にCコード生成に失敗することがある不具合を修正
 	スクリプトエディタのラベル一覧が途中までしか表示されないことがある不具合を修正
@@ -13,6 +13,7 @@ Hot Soup Processor ver3.5                           HSP : Hot Soup Processor
 	[HGIMG4] ゲームエンジンを更新、いくつかの命令を追加。詳細はhgimg4.txtをご覧ください
 	[HSP3Dish][Linux] Linux版を追加
 	[HSP3Dish][iOS] XCode8用のプロジェクトファイルにアップデート
+	[HSP3Dish][iOS] HGIMG4プロジェクトのビルドをサポート(β対応)
 	[HSP3Dish][iOS] XCode上で実機用にコンパイルした際にリンクエラーが出ることがある不具合を修正
 	[HSP3Dish][android] firebaseベースのAdMobに対応、インタースティシャル広告の表示に対応
 	[HSP3Dish][android] hsp3dhで長いソースのビルド時にエラーが発生する不具合を修正

@@ -26,6 +26,14 @@
 #include "../hsp3/sysreq.h"
 #endif
 
+#define USE_SENSOR
+
+static int hsp_lifecycle = 0;
+
+void setHspLifeCycle( int value ) {
+    hsp_lifecycle = value;
+}
+
 #ifdef HSPDISH
 /*----------------------------------------------------------*/
 //		DevInfo Call
@@ -376,7 +384,7 @@ int getUnicode(int key);
     [self deleteFramebuffer];
 
 #ifdef HSPDISH
-	hsp3eb_bye();
+	//hsp3eb_bye();
 	hgio_term();
 #endif
     
@@ -428,7 +436,8 @@ int getUnicode(int key);
     GL_ASSERT( glGetRenderbufferParameteriv(GL_RENDERBUFFER, GL_RENDERBUFFER_HEIGHT, &framebufferHeight) );
     
     NSLog(@"width: %d, height: %d", framebufferWidth, framebufferHeight);
-    
+
+#if 0
     // If multisampling is enabled in config, create and setup a multisample buffer
     Properties* config = Game::getInstance()->getConfig()->getNamespace("window", true);
     int samples = config ? config->getInt("samples") : 0;
@@ -476,6 +485,7 @@ int getUnicode(int key);
             multisampleFramebuffer = multisampleRenderbuffer = multisampleDepthbuffer = 0;
         }
     }
+#endif
     
     // Create default depth buffer and attach to the frame buffer.
     // Note: If we are using multisample buffers, we can skip depth buffer creation here since we only
@@ -602,9 +612,10 @@ int getUnicode(int key);
     if (game == nil)
     {
 #ifdef HSPDISH
+    InitSysReq();
 	hgio_init( 0, framebufferWidth, framebufferHeight, NULL );
-	hsp3eb_init();
-	hsp3dish_setdevinfo();
+	//hsp3eb_init();
+	//hsp3dish_setdevinfo();
 #endif
         game = Game::getInstance();
         __timeStart = getMachTimeInMilliseconds();
@@ -659,12 +670,17 @@ int getUnicode(int key);
                 // HACK: Skip the first display update after creating buffers and initializing the game.
                 // If we don't do this, the first frame (which includes any drawing during initialization)
                 // does not make it to the display for some reason.
+                hsp3eb_execstart();
+                hsp_lifecycle = 1;
+                hsp3dish_setdevinfo();
                 return;
             }
         }
 
 #ifdef HSPDISH
-        hsp3eb_exectime( hgio_gettick() );
+        if (hsp_lifecycle) {
+            hsp3eb_exectime( hgio_gettick() );
+        }
 #else
         // Bind our framebuffer for rendering.
         // If multisampling is enabled, bind the multisample buffer - otherwise bind the default buffer
@@ -1167,6 +1183,7 @@ int getUnicode(int key);
     [UIApplication sharedApplication].statusBarHidden = YES;
     [[UIDevice currentDevice] beginGeneratingDeviceOrientationNotifications];
 
+#ifdef USE_SENSOR
     motionManager = [[CMMotionManager alloc] init];
     if([motionManager isAccelerometerAvailable] == YES) 
     {
@@ -1178,7 +1195,7 @@ int getUnicode(int key);
         motionManager.gyroUpdateInterval = 1 / 40.0;    // 40Hz
         [motionManager startGyroUpdates];
     }
-    
+#endif
     window = [[UIWindow alloc] initWithFrame:[UIScreen mainScreen].bounds];
     viewController = [[ViewController alloc] init];
     [window setRootViewController:viewController];
@@ -1762,7 +1779,11 @@ void Platform::sleep(long ms)
 
 bool Platform::hasAccelerometer()
 {
+#ifdef USE_SENSOR
     return true;
+#else
+    return false;
+#endif
 }
 
 void Platform::getAccelerometerValues(float* pitch, float* roll)

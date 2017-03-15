@@ -46,6 +46,9 @@ extern "C" {
 	static void logfunc( gameplay::Logger::Level level, const char *msg )
 	{
 		gplog += msg;
+#ifdef HSPIOS
+        Alert( msg );
+#endif
 	}
 }
 
@@ -116,6 +119,38 @@ int hsp3eb_await( int tick )
 
 /*----------------------------------------------------------*/
 
+void hsp3eb_execstart( void )
+{
+    
+    //		Register Type
+    //
+    hsp3typeinit_extcmd( code_gettypeinfo( TYPE_EXTCMD )  );
+    hsp3typeinit_extfunc( code_gettypeinfo( TYPE_EXTSYSVAR ) );
+    
+#ifdef USE_OBAQ
+    hsp3typeinit_dw_extcmd( code_gettypeinfo( -1 ) ); // TYPE_USERDEF
+    //hsp3typeinit_dw_extfunc( code_gettypeinfo( TYPE_USERDEF+1 ) );
+#endif
+    
+    //		Utility setup
+    VarUtilInit();
+    
+#ifdef HSPDEBUG
+    dbginfo = code_getdbg();
+#endif
+    
+    ctx->endcode = 0;
+    ctx->looplev = 0;
+    ctx->sublev = 0;
+    
+    StackReset();
+    
+    //hsp3dish_setdevinfo();
+    game->frame();
+    game->setMultiTouch(true);
+}
+
+
 int hsp3eb_init( void )
 {
 	//		システム関連の初期化
@@ -163,6 +198,7 @@ int hsp3eb_init( void )
 		return 1;
 	}
 //	Alertf( "---Init HSP3\n" );
+
 	platform->enterMessagePump();
 //	Alertf( "---enterMessagePump OK\n" );
 
@@ -177,39 +213,11 @@ int hsp3eb_init( void )
 
 
 	game->frame();
+
 #endif
 
-	//		Register Type
-	//
-//	ctx->msgfunc = hsp3win_msgfunc;
-
-//	hsp3typeinit_dllcmd( code_gettypeinfo( TYPE_DLLFUNC ) );
-//	hsp3typeinit_dllctrl( code_gettypeinfo( TYPE_DLLCTRL ) );
-	hsp3typeinit_extcmd( code_gettypeinfo( TYPE_EXTCMD )  );
-	hsp3typeinit_extfunc( code_gettypeinfo( TYPE_EXTSYSVAR ) );
-
-#ifdef USE_OBAQ
-	hsp3typeinit_dw_extcmd( code_gettypeinfo( -1 ) ); // TYPE_USERDEF
-	//hsp3typeinit_dw_extfunc( code_gettypeinfo( TYPE_USERDEF+1 ) );
-#endif
-
-	//		Utility setup
-	VarUtilInit();
-
-	//gameplay::Logger::log(gameplay::Logger::LEVEL_INFO, "HGIMG4 %s initalized : %s\n", hspver, devinfo->devname);
-
-
-#ifdef HSPDEBUG
-	dbginfo = code_getdbg();
-#endif
-
-	ctx->endcode = 0;
-	ctx->looplev = 0;
-	ctx->sublev = 0;
-	
-	StackReset();
-	
-	return 0;
+    hsp3eb_execstart();
+    return 0;
 }
 
 
@@ -306,6 +314,7 @@ int hsp3eb_exec( void )
 			hsp3eb_error();
 		}
 	}
+
 	//Alertf( "RUN=%d",ctx->runmode );
 	return ctx->runmode;
 }
