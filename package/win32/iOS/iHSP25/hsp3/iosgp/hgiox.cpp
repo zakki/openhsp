@@ -291,6 +291,19 @@ int hgio_render_start( void )
 		return -1;
 	}
 
+#ifdef HSPIOS
+    if ( game->hasAccelerometer()) {
+        float accx,accy,accz,gyx,gyy,gyz;
+        game->getSensorValues(&accx, &accy, &accz, &gyx, &gyy, &gyz);
+        hgio_setinfo( GINFO_EXINFO_ACCEL_X, accx );
+        hgio_setinfo( GINFO_EXINFO_ACCEL_Y, accy );
+        hgio_setinfo( GINFO_EXINFO_ACCEL_Z, accz );
+        hgio_setinfo( GINFO_EXINFO_GYRO_X, gyx );
+        hgio_setinfo( GINFO_EXINFO_GYRO_Y, gyy );
+        hgio_setinfo( GINFO_EXINFO_GYRO_Z, gyz );
+    }
+#endif
+    
 	//シーンレンダー開始
 	if (game) {
 		if (gselbm == mainbm) {
@@ -414,7 +427,7 @@ int hgio_stick( int actsw )
 	//
 	int ckey = 0;
 
-#ifdef HSPNDK
+#if defined(HSPNDK)||defined(HSPIOS)
 	if ( mouse_btn ) ckey|=256;	// mouse_l
 #endif
 
