@@ -72,6 +72,7 @@
 	flag_arm=0
 	flag_hgimg=0
 	flag_sensor=0
+	flag_xhgimg=0
 
 	get_hsp_appdata_path app_dir
 
@@ -97,6 +98,7 @@
 		flag_arm = 0+cfg_getvar("flag_arm")
 		flag_hgimg = 0+cfg_getvar("flag_hgimg")
 		flag_sensor = 0+cfg_getvar("flag_sensor")
+		flag_xhgimg = 0+cfg_getvar("flag_xhgimg")
 		ios_org=cfg_getvar("ios_org")
 		ios_ident=cfg_getvar("ios_ident")
 	}
@@ -294,23 +296,26 @@
 	pos 8,68
 	chkbox "出力ソースをUTF-8に変換",flag_utf8
 	chkbox "XCode8用プロジェクトを生成",flag_xcode
+	pos 32,68+24+24
+	chkbox "HGIMG4を使用する(β)",flag_xhgimg
 
+	y=160
 	objsize 130,24
-	pos 20,126
+	pos 20,y
 	mes "プロジェクト名:"
-	pos 90,122
+	pos 90,y-4
 	input ios_proj
 
 	objsize 160,24
-	pos 240,126
+	pos 240,y
 	mes "Organization:"
-	pos 310,122
+	pos 310,y-4
 	input ios_org
 
 	objsize 220,24
-	pos 20,154
+	pos 20,y+30
 	mes "Identifier:"
-	pos 90,150
+	pos 90,y+30-4
 	input ios_ident
 
 	pos 312,68
@@ -596,7 +601,9 @@
 	button "SDKマネージャー",*exec_sdkman
 	pos 8+110,y
 	button "ライブラリ更新",*and_libcopy
-	;pos 8+110*2,y
+
+	pos 8+110*2,y+6
+	mes "ライブラリバージョン:"+AND_LIBVER
 	;button "AdMobセットアップ",*exec_admob
 
 	pos 8,y+34
@@ -688,6 +695,7 @@
 	cfg_seti "flag_arm",flag_arm
 	cfg_seti "flag_hgimg",flag_hgimg
 	cfg_seti "flag_sensor",flag_sensor
+	cfg_seti "flag_xhgimg",flag_xhgimg
 
 	cfg_sets "ios_org",ios_org
 	cfg_sets "ios_ident",ios_ident
@@ -846,6 +854,7 @@
 	tmp="@ECHO OFF\n"
 	tmp+="SET JAVA_HOME="+path_java+"\n"
 	tmp+="SET NDK_ROOT="+path_ndk+"\n"
+	tmp+="SET ANT_HOME="+path_ant+"\n"
 	tmp+="SET PATH="+path_ant+"\\bin;"+path_sdk+"\\tools;"+path_sdk+"\\platform-tools;"+path_ndk+";"+path_java+"\\bin;"
 	tmp+="%PATH%\n"
 	s1="C:":if peek(path_proj,1)=':' {
@@ -1534,8 +1543,6 @@ hspproj.xcodeproj\\project.xcworkspace\\xcuserdata"}
 
 	prj_flist={"hspproj\\en.lproj\\InfoPlist.strings
 hspproj\\ja.lproj\\InfoPlist.strings
-hspproj\\AppDelegate.h
-hspproj\\AppDelegate.m
 hspproj\\icon57.png
 hspproj\\icon58.png
 hspproj\\icon120.png
@@ -1544,9 +1551,16 @@ hspproj\\Default@2x.png
 hspproj\\Default-568h@2x.png
 hspproj\\hspproj-Info.plist
 hspproj\\hspproj-Prefix.pch
-hspproj\\main.m
 hspproj.xcodeproj\\project.xcworkspace\\contents.xcworkspacedata
 hspproj.xcodeproj\\project.pbxproj"}
+
+	prj_dlbase="\\ios\\hspproj_gp\\"
+	if flag_xhgimg=0 {
+		prj_flist+="\nhspproj\\AppDelegate.h"
+		prj_flist+="\nhspproj\\AppDelegate.m"
+		prj_flist+="\nhspproj\\main.m"
+		prj_dlbase="\\ios\\hspproj\\"
+	}
 
 	buf+="XCodeプロジェクトの生成中...\n"
 
@@ -1581,7 +1595,7 @@ hspproj.xcodeproj\\project.pbxproj"}
 	notesel prj_flist
 	repeat notemax
 		noteget s1,cnt
-		s2 = dir_exe+"\\ios\\hspproj\\"+s1
+		s2 = dir_exe+prj_dlbase+s1
 		buf+="Copying "+s1+"...\n"
 		exist s2
 		if strsize<=0 : buf+="ファイル["+s1+"]がありません。\n" : errflag++ : break
@@ -1833,11 +1847,17 @@ hspproj.xcodeproj\\project.pbxproj"}
 	;	SDKマネージャー起動
 	s1=path_sdk+"\\SDK Manager.exe"
 	exist s1
+	if strsize>0 {
+		exec s1
+		stop
+	}
+	s1=path_sdk+"\\tools\\android.bat"
+	exist s1
 	if strsize<=0 {
 		dialog "SDKフォルダが正しく設定されていません。"
 		stop
 	}
-	exec s1
+	exec s1+" sdk"
 	stop
 
 *exec_devmon
@@ -1855,11 +1875,17 @@ hspproj.xcodeproj\\project.pbxproj"}
 	;	AVDマネージャー起動
 	s1=path_sdk+"\\AVD Manager.exe"
 	exist s1
+	if strsize>0 {
+		exec s1
+		stop
+	}
+	s1=path_sdk+"\\tools\\android.bat"
+	exist s1
 	if strsize<=0 {
 		dialog "SDKフォルダが正しく設定されていません。"
 		stop
 	}
-	exec s1
+	exec s1+" avd"
 	stop
 
 *exec_admob

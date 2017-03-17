@@ -14,7 +14,7 @@
 <body>
 	<div id="CONTAINER">
 	<!-- ヘッダー -->
-	<p id="COPY">HSP : HSP3Dish / onion software 2016(c)</p>
+	<p id="COPY">HSP : HSP3Dish / onion software 2017(c)</p>
 	<img src="hsp3dish.jpg" width="640" height="200" alt="タイトル">
 	<h1>HSP3Dish iOS版プログラミングガイド</h1>
 
@@ -37,8 +37,8 @@
 		<li><a href="#DEVCONTROL">デバイスコントロールについて</a></li>
 		<li><a href="#SIGNING">エラー時の対応について</a></li>
 		<li><a href="#RELEASE">AppStoreへの登録について</a></li>
-		<li><a href="#IAD">iAdの対応について</a></li>
 		<li><a href="#ADMOB">AdMobの対応について</a></li>
+		<li><a href="#HGIMG4">HGIMG4プロジェクトについて</a></li>
 		<li><a href="#NOTICE">iOS版の注意事項、制限</a></li>
 		<li><a href="#NEWVER">iOS版の更新予定</a></li>
 	</ol>
@@ -54,7 +54,7 @@
 
 	<h2 id="PREPARE">環境の準備</h2>
 	<p>
-	現状ではiPhone/iPadの実機上で動作させるためには、MacOSX環境及び開発ツールXcode6.2以降またはXcode7以降、iOS Developer Program(有償)が必要になります。<br>
+	現状ではiPhone/iPadの実機上で動作させるためには、MacOSX環境及び開発ツールXcode8以降が、ストアでの配布にはiOS Developer Program(有償)が必要になります。<br>
 	ここまでに必要なプロセスは、通常のiPhone/iPadの開発と変わりません。詳しくは、iOS Developer Programのホームページなど各種資料を参照してください。
 	</p>
 	<pre>
@@ -65,7 +65,7 @@
 	このドキュメントでは、Xcodeが実際に動作し、iPhone/iPadの実機にプログラムが転送できることを前提として、HSP3Dishの導入方法を解説します。
 	それまでの準備については、既存のマニュアル等をご覧ください。
 	<br>
-	使用するSDKのバージョンは、iOS8以降、動作環境はiOS5.1以降を想定しています。
+	使用するSDKのバージョンは、iOS10以降、動作環境はiOS5.1以降を想定しています。
 	</p>
 
 	<h2 id="SAMPLE">サンプルプロジェクト</h2>
@@ -76,13 +76,16 @@
 	iOSフォルダには、HSP3Dishランタイム及びxcode用のサンプルプロジェクトが含まれています。
 
 	<ul>
-	<li>iHSP23フォルダ - HSP3Dishランタイム本体</li>
-	<li>hspprojフォルダ - HSP3Dishサンプル(hsplogo.hsp)</li>
+	<li>iHSP25フォルダ - HSP3Dishランタイム本体</li>
+	<li>gameplayフォルダ - HGIMG4用ランタイム</li>
+	<li>external-depsフォルダ - HGIMG4用ランタイム</li>
+	<li>hspprojフォルダ - HSP3Dishサンプル</li>
+	<li>hspproj_gpフォルダ - HGIMG4サンプル</li>
 	</ul>
 
 	<br>
 	すべてのフォルダをOSX上にコピーした後、プロジェクトファイル(.xcodeproj)を開いてビルドすることができます。
-	(実際にiOSデバイス上で動作させるためには、iOS Developer Programの登録が必要になります)
+	(HSP3Dish Helperを使用して、独自のプロジェクトを作成することも可能です)
 	<br clear="all">
 	</p>
 
@@ -103,7 +106,8 @@
 	</ul>
 	<p>
 	上記の指定ができたら、「変換」ボタンを押してください。
-	この時、「XCode用プロジェクトを生成」「出力ソースをUTF-8に変換」のチェックをONにしておくのを忘れないでください。
+	この時、「XCode8用プロジェクトを生成」「出力ソースをUTF-8に変換」のチェックをONにしておくのを忘れないでください。
+	(また、HGIMG4ランタイムを使用している場合は、「HGIMG4を使用する」にもチェックを入れてください。)
 	</p>
 	<p>
 	<img src="hsp3dish/s_and1.jpg"><br>
@@ -118,11 +122,11 @@
 
 	<p>
 	実際にiOS上で動作させる場合には、XCode上でプロジェクトをコンパイルする必要があります。<br>
-	<a href="#MAKECPP">スクリプトの準備</a>で出力した、XCode用プロジェクトフォルダと、「iHSP23」フォルダ(HSPアーカイブ内のiOSフォルダに同梱されています。)をMacOSX上にコピーしてください。<br>
+	<a href="#MAKECPP">スクリプトの準備</a>で出力した、XCode用プロジェクトフォルダと、「iHSP25」フォルダ(HSPアーカイブ内のiOSフォルダに同梱されています。)をMacOSX上にコピーしてください。<br>
 	※Xcode5を使用して手動でプロジェクトを作成する場合は<a href="hsp3dish_xcode5.htm">こちらを参照してください</a>。
 	</p>
 	<p>
-	必ず作成されたプロジェクトのフォルダと同じ階層に、「iHSP23」フォルダを配置してください。
+	必ず作成されたプロジェクトのフォルダと同じ階層に、「iHSP25」フォルダを配置してください。
 	</p>
 	<p>
 	<img src="hsp3dish/s_folder.jpg"><br>
@@ -414,7 +418,6 @@
 	-------------------------------------------
 	vibrate			バイブ(振動)動作
 	sound			システム音再生(パラメーター1)
-	iAd			iAdの表示
 	</pre>
 	<p>
 	たとえば、
@@ -486,63 +489,40 @@
 
 	<h2 id="IAD">iAdの対応について</h2>
 	<p>
-	アプリ内に広告を表示するiAdのシステムに対応しています。<br>
-	iAdを有効にする場合は、
-	</p>
-	<pre>
-		devcontrol "iAd"
-	</pre>
+	HSP3.4でサポートされていたiAdのシステムは、サービスが終了致しました。<br>
 	<p>
-	の記述を追加してください。iAdが有効になった後は、画面下にiAdが配信する広告表示が行なわれます。<br>
-	iAdによる広告収益を得るためには、iTunes connect上で適切な設定を行なう必要があります。
-	詳しくは、<a href="https://developer.apple.com/jp/support/ios/iad-network.html" target="_blank">デベロッパーサポートのiAd項目</a>を参照してください。
 	</p>
 
 	<h2 id="ADMOB">AdMobの対応について</h2>
 	<p>
-	アプリ内に広告を表示するAdMobのシステムに仮対応しています。<br>
-	標準的なHSP3Dishランタイム(iHSP23フォルダ)と合わせて、AdMob対応のランタイム(iHSP23AdMobフォルダ)を
-	同梱しています。AdMobを使用する際には、iHSP23ではなくiHSP23AdMobフォルダをプロジェクトに追加してください。<br>
-	また、AppDelegate.m内の#import部分のコードを、以下のように修正する必要があります。
+	アプリ内に広告を表示するAdMobのシステムは、Google Firebaseと統合されて新しいシステムになっています。
+	今後のバージョンで、新しいバージョンのAdMob対応を行なっていく予定です。今しばらくお待ちください。
+	</p>
+
+	<h2 id="HGIMG4">HGIMG4プロジェクトについて</h2>
+	<p>
+	HSP3.5β5からHGIMG4スクリプトのビルドに仮対応しています。<br>
+	現在はβ対応となっていて、様々な機能が制限されていますのでご了承の上、ご使用ください。
+	HGIMG4プロジェクトは、アプリのサイズが増加するほか、端末の環境や機種によっては動作速度が低下する可能性があります。(今後、幅広い端末でのサポートを目指していきますので、今しばらくお待ちください)<br>
+	HGIMG4では、起動時に必ずresフォルダ及びシェーダー等のファイルが必要になります。
+	HSPの「sample/hgimg4」フォルダにある「resフォルダ」からXCode側のHGIMG4プロジェクトフォルダの
+	「Resouces」以下にコピーしてください。(「Resouces/res/…」というフォルダ構成になります)<br>
+	最低限必要なファイルは以下になります。
 	</p>
 	<pre>
-	    #import "../../iHSP23AdMob/Classes/HspView.h"
+		res/font.gpb
+		res/shaders以下のファイル
 	</pre>
 	<p>
-	さらに、以下のフレームワークをプロジェクトに追加してください。
+	以下の機能については、未対応なので注意してください。将来のバージョンで対応する予定です。
 	</p>
 	<ul>
-	<li>AdSupport.framework</li>
-	<li>StoreKit.framework</li>
-	<li>MessageUI.framework</li>
-	<li>SystemConfiguration.framework</li>
-	<li>CoreGraphics.framework</li>
-	<li>CoreAudio.framework</li>
-	<li>UIKit.framework</li>
-	<li>Foundation.framework</li>
+	<li>画面のサイズ指定、スケーリングに対応していません(hgio_view/hgio_scale等のマニュアル設定項目も機能しません)</li><br>
+	<li>センサーの値は常に取得されます</li><br>
+	<li>常にマルチタッチ情報を受け取ります</li><br>
+	<li>AdMobの表示に非対応です</li><br>
+	<li>iPhoneシミュレーター上で動作させるためには、Build SettingsでLIBRARY_SEARCH_PATHSに「../external-deps/lib/ios/x86/」を指定する必要があります</li><br>
 	</ul>
-	<p>
-	最後に、ユーザーが個別に取得するAdMobパブリッシャーIDを指定します。
-	「iHSP23admob/Classes/HspViewController.mm」ファイル内のコードを直接修正してください。
-	</p>
-	<pre>
-		// 広告の「ユニット ID」を指定する。これは AdMob パブリッシャーID です。
-		adMobView.adUnitID = @"a??????????????";
-	</pre>
-
-	<p>
-	以上でAdMobに対応したアプリの作成が可能になります。<br>
-	実際にAdMobを有効にする場合は、スクリプト内のdevcontrol命令を記述してください。(これは、android版と共通の記述となります)
-	</p>
-	<pre>
-		devcontrol "AdMob"
-	</pre>
-	<p>
-	AdMobが有効になった後は、画面下にAdMobが配信する広告表示が行なわれます。<br>
-	AdMobによる広告収益を得るためには、web上のAdMobページで適切な設定を行なう必要があります。
-	詳しくは、<a href="http://www.google.co.jp/ads/admob/" target="_blank">AdMobオフィシャルサイト</a>を参照してください。
-	AdMobのメリットの１つは、androidと共通でIDや収益の管理を行なうことができる点になります。
-	</p>
 
 	<h2 id="NOTICE">iOS版の注意事項、制限</h2>
 	<ul>
@@ -568,7 +548,7 @@
 	<li>画像サイズについて</li>
 	<p>
 	celload、picload命令などで読み込まれる画像の縦・横サイズが、2048を越えるものについては、正しく扱えない機種もあるので、推奨されません。
-	縦・横のサイズが2^nのサイズ、つまり1,2,4,8,16,32,64,128,256,512,1024でない画像を
+	縦・横のサイズが2^nのサイズ、つまり1,2,4,8,16,32,64,128,256,512,1024,2048でない画像を
 	読み込む時には、内部で変換を行なうため多少のオーバーヘッドが発生します。
 	(通常はそれほど気にする必要はありません。大量の画像を読み込む場合にCPUリソースが余計に必要となります)
 	</p>
@@ -592,7 +572,6 @@
 	<p>
 	iOS版では、end命令によるアプリ終了は行なわれません(stop命令と同様の処理になります)。
 	iOSのアプリ製作ガイドラインでは、プログラム自身による終了を行なわないよう求めています。<br>
-	<a href="https://developer.apple.com/library/ios/#qa/qa2008/qa1561.html" target="_blank">https://developer.apple.com/library/ios/#qa/qa2008/qa1561.html</a><br>
 	Windowsやandroidとは異なり、iOS上では、アプリを終了するという動作のないように作ることが
 	求められるので、注意をしてください。
 	</p>
@@ -604,9 +583,9 @@
 	</p>
 	<ul>
 	<li>各種システム情報取得</li>
+	<li>AdMobのサポート</li>
 	<li>http接続、ブラウザの呼び出しサポート</li>
-	<li>GAMECENTER、Google Play Game Servicesなど各種ランキングサービスの設定</li>
-	<li>HGIMG4のサポート</li>
+	<li>GAMECENTER、Google Play Servicesなど各種サービスの設定</li>
 	</ul>
 	<p>
 	バージョンアップの告知は、HSPオフィシャルサイトHSPTV!にて行なわれますので、随時ご確認ください。
