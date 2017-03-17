@@ -145,9 +145,10 @@ void hsp3eb_execstart( void )
     
     StackReset();
     
-    //hsp3dish_setdevinfo();
+#ifdef HSPDISHGP
     game->frame();
     game->setMultiTouch(true);
+#endif
 }
 
 
@@ -223,6 +224,18 @@ int hsp3eb_init( void )
 
 void hsp3eb_bye( void )
 {
+	//		HSP関連の解放
+	//
+	if ( hsp != NULL ) { delete hsp; hsp = NULL; }
+
+#ifdef HSPDEBUG
+	//		デバッグウインドゥの解放
+	//
+	if ( h_dbgwin != NULL ) { FreeLibrary( h_dbgwin ); h_dbgwin = NULL; }
+#endif
+
+	Alertf( "---Term HSP3\n" );
+
 #ifdef HSPDISHGP
 	//		gameplay関連の解放
 	//
@@ -235,21 +248,9 @@ void hsp3eb_bye( void )
 	}
 #endif
 
-	//		HSP関連の解放
-	//
-	if ( hsp != NULL ) { delete hsp; hsp = NULL; }
-
-#ifdef HSPDEBUG
-	//		デバッグウインドゥの解放
-	//
-	if ( h_dbgwin != NULL ) { FreeLibrary( h_dbgwin ); h_dbgwin = NULL; }
-#endif
-
-
 	//		システム関連の解放
 	//
 //	DllManager().free_all_library();
-	Alertf( "---Term HSP3\n" );
 
 }
 

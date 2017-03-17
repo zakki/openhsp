@@ -14,7 +14,7 @@
 <body>
 	<div id="CONTAINER">
 	<!-- ヘッダー -->
-	<p id="COPY">HSP : HSP3Dish / onion software 2016(c)</p>
+	<p id="COPY">HSP : HSP3Dish / onion software 2017(c)</p>
 	<img src="hsp3dish.jpg" width="640" height="200" alt="タイトル">
 	<h1>HSP3Dish android(NDK)版プログラミングガイド</h1>
 
@@ -57,34 +57,40 @@
 	<br>
 	HSP3Dishでのビルドを支援するための、HSP3Dish Helperツールが同梱されています。
 	これにより、比較的スムーズにandroid向けにビルドを行なうことが可能になります。
-	(尚、<a href="hsp3dish_eclipse.html">統合開発環境Eclipse</a>上でお使い頂くことも可能ですが、
-	手順が多いためHSP3Dish Helperの利用を推奨しています。)
+	<a href="hsp3dish_eclipse.html">統合開発環境Eclipse</a>上でお使い頂くことも可能ですが、手順が多いためHSP3Dish Helperの利用を推奨しています。
 	</p>
 
-	<h2 id="PREPARE">環境の準備</h2>
 	<p>
 	androidの実機上で動作させるためには、以下が必要となります。
 	<ul>
-	<li>android開発環境(SDK) → <a href="http://developer.android.com/sdk/index.html" target="_blank">[ダウンロードサイト]</a>
+	<li>android開発環境(SDK) → <a href="https://developer.android.com/studio/index.html" target="_blank">[ダウンロードサイト]</a>
 	<ul><p>
-	「Get just the command line tools」からandroid-sdk_???-windows.zip(No installer)をダウンロードします。
-	zipアーカイブまたはインストーラー版を任意のフォルダにインストールしてください。推奨フォルダは、「c:\android\android-sdk～」です。
-	(インストールするSDKは基本的に32bit版を推奨します。64bit版での動作は確認していません。)
+	<a href="https://developer.android.com/studio/index.html#downloads" target="_blank">Download Options(ダウンロードオプション)</a>から、コマンドライン ツールのみを入手する必要があります。
+	ただし、<b>SDK Tools, Revision 25.3.0 (2017年3月版)以降は、ビルドに必要なコマンドラインツール(android command)が同梱されなくなりました。</b>それ以前のバージョンで最新のものを以下のURLからダウンロードできますので、そちらをご使用ください。
+	(将来のバージョンでは、コマンドラインツールではなくAndroid Studioを併用したビルドに切り替えて行く予定です。)
+	<ul><p>
+	<a href="https://dl.google.com/android/repository/android-sdk_r25.2.5-windows.zip" target="_blank">Android SDK Tools, Revision 25.2.5 (January 2017) [ダウンロードリンク]</a>
+	</p></ul>
+	zipアーカイブの内容を任意のフォルダにインストールしてください。推奨フォルダは、「c:\android\android-sdk」です。<br>
+	(SDK Toolsからは「tools」フォルダが取り出せるはずです。「c:\android\android-sdk\tools」のような形になるようにしてください)
+
 	</p></ul>
 	<li>JDK(Java Development Kit) → <a href="http://www.oracle.com/technetwork/java/index.html" target="_blank">[ダウンロードサイト]</a>
 	<ul><p>
-	JDK (Java Development Kit)をインストールしてください。
+	JDK (Java Development Kit)をインストールしてください。JRE8+JDK8を推奨します。<br>
+	※JDK7(ver1.7)は、apkファイルの署名が正しく行なわれないため推奨されません。
+	※64bit環境の方は64bit版をご使用ください。SDK Toolsが32bit環境用の場合のみ、32bit版を推奨します。
 	</p></ul>
 	<li>Android NDK（Native Development Kit）開発環境 → <a href="https://developer.android.com/ndk/downloads/index.html" target="_blank">[ダウンロードサイト]</a>
 	<ul><p>
-	最新版のWindows版zipアーカイブ(32bit版)を任意のフォルダに解凍してください。推奨フォルダは、「c:\android\android-ndk～」です。
-	(動作確認済みのバージョンは、r10dです。r10よりも古いバージョンには対応していません)→ <a href="http://dl.google.com/android/ndk/android-ndk-r10d-windows-x86.exe" target="_blank">[r10d(32bit)版のダウンロードリンクはこちら。]</a><br>
-	(r11、r12のバージョンはWindows上でのビルドに不具合があるため現時点では対応していません)
+	最新版のWindows版zipアーカイブを任意のフォルダに解凍してください。推奨フォルダは、「c:\android\android-ndk～」です。<br>	(動作確認済みのバージョンは、r12b,r14です。r10よりも古いバージョンには対応していません)<br>
+
+	※64bit環境の方は64bit版をご使用ください。SDK Toolsが32bit環境用の場合のみ、32bit版を推奨します。
 	</p></ul>
 	<li>Apache Ant(開発補助ツール) → <a href="http://ant.apache.org/" target="_blank">[ダウンロードサイト]</a>
 	<ul><p>
 	最新版のzipアーカイブを任意のフォルダに解凍してください。推奨フォルダは、「c:\android\apache-ant～」です。<br>
-	推奨するantのバージョンは、1.8.4または、1.9.4です。
+	推奨するantのバージョンは、1.9.4以降です。
 	</p></ul>
 	</ul>
 	</p>
@@ -114,18 +120,17 @@
 
 	<h2 id="SDKSETUP">Platform APIインストール</h2>
 	<p>
-	ビルドに必要なPlatform APIのインストールを行ないます。
-	android開発環境(SDK)フォルダ内にある、「SDK Manager.exe」を実行してください。
-	(SDKマネージャーは、HSP3Dish Helperの、「オプション」タブの「SDKマネージャー」ボタンからでも起動できます)
+	最初に、ビルドに必要なPlatform APIのインストールを行ってください。
+	HSP3Dish Helper(hsp3dh.exe)を起動して、「オプション」タブの「SDKマネージャー」ボタンから起動することができます。
 	</p>
-	<ul><img src="hsp3dish/s_and3.jpg"><br></ul>
+	<ul><img src="hsp3dish/s_and_sdkman.jpg"><br></ul>
 	<br>
 	<p>
 	このツールにより、必要なAPIをインストールすることができます。(ネットに接続されている必要があります)
 	<br>
-	「Android 5.0.1 (API 21)」のような形で、それぞれのバージョンに対応したAPIのチェックボックスが表示されます。
-	この中で、「Tools」「Android 5.0.1 (API 21)」はチェックを入れて必ずインストールするようにしてください。
-	それ以外のバージョンは必要に応じてインストールして頂いて構いません。
+	「Android 4.4.2 (API 19)」のような形で、それぞれのバージョンに対応したAPIのチェックボックスが表示されます。
+	この中で、「Android SDK Tools」「Android SDK Platform-tools」「Android SDK Build-tools」(最新のRev.)「Android 5.0.1 (API 21)」はチェックを入れて必ずインストールするようにしてください。
+	 (「Android 5.0.1 (API 21)」はプログラムで使用できるAPIのレベルを示すもので、インストールする端末のバージョンとは関係ありません。通常は、「Android 5.0.1 (API 21)」をインストールすればすべての端末で動作させることができます。)
 	<br>
 	「Install packages...」のボタンを押すことで、ダウンロードとインストールが行なわれます。
 	インストールされた項目は、「Installed」の表示が付加されます。
@@ -153,12 +158,11 @@
 	プロジェクトのタイトル名となります。スペースを含まない英文字のみで指定してください。
 	</p>
 	<li>ID</li><br><p>
-	ビルドのターゲットIDを設定します。ターゲットIDは、SDKのAPIバージョンを指定するための番号になります。デフォルトで「"android-21"」(5.0.1)が指定されています。
+	ビルドのターゲットIDを設定します。ターゲットIDは、SDKのAPIバージョンを指定するための番号になります。デフォルトで「"android-21"」(5.0.1)が指定されています。通常は、変更する必要はありません。特に理由がない限りは、デフォルトのまま使用してください。
+<br>
+他のターゲットIDが必要な場合は、「ID...」ボタンを含めず押して表示される一欄の中からIDを選んで入力してください。
 	</p>
-	<ul><img src="hsp3dish/s_and8.jpg"><br></ul>
-	<p>
-	通常は、変更する必要はありません。他のターゲットIDが必要な場合は、「ID...」ボタンを含めず押して表示される一欄の中からIDを選んで入力してください。
-	</p>
+	<ul><p><img src="hsp3dish/s_and8.jpg"></p></ul>
 	<li>パッケージ名</li><br><p>
 	アプリを識別するための情報となります。パッケージ名には、他のパッケージ名と重複しない名称が求められます。
 	通常は、ドメインをトップレベルドメインから逆方法に並べたものを使うことが推奨されています。たとえば、「net.onionsoft.testapp」のように階層的に指定します。
@@ -178,6 +182,10 @@
 	<li>HGIMG4を使用する</li><br><p>
 	HGIMG4向けに作られたスクリプトを使用する場合にチェックを入れてください。
 	HGIMG4のプロジェクト作成については、「HGIMG4プロジェクトについて」の項目を参照してください。
+	</p>
+	<li>センサーを使用する</li><br><p>
+	デバイスの加速度、ジャイロセンサーの読み取りを有効にします。
+	センサーを使用しない場合は、チェックを外しておくことでバッテリーの消費などを抑えることができます。
 	</p>
 	</ul>
 
@@ -199,6 +207,9 @@
 	HGIMG4のビルドに必要な各種ライブラリのソースが含まれています。
 	</p>
 	</ul>
+	<p>
+	HSP3Dish Helper(hsp3dh.exe)を起動して、「オプション」タブの「ライブラリ更新」ボタンを押すことで、プロジェクトフォルダの内容が最新に上書きされます。HSPのアップデートや差し替えを行なった場合に行なっておいてください。
+	</p>
 	<p>
 	hsplib35～フォルダ内のソースには、各プロジェクトから共有されるHSP3Dishランタイムのソースが含まれます。
 	ユーザーが独自にソースを変更することもできますが、HSP3Dish helperのアップデート等でソースが上書き更新されてしまうことがありますので、注意してください。
@@ -226,7 +237,8 @@
 	(HSPスクリプトが複数ある場合は、「main.hsp」という名前のファイルが優先されます。)
 	「hsp」フォルダを使わずに、直接スクリプトファイルを指定する場合は、ソーススクリプト項目の「参照」ボタンを押して、ファイルを選択することができます。<br>
 	いずれの場合も、HSPスクリプト(.hsp)は、必ずHSP3Dish用に記述されたスクリプトでなければなりません。
-	対象となるスクリプトが存在しない場合は、ソーススクリプトの変換は行なわれません。
+	対象となるスクリプトが存在しない場合は、ソーススクリプトの変換は行なわれません。<br>
+	フォルダに「hsp3dish.ini」ファイルが存在する場合は、画面サイズやスケーリングなどの設定が反映されます。詳しくは、「hsp3dish.ini設定ファイルについて」の項を参照してください。
 	</p>
 	<li>データファイル(dpm)</li><br><p>
 	スクリプトから参照されるデータが格納されているdpmファイルを指定します。dpmファイルは、HSPで使用している形式で、複数のファイルが1つのdpmファイルにパックされています。(「作成...」ボタンを押すことで、指定したフォルダ内にあるすべてのファイルをdata.dpmというファイルにパックして、そのファイルを指定することができます。)
@@ -261,14 +273,17 @@
 
 	<h2 id="RUNPROJ">実機への転送と実行</h2>
 	<p>
-	プロジェクトのビルドが完了したら、androidの実機に転送して確認することが可能です。
-	(エミュレータ上での実行は現在まだサポートされていません)
+	プロジェクトのビルドが完了したら、androidの実機またはシミュレータに転送して確認することが可能です。
+	(シミュレータ上での実行する場合は、HSP3Dish helperの「オプション」タブから「AVDマネージャー」を起動して、シミュレータを設定・起動してご使用ください)
 	<br>
 	androidの実機をUSBで接続し、OSから認識されている状態で「転送」ボタンを押すことで、ビルド済みのapkファイルを転送(インストール)します。
 	後はアプリケーション一覧から、転送したアプリの実行を行なってください。
 	<br>
 	android実機の接続設定については、デバイスの機種ごとに異なります。以下のサイトなどを参考にしてみてください。
 	</p><ul>
+
+
+	<li><a href="http://www.atmarkit.co.jp/ait/articles/1602/19/news044.html" target="_blank">「開発者向けオプション」をオンにする [@IT]</a>
 	<li><a href="http://www.adakoda.com/android/000242.html" target="_blank">実機でデバッグするには [逆引きAndroid入門]</a>
 	</ul><p>
 	実機への転送ができない場合でも、ビルドで生成されたapkファイルをネットやUSBメモリを経由して転送してインストールを行ない実行の確認をすることも可能です。
@@ -279,13 +294,13 @@
 	<h2 id="DATAFILE">データファイルの準備</h2>
 	<p>
 	スクリプトから参照されるデータファイルは2通りの方法で用意することができます。
-	1つは、「データファイル(dpm)」の項目で設定されているデータフォルダ(data.dpmを生成します)にファイルをコピーして使用する方法。基本的には、こちらの方法を使用してください。
-	ただし、サウンドファイル(wav,mp3など)は認識されないので注意してください。<br>
-	もう1つの方法は、プロジェクトディレクトリ内のassetsフォルダにファイルをコピーするというものです。サウンドのファイルは必ず、assetsフォルダに入れるようにしてください。
-	assetsフォルダには、画像ファイルを入れることも可能ですが、assetsフォルダのリソースのサイズ・個数に制限があるため、1MBを越える大きなファイルを多数使用する場合は、data.dpmのデータフォルダを使用してください。<br>
-	また、テキストファイルなどその他のデータファイルは必ず、data.dpmのデータフォルダを使用するようにしてください。
-	<br>
-	ただし、data.dpmによるファイルパックからの読み出しには、HSPのpackfile仕様と同様の制限(ファイル名の長さ12文字以内)がありますので注意してください。
+	1つは、プロジェクトディレクトリ内のassetsフォルダにファイルをコピーするというものです。基本的には、こちらの方法を使用してください。
+	assetsフォルダには、画像ファイルを始めとして読み込みに使用するファイルをすべて入れておくことができます。<br>
+	もう1つの方法は、「データファイル(dpm)」の項目で設定されているデータフォルダ(data.dpmを生成します)にファイルをコピーして使用する方法です。
+	人に見られたくないデータや暗号化を使用したい人は、data.dpmのデータフォルダを使用するようにしてください。
+	ただし、サウンドファイル(wav,mp3など)は認識されないので注意してください。
+	また、data.dpmによるファイルパックからの読み出しには、HSPのpackfile仕様と同様の制限(ファイル名の長さ12文字以内)がありますので注意してください。
+	サウンドのファイルは必ず、assetsフォルダに入れるようにしてください。<br>
 	</p>
 
 	<h2 id="SYSINFO">システム情報の取得</h2>
@@ -476,10 +491,9 @@
 
 	<h2 id="HGIMG4">HGIMG4プロジェクトについて</h2>
 	<p>
-	HSP3.5β3からHGIMG4スクリプトのビルドに対応しています。<br>
-	現在はβ対応となっていて、様々な機能が制限されていますのでご了承の上、ご使用ください。
+	HSP3.5β3からHGIMG4スクリプトのビルドに対応しています。基本的には、Windows版と同様の仕様で使用できます。<br>
 	HGIMG4プロジェクトは、初回のビルドに非常に時間がかかります。
-	また、android端末の環境や機種によっては、動作しないことがあります。(今後、幅広い端末でのサポートを目指していきますので、今しばらくお待ちください)<br>
+	また、OpenGL/ES2の機能を使用するためandroid端末の環境や機種によっては、動作しなかったり、遅くなることがあります。<br>
 	HGIMG4では、起動時に必ずresフォルダ及びシェーダー等のファイルが必要になります。
 	HSPの「sample/hgimg4」フォルダにある「resフォルダ」からandroid用のHGIMG4プロジェクトフォルダの
 	「assets」以下にコピーしてください。(「assets/res/…」というフォルダ構成になります)<br>
@@ -487,35 +501,7 @@
 	</p>
 	<pre>
 		res/font.gpb
-		res/shaders/colored-unlit.frag
-		res/shaders/colored-unlit.vert
-		res/shaders/colored.frag
-		res/shaders/colored.vert
-		res/shaders/font.frag
-		res/shaders/font.vert
-		res/shaders/form.frag
-		res/shaders/form.vert
-		res/shaders/lighting-directional.frag
-		res/shaders/lighting-directional.vert
-		res/shaders/lighting-point.frag
-		res/shaders/lighting-point.vert
-		res/shaders/lighting-spot.frag
-		res/shaders/lighting-spot.vert
-		res/shaders/lighting.frag
-		res/shaders/skinning-none.vert
-		res/shaders/skinning.vert
-		res/shaders/sprite.frag
-		res/shaders/sprite.vert
-		res/shaders/spritecol.frag
-		res/shaders/spritecol.vert
-		res/shaders/terrain.frag
-		res/shaders/terrain.vert
-		res/shaders/textured-bumped.frag
-		res/shaders/textured-bumped.vert
-		res/shaders/textured-unlit.frag
-		res/shaders/textured-unlit.vert
-		res/shaders/textured.frag
-		res/shaders/textured.vert
+		res/shaders フォルダ内のシェーダーファイル
 	</pre>
 	<p>
 	以下の機能については、未対応なので注意してください。将来のバージョンで対応する予定です。
@@ -562,11 +548,8 @@
 	<p>
 	※HSP3Dish 3.4版までは、従来の(古い)AdMobライブラリを使用していましたが、
 	Googleの更新により、2014/8/1以降は、古いAdMobライブラリを使用したアプリの更新、及び新規追加はできなくなっています。(既に登録されているアプリに影響はありません。)<br>
-	HSP3Dish 3.5版では、Google Play Servicesを使用した新しいAdMobライブラリに切り替えているので、この制限はありません。
+	HSP3Dish 3.5版では、Google Firebaseを使用した新しいAdMobライブラリに切り替えているので、この制限はありません。
 	古いAdMobライブラリを使用するプロジェクトを更新する場合は、新規でプロジェクトを作成し直してください。
-	</p>
-	<p>
-	※最新版のGoogle Play services(Rev.29)では、API21以上のSDKが必要となります。SDKマネージャーから、API21(android 5.0.1)がインストールされているか確認してください。インストールされていない場合は、追加して「AdMobセットアップ」ボタンで再度設定を行なってください。
 	</p>
 	</ul>
 
@@ -581,58 +564,48 @@
 	1. AdMobアカウントの作成
 <br><br>
 	アカウントを登録し、支払い情報などの必要事項を記入します。<br>
-	<a href="http://www.google.co.jp/ads/admob/" target="_blank">http://www.google.co.jp/ads/admob/</a>
+	<a href="https://www.google.co.jp/admob/" target="_blank">https://www.google.co.jp/admob/</a>
 <br><br>
 	2. ユニットIDの取得
 <br><br>
-	AdMobのwebページにログインし、「新しいアプリの収益化」を行ないます。
+	AdMobのwebページにログインし、「新しいアプリの登録」を行ないます。
 	(アプリがまだGoogle Playで公開されていない段階でも可能です)<br>
 	必要事項を記入することで、ユニットIDを取得することができます。
 <br><br>
-	3. Google Play Services, Android Support Libraryのダウンロード
-<br><br>
-	SDKマネージャーを起動して、Extras内にある「Google Play Services」「Android Support Library」の最新版をインストールしてください。
-	(SDKマネージャーは、HSP3Dish Helperの、「オプション」タブの「SDKマネージャー」ボタンから起動できます)
-<br><br>
-	4. AdMobのセットアップ
-<br><br>
-	HSP3Dish Helperの、「オプション」タブの「AdMobセットアップ」ボタンを押して、
-	AdMobビルドのためのファイルを準備してください。
-	この操作は、Google Play Services, Android Support Libraryのダウンロード後に1度行なえば完了します。
-<br><br>
-	5. 最新のAndroid APIライブラリの確認
-<br><br>
-	AdMob SDKをビルドするために、Android APIライブラリの最新版を使用できる状態にする必要があります。
-	"android-21"(Android 5.0.1 (API 21))が利用可能かどうかを確認しておいてください。
-<br><br>
-	HSP3Dish helperを起動して、androidタブの「新規プロジェクト」モードの「ID...」ボタンを押すと、
-	インストールされているAPIの一覧が表示されます。この中に、"android-21"が存在してれば問題ありません。
-<br><br>
-	6. AdMobを使用するプロジェクトの作成
+	3. AdMobを使用するプロジェクトの作成
 <br><br>
 	新規プロジェクトを作成します。その際に、必ず「AdMobを使用する」のチェックボックスをONにしておいてください。
 	それ以外の設定は、通常の新規プロジェクト作成と変わりありません。
 <br><br>
-	7. ユニットIDの登録
+	4. ユニットIDの登録
 <br><br>
 	プロジェクトのフォルダ以下の「src/tv/hsp/HspActivity.java」ファイルを編集します。
 	</p>
 <pre>
-		adView.setAdUnitId("ca-app-pub-???????????????????????????");
+		static final String APP_ID = "ca-app-pub-???????????????????????????";
 </pre>
 	<p>
-	の行を探してください。このpublisherIDの部分を、AdMobのwebページで取得したユニットID文字列に置き換えてください。
-	このユニットIDにより、広告の配信者が特定されます。
+	の行を探してください。このAPP_IDの部分を、AdMobのwebページで取得したアプリID文字列に置き換えてください。
+	このアプリIDにより、広告の配信者が特定されます。
+<pre>
+		static final String BANNER_AD_UNIT_ID = "ca-app-pub-???????????????????????????";
+		static final String INTERSTITIAL_AD_UNIT_ID = "ca-app-pub-???????????????????????????";
+</pre>
+	<p>
+	の行を探してください。BANNER_AD_UNIT_IDとINTERSTITIAL_AD_UNIT_IDには、広告ユニットIDを指定します。
+	BANNER_AD_UNIT_IDは、バナー広告で使用される広告ユニットIDを指定します。
+	INTERSTITIAL_AD_UNIT_IDは、インタースティシャル広告で使用される広告ユニットIDを指定します。
+	これらのIDは本番のアプリで使用します。
 <br><br>
-	8. AdMob表示スクリプトの追加
+	5. AdMob表示スクリプトの追加
 <br><br>
-	スクリプト実行時の適切なタイミングでAdMobを有効にしてください。
+	スクリプト実行時の適切なタイミングでAdMobを有効にするようにしてください。
 	タイトル画面や、ゲームメニューなど画像や音声のリソース読み込みが落ち着いた後に有効にすることを推奨します。
 	(CPU負荷が高い時には、AdMobのタスクが遅延することがあります)<br>
 	AdMobを有効にする場合は、
 	</p>
 <pre>
-		devcontrol "AdMob"		; AdMobを有効にする
+		devcontrol "AdMob",0		; AdMobを有効にする
 </pre>
 	<p>
 	をスクリプトに記述してください。("AdMob"の文字列は大小文字を正確に識別します)
@@ -641,7 +614,7 @@
 <pre>
 		getreq v_platform,SYSREQ_PLATFORM
 		if ( v_platform = PLATFORM_ANDROID ) {
-			devcontrol "AdMob"		; AdMobを有効にする
+			devcontrol "AdMob",0		; AdMobを有効にする
 		}
 </pre>
 	<p>
@@ -667,64 +640,67 @@
 	実行の確認を何度も行なう場合には、テスト用端末の登録を行なっておいてください。
 	テスト用端末の登録は、src/tv/hsp/HspActivity.javaファイルのソースで指定します。<br>
 	以下の行があることを確認してください。
+	また、Googleでは、テスト用の広告ユニットIDを使用することを推奨しています。<br>
+	<a href="https://firebase.google.com/docs/admob/android/quick-start?hl=ja" target="_blank">https://firebase.google.com/docs/admob/android/quick-start?hl=ja</a>
 	</p>
 <pre>
-		_request.addTestDevice(AdRequest.DEVICE_ID_EMULATOR);
+		static final String TestDeviceID = "********************************";
 </pre>
 	<p>
-	この行は、エミュレーターデバイス上の動作チェック用のコードです。
-	以下のように「"」記号で囲まれた文字列を指定することで、実際のデバイスをテスト機として登録することができます。
-	</p>
-<pre>
-		_request.addTestDevice("********************************");
-</pre>
-	<p>
-	"****～"の部分に、デバイスIDを記入する必要があります。
-	デバイスIDは、AdMob表示時にデバイスモニタ内のログに、
+	デバイス上の動作チェックでは、"****～"の部分に、デバイスIDを記入する必要があります。
+	(エミュレーターの場合は、"****～"の代わりにAdRequest.DEVICE_ID_EMULATORを指定してください。)<br>
+	端末のデバイスIDは、AdMob表示時にデバイスモニタ内のログに、
 	</p>
 <pre>
 	「 To get test ads on this device, call adRequest.addTestDevice("********************************");」
 </pre>
 	<p>
 	というメッセージが流れますので、そこで確認することができます。
-	(広告の表示エラーや、問題に関するメッセージも表示されます)
 	デバイスモニタは、HSP3Dish Helperの、「オプション」タブの「Deviceモニター」ボタンを押して起動させることができます。
 	LogCatよりも詳細なログが表示されます。
+	(広告の表示エラーや、問題に関するメッセージも表示されます)
 	</p>
 	</ul>
 
 	<ul>
-	<li>広告バナーサイズについて</li><br>
+	<li>インタースティシャル広告について</li><br>
 	<p>
-	Google AdMob Adsのページで、広告バナーサイズを確認することができます。<br>
-	<a href="https://developers.google.com/mobile-ads-sdk/docs/android/intermediate?hl=ja" target="_blank">https://developers.google.com/mobile-ads-sdk/docs/android/intermediate?hl=ja</a>
-<br><br>
-	現在のコードでは、画面下に縦は75ドット、横は画面いっぱいまでバナーの領域を確保しています。
-	サイズや位置などは、src/tv/hsp/HspActivity.javaファイルのソースを変更することで調整可能です。
-	</p>
+	全画面を使用したインタースティシャル広告を表示させることができます。<br>
 <pre>
-		popUp.setWidth(disp_width+4);		// 横サイズ(disp_widthは画面全体)
-		popUp.setHeight(77);			// 縦サイズ
+		devcontrol "AdMob",16		; インタースティシャル広告を表示する
 </pre>
 	<p>
-	ここで指定したサイズはポップアップのサイズで、実際のバナー表示領域は若干少なくなるので
-	注意してください。
+	インタースティシャル広告は表示のリクエストを行なうたびに、１回表示されます。
+	通常のバナー広告と併用することも可能なので、より幅広い活用が可能になります。
 	</p>
 	</ul>
 
 	<ul>
 	<li>アプリのリリース</li><br>
 	<p>
-	AdMobの表示をサポートしたアプリは、通常のHSP3Dishアプリと同様の方法でビルドし、
-	Google Playから配信することが可能です。
+	AdMobの表示をサポートしたアプリは、通常のHSP3Dishアプリと同様の方法でビルドし、Google Playから配信することが可能です。
 	リリース時には、テスト用端末の登録コードを削除するのを忘れないようにしてください。
+	</p>
+<pre>
+     		.addTestDevice(TestDeviceID)
+</pre>
+	<p>
+	この行は、テスト用端末を登録するためのものです。
+	src/tv/hsp/HspActivity.javaファイルのソース内で２か所記述されています。<br>
+	テストが終了して、本番のアプリとしてリリースする場合には、
+	</p>
+<pre>
+     		//.addTestDevice(TestDeviceID)
+</pre>
+	<p>
+	のように先頭に「//」を入れて登録を無効にするコードに修正することを忘れないでください。
 	</p>
 	</ul>
 
 
 	<h2 id="FONTMES">mes,print命令について</h2>
 	<p>
-	内蔵フォントによるmes及びprint命令の文字列描画に対応しています。<br>
+	HSP3Dishでは、内蔵フォントによるmes及びprint命令の文字列描画に対応しています。(HGIMG4はフォントデータによる描画を行うため該当しません)<br>
 	font命令で指定する、font名は無視され、フォントサイズは反映されます。また、フォントスタイルは標準(0)と太文字(1)にのみ対応しています。<br>
 	android上のフォントを取得する処理は、システムの負担が大きいため一度描画した内容(テクスチャ)はHSP3Dish側でキャッシュすることで高速化する仕組みになっています。
 	通常は、この仕組みについて意識することなく使用することができるはずです。<br>
@@ -818,8 +794,6 @@
 	以下の機能は今後、上から順に高い優先度で追加される予定です。
 	</p>
 	<ul>
-	<li>傾きセンサーの入力情報の取得</li>
-	<li>dialog命令によるダイアログ表示サポート</li>
 	<li>各種システム情報取得</li>
 	<li>カメラ、ブラウザの呼び出しサポート</li>
 	</ul>
