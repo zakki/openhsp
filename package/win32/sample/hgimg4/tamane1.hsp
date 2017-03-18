@@ -21,7 +21,8 @@
 
 	setpos GPOBJ_CAMERA, 0,3.5,5		; カメラ位置を設定
 
-	gpact id_model
+	gpaddanim id_model,"run",0,700		; "run"クリップを設定
+	gpact id_model,"run"			; "run"クリップを再生
 
 repeat
 	stick key,15
