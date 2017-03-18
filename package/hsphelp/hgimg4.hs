@@ -1279,7 +1279,7 @@ gpusershader
 %group
 拡張画面制御命令
 %prm
-"vsh","fsh","defs",color,opt
+"vsh","fsh","defs"
 "vsh"     : バーテックスシェーダーファイル名
 "fsh"     : フラグメントシェーダーファイル名
 "defs"    : 追加のラベル定義
