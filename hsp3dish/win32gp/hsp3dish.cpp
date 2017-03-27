@@ -920,7 +920,13 @@ int hsp3dish_init( HINSTANCE hInstance, char *startfile )
 
 	//		Initalize Window
 	//
-	hsp3dish_initwindow( hInstance, hsp_wx, hsp_wy, "HGIMG4 ver" hspver );
+#ifdef HSPDEBUG
+	char * pc = "HGIMG4 ver" hspver;
+#else
+	char * pc = NULL;
+#endif
+
+	hsp3dish_initwindow( hInstance, hsp_wx, hsp_wy, pc );
 
 
 #ifndef HSP_COM_UNSUPPORTED
@@ -981,6 +987,7 @@ int hsp3dish_init( HINSTANCE hInstance, char *startfile )
 	HSP3DEVINFO *devinfo;
 	devinfo = hsp3extcmd_getdevinfo();
 	hsp3dish_setdevinfo( devinfo );
+	hsp3extcmd_sysvars((int)hInstance, (int)m_hWnd, 0);
 
 	gameplay::Logger::log(gameplay::Logger::LEVEL_INFO, "HGIMG4 %s initalized : %s\n", hspver, devinfo->devname);
 

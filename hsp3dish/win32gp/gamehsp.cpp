@@ -179,17 +179,13 @@ void gamehsp::deleteAll( void )
 {
 	// release
 	//
-	if ( _scene ) {
-		_scene->removeAllNodes();
-		_scene->setActiveCamera(NULL);
-	}
-
 	if ( _gpobj ) {
 		int i;
 		for(i=0;i<_maxobj;i++) { deleteObj( i ); }
 		delete[] _gpobj;
 		_gpobj = NULL;
 	}
+
 	if ( _gpmat ) {
 		int i;
 		for(i=0;i<_maxmat;i++) { deleteMat( i ); }
@@ -197,7 +193,12 @@ void gamehsp::deleteAll( void )
 		_gpmat = NULL;
 	}
 
-	if ( _meshBatch ) {
+	if (_scene) {
+		_scene->removeAllNodes();
+		_scene->setActiveCamera(NULL);
+	}
+
+	if (_meshBatch) {
 		delete _meshBatch;
 		_meshBatch = NULL;
 	}
@@ -1767,13 +1768,24 @@ int gamehsp::deleteObj( int id )
 		obj->_phy = NULL;
 	}
 	model = obj->_model;
+
 	if ( model ) {
 		if ( obj->_usegpmat >= 0 ) {
 			material = model->getMaterial();
 			material->release();		// 独自にcreateした参照カウントを減らす
 		}
 	}
-    SAFE_RELEASE( obj->_node );
+
+	if (obj->_node) {
+		if (_curscene >= 0) {
+			_scene->removeNode( obj->_node);
+		}
+		else {
+			SAFE_RELEASE(obj->_node);
+		}
+		//unsigned int cnt = obj->_node->getRefCount();
+		//Alertf( "count[%d]",cnt );
+	}
     SAFE_RELEASE( obj->_camera );
     SAFE_RELEASE( obj->_light );
 
@@ -1792,7 +1804,7 @@ int gamehsp::setObjectPool( int startid, int num )
 	if ( startid >= _maxobj ) return -1;
 	if ( ( startid + max ) > _maxobj ) return -1;
 	_objpool_startid = startid;
-	_objpool_max = max;
+	_objpool_max = startid + max;
 	return 0;
 }
 
@@ -2202,7 +2214,7 @@ gpobj *gamehsp::getNextObj( void )
 	while(1) {
 		if ( _find_count >= _maxobj ) { return NULL; }
 		if ( _find_gpobj->_flag ) {
-			if ( _find_gpobj->_colgroup & _find_group ) {
+			if ( _find_gpobj->_mygroup & _find_group ) {
 				if (( _find_gpobj->_mode & _find_exmode ) == 0 ) {
 					res = _find_gpobj;
 					break;

@@ -11,6 +11,12 @@
 #ifdef HSPNDK
 #include "ndkgp/gamehsp.h"
 #endif
+#ifdef HSPLINUX
+#include "win32gp/gamehsp.h"
+#endif
+#ifdef HSPEMSCRIPTEN
+#include "win32gp/gamehsp.h"
+#endif
 char *hsp3dish_getlog(void);		// for gameplay3d log
 #endif
 
@@ -62,6 +68,7 @@ static int cur_window;
 static int ckey,cklast,cktrg;
 static int msact;
 static int dispflg;
+static int sys_inst, sys_hwnd, sys_hdc;
 
 extern int resY0, resY1;
 
@@ -74,6 +81,9 @@ extern int resY0, resY1;
 #endif
 #ifdef HSPNDK
 #include "ndk/mmman.h"
+#endif
+#ifdef HSPLINUX
+#include "emscripten/mmman.h"
 #endif
 #ifdef HSPEMSCRIPTEN
 #include "emscripten/mmman.h"
@@ -3743,15 +3753,15 @@ static void *reffunc_sysvar( int *type_res, int arg )
 		break;
 	case 0x003:								// hwnd
 		//ptr = (void *)(&(bmscr->hwnd));
-		reffunc_intfunc_ivalue = 0;
+		reffunc_intfunc_ivalue = sys_hwnd;
 		break;
 	case 0x004:								// hinstance
 		//ptr = (void *)(&(bmscr->hInst));
-		reffunc_intfunc_ivalue = 0;
+		reffunc_intfunc_ivalue = sys_inst;
 		break;
 	case 0x005:								// hdc
 		//ptr = (void *)(&(bmscr->hdc));
-		reffunc_intfunc_ivalue = 0;
+		reffunc_intfunc_ivalue = sys_hdc;
 		break;
 
 	default:
@@ -3790,6 +3800,10 @@ void hsp3typeinit_extcmd( HSP3TYPEINFO *info )
 	wnd = new HspWnd();
 	bmscr = wnd->GetBmscr( 0 );
 	SetObjectEventNoticePtr( &ctx->stat );
+
+	sys_inst = 0;
+	sys_hwnd = 0;
+	sys_hdc = 0;
 
 #ifdef USE_MMAN
 	mmman = new MMMan;
@@ -3839,7 +3853,7 @@ void hsp3notify_extcmd( void )
 
 void hsp3extcmd_pause( void )
 {
-#ifdef HSPNDK
+#if defined(HSPNDK) || defined(HSPLINUX) || defined(HSPEMSCRIPTEN)
 #ifdef USE_MMAN
 	mmman->Pause();
 #endif
@@ -3849,7 +3863,7 @@ void hsp3extcmd_pause( void )
 
 void hsp3extcmd_resume( void )
 {
-#ifdef HSPNDK
+#if defined(HSPNDK) || defined(HSPLINUX) || defined(HSPEMSCRIPTEN)
 #ifdef USE_MMAN
 	mmman->Resume();
 	wnd->Resume();
@@ -3858,4 +3872,11 @@ void hsp3extcmd_resume( void )
 #endif
 }
 
+
+void hsp3extcmd_sysvars(int inst, int hwnd, int hdc)
+{
+	sys_inst = inst;
+	sys_hwnd = hwnd;
+	sys_hdc = hdc;
+}
 
