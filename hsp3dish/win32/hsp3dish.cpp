@@ -878,7 +878,12 @@ int hsp3dish_init( HINSTANCE hInstance, char *startfile )
 
 	//		Initalize Window
 	//
-	hsp3dish_initwindow( hInstance, hsp_wx, hsp_wy, "HSPDish ver" hspver );
+#ifdef HSPDEBUG
+	char * pc = "HSPDish ver" hspver;
+#else
+	char * pc = NULL;
+#endif
+	hsp3dish_initwindow( hInstance, hsp_wx, hsp_wy, pc );
 
 
 
@@ -921,6 +926,8 @@ int hsp3dish_init( HINSTANCE hInstance, char *startfile )
 	HSP3DEVINFO *devinfo;
 	devinfo = hsp3extcmd_getdevinfo();
 	hsp3dish_setdevinfo( devinfo );
+
+	hsp3extcmd_sysvars((int)hInstance, (int)m_hWnd, 0);
 
 #ifdef HSPDEBUG
 	dbginfo = code_getdbg();

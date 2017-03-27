@@ -57,6 +57,7 @@
 #enum global PRMSET_USEGPMAT
 #enum global PRMSET_USEGPPHY
 #enum global PRMSET_COLILOG
+#enum global PRMSET_TRANSPARENT
 #enum global PRMSET_SPRID = 0x100
 #enum global PRMSET_SPRCELID
 #enum global PRMSET_SPRGMODE

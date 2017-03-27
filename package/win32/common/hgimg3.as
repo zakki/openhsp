@@ -552,7 +552,7 @@
 	;	DXF model load
 	;
 	exist fn
-	if strsize<0 : dialog "No file:"+fname : end
+	if strsize<0 : dialog "No file:"+fn : end
 	sdim dxfbuf,strsize
 	bload fn,dxfbuf
 	_dxfcolor = p1
