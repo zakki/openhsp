@@ -179,17 +179,13 @@ void gamehsp::deleteAll( void )
 {
 	// release
 	//
-	if ( _scene ) {
-		_scene->removeAllNodes();
-		_scene->setActiveCamera(NULL);
-	}
-
 	if ( _gpobj ) {
 		int i;
 		for(i=0;i<_maxobj;i++) { deleteObj( i ); }
 		delete[] _gpobj;
 		_gpobj = NULL;
 	}
+
 	if ( _gpmat ) {
 		int i;
 		for(i=0;i<_maxmat;i++) { deleteMat( i ); }
@@ -197,7 +193,12 @@ void gamehsp::deleteAll( void )
 		_gpmat = NULL;
 	}
 
-	if ( _meshBatch ) {
+	if (_scene) {
+		_scene->removeAllNodes();
+		_scene->setActiveCamera(NULL);
+	}
+
+	if (_meshBatch) {
 		delete _meshBatch;
 		_meshBatch = NULL;
 	}
@@ -1465,8 +1466,16 @@ bool gamehsp::makeModelNodeSub(Node *rootnode, int nest)
 {
 	Node *node = rootnode;
 	Material *mat;
-	int part,tecs,prms;
-	Vector3 directionalLightVector;
+	Vector3 *vambient;
+	int part, tecs, prms;
+
+	gpobj *lgt;
+	Node *light_node;
+	lgt = getObj(_curlight);
+	if (lgt == NULL) node = NULL;
+	light_node = lgt->_node;
+	if (light_node == NULL) node = NULL;
+	vambient = (Vector3 *)&lgt->_vec[GPOBJ_USERVEC_DIR];
 
 	while (node != NULL) {
 		part = 0;
@@ -1478,37 +1487,25 @@ bool gamehsp::makeModelNodeSub(Node *rootnode, int nest)
 			mat = model->getMaterial(0);
 			part = model->getMeshPartCount();
 			tecs = 0; prms = 0;
-			if (mat) {
-				tecs = mat->getTechniqueCount();
-				if (tecs) {
-					tec = mat->getTechniqueByIndex(0);
-					prms = tec->getParameterCount();
-				}
-			}
-			//Alertf("Node(%s) part%d mat%x tec%d prm%d: %d", node->getId(), part, mat, tecs, prms, nest);
-			//	カレントライトを反映させる
-			gpobj *lgt;
-			Node *light_node;
-			lgt = getObj(_curlight);
-			light_node = lgt->_node;
-			directionalLightVector = light_node->getForwardVector();
-			for (int i = 0; i < prms; i++){
-				MaterialParameter *prm = tec->getParameterByIndex(i);
-				//Alertf( "prm(%s) %x",prm->getName(), prm->getSampler()  );
-			}
 			if (part) {
 				for (int i = 0; i < part; i++){
 					mat = model->getMaterial(i);
 					if (mat) {
-						tec = mat->getTechniqueByIndex(0);
-						tec->getParameter("u_directionalLightColor[0]")->setValue(Vector3(1, 1, 1));
-						tec->getParameter("u_directionalLightDirection[0]")->setValue(&directionalLightVector);
-						tec->getParameter("u_lightDirection")->setValue(&directionalLightVector);
-
+						//tec = mat->getTechniqueByIndex(0);
+						//mat->getParameter("u_directionalLightColor[0]")->setValue(Vector3(1, 1, 0));
+						if (hasParameter(mat, "u_directionalLightColor[0]")) {
+							mat->getParameter("u_directionalLightColor[0]")->bindValue(light_node->getLight(), &Light::getColor);
+						}
+						//mat->getParameter("u_directionalLightDirection[0]")->setValue(&directionalLightVector);
+						if (hasParameter(mat, "u_directionalLightDirection[0]")) {
+							mat->getParameter("u_directionalLightDirection[0]")->bindValue(light_node, &Node::getForwardVectorView);
+						}
+						if (hasParameter(mat, "u_ambientColor")) {
+							mat->getParameter("u_ambientColor")->setValue(vambient);
+						}
 					}
 				}
 			}
-
 		}
 		node = node->getNextSibling();
 	}
@@ -1532,16 +1529,33 @@ int gamehsp::ApplyMaterialToModel(Material *boxMaterial, Model *model)
 {
 	if (boxMaterial == NULL) return -1;
 	model->setMaterial(boxMaterial);
+	return 0;
 
-	MaterialParameter *ambientColorParam =
-		hasParameter(boxMaterial, "u_ambientColor") ?
-		boxMaterial->getParameter("u_ambientColor") : NULL;
+#if 0
+	unsigned int i;
+	MaterialParameter *mParam;
+	Technique *tec = boxMaterial->getTechniqueByIndex(0);
+	for (i = 0; i < boxMaterial->getParameterCount(); i++)
+	{
+		mParam = boxMaterial->getParameterByIndex(i);
+		GP_WARN("%d:%s",i,mParam->getName());
+
+		if (strcmp(mParam->getName(), "u_directionalLightColor[0]") == 0) {
+			mParam->setValue(Vector3(0, 1, 1));
+			GP_WARN("%d:changed", i);
+		}
+
+	}
+
+	MaterialParameter *ambientColorParam = NULL;
+	//hasParameter(boxMaterial, "u_ambientColor") ?
+	ambientColorParam = boxMaterial->getParameter("u_ambientColor");
 	MaterialParameter *lightDirectionParam = NULL;
 	//hasParameter(boxMaterial, "u_lightDirection") ?
-	lightDirectionParam = boxMaterial->getTechnique()->getParameter("u_directionalLightDirection[0]");
+	lightDirectionParam = boxMaterial->getParameter("u_directionalLightDirection[0]");
 	MaterialParameter *lightColorParam = NULL;
 	//hasParameter(boxMaterial, "u_lightColor") ?
-	lightColorParam = boxMaterial->getTechnique()->getParameter("u_directionalLightColor[0]");
+	lightColorParam = boxMaterial->getParameter("u_directionalLightColor[0]");
 
 	Vector3 directionalLightVector;
 
@@ -1557,17 +1571,19 @@ int gamehsp::ApplyMaterialToModel(Material *boxMaterial, Model *model)
 		//lightDirectionParam->bindValue(light_node, &Node::getForwardVectorView);
 		lightDirectionParam->setValue(Vector3(0, 0, -1));
 	}
-	// ライトの色設定
-	// (リアルタイムに変更を反映させる場合は再設定が必要。現在は未対応)
 	if (ambientColorParam) {
 		Vector3 *vambient;
 		vambient = (Vector3 *)&lgt->_vec[GPOBJ_USERVEC_WORK];
 		ambientColorParam->setValue(vambient);
 	}
+	// ライトの色設定
+	// (リアルタイムに変更を反映させる場合は再設定が必要。現在は未対応)
 	if (lightColorParam) {
-		lightColorParam->setValue(light_node->getLight()->getColor());
+		lightColorParam->setValue(Vector3(0,1,1));
+		//lightColorParam->setValue(light_node->getLight()->getColor());
 	}
 	return 0;
+#endif
 }
 
 
@@ -1632,9 +1648,8 @@ int gamehsp::makeModelNode(char *fname, char *idname, char *defs)
 				Model* model = dynamic_cast<Model*>(drawable);
 				if (model) {
 					ApplyMaterialToModel(boxMaterial, model);
-
 					//Material*m = model->getMaterial();
-					//m->getTechnique()->getParameter("u_directionalLightColor[0]")->setValue(Vector3(1, 1, 1));
+					//m->getParameter("u_directionalLightColor[0]")->setValue(Vector3(1, 1, 0));
 					//m->getTechnique()->getParameter("u_directionalLightDirection[0]")->setValue(Vector3(0, 0, -1));
 
 				}
@@ -1670,7 +1685,7 @@ int gamehsp::makeModelNode(char *fname, char *idname, char *defs)
 			//animation->play(aclip->getId());
 		}
 
-		//makeModelNodeSub(rootNode, 0);
+		makeModelNodeSub(rootNode, 0);
 
 		SAFE_RELEASE(scene);
 
@@ -1767,13 +1782,24 @@ int gamehsp::deleteObj( int id )
 		obj->_phy = NULL;
 	}
 	model = obj->_model;
+
 	if ( model ) {
 		if ( obj->_usegpmat >= 0 ) {
 			material = model->getMaterial();
 			material->release();		// 独自にcreateした参照カウントを減らす
 		}
 	}
-    SAFE_RELEASE( obj->_node );
+
+	if (obj->_node) {
+		if (_curscene >= 0) {
+			_scene->removeNode( obj->_node);
+		}
+		else {
+			SAFE_RELEASE(obj->_node);
+		}
+		//unsigned int cnt = obj->_node->getRefCount();
+		//Alertf( "count[%d]",cnt );
+	}
     SAFE_RELEASE( obj->_camera );
     SAFE_RELEASE( obj->_light );
 
@@ -1792,7 +1818,7 @@ int gamehsp::setObjectPool( int startid, int num )
 	if ( startid >= _maxobj ) return -1;
 	if ( ( startid + max ) > _maxobj ) return -1;
 	_objpool_startid = startid;
-	_objpool_max = max;
+	_objpool_max = startid + max;
 	return 0;
 }
 
@@ -2202,7 +2228,7 @@ gpobj *gamehsp::getNextObj( void )
 	while(1) {
 		if ( _find_count >= _maxobj ) { return NULL; }
 		if ( _find_gpobj->_flag ) {
-			if ( _find_gpobj->_colgroup & _find_group ) {
+			if ( _find_gpobj->_mygroup & _find_group ) {
 				if (( _find_gpobj->_mode & _find_exmode ) == 0 ) {
 					res = _find_gpobj;
 					break;
