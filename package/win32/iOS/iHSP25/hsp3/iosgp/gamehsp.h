@@ -151,12 +151,12 @@ public:
 	int _mode;							// モード(GPOBJ_MODE_*)
 	int _id;							// ノードオブジェクトID
 	int _timer;							// タイマー値
-	int	_transparent;					// 透明度(0=透明/255=不透明)
 	int	_mygroup;						// 自分のコリジョングループ
 	int	_colgroup;						// 対象のコリジョングループ
 	int _shape;							// 生成された形状
 	int _usegpmat;						// gpmat使用時のID(-1=固有Material)
 	int _colilog;						// 衝突ログID
+	int	_transparent;					// 透明度(0=透明/255=不透明)
 	gpspr *_spr;						// 生成された2Dスプライト情報
 	gpphy *_phy;						// 生成されたコリジョン情報
 	Node *_node;						// 生成されたNode

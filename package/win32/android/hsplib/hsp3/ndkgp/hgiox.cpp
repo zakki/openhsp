@@ -27,6 +27,12 @@
 //#include "font_data.h"
 #endif
 
+#ifdef HSPIOS
+#import <OpenGLES/ES2/gl.h>
+#import <OpenGLES/ES2/glext.h>
+#include <CoreFoundation/CoreFoundation.h>
+#endif
+
 #ifdef HSPEMSCRIPTEN
 #define GL_GLEXT_PROTOTYPES
 #include <GL/gl.h>
@@ -89,6 +95,10 @@ static engine	*appengine;
 extern bool get_key_state(int sym);
 #endif
 
+#ifdef HSPIOS
+static	double  total_tick;
+static	CFAbsoluteTime  lastTime;
+#endif
 
 /*------------------------------------------------------------*/
 /*
@@ -215,6 +225,12 @@ void hgio_init( int mode, int sx, int sy, void *hwnd )
 	for(i=0;i<GINFO_EXINFO_MAX;i++) {
 		infoval[i] = 0.0;
 	}
+
+    //  timer initalize
+#ifdef HSPIOS
+    total_tick = 0.0;
+    lastTime = CFAbsoluteTimeGetCurrent();
+#endif
 }
 
 
@@ -275,6 +291,19 @@ int hgio_render_start( void )
 		return -1;
 	}
 
+#ifdef HSPIOS
+    if ( game->hasAccelerometer()) {
+        float accx,accy,accz,gyx,gyy,gyz;
+        game->getSensorValues(&accx, &accy, &accz, &gyx, &gyy, &gyz);
+        hgio_setinfo( GINFO_EXINFO_ACCEL_X, accx );
+        hgio_setinfo( GINFO_EXINFO_ACCEL_Y, accy );
+        hgio_setinfo( GINFO_EXINFO_ACCEL_Z, accz );
+        hgio_setinfo( GINFO_EXINFO_GYRO_X, gyx );
+        hgio_setinfo( GINFO_EXINFO_GYRO_Y, gyy );
+        hgio_setinfo( GINFO_EXINFO_GYRO_Z, gyz );
+    }
+#endif
+    
 	//シーンレンダー開始
 	if (game) {
 		if (gselbm == mainbm) {
@@ -398,7 +427,7 @@ int hgio_stick( int actsw )
 	//
 	int ckey = 0;
 
-#ifdef HSPNDK
+#if defined(HSPNDK)||defined(HSPIOS)
 	if ( mouse_btn ) ckey|=256;	// mouse_l
 #endif
 
@@ -470,6 +499,10 @@ int hgio_dialog( int mode, char *str1, char *str2 )
 #endif
 #ifdef HSPEMSCRIPTEN
 	return 0;
+#endif
+#ifdef HSPIOS
+    //gb_dialog( mode, str1, str2 );
+    //Alertf( str1 );
 #endif
 	return 0;
 }
@@ -1244,6 +1277,7 @@ void hgio_square( BMSCR *bm, int *posx, int *posy, int *color )
 
 int hgio_gettick( void )
 {
+    // 経過時間の計測
 #ifdef HSPWIN
 	return timeGetTime();
 #endif
@@ -1275,6 +1309,15 @@ int hgio_gettick( void )
     //return ((double)(ts.tv_sec) + (double)(ts.tv_nsec) * 0.001 * 0.001 * 0.001);
 	return i;
 #endif
+
+#ifdef HSPIOS
+    CFAbsoluteTime now;
+    now = CFAbsoluteTimeGetCurrent();
+    total_tick += now - lastTime;
+    lastTime = now;
+    return (int)(total_tick * 1000.0 );
+#endif
+
 }
 
 
@@ -1307,6 +1350,9 @@ int hgio_exec( char *stmp, char *option, int mode )
 		i=WinExec( stmp,j );
 	}
 	if (i < 32) return -1;
+#endif
+#ifdef HSPIOS
+    //gb_exec( mode, stmp );
 #endif
 	return 0;
 }
@@ -1403,7 +1449,8 @@ char *hgio_sysinfo( int p2, int *res, char *outbuf )
 		strcpy(p1, "Android");
 #endif
 #ifdef HSPIOS
-		strcpy(p1, "iOs");
+        strcpy(p1, "iOS");
+        //gb_getSysVer( p1 );
 #endif
 		fl=HSPVAR_FLAG_STR;
 		break;
@@ -1546,9 +1593,11 @@ char *hgio_getstorage( char *fname )
 	strcat( my_storage_path, fname );
 	return my_storage_path;
 }
-
+#endif
 
 /*-------------------------------------------------------------------------------*/
+
+#if defined(HSPNDK)||defined(HSPIOS)
 
 void hgio_touch( int xx, int yy, int button )
 {
@@ -1634,11 +1683,9 @@ int hgio_getmousebtn( void )
 	return mouse_btn;
 }
 
-/*-------------------------------------------------------------------------------*/
-
 #endif
 
-
+/*-------------------------------------------------------------------------------*/
 
 
 #ifdef HSPEMSCRIPTEN

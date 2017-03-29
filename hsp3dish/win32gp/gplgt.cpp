@@ -66,7 +66,7 @@ int gamehsp::makeNewLgt( int id, int lgtopt, float range, float inner, float out
 	}
 
 	obj->_vec[GPOBJ_USERVEC_COLOR].set( 1.0f, 1.0f, 1.0f, 1.0f );
-	obj->_vec[GPOBJ_USERVEC_WORK].set( 0.25f, 0.25f, 0.25f, 1.0f );
+	obj->_vec[GPOBJ_USERVEC_DIR].set( 0.25f, 0.25f, 0.25f, 1.0f );
 
 	return obj->_id;
 }

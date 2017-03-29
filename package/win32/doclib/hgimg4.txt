@@ -324,6 +324,13 @@ HGIMG4 REFERENCE MANUAL                High Performance Graphic Image Plugin
 	これをHGIMG3に準拠したスケール値の加算に変更しています。
 	これにより、従来のスクリプトでaddscale命令を使用していた場合、修正が必要となります。
 
+	・その他不具合の修正、機能修正など
+
+	findobj命令の第２パラメータをPRMSET_MYGROUPでなかった不具合を修正(HGIMG3と同一に)
+	gpobjpool命令の第２パラメータが「最大割り当て数」ではなく「終了ID+1」になっている不具合を修正
+	Windowsランタイムの実行ファイルで標準のウインドウタイトルを出さないように修正
+	Windowsランタイムはシステム変数hwnd,hinstを返すように修正
+
 
 ・HGIMG3との違い
 
@@ -916,13 +923,7 @@ HGIMG4 REFERENCE MANUAL                High Performance Graphic Image Plugin
 	(内部でコマンドラインツールのgameplay-encoder.exeを呼び出します)
 
 	.gpb形式とともに読み込まれるマテリアル情報(.material)も、GPBコンバーターから
-	出力が可能です。.materialは、テキスト形式のファイルなので、通常のテキストエディタで
-	閲覧したり、必要に応じて内容を編集することが可能です。
-
-	※現在のバージョンでは、FBXが参照するテクスチャによっては、マテリアル情報(.material)に
-	　出力されるテクスチャファイル名にパス名(フォルダ)が付加されることがあり、正しく読み込みが
-	　できないことがあります。その場合は、生成された.materialファイルをテキストエディタ等で
-	　開いてテクスチャファイル名部分を直接修正するようにしてください。
+	出力が可能です。
 
 	.gpb形式はfbx形式から変換することが可能です。
 	fbx形式は、Autodesk社の3Dツールで使用されている標準的な3D形式です。
@@ -931,6 +932,129 @@ HGIMG4 REFERENCE MANUAL                High Performance Graphic Image Plugin
 	http://usa.autodesk.com/adsk/servlet/pc/item?siteID=123112&id=10775855
 
 	現在、fbxの出力とgpbの変換を確認しているツールは、Blender及びMayaになります。
+
+
+・3Dモデルデータのマテリアルについて
+
+	.gpb形式とともに読み込まれるマテリアル情報(.materialファイル)には、モデルが持つマテリアル(質感)についての詳細な情報が含まれています。
+	.materialファイルは、テキスト形式のファイルなので、通常のテキストエディタで
+	閲覧したり、必要に応じて内容を編集することが可能です。
+	以下は、テキスト内容の例です。
+	複数のマテリアルが含まれている場合は、「material マテリアル名」に続く「{」から「}」の範囲が設定になります。
+
+	material colored
+	{
+	    u_worldViewProjectionMatrix = WORLD_VIEW_PROJECTION_MATRIX
+	    
+	    renderState
+	    {
+	        cullFace = true
+	        depthTest = true
+	    }
+	    
+	    technique
+	    {
+	        pass 
+	        {
+	            defines = DIRECTIONAL_LIGHT_COUNT 1
+	            vertexShader = res/shaders/colored.vert
+	            fragmentShader = res/shaders/colored.frag
+	        }
+	    }
+	}
+
+	renderState設定部分で、マテリアルごとのレンダリング設定を定義しています。
+
+		ステート名           内容
+		-------------------------------------------------
+		cullFace             裏面の消去(true/false)
+		depthTest            Zテスト(true/false)
+		depthWrite           Z書き込み(true/false)
+		stencilTest          ステンシルテスト(true/false)
+		stencilWrite         ステンシル書き込み(true/false)
+		blend                ピクセルブレンドの設定(true/false)
+		blendSrc             ブレンド元設定(*1)
+		blendDst             ブレンド先設定(*1)
+		depthFunc            Zテスト機能(*2)
+
+		(*1) 以下から選択
+		ZERO / ONE / SRC_COLOR / ONE_MINUS_SRC_COLOR / 
+		DST_COLOR / ONE_MINUS_DST_COLOR / SRC_ALPHA / 
+		ONE_MINUS_SRC_ALPHA / DST_ALPHA / ONE_MINUS_DST_ALPHA / 
+		CONSTANT_ALPHA / ONE_MINUS_CONSTANT_ALPHA / SRC_ALPHA_SATURATE
+
+		(*2) 以下から選択
+		NEVER / LESS / EQUAL / LEQUAL / GREATER / GEQUAL / 
+		NOTEQUAL / ALWAYS
+
+	pass設定部分で、マテリアルごとのシェーダー設定を定義しています。
+
+		設定名               内容
+		-------------------------------------------------
+		defines              シェーダーコンパイル時のラベル定義
+		vertexShader         バーテックスシェーダーファイルのパス
+		fragmentShader       フラグメントシェーダーファイルのパス
+
+	sampler設定部分で、マテリアルごとのテクスチャ設定を定義しています。
+
+		設定名               内容
+		-------------------------------------------------
+		path                 画像ファイルのパス
+		wrapS                横方向のラップ設定(REPEAT/CLAMP)
+		wrapT                縦方向のラップ設定(REPEAT/CLAMP)
+		mipmap               ミップマップ設定(true/false)
+		minFilter            縮小フィルター設定(*1)
+		magFilter            拡大フィルター設定(*1)
+
+		(*1) 以下から選択
+		NEAREST / LINEAR / NEAREST_MIPMAP_NEAREST / 
+		LINEAR_MIPMAP_NEAREST / NEAREST_MIPMAP_LINEAR / 
+		LINEAR_MIPMAP_LINEAR
+
+	現在のバージョンでは、FBXが参照するテクスチャによっては、マテリアル情報(.material)に
+	出力されるテクスチャファイル名にパス名(フォルダ)が付加されることがあり、正しく読み込みが
+	できないことがあります。その場合は、生成された.materialファイルの
+	テクスチャファイル名部分を直接修正するようにしてください。
+	以下の例では、「path = 」に続く文字列がファイルのパス名になります。
+	該当するテクスチャは、「res/Metal_Corrogated_Shiny.png」から読み込まれることを示しています。
+
+	    sampler u_diffuseTexture
+	    {
+	        path = res/Metal_Corrogated_Shiny.png
+	        wrapS = REPEAT
+	        wrapT = REPEAT
+	    }
+
+	.materialファイルは、複雑なモデルの定義などの場合、手で修正することが
+	困難になります。今後のバージョンでは、ツールによるサポートを予定しています。
+
+
+・3Dモデルデータのライティング
+
+	gpload命令で読み込まれたモデルは、変換時のfbxに記録されている
+	シェーディング情報を元にマテリアル設定が行なわれます。
+	つまり、モデルのライティング設定は、.materialファイルによって決まります。
+
+	ライティングされないモデルに対して、ライティングを適用する場合には、
+	.materialファイル内のdefine定義を修正する必要があります。
+	pass設定部分のdefine定義に「DIRECTIONAL_LIGHT_COUNT 1」が指定されている
+	マテリアルはライティング計算の対象になります。
+	define定義は、「;」記号で区切ることで複数の定義を記述できます。
+	「SPECULAR;DIRECTIONAL_LIGHT_COUNT 1」のように記述した場合には、
+	ライティング計算とスペキュラーが適用されます。
+
+	ライティング及びスペキュラーを適用する場合には、material設定部分に
+	以下の定義を追加する必要があります。
+
+            u_inverseTransposeWorldViewMatrix = INVERSE_TRANSPOSE_WORLD_VIEW_MATRIX
+            u_cameraPosition = CAMERA_WORLD_POSITION
+            u_specularExponent = 50
+	    u_directionalLightColor[0] = 1, 1, 1
+	    u_directionalLightDirection[0] = 0, 0, -1
+
+	これらは、シェーダーに渡されるデフォルトのパラメーターになります。
+	「u_worldViewProjectionMatrix」の定義を行なっている行の下に追加してください。
+	(「u_specularExponent」はスペキュラーの強度を示します。)
 
 
 ・シーンの描画について

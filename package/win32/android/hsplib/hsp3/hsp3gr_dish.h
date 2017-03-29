@@ -17,5 +17,6 @@ void hsp3extcmd_pause( void );
 void hsp3extcmd_resume( void );
 
 HSP3DEVINFO *hsp3extcmd_getdevinfo( void );
+void hsp3extcmd_sysvars( int inst, int hwnd, int hdc );
 
 #endif
