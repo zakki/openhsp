@@ -633,12 +633,15 @@ int hsp3dish_init( char *startfile )
 	hsp3typeinit_extcmd( code_gettypeinfo( TYPE_EXTCMD ) );
 	hsp3typeinit_extfunc( code_gettypeinfo( TYPE_EXTSYSVAR ) );
 
-#ifdef USE_OBAQ
-	hsp3typeinit_dw_extcmd( code_gettypeinfo( TYPE_DLLFUNC ) );
-	hsp3typeinit_dw_extfunc( code_gettypeinfo( TYPE_DLLCTRL ) );
-#endif
-
 	exinfo = ctx->exinfo2;
+
+#ifdef USE_OBAQ
+	HSP3TYPEINFO *tinfo = code_gettypeinfo( TYPE_USERDEF );
+	tinfo->hspctx = ctx;
+	tinfo->hspexinfo = exinfo;
+	hsp3typeinit_dw_extcmd( tinfo );
+	//hsp3typeinit_dw_extfunc( code_gettypeinfo( TYPE_USERDEF+1 ) );
+#endif
 
 	//		Initalize DEVINFO
 	HSP3DEVINFO *devinfo;

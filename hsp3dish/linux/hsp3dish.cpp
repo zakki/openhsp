@@ -37,8 +37,11 @@ struct engine;
 #include "SDL/SDL_image.h"
 //#include "SDL/SDL_opengl.h"
 
+//#define USE_OBAQ
 
-
+#ifdef USE_OBAQ
+#include "../obaq/hsp3dw.h"
+#endif
 
 //typedef BOOL (CALLBACK *HSP3DBGFUNC)(HSP3DEBUG *,int,int,int);
 
