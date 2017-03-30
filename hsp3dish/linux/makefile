@@ -1,7 +1,7 @@
 CC = gcc
 CXX = g++
 AR = ar
-CFLAGS = -Wall --exec-charset=UTF-8 -DHSPDISH -DHSPLINUX -DHSPDEBUG
+CFLAGS = -Wall --exec-charset=UTF-8 -DHSPDISH -DHSPLINUX -DHSPDEBUG -DUSE_OBAQ
 CFLAGS_GP = -Wall --exec-charset=UTF-8 -DHSPDISH -DHSPDISHGP -DHSPLINUX -DHSPDEBUG -I ../extlib/src -I ../extlib/src/glew -I ../gameplay/src -std=c++11
 
 OBJS = \
