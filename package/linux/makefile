@@ -460,5 +460,5 @@ libLinearMath.a: $(OBJS_LINEAR_MATH)
 	$(AR) rcs $@ $(OBJS_LINEAR_MATH)
 
 clean:
-	rm -f $(OBJS) $(OBJS_GP) $(OBJS_GAMEPLAY) $(TARGETS) $(LIBS_GP)
+	rm -f $(OBJS) $(OBJS_GP) $(OBJS_CMP) $(OBJS_CL) $(OBJS_GAMEPLAY) $(TARGETS) $(LIBS_GP)
 

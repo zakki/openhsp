@@ -200,7 +200,7 @@ static int handleEvent( void ) {
 				//printf("key up: sym %d scancode %d\n", event.key.keysym.sym, event.key.keysym.scancode);
 			}
 			break;
-		case SDL_QUIT: /** ã‚¦ã‚£ãƒ³ãƒ‰ã‚¦ã®xãƒœã‚¿ãƒ³ã‚„ctrl-Cã‚’æŠ¼ã—ãŸå ´åˆ */
+		case SDL_QUIT: /** ƒEƒBƒ“ƒhƒE‚Ìxƒ{ƒ^ƒ“‚âctrl-C‚ğ‰Ÿ‚µ‚½ê‡ */
 			res = -1;
 		}
 	}
@@ -239,11 +239,11 @@ static void hsp3dish_initwindow( engine* p_engine, int sx, int sy, char *windowt
 	}
 	SDL_WM_SetCaption( "HSPDish ver" hspver, NULL );
 
-	// æç”»APIã«æ¸¡ã™
+	// •`‰æAPI‚É“n‚·
 	hgio_init( 0, sx, sy, p_engine );
 	hgio_clsmode( CLSMODE_SOLID, 0xffffff, 0 );
 
-	// ãƒãƒ«ãƒã‚¿ãƒƒãƒåˆæœŸåŒ–
+	// ƒ}ƒ‹ƒ`ƒ^ƒbƒ`‰Šú‰»
 	//MTouchInit( m_hWnd );
 }
 
@@ -258,7 +258,7 @@ void hsp3dish_dialog( char *mes )
 #ifdef HSPDEBUG
 char *hsp3dish_debug( int type )
 {
-	//		ãƒ‡ãƒãƒƒã‚°æƒ…å ±å–å¾—
+	//		ƒfƒoƒbƒOî•ñæ“¾
 	//
 	char *p;
 	p = code_inidbg();
@@ -284,7 +284,7 @@ char *hsp3dish_debug( int type )
 
 void hsp3dish_drawon( void )
 {
-	//		æç”»é–‹å§‹æŒ‡ç¤º
+	//		•`‰æŠJnw¦
 	//
 	if ( drawflag == 0 ) {
 		hgio_render_start();
@@ -295,7 +295,7 @@ void hsp3dish_drawon( void )
 
 void hsp3dish_drawoff( void )
 {
-	//		æç”»çµ‚äº†æŒ‡ç¤º
+	//		•`‰æI—¹w¦
 	//
 	if ( drawflag ) {
 		hgio_render_end();
@@ -311,8 +311,8 @@ int hsp3dish_debugopen( void )
 
 int hsp3dish_wait( int tick )
 {
-	//		æ™‚é–“å¾…ã¡(wait)
-	//		(awaitã«å¤‰æ›ã—ã¾ã™)
+	//		ŠÔ‘Ò‚¿(wait)
+	//		(await‚É•ÏŠ·‚µ‚Ü‚·)
 	//
 	if ( ctx->waitcount <= 0 ) {
 		ctx->runmode = RUNMODE_RUN;
@@ -325,7 +325,7 @@ int hsp3dish_wait( int tick )
 
 int hsp3dish_await( int tick )
 {
-	//		æ™‚é–“å¾…ã¡(await)
+	//		ŠÔ‘Ò‚¿(await)
 	//
 	if ( ctx->waittick < 0 ) {
 		if ( ctx->lasttick == 0 ) ctx->lasttick = tick;
@@ -349,7 +349,7 @@ void hsp3dish_msgfunc( HSPCTX *hspctx )
 	}
 
 	while(1) {
-		// logmes ãªã‚‰å…ˆã«å‡¦ç†ã™ã‚‹
+		// logmes ‚È‚çæ‚Éˆ—‚·‚é
 		if ( hspctx->runmode == RUNMODE_LOGMES ) {
 			hspctx->runmode = RUNMODE_RUN;
 			return;
@@ -362,13 +362,13 @@ void hsp3dish_msgfunc( HSPCTX *hspctx )
 			tick = hgio_gettick();
 			hspctx->runmode = code_exec_wait( tick );
 		case RUNMODE_AWAIT:
-			//	é«˜ç²¾åº¦ã‚¿ã‚¤ãƒãƒ¼
-			tick = hgio_gettick();					// ã™ã“ã—æ—©ã‚ã«æŠœã‘ã‚‹ã‚ˆã†ã«ã™ã‚‹
+			//	‚¸“xƒ^ƒCƒ}[
+			tick = hgio_gettick();					// ‚·‚±‚µ‘‚ß‚É”²‚¯‚é‚æ‚¤‚É‚·‚é
 			if ( code_exec_await( tick ) != RUNMODE_RUN ) {
 					SDL_Delay( ( hspctx->waittick - tick) / 2 );
 			} else {
 				tick = hgio_gettick();
-				while( tick < hspctx->waittick ) {	// ç´°ã‹ã„waitã‚’å–ã‚‹
+				while( tick < hspctx->waittick ) {	// ×‚©‚¢wait‚ğæ‚é
 					SDL_Delay(1);
 					tick = hgio_gettick();
 				}
@@ -402,7 +402,7 @@ void hsp3dish_msgfunc( HSPCTX *hspctx )
 
 
 /*----------------------------------------------------------*/
-//		ãƒ‡ãƒã‚¤ã‚¹ã‚³ãƒ³ãƒˆãƒ­ãƒ¼ãƒ«é–¢é€£
+//		ƒfƒoƒCƒXƒRƒ“ƒgƒ[ƒ‹ŠÖ˜A
 /*----------------------------------------------------------*/
 static HSP3DEVINFO *mem_devinfo;
 static int devinfo_dummy;
@@ -452,7 +452,7 @@ static void hsp3dish_setdevinfo( HSP3DEVINFO *devinfo )
 
 int hsp3dish_init( char *startfile )
 {
-	//		ã‚·ã‚¹ãƒ†ãƒ é–¢é€£ã®åˆæœŸåŒ–
+	//		ƒVƒXƒeƒ€ŠÖ˜A‚Ì‰Šú‰»
 	//		( mode:0=debug/1=release )
 	//
 	int a,orgexe, mode;
@@ -465,13 +465,13 @@ int hsp3dish_init( char *startfile )
 	InitSysReq();
 
 #ifdef HSPDISHGP
-	SetSysReq( SYSREQ_MAXMATERIAL, 64 );            // ãƒãƒ†ãƒªã‚¢ãƒ«ã®ãƒ‡ãƒ•ã‚©ãƒ«ãƒˆå€¤
+	SetSysReq( SYSREQ_MAXMATERIAL, 64 );            // ƒ}ƒeƒŠƒAƒ‹‚ÌƒfƒtƒHƒ‹ƒg’l
 
 	game = NULL;
 	platform = NULL;
 #endif
 
-	//		HSPé–¢é€£ã®åˆæœŸåŒ–
+	//		HSPŠÖ˜A‚Ì‰Šú‰»
 	//
 	hsp = new Hsp3();
 
@@ -479,7 +479,7 @@ int hsp3dish_init( char *startfile )
 		hsp->SetFileName( startfile );
 	}
 
-	//		å®Ÿè¡Œãƒ•ã‚¡ã‚¤ãƒ«ã‹ãƒ‡ãƒãƒƒã‚°ä¸­ã‹ã‚’èª¿ã¹ã‚‹
+	//		Àsƒtƒ@ƒCƒ‹‚©ƒfƒoƒbƒO’†‚©‚ğ’²‚×‚é
 	//
 	mode = 0;
 	orgexe=0;
@@ -580,11 +580,10 @@ int hsp3dish_init( char *startfile )
 	exinfo = ctx->exinfo2;
 
 #ifdef USE_OBAQ
-	HSP3TYPEINFO *tinfo = code_gettypeinfo( TYPE_USERDEF );
+	HSP3TYPEINFO *tinfo = code_gettypeinfo( -1 );// TYPE_USERDEF
 	tinfo->hspctx = ctx;
 	tinfo->hspexinfo = exinfo;
 	hsp3typeinit_dw_extcmd( tinfo );
-	//hsp3typeinit_dw_extfunc( code_gettypeinfo( TYPE_USERDEF+1 ) );
 #endif
 
 	//		Initalize DEVINFO
@@ -598,12 +597,12 @@ int hsp3dish_init( char *startfile )
 
 static void hsp3dish_bye( void )
 {
-	//		Windowé–¢é€£ã®è§£æ”¾
+	//		WindowŠÖ˜A‚Ì‰ğ•ú
 	//
 	hsp3dish_drawoff();
 
 #ifdef HSPDISHGP
-	//		gameplayé–¢é€£ã®è§£æ”¾
+	//		gameplayŠÖ˜A‚Ì‰ğ•ú
 	//
 	if ( platform != NULL ) {
 		platform->shutdownInternal();
@@ -614,7 +613,7 @@ static void hsp3dish_bye( void )
 	}
 #endif
 
-	//		HSPé–¢é€£ã®è§£æ”¾
+	//		HSPŠÖ˜A‚Ì‰ğ•ú
 	//
 	if ( hsp != NULL ) { delete hsp; hsp = NULL; }
 
@@ -661,14 +660,14 @@ char *hsp3dish_getlog(void)
 
 int hsp3dish_exec( void )
 {
-	//		å®Ÿè¡Œãƒ¡ã‚¤ãƒ³ã‚’å‘¼ã³å‡ºã™
+	//		ÀsƒƒCƒ“‚ğŒÄ‚Ño‚·
 	//
 	int runmode;
 	int endcode;
 
 	hsp3dish_msgfunc( ctx );
 
-	//		å®Ÿè¡Œã®é–‹å§‹
+	//		Às‚ÌŠJn
 	//
 	runmode = code_execcmd();
 	if ( runmode == RUNMODE_ERROR ) {

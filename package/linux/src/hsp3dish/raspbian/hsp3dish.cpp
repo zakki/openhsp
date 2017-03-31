@@ -18,11 +18,6 @@
 
 #include "bcm_host.h"
 
-#include "GLES/gl.h"
-#include "EGL/egl.h"
-#include "EGL/eglext.h"
-#include "SDL/SDL.h"
-
 #include "hsp3dish.h"
 #include "../../hsp3/hsp3config.h"
 #include "../../hsp3/strbuf.h"
@@ -39,6 +34,14 @@
 #ifdef HSPDISHGP
 #include "../win32gp/gamehsp.h"
 #endif
+
+#include "GLES/gl.h"
+#include "EGL/egl.h"
+#include "EGL/eglext.h"
+
+#include "SDL/SDL.h"
+#include "SDL/SDL_image.h"
+//#include "SDL/SDL_opengl.h"
 
 
 //#define USE_OBAQ
@@ -642,7 +645,7 @@ int hsp3dish_init( char *startfile )
 	exinfo = ctx->exinfo2;
 
 #ifdef USE_OBAQ
-	HSP3TYPEINFO *tinfo = code_gettypeinfo( TYPE_USERDEF );
+	HSP3TYPEINFO *tinfo = code_gettypeinfo( -1 ); //TYPE_USERDEF
 	tinfo->hspctx = ctx;
 	tinfo->hspexinfo = exinfo;
 	hsp3typeinit_dw_extcmd( tinfo );
