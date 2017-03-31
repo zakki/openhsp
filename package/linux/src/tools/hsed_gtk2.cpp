@@ -8,8 +8,8 @@
 GtkWidget *edit;
 GtkWidget *window;
 char filename[1024];
-char hspdir[512];
-char curdir[512];
+char hspdir[1024];
+char curdir[1024];
 char complog[4096];
 
 /////////////////////////  ファイル ///////////////////////////////
@@ -238,21 +238,24 @@ static void HSP_run(GtkWidget *w,int flag)
 
 	//char *buf=gtk_editable_get_chars(GTK_EDITABLE(edit),0,-1);
 	int size=strlen(buf);
-	char cmd[512];
+	char cmd[1024];
+	char mydir[1024];
 	int p=0;
 
-	FILE *fp=fopen("hsptmp","w");
+	FILE *fp=fopen("__hsptmp.hsp","w");
 	if(fp == NULL)
 		return;
 	fwrite(buf,1,size,fp);
 	fclose(fp);
 	g_free(buf);
 
+	getcwd(mydir,1024);
+	chdir(hspdir);
 
 	if(flag==0){
-		sprintf(cmd,"%s/hspcmp -d -i -u hsptmp.ax",hspdir);  // -o obj
+		sprintf(cmd,"./hspcmp -d -i -u %s/__hsptmp",mydir);  // -o obj
 	}else{
-		sprintf(cmd,"%s/hspcmp -i -u hsptmp.ax",hspdir);
+		sprintf(cmd,"./hspcmp -i -u %s/__hsptmp",mydir);
 	}
 
 	printf("hsed: RUN(%s)\n",cmd);
@@ -267,10 +270,13 @@ static void HSP_run(GtkWidget *w,int flag)
 	//if(system(cmd)){
 		printf("hsed: Compile error.\n");
 		HSP_view_log();
+		chdir(mydir);
 		return;
 	}
 
-	sprintf(cmd,"%s/hsp3dish hsptmp.ax",hspdir);
+	chdir(mydir);
+
+	sprintf(cmd,"%s/hsp3dish __hsptmp.ax",hspdir);
 	system(cmd);
 
 	//system("./runhsp hsptmp&");

@@ -36,11 +36,17 @@
 #include "appengine.h"
 #endif
 
-#if defined(HSPLINUX) || defined(HSPEMSCRIPTEN)
+#if defined(HSPEMSCRIPTEN)
 #define USE_JAVA_FONT
 #define FONT_TEX_SX 512
 #define FONT_TEX_SY 128
+#endif
 
+#if defined(HSPLINUX)
+#include "font_data.h"
+#endif
+
+#if defined(HSPLINUX) || defined(HSPEMSCRIPTEN)
 #ifdef HSPRASPBIAN
 #include "bcm_host.h"
 #include "GLES/gl.h"
@@ -48,7 +54,9 @@
 #include "EGL/eglext.h"
 #include "SDL/SDL.h"
 
+
 #else
+
 //#include <GLES2/gl2.h>
 //#include <EGL/egl.h>
 #define GL_GLEXT_PROTOTYPES
@@ -282,7 +290,6 @@ void hgio_init( int mode, int sx, int sy, void *hwnd )
     total_tick = 0.0;
     lastTime = CFAbsoluteTimeGetCurrent();
 #endif
-
 }
 
 
@@ -297,7 +304,7 @@ void hgio_view( int sx, int sy )
 {
 	_bgsx = sx;
 	_bgsy = sy;
-    //Alertf( "Size(%d,%d)",_bgsx,_bgsy );
+ 	//printf( "Size(%d,%d)\n",_bgsx,_bgsy );
 }
 
 
@@ -305,7 +312,7 @@ void hgio_scale( float xx, float yy )
 {
 	_scaleX = xx;
 	_scaleY = yy;
-    //Alertf( "Scale(%f,%f)",_scaleX,_scaleY );
+    //printf( "Scale(%f,%f)\n",_scaleX,_scaleY );
 }
 
 
@@ -2110,7 +2117,7 @@ int hgio_render_end( void )
     gb_render_end();
 #endif
 
-#if defined(HSPLINUX) || defined(HSPNDK)
+#if defined(HSPRASPBIAN) || defined(HSPNDK)
 
 	//hgio_setColor( 0xffffff );
 	//hgio_fcopy( 0, 100,  0, 0, 118, 22, 1 );
