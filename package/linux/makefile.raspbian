@@ -3,8 +3,7 @@ CXX = g++
 AR = ar
 CFLAGS_DISH = -Wall -fpermissive --exec-charset=UTF-8 -DHSPDISH -DHSPLINUX -DHSPRASPBIAN -DHSPDEBUG -DUSE_OBAQ -I /opt/vc/include
 CFLAGS_GP = -Wall -g -O0 -fpermissive --exec-charset=UTF-8 -DHSPDISH -DHSPDISHGP -DHSPLINUX -DHSPRASPBIAN -DHSPDEBUG -I /opt/vc/include -I src/hsp3dish/extlib/src -I src/hsp3dish/gameplay/src -std=c++11
-LDFLAGS= -lm -L$(SDKSTAGE)/opt/vc/lib/ -lbrcmEGL -lopenmaxil -lbcm_host -lvcos -lvchiq_arm -lpthread -lrt -lSDL -lSDL_mixer -lEGL_static
-
+LDFLAGS= -lm -L$(SDKSTAGE)/opt/vc/lib/ -lbrcmGLESv2 -lbrcmEGL -lopenmaxil -lbcm_host -lvcos -lvchiq_arm -lpthread -lrt -lSDL -lSDL_mixer
 CFLAGS_CL = -Wall -std=c++11 --exec-charset=UTF-8 -DHSPLINUX -DHSPDEBUG
 CFLAGS_CMP = -Wall -std=c++11 --exec-charset=UTF-8 -DHSPLINUX -DHSPDEBUG
 
@@ -99,7 +98,7 @@ all: $(TARGETS)
 
 .SUFFIXES: .cpp
 hsp3dish: $(OBJS)
-	$(CXX) $(CFLAGS_DISH) $(OBJS) $(LDFLAGS) -s -o $@ $(LIBS1)
+	$(CXX) $(CFLAGS_DISH) $(OBJS) $(LDFLAGS) -s -o $@
 %.do: %.c
 	$(CC) $(CFLAGS_DISH) -c $< -o $*.do
 %.do: %.cpp

@@ -224,6 +224,7 @@ static void hsp3dish_initwindow( engine* p_engine, int sx, int sy, char *windowt
 
    static EGL_DISPMANX_WINDOW_T nativewindow;
 
+   DISPMANX_UPDATE_HANDLE_T dispman_update;
    VC_RECT_T dst_rect;
    VC_RECT_T src_rect;
 
@@ -238,11 +239,10 @@ static void hsp3dish_initwindow( engine* p_engine, int sx, int sy, char *windowt
    };
    
 	EGLConfig config;
-	DISPMANX_UPDATE_HANDLE_T dispman_update;
 	uint32_t width, height;
 
 	bcm_host_init();
-
+	
    // get an EGL display connection
    p_engine->display = eglGetDisplay(EGL_DEFAULT_DISPLAY);
    assert(p_engine->display!=EGL_NO_DISPLAY);
@@ -403,9 +403,9 @@ void hsp3dish_msgfunc( HSPCTX *hspctx )
 	btn = get_mouse(&x, &y);
 	hgio_touch( x, y, btn );
 #ifdef HSPDEBUG
-	if ( btn ) {
-		hspctx->runmode = RUNMODE_END;
-	}
+//	if ( btn ) {
+//		hspctx->runmode = RUNMODE_END;
+//	}
 	if ( get_key_state(SDLK_ESCAPE) ){	;	// [esc] to Quit
 		hspctx->runmode = RUNMODE_END;
 	}

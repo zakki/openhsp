@@ -39,6 +39,35 @@ LinuxのGUI環境(X Window System)で動作します。
 必要なツールのコンパイルが行なわれ、HSP3が使用できる状態になります。
 
 
+・Raspberry Piインストール
+
+Raspberry Pi上のRaspbian Jessieで動作します。(推奨バージョンは、March 2017 Kernel version4.4です)
+hsp3dish及びhsp3gp(HGIMG4)、hsed(スクリプトエディタ)は、
+GUI環境でのみ動作します。 GUIを使用する場合は、Raspberry Pi3または
+Raspberry Pi2の使用を推奨します。
+(描画に関する機能は、OpenGL及びSDLライブラリを使用して動作しています。)
+アーカイブの内容を任意のディレクトリに展開して、ソースをコンパイルしてください。
+コンパイルには、gcc及びmakeを実行できる環境が必要になります。
+
+	tar -vxzf hsplinux???.tar.gz   (???はバージョン)
+		
+コンパイルの際には、追加のライブラリが必要になります。ネットワークに
+接続されている状態で以下のコマンドを実行することで取得できます。
+
+	sudo apt-get install libgtk2.0-dev
+	sudo apt-get install libglew-dev
+	sudo apt-get install libsdl1.2-dev libsdl-image1.2-dev libsdl-mixer1.2-dev libsdl-ttf2.0-dev
+		
+アーカイブにはソースのみが含まれていますので、makeによってコンパイルする必要があります。
+(Raspbianのバージョンやディストリビューションによって
+正しくコンパイルされない場合は、修正が必要になります。)
+
+	make -f makefile.raspbian
+		
+アーカイブの内容が展開されたディレクトリでmakeコマンドを実行してください。
+必要なツールのコンパイルが行なわれ、HSP3が使用できる状態になります。
+
+
 ・使用方法
 
 HSP3は、オープンソースとして公開されているOpenHSP技術をベースに、
