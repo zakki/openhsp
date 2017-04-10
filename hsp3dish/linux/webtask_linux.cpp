@@ -21,30 +21,30 @@ void WebTask::Reset( void )
 
 WebTask::WebTask( void )
 {
-	//	ƒRƒ“ƒXƒgƒ‰ƒNƒ^
+	//	ã‚³ãƒ³ã‚¹ãƒˆãƒ©ã‚¯ã‚¿
 	//
 	//str_agent = NULL;
 	mode = CZHTTP_MODE_NONE;
 	vardata = NULL;
 	postdata = NULL;
 
-	//	‰Šú‰»‚ğs‚¤
+	//	åˆæœŸåŒ–ã‚’è¡Œã†
 	Reset();
 }
 
 
 WebTask::~WebTask( void )
 {
-	//	ƒfƒXƒgƒ‰ƒNƒ^
+	//	ãƒ‡ã‚¹ãƒˆãƒ©ã‚¯ã‚¿
 	//
 }
 
 
 int WebTask::Request( char *url, char *post )
 {
-	//	HTTPƒŠƒNƒGƒXƒg”­s
-	//	( url:ƒŠƒNƒGƒXƒg‚·‚éURL )
-	//	( post:NULL‚Ìê‡‚ÍGETA•¶š—ñ‚Ìê‡‚ÍPOST‚Å“n‚· )
+	//	HTTPãƒªã‚¯ã‚¨ã‚¹ãƒˆç™ºè¡Œ
+	//	( url:ãƒªã‚¯ã‚¨ã‚¹ãƒˆã™ã‚‹URL )
+	//	( post:NULLã®å ´åˆã¯GETã€æ–‡å­—åˆ—ã®å ´åˆã¯POSTã§æ¸¡ã™ )
 	//
 	if ( mode != CZHTTP_MODE_READY ) {
 		return -1;
@@ -61,7 +61,7 @@ int WebTask::Request( char *url, char *post )
 
 int WebTask::getStatus( int id )
 {
-	// ƒXƒe[ƒ^ƒX’l‚Ìæ“¾
+	// ã‚¹ãƒ†ãƒ¼ã‚¿ã‚¹å€¤ã®å–å¾—
 	//
 	switch( id ) {
 	case HTTPINFO_MODE:
@@ -78,16 +78,16 @@ int WebTask::getStatus( int id )
 
 char *WebTask::getData( int id )
 {
-	// ƒf[ƒ^•¶š—ñ‚Ìæ“¾
+	// ãƒ‡ãƒ¼ã‚¿æ–‡å­—åˆ—ã®å–å¾—
 	//
 	switch( id ) {
-	case HTTPINFO_DATA:				// Œ‹‰Êƒf[ƒ^
+	case HTTPINFO_DATA:				// çµæœãƒ‡ãƒ¼ã‚¿
 		{
 		char *p = getVarData();
 		if ( p != NULL ) return p;
 		break;
 		}
-	case HTTPINFO_ERROR:			// ƒGƒ‰[•¶š—ñ
+	case HTTPINFO_ERROR:			// ã‚¨ãƒ©ãƒ¼æ–‡å­—åˆ—
 		return getError();
 	default:
 		break;
@@ -98,14 +98,14 @@ char *WebTask::getData( int id )
 
 void WebTask::setData( int id, char *str )
 {
-	// ƒf[ƒ^•¶š—ñ‚Ìæ“¾
+	// ãƒ‡ãƒ¼ã‚¿æ–‡å­—åˆ—ã®å–å¾—
 	//
 	switch( id ) {
 	case HTTPINFO_DATA:
-		ClearVarData();				// Œ‹‰Êƒf[ƒ^‚ğƒNƒŠƒA‚·‚é
+		ClearVarData();				// çµæœãƒ‡ãƒ¼ã‚¿ã‚’ã‚¯ãƒªã‚¢ã™ã‚‹
 		break;
 	case HTTPINFO_ERROR:
-		SetError( str );			// ƒGƒ‰[•¶š—ñ
+		SetError( str );			// ã‚¨ãƒ©ãƒ¼æ–‡å­—åˆ—
 		break;
 	default:
 		break;
@@ -120,14 +120,14 @@ void WebTask::setData( int id, char *str )
 
 int WebTask::Exec( void )
 {
-	//	–ˆƒtƒŒ[ƒ€Às
+	//	æ¯ãƒ•ãƒ¬ãƒ¼ãƒ å®Ÿè¡Œ
 	//
 	//int handle;
 
 	switch( mode ) {
 	case CZHTTP_MODE_VARREQUEST:
 	case CZHTTP_MODE_VARREQSEND:
-		// HTTP‚ÉÚ‘±
+		// HTTPã«æ¥ç¶š
 //		handle = emscripten_async_wget2_data(req_url.c_str(), varstr,
 //									postdata, this, true,
 //									WebTask::onLoaded, WebTask::onError, WebTask::onProgress);
@@ -170,7 +170,7 @@ void WebTask::ClearPostData( void )
 
 void WebTask::SetURL( char *url )
 {
-	// ƒT[ƒo[‚ÌURL‚ğİ’è
+	// ã‚µãƒ¼ãƒãƒ¼ã®URLã‚’è¨­å®š
 	//
 	req_url = url;
 }
@@ -178,7 +178,7 @@ void WebTask::SetURL( char *url )
 
 void WebTask::SetPostData( char *post )
 {
-	// ƒ|ƒXƒg•¶š—ñ‚Ìİ’è
+	// ãƒã‚¹ãƒˆæ–‡å­—åˆ—ã®è¨­å®š
 	//
 	ClearPostData();
 	if ( post == NULL ) return;
@@ -190,7 +190,7 @@ void WebTask::SetPostData( char *post )
 
 void WebTask::SetVarRequestGet( char *path )
 {
-	// ƒT[ƒo[‚Éƒtƒ@ƒCƒ‹‚ğ—v‹(GET)
+	// ã‚µãƒ¼ãƒãƒ¼ã«ãƒ•ã‚¡ã‚¤ãƒ«ã‚’è¦æ±‚(GET)
 	//
 	req_url = path;
 	strcpy( varstr, "GET" );
@@ -201,7 +201,7 @@ void WebTask::SetVarRequestGet( char *path )
 
 void WebTask::SetVarRequestPost( char *path, char *post )
 {
-	// ƒT[ƒo[‚Éƒtƒ@ƒCƒ‹‚ğ—v‹(POST)
+	// ã‚µãƒ¼ãƒãƒ¼ã«ãƒ•ã‚¡ã‚¤ãƒ«ã‚’è¦æ±‚(POST)
 	//
 	req_url = path;
 	strcpy( varstr, "POST" );
@@ -211,7 +211,7 @@ void WebTask::SetVarRequestPost( char *path, char *post )
 
 void WebTask::SetError( char *mes )
 {
-	//	ƒGƒ‰[•¶š—ñ‚ğİ’è
+	//	ã‚¨ãƒ©ãƒ¼æ–‡å­—åˆ—ã‚’è¨­å®š
 	//
 	mode = CZHTTP_MODE_ERROR;
 	strcpy( errstr,mes );
