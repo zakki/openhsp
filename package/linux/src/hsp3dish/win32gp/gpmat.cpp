@@ -205,7 +205,7 @@ void gamehsp::setMaterialDefaultBinding( Material* material, int icolor, int mat
 	// ライトの色設定
 	// (リアルタイムに変更を反映させる場合は再設定が必要。現在は未対応)
 	Vector3 *vambient;
-	vambient = (Vector3 *)&lgt->_vec[GPOBJ_USERVEC_WORK];
+	vambient = (Vector3 *)&lgt->_vec[GPOBJ_USERVEC_DIR];
 	if (hasParameter(material, "u_directionalLightColor[0]"))
 		material->getParameter("u_directionalLightColor[0]")->setValue(light_node->getLight()->getColor());
 	if (hasParameter(material, "u_ambientColor"))

@@ -46,18 +46,17 @@
 #const global GPOBJ_MATOPT_SPECULAR (64)
 #const global GPOBJ_MATOPT_USERSHADER (128)
 
-#enum global PRMSET_FLAG = 0
+#enum global PRMSET_FLAG = 2
 #enum global PRMSET_MODE
 #enum global PRMSET_ID
 #enum global PRMSET_TIMER
-#enum global PRMSET_ALPHA
 #enum global PRMSET_MYGROUP
 #enum global PRMSET_COLGROUP
 #enum global PRMSET_SHAPE
 #enum global PRMSET_USEGPMAT
 #enum global PRMSET_USEGPPHY
 #enum global PRMSET_COLILOG
-#enum global PRMSET_TRANSPARENT
+#enum global PRMSET_ALPHA
 #enum global PRMSET_SPRID = 0x100
 #enum global PRMSET_SPRCELID
 #enum global PRMSET_SPRGMODE

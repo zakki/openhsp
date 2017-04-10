@@ -580,11 +580,10 @@ int hsp3dish_init( char *startfile )
 	exinfo = ctx->exinfo2;
 
 #ifdef USE_OBAQ
-	HSP3TYPEINFO *tinfo = code_gettypeinfo( TYPE_USERDEF );
+	HSP3TYPEINFO *tinfo = code_gettypeinfo( -1 );// TYPE_USERDEF
 	tinfo->hspctx = ctx;
 	tinfo->hspexinfo = exinfo;
 	hsp3typeinit_dw_extcmd( tinfo );
-	//hsp3typeinit_dw_extfunc( code_gettypeinfo( TYPE_USERDEF+1 ) );
 #endif
 
 	//		Initalize DEVINFO
