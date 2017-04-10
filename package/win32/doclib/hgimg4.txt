@@ -1584,6 +1584,20 @@ Bullet Collision Detection and Physics Library
 Advanced Micro Devices, Inc.
 http://bulletphysics.org
 
+The OpenGL Extension Wrangler Library
+Copyright (C) 2002-2007, Milan Ikits <milan ikits[]ieee org>
+Copyright (C) 2002-2007, Marcelo E. Magallon <mmagallo[]debian org>
+Copyright (C) 2002, Lev Povalahev
+All rights reserved.
+
+libpng version 1.6.16, December 22, 2014
+Copyright (c) 1998-2014 Glenn Randers-Pehrson
+(Version 0.96 Copyright (c) 1996, 1997 Andreas Dilger)
+(Version 0.88 Copyright (c) 1995, 1996 Guy Eric Schalnat, Group 42, Inc.)
+
+zlib.h version 1.2.8, April 28th, 2013
+Copyright (C) 1995-2013 Jean-loup Gailly and Mark Adler
+
 OpenHSP
 Copyright (C) 1997-2017, ONION Software/onitama.
 http://hsp.tv

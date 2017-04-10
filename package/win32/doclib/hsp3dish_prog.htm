@@ -60,9 +60,15 @@
 	<p>
 	特殊な利用を想定したHSP3DishですがWindows上で使用する上では、
 	DirectXを使用した高速描画や、アルファチャンネルやPNG形式の標準サポートなど、
-	通常のHSP3にはないメリットも持ちあわせています。
-	HSP3Dishは、現在まだ制約や未実装の機能がありますが、
-	新しいHSP3の流れとして今後も進化を続ける予定です。どうぞご期待ください。
+	通常のHSP3にはないメリットも持ちあわせています。<br>
+	さらに、3D機能や高度な物理演算をサポートする<a href="http://hsp.tv/make/hgimg4.html" target="_blank">HGIMG4ランタイム</a>も、HSP3Dishから派生する形で提供されています。<br>
+	</p>
+	<p>
+	Linux及び小型デバイスRaspberry Pi上で動作する、<a href="http://hsp.tv/make/hsp3linux_pi.html" target="_blank">HSP3 for Linux/Raspberry Pi</a>は、別途パッケージ版を配布しています。詳しくは、
+	<a href="http://hsp.tv/make/hsp3linux_pi.html" target="_blank">HSP3 for Linux/Raspberry Pi</a>のページをご覧ください。
+	</p>
+	<p>
+	HSP3Dishは、新しいHSP3の流れとして今後も進化を続ける予定です。どうぞご期待ください。
 	</p>
 	<p>
 	公式サイトHSPTV!上に、HSP3Dishについての紹介ページが用意されています。
@@ -70,13 +76,16 @@
 	</p>
 	<ul><p>
 	<a href="http://hsp.tv/make/hsp3dish.html" target="_blank">HSP3Dishサポートページ<br>http://hsp.tv/make/hsp3dish.html</a><br>
+	</p><p>
+	<a href="http://hsp.tv/make/hsp3linux_pi.html" target="_blank">HSP3 for Linux/Raspberry Pi<br>http://hsp.tv/make/hsp3linux_pi.html</a><br>
+	</p><p>
+	<a href="http://hsp.tv/make/hgimg4.html" target="_blank">HGIMG4 development<br>http://hsp.tv/make/hgimg4.html</a><br>
 	</p></ul>
 
 	<h2 id="DISHUSE">HSP3Dishの使用方法</h2>
 	<p>
-	HSP3Dishでは、Windows上で動作するHSP3のスクリプトエディタなど通常のHSP環境をそのまま
-	使用して開発を行ないます。
-	必ずHSP3.3以降のHSPで作成を行なってください。
+	HSP3Dishでは、Windows上で動作するHSP3のスクリプトエディタなど通常のHSP環境をそのまま使用して開発を行ないます。
+	できる限り、最新版のHSPで作成を行なってください。<br>
 	HSP3Dish環境で動作するスクリプトを作成する場合は、
 	最初の行に、以下のコードを追加する必要があります。
 	</p>
@@ -94,6 +103,11 @@
 	<li>外部DLL呼び出し機能は未サポート</li>
 	<li>モジュール変数に関する機能は未サポート(モジュール機能そのものはサポートされます)</li>
 	</ul>
+	<p>
+	これらは、Windows以外のプラットフォーム上で再現できない機能を持っているため、
+	マルチプラットフォームを前提としたプログラムでは使用できません。
+	Windows版のHSP3Dishのみを使用する場合は、これらの機能も利用することができます。
+	</p>
 	<p>
 	また、スマートフォンのメモリやセキュリティの制約を反映して
 	以下の機能は限定的になっています。
@@ -476,6 +490,7 @@
 	   (逐次実行(インタプリタ)ではなくネイティブコードとして実行します)</li>
 	</ol>
 	<p>
+	スクリプトの変換などをサポートするためのツールとして、「HSP3Dish Helper」アプリケーションが用意されています。
 	詳しくは、それぞれのプラットフォームごとに用意されるマニュアルを参照してください。
 	</p>
 
@@ -536,15 +551,6 @@
 	製作したソフトウェアを商用として運用することを検討されている方で、有償によるサポートをご希望の方は
 	メールにてinfo@hsp.tvまでご連絡下さい。詳細をご案内させていただきます。
 	</p>
-
-	<h2 id="CONTACT">連絡先</h2>
-	<p>
-	HSP3Dishに関するお問い合わせ、ご意見などはメールにてお知らせください。
-	</p>
-	<pre>
-	onion software (onitama@onionsoft.net)
-	<a href="http://www.onionsoft.net/">http://www.onionsoft.net/</a>
-	</pre>
 
 	<!-- フッター -->
 	<ul id="FOOTER">
