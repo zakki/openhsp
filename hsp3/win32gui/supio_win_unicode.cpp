@@ -34,6 +34,10 @@ HSPAPICHAR *chartoapichar( const char *orig,HSPAPICHAR **pphac)
 	
 	int reslen;
 	wchar_t *resw;
+	if (orig == 0) {
+		*pphac = 0;
+		return 0;
+	}
 	reslen = MultiByteToWideChar(CP_UTF8,0,orig,-1,(LPWSTR)NULL,0);
 	resw = (wchar_t*)calloc(reslen+1,sizeof(wchar_t));
 	MultiByteToWideChar(CP_UTF8,0,orig,-1,resw,reslen);
@@ -51,6 +55,10 @@ HSPCHAR *apichartohspchar( const HSPAPICHAR *orig,HSPCHAR **pphc)
 {
 	int plen;
 	HSPCHAR *p = 0;
+	if (orig == 0) {
+		*pphc = 0;
+		return 0;
+	}
 	plen=WideCharToMultiByte(CP_UTF8,NULL,orig,-1,NULL,0,NULL,NULL);
 	p = (HSPCHAR *)calloc(plen+1,sizeof(HSPCHAR*));
 	WideCharToMultiByte(CP_UTF8,NULL,orig,-1,p,plen,NULL,NULL);
@@ -69,6 +77,10 @@ HSPAPICHAR *ansichartoapichar(const char *orig, HSPAPICHAR **pphac)
 
 	int reslen;
 	wchar_t *resw;
+	if (orig == 0) {
+		*pphac = 0;
+		return 0;
+	}
 	reslen = MultiByteToWideChar(CP_ACP, 0, orig, -1, (LPWSTR)NULL, 0);
 	resw = (wchar_t*)calloc(reslen + 1, sizeof(wchar_t));
 	MultiByteToWideChar(CP_ACP, 0, orig, -1, resw, reslen);
@@ -80,6 +92,10 @@ char *apichartoansichar(const HSPAPICHAR *orig, char **ppac)
 {
 	int plen;
 	HSPCHAR *p = 0;
+	if (orig == 0) {
+		*ppac = 0;
+		return 0;
+	}
 	plen = WideCharToMultiByte(CP_ACP, NULL, orig, -1, NULL, 0, NULL, NULL);
 	p = (char *)calloc(plen + 1, sizeof(char*));
 	WideCharToMultiByte(CP_ACP,NULL, orig, -1, p, plen, NULL, NULL);
