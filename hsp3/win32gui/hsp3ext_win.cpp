@@ -814,7 +814,7 @@ static int cmdfunc_ctrlcmd( int cmd )
 
 		vptr = code_getsptr( &fl );
 		if ( fl == TYPE_STRING ) {
-			p2 = (WPARAM)chartoapichar(vptr,&hactmp2);
+			p2 = (WPARAM)chartoapichar(vptr,&hactmp1);
 		} else {
 			p2 = *(WPARAM *)vptr;
 		}
