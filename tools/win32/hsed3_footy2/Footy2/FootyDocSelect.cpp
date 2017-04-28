@@ -241,7 +241,9 @@ CFootyDoc::RedrawType CFootyDoc::DeleteSelected(CUndoBuffer *pUndoBuffer)
 	}
 
 	// ‘I‘ğ‚ğ‰ğœ‚·‚é
-	m_nSelectType = SELECT_NONE;
+	SetSelectStart(pSelStart);
+	SetSelectEndNormal(pSelStart);
+
 	SendMoveCaretCallBack();
 	return REDRAW_ALL;
 }
