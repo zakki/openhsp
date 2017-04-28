@@ -126,9 +126,6 @@ static void HspVarStr_Alloc( PVal *pval, const PVal *pval2 )
 		size = oldvar.size;
 		pval->master = oldvar.master;
 	} else {
-		if ( size > STRBUF_BLOCKSIZE ) {
-			size += size / 8;
-		}
 		pval->master = malloc(size);
 	}
 	if ( pval->master == NULL ) throw HSPERR_OUT_OF_MEMORY;
