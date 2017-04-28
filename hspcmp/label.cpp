@@ -233,8 +233,8 @@ int CLabel::Search( char *oname )
 int CLabel::SearchLocal(char *global_name, char *local_name)
 {
 
-	//		Retrieves the object name specified by 'global_name' and by 'local_name', first in the local scope and then in the global scope, and returns its ID on success or -1 on if not found. 
-	//		'global_name' has to points to the global name, and 'local_name' has to points to the local name; the module name should suffix the string of BBB.
+	//		Retrieves the object name specified by 'global_name' and by 'local_name', first from the local scope and then from the global scope, and returns its ID on success or -1 if not found. 
+	//		'global_name' has to points to the global name, and 'local_name' has to points to the local name; the module name should suffix the string of 'local_name'.
 
 	int i = Search(local_name);
 
