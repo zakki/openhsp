@@ -85,6 +85,12 @@ int poppad_setsb( int flag );
 void poppad_setsb_current( int FootyID );
 void PutLineNumber( void );
 
+void DoCaption (char*, int);
+void LoadFromCommandLine(char*);
+
+int file_exists_and_is_readable(const char*);
+#define fileok file_exists_and_is_readable
+
 // DLL functions
 
 int dll_ini( char *libname );

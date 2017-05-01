@@ -12,41 +12,59 @@
 /**
  * @brief アンドゥ情報を末尾に挿入します。
  */
+
 bool CFootyDoc::PushBackUndo(CUndoBuffer *pUndo)
 {
-	FOOTY2_ASSERT( !IsReadOnly() );
 
-	if (!pUndo)return false;
-	if (m_pNowUndoPos == m_lsUndoBuffer.end())		// アンドゥを実行していない
+	FOOTY2_ASSERT(!IsReadOnly());
+
+	if (!pUndo) return false;
+
+	bool current_position_equal_to_saved = false;
+
+	if (!m_bCannotReachSavedPos)
 	{
-		m_lsUndoBuffer.push_back(*pUndo);
-		/*セーブポイントに関する処理*/
-		if (!m_bCannotReachSavedPos &&				// アンドゥへの到達が可能で
-			m_pSavedPos == m_lsUndoBuffer.end())	// 最初のアンドゥセットのときは
-			m_pSavedPos--;							// 一つ前がアンドゥの位置となる
-	}
-	else											// アンドゥを実行している
-	{
-		// 消される位置にセーブポイントが含まれているかどうか調べる
-		if (!m_bCannotReachSavedPos)
+
+		current_position_equal_to_saved = (m_pNowUndoPos == m_pSavedPos);
+
+		std::list<CUndoBuffer>::iterator i = m_pNowUndoPos;
+
+		while (i != m_lsUndoBuffer.end())
 		{
-			std::list<CUndoBuffer>::iterator iterUndo;
-			for (iterUndo = m_pNowUndoPos;iterUndo != m_lsUndoBuffer.end();iterUndo++)
+
+			++i;
+
+			if (i == m_pSavedPos)
 			{
-				if (iterUndo == m_pSavedPos)
-				{
-					m_pSavedPos = m_lsUndoBuffer.end();
-					m_bCannotReachSavedPos = true;
-				}
+
+				m_bCannotReachSavedPos = true;
+
+				break;
+
 			}
+
 		}
-		// バッファの操作
-		m_lsUndoBuffer.erase(m_pNowUndoPos,m_lsUndoBuffer.end());	// そこから最後まで消す
-		m_lsUndoBuffer.push_back(*pUndo);							// 最後に挿入
-		m_pNowUndoPos = m_lsUndoBuffer.end();						// 一度もアンドゥしてないことにする
+
 	}
+
+	m_lsUndoBuffer.erase(m_pNowUndoPos, m_lsUndoBuffer.end());
+
+	m_lsUndoBuffer.push_back(*pUndo);
+
+	m_pNowUndoPos = m_lsUndoBuffer.end();
+
+	if (current_position_equal_to_saved)
+	{
+
+		m_pSavedPos = m_pNowUndoPos;
+		--m_pSavedPos;
+
+	}
+
 	return true;
+
 }
+
 
 //-----------------------------------------------------------------------------
 /**
@@ -78,11 +96,13 @@ bool CFootyDoc::Undo()
 	case CUndoBuffer::UNDOTYPE_INSERT:
 		SetSelectStart(&m_pNowUndoPos->m_cAfterStart);
 		SetSelectEndNormal(&m_pNowUndoPos->m_cAfterEnd);
+		m_cCaretPos = *GetSelStart();
 		DeleteSelected(NULL);
 		break;
 	case CUndoBuffer::UNDOTYPE_REPLACE:
 		SetSelectStart(&m_pNowUndoPos->m_cAfterStart);
 		SetSelectEndNormal(&m_pNowUndoPos->m_cAfterEnd);
+		m_cCaretPos = *GetSelStart();
 		InsertString(m_pNowUndoPos->m_strBefore.c_str(),false);
 		break;
 	}
@@ -108,6 +128,7 @@ bool CFootyDoc::Redo()
 	case CUndoBuffer::UNDOTYPE_DELETE:
 		SetSelectStart(&m_pNowUndoPos->m_cBeforeStart);
 		SetSelectEndNormal(&m_pNowUndoPos->m_cBeforeEnd);
+		m_cCaretPos = *GetSelStart();
 		DeleteSelected(NULL);
 		break;
 	case CUndoBuffer::UNDOTYPE_INSERT:
@@ -117,6 +138,7 @@ bool CFootyDoc::Redo()
 	case CUndoBuffer::UNDOTYPE_REPLACE:
 		SetSelectStart(&m_pNowUndoPos->m_cBeforeStart);
 		SetSelectEndNormal(&m_pNowUndoPos->m_cBeforeEnd);
+		m_cCaretPos = *GetSelStart();
 		InsertString(m_pNowUndoPos->m_strAfter.c_str(),false);
 		break;
 	}

@@ -51,9 +51,11 @@
 #ifdef JPNMSG
 #define UNTITLED "(無題)"
 #define TABUNTITLED "無題"
+#define HSP_DIALOG_CAPTION "HSPスクリプトエディタ"
 #else
 #define UNTITLED "(untitled)"
 #define TABUNTITLED "untitled"
+#define HSP_DIALOG_CAPTION "HSP Script Editor"
 #endif
 
 //		デフォルトの値
