@@ -92,7 +92,6 @@ int CheckWndFlag ( void );
 extern char szExeDir[_MAX_PATH];
 
 // Functions in poppad.cpp
-int fileok( char *fname );
 void gethdir( void );
 
 // Functions in popfont.cpp

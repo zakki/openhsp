@@ -105,178 +105,6 @@ HWND RebuildStatusBar (HWND hwndParent, WORD wFlag) ;
 void StatusBarMessage (HWND hwndSB, WORD wMsg) ;
 LRESULT Statusbar_MenuSelect (HWND, WPARAM, LPARAM) ;
 
-// Poppad functions.
-void DoCaption (char *, int);
-void LoadFromCommandLine(char *);
-
-//-------------------------------------------------------------------
-//	XP Visual Style 対策コード
-//-------------------------------------------------------------------
-
-int getUnicodeOffset( char *text, int offset )
-{
-	//		全角文字を1文字とした単位でのオフセットを求める(unicode offset対策)
-	//
-	int res;
-	unsigned char *p;
-	unsigned char a1;
-
-	p = (unsigned char *)text;
-	res = offset;
-	for(;;) {
-		a1 = *p;
-		if ( a1 == 0 ) break;
-		if ( res == 0 ) break;
-		p++;
-		if (a1>=129) {					// 全角文字チェック
-			if ((a1<=159)||(a1>=224)) {
-				p++;
-			}
-		}
-		res--;
-	}
-	return ((int)(p-(unsigned char *)text));
-}
-
-int getUnicodeOffset2( char *text, int offset )
-{
-	//		mboffset->unicode offsetに変換する(unicode offset対策)
-	//
-	int res;
-	unsigned char *p;
-	unsigned char *p2;
-	unsigned char a1;
-
-	p = (unsigned char *)text;
-	p2 = p + offset;
-	res = 0;
-	for(;;) {
-		if ( p>=p2 ) break;
-		a1 = *p++;
-		if ( a1 == 0 ) break;
-		if (a1>=129) {					// 全角文字チェック
-			if ((a1<=159)||(a1>=224)) {
-				p++;
-			}
-		}
-		res++;
-	}
-	return (res);
-}
-
-struct DLLVERSIONINFO{
-    DWORD cbSize;
-    DWORD dwMajorVersion;
-    DWORD dwMinorVersion;
-    DWORD dwBuildNumber;
-    DWORD dwPlatformID;
-};
-
-//typedef HRESULT ( CALLBACK* ProcDllGetVersion)( DLLVERSIONINFO *pdvi );
-//static int GetDllVersion( char *DllName )
-//{
-//HINSTANCE hInst;
-//DLLVERSIONINFO dvi;
-//ProcDllGetVersion DllGetVersion;
-//HRESULT hRes;
-//bool bRes;
-//DWORD Major = 0;   // メジャーバージョン
-//DWORD Minor;   // マイナーバージョン
-//DWORD Build;   // ビルド番号
-//
-//    hInst = LoadLibrary(DllName);
-//	bRes=false;
-//    if(hInst){
-//        DllGetVersion = (ProcDllGetVersion) GetProcAddress(hInst, "DllGetVersion" );
-//
-//        if(DllGetVersion){
-//            ZeroMemory(&dvi, sizeof(dvi));
-//            dvi.cbSize = sizeof(dvi);
-//			hRes = (*DllGetVersion)(&dvi);
-//            if(SUCCEEDED(hRes)){
-//                Major = dvi.dwMajorVersion;
-//                Minor = dvi.dwMinorVersion;
-//                Build = dvi.dwBuildNumber;
-//                bRes = true;
-//            }
-//		}
-//        FreeLibrary(hInst);
-//    }
-//	if (bRes) return Major;
-//	return -1;
-//}
-
-
-//static int CheckXPEditBox( HINSTANCE /*hInstance*/ )
-//{
-//	//		EditがXP仕様になっているかをチェックする
-//	//
-//	int result;
-//	result = 0;
-//	if ( GetDllVersion("ComCtl32.dll") > 5 ) { result = 1; }
-//	
-///*	
-//	//		これだとダメみたい
-//	DWORD lP,wP;
-//    HWND hWnd;
-//	int result;
-//	hWnd = CreateWindowA("EDIT","漢字",0,0,0,0,0,NULL,NULL,hInstance,0);
-//    ShowWindow(hWnd,SW_HIDE);
-//
-//    SendMessageA(hWnd,EM_SETSEL,(WPARAM)0,(LPARAM)-1);
-//    SendMessageA(hWnd,EM_GETSEL,(WPARAM)&wP,(LPARAM)&lP);
-//    if ( (int)GetWindowTextLengthA(hWnd) > (int)(lP - wP) ){
-//        result = 1;
-//    }else{
-//        result = 0;
-//    }
-//    PostMessage(hWnd,WM_CLOSE,0,0);
-//    return result;
-//*/
-//    return result;
-//}
-
-
-/*
-	 {
-		char ss[128];
-		wsprintf( ss,"%d__%d__%d",(int)IsThemeActive(), (int)IsWindowUnicode( hwndEdit ), GetDllVersion("ComCtl32.dll") );
-		MessageBox( NULL, ss, "Startup error", MB_OK | MB_ICONEXCLAMATION) ;
-	 }
-*/
-
-	 
-//-------------------------------------------------------------------
-
-
-
-//*********************************************************
-// 関数SHGetSpecialFolderPath() が使用できない環境で特殊フォルダのパスを取得する。
-// 引数は SHGetSpecialFolderPath() と同じ。
-//*********************************************************
-static BOOL GetSpecialFolderPath( HWND hWnd, int nFolder, char *Path )
-{
-	IMalloc    *pMalloc;
-	ITEMIDLIST *pidl;
-
-	Path[0] = 0;
-
-	if ( NOERROR == SHGetMalloc( &pMalloc ) )
-	{
-		if ( NOERROR == SHGetSpecialFolderLocation( hWnd, nFolder, &pidl ) )
-		{
-			if ( SHGetPathFromIDList( pidl, Path ) )
-			{
-				pMalloc->Free( pidl );
-				pMalloc->Release();
-				return TRUE;
-			}
-			pMalloc->Free( pidl );
-		}
-		pMalloc->Release();
-	}
-	return FALSE;
-}//GetSpecialFolder
 
 //-------------------------------------------------------------------
 int CALLBACK EnumWindowsProc(HWND hWnd, LPARAM /*lParam*/)
@@ -529,7 +357,7 @@ int WINAPI WinMain (HINSTANCE hInstance, HINSTANCE /*hPrevInstance*/,
 	//
 	switch( startflag ) {
 	case STARTDIR_MYDOC:
-	 	GetSpecialFolderPath( hwnd, CSIDL_PERSONAL, szStartDir );
+	 	SHGetSpecialFolderPath(hwnd, szStartDir, CSIDL_PERSONAL, 0);
 		break;
 	case STARTDIR_USER:
 		strcpy( szStartDir, startdir );
@@ -942,36 +770,51 @@ ClientWndProc (HWND hwnd, UINT mMsg, WPARAM wParam, LPARAM lParam)
 			   return 0 ;
                }
 
-          case WM_NOTIFY:
-			  switch (((NMHDR *)lParam)->code){
-				   case TCN_SELCHANGE:
-				   {
-					   int presID = activeID, newID = TabCtrl_GetCurSel(hwndTab);
-					   ActivateTab(presID, newID);
-					   ChangeZOrder(presID, newID);
-					   return 0;
-				   }
+	case WM_NOTIFY:
 
-				   case NM_RCLICK:
-					   POINT pt, cpt;
-					   int i;
+		switch (((NMHDR*)lParam)->code) {
 
-					   GetCursorPos(&pt);
-					   cpt = pt;
-					   ScreenToClient(hwndTab, &cpt);
+		case TCN_SELCHANGE:
 
-					   for(i = 0; TabCtrl_GetItemCount(hwndTab); i++){
-						   TabCtrl_GetItemRect(hwndTab, i, &rect);
-						   if(rect.left <= cpt.x && cpt.x <= rect.right && rect.top <= cpt.y && cpt.y <= rect.bottom){
-							   TrackPopupMenu(hSubMenu2, TPM_LEFTALIGN | TPM_BOTTOMALIGN | TPM_RIGHTBUTTON, pt.x, pt.y, 0, hwndClient, NULL);
-							   ClickID = i;
-							   break;
-						   }
+			{
 
-					   }
- 					   return 0;
-			  }
-			  return 0;
+				const int current = activeID;
+				const int selected = TabCtrl_GetCurSel(hwndTab);
+
+				ActivateTab(current, selected);
+				ChangeZOrder(current, selected);
+
+			}
+
+			break;
+
+		case NM_RCLICK:
+
+			{
+
+				POINT screen_point;
+				GetCursorPos(&screen_point);
+
+				TCHITTESTINFO info;
+
+				info.pt = screen_point;
+				ScreenToClient(hwndTab, &info.pt);
+
+				const int id = TabCtrl_HitTest(hwndTab, &info);
+
+				if (id < 0) break;
+
+				ClickID = id;
+
+				TrackPopupMenu(hSubMenu2, TPM_LEFTALIGN | TPM_BOTTOMALIGN | TPM_RIGHTBUTTON, screen_point.x, screen_point.y, 0, hwndClient, NULL);
+
+			}
+
+			break;
+
+		}
+
+		return 0;
 
           default :
                return (EditProc (hwnd, mMsg, wParam, lParam)) ;
