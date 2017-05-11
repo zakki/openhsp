@@ -16,6 +16,7 @@
 #include <commdlg.h>
 #include <stdlib.h>
 #include <stdio.h>
+#include <tchar.h>
 #include <ctype.h>
 #include <direct.h>
 #include <winuser.h>
@@ -34,6 +35,14 @@
 #include "config.h"
 #include "classify.h"
 #include "exttool.h"
+#include "hscw.h"
+
+
+/*
+		XP support routines
+*/
+//extern int  flag_xpstyle;
+int getUnicodeOffset( LPTSTR text, int offset );
 
 
 /*
@@ -64,21 +73,21 @@ DLLFUNC hsc3_run;		  // 3.0用の追加
 static	int dllflg=0;			// DLL uses flag
 static	HINSTANCE hDLL;			// Handle to DLL
 
-static char *SetDllFunc( char *name )
+static LPTSTR SetDllFunc( char *name )
 {
 	//		DLL関数を割り当てる
 	//
-	char *ent;
+	LPTSTR ent;
 	char fncname[128];
 	fncname[0]='_';
 	strcpy( fncname+1,name );
 	strcat( fncname,"@16" );
-	ent = (char *)GetProcAddress( hDLL, fncname );
+	ent = (LPTSTR )GetProcAddress( hDLL, fncname );
 	if (ent==NULL) dllflg=-1;				// error flag
 	return ent;
 }
 
-int dll_ini( char *libname )
+int dll_ini( LPTSTR libname )
 {
 	//		Initalize DLL entry
 	//			(result:1=ok)
@@ -107,8 +116,14 @@ int dll_ini( char *libname )
 	if ( dllflg > 0 ) {
 		hsc3_getruntime = (DLLFUNC)SetDllFunc("hsc3_getruntime");  // 3.0用の追加
 		hsc3_run = (DLLFUNC)SetDllFunc("hsc3_run");				   // 3.0用の追加
+#ifdef UNICODE
+		wraphscw();
+#endif
 		return dllflg;
 	}
+#ifdef UNICODE
+	wraphscw();
+#endif
 	return dllflg;
 }
 
@@ -129,33 +144,28 @@ void dll_bye( void )
 		special dialog routines
 */
 
-static int selfolder( char *pname )
+static int selfolder( LPTSTR pname )
 {
 	//
 	//		フォルダ選択ダイアログ
 	//
 	BROWSEINFO BrowsingInfo;
-	char DirPath[_MAX_PATH];
-	char FolderName[_MAX_PATH];
+	TCHAR DirPath[_MAX_PATH];
+	TCHAR FolderName[_MAX_PATH];
 	LPITEMIDLIST ItemID;
 	memset( &BrowsingInfo, 0, sizeof(BROWSEINFO) );
 	memset( DirPath, 0, _MAX_PATH );
 	memset( FolderName, 0, _MAX_PATH );
-	BrowsingInfo.hwndOwner = NULL;
+	BrowsingInfo.hwndOwner      = NULL;
 	BrowsingInfo.pszDisplayName = FolderName;
-
-#ifdef JPNMSG
-	BrowsingInfo.lpszTitle = "フォルダを選択してください";
-#else
-	BrowsingInfo.lpszTitle = "Choose a folder";
-#endif
-
-	BrowsingInfo.ulFlags = BIF_RETURNONLYFSDIRS;	ItemID = SHBrowseForFolder( &BrowsingInfo );
+	BrowsingInfo.lpszTitle      = TEXT("フォルダを選択してください");
+	BrowsingInfo.ulFlags        = BIF_RETURNONLYFSDIRS;
+	ItemID = SHBrowseForFolder( &BrowsingInfo );
 	if (ItemID==NULL) return -1;
 
 	SHGetPathFromIDList(ItemID, DirPath );
 	LocalFree( ItemID );						//ITEMIDLISTの解放
-	strcpy( pname,DirPath );
+	_tcscpy( pname,DirPath );
 	//strcpy( p4,FolderName );
 	return 0;
 }
@@ -168,17 +178,18 @@ static int selfolder( char *pname )
 #define EDITID   1
 
        BOOL      bNeedSave ;
-	   char      szDirName[_MAX_PATH] ;
-       char      szFileName[_MAX_PATH] ;
-       char      szTitleName[_MAX_FNAME + _MAX_EXT] ;
+	   TCHAR      szDirName[_MAX_PATH] ;
+       TCHAR      szFileName[_MAX_PATH] ;
+       TCHAR      szTitleName[_MAX_FNAME + _MAX_EXT] ;
 static HINSTANCE hInst ;
 static HWND      hwndEdit ;
 static UINT      iMsgFindReplace ;
 static UINT      iMsgHelp ;
-static char		 kwstr[512];
-char		 hdir[_MAX_PATH];
+static TCHAR		 kwstr[512];
+TCHAR		 hdir[_MAX_PATH];
 
-extern char szExeDir[_MAX_PATH];
+extern TCHAR szExeDir[_MAX_PATH];
+extern TCHAR szStartDir[_MAX_PATH];
 extern int	winx;
 extern int	winy;
 extern int	posx;
@@ -188,7 +199,7 @@ extern int	flg_toolbar;
 extern int	flg_statbar;
 extern int	startflag;
 extern int	flg_hspat;
-extern char startdir[_MAX_PATH];
+extern TCHAR startdir[_MAX_PATH];
 
 int  ClickID = -1;
 
@@ -225,14 +236,16 @@ LRESULT FileDrop(WPARAM wParam, LPARAM lParam);
 
 //void ConfigEditColor( COLORREF fore, COLORREF back );
 
+void LoadFromCommandLine(LPTSTR );
+
           // Functions in POPFILE.C
 
 void PopFileInitialize (HWND) ;
-BOOL PopFileOpenDlg    (HWND, PSTR, PSTR) ;
-BOOL PopFileOpenDlg2   (HWND, PSTR, PSTR) ;
-BOOL PopFileSaveDlg    (HWND, PSTR, PSTR) ;
-BOOL PopFileRead       (int, PSTR) ;
-BOOL PopFileWrite      (int,  PSTR) ;
+BOOL PopFileOpenDlg    (HWND, LPTSTR, LPTSTR) ;
+BOOL PopFileOpenDlg2   (HWND, LPTSTR, LPTSTR) ;
+BOOL PopFileSaveDlg    (HWND, LPTSTR, LPTSTR) ;
+BOOL PopFileRead       (int, LPTSTR) ;
+BOOL PopFileWrite      (int,  LPTSTR) ;
 
           // Functions in POPFIND.C
 
@@ -267,21 +280,21 @@ void PopFontApplyTabFont();
 
           // Functions in POPPRNT.C
 
-BOOL PopPrntPrintFile (HINSTANCE, HWND, HWND, PSTR) ;
+BOOL PopPrntPrintFile (HINSTANCE, HWND, HWND, LPTSTR) ;
 
           // Functions in STATBAR.C
 
-void Statusbar_mes( char *mes );
+void Statusbar_mes( LPTSTR mes );
 
           // Functions in main.cpp
 
 int ExecEzInputMenu( int id );
 void UpdateViewOption( int toolbar_flag, int stbar_flag );
-HWND main_aplsel( char *p1 );
+HWND main_aplsel( LPTSTR p1 );
 
           // Global variables
 
-static char szAppName[] = "OniPad" ;
+static TCHAR szAppName[] = TEXT("OniPad") ;
 
 HWND hDlgModeless ;
 static int cln;
@@ -296,19 +309,19 @@ WNDPROC	Org_TabProc;		// サブクラス化の初期値
 		HSP related service
 */
 
-static char *errbuf=NULL;					// error message buffer
+static LPTSTR errbuf=NULL;					// error message buffer
 
 int		hsp_fullscr = 0;
 static int		hsp_fnstr = 0;
 
-char		hsp_laststr[TMPSIZE];
-char		hsp_cmdopt[TMPSIZE];
-static char		compfile[TMPSIZE];
-char		hsp_helpdir[TMPSIZE];
-static char		execmd[TMPSIZE];
-static char		objname[TMPSIZE];
-char		helpopt[TMPSIZE];
-char		hsp_extstr[TMPSIZE];
+TCHAR		hsp_laststr[TMPSIZE];
+TCHAR		hsp_cmdopt[TMPSIZE];
+static TCHAR		compfile[TMPSIZE];
+TCHAR		hsp_helpdir[TMPSIZE];
+static TCHAR		execmd[TMPSIZE];
+static TCHAR		objname[TMPSIZE];
+TCHAR		helpopt[TMPSIZE];
+TCHAR		hsp_extstr[TMPSIZE];
 
 int     hscroll_flag;
 LOGFONT	chg_font;
@@ -351,7 +364,7 @@ static void err_ini( void )
 {
 	//	init error message buffer
 	//
-	if (errbuf==NULL) errbuf=(char *)malloc(0x10000);
+	if (errbuf==NULL) errbuf=(LPTSTR )malloc(0x10000*sizeof(TCHAR));
 	errbuf[0]=0;
 }
 
@@ -366,122 +379,140 @@ static void err_bye( void )
 {
 	//	error message print
 	//
-	//MessageBox (hwnd, errbuf, "HSP error message", MB_OK | MB_ICONEXCLAMATION) ;
-	DialogBox (hInst, "ErrBox", hwnd, (DLGPROC)ErrDlgProc);
+	//MessageBox (hwnd, errbuf, TEXT("HSP error message"), MB_OK | MB_ICONEXCLAMATION) ;
+	DialogBox (hInst, TEXT("ErrBox"), hwnd, (DLGPROC)ErrDlgProc);
 }
 
-
-static void OkMessage (const char *szMessage, const char *szTitleName)
+static void OkMessage ( LPTSTR szMessage, LPTSTR szTitleName)
 {
-	msgboxf(hwbak, szMessage, HSP_DIALOG_CAPTION, MB_OK | MB_ICONEXCLAMATION,
+	msgboxf(hwbak, szMessage, TEXT("script editor message"), MB_OK | MB_ICONEXCLAMATION,
 		szTitleName[0] ? szTitleName : UNTITLED);
 }
 
-
-static void OkMessage2 (const char *szMessage, const char *szTitleName)
+static void OkMessage2 ( LPTSTR szMessage, LPTSTR szTitleName)
 {
-	msgboxf(NULL, szMessage, HSP_DIALOG_CAPTION, MB_OK | MB_ICONEXCLAMATION,
+	msgboxf(NULL, szMessage, TEXT("script editor message"), MB_OK | MB_ICONEXCLAMATION,
 		szTitleName[0] ? szTitleName : UNTITLED);
 }
 
-
-static void TMes(const char *prtmes)
+static void TMes( LPTSTR prtmes )
 {
-	OkMessage ( prtmes,"\0" );
+	OkMessage ( prtmes,TEXT("\0") );
+}
+
+int fileok( LPTSTR fname )
+{
+	//		File exist check
+	//
+	FILE *fp;
+	int er=0;
+	fp=_tfopen(fname,TEXT("rb"));
+	if (fp==NULL) er++; else fclose(fp);
+	return er;
 }
 
 
-#define fileok file_exists_and_is_readable
-
-//#define file_exists_and_is_readable(path) _access((path), 4)
-
-int file_exists_and_is_readable(const char *path)
+static int filechk( LPTSTR fname )
 {
-
-	FILE *p = fopen(path, "rb");
-	if (!p) return -1;
-
-	fclose(p);
-
-	return 0;
-
+	//		File exist check
+	//
+	int er=0;
+	er=fileok( fname );
+	if (er) {
+#ifdef JPNMSG
+		OkMessage ( TEXT("カレントディレクトリに、[%s]が見つかりませんでした。\nコマンドは実行できません。"),
+					fname ) ;
+#else
+		OkMessage ( TEXT("Not exist file [%s].\nOperation invalid."),
+					fname ) ;
+#endif
+	}
+	return er;
 }
 
 
-static char *myfile( void )
+static LPTSTR myfile( void )
 {
 	//		Current filename get
 	//
 	if (szTitleName[0]==0) {
-		strcpy( compfile, "???" );
+		_tcscpy( compfile, TEXT("???") );
 	}
 	else {
-		strcpy( compfile, szTitleName );
+		_tcscpy( compfile, szTitleName );
 	}
 	return compfile;
 }
 
 
-static int GetFileTitle2(const TCHAR *source, TCHAR *result)
-{
+//static int fileexe( char *appname, char *fname )
+//{
+//	//		Execute application
+//	//
+//	if ( filechk(fname) ) return 1;
+//	strcpy( execmd,appname );
+//	strcat( execmd," " );
+//	strcat( execmd,fname );
+//	WinExec( execmd,SW_SHOW );
+//	return 0;
+//}
 
+
+static int GetFileTitle2( LPTSTR bname, LPTSTR tname )
+{
 	//		GetFileTitleの替わり
 	//		(ファイル拡張子表示ON/OFFの影響を受けない)
 	//
-
-	const TCHAR *filename = source;
-
-	if (!filename || !result) return -1;
-
-	while (*source != '\0') {
-
-		if (*source == '\\' || *source == '/') filename = source + 1;
-
-		source = CharNext(source);
-
+	int a,b,len;
+	unsigned char a1;
+	b=-1;
+	len=(int)_tcslen(bname);
+	for(a=0;a<len;a++) {
+		a1=(unsigned char)bname[a];
+		if (a1==TEXT('\\') || a1==TEXT('/')) b=a;
+		if ((a1>=129)&&(a1<=159)) a++; 
+		if ((a1>=224)&&(a1<=252)) a++; 
 	}
-
-	lstrcpy(result, filename);
-
+	if (b<0) return 1;
+	_tcscpy( tname,bname+b+1 );
 	return 0;
-
 }
 
 
 static void packgo( void )
 {
 	int a;
-	if (file_exists_and_is_readable("packfile")) {
+	if (filechk(TEXT("packfile"))) {
 #ifdef JPNMSG
-		TMes( "DPMファイルを作るためにはパックするファイル名一覧(PACKFILE)を\n作成しておく必要があります。" );
+		TMes( TEXT("DPMファイルを作るためにはパックするファイル名一覧(PACKFILE)を\n作成しておく必要があります。") );
 #else
-		TMes("It requires a packing list file 'packfile' to generate a DPM file.");
+		TMes( TEXT("[PACKFILE] needed.") );
 #endif
 		return;
 	}
 
-	pack_ini( 0,(int)"data",0,0 );	
+	pack_ini( 0,(int)TEXT("data"),0,0 );	
 	a=pack_make( 1,0,0,0 );
-	//dpmc_ini(errbuf,"data");
+	//dpmc_ini(errbuf,TEXT("data"));
 	//a=dpmc_pack();
 	if (a) { err_prt(hwbak);return; }
 #ifdef JPNMSG
-	TMes("[DATA.DPM]ファイルを作成しました。");
+	TMes(TEXT("[DATA.DPM]ファイルを作成しました。"));
 #else
-	TMes("Successfully created a DPM file 'data.dpm'");
+	TMes(TEXT("Create [DATA.DPM] Successfully."));
 #endif
 }
 
 
-static void expack(int mode, const char *exname, const char *sucess_message)
+static void expack( int mode, LPTSTR exname, LPTSTR finmes )
 {
 	//		make DPM->EXE file
 	//
 	int a;
-	char hh[_MAX_PATH];
-	char ftmp[_MAX_PATH];
+	TCHAR hh[_MAX_PATH];
+	TCHAR ftmp[_MAX_PATH];
 
-	strcpy(ftmp,exname);strcat(ftmp,".dpm");
+	_tcscpy(ftmp,exname);_tcscat(ftmp,TEXT(".dpm"));
 	pack_ini( 0,(int)exname,0,0 );	
 	a=pack_make( 0,0,0,0 );
 	//dpmc_ini(errbuf,exname);
@@ -489,131 +520,109 @@ static void expack(int mode, const char *exname, const char *sucess_message)
 	if (a) { err_prt(hwbak);return; }
 
 	if ( hsp_clmode==0 ) {
-		wsprintf(hh,"%s\\hsprt",szExeDir);
+		wsprintf(hh,TEXT("%s\\hsprt"),szExeDir);
 	} else {
-		wsprintf(hh,"%s\\runtime\\hspcl.hrt",szExeDir);
+		wsprintf(hh,TEXT("%s\\runtime\\hspcl.hrt"),szExeDir);
 	}
 
 	pack_rt( 0,(int)hh,0,0 );
 	pack_opt( hsp_wx,hsp_wy,(hsp_wd)|(hsp_orgpath<<1),0 );
-
-	if (pack_exe(mode, 0, 0, 0)) {
-
-		err_prt(hwbak);
-		return;
-
-	}
-
-	TMes(sucess_message);
-
+	a=pack_exe( mode,0,0,0 );
+	//a=dpmc_mkexe( hsp_fullscr,hh,hsp_wx,hsp_wy,hsp_wd );
+	if (a) { err_prt(hwbak);return; }
+	TMes(finmes);
 	DeleteFile(ftmp);
-
 }
 	
 	
-static void mkexe(const char *path)
+static void mkexe( LPTSTR exname )
 {
-
-	if (file_exists_and_is_readable("packfile")) {
-
+	if (filechk(TEXT("packfile"))) {
 #ifdef JPNMSG
-		TMes("EXEファイルを作るためにはパックするファイル名一覧(PACKFILE)を\n作成しておく必要があります。");
+		TMes( TEXT("EXEファイルを作るためにはパックするファイル名一覧(PACKFILE)を\n作成しておく必要があります。") );
 #else
-		TMes("It requires a packing list file 'packfile' to generate an executable file.");
+		TMes( TEXT("[PACKFILE] needed.") );
 #endif
-
 		return;
-
 	}
-
 #ifdef JPNMSG
-	expack(hsp_fullscr, path, "EXEファイルを作成しました。");
+	expack( hsp_fullscr, exname, TEXT("EXEファイルを作成しました。") );
 #else
-	expack(hsp_fullscr, path, "Successfully created an executable file");
+	expack( hsp_fullscr, exname, TEXT("Create EXE file successfully.") );
 #endif
-
 }
 
 
-static void mkscr( char *exname )
+static void mkscr( LPTSTR exname )
 {
 	if (hsp_clmode) {
-
 #ifdef JPNMSG
-		TMes( "コンソールモードでスクリーンセーバーの作成はできません。" );
+		TMes( TEXT("コンソールモードでスクリーンセーバーの作成はできません。") );
 #else
-		TMes("You cannot create a screen saver in console mode.");
+		TMes( TEXT("No operation for console mode.") );
 #endif
-
 		return;
-
 	}
-
-	if (file_exists_and_is_readable("packfile")) {
-
+	if (filechk(TEXT("packfile"))) {
 #ifdef JPNMSG
-		TMes( "スクリーンセーバーを作るためにはパックするファイル名一覧(PACKFILE)を\n作成しておく必要があります。" );
+		TMes( TEXT("スクリーンセーバーを作るためにはパックするファイル名一覧(PACKFILE)を\n作成しておく必要があります。") );
 #else
-		TMes("It requires a packing list file 'packfile' to generate a screen saver file.");
+		TMes( TEXT("[PACKFILE] needed.") );
 #endif
-
 		return;
-
 	}
-
 #ifdef JPNMSG
-	expack(2, exname, "SCRファイルを作成しました。");
+	expack( 2, exname, TEXT("SCRファイルを作成しました。") );
 #else
-	expack(2, exname, "Successfully created a screen saver file");
+	expack( 2, exname, TEXT("Create SCR file successfully.") );
 #endif
-
 }
 
 
-static void chklstr( char *laststr )
+static void chklstr( LPTSTR laststr )
 {
 	//		hsp_laststr modify
 	//
 	int a;
-	char a1;
+	TCHAR a1;
 	a=0;
 	for(;;) {
 		a1=laststr[a];
 		if (a1==0) return;
-		if (a1=='.') break;
+		if (a1==TEXT('.')) break;
 		a++;
 	}
 	laststr[a]=0;
 }
 
-static void hsprun( char *objname )
+static void hsprun( LPTSTR objname )
 {
 	//  execute HSP3 process
 	//
 	int i;
-	char cfname[256];
+	TCHAR cfname[256];
 	*cfname = 0;
 	if ( hsc3_getruntime != NULL ) {
 		hsc3_getruntime( (int)cfname, (int)objname, 0, 0 );
 	}
 	if ( *cfname == 0 ) {
-		wsprintf( execmd,"\"%s\\%s\" ",szExeDir, DEFAULT_RUNTIME );
+		wsprintf( execmd,TEXT("\"%s\\%s\" "),szExeDir, DEFAULT_RUNTIME );
 	} else {
-		wsprintf( execmd,"\"%s\\%s\" ",szExeDir, cfname );
+		wsprintf( execmd,TEXT("\"%s\\%s\" "),szExeDir, cfname );
 	}
 
-	strcat( execmd,objname );
+	_tcscat( execmd,objname );
 	if (hsp_cmdopt[0]!=0) {
-		strcat( execmd," " );
-		strcat( execmd,hsp_cmdopt );
+		_tcscat( execmd,TEXT(" ") );
+		_tcscat( execmd,hsp_cmdopt );
 	}
 
 	i = hsc3_run( (int)execmd, hsp_debug, 0, 0 );
 	if (i) {
 #ifdef JPNMSG
-		TMes("実行用ランタイムファイルが見つかりません。");
+		TMes(TEXT("実行用ランタイムファイルが見つかりません。"));
 #else
-		TMes("Runtime executable file missing.");
+		TMes(TEXT("Runtime executable file missing."));
 #endif
 /*
 	MessageBox(0, execmd, 0, 0);
@@ -622,151 +631,163 @@ static void hsprun( char *objname )
 	}
 }
 
-static void hsprun_log( char *objname )
+static void hsprun_log( LPTSTR objname )
 {
 	//		execute HSP2 process (with LOG)
 	//
-	char dbopt[64];
-	wsprintf( execmd,"\"%s\\%s\" ",szExeDir,DEFAULT_RUNTIME );
-	wsprintf( dbopt, "%03d",hsp_logmode );
-	strcat( execmd, "%" );
-	strcat( execmd, dbopt );
-	if (hsp_logadd==0) DeleteFile( "hsplog.txt" );
+	TCHAR dbopt[64];
+	wsprintf( execmd,TEXT("\"%s\\%s\" "),szExeDir,DEFAULT_RUNTIME );
+	wsprintf( dbopt, TEXT("%03d"),hsp_logmode );
+	_tcscat( execmd, TEXT("%") );
+	_tcscat( execmd, dbopt );
+	if (hsp_logadd==0) DeleteFile( TEXT("hsplog.txt") );
 
-	if (hsp_fullscr) strcat( execmd,"*" );
-	if (hsp_debug) strcat( execmd,"@" );
-	strcat( execmd,objname );
+	if (hsp_fullscr) _tcscat( execmd,TEXT("*") );
+	if (hsp_debug) _tcscat( execmd,TEXT("@") );
+	_tcscat( execmd,objname );
 	if (hsp_cmdopt[0]!=0) {
-		strcat( execmd," " );
-		strcat( execmd,hsp_cmdopt );
+		_tcscat( execmd,TEXT(" ") );
+		_tcscat( execmd,hsp_cmdopt );
 	}
 	WinExec( execmd,SW_SHOW );
 }
 
 
-static void hsprun_cl( char *objname )
+static void hsprun_cl( LPTSTR objname )
 {
 	//		execute HSP2CL process
 	//
-	char ftmp[_MAX_PATH];
+	TCHAR ftmp[_MAX_PATH];
 	GetShortPathName( szExeDir, ftmp, MAX_PATH );
 
-	wsprintf( execmd,"%s\\hspcli.bat ",ftmp );
-	//if (hsp_fullscr) strcat( execmd,"*" );
-	//if (hsp_debug) strcat( execmd,"@" );
+	wsprintf( execmd,TEXT("%s\\hspcli.bat "),ftmp );
+	//if (hsp_fullscr) strcat( execmd,TEXT("*") );
+	//if (hsp_debug) strcat( execmd,TEXT("@") );
 
 	//strcat( execmd,szDirName );
-	strcat( execmd,objname );
-	strcat( execmd," " );
-	strcat( execmd,"\\" );
+	_tcscat( execmd,objname );
+	_tcscat( execmd,TEXT(" ") );
+	_tcscat( execmd,TEXT("\\") );
 
 	if (hsp_cmdopt[0]!=0) {
-		strcat( execmd," " );
-		strcat( execmd,hsp_cmdopt );
+		_tcscat( execmd,TEXT(" ") );
+		_tcscat( execmd,hsp_cmdopt );
 	}
 	WinExec( execmd,SW_SHOW );
 }
 
 
-static void hsprun_log_cl( char *objname )
+static void hsprun_log_cl( LPTSTR objname )
 {
 	//		execute HSP2CL process (with LOG)
 	//
-	char dbopt[64];
-	char ftmp[_MAX_PATH];
+	TCHAR dbopt[64];
+	TCHAR ftmp[_MAX_PATH];
 	GetShortPathName( szExeDir, ftmp, MAX_PATH );
 
-	wsprintf( execmd,"%s\\hspcli.bat ",ftmp );
-	wsprintf( dbopt, "%03d",hsp_logmode );
-	strcat( execmd, "%" );
-	strcat( execmd, dbopt );
-	if (hsp_logadd==0) DeleteFile( "hsplog.txt" );
+	wsprintf( execmd,TEXT("%s\\hspcli.bat "),ftmp );
+	wsprintf( dbopt, TEXT("%03d"),hsp_logmode );
+	_tcscat( execmd, TEXT("%") );
+	_tcscat( execmd, dbopt );
+	if (hsp_logadd==0) DeleteFile( TEXT("hsplog.txt") );
 
 	//if (hsp_fullscr) strcat( execmd,"*" );
 	//if (hsp_debug) strcat( execmd,"@" );
 	//strcat( execmd,szDirName );
-	strcat( execmd,objname );
-	strcat( execmd," " );
-	strcat( execmd,ftmp );
-	strcat( execmd,"\\" );
+	_tcscat( execmd,objname );
+	_tcscat( execmd,TEXT(" ") );
+	_tcscat( execmd,ftmp );
+	_tcscat( execmd,TEXT("\\") );
 
 	if (hsp_cmdopt[0]!=0) {
-		strcat( execmd," " );
-		strcat( execmd,hsp_cmdopt );
+		_tcscat( execmd,TEXT(" ") );
+		_tcscat( execmd,hsp_cmdopt );
 	}
 	WinExec( execmd,SW_SHOW );
 }
 
 
-static int mkobjfile( char *fname )
+static int mkobjfile( LPTSTR fname )
 {
 	//	make object file
 	//
 	int a;
-	char a1;
-	char tmpst[_MAX_PATH];
-	char srcfn[_MAX_PATH];
-	a=(int)strlen(fname)-1;
+	TCHAR a1;
+	TCHAR tmpst[_MAX_PATH];
+	TCHAR srcfn[_MAX_PATH];
+	a=(int)_tcslen(fname)-1;
 	for(;;) {
 		a1=fname[a];
 		if (a1==0x5c) { a++;break; }
 		a--;if (a==0) break;
 	}
-	strcpy(srcfn,&(fname[a]));
-	strcpy(tmpst,srcfn);
+	_tcscpy(srcfn,&(fname[a]));
+	_tcscpy(tmpst,srcfn);
 	for(a=0;;) {
 		a1=tmpst[a];
-		if ((a1==0)||(a1=='.')) break;
+		if ((a1==0)||(a1==TEXT('.'))) break;
 		a++;
 	}
-	tmpst[a]=0;strcat(tmpst,".ax");
+	tmpst[a]=0;_tcscat(tmpst,TEXT(".ax"));
 
 	hsc_ini( 0,(int)srcfn, 0,0 );
 	hsc_refname( 0,(int)myfile(), 0,0 );
 	hsc_objname( 0,(int)tmpst, 0,0 );
+#ifndef UNICODE
 	a=hsc_comp( hsp_utf8out,0,0,0 );
+#else
+	a=hsc_comp( hsp_utf8out,32,0,0 );
+#endif
 	//a=tcomp_main( myfile(), srcfn, tmpst, errbuf, 0 );
 	return a;
 }
 
 
-static int mkobjfile2( char *fname )
+static int mkobjfile2( LPTSTR fname )
 {
 	//	make object file
 	//
 	int a;
-	char tmpst[_MAX_PATH];
-	char srcfn[_MAX_PATH];
-	strcpy(srcfn,fname);
-	strcpy(tmpst,"start.ax");
+	TCHAR tmpst[_MAX_PATH];
+	TCHAR srcfn[_MAX_PATH];
+	_tcscpy(srcfn,fname);
+	_tcscpy(tmpst,TEXT("start.ax"));
 
 	hsc_ini( 0,(int)srcfn, 0,0 );
 	hsc_refname( 0,(int)myfile(), 0,0 );
 	hsc_objname( 0,(int)tmpst, 0,0 );
+#ifndef UNICODE
 	a=hsc_comp( hsp_utf8out,0,0,0 );
+#else
+	a=hsc_comp( hsp_utf8out,32,0,0 );
+#endif
 	//a=tcomp_main( myfile(), srcfn, tmpst, errbuf, 0 );
 	return a;
 }
 
 
-static int mkexefile2( char *fname )
+static int mkexefile2( LPTSTR fname )
 {
 	//	auto make exe file (ver2.6)
 	//
 	int a;
-	char tmpst[_MAX_PATH];
-	char srcfn[_MAX_PATH];
-	char ftmp[_MAX_PATH];
-	strcpy(srcfn,fname);
-	strcpy(tmpst,"start.ax");
+	TCHAR tmpst[_MAX_PATH];
+	TCHAR srcfn[_MAX_PATH];
+	TCHAR ftmp[_MAX_PATH];
+	_tcscpy(srcfn,fname);
+	_tcscpy(tmpst,TEXT("start.ax"));
 
 	hsc_ini( 0,(int)srcfn, 0,0 );
 	hsc_refname( 0,(int)myfile(), 0,0 );
 	hsc_objname( 0,(int)tmpst, 0,0 );
+#ifndef UNICODE
 	a=hsc_comp( hsp_utf8out,4,0,0 );
+#else
+	a=hsc_comp( hsp_utf8out,36,0,0 );
+#endif
 	if ( a ) return a;
 
-	sprintf( ftmp, "%s\\%s.dpm", szExeDir, srcfn );
+	_stprintf( ftmp, TEXT("%s\\%s.dpm"), szExeDir, srcfn );
 	a=hsc3_make( 0,(int)ftmp,0,0 );
 	if ( a ) return a;
 	return 0;
@@ -782,23 +803,23 @@ void gethdir( void )
 	//		Get help directory
 	//
 	int b;
-	char a1;
-	char *ss;
-	char *ls;
+	TCHAR a1;
+	LPTSTR ss;
+	LPTSTR ls;
 
 	ss=hsp_helpdir;
 	if (*ss==0) {
-		wsprintf( hdir,"%s\\hsphelp\\",szExeDir );
+		wsprintf( hdir,TEXT("%s\\hsphelp\\"),szExeDir );
 		return;
 	}
 	b=0;ls=ss;
 	for(;;) {
 		a1=*ss++;hdir[b++]=a1;
 		if (a1==0) break;
-		if (a1=='\\') ls=ss;
+		if (a1==TEXT('\\')) ls=ss;
 	}
-	if (hdir[b-2]!='\\') {
-		hdir[b-1]='\\';hdir[b++]=0;
+	if (hdir[b-2]!=TEXT('\\')) {
+		hdir[b-1]=TEXT('\\');hdir[b++]=0;
 	}
 }
 
@@ -847,8 +868,13 @@ static void getkw( void )
 		p++);
 
 	len = (int)(p - kwstart);
+#ifndef UNICODE
 	len = WideCharToMultiByte(CP_ACP, 0, kwstart, len, kwstr, 512, NULL, NULL);
-	kwstr[len] = '\0';
+#else
+	if (len > 511) len = 511;
+	memcpy(kwstr, kwstart, len * sizeof(wchar_t));
+#endif
+	kwstr[len] = TEXT('\0');
 
 abort:
 	;
@@ -860,37 +886,37 @@ static void callhelp( void )
 	//		HELP呼び出し
 	//
 	int a;
-	char mesb[512];
+	TCHAR mesb[512];
 
 	if (hsp_helpmode==0) {
-		a=(int)strlen(kwstr);
+		a=(int)_tcslen(kwstr);
 
 		// 最初の6文字キー検索を廃止
 		//if (a>6) kwstr[6]=0;							// 始めの6文字
 
-		wsprintf( helpopt,"%ss_%s.htm",hdir,kwstr );
+		wsprintf( helpopt,TEXT("%ss_%s.htm"),hdir,kwstr );
 		if (fileok(helpopt)) {
-			wsprintf(helpopt,"%shsppidx.htm",hdir);
+			wsprintf(helpopt,TEXT("%shsppidx.htm"),hdir);
 		}
 		if (fileok(helpopt)) {
 #ifdef JPNMSG
-			TMes("ヘルプのためのHTMLファイルが見つかりません。\nディレクトリ設定を確認してください。");
+			TMes(TEXT("ヘルプのためのHTMLファイルが見つかりません。\nディレクトリ設定を確認してください。"));
 #else
-			TMes("Help data missing.Check help preference.");
+			TMes(TEXT("Help data missing.Check help preference."));
 #endif
 			return;
 		}
-		ShellExecute( NULL,NULL,helpopt,"","",SW_SHOW );
+		ShellExecute( NULL,NULL,helpopt,TEXT(""),TEXT(""),SW_SHOW );
 		return;
 	}
 
 	if (hsp_helpmode==1) {
-		wsprintf(helpopt,"%shsp.hlp",hdir);
+		wsprintf(helpopt,TEXT("%shsp.hlp"),hdir);
 		if (fileok(helpopt)) {
 #ifdef JPNMSG
-			TMes("HSP.HLPファイルが見つかりません。\nWinHelp形式のファイルを確認してください。");
+			TMes(TEXT("HSP.HLPファイルが見つかりません。\nWinHelp形式のファイルを確認してください。"));
 #else
-			TMes("Help data missing.Check help preference.");
+			TMes(TEXT("Help data missing.Check help preference."));
 #endif
 			return;
 		}
@@ -900,13 +926,13 @@ static void callhelp( void )
 
 	if (hsp_helpmode==3) {
 
-		//		"S_" + keyword先頭６文字 +".htm" のファイルを開く。
-		wsprintf( helpopt,"%shsp.chm",hdir );
+		//		TEXT("S_") + keyword先頭６文字 +TEXT(".htm") のファイルを開く。
+		wsprintf( helpopt,TEXT("%shsp.chm"),hdir );
 		if (fileok(helpopt)) {
 #ifdef JPNMSG
-			TMes("ヘルプのためのchmファイルが見つかりません。\nディレクトリ設定を確認してください。");
+			TMes(TEXT("ヘルプのためのchmファイルが見つかりません。\nディレクトリ設定を確認してください。"));
 #else
-			TMes("The help data is not found. Please check for the help file location.");
+			TMes(TEXT("Help data missing.Check help preference."));
 #endif
 			return;
 		}
@@ -924,9 +950,9 @@ static void callhelp( void )
 		rhw=HtmlHelp( GetDesktopWindow(), helpopt, HH_KEYWORD_LOOKUP, (DWORD)&link);
 		if (rhw==NULL) {
 #ifdef JPNMSG
-			TMes("HtmlHelpがインストールされていません。");
+			TMes(TEXT("HtmlHelpがインストールされていません。"));
 #else
-			TMes("HtmlHelp not installed.");
+			TMes(TEXT("HtmlHelp not installed."));
 #endif
 			return;
 		}
@@ -934,26 +960,17 @@ static void callhelp( void )
 		return;
 	}
 
-	wsprintf( helpopt,"%shelpman.exe",hdir );
-
-	if (file_exists_and_is_readable(helpopt)) {
-
+	wsprintf( helpopt,TEXT("%shelpman.exe"),hdir );
+	if (fileok(helpopt)) {
 #ifdef JPNMSG
-
-		wsprintf( mesb, "HSPヘルプマネージャが見つかりません。\n%sを確認してください。",helpopt );
-		TMes( mesb );
-
+		wsprintf( mesb, TEXT("HSPヘルプマネージャが見つかりません。\n%sを確認してください。"),helpopt );
 #else
-
-		msgboxf(hwbak, TEXT("HSP help manager is not found.\nPlease check for the path %s."), HSP_DIALOG_CAPTION, MB_OK | MB_ICONEXCLAMATION, helpopt);
-
+		wsprintf( mesb, TEXT("HSP help manager not found.\nCheck %s."),helpopt );
 #endif
-
+		TMes( mesb );
 		return;
-
 	}
-
-	wsprintf( helpopt,"\"%shelpman.exe\" %s",hdir,kwstr );
+	wsprintf( helpopt,TEXT("\"%shelpman.exe\" %s"),hdir,kwstr );
 	WinExec( helpopt, SW_SHOW );
 	return;
 }
@@ -961,24 +978,24 @@ static void callhelp( void )
 
 static void ExecMkDPM( void )
 {
-	char tmpfn[2048];
-	wsprintf( tmpfn, "\"%s\\hsp3.exe\" \"%s\\mkpack.ax\"", szExeDir, szExeDir );
+	TCHAR tmpfn[2048];
+	wsprintf( tmpfn, TEXT("\"%s\\hsp3.exe\" \"%s\\mkpack.ax\""), szExeDir, szExeDir );
 	WinExec( tmpfn, SW_SHOW );
 }
 
 
 static void ExecPaint( void )
 {
-	char tmpfn[2048];
-	wsprintf( tmpfn, "mspaint" );
+	TCHAR tmpfn[2048];
+	wsprintf( tmpfn, TEXT("mspaint") );
 	WinExec( tmpfn, SW_SHOW );
 }
 
 
 static void ExecHSPAssistant( void )
 {
-	char tmpfn[_MAX_PATH];
-	wsprintf( tmpfn, "\"%s\\hspat.exe\"", szExeDir );
+	TCHAR tmpfn[_MAX_PATH];
+	wsprintf( tmpfn, TEXT("\"%s\\hspat.exe\""), szExeDir );
 	WinExec( tmpfn, SW_SHOW );
 }
 
@@ -986,13 +1003,13 @@ static void ExecHSPAssistant( void )
 static void CloseHSPAssistant( void )
 {
 	HWND hw;
-	hw = main_aplsel( "HSP assistant ver" );
+	hw = main_aplsel( TEXT("HSP assistant ver") );
 	if ( hw == NULL ) return;
 	PostMessage( hw, WM_CLOSE, 0, 0 );
 	//SendMessage( hw, WM_CLOSE, 0, 0 );
 	while(1) {
 		Sleep( 500 );
-		hw = main_aplsel( "HSP assistant ver" );
+		hw = main_aplsel( TEXT("HSP assistant ver") );
 		if ( hw == NULL ) break;
 	}
 }
@@ -1003,35 +1020,35 @@ void pophwnd( HWND hwnd )
 	hwbak=hwnd;
 }
 
-void DoCaption ( char *szTitleName, int TabID )
+void DoCaption ( LPTSTR szTitleName, int TabID )
      {
-     char szCaption[_MAX_PATH+128] ;
+     TCHAR szCaption[_MAX_PATH+128] ;
 
 	 if(GetTabInfo(0) == NULL){
 #ifdef JPNMSG
-	     lstrcpy (szCaption, "HSPスクリプトエディタ") ;
+	     lstrcpy (szCaption, TEXT("ＨＳＰスクリプトエディタ")) ;
 #else
-	     lstrcpy (szCaption, "HSP Script Editor") ;
+	     lstrcpy (szCaption, TEXT("HSP Script Editor")) ;
 #endif
 	 } else {
 #ifdef JPNMSG
-	     wsprintf (szCaption, "HSPスクリプトエディタ - %s%s",
-			 szTitleName[0] ? szTitleName : UNTITLED, bNeedSave ? " *": "") ;
+	     wsprintf (szCaption, TEXT("ＨＳＰスクリプトエディタ - %s%s"),
+			 szTitleName[0] ? szTitleName : UNTITLED, bNeedSave ? TEXT(" *"): TEXT("")) ;
 #else
-	     wsprintf (szCaption, "HSP Script Editor - %s%s",
-			 szTitleName[0] ? szTitleName : UNTITLED, bNeedSave ? " *": "") ;
+	     wsprintf (szCaption, TEXT("HSP Script Editor - %s%s"),
+			 szTitleName[0] ? szTitleName : UNTITLED, bNeedSave ? TEXT(" *"): TEXT("")) ;
 #endif
 	 }
 	 SetWindowText (hwbak, szCaption) ;
 
 	 if(TabID >= 0){
-		 char szTabCaption[_MAX_PATH+128] ;
+		 TCHAR szTabCaption[_MAX_PATH+128] ;
 		 TCITEM tc_item;
 		 TABINFO *lpTabInfo;
 
 		 lpTabInfo = GetTabInfo(TabID);
-	     wsprintf (szTabCaption, "%s%s",
-			 lpTabInfo->TitleName[0] ? lpTabInfo->TitleName : TABUNTITLED, lpTabInfo->NeedSave ? " *" : "") ;
+	     wsprintf (szTabCaption, TEXT("%s%s"),
+			 lpTabInfo->TitleName[0] ? lpTabInfo->TitleName : TABUNTITLED, lpTabInfo->NeedSave ? TEXT(" *") : TEXT("")) ;
 
 		 tc_item.mask = TCIF_TEXT;
 		 tc_item.pszText = szTabCaption;
@@ -1040,38 +1057,33 @@ void DoCaption ( char *szTitleName, int TabID )
      }
 	 }
 
-
-static int ask_for_saving_file(HWND handle, const char *file_name)
-{
+short AskAboutSave (HWND hwnd, LPTSTR szTitleName)
+     {
+     TCHAR szBuffer[64 + _MAX_FNAME + _MAX_EXT] ;
+     int  iReturn ;
 
 #ifdef JPNMSG
-	return msgboxf(handle, "%sは変更されました。 ファイルの変更を保存しますか？", HSP_DIALOG_CAPTION, MB_YESNOCANCEL | MB_ICONQUESTION, file_name[0] ? file_name : UNTITLED);
+     wsprintf (szBuffer, TEXT("%sは変更されています。セーブしますか？"),
+               szTitleName[0] ? szTitleName : UNTITLED) ;
 #else
-	return msgboxf(handle, "%s has been modified. Do you want to save changes to the file?", HSP_DIALOG_CAPTION, MB_YESNOCANCEL | MB_ICONQUESTION, file_name[0] ? file_name : UNTITLED);
+     wsprintf (szBuffer, TEXT("%s has been modified. Save?"),
+               szTitleName[0] ? szTitleName : UNTITLED) ;
 #endif
 
-}
+     iReturn = MessageBox (hwnd, szBuffer, TEXT("Warning"),
+                           MB_YESNOCANCEL | MB_ICONQUESTION) ;
 
+     if (iReturn == IDYES)
+          if (!SendMessage (hwnd, WM_COMMAND, IDM_SAVE, 0L))
+               iReturn = IDCANCEL ;
 
-static short AskAboutSave (HWND hwnd, char *szTitleName)
-{
-
-	const int ret = ask_for_saving_file(hwnd, szTitleName);
-
-	if (ret == IDYES) {
-
-		if (!SendMessage (hwnd, WM_COMMAND, IDM_SAVE, 0)) return IDCANCEL ;
-
-	}
-
-	return ret ;
-
-}
+     return (short)iReturn ;
+     }
 
 
 BOOL CALLBACK JumpDlgProc (HWND hDlg, UINT message, WPARAM wParam, LPARAM /*lParam*/)
      {
-	 char s1[10];
+	 TCHAR s1[10];
 
      switch (message)
           {
@@ -1084,7 +1096,7 @@ BOOL CALLBACK JumpDlgProc (HWND hDlg, UINT message, WPARAM wParam, LPARAM /*lPar
                     case IDOK:
 						 GetDlgItemText( hDlg,IDC_EDIT1,s1,8 );
                          EndDialog (hDlg, 0);
-						 cln=atoi(s1)-1;
+						 cln=_tstoi(s1)-1;
                          return TRUE;
 					case IDCANCEL:
 						 EndDialog (hDlg, 0);
@@ -1236,10 +1248,10 @@ BOOL CALLBACK ErrDlgProc (HWND hDlg, UINT message, WPARAM wParam, LPARAM /*lPara
 
 static void set_labellist( HWND hList, HWND /*hwndEdit*/ )
 {
-	char st[128];
-	char lname[256];
-	char *buffer;
-	char *wp;
+	TCHAR st[128];
+	TCHAR lname[256];
+	LPTSTR buffer;
+	LPTSTR wp;
 	int len;
 	int line;
 	int tag;
@@ -1251,7 +1263,7 @@ static void set_labellist( HWND hList, HWND /*hwndEdit*/ )
 
 	len = Footy2GetTextLength(activeFootyID, LM_CRLF);
 	if(len >= 0){
-		buffer = (char *) calloc( len + 2 /* 文字列終端と番兵 */, sizeof(char) );
+		buffer = (LPTSTR ) calloc( len + 2 /* 文字列終端と番兵 */, sizeof(TCHAR) );
 		Footy2GetText(activeFootyID, buffer, LM_CRLF, len + 1);
 		ret = Footy2GetSel(activeFootyID, (size_t*)&myline, NULL, NULL, NULL);
 		if(FOOTY2ERR_NOTSELECTED == ret){
@@ -1266,61 +1278,61 @@ static void set_labellist( HWND hList, HWND /*hwndEdit*/ )
 			// 1行読み込み
 			for(; *wp && 0x0d != *wp; wp++) {
 				// 先頭の空白を無視
-				if( ' ' == *wp || '\t' == *wp ) {
+				if( TEXT(' ') == *wp || TEXT('\t') == *wp ) {
 					continue;
 				}
 				// プリプロセッサ読み飛ばし
-				if( '#' == *wp ) {
-					static const char * func_define_pp[] = {
-						"deffunc", "defcfunc",
-						"modinit", "modterm", "modfunc", //"modcfunc",
+				if( TEXT('#') == *wp ) {
+					static LPCTSTR  func_define_pp[] = {
+						TEXT("deffunc"), TEXT("defcfunc"),
+						TEXT("modinit"), TEXT("modterm"), TEXT("modfunc"), //TEXT("modcfunc"),
 					};
-				//	static const char * func_define_pp_type[] = {
-				//		"命令", "関数",
-				//		"module初期化", "module破棄", "module命令", //"module関数",
+				//	static const LPTSTR  func_define_pp_type[] = {
+				//		TEXT("命令"), TEXT("関数"),
+				//		TEXT("module初期化"), TEXT("module破棄"), TEXT("module命令"), //TEXT("module関数"),
 				//	};
 					int namelen = 0;
 					do {
 						for(wp++; *wp && 0x0d != *wp ; wp++) {
-							if( (0 < namelen || (' ' != *wp && '\t' != *wp)) &&
-								('\\' != *wp || (0x0a != wp[1] && 0x0d != wp[1])) &&
+							if( (0 < namelen || (TEXT(' ') != *wp && TEXT('\t') != *wp)) &&
+								(TEXT('\\') != *wp || (0x0a != wp[1] && 0x0d != wp[1])) &&
 								0x0a != *wp && 0x0d != *wp &&
 								namelen < sizeof(lname)/sizeof(lname[0]) - 1 ) {
 								lname[namelen++] = *wp;
 							}
 						}
 						line++;
-					} while ( '\\' == *(wp - 1) && *wp );
+					} while ( TEXT('\\') == *(wp - 1) && *wp );
 					line--;
-					lname[namelen] = '\0';
+					lname[namelen] = TEXT('\0');
 					//
 					for(int i = 0; i < sizeof(func_define_pp)/sizeof(func_define_pp[0]); i++) {
-						int comp_len = min((int)strlen(func_define_pp[i]), namelen);
-						if( !strncmp(lname, func_define_pp[i], comp_len) ) {
-							char *pa, *pb;
+						int comp_len = min((int)_tcslen(func_define_pp[i]), namelen);
+						if( !_tcsncmp(lname, func_define_pp[i], comp_len) ) {
+							LPTSTR pa, pb;
 							pb = lname + comp_len;
 							do {
 								pa = pb;
-								for(; '\t' == *pa || ' ' == *pa; pa++, pb++);	// '#'の直後の空白をスキップ
-								for(; '\t' != *pb && ' ' != *pb && ',' != *pb && *pb; pb++);	// 空白までを取得
+								for(; TEXT('\t') == *pa || TEXT(' ') == *pa; pa++, pb++);	// TEXT('#')の直後の空白をスキップ
+								for(; TEXT('\t') != *pb && TEXT(' ') != *pb && TEXT(',') != *pb && *pb; pb++);	// 空白までを取得
 								namelen = (int)(pb - pa);
 								if( sizeof(lname) <= (int)(pa - lname) + namelen ) { DebugBreak(); }
 								memcpy(lname, pa, namelen);
-								lname[namelen] = '\0';
-							} while( !strcmpi(lname, "local") );
+								lname[namelen] = TEXT('\0');
+							} while( !_tcsicmp(lname, TEXT("local")) );
 							//
 							if( *lname ) {
 								tag++;
 								LV_ITEM lvi = { LVIF_TEXT, tag, 0, 0, 0, st, };
-								wsprintf(st, "%d",line);
+								wsprintf(st, TEXT("%d"),line);
 								ListView_InsertItem(hList, &lvi);
 								lvi.iSubItem++;
-								wsprintf(st, "#%s", func_define_pp[i]);
-							//	wsprintf(st, "%s", func_define_pp_type[i]);
+								wsprintf(st, TEXT("#%s"), func_define_pp[i]);
+							//	wsprintf(st, TEXT("%s"), func_define_pp_type[i]);
 								ListView_SetItem(hList, &lvi);
 								lvi.iSubItem++;
-								wsprintf(st, "%s", lname);
-							//	wsprintf(st, "#%s %s", func_define_pp[i], lname);
+								wsprintf(st, TEXT("%s"), lname);
+							//	wsprintf(st, TEXT("#%s %s"), func_define_pp[i], lname);
 								ListView_SetItem(hList, &lvi);
 							}
 							break;
@@ -1329,27 +1341,27 @@ static void set_labellist( HWND hList, HWND /*hwndEdit*/ )
 					break;
 				}
 				// ラベル読み込み
-				if( '*' == *wp ) {
-					char *pa = wp;
+				if( TEXT('*') == *wp ) {
+					LPTSTR pa = wp;
 					int namelen;
 					for(pa++;*pa &&
-							(':' > (unsigned char)*pa || '>' < (unsigned char)*pa) &&
-							'/' < (unsigned char)*pa &&
-							' ' != *pa && '\t' != *pa && 
+							(TEXT(':') > (unsigned char)*pa || TEXT('>') < (unsigned char)*pa) &&
+							TEXT('/') < (unsigned char)*pa &&
+							TEXT(' ') != *pa && TEXT('\t') != *pa && 
 							0x0d != *pa; pa++) { }
 					namelen = (int)(pa - wp);
 					if( 1 < namelen) {
-						strncpy(lname, wp, namelen);
-						lname[namelen] = '\0';
+						_tcsncpy(lname, wp, namelen);
+						lname[namelen] = TEXT('\0');
 						tag++;
 						LV_ITEM lvi = { LVIF_TEXT, tag, 0, 0, 0, st, };
-						wsprintf(st, "%d",line);
+						wsprintf(st, TEXT("%d"),line);
 						ListView_InsertItem(hList, &lvi);
 						lvi.iSubItem++;
-						wsprintf(st, "ラベル");
+						wsprintf(st, TEXT("ラベル"));
 						ListView_SetItem(hList, &lvi);
 						lvi.iSubItem++;
-						wsprintf(st, "%s", lname);
+						wsprintf(st, TEXT("%s"), lname);
 						ListView_SetItem(hList, &lvi);
 					}
 					wp = pa;
@@ -1358,14 +1370,14 @@ static void set_labellist( HWND hList, HWND /*hwndEdit*/ )
 					}
 				}
 				// コメント読み飛ばし
-				if( ';' == *wp || ('/' == *wp && '/' == wp[1]) ) {
+				if( TEXT(';') == *wp || (TEXT('/') == *wp && TEXT('/') == wp[1]) ) {
 					// 行末まで読み飛ばし
 					for(wp++; *wp && 0x0d != *wp ; wp++);
 					break;
 				}
-				if( '/' == *wp && '*' == wp[1] ) {
+				if( TEXT('/') == *wp && TEXT('*') == wp[1] ) {
 					for(wp++; *wp ; wp++) {
-						if( '*' == *wp && '/' == wp[1] ) {
+						if( TEXT('*') == *wp && TEXT('/') == wp[1] ) {
 							wp++;
 							break;
 						}
@@ -1377,31 +1389,41 @@ static void set_labellist( HWND hList, HWND /*hwndEdit*/ )
 				}
 				// 次のステートメントまで読み飛ばし
 				for(bool bEscape = false;
-					*wp && 0x0d != *wp && ':' != *wp &&
-					';' != *wp && ('/' != *wp || '*' != wp[1]) && ('/' != *wp || '/' != wp[1]); wp++)
+					*wp && 0x0d != *wp && TEXT(':') != *wp &&
+					TEXT(';') != *wp && (TEXT('/') != *wp || TEXT('*') != wp[1]) && (TEXT('/') != *wp || TEXT('/') != wp[1]); wp++)
 				{
-					if( '\"' == *wp && !bEscape ) {
+					if( TEXT('\"') == *wp && !bEscape ) {
 						bool bDameChk = false;
 						// ダメ文字チェック
 						if (wp - 2 >= buffer)
+#ifndef UNICODE
 							bDameChk = IsDBCSLeadByte((unsigned char) *(wp - 2));
+#endif
 						// 文字列読み飛ばし
-						if( ('{' == *(wp - 1)) && (!bDameChk)) { // 複数行文字列
-						//if( '{' == *(wp - 1) ) { // 複数行文字列
+						if( (TEXT('{') == *(wp - 1)) && (!bDameChk)) { // 複数行文字列
+						//if( TEXT('{') == *(wp - 1) ) { // 複数行文字列
 							wp += 2;
-							for(bool bEscape = false; *wp && ('\"' != *wp || '}' != wp[1] || bEscape); ) {
-								if( '\\' == *wp ) {
+							for(bool bEscape = false; *wp && (TEXT('\"') != *wp || TEXT('}') != wp[1] || bEscape); ) {
+								if( TEXT('\\') == *wp ) {
 									bEscape = !bEscape;
 								}
+#ifndef UNICODE
 								wp += IsDBCSLeadByte(*wp) ? 2 : 1;
+#else
+								wp++;
+#endif
 							}
 						} else {
 							wp++;
-							for(bool bEscape = false; *wp && ('\"' != *wp || bEscape) && 0x0d != *wp; ) {
-								if( '\\' == *wp ) {
+							for(bool bEscape = false; *wp && (TEXT('\"') != *wp || bEscape) && 0x0d != *wp; ) {
+								if( TEXT('\\') == *wp ) {
 									bEscape = !bEscape;
 								}
+#ifndef UNICODE
 								wp += IsDBCSLeadByte(*wp) ? 2 : 1;
+#else
+								wp++;
+#endif
 							}
 						}
 						wp--;
@@ -1436,7 +1458,7 @@ static void set_labellist( HWND hList, HWND /*hwndEdit*/ )
 BOOL CALLBACK LabelDlgProc (HWND hDlg, UINT message, WPARAM wParam, LPARAM lParam)
 {
 	 int i;
-	 char s1[128];
+	 TCHAR s1[128];
      switch (message)
           {
           case WM_INITDIALOG: {
@@ -1466,7 +1488,7 @@ BOOL CALLBACK LabelDlgProc (HWND hDlg, UINT message, WPARAM wParam, LPARAM lPara
 						if ( i != LB_ERR ) {
 							LV_ITEM lvi = { LVIF_TEXT, i, 0, 0, 0, s1, sizeof(s1)/sizeof(s1[0])-1 };
 							ListView_GetItem(hList, &lvi);
-							cln=atoi(s1)-1;
+							cln=_tstoi(s1)-1;
 						}
 						else {
 							cln=-1;
@@ -1610,7 +1632,7 @@ int poppad_ini( HWND hwnd, LPARAM lParam )
 			   PopFontSetTLG( tchg_font );
 			   PopFontSetTabFont();
 
-			   CreateTab(0, "", "", "");
+			   CreateTab(0, TEXT(""), TEXT(""), TEXT(""));
 			   TabCtrl_SetCurFocus(hwndTab, 0);
 
 			   DoCaption (szTitleName, activeID) ;
@@ -1639,7 +1661,7 @@ void poppad_bye( void )
 int poppad_reload( int nTabID )
 {
 	TABINFO *lpTabInfo;
-	char a1;
+	TCHAR a1;
 	int len;
 
 	lpTabInfo = GetTabInfo(nTabID);
@@ -1648,18 +1670,17 @@ int poppad_reload( int nTabID )
 	if(lstrlen(lpTabInfo->FileName) > 0){
 		len = lstrlen(lpTabInfo->FileName);
 		a1 = lpTabInfo->FileName[len-1];
-		if(a1 == '"') lpTabInfo->FileName[len-1]=0;
+		if(a1 == TEXT('"')) lpTabInfo->FileName[len-1]=0;
 
 		if(GetFileTitle2(lpTabInfo->FileName, lpTabInfo->TitleName)){
 			lstrcpy(lpTabInfo->TitleName, lpTabInfo->FileName );
 		}
-
 		GetDirName(lpTabInfo->DirName, lpTabInfo->FileName);
 		if (!PopFileRead(lpTabInfo->FootyID, lpTabInfo->FileName)){
 #ifdef JPNMSG
-			OkMessage ( "%s が読み込めませんでした", lpTabInfo->TitleName ) ;
+			OkMessage ( TEXT("%s が読み込めませんでした"), lpTabInfo->TitleName ) ;
 #else
-			OkMessage ( "%s not found.", lpTabInfo->TitleName ) ;
+			OkMessage ( TEXT("%s not found."), lpTabInfo->TitleName ) ;
 #endif
 			return 1;
 		}
@@ -1678,7 +1699,7 @@ int poppad_reload( int nTabID )
 }
 
 
-static void SetFileName(char *titleName, char *fileName, char *dirName) {
+static void SetFileName(LPTSTR titleName, LPTSTR fileName, LPTSTR dirName) {
 	if ( titleName != NULL ) lstrcpy(szTitleName, titleName);
 	if ( fileName != NULL ) lstrcpy(szFileName, fileName);
 	if ( dirName != NULL ) lstrcpy(szDirName, fileName);
@@ -1696,94 +1717,60 @@ LRESULT CALLBACK MyEditProc( HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam )
 
 	case WM_KEYDOWN:
 	{
+		wchar_t *szSpaceBuf;
+		const wchar_t *szLine;
+		int nsLine, nsPos, neLine, nePos, nLength, i, j, ret;
 
-		if (!bAutoIndent || wParam != VK_RETURN || GetKeyState(VK_CONTROL) < 0) break;
+		if(bAutoIndent && wParam == VK_RETURN && GetKeyState(VK_CONTROL) >= 0){
+			/*
+			 * 処理内容
+			 *  
+			 */
+			ret = Footy2GetSel(activeFootyID, (size_t*)&nsLine, (size_t*)&nsPos, (size_t*)&neLine, (size_t*)&nePos);
+			if(FOOTY2ERR_NOTSELECTED == ret){
+				Footy2GetCaretPosition(activeFootyID, (size_t*)&nsLine, (size_t*)&nsPos);
+				neLine = nsLine;
+				nePos  = nsPos;
+			}
 
-		// Perform auto indention
+			szLine = Footy2GetLineW(activeFootyID, neLine);
+			nLength = Footy2GetLineLengthW(activeFootyID, neLine);
+			for(i = nePos; i < nLength && (szLine[i] == TEXT(' ') || szLine[i] == TEXT('\t')); i++)
+				nePos++;
 
-		// This feature is implemented by the 'Footy' control too, but it is not available outside the control.
+			nLength = min(nLength, nsPos);
 
-		// インデント
+			szSpaceBuf = (wchar_t *)calloc(nLength + 3, sizeof(wchar_t));
+			lstrcpyW(szSpaceBuf, L"\r\n");
 
-		size_t nsLine, nsPos, neLine, nePos;
+			for(i = nLength - 1, j = 2; i >= 0 && (szLine[i] == TEXT(' ') || szLine[i] == TEXT('\t')); i--);
+			if(i >= 0 && szLine[i] == TEXT('{'))
+				szSpaceBuf[j++] = TEXT('\t');
+			for(i = 0; i < nLength && (szLine[i] == TEXT(' ') || szLine[i] == TEXT('\t')); i++, j++)
+				szSpaceBuf[j] = szLine[i];
+			if(szLine[i] == TEXT('\0') || i >= nsPos)
+				nsPos = 1;
+			else if(szLine[i] == TEXT('*') && i < nsPos)
+				szSpaceBuf[j++] = TEXT('\t');
+            szSpaceBuf[j] = TEXT('\0');
 
-		if (Footy2GetSel(activeFootyID, &nsLine, &nsPos, &neLine, &nePos) == FOOTY2ERR_NOTSELECTED) {
-
-			Footy2GetCaretPosition(activeFootyID, &nsLine, &nsPos);
-
-			neLine = nsLine;
-			nePos  = nsPos;
-
+			Footy2SetSel(activeFootyID, nsLine, nsPos, neLine, nePos, false);
+			Footy2SetSelTextW(activeFootyID, szSpaceBuf);
+			free(szSpaceBuf);
+			return 0;
+ 	// 2008-03-17 Shark++ 要動作確認
 		}
-
-		const wchar_t *szLine = Footy2GetLineW(activeFootyID, neLine);
-
-		size_t nLength = wcslen(szLine);
-		if (nLength > nsPos) nLength = nsPos;
-
-		wchar_t *szSpaceBuf = (wchar_t *)calloc(nLength + strlen("\n") + strlen("\t") + 1, sizeof(wchar_t));
-		if (!szSpaceBuf) break;
-
-		while (szLine[nePos] == ' ' || szLine[nePos] == '\t') {
-
-			nePos++;
-
-		}
-
-		wcscpy(szSpaceBuf, L"\n");
-
-		size_t j = strlen("\n");
-
-		size_t i = nLength;
-
-		while (i > 0) {
-
-			i--;
-
-			if (szLine[i] != ' ' && szLine[i] != '\t') break;
-
-		}
-
-		if (szLine[i] == '{') {
-
-			szSpaceBuf[j] = '\t';
-			j++;
-
-		}
-
-		for(i = 0; i < nLength && (szLine[i] == ' ' || szLine[i] == '\t'); i++, j++)
-			szSpaceBuf[j] = szLine[i];
-
-		// Indention right after a label
-
-		if (szLine[i] == '*' && i < nsPos && j == strlen("\n")) {
-
-			szSpaceBuf[j] = '\t';
-			j++;
-
-		}
-
-		if (szLine[i] == '\0' || i >= nsPos) nsPos = 0;
-
-		szSpaceBuf[j] = '\0';
-
-		Footy2SetSel(activeFootyID, nsLine, nsPos, neLine, nePos, false);
-		Footy2SetSelTextW(activeFootyID, szSpaceBuf);
-
-		free(szSpaceBuf);
-
-		return 0;
-
+		break;
 	}
 
 	case WM_CHAR:
 	{
-		wchar_t szInsBuf[2] = { '\0' };
+		wchar_t szInsBuf[2] = { TEXT('\0') };
 		const wchar_t *szLine;
 		int nsLine, nsPos, neLine, nePos, nLength, i, ret;
-		static char chPrevByte;
+		static TCHAR chPrevByte;
 
-		if(bAutoIndent && (wParam == '*' || wParam == '}') && !_ismbblead(chPrevByte)){
+		if((wParam == TEXT('*') || wParam == TEXT('}')) && !_ismbblead(chPrevByte)){
 			ret = Footy2GetSel(activeFootyID, (size_t*)&nsLine, (size_t*)&nsPos, (size_t*)&neLine, (size_t*)&nePos);
 			if(FOOTY2ERR_NOTSELECTED == ret){
 				Footy2GetCaretPosition(activeFootyID, (size_t*)&nsLine, (size_t*)&nsPos);
@@ -1793,18 +1780,18 @@ LRESULT CALLBACK MyEditProc( HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam )
 			szLine  = Footy2GetLineW(activeFootyID, nsLine);
 			nLength = Footy2GetLineLengthW(activeFootyID, nsLine);
 
-			for(i = nsPos - 1; i >= 0 && (szLine[i] == ' ' || szLine[i] == '\t'); i--);
+			for(i = nsPos - 1; i >= 0 && (szLine[i] == TEXT(' ') || szLine[i] == TEXT('\t')); i--);
 			if(i < 0)
-				Footy2SetSel(activeFootyID, nsLine, (wParam == '*' ? 0 : (nsPos > 0 ? nsPos - 1 : 0)), neLine, nePos, false);
+				Footy2SetSel(activeFootyID, nsLine, (wParam == TEXT('*') ? 0 : (nsPos > 0 ? nsPos - 1 : 0)), neLine, nePos, false);
 			if( lParam & 0xFF0000 ) { // 直接入力の場合に処理
 				szInsBuf[0] = (wchar_t)(TCHAR)wParam;
 			}
 			Footy2SetSelTextW(activeFootyID, szInsBuf);
 			return 0;
 		} else {
-			chPrevByte = (char)wParam;
+			chPrevByte = (TCHAR)wParam;
 		}
-
+ 	// 2008-03-17 Shark++ 要動作確認
 		break;
 	}
 
@@ -1857,9 +1844,9 @@ int poppad_menupop( WPARAM wParam, LPARAM lParam )
 				mii.cbSize = sizeof(MENUITEMINFO);
 				mii.fMask = MIIM_STRING;
 #ifdef JPNMSG
-				mii.dwTypeData = ImmGetOpenStatus(hIMC) ? "IME を閉じる(&L)" : "IME を開く(&O)";
+				mii.dwTypeData = ImmGetOpenStatus(hIMC) ? TEXT("IME を閉じる(&L)") : TEXT("IME を開く(&O)");
 #else
-				mii.dwTypeData = ImmGetOpenStatus(hIMC) ? "C&lose IME" : "&Open IME";
+				mii.dwTypeData = ImmGetOpenStatus(hIMC) ? TEXT("C&lose IME") : TEXT("&Open IME");
 #endif
 				SetMenuItemInfo((HMENU) wParam, IDM_OPENIME, FALSE, &mii);
 				ImmReleaseContext(hFooty, hIMC);
@@ -1988,10 +1975,10 @@ LRESULT poppad_term( UINT iMsg )
 
 void PutLineNumber( void )
 {
-	char szBuffer[256] ;
+	TCHAR szBuffer[256] ;
 	int ln = 0;
 	Footy2GetCaretPosition(activeFootyID, (size_t*)&ln, NULL);
-	wsprintf (szBuffer, "line : %d", ln + 1) ;
+	wsprintf (szBuffer, TEXT("line : %d"), ln + 1) ;
 	Statusbar_mes( szBuffer );
 }
 
@@ -2018,9 +2005,9 @@ LRESULT CALLBACK EditDefProc(HWND hwnd, UINT iMsg, WPARAM wParam, LPARAM lParam)
 		if (pfr->Flags & FR_FINDNEXT)
 			if (!PopFindFindText (hwndEdit, iOffset, pfr)){
 #ifdef JPNMSG
-                OkMessage2 ( "終わりまで検索しました", "") ;
+                OkMessage2 ( TEXT("終わりまで検索しました"), TEXT("")) ;
 #else
-                OkMessage2 ( "Not found.", "") ;
+                OkMessage2 ( TEXT("Not found."), "") ;
 #endif
 			}
 
@@ -2030,9 +2017,9 @@ LRESULT CALLBACK EditDefProc(HWND hwnd, UINT iMsg, WPARAM wParam, LPARAM lParam)
         if (pfr->Flags & FR_REPLACE || pfr->Flags & FR_REPLACEALL)
 			if (!PopFindReplaceText (hwndEdit, iOffset, pfr))
 #ifdef JPNMSG
-				OkMessage2 ( "終わりまで置換しました", "") ;
+				OkMessage2 ( TEXT("終わりまで置換しました"), TEXT("")) ;
 #else
-				OkMessage2 ( "Replace finished.", "") ;
+				OkMessage2 ( TEXT("Replace finished."), "") ;
 #endif
 
 		if (pfr->Flags & FR_REPLACEALL) {
@@ -2053,27 +2040,28 @@ LRESULT CALLBACK EditDefProc(HWND hwnd, UINT iMsg, WPARAM wParam, LPARAM lParam)
 			2006/09/06 ワイルドカードに関する記述を削除。
 		*/
 		MessageBox(hwnd, 
-			"-検索モード(未実装)-\n"
-			"標準: 標準的な検索方法です。\n"
-			"正規表現: 正規表現(RegEx クラスを使用?)を使用した検索方法です。\n"
-			"\n"
-			"-各チェックボックス-\n"
-			"エスケープシーケンスを有効にする: \\\\, \\n, \\tに対応しています。\\nはCR,LF,CR+LFを自動で認識します。\n"
-			"大文字と小文字を区別する: 書いてある通りです。\n"
-			"\n"
-			"* これは暫定的なヘルプです *"
-			, "Help", MB_OK);
+			TEXT("-検索モード(未実装)-\n")
+			TEXT("標準: 標準的な検索方法です。\n")
+			TEXT("正規表現: 正規表現(RegEx クラスを使用?)を使用した検索方法です。\n")
+			TEXT("\n")
+			TEXT("-各チェックボックス-\n")
+			TEXT("エスケープシーケンスを有効にする: \\\\, \\n, \\tに対応しています。\\nはCR,LF,CR+LFを自動で認識します。\n")
+			TEXT("大文字と小文字を区別する: 書いてある通りです。\n")
+			TEXT("\n")
+			TEXT("* これは暫定的なヘルプです *")
+			, TEXT("Help"), MB_OK);
 	}
 	return DefWindowProc (hwnd, iMsg, wParam, lParam) ;
 }
 
 
 
-LRESULT CALLBACK EditProc (HWND hwnd, UINT iMsg, WPARAM wParam, LPARAM lParam)
+LRESULT WINAPI EditProc (HWND hwnd, UINT iMsg, WPARAM wParam, LPARAM lParam)
 {
      int a;
 	 int low;
-	 char tmpfn[_MAX_PATH];
+	 TCHAR tmpfn[_MAX_PATH];
+	 tmpfn[0] = TEXT('\0');
 
 /*
      if (iMsg == WM_KEYDOWN )
@@ -2095,10 +2083,10 @@ LRESULT CALLBACK EditProc (HWND hwnd, UINT iMsg, WPARAM wParam, LPARAM lParam)
 
 
 				case IDM_NEW :
-					CreateTab(activeID, "", "", "");
-					szFileName[0]  = '\0' ;
-					szTitleName[0] = '\0' ;
-					szDirName[0]   = '\0' ;
+					CreateTab(activeID, TEXT(""), TEXT(""), TEXT(""));
+					szFileName[0]  = TEXT('\0') ;
+					szTitleName[0] = TEXT('\0') ;
+					szDirName[0]   = TEXT('\0') ;
 					bNeedSave = FALSE ;
 					DoCaption (szTitleName, activeID) ;
 					return 0 ;
@@ -2128,7 +2116,7 @@ LRESULT CALLBACK EditProc (HWND hwnd, UINT iMsg, WPARAM wParam, LPARAM lParam)
 							if(lpTabInfo->NeedSave){ bCreated = true; }
 						}
 						if( lpTabInfo == NULL
-							|| lpTabInfo->FileName[0] != '\0'
+							|| lpTabInfo->FileName[0] != TEXT('\0')
 							|| Footy2IsEdited(activeFootyID) ){
 								bCreated = true;
 						}
@@ -2139,14 +2127,14 @@ LRESULT CALLBACK EditProc (HWND hwnd, UINT iMsg, WPARAM wParam, LPARAM lParam)
 							}
 						if (!PopFileRead (activeFootyID, szFileName)){
 #ifdef JPNMSG
-                            OkMessage ( "%s をロードできませんでした。", szTitleName) ;
+                            OkMessage ( TEXT("%s をロードできませんでした。"), szTitleName) ;
 #else
-                            OkMessage ( "Loading %s fault.", szTitleName) ;
+                            OkMessage ( TEXT("Loading %s fault."), szTitleName) ;
 #endif
 							if(bCreated) {
 								DeleteTab(activeID);
 							} else {
-								SetFileName( "", "", "" );
+								SetFileName( TEXT(""), TEXT(""), TEXT("") );
 							}
 							break;
 						}
@@ -2164,15 +2152,15 @@ LRESULT CALLBACK EditProc (HWND hwnd, UINT iMsg, WPARAM wParam, LPARAM lParam)
 				{
 					bool bUndo;
 
-					if(szFileName[0] == '\0')
+					if(szFileName[0] == TEXT('\0'))
 						return 0;
 
 //					bUndo = (FootyGetMetrics(activeID, F_GM_UNDOREM) > 0);
 					bUndo = Footy2IsEdited(activeID);	// 2008-02-17 Shark++ 要動作確認
 					if((!bNeedSave && !bUndo) || 
-						msgboxf(hwnd, "再読込を行う上で、下記のことが起こります。よろしいですか？\n\n"
-						"・「元に戻す」の情報が破棄され、再読込以前に戻れなくなります。%s",
-						"Warning", MB_YESNO | MB_ICONQUESTION, bNeedSave ? "\n・変更が無視されます" : "") == IDYES)
+						msgboxf(hwnd, TEXT("再読込を行う上で、下記のことが起こります。よろしいですか？\n\n")
+						TEXT("・「元に戻す」の情報が破棄され、再読込以前に戻れなくなります。%s"),
+						TEXT("Warning"), MB_YESNO | MB_ICONQUESTION, bNeedSave ? TEXT("\n・変更が無視されます") : TEXT("")) == IDYES)
                         	poppad_reload(activeID);
 					return 0;
 				}
@@ -2182,15 +2170,15 @@ LRESULT CALLBACK EditProc (HWND hwnd, UINT iMsg, WPARAM wParam, LPARAM lParam)
 					TABINFO *lpTabInfo = GetTabInfo(ClickID);
 					bool bUndo;
 
-					if(lpTabInfo == NULL || lpTabInfo->FileName[0] == '\0')
+					if(lpTabInfo == NULL || lpTabInfo->FileName[0] == TEXT('\0'))
 						return 0;
 
 //					bUndo = (FootyGetMetrics(ClickID, F_GM_UNDOREM) > 0);
 					bUndo = Footy2IsEdited(ClickID);	// 2008-02-17 Shark++ 要動作確認
 					if((!lpTabInfo->NeedSave && !bUndo) || 
-						msgboxf(hwnd, "再読込を行う上で、下記のことが起こります。よろしいですか？\n\n"
-						"・「元に戻す」の情報が破棄され、再読込以前に戻れなくなります。%s",
-						"Warning", MB_YESNO | MB_ICONQUESTION, lpTabInfo->NeedSave ? "\n・変更が無視されます" : "") == IDYES)
+						msgboxf(hwnd, TEXT("再読込を行う上で、下記のことが起こります。よろしいですか？\n\n")
+						TEXT("・「元に戻す」の情報が破棄され、再読込以前に戻れなくなります。%s"),
+						TEXT("Warning"), MB_YESNO | MB_ICONQUESTION, lpTabInfo->NeedSave ? TEXT("\n・変更が無視されます") : TEXT("")) == IDYES)
                         	poppad_reload(ClickID);
 					return 0;
 				}
@@ -2207,9 +2195,9 @@ LRESULT CALLBACK EditProc (HWND hwnd, UINT iMsg, WPARAM wParam, LPARAM lParam)
 							return 1 ;
 						} else {
 #ifdef JPNMSG
-                            OkMessage ( "セーブに失敗しました。\n[%s]", szFileName ) ;
+                            OkMessage ( TEXT("セーブに失敗しました。\n[%s]"), szFileName ) ;
 #else
-                            OkMessage ( "Error happened in saving.\n[%s]", szFileName ) ;
+                            OkMessage ( TEXT("Error happened in saving.\n[%s]"), szFileName ) ;
 #endif
 						}
 						return 0;
@@ -2230,9 +2218,9 @@ LRESULT CALLBACK EditProc (HWND hwnd, UINT iMsg, WPARAM wParam, LPARAM lParam)
 							return 1 ;
 						} else {
 #ifdef JPNMSG
-							OkMessage ( "%s のセーブに失敗しました。", szTitleName) ;
+							OkMessage ( TEXT("%s のセーブに失敗しました。"), szTitleName) ;
 #else
-							OkMessage ( "Error happened in saving.\n[%s]", szFileName ) ;
+							OkMessage ( TEXT("Error happened in saving.\n[%s]"), szFileName ) ;
 #endif
 						}
 					}
@@ -2246,9 +2234,9 @@ LRESULT CALLBACK EditProc (HWND hwnd, UINT iMsg, WPARAM wParam, LPARAM lParam)
 				case IDM_PRINT :
 					if (!PopPrntPrintFile (hInst, hwnd, hwndEdit, szTitleName)){
 #ifdef JPNMSG
-						OkMessage ( "%s をプリントアウトできません。", szTitleName) ;
+						OkMessage ( TEXT("%s をプリントアウトできません。"), szTitleName) ;
 #else
-						OkMessage ( "Error happened in printing.\n[%s]", szFileName ) ;
+						OkMessage ( TEXT("Error happened in printing.\n[%s]"), szFileName ) ;
 #endif
 					}
 					return 0 ;
@@ -2280,7 +2268,7 @@ LRESULT CALLBACK EditProc (HWND hwnd, UINT iMsg, WPARAM wParam, LPARAM lParam)
 					return 0 ;
 
 				case IDM_CLEAR :
-					Footy2SetSelText(activeFootyID, "");
+					Footy2SetSelText(activeFootyID, TEXT(""));
 					return 0 ;
 
 				case IDM_SELALL :
@@ -2343,7 +2331,7 @@ LRESULT CALLBACK EditProc (HWND hwnd, UINT iMsg, WPARAM wParam, LPARAM lParam)
 				//	Message from cursor menu
 
 				case IDM_JUMP:
-					DialogBox (hInst, "JumpBox", hwnd, (DLGPROC)JumpDlgProc);
+					DialogBox (hInst, TEXT("JumpBox"), hwnd, (DLGPROC)JumpDlgProc);
 					if (cln == -1) return 0;
 					Footy2SetCaretPosition(activeFootyID, cln, 0);
 					PutLineNumber();
@@ -2360,7 +2348,7 @@ LRESULT CALLBACK EditProc (HWND hwnd, UINT iMsg, WPARAM wParam, LPARAM lParam)
 					return 0;
 
 				case IDM_LABEL:
-					DialogBox (hInst, "LabelBox", hwnd, (DLGPROC)LabelDlgProc);
+					DialogBox (hInst, TEXT("LabelBox"), hwnd, (DLGPROC)LabelDlgProc);
 					if (cln == -1) return 0;
 					Footy2SetCaretPosition(activeFootyID, cln, 0);
 					PutLineNumber();
@@ -2383,50 +2371,54 @@ LRESULT CALLBACK EditProc (HWND hwnd, UINT iMsg, WPARAM wParam, LPARAM lParam)
 							return 0;
 						}
 #ifdef JPNMSG
-                        TMes("オブジェクトファイルを作成しました");
+                        TMes(TEXT("オブジェクトファイルを作成しました"));
 #else
-                        TMes("Object file generated.");
+                        TMes(TEXT("Object file generated."));
 #endif
 					}
 					return 0;
 
 				case IDM_MKOBJ2:
-					PopFileWrite ( activeFootyID, "hsptmp" );
-					if ( mkobjfile2( "hsptmp" ) ){
+					PopFileWrite ( activeFootyID, TEXT("hsptmp") );
+					if ( mkobjfile2( TEXT("hsptmp") ) ){
 						err_prt(hwnd);
 						return 0;
 					}
 #ifdef JPNMSG
-                    TMes("START.AXを作成しました");
+                    TMes(TEXT("START.AXを作成しました"));
 #else
-					TMes("START.AX generated.");
+					TMes(TEXT("START.AX generated."));
 #endif
 					return 0;
 
 				case IDM_AUTOMAKE:
-					PopFileWrite ( activeFootyID, "hsptmp" );
-					if ( mkexefile2( "hsptmp" ) ){
+					PopFileWrite ( activeFootyID, TEXT("hsptmp") );
+					if ( mkexefile2( TEXT("hsptmp") ) ){
 						err_prt(hwnd);
 						return 0;
 					}
 #ifdef JPNMSG
-					TMes("実行ファイルを作成しました");
+					TMes(TEXT("実行ファイルを作成しました"));
 #else
-					TMes("Executable file generated.");
+					TMes(TEXT("Executable file generated."));
 #endif
 					return 0;
 
 				case IDM_COMP:
 				case IDM_COMP2:
 				case IDM_LOGCOMP:
-					PopFileWrite ( activeFootyID, "hsptmp" );
-					strcpy(tmpfn,"hsptmp");
+					PopFileWrite ( activeFootyID, TEXT("hsptmp") );
+					_tcscpy(tmpfn,TEXT("hsptmp"));
 					hsc_ini( 0,(int)tmpfn, 0,0 );
 					myfile();
 					hsc_refname( 0,(int)compfile, 0,0 );
-					strcpy( objname,"obj" );
+					_tcscpy( objname,TEXT("obj") );
 					hsc_objname( 0,(int)objname, 0,0 );
+#ifndef UNICODE
 					a=hsc_comp( 1 | hsp_utf8out, 0, hsp_debug, 0 );
+#else
+					a=hsc_comp( 1 | hsp_utf8out, 32, hsp_debug, 0 );
+#endif
 					if (a) {
 						err_prt(hwnd);
 						return 0;
@@ -2436,39 +2428,39 @@ LRESULT CALLBACK EditProc (HWND hwnd, UINT iMsg, WPARAM wParam, LPARAM lParam)
 						return 0;
 					}	
 					if (LOWORD (wParam)==IDM_LOGCOMP) {
-						DialogBox (hInst, "Logcomp", hwnd, (DLGPROC)LogcompDlgProc );
+						DialogBox (hInst, TEXT("Logcomp"), hwnd, (DLGPROC)LogcompDlgProc );
 						if (hsp_logflag==0) return 0;
-						if (hsp_clmode==0) { hsprun_log("obj"); } else { hsprun_log_cl("obj"); }
+						if (hsp_clmode==0) { hsprun_log(TEXT("obj")); } else { hsprun_log_cl(TEXT("obj")); }
 						return 0;
 					}
 
 				case IDM_RUN:
-					if (hsp_clmode==0) { hsprun("obj"); } else { hsprun_cl("obj"); }
+					if (hsp_clmode==0) { hsprun(TEXT("obj")); } else { hsprun_cl(TEXT("obj")); }
 					return 0;
 
 				case IDM_COMP3:
 					exemode=0;
-					DialogBox (hInst, "ExtComp", hwnd, (DLGPROC)ExtcmpDlgProc);
+					DialogBox (hInst, TEXT("ExtComp"), hwnd, (DLGPROC)ExtcmpDlgProc);
 					if (hsp_fnstr==0) return 0;
 					chklstr(hsp_extstr);
 					if ( hsp_extobj ) {
-						strcpy( objname,hsp_extstr );
-						strcat( objname,".ax" );
-						strcat( hsp_extstr,".hsp" );
+						_tcscpy( objname,hsp_extstr );
+						_tcscat( objname,TEXT(".ax") );
+						_tcscat( hsp_extstr,TEXT(".hsp") );
 						hsc_ini( 0,(int)hsp_extstr, 0,0 );
 						hsc_objname( 0,(int)objname, 0,0 );
 						a=hsc_comp( hsp_utf8out,0,0,0 );
 						//a=tcomp_main( hsp_extstr, hsp_extstr, objname, errbuf,0 );
 						if (a) { err_prt(hwnd);return 0; }
 #ifdef JPNMSG
-						TMes("オブジェクトファイルが作成されました");
+						TMes(TEXT("オブジェクトファイルが作成されました"));
 #else
-						TMes("Object file generated.");
+						TMes(TEXT("Object file generated."));
 #endif
 						return 0;
 					}
-					strcpy( objname,"obj" );
-					strcat( hsp_extstr,".hsp" );
+					_tcscpy( objname,TEXT("obj") );
+					_tcscat( hsp_extstr,TEXT(".hsp") );
 					hsc_ini( 0,(int)hsp_extstr, 0,0 );
 					hsc_objname( 0,(int)objname, 0,0 );
 					a=hsc_comp( 1 | hsp_utf8out, 0, hsp_debug, 0 );
@@ -2482,18 +2474,18 @@ LRESULT CALLBACK EditProc (HWND hwnd, UINT iMsg, WPARAM wParam, LPARAM lParam)
 					return 0;
 
 				case IDM_HSPSYM:
-					strcpy(tmpfn,"hsptmp");
+					_tcscpy(tmpfn,TEXT("hsptmp"));
 					hsc_ini( 0,(int)tmpfn, 0,0 );
 					myfile();
 					hsc_refname( 0,(int)compfile, 0,0 );
-					strcpy( objname,"obj" );
+					_tcscpy( objname,TEXT("obj") );
 					hsc_objname( 0,(int)objname, 0,0 );
 					a=hsc3_getsym( 0,0,0,0 );
 					if (a) {
 #ifdef JPNMSG
-						TMes("キーワードの取得に失敗しました");
+						TMes(TEXT("キーワードの取得に失敗しました"));
 #else
-						TMes("Keyword analysis failed.");
+						TMes(TEXT("Keyword analysis failed."));
 #endif
 						return 0;
 					}
@@ -2521,11 +2513,11 @@ LRESULT CALLBACK EditProc (HWND hwnd, UINT iMsg, WPARAM wParam, LPARAM lParam)
 					return 0;
 
 				case IDM_CMDOPT:
-					DialogBox (hInst, "CmdBox", hwnd, (DLGPROC)OptDlgProc);
+					DialogBox (hInst, TEXT("CmdBox"), hwnd, (DLGPROC)OptDlgProc);
 					return 0;
 
 				case IDM_PACKED:
-					DialogBox (hInst, "FileBox", hwnd, (DLGPROC)PlistDlgProc);
+					DialogBox (hInst, TEXT("FileBox"), hwnd, (DLGPROC)PlistDlgProc);
 					return 0;
 
 				case IDM_PACKGO:
@@ -2534,14 +2526,14 @@ LRESULT CALLBACK EditProc (HWND hwnd, UINT iMsg, WPARAM wParam, LPARAM lParam)
 
 				case IDM_MKEXE1:
 					exemode=1;
-					DialogBox (hInst, "MkExe", hwnd, (DLGPROC)FnameDlgProc);
+					DialogBox (hInst, TEXT("MkExe"), hwnd, (DLGPROC)FnameDlgProc);
 					chklstr(hsp_laststr);
 					if (hsp_fnstr) mkexe(hsp_laststr);
 					return 0;
 
 				case IDM_MKEXE2:
 					exemode=1;
-					DialogBox (hInst, "MkExe", hwnd, (DLGPROC)FnameDlgProc);
+					DialogBox (hInst, TEXT("MkExe"), hwnd, (DLGPROC)FnameDlgProc);
 					chklstr(hsp_laststr);
 					if (hsp_fnstr) mkscr(hsp_laststr);
 					return 0;
@@ -2552,16 +2544,16 @@ LRESULT CALLBACK EditProc (HWND hwnd, UINT iMsg, WPARAM wParam, LPARAM lParam)
 
 				case IDM_OPEN_SRCFOLDER:
 						GetCurrentDirectory( _MAX_PATH, tmpfn );
-					ShellExecute( NULL, "explore", tmpfn, NULL, NULL, SW_SHOWNORMAL );
+					ShellExecute( NULL, TEXT("explore"), tmpfn, NULL, NULL, SW_SHOWNORMAL );
 					return 0;
 
 				case IDM_AHTTOOL:
-					wsprintf( tmpfn, "\"%s\\ahtman.exe\"", szExeDir );
+					wsprintf( tmpfn, TEXT("\"%s\\ahtman.exe\""), szExeDir );
 					WinExec( tmpfn, SW_SHOW );
 					return 0;
 
                 case IDM_HSPTV:
-					wsprintf( tmpfn, "\"%s\\hsptv.exe\"", szExeDir );
+					wsprintf( tmpfn, TEXT("\"%s\\hsptv.exe\""), szExeDir );
 					WinExec( tmpfn, SW_SHOW );
 					return 0;
 
@@ -2570,7 +2562,7 @@ LRESULT CALLBACK EditProc (HWND hwnd, UINT iMsg, WPARAM wParam, LPARAM lParam)
 					return 0;
 
                 case IDM_SRCCNV:
-					wsprintf( tmpfn, "\"%s\\hsp3dh.exe\"", szExeDir );
+					wsprintf( tmpfn, TEXT("\"%s\\hsp3dh.exe\""), szExeDir );
 					WinExec( tmpfn, SW_SHOW );
 					return 0;
 
@@ -2579,7 +2571,7 @@ LRESULT CALLBACK EditProc (HWND hwnd, UINT iMsg, WPARAM wParam, LPARAM lParam)
 					return 0;
 
 				case IDM_HGIMG4TOOL:
-					wsprintf( tmpfn, "\"%s\\gpbconv.exe\"", szExeDir );
+					wsprintf( tmpfn, TEXT("\"%s\\gpbconv.exe\""), szExeDir );
 					WinExec( tmpfn, SW_SHOW );
 					return 0 ;
 
@@ -2591,22 +2583,22 @@ LRESULT CALLBACK EditProc (HWND hwnd, UINT iMsg, WPARAM wParam, LPARAM lParam)
 					return 0;
 
                 case IDM_HSPMAN1 :
-					wsprintf( helpopt,"%s\\doclib\\hspprog.htm", szExeDir );
+					wsprintf( helpopt,TEXT("%s\\doclib\\hspprog.htm"), szExeDir );
 					ShellExecute( NULL, NULL, helpopt, NULL, NULL, SW_SHOW );
 					return 0 ;
 
                 case IDM_HSPMAN2 :
-					wsprintf( tmpfn, "\"%s\\hdl.exe\"", szExeDir );
+					wsprintf( tmpfn, TEXT("\"%s\\hdl.exe\""), szExeDir );
 					WinExec( tmpfn, SW_SHOW );
 					return 0 ;
 
                 case IDM_HSPMAN3 :
-					wsprintf( helpopt,"%s\\index.htm", szExeDir );
+					wsprintf( helpopt,TEXT("%s\\index.htm"), szExeDir );
 					ShellExecute( NULL, NULL, helpopt, NULL, NULL, SW_SHOW );
 					return 0 ;
 
                 case IDM_ABOUT :
-                    DialogBox (hInst, "AboutBox", hwnd, (DLGPROC)AboutDlgProc) ;
+                    DialogBox (hInst, TEXT("AboutBox"), hwnd, (DLGPROC)AboutDlgProc) ;
                     return 0 ;
 
 				// Messages for Tag Control
@@ -2627,9 +2619,9 @@ LRESULT CALLBACK EditProc (HWND hwnd, UINT iMsg, WPARAM wParam, LPARAM lParam)
 							return 1 ;
 						} else {
 #ifdef JPNMSG
-							OkMessage ( "セーブに失敗しました。\n[%s]", GetTabInfo(ClickID)->FileName ) ;
+							OkMessage ( TEXT("セーブに失敗しました。\n[%s]"), GetTabInfo(ClickID)->FileName ) ;
 #else
-                            OkMessage ( "Error happened in saving.\n[%s]", GetTabInfo(ClickID)->FileName ) ;
+                            OkMessage ( TEXT("Error happened in saving.\n[%s]"), GetTabInfo(ClickID)->FileName ) ;
 #endif
 						}
 						return 0 ;
@@ -2653,9 +2645,9 @@ LRESULT CALLBACK EditProc (HWND hwnd, UINT iMsg, WPARAM wParam, LPARAM lParam)
 								return 1 ;
 							} else {
 #ifdef JPNMSG
-                                OkMessage ( "%s のセーブに失敗しました。", szTitleName) ;
+                                OkMessage ( TEXT("%s のセーブに失敗しました。"), szTitleName) ;
 #else
-                                OkMessage ( "Error happened in saving.\n[%s]", szFileName ) ;
+                                OkMessage ( TEXT("Error happened in saving.\n[%s]"), szFileName ) ;
 #endif
 							}
 						}
@@ -2757,7 +2749,7 @@ LRESULT CALLBACK EditProc (HWND hwnd, UINT iMsg, WPARAM wParam, LPARAM lParam)
 
 				case IDM_OPTION:
 					EnableWindow(hWndMain, FALSE);
-					hConfigDlg = CreateDialog(hInst, "CONFIG", hwnd, ConfigDlgProc);
+					hConfigDlg = CreateDialog(hInst, TEXT("CONFIG"), hwnd, ConfigDlgProc);
 					return 0;
 
 				case IDM_OPENIME:
@@ -2874,7 +2866,7 @@ BOOL CALLBACK AboutDlgProc (HWND hDlg, UINT iMsg, WPARAM wParam, LPARAM lParam)
 					return TRUE ;
 				case IDC_STATICLINK:
 					if(HIWORD(wParam) == STN_CLICKED){
-						ShellExecute(NULL, NULL, "http://hsp.tv/", NULL, NULL, SW_SHOW);
+						ShellExecute(NULL, NULL, TEXT("http://hsp.tv/"), NULL, NULL, SW_SHOW);
 						return TRUE;
 					}
 					return  TRUE;
@@ -2938,7 +2930,7 @@ BOOL CALLBACK LogcompDlgProc (HWND hDlg, UINT message, WPARAM wParam, LPARAM /*l
 					     hsp_logflag=0;
 						 return TRUE;
 					case IDC_BUTTON1:
-						ShellExecute( NULL,NULL,"hsplog.txt", "", "", SW_SHOW );
+						ShellExecute( NULL,NULL,TEXT("hsplog.txt"), TEXT(""), TEXT(""), SW_SHOW );
 						break;
 					}
                break ;
@@ -2991,51 +2983,51 @@ BOOL CALLBACK ConfigDlgProc (HWND hDlg, UINT message, WPARAM wParam, LPARAM lPar
 			tvis.item.mask           = TVIF_TEXT | TVIF_PARAM;
 
 			tvis.hParent      = TVI_ROOT;
-			tvis.item.pszText = "全般";
+			tvis.item.pszText = TEXT("全般");
 			tvis.item.lParam  = NULL;
 			tvis.hParent = TreeView_InsertItem(hTree, &tvis);
-				tvis.item.pszText = "動作";
-				tvis.item.lParam  = (LPARAM)(hPage[0] = CreateDialog(hInst, "PP_BEHAVIOR", hDlg, ConfigBehaviorPageProc));
+				tvis.item.pszText = TEXT("動作");
+				tvis.item.lParam  = (LPARAM)(hPage[0] = CreateDialog(hInst, TEXT("PP_BEHAVIOR"), hDlg, ConfigBehaviorPageProc));
 				MoveWindow((HWND)tvis.item.lParam, rect.left, rect.top, rect.right, rect.bottom, TRUE);
 				hSelItem = TreeView_InsertItem(hTree, &tvis);
-				tvis.item.pszText = "ディレクトリ";
-				tvis.item.lParam  = (LPARAM)(hPage[1] = CreateDialog(hInst, "PP_DIRECTORY", hDlg, ConfigDirectoryPageProc));
+				tvis.item.pszText = TEXT("ディレクトリ");
+				tvis.item.lParam  = (LPARAM)(hPage[1] = CreateDialog(hInst, TEXT("PP_DIRECTORY"), hDlg, ConfigDirectoryPageProc));
 				MoveWindow((HWND)tvis.item.lParam, rect.left, rect.top, rect.right, rect.bottom, TRUE);
 				TreeView_InsertItem(hTree, &tvis);
 			TreeView_Expand(hTree, tvis.hParent, TVE_EXPAND);
 
 			tvis.hParent      = TVI_ROOT;
-			tvis.item.pszText = "エディタ";
+			tvis.item.pszText = TEXT("エディタ");
 			tvis.item.lParam  = NULL;
 			tvis.hParent = TreeView_InsertItem(hTree, &tvis);
-				tvis.item.pszText = "フォント";
-				tvis.item.lParam  = (LPARAM)(hPage[2] = CreateDialog(hInst, "PP_FONT", hDlg, ConfigFontPageProc));
+				tvis.item.pszText = TEXT("フォント");
+				tvis.item.lParam  = (LPARAM)(hPage[2] = CreateDialog(hInst, TEXT("PP_FONT"), hDlg, ConfigFontPageProc));
 				MoveWindow((HWND)tvis.item.lParam, rect.left, rect.top, rect.right, rect.bottom, TRUE);
 				TreeView_InsertItem(hTree, &tvis);
-				tvis.item.pszText = "色";
-				tvis.item.lParam  = (LPARAM)(hPage[3] = CreateDialog(hInst, "PP_COLOR", hDlg, ConfigColorPageProc));
+				tvis.item.pszText = TEXT("色");
+				tvis.item.lParam  = (LPARAM)(hPage[3] = CreateDialog(hInst, TEXT("PP_COLOR"), hDlg, ConfigColorPageProc));
 				MoveWindow((HWND)tvis.item.lParam, rect.left, rect.top, rect.right, rect.bottom, TRUE);
 				TreeView_InsertItem(hTree, &tvis);
-				tvis.item.pszText = "表示";
-				tvis.item.lParam  = (LPARAM)(hPage[4] = CreateDialog(hInst, "PP_NONCHARACTOR", hDlg, ConfigVisualPageProc));
+				tvis.item.pszText = TEXT("表示");
+				tvis.item.lParam  = (LPARAM)(hPage[4] = CreateDialog(hInst, TEXT("PP_NONCHARACTOR"), hDlg, ConfigVisualPageProc));
 				MoveWindow((HWND)tvis.item.lParam, rect.left, rect.top, rect.right, rect.bottom, TRUE);
 				TreeView_InsertItem(hTree, &tvis);
-				tvis.item.pszText = "色分けキーワード";
-				tvis.item.lParam  = (LPARAM)(hPage[5] = CreateDialog(hInst, "PP_KEYWORD", hDlg, ConfigKeywordPageProc));
+				tvis.item.pszText = TEXT("色分けキーワード");
+				tvis.item.lParam  = (LPARAM)(hPage[5] = CreateDialog(hInst, TEXT("PP_KEYWORD"), hDlg, ConfigKeywordPageProc));
 				MoveWindow((HWND)tvis.item.lParam, rect.left, rect.top, rect.right, rect.bottom, TRUE);
 				TreeView_InsertItem(hTree, &tvis);
 			TreeView_Expand(hTree, tvis.hParent, TVE_EXPAND);
 
 			tvis.hParent      = TVI_ROOT;
-			tvis.item.pszText = "ツール";
+			tvis.item.pszText = TEXT("ツール");
 			tvis.item.lParam  = NULL;
 			tvis.hParent = TreeView_InsertItem(hTree, &tvis);
-				tvis.item.pszText = "アドイン";
-				tvis.item.lParam  = (LPARAM)(hPage[6] = CreateDialog(hInst, "PP_ADDIN", hDlg, ConfigAddinPageProc));
+				tvis.item.pszText = TEXT("アドイン");
+				tvis.item.lParam  = (LPARAM)(hPage[6] = CreateDialog(hInst, TEXT("PP_ADDIN"), hDlg, ConfigAddinPageProc));
 				MoveWindow((HWND)tvis.item.lParam, rect.left, rect.top, rect.right, rect.bottom, TRUE);
 				TreeView_InsertItem(hTree, &tvis);
-				tvis.item.pszText = "外部ツール";
-				tvis.item.lParam  = (LPARAM)(hPage[7] = CreateDialog(hInst, "PP_EXTTOOLS", hDlg, ConfigExtToolsPageProc));
+				tvis.item.pszText = TEXT("外部ツール");
+				tvis.item.lParam  = (LPARAM)(hPage[7] = CreateDialog(hInst, TEXT("PP_EXTTOOLS"), hDlg, ConfigExtToolsPageProc));
 				MoveWindow((HWND)tvis.item.lParam, rect.left, rect.top, rect.right, rect.bottom, TRUE);
 				TreeView_InsertItem(hTree, &tvis);
 			
@@ -3051,7 +3043,7 @@ BOOL CALLBACK ConfigDlgProc (HWND hDlg, UINT message, WPARAM wParam, LPARAM lPar
 			GetClientRect(hSubject, &rect);
 			hOrgFont = (HFONT)SendMessage(hSubject, WM_GETFONT, 0, 0);
 			hFont = CreateFont((rect.bottom-rect.top) * 3 / 5, 0, 0, 0, FW_DONTCARE, FALSE, FALSE, FALSE, DEFAULT_CHARSET,
-				OUT_CHARACTER_PRECIS, CLIP_DEFAULT_PRECIS, DEFAULT_QUALITY, DEFAULT_PITCH, "ＭＳ Ｐゴシック");
+				OUT_CHARACTER_PRECIS, CLIP_DEFAULT_PRECIS, DEFAULT_QUALITY, DEFAULT_PITCH, TEXT("ＭＳ Ｐゴシック"));
 			SendMessage(hSubject, WM_SETFONT, (WPARAM)hFont, TRUE);
 
 			// デフォルトのページを表示させる
@@ -3105,8 +3097,8 @@ BOOL CALLBACK ConfigDlgProc (HWND hDlg, UINT message, WPARAM wParam, LPARAM lPar
 					return TRUE;
 
 				case IDM_BUTTON1:
-					if(MessageBox(hDlg, "現在開いているページの設定を初期状態に戻しますが、よろしいですか？\n"
-						"([OK]ボタンを押さなければ、エディタには反映されません)", "確認", MB_YESNO | MB_ICONQUESTION) == IDYES)
+					if(MessageBox(hDlg, TEXT("現在開いているページの設定を初期状態に戻しますが、よろしいですか？\n")
+						TEXT("([OK]ボタンを押さなければ、エディタには反映されません)"), TEXT("確認"), MB_YESNO | MB_ICONQUESTION) == IDYES)
 							SendMessage(hOldPage, PM_SETDEFAULT, 0, 0L);
 					return TRUE;
 			}
@@ -3116,7 +3108,7 @@ BOOL CALLBACK ConfigDlgProc (HWND hDlg, UINT message, WPARAM wParam, LPARAM lPar
 		{
 			NMTREEVIEW *pnmtv = (LPNMTREEVIEW)lParam;
 			TVITEM tvi;
-			char buf[256];
+			TCHAR buf[256];
 
 			// 設定のページを変更する
 			// Change the page to new config page
@@ -3226,15 +3218,15 @@ COLORREF crDefColor[] = {
 BOOL CALLBACK ConfigColorPageProc (HWND hDlg, UINT message, WPARAM wParam, LPARAM lParam)
 {
 	static MYCOLORREF crColor[21];
-	const char *szCategory[] = { "文字の色分け", "特殊な記号の配色", "エディタの配色", "行番号表示領域の配色", "ルーラーの配色"};
-	const char *szCharItem[] = { "通常の文字", "命令/関数", "プリプロセッサ命令", "文字列", "マクロ", "コメント", "ラベル" };
-	const char *szNonCharItem[] = { "半角スペース", "全角スペース", "TAB文字", "改行記号", "[EOF](ファイル終端)記号" };
-	const char *szEditItem[] = { "全体の背景色", "キャレット行の下線", "行番号とエディタの境界線" };
-	const char *szLineNumItem[] = { "行番号", "キャレット行の強調" };
-	const char *szRolerItem[] = { "数字", "背景色", "目盛り", "キャレット位置の強調" };
+	LPCTSTR szCategory[] = { TEXT("文字の色分け"), TEXT("特殊な記号の配色"), TEXT("エディタの配色"), TEXT("行番号表示領域の配色"), TEXT("ルーラーの配色")};
+	LPCTSTR szCharItem[] = { TEXT("通常の文字"), TEXT("命令/関数"), TEXT("プリプロセッサ命令"), TEXT("文字列"), TEXT("マクロ"), TEXT("コメント"), TEXT("ラベル") };
+	LPCTSTR szNonCharItem[] = { TEXT("半角スペース"), TEXT("全角スペース"), TEXT("TAB文字"), TEXT("改行記号"), TEXT("[EOF](ファイル終端)記号") };
+	LPCTSTR szEditItem[] = { TEXT("全体の背景色"), TEXT("キャレット行の下線"), TEXT("行番号とエディタの境界線") };
+	LPCTSTR szLineNumItem[] = { TEXT("行番号"), TEXT("キャレット行の強調") };
+	LPCTSTR szRolerItem[] = { TEXT("数字"), TEXT("背景色"), TEXT("目盛り"), TEXT("キャレット位置の強調") };
 
 	typedef struct tagItems{
-		const char **item;
+		LPCTSTR *item;
 		int num;
 	} ITEMS;
 
@@ -3255,28 +3247,28 @@ BOOL CALLBACK ConfigColorPageProc (HWND hDlg, UINT message, WPARAM wParam, LPARA
 				SendDlgItemMessage(hDlg, IDC_COMBO1, CB_ADDSTRING, 0, (LPARAM)szCategory[i]);
 			SendDlgItemMessage(hDlg, IDC_COMBO1, CB_SETCURSEL, 0, 0L);
 
-			const char *szColorName[] = {
-				"黒",
-				"白",
-				"赤",
-				"緑",
-				"青",
-				"黄",
-				"黄緑",
-				"水色",
-				"紫",
-				"マゼンタ",
-				"橙",
-				"深緑",
-				"空色",
-				"こげ茶色",
-				"行番号の既定色",
-				"行番号とエディタの境界線の既定色",
-				"キャレット行の行番号強調の既定色",
-				"キャレット行の下線の既定色",
-				"ルーラー背景の既定色",
-				"ルーラー強調の既定色",
-				"ユーザー定義...",
+			LPCTSTR szColorName[] = {
+				TEXT("黒"),
+				TEXT("白"),
+				TEXT("赤"),
+				TEXT("緑"),
+				TEXT("青"),
+				TEXT("黄"),
+				TEXT("黄緑"),
+				TEXT("水色"),
+				TEXT("紫"),
+				TEXT("マゼンタ"),
+				TEXT("橙"),
+				TEXT("深緑"),
+				TEXT("空色"),
+				TEXT("こげ茶色"),
+				TEXT("行番号の既定色"),
+				TEXT("行番号とエディタの境界線の既定色"),
+				TEXT("キャレット行の行番号強調の既定色"),
+				TEXT("キャレット行の下線の既定色"),
+				TEXT("ルーラー背景の既定色"),
+				TEXT("ルーラー強調の既定色"),
+				TEXT("ユーザー定義..."),
 			};
 
 			num = sizeof(szColorName) / sizeof(szColorName[0]);
@@ -3411,8 +3403,8 @@ BOOL CALLBACK ConfigDirectoryPageProc (HWND hDlg, UINT message, WPARAM wParam, L
 
 		case PM_SETDEFAULT:
 		{
-			SetDlgItemText(hDlg, IDC_EDIT1, "");
-			SetDlgItemText(hDlg, IDC_EDIT2, "");
+			SetDlgItemText(hDlg, IDC_EDIT1, TEXT(""));
+			SetDlgItemText(hDlg, IDC_EDIT2, TEXT(""));
 			CheckDlgButton(hDlg, IDC_RADIO1, BST_CHECKED);
 			CheckDlgButton(hDlg, IDC_RADIO2, BST_UNCHECKED);
 			CheckDlgButton(hDlg, IDC_RADIO3, BST_UNCHECKED);
@@ -3450,9 +3442,9 @@ static BOOL CALLBACK SelectExtToolProc(HWND hDlg, UINT message, WPARAM wParam, L
 			switch(LOWORD(wParam)){
 				case IDC_BUTTON1:
 				{
-					char szFileName[_MAX_PATH + 1], szFileTitle[_MAX_PATH + 1] = "";
+					TCHAR szFileName[_MAX_PATH + 1], szFileTitle[_MAX_PATH + 1] = TEXT("");
 
-					GetDlgItemText(hDlg, IDC_EDIT2, szFileName, sizeof(szFileName) - 1);
+					GetDlgItemText(hDlg, IDC_EDIT2, szFileName, (sizeof(szFileName) - 1)/sizeof(TCHAR));
 					if(PopFileOpenDlg2(hDlg, szFileName, szFileTitle))
 						SetDlgItemText(hDlg, IDC_EDIT2, szFileName);
 					return TRUE;
@@ -3466,15 +3458,15 @@ static BOOL CALLBACK SelectExtToolProc(HWND hDlg, UINT message, WPARAM wParam, L
 					RECT rcCtrl;
 					UINT uID;
 					UINT uEditID;
-					TCHAR szInsertText[64] = "";
+					TCHAR szInsertText[64] = TEXT("");
 
 					switch( LOWORD(wParam) ) {
 						case IDC_REF_CMDLINE:
-							hMenuPopup = LoadMenu(hInst, "CONTEXTMENU3");
+							hMenuPopup = LoadMenu(hInst, TEXT("CONTEXTMENU3"));
 							uEditID = IDC_EDIT3;
 							break;
 						case IDC_REF_WORKDIR:
-							hMenuPopup = LoadMenu(hInst, "CONTEXTMENU4");
+							hMenuPopup = LoadMenu(hInst, TEXT("CONTEXTMENU4"));
 							uEditID = IDC_EDIT4;
 							break;
 					}
@@ -3489,14 +3481,14 @@ static BOOL CALLBACK SelectExtToolProc(HWND hDlg, UINT message, WPARAM wParam, L
 					switch( LOWORD(wParam) ) {
 						case IDC_REF_CMDLINE:
 							switch( uID ) {
-								case 1: lstrcpyn(szInsertText, "%F", 64); break;
-								case 2: lstrcpyn(szInsertText, "%D", 64); break;
+								case 1: lstrcpyn(szInsertText, TEXT("%F"), 64); break;
+								case 2: lstrcpyn(szInsertText, TEXT("%D"), 64); break;
 							}
 							break;
 						case IDC_REF_WORKDIR:
 							switch( uID ) {
-								case 1: lstrcpyn(szInsertText, "%F", 64); break;
-								case 2: lstrcpyn(szInsertText, "%D", 64); break;
+								case 1: lstrcpyn(szInsertText, TEXT("%F"), 64); break;
+								case 2: lstrcpyn(szInsertText, TEXT("%D"), 64); break;
 							}
 							break;
 					}
@@ -3514,7 +3506,7 @@ static BOOL CALLBACK SelectExtToolProc(HWND hDlg, UINT message, WPARAM wParam, L
 
 				case IDOK:
 					if(GetWindowTextLength(GetDlgItem(hDlg, IDC_EDIT2)) == 0){
-						MessageBox(hDlg, "ファイル名を省略することはできません。", "error", MB_OK | MB_ICONERROR);
+						MessageBox(hDlg, TEXT("ファイル名を省略することはできません。"), TEXT("error"), MB_OK | MB_ICONERROR);
 						return TRUE;
 					}
 
@@ -3543,7 +3535,7 @@ BOOL CALLBACK ConfigExtToolsPageProc (HWND hDlg, UINT message, WPARAM wParam, LP
 		{
 			HWND hListView;
 			LVITEM lvi;
-			char *szColumnTitle[] = { "名前", "ファイル パス", };
+			LPTSTR szColumnTitle[] = { TEXT("名前"), TEXT("ファイル パス"), };
 			LVCOLUMN lvc;
 			int i, nSize;
 			EXTTOOLINFO *lpExtToolInfo, *lpNewExtToolInfo;
@@ -3619,15 +3611,15 @@ BOOL CALLBACK ConfigExtToolsPageProc (HWND hDlg, UINT message, WPARAM wParam, LP
 					lpExtToolInfo = (EXTTOOLINFO *)malloc(sizeof(EXTTOOLINFO));
 					if(lpExtToolInfo == NULL) return 0;
 
-					lstrcpy(lpExtToolInfo->ToolName, "");
-					lstrcpy(lpExtToolInfo->FileName, "");
-					lstrcpy(lpExtToolInfo->CmdLine, "");
-					lstrcpy(lpExtToolInfo->WorkDir, "");
+					lstrcpy(lpExtToolInfo->ToolName, TEXT(""));
+					lstrcpy(lpExtToolInfo->FileName, TEXT(""));
+					lstrcpy(lpExtToolInfo->CmdLine, TEXT(""));
+					lstrcpy(lpExtToolInfo->WorkDir, TEXT(""));
 					lpExtToolInfo->ShowOnMainMenu    = true;
 					lpExtToolInfo->ShowOnPopupMenu   = false;
 					lpExtToolInfo->ExecOnStartup     = false;
 					lpExtToolInfo->ExecWithOverwrite = false;
-					if(DialogBoxParam(hInst, "EXTTOOLS", hDlg, SelectExtToolProc, (LPARAM)lpExtToolInfo) == IDOK){
+					if(DialogBoxParam(hInst, TEXT("EXTTOOLS"), hDlg, SelectExtToolProc, (LPARAM)lpExtToolInfo) == IDOK){
 						hListView = GetDlgItem(hDlg, IDC_LIST1);
 						lvi.iItem  = 0;
 
@@ -3665,7 +3657,7 @@ BOOL CALLBACK ConfigExtToolsPageProc (HWND hDlg, UINT message, WPARAM wParam, LP
 					lpExtToolInfo = (EXTTOOLINFO *)lvi.lParam;
 					if(lpExtToolInfo == NULL) return 0;
 
-					if(DialogBoxParam(hInst, "EXTTOOLS", hDlg, SelectExtToolProc, lvi.lParam) == IDOK){
+					if(DialogBoxParam(hInst, TEXT("EXTTOOLS"), hDlg, SelectExtToolProc, lvi.lParam) == IDOK){
 						lvi.mask = LVIF_TEXT;
 
 						lvi.iSubItem = 0;
@@ -3812,19 +3804,19 @@ BOOL CALLBACK ConfigExtToolsPageProc (HWND hDlg, UINT message, WPARAM wParam, LP
 	}
 	return FALSE;
 }
-static void GetStyleStr(char *buf, LOGFONT *logfont)
+static void GetStyleStr(LPTSTR buf, LOGFONT *logfont)
 {
-	lstrcpy(buf, "");
-	if(logfont->lfWeight >= FW_BOLD) lstrcpy(buf, "太字 ");
-	if(logfont->lfItalic) lstrcat(buf, "斜体");
-	if(lstrlen(buf) == 0) lstrcpy(buf, "標準");
+	lstrcpy(buf, TEXT(""));
+	if(logfont->lfWeight >= FW_BOLD) lstrcpy(buf, TEXT("太字 "));
+	if(logfont->lfItalic) lstrcat(buf, TEXT("斜体"));
+	if(lstrlen(buf) == 0) lstrcpy(buf, TEXT("標準"));
 }
-static void GetExStyleStr(char *buf, LOGFONT *logfont)
+static void GetExStyleStr(LPTSTR buf, LOGFONT *logfont)
 {
-	lstrcpy(buf, "");
-	if(logfont->lfStrikeOut) lstrcat(buf, "取り消し線 ");
-	if(logfont->lfUnderline) lstrcat(buf, "下線");
-	if(lstrlen(buf) == 0) lstrcpy(buf, "無し");
+	lstrcpy(buf, TEXT(""));
+	if(logfont->lfStrikeOut) lstrcat(buf, TEXT("取り消し線 "));
+	if(logfont->lfUnderline) lstrcat(buf, TEXT("下線"));
+	if(lstrlen(buf) == 0) lstrcpy(buf, TEXT("無し"));
 	return;
 }
 BOOL CALLBACK ConfigFontPageProc (HWND hDlg, UINT message, WPARAM wParam, LPARAM /*lParam*/)
@@ -3833,7 +3825,7 @@ BOOL CALLBACK ConfigFontPageProc (HWND hDlg, UINT message, WPARAM wParam, LPARAM
 	switch(message){
 		case WM_INITDIALOG:
 		{
-			char str[1280];
+			TCHAR str[1280];
 			LOGFONT editfont, tabfont;
 			HDC hDC = CreateCompatibleDC(NULL);
 			editfont = PopFontGetELG();
@@ -3884,7 +3876,7 @@ BOOL CALLBACK ConfigFontPageProc (HWND hDlg, UINT message, WPARAM wParam, LPARAM
 
 				case IDC_BUTTON2:
 				{
-					char str[1280];
+					TCHAR str[1280];
 					LOGFONT *tabfont;
 					HFONT hOrgFont;
 
@@ -3919,7 +3911,7 @@ BOOL CALLBACK ConfigFontPageProc (HWND hDlg, UINT message, WPARAM wParam, LPARAM
 
 		case PM_SETDEFAULT:
 		{
-			char str[1280];
+			TCHAR str[1280];
 			LOGFONT editfont, tabfont;
 			HFONT hOrgEditFont, hOrgTabFont;
 
@@ -3954,10 +3946,10 @@ BOOL CALLBACK ConfigFontPageProc (HWND hDlg, UINT message, WPARAM wParam, LPARAM
 
 BOOL CALLBACK SelectSourceProc(HWND hDlg, UINT message, WPARAM wParam, LPARAM lParam)
 {
-	static char *lpFileName;
+	static LPTSTR lpFileName;
 	switch(message){
 		case WM_INITDIALOG:
-			lpFileName = (char *)lParam;
+			lpFileName = (LPTSTR )lParam;
 			SetDlgItemText(hDlg, IDC_EDIT1, lpFileName);
             return TRUE;
 
@@ -3965,9 +3957,9 @@ BOOL CALLBACK SelectSourceProc(HWND hDlg, UINT message, WPARAM wParam, LPARAM lP
 			switch(LOWORD(wParam)){
 				case IDC_BUTTON1:
 				{
-					char szFileName[_MAX_PATH + 1], szFileTitle[_MAX_PATH + 1] = "";
+					TCHAR szFileName[_MAX_PATH + 1], szFileTitle[_MAX_PATH + 1] = TEXT("");
 
-					GetDlgItemText(hDlg, IDC_EDIT1, szFileName, sizeof(szFileName) - 1);
+					GetDlgItemText(hDlg, IDC_EDIT1, szFileName, (sizeof(szFileName) - 1)/sizeof(TCHAR));
 					if(PopFileOpenDlg(hDlg, szFileName, szFileTitle))
 						SetDlgItemText(hDlg, IDC_EDIT1, szFileName);
 					return TRUE;
@@ -3991,7 +3983,7 @@ BOOL CALLBACK ConfigKeywordPageProc (HWND hDlg, UINT message, WPARAM wParam, LPA
 		case WM_INITDIALOG:
 		{
 			HWND hListBox = GetDlgItem(hDlg, IDC_LIST1);
-			const char *szFileName;
+			LPCTSTR szFileName;
 
 			for(size_t i = 0; i < filelist.num(); i++){
 				szFileName = filelist.get((int)i);
@@ -4006,12 +3998,12 @@ BOOL CALLBACK ConfigKeywordPageProc (HWND hDlg, UINT message, WPARAM wParam, LPA
 			switch(GET_WM_COMMAND_ID(wParam, lParam)){
 				case IDC_BUTTON1:
 				{
-					char szFileName[_MAX_PATH + 1] = "";
+					TCHAR szFileName[_MAX_PATH + 1] = TEXT("");
 					HWND hListBox = GetDlgItem(hDlg, IDC_LIST1);
 					int nFoundSel;
 
-					if(DialogBoxParam(hInst, "SELSRC", hDlg, SelectSourceProc, (LPARAM)szFileName) == IDOK
-						&& szFileName[0] != '\0'){
+					if(DialogBoxParam(hInst, TEXT("SELSRC"), hDlg, SelectSourceProc, (LPARAM)szFileName) == IDOK
+						&& szFileName[0] != TEXT('\0')){
 							nFoundSel = (int)SendMessage(hListBox, LB_FINDSTRINGEXACT, (WPARAM)-1, (LPARAM)szFileName);
 							if(nFoundSel == LB_ERR)
 								SendMessage(hListBox, LB_SETCURSEL, SendMessage(hListBox, LB_ADDSTRING, 0,
@@ -4024,15 +4016,15 @@ BOOL CALLBACK ConfigKeywordPageProc (HWND hDlg, UINT message, WPARAM wParam, LPA
 
 				case IDC_BUTTON2:
 				{
-					char szFileName[_MAX_PATH + 1];
+					TCHAR szFileName[_MAX_PATH + 1];
 					HWND hListBox = GetDlgItem(hDlg, IDC_LIST1);
 					int nCurSel, nFoundSel;
 
 					nCurSel = (int)SendMessage(hListBox, LB_GETCURSEL, 0, 0L);
 					if(nCurSel != LB_ERR){
 						SendMessage(hListBox, LB_GETTEXT, nCurSel, (LPARAM)szFileName);
-						if(DialogBoxParam(hInst, "SELSRC", hDlg, SelectSourceProc, (LPARAM)szFileName) == IDOK
-							&& szFileName[0] != '\0'){
+						if(DialogBoxParam(hInst, TEXT("SELSRC"), hDlg, SelectSourceProc, (LPARAM)szFileName) == IDOK
+							&& szFileName[0] != TEXT('\0')){
 								SendMessage(hListBox, LB_DELETESTRING, nCurSel, 0L);
 								nFoundSel = (int)SendMessage(hListBox, LB_FINDSTRINGEXACT, (WPARAM)-1, (LPARAM)szFileName);
 								if(nFoundSel == LB_ERR){
@@ -4069,7 +4061,7 @@ BOOL CALLBACK ConfigKeywordPageProc (HWND hDlg, UINT message, WPARAM wParam, LPA
 		case PM_APPLY:
 		{
 			HWND hListBox = GetDlgItem(hDlg, IDC_LIST1);
-			char tmpfn[_MAX_PATH + 1];
+			TCHAR tmpfn[_MAX_PATH + 1];
 
 			filelist.reset();
 			int num = (int)SendMessage(hListBox, LB_GETCOUNT, 0, 0L);
@@ -4124,7 +4116,7 @@ BOOL CALLBACK ConfigVisualPageProc (HWND hDlg, UINT message, WPARAM /*wParam*/, 
 				GetDlgItemInt(hDlg, IDC_EDIT4, &bSuccess, FALSE);
 			} while(0);
 			if(!bSuccess)
-				MessageBox(hDlg, "表示設定の適用に失敗しました。\nサイズには0以上の整数を入力して下さい。", "Error",
+				MessageBox(hDlg, TEXT("表示設定の適用に失敗しました。\nサイズには0以上の整数を入力して下さい。"), TEXT("Error"),
 					MB_OK | MB_ICONERROR);
 			SetWindowLong(hDlg, DWL_MSGRESULT, bSuccess);
 			return TRUE;
@@ -4173,22 +4165,26 @@ BOOL CALLBACK ConfigVisualPageProc (HWND hDlg, UINT message, WPARAM /*wParam*/, 
 	return FALSE;
 }
 
-void LoadFromCommandLine(char *lpCmdLine)
+void LoadFromCommandLine(LPTSTR lpCmdLine)
 {
 	TABINFO *lpTabInfo;
 	int SearchResult, ActivateID;
 	bool bActivate = false, bCreated;
-	char szOldDir[_MAX_PATH + 1];
-	char fullpathbuf[_MAX_PATH];
+	TCHAR szOldDir[_MAX_PATH + 1];
+	TCHAR fullpathbuf[_MAX_PATH];
 
 	int argc;
-	char **argv = CommandLineToArgvA(lpCmdLine, &argc);
+#ifndef UNICODE
+	LPSTR *argv = CommandLineToArgvA(lpCmdLine, &argc);
+#else
+	LPWSTR *argv = CommandLineToArgvW(lpCmdLine, &argc);
+#endif
 
 	for(int i = 1; i < argc; i++){
-		char *path;
-		GetCurrentDirectory(sizeof(szOldDir), szOldDir);
+		LPTSTR path;
+		GetCurrentDirectory(sizeof(szOldDir)/sizeof(TCHAR), szOldDir);
 		SetCurrentDirectory(szExeDir);
-		if(GetFullPathName(argv[i], sizeof(fullpathbuf), fullpathbuf, NULL)) {
+		if(GetFullPathName(argv[i], sizeof(fullpathbuf)/sizeof(TCHAR), fullpathbuf, NULL)) {
 			path = fullpathbuf;
 		} else {
 			path = argv[i];
@@ -4204,12 +4200,12 @@ void LoadFromCommandLine(char *lpCmdLine)
 				if(lpTabInfo->NeedSave){ bCreated = true; }
 			}
 			if( lpTabInfo == NULL
-				|| lpTabInfo->FileName[0] != '\0'
+				|| lpTabInfo->FileName[0] != TEXT('\0')
 				|| Footy2IsEdited(activeFootyID) ){
 					bCreated = true;
 			}
 			if ( bCreated ) {
-					CreateTab(activeID, "", path, "");
+					CreateTab(activeID, TEXT(""), path, TEXT(""));
 			} else {
 					SetTabInfo(activeID, NULL, path, NULL, -1);
 			}
@@ -4217,7 +4213,7 @@ void LoadFromCommandLine(char *lpCmdLine)
 				if(bCreated)
                     DeleteTab(activeID);
 				else
-					SetTabInfo(activeID, "", "", NULL, -1);
+					SetTabInfo(activeID, TEXT(""), TEXT(""), NULL, -1);
 			bActivate = false;
 		} else {
 			ActivateID = SearchResult;
@@ -4233,7 +4229,7 @@ void LoadFromCommandLine(char *lpCmdLine)
 
 LRESULT FileDrop(WPARAM wParam, LPARAM /*lParam*/)
 {
-	char tmpfn[_MAX_PATH];
+	TCHAR tmpfn[_MAX_PATH];
 	HDROP hDrop = (HDROP)wParam;
 	TABINFO *lpTabInfo;
 	int SearchResult, ActivateID;
@@ -4251,12 +4247,12 @@ LRESULT FileDrop(WPARAM wParam, LPARAM /*lParam*/)
 				if(lpTabInfo->NeedSave){ bCreated = true; }
 			}
 			if( lpTabInfo == NULL
-				|| lpTabInfo->FileName[0] != '\0'
+				|| lpTabInfo->FileName[0] != TEXT('\0')
 				|| Footy2IsEdited(activeFootyID) ){
 					bCreated = true;
 			}
 			if ( bCreated ) {
-					CreateTab(activeID, "", tmpfn, "");
+					CreateTab(activeID, TEXT(""), tmpfn, TEXT(""));
 			} else {
 					SetTabInfo(activeID, NULL, tmpfn, NULL, -1);
 			}
@@ -4264,7 +4260,7 @@ LRESULT FileDrop(WPARAM wParam, LPARAM /*lParam*/)
 				if(bCreated)
                     DeleteTab(activeID);
 				else
-					SetTabInfo(activeID, "", "", NULL, -1);
+					SetTabInfo(activeID, TEXT(""), TEXT(""), NULL, -1);
 
 			bActivate = false;
 		} else {
