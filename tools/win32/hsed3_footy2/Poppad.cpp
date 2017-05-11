@@ -11,19 +11,20 @@
 //               (c) Charles Petzold, 1996
 ---------------------------------------*/
 
+#include <windows.h>
+#include <windowsx.h>
+#include <commdlg.h>
 #include <stdlib.h>
 #include <stdio.h>
 #include <ctype.h>
 #include <direct.h>
-#include <windows.h>
-#include <windowsx.h>
-#include <commdlg.h>
 #include <winuser.h>
 #include <shlobj.h>
-#include <htmlhelp.h>
-#include <mbctype.h>
-
 #include "Footy2.h"
+#include <htmlhelp.h>
+#if _MSC_VER >= 1400 // VC++ .NET 2005 or later
+#include <mbctype.h> // for _ismbblead()
+#endif
 
 #include "poppad.h"
 #include "resource.h"
@@ -1245,7 +1246,6 @@ static void set_labellist( HWND hList, HWND /*hwndEdit*/ )
 	int mytag = -1;
 	int myline= -2;
 	int ret;
-	char *lastdq=0;
 
 	ListView_DeleteAllItems(hList);
 
@@ -1386,7 +1386,7 @@ static void set_labellist( HWND hList, HWND /*hwndEdit*/ )
 						if (wp - 2 >= buffer)
 							bDameChk = IsDBCSLeadByte((unsigned char) *(wp - 2));
 						// 文字列読み飛ばし
-						if( ('{' == *(wp - 1)) && (!bDameChk) && (wp != lastdq)) { // 複数行文字列
+						if( ('{' == *(wp - 1)) && (!bDameChk)) { // 複数行文字列
 						//if( '{' == *(wp - 1) ) { // 複数行文字列
 							wp += 2;
 							for(bool bEscape = false; *wp && ('\"' != *wp || '}' != wp[1] || bEscape); ) {
@@ -1403,7 +1403,6 @@ static void set_labellist( HWND hList, HWND /*hwndEdit*/ )
 								}
 								wp += IsDBCSLeadByte(*wp) ? 2 : 1;
 							}
-							lastdq=wp;
 						}
 						wp--;
 						continue;
@@ -1686,83 +1685,6 @@ static void SetFileName(char *titleName, char *fileName, char *dirName) {
 	SetTabInfo(activeID, titleName, fileName, dirName, -1);
 }
 
-static void auto_indentation(void)
-{
-
-	/* This feature is implemented by the 'Footy' control too, but it is not useful in this case and not available outside the control. */
-
-	// インデント
-
-	size_t start_line, start_column, end_line, end_column;
-
-	if (Footy2GetSel(activeFootyID, &start_line, &start_column, &end_line, &end_column) == FOOTY2ERR_NOTSELECTED) {
-
-		Footy2GetCaretPosition(activeFootyID, &start_line, &start_column);
-
-		end_line = start_line;
-		end_column = start_column;
-
-	}
-
-	const wchar_t *line = Footy2GetLineW(activeFootyID, end_line);
-	while (line[end_column] == ' ' || line[end_column] == '\t') end_column++;
-
-	line = Footy2GetLineW(activeFootyID, start_line);
-
-	wchar_t *spaces = (wchar_t *)malloc((start_column + (strlen("\n") + strlen("\t") + strlen("\n") + 1)) * sizeof(wchar_t));
-	if (!spaces) return;
-
-	wcscpy(spaces, L"\n");
-	size_t j = strlen("\n");
-
-	size_t i = start_column;
-
-	while (i > 0) {
-
-		i--;
-
-		if (line[i] != ' ' && line[i] != '\t') break;
-
-	}
-
-	/* Block indentation */
-
-	if (line[i] == '{') {
-
-		spaces[j] = '\t';
-		j++;
-
-	}
-
-	for(i = 0; i < start_column; i++, j++) {
-
-		if (line[i] != ' ' && line[i] != '\t') break;
-
-		spaces[j] = line[i];
-
-	}
-
-	/* Indentation after a label */
-
-	if (line[i] == '*' && i < start_column) {
-
-		spaces[j] = '\t';
-		j++;
-
-	}
-
-	if (i == start_column) start_column = 0;
-
-	spaces[j] = '\0';
-
-	Footy2SetSel(activeFootyID, start_line, start_column, end_line, end_column, false);
-	Footy2SetSelTextW(activeFootyID, spaces);
-
-	free(spaces);
-
-	return;
-
-}
 
 LRESULT CALLBACK MyEditProc( HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam )
 {
@@ -1775,11 +1697,80 @@ LRESULT CALLBACK MyEditProc( HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam )
 	case WM_KEYDOWN:
 	{
 
-		if (!bAutoIndent) break;
+		if (!bAutoIndent || wParam != VK_RETURN || GetKeyState(VK_CONTROL) < 0) break;
 
-		if (wParam != VK_RETURN || GetKeyState(VK_CONTROL) < 0) break;
+		// Perform auto indention
 
-		auto_indentation();
+		// This feature is implemented by the 'Footy' control too, but it is not available outside the control.
+
+		// インデント
+
+		size_t nsLine, nsPos, neLine, nePos;
+
+		if (Footy2GetSel(activeFootyID, &nsLine, &nsPos, &neLine, &nePos) == FOOTY2ERR_NOTSELECTED) {
+
+			Footy2GetCaretPosition(activeFootyID, &nsLine, &nsPos);
+
+			neLine = nsLine;
+			nePos  = nsPos;
+
+		}
+
+		const wchar_t *szLine = Footy2GetLineW(activeFootyID, neLine);
+
+		size_t nLength = wcslen(szLine);
+		if (nLength > nsPos) nLength = nsPos;
+
+		wchar_t *szSpaceBuf = (wchar_t *)calloc(nLength + strlen("\n") + strlen("\t") + 1, sizeof(wchar_t));
+		if (!szSpaceBuf) break;
+
+		while (szLine[nePos] == ' ' || szLine[nePos] == '\t') {
+
+			nePos++;
+
+		}
+
+		wcscpy(szSpaceBuf, L"\n");
+
+		size_t j = strlen("\n");
+
+		size_t i = nLength;
+
+		while (i > 0) {
+
+			i--;
+
+			if (szLine[i] != ' ' && szLine[i] != '\t') break;
+
+		}
+
+		if (szLine[i] == '{') {
+
+			szSpaceBuf[j] = '\t';
+			j++;
+
+		}
+
+		for(i = 0; i < nLength && (szLine[i] == ' ' || szLine[i] == '\t'); i++, j++)
+			szSpaceBuf[j] = szLine[i];
+
+		// Indention right after a label
+
+		if (szLine[i] == '*' && i < nsPos && j == strlen("\n")) {
+
+			szSpaceBuf[j] = '\t';
+			j++;
+
+		}
+
+		if (szLine[i] == '\0' || i >= nsPos) nsPos = 0;
+
+		szSpaceBuf[j] = '\0';
+
+		Footy2SetSel(activeFootyID, nsLine, nsPos, neLine, nePos, false);
+		Footy2SetSelTextW(activeFootyID, szSpaceBuf);
+
+		free(szSpaceBuf);
 
 		return 0;
 
@@ -1878,17 +1869,26 @@ int poppad_menupop( WPARAM wParam, LPARAM lParam )
 		case 1 :		// Edit menu
 			{
 
-			// Enable the 'Undo' if available
-
-			int iNum = 0;
-
+			// Enable Undo if edit control can do it
+			iNum = 0;
 			Footy2GetMetrics(activeFootyID, SM_UNDOREM, &iNum);
-			EnableMenuItem ((HMENU)wParam, IDM_UNDO, iNum > 0 ? MF_ENABLED : MF_GRAYED);
+			EnableMenuItem ((HMENU) wParam, IDM_UNDO,
+//				FootyGetMetrics(activeFootyID, F_GM_UNDOREM) > 0 ? MF_ENABLED : MF_GRAYED) ;	// 2008-02-17 Shark++ 代替機能未実装
+				iNum > 0 ? MF_ENABLED : MF_GRAYED) ;
 
-			// Enable the 'Redo' if available
+			// Enable Redo if edit control can do it
 
+//			EnableMenuItem ((HMENU) wParam, IDM_REDO, nUndoNum > 0 ?
+//				MF_ENABLED : MF_GRAYED) ;
+//			EnableMenuItem ((HMENU) wParam, IDM_REDO,
+//			SendMessage (hwndEdit, WM_USER + 85/*(EM_CANREDO)*/, 0, 0L) ?
+//				MF_ENABLED : MF_GRAYED) ;
+			iNum = 0;
 			Footy2GetMetrics(activeFootyID, SM_REDOREM, &iNum);
-			EnableMenuItem ((HMENU) wParam, IDM_REDO, iNum > 0 ? MF_ENABLED : MF_GRAYED);
+			EnableMenuItem ((HMENU) wParam, IDM_REDO,
+//				FootyGetMetrics(activeFootyID, F_GM_REDOREM) > 0 ? MF_ENABLED : MF_GRAYED) ;	// 2008-02-17 Shark++ 代替機能未実装
+				iNum > 0 ? MF_ENABLED : MF_GRAYED) ;
+
 
 			// Enable Paste if text is in the clipboard
 
@@ -2232,7 +2232,7 @@ LRESULT CALLBACK EditProc (HWND hwnd, UINT iMsg, WPARAM wParam, LPARAM lParam)
 #ifdef JPNMSG
 							OkMessage ( "%s のセーブに失敗しました。", szTitleName) ;
 #else
-							OkMessage("Failed to save data to %s", szFileName);
+							OkMessage ( "Error happened in saving.\n[%s]", szFileName ) ;
 #endif
 						}
 					}
@@ -2248,7 +2248,7 @@ LRESULT CALLBACK EditProc (HWND hwnd, UINT iMsg, WPARAM wParam, LPARAM lParam)
 #ifdef JPNMSG
 						OkMessage ( "%s をプリントアウトできません。", szTitleName) ;
 #else
-						OkMessage("Failed to print out the text %s", szFileName);
+						OkMessage ( "Error happened in printing.\n[%s]", szFileName ) ;
 #endif
 					}
 					return 0 ;
