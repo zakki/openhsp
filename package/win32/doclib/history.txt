@@ -5,30 +5,7 @@ Hot Soup Processor ver3.5                           HSP : Hot Soup Processor
 
 ・hsp3関連 更新履歴
 
-	2017/05/18 3.5 beta5
-
-	[HSP3CNV] 長い関数名の使用時にCコード生成に失敗することがある不具合を修正
-	スクリプトエディタのラベル一覧が途中までしか表示されないことがある不具合を修正
-	[hsp3] varptr関数で変数のバッファサイズをシステム変数strsizeに返す仕様を撤回、varsize関数を追加して取得できるように修正
-	[HGIMG4] ゲームエンジンを更新、いくつかの命令を追加。詳細はhgimg4.txtをご覧ください
-	[HSP3Dish][Linux] Linux版を追加
-	[HSP3Dish][iOS] XCode8用のプロジェクトファイルにアップデート
-	[HSP3Dish][iOS] HGIMG4プロジェクトのビルドをサポート(β対応)
-	[HSP3Dish][iOS] XCode上で実機用にコンパイルした際にリンクエラーが出ることがある不具合を修正
-	[HSP3Dish][android] firebaseベースのAdMobに対応、インタースティシャル広告の表示に対応
-	[HSP3Dish][android] hsp3dhで長いソースのビルド時にエラーが発生する不具合を修正
-	[HSP3Dish][android] 加速度・ジャイロセンサー値の取得に対応
-	[HSP3Dish][android] 一部の機種でテクスチャが正しく設定されなくなる不具合を修正
-	[HSP3Dish][iOS][android] #deffuncで配列をvarで渡した場合、値が正しく取得できないことがある不具合を修正
-	[HGIMG3] β4版でlogmes命令が使えなくなっていた不具合を修正
-	β4版でDLL呼び出しエラーが起動時にチェックされていた不具合を修正
-	print命令で第2パラメーターに1を指定した場合、改行しない機能を追加
-	DupPtrを入れ子にすると正常に動作しない問題を修正
-	[hsp3_64] ObjImageでランタイムがクラッシュする問題を修正
-	[hsp3_64] リストボックス、コンボボックスが正常に動作しない問題を修正
-	[hsp3_64] DLL呼び出し時にパラメータが正常に渡らない問題を修正
-	[hsp3_64] DLL呼び出し時にHSP例外処理が働かない問題を修正
-	[hsp3utf] DLL呼び出し時にランタイムがクラッシュする問題を修正
+	2017/05/18 3.5 beta5a
 
 	tds12さんによるOpenHSP修正を反映
 	[hsp3utf] DLL関数名はASCIIだとしてSJISに変換しないよう変更
@@ -55,6 +32,31 @@ Hot Soup Processor ver3.5                           HSP : Hot Soup Processor
 	[hsp3js] サウンドの使用可能チャンネル数を 16 から 32 に変更
 	[hsp3js] mmload命令にループ開始・終了時間パラメータを追加
 	[hsp3js] mmvol,mmpan,mmstatが正しく動作していなかったのを修正
+
+	2017/03/17 3.5 beta5
+
+	[HSP3CNV] 長い関数名の使用時にCコード生成に失敗することがある不具合を修正
+	スクリプトエディタのラベル一覧が途中までしか表示されないことがある不具合を修正
+	[hsp3] varptr関数で変数のバッファサイズをシステム変数strsizeに返す仕様を撤回、varsize関数を追加して取得できるように修正
+	[HGIMG4] ゲームエンジンを更新、いくつかの命令を追加。詳細はhgimg4.txtをご覧ください
+	[HSP3Dish][Linux] Linux版を追加
+	[HSP3Dish][iOS] XCode8用のプロジェクトファイルにアップデート
+	[HSP3Dish][iOS] HGIMG4プロジェクトのビルドをサポート(β対応)
+	[HSP3Dish][iOS] XCode上で実機用にコンパイルした際にリンクエラーが出ることがある不具合を修正
+	[HSP3Dish][android] firebaseベースのAdMobに対応、インタースティシャル広告の表示に対応
+	[HSP3Dish][android] hsp3dhで長いソースのビルド時にエラーが発生する不具合を修正
+	[HSP3Dish][android] 加速度・ジャイロセンサー値の取得に対応
+	[HSP3Dish][android] 一部の機種でテクスチャが正しく設定されなくなる不具合を修正
+	[HSP3Dish][iOS][android] #deffuncで配列をvarで渡した場合、値が正しく取得できないことがある不具合を修正
+	[HGIMG3] β4版でlogmes命令が使えなくなっていた不具合を修正
+	β4版でDLL呼び出しエラーが起動時にチェックされていた不具合を修正
+	print命令で第2パラメーターに1を指定した場合、改行しない機能を追加
+	DupPtrを入れ子にすると正常に動作しない問題を修正
+	[hsp3_64] ObjImageでランタイムがクラッシュする問題を修正
+	[hsp3_64] リストボックス、コンボボックスが正常に動作しない問題を修正
+	[hsp3_64] DLL呼び出し時にパラメータが正常に渡らない問題を修正
+	[hsp3_64] DLL呼び出し時にHSP例外処理が働かない問題を修正
+	[hsp3utf] DLL呼び出し時にランタイムがクラッシュする問題を修正
 
 	2016/08/08 3.5 beta4a
 
