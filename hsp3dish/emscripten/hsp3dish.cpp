@@ -121,15 +121,15 @@ void handleEvent() {
 		case SDL_MOUSEBUTTONDOWN:
 			{
 				SDL_MouseButtonEvent *m = (SDL_MouseButtonEvent*)&event;
-				//printf("button down: %d,%d  %d,%d\n", m->button, m->state, m->x, m->y);
-				hgio_touch( m->x, m->y, 1 );
+				// printf("button down: %d,%d  %d,%d\n", m->button, m->state, m->x, m->y);
+				hgio_touch( m->x, m->y, SDL_GetMouseState(NULL, NULL) );
 				break;
 			}
 		case SDL_MOUSEBUTTONUP:
 			{
 				SDL_MouseButtonEvent *m = (SDL_MouseButtonEvent*)&event;
-				//printf("button up: %d,%d  %d,%d\n", m->button, m->state, m->x, m->y);
-				hgio_touch( m->x, m->y, 0 );
+				// printf("button up: %d,%d  %d,%d\n", m->button, m->state, m->x, m->y);
+				hgio_touch( m->x, m->y, SDL_GetMouseState(NULL, NULL) );
 				break;
 			}
 		case SDL_KEYDOWN:
@@ -513,7 +513,7 @@ int hsp3dish_init( char *startfile )
 		hsp_limit_step_per_frame = atoi( env_step );
 	}
 
-	printf("Screen %f %f\n", sx, sy);
+	// printf("Screen %f %f\n", sx, sy);
 
 	char *env_syncdir = getenv( "HSP_SYNC_DIR" );
 	if ( env_syncdir ) {
@@ -643,7 +643,7 @@ void hsp3dish_error( void )
 	fname = code_getdebug_name();
 
 	if ( ln < 0 ) {
-		sprintf( errmsg, "#Error %d\n-->%s\n",(int)err,msg );
+		sprintf( errmsg, "#Error %d --> %s\n",(int)err,msg );
 		fname = NULL;
 	} else {
 		sprintf( errmsg, "#Error %d in line %d (%s)\n-->%s\n",(int)err, ln, fname, msg );
