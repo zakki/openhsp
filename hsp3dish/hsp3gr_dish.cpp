@@ -573,14 +573,25 @@ static int cmdfunc_extcmd( int cmd )
 		strncpy( fname, code_gets(), HSP_MAX_PATH-1 );
 		p1 = code_getdi( 0 );
 		p2 = code_getdi( 0 );
+#ifdef HSPEMSCRIPTEN
+		p3 = code_getdi( 0 );
+		p4 = code_getdi( 3600*10*1000 );
+		i = mmman->Load( fname, p1, p2, p3, p4 );
+#else
 		i = mmman->Load( fname, p1, p2 );
+#endif
 		if (i) throw HSPERR_FILE_IO;
 		break;
 		}
 	case 0x09:								// mmplay
 		p1 = code_getdi( 0 );
 		//mmman->SetWindow( bmscr->hwnd, bmscr->cx, bmscr->cy, bmscr->sx, bmscr->sy );
+#ifdef HSPEMSCRIPTEN
+		p2 = code_getdi( -1 );
+		mmman->Play( p1, p2 );
+#else
 		mmman->Play( p1 );
+#endif
 		break;
 
 	case 0x0a:								// mmstop
@@ -814,6 +825,9 @@ static int cmdfunc_extcmd( int cmd )
 		if ( p1 == 1 ) {
 			p2 = ( hgio_stick(0)&256 )>>8;
 		}
+#endif
+#if defined(HSPLINUX) || defined(HSPEMSCRIPTEN)
+		if ( hgio_getkey( p1 ) ) p2 = 1;
 #endif
 		code_setva( pval, aptr, TYPE_INUM, &p2 );
 		break;
@@ -1147,6 +1161,7 @@ static int cmdfunc_extcmd( int cmd )
 		break;
 		}
 
+#ifdef USE_MMAN
 	case 0x42:								// mmvol
 		p1 = code_getdi( 0 );
 		p2 = code_getdi( 0 );
@@ -1168,6 +1183,7 @@ static int cmdfunc_extcmd( int cmd )
 		code_setva( p_pval, p_aptr, HSPVAR_FLAG_INT, &p3 );
 		break;
 		}
+#endif
 	case 0x45:								// mtlist
 		{
 		int *p_ptr;

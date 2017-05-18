@@ -14,9 +14,9 @@
 <body>
 	<div id="CONTAINER">
 	<!-- ヘッダー -->
-	<p id="COPY">HSP : HSP3Dish / onion software 2014(c)</p>
+	<p id="COPY">HSP : HSP3Dish / onion software 2017(c)</p>
 	<img src="hsp3dish.jpg" width="640" height="200" alt="タイトル">
-	<h1>hsp3dish.js (WebGL/JavaScript版)プログラミングガイド</h1>
+	<h1>hsp3dish.js (WebGL/JavaScript版)<br><br>プログラミングガイド</h1>
 
 	<!-- 目次 -->
 	<ol>
@@ -34,7 +34,7 @@
 	<h2 id="ABOUT">hsp3dish.js概要</h2>
 	<p>
 	hsp3dish.jsは、WebGLをサポートしたWEBブラウザ上で動作するHSP3Dishのランタイムです。
-	Windows版 HSP3Dishがサポートする機能をWEBブラウザ上で再現することが可能です。
+	Windows版 HSP3Dishがサポートする機能を多くのWEBブラウザ上で再現することが可能です。
 	これにより、WindowsだけでなくMacOSやLinuxなど様々なOS上での動作が可能になり、インストールの手間なく手軽に、HSPのアプリケーションを実行させることができるようになります。
 	<br>
 	このマニュアルでは、hsp3dish.js版の利用方法、注意点などを説明していきます。
@@ -46,6 +46,7 @@
 	<LI>Firefox
 	<LI>Safari
 	<LI>Internet Explorer 11
+	<LI>Microsoft Edge
 	<LI>Firefox モバイルブラウザ(Android)
 	</UL>
 	<br>
@@ -189,6 +190,27 @@
 	メディアファイルはリソースとして膨大なサイズになる場合があるため、起動時にすべてメモリに読み込む現在のリソース管理では、大量の楽曲を流す処理には向いていません。
 	今後のバージョンでは改良していきたいと考えています。
 	</p>
+	<p>
+	メディア関連の命令がhsp3jsの独自拡張として実装されています。
+	(他のプラットフォームでは動作しないのでご注意ください)
+	</p>
+	<ul><pre>
+		・mmload命令にパラメータを追加しています
+
+		mmload "filename",バッファID,割り当てモード,ープ開始時間,終了時間
+		ループ開始・終了時間は、それぞれ（ミリ秒）を指定することができます。
+		バラメーターが省略された場合は、開始は0から、終了は最後の時間となります。
+
+		・mmplay命令にパラメータを追加しています
+
+		mmplay バッファID,チャンネルID
+		チャンネルIDは、-1を指定した場合に空きチャンネルを自動的に割り当てます。
+		0～31を指定した場合は、特定のチャンネルで再生を行ないます。
+
+		・mmstat命令でチャンネルIDを取得可能です
+
+		モード値に16を指定して、バッファIDをマイナス値にすることで、再生中のチャンネルIDを取得することができます。
+	</pre></ul>
 
 
 	<h2 id="NOTICE">制限事項・既知の問題点</h2>
@@ -199,7 +221,6 @@
 	<ul><pre>
 		・メディア関連の機能(ブラウザ、ファイルタイプによる制限あり)
 		・exec,dialog命令(未サポート)
-		・OBAQプラグインの命令は未サポート
 		・HGIMG4命令は未サポート
 		・マルチタッチ未サポート
 		・DPMファイルは使用できません
@@ -226,7 +247,6 @@
 	</p>
 	<ul><pre>
 		・HSP3Dishがサポートする命令の実装
-		・ネットワークを経由したデータファイルの取得
 		・SoupSeedとの連携機能
 		・WEB上でのコード編集及びコンパイル実行
 	</pre></ul>
@@ -239,8 +259,8 @@
 	それ以外の場所に、ライセンス及び著作者に関する情報を表示する義務はありません。また、利用にあたっては商用、非商用を問わずライセンス料は必要ありません。
 	</p>
 	<ul><pre>
-	Copyright (C) 1997-2014, Onion Software/onitama.
-	Copyright (C) 2014, zakki.
+	Copyright (C) 1997-, Onion Software/onitama.
+	Copyright (C) 2014-, zakki, K-s.
 	All rights reserved.
 
 	Redistribution and use in source and binary forms, with or without
@@ -267,17 +287,18 @@
 	POSSIBILITY OF SUCH DAMAGE.
 	</pre></ul>
 	<p>
-	hsp3dish.jsは、<a href="http://peppermint.jp/" target="_blank">zakkiさん</a>によって実装されたEmscripten版HSP3Dishをパッケージに同梱したものです。
-	素晴らしいシステムを実装したzakkiさん、ご意見をお寄せいただいた多くの方々に感謝致します。
+	hsp3dish.jsは、<a href="http://peppermint.jp/" target="_blank">zakkiさん</a>によって実装されたEmscripten版HSP3Dishをベースに実装したものです。
+	マルチメディア機能、描画機能の改善をK-sさんにご協力頂きました。
+	素晴らしいシステムを開発したzakkiさん、ご意見をお寄せいただいた多くの方々に感謝致します。
 	<br>
 	Emscripten版HSP3Dishは、OpenHSPの派生物となっています。ソースコードは、OpenHSPリポジトリから取得することができます。
 	</p>
 	<ul><pre>
 		OpenHSP Development
-		<a href="http://dev.onionsoft.net/trac/" target="_blank">http://dev.onionsoft.net/trac/</a>
+		<a href="http://dev.onionsoft.net/trac/openhsp/" target="_blank">http://dev.onionsoft.net/trac/openhsp/</a>
 
 		Emscripten版HSP3Dish WiKi
-		<a href="http://dev.onionsoft.net/trac/wiki/DirTrunk/Hsp3dish/Emscripten" target="_blank">http://dev.onionsoft.net/trac/wiki/DirTrunk/Hsp3dish/Emscripten</a>
+		<a href="http://dev.onionsoft.net/trac/openhsp/wiki/DirTrunk/Hsp3dish/Emscripten" target="_blank">http://dev.onionsoft.net/trac/openhsp/wiki/DirTrunk/Hsp3dish/Emscripten</a>
 
 		peppermint
 		<a href="http://peppermint.jp/" target="_blank">http://peppermint.jp/</a>

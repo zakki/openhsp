@@ -4,9 +4,6 @@
 
 OPTION CASEMAP: NONE
 
-INT_PTR TYPEDEF PTR
-FARPROC TYPEDEF PTR
-
 PUBLIC CallFunc64
 
 .CODE
@@ -41,7 +38,7 @@ PUBLIC CallFunc64
 ; If 'numberOfParameters' is set to a negative value, the behavior is the same as when the parameter is set to zero; the function of 'externalFunction' is then assumed not to receive any parameter.
 ; The behavior is undefined if the array of 'arguments' is not proper as arguments for the function of 'externalFunction'.
 
-CallFunc64 PROC FRAME parameters:INT_PTR, external_function:FARPROC, number_of_parameters:SDWORD
+CallFunc64 PROC FRAME
 
     mov rax, rdx ; Save the value of 'external_function' to rax
 
