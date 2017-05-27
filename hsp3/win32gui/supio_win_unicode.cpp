@@ -529,11 +529,11 @@ int strsp_get( char *srcstr, char *dststr, char splitchr, int len )
 		if (a1==0) break;
 		splc++;
 		if (a1>=128) {					// 多バイト文字チェック
-			if (a1>=192) utf8cnt++;
-			if (a1>=224) utf8cnt++;
-			if (a1>=240) utf8cnt++;
-			if (a1>=248) utf8cnt++;
-			if (a1>=252) utf8cnt++;
+			if ((a1 >= 192) && (srcstr[splc + utf8cnt] != 0)) utf8cnt++;
+			if ((a1 >= 224) && (srcstr[splc + utf8cnt] != 0)) utf8cnt++;
+			if ((a1 >= 240) && (srcstr[splc + utf8cnt] != 0)) utf8cnt++;
+			if ((a1 >= 248) && (srcstr[splc + utf8cnt] != 0)) utf8cnt++;
+			if ((a1 >= 252) && (srcstr[splc + utf8cnt] != 0)) utf8cnt++;
 		}
 
 		if (a1==splitchr) break;
@@ -555,9 +555,11 @@ int strsp_get( char *srcstr, char *dststr, char splitchr, int len )
 				utf8cnt--;
 			}
 		}
-		if ( a>=len ) break;
+		if ( a>=len-5 ) break;
 	}
-	dststr[a]=0;
+	for (int i = a; i < a+6; i++){
+		dststr[i] = 0;
+	}
 	return (int)a1;
 }
 
