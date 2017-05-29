@@ -5,12 +5,17 @@ Hot Soup Processor ver3.5                           HSP : Hot Soup Processor
 
 ・hsp3関連 更新履歴
 
-	2017/05/18 3.5 beta5a
+	2017/05/29 3.5 beta5a
+
+	[HGIMG3] OBJ_SORT指定によるソートに失敗することがある不具合を修正
+	[HGIMG4] getcoli命令で3Dモデルの半径が正しく指定できない不具合を修正
 
 	tds12さんによるOpenHSP修正を反映
+	[hsp3_64] gsquareやgrotateなどの変形コピー時にクラッシュする問題を修正
 	[hsp3utf] DLL関数名はASCIIだとしてSJISに変換しないよう変更
 	[hsp3utf] sendmsgの文字列が正しく変換されない不具合を修正
 	[hsp3utf] 文字コード変換時のNULL入力に対応
+	[hsp3utf] utf8コードの途中でNULLが入った場合にコピーしすぎる問題を修正
 
 	kurogomaさんによるOpenHSP修正を反映
 	文字列型変数の領域拡張時にメモリーリークが起こる可能性を修正
