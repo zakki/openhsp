@@ -1,6 +1,6 @@
 ------------------------------------------------------------------------------
 HGIMG ver3.5    REFERENCE MANUAL       High Performance Graphic Image Plugin  
-ＨＳＰ拡張DLLリファレンス             copyright 2001-2015 (c) onion software  
+ＨＳＰ拡張DLLリファレンス             copyright 2001-2017 (c) onion software  
 ------------------------------------------------------------------------------
 
 ・はじめに
@@ -75,7 +75,7 @@ HGIMG ver3.5    REFERENCE MANUAL       High Performance Graphic Image Plugin
 
 	--------------------------------------------------------------------------------
 	HGIMG3 : Made with base technology of OpenHSP
-	Copyright (C) 1997-2015, Onion Software/onitama.
+	Copyright (C) 1997-2017, Onion Software/onitama.
 	All rights reserved.
 	OggVorvis形式のファイルデコードに以下のライブラリを使用しています
 	libvorbis : Copyright (c) 2002-2004 Xiph.org Foundation
@@ -146,6 +146,10 @@ HGIMG ver3.5    REFERENCE MANUAL       High Performance Graphic Image Plugin
 
 
 ・更新履歴
+
+	2017/05/25 ( Ver3.5β5 )
+
+		OBJ_SORT指定によるソートに失敗することがある不具合を修正
 
 	2014/01/11 ( Ver3.4β3 )
 

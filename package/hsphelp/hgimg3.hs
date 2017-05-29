@@ -5,11 +5,11 @@
 %type
 拡張命令
 %ver
-3.4
+3.5
 %note
 hgimg3.asをインクルードすること。
 %date
-2014/08/01
+2017/05/29
 %author
 onitama
 %dll

@@ -2103,21 +2103,42 @@ int gamehsp::updateObjColi( int objid, float size, int addcol )
 	}
 
 	Vector3 vpos;
+	Vector3 enepos;
 	Node *node;
 	BoundingSphere bound;
 	if ( obj->_node == NULL ) return -1;
 
 	vpos = obj->_node->getTranslation();
-	bound = obj->_node->getBoundingSphere();
-	bound.radius *= size;							// 自分のサイズを調整する
 	atobj = _gpobj;
 
-	for(i=0;i<_maxobj;i++) {
-		if ( atobj->isVisible() ) {
-			if (( atobj->_mygroup & chkgroup )&&( i != objid )) {
+	if (size < 0.0f) {
+		bound = obj->_node->getBoundingSphere();
+		bound.radius *= size;							// 自分のサイズを調整する
+
+		for (i = 0; i<_maxobj; i++) {
+			if (atobj->isVisible()) {
+				if ((atobj->_mygroup & chkgroup) && (i != objid)) {
+					node = atobj->_node;
+					if (node) {
+						if (bound.intersects(node->getBoundingSphere())) {
+							return i;
+						}
+					}
+				}
+			}
+			atobj++;
+		}
+		return -1;
+	}
+
+	for (i = 0; i<_maxobj; i++) {
+		if (atobj->isVisible()) {
+			if ((atobj->_mygroup & chkgroup) && (i != objid)) {
 				node = atobj->_node;
-				if ( node ) {
-					if ( bound.intersects( node->getBoundingSphere() ) ) {
+				if (node) {
+					enepos = node->getTranslation();
+					enepos -= vpos;
+					if ( enepos.length() <= size ) {
 						return i;
 					}
 				}

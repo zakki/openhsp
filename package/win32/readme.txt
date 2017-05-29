@@ -32,13 +32,40 @@ hsp35betaフォルダ以下にあるスクリプトエディタ(hsed3.exe)を始めとする各種ツールを
 (以前のβ版を使用している方は、古い「hsp35beta」フォルダを削除した後に、再度コピーを行なってください)
 
 
-・最新版の提供について
+・OneDriveでの最新版の提供について
 
 開発中の最新版は、随時OneDriveでも公開されます。
 「ダウンロード」から全体のアーカイブ(hsp35betaフォルダの内容)を取得可能です。
 
 HSP3.5β版(OneDrive)
 https://onedrive.live.com/embed?cid=EC425522ED849DA7&resid=EC425522ED849DA7%211229&authkey=AB-pNztAqBp6BcU
+
+
+・Linux版の提供について
+
+HSP3.5β5版から、新しくLinuxのGUI環境(X Window System)及びRaspberry Pi(Raspbian Jessie)で動作するバージョンが提供されています。
+HSP3 for Linux/Raspberry Piは、簡易スクリプトエディタとHSP3Dish/HGIMG4実行環境を含む
+プレビュー版として公開されており、今後さらに機能が追加される予定です。
+詳しくは、以下のページをご覧ください。
+最新版の入手及び、インストール方法についても説明されています。
+
+HSP3 for Linux/Raspberry Pi
+http://hsp.tv/make/hsp3linux_pi.html
+
+
+・mes/print命令について
+
+HSP3.5β5版から、標準ランタイムのmes,print命令に改行オプションが追加されています。
+従来では、連続してmes命令が実行された場合、改行して表示されていました。
+
+	mes "aaa"       → aaa
+	mes "bbb"          bbb
+
+新しいバージョンでは、メッセージ文字列の後にパラメーターとして「,1」を付加することで、
+改行せずに次のメッセージを表示することができます。
+
+	mes "aaa",1     → aaabbb
+	mes "bbb"
 
 
 ・#bootopt命令について
@@ -182,8 +209,8 @@ SJISの文字コードを扱う標準のHSPでは表現できない文字を扱うことのできる
 	WebGL版    : HSP3Dish helperからhtmlコードを出力可能です
 	android版  : HSP3Dish helperからプロジェクトを出力可能です
 	iOS版      : HSP3Dish helperからプロジェクトを出力可能です
-	Linux版    : 別途配布予定です
-	Raspbian版 : 別途配布予定です
+	Linux版    : 別途配布されます
+	Raspbian版 : 別途配布されます
 
 
 ・HGIMG4 DirectX9版ランタイムについて
@@ -272,12 +299,17 @@ SJISの文字コードを扱う標準のHSPでは表現できない文字を扱うことのできる
 
 ・更新履歴
 
-	2017/05/18 3.5 beta5a
+	2017/05/29 3.5 beta5a
+
+	[HGIMG3] OBJ_SORT指定によるソートに失敗することがある不具合を修正
+	[HGIMG4] getcoli命令で3Dモデルの半径が正しく指定できない不具合を修正
 
 	tds12さんによるOpenHSP修正を反映
+	[hsp3_64] gsquareやgrotateなどの変形コピー時にクラッシュする問題を修正
 	[hsp3utf] DLL関数名はASCIIだとしてSJISに変換しないよう変更
 	[hsp3utf] sendmsgの文字列が正しく変換されない不具合を修正
 	[hsp3utf] 文字コード変換時のNULL入力に対応
+	[hsp3utf] utf8コードの途中でNULLが入った場合にコピーしすぎる問題を修正
 
 	kurogomaさんによるOpenHSP修正を反映
 	文字列型変数の領域拡張時にメモリーリークが起こる可能性を修正
