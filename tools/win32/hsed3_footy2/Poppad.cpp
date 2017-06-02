@@ -21,6 +21,7 @@
 #include <winuser.h>
 #include <shlobj.h>
 #include <htmlhelp.h>
+#include <tchar.h>
 #include <mbctype.h>
 
 #include "Footy2.h"
@@ -220,8 +221,6 @@ BOOL CALLBACK ConfigFontPageProc (HWND hDlg, UINT message, WPARAM wParam, LPARAM
 BOOL CALLBACK ConfigKeywordPageProc (HWND hDlg, UINT message, WPARAM wParam, LPARAM lParam);
 BOOL CALLBACK ConfigVisualPageProc (HWND hDlg, UINT message, WPARAM wParam, LPARAM lParam);
 
-LRESULT FileDrop(WPARAM wParam, LPARAM lParam);
-
 //void ConfigEditColor( COLORREF fore, COLORREF back );
 
           // Functions in POPFILE.C
@@ -230,7 +229,7 @@ void PopFileInitialize (HWND) ;
 BOOL PopFileOpenDlg    (HWND, PSTR, PSTR) ;
 BOOL PopFileOpenDlg2   (HWND, PSTR, PSTR) ;
 BOOL PopFileSaveDlg    (HWND, PSTR, PSTR) ;
-BOOL PopFileRead       (int, PSTR) ;
+BOOL PopFileRead       (int, const char*) ;
 BOOL PopFileWrite      (int,  PSTR) ;
 
           // Functions in POPFIND.C
@@ -342,6 +341,8 @@ int linespace;
 
 BOOL bAutoIndent;
 
+static LRESULT on_wm_dropfiles(WPARAM, LPARAM);
+
 /*
 		Error message process
 */
@@ -419,33 +420,6 @@ static char *myfile( void )
 	}
 	return compfile;
 }
-
-
-static int GetFileTitle2(const TCHAR *source, TCHAR *result)
-{
-
-	//		GetFileTitleの替わり
-	//		(ファイル拡張子表示ON/OFFの影響を受けない)
-	//
-
-	const TCHAR *filename = source;
-
-	if (!filename || !result) return -1;
-
-	while (*source != '\0') {
-
-		if (*source == '\\' || *source == '/') filename = source + 1;
-
-		source = CharNext(source);
-
-	}
-
-	lstrcpy(result, filename);
-
-	return 0;
-
-}
-
 
 static void packgo( void )
 {
@@ -996,77 +970,147 @@ static void CloseHSPAssistant( void )
 	}
 }
 
-
 void pophwnd( HWND hwnd )
 {
 	hwbak=hwnd;
 }
 
-void DoCaption ( char *szTitleName, int TabID )
-     {
-     char szCaption[_MAX_PATH+128] ;
-
-	 if(GetTabInfo(0) == NULL){
-#ifdef JPNMSG
-	     lstrcpy (szCaption, "HSPスクリプトエディタ") ;
-#else
-	     lstrcpy (szCaption, "HSP Script Editor") ;
-#endif
-	 } else {
-#ifdef JPNMSG
-	     wsprintf (szCaption, "HSPスクリプトエディタ - %s%s",
-			 szTitleName[0] ? szTitleName : UNTITLED, bNeedSave ? " *": "") ;
-#else
-	     wsprintf (szCaption, "HSP Script Editor - %s%s",
-			 szTitleName[0] ? szTitleName : UNTITLED, bNeedSave ? " *": "") ;
-#endif
-	 }
-	 SetWindowText (hwbak, szCaption) ;
-
-	 if(TabID >= 0){
-		 char szTabCaption[_MAX_PATH+128] ;
-		 TCITEM tc_item;
-		 TABINFO *lpTabInfo;
-
-		 lpTabInfo = GetTabInfo(TabID);
-	     wsprintf (szTabCaption, "%s%s",
-			 lpTabInfo->TitleName[0] ? lpTabInfo->TitleName : TABUNTITLED, lpTabInfo->NeedSave ? " *" : "") ;
-
-		 tc_item.mask = TCIF_TEXT;
-		 tc_item.pszText = szTabCaption;
-
-		 TabCtrl_SetItem(hwndTab, TabID, &tc_item);
-     }
-	 }
-
-
-static int ask_for_saving_file(HWND handle, const char *file_name)
+static void set_hsp_window_title(HWND window_handle, LPCTSTR title)
 {
 
-#ifdef JPNMSG
-	return msgboxf(handle, "%sは変更されました。 ファイルの変更を保存しますか？", HSP_DIALOG_CAPTION, MB_YESNOCANCEL | MB_ICONQUESTION, file_name[0] ? file_name : UNTITLED);
-#else
-	return msgboxf(handle, "%s has been modified. Do you want to save changes to the file?", HSP_DIALOG_CAPTION, MB_YESNOCANCEL | MB_ICONQUESTION, file_name[0] ? file_name : UNTITLED);
-#endif
+	TCHAR buffer[MAX_TITLE_LENGTH];
+
+	_sntprintf(buffer, MAX_TITLE_LENGTH - 1, TEXT(HSP_EDITOR_NAME " - %s"), title);
+	buffer[MAX_TITLE_LENGTH - 1] = '\0';
+
+	SetWindowText(window_handle, buffer);
 
 }
 
-
-static short AskAboutSave (HWND hwnd, char *szTitleName)
+static void set_menu_item_caption(HWND window_handle, HMENU menu_handle, UINT position, UINT item_type, const void *item_data)
 {
 
-	const int ret = ask_for_saving_file(hwnd, szTitleName);
+	MENUITEMINFO menu_item;
+
+	menu_item.cbSize = sizeof(MENUITEMINFO);
+	menu_item.fMask = MIIM_TYPE;
+	menu_item.fType = item_type;
+	menu_item.dwTypeData = (LPTSTR)item_data;
+
+	SetMenuItemInfo(menu_handle, position, TRUE, &menu_item);
+
+	DrawMenuBar(window_handle);
+
+}
+
+static void set_tab_caption(HWND tab_handle, int tab_id, LPCTSTR caption)
+{
+
+	if (!GetTabInfo(tab_id)) return;
+
+	TCITEM tc_item;
+
+	tc_item.mask = TCIF_TEXT;
+	tc_item.pszText = (LPTSTR)caption;
+
+	TabCtrl_SetItem(tab_handle, tab_id, &tc_item);
+
+}
+
+static void update_tab_title_display(HWND window_handle, int tab_id, int window_title_too)
+{
+
+	const TABINFO *tab_data = GetTabInfo(tab_id);
+	if (!tab_data) return;
+
+	LPCTSTR file_name = tab_data->TitleName;
+
+	TCHAR buffer[MAX_TITLE_LENGTH];
+
+	_sntprintf(buffer, MAX_TITLE_LENGTH - 1, TEXT("%s %c"), file_name[0] != '\0' ? file_name : TEXT(UNTITLED), tabinfo_changes_not_saved(tab_data) ? '*' : '\0');
+	buffer[MAX_TITLE_LENGTH - 1] = '\0';
+
+	set_menu_item_caption(window_handle, get_assigned_tab_menu_handle(), POS_TABBASE + tab_id, MFT_STRING | MFT_RADIOCHECK, buffer);
+	set_tab_caption(hwndTab, tab_id, buffer);
+
+	if (window_title_too) set_hsp_window_title(window_handle, buffer);
+
+}
+
+void DoCaption(char *dummy, int tab_id)
+{
+
+	update_tab_title_display(hwbak, tab_id, 1);
+
+}
+
+static int ask_for_saving_file(HWND window_handle, LPCTSTR file_name)
+{
+
+#ifdef JPNMSG
+	LPCTSTR message = TEXT("%sは変更されました。 ファイルの変更を保存しますか？");
+#else
+	LPCTSTR message = TEXT("%s has been modified. Do you want to save changes to the file?");
+#endif
+
+	int ret = msgboxf(window_handle, message, TEXT(HSP_DIALOG_CAPTION), MB_YESNOCANCEL | MB_ICONQUESTION, file_name[0] ? file_name : UNTITLED);
 
 	if (ret == IDYES) {
 
-		if (!SendMessage (hwnd, WM_COMMAND, IDM_SAVE, 0)) return IDCANCEL ;
+		if (!SendMessage(window_handle, WM_COMMAND, IDM_SAVE, 0)) return IDCANCEL;
 
 	}
 
-	return ret ;
+	return ret;
 
 }
 
+static int load_and_assign_file_to_tab(LPCTSTR file_path)
+{
+
+	// If the tab control has a tab with the file, the function returns the tab id. If not, the function loads the file, checks if the active tab is empty or not, and assigns the file to the active tab if so or to a new tab.
+
+	// The return value is the id of the assigned tab on success, or -1 on failure.
+
+	int created = 0;
+
+	int tab_id = retrieve_tab_holding_file(file_path);
+
+	if (tab_id >= 0) return tab_id;
+
+	tab_id = get_currently_selected_tab_id();
+	TABINFO *tab_data = GetTabInfo(tab_id);
+
+	if (!tab_data || !tabinfo_is_empty(tab_data)) {
+
+		tab_id = CreateTab(activeID, "", "", "");
+		tab_data = GetTabInfo(tab_id);
+
+		created = 1;
+
+	}
+
+	if (!tab_data || tabinfo_load_file(tab_data, file_path)) {
+
+		if (created) DeleteTab(tab_id);
+
+#ifdef JPNMSG
+		LPCTSTR message = TEXT("%s が読み込めませんでした");
+#else
+		LPCTSTR message = TEXT("Could not load %s");
+#endif
+
+		msgboxf(hwbak, message, TEXT(HSP_DIALOG_CAPTION), MB_OK | MB_ICONEXCLAMATION, file_path);
+
+		return -1;
+
+	}
+
+	update_tab_title_display(hwbak, tab_id, 0);
+
+	return tab_id;
+
+}
 
 BOOL CALLBACK JumpDlgProc (HWND hDlg, UINT message, WPARAM wParam, LPARAM /*lParam*/)
      {
@@ -1625,6 +1669,8 @@ void poppad_bye( void )
 {
     //case WM_DESTROY :
 
+	SetWindowLongPtr(hwndTab, GWL_WNDPROC, (LONG_PTR)Org_TabProc);
+
 	if (flg_hspat) {						// HSPアシスタントを終了させる
 		CloseHSPAssistant();
 	}
@@ -1636,7 +1682,37 @@ void poppad_bye( void )
 
 }
 
+int poppad_reload(int tab_id)
+{
 
+	TABINFO *tab_data = GetTabInfo(tab_id);
+	if (!tab_data) return -1;
+
+	if (!tabinfo_is_assigned_to_file(tab_data)) return 0;
+
+	LPCTSTR file_path = tab_data->FileName;
+
+	if (tabinfo_load_file(tab_data, file_path)) {
+
+#ifdef JPNMSG
+		LPCTSTR message = TEXT("%s が読み込めませんでした");
+#else
+		LPCTSTR message = TEXT("Could not load %s");
+#endif
+
+		msgboxf(hwbak, message, TEXT(HSP_DIALOG_CAPTION), MB_OK | MB_ICONEXCLAMATION, file_path);
+
+		return -1;
+
+	}
+
+	update_tab_title_display(hwbak, tab_id, 0);
+
+	return 0;
+
+}
+
+/*
 int poppad_reload( int nTabID )
 {
 	TABINFO *lpTabInfo;
@@ -1677,7 +1753,7 @@ int poppad_reload( int nTabID )
 	DoCaption (lpTabInfo->TitleName, nTabID) ;
 	return 0;
 }
-
+*/
 
 static void SetFileName(char *titleName, char *fileName, char *dirName) {
 	if ( titleName != NULL ) lstrcpy(szTitleName, titleName);
@@ -1704,10 +1780,16 @@ static void auto_indentation(void)
 
 	}
 
-	const wchar_t *line = Footy2GetLineW(activeFootyID, end_line);
-	while (line[end_column] == ' ' || line[end_column] == '\t') end_column++;
+	/*
+	{
 
-	line = Footy2GetLineW(activeFootyID, start_line);
+		const wchar_t *line = Footy2GetLineW(activeFootyID, end_line);
+		while (line[end_column] == ' ' || line[end_column] == '\t') end_column++;
+
+	}
+	*/
+
+	const wchar_t *line = Footy2GetLineW(activeFootyID, start_line);
 
 	wchar_t *spaces = (wchar_t *)malloc((start_column + (strlen("\n") + strlen("\t") + strlen("\n") + 1)) * sizeof(wchar_t));
 	if (!spaces) return;
@@ -1770,7 +1852,7 @@ LRESULT CALLBACK MyEditProc( HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam )
 	//
 	switch (msg) {
 	case WM_DROPFILES:
-		return FileDrop(wParam, lParam);
+		return on_wm_dropfiles(wParam, lParam);
 
 	case WM_KEYDOWN:
 	{
@@ -1841,7 +1923,7 @@ LRESULT CALLBACK MyTabProc( HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam )
 	//
 	switch(msg){
 		case WM_DROPFILES:
-			return FileDrop(wParam, lParam);
+			return on_wm_dropfiles(wParam, lParam);
 	}
 	return (CallWindowProc( Org_TabProc, hwnd, msg, wParam, lParam ));
 }
@@ -1957,34 +2039,64 @@ int poppad_menupop( WPARAM wParam, LPARAM lParam )
 	return 0 ;
 }
 
-LRESULT poppad_term( UINT iMsg )
+static void delete_all_tab_data_but_no_tab(void)
 {
-	switch(iMsg) {
-          case WM_CLOSE :
-			  TABINFO *lpTabInfo;
-			  NMHDR nmhdr;
-			  nmhdr.code = TCN_SELCHANGE;
-			  for(int i = 0; (lpTabInfo = GetTabInfo(i)) != NULL; i++){
-				  if(lpTabInfo->NeedSave){
-					  TabCtrl_SetCurFocus(hwndTab, i);
-					  SendMessage(hwndClient, WM_NOTIFY, 0, (LPARAM)&nmhdr);
-					  if(IDCANCEL == AskAboutSave (hwbak, lpTabInfo->TitleName)) return 0;
-				  }
-			   }
-			   SaveConfig();					// config save
-			   ReleaseExtTool();
-		       SetWindowLong( hwndEdit, GWL_WNDPROC, (LONG)Org_EditProc );
-		       DestroyWindow (hwbak) ;
-	           break;
 
-          case WM_QUERYENDSESSION :
-               if (!bNeedSave || IDCANCEL != AskAboutSave (hwbak, szTitleName))
-                    return 1 ;
-              break;
+	// Deletes all tab data but no tab itself.
+
+	int num = TabCtrl_GetItemCount(hwndTab);
+
+	for (int i = 0; i < num; i++) {
+
+		TABINFO *tab_data = GetTabInfo(i);
+
+		if (!tab_data) break;
+
+		delete_tabinfo(tab_data);
+
 	}
-	return 0;
+
 }
 
+LRESULT poppad_term(UINT message)
+{
+
+	int num = TabCtrl_GetItemCount(hwndTab);
+
+	for (int i = 0; i < num; i++) {
+
+		TABINFO *tab_data = GetTabInfo(i);
+
+		if (!tab_data) break;
+
+		if (!tabinfo_changes_not_saved(tab_data)) continue;
+
+		NMHDR nmhdr;
+		nmhdr.hwndFrom = hwndTab;
+		nmhdr.idFrom = GetDlgCtrlID(hwndTab);
+		nmhdr.code = TCN_SELCHANGE;
+
+		TabCtrl_SetCurFocus(hwndTab, i);
+		SendMessage(hwndClient, WM_NOTIFY, 0, (LPARAM)&nmhdr);
+
+		if (ask_for_saving_file(hwbak, tab_data->TitleName) == IDCANCEL) return 0;
+
+	}
+
+	ShowWindow(hwbak, SW_HIDE);
+
+	delete_all_tab_data_but_no_tab();
+
+	SaveConfig();
+	ReleaseExtTool();
+
+	if (message == WM_QUERYENDSESSION) return 1;
+
+	DestroyWindow(hwbak);
+
+	return 0;
+
+}
 
 void PutLineNumber( void )
 {
@@ -2103,63 +2215,52 @@ LRESULT CALLBACK EditProc (HWND hwnd, UINT iMsg, WPARAM wParam, LPARAM lParam)
 					DoCaption (szTitleName, activeID) ;
 					return 0 ;
 
-				case IDM_OPEN :
+				case IDM_OPEN:
+
+					if (PopFileOpenDlg(hwnd, tmpfn, NULL)) ActivateTab(get_currently_selected_tab_id(), load_and_assign_file_to_tab(tmpfn));
+
+					return 0;
+
+				case IDM_RELOAD:
+				case IDM_RELOADTAB:
+
 				{
-					int nTabNumber, nFootyID;
-					TABINFO *lpTabInfo;
-					bool bCreated;
-					ULONGLONG ullFileIndex;
 
-					if (PopFileOpenDlg (hwnd, szFileName, szTitleName)){
-						GetDirName(szDirName, szFileName);
-						SetCurrentDirectory(szDirName);
-						ullFileIndex = GetFileIndex(szFileName);
-						if((nTabNumber = SearchTab(NULL, NULL, NULL, ullFileIndex)) >= 0){
-							ActivateTab(activeID, nTabNumber);
-							return 0;
-						}
+					int selected = (low == IDM_RELOAD) ? get_currently_selected_tab_id() : ClickID;
 
-                        lpTabInfo = GetTabInfo(activeID);
+					TABINFO *tab_data = GetTabInfo(selected);
 
-						nFootyID = activeFootyID;
-						bCreated = false;
+					if (!tab_data || !tabinfo_is_assigned_to_file(tab_data)) return 0;
 
-						if(lpTabInfo != NULL ) {
-							if(lpTabInfo->NeedSave){ bCreated = true; }
-						}
-						if( lpTabInfo == NULL
-							|| lpTabInfo->FileName[0] != '\0'
-							|| Footy2IsEdited(activeFootyID) ){
-								bCreated = true;
-						}
-						if ( bCreated ) {
-								CreateTab(activeID, szTitleName, szFileName, szDirName);
-							} else {
-								SetTabInfo(activeID, szTitleName, szFileName, szDirName, FALSE);
-							}
-						if (!PopFileRead (activeFootyID, szFileName)){
 #ifdef JPNMSG
-                            OkMessage ( "%s をロードできませんでした。", szTitleName) ;
+
+					LPCTSTR message = TEXT("再読込を行う上で、下記のことが起こります。よろしいですか？\n\n")
+						TEXT("・「元に戻す」の情報が破棄され、再読込以前に戻れなくなります。%s\n")
+						TEXT("・変更が無視されます");
+
 #else
-                            OkMessage ( "Loading %s fault.", szTitleName) ;
+
+					LPCTSTR message = TEXT("You will lose the 'Undo' history and your changes. Are you sure you want to reload the text?");
+
+					/*
+					LPCTSTR message = TEXT("Are you sure you want to reload the text? It will lead to these things.\n\n")
+						TEXT("\tYou lose the 'Undo' history and cannot take back any changes before the reloading.\n")
+						TEXT("\tYou lose all unsaved changes.");
+					*/
+
 #endif
-							if(bCreated) {
-								DeleteTab(activeID);
-							} else {
-								SetFileName( "", "", "" );
-							}
-							break;
-						}
 
-						GetTabInfo(activeID)->FileIndex = ullFileIndex;
+					if (!tabinfo_changes_not_saved(tab_data) || (MessageBox(hwnd, message, TEXT("Warning"), MB_YESNO | MB_ICONQUESTION) == IDYES)) {
 
-						bNeedSave = FALSE ;
-						DoCaption (szTitleName, activeID) ;
+						poppad_reload(selected);
+
 					}
 
-					return 0 ;
+					return 0;
+
 				}
 
+/*
 				case IDM_RELOAD:
 				{
 					bool bUndo;
@@ -2194,7 +2295,7 @@ LRESULT CALLBACK EditProc (HWND hwnd, UINT iMsg, WPARAM wParam, LPARAM lParam)
                         	poppad_reload(ClickID);
 					return 0;
 				}
-
+*/
 				case IDM_SAVE :
 					if (szFileName[0]){
                         if (PopFileWrite (activeFootyID, szFileName)){
@@ -2661,12 +2762,12 @@ LRESULT CALLBACK EditProc (HWND hwnd, UINT iMsg, WPARAM wParam, LPARAM lParam)
 						}
 						return 0 ;
 
-				case IDM_CLOSE :
+				case IDM_CLOSE:
 				{
 					TABINFO *lpTabInfo = GetTabInfo(ClickID);
 					if(lpTabInfo == NULL) break;
 					if(lpTabInfo->NeedSave){
-						if(IDCANCEL != AskAboutSave (hwbak, lpTabInfo->TitleName)) DeleteTab(ClickID);
+						if(IDCANCEL != ask_for_saving_file(hwbak, lpTabInfo->TitleName)) DeleteTab(ClickID);
 					} else DeleteTab(ClickID);
 					return 0;
 				}
@@ -2676,7 +2777,7 @@ LRESULT CALLBACK EditProc (HWND hwnd, UINT iMsg, WPARAM wParam, LPARAM lParam)
 					TABINFO *lpTabInfo = GetTabInfo(activeID);
 					if(lpTabInfo == NULL) break;
 					if(lpTabInfo->NeedSave){
-						if(IDCANCEL != AskAboutSave (hwbak, lpTabInfo->TitleName)) DeleteTab(activeID);
+						if(IDCANCEL != ask_for_saving_file(hwbak, lpTabInfo->TitleName)) DeleteTab(activeID);
 					} else DeleteTab(activeID);
 					return 0;
 				}
@@ -2690,7 +2791,7 @@ LRESULT CALLBACK EditProc (HWND hwnd, UINT iMsg, WPARAM wParam, LPARAM lParam)
 						lpTabInfo = GetTabInfo(0);
 						if(lpTabInfo == NULL) break;
 						if(lpTabInfo->NeedSave){
-                            if(IDCANCEL != AskAboutSave (hwbak, lpTabInfo->TitleName)) DeleteTab(0);
+                            if(IDCANCEL != ask_for_saving_file(hwbak, lpTabInfo->TitleName)) DeleteTab(0);
 							else break;
 						} else DeleteTab(0);
 					}
@@ -2704,7 +2805,7 @@ LRESULT CALLBACK EditProc (HWND hwnd, UINT iMsg, WPARAM wParam, LPARAM lParam)
 					for(int i = ClickID-1; i >= 0; i--){
 						lpTabInfo = GetTabInfo(i);
 						if(lpTabInfo->NeedSave){
-							if(IDCANCEL != AskAboutSave (hwbak, lpTabInfo->TitleName)) DeleteTab(i);
+							if(IDCANCEL != ask_for_saving_file(hwbak, lpTabInfo->TitleName)) DeleteTab(i);
 							else break;
 						} else DeleteTab(i);
 					}
@@ -2719,7 +2820,7 @@ LRESULT CALLBACK EditProc (HWND hwnd, UINT iMsg, WPARAM wParam, LPARAM lParam)
 						lpTabInfo = GetTabInfo(ClickID+1);
 						if(lpTabInfo == NULL) break;
 						if(lpTabInfo->NeedSave){
-                            if(IDCANCEL != AskAboutSave (hwbak, lpTabInfo->TitleName)) DeleteTab(ClickID+1);
+                            if(IDCANCEL != ask_for_saving_file(hwbak, lpTabInfo->TitleName)) DeleteTab(ClickID+1);
 							else break;
 						} else DeleteTab(ClickID+1);
 					}
@@ -2733,7 +2834,7 @@ LRESULT CALLBACK EditProc (HWND hwnd, UINT iMsg, WPARAM wParam, LPARAM lParam)
 					for(int i = activeID-1; i >= 0; i--){
 						lpTabInfo = GetTabInfo(i);
 						if(lpTabInfo->NeedSave){
-							if(IDCANCEL != AskAboutSave (hwbak, lpTabInfo->TitleName)) DeleteTab(i);
+							if(IDCANCEL != ask_for_saving_file(hwbak, lpTabInfo->TitleName)) DeleteTab(i);
 							else break;
 						} else DeleteTab(i);
 					}
@@ -2748,7 +2849,7 @@ LRESULT CALLBACK EditProc (HWND hwnd, UINT iMsg, WPARAM wParam, LPARAM lParam)
 						lpTabInfo = GetTabInfo(activeID+1);
 						if(lpTabInfo == NULL) break;
 						if(lpTabInfo->NeedSave){
-                            if(IDCANCEL != AskAboutSave (hwbak, lpTabInfo->TitleName)) DeleteTab(activeID+1);
+                            if(IDCANCEL != ask_for_saving_file(hwbak, lpTabInfo->TitleName)) DeleteTab(activeID+1);
 							else break;
 						} else DeleteTab(activeID+1);
 					}
@@ -2827,7 +2928,13 @@ LRESULT CALLBACK EditProc (HWND hwnd, UINT iMsg, WPARAM wParam, LPARAM lParam)
 
 				default:
 					if(LOWORD(wParam) >= IDM_ACTIVATETAB && LOWORD(wParam) < IDM_ACTIVATETAB + 10000){
+
+#ifdef ASSIGN_TAB_LIST_TO_FOOTY_IDS
+						ActivateTab(activeID, GetTabID(LOWORD(wParam) - IDM_ACTIVATETAB));
+#else
 						ActivateTab(activeID, LOWORD(wParam) - IDM_ACTIVATETAB);
+#endif
+
 						return 0;
 					}
 					else if(LOWORD(wParam) >= IDM_EXTTOOL && LOWORD(wParam) < IDM_EXTTOOL + 10000){
@@ -4173,65 +4280,62 @@ BOOL CALLBACK ConfigVisualPageProc (HWND hDlg, UINT message, WPARAM /*wParam*/, 
 	return FALSE;
 }
 
-void LoadFromCommandLine(char *lpCmdLine)
+// コマンドラインからファイルを読み込めるべきではないでしょうか？
+
+void LoadFromCommandLine(LPCTSTR command_line)
 {
-	TABINFO *lpTabInfo;
-	int SearchResult, ActivateID;
-	bool bActivate = false, bCreated;
-	char szOldDir[_MAX_PATH + 1];
-	char fullpathbuf[_MAX_PATH];
 
-	int argc;
-	char **argv = CommandLineToArgvA(lpCmdLine, &argc);
+	int newly_selected = -1;
 
-	for(int i = 1; i < argc; i++){
-		char *path;
-		GetCurrentDirectory(sizeof(szOldDir), szOldDir);
-		SetCurrentDirectory(szExeDir);
-		if(GetFullPathName(argv[i], sizeof(fullpathbuf), fullpathbuf, NULL)) {
-			path = fullpathbuf;
-		} else {
-			path = argv[i];
-		}
-		SearchResult = SearchTab(NULL, NULL, NULL, GetFileIndex(path));
-		SetCurrentDirectory(szOldDir);
+	win_cmdline_parser(command_line, NULL, &command_line);
 
-		if(SearchResult < 0){
-			lpTabInfo = GetTabInfo(activeID);
+	while (*command_line != '\0') {
 
-			bCreated = false;
-			if(lpTabInfo != NULL ) {
-				if(lpTabInfo->NeedSave){ bCreated = true; }
-			}
-			if( lpTabInfo == NULL
-				|| lpTabInfo->FileName[0] != '\0'
-				|| Footy2IsEdited(activeFootyID) ){
-					bCreated = true;
-			}
-			if ( bCreated ) {
-					CreateTab(activeID, "", path, "");
-			} else {
-					SetTabInfo(activeID, NULL, path, NULL, -1);
-			}
-			if(poppad_reload(activeID))
-				if(bCreated)
-                    DeleteTab(activeID);
-				else
-					SetTabInfo(activeID, "", "", NULL, -1);
-			bActivate = false;
-		} else {
-			ActivateID = SearchResult;
-			bActivate = true;
-		}
+		LPTSTR file_path = (LPTSTR)malloc(win_cmdline_parser(command_line, NULL, NULL) * sizeof(TCHAR));
+		win_cmdline_parser(command_line, file_path, &command_line);
+
+		if (!file_path) continue;
+
+		newly_selected = load_and_assign_file_to_tab(file_path);
+
+		free(file_path);
+
 	}
-	if(bActivate && ActivateID >= 0)
-		ActivateTab(activeID, ActivateID);
 
-	GlobalFree((HGLOBAL)argv);
+	ActivateTab(get_currently_selected_tab_id(), newly_selected);
+
 	return;
+
 }
 
-LRESULT FileDrop(WPARAM wParam, LPARAM /*lParam*/)
+static LRESULT on_wm_dropfiles(WPARAM wParam, LPARAM lParam)
+{
+
+	HDROP drop_handle = (HDROP)wParam;
+
+	int newly_selected = -1;
+
+	int num_of_files = DragQueryFile(drop_handle, -1, NULL, 0);
+
+	for (int i = 0; i < num_of_files; i++) {
+
+		TCHAR file_path[MAX_PATH];
+		DragQueryFile(drop_handle, i, file_path, MAX_PATH);
+
+		newly_selected = load_and_assign_file_to_tab(file_path);;
+
+	}
+
+	DragFinish(drop_handle);
+
+	ActivateTab(get_currently_selected_tab_id(), newly_selected);
+
+	return 0;
+
+}
+
+/*
+LRESULT FileDrop(WPARAM wParam, LPARAM lParam)
 {
 	char tmpfn[_MAX_PATH];
 	HDROP hDrop = (HDROP)wParam;
@@ -4277,6 +4381,7 @@ LRESULT FileDrop(WPARAM wParam, LPARAM /*lParam*/)
     DragFinish( hDrop );
 	return 0;						// breakだとWin9xで止まる
 }
+*/
 
 void __stdcall OnFooty2TextModified(int id, void * /*pParam*/, int /*nCause*/)
 {

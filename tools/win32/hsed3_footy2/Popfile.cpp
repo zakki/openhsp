@@ -146,7 +146,7 @@ BOOL PopFileSaveDlg (HWND hwnd, PSTR pstrFileName, PSTR pstrTitleName)
 //     return iFileLength ;
 //     }
 
-BOOL PopFileRead (int nFootyID, PSTR pstrFileName)
+BOOL PopFileRead (int nFootyID, const char*pstrFileName)
      {
 //     FILE    *file ;
 //     int      iLength ;
