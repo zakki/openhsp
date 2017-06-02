@@ -49,7 +49,6 @@ extern char      szTitleName[_MAX_FNAME + _MAX_EXT] ;
 
 char szStartDir[_MAX_PATH];
 char szExeDir[_MAX_PATH];
-char szDllDir[_MAX_PATH];
 char szAppName[]  = "onipad" ;
 int	 winflg,winx,winy,posx,posy,flg_toolbar,flg_statbar,flg_hspat;
 //int  flag_xpstyle;
@@ -222,9 +221,7 @@ int WINAPI WinMain (HINSTANCE hInstance, HINSTANCE /*hPrevInstance*/,
                     LPSTR /*lpszCmdLine*/, int /*cmdShow*/)       
      {
 	 HWND        hwnd ;
-     MSG         msg ;
      WNDCLASSEX  wc ;
-     HACCEL      hAccel ;
 	 int		 a;
 	 int		 scmd;
 	 char		 a1;
@@ -291,28 +288,32 @@ int WINAPI WinMain (HINSTANCE hInstance, HINSTANCE /*hPrevInstance*/,
      RegisterClassEx (&wc) ;
 
 
-	GetModuleFileName( NULL,szExeDir, _MAX_PATH );
-	a=(int)strlen(szExeDir)-1;
-	for(;;) {
-		a1=szExeDir[a];if (a1=='\\') break;
-		a--;
-	}
-	szExeDir[a]=0;
+	GetModuleFileName(NULL, szExeDir, MAX_PATH);
 
-	//		DLLを初期化
+	{
 
-	strcpy( szDllDir,szExeDir );
-	strcat( szDllDir,"\\" FILE_HSPCMP );
-	a=dll_ini( szDllDir );
-	if (a!=1) {
-		msgboxf(NULL,
+		size_t i = hsp_getpath(szExeDir, NULL, GETPATH_DIR) - 1;
+
+		szExeDir[i] = '\0';
+
+		if ((i >= MAX_PATH - strlen(FILE_HSPCMP)) || !dll_ini(strcat(szExeDir, FILE_HSPCMP))) {
+
 #ifdef JPNMSG
-		"%sが見つかりませんでした。"
+			LPCTSTR message = TEXT("コンパイラが見つかりませんでした。");
 #else
-		"%s not found."
+			LPCTSTR message = TEXT("The compiler is not found.");
 #endif
-		, "Startup error", MB_OK | MB_ICONEXCLAMATION, szDllDir);
-		dll_bye(); return -1;
+
+			MessageBox(NULL, message, NULL, MB_OK | MB_ICONEXCLAMATION);
+
+			dll_bye();
+
+			return 0;
+
+		}
+
+		szExeDir[i] = '\0';
+
 	}
 
 	//		XPのチェック
@@ -386,41 +387,55 @@ int WINAPI WinMain (HINSTANCE hInstance, HINSTANCE /*hPrevInstance*/,
     ShowWindow ( hwnd, scmd ) ;
     UpdateWindow (hwnd) ;
 
-    hAccel = LoadAccelerators (hInstance, szAppName) ;
+	if (!InitInterface(hInstance)) {
 
-	if(!InitInterface(hInstance))
-		MessageBox(hwnd, 
 #ifdef JPNMSG
-			"外部ツール用のウィンドウの初期化に失敗しました。\n"
-			"一部の外部ツールを使用することはできません。"
+
+		const TCHAR *message =
+			TEXT("外部ツール用のウィンドウの初期化に失敗しました。\n");
+			TEXT("一部の外部ツールを使用することはできません。");
+
 #else
-			"Failed to initialize a window for extension tools.\n"
-			"You can't use some extending tools."
+
+		const TCHAR *message =
+			TEXT("Failed to initialize the plugin message interface.\n")
+			TEXT("Some plugins may not work properly.");
+
 #endif
-			, "start up error", MB_OK | MB_ICONEXCLAMATION);
 
-	//	main loop
+		MessageBox(hwnd, message, NULL, MB_OK | MB_ICONEXCLAMATION);
 
-    while (GetMessage (&msg, NULL, 0, 0))
-    {
-	  if ((hDlgModeless  == NULL || !IsDialogMessage (hDlgModeless, &msg))
-		  &&(hConfigDlg  == NULL || !IsDialogMessage (hConfigDlg,   &msg))
-		  &&(hConfigPage == NULL || !IsDialogMessage (hConfigPage,  &msg)))
-      {
-      if (!TranslateAccelerator (hwnd, hAccel, &msg))
-           {
-           TranslateMessage (&msg) ;
-           DispatchMessage (&msg) ;
-           }
-       }
 	}
 
-	dll_bye();							// DLLを開放
+	// Message loop
+
+	HACCEL accelerator = LoadAccelerators(hInstance, szAppName);
+
+	MSG msg;
+
+	while (GetMessage(&msg, NULL, 0, 0) > 0) {
+
+		if (hDlgModeless && IsDialogMessage(hDlgModeless, &msg)) continue;
+		if (hConfigDlg && IsDialogMessage(hConfigDlg, &msg)) continue;
+		if (hConfigPage && IsDialogMessage(hConfigPage, &msg)) continue;
+
+		if (TranslateAccelerator(hwnd, accelerator, &msg)) continue;
+
+		TranslateMessage(&msg);
+		DispatchMessage(&msg);
+
+	}
+
+	dll_bye();
+
 #ifdef FOOTYSTATIC
 	Footy2End();
-#endif	/*FOOTYSTATIC*/
+#endif
+
 	delete AhtMenuBuf;
-	return (int)msg.wParam ;
+
+	return (int)msg.wParam;
+
 }
 
 //-------------------------------------------------------------------
@@ -462,6 +477,7 @@ void UpdateViewOption( int toolbar_flag, int stbar_flag )
 	PostMessage (hWndMain, WM_SIZE, 0, MAKELPARAM (r.right, r.bottom));
 }
 //-------------------------------------------------------------------
+
 LRESULT CALLBACK
 WndProc (HWND hwnd, UINT mMsg, WPARAM wParam, LPARAM lParam) 
      {
@@ -781,8 +797,8 @@ ClientWndProc (HWND hwnd, UINT mMsg, WPARAM wParam, LPARAM lParam)
 				const int current = activeID;
 				const int selected = TabCtrl_GetCurSel(hwndTab);
 
-				ActivateTab(current, selected);
 				ChangeZOrder(current, selected);
+				ActivateTab(current, selected);
 
 			}
 

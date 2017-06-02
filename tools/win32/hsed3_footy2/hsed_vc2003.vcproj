@@ -220,6 +220,9 @@
 				RelativePath="Poppad.h">
 			</File>
 			<File
+				RelativePath="popfile.h">
+			</File>
+			<File
 				RelativePath="resource.h">
 			</File>
 			<File

@@ -86,7 +86,7 @@ void poppad_setsb_current( int FootyID );
 void PutLineNumber( void );
 
 void DoCaption (char*, int);
-void LoadFromCommandLine(char*);
+void LoadFromCommandLine(LPCTSTR);
 
 int file_exists_and_is_readable(const char*);
 #define fileok file_exists_and_is_readable
