@@ -7,11 +7,9 @@
 
 int __cdecl msgboxf(HWND, LPCTSTR, LPCTSTR, UINT, ...);
 void ShowLastError();
-LPSTR *CommandLineToArgvA(LPSTR, int *);
 size_t strlcpy(char *, char *, size_t);
 ULONGLONG GetFileIndex(const char *);
 int getStrLinesSize(const char *);
-void GetDirName(char *dirName, const char *path);
 
 class FileList{
 private:
