@@ -4334,55 +4334,6 @@ static LRESULT on_wm_dropfiles(WPARAM wParam, LPARAM lParam)
 
 }
 
-/*
-LRESULT FileDrop(WPARAM wParam, LPARAM lParam)
-{
-	char tmpfn[_MAX_PATH];
-	HDROP hDrop = (HDROP)wParam;
-	TABINFO *lpTabInfo;
-	int SearchResult, ActivateID;
-	bool bActivate = false, bCreated;
-
-	int filenum = DragQueryFile( hDrop, 0xFFFFFFFF, tmpfn, _MAX_PATH );
-	for(int i = 0; i < filenum; i++){
-        DragQueryFile( hDrop, i, tmpfn, _MAX_PATH );
-		SearchResult = SearchTab(NULL, NULL, NULL, GetFileIndex(tmpfn));
-		if(SearchResult < 0){
-			lpTabInfo = GetTabInfo(activeID);
-
-			bCreated = false;
-			if(lpTabInfo != NULL ) {
-				if(lpTabInfo->NeedSave){ bCreated = true; }
-			}
-			if( lpTabInfo == NULL
-				|| lpTabInfo->FileName[0] != '\0'
-				|| Footy2IsEdited(activeFootyID) ){
-					bCreated = true;
-			}
-			if ( bCreated ) {
-					CreateTab(activeID, "", tmpfn, "");
-			} else {
-					SetTabInfo(activeID, NULL, tmpfn, NULL, -1);
-			}
-			if(poppad_reload(activeID))
-				if(bCreated)
-                    DeleteTab(activeID);
-				else
-					SetTabInfo(activeID, "", "", NULL, -1);
-
-			bActivate = false;
-		} else {
-			ActivateID = SearchResult;
-			bActivate = true;
-		}
-	}
-	if(bActivate && ActivateID >= 0)
-		ActivateTab(activeID, ActivateID);
-    DragFinish( hDrop );
-	return 0;						// break‚¾‚ÆWin9x‚ÅŽ~‚Ü‚é
-}
-*/
-
 void __stdcall OnFooty2TextModified(int id, void * /*pParam*/, int /*nCause*/)
 {
 	int nTabID = GetTabID(id);
