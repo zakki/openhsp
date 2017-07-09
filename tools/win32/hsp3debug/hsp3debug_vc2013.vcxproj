@@ -166,6 +166,7 @@ copy $(TargetPath) ..\..\..\hsp3\win32gui\release\
       </PrecompiledHeader>
       <WarningLevel>Level3</WarningLevel>
       <DebugInformationFormat>None</DebugInformationFormat>
+      <Optimization>Disabled</Optimization>
     </ClCompile>
     <Link>
       <OutputFile>$(OutDir)hsp3debug_u8.dll</OutputFile>
