@@ -5,6 +5,10 @@ Hot Soup Processor ver3.5                           HSP : Hot Soup Processor
 
 ・hsp3関連 更新履歴
 
+	2017/08/02 3.5 beta6
+
+	オフィシャル珠音2D素材(tamane_s)とサンプルを追加
+
 	2017/06/07 3.5 beta5b
 
 	3.5beta5aでファイルの暗号化が正しく行なわれない不具合を修正
