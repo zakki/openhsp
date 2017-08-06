@@ -8,6 +8,7 @@ Hot Soup Processor ver3.5                           HSP : Hot Soup Processor
 	2017/08/02 3.5 beta6
 
 	オフィシャル珠音2D素材(tamane_s)とサンプルを追加
+	[HGIMG4] アニメーションの更新を固定フレームレート対応に修正
 
 	2017/06/07 3.5 beta5b
 

@@ -21,6 +21,12 @@ static Game* __gameInstance = NULL;
 double Game::_pausedTimeLast = 0.0;
 double Game::_pausedTimeTotal = 0.0;
 
+#ifdef HSPDISH
+int Game::_FixedTimeMode = 0;
+double Game::_FixedTimeRate = 0.0;
+double Game::_FixedTimeCount = 0.0;
+#endif
+
 /**
 * @script{ignore}
 */
@@ -130,8 +136,29 @@ double Game::getAbsoluteTime()
 
 double Game::getGameTime()
 {
-    return Platform::getAbsoluteTime() - _pausedTimeTotal;
+#ifdef HSPDISH
+	if (_FixedTimeMode) {
+		return _FixedTimeCount;
+	}
+#endif
+	return Platform::getAbsoluteTime() - _pausedTimeTotal;
 }
+
+#ifdef HSPDISH
+void Game::setFixedTime( double rate )
+{
+    /**
+     * Set Fixed Time Mode & Rate ( -1 to cancel mode )
+     */
+	if ( rate < 0.0 ) {
+		_FixedTimeMode = 0;
+		return;
+	}
+	_FixedTimeMode = 1;
+	_FixedTimeRate = rate;
+	_FixedTimeCount = 0.0;
+}
+#endif
 
 void Game::setVsync(bool enable)
 {
@@ -401,6 +428,7 @@ void Game::frame()
     }
 
 	static double lastFrameTime = Game::getGameTime();
+	float elapsedTime;
 	double frameTime = getGameTime();
 
     // Fire time events to scheduled TimeListeners
@@ -416,8 +444,14 @@ void Game::frame()
         GP_ASSERT(_aiController);
 
         // Update Time.
-        float elapsedTime = (frameTime - lastFrameTime);
-        lastFrameTime = frameTime;
+		elapsedTime = (frameTime - lastFrameTime);
+		lastFrameTime = frameTime;
+#ifdef HSPDISH
+		if (_FixedTimeMode) {
+			_FixedTimeCount += _FixedTimeRate;
+			elapsedTime = _FixedTimeRate;
+		}
+#endif
 
         // Update the scheduled and running animations.
         _animationController->update(elapsedTime);
@@ -459,13 +493,19 @@ void Game::frame()
 
         // Update FPS.
         ++_frameCount;
-        if ((Game::getGameTime() - _frameLastFPS) >= 1000)
-        {
-            _frameRate = _frameCount;
-            _frameCount = 0;
-            _frameLastFPS = getGameTime();
-        }
-    }
+#ifdef HSPDISH
+		if (_FixedTimeMode == 0) {
+#endif
+			if ((Game::getGameTime() - _frameLastFPS) >= 1000)
+			{
+				_frameRate = _frameCount;
+				_frameCount = 0;
+				_frameLastFPS = getGameTime();
+			}
+#ifdef HSPDISH
+		}
+#endif
+	}
 	else if (_state == Game::PAUSED)
     {
         // Update gamepads.
@@ -516,6 +556,12 @@ void Game::updateOnce()
     double frameTime = getGameTime();
     float elapsedTime = (frameTime - lastFrameTime);
     lastFrameTime = frameTime;
+#ifdef HSPDISH
+	if (_FixedTimeMode) {
+		_FixedTimeCount += _FixedTimeRate;
+		elapsedTime = _FixedTimeRate;
+	}
+#endif
 
     // Update the internal controllers.
     _animationController->update(elapsedTime);
