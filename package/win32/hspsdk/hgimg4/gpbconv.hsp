@@ -1,0 +1,173 @@
+
+	;
+	;	gpb converter
+	;	onion software/onitama 2013/5
+	;
+#packopt name "gpbconv"
+#include "hspext.as"
+
+#define APPTITLE "GPB converter"
+#define APPVER "0.5"
+
+	randomize
+
+	sdim s1,256:sdim s2,256
+	wx=480:wy=240	; ウィンドウサイズ
+
+	sdim buf,$10000
+	sdim buftxt,$10000
+
+	sdim fname,1024
+
+	goto *boot
+
+#deffunc initwnd
+
+	screen 0,wx,wy,0,app_winx,app_winy
+	title APPTITLE +" ver."+APPVER
+	gsel 0,1
+	cls 4
+	syscolor 15:boxf
+	sysfont 17
+	color 0,0,0
+	return
+
+#deffunc initsub
+
+	screen 1,wx,480,8,ginfo_wx1-4,ginfo_wy2+1
+	title "console"
+
+	cls 4
+	syscolor 15:boxf
+	sysfont 17
+	color 0,0,0
+	mesbox buftxt,wx,320,0
+
+	objsize 160,24
+	pos wx-168,480-32
+	button gosub "閉じる",*closesub
+
+	pos 8,320+8
+
+	gsel 0
+	return
+
+*closesub
+	gsel 1,-1
+	gsel 0
+	return
+
+
+#deffunc execcmd str _p1
+
+	sdim tmp,$20000
+	cmd = _p1
+
+	pipeexec tmp,cmd
+	if stat : dialog "コマンドラインの実行に失敗しました" : return -1
+
+	lnbak=""
+	repeat
+	pipeget ln
+	if stat=0 : break
+	wait 10
+	title ""+cnt
+	loop
+
+	buf+=tmp
+
+	buf=""
+	i=0
+	repeat
+		getstr s1,tmp,i,10
+		if strsize=0 : break
+		i+=strsize
+		buf+=s1
+		buf+="\n"
+	loop
+
+	gsel 1
+	objprm 0,buf
+	gsel 0
+
+	return 0
+
+;--------------------------------------------------------------------------------
+
+*boot
+	;	アプリケーション開始
+	;
+	initwnd
+
+	pos 8,8
+	mes "HGIMG4(gameplay)で使用可能なgpbファイルを作成します。"
+
+	;sdim mdl_file,256
+	flag_mat=1
+
+	pos 8,30
+	sysfont 17
+	mes "モデルデータ:"
+	objsize 390,24
+	input fname
+	objsize 64,24
+	pos 408,41:button "参照...",*selfile
+
+	objsize 160,24
+	pos 8,68
+	chkbox ".materialを出力",flag_mat
+	chkbox "構造をXMLに出力",flag_xml
+
+	pos 312,68
+	objsize 160,48
+	button "変換",*mkgpb
+	button "ログ読み込み",*loadlog
+
+*topmenu
+	stop
+
+
+*selfile
+	dialog "fbx;*.dae",16,"3Dモデルデータ"
+	fname=refstr
+	if stat : objprm 0,fname
+	stop
+
+*loadlog
+	notesel buf
+	exist mydir+"\\log.txt"
+	if strsize<0 : goto *topmenu
+
+	noteload mydir+"\\log.txt"
+	gsel 1
+	objprm 0,buf
+	gsel 0
+	goto *topmenu
+
+
+*mkgpb
+	;	hsp convert only
+	;
+	if fname="" : stop
+
+	initsub
+
+	mydir=getpath(fname,32)
+	myfile=getpath(fname,8+16)
+	opt=""
+	if flag_mat : opt+="-m "
+	if flag_xml : opt+="-t "
+
+	gsel 1
+	mes "変換中..."
+
+	chdir mydir
+	exec "cmd.exe /c "+dir_exe+"\\gameplay-encoder.exe -g:auto "+opt+myfile+" >log.txt"
+
+	gsel 1
+	mes "終了しました。"
+
+	;button "OK",*topmenu
+	gsel 0
+	goto *topmenu
+

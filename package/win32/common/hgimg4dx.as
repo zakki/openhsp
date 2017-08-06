@@ -158,6 +158,7 @@
 #enum global SYSREQ_PLIGHT_MAX
 #enum global SYSREQ_SLIGHT_MAX
 #enum global SYSREQ_LOGWRITE
+#enum global SYSREQ_FIXEDFRAME
 
 #const global PLATFORM_WINDOWS 0
 #const global PLATFORM_IOS 1
