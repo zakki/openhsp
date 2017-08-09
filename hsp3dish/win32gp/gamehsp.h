@@ -6,6 +6,7 @@
 #include "gplgt.h"
 #include "gpcam.h"
 #include "gpphy.h"
+#include "gpevent.h"
 
 using namespace gameplay;
 
@@ -116,6 +117,7 @@ GPPSET_MAX
 #define GPANIM_OPT_PLAYING (5)
 #define GPANIM_OPT_SPEED (6)
 
+#define GPOBJ_MULTIEVENT_MAX 4
 
 //  HGIMG4 Sprite Object
 class gpspr {
@@ -145,6 +147,13 @@ public:
 	bool isVisible( bool lateflag );	// 表示できるか調べる(lateflagあり)
 	float getAlphaRate( void );			// Alpha値を取得する
 	void updateParameter( Material *mat );	// 後処理
+	void executeFade(void);				// フェード処理
+
+	int GetEmptyEvent(void);
+	void DeleteEvent(int entry);
+	gpevent *GetEvent(int entry);
+	void SetEvent(gpevent *ev, int entry);
+	void StartEvent(gpevent *ev, int entry);
 
 	short _flag;						// 存在フラグ
 	short _mark;						// マーク処理用
@@ -157,6 +166,7 @@ public:
 	int _usegpmat;						// gpmat使用時のID(-1=固有Material)
 	int _colilog;						// 衝突ログID
 	int	_transparent;					// 透明度(0=透明/255=不透明)
+	int _fade;							// フェード設定(0=なし/+-で増減)
 	gpspr *_spr;						// 生成された2Dスプライト情報
 	gpphy *_phy;						// 生成されたコリジョン情報
 	Node *_node;						// 生成されたNode
@@ -168,6 +178,11 @@ public:
 	Vector4 _vec[GPOBJ_USERVEC_MAX];	// ワーク用ベクター
 
 	gameplay::MaterialParameter *_prm_modalpha;	// Alphaモジュレート用パラメーター
+
+	gpevent *_event[GPOBJ_MULTIEVENT_MAX];		// Event List
+	float	_time[GPOBJ_MULTIEVENT_MAX];		// Event Time
+	Vector4 _evvec[GPOBJ_MULTIEVENT_MAX];		// イベントワーク用ベクター
+
 };
 
 #define BUFSIZE_POLYCOLOR 32
@@ -235,8 +250,29 @@ public:
 	gpmat *getMat( int id );
 	int deleteMat( int id );
 	gpmat *addMat( void );
-
 	Material *getMaterial( int matid );
+
+	//		Event process
+	gpevent *getEvent(int id);
+	gpevent *addEvent(int id);
+	gpevent *addNewEvent(void);
+	int deleteEvent(int id);
+	int GetEmptyEventId(void);
+	int AddWaitEvent(int eventid, int frame);
+	int AddMoveEvent(int eventid, int target, float x, float y, float z, int frame, int sw);
+	int AddSplineMoveEvent(int eventid, int target, float x, float y, float z, int frame, int sw);
+	int AddPlusEvent(int eventid, int target, float x, float y, float z);
+	int AddChangeEvent(int eventid, int target, float x1, float y1, float z1, float x2, float y2, float z2);
+	int AddJumpEvent(int eventid, int gonum, int rate);
+	int AddParamEvent(int eventid, int mode, int target, int param);
+	int AddParamEvent2(int eventid, int target, int param, int low, int high);
+	int AddUVEvent(int eventid, int ysize, int count);
+	int AddRegobjEvent(int eventid, int model, int event);
+	int AddAimEvent(int eventid, int target, int mode, float x, float y, float z);
+	int AddAnimEvent(int eventid, int anim, int opt, float speed);
+	void ExecuteObjEvent(gpobj *obj, float timepass, int entry);
+	int AttachEvent(int objid, int eventid, int entry);
+	void putEventError(gpobj *obj, gpevent *ev, char *msg);
 
 	void drawAll( int option );
 	void drawNode( Node *node );
@@ -331,6 +367,10 @@ public:
 	Material*make2DMaterialForMesh( void );
 	void setBorder( float x0, float x1, float y0, float y1, float z0, float z1 );
 	void getBorder( Vector3 *v1, Vector3 *v2 );
+	float GetTimerFromFrame(int frame);
+	int convertAxis(Vector3 *res, Vector3 *pos, int mode);
+	void storeNextVector(gpevent *myevent);
+
 
 	// 2D draw function
 	float *startPolyTex2D( gpmat *mat, int material_id );
@@ -414,6 +454,7 @@ private:
 	int _objpool_startid;
 	int _objpool_max;
 	gpobj *_gpobj;
+
 	int _find_count;
 	int _find_exmode;
 	int _find_group;
@@ -423,6 +464,10 @@ private:
 	// gpmat
 	int _maxmat;
 	gpmat *_gpmat;
+
+	// gpevent
+	int _maxevent;
+	gpevent *_gpevent;
 
 	// default scene
 	int _curscene;
