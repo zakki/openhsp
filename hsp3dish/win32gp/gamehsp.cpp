@@ -58,6 +58,7 @@ void gpobj::reset( int id )
 	_mygroup = 0;
 	_colgroup = 0;
 	_transparent = 255;
+	_fade = 0;
 
 	_usegpmat = -1;
 	_colilog = -1;
@@ -66,6 +67,12 @@ void gpobj::reset( int id )
 
 	for(i=0;i<GPOBJ_USERVEC_MAX;i++) {
 		_vec[i].set( Vector4::zero() );
+	}
+
+	//	イベントのリセット
+	for (i = 0; i<GPOBJ_MULTIEVENT_MAX; i++) {
+		_time[i] = 0.0f;
+		_event[i] = NULL;
 	}
 
 }
@@ -136,6 +143,67 @@ void gpobj::updateParameter( Material *mat )
 }
 
 
+void gpobj::executeFade(void)
+{
+	//	透明度の自動フェードイン・アウトを制御する
+	//
+	if (_fade == 0) return;
+	_transparent += _fade;
+	if (_transparent < 0) {
+		_fade = 0;
+		_transparent = 0;
+	}
+	if (_transparent > 255) {
+		_fade = 0;
+		_transparent = 255;
+	}
+}
+
+
+int gpobj::GetEmptyEvent(void)
+{
+	int i;
+	for (i = 0; i<GPOBJ_MULTIEVENT_MAX; i++) {
+		if (_event[i] == NULL) return i;
+	}
+	return -1;
+}
+
+
+void gpobj::DeleteEvent(int entry)
+{
+	_event[entry] = NULL;
+}
+
+
+void gpobj::StartEvent(gpevent *ev, int entry)
+{
+	SetEvent(ev, entry);
+}
+
+
+void gpobj::SetEvent(gpevent *ev, int entry)
+{
+	int i;
+	if (entry < 0) {
+		i = GetEmptyEvent();
+		if (i < 0) return;
+		_event[i] = ev;
+		_time[i] = 0.0f;
+	}
+	else {
+		_event[entry] = ev;
+		_time[entry] = 0.0f;
+	}
+}
+
+
+gpevent *gpobj::GetEvent(int entry)
+{
+	return _event[entry];
+}
+
+
 /*------------------------------------------------------------*/
 /*
 		gameplay game class
@@ -149,6 +217,7 @@ gamehsp::gamehsp()
 	_maxobj = 0;
 	_gpobj = NULL;
 	_gpmat = NULL;
+	_gpevent = NULL;
 	_colrate = 1.0f / 255.0f;
 	_scene = NULL;
 	_meshBatch = NULL;
@@ -186,11 +255,18 @@ void gamehsp::deleteAll( void )
 		_gpobj = NULL;
 	}
 
-	if ( _gpmat ) {
+	if (_gpmat) {
 		int i;
-		for(i=0;i<_maxmat;i++) { deleteMat( i ); }
+		for (i = 0; i<_maxmat; i++) { deleteMat(i); }
 		delete[] _gpmat;
 		_gpmat = NULL;
+	}
+
+	if (_gpmat) {
+		int i;
+		for (i = 0; i<_maxevent; i++) { deleteEvent(i); }
+		delete[] _gpevent;
+		_gpevent = NULL;
 	}
 
 	if (_scene) {
@@ -257,6 +333,17 @@ void gamehsp::hookSetSysReq( int reqid, int value )
 	case SYSREQ_VSYNC:
 		setVsync( value!=0 );
 		break;
+	case SYSREQ_FIXEDFRAME:
+		{
+		double fixedrate = (double)value;
+		if (fixedrate < 0.0) {
+			setFixedTime(-1);
+		}
+		else {
+			setFixedTime(fixedrate);
+		}
+		break;
+		}
 	default:
 		break;
 	}
@@ -299,6 +386,10 @@ void gamehsp::resetScreen( int opt )
 	// gpmat作成
 	_maxmat = GetSysReq( SYSREQ_MAXMATERIAL );
 	_gpmat = new gpmat[ _maxmat ];
+
+	// gpevent作成
+	_maxevent = GetSysReq(SYSREQ_MAXEVENT);
+	_gpevent = new gpevent[_maxevent];
 
 	// シーン作成
 	_scene = Scene::create();
@@ -362,6 +453,14 @@ void gamehsp::resetScreen( int opt )
 	// ビューポート初期化
 	updateViewport( 0, 0, getWidth(), getHeight() );
 
+	//	固定フレームレート設定
+	double fixedrate = (double)GetSysReq(SYSREQ_FIXEDFRAME);
+	if (fixedrate < 0.0) {
+		setFixedTime(-1);
+	}
+	else {
+		setFixedTime(fixedrate);
+	}
 }
 
 
@@ -2014,6 +2113,13 @@ void gamehsp::updateObj( gpobj *obj )
 	//		gpobjの更新
 	//
 	int mode = obj->_mode;
+
+	obj->executeFade();
+	if (obj->_transparent == 0) {
+		deleteObj(obj->_id);
+		return;
+	}
+
 	if ( mode & ( GPOBJ_MODE_MOVE|GPOBJ_MODE_BORDER) ) {
 		int cflag;
 		Vector3 pos;
@@ -2049,14 +2155,21 @@ void gamehsp::updateAll( void )
 	/*
 		All update of gpobj
 	*/
-	int i;
+	int i,j;
+	float timepass = 1.0f;
 
     if ( getState() == PAUSED ) return;
 
 	gpobj *obj = _gpobj;
 	for(i=0;i<_maxobj;i++) {
-		if ( obj->_flag ) {
-			updateObj( obj );
+		if (obj->_flag) {
+			// Execute Events
+			for (j = 0; j<GPOBJ_MULTIEVENT_MAX; j++) {
+				if (obj->GetEvent(j) != NULL) ExecuteObjEvent(obj, timepass, j);
+			}
+		}
+		if (obj->_flag) {
+			updateObj(obj);
 		}
 		obj++;
 	}
@@ -2606,3 +2719,32 @@ void gamehsp::deleteFrameBuffer(gameplay::FrameBuffer *fb)
 	SAFE_RELEASE(fb);
 }
 
+int gamehsp::convertAxis(Vector3 *res, Vector3 *pos, int mode)
+{
+	//	座標変換
+	//	mode:0=screen/1=projection/2=view
+	//
+	Rectangle viewport;
+
+	switch (mode) {
+	case 0:
+		viewport = getViewport();
+		_cameraDefault->project(viewport, *pos, res);
+		break;
+	case 1:
+		viewport.set(0.0f,0.0f,1.0f,1.0f);
+		_cameraDefault->project(viewport, *pos, res);
+		break;
+	case 2:
+	{
+		Vector4 v1,v2;
+		Matrix mat = _cameraDefault->getInverseViewMatrix();
+		mat.transformVector(pos->x, pos->y, pos->z, 1.0f, res);
+		break;
+	}
+	default:
+		return -1;
+	}
+
+	return 0;
+}

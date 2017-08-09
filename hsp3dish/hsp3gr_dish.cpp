@@ -146,7 +146,7 @@ static HSPREAL *p_vec;
 static gameplay::Vector4 p_vec1;
 static gameplay::Vector4 p_vec2;
 
-static	HSPREAL dp1,dp2,dp3;
+static	HSPREAL dp1,dp2,dp3,dp4;
 
 static int select_objid;
 static int select_objmoc;
@@ -310,7 +310,15 @@ static void code_getvec( gameplay::Vector4 *vec )
 	vec->w = 1.0f;
 }
 
-static void code_setvec( HSPREAL *ptr, VECTOR *vec )
+static void code_getvec4(gameplay::Vector4 *vec)
+{
+	vec->x = (float)code_getdd(0.0);
+	vec->y = (float)code_getdd(0.0);
+	vec->z = (float)code_getdd(0.0);
+	vec->w = (float)code_getdd(0.0);
+}
+
+static void code_setvec(HSPREAL *ptr, VECTOR *vec)
 {
 	ptr[0] = (HSPREAL)vec->x;
 	ptr[1] = (HSPREAL)vec->y;
@@ -573,25 +581,14 @@ static int cmdfunc_extcmd( int cmd )
 		strncpy( fname, code_gets(), HSP_MAX_PATH-1 );
 		p1 = code_getdi( 0 );
 		p2 = code_getdi( 0 );
-#ifdef HSPEMSCRIPTEN
-		p3 = code_getdi( 0 );
-		p4 = code_getdi( 3600*10*1000 );
-		i = mmman->Load( fname, p1, p2, p3, p4 );
-#else
 		i = mmman->Load( fname, p1, p2 );
-#endif
 		if (i) throw HSPERR_FILE_IO;
 		break;
 		}
 	case 0x09:								// mmplay
 		p1 = code_getdi( 0 );
 		//mmman->SetWindow( bmscr->hwnd, bmscr->cx, bmscr->cy, bmscr->sx, bmscr->sy );
-#ifdef HSPEMSCRIPTEN
-		p2 = code_getdi( -1 );
-		mmman->Play( p1, p2 );
-#else
 		mmman->Play( p1 );
-#endif
 		break;
 
 	case 0x0a:								// mmstop
@@ -825,9 +822,6 @@ static int cmdfunc_extcmd( int cmd )
 		if ( p1 == 1 ) {
 			p2 = ( hgio_stick(0)&256 )>>8;
 		}
-#endif
-#if defined(HSPLINUX) || defined(HSPEMSCRIPTEN)
-		if ( hgio_getkey( p1 ) ) p2 = 1;
 #endif
 		code_setva( pval, aptr, TYPE_INUM, &p2 );
 		break;
@@ -1161,7 +1155,6 @@ static int cmdfunc_extcmd( int cmd )
 		break;
 		}
 
-#ifdef USE_MMAN
 	case 0x42:								// mmvol
 		p1 = code_getdi( 0 );
 		p2 = code_getdi( 0 );
@@ -1183,7 +1176,6 @@ static int cmdfunc_extcmd( int cmd )
 		code_setva( p_pval, p_aptr, HSPVAR_FLAG_INT, &p3 );
 		break;
 		}
-#endif
 	case 0x45:								// mtlist
 		{
 		int *p_ptr;
@@ -1718,7 +1710,6 @@ static int cmdfunc_extcmd( int cmd )
 
 
 	case 0x80:								// getpos
-	case 0x81:								// getquat
 	case 0x82:								// getscale
 	case 0x83:								// getdir
 	case 0x84:								// getefx
@@ -1748,6 +1739,35 @@ static int cmdfunc_extcmd( int cmd )
 		code_setva( pv3, aptr3, HSPVAR_FLAG_DOUBLE, &dp3 );
 		break;
 		}
+	case 0x81:								// getquat
+	{
+		PVal *pv1;
+		PVal *pv2;
+		PVal *pv3;
+		PVal *pv4;
+		APTR aptr1;
+		APTR aptr2;
+		APTR aptr3;
+		APTR aptr4;
+		gameplay::Vector4 v;
+		HSPREAL dp1, dp2, dp3, dp4;
+		p1 = code_getdi(0);
+		aptr1 = code_getva(&pv1);
+		aptr2 = code_getva(&pv2);
+		aptr3 = code_getva(&pv3);
+		aptr4 = code_getva(&pv4);
+		p6 = game->getObjectVector(p1, cmd - 0x80, &v);
+		if (p6 < 0) code_puterror(HSPERR_ILLEGAL_FUNCTION);
+		dp1 = (HSPREAL)v.x;
+		dp2 = (HSPREAL)v.y;
+		dp3 = (HSPREAL)v.z;
+		dp4 = (HSPREAL)v.w;
+		code_setva(pv1, aptr1, HSPVAR_FLAG_DOUBLE, &dp1);
+		code_setva(pv2, aptr2, HSPVAR_FLAG_DOUBLE, &dp2);
+		code_setva(pv3, aptr3, HSPVAR_FLAG_DOUBLE, &dp3);
+		code_setva(pv4, aptr4, HSPVAR_FLAG_DOUBLE, &dp4);
+		break;
+	}
 
 	case 0x90:								// getposi
 	case 0x91:								// getquati
@@ -1794,7 +1814,6 @@ static int cmdfunc_extcmd( int cmd )
 		break;
 
 	case 0xb0:								// setpos
-	case 0xb1:								// setquat
 	case 0xb2:								// setscale
 	case 0xb3:								// setdir
 	case 0xb4:								// setefx
@@ -1809,6 +1828,12 @@ static int cmdfunc_extcmd( int cmd )
 		code_getvec( &p_vec1 );
 		p6 = game->setObjectVector( p1, cmd - 0xb0, &p_vec1 );
 		if ( p6 < 0 ) throw HSPERR_ILLEGAL_FUNCTION;
+		break;
+	case 0xb1:								// setquat
+		p1 = code_getdi(0);
+		code_getvec4(&p_vec1);
+		p6 = game->setObjectVector(p1, cmd - 0xb0, &p_vec1);
+		if (p6 < 0) throw HSPERR_ILLEGAL_FUNCTION;
 		break;
 
 	case 0xc0:								// addpos
@@ -1841,13 +1866,13 @@ static int cmdfunc_extcmd( int cmd )
 		break;
 	case 0xd2:								// objsetfv
 		p_vec = code_getvvec();
-		p_vec2.set( (float)p_vec[0],(float)p_vec[1],(float)p_vec[2], 1.0f );
+		p_vec2.set((float)p_vec[0], (float)p_vec[1], (float)p_vec[2], (float)p_vec[3]);
 		p6 = game->setObjectVector( select_objid, select_objmoc, &p_vec2 );
 		if ( p6 < 0 ) throw HSPERR_ILLEGAL_FUNCTION;
 		break;
 	case 0xd3:								// objaddfv
 		p_vec = code_getvvec();
-		p_vec2.set( (float)p_vec[0],(float)p_vec[1],(float)p_vec[2], 1.0f );
+		p_vec2.set((float)p_vec[0], (float)p_vec[1], (float)p_vec[2], (float)p_vec[3]);
 		p6 = game->addObjectVector( select_objid, select_objmoc, &p_vec2 );
 		if ( p6 < 0 ) throw HSPERR_ILLEGAL_FUNCTION;
 		break;
@@ -1887,7 +1912,38 @@ static int cmdfunc_extcmd( int cmd )
 		select_objmoc = p2;
 		break;
 	case 0xd8:								// gpcnvaxis
+		{
+		PVal *pv1;
+		PVal *pv2;
+		PVal *pv3;
+		APTR aptr1;
+		APTR aptr2;
+		APTR aptr3;
+		gameplay::Vector3 v;
+		gameplay::Vector3 v2;
+		HSPREAL dp1, dp2, dp3;
+		aptr1 = code_getva(&pv1);
+		aptr2 = code_getva(&pv2);
+		aptr3 = code_getva(&pv3);
+
+		dp1 = code_getdd(0.0);
+		dp2 = code_getdd(0.0);
+		dp3 = code_getdd(0.0);
+		p1 = code_getdi(0);
+
+		v.set( dp1, dp2, dp3 );
+		game->convertAxis( &v2, &v, p1 );
+		//p6 = game->getObjectVector(p1, cmd - 0x80, &v);
+		//if (p6 < 0) code_puterror(HSPERR_ILLEGAL_FUNCTION);
+
+		dp1 = (HSPREAL)v2.x;
+		dp2 = (HSPREAL)v2.y;
+		dp3 = (HSPREAL)v2.z;
+		code_setva(pv1, aptr1, HSPVAR_FLAG_DOUBLE, &dp1);
+		code_setva(pv2, aptr2, HSPVAR_FLAG_DOUBLE, &dp2);
+		code_setva(pv3, aptr3, HSPVAR_FLAG_DOUBLE, &dp3);
 		break;
+		}
 	case 0xd9:								// getcoli
 		{
 		PVal *p_pval;
@@ -2327,6 +2383,164 @@ static int cmdfunc_extcmd( int cmd )
 		code_setva(p_pval, p_aptr, HSPVAR_FLAG_INT, &res);
 		break;
 	}
+
+	case 0x100:								// setevent
+		p1 = code_getdi( 0 );
+		p2 = code_getdi( 0 );
+		p3 = code_getdi( -1 );
+		ctx->stat = game->AttachEvent(p1, p2, p3);
+		break;
+	case 0x101:								// delevent
+		p1 = code_getdi( 0 );
+		game->deleteEvent(p1);
+		break;
+	case 0x102:								// event_wait
+		p1 = code_getdi( 0 );
+		p2 = code_getdi( 0 );
+		ctx->stat = game->AddWaitEvent(p1, p2);
+		break;
+	case 0x103:								// event_uv
+		p1 = code_getdi( 0 );
+		p2 = code_getdi( 0 );
+		p3 = code_getdi( 0 );
+		ctx->stat = game->AddUVEvent(p1, p2, p3);
+		break;
+	case 0x104:								// newevent
+	{
+		PVal *p_pval;
+		APTR p_aptr;
+		p_aptr = code_getva( &p_pval );
+		p1 = game->GetEmptyEventId();
+		code_setva( p_pval, p_aptr, HSPVAR_FLAG_INT, &p1 );
+		break;
+	}
+	case 0x105:								// event_jump
+		p1 = code_getdi(0);
+		p2 = code_getdi(0);
+		p3 = code_getdi(0);
+		ctx->stat = game->AddJumpEvent(p1, p2, p3);
+		break;
+	case 0x106:								// event_prmset
+	case 0x107:								// event_prmon
+	case 0x108:								// event_prmoff
+		p1 = code_getdi(0);
+		p2 = code_getdi(0);
+		p3 = code_getdi(0);
+		ctx->stat = game->AddParamEvent( p1, cmd-0x106, p2, p3 );
+		break;
+	case 0x109:								// event_prmadd
+		p1 = code_getdi(0);
+		p2 = code_getdi(0);
+		p3 = code_getdi(0);
+		p4 = code_getdi(0);
+		p5 = code_getdi(255);
+		ctx->stat = game->AddParamEvent2(p1, p2, p3, p4, p5);
+		break;
+
+	case 0x110:								// event_pos
+	case 0x111:								// event_quat
+	case 0x112:								// event_scale
+	case 0x113:								// event_dir
+	case 0x114:								// event_efx
+	case 0x115:								// event_color
+	case 0x116:								// event_work
+	case 0x117:								// event_work2
+	case 0x118:								// event_axang
+	case 0x119:								// event_angx
+	case 0x11a:								// event_angy
+	case 0x11b:								// event_angz
+		p1 = code_getdi( 0 );
+		p2 = code_getdi( 10 );
+		dp1 = code_getdd( 0.0 );
+		dp2 = code_getdd( 0.0 );
+		dp3 = code_getdd(0.0);
+		//dp4 = code_getdd(0.0);
+		dp4 = 1.0f;
+		p6 = cmd - 0x110;
+		p3 = code_getdi(MOVEMODE_LINEAR);
+		if ( p3 & 16 ) p6|=HGEVENT_MOCOPT_SRCWORK;
+		switch( p3 & 15 ) {
+		case MOVEMODE_LINEAR:
+			ctx->stat = game->AddMoveEvent( p1, p6, (float)dp1, (float)dp2, (float)dp3, p2, 0 );
+			break;
+		case MOVEMODE_SPLINE:
+			ctx->stat = game->AddSplineMoveEvent(p1, p6, (float)dp1, (float)dp2, (float)dp3, p2, 0);
+			break;
+		case MOVEMODE_LINEAR_REL:
+			ctx->stat = game->AddMoveEvent(p1, p6, (float)dp1, (float)dp2, (float)dp3, p2, 1);
+			break;
+		case MOVEMODE_SPLINE_REL:
+			ctx->stat = game->AddSplineMoveEvent(p1, p6, (float)dp1, (float)dp2, (float)dp3, p2, 1);
+			break;
+		}
+		break;
+
+	case 0x11c:								// event_angr
+		p1 = code_getdi(0);
+		p2 = code_getdi(10);
+		dp1 = CnvIntRot(code_getdi(0));
+		dp2 = CnvIntRot(code_getdi(0));
+		dp3 = CnvIntRot(code_getdi(0));
+		ctx->stat = game->AddMoveEvent(p1, MOC_ANGX, (float)dp1, (float)dp2, (float)dp3, p2, 0);
+		break;
+
+
+	case 0x120:								// event_addpos
+	case 0x121:								// event_addquat
+	case 0x122:								// event_addscale
+	case 0x123:								// event_adddir
+	case 0x124:								// event_addefx
+	case 0x125:								// event_addcolor
+	case 0x126:								// event_addwork
+	case 0x127:								// event_addwork2
+		p1 = code_getdi(0);
+		dp1 = code_getdd(0.0);
+		dp2 = code_getdd(0.0);
+		dp3 = code_getdd(0.0);
+		ctx->stat = game->AddPlusEvent(p1, cmd - 0x120, (float)dp1, (float)dp2, (float)dp3);
+		break;
+
+	case 0x130:								// event_setpos
+	case 0x131:								// event_setquat
+	case 0x132:								// event_setscale
+	case 0x133:								// event_setdir
+	case 0x134:								// event_setefx
+	case 0x135:								// event_setcolor
+	case 0x136:								// event_setwork
+	case 0x137:								// event_setwork2
+	case 0x138:								// event_setaxang
+	case 0x139:								// event_setangx
+	case 0x13a:								// event_setangy
+	case 0x13b:								// event_setangz
+	{
+		double dp4, dp5, dp6;
+		p1 = code_getdi(0);
+		dp1 = code_getdd(0.0);
+		dp2 = code_getdd(0.0);
+		dp3 = code_getdd(0.0);
+		dp4 = code_getdd(dp1);
+		dp5 = code_getdd(dp2);
+		dp6 = code_getdd(dp3);
+		ctx->stat = game->AddChangeEvent(p1, cmd - 0x130, (float)dp1, (float)dp2, (float)dp3, (float)dp4, (float)dp5, (float)dp6);
+		break;
+	}
+	case 0x13c:								// event_setangr
+	{
+		double dp4, dp5, dp6;
+		p1 = code_getdi(0);
+		p2 = code_getdi(0);
+		p3 = code_getdi(0);
+		p4 = code_getdi(0);
+		dp1 = CnvIntRot(p2);
+		dp2 = CnvIntRot(p3);
+		dp3 = CnvIntRot(p4);
+		dp4 = CnvIntRot(code_getdi(p2));
+		dp5 = CnvIntRot(code_getdi(p3));
+		dp6 = CnvIntRot(code_getdi(p4));
+		ctx->stat = game->AddChangeEvent(p1, MOC_ANGX, (float)dp1, (float)dp2, (float)dp3, (float)dp4, (float)dp5, (float)dp6);
+		break;
+	}
+
 
 
 #endif

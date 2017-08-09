@@ -589,3 +589,4 @@ bool hasParameter( Material* material, const char* name )
 	}
 	return false;
 }
+
