@@ -9,7 +9,7 @@
 %note
 hgimg4.asまたはhgimg4dx.asをインクルードすること。
 %date
-2017/02/08
+2017/08/08
 %author
 onitama
 %dll
@@ -120,6 +120,7 @@ value(0) : 設定する値(整数値)
 	PRMSET_SHAPE           形状ID(*)
 	PRMSET_USEGPMAT        マテリアルID
 	PRMSET_COLILOG         コリジョンログID(*)
+	PRMSET_FADE            フェードパラメーター
 	PRMSET_SPRID           ソースバッファID(スプライトのみ)
 	PRMSET_SPRCELID        ソースのセルID(スプライトのみ)
 	PRMSET_SPRGMODE        コピーモード(スプライトのみ)
@@ -157,6 +158,7 @@ prmid(0) : コアパラメーターID
 	PRMSET_SHAPE           形状ID(*)
 	PRMSET_USEGPMAT        マテリアルID
 	PRMSET_COLILOG         コリジョンログID(*)
+	PRMSET_FADE            フェードパラメーター
 	PRMSET_SPRID           ソースバッファID(スプライトのみ)
 	PRMSET_SPRCELID        ソースのセルID(スプライトのみ)
 	PRMSET_SPRGMODE        コピーモード(スプライトのみ)
@@ -489,9 +491,10 @@ gpclone
 %group
 拡張画面制御命令
 %prm
-var,objid
-var      : 複製されたオブジェクトのIDが代入される変数名
-objid(0) : 複製元のオブジェクトID
+var,objid,eventid
+var         : 複製されたオブジェクトのIDが代入される変数名
+objid(0)    : 複製元のオブジェクトID
+eventid(-1) : イベントID
 %inst
 既に存在するオブジェクトと同じ設定で、新しいオブジェクトを生成します。
 varで指定された変数に、複製されたオブジェクトのIDが代入されます。
@@ -504,6 +507,7 @@ varで指定された変数に、複製されたオブジェクトのIDが代入されます。
 ^p
 上の例では、res/duck.gpbファイルによる3Dモデルノード(id_model)をクローンして変数iに新しいオブジェクトIDを代入します。
 クローンやIDの割り当てに失敗した場合は、varで指定された変数に-1が代入されます。
+イベントIDをeventidパラメーターに指定することで、クローン後のオブジェクトにイベントを適用することができます。eventidがマイナス値か、省略された場合はイベントは設定されません。
 ※現在のバージョンでは、シーン内に存在する表示可能なオブジェクト以外はクローンすることができませんので注意してください。
 %href
 gpdraw
@@ -1371,5 +1375,23 @@ HGIMG4内部では、すべての回転情報は、クォータニオンにより保持されています。
 %href
 setquat
 
+
+
+%index
+event_suicide
+オブジェクト破棄イベントを追加
+%group
+拡張画面制御命令
+%prm
+p1,p2
+p1    : イベントID
+p2    : Xオフセット
+%inst
+idで指定しているイベントIDに、オブジェクト破棄イベントを追加します。
+オブジェクト破棄イベントは、実行しているオブジェクト自身を破棄(delobj)します。
+
+%href
+newevent
+setevent
 
 

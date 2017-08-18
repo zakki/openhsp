@@ -1568,8 +1568,10 @@ static int cmdfunc_extcmd( int cmd )
 		PVal *p_pval;
 		APTR p_aptr;
 		p_aptr = code_getva(&p_pval);
-		p1 = code_getdi( 0 );
-		p6 = game->makeCloneNode( p1 );
+		p1 = code_getdi(0);
+		p2 = code_getdi(0);
+		p3 = code_getdi(-1);
+		p6 = game->makeCloneNode(p1,p2,p3);
 		code_setva( p_pval, p_aptr, HSPVAR_FLAG_INT, &p6 );
 		break;
 		}
@@ -2435,6 +2437,11 @@ static int cmdfunc_extcmd( int cmd )
 		p4 = code_getdi(0);
 		p5 = code_getdi(255);
 		ctx->stat = game->AddParamEvent2(p1, p2, p3, p4, p5);
+		break;
+	case 0x10a:								// event_suicide
+		p1 = code_getdi(0);
+		p2 = code_getdi(0);
+		ctx->stat = game->AddSuicideEvent(p1, p2);
 		break;
 
 	case 0x110:								// event_pos

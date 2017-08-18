@@ -100,6 +100,7 @@ gpevent *gamehsp::addEvent(int id)
 	gpevent *ev_next;
 	gpevent *ev = getEvent(id);
 	gpevent *newev = addNewEvent();
+	newev->_root = id;
 	if (ev == NULL) {
 		return newev;
 	}
@@ -109,7 +110,6 @@ gpevent *gamehsp::addEvent(int id)
 		ev = ev_next;
 	}
 	ev->SetNextEvent(newev);
-	newev->_root = id;
 	return newev;
 }
 
@@ -175,8 +175,10 @@ int gamehsp::AddJumpEvent(int eventid, int gonum, int rate)
 	ev = addEvent(eventid);
 	if (ev == NULL) return -1;
 	ev->Reset(GPEVENT_FLAG_JUMP);
+	//Alertf("##%d #ID%d jump%d", eventid, ev->_id, ev->_root);
 	ev->_target = gonum;
 	ev->_value = rate;
+	ev->_root = eventid;
 	return ev->_id;
 }
 
@@ -279,6 +281,16 @@ int gamehsp::AddChangeEvent(int eventid, int target, float x1, float y1, float z
 	return ev->_id;
 }
 
+int gamehsp::AddSuicideEvent(int eventid, int mode)
+{
+	gpevent *ev;
+	ev = addEvent(eventid);
+	if (ev == NULL) return -1;
+	ev->Reset(GPEVENT_FLAG_SUICIDE);
+	ev->_value = mode;
+	return ev->_id;
+}
+
 void gamehsp::storeNextVector(gpevent *myevent)
 {
 	//		次のmovevectorを検索して補完する
@@ -372,6 +384,11 @@ void gamehsp::ExecuteObjEvent(gpobj *obj, float timepass, int entry)
 			obj->SetEvent(ev->GetNextEvent(), entry);	// イベントをパスする
 			break;
 		}
+		case GPEVENT_FLAG_SUICIDE:
+			deleteObj(obj->_id);
+			obj->SetEvent(NULL, entry);
+			return;
+
 		case GPEVENT_FLAG_PRMSET:
 			if (setObjectPrm(obj->_id, ev->_target, ev->_value) < 0) {
 				putEventError(obj, ev, "無効なパラメーターID");
