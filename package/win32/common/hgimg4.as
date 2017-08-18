@@ -33,6 +33,8 @@
 #const global OBJ_SORT 0x400
 #const global OBJ_LATE 0x4000
 
+#const global OBJ_BHIDE 0x8000
+
 #const global GPOBJ_SCENE  0x100001
 #const global GPOBJ_CAMERA 0x100002
 #const global GPOBJ_LIGHT  0x100003
@@ -341,6 +343,7 @@
 #cmd event_prmon $107
 #cmd event_prmoff $108
 #cmd event_prmadd $109
+#cmd event_suicide $10a
 
 #cmd event_pos $110
 #cmd event_quat $111
