@@ -5,12 +5,13 @@ Hot Soup Processor ver3.5                           HSP : Hot Soup Processor
 
 ・hsp3関連 更新履歴
 
-	2017/08/02 3.5 beta6
+	2017/08/18 3.5 beta6
 
 	オフィシャル珠音2D素材(tamane_s)とサンプルを追加
 	[HGIMG4] クォータニオン情報を扱うsetquat,getquat命令を追加
 	[HGIMG4] HGIMG3と同様のイベント制御機能を追加
 	[HGIMG4] アニメーションの更新を固定フレームレート対応に修正
+	[HGIMG4] オブジェクト削除時のメモリリークを修正
 
 	2017/06/07 3.5 beta5b
 

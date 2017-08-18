@@ -32,6 +32,8 @@ using namespace gameplay;
 #define GPOBJ_MODE_SORT (0x400)
 #define GPOBJ_MODE_LATE (0x4000)
 
+#define GPOBJ_MODE_BHIDE (0x8000)
+
 #define GPOBJ_ID_MATFLAG  (0x200000)
 #define GPOBJ_ID_FLAGBIT (0xff00000)
 #define GPOBJ_ID_FLAGMASK (0x0fffff)
@@ -147,7 +149,7 @@ public:
 	bool isVisible( bool lateflag );	// 表示できるか調べる(lateflagあり)
 	float getAlphaRate( void );			// Alpha値を取得する
 	void updateParameter( Material *mat );	// 後処理
-	void executeFade(void);				// フェード処理
+	int executeFade(void);				// フェード処理
 
 	int GetEmptyEvent(void);
 	void DeleteEvent(int entry);
@@ -164,6 +166,7 @@ public:
 	int	_colgroup;						// 対象のコリジョングループ
 	int _shape;							// 生成された形状
 	int _usegpmat;						// gpmat使用時のID(-1=固有Material)
+	int _usegpphy;						// gpphy使用時のID
 	int _colilog;						// 衝突ログID
 	int	_transparent;					// 透明度(0=透明/255=不透明)
 	int _fade;							// フェード設定(0=なし/+-で増減)
@@ -270,6 +273,7 @@ public:
 	int AddRegobjEvent(int eventid, int model, int event);
 	int AddAimEvent(int eventid, int target, int mode, float x, float y, float z);
 	int AddAnimEvent(int eventid, int anim, int opt, float speed);
+	int AddSuicideEvent(int eventid, int mode);
 	void ExecuteObjEvent(gpobj *obj, float timepass, int entry);
 	int AttachEvent(int objid, int eventid, int entry);
 	void putEventError(gpobj *obj, gpevent *ev, char *msg);
@@ -297,7 +301,7 @@ public:
 
 	bool makeModelNodeSub(Node *node, int nest);
 
-	int makeCloneNode( int objid );
+	int makeCloneNode( int objid, int mode, int eventid );
 	int makeSpriteObj( int celid, int gmode, void *bmscr );
 
 	int makeNewMat( Material* material, int mode = GPMAT_MODE_3D );
