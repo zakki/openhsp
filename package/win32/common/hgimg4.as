@@ -332,6 +332,7 @@
 #cmd gpmatprmt $fc
 #cmd gpusershader $fd
 #cmd gpgetmat $fe
+#cmd setmove $ff
 
 #cmd setevent $100
 #cmd delevent $101

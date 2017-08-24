@@ -307,6 +307,7 @@ public:
 	int makeNewMat( Material* material, int mode = GPMAT_MODE_3D );
 	int makeNewMat2D( char *fname, int matopt );
 	int makeNewMatFromFB(gameplay::FrameBuffer *fb, int matopt);
+
 	int makeNewLgt( int id, int lgtopt, float range=1.0f, float inner=0.5f, float outer=1.0f );
 	int makeNewCam( int id, float fov, float aspect, float near, float far );
 	void setUserShader2D( char *vsh, char *fsh, char *defines );
