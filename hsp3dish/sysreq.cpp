@@ -74,7 +74,7 @@ void InitSysReq( void )
 	sysreq[ SYSREQ_MAXTEX ] = 128;
 	sysreq[ SYSREQ_MAXMOC ] = 4096;
 	sysreq[ SYSREQ_PKTSIZE ] = 0x100000;
-	sysreq[ SYSREQ_MAXEVENT ] = 256;
+	sysreq[ SYSREQ_MAXEVENT ] = 1024;
 	sysreq[ SYSREQ_MDLANIM ] = 16;
 	sysreq[ SYSREQ_MAXEMITTER ] = 16;
 	sysreq[ SYSREQ_OBAQMATBUF ] = 1024;

@@ -2456,14 +2456,17 @@ static int cmdfunc_extcmd( int cmd )
 	case 0x119:								// event_angx
 	case 0x11a:								// event_angy
 	case 0x11b:								// event_angz
-		p1 = code_getdi( 0 );
+	case 0x11c:								// event_angr
+		p1 = code_getdi(0);
 		p2 = code_getdi( 10 );
 		dp1 = code_getdd( 0.0 );
 		dp2 = code_getdd( 0.0 );
 		dp3 = code_getdd(0.0);
 		//dp4 = code_getdd(0.0);
 		dp4 = 1.0f;
+
 		p6 = cmd - 0x110;
+		if (cmd == 0x11c) {	p6 = MOC_ANGX; }
 		p3 = code_getdi(MOVEMODE_LINEAR);
 		if ( p3 & 16 ) p6|=HGEVENT_MOCOPT_SRCWORK;
 		switch( p3 & 15 ) {
@@ -2481,16 +2484,6 @@ static int cmdfunc_extcmd( int cmd )
 			break;
 		}
 		break;
-
-	case 0x11c:								// event_angr
-		p1 = code_getdi(0);
-		p2 = code_getdi(10);
-		dp1 = CnvIntRot(code_getdi(0));
-		dp2 = CnvIntRot(code_getdi(0));
-		dp3 = CnvIntRot(code_getdi(0));
-		ctx->stat = game->AddMoveEvent(p1, MOC_ANGX, (float)dp1, (float)dp2, (float)dp3, p2, 0);
-		break;
-
 
 	case 0x120:								// event_addpos
 	case 0x121:								// event_addquat
@@ -2547,7 +2540,6 @@ static int cmdfunc_extcmd( int cmd )
 		ctx->stat = game->AddChangeEvent(p1, MOC_ANGX, (float)dp1, (float)dp2, (float)dp3, (float)dp4, (float)dp5, (float)dp6);
 		break;
 	}
-
 
 
 #endif

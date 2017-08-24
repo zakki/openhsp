@@ -1446,10 +1446,12 @@ int gamehsp::makeFloorNode( float xsize, float ysize, int color, int matid )
 		int matopt = 0;
 		if ( _curlight < 0 ) matopt |= GPOBJ_MATOPT_NOLIGHT;
 		material = makeMaterialColor( color, matopt );
-	} else {
-		material = getMaterial( matid );
+		makeNewModel(obj, floorMesh, material);
 	}
-	makeNewModel( obj, floorMesh, material );
+	else {
+		material = getMaterial( matid );
+		makeNewModelWithMat(obj, floorMesh, matid);
+	}
 
     // メッシュ削除
     SAFE_RELEASE(floorMesh);
@@ -1495,10 +1497,12 @@ int gamehsp::makePlateNode( float xsize, float ysize, int color, int matid )
 		int matopt = 0;
 		if ( _curlight < 0 ) matopt |= GPOBJ_MATOPT_NOLIGHT;
 		material = makeMaterialColor( color, matopt );
-	} else {
-		material = getMaterial( matid );
+		makeNewModel(obj, floorMesh, material);
 	}
-	makeNewModel( obj, floorMesh, material );
+	else {
+		material = getMaterial( matid );
+		makeNewModelWithMat(obj, floorMesh, matid);
+	}
 
     // メッシュ削除
     SAFE_RELEASE(floorMesh);
@@ -1528,10 +1532,12 @@ int gamehsp::makeBoxNode( float size, int color, int matid )
 		int matopt = 0;
 		if ( _curlight < 0 ) matopt |= GPOBJ_MATOPT_NOLIGHT;
 		material = makeMaterialColor( color, matopt );
-	} else {
-		material = getMaterial( matid );
+		makeNewModel(obj, mesh, material);
 	}
-	makeNewModel( obj, mesh, material );
+	else {
+		material = getMaterial(matid);
+		makeNewModelWithMat(obj, mesh, matid);
+	}
 
 	// 初期化パラメーターを保存
 	obj->_shape = GPOBJ_SHAPE_BOX;
@@ -1829,6 +1835,7 @@ void gamehsp::makeNewModel( gpobj *obj, Mesh *mesh, Material *material )
 		node = Node::create();
 		obj->_node = node;
 	}
+
 	node->setDrawable(model);
 	node->setUserObject( obj );
 	obj->addRef();
@@ -1845,7 +1852,41 @@ int gamehsp::makeNewModelWithMat( gpobj *obj, Mesh *mesh, int matid )
 	//
 	gpmat *mat = getMat( matid );
 	if ( mat == NULL ) return -1;
-	makeNewModel( obj, mesh, mat->_material );
+
+	Material *new_material;
+	NodeCloneContext context;
+	//new_material = mat->_material;
+	new_material = mat->_material->clone(context);
+	setMaterialDefaultBinding(new_material,-1,0);
+
+	makeNewModel(obj, mesh, new_material);
+
+#if 0
+	Technique *tec = new_material->getTechnique();
+	Pass *pass = tec->getPassByIndex(0);
+	Effect *effect = pass->getEffect();
+
+	//new_material = Material::create( effect );
+	for (unsigned int i = 0, count = tec->getParameterCount(); i < count; ++i)
+	{
+		MaterialParameter *mp = tec->getParameterByIndex(i);
+		Alertf( "%d: [%s]",i, mp->getName() );
+	}
+
+	// Search for the first sampler uniform in the effect.
+	Uniform* samplerUniform = NULL;
+	for (unsigned int i = 0, count = effect->getUniformCount(); i < count; ++i)
+	{
+		Uniform* uniform = effect->getUniform(i);
+		if (uniform && uniform->getType() == GL_SAMPLER_2D)
+		{
+			samplerUniform = uniform;
+			Alertf("[%s] passcount%d [%s][%x]", samplerUniform->getName(), tec->getPassCount(), pass->getId(), new_material);
+			break;
+		}
+	}
+#endif
+
 	obj->_usegpmat = matid;
 	return 0;
 }
@@ -2162,7 +2203,7 @@ void gamehsp::updateObj( gpobj *obj )
 		if ( obj->_spr ) {
 			obj->_spr->_pos.set( pos.x, pos.y, pos.z, 1.0f );
 		} else {
-			obj->_node->setTranslation( pos );
+			obj->_node->setTranslation(pos);
 		}
 	}
 
