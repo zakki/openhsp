@@ -226,7 +226,7 @@ gpmatprm
 拡張画面制御命令
 %prm
 id,"name",x,y,z
-id(0)  : マテリアルID
+id(0)  : マテリアルID/オブジェクトID
 "name" : パラメーター名
 x(0.0) : Xの設定値(実数値)
 y(0.0) : Yの設定値(実数値)
@@ -253,7 +253,7 @@ gpmatstate
 拡張画面制御命令
 %prm
 objid,"name","value"
-id(0)   : マテリアルID
+id(0)   : マテリアルID/オブジェクトID
 "name"  : 設定項目名(文字列)
 "value" : 設定値(文字列)
 %inst
@@ -1048,7 +1048,7 @@ gpmatprm1
 拡張画面制御命令
 %prm
 id,"name",value
-id(0)      : マテリアルID
+id(0)      : マテリアルID/オブジェクトID
 "name"     : パラメーター名
 value(0.0) : Xの設定値(実数値)
 %inst
@@ -1069,7 +1069,7 @@ gpmatprm4
 拡張画面制御命令
 %prm
 id,"name",x,y,z,w
-id(0)  : マテリアルID
+id(0)  : マテリアルID/オブジェクトID
 "name" : パラメーター名
 x(0.0) : Xの設定値(実数値)
 y(0.0) : Yの設定値(実数値)
@@ -1255,7 +1255,7 @@ gpmatprm16
 拡張画面制御命令
 %prm
 id,"name",var
-id(0)      : マテリアルID
+id(0)      : マテリアルID/オブジェクトID
 "name"     : パラメーター名
 var        : 値が代入された配列変数名(実数型)
 count(1)   : 設定されるマトリクスの個数
@@ -1276,7 +1276,7 @@ gpmatprmt
 拡張画面制御命令
 %prm
 id,"name","filename"
-id(0)      : マテリアルID
+id(0)      : マテリアルID/オブジェクトID
 "name"     : パラメーター名
 "filename" : 画像ファイル名
 opt(0)     : マテリアルオプション値

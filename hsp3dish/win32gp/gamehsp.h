@@ -157,6 +157,14 @@ public:
 	void SetEvent(gpevent *ev, int entry);
 	void StartEvent(gpevent *ev, int entry);
 
+	int setParameter(char *name, float value, int part);
+	int setParameter(char *name, Vector3 *value, int part);
+	int setParameter(char *name, Vector4 *value, int part);
+	int setParameter(char *name, const Matrix *value, int count, int part);
+	int setParameter(char *name, char *fname, int matopt, int part);
+	int setState(char *name, char *value, int part);
+	void setFilter(Texture::Filter value, int part);
+
 	short _flag;						// 存在フラグ
 	short _mark;						// マーク処理用
 	int _mode;							// モード(GPOBJ_MODE_*)
@@ -304,9 +312,10 @@ public:
 	int makeCloneNode( int objid, int mode, int eventid );
 	int makeSpriteObj( int celid, int gmode, void *bmscr );
 
-	int makeNewMat( Material* material, int mode = GPMAT_MODE_3D );
+	int makeNewMat(Material* material, int mode, int color, int matopt );
 	int makeNewMat2D( char *fname, int matopt );
 	int makeNewMatFromFB(gameplay::FrameBuffer *fb, int matopt);
+	int makeNewMatFromObj(int objid, int part);
 
 	int makeNewLgt( int id, int lgtopt, float range=1.0f, float inner=0.5f, float outer=1.0f );
 	int makeNewCam( int id, float fov, float aspect, float near, float far );

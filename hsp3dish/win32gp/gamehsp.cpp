@@ -1856,9 +1856,10 @@ int gamehsp::makeNewModelWithMat( gpobj *obj, Mesh *mesh, int matid )
 	Material *new_material;
 	NodeCloneContext context;
 	//new_material = mat->_material;
-	new_material = mat->_material->clone(context);
-	setMaterialDefaultBinding(new_material,-1,0);
+	new_material = mat->_material->clone(context);		// 元のマテリアルをクローンして適用する
+	setMaterialDefaultBinding(new_material,mat->_matcolor,mat->_matopt);		// 正しくクローンされないBinding情報を上書きする
 
+	//Alertf("[%x]===",new_material);
 	makeNewModel(obj, mesh, new_material);
 
 #if 0
@@ -1925,10 +1926,8 @@ int gamehsp::deleteObj( int id )
 	model = obj->_model;
 
 	if ( model ) {
-		if ( obj->_usegpmat < 0 ) {
 			material = model->getMaterial();
-			SAFE_RELEASE(material);		// 独自にcreateした参照カウントを減らす
-		}
+			SAFE_RELEASE(material);		// マテリアルはモデルに個別で用意されるので削除
 	}
 
 	if (obj->_node) {

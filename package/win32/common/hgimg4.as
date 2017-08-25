@@ -332,7 +332,6 @@
 #cmd gpmatprmt $fc
 #cmd gpusershader $fd
 #cmd gpgetmat $fe
-#cmd setmove $ff
 
 #cmd setevent $100
 #cmd delevent $101
@@ -345,6 +344,8 @@
 #cmd event_prmoff $108
 #cmd event_prmadd $109
 #cmd event_suicide $10a
+#cmd event_aim $10b
+#cmd objaim $10c
 
 #cmd event_pos $110
 #cmd event_quat $111
@@ -387,6 +388,17 @@
 #cmd event_setangy $13a
 #cmd event_setangz $13b
 #cmd event_setangr $13c
+
+#cmd event_wpos $140
+#cmd event_wquat $141
+#cmd event_wscale $142
+#cmd event_wdir $143
+#cmd event_wefx $144
+#cmd event_wcolor $145
+#cmd event_wangx $149
+#cmd event_wangy $14a
+#cmd event_wangz $14b
+#cmd event_wangr $14c
 
 
 #define fsin(%1,%2) %1=sin(%2)

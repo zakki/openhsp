@@ -1411,8 +1411,14 @@ static int cmdfunc_extcmd( int cmd )
 		strncpy( fname, ps, 256 );
 		code_getvec( &p_vec1 );
 		mat = game->getMat( p1 );
-		if ( mat == NULL ) throw HSPERR_ILLEGAL_FUNCTION;
-		mat->setParameter( fname, (gameplay::Vector3 *)&p_vec1 );
+		if (mat == NULL) {
+			gpobj *obj = game->getObj(p1);
+			if (obj == NULL) throw HSPERR_ILLEGAL_FUNCTION;
+			ctx->stat = obj->setParameter(fname, (gameplay::Vector3 *)&p_vec1,-1);
+		}
+		else {
+			ctx->stat = mat->setParameter(fname, (gameplay::Vector3 *)&p_vec1);
+		}
 		break;
 		}
 	case 0x69:								// gpmatstate
@@ -1425,8 +1431,14 @@ static int cmdfunc_extcmd( int cmd )
 		strncpy( fname, ps, 256 );
 		ps = code_gets();
 		mat = game->getMat( p1 );
-		if ( mat == NULL ) throw HSPERR_ILLEGAL_FUNCTION;
-		mat->setState( fname, ps );
+		if (mat == NULL) {
+			gpobj *obj = game->getObj(p1);
+			if (obj == NULL) throw HSPERR_ILLEGAL_FUNCTION;
+			ctx->stat = obj->setState(fname, ps, -1);
+		}
+		else {
+			ctx->stat = mat->setState(fname, ps);
+		}
 		break;
 		}
 	case 0x6a:								// gpviewport
@@ -1517,7 +1529,7 @@ static int cmdfunc_extcmd( int cmd )
 		p2 = code_getdi( 0 );
 		mat = game->makeMaterialColor( p1, p2 );
 		if ( mat == NULL ) throw HSPERR_ILLEGAL_FUNCTION;
-		p6 = game->makeNewMat( mat );
+		p6 = game->makeNewMat(mat, GPMAT_MODE_3D, p1, p2 );
 		code_setva( p_pval, p_aptr, HSPVAR_FLAG_INT, &p6 );
 		break;
 		}
@@ -1534,7 +1546,7 @@ static int cmdfunc_extcmd( int cmd )
 		p1 = code_getdi(0);
 		mat = game->makeMaterialTexture(fname, p1);
 		if (mat == NULL) throw HSPERR_ILLEGAL_FUNCTION;
-		p6 = game->makeNewMat(mat);
+		p6 = game->makeNewMat(mat, GPMAT_MODE_3D, -1, p1);
 		code_setva(p_pval, p_aptr, HSPVAR_FLAG_INT, &p6);
 		break;
 		}
@@ -1559,7 +1571,7 @@ static int cmdfunc_extcmd( int cmd )
 		mat = game->makeMaterialFromShader( vshname, fshname, defname );
 		if ( mat == NULL ) throw HSPERR_ILLEGAL_FUNCTION;
 		game->setMaterialDefaultBinding( mat, p1, p2 );
-		p6 = game->makeNewMat( mat );
+		p6 = game->makeNewMat(mat, GPMAT_MODE_3D, p1, p2);
 		code_setva( p_pval, p_aptr, HSPVAR_FLAG_INT, &p6 );
 		break;
 		}
@@ -2209,8 +2221,14 @@ static int cmdfunc_extcmd( int cmd )
 		strncpy( fname, ps, 256 );
 		dp1 = code_getdd( 0.0 );
 		mat = game->getMat( p1 );
-		if ( mat == NULL ) throw HSPERR_ILLEGAL_FUNCTION;
-		mat->setParameter( fname, dp1 );
+		if (mat == NULL) {
+			gpobj *obj = game->getObj(p1);
+			if (obj == NULL) throw HSPERR_ILLEGAL_FUNCTION;
+			ctx->stat = obj->setParameter(fname, dp1, -1);
+		}
+		else {
+			ctx->stat = mat->setParameter(fname, dp1);
+		}
 		break;
 		}
 	case 0xf5:								// gpmatprm4
@@ -2223,10 +2241,16 @@ static int cmdfunc_extcmd( int cmd )
 		strncpy( fname, ps, 256 );
 		code_getvec( &p_vec1 );
 		dp1 = code_getdd( 0.0 );
-		mat = game->getMat( p1 );
-		if ( mat == NULL ) throw HSPERR_ILLEGAL_FUNCTION;
 		p_vec1.w = (float)dp1;
-		mat->setParameter( fname, &p_vec1 );
+		mat = game->getMat(p1);
+		if (mat == NULL) {
+			gpobj *obj = game->getObj(p1);
+			if (obj == NULL) throw HSPERR_ILLEGAL_FUNCTION;
+			ctx->stat = obj->setParameter(fname, &p_vec1, -1);
+		}
+		else {
+			ctx->stat = mat->setParameter(fname, &p_vec1);
+		}
 		break;
 		}
 	case 0xf6:								// gpgetlog
@@ -2314,8 +2338,14 @@ static int cmdfunc_extcmd( int cmd )
 		code_getvec(&p_vec1);
 		p2 = code_getdi(1);
 		mat = game->getMat(p1);
-		if (mat == NULL) throw HSPERR_ILLEGAL_FUNCTION;
-		mat->setParameter(fname, (gameplay::Matrix *)&p_vec1,p2);
+		if (mat == NULL) {
+			gpobj *obj = game->getObj(p1);
+			if (obj == NULL) throw HSPERR_ILLEGAL_FUNCTION;
+			ctx->stat = obj->setParameter(fname, (gameplay::Matrix *)&p_vec1, p2, -1);
+		}
+		else {
+			ctx->stat = mat->setParameter(fname, (gameplay::Matrix *)&p_vec1, p2);
+		}
 		break;
 	}
 
@@ -2332,8 +2362,14 @@ static int cmdfunc_extcmd( int cmd )
 		strncpy(texname, ps, 256);
 		p2 = code_getdi(0);
 		mat = game->getMat(p1);
-		if (mat == NULL) throw HSPERR_ILLEGAL_FUNCTION;
-		mat->setParameter( fname, texname, p2 );
+		if (mat == NULL) {
+			gpobj *obj = game->getObj(p1);
+			if (obj == NULL) throw HSPERR_ILLEGAL_FUNCTION;
+			ctx->stat = obj->setParameter(fname, texname, p2, -1);
+		}
+		else {
+			ctx->stat = mat->setParameter(fname, texname, p2);
+		}
 		break;
 	}
 
@@ -2360,6 +2396,7 @@ static int cmdfunc_extcmd( int cmd )
 		p_aptr = code_getva(&p_pval);
 		p1 = code_getdi(0);
 		p2 = code_getdi(0);
+
 		switch (p2) {
 		case 0:
 		{
@@ -2376,6 +2413,15 @@ static int cmdfunc_extcmd( int cmd )
 			bm2 = wnd->GetBmscrSafe(p1);	// “]‘—Œ³‚ÌBMSCR‚ğæ“¾
 			if (bm2) {
 				res = bm2->texid;
+			}
+			break;
+		}
+		case 2:
+		{
+			gpobj *obj;
+			obj = game->getObj(p1);
+			if (obj) {
+				res = obj->_usegpmat;
 			}
 			break;
 		}
