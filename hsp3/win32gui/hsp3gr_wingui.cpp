@@ -53,6 +53,37 @@ extern int resY0, resY1;				// "fcpoly.h"のパラメーター
 #define GSQUARE_MODE_COLORFILL 1
 #define GSQUARE_MODE_GRADFILL 2
 
+
+#ifdef UNICODE
+UINT WinExec(LPCTSTR lpCmdLine, UINT uCmdShow)
+{
+	STARTUPINFO sui = {
+		sizeof(STARTUPINFO),
+		NULL,
+		NULL,
+		NULL,
+		0,
+		0,
+		0,
+		0,
+		0,
+		0,
+		0,
+		STARTF_USESHOWWINDOW,
+		uCmdShow,
+		NULL,
+		NULL,
+		NULL,
+		NULL,
+		NULL
+	};
+	PROCESS_INFORMATION pi = {
+		NULL, NULL, 0, 0
+	};
+	CreateProcess(NULL, (LPTSTR)lpCmdLine, NULL, NULL, FALSE, NORMAL_PRIORITY_CLASS, NULL, NULL, &sui, &pi);
+	return 32;
+}
+#endif
 /*----------------------------------------------------------*/
 //					HSP system support
 /*----------------------------------------------------------*/
@@ -62,7 +93,6 @@ void ExecFile( char *stmp, char *ps, int mode )
 	int i,j;
 	HSPAPICHAR *hactmp1 = 0;
 	HSPAPICHAR *hactmp2 = 0;
-	char *p;
 	j=SW_SHOWDEFAULT;if (mode&2) j=SW_SHOWMINIMIZED;
 
 	if ( *ps != 0 ) {
@@ -93,11 +123,8 @@ void ExecFile( char *stmp, char *ps, int mode )
 		freehac(&hactmp1);
 	}
 	else {
-		apichartohspchar(chartoapichar(stmp,&hactmp1),&p);
-		freehac(&hactmp1);
-		i=WinExec( p,j );
-		freehc(&p);
-		
+		i = WinExec(chartoapichar(stmp, &hactmp1), j);
+		freehac(&hactmp1);		
 	}
 	if (i<32) throw HSPERR_EXTERNAL_EXECUTE;
 }
