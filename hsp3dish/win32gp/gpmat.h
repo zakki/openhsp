@@ -15,6 +15,7 @@ using namespace gameplay;
 
 #define GPMAT_MODE_2D (1)
 #define GPMAT_MODE_3D (2)
+#define GPMAT_MODE_PROXY (3)
 
 class gamehsp;
 
@@ -43,6 +44,8 @@ public:
 	float _texratex;					// Texture UV rate (1.0/xsize)
 	float _texratey;					// Texture UV rate (1.0/ysize)
 	int _target_material_id;			// レンダリング対象のマテリアルID保存用
+	int _matopt;						// マテリアルオプション保存用
+	int _matcolor;						// マテリアルカラー保存用
 
 protected:
 	/**
