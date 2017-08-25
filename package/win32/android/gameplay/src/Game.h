@@ -621,6 +621,15 @@ public:
      */
     bool launchURL(const char *url) const;
 
+
+#ifdef HSPDISH
+	/**
+	* Set Fixed Time Mode & Rate ( -1 to cancel mode )
+	*/
+	void setFixedTime(double rate);
+#endif
+
+
 protected:
 
     /**
@@ -772,6 +781,12 @@ private:
     ScriptController* _scriptController;            // Controls the scripting engine.
 #endif
     ScriptTarget* _scriptTarget;                // Script target for the game
+
+#ifdef HSPDISH
+    static int _FixedTimeMode;  	            // The Fixed time mode. (0=none)
+    static double _FixedTimeRate;               // The total time rate.
+    static double _FixedTimeCount;              // The Fixed time count.
+#endif
 
     // Note: Do not add STL object member variables on the stack; this will cause false memory leaks to be reported.
 

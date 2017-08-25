@@ -74,7 +74,7 @@ void InitSysReq( void )
 	sysreq[ SYSREQ_MAXTEX ] = 128;
 	sysreq[ SYSREQ_MAXMOC ] = 4096;
 	sysreq[ SYSREQ_PKTSIZE ] = 0x100000;
-	sysreq[ SYSREQ_MAXEVENT ] = 256;
+	sysreq[ SYSREQ_MAXEVENT ] = 1024;
 	sysreq[ SYSREQ_MDLANIM ] = 16;
 	sysreq[ SYSREQ_MAXEMITTER ] = 16;
 	sysreq[ SYSREQ_OBAQMATBUF ] = 1024;
@@ -90,6 +90,9 @@ void InitSysReq( void )
 	sysreq[SYSREQ_DLIGHT_MAX] = 1;			// number of Directional Light(HGIMG4)
 	sysreq[SYSREQ_PLIGHT_MAX] = 0;			// number of Point Light(HGIMG4)
 	sysreq[SYSREQ_SLIGHT_MAX] = 0;			// number of Spot Light(HGIMG4)
+
+	sysreq[SYSREQ_FIXEDFRAME] = -1;			// fixed frame rate
+
 
 #ifdef HSPIOS
     sysreq[ SYSREQ_PLATFORM ] = PLATFORM_IOS;

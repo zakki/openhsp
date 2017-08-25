@@ -46,13 +46,15 @@ void gpmat::reset( gamehsp *owner, int id )
 	_texratex = 0.0f;
 	_texratey = 0.0f;
 	_target_material_id = -1;
+	_matopt = 0;
+	_matcolor = -1;
 }
 
 
 int gpmat::setParameter( char *name, Vector4 *value )
 {
 	if ( _material == NULL ) return -1;
-    _material->getParameter( name )->setValue( *value );
+	_material->getParameter(name)->setValue(*value);
 
 	return 0;
 }
@@ -116,6 +118,96 @@ void gpmat::setFilter(Texture::Filter value)
 	sampler->setFilterMode(value, value);
 }
 
+
+/*------------------------------------------------------------*/
+/*
+Material process for gpobj
+*/
+/*------------------------------------------------------------*/
+
+int gpobj::setParameter(char *name, Vector4 *value,int part)
+{
+	if (_model == NULL) return -1;
+	Material *material = _model->getMaterial(part);
+	if (material == NULL) return -1;
+	MaterialParameter *mp = material->getParameter(name);
+	if (mp == NULL) return -1;
+	mp->setValue(*value);
+
+	return 0;
+}
+
+
+int gpobj::setParameter(char *name, Vector3 *value, int part)
+{
+	if (_model == NULL) return -1;
+	Material *material = _model->getMaterial(part);
+	if (material == NULL) return -1;
+	material->getParameter(name)->setValue(*value);
+
+	return 0;
+}
+
+
+int gpobj::setParameter(char *name, float value, int part)
+{
+	if (_model == NULL) return -1;
+	Material *material = _model->getMaterial(part);
+	if (material == NULL) return -1;
+	material->getParameter(name)->setValue(value);
+
+	return 0;
+}
+
+
+int gpobj::setParameter(char *name, const Matrix *value, int count, int part)
+{
+	if (_model == NULL) return -1;
+	Material *material = _model->getMaterial(part);
+	if (material == NULL) return -1;
+	material->getParameter(name)->setValue(value, count);
+
+	return 0;
+}
+
+
+int gpobj::setParameter(char *name, char *fname, int matopt, int part)
+{
+	bool mipmap;
+	if (_model == NULL) return -1;
+	Material *material = _model->getMaterial(part);
+	if (material == NULL) return -1;
+	mipmap = (matopt & GPOBJ_MATOPT_NOMIPMAP) == 0;
+	material->getParameter(name)->setValue(fname, mipmap);
+
+	return 0;
+}
+
+int gpobj::setState(char *name, char *value, int part)
+{
+	RenderState::StateBlock *state;
+
+	if (_model == NULL) return -1;
+	Material *material = _model->getMaterial(part);
+	if (material == NULL) return -1;
+
+	state = material->getStateBlock();
+	state->setState(name, value);
+
+	return 0;
+}
+
+void gpobj::setFilter(Texture::Filter value, int part)
+{
+	if (_model == NULL) return;
+	Material *material = _model->getMaterial(part);
+
+	MaterialParameter *mprm = material->getParameter("u_texture");
+	if (mprm == NULL) return;
+	Texture::Sampler *sampler = mprm->getSampler();
+	if (sampler == NULL) return;
+	sampler->setFilterMode(value, value);
+}
 
 /*------------------------------------------------------------*/
 /*
@@ -232,7 +324,7 @@ void gamehsp::setMaterialDefaultBinding( Material* material, int icolor, int mat
 	state->setDepthWrite( (( matopt & GPOBJ_MATOPT_NOZWRITE )==0) );
 
 	state->setBlend(true);
-	if ( matopt & GPOBJ_MATOPT_BLENDADD ) {
+	if (matopt & GPOBJ_MATOPT_BLENDADD) {
 		state->setBlendSrc(RenderState::BLEND_SRC_ALPHA);
 		state->setBlendDst(RenderState::BLEND_ONE);
 	} else {
@@ -288,18 +380,38 @@ float gamehsp::setMaterialBlend( Material* material, int gmode, int gfrate )
 }
 
 
-int gamehsp::makeNewMat( Material* material, int mode )
+int gamehsp::makeNewMat( Material* material, int mode, int color, int matopt )
 {
+	//	マテリアルを生成する
 	gpmat *mat = addMat();
 	if ( mat == NULL ) return -1;
 	mat->_material = material;
 	mat->_mode = mode;
+	mat->_matcolor = color;
+	mat->_matopt = matopt;
+	return mat->_id;
+}
+
+
+int gamehsp::makeNewMatFromObj(int objid, int part)
+{
+	//	オブジェクト固有のマテリアルを参照する
+	gpobj *obj = getObj(objid);
+	if (obj == NULL) return -1;
+	if (obj->_model == NULL) return -1;
+
+	gpmat *mat = addMat();
+	if (mat == NULL) return -1;
+
+	mat->_material = obj->_model->getMaterial(part);
+	mat->_mode = GPMAT_MODE_PROXY;
 	return mat->_id;
 }
 
 
 int gamehsp::makeNewMat2D( char *fname, int matopt )
 {
+	//	マテリアルを生成する(2D)
 	gpmat *mat = addMat();
 	if ( mat == NULL ) return -1;
 
@@ -334,6 +446,8 @@ int gamehsp::makeNewMat2D( char *fname, int matopt )
 	// 2D用のプロジェクション
 	make2DRenderProjection(&mat->_projectionMatrix2D, _tex_width, _tex_height);
 	mat->_target_material_id = -1;
+	mat->_matcolor = -1;
+	mat->_matopt = matopt;
 
 	return mat->_id;
 }
@@ -380,6 +494,8 @@ int gamehsp::makeNewMatFromFB(gameplay::FrameBuffer *fb, int matopt)
 	// 2D用のプロジェクション
 	make2DRenderProjection(&mat->_projectionMatrix2D, tex_width, tex_height);
 	mat->_target_material_id = -1;
+	mat->_matcolor = -1;
+	mat->_matopt = matopt;
 
 	return mat->_id;
 }
@@ -589,3 +705,4 @@ bool hasParameter( Material* material, const char* name )
 	}
 	return false;
 }
+

@@ -47,6 +47,7 @@ PlatformAndroid.cpp \
 ../../hsplib35b5/hsp3/ndkgp/gplgt.cpp \
 ../../hsplib35b5/hsp3/ndkgp/gpmat.cpp \
 ../../hsplib35b5/hsp3/ndkgp/gpphy.cpp \
+../../hsplib35b5/hsp3/ndkgp/gpevent.cpp \
 ../../gameplay/src/AbsoluteLayout.cpp \
 ../../gameplay/src/AIAgent.cpp \
 ../../gameplay/src/AIController.cpp \
