@@ -237,10 +237,10 @@
 		p1,p2,p3=0～255(255) : 色コード（R,G,Bの輝度）
 	</pre>
 	<p>
-	p1,p2,p3がそれぞれ、R,G,Bの輝度になります。gcopy,celputなどでコピーされる画像に対して、指定したR,G,B値が乗算されます。
+	p1,p2,p3がそれぞれ、R,G,Bの輝度になります。gcopy,gzoom,celput,grotate命令などでコピーされる画像に対して、指定したR,G,B値が乗算されます。
 	初期値は、RGBそれぞれ255が指定されています。テクスチャ乗算値を設定することにより、元の画像の色を変化させることができます。
 	画像コピーの際に、gmode命令で指定されるコピーモードが0または1(アルファチャンネルを反映しない)の場合は、テクスチャ乗算値は無効になるので注意してください。
-	また、テクスチャ乗算値は、mes命令による文字の描画には反映されません。また、boxf,line命令など単色の描画には反映されません。
+	テクスチャ乗算値は、mes命令による文字の描画、gsquare命令の描画には反映されません。また、boxf,line命令など単色の描画には反映されません。(grotate命令の単色描画も含む)
 	</p>
 
 	<h2 id="GFILTER">gfilter命令について</h2>
@@ -316,6 +316,8 @@
 	PLATFORM_IOS        1   iOS版
 	PLATFORM_ANDROID    2   android版
 	PLATFORM_WEBGL      3   hsp3dish.js(WebGL/JavaScript)版
+	PLATFORM_LINUX      4   Linux版
+	PLATFORM_RASPBIAN   5   Raspberry Pi(raspbian)版
 	</pre>
 
 
@@ -391,7 +393,7 @@
 	HSP3Dishでは、簡易的なhttp通信機能を持っています。<br>
 	これにより、web(HTTP)サーバーへのネットワークアクセス及び、データの取得を行なうことができます。
 	あくまでも、基本的なhttp通信機能をサポートするもので、すべてのwebサーバーとの通信を保証するものではありません。<br>
-	<b>現在のバージョン(3.5β2)では、Windows,Emscripten(WebGL),androidプラットフォームのみサポートされています。今後のバージョンでは、他のプラットフォームもサポートされる予定です。</b>
+	<b>現在のバージョンでは、Windows,Emscripten(WebGL),androidプラットフォームのみサポートされています。今後のバージョンでは、他のプラットフォームもサポートされる予定です。</b>
 	</p>
 	<pre>
 		httpload (HTTP通信の開始)

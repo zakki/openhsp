@@ -2,6 +2,12 @@
 ; ジョイスティック入力モジュール MIA 2004 / onitama 2005
 ;  使用に関する制限はありません。ご自由にお使いください。
 ;----------------------------------------------------------------
+;2017/9/8 修正
+;一部のWindows 10環境において、;ジョイスティック取得時のエラーにより、
+;その後の動作が遅くなることがあるため
+;エラーが発生した場合は、以降の取得をキャンセルするように修正しました
+;エラーが発生した場合は、変数「modjoy_err」が1になります。
+;変数「modjoy_err」が0の間はジョイスティックの値を取りにいきます。
 
 #module "joy"
 
@@ -20,9 +26,11 @@
 	;	jstick 変数,ポート番号
 	;	(stick命令互換の値を変数に返す)
 	;
+	if modjoy_err@ : p1=0 : return
+	;
 	jdata.15=0:jdata=52,255
 	_joyGetPosEx p2,jdata
-	if stat!=0 : p1=0 : return
+	if stat!=0 : p1=0 : modjoy_err@=1 : return
 	res=(jdata.8)<<4
 	if jdata.2<BORDER_LOW : res|=1
 	if jdata.2>BORDER_HIGH : res|=4

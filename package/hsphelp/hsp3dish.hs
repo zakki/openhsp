@@ -11,7 +11,7 @@
 hsp3dish.as‚ðƒCƒ“ƒNƒ‹[ƒh‚·‚é‚±‚ÆB
 
 %date
-2015/02/12
+2017/09/08
 %author
 onitama
 %dll
@@ -62,6 +62,9 @@ redraw 0‚É‚æ‚é•`‰æŠJŽnŽž‚É‰æ–Ê‚ðƒNƒŠƒA‚·‚é‚©‚Ç‚¤‚©‚ðÝ’è‚µ‚Ü‚·B SYSREQ_CLSMODE‚
 	PLATFORM_WINDOWS    0   Windows”Å
 	PLATFORM_IOS        1   iOS”Å
 	PLATFORM_ANDROID    2   android”Å
+	PLATFORM_WEBGL      3   hsp3dish.js(WebGL/JavaScript)”Å
+	PLATFORM_LINUX      4   Linux”Å
+	PLATFORM_RASPBIAN   5   Raspberry Pi(raspbian)”Å
 ^p
 
 %href
@@ -460,14 +463,16 @@ p1,p2,p3
 p1,p2,p3=0`255(255) : FƒR[ƒhiR,G,B‚Ì‹P“xj
 %inst
 ‰æ‘œ(ƒeƒNƒXƒ`ƒƒ)ƒRƒs[‚ðs‚È‚¤Û‚ÌƒJƒ‰[æŽZ’l‚ðŽw’è‚µ‚Ü‚·B
-p1,p2,p3‚ª‚»‚ê‚¼‚êAR,G,B‚Ì‹P“x‚É‚È‚è‚Ü‚·Bgcopy,celput‚È‚Ç‚ÅƒRƒs[‚³‚ê‚é‰æ‘œ‚É‘Î‚µ‚ÄAŽw’è‚µ‚½R,G,B’l‚ªæŽZ‚³‚ê‚Ü‚·B
+p1,p2,p3‚ª‚»‚ê‚¼‚êAR,G,B‚Ì‹P“x‚É‚È‚è‚Ü‚·B
+gcopy,gzoom,celput,grotate(‰æ‘œŽg—pŽž)‚È‚Ç‚ÅƒRƒs[‚³‚ê‚é‰æ‘œ‚É‘Î‚µ‚ÄAŽw’è‚µ‚½R,G,B’l‚ªæŽZ‚³‚ê‚Ü‚·B
 ‰Šú’l‚ÍARGB‚»‚ê‚¼‚ê255‚ªŽw’è‚³‚ê‚Ä‚¢‚Ü‚·BƒeƒNƒXƒ`ƒƒæŽZ’l‚ðÝ’è‚·‚é‚±‚Æ‚É‚æ‚èAŒ³‚Ì‰æ‘œ‚ÌF‚ð•Ï‰»‚³‚¹‚é‚±‚Æ‚ª‚Å‚«‚Ü‚·B
 ‰æ‘œƒRƒs[‚ÌÛ‚ÉAgmode–½—ß‚ÅŽw’è‚³‚ê‚éƒRƒs[ƒ‚[ƒh‚ª0‚Ü‚½‚Í1(ƒAƒ‹ƒtƒ@ƒ`ƒƒƒ“ƒlƒ‹‚ð”½‰f‚µ‚È‚¢)‚Ìê‡‚ÍAƒeƒNƒXƒ`ƒƒæŽZ’l‚Í–³Œø‚É‚È‚é‚Ì‚Å’ˆÓ‚µ‚Ä‚­‚¾‚³‚¢B
-‚Ü‚½AƒeƒNƒXƒ`ƒƒæŽZ’l‚ÍAmes–½—ß‚É‚æ‚é•¶Žš‚Ì•`‰æ‚É‚Í”½‰f‚³‚ê‚Ü‚¹‚ñB‚Ü‚½Aboxf,line–½—ß‚È‚Ç’PF‚Ì•`‰æ‚É‚Í”½‰f‚³‚ê‚Ü‚¹‚ñB
+ƒeƒNƒXƒ`ƒƒæŽZ’l‚ÍAmes–½—ß‚É‚æ‚é•¶Žš‚Ì•`‰æA‹y‚Ñgsquare–½—ß‚É‚Í”½‰f‚³‚ê‚Ü‚¹‚ñB‚Ü‚½Aboxf,line–½—ß‚È‚Ç’PF‚Ì•`‰æ‚É‚Í”½‰f‚³‚ê‚Ü‚¹‚ñB
 
 %href
 color
 gcopy
+gzoom
 grotate
 gsquare
 celput

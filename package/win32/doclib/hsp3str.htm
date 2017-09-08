@@ -15,7 +15,7 @@
 <body>
 	<div id="CONTAINER">
 		<!-- ヘッダー -->
-		<p id="COPY">HSP : Hot Soup Processor ver3.4 / onion software 1997-2014(c)</p>
+		<p id="COPY">HSP : Hot Soup Processor ver3.5 / onion software 1997-2017(c)</p>
 		<img src="hsp3ttl.jpg" alt="タイトル" width="640" height="200">
 		<h1>HSP3 文字列のひみつ（TIPS）</h1>
 
@@ -876,6 +876,12 @@ p2=0～(0)  : 検索を始めるインデックス
 			そんなこんなで、日本語コードを扱うのは英文字よりも少しやっかいです。
 			ただし、英文字と日本語を混在させないなどの制限をつけてやれば、必ず2バイトで1文字という
 			法則になり、文字を取り出したり、長さをチェックしたりする時には容易になるでしょう。
+		</p>
+		<p>
+			日本語文字列は、unicode形式で扱われることが最近は増えてきました。
+			HSPでは、HSPUTFランタイムによりunicode(UTF-8)形式を扱うことが可能です。
+			ただし、Windowsで古くから扱われているテキストファイルはまだシフトJISのものも多く、
+			unicodeと互換性がないため、場面によって使い分けることが望ましいと思います。
 		</p>
 
 

@@ -1,6 +1,6 @@
 ------------------------------------------------------------------------------
-HSP3Dish ver3.5                                     HSP : Hot Soup Processor  
-Users Manual                               copyright 2016 (c) onion software  
+HSP3UTF  ver3.5                                     HSP : Hot Soup Processor  
+Users Manual                               copyright 2017 (c) onion software  
 ------------------------------------------------------------------------------
 
 ・HSP3UTFとは
@@ -77,7 +77,11 @@ Users Manual                               copyright 2016 (c) onion software
 
 ・謝辞
 
-	hsp3utfは、tds12さんが作成し公開されているものをベースに同梱させていただきました。
+	hsp3utfは、tds12さんが作成し公開されているものをベースに同梱させていただきました
+
+	tds12さん
+	https://twitter.com/lltds12
+
 	OpenHSP及びHSPTV!掲示板で多くの修正及び助言を頂いた皆様に感謝致します。
 
 
