@@ -3088,7 +3088,7 @@ int CToken::GenerateCode( CMemBuf *srcbuf, char *oname, int mode )
 		//		デバッグウインドゥ表示
 		if ( mode & COMP_MODE_DEBUGWIN ) hsphed.bootoption |= HSPHED_BOOTOPT_DEBUGWIN;
 		//		起動オプションの設定
-		if (hed_autoopt_timer >= 0) {
+		if ( ( hed_option & HEDINFO_AUTOTIMER ) == 0) {
 			// awaitが使用されていない場合はマルチメディアタイマーを無効にする(自動設定)
 			if (hed_autoopt_timer == 0) hsphed.bootoption |= HSPHED_BOOTOPT_NOMMTIMER;
 		} else {

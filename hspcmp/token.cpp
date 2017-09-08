@@ -2953,7 +2953,7 @@ ppresult_t CToken::PP_BootOpt(void)
 	i = 0;
 	if (tstrcmp(optname, "notimer")) {			// No MMTimer sw
 		i = HEDINFO_NOMMTIMER;
-		hed_autoopt_timer = -1;
+		hed_option |= HEDINFO_AUTOTIMER;
 	}
 	if (tstrcmp(optname, "nogdip")) {			// No GDI+ sw
 		i = HEDINFO_NOGDIP;
