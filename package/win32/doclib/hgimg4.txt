@@ -10,10 +10,11 @@ HGIMG4 REFERENCE MANUAL                High Performance Graphic Image Plugin
 
 	HGIMG4の特徴
 
+	・HSP3Dishの上位互換として動作
 	・OpenGL/ESまたはDirectX9による描画、シェーダー言語サポート
 	・シーン管理と統合化された物理エンジン(Bullet)サポート
 	・FBX形式のモデルファイル読み込み、アニメーションサポート
-	・マルチテクスチャ、バンプマップ、ハイトマップ、LODをサポート
+	・カスタムシェーダーによるマテリアル、ライティングをサポート
 	・フォントデータ(TTF)のレンダリングサポート
 	・オフスクリーンレンダリング及び各種ポストエフェクトサポート
 	・WindowsだけでなくLinux,iOS,Android,WebGL上での動作をサポート
@@ -98,22 +99,7 @@ HGIMG4 REFERENCE MANUAL                High Performance Graphic Image Plugin
 	以下のファイルは、起動のために必要ですので、実行ファイル作成時なども必ず入れておいてください。
 
 	res/font.gpb
-	res/shaders/colored.frag
-	res/shaders/colored.vert
-	res/shaders/font.frag
-	res/shaders/font.vert
-	res/shaders/lighting.frag
-	res/shaders/lighting.vert
-	res/shaders/skinning.vert
-	res/shaders/skinning-none.vert
-	res/shaders/sprite.frag
-	res/shaders/sprite.vert
-	res/shaders/spritecol.frag
-	res/shaders/spritecol.vert
-	res/shaders/terrain.frag
-	res/shaders/terrain.vert
-	res/shaders/textured.frag
-	res/shaders/textured.vert
+	res/shaders フォルダ(中のファイルも含む)
 
 
 ・注意点
@@ -1834,6 +1820,18 @@ HGIMG4 REFERENCE MANUAL                High Performance Graphic Image Plugin
 		SYSREQ_FPS            フレームレート(取得のみ)
 
 	この他に、HSP3Dishがサポートする設定項目も使用可能です。
+
+
+・Windows上での実行ファイル作成
+
+	Windows上での実行ファイル作成は、HSP3Dishと同様に画面サイズを
+	#packoptで指定する形で作成してください。
+
+	#packopt name "ファイル名"
+	#packopt xsize 960		; 横サイズ
+	#packopt ysize 640		; 縦サイズ
+
+	dpmファイルによるモデルデータの読み込みには、現時点では対応していません。
 
 
 ・現バージョンでの注意点

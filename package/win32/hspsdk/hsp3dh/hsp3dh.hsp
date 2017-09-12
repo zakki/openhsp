@@ -1010,6 +1010,7 @@
 		if res {
 			dialog "HSPlibフォルダが作成できません。\n「オプション」のプロジェクトフォルダを正しく設定してください。"
 		}
+		goto *and_setgp
 	}
 
 	if flag_admob {
@@ -1025,15 +1026,22 @@
 		if res=0 {
 			mes "gameplayフォルダを確認しています..."
 		} else {
-			mes "gameplayフォルダを設定しています..."
-			gosub *setup_hspgp
-			if res {
-				dialog "gameplayフォルダが作成できません"
-				goto *and_fin
-			}
+			goto *and_setgp
 		}
 	}
+	goto *and_start2
 
+*and_setgp
+	mes "gameplayフォルダを設定しています..."
+	gosub *setup_hspgp
+	if res {
+		dialog "gameplayフォルダが作成できません"
+		goto *and_fin
+	}
+	goto *and_start2
+
+
+*and_start2
 	mes "処理中..."
 
 	basedir=path_proj+"\\"+and_name+"\\"

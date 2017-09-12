@@ -216,7 +216,11 @@ extern int strcmpnocase(const char* s1, const char* s2);
 #endif
 
 // Image
+#ifndef HSPDISH
 #include <png.h>
+#else
+#include <libpng/png.h>
+#endif
 
 // Scripting
 using std::va_list;

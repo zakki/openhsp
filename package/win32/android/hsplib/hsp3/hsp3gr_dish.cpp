@@ -11,6 +11,9 @@
 #ifdef HSPNDK
 #include "ndkgp/gamehsp.h"
 #endif
+#ifdef HSPIOS
+#include "iosgp/gamehsp.h"
+#endif
 #ifdef HSPLINUX
 #include "win32gp/gamehsp.h"
 #endif
