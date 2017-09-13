@@ -90,6 +90,11 @@
 #func getenvprm getenvprm $202
 #func getctime getctime $202
 
+#func netgetv_data "_netgetv_data@4" var			// データを受け取る
+#cfunc netgetv_size "_netgetv_size@0"				// 必要なバッファサイズ
+#cfunc netgetv_requestsize "_netgetv_requestsize@0"	// 受信サイズ
+#cfunc netgetv_ptr "_netgetv_ptr@0"					// ポインタ取得（使わない）
+
 #module
 
 #deffunc netload str _p1

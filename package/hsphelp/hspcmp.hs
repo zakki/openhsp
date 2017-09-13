@@ -11,7 +11,7 @@
 hspcmp.asをインクルードすること。
 
 %date
-2016/07/06
+2017/09/13
 %author
 onitama
 %dll
@@ -337,16 +337,21 @@ hsc3_make
 %group
 拡張入出力制御命令
 %prm
-"path"
+"path",sw
 "path" : HSPランタイムライブラリのあるフルパス
+sw(0)  : iconins使用フラグ(0=未使用/1=使用)
 
 %inst
 実行ファイルの自動作成を行ないます。
+あらかじめ、pack_iniによってPACKFILEマネージャの初期化を行なう必要があります。
 "path"でHSPランタイムライブラリのあるフルパスを指定します。
 packfileのオプションに従って実行ファイルを作成します。
+swに1を指定した場合は、iconinsツールによるアイコンなどのリソース書き換えを実行します。
+iconinsツールに渡すオプションについては、#packopt命令を参照してください。
 オプション付きのpackfile作成は、hsc_compで行ないます。
-
-
+%ref
+pack_ini
+#packopt
 
 
 %index

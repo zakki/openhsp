@@ -1,12 +1,12 @@
 ------------------------------------------------------------------------------
-Hot Soup Processor SDK ver3.3                       HSP : Hot Soup Processor  
-ホットスーププロセッサ                copyright 1997-2011 (c) onion software  
+Hot Soup Processor SDK ver3.5                       HSP : Hot Soup Processor  
+ホットスーププロセッサ                copyright 1997-2017 (c) onion software  
 ------------------------------------------------------------------------------
 
 ・はじめに
 
-このフォルダには、Hot Soup Processor SDK ver3.3が含まれています。
-Hot Soup Processor 3.3 SDKは、HSP 3.3のプラグイン開発及びランタイムの作成
+このフォルダには、Hot Soup Processor SDKが含まれています。
+Hot Soup Processor SDKは、HSP3のプラグイン開発及びランタイムの作成
 などHSPとの高度な連携をサポートするための素材が含まれています。
 HSPに関する資料及びソースコードは、OpenHSPとしてすべて公開されています。
 詳しくは、OpenHSPホームページまたはOpenHSPプロジェクト・ポータルを参照してください。
@@ -58,6 +58,22 @@ HSPに関する資料及びソースコードは、OpenHSPとしてすべて公開されています。
 
 	HSP3.2に同梱されている、HSPアシスタントツールのソースコードが
 	含まれています。
+
+	hsp3lib フォルダ
+
+	VC++で利用可能なHSPのスタティックライブラリが含まれています。
+
+	hsp3dh フォルダ
+
+	hsp3dhツールのソースコードが含まれています。
+
+	hgimg4 フォルダ
+
+	HGIMG4に関するツールのソースコードが含まれています。
+
+	iconins フォルダ
+
+	iconinsツールのソースコードが含まれています。
 
 
 ・著作権および連絡先

@@ -632,6 +632,58 @@ EXPORT BOOL WINAPI netgetv( HSPEXINFO *hei, int p1, int p2, int p3 )
 	return -size;
 }
 
+EXPORT BOOL WINAPI netgetv4( HSPEXINFO *hei, int p1, int p2, int p3 )
+{
+	//	(type$202)
+	//		取得データを文字列として変数に代入する
+	//		netgetv 変数
+	//
+	PVal *pv;
+	APTR ap;
+	char *ss;
+	ap = hei->HspFunc_prm_getva( &pv );		// パラメータ1:変数
+	//char *ep1;
+	//ep1 = (char *)hei->HspFunc_prm_getv();
+
+	if ( http == NULL ) return -1;
+
+	//http->SetVarRequestGet( ss );
+	ss = http->getVarData();
+	hei->HspFunc_val_realloc( pv, http->getVarSize()+1, 0 );
+	ap = (APTR)ss;
+	//hei->HspFunc_prm_setva( pv, ap, HSPVAR_FLAG_STR, ss );	// 変数に値を代入
+	return -http->getVarSize();
+}
+
+EXPORT int WINAPI netgetv_data(char *res)
+{
+	if ( http == NULL ) return -1;
+	//MessageBoxA(0,http->getVarData(),"!",0);
+	memcpy(res,http->getVarData(),http->getVarSize());
+	//res = http->getVarData();
+	return http->getVarSize();
+}
+
+EXPORT char * WINAPI netgetv_ptr()
+{
+	return http->getVarData();
+}
+
+EXPORT int WINAPI netgetv_size()
+{
+	return http->getVarSize();
+}
+
+EXPORT int WINAPI netgetv_requestsize()
+{
+	return http->GetSize();
+}
+
+// レスポンスヘッダを取得
+EXPORT int WINAPI netget_resphead(char *buff, LPDWORD size){
+	return http->GetRespHead( buff, size );
+}
+
 
 EXPORT BOOL WINAPI netrequest_get( HSPEXINFO *hei, int p1, int p2, int p3 )
 {
@@ -664,6 +716,17 @@ EXPORT BOOL WINAPI netrequest_post( HSPEXINFO *hei, int p1, int p2, int p3 )
 	if ( http == NULL ) return -1;
 
 	http->SetVarRequestPost( ss, ap );
+	return 0;
+}
+
+EXPORT BOOL WINAPI netrequest_post2( char *path, char *data, int size )
+{
+	//	(type$202)
+	//		ファイルデータをメモリに取得する(netgetvで取得)
+	//		netrequest_post2 "path", var, varsize
+	//
+
+	http->SetVarRequestPost2( path, data, size );
 	return 0;
 }
 
