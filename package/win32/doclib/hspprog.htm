@@ -32,11 +32,11 @@
 					<li><a href="#START_DIR">起動ディレクトリ</a></li>
 					<li><a href="#HSP_MECHANISM">HSPのしくみ</a></li>
 					<li><a href="#EX_RUNTIME">拡張ランタイム</a></li>
-					<li><a href="#MAKE_EXE">実行ファイルの作成方法</a></li>
+					<li><a href="#MAKE_EXE">実行ファイルの作成方法<span class="new">（New!）</span></a></li>
 					<li><a href="#EDIT_PACKFILE">PACKFILEの編集について</a></li>
 					<li><a href="#MAKE_SAVER">スクリーンセーバーの作成</a></li>
 					<li><a href="#START_OPT">起動オプションのパース</a></li>
-					<li><a href="#CHANGE_ICON">実行ファイルのアイコン書き換え</a></li>
+					<li><a href="#ICONINS">実行ファイルの書き換えについて<span class="new">（New!）</span></a></li>
 					<li><a href="#SCRIPT_SAMPLE">HSPスクリプトサンプル</a></li>
 					<li><a href="#HIDDEN_WINDOW">メインウィンドウ非表示EXEファイル</a></li>
 					<li><a href="#NO_DIR_MOVE">ディレクトリ移動の無効化</a></li>
@@ -548,14 +548,19 @@
 			<tr><td>ysize</td><td>初期ウィンドウYサイズ</td><td>480</td></tr>
 			<tr><td>hide</td><td>初期ウィンドウ非表示SW</td><td>0</td></tr>
 			<tr><td>orgpath</td><td>起動時ディレクトリ移動無効化SW</td><td>0</td></tr>
+			<tr><td>icon</td><td>アイコンファイル設定</td><td>なし</td></tr>
+			<tr><td>version</td><td>バージョンリソース設定</td><td>なし</td></tr>
+			<tr><td>manifest</td><td>マニフェスト設定</td><td>なし</td></tr>
+			<tr><td>lang</td><td>言語コード設定</td><td>なし</td></tr>
+			<tr><td>upx</td><td>UPX圧縮設定</td><td>なし</td></tr>
 		</table>
 
 		<p>
 			次の例では、「test.scr」というスクリーンセーバーを「hsp3c.hrt」というランタイムを使用して作成します。
 		</p>
-		<pre>#packopt type 2
-#packopt name "test"
-#packopt runtime "hsp3c.hrt"</pre>
+		<pre>	#packopt type 2
+	#packopt name "test"
+	#packopt runtime "hsp3c.hrt"</pre>
 		<p>
 			尚、「start.ax」はデフォルトで暗号化されたものがpackfileに追加されます。
 			また、「#packopt runtime "ランタイムファイル名"」で指定された
@@ -571,6 +576,11 @@
 			(詳しくは、「ディレクトリ移動の無効化について」を参照してください。)
 		</p>
 
+		<p>
+			icon,version,manifest,lang,upxのキーワードは、実行ファイル生成後にiconinsツールを使用して設定されます。
+			これにより、実行ファイルのアイコンやバージョン情報、マニフェストなどを埋め込むことが可能です。<br>
+			詳しくは、「<a href="#ICONINS">実行ファイルの書き換えについて</a>」の項を参照してください。
+		</p>
 		<p>
 			HSP3.0以前で利用していた、「packfile編集」からパックされるファイルを選択して
 			実行ファイルを作成することも可能です。
@@ -763,18 +773,57 @@
 		</p>
 
 
-		<h3 id="CHANGE_ICON">実行ファイルのアイコン書き換え</h3>
+		<h3 id="ICONINS">実行ファイルの書き換えについて</h3>
 		<p>
-			配布用の実行ファイルは自由にアイコンを書き換えていただいて構いません。
 			通常、EXEファイルやSCRファイルを作成すると、Windowsから見たアイコンはHSP3.EXEと同じものになっています。
+			カスタムのアイコンファイルを用意することで、配布用の実行ファイルアイコンを自由に書き換えることができます。
+			他にも、バージョン情報やマニフェスト、言語コード、UPX圧縮などを実行ファイルに適用することができます。
 		</p>
 		<p>
-			現在のHSPには、アイコンの編集機能はありませんがアイコンを直接書き換えるソフトを使用していただくことができます。
-			詳しくは、HSPオフィシャルサイト(HSPTV!)にあるHSP関連ツールの項目を参照してください。
+			「実行ファイル自動作成」を行なう際に、ソーススクリプトに#packopt命令により適用する情報を記述しておくことが可能です。<br>
+			#packopt命令で指定する、icon,version,manifest,lang,upxのキーワードは、実行ファイル生成後にiconinsツールを使用して、実行ファイルの書き換えを行ないます。
+		</p>
+<pre>
+	// 埋め込むアイコンファイルを指定
+	#packopt icon "test.ico"
+	// 埋め込むバージョン情報を記述したファイルを指定
+	#packopt version "test.txt"
+	// UPXを使用し圧縮する場合"1"を設定する
+	#packopt upx "1"
+	// 言語を指定 デフォルトは日本語 (1041)10進数で記述
+	#packopt lang "1041"
+</pre>
+		<p>
+		上の例では、「test.ico」というアイコンファイルのアイコンを使用し、「test.txt」ファイルに記述されたバージョン情報を設定します。
+		アイコンファイルは、.ico形式のファイルを指定する必要があります。<br>
+		また、言語コードを「1041」(日本語)に設定します。これは、日本語 (1041) や英語 (U.S.)(1033) など10進数で記述されたロケールIDを指定するものです。ロケールIDの詳細は、<a href="https://msdn.microsoft.com/ja-jp/library/cc392381.aspx" target="_blank">こちら</a>を参照してください。<br>
+		UPX圧縮に「1」を指定した場合は、UPXによる実行ファイル圧縮が有効になります。
+		(UPX圧縮を使用する場合は、upx.exe(Win32 console version)をあらかじめダウンロードしてiconinsツールと同じフォルダに配置する必要があります。)<br>
+		</p>
+
+		<p>
+		バージョン情報の設定は、別途テキストファイルを作成しておく必要があります。
+		</p>
+<pre>
+	_FILEVERSION=1.0.0.0
+	_PRODUCTVERSION=1.0.0.0
+	Comments=テスト
+	CompanyName=Test!
+	FileDescription=テスト
+	FileVersion=1.00
+	InternalName=test
+	LegalCopyright=Copyright (C) 2017 Test!
+	OriginalFilename=test.exe
+	ProductName=テスト
+	ProductVersion=1.00
+</pre>
+		<p>
+		１行ごと必要な項目に「=」で内容を記述します。
+		行の先頭部分に｢;｣(セミコロン)を付けると、その行はスキップされます。
+		このファイルは、<a href="http://lhsp.s206.xrea.com/" target="_blank">Kpan氏</a>が作成したLet's HSPIC! のバージョン情報用ファイルと互換があります。
 		</p>
 		<p>
-			アイコンの色数やサイズ等を変更する場合は、リソースセクションの書き換えに対応したソフトが必要です。
-			<a href="http://www.angusj.com/resourcehacker/">Resource Hacker</a>等のツールをご利用下さい。
+			より広範囲にリソースを変更する場合は、<a href="http://www.angusj.com/resourcehacker/" target="_blank">Resource Hacker</a>等のツールをご利用下さい。
 		</p>
 
 

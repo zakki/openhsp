@@ -749,7 +749,7 @@ static int mkexefile2( char *fname )
 	if ( a ) return a;
 
 	sprintf( ftmp, "%s\\%s.dpm", szExeDir, srcfn );
-	a=hsc3_make( 0,(int)ftmp,0,0 );
+	a=hsc3_make( 0,(int)ftmp,1,0 );
 	if ( a ) return a;
 	return 0;
 }

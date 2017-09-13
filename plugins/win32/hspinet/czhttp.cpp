@@ -109,6 +109,7 @@ int CzHttp::Exec( void )
 	char req_name[1024];
 	char *name;
 	BOOL res;
+	int flagmode = 0;
 
 	switch( mode ) {
 	case CZHTTP_MODE_REQUEST:			// httpに接続
@@ -156,6 +157,13 @@ int CzHttp::Exec( void )
 
 
 	case CZHTTP_MODE_VARREQUEST:
+		
+		if (strncmp(req_url, "https://", strlen("https://")) == 0){
+			varport = INTERNET_DEFAULT_HTTPS_PORT;
+			flagmode= INTERNET_FLAG_RELOAD|INTERNET_FLAG_NO_UI|INTERNET_FLAG_SECURE;
+		}else{
+			flagmode = INTERNET_FLAG_RELOAD|INTERNET_FLAG_NO_UI;
+		}
 
 		strcpy( req_name, req_url2 );
 		strcat( req_name, req_path );
@@ -168,7 +176,7 @@ int CzHttp::Exec( void )
 		}
 
 		// HTTP要求の作成
-		hHttpRequest = ::HttpOpenRequestA( hHttpSession, varstr, req_name, HTTP_VERSION, NULL, NULL, INTERNET_FLAG_RELOAD|INTERNET_FLAG_NO_UI, 0 );
+		hHttpRequest = ::HttpOpenRequestA( hHttpSession, varstr, req_name, HTTP_VERSION, NULL, NULL, flagmode, 0 );
 		if ( hHttpSession == NULL ) {
 			SetError( "無効なURLが指定されました" );
 			break;
@@ -183,7 +191,7 @@ int CzHttp::Exec( void )
 			char *header = (char *)malloc( strlen(hdr) + strlen(additional_header) + 1 );
 			strcpy(header, hdr);
 			strcat(header, additional_header);
-			res = ::HttpSendRequestA( hHttpRequest, header, -1L, postdata, (int)strlen(postdata) );
+			res = ::HttpSendRequestA( hHttpRequest, header, -1L, postdata, (int)postsize/*strlen(postdata)*/ );
 			free(header);
 		} else {
 			res = ::HttpSendRequestA( hHttpRequest, req_header, -1L, NULL, 0 );
@@ -193,6 +201,8 @@ int CzHttp::Exec( void )
 			SetError( "リクエストができませんでした" );
 			break;
 		}
+		// HTTPヘッダ
+		HttpQueryInfo( hHttpRequest, HTTP_QUERY_RAW_HEADERS_CRLF, resphead, resphead_size, 0 );
 /*
 		{
 		// 返されたコンテンツの長さを取得
@@ -356,6 +366,11 @@ int CzHttp::RequestFile( char *path )
 	return 0;
 }
 
+int CzHttp::GetRespHead( char *buff, LPDWORD size ){
+	resphead = buff;
+	resphead_size = size;
+	return 0;
+}
 
 char *CzHttp::RequestFileInfo( char *path )
 {
@@ -607,6 +622,22 @@ void CzHttp::SetVarRequestPost( char *path, char *post )
 	strcpy( varstr, "POST" );
 	strcpy( req_path, path );
 	postdata = post;
+	postsize = (int)strlen(postdata);
+	mode = CZHTTP_MODE_VARREQUEST;
+}
+
+void CzHttp::SetVarRequestPost2( char *path, char *post, int size )
+{
+	// サーバーにファイルを要求(POST)
+	//
+	if ( mode != CZHTTP_MODE_READY ) {
+		return;
+	}
+	SetVarServerFromURL();
+	strcpy( varstr, "POST" );
+	strcpy( req_path, path );
+	postdata = post;
+	postsize = size;
 	mode = CZHTTP_MODE_VARREQUEST;
 }
 
@@ -679,6 +710,7 @@ char *CzHttp::GetFtpCurrentDir( void )
 		return buf;
 	}
 	FtpGetCurrentDirectory( hService, buf, &dwSize );
+	GetFtpResponse();	// 順番入れ替え
 	return buf;
 }
 
@@ -728,8 +760,8 @@ int CzHttp::GetFtpFile( char *name, char *downname, int tmode )
 	type = FTP_TRANSFER_TYPE_BINARY;
 	if ( tmode ) type = FTP_TRANSFER_TYPE_ASCII;
 	i = FtpGetFile( hService, name, downname, FALSE, FILE_ATTRIBUTE_ARCHIVE, type, 0 );
+	GetFtpResponse();	// 順番入れ替え
 	if ( i == 0 ) return -1;
-	GetFtpResponse();
 	return 0;
 }
 
@@ -746,8 +778,8 @@ int CzHttp::PutFtpFile( char *name, char *downname, int tmode )
 	type = FTP_TRANSFER_TYPE_BINARY;
 	if ( tmode ) type = FTP_TRANSFER_TYPE_ASCII;
 	i = FtpPutFile( hService, downname, name, type, 0 );
+	GetFtpResponse();	// 順番入れ替え
 	if ( i == 0 ) return -1;
-	GetFtpResponse();
 	return 0;
 }
 
@@ -765,8 +797,8 @@ int CzHttp::RenameFtpFile( char *name, char *newname )
 	} else {
 		i = FtpRenameFile( hService, name, newname );
 	}
+	GetFtpResponse();	// 順番入れ替え
 	if ( i == 0 ) return -1;
-	GetFtpResponse();
 	return 0;
 }
 
@@ -780,8 +812,8 @@ int CzHttp::MakeFtpDir( char *name )
 		return -1;
 	}
 	i = FtpCreateDirectory( hService, name );
+	GetFtpResponse();	// 順番入れ替え
 	if ( i == 0 ) return -1;
-	GetFtpResponse();
 	return 0;
 }
 
@@ -795,8 +827,8 @@ int CzHttp::KillFtpDir( char *name )
 		return -1;
 	}
 	i = FtpRemoveDirectory( hService, name );
+	GetFtpResponse();	// 順番入れ替え
 	if ( i == 0 ) return -1;
-	GetFtpResponse();
 	return 0;
 }
 

@@ -26,6 +26,7 @@ static HINSTANCE myinst;
 #define ID_BTN1 1000
 #define ID_BTN2 1001
 #define ID_BTN3 1002
+#define ID_BTN4 1003
 
 #define TABDLGMAX 4
 #define myClass TEXT("HSP3DEBUG")
@@ -50,6 +51,7 @@ static HWND g_hVarEdit;
 static HWND g_hBtn1;
 static HWND g_hBtn2;
 static HWND g_hBtn3;
+static HWND g_hBtn4;
 static HWND g_hSttCtrl;
 
 static HWND g_hLogPage;
@@ -298,12 +300,24 @@ LRESULT CALLBACK TabLogProc(HWND hDlg, UINT msg, WPARAM wp, LPARAM lp)
 {
 	//		LogÉ^Éu
 	//
+	HFONT hf;
 	switch (msg) {
 	case WM_INITDIALOG:
 		g_hLogPage = hDlg;
 		g_hLogEdit = GetDlgItem( hDlg, IDC_EDIT1 );
-		return TRUE;
+		SendMessageA(g_hLogEdit, EM_LIMITTEXT, 0, 0);
+		hf = (HFONT)GetStockObject( DEFAULT_GUI_FONT );
+		g_hBtn4 = GenerateObj( g_hLogPage, TEXT("button"), TEXT("ÉçÉOè¡ãé"), 266/*DIALOG_X0+168*/, 326/*DIALOG_Y1+4*/, 80, 24, ID_BTN4, hf );
+	return TRUE;
+	case WM_COMMAND:
+		switch (LOWORD(wp)) {
+			case ID_BTN4:
+				SetWindowText( g_hLogEdit, TEXT("") );
+			break;
+		}
+	return TRUE;
 	}
+
 	return FALSE;
 }
 

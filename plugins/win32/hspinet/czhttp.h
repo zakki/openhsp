@@ -5,7 +5,7 @@
 #define __czhttp_h
 
 #include <wininet.h>
-#define INETBUF_MAX 4096
+#define INETBUF_MAX 4096000
 
 enum {
 CZHTTP_MODE_NONE = 0,
@@ -52,9 +52,11 @@ public:
 	void SetUserPassword( char *pass );					// パスワードの設定
 	void SetFtpPort( int port );						// ポートの設定
 	void SetFtpFlag( int flag );						// パッシブモードの設定
+	int GetRespHead( char *buf, LPDWORD size );			// レスポンスヘッダの取得
 
 	void SetVarRequestGet( char *path );
 	void SetVarRequestPost( char *path, char *post );
+	void SetVarRequestPost2( char *path, char *post, int size );
 	void ClearVarData( void );
 	void SetVarServerFromURL( void );
 	char *getVarData( void ) { return vardata; };
@@ -126,8 +128,11 @@ private:
 	char varstr[256];		// VarRequest request token
 	INTERNET_PORT varport;	// VarRequest server port
 	char *postdata;			// Post data
+	int postsize;			// Post size
 	char *vardata;			// Transfer destination
 	int varsize;			// Transfer max size
+	char *resphead;			
+	LPDWORD resphead_size;
 };
 
 

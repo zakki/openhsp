@@ -16,6 +16,11 @@ Hot Soup Processor ver3.5                           HSP : Hot Soup Processor
 	[HGIMG4] オブジェクト削除時のメモリリークを修正
 	非推奨となるllmod3,hspdx,hgimgのドキュメント・サンプルを除外
 
+	inoviaさんによるOpenHSP修正を反映
+	#packopt命令によるアイコン書き換え、バージョン定義、UPX圧縮に対応
+	デバッグウインドウのログサイズ拡大、消去ボタンの追加
+	[hspinet] httpsダウンロード、バイナリファイルの保存に対応
+
 	2017/06/07 3.5 beta5b
 
 	3.5beta5aでファイルの暗号化が正しく行なわれない不具合を修正

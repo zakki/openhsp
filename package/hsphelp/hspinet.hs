@@ -6,12 +6,12 @@
 %type
 拡張命令
 %ver
-3.4
+3.5
 %note
 hspinet.asをインクルードすること。
 
 %date
-2012/07/04
+2017/09/13
 %author
 onitama
 %dll
@@ -154,6 +154,7 @@ URLは、ファイル名を除いた形でスキーム名を含めて設定する必要があります。
 「http://www.onionsoft.net/hsp/index.html」の場合は、「http://www.onionsoft.net/hsp/」までを設定してください。
 httpリクエストは必ず、neturl命令によるURL設定を先に行なっておいてください。neturl命令実行の時点では、まだhttpリクエストは発行されません。
 httpリクエストの発行は、netrequest命令またはnetload命令によって行なわれます。
+SSL接続によるリクエストを行なう場合には、「https://」から始まるURLを指定してください。
 %href
 netrequest
 netload
@@ -677,11 +678,13 @@ netrequest命令と同様ですが、ダウンロードしたデータイメージをファイルではなく、メ
 ^
 netrequest命令でhttpリクエストを発行した後は、netexec命令により受信処理を
 スクリプト側で行なう必要があります。
-処理が完了した後は、netgetv命令により任意の変数でデータを受け取ることができます。
+処理が完了した後は、netgetv命令またはnetgetv_data命令により任意の変数でデータを受け取ることができます。
 POST形式でCGIにデータをリクエストする場合は、netrequest_post命令を使用してください。
 
 %href
 netgetv
+netgetv_data
+netgetv_size
 netrequest
 netrequest_post
 neturl
@@ -719,11 +722,13 @@ prm = "mode=find&cond=and&log=0&word=script"
 netrequest_post "betabbs.cgi",prm
 ^p
 netrequest命令でhttpリクエストを発行した後は、netexec命令により受信処理をスクリプト側で行なう必要があります。
-処理が完了した後は、netgetv命令により任意の変数でデータを受け取ることができます。
+処理が完了した後は、netgetv命令またはnetgetv_data命令により任意の変数でデータを受け取ることができます。
 GET形式でCGIにデータをリクエストする場合は、netrequest_get命令を使用してください。
 
 %href
 netgetv
+netgetv_data
+netgetv_size
 netrequest
 netrequest_get
 neturl
@@ -743,9 +748,12 @@ netrequest_get、netrequest_post命令によるhttpリクエストの結果を取得します。
 必ず、netexec命令による受信処理で、ダウンロードが完了したことを確認してから、データを取得するようにしてください。
 p1で指定された変数は、自動的に必要なサイズを確保した文字列型として初期化されます。
 (あらかじめ変数を初期化したり、メモリを確保しておく必要はありません。)
+取得されるデータはテキスト(文字列)として処理されます。それ以外のデータ(バイナリ)を取得する場合は、netgetv_data命令を使用してください。
 命令実行後に、システム変数statにデータサイズが代入されます。
 
 %href
+netgetv_data
+netgetv_size
 netrequest_get
 netrequest_post
 
@@ -1292,5 +1300,43 @@ codeに区切り文字のコードを指定することが可能です。
 codeの指定を省略した場合は、'&'が使用されます。
 
 %href
+
+
+%index
+netgetv_data
+httpリクエストの結果を取得
+%group
+拡張入出力制御命令
+%prm
+p1
+p1 : データが代入される変数
+
+%inst
+netrequest_get、netrequest_post命令によるhttpリクエストの結果を取得します。
+必ず、netexec命令による受信処理で、ダウンロードが完了したことを確認してから、データを取得するようにしてください。
+netgetv命令と同様の動作ですが、netgetv命令はテキスト(文字列)を取得するのに対して、netgetv_data命令はバイナリデータをバッファに取得します。
+そのため、p1で指定された変数には、あらかじめダウンロードに必要なメモリバッファを文字列型として確保しておく必要があります。(必要なサイズは、netgetv_size関数によって取得することができます。)
+命令実行後に、システム変数statにデータサイズが代入されます。
+
+%href
+netgetv
+netgetv_size
+netrequest_get
+netrequest_post
+
+
+%index
+netgetv_size
+ファイル受信サイズの取得
+%group
+拡張入出力関数
+
+%inst
+netrequest_get、netrequest_post命令によるhttpリクエストの結果で取得したデータのサイズを戻します。
+必ず、netexec命令による受信処理で、ダウンロードが完了したことを確認してから、データを取得するようにしてください。
+%href
+netexec
+netgetv_data
+
 
 
