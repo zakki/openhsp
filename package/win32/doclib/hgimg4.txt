@@ -55,7 +55,7 @@ HGIMG4 REFERENCE MANUAL                High Performance Graphic Image Plugin
 
 		Windows 7以降(OpenGL版)、XP以降(DirectX9版)
 		Android 2.3.3以降
-		iOS 6以降
+		iOS 8以降
 		Raspberry Pi (raspbian)
 		SDL/OpenGLをサポートするLinux環境
 		WebGL/html5をサポートする各種webブラウザ
