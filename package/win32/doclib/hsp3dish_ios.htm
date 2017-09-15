@@ -65,7 +65,8 @@
 	このドキュメントでは、Xcodeが実際に動作し、iPhone/iPadの実機にプログラムが転送できることを前提として、HSP3Dishの導入方法を解説します。
 	それまでの準備については、既存のマニュアル等をご覧ください。
 	<br>
-	使用するSDKのバージョンは、iOS10以降、動作環境はiOS5.1以降を想定しています。
+	検証に使用しているXCodeのバージョンは、8.3.3です。
+	使用するSDKのバージョンは、iOS10以降、動作環境はiOS8以降を想定しています。
 	</p>
 
 	<h2 id="SAMPLE">サンプルプロジェクト</h2>
@@ -76,7 +77,7 @@
 	iOSフォルダには、HSP3Dishランタイム及びxcode用のサンプルプロジェクトが含まれています。
 
 	<ul>
-	<li>iHSP25フォルダ - HSP3Dishランタイム本体</li>
+	<li>iHSP26フォルダ - HSP3Dishランタイム本体</li>
 	<li>gameplayフォルダ - HGIMG4用ランタイム</li>
 	<li>external-depsフォルダ - HGIMG4用ランタイム</li>
 	<li>hspprojフォルダ - HSP3Dishサンプル</li>
@@ -122,11 +123,12 @@
 
 	<p>
 	実際にiOS上で動作させる場合には、XCode上でプロジェクトをコンパイルする必要があります。<br>
-	<a href="#MAKECPP">スクリプトの準備</a>で出力した、XCode用プロジェクトフォルダと、「iHSP25」フォルダ(HSPアーカイブ内のiOSフォルダに同梱されています。)をMacOSX上にコピーしてください。<br>
+	<a href="#MAKECPP">スクリプトの準備</a>で出力した、XCode用プロジェクトフォルダと、「iHSP26」フォルダ(HSPアーカイブ内のiOSフォルダに同梱されています。)をMacOSX上にコピーしてください。<br>
 	※Xcode5を使用して手動でプロジェクトを作成する場合は<a href="hsp3dish_xcode5.htm">こちらを参照してください</a>。
 	</p>
 	<p>
-	必ず作成されたプロジェクトのフォルダと同じ階層に、「iHSP25」フォルダを配置してください。
+	必ず作成されたプロジェクトのフォルダと同じ階層に、「iHSP26」フォルダを配置してください。<br>
+	(HGIMG4プロジェクトの場合は、「external-deps」「gameplay」も同様に配置してください。)
 	</p>
 	<p>
 	<img src="hsp3dish/s_folder.jpg"><br>
@@ -520,7 +522,7 @@
 	<li>画面のサイズ指定、スケーリングに対応していません(hgio_view/hgio_scale等のマニュアル設定項目も機能しません)</li><br>
 	<li>センサーの値は常に取得されます</li><br>
 	<li>常にマルチタッチ情報を受け取ります</li><br>
-	<li>AdMobの表示に非対応です</li><br>
+	<li>オフスクリーンレンダリングに非対応です(現在原因を調査中で修正予定です)</li><br>
 	<li>iPhoneシミュレーター上で動作させるためには、Build SettingsでLIBRARY_SEARCH_PATHSに「../external-deps/lib/ios/x86/」を指定する必要があります</li><br>
 	</ul>
 
@@ -583,7 +585,6 @@
 	</p>
 	<ul>
 	<li>各種システム情報取得</li>
-	<li>AdMobのサポート</li>
 	<li>http接続、ブラウザの呼び出しサポート</li>
 	<li>GAMECENTER、Google Play Servicesなど各種サービスの設定</li>
 	</ul>

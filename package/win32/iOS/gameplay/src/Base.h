@@ -219,7 +219,7 @@ extern int strcmpnocase(const char* s1, const char* s2);
 #ifndef HSPDISH
 #include <png.h>
 #else
-#include <libpng/png.h>
+#include <png.h>
 #endif
 
 // Scripting
