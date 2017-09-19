@@ -582,6 +582,8 @@ int HspWnd::Picload( int id, char *fname, int mode )
     LPSTREAM pstm = NULL;							// IStreamを取得する
 	char fext[8];
 	int stbmode;
+	HSPAPICHAR *hactmp1 = 0;
+	HSPAPICHAR wfext[8];
 
 	bm = GetBmscr( id );
 	if ( bm == NULL ) return 1;
@@ -601,11 +603,12 @@ int HspWnd::Picload( int id, char *fname, int mode )
 
 #ifdef USE_STBIMAGE
 	stbmode = 0;
-	getpath(fname,fext,16+2);				// 拡張子を小文字で取り出す
+	getpathW(chartoapichar(fname,&hactmp1),wfext,16+2);				// 拡張子を小文字で取り出す
 
-	if (!strcmp(fext,".png")) stbmode++;	// ".png"の時
-	if (!strcmp(fext,".psd")) stbmode++;	// ".psd"の時
-	if (!strcmp(fext,".tga")) stbmode++;	// ".tga"の時
+	if (!_tcscmp(wfext,TEXT(".png"))) stbmode++;	// ".png"の時
+	if (!_tcscmp(wfext,TEXT(".psd"))) stbmode++;	// ".psd"の時
+	if (!_tcscmp(wfext,TEXT(".tga"))) stbmode++;	// ".tga"の時
+	freehac(&hactmp1);
 
 	if ( stbmode ) {						// stb_imageを使用して読み込む
 		int components;

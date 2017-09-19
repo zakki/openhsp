@@ -218,6 +218,8 @@ int MMMan::Load( char *fname, int num, int opt )
 	char *pt;
 	int flag;
 	MMM *mmm;
+	HSPAPICHAR *hactmp1 = 0;
+	HSPAPICHAR wfext[9];
 
 	flag = MMDATA_MCIVOICE;
 	pt = NULL;
@@ -230,29 +232,33 @@ int MMMan::Load( char *fname, int num, int opt )
 		a = atoi( fname+3 );if ( a<1 ) a=1;
 	}
 
-	getpath(fname,fext,16+2);				// Šg’£Žq‚ð¬•¶Žš‚ÅŽæ‚èo‚·
+	getpathW(chartoapichar(fname,&hactmp1),wfext,16+2);				// Šg’£Žq‚ð¬•¶Žš‚ÅŽæ‚èo‚·
 
-	if (!strcmp(fext,".avi")) {				// when "AVI"
+	if (!_tcscmp(wfext,TEXT(".avi"))) {				// when "AVI"
 		flag = MMDATA_MCIVIDEO;
 	}
 
-	if (!strcmp(fext,".wmv")) {				// when "WMV"
+	if (!_tcscmp(wfext,TEXT(".wmv"))) {				// when "WMV"
 		flag = MMDATA_MCIVIDEO;
 	}
 
-	if (!strcmp(fext,".mpg")) {				// when "MPG"
+	if (!_tcscmp(wfext,TEXT(".mpg"))) {				// when "MPG"
 		flag = MMDATA_MPEGVIDEO;
 	}
 
-	if (!strcmp(fext,".wav")) {				// when "WAV"
+	if (!_tcscmp(wfext,TEXT(".wav"))) {				// when "WAV"
 		getlen = dpm_exist( fname );
-		if ( getlen==-1 ) return 1;
+		if (getlen == -1) {
+			freehac(&hactmp1);
+			return 1;
+		}
 		if ( getlen < 2000000 ) {			// 2MBˆÈã‚ÍMCI‚©‚çÄ¶
 			pt = (char *)malloc( getlen+16 );
 			dpm_read( fname, pt, getlen, 0 );
 			flag = MMDATA_INTWAVE;
 		}
 	}
+	freehac(&hactmp1);
 
 	mmm = SetBank( num, flag, opt, pt, fname );
 
