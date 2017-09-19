@@ -174,6 +174,7 @@ static char *getdir( int id )
 	TCHAR fname[_MAX_PATH+1];
 	char *resp8;
 	p = ctx->stmp;
+	HSPCHAR *hctmp1 = 0;
 
 	switch( id ) {
 	case 0:				//    カレント(現在の)ディレクトリ
@@ -197,9 +198,10 @@ static char *getdir( int id )
 	case 5:				//    HSPTV素材があるディレクトリ
 #if defined(HSPDEBUG)||defined(HSP3IMP)
 		GetModuleFileName( NULL,fname,_MAX_PATH );
-		apichartohspchar(fname,&resp8);
-		getpath( resp8, p, 32 );
-		freehc(&resp8);
+		getpathW( fname, pw, 32 );
+		apichartohspchar(pw, &hctmp1);
+		strcpy(p, hctmp1);
+		freehc(&hctmp1);
 		CutLastChr( p, '\\' );
 		strcat( p, "\\hsptv\\" );
 		return p;
