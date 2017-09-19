@@ -68,7 +68,6 @@
 #const global PLATFORM_IOS 1
 #const global PLATFORM_ANDROID 2
 #const global PLATFORM_WEBGL 3
-#const global PLATFORM_WEBGL 3
 #const global PLATFORM_LINUX 4
 #const global PLATFORM_RASPBIAN 5
 
