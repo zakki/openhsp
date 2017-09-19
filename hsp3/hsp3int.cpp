@@ -1632,6 +1632,7 @@ static void *reffunc_intfunc( int *type_res, int arg )
 		{
 		char *p;
 		char pathname[HSP_MAX_PATH];
+#if defined(HSPWIN)&&defined(HSPUTF8)
 		HSPAPICHAR *hactmp1 = 0;
 		HSPAPICHAR pw[HSP_MAX_PATH];
 		HSPCHAR *hctmp1 = 0;
@@ -1643,6 +1644,12 @@ static void *reffunc_intfunc( int *type_res, int arg )
 		apichartohspchar(pw, &hctmp1);
 		strncpy(p, hctmp1, HSP_MAX_PATH - 1);
 		freehc(&hctmp1);
+#else
+		p = ctx->stmp;
+		strncpy( pathname, code_gets(), HSP_MAX_PATH-1 );
+		p1=code_geti();
+		getpath( pathname, p, p1 );
+#endif
 		ptr = p;
 		break;
 		}
