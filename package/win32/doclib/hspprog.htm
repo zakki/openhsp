@@ -2326,6 +2326,7 @@ p2=0～65535(0)</pre>
 			<tr><td>dir_cmdline</td><td>コマンドライン文字列</td></tr>
 			<tr><td>dir_desktop</td><td>デスクトップディレクトリ(フォルダ)</td></tr>
 			<tr><td>dir_mydoc</td><td>マイドキュメントディレクトリ(フォルダ)</td></tr>
+			<tr><td>dir_tv</td><td>HSPTVディレクトリ(フォルダ)</td></tr>
 		</table>
 		<dl>
 			<dt id="SYSVAR_1">*1</dt>
@@ -2333,16 +2334,21 @@ p2=0～65535(0)</pre>
 				<p>以下の情報がすべて合計された値になります。</p>
 				<ul>
 					<li>デバッグモード = 1</li>
-					<li>IMEが有効 = 2</li>
-					<li>Macintosh版HSP = $8</li>
-					<li>IMEをサポートしないOS = $100</li>
+					<li>スクリーンセーバー起動時 = 2</li>
+					<li>コンソールモード = 16</li>
+					<li>Macintosh版HSP = $80</li>
+					<li>HSP3Dish = $100</li>
+					<li>Linux版HSP = $1000</li>
+					<li>UTF8文字列ランタイム = $20000</li>
+					<li>64ビットランタイム = $40000</li>
 				</ul>
+
 			</dd>
 			<dt id="SYSVAR_2">*2</dt>
 			<dd>
 				<p>
-					バージョンコード + マイナーバージョンコードの値になります。
-					例えば3.0は$3000になります。
+					バージョンコード(8bit) + マイナーバージョンコード(8bit)の値になります。
+					例えば3.5は$3500になります。
 				</p>
 			</dd>
 		</dl>
