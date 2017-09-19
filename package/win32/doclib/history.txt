@@ -5,11 +5,11 @@ Hot Soup Processor ver3.5                           HSP : Hot Soup Processor
 
 ・hsp3関連 更新履歴
 
-	2017/08/18 3.5 beta6
+	2017/09/19 3.5 beta6
 
 	#bootopt notimer が正しく機能していない不具合を修正(HSP3BT#22)
 	mod_joystick.asでエラーが発生した場合の処理を修正
-	オフィシャル珠音2D素材(tamane_s)とサンプルを追加
+	オフィシャル珠音2D素材1.2(tamane_s,tamane_b)とサンプルを追加
 	[HGIMG4] クォータニオン情報を扱うsetquat,getquat命令を追加
 	[HGIMG4] HGIMG3と同様のイベント制御機能を追加
 	[HGIMG4] アニメーションの更新を固定フレームレート対応に修正
