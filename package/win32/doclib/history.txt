@@ -5,7 +5,7 @@ Hot Soup Processor ver3.5                           HSP : Hot Soup Processor
 
 ・hsp3関連 更新履歴
 
-	2017/09/19 3.5 beta6
+	2017/09/21 3.5 beta6
 
 	#bootopt notimer が正しく機能していない不具合を修正(HSP3BT#22)
 	mod_joystick.asでエラーが発生した場合の処理を修正
@@ -15,6 +15,10 @@ Hot Soup Processor ver3.5                           HSP : Hot Soup Processor
 	[HGIMG4] アニメーションの更新を固定フレームレート対応に修正
 	[HGIMG4] オブジェクト削除時のメモリリークを修正
 	非推奨となるllmod3,hspdx,hgimgのドキュメント・サンプルを除外
+
+	tds12さんによるOpenHSP修正を反映
+	[hsp3utf] getpathが関係する処理（picloadやmmload）の問題を修正
+	コールバックモジュール・modclbk3.hspを同梱
 
 	inoviaさんによるOpenHSP修正を反映
 	#packopt命令によるアイコン書き換え、バージョン定義、UPX圧縮に対応
