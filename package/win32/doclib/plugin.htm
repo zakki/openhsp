@@ -61,7 +61,6 @@
 					<li><a href="#hsp261cmp">hsp261cmp.as</a></li>
 					<li><a href="#form_decode">form_decode.as</a></li>
 					<li><a href="#mod_getenv">mod_getenv.as</a></li>
-					<li><a href="#mod_img">mod_img.as</a></li>
 					<li><a href="#hspmath">hspmath.as</a></li>
 					<li><a href="#mod_fontdlg">mod_fontdlg.as</a></li>
 					<li><a href="#mod_aht">mod_aht.as</a></li>
@@ -70,6 +69,7 @@
 					<li><a href="#mod_picfont">mod_picfont.as</a></li>
 					<li><a href="#mod_rss">mod_rss.as</a></li>
 					<li><a href="#mod_stbar">mod_stbar.as</a></li>
+					<li><a href="#mod_clbk">modclbk3.hsp</a></li>
 					<li><a href="#winapi">Win32API定義</a></li>
 				</ol>
 			</li>
@@ -762,29 +762,6 @@
 				</td>
 			</tr>
 		</table>
-		<h3 id="mod_img">mod_img.as</h3>
-		<table summary="拡張モジュールの紹介です。" class="pluginlist">
-			<caption>mod_img.asの紹介</caption>
-			<tr>
-				<th width="20%">拡張モジュール</th>
-				<th width="30%">mod_img.as</th>
-				<th width="5%">Ver3.3</th>
-				<th width="25%">作者:おにたま</th>
-				<th width="20%"><a href="http://www.onionsoft.net/">作者のページ</a></th>
-			</tr>
-			<tr>
-				<td colspan="5">
-					<p>
-					画像を読み込むためのimgload命令が追加されます。
-					BMP,JPEG,GIF,ICO,PNGフォーマットを読み込むことが可能です。
-					(ただし、packfileからの読み込みはサポートしていないので注意してください)
-					</p>
-					<p>
-					詳しくは、モジュールのソーススクリプト及び命令ヘルプを参照してください。
-					</p>
-				</td>
-			</tr>
-		</table>
 		<h3 id="hspmath">hspmath.as</h3>
 		<table summary="拡張モジュールの紹介です。" class="pluginlist">
 			<caption>hspmath.asの紹介</caption>
@@ -961,6 +938,28 @@
 				</td>
 			</tr>
 		</table>
+		<h3 id="mod_clbk">modclbk3.hsp</h3>
+		<table summary="拡張モジュールの紹介です。" class="pluginlist">
+			<caption>modclbk3.hspの紹介</caption>
+			<tr>
+				<th width="20%">拡張モジュール</th>
+				<th width="30%">modclbk3.hsp</th>
+				<th width="5%">Ver3.5</th>
+				<th width="25%">作者:tds12</th>
+				<th width="20%"><a href="https://twitter.com/lltds12">作者のページ</a></th>
+			</tr>
+			<tr>
+				<td colspan="5">
+					<p>
+					外部APIから値を受け取るためのコールバックを作成し設定するためのモジュールです。
+					</p>
+					<p>
+					詳しくは、モジュールのソーススクリプトを参照してください。
+					</p>
+				</td>
+			</tr>
+		</table>
+
 		<h3 id="winapi">Win32API定義</h3>
 		<table summary="拡張モジュールの紹介です。" class="pluginlist">
 			<caption>Win32API定義の紹介</caption>
@@ -1067,6 +1066,29 @@
 					<li>input.as	インプット関連のモジュール
 					<li>misc.as		その他
 					</ul>
+					</p>
+					<p>
+					詳しくは、モジュールのソーススクリプト及び命令ヘルプを参照してください。
+					</p>
+				</td>
+			</tr>
+		</table>
+		<h3 id="mod_img">mod_img.as</h3>
+		<table summary="拡張モジュールの紹介です。" class="pluginlist">
+			<caption>mod_img.asの紹介</caption>
+			<tr>
+				<th width="20%">拡張モジュール</th>
+				<th width="30%">mod_img.as</th>
+				<th width="5%">Ver3.3</th>
+				<th width="25%">作者:おにたま</th>
+				<th width="20%"><a href="http://www.onionsoft.net/">作者のページ</a></th>
+			</tr>
+			<tr>
+				<td colspan="5">
+					<p>
+					画像を読み込むためのimgload命令が追加されます。
+					BMP,JPEG,GIF,ICO,PNGフォーマットを読み込むことが可能です。
+					(ただし、packfileからの読み込みはサポートしていないので注意してください)
 					</p>
 					<p>
 					詳しくは、モジュールのソーススクリプト及び命令ヘルプを参照してください。
