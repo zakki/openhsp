@@ -1444,7 +1444,7 @@ gpsetprmoff
 
 
 %index
-gpsetprmon
+gpsetprmoff
 オブジェクトのコアパラメーター設定(ビット削除)
 %group
 拡張画面制御命令
