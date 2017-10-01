@@ -1264,7 +1264,7 @@ res\\drawable-mdpi\\ic_launcher.png"}
 	if and_name="" : dialog "プロジェクトが指定されていません" : goto *topmenu
 
 	exist tool_zipalign
-	if strsize<=0 : dialog "SDKのtoolsフォルダにzipalignツールがありません。\nbuild-toolsフォルダからコピーする必要があります。" : goto *topmenu
+	if strsize<=0 : dialog "SDKのtoolsフォルダにzipalignツールがありません。\n("+tool_zipalign+")\nbuild-toolsフォルダからコピーする必要があります。" : goto *topmenu
 
 	initsub
 
@@ -1286,7 +1286,7 @@ res\\drawable-mdpi\\ic_launcher.png"}
 
 	gosub *bat_init
 	tmp+="CD "+and_name+"\n"
-	tmp+="jarsigner -verbose -keystore ..\\"+and_keystore+".keystore bin\\"+and_name+"-release-unsigned.apk "+and_keystore+"\n"
+	tmp+="jarsigner -verbose -tsa http://timestamp.digicert.com -keystore ..\\"+and_keystore+".keystore bin\\"+and_name+"-release-unsigned.apk "+and_keystore+"\n"
 
 	tmp+="del bin\\"+and_name+".apk\n"
 	tmp+="zipalign -v 4 bin\\"+and_name+"-release-unsigned.apk bin\\"+and_name+".apk\n"
