@@ -1,0 +1,50 @@
+#include "mod_joystick.as"
+
+	;	ジョイスティック接続サンプル
+	;	(ジョイスティックの情報を表示します)
+	;
+
+	;	標準のサイズで表示
+	screen 0,640,480
+
+	dim jdata,16					; ジョイスティック情報
+
+*main
+	stick key,15					; キー入力
+	if key&128 : goto *owari			; [ESC]で終了
+
+	joyGetPosEx jdata, 0				; ジョイスティック入力
+	if stat!=0 : goto *joy_err			; ジョイスティックのエラー時
+
+	px=( jdata(2) - 32768 )				; アナログ入力X
+	py=( jdata(3) - 32768 )				; アナログ入力Y
+
+*joy_err
+	redraw 0					; 描画始め
+
+	color 0,160,160					; 背景色
+	boxf						; 背景を消す
+
+	color 255,255,255
+	pos 0,0
+	mes "アナログX = "+px
+	mes "アナログY = "+py
+
+	btn = jdata(8)
+	bit=1
+	repeat 32
+		if btn&bit {
+			mes "●",1
+		} else {
+			mes "〇",1
+		}
+		bit*=2
+	loop
+
+	redraw 1					; 描画終わり
+	await 1000/60					; 60fpsで更新
+
+	goto *main
+
+*owari
+	end

@@ -1,0 +1,45 @@
+#include "mod_joystick.as"
+
+	;	ジョイスティック接続サンプル
+	;	(キーボードかジョイスティックで移動させます)
+	;
+	tamas=ginfo_newid				; 未使用の画面IDを得る
+	celload dir_tv+"tamane_b.png",tamas		; 素材フォルダから読み込みます
+	celdiv tamas,256,512				; 256x512ドットに区切る
+
+	;	標準のサイズで表示
+	screen 0,640,480
+
+	mx=320						; X座標
+	my=240						; Y座標
+	msp=4						; スピード
+	face=1						; 表情
+
+*main
+	stick key,15					; キー入力
+	if key&128 : goto *owari			; [ESC]で終了
+	jstick jkey					; ジョイスティック入力
+	key = key|jkey					; 入力データを合成する
+
+	;	入力から座標を動かす
+	if key&1 : mx=mx-msp
+	if key&4 : mx=mx+msp
+	if key&2 : my=my-msp
+	if key&8 : my=my+msp
+
+	redraw 0					; 描画始め
+
+	color 0,160,160					; 背景色
+	boxf						; 背景を消す
+
+	gmode 2						; 透明色ありの指定
+	pos mx,my					; 表示位置の設定
+	celput tamas,face				; 画像コピー
+
+	redraw 1					; 描画終わり
+	await 1000/60					; 60fpsで更新
+
+	goto *main
+
+*owari
+	end
