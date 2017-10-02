@@ -1242,6 +1242,7 @@ void Bmscr::Print( char *mes )
 		Send( cx, cy, size->cx, size->cy );
 	} else {
 		GetTextExtentPoint32( hdc, TEXT(" "), 1, size );
+		size->cx = 0;
 	}
 	Posinc( size->cy );
 }
