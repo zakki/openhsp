@@ -5,6 +5,12 @@ Hot Soup Processor ver3.5                           HSP : Hot Soup Processor
 
 ・hsp3関連 更新履歴
 
+	2017/10/02 3.5
+
+	mes/print命令で空行でもカレントポジションが右に移動する不具合を修正
+	3.5で新規追加された機能のサンプルをフォルダ「new35」に移動
+	[HSP3Dish][android] hsp3dhのリリース時にjarのタイムスタンプを付加するように修正
+
 	2017/09/21 3.5 beta6
 
 	#bootopt notimer が正しく機能していない不具合を修正(HSP3BT#22)
@@ -79,7 +85,7 @@ Hot Soup Processor ver3.5                           HSP : Hot Soup Processor
 	[HSP3Dish][iOS][android] #deffuncで配列をvarで渡した場合、値が正しく取得できないことがある不具合を修正
 	[HGIMG3] β4版でlogmes命令が使えなくなっていた不具合を修正
 	β4版でDLL呼び出しエラーが起動時にチェックされていた不具合を修正
-	print命令で第2パラメーターに1を指定した場合、改行しない機能を追加
+	mes/print命令で第2パラメーターに1を指定した場合、改行しない機能を追加
 	DupPtrを入れ子にすると正常に動作しない問題を修正
 	[hsp3_64] ObjImageでランタイムがクラッシュする問題を修正
 	[hsp3_64] リストボックス、コンボボックスが正常に動作しない問題を修正
