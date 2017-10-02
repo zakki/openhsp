@@ -1,5 +1,7 @@
 	#include "modclbk3.hsp"
-	
+
+	;	コールバックモジュール modclbk3.hspサンプル
+	;
 	#uselib "user32.dll"
 		#func EnumWindows "EnumWindows" int,int
 		#func GetWindowText "GetWindowTextA" int,int,int
