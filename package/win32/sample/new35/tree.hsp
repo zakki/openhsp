@@ -1,0 +1,32 @@
+
+	;	木の素材サンプル
+	;	(実際の画像データはhsptvフォルダに入っています)
+	;
+	randomize
+
+	celload dir_tv+"sozai4.jpg",1		; 素材フォルダから読み込みます
+	celload dir_tv+"treeset.png",2		; 素材フォルダから読み込みます
+	celdiv 2,160,320
+
+	;	標準のサイズで表示
+	screen 0,640,480
+
+*main
+	redraw 0
+	pos 0,0:gmode 0:celput 1		; 背景
+
+	gmode 2
+	repeat 5
+	pos rnd(640),180
+	celput 2,1,0.75,0.75
+	loop
+
+	repeat 5
+	pos rnd(640),130
+	celput 2,1
+	loop
+
+	redraw 1
+
+	wait 200
+	goto *main

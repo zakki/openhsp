@@ -1,0 +1,13 @@
+; Let's HSPIC! のバージョン情報用ファイルと互換です
+; 行の先頭部分に｢;｣(セミコロン)を付けると、その行はスキップします。
+_FILEVERSION=1.0.0.0
+_PRODUCTVERSION=1.0.0.0
+Comments=テスト
+CompanyName=Test!
+FileDescription=テスト
+FileVersion=1.00
+InternalName=test
+LegalCopyright=Copyright (C) 2017 Test!
+OriginalFilename=test.exe
+ProductName=テスト
+ProductVersion=1.00

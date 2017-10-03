@@ -1,11 +1,11 @@
 ------------------------------------------------------------------------------
-HSP3IMP.DLL ver3.3                                  HSP : Hot Soup Processor  
-ＨＳＰ拡張DLLリファレンス             copyright 1999-2011 (c) onion software  
+HSP3IMP.DLL ver3.5                                  HSP : Hot Soup Processor  
+ＨＳＰ拡張DLLリファレンス             copyright 1999-2017 (c) onion software  
 ------------------------------------------------------------------------------
 
 ・はじめに
 
-	このDLLは、Hot Soup Processor ver3.3相当の機能を外部から呼び出すために
+	このDLLは、Hot Soup Processor ver3.5相当の機能を外部から呼び出すために
 	利用するものです。
 	HSP3IMP.DLLには、HSP3ランタイムと同等の機能が組み込まれています。
 	HSPだけでなく、C/C++といった一般的な言語で作成されたアプリケーションに
