@@ -1,4 +1,7 @@
 
+	;	珠音ちゃんドット絵素材サンプル
+	;	(実際の画像データはhsptvフォルダに入っています)
+	;
 	tamadot=ginfo_newid
 	celload dir_tv+"tamadot.bmp",tamadot		; 素材フォルダから読み込みます
 	tama_sx=64:tama_sy=64

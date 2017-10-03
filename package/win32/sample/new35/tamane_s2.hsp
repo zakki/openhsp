@@ -1,4 +1,7 @@
 
+	;	珠音ちゃん絵素材サンプル
+	;	(実際の画像データはhsptvフォルダに入っています)
+	;
 	tamas=ginfo_newid				; 未使用の画面IDを得る
 	celload dir_tv+"tamane_b.png",tamas		; 素材フォルダから読み込みます
 	celdiv tamas,256,512				; 256x512ドットに区切る

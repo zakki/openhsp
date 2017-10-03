@@ -1,0 +1,27 @@
+
+	;	実行ファイル・アイコン書き換えサンプル
+	;	([ctrl]+[F9]で実行ファイルの自動作成を行なってください)
+	;	(packopt.exeが生成されます)
+	;
+	randomize
+
+// 作成する実行ファイル名
+#packopt name "packopt"
+// 埋め込むアイコンファイル
+#packopt icon "tamaicon.ico"
+// 言語を指定 デフォルトは日本語 (1041) 英語(米国)は 1033 など10進数で記述
+#packopt lang "1041"
+// 埋め込むバージョン情報を記述したファイル
+#packopt version "version.txt"
+
+	screen 0,640,480
+	cls 4
+*main
+	hsvcolor rnd(192),255,255		; ランダムな色を指定
+	pos rnd(ginfo_sx),rnd(ginfo_sy)		; ランダムな座標を指定
+	mes "☆"				; 「☆」を表示
+
+	wait 10
+	goto *main
+
+

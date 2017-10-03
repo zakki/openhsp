@@ -12,8 +12,6 @@
 	<title>拡張プラグイン・モジュール一覧</title>
 </head>
 <!--
-	2015/11/12
-		・ 非推奨のプラグイン・モジュールを分離
 	2010/02/16
 		・ 同梱モジュールの説明を追加
 	2009/05/19
@@ -61,6 +59,7 @@
 					<li><a href="#hsp261cmp">hsp261cmp.as</a></li>
 					<li><a href="#form_decode">form_decode.as</a></li>
 					<li><a href="#mod_getenv">mod_getenv.as</a></li>
+					<li><a href="#mod_img">mod_img.as</a></li>
 					<li><a href="#hspmath">hspmath.as</a></li>
 					<li><a href="#mod_fontdlg">mod_fontdlg.as</a></li>
 					<li><a href="#mod_aht">mod_aht.as</a></li>
@@ -69,11 +68,10 @@
 					<li><a href="#mod_picfont">mod_picfont.as</a></li>
 					<li><a href="#mod_rss">mod_rss.as</a></li>
 					<li><a href="#mod_stbar">mod_stbar.as</a></li>
-					<li><a href="#mod_clbk">modclbk3.hsp</a></li>
+					<li><a href="#modclbk">modclbk3.hsp</a></li>
 					<li><a href="#winapi">Win32API定義</a></li>
 				</ol>
 			</li>
-			<li><a href="#OBSOLATE">非推奨のプラグイン・モジュール</a></li>
 			<li><a href="#OTHER_PLUGIN">その他の拡張プラグイン</a></li>
 			<li><a href="#SHIYOU">拡張プラグインの仕様</a></li>
 		</ol>
@@ -108,7 +106,7 @@
 			<tr>
 				<th width="20%">拡張プラグイン</th>
 				<th width="30%">HSPEXT.DLL</th>
-				<th width="5%">Ver3.1</th>
+				<th width="5%">Ver3.5</th>
 				<th width="25%">作者:おにたま</th>
 				<th width="20%"><a href="http://www.onionsoft.net/">作者のページ</a></th>
 			</tr>
@@ -140,7 +138,7 @@
 			<tr>
 				<th width="20%">拡張プラグイン</th>
 				<th width="30%">HSPINET.DLL</th>
-				<th width="5%">Ver3.1</th>
+				<th width="5%">Ver3.5</th>
 				<th width="25%">作者:おにたま</th>
 				<th width="20%"><a href="http://www.onionsoft.net/">作者のページ</a></th>
 			</tr>
@@ -168,7 +166,7 @@
 			<tr>
 				<th width="20%">拡張ランタイム</th>
 				<th width="30%">HGIMG3.hrt</th>
-				<th width="5%">Ver3.1</th>
+				<th width="5%">Ver3.5</th>
 				<th width="25%">作者:おにたま</th>
 				<th width="20%"><a href="http://www.onionsoft.net/">作者のページ</a></th>
 			</tr>
@@ -212,30 +210,30 @@
 			<tr>
 				<th width="20%">拡張ランタイム</th>
 				<th width="30%">HGIMG4.hrt</th>
-				<th width="5%">Ver3.4</th>
+				<th width="5%">Ver3.5</th>
 				<th width="25%">作者:おにたま</th>
 				<th width="20%"><a href="http://www.onionsoft.net/">作者のページ</a></th>
 			</tr>
 			<tr>
 				<td colspan="5">
 					<p>
-						HGIMG3の後継にあたる、高機能2D・3D画像処理ランタイムです。
-						2D・3Dグラフィック表示をサポートし、物理エンジンなどを内包しています。
+						高機能2D・3D画像処理機能付きランタイムです。
+						高度な2D・3Dグラフィック表示をサポートしたOpenGL/DirectX9のプラグインになります。
 					</p>
 					<p>
 						スプライトを使用した2Dゲームから、3Dモデルを使った本格的なソフトまで幅広く
 						利用することができます。
-						HSP3HG.hrtで追加される主な機能は以下の通りです。
+						HGIMG4で追加される主な機能は以下の通りです。
 					</p>
 					<ul>
-							<li>OpenGL/ESまたはDirectX9による描画、シェーダー言語サポート</li>
-							<li>シーン管理と統合化された物理エンジン(Bullet)サポート</li>
-							<li>FBX形式のモデルファイル読み込み、アニメーションサポート</li>
-							<li>マルチテクスチャ、バンプマップ、ハイトマップ、LODをサポート</li>
-							<li>フォントデータ(TTF)のレンダリングサポート</li>
-							<li>オフスクリーンレンダリング及び各種ポストエフェクトサポート</li>
-							<li>WindowsだけでなくiOS,Android上での動作をサポート予定</li>
-							<li>HSP及びHSP3Dishと同様のライセンス規約、オープンソース </li>
+							<li>OpenGL/ESまたはDirectX9による描画、シェーダー言語サポート
+							<li>シーン管理と統合化された物理エンジン(Bullet)サポート
+							<li>FBX形式のモデルファイル読み込み、アニメーションサポート
+							<li>マルチテクスチャ、バンプマップ、ハイトマップ、LODをサポート
+							<li>フォントデータ(TTF)のレンダリングサポート
+							<li>オフスクリーンレンダリング及び各種ポストエフェクトサポート
+							<li>WindowsだけでなくiOS,Android,Linux上での動作をサポート
+							<li>HSP及びHSP3Dishと同様のライセンス規約、オープンソース 
 					</ul>
 					<p>
 						詳しくは、別途ドキュメント「<a href="hgimg4.txt">hgimg4.txt</a>」を参照してください。
@@ -249,7 +247,7 @@
 			<tr>
 				<th width="20%">拡張プラグイン</th>
 				<th width="30%">OBAQ for HSP3</th>
-				<th width="5%">Ver3.3</th>
+				<th width="5%">Ver3.5</th>
 				<th width="25%">作者:Zener Works, Inc./kuni/onitama</th>
 				<th width="20%"><a href="http://www.zener.co.jp/">作者のページ</a></th>
 			</tr>
@@ -277,7 +275,7 @@
 			<tr>
 				<th width="20%">拡張プラグイン</th>
 				<th width="30%">HSPCV.DLL</th>
-				<th width="5%">Ver3.1</th>
+				<th width="5%">Ver3.5</th>
 				<th width="25%">作者:おにたま</th>
 				<th width="20%"><a href="http://www.onionsoft.net/">作者のページ</a></th>
 			</tr>
@@ -316,7 +314,7 @@
 			<tr>
 				<th width="20%">拡張プラグイン</th>
 				<th width="30%">HSPDB.DLL</th>
-				<th width="5%">Ver3.1</th>
+				<th width="5%">Ver3.5</th>
 				<th width="25%">作者:おにたま</th>
 				<th width="20%"><a href="http://www.onionsoft.net/">作者のページ</a></th>
 			</tr>
@@ -345,7 +343,7 @@
 			<tr>
 				<th width="20%">拡張プラグイン</th>
 				<th width="30%">HSPDA.DLL</th>
-				<th width="5%">Ver3.1</th>
+				<th width="5%">Ver3.5</th>
 				<th width="25%">作者:おにたま</th>
 				<th width="20%"><a href="http://www.onionsoft.net/">作者のページ</a></th>
 			</tr>
@@ -356,7 +354,8 @@
 					</p>
 					<p>
 						大量の文字列や数値をまとめてデータ管理する場合に威力を発揮します。
-						ソーススクリプトで使用している変数データの一部またはすべてをファイルに書き出し、
+						特に数値や文字列のソート機能は、大量のデータでも短時間で並び替えが可能です。
+						また、ソーススクリプトで使用している変数データの一部またはすべてをファイルに書き出し、
 						読み込みを行なう機能を持っています。
 						その他にも、CSV形式のファイルを配列に変換したり検索する機能、実数の乱数発生などが
 						用意されています。
@@ -373,7 +372,7 @@
 			<tr>
 				<th width="20%">拡張プラグイン</th>
 				<th width="30%">HSPCMP.DLL</th>
-				<th width="5%">Ver3.1</th>
+				<th width="5%">Ver3.5</th>
 				<th width="25%">作者:おにたま</th>
 				<th width="20%"><a href="http://www.onionsoft.net/">作者のページ</a></th>
 			</tr>
@@ -386,7 +385,7 @@
 						スクリプトエディタが持つHSP関連機能（コンパイル、実行、オブジェクト作成、実行ファイル作成）を
 						コントロール可能です。HSPのシステム機能をHSPのスクリプトから制御することで、
 						それぞれのユーザーに合った独自のカスタマイズやバッチ処理が可能になります。
-						HSP3.1の新機能である、AHT(拡張テンプレート)のためのサポート機能も持っています。
+						AHT(拡張テンプレート)のためのサポート機能も持っています。
 					</p>
 					<p>
 						詳しくは、別途ドキュメント「<a href="hspcmp.txt">hspcmp.txt</a>」を参照してください。
@@ -400,7 +399,7 @@
 			<tr>
 				<th width="20%">拡張プラグイン</th>
 				<th width="30%">HSP3IMP.DLL</th>
-				<th width="5%">Ver3.1</th>
+				<th width="5%">Ver3.5</th>
 				<th width="25%">作者:おにたま</th>
 				<th width="20%"><a href="http://www.onionsoft.net/">作者のページ</a></th>
 			</tr>
@@ -427,7 +426,7 @@
 			<tr>
 				<th width="20%">拡張プラグイン</th>
 				<th width="30%">HSPOGG.DLL</th>
-				<th width="5%">Ver3.1</th>
+				<th width="5%">Ver3.5</th>
 				<th width="25%">作者:おにたま</th>
 				<th width="20%"><a href="http://www.onionsoft.net/">作者のページ</a></th>
 			</tr>
@@ -453,7 +452,7 @@
 			<tr>
 				<th width="20%">拡張プラグイン</th>
 				<th width="30%">HSPSOCK.DLL</th>
-				<th width="5%">Ver3.1</th>
+				<th width="5%">Ver3.5</th>
 				<th width="25%">作者:おにたま</th>
 				<th width="20%"><a href="http://www.onionsoft.net/">作者のページ</a></th>
 			</tr>
@@ -510,7 +509,7 @@
 			<tr>
 				<th width="20%">拡張プラグイン</th>
 				<th width="30%">HSPPRINT.DLL</th>
-				<th width="5%">Ver3.4</th>
+				<th width="5%">Ver3.5</th>
 				<th width="25%">作者:おにたま</th>
 				<th width="20%"><a href="http://www.onionsoft.net/">作者のページ</a></th>
 			</tr>
@@ -612,7 +611,7 @@
 			<tr>
 				<th width="20%">拡張ランタイム</th>
 				<th width="30%">HSP3dish.hrt</th>
-				<th width="5%">Ver3.3</th>
+				<th width="5%">Ver3.5</th>
 				<th width="25%">作者:おにたま</th>
 				<th width="20%"><a href="http://www.onionsoft.net/">作者のページ</a></th>
 			</tr>
@@ -676,7 +675,7 @@
 			<tr>
 				<th width="20%">拡張モジュール</th>
 				<th width="30%">hsp3util.as</th>
-				<th width="5%">Ver3.3</th>
+				<th width="5%">Ver3.5</th>
 				<th width="25%">作者:おにたま</th>
 				<th width="20%"><a href="http://www.onionsoft.net/">作者のページ</a></th>
 			</tr>
@@ -724,7 +723,7 @@
 			<tr>
 				<th width="20%">拡張モジュール</th>
 				<th width="30%">form_decode.as</th>
-				<th width="5%">Ver3.3</th>
+				<th width="5%">Ver3.5</th>
 				<th width="25%">作者:おにたま</th>
 				<th width="20%"><a href="http://www.onionsoft.net/">作者のページ</a></th>
 			</tr>
@@ -746,7 +745,7 @@
 			<tr>
 				<th width="20%">拡張モジュール</th>
 				<th width="30%">mod_getenv.as</th>
-				<th width="5%">Ver3.3</th>
+				<th width="5%">Ver3.5</th>
 				<th width="25%">作者:おにたま</th>
 				<th width="20%"><a href="http://www.onionsoft.net/">作者のページ</a></th>
 			</tr>
@@ -762,13 +761,36 @@
 				</td>
 			</tr>
 		</table>
+		<h3 id="mod_img">mod_img.as</h3>
+		<table summary="拡張モジュールの紹介です。" class="pluginlist">
+			<caption>mod_img.asの紹介</caption>
+			<tr>
+				<th width="20%">拡張モジュール</th>
+				<th width="30%">mod_img.as</th>
+				<th width="5%">Ver3.5</th>
+				<th width="25%">作者:おにたま</th>
+				<th width="20%"><a href="http://www.onionsoft.net/">作者のページ</a></th>
+			</tr>
+			<tr>
+				<td colspan="5">
+					<p>
+					画像を読み込むためのimgload命令が追加されます。
+					BMP,JPEG,GIF,ICO,PNGフォーマットを読み込むことが可能です。
+					(ただし、packfileからの読み込みはサポートしていないので注意してください)
+					</p>
+					<p>
+					詳しくは、モジュールのソーススクリプト及び命令ヘルプを参照してください。
+					</p>
+				</td>
+			</tr>
+		</table>
 		<h3 id="hspmath">hspmath.as</h3>
 		<table summary="拡張モジュールの紹介です。" class="pluginlist">
 			<caption>hspmath.asの紹介</caption>
 			<tr>
 				<th width="20%">拡張モジュール</th>
 				<th width="30%">hspmath.as</th>
-				<th width="5%">Ver3.3</th>
+				<th width="5%">Ver3.5</th>
 				<th width="25%">作者:おにたま</th>
 				<th width="20%"><a href="http://www.onionsoft.net/">作者のページ</a></th>
 			</tr>
@@ -790,7 +812,7 @@
 			<tr>
 				<th width="20%">拡張モジュール</th>
 				<th width="30%">mod_fontdlg.as</th>
-				<th width="5%">Ver3.3</th>
+				<th width="5%">Ver3.5</th>
 				<th width="25%">作者:おにたま</th>
 				<th width="20%"><a href="http://www.onionsoft.net/">作者のページ</a></th>
 			</tr>
@@ -812,7 +834,7 @@
 			<tr>
 				<th width="20%">拡張モジュール</th>
 				<th width="30%">mod_aht.as</th>
-				<th width="5%">Ver3.3</th>
+				<th width="5%">Ver3.5</th>
 				<th width="25%">作者:おにたま</th>
 				<th width="20%"><a href="http://www.onionsoft.net/">作者のページ</a></th>
 			</tr>
@@ -834,7 +856,7 @@
 			<tr>
 				<th width="20%">拡張モジュール</th>
 				<th width="30%">mod_joystick.as</th>
-				<th width="5%">Ver3.3</th>
+				<th width="5%">Ver3.5</th>
 				<th width="25%">作者:MIA</th>
 				<th width="20%"><a href="http://taillove.jp/mia/">作者のページ</a></th>
 			</tr>
@@ -856,7 +878,7 @@
 			<tr>
 				<th width="20%">拡張モジュール</th>
 				<th width="30%">mod_menu.as</th>
-				<th width="5%">Ver3.3</th>
+				<th width="5%">Ver3.5</th>
 				<th width="25%">作者:HSPWiKi</th>
 				<th width="20%"><a href="http://quasiquote.org/hspwiki/">作者のページ</a></th>
 			</tr>
@@ -878,7 +900,7 @@
 			<tr>
 				<th width="20%">拡張モジュール</th>
 				<th width="30%">mod_picfont.as</th>
-				<th width="5%">Ver3.3</th>
+				<th width="5%">Ver3.5</th>
 				<th width="25%">作者:おにたま</th>
 				<th width="20%"><a href="http://www.onionsoft.net/">作者のページ</a></th>
 			</tr>
@@ -901,7 +923,7 @@
 			<tr>
 				<th width="20%">拡張モジュール</th>
 				<th width="30%">mod_rss.as</th>
-				<th width="5%">Ver3.3</th>
+				<th width="5%">Ver3.5</th>
 				<th width="25%">作者:おにたま</th>
 				<th width="20%"><a href="http://www.onionsoft.net/">作者のページ</a></th>
 			</tr>
@@ -923,7 +945,7 @@
 			<tr>
 				<th width="20%">拡張モジュール</th>
 				<th width="30%">mod_stbar.as</th>
-				<th width="5%">Ver3.3</th>
+				<th width="5%">Ver3.5</th>
 				<th width="25%">作者:おにたま</th>
 				<th width="20%"><a href="http://www.onionsoft.net/">作者のページ</a></th>
 			</tr>
@@ -938,7 +960,7 @@
 				</td>
 			</tr>
 		</table>
-		<h3 id="mod_clbk">modclbk3.hsp</h3>
+		<h3 id="modclbk">modclbk3.hsp</h3>
 		<table summary="拡張モジュールの紹介です。" class="pluginlist">
 			<caption>modclbk3.hspの紹介</caption>
 			<tr>
@@ -951,22 +973,21 @@
 			<tr>
 				<td colspan="5">
 					<p>
-					外部APIから値を受け取るためのコールバックを作成し設定するためのモジュールです。
+					API呼び出しで使用するコールバック関数をHSP上で定義することのできるモジュールです。
 					</p>
 					<p>
-					詳しくは、モジュールのソーススクリプトを参照してください。
+					詳しくは、モジュールのソーススクリプトとサンプルを参照してください。
 					</p>
 				</td>
 			</tr>
 		</table>
-
 		<h3 id="winapi">Win32API定義</h3>
 		<table summary="拡張モジュールの紹介です。" class="pluginlist">
 			<caption>Win32API定義の紹介</caption>
 			<tr>
 				<th width="20%">拡張モジュール</th>
 				<th width="30%">Win32API定義</th>
-				<th width="5%">Ver3.3</th>
+				<th width="5%">Ver3.5</th>
 				<th width="25%">作者:sakura/おにたま</th>
 				<th width="20%"><a href="http://www.onionsoft.net/">作者のページ</a></th>
 			</tr>
@@ -993,112 +1014,7 @@
 			</tr>
 		</table>
 
-		<h2 id="OBSOLATE">非推奨のプラグイン・モジュール</h2>
-		<p>
-			以下のプラグイン・モジュールは、開発が終了して時間が経過しているため、非推奨としています。
-			これらは、将来のバージョンでパッケージから削除される可能性がありますのでご了承ください。
-		</p>
-
-		<h3 id="HSPDX">HSPDX.DLL</h3>
-		<table summary="拡張プラグインHSPDXの紹介です。" class="pluginlist">
-			<caption>HSPDX.DLLの紹介</caption>
-			<tr>
-				<th width="20%">拡張プラグイン</th>
-				<th width="30%">HSPDX.DLL</th>
-				<th width="5%">Ver3.1</th>
-				<th width="25%">作者:おにたま/Shinagawa</th>
-				<th width="20%"><a href="http://www.hspdx.net/">作者のページ</a></th>
-			</tr>
-			<tr>
-				<td colspan="5">
-					<p>
-						DirectX対応の2D描画プラグインです。
-					</p>
-					<p>
-						豊富なスプライト制御命令を持っているので、面倒な角度ごとの移動、自由落下、衝突判定などを
-						1つの命令で実行できます。
-						これにより、2Dキャラクタを使ったゲーム、デモなどの作成を手軽に行なうことができます。
-					</p>
-					<p>
-						このプラグインは、Shinagawa氏が改変、更新したものをHSP本体に同梱しています。
-						プラグインについてのご意見や感想などは、onion softwareではなく、
-						Sinagawa氏にフィードバックされるようお願いします。
-					</p>
-					<p>
-						詳しくは、別途ドキュメント「<a href="hspdx.txt">hspdx.txt</a>」を参照してください。
-					</p>
-				</td>
-			</tr>
-		</table>
-		<h3 id="llmod3">llmod3</h3>
-		<table summary="拡張モジュールの紹介です。" class="pluginlist">
-			<caption>llmod3の紹介</caption>
-			<tr>
-				<th width="20%">拡張モジュール</th>
-				<th width="30%">llmod3</th>
-				<th width="5%">Ver3.3</th>
-				<th width="25%">作者:tom/芝やん/OpenHSP</th>
-				<th width="20%"><a href="http://www.s-software.net/">作者のページ</a></th>
-			</tr>
-			<tr>
-				<td colspan="5">
-					<p>
-					HSP3.0以前に使用されていたllmod(tomさん作)の命令群をHSP3で使用可能にするモジュールです。
-					拡張オブジェクトからシステムの設定など多くの機能をサポートしています。
-					llmod3は、common/llmod3フォルダにある以下のファイルから構成されています。
-					<ul>
-					<li>about.as	aboutモジュール
-					<li>msgdlg.as	dialog(type 0)拡張モジュール
-					<li>unicode.as	Unicode関連のモジュール
-					<li>winver.as	Version取得モジュール
-					<li>multiopen.as	dialog(type 16,17)拡張モジュール(複数のファイル名を取得できるようにしたもの)
-					<li>scrsvr.as	スクリーンセーバー関連モジュール
-					<li>obj.as		オブジェクト関連モジュール
-					<li>img.as		イメージ関連のモジュール
-					<li>treebox.as	ツリーボックス作成モジュール
-					<li>progbox.as	プログレスボックス作成モジュール
-					<li>trackbox.as	トラックボックス作成モジュール
-					<li>udbtn.as	アップダウンボックス作成モジュール
-					<li>listview.as	リストビュー作成モジュール
-					<li>console.as	コンソールウィンドウ作成モジュール
-					<li>dragdrop.as	ドラッグ&ドロップモジュール
-					<li>ime.as		IME関連のモジュール
-					<li>input.as	インプット関連のモジュール
-					<li>misc.as		その他
-					</ul>
-					</p>
-					<p>
-					詳しくは、モジュールのソーススクリプト及び命令ヘルプを参照してください。
-					</p>
-				</td>
-			</tr>
-		</table>
-		<h3 id="mod_img">mod_img.as</h3>
-		<table summary="拡張モジュールの紹介です。" class="pluginlist">
-			<caption>mod_img.asの紹介</caption>
-			<tr>
-				<th width="20%">拡張モジュール</th>
-				<th width="30%">mod_img.as</th>
-				<th width="5%">Ver3.3</th>
-				<th width="25%">作者:おにたま</th>
-				<th width="20%"><a href="http://www.onionsoft.net/">作者のページ</a></th>
-			</tr>
-			<tr>
-				<td colspan="5">
-					<p>
-					画像を読み込むためのimgload命令が追加されます。
-					BMP,JPEG,GIF,ICO,PNGフォーマットを読み込むことが可能です。
-					(ただし、packfileからの読み込みはサポートしていないので注意してください)
-					</p>
-					<p>
-					詳しくは、モジュールのソーススクリプト及び命令ヘルプを参照してください。
-					</p>
-				</td>
-			</tr>
-		</table>
-
-
-		<h2 id="OTHER_PLUGIN">その他の拡張プラグイン</h2>
+		<h2 id="OTHER_PLUGI">その他の拡張プラグイン</h2>
 		<p>
 			HSP拡張プラグインは、仕様が公開されていて、ユーザーの方たちが制作した
 			多くのプラグインが存在します。
