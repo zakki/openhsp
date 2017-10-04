@@ -1,13 +1,11 @@
 
-
-
-
 #define IID_IImgCtx   "{3050f3d7-98b5-11cf-bb82-00aa00bdce0b}"
 #define CLSID_IImgCtx "{3050f3d6-98b5-11cf-bb82-00aa00bdce0b}"
 
 #usecom  ImgCtx IID_IImgCtx CLSID_IImgCtx
 #comfunc IImgCtx_Load 3 wstr,int
 #comfunc IImgCtx_GetStateInfo 8 var,var,int
+#comfunc IImgCtx_Draw 10 int,var
 #comfunc IImgCtx_StretchBlt 12 int,int,int,int,int,int,int,int,int,int
 
 	title "ImgCtxÇ…ÇÊÇÈâÊëúì«Ç›çûÇ›"
@@ -29,7 +27,8 @@
 
 
 	IImgCtx_GetStateInfo pImage,flg,size,0
-	IImgCtx_StretchBlt pImage,hdc,0,0,size(0),size(1),0,0,size(0),size(1),0xCC0020
+	rect=0,0,size(0),size(1)
+	IImgCtx_Draw pImage,hdc,rect
 	redraw 1
 
 	title "ì«Ç›çûÇ›äÆóπ["+fname+"]"

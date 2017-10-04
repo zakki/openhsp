@@ -10,6 +10,7 @@
 #usecom  ImgCtx IID_IImgCtx CLSID_IImgCtx
 #comfunc IImgCtx_Load 3 wstr,int
 #comfunc IImgCtx_GetStateInfo 8 var,var,int
+#comfunc IImgCtx_Draw 10 int,var
 #comfunc IImgCtx_StretchBlt 12 int,int,int,int,int,int,int,int,int,int
 
 #deffunc imgload str _p1
@@ -34,7 +35,8 @@
 	loop
 
 	IImgCtx_GetStateInfo pImage,flg,size,0
-	IImgCtx_StretchBlt pImage,hdc,0,0,size(0),size(1),0,0,size(0),size(1),0xCC0020
+	rect=0,0,size(0),size(1)
+	IImgCtx_Draw pImage,hdc,rect
 	redraw 1
 
 	delcom pImage
