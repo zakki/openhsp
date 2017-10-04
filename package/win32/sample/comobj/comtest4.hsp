@@ -1,7 +1,7 @@
 
 	;	XMLパーサー(MSXML)を使用してRSSを読み込む
 	;
-	url="http://hotwired.goo.ne.jp/news/index.rdf"
+	url="http://www.metro.tokyo.jp/rss/index.rdf"
 	;
 	newcom oDom,"Microsoft.XMLDOM"
 	oDom("async")="FALSE"		; 同期読み込みを行う

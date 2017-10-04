@@ -7,14 +7,14 @@
 	netinit
 	if stat : dialog "ネット接続できません。" : end
 
-	neturl "http://www.onionsoft.net/hsp/"
+	neturl "http://www.onionsoft.net/"
 
 	mes "DOWNLOAD 開始"
 
-	netload "index.html"
+	netload "about.html"
 
 	mes "DOWNLOAD 完了"
-	mes "index.htmlを保存しました。"
+	mes "about.htmlを保存しました。"
 
 	stop
 

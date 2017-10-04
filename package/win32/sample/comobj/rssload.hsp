@@ -2,7 +2,7 @@
 
 	;	RSSリーダーサンプル
 	;
-	url="http://hotwired.goo.ne.jp/news/index.rdf"
+	url="http://www.metro.tokyo.jp/rss/index.rdf"
 	rssload desc, link, url, 6
 	;
 	if stat=1 : dialog "取得に失敗しました。" : end
