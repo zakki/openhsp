@@ -395,7 +395,7 @@
 #cmd event_wdir $143
 #cmd event_wefx $144
 #cmd event_wcolor $145
-#cmd event_wangx $149
+#cmd event_wang $149
 #cmd event_wangy $14a
 #cmd event_wangz $14b
 #cmd event_wangr $14c
