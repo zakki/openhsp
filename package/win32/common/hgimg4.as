@@ -356,7 +356,7 @@
 #cmd event_work $116
 #cmd event_work2 $117
 #cmd event_axang $118
-#cmd event_angx $119
+#cmd event_ang $119
 #cmd event_angy $11a
 #cmd event_angz $11b
 #cmd event_angr $11c
@@ -370,7 +370,7 @@
 #cmd event_addwork $126
 #cmd event_addwork2 $127
 #cmd event_addaxang $128
-#cmd event_addangx $129
+#cmd event_addang $129
 #cmd event_addangy $12a
 #cmd event_addangz $12b
 #cmd event_addangr $12c
@@ -384,7 +384,7 @@
 #cmd event_setwork $136
 #cmd event_setwork2 $137
 #cmd event_setaxang $138
-#cmd event_setangx $139
+#cmd event_setang $139
 #cmd event_setangy $13a
 #cmd event_setangz $13b
 #cmd event_setangr $13c
