@@ -49,6 +49,9 @@ void hgio_copy( struct BMSCR *bm, short xx, short yy, short srcsx, short srcsy, 
 void hgio_copyrot( struct BMSCR *bm, short xx, short yy, short srcsx, short srcsy, float ofsx, float ofsy, struct BMSCR *bmsrc, float psx, float psy, float ang );
 #endif
 
+bool hgio_getkey( int kcode );
+void hgio_setColorTex( int rval, int gval ,int bval ); 
+
 //	for internal use
 
 void hgio_clear( void );
@@ -56,8 +59,7 @@ void hgio_reset( void );
 
 void hgio_setClear( int rval, int gval ,int bval );
 void hgio_setFilterMode( int mode );
-void hgio_setBlendMode( int mode, int aval );
-void hgio_setBlendModeFlat( int mode );
+void hgio_setTexBlendMode( int mode, int aval );
 void hgio_putTexFont( int x, int y, char *msg, int color );
 
 //色の指定

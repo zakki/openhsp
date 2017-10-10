@@ -58,14 +58,22 @@ void gpobj::reset( int id )
 	_mygroup = 0;
 	_colgroup = 0;
 	_transparent = 255;
+	_fade = 0;
 
 	_usegpmat = -1;
+	_usegpphy = -1;
 	_colilog = -1;
 
 	_prm_modalpha = NULL;
 
 	for(i=0;i<GPOBJ_USERVEC_MAX;i++) {
 		_vec[i].set( Vector4::zero() );
+	}
+
+	//	イベントのリセット
+	for (i = 0; i<GPOBJ_MULTIEVENT_MAX; i++) {
+		_time[i] = 0.0f;
+		_event[i] = NULL;
 	}
 
 }
@@ -136,6 +144,69 @@ void gpobj::updateParameter( Material *mat )
 }
 
 
+int gpobj::executeFade(void)
+{
+	//	透明度の自動フェードイン・アウトを制御する
+	//
+	if (_fade == 0) return 0;
+	_transparent += _fade;
+	if (_transparent <= 0) {
+		_fade = 0;
+		_transparent = 0;
+		return -1;
+	}
+	if (_transparent > 255) {
+		_fade = 0;
+		_transparent = 255;
+	}
+	return 0;
+}
+
+
+int gpobj::GetEmptyEvent(void)
+{
+	int i;
+	for (i = 0; i<GPOBJ_MULTIEVENT_MAX; i++) {
+		if (_event[i] == NULL) return i;
+	}
+	return -1;
+}
+
+
+void gpobj::DeleteEvent(int entry)
+{
+	_event[entry] = NULL;
+}
+
+
+void gpobj::StartEvent(gpevent *ev, int entry)
+{
+	SetEvent(ev, entry);
+}
+
+
+void gpobj::SetEvent(gpevent *ev, int entry)
+{
+	int i;
+	if (entry < 0) {
+		i = GetEmptyEvent();
+		if (i < 0) return;
+		_event[i] = ev;
+		_time[i] = 0.0f;
+	}
+	else {
+		_event[entry] = ev;
+		_time[entry] = 0.0f;
+	}
+}
+
+
+gpevent *gpobj::GetEvent(int entry)
+{
+	return _event[entry];
+}
+
+
 /*------------------------------------------------------------*/
 /*
 		gameplay game class
@@ -149,6 +220,7 @@ gamehsp::gamehsp()
 	_maxobj = 0;
 	_gpobj = NULL;
 	_gpmat = NULL;
+	_gpevent = NULL;
 	_colrate = 1.0f / 255.0f;
 	_scene = NULL;
 	_meshBatch = NULL;
@@ -186,16 +258,18 @@ void gamehsp::deleteAll( void )
 		_gpobj = NULL;
 	}
 
-	if ( _gpmat ) {
+	if (_gpmat) {
 		int i;
-		for(i=0;i<_maxmat;i++) { deleteMat( i ); }
+		for (i = 0; i<_maxmat; i++) { deleteMat(i); }
 		delete[] _gpmat;
 		_gpmat = NULL;
 	}
 
-	if (_scene) {
-		_scene->removeAllNodes();
-		_scene->setActiveCamera(NULL);
+	if (_gpevent) {
+		int i;
+		for (i = 0; i<_maxevent; i++) { deleteEvent(i); }
+		delete[] _gpevent;
+		_gpevent = NULL;
 	}
 
 	if (_meshBatch) {
@@ -208,7 +282,13 @@ void gamehsp::deleteAll( void )
 	}
 
 	SAFE_RELEASE(_spriteEffect);
-	SAFE_RELEASE(_scene);
+
+	if (_scene) {
+		_scene->removeAllNodes();
+		_scene->setActiveCamera(NULL);
+		SAFE_RELEASE(_scene);
+	}
+
 }
 
 
@@ -218,8 +298,6 @@ void gamehsp::update(float elapsedTime)
 
 void gamehsp::render(float elapsedTime)
 {
-    // Clear the color and depth buffers
-
 	// 描画先をリセット
 	resumeFrameBuffer();
 
@@ -232,7 +310,6 @@ void gamehsp::render(float elapsedTime)
 	// 画面クリア
 	clearFrameBuffer();
 
-    //nodetemp->rotateY(MATH_DEG_TO_RAD((float)elapsedTime / 1000.0f * 180.0f));
 }
 
 void gamehsp::keyEvent(Keyboard::KeyEvent evt, int key)
@@ -257,6 +334,17 @@ void gamehsp::hookSetSysReq( int reqid, int value )
 	case SYSREQ_VSYNC:
 		setVsync( value!=0 );
 		break;
+	case SYSREQ_FIXEDFRAME:
+		{
+		double fixedrate = (double)value;
+		if (fixedrate < 0.0) {
+			setFixedTime(-1);
+		}
+		else {
+			setFixedTime(fixedrate);
+		}
+		break;
+		}
 	default:
 		break;
 	}
@@ -299,6 +387,10 @@ void gamehsp::resetScreen( int opt )
 	// gpmat作成
 	_maxmat = GetSysReq( SYSREQ_MAXMATERIAL );
 	_gpmat = new gpmat[ _maxmat ];
+
+	// gpevent作成
+	_maxevent = GetSysReq(SYSREQ_MAXEVENT);
+	_gpevent = new gpevent[_maxevent];
 
 	// シーン作成
 	_scene = Scene::create();
@@ -362,6 +454,14 @@ void gamehsp::resetScreen( int opt )
 	// ビューポート初期化
 	updateViewport( 0, 0, getWidth(), getHeight() );
 
+	//	固定フレームレート設定
+	double fixedrate = (double)GetSysReq(SYSREQ_FIXEDFRAME);
+	if (fixedrate < 0.0) {
+		setFixedTime(-1);
+	}
+	else {
+		setFixedTime(fixedrate);
+	}
 }
 
 
@@ -509,8 +609,8 @@ void gamehsp::update2DRenderProjection(Material* material, Matrix *mat)
 void gamehsp::update2DRenderProjectionSystem(Matrix *mat)
 {
 	//	2Dシステム用のプロジェクションを再設定する
-	update2DRenderProjection(_meshBatch->getMaterial(), mat);
-	update2DRenderProjection(_meshBatch_line->getMaterial(), mat);
+	if (_meshBatch) update2DRenderProjection(_meshBatch->getMaterial(), mat);
+	if (_meshBatch_line) update2DRenderProjection(_meshBatch_line->getMaterial(), mat);
 }
 
 
@@ -1346,10 +1446,12 @@ int gamehsp::makeFloorNode( float xsize, float ysize, int color, int matid )
 		int matopt = 0;
 		if ( _curlight < 0 ) matopt |= GPOBJ_MATOPT_NOLIGHT;
 		material = makeMaterialColor( color, matopt );
-	} else {
-		material = getMaterial( matid );
+		makeNewModel(obj, floorMesh, material);
 	}
-	makeNewModel( obj, floorMesh, material );
+	else {
+		material = getMaterial( matid );
+		makeNewModelWithMat(obj, floorMesh, matid);
+	}
 
     // メッシュ削除
     SAFE_RELEASE(floorMesh);
@@ -1395,10 +1497,12 @@ int gamehsp::makePlateNode( float xsize, float ysize, int color, int matid )
 		int matopt = 0;
 		if ( _curlight < 0 ) matopt |= GPOBJ_MATOPT_NOLIGHT;
 		material = makeMaterialColor( color, matopt );
-	} else {
-		material = getMaterial( matid );
+		makeNewModel(obj, floorMesh, material);
 	}
-	makeNewModel( obj, floorMesh, material );
+	else {
+		material = getMaterial( matid );
+		makeNewModelWithMat(obj, floorMesh, matid);
+	}
 
     // メッシュ削除
     SAFE_RELEASE(floorMesh);
@@ -1428,10 +1532,12 @@ int gamehsp::makeBoxNode( float size, int color, int matid )
 		int matopt = 0;
 		if ( _curlight < 0 ) matopt |= GPOBJ_MATOPT_NOLIGHT;
 		material = makeMaterialColor( color, matopt );
-	} else {
-		material = getMaterial( matid );
+		makeNewModel(obj, mesh, material);
 	}
-	makeNewModel( obj, mesh, material );
+	else {
+		material = getMaterial(matid);
+		makeNewModelWithMat(obj, mesh, matid);
+	}
 
 	// 初期化パラメーターを保存
 	obj->_shape = GPOBJ_SHAPE_BOX;
@@ -1729,6 +1835,7 @@ void gamehsp::makeNewModel( gpobj *obj, Mesh *mesh, Material *material )
 		node = Node::create();
 		obj->_node = node;
 	}
+
 	node->setDrawable(model);
 	node->setUserObject( obj );
 	obj->addRef();
@@ -1745,7 +1852,42 @@ int gamehsp::makeNewModelWithMat( gpobj *obj, Mesh *mesh, int matid )
 	//
 	gpmat *mat = getMat( matid );
 	if ( mat == NULL ) return -1;
-	makeNewModel( obj, mesh, mat->_material );
+
+	Material *new_material;
+	NodeCloneContext context;
+	//new_material = mat->_material;
+	new_material = mat->_material->clone(context);		// 元のマテリアルをクローンして適用する
+	setMaterialDefaultBinding(new_material,mat->_matcolor,mat->_matopt);		// 正しくクローンされないBinding情報を上書きする
+
+	//Alertf("[%x]===",new_material);
+	makeNewModel(obj, mesh, new_material);
+
+#if 0
+	Technique *tec = new_material->getTechnique();
+	Pass *pass = tec->getPassByIndex(0);
+	Effect *effect = pass->getEffect();
+
+	//new_material = Material::create( effect );
+	for (unsigned int i = 0, count = tec->getParameterCount(); i < count; ++i)
+	{
+		MaterialParameter *mp = tec->getParameterByIndex(i);
+		Alertf( "%d: [%s]",i, mp->getName() );
+	}
+
+	// Search for the first sampler uniform in the effect.
+	Uniform* samplerUniform = NULL;
+	for (unsigned int i = 0, count = effect->getUniformCount(); i < count; ++i)
+	{
+		Uniform* uniform = effect->getUniform(i);
+		if (uniform && uniform->getType() == GL_SAMPLER_2D)
+		{
+			samplerUniform = uniform;
+			Alertf("[%s] passcount%d [%s][%x]", samplerUniform->getName(), tec->getPassCount(), pass->getId(), new_material);
+			break;
+		}
+	}
+#endif
+
 	obj->_usegpmat = matid;
 	return 0;
 }
@@ -1784,23 +1926,25 @@ int gamehsp::deleteObj( int id )
 	model = obj->_model;
 
 	if ( model ) {
-		if ( obj->_usegpmat >= 0 ) {
 			material = model->getMaterial();
-			material->release();		// 独自にcreateした参照カウントを減らす
-		}
+			SAFE_RELEASE(material);		// マテリアルはモデルに個別で用意されるので削除
 	}
 
 	if (obj->_node) {
+		obj->_node->setUserObject(NULL);
 		if (_curscene >= 0) {
 			_scene->removeNode( obj->_node);
 		}
-		else {
-			SAFE_RELEASE(obj->_node);
-		}
+		obj->_node->removeAllChildren();
+		obj->_node->setLight(NULL);
+		obj->_node->setCamera(NULL);
+
+		SAFE_RELEASE(obj->_node);
 		//unsigned int cnt = obj->_node->getRefCount();
 		//Alertf( "count[%d]",cnt );
 	}
-    SAFE_RELEASE( obj->_camera );
+
+	SAFE_RELEASE( obj->_camera );
     SAFE_RELEASE( obj->_light );
 
 	return 0;
@@ -1876,45 +2020,54 @@ Node *gamehsp::getNode( int objid )
 }
 
 
-int gamehsp::makeCloneNode( int objid )
+int gamehsp::makeCloneNode( int objid, int mode, int eventID )
 {
 	gpobj *obj;
 	Node *node;
+	int id;
 	obj = getObj( objid );
 	if ( obj == NULL ) return -1;
 
 	if ( obj->_spr ) {
 		// 2Dスプライトの場合
-		return makeSpriteObj( obj->_spr->_celid, obj->_spr->_gmode, obj->_spr->_bmscr );
+		id = makeSpriteObj( obj->_spr->_celid, obj->_spr->_gmode, obj->_spr->_bmscr );
 	}
-	
-	gpobj *newobj = addObj();
-	if ( newobj == NULL ) return -1;
+	else {
+		gpobj *newobj = addObj();
+		if (newobj == NULL) return -1;
 
-	node = obj->_node;
-	if ( node == NULL ) {
-		return newobj->_id;
+		node = obj->_node;
+		if (node == NULL) {
+			return newobj->_id;
+		}
+
+		newobj->_mode = obj->_mode;
+		newobj->_usegpmat = obj->_usegpmat;
+		newobj->_shape = obj->_shape;
+		newobj->_sizevec = obj->_sizevec;
+
+		node->setUserObject(NULL);
+
+		newobj->_node = node->clone();
+
+		newobj->_node->setUserObject(newobj);
+		newobj->addRef();
+
+		if (_curscene >= 0) {
+			_scene->addNode(newobj->_node);
+		}
+
+		node->setUserObject(obj);
+		id = newobj->_id;
 	}
 
-	newobj->_mode = obj->_mode;
-	newobj->_usegpmat = obj->_usegpmat;
-	newobj->_shape = obj->_shape;
-	newobj->_sizevec = obj->_sizevec;
-
-	node->setUserObject( NULL );
-
-	newobj->_node = node->clone();
-
-	newobj->_node->setUserObject( newobj );
-	newobj->addRef();
-
-	if ( _curscene >= 0 ) {
-		_scene->addNode( newobj->_node );
+	obj = getObj(id);
+	if (obj == NULL) return -1;
+	obj->_mode |= mode;
+	if (eventID >= 0) {
+		AttachEvent(id,eventID,-1);
 	}
-
-	node->setUserObject( obj );
-
-	return newobj->_id;
+	return id;
 }
 
 
@@ -2014,6 +2167,14 @@ void gamehsp::updateObj( gpobj *obj )
 	//		gpobjの更新
 	//
 	int mode = obj->_mode;
+
+	if (obj->isVisible() == false) return;
+
+	if (obj->executeFade()) {
+		deleteObj(obj->_id);
+		return;
+	}
+
 	if ( mode & ( GPOBJ_MODE_MOVE|GPOBJ_MODE_BORDER) ) {
 		int cflag;
 		Vector3 pos;
@@ -2030,14 +2191,18 @@ void gamehsp::updateObj( gpobj *obj )
 		if ( mode & GPOBJ_MODE_BORDER ) {
 			cflag = updateObjBorder( mode, &pos, dir );
 			if ( cflag ) {												// 消去フラグ
-				deleteObj( obj->_id );
+				if (mode & GPOBJ_MODE_BHIDE) {
+					obj->_mode |= GPOBJ_MODE_HIDE;
+				} else {
+					deleteObj(obj->_id);
+				}
 				return;
 			}
 		}
 		if ( obj->_spr ) {
 			obj->_spr->_pos.set( pos.x, pos.y, pos.z, 1.0f );
 		} else {
-			obj->_node->setTranslation( pos );
+			obj->_node->setTranslation(pos);
 		}
 	}
 
@@ -2049,14 +2214,21 @@ void gamehsp::updateAll( void )
 	/*
 		All update of gpobj
 	*/
-	int i;
+	int i,j;
+	float timepass = 1.0f;
 
     if ( getState() == PAUSED ) return;
 
 	gpobj *obj = _gpobj;
 	for(i=0;i<_maxobj;i++) {
-		if ( obj->_flag ) {
-			updateObj( obj );
+		if (obj->isVisible()) {
+			// Execute Events
+			for (j = 0; j<GPOBJ_MULTIEVENT_MAX; j++) {
+				if (obj->GetEvent(j) != NULL) ExecuteObjEvent(obj, timepass, j);
+			}
+		}
+		if (obj->isVisible()) {
+			updateObj(obj);
 		}
 		obj++;
 	}
@@ -2103,21 +2275,42 @@ int gamehsp::updateObjColi( int objid, float size, int addcol )
 	}
 
 	Vector3 vpos;
+	Vector3 enepos;
 	Node *node;
 	BoundingSphere bound;
 	if ( obj->_node == NULL ) return -1;
 
 	vpos = obj->_node->getTranslation();
-	bound = obj->_node->getBoundingSphere();
-	bound.radius *= size;							// 自分のサイズを調整する
 	atobj = _gpobj;
 
-	for(i=0;i<_maxobj;i++) {
-		if ( atobj->isVisible() ) {
-			if (( atobj->_mygroup & chkgroup )&&( i != objid )) {
+	if (size < 0.0f) {
+		bound = obj->_node->getBoundingSphere();
+		bound.radius *= size;							// 自分のサイズを調整する
+
+		for (i = 0; i<_maxobj; i++) {
+			if (atobj->isVisible()) {
+				if ((atobj->_mygroup & chkgroup) && (i != objid)) {
+					node = atobj->_node;
+					if (node) {
+						if (bound.intersects(node->getBoundingSphere())) {
+							return i;
+						}
+					}
+				}
+			}
+			atobj++;
+		}
+		return -1;
+	}
+
+	for (i = 0; i<_maxobj; i++) {
+		if (atobj->isVisible()) {
+			if ((atobj->_mygroup & chkgroup) && (i != objid)) {
 				node = atobj->_node;
-				if ( node ) {
-					if ( bound.intersects( node->getBoundingSphere() ) ) {
+				if (node) {
+					enepos = node->getTranslation();
+					enepos -= vpos;
+					if ( enepos.length() <= size ) {
 						return i;
 					}
 				}
@@ -2585,3 +2778,32 @@ void gamehsp::deleteFrameBuffer(gameplay::FrameBuffer *fb)
 	SAFE_RELEASE(fb);
 }
 
+int gamehsp::convertAxis(Vector3 *res, Vector3 *pos, int mode)
+{
+	//	座標変換
+	//	mode:0=screen/1=projection/2=view
+	//
+	Rectangle viewport;
+
+	switch (mode) {
+	case 0:
+		viewport = getViewport();
+		_cameraDefault->project(viewport, *pos, res);
+		break;
+	case 1:
+		viewport.set(0.0f,0.0f,1.0f,1.0f);
+		_cameraDefault->project(viewport, *pos, res);
+		break;
+	case 2:
+	{
+		Vector4 v1,v2;
+		Matrix mat = _cameraDefault->getInverseViewMatrix();
+		mat.transformVector(pos->x, pos->y, pos->z, 1.0f, res);
+		break;
+	}
+	default:
+		return -1;
+	}
+
+	return 0;
+}

@@ -442,11 +442,16 @@ void Bmscr::SetMulcolor( int a1, int a2, int a3 )
 {
 	mulcolor = ((a1&0xff)<<16)|((a2&0xff)<<8)|(a3&0xff);
 
+
 #ifdef HSPDISHGP
 	mulcolorvalue[0] = ((float)a1) * COLORRATE;
 	mulcolorvalue[1] = ((float)a2) * COLORRATE;
 	mulcolorvalue[2] = ((float)a3) * COLORRATE;
 	mulcolorvalue[3] = 1.0f;
+#else
+#if defined(HSPLINUX) || defined(HSPEMSCRIPTEN)
+	hgio_setColorTex( a1, a2, a3 );
+#endif
 #endif
 
 }
