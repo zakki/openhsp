@@ -92,6 +92,7 @@ OBJS_GP = \
 	../hsp3/strnote.gp.bc \
 	sysreq.gp.bc \
 	win32gp/gamehsp.gp.bc \
+	win32gp/gpevent.gp.bc \
 	win32gp/gpcam.gp.bc \
 	win32gp/gplgt.gp.bc \
 	win32gp/gpmat.gp.bc \

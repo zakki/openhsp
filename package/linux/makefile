@@ -116,6 +116,7 @@ OBJS_GP = \
 	src/hsp3dish/emscripten/stb_image.gpo \
 	src/hsp3dish/win32gp/hgiox.gpo \
 	src/hsp3dish/win32gp/gamehsp.gpo \
+	src/hsp3dish/win32gp/gpevent.gpo \
 	src/hsp3dish/win32gp/gpcam.gpo \
 	src/hsp3dish/win32gp/gplgt.gpo \
 	src/hsp3dish/win32gp/gpmat.gpo \

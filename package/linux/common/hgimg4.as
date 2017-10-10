@@ -33,6 +33,8 @@
 #const global OBJ_SORT 0x400
 #const global OBJ_LATE 0x4000
 
+#const global OBJ_BHIDE 0x8000
+
 #const global GPOBJ_SCENE  0x100001
 #const global GPOBJ_CAMERA 0x100002
 #const global GPOBJ_LIGHT  0x100003
@@ -46,21 +48,27 @@
 #const global GPOBJ_MATOPT_SPECULAR (64)
 #const global GPOBJ_MATOPT_USERSHADER (128)
 
-#enum global PRMSET_FLAG = 0
+#enum global PRMSET_FLAG = 2
 #enum global PRMSET_MODE
 #enum global PRMSET_ID
 #enum global PRMSET_TIMER
-#enum global PRMSET_ALPHA
 #enum global PRMSET_MYGROUP
 #enum global PRMSET_COLGROUP
 #enum global PRMSET_SHAPE
 #enum global PRMSET_USEGPMAT
 #enum global PRMSET_USEGPPHY
 #enum global PRMSET_COLILOG
-#enum global PRMSET_TRANSPARENT
+#enum global PRMSET_ALPHA
+#enum global PRMSET_FADE
 #enum global PRMSET_SPRID = 0x100
 #enum global PRMSET_SPRCELID
 #enum global PRMSET_SPRGMODE
+
+#const global MOVEMODE_LINEAR 0
+#const global MOVEMODE_SPLINE 1
+#const global MOVEMODE_LINEAR_REL 2
+#const global MOVEMODE_SPLINE_REL 3
+#const global MOVEMODE_FROMWORK 16
 
 #define GPOBJ_LGTOPT_NORMAL (0)
 #define GPOBJ_LGTOPT_POINT (1)
@@ -103,6 +111,7 @@
 
 #const global GPGETMAT_OPT_OBJMAT (0)
 #const global GPGETMAT_OPT_SCRMAT (1)
+
 
 ;
 ;	system request
@@ -159,6 +168,7 @@
 #enum global SYSREQ_PLIGHT_MAX
 #enum global SYSREQ_SLIGHT_MAX
 #enum global SYSREQ_LOGWRITE
+#enum global SYSREQ_FIXEDFRAME
 
 #const global PLATFORM_WINDOWS 0
 #const global PLATFORM_IOS 1
@@ -323,12 +333,78 @@
 #cmd gpusershader $fd
 #cmd gpgetmat $fe
 
+#cmd setevent $100
+#cmd delevent $101
+#cmd event_wait $102
+#cmd event_uv $103
+#cmd newevent $104
+#cmd event_jump $105
+#cmd event_prmset $106
+#cmd event_prmon $107
+#cmd event_prmoff $108
+#cmd event_prmadd $109
+#cmd event_suicide $10a
+#cmd event_aim $10b
+#cmd objaim $10c
+
+#cmd event_pos $110
+#cmd event_quat $111
+#cmd event_scale $112
+#cmd event_dir $113
+#cmd event_efx $114
+#cmd event_color $115
+#cmd event_work $116
+#cmd event_work2 $117
+#cmd event_axang $118
+#cmd event_ang $119
+#cmd event_angy $11a
+#cmd event_angz $11b
+#cmd event_angr $11c
+
+#cmd event_addpos $120
+#cmd event_addquat $121
+#cmd event_addscale $122
+#cmd event_adddir $123
+#cmd event_addefx $124
+#cmd event_addcolor $125
+#cmd event_addwork $126
+#cmd event_addwork2 $127
+#cmd event_addaxang $128
+#cmd event_addang $129
+#cmd event_addangy $12a
+#cmd event_addangz $12b
+#cmd event_addangr $12c
+
+#cmd event_setpos $130
+#cmd event_setquat $131
+#cmd event_setscale $132
+#cmd event_setdir $133
+#cmd event_setefx $134
+#cmd event_setcolor $135
+#cmd event_setwork $136
+#cmd event_setwork2 $137
+#cmd event_setaxang $138
+#cmd event_setang $139
+#cmd event_setangy $13a
+#cmd event_setangz $13b
+#cmd event_setangr $13c
+
+#cmd event_wpos $140
+#cmd event_wquat $141
+#cmd event_wscale $142
+#cmd event_wdir $143
+#cmd event_wefx $144
+#cmd event_wcolor $145
+#cmd event_wangx $149
+#cmd event_wangy $14a
+#cmd event_wangz $14b
+#cmd event_wangr $14c
+
+
 #define fsin(%1,%2) %1=sin(%2)
 #define fcos(%1,%2) %1=cos(%2)
 #define fsqr(%1,%2) %1=sqrt(%2)
 #define froti(%1,%2) %1=%2/6433.98175455188992
-
-
 
 #endif
 

@@ -148,6 +148,16 @@ public:
      */
     void setNodeBinding(Node* node);
 
+    /**
+     * Clones this material.
+     * 
+     * @param context The clone context.
+     * 
+     * @return The newly created material.
+     * @script{create}
+     */
+    Material* clone(NodeCloneContext &context) const;
+
 private:
 
     /**
@@ -164,16 +174,6 @@ private:
      * Destructor.
      */
     ~Material();
-
-    /**
-     * Clones this material.
-     * 
-     * @param context The clone context.
-     * 
-     * @return The newly created material.
-     * @script{create}
-     */
-    Material* clone(NodeCloneContext &context) const;
 
     /**
      * Creates a new material with optional pass callback function.

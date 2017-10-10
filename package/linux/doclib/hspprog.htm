@@ -15,7 +15,7 @@
 
 	<div id="CONTAINER">
 		<!-- ヘッダー -->
-		<p id="COPY"><a id="top" class="head">HSP : Hot Soup Processor ver3.4 / onion software 1997-2015(c)</a></p>
+		<p id="COPY"><a id="top" class="head">HSP : Hot Soup Processor ver3.5 / onion software 1997-2017(c)</a></p>
 		<img src="hsp3ttl.jpg" alt="タイトル" width="640" height="200">
 		<h1>プログラミング・マニュアル</h1>
 
@@ -31,12 +31,12 @@
 					<li><a href="#ONEKEY_HELP">ワンキーヘルプ</a></li>
 					<li><a href="#START_DIR">起動ディレクトリ</a></li>
 					<li><a href="#HSP_MECHANISM">HSPのしくみ</a></li>
-					<li><a href="#EX_RUNTIME">拡張ランタイム<span class="new">（New!）</span></a></li>
-					<li><a href="#MAKE_EXE">実行ファイルの作成方法</a></li>
+					<li><a href="#EX_RUNTIME">拡張ランタイム</a></li>
+					<li><a href="#MAKE_EXE">実行ファイルの作成方法<span class="new">（New!）</span></a></li>
 					<li><a href="#EDIT_PACKFILE">PACKFILEの編集について</a></li>
 					<li><a href="#MAKE_SAVER">スクリーンセーバーの作成</a></li>
 					<li><a href="#START_OPT">起動オプションのパース</a></li>
-					<li><a href="#CHANGE_ICON">実行ファイルのアイコン書き換え</a></li>
+					<li><a href="#ICONINS">実行ファイルの書き換えについて<span class="new">（New!）</span></a></li>
 					<li><a href="#SCRIPT_SAMPLE">HSPスクリプトサンプル</a></li>
 					<li><a href="#HIDDEN_WINDOW">メインウィンドウ非表示EXEファイル</a></li>
 					<li><a href="#NO_DIR_MOVE">ディレクトリ移動の無効化</a></li>
@@ -44,10 +44,12 @@
 					<li><a href="#DEBUG_WINDOW">デバッグウィンドウ</a></li>
 					<li><a href="#EX_MACRO">HSP拡張マクロ</a></li>
 					<li><a href="#COLORING_AND_TAB">スクリプトの色分けとタブ</a></li>
-					<li><a href="#HSPLET">HSPLetの利用について</a></li>
 					<li><a href="#HSPMT">マルチスレッド対応版の利用について</a></li>
 					<li><a href="#EASY_INPUT">かんたん入力</a></li>
 					<li><a href="#PEAS_EDITOR">Peasエディタ</a></li>
+
+					<li><a href="#HSPUTF">UTF8対応版ランタイムの利用について<span class="new">（New!）</span></a></li>
+					<li><a href="#HSP64">64bit(x64)対応版ランタイムの利用について<span class="new">（New!）</span></a></li>
 				</ol>
 			</li>
 			<li><a href="#DESCRIPTION">スクリプト記述の基本</a>
@@ -66,6 +68,7 @@
 					<li><a href="#IF">条件判断</a></li>
 					<li><a href="#REPEAT">繰り返し命令</a></li>
 					<li><a href="#MEM_NOTEPAD">メモリノートパッド命令</a></li>
+					<li><a href="#SORT">ソート命令<span class="new">（New!）</span></a></li>
 					<li><a href="#SYSVAR">システム変数</a></li>
 				</ol>
 			</li>
@@ -95,15 +98,16 @@
 					<li><a href="#CEL_FUNCTION">CEL関連命令について</a></li>
 					<li><a href="#MEM_BUFFER">メモリバッファの使用</a></li>
 					<li><a href="#PLAY_MULTIMEDIA">マルチメディア再生</a></li>
-					<li><a href="#VAR_INIT">未初期化の変数検出<span class="new">（New!）</span></a></li>
+					<li><a href="#VAR_INIT">未初期化の変数検出</a></li>
 					<li><a href="#CONSOLE">コンソール版HSP</a></li>
 					<li><a href="#ON_EVENT">割り込み</a></li>
 					<li><a href="#STANDARD_MODNAME">標準モジュール名</a></li>
 					<li><a href="#COMMON_DIR">コモンディレクトリ</a></li>
 					<li><a href="#ERR_MSG">エラーメッセージ</a></li>
 					<li><a href="#TOLERANCE_LEVEL">HSPシステムの許容範囲</a></li>
-					<li><a href="#PACKFILE">PACKFILEと暗号化<span class="new">（New!）</span></a></li>
-					<li><a href="#CNVSRC">Cソースへの変換<span class="new">（New!）</span></a></li>
+					<li><a href="#PACKFILE">PACKFILEと暗号化</a></li>
+					<li><a href="#CNVSRC">Cソースへの変換</a></li>
+					<li><a href="#BOOTOPT">起動設定#bootoptの利用について<span class="new">（New!）</span></a></li>
 				</ol>
 			</li>
 		</ol>
@@ -443,6 +447,14 @@
 					通常の描画命令は使用できず、HGIMG3で用意された専用の命令を使用します。
 				</p>
 			</dd>
+			<dt>HGIMG4ランタイム(hsp3gp)</dt>
+			<dd>
+				<p>
+					HGIMG4ランタイムで作成したアプリケーションの実行ファイルを作成する際に使用します。
+					通常の描画命令は使用できず、HGIMG4で用意された専用の命令を使用します。
+					HGIMG4はHSP3Dishランタイムの上位互換で動作します。
+				</p>
+			</dd>
 			<dt>コンパクト版HSPランタイム(hsp3c)</dt>
 			<dd>
 				<p>
@@ -455,6 +467,20 @@
 				<p>
 					標準のHSPランタイムと同一ですが、マルチスレッド対応ライブラリを使用しています。
 					ランタイムサイズが標準よりも大きくなりますが、動作の効率が上がる場合があります。
+				</p>
+			</dd>
+			<dt>HSP3UTFランタイム(hsp3utf)</dt>
+			<dd>
+				<p>
+					通常のHSP3ランタイムと同等の機能を持っていますが、文字列をすべてUnicode(UTF8)形式で処理するランタイムです。
+					Unicode形式のテキストを扱えるほか、幅広い文字コードを表示させることが可能です。
+				</p>
+			</dd>
+			<dt>64bit版HSP3ランタイム(hsp3_64)</dt>
+			<dd>
+				<p>
+					通常のHSP3ランタイムと同等の機能を持っていますが、64bitアプリケーションとして動作するランタイムです。
+					通常のランタイムは32bitアプリケーションで、プラグイン等の互換性はありません。現在はまだβ版としての提供となっています。
 				</p>
 			</dd>
 		</dl>
@@ -522,14 +548,19 @@
 			<tr><td>ysize</td><td>初期ウィンドウYサイズ</td><td>480</td></tr>
 			<tr><td>hide</td><td>初期ウィンドウ非表示SW</td><td>0</td></tr>
 			<tr><td>orgpath</td><td>起動時ディレクトリ移動無効化SW</td><td>0</td></tr>
+			<tr><td>icon</td><td>アイコンファイル設定</td><td>なし</td></tr>
+			<tr><td>version</td><td>バージョンリソース設定</td><td>なし</td></tr>
+			<tr><td>manifest</td><td>マニフェスト設定</td><td>なし</td></tr>
+			<tr><td>lang</td><td>言語コード設定</td><td>なし</td></tr>
+			<tr><td>upx</td><td>UPX圧縮設定</td><td>なし</td></tr>
 		</table>
 
 		<p>
 			次の例では、「test.scr」というスクリーンセーバーを「hsp3c.hrt」というランタイムを使用して作成します。
 		</p>
-		<pre>#packopt type 2
-#packopt name "test"
-#packopt runtime "hsp3c.hrt"</pre>
+		<pre>	#packopt type 2
+	#packopt name "test"
+	#packopt runtime "hsp3c.hrt"</pre>
 		<p>
 			尚、「start.ax」はデフォルトで暗号化されたものがpackfileに追加されます。
 			また、「#packopt runtime "ランタイムファイル名"」で指定された
@@ -545,6 +576,11 @@
 			(詳しくは、「ディレクトリ移動の無効化について」を参照してください。)
 		</p>
 
+		<p>
+			icon,version,manifest,lang,upxのキーワードは、実行ファイル生成後にiconinsツールを使用して設定されます。
+			これにより、実行ファイルのアイコンやバージョン情報、マニフェストなどを埋め込むことが可能です。<br>
+			詳しくは、「<a href="#ICONINS">実行ファイルの書き換えについて</a>」の項を参照してください。
+		</p>
 		<p>
 			HSP3.0以前で利用していた、「packfile編集」からパックされるファイルを選択して
 			実行ファイルを作成することも可能です。
@@ -737,18 +773,57 @@
 		</p>
 
 
-		<h3 id="CHANGE_ICON">実行ファイルのアイコン書き換え</h3>
+		<h3 id="ICONINS">実行ファイルの書き換えについて</h3>
 		<p>
-			配布用の実行ファイルは自由にアイコンを書き換えていただいて構いません。
 			通常、EXEファイルやSCRファイルを作成すると、Windowsから見たアイコンはHSP3.EXEと同じものになっています。
+			カスタムのアイコンファイルを用意することで、配布用の実行ファイルアイコンを自由に書き換えることができます。
+			他にも、バージョン情報やマニフェスト、言語コード、UPX圧縮などを実行ファイルに適用することができます。
 		</p>
 		<p>
-			現在のHSPには、アイコンの編集機能はありませんがアイコンを直接書き換えるソフトを使用していただくことができます。
-			詳しくは、HSPオフィシャルサイト(HSPTV!)にあるHSP関連ツールの項目を参照してください。
+			「実行ファイル自動作成」を行なう際に、ソーススクリプトに#packopt命令により適用する情報を記述しておくことが可能です。<br>
+			#packopt命令で指定する、icon,version,manifest,lang,upxのキーワードは、実行ファイル生成後にiconinsツールを使用して、実行ファイルの書き換えを行ないます。
+		</p>
+<pre>
+	// 埋め込むアイコンファイルを指定
+	#packopt icon "test.ico"
+	// 埋め込むバージョン情報を記述したファイルを指定
+	#packopt version "test.txt"
+	// UPXを使用し圧縮する場合"1"を設定する
+	#packopt upx "1"
+	// 言語を指定 デフォルトは日本語 (1041)10進数で記述
+	#packopt lang "1041"
+</pre>
+		<p>
+		上の例では、「test.ico」というアイコンファイルのアイコンを使用し、「test.txt」ファイルに記述されたバージョン情報を設定します。
+		アイコンファイルは、.ico形式のファイルを指定する必要があります。<br>
+		また、言語コードを「1041」(日本語)に設定します。これは、日本語 (1041) や英語 (U.S.)(1033) など10進数で記述されたロケールIDを指定するものです。ロケールIDの詳細は、<a href="https://msdn.microsoft.com/ja-jp/library/cc392381.aspx" target="_blank">こちら</a>を参照してください。<br>
+		UPX圧縮に「1」を指定した場合は、UPXによる実行ファイル圧縮が有効になります。
+		(UPX圧縮を使用する場合は、upx.exe(Win32 console version)をあらかじめダウンロードしてiconinsツールと同じフォルダに配置する必要があります。)<br>
+		</p>
+
+		<p>
+		バージョン情報の設定は、別途テキストファイルを作成しておく必要があります。
+		</p>
+<pre>
+	_FILEVERSION=1.0.0.0
+	_PRODUCTVERSION=1.0.0.0
+	Comments=テスト
+	CompanyName=Test!
+	FileDescription=テスト
+	FileVersion=1.00
+	InternalName=test
+	LegalCopyright=Copyright (C) 2017 Test!
+	OriginalFilename=test.exe
+	ProductName=テスト
+	ProductVersion=1.00
+</pre>
+		<p>
+		１行ごと必要な項目に「=」で内容を記述します。
+		行の先頭部分に｢;｣(セミコロン)を付けると、その行はスキップされます。
+		このファイルは、<a href="http://lhsp.s206.xrea.com/" target="_blank">Kpan氏</a>が作成したLet's HSPIC! のバージョン情報用ファイルと互換があります。
 		</p>
 		<p>
-			アイコンの色数やサイズ等を変更する場合は、リソースセクションの書き換えに対応したソフトが必要です。
-			<a href="http://www.angusj.com/resourcehacker/">Resource Hacker</a>等のツールをご利用下さい。
+			より広範囲にリソースを変更する場合は、<a href="http://www.angusj.com/resourcehacker/" target="_blank">Resource Hacker</a>等のツールをご利用下さい。
 		</p>
 
 
@@ -931,39 +1006,6 @@
 		</p>
 
 
-		<h3 id="HSPLET">HSPLetの利用について</h3>
-		<p>
-			HSPフルセットには、山田 雄己(Yuki)さん製作によるHSPLetを標準で同梱しています。
-			HSPLetは、HSPの実行をJavaランタイム上で行なうためのシステムで、
-			これによりWebブラウザでの実行及び、Windows以外のシステムで動作させることが
-			可能になります。(いくつかの制約と互換性についての注意点があります)
-			HSPLetについての詳細は、<a href="../hsplet/doc/index.html">HSPLetマニュアル</a>を参照してください。
-		</p>
-		<p>
-			HSPスクリプトエディタから、直接HSPLetを使って実行させることが可能です。
-			スクリプトの先頭に<pre>	#runtime "hsplet3"<br>	#cmpopt optprm 0</pre>を記述することで、HSPLetによる動作に切り替わります。
-			(HSPLetは、HSP3.3のパラメーター最適化に対応していないため、「#cmpopt optprm 0」のコードが必要となります)
-		</p>
-		<p>
-			HSPLetによる実行時は、htmlブラウザが起動し、その中に実行結果が表示されます。
-			また、その際にHSPLetの簡易サーバーウィンドウが同時に表示されます。
-			これは、html表示を行なうために動作しているモジュールです。HSPLet実行時以外には必要ありませんので、
-			テスト実行が終わったら閉じてしまって問題ありません。
-		</p>
-		<p>
-			HSPLetについてのご意見及び、報告については開発されている山田 雄己(Yuki)さんの
-			方に直接お送りいただくようお願いします。
-		</p>
-		<dl>
-			<dt>Group Finity（HSPLet配布元）</dt>
-			<dd>
-				<p>
-					<a href="http://www.group-finity.com/">http://www.group-finity.com/</a>
-				</p>
-			</dd>
-		</dl>
-
-
 		<h3 id="HSPMT">マルチスレッド対応版の利用について</h3>
 		<p>
 			標準でマルチスレッド対応版ランタイムが同梱されています。
@@ -1047,6 +1089,53 @@
 		<p>
 			「Peasエディタ」の詳細は、別途ドキュメント<a href="peas.htm">peas.htm</a>を参照してください。
 		</p>
+
+
+		<h3 id="HSPUTF">UTF8対応版ランタイムの利用について</h3>
+		<p>
+			HSP3の標準ランタイムをunicode(UTF-8)文字ベースで動作させるための
+			HSP3UTFランタイム(hsp3utf.exe)が同梱されています。<BR>
+			通常のHSP3ランタイムと同等の機能を持っていますが、文字列の扱いのみ
+			unicode(UTF-8)となっています。
+			SJISの文字コードを扱う標準のHSPでは表現できない文字を扱うことのできる
+			新しいHSP3として今後も進化を続ける予定です。
+			使用する場合は、スクリプトの先頭に以下の行を指定してください。
+		</p>
+		<pre>
+			#include "hsp3utf.as"
+		</pre>
+		<p>
+			詳しくは、ドキュメント <a href="hsp3utf.txt">hsp3utf.txt</a>をご覧ください。
+		</p>
+
+
+		<h3 id="HSP64">64bit(x64)対応版ランタイムの利用について</h3>
+		<p>
+			64bit(x64)アプリとして動作するHSP3標準ランタイム(hsp3_64.exe)を同梱しています。
+			使用する場合は、スクリプトの先頭に以下の行を指定してください。
+		</p>
+		<pre>
+			#include "hsp3_64.as"
+		</pre>
+		<p>
+			64bit(x64)ランタイムは、64bit版のWindows上でのみ動作します。
+			同梱されているバージョンには、まだ既知の問題があり、将来の64bit化に向けてのβテスト版とお考えください。
+			通常は、標準の32bit版HSP3ランタイム(hsp3.exe)をご使用頂いて問題ありません。
+			<br><br>
+			現状では、64bitランタイムに以下の注意点があります。
+		</p>
+		<ul>
+			<li>従来のHSPスクリプトを64bitアプリとして動作させるランタイムです
+			　(整数値の範囲など従来の仕様が変わるものではありません)
+			<li>1つの変数が使用するメモリバッファは2GB(32bit)が上限となります
+			　(スクリプト全体が使用できるメモリサイズは64bitアプリに準拠します)
+			<li>従来の32bit版プラグインとは互換性がありません
+			<li>COM関連の命令が正しく動作しないことがあります
+			<li>将来の64bit(x64)ランタイムは、文字コードをUTF8として扱う予定です
+			<li>#packopt命令によるアイコンの書き換えに対応していません
+		</ul>
+
+
 
 		<h2 id="DESCRIPTION">基本文法</h2>
 		<h3 id="DESCRIPTION_RULE">HSP言語の規定</h3>
@@ -1997,9 +2086,9 @@ p2=0～65535(0)</pre>
 			<tr><td>notesave</td><td>内容をファイルに書き出し</td><td></td></tr>
 			<tr><td>noteunsel</td><td>以前に選択されていた変数に復帰する</td><td></td></tr>
 			<tr><td>noteinfo</td><td>メモリノートパッドに関する情報を取得する</td><td></td></tr>
-			<tr><td>notemax</td><td>全体の行数を取得する</td><td></td></tr>
-			<tr><td>notesize</td><td>全体のサイズ(バイト数)を取得する</td><td></td></tr>
-			<tr><td>notefind</td><td>特定の文字列を含む行を検索する</td><td></td></tr>
+			<tr><td>notemax</td><td>全体の行数を取得する</td><td>マクロとして使用</td></tr>
+			<tr><td>notesize</td><td>全体のサイズ(バイト数)を取得する</td><td>マクロとして使用</td></tr>
+			<tr><td>notefind</td><td>特定の文字列を含む行を検索する</td><td>関数として使用</td></tr>
 		</table>
 		<p>
 			基本的な使い方は、まずnotesel命令で文字列型の変数を指定します。
@@ -2119,6 +2208,56 @@ p2=0～65535(0)</pre>
 			使い方次第で応用範囲がさらに広がります。
 		</p>
 
+		<h3 id="SORT">ソート命令</h3>
+		<p>
+			ソート命令セットは、数値、文字列の並べ替え(ソート)をするための命令群です。
+			複数のデータや文字列を効率よく加工することが容易になります。
+		</p>
+		</p>
+		<table summary="ソート命令セットを一覧形式で紹介しています。" class="keywordlist">
+			<caption>ソート命令セット一覧</caption>
+			<tr><th>命令</th><th>主な機能</th><th>備考</th></tr>
+			<tr><td>sortval</td><td>配列変数を数値でソート</td><td></td></tr>
+			<tr><td>sortstr</td><td>配列変数を文字列でソート</td><td></td></tr>
+			<tr><td>sortnote</td><td>メモリノート文字列をソート</td><td></td></tr>
+			<tr><td>sortget</td><td>ソート元のインデックスを取得</td><td>ソート実行後に取得する</td></tr>
+		</table>
+		<p>
+			数値のソートは、配列変数に代入されている整数値、または実数値に対して行なわれます。
+		</p>
+		<pre>
+		dim n,10
+		sortval n,0
+		</pre>
+		<p>
+			上の例では、変数nが持つ１次元配列の範囲n(0)～n(9)を小さい数値の順番に並び替えます。<br>
+			命令が実行されると、配列変数の内容がすべて並べ替えられます。
+			ソートの順番は、２番目のパラメーターで指定できます。0の場合は、数値の小さい順、1の場合は大きい順にソートされます。
+		</p>
+		<pre>
+		sdim n,64,10
+		sortstr n,0
+		</pre>
+		<p>
+			上の例では、文字列型変数nが持つ１次元配列の範囲n(0)～n(9)を文字コードが小さい順番に並び替えます。<br>
+			命令が実行されると、配列変数の内容がすべて並べ替えられます。
+			ソートの順番は、２番目のパラメーターで指定できます。0の場合は、文字コードが小さい順、1の場合は文字コードが大きい順にソートされます。
+		</p>
+		<p>
+			他にも、メモリノートパッド命令(notesel)で指定された改行入りの文字列をソートするための、sortnote命令が用意されており、用途によって使い分けることが可能です。<br>
+			ソート命令が実行された後は、もともとの位置を調べるためのnoteget命令を使用することができます。
+			これは、直前に実行されたソート結果の項目が、もともとどの位置(インデックス)にあったかを調べるものです。
+		</p>
+		<pre>
+		sortget a,0
+		</pre>
+		<p>
+			上の例では、インデックス0(最初の項目)がもともと、どこにあったものかを変数aに取得しています。
+			(インデックス値は、配列の要素値と同じものになります)<br>
+			たとえば、変数aの値が5だった場合は、インデックス5に入っていた項目が並べ替えられてインデックス0になったことを示しています。
+		</p>
+
+
 		<h3 id="SYSVAR">システム変数</h3>
 		<p>
 			システム変数はシステム起動時、または特定の命令を実行した時に自動的に
@@ -2187,6 +2326,7 @@ p2=0～65535(0)</pre>
 			<tr><td>dir_cmdline</td><td>コマンドライン文字列</td></tr>
 			<tr><td>dir_desktop</td><td>デスクトップディレクトリ(フォルダ)</td></tr>
 			<tr><td>dir_mydoc</td><td>マイドキュメントディレクトリ(フォルダ)</td></tr>
+			<tr><td>dir_tv</td><td>HSPTVディレクトリ(フォルダ)</td></tr>
 		</table>
 		<dl>
 			<dt id="SYSVAR_1">*1</dt>
@@ -2194,16 +2334,21 @@ p2=0～65535(0)</pre>
 				<p>以下の情報がすべて合計された値になります。</p>
 				<ul>
 					<li>デバッグモード = 1</li>
-					<li>IMEが有効 = 2</li>
-					<li>Macintosh版HSP = $8</li>
-					<li>IMEをサポートしないOS = $100</li>
+					<li>スクリーンセーバー起動時 = 2</li>
+					<li>コンソールモード = 16</li>
+					<li>Macintosh版HSP = $80</li>
+					<li>HSP3Dish = $100</li>
+					<li>Linux版HSP = $1000</li>
+					<li>UTF8文字列ランタイム = $20000</li>
+					<li>64ビットランタイム = $40000</li>
 				</ul>
+
 			</dd>
 			<dt id="SYSVAR_2">*2</dt>
 			<dd>
 				<p>
-					バージョンコード + マイナーバージョンコードの値になります。
-					例えば3.0は$3000になります。
+					バージョンコード(8bit) + マイナーバージョンコード(8bit)の値になります。
+					例えば3.5は$3500になります。
 				</p>
 			</dd>
 		</dl>
@@ -2338,6 +2483,7 @@ p2=0～65535(0)</pre>
 			<tr><td>array</td><td>変数(配列あり)</td></tr>
 			<tr><td>str</td><td>文字列</td></tr>
 			<tr><td>double</td><td>実数値</td></tr>
+			<tr><td>label</td><td>ラベル</td></tr>
 			<tr><td>local</td><td>ローカル変数</td></tr>
 		</table>
 		<p>
@@ -4052,8 +4198,8 @@ v("arraycount",n)  : SafeArrayの次元nの要素の要素数</pre>
 			尚、データをまとめてコピー、フィルするために、memcpy命令、memset命令が用意されています。
 		</p>
 		<p>
-			外部DLLやプログラムで扱う場合には、変数が扱うメモリバッファのポインタを
-			varptr関数により取得することが可能です。
+			外部DLLやプログラムで扱う場合には、変数が扱うメモリバッファのポインタをvarptr関数により取得することが可能です。
+			また、変数が扱うメモリバッファのサイズをvarsize関数により取得することが可能です。
 		</p>
 
 
@@ -4549,6 +4695,46 @@ button goto/gosub "name",*label  ボタンを押した時の割り込み</pre>
 		</p>
 		<p>
 			変換されたCソースコードの運用については、C/C++言語についての知識が必要となります。詳しくは、 <a href="hsp3cnv.txt">HSP3ソースコンバーターマニュアル</a>をご覧ください。
+		</p>
+
+		<h3 id="BOOTOPT">起動設定#bootoptの利用について</h3>
+		<p>
+		新規プリプロセッサ命令、#bootoptが追加されています。
+		これはランタイムの細かい動作設定を行なうためのものです。
+		以下の書式で設定を変更することができます。
+		</p>
+		<pre>
+		#bootopt オプション名  設定スイッチ
+
+		オプション名 : オプションの種類
+		設定スイッチ : 1または0の数値
+		</pre>
+		<p>
+		スクリプトランタイムの細かい動作設定を行ないます。
+		オプション名、の後スペース又は TAB を入れて設定スイッチ1か0の数値を記述して下さい。
+		#bootoptは、スクリプト内の任意の位置に記述することが可能です。
+		複数の指定があった場合は、最後に設定されたものが全体の設定となります。
+		#bootoptで指定できるオプション名は以下の通りです。
+		</p>
+		<pre>
+		  オプション |      内      容                | 初期値
+		 -----------------------------------------------------------
+		  notimer    | 高精度タイマーの使用           | 自動設定
+		             | (0=使用する/1=使用しない)      |
+		  utf8       | UTF-8形式文字列の使用          | 自動設定
+		             | (0=使用する/1=使用しない)      |
+		  hsp64      | 64ビットランタイムの使用       | 自動設定
+		             | (0=使用する/1=使用しない)      |
+		 -----------------------------------------------------------
+		</pre>
+		<p>
+		通常は、これらの設定は自動的に行なわれます。
+		「高精度タイマーの使用」は、標準HSPランタイムにおいて高精度タイマー(マルチメディアタイマー)を使用するための設定です。<br>
+		HSP3.4では、すべてのスクリプト実行時に高精度タイマーを使用してawait命令などの待ち時間を調整していましたが、
+		それほど厳密なタイマー制御が必要ないツールや常駐アプリケーションにおいて、CPUの負荷が増大することがありました。
+		HSP3.5では、スクリプト中でawait命令を使用している場合のみ、高精度タイマーを使用する形に修正されています。<br>
+		明示的に高精度タイマーの使用をON/OFFしたい場合に、#bootopt命令を使用することができます。
+		「#bootopt notimer 1」をスクリプトに記述した場合は、高精度タイマーを使用しません。
 		</p>
 
 
