@@ -36,11 +36,17 @@
 #include "appengine.h"
 #endif
 
-#if defined(HSPLINUX) || defined(HSPEMSCRIPTEN)
+#if defined(HSPEMSCRIPTEN)
 #define USE_JAVA_FONT
 #define FONT_TEX_SX 512
 #define FONT_TEX_SY 128
+#endif
 
+#if defined(HSPLINUX)
+#include "font_data.h"
+#endif
+
+#if defined(HSPLINUX) || defined(HSPEMSCRIPTEN)
 #ifdef HSPRASPBIAN
 #include "bcm_host.h"
 #include "GLES/gl.h"
@@ -48,7 +54,9 @@
 #include "EGL/eglext.h"
 #include "SDL/SDL.h"
 
+
 #else
+
 //#include <GLES2/gl2.h>
 //#include <EGL/egl.h>
 #define GL_GLEXT_PROTOTYPES
@@ -915,9 +923,9 @@ int hgio_texload( BMSCR *bm, char *fname )
 /*-------------------------------------------------------------------------------*/
 
 //ポイントカラー設定
-void hgio_panelcolor( int color, int aval )
+void hgio_panelcolor( GLfloat *colors, int color, int aval )
 {
-	GLfloat colors[16], *flp;
+	GLfloat *flp;
 	GLfloat r = RGBA2R(color);
 	GLfloat g = RGBA2G(color);
 	GLfloat b = RGBA2B(color);
@@ -935,9 +943,9 @@ void hgio_panelcolor( int color, int aval )
 }
 
 
-static void setCurrentColor( int vnum )
+static void setCurrentColor( GLfloat *colors, int vnum )
 {
-	GLfloat colors[vnum*4], *flp;
+	GLfloat *flp;
 	flp = colors;
 	for (int i=0;i<vnum;i++) {
 		*flp++ = _color.r;
@@ -954,6 +962,7 @@ static void setCurrentColor( int vnum )
 void hgio_pset( float x, float y )
 {
     //頂点配列情報
+	GLfloat colors[1*4];
     GLfloat vert[2]={
 		x, -y
 	};
@@ -961,7 +970,7 @@ void hgio_pset( float x, float y )
 	glDisable(GL_BLEND);
     //glBindTexture(GL_TEXTURE_2D,0);
     glVertexPointer(2,GL_FLOAT,0,vert);
-	setCurrentColor(1);
+	setCurrentColor(colors,1);
     glDrawArrays(GL_POINTS,0,1);
 }
 
@@ -970,6 +979,7 @@ void hgio_pset( float x, float y )
 void hgio_rect( float x, float y, float w, float h )
 {
     //頂点配列情報
+	GLfloat colors[4*4];
 	GLfloat vert[8]={
 		x,   -y,
 		x,   -y-h,
@@ -980,7 +990,7 @@ void hgio_rect( float x, float y, float w, float h )
 	glDisable(GL_BLEND);
     //glBindTexture(GL_TEXTURE_2D,0);
     glVertexPointer(2,GL_FLOAT,0,vert);
-	setCurrentColor(4);
+	setCurrentColor(colors,4);
     glDrawArrays(GL_LINE_LOOP,0,4);
 }
 
@@ -988,6 +998,7 @@ void hgio_rect( float x, float y, float w, float h )
 void hgio_boxfill( float x, float y, float w, float h )
 {
     //頂点配列情報
+	GLfloat colors[4*4];
 	GLfloat vert[8]={
 		x,   -y,
 		x,   -y-h,
@@ -998,7 +1009,7 @@ void hgio_boxfill( float x, float y, float w, float h )
 	glDisable(GL_BLEND);
 	//glBindTexture(GL_TEXTURE_2D,0);
 	glVertexPointer(2,GL_FLOAT,0,vert);
-	setCurrentColor(4);
+	setCurrentColor(colors,4);
 	glDrawArrays(GL_TRIANGLE_STRIP,0,4);
 }
 
@@ -1008,6 +1019,7 @@ void hgio_circleLine( float x, float y, float rx, float ry )
     int length = CIRCLE_DIV;
 
 	//頂点配列情報
+	GLfloat colors[length*4];
     GLfloat vert[length*2], *flp;
 	flp = vert;
 	for (int i=0;i<length;i++) {
@@ -1019,7 +1031,7 @@ void hgio_circleLine( float x, float y, float rx, float ry )
 	glDisable(GL_BLEND);
     //glBindTexture(GL_TEXTURE_2D,0);
     glVertexPointer(2,GL_FLOAT,0,vert);
- 	setCurrentColor(length);
+ 	setCurrentColor(colors,length);
 	glDrawArrays(GL_LINE_LOOP,0,length);
 }
 
@@ -1029,6 +1041,7 @@ void hgio_circleFill( float x, float y, float rx, float ry )
     int length = CIRCLE_DIV+2;
     
 	//頂点配列情報
+	GLfloat colors[length*4];
     GLfloat vert[length*2], *flp;
 	flp = vert;
 	*flp++ =  x;
@@ -1042,7 +1055,7 @@ void hgio_circleFill( float x, float y, float rx, float ry )
 	glDisable(GL_BLEND);
     //glBindTexture(GL_TEXTURE_2D,0);
     glVertexPointer(2,GL_FLOAT,0,vert);
-  	setCurrentColor(length);
+  	setCurrentColor(colors,length);
 	glDrawArrays(GL_TRIANGLE_FAN,0,length);
 }
 
@@ -1146,6 +1159,7 @@ void hgio_fillrot( BMSCR *bm, float x, float y, float sx, float sy, float ang )
 	if ( bm == NULL ) return;
 	if ( bm->type != HSPWND_TYPE_MAIN ) throw HSPERR_UNSUPPORTED_FUNCTION;
     
+	GLfloat colors[16];
     GLfloat *flp;
 	GLfloat x0,y0,x1,y1,ofsx,ofsy;
     
@@ -1182,7 +1196,7 @@ void hgio_fillrot( BMSCR *bm, float x, float y, float sx, float sy, float ang )
     glVertexPointer(2,GL_FLOAT,0,vertf2D);
 
 	setBlendMode( bm->gmode );
-	hgio_panelcolor( bm->color, bm->gmode < 3 ? 255 : bm->gfrate );
+	hgio_panelcolor( colors, bm->color, bm->gmode < 3 ? 255 : bm->gfrate );
 
     glDrawArrays(GL_TRIANGLE_STRIP,0,4);
 }
@@ -1197,6 +1211,7 @@ void hgio_fcopy( float distx, float disty, short xx, short yy, short srcsx, shor
 	TEXINF *tex = GetTex( texid );
 	if ( tex->mode == TEXMODE_NONE ) return;
 
+	GLfloat colors[16];
     GLfloat *flp;
     GLfloat x1,y1,x2,y2;
     float ratex,ratey;
@@ -1253,7 +1268,7 @@ void hgio_fcopy( float distx, float disty, short xx, short yy, short srcsx, shor
     glTexCoordPointer( 2,GL_FLOAT,0,uvf2D );
 
 	setBlendMode( 3 );
-	hgio_panelcolor( color, 255 );
+	hgio_panelcolor( colors, color, 255 );
 	
 //    glDisableClientState(GL_COLOR_ARRAY);
     glDrawArrays(GL_TRIANGLE_STRIP,0,4);
@@ -1827,7 +1842,7 @@ void hgio_putTexFont( int x, int y, char *msg, int color )
 
 		tx = ( a & 15 ) * font_sx;
 		ty = ( a >> 4 ) * font_sy;
-		hgio_fcopy( xx, yy, tx, ty, font_sx, font_sy, font_texid, 0xffffff );
+		hgio_fcopy( xx, yy, tx, ty, font_sx, font_sy, font_texid, color );
 		xx += font_sx;
 	}
 
@@ -2096,7 +2111,7 @@ int hgio_render_end( void )
     gb_render_end();
 #endif
 
-#if defined(HSPLINUX) || defined(HSPNDK)
+#if defined(HSPRASPBIAN) || defined(HSPNDK)
 
 	//hgio_setColor( 0xffffff );
 	//hgio_fcopy( 0, 100,  0, 0, 118, 22, 1 );
