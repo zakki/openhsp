@@ -155,6 +155,71 @@ static int	GetIniFileInt( char *keyword )
 
 /*----------------------------------------------------------*/
 
+#define KEY_ESCAPE 0x1B
+#define KEY_UP 0x1B5B41
+#define KEY_DOWN 0x1B5B42
+#define KEY_LEFT 0x1B5B44
+#define KEY_RIGHT 0x1B5B43
+#define KEY_DELETE 0x1B5B337E
+#define KEY_F1 0x1B5B5B41
+#define KEY_F2 0x1B5B5B42
+#define KEY_F3 0x1B5B5B43
+#define KEY_F4 0x1B5B5B44
+#define KEY_F5 0x1B5B5B45
+#define KEY_F6 0x5B31377E
+#define KEY_F7 0x5B31387E
+#define KEY_F8 0x5B31397E
+#define KEY_F9 0x5B32307E
+#define KEY_F10 0x5B32317E
+
+struct termios origTermAattr;
+struct termios newTermAttr;
+
+static int GetKey() 
+{
+    // read a character from the stdin stream without blocking
+    // returns EOF (-1) if no character is available
+    int in;
+
+    // get the first character from the buffer
+    int c = fgetc(stdin);
+
+    // 0x1B ANSI escape sequence?
+    if (c == 0x1B)
+    {
+        // shift the characters into the 32-bit int
+        // overflow may occur with longer escape sequences, sorry.
+        while ((in = fgetc(stdin)) != EOF)
+        {
+            c = (c << 8) | in;
+
+            // end of ANSI escape sequence?
+            if (in >= 0x40 && in <= 0x7E && in != 0x5B)
+                break;
+        }
+    }
+
+    return c;
+}
+
+static void InitKeyboard() 
+{
+    tcgetattr(fileno(stdin), &origTermAattr);
+    memcpy(&newTermAttr, &origTermAattr, sizeof(struct termios));
+    newTermAttr.c_lflag &= ~(ECHO|ICANON);
+    newTermAttr.c_cc[VTIME] = 0;
+    newTermAttr.c_cc[VMIN] = 0;
+    tcsetattr(fileno(stdin), TCSANOW, &newTermAttr); 
+}
+
+static void ResetKeyboard()
+{
+    origTermAattr.c_lflag |= ECHO|ICANON;
+    tcsetattr(fileno(stdin), TCSANOW, &origTermAattr);
+}
+
+/*----------------------------------------------------------*/
+
 static int get_mouse(int *outx, int *outy)
 {
     struct {char buttons, dx, dy; } m;
@@ -197,20 +262,26 @@ static int get_mouse(int *outx, int *outy)
 
 static void initKeyboard( void )
 {
-	sdl_keys = NULL;
+	//sdl_keys = NULL;
 }
 
 
 bool get_key_state(int sym)
 {
-	if ( sdl_keys == NULL ) return false;
-	return ( sdl_keys[sym] != 0 );
+	//if ( sdl_keys == NULL ) return false;
+	//return ( sdl_keys[sym] != 0 );
+
+	if ( sym == 27 ) {
+		int key = GetKey();
+		if ( key == KEY_ESCAPE ) return true;
+	}
+	return false;
 }
 
 static void updateKeyboard( void )
 {
-	sdl_keys = SDL_GetKeyState(NULL);
-	SDL_PumpEvents();
+	//sdl_keys = SDL_GetKeyState(NULL);
+	//SDL_PumpEvents();
 }
 
 
@@ -293,6 +364,8 @@ static void hsp3dish_initwindow( engine* p_engine, int sx, int sy, char *windowt
 
 	p_engine->width = (int32_t)width;
 	p_engine->height = (int32_t)height;
+
+	InitKeyboard();
 
 	// 描画APIに渡す
 	hgio_init( 0, width, height, p_engine );
@@ -701,6 +774,8 @@ static void hsp3dish_bye( void )
    eglMakeCurrent( p_engine->display, EGL_NO_SURFACE, EGL_NO_SURFACE, EGL_NO_CONTEXT );
    eglDestroyContext( p_engine->display, p_engine->context );
    eglTerminate( p_engine->display );
+
+	ResetKeyboard();
 
 	bcm_host_deinit();
 

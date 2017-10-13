@@ -41,7 +41,7 @@ LinuxのGUI環境(X Window System)で動作します。
 
 ・Raspberry Piインストール
 
-Raspberry Pi上のRaspbian Jessieで動作します。(推奨バージョンは、March 2017 Kernel version4.4です)
+Raspberry Pi上のRaspbian上で動作します。(推奨バージョンは、March 2017 Kernel version4.4です)
 hsp3dish及びhsp3gp(HGIMG4)、hsed(スクリプトエディタ)は、
 GUI環境でのみ動作します。 GUIを使用する場合は、Raspberry Pi3または
 Raspberry Pi2の使用を推奨します。
@@ -66,6 +66,11 @@ Raspberry Pi2の使用を推奨します。
 		
 アーカイブの内容が展開されたディレクトリでmakeコマンドを実行してください。
 必要なツールのコンパイルが行なわれ、HSP3が使用できる状態になります。
+
+Raspberry Pi版では、フルスクリーンで実行を行ないます。
+実行の中断は、[ctrl]+[C]か[esc]キーで行ないますが、
+エディタからの実行時に正しく認識されないことがあります。
+その場合は、コマンドラインから「./hsp3dish ****.ax」の形で実行を行なってください。
 
 
 ・使用方法
