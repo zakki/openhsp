@@ -753,7 +753,7 @@ int hgio_stick( int actsw )
 }
 
 
-#if defined(HSPEMSCRIPTEN)
+#if defined(HSPLINUX) || defined(HSPEMSCRIPTEN)
 static const unsigned int key_map[256]={
 	/* 0- */
 	0, 0, 0, 3, 0, 0, 0, 0, SDLK_BACKSPACE, SDLK_TAB, 0, 0, 12, SDLK_RETURN, 0, 0,
