@@ -431,6 +431,11 @@ void hgio_term( void )
 }
 
 
+void hgio_setColorTex( int rval, int gval ,int bval )
+{
+}
+
+
 int hgio_stick( int actsw )
 {
 	//		stick—p‚Ì“ü—Í‚ð•Ô‚·
@@ -462,20 +467,87 @@ int hgio_stick( int actsw )
 #endif
 
 #if defined(HSPLINUX) || defined(HSPEMSCRIPTEN)
-	if ( mouse_btn ) ckey|=256;	// mouse_l
 	if ( get_key_state(SDLK_LEFT) )  ckey|=1;		// [left]
-	if ( get_key_state(SDLK_UP) )    ckey|=2;		// [up]
-	if ( get_key_state(SDLK_RIGHT) ) ckey|=4;		// [right]
-	if ( get_key_state(SDLK_DOWN) )  ckey|=8;		// [down]
-	if ( get_key_state(SDLK_SPACE) ) ckey|=16;		// [spc]
-	if ( get_key_state(SDLK_RETURN) )ckey|=32;		// [ent]
-	if ( get_key_state(SDLK_LCTRL) ) ckey|=64;		// [ctrl]
-	if ( get_key_state(SDLK_ESCAPE) )ckey|=128;	// [esc]
-	if ( get_key_state(SDLK_TAB) )   ckey|=1024;	// [tab]
+	if ( get_key_state(SDLK_UP) )    ckey|=1<<1;		// [up]
+	if ( get_key_state(SDLK_RIGHT) ) ckey|=1<<2;		// [right]
+	if ( get_key_state(SDLK_DOWN) )  ckey|=1<<3;		// [down]
+	if ( get_key_state(SDLK_SPACE) ) ckey|=1<<4;		// [spc]
+	if ( get_key_state(SDLK_RETURN) )ckey|=1<<5;		// [ent]
+	if ( get_key_state(SDLK_LCTRL) || get_key_state(SDLK_RCTRL) ) ckey|=1<<6;		// [ctrl]
+	if ( get_key_state(SDLK_ESCAPE) )ckey|=1<<7;	// [esc]
+	if ( mouse_btn & SDL_BUTTON_LMASK ) ckey|=1<<8;	// mouse_l
+	if ( mouse_btn & SDL_BUTTON_RMASK ) ckey|=1<<9;	// mouse_r
+	if ( get_key_state(SDLK_TAB) )   ckey|=1<<10;	// [tab]
+	
+	if ( get_key_state(SDLK_z) )     ckey|=1<<11;
+	if ( get_key_state(SDLK_x) )     ckey|=1<<12;
+	if ( get_key_state(SDLK_c) )     ckey|=1<<13;
+	
+	if ( get_key_state(SDLK_a) )     ckey|=1<<14;
+	if ( get_key_state(SDLK_w) )     ckey|=1<<15;
+	if ( get_key_state(SDLK_d) )     ckey|=1<<16;
+	if ( get_key_state(SDLK_s) )     ckey|=1<<17;
 #endif
 
 	return ckey;
 }
+
+
+#if defined(HSPLINUX) || defined(HSPEMSCRIPTEN)
+static const unsigned int key_map[256]={
+	/* 0- */
+	0, 0, 0, 3, 0, 0, 0, 0, SDLK_BACKSPACE, SDLK_TAB, 0, 0, 12, SDLK_RETURN, 0, 0,
+	0, 0, 0, SDLK_PAUSE, SDLK_CAPSLOCK, 0, 0, 0, 0, 0, 0, SDLK_ESCAPE, 0, 0, 0, 0,
+	/* 32- */
+	SDLK_SPACE, SDLK_PAGEUP, SDLK_PAGEDOWN, SDLK_END, SDLK_HOME,
+	SDLK_LEFT, SDLK_UP, SDLK_RIGHT, SDLK_DOWN, 0, SDLK_PRINT, 0, 0, SDLK_INSERT, SDLK_DELETE, SDLK_HELP,
+	/* 48- */
+	SDLK_0, SDLK_1, SDLK_2, SDLK_3, SDLK_4, SDLK_5, SDLK_6, SDLK_7, SDLK_8, SDLK_9,
+	0, 0, 0, 0, 0, 0, 0,
+	/* 65- */
+	SDLK_a, SDLK_b, SDLK_c, SDLK_d, SDLK_e, SDLK_f, SDLK_g, SDLK_h, SDLK_i,
+	SDLK_j, SDLK_k, SDLK_l, SDLK_m, SDLK_n, SDLK_o, SDLK_p, SDLK_q, SDLK_r,
+	SDLK_s, SDLK_t, SDLK_u, SDLK_v, SDLK_w, SDLK_x, SDLK_y, SDLK_z,
+	/* 91- */
+	SDLK_LSUPER, SDLK_RSUPER, 0, 0, 0,
+	SDLK_KP0, SDLK_KP1, SDLK_KP2, SDLK_KP3, SDLK_KP4, SDLK_KP5, SDLK_KP6, SDLK_KP7, SDLK_KP8, SDLK_KP9,
+	SDLK_KP_MULTIPLY, SDLK_KP_PLUS, 0, SDLK_KP_MINUS, SDLK_KP_PERIOD, SDLK_KP_DIVIDE, 
+	/* 112- */
+	SDLK_F1, SDLK_F2, SDLK_F3, SDLK_F4, SDLK_F5, SDLK_F6, SDLK_F7, SDLK_F8, SDLK_F9, SDLK_F10,
+	SDLK_F11, SDLK_F12, SDLK_F13, SDLK_F14, SDLK_F15, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+	/* 136- */
+	0, 0, 0, 0, 0, 0, 0, 0, SDLK_NUMLOCK, 145,
+	0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+	/* 160- */
+	SDLK_LSHIFT, SDLK_RSHIFT, SDLK_LCTRL, SDLK_RCTRL, SDLK_LALT, SDLK_RALT,
+	0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+	/* 186- */
+	SDLK_COLON, SDLK_SEMICOLON, SDLK_COMMA, SDLK_MINUS, SDLK_PERIOD, SDLK_SLASH, SDLK_AT, 
+	0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+	/* 219- */
+	SDLK_LEFTBRACKET, SDLK_BACKSLASH, SDLK_RIGHTBRACKET, SDLK_CARET,
+	0, 0, 0, SDLK_DOLLAR, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+	0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0
+};
+
+
+bool hgio_getkey( int kcode )
+{
+	bool res = false;
+	switch( kcode ){
+		case 1: res = (mouse_btn & SDL_BUTTON_LMASK) > 0; break;
+		case 2: res = (mouse_btn & SDL_BUTTON_RMASK) > 0; break;
+		case 4: res = (mouse_btn & SDL_BUTTON_MMASK) > 0; break;
+		case 5: res = (mouse_btn & SDL_BUTTON_X1MASK) > 0; break;
+		case 6: res = (mouse_btn & SDL_BUTTON_X2MASK) > 0; break;
+		case 16: res = get_key_state(SDLK_LSHIFT) | get_key_state(SDLK_RSHIFT); break;
+		case 17: res = get_key_state(SDLK_LCTRL) | get_key_state(SDLK_RCTRL); break;
+		case 18: res = get_key_state(SDLK_LALT) | get_key_state(SDLK_RALT); break;
+		default: res = get_key_state( key_map[ kcode & 255 ] ); break;
+	}
+	return res;
+}
+#endif
 
 
 int hgio_redraw( BMSCR *bm, int flag )

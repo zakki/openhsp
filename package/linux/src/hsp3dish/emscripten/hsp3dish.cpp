@@ -538,7 +538,7 @@ int hsp3dish_init( char *startfile )
 
 	//		Initalize Window
 	//
-	hsp3dish_initwindow( NULL, sx, sy, "HSPDish ver" hspver " - " modname);
+	hsp3dish_initwindow( NULL, sx, sy, "HSPDish ver" hspver );
 
 	if ( sx != hsp_wx || sy != hsp_wy ) {
 #ifndef HSPDISHGP
