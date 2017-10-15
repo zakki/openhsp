@@ -1,3 +1,7 @@
+#if defined(OPENGL_ES) || defined(GL_ES)
+precision highp float;
+#endif
+
 #ifndef DIRECTIONAL_LIGHT_COUNT
 #define DIRECTIONAL_LIGHT_COUNT 0
 #endif

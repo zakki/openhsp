@@ -97,6 +97,11 @@
 	通常は、デフォルト値で問題ありませんが、規模の大きいスクリプトや膨大なデータを使用する場合は、16よりも大きい値を指定してください。(32を指定した場合は、32メガバイトとなります。)<br>
 	ブラウザ実行時に、hsp3dish.jsコンソールに「Cannot enlarge memory arrays.」という表示が出る場合は、メモリブロックの上限値を調整してみてください。
 	</p>
+	<li>HGIMG4を使用する</li><br><p>
+	HGIMG4のスクリプトを変換します。実行時には「hsp3dish-gp.js」が必要になります。<br>
+	HGIMG4が使用するデータは、「データフォルダ」で指定したフォルダ内の「res」「res/shaders」に配置しておいてください。(sample/hgimg4内にあります)
+	<br><b>※現在のバージョンでは、ポストエフェクトなどで使用するオフスクリーン描画命令を使用することができませんので、注意してください。</b>
+	</p>
 	</ul>
 	<p>
 	設定ができたら、「変換」ボタンを押してください。スクリプトやデータファイルがhsp3dish.js向けに生成されます。<br>
@@ -105,7 +110,7 @@
 	<ul>
 	<li>(ソーススクリプト名).html ファイル</li>
 	<li>(ソーススクリプト名).data ファイル</li>
-	<li>hsp3dish.js ファイル</li>
+	<li>hsp3dish.js ファイル (HGIMG4使用時は、hsp3dish-gp.js)</li>
 	</ul>
 	<p>
 	元のソーススクリプトがあるフォルダに、これらのファイルが生成されているはずです。
@@ -116,7 +121,7 @@
 	「http://www.onionsoft.net/hsp/hsp3js/block3.html」が実行のためのURLとなります。<br>
 	.dataファイルは、HTMLファイル内のJavaScriptから読み込まれるデータファイルで、実行に必要なデータがすべて含まれています。
 	<br>
-	「hsp3dish.js」ファイルは、HSPランタイムの核となる部分で、WEB上でHSP3Dishを実行させる場合に必ず必要となります。
+	「hsp3dish.js」「hsp3dish-gp.js」ファイルは、HSPランタイムの核となる部分で、WEB上でHSP3Dishを実行させる場合に必ず必要となります。
 	これは、すべてのスクリプトで同一となるため、同じフォルダに複数の.htmlと.dataを置いた場合でも、共用することが可能です。
 	</p>
 
@@ -221,7 +226,7 @@
 	<ul><pre>
 		・メディア関連の機能(ブラウザ、ファイルタイプによる制限あり)
 		・exec,dialog命令(未サポート)
-		・HGIMG4命令は未サポート
+		・HGIMG4のオフスクリーン描画命令は未サポート
 		・マルチタッチ未サポート
 		・DPMファイルは使用できません
 		・bsave命令などファイルの静的な保存はできません
@@ -254,9 +259,13 @@
 
 	<h2 id="LICENSE">ライセンス・謝辞</h2>
 	<p>
-	ユーザーは、<a href="hsp3dish_prog.htm#LICENCE">HSP3Dishと同様のライセンス(BSDライセンス)</a>で、hsp3dish.jsを利用することができます。
-	以下のライセンス表記が、hsp3dish.jsファイルに含まれていますので、hsp3dish.jsファイルを改変せずにそのままホームページにアップロードしてご使用ください。
+	ユーザーは、<a href="hsp3dish_prog.htm#LICENCE">HSP3Dishと同様のライセンス(BSDライセンス)</a>で、hsp3dish.js/hsp3dish-gp.jsを利用することができます。
+	以下のライセンス表記が、ファイルに含まれていますので、hsp3dish.js/hsp3dish-gp.jsファイルを改変せずにそのままホームページにアップロードしてご使用ください。
 	それ以外の場所に、ライセンス及び著作者に関する情報を表示する義務はありません。また、利用にあたっては商用、非商用を問わずライセンス料は必要ありません。
+	</p>
+	<p>
+	hsp3dish.js/hsp3dish-gp.jsを直接リンクして使用する場合は、「http://www.onionsoft.net/hsp/v35/hsp3js/hsp3dish.js」「http://www.onionsoft.net/hsp/v35/hsp3js/hsp3dish-gp.js」をご使用ください。
+	(ただし、高い負荷が発生する場合や、セキュリティの懸念があるなど、運用に支障が生じる場合は内容が変更されることがありますのでご了承ください。)
 	</p>
 	<ul><pre>
 	Copyright (C) 1997-, Onion Software/onitama.
@@ -287,7 +296,7 @@
 	POSSIBILITY OF SUCH DAMAGE.
 	</pre></ul>
 	<p>
-	hsp3dish.jsは、<a href="http://peppermint.jp/" target="_blank">zakkiさん</a>によって実装されたEmscripten版HSP3Dishをベースに実装したものです。
+	hsp3dish.js/hsp3dish-gp.jsは、<a href="http://peppermint.jp/" target="_blank">zakkiさん</a>によって実装されたEmscripten版HSP3Dishをベースに実装したものです。
 	マルチメディア機能、描画機能の改善をK-sさんにご協力頂きました。
 	素晴らしいシステムを開発したzakkiさん、ご意見をお寄せいただいた多くの方々に感謝致します。
 	<br>
