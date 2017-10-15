@@ -5,7 +5,7 @@ Hot Soup Processor ver3.5                           HSP : Hot Soup Processor
 
 ・hsp3関連 更新履歴
 
-	2017/10/05 3.5
+	2017/10/15 3.5
 
 	mes/print命令で空行でもカレントポジションが右に移動する不具合を修正
 	3.5で新規追加された機能のサンプルをフォルダ「new35」に移動
@@ -13,6 +13,7 @@ Hot Soup Processor ver3.5                           HSP : Hot Soup Processor
 	[HSP3Dish][android] hsp3dhのリリース時にjarのタイムスタンプを付加するように修正
 	[HSP3Dish][Windows] mmvol命令に-1000以下を指定しても反映されない不具合を修正
 	[HGIMG4] event_setang,event_ang命令が実行できない不具合を修正
+	[hsp3js] HGIMG4のサポートを追加(一部制約あり)
 
 	2017/09/21 3.5 beta6
 

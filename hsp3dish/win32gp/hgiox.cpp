@@ -597,6 +597,16 @@ int hgio_title( char *str1 )
 #ifdef HSPWIN
 	SetWindowText( master_wnd, str1 );
 #endif
+
+#if defined(HSPEMSCRIPTEN)
+	SDL_WM_SetCaption( (const char *)str1, NULL );
+#endif
+#if defined(HSPLINUX)
+#ifndef HSPRASPBIAN
+	SDL_WM_SetCaption( (const char *)str1, NULL );
+#endif
+#endif
+
 	return 0;
 }
 
@@ -1400,6 +1410,21 @@ int hgio_gettick( void )
     return (int)(total_tick * 1000.0 );
 #endif
 
+#if defined(HSPEMSCRIPTEN)
+	int i;
+	timespec ts;
+	double nsec;
+	static bool init = false;
+	static int initTime = 0;
+	clock_gettime(CLOCK_REALTIME,&ts);
+	nsec = (double)(ts.tv_nsec) * 0.001 * 0.001;
+	i = (int)ts.tv_sec * 1000 + (int)nsec;
+	if (!init) {
+		init = true;
+		initTime = i;
+	}
+	return i - initTime;
+#endif
 }
 
 

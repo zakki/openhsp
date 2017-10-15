@@ -9,6 +9,8 @@ HGIMG ver3.5    REFERENCE MANUAL       High Performance Graphic Image Plugin
 	画面の描画に関する様々な機能拡張を提供します。
 	HGIMG3は、Windows98、Me、2000、XP、Vista、7以降のDirectX8以上が
 	インストールされた環境で動作します。
+	(Windows XP以降には、標準で含まれているためDirectXインストールの
+	必要はありません)
 
 
 ・インストール

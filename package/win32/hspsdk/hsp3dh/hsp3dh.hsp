@@ -9,7 +9,7 @@
 #include "mod_appconfig.as"
 
 #define APPTITLE "HSP3Dish helper"
-#define APPVER "1.53"
+#define APPVER "1.6"
 #define APP_CONF "\\hsp3dh.cfg"
 
 #define AND_LIBVER 107			; android HSPランタイムの内部バージョン
@@ -63,6 +63,7 @@
 	js_memopt=""
 	js_memsize=0
 	hspjsname="hsp3dish.js"
+	js_gpmode=0
 
 	ios_proj=""
 	ios_org="hsp3dish"
@@ -523,6 +524,9 @@
 	mes "メモリサイズ(MB)指定(空白の場合は規定値)"
 	objsize 120,24
 	input js_memopt
+
+	objsize 160,24
+	chkbox "HGIMG4を使用する",js_gpmode
 
 	pos 312,118
 	objsize 160,48
@@ -1693,6 +1697,8 @@ hspproj.xcodeproj\\project.pbxproj"}
 
 	dataname=myfile+".data" ; .dataファイル名
 	htmlname=myfile+".html" ; htmlファイル名
+	hspjsname="hsp3dish.js"
+	if js_gpmode : hspjsname="hsp3dish-gp.js"
 
 	tmp=mydir+objname+"\n"
 	dim jspack_start,64
@@ -1714,21 +1720,43 @@ hspproj.xcodeproj\\project.pbxproj"}
 	mes "データフォルダ追加 ["+s1+"]"
 	;
 	chdir s1
+	packbase=s1
+	;
 	dirlist s2,"*.*",1
 	notesel s2
 	repeat notemax
 		noteget ff,cnt
-		tmp+=s1 + ff + "\n"
+		tmp+=ff + "\n"
+	loop
+
+	dirlist s2,"res\\*.*",1
+	if stat=0 : goto *no_jspack
+	mes "データフォルダ追加 ["+s1+"res]"
+	notesel s2
+	repeat notemax
+		noteget ff,cnt
+		tmp+="res/" + ff + "\n"
+	loop
+
+	dirlist s2,"res\\shaders\\*.*",1
+	if stat=0 : goto *no_jspack
+	mes "データフォルダ追加 ["+s1+"res\\shaders]"
+	notesel s2
+	repeat notemax
+		noteget ff,cnt
+		tmp+="res/shaders/" + ff + "\n"
 	loop
 
 *no_jspack
-	chdir mydir
+	chdir packbase
 
 	notesel tmp
 	repeat notemax
 		noteget ff,cnt
 		gosub *sub_jspack
 	loop
+
+	chdir mydir
 	bsave dataname,outbuf,jspack_cur
 	buf+="["+dataname+"]を作成しました.\n"
 
@@ -1745,7 +1773,7 @@ hspproj.xcodeproj\\project.pbxproj"}
 	notesel tmp
 	repeat notemax
 		noteget ff,cnt
-		ff=getpath(ff,8)
+		if instr(ff,0,".ax")>0 : ff=getpath(ff,8)
 		i=jspack_start(cnt):i2=i+jspack_size(cnt)
 		s1+="      new DataRequest("+i+", "+i2+", 0, 0).open('GET', '/"+ff+"');\n"
 		s2+="          DataRequest.prototype.requests[\"/"+ff+"\"].onload();\n"
@@ -1768,6 +1796,13 @@ hspproj.xcodeproj\\project.pbxproj"}
 	}
 	strrep outbuf, "$$$memoptions$$$", s1
 
+	;	HGIMG4オプション
+	s1=""
+	if js_gpmode {
+		strrep outbuf, "hsp3dish.js", "hsp3dish-gp.js"
+		s1="Module['FS_createPath']('/', 'res', true, true);\nModule['FS_createPath']('/res', 'shaders', true, true);\n"
+	}
+	strrep outbuf, "$$$mkdirrequest$$$", s1
 
 	notesel outbuf
 	notesave htmlname
