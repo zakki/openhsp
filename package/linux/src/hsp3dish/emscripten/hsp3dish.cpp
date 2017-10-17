@@ -105,7 +105,6 @@ void handleEvent() {
 #else
 					hgio_scale_point( m->x, m->y, x, y );
 #endif
-
 					bm = (Bmscr *)exinfo->HspFunc_getbmscr(0);
 					bm->savepos[BMSCR_SAVEPOS_MOSUEX] = x;
 					bm->savepos[BMSCR_SAVEPOS_MOSUEY] = y;
