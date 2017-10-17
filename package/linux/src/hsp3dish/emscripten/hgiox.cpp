@@ -726,6 +726,7 @@ int hgio_stick( int actsw )
 {
 	int ckey = 0;
 #if defined(HSPLINUX) || defined(HSPEMSCRIPTEN)
+#ifndef HSPRASPBIAN
 	if ( get_key_state(SDLK_LEFT) )  ckey|=1;		// [left]
 	if ( get_key_state(SDLK_UP) )    ckey|=1<<1;		// [up]
 	if ( get_key_state(SDLK_RIGHT) ) ckey|=1<<2;		// [right]
@@ -747,6 +748,20 @@ int hgio_stick( int actsw )
 	if ( get_key_state(SDLK_d) )     ckey|=1<<16;
 	if ( get_key_state(SDLK_s) )     ckey|=1<<17;
 #else
+	if ( get_key_state(37) ) ckey|=1;		// [left]
+	if ( get_key_state(38) ) ckey|=2;		// [up]
+	if ( get_key_state(39) ) ckey|=4;		// [right]
+	if ( get_key_state(40) ) ckey|=8;		// [down]
+	if ( get_key_state(32) ) ckey|=16;		// [spc]
+	if ( get_key_state(13) ) ckey|=32;		// [ent]
+	if ( get_key_state(17) ) ckey|=64;		// [ctrl]
+	if ( get_key_state(27) ) ckey|=128;		// [esc]
+	if ( get_key_state(1) )  ckey|=256;		// mouse_l
+	if ( get_key_state(2) )  ckey|=512;		// mouse_r
+	if ( get_key_state(9) )  ckey|=1024;	// [tab]
+#endif
+
+#else
 	if ( mouse_btn ) ckey|=256;	// mouse_l
 #endif
 	return ckey;
@@ -754,6 +769,7 @@ int hgio_stick( int actsw )
 
 
 #if defined(HSPLINUX) || defined(HSPEMSCRIPTEN)
+#ifndef HSPRASPBIAN
 static const unsigned int key_map[256]={
 	/* 0- */
 	0, 0, 0, 3, 0, 0, 0, 0, SDLK_BACKSPACE, SDLK_TAB, 0, 0, 12, SDLK_RETURN, 0, 0,
@@ -806,6 +822,13 @@ bool hgio_getkey( int kcode )
 	}
 	return res;
 }
+#else
+bool hgio_getkey( int kcode )
+{
+	return get_key_state( kcode );
+}
+#endif
+
 #endif
 
 

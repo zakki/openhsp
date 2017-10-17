@@ -276,7 +276,26 @@ static void HSP_run(GtkWidget *w,int flag)
 
 	chdir(mydir);
 
+/*
+	int pid;
+	sprintf(cmd,"%s/hsp3dish",hspdir);
+	sigignore( SIGCLD );
+	if( (pid=fork()) < 0 ){ 
+	    return; 
+	} else if( pid == 0 ){ 
+	    execlp( cmd, cmd, "__hsptmp.ax", NULL );
+	    exit( -1 );
+	}
+*/
+
+
+#ifdef HSPRASPBIAN
+	sprintf(cmd,"/usr/bin/lxterminal --working-directory=\"%s\" --command=\"%s/hsp3dish __hsptmp.ax\""
+			, mydir, hspdir );
+#else
 	sprintf(cmd,"%s/hsp3dish __hsptmp.ax",hspdir);
+#endif
+
 	system(cmd);
 
 	//system("./runhsp hsptmp&");
