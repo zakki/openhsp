@@ -8,6 +8,10 @@
 #include <stdlib.h>
 #include <string.h>
 
+#include <fcntl.h>
+#include <unistd.h>
+#include <poll.h>
+
 #include "../hsp3config.h"
 #include "../hsp3code.h"
 #include "../hsp3debug.h"
@@ -40,6 +44,7 @@ extern int resY0, resY1;
 static void ExecFile( char *stmp, char *ps, int mode )
 {
 	//	外部ファイル実行
+	system(stmp);
 }
 		
 static char *getdir( int id )
@@ -121,6 +126,179 @@ void ex_mref( PVal *pval, int prm )
 	HspVarCoreDupPtr( pval, t, ptr, size );
 }
 
+
+/*----------------------------------------------------------*/
+//		GPIOデバイスコントロール関連
+/*----------------------------------------------------------*/
+
+#ifdef HSPRASPBIAN
+
+#define GPIO_TYPE_NONE 0
+#define GPIO_TYPE_OUT 1
+#define GPIO_TYPE_IN 2
+#define GPIO_MAX 32
+
+#define GPIO_CLASS "/sys/class/gpio/"
+
+static int gpio_type[GPIO_MAX];
+static int gpio_value[GPIO_MAX];
+
+static int echo_file( char *name, char *value )
+{
+	//	echo value > name を行なう
+	//printf( "[%s]<-%s\n",name,value );
+	int fd;
+	fd = open( name, O_WRONLY );
+	if (fd < 0) {
+		return -1;
+	}
+	write( fd, value, strlen(value)+1 );
+	close(fd);
+	return 0;
+}
+
+static int echo_file2( char *name, int value )
+{
+	char vstr[64];
+	sprintf( vstr, "%d", value );
+	return echo_file( name, vstr );
+}
+
+static int gpio_delport( int port )
+{
+	if ((port<0)||(port>=GPIO_MAX)) return -1;
+
+	if ( gpio_type[port]==GPIO_TYPE_NONE ) return 0;
+	echo_file2( GPIO_CLASS "unexport", port );
+	usleep(100000);		//0.1秒待つ(念のため)
+	gpio_type[port]=GPIO_TYPE_NONE;
+	return 0;
+}
+
+static int gpio_setport( int port, int type )
+{
+	if ((port<0)||(port>=GPIO_MAX)) return -1;
+
+	if ( gpio_type[port]==GPIO_TYPE_NONE ) {
+		echo_file2( GPIO_CLASS "export", port );
+		usleep(100000);		//0.1秒待つ(念のため)
+	}
+
+	if ( gpio_type[port] == type ) return 0;
+
+	int res = 0;
+	char vstr[256];
+	sprintf( vstr, GPIO_CLASS "gpio%d/direction", port );
+
+	switch( type ) {
+	case GPIO_TYPE_OUT:
+		res = echo_file( vstr, "out" );
+		break;
+	case GPIO_TYPE_IN:
+		res = echo_file( vstr, "in" );
+		break;
+	}
+
+	if ( res ) {
+		gpio_type[port] = GPIO_TYPE_NONE;
+		return res;
+	}
+
+	gpio_type[port] = type;
+	gpio_value[port] = 0;
+	return 0;
+}
+
+static int gpio_out( int port, int value )
+{
+	if ((port<0)||(port>=GPIO_MAX)) return -1;
+	if ( gpio_type[port]!=GPIO_TYPE_OUT ) {
+		int res = gpio_setport( port, GPIO_TYPE_OUT );
+		if ( res ) return res;
+	}
+
+	char vstr[256];
+	sprintf( vstr, GPIO_CLASS "gpio%d/value", port );
+	if ( value == 0 ) {
+		gpio_value[port] = 0;
+		return echo_file( vstr, "0" );
+	}
+	gpio_value[port] = 1;
+	return echo_file( vstr, "1" );
+}
+
+static int gpio_in( int port, int *value )
+{
+	if ((port<0)||(port>=GPIO_MAX)) return -1;
+	if ( gpio_type[port]!=GPIO_TYPE_IN ) {
+		int res = gpio_setport( port, GPIO_TYPE_IN );
+		if ( res ) return res;
+	}
+
+	int fd,rd,i;
+	char vstr[256];
+	char ev[256];
+	char a1;
+	sprintf( vstr, GPIO_CLASS "gpio%d/value", port );
+
+	fd = open( vstr, O_RDONLY | O_NONBLOCK );
+	if (fd < 0) {
+		return -1;
+	}
+    rd = read(fd,ev,255);
+    if(rd > 0) {
+		i = 0;
+		while(1) {
+			if ( i >= rd ) break;
+			a1 = ev[i++];
+			if ( a1 == '0' ) gpio_value[port] = 0;
+			if ( a1 == '1' ) gpio_value[port] = 1;
+		}
+	}
+	close(fd);
+
+	*value = gpio_value[port];
+	return 0;
+}
+
+static void gpio_init( void )
+{
+	int i;
+	for(i=0;i<GPIO_MAX;i++) {
+		gpio_type[i] = GPIO_TYPE_NONE;
+	}
+}
+
+static void gpio_bye( void )
+{
+	int i;
+	for(i=0;i<GPIO_MAX;i++) {
+		gpio_delport(i);
+	}
+}
+
+//--------------------------------------------------------------
+
+static int devprm( char *name, char *value )
+{
+	return echo_file( name, value );
+}
+
+static int devcontrol( char *cmd, int p1, int p2, int p3 )
+{
+	if (( strcmp( cmd, "gpio" )==0 )||( strcmp( cmd, "GPIO" )==0 )) {
+		return gpio_out( p1, p2 );
+	}
+	if (( strcmp( cmd, "gpioin" )==0 )||( strcmp( cmd, "GPIOIN" )==0 )) {
+		int res,val;
+		res = gpio_in( p1, &val );
+		if ( res == 0 ) return val;
+		return res;
+	}
+	return -1;
+}
+
+#endif
 
 /*------------------------------------------------------------*/
 /*
@@ -261,6 +439,34 @@ static int cmdfunc_extcmd( int cmd )
 		break;
 		}
 
+#ifdef HSPRASPBIAN
+
+	case 0x49:								// devprm
+		{
+		char *ps;
+		char prmname[256];
+		int p_res;
+		strncpy( prmname, code_gets(), 255 );
+		ps = code_gets();
+		p_res = devprm( prmname, ps );
+		ctx->stat = p_res;
+		break;
+		}
+	case 0x4a:								// devcontrol
+		{
+		char *cname;
+		int p_res;
+		cname = code_stmpstr( code_gets() );
+		p1 = code_getdi( 0 );
+		p2 = code_getdi( 0 );
+		p3 = code_getdi( 0 );
+		p_res = devcontrol( cname, p1, p2, p3 );
+		ctx->stat = p_res;
+		break;
+		}
+
+#endif
+
 	default:
 		throw HSPERR_UNSUPPORTED_FUNCTION;
 	}
@@ -320,6 +526,10 @@ static int termfunc_extcmd( int option )
 	//		termfunc : TYPE_EXTCMD
 	//		(内蔵GUI)
 	//
+
+#ifdef HSPRASPBIAN
+	gpio_bye();
+#endif
 	return 0;
 }
 
@@ -351,5 +561,9 @@ void hsp3typeinit_cl_extcmd( HSP3TYPEINFO *info )
 void hsp3typeinit_cl_extfunc( HSP3TYPEINFO *info )
 {
 	info->reffunc = reffunc_function;
+
+#ifdef HSPRASPBIAN
+	gpio_init();
+#endif
 }
 
