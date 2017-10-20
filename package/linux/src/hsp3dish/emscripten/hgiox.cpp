@@ -1693,6 +1693,9 @@ int hgio_exec( char *msg, char *option, int mode )
 #ifdef HSPIOS
     gb_exec( mode, msg );
 #endif
+#ifdef HSPLINUX
+	system(msg);
+#endif
     return 0;
 }
 

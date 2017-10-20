@@ -41,10 +41,8 @@ LinuxのGUI環境(X Window System)で動作します。
 
 ・Raspberry Piインストール
 
-Raspberry Pi上のRaspbian上で動作します。(推奨バージョンは、March 2017 Kernel version4.4です)
-hsp3dish及びhsp3gp(HGIMG4)、hsed(スクリプトエディタ)は、
-GUI環境でのみ動作します。 GUIを使用する場合は、Raspberry Pi3または
-Raspberry Pi2の使用を推奨します。
+Raspberry Pi上のRaspbian上で動作します。(推奨バージョンは、September 2017 Kernel version4.9です)
+hsp3dish及び、hsed(スクリプトエディタ)は、GUI環境でのみ動作します。
 (描画に関する機能は、OpenGL及びSDLライブラリを使用して動作しています。)
 アーカイブの内容を任意のディレクトリに展開して、ソースをコンパイルしてください。
 コンパイルには、gcc及びmakeを実行できる環境が必要になります。
@@ -59,18 +57,21 @@ Raspberry Pi2の使用を推奨します。
 	sudo apt-get install libsdl1.2-dev libsdl-image1.2-dev libsdl-mixer1.2-dev libsdl-ttf2.0-dev
 		
 アーカイブにはソースのみが含まれていますので、makeによってコンパイルする必要があります。
-(Raspbianのバージョンやディストリビューションによって
-正しくコンパイルされない場合は、修正が必要になります。)
 
 	make -f makefile.raspbian
 		
 アーカイブの内容が展開されたディレクトリでmakeコマンドを実行してください。
 必要なツールのコンパイルが行なわれ、HSP3が使用できる状態になります。
 
+	./hsed
+
+上記のプログラムを起動することで、スクリプトエディタ(簡易版)がGUIで動作します。
+HSP3のスクリプトを記述して、実行することのできる簡易的なエディタです。
+
 Raspberry Pi版では、フルスクリーンで実行を行ないます。
-実行の中断は、[ctrl]+[C]か[esc]キーで行ないますが、
-エディタからの実行時に正しく認識されないことがあります。
-その場合は、コマンドラインから「./hsp3dish ****.ax」の形で実行を行なってください。
+実行の中断は、[ctrl]+[C]か[esc]キーを押してください。
+キーボードだ正しく認識されていない場合など、中断ができなくなることがありますので注意してください。
+GUIエディタだけでなく、コマンドラインから「./hsp3dish ****.ax」の形で実行を行なうことも可能です。
 
 
 ・使用方法
@@ -110,6 +111,35 @@ HSPオブジェクトファイルを作成する必要があります。
 同様に、「hsp3dish」「hsp3gp」などのランタイムに合わせたスクリプトを
 実行させることができます。
 (「hsp3dish」「hsp3gp」の実行は、GUI環境が必要になります。)
+
+
+・exec、devprm命令について
+
+Linux版、Raspberry Pi版ともにexec命令により、シェルのコマンドを呼び出すことができます。
+また、devprm命令によりファイルシステム上のデバイスに文字列を出力することが可能です。
+
+	devprm "/sys/class/gpio/export", "2"
+
+のように記述した場合は、「/sys/class/gpio/export」に「2」が出力されます。
+シェルから「echo 2 > /sys/class/gpio/export」を実行するのと同じ動作になります。
+
+
+・Raspberry PiのGPIO入出力
+
+Raspberry Pi版では、devprm命令の他にdevcontrol命令によりGPIO入出力を行なう拡張が行われています。
+GPIO出力を制御する場合は、以下のように記述します。
+
+	devcontrol "gpio", ポート番号, 出力値
+
+ポート番号は、GPIOのポートを数値で指定します。
+出力値は、1(ON)か0(OFF)を数値で指定することで、デジタルポートの出力を制御します。
+入力を行う場合は、以下のように記述します。
+
+	devcontrol "gpioin", ポート番号
+
+命令の実行後にシステム変数statに0か1が代入されます。
+(エラーが発生した場合は、マイナス値が代入されます)
+GPIO入出力は、hsp3dishだけでなくhsp3clからも使用することが可能です。
 
 
 ・オンラインマニュアル
