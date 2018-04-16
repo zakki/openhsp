@@ -23,7 +23,7 @@ FOOTYEXPORT(int) Footy2GetCaretPosition(int nID,size_t *pCaretLine,size_t *pCare
 
 /*----------------------------------------------------------------
 Footy2SetCaretPosition
-キャレット位置を取得します
+キャレット位置を変更します
 ----------------------------------------------------------------*/
 FOOTYEXPORT(int) Footy2SetCaretPosition(int nID,size_t nCaretLine,size_t nCaretPos,bool bRefresh){
 	/*Footyを取得する*/
@@ -107,12 +107,57 @@ FOOTYEXPORT(int) Footy2SetSel(int nID,size_t nStartLine,size_t nStartPos,size_t 
 		pFooty->m_cView[0].AdjustVisiblePos();
 		pFooty->m_cView[0].AdjustVisibleLine();
 		pFooty->m_cView[0].Refresh();
-		pFooty->m_cView[0].Refresh();
 	}
 	
 	/*関数が正常に終了した*/
 	return FOOTY2ERR_NONE;
 }
 
+/*----------------------------------------------------------------
+Footy2ResetSel
+選択を強制解除する by inovia
+----------------------------------------------------------------*/
+//FOOTYEXPORT(int) Footy2ResetSel(int nID,bool bRefresh){
+//	/*Footyを取得する*/
+//	CFooty *pFooty = GetFooty(nID);
+//	if (!pFooty)return FOOTY2ERR_NOID;
+//	
+//	/*選択する*/
+//	CEditPosition cSelStart,cSelEnd;
+//	if (!cSelStart.SetPosition(pFooty->m_cDoc.GetLineList(),nStartLine,nStartPos) ||
+//		!cSelEnd.SetPosition(pFooty->m_cDoc.GetLineList(),nEndLine,nEndPos) ||
+//		!pFooty->m_cDoc.SetSelectStart(&cSelStart) ||
+//		!pFooty->m_cDoc.SetSelectEndNormal(&cSelEnd))
+//		return FOOTY2ERR_ARGUMENT;
+//	*pFooty->m_cDoc.GetCaretPosition() = cSelEnd;
+//	
+//	/*再描画*/
+//	if (bRefresh){
+//		pFooty->m_cView[0].AdjustVisiblePos();
+//		pFooty->m_cView[0].AdjustVisibleLine();
+//		pFooty->m_cView[0].Refresh();
+//		pFooty->m_cView[0].Refresh();
+//	}
+//	
+//	/*関数が正常に終了した*/
+//	return FOOTY2ERR_NONE;
+//}
+
+/*----------------------------------------------------------------
+Footy2SetUnderlineDraw
+フォーカスされていないときにアンダーバーを描画するかどうか？ by inovia
+デフォルト: false
+----------------------------------------------------------------*/
+FOOTYEXPORT(int) Footy2SetUnderlineDraw(int nID, bool bFlag){
+	/*Footyを取得する*/
+	CFooty *pFooty = GetFooty(nID);
+	/*エラーチェック*/
+	if (!pFooty)return FOOTY2ERR_NOID;
+	pFooty->m_cView[0].SetUnderlineDraw(bFlag);
+	pFooty->m_cView[1].SetUnderlineDraw(bFlag);
+	pFooty->m_cView[2].SetUnderlineDraw(bFlag);
+	pFooty->m_cView[3].SetUnderlineDraw(bFlag);
+	return FOOTY2ERR_NONE;
+}
 
 /*[EOF]*/

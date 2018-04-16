@@ -49,6 +49,27 @@ typedef struct tagMyColor{
 		MYCOLORREF Caret;
 	} Ruler;
 
+
+	struct{// by Tetr@pod
+		MYCOLORREF URL;
+		MYCOLORREF URLUnderLine;
+		MYCOLORREF Mail;
+		MYCOLORREF MailUnderLine;
+		MYCOLORREF Label;
+		MYCOLORREF LabelUnderLine;
+	} Clickable;
+
+	struct{// by Tetr@pod
+		MYCOLORREF UserFunction1;
+		MYCOLORREF UserFunction2;
+		MYCOLORREF UserFunction3;
+		MYCOLORREF UserFunction4;
+		MYCOLORREF UserFunction5;
+		MYCOLORREF UserFunction6;
+		MYCOLORREF UserFunction7;
+		MYCOLORREF UserFunction8;
+	} UserFunction;
+
 } MYCOLOR;
 
 typedef struct tagClassifyTable{
@@ -108,6 +129,22 @@ typedef struct tagClassifyTable{
 #define DEFCOLOR_RULER_BACKGROUND RGB(239, 235, 222)
 #define DEFCOLOR_RULER_CARET      RGB(  0, 203, 206)
 #define DEFCOLOR_RULER_DIVISION   RGB(  0,   0,   0)
+
+// by Tetr@pod
+#define DEFCOLOR_CURL             RGB(  0,   0, 255)
+#define DEFCOLOR_CURL_UNDERLINE   RGB(  0,   0, 255)
+#define DEFCOLOR_CMAIL            RGB( 64, 255,  64)
+#define DEFCOLOR_CMAIL_UNDERLINE  RGB( 64, 255,  64)
+#define DEFCOLOR_CLABEL           RGB(192, 192,  49)
+#define DEFCOLOR_CLABEL_UNDERLINE RGB(192, 192,  49)
+#define DEFCOLOR_USERFUNC_DEFFUNC RGB(  0, 192, 192)// #deffunc, #defcfunc
+#define DEFCOLOR_USERFUNC_MODINIT RGB(  0, 192, 255)// #modinit, #modterm
+#define DEFCOLOR_USERFUNC_MODFUNC RGB(  0, 192, 192)// #modfunc
+#define DEFCOLOR_USERFUNC_FUNC    RGB(192,   0,   0)// #func, #cfunc
+#define DEFCOLOR_USERFUNC_CMD     RGB(192,   0,   0)// #cmd
+#define DEFCOLOR_USERFUNC_COMFUNC RGB(192,   0,   0)// #comfunc
+#define DEFCOLOR_USERFUNC_DEFINE  RGB(192, 255, 255)// #define
+#define DEFCOLOR_USERFUNC_DEFINEC RGB(192, 255, 255)// #define ctype
 
 void InitClassify();
 void SetClassify(int);

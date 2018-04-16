@@ -19,17 +19,12 @@ CEditPosition::CEditPosition(){
 CEditPosition::operator =
 代入演算
 -------------------------------------------------------------------*/
-CEditPosition& CEditPosition::operator = (CEditPosition &cPos){
-
+bool CEditPosition::operator = (CEditPosition &cPos){
 	m_nPosition = cPos.m_nPosition;
 	m_nBackupPosition = cPos.m_nBackupPosition;
 	m_nBackupLine = cPos.m_nBackupLine;
 	m_iterBackupLine = cPos.m_iterBackupLine;
-
-	*static_cast<CPositionBase*>(this) = cPos;
-
-	return *this;
-
+	return *(CPositionBase*)this = cPos;
 }
 
 /*-------------------------------------------------------------------
@@ -98,7 +93,6 @@ CEditPosition::MoveColumnBackward
 nPos桁分後ろにさせる。成功時trueです。データはバックアップされます。
 -------------------------------------------------------------------*/
 bool CEditPosition::MoveColumnBackward(LsLines *pLines,size_t nPos){
-
 	if (!pLines)return false;
 	/*前の行に行くかチェック*/
 	if (m_nPosition < nPos){
@@ -112,7 +106,6 @@ bool CEditPosition::MoveColumnBackward(LsLines *pLines,size_t nPos){
 	}
 	else m_nPosition -= nPos;
 	BackupAll();
-
 	return true;
 }
 

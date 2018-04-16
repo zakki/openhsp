@@ -7,9 +7,11 @@
 
 #include "FootyView.h"
 #include "resource.h"
+#include "ImageController.h"
 
 #define FOOTY_WNDCLASSNAME	L"Footy2View"
 #define FOOTY_PROPNAME		L"Footy2Class"
+#define MSH_MOUSEWHEEL L"MSWHEEL_ROLLMSG"
 
 #ifndef UNDER_CE
 	unsigned int CFootyView::m_uWheelMsg = GetWheelMsg();
@@ -53,7 +55,8 @@ CFootyView::CFootyView() :
 	m_nLineCountWidth( LINEWIDTH_DEFAULT ),
 	m_nRulerHeight( 10 ),
 	m_nLineCountMargin( 2 ),
-	m_nCaretWidth( 2 )
+	m_nCaretWidth( 2 ),
+	m_bUnderlineDraw(false)
 {
 }
 
@@ -149,6 +152,9 @@ bool CFootyView::CreateFootyView( HWND hWndParent, HINSTANCE hInstance )
 		return false;
 	}
 	SetProp( m_hWnd, FOOTY_PROPNAME, (HANDLE)this );			// ƒNƒ‰ƒX‚ğ“o˜^
+
+	m_ImgCtr = new CImageController(m_hWnd);
+	// m_ImgCtr->Load(L"C:\\test.png");
 	
 	// ƒƒ“ƒo•Ï”‚Ì‰Šú‰»
 	m_nFirstVisibleColumn = 0;
@@ -168,6 +174,7 @@ void CFootyView::DestroyFootyView()
 		RemoveProp( m_hWnd, FOOTY_PROPNAME );
 		DestroyWindow( m_hWnd );
 		m_hWnd = NULL;
+		delete m_ImgCtr;
 	}
 }
 

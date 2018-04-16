@@ -14,7 +14,7 @@
 #define HSPVER3		// HSP version3.0 flag
 
 #ifdef HSPVER3
-#include "../hsp3/hsp3config.h"
+#include "../../../hsp3/hsp3config.h"
 #else
 #define vercode 0x0206		// HSP2 version code
 #endif
@@ -49,30 +49,18 @@
 //		デフォルトの文字列
 //
 #ifdef JPNMSG
-
 #define UNTITLED "(無題)"
 #define TABUNTITLED "無題"
-#define HSP_EDITOR_NAME "HSPスクリプトエディタ"
-#define HSP_DIALOG_CAPTION "HSPスクリプトエディタ"
-
 #else
-
 #define UNTITLED "(untitled)"
 #define TABUNTITLED "untitled"
-#define HSP_EDITOR_NAME "HSP Script Editor"
-#define HSP_DIALOG_CAPTION "HSP Script Editor"
-
 #endif
 
 //		デフォルトの値
 #define TMPSIZE 2048
 
-#define MAX_TITLE_LENGTH (MAX_PATH + 32)
-
 //		インターフェイス用
 //
 #define HSED_INTERFACE_NAME "HSPEditorInterface"
-
-#define ASSIGN_TAB_LIST_TO_FOOTY_IDS
 
 #endif

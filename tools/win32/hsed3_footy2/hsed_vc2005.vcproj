@@ -201,6 +201,14 @@
 				>
 			</File>
 			<File
+				RelativePath=".\CustomColorKeywords.cpp"
+				>
+			</File>
+			<File
+				RelativePath=".\CustomConfig.cpp"
+				>
+			</File>
+			<File
 				RelativePath="exttool.cpp"
 				>
 			</File>
@@ -218,6 +226,10 @@
 			</File>
 			<File
 				RelativePath="membuf.cpp"
+				>
+			</File>
+			<File
+				RelativePath=".\PackIconResource.cpp"
 				>
 			</File>
 			<File
@@ -294,6 +306,14 @@
 				>
 			</File>
 			<File
+				RelativePath=".\CustomColorKeywords.h"
+				>
+			</File>
+			<File
+				RelativePath=".\CustomConfig.h"
+				>
+			</File>
+			<File
 				RelativePath="exttool.h"
 				>
 			</File>
@@ -318,11 +338,11 @@
 				>
 			</File>
 			<File
-				RelativePath="poppad.h"
+				RelativePath=".\PackIconResource.h"
 				>
 			</File>
 			<File
-				RelativePath="popfile.h"
+				RelativePath="poppad.h"
 				>
 			</File>
 			<File

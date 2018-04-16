@@ -229,11 +229,11 @@ static LRESULT InterfaceProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 */
 		case HSED_GETCARETLINE:
 			Footy2GetCaretPosition(footy_defid, (size_t*)&nRet, NULL);
-			return nRet + 1;
+			return nRet;
 
 		case HSED_GETCARETPOS:
-			Footy2GetCaretPosition(footy_defid, NULL, (size_t*)&nRet);
-			return nRet + 1;
+//			return FootyGetCaretPos(footy_defid);
+			return 0;	// 2008-02-17 Shark++ 代替機能未実装
 
 		case HSED_SETCARETLINE:
 			return Footy2SetCaretPosition(footy_defid, (int)lParam, 0);	// 2008-02-17 Shark++ SDKを見直す必要あり？SDKで使用されていない？
@@ -401,11 +401,14 @@ static inline LRESULT GetText(int nFootyID, HANDLE hPipe)
 	lpBuffer = (char *)malloc(dwSize + 1);
 	if(lpBuffer == NULL) return -1;
 	nRet = Footy2GetText(nFootyID, lpBuffer, LM_CRLF, dwSize);
-	if (nRet == FOOTY2ERR_NONE && !WriteFile(hPipe, lpBuffer, dwSize, &dwNumberOfBytesWritten, NULL)){
+	if(nRet == FOOTY2ERR_NONE){
+		if(!WriteFile(hPipe, lpBuffer, dwSize, &dwNumberOfBytesWritten, NULL)){
+			free(lpBuffer);
+			return -3;
+		}
+	} else {
 		free(lpBuffer);
-		return -3;
 	}
-	free(lpBuffer);
 
 	switch(nRet){
 		case FOOTY2ERR_NONE:   return 0;

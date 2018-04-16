@@ -12,9 +12,13 @@
 #include "DoubleBuffering.h"
 #include "FootyDoc.h"
 #include "Caret.h"
+#include "ImageController.h"
 
 #define LINEWIDTH_DEFAULT	50
 #define RULERHEIGHT_DEFAULT	10
+
+/*bool extern DrawAllUserFuncs;					//!< 全行再描画 by Tetr@pod
+bool extern IsUFUpdateTiming;					//!< 更新すべき時か？ by Tetr@pod*/
 
 class CFootyView
 {
@@ -60,11 +64,19 @@ public:
 	void CaretMove();
 	void SetMarkVisible(int nMark){m_nMarkVisible = nMark;}
 	void SetUnderlineVisible(int nUnderline){m_bUnderlineVisible = nUnderline ? true : false;}
-	
+	void SetUnderlineDraw(bool flag);
+
+	// 背景画像設定系
+	BOOL ImageLoad(const wchar_t *pFilePath);
+	void ImageClear(void);
+	void SetColor(COLORREF color);
+
 	/*キャレット位置から表示位置を調整する処理*/
 	inline void SetFirstColumn(int nFirstColumn){m_nFirstVisibleColumn = nFirstColumn;}
 	bool AdjustVisiblePos();
 	bool AdjustVisibleLine();
+
+	bool RenderLines2();
 
 //privateメンバ関数/////////////////////////////////////////////////////////
 private:
@@ -123,6 +135,8 @@ private:
 		ONURL_NONE,				//!< 何にもない
 		ONURL_URL,				//!< URL上
 		ONURL_MAIL,				//!< メール上
+		ONURL_LABEL,			//!< ラベル上 by Tetr@pod
+		ONURL_FUNC,				//!< 命令・関数上 by Tetr@pod
 	};
 	RetOnUrl IsOnUrl(CEditPosition *pPos,CUrlInfo *pInfo);
 	
@@ -241,11 +255,14 @@ private:
 	int m_nNowMousePosX,m_nNowMousePosY;
 	int m_nMarkVisible;							//!< エディタの描画情報
 	bool m_bUnderlineVisible;					//!< 行下線の描画情報
+	bool m_bUnderlineDraw;						// フォーカス時のアンダーラインの描画
 	
 	// 一時的な変数
 	unsigned long m_nIgnoreKey;					//!< 無視するキー
 	bool m_bShiftLocked;						//!< シフトロックされているかどうか
 	enDragMode m_nDragMode;						//!< ドラッグ状態
+
+	CImageController *m_ImgCtr;					//!< イメージコントローラ by inovia
 };
 
 /*[EOF]*/

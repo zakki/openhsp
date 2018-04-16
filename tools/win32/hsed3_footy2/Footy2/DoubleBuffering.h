@@ -22,6 +22,8 @@ public:
 	inline bool IsRendered(){return m_bRendered;}
 	//! 前に描画されたときのバッファリング状態を返す
 	inline CEthicLine* const GetFirstVisible(){return &m_cRenderedFirstVisible;}
+	inline int GetWidth(){return m_nWidth;};
+	inline int GetHeight(){return m_nHeight;};
 
 private:
 	/*ダブルバッファリングのデータ*/

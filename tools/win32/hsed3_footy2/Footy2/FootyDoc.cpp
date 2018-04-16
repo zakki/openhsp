@@ -26,6 +26,7 @@ CFootyDoc::CFootyDoc()	:
 	m_pFuncInsertMode( NULL ),
 	m_pDataInsertModeChanged( NULL )
 {
+	f_SpeedDraw = 0;
 }
 
 //-----------------------------------------------------------------------------
@@ -236,6 +237,7 @@ void CFootyDoc::SetTabLen(size_t nTabLen){
 CFootyDoc::RedrawType CFootyDoc::InsertString
 		(const wchar_t *pString,bool bRecUndo,bool bOverwritable,bool bMemLineMode)
 {
+	FOOTY2_PRINTF( L"InsertString開始\n");
 	// 宣言
 	const wchar_t *pWork;			//!< 改行位置検索用
 	std::wstring strRestLine;		//!< 挿入位置以降のデータ
@@ -294,6 +296,7 @@ CFootyDoc::RedrawType CFootyDoc::InsertString
 				nNumLines++;
 				pWork++;
 				if (bMemLineMode)m_nLineMode = LM_CRLF;
+				FOOTY2_PRINTF( L"InsertString CRLF発見\n");
 			}
 			else						// キャリッジリターンのみ
 			{
@@ -301,6 +304,7 @@ CFootyDoc::RedrawType CFootyDoc::InsertString
 							nPos,&strRestLine,1,nNumLines==0);
 				nNumLines++;
 				if (bMemLineMode)m_nLineMode = LM_CR;
+				FOOTY2_PRINTF( L"InsertString CR発見\n");
 			}
 		}
 		else if (*pWork == L'\n')		// ラインフィード
@@ -309,27 +313,36 @@ CFootyDoc::RedrawType CFootyDoc::InsertString
 						nPos,&strRestLine,1,nNumLines==0);
 			nNumLines++;
 			if (bMemLineMode)m_nLineMode = LM_LF;
+			FOOTY2_PRINTF( L"InsertString LF発見\n");
 		}
 		else if (*pWork == L'\0')		// 終端文字
 		{
+			FOOTY2_PRINTF( L"InsertString走査終了\n");
 			if (!nNumLines)				// 今までに改行が無かったとき
 			{
+				FOOTY2_PRINTF( L"InsertString改行なし\n");
 				// その位置に全ての文字列を挿入する
 				pLine->m_strLineData.insert(nPos,pString);
-				SetLineInfo(pBeginLine);
+				FOOTY2_PRINTF( L"InsertString変更確定しそう\n");
+				SetLineInfo(pBeginLine, false/*改行を含むか by Tetr@pod*/);
+				FOOTY2_PRINTF( L"InsertString変更確定\n");
 				// キャレット位置を移動させる
 				m_cCaretPos.MoveColumnForward(&m_lsLines,(size_t)(pWork-pString));
 			}
 			else						// 改行があったとき
 			{
+				FOOTY2_PRINTF( L"InsertString改行あり\n");
 				// バックアップ文字列を代入する
 				pLine->m_strLineData = pString + strRestLine;
 				// 変更を確定する
-				SetLineInfo(pBeginLine,pLine);
+				FOOTY2_PRINTF( L"InsertString変更確定しそう\n");
+				SetLineInfo(pBeginLine,pLine, true/*改行を含むか by Tetr@pod*/);
+				FOOTY2_PRINTF( L"InsertString変更確定\n");
 				// キャレット位置を移動させる
 				m_cCaretPos.MoveRealNext(&m_lsLines,nNumLines);
 				m_cCaretPos.MoveColumnForward(&m_lsLines,(size_t)(pWork-pString));
 			}
+			FOOTY2_PRINTF( L"InsertStringアンドゥ情報追加\n");
 			// アンドゥ情報を挿入する
 			if (bRecUndo)
 			{
@@ -339,7 +352,9 @@ CFootyDoc::RedrawType CFootyDoc::InsertString
 			break;
 		}
 	}
+	FOOTY2_PRINTF( L"InsertString終了間際\n");
 	SendMoveCaretCallBack();
+	FOOTY2_PRINTF( L"InsertString終了\n");
 	return REDRAW_ALL;
 }
 
@@ -430,7 +445,7 @@ CFootyDoc::RedrawType CFootyDoc::InsertChar(wchar_t wChar)
 	
 	// 倫理行何行になるかチェック
 	size_t nBeforeEthic = pLine->GetEthicLine();
-	if (SetLineInfo(pLine))
+	if (SetLineInfo(pLine, false/*改行を含むか by Tetr@pod*/))
 		nRetRedraw = REDRAW_ALL;
 	if (nBeforeEthic != pLine->GetEthicLine())
 		nRetRedraw = REDRAW_ALL;
@@ -514,10 +529,13 @@ CFootyDoc::RedrawType CFootyDoc::InsertReturn( bool bIndentMode )
 	pInsertPos = pLine;
 	pInsertPos++;
 	pInsertPos = m_lsLines.insert( pInsertPos, cNewLine );
-	SetLineInfo( pLine, pInsertPos );
+	SetLineInfo( pLine, pInsertPos, false/*改行を含むか by Tetr@pod*/ );
 
 	// キャレット位置を移動させる
 	m_cCaretPos.SetPosition( pInsertPos, nIndentChars );
+
+	// 再度更新
+	SetLineInfo( pLine, pInsertPos, false/*改行を含むか by Tetr@pod*/ );
 
 	// アンドゥー情報を格納
 	cUndo.m_cAfterEnd = m_cCaretPos;
@@ -621,7 +639,7 @@ CFootyDoc::RedrawType CFootyDoc::OnBackSpace()
 			else
 				pLine->m_strLineData.erase(nPos-1,1);
 			size_t nBeforeEthic = pLine->GetEthicLine();
-			if (SetLineInfo(pLine))
+			if (SetLineInfo(pLine, false/*改行を含むか by Tetr@pod*/))
 				nNeedRedraw = REDRAW_ALL;
 			if (nBeforeEthic != pLine->GetEthicLine())
 				nNeedRedraw = REDRAW_ALL;
@@ -663,7 +681,7 @@ CFootyDoc::RedrawType CFootyDoc::OnBackSpace()
 				// 情報を更新する
 				LinePt pNextLine = pPrevLine;
 				pNextLine++;      
-				SetLineInfo(pPrevLine,pNextLine);  
+				SetLineInfo(pPrevLine,pNextLine, false);  
 
 				SendMoveCaretCallBack();
 				return REDRAW_ALL;
@@ -712,14 +730,14 @@ CFootyDoc::RedrawType CFootyDoc::OnDelete()
  * @note pBeginは文字列が変更されているのでURLとメールアドレスを再検索。
  *       以降の行は強調表示文字列を全て検索します。
  */
-bool CFootyDoc::SetLineInfo(LinePt pBegin)
+bool CFootyDoc::SetLineInfo(LinePt pBegin, bool ForceListUpdate/*改行を含むか by Tetr@pod*/)
 {
 	bool bAllRedraw = false;
 	bool bPrevLineInfoChanged = false;
 	bool bEmphasisChanged = false;
 	
 	// 最初の行だけを確定させる
-	bPrevLineInfoChanged = pBegin->FlushString(m_nTabLen,m_nLapelColumns,m_nLapelMode);
+	bPrevLineInfoChanged = pBegin->FlushString(m_nGlobalID/*by Tetr@pod*/, m_nTabLen,m_nLapelColumns,m_nLapelMode, &bAllRedraw/*by Tetr@pod*/, ForceListUpdate/*改行を含むか by Tetr@pod*/);
 	if (pBegin == m_lsLines.begin())
 		bEmphasisChanged = pBegin->SearchEmphasis(NULL,&m_lsEmphasisWord);
 	else
@@ -728,7 +746,7 @@ bool CFootyDoc::SetLineInfo(LinePt pBegin)
 		pPrevLine--;
 		bEmphasisChanged = pBegin->SearchEmphasis(pPrevLine->GetBetweenNext(),&m_lsEmphasisWord);
 	}
-	bAllRedraw = bEmphasisChanged || bPrevLineInfoChanged;
+	bAllRedraw = bAllRedraw/*by Tetr@pod*/ || bEmphasisChanged || bPrevLineInfoChanged;
 
 	// ループさせて収集(pBeginの次の行から最後までループ)
 	pBegin++;
@@ -758,7 +776,7 @@ bool CFootyDoc::SetLineInfo(LinePt pBegin)
  * @param pEnd 変更領域の最後の行
  * @return 全ての再描画を要求するときtrue
  */
-bool CFootyDoc::SetLineInfo(LinePt pBegin, LinePt pEnd)
+bool CFootyDoc::SetLineInfo(LinePt pBegin, LinePt pEnd, bool ForceListUpdate/*改行を含むか by Tetr@pod*/)
 {
 	LinePt pLine;
 	bool bAllRedraw = false;
@@ -769,10 +787,12 @@ bool CFootyDoc::SetLineInfo(LinePt pBegin, LinePt pEnd)
 	for (pLine = pBegin; ;pLine++)
 	{
 		// それがすでに文書の最後の行のときは関数を終了
-		if (pLine == m_lsLines.end())return bAllRedraw;
+		if (pLine == m_lsLines.end()) {
+			return bAllRedraw;
+		}
 
 		// 現在の行を調査する
-		bPrevLineInfoChanged = pLine->FlushString(m_nTabLen,m_nLapelColumns,m_nLapelMode);
+		bPrevLineInfoChanged = pLine->FlushString(m_nGlobalID/*by Tetr@pod*/, m_nTabLen,m_nLapelColumns,m_nLapelMode, &bAllRedraw/*by Tetr@pod*/, ForceListUpdate/*改行を含むか by Tetr@pod*/);
 
 		if (pLine == m_lsLines.begin())
 			bEmphasisChanged = pLine->SearchEmphasis(NULL,&m_lsEmphasisWord);
@@ -783,7 +803,7 @@ bool CFootyDoc::SetLineInfo(LinePt pBegin, LinePt pEnd)
 			bEmphasisChanged = pLine->SearchEmphasis(pPrevLine->GetBetweenNext(),&m_lsEmphasisWord);
 			bPrevLineInfoChanged = pLine->SetPrevLineInfo(pPrevLine);
 		}
-		bAllRedraw = bAllRedraw || bEmphasisChanged || bPrevLineInfoChanged;
+		bAllRedraw = bAllRedraw/*by Tetr@pod*/ || bEmphasisChanged || bPrevLineInfoChanged;
 
 		// 常に見る領域を抜けるかどうかの判定
 		if (pLine == pEnd)break;
@@ -792,13 +812,15 @@ bool CFootyDoc::SetLineInfo(LinePt pBegin, LinePt pEnd)
 	// ループさせて最後まで取っていく
 	for (pLine++ ; pLine != m_lsLines.end(); pLine++)
 	{
-		// 前の情報を入れておく
-		if (bPrevLineInfoChanged && pLine != m_lsLines.begin())
-		{
-			LinePt pPrevLine = pLine;
-			pPrevLine--;
-			bPrevLineInfoChanged = pLine->SetPrevLineInfo(pPrevLine);
-			bAllRedraw = bAllRedraw || bPrevLineInfoChanged;
+		if (pLine != m_lsLines.end()) {
+			// 前の情報を入れておく
+			if (bPrevLineInfoChanged && pLine != m_lsLines.begin())
+			{
+				LinePt pPrevLine = pLine;
+				pPrevLine--;
+				bPrevLineInfoChanged = pLine->SetPrevLineInfo(pPrevLine);
+				bAllRedraw = bAllRedraw || bPrevLineInfoChanged;
+			}
 		}
 
 		// 強調が変わったときは全てフラグをおろしておく
@@ -816,33 +838,78 @@ bool CFootyDoc::SetLineInfo(LinePt pBegin, LinePt pEnd)
  */
 void CFootyDoc::SetChacheCommand(LinePt pLine)
 {
+	// 表示位置を更新する
+	//SYSTEMTIME st;
 	if (pLine == m_lsLines.begin())
 	{
 		pLine->SearchEmphasis(NULL,&m_lsEmphasisWord);
+//GetLocalTime(&st);
+//FOOTY2_PRINTF( L"SearchEmphasis！ %d年%d月%d日%d時%d分%d秒%dms\n", st.wYear,st.wMonth,st.wDay,st.wHour,st.wMinute,st.wSecond, st.wMilliseconds);
 	}
 	else
 	{
-		// キャッシュされている行を取得する
+		// キャッシュされている行を取得する(現在行からさかのぼって検索・マイナス方向)
 		LinePt pStartLine;
 		for (pStartLine = pLine;pStartLine != m_lsLines.begin();pStartLine--)
 		{
-			if (pStartLine->EmphasisChached())break;
+			if (pStartLine->EmphasisChached()){
+//GetLocalTime(&st);
+//FOOTY2_PRINTF( L"キャッシュされている行がみつかった！ %d年%d月%d日%d時%d分%d秒%dms\n", st.wYear,st.wMonth,st.wDay,st.wHour,st.wMinute,st.wSecond, st.wMilliseconds);
+				break;
+			}
+//GetLocalTime(&st);
+//FOOTY2_PRINTF( L"キャッシュ行検索ナウ！ %d行 : %d年%d月%d日%d時%d分%d秒%dms\n", pStartLine, st.wYear,st.wMonth,st.wDay,st.wHour,st.wMinute,st.wSecond, st.wMilliseconds);
 		}
 
 		// 一行もキャッシュされていないとき
 		if (pStartLine == m_lsLines.begin() && !pStartLine->EmphasisChached())
 		{
 			pStartLine->SearchEmphasis(NULL,&m_lsEmphasisWord);
+//GetLocalTime(&st);
+//FOOTY2_PRINTF( L"一行もキャッシュされていない %d年%d月%d日%d時%d分%d秒%dms\n", st.wYear,st.wMonth,st.wDay,st.wHour,st.wMinute,st.wSecond, st.wMilliseconds);
 		}
 
+		//FOOTY2_PRINTF( L"キャッシュ開始行？？？ %d\n",pStartLine->GetRealLineNum());
+		
+		/*
+		LinePt pNowLine;
+		LinePt pPrevLine;
+		int i = 0;
+		for (pNowLine = pLine, i = 0;pNowLine != m_lsLines.begin();pNowLine--,pPrevLine--,i++)
+		{
+			if (i == 30)break;
+			pNowLine->SearchEmphasis(pPrevLine->GetBetweenNext(),&m_lsEmphasisWord);
+
+		}
+
+		*/
+		// 高速描画が有効な場合 by inovia
+		if (f_SpeedDraw != 0){
+			// キャッシュされている行を取得する(現在行からさかのぼって検索・マイナス方向)
+			int i = 0;
+			for (pStartLine = pLine;pStartLine != m_lsLines.begin();pStartLine--)
+			{
+				if (i == 30)break;
+				if (pStartLine->EmphasisChached()){
+					break;
+				}
+				i++;
+			}
+		}
 		// 開始行から基準点までキャッシュする
-		LinePt pPrevLine = pStartLine;
-		LinePt pNowLine = pStartLine;
+		LinePt pPrevLine = pStartLine;//pStartLine;
+		LinePt pNowLine = pStartLine;//pStartLine;
+
 		for (pNowLine++;;pNowLine++,pPrevLine++)
 		{
+	//		FOOTY2_PRINTF( L"キャッシュカレント行 追加中 %d\n",pNowLine->GetRealLineNum());
+	//GetLocalTime(&st);
+	//FOOTY2_PRINTF( L"キャッシュ追加ナウ！ %d行%d行%d行 : %d年%d月%d日%d時%d分%d秒%dms\n", pPrevLine,pPrevLine,pLine, st.wYear,st.wMonth,st.wDay,st.wHour,st.wMinute,st.wSecond, st.wMilliseconds);
 			pNowLine->SearchEmphasis(pPrevLine->GetBetweenNext(),&m_lsEmphasisWord);
 			if (pNowLine == pLine)break;
 		}
+
+		
 	}
 }
 
@@ -946,14 +1013,27 @@ void CFootyDoc::SetLapel(size_t nColumn,int nMode)
 	// ループさせて収集
 	LinePt pLine = m_lsLines.begin();
 	LinePt pPrevLine = m_lsLines.begin();
-	pLine->FlushString(m_nTabLen,m_nLapelColumns,m_nLapelMode);
+	pLine->FlushString(m_nGlobalID, m_nTabLen,m_nLapelColumns,m_nLapelMode, NULL, false/*改行を含むか by Tetr@pod*/);
 	
 	for (pLine++;pLine != m_lsLines.end();pLine++,pPrevLine++)
 	{
-		pLine->FlushString(m_nTabLen,m_nLapelColumns,m_nLapelMode);
+		pLine->FlushString(m_nGlobalID, m_nTabLen,m_nLapelColumns,m_nLapelMode, NULL, false/*改行を含むか by Tetr@pod*/);
 		pLine->SetPrevLineInfo(pPrevLine);
 	}	
 }
+//-----------------------------------------------------------------------------
+/**
+ * @brief 高速描画 by inovia
+ * @param	flag [in] フラグ
+ */
+void CFootyDoc::SetSpeedDraw( int flag )
+{
+	f_SpeedDraw = flag;
+}
 
+bool CFootyDoc::FlushString2(LinePt pLine)// by Tetr@pod
+{
+	return pLine->FlushString(m_nGlobalID/*by Tetr@pod*/, m_nTabLen,m_nLapelColumns,m_nLapelMode, NULL/*by Tetr@pod*/, false/*改行を含むか by Tetr@pod*/);
+}
 
 /*[EOF]*/

@@ -33,6 +33,7 @@ Footyの関数を使用するための定義を追加するヘッダファイルです。
 #	define Footy2GetText		Footy2GetTextW
 #	define Footy2GetSelText		Footy2GetSelTextW
 #	define Footy2GetSelLength	Footy2GetSelLengthW
+#	define Footy2SetBackgroundImage	Footy2SetBackgroundImageW
 #else	/*! _UNICODE*/
 #	define Footy2AddEmphasis	Footy2AddEmphasisA
 #	define Footy2SetText		Footy2SetTextA
@@ -48,6 +49,7 @@ Footyの関数を使用するための定義を追加するヘッダファイルです。
 #	define Footy2GetText		Footy2GetTextA
 #	define Footy2GetSelText		Footy2GetSelTextA
 #	define Footy2GetSelLength	Footy2GetSelLengthA
+#	define Footy2SetBackgroundImage	Footy2SetBackgroundImageA
 #endif	/*_UNICODE*/
 
 //関数ポインタとコールバック設定///////////////////////////////////////////////
@@ -71,6 +73,8 @@ enum UrlType									//!< URLタイプ
 	URLTYPE_HTTPS,								//!< https
 	URLTYPE_FTP,								//!< ftp
 	URLTYPE_MAIL,								//!< メールアドレス
+	URLTYPE_LABEL,								//!< ラベル by Tetr@pod
+	URLTYPE_FUNC,								//!< 命令・関数 by Tetr@pod
 };
 
 enum ViewMode
@@ -111,7 +115,19 @@ enum ColorPos
 	CP_URLTEXT,									//!< URL文字
 	CP_URLUNDERLINE,							//!< URL下に表示されるアンダーライン
 	CP_MAILTEXT,								//!< メールアドレス文字
-	CP_MAILUNDERLINE,							//!< メール下に表示される文字列
+	CP_MAILUNDERLINE,							//!< メール下に表示されるアンダーライン
+	CP_LABELTEXT,								//!< ラベル文字 by Tetr@pod
+	CP_LABELUNDERLINE,							//!< ラベル下に表示されるアンダーライン by Tetr@pod
+
+	CP_FUNCTEXT1,								//!< 命令・関数文字1 by Tetr@pod
+	CP_FUNCTEXT2,								//!< 命令・関数文字2 by Tetr@pod
+	CP_FUNCTEXT3,								//!< 命令・関数文字3 by Tetr@pod
+	CP_FUNCTEXT4,								//!< 命令・関数文字4 by Tetr@pod
+	CP_FUNCTEXT5,								//!< 命令・関数文字5 by Tetr@pod
+	CP_FUNCTEXT6,								//!< 命令・関数文字6 by Tetr@pod
+	CP_FUNCTEXT7,								//!< 命令・関数文字7 by Tetr@pod
+	CP_FUNCTEXT8,								//!< 命令・関数文字8 by Tetr@pod
+
 	CP_HIGHLIGHTTEXT,							//!< ハイライトテキスト
 	CP_HIGHLIGHTBACKGROUND,						//!< ハイライト背景色
 };
@@ -190,7 +206,8 @@ enum FontMode
 	FFM_ARABIC_CHARSET,							//!< アラビア語
 	FFM_HEBREW_CHARSET,							//!< ヘブライ語
 	FFM_THAI_CHARSET,							//!< タイ語
-	
+	FFM_DEFAULT_CHARSET,						//!< デフォルト(追加した) by inovia							
+	//!< タイ語
 	// 内部処理用(使用しないでください)
 	FFM_NUM_FONTS								//!< フォントの数
 };
@@ -499,7 +516,8 @@ FOOTYEXPORT(int) Footy2SetFontSize(int nID,int nPoint,bool bRefresh = true);
 FOOTYEXPORT(int) Footy2SetFontFaceW(int nID,int nFontMode,const wchar_t* pString,bool bRefresh = true);
 FOOTYEXPORT(int) Footy2SetLineIcon(int nID,size_t nLine,int nIcons,bool bRefresh = true);
 FOOTYEXPORT(int) Footy2GetLineIcon(int nID,size_t nLine,int *pIcons);
-
+FOOTYEXPORT(int) Footy2SetForceFont(int nID, int flag);	// フォントの強制使用 by inovia
+FOOTYEXPORT(int) Footy2SetSpeedDraw(int nID, int flag);	// 高速描画をONにする by inovia
 //設定関連
 FOOTYEXPORT(int) Footy2SetLapel(int nID,int nColumns,int nMode,bool bRefresh = true);
 FOOTYEXPORT(int) Footy2SetMetrics(int nID,int nObject,int nValue,bool bRefresh = true);
@@ -508,6 +526,12 @@ FOOTYEXPORT(int) Footy2SetColor(int nID,int nPosition,COLORREF nColor,bool bRefr
 FOOTYEXPORT(int) Footy2GetVisibleColumns(int nID,int nViewID);	//!< 現在ビューで表示している桁数を取得
 FOOTYEXPORT(int) Footy2GetVisibleLines(int nID,int nViewID);	//!< 現在ビューで表示している行数を取得
 
+FOOTYEXPORT(int) Footy2SetUnderlineDraw(int nID, bool bFlag);	// フォーカスが外れたときもアンダーバーを描画するかどうか？
+
+FOOTYEXPORT(int) Footy2SetBackgroundImageA(int nID, const char *pPath, bool bRefresh);
+FOOTYEXPORT(int) Footy2SetBackgroundImageW(int nID, const wchar_t *pPath, bool bRefresh);
+FOOTYEXPORT(int) Footy2ClearBackgroundImage(int nID, bool bRefresh);
+FOOTYEXPORT(int) Footy2SetBackgroundImageColor(int nID, COLORREF color);
 #endif	/*_FOOTY2_DLL_H_*/
 
 /*[EOF]*/

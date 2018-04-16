@@ -12,7 +12,7 @@
 #include "tabmanager.h"
 #include "classify.h"
 
-static OPENFILENAME ofn, ofn2 ;
+static OPENFILENAME ofn, ofn2, ofnImg ;
 static char szMyDir[_MAX_PATH];
 
 extern int	startflag;
@@ -20,6 +20,18 @@ extern char startdir[_MAX_PATH];
 
 extern int activeFootyID ;
 extern int activeID ;
+
+// PathFileExistsで使用
+#include "shlwapi.h"
+#pragma comment(lib, "shlwapi.lib")
+
+#pragma warning( disable : 4996 )
+#pragma warning( disable : 4006 )
+void GetImagesFullPath(char *imgpath){
+	GetModuleFileNameA(0, imgpath, _MAX_PATH);
+	PathRemoveFileSpec(imgpath);	// ディレクトリのみにする
+	strcat(imgpath, "\\images\\");
+}
 
 void PopFileInitialize (HWND hwnd)
      {
@@ -74,6 +86,31 @@ void PopFileInitialize (HWND hwnd)
      ofn2.lCustData         = 0L ;
      ofn2.lpfnHook          = NULL ;
      ofn2.lpTemplateName    = NULL ;
+
+	 static char szFilterImg[] = 
+	                          "Image Files (*.bmp;*.jpg;*.gif;*.png;*.tif;*.ico;*.emf;*.wmf)\0*.bmp;*.jpg;*.gif;*.png;*.tif;*.ico;*.emf;*.wmf\0"  \
+                              "All Files (*.*)\0*.*\0\0" ;
+
+     ofnImg.lStructSize       = sizeof (OPENFILENAME) ;
+     ofnImg.hwndOwner         = hwnd ;
+     ofnImg.hInstance         = NULL ;
+     ofnImg.lpstrFilter       = szFilterImg ;
+     ofnImg.lpstrCustomFilter = NULL ;
+     ofnImg.nMaxCustFilter    = 0 ;
+     ofnImg.nFilterIndex      = 0 ;
+     ofnImg.lpstrFile         = NULL ;          // Set in Open and Close functions
+     ofnImg.nMaxFile          = _MAX_PATH ;
+     ofnImg.lpstrFileTitle    = NULL ;          // Set in Open and Close functions
+     ofnImg.nMaxFileTitle     = _MAX_FNAME + _MAX_EXT ;
+     ofnImg.lpstrInitialDir   = NULL ;
+     ofnImg.lpstrTitle        = NULL ;
+     ofnImg.Flags             = 0 ;             // Set in Open and Close functions
+     ofnImg.nFileOffset       = 0 ;
+     ofnImg.nFileExtension    = 0 ;
+     ofnImg.lpstrDefExt       = NULL ;
+     ofnImg.lCustData         = 0L ;
+     ofnImg.lpfnHook          = NULL ;
+     ofnImg.lpTemplateName    = NULL ;
      }
 
 BOOL PopFileOpenDlg (HWND hwnd, PSTR pstrFileName, PSTR pstrTitleName)
@@ -112,6 +149,22 @@ BOOL PopFileOpenDlg2 (HWND hwnd, PSTR pstrFileName, PSTR pstrTitleName)
 	 return GetOpenFileName (&ofn2);
      }
 
+BOOL PopFileOpenDlgImg (HWND hwnd, PSTR pstrFileName, PSTR pstrTitleName)
+     {
+ 
+	 ofnImg.hwndOwner         = hwnd ;
+     ofnImg.lpstrFile         = pstrFileName ;
+     ofnImg.lpstrFileTitle    = pstrTitleName ;
+     ofnImg.Flags             = OFN_HIDEREADONLY | OFN_FILEMUSTEXIST | OFN_NOCHANGEDIR;
+
+	 char newCd[_MAX_PATH + 1] = "";
+
+     GetImagesFullPath(newCd);
+	 ofnImg.lpstrInitialDir = newCd;
+	 BOOL res = GetOpenFileName (&ofnImg);
+
+	 return res;
+     }
 
 BOOL PopFileSaveDlg (HWND hwnd, PSTR pstrFileName, PSTR pstrTitleName)
      {
@@ -146,7 +199,7 @@ BOOL PopFileSaveDlg (HWND hwnd, PSTR pstrFileName, PSTR pstrTitleName)
 //     return iFileLength ;
 //     }
 
-BOOL PopFileRead (int nFootyID, const char*pstrFileName)
+BOOL PopFileRead (int nFootyID, PSTR pstrFileName)
      {
 //     FILE    *file ;
 //     int      iLength ;

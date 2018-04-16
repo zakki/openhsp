@@ -150,8 +150,9 @@ private:
 	bool PushBackUndo(CUndoBuffer *pUndo);
 	void DeleteLine(LinePt pLine);
 	void DeleteLine(LinePt pStart,LinePt pEnd);
-	bool SetLineInfo(LinePt pBegin);
-	bool SetLineInfo(LinePt pBegin,LinePt pEnd);
+	bool SetLineInfo(LinePt pBegin, bool ForceListUpdate/*改行を含むか by Tetr@pod*/);
+	bool SetLineInfo(LinePt pBegin,LinePt pEnd, bool ForceListUpdate/*改行を含むか by Tetr@pod*/);
+	
 
 public:
 	//! 選択タイプ
@@ -171,6 +172,9 @@ public:
 	void *m_pDataTextModified;						//!< テキストが編集されたときのデータ
 	Footy2FuncInsertModeChanged m_pFuncInsertMode;	//!< 挿入状態が変化されたときのイベント
 	void *m_pDataInsertModeChanged;					//!< 挿入状態が変化されたときのデータ
+
+	void SetSpeedDraw(int flag);					//!< 高速描画 by inovia
+	bool FlushString2(LinePt pLine);				// Clone by Tetr@pod
 
 private:
 	// ドキュメントデータ
@@ -202,6 +206,7 @@ private:
 	// そのほかデータ
 	bool m_bReadOnly;								//!< 編集可能状態
 	int m_nGlobalID;								//!< 親のID番号
+	int f_SpeedDraw;								//!< 高速描画 by inovia
 };
 
 /*[EOF]*/

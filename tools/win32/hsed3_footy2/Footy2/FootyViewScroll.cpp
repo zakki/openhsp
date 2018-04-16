@@ -59,11 +59,55 @@ void CFootyView::SetBars(){
 	}
 }
 
+// この辺いじった
+int g_dy;
 /**
  * CFootyView::OnVScroll
  * @brief 垂直スクロールバーが操作されたときに呼ばれます。
  * @param wParam ウィンドウメッセージのWPARAMを引き継ぎます
  */
+
+/*
+void CFootyView::OnVScroll(WPARAM wParam){
+	int dy;                   // スクロール量
+	SCROLLINFO sbInfo;
+
+	switch (LOWORD(wParam)) {
+	case SB_LINEUP:
+		g_dy = -1; 
+		return;                // 三角ボタン上
+	case SB_LINEDOWN:
+		g_dy = 1;
+		return;                // 三角ボタン下
+	case SB_PAGEUP:           // ちょこっと間を上へ
+		g_dy = -1*m_vInfo.nPage;
+		return;
+	case SB_PAGEDOWN:         // ちょこっと間を下へ
+		g_dy = m_vInfo.nPage;
+		return;
+	case SB_THUMBPOSITION:    // スクロールをぐりぐり動かす
+	case SB_THUMBTRACK:       // スクロールをぐりぐり動かす
+		ZeroMemory(&sbInfo, sizeof(SCROLLINFO));
+		sbInfo.cbSize = sizeof(SCROLLINFO);
+		sbInfo.fMask = SIF_TRACKPOS;
+		GetScrollInfo(m_hWnd,SB_VERT,&sbInfo);
+		g_dy = sbInfo.nTrackPos - m_vInfo.nPos;
+		return;
+	case SB_ENDSCROLL:
+		dy = g_dy;
+		break;
+    default:
+		return;
+    }
+
+	// 最初に表示されている行を移動させる
+	if (dy < 0)m_pDocuments->GetFirstVisible(m_nViewID)->MoveEthicBack(-dy);
+	else m_pDocuments->GetFirstVisible(m_nViewID)->MoveEthicNext(m_pDocuments->GetLineList(),dy);
+
+	// 再描画させる
+	ScrollRefresh();
+}
+*/
 void CFootyView::OnVScroll(WPARAM wParam){
 	/*宣言*/
 	int dy;                   // スクロール量
@@ -99,7 +143,11 @@ void CFootyView::OnVScroll(WPARAM wParam){
 	else m_pDocuments->GetFirstVisible(m_nViewID)->MoveEthicNext(m_pDocuments->GetLineList(),dy);
 
 	// 再描画させる
-	ScrollRefresh();
+	if (m_ImgCtr->IsLoaded()){
+		Refresh();// 背景画像が読まれている場合は、残像が残る為すべて再描画する
+	}else{
+		ScrollRefresh();
+	}
 }
 
 /**

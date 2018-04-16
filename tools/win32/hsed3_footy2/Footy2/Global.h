@@ -7,9 +7,9 @@
 
 #pragma once
 
-#if defined( _DEBUG ) && !defined ( UNDER_CE )
+//#if defined( _DEBUG ) && !defined ( UNDER_CE )/*Tp*/
 #	define PRINT_ENABLED
-#endif
+//#endif/*Tp*/
 
 // 標準ヘッダファイル
 #include <windows.h>

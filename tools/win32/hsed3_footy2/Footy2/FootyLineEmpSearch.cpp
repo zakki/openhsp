@@ -174,6 +174,7 @@ bool CFootyLine::IsMatched(const wchar_t *pStr1,const wchar_t *pStr2,size_t nLen
 #else	/*UNDER_CE*/
 	/*宣言*/
 	bool bIsOddNum = (nLen & 1) == 1;
+	if (bIsOddNum && pStr1[nLen-1] != pStr2[nLen-1])return false;
 	size_t nLoopNum = nLen >> 1;
 	/*ループして文字列が一致しているかチェックする*/
 	unsigned long* pStrLong1 = (unsigned long*)pStr1;
@@ -181,7 +182,7 @@ bool CFootyLine::IsMatched(const wchar_t *pStr1,const wchar_t *pStr2,size_t nLen
 	for (size_t i=0;i<nLoopNum;i++,pStrLong1++,pStrLong2++){
 		if ((*pStrLong1) != (*pStrLong2))return false;
 	}
-	if (bIsOddNum && pStr1[nLen-1] != pStr2[nLen-1])return false;
+	//if (bIsOddNum && pStr1[nLen-1] != pStr2[nLen-1])return false;
 	return true;
 #endif	/*UNDER_CE*/	
 }

@@ -70,7 +70,7 @@ FOOTYEXPORT(int) Footy2SetSelTextA(int nID,const char *pString)
 	// •ÏŠ·‚µ‚ÄƒZƒbƒg
 	CConvFactory cConv;
 	if (!cConv.GetConv()->ToUnicode(pString,(UINT)strlen(pString)))return FOOTY2ERR_MEMORY;
-	return pFooty->SetSelText((wchar_t*)cConv.GetConv()->GetConvData()) ?
+	return pFooty->SetSelText((wchar_t*)cConv.GetConv()->GetConvData(), true) ?
 		FOOTY2ERR_NONE : FOOTY2ERR_ARGUMENT;
 }
 #endif
@@ -87,7 +87,7 @@ FOOTYEXPORT(int) Footy2SetSelTextW(int nID,const wchar_t *pString){
 	CFooty *pFooty = GetFooty(nID);
 	if (!pFooty)return FOOTY2ERR_NOID;
 	/*‹­’²•\Ž¦•¶Žš—ñ‚ð“o˜^‚·‚é*/
-	return pFooty->SetSelText(pString) ? FOOTY2ERR_NONE : FOOTY2ERR_ARGUMENT;
+	return pFooty->SetSelText(pString, true) ? FOOTY2ERR_NONE : FOOTY2ERR_ARGUMENT;
 }
 
 #ifndef UNDER_CE

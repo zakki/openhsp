@@ -49,6 +49,7 @@ extern char      szTitleName[_MAX_FNAME + _MAX_EXT] ;
 
 char szStartDir[_MAX_PATH];
 char szExeDir[_MAX_PATH];
+char szDllDir[_MAX_PATH];
 char szAppName[]  = "onipad" ;
 int	 winflg,winx,winy,posx,posy,flg_toolbar,flg_statbar,flg_hspat;
 //int  flag_xpstyle;
@@ -86,6 +87,8 @@ CMemBuf *AhtMenuBuf;
 extern int ClickID;
 static int cyToolBar ;
 
+extern int autobackup;
+int AutoBackupTimer;
 
 // Toolbar functions.
 HWND InitToolBar (HWND hwndParent, HINSTANCE hInst );
@@ -104,6 +107,178 @@ HWND RebuildStatusBar (HWND hwndParent, WORD wFlag) ;
 void StatusBarMessage (HWND hwndSB, WORD wMsg) ;
 LRESULT Statusbar_MenuSelect (HWND, WPARAM, LPARAM) ;
 
+// Poppad functions.
+void DoCaption (char *, int);
+void LoadFromCommandLine(char *);
+
+//-------------------------------------------------------------------
+//	XP Visual Style 対策コード
+//-------------------------------------------------------------------
+
+int getUnicodeOffset( char *text, int offset )
+{
+	//		全角文字を1文字とした単位でのオフセットを求める(unicode offset対策)
+	//
+	int res;
+	unsigned char *p;
+	unsigned char a1;
+
+	p = (unsigned char *)text;
+	res = offset;
+	for(;;) {
+		a1 = *p;
+		if ( a1 == 0 ) break;
+		if ( res == 0 ) break;
+		p++;
+		if (a1>=129) {					// 全角文字チェック
+			if ((a1<=159)||(a1>=224)) {
+				p++;
+			}
+		}
+		res--;
+	}
+	return ((int)(p-(unsigned char *)text));
+}
+
+int getUnicodeOffset2( char *text, int offset )
+{
+	//		mboffset->unicode offsetに変換する(unicode offset対策)
+	//
+	int res;
+	unsigned char *p;
+	unsigned char *p2;
+	unsigned char a1;
+
+	p = (unsigned char *)text;
+	p2 = p + offset;
+	res = 0;
+	for(;;) {
+		if ( p>=p2 ) break;
+		a1 = *p++;
+		if ( a1 == 0 ) break;
+		if (a1>=129) {					// 全角文字チェック
+			if ((a1<=159)||(a1>=224)) {
+				p++;
+			}
+		}
+		res++;
+	}
+	return (res);
+}
+
+struct DLLVERSIONINFO{
+    DWORD cbSize;
+    DWORD dwMajorVersion;
+    DWORD dwMinorVersion;
+    DWORD dwBuildNumber;
+    DWORD dwPlatformID;
+};
+
+//typedef HRESULT ( CALLBACK* ProcDllGetVersion)( DLLVERSIONINFO *pdvi );
+//static int GetDllVersion( char *DllName )
+//{
+//HINSTANCE hInst;
+//DLLVERSIONINFO dvi;
+//ProcDllGetVersion DllGetVersion;
+//HRESULT hRes;
+//bool bRes;
+//DWORD Major = 0;   // メジャーバージョン
+//DWORD Minor;   // マイナーバージョン
+//DWORD Build;   // ビルド番号
+//
+//    hInst = LoadLibrary(DllName);
+//	bRes=false;
+//    if(hInst){
+//        DllGetVersion = (ProcDllGetVersion) GetProcAddress(hInst, "DllGetVersion" );
+//
+//        if(DllGetVersion){
+//            ZeroMemory(&dvi, sizeof(dvi));
+//            dvi.cbSize = sizeof(dvi);
+//			hRes = (*DllGetVersion)(&dvi);
+//            if(SUCCEEDED(hRes)){
+//                Major = dvi.dwMajorVersion;
+//                Minor = dvi.dwMinorVersion;
+//                Build = dvi.dwBuildNumber;
+//                bRes = true;
+//            }
+//		}
+//        FreeLibrary(hInst);
+//    }
+//	if (bRes) return Major;
+//	return -1;
+//}
+
+
+//static int CheckXPEditBox( HINSTANCE /*hInstance*/ )
+//{
+//	//		EditがXP仕様になっているかをチェックする
+//	//
+//	int result;
+//	result = 0;
+//	if ( GetDllVersion("ComCtl32.dll") > 5 ) { result = 1; }
+//	
+///*	
+//	//		これだとダメみたい
+//	DWORD lP,wP;
+//    HWND hWnd;
+//	int result;
+//	hWnd = CreateWindowA("EDIT","漢字",0,0,0,0,0,NULL,NULL,hInstance,0);
+//    ShowWindow(hWnd,SW_HIDE);
+//
+//    SendMessageA(hWnd,EM_SETSEL,(WPARAM)0,(LPARAM)-1);
+//    SendMessageA(hWnd,EM_GETSEL,(WPARAM)&wP,(LPARAM)&lP);
+//    if ( (int)GetWindowTextLengthA(hWnd) > (int)(lP - wP) ){
+//        result = 1;
+//    }else{
+//        result = 0;
+//    }
+//    PostMessage(hWnd,WM_CLOSE,0,0);
+//    return result;
+//*/
+//    return result;
+//}
+
+
+/*
+	 {
+		char ss[128];
+		wsprintf( ss,"%d__%d__%d",(int)IsThemeActive(), (int)IsWindowUnicode( hwndEdit ), GetDllVersion("ComCtl32.dll") );
+		MessageBox( NULL, ss, "Startup error", MB_OK | MB_ICONEXCLAMATION) ;
+	 }
+*/
+
+	 
+//-------------------------------------------------------------------
+
+
+
+//*********************************************************
+// 関数SHGetSpecialFolderPath() が使用できない環境で特殊フォルダのパスを取得する。
+// 引数は SHGetSpecialFolderPath() と同じ。
+//*********************************************************
+static BOOL GetSpecialFolderPath( HWND hWnd, int nFolder, char *Path )
+{
+	IMalloc    *pMalloc;
+	ITEMIDLIST *pidl;
+
+	Path[0] = 0;
+
+	if ( NOERROR == SHGetMalloc( &pMalloc ) )
+	{
+		if ( NOERROR == SHGetSpecialFolderLocation( hWnd, nFolder, &pidl ) )
+		{
+			if ( SHGetPathFromIDList( pidl, Path ) )
+			{
+				pMalloc->Free( pidl );
+				pMalloc->Release();
+				return TRUE;
+			}
+			pMalloc->Free( pidl );
+		}
+		pMalloc->Release();
+	}
+	return FALSE;
+}//GetSpecialFolder
 
 //-------------------------------------------------------------------
 int CALLBACK EnumWindowsProc(HWND hWnd, LPARAM /*lParam*/)
@@ -157,6 +332,16 @@ int BuildEzInputMenu( HMENU menu, char *fname, char *dirname )
 
 	sh=FindFirstFile( wname, &fd );
 	if (sh==INVALID_HANDLE_VALUE) {
+		int size = strlen(dirname) + 64;
+		char *tmp = (char *)calloc(size + 1, sizeof(char));
+		strcat_s(tmp, size, dirname);
+#ifdef JPNMSG
+		strcat_s(tmp, size, " は使用できません");
+#else
+		strcat_s(tmp, size, " is invalid.");
+#endif
+		AppendMenu( menu, MF_GRAYED | MF_DISABLED, 0xFFFF, tmp );
+		free(tmp);
         FindClose( sh );
 		return 0;
 	}
@@ -221,18 +406,23 @@ int WINAPI WinMain (HINSTANCE hInstance, HINSTANCE /*hPrevInstance*/,
                     LPSTR /*lpszCmdLine*/, int /*cmdShow*/)       
      {
 	 HWND        hwnd ;
+     MSG         msg ;
      WNDCLASSEX  wc ;
+     HACCEL      hAccel ;
 	 int		 a;
 	 int		 scmd;
 	 char		 a1;
 	 HANDLE      hMutex ;
 	 char		 tmp[_MAX_PATH];
 
+// デバッグ時無効化
+#ifndef _DEBUG
 	 hMutex = CreateMutex(NULL, TRUE, MUTEX_NAME);
 	 if(GetLastError() == ERROR_ALREADY_EXISTS){
 		 EnumWindows((WNDENUMPROC)EnumWindowsProc, NULL);
 		 return 0;
 	 }
+#endif
 
      InitCommonControls () ;
 	 OleInitialize(NULL);
@@ -242,7 +432,15 @@ int WINAPI WinMain (HINSTANCE hInstance, HINSTANCE /*hPrevInstance*/,
 //	 FootySetCursor(IDC_ONLINE, IDC_ONURL);	// 2008-02-17 Shark++ 代替機能不明
 	 //FootySetMetrics(0, F_SM_CREATESHOW, F_CS_HIDE, false);
 
-     hInst = hInstance ;
+	// 日本だったら日本語、それ以外はすべて英語
+	//UINT localeId = GetUserDefaultLCID();
+	//if(0x411 != localeId){
+	//	localeId = 0x409; // 日本語以外は英語UIとして表示する
+	//}
+	//SetThreadUILanguage(localeId);
+	//SetThreadLocale(localeId);
+
+	 hInst = hInstance ;
 
 	 wc.cbSize        = sizeof (wc) ;
      wc.lpszClassName = szAppName ;
@@ -288,32 +486,28 @@ int WINAPI WinMain (HINSTANCE hInstance, HINSTANCE /*hPrevInstance*/,
      RegisterClassEx (&wc) ;
 
 
-	GetModuleFileName(NULL, szExeDir, MAX_PATH);
+	GetModuleFileName( NULL,szExeDir, _MAX_PATH );
+	a=(int)strlen(szExeDir)-1;
+	for(;;) {
+		a1=szExeDir[a];if (a1=='\\') break;
+		a--;
+	}
+	szExeDir[a]=0;
 
-	{
+	//		DLLを初期化
 
-		size_t i = hsp_getpath(szExeDir, NULL, GETPATH_DIR) - 1;
-
-		szExeDir[i] = '\0';
-
-		if ((i >= MAX_PATH - strlen(FILE_HSPCMP)) || !dll_ini(strcat(szExeDir, FILE_HSPCMP))) {
-
+	strcpy( szDllDir,szExeDir );
+	strcat( szDllDir,"\\" FILE_HSPCMP );
+	a=dll_ini( szDllDir );
+	if (a!=1) {
+		msgboxf(NULL,
 #ifdef JPNMSG
-			LPCTSTR message = TEXT("コンパイラが見つかりませんでした。");
+		"%sが見つかりませんでした。"
 #else
-			LPCTSTR message = TEXT("The compiler is not found.");
+		"%s not found."
 #endif
-
-			MessageBox(NULL, message, NULL, MB_OK | MB_ICONEXCLAMATION);
-
-			dll_bye();
-
-			return 0;
-
-		}
-
-		szExeDir[i] = '\0';
-
+		, "Startup error", MB_OK | MB_ICONEXCLAMATION, szDllDir);
+		dll_bye(); return -1;
 	}
 
 	//		XPのチェック
@@ -349,7 +543,11 @@ int WINAPI WinMain (HINSTANCE hInstance, HINSTANCE /*hPrevInstance*/,
 	hSubMenu = GetSubMenu(hMenu, 0);
 
 	wsprintf( tmp, "%s\\ezinput", szExeDir );
+#ifdef JPNMSG
 	BuildEzInputMenu( hSubMenu, tmp, "かんたん入力" );
+#else
+	BuildEzInputMenu(hSubMenu, tmp, "EasyInput");
+#endif
 
 	hMenu2 = LoadMenu(hInstance, "CONTEXTMENU2");
 	hSubMenu2 = GetSubMenu(hMenu2, 0);
@@ -358,7 +556,7 @@ int WINAPI WinMain (HINSTANCE hInstance, HINSTANCE /*hPrevInstance*/,
 	//
 	switch( startflag ) {
 	case STARTDIR_MYDOC:
-	 	SHGetSpecialFolderPath(hwnd, szStartDir, CSIDL_PERSONAL, 0);
+	 	GetSpecialFolderPath( hwnd, CSIDL_PERSONAL, szStartDir );
 		break;
 	case STARTDIR_USER:
 		strcpy( szStartDir, startdir );
@@ -387,55 +585,80 @@ int WINAPI WinMain (HINSTANCE hInstance, HINSTANCE /*hPrevInstance*/,
     ShowWindow ( hwnd, scmd ) ;
     UpdateWindow (hwnd) ;
 
-	if (!InitInterface(hInstance)) {
+    hAccel = LoadAccelerators (hInstance, szAppName) ;
 
+	if(!InitInterface(hInstance))
+		MessageBox(hwnd, 
 #ifdef JPNMSG
-
-		const TCHAR *message =
-			TEXT("外部ツール用のウィンドウの初期化に失敗しました。\n");
-			TEXT("一部の外部ツールを使用することはできません。");
-
+			"外部ツール用のウィンドウの初期化に失敗しました。\n"
+			"一部の外部ツールを使用することはできません。"
 #else
-
-		const TCHAR *message =
-			TEXT("Failed to initialize the plugin message interface.\n")
-			TEXT("Some plugins may not work properly.");
-
+			"Failed to initialize a window for extension tools.\n"
+			"You can't use some extending tools."
 #endif
-
-		MessageBox(hwnd, message, NULL, MB_OK | MB_ICONEXCLAMATION);
-
+			, "start up error", MB_OK | MB_ICONEXCLAMATION);
+	
+	// バックアップファイルがある場合は読む
+	char _backuppath[MAX_PATH*2];
+	GetBackupPath(_backuppath, MAX_PATH*2);
+	if (ExistBackupFile(_backuppath) != -1){
+#ifdef JPNMSG
+		int res = MessageBoxA(hwnd, "前回正しく終了されませんでした。バックアップファイルから復旧しますか？", "", MB_ICONQUESTION | MB_YESNO);
+#else
+		int res = MessageBoxA(hwnd, "Invalid exit detected. Will you resume from backup?", "", MB_ICONQUESTION | MB_YESNO);
+#endif
+		if (res == IDYES){
+			ReadBackup();
+		}else{
+#ifdef JPNMSG
+			res = MessageBoxA(hwnd, "復元しない場合はバックアップファイルが消えますがよろしいですか？", "", MB_ICONQUESTION | MB_YESNO | MB_DEFBUTTON2);
+#else
+			res = MessageBoxA(hwnd, "Are you sure to delete backup files?", "", MB_ICONQUESTION | MB_YESNO | MB_DEFBUTTON2);
+#endif
+			if (res == IDNO){
+				ReadBackup();
+			}
+		}
 	}
-
-	// Message loop
-
-	HACCEL accelerator = LoadAccelerators(hInstance, szAppName);
-
-	MSG msg;
-
-	while (GetMessage(&msg, NULL, 0, 0) > 0) {
-
-		if (hDlgModeless && IsDialogMessage(hDlgModeless, &msg)) continue;
-		if (hConfigDlg && IsDialogMessage(hConfigDlg, &msg)) continue;
-		if (hConfigPage && IsDialogMessage(hConfigPage, &msg)) continue;
-
-		if (TranslateAccelerator(hwnd, accelerator, &msg)) continue;
-
-		TranslateMessage(&msg);
-		DispatchMessage(&msg);
-
+	
+	// タイマーセット
+	if (autobackup > 0){
+		AutoBackupTimer = SetTimer(hWndMain, TIMERID_AUTOBACKUP, autobackup*1000, 0);
+	}else{
+		
 	}
+	
 
-	dll_bye();
+	//	main loop
 
+    while (GetMessage (&msg, NULL, 0, 0))
+    {
+	  if ((hDlgModeless  == NULL || !IsDialogMessage (hDlgModeless, &msg))
+		  &&(hConfigDlg  == NULL || !IsDialogMessage (hConfigDlg,   &msg))
+		  &&(hConfigPage == NULL || !IsDialogMessage (hConfigPage,  &msg)))
+      {
+      if (!TranslateAccelerator (hwnd, hAccel, &msg))
+           {
+           TranslateMessage (&msg) ;
+           DispatchMessage (&msg) ;
+           }
+       }
+	}
+	KillTimer(hwnd, AutoBackupTimer);
+	dll_bye();							// DLLを開放
 #ifdef FOOTYSTATIC
 	Footy2End();
-#endif
+#endif	/*FOOTYSTATIC*/
+	
+	// バックアップファイル削除
+	char backuppath[MAX_PATH*2];
+	GetBackupPath(backuppath, MAX_PATH*2);
+	BackupDelete(backuppath);
+	
+	
 
 	delete AhtMenuBuf;
-
-	return (int)msg.wParam;
-
+	return (int)msg.wParam ;
 }
 
 //-------------------------------------------------------------------
@@ -477,10 +700,29 @@ void UpdateViewOption( int toolbar_flag, int stbar_flag )
 	PostMessage (hWndMain, WM_SIZE, 0, MAKELPARAM (r.right, r.bottom));
 }
 //-------------------------------------------------------------------
-
 LRESULT CALLBACK
 WndProc (HWND hwnd, UINT mMsg, WPARAM wParam, LPARAM lParam) 
      {
+	 // 自動バックアップが有効な場合
+	 if (autobackup > 0){
+		 if (mMsg == WM_TIMER){
+			if (wParam == TIMERID_AUTOBACKUP)
+				AutoBackUp();
+		 }else if (mMsg == WM_QUERYENDSESSION){
+			 return TRUE;
+		 }else if (mMsg == WM_ENDSESSION){
+			// HKEY_CURRENT_USER\Software\Microsoft\Windows\CurrentVersion\RunOnce
+			HKEY hKey;
+			DWORD dwDisposition;
+			LONG result;
+			result = RegCreateKeyExA( HKEY_CURRENT_USER, "Software\\Microsoft\\Windows\\CurrentVersion\\RunOnce", 0, NULL, REG_OPTION_NON_VOLATILE, KEY_ALL_ACCESS, NULL, &hKey, &dwDisposition);
+			char data[MAX_PATH*2] = {0};
+			GetModuleFileNameA(NULL, data, sizeof(data));
+			result = RegSetValueExA(hKey, "!HSED3", 0, REG_SZ, (CONST BYTE*)(LPCTSTR)data, strlen(data));
+			RegCloseKey(hKey);
+			ExitProcess( 0 );
+		 }
+	 }
      switch (mMsg)
           {
           case WM_CREATE :
@@ -786,51 +1028,36 @@ ClientWndProc (HWND hwnd, UINT mMsg, WPARAM wParam, LPARAM lParam)
 			   return 0 ;
                }
 
-	case WM_NOTIFY:
+          case WM_NOTIFY:
+			  switch (((NMHDR *)lParam)->code){
+				   case TCN_SELCHANGE:
+				   {
+					   int presID = activeID, newID = TabCtrl_GetCurSel(hwndTab);
+					   ActivateTab(presID, newID);
+					   ChangeZOrder(presID, newID);
+					   return 0;
+				   }
 
-		switch (((NMHDR*)lParam)->code) {
+				   case NM_RCLICK:
+					   POINT pt, cpt;
+					   int i;
 
-		case TCN_SELCHANGE:
+					   GetCursorPos(&pt);
+					   cpt = pt;
+					   ScreenToClient(hwndTab, &cpt);
 
-			{
+					   for(i = 0; TabCtrl_GetItemCount(hwndTab); i++){
+						   TabCtrl_GetItemRect(hwndTab, i, &rect);
+						   if(rect.left <= cpt.x && cpt.x <= rect.right && rect.top <= cpt.y && cpt.y <= rect.bottom){
+							   TrackPopupMenu(hSubMenu2, TPM_LEFTALIGN | TPM_BOTTOMALIGN | TPM_RIGHTBUTTON, pt.x, pt.y, 0, hwndClient, NULL);
+							   ClickID = i;
+							   break;
+						   }
 
-				const int current = activeID;
-				const int selected = TabCtrl_GetCurSel(hwndTab);
-
-				ChangeZOrder(current, selected);
-				ActivateTab(current, selected);
-
-			}
-
-			break;
-
-		case NM_RCLICK:
-
-			{
-
-				POINT screen_point;
-				GetCursorPos(&screen_point);
-
-				TCHITTESTINFO info;
-
-				info.pt = screen_point;
-				ScreenToClient(hwndTab, &info.pt);
-
-				const int id = TabCtrl_HitTest(hwndTab, &info);
-
-				if (id < 0) break;
-
-				ClickID = id;
-
-				TrackPopupMenu(hSubMenu2, TPM_LEFTALIGN | TPM_BOTTOMALIGN | TPM_RIGHTBUTTON, screen_point.x, screen_point.y, 0, hwndClient, NULL);
-
-			}
-
-			break;
-
-		}
-
-		return 0;
+					   }
+ 					   return 0;
+			  }
+			  return 0;
 
           default :
                return (EditProc (hwnd, mMsg, wParam, lParam)) ;

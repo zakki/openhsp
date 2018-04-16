@@ -61,15 +61,18 @@
 #define PM_SETDEFAULT   WM_APP + 2
 
 #define POS_EXTTOOL                     5
-#define POS_TABBASE                     6
+// #define POS_TABBASE                     6
+#define POS_TABBASE                     8// by Tetr@pod
 #define POS_WINDOW                      6
-#define POS_TOOLPOPUPSEP                14
+#define POS_TOOLPOPUPSEP                16
 #define POS_TOOLPOPUPBASE               (POS_TOOLPOPUPSEP + 1)
 #define POS_TOOLMAINBASE                0
 
 #define STARTDIR_MYDOC 0
 #define STARTDIR_USER 1
 #define STARTDIR_NONE 2
+
+#define TIMERID_AUTOBACKUP 10
 
 // Poppad.cpp functions
 
@@ -84,13 +87,16 @@ LRESULT poppad_term( UINT iMsg );
 int poppad_setsb( int flag );
 void poppad_setsb_current( int FootyID );
 void PutLineNumber( void );
-
-void DoCaption (char*, int);
-void LoadFromCommandLine(LPCTSTR);
-
-int file_exists_and_is_readable(const char*);
-#define fileok file_exists_and_is_readable
-
+void TXTBackupSave(const char *backuppath, const char *path, char *data);
+void HSPBackupSave(const char *backuppath, const char *path, int nFootyID);
+void BackupDelete(const char *backuppath);
+void GetBackupPath(char *backuppath, int size);
+void AutoBackUp(void);
+void ReadBackup(void);
+int ReadFileBuffer(const char *filepath, char **buf);
+void CloseFileBuffer(char *buf);
+int ExistBackupFile(char *backuppath);
+void BackupCopy(void);
 // DLL functions
 
 int dll_ini( char *libname );

@@ -51,6 +51,11 @@ public:
 	}
 	bool SetFontFace(int nType,const wchar_t *pFontFace,HDC hDC);
 
+	// フォントの強制 by inovia
+	void SetForceFont( int flag );
+	// 高速描画 by inovia
+	void SetSpeedDraw( int flag );
+
 private:
 	bool CreateFontObject(int nType,HDC hDC);
 	HFONT GetFontHandle(const wchar_t *szFontName,int nHeight,bool bBold,int nCharSets);
@@ -79,6 +84,7 @@ private:
 	int m_nFontHeight;							//!< メインフォントの高さ(ピクセル)
 	int m_nFontWidth;							//!< メインフォントの幅(ピクセル)
 	int m_nRulerHeight;							//!< ルーラーフォントの高さ
+	int m_fForceFont;							//!< フォント強制させるか？ by inovia
 };
 
 /*[EOF]*/

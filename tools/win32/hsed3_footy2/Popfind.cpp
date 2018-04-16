@@ -2,6 +2,10 @@
    POPFIND.C -- Popup Editor Search and Replace Functions
   --------------------------------------------------------*/
 
+// bool selectは、発見時にその部分を選択するかです。
+// trueで選択し、falseで選択しません。
+// 従来の動作は、 true です。
+
 #include <windows.h>
 #include <windowsx.h>
 #include <commdlg.h>
@@ -355,80 +359,88 @@ int Footy2SetSelB(int FootyID, size_t StartOffset, size_t EndOffset, bool bRefre
 
 //
 // 標準の検索を行う
-static void FindTextAsStandard(FRSTRING * /*dest*/, FRSTRING *pattern, bool down, bool matchcase, FINDRET *frReturn)
+static void FindTextAsStandard(FRSTRING * dest, FRSTRING *pattern, bool down, bool matchcase, bool select/*by Tetr@pod*/, FINDRET *frReturn)
 {
-#if 1
-	int nRet;
-	nRet = Footy2Search(
-				activeFootyID,
-				pattern->ptr,
-				SEARCH_FROMCURSOR
-					| (matchcase ? 0 : SEARCH_IGNORECASE)
-					| (down ? 0 : SEARCH_BACK)
-				);
-	frReturn->success = 0 <= nRet;
+// #if 0
+	if ( select ) {
+		int nRet;
+		nRet = Footy2Search(
+					activeFootyID,
+					pattern->ptr,
+					SEARCH_FROMCURSOR
+						| (matchcase ? 0 : SEARCH_IGNORECASE)
+						| (down ? 0 : SEARCH_BACK)
+					);
+		frReturn->success = 0 <= nRet;
+		// return;
+// #else
+	} else {
+		int nDestSize, nPatternSize, nLength, nOffset;
+		char *pcDest;
+		wchar_t *pwDest, *pwPattern;
+		std::wstring wsDest;
+
+		//
+		// Unicodeへの変換を行う
+
+		pcDest = dest->ptr + (down ? dest->offset : 0);
+		nLength = (down ? dest->length - dest->offset : dest->offset);
+
+		nDestSize = MultiByteToWideChar(CP_ACP, 0, pcDest, nLength, NULL, 0);
+		nPatternSize = MultiByteToWideChar(CP_ACP, 0, pattern->ptr, pattern->length, NULL, 0);
+
+		pwDest = (wchar_t *)malloc((nDestSize + 1) * sizeof(wchar_t));
+		pwPattern = (wchar_t *)malloc((nPatternSize + 1) * sizeof(wchar_t));
+
+		MultiByteToWideChar(CP_ACP, 0, pcDest, nLength, pwDest, nDestSize + 1);
+		MultiByteToWideChar(CP_ACP, 0, pattern->ptr, pattern->length, pwPattern, nPatternSize + 1);
+
+		pwDest[nDestSize] = pwPattern[nPatternSize] = 0;
+
+		//
+		// 大文字、小文字の区別を無くす
+
+		if(!matchcase) {
+			IgnoreCase(pwDest);
+			IgnoreCase(pwPattern);
+		}
+
+		wsDest = pwDest;
+
+		//
+		// 検索
+
+		nOffset = (down ? wsDest.find(pwPattern) : wsDest.rfind(pwPattern));
+		if(nOffset == wsDest.npos){
+			frReturn->success = false;
+			frReturn->offset = frReturn->length = 0;
+		}
+		else{
+			ConvertOffset(pcDest, &nOffset);
+
+			frReturn->success = true;
+			frReturn->offset = nOffset + (down ? dest->offset : 0);
+			frReturn->length = pattern->length;
+
+			/*// ありえないので
+			if (select == true) {
+				Footy2SetSelB(activeFootyID, frReturn->offset, frReturn->offset + frReturn->length);
+			}
+			*/
+		}
+
+		//
+		// 後処理
+		free(pwDest);
+		free(pwPattern);
+	}
 	return;
-#else
-	int nDestSize, nPatternSize, nLength, nOffset;
-	char *pcDest;
-	wchar_t *pwDest, *pwPattern;
-	std::wstring wsDest;
-
-	//
-	// Unicodeへの変換を行う
-
-	pcDest = dest->ptr + (down ? dest->offset : 0);
-	nLength = (down ? dest->length - dest->offset : dest->offset);
-
-	nDestSize = MultiByteToWideChar(CP_ACP, 0, pcDest, nLength, NULL, 0);
-	nPatternSize = MultiByteToWideChar(CP_ACP, 0, pattern->ptr, pattern->length, NULL, 0);
-
-	pwDest = (wchar_t *)malloc((nDestSize + 1) * sizeof(wchar_t));
-	pwPattern = (wchar_t *)malloc((nPatternSize + 1) * sizeof(wchar_t));
-
-	MultiByteToWideChar(CP_ACP, 0, pcDest, nLength, pwDest, nDestSize + 1);
-	MultiByteToWideChar(CP_ACP, 0, pattern->ptr, pattern->length, pwPattern, nPatternSize + 1);
-
-	pwDest[nDestSize] = pwPattern[nPatternSize] = 0;
-
-	//
-	// 大文字、小文字の区別を無くす
-
-	if(!matchcase) {
-		IgnoreCase(pwDest);
-		IgnoreCase(pwPattern);
-	}
-
-	wsDest = pwDest;
-
-	//
-	// 検索
-
-	nOffset = (down ? wsDest.find(pwPattern) : wsDest.rfind(pwPattern));
-	if(nOffset == wsDest.npos){
-		frReturn->success = false;
-		frReturn->offset = frReturn->length = 0;
-	}
-	else{
-		ConvertOffset(pcDest, &nOffset);
-
-		frReturn->success = true;
-		frReturn->offset = nOffset + (down ? dest->offset : 0);
-		frReturn->length = pattern->length;
-	}
-
-	//
-	// 後処理
-	free(pwDest);
-	free(pwPattern);
-
-	return;
-#endif
+// #endif
 }
 
 // 正規表現を用いて検索を行う
 // Find text with regular expression.
-static void FindTextAsRegExp(FRSTRING *dest, FRSTRING *pattern, bool down, bool matchcase, FINDRET *frReturn)
+static void FindTextAsRegExp(FRSTRING *dest, FRSTRING *pattern, bool down, bool matchcase, bool select/*by Tetr@pod*/, FINDRET *frReturn)
 {
 	IRegExpPtr pRegExp;
 	IDispatch *pDispatch = NULL, *pDispatch2 = NULL;
@@ -473,7 +485,9 @@ static void FindTextAsRegExp(FRSTRING *dest, FRSTRING *pattern, bool down, bool 
 					frReturn->success = true;
 					frReturn->offset = nIndex + (down ? dest->offset : 0);
 
-					Footy2SetSelB(activeFootyID, frReturn->offset, frReturn->offset + frReturn->length);
+					if (select == true) {
+						Footy2SetSelB(activeFootyID, frReturn->offset, frReturn->offset + frReturn->length);
+					}
 				}
 				pDispatch2->Release();
 
@@ -522,7 +536,7 @@ static void ReplaceEscSeq(char *nstr)
 	return;
 }
 
-BOOL PopFindFindText (HWND /*hwndEdit*/, int iSearchOffset, LPFINDREPLACE pfr)
+BOOL PopFindFindText (HWND /*hwndEdit*/, int iSearchOffset, LPFINDREPLACE pfr, bool select/*by Tetr@pod*/)
 	{
 	FRSTRING dest, pattern;
 	FINDRET frReturn = { 0,0,0 };
@@ -548,9 +562,9 @@ BOOL PopFindFindText (HWND /*hwndEdit*/, int iSearchOffset, LPFINDREPLACE pfr)
 	pattern.length = lstrlen(pattern.ptr);
 	if(dest.length > 0 && pattern.length > 0){
 		if(frcd.Mode)
-			FindTextAsRegExp(&dest, &pattern, (pfr->Flags & FR_DOWN) != FALSE, (pfr->Flags & FR_MATCHCASE) != FALSE, &frReturn);
+			FindTextAsRegExp(&dest, &pattern, (pfr->Flags & FR_DOWN) != FALSE, (pfr->Flags & FR_MATCHCASE) != FALSE, select, &frReturn);
 		else
-			FindTextAsStandard(&dest, &pattern, (pfr->Flags & FR_DOWN) != FALSE, (pfr->Flags & FR_MATCHCASE) != FALSE, &frReturn);
+			FindTextAsStandard(&dest, &pattern, (pfr->Flags & FR_DOWN) != FALSE, (pfr->Flags & FR_MATCHCASE) != FALSE, select, &frReturn);
 	}
 	else
 		frReturn.success = false;
@@ -573,7 +587,7 @@ BOOL PopFindNextText (HWND hwndEdit, int iSearchOffset, bool down)
 	fr.lpstrFindWhat = szFindText ;
 	fr.Flags = (down ? FR_DOWN : FR_UP) ;
 
-	return PopFindFindText (hwndEdit, iSearchOffset, &fr) ;
+	return PopFindFindText(hwndEdit, iSearchOffset, &fr, true) ;
 	}
 
 BOOL PopFindReplaceText (HWND hwndEdit, int iSearchOffset, LPFINDREPLACE pfr)
@@ -591,7 +605,7 @@ BOOL PopFindReplaceText (HWND hwndEdit, int iSearchOffset, LPFINDREPLACE pfr)
 		// Find the text
 
 	if ( repl_flag == 0 ) {
-		if (!PopFindFindText (hwndEdit, iSearchOffset, pfr)) return FALSE ;
+		if (!PopFindFindText(hwndEdit, iSearchOffset, pfr, true)) return FALSE ;
 	}
 
 		// Replace it
@@ -602,12 +616,123 @@ BOOL PopFindReplaceText (HWND hwndEdit, int iSearchOffset, LPFINDREPLACE pfr)
 //	iSearchOffset = Footy2GetCaretThrough(activeFootyID) - 1;
 	iSearchOffset = 0;	// 2008-02-17 Shark++ 代替機能不明
 	
-	if (!PopFindFindText (hwndEdit, iSearchOffset, pfr)){
+	if (!PopFindFindText(hwndEdit, iSearchOffset, pfr, true)){// 次が見つからなかったら
 		repl_flag = 0;
-        return FALSE ;
+        return FALSE ;// FALSEを返す
 	}
-	//PopFindFindText (hwndEdit, piSearchOffset, pfr);
+	//PopFindFindText (hwndEdit, piSearchOffset, pfr, true);
 	return TRUE ;
+	}
+
+BOOL PopFindReplaceAllText(HWND hwndEdit, int iSearchOffset, LPFINDREPLACE pfr)// ReplaceAll by Tetr@pod すべて置換が遅すぎるため
+	{
+	char *ReplaceWith;
+
+	ReplaceWith = (char *)malloc(lstrlen(pfr->lpstrReplaceWith) + 1);
+	if (ReplaceWith == NULL) {
+		return FALSE;
+	}
+    lstrcpy(ReplaceWith, pfr->lpstrReplaceWith);
+	if (frcd.EscSeq) {
+		ReplaceEscSeq(ReplaceWith);
+	}
+
+		// Find the text
+	if ( repl_flag == 0 ) {
+		if (!PopFindFindText(hwndEdit, iSearchOffset, pfr, false)) {
+			return FALSE ;
+		}
+	}
+
+
+
+	FRSTRING dest, pattern;
+	FINDRET frReturn = { 0,0,0 };
+    
+		// Read in the edit document
+	dest.length = Footy2GetTextLength(activeFootyID, LM_CRLF) + 1;// 【重要】なぜか+1が必要
+	dest.ptr = (char *)malloc(dest.length + 1);
+	if(dest.ptr == NULL) return FALSE;
+	//memset(dest.ptr, 0, dest.length + 2);// 一応dest.ptrを0フィル
+	dest.offset = iSearchOffset;
+	Footy2GetText(activeFootyID, dest.ptr, LM_CRLF, dest.length + 1);
+
+		// Search the document for the find string
+	pattern.ptr = (char *)malloc(lstrlen(pfr->lpstrFindWhat) + 1);
+	if(pattern.ptr == NULL){
+		free(dest.ptr);
+		return FALSE;
+	}
+	lstrcpy(pattern.ptr, pfr->lpstrFindWhat);
+
+	if(frcd.EscSeq && !frcd.Mode) ReplaceEscSeq(pattern.ptr);
+	pattern.length = lstrlen(pattern.ptr);
+
+	/*// 何故か最後の文字が消えるので、追加する
+	dest.ptr[dest.length] = 1;// 検索に引っかからない、かつ\0でない文字付加
+	dest.ptr[dest.length + 1] = 0;// \0付加
+	dest.length++;*/
+
+	while (true) {// 無限ループで置換しつづける(両方のFindTextAs...に問題ないなら、おそらく大丈夫)
+	//	iSearchOffset = Footy2GetCaretThrough(activeFootyID) - 1;
+		iSearchOffset = 0;	// 2008-02-17 Shark++ 代替機能不明
+		
+		if(dest.length > 0 && pattern.length > 0){
+			if(frcd.Mode) {
+				FindTextAsRegExp(&dest, &pattern, (pfr->Flags & FR_DOWN) != FALSE, (pfr->Flags & FR_MATCHCASE) != FALSE, false, &frReturn);
+			} else {
+				FindTextAsStandard(&dest, &pattern, (pfr->Flags & FR_DOWN) != FALSE, (pfr->Flags & FR_MATCHCASE) != FALSE, false, &frReturn);
+			}
+		} else {
+			frReturn.success = false;
+		}
+
+		if (frReturn.success == false) {// 見つからなかった
+			break;
+		}
+
+
+		// 次に備える
+		dest.length = dest.length + lstrlen(ReplaceWith) - pattern.length;// dest.length更新
+
+		char *ratemp;// 置換後の文字を保持する一時的な変数
+		ratemp = (char *)malloc(dest.length + 1);// ratemp作成
+		if (ratemp == NULL) {// ratemp確保失敗
+			free(dest.ptr);// dest.ptr解放
+			dest.ptr = NULL;// dest.ptrでエラーか判断する(あまり良くないかも)
+			break;
+		}
+		memset(ratemp, 0, dest.length + 1);// 【重要】ratempを0フィル
+
+		// ratempに置換後の文字を作成
+		strncpy(ratemp, dest.ptr, frReturn.offset);// 前の部分
+		strcat(ratemp, ReplaceWith);// 置換部分
+		strcat(ratemp, dest.ptr + frReturn.offset + pattern.length);// 後ろの部分
+		ratemp[dest.length - 1] = dest.ptr[dest.length - 1];
+
+		free(dest.ptr);// dest.ptr解放
+		dest.ptr = (char *)malloc(dest.length + 1);// dest.ptr作成
+		if (dest.ptr == NULL) {// dest.ptr確保失敗
+			free(ratemp);// ratemp解放
+			break;
+		}
+		// memset(dest.ptr, 0, dest.length + 1);// 一応dest.ptrを0フィル
+		strcpy(dest.ptr, ratemp);// ratempをdest.ptrにコピー
+
+		free(ratemp);// ratemp解放
+	}// while終了
+
+	if ( dest.ptr != NULL ) {// エラーはなかった(dest.ptrでエラーか判断するのはあまり良くないかも)
+		// Footy2更新、Footy2SetTextはアンドゥバッファが消えるため使用しない
+		Footy2SelectAll(activeFootyID, false);// 全て選択(再描画なし)
+		Footy2SetSelText(activeFootyID, dest.ptr);// 上で選択した部分(つまり全て)を書き換え
+
+		free(dest.ptr);// dest.ptr解放
+	}
+	// 解放処理
+	free(pattern.ptr);
+	free(ReplaceWith);
+	return FALSE;
 	}
 
 BOOL PopFindValidFind (void)
@@ -622,7 +747,7 @@ BOOL PopFindReplaceAll (HWND hwndEdit, int iSearchOffset, LPFINDREPLACE pfr)
 	BOOL rval;
 	int ofs;
 	ofs=iSearchOffset;
-	//if (!PopFindFindText (hwndEdit, &ofs, pfr)) return FALSE ;
+	//if (!PopFindFindText (hwndEdit, &ofs, pfr, true)) return FALSE ;
 	//SendMessage (hwndEdit, EM_GETSEL, 0,(LPARAM) &ofs ) ;
 	rval=PopFindReplaceText ( hwndEdit, ofs, pfr );
 	return rval;

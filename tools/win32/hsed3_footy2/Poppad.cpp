@@ -11,20 +11,20 @@
 //               (c) Charles Petzold, 1996
 ---------------------------------------*/
 
+#include <windows.h>
+#include <windowsx.h>
+#include <commdlg.h>
 #include <stdlib.h>
 #include <stdio.h>
 #include <ctype.h>
 #include <direct.h>
-#include <windows.h>
-#include <windowsx.h>
-#include <commdlg.h>
 #include <winuser.h>
 #include <shlobj.h>
-#include <htmlhelp.h>
-#include <tchar.h>
-#include <mbctype.h>
-
 #include "Footy2.h"
+#include <htmlhelp.h>
+#if _MSC_VER >= 1400 // VC++ .NET 2005 or later
+#include <mbctype.h> // for _ismbblead()
+#endif
 
 #include "poppad.h"
 #include "resource.h"
@@ -34,6 +34,17 @@
 #include "config.h"
 #include "classify.h"
 #include "exttool.h"
+
+#include "PackIconResource.h"
+
+// PathIsDirectoryで使用
+#include "shlwapi.h"
+#pragma comment(lib, "shlwapi.lib")
+/*
+		XP support routines
+*/
+//extern int  flag_xpstyle;
+int getUnicodeOffset( char *text, int offset );
 
 
 /*
@@ -63,6 +74,7 @@ DLLFUNC hsc3_run;		  // 3.0用の追加
 
 static	int dllflg=0;			// DLL uses flag
 static	HINSTANCE hDLL;			// Handle to DLL
+
 
 static char *SetDllFunc( char *name )
 {
@@ -141,16 +153,15 @@ static int selfolder( char *pname )
 	memset( &BrowsingInfo, 0, sizeof(BROWSEINFO) );
 	memset( DirPath, 0, _MAX_PATH );
 	memset( FolderName, 0, _MAX_PATH );
-	BrowsingInfo.hwndOwner = NULL;
+	BrowsingInfo.hwndOwner      = NULL;
 	BrowsingInfo.pszDisplayName = FolderName;
-
 #ifdef JPNMSG
-	BrowsingInfo.lpszTitle = "フォルダを選択してください";
+	BrowsingInfo.lpszTitle      = "フォルダを選択してください";
 #else
-	BrowsingInfo.lpszTitle = "Choose a folder";
+	BrowsingInfo.lpszTitle	    = "Select Folder";
 #endif
-
-	BrowsingInfo.ulFlags = BIF_RETURNONLYFSDIRS;	ItemID = SHBrowseForFolder( &BrowsingInfo );
+	BrowsingInfo.ulFlags        = BIF_RETURNONLYFSDIRS;
+	ItemID = SHBrowseForFolder( &BrowsingInfo );
 	if (ItemID==NULL) return -1;
 
 	SHGetPathFromIDList(ItemID, DirPath );
@@ -179,6 +190,7 @@ static char		 kwstr[512];
 char		 hdir[_MAX_PATH];
 
 extern char szExeDir[_MAX_PATH];
+extern char szStartDir[_MAX_PATH];
 extern int	winx;
 extern int	winy;
 extern int	posx;
@@ -221,23 +233,29 @@ BOOL CALLBACK ConfigFontPageProc (HWND hDlg, UINT message, WPARAM wParam, LPARAM
 BOOL CALLBACK ConfigKeywordPageProc (HWND hDlg, UINT message, WPARAM wParam, LPARAM lParam);
 BOOL CALLBACK ConfigVisualPageProc (HWND hDlg, UINT message, WPARAM wParam, LPARAM lParam);
 
+LRESULT FileDrop(WPARAM wParam, LPARAM lParam);
+
 //void ConfigEditColor( COLORREF fore, COLORREF back );
+
+void LoadFromCommandLine(char *);
 
           // Functions in POPFILE.C
 
 void PopFileInitialize (HWND) ;
 BOOL PopFileOpenDlg    (HWND, PSTR, PSTR) ;
 BOOL PopFileOpenDlg2   (HWND, PSTR, PSTR) ;
+BOOL PopFileOpenDlgImg (HWND, PSTR, PSTR) ;
 BOOL PopFileSaveDlg    (HWND, PSTR, PSTR) ;
-BOOL PopFileRead       (int, const char*) ;
+BOOL PopFileRead       (int, PSTR) ;
 BOOL PopFileWrite      (int,  PSTR) ;
 
           // Functions in POPFIND.C
 
 HWND PopFindFindDlg     (HWND, int) ;
 HWND PopFindReplaceDlg  (HWND) ;
-BOOL PopFindFindText    (HWND, int, LPFINDREPLACE) ;
+BOOL PopFindFindText    (HWND, int, LPFINDREPLACE, bool) ;
 BOOL PopFindReplaceText (HWND, int, LPFINDREPLACE) ;
+BOOL PopFindReplaceAllText(HWND, int, LPFINDREPLACE);
 void PopFindDlgTerm     (DWORD);
 BOOL PopFindNextText    (HWND, int, bool) ;
 BOOL PopFindValidFind   (void) ;
@@ -317,7 +335,6 @@ int		hsp_wy;
 int		hsp_wd;
 int		hsp_orgpath;
 int		hsp_debug;
-int		hsp_utf8out;
 int		hsp_extobj;
 int		hsp_helpmode;
 
@@ -341,7 +358,25 @@ int linespace;
 
 BOOL bAutoIndent;
 
-static LRESULT on_wm_dropfiles(WPARAM, LPARAM);
+int forcefont;		// フォント強制 by inovia
+BOOL bCustomColor;	// カスタムカラー by inovia
+int autobackup;		// 自動バックアップ by inovia
+BOOL BackupNoDelete;// 復旧時バックアップファイルを削除せず保存する by inovia
+BOOL NotifyBackup;	// バックアップしたことをステータスバーで通知
+extern int AutoBackupTimer;	// タイマー
+int speedDraw;		// 高速描画
+BOOL bDrawUnderline;	// 非フォーカス時にもアンダーライン描画
+BOOL UseNewReplace; // 高速な置換 by Tetr@pod
+BOOL CustomMatchCase; // カスタム色分け機能の大文字小文字の区別 by Tetr@pod
+int nowViewMode = VIEWMODE_NORMAL;// ウィンドウ分割 by Tetr@pod
+BOOL UseClickableLabel; // リンクラベルを使用する by Tetr@pod
+BOOL UseSearchFunction; // ユーザー定義命令・関数を色分けする by Tetr@pod
+
+BOOL ChangeColor_func; // #func、#cfunc、#cmd を色分けしない by Tetr@pod
+BOOL ChangeColor_define; // #define、#define ctype を色分けしない by Tetr@pod
+
+char BgImagePath[_MAX_PATH+1]; // 背景画像パス by inovia
+
 
 /*
 		Error message process
@@ -370,41 +405,51 @@ static void err_bye( void )
 	DialogBox (hInst, "ErrBox", hwnd, (DLGPROC)ErrDlgProc);
 }
 
-
-static void OkMessage (const char *szMessage, const char *szTitleName)
+static void OkMessage ( char *szMessage, char *szTitleName)
 {
-	msgboxf(hwbak, szMessage, HSP_DIALOG_CAPTION, MB_OK | MB_ICONEXCLAMATION,
+	msgboxf(hwbak, szMessage, "script editor message", MB_OK | MB_ICONEXCLAMATION,
 		szTitleName[0] ? szTitleName : UNTITLED);
 }
 
-
-static void OkMessage2 (const char *szMessage, const char *szTitleName)
+static void OkMessage2 ( char *szMessage, char *szTitleName)
 {
-	msgboxf(NULL, szMessage, HSP_DIALOG_CAPTION, MB_OK | MB_ICONEXCLAMATION,
+	msgboxf(NULL, szMessage, "script editor message", MB_OK | MB_ICONEXCLAMATION,
 		szTitleName[0] ? szTitleName : UNTITLED);
 }
 
-
-static void TMes(const char *prtmes)
+static void TMes( char *prtmes )
 {
 	OkMessage ( prtmes,"\0" );
 }
 
-
-#define fileok file_exists_and_is_readable
-
-//#define file_exists_and_is_readable(path) _access((path), 4)
-
-int file_exists_and_is_readable(const char *path)
+int fileok( char *fname )
 {
+	//		File exist check
+	//
+	FILE *fp;
+	int er=0;
+	fp=fopen(fname,"rb");
+	if (fp==NULL) er++; else fclose(fp);
+	return er;
+}
 
-	FILE *p = fopen(path, "rb");
-	if (!p) return -1;
 
-	fclose(p);
-
-	return 0;
-
+static int filechk( char *fname )
+{
+	//		File exist check
+	//
+	int er=0;
+	er=fileok( fname );
+	if (er) {
+#ifdef JPNMSG
+		OkMessage ( "カレントディレクトリに、[%s]が見つかりませんでした。\nコマンドは実行できません。",
+					fname ) ;
+#else
+		OkMessage ( "Not exist file [%s].\nOperation invalid.",
+					fname ) ;
+#endif
+	}
+	return er;
 }
 
 
@@ -421,14 +466,49 @@ static char *myfile( void )
 	return compfile;
 }
 
+
+//static int fileexe( char *appname, char *fname )
+//{
+//	//		Execute application
+//	//
+//	if ( filechk(fname) ) return 1;
+//	strcpy( execmd,appname );
+//	strcat( execmd," " );
+//	strcat( execmd,fname );
+//	WinExec( execmd,SW_SHOW );
+//	return 0;
+//}
+
+
+static int GetFileTitle2( char *bname, char *tname )
+{
+	//		GetFileTitleの替わり
+	//		(ファイル拡張子表示ON/OFFの影響を受けない)
+	//
+	int a,b,len;
+	unsigned char a1;
+	b=-1;
+	len=(int)strlen(bname);
+	for(a=0;a<len;a++) {
+		a1=(unsigned char)bname[a];
+		if (a1=='\\' || a1=='/') b=a;
+		if ((a1>=129)&&(a1<=159)) a++; 
+		if ((a1>=224)&&(a1<=252)) a++; 
+	}
+	if (b<0) return 1;
+	strcpy( tname,bname+b+1 );
+	return 0;
+}
+
+
 static void packgo( void )
 {
 	int a;
-	if (file_exists_and_is_readable("packfile")) {
+	if (filechk("packfile")) {
 #ifdef JPNMSG
 		TMes( "DPMファイルを作るためにはパックするファイル名一覧(PACKFILE)を\n作成しておく必要があります。" );
 #else
-		TMes("It requires a packing list file 'packfile' to generate a DPM file.");
+		TMes( "[PACKFILE] needed." );
 #endif
 		return;
 	}
@@ -441,12 +521,12 @@ static void packgo( void )
 #ifdef JPNMSG
 	TMes("[DATA.DPM]ファイルを作成しました。");
 #else
-	TMes("Successfully created a DPM file 'data.dpm'");
+	TMes("Create [DATA.DPM] Successfully.");
 #endif
 }
 
 
-static void expack(int mode, const char *exname, const char *sucess_message)
+static void expack( int mode, char *exname, char *finmes )
 {
 	//		make DPM->EXE file
 	//
@@ -469,77 +549,55 @@ static void expack(int mode, const char *exname, const char *sucess_message)
 
 	pack_rt( 0,(int)hh,0,0 );
 	pack_opt( hsp_wx,hsp_wy,(hsp_wd)|(hsp_orgpath<<1),0 );
-
-	if (pack_exe(mode, 0, 0, 0)) {
-
-		err_prt(hwbak);
-		return;
-
-	}
-
-	TMes(sucess_message);
-
+	a=pack_exe( mode,0,0,0 );
+	//a=dpmc_mkexe( hsp_fullscr,hh,hsp_wx,hsp_wy,hsp_wd );
+	if (a) { err_prt(hwbak);return; }
+	TMes(finmes);
 	DeleteFile(ftmp);
-
 }
 	
 	
-static void mkexe(const char *path)
+static void mkexe( char *exname )
 {
-
-	if (file_exists_and_is_readable("packfile")) {
-
+	if (filechk("packfile")) {
 #ifdef JPNMSG
-		TMes("EXEファイルを作るためにはパックするファイル名一覧(PACKFILE)を\n作成しておく必要があります。");
+		TMes( "EXEファイルを作るためにはパックするファイル名一覧(PACKFILE)を\n作成しておく必要があります。" );
 #else
-		TMes("It requires a packing list file 'packfile' to generate an executable file.");
+		TMes( "[PACKFILE] needed." );
 #endif
-
 		return;
-
 	}
-
 #ifdef JPNMSG
-	expack(hsp_fullscr, path, "EXEファイルを作成しました。");
+	expack( hsp_fullscr, exname, "EXEファイルを作成しました。" );
 #else
-	expack(hsp_fullscr, path, "Successfully created an executable file");
+	expack( hsp_fullscr, exname, "Create EXE file successfully." );
 #endif
-
 }
 
 
 static void mkscr( char *exname )
 {
 	if (hsp_clmode) {
-
 #ifdef JPNMSG
 		TMes( "コンソールモードでスクリーンセーバーの作成はできません。" );
 #else
-		TMes("You cannot create a screen saver in console mode.");
+		TMes( "No operation for console mode." );
 #endif
-
 		return;
-
 	}
-
-	if (file_exists_and_is_readable("packfile")) {
-
+	if (filechk("packfile")) {
 #ifdef JPNMSG
 		TMes( "スクリーンセーバーを作るためにはパックするファイル名一覧(PACKFILE)を\n作成しておく必要があります。" );
 #else
-		TMes("It requires a packing list file 'packfile' to generate a screen saver file.");
+		TMes( "[PACKFILE] needed." );
 #endif
-
 		return;
-
 	}
-
 #ifdef JPNMSG
-	expack(2, exname, "SCRファイルを作成しました。");
+	expack( 2, exname, "SCRファイルを作成しました。" );
 #else
-	expack(2, exname, "Successfully created a screen saver file");
+	expack( 2, exname, "Create SCR file successfully." );
 #endif
-
 }
 
 
@@ -697,7 +755,7 @@ static int mkobjfile( char *fname )
 	hsc_ini( 0,(int)srcfn, 0,0 );
 	hsc_refname( 0,(int)myfile(), 0,0 );
 	hsc_objname( 0,(int)tmpst, 0,0 );
-	a=hsc_comp( hsp_utf8out,0,0,0 );
+	a=hsc_comp( 0,0,0,0 );
 	//a=tcomp_main( myfile(), srcfn, tmpst, errbuf, 0 );
 	return a;
 }
@@ -716,7 +774,7 @@ static int mkobjfile2( char *fname )
 	hsc_ini( 0,(int)srcfn, 0,0 );
 	hsc_refname( 0,(int)myfile(), 0,0 );
 	hsc_objname( 0,(int)tmpst, 0,0 );
-	a=hsc_comp( hsp_utf8out,0,0,0 );
+	a=hsc_comp( 0,0,0,0 );
 	//a=tcomp_main( myfile(), srcfn, tmpst, errbuf, 0 );
 	return a;
 }
@@ -730,17 +788,19 @@ static int mkexefile2( char *fname )
 	char tmpst[_MAX_PATH];
 	char srcfn[_MAX_PATH];
 	char ftmp[_MAX_PATH];
+
 	strcpy(srcfn,fname);
 	strcpy(tmpst,"start.ax");
 
 	hsc_ini( 0,(int)srcfn, 0,0 );
 	hsc_refname( 0,(int)myfile(), 0,0 );
 	hsc_objname( 0,(int)tmpst, 0,0 );
-	a=hsc_comp( hsp_utf8out,4,0,0 );
+	a=hsc_comp( 0,4,0,0 );
 	if ( a ) return a;
 
 	sprintf( ftmp, "%s\\%s.dpm", szExeDir, srcfn );
-	a=hsc3_make( 0,(int)ftmp,1,0 );
+	a=hsc3_make( 0,(int)ftmp,0,0 );
+
 	if ( a ) return a;
 	return 0;
 }
@@ -879,7 +939,7 @@ static void callhelp( void )
 #ifdef JPNMSG
 			TMes("ヘルプのためのchmファイルが見つかりません。\nディレクトリ設定を確認してください。");
 #else
-			TMes("The help data is not found. Please check for the help file location.");
+			TMes("Help data missing.Check help preference.");
 #endif
 			return;
 		}
@@ -908,24 +968,15 @@ static void callhelp( void )
 	}
 
 	wsprintf( helpopt,"%shelpman.exe",hdir );
-
-	if (file_exists_and_is_readable(helpopt)) {
-
+	if (fileok(helpopt)) {
 #ifdef JPNMSG
-
 		wsprintf( mesb, "HSPヘルプマネージャが見つかりません。\n%sを確認してください。",helpopt );
-		TMes( mesb );
-
 #else
-
-		msgboxf(hwbak, TEXT("HSP help manager is not found.\nPlease check for the path %s."), HSP_DIALOG_CAPTION, MB_OK | MB_ICONEXCLAMATION, helpopt);
-
+		wsprintf( mesb, "HSP help manager not found.\nCheck %s.",helpopt );
 #endif
-
+		TMes( mesb );
 		return;
-
 	}
-
 	wsprintf( helpopt,"\"%shelpman.exe\" %s",hdir,kwstr );
 	WinExec( helpopt, SW_SHOW );
 	return;
@@ -940,11 +991,11 @@ static void ExecMkDPM( void )
 }
 
 
-static void ExecPaint( void )
+static void ExecPaint(void)
 {
 	char tmpfn[2048];
-	wsprintf( tmpfn, "mspaint" );
-	WinExec( tmpfn, SW_SHOW );
+	wsprintf(tmpfn, "mspaint");
+	WinExec(tmpfn, SW_SHOW);
 }
 
 
@@ -970,147 +1021,76 @@ static void CloseHSPAssistant( void )
 	}
 }
 
+
 void pophwnd( HWND hwnd )
 {
 	hwbak=hwnd;
 }
 
-static void set_hsp_window_title(HWND window_handle, LPCTSTR title)
-{
+void DoCaption ( char *szTitleName, int TabID )
+     {
+     char szCaption[_MAX_PATH+128] ;
 
-	TCHAR buffer[MAX_TITLE_LENGTH];
+	 if(GetTabInfo(0) == NULL){
+#ifdef JPNMSG
+	     lstrcpy (szCaption, "ＨＳＰスクリプトエディタ") ;
+#else
+	     lstrcpy (szCaption, "HSP Script Editor") ;
+#endif
+	 } else {
+#ifdef JPNMSG
+	     wsprintf (szCaption, "ＨＳＰスクリプトエディタ - %s%s",
+			 szTitleName[0] ? szTitleName : UNTITLED, bNeedSave ? " *": "") ;
+#else
+	     wsprintf (szCaption, "HSP Script Editor - %s%s",
+			 szTitleName[0] ? szTitleName : UNTITLED, bNeedSave ? " *": "") ;
+#endif
+	 }
+	 SetWindowText (hwbak, szCaption) ;
 
-	_sntprintf(buffer, MAX_TITLE_LENGTH - 1, TEXT(HSP_EDITOR_NAME " - %s"), title);
-	buffer[MAX_TITLE_LENGTH - 1] = '\0';
+	 if(TabID >= 0){
+		 char szTabCaption[_MAX_PATH*5+128] ;	// 下の置き換え処理を実行した場合最悪で、５倍必要な為
+		 TCITEM tc_item;
+		 TABINFO *lpTabInfo;
 
-	SetWindowText(window_handle, buffer);
+		 lpTabInfo = GetTabInfo(TabID);
+	     wsprintf (szTabCaption, "%s%s",
+			 lpTabInfo->TitleName[0] ? lpTabInfo->TitleName : TABUNTITLED, lpTabInfo->NeedSave ? " *" : "") ;
 
-}
+		 // &を&&に置き換える処理(これしないと&が含まれているとき、タブの文字列がアンダーバーが付く)
+		 StrReplaceALL(szTabCaption, "&", ":amp:");
+		 StrReplaceALL(szTabCaption, ":amp:", "&&");
 
-static void set_menu_item_caption(HWND window_handle, HMENU menu_handle, UINT position, UINT item_type, const void *item_data)
-{
+		 tc_item.mask = TCIF_TEXT;
+		 tc_item.pszText = szTabCaption;
 
-	MENUITEMINFO menu_item;
+		 TabCtrl_SetItem(hwndTab, TabID, &tc_item);
+     }
+	 }
 
-	menu_item.cbSize = sizeof(MENUITEMINFO);
-	menu_item.fMask = MIIM_TYPE;
-	menu_item.fType = item_type;
-	menu_item.dwTypeData = (LPTSTR)item_data;
-
-	SetMenuItemInfo(menu_handle, position, TRUE, &menu_item);
-
-	DrawMenuBar(window_handle);
-
-}
-
-static void set_tab_caption(HWND tab_handle, int tab_id, LPCTSTR caption)
-{
-
-	if (!GetTabInfo(tab_id)) return;
-
-	TCITEM tc_item;
-
-	tc_item.mask = TCIF_TEXT;
-	tc_item.pszText = (LPTSTR)caption;
-
-	TabCtrl_SetItem(tab_handle, tab_id, &tc_item);
-
-}
-
-static void update_tab_title_display(HWND window_handle, int tab_id, int window_title_too)
-{
-
-	const TABINFO *tab_data = GetTabInfo(tab_id);
-	if (!tab_data) return;
-
-	LPCTSTR file_name = tab_data->TitleName;
-
-	TCHAR buffer[MAX_TITLE_LENGTH];
-
-	_sntprintf(buffer, MAX_TITLE_LENGTH - 1, TEXT("%s %c"), file_name[0] != '\0' ? file_name : TEXT(UNTITLED), tabinfo_changes_not_saved(tab_data) ? '*' : '\0');
-	buffer[MAX_TITLE_LENGTH - 1] = '\0';
-
-	set_menu_item_caption(window_handle, get_assigned_tab_menu_handle(), POS_TABBASE + tab_id, MFT_STRING | MFT_RADIOCHECK, buffer);
-	set_tab_caption(hwndTab, tab_id, buffer);
-
-	if (window_title_too) set_hsp_window_title(window_handle, buffer);
-
-}
-
-void DoCaption(char *dummy, int tab_id)
-{
-
-	update_tab_title_display(hwbak, tab_id, 1);
-
-}
-
-static int ask_for_saving_file(HWND window_handle, LPCTSTR file_name)
-{
+short AskAboutSave (HWND hwnd, char *szTitleName)
+     {
+     char szBuffer[64 + _MAX_FNAME + _MAX_EXT] ;
+     int  iReturn ;
 
 #ifdef JPNMSG
-	LPCTSTR message = TEXT("%sは変更されました。 ファイルの変更を保存しますか？");
+     wsprintf (szBuffer, "%sは変更されています。セーブしますか？",
+               szTitleName[0] ? szTitleName : UNTITLED) ;
 #else
-	LPCTSTR message = TEXT("%s has been modified. Do you want to save changes to the file?");
+     wsprintf (szBuffer, "%s has been modified. Save?",
+               szTitleName[0] ? szTitleName : UNTITLED) ;
 #endif
 
-	int ret = msgboxf(window_handle, message, TEXT(HSP_DIALOG_CAPTION), MB_YESNOCANCEL | MB_ICONQUESTION, file_name[0] ? file_name : UNTITLED);
+     iReturn = MessageBox (hwnd, szBuffer, "Warning",
+                           MB_YESNOCANCEL | MB_ICONQUESTION) ;
 
-	if (ret == IDYES) {
+     if (iReturn == IDYES)
+          if (!SendMessage (hwnd, WM_COMMAND, IDM_SAVE, 0L))
+               iReturn = IDCANCEL ;
 
-		if (!SendMessage(window_handle, WM_COMMAND, IDM_SAVE, 0)) return IDCANCEL;
+     return (short)iReturn ;
+     }
 
-	}
-
-	return ret;
-
-}
-
-static int load_and_assign_file_to_tab(LPCTSTR file_path)
-{
-
-	// If the tab control has a tab with the file, the function returns the tab id. If not, the function loads the file, checks if the active tab is empty or not, and assigns the file to the active tab if so or to a new tab.
-
-	// The return value is the id of the assigned tab on success, or -1 on failure.
-
-	int created = 0;
-
-	int tab_id = retrieve_tab_holding_file(file_path);
-
-	if (tab_id >= 0) return tab_id;
-
-	tab_id = get_currently_selected_tab_id();
-	TABINFO *tab_data = GetTabInfo(tab_id);
-
-	if (!tab_data || !tabinfo_is_empty(tab_data)) {
-
-		tab_id = CreateTab(activeID, "", "", "");
-		tab_data = GetTabInfo(tab_id);
-
-		created = 1;
-
-	}
-
-	if (!tab_data || tabinfo_load_file(tab_data, file_path)) {
-
-		if (created) DeleteTab(tab_id);
-
-#ifdef JPNMSG
-		LPCTSTR message = TEXT("%s が読み込めませんでした");
-#else
-		LPCTSTR message = TEXT("Could not load %s");
-#endif
-
-		msgboxf(hwbak, message, TEXT(HSP_DIALOG_CAPTION), MB_OK | MB_ICONEXCLAMATION, file_path);
-
-		return -1;
-
-	}
-
-	update_tab_title_display(hwbak, tab_id, 0);
-
-	return tab_id;
-
-}
 
 BOOL CALLBACK JumpDlgProc (HWND hDlg, UINT message, WPARAM wParam, LPARAM /*lParam*/)
      {
@@ -1277,6 +1257,7 @@ BOOL CALLBACK ErrDlgProc (HWND hDlg, UINT message, WPARAM wParam, LPARAM /*lPara
 	2006/09/06 コメントが存在するときとEOF付近のときのラベルが無視される不具合を修正(LonelyWolf)
 */
 
+
 static void set_labellist( HWND hList, HWND /*hwndEdit*/ )
 {
 	char st[128];
@@ -1289,7 +1270,6 @@ static void set_labellist( HWND hList, HWND /*hwndEdit*/ )
 	int mytag = -1;
 	int myline= -2;
 	int ret;
-	char *lastdq=0;
 
 	ListView_DeleteAllItems(hList);
 
@@ -1430,7 +1410,7 @@ static void set_labellist( HWND hList, HWND /*hwndEdit*/ )
 						if (wp - 2 >= buffer)
 							bDameChk = IsDBCSLeadByte((unsigned char) *(wp - 2));
 						// 文字列読み飛ばし
-						if( ('{' == *(wp - 1)) && (!bDameChk) && (wp != lastdq)) { // 複数行文字列
+						if( ('{' == *(wp - 1)) && (!bDameChk)) { // 複数行文字列
 						//if( '{' == *(wp - 1) ) { // 複数行文字列
 							wp += 2;
 							for(bool bEscape = false; *wp && ('\"' != *wp || '}' != wp[1] || bEscape); ) {
@@ -1447,7 +1427,6 @@ static void set_labellist( HWND hList, HWND /*hwndEdit*/ )
 								}
 								wp += IsDBCSLeadByte(*wp) ? 2 : 1;
 							}
-							lastdq=wp;
 						}
 						wp--;
 						continue;
@@ -1568,8 +1547,12 @@ static void poppad_setalledit()
 
 static void poppad_setsb0( int chk, int FootyID )
 {
-	HWND hWnd = Footy2GetWnd(FootyID, 0);
-	ShowScrollBar(hWnd, SB_HORZ, chk);
+	/*
+	for(int i = 0; i > 4; i++){
+		HWND hWnd = Footy2GetWnd(FootyID, i);
+		ShowScrollBar(hWnd, SB_HORZ, chk);
+	}
+	*/
 }
 
 int poppad_setsb( int flag )
@@ -1669,8 +1652,6 @@ void poppad_bye( void )
 {
     //case WM_DESTROY :
 
-	SetWindowLongPtr(hwndTab, GWL_WNDPROC, (LONG_PTR)Org_TabProc);
-
 	if (flg_hspat) {						// HSPアシスタントを終了させる
 		CloseHSPAssistant();
 	}
@@ -1682,37 +1663,7 @@ void poppad_bye( void )
 
 }
 
-int poppad_reload(int tab_id)
-{
 
-	TABINFO *tab_data = GetTabInfo(tab_id);
-	if (!tab_data) return -1;
-
-	if (!tabinfo_is_assigned_to_file(tab_data)) return 0;
-
-	LPCTSTR file_path = tab_data->FileName;
-
-	if (tabinfo_load_file(tab_data, file_path)) {
-
-#ifdef JPNMSG
-		LPCTSTR message = TEXT("%s が読み込めませんでした");
-#else
-		LPCTSTR message = TEXT("Could not load %s");
-#endif
-
-		msgboxf(hwbak, message, TEXT(HSP_DIALOG_CAPTION), MB_OK | MB_ICONEXCLAMATION, file_path);
-
-		return -1;
-
-	}
-
-	update_tab_title_display(hwbak, tab_id, 0);
-
-	return 0;
-
-}
-
-/*
 int poppad_reload( int nTabID )
 {
 	TABINFO *lpTabInfo;
@@ -1730,7 +1681,6 @@ int poppad_reload( int nTabID )
 		if(GetFileTitle2(lpTabInfo->FileName, lpTabInfo->TitleName)){
 			lstrcpy(lpTabInfo->TitleName, lpTabInfo->FileName );
 		}
-
 		GetDirName(lpTabInfo->DirName, lpTabInfo->FileName);
 		if (!PopFileRead(lpTabInfo->FootyID, lpTabInfo->FileName)){
 #ifdef JPNMSG
@@ -1753,7 +1703,7 @@ int poppad_reload( int nTabID )
 	DoCaption (lpTabInfo->TitleName, nTabID) ;
 	return 0;
 }
-*/
+
 
 static void SetFileName(char *titleName, char *fileName, char *dirName) {
 	if ( titleName != NULL ) lstrcpy(szTitleName, titleName);
@@ -1762,89 +1712,6 @@ static void SetFileName(char *titleName, char *fileName, char *dirName) {
 	SetTabInfo(activeID, titleName, fileName, dirName, -1);
 }
 
-static void auto_indentation(void)
-{
-
-	/* This feature is implemented by the 'Footy' control too, but it is not useful in this case and not available outside the control. */
-
-	// インデント
-
-	size_t start_line, start_column, end_line, end_column;
-
-	if (Footy2GetSel(activeFootyID, &start_line, &start_column, &end_line, &end_column) == FOOTY2ERR_NOTSELECTED) {
-
-		Footy2GetCaretPosition(activeFootyID, &start_line, &start_column);
-
-		end_line = start_line;
-		end_column = start_column;
-
-	}
-
-	/*
-	{
-
-		const wchar_t *line = Footy2GetLineW(activeFootyID, end_line);
-		while (line[end_column] == ' ' || line[end_column] == '\t') end_column++;
-
-	}
-	*/
-
-	const wchar_t *line = Footy2GetLineW(activeFootyID, start_line);
-
-	wchar_t *spaces = (wchar_t *)malloc((start_column + (strlen("\n") + strlen("\t") + strlen("\n") + 1)) * sizeof(wchar_t));
-	if (!spaces) return;
-
-	wcscpy(spaces, L"\n");
-	size_t j = strlen("\n");
-
-	size_t i = start_column;
-
-	while (i > 0) {
-
-		i--;
-
-		if (line[i] != ' ' && line[i] != '\t') break;
-
-	}
-
-	/* Block indentation */
-
-	if (line[i] == '{') {
-
-		spaces[j] = '\t';
-		j++;
-
-	}
-
-	for(i = 0; i < start_column; i++, j++) {
-
-		if (line[i] != ' ' && line[i] != '\t') break;
-
-		spaces[j] = line[i];
-
-	}
-
-	/* Indentation after a label */
-
-	if (line[i] == '*' && i < start_column) {
-
-		spaces[j] = '\t';
-		j++;
-
-	}
-
-	if (i == start_column) start_column = 0;
-
-	spaces[j] = '\0';
-
-	Footy2SetSel(activeFootyID, start_line, start_column, end_line, end_column, false);
-	Footy2SetSelTextW(activeFootyID, spaces);
-
-	free(spaces);
-
-	return;
-
-}
 
 LRESULT CALLBACK MyEditProc( HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam )
 {
@@ -1852,19 +1719,55 @@ LRESULT CALLBACK MyEditProc( HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam )
 	//
 	switch (msg) {
 	case WM_DROPFILES:
-		return on_wm_dropfiles(wParam, lParam);
+		return FileDrop(wParam, lParam);
 
 	case WM_KEYDOWN:
 	{
+		wchar_t *szSpaceBuf;
+		const wchar_t *szLine;
+		int nsLine, nsPos, neLine, nePos, nLength, i, j, ret;
 
-		if (!bAutoIndent) break;
+		if(bAutoIndent && wParam == VK_RETURN && GetKeyState(VK_CONTROL) >= 0){
+			/*
+			 * 処理内容
+			 *  
+			 */
 
-		if (wParam != VK_RETURN || GetKeyState(VK_CONTROL) < 0) break;
+			ret = Footy2GetSel(activeFootyID, (size_t*)&nsLine, (size_t*)&nsPos, (size_t*)&neLine, (size_t*)&nePos);
+			if(FOOTY2ERR_NOTSELECTED == ret){
+				Footy2GetCaretPosition(activeFootyID, (size_t*)&nsLine, (size_t*)&nsPos);
+				neLine = nsLine;
+				nePos  = nsPos;
+			}
 
-		auto_indentation();
+			szLine = Footy2GetLineW(activeFootyID, neLine);
+			nLength = Footy2GetLineLengthW(activeFootyID, neLine);
+			for(i = nePos; i < nLength && (szLine[i] == ' ' || szLine[i] == '\t'); i++)
+				nePos++;
 
-		return 0;
+			nLength = min(nLength, nsPos);
 
+			szSpaceBuf = (wchar_t *)calloc(nLength + 3, sizeof(wchar_t));
+			lstrcpyW(szSpaceBuf, L"\r\n");
+
+			for(i = nLength - 1, j = 2; i >= 0 && (szLine[i] == ' ' || szLine[i] == '\t'); i--);
+			if(i >= 0 && szLine[i] == '{')
+				szSpaceBuf[j++] = '\t';
+			for(i = 0; i < nLength && (szLine[i] == ' ' || szLine[i] == '\t'); i++, j++)
+				szSpaceBuf[j] = szLine[i];
+			if(szLine[i] == '\0' || i >= nsPos)
+				nsPos = 0;//1
+			else if(szLine[i] == '*' && i < nsPos)
+				szSpaceBuf[j++] = '\t';
+            szSpaceBuf[j] = '\0';
+
+			Footy2SetSel(activeFootyID, nsLine, nsPos, neLine, nePos, false);
+			Footy2SetSelTextW(activeFootyID, szSpaceBuf);
+			free(szSpaceBuf);
+			return 0;
+ 	// 2008-03-17 Shark++ 要動作確認
+		}
+		break;
 	}
 
 	case WM_CHAR:
@@ -1874,7 +1777,7 @@ LRESULT CALLBACK MyEditProc( HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam )
 		int nsLine, nsPos, neLine, nePos, nLength, i, ret;
 		static char chPrevByte;
 
-		if(bAutoIndent && (wParam == '*' || wParam == '}') && !_ismbblead(chPrevByte)){
+		if((wParam == '*' || wParam == '}') && !_ismbblead(chPrevByte)){
 			ret = Footy2GetSel(activeFootyID, (size_t*)&nsLine, (size_t*)&nsPos, (size_t*)&neLine, (size_t*)&nePos);
 			if(FOOTY2ERR_NOTSELECTED == ret){
 				Footy2GetCaretPosition(activeFootyID, (size_t*)&nsLine, (size_t*)&nsPos);
@@ -1895,7 +1798,7 @@ LRESULT CALLBACK MyEditProc( HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam )
 		} else {
 			chPrevByte = (char)wParam;
 		}
-
+ 	// 2008-03-17 Shark++ 要動作確認
 		break;
 	}
 
@@ -1923,7 +1826,7 @@ LRESULT CALLBACK MyTabProc( HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam )
 	//
 	switch(msg){
 		case WM_DROPFILES:
-			return on_wm_dropfiles(wParam, lParam);
+			return FileDrop(wParam, lParam);
 	}
 	return (CallWindowProc( Org_TabProc, hwnd, msg, wParam, lParam ));
 }
@@ -1960,17 +1863,26 @@ int poppad_menupop( WPARAM wParam, LPARAM lParam )
 		case 1 :		// Edit menu
 			{
 
-			// Enable the 'Undo' if available
-
-			int iNum = 0;
-
+			// Enable Undo if edit control can do it
+			iNum = 0;
 			Footy2GetMetrics(activeFootyID, SM_UNDOREM, &iNum);
-			EnableMenuItem ((HMENU)wParam, IDM_UNDO, iNum > 0 ? MF_ENABLED : MF_GRAYED);
+			EnableMenuItem ((HMENU) wParam, IDM_UNDO,
+//				FootyGetMetrics(activeFootyID, F_GM_UNDOREM) > 0 ? MF_ENABLED : MF_GRAYED) ;	// 2008-02-17 Shark++ 代替機能未実装
+				iNum > 0 ? MF_ENABLED : MF_GRAYED) ;
 
-			// Enable the 'Redo' if available
+			// Enable Redo if edit control can do it
 
+//			EnableMenuItem ((HMENU) wParam, IDM_REDO, nUndoNum > 0 ?
+//				MF_ENABLED : MF_GRAYED) ;
+//			EnableMenuItem ((HMENU) wParam, IDM_REDO,
+//			SendMessage (hwndEdit, WM_USER + 85/*(EM_CANREDO)*/, 0, 0L) ?
+//				MF_ENABLED : MF_GRAYED) ;
+			iNum = 0;
 			Footy2GetMetrics(activeFootyID, SM_REDOREM, &iNum);
-			EnableMenuItem ((HMENU) wParam, IDM_REDO, iNum > 0 ? MF_ENABLED : MF_GRAYED);
+			EnableMenuItem ((HMENU) wParam, IDM_REDO,
+//				FootyGetMetrics(activeFootyID, F_GM_REDOREM) > 0 ? MF_ENABLED : MF_GRAYED) ;	// 2008-02-17 Shark++ 代替機能未実装
+				iNum > 0 ? MF_ENABLED : MF_GRAYED) ;
+
 
 			// Enable Paste if text is in the clipboard
 
@@ -2026,8 +1938,6 @@ int poppad_menupop( WPARAM wParam, LPARAM lParam )
 			CheckMenuItem ((HMENU) wParam, IDM_FULLSCR, iEnable) ;
 			iEnable = hsp_debug ? MF_CHECKED : MF_UNCHECKED ;
 			CheckMenuItem ((HMENU) wParam, IDM_DEBUG, iEnable) ;
-			iEnable = hsp_utf8out ? MF_CHECKED : MF_UNCHECKED ;
-			CheckMenuItem ((HMENU) wParam, IDM_UTF8OUT, iEnable) ;
 //			iEnable = hsp_extmacro ? MF_CHECKED : MF_UNCHECKED ;
 //			CheckMenuItem ((HMENU) wParam, IDM_HSPEXTMACRO, iEnable) ;
 			iEnable = hsp_clmode ? MF_CHECKED : MF_UNCHECKED ;
@@ -2039,64 +1949,34 @@ int poppad_menupop( WPARAM wParam, LPARAM lParam )
 	return 0 ;
 }
 
-static void delete_all_tab_data_but_no_tab(void)
+LRESULT poppad_term( UINT iMsg )
 {
+	switch(iMsg) {
+          case WM_CLOSE :
+			  TABINFO *lpTabInfo;
+			  NMHDR nmhdr;
+			  nmhdr.code = TCN_SELCHANGE;
+			  for(int i = 0; (lpTabInfo = GetTabInfo(i)) != NULL; i++){
+				  if(lpTabInfo->NeedSave){
+					  TabCtrl_SetCurFocus(hwndTab, i);
+					  SendMessage(hwndClient, WM_NOTIFY, 0, (LPARAM)&nmhdr);
+					  if(IDCANCEL == AskAboutSave (hwbak, lpTabInfo->TitleName)) return 0;
+				  }
+			   }
+			   SaveConfig();					// config save
+			   ReleaseExtTool();
+		       SetWindowLong( hwndEdit, GWL_WNDPROC, (LONG)Org_EditProc );
+		       DestroyWindow (hwbak) ;
+	           break;
 
-	// Deletes all tab data but no tab itself.
-
-	int num = TabCtrl_GetItemCount(hwndTab);
-
-	for (int i = 0; i < num; i++) {
-
-		TABINFO *tab_data = GetTabInfo(i);
-
-		if (!tab_data) break;
-
-		delete_tabinfo(tab_data);
-
+          case WM_QUERYENDSESSION :
+               if (!bNeedSave || IDCANCEL != AskAboutSave (hwbak, szTitleName))
+                    return 1 ;
+              break;
 	}
-
-}
-
-LRESULT poppad_term(UINT message)
-{
-
-	int num = TabCtrl_GetItemCount(hwndTab);
-
-	for (int i = 0; i < num; i++) {
-
-		TABINFO *tab_data = GetTabInfo(i);
-
-		if (!tab_data) break;
-
-		if (!tabinfo_changes_not_saved(tab_data)) continue;
-
-		NMHDR nmhdr;
-		nmhdr.hwndFrom = hwndTab;
-		nmhdr.idFrom = GetDlgCtrlID(hwndTab);
-		nmhdr.code = TCN_SELCHANGE;
-
-		TabCtrl_SetCurFocus(hwndTab, i);
-		SendMessage(hwndClient, WM_NOTIFY, 0, (LPARAM)&nmhdr);
-
-		if (ask_for_saving_file(hwbak, tab_data->TitleName) == IDCANCEL) return 0;
-
-	}
-
-	ShowWindow(hwbak, SW_HIDE);
-
-	delete_all_tab_data_but_no_tab();
-
-	SaveConfig();
-	ReleaseExtTool();
-
-	if (message == WM_QUERYENDSESSION) return 1;
-
-	DestroyWindow(hwbak);
-
 	return 0;
-
 }
+
 
 void PutLineNumber( void )
 {
@@ -2128,7 +2008,7 @@ LRESULT CALLBACK EditDefProc(HWND hwnd, UINT iMsg, WPARAM wParam, LPARAM lParam)
 		if (pfr->Flags & FR_DIALOGTERM) hDlgModeless = NULL ;
 
 		if (pfr->Flags & FR_FINDNEXT)
-			if (!PopFindFindText (hwndEdit, iOffset, pfr)){
+			if (!PopFindFindText (hwndEdit, iOffset, pfr, true)){
 #ifdef JPNMSG
                 OkMessage2 ( "終わりまで検索しました", "") ;
 #else
@@ -2140,20 +2020,37 @@ LRESULT CALLBACK EditDefProc(HWND hwnd, UINT iMsg, WPARAM wParam, LPARAM lParam)
             iOffset = 0;
 
         if (pfr->Flags & FR_REPLACE || pfr->Flags & FR_REPLACEALL)
-			if (!PopFindReplaceText (hwndEdit, iOffset, pfr))
+			if (pfr->Flags & FR_REPLACE || !UseNewReplace ) {
+				if (!PopFindReplaceText (hwndEdit, iOffset, pfr)) {
 #ifdef JPNMSG
-				OkMessage2 ( "終わりまで置換しました", "") ;
+					OkMessage2 ( "終わりまで置換しました", "") ;
 #else
-				OkMessage2 ( "Replace finished.", "") ;
+					OkMessage2 ( "Replace finished.", "") ;
 #endif
+				}
+			}
+			if (pfr->Flags & FR_REPLACEALL) {// elseでは代替できない
 
-		if (pfr->Flags & FR_REPLACEALL) {
-			// 2008-03-11 Shark++ 他のエディタに比べると置換がすごく遅い気がする(それでも現行版よりは早いけど)
-		//	::SendMessage(Footy2GetWnd(activeFootyID, 0), WM_SETREDRAW, 0, 0); // 2008-03-11 Shark++ 速度を稼ぐために描画を止めてみたけどあまり変わらない
-			while (PopFindReplaceText (hwndEdit, iOffset, pfr) );
-		//	::SendMessage(Footy2GetWnd(activeFootyID, 0), WM_SETREDRAW, 1, 0);
-		//	Footy2Refresh(activeFootyID);
-		}
+				// 2008-03-11 Shark++ 他のエディタに比べると置換がすごく遅い気がする(それでも現行版よりは早いけど)
+			//	::SendMessage(Footy2GetWnd(activeFootyID, 0), WM_SETREDRAW, 0, 0); // 2008-03-11 Shark++ 速度を稼ぐために描画を止めてみたけどあまり変わらない
+
+				if ( UseNewReplace ) {// 設定により処理を振り分ける
+					if (!PopFindFindText (hwndEdit, iOffset, pfr, false)) {
+#ifdef JPNMSG
+						OkMessage2 ( "終わりまで置換しました", "") ;
+#else
+						OkMessage2 ( "Replace finished.", "") ;
+#endif
+					}
+
+					PopFindReplaceAllText(hwndEdit, iOffset, pfr);// by Tetr@pod
+				} else {
+					while ( PopFindReplaceText(hwndEdit, iOffset, pfr) );
+					PopFindReplaceText(hwndEdit, iOffset, pfr);
+				}
+			//	::SendMessage(Footy2GetWnd(activeFootyID, 0), WM_SETREDRAW, 1, 0);
+			//	Footy2Refresh(activeFootyID);
+			}
 	// 2008-02-17 Shark++ 後回し
 		return 0 ;
 	}
@@ -2215,52 +2112,63 @@ LRESULT CALLBACK EditProc (HWND hwnd, UINT iMsg, WPARAM wParam, LPARAM lParam)
 					DoCaption (szTitleName, activeID) ;
 					return 0 ;
 
-				case IDM_OPEN:
-
-					if (PopFileOpenDlg(hwnd, tmpfn, NULL)) ActivateTab(get_currently_selected_tab_id(), load_and_assign_file_to_tab(tmpfn));
-
-					return 0;
-
-				case IDM_RELOAD:
-				case IDM_RELOADTAB:
-
+				case IDM_OPEN :
 				{
+					int nTabNumber, nFootyID;
+					TABINFO *lpTabInfo;
+					bool bCreated;
+					ULONGLONG ullFileIndex;
 
-					int selected = (low == IDM_RELOAD) ? get_currently_selected_tab_id() : ClickID;
+					if (PopFileOpenDlg (hwnd, szFileName, szTitleName)){
+						GetDirName(szDirName, szFileName);
+						SetCurrentDirectory(szDirName);
+						ullFileIndex = GetFileIndex(szFileName);
+						if((nTabNumber = SearchTab(NULL, NULL, NULL, ullFileIndex)) >= 0){
+							ActivateTab(activeID, nTabNumber);
+							return 0;
+						}
 
-					TABINFO *tab_data = GetTabInfo(selected);
+                        lpTabInfo = GetTabInfo(activeID);
 
-					if (!tab_data || !tabinfo_is_assigned_to_file(tab_data)) return 0;
+						nFootyID = activeFootyID;
+						bCreated = false;
 
+						if(lpTabInfo != NULL ) {
+							if(lpTabInfo->NeedSave){ bCreated = true; }
+						}
+						if( lpTabInfo == NULL
+							|| lpTabInfo->FileName[0] != '\0'
+							|| Footy2IsEdited(activeFootyID) ){
+								bCreated = true;
+						}
+						if ( bCreated ) {
+								CreateTab(activeID, szTitleName, szFileName, szDirName);
+							} else {
+								SetTabInfo(activeID, szTitleName, szFileName, szDirName, FALSE);
+							}
+						if (!PopFileRead (activeFootyID, szFileName)){
 #ifdef JPNMSG
-
-					LPCTSTR message = TEXT("再読込を行う上で、下記のことが起こります。よろしいですか？\n\n")
-						TEXT("・「元に戻す」の情報が破棄され、再読込以前に戻れなくなります。%s\n")
-						TEXT("・変更が無視されます");
-
+                            OkMessage ( "%s をロードできませんでした。", szTitleName) ;
 #else
-
-					LPCTSTR message = TEXT("You will lose the 'Undo' history and your changes. Are you sure you want to reload the text?");
-
-					/*
-					LPCTSTR message = TEXT("Are you sure you want to reload the text? It will lead to these things.\n\n")
-						TEXT("\tYou lose the 'Undo' history and cannot take back any changes before the reloading.\n")
-						TEXT("\tYou lose all unsaved changes.");
-					*/
-
+                            OkMessage ( "Loading %s fault.", szTitleName) ;
 #endif
+							if(bCreated) {
+								DeleteTab(activeID);
+							} else {
+								SetFileName( "", "", "" );
+							}
+							break;
+						}
 
-					if (!tabinfo_changes_not_saved(tab_data) || (MessageBox(hwnd, message, TEXT("Warning"), MB_YESNO | MB_ICONQUESTION) == IDYES)) {
+						GetTabInfo(activeID)->FileIndex = ullFileIndex;
 
-						poppad_reload(selected);
-
+						bNeedSave = FALSE ;
+						DoCaption (szTitleName, activeID) ;
 					}
 
-					return 0;
-
+					return 0 ;
 				}
 
-/*
 				case IDM_RELOAD:
 				{
 					bool bUndo;
@@ -2295,7 +2203,7 @@ LRESULT CALLBACK EditProc (HWND hwnd, UINT iMsg, WPARAM wParam, LPARAM lParam)
                         	poppad_reload(ClickID);
 					return 0;
 				}
-*/
+
 				case IDM_SAVE :
 					if (szFileName[0]){
                         if (PopFileWrite (activeFootyID, szFileName)){
@@ -2333,7 +2241,7 @@ LRESULT CALLBACK EditProc (HWND hwnd, UINT iMsg, WPARAM wParam, LPARAM lParam)
 #ifdef JPNMSG
 							OkMessage ( "%s のセーブに失敗しました。", szTitleName) ;
 #else
-							OkMessage("Failed to save data to %s", szFileName);
+							OkMessage ( "Error happened in saving.\n[%s]", szFileName ) ;
 #endif
 						}
 					}
@@ -2349,7 +2257,7 @@ LRESULT CALLBACK EditProc (HWND hwnd, UINT iMsg, WPARAM wParam, LPARAM lParam)
 #ifdef JPNMSG
 						OkMessage ( "%s をプリントアウトできません。", szTitleName) ;
 #else
-						OkMessage("Failed to print out the text %s", szFileName);
+						OkMessage ( "Error happened in printing.\n[%s]", szFileName ) ;
 #endif
 					}
 					return 0 ;
@@ -2510,6 +2418,7 @@ LRESULT CALLBACK EditProc (HWND hwnd, UINT iMsg, WPARAM wParam, LPARAM lParam)
 						err_prt(hwnd);
 						return 0;
 					}
+					RunIconChange(activeFootyID);
 #ifdef JPNMSG
 					TMes("実行ファイルを作成しました");
 #else
@@ -2527,7 +2436,7 @@ LRESULT CALLBACK EditProc (HWND hwnd, UINT iMsg, WPARAM wParam, LPARAM lParam)
 					hsc_refname( 0,(int)compfile, 0,0 );
 					strcpy( objname,"obj" );
 					hsc_objname( 0,(int)objname, 0,0 );
-					a=hsc_comp( 1 | hsp_utf8out, 0, hsp_debug, 0 );
+					a=hsc_comp( 1, 0, hsp_debug, 0 );
 					if (a) {
 						err_prt(hwnd);
 						return 0;
@@ -2558,7 +2467,7 @@ LRESULT CALLBACK EditProc (HWND hwnd, UINT iMsg, WPARAM wParam, LPARAM lParam)
 						strcat( hsp_extstr,".hsp" );
 						hsc_ini( 0,(int)hsp_extstr, 0,0 );
 						hsc_objname( 0,(int)objname, 0,0 );
-						a=hsc_comp( hsp_utf8out,0,0,0 );
+						a=hsc_comp( 0,0,0,0 );
 						//a=tcomp_main( hsp_extstr, hsp_extstr, objname, errbuf,0 );
 						if (a) { err_prt(hwnd);return 0; }
 #ifdef JPNMSG
@@ -2572,7 +2481,7 @@ LRESULT CALLBACK EditProc (HWND hwnd, UINT iMsg, WPARAM wParam, LPARAM lParam)
 					strcat( hsp_extstr,".hsp" );
 					hsc_ini( 0,(int)hsp_extstr, 0,0 );
 					hsc_objname( 0,(int)objname, 0,0 );
-					a=hsc_comp( 1 | hsp_utf8out, 0, hsp_debug, 0 );
+					a=hsc_comp( 1, 0, hsp_debug, 0 );
 					//a=tcomp_main( hsp_extstr, hsp_extstr, objname, errbuf,1 );
 					if (a) { err_prt(hwnd);return 0; }
 					if (hsp_clmode==0) { hsprun(objname); } else { hsprun_cl(objname); }
@@ -2615,10 +2524,6 @@ LRESULT CALLBACK EditProc (HWND hwnd, UINT iMsg, WPARAM wParam, LPARAM lParam)
 
 				case IDM_DEBUG:
 					hsp_debug^=1;
-					return 0;
-
-				case IDM_UTF8OUT:
-					hsp_utf8out^=4;
 					return 0;
 
 				case IDM_CMDOPT:
@@ -2670,19 +2575,19 @@ LRESULT CALLBACK EditProc (HWND hwnd, UINT iMsg, WPARAM wParam, LPARAM lParam)
 					ExecMkDPM();
 					return 0;
 
-                case IDM_SRCCNV:
-					wsprintf( tmpfn, "\"%s\\hsp3dh.exe\"", szExeDir );
-					WinExec( tmpfn, SW_SHOW );
+				case IDM_SRCCNV:
+					wsprintf(tmpfn, "\"%s\\hsp3dh.exe\"", szExeDir);
+					WinExec(tmpfn, SW_SHOW);
 					return 0;
 
-                case IDM_PAINT:
+				case IDM_PAINT:
 					ExecPaint();
 					return 0;
 
 				case IDM_HGIMG4TOOL:
-					wsprintf( tmpfn, "\"%s\\gpbconv.exe\"", szExeDir );
-					WinExec( tmpfn, SW_SHOW );
-					return 0 ;
+					wsprintf(tmpfn, "\"%s\\gpbconv.exe\"", szExeDir);
+					WinExec(tmpfn, SW_SHOW);
+					return 0;
 
 				// Messages from Help menu
 
@@ -2692,12 +2597,12 @@ LRESULT CALLBACK EditProc (HWND hwnd, UINT iMsg, WPARAM wParam, LPARAM lParam)
 					return 0;
 
                 case IDM_HSPMAN1 :
-					wsprintf( helpopt,"%s\\doclib\\hspprog.htm", szExeDir );
+					wsprintf( helpopt,"%s\\docs\\hspprog.htm", szExeDir );
 					ShellExecute( NULL, NULL, helpopt, NULL, NULL, SW_SHOW );
 					return 0 ;
 
                 case IDM_HSPMAN2 :
-					wsprintf( tmpfn, "\"%s\\hdl.exe\"", szExeDir );
+					wsprintf( tmpfn, "\"%s\\hsphelp\\helpman.exe\"", szExeDir );
 					WinExec( tmpfn, SW_SHOW );
 					return 0 ;
 
@@ -2762,12 +2667,12 @@ LRESULT CALLBACK EditProc (HWND hwnd, UINT iMsg, WPARAM wParam, LPARAM lParam)
 						}
 						return 0 ;
 
-				case IDM_CLOSE:
+				case IDM_CLOSE :
 				{
 					TABINFO *lpTabInfo = GetTabInfo(ClickID);
 					if(lpTabInfo == NULL) break;
 					if(lpTabInfo->NeedSave){
-						if(IDCANCEL != ask_for_saving_file(hwbak, lpTabInfo->TitleName)) DeleteTab(ClickID);
+						if(IDCANCEL != AskAboutSave (hwbak, lpTabInfo->TitleName)) DeleteTab(ClickID);
 					} else DeleteTab(ClickID);
 					return 0;
 				}
@@ -2777,7 +2682,7 @@ LRESULT CALLBACK EditProc (HWND hwnd, UINT iMsg, WPARAM wParam, LPARAM lParam)
 					TABINFO *lpTabInfo = GetTabInfo(activeID);
 					if(lpTabInfo == NULL) break;
 					if(lpTabInfo->NeedSave){
-						if(IDCANCEL != ask_for_saving_file(hwbak, lpTabInfo->TitleName)) DeleteTab(activeID);
+						if(IDCANCEL != AskAboutSave (hwbak, lpTabInfo->TitleName)) DeleteTab(activeID);
 					} else DeleteTab(activeID);
 					return 0;
 				}
@@ -2791,7 +2696,7 @@ LRESULT CALLBACK EditProc (HWND hwnd, UINT iMsg, WPARAM wParam, LPARAM lParam)
 						lpTabInfo = GetTabInfo(0);
 						if(lpTabInfo == NULL) break;
 						if(lpTabInfo->NeedSave){
-                            if(IDCANCEL != ask_for_saving_file(hwbak, lpTabInfo->TitleName)) DeleteTab(0);
+                            if(IDCANCEL != AskAboutSave (hwbak, lpTabInfo->TitleName)) DeleteTab(0);
 							else break;
 						} else DeleteTab(0);
 					}
@@ -2805,7 +2710,7 @@ LRESULT CALLBACK EditProc (HWND hwnd, UINT iMsg, WPARAM wParam, LPARAM lParam)
 					for(int i = ClickID-1; i >= 0; i--){
 						lpTabInfo = GetTabInfo(i);
 						if(lpTabInfo->NeedSave){
-							if(IDCANCEL != ask_for_saving_file(hwbak, lpTabInfo->TitleName)) DeleteTab(i);
+							if(IDCANCEL != AskAboutSave (hwbak, lpTabInfo->TitleName)) DeleteTab(i);
 							else break;
 						} else DeleteTab(i);
 					}
@@ -2820,7 +2725,7 @@ LRESULT CALLBACK EditProc (HWND hwnd, UINT iMsg, WPARAM wParam, LPARAM lParam)
 						lpTabInfo = GetTabInfo(ClickID+1);
 						if(lpTabInfo == NULL) break;
 						if(lpTabInfo->NeedSave){
-                            if(IDCANCEL != ask_for_saving_file(hwbak, lpTabInfo->TitleName)) DeleteTab(ClickID+1);
+                            if(IDCANCEL != AskAboutSave (hwbak, lpTabInfo->TitleName)) DeleteTab(ClickID+1);
 							else break;
 						} else DeleteTab(ClickID+1);
 					}
@@ -2834,7 +2739,7 @@ LRESULT CALLBACK EditProc (HWND hwnd, UINT iMsg, WPARAM wParam, LPARAM lParam)
 					for(int i = activeID-1; i >= 0; i--){
 						lpTabInfo = GetTabInfo(i);
 						if(lpTabInfo->NeedSave){
-							if(IDCANCEL != ask_for_saving_file(hwbak, lpTabInfo->TitleName)) DeleteTab(i);
+							if(IDCANCEL != AskAboutSave (hwbak, lpTabInfo->TitleName)) DeleteTab(i);
 							else break;
 						} else DeleteTab(i);
 					}
@@ -2849,12 +2754,44 @@ LRESULT CALLBACK EditProc (HWND hwnd, UINT iMsg, WPARAM wParam, LPARAM lParam)
 						lpTabInfo = GetTabInfo(activeID+1);
 						if(lpTabInfo == NULL) break;
 						if(lpTabInfo->NeedSave){
-                            if(IDCANCEL != ask_for_saving_file(hwbak, lpTabInfo->TitleName)) DeleteTab(activeID+1);
+                            if(IDCANCEL != AskAboutSave (hwbak, lpTabInfo->TitleName)) DeleteTab(activeID+1);
 							else break;
 						} else DeleteTab(activeID+1);
 					}
 					return 0;
 				}
+				
+
+				// by Tetr@pod
+				case IDM_SEPARATEWINDOWN :
+				{
+					Footy2ChangeView(activeFootyID, VIEWMODE_NORMAL);
+					nowViewMode = VIEWMODE_NORMAL;
+					return 0;
+				}
+				
+				case IDM_SEPARATEWINDOWV :
+				{
+					Footy2ChangeView(activeFootyID, VIEWMODE_VERTICAL);
+					nowViewMode = VIEWMODE_VERTICAL;
+					return 0;
+				}
+
+				case IDM_SEPARATEWINDOWH :
+				{
+					Footy2ChangeView(activeFootyID, VIEWMODE_HORIZONTAL);
+					nowViewMode = VIEWMODE_HORIZONTAL;
+					return 0;
+				}
+				
+				case IDM_SEPARATEWINDOWQ :
+				{				
+					Footy2ChangeView(activeFootyID, VIEWMODE_QUAD);
+					nowViewMode = VIEWMODE_QUAD;
+					return 0;
+				}
+
+				
 
 				case IDM_OPTION:
 					EnableWindow(hWndMain, FALSE);
@@ -2875,10 +2812,19 @@ LRESULT CALLBACK EditProc (HWND hwnd, UINT iMsg, WPARAM wParam, LPARAM lParam)
 					ImmReleaseContext(hFooty, hIMC);
 					return 0;
 				}
+				case IDM_GOOGLE:
+				{
+					// Google検索
+					getkw();
+					wsprintf(helpopt,"http://www.google.co.jp/search?q=%s&ie=Shift_JIS",kwstr);
+					ShellExecute( NULL,NULL,helpopt,"","",SW_SHOW );
+					return 0;
+				}
 
 				case IDM_RECONVERT:
 				{
 					// 未実装
+					keybd_event(28, 0, 0, 0);
 					return 0;
 				}
 
@@ -2928,13 +2874,7 @@ LRESULT CALLBACK EditProc (HWND hwnd, UINT iMsg, WPARAM wParam, LPARAM lParam)
 
 				default:
 					if(LOWORD(wParam) >= IDM_ACTIVATETAB && LOWORD(wParam) < IDM_ACTIVATETAB + 10000){
-
-#ifdef ASSIGN_TAB_LIST_TO_FOOTY_IDS
-						ActivateTab(activeID, GetTabID(LOWORD(wParam) - IDM_ACTIVATETAB));
-#else
 						ActivateTab(activeID, LOWORD(wParam) - IDM_ACTIVATETAB);
-#endif
-
 						return 0;
 					}
 					else if(LOWORD(wParam) >= IDM_EXTTOOL && LOWORD(wParam) < IDM_EXTTOOL + 10000){
@@ -3264,6 +3204,10 @@ BOOL CALLBACK ConfigBehaviorPageProc (HWND hDlg, UINT message, WPARAM /*wParam*/
 			CheckDlgButton(hDlg, IDC_RADIO3+hsp_helpmode, BST_CHECKED);
 			CheckDlgButton(hDlg, IDC_CHECK1, bAutoIndent != FALSE);
 			CheckDlgButton(hDlg, IDC_CHECK2, flg_hspat );
+			CheckDlgButton(hDlg, IDC_CHECK3, BackupNoDelete );
+			CheckDlgButton(hDlg, IDC_CHECK4, NotifyBackup );
+			SetDlgItemInt(hDlg, IDC_EDIT1, autobackup, FALSE);
+			CheckDlgButton(hDlg, IDC_CHECK5, UseNewReplace);// by Tetr@pod
 			return TRUE;
 
 		case PM_ISAPPLICABLE:
@@ -3275,6 +3219,16 @@ BOOL CALLBACK ConfigBehaviorPageProc (HWND hDlg, UINT message, WPARAM /*wParam*/
 			bAutoIndent = BST_CHECKED == IsDlgButtonChecked(hDlg, IDC_CHECK1);
 			hsp_helpmode= CheckRadio(hDlg, IDC_RADIO3, 4);
 			flg_hspat   = IsDlgButtonChecked(hDlg, IDC_CHECK2);
+			autobackup = GetDlgItemInt(hDlg, IDC_EDIT1, NULL, FALSE);
+			BackupNoDelete = BST_CHECKED == IsDlgButtonChecked(hDlg, IDC_CHECK3);
+			NotifyBackup = BST_CHECKED == IsDlgButtonChecked(hDlg, IDC_CHECK4);
+			UseNewReplace = BST_CHECKED == IsDlgButtonChecked(hDlg, IDC_CHECK5);// by Tetr@pod
+			// タイマー削除
+			KillTimer(hWndMain, AutoBackupTimer);
+			if (autobackup > 0){
+				// 再登録
+				AutoBackupTimer = SetTimer(hWndMain, TIMERID_AUTOBACKUP, autobackup*1000, 0);
+			}
 			return TRUE;
 
 		case PM_SETDEFAULT:
@@ -3286,6 +3240,10 @@ BOOL CALLBACK ConfigBehaviorPageProc (HWND hDlg, UINT message, WPARAM /*wParam*/
 			CheckDlgButton(hDlg, IDC_RADIO6, BST_UNCHECKED);
 			CheckDlgButton(hDlg, IDC_CHECK1, BST_CHECKED);
 			CheckDlgButton(hDlg, IDC_CHECK2, BST_CHECKED);
+			CheckDlgButton(hDlg, IDC_CHECK3, BST_UNCHECKED);
+			CheckDlgButton(hDlg, IDC_CHECK4, BST_UNCHECKED);
+			SetDlgItemInt(hDlg, IDC_EDIT1, 0, FALSE);
+			CheckDlgButton(hDlg, IDC_CHECK5, BST_UNCHECKED);// by Tetr@pod
 			return TRUE;
 	}
 	return FALSE;
@@ -3333,12 +3291,15 @@ COLORREF crDefColor[] = {
 BOOL CALLBACK ConfigColorPageProc (HWND hDlg, UINT message, WPARAM wParam, LPARAM lParam)
 {
 	static MYCOLORREF crColor[21];
-	const char *szCategory[] = { "文字の色分け", "特殊な記号の配色", "エディタの配色", "行番号表示領域の配色", "ルーラーの配色"};
+	const char *szCategory[] = { "文字の色分け", "特殊な記号の配色", "エディタの配色", "行番号表示領域の配色", "ルーラーの配色", "リンクの配色", "ユーザー定義命令・関数の色分け"};
 	const char *szCharItem[] = { "通常の文字", "命令/関数", "プリプロセッサ命令", "文字列", "マクロ", "コメント", "ラベル" };
 	const char *szNonCharItem[] = { "半角スペース", "全角スペース", "TAB文字", "改行記号", "[EOF](ファイル終端)記号" };
 	const char *szEditItem[] = { "全体の背景色", "キャレット行の下線", "行番号とエディタの境界線" };
 	const char *szLineNumItem[] = { "行番号", "キャレット行の強調" };
 	const char *szRolerItem[] = { "数字", "背景色", "目盛り", "キャレット位置の強調" };
+
+	const char *szClickableItem[] = { "URL", "URLのアンダーバー", "メールアドレス", "メールアドレスのアンダーバー", "リンクラベル", "リンクラベルのアンダーバー" };// 便宜上リンクラベルと呼びます by Tetr@pod
+	const char *szUserFuncItem[] = { "#deffunc, #defcfunc", "#modinit, #modterm", "#modfunc, #modcfunc", "#func, #cfunc", "#cmd", "#comfunc", "#define", "#define ctype" };// by Tetr@pod
 
 	typedef struct tagItems{
 		const char **item;
@@ -3346,11 +3307,14 @@ BOOL CALLBACK ConfigColorPageProc (HWND hDlg, UINT message, WPARAM wParam, LPARA
 	} ITEMS;
 
 	ITEMS items[] = {
-		szCharItem,    sizeof(szCharItem)    / sizeof(szCharItem[0]),
-		szNonCharItem, sizeof(szNonCharItem) / sizeof(szNonCharItem[0]),
-		szEditItem,    sizeof(szEditItem)    / sizeof(szEditItem[0]),
-		szLineNumItem, sizeof(szLineNumItem) / sizeof(szLineNumItem[0]),
-		szRolerItem,   sizeof(szRolerItem)   / sizeof(szRolerItem[0]),
+		szCharItem,      sizeof(szCharItem)      / sizeof(szCharItem[0]),
+		szNonCharItem,   sizeof(szNonCharItem)   / sizeof(szNonCharItem[0]),
+		szEditItem,      sizeof(szEditItem)      / sizeof(szEditItem[0]),
+		szLineNumItem,   sizeof(szLineNumItem)   / sizeof(szLineNumItem[0]),
+		szRolerItem,     sizeof(szRolerItem)     / sizeof(szRolerItem[0]),
+
+		szClickableItem, sizeof(szClickableItem) / sizeof(szClickableItem[0]),// by Tetr@pod
+		szUserFuncItem,  sizeof(szUserFuncItem)  / sizeof(szUserFuncItem[0]),// by Tetr@pod
 	};
 
 	switch(message){
@@ -3392,6 +3356,20 @@ BOOL CALLBACK ConfigColorPageProc (HWND hDlg, UINT message, WPARAM wParam, LPARA
 
 			CopyMemory(crColor, &color, sizeof(crColor));
 			PostMessage(hDlg, WM_COMMAND, MAKELONG(IDC_COMBO1, CBN_SELCHANGE), (LPARAM)GetDlgItem(hDlg, IDC_COMBO1));
+
+			if (bCustomColor == true){
+				CheckDlgButton(hDlg, IDC_CHECK1, BST_CHECKED);
+			}else{
+				CheckDlgButton(hDlg, IDC_CHECK1, BST_UNCHECKED);
+			}
+			CheckDlgButton(hDlg, IDC_CHECK2, speedDraw );
+
+			CheckDlgButton(hDlg, IDC_CHECK3, CustomMatchCase );// by Tetr@pod
+			CheckDlgButton(hDlg, IDC_CHECK4, UseClickableLabel );// by Tetr@pod
+			CheckDlgButton(hDlg, IDC_CHECK5, UseSearchFunction );// by Tetr@pod
+
+			CheckDlgButton(hDlg, IDC_CHECK6, ChangeColor_func );// by Tetr@pod
+			CheckDlgButton(hDlg, IDC_CHECK7, ChangeColor_define );// by Tetr@pod
 
 			return TRUE;
 		}
@@ -3457,12 +3435,29 @@ BOOL CALLBACK ConfigColorPageProc (HWND hDlg, UINT message, WPARAM wParam, LPARA
 		case PM_APPLY:
 			CopyMemory(&color, crColor, sizeof(crColor));
 			SetAllEditColor();
+			bCustomColor       = BST_CHECKED == IsDlgButtonChecked(hDlg, IDC_CHECK1);
+			speedDraw          = BST_CHECKED == IsDlgButtonChecked(hDlg, IDC_CHECK2);
+
+			CustomMatchCase    = BST_CHECKED == IsDlgButtonChecked(hDlg, IDC_CHECK3);// by Tetr@pod
+			UseClickableLabel  = BST_CHECKED == IsDlgButtonChecked(hDlg, IDC_CHECK4);// by Tetr@pod
+			UseSearchFunction  = BST_CHECKED == IsDlgButtonChecked(hDlg, IDC_CHECK5);// by Tetr@pod
+
+			ChangeColor_func     = BST_CHECKED == IsDlgButtonChecked(hDlg, IDC_CHECK6);// by Tetr@pod
+			ChangeColor_define   = BST_CHECKED == IsDlgButtonChecked(hDlg, IDC_CHECK7);// by Tetr@pod
+
+
 			ResetClassify();
 			return TRUE;
 
 		case PM_SETDEFAULT:
 			DefaultColor((MYCOLOR *)crColor);
 			PostMessage(hDlg, WM_COMMAND, MAKELONG(IDC_COMBO1, CBN_SELCHANGE), (LPARAM)GetDlgItem(hDlg, IDC_COMBO1));
+			CheckDlgButton(hDlg, IDC_CHECK1, BST_UNCHECKED);
+			CheckDlgButton(hDlg, IDC_CHECK2, BST_UNCHECKED);
+			CheckDlgButton(hDlg, IDC_CHECK3, BST_UNCHECKED);// by Tetr@pod
+			CheckDlgButton(hDlg, IDC_CHECK4, BST_UNCHECKED);// by Tetr@pod
+			CheckDlgButton(hDlg, IDC_CHECK5, BST_UNCHECKED);// by Tetr@pod
+			SetDlgItemInt(hDlg, IDC_EDIT1, 0, FALSE);// by Tetr@pod
 			return TRUE;
 
 	}
@@ -3621,7 +3616,11 @@ static BOOL CALLBACK SelectExtToolProc(HWND hDlg, UINT message, WPARAM wParam, L
 
 				case IDOK:
 					if(GetWindowTextLength(GetDlgItem(hDlg, IDC_EDIT2)) == 0){
+#ifdef JPNMSG
 						MessageBox(hDlg, "ファイル名を省略することはできません。", "error", MB_OK | MB_ICONERROR);
+#else
+						MessageBox(hDlg, "You must specify a file name.", "error", MB_OK | MB_ICONERROR);
+#endif
 						return TRUE;
 					}
 
@@ -3922,16 +3921,52 @@ BOOL CALLBACK ConfigExtToolsPageProc (HWND hDlg, UINT message, WPARAM wParam, LP
 static void GetStyleStr(char *buf, LOGFONT *logfont)
 {
 	lstrcpy(buf, "");
-	if(logfont->lfWeight >= FW_BOLD) lstrcpy(buf, "太字 ");
-	if(logfont->lfItalic) lstrcat(buf, "斜体");
-	if(lstrlen(buf) == 0) lstrcpy(buf, "標準");
+	if (logfont->lfWeight >= FW_BOLD) {
+#ifdef JPNMSG
+		lstrcpy(buf, "太字 ");
+#else
+		lstrcpy(buf, "Bold ");
+#endif
+	}
+	if (logfont->lfItalic) {
+#ifdef JPNMSG
+		lstrcat(buf, "斜体");
+#else
+		lstrcat(buf, "Italic");
+#endif
+	}
+	if (lstrlen(buf) == 0) {
+#ifdef JPNMSG
+		lstrcpy(buf, "標準");
+#else
+		lstrcpy(buf, "Normal");
+#endif
+	}
 }
 static void GetExStyleStr(char *buf, LOGFONT *logfont)
 {
 	lstrcpy(buf, "");
-	if(logfont->lfStrikeOut) lstrcat(buf, "取り消し線 ");
-	if(logfont->lfUnderline) lstrcat(buf, "下線");
-	if(lstrlen(buf) == 0) lstrcpy(buf, "無し");
+	if (logfont->lfStrikeOut) {
+#ifdef JPNMSG
+		lstrcat(buf, "取り消し線 ");
+#else
+		lstrcat(buf, "Strikeout ");
+#endif
+	}
+	if (logfont->lfUnderline) {
+#ifdef JPNMSG
+		lstrcat(buf, "下線");
+#else
+		lstrcat(buf, "Underline");
+#endif
+	}
+	if (lstrlen(buf) == 0) {
+#ifdef JPNMSG
+		lstrcpy(buf, "無し");
+#else
+		lstrcpy(buf, "None");
+#endif
+	}
 	return;
 }
 BOOL CALLBACK ConfigFontPageProc (HWND hDlg, UINT message, WPARAM wParam, LPARAM /*lParam*/)
@@ -3960,7 +3995,14 @@ BOOL CALLBACK ConfigFontPageProc (HWND hDlg, UINT message, WPARAM wParam, LPARAM
 			SendDlgItemMessage(hDlg, IDC_STATIC7, WM_SETFONT, (WPARAM)hEditFont, TRUE);
 			SendDlgItemMessage(hDlg, IDC_STATIC8, WM_SETFONT, (WPARAM)hTabFont, TRUE);				
 
+			if (forcefont == 1){
+				CheckDlgButton(hDlg, IDC_CHECK1, BST_CHECKED);
+			}else{
+				CheckDlgButton(hDlg, IDC_CHECK1, BST_UNCHECKED);
+			}
+
 			PopFontInitChooseFont(NULL, NULL);
+
 			return TRUE;
 		}
 
@@ -4022,6 +4064,8 @@ BOOL CALLBACK ConfigFontPageProc (HWND hDlg, UINT message, WPARAM wParam, LPARAM
 		case PM_APPLY:
 			PopFontApplyEditFont();
 			PopFontApplyTabFont();
+			
+			forcefont = IsDlgButtonChecked(hDlg, IDC_CHECK1);
 			return TRUE;
 
 		case PM_SETDEFAULT:
@@ -4053,6 +4097,8 @@ BOOL CALLBACK ConfigFontPageProc (HWND hDlg, UINT message, WPARAM wParam, LPARAM
 			if(hOrgTabFont != NULL)  DeleteObject(hOrgTabFont);
 
 			PopFontInitChooseFont(&editfont, &tabfont);
+			// 改造版のフォント強制
+			CheckDlgButton(hDlg, IDC_CHECK1, BST_UNCHECKED);
 			return TRUE;
 		}
 	}
@@ -4197,7 +4243,7 @@ BOOL CALLBACK ConfigKeywordPageProc (HWND hDlg, UINT message, WPARAM wParam, LPA
 	return FALSE;
 }
 
-BOOL CALLBACK ConfigVisualPageProc (HWND hDlg, UINT message, WPARAM /*wParam*/, LPARAM /*lParam*/)
+BOOL CALLBACK ConfigVisualPageProc (HWND hDlg, UINT message, WPARAM wParam, LPARAM /*lParam*/)
 {
 	switch(message){
 		case WM_INITDIALOG:
@@ -4211,13 +4257,15 @@ BOOL CALLBACK ConfigVisualPageProc (HWND hDlg, UINT message, WPARAM /*wParam*/, 
 			CheckDlgButton(hDlg, IDC_CHECK7, flg_statbar );
 			CheckDlgButton(hDlg, IDC_CHECK8, hscroll_flag );
 			CheckDlgButton(hDlg, IDC_CHECK9, flg_toolbar );
+			CheckDlgButton(hDlg, IDC_CHECK10, bDrawUnderline );
 
 			SetDlgItemInt(hDlg, IDC_EDIT1, tabsize,     FALSE);
 			SetDlgItemInt(hDlg, IDC_EDIT2, rulerheight, FALSE);
 			SetDlgItemInt(hDlg, IDC_EDIT3, linewidth,   FALSE);
 			SetDlgItemInt(hDlg, IDC_EDIT4, linespace,   FALSE);
+			SetDlgItemText(hDlg, IDC_EDIT9, BgImagePath);
 			return TRUE;
-
+		
 		case PM_ISAPPLICABLE:
 		{
 			BOOL bSuccess;
@@ -4231,8 +4279,13 @@ BOOL CALLBACK ConfigVisualPageProc (HWND hDlg, UINT message, WPARAM /*wParam*/, 
 				GetDlgItemInt(hDlg, IDC_EDIT4, &bSuccess, FALSE);
 			} while(0);
 			if(!bSuccess)
+#ifdef JPNMSG
 				MessageBox(hDlg, "表示設定の適用に失敗しました。\nサイズには0以上の整数を入力して下さい。", "Error",
 					MB_OK | MB_ICONERROR);
+#else
+				MessageBox(hDlg, "You must specify integer above 0.", "Error",
+					MB_OK | MB_ICONERROR);
+#endif
 			SetWindowLong(hDlg, DWL_MSGRESULT, bSuccess);
 			return TRUE;
 		}
@@ -4248,11 +4301,16 @@ BOOL CALLBACK ConfigVisualPageProc (HWND hDlg, UINT message, WPARAM /*wParam*/, 
 			flg_statbar   = IsDlgButtonChecked(hDlg, IDC_CHECK7);
 			hscroll_flag  = IsDlgButtonChecked(hDlg, IDC_CHECK8);
 			flg_toolbar   = IsDlgButtonChecked(hDlg, IDC_CHECK9);
+			bDrawUnderline = (BOOL)IsDlgButtonChecked(hDlg, IDC_CHECK10);
 
 			tabsize     = GetDlgItemInt(hDlg, IDC_EDIT1, NULL, FALSE);
 			rulerheight = GetDlgItemInt(hDlg, IDC_EDIT2, NULL, FALSE);
 			linewidth   = GetDlgItemInt(hDlg, IDC_EDIT3, NULL, FALSE);
 			linespace   = GetDlgItemInt(hDlg, IDC_EDIT4, NULL, FALSE);
+			GetDlgItemText(hDlg, IDC_EDIT9, (LPSTR)&BgImagePath, _MAX_PATH);
+
+			// これないと、アンダーバーの設定が適用されない
+			PopFontApplyEditFont();
 
 			poppad_setalledit();
 			poppad_setsb( hscroll_flag );
@@ -4270,68 +4328,132 @@ BOOL CALLBACK ConfigVisualPageProc (HWND hDlg, UINT message, WPARAM /*wParam*/, 
 			CheckDlgButton(hDlg, IDC_CHECK7, BST_CHECKED);
 			CheckDlgButton(hDlg, IDC_CHECK8, BST_CHECKED);
 			CheckDlgButton(hDlg, IDC_CHECK9, BST_CHECKED);
+			CheckDlgButton(hDlg, IDC_CHECK10, BST_UNCHECKED);
 
 			SetDlgItemInt(hDlg, IDC_EDIT1, 4,  FALSE);
 			SetDlgItemInt(hDlg, IDC_EDIT2, 10, FALSE);
 			SetDlgItemInt(hDlg, IDC_EDIT3, 50, FALSE);
 			SetDlgItemInt(hDlg, IDC_EDIT4, 0,  FALSE);
+			SetDlgItemText(hDlg, IDC_EDIT9, "");
 			return TRUE;
+		case WM_COMMAND:
+		switch(LOWORD(wParam)){
+				case IDC_BUTTON1:
+				{
+					char szFileName[_MAX_PATH + 1] = "";
+					char szFileTitle[_MAX_PATH + 1] = "";
+					if(PopFileOpenDlgImg(hDlg, szFileName, szFileTitle))
+						SetDlgItemText(hDlg, IDC_EDIT9, szFileName);
+					return TRUE;
+				}
+		}
 	}
 	return FALSE;
 }
 
-// コマンドラインからファイルを読み込めるべきではないでしょうか？
-
-void LoadFromCommandLine(LPCTSTR command_line)
+void LoadFromCommandLine(char *lpCmdLine)
 {
+	TABINFO *lpTabInfo;
+	int SearchResult, ActivateID;
+	bool bActivate = false, bCreated;
+	char szOldDir[_MAX_PATH + 1];
+	char fullpathbuf[_MAX_PATH];
 
-	int newly_selected = -1;
+	int argc;
+	char **argv = CommandLineToArgvA(lpCmdLine, &argc);
 
-	win_cmdline_parser(command_line, NULL, &command_line);
+	for(int i = 1; i < argc; i++){
+		char *path;
+		GetCurrentDirectory(sizeof(szOldDir), szOldDir);
+		SetCurrentDirectory(szExeDir);
+		if(GetFullPathName(argv[i], sizeof(fullpathbuf), fullpathbuf, NULL)) {
+			path = fullpathbuf;
+		} else {
+			path = argv[i];
+		}
+		SearchResult = SearchTab(NULL, NULL, NULL, GetFileIndex(path));
+		SetCurrentDirectory(szOldDir);
 
-	while (*command_line != '\0') {
+		if(SearchResult < 0){
+			lpTabInfo = GetTabInfo(activeID);
 
-		LPTSTR file_path = (LPTSTR)malloc(win_cmdline_parser(command_line, NULL, NULL) * sizeof(TCHAR));
-		win_cmdline_parser(command_line, file_path, &command_line);
-
-		if (!file_path) continue;
-
-		newly_selected = load_and_assign_file_to_tab(file_path);
-
-		free(file_path);
-
+			bCreated = false;
+			if(lpTabInfo != NULL ) {
+				if(lpTabInfo->NeedSave){ bCreated = true; }
+			}
+			if( lpTabInfo == NULL
+				|| lpTabInfo->FileName[0] != '\0'
+				|| Footy2IsEdited(activeFootyID) ){
+					bCreated = true;
+			}
+			if ( bCreated ) {
+					CreateTab(activeID, "", path, "");
+			} else {
+					SetTabInfo(activeID, NULL, path, NULL, -1);
+			}
+			if(poppad_reload(activeID))
+				if(bCreated)
+                    DeleteTab(activeID);
+				else
+					SetTabInfo(activeID, "", "", NULL, -1);
+			bActivate = false;
+		} else {
+			ActivateID = SearchResult;
+			bActivate = true;
+		}
 	}
+	if(bActivate && ActivateID >= 0)
+		ActivateTab(activeID, ActivateID);
 
-	ActivateTab(get_currently_selected_tab_id(), newly_selected);
-
+	GlobalFree((HGLOBAL)argv);
 	return;
-
 }
 
-static LRESULT on_wm_dropfiles(WPARAM wParam, LPARAM lParam)
+LRESULT FileDrop(WPARAM wParam, LPARAM /*lParam*/)
 {
+	char tmpfn[_MAX_PATH];
+	HDROP hDrop = (HDROP)wParam;
+	TABINFO *lpTabInfo;
+	int SearchResult, ActivateID;
+	bool bActivate = false, bCreated;
 
-	HDROP drop_handle = (HDROP)wParam;
+	int filenum = DragQueryFile( hDrop, 0xFFFFFFFF, tmpfn, _MAX_PATH );
+	for(int i = 0; i < filenum; i++){
+        DragQueryFile( hDrop, i, tmpfn, _MAX_PATH );
+		SearchResult = SearchTab(NULL, NULL, NULL, GetFileIndex(tmpfn));
+		if(SearchResult < 0){
+			lpTabInfo = GetTabInfo(activeID);
 
-	int newly_selected = -1;
+			bCreated = false;
+			if(lpTabInfo != NULL ) {
+				if(lpTabInfo->NeedSave){ bCreated = true; }
+			}
+			if( lpTabInfo == NULL
+				|| lpTabInfo->FileName[0] != '\0'
+				|| Footy2IsEdited(activeFootyID) ){
+					bCreated = true;
+			}
+			if ( bCreated ) {
+					CreateTab(activeID, "", tmpfn, "");
+			} else {
+					SetTabInfo(activeID, NULL, tmpfn, NULL, -1);
+			}
+			if(poppad_reload(activeID))
+				if(bCreated)
+                    DeleteTab(activeID);
+				else
+					SetTabInfo(activeID, "", "", NULL, -1);
 
-	int num_of_files = DragQueryFile(drop_handle, -1, NULL, 0);
-
-	for (int i = 0; i < num_of_files; i++) {
-
-		TCHAR file_path[MAX_PATH];
-		DragQueryFile(drop_handle, i, file_path, MAX_PATH);
-
-		newly_selected = load_and_assign_file_to_tab(file_path);;
-
+			bActivate = false;
+		} else {
+			ActivateID = SearchResult;
+			bActivate = true;
+		}
 	}
-
-	DragFinish(drop_handle);
-
-	ActivateTab(get_currently_selected_tab_id(), newly_selected);
-
-	return 0;
-
+	if(bActivate && ActivateID >= 0)
+		ActivateTab(activeID, ActivateID);
+    DragFinish( hDrop );
+	return 0;						// breakだとWin9xで止まる
 }
 
 void __stdcall OnFooty2TextModified(int id, void * /*pParam*/, int /*nCause*/)
@@ -4369,3 +4491,364 @@ void __stdcall OnFooty2TextModified(int id, void * /*pParam*/, int /*nCause*/)
 //	TrackPopupMenu(hSubMenu, TPM_LEFTALIGN | TPM_TOPALIGN | TPM_RIGHTBUTTON, pt.x, pt.y, 0, hwndClient, NULL);
 //	return;
 //}
+void GetBackupPath(char *backuppath, int size){
+	// EXEのあるディレクトリ
+	char exepath[MAX_PATH+1];
+	GetModuleFileNameA(0, exepath, MAX_PATH);
+	PathRemoveFileSpec(exepath);
+
+	// バックアップフォルダ
+	strcpy_s(backuppath, size, exepath);
+	strcat_s(backuppath, size,"\\backup\\");
+}
+
+void BackupDelete(const char *backuppath){
+	int i;
+	// 無限ループは怖いので縛っておく
+	for (i = 0; i < 4096; i++){
+		char txtpath[MAX_PATH*2];
+		char hsppath[MAX_PATH*2];
+		char number[256];
+		sprintf_s(number, 256, "%d", i);
+		strcpy_s(txtpath, MAX_PATH*2, backuppath);
+		strcpy_s(hsppath, MAX_PATH*2, backuppath);
+		strcat_s(txtpath, MAX_PATH*2, number);
+		strcat_s(txtpath, MAX_PATH*2, ".txt");
+		strcat_s(hsppath, MAX_PATH*2, number);
+		strcat_s(hsppath, MAX_PATH*2, ".hsp");
+		if (!PathFileExists(txtpath))
+			break;
+
+		DeleteFile(txtpath);
+		DeleteFile(hsppath);
+	}
+}
+
+void HSPBackupSave(const char *backuppath, const char *path, int nFootyID){
+	if (!PathIsDirectoryA(backuppath)){
+		CreateDirectory(backuppath, NULL);
+		if (!PathIsDirectoryA(backuppath))
+			return;
+	}
+	
+	int size = Footy2GetTextLengthA(nFootyID, LM_CRLF);
+	char *bufhsp = (char *)calloc(size + 2,sizeof(char));
+	Footy2GetTextA(nFootyID, bufhsp, LM_CRLF, size + 1);
+	/*
+	FILE *fphsp;
+	fphsp = fopen(path, "wb");
+	if (fphsp == NULL)
+		return;
+	fputs(bufhsp, fphsp);
+	fclose(fphsp);
+	*/
+	HANDLE fp;
+	fp = CreateFileA(path, GENERIC_READ | GENERIC_WRITE, FILE_SHARE_READ, NULL, OPEN_ALWAYS, FILE_FLAG_WRITE_THROUGH, NULL);
+	if (fp == NULL)
+		return;
+	DWORD NumberOfBytesWritten = 0;
+	WriteFile(fp, bufhsp, size, &NumberOfBytesWritten, NULL);
+	FlushFileBuffers(fp);
+	CloseHandle(fp);
+
+	free(bufhsp);
+}
+
+void TXTBackupSave(const char *backuppath, const char *path, char *data){
+	if (!PathIsDirectoryA(backuppath)){
+		CreateDirectory(backuppath, NULL);
+		if (!PathIsDirectoryA(backuppath))
+			return;
+	}
+	/*
+	FILE *fptxt;
+	fptxt = fopen(path, "wb");
+	if (fptxt == NULL)
+		return;
+	fputs(data, fptxt);
+	fclose(fptxt);
+	*/
+	HANDLE fp;
+	fp = CreateFileA(path, GENERIC_READ | GENERIC_WRITE, FILE_SHARE_READ, NULL, OPEN_ALWAYS, FILE_FLAG_WRITE_THROUGH, NULL);
+	if (fp == NULL)
+		return;
+	DWORD NumberOfBytesWritten = 0;
+	WriteFile(fp, data, strlen(data), &NumberOfBytesWritten, NULL);
+	FlushFileBuffers(fp);
+	CloseHandle(fp);
+}
+
+// 自動バックアップ by inovia
+void AutoBackUp(void){
+	TABINFO *lpTabInfo;
+	int n = TabCtrl_GetItemCount(hwndTab), i, nFootyID;
+
+	// 未保存の場合はファイルパスと内容を記録(1度も保存しておらずパスがない場合は無題というか空欄にしておく)
+	// 保存済みの場合は内容は保存せず、ファイルパスのみ記録
+	// 0 番から始めるので、 0.txt がパスを格納、 0.hsp がファイルの内容を格納するファイルとする
+	// フォルダ名はbackupに保存する
+
+	char backuppath[MAX_PATH*2] = {0};
+	GetBackupPath(backuppath, MAX_PATH*2);
+	BackupDelete(backuppath);
+
+	// タブの数だけループする
+	for (i = 0; i < n; i++){
+		lpTabInfo = GetTabInfo(i);
+
+		nFootyID = lpTabInfo->FootyID;
+
+		char txtpath[MAX_PATH*2] = {0};
+		char hsppath[MAX_PATH*2] = {0};
+		char number[256] = {0};
+		sprintf_s(number, 256, "%d", i);
+		strcpy_s(txtpath, MAX_PATH*2, backuppath);
+		strcpy_s(hsppath, MAX_PATH*2, backuppath);
+		strcat_s(txtpath, MAX_PATH*2, number);
+		strcat_s(txtpath, MAX_PATH*2, ".txt");
+		strcat_s(hsppath, MAX_PATH*2, number);
+		strcat_s(hsppath, MAX_PATH*2, ".hsp");
+		
+		// 未保存の場合はファイルパスと内容を記録
+		if (lpTabInfo->NeedSave == TRUE){
+			TXTBackupSave(backuppath, txtpath, lpTabInfo->FileName);
+			HSPBackupSave(backuppath, hsppath, nFootyID);
+		}else{
+			// 保存済みの場合はファイルパスのみ記録
+			TXTBackupSave(backuppath, txtpath, lpTabInfo->FileName);
+		}
+		//MessageBoxA(0,"ループ内","",0);
+		//
+	}
+
+	if (NotifyBackup == TRUE){
+		char msg[256] = {0};
+		SYSTEMTIME st;
+		GetLocalTime(&st);
+#ifdef JPNMSG
+		sprintf_s(msg, 256, "%04d/%02d/%02d %02d:%02d:%02d に自動バックアップしました",st.wYear,st.wMonth,st.wDay,st.wHour,st.wMinute,st.wSecond);
+#else
+		sprintf_s(msg, 256, "Auto backup on %04d/%02d/%02d %02d:%02d:%02d.", st.wMonth, st.wDay, st.wYear, st.wHour, st.wMinute, st.wSecond);
+#endif
+		Statusbar_mes(msg);
+	}
+	
+}
+
+// バックアップから復元する
+void ReadBackup(void){
+	// バックアップを削除せずコピーする場合
+	if (BackupNoDelete == TRUE){
+		BackupCopy();
+	}
+	
+	char backuppath[MAX_PATH*2];
+	GetBackupPath(backuppath, MAX_PATH*2);
+	int i;
+	// 無限ループは怖いので縛っておく
+	for (i = 0; i < 4096; i++){
+		char txtpath[MAX_PATH*2];
+		char hsppath[MAX_PATH*2];
+		char number[256];
+		sprintf_s(number, 256, "%d", i);
+		strcpy_s(txtpath, MAX_PATH*2,  backuppath);
+		strcpy_s(hsppath, MAX_PATH*2, backuppath);
+		strcat_s(txtpath, MAX_PATH*2, number);
+		strcat_s(txtpath, MAX_PATH*2, ".txt");
+		strcat_s(hsppath, MAX_PATH*2, number);
+		strcat_s(hsppath, MAX_PATH*2, ".hsp");
+		if (!PathFileExists(txtpath))
+			break;
+		
+
+		// .txtを開く処理
+		TABINFO *lpTabInfo;
+		char *buf = NULL, *buf2 = NULL;
+		if (ReadFileBuffer(txtpath, &buf) == -1){
+			continue;
+		}
+		
+		if (strcmp(buf, "") == 0){
+			// 1度も保存していない
+			CreateTab(activeID, "", "", "");
+			lpTabInfo = GetTabInfo(activeID);
+			if (ReadFileBuffer(hsppath, &buf2) == -1){
+				CloseFileBuffer(buf);
+				//MessageBoxA(0,"直読みから読み込み失敗！","",0);
+				continue;
+			}
+			Footy2SetTextA(lpTabInfo->FootyID, buf2);
+			lpTabInfo->NeedSave = TRUE;
+			SetClassify(lpTabInfo->FootyID);
+			DoCaption ("", activeID) ;
+			CloseFileBuffer(buf);
+			CloseFileBuffer(buf2);
+			//MessageBoxA(0,"直読みから読み込み成功！","",0);
+		}else if (!PathFileExists(buf)){
+			// 存在しないパスの場合はスルー
+			CloseFileBuffer(buf);
+			//MessageBoxA(0,"そんなの存在しない","",0);
+			continue;
+		}else{
+			// ファイルが存在する場合
+			char TitleName[512], DirName[512];
+			// コポー
+			strcpy_s(DirName, 512, buf);
+			// ディレクトリのみにする
+			PathRemoveFileSpec(DirName);
+			// コポー
+			strcpy_s(TitleName, 512, buf);
+			// ファイル名のみにする
+			PathStripPath(TitleName);
+			CreateTab(activeID, TitleName, buf, DirName);
+			lpTabInfo = GetTabInfo(activeID);
+			if (!PathFileExists(hsppath)){
+				if (!PopFileRead(lpTabInfo->FootyID, buf)){
+					//MessageBoxA(0,"PopFileReadから読み込み失敗","",0);
+					CloseFileBuffer(buf);
+					continue;
+				}
+				//MessageBoxA(0,"PopFileReadから読み込み成功","",0);
+			}else{
+				// 見つからない場合
+				if (ReadFileBuffer(hsppath, &buf2) == -1){
+					CloseFileBuffer(buf);
+					//MessageBoxA(0,"直読みから読み込み失敗したｗｗｗ！","",0);
+					continue;
+				}
+				//MessageBoxA(0,buf2,buf,0);
+				Footy2SetTextA(lpTabInfo->FootyID, buf2);
+				lpTabInfo->NeedSave = TRUE;
+				CloseFileBuffer(buf2);
+				//MessageBoxA(0,"直読みから読み込み成功","",0);
+			}
+			DoCaption (TitleName, activeID) ;
+			SetClassify(lpTabInfo->FootyID);
+			CloseFileBuffer(buf);
+		}
+
+		ULONGLONG ullFileIndex;
+		ullFileIndex = GetFileIndex(szFileName);
+		lpTabInfo->FileIndex = ullFileIndex;
+
+	}
+}
+
+void BackupCopy(void){
+	char backuppath[MAX_PATH*2];
+	char backupcopyfolder[MAX_PATH*2];
+	GetBackupPath(backuppath, MAX_PATH*2);
+	strcpy_s(backupcopyfolder, MAX_PATH*2, backuppath);
+	char t[256] = {0};
+	SYSTEMTIME st;
+	GetLocalTime(&st);
+	sprintf_s(t, 256, "%04d%02d%02d %02d%02d%02d",st.wYear,st.wMonth,st.wDay,st.wHour,st.wMinute,st.wSecond);
+	strcat_s(backupcopyfolder, MAX_PATH*2, t);
+	strcat_s(backupcopyfolder, MAX_PATH*2, "\\");
+	//MessageBoxA(hWndMain,backupcopyfolder,"",0);
+	if (!CreateDirectory(backupcopyfolder, NULL)){
+#ifdef JPNMSG
+		MessageBoxA(hWndMain,"フォルダの作成に失敗しました。バックアップのコピーは作成されませんでした。\nファイル保全のため強制終了します。再度このメッセージが出る場合は、backupフォルダを削除するか移動してください。","",MB_OK | MB_ICONERROR);
+#else
+		MessageBoxA(hWndMain, "Failed to make folders for backup.", "", MB_OK | MB_ICONERROR);
+#endif
+		ExitProcess( 0 );
+		return;
+	}
+
+	int i;
+	// 無限ループは怖いので縛っておく
+	for (i = 0; i < 4096; i++){
+		char txtpath[MAX_PATH*2];
+		char txtpath_n[MAX_PATH*2];
+		char hsppath[MAX_PATH*2];
+		char hsppath_n[MAX_PATH*2];
+		char number[256];
+		sprintf_s(number, 256, "%d", i);
+		strcpy_s(txtpath, MAX_PATH*2, backuppath);
+		strcpy_s(txtpath_n, MAX_PATH*2, backupcopyfolder);
+		strcpy_s(hsppath, MAX_PATH*2, backuppath);
+		strcpy_s(hsppath_n, MAX_PATH*2, backupcopyfolder);
+		strcat_s(txtpath, MAX_PATH*2, number);
+		strcat_s(txtpath, MAX_PATH*2, ".txt");
+		strcat_s(txtpath_n, MAX_PATH*2, number);
+		strcat_s(txtpath_n, MAX_PATH*2, ".txt");
+		strcat_s(hsppath, MAX_PATH*2, number);
+		strcat_s(hsppath, MAX_PATH*2, ".hsp");
+		strcat_s(hsppath_n, MAX_PATH*2, number);
+		strcat_s(hsppath_n, MAX_PATH*2, ".hsp");
+
+		if (!PathFileExists(txtpath))
+			break;
+		if (PathFileExists(txtpath))
+			CopyFile(txtpath, txtpath_n, FALSE);
+		if (PathFileExists(hsppath))
+			CopyFile(hsppath, hsppath_n, FALSE);
+
+	}
+}
+
+int ReadFileBuffer(const char *filepath, char **buf){
+	/*
+	FILE *fp;
+	fpos_t fsize;
+	// オープン
+	fp = fopen(filepath, "rb");
+	if (fp == NULL)
+		return -1;
+	// ファイルサイズ
+	fseek(fp, 0, SEEK_END); 
+	fgetpos(fp, &fsize);
+	fseek(fp, 0, SEEK_SET);
+	*buf = (char *)calloc(fsize*2+2, sizeof(char));
+	char *tmp = (char *)calloc(fsize*2+2, sizeof(char));
+	if (fsize > 0){
+		while (fgets(tmp, fsize*2+1, fp) != NULL){
+			strcat(*buf, tmp);
+		}
+	}
+
+	//fgets(*buf, fsize*2+1, fp);
+	free(tmp);
+	fclose(fp);
+	return (int)fsize;
+	*/
+	HANDLE fp;
+	int fsize;
+	fp = CreateFileA(filepath, GENERIC_READ, FILE_SHARE_READ, NULL, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, NULL);
+	if (fp == NULL)
+		return -1;
+	// ファイルサイズ
+	fsize = GetFileSize(fp, NULL);
+	*buf = (char *)calloc(fsize*2+2, sizeof(char));
+	//char *tmp = (char *)calloc(fsize*2+2, sizeof(char));
+	if (fsize > 0){
+		DWORD NumberOfBytesRead = 0;
+		ReadFile(fp, *buf, fsize, &NumberOfBytesRead, NULL);
+	}
+	//free(tmp);
+	CloseHandle(fp);
+	return fsize;
+}
+
+void CloseFileBuffer(char *buf){
+	if (buf != NULL){
+		free(buf);
+		buf = NULL;
+	}
+
+}
+
+int ExistBackupFile(char *backuppath){
+	int res = 0;
+	char txtpath[MAX_PATH*2];
+	char number[256];
+	sprintf_s(number, 256, "%d", 0);
+	strcpy_s(txtpath, MAX_PATH*2, backuppath);;
+	strcat_s(txtpath, MAX_PATH*2, number);
+	strcat_s(txtpath, MAX_PATH*2, ".txt");
+	if (!PathFileExists(txtpath)){
+		return -1;
+	}
+	return res;
+}

@@ -32,6 +32,18 @@ public:
 	COLORREF m_clUrlUnder;						/*URLの色*/
 	COLORREF m_clMail;							/*メールアドレスの色*/
 	COLORREF m_clMailUnder;						/*メールアドレスの色*/
+	COLORREF m_clLabel;							/*ラベルの色 by Tetr@pod*/
+	COLORREF m_clLabelUnder;					/*ラベルの色 by Tetr@pod*/
+	
+	COLORREF m_clFunc1;							/*命令・関数の色1 by Tetr@pod*/
+	COLORREF m_clFunc2;							/*命令・関数の色2 by Tetr@pod*/
+	COLORREF m_clFunc3;							/*命令・関数の色3 by Tetr@pod*/
+	COLORREF m_clFunc4;							/*命令・関数の色4 by Tetr@pod*/
+	COLORREF m_clFunc5;							/*命令・関数の色5 by Tetr@pod*/
+	COLORREF m_clFunc6;							/*命令・関数の色6 by Tetr@pod*/
+	COLORREF m_clFunc7;							/*命令・関数の色7 by Tetr@pod*/
+	COLORREF m_clFunc8;							/*命令・関数の色8 by Tetr@pod*/
+
 	COLORREF m_clHighlightText;					/*強調テキスト*/
 	COLORREF m_clHighlightBk;					/*強調背景*/
 

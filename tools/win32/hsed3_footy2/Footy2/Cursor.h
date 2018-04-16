@@ -18,6 +18,8 @@ public:
 	static void UseLineCount();					/*行番号表示領域のカーソルを使用します。*/
 	static void UseUpDown();					/*上下カーソルを使用します。*/
 	static void UseRightLeft();					/*左右カーソルを使用します。*/
+	static void UseCross();					/*十字カーソルを使用します。*/
+
 	
 //private:
 	static HCURSOR m_hArrowCursor;				/*アローカーソル*/
@@ -26,6 +28,7 @@ public:
 	static HCURSOR m_hOnUrlCursor;				/*URLに乗ったときのカーソル*/
 	static HCURSOR m_hUpDownCursor;				/*上下カーソル*/
 	static HCURSOR m_hRightLeftCursor;			/*左右カーソル*/
+	static HCURSOR m_hCrossCursor;				/*十字カーソル*/
 };
 
 /*[EOF]*/

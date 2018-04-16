@@ -59,7 +59,7 @@ bool CDoubleBuffering::ChangeSize(HWND hWnd,int nWidth,int nHeight)
 	}
 
 	HDC hDC = ::GetDC(hWnd);
-	FOOTY2_PRINTF( L"GetDC\n" );
+	//FOOTY2_PRINTF( L"GetDC\n" );
 	if ( !hDC )
 	{
 		FOOTY2_PRINTF( L"But failed...\n" );
@@ -106,7 +106,7 @@ bool CDoubleBuffering::ChangeSize(HWND hWnd,int nWidth,int nHeight)
 		BitBlt(m_MainSurfaceDC,0,0,nWidth,nHeight,hDC,0,0,SRCCOPY);	// コンバチブルDCにコピー
 	}
 	ReleaseDC(hWnd,hDC);											// デバイスコンテキスト開放
-	FOOTY2_PRINTF( L"ReleaseDC\n" );
+	//FOOTY2_PRINTF( L"ReleaseDC\n" );
 
 	// メンバ変数に格納
 	m_nHeight = nHeight;

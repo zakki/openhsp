@@ -21,7 +21,7 @@ public:
 	void ChangeView(int nViewMode,bool bRedraw = false);
 	bool Move(int x,int y,int nWidth,int nHeight);
 	void SetText(const wchar_t *pString);
-	bool SetSelText(const wchar_t *pString);
+	bool SetSelText(const wchar_t *pString, bool recUndo);
 	bool Paste();
 	bool Copy();
 	bool Cut();
@@ -31,6 +31,8 @@ public:
 	// フォント設定
 	bool SetFontSize(int nPoint,bool bRedraw);
 	bool SetFontFace(int nType,const wchar_t *pFaceName,bool bRedraw);
+	bool SetForceFont(int flag);	// フォントの強制使用 by inovia
+	bool SetSpeedDraw(int flag);	// 高速描画 by inovia
 	
 	// 折り返し設定
 	bool SetLapel(int nColumns,int nMode,bool bRedraw);
@@ -40,6 +42,11 @@ public:
 	inline int GetID() const {return m_nID;}
 	inline CharSetMode GetCharSet() const {return m_nCharSet;}
 	bool IsFocused();
+
+	// 背景画像設定系
+	bool SetBackgroundImage(const wchar_t *pFilePath, bool bRedraw);
+	bool ClearBackgroundImage(bool bRedraw);
+	bool SetBackgroundColor(COLORREF color);
 
 public:
 	// データ
@@ -64,6 +71,7 @@ private:
 	int m_nWidth,m_nHeight;				//!< 大きさ
 	int m_nViewMode;					//!< ビュー情報
 	CFontObjects m_cFonts;				//!< フォントオブジェクト
+	
 };
 
 /*[EOF]*/
