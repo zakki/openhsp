@@ -11,6 +11,10 @@
 
 #include "support.h"
 
+// 色定義追加用 by inovia
+#include "CustomColorKeywords.h"
+
+
 // Type table
 typedef struct tagTypeTable{
 	char *Type;
@@ -183,13 +187,18 @@ void InitClassify()
 // 強調文字の設定
 void SetClassify(int FootyID)
 {
+
 	// 2008-02-17 Shark++ 要動作確認
 	for(CLASSIFY_TABLE *lpCT = ClassifyTable; lpCT->Word1[0] != '\0'; lpCT++) {
 		Footy2AddEmphasis(FootyID, lpCT->Word1, *lpCT->Word2 ? lpCT->Word2 : NULL, lpCT->Type, 
 			lpCT->Status, lpCT->Level, lpCT->pLevel, lpCT->Ind,
 		//	lpCT->Status, lpCT->Level, PERMIT_LEVEL(lpCT->pLevel), EMP_IND_ALLOW_ALL,
 			(lpCT->color != NULL ? *(lpCT->color) : RGB(255,0,0)));
-	}	
+	}
+
+	// 追加の定義登録 by inovia CumtomColorKeywords.cpp で定義
+	SetCumtomColorKeywords(FootyID, color);
+	
 	Footy2FlushEmphasis(FootyID);
 
 //	Footy2Refresh(FootyID); // 2008-02-18 Shark++ 要らない？
@@ -214,11 +223,25 @@ void SetEditColor(int FootyID)
 	Footy2SetColor(FootyID, CP_CARETPOS, color.Ruler.Caret.Conf,  false);
 	Footy2SetColor(FootyID, CP_BACKGROUND, color.Edit.Background.Conf,  false);
 
-	Footy2SetColor(FootyID, CP_URLTEXT, color.Character.Default.Conf,  false);
-	Footy2SetColor(FootyID, CP_URLUNDERLINE, color.Character.Default.Conf,  false);
-	Footy2SetColor(FootyID, CP_MAILTEXT, color.Character.Default.Conf,  false);
-	Footy2SetColor(FootyID, CP_MAILUNDERLINE, color.Character.Default.Conf,  false);
+	Footy2SetColor(FootyID, CP_URLTEXT, color.Clickable.URL.Conf,  false);
+	Footy2SetColor(FootyID, CP_URLUNDERLINE, color.Clickable.URLUnderLine.Conf,  false);
+	Footy2SetColor(FootyID, CP_MAILTEXT, color.Clickable.Mail.Conf,  false);
+	Footy2SetColor(FootyID, CP_MAILUNDERLINE, color.Clickable.MailUnderLine.Conf,  false);
+	Footy2SetColor(FootyID, CP_LABELTEXT, color.Clickable.Label.Conf,  false);// by Tetr@pod
+	Footy2SetColor(FootyID, CP_LABELUNDERLINE, color.Clickable.LabelUnderLine.Conf,  false);// by Tetr@pod
 
+	Footy2SetColor(FootyID, CP_FUNCTEXT1, color.UserFunction.UserFunction1.Conf,  false);// by Tetr@pod
+	Footy2SetColor(FootyID, CP_FUNCTEXT2, color.UserFunction.UserFunction2.Conf,  false);// by Tetr@pod
+	Footy2SetColor(FootyID, CP_FUNCTEXT3, color.UserFunction.UserFunction3.Conf,  false);// by Tetr@pod
+	Footy2SetColor(FootyID, CP_FUNCTEXT4, color.UserFunction.UserFunction4.Conf,  false);// by Tetr@pod
+	Footy2SetColor(FootyID, CP_FUNCTEXT5, color.UserFunction.UserFunction5.Conf,  false);// by Tetr@pod
+	Footy2SetColor(FootyID, CP_FUNCTEXT6, color.UserFunction.UserFunction6.Conf,  false);// by Tetr@pod
+	Footy2SetColor(FootyID, CP_FUNCTEXT7, color.UserFunction.UserFunction7.Conf,  false);// by Tetr@pod
+	Footy2SetColor(FootyID, CP_FUNCTEXT8, color.UserFunction.UserFunction8.Conf,  false);// by Tetr@pod
+
+	// 指定背景色で描画指定する
+	Footy2SetBackgroundImageColor(FootyID, color.Edit.Background.Conf);
+	
 	Footy2Refresh(FootyID);
 }
 

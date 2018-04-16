@@ -82,12 +82,14 @@ LRESULT CFootyView::MainProc(UINT msg,WPARAM wParam,LPARAM lParam){
 		FOOTY2_PRINTF(L"On lost focus\n");
 		break;
 	case WM_PAINT:
+		
 		PAINTSTRUCT ps;
 		BeginPaint(m_hWnd,&ps);
-		FOOTY2_PRINTF( L"BeginPaint %d\n", m_nFootyID );
+		//FOOTY2_PRINTF( L"BeginPaint %d\n", m_nFootyID );
 		Refresh(ps.hdc,&ps.rcPaint);
 		EndPaint(m_hWnd,&ps);
-		FOOTY2_PRINTF( L"EndPaint %d\n", m_nFootyID );
+		//FOOTY2_PRINTF( L"EndPaint %d\n", m_nFootyID );
+		
 		break;
 	default:
 		return DefWindowProc(m_hWnd,msg,wParam,lParam);
@@ -100,13 +102,38 @@ CFootyView::OnLostFocus
 フォーカスを失ったときに発生します。
 ----------------------------------------------------------------*/
 void CFootyView::OnLostFocus(){
+
+
 	m_bIsFocused = false;
 	m_cCaret.Hide();		/*キャレットを非表示にして*/
-	m_cCaret.Destroy();		/*破壊。*/
-	CaretRefresh();
+	if ((m_bUnderlineDraw == false)){
+		m_cCaret.Destroy();		/*破壊。*/
+		CaretRefresh();
+	}
 	/*イベント出力*/
 	if (m_pFuncFocus)
 		m_pFuncFocus(m_nFootyID,m_pDataFocus,m_nViewID,false);
+	
+//	m_cCaret.Hide();		/*キャレットを非表示にして*/
+//	// 4つのビューがフォーカスされてないときは破棄しない
+//	// １つでもビューがフォーカスされている場合は破棄
+
+//	if ( ( m_pView[0].IsFocused() == false ) && ( m_pView[1].IsFocused() == false ) && ( m_pView[2].IsFocused() == false ) && ( m_pView[3].IsFocused() == false ) ){
+//		FOOTY2_PRINTF( L"Test_OnLostFocus %d\n", m_nFootyID );
+//	}else{
+//		if ((m_bUnderlineDraw == false)){
+//			m_cCaret.Destroy();		/*破壊。*/
+//			CaretRefresh();
+//		}
+//	}
+
+
+//	m_bIsFocused = false;
+	
+	/*イベント出力*/
+//	if (m_pFuncFocus)
+//		m_pFuncFocus(m_nFootyID,m_pDataFocus,m_nViewID,false);
+	
 }
 
 /*----------------------------------------------------------------
@@ -114,6 +141,17 @@ CFootyView::OnGotFocus
 フォーカスを得たときに発生します。
 ----------------------------------------------------------------*/
 void CFootyView::OnGotFocus(){
+
+	// アンダーラインの表示バグ(仕様？)修正 by Tetr@pod
+	if (m_bUnderlineDraw){// 非フォーカス時のアンダーラインの描画が有効なときで、
+		for(int i=0; i<4; i++){// 他のビューの
+			if (m_pView[i].IsFocused() == false){// フォーカスがないときは
+				m_pView[i].m_cCaret.Destroy();// そのビューのアンダーラインを破棄
+				m_pView[i].CaretRefresh();// そして更新
+			}
+		}
+	}
+
 	if (!m_bIsFocused){				/*フォーカスを失っていたときは*/
 		m_bIsFocused = true;		/*フォーカスフラグを立てて*/
 		Refresh(false);				/*再描画させる*/

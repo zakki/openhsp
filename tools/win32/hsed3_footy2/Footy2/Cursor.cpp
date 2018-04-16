@@ -12,6 +12,7 @@ HCURSOR CCursor::m_hIBeam = NULL;
 HCURSOR CCursor::m_hArrowCursor = NULL;
 HCURSOR CCursor::m_hUpDownCursor = NULL;
 HCURSOR CCursor::m_hRightLeftCursor = NULL;
+HCURSOR CCursor::m_hCrossCursor = NULL;// スプリットバーの中央ドラッグ by Tetr@pod
 
 /*-------------------------------------------------------------------
 CCursor::LoadCursors
@@ -26,9 +27,14 @@ bool CCursor::LoadCursors(HINSTANCE hInstance){
 	m_hIBeam = LoadCursor(NULL,IDC_IBEAM);
 	m_hUpDownCursor = LoadCursor(NULL,IDC_SIZENS);
 	m_hRightLeftCursor = LoadCursor(NULL,IDC_SIZEWE);
-	m_hOnUrlCursor = LoadCursor(NULL,IDC_ARROW);
+
+	m_hCrossCursor = LoadCursor(NULL,IDC_SIZEALL);// スプリットバーの中央ドラッグby Tetr@pod
+
+	m_hOnUrlCursor = LoadCursor(NULL,IDC_HAND);
+	//m_hOnUrlCursor = LoadCursor(NULL,IDC_ARROW);
 	//m_hOnUrlCursor = LoadCursor(hInstance,MAKEINTRESOURCE(IDC_URL));
 	if (!m_hOnUrlCursor)return false;
+
 	m_hLineCountCursor = LoadCursor(NULL,IDC_ARROW);
 	//m_hLineCountCursor = LoadCursor(hInstance,MAKEINTRESOURCE(IDC_LINE));
 	if (!m_hLineCountCursor)return false;
@@ -51,12 +57,13 @@ void CCursor::DestroyCursors(){
 	m_hArrowCursor = NULL;
 	m_hUpDownCursor = NULL;
 	m_hRightLeftCursor = NULL;
+	m_hCrossCursor = NULL;// スプリットバーの中央ドラッグ by Tetr@pod
 }
 
 /*-------------------------------------------------------------------
 CCursor::Use●●
 各カーソルを使用するルーチンです。
--------------------------------------------------------------------*/
+----------------------------------------------------------c---------*/
 void CCursor::UseArrow(){				/*アローカーソルを使用します。*/
 	SetCursor(m_hArrowCursor);	
 }
@@ -69,11 +76,16 @@ void CCursor::UseUrlCursor(){			/*URLに乗ったときのカーソルを使用します。*/
 void CCursor::UseLineCount(){			/*行番号表示領域のカーソルを使用します。*/
 	SetCursor(m_hLineCountCursor);
 }
-void CCursor::UseUpDown(){			/*行番号表示領域のカーソルを使用します。*/
+void CCursor::UseUpDown(){			/*水平スプリットバーのカーソルを使用します。*/
 	SetCursor(m_hUpDownCursor);
 }
-void CCursor::UseRightLeft(){			/*行番号表示領域のカーソルを使用します。*/
+void CCursor::UseRightLeft(){			/*垂直スプリットバーのカーソルを使用します。*/
 	SetCursor(m_hRightLeftCursor);
 }
+
+void CCursor::UseCross(){			/*水平・垂直スプリットバーのカーソルを使用します。 by Tetr@pod*/
+	SetCursor(m_hCrossCursor);
+}
+
 
 /*[EOF]*/

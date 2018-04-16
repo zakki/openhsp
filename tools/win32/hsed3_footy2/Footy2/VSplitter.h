@@ -1,6 +1,6 @@
 /*===================================================================
 CVSplitter
-垂直スクロールバーの管理クラスです。
+垂直スプリットバーの管理クラスです。
 ===================================================================*/
 
 #pragma once
@@ -15,6 +15,9 @@ public:
 
 private:
 	void OnMouseMove(int x,int y);
+
+	void OnMouseDown(int x,int y);// by Tetr@pod
+	void OnMouseDouble(int x,int y);// by Tetr@pod
 
 public:
 private:

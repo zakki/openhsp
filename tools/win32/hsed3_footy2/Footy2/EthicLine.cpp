@@ -52,7 +52,7 @@ bool CEthicLine::MoveEthicNext(LsLines *pLines,size_t nPos)
 	for (size_t i=0;i<nPos;i++){
 		if (m_nNowEthicLine == nThisEthic - 1){			// それが最終論理行のとき
 			if (GetLineNum()+1 != pLines->size()){		// それが最終行でないとき
-				MoveRealNext(pLines,1);					// 次の行へ
+				MoveRealNext(pLines,1);//				// 次の行へ
 				nThisEthic = GetLinePointer()->GetEthicLine();
 				m_nNowEthicLine = 0;
 			}

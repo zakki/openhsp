@@ -23,7 +23,7 @@ const int CFontObjects::m_nCharSets[FFM_NUM_FONTS] =
 	VIETNAMESE_CHARSET,
 	ARABIC_CHARSET,
 	HEBREW_CHARSET,
-	THAI_CHARSET
+	THAI_CHARSET,
 };
 
 //-----------------------------------------------------------------------------
@@ -42,6 +42,7 @@ CFontObjects::CFontObjects()
 	m_nFontHeight = 0;
 	m_nFontWidth = 0;
 	m_nRulerHeight = 0;
+	m_fForceFont = 0;		// 強制させるか？ by inovia
 	
 	// デフォルトフォント名を入れておく
 	m_strFace[FFM_ANSI_CHARSET]			= L"Courier New";
@@ -57,7 +58,7 @@ CFontObjects::CFontObjects()
 	m_strFace[FFM_VIETNAMESE_CHARSET]	= L"Courier New";
 	m_strFace[FFM_ARABIC_CHARSET]		= L"GulimChe";
 	m_strFace[FFM_HEBREW_CHARSET]		= L"Courier New";
-	m_strFace[FFM_THAI_CHARSET]			= L"Tahoma";
+	m_strFace[FFM_THAI_CHARSET]			= L"Tahoma";	
 	m_nFontPoint	=	FONTNORMAL_DEFAULT;
 }
 
@@ -170,7 +171,11 @@ HFONT CFontObjects::GetFontHandle(const wchar_t *szFontName,int nHeight,bool bBo
 	memset(&fontStruct,0,sizeof(LOGFONTW));
 	fontStruct.lfHeight = -nHeight;
 	fontStruct.lfWeight = (bBold ? m_fnWeight : FW_NORMAL);
-	fontStruct.lfCharSet = nCharSets;
+	if (m_fForceFont == 0){// 条件追加 by inovia
+		fontStruct.lfCharSet = nCharSets;
+	}else{
+		fontStruct.lfCharSet = DEFAULT_CHARSET;
+	}
 	fontStruct.lfOutPrecision = OUT_DEFAULT_PRECIS;
 	fontStruct.lfClipPrecision = CLIP_DEFAULT_PRECIS;
 	fontStruct.lfQuality = DEFAULT_QUALITY;
@@ -191,4 +196,13 @@ int CFontObjects::GetMulDiv(int nNumber,int nNumerator,int nDenominator)
 	return (int)floor(fReturn);
 }
 
+//-----------------------------------------------------------------------------
+/**
+ * @brief フォントの強制 by inovia
+ * @param	flag [in] フラグ
+ */
+void CFontObjects::SetForceFont( int flag )
+{
+	m_fForceFont = flag;
+}
 /*[EOF]*/

@@ -35,6 +35,19 @@ void CFootyStatus::SetDefaultColor(){
 	m_clUrlUnder = RGB(0,0,255);
 	m_clMail = RGB(170,43,94);
 	m_clMailUnder = RGB(170,43,94);
+	m_clLabel = RGB(0,0,255);// by Tetr@pod
+	m_clLabelUnder = RGB(0,0,255);// by Tetr@pod
+
+	m_clFunc1 = RGB(0,0,255);
+	m_clFunc2 = RGB(0,0,255);
+	m_clFunc3 = RGB(0,0,255);
+	m_clFunc4 = RGB(0,0,255);
+	m_clFunc5 = RGB(0,0,255);
+	m_clFunc6 = RGB(0,0,255);
+	m_clFunc7 = RGB(0,0,255);
+	m_clFunc8 = RGB(0,0,255);
+
+
 	m_clNormalSpace = RGB(255,150,150);
 	m_clHalfSpace = RGB(255,150,150);
 	m_clHighlightBk = RGB(255,178,0);

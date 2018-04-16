@@ -15,32 +15,33 @@ FOOTYEXPORT(int) Footy2SetMetrics(int nID,int nObject,int nValue,bool bRefresh)
 	
 	switch(nObject)
 	{
+	// for (int i=0;i<3;i++)‚ðfor (int i=0;i<4;i++)‚ÉC³ by Tetr@pod
 	case SM_MARK_VISIBLE:
-		for (int i=0;i<3;i++)
+		for (int i=0;i<4;i++)
 		{
 			pFooty->m_cView[i].SetMarkVisible(nValue);
 		}
 		break;
 	case SM_LINENUM_WIDTH:
-		for (int i=0;i<3;i++)
+		for (int i=0;i<4;i++)
 		{
 			pFooty->m_cView[i].SetLineWidth(nValue);
 		}
 		break;
 	case SM_RULER_HEIGHT:
-		for (int i=0;i<3;i++)
+		for (int i=0;i<4;i++)
 		{
 			pFooty->m_cView[i].SetRulerHeight(nValue);
 		}
 		break;
 	case SM_UNDERLINE_VISIBLE:
-		for (int i=0;i<3;i++)
+		for (int i=0;i<4;i++)
 		{
 			pFooty->m_cView[i].SetUnderlineVisible(nValue);
 		}
 		break;
 	case SM_MARGIN_HEIGHT:
-		for (int i=0;i<3;i++)
+		for (int i=0;i<4;i++)
 		{
 			pFooty->m_cView[i].SetMarginHeight(nValue);
 		}

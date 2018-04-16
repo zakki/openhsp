@@ -1,6 +1,6 @@
 //{{NO_DEPENDENCIES}}
-// Microsoft Visual C++ generated include file.
-// Used by Poppad.rc
+// Microsoft Visual C++ で生成されたインクルード ファイル。
+// poppad_en.rc で使用
 //
 #define IDOK2                           3
 #define IDM_BUTTON1                     3
@@ -46,7 +46,6 @@
 #define IDM_DEBUG                       1512
 #define IDM_HSPEXTMACRO                 1513
 #define IDM_HSPCLMODE                   1514
-#define IDM_UTF8OUT                     1515
 #define IDM_PACKED                      1600
 #define IDM_PACKGO                      1601
 #define IDM_MKEXE1                      1602
@@ -58,6 +57,10 @@
 #define IDM_CLOSEALL                    1701
 #define IDM_CLOSEALEFT                  1702
 #define IDM_CLOSEARIGHT                 1703
+#define IDM_SEPARATEWINDOWN             1704
+#define IDM_SEPARATEWINDOWV             1705
+#define IDM_SEPARATEWINDOWH             1706
+#define IDM_SEPARATEWINDOWQ             1707
 #define IDM_KWHELP                      1800
 #define IDM_HELPDIR                     1801
 #define IDM_HSPMAN1                     1802
@@ -67,6 +70,8 @@
 #define IDM_PAINT                       1900
 #define IDM_HGIMG4TOOL                  1901
 #define IDM_REGACYTOOL                  1902
+#define IDM_DOTTOOL                     1903
+#define IDM_MAPTOOL                     1904
 #define IDM_OPENIME                     2000
 #define IDM_RECONVERT                   2001
 #define IDM_SAVETABAS                   2100
@@ -97,9 +102,8 @@
 #define IDM_DIRDPM                      2931
 #define ID_SRCCNV                       2932
 #define IDM_SRCCNV                      2932
-#define ID_2933                         2933
-#define ID_2934                         2934
-#define ID_2935                         2935
+#define ID_TOOL_LEGACYTOOL              2933
+#define IDM_GOOGLE                      2950
 #define IDCM_ADD                        3000
 #define IDCM_ALLSEL                     3001
 #define IDCM_BYE                        3002
@@ -166,6 +170,10 @@
 #define IDC_REF_WORKDIR                 4054
 #define IDC_MOVE_UP                     4055
 #define IDC_MOVE_DOWN                   4056
+#define IDC_DATETIMEPICKER1             4057
+#define IDC_SPIN1                       4058
+#define IDC_CHECK10                     4059
+#define IDC_EDIT9                       4060
 #define IDB_TOOLBAR                     5000
 #define IDD_FNAME                       5000
 #define IDB_BITMAP2                     5001
@@ -190,8 +198,8 @@
 #ifndef APSTUDIO_READONLY_SYMBOLS
 #define _APS_NO_MFC                     1
 #define _APS_NEXT_RESOURCE_VALUE        5010
-#define _APS_NEXT_COMMAND_VALUE         2936
-#define _APS_NEXT_CONTROL_VALUE         4057
+#define _APS_NEXT_COMMAND_VALUE         2934
+#define _APS_NEXT_CONTROL_VALUE         4060
 #define _APS_NEXT_SYMED_VALUE           6003
 #endif
 #endif

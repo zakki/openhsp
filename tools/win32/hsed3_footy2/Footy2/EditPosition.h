@@ -13,7 +13,7 @@ public:
 	CEditPosition();
 	
 	/*オペレーション(代入演算)*/
-	CEditPosition& operator = (CEditPosition &cPos);
+	bool operator = (CEditPosition &cPos);
 	bool operator == (CEditPosition &cPos);
 	bool operator != (CEditPosition &cPos);
 	bool operator < (CEditPosition &cPos);

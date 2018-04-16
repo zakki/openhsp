@@ -1,6 +1,6 @@
 /*===================================================================
 CHSplitter
-水平スクロールバーの管理クラスです。
+水平スプリットバーの管理クラスです。
 ===================================================================*/
 
 #pragma once
@@ -16,6 +16,9 @@ public:
 
 private:
 	void OnMouseMove(int x,int y);
+
+	void OnMouseDown(int x,int y);// by Tetr@pod
+	void OnMouseDouble(int x,int y);// by Tetr@pod
 
 public:
 private:

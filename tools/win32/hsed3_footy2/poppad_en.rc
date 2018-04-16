@@ -39,106 +39,106 @@ ONIPAD                  ICON                    "onipad.ico"
 
 ONIPAD MENU
 BEGIN
-    POPUP "ファイル(&F)"
+    POPUP "File(&F)"
     BEGIN
-        MENUITEM "新規作成(&N)\tctrl+N",            IDM_NEW
-        MENUITEM "開く(&O)...\tctrl+O",           IDM_OPEN
-        MENUITEM "再読込(&R)\tctrl+L",             IDM_RELOAD
-        MENUITEM "上書き保存(&S)\tctrl+S",           IDM_SAVE
-        MENUITEM "名前を付けて保存(&A)...",             IDM_SAVEAS
-        MENUITEM "すべて上書き保存(&V)\t",              IDM_SAVEALL
+        MENUITEM "New(&N)\tctrl+N",             IDM_NEW
+        MENUITEM "Open(&O)...\tctrl+O",         IDM_OPEN
+        MENUITEM "Reload(&R)\tctrl+L",          IDM_RELOAD
+        MENUITEM "Save(&S)\tctrl+S",            IDM_SAVE
+        MENUITEM "Save as(&A)...",              IDM_SAVEAS
+        MENUITEM "Save All(&V)\t",              IDM_SAVEALL
         MENUITEM SEPARATOR
-        MENUITEM "印刷(&P)...\tctrl+P",           IDM_PRINT
+        MENUITEM "Print(&P)...\tctrl+P",        IDM_PRINT
         MENUITEM SEPARATOR
-        MENUITEM "終了(&Q)\tctrl+Q",              IDM_EXIT
+        MENUITEM "Quit(&Q)\tctrl+Q",            IDM_EXIT
     END
-    POPUP "編集(&E)"
+    POPUP "Edit(&E)"
     BEGIN
-        MENUITEM "元に戻す(&U)\tctrl+Z",            IDM_UNDO
-        MENUITEM "やり直し(&R)\tctrl+Y",            IDM_REDO
+        MENUITEM "Undo(&U)\tctrl+Z",            IDM_UNDO
+        MENUITEM "Redo(&R)\tctrl+Y",            IDM_REDO
         MENUITEM SEPARATOR
-        MENUITEM "切り取り(&T)\tctrl+X",            IDM_CUT
-        MENUITEM "コピー(&C)\tctrl+C",             IDM_COPY
-        MENUITEM "貼り付け(&P)\tctrl+V",            IDM_PASTE
-        MENUITEM "削除(&D)\tDelete",              IDM_CLEAR
+        MENUITEM "Cut(&T)\tctrl+X",             IDM_CUT
+        MENUITEM "Copy(&C)\tctrl+C",            IDM_COPY
+        MENUITEM "Paste(&P)\tctrl+V",           IDM_PASTE
+        MENUITEM "Delete(&D)\tDelete",          IDM_CLEAR
         MENUITEM SEPARATOR
-        MENUITEM "すべてを選択(&A)\tctrl+A",          IDM_SELALL
+        MENUITEM "Select All(&A)\tctrl+A",      IDM_SELALL
         MENUITEM SEPARATOR
-        MENUITEM "先頭行に移動(&T)\tctrl+T",          IDM_LTOP
-        MENUITEM "最終行に移動(&B)\tctrl+B",          IDM_LBTM
-        MENUITEM "指定行に移動(&J)...\tctrl+J",       IDM_JUMP
-        MENUITEM "ラベル・関数一覧(&L)...\tF11",        IDM_LABEL
+        MENUITEM "Jump to Top(&T)\tctrl+T",     IDM_LTOP
+        MENUITEM "Jump to Bottom(&B)\tctrl+B",  IDM_LBTM
+        MENUITEM "Jump to(&J)...\tctrl+J",      IDM_JUMP
+        MENUITEM "Label List(&L)...\tF11",      IDM_LABEL
     END
-    POPUP "検索(&S)"
+    POPUP "Search(&S)"
     BEGIN
-        MENUITEM "文字列の検索(&F)...\tctrl+F / F4",  IDM_FIND
-        MENUITEM "前を検索(&B)\tshift+F3",          IDM_BACK
-        MENUITEM "次を検索(&N)\tF3",                IDM_NEXT
-        MENUITEM "文字列の置換(&R)...\tctrl+R",       IDM_REPLACE
+        MENUITEM "Find(&F)...\tctrl+F / F4",    IDM_FIND
+        MENUITEM "Find Previous(&B)\tshift+F3", IDM_BACK
+        MENUITEM "Find Next(&N)\tF3",           IDM_NEXT
+        MENUITEM "Replace(&R)...\tctrl+R",      IDM_REPLACE
     END
-    POPUP "ＨＳＰ(&P)"
+    POPUP "HSP(&P)"
     BEGIN
-        MENUITEM "コンパイル+実行(&C)\tF5",            IDM_COMP
-        MENUITEM "実行(&R)\tF6",                  IDM_RUN
-        MENUITEM "コンパイルのみ(&P)\tF7",             IDM_COMP2
-        MENUITEM "エラー表示(&E)...\tF8",            IDM_HSPERR
-        MENUITEM "オブジェクトファイル作成(&B)\tF9",        IDM_MKOBJ
-        MENUITEM "START.AXファイル作成(&S)",          IDM_MKOBJ2
-        MENUITEM "実行ファイル自動作成(&A)\tctrl+F9",     IDM_AUTOMAKE
-        MENUITEM "外部ファイル実行(&F)...\tF10",        IDM_COMP3
-        MENUITEM "予約キーワード一覧(&K)...",            IDM_HSPSYM
+        MENUITEM "Compile and Run(&C)\tF5",     IDM_COMP
+        MENUITEM "Run(&R)\tF6",                 IDM_RUN
+        MENUITEM "Compile(&P)\tF7",             IDM_COMP2
+        MENUITEM "Error Report(&E)...\tF8",     IDM_HSPERR
+        MENUITEM "Make .ax(&B)\tF9",            IDM_MKOBJ
+        MENUITEM "Make START.AX(&S)",           IDM_MKOBJ2
+        MENUITEM "Make Executable(&A)\tctrl+F9", IDM_AUTOMAKE
+        MENUITEM "Run External(&F)...\tF10",    IDM_COMP3
+        MENUITEM "Keywords(&K)...",             IDM_HSPSYM
         MENUITEM SEPARATOR
-        MENUITEM "起動オプション(&O)...",              IDM_CMDOPT
-        MENUITEM "Debugウィンドウ表示(&D)",            IDM_DEBUG
+        MENUITEM "Boot Option(&O)...",          IDM_CMDOPT
+        MENUITEM "Debug Window(&D)",            IDM_DEBUG
     END
-    POPUP "ツール(&T)"
+    POPUP "Tool(&T)"
     BEGIN
-        MENUITEM "ソースフォルダを開く(&O)...",           IDM_OPEN_SRCFOLDER
-        MENUITEM "HSPアシスタント起動(&F)...",          IDM_START_RUNTIMEMAN
-        MENUITEM "HSPTVブラウザ起動(&H)...",          IDM_HSPTV
-        MENUITEM "指定フォルダからDPM作成(&D)...",        ID_DIRDPM
-        MENUITEM "HSP3Dish / Cソース変換(&C)...",    ID_SRCCNV
-        MENUITEM "HGIMG4ツールを開く(&G)...",         IDM_HGIMG4TOOL
-        MENUITEM "ペイントツールを開く(&W)...",           IDM_PAINT
+        MENUITEM "Open Source Folder(&O)...",   IDM_OPEN_SRCFOLDER
+        MENUITEM "HSP Assistant(&F)...",        IDM_START_RUNTIMEMAN
+        MENUITEM "HSPTV Browser(&H)...",        IDM_HSPTV
+        MENUITEM "Make .DPM from Folder(D)...", ID_DIRDPM
+        MENUITEM "HSP3Dish / Source Convert(C)...", ID_SRCCNV
+        MENUITEM "HGIMG4 Tool(&G)...",          IDM_HGIMG4TOOL
+        MENUITEM "Paint Tool(&W)...",           IDM_PAINT
         MENUITEM SEPARATOR
-        MENUITEM "オプション(&O)...",                IDM_OPTION
-        POPUP "レガシーツール(&R)"
+        MENUITEM "Options(&O)...",              IDM_OPTION
+        POPUP "Legacy Tools(&R)"
         BEGIN
-            MENUITEM "PACKFILE編集(&E)...",           IDM_PACKED
-            MENUITEM "DPMファイル作成(&P)",               IDM_PACKGO
-            MENUITEM "EXEファイル作成(&M)...",            IDM_MKEXE1
-            MENUITEM "スクリーンセーバー作成(&S)",             IDM_MKEXE2
-            MENUITEM "スクリプト自動作成(&T)...",            IDM_AHTTOOL
+            MENUITEM "Edit PACKFILE(&E)...",        IDM_PACKED
+            MENUITEM "Make .DPM(&P)",               IDM_PACKGO
+            MENUITEM "Make .EXE(&M)...",            IDM_MKEXE1
+            MENUITEM "Make Screen Saver(&S)",       IDM_MKEXE2
+            MENUITEM "HSP Peas(&T)...",             IDM_AHTTOOL
         END
     END
-    POPUP "外部ツール(&X)"
+    POPUP "ExtTool(&X)"
     BEGIN
         MENUITEM "Dummy",                       0
     END
-    POPUP "ウィンドウ(&W)"
+    POPUP "Window(&W)"
     BEGIN
-        POPUP "ウィンドウの分割(&S)"
+        POPUP "Split(&S)"
         BEGIN
-            MENUITEM "なし(&N)\tctrl+1",              IDM_SEPARATEWINDOWN
-            MENUITEM "垂直方向(&V)\tctrl+2",            IDM_SEPARATEWINDOWV
-            MENUITEM "水平方向(&H)\tctrl+3",            IDM_SEPARATEWINDOWH
-            MENUITEM "水平・垂直方向(&Q)\tctrl+4",         IDM_SEPARATEWINDOWQ
+            MENUITEM "None(&N)\tctrl+1",            IDM_SEPARATEWINDOWN
+            MENUITEM "Vertical(&V)\tctrl+2",        IDM_SEPARATEWINDOWV
+            MENUITEM "Horizontal(&H)\tctrl+3",      IDM_SEPARATEWINDOWH
+            MENUITEM "Both(&Q)\tctrl+4",            IDM_SEPARATEWINDOWQ
         END
         MENUITEM SEPARATOR
-        MENUITEM "アクティブなタブを閉じる(&C)\tctrl+W",    IDM_CLOSEACT
+        MENUITEM "Close Tab(&C)\tctrl+W",       IDM_CLOSEACT
         MENUITEM SEPARATOR
-        MENUITEM "すべて閉じる(&W)",                  IDM_CLOSEALL
-        MENUITEM "左側のタブをすべて閉じる(&L)",            IDM_CLOSEALEFT
-        MENUITEM "右側のタブをすべて閉じる(&R)",            IDM_CLOSEARIGHT
+        MENUITEM "Close All(&W)",               IDM_CLOSEALL
+        MENUITEM "Close Tabs to the Left(&L)",  IDM_CLOSEALEFT
+        MENUITEM "Close Tabs to the Right(&R)", IDM_CLOSEARIGHT
         MENUITEM SEPARATOR
     END
-    POPUP "ヘルプ(&H)"
+    POPUP "Help(&H)"
     BEGIN
-        MENUITEM "HSPキーワード検索(&K)...\tF1",       IDM_KWHELP
-        MENUITEM "HSPプログラミング・マニュアルを開く(&P)...",  IDM_HSPMAN1
-        MENUITEM "HSP命令リファレンスを開く(&R)...",       IDM_HSPMAN2
-        MENUITEM "HSPマニュアル目次(&I)...",           IDM_HSPMAN3
-        MENUITEM "バージョン情報(&A)...",              IDM_ABOUT
+        MENUITEM "Keywords(&K)...\tF1",         IDM_KWHELP
+        MENUITEM "Programming Manual(&P)...",   IDM_HSPMAN1
+        MENUITEM "Command Reference(&R)...",    IDM_HSPMAN2
+        MENUITEM "Manual Index(&I)...",         IDM_HSPMAN3
+        MENUITEM "About(&A)...",                IDM_ABOUT
     END
 END
 
@@ -146,20 +146,20 @@ CONTEXTMENU MENU
 BEGIN
     POPUP ""
     BEGIN
-        MENUITEM "Google検索(&G)",                IDM_GOOGLE
+        MENUITEM "Google Search(&G)",           IDM_GOOGLE
         MENUITEM SEPARATOR
-        MENUITEM "元に戻す(&U)\tCtrl+Z",            IDM_UNDO
-        MENUITEM "やり直し(&R)\tCtrl+Y",            IDM_REDO
+        MENUITEM "Undo(&U)\tCtrl+Z",            IDM_UNDO
+        MENUITEM "Redo(&R)\tCtrl+Y",            IDM_REDO
         MENUITEM SEPARATOR
-        MENUITEM "切り取り(&T)\tCtrl+X",            IDM_CUT
-        MENUITEM "コピー(&C)\tCtrl+C",             IDM_COPY
-        MENUITEM "貼り付け(&P)\tCtrl+V",            IDM_PASTE
-        MENUITEM "削除(&D)\tDelete",              IDM_CLEAR
+        MENUITEM "Cut(&T)\tCtrl+X",             IDM_CUT
+        MENUITEM "Copy(&C)\tCtrl+C",            IDM_COPY
+        MENUITEM "Paste(&P)\tCtrl+V",           IDM_PASTE
+        MENUITEM "Delete(&D)\tDelete",          IDM_CLEAR
         MENUITEM SEPARATOR
-        MENUITEM "すべて選択(&A)\tCtrl+A",           IDM_SELALL
+        MENUITEM "Select All(&A)\tCtrl+A",      IDM_SELALL
         MENUITEM SEPARATOR
-        MENUITEM "IME を開く(&O)",                 IDM_OPENIME
-        MENUITEM "再変換(&R)",                     IDM_RECONVERT
+        MENUITEM "Open IME(&O)",                IDM_OPENIME
+        MENUITEM "Retype(&R)",                  IDM_RECONVERT
         MENUITEM SEPARATOR
     END
 END
@@ -168,15 +168,15 @@ CONTEXTMENU2 MENU
 BEGIN
     POPUP ""
     BEGIN
-        MENUITEM "再読込(&E)",                     IDM_RELOADTAB
-        MENUITEM "名前を付けて保存(&A)...",             IDM_SAVETABAS
-        MENUITEM "上書き保存(&S)",                   IDM_SAVETAB
-        MENUITEM "すべて上書き保存(&V)",                IDM_SAVEALL
-        MENUITEM "閉じる(&C)",                     IDM_CLOSE
+        MENUITEM "Reload(&E)",                  IDM_RELOADTAB
+        MENUITEM "Save as(&A)...",              IDM_SAVETABAS
+        MENUITEM "Save(&S)",                    IDM_SAVETAB
+        MENUITEM "Save All(&V)",                IDM_SAVEALL
+        MENUITEM "Close(&C)",                   IDM_CLOSE
         MENUITEM SEPARATOR
-        MENUITEM "すべて閉じる(&W)",                  IDM_CLOSEALL
-        MENUITEM "左側のタブをすべて閉じる(&L)",            IDM_CLOSELEFT
-        MENUITEM "右側のタブをすべて閉じる(&R)",            IDM_CLOSERIGHT
+        MENUITEM "Close All(&W)",               IDM_CLOSEALL
+        MENUITEM "Close Tabs to the Left(&L)",  IDM_CLOSELEFT
+        MENUITEM "Close Tabs to the Right(&R)", IDM_CLOSERIGHT
     END
 END
 
@@ -184,8 +184,8 @@ CONTEXTMENU3 MENU
 BEGIN
     POPUP ""
     BEGIN
-        MENUITEM "%F\t編集中のファイル名",               1
-        MENUITEM "%D\t現在のディレクトリ",               2
+        MENUITEM "%F\tActive File Name",        1
+        MENUITEM "%D\tCurrent Folder",          2
     END
 END
 
@@ -193,8 +193,8 @@ CONTEXTMENU4 MENU
 BEGIN
     POPUP ""
     BEGIN
-        MENUITEM "%F\t編集中のファイルのディレクトリ",         1
-        MENUITEM "%D\t現在のディレクトリ",               2
+        MENUITEM "%F\tCurrent File Folder",     1
+        MENUITEM "%D\tCurrent Folder",          2
     END
 END
 

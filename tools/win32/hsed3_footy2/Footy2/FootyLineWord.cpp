@@ -214,7 +214,8 @@ CFootyLine::CharSets CFootyLine::GetCharSets(wchar_t wc){
 			 (0xFF1A <= wc && wc <= 0xFF20) ||
 			 (0xFF38 <= wc && wc <= 0xFF40) ||
 			 (0xFF58 <= wc && wc <= 0xFF65) ||
-			 (0xFFE0 <= wc && wc <= 0xFFEE))	/*‹L†Œn*/
+			 (0xFFE0 <= wc && wc <= 0xFFEE) ||
+			 (wc == 0x00D7) || (wc == 0x00F7))	/*‹L†Œn*/
 			 return CHARSETS_SYMBOLS;
 	else if ((0x31F0 <= wc && wc <= 0x31FF))	/*Katakana Phonetic Extensions*/
 			return CHARSETS_AINU_EXTENSION;

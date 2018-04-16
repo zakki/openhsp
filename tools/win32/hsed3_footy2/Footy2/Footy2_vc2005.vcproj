@@ -347,6 +347,10 @@
 				>
 			</File>
 			<File
+				RelativePath=".\ImageController.cpp"
+				>
+			</File>
+			<File
 				RelativePath=".\module.def"
 				>
 			</File>
@@ -576,6 +580,10 @@
 			</File>
 			<File
 				RelativePath=".\HSplitter.h"
+				>
+			</File>
+			<File
+				RelativePath=".\ImageController.h"
 				>
 			</File>
 			<File

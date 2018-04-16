@@ -90,6 +90,10 @@ EXPORTS      ;エクスポート関数の記述
 	Footy2SetColor					@903
 	Footy2GetVisibleColumns			@904
 	Footy2GetVisibleLines			@905
+	Footy2SetBackgroundImageA		@906
+	Footy2SetBackgroundImageW		@907
+	Footy2ClearBackgroundImage		@908
+	Footy2SetBackgroundImageColor	@909
 
 ;検索系
 	Footy2SearchA					@1000

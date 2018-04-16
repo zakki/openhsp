@@ -111,9 +111,24 @@ bool CFootyView::Refresh(bool bSendOther)
 {
 	if (m_bVisible)						// 再描画は表示しているときのみ
 	{
+		FOOTY2_PRINTF( L"超！リフレッシュ！ %d\n", m_nFootyID );
+
 		// 雑多処理
 		CaretMove();
 		SetBars();
+
+		/*// 色分け by Tetr@pod
+		for (LinePt Line = m_pDocuments->GetTopLine(); Line != m_pDocuments->GetLastLine(); Line++) {
+			m_pDocuments->SetLineInfo2(Line);
+		}*/
+		if (DrawAllUserFuncs) {
+			for (LinePt Line = m_pDocuments->GetTopLine(); Line != m_pDocuments->GetLastLine(); ++Line) {
+				m_pDocuments->FlushString2(Line);
+				Line->SetEmphasisChached(false);
+			}
+			DrawAllUserFuncs = false;
+			IsUFUpdateTiming = true;
+		}
 
 		// 再描画処理をかける
 		HDC hDC = GetDC(m_hWnd);		// デバイスコンテキストを取得
@@ -126,12 +141,16 @@ bool CFootyView::Refresh(bool bSendOther)
 
 		RECT rc;
 		GetClientRect( m_hWnd, &rc );
+
+		//FOOTY2_PRINTF( L"RECT %d,%d,%d,%d \n", rc.left, rc.top, rc.right, rc.bottom );
+		//FOOTY2_PRINTF( L"描画開始！\n");
 		if (!Refresh(hDC,&rc))
 		{
 			ReleaseDC( m_hWnd, hDC );
 			FOOTY2_PRINTF( L"ReleaseDC %d\n", m_nFootyID );
 			return false;
 		}
+		//FOOTY2_PRINTF( L"描画終了！\n");
 		ReleaseDC(m_hWnd,hDC);			// デバイスコンテキストを解放
 		FOOTY2_PRINTF( L"ReleaseDC %d\n", m_nFootyID );
 
@@ -165,6 +184,8 @@ bool CFootyView::Refresh(HDC hDC,const RECT *rc){
 	// 初期化
 	m_cCaret.Hide();
 	DrawRectangle(hDcBuffer,0,0,rc->right,rc->bottom,m_pStatus->m_clBackGround);
+	m_ImgCtr->Draw(hDcBuffer, 0, 0, rc->right, rc->bottom, m_cDoubleBuffering.GetWidth(), m_cDoubleBuffering.GetHeight() );
+
 	SetBkMode(hDcBuffer,TRANSPARENT);
 
 	// 現在の表示位置からレンダリングしていく
@@ -185,7 +206,6 @@ bool CFootyView::Refresh(HDC hDC,const RECT *rc){
 		if (!cNowLine.MoveRealNext(m_pDocuments->GetLineList(),1))
 			break;
 	}
-
 	// 選択領域の反転
 	if (m_pDocuments->IsSelecting()){
 		// 情報の初期化
@@ -219,9 +239,9 @@ bool CFootyView::Refresh(HDC hDC,const RECT *rc){
 
 	// キャレット下アンダーラインは最後に引く
 	RendUnderLine(hDC,rc);
-
 	// 終了処理
 	m_cCaret.Show();
+
 	return true;
 }
 
@@ -395,6 +415,7 @@ bool CFootyView::RenderLines(LinePt pStartLine,LinePt pEndLine)
 			cNowLine.GetLineNum() <= pEndLine->GetRealLineNum()){
 			
 			DrawRectangle(hDcBuffer,0,yNowPos,rc.right,yNext,m_pStatus->m_clBackGround);
+			m_ImgCtr->Draw(hDcBuffer, 0, yNowPos, rc.right, yNext, m_cDoubleBuffering.GetWidth(), m_cDoubleBuffering.GetHeight() );
 			RendLine(hDcBuffer,cNowLine.GetLinePointer(),yNowPos,cNowLine.GetLineNum() + 1 == nLines);
 		}
 
@@ -407,6 +428,7 @@ bool CFootyView::RenderLines(LinePt pStartLine,LinePt pEndLine)
 			break;
 	}
 	DrawRectangle(hDcBuffer,0,yNowPos,rc.right,rc.bottom,m_pStatus->m_clBackGround);
+	m_ImgCtr->Draw(hDcBuffer, 0, yNowPos, rc.right, rc.bottom, m_cDoubleBuffering.GetWidth(), m_cDoubleBuffering.GetHeight() );
 
 	// 選択領域の反転
 	if (m_pDocuments->IsSelecting()){
@@ -471,6 +493,8 @@ bool CFootyView::RendLine(HDC hDC,LinePt pLine,int y,bool bEnd)
 		RM_NORMAL,										//!< 通常文字列のレンダリング中
 		RM_URL,											//!< URLのレンダリング中
 		RM_MAIL,										//!< メールのレンダリング中
+		RM_LABEL,										//!< ラベルのレンダリング中 by Tetr@pod
+		RM_FUNC,										//!< 命令・関数のレンダリング中 by Tetr@pod
 	};
 	
 	/*宣言*/
@@ -478,9 +502,9 @@ bool CFootyView::RendLine(HDC hDC,LinePt pLine,int y,bool bEnd)
 	const wchar_t *pNowChar = pLine->GetLineData();		//!< 現在描画している文字
 	int nColumn = 0;									//!< 現在描画する位置
 	CStaticStack<COLORREF,sizeof(int)*8+3> StackColor;	//!< 描画する色のスタック
-	RendMode nRendMode = RM_NORMAL;						//!< 現在の描画モード(URL、メール？)
+	RendMode nRendMode = RM_NORMAL;						//!< 現在の描画モード(ノーマル、URL、メール、ラベル、命令・関数)
 	CFootyLine::CharSets nCharSets;
-	int nStartUrl;										//!< URL、メールアドレスの開始x座標
+	int nStartUrl;										//!< URL、メールアドレス、ラベル、命令・関数の開始x座標
 
 	// 高速化用
 	int nFirstVisCol = m_nFirstVisibleColumn;
@@ -492,19 +516,25 @@ bool CFootyView::RendLine(HDC hDC,LinePt pLine,int y,bool bEnd)
 	UrlIterator pEndUrl = pLine->GetUrlInfo()->end();
 	UrlIterator pNowMail = pLine->GetMailInfo()->begin();
 	UrlIterator pEndMail = pLine->GetMailInfo()->end();
+	UrlIterator pNowLabel = pLine->GetLabelInfo()->begin();// by Tetr@pod
+	UrlIterator pEndLabel = pLine->GetLabelInfo()->end();// by Tetr@pod
+	UrlIterator pNowFunc = pLine->GetFuncInfo()->begin();// by Tetr@pod
+	UrlIterator pEndFunc = pLine->GetFuncInfo()->end();// by Tetr@pod
 
 	// レンダリングのための初期化
 	SetTextColor(hDC,m_pStatus->m_clDefaultLetter);
 	StackColor.push(m_pStatus->m_clDefaultLetter);
 	
-	// URL、メール用のペンを作成する
-	HPEN hPenURL,hPenMail;
+	// URL、メール、ラベル用のペンを作成する
+	HPEN hPenURL,hPenMail,hPenLabel;// hPenLabel by Tetr@pod
 #ifdef UNDER_CE
 	hPenMail = CreatePen(PS_SOLID,1,m_pStatus->m_clMailUnder);
 	hPenURL = CreatePen(PS_SOLID,1,m_pStatus->m_clUrlUnder);
+	hPenLabel = CreatePen(PS_SOLID,1,m_pStatus->m_clLabelUnder);// by Tetr@pod
 #else	/*UNDER_CE*/
 	hPenMail = CreatePen(PS_DOT,1,m_pStatus->m_clMailUnder);
 	hPenURL = CreatePen(PS_DOT,1,m_pStatus->m_clUrlUnder);
+	hPenLabel = CreatePen(PS_DOT,1,m_pStatus->m_clLabelUnder);// by Tetr@pod
 #endif	/*UNDER_CE*/
 
 	// キャッシュがあるか確認しておく
@@ -515,12 +545,71 @@ bool CFootyView::RendLine(HDC hDC,LinePt pLine,int y,bool bEnd)
 
 	// １行分のデータをレンダリングする
 	for (size_t i=0;i<nSize;i++,pNowChar++){
+		// 命令・関数？ by Tetr@pod
+		if (pNowFunc != pEndFunc){
+			if (pNowFunc->m_nStartPos == i){
+				nRendMode = RM_FUNC;
+				switch (pNowFunc->m_nKind){
+				case 0:
+					SetTextColor(hDC,m_pStatus->m_clFunc1);
+					break;
+				case 1:
+					SetTextColor(hDC,m_pStatus->m_clFunc2);
+					break;
+				case 2:
+					SetTextColor(hDC,m_pStatus->m_clFunc3);
+					break;
+				case 3:
+					SetTextColor(hDC,m_pStatus->m_clFunc4);
+					break;
+				case 4:
+					SetTextColor(hDC,m_pStatus->m_clFunc5);
+					break;
+				case 5:
+					SetTextColor(hDC,m_pStatus->m_clFunc6);
+					break;
+				case 6:
+					SetTextColor(hDC,m_pStatus->m_clFunc7);
+					break;
+				case 7:
+					SetTextColor(hDC,m_pStatus->m_clFunc8);
+					break;
+				}
+				nStartUrl = GetTextPosX(nColumn);
+			}
+			if (pNowFunc->m_nEndPos == i){
+				nRendMode = RM_NORMAL;
+				SetTextColor(hDC,StackColor.top());
+				pNowFunc++;
+			}
+		}
+		// ラベル？ by Tetr@pod
+		if (pNowLabel != pEndLabel){
+			if (nRendMode != RM_FUNC){									// とりあえず命令・関数優先、誤作動防止
+				if (pNowLabel->m_nStartPos == i){
+					nRendMode = RM_LABEL;
+					SetTextColor(hDC,m_pStatus->m_clLabel);
+					nStartUrl = GetTextPosX(nColumn);
+				}
+				if (pNowLabel->m_nEndPos == i){
+					nRendMode = RM_NORMAL;
+					SetTextColor(hDC,StackColor.top());
+					pNowLabel++;
+					// アンダーラインの描画
+					SelectObject(hDC,hPenLabel);
+					MoveToEx(hDC,nStartUrl,y+m_pFonts->GetHeight(),NULL);
+					LineTo(hDC,GetTextPosX(nColumn),y+m_pFonts->GetHeight());
+				}
+			}
+		}
 		// URL？
 		if (pNowUrl != pEndUrl){
-			if (pNowUrl->m_nStartPos == i){
-				nRendMode = RM_URL;
-				SetTextColor(hDC,m_pStatus->m_clUrl);
-				nStartUrl = GetTextPosX(nColumn);
+			if (nRendMode != RM_LABEL && nRendMode != RM_FUNC){									// URLよりラベル、命令・関数優先
+				if (pNowUrl->m_nStartPos == i){
+					nRendMode = RM_URL;
+					SetTextColor(hDC,m_pStatus->m_clUrl);
+					nStartUrl = GetTextPosX(nColumn);
+				}
 			}
 			if (pNowUrl->m_nEndPos == i){
 				nRendMode = RM_NORMAL;
@@ -534,7 +623,7 @@ bool CFootyView::RendLine(HDC hDC,LinePt pLine,int y,bool bEnd)
 		}
 		// メールアドレス？
 		if (pNowMail != pEndMail){
-			if (nRendMode != RM_URL){						// メールアドレスよりURL優先
+			if (nRendMode != RM_URL && nRendMode != RM_LABEL && nRendMode != RM_FUNC){			// メールアドレスよりURL、ラベル、命令・関数優先
 				if (pNowMail->m_nStartPos == i){
 					nRendMode = RM_MAIL;
 					SetTextColor(hDC,m_pStatus->m_clMail);
@@ -551,6 +640,7 @@ bool CFootyView::RendLine(HDC hDC,LinePt pLine,int y,bool bEnd)
 				LineTo(hDC,GetTextPosX(nColumn),y+m_pFonts->GetHeight());
 			}
 		}
+		
 		// その位置のコマンドをスタックに積む
 		for (;pNowCommand != pEndCommand;pNowCommand++){
 			if (pNowCommand->m_nPosition == i){			// 同じ位置
@@ -665,8 +755,10 @@ bool CFootyView::RendLine(HDC hDC,LinePt pLine,int y,bool bEnd)
 						i++;pNowChar++;
 					}
 					// 通常の文字の描画処理
-					else
+					else{
+						//FOOTY2_PRINTF( L"Drawing %s\n", pNowChar );
 						ExtTextOutW(hDC,GetTextPosX(nColumn),y,0,NULL,pNowChar,1,NULL);
+					}
 				}
 			}
 			// もしも描画位置を過ぎていて、サロゲートペアのときはポインタだけ移動する
@@ -702,6 +794,12 @@ bool CFootyView::RendLine(HDC hDC,LinePt pLine,int y,bool bEnd)
 				LineTo(hDC,GetTextPosX(nColumn),y+m_pFonts->GetHeight());
 				nStartUrl = GetTextPosX(0);
 				break;
+			case RM_LABEL:// by Tetr@pod
+				SelectObject(hDC,hPenLabel);
+				MoveToEx(hDC,nStartUrl,y+m_pFonts->GetHeight(),NULL);
+				LineTo(hDC,GetTextPosX(nColumn),y+m_pFonts->GetHeight());
+				nStartUrl = GetTextPosX(0);
+				break;
 			}
 			// 次の行へ
 			nColumn = 0;
@@ -722,6 +820,11 @@ bool CFootyView::RendLine(HDC hDC,LinePt pLine,int y,bool bEnd)
 		MoveToEx(hDC,nStartUrl,y+m_pFonts->GetHeight(),NULL);
 		LineTo(hDC,GetTextPosX(nColumn),y+m_pFonts->GetHeight());
 		break;
+	case RM_LABEL:// by Tetr@pod
+		SelectObject(hDC,hPenLabel);
+		MoveToEx(hDC,nStartUrl,y+m_pFonts->GetHeight(),NULL);
+		LineTo(hDC,GetTextPosX(nColumn),y+m_pFonts->GetHeight());
+		break;
 	}
 	
 	// 行末のマークを描画する
@@ -739,11 +842,12 @@ bool CFootyView::RendLine(HDC hDC,LinePt pLine,int y,bool bEnd)
 	// オブジェクト破棄
 	DeleteObject(hPenURL);
 	DeleteObject(hPenMail);
+	DeleteObject(hPenLabel);// by Tetr@pod
 	return true;
 }
 
 /*----------------------------------------------------------------
-CFootyView::InitDcForSelected
+CFootyView::InitDcForSelect
 選択領域の描画のためにデバイスコンテキスト初期化。
 pSelInfoには元の情報を格納するための構造体へのポインタ
 ----------------------------------------------------------------*/
@@ -1061,6 +1165,21 @@ void CFootyView::DrawLine(HDC hDC,int x1,int y1,int x2,int y2,COLORREF color,int
 	LineTo(hDC,x2,y2);
 	SelectObject(hDC,hOldPen);
 	DeleteObject(hPen);
+}
+
+void CFootyView::SetUnderlineDraw(bool flag){
+	m_bUnderlineDraw = flag;
+	//m_bUnderlineDraw = true;
+}
+
+BOOL CFootyView::ImageLoad(const wchar_t *pFilePath){
+	return m_ImgCtr->Load(pFilePath);
+}
+void CFootyView::ImageClear(void){
+	m_ImgCtr->UnLoad();
+}
+void CFootyView::SetColor(COLORREF color){
+	m_ImgCtr->SetBgColor(color);
 }
 
 /*[EOF]*/

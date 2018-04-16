@@ -11,14 +11,12 @@
 #include "hsed_config.h"
 #include "support.h"
 #include "poppad.h"
-#include "popfile.h"
 #include "resource.h"
-
-#define tabinfo_is_assigned_to_file(tab_data, file_path) (check_if_two_paths_map_to_same((tab_data)->FileName, file_path))
 
 // poppad.cpp
 LRESULT CALLBACK MyEditProc( HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam );
 void poppad_setedit( int );
+void DoCaption ( char *szTitleName, int TabID );
 
 void __stdcall OnFooty2TextModified(int id, void *pParam, int nStatus);
 void __stdcall OnFootyContextMenu(void *pParam, int id);
@@ -33,6 +31,7 @@ void PopFontSetEditFont();
 extern HWND     hwndClient;
 extern HWND     hwndTab;
 extern HWND     hwbak;
+extern HWND     hwndDummy;
 extern int      activeID;
 extern int      activeFootyID;
 extern WNDPROC	Org_EditProc;
@@ -43,18 +42,20 @@ extern char     szTitleName[_MAX_FNAME + _MAX_EXT] ;
 extern char     szStartDir[_MAX_PATH];
 static HMENU    hMenu = NULL;
 
+extern int      nowViewMode;// by Tetr@pod
+
 // タブを作成
 // Create a tab
 //
 // 引数(Parameters)
-// nTabNumber:  挿入先のタブ番号
-// szTitleName: キャプション
-// szFileName:  管理するファイルのファイル名
-// szDirName:   管理するファイルのディレクトリ名
+// nTabNumber:  挿入先のタブ番号(Number of target tab's insert point)
+// szTitleName: キャプション(The caption)
+// szFileName:  管理するファイルのファイル名(File name of file managed by target tab)
+// szDirName:   管理するファイルのディレクトリ名(Directory name of file managed by target tab)
 //
 // 戻り値
 // ありません(Nothing)
-int CreateTab(int nTabNumber, const char *szNewTitleName, const char *szNewFileName, const char *szNewDirName)
+void CreateTab(int nTabNumber, const char *szNewTitleName, const char *szNewFileName, const char *szNewDirName)
 {
 	int FootyID;
 	int j/*, ret*/;
@@ -62,6 +63,7 @@ int CreateTab(int nTabNumber, const char *szNewTitleName, const char *szNewFileN
 	TABINFO *lpTabInfo, *lpTopTabInfo;
 	TCITEM tc_item;
 	RECT rect;
+	char szCaption[_MAX_PATH+128];
 	MENUITEMINFO mii;
 	LONG dx, dy;
 
@@ -69,12 +71,13 @@ int CreateTab(int nTabNumber, const char *szNewTitleName, const char *szNewFileN
 	// Create a Footy window
 	GetClientRect(hwndTab, &rect);
 	TabCtrl_AdjustRect(hwndTab, FALSE, &rect);
-	dx = max(rect.right-rect.left, 1);
-	dy = max(rect.bottom-rect.top, 1);
+	dx = max(rect.right-rect.left, 512);
+	dy = max(rect.bottom-rect.top, 512);
+	// dx, dy を小さいサイズにすると、分割ビュー時にバグる
 	FootyID = Footy2Create(hwndTab, rect.left, rect.top, dx, dy, VIEWMODE_INVISIBLE);
 	if( FootyID < 0 ) {
 		DebugBreak();	// 2008-02-17 Shark++ 取り敢えずここで落とす
-		return -1;
+		return;
 	}
 
 //	FootySetMetrics(FootyID, F_SM_CLICKABLE_MODE, 0);	// 2008-02-17 Shark++ 代替手段不明
@@ -94,6 +97,7 @@ int CreateTab(int nTabNumber, const char *szNewTitleName, const char *szNewFileN
 	PopFontSetEditFont();
 
 	// タブ情報の構造体を作成する
+	// Create a struct of new tab information
 	lpTabInfo = (TABINFO *)malloc(sizeof(TABINFO));
 	lstrcpy(lpTabInfo->TitleName, szNewTitleName);
 	lstrcpy(lpTabInfo->FileName, szNewFileName);
@@ -114,19 +118,19 @@ int CreateTab(int nTabNumber, const char *szNewTitleName, const char *szNewFileN
 	}
 	else lpTabInfo->ZOrder.next = lpTabInfo->ZOrder.prev = lpTabInfo;
 
-	TCHAR caption_name[MAX_PATH];
-	lstrcpyn(caption_name, szNewTitleName[0] == '\0' ? TABUNTITLED : szNewTitleName, MAX_PATH);
-
-	int num_of_tabs = TabCtrl_GetItemCount(hwndTab);
-
-	if (nTabNumber < 0 || nTabNumber > num_of_tabs) nTabNumber = num_of_tabs;
+	// タブの名前を登録
+	// Register tab name
+	if(szNewTitleName[0] == '\0') strcpy(szCaption, TABUNTITLED);
+	else strcpy(szCaption, szNewTitleName);
 
 	// 新しいタブを挿入
+	// Insert a new tab
+	if(nTabNumber < 0) nTabNumber = TabCtrl_GetItemCount(hwndTab);
 	tc_item.mask = TCIF_TEXT | TCIF_PARAM;
-	tc_item.pszText = caption_name;
+	tc_item.pszText = szCaption;
 	tc_item.lParam = (LPARAM)lpTabInfo;
 	TabCtrl_InsertItem(hwndTab, nTabNumber, &tc_item);
-
+	TabCtrl_SetCurSel(hwndTab, nTabNumber);
 	if(lpTopTabInfo != NULL)
 		activeID = GetTabID(lpTopTabInfo->FootyID);
 	else
@@ -137,113 +141,84 @@ int CreateTab(int nTabNumber, const char *szNewTitleName, const char *szNewFileN
 	if(hMenu == NULL)
 		hMenu =  GetSubMenu(GetMenu(hwbak), POS_WINDOW);
 
-	mii.cbSize = sizeof(MENUITEMINFO);
-	mii.fMask = MIIM_ID | MIIM_TYPE;
-	mii.fType = MFT_RADIOCHECK | MFT_STRING;
-#ifdef ASSIGN_TAB_LIST_TO_FOOTY_IDS
-	mii.wID = IDM_ACTIVATETAB + FootyID;
-#else
-	mii.wID = IDM_ACTIVATETAB + nTabNumber;
-#endif
-	mii.dwTypeData = caption_name;
+	mii.cbSize     = sizeof(MENUITEMINFO);
+	mii.fMask      = MIIM_ID | MIIM_TYPE;
+	mii.fType      = MFT_RADIOCHECK | MFT_STRING;
+	// mii.wID        = IDM_ACTIVATETAB + nTabNumber;
+	mii.wID        = IDM_SEPARATEWINDOWQ + nTabNumber;
+	mii.dwTypeData = (LPSTR)(szNewTitleName[0] == '\0' ? TABUNTITLED : szNewTitleName);
 	InsertMenuItem(hMenu, POS_TABBASE + nTabNumber, TRUE, &mii);
 
-#ifndef ASSIGN_TAB_LIST_TO_FOOTY_IDS
-
-	// Reassign the tab list items to the tabs
-
 	mii.fMask = MIIM_ID;
-
-	while (nTabNumber < num_of_tabs) {
-
-		nTabNumber++;
-
-		mii.wID = IDM_ACTIVATETAB + num_of_tabs;
-		SetMenuItemInfo(hMenu, POS_TABBASE + num_of_tabs, TRUE, &mii);
-
+	for(j = nTabNumber + 1; j < GetMenuItemCount(hMenu); j++){
+		mii.wID = IDM_ACTIVATETAB + j;
+		SetMenuItemInfo(hMenu, POS_TABBASE + j, TRUE, &mii);
 	}
-
-#endif
-
 	DrawMenuBar(hwbak);
 
 	ActivateTab(activeID, nTabNumber);
 
-	return nTabNumber;
+	return;
 }
 
 // タブを削除する
-// Remove a tab from the menu
+// Delete a tab
 //
 // 引数(Parameters)
-// tab_id:  タブ番号
-//     Specifies the number of the tab to remove.
+// nTabNumber:  タブ番号(Number of target tab)
 //
-// 戻り値(Return value)
-// ありません
-// The function does not return a return value.
-
-void DeleteTab(int tab_id)
+// 戻り値(Result)
+// ありません(Nothing)
+void DeleteTab(int nTabNumber)
 {
+	TABINFO *lpTabInfo;
+	MENUITEMINFO mii;
+	int n = TabCtrl_GetItemCount(hwndTab), i, nFootyID;
 
-	TABINFO *tab_data = GetTabInfo(tab_id);
-	if (tab_data == NULL) return;
+	lpTabInfo = GetTabInfo(nTabNumber);
+//	if(lpTabInfo == NULL || (n == 1 && lpTabInfo->FileName[0] == '\0' && FootyGetMetrics(0, F_GM_UNDOREM) <= 0
+//		&& FootyGetMetrics(0, F_GM_REDOREM) <= 0))
+	if(lpTabInfo == NULL || (n == 1 && lpTabInfo->FileName[0] == '\0' && Footy2IsEdited(activeFootyID)))	// 2008-02-17 Shark++ 代替機能未実装
+		return;
 
-	DeleteMenu(hMenu, IDM_ACTIVATETAB + tab_id, MF_BYCOMMAND);
+	nFootyID = lpTabInfo->FootyID;
+	(lpTabInfo->ZOrder.prev)->ZOrder.next = lpTabInfo->ZOrder.next;
+	(lpTabInfo->ZOrder.next)->ZOrder.prev = lpTabInfo->ZOrder.prev;
+	free(lpTabInfo);
+	TabCtrl_DeleteItem(hwndTab, nTabNumber);
+	DeleteMenu(hMenu, POS_TABBASE + nTabNumber, MF_BYPOSITION);
 
-	//int active_tab = TabCtrl_GetCurSel(hwndTab);
+	// 新しい操作対象となるタブを取得
+	// Get a new current tab
+	if(--n > 0){
+		if(activeID == nTabNumber) TabCtrl_SetCurSel(hwndTab, n <= activeID ? n - 1 : activeID);
+		else if(activeID > nTabNumber) TabCtrl_SetCurSel(hwndTab, activeID-1);
+		activeID = TabCtrl_GetCurSel(hwndTab);
+		if(GetTabInfo(activeID) != NULL)
+			ActivateTab(-1, activeID);
+		else activeFootyID = -1;
+	} else CreateTab(0, "", "", "");
 
-	TabCtrl_DeleteItem(hwndTab, tab_id);
-
-	int num_of_tabs = TabCtrl_GetItemCount(hwndTab);
-
-	if (num_of_tabs <= 0) {
-
-		CreateTab(0, "", "", "");
-
-	} else {
-
-		//ActivateTab(-1, active_tab < num_of_tabs ? active_tab : num_of_tabs - 1);
-		ActivateTab(-1, get_currently_selected_tab_id());
-
-#ifndef ASSIGN_TAB_LIST_TO_FOOTY_IDS
-
-		// Reassign the tab list items to the tabs
-
-		MENUITEMINFO item_data;
-		item_data.cbSize = sizeof(MENUITEMINFO);
-		item_data.fMask = MIIM_ID;
-
-		while (tab_id < num_of_tabs) {
-
-			item_data.wID = IDM_ACTIVATETAB + tab_id;
-
-			SetMenuItemInfo(hMenu, POS_TABBASE + tab_id, TRUE, &item_data);
-
-			tab_id++;
-
-		}
-
-#endif
-
+	mii.cbSize = sizeof(MENUITEMINFO);
+	mii.fMask  = MIIM_ID;
+	for(i = nTabNumber; i < GetMenuItemCount(hMenu); i++){
+		mii.wID = IDM_ACTIVATETAB + i;
+		SetMenuItemInfo(hMenu, POS_TABBASE + i, TRUE, &mii);
 	}
 
-	delete_tabinfo(tab_data);
-
+	Footy2Delete(nFootyID);
 	return;
-
 }
 
 // タブ情報を取得
-// Get the data of a tab
+// Get a tab information
 //
 // 引数(Parameters)
-// nTabNumber:  タブ番号
-//     Specifies the number of the tab.
+// nTabNumber:  タブ番号(Number of target tab)
 //
 // 戻り値(Result)
 // タブ情報の構造体へのポインタを返します。
-// The function returns a pointer to the tab data on success, or NULL if not found.
+// Return a pointer to a target tab information
 TABINFO *GetTabInfo(int nTabNumber)
 {
 	TCITEM tc_item;
@@ -255,19 +230,22 @@ TABINFO *GetTabInfo(int nTabNumber)
 }
 
 // タブ情報を設定
+// Set a tab information
 //
 // 引数(Parameters)
-// nTabNumber:  タブ番号
-// szTitleName: キャプション
-// szFileName:  管理するファイルのファイル名
-// szDirName:   管理するファイルのディレクトリ名
+// nTabNumber:  タブ番号(Number of target tab.)
+// szTitleName: キャプション(The caption.)
+// szFileName:  管理するファイルのファイル名(File name of file managed by target tab.)
+// szDirName:   管理するファイルのディレクトリ名(Directory name of file managed by target tab.)
 // bNeedSave:   保存が必要ならTRUE、それ以外ならFALSE
+//              If this parameter is TRUE, the string target tab has need to save; otherwise, it doesn't.
 //
 // 戻り値(Result)
 // ありません(Nothing)
 //
 // 備考(Remarks)
 // szTitleName, szFileName, szDirNameにNULLを指定すると、そのパラメータは無視されます。
+// If szTitleName, szFileName, szDirName is set NULL, the parameter is ignored.
 void SetTabInfo(int nTabNumber, const char *szTitleName, const char *szFileName, const char *szDirName, BOOL bNeedSave)
 {
 	MENUITEMINFO mii;
@@ -281,7 +259,9 @@ void SetTabInfo(int nTabNumber, const char *szTitleName, const char *szFileName,
 
 		szMenuText = (char *)malloc(max(lstrlen(lpTabInfo->TitleName), lstrlen(TABUNTITLED)) + 3);
 		lstrcpy(szMenuText, lpTabInfo->TitleName[0] == '\0' ? TABUNTITLED : lpTabInfo->TitleName);
+
 		if(lpTabInfo->NeedSave) lstrcat(szMenuText, " *");
+
 		mii.cbSize = sizeof(MENUITEMINFO);
 		mii.fMask  = MIIM_TYPE;
 		mii.fType  = MFT_STRING | MFT_RADIOCHECK;
@@ -295,15 +275,17 @@ void SetTabInfo(int nTabNumber, const char *szTitleName, const char *szFileName,
 }
 
 // 条件を満たすタブを検索
+// Search a tab matching up to a conditional
 //
 // 引数(Parameters)
-// szTitleName: キャプション
-// szFileName:  管理するファイルのファイル名
-// szDirName:   管理するファイルのディレクトリ名
+// szTitleName: キャプション(The caption)
+// szFileName:  管理するファイルのファイル名(File name of file managed by target tab)
+// szDirName:   管理するファイルのディレクトリ名(Directory name of file managed by target tab)
 // ullFileIndex: ファイル インデックス
 //
 // 戻り値(Result)
 // 見つかった場合は対象のタブ番号、見つからなければ-1を返します。
+// If finder could find a target, return number of target, or else return -1
 int SearchTab(const char *szTitleName, const char *szFileName, const char *szDirName, ULONGLONG ullFileIndex)
 {
 	TABINFO *lpTabInfo;
@@ -319,24 +301,6 @@ int SearchTab(const char *szTitleName, const char *szFileName, const char *szDir
 			return i;
 	}
 	return -1;
-}
-
-int retrieve_tab_holding_file(LPCTSTR file_path)
-{
-
-	int num = TabCtrl_GetItemCount(hwndTab);
-
-	for (int i = 0; i < num; i++) {
-
-		TABINFO *tab_data = GetTabInfo(i);
-		if (!tab_data) break;
-
-		if (tabinfo_is_assigned_to_file(tab_data, file_path)) return i;
-
-	}
-
-	return -1;
-
 }
 
 // タブをアクティブにする
@@ -357,8 +321,7 @@ void ActivateTab(int nTabNumber1, int nTabNumber2)
 
 	lpTabInfo1 = GetTabInfo(nTabNumber1);
 	lpTabInfo2 = GetTabInfo(nTabNumber2);
-	if(lpTabInfo2 == NULL) return;
-	{
+	if(lpTabInfo2 != NULL){
 		activeID = nTabNumber2;
 		activeFootyID = lpTabInfo2->FootyID;
 
@@ -374,16 +337,17 @@ void ActivateTab(int nTabNumber1, int nTabNumber2)
 
 		GetClientRect(hwndTab, &rect);
 		TabCtrl_AdjustRect(hwndTab, FALSE, &rect);
-
 		Footy2Move(activeFootyID, rect.left, rect.top, rect.right-rect.left, rect.bottom-rect.top);
-		Footy2ChangeView(activeFootyID, VIEWMODE_NORMAL);
+		// Footy2ChangeView(activeFootyID, VIEWMODE_NORMAL);
+		Footy2ChangeView(activeFootyID, nowViewMode);// by Tetr@pod
+		//Footy2ChangeView(activeFootyID, VIEWMODE_QUAD);
 		Footy2SetFocus(activeFootyID, 0);
 		poppad_setsb_current(activeFootyID);
 		Footy2Refresh(activeFootyID);
 
 		CheckMenuRadioItem(hMenu, POS_TABBASE, GetMenuItemCount(hMenu) - 1, POS_TABBASE + nTabNumber2, MF_BYPOSITION);
 	}
-
+	else activeID = activeFootyID = -1;
 	if(lpTabInfo1 != NULL)
 		Footy2ChangeView(lpTabInfo1->FootyID, VIEWMODE_INVISIBLE);
 
@@ -391,20 +355,19 @@ void ActivateTab(int nTabNumber1, int nTabNumber2)
 }
 
 // Zオーダーの順序を変更する
+// Change Z-Order.
 //
 // 引数(Parameters)
-// nTabNumber1: トップだったタブ番号
-// nTabNumber2: トップにするタブ番号
+// nTabNumber1: トップだったタブ番号(Number of tab which was top tab)
+// nTabNumber2: トップにするタブ番号(Number of tab been top tab)
 //
-// 戻り値
-// ありません
+// 戻り値(Result)
+// ありません(Nothing)
 void ChangeZOrder(int nTabNumber1, int nTabNumber2)
 {
-
 	TABINFO *lpTabInfo1, *lpTabInfo2;
 	lpTabInfo1 = GetTabInfo(nTabNumber1);
 	lpTabInfo2 = GetTabInfo(nTabNumber2);
-
 	if(lpTabInfo1 != NULL && lpTabInfo2 != NULL){
 		(lpTabInfo2->ZOrder.prev)->ZOrder.next = lpTabInfo2->ZOrder.next;
 		(lpTabInfo2->ZOrder.next)->ZOrder.prev = lpTabInfo2->ZOrder.prev;
@@ -416,17 +379,16 @@ void ChangeZOrder(int nTabNumber1, int nTabNumber2)
 
 }
 
+
 // FootyのIDからIDを取得する
-// Retrieve the ID of the tab assigned to a Footy ID.
+// Get tab ID by Footy ID
 //
 // 引数(Parameters)
-// lpTabInfo: FootyのID
-//     Specifies the Footy ID to retrieve a tab ID from.
+// lpTabInfo: FootyのID(ID of Footy)
 //
-// 戻り値(Return value)
+// 戻り値(Result)
 // 渡されたFootyIDを持つタブのID
-// The function returns -1 on failure, or the tab ID if found.
-
+// ID of tab which has Footy ID
 int GetTabID(int FootyID)
 {
 	TABINFO *lpTabInfo;
@@ -440,54 +402,4 @@ int GetTabID(int FootyID)
 		}
 	}
 	return -1;
-}
-
-// Get the handle of the menu assigned to the tab manager.
-HMENU get_assigned_tab_menu_handle(void)
-{
-
-	return hMenu;
-
-}
-
-// Get the index of the tab selected currently.
-int get_currently_selected_tab_id(void)
-{
-
-	return TabCtrl_GetCurSel(hwndTab);
-
-}
-
-void delete_tabinfo(TABINFO *tab_data)
-{
-
-	TABINFO *next_data = tab_data->ZOrder.next;
-	TABINFO *previous_data = tab_data->ZOrder.prev;
-
-	if (previous_data) previous_data->ZOrder.next = next_data;
-	if (next_data) next_data->ZOrder.prev = previous_data;
-
-	SetWindowLongPtr(Footy2GetWnd(tab_data->FootyID, 0), GWL_WNDPROC, (LONG_PTR)Org_EditProc);
-
-	Footy2Delete(tab_data->FootyID);
-
-	free(tab_data);
-
-}
-
-int tabinfo_load_file(TABINFO *tab_data, LPCTSTR file_path)
-{
-
-	if (lstrlen(file_path) >= MAX_PATH) return -1;
-	if (!PopFileRead(tab_data->FootyID, file_path)) return -1;
-
-	tab_data->NeedSave = 0;
-
-	lstrcpyn(tab_data->FileName, file_path, MAX_PATH);
-
-	hsp_getpath(file_path, tab_data->TitleName, GETPATH_WITHOUTDIR);
-	hsp_getpath(file_path, tab_data->DirName, GETPATH_DIR);
-
-	return 0;
-
 }

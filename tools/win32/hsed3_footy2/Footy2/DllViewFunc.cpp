@@ -71,6 +71,38 @@ FOOTYEXPORT(int) Footy2SetColor(int nID,int nPosition,COLORREF nColor,bool bRedr
 	case CP_MAILUNDERLINE:
 		pFooty->m_cStatus.m_clMailUnder = nColor;
 		break;
+	case CP_LABELTEXT:// by Tetr@pod
+		pFooty->m_cStatus.m_clLabel = nColor;
+		break;
+	case CP_LABELUNDERLINE:// by Tetr@pod
+		pFooty->m_cStatus.m_clLabelUnder = nColor;
+		break;
+
+	case CP_FUNCTEXT1:// by Tetr@pod
+		pFooty->m_cStatus.m_clFunc1 = nColor;
+		break;
+	case CP_FUNCTEXT2:// by Tetr@pod
+		pFooty->m_cStatus.m_clFunc2 = nColor;
+		break;
+	case CP_FUNCTEXT3:// by Tetr@pod
+		pFooty->m_cStatus.m_clFunc3 = nColor;
+		break;
+	case CP_FUNCTEXT4:// by Tetr@pod
+		pFooty->m_cStatus.m_clFunc4 = nColor;
+		break;
+	case CP_FUNCTEXT5:// by Tetr@pod
+		pFooty->m_cStatus.m_clFunc5 = nColor;
+		break;
+	case CP_FUNCTEXT6:// by Tetr@pod
+		pFooty->m_cStatus.m_clFunc6 = nColor;
+		break;
+	case CP_FUNCTEXT7:// by Tetr@pod
+		pFooty->m_cStatus.m_clFunc7 = nColor;
+		break;
+	case CP_FUNCTEXT8:// by Tetr@pod
+		pFooty->m_cStatus.m_clFunc8 = nColor;
+		break;
+
 	case CP_HIGHLIGHTTEXT:
 		pFooty->m_cStatus.m_clHighlightText = nColor;
 		break;
@@ -223,6 +255,35 @@ FOOTYEXPORT(int) Footy2SetFontFaceW(int nID,int nFontMode,const wchar_t *pString
 	return FOOTY2ERR_NONE;
 }
 
+/*----------------------------------------------------------------
+Footy2SetForceFont
+Žw’èƒtƒHƒ“ƒg‚ðŽg—p‚ð‹­§‚·‚é by inovia
+----------------------------------------------------------------*/
+FOOTYEXPORT(int) Footy2SetForceFont(int nID, int flag){
+	/*éŒ¾*/
+	CFooty *pFooty = GetFooty(nID);
+	/*ƒGƒ‰[ƒ`ƒFƒbƒN*/
+	if (!pFooty)return FOOTY2ERR_NOID;
+	/*ƒtƒ‰ƒbƒVƒ…‚³‚¹‚é*/
+	if (!pFooty->SetForceFont(flag))
+		return FOOTY2ERR_ARGUMENT;
+	return FOOTY2ERR_NONE;
+}
+
+/*----------------------------------------------------------------
+Footy2SetSpeedDraw
+‚‘¬•`‰æ‚ðON‚É‚·‚éH by inovia
+----------------------------------------------------------------*/
+FOOTYEXPORT(int) Footy2SetSpeedDraw(int nID, int flag){
+	/*éŒ¾*/
+	CFooty *pFooty = GetFooty(nID);
+	/*ƒGƒ‰[ƒ`ƒFƒbƒN*/
+	if (!pFooty)return FOOTY2ERR_NOID;
+	/*ƒtƒ‰ƒbƒVƒ…‚³‚¹‚é*/
+	if (!pFooty->SetSpeedDraw(flag))
+		return FOOTY2ERR_ARGUMENT;
+	return FOOTY2ERR_NONE;
+}
 
 /*----------------------------------------------------------------
 Footy2SetLineIcon
@@ -260,4 +321,70 @@ FOOTYEXPORT(int) Footy2GetLineIcon(int nID,size_t nLine,int *pIcons){
 	return FOOTY2ERR_NONE;
 }
 
+/*----------------------------------------------------------------
+Footy2SetBackgroundImageA
+”wŒi‰æ‘œ‚ðÝ’è‚·‚éˆ—
+----------------------------------------------------------------*/
+FOOTYEXPORT(int) Footy2SetBackgroundImageA(int nID, const char *pPath, bool bRefresh){
+	/*éŒ¾*/
+	CFooty *pFooty = GetFooty(nID);
+	if (!pFooty)return FOOTY2ERR_NOID;
+	/*‰æ‘œ‚ðÝ’è‚·‚é*/
+	CConvFactory cConv;
+	if (!cConv.GetConv()->ToUnicode(pPath,strlen(pPath)))
+		return FOOTY2ERR_MEMORY;
+	if (!pFooty->SetBackgroundImage((const wchar_t*)cConv.GetConv()->GetConvData(), bRefresh)){
+		return FOOTY2ERR_404;
+	}
+	/*Ä•`‰æ‚³‚¹‚é*/
+	if (bRefresh)pFooty->m_cView[0].Refresh();
+	return FOOTY2ERR_NONE;
+}
+
+/*----------------------------------------------------------------
+Footy2SetBackgroundImageW
+”wŒi‰æ‘œ‚ðÝ’è‚·‚éˆ—
+----------------------------------------------------------------*/
+FOOTYEXPORT(int) Footy2SetBackgroundImageW(int nID, const wchar_t *pPath, bool bRefresh){
+	/*éŒ¾*/
+	CFooty *pFooty = GetFooty(nID);
+	if (!pFooty)return FOOTY2ERR_NOID;
+	/*‰æ‘œ‚ðÝ’è‚·‚é*/
+	if (!pFooty->SetBackgroundImage(pPath, bRefresh)){
+		return FOOTY2ERR_404;
+	}
+	/*Ä•`‰æ‚³‚¹‚é*/
+	if (bRefresh)pFooty->m_cView[0].Refresh();
+	return FOOTY2ERR_NONE;
+}
+
+/*----------------------------------------------------------------
+Footy2ClearBackgroundImage
+”wŒi‰æ‘œ‚ð‰ðœ‚·‚éˆ—
+----------------------------------------------------------------*/
+FOOTYEXPORT(int) Footy2ClearBackgroundImage(int nID, bool bRefresh){
+	/*éŒ¾*/
+	CFooty *pFooty = GetFooty(nID);
+	if (!pFooty)return FOOTY2ERR_NOID;
+	/*‰æ‘œ‚ðÝ’è‚·‚é*/
+	pFooty->ClearBackgroundImage(bRefresh);
+	/*Ä•`‰æ‚³‚¹‚é*/
+	if (bRefresh)pFooty->m_cView[0].Refresh();
+	return FOOTY2ERR_NONE;
+}
+
+/*----------------------------------------------------------------
+Footy2SetBackgroundImageColor
+”wŒi‰æ‘œ‚Ì”wŒiF‚ðÝ’è‚·‚éˆ—
+----------------------------------------------------------------*/
+FOOTYEXPORT(int) Footy2SetBackgroundImageColor(int nID, COLORREF color){
+	/*éŒ¾*/
+	CFooty *pFooty = GetFooty(nID);
+	if (!pFooty)return FOOTY2ERR_NOID;
+	/*F‚ðÝ’è‚·‚é*/
+	if (!pFooty->SetBackgroundColor(color)){
+		return FOOTY2ERR_ARGUMENT;
+	}
+	return FOOTY2ERR_NONE;
+}
 /*[EOF]*/

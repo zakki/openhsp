@@ -209,6 +209,9 @@ bool CFootyView::OnKeyDown(int nKeyCode)
 				m_pDocuments->GetTabLen(),
 				m_pDocuments->GetLapelMode());
 			END_MOVEKEY
+				if (m_ImgCtr->IsLoaded()){
+					nNeedRedraw = CFootyDoc::REDRAW_ALL;// 背景画像が読まれている場合は、残像が残る為すべて再描画する
+				}
 		}
 		break;
 
@@ -234,6 +237,9 @@ bool CFootyView::OnKeyDown(int nKeyCode)
 				m_pDocuments->GetCaretPosition()->GetLinePointer()->GetOffset() + stEthicInfo.m_nEthicLine + 1)
 				m_pDocuments->GetFirstVisible(m_nViewID)->MoveEthicNext(m_pDocuments->GetLineList(),1);
 			END_MOVEKEY
+				if (m_ImgCtr->IsLoaded()){
+					nNeedRedraw = CFootyDoc::REDRAW_ALL;// 背景画像が読まれている場合は、残像が残る為すべて再描画する
+				}
 		}
 		break;
 
@@ -262,6 +268,9 @@ bool CFootyView::OnKeyDown(int nKeyCode)
 			m_pDocuments->GetCaretPosition()->GetLinePointer()->GetOffset() + stEthicInfo.m_nEthicLine + 1)
 			m_pDocuments->GetFirstVisible(m_nViewID)->MoveEthicNext(m_pDocuments->GetLineList(),1);
 		END_MOVEKEY
+		if (m_ImgCtr->IsLoaded()){
+			nNeedRedraw = CFootyDoc::REDRAW_ALL;// 背景画像が読まれている場合は、残像が残る為すべて再描画する
+		}
 		break;
 
 //左のキー
@@ -286,6 +295,9 @@ bool CFootyView::OnKeyDown(int nKeyCode)
 				pCaretPos->MoveColumnBackward(m_pDocuments->GetLineList(),1);
 		}
 		END_MOVEKEY
+		if (m_ImgCtr->IsLoaded()){
+			nNeedRedraw = CFootyDoc::REDRAW_ALL;// 背景画像が読まれている場合は、残像が残る為すべて再描画する
+		}
 		break;
 
 //ページダウンキー
