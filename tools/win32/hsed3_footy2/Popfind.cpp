@@ -94,8 +94,13 @@ int CALLBACK FRHookProc(HWND hDlg, UINT uiMsg, WPARAM wParam, LPARAM /*lParam*/)
 	switch(uiMsg){
 		case WM_INITDIALOG:
 		{
+#ifdef JPNMSG
 			SendDlgItemMessage(hDlg, IDC_FINDMODE, CB_INSERTSTRING, 0, (LPARAM)"ïWèÄ");
 			SendDlgItemMessage(hDlg, IDC_FINDMODE, CB_INSERTSTRING, 1, (LPARAM)"ê≥ãKï\åª");
+#else
+			SendDlgItemMessage(hDlg, IDC_FINDMODE, CB_INSERTSTRING, 0, (LPARAM)"Normal");
+			SendDlgItemMessage(hDlg, IDC_FINDMODE, CB_INSERTSTRING, 1, (LPARAM)"Regexp");
+#endif
 			SendDlgItemMessage(hDlg, IDC_FINDMODE, CB_SETCURSEL, frcd.Mode, 0L);
 			SendDlgItemMessage(hDlg, IDC_ESCSEQ, BM_SETCHECK, frcd.EscSeq, 0L);
 			return TRUE;

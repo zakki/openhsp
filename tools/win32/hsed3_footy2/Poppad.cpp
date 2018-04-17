@@ -3038,50 +3038,94 @@ BOOL CALLBACK ConfigDlgProc (HWND hDlg, UINT message, WPARAM wParam, LPARAM lPar
 			tvis.item.mask           = TVIF_TEXT | TVIF_PARAM;
 
 			tvis.hParent      = TVI_ROOT;
+#ifdef JPNMSG
 			tvis.item.pszText = "全般";
+#else
+			tvis.item.pszText = "Global";
+#endif
 			tvis.item.lParam  = NULL;
 			tvis.hParent = TreeView_InsertItem(hTree, &tvis);
-				tvis.item.pszText = "動作";
-				tvis.item.lParam  = (LPARAM)(hPage[0] = CreateDialog(hInst, "PP_BEHAVIOR", hDlg, ConfigBehaviorPageProc));
+#ifdef JPNMSG
+			tvis.item.pszText = "動作";
+#else
+			tvis.item.pszText = "Behavior";
+#endif
+			tvis.item.lParam  = (LPARAM)(hPage[0] = CreateDialog(hInst, "PP_BEHAVIOR", hDlg, ConfigBehaviorPageProc));
 				MoveWindow((HWND)tvis.item.lParam, rect.left, rect.top, rect.right, rect.bottom, TRUE);
 				hSelItem = TreeView_InsertItem(hTree, &tvis);
+#ifdef JPNMSG
 				tvis.item.pszText = "ディレクトリ";
+#else
+				tvis.item.pszText = "Directory";
+#endif
 				tvis.item.lParam  = (LPARAM)(hPage[1] = CreateDialog(hInst, "PP_DIRECTORY", hDlg, ConfigDirectoryPageProc));
 				MoveWindow((HWND)tvis.item.lParam, rect.left, rect.top, rect.right, rect.bottom, TRUE);
 				TreeView_InsertItem(hTree, &tvis);
 			TreeView_Expand(hTree, tvis.hParent, TVE_EXPAND);
 
 			tvis.hParent      = TVI_ROOT;
+#ifdef JPNMSG
 			tvis.item.pszText = "エディタ";
+#else
+			tvis.item.pszText = "Editor";
+#endif
 			tvis.item.lParam  = NULL;
 			tvis.hParent = TreeView_InsertItem(hTree, &tvis);
+#ifdef JPNMSG
 				tvis.item.pszText = "フォント";
-				tvis.item.lParam  = (LPARAM)(hPage[2] = CreateDialog(hInst, "PP_FONT", hDlg, ConfigFontPageProc));
+#else
+			tvis.item.pszText = "Font";
+#endif
+			tvis.item.lParam  = (LPARAM)(hPage[2] = CreateDialog(hInst, "PP_FONT", hDlg, ConfigFontPageProc));
 				MoveWindow((HWND)tvis.item.lParam, rect.left, rect.top, rect.right, rect.bottom, TRUE);
 				TreeView_InsertItem(hTree, &tvis);
+#ifdef JPNMSG
 				tvis.item.pszText = "色";
+#else
+				tvis.item.pszText = "Color";
+#endif
 				tvis.item.lParam  = (LPARAM)(hPage[3] = CreateDialog(hInst, "PP_COLOR", hDlg, ConfigColorPageProc));
 				MoveWindow((HWND)tvis.item.lParam, rect.left, rect.top, rect.right, rect.bottom, TRUE);
 				TreeView_InsertItem(hTree, &tvis);
+#ifdef JPNMSG
 				tvis.item.pszText = "表示";
+#else
+				tvis.item.pszText = "Display";
+#endif
 				tvis.item.lParam  = (LPARAM)(hPage[4] = CreateDialog(hInst, "PP_NONCHARACTOR", hDlg, ConfigVisualPageProc));
 				MoveWindow((HWND)tvis.item.lParam, rect.left, rect.top, rect.right, rect.bottom, TRUE);
 				TreeView_InsertItem(hTree, &tvis);
+#ifdef JPNMSG
 				tvis.item.pszText = "色分けキーワード";
+#else
+				tvis.item.pszText = "Keywords";
+#endif
 				tvis.item.lParam  = (LPARAM)(hPage[5] = CreateDialog(hInst, "PP_KEYWORD", hDlg, ConfigKeywordPageProc));
 				MoveWindow((HWND)tvis.item.lParam, rect.left, rect.top, rect.right, rect.bottom, TRUE);
 				TreeView_InsertItem(hTree, &tvis);
 			TreeView_Expand(hTree, tvis.hParent, TVE_EXPAND);
 
 			tvis.hParent      = TVI_ROOT;
+#ifdef JPNMSG
 			tvis.item.pszText = "ツール";
+#else
+			tvis.item.pszText = "Tool";
+#endif
 			tvis.item.lParam  = NULL;
 			tvis.hParent = TreeView_InsertItem(hTree, &tvis);
+#ifdef JPNMSG
 				tvis.item.pszText = "アドイン";
+#else
+			tvis.item.pszText = "AddOn";
+#endif
 				tvis.item.lParam  = (LPARAM)(hPage[6] = CreateDialog(hInst, "PP_ADDIN", hDlg, ConfigAddinPageProc));
 				MoveWindow((HWND)tvis.item.lParam, rect.left, rect.top, rect.right, rect.bottom, TRUE);
 				TreeView_InsertItem(hTree, &tvis);
+#ifdef JPNMSG
 				tvis.item.pszText = "外部ツール";
+#else
+				tvis.item.pszText = "ExtTool";
+#endif
 				tvis.item.lParam  = (LPARAM)(hPage[7] = CreateDialog(hInst, "PP_EXTTOOLS", hDlg, ConfigExtToolsPageProc));
 				MoveWindow((HWND)tvis.item.lParam, rect.left, rect.top, rect.right, rect.bottom, TRUE);
 				TreeView_InsertItem(hTree, &tvis);
@@ -3097,8 +3141,13 @@ BOOL CALLBACK ConfigDlgProc (HWND hDlg, UINT message, WPARAM wParam, LPARAM lPar
 			hSubject = GetDlgItem(hDlg, IDC_SUBJECT);
 			GetClientRect(hSubject, &rect);
 			hOrgFont = (HFONT)SendMessage(hSubject, WM_GETFONT, 0, 0);
+#ifdef JPNMSG
 			hFont = CreateFont((rect.bottom-rect.top) * 3 / 5, 0, 0, 0, FW_DONTCARE, FALSE, FALSE, FALSE, DEFAULT_CHARSET,
 				OUT_CHARACTER_PRECIS, CLIP_DEFAULT_PRECIS, DEFAULT_QUALITY, DEFAULT_PITCH, "ＭＳ Ｐゴシック");
+#else
+			hFont = CreateFont((rect.bottom - rect.top) * 3 / 5, 0, 0, 0, FW_DONTCARE, FALSE, FALSE, FALSE, DEFAULT_CHARSET,
+				OUT_CHARACTER_PRECIS, CLIP_DEFAULT_PRECIS, DEFAULT_QUALITY, DEFAULT_PITCH, "MS Shell Dlg");
+#endif
 			SendMessage(hSubject, WM_SETFONT, (WPARAM)hFont, TRUE);
 
 			// デフォルトのページを表示させる
@@ -3152,8 +3201,13 @@ BOOL CALLBACK ConfigDlgProc (HWND hDlg, UINT message, WPARAM wParam, LPARAM lPar
 					return TRUE;
 
 				case IDM_BUTTON1:
+#ifdef JPNMSG
 					if(MessageBox(hDlg, "現在開いているページの設定を初期状態に戻しますが、よろしいですか？\n"
 						"([OK]ボタンを押さなければ、エディタには反映されません)", "確認", MB_YESNO | MB_ICONQUESTION) == IDYES)
+#else
+					if (MessageBox(hDlg, "Restore default. Are you sure?\n"
+						"( Press OK to save setting )", "Notice", MB_YESNO | MB_ICONQUESTION) == IDYES)
+#endif
 							SendMessage(hOldPage, PM_SETDEFAULT, 0, 0L);
 					return TRUE;
 			}
@@ -3291,6 +3345,7 @@ COLORREF crDefColor[] = {
 BOOL CALLBACK ConfigColorPageProc (HWND hDlg, UINT message, WPARAM wParam, LPARAM lParam)
 {
 	static MYCOLORREF crColor[21];
+#ifdef JPNMSG
 	const char *szCategory[] = { "文字の色分け", "特殊な記号の配色", "エディタの配色", "行番号表示領域の配色", "ルーラーの配色", "リンクの配色", "ユーザー定義命令・関数の色分け"};
 	const char *szCharItem[] = { "通常の文字", "命令/関数", "プリプロセッサ命令", "文字列", "マクロ", "コメント", "ラベル" };
 	const char *szNonCharItem[] = { "半角スペース", "全角スペース", "TAB文字", "改行記号", "[EOF](ファイル終端)記号" };
@@ -3299,6 +3354,16 @@ BOOL CALLBACK ConfigColorPageProc (HWND hDlg, UINT message, WPARAM wParam, LPARA
 	const char *szRolerItem[] = { "数字", "背景色", "目盛り", "キャレット位置の強調" };
 
 	const char *szClickableItem[] = { "URL", "URLのアンダーバー", "メールアドレス", "メールアドレスのアンダーバー", "リンクラベル", "リンクラベルのアンダーバー" };// 便宜上リンクラベルと呼びます by Tetr@pod
+#else
+	const char *szCategory[] = { "Words color", "Special symbol", "Editor color", "Line Number color", "ruler color", "link color", "User command/function" };
+	const char *szCharItem[] = { "Words", "command/function", "preprocessor", "strings", "macro", "comment", "label" };
+	const char *szNonCharItem[] = { "Space", "JPN Space", "Tab", "CR", "[EOF](End of File)" };
+	const char *szEditItem[] = { "Background color", "Caret underline", "Divider" };
+	const char *szLineNumItem[] = { "Line Number", "Line Emphasize" };
+	const char *szRolerItem[] = { "Numeric", "Background color", "Scaler", "Caret Emphasize" };
+
+	const char *szClickableItem[] = { "URL", "URL underline", "Mail Address", "Mail Address underline", "Link Label", "Link Label underline" };// 便宜上リンクラベルと呼びます by Tetr@pod
+#endif
 	const char *szUserFuncItem[] = { "#deffunc, #defcfunc", "#modinit, #modterm", "#modfunc, #modcfunc", "#func, #cfunc", "#cmd", "#comfunc", "#define", "#define ctype" };// by Tetr@pod
 
 	typedef struct tagItems{
@@ -3326,6 +3391,7 @@ BOOL CALLBACK ConfigColorPageProc (HWND hDlg, UINT message, WPARAM wParam, LPARA
 				SendDlgItemMessage(hDlg, IDC_COMBO1, CB_ADDSTRING, 0, (LPARAM)szCategory[i]);
 			SendDlgItemMessage(hDlg, IDC_COMBO1, CB_SETCURSEL, 0, 0L);
 
+#ifdef JPNMSG
 			const char *szColorName[] = {
 				"黒",
 				"白",
@@ -3349,6 +3415,31 @@ BOOL CALLBACK ConfigColorPageProc (HWND hDlg, UINT message, WPARAM wParam, LPARA
 				"ルーラー強調の既定色",
 				"ユーザー定義...",
 			};
+#else
+			const char *szColorName[] = {
+				"Black",
+				"White",
+				"Red",
+				"Green",
+				"Blue",
+				"Yellow",
+				"Yellow Green",
+				"Light Blue",
+				"Pink",
+				"Magenta",
+				"Orange",
+				"Dark Green",
+				"Sky Blue",
+				"Dark Brown",
+				"Line Number Default",
+				"Divider Default",
+				"Caret Line Number Default",
+				"Caret Line Underline Default",
+				"Ruler Background Default",
+				"Ruler Emphasis Default",
+				"User Define...",
+			};
+#endif
 
 			num = sizeof(szColorName) / sizeof(szColorName[0]);
 			for(i = 0; i < num; i++)
@@ -3649,7 +3740,11 @@ BOOL CALLBACK ConfigExtToolsPageProc (HWND hDlg, UINT message, WPARAM wParam, LP
 		{
 			HWND hListView;
 			LVITEM lvi;
+#ifdef JPNMSG
 			char *szColumnTitle[] = { "名前", "ファイル パス", };
+#else
+			char *szColumnTitle[] = { "Name", "File Path", };
+#endif
 			LVCOLUMN lvc;
 			int i, nSize;
 			EXTTOOLINFO *lpExtToolInfo, *lpNewExtToolInfo;
