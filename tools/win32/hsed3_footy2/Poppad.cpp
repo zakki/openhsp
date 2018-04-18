@@ -2178,11 +2178,19 @@ LRESULT CALLBACK EditProc (HWND hwnd, UINT iMsg, WPARAM wParam, LPARAM lParam)
 
 //					bUndo = (FootyGetMetrics(activeID, F_GM_UNDOREM) > 0);
 					bUndo = Footy2IsEdited(activeID);	// 2008-02-17 Shark++ 要動作確認
+#ifdef JPNMSG
 					if((!bNeedSave && !bUndo) || 
 						msgboxf(hwnd, "再読込を行う上で、下記のことが起こります。よろしいですか？\n\n"
 						"・「元に戻す」の情報が破棄され、再読込以前に戻れなくなります。%s",
 						"Warning", MB_YESNO | MB_ICONQUESTION, bNeedSave ? "\n・変更が無視されます" : "") == IDYES)
                         	poppad_reload(activeID);
+#else
+					if((!bNeedSave && !bUndo) || 
+						msgboxf(hwnd, "Are you sure you want to reload the text? It will lead to these things.\n\n"
+						"\tYou lose the 'Undo' history and cannot take back any changes before the reloading.%s",
+						"Warning", MB_YESNO | MB_ICONQUESTION, bNeedSave ? "\nlose all unsaved changes" : "") == IDYES)
+                        	poppad_reload(activeID);
+#endif
 					return 0;
 				}
 
@@ -2196,11 +2204,19 @@ LRESULT CALLBACK EditProc (HWND hwnd, UINT iMsg, WPARAM wParam, LPARAM lParam)
 
 //					bUndo = (FootyGetMetrics(ClickID, F_GM_UNDOREM) > 0);
 					bUndo = Footy2IsEdited(ClickID);	// 2008-02-17 Shark++ 要動作確認
+#ifdef JPNMSG
 					if((!lpTabInfo->NeedSave && !bUndo) || 
 						msgboxf(hwnd, "再読込を行う上で、下記のことが起こります。よろしいですか？\n\n"
 						"・「元に戻す」の情報が破棄され、再読込以前に戻れなくなります。%s",
 						"Warning", MB_YESNO | MB_ICONQUESTION, lpTabInfo->NeedSave ? "\n・変更が無視されます" : "") == IDYES)
                         	poppad_reload(ClickID);
+#else
+					if((!lpTabInfo->NeedSave && !bUndo) || 
+						msgboxf(hwnd, "Are you sure you want to reload the text? It will lead to these things.\n\n"
+						"\tYou lose the 'Undo' history and cannot take back any changes before the reloading.%s",
+						"Warning", MB_YESNO | MB_ICONQUESTION, lpTabInfo->NeedSave ? "\nlose all unsaved changes" : "") == IDYES)
+                        	poppad_reload(ClickID);
+#endif
 					return 0;
 				}
 
@@ -2597,12 +2613,12 @@ LRESULT CALLBACK EditProc (HWND hwnd, UINT iMsg, WPARAM wParam, LPARAM lParam)
 					return 0;
 
                 case IDM_HSPMAN1 :
-					wsprintf( helpopt,"%s\\docs\\hspprog.htm", szExeDir );
+					wsprintf( helpopt,"%s\\doclib\\hspprog.htm", szExeDir );
 					ShellExecute( NULL, NULL, helpopt, NULL, NULL, SW_SHOW );
 					return 0 ;
 
                 case IDM_HSPMAN2 :
-					wsprintf( tmpfn, "\"%s\\hsphelp\\helpman.exe\"", szExeDir );
+					wsprintf( tmpfn, "\"%s\\hdl.exe\"", szExeDir );
 					WinExec( tmpfn, SW_SHOW );
 					return 0 ;
 
