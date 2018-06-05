@@ -1,9 +1,8 @@
 
 ;============================================================
-;                                                 2007/xx/xx
-;	gpmodule 1.03c
-;
-;                    S.Programs http://sprocket.babyblue.jp/
+;	gpmodule
+;		version 1.03 + GdipSetClipRectI patch
+;			s.programs http://spn.php.xdomain.jp/
 ;============================================================
 
 #module
@@ -108,5 +107,4 @@
 #define global gpcircle(%1=0, %2=0, %3=0, %4=0, %5=1)  gpcircle_ %1, %2, %3, %4, %5
 
 #global
-
 

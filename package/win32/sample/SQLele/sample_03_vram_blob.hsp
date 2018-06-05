@@ -1,9 +1,9 @@
 
 ;============================================================
-;                                                 2010/--/--
+;                                      s.programs 2010/--/--
 ;	SQLele sample
 ;	BLOB
-;                               http://sprocket.babyblue.jp/
+;                                 http://spn.php.xdomain.jp/
 ;============================================================
 /*
 	ビットマップを BLOB で出し入れするサンプル
@@ -17,11 +17,9 @@
 	sql_open ":memory:"
 	sql_q "CREATE TABLE ttest (ID INTEGER PRIMARY KEY, bbitmap)"
 
-
 	; 画面ビットマップを参照する変数
 	size = 640*480*3 ; ビットマップサイズ 640x480 24bpp
 	mref vram, 66    ; HSP スクリーン BMP 参照変数
-
 
 	; 30 フレームの動画ビットマップをデータベースに挿入
 	repeat 30
@@ -35,18 +33,15 @@
 			p += 0.1
 		loop
 
-
 		; 現在の画面ビットマップを BLOB 型でデータベースへ格納
 		sql_q "INSERT INTO ttest (bbitmap) VALUES (" + prm_blob(vram, size) + ")"
 	loop
-
 
 	; データベースからビットマップを取り出してアニメーション表示
 	repeat
 		; 画面ビットマップをデータベースからコピー
 		sql_q "SELECT * FROM ttest WHERE ID=" + prm_i(cnt\30+1)
 		sql_blobcopy vram, "bbitmap"
-
 
 		; スクリーン更新
 		redraw 1

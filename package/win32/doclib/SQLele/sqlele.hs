@@ -6,16 +6,16 @@
 SQLele
 
 %ver
-1.15
+1.16
 
 %date
-2010/02/22
+2018/06/01
 
 %author
-S.Programs
+s.programs
 
 %url
-http://sprocket.babyblue.jp/
+http://spn.php.xdomain.jp/
 
 %note
 sqlele.hsp をインクルードして使用します。実行には sqlite3.dll が必要です。
@@ -198,7 +198,6 @@ v1	: 対象レコードセット変数 (省略値 tmparr)
 
 参照するレコードを次へ進めるときは、sql_next 命令を使用します。
 
-
 %href
 sql_q
 sql_next
@@ -222,7 +221,6 @@ v1	: 対象レコードセット変数 (省略値 tmparr)
 レコードセット変数から、カラム名を指定して (元のデータの型に関係なく) 整数値としてデータを参照します。
 
 参照するレコードを次へ進めるときは、sql_next 命令を使用します。
-
 
 %href
 sql_q
@@ -297,7 +295,6 @@ i = instr(sql_v("hoge"), 0, "srch")
 s = strmid(sql_v("hoge"), 0, 99)
 
 参照するレコードを次へ進めるときは、sql_next 命令を使用します。
-
 
 (資料) マクロの仕様
 展開前 : sql_v("Col", arr)

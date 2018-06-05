@@ -1,8 +1,7 @@
 
 ;============================================================
-;                                                 2005/--/--
-;	d3module  sample script
-;	for HSP 3.0
+;                                      s.programs 2005/--/--
+;	d3module sample
 ;
 ;============================================================
 ;
@@ -19,32 +18,24 @@
 
 #include "d3m.hsp"
 
-	title "S.Programs d3module sample"
-
-
 	gmode 5, , , 128 ; 面を描画するときのコピーモードを設定
 
 	time_start = d3timer()
-
 
 *mainloop
 
 	; ループタイマー
 	time = d3timer() - time_start
 
-
 	; フレームレートを表示
 	title "fps = " + d3getfps()
-
 
 	redraw 0
 
 	color : boxf
 
-
 	; カメラ座標を回転させる
 	d3setcam cos(0.002 * time) * 2000, sin(0.002 * time) * 2000, cos(0.001 * time) * 1000
-
 
 	r = 500
 	x = -r,  r,  r, -r
@@ -73,10 +64,8 @@
 	;          └ 描画する四角形の各頂点を格納した配列変数
 	;------------------------------------------------------------
 
-
 	redraw
 	await
-
 
 	goto *mainloop
 

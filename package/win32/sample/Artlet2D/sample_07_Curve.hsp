@@ -1,6 +1,6 @@
 
 ;============================================================
-;                                                 2010/--/--
+;                                      s.programs 2010/--/--
 ;	Artlet2D sample
 ;
 ;============================================================
@@ -35,7 +35,6 @@
 	alTransModeOffsetRotateZoom 0, 300
 	alFillPoly points, 5
 
-
 	; 曲線
 	alTransModeOffsetRotateZoom 150, 0
 	alDrawCurve points, 5
@@ -47,7 +46,6 @@
 	; 塗りつぶし閉曲線
 	alTransModeOffsetRotateZoom 150, 300
 	alFillClosedCurve points, 5
-
 
 	; カーブ強度を変えて描画 (+)
 	alTransModeOffsetRotateZoom 300, 0
@@ -62,7 +60,6 @@
 	alTransModeOffsetRotateZoom 300, 300
 	alDrawClosedCurve points, 5, 2.0
 
-
 	; カーブ強度を変えて描画 (-)
 	alTransModeOffsetRotateZoom 450, 0
 	alDrawClosedCurve points, 5, -0.5
@@ -75,7 +72,6 @@
 
 	alTransModeOffsetRotateZoom 450, 300
 	alDrawClosedCurve points, 5, -2.0
-
 
 	; 仮想イメージ 0 から HSP スクリーンにコピー
 	alCopyImageToScreen 0, 0

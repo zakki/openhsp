@@ -1,8 +1,7 @@
 
 ;============================================================
-;                                                 2010/--/--
-;	d3module  sample script
-;	for HSP 3.0
+;                                      s.programs 2010/--/--
+;	d3module sample
 ;
 ;============================================================
 ;
@@ -13,9 +12,6 @@
 
 #include "d3m.hsp"
 
-	title "S.Programs d3module sample"
-
-
 *mainloop
 	time = d3timer()
 
@@ -24,10 +20,8 @@
 	redraw 0
 	color 255, 160, 80 : boxf
 
-
 	; カメラ座標を回転させる
 	d3setcam cos(0.0005 * time) * 1500, sin(0.0005 * time) * 1500, cos(0.0007 * time) * 500 + 600
-
 
 	; オブジェクト描画
 	repeat 2
@@ -63,9 +57,7 @@
 		loop
 	loop
 
-
 	redraw
 	await
-
 
 	goto *mainloop

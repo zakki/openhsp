@@ -1,20 +1,14 @@
 
 ;============================================================
-;                                                 2009/xx/xx
-;	S.Programs HHW / HDL Built-in Editor
+;                                      s.programs 2012/xx/xx
+;	HHW / HDL Built-in Editor
 ;	hs editor (HSP 3.0)
-;                               http://sprocket.babyblue.jp/
+;                                 http://spn.php.xdomain.jp/
 ;============================================================
 
-
-;============================================================
 ; includes
 #include "gpm.hsp"
-#ifndef HDL_LIB_INCLUDED
- #include "hdl_lib.hsp"
-#endif
-
-
+#include "hdl_lib.hsp"
 
 ;============================================================
 ; マウス関係
@@ -44,8 +38,6 @@
 	ScreenToClient hwnd, varptr(p)
 	return p.1
 #global
-
-
 
 ;============================================================
 ; tricorn / drawborder
@@ -81,8 +73,6 @@
 	return
 #global
 
-
-
 ;============================================================
 ; Windows Timer
 
@@ -103,8 +93,6 @@
 	return
 #global
 
-
-
 ;============================================================
 ; wstrlen
 ; ダブルバイト対応 文字数カウント
@@ -120,8 +108,6 @@
 #defcfunc wstrlen var v
 	return (MultiByteToWideChar(0, 0, v, -1, 0, 0) - 1)
 #global
-
-
 
 ;============================================================
 ; hs エディタ モジュール
@@ -184,8 +170,6 @@
 		poke cur_file, a
 	}
 
-
-
 	;============================================================
 	; ウィンドウ作成
 
@@ -219,7 +203,6 @@
 	sdim astr, 4096 ; テンポラリ ミニマム容量設定
 	sdim bstr, 4096
 
-
 	;--------------------------------------------------
 	; create window
 
@@ -227,7 +210,6 @@
 	Window_resizable
 	status_create	; ステータスバー 初期化
 	title appname
-
 
 	; メニュー 初期化
 	; ファイル(F)
@@ -264,7 +246,6 @@
 	SetMenu hwnd, hmenu
 	DrawMenuBar hwnd
 
-
 	; UI ウィンドウ作成
 	; レコード挿入 box
 	objmode 2
@@ -294,9 +275,9 @@
 	font "Terminal", 18
 	mesbox str_edit, , , 1, -1
 	id_edit = stat
+	objskip id_edit, 2
 	; objhwnd(id_edit) -> GWL_EXSTYLE -> 0
 	SetWindowLongA objhwnd(id_edit), -20, 0
-
 
 	; EM_LINEFROMCHAR で与えるべき値のタイプを判別
 	;  (Windows XP は文字数、それ以下ではバイト数)
@@ -304,7 +285,6 @@
 	; EM_LINEFROMCHAR
 	sendmsg objhwnd(id_edit), 0xc9, 4, 0
 	TYPE_EM_LINEFROMCHAR = stat ; 0->bytes, 1->chars
-
 
 	; 割り込み
 	oncmd gosub *event_WM_ACTIVATE, 0x0006 ; -- これをトップに書くこと
@@ -317,11 +297,11 @@
 	onexit gosub *endapp
 	timer_setlabel *event_WM_TIMER
 
-
 	;--------------------------------------------------
 	; load config / restore window
 
-	Config_open "hhw_config.dat"
+	get_hsp_appdata_path APPDATAPATH
+	Config_open APPDATAPATH + "\\hhw_config.dat"
 
 	; alias
 	#define CONFIGVER	0x131
@@ -341,12 +321,10 @@
 	objsel id_edit
 	await
 
-
 	;--------------------------------------------------
 	; cur_file をロード
 
 	gosub *loadhs
-
 
 	;--------------------------------------------------
 	; ポーリング ループ
@@ -355,7 +333,6 @@
 
 	repeat
 		if cnt : wait 4		; 割り込み先へはここから飛んで、ここへ帰ってくる
-
 
 		; タイトル設定
 		if cur_file = "" {
@@ -373,7 +350,6 @@
 			title titlebk
 		}
 
-
 		; ID 切り替え -> 新しいパートバッファ ロード
 		if pos_reclist ! id {
 			id = pos_reclist
@@ -383,7 +359,6 @@
 			}
 			gosub *redrawer
 		}
-
 
 		; EDIT 変更された -> パートバッファ更新 & 再描画
 		if str_edit ! recbuf.id {
@@ -427,7 +402,6 @@
 			gosub *redrawer
 		}
 
-
 		; シンボル名で選択
 		if symbol_select ! "" {
 			repeat ids
@@ -440,9 +414,7 @@
 			symbol_select = ""
 		}
 
-
 		; ---------- low priority ----------
-
 
 		; 検索文字列が変わった -> 再描画
 		if str_find ! findstrbk {
@@ -469,13 +441,11 @@
 			gosub *redrawer
 		}
 
-
 		; 項目数が増えた -> ステータスバー 更新
 		if ids ! idsbk {
 			idsbk = ids
 			status_mes 2, ""+(ids-1)+" record(s)"
 		}
-
 
 		; フィールドタグ 挿入
 		if pos_tagbox {
@@ -523,12 +493,9 @@
 
 	return
 
-
-
 ;============================================================
 ;============================================================
 ; subroutines
-
 
 ;============================================================
 ; ファイル名設定 / セーブとロード
@@ -623,7 +590,6 @@
 
 	edited = 0	; 編集フラグ off
 	return
-
 
 ;============================================================
 ; データ処理
@@ -723,7 +689,6 @@
 	loop
 	poke recbuf(ids-1), strlen(recbuf(ids-1)) - 2 ; patch 終端ゴミの削除
 
-
 	; 内容情報 (シンボル名配列・href 参照配列) 更新
 
 	; LB_RESETCONTENT
@@ -744,7 +709,6 @@
 		id = cnt
 		gosub *renewref_phase2
 	loop
-
 
 	id = -1
 	pos_reclist = 0
@@ -816,7 +780,6 @@
 		}
 	loop
 
-
 	; UI リスト変更
 
 	; LB_GETTEXT (現在の文字列を取得)
@@ -863,7 +826,6 @@
 
 	return
 
-
 ;============================================================
 ; misc
 
@@ -874,12 +836,11 @@
 	syscolor 15
 	boxf
 
-
 	;--------------------------------------------------
 	; Right pane Field marker
 
 	; バー描画
-	syscolor 5 : boxf x20+2, , x21-1
+	syscolor 5 : color ginfo_r - 10, ginfo_g - 10, ginfo_b - 10 : boxf x20+2, , x21-1
 	syscolor 8 : boxf x21-1, , x21-1
 
 	; マーカー描画
@@ -906,12 +867,10 @@
 		sendmsg objhwnd(id_edit), 0xc9, i, 0
 		y = line2y(stat)
 
-
 		; タグ行を空行に変換
 		if (peek(astr) = '^') : if (astr="^") | (astr="^p") | (astr="^P") {
 			poke astr ;= ""
 		}
-
 
 		; フィールドマーカー 描画 (0x2525 -> '%' エスケープ対応)
 		if (peek(astr) = '%') & (wpeek(astr) ! 0x2525) {
@@ -975,7 +934,6 @@
 	redraw 1, x20+2, y22+2, x21-x20-4, y29-y22-4
 	redraw 0
 
-
 	;--------------------------------------------------
 	; Left pane (x10-x19)
 
@@ -999,7 +957,10 @@
 
 	if cfg_hrborder_x > 0 {
 		; 設定された幅がある場合 : %href view 描画
-		syscolor 5 : boxf rx, ry, rx2, ry2
+		syscolor 5 : color ginfo_r - 10, ginfo_g - 10, ginfo_b - 10
+		boxf rx, ry, rx2, ry2
+		; EDGE
+		syscolor 15 : boxf rx2-1, ry, rx2-1, ry2
 
 		; title
 		syscolor 8
@@ -1104,7 +1065,6 @@
 	pos x10+2, y12+2
 	gcopy 0, rx, ry, rw, rh
 
-
 	; LTBox base
 	syscolor 15
 	color (ginfo_r * 5 + 256) / 6, (ginfo_g * 5 + 256) / 6, (ginfo_b * 5 + 256) / 6
@@ -1122,7 +1082,6 @@
 	; BDR_SUNKEN
 	drawborder x10, y12, x19, y18
 
-
 	;--------------------------------------------------
 	; Right pane toolbar
 
@@ -1135,7 +1094,6 @@
 
 	; BDR_SUNKEN
 	drawborder x20, y22, x29, y29
-
 
 	;--------------------------------------------------
 	EnableWindow objhwnd(id_delbtn), (id ! 0) ; [レコード削除] ボタン en/di
@@ -1164,8 +1122,6 @@
 		}
 	}
 	return 0
-
-
 
 ;============================================================
 ;============================================================
@@ -1323,7 +1279,6 @@
 ;	y22 = 後で	; ここから エディットボックス
 	y29 = gh	; 下端
 
-
 	; コントロール フィット
 
 	;  left pane
@@ -1351,7 +1306,6 @@
 	; レコード一覧 (エッジ分小さく (margin: 2px 2px 2px 0;))
 	MoveWindow objhwnd(id_reclist),   x11, y12+2, x19-x11-2, y19-y12-4,  1
 
-
 	;  right pane
 	; フィールドタグ 挿入ボックス / レコード削除ボタン
 	a = limit(x29-x23, 0, 90)
@@ -1368,7 +1322,6 @@
 	y22 = y21 + lineh + 2
 	; レコード Edit (エッジ分小さく (margin: 2px 2px 2px 0;))
 	MoveWindow objhwnd(id_edit),   x21, y22+2, x29-x21-2, y29-y22-4,  1
-
 
 	; 描画
 	gosub *redrawer
@@ -1471,8 +1424,6 @@
 		return 0
 	}
 	return
-
-
 
 ;============================================================
 ;============================================================
@@ -1620,7 +1571,6 @@
 		if n >= len : break
 	loop
 
-
 	; ソート結果 連結
 	sdim buf, 1048576
 	repeat ids
@@ -1760,7 +1710,6 @@
 	loop
 
 	return
-
 
 ;--------------------------------------------------
 ; hsp ファイルからインポート
@@ -1911,8 +1860,6 @@
 	gosub *rebuild_recs
 	return
 
-
-
 ;============================================================
 ;============================================================
 ; 終了シーケンス
@@ -1928,17 +1875,12 @@
 		end
 	}
 
-
 #global
-
-
 
 ;============================================================
 ; テスト
 
 #ifndef HDL_BROWSER
-	hhw_start dir_cmdline, "HHW", "test", "S.Programs"
+	hhw_start dir_cmdline, "HHW", "test", "s.programs"
 #endif
-
-
 

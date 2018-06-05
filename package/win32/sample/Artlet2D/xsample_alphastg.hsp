@@ -1,6 +1,6 @@
 
 ;============================================================
-;                                                 2008/--/--
+;                                      s.programs 2008/--/--
 ;	Artlet2D demo
 ;	AlphaSTG
 ;
@@ -126,7 +126,6 @@
 		}
 	loop
 
-
 	; draw
 	color 64, 128, 255 : boxf
 
@@ -151,7 +150,6 @@
 
 	; Ž©‹@ •`‰æ
 	alCopyImageToScreen IMG_JIKI, 0,  jikix-32, jikiy-32
-
 
 	redraw
 	await 25
