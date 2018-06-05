@@ -1,9 +1,9 @@
 
 ;============================================================
-;                                                 2006/--/--
-	title "S.Programs 花火窓 Verge"
+;                                      s.programs 2006/--/--
+	title "s.programs 花火窓 Verge"
 ;	version 1.0/sample_ver
-;                               http://sprocket.babyblue.jp/
+;                                 http://spn.php.xdomain.jp/
 ;============================================================
 /*
 ・花火窓 Verge
@@ -34,7 +34,6 @@
 #const	MODELS	6		; モデル数
 #const	MDLSFT	PTCS_FR / 2	; モデルシフタ
 
-
 ;------------------------------------------------------------
 ; init
 
@@ -48,20 +47,16 @@
 	d3mkparticle 2,  255, 255, 128,  arr	; 2 yellow
 	d3mkparticle 3,  128, 192, 255,  arr	; 3 skyblue
 
-
 	;------------------------------------------------------------
 	; mkinstance
 
 	dim s_iph, 16 ; >= INSTMAX
 	memset s_iph, 1, 64
 
-
 	randomize
-
 
 ;------------------------------------------------------------
 *mainloop
-
 
 	;------------------------------------------------------------
 	; full-screen ctrlr (toggle : Enter)
@@ -82,7 +77,6 @@
 		}
 	}
 
-
 	;------------------------------------------------------------
 	; setup
 
@@ -92,7 +86,6 @@
 	lup = 0
 	time = d3timer()
 
-
 	;------------------------------------------------------------
 	; setcam
 
@@ -100,7 +93,6 @@
 	r = sin(f)*300 + 400	; r-rng : 100 -- 700
 	z = 70000.0/r - 90	; z-rng : 600 -- 0
 	d3setcam cos(f)*r, sin(f)*r, z,  0, 0, z*2/3
-
 
 	;------------------------------------------------------------
 	; play sequence
@@ -164,7 +156,6 @@
 		}
 	loop
 
-
 	;------------------------------------------------------------
 	; stars
 
@@ -177,20 +168,16 @@
 
 	gosub *starptc
 
-
 	;------------------------------------------------------------
 	redraw
 	await ;10
 
 	goto *mainloop
 
-
-
 ;------------------------------------------------------------
 *starptc
 	; pre-calc
 	sqstg = sqrt(ds_stg)
-
 
 	; generate vector / draw particles
 	repeat ds_cnt, ds_seed
@@ -233,7 +220,6 @@
 
 		z *= (z > 0) ; clip
 
-
 		; draw
 
 		gmode 5, , , sqstg * 256
@@ -247,14 +233,9 @@
 		d3particle  pid, x, y, z, ds_stg * 10
 	loop
 
-
 	; set default
 	ds_mode	= 0	; fire
 	ds_seed	= 0
 
-
 	return
-
-
-
 

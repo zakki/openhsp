@@ -1,5 +1,5 @@
-// helpman.exe
-// for old-help call
+// helpman.exe (ascii / mbcs)
+// old-help dummy
 
 #include <windows.h>
 

@@ -1,6 +1,6 @@
 
 ;============================================================
-;                                                 2010/--/--
+;                                      s.programs 2010/--/--
 ;	Artlet2D sample
 ;
 ;============================================================
@@ -41,7 +41,6 @@
 
 	alSelectImage IMG_MAIN ; 仮想イメージ IMG_MAIN を選択
 
-
 	; ロゴを描画
 	strn = "Artlet2D test"
 	alFont "Times New Roman", 60, 3
@@ -53,7 +52,6 @@
 	alDrawText strn, -1, -1, ginfo_winx, , 1, 0
 	alGradientColor 0, 10, 0, 80, RGBA(255, 255, 255), RGBA(0, 0, 128)
 	alDrawText strn,  0,  0, ginfo_winx, , 1, 0
-
 
 	; テストイメージを描画
 	repeat 6
@@ -134,7 +132,6 @@
 		loop
 	loop
 
-
 	; テストイメージをアニメーションしながら HSP スクリーン 0 に転送
 	ani = 100
 	repeat ani, 1
@@ -153,7 +150,4 @@
 		redraw
 		await 33
 	loop
-
-
-
 

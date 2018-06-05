@@ -1,6 +1,6 @@
 
 ;============================================================
-;                                                 2010/--/--
+;                                      s.programs 2010/--/--
 ;	Artlet2D sample
 ;
 ;============================================================
@@ -18,7 +18,6 @@
 	alCreateImage 0, 640, 480
 	if stat = -1 : dialog "GDI+ を初期化できませんでした。" : end
 
-
 	; ペン幅の設定
 	alPenWidth 1
 	alDrawEllip 0, 0, 240, 120
@@ -29,10 +28,8 @@
 	alPenWidth 4
 	alDrawEllip 100, 100, 240, 120
 
-
 	; グラデーションブラシとの組み合わせ
 	alGradientColor 0, 0, 30, 30, RGBA(255, 255, 0), RGBA(0, 0, 255), WrapModeTileFlipX
-
 
 	; ペンスタイルの設定
 	alPenStyle DashStyleDash
@@ -46,7 +43,6 @@
 
 	alPenStyle DashStyleDashDotDot
 	alDrawEllip 300, 300, 240, 120
-
 
 	; 仮想イメージ 0 から HSP スクリーンにコピー
 	alCopyImageToScreen 0, 0

@@ -1,6 +1,6 @@
 
 ;============================================================
-;                                                 2010/--/--
+;                                      s.programs 2010/--/--
 ;	Artlet2D sample
 ;
 ;============================================================
@@ -24,7 +24,6 @@
 	; テキスト描画 (基本)
 	alDrawText "test テキスト"
 
-
 	; 矩形領域内自動折り返しでテキスト描画
 	s = {"
 Ohoadmri, or iamneterie at aholiqdltn. Tc pbednpasuami. Na solciunhthlec. Mpatnoi, pdaogtni kc titftkiadt. Il iethivriact.
@@ -40,7 +39,6 @@ Et mdotrh rdwea, lh tekarolstdso ritlq yr ontehsti, renrnha wteavecd oanidr tm s
 	alColor 0, 128, 0
 	alDrawText s, 100, 250, 400, 300, 1
 
-
 	; フォントスタイル、ブラシの組み合わせ
 	alFont "Arial", 80, 3+4
 	alGradientColor 0, 0, 3, 10, RGBA(0, 0, 0), RGBA(255, 0, 0), WrapModeTileFlipX
@@ -51,7 +49,6 @@ Et mdotrh rdwea, lh tekarolstdso ritlq yr ontehsti, renrnha wteavecd oanidr tm s
 	repeat 7
 		alDrawText "Artlet2D", 280+rnd(10), 380+rnd(10)
 	loop
-
 
 	; 仮想イメージ 0 から HSP スクリーンにコピー
 	alCopyImageToScreen 0, 0

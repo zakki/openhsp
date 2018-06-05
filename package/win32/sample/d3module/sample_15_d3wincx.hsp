@@ -1,8 +1,7 @@
 
 ;============================================================
-;                                                 2005/--/--
-;	d3module  sample script
-;	for HSP 3.0
+;                                      s.programs 2005/--/--
+;	d3module sample
 ;
 ;============================================================
 ;
@@ -16,15 +15,12 @@
 
 #include "d3m.hsp"
 
-	title "S.Programs d3module sample"
-
-
 *mainloop
 	time = d3timer()
 
 	redraw 0
 
-	syscolor 15
+	color 192, 192, 192
 	boxf
 
 	repeat 2
@@ -37,16 +33,14 @@
 		d3wincy -= cnt
 
 		; 色設定
-		if cnt = 0 : syscolor 20 ; 明るい色
-		if cnt = 1 : syscolor 16 ; 暗い色
-
+		if cnt = 0 : color 255, 255, 255 ; 明るい色
+		if cnt = 1 : color 127, 127, 127 ; 暗い色
 
 		; オブジェクト描画
 		d3box -500, -100, -100,  500, 100, 100
 		d3box -100, -500, -100,  100, 500, 100
 		d3box -100, -100, -500,  100, 100, 500
 	loop
-
 
 	redraw
 	await 10

@@ -1,0 +1,2654 @@
+
+;============================================================
+	TITL =	"s.programs d3module techdemo"
+		VER  =	"1.68"
+;			s.programs http://spn.php.xdomain.jp/
+;============================================================
+
+#packopt hide 1
+#packopt xsize 1
+#packopt ysize 1
+#packopt name "d3m_techdemo"
+
+; 0 - release, 1 - create
+#define DVMODE	0
+
+#include "d3m.hsp" ; include d3module
+
+	; const
+	_PI  = 3.14159265
+	_2PI = 6.28318531
+
+;============================================================
+;	initialize
+
+	; display modes
+	modex = 640, 720, 800, 1280, 1360, 1920, 0
+	modey = 480, 480, 600,  720,  768, 1080
+
+	str_res = ""
+
+	repeat
+		if modex(cnt) = 0 : break
+		if modex(cnt) > ginfo_dispx | modey(cnt) > ginfo_dispy : break
+		str_res += "" + modex(cnt) + " x " + modey(cnt) + "\n"
+	loop
+
+	; default value
+	com_res = 1
+	chk_sound = 1
+	chk_full = 1
+	chk_loop = 0
+	chk_fulsp = 0
+	chk_fps = 0
+
+;============================================================
+;	select screen
+*select_scr
+
+	screen 0, 480, 300
+	title TITL
+
+	syscolor 15 : boxf
+
+	redraw 0
+
+	; gradi
+	color 255, 255, 255 : boxf , , , 99
+	repeat 99
+		f = 0.4 * cnt*cnt / 99/99 + 0.6 * cnt / 99
+		hsvcolor 191, sin(f * _PI) * 96, f * 255
+		boxf , cnt, , cnt
+	loop
+	repeat ginfo_winx
+		hsvcolor cnt, 192, 255
+		boxf cnt, 95, cnt, 99
+	loop
+	color
+	boxf , 95, , 96
+	boxf 43, , 44
+
+	; title
+	pget 80, 10 : pos 80, 38
+	font "Meiryo", 14, 1
+	mes TITL + " " + VER
+	hsvcolor , , 255 : pos 80, 39
+	mes TITL + " " + VER
+
+	; credit
+	pos 270, 160
+	font "Meiryo", 12 : syscolor 8
+	mes "music : 'Vijore'\n by onoken\n  http://www.axsword.com/"
+
+	; c-mark
+	x = 270 : y = 240 : w = 64 : h = 32
+	syscolor 17 : circle x, y, x+w, y+h
+	x += w * 15 / 80 : y += h * 5 / 40 : w = w * 67 / 80 : h = h * 30 / 40
+	syscolor 15 : circle x, y, x+w, y+h
+	font "Meiryo", 12, 1 : syscolor 17 : pos x+5, y+h/2-8
+	mes "d3module for HSP3"
+
+	redraw
+
+	pos 80, 115
+	objsize 128, 20, 24
+	combox com_res, 200, str_res
+	chkbox "音楽 sound", chk_sound
+	chkbox "全画面 fullscreen", chk_full
+	chkbox "loop", chk_loop
+	chkbox "full-speed benckmark", chk_fulsp
+	chkbox "show fps", chk_fps
+	button "RUN !", *run_setup
+
+	objsel stat
+
+#if DVMODE = 0
+	stop
+#endif
+
+;============================================================
+;	RUN ! button
+
+#define SCR_BLUR 3
+
+*run_setup
+
+	gsel 0, -1
+
+	winx = modex(com_res)
+	winy = modey(com_res)
+
+#if DVMODE = 1
+	chk_full = 0
+	chk_fulsp = 1
+	chk_fps = 1
+	winx = 99
+	winy = 99
+#endif
+
+	if winx ! ginfo_dispx & winy ! ginfo_dispx & chk_full {
+		chgdisp 1, winx, winy
+		if stat {
+			chgdisp
+			dialog ""+winx+" x "+winy+" への画面モード変更はできませんでした。\nウィンドウモードで実行します。", 0, "error"
+			chk_full = 0
+		} else {
+			wait 50
+		}
+	}
+
+	if winx = ginfo_dispx | chk_full {
+
+		; mode_fullscreen
+		SCR_FB = 2
+		bgscr SCR_FB, winx, winy, 0, 0, 0
+		gsel SCR_FB, 2
+		mouse -1
+	} else {
+
+		; mode_windowed
+		SCR_FB = 0
+		screen SCR_FB, winx, winy, 4, (ginfo_dispx - winx - 6) / 2, (ginfo_dispy - winy - 24) / 2
+	}
+
+#if DVMODE = 1
+	winx = 1280 : winy = 720
+	screen SCR_FB, winx, winy, 4, 0, 0
+#endif
+
+	oncmd gosub *ssctrl, 0x0112 ; WM_SYSCOMMAND
+
+	title TITL : color : boxf
+	;__demo スクリーン準備完了__
+
+	; 各シーン 初期化ルーチン
+	gosub *demoinit
+
+	; blur scr
+	buffer SCR_BLUR, winx, winy
+	gsel SCR_FB
+
+	; demo 本体 実行
+	gosub *mainseq
+
+	; demo 終了
+	chgdisp
+	gsel SCR_FB, -1
+
+	if frms {
+		mouse
+		wait 80
+		dialog "thank you!\n\nbenchmark score : " + frms + " d3marks", , TITL
+	}
+
+	end
+
+;------------------------------------------------------------ ss-ctrl (WM_SYSCOMMAND)
+*ssctrl
+	if wparam = 0xF140 : return 1 ; SC_SCREENSAVE
+	return
+
+;----------------------------- bracon
+#define efctblur  gsel SCR_FB : gmode 3, , , mode_blur : pos 0, 0 : gcopy SCR_BLUR, 0, 0, winx, winy : mode_blur = 0
+#deffunc useblur double p1
+	mode_blur = limit( 256-(expf(logf(0.00390625 * p1)*(32.0/(fps+1))) * 256), 32, 256)
+	gsel SCR_BLUR
+	return
+
+;============================================================ INIT
+;	demo init4
+
+#define TEX_TEMP	SCR_BLUR
+#define TEX_METAL	10
+#define TEX_DGIT	11
+#define TEX_MOON	12
+#define TEX_FONT	13
+
+*demoinit
+
+	; ディレクトリ [demo] があれば移動
+	astr = "demo"
+	dirlist bstr, astr
+	if stat : chdir astr
+
+	; particle
+	d3mkparticle  0,  255, 255, 255
+	d3mkparticle  1,  255, 255, 100
+	d3mkparticle  2,  255, 100, 100
+	d3mkparticle  3,  127, 255, 127
+	d3mkparticle  4,  127, 255, 255
+	d3mkparticle  5,  100, 127, 255
+
+	; ptc 画像読み込み
+	buffer TEX_TEMP, 160, 160
+
+#define PTC_STAR 6
+#define PTC_MOON 7
+#define PTC_XS   8
+
+	picload "star.jpg", 1
+	d3ldparticle PTC_STAR, TEX_TEMP, 0, 0, 160, 160
+
+	picload "flmoon.jpg", 1
+	d3ldparticle PTC_MOON, TEX_TEMP, 0, 0, 160, 160
+
+	; ×型
+	arr = 4,  4,  30, 30, 150, 30
+	d3mkparticle  PTC_XS,  200, 200, 400,  arr
+
+	; get "d3module" dots
+	picload "d3mlogo.gif", 1 ; 68 x 18
+	cx = 68 : cy = 18 : d3tc = 0
+	repeat cy
+		y = cnt
+		repeat cx
+			x = cnt
+			pget x, y
+			if ginfo_r {
+				d3tx(d3tc) = cx/2 - x
+				d3ty(d3tc) = cy/2 - y
+				d3tc++
+			}
+		loop
+	loop
+
+	; メタルテクスチャ作成
+	buffer TEX_TEMP,  64, 1024
+	repeat 64
+		hsvcolor , , (1.0 - sin(_PI * cnt / 63)) * 240
+		boxf cnt, , cnt
+	loop
+	buffer TEX_METAL, 64, 1024
+	repeat 1024
+		hsvcolor cnt / 4, 128, 128 + rnd(64)
+		boxf , cnt, , cnt
+	loop
+	gmode 6, ginfo_winx, ginfo_winy, 192
+	gcopy TEX_TEMP
+
+	; letter 画像読み込み
+	celload "letter.jpg", TEX_FONT
+	fntx = 80
+	fnty = 60
+
+	fnt_s6 = 0.0625
+	fnt_s4 = 0.046875
+	fnt_s3 = 0.03125
+
+	; 010101 画像読み込み
+	celload "digits.gif", TEX_DGIT
+
+	; moon gnd 画像読み込み
+	celload "moongnd.jpg", TEX_MOON
+
+	; double ary
+	ddim ptcx, 16
+	ddim ptcy, 16
+	ddim ptcz, 16
+
+	ddim afx, 16
+	ddim afy, 16
+	ddim afz, 16
+
+	; str table
+	sdim astr_ins, 16, 9
+	astr_ins = "d3arrow", "d3box", "d3circle", "d3line", "d3lineto", "d3mes", "d3particle", "d3pset", "d3ribbonto"
+
+	sdim astr_cred, 16, 9
+	astr_cred = "s.programs", "d3module", "techdemo", "created by", "sprocket,", "running on", "HSP 3.5,", "music : 'Vijore'", "by onoken"
+
+	return
+
+;============================================================   ■  ■
+;	demo mainloop
+;============================================================ ■  ■   LOOP
+*mainseq
+
+	bpm = 144.0
+	bt_len = 928  ; length; beat (386.66 sec)
+	st_pos = 666  ; start offset; ms
+	frms = 0      ; bench score
+
+#if DVMODE ! 0
+;	********************************************************************** startpos
+	st_pos = int(12.0 * 1920000 / bpm)
+;	**********************************************************************
+#endif
+
+	if chk_sound {
+		mci "open \"" + dir_cur + "\\vijore.wma\" alias snds"
+
+		if stat = -1 {
+			dialog "サウンド再生エラー\nサウンド OFF で実行します。", , "error"
+			chk_sound = 0
+		}
+	}	
+
+	if chk_sound {
+		mci "set snds time format milliseconds"
+		mci "seek snds to " + st_pos
+		mci "play snds"
+	} else {
+		time_offset = d3timer() - st_pos
+	}
+
+	color : boxf
+	sysfont
+
+	; demo main-loop
+	repeat
+		await (chk_fulsp = 0) * 16
+
+		; escape
+		stick ka, 1023 : if ka & 128 : frms = 0 : break
+
+		; music timer
+		if chk_sound {
+			mci "status snds position"
+			ms = stat
+		} else {
+			ms = d3timer() - time_offset
+		}
+
+#if 0
+		; ss-bmp saver
+		a = ms / 500
+		if a ! bkms {
+			bkms = a
+			bmpsave "sc" + strf("%04d", a) + ".bmp"
+		}
+#endif
+
+		fbt = bpm * ms / 60000 - 4
+		ibt = int( fbt )
+
+		if fbt < 0 : await 1 : continue		; 始まるのを待つ
+		if ibt >= bt_len : break		; 終わり
+
+		fps = d3getfps()
+
+		; cbN : N beat count-up (0.0 -> 1.0)
+
+		cb1  =  fbt -  ibt
+		cb2  = (fbt - (ibt /  2 *  2)) /  2
+		cb4  = (fbt - (ibt /  4 *  4)) /  4
+		cb8  = (fbt - (ibt /  8 *  8)) /  8
+		cb16 = (fbt - (ibt / 16 * 16)) / 16
+		cb32 = (fbt - (ibt / 32 * 32)) / 32
+
+		cb1s  = cb1  * cb1
+		cb2s  = cb2  * cb2
+		cb4s  = cb4  * cb4
+		cb8s  = cb8  * cb8
+		cb16s = cb16 * cb16
+		cb32s = cb32 * cb32
+
+		; xbN : N beat count-down (1.0 -> 0.0)
+
+		xb1  = 1.0 - cb1
+		xb2  = 1.0 - cb2
+		xb4  = 1.0 - cb4
+		xb8  = 1.0 - cb8
+		xb16 = 1.0 - cb16
+		xb32 = 1.0 - cb32
+
+		xb1s  = xb1  * xb1
+		xb2s  = xb2  * xb2
+		xb4s  = xb4  * xb4
+		xb8s  = xb8  * xb8
+		xb16s = xb16 * xb16
+		xb32s = xb32 * xb32
+
+		; 32 beat カウンタ
+
+		bcnt = ibt \ 32
+		fcnt = cb1 + bcnt
+
+		; preps
+		redraw 0
+		randomize 0
+		pmode = 0
+		xb1ss = xb1s
+
+		; default bgcolor
+		c = 32.0 + cos(cb32 * 12.56637) * 16
+		if bcnt <  8  : c += xb8s * 160
+		if bcnt >= 24 : c += cb8s * 128
+
+		;============================================================
+		; シーン制御テーブル 32 beat (13.3 sec) / scene, (29 scenes)
+
+		on (ibt/32) gosub *galax1, *helic1, *logotip1, *logotip2, *tips1, *rappa1, *prop1, *tube1, *tube2, *helic2, *pfeil1, *xtube1, *cubes1, *lumin1, *logotip3, *logotip4, *moon1, *moon2, *xtube2, *pfeil2, *hexa1, *penta1, *tube3, *prop2, *moon3, *moon4, *tips2, *arry1, *galax2
+
+		if mode_blur : efctblur
+
+		frms++
+		if chk_fps {
+			a = ""
+			repeat fps / 10 : a += "/" : loop
+			a += " " + fps + " fps\n" + (ibt/32) + "-" + bcnt
+			repeat 3-bcnt\4 : a += "." : loop
+			repeat 2
+				color , 255 * cnt
+				pos 10-cnt, 10-cnt
+				mes a
+			loop
+		}
+		redraw
+	loop
+
+	if chk_sound {
+		mci "stop snds"
+		mci "close snds"
+	}
+
+	; fade
+	color 255, 255, 255
+	gmode 6, , , 20
+	ax = 0, winx, winx, 0
+	ay = 0, 0, winy, winy
+	repeat 16
+		gsquare -1, ax, ay
+		await 20
+	loop
+
+	if (ka = 0) & chk_loop : goto *mainseq
+
+	return
+
+;----------------------------- beat 変形 1
+*mod_xb1ss
+	if fcnt >= 31.50 {
+
+		; 1/2 beat 進行
+		f = fbt + 0.50
+		f = 1.0 - f + int(f)
+		xb1ss = f * f
+
+	} else:if fcnt >= 30.75 {
+
+		; 1/4 beat 進行
+		f = fbt + 0.25
+		f = 1.0 - f + int(f)
+		xb1ss = f * f
+	}
+	return
+
+;----------------------------- beat 変形 2
+*mod_xb1ss_2
+	if fcnt >= 31.50 {
+
+		; 1/2 beat 進行
+		f = fbt + 0.50
+		f = 1.0 - f + int(f)
+		xb1ss = f * f
+
+	} else:if fcnt >= 30.75 {
+
+		; 1/4 beat 進行
+		f = fbt + 0.25
+		f = 1.0 - f + int(f)
+		xb1ss = f * f
+
+	} else:if fcnt >= 30.00 {
+
+		xb1ss = xb1s
+
+	} else:if fcnt >= 28.00 {
+
+		xb1ss = xb2s
+	}
+	return
+
+;============================================================   ■  ■   DEMO SCENE
+;	Beatbeatbeat!!@#$%^&*
+;============================================================ ■  ■  ■
+
+;============================================================ □
+; telop typer
+; inp : [gmode], str types, wx, py, sx, sy
+#module
+#deffunc screen_type str inp1, double wx, double py, double sx, double sy
+	types = inp1
+	ppy = int( py * winy@ - sy / 2 )
+
+	ssx = 0.5 * winx@ * sx
+	ssy = 0.5 * winy@ * sy
+	ay = ppy-ssy, ppy-ssy, ppy+ssy, ppy+ssy
+	by = 0, 0, fnty@, fnty@
+
+	len = strlen(types) - 1
+
+	repeat len + 1
+		x = int( ( (double(cnt)/len - 0.5) * wx + 0.5 ) * winx@)
+
+		ax =  x-ssx,  x+ssx,  x+ssx,  x-ssx
+
+		tx = fntx@ * (peek(types, cnt) - ' ')
+		bx = tx, tx+fntx@, tx+fntx@, tx
+
+		gsquare TEX_FONT@, ax, ay, bx, by
+	loop
+
+	return
+#global
+
+;============================================================ □
+; 010101 polys
+*draw_numpolys
+
+	POLYS = 11
+	dh = _2PI / POLYS
+
+	; トンネル
+	repeat 5
+		z0 = 1000 * cnt
+		z1 = z0 + 700
+		az = z0, z1, z1, z0
+
+		repeat POLYS
+			th = dh * cnt - 0.08
+			x0 = cos(th) * r
+			y0 = sin(th) * r
+
+			th = dh * cnt + 0.08
+			x1 = cos(th) * r
+			y1 = sin(th) * r
+
+			ax = x0, x0, x1, x1
+			ay = y0, y0, y1, y1
+			d3texture ax, ay, az,  TEX_DGIT, rnd(8)*80, 0, 80, 24
+		loop
+	loop
+
+	return
+
+;============================================================ ■
+; galaxy
+;----------------------------- Phase 1
+*galax1
+	if bcnt >= 28 {
+		cc = cb4s * 5 + 1
+	} else:if bcnt >= 8 {
+		cc = 1.0
+	} else {
+		cc = cb8
+	}
+	cc += sin(cb32 * 12.56637) / 8
+
+	; カメラセッティング
+	d3setcam 0, 700 + xb32 * 2000, 600
+
+	gosub *@f
+
+	; opening telop
+	sx = fnt_s6
+	sy = fnt_s6
+	py = 0.3
+
+	wx = sin((cb32) * _2PI) * 0.8
+	if wx > 0.0 {
+		gmode 5, , , wx * 300
+		screen_type "s.programs", wx, py, sx, sy
+	}
+
+	wx = sin((cb32 - 0.5) * _2PI) * 0.8
+	if wx > 0.0 {
+		gmode 5, , , wx * 300
+		screen_type "d3module", wx, py, sx, sy
+	}
+
+	sx = fnt_s3
+	sy = fnt_s3
+	py = 0.75
+
+	if chk_sound {
+		wx = sin((cb32) * _2PI) * 0.7
+		if wx > 0.0 {
+			gmode 5, , , wx * 300
+			screen_type "music : 'Vijore' by onoken", wx, py, sx, sy
+		}
+	}
+
+	wx = sin((cb32 + 0.5) * _2PI) * 0.5
+	if wx > 0.0 {
+		gmode 5, , , wx * 300
+		screen_type "press [Esc] to exit", wx, py, sx, sy
+	}
+
+	; フレア
+	if bcnt >= 28 {
+		d3setcam 2
+		repeat 50
+			r = (1.0 - (0.001 * rnd(rnd(1000) + 1))) * cb4 * 0.7 + 0.1
+			f = cb32 + rnd(32768)
+			gmode 5, , , cb4s * 224
+			d3particle 0, 0, sin(f) * r, cos(f) * r, 0.02
+
+			if rnd(3) = 0 {
+				gmode 5, , , cb4s * 64
+				d3particlem 5, 0.10
+			}
+		loop
+	}
+
+	color
+	boxf , , , 0.125 * winy
+	boxf , 0.875 * winy
+
+	return
+;----------------------------- Phase 2
+*galax2
+	if bcnt >= 24 {
+		cc = xb8
+	} else:if bcnt >= 8 {
+		cc = 1
+	} else {
+		cc = sqrt(cb8)
+	}
+
+	; カメラセッティング
+	d3setcam 0, 1100 + cb32s * 2000, 600
+
+	pmode = 1
+
+	gosub *@f
+
+	; opening telop
+
+	wx = sin(cb32 * _PI * 1.5) * 0.6
+	if wx > 0.0 {
+		sx = fnt_s3
+		sy = fnt_s3
+		gmode 5, , , wx * 400
+		py = 0.2
+		screen_type "Thank you...", wx, py, sx, sy
+	}
+
+	wx = sin((cb32 - 0.25) * _PI * 1.5) * 0.6
+	if wx > 0.0 {
+		sx = fnt_s3
+		sy = fnt_s3
+		gmode 5, , , wx * 400
+		py = 0.8
+		screen_type "Benchmark score : " + frms, wx, py, sx, sy
+	}
+
+	return
+;----------------------------- main
+*@
+	; 背景
+	c = cc * 16
+	color limit(c, 0, 255), limit(1.2 * c, 0, 255), limit(1.4 * c, 0, 255)
+	boxf
+
+	; stars
+	repeat 800
+		if pmode {
+			z = limit( rnd(5000) - cb32s * 2000, -59999, 0)
+		} else {
+			z = limit( rnd(5000) - cb32s * 2000 - 2800, 0, 59999)
+		}
+
+		r = double( rnd(600) )
+		f = r / 200 + 0.002 * rnd(32768) / (r + 100) + _2PI * cnt / 5 - cb32
+
+		; 厚み (1.66+)
+		a = double( rnd(5000) ) / (r + 100)
+		if rnd(2) {
+			z += a
+		} else {
+			z -= a
+		}
+
+		gmode 5, , , cc * 224
+		d3particle  0,  cos(f) * r, sin(f) * r, z,  15 * (600 - r) / 600 + 2
+
+		if rnd(4) = 0 {
+			gmode 5, , , cc * 64
+			d3particlem 5, 45 * (600 - r) / 600 + 5
+		}
+
+		if rnd(8) = 0 {
+			a = sin(cb32*_PI*4 + cnt*cnt)
+			gmode 5, , , a * limit( cc * 64, 0, 64 )
+			d3particlem PTC_XS, a * 90
+		}
+	loop
+
+	; x
+	gmode 5, , , cc * 64
+	d3particle    5,  0, 0, 0,  500
+	d3particlem   2,  300
+	d3particlemr  PTC_STAR, cb2s*(bcnt>=30)*200 + 200, -cb32
+	d3particlemr  PTC_STAR,                       200,  cb32 * 3
+
+	; 浮遊物
+	repeat 200
+		gmode 5, , , cc * 224
+		d3particle  0,  rnd(4000)-2000, -rnd(4000), rnd(4000)-2000,  7
+
+		if rnd(3) = 0 {
+			gmode 5, , , cc * 64
+			d3particlem 5, 30
+		}
+	loop
+
+	return
+
+;============================================================ ■
+; らせん
+;----------------------------- Phase 1
+*helic1
+	; カメラ座標
+	r = 10000 - cb32s*cb32s*cb32s*cb32s * 10000
+	f = cb32 * 2 + cb32s*cb32s*cb32s*cb32s * 6
+	d3setcam sin(f) * r, cos(f) * r, 8000 - r/2,  0, 0, 8000
+
+	gosub *@f
+
+	; opening telop
+
+	wx = sin((cb32) * _PI) * 0.8
+	if wx > 0.0 {
+		sx = fnt_s6
+		sy = fnt_s6
+		py = 0.3
+		gmode 5, , , wx * 300
+		screen_type "techdemo", wx, py, sx, sy
+	}
+
+	sx = fnt_s3
+	sy = fnt_s3
+
+	wx = sin((cb32) * _2PI) * 0.4
+	if wx > 0.0 {
+		py = 0.70
+		gmode 5, , , wx * 400
+		screen_type "Written in", wx, py, sx, sy
+	}
+
+	wx = sin((cb32 - 0.25) * _2PI) * 0.7
+	if wx > 0.0 {
+		py = 0.75
+		gmode 5, , , wx * 400
+		screen_type "Hot Soup Processor", wx, py, sx, sy
+	}
+
+	wx = sin((cb32 - 0.50) * _2PI) * 0.4
+	if wx > 0.0 {
+		py = 0.80
+		gmode 5, , , wx * 400
+		screen_type "Version 3.5", wx, py, sx, sy
+	}
+
+	color
+	boxf , , , 0.125 * winy
+	boxf , 0.875 * winy
+
+	return
+;----------------------------- Phase 2
+*helic2
+	if bcnt < 4 : useblur xb4 * 192
+	if bcnt < 8 : c += xb8 * 32
+
+	; カメラセッティング
+	if bcnt < 16 {
+		y  = 6000.0 - cb16s * 3000
+		cz = xb16s * 16000
+		tz = xb16s * 16000
+	} else {
+		y  = xb16s * 3000
+		cz = cb16s*cb16 * 16000
+		tz = cb16s      * 16000
+	}
+	d3setcam  0, y, cz,  0, 0, tz
+
+	gosub *@f
+
+	return
+;----------------------------- main
+*@
+	; 背景 (c, c, c)
+	color limit(c, 0, 255), limit(c, 0, 255), limit(c + 32, 0, 255)
+	boxf
+
+	; らせん
+	; draw 0 - 16000, 300 - 1000
+
+	c += 160
+	color limit(c, 0, 255), limit(c, 0, 255), limit(c + 32, 0, 255)
+
+	repeat 101
+		z0 = 16000.0 * (100 - cnt) / 100
+		th = 3.395 * cnt + cb32*10
+		a = cnt
+
+		repeat 5
+			r = cnt * 150 + 400
+			x0 = cos(th) * r
+			y0 = sin(th) * r
+
+			if cnt = 4 {
+				d3circle x0, y0, z0, 70, 1
+				gmode 5, , , 160
+				d3particlem a\4+1, 210
+			} else {
+				d3circle x0, y0, z0, 30, 1
+				gmode 5, , , 160
+				d3particlem a\4+1, 90
+			}
+		loop
+	loop
+
+	; 極
+	repeat 2
+		zz = cnt * 16000
+		gmode 5, , , 48
+		d3particle   0,  0, 0, zz,  1500
+		gmode 5, , , 128
+		d3particlemr PTC_STAR, 700, -cb32
+		d3particlemr PTC_STAR, 700, cb32 * 3
+	loop
+
+	; 浮遊物
+	repeat 500
+		gmode 5, , , 192
+		d3particle  cnt\6,  rnd(4000)-2000, rnd(4000)-2000, rnd(20000)-2000,  30
+
+		if rnd(3) = 0 {
+			gmode 5, , , 32
+			d3particlem cnt\6, 240
+		}
+
+		if rnd(16) = 0 {
+			a = sin(cb32*_PI*4 + cnt*cnt)
+			gmode 5, , , a * 72
+			d3particlem PTC_XS, a * 480
+		}
+	loop
+
+	repeat 100
+		gmode 5, , , 192
+		d3particle  0,  rnd(10000)-5000, rnd(10000)-5000, rnd(20000)-2000,  30
+
+		if rnd(3) = 0 {
+			gmode 5, , , 32
+			d3particlem 5, 240
+		}
+	loop
+
+	return
+
+;============================================================ ■
+; logo tips
+;----------------------------- Phase 1
+*logotip1
+	; カメラ座標
+	d3setcam  xb32 * 5000 - 4500, xb32s*xb32s*xb32s * -3000, 0,  0, xb32s * 2000, 0
+
+	nx = xb32 * 700 + 200
+
+	; 背景
+	color limit(c, 0, 255), limit(c, 0, 255), limit(c * 2, 0, 255)
+	boxf
+
+	gmd = 160
+
+	gosub *@f
+
+	color
+	boxf , , , 0.125 * winy
+	boxf , 0.875 * winy
+
+	return
+;----------------------------- Phase 11
+*logotip11
+	; カメラ座標
+	d3setcam  xb32 * 5000 - 4500, xb32s*xb32s*xb32s * -3000, 0,  0, xb32s * 2000, 0
+
+	nx = xb32 * 700 + 200
+
+	; 背景
+	color limit(c, 0, 255), limit(c, 0, 255), limit(c * 2, 0, 255)
+	boxf
+
+	gmd = 160
+
+	goto *@f
+;----------------------------- Phase 2
+*logotip2
+	; blur
+	if bcnt >= 24 : useblur cb8 * 224
+
+	; 背景
+	color limit(c, 0, 255), limit(c, 0, 255), limit(c * 2, 0, 255)
+	boxf
+
+	if bcnt < 16 {
+		a = xb16s * xb16s * 64
+		color limit(ginfo_r+a, 0, 255), limit(ginfo_g+a, 0, 255), limit(ginfo_b+a, 0, 255)
+
+		boxf , , , 0.125 * winy
+		boxf , 0.875 * winy
+	}
+
+	randomize 0
+
+	; カメラ座標
+	y = cb32s*cb32s*cb32s * 3000
+	d3setcam  xb32s * 3000 + cb32s * 8000 - 8000, y, 0,   0, -y, 0
+
+	nx = cb32s * 900
+
+	gmd = 160
+	if bcnt < 16 {
+		gmd += xb16s * 64
+	}
+
+	pmode = 1
+
+	gosub *@f
+
+	; opening telop
+
+	if bcnt < 16 {
+		wx = 0.5 + (sqrt(cb32)) / 3
+		sx = fnt_s4
+		sy = fnt_s4
+		gmode 5, , , xb16s * xb16 * 120
+
+		py = 0.3
+		screen_type "s.programs", wx, py, sx, sy
+
+		py = 0.7
+		screen_type "Version " + VER, wx, py, sx, sy
+
+		; fire-particles
+		d3setcam 0, -100, 0
+		repeat 150
+			f = rnd(32768)
+			r = sqrt(cb32) * rnd(200) + 30
+			gmode 5, , , xb16s * 48
+			d3particle  1, cos(f) * r, 0, sin(f) * r / 3, 1
+			gmode 5, , , xb16s * 24
+			if cnt \ 3 = 0 {
+				d3particlem PTC_XS, 4
+			} else {
+				d3particlem 5, 4
+			}
+		loop
+	}
+
+	return
+;----------------------------- Phase 3
+*logotip3
+	; blur
+	if bcnt >= 24 : useblur cb8 * 224
+
+	; カメラ座標
+	r = cb32s * 3000 + 5900
+	f = 1.57 * cb32s + _PI
+	d3setcam  cos(f) * r, sin(f) * r, 0,  xb32s * 5000, 0, 0
+
+	nx = cb32s * 800
+
+	; 背景
+
+	color limit(c, 0, 255), limit(c, 0, 255), limit(c * 2, 0, 255)
+	boxf
+
+	gmd = 192
+
+	gosub *@f
+
+	return
+;----------------------------- Phase 4
+*logotip4
+	; blur
+	if bcnt >= 24 : useblur cb8 * 224
+
+	; カメラ座標
+	d3setcam  1, (cb32-0.5)*6000 + 1, 3000,  0, (cb32-0.5)*6000, 0
+
+	nx = 1400
+
+	; 背景
+	color limit(c, 0, 255), limit(c, 0, 255), limit(c * 2, 0, 255)
+	boxf
+
+	gmd = 100
+
+	goto *@f
+;----------------------------- main
+*@
+	gmode 5, , , gmd
+
+	; タイル
+	repeat d3tc
+		x = (rnd(1000) - 500) * nx / 1000
+		z = d3ty(cnt) * 100
+		y = d3tx(cnt) * 100 - z/5
+
+		ax = x, x, x, x
+		ay = y - 150, y + 150, y + 150, y - 150
+		az = z -  50, z -  50, z +  50, z +  50
+
+		d3particle  5, x, y, z, 60
+
+		if bcnt < 16 & pmode {
+			gmode 5, , , xb16s * 224
+			if cnt\6 {
+				d3particlem 5, 140
+			} else {
+				d3particlem PTC_STAR, 250
+			}
+			gmode 5, , , gmd
+		}
+
+		if stat : d3texture ax, ay, az, TEX_METAL, 0, 400 + z/3, 64, 32
+	loop
+
+	; 浮遊物
+	repeat 600
+		gmode 5, , , gmd
+		d3particle  0,  rnd(10000)-5000, rnd(10000)-5000, rnd(10000)-5000,  18
+
+		if rnd(3) = 0 {
+			gmode 5, , , gmd / 6
+			d3particlem 5,  72
+		}
+	loop
+
+	return
+
+;============================================================ ■
+; 010101 tips
+;----------------------------- Phase 1
+*tips1
+	; blur
+	if bcnt < 8 : useblur xb8 * 224
+
+	; bgcolor+
+	if bcnt >= 24 : c += xb8s*xb8 * 224
+	cc = 1
+
+	; カメラ座標
+	y = cb32s*cb32s*cb32s * 5500 - 5000 + xb32s * 2000
+	d3setcam  0, y, xb32 * 800,  0, 10000, xb32 * -30000
+
+	nx = 1000
+
+	gosub *@f
+
+	; opening telop
+
+	sx = fnt_s3
+	sy = fnt_s3
+	py = 0.5
+
+	wx = sin((cb32) * _2PI) * 0.7
+	if wx > 0.0 {
+		gmode 5, , , wx * 300
+		screen_type "'s.programs net' moved to", wx, py, sx, sy
+	}
+
+	wx = sin((cb32 - 0.5) * _2PI) * 0.7
+	if wx > 0.0 {
+		gmode 5, , , wx * 300
+		screen_type "http://spn.php.xdomain.jp/", wx, py, sx, sy
+	}
+
+	return
+;----------------------------- Phase 2
+*tips2
+	; blur
+	if bcnt < 8 : useblur xb8 * 224
+
+	if bcnt >= 24 {
+		cc = xb8
+	} else:if bcnt >= 4 {
+		cc = 1
+	} else {
+		cc = xb4s / 4 + 1
+	}
+	c = cc * c ; bgc
+
+	; カメラ座標
+	d3setcam  cb32s * -1000, sin(cb32 * _PI * 1.2) * 4000, cb32s*cb32 * -5000,  0,0,0,  cb32s * 2 + 1
+
+	nx = xb32 * 1000 + 50
+
+	goto *@f
+;----------------------------- main
+*@
+	; 背景
+	color limit(c, 0, 255), limit(c, 0, 255), limit(1.5 * c, 0, 255)
+	boxf
+
+	gmode 5, , , cc * 160
+
+	; タイル
+	repeat d3tc
+		x = (rnd(1000) - 500) * nx / 1000
+		z = d3ty(cnt) * -100
+		y = d3tx(cnt) *  150
+
+		ax = x, x, x, x
+		ay = y - 150, y + 150, y + 150, y - 150
+		az = z -  50, z -  50, z +  50, z +  50
+
+		d3particle  5, z, y, x, 55
+		if stat : d3texture az, ay, ax, TEX_DGIT, cnt\8*80, 0, 80, 24
+	loop
+
+	; 浮遊物
+	repeat 600
+		gmode 5, , , cc * 160
+		d3particle  0,  rnd(10000)-5000, rnd(10000)-5000, rnd(10000)-5000,  18
+
+		if rnd(3) = 0 {
+			gmode 5, , , cc * 32
+			d3particlem 5,  72
+		}
+	loop
+
+	return
+
+;============================================================ ■
+; ラッパ
+;----------------------------- Phase 1
+*rappa1
+	; bgcolor
+	if bcnt < 28  : c += xb1s * 64
+
+	; カメラ座標
+	r = xb32s * 1000
+	d3setcam  r, r, r + 600,  0, xb32 * 600, 400 - cb32s * 800
+
+	gosub *@f
+
+	; opening telop
+	if bcnt < 8 {
+		wx = xb32
+		sx = fnt_s6
+		sy = fnt_s6
+		gmode 5, , , xb8s * 64
+		py = 0.77 + cb8 * 0.11
+		types = "d3module"
+		screen_type types, wx, py, sx, sy
+	}
+
+	sx = fnt_s3
+	sy = fnt_s3
+
+	repeat 9
+		wx = sin((cb32 - 0.0625 * cnt) * _2PI) * 0.5
+		if wx > 0.0 {
+			types = astr_ins(cnt)
+			py = 0.1 + 0.1 * cnt
+			gmode 5, , , wx * 255
+			screen_type types, wx, py, sx, sy
+		}
+	loop
+
+	return
+;----------------------------- main
+*@
+	; BG
+	hsvcolor cb32 * 192 + 96, 64, limit(c, 0, 255)
+	boxf
+
+	; ラッパ設定
+	hsvcolor cb32 * 192 + 96, 128, 255
+
+	POLYS = 22
+
+	; rappa beat
+	if bcnt <= 27 {
+		zz = xb1s * 77
+		aa = xb1s * _2PI
+	} else {
+		zz = 0.0
+		aa = xb4 * _2PI ;0.0
+	}
+
+	; draw ラッパ
+	dh = _2PI / POLYS
+	r1 = 0.0
+
+	repeat 10
+		r0 = r1
+		r1 = r1 * 1.2 + 40
+
+		c = cnt
+		z0 = sqrt( absf( cos( _PI * c / 10 ) ) ) * 200 + c*c * 2 + zz * sqrt(10-c)
+		c = cnt + 1
+		z1 = sqrt( absf( cos( _PI * c / 10 ) ) ) * 200 + c*c * 2 + zz * sqrt(10-c)
+
+		gra = 0.1 * (10 - cnt)
+
+		d3initlineto
+
+		repeat POLYS + 1
+			th = dh * cnt + cb32*2
+			x0 = cos(th) * r0
+			y0 = sin(th) * r0
+			x1 = cos(th) * r1
+			y1 = sin(th) * r1
+
+			gmode 5, , , gra * ((sin(th * 3 + aa) + 1) * 72 + 72 + rnd(64))
+
+			d3ribbonto x0, y0, z0, x1, y1, z1
+
+			if cnt {
+				gmode 5, , , gra * 200
+				d3particlem 1, 10
+
+				if rnd(3) = 0 {
+					gmode 5, , , gra * 100
+					d3particlem 0, r1 / 10 + 20
+				}
+			}
+		loop
+
+		; sonic
+		if cnt \ 3 = 1 {
+			z0 -= zz * sqrt(10-cnt) * 5
+			z1 += zz * sqrt(10-cnt) * 5
+	
+			d3initlineto
+	
+			repeat POLYS + 1
+				th = dh * cnt + cb32*2
+				x0 = cos(th) * r0
+				y0 = sin(th) * r0
+				x1 = cos(th) * r1
+				y1 = sin(th) * r1
+	
+				gmode 5, , , gra * sin(th * 4) * zz / 2
+	
+				d3ribbonto x0, y0, z0, x1, y1, z1
+			loop
+		}
+	loop
+
+	; 以下 別座標系で描画
+	c = 0.0
+	if bcnt <  8  : c += xb8s * -1000
+	if bcnt >= 28 : c += cb4s * 2000
+
+	x = cb32 * 2000 - 1000
+	d3setcam  x, 1000 - c, 0,  x, -10000, 0
+
+	gmode 5, , , 160
+
+	; 浮遊物
+	repeat 200
+		d3particle  1,  rnd(4000)-2000, -rnd(1000), rnd(2000)-1000,  10
+	loop
+
+	return
+
+;============================================================ ■
+; プロペラ
+;----------------------------- Phase 1
+*prop1
+	; blur
+	if bcnt >= 24 : useblur cb8 * 224
+
+	; bgcolor
+	if bcnt < 29 : c += xb1s * 32
+
+	; camera
+	x = cb32 * 4000 + 40
+	y = 50.0 - xb32 * 100
+	d3setcam  y - 30, x, y,  0, -10000, 0
+
+	pmode = 1
+
+	phase = cb32 * 30 + cb32s*cb32 * 30
+
+	goto *@f
+;----------------------------- Phase 2
+*prop2
+	; bgcolor
+	c += sin(_PI * cb32) * xb1s * 16
+
+	; camera
+	d3setcam  sin(cb32*2.3)*200+200, cb32 * 4400 - 500, 0,  0, cb32 * 3400, 0,  2.2
+
+	phase = cb32 * 27.7 + 0.9
+
+	goto *@f
+;----------------------------- main
+*@
+	; BG
+	hsvcolor cb32 * 192 + 96, 64, limit(c, 0, 255)
+	boxf
+
+	; 軸
+	hsvcolor cb32 * 192 + 96, 128, limit(c * 5, 0, 255)
+	POLYS = 3
+	dh = _2PI / POLYS
+	repeat POLYS
+		th = dh * cnt + phase
+		x0 = cos(th) * 2
+		y0 = sin(th) * 2
+		d3line  x0, 0, y0,  x0, 4000, y0
+	loop
+
+	; fog
+	if pmode {
+		; case
+
+		POLYS = 13
+		dh = _2PI / POLYS
+
+		hsvcolor cb32 * 192 + 96, 64, limit(c * 1.44, 0, 255)
+		repeat POLYS
+			th = dh * cnt - cb32 * 6
+			x0 = cos(th) * 500
+			y0 = sin(th) * 500
+			d3line  x0, -6000, y0,  x0, 6000, y0
+
+			th = dh * cnt - cb32 * 6 + 0.04
+			x0 = cos(th) * 500
+			y0 = sin(th) * 500
+			d3line  x0, -5000, y0,  x0, 5000, y0
+
+			th = dh * cnt - cb32 * 6 + 0.08
+			x0 = cos(th) * 500
+			y0 = sin(th) * 500
+			d3line  x0, -4000, y0,  x0, 4000, y0
+		loop
+
+		gmode 5, , , 64
+		d3particle   5,  0, -4500, 0,  2000
+		d3particlem  0, 1000
+		d3particlem  0, 500
+	}
+
+	; CHAIN
+	POINTS = 64
+	gmode 5, , , 160
+	repeat POINTS + 1
+		d3particle 0, 0, cnt * 4000 / POINTS, 0, 5
+		if rnd(2) : d3particlem 5, 15
+	loop
+
+	; プロペラ
+
+	POLYS = 5
+	dh = _2PI / POLYS
+
+	hsvcolor cb32 * 192 + 96, 128, 192
+
+	repeat 8
+		phase += dh / 2
+		z = 500 * cnt
+
+		gmode 5, , , 160
+		d3particle 0, 0, z, 0, 20
+		d3particlem 5, 60
+
+		repeat POLYS
+			th = dh * cnt + phase
+
+			d3initlineto
+
+			repeat 6
+				r0 = 60 * cnt
+
+				a = 0.05 * (7-cnt) ; 前縁
+				x0 = cos(th+a) * r0
+				y0 = sin(th+a) * r0
+
+				a = -a ; 後縁
+				x1 = cos(th+a) * r0
+				y1 = sin(th+a) * r0
+
+				zz = 4 * (6-cnt)
+
+				gmode 5, , , absf(sin(th)) * (6-cnt)/6 * 192 + 16
+				d3ribbonto x0, z-zz, y0,  x1, z+zz, y1
+
+				if cnt {
+					gmode 5, , , 100
+					d3particlem 1, 5
+					if rnd(2) : d3particlem cnt, 15
+				}
+			loop
+		loop
+	loop
+
+	if pmode {
+		; 以下 別座標系で描画
+		c = 0.0
+		if bcnt <  8  : c += xb8s * 500
+		if bcnt >= 28 : c += cb4s * 2000
+
+		x = cb32 * 2000 - 1000
+		d3setcam  x, 1000 - c, 0,  x, -10000, 0
+
+		gmode 5, , , 128
+
+		f = 0.0
+		if bcnt < 28 : f += xb1s * 100
+
+		; 浮遊物
+		repeat 100
+			d3particle  0,  rnd(4000)-2000, -rnd(1500)+f, rnd(3000)-1500,  15
+		loop
+
+		; 010101 polys
+		if bcnt < 8 {
+			; セッティング
+			d3setcam 0, 0, xb8 * 5000,  cos(cb8 * 3), sin(cb8 * 3), -10000
+			gmode 5, , , xb8 * 128
+			r = 1000
+
+			goto *draw_numpolys
+		}
+
+	} else {
+		; 浮遊物
+		repeat 800
+			r = rnd(1000) + 100
+			f = phase * (1200-r) / 6000 + rnd(32768)
+
+			gmode 5, , , 128
+			d3particle  0,  cos(f) * r, (rnd(10000) + cb32*(1000-r)*5 )\8000 - 1000, sin(f) * r,  5
+
+			if rnd(3) = 0 {
+				gmode 5, , , 40
+				d3particlem 0, 20
+			}
+		loop
+	}
+
+	return
+
+;============================================================ ■
+; トンネル
+;----------------------------- Phase 1
+*tube1
+	if bcnt >= 24 : useblur cb8 * 192
+
+	gosub *mod_xb1ss
+
+	c += xb1ss * 32	; bgcolor
+
+	; 背景 (c, c, c)
+	color limit(c, 0, 255), limit(c, 0, 255), limit(c + 32, 0, 255)
+	boxf
+
+	; カメラセッティング
+
+	f = cb32 * 11
+	r = cb32s * 2000 + xb32s * 2000 - 2000
+
+	d3setcam  0, 0, cb32 * 14000 + 1000,  sin(f)*r, cos(f)*r, cb32 * 20000 - 2000
+
+	gosub *@f
+
+	return
+;----------------------------- Phase 2
+*tube2
+	if bcnt <  8  : useblur xb8 * 192
+	if bcnt >= 24 : useblur cb8 * 192
+
+	if bcnt < 29  : c += xb1s * 32	; bgcolor
+
+	; 背景 (c, c, c)
+	color limit(c, 0, 255), limit(c, 0, 255), limit(c + 32, 0, 255)
+	boxf
+
+	; カメラセッティング
+
+	f = cb32 * 11
+	r = cb32s * 2000 + xb32s * 2000 - 2000
+
+	d3setcam  0, 0, cb32 * 14000 + 1000,  sin(f)*r, cos(f)*r, cb32 * 20000 - 2000
+
+	pmode = 1 ; モード
+
+	gosub *@f
+
+	return
+;----------------------------- Phase 3 - making
+*tube3
+	; bgcolor
+	c += sin(_PI * cb32) * xb1s * 10
+
+	; 背景 (c, c, c)
+	color limit(c, 0, 255), limit(c, 0, 255), limit(c + 32, 0, 255)
+	boxf
+
+	; カメラセッティング
+	d3setcam sin(cb32 * _PI) * 700, 0, 8000,   0, 0, cb32 * 14000 + 1000
+
+	; allow + circle
+
+	f = cb32 * 11
+	r = cb32s * 2000 + xb32s * 2000 - 2000
+
+	a = 160
+	color limit(ginfo_r+a, 0, 255), limit(ginfo_g+a, 0, 255), limit(ginfo_b+a, 0, 255)
+
+	d3circle  0, 0, cb32 * 14000 + 1000,  30, 1
+	if stat : pos dx@d3m+5, dy@d3m+5 : mes "camera"
+	d3circle  sin(f)*r, cos(f)*r, cb32 * 20000 - 2000,  200
+	if stat : pos dx@d3m+5, dy@d3m+5 : mes "target"
+	d3arrow sin(f)*r, cos(f)*r, cb32 * 20000 - 2000,   0, 0, cb32 * 14000 + 1000
+
+	goto *@f
+;----------------------------- main
+*@
+	; 周 POLYS
+	POLYS = 8
+	dh = _2PI / POLYS
+
+	; トンネル
+
+	r0 = 1000
+
+	hsvcolor 100, 192, 255
+
+	repeat 19, bcnt
+		z0 = 1000 * (cnt\19 - 1) - 400
+		z1 = z0 + 800
+
+		az = z0, z0, z1, z1
+
+		repeat POLYS
+			th = dh * cnt - 0.24 + dh/2
+			x0 = cos(th) * r0
+			y0 = sin(th) * r0
+
+			th = dh * cnt + 0.24 + dh/2
+			x1 = cos(th) * r0
+			y1 = sin(th) * r0
+
+			if pmode {
+				gmode 5, , , 128
+				d3particle  0, (x0+x1)/2, (y0+y1)/2, (z0+z1)/2, 300
+
+				; カラフルモード
+				hsvcolor rnd(192), 192, 255
+				gmode 5, , , 160
+
+			} else {
+				gmode 5, , , 64
+				d3particle  0, (x0+x1)/2, (y0+y1)/2, (z0+z1)/2, 300
+
+				; OFF モード
+				if bcnt <  16 : gmode 5, , , 32
+				if bcnt >= 16 : gmode 5, , , 32 + xb16s*xb16 * 224
+			}
+
+			if stat {
+				ax = x0, x1, x1, x0
+				ay = y0, y1, y1, y0
+				d3square ax, ay, az ; トンネル
+			}
+		loop
+	loop
+
+	gmode 5, , , 224
+	d3particle  0,  0, 0,     0,  1000
+	gmode 5, , , 128
+	d3particlem 0, 2000
+
+	gmode 5, , , 224
+	d3particle  0,  0, 0, 16000,  1000
+	gmode 5, , , 128
+	d3particlem 0, 2000
+
+	if pmode {
+		; 浮遊物
+		gmode 5, , , 224
+		repeat 400
+			d3particle  cnt\6,  rnd(820)-410, rnd(820)-410, rnd(16000),  25
+		loop
+	}
+
+	return
+
+;============================================================ ■
+; 飛行機
+;----------------------------- Phase 1
+*pfeil1
+	gosub *mod_xb1ss
+
+	; bgcolor
+	c += xb1ss * 8
+	if bcnt < 8 : c += xb8 * 32
+
+	; setcam
+	r = 2000 - xb32s * 2000 - cb32s * 2000
+	f = cb32 * 6
+	d3setcam  cos(f) * r, cb32s*cb32s * 2000 - 2450, sin(f) * r,  0, xb32s * -1000, 0
+
+	; 姿勢
+	x = 0.0
+	y = 0.0
+	z = 0.0
+	ang = -cos(f + 1.5)
+
+	; パラメータ
+	arkf	= 0.5
+	ppitch	= 0.2
+	pphase	= cb32 * 150
+	bgspeed	= 40000
+
+	gosub *@f
+
+	return
+;----------------------------- Phase 2
+*pfeil2
+	gosub *mod_xb1ss_2
+
+	; bgcolor
+	c += xb1ss * 8
+	if bcnt < 8 : c += xb8s * 64
+
+	; setcam
+	r = 1500
+	f = sin(cb32 * 5.8) * 0.7 - 1.48
+	d3setcam  cos(f) * r,  sin(f) * r,  sin(cb32 * _PI) * 500 ;cb32s*cb32s*500 - cb32*62.5
+
+	; 姿勢
+	x = 0.0
+	y = 0.0
+	z = cb32s * 2000
+	ang = cos(cb32 * _PI) * 6
+
+	; パラメータ
+	arkf	= sin(cb8s * cb8 * _PI * 5) * 10 * cb8s * cb8 * (bcnt >= 24) ; はばたき
+	ppitch	= ( xb16 * 0.2 * (bcnt < 16))
+	pphase	= (-xb16s * xb16s * 32 * (bcnt < 16)) - _PI / 6
+	bgspeed	= cb32 * 80000 + 40000
+
+	pmode = 1
+
+	goto *@f
+;----------------------------- main
+*@
+	; BG
+	color limit(c, 0, 255), limit(c, 0, 255), limit(1.6 * c, 0, 255)
+	boxf
+
+	; 浮遊物
+	repeat 300
+		gmode 5, , , 224
+		d3particle  0,  rnd(4000)-2000, (rnd(32768) - cb32 * bgspeed + 1000000)\10000-3000, (rnd(32768) + xb32*5000)\4000-2000,  10
+
+		if rnd(3) = 0 {
+			gmode 5, , , 32
+			d3particlem  5, 40
+		}
+
+		if rnd(16) = 0 {
+			gmode 5, , , 32
+			d3particlem  PTC_XS, 100
+		}
+	loop
+
+	; ローカル座標設定
+	d3setlocal x, z, y,  cos(ang),0,-sin(ang),  0,1,0,  sin(ang),0,cos(ang)
+
+	; ノズル位置 index
+	ptcc = 0
+
+	; craft (-300～300 cube)
+	repeat 1
+		hsvcolor , , 192
+
+		; 胴体
+		d3initlineto
+		repeat 61
+			y = cnt * 10 - 300
+			r = sin(0.0523 * cnt) * 30 + 5
+			th = 0.3 * cnt + cb32 * 100
+			gmode 5, , , rnd(64) + 64
+			d3ribbonto cos(th) * -r, y, sin(th) * -r,  cos(th) * r, y, sin(th) * r
+		loop
+
+		; 主翼
+		POLYS = 2
+		dh = _2PI / POLYS
+		repeat POLYS
+			th = dh * cnt
+			d3initlineto
+			repeat 7
+				gmode 5, , , (7 - cnt) * 33
+				x1 = cos(th) * cnt * 60
+				y1 = sin(th) * cnt * 60
+				d3ribbonto x1, 120-6*cnt*cnt, y1 + 10 + arkf*cnt*cnt, x1, -4*cnt*cnt, y1 - 10 + arkf*cnt*cnt
+
+				gmode 5, , , 192
+				d3particlem 1, 10
+				gmode 5, , , 32
+				d3particlem 0, 50
+
+				if pmode = 0 {
+					; ノズル位置記録
+					if cnt >= 6 {
+						ptcx(ptcc) = x1
+						ptcy(ptcc) = y1 - 10 + arkf*cnt*cnt
+						ptcz(ptcc) = -4*cnt*cnt
+						ptcc++
+					}
+				}
+			loop
+		loop
+
+		; 尾翼
+		POLYS = 3
+		dh = _2PI / POLYS
+		repeat POLYS
+			th = dh * cnt + 1.5707963
+			d3initlineto
+			repeat 4
+				gmode 5, , , (4 - cnt) * 50
+				x1 = cos(th) * cnt * 50
+				y1 = sin(th) * cnt * 50
+				d3ribbonto x1, -150-sqrt(cnt)*50, y1, x1, -260, y1
+
+				gmode 5, , , 192
+				d3particlem 1, 10
+				gmode 5, , , 32
+				d3particlem 0, 50
+
+				if pmode {
+					; ノズル位置記録
+					if cnt >= 3 {
+						ptcx(ptcc) = x1
+						ptcy(ptcc) = y1
+						ptcz(ptcc) = -260
+						ptcc++
+					}
+				}
+			loop
+		loop
+
+		; ペラ
+		POLYS = 3
+		dh = _2PI / POLYS
+		repeat 2
+			if cnt {
+				; rear
+				z0 = -300
+				az = z0 + 10, z0 - 10, z0 - 10, z0 + 10
+				phase = pphase
+				ppitch = -ppitch
+			} else {
+				; front
+				z0 = 300
+				az = z0 - 10, z0 + 10, z0 + 10, z0 - 10
+				phase  = -phase
+			}
+
+			repeat POLYS
+				th = dh * cnt + phase
+				d3initlineto
+				repeat 4
+					gmode 5, , , (4 - cnt) * 50
+					x1 = cos(th + ppitch * cnt / 2) * cnt * 50
+					y1 = sin(th + ppitch * cnt / 2) * cnt * 50
+					x2 = cos(th + ppitch * cnt / 2 + ppitch) * cnt * 50
+					y2 = sin(th + ppitch * cnt / 2 + ppitch) * cnt * 50
+					d3ribbonto x1, z0+10, y1, x2, z0-10, y2
+
+					gmode 5, , , 192
+					d3particlem 1, 10
+					gmode 5, , , 32
+					d3particlem 0, 50
+				loop
+			loop
+		loop
+
+	loop
+
+	if pmode = 0 {
+		; ダスト
+		dzmax = 2000
+		repeat 200
+			dz = (cnt * 10 + cb4 * dzmax) \ dzmax
+
+			x = ptcx(cnt\ptcc)
+			y = ptcy(cnt\ptcc)
+			z = ptcz(cnt\ptcc)
+
+			r = sqrt(dz) * 2
+			th = cnt;0.001 * rnd(6283)
+
+			gmode 5, , , (dzmax - dz) * 128 / dzmax
+			d3particle  PTC_XS,  cos(th) * r + x, z - dz, sin(th) * r + y,  25
+		loop
+	}
+
+	if pmode {
+		; x-ダスト
+		dzmax = 120 ; blue
+		repeat 12
+			dz = (cnt * 10 + cb1 * dzmax * 2) \ dzmax
+
+			x = ptcx(cnt\ptcc)
+			y = ptcy(cnt\ptcc)
+			z = ptcz(cnt\ptcc)
+
+			r = dz / 100
+			th = 0.001 * rnd(6283)
+
+			gmode 5, , , (dzmax - dz) * 128 / dzmax
+			d3particle  5,  cos(th) * r + x, z - dz, sin(th) * r + y,  dz / 3 + 100
+		loop
+
+		dzmax = 400 ; blue
+		repeat 40
+			dz = (cnt * 10 + cb1 * dzmax * 2) \ dzmax
+
+			x = ptcx(cnt\ptcc)
+			y = ptcy(cnt\ptcc)
+			z = ptcz(cnt\ptcc)
+
+			r = dz / 30
+			th = 0.001 * rnd(6283)
+
+			gmode 5, , , (dzmax - dz) * 192 / dzmax
+			d3particle  5,  cos(th) * r + x, z - dz, sin(th) * r + y,  30
+		loop
+
+		dzmax = 600 ; yellow
+		repeat 60
+			dz = (cnt * 10 + cb1 * dzmax * 2) \ dzmax
+
+			x = ptcx(cnt\ptcc)
+			y = ptcy(cnt\ptcc)
+			z = ptcz(cnt\ptcc)
+
+			r = dz / 100
+			th = 0.001 * rnd(6283)
+
+			gmode 5, , , (dzmax - dz) * 100 / dzmax
+			d3particle  1,  cos(th) * r + x, z - dz, sin(th) * r + y,  dz / 10 + 40
+		loop
+
+		dzmax = 2000 ; white
+		repeat 100
+			dz = (cnt * 20 + cb1 * dzmax) \ dzmax
+
+			x = ptcx(cnt\ptcc)
+			y = ptcy(cnt\ptcc)
+			z = ptcz(cnt\ptcc)
+
+			r = dz / 150
+			th = 0.001 * rnd(6283)
+
+			gmode 5, , , sin(_PI * sqrt(double(dz)/dzmax) ) * 32
+			d3particle  0,  cos(th) * r + x, z - dz - 600, sin(th) * r + y,  dz / 30 + 50
+		loop
+
+		; ローカル座標設定
+		a = cb4s
+		d3setlocal 0, 0, 0,  cos(a),0,-sin(a),  0,1,0,  sin(a),0,cos(a)
+
+		; stargate
+		if bcnt >= 16 {
+			; tunnel
+			repeat 5
+				gmode 5, , , cb16s * cb16s * (10 - cnt) * 30
+				d3particle 5, 0, 10000 - cnt * 2000, 0, cnt * 200 + 500
+			loop
+		}
+		if bcnt >= 28 {
+			; gate
+			y  = 4000
+			rr = cb4s * 5000
+			gmode 5, , , cb4s * 100
+
+			POLYS = 80
+			dh = _2PI / POLYS
+			repeat 6
+				a = cb32 * 10 + cnt * 2
+				repeat POLYS
+					x = cos(dh * cnt) * sin(dh*cnt) * cos(a*2) * rr
+					z = sin(dh * cnt) * sin(dh*cnt) * cos(a/2) * rr
+					d3particle PTC_XS, x, y, z, 80
+				loop
+			loop
+		}
+		if bcnt >= 30 {
+			; star
+			gmode 5, , , cb2 * 128
+			d3particle PTC_STAR,  0, 4000, 0,  cb4s * 1500
+		}
+	}
+
+	return
+
+;============================================================ ■
+; x チューブ
+;----------------------------- Phase 1
+*xtube1
+	gosub *mod_xb1ss_2
+
+	; bgcolor
+	c /= 2
+	c += xb1ss * 32
+
+	; param
+	cc = cb32 * 1300			; z 位置
+	r = 640.0 - xb1ss * 100			; tube 半径
+	mg = cos(cb32 * _2PI * 3) * 5000	; tube 曲がり
+	mr = 100	; ゆれ r
+	mc = 0.0009	; ゆれ sin speed
+	ms = 0.0011	; ゆれ cos speed
+
+	; カメラ転回
+	f = cb32 * 10 + cos(cb32 * 10)
+
+	gosub *@f
+
+	return
+
+;----------------------------- Phase 2
+*xtube2
+	gosub *mod_xb1ss
+
+	if bcnt > 24 : c += cb8s * 64
+
+	; param
+	cc = cb32 * 2000 + cb32s * cb32s * cb32s * 400	; z 位置
+	r = 640.0 - xb1ss * 100				; tube 半径
+	mg = cos(cb32 * _2PI * 3) * 5000 * xb32		; 曲がり
+	mr = xb32 * 100	; ゆれ r
+	mc = 0.0013	; ゆれ sin speed
+	ms = 0.0017	; ゆれ cos speed
+
+	; カメラ転回
+	f = cb32 * 20 + xb32 * cos(cb32 * 10) * 2 + xb32 * sin(cb32 * 17)
+
+	pmode = 1
+
+	goto *@f
+;----------------------------- main
+*@
+	; BG
+	hsvcolor 112, 64, limit(c, 0, 255)
+	boxf
+
+	; setup
+	POLYS = 11
+	LOOPS = 11
+
+	dh = _2PI / POLYS
+	dz = 500.0 / POLYS
+
+	cz = dz * cc
+	cx = cos(mc * cz) * mr
+	cy = sin(ms * cz) * mr
+	d3setcam  cx, cy, cz,  cx + sin(f), cy + cos(f), cz + 100
+
+	; チューブ
+	hsvcolor (cb32 * 160) * pmode + 112, 128, 255
+
+	repeat POLYS * LOOPS, cc
+		c = cnt
+		th = dh * c : z = dz * c : cr = double(c - cc) / (POLYS * LOOPS)
+		x1 = cos(th) * r + cos(mc * z) * mr
+		y1 = sin(th) * r + sin(ms * z) * mr + cr*cr*mg
+		z1 = z
+
+		c = cnt + POLYS
+		th = dh * c : z = dz * c : cr = double(c - cc) / (POLYS * LOOPS)
+		cr = double(c - cc) / (POLYS * LOOPS)
+		x2 = cos(th) * r + cos(mc * z) * mr
+		y2 = sin(th) * r + sin(ms * z) * mr + cr*cr*mg
+		z2 = z
+
+		if bcnt >= 28 & pmode : z2 += cb4 * dz * POLYS / 3
+
+		gmode 5, , , (1.0-cr) * ((sin(th+f) + 1.2) * 128 + (cnt*cnt\32))
+		d3ribbonto x1, y1, z1, x2, y2, z2
+
+		gmode 5, , , (1.0-cr) * 56
+		d3particlem 2, 150
+	loop
+
+	; 浮遊物
+	repeat POLYS * LOOPS, cc
+		c = cnt
+		r = ((((c^0x5555)*c)^c)*c&0x7fffffff)\500 + 100
+
+		th = dh * c : z = dz * c : cr = double(c - cc) / (POLYS * LOOPS)
+		x1 = cos(th) * r + cos(mc * z) * mr
+		y1 = sin(th) * r + sin(ms * z) * mr + cr*cr*mg
+		z1 = z
+
+		gmode 5, , , (1.0-cr) * 255
+		d3particle  2,  x1, y1, z1,  20
+
+		if rnd(3) = 0 {
+			gmode 5, , , (1.0-cr) * 64
+			d3particlem 5, 100
+		}
+	loop
+
+	return
+
+;============================================================ ■
+; cubes
+;----------------------------- Phase 1
+*cubes1
+	gosub *mod_xb1ss_2
+
+	; bgcolor
+	c += xb1ss * 8
+
+	gosub *@f
+
+	return
+
+;----------------------------- main
+*@
+	; 背景
+	color limit(c, 0, 255), limit(1.2 * c, 0, 255), limit(1.4 * c, 0, 255)
+	boxf
+
+	; setcam
+	cx = cb32 * 32000
+	d3setcam cx, 0, 0,  cx - cos(cb32 * _2PI) * 1000, sin(cb32 * _2PI) * 500, sin(cb32 * _PI * 4) * 500,  cb32s*cb32s*cb32s*cb32s*cb32s * 3 + 1
+
+	color limit(c+10, 0, 255), limit(1.2 * c + 20, 0, 255), limit(1.4 * c + 30, 0, 255)
+
+	; frame 1
+	repeat 36
+		y = (cnt / 6) * 1000 - 2500
+		z = (cnt \ 6) * 1000 - 2500
+
+		d3line 0, y, z, 32000, y, z
+	loop
+
+	; frame 2
+	repeat 9
+		x = cnt * 4000
+		repeat 6
+			y = cnt * 1000 - 2500
+
+			d3line  x, y, -2500,  x, y, 2500
+			d3line  x, -2500, y,  x, 2500, y
+		loop
+	loop
+
+	; particles
+	repeat 36 * 10
+		y = (cnt / 6 \ 6) * 1000 - 2500
+		z = (cnt \ 6) * 1000 - 2500
+		x = (-rnd(32000) + cb32 * 64000) \ 32000
+
+		gmode 5, , , 192
+		d3particle  1, x, y, z, 50
+
+		if rnd(3) = 0 {
+			gmode 5, , , 64
+			d3particlem 5, 200
+		}
+	loop
+
+	; cubes
+	color 64, 96, 128
+	a = 0.0
+	repeat 9
+		x = cnt * 4000
+		repeat 16
+			y = (cnt / 4) * 1000 - 1500
+			z = (cnt \ 4) * 1000 - 1500
+
+			a += 0.5
+			r = cos(xb1ss * _PI * 2 + a) * 50 + 200
+
+			gmode 5, , , 48
+			d3particle 5, x, y, z, r
+			if stat : gosub *draw_cube
+		loop
+	loop
+
+	gmode 5, , , 224
+	d3particle  0, -1000, 0, 0, 1000
+	gmode 5, , , 64
+	d3particlem 5, 4000
+
+	gmode 5, , , 224
+	d3particle  0, 33000, 0, 0, 1000
+	gmode 5, , , 64
+	d3particlem 5, 4000
+
+	return
+
+;============================================================ □
+; cube □ (x, y, z, r)
+*draw_cube
+
+	d3initlineto
+
+	x1 = x - r
+	x2 = x + r
+	y1 = y - r
+	y2 = y + r
+	z1 = z - r
+	z2 = z + r
+
+	d3ribbonto x1, y1, z1,  x1, y1, z2
+	gmode 5, , , 96
+	d3ribbonto x2, y1, z1,  x2, y1, z2
+	gmode 5, , , 64
+	d3ribbonto x2, y2, z1,  x2, y2, z2
+	gmode 5, , , 96
+	d3ribbonto x1, y2, z1,  x1, y2, z2
+	gmode 5, , , 64
+	d3ribbonto x1, y1, z1,  x1, y1, z2
+
+	ax = x1, x2, x2, x1
+	ay = y1, y1, y2, y2
+	az = z2, z2, z2, z2
+
+	gmode 5, , , 128
+	d3square  ax, ay, az
+
+	return
+
+;============================================================ ■
+; 光 obj
+;----------------------------- Phase 1
+*lumin1
+	gosub *mod_xb1ss
+
+	f = cb32 * 9
+	r = 1700.0
+	if bcnt < 4 : r -= xb4s * 1000
+	d3setcam cos(f) * r, sin(f + 0.5) * r, sin(f/2) * r/2
+
+	gosub *@f
+
+	return
+
+;----------------------------- main
+*@
+	; BG
+	hsvcolor 112, 64, limit(c, 0, 255)
+	boxf
+
+	; 球体描画
+
+	#define ctype r_lumin(%1,%2)   500 + sin(%1 * 5 + cb32 * 30) * sin(%2) * 150 + sin(%2 * 2 + cb32 * 30) * 120
+	#define ctype th_lumin(%1,%2)  %1 + %2 * sin(cb32 * _2PI * 1)
+	#define ctype ph_lumin(%1,%2)  %2
+
+	POLYS = 26 ; 球体分割数
+	dh = _2PI / POLYS
+
+	flg = 1
+
+	; oOOo
+	color 96, 96, 192
+	repeat POLYS / 2
+
+		ph0 = dh *  cnt
+		ph1 = dh * (cnt+1)
+
+		if cnt + 1 = POLYS / 2 : flg = 0
+
+		d3initlineto
+
+		repeat POLYS + 1
+			th = dh * cnt
+
+			; default value
+			x0 = 0 : y0 = 0 : z0 = r_lumin(th, ph0)
+			x1 = 0 : y1 = 0 : z1 = r_lumin(th, ph1)
+
+			; 座標を回転置換
+			d3rotate y0, z0, y0, z0, ph_lumin(th, ph0)
+			d3rotate x0, y0, x0, y0, th_lumin(th, ph0)
+
+			d3rotate y1, z1, y1, z1, ph_lumin(th, ph1)
+			d3rotate x1, y1, x1, y1, th_lumin(th, ph1)
+
+			gmode 5, , , ((sin(ph0*3+cb32*30)+0.4)+(sin(th*4)+0.4)) * 50
+			d3ribbonto x0, y0, z0, x1, y1, z1
+
+			if cnt * flg {
+				gmode 5, , , 192
+				d3particlem  1, 12
+
+				if rnd(3) = 0 {
+					gmode 5, , , 32
+					d3particlem  PTC_STAR, (sin(ph0*3+cb32*30)+sin(th*4)) * 50
+				}
+			}
+		loop
+	loop
+
+	gmode 5, , , cos(cb32 * _2PI * 4) * 80 + 128
+	d3particle 0,  0, 0, 0,  r_lumin(0.0,0.0)
+
+	; 浮遊物
+	repeat 300
+		r = rnd(60) * rnd(60)
+		f = rnd(32768)
+
+		x = cos(f) * r
+		y = sin(f) * r
+		z = rnd(4000) - 2000
+
+		if d3dist(x, y, z) < 1000 : continue
+
+		gmode 5, , , 128
+		d3particle  5,  x, y, z, 15
+
+		if rnd(3) = 0 {
+			gmode 5, , , 32
+			d3particlem 5, 60
+		}
+	loop
+
+	return
+
+;============================================================ ■
+; moonlight
+;----------------------------- Phase 1
+*moon1
+	; blur
+	if bcnt >= 24 : useblur cb8 * 224
+
+	; カメラセッティング
+	r = cb32 * 2000 + 500
+	f = cb32 * 3
+	d3setcam cos(f) * r, sin(f) * r, 8000,   0, 0, 12000 - cb32s * 10000
+
+	css = -10000
+
+	goto *@f
+;----------------------------- Phase 2
+*moon2
+	if bcnt <  8  : useblur xb8 * 224
+
+	; カメラセッティング
+	r = 500 + xb32s * 5000
+	f = cb32 * 3
+	d3setcam cos(f) * r, sin(f) * r, 3000 + (cb8s*10000*(bcnt>=24)),   0, 0, cb32s * 10000
+
+	if bcnt >= 24 : c += cb8s * 64 ; bgc
+
+	css = -10000
+
+	goto *@f
+;----------------------------- Phase 3
+*moon3
+	; カメラセッティング
+	r = 700
+	f = cb32 + 0.3
+	d3setcam cos(f) * r, sin(f) * r, 10000,  0, 0, 8000
+
+	css = 4000
+
+	goto *@f
+;----------------------------- Phase 4
+*moon4
+	if bcnt >= 24 : useblur cb8 * 224
+
+	; カメラセッティング
+	d3setcam xb32 * 2000, 0, 4000,  0, 0, 8000 + cb32 * 10000
+
+	css = 4000 + cb32 * 15000
+
+	goto *@f
+;----------------------------- main
+*@
+	; 背景
+	color limit(c, 0, 255), limit(c, 0, 255), limit(1.5 * c, 0, 255)
+	boxf
+
+	; moon
+	gmode 5, , , 192
+	d3particle  PTC_MOON,  0, 0, 50000,  1200
+	gmode 5, , , 48
+	d3particlem  0, 6000
+
+	; moonlight
+	repeat 10
+		gmode 5, , , (10-cnt) * 3
+		d3particle  0,  0, 0, 20000 - cnt * 1000,  cnt * 70 + 1000
+	loop
+
+	; ground
+	ax = 1500, 0, 0, 1500
+	ay = 1500, 1500, 0, 0
+	az = 0, 0, 0, 0
+	gmode 5, , , 112
+	repeat 5
+		f = _2PI / 5 * cnt
+		repeat 4
+			d3rotate afx(cnt), afy(cnt), ax(cnt), ay(cnt), f
+		loop
+		d3texture  afx, afy, az,  TEX_MOON, 0, 0, 480, 480,  2
+	loop
+
+	; gnd softlight
+	gmode 5, , , 80
+	d3particle  0,  0,0,0, 1000
+
+	; light
+
+	gmode 5, , , 128
+	d3particle  0,  0, 0, 0,  300
+
+	gmode 5, , , 128
+	d3particlem 0, 500
+	repeat 30, 1
+		gmode 5, , , (30 - cnt) * 2
+		d3particle 0,  0, 0, cnt * 100,  cnt * 5 + 100
+	loop
+
+	; snow
+	repeat 1500
+		f = rnd(32768)
+		r = 0.030 * rnd(1000) : r *= r + 5
+		z = 30000 * cnt / 1000
+
+		gmode 5, , , 224
+		d3particle  0,  cos(f) * r, sin(f) * r, limit( (100000 + cb32 * css + z)\30000 - 10000, 0, 32768), 20
+
+		if rnd(3) = 0 {
+			gmode 5, , , 24
+			d3particlem 5,  80
+		}
+	loop
+
+	; stars
+	gmode 5, , , 192
+	repeat 200
+		f = rnd(32768)
+		z = rnd(32768)
+		r = 32768 - z
+		d3particle  0,  cos(f) * r, sin(f) * r, z + 5000,  rnd(100) + 10
+	loop
+
+	return
+
+;============================================================ ■
+; hexagon tube
+;----------------------------- Phase 1
+*hexa1
+	if bcnt / 4 = 12 / 4 : useblur cb4 * 224
+	if bcnt / 4 = 16 / 4 : useblur xb4 * 224
+
+	gosub *mod_xb1ss
+	c += xb1ss * 32
+
+	; setcam
+	f  = cb32 * _PI - 1.57
+	cy = cb32 * 32000
+	d3setcam 0, cy, 0,  cos(f) / 3, cy + sin(f), 0
+
+	goto *@f
+;----------------------------- main
+*@
+	; BG
+	hsvcolor 112, 128, limit(c, 0, 255)
+	boxf
+
+	POLYS = 6
+	dh = _2PI / POLYS
+
+	rr = 544
+	th = cb32 * 12
+
+	color 200, 200, 255
+
+	repeat 48, -8
+		y  = cnt * 1000
+
+		d3initlineto
+
+		repeat POLYS + 1
+			x = cos(dh * cnt + th) * rr
+			z = sin(dh * cnt + th) * rr
+
+			; 表示
+
+			gmode 5, , , 112 - sin(dh * cnt + th) * 64
+			d3ribbonto  x, y-100, z,  x, y+100, z
+
+			if cnt {
+				gmode 5, , , 72
+				d3particlem 0, 50
+			}
+		loop
+
+		repeat POLYS
+			x = cos(dh * cnt + th) * rr
+			z = sin(dh * cnt + th) * rr
+
+			d3particle 0, x, y-100, z, 50
+		loop
+	loop
+
+	gmode 5, , , 120
+	d3particle   5,  0, 32010, 0,  2000
+	d3particlemr PTC_STAR, 300, cb32 * -4
+	d3particlemr PTC_STAR, 400, cb32 * 3
+
+	gmode 5, , , 120
+	d3particle   5,  0, -10, 0,  2000
+	d3particlemr PTC_STAR, 300, cb32 * -4
+	d3particlemr PTC_STAR, 400, cb32 * 3
+
+	; byu-byu-
+	POLYS = 12
+	dh = _2PI / POLYS
+	gmode 5, , , 64
+	repeat 31, 1
+		rr = 100
+		y  = cnt * 1000
+		repeat POLYS
+			x = cos(dh * cnt) * rr
+			z = sin(dh * cnt) * rr
+			d3particle 5, x, y + sin(dh * cnt * 6 + cb32 * 32) * 30, z, 50
+		loop
+	loop
+
+	repeat 1000
+		f = rnd(32768)
+		r = rnd(50) + 20
+		r = r * r
+		gmode 5, , , 224
+		d3particle  0, cos(f)*r, 2 * (25000 - (rnd(32768) + cb32 * 32768) \ 32768), sin(f)*r, 20
+
+		if rnd(3) = 0 {
+			gmode 5, , , 64
+			d3particlem 5, 100
+		}
+	loop
+
+	return
+
+;============================================================ ■
+; pentagon tube
+;----------------------------- Phase 1
+*penta1
+	if bcnt >= 24 & (int(cb1 * 4) \ 2) = 0 {
+		on int(fcnt * 2)\6 goto *rappa1, *prop1, *tube2, *logotip11, *xtube2, *helic2
+	}
+
+	gosub *mod_xb1ss
+	c += xb1ss * 32
+
+	; BG
+	color limit(c, 0, 255), limit(c, 0, 255), limit(1.5 * c, 0, 255)
+	boxf
+
+	; setcam
+	d3setcam 0, cb32 * 32000, 0,  0, 60000, 0
+
+	; setcam
+	r  = xb32 * 800 + xb1 * 30
+	f  = cb32 * 1.4 * _2PI
+	cy = cb32 * 32000
+	d3setcam 0, cy, 0,  cos(f) * r, cy + 1000, sin(f) * r
+
+	goto *@f
+;----------------------------- main
+*@
+	POLYS = 5
+	dh = _2PI / POLYS
+
+	repeat 32
+		rr = (35 - cnt) * 16
+
+		y  = cnt * 1000
+		th = cb32 * 32 * _PI / POLYS * ((cnt&1)*2-1)
+
+		if cnt&1 : color 255, 192, 128 : else : color 128, 192, 255
+
+		d3initlineto
+
+		repeat POLYS + 1
+			x = cos(dh * cnt + th) * rr
+			z = sin(dh * cnt + th) * rr
+
+			gmode 5, , , 112 - sin(dh * cnt + th) * 64
+			d3ribbonto x, y-100, z,  x, y+100, z
+
+			if cnt {
+				gmode 5, , , 72
+				d3particlem 0, 50
+			}
+		loop
+
+		repeat POLYS
+			x = cos(dh * cnt + th) * rr
+			z = sin(dh * cnt + th) * rr
+
+			d3particle 0, x, y-100, z, 50
+		loop
+	loop
+
+	; byu-byu-
+	POLYS = 12
+	dh = _2PI / POLYS
+	gmode 5, , , 64
+	repeat 31, 1
+		rr = 100
+		y  = cnt * 1000
+		repeat POLYS
+			x = cos(dh * cnt) * rr
+			z = sin(dh * cnt) * rr
+			d3particle 2, x, y + sin(dh * cnt * 6 + cb32 * 32) * 30, z, 50
+		loop
+	loop
+
+	gmode 5, , , 96
+	d3particle   5,  0, 32010, 0,  2000
+	gmode 5, , , 64
+	d3particlem  0, 700
+	gmode 5, , , 120
+	d3particlemr PTC_STAR, 300, cb32 * -4
+	d3particlemr PTC_STAR, 400, cb32 * 3
+
+	repeat 1000
+		f = rnd(32768)
+		r = rnd(50) + 20
+		r = r * r
+		gmode 5, , , 224
+		d3particle  0, cos(f)*r, 2 * (32768 - (rnd(32768) + cb32 * 32768) \ 32768), sin(f)*r, 20
+
+		if rnd(3) = 0 {
+			gmode 5, , , 64
+			d3particlem 5, 100
+		}
+	loop
+
+	return
+
+;============================================================ ■
+; アレイ
+;----------------------------- Phase 1
+*arry1
+	if bcnt >= 24 {
+		cc = xb8
+	} else:if bcnt >= 8 {
+		cc = 1
+	} else {
+		cc = cb8
+	}
+	c *= cc
+
+	; カメラ座標
+	d3setcam cos(cb32), sin(cb32), cb32s * 5000 + cb32 * 5000,  0, 0, -10000
+
+	gosub *@f
+
+	; telop
+	sx = fnt_s3
+	sy = fnt_s3
+	repeat 9
+		wx = sin((cb32 - 0.0625 * cnt) * _2PI) * 0.5
+		if wx > 0.0 {
+			types = astr_cred(cnt)
+			py = 0.1 + 0.1 * cnt
+			gmode 5, , , wx * 500
+			screen_type types, wx, py, sx, sy
+		}
+	loop
+
+	return
+;----------------------------- main
+*@
+	; 背景 (c, c, c)
+	color limit(c, 0, 255), limit(c, 0, 255), limit(c + 32, 0, 255)
+	boxf
+
+	; アレイ
+	c += cc * 160
+	color limit(c, 0, 255), limit(c, 0, 255), limit(c + 32, 0, 255)
+
+	repeat 101
+		r = rnd(1000) + 1000
+		th = rnd(32768)
+		x0 = cos(th) * r
+		y0 = sin(th) * r
+		d3setlocal x0, y0, 0
+
+		z0 = 16000.0 * (cnt) / 100 - 1000
+		th = 3.395 * cnt + cb32*3
+		a = cnt
+
+		repeat 5
+			r = cnt * 150 - 600
+			x0 = cos(th) * r
+			y0 = sin(th) * r
+
+			if cnt = 4 {
+				d3circle x0, y0, z0, 70, 1
+				gmode 5, , , cc * 160
+				d3particlem a\4+1, 210
+			} else {
+				d3circle x0, y0, z0, 30, 1
+				gmode 5, , , cc * 160
+				d3particlem a\4+1, 90
+			}
+		loop
+	loop
+	d3setlocal
+
+	gmode 5, , , cc * 64
+	repeat 1000
+		d3particle  0,  rnd(10000)-5000, rnd(10000)-5000, rnd(20000)-10000,  50
+	loop
+
+	return
+

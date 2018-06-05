@@ -1,8 +1,7 @@
 
 ;============================================================
-;                                                 2005/--/--
-;	d3module  sample script
-;	for HSP 3.0
+;                                      s.programs 2005/--/--
+;	d3module sample
 ;
 ;============================================================
 ;
@@ -15,10 +14,7 @@
 
 #include "d3m.hsp"
 
-	title "S.Programs d3module sample"
-
 	TEX_SIZE = 32 ; 使用するテクスチャの大きさ
-
 
 	; テクスチャを格納する仮想スクリーン
 
@@ -33,20 +29,16 @@
 		loop
 	loop
 
-
 	gsel 0
 	gmode 5, , , 224 ; 面を描画するときのコピーモードを設定
-
 
 *mainloop
 
 	; タイマー
 	time = d3timer()
 
-
 	; フレームレートを表示
 	title "fps = " + d3getfps()
-
 
 	; カメラ座標を回転させる
 	d3setcam cos(0.002 * time) * 500, sin(0.002 * time) * 500, sin(0.001 * time) * 200
@@ -70,10 +62,8 @@
 		d3mes "div = " + cnt, 0, 0, ofz
 	loop
 
-
 	redraw
 	await
-
 
 	goto *mainloop
 

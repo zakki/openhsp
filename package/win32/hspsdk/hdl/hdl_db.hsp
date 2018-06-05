@@ -1,20 +1,15 @@
 
 ;============================================================
-;                                                 2009/xx/xx
-;	S.Programs HDL
-;	database create module for HSP3 + SQLele
-;                               http://sprocket.babyblue.jp/
+;	HDL Create DB parts
 ;============================================================
-; 対応データ仕様
-; ・hs ファイル仕様 2.0
-; ・HTML (*ML) (sjis)
-; ・text (sjis)
-;============================================================
-
-#define global HDL_PF 1
-#define global HDL_BEN 0
 
 #include "sqlele.hsp"
+#include "hdl_lib.hsp"
+#ifndef notnull
+ #define global ctype notnull(%1) peek(%1)
+#endif
+
+#define global HDL_PF 1
 
 /*
 	データベース フォーマット
@@ -29,7 +24,6 @@
 	Files
 		ID
 		Path	; Hoge\Foo\Bar.txt
-	;	Type					; 廃止 1.32
 		Dir	; == Dirs.Dir			; 追加 1.10
 		Fn	; bar.txt (lower)		; 追加 1.32
 		Chksum	; update-check
@@ -44,7 +38,6 @@
 		Date
 		Author
 		Group3
-
 		Prm
 		Prm2
 		Inst
@@ -66,32 +59,11 @@
 		Catego
 		Search	; Index data
 		SmryIdx	; Summary start index	; 追加 1.32
-
 */
-
-#ifndef notnull
-; notnull(string_var)
-#define global ctype notnull(%1) peek(%1)
-#endif
-
-;============================================================
-; BENCH macro
-
-#ifndef B_ST
-#uselib "winmm"
-#cfunc global d3timer "timeGetTime"
-#define global B_ST(%1="test")	bench_ot = d3timer() : bench_titl = %1
-#define global B_EN	dialog bench_titl + " - " + (d3timer() - bench_ot) + "ms"
-#define global B_I1	bench_i = 0
-#define global B_I2	bench_iot = d3timer()
-#define global B_I3	bench_i += d3timer() - bench_iot
-#define global B_I4	dialog "B_I - " + bench_i + "ms"
-#endif
-
-
 
 ;============================================================
 ; DBCS buffer index to UTF-16 char index
+;============================================================
 
 #module
 ; winapi
@@ -102,33 +74,27 @@
 	return MultiByteToWideChar(0, 0, v, i, 0, 0)
 #global
 
-
-
 ;============================================================
 ; HDL プログレスバー モジュール
+;============================================================
 
 #module
-
 ;------------------------------------------------------------
 #define PGWID 11
 #deffunc progress_pos int p1 ; (0 - 1000)
-
-	; delay patch
-	dly_cnt++ : if dly_cnt <= 6 : return
-
-	if f_show = 0 {
+	if inited = 0 {
 		; init
-		f_show = 1
-		wx = 400
+		inited = 1
+		wx = 360
 		wy = 100
 		bgscr PGWID, wx, wy, , (ginfo_dispx-wx)/2, (ginfo_dispy-wy)/2
 		title "HDL SYNC"
 
 		; background
-		color 64,64,128 : boxf
+		color 85,85,153 : boxf
 		color 255,255,255 : boxf 3, 3, wx-4, wy-4
 		color : pos 25, 25 : sysfont 17 : mes "HSP ドキュメント ファイルの情報を集めています。\nしばらくお待ちください ..."
-		color 64,64,128 : boxf , 70, , 70 : boxf , 80, , 80
+		color 85,85,153 : boxf , 70, , 70 : boxf , 80, , 80
 	}
 	gsel PGWID
 	boxf , 70, p1 * wx / 1000, 80
@@ -137,22 +103,19 @@
 
 ;------------------------------------------------------------
 #deffunc progress_close
-	if f_show {
+	if inited {
 		gsel PGWID, -1
 		gsel 0
-		f_show = 0
+		inited = 0
 		await
-
-		dly_cnt = 0
 	}
 	return
 
 #global
 
-
-
 ;============================================================
 ; note_merge モジュール
+;============================================================
 
 #module
 ;------------------------------------------------------------
@@ -231,10 +194,9 @@
 	return oup
 #global
 
-
-
 ;============================================================
 ; HDL データベースモジュール
+;============================================================
 
 #module
 ;------------------------------------------------------------
@@ -245,13 +207,6 @@
 #func	FindFirstFile	"FindFirstFileA" str, var
 #func	FindNextFile	"FindNextFileA" int, var
 #func	FindClose	"FindClose" int
-
-; UTF BOM 判別
-#define ctype IS_UTF8(%1)	((lpeek(%1) & 0x00ffffff) = 0xBFBBEF)
-#define ctype IS_UTF16(%1)	(wpeek(%1) = 0xFEFF)
-#define ctype IS_UTF16BE(%1)	(wpeek(%1) = 0xFFFE)
-#define ctype IS_UTF32(%1)	(lpeek(%1) = 0x0000FEFF)
-#define ctype IS_UTF32BE(%1)	(lpeek(%1) = 0xFFFE0000)
 
 ;------------------------------------------------------------
 ; = HDL_getsum(str fn)
@@ -281,23 +236,6 @@
 	return 0
 
 ;------------------------------------------------------------
-; HDL_bload var, fn
-; ファイル読み込み with 文字コードチェック
-#deffunc HDL_bload  var v1, str ipath
-	exist ipath
-	sdim v1, strsize + 16
-	bload ipath, v1
-
-	if ((instr(v1,,"縺")>=0)+(instr(v1,,"繝")>=0)+(instr(v1,,"繧")>=0)+(instr(v1,,"裔")>=0)>=3) | (instr(v1,,strf("%c",0xfd))>=0) | (instr(v1,,strf("%c",0xfe))>=0) | (instr(v1,,strf("%c",0xff))>=0) {
-		errs++
-		if errs <= 30 {
-			errmsg += ipath + " は Shift_JIS 以外の文字コードで書かれているため読み込めません。\n"
-		}
-		return 1
-	}
-	return 0
-
-;------------------------------------------------------------
 ; HDL_getdata_hs
 ; hs ファイルからデータを取得
 #deffunc HDL_getdata_hs  var vpath, var vtype
@@ -323,9 +261,7 @@
 #define C_MAX		17	; 配列の最大値
 #define C_VOID		999	; (無効なメンバ)
 
-	; hs ファイルロード
-	HDL_bload buf, vpath
-	if stat : return
+	bload_utf_safe vpath, buf
 
 	buf += "\n\n%index"
 
@@ -356,13 +292,11 @@
 		p += strsize
 		a = peek(astr)
 
-
 		; '%' エスケープ (%%hgoehgoe..)
 		if wpeek(astr) = 0x2525 {
 			memcpy astr, astr, strsize + 1, , 1
 			a = '*'
 		}
-
 
 		; フィールドタグ処理
 		if a = '%' {
@@ -371,7 +305,6 @@
 			getstr astr, astr, , ';'
 			getstr astr, astr, , 9
 			CharLower astr
-
 
 			; フィールド ストア
 			if c_curr ! C_VOID {
@@ -401,12 +334,10 @@
 				}
 			}
 
-
 			; デフォルト値
 			c_curr = C_VOID	; フィールドセレクト
 			r = 1		; 改行可フラグ リセット (= enabled)
 			diffmode = 0	; 差分記述モード リセット (= off)
-
 
 			; レコード開始
 			if astr = "%index" {
@@ -432,7 +363,6 @@
 				; 対象フィールド設定
 				c_curr = C_NAME
 
-
 			; フィールド選択
 			} else:if astr = "%prm"		{ c_curr = C_PRM	}
 			else:if astr = "%inst"		{ c_curr = C_INST	}
@@ -457,25 +387,21 @@
 			else:if astr = "%url+"		{ c_curr = C_URL	: diffmode =  1 }
 			else:if astr = "%url-"		{ c_curr = C_URL	: diffmode = -1 }
 
-
 			; これから取得する値を空リセット
 			poke accum ;= ""
 
 			continue
 		}
 
-
 		; 無効メンバとコメント
 		if (c_curr = C_VOID) | (a = ';') {
 			continue
 		}
 
-
 		; タグ行を空行に変換
 		if (a = '^') : if (astr="^") | (astr="^p") | (astr="^P") {
 			poke astr ;= ""
 		}
-
 
 		; 行 追加
 		if notnull(accum) * r {
@@ -483,7 +409,6 @@
 		} else {
 			accum += astr
 		}
-
 
 		; メンバ固有の処理
 		if notnull(accum) {
@@ -524,7 +449,7 @@
 	if instr(astr, 0, "\\") > 0 : poke astr, instr(astr, 0, "\\")
 
 	; トリム
-	sql_q "SELECT trim(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace( "+prm_text(v4)+"||' '||"+prm_text(v1)+", '---',' '),'***',' '),'///',' '),'===',' '),'___',' '),'━',' '),'─',' '),'￣',' '),'■■',' '),'□□',' '),'　',' '),'\t',' '),'\n',' '),'      ',' '),'     ',' '),'    ',' '),'   ',' '),'  ',' '))", v4
+	sql_q "SELECT trim(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace( "+prm_text(v4)+"||' '||"+prm_text(v1)+", '---',' '),'***',' '),'///',' '),'===',' '),'___',' '),'━',' '),'─',' '),'￣',' '),'■■',' '),'□□',' '),'－－－',' '),'　',' '),'\t',' '),'\n',' '),'      ',' '),'     ',' '),'    ',' '),'   ',' '),'  ',' '))", v4
 
 	; SmryIdx ; 本文の始まりそうなオフセット位置
 	a = instr(v4,, "#SKM#") ; 開始位置マーカー
@@ -533,12 +458,14 @@
 		a += 5
 	}
 	; 代替マーカー
-	if a < 0 : a = instr(v4,, "はじめに ") : if a > 500 : a = -1
-	if a < 0 : a = instr(v4,, "概要 ") : if a > 500 : a = -1
+	if a < 0 : a = instr(v4,, "はじめに") : if a > 500 : a = -1
+	if a < 0 : a = instr(v4,, "概要") : if a > 500 : a = -1
 	if a < 0 : a = instr(v4,, "SUMMARY") : if a > 500 : a = -1
 	if a < 0 : a = instr(v4,, "Summary") : if a > 500 : a = -1
 	if a < 0 : a = instr(v4,, "DESCRIPTION") : if a > 500 : a = -1
 	if a < 0 : a = instr(v4,, "Description") : if a > 500 : a = -1
+	if a < 0 : a = instr(v4,, "title \"") : if a > 500 : a = -1
+	if a < 0 : a = instr(v4,, "#include") : if a > 500 : a = -1
 	if a < 0 : a = 0
 
 	; 挿入
@@ -550,8 +477,7 @@
 ; HTML (*ML) からデータを取得
 #deffunc HDL_getdata_htm  var vpath, var vtype
 
-	HDL_bload buf, vpath
-	if stat : return
+	bload_utf_safe vpath, buf
 
 	; HTML 解釈準備 (tmp 作成)
 	sdim tmp, 8000
@@ -601,10 +527,20 @@
 	}
 
 	; サマリ開始位置マーカーを設定 "#SKM#"
-	a = instr(tmp, , "</h2>")
-	if a < 0 : a = instr(tmp, , "</h1>")
-	if a < 0 : a = instr(tmp, , "</h3>")
-	if a > 0 : astr = "#SKM#" : memcpy buf, astr, 5, a, 0
+	repeat
+		if cnt = 0 : astr = "</h2>"
+		if cnt = 1 : astr = "</h1>"
+		if cnt = 2 : astr = "</h3>"
+		if cnt = 3 : astr = "</title>"
+		if cnt = 4 : break
+
+		a = instr(tmp, , astr)
+		if a > 0 {
+			bstr = "#SKM#           "
+			memcpy buf, bstr, strlen(astr), a, 0
+			break
+		}
+	loop
 
 	; タグを適当に消す (単区間コピー)
 	c0 = instr(buf, 0, "<")
@@ -635,8 +571,7 @@
 ; HSP スクリプトからデータを取得 (with カテゴリ判別)
 #deffunc HDL_getdata_hsp  var vpath, var vtype
 
-	HDL_bload buf, vpath
-	if stat : return
+	bload_utf_safe vpath, buf
 
 	; Title = ファイル名
 	ttle = getpath(vpath, 8)
@@ -653,11 +588,10 @@
 ; プレーンテキストからデータを取得
 #deffunc HDL_getdata_txt  var vpath, var vtype
 
-	HDL_bload buf, vpath
-	if stat : return
+	bload_utf_safe vpath, buf
 
-	; Title = ファイル名 拡張子抜き
-	ttle = getpath(vpath, 8+1)
+	; Title = ファイル名
+	ttle = getpath(vpath, 8)
 
 	; データをそのまま挿入
 	HDL_insert_docs vpath, vtype, ttle, buf
@@ -704,12 +638,6 @@
 	if locked : return 0	; 再入防止
 	locked = 1
 
-
-#if HDL_BEN
-	b_st "mkdb"
-#endif
-
-
 	; 0. バイパス処理
 	; ディレクトリチェックで変化がなければファイルもディレクトリも変化していない、よって再列挙不要
 	sql_q "SELECT Dir, Chksum FROM Dirs", rs
@@ -730,13 +658,10 @@
 		}
 	}
 
-
 	; 前処理
 	sql_q "BEGIN"
 	basedir = dir_cur ; d:\hoge\foo
 	upd = 0
-	errs = 0
-	errmsg = ""
 
 /*
 	チェック手順
@@ -751,9 +676,7 @@
 	HDL_getdir "doclib", ""
 	HDL_getdir "common", ""
 	HDL_getdir "hsphelp", ""
-	HDL_getdir "docs", ""
 	HDL_getdir "sample", ""
-
 
 	; 2. ディレクトリチェック
 	sql_q "SELECT Dir, Chksum FROM Dirs ORDER BY Dir", rs
@@ -787,7 +710,6 @@
 				; ファイルチェックするディレクトリ名リスト (for sql)
 				astr += "'" + sqesc(dir) + "',"
 
-
 				; 3. ファイル列挙
 				chdir dir
 				dirlist buf, "*.*", 3
@@ -795,11 +717,10 @@
 				chdir basedir
 
 				; 拡張子マスクを設定
-				gf_mask = "<.bmp><.png><.jpg><.gif>"
+				gf_mask = "<.bmp><.gif><.jpg><.png>"
 				if instr(dir,, "doclib") = 0 {		gf_mask += "<.hs><.hsp><.htm><.html><.txt>"
 				} else:if instr(dir,, "common") = 0 {	gf_mask += "<.as><.hsp>"
 				} else:if instr(dir,, "hsphelp") = 0 {	gf_mask += "<.hs>"
-				} else:if instr(dir,, "docs") = 0 {	gf_mask += "<.htm><.html><.txt>"
 				} else:if instr(dir,, "sample") = 0 {	gf_mask += "<.hsp>"
 				}
 
@@ -829,28 +750,18 @@
 		}
 	loop
 
-
 #if HDL_PF
-	#uselib "kernel32"
-	#func GetSystemInfo "GetSystemInfo" var
-	#func WinExec "WinExec" sptr, sptr
-
-	; 2-P 以上の環境のみ実行
-	dim a, 9
-	GetSystemInfo a
-	if a(5) >= 2 { ; (dwNumberOrfProcessors >= 2)
-
-		; prefetch
-		; 今回追加された document files を、実読み込みと同じ順番で列挙
-		sql_q "SELECT 'hdl <pf>?'||group_concat(Df,'?') as Cmd, sum(Num) as Num FROM (SELECT '\\'||Dir||'?'||group_concat(Fn,'?') as Df, count(Fn) as Num FROM (SELECT Dir, Fn FROM Files WHERE Chksum=0 and (Fn LIKE '%.as' OR Fn LIKE '%.hs' OR Fn LIKE '%.hsp' OR Fn LIKE '%.htm' OR Fn LIKE '%.html' OR Fn LIKE '%.txt') ORDER BY Dir, Fn) GROUP BY Dir)"
-		if sql_i("Num") >= 20 {
-			if strlen(sql_v("Cmd")) > 32700 : poke sql_v("Cmd"), 32700 ; <- 長さ制限 patch
-; mesbox sql_v("Cmd"),640,480,1:stop
-			WinExec sql_v("Cmd"), 5
-		}
+	; ディスクキャッシュを使った並列読み込み。複数論理プロセッサ環境でのみ多少速くなる。
+	; (重要でない機能)
+	; 今回追加された document files を、実読み込みと同じ順番で列挙
+	sql_q "SELECT 'hdl <pf>?'||group_concat(Df,'?') as Cmd, sum(Num) as Num FROM (SELECT '\\'||Dir||'?'||group_concat(Fn,'?') as Df, count(Fn) as Num FROM (SELECT Dir, Fn FROM Files WHERE Chksum=0 and (Fn LIKE '%.as' OR Fn LIKE '%.hs' OR Fn LIKE '%.hsp' OR Fn LIKE '%.htm' OR Fn LIKE '%.html' OR Fn LIKE '%.txt') ORDER BY Dir, Fn) GROUP BY Dir)"
+	if sql_i("Num") > 99 {
+		bstr = sql_v("Cmd")
+		if strlen(bstr) > 32700 : poke bstr, 32700 ; <- 長さ制限 patch
+	;	mesbox bstr,640,480,1:stop
+		WinExec@ bstr, 5
 	}
 #endif
-
 
 	; 4. ファイルチェック
 	sql_q "SELECT Path, Chksum FROM Files WHERE Dir IN (" + astr + "'') ORDER BY Dir, Fn", rs
@@ -879,7 +790,6 @@
 				; ファイルが追加・変更された → 現在のチェックサムを登録
 				sql_q "UPDATE Files SET Chksum=" + prm_i(nsum) + " WHERE Path=" + prm_text(path)
 
-
 				; 5. データレコード作成
 				ext = getpath(path, 2|16)	; 拡張子 ".xxxx"
 				type = strmid(ext, 1, 3)	; Type は拡張子の頭 3 文字まで
@@ -902,24 +812,14 @@
 
 	progress_close
 
-#ifdef HDL_BROWSER
-#if HDL_BEN = 0
-	if errs : dialog "ドキュメント データベース作成で " + errs + " 件のエラーがスキップされました :\n\n" + errmsg, 1, "HDL SYNC"
-#endif
-#endif
-
 	sql_q "COMMIT"
-
-#if HDL_BEN
-	b_en
-#endif
 
 	locked = 0
 	return upd
 
 ;------------------------------------------------------------
 ; HDL_createtable
-; テーブル作成 フロント
+; テーブル + インデックス作成
 #deffunc HDL_createtable
 	; Files, Help, Docs テーブル 構築
 	sql_q "CREATE TABLE IF NOT EXISTS Dirs (ID INTEGER PRIMARY KEY, Dir, Chksum)"
@@ -928,25 +828,16 @@
 	sql_q "CREATE INDEX IF NOT EXISTS IX_Files1 ON Files (Path)"
 	sql_q "CREATE TABLE IF NOT EXISTS Help (ID INTEGER PRIMARY KEY, Name, Summary, Mod, Ver, Date, Author, Group3, Prm, Prm2, Inst, Sample, Href, Portinf, Port, Url, Type, Note, Path)"
 	sql_q "CREATE TABLE IF NOT EXISTS Docs (ID INTEGER PRIMARY KEY, Path, Type, Title, Catego, Search, SmryIdx)"
-	return
 
-;------------------------------------------------------------
-; HDL_createindex
-; インデックス作成 フロント (初回作成時 多少時間かかる)
-#deffunc HDL_createindex
 	sql_q "CREATE INDEX IF NOT EXISTS IX_Files2 ON Files (Dir)"
 	sql_q "CREATE INDEX IF NOT EXISTS IX_Files3 ON Files (Fn)"
 	sql_q "CREATE INDEX IF NOT EXISTS IX_Help1 ON Help (Name)"
 	sql_q "CREATE INDEX IF NOT EXISTS IX_Help2 ON Help (Mod)"
 	sql_q "CREATE INDEX IF NOT EXISTS IX_Help3 ON Help (Path)"
 	sql_q "CREATE INDEX IF NOT EXISTS IX_Docs1 ON Docs (Path)"
-	;sql_q "CREATE INDEX IF NOT EXISTS IX_Docs2 ON Docs (Type)"
-	;sql_q "CREATE INDEX IF NOT EXISTS IX_Docs3 ON Docs (Catego)"
 	return
 
 #global
-
-
 
 #if HDL_PF
 ;============================================================
@@ -954,10 +845,10 @@
 ; コマンドラインで指定されたファイルを OS にキャッシュさせる
 ; 区切り文字 '?'
 ; コマンドライン最大文字数 32768bytes
+;============================================================
 
 	buf = dir_cmdline
 	if instr(buf, ,"<pf>?") = 0 {
-; screen 0, 300, 1000 : font "", 12
 		basepath = dir_cur
 		p = 0
 		repeat
@@ -967,42 +858,41 @@
 
 			if peek(astr) = '\\' { ; chdir 情報
 				chdir basepath + astr
-; mes "CD " + basepath + astr
 			} else {
 				exist astr
 				if strsize >= 0 {
-; mes "LD " + astr
 					memexpand astr, strsize
-					bload astr, astr
+					bload astr, astr ; ディスクから読み取り
 				}
-; else:mes "LDE " + astr
 			}
 			await
 		loop
-; stop
 		end
 	}
 #endif
 
-
-
 ;============================================================
-; テスト
+; 単体テスト
+;============================================================
+
+; BENCH macro
+#ifndef B_ST
+#uselib "winmm"
+#cfunc global d3timer "timeGetTime"
+#define global B_ST bench_ot = d3timer()
+#define global B_EN dialog "bench " + (d3timer() - bench_ot) + " ms"
+#endif
 
 #ifndef HDL_BROWSER
-
-; #packopt name "hdl"
-
 	sql_open "test.db"
 	B_ST
+
 	HDL_createtable
 	HDL_reload
-	B_EN
-;	HDL_createindex
-	sql_close
 
+	B_EN
+	sql_close
 	delete "test.db"
 	end
 #endif
-
 

@@ -1,8 +1,8 @@
 
 ;============================================================
-;                                                 2009/05/09
-;    SQLele 1.14 for SQLite3 (UTF-8), HSP3
-;                               http://sprocket.babyblue.jp/
+;	SQLele for SQLite3, HSP3
+;		version 1.16 update 2018/06/01
+;			s.programs http://spn.php.xdomain.jp/
 ;============================================================
 
 #ifndef sql_q
@@ -79,7 +79,6 @@
 	kWideCharToMultiByte 0, 0, varptr(wtmp), -1, varptr(v1), stat, 0, 0
 	return
 
-
 ;============================================================
 ; sql_close
 ;------------------------------------------------------------
@@ -88,9 +87,9 @@
 		gosub *finze_stm
 		sqlite3_close pdb
 		pdb = 0
+		sqls = 0
 	}
 	return
-
 
 ;============================================================
 ; binding parameter
@@ -120,7 +119,6 @@
 #define global ctype prm_i(%1)		prm_bind(%1, 0, SQLITE_INTEGER)
 #define global ctype prm_text(%1)	prm_bind(varptr(%1), strlen(%1), SQLITE_TEXT)
 #define global ctype prm_blob(%1, %2)	prm_bind(varptr(%1), %2, SQLITE_BLOB)
-
 
 ;============================================================
 ; sql_q  "SQL statement", arr ; exec query / get values
@@ -170,62 +168,64 @@
 
 		; SQL statement 実行
 		sqlite3_step pstm
+		a = stat
 
 		; BUSY
-		if stat = SQLITE_BUSY : goto *busy_handle
+		if a = SQLITE_BUSY : goto *busy_handle
 
-		; 出力がある場合 : レコードセット変数を作成
-		if stat = SQLITE_ROW {
-		/*
-			レコードセット変数データ形式         0            4         8          12
-			v1(0, 0)           : (str)Data (char)0 ? ? ? (int)Type (int)Count (int)0
-			v1(*, [0～recs-1]) : (str)Data (char)0 ? ? ? (int)Type (int)?     (int)0
-			(BLOB) v1(*, *)    :           (char)0 ? ? ? (int)Type (int)?     (int)size  (blob)data
-			v1(*, recs)        : (str)ColName
-		*/
+		; 出力カラム数
+		sqlite3_column_count pstm
+		cols = stat
 
-			; 出力アレイ作成  arr(cols, 可変recs )
-			sqlite3_column_count pstm
-			cols = stat
+		; 出力カラムがある場合、レコードセット変数を作成  v1(cols, 可変recs)
+		if cols > 0 {
 			sdim v1, 32, cols, 1
+/*
+			レコードセット変数データ形式        offset 0             4         8          12             16
+			       v1(0, 0)           : [str]Data      [char]0 ? ? ? [int]Type [int]Count [int]0
+			       v1(*, [0～recs-1]) : [str]Data      [char]0 ? ? ? [int]Type [int]?     [int]0
+			(BLOB) v1(*, *)           : [0 byte]       [char]0 ? ? ? [int]Type [int]?     [int]size      [blob]data
+			(COLN) v1(*, recs)        : [str]ColName   [char]0 ? ? ?           [int]Count <- if recs = 0
+*/
+			; レコードがある場合 結果を受け取る
+			if a = SQLITE_ROW {
+				repeat
+					repeat cols
+						sqlite3_column_type pstm, cnt
+						type = stat
+						if type <= SQLITE_TEXT {
+							; データ取得 (as text)
+							sqlite3_column_text pstm, cnt
+							putf_to_vascii stat, v1(cnt, recs)
 
-			; 全データを回収
-			repeat
-				repeat cols
-					sqlite3_column_type pstm, cnt
-					type = stat
-					if type <= SQLITE_TEXT {
-						; データ取得 (as text)
-						sqlite3_column_text pstm, cnt
-						putf_to_vascii stat, v1(cnt, recs)
-
-						; 型 / BLOB サイズ情報
-						n = strlen(v1(cnt, recs))
-						lpoke v1(cnt, recs), n+4, type
-						lpoke v1(cnt, recs), n+12
-					} else {
-						if type = SQLITE_BLOB {
-							; BLOB 取得
-							sqlite3_column_bytes pstm, cnt
-							n = stat
-							memexpand v1(cnt, recs), n+16
-							sqlite3_column_blob pstm, cnt
-							kRtlMoveMemory varptr(v1(cnt, recs))+16, stat, n
+							; 型 / BLOB サイズ情報
+							n = strlen(v1(cnt, recs))
+							lpoke v1(cnt, recs), n+4, type
+							lpoke v1(cnt, recs), n+12
 						} else {
-							; NULL
-							v1(cnt, recs) = ""
-							n = 0
+							if type = SQLITE_BLOB {
+								; BLOB 取得
+								sqlite3_column_bytes pstm, cnt
+								n = stat
+								memexpand v1(cnt, recs), n+16
+								sqlite3_column_blob pstm, cnt
+								kRtlMoveMemory varptr(v1(cnt, recs))+16, stat, n
+							} else {
+								; NULL
+								v1(cnt, recs) = ""
+								n = 0
+							}
+							; 型 / BLOB サイズ情報
+							lpoke v1(cnt, recs), 4, type
+							lpoke v1(cnt, recs), 12, n
 						}
-						; 型 / BLOB サイズ情報
-						lpoke v1(cnt, recs), 4, type
-						lpoke v1(cnt, recs), 12, n
-					}
-				loop
-				recs++
+					loop
+					recs++
 
-				sqlite3_step pstm
-				if stat ! SQLITE_ROW : break
-			loop
+					sqlite3_step pstm
+					if stat ! SQLITE_ROW : break
+				loop
+			}
 
 			; カラム名情報 追加
 			repeat cols
@@ -265,7 +265,6 @@
 	kSleep 500
 	goto *sql_q_retry
 
-
 ;============================================================
 ; sql_open
 ;------------------------------------------------------------
@@ -275,7 +274,7 @@
 		enddd
 	}
 	if varptr(sqlite3_prepare_v2) = 0 {
-		dialog "sqlite3.dll not found.", , "SQL ERR"
+		dialog "sqlite3.dll not found.\n\nこのプログラムのディレクトリに sqlite3.dll をコピーしてください。", , "SQL ERR"
 		enddd
 	}
 	; init vars
@@ -298,7 +297,6 @@
 	sqlite3_busy_timeout pdb, BUSY_TIMEOUT
 	return
 
-
 ;------------------------------------------------------------
 *finze_stm
 	if pstm {
@@ -308,7 +306,6 @@
 	}
 	return
 
-
 ;------------------------------------------------------------
 *badend
 	sqlite3_errmsg pdb
@@ -317,7 +314,6 @@
 	sqlite3_close pdb
 	enddd
 
-
 ;============================================================
 ; id = sql_colid("Column name", arr) ; get colid
 ;------------------------------------------------------------
@@ -325,9 +321,9 @@
 #defcfunc sql_colid_  str p1, array v1
 	i = -1
 	recs = length2(v1) - 1
-	if recs > 0 {
+	if recs >= 0 {
 		; カラム名からカラム番号を検索
-		repeat length(v1) ;= cols
+		repeat length(v1) ; cols
 			if p1 = v1(cnt, recs) {
 				i = cnt
 				break
@@ -367,7 +363,6 @@
 #define global sql_move(%1=0, %2=tmparr)  lpoke %2, strlen(%2)+8, %1
 #define global sql_blobcopy(%1, %2, %3=tmparr)  memcpy %1, %3(sql_colid_(%2,%3),n@sqle), lpeek(%3(i@sqle,n@sqle),strlen(%3(i@sqle,n@sqle))+12), 0, 16
 
-
 ;============================================================
 ; str = sql_collist("str", arr) ; get cols list
 ;------------------------------------------------------------
@@ -375,7 +370,7 @@
 #defcfunc sql_collist_  str p1, array v1
 	dest = ""
 	recs = length2(v1) - 1
-	if recs > 0 {
+	if recs >= 0 {
 		; カラム名一覧を作成
 		repeat length(v1) ;= cols
 			if cnt : dest += p1
@@ -383,7 +378,6 @@
 		loop
 	}
 	return dest
-
 
 ;============================================================
 ; str = sqesc("str") ; single-quotation escape ("'" -> "''")
@@ -413,5 +407,4 @@
 
 #global
 #endif
-
 

@@ -6,16 +6,16 @@
 Artlet2D
 
 %ver
-1.01 R2
+1.01 R3
 
 %date
-2010/02/04
+2018/06/01
 
 %author
-S.Programs
+s.programs
 
 %url
-http://sprocket.babyblue.jp/
+http://spn.php.xdomain.jp/
 
 %note
 a2d.hsp ‚ğƒCƒ“ƒNƒ‹[ƒh‚µ‚Ä‚­‚¾‚³‚¢B
@@ -27,9 +27,7 @@ a2d.hsp ‚ğƒCƒ“ƒNƒ‹[ƒh‚µ‚Ä‚­‚¾‚³‚¢B
 Win
 
 %portinfo
-ÀsŠÂ‹«‚É GDI+ (gdiplus.dll) ‚ª•K—v‚Å‚·B
-
-
+Windows XP ˆÈ~‚ÌŠÂ‹«‚ª•K—v‚Å‚·B
 
 %index
 alClipModeRect
@@ -67,8 +65,6 @@ alClipModeRect
 
 %group
 ƒNƒŠƒbƒsƒ“ƒO
-
-
 
 %index
 alColor
@@ -114,8 +110,6 @@ alSysColor
 %group
 ƒuƒ‰ƒVİ’è
 
-
-
 %index
 alGradientColor
 ƒOƒ‰ƒf[ƒVƒ‡ƒ“ƒuƒ‰ƒV‚ğİ’è
@@ -159,8 +153,6 @@ alColor
 %group
 ƒuƒ‰ƒVİ’è
 
-
-
 %index
 alHsvColor
 •`‰æF‚ğ HSV ‚Åİ’è
@@ -186,8 +178,6 @@ alSysColor
 %group
 ƒuƒ‰ƒVİ’è
 
-
-
 %index
 alSysColor
 ƒVƒXƒeƒ€ƒJƒ‰[‚©‚ç•`‰æF‚ğİ’è
@@ -212,8 +202,6 @@ alHsvColor
 
 %group
 ƒuƒ‰ƒVİ’è
-
-
 
 %index
 alCopyImageToImage
@@ -241,8 +229,6 @@ alCopyScreenToImage
 %group
 ƒRƒs[EƒY[ƒ€
 
-
-
 %index
 alCopyImageToScreen
 ‰æ‘œƒRƒs[ (Image ¨ HSP screen)
@@ -267,8 +253,6 @@ alCopyScreenToImage
 %group
 ƒRƒs[EƒY[ƒ€
 
-
-
 %index
 alCopyScreenToImage
 ‰æ‘œƒRƒs[ (HSP screen ¨ Image)
@@ -292,8 +276,6 @@ alCopyImageToScreen
 
 %group
 ƒRƒs[EƒY[ƒ€
-
-
 
 %index
 alCopyModeAlpha
@@ -330,8 +312,6 @@ alResetCopyMode
 %group
 ƒRƒs[ƒ‚[ƒh
 
-
-
 %index
 alResetCopyMode
 ƒRƒs[ƒ‚[ƒh‚ğƒŠƒZƒbƒg
@@ -358,8 +338,6 @@ alCopyModeColorKey
 
 %group
 ƒRƒs[ƒ‚[ƒh
-
-
 
 %index
 alCopyModeColorKey
@@ -401,18 +379,16 @@ alResetCopyMode
 %group
 ƒRƒs[ƒ‚[ƒh
 
-
-
 %index
 alCopyModeColorMatrix
 ƒJƒ‰[ƒ}ƒgƒŠƒbƒNƒX ƒRƒs[ƒ‚[ƒh‚ğİ’è
 
 %prm
 arr
-arr	: ƒJƒ‰[ƒ}ƒgƒŠƒbƒNƒX‚ğ•\‚·”z—ñ
+arr	: ƒJƒ‰[ƒ}ƒgƒŠƒbƒNƒX (s—ñ) ‚ğ•\‚·”z—ñ
 
 %inst
-‰æ‘œƒRƒs[‚ÉƒJƒ‰[ƒ}ƒgƒŠƒbƒNƒX•ÏŠ·‚ğs‚¤‚æ‚¤‚Éİ’è‚µ‚Ü‚·B
+‰æ‘œƒRƒs[‚ÉƒJƒ‰[ƒ}ƒgƒŠƒbƒNƒX (s—ñ) •ÏŠ·‚ğs‚¤‚æ‚¤‚Éİ’è‚µ‚Ü‚·B
 
 ˆø” arr ‚ÍAƒJƒ‰[ƒ}ƒgƒŠƒbƒNƒX‚ğ•\‚· double Œ^‚Ì 1 ŸŒ³”z—ñ‚ÅA
 
@@ -435,9 +411,9 @@ A' = m30 * R + m31 * G + m32 * B + m33 * A + m34
 	cmatrix(MAT_A) = m30, m31, m32, m33, m34
 	alCopyModeColorMatrix cmatrix
 
-ƒ}ƒ‰[ƒ}ƒgƒŠƒNƒX‚ğ—p‚¢‚é‚ÆA‰æ‘œ‚Ì–¾‚é‚³‚Ì’²®AƒlƒKƒ|ƒW”½“]A”¼“§–¾‰»AƒOƒŒ[ƒXƒP[ƒ‹•ÏŠ·AƒZƒsƒAF•ÏŠ·ARGB ŒğŠ·AƒAƒ‹ƒtƒ@ƒ`ƒƒƒlƒ‹‚ÌƒOƒŒ[ƒXƒP[ƒ‹‰æ‘œ‰»‚È‚ÇA‚³‚Ü‚´‚Ü‚ÈŒø‰Ê‚ğ“¾‚é‚±‚Æ‚ª‚Å‚«‚Ü‚·B
+ƒ}ƒ‰[ƒ}ƒgƒŠƒbƒNƒX‚ğ—p‚¢‚é‚ÆA‰æ‘œ‚Ì–¾‚é‚³‚Ì’²®AƒlƒKƒ|ƒW”½“]A”¼“§–¾‰»AƒOƒŒ[ƒXƒP[ƒ‹•ÏŠ·AƒZƒsƒAF•ÏŠ·ARGB ŒğŠ·AƒAƒ‹ƒtƒ@ƒ`ƒƒƒlƒ‹‚ÌƒOƒŒ[ƒXƒP[ƒ‹‰æ‘œ‰»‚È‚ÇA‚³‚Ü‚´‚Ü‚ÈŒø‰Ê‚ğ“¾‚é‚±‚Æ‚ª‚Å‚«‚Ü‚·B
 
-	(ƒ}ƒgƒŠƒbƒNƒX‚Ì—á)
+	(ƒ}ƒgƒŠƒbƒNƒX‚Ìì¬—á)
 
 	; –³•ÏŠ· (Šî–{)
 	cmatrix(MAT_R) = 1.0, 0.0, 0.0, 0.0, 0.0
@@ -509,8 +485,6 @@ alResetCopyMode
 %group
 ƒRƒs[ƒ‚[ƒh
 
-
-
 %index
 alCopyModeGamma
 ƒKƒ“ƒ}’²®ƒRƒs[ƒ‚[ƒh‚ğİ’è
@@ -543,8 +517,6 @@ alResetCopyMode
 
 %group
 ƒRƒs[ƒ‚[ƒh
-
-
 
 %index
 alCreateImage
@@ -595,7 +567,6 @@ alCreateImageByFile
 %group
 ƒCƒ[ƒWŠÇ—
 
-
 %index
 alCreateImageByFile
 ‰æ‘œƒtƒ@ƒCƒ‹‚©‚ç‰¼‘zƒCƒ[ƒW‚ğì¬
@@ -620,8 +591,6 @@ ID ‚É‚ÍAì¬‚·‚é‰¼‘zƒCƒ[ƒW‚Ì Image ID ‚ğw’è‚µ‚Ü‚·B‚·‚Å‚É‘¶İ‚·‚é Image ID ‚
 %group
 ƒtƒ@ƒCƒ‹‘€ì
 
-
-
 %index
 alDeleteImage
 ‰¼‘zƒCƒ[ƒW‚ğíœ
@@ -643,8 +612,6 @@ alDeleteAll
 
 %group
 ƒCƒ[ƒWŠÇ—
-
-
 
 %index
 alSelectImage
@@ -669,7 +636,6 @@ alCreateImage
 %group
 ƒCƒ[ƒWŠÇ—
 
-
 %index
 alDeleteAll
 ‰¼‘zƒCƒ[ƒW‚ğ‚·‚×‚Äíœ
@@ -686,8 +652,6 @@ alDeleteImage
 
 %group
 ƒCƒ[ƒWŠÇ—
-
-
 
 %index
 alGetID
@@ -707,8 +671,6 @@ alSelectImage
 %group
 ƒCƒ[ƒWŠÇ—
 
-
-
 %index
 alDrawArc
 ‰~ŒÊ‚Ì•`‰æ
@@ -717,8 +679,8 @@ alDrawArc
 x, y, w, h, ang0, ang1
 x, y	: Šî€‘È‰~‚ÉŠOÚ‚·‚é‹éŒ`‚Ì¶ãÀ•W
 w, h	: Šî€‘È‰~‚ÉŠOÚ‚·‚é‹éŒ`‚ÌƒTƒCƒY
-ang0	: ŠJnŠp“x
-ang1	: I—¹Šp“x
+ang0	: ŠJnŠp“x (“x)
+ang1	: I—¹Šp“x (“x)
 
 %inst
 ‰~ŒÊ‚ğ•`‰æ‚µ‚Ü‚·B
@@ -730,8 +692,6 @@ alFillPie
 %group
 }Œ`•`‰æ
 
-
-
 %index
 alDrawPie
 îŒ`‚Ì•`‰æ
@@ -740,8 +700,8 @@ alDrawPie
 x, y, w, h, ang0, ang1
 x, y	: Šî€‘È‰~‚ÉŠOÚ‚·‚é‹éŒ`‚Ì¶ãÀ•W
 w, h	: Šî€‘È‰~‚ÉŠOÚ‚·‚é‹éŒ`‚ÌƒTƒCƒY
-ang0	: ŠJnŠp“x
-ang1	: I—¹Šp“x
+ang0	: ŠJnŠp“x (“x)
+ang1	: I—¹Šp“x (“x)
 
 %inst
 îŒ`‚ğ•`‰æ‚µ‚Ü‚·B
@@ -755,8 +715,6 @@ alFillPie
 %group
 }Œ`•`‰æ
 
-
-
 %index
 alFillPie
 “h‚è‚Â‚Ô‚µîŒ`‚Ì•`‰æ
@@ -765,8 +723,8 @@ alFillPie
 x, y, w, h, ang0, ang1
 x, y	: Šî€‘È‰~‚ÉŠOÚ‚·‚é‹éŒ`‚Ì¶ãÀ•W
 w, h	: Šî€‘È‰~‚ÉŠOÚ‚·‚é‹éŒ`‚ÌƒTƒCƒY
-ang0	: ŠJnŠp“x
-ang1	: I—¹Šp“x
+ang0	: ŠJnŠp“x (“x)
+ang1	: I—¹Šp“x (“x)
 
 %inst
 îŒ`‚ğ•`‰æ‚µ‚Ü‚·B
@@ -777,8 +735,6 @@ alDrawPie
 
 %group
 }Œ`•`‰æ
-
-
 
 %index
 alDrawClosedCurve
@@ -805,8 +761,6 @@ alDrawClosedCurve arr, 3
 %group
 }Œ`•`‰æ
 
-
-
 %index
 alDrawCurve
 ‹Èü‚Ì•`‰æ
@@ -832,8 +786,6 @@ alDrawCurve arr, 3
 %group
 }Œ`•`‰æ
 
-
-
 %index
 alDrawEllip
 ‘È‰~‚Ì•`‰æ
@@ -851,8 +803,6 @@ alFillEllip
 
 %group
 }Œ`•`‰æ
-
-
 
 %index
 alFillEllip
@@ -872,8 +822,6 @@ alDrawEllip
 %group
 }Œ`•`‰æ
 
-
-
 %index
 alDrawLine
 ü•ª‚ğ•`‰æ
@@ -890,8 +838,6 @@ Artlet2D (GDI+) ‚É‚ÍAuƒJƒŒƒ“ƒgƒ|ƒWƒVƒ‡ƒ“v‚Æ‚¢‚¤ŠT”O‚Í‚ ‚è‚Ü‚¹‚ñBHSP •W€‚Ì l
 
 %group
 }Œ`•`‰æ
-
-
 
 %index
 alDrawLines
@@ -919,8 +865,6 @@ alDrawLines arr, 3
 %group
 }Œ`•`‰æ
 
-
-
 %index
 alDrawPoly
 ‘½ŠpŒ`‚Ì•`‰æ
@@ -945,8 +889,6 @@ alDrawPoly arr, 3
 %group
 }Œ`•`‰æ
 
-
-
 %index
 alDrawRect
 ‹éŒ`‚Ì•`‰æ
@@ -967,8 +909,6 @@ alFillRect
 %group
 }Œ`•`‰æ
 
-
-
 %index
 alFillRect
 “h‚è‚Â‚Ô‚µ‹éŒ`‚Ì•`‰æ
@@ -986,8 +926,6 @@ alDrawRect
 
 %group
 }Œ`•`‰æ
-
-
 
 %index
 alDrawText
@@ -1042,8 +980,6 @@ alFont
 %group
 }Œ`•`‰æ
 
-
-
 %index
 alFont
 ƒtƒHƒ“ƒg‚ğİ’è
@@ -1070,8 +1006,6 @@ alDrawText
 %group
 ƒuƒ‰ƒVİ’è
 
-
-
 %index
 alErase
 ‰¼‘zƒCƒ[ƒW‘S‘Ì‚ğÁ‹
@@ -1081,8 +1015,6 @@ alErase
 
 %group
 ƒsƒNƒZƒ‹‘€ì
-
-
 
 %index
 alEraserBrush
@@ -1099,8 +1031,6 @@ alFillRect 10, 10, 10, 10 ; ‚±‚Ì‹éŒ`—Ìˆæ‚ğÁ‹
 
 %group
 ƒuƒ‰ƒVİ’è
-
-
 
 %index
 alFillClosedCurve
@@ -1131,8 +1061,6 @@ alFillClosedCurve arr, 3
 %group
 }Œ`•`‰æ
 
-
-
 %index
 alFillPoly
 “h‚è‚Â‚Ô‚µ‘½ŠpŒ`‚Ì•`‰æ
@@ -1159,8 +1087,6 @@ alFillPoly arr, 3
 %group
 }Œ`•`‰æ
 
-
-
 %index
 alGetFileWidth
 ‰æ‘œƒtƒ@ƒCƒ‹‚Ì•A‚‚³‚ğæ“¾
@@ -1182,8 +1108,6 @@ alLoadFile
 
 %group
 ƒtƒ@ƒCƒ‹‘€ì
-
-
 
 %index
 alLoadFile
@@ -1211,8 +1135,6 @@ BMP, GIF, JPEG, PNG, TIFF ‚È‚Ç GDI+ ‚ª“Ç‚İo‚¹‚éŒ`®‚ğƒTƒ|[ƒg‚µ‚Ü‚·B
 %group
 ƒtƒ@ƒCƒ‹‘€ì
 
-
-
 %index
 alGetHeight
 ‰¼‘zƒCƒ[ƒW‚Ì‚‚³‚ğæ“¾
@@ -1231,8 +1153,6 @@ alGetWidth
 %group
 ƒCƒ[ƒWŠÇ—
 
-
-
 %index
 alGetWidth
 ‰¼‘zƒCƒ[ƒW‚Ì‰¡•‚ğæ“¾
@@ -1250,8 +1170,6 @@ alGetHeight
 
 %group
 ƒCƒ[ƒWŠÇ—
-
-
 
 %index
 alGetPixel
@@ -1276,8 +1194,6 @@ alSetPixel
 %group
 ƒsƒNƒZƒ‹‘€ì
 
-
-
 %index
 alSetPixel
 ƒsƒNƒZƒ‹‚Ì’l‚ğİ’è
@@ -1297,8 +1213,6 @@ alGetPixel
 
 %group
 ƒsƒNƒZƒ‹‘€ì
-
-
 
 %index
 alPenStyle
@@ -1330,8 +1244,6 @@ alPenWidth
 %group
 ƒuƒ‰ƒVİ’è
 
-
-
 %index
 alPenWidth
 ƒyƒ“‚Ì‘¾‚³‚ğİ’è
@@ -1354,8 +1266,6 @@ alPenStyle
 %group
 ƒuƒ‰ƒVİ’è
 
-
-
 %index
 alResetTransMode
 À•W•ÏŠ·ƒ‚[ƒh‚ğƒŠƒZƒbƒg
@@ -1375,20 +1285,18 @@ alTransModeRotateAt
 %group
 À•W•ÏŠ·ƒ‚[ƒh
 
-
-
 %index
 alTransModeMatrix
-À•W•ÏŠ·ƒ}ƒgƒŠƒNƒX‚ğİ’è
+À•W•ÏŠ·ƒ}ƒgƒŠƒbƒNƒX‚ğİ’è
 
 %prm
 m11, m12, m21, m22, dx, dy
 m11, m12, 
-m21, m22  : 2x2 À•W•ÏŠ·ƒ}ƒgƒŠƒNƒX
+m21, m22  : 2x2 À•W•ÏŠ·ƒ}ƒgƒŠƒbƒNƒX (s—ñ)
 dx, dy    : ƒIƒtƒZƒbƒg
 
 %inst
-À•W•ÏŠ·ƒ‚[ƒh‚Æ‚µ‚Äƒ}ƒgƒŠƒNƒX‚ğİ’è‚µ‚Ü‚·B
+À•W•ÏŠ·ƒ‚[ƒh‚Æ‚µ‚Äƒ}ƒgƒŠƒbƒNƒX  (s—ñ) ‚ğİ’è‚µ‚Ü‚·B
 
 À•W•ÏŠ·ƒ‚[ƒh‚ÍAalDraw`, alFill`, alCopy` ‚È‚Ç‚Ì‚³‚Ü‚´‚Ü‚È•`‰æ–½—ß‚É“K—p‚³‚ê‚Ü‚·B
 
@@ -1400,8 +1308,6 @@ alResetTransMode
 %group
 À•W•ÏŠ·ƒ‚[ƒh
 
-
-
 %index
 alTransModeOffsetRotateZoom
 À•W•ÏŠ·ƒpƒ‰ƒ[ƒ^‚ğİ’è
@@ -1409,7 +1315,7 @@ alTransModeOffsetRotateZoom
 %prm
 dx, dy, pa, sx, sy
 dx, dy : ƒIƒtƒZƒbƒg (0)
-pa     : ‰ñ“]Šp“x (0)
+pa     : ‰ñ“]Šp“x (“x) (0)
 sx, sy : ƒY[ƒ€ (1.0)
 
 %inst
@@ -1429,15 +1335,13 @@ alResetTransMode
 %group
 À•W•ÏŠ·ƒ‚[ƒh
 
-
-
 %index
 alTransModeRotateAt
 À•W•ÏŠ·ƒpƒ‰ƒ[ƒ^‚ğİ’è
 
 %prm
 pa, px, py
-pa     : ‰ñ“]Šp“x
+pa     : ‰ñ“]Šp“x (“x)
 px, py : ‰ñ“]‚Ì’†SÀ•W (0)
 
 %inst
@@ -1455,8 +1359,6 @@ alResetTransMode
 
 %group
 À•W•ÏŠ·ƒ‚[ƒh
-
-
 
 %index
 alSaveFile
@@ -1487,8 +1389,6 @@ w, h	: •Û‘¶‘ÎÛ‹éŒ` •E‚‚³ (currentWidth, currentHeight)
 %group
 ƒtƒ@ƒCƒ‹‘€ì
 
-
-
 %index
 alStretchImageToImage
 ‰æ‘œƒXƒgƒŒƒbƒ`ƒRƒs[ (Image ¨ Image)
@@ -1514,8 +1414,6 @@ alStretchScreenToImage
 %group
 ƒRƒs[EƒY[ƒ€
 
-
-
 %index
 alStretchImageToScreen
 ‰æ‘œƒXƒgƒŒƒbƒ`ƒRƒs[ (Image ¨ HSP screen)
@@ -1539,8 +1437,6 @@ alStretchScreenToImage
 %group
 ƒRƒs[EƒY[ƒ€
 
-
-
 %index
 alStretchScreenToImage
 ‰æ‘œƒXƒgƒŒƒbƒ`ƒRƒs[ (HSP screen ¨ Image)
@@ -1563,8 +1459,6 @@ alStretchImageToScreen
 
 %group
 ƒRƒs[EƒY[ƒ€
-
-
 
 %index
 alTextureImage
@@ -1592,6 +1486,4 @@ mode ‚É‚ÍA’è” WrapModeTile (= 0), WrapModeTileFlipX (= 1), WrapModeTileFlipY (
 
 %group
 ƒuƒ‰ƒVİ’è
-
-
 

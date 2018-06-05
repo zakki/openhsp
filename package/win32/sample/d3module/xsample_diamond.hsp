@@ -1,9 +1,9 @@
 
 ;============================================================
-;                                                 2006/--/--
-	title "S.Programs Diamond Ring"
+;                                      s.programs 2006/--/--
+	title "s.programs Diamond Ring"
 ;	version 1.0/sample_ver
-;                               http://sprocket.babyblue.jp/
+;                                 http://spn.php.xdomain.jp/
 ;============================================================
 /*
 ÅEDiamond Ring
@@ -34,13 +34,10 @@
 	; sun
 	d3mkparticle 4, 999, 999, 999
 
-
 	t_start = d3timer()
-
 
 ;------------------------------------------------------------
 *mainloop
-
 
 	;------------------------------------------------------------
 	; full-screen ctrlr (toggle : Enter)
@@ -61,14 +58,12 @@
 		}
 	}
 
-
 	;------------------------------------------------------------
 	; setup
 
 	time = double(d3timer())
 	randomize 0
 	redraw 0
-
 
 	; set camera pos
 	f = time / 5882
@@ -79,19 +74,16 @@
 	z1 = sin(time / 7692) * 500 + sqrt(u * 700)
 	d3setcam x1, y1, z1
 
-
 	; sun vector (fixed)
 	;;x2 = 0
 	;;y2 = 1
 	;;z2 = 0
-
 
 	; get vcos()
 	;;vcos = (x1*x2 + y1*y2 + z1*z2) / (d3dist(x1, y1, z1) * d3dist(x2, y2, z2))
 	vcos = y1 / d3dist(x1, y1, z1)
 	vcos2 = vcos * vcos
 	vcos3 = vcos * vcos2
-
 
 	;------------------------------------------------------------
 	; draw
@@ -100,13 +92,11 @@
 	hsvcolor 112, 192, 72 - vcos3*96*(vcos<0)
 	boxf
 
-
 	; bg stars
 	gmode 5, , , 96
 	repeat 600
 		d3particle 3, (rnd(32768)-16384)*1000, (rnd(32768)-16384)*1000, (rnd(32768)-16384)*1000, 50000
 	loop
-
 
 	; sun (r = 1400000[km], y = 150000000[km])
 	gmode 5, , , 256
@@ -116,7 +106,6 @@
 	sunx = dx@d3m
 	suny = dy@d3m
 
-
 	; planets (r = 100[km])
 	repeat 7
 		; set pos
@@ -125,11 +114,9 @@
 		xx = cos(f) * r
 		yy = sin(f) * r
 
-
 		; back-flr
 		gmode 5, , , 96
 		d3particle 3, xx, yy + 25, zz, 125
-
 
 		; body
 		a = (vcos + 1) * 128 ;0.0 - 256.0
@@ -146,11 +133,9 @@
 			d3particle 3, xx, yy - 66, zz, 133
 		loop
 
-
 		; highlight (if vcos > 0)
 		gmode 5, , , vcos3 * 256
 		d3particle 3, xx, yy + 30, zz, 133
-
 
 		; shadow (if vcos < 0)
 		repeat 12, 1
@@ -159,18 +144,15 @@
 		loop
 	loop
 
-
 	if sunf {
 		; eclipse chk
 		pget sunx, suny
-
 
 		; sunlight (y = 0 - 600000)
 		gmode 5, , , vcos2 * (128 + ginfo_b) / 11
 		repeat 11
 			d3particle 3, 0, cnt*cnt*6000, 0, cnt*5000
 		loop
-
 
 		; lens flare
 		gmode 5, , , (vcos2-0.5) * ginfo_g / 3
@@ -179,12 +161,7 @@
 		loop
 	}
 
-
 	redraw
 	await ;10
 	goto *mainloop
-
-
-
-
 

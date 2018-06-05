@@ -1,8 +1,7 @@
 
 ;============================================================
-;                                                 2005/--/--
-;	d3module  sample script
-;	for HSP 3.0
+;                                      s.programs 2005/--/--
+;	d3module sample
 ;
 ;============================================================
 ;
@@ -15,13 +14,9 @@
 
 #include "d3m.hsp"
 
-	title "S.Programs d3module sample"
-
-
 	; 使用するパーティクルを作成
 	d3mkparticle 0,  255, 255, 255 ; 白
 	d3mkparticle 1,  255, 192,  32 ; 黄 (青の反転色)
-
 
 *mainloop
 	ct++
@@ -31,11 +26,8 @@
 	color 255, 255, 255
 	boxf
 
-
 	; カメラ座標を回転させる (上向き)
 	d3setcam cos(0.01 * ct) * 2000, sin(0.01 * ct) * 2000, 0,  0, 0, 1000
-
-
 
 	; パーティクルを描画
 	randomize 0
@@ -57,7 +49,6 @@
 		d3particlem 0, 40
 
 	loop
-
 
 	redraw
 	await 30

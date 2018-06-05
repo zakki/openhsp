@@ -1,33 +1,13 @@
 
-;============================================================
-;                                                 2008/xx/xx
-;	S.Programs HDL
-;	汎用ライブラリ (HSP 3.0)
-;                               http://sprocket.babyblue.jp/
-;============================================================
+;	Windows 雑用ライブラリ s.programs
 
-#define HDL_LIB_INCLUDED  1
-
-
-;============================================================
-; BENCH macro
-
-#ifndef B_ST
-#uselib "winmm"
-#cfunc global d3timer "timeGetTime"
-#define global B_ST(%1="test")	bench_ot = d3timer() : bench_titl = %1
-#define global B_EN	dialog bench_titl + " - " + (d3timer() - bench_ot) + "ms"
-#define global B_I1	bench_i = 0
-#define global B_I2	bench_iot = d3timer()
-#define global B_I3	bench_i += d3timer() - bench_iot
-#define global B_I4	dialog "B_I - " + bench_i + "ms"
-#endif
-
-
+#ifndef _HDL_LIB
+#define _HDL_LIB  1
 
 ;============================================================
 ; get_hsp_appdata_path
 ;  HSP が使う Application Data の Path
+;============================================================
 
 #module
 ; winapi
@@ -51,10 +31,9 @@
 	return
 #global
 
-
-
 ;============================================================
 ; ステータスバー モジュール
+;============================================================
 
 #module
 ; winapi
@@ -121,24 +100,24 @@
 	dim icon, 3 ; 各パーツのアイコンハンドル格納
 	status_resize ; パーツ初期化
 	return
-#global
 ; icon sample
 ;	status_icon 0, "explorer.exe", 7 ; (i)
 ;	status_icon 0, "explorer.exe", 8 ; <!>
 ;	status_icon 0, "explorer.exe", 9 ; (X)
 ;	status_icon 0, "shell32.dll", 22 ; ○━
 ;	status_icon 0, "shell32.dll", 23 ; (?)
-
-
+#global
 
 ;============================================================
-; ウィンドウ操作・ウィンドウ情報/設定データのセーブ/ロード
+; ウィンドウ位置のセーブとロード
+;  セーブデータにアプリケーションデータも乗り合い可
+;============================================================
 ;  ウィンドウ情報 : cfgdat(0-10)
 ;  ユーザーエリア : cfgdat(11-127)
 ;  設定ファイルサイズ 512 bytes
 
 ; global var cfgdat
-#define global cfgdat cfgdat_@
+#define global cfgdat _cfgdat@
 
 #module
 ; config
@@ -195,7 +174,7 @@
 ;--------------------------------------------------
 #deffunc Config_restore_window
 	; default window pos
-	if cfgdat ! 44 : cfgdat = 44, 0, 1, -1, -1, -1, -1, ginfo_dispx*10/100, ginfo_dispy*15/100, ginfo_dispx*85/100, ginfo_dispy*90/100
+	if cfgdat ! 44 : cfgdat = 44, 0, 1, -1, -1, -1, -1, ginfo_dispx*10/100, ginfo_dispy*20/100, ginfo_dispx*70/100, ginfo_dispy*90/100
 
 	; restore window
 	SetWindowPlacement hwnd, cfgdat
@@ -204,8 +183,7 @@
 ;--------------------------------------------------
 #deffunc Config_open str p1
 	; set filename
-	get_hsp_appdata_path cfgfile
-	cfgfile += "\\" + p1
+	cfgfile = p1
 
 	; load config
 	dim cfgdat, 128
@@ -221,6 +199,135 @@
 	return
 #global
 
+;============================================================
+; プロセス間 メモリ共有 モジュール
+;============================================================
+; 仕様
+; ・保護モード 読み書き可
+; ・最大サイズ 4KB
+
+#module
+; winapi
+#uselib "kernel32"
+#cfunc	CreateFileMapping	"CreateFileMappingA" int, int, int, int, int, str
+#cfunc	GetLastError		"GetLastError"
+#cfunc	MapViewOfFile		"MapViewOfFile" int, int, int, int, int
+#func	UnmapViewOfFile		"UnmapViewOfFile" sptr
+#func	CloseHandle		"CloseHandle" int
+;--------------------------------------------------
+#deffunc filemap_create str inp
+	hMapobj = CreateFileMapping(-1, 0, 4, 0,4096, inp)
+	lasterr = GetLastError()
+	mapptr = MapViewOfFile(hMapobj, 2, 0, 0, 0)
+	return
+;--------------------------------------------------
+#deffunc filemap_close
+	UnmapViewOfFile mapptr
+	CloseHandle hMapobj
+	return
+;--------------------------------------------------
+#defcfunc filemap_viewptr
+	return mapptr
+;--------------------------------------------------
+#defcfunc filemap_already_exists
+	; ERROR_ALREADY_EXISTS 183
+	return (lasterr = 183)
+#global
+
+;============================================================
+; bload_utf_safe
+;	(encode.as を改造)
+;============================================================
+
+#module "mod_encbus"
+
+#const global CODEPAGE_S_JIS            932 ; Shift-JIS
+#const global CODEPAGE_EUC_JP         51932 ; EUC-JP
+#const global CODEPAGE_JIS            50220 ; iso-2022-jp(JIS)
+#const global CODEPAGE_UTF_7          65000 ; utf-7
+#const global CODEPAGE_UTF_8          65001 ; utf-8
+#const global CODEPAGE_UNICODE         1200 ; Unicode
+#const global CODEPAGE_UNICODE_BE      1201 ; Unicode(Big-Endian)
+#const global CODEPAGE_AUTODET_ALL    50001 ; auto detect all
+#const global CODEPAGE_AUTODET        50932 ; auto detect
+
+#usecom IMultiLanguage@mod_encbus	"{275c23e1-3747-11d0-9fea-00aa003f8646}" \
+									"{275c23e2-3747-11d0-9fea-00aa003f8646}"
+#comfunc MuLang_ConvertString 9 var, int, int, var, var, var, var
+
+#deffunc _encode_init
+	newcom ml, IMultiLanguage
+	return
+
+#deffunc _encode_term onexit
+	delcom ml
+	return
+
+#deffunc __FromSJIS@mod_encbus str _src, int srcCodepage, var dest, int destCodepage, local src, local srcSize, local destSize, local pdwMode
+	pdwMode = 0
+	srcSize = -1
+	destSize= 0
+	src		= _src
+	sdim dest
+	MuLang_ConvertString ml, pdwMode, srcCodepage, destCodepage, src, srcSize, dest, destSize
+	sdim dest, destSize + 1
+	MuLang_ConvertString ml, pdwMode, srcCodepage, destCodepage, src, srcSize, dest, destSize
+	return destSize
+
+#defcfunc _ToSJIS@mod_encbus var src, int srcCodepage, int destCodepage, local dest
+	__FromSJIS src, srcCodepage, dest, destCodepage
+	return dest
+
+#define ctype	eucjp2sjis(%1)		_ToSJIS@mod_encbus(%1, CODEPAGE_EUC_JP, CODEPAGE_S_JIS)
+#define ctype	jis2sjis(%1)		_ToSJIS@mod_encbus(%1, CODEPAGE_JIS,    CODEPAGE_S_JIS)
+#define ctype	utf7n2sjis(%1)		_ToSJIS@mod_encbus(%1, CODEPAGE_UTF_7,  CODEPAGE_S_JIS)
+#define ctype	utf8n2sjis(%1)		_ToSJIS@mod_encbus(%1, CODEPAGE_UTF_8,  CODEPAGE_S_JIS)
+
+#define ctype IS_UTF8_BOM(%1)	((lpeek(%1) & 0xffffff) = 0xBFBBEF)
+#define ctype UTF8J_SCORE(%1)	((instr(%1,,"縺")>=0)+(instr(%1,,"繧")>=0)+(instr(%1,,"繝")>=0))
+#define ctype SJISJ_SCORE(%1)	((instr(%1,,"の")>=0)+(instr(%1,,"ー")>=0)+(instr(%1,,"に")>=0))
+
+#deffunc bload_utf_safe str fn, var buf
+	buf = ""
+	exist fn
+	if strsize > 0 {
+		sdim buf, strsize + 16
+		bload fn, buf
+		if UTF8J_SCORE(buf) > SJISJ_SCORE(buf) | IS_UTF8_BOM(buf) {
+			_encode_init
+			buf = utf8n2sjis(buf)
+		}
+	}
+	return
+#global
+
+;============================================================
+; misc
+;============================================================
+
+#uselib "kernel32"
+#func GetModuleFileName	"GetModuleFileNameA" int, var, int
+#func GetTempPath		"GetTempPathA" sptr, var
+#func WinExec			"WinExec" sptr, sptr
+
+#uselib "user32"
+#cfunc	MoveWindow	"MoveWindow" sptr, sptr, sptr, sptr, sptr, sptr
+#func	CharLower	"CharLowerA" var
+#func	PostMessage	"PostMessageA" int, int, int, int
+#func	SendMessage	"SendMessageA" int, int, int, int
+; menu
+#func CreateMenu	"CreateMenu"
+#cfunc CreatePopupMenu	"CreatePopupMenu"
+#func AppendMenu	"AppendMenuA"     int,int,int,sptr
+#func SetMenu		"SetMenu"         int,int
+#func DrawMenuBar	"DrawMenuBar"     int
+#func CheckMenuItem	"CheckMenuItem"   int, int, int
+
+; open file skiperror
+#uselib "shell32.dll"
+#func	ShellExecute	"ShellExecuteA" int, str, str, str, str, int
+#define	exec_file(%1)	ShellExecute 0, "", %1, "", "", 1
 
 
+#endif
 

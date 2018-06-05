@@ -1,9 +1,9 @@
 
 ;============================================================
-;                                                 2005/10/--
-	title "S.Programs grgr-gimbal 1.01"
+;                                      s.programs 2005/10/--
+	title "s.programs grgr-gimbal 1.01"
 ;	version 1.01/sample_ver
-;                               http://sprocket.babyblue.jp/
+;                                 http://spn.php.xdomain.jp/
 ;============================================================
 /*
 ・グルグル・ジンバル
@@ -33,8 +33,6 @@
 
 	POLYS = 20
 
-
-
 ;-----------------------------------------------------------
 *mainloop
 	ct++
@@ -42,12 +40,8 @@
 	rr = limitf( 3300 - 2900.0 / (0.05 * ct + 1), 0, 3000 )
 	d3setcam 0, rr, 0
 
-
-
 	; key inp
 	if ct > 10 : stick ka, 1023
-
-
 
 	; パラメータ変更
 	POLYS += (ka & 2) ! 0
@@ -56,8 +50,6 @@
 
 	LOOPS = POLYS + 1
 	dh = 6.2831853 / POLYS
-
-
 
 	; ドラッグ
 	if ka & 256 {
@@ -68,7 +60,6 @@
 	bmx = mousex
 	bmy = mousey
 
-
 	th += vx + vv
 	ph += vy
 
@@ -77,13 +68,8 @@
 	vx *= 0.995
 	vy *= 0.995
 
-
-
 	redraw 0
 	hsvcolor 32, 64, limit(2000 / (1 | bkr), 24, 127) : boxf
-
-
-
 
 	; inner-rotor
 
@@ -103,9 +89,6 @@
 		gosub *default_draw
 	loop
 
-
-
-
 	; outer-rotor
 
 	color 255, 100, 100
@@ -121,9 +104,6 @@
 		gosub *default_draw
 	loop
 
-
-
-
 	; case
 
 	color 100, 255, 100
@@ -134,9 +114,6 @@
 		gosub *default_setup
 		gosub *default_draw
 	loop
-
-
-
 
 	; inner
 
@@ -168,13 +145,11 @@
 				za(cnt) = -zc
 			loop
 
-
 			d3square x, y, z
 
 			; 最終描画時のライト中心距離を保存
 			gosub *default_getrr_f
 			bkr = f
-
 
 			d3square xa, ya, za
 
@@ -183,30 +158,23 @@
 		loop
 	loop
 
-
 	gmode 5, , , 192
 	d3particle 3,  0, 0, 0,  50
 	d3particle 3,  0, 0, 0,  200
-
-
-
 
 	redraw
 	await 30
 
 	goto *mainloop
 
-
 ;-----------------------------------------------------------
 ; subroutines
-
 
 ;- - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 *default_getrr_f
 
 	f = d3dist(dx@d3m - wincx@d3m, dy@d3m - wincy@d3m)
 	return
-
 
 ;- - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 *default_setup
@@ -221,7 +189,6 @@
 	z2 = z1
 
 	return
-
 
 ;- - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 *default_draw
@@ -246,7 +213,6 @@
 		d3particle pid,  x1, y1, z1,  120
 	}
 
-
 	; bklup
 
 	ox1 = x1
@@ -258,6 +224,4 @@
 	oz2 = z2
 
 	return
-
-
 

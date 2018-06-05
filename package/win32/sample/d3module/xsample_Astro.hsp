@@ -1,9 +1,9 @@
 
 ;============================================================
-;                                                 2008/--/--
-;	title "S.Programs Astro Balloon"
+;                                      s.programs 2008/--/--
+;	title "s.programs Astro Balloon"
 ;	version 1.0/sample_ver
-;                               http://sprocket.babyblue.jp/
+;                                 http://spn.php.xdomain.jp/
 ;============================================================
 /*
 サンプルゲーム  アストロ・バルーン
@@ -49,7 +49,6 @@ HUD
 	f0 = refdval ; = 0.0
 	foname = "ＭＳ Ｐゴシック"
 
-
 ;------------------------------------------------------------
 ; ゲーム初期化
 *init
@@ -68,7 +67,6 @@ HUD
 	; 姿勢角速度 ロール, ピッチ のみ (rad/s)
 	vm_r = f0 : vm_p = f0
 
-
 	; 機体スペック
 #const MACHM	2000	; 機体質量 (kg)
 #const FORCE	200000	; 推力 (N)
@@ -77,7 +75,6 @@ HUD
 
 //onst FORCE_YP	19600	; 姿勢制御用 推力 (N)
 #const FCOST_YP	5	; 姿勢制御用 燃費 (kg/sec)
-
 
 	; ゲーム設定
 #const BALLS   8
@@ -95,10 +92,8 @@ HUD
 	time_s = 0
 	time_e = 0
 
-
 	; effect
 	cv = 88
-
 
 ;------------------------------------------------------------
 ; ゲームループ
@@ -110,14 +105,12 @@ HUD
 	sec = 0.001 * d3timer()
 	dt = limitf(sec - a, 0, 1)
 
-
 	;------------------------------------------------------------
 	; ctrl default
 
 	am_v = 0
 	am_r = 0
 	am_p = 0
-
 
 	;------------------------------------------------------------
 	; ctrl
@@ -126,7 +119,6 @@ HUD
 
 		getkey k, 27
 		if k : goto *init ; [Esc] to Reset
-
 
 		;------------------------------------------------------------
 		; full-screen ctrlr (toggle : Enter)
@@ -146,7 +138,6 @@ HUD
 			}
 		}
 
-
 		;------------------------------------------------------------
 		; ctrl
 
@@ -163,7 +154,6 @@ HUD
 			getkey k, ymm : am_p -= k
 		}
 	}
-
 
 	;------------------------------------------------------------
 	; v-move
@@ -193,7 +183,6 @@ HUD
 	; 推進剤減少
 	fuelm = limitf(fuelm - dt * (FCOST * am_v + FCOST_YP * (am_r*am_r + am_p*am_p)), 0, FUEL_MAX)
 
-
 	;------------------------------------------------------------
 	; p-move
 
@@ -210,7 +199,6 @@ HUD
 	py += vy * dt
 	pz += vz * dt
 
-
 	;------------------------------------------------------------
 	; setcam
 
@@ -219,7 +207,6 @@ HUD
 	; 機体姿勢行列の転置
 	d3setlocal -(pm00*px+pm01*py+pm02*pz),-(pm10*px+pm11*py+pm12*pz),-(pm20*px+pm21*py+pm22*pz), pm00,pm01,pm02, pm10,pm11,pm12, pm20,pm21,pm22
 
-
 	;------------------------------------------------------------
 	; static obj
 
@@ -227,12 +214,10 @@ HUD
 	randomize 1
 	font foname, 15 ; HUD 用フォント
 
-
 	; background
 	color (fuelm=0) * 64, cv, cv * cv / 48
 	cv = limitf(cv - dt * 20, 48, 255)
 	boxf
-
 
 	; Star-Ring
 	repeat 642
@@ -246,7 +231,6 @@ HUD
 	repeat 5
 		d3particlem , 50000 * cnt
 	loop
-
 
 	; balloons
 	repeat BALLS
@@ -271,7 +255,6 @@ HUD
 			gmode 5, , , 96
 			d3particlem , 300
 
-
 			; レーダー射程距離内なら HUD に表示
 			if goal_d <= 30000 {
 				; HUD
@@ -286,7 +269,6 @@ HUD
 					mes 0 + goal_d
 				}
 			}
-
 
 			; 当たり処理
 			if goal_d <= BALL_R {
@@ -316,13 +298,11 @@ HUD
 		}
 	loop
 
-
 	;------------------------------------------------------------
 	; HUD
 
 	color 222, 222
 	t = d3timer() / 250 \ 2	; 点滅信号
-
 
 	; センター (燃焼時 推進剤時計)
 	repeat 60
@@ -332,11 +312,9 @@ HUD
 		line cos(p) * r1 + d3wincx, sin(p) * r1 + d3wincy, cos(p) * r0 + d3wincx, sin(p) * r0 + d3wincy
 	loop
 
-
 	; ウィスキーマーク
 	pos d3wincx-13, d3wincy-8
 	mes "-ｗ-"
-
 
 	; ベロシティベクトル
 	repeat 2
@@ -357,12 +335,10 @@ HUD
 		}
 	loop
 
-
 	; 数値情報
 	pos 50, 40
 	mes "VEL.  " + (0 + v_abs) + " m/s\nFUEL " + (0 + fuelm) + " kg"
 	if (fuelm = 0) & t : mes "EMPTY  推進剤切れ"
-
 
 	; グラフ
 	; V-ROLL
@@ -371,7 +347,6 @@ HUD
 ;	boxf 240, d3wincy, 243, vm_p*60 + d3wincy-1
 	; FUEL
 	boxf 160, 59, 160 + fuelm*((fuelm>=100)|t)/3, 66
-
 
 	;------------------------------------------------------------
 	; game telop
@@ -391,14 +366,8 @@ HUD
 	font foname, 20
 	mes ""+d3getfps()+" fps"
 
-
 	;------------------------------------------------------------
 	redraw
 
 	goto *mainloop
-
-
-
-
-
 
