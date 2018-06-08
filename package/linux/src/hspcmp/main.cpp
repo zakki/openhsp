@@ -28,6 +28,9 @@ static 	char *p[] = {
 	"       -i    input UTF-8 source code",
 	"       -u    output UTF-8 strings",
 	"       -w    force debug window on",
+	"       -e?   execute/view .ax runtime",
+	"       -r    execute runtime with result log",
+	"       --syspath=??? set system folder for execute",
 	"       --compath=??? set common path to ???",
 	NULL };
 	int i;
@@ -39,13 +42,14 @@ static 	char *p[] = {
 
 int main( int argc, char *argv[] )
 {
-	char a1,a2;
+	char a1,a2,a3;
 	int b,st;
-	int cmpopt,ppopt,utfopt,pponly;
+	int cmpopt,ppopt,utfopt,pponly,execobj;
 	char fname[HSP_MAX_PATH];
 	char fname2[HSP_MAX_PATH];
 	char oname[HSP_MAX_PATH];
 	char compath[HSP_MAX_PATH];
+	char syspath[HSP_MAX_PATH];
 	CHsc3 *hsc3=NULL;
 
 	//	check switch and prm
@@ -53,10 +57,12 @@ int main( int argc, char *argv[] )
 	if (argc<2) { usage1();return -1; }
 
 	st = 0; ppopt = 0; cmpopt = 0; utfopt = 0; pponly = 0;
+	execobj = 0;
 	fname[0]=0;
 	fname2[0]=0;
 	oname[0]=0;
-	
+	syspath[0]=0;
+
 #ifdef HSPLINUX
 	strcpy( compath,"common/" );
 #else
@@ -72,8 +78,13 @@ int main( int argc, char *argv[] )
 #endif
 			strcpy(fname,argv[b]);
 		} else {
+			a3=tolower(*(argv[b]+2));
 			if (strncmp(argv[b], "--compath=", 10) == 0) {
 				strcpy( compath, argv[b] + 10 );
+				continue;
+			}
+			if (strncmp(argv[b], "--syspath=", 10) == 0) {
+				strcpy( syspath, argv[b] + 10 );
 				continue;
 			}
 			switch (a2) {
@@ -92,6 +103,14 @@ int main( int argc, char *argv[] )
 			case 'o':
 				strcpy( oname,argv[b]+2 );
 				break;
+			case 'e':
+				execobj = 1;
+				if ( a3=='0' ) execobj|=8;
+				break;
+			case 'r':
+				execobj = 2;
+				if ( a3=='0' ) execobj|=8;
+				break;
 			default:
 				st=1;break;
 			}
@@ -106,7 +125,7 @@ int main( int argc, char *argv[] )
 		strcpy( oname,fname ); cutext( oname ); addext( oname,"ax" );
 	}
 	strcpy( fname2, fname ); cutext( fname2 ); addext( fname2,"i" );
-	addext( fname,"hsp" );			// �g���q���Ȃ���Βǉ�����
+	addext( fname,"hsp" );			// 拡張子がなければ追加する
 
 	//		call main
 
@@ -114,12 +133,49 @@ int main( int argc, char *argv[] )
 
 	hsc3->SetCommonPath( compath );
 
-	st = hsc3->PreProcess( fname, fname2, ppopt, fname );
-	if (( pponly == 0 )&&( st == 0 )) {
-		st = hsc3->Compile( fname2, oname, cmpopt );
+	if ( execobj ) {
+		//		ランタイムを起動
+		char execmd[4096];
+		st = hsc3->GetRuntimeFromHeader( fname, oname );
+		if ( st != 1 ) {
+			strcpy( oname, "hsp3.exe" );			// デフォルトランタイム
+		}
+
+#ifdef HSPLINUX
+		cutext( oname );
+		if ( execobj & 8 ) {
+			printf("Runtime[%s].\n",oname);
+		} else {
+			printf("Execute from %s runtime[%s](%d).\n",fname,oname,execobj);
+			if ( execobj==2 ) {
+				sprintf(execmd,"%s./%s %s >%s.hspres",syspath,oname,fname,syspath);
+			} else {
+				sprintf(execmd,"%s./%s %s",syspath,oname,fname);
+			}
+			system(execmd);
+		}
+#else
+		if ( execobj & 8 ) {
+			printf("Runtime[%s].\n",oname);
+		} else {
+			sprintf( execmd, "%s %s", oname, fname );
+			st = WinExec( execmd, SW_SHOW );
+			if ( st < 32 ) {
+				printf("Runtime file missing.\n");
+			}
+		}
+#endif
+
+	} else {
+		//		通常のコンパイル
+		st = hsc3->PreProcess( fname, fname2, ppopt, fname );
+		if (( pponly == 0 )&&( st == 0 )) {
+			st = hsc3->Compile( fname2, oname, cmpopt );
+		}
+		puts( hsc3->GetError() );
+		hsc3->PreProcessEnd();
 	}
-	puts( hsc3->GetError() );
-	hsc3->PreProcessEnd();
+
 	if ( hsc3 != NULL ) { delete hsc3; hsc3=NULL; }
 	return st;
 }

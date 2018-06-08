@@ -88,10 +88,10 @@
 #enum global HTTPMODE_DATAEND
 #define global HTTPMODE_ERROR (-1)
 
-#define global HTTPINFO_MODE 0		; Œ»İ‚Ìƒ‚[ƒh
-#define global HTTPINFO_SIZE 1		; ƒf[ƒ^ƒTƒCƒY
-#define global HTTPINFO_DATA 16		; æ“¾ƒf[ƒ^
-#define global HTTPINFO_ERROR 17	; ƒGƒ‰[•¶š—ñ
+#define global HTTPINFO_MODE 0		; ç¾åœ¨ã®ãƒ¢ãƒ¼ãƒ‰
+#define global HTTPINFO_SIZE 1		; ãƒ‡ãƒ¼ã‚¿ã‚µã‚¤ã‚º
+#define global HTTPINFO_DATA 16		; å–å¾—ãƒ‡ãƒ¼ã‚¿
+#define global HTTPINFO_ERROR 17	; ã‚¨ãƒ©ãƒ¼æ–‡å­—åˆ—
 
 
 #endif
