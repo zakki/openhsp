@@ -386,6 +386,7 @@ static void HSP_run(GtkWidget *w,int flag)
 	char mydir[1024];
 	char runtime[128];
 	char option[16];
+	int result;
 	int needres=0;			// .hspresによるエラー解析を行うか?
 	char *err;
 	char a1;
@@ -479,22 +480,29 @@ static void HSP_run(GtkWidget *w,int flag)
 	option[1] = 'e';
 	option[2] = 0;
 	if ( strcmp(runtime,"hsp3cl")==0 ) needres = 0;		// hsp3clはそのまま
-	if ( needres ) {
-		option[1] = 'r';			// .hspresを出力するオプション
-	}
-	//printf("hsed: Runtime [%s].\n",runtime);
+	printf("hsed: Runtime [%s].\n",runtime);
 
 #ifdef HSPRASPBIAN
+	if ( needres ) {
+		option[1] = 'r';			// エラー時に停止するオプション
+	}
 	sprintf(cmd,"/usr/bin/lxterminal --working-directory=\"%s\" --command=\"%s/hspcmp %s %s --syspath=%s/\""
 			, mydir, hspdir, option, TEMP_AX, hspdir );
 #else
 	sprintf(cmd,"%s/hspcmp %s %s --syspath=%s/",hspdir, option, TEMP_AX, hspdir);
 #endif
 
-	system(cmd);
+	result = system(cmd);
+	if ( WIFEXITED(result) ) {
+		result = WEXITSTATUS(result);
+		printf("hsed: Process end %d.\n",result);
+	} else {
+		printf("hsed: Process error.\n");
+	}
 
 	//	error detect
-
+	
+/*
 	if ( needres ) {
 		p = 0;
 		sprintf(cmd,"%s/.hspres", hspdir);
@@ -511,7 +519,7 @@ static void HSP_run(GtkWidget *w,int flag)
 			return;
 		}
 	}
-
+*/
 }
 
 /////////////////////////  MENU ///////////////////////////////
