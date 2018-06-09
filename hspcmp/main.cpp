@@ -32,7 +32,7 @@ static 	char *p[] = {
 	"       -u    output UTF-8 strings",
 	"       -w    force debug window on",
 	"       -e?   execute/view .ax runtime",
-	"       -r    execute runtime with result log",
+	"       -r    execute runtime with result",
 	"       --syspath=??? set system folder for execute",
 	"       --compath=??? set common path to ???",
 	NULL };
@@ -48,6 +48,7 @@ int main( int argc, char *argv[] )
 	char a1,a2,a3;
 	int b,st;
 	int cmpopt,ppopt,utfopt,pponly,execobj;
+	int result;
 	char fname[HSP_MAX_PATH];
 	char fname2[HSP_MAX_PATH];
 	char oname[HSP_MAX_PATH];
@@ -150,12 +151,24 @@ int main( int argc, char *argv[] )
 			printf("Runtime[%s].\n",oname);
 		} else {
 			printf("Execute from %s runtime[%s](%d).\n",fname,oname,execobj);
-			if ( execobj==2 ) {
-				sprintf(execmd,"%s./%s %s >%s.hspres",syspath,oname,fname,syspath);
+			sprintf(execmd,"%s./%s %s",syspath,oname,fname);
+			//sprintf(execmd,"%s./%s %s >%s.hspres",syspath,oname,fname,syspath);
+			
+			result = system(execmd);
+			if ( WIFEXITED(result) ) {
+				result = WEXITSTATUS(result);
+				printf("hsed: Process end %d.\n",result);
+				if ( execobj==2 ) {
+					if ( result != 0 ) {			// ÉGÉâÅ[Ç™Ç†Ç¡ÇΩéû
+						while(1) {
+							result = getchar();
+							if (( result == 13 )||( result == 10 )) break;
+						}
+					}
+				}
 			} else {
-				sprintf(execmd,"%s./%s %s",syspath,oname,fname);
+				printf("hsed: Process error.\n");
 			}
-			system(execmd);
 		}
 #else
 		if ( execobj & 8 ) {
