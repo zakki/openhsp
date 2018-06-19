@@ -12,6 +12,13 @@
 #include <unistd.h>
 #include <termios.h>
 
+#include <errno.h>
+#include <regex.h>
+#include <dirent.h>
+#include <linux/input.h>
+#include <stdbool.h>
+
+
 #if defined( __GNUC__ )
 #include <ctype.h>
 #endif
@@ -52,6 +59,8 @@
 
 //typedef BOOL (CALLBACK *HSP3DBGFUNC)(HSP3DEBUG *,int,int,int);
 
+extern char *hsp_mainpath;
+
 /*----------------------------------------------------------*/
 
 static Hsp3 *hsp = NULL;
@@ -73,8 +82,6 @@ static engine	mem_engine;
 static DISPMANX_ELEMENT_HANDLE_T dispman_element;
 static DISPMANX_DISPLAY_HANDLE_T dispman_display;
 //static	HWND m_hWnd;
-
-static Uint8 *sdl_keys;
 
 #ifndef HSPDEBUG
 static int hsp_sscnt, hsp_ssx, hsp_ssy;
@@ -155,64 +162,225 @@ static int	GetIniFileInt( char *keyword )
 
 /*----------------------------------------------------------*/
 
-static int get_mouse(int *outx, int *outy)
-{
-    struct {char buttons, dx, dy; } m;
-    static int fd = -1;
-    const int width=mem_engine.width, height=mem_engine.height;
-    static int x=800, y=400;
-    const int XSIGN = 1<<4, YSIGN = 1<<5;
- 	int res = 0;
-    if (fd<0) {
-       fd = open("/dev/input/mouse0",O_RDONLY|O_NONBLOCK);
-    }
-    if (fd>=0) {
-        while (1) {
-           int bytes = read(fd, &m, sizeof m);
-           if (bytes < (int)sizeof m) {
-              if (outx) *outx = x;
-              if (outy) *outy = y;
-              return 0;
-		   }
-           if (m.buttons&8) {
-              break; // This bit should always be set
-           }
-           read(fd, &m, 1); // Try to sync up again
-        }
-        res = (int)(m.buttons&3);
-        x+=m.dx;
-        y+=m.dy;
-        if (m.buttons&XSIGN) x-=256;
-        if (m.buttons&YSIGN) y-=256;
-        if (x<0) x=0;
-        if (y<0) y=0;
-        if (x>width) x=width;
-        if (y>height) y=height;
-   }
-   if (outx) *outx = x;
-   if (outy) *outy = y;
-   return res;
-}
+static int mouseFd = -1;
+static int keyboardFd = -1;
+static int quit_flag = 0;
+static int mouse_x, mouse_y, mouse_btn1, mouse_btn2;
 
+#define KEY_MAX 256
+static int key_map[KEY_MAX];
+
+struct input_event ev[64];
 
 static void initKeyboard( void )
 {
-	sdl_keys = NULL;
-}
+	DIR *dirp;
+	struct dirent *dp;
+	regex_t kbd,mouse;
 
+	char fullPath[1024];
+	static char *dirName = "/dev/input/by-id";
+	int i;
 
-bool get_key_state(int sym)
-{
-	if ( sdl_keys == NULL ) return false;
-	return ( sdl_keys[sym] != 0 );
+	if(regcomp(&kbd,"event-kbd",0)!=0)
+	{
+	    printf("regcomp for kbd failed\n");
+	    return true;
+
+	}
+	if(regcomp(&mouse,"event-mouse",0)!=0)
+	{
+	    printf("regcomp for mouse failed\n");
+	    return true;
+
+	}
+
+	if ((dirp = opendir(dirName)) == NULL) {
+	    perror("couldn't open '/dev/input/by-id'");
+	    return true;
+	}
+
+	// Find any files that match the regex for keyboard or mouse
+
+	do {
+	    errno = 0;
+	    if ((dp = readdir(dirp)) != NULL) 
+	    {
+		//printf("readdir (%s)\n",dp->d_name);
+		if(regexec (&kbd, dp->d_name, 0, NULL, 0) == 0)
+		{
+		    //printf("match for the kbd = %s\n",dp->d_name);
+		    sprintf(fullPath,"%s/%s",dirName,dp->d_name);
+		    keyboardFd = open(fullPath,O_RDONLY | O_NONBLOCK);
+		    //printf("%s Fd = %d\n",fullPath,keyboardFd);
+
+		}
+		if(regexec (&mouse, dp->d_name, 0, NULL, 0) == 0)
+		{
+		    //printf("match for the kbd = %s\n",dp->d_name);
+		    sprintf(fullPath,"%s/%s",dirName,dp->d_name);
+		    mouseFd = open(fullPath,O_RDONLY | O_NONBLOCK);
+		    //printf("%s Fd = %d\n",fullPath,mouseFd);
+		    //printf("Getting exclusive access: ");
+		    ioctl(mouseFd, EVIOCGRAB, 1);
+		    //printf("%s\n", (result == 0) ? "SUCCESS" : "FAILURE");
+		}
+
+	    }
+	} while (dp != NULL);
+
+	closedir(dirp);
+
+	regfree(&kbd);
+	regfree(&mouse);
+
+	mouse_x = (int)mem_engine.width / 2;
+	mouse_y = (int)mem_engine.height / 2;
+	mouse_btn1 = 0;
+	mouse_btn2 = 0;
+	for(i=0;i<KEY_MAX;i++) {
+		key_map[i] = 0;
+	}
+
 }
 
 static void updateKeyboard( void )
 {
-	sdl_keys = SDL_GetKeyState(NULL);
-	SDL_PumpEvents();
+    int rd;
+    int sx,sy;
+	if((keyboardFd == -1) || (mouseFd == -1)) return;
+
+	sx = (int)mem_engine.width;
+	sy = (int)mem_engine.height;
+
+    // Read events from mouse
+
+    rd = read(mouseFd,ev,sizeof(ev));
+    if(rd > 0) {
+		int count,n;
+		struct input_event *evp;
+
+		count = rd / sizeof(struct input_event);
+		n = 0;
+		while(count--) {
+			evp = &ev[n++];
+			if(evp->type == 1) {
+				if(evp->code == BTN_LEFT)  {
+					//printf("Left button(%d)\n",evp->value);
+					mouse_btn1 = evp->value;
+			    }
+				if(evp->code == BTN_RIGHT)  {
+					//printf("Right button(%d)\n",evp->value);
+					mouse_btn2 = evp->value;
+			    }
+			}
+	
+			if(evp->code == 0) {
+			    // Mouse Left/Right
+			    //printf("Mouse moved left/right %d\n",evp->value);
+			    mouse_x += evp->value;
+			    if ( mouse_x < 0 ) mouse_x = 0;
+			    if ( mouse_x >= sx ) mouse_x = sx-1;
+			}
+		
+			if(evp->code == 1) {
+			    // Mouse Up/Down
+			    //printf("Mouse moved up/down %d\n",evp->value);
+			    mouse_y += evp->value;
+			    if ( mouse_y < 0 ) mouse_y = 0;
+			    if ( mouse_y >= sy ) mouse_y = sy-1;
+			}
+	    }
+	}
+
+    // Read events from keyboard
+
+    rd = read(keyboardFd,ev,sizeof(ev));
+    if(rd > 0) {
+		int count,n;
+		struct input_event *evp;
+		count = rd / sizeof(struct input_event);
+		n = 0;
+		while(count--) {
+		    evp = &ev[n++];
+		    if(evp->type == 1) {
+				if (( evp->code >= 0 )&&( evp->code < KEY_MAX )) {
+					key_map[evp->code] = evp->value;
+				}
+				if((evp->code == KEY_ESC) && (evp->value == 1)) {
+				    quit_flag = 1;
+				}
+			}
+		}
+    }
+
 }
 
+
+static void doneKeyboard( void )
+{
+	if (keyboardFd!=-1) close(keyboardFd);
+	if (mouseFd!=-1) {
+	    ioctl(mouseFd, EVIOCGRAB, 0);
+		close(mouseFd);
+	}
+}
+
+
+/*----------------------------------------------------------*/
+
+static const int key_cnv[256]={
+	/* 0- */
+	0, 0, 0, 3, 0, 0, 0, 0, KEY_BACKSPACE, KEY_TAB, 0, 0, 12, KEY_ENTER, 0, 0,
+	0, 0, 0, KEY_PAUSE, KEY_CAPSLOCK, 0, 0, 0, 0, 0, 0, KEY_ESC, 0, 0, 0, 0,
+	/* 32- */
+	KEY_SPACE, KEY_PAGEUP, KEY_PAGEDOWN, KEY_END, KEY_HOME,
+	KEY_LEFT, KEY_UP, KEY_RIGHT, KEY_DOWN, 0, KEY_PRINT, 0, 0, KEY_INSERT, KEY_DELETE, KEY_HELP,
+	/* 48- */
+	KEY_0, KEY_1, KEY_2, KEY_3, KEY_4, KEY_5, KEY_6, KEY_7, KEY_8, KEY_9,
+	0, 0, 0, 0, 0, 0, 0,
+	/* 65- */
+	KEY_A, KEY_B, KEY_C, KEY_D, KEY_E, KEY_F, KEY_G, KEY_H, KEY_I,
+	KEY_J, KEY_K, KEY_L, KEY_M, KEY_N, KEY_O, KEY_P, KEY_Q, KEY_R,
+	KEY_S, KEY_T, KEY_U, KEY_V, KEY_W, KEY_X, KEY_Y, KEY_Z,
+	/* 91- */
+	KEY_LEFTMETA, KEY_RIGHTMETA, 0, 0, 0,
+	KEY_KP0, KEY_KP1, KEY_KP2, KEY_KP3, KEY_KP4, KEY_KP5, KEY_KP6, KEY_KP7, KEY_KP8, KEY_KP9,
+	KEY_KPASTERISK, KEY_KPPLUS, 0, KEY_KPMINUS, KEY_KPDOT, KEY_KPSLASH, 
+	/* 112- */
+	KEY_F1, KEY_F2, KEY_F3, KEY_F4, KEY_F5, KEY_F6, KEY_F7, KEY_F8, KEY_F9, KEY_F10,
+	KEY_F11, KEY_F12, KEY_F13, KEY_F14, KEY_F15, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+	/* 136- */
+	0, 0, 0, 0, 0, 0, 0, 0, KEY_NUMLOCK, 145,
+	0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+	/* 160- */
+	KEY_LEFTSHIFT, KEY_RIGHTSHIFT, KEY_LEFTCTRL, KEY_RIGHTCTRL, KEY_LEFTALT, KEY_RIGHTALT,
+	0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+	/* 186- */
+	KEY_APOSTROPHE, KEY_SEMICOLON, KEY_COMMA, KEY_MINUS, KEY_DOT, KEY_SLASH, KEY_LEFTBRACE, 
+	0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+	/* 219- */
+	KEY_LEFTBRACE, KEY_BACKSLASH, KEY_RIGHTBRACE, KEY_EQUAL,
+	0, 0, 0, KEY_DOLLAR, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+	0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0
+};
+
+
+
+bool get_key_state(int sym)
+{
+	switch( sym ){
+		case 1:
+			return (mouse_btn1>0);
+		case 2:
+			return (mouse_btn2>0);
+	}
+
+	int i;
+	if ((sym<0)||(sym>255)) return false;
+	i = key_cnv[sym];
+	return (key_map[i]>0);
+}
 
 /*----------------------------------------------------------*/
 
@@ -398,16 +566,20 @@ void hsp3dish_msgfunc( HSPCTX *hspctx )
 	int tick;
 	useconds_t usec;
 
-	int x, y, btn;
 	updateKeyboard();
-	btn = get_mouse(&x, &y);
-	hgio_touch( x, y, btn );
+	hgio_touch( mouse_x, mouse_y, mouse_btn1 );
+
+	//int x, y, btn;
+	//btn = get_mouse(&x, &y);
+	//hgio_touch( x, y, btn );
 #ifdef HSPDEBUG
-//	if ( btn ) {
-//		hspctx->runmode = RUNMODE_END;
-//	}
-	if ( get_key_state(SDLK_ESCAPE) ){	;	// [esc] to Quit
+	//if ( btn ) {
+	//	hspctx->runmode = RUNMODE_END;
+	//}
+	//if ( get_key_state(KEY_ESCAPE) ){	;	// [esc] to Quit
+	if ( quit_flag ){	;	// Quit
 		hspctx->runmode = RUNMODE_END;
+		return;
 	}
 #endif
 
@@ -466,20 +638,183 @@ void hsp3dish_msgfunc( HSPCTX *hspctx )
 
 
 /*----------------------------------------------------------*/
-//		デバイスコントロール関連
+//		GPIOデバイスコントロール関連
 /*----------------------------------------------------------*/
-static HSP3DEVINFO *mem_devinfo;
-static int devinfo_dummy;
+
+#ifdef HSPRASPBIAN
+
+#define GPIO_TYPE_NONE 0
+#define GPIO_TYPE_OUT 1
+#define GPIO_TYPE_IN 2
+#define GPIO_MAX 32
+
+#define GPIO_CLASS "/sys/class/gpio/"
+
+static int gpio_type[GPIO_MAX];
+static int gpio_value[GPIO_MAX];
+
+static int echo_file( char *name, char *value )
+{
+	//	echo value > name を行なう
+	//printf( "[%s]<-%s\n",name,value );
+	int fd;
+	fd = open( name, O_WRONLY );
+	if (fd < 0) {
+		return -1;
+	}
+	write( fd, value, strlen(value)+1 );
+	close(fd);
+	return 0;
+}
+
+static int echo_file2( char *name, int value )
+{
+	char vstr[64];
+	sprintf( vstr, "%d", value );
+	return echo_file( name, vstr );
+}
+
+static int gpio_delport( int port )
+{
+	if ((port<0)||(port>=GPIO_MAX)) return -1;
+
+	if ( gpio_type[port]==GPIO_TYPE_NONE ) return 0;
+	echo_file2( GPIO_CLASS "unexport", port );
+	usleep(100000);		//0.1秒待つ(念のため)
+	gpio_type[port]=GPIO_TYPE_NONE;
+	return 0;
+}
+
+static int gpio_setport( int port, int type )
+{
+	if ((port<0)||(port>=GPIO_MAX)) return -1;
+
+	if ( gpio_type[port]==GPIO_TYPE_NONE ) {
+		echo_file2( GPIO_CLASS "export", port );
+		usleep(100000);		//0.1秒待つ(念のため)
+	}
+
+	if ( gpio_type[port] == type ) return 0;
+
+	int res = 0;
+	char vstr[256];
+	sprintf( vstr, GPIO_CLASS "gpio%d/direction", port );
+
+	switch( type ) {
+	case GPIO_TYPE_OUT:
+		res = echo_file( vstr, "out" );
+		break;
+	case GPIO_TYPE_IN:
+		res = echo_file( vstr, "in" );
+		break;
+	}
+
+	if ( res ) {
+		gpio_type[port] = GPIO_TYPE_NONE;
+		return res;
+	}
+
+	gpio_type[port] = type;
+	gpio_value[port] = 0;
+	return 0;
+}
+
+static int gpio_out( int port, int value )
+{
+	if ((port<0)||(port>=GPIO_MAX)) return -1;
+	if ( gpio_type[port]!=GPIO_TYPE_OUT ) {
+		int res = gpio_setport( port, GPIO_TYPE_OUT );
+		if ( res ) return res;
+	}
+
+	char vstr[256];
+	sprintf( vstr, GPIO_CLASS "gpio%d/value", port );
+	if ( value == 0 ) {
+		gpio_value[port] = 0;
+		return echo_file( vstr, "0" );
+	}
+	gpio_value[port] = 1;
+	return echo_file( vstr, "1" );
+}
+
+static int gpio_in( int port, int *value )
+{
+	if ((port<0)||(port>=GPIO_MAX)) return -1;
+	if ( gpio_type[port]!=GPIO_TYPE_IN ) {
+		int res = gpio_setport( port, GPIO_TYPE_IN );
+		if ( res ) return res;
+	}
+
+	int fd,rd,i;
+	char vstr[256];
+	char ev[256];
+	char a1;
+	sprintf( vstr, GPIO_CLASS "gpio%d/value", port );
+
+	fd = open( vstr, O_RDONLY | O_NONBLOCK );
+	if (fd < 0) {
+		return -1;
+	}
+    rd = read(fd,ev,255);
+    if(rd > 0) {
+		i = 0;
+		while(1) {
+			if ( i >= rd ) break;
+			a1 = ev[i++];
+			if ( a1 == '0' ) gpio_value[port] = 0;
+			if ( a1 == '1' ) gpio_value[port] = 1;
+		}
+	}
+	close(fd);
+
+	*value = gpio_value[port];
+	return 0;
+}
+
+static void gpio_init( void )
+{
+	int i;
+	for(i=0;i<GPIO_MAX;i++) {
+		gpio_type[i] = GPIO_TYPE_NONE;
+	}
+}
+
+static void gpio_bye( void )
+{
+	int i;
+	for(i=0;i<GPIO_MAX;i++) {
+		gpio_delport(i);
+	}
+}
+
+//--------------------------------------------------------------
 
 static int hsp3dish_devprm( char *name, char *value )
 {
-	return -1;
+	return echo_file( name, value );
 }
 
 static int hsp3dish_devcontrol( char *cmd, int p1, int p2, int p3 )
 {
+	if (( strcmp( cmd, "gpio" )==0 )||( strcmp( cmd, "GPIO" )==0 )) {
+		return gpio_out( p1, p2 );
+	}
+	if (( strcmp( cmd, "gpioin" )==0 )||( strcmp( cmd, "GPIOIN" )==0 )) {
+		int res,val;
+		res = gpio_in( p1, &val );
+		if ( res == 0 ) return val;
+		return res;
+	}
 	return -1;
 }
+
+#endif
+
+/*----------------------------------------------------------*/
+//		デバイスコントロール関連
+/*----------------------------------------------------------*/
+static HSP3DEVINFO *mem_devinfo;
+static int devinfo_dummy;
 
 static int *hsp3dish_devinfoi( char *name, int *size )
 {
@@ -504,7 +839,7 @@ static void hsp3dish_setdevinfo( HSP3DEVINFO *devinfo )
 {
 	//		Initalize DEVINFO
 	mem_devinfo = devinfo;
-	devinfo->devname = "linux";
+	devinfo->devname = "RaspberryPi";
 	devinfo->error = "";
 	devinfo->devprm = hsp3dish_devprm;
 	devinfo->devcontrol = hsp3dish_devcontrol;
@@ -527,8 +862,6 @@ int hsp3dish_init( char *startfile )
 	int i;
 #endif
 	InitSysReq();
-
-	initKeyboard();
 
 #ifdef HSPDISHGP
 	SetSysReq( SYSREQ_MAXMATERIAL, 64 );            // マテリアルのデフォルト値
@@ -574,12 +907,17 @@ int hsp3dish_init( char *startfile )
 		return 1;
 	}
 
+	hgio_setmainarg( hsp_mainpath, startfile );
+
 	//		Initalize Window
 	//
 	hsp3dish_initwindow( &mem_engine, -1, -1, "HSPDish ver" hspver );
 	sx = (int)mem_engine.width;
 	sy = (int)mem_engine.height;
 	autoscale = 0;
+
+	initKeyboard();
+	gpio_init();
 
 //#ifdef HSPDEBUG
 	if ( OpenIniFile( "hsp3dish.ini" ) == 0 ) {
@@ -701,6 +1039,9 @@ static void hsp3dish_bye( void )
    eglMakeCurrent( p_engine->display, EGL_NO_SURFACE, EGL_NO_SURFACE, EGL_NO_CONTEXT );
    eglDestroyContext( p_engine->display, p_engine->context );
    eglTerminate( p_engine->display );
+
+	doneKeyboard();
+	gpio_bye();
 
 	bcm_host_deinit();
 

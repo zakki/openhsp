@@ -253,7 +253,7 @@ void hgio_init( int mode, int sx, int sy, void *hwnd )
 	//font_texid = MakeEmptyTex( FONT_TEX_SX, FONT_TEX_SY );
 	#else
 
-#if 0
+#if 1
 	char fontpath[HSP_MAX_PATH+1];
 	strcpy( fontpath, hgio_getdir(1) );
 	strcat( fontpath, TTF_FONTFILE );
@@ -271,34 +271,42 @@ void hgio_init( int mode, int sx, int sy, void *hwnd )
     }
 
 	int psx,psy,colors;
-	GLuint texture_format;
+	GLuint texture_format = 0;
 	psx = surf->w;
 	psy = surf->h;
 	colors = surf->format->BytesPerPixel;
-	Alertf( "Init:Surface(%d,%d) %d",psx,psy,colors );
-
-	if (colors == 4) {   // alpha
-		if (surf->format->Rmask == 0x000000ff)
-			texture_format = GL_RGBA; else texture_format = GL_BGRA_EXT;
-	} else {             // no alpha
-		if (surf->format->Rmask == 0x000000ff)
-			texture_format = GL_RGB; else texture_format = GL_BGR_EXT;
-	}
+	Alertf( "Init:Surface(%d,%d) %d mask%x",psx,psy,colors,surf->format->Rmask );
 
 	font_texid = MakeEmptyTex( psx, psy );
-
 	TEXINF *tex = GetTex( font_texid );
 	ChangeTex( tex->texid );
+
+#ifdef HSPRASPBIAN
+
+	glTexImage2D( GL_TEXTURE_2D, 0, GL_RGBA, psx, psy, 0, GL_RGBA, GL_UNSIGNED_BYTE, surf->pixels );
+
+#else
+	if (colors == 4) {   // alpha
+		if (surf->format->Rmask == 0x000000ff)
+			texture_format = GL_RGBA;
+			else texture_format = GL_BGRA_EXT;
+	} else {             // no alpha
+		if (surf->format->Rmask == 0x000000ff)
+			texture_format = GL_RGB;
+			else texture_format = GL_BGR_EXT;
+	}
 	glTexImage2D( GL_TEXTURE_2D, 0, colors, psx, psy, 0, texture_format, GL_UNSIGNED_BYTE, surf->pixels );
+#endif
 
     //Clean up the surface and font
     SDL_FreeSurface(surf);
     TTF_CloseFont(font);
 #endif
+#endif
 
 	font_texid = RegistTexMem( font_data, font_data_size );
-	#endif
 #endif
+
 	font_sx = 16;
 	font_sy = 16;
 
@@ -773,6 +781,7 @@ int hgio_stick( int actsw )
 {
 	int ckey = 0;
 #if defined(HSPLINUX) || defined(HSPEMSCRIPTEN)
+#ifndef HSPRASPBIAN
 	if ( get_key_state(SDLK_LEFT) )  ckey|=1;		// [left]
 	if ( get_key_state(SDLK_UP) )    ckey|=1<<1;		// [up]
 	if ( get_key_state(SDLK_RIGHT) ) ckey|=1<<2;		// [right]
@@ -794,13 +803,27 @@ int hgio_stick( int actsw )
 	if ( get_key_state(SDLK_d) )     ckey|=1<<16;
 	if ( get_key_state(SDLK_s) )     ckey|=1<<17;
 #else
+	if ( get_key_state(37) ) ckey|=1;		// [left]
+	if ( get_key_state(38) ) ckey|=2;		// [up]
+	if ( get_key_state(39) ) ckey|=4;		// [right]
+	if ( get_key_state(40) ) ckey|=8;		// [down]
+	if ( get_key_state(32) ) ckey|=16;		// [spc]
+	if ( get_key_state(13) ) ckey|=32;		// [ent]
+	if ( get_key_state(17) ) ckey|=64;		// [ctrl]
+	if ( get_key_state(27) ) ckey|=128;		// [esc]
+	if ( get_key_state(1) )  ckey|=256;		// mouse_l
+	if ( get_key_state(2) )  ckey|=512;		// mouse_r
+	if ( get_key_state(9) )  ckey|=1024;	// [tab]
+#endif
+
+#else
 	if ( mouse_btn ) ckey|=256;	// mouse_l
 #endif
 	return ckey;
 }
 
-
 #if defined(HSPLINUX) || defined(HSPEMSCRIPTEN)
+#ifndef HSPRASPBIAN
 static const unsigned int key_map[256]={
 	/* 0- */
 	0, 0, 0, 3, 0, 0, 0, 0, SDLK_BACKSPACE, SDLK_TAB, 0, 0, 12, SDLK_RETURN, 0, 0,
@@ -853,6 +876,13 @@ bool hgio_getkey( int kcode )
 	}
 	return res;
 }
+#else
+bool hgio_getkey( int kcode )
+{
+	return get_key_state( kcode );
+}
+#endif
+
 #endif
 
 
@@ -1717,6 +1747,9 @@ int hgio_exec( char *msg, char *option, int mode )
 #ifdef HSPIOS
     gb_exec( mode, msg );
 #endif
+#ifdef HSPLINUX
+	system(msg);
+#endif
     return 0;
 }
 
@@ -1790,6 +1823,7 @@ void hgio_setmainarg( char *hsp_mainpath, char *cmdprm )
 	dir_hsp[p]=0;
 
 	strcpy( dir_cmdline, cmdprm );
+	Alertf( "Init:hgio_setmainarg(%s,%s)",dir_hsp,dir_cmdline );
 }
 
 char *hgio_getdir( int id )
@@ -2225,6 +2259,10 @@ int hgio_render_end( void )
         // displayが無い
         return 0;
     }
+	//hgio_setColor( 0xffffff );
+	//hgio_fcopy( 0,80,  0, 0, 256, 128, font_texid, 0xffffff );
+
+
     eglSwapBuffers(appengine->display, appengine->surface);
 #endif
 
@@ -2233,10 +2271,11 @@ int hgio_render_end( void )
 #endif
 #if defined(HSPLINUX)
 
-	//hgio_setColor( 0xffffff );
 	//hgio_makeTexFont( msg );
 	//hgio_putTexFont( 0,0, (char *)"This is Test.", -1 );
-	//hgio_fcopy( 0,80,  0, 0, 256, 128, font_texid, -1 );
+	//hgio_setColor( 0xffffff );
+	//hgio_boxfill( 100,200,100,10 );
+	//hgio_fcopy( 0,80,  0, 0, 256, 128, font_texid, 0xffffff );
 
 #ifndef HSPRASPBIAN
 	SDL_GL_SwapBuffers();
