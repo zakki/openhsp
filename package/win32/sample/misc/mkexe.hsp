@@ -1,0 +1,85 @@
+#packopt name "mkpack"
+#include "hspcmp.as"
+
+	;	HSPスクリプトを実行ファイル(.exe)に変換
+	;	(hspcmp.dllが必要です)
+	;
+
+	title "mkexe v1.0"
+	screen 0,480,240
+	sdim fname,1024
+	sdim srcdir,1024
+	sdim srcname,1024
+	sdim mesbuf,$10000
+
+	utf8_input=0			; script written in UTF-8 (1=on)
+	utf8_output=0			; output UTF-8 object file (1=on)
+
+	syscolor 15:boxf
+	color 0,0,0
+	mes "HSPスクリプトを実行ファイル(.exe)に変換します"
+
+	pos 0,30
+	sysfont 17
+	mes "ソーススクリプト:"
+	objsize 400,24
+	input fname
+	chkbox "UTF8形式のソーススクリプト",utf8_input
+	chkbox "文字列をUTF8形式で出力する",utf8_output
+
+	objsize 260,30
+	button "開始",*mkstart
+	button "終了",*owari
+
+	objsize 64,24
+	pos 408,41:button "参照...",*seldir
+
+	stop
+
+*owari
+	end
+
+*seldir
+	fname = ""
+	dialog "hsp",16,"HSP Script"
+	if stat!0 : fname = refstr
+	objprm 0,fname
+	stop
+
+*mkstart
+	if fname="" : stop
+
+	srcdir=getpath(fname,32+16)
+	srcname=getpath(fname,1+8+16)
+
+	chdir srcdir
+
+	cls 1
+	mes "Compiling..."+fname
+
+	objname="start.ax"		; output object file
+	cmpmode=0
+	ppmode=4
+
+	if utf8_input : ppmode|=32
+	if utf8_output : cmpmode|=4
+
+	hsc_ini srcname+".hsp"
+	hsc_objname objname
+	hsc_comp cmpmode,ppmode,0
+	res=stat:if res!=0 : dialog "ERROR" : goto *goerror
+
+	mes "Make .exe file..."
+	hsc3_make dir_exe+"\\"+srcname+".dpm",1
+
+	mes "Done."
+	title "Complete."
+
+*goerror
+	hsc_getmes mesbuf
+
+	objmode 1
+	flg=1				; 1=editable
+	mesbox mesbuf,636,246,flg+4
+
+	stop
