@@ -79,6 +79,10 @@ pre {
 	border-style: none none none solid;
 	border-color: #337;
 	border-width: 0 0 0 3px;
+
+	/* pre ‚Å©“®Ü‚è•Ô‚µ */
+	word-wrap: break-word;
+	white-space: pre-wrap;
 }
 
 aside {

@@ -1,46 +1,15 @@
 
 ;============================================================
-;                                      s.programs 2012/xx/xx
-;	HHW / HDL Built-in Editor
-;	hs editor (HSP 3.0)
-;                                 http://spn.php.xdomain.jp/
+;	hs help editor
+;			s.programs http://spn.php.xdomain.jp/
 ;============================================================
 
-; includes
 #include "gpm.hsp"
 #include "hdl_lib.hsp"
 
 ;============================================================
-; マウス関係
-
-#module
-#uselib "user32"
-#cfunc LoadCursorA "LoadCursorA" int, int
-#func SetCursor "SetCursor" int
-#func ScreenToClient "ScreenToClient" int, int
-
-#define global IDC_SIZEWE 32644
-#define global IDC_SIZENS 32645
-#define global IDC_SIZEALL 32646
-
-#deffunc SetMouseCursor int p1
-	h = LoadCursorA(hinst, p1)
-	if h : SetCursor h
-	return
-
-#defcfunc rtmousex
-	p = ginfo_mx, 0
-	ScreenToClient hwnd, varptr(p)
-	return p.0
-
-#defcfunc rtmousey
-	p = 0, ginfo_my
-	ScreenToClient hwnd, varptr(p)
-	return p.1
-#global
-
-;============================================================
 ; tricorn / drawborder
+;============================================================
 
 #module
 #deffunc tricorn int px, int py, int pdir  ; top-x, top-y, direction (clock)
@@ -74,63 +43,21 @@
 #global
 
 ;============================================================
-; Windows Timer
-
-#module
-; winapi
-#uselib "user32"
-#func	SetTimer	"SetTimer" int, int, int, int
-#func	KillTimer	"KillTimer" int, int
-;--------------------------------------------------
-#define global timer_setlabel(%1)  oncmd gosub %1, 0x113
-;--------------------------------------------------
-#deffunc timer_start
-	SetTimer hwnd, 333, 33, 0
-	return
-;--------------------------------------------------
-#deffunc timer_stop
-	KillTimer hwnd, 333
-	return
-#global
-
-;============================================================
-; wstrlen
-; ダブルバイト対応 文字数カウント
-
-;#uselib "kernel32"
-;#cfunc wstrlen "lstrlenW" wptr
-
-#module
-; winapi
-#uselib "kernel32"
-#cfunc MultiByteToWideChar "MultiByteToWideChar" int, int, var, int, int, int
-;--------------------------------------------------
-#defcfunc wstrlen var v
-	return (MultiByteToWideChar(0, 0, v, -1, 0, 0) - 1)
-#global
-
-;============================================================
 ; hs エディタ モジュール
 ; (hhw_start で起動 元のスクリプトに制御を返さず終了)
+;============================================================
 
 #module
 ; winapi
 #uselib "user32"
-#func	CharLower	"CharLowerA" var
-#func	MoveWindow	"MoveWindow" sptr, sptr, sptr, sptr, sptr, sptr
+#func	CharLower		"CharLowerA" var
+#func	MoveWindow		"MoveWindow" sptr, sptr, sptr, sptr, sptr, sptr
 #func	EnableWindow	"EnableWindow" int, int
 #cfunc	GetScrollPos	"GetScrollPos" int, int
 #func	SetWindowLongA	"SetWindowLongA" sptr, sptr, sptr
-#cfunc	MessageBox	"MessageBoxA" int, sptr, sptr, int
+#cfunc	MessageBox		"MessageBoxA" int, sptr, sptr, int
 #func	GetWindowRect	"GetWindowRect" int, var
 #func	MapWindowPoints	"MapWindowPoints" int, int, var, int
-
-; (menu api)
-#func CreateMenu	"CreateMenu"
-#cfunc CreatePopupMenu	"CreatePopupMenu"
-#func AppendMenu	"AppendMenuA"     int,int,int,sptr
-#func SetMenu		"SetMenu"         int,int
-#func DrawMenuBar	"DrawMenuBar"     int
 
 ; const
 #enum	CMD_N = 333
@@ -140,11 +67,10 @@
 #enum	CMD_Q
 #enum	CMD_V
 #enum	CMD_E
+#enum	CMD_IH_B
+#enum	CMD_IH_TABLE
 #enum	CMD_SORT
 #enum	CMD_OPTIM
-#enum	CMD_INP
-#enum	CMD_IH_STRONG
-#enum	CMD_IH_TABLE
 #enum	CMD_OPT_SHOWHV
 #enum	CMD_OPT_HIDEHV
 #define ctype objhwnd(%1)  objinfo(%1, 2)
@@ -153,7 +79,6 @@
 #define MAX_ID 3000
 #define EDIT_MAX 128000 ; editbox max length
 
-;============================================================
 ;============================================================
 ; 起動・メインループ
 #deffunc hhw_start str s1, str s2, str s3, str s4
@@ -164,18 +89,11 @@
 	appsig	= s4
 
 	; cur_file を分解 ("hoge>foo" -> "hoge", "foo")
-	a = instr(cur_file, , ">")
-	if a >= 0 {
-		symbol_select = strmid(cur_file, a+1, 999)
-		poke cur_file, a
-	}
+	split cur_file, ">", cur_file, symbol_select
 
-	;============================================================
 	; ウィンドウ作成
 
-	;--------------------------------------------------
 	; UI 変数初期化
-
 	str_insbox = ""	; 新規レコード追加
 	str_find = ""	; シンボル検索
 	str_tagbox = ""	; フィールドタグ追加
@@ -203,11 +121,9 @@
 	sdim astr, 4096 ; テンポラリ ミニマム容量設定
 	sdim bstr, 4096
 
-	;--------------------------------------------------
 	; create window
-
+;	Window_DPIAware
 	screen 0, ginfo_dispx+4, ginfo_dispy, 2
-	Window_resizable
 	status_create	; ステータスバー 初期化
 	title appname
 
@@ -226,13 +142,11 @@
 	AppendMenu hmenuView, 0, CMD_OPT_HIDEHV, "%href ビューを非表示(&H)"
 	; ツール(T)
 	hmenuTool = CreatePopupMenu()
-	AppendMenu hmenuTool, 0, CMD_OPTIM, "レコードの並び順を最適化"
-	AppendMenu hmenuTool, 0, CMD_SORT, "レコードの並び順をソート"
-	AppendMenu hmenuTool, $800, 0, ""
+	AppendMenu hmenuTool, 0, CMD_IH_B, "インライン HTML <b> 挿入"
 	AppendMenu hmenuTool, 0, CMD_IH_TABLE, "インライン HTML <table> 挿入"
-	AppendMenu hmenuTool, 0, CMD_IH_STRONG, "インライン HTML <strong> 挿入"
 	AppendMenu hmenuTool, $800, 0, ""
-	AppendMenu hmenuTool, 0, CMD_INP, "HSP スクリプトからシンボルをインポート"
+	AppendMenu hmenuTool, 0, CMD_SORT, "レコードの並び順をソート"
+	AppendMenu hmenuTool, 0, CMD_OPTIM, "レコードの並び順を最適化"
 	; ヘルプ(H)
 	hmenuHelp = CreatePopupMenu()
 	AppendMenu hmenuHelp, 0, CMD_V, "バージョン情報(&V)"
@@ -297,9 +211,7 @@
 	onexit gosub *endapp
 	timer_setlabel *event_WM_TIMER
 
-	;--------------------------------------------------
 	; load config / restore window
-
 	get_hsp_appdata_path APPDATAPATH
 	Config_open APPDATAPATH + "\\hhw_config.dat"
 
@@ -316,7 +228,9 @@
 		cfg_hrborder_x	= 50  ; [%]
 	}
 
-	Config_restore_window
+	Window_resizable
+	Config_restore_window ; <--- ここで画面が出るだはず --------------------------------------
+	gsel 0, 1 ; omajinai
 
 	objsel id_edit
 	await
@@ -332,7 +246,7 @@
 	timer_start
 
 	repeat
-		if cnt : wait 4		; 割り込み先へはここから飛んで、ここへ帰ってくる
+		if cnt : wait 6		; 割り込み先へはここから飛んで、ここへ帰ってくる
 
 		; タイトル設定
 		if cur_file = "" {
@@ -559,8 +473,7 @@
 		; ファイルを開く
 		exist cur_file
 		if strsize >= 0 {
-			sdim buf, strsize + 16
-			bload cur_file, buf
+			bload_utf_safe cur_file, buf
 		} else {
 			dialog  "ファイル " + cur_file + " が見つかりません。", 1, appname
 			cur_file = ""
@@ -1183,7 +1096,7 @@
 		getkey k, 1  : if k = 0 : break
 		getkey k, 27 : if k { cfg_border_x = bkup : gosub *event_WM_SIZE : break }
 
-		x = rtmousex() & 0xfffffffe
+		x = scr_mousex() & 0xfffffffe
 		if x ! cfg_border_x {
 			cfg_border_x = x
 			gosub *event_WM_SIZE
@@ -1202,7 +1115,7 @@
 		getkey k, 1  : if k = 0 : break
 		getkey k, 27 : if k { cfg_hrborder_x = bkup : gosub *event_WM_SIZE : break }
 
-		x = (rtmousex() - x10 + 3) * 100 / (x19 - x10) ; ボーダー位置をパーセントで算出
+		x = (scr_mousex() - x10 + 3) * 100 / (x19 - x10) ; ボーダー位置をパーセントで算出
 		if x < 10 : x = 0	; 最小値を選択しやすくする
 		if x ! cfg_hrborder_x {
 			cfg_hrborder_x = x
@@ -1392,10 +1305,7 @@
 				edited = 1
 			}
 
-		} else:if i = CMD_INP {
-			gosub *tool_inport_hsp
-
-		} else:if i = CMD_IH_STRONG {
+		} else:if i = CMD_IH_B {
 			gosub *tool_ih_strong
 
 		} else:if i = CMD_IH_TABLE {
@@ -1473,11 +1383,11 @@
 	return 0
 
 ;--------------------------------------------------
-; インライン HTML <strong>
+; インライン HTML <b>
 *tool_ih_strong
 	if confitm_ih() = 0 {
 		astr = "html{\n"
-		astr += "<strong>強調する文章</strong>\n"
+		astr += "<b>強調する文章</b>\n"
 		astr += "}html\n"
 
 		objsel id_edit
@@ -1600,8 +1510,6 @@
 
 	; 数パス実行
 	repeat 7
-		; solve et coagula
-
 		; (Phase 1) リンク先のリンク情報に自分へのリンクを追加 (これを実行したほうが最適化率が上がる)
 		repeat ids
 			id = cnt
@@ -1614,7 +1522,6 @@
 			loop
 		loop
 
-	#if 1
 		; (Phase 2) リンク配列を ID 順にソート (これを実行したほうが最適化率が上がる傾向にある)
 		repeat ids
 			id = cnt
@@ -1629,57 +1536,8 @@
 				loop
 			loop
 		loop
-	#else
-		; (Phase 2) リンク配列を名前順にソート
-		; シンボル名 正規化
-		repeat ids
-			CharLower symbuf.cnt
-		loop
-		repeat ids
-			id = cnt
-			; バブルソート (要素数小さい)
-			repeat refs(id)
-				repeat refs(id) - cnt - 1
-					if refid(id, cnt) >= 0 & refid(id, cnt+1) >= 0 {
-					if (symbuf(refid(id, cnt)) ! symbuf(refid(id, cnt+1))) > 0 {
-						refid(id, cnt) ^= refid(id, cnt+1)
-						refid(id, cnt+1) ^= refid(id, cnt)
-						refid(id, cnt) ^= refid(id, cnt+1)
-					}
-					}
-				loop
-			loop
-		loop
-	#endif
 
 		; (Final) リンク先を近くに寄せながらレコードを連結
-	#if 0
-		; 再帰バージョン (1 pass で収束するが、最適化率低い)
-		if 0 {
-		#deffunc connectbuf  int localid
-			; 連結 ("末尾改行を強制" は、*tool_sort_records で実行済みのため省略)
-			if peek(recbuf.localid) {
-				buf += recbuf.localid
-				recbuf.localid = "" ; 連結済みレコードは消去
-			}
-
-			if sublev >= 30 : return
-
-			repeat refs(localid)
-				if refid(localid, cnt) >= 0 {
-					if peek(recbuf( refid(localid, cnt) )) {
-						connectbuf refid(localid, cnt)
-					}
-				}
-			loop
-			return
-		}
-		buf = ""
-		repeat ids
-			connectbuf cnt
-		loop
-	#else
-		; 非再帰バージョン (収束に n pass かかるが、最終的な最適化率高い)
 		buf = ""
 		repeat ids
 			id = cnt
@@ -1700,7 +1558,6 @@
 				}
 			loop
 		loop
-	#endif
 
 		; 連結済みレコードを再分解・解析
 		gosub *rebuild_recs
@@ -1712,158 +1569,7 @@
 	return
 
 ;--------------------------------------------------
-; hsp ファイルからインポート
-*tool_inport_hsp
-	dialog "インクルード用 HSP ソーススクリプトから、下記のプリプロセッサで定義された\nシンボル/引数を抽出して追加します。続行しますか?\n\n#deffunc\n#defcfunc\n#func\n#cfunc\n#cmd\n\n(この操作は元に戻せません。)", 3, appname
-	if stat ! 6 : return
-
-	dialog "hsp;*.as", 16, "インクルード用 HSP3 ソーススクリプト"
-	if stat = 0 : return
-	hspfn = refstr
-	edited = 1
-
-	; fn = hspfn
-	gosub *rebuild_buf
-
-	exist hspfn
-	sdim hspbuf, strsize + 8
-	bload hspfn, hspbuf
-
-	hspfn = getpath(hspfn, 8) ; path を剥く
-	sdim div, 1024, 64
-
-	; (誤動作防止) リテラル文字列加工
-	p = 0
-	repeat
-		i = instr(hspbuf, p, "\"")
-		if i = -1 : break
-		p += i
-		b = 0
-		repeat
-			p++
-			a = peek(hspbuf, p)
-			if a = 0 : break
-			if (a = '"') & (b ! '\\') {
-				break
-			}
-			if (a <= ' ') | (a = ';') | (a = '/') : poke hspbuf, p, '$'
-			b = a
-		loop
-		if a = 0 : break
-		p++
-	loop
-
-	; /* */ コメント削除
-	p = 0
-	repeat
-		i = instr(hspbuf, p, "/*")
-		if i = -1 : break
-		p += i
-		i = instr(hspbuf, p, "*/")
-		if i = -1 : break
-		memcpy hspbuf, hspbuf, strlen(hspbuf)-p-i-1, p, p+i+2
-	loop
-
-	; データ取得 メイン
-	p = 0
-	repeat
-		; 処理ライン取得
-		getstr astr, hspbuf, p
-		if strsize = 0 : break
-		p += strsize
-
-		; コメント削除
-		getstr astr, astr, , ';'
-		getstr astr, astr, , '/'
-
-		; split
-		i = 0	; id
-		n = 0	; len
-		repeat
-			a = peek(astr, cnt)
-			if (a <= 32) | (a = ',') {
-				if n {
-					div.i = bstr ; store
-					n = 0
-					; ignore words
-					CharLower bstr
-					if (bstr ! "ctype") & (bstr ! "global") {
-						i++
-					}
-				}
-				if a = 0 : break
-				continue
-			}
-			if (a ! '#') & ((i | n) = 0) : break ; プロプロセッサ以外 ignore
-
-			wpoke bstr, n, a
-			n++
-		loop
-
-		if i = 0 : continue
-
-		CharLower div.0
-		tmp = ""
-
-		if (div.0 = "#deffunc") | (div.0 = "#defcfunc") {
-			tmp += "%index\n" + div.1 + "\n; 見出し を記入\n\n"
-			prmlist = ""
-			prmsum  = ""
-			a = 2
-			repeat
-				if a >= i : break
-				if prmlist ! "" : prmlist += ", "
-				prmlist += div(a+1)
-				prmsum += div(a+1) + "\t: (" + div(a) + ")\n"
-				a += 2
-			loop
-			; ctype
-			if div.0 = "#defcfunc" {
-				prmlist = "(" + prmlist + ")"
-			}
-			tmp += "%prm\n" + prmlist + "\n" + prmsum + "\n"
-
-		} else:if (div.0 = "#func") | (div.0 = "#cfunc") {
-			tmp += "%index\n" + div.1 + "\n; 見出し を記入\n\n"
-			prmlist = ""
-			prmsum  = ""
-			a = 3
-			repeat
-				if a >= i : break
-				if prmlist ! "" : prmlist += ", "
-				prmlist += div(a) + (cnt+1)
-				prmsum += div(a) + (cnt+1) + "\t: \n"
-				a++
-			loop
-			; ctype
-			if div.0 = "#cfunc" {
-				prmlist = "(" + prmlist + ")"
-			}
-			tmp += "%prm\n" + prmlist + "\n" + prmsum + "\n"
-
-		} else:if div.0 = "#cmd" {
-			tmp += "%index\n" + div.1 + "\n; 見出し を記入\n\n"
-			str_edit += "%prm\n; パラメータリスト を記入\n; パラメータ説明文 を記入\n\n"
-
-		}
-
-		if tmp ! "" {
-			tmp += "%inst\n; 解説文 を記入\n\n"
-			tmp += "%sample\n; サンプルスクリプト を記入\n\n"
-			tmp += "%href\n; 関連項目 を記入\n\n"
-			tmp += "%group\n; グループ を記入\n\n"
-			tmp += "; 定義 : [" + hspfn + "] " + astr + "\n\n\n"
-			buf += tmp
-		}
-	loop
-
-	gosub *rebuild_recs
-	return
-
-;============================================================
-;============================================================
-; 終了シーケンス
-
+; 終了
 *endapp
 	if confirm_break() {
 		return
