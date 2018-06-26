@@ -1,7 +1,7 @@
 
 ;============================================================
 ;	SQLele for SQLite3, HSP3
-;		version 1.16 update 2018/06/01
+;		version 1.17 update 2018/06/07
 ;			s.programs http://spn.php.xdomain.jp/
 ;============================================================
 
@@ -60,7 +60,7 @@
 ; pASCII to vUTF8
 #deffunc pascii_to_vutf int p1, var v1
 	kMultiByteToWideChar 0, 0, p1, -1, 0, 0
-	memexpand wtmp, stat * 4
+	memexpand wtmp, stat * 2 + 16
 	kMultiByteToWideChar 0, 0, p1, -1, varptr(wtmp), stat
 
 	kWideCharToMultiByte 65001, 0, varptr(wtmp), -1, 0, 0, 0, 0
@@ -71,7 +71,7 @@
 ; pUTF8 to vASCII
 #deffunc putf_to_vascii int p1, var v1
 	kMultiByteToWideChar 65001, 0, p1, -1, 0, 0
-	memexpand wtmp, stat * 4
+	memexpand wtmp, stat * 2 + 16
 	kMultiByteToWideChar 65001, 0, p1, -1, varptr(wtmp), stat
 
 	kWideCharToMultiByte 0, 0, varptr(wtmp), -1, 0, 0, 0, 0
@@ -383,28 +383,9 @@
 ; str = sqesc("str") ; single-quotation escape ("'" -> "''")
 ;------------------------------------------------------------
 #defcfunc sqesc str p1
-	src = p1
-	if instr(src, 0, "'") < 0 : return src
-
-	len = strlen(src)
-	p = 0
-	repeat
-		i = instr(src, p, "'")
-		if i < 0 {
-			a(cnt) = len
-			sdim dest, len * 2 + 1
-			memcpy dest, src, a
-			repeat cnt
-				poke dest, a(cnt)+cnt, 39
-				memcpy dest, src, a(cnt+1)-a(cnt), a(cnt)+cnt+1, a(cnt)
-			loop
-			break
-		}
-		a(cnt) = p + i
-		p += i + 1
-	loop
+	dest = p1
+	strrep dest, "'", "''"
 	return dest
 
 #global
 #endif
-

@@ -5,6 +5,15 @@
 #define _HDL_LIB  1
 
 ;============================================================
+; benckmark macro
+;============================================================
+
+#uselib "winmm"
+#cfunc global btimer "timeGetTime"
+#define global b0 bench_ot = btimer()
+#define global b1 dialog "bench " + (btimer() - bench_ot) + " ms"
+
+;============================================================
 ; get_hsp_appdata_path
 ;  HSP が使う Application Data の Path
 ;============================================================
@@ -197,6 +206,13 @@
 
 	bsave cfgfile, cfgdat, CFG_SIZE
 	return
+;--------------------------------------------------
+; 高 DPI 対応
+#uselib "user32.dll"
+#func SetProcessDPIAware "SetProcessDPIAware"
+#deffunc Window_DPIAware
+	if varptr(SetProcessDPIAware) : SetProcessDPIAware
+	return
 #global
 
 ;============================================================
@@ -236,57 +252,32 @@
 
 ;============================================================
 ; bload_utf_safe
-;	(encode.as を改造)
 ;============================================================
 
-#module "mod_encbus"
+#module
+; winapi
+#uselib "kernel32"
+#func kMultiByteToWideChar "MultiByteToWideChar" sptr, sptr, sptr, sptr, sptr, sptr
+#func kWideCharToMultiByte "WideCharToMultiByte" sptr, sptr, sptr, sptr, sptr, sptr, sptr, sptr
 
-#const global CODEPAGE_S_JIS            932 ; Shift-JIS
-#const global CODEPAGE_EUC_JP         51932 ; EUC-JP
-#const global CODEPAGE_JIS            50220 ; iso-2022-jp(JIS)
-#const global CODEPAGE_UTF_7          65000 ; utf-7
-#const global CODEPAGE_UTF_8          65001 ; utf-8
-#const global CODEPAGE_UNICODE         1200 ; Unicode
-#const global CODEPAGE_UNICODE_BE      1201 ; Unicode(Big-Endian)
-#const global CODEPAGE_AUTODET_ALL    50001 ; auto detect all
-#const global CODEPAGE_AUTODET        50932 ; auto detect
+; pUTF8 to vASCII (from sqlele)
+#deffunc putf_to_vascii_2 int p1, var v1
+	wtmp = ""
+	kMultiByteToWideChar 65001, 0, p1, -1, 0, 0
+	memexpand wtmp, stat * 2 + 16
+	kMultiByteToWideChar 65001, 0, p1, -1, varptr(wtmp), stat
 
-#usecom IMultiLanguage@mod_encbus	"{275c23e1-3747-11d0-9fea-00aa003f8646}" \
-									"{275c23e2-3747-11d0-9fea-00aa003f8646}"
-#comfunc MuLang_ConvertString 9 var, int, int, var, var, var, var
-
-#deffunc _encode_init
-	newcom ml, IMultiLanguage
+	kWideCharToMultiByte 0, 0, varptr(wtmp), -1, 0, 0, 0, 0
+	memexpand v1, stat + 16
+	kWideCharToMultiByte 0, 0, varptr(wtmp), -1, varptr(v1), stat, 0, 0
 	return
 
-#deffunc _encode_term onexit
-	delcom ml
-	return
-
-#deffunc __FromSJIS@mod_encbus str _src, int srcCodepage, var dest, int destCodepage, local src, local srcSize, local destSize, local pdwMode
-	pdwMode = 0
-	srcSize = -1
-	destSize= 0
-	src		= _src
-	sdim dest
-	MuLang_ConvertString ml, pdwMode, srcCodepage, destCodepage, src, srcSize, dest, destSize
-	sdim dest, destSize + 1
-	MuLang_ConvertString ml, pdwMode, srcCodepage, destCodepage, src, srcSize, dest, destSize
-	return destSize
-
-#defcfunc _ToSJIS@mod_encbus var src, int srcCodepage, int destCodepage, local dest
-	__FromSJIS src, srcCodepage, dest, destCodepage
-	return dest
-
-#define ctype	eucjp2sjis(%1)		_ToSJIS@mod_encbus(%1, CODEPAGE_EUC_JP, CODEPAGE_S_JIS)
-#define ctype	jis2sjis(%1)		_ToSJIS@mod_encbus(%1, CODEPAGE_JIS,    CODEPAGE_S_JIS)
-#define ctype	utf7n2sjis(%1)		_ToSJIS@mod_encbus(%1, CODEPAGE_UTF_7,  CODEPAGE_S_JIS)
-#define ctype	utf8n2sjis(%1)		_ToSJIS@mod_encbus(%1, CODEPAGE_UTF_8,  CODEPAGE_S_JIS)
-
+; encode detector
 #define ctype IS_UTF8_BOM(%1)	((lpeek(%1) & 0xffffff) = 0xBFBBEF)
 #define ctype UTF8J_SCORE(%1)	((instr(%1,,"縺")>=0)+(instr(%1,,"繧")>=0)+(instr(%1,,"繝")>=0))
 #define ctype SJISJ_SCORE(%1)	((instr(%1,,"の")>=0)+(instr(%1,,"ー")>=0)+(instr(%1,,"に")>=0))
 
+; bload + utf-8 auto-transcode
 #deffunc bload_utf_safe str fn, var buf
 	buf = ""
 	exist fn
@@ -294,11 +285,79 @@
 		sdim buf, strsize + 16
 		bload fn, buf
 		if UTF8J_SCORE(buf) > SJISJ_SCORE(buf) | IS_UTF8_BOM(buf) {
-			_encode_init
-			buf = utf8n2sjis(buf)
+			putf_to_vascii_2 varptr(buf), buf
 		}
 	}
 	return
+#global
+
+;============================================================
+; マウス関係
+;============================================================
+
+#module
+#uselib "user32"
+#cfunc LoadCursorA "LoadCursorA" int, int
+#func SetCursor "SetCursor" int
+#func ScreenToClient "ScreenToClient" int, int
+
+#define global IDC_SIZEWE 32644
+#define global IDC_SIZENS 32645
+#define global IDC_SIZEALL 32646
+
+#deffunc SetMouseCursor int p1
+	h = LoadCursorA(hinst, p1)
+	if h : SetCursor h
+	return
+
+#defcfunc scr_mousex
+	p = ginfo_mx, 0
+	ScreenToClient hwnd, varptr(p)
+	return p.0
+
+#defcfunc scr_mousey
+	p = 0, ginfo_my
+	ScreenToClient hwnd, varptr(p)
+	return p.1
+#global
+
+;============================================================
+; Windows Timer
+;============================================================
+
+#module
+; winapi
+#uselib "user32"
+#func	SetTimer	"SetTimer" int, int, int, int
+#func	KillTimer	"KillTimer" int, int
+;--------------------------------------------------
+#define global timer_setlabel(%1)  oncmd gosub %1, 0x113
+;--------------------------------------------------
+#deffunc timer_start
+	SetTimer hwnd, 333, 60, 0
+	return
+;--------------------------------------------------
+#deffunc timer_stop
+	KillTimer hwnd, 333
+	return
+#global
+
+;============================================================
+; wstrlen
+; ダブルバイト対応 文字数カウント
+;============================================================
+
+#module
+; winapi
+#uselib "kernel32"
+#cfunc MultiByteToWideChar "MultiByteToWideChar" int, int, var, int, int, int
+;--------------------------------------------------
+#defcfunc wstrlen var v
+	return (MultiByteToWideChar(0, 0, v, -1, 0, 0) - 1)
+;--------------------------------------------------
+; DBCS buffer index to UTF-16 char index
+#defcfunc wstrpos var v, int i
+	return MultiByteToWideChar(0, 0, v, i, 0, 0)
 #global
 
 ;============================================================
@@ -316,12 +375,12 @@
 #func	PostMessage	"PostMessageA" int, int, int, int
 #func	SendMessage	"SendMessageA" int, int, int, int
 ; menu
-#func CreateMenu	"CreateMenu"
-#cfunc CreatePopupMenu	"CreatePopupMenu"
-#func AppendMenu	"AppendMenuA"     int,int,int,sptr
-#func SetMenu		"SetMenu"         int,int
-#func DrawMenuBar	"DrawMenuBar"     int
-#func CheckMenuItem	"CheckMenuItem"   int, int, int
+#func	global CreateMenu		"CreateMenu"
+#cfunc	global CreatePopupMenu	"CreatePopupMenu"
+#func	global AppendMenu		"AppendMenuA"     int,int,int,sptr
+#func	global SetMenu			"SetMenu"         int,int
+#func	global DrawMenuBar		"DrawMenuBar"     int
+#func	global CheckMenuItem	"CheckMenuItem"   int, int, int
 
 ; open file skiperror
 #uselib "shell32.dll"

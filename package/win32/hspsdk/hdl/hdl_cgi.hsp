@@ -34,6 +34,20 @@
 
 #module
 ;--------------------------------------------------
+#defcfunc htmlenc str inp, int sw
+	dest = inp
+	strrep dest, "&", "&amp;"
+	strrep dest, "<", "&lt;"
+	strrep dest, ">", "&gt;"
+	strrep dest, "\"", "&#34;"
+	if sw {
+		strrep dest, "  ", " &nbsp;"
+		strrep dest, "\n", "<br>"
+	}
+	return dest
+;--------------------------------------------------
+#define global ctype htmlenc2(%1)  htmlenc(%1, 2)
+;--------------------------------------------------
 #defcfunc urlenc str inp
 	src = inp
 	dest = ""
@@ -82,69 +96,11 @@
 	loop
 	return dest
 ;--------------------------------------------------
-#defcfunc htmlenc str inp, int sw
-	dest = inp
-	; speedup patch (99%)
-	if sw = 0 {
-		if instr(dest,0,"&")<0 & instr(dest,0,"<")<0 & instr(dest,0,">")<0 & instr(dest,0,"\"")<0 {
-			return dest
-		}
-	}
-	; htmlenc init
-	if he_inited = 0 {
-		sdim he_ssrc, 16, 6
-		sdim he_sdst, 16, 6
-		he_ssrc = "&", "<", ">", "\"", " ", "\n"
-		he_sdst = "&amp;", "&lt;", "&gt;", "&#34;", "&nbsp;", "<br>"
-		he_inited = 1
-	}
-	; find and destroy
-	repeat 4 + sw
-		ssrc = he_ssrc(cnt)
-		sdst = he_sdst(cnt)
-		src = dest
-		; 汎用文字列置換ルーチン (src, dest, ssrc, sdst)
-		p = 0
-		dest = ""
-		repeat
-			a = instr(src, p, ssrc)
-			if a = -1 {
-				dest += strmid(src, p, strlen(src))
-				break
-			}
-			dest += strmid(src, p, a) + sdst
-			p += a + strlen(ssrc)
-		loop
-	loop
-	return dest
-;--------------------------------------------------
-#define global ctype htmlenc2(%1)  htmlenc(%1, 2)
-;--------------------------------------------------
 #defcfunc QuoteEsc str inp
-	src = inp
-	sdim dest, strlen(src) * 2 + 1
-	p = 0
-	repeat strlen(src)
-		c = peek(src, cnt)
-		if c = 39 { ; '
-			dest += "\\\'"
-			p += 2
-		} else:if c = 92 { ; \\
-			dest += "\\\\"
-			p += 2
-		} else:if c = 13 { ; \n
-			dest += "\\n"
-			p += 2
-		} else:if c = 10 {
-
-		} else:if (c>=0x81 & c<=0x9F) | (c>=0xE0 & c<=0xFC) { ; SJIS patch
-			wpoke dest, p, wpeek(src, cnt)
-			p += 2
-			continue cnt + 2
-		} else {
-			poke dest, p, c : p++
-		}
-	loop
+	dest = inp
+	strrep dest, "\\", "\\\\"
+	strrep dest, "\"", "\\\""
+	strrep dest, "'", "\\'"
 	return dest
 ;--------------------------------------------------
 #defcfunc StrHash var inp
@@ -534,12 +490,10 @@
 
 ;--------------------------------------------------
 ; HTML 中のアクティブスクリプトに関するキーワードなどを禁止
-#deffunc DoubtAngel var v1
-	sdim dtable, 16, 99
-	dtable = "<script","<iframe","<applet","<meta","<embed","<object","javascript:","vbscript:","onunload","onsubmit","onstop","onstart","onselectstart","onselectionchange","onselect","onscroll","onrowsinserted","onrowsdelete","onrowexit","onrowenter","onresizestart","onresizeend","onresize","onreset","onreadystatechange","onpropertychange","onpaste","onpage","onmovestart","onmoveend","onmove","onmousewheel","onmouseup","onmouseover","onmouseout","onmousemove","onmouseleave","onmouseenter","onmousedown","onlosecapture","onload","onlayoutcomplete","onkeyup","onkeypress","onkeydown","onhelp","onfocusout","onfocusin","onfocus","onfinish","onfilterchange","onerrorupdate","onerror","ondrop","ondragstart","ondragover","ondragleave","ondragenter","ondragend","ondrag","ondeactivate","ondblclick","ondatasetcomplete","ondatasetchanged","ondataavailable","oncut","oncopy","oncontrolselect","oncontextmenu","onclick","onchange","oncellchange","onbounce","onblur","onbeforeupdate","onbeforeunload","onbeforeprint","onbeforepaste","onbeforeeditfocus","onbeforedeactivate","onbeforecut","onbeforecopy","onbeforeactivate","onafterupdate","onafterprint","onactivate","onabort","?opfile="
-
+#deffunc ForceStaticHTML var v1
+	dtable = "hdl:","<script","<iframe","<applet","<meta","<embed","<object","javascript:","vbscript:","onunload","onsubmit","onstop","onstart","onselect","onscroll","onrowsinserted","onrowsdelete","onrowexit","onrowenter","onresize","onreset","onreadystatechange","onpropertychange","onpaste","onpage","onmove","onmouse","onlosecapture","onload","onlayoutcomplete","onkeyup","onkeypress","onkeydown","onhelp","onfocus","onfinish","onfilterchange","onerror","ondrop","ondrag","ondeactivate","ondblclick","ondataset","ondataavailable","oncut","oncopy","oncontrolselect","oncontextmenu","onclick","onchange","oncellchange","onbounce","onblur","onbefore","onafter","onactivate","onabort",""
 	bstr = v1
-	CharLower bstr
+	CharLower bstr ; 大文字小文字区別しないことに注意
 
 	repeat
 		s = dtable.cnt
@@ -549,8 +503,8 @@
 			i = instr(bstr, p, s)
 			if i < 0 : break
 			p += i
-			memset bstr, '_', strlen(s)-2, p+1
-			memset  v1 , '_', strlen(s)-2, p+1
+			poke bstr, p, '_'
+			poke v1,   p, '_'
 		loop
 	loop
 	return
@@ -640,7 +594,7 @@
 	if cmd = "r"		: gosub *page_r : return
 	if cmd = "f"		: gosub *page_f : return
 	if cmd = "about"	: gosub *page_about : return
-	if cmd = "frameset"	: buf = "<html><head><meta charset='shift_jis'><title>" + appname + "</title></head><frameset cols='185,*'><frame name='hdlmenu'><frame name='hdlmain'></frameset></html>" : return
+	if cmd = "frameset"	: buf = "<html><head><meta charset='shift_jis'><title>" + appname + "</title></head><frameset cols='190,*'><frame name='hdlmenu'><frame name='hdlmain'></frameset></html>" : return
 
 	buf = "処理できませんでした : " + p1
 	return
@@ -772,7 +726,7 @@
 					if catego = srch & ("" = atsec | secname = atsec) & MODE_CATEGO {
 						tmp += "<em>" + htmlenc(catego_disp(catego, mode)) + "</em>"
 					} else {
-						tmp += "<a href=\"hdl:?index=cat:" + urlenc(catego + "@" + secname) + "\");\">" + htmlenc(catego_disp(catego, mode)) + "</a>"
+						tmp += "<a href=\"hdl:?index=cat:" + urlenc(catego + "@" + secname) + "\">" + htmlenc(catego_disp(catego, mode)) + "</a>"
 					}
 					sql_next rs
 				loop
@@ -863,7 +817,7 @@
 				tmp = ""
 
 				if "" = arg & INDEX_FLAG { ; カテゴリ抽出へのリンクのみ表示
-					buf += "<p><a href=\"hdl:?index=cat:" + urlenc(catego + "@" + secname) + "\");\">" + htmlenc(catego_disp(catego, mode)) + "</a></p>\n"
+					buf += "<p><a href=\"hdl:?index=cat:" + urlenc(catego + "@" + secname) + "\">" + htmlenc(catego_disp(catego, mode)) + "</a></p>\n"
 					hits++
 					sql_next rs
 					continue
@@ -873,7 +827,7 @@
 				if mode = 'R' {
 					sql_q "SELECT ID, Group3, Name, Summary FROM Help WHERE Mod="+prm_text(catego) + whereq+" ORDER BY lower(Group3), Group3, lower(Name)"
 				} else {
-					sql_q "SELECT ID, Title, substr(Search,SmryIdx," + (INDEX_FLAG * 100 + 75) + ")||'..' as Summary, Path FROM Docs WHERE Catego="+prm_text(catego)+" AND Type"+hspoper+"'hsp' "+whereq+" ORDER BY lower(Title), lower(Path)"
+					sql_q "SELECT ID, Title, substr(Search,SmryIdx," + (INDEX_FLAG * 200 + 75) + ") as Summary, Path FROM Docs WHERE Catego="+prm_text(catego)+" AND Type"+hspoper+"'hsp' "+whereq+" ORDER BY lower(Title), lower(Path) limit 501"
 				}
 				count = stat
 
@@ -901,27 +855,16 @@
 					loop
 				} else {
 					repeat count
-						if cnt = 300 {
+						if cnt = 500 {
 							; 一定以上の結果は表示しない
-							tmp += "<p>このカテゴリには " + count + " 件の結果がありますが、" + cnt + " 件を超える表示は省略されています。</p>\n"
+							tmp += "<p>" + cnt + " 件を超える表示は省略されています。</p>\n"
 							break
 						}
-						if cnt >= 100 {
+						if cnt < 100 {
+							tmp += "<p><a href='hdl:?f=" + sql_v("ID") + ckwd + "'>" + htmlenc(sql_v("Title")) + "</a><br>" + htmlenc(sql_v("Summary")) + "…</p>\n"
+						} else {
 							; 一定以上の結果は簡易表示に切り替え
 							tmp += "<p><a href='hdl:?f=" + sql_v("ID") + ckwd + "'>" + htmlenc(sql_v("Title")) + "</a></p>\n"
-						} else {
-							; Summary は空白をキリとする
-							astr = sql_v("Summary")
-							p = 0
-							repeat
-								i = instr(astr, p, " ")
-								if i < 0 : break
-								p += i + 1
-							loop
-							if p > 10 : poke astr, p
-
-							; 中身
-							tmp += "<p><a href='hdl:?f=" + sql_v("ID") + ckwd + "'>" + htmlenc(sql_v("Title")) + "</a><br>" + htmlenc(astr) + "</p>\n"
 						}
 						sql_next
 					loop
@@ -1070,9 +1013,8 @@ function dsw(id){
 			i = instr(astr, p, "\n}html")
 			if i = -1 : i = a - p
 
-			; DoubtAngel
 			bstr = strmid(astr, p, i)
-			DoubtAngel bstr
+			ForceStaticHTML bstr
 			buf += "<div class=p>" + bstr + "</div>\n"
 
 			p += i + 7
@@ -1192,7 +1134,7 @@ function dsw(id){
 
 	if sql_v("Type") = "htm" {
 		; HTML ファイルにリダイレクト
-		buf = "<body onload='location.replace(\"" + QuoteEsc(pas) + "\");'></body>"
+		buf = "<body onload=\"location.replace('" + QuoteEsc(pas) + "');\"></body>"
 		return
 	}
 
@@ -1307,4 +1249,3 @@ function dsw(id){
 	return
 
 #global
-

@@ -1,6 +1,6 @@
 
 ;============================================================
-;	HDL Create DB parts
+;	HDL Create DB part
 ;============================================================
 
 #include "sqlele.hsp"
@@ -17,15 +17,15 @@
 	; ディレクトリ一覧
 	Dirs
 		ID
-		Dir	; Hoge\Foo
+		Dir		; Hoge\Foo
 		Chksum	; update-check
 
 	; ファイル一覧
 	Files
 		ID
 		Path	; Hoge\Foo\Bar.txt
-		Dir	; == Dirs.Dir			; 追加 1.10
-		Fn	; bar.txt (lower)		; 追加 1.32
+		Dir		; == Dirs.Dir
+		Fn		; bar.txt (lower)
 		Chksum	; update-check
 
 	; hs ヘルプデータ
@@ -58,21 +58,8 @@
 		Title
 		Catego
 		Search	; Index data
-		SmryIdx	; Summary start index	; 追加 1.32
+		SmryIdx	; Summary start index
 */
-
-;============================================================
-; DBCS buffer index to UTF-16 char index
-;============================================================
-
-#module
-; winapi
-#uselib "kernel32"
-#cfunc MultiByteToWideChar "MultiByteToWideChar" int, int, var, int, int, int
-;--------------------------------------------------
-#defcfunc wstrpos var v, int i
-	return MultiByteToWideChar(0, 0, v, i, 0, 0)
-#global
 
 ;============================================================
 ; HDL プログレスバー モジュール
@@ -91,13 +78,14 @@
 		title "HDL SYNC"
 
 		; background
-		color 85,85,153 : boxf
-		color 255,255,255 : boxf 3, 3, wx-4, wy-4
-		color : pos 25, 25 : sysfont 17 : mes "HSP ドキュメント ファイルの情報を集めています。\nしばらくお待ちください ..."
-		color 85,85,153 : boxf , 70, , 70 : boxf , 80, , 80
+		color 85, 85, 153 : boxf
+		color 255, 255, 255 : boxf 3, 3, wx-4, wy-4
+		color : pos 15, 15 : font "Meiryo", 12 : mes "ドキュメント ファイルの情報を集めています。\nしばらくお待ちください ..."
+		color 222, 222, 222 : boxf 10, 70, 349, 79
+		color 85, 85, 153
 	}
 	gsel PGWID
-	boxf , 70, p1 * wx / 1000, 80
+	boxf 10, 70, p1 * 339 / 1000 + 10, 79
 	gsel 0
 	return
 
@@ -126,17 +114,9 @@
 	st1 = st1_
 	oup = ""
 
-	astr = "" ;sdim astr, 64, 64
-	c = 0
-
 	; 連結した文字列の各行を配列に分解
-	p = 0
-	repeat
-		getstr astr.c, st1, p  ,,99999
-		if strsize = 0 : break
-		c++
-		p += strsize
-	loop
+	split st1, "\n", astr
+	c = stat
 
 	; 重複行が無いように文字列を再構成
 	repeat c
@@ -162,17 +142,9 @@
 	st2 = st2_
 	oup = ""
 
-	astr = "" ;sdim astr, 64, 64
-	c = 0
-
-	; 除外する文字列を配列に分解
-	p = 0
-	repeat ; sub
-		getstr astr.c, st2, p  ,,99999
-		if strsize = 0 : break
-		c++
-		p += strsize
-	loop
+	; 連結した文字列の各行を配列に分解
+	split st2, "\n", astr
+	c = stat
 
 	; 除外文字列を除去しながらソース文字列を再構成
 	p = 0
@@ -219,8 +191,6 @@
 	if h ! -1 {
 		repeat
 			; (WIN32_FIND_DATA)tmp よりチェック値作成
-			; http://yokohama.cool.ne.jp/chokuto/urawaza/struct/WIN32_FIND_DATA.html
-
 			dest += tmp.8 * 137 + tmp.5 ; (size * 137 + time)
 
 			FindNextFile h, tmp
@@ -263,19 +233,13 @@
 
 	bload_utf_safe vpath, buf
 
+	if instr(buf,,"%") < 0 : return
+
 	buf += "\n\n%index"
 
-	; ドキュメンテーションコメント パッチ
+	; ドキュメンテーションコメント HSPコメント パッチ
 	astr = getpath(vpath, 2|16)
-	if astr = ".hsp" | astr = ".as" {
-		p = 0
-		repeat
-			i = instr(buf, p, "*/")
-			if i < 0 : break
-			p += i
-			lpoke buf, p, 0x20250a0d ; "\n% "
-		loop
-	}
+	if astr = ".hsp" | astr = ".as" : strrep buf, "*/", "\n%x\n"
 
 	; テキストプロセッサ リセット
 	sdim record_default,	64, C_MAX
@@ -689,9 +653,6 @@
 		nsum = HDL_getsum( dir + "\\*.*" )
 
 		if gsum ! nsum {
-			progress_pos (cnt * 100 / count) ; [0% - 10%]
-			await
-
 			; Dirs テーブル更新
 			if nsum = 0 {
 				; ディレクトリが削除された → Dirs テーブルから削除
@@ -773,7 +734,7 @@
 		nsum = HDL_getsum( path )
 
 		if gsum ! nsum {
-			progress_pos (cnt * 900 / count) + 100 ; [10% - 100%]
+			progress_pos (cnt * 1000 / count)
 			await
 			upd++
 
@@ -875,22 +836,16 @@
 ; 単体テスト
 ;============================================================
 
-; BENCH macro
-#ifndef B_ST
-#uselib "winmm"
-#cfunc global d3timer "timeGetTime"
-#define global B_ST bench_ot = d3timer()
-#define global B_EN dialog "bench " + (d3timer() - bench_ot) + " ms"
-#endif
-
 #ifndef HDL_BROWSER
 	sql_open "test.db"
-	B_ST
+
+	b0
 
 	HDL_createtable
 	HDL_reload
 
-	B_EN
+	b1
+
 	sql_close
 	delete "test.db"
 	end

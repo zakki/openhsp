@@ -1,14 +1,14 @@
 
 ;============================================================
 ;	HDL
-;		version 1.40 update 2018/06/01
+;		version 1.41 update 2018/06/07
 ;			s.programs http://spn.php.xdomain.jp/
 ;============================================================
 
 	appname	= "HSP Docs Library"
-	appver	= "1.40"
+	appver	= "1.41"
 	appsig	= "s.programs 2007-2018"
-	sig_css	= "/* hdlcss 1.40 */"
+	sig_css	= "/* hdlcss 1.41 */"
 
 ; make option
 #packopt name		"hdl"
@@ -16,9 +16,8 @@
 #packopt xsize		1
 #packopt ysize		1
 #packopt icon		"hdl_ico.ico"
-#ifdef _DEBUG
-	screen 0, 1, 1, 2
-#endif
+#packopt lang		"1041"
+#packopt version	"version.txt"
 
 ; includes
 #define global HDL_BROWSER 1  ; HDL Browser からのインクルードであることを示す
@@ -67,8 +66,6 @@
 	sdim ModuleFileName, 1000
 	GetModuleFileName 0, ModuleFileName, 999
 #endif
-
-	randomize
 
 	; パラメータ
 	; ・"/hsedit:hoge"   hs エディタ起動
@@ -126,16 +123,18 @@
 ; HDL 本体起動!!
 ;============================================================
 
+	Window_DPIAware
 	status_create	; ステータスバー 作成
 
 	; メニュー 作成
 	; 拡大率
 	hmenuZoom = CreatePopupMenu()
 	AppendMenu hmenuZoom, $00, CMD_OZ + 200, "200%"
+	AppendMenu hmenuZoom, $00, CMD_OZ + 175, "175%"
 	AppendMenu hmenuZoom, $00, CMD_OZ + 150, "150%"
 	AppendMenu hmenuZoom, $00, CMD_OZ + 125, "125%"
 	AppendMenu hmenuZoom, $00, CMD_OZ + 110, "110%"
-	AppendMenu hmenuZoom, $00, CMD_OZ + 100, "100% (標準)"
+	AppendMenu hmenuZoom, $00, CMD_OZ + 100, "100%"
 	AppendMenu hmenuZoom, $00, CMD_OZ +  90, "90%"
 	AppendMenu hmenuZoom, $00, CMD_OZ +  75, "75%"
 	AppendMenu hmenuZoom, $00, CMD_OZ +  50, "50%"
@@ -155,7 +154,7 @@
 	DrawMenuBar hwnd
 
 	; 割り込み登録
-	oncmd gosub *event_WM_ACTIVATE, 0x0006 ; HSP 3.0 の oncmd 0 のバグのため、これを先頭に書かないと end でプロセスが終了しない。oncmd 0 で割り込み解除されるのはこのメッセージだけ
+	oncmd gosub *event_WM_ACTIVATE, 0x0006
 	oncmd gosub *event_WM_SIZE, 0x0005
 	oncmd gosub *event_WM_GETMINMAXINFO, 0x0024
 	oncmd gosub *event_WM_APPCOMMAND, 0x0319
@@ -202,6 +201,8 @@
 	#define db_ver		cfgdat(12)
 	if db_ver ! DBVER {
 		db_ver = DBVER
+
+		gosub *delete_cachefiles
 
 		sql_q "DROP TABLE IF EXISTS Dirs"
 		sql_q "DROP TABLE IF EXISTS Files"
@@ -293,7 +294,7 @@
 	; 前にナビゲートしたファイルが残ってたら使う
 
 	bstr = ModuleFileName + appver + p1
-	fn = temppath + "HDLCACHE" + StrHash(bstr) + ".HTM"
+	fn = temppath + "HDL" + StrHash(bstr) + ".HTM"
 	exist fn
 	if strsize <= 0 {
 		status_mes 1, "抽出中 ..."
@@ -384,9 +385,9 @@
 	if dispid = DISPID_BEFORENAVIGATE2 {
 
 		; パラメータ取得
-		comevarg newurl, ieEvent, 1, 1		; URL
+		comevarg newurl, ieEvent, 1, 1			; URL
 		comevarg TargetFrameName, ieEvent, 3	; TargetFrameName
-		comevarg Cancel, ieEvent, 6, 2		; Cancel (Variant)
+		comevarg Cancel, ieEvent, 6, 2			; Cancel (Variant)
 
 		if instr(newurl,,"hdl:") ! 0 {
 			; file:///X:/～/hoge.txt , D:\～\hoge.txt -> hdl:?f=x 変換 (1.32)
@@ -430,69 +431,48 @@
 		; ステータスバー 表示内容 取得
 		comevarg strstat, ieEvent, 0, 1
 
-		;------------------------------------------------------------
-		if strstat ! strstat_dif { strstat_dif = strstat
-		;------------------------------------------------------------
+		if strstat ! strstat_dif {
+			strstat_dif = strstat
 
-		; "Microsoft Web ブラウザ コントロール" (ごみメッセージ ignore)
-		if instr(strstat,,"Microsoft ") = 0 : return
+			; hdl: スキームのリンクの場合、内容を変換して表示
+			if instr(strstat,,"hdl:") = 0 {
 
-		; hdl: スキームのリンクの場合、内容を変換して表示
-		if instr(strstat,,"hdl:") = 0 {
+				; GET cmd, arg, kwd; hdl:?cmd=arg,kwd
+				bstr = strstat
+				cmd = "" : arg = "" : kwd = ""
+				i = instr(bstr,,",") : if i > 0 : kwd = URLDec(strmid(bstr, i+1, 999)) : poke bstr, i
+				i = instr(bstr,,"=") : if i > 0 : arg = URLDec(strmid(bstr, i+1, 999)) : poke bstr, i
+				i = instr(bstr,,"?") : if i > 0 : cmd = URLDec(strmid(bstr, i+1, 999))
 
-			; マウスオーバーした hdl: クエリに対する処理はここに追加
-		;	newurl = strstat
-
-			;------------------------------------------------------------
-			; GET cmd, arg, kwd; hdl:?cmd=arg,kwd
-
-			bstr = strstat
-			cmd = "" : arg = "" : kwd = ""
-			i = instr(bstr,,",") : if i > 0 : kwd = URLDec(strmid(bstr, i+1, 999)) : poke bstr, i
-			i = instr(bstr,,"=") : if i > 0 : arg = URLDec(strmid(bstr, i+1, 999)) : poke bstr, i
-			i = instr(bstr,,"?") : if i > 0 : cmd = URLDec(strmid(bstr, i+1, 999))
-
-			;------------------------------------------------------------
-			; クエリに応じたヘルプを出力
-
-			if cmd = "r" {
-				sql_q "SELECT Name, Prm, Summary FROM Help WHERE ID=" + int(arg)
-				if stat {
-					if sql_v("Prm") = "" {
-						strstat = sql_v("Name") ; 引数なし
-					} else:if peek( sql_v("Prm") ) = '(' {
-						strstat = "val = " + sql_v("Name") + sql_v("Prm") ; 関数型
-					} else {
-						strstat = sql_v("Name") + " " + sql_v("Prm") ; 命令型
-					}
-					strstat += " - " + sql_v("Summary")
+				; クエリに応じたステータスに変換
+				if cmd = "r" {
+					sql_q "SELECT Name || ' - ' || Summary FROM Help WHERE ID=" + int(arg), astr
+					if stat : strstat = astr
+				} else:if cmd = "f" {
+					sql_q "SELECT Path FROM Docs WHERE ID=" + int(arg), astr
+					if stat : strstat = astr
+				} else {
+					strstat = cmd + " " + arg
+					strrep strstat, "index cat:", "カテゴリ: "
+					if stat : strrep strstat, "@", " "
 				}
-			} else:if cmd = "f" {
-				sql_q "SELECT Path FROM Docs WHERE ID=" + int(arg), astr
-				if stat : strstat = astr
-			} else {
-				strstat = cmd + " " + arg
-			}
 
-			; 出力
-			status_mes 0, strstat
-			status_icon 0, ModuleFileName
-		} else {
-
-			; 標準の表示
-			status_mes 0, strstat
-
-			; リンク先が Docs テーブル内のファイルならアイコンを表示 (1.32)
-			strstat = URLDec(strstat)
-			sql_q "SELECT ID FROM Docs WHERE replace(" + prm_text(strstat) + ",'/','\\') LIKE '%'||Path", astr
-			if stat = 1 {
+				; 出力
+				status_mes 0, strstat
 				status_icon 0, ModuleFileName
+
+			} else {
+				; 標準の表示
+				status_mes 0, strstat
+
+				; リンク先が Docs テーブル内のファイルならアイコンを表示 (1.32)
+				strstat = URLDec(strstat)
+				sql_q "SELECT ID FROM Files WHERE replace(" + prm_text(strstat) + ",'/','\\') LIKE '%'||Path", astr
+				if stat = 1 {
+					status_icon 0, ModuleFileName
+				}
 			}
 		}
-
-		;------------------------------------------------------------
-		} ; strstat_dif
-		;------------------------------------------------------------
 
 		return
 	}
@@ -500,7 +480,7 @@
 	; OnTitleChange
 	if dispid = DISPID_TITLECHANGE {
 		; パラメータ取得
-		comevarg text, ieEvent, 0, 1	; Text
+		comevarg text, ieEvent, 0, 1
 		title text
 	}
 
@@ -514,15 +494,9 @@
 	IEC_destruct
 	filemap_close
 	Config_close
-
-	if rnd(100) = 42 : sql_q "VACUUM"
+	randomize
+	if rnd(77) = 42 : sql_q "VACUUM" : gosub *delete_cachefiles ; clean
 	sql_close
-
-	wait 20
-
-	if rnd(100) = 42 : gosub *delete_cachefiles ; キャッシュ縮小
-
-	end	; <- HSP 3.0 oncmd 0 のバグのため、これまでのコードによってはプロセスが終了しない
 	end
 
 ;-------------------------------------------------- WM_APP_ACTIVATE
@@ -601,7 +575,7 @@
 *delete_cachefiles
 
 	chdir temppath
-	dirlist buf, "HDLCACHE*.HTM", 3
+	dirlist buf, "HDL*.HTM", 3
 	notesel buf
 	repeat stat
 		noteget fn, cnt

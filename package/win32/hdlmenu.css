@@ -1,9 +1,8 @@
-/* hdlcss 1.40 */
-
+/* hdlcss 1.41 */
 body {
 	/* ページ全体のフォント設定 */
 	font-family: Meiryo;
-	font-size: 14px;
+	font-size: 10.3pt;
 	line-height: 1.2;
 
 	background: #fff;
@@ -17,7 +16,7 @@ input {
 }
 
 h1, form, div.control, footer {
-	font-size: 14px;
+	font-size: 10.3pt;
 	font-weight: normal;
 	text-align: center;
 	margin: 8px 0;

@@ -6,10 +6,10 @@
 SQLele
 
 %ver
-1.16
+1.17
 
 %date
-2018/06/01
+2018/06/07
 
 %author
 s.programs
