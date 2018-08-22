@@ -298,8 +298,7 @@ int MMMan::Play( int num )
 			if (a==1) prm|=SND_LOOP | SND_ASYNC;
 			if (a==2) prm|=SND_SYNC;
 #ifdef HSPUTF8
-			sndPlaySound( chartoapichar((char*)mmm->mempt,&hactmp1),prm );
-			freehac(&hactmp1);
+			sndPlaySound( (LPCTSTR)mmm->mempt,prm );
 #else
 			sndPlaySound( (LPCSTR)mmm->mempt,prm);
 #endif
