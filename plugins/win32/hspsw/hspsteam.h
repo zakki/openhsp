@@ -69,20 +69,35 @@ public:
 	char *getAchivementString(int id, int type);
 	int getAchivementFlag(int index);
 
+	void request_Leaderboard(char *name, int type);
+	int request_LeaderboardData(int type,int n_start,int n_end);
+	int getLeaderboardMax(void);
+	int getLeaderboardValue(int type, int entry);
+	int getLeaderboardString(char *result, int type, int entry);
+	int getPlayerName(char *result, int type);
+	int update_LeaderboardData(int value, int option);
+
 	int getStatInt(char *apikey, int *result);
 	int getStatDouble(char *apikey, double *result);
 	void updateStatusInt(char *apikey, int value);
 	void updateStatusDouble(char *apikey, double value);
 
+	void setUTF8Mode(int mode);
+	void setResultString(char *result, char *src);
+
 private:
 	//		Settings
 	//
+	int utf8mode;				// enable UTF-8 mode (0=SJIS/1=Native)
 
 	// Steam User interface
 	ISteamUser *m_pSteamUser;
 
 	// Steam UserStats interface
 	ISteamUserStats *m_pSteamUserStats;
+
+	// Steam Leaderboard interface
+	SteamLeaderboard_t m_CurrentLeaderboard;
 
 	// our GameID
 	CGameID m_GameID;
@@ -93,12 +108,34 @@ private:
 	// Achievement Data Size
 	int m_AchievementsSize;
 
+	// Leaderboard Data
+	LeaderboardEntry_t *m_leaderboardEntries;
+
+	// Leaderboard Data Size
+	int m_LeaderboardSize;
+
+	// Called when SteamUserStats()->FindOrCreateLeaderboard() returns asynchronously
+	void OnFindLeaderboard(LeaderboardFindResult_t *pFindLearderboardResult, bool bIOFailure);
+	CCallResult<hspsteam, LeaderboardFindResult_t> m_SteamCallResultCreateLeaderboard;
+
+	// Called when SteamUserStats()->DownloadLeaderboardEntries() returns asynchronously
+	void OnDownloadScore(LeaderboardScoresDownloaded_t *pLeaderboardScoresDownloaded, bool bIOFailure);
+	CCallResult<hspsteam, LeaderboardScoresDownloaded_t> m_callResultDownloadEntries;
+
+	// Called when SteamUserStats()->UploadLeaderboardScore() returns asynchronously
+	void OnUploadScore(LeaderboardScoreUploaded_t *pFindLearderboardResult, bool bIOFailure);
+	CCallResult<hspsteam, LeaderboardScoreUploaded_t> m_SteamCallResultUploadScore;
+
+
 	// Did we get the stats from Steam?
 	bool m_bRequestedStats;
 	bool m_bStatsValid;
 
 	// Should we store stats this frame?
 	bool m_bStoreStats;
+
+	// true if we looking up a leaderboard handle
+	bool m_bLoading;
 
 	CMemBuf *namebuf;
 };

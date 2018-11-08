@@ -20,6 +20,19 @@ static void Alertf(char *format, ...)
 	MessageBox(NULL, textbf, "error", MB_ICONINFORMATION | MB_OK);
 }
 
+//
+//		文字エンコード変換(UTF8->SJIS)
+//
+#define BUFSIZE 4096
+static int cnvmode = 0;
+
+static const char *cnvutf8(char *bufSJIS, char *szUTF8) {
+	wchar_t bufUnicode[BUFSIZE];
+	int lenUnicode = MultiByteToWideChar(CP_UTF8, 0, szUTF8, strlen(szUTF8) + 1, bufUnicode, BUFSIZE);
+	WideCharToMultiByte(CP_ACP, 0, bufUnicode, lenUnicode, bufSJIS, BUFSIZE, NULL, NULL);
+	return bufSJIS;
+}
+
 /*------------------------------------------------------------*/
 /*
 API initalize
@@ -114,11 +127,20 @@ m_CallbackAchievementStored(this, &hspsteam::OnAchievementStored)
 	m_bStatsValid = false;
 	m_bStoreStats = false;
 
+	m_leaderboardEntries = NULL;
+	m_leaderboardEntries = NULL;
+	m_LeaderboardSize = 0;
+	m_bLoading = false;
+
+	utf8mode = 0;
 }
 
 
 hspsteam::~hspsteam( void )
 {
+	if (m_leaderboardEntries != NULL) {
+		free(m_leaderboardEntries);
+	}
 	if (m_AchievementsSize != 0) {
 		free(g_rgAchievements);
 		delete namebuf;
@@ -158,6 +180,23 @@ void hspsteam::setAchivementMax(int max)
 	m_AchievementsSize = max;
 	g_rgAchievements = (Achievement_t *)malloc(sizeof(Achievement_t) * max);
 	namebuf = new CMemBuf;
+}
+
+void hspsteam::setUTF8Mode(int mode)
+{
+	utf8mode = mode;
+}
+
+void hspsteam::setResultString(char *result, char *src)
+{
+	//	src -> resultに文字列をコピー(UTF8変換を考慮する)
+	//
+	if (utf8mode) {
+		strcpy(result, src);
+	}
+	else {
+		cnvutf8(result, src);
+	}
 }
 
 //-----------------------------------------------------------------------------
@@ -456,3 +495,200 @@ int hspsteam::getStatDouble(char *apikey, double *result)
 
 
 
+void hspsteam::request_Leaderboard(char *name, int type)
+{
+	SteamAPICall_t hSteamAPICall = NULL;
+	ELeaderboardSortMethod sort = k_ELeaderboardSortMethodDescending;
+	ELeaderboardDisplayType dtype = k_ELeaderboardDisplayTypeNumeric;
+
+	if (type & 1) { sort = k_ELeaderboardSortMethodAscending; }					// 逆順
+	if (type & 2) { dtype = k_ELeaderboardDisplayTypeTimeSeconds; }				// 秒
+	if (type & 4) { dtype = k_ELeaderboardDisplayTypeTimeMilliSeconds; }			// ミリ秒
+
+	// find/create a leaderboard for the quickest win
+	hSteamAPICall = SteamUserStats()->FindOrCreateLeaderboard( (const char *)name, sort, dtype );
+
+	if ( hSteamAPICall )
+	{
+		// set the function to call when this API call has completed
+		m_SteamCallResultCreateLeaderboard.Set(hSteamAPICall, this, &hspsteam::OnFindLeaderboard);
+		m_bLoading = true;
+		flag = STEAM_GETSTAT;
+	}
+	else {
+		flag = STEAM_ERROR;
+	}
+}
+
+//-----------------------------------------------------------------------------
+// Purpose: Called when SteamUserStats()->FindOrCreateLeaderboard() returns asynchronously
+//-----------------------------------------------------------------------------
+void hspsteam::OnFindLeaderboard(LeaderboardFindResult_t *pFindLeaderboardResult, bool bIOFailure)
+{
+	flag = STEAM_READY;
+	m_bLoading = false;
+
+	// see if we encountered an error during the call
+	if (!pFindLeaderboardResult->m_bLeaderboardFound || bIOFailure) {
+		m_CurrentLeaderboard = NULL;
+		return;
+	}
+
+	// check to see which leaderboard handle we just retrieved
+	m_CurrentLeaderboard = pFindLeaderboardResult->m_hSteamLeaderboard;
+
+	//Alertf("OnFindLeaderboard - validate\n");
+}
+
+
+int hspsteam::request_LeaderboardData(int type, int n_start, int n_end)
+{
+	SteamAPICall_t hSteamAPICall = NULL;
+
+	if (m_CurrentLeaderboard == NULL) return -1;
+
+	hSteamAPICall = SteamUserStats()->DownloadLeaderboardEntries(m_CurrentLeaderboard, (ELeaderboardDataRequest)type, n_start, n_end);
+	
+	if (hSteamAPICall)
+	{
+		// set the function to call when this API call has completed
+		m_callResultDownloadEntries.Set(hSteamAPICall, this, &hspsteam::OnDownloadScore);
+		m_bLoading = true;
+		flag = STEAM_GETSTAT;
+	}
+	else {
+		return -2;
+	}
+
+	return 0;
+}
+
+
+//-----------------------------------------------------------------------------
+// Purpose: Called when SteamUserStats()->DownloadLeaderboardEntries() returns asynchronously
+//-----------------------------------------------------------------------------
+void hspsteam::OnDownloadScore(LeaderboardScoresDownloaded_t *pLeaderboardScoresDownloaded, bool bIOFailure)
+{
+	flag = STEAM_READY;
+	m_bLoading = false;
+
+	m_LeaderboardSize = pLeaderboardScoresDownloaded->m_cEntryCount;
+
+	if (m_leaderboardEntries != NULL) free(m_leaderboardEntries);
+
+	if (m_LeaderboardSize > 0) {
+		m_leaderboardEntries = (LeaderboardEntry_t *)malloc(sizeof(LeaderboardEntry_t)*m_LeaderboardSize);
+	}
+
+	for (int index = 0; index < m_LeaderboardSize; index++)
+	{
+		SteamUserStats()->GetDownloadedLeaderboardEntry(pLeaderboardScoresDownloaded->m_hSteamLeaderboardEntries,
+			index, &m_leaderboardEntries[index], NULL, 0);
+	}
+	//Alertf("OnDownloadScore - validate\n");
+}
+
+
+
+int hspsteam::getLeaderboardMax(void)
+{
+	if (m_CurrentLeaderboard == NULL) return 0;
+	if (m_leaderboardEntries == NULL) return 0;
+	return m_LeaderboardSize;
+}
+
+
+int hspsteam::getLeaderboardValue(int type,int entry)
+{
+	int res;
+	if (m_CurrentLeaderboard == NULL) return -1;
+	if (m_leaderboardEntries == NULL) return -1;
+	if ((entry < 0) || (entry >= m_LeaderboardSize)) return -1;
+	switch (type) {
+	case 0:
+		res = (int)m_leaderboardEntries[entry].m_nGlobalRank;
+		break;
+	case 1:
+		res = (int)m_leaderboardEntries[entry].m_nScore;
+		break;
+	default:
+		return -1;
+	}
+	return res;
+}
+
+
+int hspsteam::getLeaderboardString(char *result, int type, int entry)
+{
+	const char *pchName;
+	if ((entry < 0) || (entry >= m_LeaderboardSize)) return -1;
+	switch (type) {
+	case 0:
+		pchName = SteamFriends()->GetFriendPersonaName(m_leaderboardEntries[entry].m_steamIDUser);
+		setResultString(result, (char *)pchName);
+		break;
+	default:
+		return -1;
+	}
+	return 0;
+}
+
+
+int hspsteam::getPlayerName(char *result, int type)
+{
+	const char *pchName = NULL;
+	switch (type) {
+	case 0:
+		pchName = SteamFriends()->GetPersonaName();
+		break;
+	default:
+		return -1;
+	}
+	if (pchName != NULL) {
+		setResultString(result, (char *)pchName );
+	}
+	return 0;
+}
+
+
+//-----------------------------------------------------------------------------
+// Purpose: Updates leaderboards with stats from our just finished game
+//-----------------------------------------------------------------------------
+int hspsteam::update_LeaderboardData(int value,int option)
+{
+	SteamAPICall_t hSteamAPICall = NULL;
+	ELeaderboardUploadScoreMethod meth = k_ELeaderboardUploadScoreMethodKeepBest;
+
+	if (option & 1) meth = k_ELeaderboardUploadScoreMethodForceUpdate;
+
+	if (m_CurrentLeaderboard)
+	{
+		hSteamAPICall = SteamUserStats()->UploadLeaderboardScore(m_CurrentLeaderboard, meth, value, NULL, 0);
+		m_SteamCallResultUploadScore.Set(hSteamAPICall, this, &hspsteam::OnUploadScore);
+
+		flag = STEAM_GETSTAT;
+		return 0;
+	}
+	return -1;
+}
+
+
+//-----------------------------------------------------------------------------
+// Purpose: Called when SteamUserStats()->UploadLeaderboardScore() returns asynchronously
+//-----------------------------------------------------------------------------
+void hspsteam::OnUploadScore(LeaderboardScoreUploaded_t *pScoreUploadedResult, bool bIOFailure)
+{
+	if (!pScoreUploadedResult->m_bSuccess)
+	{
+		// error
+		flag = STEAM_ERROR;
+		return;
+	}
+
+	if (pScoreUploadedResult->m_bScoreChanged)
+	{
+		// could display new rank
+	}
+
+	flag = STEAM_READY;
+}
