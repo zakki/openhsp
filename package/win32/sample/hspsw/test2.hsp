@@ -1,0 +1,76 @@
+;
+;	STEAMステータス取得
+;	steam_appid.txtは、480でテストしてください
+;
+#include "hspsw.as"
+
+	;	STEAM環境の初期化
+	steaminit : res=stat
+	if res : dialog "STEAM環境がありません。終了します。("+stat+")" : end
+
+	;	STEAM実績の自動設定
+	steamset_achievement
+	achimax=stat
+
+
+	;	読み込みリクエストを送る
+	steamreq_status
+*main
+	steamupdate flag		; ループ内で定期的に呼び出す
+
+	color 255,255,255:boxf
+	color 0,0,0:pos 0,100
+	mes "お待ちください..."
+
+	wait 10
+
+	if flag=STEAM_ERROR : goto *go_error
+	if flag!=STEAM_READY : goto *main
+
+*main2
+	;	設定値の取得
+	steamget_status st_games, "NumGames"
+	steamget_statusf st_travel, "MaxFeetTraveled"
+
+	cls
+	pos 0,0
+	input st_games
+	input st_travel
+	button "write",*st_write
+
+*main3
+	steamupdate flag
+	color 255,255,255:boxf
+	color 0,0,0:pos 0,100
+	mes "games:"+st_games+" / travel:"+st_travel
+
+	wait 10
+
+	if flag=STEAM_ERROR : goto *go_error
+	goto *main3
+
+*st_write
+	steamset_status "NumGames",st_games
+	steamset_statusf "MaxFeetTraveled",st_travel
+
+*main4
+	;	書き込み情報送信の完了を待つ
+	;
+	steamupdate flag		; ループ内で定期的に呼び出す
+
+	color 255,255,255:boxf
+	color 0,0,0:pos 0,100
+	mes "送信中..."
+
+	wait 10
+
+	if flag=STEAM_ERROR : goto *go_error
+	if flag!=STEAM_READY : goto *main4
+
+	goto *main2
+
+*go_error
+	cls 1
+	mes "エラーが発生しました。"
+	stop
+

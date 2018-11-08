@@ -1,0 +1,102 @@
+;
+;	ランキングの取得(UTF-8ランタイムによる表示)
+;
+#include "hsp3utf.as"
+#include "hspsw.as"
+
+	;	STEAM環境の初期化
+	steaminit 1: res=stat
+	if res : dialog "STEAM環境がありません。終了します。("+stat+")" : end
+
+
+	score=1234
+	objsize 120,24
+	pos 0,440
+	input score
+	pos 140,440
+	button "スコア送信",*go_update
+
+
+	;	leaderboardのリクエストを送る
+	steamreq_leaderboard "Feet Traveled",0
+
+*main
+	steamupdate flag		; ループ内で定期的に呼び出す
+
+	color 255,255,255:boxf
+	color 0,0,0:pos 0,0
+	mes "お待ちください..."
+
+	wait 10
+
+	if flag=STEAM_ERROR : goto *go_error
+	if flag!=STEAM_READY : goto *main
+
+*go_ranking
+	;	ランキング取得のリクエストを送る
+	;steamreq_leaderboarddata STEAMLB_GLOBAL,1,10
+	steamreq_leaderboarddata STEAMLB_AROUND,-2,2
+
+*main2
+	steamupdate flag		; ループ内で定期的に呼び出す
+
+	color 255,255,255:boxf
+	color 0,0,0:pos 0,0
+	mes "ランキング取得中..."
+
+	wait 10
+
+	if flag=STEAM_ERROR : goto *go_error
+	if flag!=STEAM_READY : goto *main2
+
+	steamget_leaderboardmax max
+	steamget_name myname
+
+*main3
+	steamupdate flag		; ループ内で定期的に呼び出す
+
+	redraw 0
+	color 255,255,255:boxf
+	color 0,0,0:pos 0,0
+
+	;	leaderboardの表示
+	mes "player="+myname
+	mes "max="+max
+	repeat max
+		steamget_leaderboard rrank,STEAMLB_GETRANK,cnt
+		steamget_leaderboard rscore,STEAMLB_GETSCORE,cnt
+		steamget_leaderboard rname,STEAMLB_GETNAME,cnt
+		mes "No."+rrank+":"+rscore+"("+rname+")"
+	loop
+	redraw 1
+
+	wait 10
+
+	if flag=STEAM_ERROR : goto *go_error
+	goto *main3
+
+
+*go_update
+	;	スコアをランキングに登録する
+	steamset_leaderboarddata score
+	if stat!=0 : goto *go_error
+
+*main4
+	steamupdate flag		; ループ内で定期的に呼び出す
+
+	color 255,255,255:boxf
+	color 0,0,0:pos 0,0
+	mes "ランキング送信中..."
+
+	wait 10
+
+	if flag=STEAM_ERROR : goto *go_error
+	if flag!=STEAM_READY : goto *main4
+
+	goto *go_ranking
+
+*go_error
+	cls 1
+	mes "エラーが発生しました。"
+	stop
+

@@ -90,17 +90,18 @@ static int valsize( PVAL2 *pv )
 
 EXPORT BOOL WINAPI steaminit( int p1, int p2, int p3, int p4 )
 {
-	//	DLL dbini (type$00)
+	//	DLL steaminit (type$00)
 	//
 	int res;
 	res = sw_init();
+	if (p1 & 1) _hspsteam->setUTF8Mode(1);
 	return res;
 }
 
 
 EXPORT BOOL WINAPI steambye(int p1, int p2, int p3, int p4)
 {
-	//	DLL dbbye (type$00)
+	//	DLL steambye (type$00)
 	//
 	sw_term();
 	return 0;
@@ -340,7 +341,6 @@ EXPORT BOOL WINAPI steamset_status(HSPEXINFO *hei, int p1, int p2, int p3)
 {
 	//	DLL steamset_status "name",value (type$202)
 	//
-	int res;
 	char *ep1;
 	int ep2;
 	ep1 = hei->HspFunc_prm_gets();			// パラメータ1:文字列
@@ -358,7 +358,6 @@ EXPORT BOOL WINAPI steamset_statusf(HSPEXINFO *hei, int p1, int p2, int p3)
 {
 	//	DLL steamset_statusf "name",value (type$202)
 	//
-	int res;
 	char *ep1;
 	double ep2;
 	ep1 = hei->HspFunc_prm_gets();			// パラメータ1:文字列
@@ -371,5 +370,128 @@ EXPORT BOOL WINAPI steamset_statusf(HSPEXINFO *hei, int p1, int p2, int p3)
 	return 0;
 }
 
+
+EXPORT BOOL WINAPI steamreq_leaderboard(HSPEXINFO *hei, int p1, int p2, int p3)
+{
+	//	DLL steamreq_leaderboard "name",type (type$202)
+	//
+	char *ep1;
+	int ep2;
+	ep1 = hei->HspFunc_prm_gets();			// パラメータ1:文字列
+	ep2 = hei->HspFunc_prm_getdi(0);		// パラメータ2:数値
+	if (*hei->er) return *hei->er;		// エラーチェック
+
+	if (_hspsteam) {
+		_hspsteam->request_Leaderboard(ep1, ep2);
+	}
+	return 0;
+}
+
+
+EXPORT BOOL WINAPI steamreq_leaderboarddata(HSPEXINFO *hei, int p1, int p2, int p3)
+{
+	//	DLL steamreq_leaderboarddata type,start,end (type$202)
+	//
+	int res,ep1,ep2,ep3;
+	ep1 = hei->HspFunc_prm_getdi(0);		// パラメータ1:数値
+	ep2 = hei->HspFunc_prm_getdi(1);		// パラメータ1:数値
+	ep3 = hei->HspFunc_prm_getdi(10);		// パラメータ1:数値
+	if (*hei->er) return *hei->er;		// エラーチェック
+
+	res = -1;
+	if (_hspsteam) {
+		res = _hspsteam->request_LeaderboardData(ep1, ep2, ep3);
+	}
+	return res;
+}
+
+
+EXPORT BOOL WINAPI steamget_leaderboardmax(HSPEXINFO *hei, int _p1, int _p2, int _p3)
+{
+	//
+	//		steamget_leaderboardmax var  (type$202)
+	//
+	PVal *pv;
+	APTR ap;
+	int p2;
+	ap = hei->HspFunc_prm_getva(&pv);		// パラメータ1:変数
+	if (*hei->er) return *hei->er;		// エラーチェック
+	p2 = 0;
+	if (_hspsteam) {
+		p2 = _hspsteam->getLeaderboardMax();
+	}
+	hei->HspFunc_prm_setva(pv, ap, HSPVAR_FLAG_INT, &p2);	// 変数に値を代入
+	return 0;
+}
+
+
+EXPORT BOOL WINAPI steamget_leaderboard(HSPEXINFO *hei, int _p1, int _p2, int _p3)
+{
+	//
+	//		steamget_leaderboard var, type, index  (type$202)
+	//
+	PVal *pv;
+	APTR ap;
+	int p1, p2;
+	int res = 0;
+	char stemp[256];
+	ap = hei->HspFunc_prm_getva(&pv);		// パラメータ1:変数
+	p1 = hei->HspFunc_prm_getdi(0);		// パラメータ2:数値
+	p2 = hei->HspFunc_prm_getdi(0);		// パラメータ3:数値
+	if (*hei->er) return *hei->er;		// エラーチェック
+	if (p1 & 16) {
+		*stemp = 0;
+		if (_hspsteam) {
+			_hspsteam->getLeaderboardString(stemp, p1 & 15, p2);
+		}
+		hei->HspFunc_prm_setva(pv, ap, HSPVAR_FLAG_STR, stemp);	// 変数に値を代入
+	}
+	else {
+		if (_hspsteam) {
+			res = _hspsteam->getLeaderboardValue(p1, p2);
+		}
+		hei->HspFunc_prm_setva(pv, ap, HSPVAR_FLAG_INT, &res);	// 変数に値を代入
+	}
+	return 0;
+}
+
+
+EXPORT BOOL WINAPI steamget_name(HSPEXINFO *hei, int _p1, int _p2, int _p3)
+{
+	//
+	//		steamget_name var,p1  (type$202)
+	//
+	PVal *pv;
+	APTR ap;
+	int p1;
+	char stemp[256];
+	ap = hei->HspFunc_prm_getva(&pv);		// パラメータ1:変数
+	p1 = hei->HspFunc_prm_getdi(0);		// パラメータ2:数値
+	if (*hei->er) return *hei->er;		// エラーチェック
+	*stemp = 0;
+	if (_hspsteam) {
+		_hspsteam->getPlayerName(stemp, p1);
+	}
+	hei->HspFunc_prm_setva(pv, ap, HSPVAR_FLAG_STR, stemp);	// 変数に値を代入
+	return 0;
+}
+
+
+
+EXPORT BOOL WINAPI steamset_leaderboarddata(HSPEXINFO *hei, int p1, int p2, int p3)
+{
+	//	DLL steamset_leaderboarddata score,option (type$202)
+	//
+	int res, ep1, ep2;
+	ep1 = hei->HspFunc_prm_getdi(0);		// パラメータ1:数値
+	ep2 = hei->HspFunc_prm_getdi(0);		// パラメータ1:数値
+	if (*hei->er) return *hei->er;		// エラーチェック
+
+	res = -1;
+	if (_hspsteam) {
+		res = _hspsteam->update_LeaderboardData(ep1, ep2);
+	}
+	return res;
+}
 
 

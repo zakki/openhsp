@@ -1,0 +1,81 @@
+;
+;	STEAMWORKS 各種test
+;
+#include "hspsw.as"
+
+	;	STEAM環境の初期化
+	steaminit : res=stat
+	if res : dialog "STEAM環境がありません。終了します。("+stat+")" : end
+
+	;	STEAM実績の自動設定
+	steamset_achievement
+	achimax=stat
+
+	;	STEAM実績の手動設定
+;	achimax=2
+;	steamset_max achimax
+;	steamreg_achievement 0,"ACH_WIN_ONE_GAME"
+;	steamreg_achievement 1,"ACH_WIN_100_GAMES"
+
+	achiid=0
+
+	input achiid
+	button "clear",*clrach
+	button "unlock",*unlock
+	button "write",*st_write
+
+	steamreq_status
+*main
+	steamupdate flag
+
+	color 255,255,255:boxf
+	color 0,0,0:pos 0,120
+	mes "flag="+flag
+
+	wait 10
+
+	if flag=STEAM_ERROR : goto *go_error
+	if flag!=STEAM_READY : goto *main
+
+*main2
+	;	設定値の取得
+	steamget_status st_games, "NumGames"
+	steamget_statusf st_travel, "MaxFeetTraveled"
+
+	steamupdate flag
+
+	color 255,255,255:boxf
+	color 0,0,0:pos 0,120
+	mes "flag="+flag
+	mes "games:"+st_games+" / travel:"+st_travel
+
+	repeat achimax
+		steamget_achievementstr api,cnt,0
+		steamget_achievementstr moji,cnt,1
+		steamget_achievementstr desc,cnt,2
+		steamget_achievement result,cnt
+		mes "ID:"+cnt+"="+result+" / "+api+" / "+moji+" / "+desc
+	loop
+
+	wait 10
+
+	if flag=STEAM_ERROR : goto *go_error
+	goto *main2
+
+*unlock
+	steamunlock_achievement achiid
+	goto *main
+
+*clrach
+	steamclear_achievement achiid
+	goto *main
+
+*st_write
+	steamset_status "NumGames",99
+	steamset_statusf "MaxFeetTraveled",1.1
+	goto *main
+
+*go_error
+	mes "エラーが発生しました。"
+	stop
+
