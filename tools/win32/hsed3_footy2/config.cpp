@@ -78,7 +78,7 @@ extern BOOL     ChangeColor_func;     // #func、#cfunc、#cmd を色分けしない
 extern BOOL     ChangeColor_define;   // #define、#define ctype を色分けしない
 
 extern char		BgImagePath[_MAX_PATH+1];// 背景画像のパス by inovia
-
+extern int      BgImageFlag;			// 背景画像の使用フラグ by onitama
 
 static int      hsed_ver;
 static int      hsed_private_ver;
@@ -161,6 +161,7 @@ void LoadConfig()
 	ChangeColor_define = GetINICustomBOOL("ChangeColor_define");// by Tetr@pod
 
 	GetINICustomString("BgImagePath", (char *)&BgImagePath, _MAX_PATH);// by inovia
+	BgImageFlag = GetINICustomInt("BgImageFlag");// by onitama
 
 	return;
 }
@@ -195,6 +196,7 @@ void SaveConfig()
 	SetINICustomBOOL(ChangeColor_func, "ChangeColor_func");// by Tetr@pod
 	SetINICustomBOOL(ChangeColor_define, "ChangeColor_define");// by Tetr@pod
 	SetINICustomString("BgImagePath", (char *)&BgImagePath);	// by inovia
+	SetINICustomInt(BgImageFlag, "BgImageFlag");// by onitama
 
 	return;
 }

@@ -5,6 +5,11 @@ Hot Soup Processor ver3.51                          HSP : Hot Soup Processor
 
 ・hsp3関連 更新履歴
 
+	2018/06/27 3.51p
+
+	HSP3.51プロ生ちゃんエディションを追加
+	->エディタの背景、HSPTVブラウザ、サンプル、デモの追加修正
+
 	2018/06/19 3.51
 
 	[HSP3Dish][Linux] Linux版スクリプトエディタの更新

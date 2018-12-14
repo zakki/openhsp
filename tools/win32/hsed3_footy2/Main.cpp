@@ -174,80 +174,6 @@ struct DLLVERSIONINFO{
     DWORD dwPlatformID;
 };
 
-//typedef HRESULT ( CALLBACK* ProcDllGetVersion)( DLLVERSIONINFO *pdvi );
-//static int GetDllVersion( char *DllName )
-//{
-//HINSTANCE hInst;
-//DLLVERSIONINFO dvi;
-//ProcDllGetVersion DllGetVersion;
-//HRESULT hRes;
-//bool bRes;
-//DWORD Major = 0;   // メジャーバージョン
-//DWORD Minor;   // マイナーバージョン
-//DWORD Build;   // ビルド番号
-//
-//    hInst = LoadLibrary(DllName);
-//	bRes=false;
-//    if(hInst){
-//        DllGetVersion = (ProcDllGetVersion) GetProcAddress(hInst, "DllGetVersion" );
-//
-//        if(DllGetVersion){
-//            ZeroMemory(&dvi, sizeof(dvi));
-//            dvi.cbSize = sizeof(dvi);
-//			hRes = (*DllGetVersion)(&dvi);
-//            if(SUCCEEDED(hRes)){
-//                Major = dvi.dwMajorVersion;
-//                Minor = dvi.dwMinorVersion;
-//                Build = dvi.dwBuildNumber;
-//                bRes = true;
-//            }
-//		}
-//        FreeLibrary(hInst);
-//    }
-//	if (bRes) return Major;
-//	return -1;
-//}
-
-
-//static int CheckXPEditBox( HINSTANCE /*hInstance*/ )
-//{
-//	//		EditがXP仕様になっているかをチェックする
-//	//
-//	int result;
-//	result = 0;
-//	if ( GetDllVersion("ComCtl32.dll") > 5 ) { result = 1; }
-//	
-///*	
-//	//		これだとダメみたい
-//	DWORD lP,wP;
-//    HWND hWnd;
-//	int result;
-//	hWnd = CreateWindowA("EDIT","漢字",0,0,0,0,0,NULL,NULL,hInstance,0);
-//    ShowWindow(hWnd,SW_HIDE);
-//
-//    SendMessageA(hWnd,EM_SETSEL,(WPARAM)0,(LPARAM)-1);
-//    SendMessageA(hWnd,EM_GETSEL,(WPARAM)&wP,(LPARAM)&lP);
-//    if ( (int)GetWindowTextLengthA(hWnd) > (int)(lP - wP) ){
-//        result = 1;
-//    }else{
-//        result = 0;
-//    }
-//    PostMessage(hWnd,WM_CLOSE,0,0);
-//    return result;
-//*/
-//    return result;
-//}
-
-
-/*
-	 {
-		char ss[128];
-		wsprintf( ss,"%d__%d__%d",(int)IsThemeActive(), (int)IsWindowUnicode( hwndEdit ), GetDllVersion("ComCtl32.dll") );
-		MessageBox( NULL, ss, "Startup error", MB_OK | MB_ICONEXCLAMATION) ;
-	 }
-*/
-
-	 
 //-------------------------------------------------------------------
 
 
@@ -960,19 +886,6 @@ WndProc (HWND hwnd, UINT mMsg, WPARAM wParam, LPARAM lParam)
 
 //-------------------------------------------------------------------
 
-//static COLORREF crBack ;
-//static COLORREF crText ;
-//static HBRUSH hbr=NULL ;
-
-//void ConfigEditColor( COLORREF fore, COLORREF back )
-//{
-//	crText=fore; crBack=back;
-//	for(int i = 0;; i++){
-//		if(FootySetColor(i, F_SC_BACKGROUND, crBack) == F_RET_OUTID) break;
-//		FootySetColor(i, F_SC_DEFAULT, crText);
-//	}
-//}
-
 LRESULT CALLBACK 
 ClientWndProc (HWND hwnd, UINT mMsg, WPARAM wParam, LPARAM lParam)
      {
@@ -993,32 +906,15 @@ ClientWndProc (HWND hwnd, UINT mMsg, WPARAM wParam, LPARAM lParam)
 		  case WM_INITMENUPOPUP :
 			   return poppad_menupop( (WPARAM)hSubMenu, -1 );
 
-//          case WM_CTLCOLOREDIT :
-//               {
-//               DefWindowProc (hwnd, mMsg, wParam, lParam) ;
-//               SetBkColor ((HDC) wParam, crBack) ;
-//               //SetBkMode ((HDC) wParam, TRANSPARENT) ;
-//			   SetTextColor( (HDC) wParam, crText );
-//               return (LRESULT) (HBRUSH) hbr ;
-//               }
-
           case WM_SETFOCUS :
-//               hwndNotify = GetWindow (hwnd, GW_CHILD) ;
-//               SetFocus (hwndNotify) ;
 			   Footy2SetFocus(activeFootyID, 0);
                return 0 ;
 
           case WM_SIZE :
                {
-//               hwndNotify = GetWindow (hwnd, GW_CHILD) ;
                int cx = LOWORD (lParam) ;
                int cy = HIWORD (lParam) ;
 
-               // Ignore if notification window is absent.
-//               if (hwndNotify != NULL)
-//                    {
-//                    MoveWindow (hwndNotify, 0, 0, cx, cy, TRUE) ;
-//                    }
 			   MoveWindow(hwndTab, 0, 0, cx, cy, TRUE);
 			   GetClientRect(hwndTab, &rect);
 			   TabCtrl_AdjustRect(hwndTab, FALSE, &rect);
@@ -1061,7 +957,6 @@ ClientWndProc (HWND hwnd, UINT mMsg, WPARAM wParam, LPARAM lParam)
 
           default :
                return (EditProc (hwnd, mMsg, wParam, lParam)) ;
-               //return (DefWindowProc (hwnd, mMsg, wParam, lParam)) ;
           }
      }
 

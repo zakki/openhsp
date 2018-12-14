@@ -542,12 +542,14 @@ return stat
 return stat
 #global
 
-	// インストールされているバージョンをサポートするように設定する
-	// もし、IE11が入っている場合は、そのバージョンをサポートします。
-	SetIEConfigEmulation GetIEVersion(), GetProcessName()
+	if int(GetIEVersion()) >= 9 {
+		// インストールされているバージョンをサポートするように設定する
+		// もし、IE11が入っている場合は、そのバージョンをサポートします。
+		SetIEConfigEmulation GetIEVersion(), GetProcessName()
 
-	// GPUを利用したレンダリングを行う
-	SetIEConfigGPURendering 1, GetProcessName()
+		// GPUを利用したレンダリングを行う
+		SetIEConfigGPURendering 1, GetProcessName()
 
-	// 古いJavaScriptエンジンを使用しない(Chakraエンジン)
-	SetIEConfigLegacyJScript 0, GetProcessName()
+		// 古いJavaScriptエンジンを使用しない(Chakraエンジン)
+		SetIEConfigLegacyJScript 0, GetProcessName()
+	}

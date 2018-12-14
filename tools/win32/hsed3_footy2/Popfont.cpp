@@ -21,6 +21,7 @@ extern int forcefont;
 extern int speedDraw;
 extern BOOL bDrawUnderline;
 extern char BgImagePath[_MAX_PATH+1];// 背景画像のパス by inovia
+extern int BgImageFlag;			// 背景画像の使用フラグ by onitama
 
 void PopFontSetELG ( LOGFONT lf ) { editfont =lf; }
 LOGFONT PopFontGetELG ( void ) { return editfont; }
@@ -147,20 +148,16 @@ void PopFontSetEditFont()
 
 	// 背景画像読み込み by inovia
 	char imgpath[_MAX_PATH * 2 + 1] = {0};
-	if (BgImagePath[0] != 0) {
-		if (0 == strncmp( BgImagePath, "./", 2 )){
-			GetModuleFileNameA(0, imgpath, _MAX_PATH);
-			PathRemoveFileSpec(imgpath);	// ディレクトリのみにする
+	if (BgImageFlag) {
+		if (BgImagePath[0] != 0) {
+			if (0 == strncmp(BgImagePath, "./", 2)){
+				GetModuleFileNameA(0, imgpath, _MAX_PATH);
+				PathRemoveFileSpec(imgpath);	// ディレクトリのみにする
+			}
+			strcat(imgpath, BgImagePath);
 		}
-		strcat(imgpath, BgImagePath);
-		for(int i = 0; Footy2SetBackgroundImageA(i, imgpath, false) != FOOTY2ERR_NOID; i++);
 	}
-	else {
-		GetModuleFileNameA(0, imgpath, _MAX_PATH);
-		PathRemoveFileSpec(imgpath);	// ディレクトリのみにする
-		strcat(imgpath, "\\hsptv\\editor.png");
-		for (int i = 0; Footy2SetBackgroundImageA(i, imgpath, false) != FOOTY2ERR_NOID; i++);
-	}
+	for (int i = 0; Footy2SetBackgroundImageA(i, imgpath, false) != FOOTY2ERR_NOID; i++);
 
 	DeleteDC(hDC);
 }
