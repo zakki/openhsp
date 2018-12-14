@@ -1,12 +1,12 @@
 
 ;============================================================
 ;	HDL
-;		version 1.41 update 2018/06/07
+;		version 1.42 update 2018/09/04
 ;			s.programs http://spn.php.xdomain.jp/
 ;============================================================
 
 	appname	= "HSP Docs Library"
-	appver	= "1.41"
+	appver	= "1.42"
 	appsig	= "s.programs 2007-2018"
 	sig_css	= "/* hdlcss 1.41 */"
 

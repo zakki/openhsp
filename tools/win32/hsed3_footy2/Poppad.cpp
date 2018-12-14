@@ -376,7 +376,7 @@ BOOL ChangeColor_func; // #func、#cfunc、#cmd を色分けしない by Tetr@pod
 BOOL ChangeColor_define; // #define、#define ctype を色分けしない by Tetr@pod
 
 char BgImagePath[_MAX_PATH+1]; // 背景画像パス by inovia
-
+int      BgImageFlag;			// 背景画像の使用フラグ by onitama
 
 /*
 		Error message process
@@ -4375,6 +4375,7 @@ BOOL CALLBACK ConfigVisualPageProc (HWND hDlg, UINT message, WPARAM wParam, LPAR
 			SetDlgItemInt(hDlg, IDC_EDIT3, linewidth,   FALSE);
 			SetDlgItemInt(hDlg, IDC_EDIT4, linespace,   FALSE);
 			SetDlgItemText(hDlg, IDC_EDIT9, BgImagePath);
+			CheckDlgButton(hDlg, IDC_CHECK11, BgImageFlag!=0);
 			return TRUE;
 		
 		case PM_ISAPPLICABLE:
@@ -4419,6 +4420,7 @@ BOOL CALLBACK ConfigVisualPageProc (HWND hDlg, UINT message, WPARAM wParam, LPAR
 			linewidth   = GetDlgItemInt(hDlg, IDC_EDIT3, NULL, FALSE);
 			linespace   = GetDlgItemInt(hDlg, IDC_EDIT4, NULL, FALSE);
 			GetDlgItemText(hDlg, IDC_EDIT9, (LPSTR)&BgImagePath, _MAX_PATH);
+			BgImageFlag = IsDlgButtonChecked(hDlg, IDC_CHECK11);
 
 			// これないと、アンダーバーの設定が適用されない
 			PopFontApplyEditFont();

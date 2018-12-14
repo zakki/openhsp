@@ -174,6 +174,7 @@
 #define IDC_SPIN1                       4058
 #define IDC_CHECK10                     4059
 #define IDC_EDIT9                       4060
+#define IDC_CHECK11                     4061
 #define IDB_TOOLBAR                     5000
 #define IDD_FNAME                       5000
 #define IDB_BITMAP2                     5001

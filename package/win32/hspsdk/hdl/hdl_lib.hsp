@@ -183,7 +183,7 @@
 ;--------------------------------------------------
 #deffunc Config_restore_window
 	; default window pos
-	if cfgdat ! 44 : cfgdat = 44, 0, 1, -1, -1, -1, -1, ginfo_dispx*10/100, ginfo_dispy*20/100, ginfo_dispx*70/100, ginfo_dispy*90/100
+	if cfgdat ! 44 : cfgdat = 44, 0, 1, -1, -1, -1, -1, ginfo_dispx*20/100, ginfo_dispy*20/100, ginfo_dispx*80/100, ginfo_dispy*90/100
 
 	; restore window
 	SetWindowPlacement hwnd, cfgdat

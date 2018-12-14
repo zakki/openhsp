@@ -1,7 +1,7 @@
 FileDescription=HSP Docs Library
-_FILEVERSION=1.4.1.0
+_FILEVERSION=1.4.2.0
 ProductName=HSP Docs Library
-_PRODUCTVERSION=1.4.1.0
+_PRODUCTVERSION=1.4.2.0
 LegalCopyright=
 OriginalFilename=hdl.exe
 Comments=
