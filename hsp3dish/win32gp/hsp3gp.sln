@@ -1,0 +1,31 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio 2013
+VisualStudioVersion = 12.0.21005.1
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "hsp3gp", "hsp3gp.vcxproj", "{70071784-3472-4FDA-8F73-8163A29F9D3F}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		angle_hsprt|Win32 = angle_hsprt|Win32
+		angle_Release|Win32 = angle_Release|Win32
+		Debug|Win32 = Debug|Win32
+		hsprt|Win32 = hsprt|Win32
+		Release|Win32 = Release|Win32
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{70071784-3472-4FDA-8F73-8163A29F9D3F}.angle_hsprt|Win32.ActiveCfg = angle_hsprt|Win32
+		{70071784-3472-4FDA-8F73-8163A29F9D3F}.angle_hsprt|Win32.Build.0 = angle_hsprt|Win32
+		{70071784-3472-4FDA-8F73-8163A29F9D3F}.angle_Release|Win32.ActiveCfg = angle_Release|Win32
+		{70071784-3472-4FDA-8F73-8163A29F9D3F}.angle_Release|Win32.Build.0 = angle_Release|Win32
+		{70071784-3472-4FDA-8F73-8163A29F9D3F}.Debug|Win32.ActiveCfg = Debug|Win32
+		{70071784-3472-4FDA-8F73-8163A29F9D3F}.Debug|Win32.Build.0 = Debug|Win32
+		{70071784-3472-4FDA-8F73-8163A29F9D3F}.hsprt|Win32.ActiveCfg = hsprt|Win32
+		{70071784-3472-4FDA-8F73-8163A29F9D3F}.hsprt|Win32.Build.0 = hsprt|Win32
+		{70071784-3472-4FDA-8F73-8163A29F9D3F}.Release|Win32.ActiveCfg = Release|Win32
+		{70071784-3472-4FDA-8F73-8163A29F9D3F}.Release|Win32.Build.0 = Release|Win32
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+EndGlobal

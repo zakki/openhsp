@@ -69,6 +69,10 @@ public:
 
 private:
 
+	std::string _OptionFilePath;
+	std::string GetFileNameFromPath(const std::string &path);
+	FbxNode* getRootNode(FbxScene* fbxScene);
+
     /**
      * Loads the scene.
      * 
