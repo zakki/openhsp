@@ -1483,7 +1483,9 @@ int gamehsp::makeFloorNode( float xsize, float ysize, int color, int matid )
 int gamehsp::makePlateNode( float xsize, float ysize, int color, int matid )
 {
 	gpobj *obj = addObj();
-	if ( obj == NULL ) return -1;
+	if (obj == NULL) {
+		return -1;
+	}
 
     // ïΩñ çÏê¨
 	Mesh* floorMesh = Mesh::createQuad(

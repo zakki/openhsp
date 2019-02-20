@@ -225,7 +225,7 @@ Node* Node::findNode(const char* id, bool recursive, bool exactMatch) const
 {
     GP_ASSERT(id);
 
-    // If the drawable is a model with a mesh skin, search the skin's hierarchy as well.
+	// If the drawable is a model with a mesh skin, search the skin's hierarchy as well.
     Node* rootNode = NULL;
     Model* model = dynamic_cast<Model*>(_drawable);
     if (model)
@@ -245,13 +245,14 @@ Node* Node::findNode(const char* id, bool recursive, bool exactMatch) const
     // Search immediate children first.
     for (Node* child = getFirstChild(); child != NULL; child = child->getNextSibling())
     {
-        // Does this child's ID match?
+
+		// Does this child's ID match?
         if ((exactMatch && child->_id == id) || (!exactMatch && child->_id.find(id) == 0))
         {
             return child;
         }
     }
-    // Recurse.
+	// Recurse.
     if (recursive)
     {
         for (Node* child = getFirstChild(); child != NULL; child = child->getNextSibling())

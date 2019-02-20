@@ -24,25 +24,56 @@ FBXSceneEncoder::~FBXSceneEncoder()
 {
 }
 
+FbxNode* FBXSceneEncoder::getRootNode(FbxScene* fbxScene)
+{
+    // Load all of the nodes and their contents.
+    FbxNode* rootNode = fbxScene->GetRootNode();
+
+	if ( rootNode->GetChildCount() == 1 ) {
+		rootNode = rootNode->GetChild(0);
+	}
+	return rootNode;
+}
+
 void FBXSceneEncoder::write(const string& filepath, const EncoderArguments& arguments)
 {
     FbxManager* sdkManager = FbxManager::Create();
     FbxIOSettings *ios = FbxIOSettings::Create(sdkManager, IOSROOT);
     sdkManager->SetIOSettings(ios);
-    FbxImporter* importer = FbxImporter::Create(sdkManager,"");
-    
+
+	FbxImporter* importer = FbxImporter::Create(sdkManager,"");
+
     if (!importer->Initialize(filepath.c_str(), -1, sdkManager->GetIOSettings()))
     {
         LOG(1, "Call to FbxImporter::Initialize() failed.\n");
         LOG(1, "Error returned: %s\n\n", importer->GetStatus().GetErrorString());
         exit(-1);
     }
+
+	_OptionFilePath = arguments.getTextureOptionPath();
     
     FbxScene* fbxScene = FbxScene::Create(sdkManager,"__FBX_SCENE__");
+	FbxScene* fbxScene2;
 
     print("Loading FBX file.");
     importer->Import(fbxScene);
     importer->Destroy();
+
+	if (arguments.mergeAnimationEnabled()) {
+		importer = FbxImporter::Create(sdkManager,"");
+    
+		if (!importer->Initialize( arguments.getMergeAnimationFBXName().c_str(), -1, sdkManager->GetIOSettings()))
+		{
+			LOG(1, "Call to FbxImporter::Initialize() failed.\n");
+			LOG(1, "Error returned: %s\n\n", importer->GetStatus().GetErrorString());
+			exit(-1);
+		}
+
+		fbxScene2 = FbxScene::Create(sdkManager,"__FBX_SCENE2__");
+		importer->Import(fbxScene2);
+		importer->Destroy();
+		print("Loading FBX2 file.");
+	}
 
     // Determine if animations should be grouped.
     if (arguments.getGroupAnimationAnimationId().empty() && isGroupAnimationPossible(fbxScene))
@@ -56,7 +87,7 @@ void FBXSceneEncoder::write(const string& filepath, const EncoderArguments& argu
 
     if (arguments.tangentBinormalIdCount() > 0)
     {
-        generateTangentsAndBinormals(fbxScene->GetRootNode(), arguments);
+        generateTangentsAndBinormals(getRootNode(fbxScene), arguments);
     }
 
     print("Loading Scene.");
@@ -64,7 +95,11 @@ void FBXSceneEncoder::write(const string& filepath, const EncoderArguments& argu
     print("Load materials");
     loadMaterials(fbxScene);
     print("Loading animations.");
-    loadAnimations(fbxScene, arguments);
+	if (arguments.mergeAnimationEnabled()) {
+		loadAnimations(fbxScene2, arguments);
+	} else {
+		loadAnimations(fbxScene, arguments);
+	}
     sdkManager->Destroy();
 
     print("Optimizing GamePlay Binary.");
@@ -155,7 +190,8 @@ void FBXSceneEncoder::loadScene(FbxScene* fbxScene)
     }
 
     // Load all of the nodes and their contents.
-    FbxNode* rootNode = fbxScene->GetRootNode();
+    FbxNode* rootNode = getRootNode(fbxScene);
+
     if (rootNode)
     {
         print("Triangulate.");
@@ -361,6 +397,8 @@ void FBXSceneEncoder::loadAnimationChannels(FbxAnimLayer* animLayer, FbxNode* fb
         channel->setInterpolation(AnimationChannel::LINEAR);
         channel->setTargetAttribute(channelAttribs[i]);
         animation->add(channel);
+		printf( "Anim #%d [%s]\r\n",i,name );
+
     }
 
     // Evaulate animation curve in increments of frameRate and populate channel data.
@@ -459,7 +497,7 @@ void FBXSceneEncoder::loadAnimations(FbxScene* fbxScene, const EncoderArguments&
         for (int l = 0; l < nbAnimLayers; ++l)
         {
             FbxAnimLayer* animLayer = animStack->GetMember<FbxAnimLayer>(l);
-            loadAnimationLayer(animLayer, fbxScene->GetRootNode(), arguments);
+            loadAnimationLayer(animLayer, getRootNode(fbxScene), arguments);
         }
     }
 }
@@ -876,7 +914,7 @@ void FBXSceneEncoder::loadModel(FbxNode* fbxNode, Node* node)
 
 void FBXSceneEncoder::loadMaterials(FbxScene* fbxScene)
 {
-    FbxNode* rootNode = fbxScene->GetRootNode();
+    FbxNode* rootNode = getRootNode(fbxScene);
     if (rootNode)
     {
         // Don't include the FBX root node
@@ -993,6 +1031,24 @@ void FBXSceneEncoder::loadMaterialTextures(FbxSurfaceMaterial* fbxMaterial, Mate
     }
 }
 
+
+std::string FBXSceneEncoder::GetFileNameFromPath(const std::string &path)
+{
+    size_t pos1;
+ 
+    pos1 = path.rfind('\\');
+    if(pos1 != std::string::npos){
+        return path.substr(pos1+1, path.size()-pos1-1);
+    }
+ 
+    pos1 = path.rfind('/');
+    if(pos1 != std::string::npos){
+        return path.substr(pos1+1, path.size()-pos1-1);
+    }
+ 
+    return path;
+}
+
 void FBXSceneEncoder::loadMaterialFileTexture(FbxFileTexture* fileTexture, Material* material)
 {
     FbxTexture::ETextureUse textureUse = fileTexture->GetTextureUse();
@@ -1004,8 +1060,9 @@ void FBXSceneEncoder::loadMaterialFileTexture(FbxFileTexture* fileTexture, Mater
     }
     if (sampler)
     {
+		string fname = _OptionFilePath + GetFileNameFromPath(fileTexture->GetRelativeFileName());
         sampler->set("absolutePath", fileTexture->GetFileName());
-        sampler->set("relativePath", fileTexture->GetRelativeFileName());
+        sampler->set("relativePath", fname );
         sampler->set("wrapS", fileTexture->GetWrapModeU() == FbxTexture::eClamp ? CLAMP : REPEAT);
         sampler->set("wrapT", fileTexture->GetWrapModeV() == FbxTexture::eClamp ? CLAMP : REPEAT);
 

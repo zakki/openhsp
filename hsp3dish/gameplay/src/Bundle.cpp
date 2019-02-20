@@ -469,6 +469,7 @@ Scene* Bundle::loadScene(const char* id)
     }
     scene->setAmbientColor(red, green, blue);
 
+#if 1
     // Parse animations.
     GP_ASSERT(_references);
     GP_ASSERT(_stream);
@@ -486,9 +487,9 @@ Scene* Bundle::loadScene(const char* id)
             readAnimations(scene);
         }
     }
+#endif
 
     resolveJointReferences(scene, NULL);
-
     return scene;
 }
 
@@ -1207,8 +1208,9 @@ void Bundle::resolveJointReferences(Scene* sceneContext, Node* nodeContext)
         }
 
         // Remove the joint hierarchy from the scene since it is owned by the mesh skin.
-        if (sceneContext)
-            sceneContext->removeNode(skinData->skin->_rootNode);
+		if (sceneContext) {
+			sceneContext->removeNode(skinData->skin->_rootNode);
+		}
 
         // Done with this MeshSkinData entry.
         SAFE_DELETE(_meshSkins[i]);
@@ -1279,7 +1281,8 @@ Animation* Bundle::readAnimationChannel(Scene* scene, Animation* animation, cons
         target = scene->findNode(targetId.c_str());
         if (!target)
         {
-            GP_ERROR("Failed to find the animation target (with id '%s') for animation '%s'.", targetId.c_str(), animationId);
+			readAnimationChannelData(animation, animationId, target, 0);
+			GP_WARN("Failed to find the animation target (with id '%s') for animation '%s'.", targetId.c_str(), animationId);
             return NULL;
         }
     }
