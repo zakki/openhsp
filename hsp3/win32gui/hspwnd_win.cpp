@@ -248,6 +248,24 @@ LRESULT CALLBACK WndProc( HWND hwnd, UINT uMessage, WPARAM wParam, LPARAM lParam
 		}
 		break;
 
+	case WM_CTLCOLOREDIT:
+		bm = TrackBmscr( hwnd );
+		if ( bm != NULL ) {
+			HDC hDC = (HDC)wParam;
+			HWND hCtrl = (HWND)lParam;
+			HSPOBJINFO *hspobj = bm->TrackHSPObject(hCtrl);
+			if ( hspobj != NULL ) {
+				HBRUSH brush_bg = hspobj->br_back;
+				if ( brush_bg != NULL ) {
+					SetBkMode(hDC, OPAQUE);
+					SetTextColor(hDC, hspobj->color_text);
+					SetBkColor(hDC,hspobj->color_back);
+					return (LRESULT)brush_bg;
+				}
+			}
+		}
+		break;
+
 	}
 
 	return DefWindowProc (hwnd, uMessage, wParam, lParam) ;
@@ -846,7 +864,8 @@ void Bmscr::Cls( int mode )
 	//		text setting initalize
 	//
 	cx=0;cy=0;
-	Setcolor(0,0,0);
+	Setcolor((COLORREF)0);
+	Setcolor2((COLORREF)0);
 
 	//		palette initalize
 	//
@@ -1118,7 +1137,20 @@ void Bmscr::Setcolor( int a1, int a2, int a3 )
 
 void Bmscr::Setcolor( COLORREF rgbcolor )
 {
-	Setcolor( GetRValue(rgbcolor), GetGValue(rgbcolor), GetBValue(rgbcolor) );
+	color = rgbcolor;
+	SetBkMode( hdc,TRANSPARENT );
+	SetTextColor( hdc, color );
+	if ( hbr != NULL ) DeleteObject( hbr );
+	hbr = CreateSolidBrush( color );
+	if ( hpn != NULL ) DeleteObject( hpn );
+	hpn = CreatePen( PS_SOLID,0,color );
+	//Setcolor( GetRValue(rgbcolor), GetGValue(rgbcolor), GetBValue(rgbcolor) );
+}
+
+
+void Bmscr::Setcolor2( COLORREF rgbcolor )
+{
+	objcolor = rgbcolor;
 }
 
 

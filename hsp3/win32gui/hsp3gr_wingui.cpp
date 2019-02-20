@@ -883,7 +883,7 @@ static int cmdfunc_extcmd( int cmd )
 		p1 = code_getdi( 0 );
 		p2 = code_getdi( 0 );
 		p3 = code_getdi( 0 );
-		bmscr->Setcolor(p1,p2,p3);
+		bmscr->Setcolor( RGB(p1,p2,p3) );
 		break;
 	case 0x19:								// palcolor
 		p1 = code_getdi( 0 );
@@ -1084,6 +1084,7 @@ static int cmdfunc_extcmd( int cmd )
 		i = HSPOBJ_INPUT_MULTILINE;
 		if ((p3&1)==0) i |= HSPOBJ_INPUT_READONLY;
 		if (p3&4) i |= HSPOBJ_INPUT_HSCROLL;
+		if (p3&8) i |= HSPOBJ_INPUT_NOWRAP;
 		if ( p4 < 0 ) p4 = size-1;
 		ctx->stat = bmscr->AddHSPObjectInput( pval, aptr, p1, p2, ptr, p4, (pval->flag)|i );
 		break;
@@ -1491,10 +1492,26 @@ static int cmdfunc_extcmd( int cmd )
 	case 0x48:								// devinfoi
 	case 0x49:								// devprm
 	case 0x4a:								// devcontrol
+	case 0x4b:								// httpload
+	case 0x4c:								// httpinfo
+	case 0x5d:								// gmulcolor
+	case 0x5e:								// setcls
+	case 0x5f:								// celputm
 		// HSP3Dish—p‚Ì‹@”\
 		throw HSPERR_UNSUPPORTED_FUNCTION;
 		break;
 
+	case 0x4d:								// objcolor
+		p1 = code_getdi( 0 );
+		p2 = code_getdi( 0 );
+		p3 = code_getdi( 0 );
+		bmscr->Setcolor2( RGB(p1,p2,p3) );
+		break;
+	case 0x4e:								// rgbcolor
+		p1 = code_getdi( 0 );
+		p2 = code_getdi( 0 );
+		bmscr->Setcolor( (DWORD)p1 );
+		break;
 
 
 	default:
