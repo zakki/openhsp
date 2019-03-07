@@ -2461,6 +2461,11 @@ static int cmdfunc_extcmd( int cmd )
 		code_setva(p_pval, p_aptr, HSPVAR_FLAG_INT, &res);
 		break;
 	}
+	case 0xff:								// gpreport
+		p1 = code_getdi(0);
+		game->pickupAll(p1);
+		break;
+
 
 	case 0x100:								// setevent
 		p1 = code_getdi( 0 );

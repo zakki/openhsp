@@ -402,7 +402,7 @@ void gamehsp::resetScreen( int opt )
 	//Camera*	camera = Camera::createPerspective(0.25f*3.141592654f, getAspectRatio(), 0.5f, 768.0f );
 	//_cameraDefault = Camera::createPerspective( 45.0f, getAspectRatio(), 0.5f, 768.0f );
 
-	_defcamera = makeNewCam( -1, 45.0f, getAspectRatio(), 0.5f, 768.0f );		// カメラを生成
+	_defcamera = makeNewCam(-1, 45.0f, getAspectRatio(), 0.5f, 768.0f);		// カメラを生成
 	selectCamera( _defcamera );
 
 //	_camera = _scene->addNode("camera");
@@ -1108,6 +1108,61 @@ void gamehsp::drawNode( Node *node )
 }
 
 
+bool gamehsp::drawNodeRecursive(Node *node, bool wireflag)
+{
+	Drawable* drawable = node->getDrawable();
+	if (drawable) {
+		drawable->draw(wireflag);
+	}
+
+	Node *pnode = node->getFirstChild();
+	while (1) {
+		if (pnode == NULL) break;
+		drawNodeRecursive(pnode, wireflag);
+		pnode = pnode->getNextSibling();
+	}
+
+	return true;
+}
+
+int gamehsp::drawSceneObject(void)
+{
+	int i,num;
+	gpobj *obj = _gpobj;
+	num = 0;
+	for (i = 0; i < _maxobj; i++) {
+		if (obj->isVisible(_scenedraw_lateflag)) {
+			Node *node = obj->_node;
+			if (node) {
+				bool clip = true;
+				bool wireflag = false;
+				int mode = obj->_mode;
+				if (mode & GPOBJ_MODE_XFRONT) {
+					node->setRotation(_qcam_billboard);
+				}
+				if (mode & GPOBJ_MODE_CLIP) {
+					clip = node->getBoundingSphere().intersects(_cameraDefault->getFrustum());
+				}
+				if (mode & GPOBJ_MODE_WIRE) {			// ワイヤーフレーム描画時
+					wireflag = true;
+				}
+
+				if (clip) {
+					//	Alphaのモジュレート設定
+					gameplay::MaterialParameter *prm_modalpha = obj->_prm_modalpha;
+					if (prm_modalpha) { prm_modalpha->setValue(obj->getAlphaRate()); }
+					drawNodeRecursive(obj->_node, wireflag);
+					num++;
+				}
+			}
+		}
+		obj++;
+	}
+
+	return num;
+}
+
+
 void gamehsp::drawAll( int option )
 {
 	// すべてのノードを描画
@@ -1121,6 +1176,16 @@ void gamehsp::drawAll( int option )
 
 	//	gpobjの3Dシーン描画
 	//
+	if (option & GPDRAW_OPT_DRAWSCENE) {
+		_scenedraw_lateflag = false;
+		drawSceneObject();
+	}
+	if (option & GPDRAW_OPT_DRAWSCENE_LATE) {
+		_scenedraw_lateflag = true;
+		drawSceneObject();
+	}
+
+#if 0
 	if ( option & GPDRAW_OPT_DRAWSCENE ) {
 		_scenedraw_lateflag = false;
 		_scene->visit(this, &gamehsp::drawScene);
@@ -1128,6 +1193,69 @@ void gamehsp::drawAll( int option )
 	if ( option & GPDRAW_OPT_DRAWSCENE_LATE ) {
 		_scenedraw_lateflag = true;
 		_scene->visit(this, &gamehsp::drawScene);
+	}
+#endif
+}
+
+
+bool gamehsp::pickupNode(Node *node, int deep)
+{
+	Drawable* drawable = node->getDrawable();
+	Model* model = dynamic_cast<Model*>(drawable);
+	if (model)
+	{
+		unsigned int partCount = model->getMeshPartCount();
+		GP_WARN( "#model %s (deep:%d)(part:%d)",node->getId(), deep, partCount);
+
+		Material *mat = model->getMaterial(0);
+		if (mat)
+		{
+			Technique* technique = mat->getTechnique();
+			unsigned int passCount = technique->getPassCount();
+			for (unsigned int i = 0; i < passCount; ++i)
+			{
+				Pass* pass = technique->getPassByIndex(i);
+				GP_WARN("#Pass%d ", i);
+			}
+		}
+
+		MeshSkin* skin = model->getSkin();
+		if (skin) {
+			Joint *joint = skin->getRootJoint();
+			Node* jointParent = joint->getParent();
+			GP_WARN("#Skin Root:%s", joint->getId());
+		}
+	}
+
+	if (model) {
+		MeshSkin *skin = model->getSkin();
+		if (skin) {
+			Node *root = skin->getRootNode();
+			if (root) {
+				pickupNode(root, deep + 1);
+			}
+		}
+	}
+
+	Node *pnode = node->getFirstChild();
+	while (1) {
+		if (pnode == NULL) break;
+		pickupNode(pnode, deep+1);
+		pnode = pnode->getNextSibling();
+	}
+
+	return true;
+}
+
+void gamehsp::pickupAll(int option)
+{
+	// すべてのノードを検証
+	//
+	Node *node = _scene->getFirstNode();
+	while (1) {
+		if (node == NULL) break;
+		pickupNode(node, 0);
+		node = node->getNextSibling();
 	}
 }
 
@@ -1185,8 +1313,6 @@ bool gamehsp::drawScene(Node* node)
 			}
 
 		}
-
-
 	}
 
     if (model)
@@ -1703,7 +1829,6 @@ int gamehsp::makeModelNode(char *fname, char *idname, char *defs)
 	if (obj == NULL) return -1;
 
 	getpath(fname, fn, 1);
-	//strcpy( fn, fname );
 	strcpy(fn2, fn);
 	strcat(fn, ".gpb");
 	strcat(fn2, ".material");
@@ -1725,64 +1850,38 @@ int gamehsp::makeModelNode(char *fname, char *idname, char *defs)
 			return -1;
 		}
 		updateNodeMaterial(rootNode, boxMaterial);
-
 	}
 	else {
-		unsigned int i;
-
 		Scene *scene;
 		char *rootid;
-
-		rootNode = Node::create();
+		rootNode = Node::create("objRoot");
 		rootid = NULL;
-
 		scene = bundle->loadScene();
-		if (scene) {
-			node = scene->getFirstNode();
-			animation = node->getAnimation("animations");
-			if (animation) {
-				rootid = (char *)node->getId();
-				//Alertf( "Found Power Scene Node(%s) Clip count: %d", node->getId(), animation->getClipCount() );
-			}
-		}
-		else {
+		if (scene == NULL) {
 			Alertf("Scene not found.(%s)", fname);
+			return -1;
 		}
 
-		for (i = 0; i<bundle->getObjectCount(); i++) {
-			node = bundle->loadNode(bundle->getObjectId(i));
-			if (node) {
-				Drawable* drawable = node->getDrawable();
-				Model* model = dynamic_cast<Model*>(drawable);
-				if (model) {
-					ApplyMaterialToModel(boxMaterial, model);
-					//Material*m = model->getMaterial();
-					//m->getParameter("u_directionalLightColor[0]")->setValue(Vector3(1, 1, 0));
-					//m->getTechnique()->getParameter("u_directionalLightDirection[0]")->setValue(Vector3(0, 0, -1));
+		node = scene->getFirstNode();
+		while (1) {
+			if (node == NULL) break;
+			rootNode->addChild(node);
+			//GP_WARN( "#ADD[%s]",node->getId() );
+			node = node->getNextSibling();
+		}
 
-				}
-				//Alertf( "#%d %s",i, bundle->getObjectId(i) );
-
-				animation = node->getAnimation("animations");
-				if (animation) {
-					if (strcmp(node->getId(), rootid) == 0) {
-						//AnimationClip *aclip;
-						//aclip = animation->createClip("idle", 0, animation->getDuration());
-						//aclip->setRepeatCount(AnimationClip::REPEAT_INDEFINITE);
-						//animation->play("idle");
-						//animation->createClips("zombie.animation");
-						//aclip = animation->getClip(0);
-						//Alertf("(%s) Clip count: %d Dur:%ld", aclip->getId(), animation->getClipCount(), aclip->getActiveDuration());
-						//animation->play(aclip->getId());
-						rootNode->addChild(node);
-					}
-				}
-				else {
-					rootNode->addChild(node);
-				}
-
-				SAFE_RELEASE(node);
-			}
+		size_t i, max;
+		max = bundle->_savedNode.size();
+		for (i = 0; i < max; i++) {
+			node = bundle->_savedNode[i];
+			//GP_WARN("#SAVE[%s]", node->getId());
+			//scene->addNode(node);
+			//rootNode->addChild(node);
+			Node *subnode = Node::create("Subobj");
+			subnode->setDrawable(node->getDrawable());
+			subnode->setId(node->getId());
+			subnode->setRefNode(node);
+			rootNode->addChild(subnode);
 		}
 
 		animation = rootNode->getAnimation("animations");
@@ -1796,8 +1895,6 @@ int gamehsp::makeModelNode(char *fname, char *idname, char *defs)
 		makeModelNodeSub(rootNode, 0);
 
 		SAFE_RELEASE(scene);
-
-
 	}
 
 	obj->updateParameter(boxMaterial);

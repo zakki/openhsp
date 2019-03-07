@@ -293,6 +293,10 @@ public:
 	int updateObjColi( int objid, float size, int addcol );
 	void findeObj( int exmode, int group );
 	gpobj *getNextObj( void );
+	void pickupAll(int option);
+	bool pickupNode(Node* node, int deep);
+	bool drawNodeRecursive(Node *node,bool wire=false);
+	int drawSceneObject(void);
 
 	void selectScene( int sceneid );
 	void selectLight( int lightid );
@@ -495,6 +499,8 @@ private:
 	Quaternion _qcam_billboard;
 	int _viewx1, _viewy1, _viewx2, _viewy2;
 	FrameBuffer* _previousFrameBuffer;
+
+	Node *testNode;
 
 	// Multi Light
 	int _max_dlight;
