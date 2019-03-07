@@ -28,7 +28,11 @@ Node::Node(const char* id)
     _drawable(NULL), _camera(NULL), _light(NULL), _audioSource(NULL), _collisionObject(NULL), _agent(NULL), _userObject(NULL),
       _dirtyBits(NODE_DIRTY_ALL)
 {
-    GP_REGISTER_SCRIPT_EVENTS();
+#ifdef HSPDISH
+	_refnode = NULL;
+	_worldref.identity();
+#endif
+	GP_REGISTER_SCRIPT_EVENTS();
     if (id)
     {
         _id = id;
@@ -205,6 +209,18 @@ Node* Node::getParent() const
 {
     return _parent;
 }
+
+#ifdef HSPDISH
+Node* Node::getRefNode() const
+{
+	return _refnode;
+}
+
+void Node::setRefNode( Node *node )
+{
+	_refnode = node;
+}
+#endif
 
 unsigned int Node::getChildCount() const
 {
@@ -443,13 +459,20 @@ const Matrix& Node::getWorldMatrix() const
 
             // Our world matrix was just updated, so call getWorldMatrix() on all child nodes
             // to force their resolved world matrices to be updated.
-            for (Node* child = getFirstChild(); child != NULL; child = child->getNextSibling())
-            {
-                child->getWorldMatrix();
-            }
-        }
+            //for (Node* child = getFirstChild(); child != NULL; child = child->getNextSibling())
+            //{
+            //    child->getWorldMatrix();
+            //}
+		}
     }
-    return _world;
+#ifdef HSPDISH
+	if (_refnode) {
+		// Apply reference node matrix
+		Matrix::multiply(_world, _refnode->getWorldMatrix(), &_worldref);
+		return _worldref;
+	}
+#endif
+	return _world;
 }
 
 const Matrix& Node::getWorldViewMatrix() const

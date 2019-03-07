@@ -200,18 +200,24 @@ void FBXSceneEncoder::loadScene(FbxScene* fbxScene)
         //triangulateRecursive(rootNode);
         
 
-        print("Load nodes.");
         // Don't include the FBX root node in the GPB.
         const int childCount = rootNode->GetChildCount();
+        printf("Load nodes.(%d)\n",childCount);
         for (int i = 0; i < childCount; ++i)
         {
+			printf("Node:%s\n",rootNode->GetChild(i)->GetName());
             Node* node = loadNode(rootNode->GetChild(i));
             if (node)
             {
                 scene->add(node);
             }
         }
-    }
+
+		//printf("Process Mesh.\n");
+		//scene->processSceneMesh(0);
+	}
+
+	printf("Load Shapes.\n");
 
     // Load the MeshSkin information from the scene's poses.
     loadBindShapes(fbxScene);
@@ -940,9 +946,24 @@ void FBXSceneEncoder::loadMaterial(FbxNode* fbxNode)
     {
         FbxSurfaceMaterial* fbxMaterial = fbxNode->GetMaterial(index);
         string materialName(fbxMaterial->GetName());
+
+		unsigned int jointcount = 0;
+		if (model) {
+			MeshSkin *skin = model->getSkin();
+			if ( skin ) {
+				jointcount = skin->getJointCount();
+			}
+		}
+
         fixMaterialName(materialName);
+		if (jointcount>0) {                    // FIX : aboid same material name of different joint count (onitama)
+			materialName+="_";
+			materialName+=std::to_string(jointcount);
+		}
+
         Material* material = NULL;
         map<string, Material*>::iterator it = _materials.find(materialName);
+		//printf( "Material(%s)(%d)\n",materialName.c_str(),jointcount );
         if (it != _materials.end())
         {
             // This material was already loaded so don't load it again
@@ -1157,7 +1178,7 @@ Material* FBXSceneEncoder::createMaterial(const string& name, FbxSurfaceMaterial
         material->setUniform("u_matrixPalette", "MATRIX_PALETTE");
         material->addDefine("SKINNING");
         ostringstream stream;
-        stream << "SKINNING_JOINT_COUNT " << skin->getJointCount();
+		stream << "SKINNING_JOINT_COUNT " << skin->getJointCount();
         material->addDefine(stream.str());
     }
     loadMaterialTextures(fbxMaterial, material);
@@ -1173,6 +1194,7 @@ void FBXSceneEncoder::loadSkin(FbxMesh* fbxMesh, Model* model)
     for (int i = 0; i < deformerCount; ++i)
     {
         FbxDeformer* deformer = fbxMesh->GetDeformer(i);
+		//printf( "#Load Skin [%s]\n",deformer->GetName() );
         if (deformer->GetDeformerType() == FbxDeformer::eSkin)
         {
             FbxSkin* fbxSkin = FbxCast<FbxSkin>(deformer);
@@ -1194,6 +1216,7 @@ void FBXSceneEncoder::loadSkin(FbxMesh* fbxMesh, Model* model)
                     const char* jointName = linkedNode->GetName();
                     assert(jointName);
                     jointNames.push_back(jointName);
+					//printf( "#     Joint [%s]\n",jointName );
                     Node* joint = loadNode(linkedNode);
                     assert(joint);
                     joints.push_back(joint);
@@ -1245,6 +1268,9 @@ Mesh* FBXSceneEncoder::loadMesh(FbxMesh* fbxMesh)
     // Find the blend weights and blend indices if this mesh is skinned.
     vector<vector<Vector2> > weights;
     bool hasSkin = loadBlendWeights(fbxMesh, weights);
+
+	printf( "#Load Mesh [%s] skin:%d\n",name,hasSkin );
+
     
     // Get list of uv sets for mesh
     FbxStringList uvSetNameList;
