@@ -1,7 +1,7 @@
 
 //
 //	HSP3 dish graphics command
-//	(GUIé–¢é€£ã‚³ãƒãƒ³ãƒ‰ãƒ»é–¢æ•°å‡¦ç†)
+//	(GUIŠÖ˜AƒRƒ}ƒ“ƒhEŠÖ”ˆ—)
 //	onion software/onitama 2011/3
 //
 #ifdef HSPDISHGP
@@ -163,13 +163,13 @@ static int select_objmoc;
 
 static void ExecFile( char *stmp, char *ps, int mode )
 {
-	//	å¤–éƒ¨ãƒ•ã‚¡ã‚¤ãƒ«å®Ÿè¡Œ
+	//	ŠO•”ƒtƒ@ƒCƒ‹Às
 	hgio_exec( stmp, ps, mode );
 }
 
 static char *getdir( int id )
 {
-	//		dirinfoå‘½ä»¤ã®å†…å®¹ã‚’stmpã«è¨­å®šã™ã‚‹
+	//		dirinfo–½—ß‚Ì“à—e‚ğstmp‚Éİ’è‚·‚é
 	//
 	char *p;
 #ifdef HSPWIN
@@ -181,28 +181,28 @@ static char *getdir( int id )
 	*p = 0;
 
 	switch( id ) {
-	case 0:				//    ã‚«ãƒ¬ãƒ³ãƒˆ(ç¾åœ¨ã®)ãƒ‡ã‚£ãƒ¬ã‚¯ãƒˆãƒª
+	case 0:				//    ƒJƒŒƒ“ƒg(Œ»İ‚Ì)ƒfƒBƒŒƒNƒgƒŠ
 #ifdef HSPWIN
 		_getcwd( p, _MAX_PATH );
 #endif
 		break;
-	case 1:				//    HSPã®å®Ÿè¡Œãƒ•ã‚¡ã‚¤ãƒ«ãŒã‚ã‚‹ãƒ‡ã‚£ãƒ¬ã‚¯ãƒˆãƒª
+	case 1:				//    HSP‚ÌÀsƒtƒ@ƒCƒ‹‚ª‚ ‚éƒfƒBƒŒƒNƒgƒŠ
 #ifdef HSPWIN
 		GetModuleFileName( NULL,fname,_MAX_PATH );
 		getpath( fname, p, 32 );
 #endif
 		break;
-	case 2:				//    Windowsãƒ‡ã‚£ãƒ¬ã‚¯ãƒˆãƒª
+	case 2:				//    WindowsƒfƒBƒŒƒNƒgƒŠ
 #ifdef HSPWIN
 		GetWindowsDirectory( p, _MAX_PATH );
 #endif
 		break;
-	case 3:				//    Windowsã®ã‚·ã‚¹ãƒ†ãƒ ãƒ‡ã‚£ãƒ¬ã‚¯ãƒˆãƒª
+	case 3:				//    Windows‚ÌƒVƒXƒeƒ€ƒfƒBƒŒƒNƒgƒŠ
 #ifdef HSPWIN
 		GetSystemDirectory( p, _MAX_PATH );
 #endif
 		break;
-	case 4:				//    ã‚³ãƒãƒ³ãƒ‰ãƒ©ã‚¤ãƒ³æ–‡å­—åˆ—
+	case 4:				//    ƒRƒ}ƒ“ƒhƒ‰ƒCƒ“•¶š—ñ
 #ifdef HSPWIN
 		ss = ctx->cmdline;
 		sbStrCopy( &(ctx->stmp), ss );
@@ -210,7 +210,7 @@ static char *getdir( int id )
 		return p;
 #endif
 		break;
-	case 5:				//    HSPTVç´ æãŒã‚ã‚‹ãƒ‡ã‚£ãƒ¬ã‚¯ãƒˆãƒª
+	case 5:				//    HSPTV‘fŞ‚ª‚ ‚éƒfƒBƒŒƒNƒgƒŠ
 #ifdef HSPWIN
 #if defined(HSPDEBUG)||defined(HSP3IMP)
 		GetModuleFileName( NULL,fname,_MAX_PATH );
@@ -235,7 +235,7 @@ static char *getdir( int id )
 	}
 
 #ifdef HSPWIN
-	//		æœ€å¾Œã®'\\'ã‚’å–ã‚Šé™¤ã
+	//		ÅŒã‚Ì'\\'‚ğæ‚èœ‚­
 	//
 	CutLastChr( p, '\\' );
 #endif
@@ -351,7 +351,7 @@ static HSPREAL *code_getvvec( void )
 	}
 	inisize = pval->len[1];
 	if ( inisize < 4 ) {
-			pval->len[1] = 4;						// ã¡ã‚‡ã£ã¨å¼·å¼•ã«é…åˆ—ã‚’æ‹¡å¼µ
+			pval->len[1] = 4;						// ‚¿‚å‚Á‚Æ‹­ˆø‚É”z—ñ‚ğŠg’£
 			pval->size = 4 * sizeof(HSPREAL);
 			code_setva( pval, 3, HSPVAR_FLAG_DOUBLE, &dummy );
 			if ( inisize < 3 ) code_setva( pval, 2, HSPVAR_FLAG_DOUBLE, &dummy );
@@ -376,7 +376,7 @@ static int *code_getivec( void )
 	}
 	inisize = pval->len[1];
 	if ( inisize < 4 ) {
-			pval->len[1] = 4;						// ã¡ã‚‡ã£ã¨å¼·å¼•ã«é…åˆ—ã‚’æ‹¡å¼µ
+			pval->len[1] = 4;						// ‚¿‚å‚Á‚Æ‹­ˆø‚É”z—ñ‚ğŠg’£
 			pval->size = 4 * sizeof(int);
 			code_setva( pval, 3, HSPVAR_FLAG_INT, &dummy );
 			if ( inisize < 3 ) code_setva( pval, 2, HSPVAR_FLAG_INT, &dummy );
@@ -426,7 +426,7 @@ static double *code_getvvec( void )
 	if ( pval->flag != HSPVAR_FLAG_DOUBLE ) {
 		dummy = 0.0f;
 		code_setva( pval, 0, HSPVAR_FLAG_DOUBLE, &dummy );
-		pval->len[1] = 4;						// ã¡ã‚‡ã£ã¨å¼·å¼•ã«é…åˆ—ã‚’æ‹¡å¼µ
+		pval->len[1] = 4;						// ‚¿‚å‚Á‚Æ‹­ˆø‚É”z—ñ‚ğŠg’£
 		pval->size = 4 * sizeof(double);
 		code_setva( pval, 1, HSPVAR_FLAG_DOUBLE, &dummy );
 		code_setva( pval, 2, HSPVAR_FLAG_DOUBLE, &dummy );
@@ -446,7 +446,7 @@ static int *code_getivec( void )
 	if ( pval->flag != HSPVAR_FLAG_INT ) {
 		dummy = 0;
 		code_setva( pval, 0, HSPVAR_FLAG_INT, &dummy );
-		pval->len[1] = 4;						// ã¡ã‚‡ã£ã¨å¼·å¼•ã«é…åˆ—ã‚’æ‹¡å¼µ
+		pval->len[1] = 4;						// ‚¿‚å‚Á‚Æ‹­ˆø‚É”z—ñ‚ğŠg’£
 		pval->size = 4 * sizeof(int);
 		v = (int *)HspVarCorePtrAPTR( pval, 0 );
 	}
@@ -457,7 +457,7 @@ static int *code_getivec( void )
 
 static int *code_getiv( void )
 {
-	//		å¤‰æ•°ãƒ‘ãƒ©ãƒ¡ãƒ¼ã‚¿ãƒ¼ã‚’å–å¾—(PDATãƒã‚¤ãƒ³ã‚¿)
+	//		•Ï”ƒpƒ‰ƒ[ƒ^[‚ğæ“¾(PDATƒ|ƒCƒ“ƒ^)
 	//
 	PVal *pval;
 	pval = code_getpval();
@@ -467,7 +467,7 @@ static int *code_getiv( void )
 
 static int *code_getiv2( PVal **out_pval )
 {
-	//		å¤‰æ•°ãƒ‘ãƒ©ãƒ¡ãƒ¼ã‚¿ãƒ¼ã‚’å–å¾—(PDATãƒã‚¤ãƒ³ã‚¿)(åˆæœŸåŒ–ã‚ã‚Š)
+	//		•Ï”ƒpƒ‰ƒ[ƒ^[‚ğæ“¾(PDATƒ|ƒCƒ“ƒ^)(‰Šú‰»‚ ‚è)
 	//
 	PVal *pval;
 	int *v;
@@ -486,12 +486,12 @@ static int *code_getiv2( PVal **out_pval )
 
 static void code_setivlen( PVal *pval, int len )
 {
-	//		é…åˆ—å¤‰æ•°ã‚’æ‹¡å¼µ(intã®ã¿)
+	//		”z—ñ•Ï”‚ğŠg’£(int‚Ì‚İ)
 	//
 	int ilen;
 	ilen = len;
 	if ( ilen < 1 ) ilen = 1;
-	pval->len[1] = ilen;						// ã¡ã‚‡ã£ã¨å¼·å¼•ã«é…åˆ—ã‚’æ‹¡å¼µ
+	pval->len[1] = ilen;						// ‚¿‚å‚Á‚Æ‹­ˆø‚É”z—ñ‚ğŠg’£
 	pval->size = ilen * sizeof(int);
 }
 
@@ -521,11 +521,11 @@ static void cmdfunc_dialog( void )
 static int cmdfunc_extcmd( int cmd )
 {
 	//		cmdfunc : TYPE_EXTCMD
-	//		(å†…è”µGUIã‚³ãƒãƒ³ãƒ‰)
+	//		(“à‘ GUIƒRƒ}ƒ“ƒh)
 	//
 	int p1,p2,p3,p4,p5,p6;
-	code_next();							// æ¬¡ã®ã‚³ãƒ¼ãƒ‰ã‚’å–å¾—(æœ€åˆã«å¿…ãšå¿…è¦ã§ã™)
-	switch( cmd ) {							// ã‚µãƒ–ã‚³ãƒãƒ³ãƒ‰ã”ã¨ã®åˆ†å²
+	code_next();							// Ÿ‚ÌƒR[ƒh‚ğæ“¾(Å‰‚É•K‚¸•K—v‚Å‚·)
+	switch( cmd ) {							// ƒTƒuƒRƒ}ƒ“ƒh‚²‚Æ‚Ì•ªŠò
 
 	case 0x00:								// button
 		{
@@ -640,7 +640,7 @@ static int cmdfunc_extcmd( int cmd )
 			bmscr->Print( ctx->stmp );
 			if ( chk == 0 ) break;
 		}
-		if ( sw ) {		// æ”¹è¡Œã—ãªã„
+		if ( sw ) {		// ‰üs‚µ‚È‚¢
 			bmscr->cx = x + bmscr->printsizex;
 			bmscr->cy = y;
 		}
@@ -716,16 +716,16 @@ static int cmdfunc_extcmd( int cmd )
 		p5 = code_getdi( 0 );
 		if ( p1&1 ) {
 			if (( p1 & 16 ) == 0 ) {
-				bmscr->DrawAllObjects();	// ã‚ªãƒ–ã‚¸ã‚§ã‚¯ãƒˆã‚’æç”»ã™ã‚‹
-				bmscr->SetDefaultFont();	// ãƒ•ã‚©ãƒ³ãƒˆã‚’å…ƒã«æˆ»ã™
+				bmscr->DrawAllObjects();	// ƒIƒuƒWƒFƒNƒg‚ğ•`‰æ‚·‚é
+				bmscr->SetDefaultFont();	// ƒtƒHƒ“ƒg‚ğŒ³‚É–ß‚·
 #ifdef HSPWIN
 				hgio_text_render();
 #endif
 			}
 		} else {
 			if ( p1 & 16 ) {
-				bmscr->DrawAllObjects();	// ã‚ªãƒ–ã‚¸ã‚§ã‚¯ãƒˆã‚’æç”»ã™ã‚‹
-				bmscr->SetDefaultFont();	// ãƒ•ã‚©ãƒ³ãƒˆã‚’å…ƒã«æˆ»ã™
+				bmscr->DrawAllObjects();	// ƒIƒuƒWƒFƒNƒg‚ğ•`‰æ‚·‚é
+				bmscr->SetDefaultFont();	// ƒtƒHƒ“ƒg‚ğŒ³‚É–ß‚·
 #ifdef HSPWIN
 				hgio_text_render();
 #endif
@@ -1006,11 +1006,11 @@ static int cmdfunc_extcmd( int cmd )
 	case 0x35:								// grect
 		{
 		double rot;
-		p1 = code_getdi(0);				// ãƒ‘ãƒ©ãƒ¡ãƒ¼ã‚¿1:æ•°å€¤
-		p2 = code_getdi(0);				// ãƒ‘ãƒ©ãƒ¡ãƒ¼ã‚¿2:æ•°å€¤
-		rot = code_getdd(0.0);			// ãƒ‘ãƒ©ãƒ¡ãƒ¼ã‚¿5:æ•°å€¤
-		p3 = code_getdi(bmscr->gx);		// ãƒ‘ãƒ©ãƒ¡ãƒ¼ã‚¿3:æ•°å€¤
-		p4 = code_getdi(bmscr->gy);		// ãƒ‘ãƒ©ãƒ¡ãƒ¼ã‚¿4:æ•°å€¤
+		p1 = code_getdi(0);				// ƒpƒ‰ƒ[ƒ^1:”’l
+		p2 = code_getdi(0);				// ƒpƒ‰ƒ[ƒ^2:”’l
+		rot = code_getdd(0.0);			// ƒpƒ‰ƒ[ƒ^5:”’l
+		p3 = code_getdi(bmscr->gx);		// ƒpƒ‰ƒ[ƒ^3:”’l
+		p4 = code_getdi(bmscr->gy);		// ƒpƒ‰ƒ[ƒ^4:”’l
 		bmscr->FillRot( p1, p2, p3, p4, (float)rot );
 		break;
 		}
@@ -1019,14 +1019,14 @@ static int cmdfunc_extcmd( int cmd )
 		Bmscr *bm2;
 		double rot;
 
-		p1 = code_getdi(0);			// ãƒ‘ãƒ©ãƒ¡ãƒ¼ã‚¿1:æ•°å€¤
-		p2 = code_getdi(0);			// ãƒ‘ãƒ©ãƒ¡ãƒ¼ã‚¿2:æ•°å€¤
-		p3 = code_getdi(0);			// ãƒ‘ãƒ©ãƒ¡ãƒ¼ã‚¿3:æ•°å€¤
-		rot = code_getdd(0.0);		// ãƒ‘ãƒ©ãƒ¡ãƒ¼ã‚¿4:æ•°å€¤
-		p4 = code_getdi(bmscr->gx);	// ãƒ‘ãƒ©ãƒ¡ãƒ¼ã‚¿5:æ•°å€¤
-		p5 = code_getdi(bmscr->gy);	// ãƒ‘ãƒ©ãƒ¡ãƒ¼ã‚¿6:æ•°å€¤
+		p1 = code_getdi(0);			// ƒpƒ‰ƒ[ƒ^1:”’l
+		p2 = code_getdi(0);			// ƒpƒ‰ƒ[ƒ^2:”’l
+		p3 = code_getdi(0);			// ƒpƒ‰ƒ[ƒ^3:”’l
+		rot = code_getdd(0.0);		// ƒpƒ‰ƒ[ƒ^4:”’l
+		p4 = code_getdi(bmscr->gx);	// ƒpƒ‰ƒ[ƒ^5:”’l
+		p5 = code_getdi(bmscr->gy);	// ƒpƒ‰ƒ[ƒ^6:”’l
 
-		bm2 = wnd->GetBmscrSafe( p1 );	// è»¢é€å…ƒã®BMSCRã‚’å–å¾—
+		bm2 = wnd->GetBmscrSafe( p1 );	// “]‘—Œ³‚ÌBMSCR‚ğæ“¾
 		bmscr->FillRotTex( p4, p5, (float)rot, bm2, p2, p3, bmscr->gx, bmscr->gy );
 		break;
 		}
@@ -1040,12 +1040,12 @@ static int cmdfunc_extcmd( int cmd )
 		int *ptx;
 		int *pty;
 
-		ep1 = code_getdi(0);				// ãƒ‘ãƒ©ãƒ¡ãƒ¼ã‚¿1:æ•°å€¤
+		ep1 = code_getdi(0);				// ƒpƒ‰ƒ[ƒ^1:”’l
 		px = code_getiv();
 		py = code_getiv();
 
 		if ( ep1 >= 0 ) {
-			bm2 = wnd->GetBmscrSafe( ep1 );	// è»¢é€å…ƒã®BMSCRã‚’å–å¾—
+			bm2 = wnd->GetBmscrSafe( ep1 );	// “]‘—Œ³‚ÌBMSCR‚ğæ“¾
 			ptx = code_getiv();
 			pty = code_getiv();
 		} else {
@@ -1141,22 +1141,22 @@ static int cmdfunc_extcmd( int cmd )
 		zx = code_getdd(1.0);
 		zy = code_getdd(1.0);
 		rot = code_getdd(0.0);
-		bm2 = wnd->GetBmscrSafe( p1 );	// è»¢é€å…ƒã®BMSCRã‚’å–å¾—
+		bm2 = wnd->GetBmscrSafe( p1 );	// “]‘—Œ³‚ÌBMSCR‚ğæ“¾
 
 		if (( rot == 0.0 )&&( zx == 1.0 )&&( zy == 1.0 )) {
-			//		å¤‰å½¢ãªã—
+			//		•ÏŒ`‚È‚µ
 			bmscr->CelPut( bm2, p2 );
 			break;
 		}
 
-		//	å¤‰å½¢ã‚ã‚Š
+		//	•ÏŒ`‚ ‚è
 		bmscr->CelPut( bm2, p2, (float)zx, (float)zy, (float)rot );
 		break;
 		}
 
 	case 0x3f:								// gfilter
 		p1=code_getdi(0);
-		//	å¤‰å½¢ã‚ã‚Š
+		//	•ÏŒ`‚ ‚è
 		bmscr->SetFilter( p1 );
 		break;
 	case 0x40:								// setreq
@@ -1211,10 +1211,10 @@ static int cmdfunc_extcmd( int cmd )
 		int *p_ptr;
 		int p_size;
 		PVal *p_pval;
-		p_ptr = code_getiv2( &p_pval );				// å¤‰æ•°ãƒã‚¤ãƒ³ã‚¿å–å¾—
-		p_size = bmscr->listMTouch( p_ptr );		// ãƒãƒ«ãƒã‚¿ãƒƒãƒãƒªã‚¹ãƒˆå–å¾—
-		code_setivlen( p_pval, p_size );			// è¦ç´ æ•°ã‚’è¨­å®š
-		ctx->stat = p_size;							// statã«è¦ç´ æ•°ã‚’ä»£å…¥
+		p_ptr = code_getiv2( &p_pval );				// •Ï”ƒ|ƒCƒ“ƒ^æ“¾
+		p_size = bmscr->listMTouch( p_ptr );		// ƒ}ƒ‹ƒ`ƒ^ƒbƒ`ƒŠƒXƒgæ“¾
+		code_setivlen( p_pval, p_size );			// —v‘f”‚ğİ’è
+		ctx->stat = p_size;							// stat‚É—v‘f”‚ğ‘ã“ü
 		break;
 		}
 	case 0x46:								// mtinfo
@@ -1222,10 +1222,10 @@ static int cmdfunc_extcmd( int cmd )
 		int *p_ptr;
 		HSP3MTOUCH *mt;
 		PVal *p_pval;
-		p_ptr = code_getiv2( &p_pval );				// å¤‰æ•°ãƒã‚¤ãƒ³ã‚¿å–å¾—
+		p_ptr = code_getiv2( &p_pval );				// •Ï”ƒ|ƒCƒ“ƒ^æ“¾
 		p1 = code_getdi( 0 );
 		mt = bmscr->getMTouch( p1 );
-		code_setivlen( p_pval, 4 );					// è¦ç´ æ•°ã‚’è¨­å®š
+		code_setivlen( p_pval, 4 );					// —v‘f”‚ğİ’è
 		if ( mt ) {
 			p_ptr[0] = mt->flag;
 			p_ptr[1] = mt->x;
@@ -1267,13 +1267,13 @@ static int cmdfunc_extcmd( int cmd )
 		char *ps;
 		int p_size;
 		int *i_res;
-		p_ptr = code_getiv2( &p_pval );				// å¤‰æ•°ãƒã‚¤ãƒ³ã‚¿å–å¾—
+		p_ptr = code_getiv2( &p_pval );				// •Ï”ƒ|ƒCƒ“ƒ^æ“¾
 		ps = code_gets();
 		i_res = wnd->getDevInfo()->devinfoi( ps, &p_size );
 		if ( i_res == NULL ) {
 			p_size = -1;
 		} else {
-			code_setivlen( p_pval, p_size );			// è¦ç´ æ•°ã‚’è¨­å®š
+			code_setivlen( p_pval, p_size );			// —v‘f”‚ğİ’è
 			memcpy( p_ptr, i_res, sizeof(int)*p_size );
 		}
 		ctx->stat = p_size;
@@ -1308,8 +1308,8 @@ static int cmdfunc_extcmd( int cmd )
 		{
 		char *ss;
 		char *ss_post;
-		ss = code_stmpstr( code_gets() );			// ãƒ‘ãƒ©ãƒ¡ãƒ¼ã‚¿1:æ–‡å­—åˆ—
-		ss_post = code_getds( "" );					// ãƒ‘ãƒ©ãƒ¡ãƒ¼ã‚¿2:æ–‡å­—åˆ—
+		ss = code_stmpstr( code_gets() );			// ƒpƒ‰ƒ[ƒ^1:•¶š—ñ
+		ss_post = code_getds( "" );					// ƒpƒ‰ƒ[ƒ^2:•¶š—ñ
 		if ( *ss_post == 0 ) ss_post = NULL;
 		ctx->stat = webtask->Request( ss, ss_post );
 		break;
@@ -1321,12 +1321,12 @@ static int cmdfunc_extcmd( int cmd )
 		char *ss;
 		char *dst;
 		int size;
-		ap = code_getva( &pv );					// ãƒ‘ãƒ©ãƒ¡ãƒ¼ã‚¿1:å¤‰æ•°
-		p1 = code_getdi( 0 );					// ãƒ‘ãƒ©ãƒ¡ãƒ¼ã‚¿2:æ•°å€¤
+		ap = code_getva( &pv );					// ƒpƒ‰ƒ[ƒ^1:•Ï”
+		p1 = code_getdi( 0 );					// ƒpƒ‰ƒ[ƒ^2:”’l
 		if ( p1 & 16 ) {
 			ss = webtask->getData( p1 );
 			if ( p1 == HTTPINFO_DATA ) {
-				//	çµæœãƒ‡ãƒ¼ã‚¿ã‚’ãƒã‚¤ãƒŠãƒªã§å–å¾—ã™ã‚‹
+				//	Œ‹‰Êƒf[ƒ^‚ğƒoƒCƒiƒŠ‚Åæ“¾‚·‚é
 				if ( pv->flag != HSPVAR_FLAG_STR ) {
 					code_setva( pv, ap, TYPE_STRING, "" );
 				}
@@ -1336,13 +1336,13 @@ static int cmdfunc_extcmd( int cmd )
 				dst = (char *)HspVarCorePtrAPTR( pv, ap );
 				memcpy( dst, ss, size );
 				dst[size] = 0;
-				webtask->setData( HTTPINFO_DATA, "" );	// å—ä¿¡ãƒ‡ãƒ¼ã‚¿ã‚’ç ´æ£„ã™ã‚‹
+				webtask->setData( HTTPINFO_DATA, "" );	// óMƒf[ƒ^‚ğ”jŠü‚·‚é
 				break;
 			}
-			code_setva( pv, ap, HSPVAR_FLAG_STR, ss );	// å¤‰æ•°ã«å€¤ã‚’ä»£å…¥
+			code_setva( pv, ap, HSPVAR_FLAG_STR, ss );	// •Ï”‚É’l‚ğ‘ã“ü
 		} else {
 			p2 = webtask->getStatus( p1 );
-			code_setva( pv, ap, HSPVAR_FLAG_INT, &p2 );	// å¤‰æ•°ã«å€¤ã‚’ä»£å…¥
+			code_setva( pv, ap, HSPVAR_FLAG_INT, &p2 );	// •Ï”‚É’l‚ğ‘ã“ü
 		}
 		break;
 		}
@@ -1373,7 +1373,7 @@ static int cmdfunc_extcmd( int cmd )
 		p1 = code_getdi( 0 );
 		p2 = code_getdi( 1 );
 
-		bm2 = wnd->GetBmscrSafe( p1 );	// è»¢é€å…ƒã®BMSCRã‚’å–å¾—
+		bm2 = wnd->GetBmscrSafe( p1 );	// “]‘—Œ³‚ÌBMSCR‚ğæ“¾
 		p_res = hgio_celputmulti( (BMSCR *)bmscr, p_ptr1, p_ptr2, p_ptr3, p2, (BMSCR *)bm2 );
 		ctx->stat = p_res;
 		break;
@@ -1425,11 +1425,13 @@ static int cmdfunc_extcmd( int cmd )
 		break;
 	case 0x66:								// gpuselight
 		p1 = code_getdi( 0 );
-		game->selectLight( p1 );
+		p2 = game->selectLight( p1 );
+		if (p2) throw HSPERR_ILLEGAL_FUNCTION;
 		break;
 	case 0x67:								// gpusecamera
 		p1 = code_getdi( 0 );
-		game->selectCamera( p1 );
+		p2 = game->selectCamera( p1 );
+		if (p2) throw HSPERR_ILLEGAL_FUNCTION;
 		break;
 	case 0x68:								// gpmatprm
 		{
@@ -1574,7 +1576,7 @@ static int cmdfunc_extcmd( int cmd )
 		ps = code_gets();
 		strncpy(fname, ps, HSP_MAX_PATH);
 		p1 = code_getdi(0);
-		mat = game->makeMaterialTexture(fname, p1);
+		mat = game->makeMaterialTexture(fname, p1,NULL);
 		if (mat == NULL) throw HSPERR_ILLEGAL_FUNCTION;
 		p6 = game->makeNewMat(mat, GPMAT_MODE_3D, -1, p1);
 		code_setva(p_pval, p_aptr, HSPVAR_FLAG_INT, &p6);
@@ -1684,7 +1686,7 @@ static int cmdfunc_extcmd( int cmd )
 		p1 = code_getdi( 0 );
 		p2 = code_getdi( 0 );
 		p3 = code_getdi( 3 );
-		bm2 = wnd->GetBmscrSafe( p1 );	// è»¢é€å…ƒã®BMSCRã‚’å–å¾—
+		bm2 = wnd->GetBmscrSafe( p1 );	// “]‘—Œ³‚ÌBMSCR‚ğæ“¾
 		if ( bm2 == NULL ) code_puterror( HSPERR_ILLEGAL_FUNCTION );
 		p6 = game->makeSpriteObj( p2, p3, bm2 );
 		code_setva( p_pval, p_aptr, HSPVAR_FLAG_INT, &p6 );
@@ -1705,7 +1707,7 @@ static int cmdfunc_extcmd( int cmd )
 		p1 = code_getdi( 0 );
 		p2 = code_getdi( 0 );
 		p3 = code_getdi( 0 );
-		o = game->getObj( p1 );
+		o = game->getSceneObj( p1 );
 		if ( o == NULL ) code_puterror( HSPERR_ILLEGAL_FUNCTION );
 		ctx->stat = o->_mode;
 		switch(p3) {
@@ -1739,7 +1741,8 @@ static int cmdfunc_extcmd( int cmd )
 		fp2 = (float)code_getdd( 1.5 );
 		fp3 = (float)code_getdd( 0.5 );
 		fp4 = (float)code_getdd( 768.0 );
-		p6 = game->makeNewCam( p1, fp1, fp2, fp3, fp4 );
+		p2 = code_getdi(0);
+		p6 = game->makeNewCam( p1, fp1, fp2, fp3, fp4, p2 );
 		if ( p6 < 0 ) code_puterror( HSPERR_ILLEGAL_FUNCTION );
 		break;
 	case 0x7f:								// gpnull
@@ -2006,7 +2009,7 @@ static int cmdfunc_extcmd( int cmd )
 		p1 = code_getdi( 0 );
 		p2 = code_getdi( 0 );
 		p3 = code_getdi( 0 );
-		obj = game->getObj( p1 );
+		obj = game->getSceneObj( p1 );
 		if ( obj == NULL ) throw HSPERR_ILLEGAL_FUNCTION;
 		obj->_mygroup = p2;
 		obj->_colgroup = p3;
@@ -2019,9 +2022,26 @@ static int cmdfunc_extcmd( int cmd )
 		gpobj *obj;
 		p_aptr = code_getva( &p_pval );
 		p1 = code_getdi( 0 );
-		obj = game->getObj( p1 );
+		p2 = code_getdi(0);
+		obj = game->getSceneObj( p1 );
 		if ( obj == NULL ) code_puterror( HSPERR_ILLEGAL_FUNCTION );
-		p1 = obj->_mygroup;
+		switch (p2) {
+		case 0:
+			p1 = obj->_mygroup;
+			break;
+		case 1:
+			p1 = obj->_colgroup;
+			break;
+		case 2:
+			p1 = obj->_rendergroup;
+			break;
+		case 3:
+			p1 = obj->_lightgroup;
+			break;
+		default:
+			code_puterror(HSPERR_ILLEGAL_FUNCTION);
+			break;
+		}
 		code_setva( p_pval, p_aptr, HSPVAR_FLAG_INT, &p1 );
 		break;
 		}
@@ -2030,7 +2050,7 @@ static int cmdfunc_extcmd( int cmd )
 		gpobj *obj;
 		p1 = code_getdi( 0 );
 		p2 = 0;
-		obj = game->getObj( p1 );
+		obj = game->getSceneObj( p1 );
 		if ( obj == NULL ) p2 = -1;
 		ctx->stat = p2;
 		break;
@@ -2440,7 +2460,7 @@ static int cmdfunc_extcmd( int cmd )
 		case 1:
 		{
 			Bmscr *bm2;
-			bm2 = wnd->GetBmscrSafe(p1);	// è»¢é€å…ƒã®BMSCRã‚’å–å¾—
+			bm2 = wnd->GetBmscrSafe(p1);	// “]‘—Œ³‚ÌBMSCR‚ğæ“¾
 			if (bm2) {
 				res = bm2->texid;
 			}
@@ -2524,6 +2544,51 @@ static int cmdfunc_extcmd( int cmd )
 		p2 = code_getdi(0);
 		ctx->stat = game->AddSuicideEvent(p1, p2);
 		break;
+
+	case 0x10b:								// event_aim
+		break;
+	case 0x10c:								// objaim
+		break;
+	case 0x10d:								// gpscrmat
+	{
+		gameplay::Material *mat;
+		PVal *p_pval;
+		APTR p_aptr;
+		gameplay::Texture *opttex = NULL;
+		p_aptr = code_getva(&p_pval);
+		p1 = code_getdi(0);
+		p2 = code_getdi(0);
+		Bmscr *bm = wnd->GetBmscrSafe(p1);
+		gameplay::FrameBuffer *fb = (gameplay::FrameBuffer *)bm->master_buffer;
+		if (fb) {
+			gameplay::RenderTarget *target = fb->getRenderTarget();
+			if (target) {
+				opttex = target->getTexture();
+			}
+		}
+		if (opttex == NULL) throw HSPERR_ILLEGAL_FUNCTION;
+		p2 |= GPOBJ_MATOPT_USERBUFFER;
+		mat = game->makeMaterialTexture("", p2, opttex);
+		if (mat == NULL) throw HSPERR_ILLEGAL_FUNCTION;
+		p6 = game->makeNewMat(mat, GPMAT_MODE_3D, -1, p2);
+		code_setva(p_pval, p_aptr, HSPVAR_FLAG_INT, &p6);
+		break;
+	}
+	case 0x10e:								// setobjrender
+	{
+		p1 = code_getdi(0);
+		p2 = code_getdi(1);
+		p3 = code_getdi(1);
+		gpobj *obj = game->getSceneObj(p1);
+		if (obj == NULL) code_puterror(HSPERR_ILLEGAL_FUNCTION);
+		obj->_rendergroup = p2;
+		obj->_lightgroup = p3;
+		break;
+	}
+	case 0x10f:								// 
+	{
+		break;
+	}
 
 	case 0x110:								// event_pos
 	case 0x111:								// event_quat
@@ -3801,9 +3866,9 @@ static int cmdfunc_extcmd( int cmd )
 		p1 = code_getdi( -1 );
 		p2 = code_getdi( 0 );
 
-		getpath(fname,fext,16+2);				// æ‹¡å¼µå­ã‚’å°æ–‡å­—ã§å–ã‚Šå‡ºã™
+		getpath(fname,fext,16+2);				// Šg’£q‚ğ¬•¶š‚Åæ‚èo‚·
 		if (!strcmp(fext,".wav")) {				// when "wav"
-			mp = dpm_readalloc( fname );		// HSPãƒªã‚½ãƒ¼ã‚¹ã‚’å«ã‚ã¦æ¤œç´¢ã™ã‚‹
+			mp = dpm_readalloc( fname );		// HSPƒŠƒ\[ƒX‚ğŠÜ‚ß‚ÄŒŸõ‚·‚é
 			if ( mp == NULL ) { ctx->stat = -1; break; }
 			ctx->stat = SndRegistWav( p1, mp, 0);
 			if ( p2 & 1 ) { SndSetLoop( ctx->stat, 0 ); }
@@ -3813,7 +3878,7 @@ static int cmdfunc_extcmd( int cmd )
 		if (!strcmp(fext,".ogg")) {				// when "ogg"
 			hspctx->stat = SndRegistOgg( p1, fname, p2 );
 		}
-		if (!strcmp(fext,".s")) {				// when "s" (oggã¨åŒæ§˜)
+		if (!strcmp(fext,".s")) {				// when "s" (ogg‚Æ“¯—l)
 			hspctx->stat = SndRegistOgg( p1, fname, p2 );
 		}
 */
@@ -3981,12 +4046,12 @@ static void *reffunc_function( int *type_res, int arg )
 	int p1;
 	void *ptr;
 
-	//		è¿”å€¤ã®ã‚¿ã‚¤ãƒ—ã‚’è¨­å®šã™ã‚‹
+	//		•Ô’l‚Ìƒ^ƒCƒv‚ğİ’è‚·‚é
 	//
-	*type_res = HSPVAR_FLAG_INT;			// è¿”å€¤ã®ã‚¿ã‚¤ãƒ—ã‚’æŒ‡å®šã™ã‚‹
-	ptr = &reffunc_intfunc_ivalue;			// è¿”å€¤ã®ãƒã‚¤ãƒ³ã‚¿
+	*type_res = HSPVAR_FLAG_INT;			// •Ô’l‚Ìƒ^ƒCƒv‚ğw’è‚·‚é
+	ptr = &reffunc_intfunc_ivalue;			// •Ô’l‚Ìƒ|ƒCƒ“ƒ^
 
-	//			'('ã§å§‹ã¾ã‚‹ã‹ã‚’èª¿ã¹ã‚‹
+	//			'('‚Ån‚Ü‚é‚©‚ğ’²‚×‚é
 	//
 	if ( *type != TYPE_MARK ) throw HSPERR_INVALID_FUNCPARAM;
 	if ( *val != '(' ) throw HSPERR_INVALID_FUNCPARAM;
@@ -4027,7 +4092,7 @@ static void *reffunc_function( int *type_res, int arg )
 		throw HSPERR_UNSUPPORTED_FUNCTION;
 	}
 
-	//			')'ã§çµ‚ã‚ã‚‹ã‹ã‚’èª¿ã¹ã‚‹
+	//			')'‚ÅI‚í‚é‚©‚ğ’²‚×‚é
 	//
 	if ( *type != TYPE_MARK ) throw HSPERR_INVALID_FUNCPARAM;
 	if ( *val != ')' ) throw HSPERR_INVALID_FUNCPARAM;
@@ -4040,15 +4105,15 @@ static void *reffunc_function( int *type_res, int arg )
 static void *reffunc_sysvar( int *type_res, int arg )
 {
 	//		reffunc : TYPE_EXTSYSVAR
-	//		(æ‹¡å¼µã‚·ã‚¹ãƒ†ãƒ å¤‰æ•°)
+	//		(Šg’£ƒVƒXƒeƒ€•Ï”)
 	//
 	void *ptr;
 	if ( arg & 0x100 ) return reffunc_function( type_res, arg );
 
-	//		è¿”å€¤ã®ã‚¿ã‚¤ãƒ—ã‚’è¨­å®šã™ã‚‹
+	//		•Ô’l‚Ìƒ^ƒCƒv‚ğİ’è‚·‚é
 	//
-	*type_res = HSPVAR_FLAG_INT;			// è¿”å€¤ã®ã‚¿ã‚¤ãƒ—ã‚’æŒ‡å®šã™ã‚‹
-	ptr = &reffunc_intfunc_ivalue;			// è¿”å€¤ã®ãƒã‚¤ãƒ³ã‚¿
+	*type_res = HSPVAR_FLAG_INT;			// •Ô’l‚Ìƒ^ƒCƒv‚ğw’è‚·‚é
+	ptr = &reffunc_intfunc_ivalue;			// •Ô’l‚Ìƒ|ƒCƒ“ƒ^
 
 	switch( arg ) {
 
@@ -4088,7 +4153,7 @@ static void *reffunc_sysvar( int *type_res, int arg )
 static int termfunc_extcmd( int option )
 {
 	//		termfunc : TYPE_EXTCMD
-	//		(å†…è”µGUI)
+	//		(“à‘ GUI)
 	//
 #ifdef USE_MMAN
 	delete mmman;
@@ -4136,13 +4201,13 @@ void hsp3typeinit_extcmd( HSP3TYPEINFO *info )
 	info->cmdfunc = cmdfunc_extcmd;
 	info->termfunc = termfunc_extcmd;
 
-	//		HSPEXINFOã«é–¢æ•°ã‚’ç™»éŒ²ã™ã‚‹
+	//		HSPEXINFO‚ÉŠÖ”‚ğ“o˜^‚·‚é
 	//
 	exinfo->actscr = &cur_window;					// Active Window ID
 	exinfo->HspFunc_getbmscr = ex_getbmscr;
 	exinfo->HspFunc_mref = ex_mref;
 
-	//		ãƒã‚¤ãƒŠãƒªãƒ¢ãƒ¼ãƒ‰ã‚’è¨­å®š
+	//		ƒoƒCƒiƒŠƒ‚[ƒh‚ğİ’è
 	//
 	//_setmode( _fileno(stdin),  _O_BINARY );
 }
