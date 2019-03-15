@@ -5,11 +5,11 @@
 %type
 拡張命令
 %ver
-3.5
+3.6
 %note
 hgimg4.asまたはhgimg4dx.asをインクルードすること。
 %date
-2017/08/08
+2019/03/06
 %author
 onitama
 %dll
@@ -413,6 +413,7 @@ gptexmat
 %prm
 var,"file",opt
 var     : 生成されたマテリアルIDが代入される変数名
+"file"  : 読み込まれるテクスチャファイル名
 opt(0)  : マテリアルオプション値
 %inst
 テクスチャ(画像)マテリアルの生成を行ないます。
@@ -423,6 +424,47 @@ opt(0)  : マテリアルオプション値
 	gpbox id_model, 1, , id_texmat		; 箱ノードを追加
 ^p
 上の例では、resフォルダ内のqbox.pngをテクスチャとして持ったマテリアルを持った、立方体のノードオブジェクトが生成されます。
+optパラメーターにより、マテリアルの設定を変更することができます。
+これらの設定は、gpmatstate命令で別途設定することも可能です。
+^p
+        マクロ名                内容
+    -------------------------------------------------------------------
+	GPOBJ_MATOPT_NOLIGHT    ライティングを行なわない
+	GPOBJ_MATOPT_NOMIPMAP   MIPMAPを生成しない
+	GPOBJ_MATOPT_NOCULL     カリングを無効にする
+	GPOBJ_MATOPT_NOZTEST    Zテストを無効にする
+	GPOBJ_MATOPT_NOZWRITE   Zバッファ書き込みを無効にする
+	GPOBJ_MATOPT_BLENDADD   プレンドモードを加算に設定する
+^p
+正常にマテリアルが生成できなかった場合は、エラー3(パラメータの値が異常です)が発生します。
+正しく生成された場合は、varで指定された変数にマテリアルID(整数値)が代入されます。
+
+%href
+gpcolormat
+gpusermat
+gpscrmat
+
+
+%index
+gpscrmat
+オフスクリーンテクスチャマテリアルの生成
+%group
+拡張画面制御命令
+%prm
+var,id,opt
+var     : 生成されたマテリアルIDが代入される変数名
+id      : 参照されるオフスクリーンバッファID
+opt(0)  : マテリアルオプション値
+%inst
+オフスクリーンテクスチャバッファを参照するマテリアルを生成します。
+マテリアルを独自に生成することにより、オフスクリーンにレンダリングされた画像イメージをテクスチャとして再利用することが可能になります。
+^p
+	例:
+	buffer id_render,512,512,screen_offscreen
+	gpscrmat id_texmat, id_render, GPOBJ_MATOPT_NOLIGHT|GPOBJ_MATOPT_NOMIPMAP	; テクスチャマテリアル作成
+	gpbox id_model, 1, , id_texmat		; 箱ノードを追加
+^p
+上の例では、buffer命令で作成されたオフスクリーンテクスチャバッファを参照する立方体のノードオブジェクトが生成されます。
 optパラメーターにより、マテリアルの設定を変更することができます。
 これらの設定は、gpmatstate命令で別途設定することも可能です。
 ^p
@@ -487,6 +529,7 @@ gpmatprm
 gpcolormat
 gptexmat
 gpusershader
+gpscrmat
 
 
 %index
@@ -746,12 +789,13 @@ gpcamera
 %group
 拡張画面制御命令
 %prm
-id,fov,aspect,near,far
+id,fov,aspect,near,far,sw
 id(0)      : オブジェクトのID
 fov(45)    : 視野(FOV)パラメーター
 aspect(1.5): アスペクト比
 near(0.5)  : ニアクリップZ値
 far(768)   : ファークリップZ値
+sw(0)      : カメラタイプ値(0,1)
 %inst
 生成済みのノードにカメラとしての機能を追加します。
 idパラメーターで、ノードのオブジェクトIDを指定します。
@@ -765,6 +809,8 @@ aspectパラメーターでアスペクト比(縦横比)を指定します。
 	gpusecamera id_camera			; 使用するカメラを選択する
 	setpos id_camera, 0,20,20		; カメラ位置を設定する
 ^p
+カメラタイプ値(sw)に1を指定することにより、平行投影(Orthographic)を行うカメラを設定することが可能です。その場合は、fov値はズーム値(1.0が標準)として反映されます。
+
 シーン内に配置されたカメラは、gpusecamera命令により切り替えることができます。
 
 %href
@@ -1285,6 +1331,10 @@ opt(0)     : マテリアルオプション値
 gpmatprm命令と基本的に同じ機能ですが、gpmatprmt命令は、"filename"で指定されたファイルをテクスチャ画像として設定します。
 sampler2D型のパラメーターをシェーダーに渡す場合に使用することができます。
 optパラメーターに、GPOBJ_MATOPT_NOMIPMAPを指定した場合は、MIPMAPを生成しません。
+また、optパラメーターに、GPOBJ_MATOPT_CUBEMAPを指定した場合は、テクスチャをキューブマップとして扱います。
+キューブマップは、6面方向の画像をまとめた特殊な形式で環境マップやスカイボックスなどに利用することができます。
+(キューブマップ画像は、+X,-X,+Y,-Y,+Z,-Z放送の6画像を縦に連結した1枚の.PNG形式を使用してください。)
+
 %href
 gpmatprm
 gpmatprm1

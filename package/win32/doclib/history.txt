@@ -5,8 +5,10 @@ Hot Soup Processor ver3.6                           HSP : Hot Soup Processor
 
 ・hsp3関連 更新履歴
 
-	2019/03/07 3.6 beta1
+	2019/03/14 3.6 beta1
 
+	[HGIMG4] gpscrmat命令を追加
+	[HGIMG4] gpcamera命令に平行投影カメラのオプション設定を追加
 	[HGIMG4] .gpbファイルの読み込みを高速化
 	[HGIMG4] .gpb出力の構造によって正しく表示できないモデルがあったのを修正
 	[HGIMG4] .gpb出力時に独立したFBXアニメーションファイルをマージする機能を追加
