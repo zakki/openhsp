@@ -1498,10 +1498,19 @@ int gamehsp::addAnimId(int objid, char *name, int start, int end, int option)
 	obj = getObj(objid);
 	if (obj == NULL) return -1;
 	anim = obj->_animation;
-	if (anim == NULL) return -1;
-	if (*name == 0) return -1;
+	if (anim == NULL) {
+		GP_WARN( "Not Found Animation in OBJ#%d",objid );
+		return -1;
+	}
+	if (*name == 0) {
+		GP_WARN("No Animation name");
+		return -1;
+	}
 	clip = anim->getClip(name);
-	if (clip != NULL) return -1;
+	if (clip != NULL) {
+		GP_WARN("Already exist Animation [%s] in OBJ#%d", name, objid);
+		return -1;
+	}
 
 	p_start = (unsigned long)start;
 	if (end < 0) {
@@ -1598,7 +1607,13 @@ int gamehsp::makeFloorNode( float xsize, float ysize, int color, int matid )
 	}
 	else {
 		material = getMaterial( matid );
-		makeNewModelWithMat(obj, floorMesh, matid);
+		if (material == NULL) {
+			material = makeMaterialColor(-1, GPOBJ_MATOPT_NOLIGHT);
+			makeNewModel(obj, floorMesh, material);
+		}
+		else {
+			makeNewModelWithMat(obj, floorMesh, matid);
+		}
 	}
 
     // メッシュ削除
@@ -1651,7 +1666,13 @@ int gamehsp::makePlateNode( float xsize, float ysize, int color, int matid )
 	}
 	else {
 		material = getMaterial( matid );
-		makeNewModelWithMat(obj, floorMesh, matid);
+		if (material) {
+			makeNewModelWithMat(obj, floorMesh, matid);
+		}
+		else {
+			material = makeMaterialColor(-1, GPOBJ_MATOPT_NOLIGHT);
+			makeNewModel(obj, floorMesh, material);
+		}
 	}
 
     // メッシュ削除
@@ -1686,7 +1707,13 @@ int gamehsp::makeBoxNode( float size, int color, int matid )
 	}
 	else {
 		material = getMaterial(matid);
-		makeNewModelWithMat(obj, mesh, matid);
+		if (material) {
+			makeNewModelWithMat(obj, mesh, matid);
+		}
+		else {
+			material = makeMaterialColor(-1, GPOBJ_MATOPT_NOLIGHT);
+			makeNewModel(obj, mesh, material);
+		}
 	}
 
 	// 初期化パラメーターを保存
@@ -2136,9 +2163,12 @@ int gamehsp::makeCloneNode( int objid, int mode, int eventID )
 		node->setUserObject(NULL);
 
 		newobj->_node = node->clone();
+		newobj->_animation = newobj->_node->getAnimation("animations");
 
 		newobj->_node->setUserObject(newobj);
 		newobj->addRef();
+
+		makeModelNodeSub(newobj->_node, 0);
 
 		if (_curscene >= 0) {
 			_scene->addNode(newobj->_node);
