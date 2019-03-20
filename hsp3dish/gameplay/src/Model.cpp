@@ -334,6 +334,8 @@ unsigned int Model::draw(bool wireframe )
 	unsigned int meshcount;
 	_drawtotal = 0;
 
+	//GP_WARN( "Draw[%s]",getNode()->getId() );
+
 	if (partCount == 0)
     {
         // No mesh parts (index buffers).
