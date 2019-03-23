@@ -91,6 +91,7 @@ void FBXSceneEncoder::write(const string& filepath, const EncoderArguments& argu
     }
 
     print("Loading Scene.");
+	_fbxScene = fbxScene;
     loadScene(fbxScene);
     print("Load materials");
     loadMaterials(fbxScene);
@@ -508,7 +509,31 @@ void FBXSceneEncoder::loadAnimations(FbxScene* fbxScene, const EncoderArguments&
     }
 }
 
-Node* FBXSceneEncoder::loadNode(FbxNode* fbxNode)
+
+	/**
+	 * Get the world matrix of a node.
+	 *
+	 * \param _pnNode The node for which to get the world matrix.
+	 * \param _psScene The scene containing the node.
+	 * \return Returns the world matrix of a node.
+	 */
+FbxAMatrix &FBXSceneEncoder::GetNodeWorldMatrix( FbxNode * _pnNode ) {
+		FbxScene * _psScene = _fbxScene;
+
+		FbxAMatrix & xmTrans = _psScene->GetAnimationEvaluator()->GetNodeGlobalTransform( const_cast<FbxNode *>(_pnNode) );
+		FbxAMatrix xmGeometry;
+		FbxVector4 vTranslation, vRotation, vScaling;
+		vTranslation = _pnNode->GetGeometricTranslation( FbxNode::eSourcePivot );
+		vRotation = _pnNode->GetGeometricRotation( FbxNode::eSourcePivot );
+		vScaling = _pnNode->GetGeometricScaling( FbxNode::eSourcePivot );
+		xmGeometry.SetT( vTranslation );
+		xmGeometry.SetR( vRotation );
+		xmGeometry.SetS( vScaling );
+		FbxAMatrix xmFinal = xmTrans * xmGeometry;
+		return xmFinal;
+}
+
+Node* FBXSceneEncoder::loadNode(FbxNode* fbxNode, FbxNode *baseNode)
 {
     Node* node = NULL;
 
@@ -530,7 +555,27 @@ Node* FBXSceneEncoder::loadNode(FbxNode* fbxNode)
     _gamePlayFile.addNode(node);
 
     transformNode(fbxNode, node);
-    
+
+#if 0
+	if ( baseNode ) {
+		float m[16];
+		FbxAMatrix mat;
+		FbxAMatrix mat2;
+	    //mat = GetNodeWorldMatrix(fbxNode);
+        mat = fbxNode->EvaluateLocalTransform();
+		mat2 = baseNode->EvaluateLocalTransform();
+		mat *= mat2.Inverse();
+        copyMatrix(mat, m);
+        node->setTransformMatrix(m);
+	}
+/*
+		std::string name = node->getId();
+		if ( strcmp( name.c_str(),"PronamaChan" )==0 ) {
+            node->resetTransformMatrix();
+		}
+*/
+#endif
+
     loadCamera(fbxNode, node);
     loadLight(fbxNode, node);
     loadModel(fbxNode, node);
@@ -546,7 +591,7 @@ Node* FBXSceneEncoder::loadNode(FbxNode* fbxNode)
     const int childCount = fbxNode->GetChildCount();
     for (int i = 0; i < childCount; ++i)
     {
-        Node* child = loadNode(fbxNode->GetChild(i));
+        Node* child = loadNode(fbxNode->GetChild(i),baseNode);
         if (child)
         {
             node->addChild(child);
@@ -899,7 +944,7 @@ void FBXSceneEncoder::loadLight(FbxNode* fbxNode, Node* node)
 
 void FBXSceneEncoder::loadModel(FbxNode* fbxNode, Node* node)
 {
-    FbxMesh* fbxMesh = fbxNode->GetMesh();
+	FbxMesh* fbxMesh = fbxNode->GetMesh();
 	if (!fbxMesh || fbxMesh->GetPolygonVertexCount() == 0)
     {
         return;
@@ -909,11 +954,12 @@ void FBXSceneEncoder::loadModel(FbxNode* fbxNode, Node* node)
         Mesh* mesh = loadMesh(fbxMesh);
         Model* model = new Model();
         model->setMesh(mesh);
-        node->setModel(model);
-        loadSkin(fbxMesh, model);
+		node->setModel(model);
+		
+		loadSkin(fbxMesh, model, fbxNode);
         if (model->getSkin())
         {
-            node->resetTransformMatrix();
+              node->resetTransformMatrix();
         }
     }
 }
@@ -1188,7 +1234,7 @@ Material* FBXSceneEncoder::createMaterial(const string& name, FbxSurfaceMaterial
     return material;
 }
 
-void FBXSceneEncoder::loadSkin(FbxMesh* fbxMesh, Model* model)
+void FBXSceneEncoder::loadSkin(FbxMesh* fbxMesh, Model* model, FbxNode *basenode)
 {
     const int deformerCount = fbxMesh->GetDeformerCount();
     for (int i = 0; i < deformerCount; ++i)
@@ -1217,7 +1263,7 @@ void FBXSceneEncoder::loadSkin(FbxMesh* fbxMesh, Model* model)
                     assert(jointName);
                     jointNames.push_back(jointName);
 					//printf( "#     Joint [%s]\n",jointName );
-                    Node* joint = loadNode(linkedNode);
+                    Node* joint = loadNode(linkedNode, basenode);
                     assert(joint);
                     joints.push_back(joint);
 

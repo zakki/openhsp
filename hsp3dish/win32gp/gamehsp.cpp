@@ -1847,15 +1847,20 @@ int gamehsp::makeModelNode(char *fname, char *idname, char *defs)
 			return -1;
 		}
 
+		size_t i, max;
+		std::vector<Node*> nodes;
 		node = scene->getFirstNode();
 		while (1) {
 			if (node == NULL) break;
-			rootNode->addChild(node);
-			//GP_WARN( "#ADD[%s]",node->getId() );
+			nodes.push_back(node);
 			node = node->getNextSibling();
 		}
-
-		size_t i, max;
+		max = nodes.size();
+		for (i = 0; i < max; i++) {
+			node = nodes[i];
+			rootNode->addChild(node);
+			//GP_WARN("#ADD[%s]", node->getId());
+		}
 		max = bundle->_savedNode.size();
 		for (i = 0; i < max; i++) {
 			node = bundle->_savedNode[i];
