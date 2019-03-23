@@ -491,11 +491,11 @@ Scene* Bundle::loadScene(const char* id)
     }
 #endif
 
-
 	//testNode = scene->findNode("Character1_Head");
 	
     resolveJointReferences(scene, NULL);
-    return scene;
+
+	return scene;
 }
 
 Node* Bundle::loadNode(const char* id)
