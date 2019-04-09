@@ -22,6 +22,8 @@
 #func netgetv netgetv $202
 #func netrequest_get netrequest_get $202
 #func netrequest_post netrequest_post $202
+#func netrequest_put netrequest_put $202
+#func netrequest_delete netrequest_delete $202
 
 #func filecrc filecrc $202
 #func filemd5 filemd5 $202
@@ -94,6 +96,9 @@
 #cfunc netgetv_size "_netgetv_size@0"				// 必要なバッファサイズ
 #cfunc netgetv_requestsize "_netgetv_requestsize@0"	// 受信サイズ
 #cfunc netgetv_ptr "_netgetv_ptr@0"					// ポインタ取得（使わない）
+
+#func netrequest_post2 "_netrequest_post2@12" str,var,int
+#func netrequest_put2 "_netrequest_put2@12" str,var,int
 
 #module
 

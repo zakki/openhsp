@@ -6,11 +6,11 @@
 %type
 “à‘ –½—ß
 %ver
-3.5
+3.6
 %note
-ver3.5•W€–½—ß
+ver3.6•W€–½—ß
 %date
-2017/09/08
+2019/04/09
 %author
 onitama
 %url
@@ -292,6 +292,7 @@ p4=0`     : ‹éŒ`‚Ì‰E‰ºYÀ•W
 %href
 color
 hsvcolor
+rgbcolor
 palcolor
 line
 circle
@@ -389,6 +390,7 @@ color 0,0,0 ‚Í•‚ÉAcolor 255,255,255 ‚Í”’‚É‚È‚è‚Ü‚·B
 %href
 palcolor
 hsvcolor
+rgbcolor
 %port+
 Let
 
@@ -643,6 +645,7 @@ p1‚ÍƒpƒŒƒbƒgƒR[ƒh‚É‚È‚è‚Ü‚·BƒpƒŒƒbƒgƒR[ƒh‚ÍA ƒpƒŒƒbƒgƒ‚[ƒh‰æ–Ê‚Ì‚½‚ß‚É—pˆÓ‚
 %href
 color
 hsvcolor
+rgbcolor
 palette
 
 
@@ -1138,6 +1141,29 @@ color
 palcolor
 %port+
 Let
+
+
+%index
+rgbcolor
+RGBŒ`®‚ÅƒJƒ‰[‚ğİ’è‚·‚é
+%group
+‰æ–Ê§Œä–½—ß
+%prm
+p1
+p1=$000000`$ffffff(0) : RGBŒ`® ƒJƒ‰[ƒR[ƒh’l
+
+%inst
+F‚Ìw’è‚ğRGBŒ`®($rrggbb)‚Ås‚È‚¢‚Ü‚·B
+p1‚ÉRGB‚»‚ê‚¼‚ê‚Ì‹P“x‚ğ8bit’l‚Å•ÏŠ·‚µ‚½’l‚ğw’è‚µ‚Ü‚·B
+16i”‚ğw’è‚·‚éu$v‚ğg—p‚µ‚Äu$112233v‚Ì‚æ‚¤‚É‹Lq‚·‚é‚±‚Æ‚ª‚Å‚«‚Ü‚·B
+‚±‚Ìê‡AuR=$11,G=$22,B=$33v‚ğw’è‚·‚é‚±‚Æ‚É‚È‚è‚Ü‚·B
+–½—ß‚Ì‹@”\‚Æ‚µ‚Ä‚ÍAcolor–½—ß‚âhsvcolor–½—ß‚Æ“¯“™‚ÅAˆÈ~‚Ì•`‰æ–½—ß‚Åİ’è‚³‚ê‚½F‚ªg—p‚³‚ê‚Ü‚·B
+rgbcolor‚Åw’è‚·‚éRGBŒ`®‚ÌƒJƒ‰[ƒR[ƒh’l‚ÍAhtml“™‚Åw’è‚·‚é24bitƒJƒ‰[ƒR[ƒh‚ÆŒİŠ·«‚ª‚ ‚è‚Ü‚·B
+
+%href
+color
+palcolor
+hsvcolor
 
 
 

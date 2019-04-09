@@ -6,7 +6,7 @@
 %type
 拡張命令
 %ver
-3.5
+3.51
 %note
 hspinet.asをインクルードすること。
 
@@ -687,6 +687,8 @@ netgetv_data
 netgetv_size
 netrequest
 netrequest_post
+netrequest_put
+netrequest_delete
 neturl
 
 
@@ -731,6 +733,73 @@ netgetv_data
 netgetv_size
 netrequest
 netrequest_get
+netrequest_put
+netrequest_delete
+neturl
+
+
+%index
+netrequest_delete
+httpリクエスト発行(DELETE)
+%group
+拡張入出力制御命令
+%prm
+"FileName"
+"FileName" : リクエストを行なうファイル名
+
+%inst
+httpリクエストを行ないます。
+netrequest_delete命令により、DELETEリクエストを送信し、指定されたリソース(ファイル名)を削除します。
+先に、neturl命令によりファイル名を除いたURLを指定しておく必要があります。
+^
+netrequest命令でhttpリクエストを発行した後は、netexec命令により受信処理を
+スクリプト側で行なう必要があります。
+処理が完了した後は、netgetv命令またはnetgetv_data命令により任意の変数でデータを受け取ることができます。
+
+%href
+netgetv
+netgetv_data
+netgetv_size
+netrequest
+netrequest_put
+netrequest_get
+neturl
+
+
+%index
+netrequest_put
+httpリクエスト発行(PUT)
+%group
+拡張入出力制御命令
+%prm
+"FileName",p1
+"FileName" : リクエストを行なうファイル名
+p1         : PUT用のデータを格納した文字列型変数名
+
+%inst
+httpリクエストを行ないます。
+netrequest_put命令により、PUTリクエストを送信し、指定されたリソースの更新を行うことができます。
+先に、neturl命令によりファイル名を除いたURLを指定しておく必要があります。
+パラメーターの情報は、netrequest_post命令と同様に、POST形式によるCGIパラメーター受け渡しに対応しています。
+^
+"FileName"で、リクエストを行なうファイル名を指定します。
+先に、neturl命令によりファイル名を除いたURLを指定しておく必要があります。
+p1に、POST用のデータを格納した変数名を指定します。
+あらかじめ、変数は文字列型でPOST形式のデータを格納しておく必要があります。
+POST形式のデータは、GET形式のURLで指定される「&」で区切られたパラメーターと同様のものになります。
+^
+netrequest命令でhttpリクエストを発行した後は、netexec命令により受信処理をスクリプト側で行なう必要があります。
+処理が完了した後は、netgetv命令またはnetgetv_data命令により任意の変数でデータを受け取ることができます。
+GET形式でCGIにデータをリクエストする場合は、netrequest_get命令を使用してください。
+
+%href
+netgetv
+netgetv_data
+netgetv_size
+netrequest
+netrequest_get
+netrequest_post
+netrequest_delete
 neturl
 
 
@@ -756,6 +825,8 @@ netgetv_data
 netgetv_size
 netrequest_get
 netrequest_post
+netrequest_put
+netrequest_delete
 
 
 
