@@ -89,6 +89,7 @@
 #define global objmode_normal (0)
 #define global objmode_guifont (1)
 #define global objmode_usefont (2)
+#define global objmode_usecolor (4)
 
 #define global gsquare_grad (-257)
 

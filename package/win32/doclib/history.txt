@@ -5,8 +5,11 @@ Hot Soup Processor ver3.6                           HSP : Hot Soup Processor
 
 ・hsp3関連 更新履歴
 
-	2019/03/20 3.6 beta1
+	2019/04/09 3.6 beta1
 
+	24bitカラーコードを指定するためのrgbcolor命令を追加
+	objcolor命令を追加、objmode命令のオプションにより配置オブジェクトの文字色・背景色指定が可能になります
+	[hspinet] http/httpsリクエストでPUT/DELETEメソッドに対応(inovia)
 	[HGIMG4] gpscrmat命令を追加
 	[HGIMG4] gpcamera命令に平行投影カメラのオプション設定を追加
 	[HGIMG4] .gpbファイルの読み込みを高速化

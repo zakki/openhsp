@@ -1,9 +1,9 @@
 %type
 システム定義マクロ
 %ver
-3.4
+3.6
 %date
-2014/07/16
+2019/04/09
 %note
 このマクロはhspdef.as内で定義されています。
 %group
@@ -14,7 +14,6 @@ onitama
 Win
 Mac
 Cli
-Let
 
 
 %index
@@ -589,6 +588,8 @@ font_bold
 font_italic
 font_underline
 font_strikeout
+
+
 %index
 objmode_normal
 HSP標準フォントを設定
@@ -614,6 +615,8 @@ objmode命令の第1引数に指定することで、オブジェクト制御命令で使用されるフォントを
 objmode
 objmode_guifont
 objmode_usefont
+objmode_usecolor
+
 %index
 objmode_guifont
 デフォルトGUIフォントを設定
@@ -634,6 +637,7 @@ objmode命令の第1引数に指定することで、オブジェクト制御命令で使用されるフォントを
 objmode
 objmode_normal
 objmode_usefont
+objmode_usecolor
 
 
 %index
@@ -661,6 +665,22 @@ objmode命令の第1引数に指定することで、オブジェクト制御命令で使用されるフォントを
 objmode
 objmode_normal
 objmode_guifont
+objmode_usecolor
+
+
+%index
+objmode_usecolor
+objcolor命令で選択されている色を設定
+
+%inst
+objmode命令の第1引数に指定することで、オブジェクト制御命令で使用される色をcolor命令、objcolor命令で指定されている色に設定することができます。
+
+%href
+objmode
+objmode_normal
+objmode_guifont
+objmode_usefont
+
 
 
 %index

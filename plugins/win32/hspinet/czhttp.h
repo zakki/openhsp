@@ -57,6 +57,9 @@ public:
 	void SetVarRequestGet( char *path );
 	void SetVarRequestPost( char *path, char *post );
 	void SetVarRequestPost2( char *path, char *post, int size );
+	void SetVarRequestPut(char *path, char *post);
+	void SetVarRequestPut2(char *path, char *post, int size);
+	void SetVarRequestDelete(char *path);
 	void ClearVarData( void );
 	void SetVarServerFromURL( void );
 	char *getVarData( void ) { return vardata; };

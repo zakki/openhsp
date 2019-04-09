@@ -641,6 +641,49 @@ void CzHttp::SetVarRequestPost2( char *path, char *post, int size )
 	mode = CZHTTP_MODE_VARREQUEST;
 }
 
+void CzHttp::SetVarRequestPut(char *path, char *post)
+{
+	// サーバーにファイルを要求(PUT)
+	//
+	if (mode != CZHTTP_MODE_READY) {
+		return;
+	}
+	SetVarServerFromURL();
+	strcpy(varstr, "PUT");
+	strcpy(req_path, path);
+	postdata = post;
+	postsize = (int)strlen(postdata);
+	mode = CZHTTP_MODE_VARREQUEST;
+}
+
+void CzHttp::SetVarRequestPut2(char *path, char *post, int size)
+{
+	// サーバーにファイルを要求(PUT)
+	//
+	if (mode != CZHTTP_MODE_READY) {
+		return;
+	}
+	SetVarServerFromURL();
+	strcpy(varstr, "PUT");
+	strcpy(req_path, path);
+	postdata = post;
+	postsize = size;
+	mode = CZHTTP_MODE_VARREQUEST;
+}
+
+void CzHttp::SetVarRequestDelete(char *path)
+{
+	// サーバーにファイルを要求(DELETE)
+	//
+	if (mode != CZHTTP_MODE_READY) {
+		return;
+	}
+	SetVarServerFromURL();
+	strcpy(varstr, "DELETE");
+	strcpy(req_path, path);
+	postdata = NULL;
+	mode = CZHTTP_MODE_VARREQUEST;
+}
 
 //--------------------------------------------------------------//
 //				FTP functions
