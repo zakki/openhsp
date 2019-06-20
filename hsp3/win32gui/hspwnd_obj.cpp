@@ -230,8 +230,8 @@ static void Object_StrInput( HSPOBJINFO *info, int wparam )
 	size = (int)SendMessage( info->hCld, WM_GETTEXTLENGTH,0,0L );
 	cid = GetDlgCtrlID( info->hCld );
 	
-	if ( size < 0x8000 ) {
-		bigbuf = minp;
+	if (size < 0x8000) {
+			bigbuf = minp;
 		val = GetDlgItemText( hwnd, cid, minp, 0x7fff );
 	} else {
 		bigbuf = (HSPAPICHAR*)sbAlloc( size+1 );
@@ -242,6 +242,7 @@ static void Object_StrInput( HSPOBJINFO *info, int wparam )
 		bmscr_obj_ival = 0;
 		info->varset.ptr = (void *)&bmscr_obj_ival;
 	} else {
+		bigbuf[size] = 0;
 		apichartohspchar(bigbuf,&hctmp1);
 		info->varset.ptr = hctmp1;
 	}
