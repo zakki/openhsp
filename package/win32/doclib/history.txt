@@ -5,11 +5,13 @@ Hot Soup Processor ver3.6                           HSP : Hot Soup Processor
 
 ・hsp3関連 更新履歴
 
-	2019/06/20 3.6 beta1
+	2019/06/21 3.6 beta1
 
 	mesboxによるテキスト入力サイズが32768以上の時に余計な文字列が付加されることがある不具合を修正
 	24bitカラーコードを指定するためのrgbcolor命令を追加
 	objcolor命令を追加、objmode命令のオプションにより配置オブジェクトの文字色・背景色指定が可能になります
+	[HSP3Dish][android] HSP3Dish Helperの更新
+	[HSP3Dish][android] 64bit armコードに対応
 	[hspinet] http/httpsリクエストでPUT/DELETEメソッドに対応(inovia)
 	[HGIMG4] gpscrmat命令を追加
 	[HGIMG4] gpcamera命令に平行投影カメラのオプション設定を追加
