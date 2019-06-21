@@ -9,10 +9,10 @@
 #include "mod_appconfig.as"
 
 #define APPTITLE "HSP3Dish helper"
-#define APPVER "1.6"
+#define APPVER "1.7"
 #define APP_CONF "\\hsp3dh.cfg"
 
-#define AND_LIBVER 107			; android HSPランタイムの内部バージョン
+#define AND_LIBVER 108			; android HSPランタイムの内部バージョン
 
 #uselib "shell32.dll"
 #cfunc SHBrowseForFolder "SHBrowseForFolder" int
@@ -40,7 +40,7 @@
 	dir_gps="google-play-services_lib"
 	dir_gplib="gameplay"
 	dir_extlib="extlib"
-	dir_hsplib="hsplib35"
+	dir_hsplib="hsplib36b1"
 	;
 	app_winx=-1
 	app_winy=-1
@@ -103,7 +103,7 @@
 		ios_org=cfg_getvar("ios_org")
 		ios_ident=cfg_getvar("ios_ident")
 	}
-	if and_targetid="" : and_targetid="\"android-21\""
+	if and_targetid="" : and_targetid="\"android-24\""
 	if and_keystore="" : and_keystore="hspapp"
 
 	if app_winx<0 : app_winx = -1
@@ -1067,9 +1067,6 @@ src\\tv
 src\\tv\\hsp
 hsp
 libs
-libs\\armeabi
-libs\\armeabi-v7a
-libs\\x86
 jni
 jni\\hsp3embed
 res\\drawable-xhdpi
@@ -1142,6 +1139,8 @@ res\\drawable-mdpi\\ic_launcher.png"}
 		if strsize>0 : bcopy s2,s1
 		gosub *copy_admob		; jarファイルのコピー
 	}
+
+	gosub *copy_http		; httpクラスファイルのコピー
 
 	s1=basedir+"AndroidManifest.xml"
 	notesel tmp
@@ -1344,7 +1343,7 @@ res\\drawable-mdpi\\ic_launcher.png"}
 
 	gosub *bat_init
 
-	s1=path_proj+"\\"+and_name+"\\obj\\local\\armeabi\\objs\\"+and_name+"\\hsp3embed\\*.*"
+	s1=path_proj+"\\"+and_name+"\\obj\\local\\*.*"
 	tmp+="DEL /F /Q "+s1+"\n"
 	tmp+="ECHO "+s1+"\n"
 
@@ -1356,23 +1355,6 @@ res\\drawable-mdpi\\ic_launcher.png"}
 	execcmd "go.bat"
 	if stat : goto *and_fin
 
-/*
-	s1=path_proj+"\\"+and_name+"\\obj\\local\\armeabi\\objs\\test2\\hsp3embed"
-	gsel 1
-	mes "Delete ["+s1+"]"
-
-	dim SHFILEOPSTRUCT, 8
-	SHFILEOPSTRUCT.0 = hWnd
-	SHFILEOPSTRUCT.1 = 0x0003 //FO_DELETE
-	SHFILEOPSTRUCT.2 = varptr( s1 )
-	SHFILEOPSTRUCT.3 = 0
-	SHFILEOPSTRUCT.4 = 0x0114 // FOF_SIMPLEPROGRESS | FOF_NOCONFIRMATION
-	SHFILEOPSTRUCT.5 = -1
-	SHFileOperation varptr( SHFILEOPSTRUCT )
-	if stat!=0 {
-		mes "フォルダの削除に失敗しました"
-	}
-*/
 	gsel 1
 	mes "終了しました。"
 	goto *and_fin
@@ -1994,8 +1976,17 @@ hspproj.xcodeproj\\project.pbxproj"}
 	res=0
 	return
 
+*copy_http
+	;	httpクラス(apache.http.legacy)の必要なファイル(jar)をコピー
+	;
+	s1 = basedir+"libs\\"
+	s2 = dir_exe+"\\android\\hspproj\\libs\\"
+	admob_file="org.apache.http.legacy.jar"
+	bcopy s2+admob_file,s1+admob_file
+	return
+
 *copy_admob
-	;	AdMob(GooglePlayServices)の必要なファイル(jar)をコピー
+	;	http(GooglePlayServices)の必要なファイル(jar)をコピー
 	;
 	s1 = basedir+"libs\\"
 	s2 = dir_exe+"\\android\\hspproj\\libs\\firebase_ads\\"

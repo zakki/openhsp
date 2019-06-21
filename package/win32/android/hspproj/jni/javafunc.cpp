@@ -4,6 +4,8 @@
 //--------------------------------------------------------------------------
 
 #include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
 #include <android/log.h>
 #include <jni.h>
 #include <android/sensor.h>
