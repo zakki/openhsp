@@ -27,7 +27,6 @@
 #ifdef HSPDISHGP
 #ifdef HSPIOS
 #include "../hsp3/iosgp/gamehsp.h"
-void setHspLifeCycle( int value );
 #else
 #include "../hsp3/ndkgp/gamehsp.h"
 #endif
@@ -47,7 +46,9 @@ extern "C" {
 	static void logfunc( gameplay::Logger::Level level, const char *msg )
 	{
 		gplog += msg;
+#ifdef HSPIOS
         Alert( msg );
+#endif
 	}
 }
 
@@ -144,8 +145,7 @@ void hsp3eb_execstart( void )
     
     StackReset();
     
-    //hsp3dish_setdevinfo();
-#ifdef HSPIOSGP
+#ifdef HSPDISHGP
     game->frame();
     game->setMultiTouch(true);
 #endif
@@ -224,6 +224,18 @@ int hsp3eb_init( void )
 
 void hsp3eb_bye( void )
 {
+	//		HSP関連の解放
+	//
+	if ( hsp != NULL ) { delete hsp; hsp = NULL; }
+
+#ifdef HSPDEBUG
+	//		デバッグウインドゥの解放
+	//
+	if ( h_dbgwin != NULL ) { FreeLibrary( h_dbgwin ); h_dbgwin = NULL; }
+#endif
+
+	Alertf( "---Term HSP3\n" );
+
 #ifdef HSPDISHGP
 	//		gameplay関連の解放
 	//
@@ -236,21 +248,9 @@ void hsp3eb_bye( void )
 	}
 #endif
 
-	//		HSP関連の解放
-	//
-	if ( hsp != NULL ) { delete hsp; hsp = NULL; }
-
-#ifdef HSPDEBUG
-	//		デバッグウインドゥの解放
-	//
-	if ( h_dbgwin != NULL ) { FreeLibrary( h_dbgwin ); h_dbgwin = NULL; }
-#endif
-
-
 	//		システム関連の解放
 	//
 //	DllManager().free_all_library();
-	Alertf( "---Term HSP3\n" );
 
 }
 
@@ -296,15 +296,15 @@ int hsp3eb_exec( void )
 	}
 	ctx->runmode = RUNMODE_RUN;
 
-//	try {
+	try {
 		while(1) {
 			TaskExec();
 			if ( ctx->runmode != 0 ) {
                 if ( ctx->runmode != RUNMODE_RETURN ) break;  
             }
 		}
-//	}
-/*
+	}
+
 		catch( HSPERROR code ) {						// HSPエラー例外処理
 		if ( code == HSPERR_NONE ) {
 			ctx->runmode = RUNMODE_END;
@@ -315,7 +315,7 @@ int hsp3eb_exec( void )
 			hsp3eb_error();
 		}
 	}
- */
+
 	//Alertf( "RUN=%d",ctx->runmode );
 	return ctx->runmode;
 }
