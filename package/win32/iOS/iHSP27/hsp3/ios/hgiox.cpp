@@ -12,7 +12,7 @@
 
 #include "stb_image.h"
 
-#ifdef HSPEMSCRIPTEN
+#if defined(HSPLINUX) || defined(HSPEMSCRIPTEN)
 #include "../../hsp3/hsp3config.h"
 #else
 #include "../hsp3config.h"
@@ -36,7 +36,7 @@
 #include "appengine.h"
 #endif
 
-#ifdef HSPEMSCRIPTEN
+#if defined(HSPLINUX) || defined(HSPEMSCRIPTEN)
 #define USE_JAVA_FONT
 #define FONT_TEX_SX 512
 #define FONT_TEX_SY 128
@@ -96,17 +96,17 @@ static const GLfloat panelUVs[]={
 };
 
 static GLbyte panelColors[]={
-    (GLbyte)0xff, (GLbyte)0xff, (GLbyte)0xff, (GLbyte)0xff,
-    (GLbyte)0xff, (GLbyte)0xff, (GLbyte)0xff, (GLbyte)0xff,
-    (GLbyte)0xff, (GLbyte)0xff, (GLbyte)0xff, (GLbyte)0xff,
-    (GLbyte)0xff, (GLbyte)0xff, (GLbyte)0xff, (GLbyte)0xff,
+    0xff, 0xff, 0xff, 0xff,
+    0xff, 0xff, 0xff, 0xff,
+    0xff, 0xff, 0xff, 0xff,
+    0xff, 0xff, 0xff, 0xff,
 };
 
 static GLbyte panelColorsTex[]={
-    (GLbyte)0xff, (GLbyte)0xff, (GLbyte)0xff, (GLbyte)0xff,
-    (GLbyte)0xff, (GLbyte)0xff, (GLbyte)0xff, (GLbyte)0xff,
-    (GLbyte)0xff, (GLbyte)0xff, (GLbyte)0xff, (GLbyte)0xff,
-    (GLbyte)0xff, (GLbyte)0xff, (GLbyte)0xff, (GLbyte)0xff,
+    0xff, 0xff, 0xff, 0xff,
+    0xff, 0xff, 0xff, 0xff,
+    0xff, 0xff, 0xff, 0xff,
+    0xff, 0xff, 0xff, 0xff,
 };
 
 #define FVAL_BYTE1 (1.0f/256.0f)
@@ -251,7 +251,7 @@ void hgio_init( int mode, int sx, int sy, void *hwnd )
 	Alertf( "Init:HGIOScreen(%d,%d)",sx,sy );
 
 	//フォント準備
-#if defined(HSPNDK) || defined(HSPEMSCRIPTEN)
+#if defined(HSPNDK) || defined(HSPLINUX) || defined(HSPEMSCRIPTEN)
 	#ifdef USE_JAVA_FONT
 	//font_texid = MakeEmptyTex( FONT_TEX_SX, FONT_TEX_SY );
 	#else
@@ -383,10 +383,12 @@ void hgio_reset( void )
 
     glDisable(GL_LIGHTING);
     glDisable(GL_CULL_FACE);
-    glDisable(GL_DEPTH_BUFFER_BIT);
     glDisable(GL_DEPTH_TEST);
     //glClearColor(.7f, .7f, .9f, 1.f);
     //glShadeModel(GL_SMOOTH);
+#if defined(HSPIOS) || defined(HSPLINUX) || defined(HSPEMSCRIPTEN)
+    glDisable(GL_DEPTH_BUFFER_BIT);
+#endif
 
     
     //頂点配列の設定
@@ -398,7 +400,7 @@ void hgio_reset( void )
         
     //テクスチャの設定
     glEnableClientState(GL_TEXTURE_COORD_ARRAY);
-#if defined(HSPEMSCRIPTEN)
+#if defined(HSPLINUX) || defined(HSPEMSCRIPTEN)
 	glDisable(GL_TEXTURE_2D);
 #else
     glEnable(GL_TEXTURE_2D);
@@ -425,7 +427,7 @@ void hgio_reset( void )
 	TexReset();
 
 	//フォント描画リセット
-#if defined(HSPNDK) || defined(HSPEMSCRIPTEN)
+#if defined(HSPNDK) || defined(HSPLINUX) || defined(HSPEMSCRIPTEN)
 #ifdef USE_JAVA_FONT
 	TexProc();
 #endif
@@ -448,7 +450,7 @@ void hgio_resume( void )
 	//テクスチャ初期化
 	TexInit();
 
-#if defined(HSPNDK) || defined(HSPEMSCRIPTEN)
+#if defined(HSPNDK) || defined(HSPLINUX) || defined(HSPEMSCRIPTEN)
 	#ifdef USE_JAVA_FONT
 	//font_texid = MakeEmptyTex( FONT_TEX_SX, FONT_TEX_SY );
 	#else
@@ -496,6 +498,7 @@ void hgio_setFilterMode( int mode )
 void hgio_setBlendMode( int mode, int aval )
 {
     //ブレンドモード設定
+
     switch( mode ) {
         case 0:                     //no blend
         case 1:                     //no blend
@@ -524,12 +527,40 @@ void hgio_setBlendMode( int mode, int aval )
             //glBlendFunc(GL_ONE,GL_ONE_MINUS_SRC_ALPHA);
             break;
     }
-    if ( mode >= 3 ) {
-        panelColorsTex[3] = panelColorsTex[4+3] = panelColorsTex[8+3] = panelColorsTex[12+3] = aval;
+    if ( mode <= 1 ) {
+        glDisableClientState(GL_COLOR_ARRAY);
+	} else {
+	    int *i_panelcolor;
+		int mulcolor;
+	    if ( mode >= 2 ) {
+		    if ( mode >= 3 ) {
+				mulcolor = ( aval<<24 );
+			} else {
+				mulcolor = 0xff000000;
+			}
+			if ( mainbm != NULL ) {
+			    int rval,gval,bval;
+				GLbyte *colbyte;
+			    rval = (( mainbm->mulcolor )>>16)&0xff;
+			    gval = (( mainbm->mulcolor )>>8)&0xff;
+			    bval = (( mainbm->mulcolor ))&0xff;
+				colbyte = (GLbyte *)&mulcolor;
+				*colbyte++ = rval;
+				*colbyte++ = gval;
+				*colbyte++ = bval;
+			} else {
+				mulcolor |= 0xffffff;
+			}
+		} else {
+			mulcolor = 0xffffffff;
+		}
+		i_panelcolor = (int *)panelColorsTex;
+		*i_panelcolor++ = mulcolor;
+		*i_panelcolor++ = mulcolor;
+		*i_panelcolor++ = mulcolor;
+		*i_panelcolor++ = mulcolor;
         glEnableClientState(GL_COLOR_ARRAY);
         glColorPointer(4,GL_UNSIGNED_BYTE,0,panelColorsTex);
-    } else {
-        glDisableClientState(GL_COLOR_ARRAY);
     }
     glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_MAG_FILTER,_filter); 
     glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_MIN_FILTER,_filter); 
@@ -671,6 +702,9 @@ void hgio_setfilter( int type, int opt )
 
 int hgio_title( char *str1 )
 {
+#if defined(HSPLINUX) || defined(HSPEMSCRIPTEN)
+	SDL_WM_SetCaption( (const char *)str1, NULL );
+#endif
 	return 0;
 }
 
@@ -679,7 +713,7 @@ int hgio_stick( int actsw )
 {
 	int ckey = 0;
 	if ( mouse_btn ) ckey|=256;	// mouse_l
-#ifdef HSPEMSCRIPTEN
+#if defined(HSPLINUX) || defined(HSPEMSCRIPTEN)
 	if ( get_key_state(SDLK_LEFT) )  ckey|=1;		// [left]
 	if ( get_key_state(SDLK_UP) )    ckey|=2;		// [up]
 	if ( get_key_state(SDLK_RIGHT) ) ckey|=4;		// [right]
@@ -705,14 +739,79 @@ int hgio_font( char *fontname, int size, int style )
 }
 
 
+static void hgio_messub( BMSCR *bm, char *str1 )
+{
+	// print per line
+	if ( bm->cy >= bm->sy ) return;
+	hgio_putTexFont( bm->cx, bm->cy, str1, bm->color );
+	if ( mes_sx > bm->printsizex ) bm->printsizex = mes_sx;
+	bm->printsizey += mes_sy;
+	bm->cy += mes_sy;
+}
+
+
 int hgio_mes( BMSCR *bm, char *str1 )
 {
-#if defined(HSPNDK) || defined(HSPEMSCRIPTEN)
-	hgio_putTexFont( bm->cx, bm->cy, str1, bm->color );
-	bm->printsizex = mes_sx;
-	bm->printsizey = mes_sy;
-	//LOGI( str1 );
+#if defined(HSPNDK) || defined(HSPLINUX) || defined(HSPEMSCRIPTEN)
+
+	int spcur;
+	int org_cy;
+	unsigned char *p;
+	unsigned char *st;
+	unsigned char a1;
+	unsigned char a2;
+	unsigned char bak_a1;
+
+	org_cy = bm->cy;
+	bm->printsizex = 0;
+	bm->printsizey = 0;
+
+	p = (unsigned char *)str1;
+	st = p;
+	spcur = 0;
+
+	while(1) {
+		a1 = *p;
+		if ( a1 == 0 ) break;
+		if ( a1 == 13 ) {
+			bak_a1 = a1; *p = 0;		// 終端を仮設定
+			hgio_messub( bm, (char *)st );
+			*p = bak_a1;
+			p++; st = p; spcur = 0;		// 終端を戻す
+			a1 = *p;
+			if ( a1 == 10 ) p++;
+			continue;
+		}
+		if ( a1 == 10 ) {
+			bak_a1 = a1; *p = 0;		// 終端を仮設定
+			hgio_messub( bm, (char *)st );
+			*p = bak_a1;
+			p++; st = p; spcur = 0;		// 終端を戻す
+			continue;
+		}
+/*		
+		if (a1&128) {					// UTF8チェック
+			while(1) {
+				a2 = *p;
+				if ( a2==0 ) break;
+				if ( ( a2 & 0xc0 ) != 0x80 ) break;
+				p++; spcur++;
+			}
+		} else {
+			p++; spcur++;
+		}
+*/
+		p++; spcur++;
+	}
+
+	if ( spcur > 0 ) {
+		hgio_messub( bm, (char *)st );
+	}
+
+	bm->cy = org_cy;
+
 #endif
+
 #ifdef HSPIOS
     gb_mes( bm, str1 );
 #endif
@@ -1127,7 +1226,7 @@ void hgio_fcopy( float distx, float disty, short xx, short yy, short srcsx, shor
     *flp++ = x2;
     *flp++ = y2;
 
-#if defined(HSPEMSCRIPTEN)
+#if defined(HSPLINUX) || defined(HSPEMSCRIPTEN)
 	glEnable(GL_TEXTURE_2D);
 #endif
 
@@ -1142,7 +1241,7 @@ void hgio_fcopy( float distx, float disty, short xx, short yy, short srcsx, shor
 //    glDisableClientState(GL_COLOR_ARRAY);
     glDrawArrays(GL_TRIANGLE_STRIP,0,4);
 
-#if defined(HSPEMSCRIPTEN)
+#if defined(HSPLINUX) || defined(HSPEMSCRIPTEN)
 	glDisable(GL_TEXTURE_2D);
 #endif
 }
@@ -1493,7 +1592,7 @@ int hgio_celputmulti( BMSCR *bm, int *xpos, int *ypos, int *cel, int count, BMSC
 
 int hgio_gettick( void )
 {
-#ifdef HSPNDK
+#if defined(HSPLINUX) || defined(HSPNDK)
 	int i;
 	timespec ts;
 	double nsec;
@@ -1684,7 +1783,7 @@ int hgio_getmousebtn( void )
 
 /*-------------------------------------------------------------------------------*/
 
-#if defined(HSPNDK) || defined(HSPEMSCRIPTEN)
+#if defined(HSPNDK) || defined(HSPLINUX) || defined(HSPEMSCRIPTEN)
 
 void hgio_putTexFont( int x, int y, char *msg, int color )
 {
@@ -1949,7 +2048,7 @@ int hgio_render_start( void )
     gb_render_start();
 #endif
     
-#if defined(HSPNDK) || defined(HSPEMSCRIPTEN)
+#if defined(HSPNDK) || defined(HSPLINUX) || defined(HSPEMSCRIPTEN)
 	if ( GetSysReq( SYSREQ_CLSMODE ) == CLSMODE_SOLID ) {
 		//指定カラーで消去
 		int ccol = GetSysReq( SYSREQ_CLSCOLOR );
@@ -1962,7 +2061,7 @@ int hgio_render_start( void )
 	hgio_reset();
 
 
-#if defined(HSPNDK) || defined(HSPEMSCRIPTEN)
+#if defined(HSPNDK) || defined(HSPLINUX) || defined(HSPEMSCRIPTEN)
 	if ( GetSysReq( SYSREQ_CLSMODE ) == CLSMODE_TEXTURE ) {
 		//テクスチャで消去
 	}
@@ -1997,7 +2096,7 @@ int hgio_render_end( void )
     eglSwapBuffers(appengine->display, appengine->surface);
 #endif
 
-#ifdef HSPEMSCRIPTEN
+#if defined(HSPLINUX) || defined(HSPEMSCRIPTEN)
 	SDL_GL_SwapBuffers();
 #endif
 

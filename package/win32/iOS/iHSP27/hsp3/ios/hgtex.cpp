@@ -136,7 +136,7 @@ void ChangeTex( int id )
 {
 	//	テクスチャ設定
 	//	TexIDではなくOpenGLのIDを渡すこと
-	if ( id < 0 ) {
+	if ( id == -1 ) {
 		curtex = -1;
 	    glBindTexture(GL_TEXTURE_2D,0);
 #if defined(HSPEMSCRIPTEN)

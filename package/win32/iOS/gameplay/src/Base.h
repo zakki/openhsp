@@ -78,7 +78,16 @@ extern int strcmpnocase(const char* s1, const char* s2);
 #ifdef _DEBUG
 #define GP_ASSERT(expression) assert(expression)
 #else
+#ifdef HSPDISH
+#ifdef HSPDEBUG
 #define GP_ASSERT(expression)
+#else
+#define GP_ASSERT(expression)
+#endif
+
+#else
+#define GP_ASSERT(expression)
+#endif
 #endif
 
 #if defined(WIN32) && defined(_MSC_VER)
@@ -219,7 +228,7 @@ extern int strcmpnocase(const char* s1, const char* s2);
 #ifndef HSPDISH
 #include <png.h>
 #else
-#include <png.h>
+#include <libpng/png.h>
 #endif
 
 // Scripting
