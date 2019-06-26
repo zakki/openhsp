@@ -285,6 +285,7 @@
 		sdim buf, strsize + 16
 		bload fn, buf
 		if UTF8J_SCORE(buf) > SJISJ_SCORE(buf) | IS_UTF8_BOM(buf) {
+			if IS_UTF8_BOM(buf) : memcpy buf, buf, strlen(buf)-2, 0, 3 ; cut BOM
 			putf_to_vascii_2 varptr(buf), buf
 		}
 	}

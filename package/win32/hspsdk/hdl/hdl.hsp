@@ -1,13 +1,13 @@
 
 ;============================================================
 ;	HDL
-;		version 1.42 update 2018/09/04
+;		version 1.43 update 2019/04/02
 ;			s.programs http://spn.php.xdomain.jp/
 ;============================================================
 
 	appname	= "HSP Docs Library"
-	appver	= "1.42"
-	appsig	= "s.programs 2007-2018"
+	appver	= "1.43"
+	appsig	= "s.programs 2007-2019"
 	sig_css	= "/* hdlcss 1.41 */"
 
 ; make option
@@ -164,7 +164,7 @@
 	oncmd gosub *event_WM_APP_REBUILD, WM_APP_REBUILD
 	oncmd gosub *event_WM_APP_CALLQUERY, WM_APP_CALLQUERY
 	; std
-	onexit *endapp
+	onexit gosub *endapp
 	oncmd gosub *event_WM_COMMAND, 0x0111
 
 	map_hwnd = hwnd	; 同時起動制御用 hwnd
@@ -498,6 +498,7 @@
 	if rnd(77) = 42 : sql_q "VACUUM" : gosub *delete_cachefiles ; clean
 	sql_close
 	end
+	return
 
 ;-------------------------------------------------- WM_APP_ACTIVATE
 ; 他プロセスからのアクティブ化指令
