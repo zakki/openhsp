@@ -41,6 +41,7 @@
 	dir_gplib="gameplay"
 	dir_extlib="extlib"
 	dir_hsplib="hsplib36b1"
+	fname_dpm  = "libhsp3dish.so"
 	;
 	app_winx=-1
 	app_winy=-1
@@ -71,6 +72,7 @@
 
 	flag_admob=0
 	flag_arm=0
+	flag_x86=0
 	flag_hgimg=0
 	flag_sensor=0
 	flag_xhgimg=0
@@ -97,6 +99,7 @@
 		and_copylib=0+cfg_getvar("and_copylib")
 		flag_admob = 0+cfg_getvar("flag_admob")
 		flag_arm = 0+cfg_getvar("flag_arm")
+		flag_x86 = 0+cfg_getvar("flag_x86")
 		flag_hgimg = 0+cfg_getvar("flag_hgimg")
 		flag_sensor = 0+cfg_getvar("flag_sensor")
 		flag_xhgimg = 0+cfg_getvar("flag_xhgimg")
@@ -373,7 +376,8 @@
 	objsize 160,24
 	pos 8,110
 	chkbox "AdMobを使用する",flag_admob
-	chkbox "ARM7最適化を無効",flag_arm
+	chkbox "ARM64をビルドしない",flag_arm
+	chkbox "x86をビルドしない",flag_x86
 	chkbox "HGIMG4を使用する",flag_hgimg
 	chkbox "センサーを使用する",flag_sensor
 	;objenable stat,0
@@ -697,6 +701,7 @@
 
 	cfg_seti "flag_admob",flag_admob
 	cfg_seti "flag_arm",flag_arm
+	cfg_seti "flag_x86",flag_x86
 	cfg_seti "flag_hgimg",flag_hgimg
 	cfg_seti "flag_sensor",flag_sensor
 	cfg_seti "flag_xhgimg",flag_xhgimg
@@ -876,7 +881,7 @@
 	return
 
 *xml_init
-	;	ndroidManifest.xmlを操作する
+	;	androidManifest.xmlを操作する
 	xmlfile = path_proj+"\\"+and_name+"\\AndroidManifest.xml"
 	gosub *xml_initfile
 	;
@@ -1184,8 +1189,8 @@ res\\drawable-mdpi\\ic_launcher.png"}
 		getstr s2,tmp,i,10
 		if strsize=0 : break
 		i+=strsize
-		if instr(s2,0,"libhsp3dish.so")>=0 {
-			outbuf+="    dpm_ini( \"/data/data/"+and_package+"/lib/libhsp3dish.so\",0,-1,-1 );"
+		if instr(s2,0,fname_dpm)>=0 {
+			outbuf+="    dpm_ini( \"/data/data/"+and_package+"/lib/"+fname_dpm+"\",0,-1,-1 );"
 		} else {
 			outbuf+=s2
 		}
@@ -1207,15 +1212,15 @@ res\\drawable-mdpi\\ic_launcher.png"}
 	;	buf=outbuf+buf
 	;}
 
-	if flag_arm {
-		xmlfile=path_proj+"\\"+and_name+"\\jni\\Application.mk"
-		gosub *xml_initfile
-		if tmp!="" {
-			s1="APP_ABI :=":gosub *xml_search
-			if res>0 : noteadd "",res,1		; APP_ABIの追加を無効にする
-			gosub *xml_save
-		}
-	}
+	abilist="APP_ABI := armeabi-v7a"
+	if flag_arm=0 : abilist+=" arm64-v8a"
+	if flag_x86=0 : abilist+=" x86 x86_64"
+
+	xmlfile=path_proj+"\\"+and_name+"\\jni\\Application.mk"
+	gosub *xml_initfile
+	s1="APP_ABI :=":gosub *xml_search
+	if res>0 : noteadd abilist,res,1		; APP_ABIの項目を更新する
+	gosub *xml_save
 
 	if flag_sensor {
 		;	センサー設定をいじる
@@ -1482,23 +1487,17 @@ res\\drawable-mdpi\\ic_launcher.png"}
 	exist and_pack
 	if strsize<=0 : mes "data.dpmがありません" : goto *and_fin
 
-	;	ARMV7を判定する
-	armv7flag=0
-	xmlfile=path_proj+"\\"+and_name+"\\jni\\Application.mk"
-	gosub *xml_initfile
-	if tmp!="" {
-		s1="APP_ABI :=":gosub *xml_search
-		if res>0 : armv7flag=1
-	}
+	;	libsフォルダにコピーする
 	basedir=path_proj+"\\"+and_name+"\\libs\\"
-	if armv7flag {
-		basedir+="armeabi-v7a\\"
-	} else {
-		basedir+="armeabi\\"
-	}
-
-	mes "make ["+basedir+"libhsp3dish.so] ..."
-	bcopy and_pack, basedir+"libhsp3dish.so"
+	dirlist tmp,basedir+"*.*",5
+	notesel tmp
+	repeat notemax
+		noteget s1,cnt
+		if s1!="" {
+			;mes "make ["+basedir+s1+"\\"+fname_dpm+"] ..."
+			bcopy and_pack, basedir+s1+"\\"+fname_dpm
+		}
+	loop
 
 *nohsp_pack
 

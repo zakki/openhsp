@@ -548,7 +548,7 @@ return stat
 		SetIEConfigEmulation GetIEVersion(), GetProcessName()
 
 		// GPUを利用したレンダリングを行う
-		SetIEConfigGPURendering 1, GetProcessName()
+	;	SetIEConfigGPURendering 1, GetProcessName()
 
 		// 古いJavaScriptエンジンを使用しない(Chakraエンジン)
 		SetIEConfigLegacyJScript 0, GetProcessName()
