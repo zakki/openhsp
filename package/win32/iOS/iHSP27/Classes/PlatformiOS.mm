@@ -615,7 +615,7 @@ int getUnicode(int key);
 #ifdef HSPDISH
     InitSysReq();
 	hgio_init( 0, framebufferWidth, framebufferHeight, NULL );
-	//hsp3eb_init();
+	hsp3eb_init();
 	//hsp3dish_setdevinfo();
 #endif
         game = Game::getInstance();

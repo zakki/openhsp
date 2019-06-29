@@ -1532,6 +1532,7 @@ hspproj\\Resouces
 hspproj.xcodeproj
 hspproj.xcodeproj\\xcuserdata
 hspproj.xcodeproj\\project.xcworkspace
+hspproj.xcodeproj\\project.xcworkspace\\xcshareddata
 hspproj.xcodeproj\\project.xcworkspace\\xcuserdata"}
 
 	prj_flist={"hspproj\\en.lproj\\InfoPlist.strings
@@ -1553,6 +1554,10 @@ hspproj.xcodeproj\\project.pbxproj"}
 		prj_flist+="\nhspproj\\AppDelegate.m"
 		prj_flist+="\nhspproj\\main.m"
 		prj_dlbase="\\ios\\hspproj\\"
+	}
+	if flag_xhgimg {
+		prj_flist+="\nhspproj.xcodeproj\\project.xcworkspace\\\xcshareddata\\IDEWorkspaceChecks.plist"
+		prj_flist+="\nhspproj.xcodeproj\\project.xcworkspace\\\xcshareddata\\WorkspaceSettings.xcsettings"
 	}
 
 	buf+="XCodeプロジェクトの生成中...\n"
@@ -1603,10 +1608,13 @@ hspproj.xcodeproj\\project.pbxproj"}
 	pfname=basedir+"hspproj\\hspproj-Info.plist"
 	notesel tmp
 	noteload pfname
-	s2="${PRODUCT_NAME:rfc1034identifier}"
-	s3="	<string>"+ios_ident+".${PRODUCT_NAME:rfc1034identifier}</string>"
-	gosub *rep_tmpline
-	notesave pfname
+
+	if flag_xhgimg=0 {
+		s2="${PRODUCT_NAME:rfc1034identifier}"
+		s3="	<string>"+ios_ident+".${PRODUCT_NAME:rfc1034identifier}</string>"
+		gosub *rep_tmpline
+		notesave pfname
+	}
 
 	pfname=basedir+"hspproj.xcodeproj\\project.pbxproj"
 	notesel tmp
