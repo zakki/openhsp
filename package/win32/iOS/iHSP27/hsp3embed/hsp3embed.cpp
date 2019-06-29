@@ -200,7 +200,9 @@ int hsp3eb_init( void )
 	}
 //	Alertf( "---Init HSP3\n" );
 
+#ifndef HSPIOS
 	platform->enterMessagePump();
+#endif
 //	Alertf( "---enterMessagePump OK\n" );
 
        if (Game::getInstance()->getState() == Game::UNINITIALIZED)

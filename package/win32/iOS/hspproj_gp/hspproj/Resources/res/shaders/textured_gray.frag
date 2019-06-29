@@ -22,7 +22,8 @@ precision mediump float;
 ///////////////////////////////////////////////////////////
 // Uniforms
 uniform vec3 u_ambientColor;
-uniform vec4 u_diffuseColor;
+
+uniform sampler2D u_diffuseTexture;
 
 #if defined(LIGHTMAP)
 uniform sampler2D u_lightmapTexture;
@@ -30,9 +31,15 @@ uniform sampler2D u_lightmapTexture;
 
 #if defined(LIGHTING)
 
+#if defined(BUMPED)
+uniform sampler2D u_normalmapTexture;
+#endif
+
 #if (DIRECTIONAL_LIGHT_COUNT > 0)
 uniform vec3 u_directionalLightColor[DIRECTIONAL_LIGHT_COUNT];
+#if !defined(BUMPED)
 uniform vec3 u_directionalLightDirection[DIRECTIONAL_LIGHT_COUNT];
+#endif
 #endif
 
 #if (POINT_LIGHT_COUNT > 0)
@@ -43,10 +50,12 @@ uniform float u_pointLightRangeInverse[POINT_LIGHT_COUNT];
 
 #if (SPOT_LIGHT_COUNT > 0)
 uniform vec3 u_spotLightColor[SPOT_LIGHT_COUNT];
-uniform vec3 u_spotLightDirection[SPOT_LIGHT_COUNT];
 uniform float u_spotLightRangeInverse[SPOT_LIGHT_COUNT];
 uniform float u_spotLightInnerAngleCos[SPOT_LIGHT_COUNT];
 uniform float u_spotLightOuterAngleCos[SPOT_LIGHT_COUNT];
+#if !defined(BUMPED)
+uniform vec3 u_spotLightDirection[SPOT_LIGHT_COUNT];
+#endif
 #endif
 
 #if defined(SPECULAR)
@@ -69,9 +78,7 @@ vec4 _baseColor;
 
 ///////////////////////////////////////////////////////////
 // Varyings
-#if defined(VERTEX_COLOR)
-varying vec3 v_color;
-#endif
+varying vec2 v_texCoord;
 
 #if defined(LIGHTMAP)
 varying vec2 v_texCoord1;
@@ -79,7 +86,13 @@ varying vec2 v_texCoord1;
 
 #if defined(LIGHTING)
 
+#if !defined(BUMPED)
 varying vec3 v_normalVector;
+#endif
+
+#if defined(BUMPED) && (DIRECTIONAL_LIGHT_COUNT > 0)
+varying vec3 v_directionalLightDirection[DIRECTIONAL_LIGHT_COUNT];
+#endif
 
 #if (POINT_LIGHT_COUNT > 0)
 varying vec3 v_vertexToPointLightDirection[POINT_LIGHT_COUNT];
@@ -87,6 +100,9 @@ varying vec3 v_vertexToPointLightDirection[POINT_LIGHT_COUNT];
 
 #if (SPOT_LIGHT_COUNT > 0)
 varying vec3 v_vertexToSpotLightDirection[SPOT_LIGHT_COUNT];
+#if defined(BUMPED)
+varying vec3 v_spotLightDirection[SPOT_LIGHT_COUNT];
+#endif
 #endif
 
 #if defined(SPECULAR)
@@ -101,32 +117,28 @@ varying vec3 v_cameraDirection;
 varying float v_clipDistance;
 #endif
 
+
 void main()
 {
     #if defined(CLIP_PLANE)
     if(v_clipDistance < 0.0) discard;
     #endif
  
+    float gray = dot(texture2D(u_diffuseTexture, v_texCoord).rgb, vec3(0.299, 0.587, 0.114));
+
+    _baseColor = vec4(gray, gray, gray,texture2D(u_diffuseTexture, v_texCoord).a);
+    gl_FragColor.a = _baseColor.a;
+
+    #if defined(TEXTURE_DISCARD_ALPHA)
+    if (gl_FragColor.a < 0.5)
+        discard;
+    #endif
+
     #if defined(LIGHTING)
 
-    #if defined(VERTEX_COLOR)
-	_baseColor.rgb = v_color;
-    #else
-    _baseColor = u_diffuseColor;
-	#endif
-    
-    gl_FragColor.a = _baseColor.a;
     gl_FragColor.rgb = getLitPixel();
-    
     #else
-    
-    #if defined(VERTEX_COLOR)
-    gl_FragColor.rgb = v_color;
-    gl_FragColor.a = 1.0;
-    #else
-    gl_FragColor = u_diffuseColor;
-    #endif
-    
+    gl_FragColor.rgb = _baseColor.rgb;
     #endif
 
 	#if defined(LIGHTMAP)
@@ -134,11 +146,11 @@ void main()
 	gl_FragColor.rgb *= lightColor.rgb;
 	#endif
 
-	#if defined(MODULATE_COLOR)
+    #if defined(MODULATE_COLOR)
     gl_FragColor *= u_modulateColor;
     #endif
 
-	#if defined(MODULATE_ALPHA)
+    #if defined(MODULATE_ALPHA)
     gl_FragColor.a *= u_modulateAlpha;
     #endif
 }
