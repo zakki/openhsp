@@ -221,7 +221,7 @@ void hgio_init( int mode, int sx, int sy, void *hwnd )
 	nDestWidth = sx;
 	nDestHeight = sy;
 
-#if defined(HSPNDK) || defined(HSPLINUX) || defined(HSPEMSCRIPTEN)
+#if defined(HSPNDK) || defined(HSPIOS) || defined(HSPLINUX) || defined(HSPEMSCRIPTEN)
 	_originX = 0;
 	_originY = 0;
 	_scaleX = 1.0f;
