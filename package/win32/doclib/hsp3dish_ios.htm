@@ -14,7 +14,7 @@
 <body>
 	<div id="CONTAINER">
 	<!-- ヘッダー -->
-	<p id="COPY">HSP : HSP3Dish / onion software 2017(c)</p>
+	<p id="COPY">HSP : HSP3Dish / onion software 2019(c)</p>
 	<img src="hsp3dish.jpg" width="640" height="200" alt="タイトル">
 	<h1>HSP3Dish iOS版プログラミングガイド</h1>
 
@@ -22,7 +22,7 @@
 	<ol>
 		<li><a href="#ABOUT">iOS版 HSP3Dish概要</a></li>
 		<li><a href="#PREPARE">環境の準備</a></li>
-		<li><a href="#SAMPLE">サンプルプロジェクト</a></li>
+		<li><a href="#SAMPLE">iOSフォルダについて</a></li>
 		<li><a href="#MAKECPP">スクリプトの準備</a></li>
 		<li><a href="#RUNPROJ">HSP3Dishの実行と設定</a></li>
 		<li><a href="#APPICON">アプリ名とアイコンの設定</a></li>
@@ -54,7 +54,7 @@
 
 	<h2 id="PREPARE">環境の準備</h2>
 	<p>
-	現状ではiPhone/iPadの実機上で動作させるためには、MacOSX環境及び開発ツールXcode8以降が、ストアでの配布にはiOS Developer Program(有償)が必要になります。<br>
+	現状ではiPhone/iPadの実機上で動作させるためには、MacOSX環境及び開発ツールXcode9以降が、ストアでの配布にはiOS Developer Program(有償)が必要になります。<br>
 	ここまでに必要なプロセスは、通常のiPhone/iPadの開発と変わりません。詳しくは、iOS Developer Programのホームページなど各種資料を参照してください。
 	</p>
 	<pre>
@@ -65,34 +65,32 @@
 	このドキュメントでは、Xcodeが実際に動作し、iPhone/iPadの実機にプログラムが転送できることを前提として、HSP3Dishの導入方法を解説します。
 	それまでの準備については、既存のマニュアル等をご覧ください。
 	<br>
-	検証に使用しているXCodeのバージョンは、8.3.3です。
-	使用するSDKのバージョンは、iOS10以降、動作環境はiOS8以降を想定しています。
+	検証に使用しているXCodeのバージョンは、XCode9です。
+	使用するSDKのバージョンは、iOS12以降、動作環境はiOS10以降を想定しています。
 	</p>
 
-	<h2 id="SAMPLE">サンプルプロジェクト</h2>
+	<h2 id="SAMPLE">iOSフォルダについて</h2>
 	<p>
 	<img src="hsp3dish/s_block3.jpg" style="float:right;">
-	<img src="hsp3dish/s_hspproj.jpg" style="float:right;">
-	<img src="hsp3dish/s_gcube.jpg" style="float:right;">
-	iOSフォルダには、HSP3Dishランタイム及びxcode用のサンプルプロジェクトが含まれています。
+	iOSフォルダには、HSP3Dishランタイム及びxcode用の基本プロジェクトが含まれています。
 
 	<ul>
-	<li>iHSP26フォルダ - HSP3Dishランタイム本体</li>
+	<li>iHSP27フォルダ - HSP3Dishランタイム本体</li>
 	<li>gameplayフォルダ - HGIMG4用ランタイム</li>
-	<li>external-depsフォルダ - HGIMG4用ランタイム</li>
-	<li>hspprojフォルダ - HSP3Dishサンプル</li>
-	<li>hspproj_gpフォルダ - HGIMG4サンプル</li>
+	<li>extlibフォルダ - HGIMG4用ライブラリ</li>
+	<li>hspprojフォルダ - HSP3Dish基本プロジェクト</li>
+	<li>hspproj_gpフォルダ - HGIMG4基本プロジェクト</li>
 	</ul>
 
 	<br>
-	すべてのフォルダをOSX上にコピーした後、プロジェクトファイル(.xcodeproj)を開いてビルドすることができます。
-	(HSP3Dish Helperを使用して、独自のプロジェクトを作成することも可能です)
+	iOS向けのプロジェクトは、基本的にHSP3Dish Helperを使用して作成してください。
+	ランタイムやライブラリは、必要に応じてコピーする必要があります。
 	<br clear="all">
 	</p>
 
 	<h2 id="MAKECPP">スクリプトの準備</h2>
 	<p>
-	iOS上でスクリプトを動作させる場合には、最初にWindows上でスクリプトをCソースコードに変換します。
+	iOS上でスクリプトを動作させる場合には、最初にWindows上でプロジェクトを生成します。
 	変換ツールとなる、HSP3Dish Helper(hsp3dh.exe)を起動してください。 
 	(スクリプトエディタの、「ツール」メニューから「指定ファイルをCソースに変換」メニューを選択して起動することも可能です。)<br>
 	ツールが起動したら、「ソース変換」のタブが選択されていることを確認して、以下の内容を設定してください。<br>
@@ -123,12 +121,11 @@
 
 	<p>
 	実際にiOS上で動作させる場合には、XCode上でプロジェクトをコンパイルする必要があります。<br>
-	<a href="#MAKECPP">スクリプトの準備</a>で出力した、XCode用プロジェクトフォルダと、「iHSP26」フォルダ(HSPアーカイブ内のiOSフォルダに同梱されています。)をMacOSX上にコピーしてください。<br>
-	※Xcode5を使用して手動でプロジェクトを作成する場合は<a href="hsp3dish_xcode5.htm">こちらを参照してください</a>。
+	<a href="#MAKECPP">スクリプトの準備</a>で出力した、XCode用プロジェクトフォルダと、「iHSP27」フォルダ(HSPアーカイブ内のiOSフォルダに同梱されています。)をMacOSX上にコピーしてください。<br>
 	</p>
 	<p>
-	必ず作成されたプロジェクトのフォルダと同じ階層に、「iHSP26」フォルダを配置してください。<br>
-	(HGIMG4プロジェクトの場合は、「external-deps」「gameplay」も同様に配置してください。)
+	必ず作成されたプロジェクトのフォルダと同じ階層に、「iHSP27」フォルダを配置してください。<br>
+	(HGIMG4プロジェクトの場合は、「extlib」「gameplay」も同様に配置してください。)
 	</p>
 	<p>
 	<img src="hsp3dish/s_folder.jpg"><br>
@@ -140,12 +137,29 @@
 	</p>
 
 	<p>
-	<img src="hsp3dish/s_code3.jpg"><br>
+	<img src="hsp3dish/s_code3.png"><br>
 	</p>
 
 	<p>
 	画像やサウンドなど追加のデータファイルがある場合は、「Resource」フォルダにコピーして、「File」メニューの「Add Files to "hspproj"...」を選択し、プロジェクトにリソースファイルを登録する必要があります。<br>
-	(あらかじめ、パックされているファイル(data.dpm)を使用する場合は、「Resourceフォルダのデータについて」の項目を参照してください。)
+	Resource以下にあるファイルをXCode上で登録することで、画像などのデータファイルをスクリプトから読み込むことが可能になります。
+	</p>
+
+	<p>
+	<img src="hsp3dish/s_addfiles.png"><br>
+	</p>
+
+	<p>
+	HGIMG4を利用する場合は、Resourceフォルダ以下に「res」フォルダをリファレンス(参照)として追加してください。
+	「res」フォルダ以下のすべてのファイルをリソースとして扱われるようになります。
+	</p>
+
+	<p>
+	<img src="hsp3dish/s_folderref.png"><br>
+	</p>
+
+	<p>
+	あらかじめ、パックされているファイル(data.dpm)を使用する場合は、「Resourceフォルダのデータについて」の項目を参照してください。
 	</p>
 
 	<p>
@@ -155,6 +169,7 @@
 
 	<p>
 	HSP3Dishの実行時には、AppDelegate.mに書かれているHSPランタイムの初期化コードが参照されます。
+	(HGIMG4を利用する場合は、この設定は無効となります。HGIMG4使用時は、使用可能な画面エリアすべてが描画の対象となります)<br>
 	この内容をXCode上で編集することで、各種設定を変更することができます。<br>
 	AppDelegate.mを編集するためには、画面左のビューでフォルダアイコンを選択して、プロジェクトのファイルツリーを表示させてください。その中にある、AppDelegate.m項目をクリックすると、エディタに内容が表示されます。
 	</p>
@@ -338,7 +353,8 @@
 	<h2 id="RESOURCE">Resourceフォルダのデータについて</h2>
 	<p>
 	スクリプトから読み込まれる画像や音声データのファイルは、Resourceフォルダを作成して
-	プロジェクトに追加することで読み込み可能になります。<br>
+	プロジェクトに追加することで読み込み可能になります。
+	ただし、Windowsとは異なりファイル名の大文字・小文字が区別されますので正しくファイル名を記述する必要がありますのでご注意ください。<br>
 	リソースに、data.dpmファイルを追加することにより、複数ファイルがパックされたデータにアクセスすることが可能です。
 	data.dpmファイルは、Windows上のHSP開発システム上で作成可能です。詳しくは、dpmファイル、パックファイル等の項目を参照してください。
 	また、HSP3Dishでは、音声ファイル(wav、mp3など)やアイコンなどiOSのシステムがアクセスするファイルは含めることができませんのでご注意下さい。ファイル名の長さ制限(12文字以内)などは、HSPのpackfile仕様と同様です。
@@ -503,12 +519,16 @@
 
 	<h2 id="HGIMG4">HGIMG4プロジェクトについて</h2>
 	<p>
-	HSP3.5β5からHGIMG4スクリプトのビルドに仮対応しています。<br>
+	このバージョンでは、HGIMG4スクリプトのビルドに対応しています。<br>
 	現在はβ対応となっていて、様々な機能が制限されていますのでご了承の上、ご使用ください。
+	</p>
+	<ul><img src="hsp3dish/pronama3d.png"><br>
+	暮井 慧（プロ生ちゃん） (C) Pronama LLC
+	</ul>
+	<br>
+	<p>
 	HGIMG4プロジェクトは、アプリのサイズが増加するほか、端末の環境や機種によっては動作速度が低下する可能性があります。(今後、幅広い端末でのサポートを目指していきますので、今しばらくお待ちください)<br>
-	HGIMG4では、起動時に必ずresフォルダ及びシェーダー等のファイルが必要になります。
-	HSPの「sample/hgimg4」フォルダにある「resフォルダ」からXCode側のHGIMG4プロジェクトフォルダの
-	「Resouces」以下にコピーしてください。(「Resouces/res/…」というフォルダ構成になります)<br>
+	HGIMG4では、起動時に必ずresフォルダ及びシェーダー等のファイルが必要になります。(「Resouces/res/…」というフォルダ構成になります)<br>
 	最低限必要なファイルは以下になります。
 	</p>
 	<pre>
@@ -523,8 +543,11 @@
 	<li>センサーの値は常に取得されます</li><br>
 	<li>常にマルチタッチ情報を受け取ります</li><br>
 	<li>オフスクリーンレンダリングに非対応です(現在原因を調査中で修正予定です)</li><br>
-	<li>iPhoneシミュレーター上で動作させるためには、Build SettingsでLIBRARY_SEARCH_PATHSに「../external-deps/lib/ios/x86/」を指定する必要があります</li><br>
+	<li>XCode9で使用する場合は、プロジェクトの設定がLegacy Build Systemになっている必要があります<br>
+		<img src="hsp3dish/s_legacybuild.png"><br>
+	</li>
 	</ul>
+
 
 	<h2 id="NOTICE">iOS版の注意事項、制限</h2>
 	<ul>
@@ -549,8 +572,7 @@
 	</p>
 	<li>画像サイズについて</li>
 	<p>
-	celload、picload命令などで読み込まれる画像の縦・横サイズが、2048を越えるものについては、正しく扱えない機種もあるので、推奨されません。
-	縦・横のサイズが2^nのサイズ、つまり1,2,4,8,16,32,64,128,256,512,1024,2048でない画像を
+	縦・横のサイズが2^nのサイズ、つまり1,2,4,8,16,32,64,128,256,512,1024,2048…でない画像を
 	読み込む時には、内部で変換を行なうため多少のオーバーヘッドが発生します。
 	(通常はそれほど気にする必要はありません。大量の画像を読み込む場合にCPUリソースが余計に必要となります)
 	</p>
