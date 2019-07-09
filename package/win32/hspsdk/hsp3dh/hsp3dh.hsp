@@ -1698,29 +1698,32 @@ hspproj.xcodeproj\\project.pbxproj"}
 	sdim outbuf, maxsize
 
 	js_memsize = 0+js_memopt
-	if js_memsize<0 || js_memsize>=2048 : mes "メモリサイズ指定が無効です。" : goto *cnv_jsok
+	if js_memsize<0 || js_memsize>=8192 : mes "メモリサイズ指定が無効です。" : goto *cnv_jsok
 	js_memsize *= 1048576
-
-	if js_pack="" : goto *no_jspack
 
 	;	.data作成
 	;
-	s1=getpath(js_pack+"\\",32)
-	mes "データフォルダ追加 ["+s1+"]"
+	s1=""
+	packbase=mydir
+	js_pack="data"
+	chdir packbase
 	;
-	chdir s1
-	packbase=s1
+	dirlist s2,"data\\*.*",1
+	if stat=0 : goto *no_jspackdata
+	mes "データフォルダ追加 [data]"
 	;
-	dirlist s2,"*.*",1
+	packbase=mydir+"data\\"
 	notesel s2
 	repeat notemax
 		noteget ff,cnt
 		tmp+=ff + "\n"
 	loop
+	goto *no_jspack
 
+*no_jspackdata
 	dirlist s2,"res\\*.*",1
 	if stat=0 : goto *no_jspack
-	mes "データフォルダ追加 ["+s1+"res]"
+	mes "データフォルダ追加 [res]"
 	notesel s2
 	repeat notemax
 		noteget ff,cnt
@@ -1729,7 +1732,7 @@ hspproj.xcodeproj\\project.pbxproj"}
 
 	dirlist s2,"res\\shaders\\*.*",1
 	if stat=0 : goto *no_jspack
-	mes "データフォルダ追加 ["+s1+"res\\shaders]"
+	mes "データフォルダ追加 [res/shaders]"
 	notesel s2
 	repeat notemax
 		noteget ff,cnt

@@ -1,5 +1,7 @@
 #ifdef OPENGL_ES
 precision highp float;
+#else
+precision mediump float;
 #endif
 
 // Varyings
