@@ -1,0 +1,16 @@
+#include "zipfile.as"
+
+	;	zipファイル圧縮サンプル
+	;
+	;	(hspインストールフォルダ内のcommonフォルダ以下を圧縮してcommon.zipとして保存します)
+	;
+	fname = "common.zip"
+	s1=dir_exe+"\\common\\*.*"
+	ZipCompress s1, fname
+	if stat : dialog "zip圧縮に失敗しました"
+
+	mes "圧縮元パス:"+s1
+	mes fname+"を保存しました。"
+	stop
+
+

@@ -507,7 +507,7 @@
 *jsmenu
 	initwnd
 	pos 8,8
-	mes "指定されたHSP3Dishスクリプトをhtml(WebGL/JavaScript)に変換します"
+	mes "指定されたHSP3Dishスクリプトをhtml5(WebGL/JavaScript)に変換します"
 
 	pos 8,30
 	sysfont 17
@@ -518,11 +518,13 @@
 	pos 408,41:button "参照...",*seljsfile
 
 	pos 8,70
-	mes "データフォルダ: (空白の場合は未使用)"
-	objsize 390,24
-	input js_pack
-	objsize 64,24
-	pos 408,82:button "参照...",*selfile_jspack
+	mes "データフォルダ: data"
+	mes "( ソーススクリプト以下のdataフォルダ内のファイルが追加されます )"
+
+	;objsize 390,24
+	;input js_pack
+	;objsize 64,24
+	;pos 408,82:button "参照...",*selfile_jspack
 
 	pos 8,110
 	mes "メモリサイズ(MB)指定(空白の場合は規定値)"
@@ -1532,7 +1534,6 @@ hspproj\\Resouces
 hspproj.xcodeproj
 hspproj.xcodeproj\\xcuserdata
 hspproj.xcodeproj\\project.xcworkspace
-hspproj.xcodeproj\\project.xcworkspace\\xcshareddata
 hspproj.xcodeproj\\project.xcworkspace\\xcuserdata"}
 
 	prj_flist={"hspproj\\en.lproj\\InfoPlist.strings
@@ -1554,10 +1555,6 @@ hspproj.xcodeproj\\project.pbxproj"}
 		prj_flist+="\nhspproj\\AppDelegate.m"
 		prj_flist+="\nhspproj\\main.m"
 		prj_dlbase="\\ios\\hspproj\\"
-	}
-	if flag_xhgimg {
-		prj_flist+="\nhspproj.xcodeproj\\project.xcworkspace\\\xcshareddata\\IDEWorkspaceChecks.plist"
-		prj_flist+="\nhspproj.xcodeproj\\project.xcworkspace\\\xcshareddata\\WorkspaceSettings.xcsettings"
 	}
 
 	buf+="XCodeプロジェクトの生成中...\n"
@@ -1608,13 +1605,10 @@ hspproj.xcodeproj\\project.pbxproj"}
 	pfname=basedir+"hspproj\\hspproj-Info.plist"
 	notesel tmp
 	noteload pfname
-
-	if flag_xhgimg=0 {
-		s2="${PRODUCT_NAME:rfc1034identifier}"
-		s3="	<string>"+ios_ident+".${PRODUCT_NAME:rfc1034identifier}</string>"
-		gosub *rep_tmpline
-		notesave pfname
-	}
+	s2="${PRODUCT_NAME:rfc1034identifier}"
+	s3="	<string>"+ios_ident+".${PRODUCT_NAME:rfc1034identifier}</string>"
+	gosub *rep_tmpline
+	notesave pfname
 
 	pfname=basedir+"hspproj.xcodeproj\\project.pbxproj"
 	notesel tmp
