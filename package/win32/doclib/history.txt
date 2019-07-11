@@ -5,12 +5,14 @@ Hot Soup Processor ver3.6                           HSP : Hot Soup Processor
 
 ・hsp3関連 更新履歴
 
-	2019/06/26 3.6 beta1
+	2019/07/11 3.6 beta1
 
+	シンプルなzipファイルの圧縮解凍をサポートするzipfile.asを追加
 	mesboxによるテキスト入力サイズが32768以上の時に余計な文字列が付加されることがある不具合を修正
+	mesboxによるテキスト入力で全選択(ctrl+A)のキーを有効に修正
 	24bitカラーコードを指定するためのrgbcolor命令を追加
 	objcolor命令を追加、objmode命令のオプションにより配置オブジェクトの文字色・背景色指定が可能になります
-	[HSP3Dish][android] HSP3Dish Helperの更新
+	[HSP3Dish][android][iOS][hsp3js] HSP3Dish Helperの更新
 	[HSP3Dish][android] hsp3dhのプロジェクト新規作成でarm64,x86コードを標準で生成するように修正
 	[hspinet] http/httpsリクエストでPUT/DELETEメソッドに対応(inovia)
 	[HGIMG4] gpscrmat命令を追加

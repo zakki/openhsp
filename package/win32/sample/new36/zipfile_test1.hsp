@@ -1,0 +1,18 @@
+#include "zipfile.as"
+
+	;	zipファイル解凍サンプル
+	;
+	;	onibtn.zipを解凍します(onibtn.gifが取り出されます)
+	;
+	fname = "onibtn.zip"
+	s1 = dir_cur
+	mes "解凍元ファイル:"+fname
+	mes "解凍先フォルダ:"+s1
+	;
+	ZipExtract fname, s1
+	if stat : dialog "zip解凍に失敗しました"
+
+	mes "解凍しました。"
+	stop
+
+
