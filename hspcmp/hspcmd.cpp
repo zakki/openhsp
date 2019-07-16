@@ -209,6 +209,7 @@ char 	s_rec[1]= "", *hsp_prestr[] =
 
 	"$04d 9 objcolor",				// (ver3.6)
 	"$04e 9 rgbcolor",				// (ver3.6)
+	"$04f 9 viewport",				// (ver3.6)
 
 	//	enhanced command (ver3.0)
 

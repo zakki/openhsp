@@ -44,9 +44,9 @@ static HWND g_hTabCtrl;
 static HWND g_hGenList;
 static HWND g_hTabSheet[TABDLGMAX];
 
-static HWND g_hVarPage;
-static HWND g_hVarList;
-static HWND g_hVarEdit;
+static HWND g_hVarPage = NULL;
+static HWND g_hVarList = NULL;
+static HWND g_hVarEdit = NULL;
 
 static HWND g_hBtn1;
 static HWND g_hBtn2;
@@ -192,6 +192,8 @@ static void TabVarsReset( void )
 	int opt;
 
 	opt = GetTabVarsOption();
+
+	if (g_hVarList == NULL) return;
 /*
 	long style;
 	style = GetWindowLong( g_hVarList, GWL_STYLE );
@@ -207,7 +209,7 @@ static void TabVarsReset( void )
 	while(1) {
 		chk = strsp_get( p, name, 0, 255 );
 		if ( chk == 0 ) break;
-		SendMessage( g_hVarList, LB_INSERTSTRING, 0, (long)name );
+		SendMessage(g_hVarList, LB_INSERTSTRING, 0, (LPARAM)name);
 	}
 	freehac(&p);
 	g_debug->dbg_close( p0 );
@@ -471,13 +473,12 @@ EXPORT BOOL WINAPI debugini ( HSP3DEBUG *p1, int p2, int p3, int p4 )
 		NULL,
 		myinst,
 		NULL);
-	ShowWindow( hDlgWnd, SW_SHOW );
-	UpdateWindow( hDlgWnd );
 
 	//hDlgWnd = CreateDialog( myinst, "HSP3DEBUG", NULL, (DLGPROC)DlgProc );
 	if ( hDlgWnd == NULL ) {
 		MessageBox( NULL, TEXT("Debug window initalizing failed."), TEXT("Error"), 0 );
 	}
+
 	ShowWindow( hDlgWnd, SW_SHOW );
     UpdateWindow( hDlgWnd );
 

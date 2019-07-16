@@ -2996,7 +2996,11 @@ void CToken::PutHPI( short flag, short option, char *libname, char *funcname )
 	hpi.option = option;
 	hpi.libname = PutDSBuf( libname );
 	hpi.funcname = PutDSBuf( funcname );
+#ifndef HSP64
 	hpi.libptr = NULL;
+#else
+	hpi.p_libptr = 0;
+#endif
 	hpi_buf->PutData( &hpi, sizeof(HPIDAT) );
 }
 
