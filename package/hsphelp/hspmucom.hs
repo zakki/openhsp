@@ -316,17 +316,88 @@ optionパラメーターは、以下の値を指定することができます。取得される数値はすべて整
    MUCOM_STATUS_MAJORVER    メジャーバージョンコード
    MUCOM_STATUS_MINORVER    マイナーバージョンコード
    MUCOM_STATUS_COUNT       割り込みカウント
-   MUCOM_STATUS_MAXCOUNT    カウントの最大数
-   MUCOM_STATUS_MUBSIZE     音楽データのサイズ
-   MUCOM_STATUS_MUBRATE     音楽データのメモリ使用率(%)
-   MUCOM_STATUS_BASICSIZE   MMLデータのサイズ
-   MUCOM_STATUS_BASICRATE   MMLデータのメモリ使用率(%)
+   MUCOM_STATUS_MAXCOUNT    カウントの最大数(*)
+   MUCOM_STATUS_MUBSIZE     音楽データのサイズ(*)
+   MUCOM_STATUS_MUBRATE     音楽データのメモリ使用率(%)(*)
+   MUCOM_STATUS_BASICSIZE   MMLデータのサイズ(*)
+   MUCOM_STATUS_BASICRATE   MMLデータのメモリ使用率(%)(*)
+
+(*) コンパイル後のみ取得可能
 ^p
 エラーが発生した場合は、システム変数statに0以外が代入されます。
 
 %href
 mucomplay
 mucomcomp
+
+
+%index
+mucomsetvolume
+MUCOM88ボリューム設定
+
+%prm
+fmvol, ssgvol
+fmvol(0) : FM音源のボリューム設定
+ssgvol(0) : PSG音源のボリューム設定
+
+%inst
+MUCOM88でシミュレートされる各音源の音量を+-方向に調整します。標準値は 0です。
+約 1/2 dBの単位を整数で指定してください。有効範囲の上限は 20(10dB)となります。
+SCCI使用時には、ボリューム設定は反映されません。
+エラーが発生した場合は、システム変数statに0以外が代入されます。
+
+%href
+mucomplay
+
+
+%index
+mucomgetchdata
+演奏情報の取得
+
+%prm
+var, ch
+var : 取得されたデータが代入される変数
+ch(0) : チャンネルNo.(0～10)
+
+%inst
+MUCOM88プレイヤーの演奏情報をチャンネルごとに取得します。
+chパラメーターにチャンネルNo.(0～10)を指定することで、現在の状態をvarで指定した変数に代入します。
+変数は配列変数として設定され、それぞれの配列要素にステータスが返ります。
+^p
+   配列要素            : 内容
+ ---------------------------------------------------------------
+   MUCOM_CHDATA_LENGTH   音長
+   MUCOM_CHDATA_VNUM     音色No.(内部インデックス値)
+   MUCOM_CHDATA_WADR     演奏中のデータアドレス1
+   MUCOM_CHDATA_TADR     演奏中のデータアドレス2
+   MUCOM_CHDATA_VOL      ボリューム(内部値)
+   MUCOM_CHDATA_ALG      アルゴリズム値
+   MUCOM_CHDATA_CH       チャンネルNo.
+   MUCOM_CHDATA_DETUNE   デチューン値
+   MUCOM_CHDATA_TLLFO    TLLFO値
+   MUCOM_CHDATA_REVERB   リバーブパラメーター
+   MUCOM_CHDATA_QUANTIZE クオンタイズ値
+   MUCOM_CHDATA_LFODELAY LFOパラメーター
+   MUCOM_CHDATA_LFOCOUNT LFOパラメーター
+   MUCOM_CHDATA_LFODIFF  LFOパラメーター
+   MUCOM_CHDATA_LFOPEAK  LFOパラメーター
+   MUCOM_CHDATA_FNUM1    設定されているFNUM値1
+   MUCOM_CHDATA_FNUM2    設定されているFNUM値2
+   MUCOM_CHDATA_FLAG     演奏フラグ1
+   MUCOM_CHDATA_CODE     コード値
+   MUCOM_CHDATA_FLAG2    演奏フラグ2
+   MUCOM_CHDATA_PAN      パン設定値
+   MUCOM_CHDATA_KEYON    キーオンフラグ
+   MUCOM_CHDATA_VNUMORIG 音色No.
+   MUCOM_CHDATA_VOLORIG  ボリューム
+^p
+たとえば、「mucomgetchdata a,0」と記述した場合は、チャンネル0(A)の状態が変数aに代入されます。
+その後、「a(MUCOM_CHDATA_VNUMORIG)」で演奏中の音色No.を参照することができます。
+最初に、mucomreset命令により音楽プレイヤーとしてMUCOM88をリセットしておく必要があります。
+mucomgetchdata命令でエラーが発生した場合は、システム変数statに0以外が代入されます。
+
+%href
+mucomplay
 
 
 
