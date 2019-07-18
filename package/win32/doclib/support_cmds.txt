@@ -65,18 +65,28 @@ objenable	,sys|func
 clrobj	,sys|func
 objprm	,sys|func
 button	,sys|func
-
 getkey	,sys|func
 bsave	,sys|func
 exist	,sys|func
 notesave	,sys|func
-
 mmload	,sys|func
 mmplay	,sys|func
 mmstop	,sys|func
-
 setease	,sys|func
 
+mtlist	,sys|func
+mtinfo	,sys|func
+devinfo	,sys|func
+devinfoi,sys|func
+devprm	,sys|func
+devcontrol,sys|func
+httpload,sys|func
+httpinfo,sys|func
+gmulcolor,sys|func
+setcls	,sys|func
+celputm	,sys|func
+rgbcolor,sys|func
+viewport,sys|func
 
 HSP3Dishサポート済みシステム変数・関数
 
@@ -138,6 +148,8 @@ ginfo_accx	,sys|macro
 ginfo_accy	,sys|macro
 getease	,sys|func
 geteasef	,sys|func
+strrep	,sys|func
+dirinfo	,sys|func
 
 
 HSP3Dishサポート済みプリプロセッサ命令
@@ -265,7 +277,6 @@ HSP3Dishサポート外コマンド
 mouse	,sys|func
 run	,sys|func
 objinfo	,sys|func
-dirinfo	,sys|func
 sysinfo	,sys|func
 thismod	,sys|func
 onkey	,sys|func
@@ -308,10 +319,10 @@ mcall	,sys|func
 newmod	,sys|func
 delmod	,sys|func
 split	,sys|func
-strrep	,sys|func
 
 objskip	,sys|func
 objmode	,sys|func
+objcolor,sys|func
 
 #usecom	,pre|func
 #defint	,pre|func
