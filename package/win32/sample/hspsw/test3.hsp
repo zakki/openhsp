@@ -1,0 +1,83 @@
+;
+;	STEAM実績の解除
+;	steam_appid.txtは、480でテストしてください
+;
+#include "hspsw.as"
+
+	;	STEAM環境の初期化
+	steaminit : res=stat
+	if res : dialog "STEAM環境がありません。終了します。("+stat+")" : end
+
+	;	STEAM実績の自動設定
+	steamset_achievement
+	achimax=stat
+
+	;	読み込みリクエストを送る
+	steamreq_status
+*main
+	steamupdate flag		; ループ内で定期的に呼び出す
+
+	color 255,255,255:boxf
+	color 0,0,0:pos 0,100
+	mes "お待ちください..."
+
+	wait 10
+
+	if flag=STEAM_ERROR : goto *go_error
+	if flag!=STEAM_READY : goto *main
+
+*main2
+	apikey="ACH_WIN_ONE_GAME"	; 実績のAPIKEY
+
+	cls
+	pos 0,0
+	objsize 250,24
+	button "実績解除",*unlock
+	button "実績を戻す(TEST)",*unlock2
+
+*main3
+	steamupdate flag
+	color 255,255,255:boxf
+	color 0,0,0:pos 0,100
+
+	repeat achimax
+		steamget_achievementstr api,cnt,0	; APIKEY
+		steamget_achievementstr moji,cnt,1	; 表示文字列(UTF-8)
+		steamget_achievement result,cnt		; 実績の状態(-1=解除)
+		mes "ID:"+cnt+"="+result+" / "+api+" / "+moji
+	loop
+
+	wait 10
+
+	if flag=STEAM_ERROR : goto *go_error
+	goto *main3
+
+*unlock
+	steamunlock_achievementkey apikey
+	goto *main4
+
+*unlock2
+	steamclear_achievementkey apikey
+	goto *main4
+
+*main4
+	;	書き込み情報送信の完了を待つ
+	;
+	steamupdate flag		; ループ内で定期的に呼び出す
+
+	color 255,255,255:boxf
+	color 0,0,0:pos 0,100
+	mes "送信中..."
+
+	wait 10
+
+	if flag=STEAM_ERROR : goto *go_error
+	if flag!=STEAM_READY : goto *main4
+
+	goto *main2
+
+*go_error
+	cls 1
+	mes "エラーが発生しました。"
+	stop
+

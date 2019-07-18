@@ -1113,7 +1113,7 @@ void hgio_circle( BMSCR *bm, float x1, float y1, float x2, float y2, int mode )
 	if (drawflag == 0) hgio_render_start();
 
 	rate = D3DX_PI * 2.0f / (float)CIRCLE_DIV;
-	sx = abs(x2-x1); sy = abs(y2-y1);
+	sx = fabs(x2-x1); sy = fabs(y2-y1);
 	rx = sx * 0.5f;
 	ry = sy * 0.5f;
 	x = x1 + rx;
