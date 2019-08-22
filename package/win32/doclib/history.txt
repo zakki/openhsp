@@ -5,7 +5,7 @@ Hot Soup Processor ver3.6                           HSP : Hot Soup Processor
 
 ・hsp3関連 更新履歴
 
-	2019/07/16 3.6 beta1
+	2019/07/29 3.6 beta1
 
 	64bitランタイム(hsp3_64)はUTF-8を規定の文字コードに修正
 	MML記述によるFM音源再生をサポートするmucom88プラグインを標準で同梱
@@ -15,6 +15,8 @@ Hot Soup Processor ver3.6                           HSP : Hot Soup Processor
 	mesboxによるテキスト入力で全選択(ctrl+A)のキーを有効に修正
 	24bitカラーコードを指定するためのrgbcolor命令を追加
 	objcolor命令を追加、objmode命令のオプションにより配置オブジェクトの文字色・背景色指定が可能になります
+	[HSP3Dish][Windows] webdish素材をhsptvフォルダ内に追加、webdish.asヘッダを追加
+	[HSP3Dish][Windows] 標準でhsptvフォルダ内のリソースを検索するように修正
 	[HSP3Dish][android][iOS][hsp3js] HSP3Dish Helperの更新
 	[HSP3Dish][android] hsp3dhのプロジェクト新規作成でarm64,x86コードを標準で生成するように修正
 	[hspinet] http/httpsリクエストでPUT/DELETEメソッドに対応(inovia)
