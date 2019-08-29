@@ -29,6 +29,7 @@ void hgio_term( void );
 void hgio_resume( void );
 int hgio_gsel( BMSCR *bm );
 int hgio_buffer(BMSCR *bm);
+int hgio_bufferop(BMSCR* bm, int mode, char *ptr);
 
 void hgio_size( int sx, int sy );
 void hgio_view( int sx, int sy );
