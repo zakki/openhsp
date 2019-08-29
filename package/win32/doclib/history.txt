@@ -5,7 +5,7 @@ Hot Soup Processor ver3.6                           HSP : Hot Soup Processor
 
 ・hsp3関連 更新履歴
 
-	2019/07/29 3.6 beta1
+	2019/08/29 3.6 beta1
 
 	64bitランタイム(hsp3_64)はUTF-8を規定の文字コードに修正
 	MML記述によるFM音源再生をサポートするmucom88プラグインを標準で同梱
@@ -31,6 +31,8 @@ Hot Soup Processor ver3.6                           HSP : Hot Soup Processor
 	[HGIMG4] gpclone命令で正しくアニメーションがクローンされない不具合を修正
 	[HGIMG4] gpclone命令でクローンされた元のモデルが非表示の時にエラーとなる不具合を修正
 	[HGIMG4] システムリクエストでSYSREQ_LOGWRITEに0を設定した際にログを生成しないように修正
+	[HGIMG4] 角度値で回転を取得するgetang、getangr命令を追加
+	[HGIMG4] XYZ回転の順番が異なるsetangy、setangz等の命令を追加
 
 	2019/02/16 3.51
 

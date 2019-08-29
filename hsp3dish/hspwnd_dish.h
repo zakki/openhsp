@@ -178,6 +178,7 @@ public:
 	void FillRotTex( int dst_sx, int dst_sy, float ang, Bmscr *src, int tx, int ty, int srcx, int scry );
 	void SquareTex( int *dst_x, int *dst_y, Bmscr *src, int *src_x, int *src_y, int mode );
 	void GradFill( int x, int y, int sx, int sy, int mode, int col1, int col2 );
+	int BufferOp(int mode, char* ptr);
 
 	void SetFilter( int type );
 

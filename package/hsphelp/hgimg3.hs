@@ -1011,57 +1011,6 @@ addwork
 
 
 %index
-getang
-angグループ情報を取得
-%group
-拡張画面制御命令
-%prm
-id,x,y,z
-id      : オブジェクトID
-(x,y,z) : 取得する変数
-
-%inst
-オブジェクトの持つパラメーターを取得します。
-angグループ(表示角度)の内容が(x,y,z)で指定された変数に代入されます。
-(x,y,z)は、実数型の変数として設定されます。
-命令の最後に「i」を付加することで、整数値として値を取得することができます。
-
-%href
-getangi
-getpos
-getangr
-getscale
-getdir
-getefx
-getwork
-
-
-%index
-getangr
-angグループ情報を取得
-%group
-拡張画面制御命令
-%prm
-id,x,y,z
-id      : オブジェクトID
-(x,y,z) : 取得する変数
-
-%inst
-オブジェクトの持つパラメーターを取得します。
-angグループ(表示角度)の内容が(x,y,z)で指定された変数に代入されます。
-(x,y,z)は、整数型の変数として設定されます。
-角度の単位は整数で0～255で一周する値を使用します。
-
-%href
-getpos
-getang
-getscale
-getdir
-getefx
-getwork
-
-
-%index
 getefx
 efxグループ情報を取得
 %group

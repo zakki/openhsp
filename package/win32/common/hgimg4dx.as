@@ -47,6 +47,9 @@
 #const global GPOBJ_MATOPT_BLENDADD (32)
 #const global GPOBJ_MATOPT_SPECULAR (64)
 #const global GPOBJ_MATOPT_USERSHADER (128)
+#const global GPOBJ_MATOPT_USERBUFFER (256)
+#const global GPOBJ_MATOPT_MIRROR (512)
+#const global GPOBJ_MATOPT_CUBEMAP (1024)
 
 #enum global PRMSET_FLAG = 2
 #enum global PRMSET_MODE
@@ -111,6 +114,11 @@
 
 #const global GPGETMAT_OPT_OBJMAT (0)
 #const global GPGETMAT_OPT_SCRMAT (1)
+
+#const global GPCNVAXIS_PROJECTION (0)
+#const global GPCNVAXIS_PROJECTIONNORMAL (1)
+#const global GPCNVAXIS_WORLDVIEW (2)
+#const global GPCNVAXIS_WORLD (3)
 
 
 ;
@@ -241,6 +249,7 @@
 #cmd getcolor $85
 #cmd getwork $86
 #cmd getwork2 $87
+#cmd getang $89
 
 #cmd getposi $90
 #cmd getquati $91
@@ -332,6 +341,7 @@
 #cmd gpmatprmt $fc
 #cmd gpusershader $fd
 #cmd gpgetmat $fe
+#cmd gpreport $ff
 
 #cmd setevent $100
 #cmd delevent $101
@@ -346,6 +356,9 @@
 #cmd event_suicide $10a
 #cmd event_aim $10b
 #cmd objaim $10c
+#cmd gpscrmat $10d
+#cmd setobjrender $10e
+#cmd getangr $10f
 
 #cmd event_pos $110
 #cmd event_quat $111

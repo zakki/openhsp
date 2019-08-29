@@ -9,7 +9,7 @@
 %note
 hgimg4.asまたはhgimg4dx.asをインクルードすること。
 %date
-2019/03/06
+2019/08/29
 %author
 onitama
 %dll
@@ -1425,8 +1425,12 @@ id      : オブジェクトID
 quatグループ(クォータニオン)の内容が(x,y,z,w)で指定された変数に代入されます。
 (x,y,z,w)は、実数型の変数として設定されます。
 HGIMG4内部では、すべての回転情報は、クォータニオンにより保持されています。
+角度情報に変換する場合は、getangまたはgetangr命令をご使用ください。
+ただし、回転情報を完全に再現できない場合がありますので、角度情報に変換する場合は注意してください。
 
 %href
+getang
+getangr
 setquat
 
 
@@ -1535,5 +1539,123 @@ gpgetprm
 gpsetprm
 gpsetprmon
 
+
+
+%index
+setangy
+angグループ情報を設定
+%group
+拡張画面制御命令
+%prm
+id,x,y,z
+id      : オブジェクトID
+(x,y,z) : 設定する値 (デフォルト=0)
+
+%inst
+setang命令と同様の機能を持っていますが、回転の順番がY->X->Zとなります。
+
+%href
+setang
+setangz
+setangr
+
+
+%index
+setangz
+angグループ情報を設定
+%group
+拡張画面制御命令
+%prm
+id,x,y,z
+id      : オブジェクトID
+(x,y,z) : 設定する値 (デフォルト=0)
+
+%inst
+setang命令と同様の機能を持っていますが、回転の順番がZ->Y->Xとなります。
+
+%href
+setang
+setangy
+setangr
+
+
+%index
+event_angy
+angグループ変化イベントを追加
+%group
+拡張画面制御命令
+%prm
+id,frame,x1,y1,z1,sw
+id         : イベントID
+frame      : 変化までのフレーム数
+(x1,y1,z1) : 設定される値
+sw(0)      : 補間オプション
+
+%inst
+event_ang命令と同様の機能を持っていますが、回転の順番がY->X->Zとなります。
+
+%href
+event_ang
+event_angz
+event_angr
+
+
+%index
+event_angz
+angグループ変化イベントを追加
+%group
+拡張画面制御命令
+%prm
+id,frame,x1,y1,z1,sw
+id         : イベントID
+frame      : 変化までのフレーム数
+(x1,y1,z1) : 設定される値
+sw(0)      : 補間オプション
+
+%inst
+event_ang命令と同様の機能を持っていますが、回転の順番がZ->Y->Xとなります。
+
+%href
+event_ang
+event_angy
+event_angr
+
+
+%index
+event_setangy
+angグループ設定イベントを追加
+%group
+拡張画面制御命令
+%prm
+id,x1,y1,z1,x2,y2,z2
+id         : イベントID
+(x1,y1,z1) : 設定される値(下限値)
+(x2,y2,z2) : 設定される値(上限値)
+%inst
+event_setang命令と同様の機能を持っていますが、回転の順番がY->X->Zとなります。
+
+%href
+event_setang
+event_setangz
+event_setangr
+
+
+%index
+event_setangz
+angグループ設定イベントを追加
+%group
+拡張画面制御命令
+%prm
+id,x1,y1,z1,x2,y2,z2
+id         : イベントID
+(x1,y1,z1) : 設定される値(下限値)
+(x2,y2,z2) : 設定される値(上限値)
+%inst
+event_setang命令と同様の機能を持っていますが、回転の順番がZ->Y->Xとなります。
+
+%href
+event_setang
+event_setangy
+event_setangr
 
 
