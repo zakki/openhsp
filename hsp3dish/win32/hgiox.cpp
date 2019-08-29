@@ -45,7 +45,9 @@ int OpenMemFilePtr( char *fname )
 {
 	int fsize;
 	fsize = dpm_exist( fname );		// ファイルのサイズを取得
-	if ( fsize <= 0 ) return -1;
+	if ( fsize <= 0 ) {
+		return -1;
+	}
 	mfptr_depth++;
 	if ( mfptr_depth >= MFPTR_MAX ) return -1;
 	mfptr[mfptr_depth] = (char *)malloc( fsize );
@@ -909,10 +911,35 @@ int hgio_gsel( BMSCR *bm )
 }
 
 
-int hgio_buffer(BMSCR *bm)
+int hgio_buffer(BMSCR* bm)
 {
-	//		buffer(描画用画面作成) 未実装
+	//		buffer(描画用画面作成)
 	//
+	int texid = RegistTexEmpty(bm->sx, bm->sy, 1);
+	if (texid >= 0) {
+		bm->texid = texid;
+	}
+	return 0;
+}
+
+
+int hgio_bufferop(BMSCR* bm, int mode, char *ptr)
+{
+	//		オフスクリーンバッファを操作
+	//
+	int texid = bm->texid;
+	if (texid < 0) return -1;
+
+	if (mode & 0x1000) {
+		return UpdateTexStar(texid, mode & 0xfff);
+	}
+
+	switch (mode) {
+	case 0:
+		return UpdateTex32(texid, ptr, 0);
+	default:
+		return -2;
+	}
 	return 0;
 }
 

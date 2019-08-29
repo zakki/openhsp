@@ -794,45 +794,6 @@ void hgio_circle( BMSCR *bm, float x1, float y1, float x2, float y2, int mode )
 	}
 
 	game->finishPolyColor2D();
-
-
-	/*
-	D3DTLVERTEXC *v;
-	D3DTLVERTEXC arScreen[CIRCLE_DIV + 2];
-	int col;
-	float x,y,rx,ry,sx,sy,rate;
-
-	if ( bm == NULL ) return;
-	if ( bm->type != HSPWND_TYPE_MAIN ) throw HSPERR_UNSUPPORTED_FUNCTION;
-
-	rate = D3DX_PI * 2.0f / (float)CIRCLE_DIV;
-	sx = abs(x2-x1); sy = abs(y2-y1);
-	rx = sx * 0.5f;
-	ry = sy * 0.5f;
-	x = x1 + rx;
-	y = y1 + ry;
-
-	ChangeTex( -1 );
-	SetAlphaMode( 0 );
-	col = bm->color;
-
-	v = arScreen;
-	for(int i = 1; i<=CIRCLE_DIV + 1; i ++) {
-		v->x = x + cos((float)i * rate)*rx;
-		v->y = y + sin((float)i * rate)*ry;
-		v->z = 0.0f;
-		v->rhw = 1.0f;
-		v->color = col;
-		v++;
-	}
-
-	//デバイスに使用する頂点フォーマットをセットする
-	d3ddev->SetVertexShader(D3DFVF_TLVERTEXC);
-	// とりあえず直接描画(四角形)
-	d3ddev->SetRenderState( D3DRS_CULLMODE, D3DCULL_CCW );
-	d3ddev->DrawPrimitiveUP(D3DPT_TRIANGLEFAN,CIRCLE_DIV,arScreen,sizeof(D3DTLVERTEXC));
-	d3ddev->SetRenderState( D3DRS_CULLMODE, D3DCULL_CW );
-	*/
 }
 
 
@@ -1392,6 +1353,17 @@ int hgio_gettick( void )
 	return i - initTime;
 #endif
 
+#ifdef HSPNDK
+	int i;
+	timespec ts;
+	double nsec;
+    clock_gettime(CLOCK_REALTIME,&ts);
+    nsec = (double)(ts.tv_nsec) * 0.001 * 0.001;
+    i = (int)ts.tv_sec * 1000 + (int)nsec;
+    //return ((double)(ts.tv_sec) + (double)(ts.tv_nsec) * 0.001 * 0.001 * 0.001);
+	return i;
+#endif
+
 #ifdef HSPIOS
     CFAbsoluteTime now;
     now = CFAbsoluteTimeGetCurrent();
@@ -1869,4 +1841,23 @@ char *hgio_getdir( int id )
 #endif
 
 /*-------------------------------------------------------------------------------*/
+
+int hgio_bufferop(BMSCR* bm, int mode, char* ptr)
+{
+	//		オフスクリーンバッファを操作
+	//
+	gpmat* mat;
+	int texid = bm->texid;
+	if (texid < 0) return -1;
+
+	switch (mode) {
+	case 0:
+		mat = game->getMat(texid);
+		return mat->updateTex32(ptr, 0);
+	default:
+		return -2;
+	}
+	return 0;
+}
+
 
