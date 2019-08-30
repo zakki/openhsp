@@ -15,6 +15,9 @@
 #const global CLSMODE_SOLID 1
 #const global CLSMODE_TEXTURE 2
 
+#define global screen_offscreen (32)
+#define global screen_usergcopy (64)
+
 ;	system request
 ;
 #enum global SYSREQ_MAXMODEL=1

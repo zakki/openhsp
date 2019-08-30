@@ -100,7 +100,10 @@ static std::string gplog;
 extern "C" {
 	static void logfunc( gameplay::Logger::Level level, const char *msg )
 	{
-		if (GetSysReq(SYSREQ_LOGWRITE)) gplog += msg;
+		if (GetSysReq(SYSREQ_LOGWRITE)) {
+			gplog += msg;
+			//MessageBox(NULL, msg, "!", 0);
+		}
 	}
 }
 
