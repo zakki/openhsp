@@ -1,9 +1,11 @@
-#if defined(OPENGL_ES) || defined(GL_ES)
+#ifdef OPENGL_ES
 #ifdef GL_FRAGMENT_PRECISION_HIGH
 precision highp float;
 #else
 precision mediump float;
 #endif
+#else
+precision mediump float;
 #endif
 
 #ifndef DIRECTIONAL_LIGHT_COUNT
@@ -124,7 +126,11 @@ void main()
     if(v_clipDistance < 0.0) discard;
     #endif
  
+    #if defined(MIRRORTEX)
+    _baseColor = texture2D(u_diffuseTexture, vec2(1.0-v_texCoord.x,v_texCoord.y));
+    #else
     _baseColor = texture2D(u_diffuseTexture, v_texCoord);
+    #endif
  
     gl_FragColor.a = _baseColor.a;
 

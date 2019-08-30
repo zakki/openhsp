@@ -1604,13 +1604,13 @@ hspproj.xcodeproj\\project.pbxproj"}
 	s2=cppname
 	bcopy s2,basedir+"hspproj\\hspsource.cpp"
 
-	pfname=basedir+"hspproj\\hspproj-Info.plist"
-	notesel tmp
-	noteload pfname
-	s2="${PRODUCT_NAME:rfc1034identifier}"
-	s3="	<string>"+ios_ident+".${PRODUCT_NAME:rfc1034identifier}</string>"
-	gosub *rep_tmpline
-	notesave pfname
+	;pfname=basedir+"hspproj\\hspproj-Info.plist"
+	;notesel tmp
+	;noteload pfname
+	;s2="${PRODUCT_NAME:rfc1034identifier}"
+	;s3="	<string>"+ios_ident+".${PRODUCT_NAME:rfc1034identifier}</string>"
+	;gosub *rep_tmpline
+	;notesave pfname
 
 	pfname=basedir+"hspproj.xcodeproj\\project.pbxproj"
 	notesel tmp
