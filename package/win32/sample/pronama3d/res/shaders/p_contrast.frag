@@ -23,7 +23,7 @@ varying vec4 v_color;
 void main()
 {
    vec4 col = v_color * texture2D(u_texture, v_texCoord);
-   col.rgb = ((col.rgb - 0.5f) * max(u_contrast, 0)) + 0.5f;
+   col.rgb = ((col.rgb - 0.5) * max(u_contrast, 0.0)) + 0.5;
    col.rgb += u_brightness;
    gl_FragColor = col;
 }

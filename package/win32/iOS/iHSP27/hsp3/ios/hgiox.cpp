@@ -2138,6 +2138,27 @@ int hgio_buffer(BMSCR *bm)
 {
 	//		buffer(描画用画面作成) 未実装
 	//
+	int texid = MakeEmptyTex( bm->sx, bm->sy );
+	if (texid >= 0) {
+		bm->texid = texid;
+	}
+	return 0;
+}
+
+
+int hgio_bufferop(BMSCR* bm, int mode, char *ptr)
+{
+	//		オフスクリーンバッファを操作
+	//
+	int texid = bm->texid;
+	if (texid < 0) return -1;
+
+	switch (mode) {
+	case 0:
+		return 0;
+	default:
+		return -2;
+	}
 	return 0;
 }
 
