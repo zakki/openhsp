@@ -9,10 +9,10 @@
 #include "mod_appconfig.as"
 
 #define APPTITLE "HSP3Dish helper"
-#define APPVER "1.7"
+#define APPVER "1.71"
 #define APP_CONF "\\hsp3dh.cfg"
 
-#define AND_LIBVER 108			; android HSPランタイムの内部バージョン
+#define AND_LIBVER 109			; android HSPランタイムの内部バージョン
 
 #uselib "shell32.dll"
 #cfunc SHBrowseForFolder "SHBrowseForFolder" int
@@ -106,7 +106,7 @@
 		ios_org=cfg_getvar("ios_org")
 		ios_ident=cfg_getvar("ios_ident")
 	}
-	if and_targetid="" : and_targetid="\"android-24\""
+	if and_targetid="" : and_targetid="\"android-29\""
 	if and_keystore="" : and_keystore="hspapp"
 
 	if app_winx<0 : app_winx = -1
@@ -1152,12 +1152,11 @@ res\\drawable-mdpi\\ic_launcher.png"}
 	s1=basedir+"AndroidManifest.xml"
 	notesel tmp
 	noteload s1
-	noteadd "    <uses-sdk android:minSdkVersion=\"10\" />",5,0
+	noteadd "    <uses-sdk android:minSdkVersion=\"18\" />",5,0
 	noteadd "	<uses-permission android:name=\"android.permission.ACCESS_NETWORK_STATE\"/>",15,0
 	noteadd "	<uses-permission android:name=\"android.permission.INTERNET\"/>",15,0
 	noteadd "	<uses-permission android:name=\"android.permission.VIBRATE\"/>",15,0
 	noteadd "	<uses-permission android:name=\"android.permission.WRITE_EXTERNAL_STORAGE\" />",15,0
-
 
 	noteadd "        <activity android:name=\"tv.hsp.HspActivity\"",7,1
 	noteadd "                  android:screenOrientation=\"portrait\"",8,0
@@ -1173,6 +1172,9 @@ res\\drawable-mdpi\\ic_launcher.png"}
 	noteadd "            android:theme=\"@android:style/Theme.Translucent\"",10,0
 	noteadd "            android:configChanges=\"keyboard|keyboardHidden|orientation|screenLayout|uiMode|screenSize|smallestScreenSize\"/>",11,0
 	}
+
+	noteadd "        <uses-library android:name=\"org.apache.http.legacy\" android:required=\"false\"/>",7
+
 	notesave s1
 
 	s1=basedir+"jni\\Android.mk"
