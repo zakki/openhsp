@@ -336,24 +336,26 @@ void gamehsp::setMaterialDefaultBinding( Material* material, int icolor, int mat
 		material->getParameter("u_diffuseColor")->setValue(color);
 
 	gameplay::MaterialParameter *prm_modalpha;
-	if ( hasParameter( material, "u_modulateAlpha" ) )
+	if (hasParameter(material, "u_modulateAlpha")) {
 		prm_modalpha = material->getParameter("u_modulateAlpha");
-	if ( prm_modalpha ) { prm_modalpha->setValue( 1.0f ); }
+		if (prm_modalpha) { prm_modalpha->setValue(1.0f); }
+	}
 
 	RenderState::StateBlock *state;
 	state = material->getStateBlock();
+	if (state) {
+		state->setCullFace( (( matopt & GPOBJ_MATOPT_NOCULL )==0) );
+		state->setDepthTest( (( matopt & GPOBJ_MATOPT_NOZTEST )==0) );
+		state->setDepthWrite( (( matopt & GPOBJ_MATOPT_NOZWRITE )==0) );
 
-	state->setCullFace( (( matopt & GPOBJ_MATOPT_NOCULL )==0) );
-	state->setDepthTest( (( matopt & GPOBJ_MATOPT_NOZTEST )==0) );
-	state->setDepthWrite( (( matopt & GPOBJ_MATOPT_NOZWRITE )==0) );
-
-	state->setBlend(true);
-	if (matopt & GPOBJ_MATOPT_BLENDADD) {
-		state->setBlendSrc(RenderState::BLEND_SRC_ALPHA);
-		state->setBlendDst(RenderState::BLEND_ONE);
-	} else {
-		state->setBlendSrc(RenderState::BLEND_SRC_ALPHA);
-		state->setBlendDst(RenderState::BLEND_ONE_MINUS_SRC_ALPHA);
+		state->setBlend(true);
+		if (matopt & GPOBJ_MATOPT_BLENDADD) {
+			state->setBlendSrc(RenderState::BLEND_SRC_ALPHA);
+			state->setBlendDst(RenderState::BLEND_ONE);
+		} else {
+			state->setBlendSrc(RenderState::BLEND_SRC_ALPHA);
+			state->setBlendDst(RenderState::BLEND_ONE_MINUS_SRC_ALPHA);
+		}
 	}
 
 }
@@ -529,6 +531,7 @@ Material *gamehsp::makeMaterialFromShader(char *vshd, char *fshd, char *defs)
 {
 	Material *material;
 	material = Material::create( vshd, fshd, defs );
+
 	if ( material == NULL ) {
 		return NULL;
 	}

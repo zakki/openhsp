@@ -82,8 +82,10 @@ static std::string gplog;
 extern "C" {
 	static void logfunc( gameplay::Logger::Level level, const char *msg )
 	{
-		if (( level == gameplay::Logger::LEVEL_ERROR )||( level == gameplay::Logger::LEVEL_WARN )) printf( "#%s\n",msg );
-		gplog += msg;
+		if (GetSysReq(SYSREQ_LOGWRITE)) {
+			gplog += msg;
+			if (( level == gameplay::Logger::LEVEL_ERROR )||( level == gameplay::Logger::LEVEL_WARN )) printf( "#%s\n",msg );
+		}
 	}
 }
 
