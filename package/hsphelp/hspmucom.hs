@@ -251,11 +251,34 @@ optionパラメーターは、以下の値を指定することができます。
     0   : 通常のMUCOM88コンパイルを行う
     +1  : #voiceタグを無視する
 ^p
+mucomcomp命令を使用する際には、最初に、mucomreset命令によりMMLコンパイラとしてMUCOM88をリセットしておく必要があります。
 コンパイル結果のメッセージをmucomres命令により取得することができます。
 エラーが発生した場合は、システム変数statに0以外が代入されます。
 
 %href
 mucomres
+mucommml
+
+
+%index
+mucommml
+MMLのコンパイル
+
+%prm
+var,option
+var : MMLが格納された変数
+option(0) : コンパイルオプション
+
+%inst
+MUCOM88の形式で記述されたMMLの文字列を直接コンパイルします。
+コンパイルした結果は、音楽バッファ0に格納され、ファイルを介さずにコンパイルから演奏を行うことが可能です。
+optionパラメーターは、mucomcomp命令と同様のものが使用できます。
+mucommml命令を使用する際には、最初に、mucomreset命令によりMMLコンパイラとしてMUCOM88をリセットしておく必要があります。
+エラーが発生した場合は、システム変数statに0以外が代入されます。
+
+%href
+mucomres
+mucomcomp
 
 
 %index
