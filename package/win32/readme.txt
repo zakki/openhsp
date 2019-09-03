@@ -224,6 +224,23 @@ http://hsp.tv/make/hsp3linux_pi.html
 
 		setreq SYSREQ_LOGWRITE,0	; ログ出力を抑制
 
+	・getang、getangr命令の追加
+
+	オブジェクトの姿勢情報をXYZの回転角度で取得するためのgetang,getangr命令が追加されています。
+	クォータニオン形式による回転情報より、手軽に扱うことができるようになっています。
+	また、回転角度を指定するsetang、event_ang、event_setangの命令それぞれに回転順番が異なる命令を
+	用意しています。
+
+		setang (X->Y->Zの順番による回転角度の設定)
+		setangy (Y->X->Zの順番による回転角度の設定)
+		setangz (Z->Y->Xの順番による回転角度の設定)
+		event_ang (X->Y->Zの順番による回転角度のイベント変化)
+		event_angy (Y->X->Zの順番による回転角度のイベント変化)
+		event_angz (Z->Y->Xの順番による回転角度のイベント変化)
+		event_setang (X->Y->Zの順番による回転角度のイベント設定)
+		event_setangy (Y->X->Zの順番による回転角度のイベント設定)
+		event_setangz (Z->Y->Xの順番による回転角度のイベント設定)
+
 	・gpscrmat命令の追加
 
 	gpscrmat命令が追加されています。これにより、オフスクリーンテクスチャバッファを参照する

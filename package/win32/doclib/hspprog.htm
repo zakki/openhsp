@@ -15,7 +15,7 @@
 
 	<div id="CONTAINER">
 		<!-- ヘッダー -->
-		<p id="COPY"><a id="top" class="head">HSP : Hot Soup Processor ver3.51 / onion software 1997-2018(c)</a></p>
+		<p id="COPY"><a id="top" class="head">HSP : Hot Soup Processor ver3.6 / onion software 1997-2019(c)</a></p>
 		<img src="hsp3ttl.jpg" alt="タイトル" width="640" height="200">
 		<h1>プログラミング・マニュアル</h1>
 
@@ -32,11 +32,11 @@
 					<li><a href="#START_DIR">起動ディレクトリ</a></li>
 					<li><a href="#HSP_MECHANISM">HSPのしくみ</a></li>
 					<li><a href="#EX_RUNTIME">拡張ランタイム</a></li>
-					<li><a href="#MAKE_EXE">実行ファイルの作成方法<span class="new">（New!）</span></a></li>
+					<li><a href="#MAKE_EXE">実行ファイルの作成方法</a></li>
 					<li><a href="#EDIT_PACKFILE">PACKFILEの編集について</a></li>
 					<li><a href="#MAKE_SAVER">スクリーンセーバーの作成</a></li>
 					<li><a href="#START_OPT">起動オプションのパース</a></li>
-					<li><a href="#ICONINS">実行ファイルの書き換えについて<span class="new">（New!）</span></a></li>
+					<li><a href="#ICONINS">実行ファイルの書き換えについて</a></li>
 					<li><a href="#SCRIPT_SAMPLE">HSPスクリプトサンプル</a></li>
 					<li><a href="#HIDDEN_WINDOW">メインウィンドウ非表示EXEファイル</a></li>
 					<li><a href="#NO_DIR_MOVE">ディレクトリ移動の無効化</a></li>
@@ -44,13 +44,12 @@
 					<li><a href="#DEBUG_WINDOW">デバッグウィンドウ</a></li>
 					<li><a href="#EX_MACRO">HSP拡張マクロ</a></li>
 					<li><a href="#COLORING_AND_TAB">スクリプトの色分けとタブ</a></li>
-					<li><a href="#HSPMT">マルチスレッド対応版の利用について</a></li>
 					<li><a href="#EASY_INPUT">かんたん入力</a></li>
 					<li><a href="#PEAS_EDITOR">Peasエディタ</a></li>
 
 					<li><a href="#HSPUTF">UTF8対応版ランタイムの利用について<span class="new">（New!）</span></a></li>
 					<li><a href="#HSP64">64bit(x64)対応版ランタイムの利用について<span class="new">（New!）</span></a></li>
-					<li><a href="#HSED3CUSTOM">スクリプトエディタの拡張機能について<span class="new">（New!）</span></a></li>
+					<li><a href="#HSED3CUSTOM">スクリプトエディタの拡張機能について</a></li>
 				</ol>
 			</li>
 			<li><a href="#DESCRIPTION">スクリプト記述の基本</a>
@@ -69,7 +68,7 @@
 					<li><a href="#IF">条件判断</a></li>
 					<li><a href="#REPEAT">繰り返し命令</a></li>
 					<li><a href="#MEM_NOTEPAD">メモリノートパッド命令</a></li>
-					<li><a href="#SORT">ソート命令<span class="new">（New!）</span></a></li>
+					<li><a href="#SORT">ソート命令</a></li>
 					<li><a href="#SYSVAR">システム変数</a></li>
 				</ol>
 			</li>
@@ -108,7 +107,7 @@
 					<li><a href="#TOLERANCE_LEVEL">HSPシステムの許容範囲</a></li>
 					<li><a href="#PACKFILE">PACKFILEと暗号化</a></li>
 					<li><a href="#CNVSRC">Cソースへの変換</a></li>
-					<li><a href="#BOOTOPT">起動設定#bootoptの利用について<span class="new">（New!）</span></a></li>
+					<li><a href="#BOOTOPT">起動設定#bootoptの利用について</a></li>
 				</ol>
 			</li>
 		</ol>
@@ -463,13 +462,6 @@
 					これらの機能が必要がない場合に実行ファイルをコンパクトにすることができます。
 				</p>
 			</dd>
-			<dt>マルチスレッド版HSPランタイム(hsp3mt)</dt>
-			<dd>
-				<p>
-					標準のHSPランタイムと同一ですが、マルチスレッド対応ライブラリを使用しています。
-					ランタイムサイズが標準よりも大きくなりますが、動作の効率が上がる場合があります。
-				</p>
-			</dd>
 			<dt>HSP3UTFランタイム(hsp3utf)</dt>
 			<dd>
 				<p>
@@ -481,7 +473,8 @@
 			<dd>
 				<p>
 					通常のHSP3ランタイムと同等の機能を持っていますが、64bitアプリケーションとして動作するランタイムです。
-					通常のランタイムは32bitアプリケーションで、プラグイン等の互換性はありません。現在はまだβ版としての提供となっています。
+					hsp3utfと同様に文字列をすべてUnicode(UTF8)形式で処理されます。
+					32bit版のプラグインとの互換性はありません。今後、64bit対応のプラグインも拡充される予定です。
 				</p>
 			</dd>
 		</dl>
@@ -1007,29 +1000,6 @@
 		</p>
 
 
-		<h3 id="HSPMT">マルチスレッド対応版の利用について</h3>
-		<p>
-			標準でマルチスレッド対応版ランタイムが同梱されています。
-			これは、マルチスレッド環境に対応し効率良く動作することが期待されるほか、
-			PGO (Profile-Guided Optimization)による最適化を行なっており、
-			より高いパフォーマンスを期待できます。
-			(ただし、従来よりもランタイムのファイルサイズが約80KB増加しています。)
-		</p>
-		<p>
-			マルチスレッド版のランタイムは、スクリプトの先頭に#runtime命令を
-			以下のように記述することで使用できます。
-		</p>
-		<pre>
-			#runtime "hsp3mt" ; マルチスレッドランタイムを使用する
-		</pre>
-		<p>
-			マルチスレッドランタイムは、通常のHSP3と同様に使うことができます。
-			ただし、別なランタイム(コンソール版HSPやHGIMG3など)と同時に指定することはできません。
-			(HGIMG3は、すでにマルチスレッドに対応しているため特に指定する意味はありません。)
-			ランタイムの最適化については、今後も作業を行なっていく予定です。
-		</p>
-
-
 		<h3 id="EASY_INPUT">かんたん入力</h3>
 		<p>
 			スクリプトエディタの右クリックメニューに<em>かんたん入力</em>項目が
@@ -1130,9 +1100,9 @@
 			　(整数値の範囲など従来の仕様が変わるものではありません)
 			<li>1つの変数が使用するメモリバッファは2GB(32bit)が上限となります
 			　(スクリプト全体が使用できるメモリサイズは64bitアプリに準拠します)
+			<li>文字コードをUTF8として扱います(hsp3utfと同様)
 			<li>従来の32bit版プラグインとは互換性がありません
 			<li>COM関連の命令が正しく動作しないことがあります
-			<li>将来の64bit(x64)ランタイムは、文字コードをUTF8として扱う予定です
 			<li>#packopt命令によるアイコンの書き換えに対応していません
 		</ul>
 
