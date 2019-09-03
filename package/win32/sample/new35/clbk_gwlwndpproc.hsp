@@ -1,0 +1,49 @@
+
+	;	コールバックモジュール modclbk3.hspサンプル
+	;
+
+	/*--------------------------------------------
+	// サブクラス化テスト
+	// mesboxのコンテキストメニューと
+	//   ペーストを無効にします。
+	--------------------------------------------*/
+	//↓コールバック用モジュールをinclude
+	#include "modclbk3.hsp"
+	//↓必要な定数の設定
+	#const GWL_WNDPROC	$FFFFFFFC
+	#const WM_CONTEXTMENU	$0000007B
+	#const WM_PASTE	$00000302
+	//↓必要なＤＬＬ関数の登録
+	#uselib "user32.dll"
+	#cfunc GetWindowLong "GetWindowLongA" int,int
+	#func SetWindowLong "SetWindowLongA" int,int,int
+	#cfunc DefWindowProc "DefWindowProcA" int,int,int,int
+	#cfunc CallWindowProc "CallWindowProcA" int,int,int,int,int
+	//↓タイトル設定
+	title "modclbk test on sub-class -コピペ防止"
+	//↓mesbox作成
+	sdim restext
+	mesbox restext,ginfo_winx,ginfo_winy,5,0
+	idmesbox=stat
+	//↓コールバック関数の作成
+	vmesboxclbklb = *mesboxclbklb
+
+	newclbk3 clbkptr,4,vmesboxclbklb		; コールバック関数を作成する
+	
+	//↓サブクラス化
+	defmesboxproc=GetWindowLong(objinfo(idmesbox,2),GWL_WNDPROC)
+	SetWindowLong objinfo(idmesbox,2),GWL_WNDPROC,clbkptr
+	//↓停止
+	stop
+//↓ウィンドウプロシージャ
+*mesboxclbklb
+	//↓引数取得
+	dupptr msg,lparam,wparam*4,4
+	//↓もしもメッセージが、コンテキストメニューかペーストなら
+	if (msg.1 == WM_CONTEXTMENU)|(msg.1 == WM_PASTE){
+		//↓デフォルトのプロシージャを呼ぶ
+		return DefWindowProc(msg.0,msg.1,msg.2,msg.3)
+	}
+	//↓元のプロシージャを呼び結果を返す
+	res = CallWindowProc(defmesboxproc,msg.0,msg.1,msg.2,msg.3)
+	return res

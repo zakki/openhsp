@@ -1,0 +1,47 @@
+
+	;	mes/printサンプル
+	;	(オプションを指定することで改行されません)
+	;
+	font msgothic,20
+
+	s1=""
+	x=0:y=0
+
+	repeat 5
+
+	moji="This is mes/print sample for HSP3.5."
+	gosub *sub
+
+	moji="１文字ずつ表示するサンプルスクリプトです。"
+	gosub *sub2
+
+	loop
+
+	stop
+
+*sub
+	;	英文字(半角)で1文字ずつ表示
+	pos x,y
+	repeat strlen(moji)
+		s1=strmid(moji,cnt,1)
+		mes s1,1
+		await 100
+	loop
+
+	y=y+20
+	return
+
+
+*sub2
+	;	日本語(全角)で1文字ずつ表示
+	pos x,y
+	repeat strlen(moji)/2
+		s1=strmid(moji,cnt*2,2)
+		mes s1,1
+		await 100
+	loop
+
+	y=y+20
+	return
+
+

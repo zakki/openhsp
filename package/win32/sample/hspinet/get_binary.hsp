@@ -1,0 +1,44 @@
+#include "hspinet.as"
+
+	;
+	;	ファイルの取得(バイナリファイルの取得)
+	;
+
+	netinit
+	if stat : dialog "ネット接続できません。" : end
+
+	neturl "http://hsp.tv/images/bbs/mascot8.jpg"
+	netrequest_get ""
+
+	mes "DOWNLOAD 開始"
+
+*main
+	;	結果待ちのためのループ
+	netexec res
+	if res > 0 : goto *comp
+	if res < 0 : goto *bad
+	await 50
+	goto *main
+
+*bad
+	;	エラー
+	neterror estr
+	mes "ERROR "+estr
+	stop
+
+*comp
+	;	完了
+	mes "DOWNLOAD 完了"
+
+	// バッファを確保(実際に受信した量より多めに確保される)
+	sdim buf, netgetv_size()
+	// 受信データを代入
+	netgetv_data buf
+	// 実際に受信したサイズを取得
+	title ""+netgetv_requestsize()+" bytes"
+
+	//mesbox buf,640,400,1
+	bsave "mascot8.jpg", buf, netgetv_requestsize()
+
+	stop
+

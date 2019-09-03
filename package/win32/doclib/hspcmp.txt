@@ -1,0 +1,487 @@
+------------------------------------------------------------------------------
+HSPCMP ver3.51                                      HSP : Hot Soup Processor  
+ＨＳＰ拡張DLLリファレンス             copyright 1999-2018 (c) onion software  
+------------------------------------------------------------------------------
+
+・はじめに
+
+	このツールは、Hot Soup Processor ver3以降のHSPスクリプトエディタなどで使用
+	可能なHSPコードコンパイラです。
+	Windows用のDLL版は、hspcmp3.dllとして提供されています。
+	(このDLLは、スクリプトエディタが使用するほか、HSPスクリプトから機能を
+	呼び出すことも可能です。HSPの拡張プラグインとして使用する場合は、
+	HSP3.EXE,HSED3.EXEと同じディレクトリに置かれている必要があります。)
+
+	コマンドライン版としてhspcmp.exe(Linux版はhspcmp)が用意されています。
+
+
+・コマンドラインからの呼び出し
+
+	コマンドプロンプト(またはシェル)から、hspcmp.exe(Linux版はhspcmp)を
+	実行することができます。
+
+	呼び出しの書式は、以下の通りです。
+
+	hspcmp [options] [filename]
+
+	オプション一覧
+
+	       -o??? 出力するオブジェクトファイル(.ax)の名前を???に指定する
+	       -d    デバッグ情報を含めたオブジェクトファイルを生成する
+	       -p    プリプロセスのみを行う
+	       -c    HSP2.55互換モードでコンパイルする
+	       -i    UTF-8形式のスクリプトを読み込む
+	       -u    文字列データをUTF-8形式で出力する
+	       -w    デバッグウインドウ表示フラグを設定する
+	       -e0,e1,r0,r1        オブジェクトファイルを実行する
+                                   (e0,r0はランタイム名のみを表示)
+                                   (r,r1の場合はエラーコード確認付き)
+	       --syspath=??? 実行時のHSPシステムフォルダを指定する
+	       --compath=??? commonフォルダのパスを指定する
+
+	hspcmpツールを使用することで、コマンドラインからHSPスクリプトの
+	コンパイル、実行を行うことができます。
+
+		例:
+		hspcmp -d -oout.ax test1.hsp
+
+		test1.hspをコンパイルして、デバッグ情報を含めた
+		オブジェクトファイルをout.axとして出力する。
+
+		例:
+		hspcmp -e test1.ax
+
+		オブジェクトファイルtest1.axをHSPランタイムで実行する。
+
+
+・スクリプトからの呼び出し
+
+	HSPスクリプトからDLLを呼び出すには、以下の行をスクリプトの先頭に追加
+	して下さい。
+
+	#include "hspcmp.as"
+
+	その後は、命令が追加されHSPコードコンパイラの機能が使用できるようになります。
+
+
+・命令詳細
+
+	hsc_ini "filename"
+
+		HSPCMP.DLLの初期化を行ないます。
+		HSPCMP.DLLの機能を使用する場合は、最初に初期化をする必要があります。
+		"filename"で指定したファイルをコンパイルの対象とします。
+		ファイル名は、拡張子(asでなくても構いません)も含めて指定して下さい。
+
+	hsc_refname "filename"
+
+		エラーメッセージで表示されるソーススクリプトファイル名を指定します。
+		これは、たとえば「test.as」という名前を一時的に「hsptmp」などの別名で
+		保存してコンパイルする時にも、エラーメッセージには「test.as」ファイル
+		内でエラーが起こっているということを表示させるためのものです。
+		ソーススクリプトファイル名が、hsc_iniで指定したファイルから変更する
+		必要がない場合は、指定しなくても構いません。
+
+	hsc_objname "filename"
+
+		出力されるオブジェクトファイル名を指定します。
+
+	hsc_compath "pathname"
+
+		#includeでサーチされる共通ディレクトリを指定します。
+		"pathname"は必ず「\」で終わる文字列である必要があります。
+		hsc_compathが指定されなかった場合は、hspcmp.dllを使用しているEXEの
+		下にある「common」ディレクトリが参照されます。
+
+	hsc_comp p1,p2,p3
+
+		HSPコードコンパイラで、ソースファイルをコンパイルして、オブジェクト
+		ファイルを作成します。
+		p1のパラメータで、デバッグ情報をオブジェクトファイルに出力するかを
+		指定することができます。p1が0かまたは省略されている場合は、エラー行
+		表示などに必要なデバッグ情報がオブジェクトファイルに付加されません。
+		p1が1の場合は、デバッグ情報が付加されます。
+		p1が2の場合はプリプロセス処理のみ行います。
+		p2が0の場合は「__hsp30__」マクロが定義された状態でコンパイルを行ないます。
+		p2が1の場合は、マクロは定義されません。これは、スクリプトエディタの
+		「HSP拡張マクロを使用する」フラグをコンパイラに渡すためのものです。
+		p2の値を+4(bit2)すると、ソースに含まれる実行ファイル自動作成のための
+		命令(#pack,#epack,#packopt)をもとにpackfile作成を行ないます。
+		p3が0以外の場合は、デバッグウインドゥを表示するフラグをオブジェクト
+		ファイルに埋め込みます。
+		hsc_comp命令を実行するためには、必ずhsc_ini命令で初期化とファイルの
+		指定をする必要があります。
+		また、必要があればhsc_objnameで出力されるオブジェクトファイル名を
+		指定します。(出力ファイル名は、デフォルトではhdc_iniで指定した
+		ファイル名の拡張子が「.ax」になったものになります)
+		さらに必要であれば、hsc_refname命令をあらかじめ実行しておいて
+		下さい。コンパイルの手順としては、
+
+			1.「hsc_ini」
+					↓
+			2.「hsc_refname」(省略可)
+					↓
+			3.「hsc_objname」(省略可)
+					↓
+			4.「hsc_comp」
+
+		のようになります。
+
+	hsc_getmes p1
+
+		p1で指定した文字列型の変数に、エラーなどHSPCMP.DLLが出力した
+		メッセージを代入します。
+
+	hsc_clrmes
+
+		コンパイラが出力したメッセージのデータをすべてクリアします。
+
+	hsc_ver
+
+		システム変数refstrに、HSPコードコンパイラのバージョン情報を
+		文字列として返します。
+
+	hsc_bye
+
+		HSPコードコンパイラの終了処理を行ないます。
+		この命令は自動的に実行されるので、通常は使用しません。
+
+	pack_ini "filename"
+
+		PACKFILEマネージャの初期化を行ないます。
+		PACKFILEの操作を行なう場合(「pack_」で始まる命令)は、最初に
+		初期化をする必要があります。
+		"filename"で指定したファイルを操作の対象とします。
+		ファイル名は、拡張子のないものを指定して下さい。
+
+	pack_view
+
+		pack_iniで指定したファイルをDPMファイルとして内容一覧を表示
+		します。pack_viewの結果は、hsc_getmes命令で取得して下さい。
+
+	pack_make p1,p2
+
+		p1 = 0=標準EXEファイル用 / 1=外部DPMファイル用
+		p2 : 暗号化キー( 0=標準キーを使用する / その他=暗号化キー )
+
+		pack_iniで指定したファイル名でDPMファイルを作成します。
+		p1で、標準EXEファイル用か、外部読み込み用のDPMファイルなのかを指定する必要があります。
+		また、DPMファイルを作成する場合は、p2で暗号化キーについての設定を行なうことができます。
+		p2に0を指定した場合は、標準の暗号化によるDPMファイル(2.61互換)を作成します。
+		p2に0以外を指定した場合は、その値をキーとする暗号化を施します。
+		この場合は、DPM読み込みの際にスクリプト側で同じ値のキーをchdpm命令によって指定しなければ、
+		正しいファイルとして復号されなくなるので注意してください。
+		DPMファイルに含めるファイルは、カレントディレクトリの
+		「PACKFILE」内のテキストで指定されたファイルになります。
+
+	pack_exe p1
+
+		p1 = 0=標準 / 1=フルスクリーンモード / 2=スクリーンセーバー
+
+		pack_iniで指定したファイル名でEXEファイルを作成します。
+		p1で3つのモード(標準・フルスクリーン・スクリーンセーバー)
+		を指定することができます。
+		EXEファイルに含めるファイルは、カレントディレクトリの
+		「PACKFILE」内のテキストで指定されたファイルになります。
+		また、HSPランタイムファイル(hsprt)が適切なディレクトリに
+		置かれている必要があります。
+
+	pack_opt p1,p2,p3
+
+		p1 = 画面Xサイズ( 0 or 省略時 = 640 )
+		p2 = 画面Yサイズ( 0 or 省略時 = 480 )
+		p3 = 起動時の動作スイッチ
+
+		pack_exe命令でEXEファイルを作成する場合のオプションを
+		指定します。pack_exe命令を実行する前に、指定をしておく
+		必要があります。
+		p3で指定する起動時の動作スイッチには、以下の値を指定することで特殊な起動動作にすることができます。
+
+			1 = 初期ウィンドウ非表示
+			2 = ディレクトリ移動なし
+
+		動作スイッチは、加算することで同時に機能を選択することが可能です。
+		特に特殊な動作が必要ない場合は、0を指定して下さい。
+
+	pack_rt "filename"
+
+		pack_exe命令でEXEファイルを作成する場合に参照される
+		HSPランタイムファイル(hsprt)のあるフルパス名を指定します。
+		HSPランタイムファイルがカレントディレクトリにない場合は、
+		指定をしておいてください。
+		(例: pack_rt "c:\hsp\hsprt")
+
+	pack_get "filename"
+
+		pack_iniで指定したファイル名をDPMファイルとして、格納
+		されているファイルを取り出します。
+		"filename"で指定したファイルが取り出され、カレントディレクトリに
+		セーブされます。
+
+	hsc3_getsym
+
+		コンパイラのメッセージバッファにHSPで使用されるシンボル名を出力します。
+		出力は、「シンボル名,sys[|var/func/macro][|1/2]」の形式になります。
+
+	hsc3_messize val
+
+		hsc_getmesで得られるメッセージ全体のサイズを、valで指定した変数に
+		代入します。
+
+	hsc3_make "path"
+
+		実行ファイルの自動作成を行ないます。
+		"path"でHSPランタイムライブラリのあるフルパスを指定します。
+		packfileのオプションに従って実行ファイルを作成します。
+		オプション付きのpackfile作成は、hsc_compで行ないます。
+
+	hsc3_getruntime val, "objfile"
+
+		"objfile"で指定したオブジェクトファイルが必要とする
+		ランタイムファイル名をvalで指定した変数に取得します。
+		valの変数は文字列型で初期化されている必要があります。
+		ランタイムファイル名が空("")の場合は、デフォルトの
+		ランタイム(hsp3.exe)を使用することを示しています。
+
+	hsc3_run "string"
+
+		"string"の内容をランタイム実行用のコマンドラインとして処理します。
+		"string"には、「ランタイム名」「オブジェクトファイル名」
+		「起動オプション」をそれぞれスペースで区切った形で指定する
+		必要があります。
+
+
+・注意点
+
+	HSPCMP.DLLは、HSP3.2以上と同時に使用されるプラグインファイルです。
+	EXEファイルを作成した場合でも、HSPCMP.DLLをEXEファイルと同じディレクトリ
+	に置かないと動作しません。また、packfileにDLLを追加することはできません。
+
+	このバージョンについてお気づきのことや、ご意見などありましたら、
+	メールやHSPの掲示板の方にお寄せ下さい。
+
+
+・著作権とライセンス
+
+	HSPCMP.DLLの著作権はonion softwareにあります。
+	onion softwareは本プログラムによって生じた、いかなる損害についても
+	保証いたしません。自己の責任の範囲で使用してください。
+
+	HSPCMP.DLLは、自由に添付、複製、改編、再配布することができます。
+	ただし、その際にはHSPのライセンス表記(hsplicense.txt)
+	を明示するようにしてください。
+	(ライセンス表記の明示は、配布物の中にhsplicense.txtを含めるか、
+	またはドキュメント内にhsplicense.txtと同じ内容を含めるようにしてください。)
+
+	ライセンスの詳細は、HSPシステムドキュメントを参照してください。
+
+
+---------------------------------------------------------------------------
+Appendix : HSPからスクリプトのコンパイルを行なう方法
+---------------------------------------------------------------------------
+
+	HSPCMP.DLLをHSPスクリプトから呼び出すサンプルを示します。
+	以下は、スクリプトエディタの「コンパイル+実行」と同じ動作を行ないます。
+
+	#include "hspcmp.as"
+
+	;
+	;	HSP3ソーススクリプトをコンパイルして実行する
+	;
+	sdim mesbuf,$10000
+	sdim rtname,256
+
+	fname="test1.as"		; スクリプトファイル名
+	objname="obj"			; オブジェクトファイル名
+	debug_mode=0			; デバッグウィンドウ表示フラグ
+
+	hsc_ini fname
+	hsc_objname objname
+	hsc_comp 0,2,debug_mode
+	res=stat:if res!=0 : dialog "ERROR" : goto *goerror
+
+	delete fname+".i"		; 中間ファイルを削除
+
+	hsc3_getruntime rtname, objname
+	if rtname="" : rtname="hsp3.exe"
+
+	cmdexe = "\""+dir_exe+"\\"+rtname+"\" "+objname
+	hsc3_run cmdexe
+
+*goerror
+	hsc_getmes mesbuf
+
+	objmode 1
+	flg=1				; 0=編集不可/1=編集可能
+	mesbox mesbuf,636,446,flg+4
+
+	stop
+
+
+---------------------------------------------------------------------------
+Appendix : CプログラムからのHSP拡張プラグインの呼び出し方法
+---------------------------------------------------------------------------
+
+	ここでは、HSPCMP.DLLをCプログラムから呼び出す方法を解説しています。
+	これ以外の拡張プラグインも、基本的には同じ方法でアクセス可能です。
+	リストの例は、Visual C++で使われているものです。
+
+
+・呼び出し側
+
+	下のリストは、HSPCMP.DLLをリンクして関数を定義している部分です。
+	DLLFUNCという型の関数を定義して使っています。
+	引数が(int,int,int,int)になっていますが、別のタイプであっても4つの
+	呼び出しパラメータ(サイズは4byte)であれば何でも構いません。
+	下の例では、dll_iniを呼ぶことでhsc_で始まるそれぞれの関数が使用できる
+	ようになり、dll_byeを呼ぶことで開放します。(ここでは開放時に、
+	hsc_byeを呼ぶようになっています)
+
+/*
+		DLL support routines
+*/
+
+typedef BOOL (CALLBACK *DLLFUNC)(int,int,int,int);
+
+DLLFUNC hsc_ini;
+DLLFUNC hsc_refname;
+DLLFUNC hsc_objname;
+DLLFUNC hsc_comp;
+DLLFUNC hsc_getmes;
+DLLFUNC hsc_clrmes;
+DLLFUNC hsc_ver;
+DLLFUNC hsc_bye;
+DLLFUNC pack_ini;
+DLLFUNC pack_make;
+DLLFUNC pack_exe;
+DLLFUNC pack_opt;
+DLLFUNC pack_rt;
+DLLFUNC hsc3_getsym;
+DLLFUNC hsc3_make;
+DLLFUNC hsc3_getruntime;		// 3.0用の追加
+DLLFUNC hsc3_run;				// 3.0用の追加
+
+static	int dllflg=0;			// DLL uses flag
+static	HINSTANCE hDLL;			// Handle to DLL
+
+static char *SetDllFunc( char *name )
+{
+	//		DLL関数を割り当てる
+	//
+	char *ent;
+	char fncname[128];
+	fncname[0]='_';
+	strcpy( fncname+1,name );
+	strcat( fncname,"@16" );
+	ent = (char *)GetProcAddress( hDLL, fncname );
+	if (ent==NULL) dllflg=-1;				// error flag
+	return ent;
+}
+
+
+int dll_ini( char *libname )
+{
+	//		Initalize DLL entry
+	//			(result:1=ok)
+	//
+	hDLL = LoadLibrary( libname );
+	if ( hDLL==NULL ) return 0;
+
+	dllflg=1;
+	hsc_ini = (DLLFUNC)SetDllFunc("hsc_ini");
+	hsc_refname = (DLLFUNC)SetDllFunc("hsc_refname");
+	hsc_objname = (DLLFUNC)SetDllFunc("hsc_objname");
+	hsc_comp = (DLLFUNC)SetDllFunc("hsc_comp");
+	hsc_getmes = (DLLFUNC)SetDllFunc("hsc_getmes");
+	hsc_clrmes = (DLLFUNC)SetDllFunc("hsc_clrmes");
+	hsc_ver = (DLLFUNC)SetDllFunc("hsc_ver");
+	hsc_bye = (DLLFUNC)SetDllFunc("hsc_bye");
+	pack_ini = (DLLFUNC)SetDllFunc("pack_ini");
+	pack_make = (DLLFUNC)SetDllFunc("pack_make");
+	pack_exe = (DLLFUNC)SetDllFunc("pack_exe");
+	pack_opt = (DLLFUNC)SetDllFunc("pack_opt");
+	pack_rt = (DLLFUNC)SetDllFunc("pack_rt");
+	hsc3_getsym = (DLLFUNC)SetDllFunc("hsc3_getsym");
+	hsc3_make = (DLLFUNC)SetDllFunc("hsc3_make");
+	hsc3_getruntime = (DLLFUNC)SetDllFunc("hsc3_getruntime");		// 3.0用の追加
+	hsc3_run = (DLLFUNC)SetDllFunc("hsc3_run");						// 3.0用の追加
+
+	return dllflg;
+}
+
+
+void dll_bye( void )
+{
+	//		Release DLL entry
+	//
+	if (dllflg==0) return;
+	if (dllflg==1) {
+		hsc_bye(0,0,0,0);					// 後始末routine
+	}
+	FreeLibrary( hDLL );
+	dllflg=0;
+}
+
+
+
+・HSPCMP.DLLを使ったファイルのコンパイルと実行
+
+	以下の例は、ファイルのコンパイルと実行を行なう例です。
+	hsc_で始まる命令についての詳細は、命令リファレンスを参照してください。
+	おおまかな流れは、hsc_iniでソーススクリプトを指定してから、
+	hsc_objnameで出力されるオブジェクトファイルを指定します。
+	その後、hsc_compでファイルがコンパイルされます。
+	エラーがあった場合は、hsc_getmesでメッセージデータを取り出す
+	ことができます。
+	エラーがなかった場合は、ランタイムを呼び出して実行させます。
+	下の例では、ディレクトリの指定は特に行なっていませんが、実際には
+	ランタイムのあるディレクトリを含めたパスや、ソーススクリプトのパスなどを
+	含めた名前で指定するといいでしょう。
+
+	/*
+			HSP compile support routines
+	*/
+
+	char hsp_file[128];				// ソーススクリプトファイル名
+	char objname[128];				// オブジェクトファイル名
+	char errbuf[32000];				// エラーメッセージ格納の領域
+	char cfname[_MAX_PATH];				// ランタイムファイル名
+	char execmd[2048];				// 実行用文字列
+	int a,i;
+
+	//		Compile as file
+	//
+	strcat( hsp_file,"test.as" );
+	strcat( objname,"test.ax" );
+	hsc_ini( 0,(int)hsp_file, 0,0 );
+	hsc_objname( 0,(int)objname, 0,0 );
+	a=hsc_comp( 1,0,0,0 );
+	if (a) {
+		hsc_getmes( (int)errbuf,0,0,0 );	// エラーを取得
+	}
+
+	//		execute HSP3 process
+	//
+	*cfname = 0;
+	hsc3_getruntime( (int)cfname, (int)objname, 0, 0 );	// ランタイムを取得
+	if ( *cfname == 0 ) {
+		wsprintf( execmd,"%s ", "hsp3.exe" );
+	} else {
+		wsprintf( execmd,"%s ", cfname );
+	}
+
+	strcat( execmd,objname );
+	if (hsp_cmdopt[0]!=0) {
+		strcat( execmd," " );
+		strcat( execmd,hsp_cmdopt );		// コマンドラインオプションがある場合
+	}
+
+	i = hsc3_run( (int)execmd, 0, 0, 0 );
+	if ( i ) {
+		//	エラー "実行用ランタイムファイルが見つかりません。"
+	}
+
+
+-------------------------------------------------------------------------------
+                                                HSP users manual / end of file 
+-------------------------------------------------------------------------------

@@ -1,0 +1,416 @@
+
+	;
+	;	カードバトルゲーム
+	;
+	;	このゲームは、カードをレベルアップしながら敵と戦います。
+	;
+	;	  1. 王国にせまる敵を倒しながらカードのレベルを上げましょう
+	;	  2. 「こうげき」カードを選ぶと敵に攻撃をしかけます
+	;	  3.  敵を倒すと「ざいりょう」が手に入ります
+	;	  4. 「せいさん」カードを選ぶとざいりょうをもとにお金をかせぎます
+	;	  5. 「かいふく」カードを選ぶと「たいりょく」が回復します(ゴールドが減ります)
+	;	  6.  「レベルアップ」を選ぶとゴールドを払ってカードのレベルを上げることができます
+	;	  7.  カードのレベルを上げると効果がさらに上がります
+	;
+	;	敵の攻撃で「たいりょく」が0になると負けになってしまいます。
+	;	ゴールドを増やしながら長い期間、王国を繁栄させましょう。
+	;
+	;	(素材データはHSPインストールフォルダ以下のhsptvフォルダに入っています)
+	;
+	;
+	name="カードバトルゲーム"
+	randomize
+	screen 0,800,600	; ウィンドウ初期化
+	cls 4
+	title name
+
+	sdim tvdir,256
+	tvdir = dir_tv			; HSPTV素材フォルダ
+
+	celload "cardbg.png",3		; 背景
+	celload "btlcard.bmp",4		; カード
+	celdiv 4,128,192
+	celload "btlenemy.bmp",5	; 敵
+	celdiv 5,64,64
+	celload tvdir+"baku.bmp",6	; 爆発
+	celdiv 6,96,96
+	sdim msg,256
+
+	mmload tvdir+"se_click.wav",0
+	mmload tvdir+"se_break3.wav",1
+	mmload tvdir+"se_block2.wav",2
+
+	enemylv=1
+	gold=100
+	turn=0
+	beats=0
+
+	attack=1
+	heal=1
+	make=1
+	level=1
+
+*start
+	;	ステージ開始
+	maxhp=300+level*100
+	hp=maxhp
+	encount=0
+	gosub *stageset
+
+*gomain
+	;	ターン開始
+	clrobj
+	if hp=0 : goto *main6
+	;
+	gosub *initcard
+	repeat 4
+		card_lv(cnt)=1
+		card_type(cnt)=cnt
+		x=220+(cnt*140)
+		card_x(cnt)=x
+		card_y(cnt)=310
+	loop
+	card_lv(0)=attack
+	card_lv(1)=heal
+	card_lv(2)=make
+	card_lv(3)=level
+
+	encount++
+	if encount>3 : goto *main5
+
+	target=-1
+	turn++
+	objsize 128,28
+	pos 220,510:button "こうげき",*main1
+	pos 220+140*1,510:button "かいふく",*main2
+	pos 220+140*2,510:button "せいさん",*main3
+	pos 220+140*3,510:button "レベルアップ",*main4
+
+	msg="ボタンでカードをえらんでください。"
+	enemypow=0
+*main
+	;	メインループ
+	gosub *scclear
+	gosub *scupdate
+
+	if eleft=0 {
+		enemylv++
+		goto *start
+	}
+	;
+	goto *main
+
+*main1
+	;	こうげき
+	if target<0 {
+		msg="こうげきできません。"
+		goto *main
+	}
+
+	clrobj
+	msg="てきにレベル"+attack+"のこうげき！"
+	mmplay 1
+
+	card_y(0)-=16
+	bomx=ene_x(target)-64
+	bomy=ene_y(target)-64
+	bomcnt=0
+	bomfl=1
+	ene_hp(target)-=attack*40
+	if ene_hp(target)<=0 {
+		ene_hp(target)=0
+		beats++
+		msg+="　てきをたおした！"
+	}
+	pass=20:gosub *scpass
+	goto *gomain
+
+*main2
+	;	かいふく
+	if gold<20 {
+		msg="ゴールドがたりません。20ゴールドかかります。"
+		goto *main
+	}
+	gold-=20
+
+	clrobj
+	msg="レベル"+heal+"のかいふく！"
+	card_y(1)-=16
+
+	bomfl=3
+	bomcnt=0
+	bomx=-40
+	bomy=318
+
+	hp+=heal*150
+	if hp>maxhp : hp=maxhp
+
+	mmplay 2
+	pass=20:gosub *scpass
+	goto *gomain
+
+*main3
+	;	せいさん
+	if beats=0 {
+		msg="ざいりょうがありません。"
+		goto *main
+	}
+	clrobj
+	plus=make*20+20
+	plus=beats*plus+rnd(4)*10
+	beats=0
+	msg="レベル"+make+"のせいさんで +"+plus+"ゴールド！"
+	card_y(2)-=16
+
+	bomfl=4
+	bomcnt=0
+	bomx=-40
+	bomy=368
+
+	gold+=plus
+
+	mmplay 2
+	pass=30:gosub *scpass
+	goto *gomain
+
+*main4
+	;	レベルアップ
+	picload "cardbg2.png"
+	font msgothic,20,1
+	color 255,255,255
+	pos 180,20
+	mes "レベルアップさせるカードをえらんでください。"
+	pos 180,540
+	mes "ゴールドのこり "+gold
+	objsize 128,28
+	pos 480,536:button "やめる",*gomain
+
+	x=40:y=70
+	repeat 4
+		card_lv(cnt)+=1
+		need=100*card_lv(cnt)
+		card_x(cnt)=x
+		card_y(cnt)=y
+		pos x+150,y+10
+		mes ""+need+"ゴールド"
+		mes "かかります。"
+		pos x+150,y+160
+		button "レベルアップ",*main4buy
+		x+=400:if x>800 : x=40 : y+=220
+	loop
+
+	gmode 0
+	font msgothic,12,1
+	color 0,0,0
+	repeat cmax
+		a=cnt:gosub *getcard
+		if lv>0 : gosub *putcard
+	loop
+
+	mmplay 0
+	stop
+
+*main4buy
+	;	レベルアップ承認
+	a=stat-1
+	if a<0|a>3 : stop
+	gosub *getcard
+	need=100*lv
+	if need>gold : dialog "ゴールドがたりません！" : stop
+
+	gold=gold-need
+	if type=0 : attack++
+	if type=1 : heal++
+	if type=2 : make++
+	if type=3 : level++ : maxhp=300+level*100
+
+	mmplay 2
+	goto *gomain
+
+
+*main5
+	;	敵の攻撃
+	encount=rnd(2)
+	if target<0 : goto *gomain
+	;
+	clrobj
+	enemypow=enemylv*20+rnd(3)*10
+	msg="てきのこうげき！ -"+enemypow
+
+	repeat 30
+	gosub *scclear
+
+	x=260:y=cnt*40-200
+	if y>30 : y=30
+	pos x,y:gmode 2
+	if target>=0 {
+		celput 5,ene_type(target),4,4
+	}
+	if cnt=8 {
+		mmplay 1
+		bomfl=1
+		bomcnt=0
+		bomx=-40
+		bomy=310
+	}
+	gosub *scupdate
+	loop
+
+	hp-=enemypow
+	if hp<0 : hp=0
+
+	repeat 8
+		gosub *scclear
+		x=260:y=30:color 0,0,0
+		pos x,y:gmode 4,,,255-(cnt*32)
+		if target>=0 {
+			celput 5,ene_type(target),4,4
+		}
+		gosub *scupdate
+	loop
+
+	goto *gomain
+
+*main6
+	;	プレイヤーやられた
+	clrobj
+	msg="たいりょくがない…ちからつきた…！"
+	gosub *scclear
+	gosub *scupdate
+	objsize 128,28
+	pos 220+140*3,510:button "おしまい",*owari
+	stop
+
+*owari
+	end
+
+*scpass
+	;	passの回数、画面を更新
+	repeat pass
+	gosub *scclear
+	gosub *scupdate
+	loop
+	return
+
+*stageset
+	;	敵をセット
+	emax=enemylv*5
+	if emax>30 : emax=30
+	dim ene_x,emax
+	dim ene_y,emax
+	dim ene_type,emax
+	dim ene_hp,emax
+	dim ene_cnt,emax
+	repeat emax
+		i=enemylv:if i>3 : i=3
+		ene_hp(cnt)=40+(enemylv*40)
+		ene_type(cnt)=rnd(i)
+		x=160+(rnd(46)*10)
+		y=160+((cnt/5)*10)
+		if y>220 : y=220
+		ene_x(cnt)=x
+		ene_y(cnt)=y
+	loop
+	bomfl=0
+	bomx=0:bomy=0:bomcnt=0
+	return
+
+*stagedraw
+	;	敵を描画
+	gmode 2
+	eleft=0
+	target=-1
+	repeat emax
+		if ene_hp(cnt)>0 {
+			pos ene_x(cnt),ene_y(cnt)
+			celput 5,ene_type(cnt)
+			eleft++
+			target=cnt
+		}
+	loop
+	gmode 5,,,255
+	if bomfl {
+		pos bomx,bomy
+		i=(bomfl-1)*16
+		celput 6,i+bomcnt,2,2
+		bomcnt++
+		if bomcnt>=16 : bomfl=0
+	}
+	return
+
+*initcard
+	;	カード初期化
+	cmax=5
+	dim card_x,cmax
+	dim card_y,cmax
+	dim card_type,cmax
+	dim card_lv,cmax
+	return
+
+*getcard
+	;	カードの情報取得(a=card id)
+	x=card_x(a)
+	y=card_y(a)
+	type=card_type(a)
+	lv=card_lv(a)
+	return
+
+*putcard
+	;	カードを描画
+	pos x,y
+	celput 4,type
+	pos x+34,y+168
+	mes "レベル "+lv
+	return
+
+*scclear
+	;	画面クリア
+	redraw 0
+	pos 0,0:gmode 0,800,600:gcopy 3
+
+	font msgothic,20,1
+	color 255,255,255
+	pos 18,320
+	mes "ターン"
+	mes " +"+turn
+	pos 18,380
+	mes "たいりょく"
+	if enemypow=0 {
+		mes " +"+hp
+	} else {
+		mes " +"+hp+"   -"+enemypow
+	}
+	pos 18,440
+	mes "ざいりょう"
+	mes " +"+beats
+	pos 18,500
+	mes "ゴールド"
+	mes " +"+gold
+
+	color 0,0,0
+	pos 50,560
+	mes msg
+
+	gosub *stagedraw
+
+	gmode 0
+	font msgothic,12,1
+	color 0,0,0
+	repeat cmax
+		a=cnt:gosub *getcard
+		if lv>0 : gosub *putcard
+	loop
+	return
+
+*scupdate
+	;	画面の更新
+
+	font msgothic,20,1
+	pos 8,8
+	color 255,255,255
+	mes "てきレベル:"+enemylv+" のこり:"+eleft
+
+	redraw 1
+	await 30
+	return
+

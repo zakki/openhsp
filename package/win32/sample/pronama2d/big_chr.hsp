@@ -1,0 +1,62 @@
+
+	cls 1
+	objsize 640,200
+	button "プロ生ちゃん",*sub_1
+	button "珠音ちゃん",*sub_2
+	stop
+*sub_1
+
+	;	大きいサイズのプロ生ちゃん・珠音ちゃんを表示
+	;	(素材データはHSPインストールフォルダ以下のhsptvフォルダに入っています)
+	;
+	my="kei"
+	wear="knight"
+	goto *sub_start
+*sub_2
+	my="tamane"
+	wear="wizard"
+	goto *sub_start
+
+*sub_start
+	sx=256:sy=256
+	px=4:py=4
+	screen 0,sx*px,sy*py
+	cls 4
+
+	sdim name,64,16
+	name(0)=wear+"1_1"
+	name(1)=wear+"1_2"
+	name(2)=wear+"1_3"
+	name(3)=wear+"1_4"
+	name(4)=wear+"1_5"
+
+	name(5)=wear+"2_1"
+	name(6)=wear+"2_2"
+	name(7)=wear+"2_3"
+	name(8)=wear+"2_4"
+	name(9)=wear+"2_5"
+
+	name(10)="school1_1"
+	name(11)="school1_2"
+	name(12)="school1_3"
+	name(13)="school1_4"
+	name(14)="school1_5"
+
+	max=15
+
+	repeat max
+	yy=(cnt/px)*sy
+	xx=(cnt\px)*sx
+
+		buffer 3,640,800
+		cls 4
+		picload dir_tv+my+"_"+name(cnt)+".png",1
+
+		gsel 0
+		gmode 0
+		pos xx+8,yy+8
+		gzoom sx-16,sy-16,3,0,88, 640,640,1
+
+	loop
+
+	stop

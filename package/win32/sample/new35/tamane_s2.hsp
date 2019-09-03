@@ -1,0 +1,26 @@
+
+	;	珠音ちゃん絵素材サンプル
+	;	(実際の画像データはhsptvフォルダに入っています)
+	;
+	tamas=ginfo_newid				; 未使用の画面IDを得る
+	celload dir_tv+"tamane_b.png",tamas		; 素材フォルダから読み込みます
+	celdiv tamas,256,512				; 256x512ドットに区切る
+
+	;	標準のサイズで表示
+	screen 0,640,480
+
+*main
+	color 0,160,160
+	boxf
+
+	gmode 2
+	repeat 5
+	x=rnd(640):y=rnd(480)
+	i=rnd(8)
+	pos x-128,y-256			; 適当な座標に表示
+	celput tamas,i			; ランダムに表情を選ぶ
+	loop
+
+	wait 100
+	goto *main
+

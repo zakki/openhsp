@@ -1,0 +1,45 @@
+
+	;	プロ生ちゃん・珠音ちゃんを表示絵素材サンプル
+	;	(実際の画像データはhsptvフォルダに入っています)
+	;
+	sx=256:sy=256					; 素材のサイズ
+	kage=15						; 影のセルID
+	;
+	keis=ginfo_newid
+	celload dir_tv+"mini_kei.png",keis		; 素材フォルダから読み込みます
+	celdiv keis,sx,sy
+	tamas=ginfo_newid
+	celload dir_tv+"mini_tamane.png",tamas		; 素材フォルダから読み込みます
+	celdiv tamas,sx,sy
+	bgs=ginfo_newid
+	celload dir_tv+"sozai5.jpg",bgs			; 素材フォルダから読み込みます
+
+	;	標準のサイズで表示
+	screen 0,640,480
+
+	y=480-320
+	frame=0
+*main
+	anim=(frame/32)\2
+
+	redraw 0
+	gmode 0:pos 0,0:celput bgs			; 背景
+
+	cel=0:if anim : cel=5				; アニメーションさせる
+
+	gmode 2
+	pos 20+256,y
+	celput keis,kage,-1,1				; 影を表示
+	pos 20+256,y
+	celput keis,cel,-1,1				; 反転して慧ちゃん表示
+
+	pos 360,y
+	celput tamas,kage				; 影を表示
+	pos 360,y
+	celput tamas,cel				; 珠音ちゃん表示
+
+	redraw 1
+	await 16
+	frame++
+	goto *main
+

@@ -1,0 +1,1251 @@
+
+;============================================================
+;	HDL HTML output part
+;============================================================
+
+#include "sqlele.hsp"
+#include "hdl_lib.hsp"
+#ifndef notnull
+ #define global ctype notnull(%1) peek(%1)
+#endif
+
+/*
+	HDL_CGI_q "hdl:?cmd=arg,kwd"
+
+	hdl: クエリ
+	[cmd]		[arg]		[kwd]		[descr]
+	hdls		Keyword		Emphasis	search
+	index		Keyword		Emphasis	index
+	r			ID			Emphasis	open reference ID
+	f			ID			Emphasis	open document file ID
+	about		-			-			information
+	frameset	-			-			frameset
+
+	ブラウザ側で処理すべきリクエリ
+	[cmd]		[arg]		[kwd]		[descr]
+	opfile		filename	-			open file
+	opdir		directory	-			open folder
+	hsedit		filename	-			exec hs editor
+*/
+
+;============================================================
+; HTML 文字列変換モジュール
+;============================================================
+
+#module
+;--------------------------------------------------
+#defcfunc htmlenc str inp, int sw
+	dest = inp
+	strrep dest, "&", "&amp;"
+	strrep dest, "<", "&lt;"
+	strrep dest, ">", "&gt;"
+	strrep dest, "\"", "&#34;"
+	if sw {
+		strrep dest, "  ", " &nbsp;"
+		strrep dest, "\n", "<br>"
+	}
+	return dest
+;--------------------------------------------------
+#define global ctype htmlenc2(%1)  htmlenc(%1, 2)
+;--------------------------------------------------
+#defcfunc urlenc str inp
+	src = inp
+	dest = ""
+	memexpand dest, strlen(src) * 3 + 1 ; sdim
+	p = 0
+	repeat strlen(src)
+		c = peek(src, cnt)
+		if (c>='a' & c<='z') {
+			poke dest, p, c : p++
+		} else:if (c>='A' & c<='Z') {
+			poke dest, p, c : p++
+		} else:if (c>='0' & c<='9') | c='_' {
+			poke dest, p, c : p++
+		} else:if c = ' ' {
+			poke dest, p, '+' : p++
+		} else {
+			a = c >> 4
+			b = c & 15
+			if a >= 10 : a += 55 : else : a += '0'
+			if b >= 10 : b += 55 : else : b += '0'
+			poke dest, p, '%' : p++
+			poke dest, p, a : p++
+			poke dest, p, b : p++
+		}
+	loop
+	poke dest, p
+	return dest
+;--------------------------------------------------
+#defcfunc urldec str inp
+	src = inp
+	sdim dest, strlen(src) + 1
+	p = 0
+	repeat
+		c = peek(src, p) : p++
+		if c = 0 : break
+		if c = '+' {
+			c = ' '
+		} else:if c = '%' {
+			a = peek(src, p) : p++
+			b = peek(src, p) : p++
+			if a >= 'A' : a -= 55 : else : a -= '0'
+			if b >= 'A' : b -= 55 : else : b -= '0'
+			c = a << 4 | b
+		}
+		poke dest, cnt, c
+	loop
+	return dest
+;--------------------------------------------------
+#defcfunc QuoteEsc str inp
+	dest = inp
+	strrep dest, "\\", "\\\\"
+	strrep dest, "\"", "\\\""
+	strrep dest, "'", "\\'"
+	return dest
+;--------------------------------------------------
+#defcfunc StrHash var inp
+	a = 0
+	repeat strlen(inp)
+		a = a * 137 + peek(inp, cnt)
+	loop
+	return a
+#global
+
+;============================================================
+; HTML 作成サブモジュール
+;============================================================
+
+#module
+; winapi
+#uselib "user32"
+#func	CharLower	"CharLowerA" var
+
+;------------------------------------------------------------
+; テキスト → ハイパーテキスト 変換 text, br-mode, link-mode(disabled)
+; (HTML Enc & シンボル オートリンク & URL オートリンク)
+#defcfunc htmlenc_spider str inp, int p1, int p2
+
+	; dest バッファ
+	if destlen = 0 {
+		destlen = 40000
+		sdim dest, destlen
+	}
+
+	; init
+	#enum CHR_DEFAULT
+	#enum CHR_KANJI
+	#enum CHR_SYMBOL
+	#enum CHR_CHARREF
+	#enum CHR_BR
+	#enum CHR_NULL
+
+	if inited = 0 {
+		inited = 1
+
+		; キャラクタ属性テーブル初期化
+		; (shift-jis)
+		repeat 256
+			c = cnt
+			chrflg(c) = CHR_DEFAULT
+
+			; shift-jis kanji
+			if (c>=0x81 & c<=0x9F) | (c>=0xE0 & c<=0xFC) {
+				chrflg(c) = CHR_KANJI
+			}
+			; symbol
+			if (c>='A' & c<='Z') | (c>='a' & c<='z') | (c>='0' & c<='9') | c='_' | c='#' | c='%' | c='$' {
+				chrflg(c) = CHR_SYMBOL
+			}
+			; 文字参照に変換
+			if c = '"' | c = '&' | c = '<' | c = '>' {
+				chrflg(c) = CHR_CHARREF
+			}
+			; null
+			if c = 0 {
+				chrflg(c) = CHR_NULL
+			}
+		loop
+
+		sdim tmp, 4000
+		sdim whitelst, 16000
+		sdim blacklst, 16000
+	}
+
+	; 改行フラグ
+	if p1 {
+		chrflg(13) = CHR_BR
+	} else {
+		chrflg(13) = CHR_DEFAULT
+	}
+
+	; prep
+	src = inp
+	dest = ""
+
+	lsrc = 0 ; 最後にコピーしたソース位置
+	psrc = 0 ; 現在のソース位置
+	ldst = 0 ; 最後にコピーされた dest 位置
+
+	; accellerator
+	whitelst = "&"	; シンボルではないワードを集めたホワイトリスト ex. "&2008&xx&Programs&HDL&HTML&..."
+	blacklst = "&"	; シンボルであるワードと挿入文字列を集めたブラックリスト ex. "&mes&<a href=...>mes</a>&&..."
+
+	c = chrflg(peek(src, psrc))
+
+	repeat
+		; sjis double-byte
+		if c = CHR_KANJI {
+			; 次の属性変化までスキップ
+			repeat
+				psrc += 2 ; ソース読み進め
+				if chrflg(peek(src, psrc)) ! CHR_KANJI : break
+			loop
+
+			c = chrflg(peek(src, psrc))
+		}
+
+		; default chr (記号, 区切り文字, 半カナなど)
+		if c = CHR_DEFAULT {
+			; 次の属性変化までスキップ
+			repeat
+				psrc++ ; ソース読み進め
+				if chrflg(peek(src, psrc)) ! CHR_DEFAULT : break
+			loop
+
+			c = chrflg(peek(src, psrc))
+		}
+
+		; 文字参照 patch
+		if c = CHR_CHARREF {
+			; 挿入文字列
+			tmp = "&#" + peek(src, psrc) + ";"
+
+			; 区間コピー
+			len = psrc - lsrc : memcpy dest, src, len, ldst, lsrc : ldst += len : lsrc += len
+			; tmp を挿入
+			len = strlen(tmp) : memcpy dest, tmp, len, ldst : ldst += len
+
+			lsrc++ ; ソース相殺文字数
+			psrc++ ; ソース読み進め
+
+			c = chrflg(peek(src, psrc))
+		}
+
+		; 改行パッチ
+		if c = CHR_BR {
+			; 挿入文字列
+			tmp = "<br>"
+
+			; 区間コピー
+			len = psrc - lsrc : memcpy dest, src, len, ldst, lsrc : ldst += len : lsrc += len
+			; tmp を挿入
+			len = strlen(tmp) : memcpy dest, tmp, len, ldst : ldst += len
+
+			psrc++ ; ソース読み進め
+
+			c = chrflg(peek(src, psrc))
+		}
+
+		; symbol chr (英ワード)
+		if c = CHR_SYMBOL {
+			; 次の属性変化までを切り出し
+			repeat , 1
+				if chrflg( peek(src, psrc+cnt) ) ! CHR_SYMBOL {
+					; マークアップ
+					if cnt >= 2 & cnt <= 40 { ; シンボルと認める文字数
+
+						; patch ファイル名
+						if peek(src, psrc+cnt) = '.' : continue
+
+						; patch
+						; URL マークアップ モード
+						if peek(src, psrc+cnt) = ':' {
+							a = strmid(src, psrc, cnt + 3)
+							if ((a = "http://") | (a = "https://") | (a = "ftp://")) & (chrflg( peek(src, psrc+cnt+3) ) = CHR_SYMBOL) {
+								repeat , 1
+									#define BC_DBLQ 34
+									#define BC_SNGQ 39
+									#define BC_YEN  92
+									c = peek(src, psrc+cnt)
+									if (c <= ' ') | (c = BC_DBLQ) | (c = BC_SNGQ) | (c = ',') | (c = BC_YEN) | (c = '(') | (c = ')') | (c > '~') {
+										; 挿入文字列
+										tmp = strmid(src, psrc, cnt)
+										tmp = "<a href='" + tmp + "'>" + htmlenc(tmp) + "</a>"
+
+										; 区間コピー
+										len = psrc - lsrc : memcpy dest, src, len, ldst, lsrc : ldst += len : lsrc += len
+										; tmp を挿入
+										len = strlen(tmp) : memcpy dest, tmp, len, ldst : ldst += len
+
+										lsrc += cnt ; ソース相殺文字数
+										psrc += cnt ; ソース読み進め
+										break
+									}
+								loop
+								break
+							}
+						}
+						; end patch
+
+						; シンボル候補ワード 切り出し・検索
+						memcpy tmp, src, cnt, 0, psrc ; <-- HSP 3.1 では strmid が低速化し使えなくなった
+						poke tmp, cnt
+
+						; ホワイトリストとブラックリストで SELECT 処理をスキップ (79%)
+						; << 3316 100%
+						if instr(whitelst,,"&"+tmp+"&") < 0 { ; << 1053 32% ホワイトリストに無い
+
+							i = instr(blacklst,,"&"+tmp+"&")
+							if i < 0 { ; << 686 21% ブラックリストに無い
+
+								sql_q "SELECT ID, Name, Summary FROM Help WHERE Name=" + prm_text(tmp) + " LIMIT 1"
+								if stat { ; << 127 4% シンボル
+
+									; ブラックリストに追加
+									blacklst += tmp + "&"
+									; 挿入文字列
+									tmp = "<a href='hdl:?r=" + sql_v("ID") + "' title=\"" + htmlenc(sql_v("Name")+" - "+sql_v("Summary")) + "\">" + tmp + "</a>"
+									; ブラックリストに挿入文字列を追加
+									blacklst += tmp + "&&"
+
+								} else { ; << 559 17% 非シンボル
+
+									f = 0
+									if instr(tmp,,".") >= 0 {
+										sql_q "SELECT Path FROM Files WHERE Fn=lower(" + prm_text(tmp) + ") LIMIT 1"
+										f = stat
+									}
+									if f { ; ファイル名
+
+										; ブラックリストに追加
+										blacklst += tmp + "&"
+										; 挿入文字列
+										tmp = "<a href=\"" + sql_v("Path") + "\">" + tmp + "</a>"
+										; ブラックリストに挿入文字列を追加
+										blacklst += tmp + "&&"
+
+									} else { ; 非シンボル かつ 非ファイル名
+
+										; ホワイトリストに追加
+										whitelst += tmp + "&"
+									}
+								}
+
+							} else { ; << 367 11% ブラックリストにあるワード
+								i += cnt + 2
+								tmp = strmid(blacklst, i, instr(blacklst, i, "&&")) ; リストから挿入文字列を取り出し
+							}
+
+							; 区間コピー
+							len = psrc - lsrc : memcpy dest, src, len, ldst, lsrc : ldst += len : lsrc += len
+							; tmp を挿入
+							len = strlen(tmp) : memcpy dest, tmp, len, ldst : ldst += len
+
+							lsrc += cnt ; ソース相殺文字数
+						}
+ 					}
+					psrc += cnt ; ソース読み進め
+					break
+				}
+			loop
+
+			c = chrflg(peek(src, psrc))
+		}
+
+		; 文字列終了
+		if c = CHR_NULL {
+			; 区間コピー
+			len = psrc - lsrc + 1
+			memcpy dest, src, len, ldst, lsrc
+			break
+		}
+
+		; dest バッファ拡張 patch
+		if ldst+psrc-lsrc+16000 >= destlen {
+			destlen += ldst+psrc-lsrc+16000
+			memexpand dest, destlen
+		}
+	loop
+
+	; debug
+;	dest += "\n\nwhitelst (" + strlen(whitelst) + ")\n" + htmlenc(whitelst)
+;	dest += "\n\nblacklst (" + strlen(blacklst) + ")\n" + htmlenc(blacklst)
+;	dialog " a"+aaa+" b"+bbb+" c"+ccc+" d"+ddd+" e"+eee+" f"+fff+" g"+ggg
+
+	return dest
+
+;--------------------------------------------------
+; キーワード強調
+#deffunc KeywordEmphasis array v1, str p1
+
+	; dest バッファ
+	if destlen = 0 {
+		destlen = 40000
+		sdim dest, destlen
+	}
+
+	; 本文でないデータを除去
+	src = v1
+	CharLower src
+
+	repeat 4
+		if cnt = 0 {
+			astr = "<"
+			bstr = "<body"
+		} else:if cnt = 1 {
+			astr = "<!--"
+			bstr = "-->"
+		} else:if cnt = 2 {
+			astr = "<style"
+			bstr = "</style>"
+		} else:if cnt = 3 {
+			astr = "<script"
+			bstr = "</script>"
+		}
+		repeat
+			a = instr(src, 0, astr)
+			b = instr(src, 0, bstr)
+			if a >= 0 & b > a {
+				memset src, '<', b-a, a+2
+			} else {
+				break
+			}
+		loop
+	loop
+
+	; prep
+	key = p1
+	CharLower key
+	len = strlen(key)
+
+	sp = 0 ; 検索ポインタ
+	cp = 0 ; 連結ポインタ
+	dp = 0 ; dest 書き込みポインタ
+	dest = ""
+
+	repeat
+		; 文字列検索
+		i = instr(src, sp, key)
+		if i < 0 : break
+		sp += i
+		; 文字列位置が本文内ならば、マークアップして連結
+		; tags
+		repeat
+			a = peek(src, sp+len+cnt)
+			b = peek(src, sp-cnt-1)
+			if b = '<' | a = '>' : break
+			if b = '>' | a = '<' {
+				; charref
+				repeat
+					b = peek(src, sp-cnt-1)
+					if b = '&' : break
+					if b = '>' | b = ';' | cnt >= 8 {
+						; 連結
+					;	dest += strmid(v1, cp, sp-cp) + "<span class='kwd'>" + strmid(v1, sp, len) + "</span>"
+						; ボトルネックのため最適化
+
+						; dest バッファ拡張
+						if dp+sp-cp+len+99 >= destlen {
+							destlen += dp+sp-cp+len+99
+							memexpand dest, destlen
+						}
+
+						; コピー
+						memcpy dest, v1, sp-cp, dp, cp		: dp += sp-cp
+						tmp = "<span class='kwd'>"
+						memcpy dest, tmp, strlen(tmp), dp, 0	: dp += strlen(tmp)
+						memcpy dest, v1, len, dp, sp		: dp += len
+						tmp = "</span>"
+						memcpy dest, tmp, strlen(tmp), dp, 0	: dp += strlen(tmp)
+						poke dest, dp ; NUL
+
+						cp = sp + len
+						break
+					}
+				loop
+				break
+			}
+		loop
+		sp += len
+	loop
+	dest += strmid(v1, cp, strlen(v1) - cp)
+
+	v1 = dest
+	return
+
+;--------------------------------------------------
+; キーワーズ強調
+#deffunc KeywordEmphasis2 array v1, var v2
+	if notnull(v2) {
+		p = 0
+		repeat
+			; スペース区切り出し
+			getstr astr, v2, p, ' '
+			if strsize = 0 : break
+			p += strsize
+			if notnull(astr) : KeywordEmphasis v1, htmlenc(astr)
+		loop
+	}
+	return
+
+;--------------------------------------------------
+; HTML 中のアクティブスクリプトに関するキーワードなどを禁止
+#deffunc ForceStaticHTML var v1
+	dtable = "hdl:","<script","<iframe","<applet","<meta","<embed","<object","javascript:","vbscript:","onunload","onsubmit","onstop","onstart","onselect","onscroll","onrowsinserted","onrowsdelete","onrowexit","onrowenter","onresize","onreset","onreadystatechange","onpropertychange","onpaste","onpage","onmove","onmouse","onlosecapture","onload","onlayoutcomplete","onkeyup","onkeypress","onkeydown","onhelp","onfocus","onfinish","onfilterchange","onerror","ondrop","ondrag","ondeactivate","ondblclick","ondataset","ondataavailable","oncut","oncopy","oncontrolselect","oncontextmenu","onclick","onchange","oncellchange","onbounce","onblur","onbefore","onafter","onactivate","onabort",""
+	bstr = v1
+	CharLower bstr ; 大文字小文字区別しないことに注意
+
+	repeat
+		s = dtable.cnt
+		if s = "" : break
+		p = 0
+		repeat
+			i = instr(bstr, p, s)
+			if i < 0 : break
+			p += i
+			poke bstr, p, '_'
+			poke v1,   p, '_'
+		loop
+	loop
+	return
+
+;------------------------------------------------------------
+; カテゴリ名 (if flag == 'R' : モジュール名)
+#defcfunc catego_disp str p1, int p2
+	if p1 = "" {
+		if p2 = 'R' {
+			return "標準機能"
+		} else {
+			return "デフォルト"
+		}
+	}
+	return p1
+
+;------------------------------------------------------------
+; モジュール名
+#defcfunc dll_disp str p1
+	return catego_disp(p1, 'R')
+
+;------------------------------------------------------------
+; sonota
+#defcfunc null_cvt str p1
+	if p1 = "" : return "-"
+	return p1
+
+;------------------------------------------------------------
+; ファイルの更新日付
+#uselib "kernel32"
+#func	FindFirstFile	"FindFirstFileA" str, var
+#func	FindClose	"FindClose" int
+#func	FileTimeToLocalFileTime	"FileTimeToLocalFileTime" var, var
+#func	FileTimeToSystemTime	"FileTimeToSystemTime" var, var
+
+#defcfunc FileUpdateTime str p1
+	dim a, 80	; struct WIN32_FIND_DATA
+	dim b, 4	; struct hoge
+
+	FindFirstFile basepath@ + "\\" + p1, a
+	if stat ! -1 {
+		FindClose stat
+		b = a.5, a.6
+		FileTimeToLocalFileTime b, a
+		FileTimeToSystemTime a, b
+	}
+
+	; wpeek(b,0) / wpeek(b,2) / wpeek(b,6)  wpeek(b,8) : wpeek(b,10) : wpeek(b,12)
+	return ""+wpeek(b,0)+"/"+strf("%02d",wpeek(b,2))+"/"+strf("%02d",wpeek(b,6))
+
+#global
+
+;============================================================
+; HTML 応答モジュール メイン
+;============================================================
+
+#module
+;------------------------------------------------------------
+; use global var
+#define buf buf@
+#define basepath basepath@
+#define appname appname@
+#define appver appver@
+#define appsig appsig@
+
+;------------------------------------------------------------
+; ページ出力 メイン (query)
+#deffunc HDL_CGI_q str p1
+
+	; GET cmd, arg, kwd; hdl:?cmd=arg,kwd
+	bstr = p1
+	cmd = "" : arg = "" : kwd = ""
+	i = instr(bstr,,",") : if i > 0 : kwd = urldec(strmid(bstr, i+1, 999)) : poke bstr, i
+	i = instr(bstr,,"=") : if i > 0 : arg = urldec(strmid(bstr, i+1, 999)) : poke bstr, i
+	i = instr(bstr,,"?") : if i > 0 : cmd = urldec(strmid(bstr, i+1, 999))
+
+	; normal html5 header
+	head_basic = "<!DOCTYPE HTML>\n<html><head>\n<meta charset='shift_jis'>\n<base href=\"file:///" + basepath + "\\\">\n"
+	; jspatch
+	head_basic += "<script>\nfunction proc_onkey(ev){ if(document.activeElement.type != 'text' && event.keyCode == 8) history.back(); }\ndocument.onkeypress = proc_onkey;\n</script>\n"
+	; normal html5 footer
+	foot_basic = "<footer>" + appname + "</footer>\n</body></html>\n"
+
+	; クエリに応じたページを出力
+	if cmd = "hdls"		: gosub *page_hdls : return
+	if cmd = "index"	: gosub *page_index : return
+	if cmd = "r"		: gosub *page_r : return
+	if cmd = "f"		: gosub *page_f : return
+	if cmd = "about"	: gosub *page_about : return
+	if cmd = "frameset"	: buf = "<html><head><meta charset='shift_jis'><title>" + appname + "</title></head><frameset cols='190,*'><frame name='hdlmenu'><frame name='hdlmain'></frameset></html>" : return
+
+	buf = "処理できませんでした : " + p1
+	return
+
+;------------------------------------------------------------
+; buf ヘッダ作成 (title, navi)
+#deffunc buf_head str p1, str p2
+	buf = head_basic
+	buf += "<link rel='StyleSheet' href='hdlmain.css'>\n<title>" + p1 + " - HDL</title>\n</head><body onload='this.focus();'>\n<nav class=top>" + p2 + "</nav>\n<h1>" + p1 + "</h1>\n"
+	return
+
+;------------------------------------------------------------
+; Help.* の格納順番
+#enum HID = 0
+#enum Name
+#enum Summary
+#enum Mod
+#enum Ver
+#enum Date
+#enum Author
+#enum Group3
+#enum Prm
+#enum Prm2
+#enum Inst
+#enum Sample
+#enum Href
+#enum Portinf
+#enum Port
+#enum Url
+#enum Type
+#enum Note
+#enum Path
+
+;============================================================
+; 検索・ホーム
+;============================================================
+*page_index
+	if notnull(arg) {
+		buf_head htmlenc(arg), "<a href='hdl:?index'>index</a> &rsaquo; 条件抽出 &rsaquo; <b>" + htmlenc(arg) + "</b>"
+	} else	{
+		buf_head appname, "<b>index</b>"
+	}
+
+	INDEX_FLAG = 1
+	gosub *common_srch
+
+	buf += "<form action='hdl:' onsubmit='index.value = index.value.replace(/^\\s+|\\s+$/g, \"\");'>"
+	buf += "<input value=\"" + htmlenc(arg) + "\" name='index' maxlength='256'><input type='submit' value='抽出'></form>\n"
+	buf += foot_basic
+	return
+
+;--------------------------------------------------
+*page_hdls
+	buf = head_basic
+	buf += {"
+<base target='hdlmain'>
+<link rel='StyleSheet' href='hdlmenu.css'>
+<title>MENU - HDL</title>
+</head>
+<body onload='var obj = getobj("hdls"); if(obj.value) obj.focus();'>
+"}
+	buf += "<h1>検索キーワード</h1>"
+	buf += "<form target='_self' action='hdl:' onsubmit='hdls.value = hdls.value.replace(/^\\s+|\\s+$/g, \"\");'>"
+	buf += "<input value=\"" + htmlenc(arg) + "\" name='hdls' maxlength='256' style='width:100px;'><input type='submit' value='検索'></form>\n"
+
+	if notnull(arg) {
+		buf += "<div class='control'>" + htmlenc(arg) + " の検索結果</div>\n"
+		buf += "<div class='control'><a target='_self' href='hdl:?hdls='>[検索リセット]</a></div>\n"
+	}
+
+	INDEX_FLAG = 0
+	gosub *common_srch
+
+	buf += foot_basic
+	return
+
+;--------------------------------------------------
+*common_srch
+
+	srch = arg
+	MODE_CATEGO = 0
+	atsec = ""
+
+	if instr(arg, , "cat:") = 0 {
+		srch = strmid(arg, 4, 99)
+		MODE_CATEGO = 1
+
+		; @section
+		i = instr(srch,,"@") : if i >= 0 : atsec = urldec(strmid(srch, i+1, 999)) : poke srch, i
+
+		; patch
+		strrep buf, ">" + htmlenc(arg) + "<", ">カテゴリ: " + htmlenc(catego_disp(srch, 'R'*("コマンドヘルプ"=atsec)) + " " + atsec) + "<"
+	}
+
+	; サンドイッチメニュー
+	if INDEX_FLAG & (MODE_CATEGO | "" = arg) {
+		repeat 3
+			; セクション選択
+			if cnt = 0 {
+				mode = 'R'
+				secname = "コマンドヘルプ"
+	
+			} else:if cnt = 1 {
+				mode = 'D'
+				secname = "ドキュメント"
+				hspoper = "!="
+	
+			} else {
+				mode = 'S'
+				secname = "サンプル"
+				hspoper = "="
+			}
+	
+			; WHERE 作成
+			whereq = ""
+			; カテゴリ一覧作成
+			if mode = 'R' {
+				sql_q "SELECT Mod AS Catego FROM Help GROUP BY Mod ORDER BY lower(Mod)", rs
+			} else {
+				sql_q "SELECT Catego FROM Docs WHERE Type"+hspoper+"'hsp' GROUP BY Catego ORDER BY lower(Catego)", rs
+			}
+			count = stat
+	
+			tmp = ""
+			if count {
+				tmp += "<nav class=tabs><b>" + secname + " :</b>"
+				repeat count
+					catego = sql_v("Catego", rs)
+					if catego = srch & ("" = atsec | secname = atsec) & MODE_CATEGO {
+						tmp += "<em>" + htmlenc(catego_disp(catego, mode)) + "</em>"
+					} else {
+						tmp += "<a href=\"hdl:?index=cat:" + urlenc(catego + "@" + secname) + "\">" + htmlenc(catego_disp(catego, mode)) + "</a>"
+					}
+					sql_next rs
+				loop
+				tmp += "</nav>\n"
+			}
+			if "" = arg | instr(tmp,,"<em>") >= 0 : buf += tmp ; いらないサンドを抜く
+		loop
+
+	}
+
+	; パラメータ
+	ckwd = ""
+	disp_css = ""
+	if notnull(srch) {
+		if 0 = MODE_CATEGO : ckwd = "," + urlenc(srch) ; リンク先の強調ワード
+	} else	{
+		if 0 = INDEX_FLAG : disp_css = " style='display:none;'"
+	}
+
+	; 本体
+	hits = 0
+	idc = 0
+	repeat 3
+		; セクション選択
+		if cnt = 0 {
+			mode = 'R'
+			secname = "コマンドヘルプ"
+
+		} else:if cnt = 1 {
+			mode = 'D'
+			secname = "ドキュメント"
+			hspoper = "!="
+
+		} else {
+			mode = 'S'
+			secname = "サンプル"
+			hspoper = "="
+		}
+
+		if "" ! atsec & secname ! atsec : continue ; セクション限定抽出
+
+		; WHERE 作成
+		whereq = ""
+		if MODE_CATEGO {
+			if mode = 'R' {
+				whereq = " and Mod = " + prm_text(srch)
+			} else {
+				whereq = " and Catego = " + prm_text(srch)
+			}
+		} else:if notnull(srch) {
+			; 検索対象
+			if mode = 'R' {
+				bstr = "Name||' '||Summary||' '||Inst||' '||Prm||' '||Prm2||' '||Sample||' '||Href||' '||Portinf||' '||Group3||' '||Type||' '||Note||' '||Url||' '||Ver||' '||Date||' '||Mod||' '||Author||' '||Path"
+			} else {
+				bstr = "Search"
+			}
+			p = 0
+			repeat
+				; srch スペース区切り出し
+				getstr astr, srch, p, ' '
+				if strsize = 0 : break
+				p += strsize
+
+				if notnull(astr) {
+					whereq += "AND"
+					if peek(astr) = '-' : whereq += " NOT" : astr = strmid(astr, 1, 999) ; NOT 検索パッチ
+					whereq += "(" + bstr + " LIKE '%" + sqesc(astr) + "%')"
+				}
+			loop
+		}
+
+		; カテゴリ一覧作成
+		if mode = 'R' {
+			sql_q "SELECT Mod AS Catego FROM Help WHERE 1=1 "+whereq+" GROUP BY Mod ORDER BY lower(Mod)", rs
+		} else {
+			sql_q "SELECT Catego FROM Docs WHERE Type"+hspoper+"'hsp' "+whereq+" GROUP BY Catego ORDER BY lower(Catego)", rs
+		}
+		count = stat
+
+		if count {
+			buf += "<div class=mh1><a target='_self' href='javascript:;' onclick=\"dsw('m"+idc+"');\">" + secname + "</a></div>\n"
+			buf += "<div class=md1 id=m"+idc+">\n"
+			idc++
+
+			; カテゴリごとにページを抽出
+			repeat count
+				catego = sql_v("Catego", rs)
+				tmp = ""
+
+				if "" = arg & INDEX_FLAG { ; カテゴリ抽出へのリンクのみ表示
+					buf += "<p><a href=\"hdl:?index=cat:" + urlenc(catego + "@" + secname) + "\">" + htmlenc(catego_disp(catego, mode)) + "</a></p>\n"
+					hits++
+					sql_next rs
+					continue
+				}
+
+				; ページ一覧作成
+				if mode = 'R' {
+					sql_q "SELECT ID, Group3, Name, Summary FROM Help WHERE Mod="+prm_text(catego) + whereq+" ORDER BY lower(Group3), Group3, lower(Name)"
+				} else {
+					sql_q "SELECT ID, Title, substr(Search,SmryIdx," + (INDEX_FLAG * 200 + 75) + ") as Summary, Path FROM Docs WHERE Catego="+prm_text(catego)+" AND Type"+hspoper+"'hsp' "+whereq+" ORDER BY lower(Title), lower(Path) limit 501"
+				}
+				count = stat
+
+				hits += count
+
+				; カテゴリ ヘッダ
+				tmp += "<div class=mh2><a target='_self' href='javascript:;' onclick=\"dsw('m"+idc+"');\">" + htmlenc(catego_disp(catego, mode)) + "</a></div>\n"
+				tmp += "<div class=md2 id=m"+idc+disp_css+">\n"
+				idc++
+
+				; ページ内容
+				if mode = 'R' {
+					diff = ""
+					repeat count
+						; グループ ヘッダ
+						astr = sql_v("Group3")
+						if astr ! diff {
+							diff = astr
+							tmp += "<div class=mh3>" + htmlenc(astr) + "</div>\n"
+						}
+
+						; 中身
+						tmp += "<p><a href='hdl:?r=" + sql_v("ID") + ckwd + "'>" + htmlenc(sql_v("Name")) + "</a><br>" + htmlenc(sql_v("Summary")) ;+ "</p>\n"
+						sql_next
+					loop
+				} else {
+					repeat count
+						if cnt = 500 {
+							; 一定以上の結果は表示しない
+							tmp += "<p>" + cnt + " 件を超える表示は省略されています。</p>\n"
+							break
+						}
+						if cnt < 100 {
+							tmp += "<p><a href='hdl:?f=" + sql_v("ID") + ckwd + "'>" + htmlenc(sql_v("Title")) + "</a><br>" + htmlenc(sql_v("Summary")) + "…</p>\n"
+						} else {
+							; 一定以上の結果は簡易表示に切り替え
+							tmp += "<p><a href='hdl:?f=" + sql_v("ID") + ckwd + "'>" + htmlenc(sql_v("Title")) + "</a></p>\n"
+						}
+						sql_next
+					loop
+				}
+
+				tmp += "</div>\n" ; close md2 div
+
+				; buf に書き出し
+				buf += tmp
+				sql_next rs
+			loop
+
+			buf += "</div>\n" ; close md1 div
+		}
+	loop
+
+	if hits {
+		buf += "<div class='control'>表示件数 " + hits + " 件</div>\n"
+	} else {
+		buf += "<div class='control'>情報が見つかりませんでした。</div>\n"
+	}
+
+	if MODE_CATEGO = 0 {
+		if notnull(srch) : KeywordEmphasis2 buf, srch
+
+		; もしかして : 似た名前のアレを列挙
+		len = strlen(srch)
+		if len >= 3 {
+			repeat
+				if cnt = len {
+					; srch に SJIS KANJI コードが含まれていなければ :
+					sql_q "SELECT count(*) FROM Help WHERE Name LIKE " + prm_text(srch) + " OR Mod LIKE " + prm_text(srch), bstr
+					if int(bstr) = 0 {
+						; srch の一致語が無ければ :
+	
+						; 似たつづりの命令語を検索
+						;  ex. csllfunc -> (csllfu*) or (csll*nc) or (cs*func) or (*llfunc)
+	
+						sql_q "SELECT ID, Name FROM Help WHERE (Name LIKE '" + sqesc(strmid(srch,0,len*3/4)) + "%' OR Name LIKE '" + sqesc(strmid(srch,0,len/2) + "%" + strmid(srch,len*3/4,999)) + "' OR Name LIKE '" + sqesc(strmid(srch,0,len/4) + "%" + strmid(srch,len/2,999)) + "' OR Name LIKE '%" + sqesc(strmid(srch,len/4,999)) + "') AND (length(Name)>="+(len-(len>=4))+" AND length(Name)<="+(len+(len>=4))+") ORDER BY lower(Name)"
+						if stat {
+							buf += "<div class='control'>もしかして :"
+							repeat stat
+								buf += " <b><a href='hdl:?r=" + sql_v("ID") + "'>" + htmlenc(sql_v("Name")) + "</a></b>"
+								sql_next
+							loop
+							buf += "</div>\n"
+						}
+					}
+					break
+				}
+				if peek(srch, cnt) >= 0x80 : break ; SJIS KANJI
+			loop
+		}
+	}
+
+	; フッタ
+	buf += {"
+<div class='control'><a href='hdl:?about'>version</a></div>
+<script>
+function getobj(id){
+	return document.getElementById(id) || document.getElementsByName(id)[0];
+}
+function animenu(id, ha, hz){
+	var elm;
+	if(elm = getobj(id)){
+		if(Math.abs(ha - hz) > 30){
+			ha = (ha * 60 + hz * 40) / 100;
+			elm.style.height = ha + 'px';
+			elm.style.overflow = 'hidden';
+			elm.style.display = 'block';
+			setTimeout("animenu('" + id + "', " + ha + ", " + hz + ")", 1);
+		} else {
+			elm.style.height = '';
+			elm.style.overflow = '';
+			elm.style.display = (hz == 0) ? 'none' : 'block';
+		}
+	}
+}
+function dsw(id){
+	var elm;
+	if(elm = getobj(id)){
+		if(elm.style.display == 'none'){
+			elm.style.display = 'block';
+			setTimeout("animenu('" + id + "', 0, " + elm.offsetHeight + ")", 1);
+			elm.style.display='none';
+		} else {
+			setTimeout("animenu('" + id + "', " + elm.offsetHeight + ", 0)", 1);
+		}
+	}
+}
+</script>
+"}
+	return
+
+;============================================================
+; コマンドヘルプ ID を開く
+;============================================================
+*page_r
+	sql_q "SELECT * FROM Help WHERE ID="+arg, RecDat
+	if stat = 0 : return
+
+	astr = RecDat.Name
+	if peek(RecDat.Prm) = '(' : astr += "()"
+
+	buf_head htmlenc(astr), "<a href='hdl:?index'>index</a> &rsaquo; コマンドヘルプ &rsaquo; <a href='hdl:?index=cat:" + urlenc(RecDat.Mod) + "'>" + htmlenc(dll_disp(RecDat.Mod)) + "</a> &rsaquo; <b>" + htmlenc(astr) + "</b>"
+
+	; summary
+	buf += "<p class='summary'>" + htmlenc(RecDat.Summary) + "</p>\n"
+
+	; parameter
+	if notnull(RecDat.Prm) {
+		if peek(RecDat.Prm)='('  &  peek(RecDat.Prm, strlen(RecDat.Prm)-1 )=')'  {
+			; 関数型記述
+			buf += "<p><span class='arg'>val = </span><span class='symbol'>" + htmlenc(RecDat.Name) + "(</span><span class='arg'>" + htmlenc( strmid(RecDat.Prm, 1, strlen(RecDat.Prm)-2 ) ) + "</span><span class='symbol'>)</span></p>\n"
+		} else {
+			; 命令型記述
+			buf += "<p><span class='symbol'>" + htmlenc(RecDat.Name) + "</span> <span class='arg'>" + htmlenc(RecDat.Prm) + "</span></p>\n"
+		}
+	} else {
+		; ノーパラ
+		buf += "<p><span class='symbol'>" + htmlenc(RecDat.Name) + "</span></p>\n"
+	}
+
+	if notnull(RecDat.Prm2) {
+		buf += "<div class=p>" + htmlenc_spider(RecDat.Prm2, 1) + "</div>\n"
+	}
+
+	if notnull(RecDat.Mod) {
+		buf += "<p>(プラグイン / モジュール : <a href='hdl:?index=cat:" + urlenc(RecDat.Mod) + "'>" + htmlenc(RecDat.Mod) + "</a>)</p>\n"
+	}
+
+	if notnull(RecDat.Inst) {
+		;--------------------------------------------------
+		buf += "<h2>解説</h2>\n"
+
+		; インライン HTML 記述のサポート ( html{ ... }html )
+		astr = RecDat.Inst
+		p = 0
+		a = strlen(astr)
+		repeat 256
+			i = instr(astr, p, "html{\n")
+			if i = -1 : i = a - p
+			if i > 0 : if (strmid(astr, p, i) ! "\n") : buf += "<pre class=p>" + htmlenc_spider(strmid(astr, p, i)) + "</pre>\n"
+			p += i + 7
+			if p >= a : break
+			i = instr(astr, p, "\n}html")
+			if i = -1 : i = a - p
+
+			bstr = strmid(astr, p, i)
+			ForceStaticHTML bstr
+			buf += "<div class=p>" + bstr + "</div>\n"
+
+			p += i + 7
+			if p >= a : break
+		loop
+	}
+
+	if notnull(RecDat.Sample) {
+		;--------------------------------------------------
+		buf += "<h2>サンプル</h2>\n"
+		buf += "<pre class='script'>" + htmlenc_spider(RecDat.Sample) + "</pre>\n"
+	}
+
+	if notnull(RecDat.Href) {
+		;--------------------------------------------------
+		buf += "<h2>関連項目</h2>\n"
+		buf += "<div class=p><table>\n"
+
+		p = 0
+		repeat
+			getstr astr, RecDat.Href, p
+			if strsize = 0 : break
+			p += strsize
+
+			sql_q "SELECT ID, Name, Summary, Mod FROM Help WHERE lower(Name)=lower('"+sqesc(astr)+"') LIMIT 1", RecTmp
+			if stat {
+				if notnull(RecTmp.Mod) {
+					buf += "<tr><td><a href='hdl:?r=" + RecTmp.HID + "'>" + htmlenc(RecTmp.Name) + "</a><td>" + htmlenc(RecTmp.Summary) + "<td>(<a href='hdl:?index=cat:" + urlenc(RecTmp.Mod) + "'>" + htmlenc(RecTmp.Mod) + "</a>)</tr>\n"
+				} else {
+					buf += "<tr><td><a href='hdl:?r=" + RecTmp.HID + "'>" + htmlenc(RecTmp.Name) + "</a><td colspan=2>" + htmlenc(RecTmp.Summary) + "</tr>\n"
+				}
+			} else {
+				buf += "<tr><td colspan=3><a href='hdl:?index=" + urlenc(astr) + "'>" + htmlenc(astr) + "</a></tr>\n"
+			}
+		loop
+
+		buf += "</table></div>\n"
+	}
+
+	;--------------------------------------------------
+	sql_q "SELECT ID, Title, substr(Search,SmryIdx,55)||'..' as Summary FROM Docs WHERE Type='hsp' and Search LIKE '%"+sqesc(RecDat.Name)+"%' and Search GLOB '*[^0-9a-z]"+sqesc(RecDat.Name)+"[^0-9a-z]*' order by lower(Title) limit 99"
+	count = stat
+	if count {
+		buf += "<h2>サンプル逆引き (" + count + ")</h2>\n"
+		buf += "<div class=p><table>\n"
+		repeat count
+			buf += "<tr><td><a href='hdl:?f=" + sql_v("ID") + "," + urlenc(RecDat.Name) + "'>" + htmlenc(sql_v("Title")) + "</a><td>" + htmlenc(sql_v("Summary")) + "</tr>"
+			sql_next
+		loop
+		buf += "</table></div>\n"
+	}
+
+	;--------------------------------------------------
+	buf += "<h2>情報</h2>\n"
+	buf += "<div class=p><table>\n"
+	if notnull(RecDat.Mod)		: buf += "<tr><td>プラグイン / モジュール<td><a href='hdl:?index=cat:" + urlenc( RecDat.Mod ) + "'>" + htmlenc2( RecDat.Mod ) + "</a></tr>\n"
+	if notnull(RecDat.Ver)		: buf += "<tr><td>バージョン<td>" + htmlenc2( RecDat.Ver ) + "</tr>\n"
+	if notnull(RecDat.Date)		: buf += "<tr><td>作成日<td>" + htmlenc2( RecDat.Date ) + "</tr>\n"
+	if notnull(RecDat.Author)	: buf += "<tr><td>著作者<td>" + htmlenc2( RecDat.Author ) + "</tr>\n"
+	if notnull(RecDat.Url)		: buf += "<tr><td>URL<td>" + htmlenc_spider( RecDat.Url, 1) + "</tr>\n"
+	if notnull(RecDat.Note)		: buf += "<tr><td>備考<td>" + htmlenc_spider( RecDat.Note, 1) + "</tr>\n"
+	if notnull(RecDat.Type)		: buf += "<tr><td>タイプ<td>" + htmlenc2( RecDat.Type ) + "</tr>\n"
+	if notnull(RecDat.Group3)	: buf += "<tr><td>グループ<td>" + htmlenc2( RecDat.Group3 ) + "</tr>\n"
+	if notnull(RecDat.Port) {
+		buf += "<tr><td>対応環境<td>"
+
+		; 対応環境フラグ 変換表
+		sdim envstr1, 32, 10
+		sdim envstr2, 32, 10
+		envstr1 = "Win", "Mac", "Let", "Cli"
+		envstr2 = "Windows 版 HSP", "Macintosh 版 HSP", "HSPLet", "コマンドライン版 HSP"
+
+		; 対応環境情報 文字列変換 (envstr1.n -> envstr2.n)
+		p = 0
+		repeat
+			getstr astr, RecDat.Port, p
+			if strsize = 0 : break
+			p += strsize
+			repeat
+				if envstr1(cnt) = "" { ; end of list
+					buf += "・" + htmlenc( astr ) + "<br>"
+					break
+				}
+				if astr = envstr1(cnt) {
+					buf += "・" + envstr2(cnt) + "<br>"
+					break
+				}
+			loop
+		loop
+		buf += "</tr>\n"
+	}
+	if notnull(RecDat.Portinf)	: buf += "<tr><td>移植のヒント<td>" + htmlenc_spider( RecDat.Portinf, 1 ) + "</tr>\n"
+
+	; ソースがドキュメントつきヘッダファイルの場合 表示を分ける
+	if getpath(RecDat.Path, 32|16) = "common\\" {
+		buf += "<tr><td>ヘッダファイル<td>" + htmlenc2( RecDat.Path ) + " <a href='hdl:?opfile=" + urlenc(RecDat.Path) + "'>&raquo; エディタで開く</a></tr>\n"
+	} else {
+		buf += "<tr><td>hs ファイル<td>" + htmlenc2( RecDat.Path ) + " <a href='hdl:?hsedit=" + urlenc(RecDat.Path+">"+RecDat.Name) + "'>&raquo; このレコードを編集</a></tr>\n"
+	}
+
+	buf += "</table></div>\n"
+
+	KeywordEmphasis2 buf, kwd
+
+	buf += foot_basic
+	return
+
+;============================================================
+; ファイル ID を開く
+;============================================================
+*page_f
+	sql_q "SELECT * FROM Docs WHERE ID="+arg
+	if stat = 0 : return
+
+	fn = sql_v("Path")
+	pas = basepath + "\\" + fn
+
+	if sql_v("Type") = "htm" {
+		; HTML ファイルにリダイレクト
+		buf = "<body onload=\"location.replace('" + QuoteEsc(pas) + "');\"></body>"
+		return
+	}
+
+	if sql_v("Type") = "hsp" {
+		secname = "サンプル"
+	} else {
+		secname = "ドキュメント"
+	}
+
+	buf_head htmlenc(sql_v("Title")), "<a href='hdl:?index'>index</a> &rsaquo; " + secname + " &rsaquo; <a href='hdl:?index=cat:" + urlenc(sql_v("Catego")) + "'>" + htmlenc(catego_disp(sql_v("Catego"))) + "</a> &rsaquo; <b>" + htmlenc(sql_v("Title")) + "</b>"
+
+	; icon image
+	ico_file = "<img src='data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAwAAAAOCAIAAACU32q7AAAABnRSTlMAAAD/AADQPjN8AAAAQ0lEQVR42mNkwAP+Q2lGEPv/f0wFjIyMcHX4FB04cMDBwQGojpBJaNYxMjYiHPO/Hlk1TpOwK0I2Cdm84WESAUUEAQB3BDYMQbYcGgAAAABJRU5ErkJggg=='> "
+	ico_fol  = "<img src='data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAA4AAAALCAIAAADA5ys1AAAABnRSTlMAAAD/AADQPjN8AAAAR0lEQVR42tWROw4AIAhD25txdG5WBVz8JLr6hg7QFAKEEBATwg6j2kXVZyl5cBOPKK1L5FGZk7r14quVfkt19+utzGy84IUGwDs9CY7VhdYAAAAASUVORK5CYII='> "
+
+	buf += "<p><a href=\"hdl:?opdir=" + getpath(fn, 32) + "\">" + ico_fol + htmlenc(getpath(fn, 32)) + "</a> <a href=\"hdl:?opfile=" + urlenc(fn) + "\">" + ico_file + htmlenc(getpath(fn, 8)) + "</a></p>\n"
+
+	if sql_v("Type") = "hsp" {
+		buf += "<pre class='script'>"
+	} else {
+		buf += "<pre class=p>"
+	}
+	bload_utf_safe pas, astr ; ファイル実体をロードして表示
+	buf += htmlenc_spider(astr) + "</pre>\n"
+
+	KeywordEmphasis2 buf, kwd
+
+	buf += foot_basic
+	return
+
+;============================================================
+; about
+;============================================================
+*page_about
+	buf_head appname, "<a href='hdl:?index'>index</a> &rsaquo; <b>version</b>"
+
+	sql_q "SELECT sqlite_version()"
+	buf += "<p>Version " + appver + "</p>\n"
+	buf += "<p>" + appsig + " / powered by SQLite " + tmparr + "</p>\n"
+	buf += "<p>Web : <a href='http://spn.php.xdomain.jp/'>http://spn.php.xdomain.jp/</a></p>\n"
+	buf += "<p>HSPTV! : <a href='http://hsp.tv/'>http://hsp.tv/</a></p>\n"
+
+	buf += {"
+<h2>ライブラリについて</h2>
+<p>ライブラリのファイルは、次のディレクトリから検索され、拡張子ごとにセクションに区分されます。</p>
+<div class=p><table class=bdr>
+<tr><th rowspan=2>ディレクトリ<th colspan=3>検索される拡張子 / 対象セクション<th rowspan=2>用途</tr>
+<tr><th>コマンドヘルプ<th>ドキュメント<th>サンプル</tr>
+<tr><td>doclib<td align='center'>*.hs<td align='center'>*.htm *.html *.txt<td align='center'>*.hsp<td>ドキュメント各種</tr>
+<tr><td>hsphelp<td align='center'>*.hs<td align='center'>-<td align='center'>-<td>コマンドヘルプ</tr>
+<tr><td>sample<td align='center'>-<td align='center'>-<td align='center'>*.hsp<td>サンプル</tr>
+<tr><td>common<td align='center'>*.as *.hsp<td align='center'>-<td align='center'>-<td>ドキュメント付けされたヘッダ</tr>
+</table></div>
+<p>プラグイン等のドキュメントを追加する場合は、doclib ディレクトリにプラグイン名のディレクトリを作成し、その中に関連ファイル (.hs .txt .htm .hsp) まとめて入れることができます。</p>
+<style> img { max-height: 32px;} </style>
+"}
+	sql_q "SELECT count(*) FROM Dirs", astr
+	sql_q "SELECT count(*) FROM Files", bstr
+	buf += "<p>このライブラリには、" + astr + " のディレクトリ、" + bstr + " のファイルから抽出された、"
+	sql_q "SELECT count(*) FROM Help", astr
+	sql_q "SELECT count(*) FROM Docs WHERE Type!='hsp'", bstr
+	sql_q "SELECT count(*) FROM Docs WHERE Type='hsp'", cstr
+	buf += "" + astr + " のコマンドヘルプ、" + bstr + " のドキュメント、" + cstr + " のサンプルが登録されています。</p>\n"
+
+	buf += "<p>"
+	sql_q "SELECT Path from Files where Fn like '%.bmp' or Fn like '%.gif' or Fn like '%.jpg' or Fn like '%.png' order by random()"
+	repeat stat
+		buf += "<img src='" + sql_v("Path") + "'> "
+		sql_next
+	loop
+	buf += "</p>\n"
+
+	buf += "<h2>hs ファイルの情報</h2>\n"
+	buf += "<p>ライブラリには、以下の hs ファイルが読み込まれています。</p>\n"
+	buf += "<div class=p><table class=bdr>\n"
+	buf += "<th>File<th>Module<th>Ver<th>Date<th>Author<th>Recs<th>FileDate</th></tr>\n"
+	sql_q "SELECT Help.Path as Path, count(Help.ID) as IDs, Mod, Ver, Date, Author FROM Help LEFT JOIN Files ON Help.Path=Files.Path GROUP BY Help.Path, Mod, Ver, Date, Author ORDER BY lower(Dir), lower(Help.Path), lower(Mod), lower(Ver) desc, lower(Date), lower(Author)"
+	repeat stat
+		pas = sql_v("Path")
+
+		; ファイルの拡張子によってアンカーを分ける
+		bstr = getpath(pas, 2|16)
+		if bstr = ".hs" {
+			bstr = "hdl:?hsedit="
+		} else {
+			bstr = "hdl:?opfile="
+		}
+
+		buf += "<tr><td><a href=\"" + bstr + urlenc(pas) + "\">" + htmlenc(pas) + "</a><td>" + null_cvt(htmlenc(sql_v("Mod"))) + "<td>" + null_cvt(htmlenc(sql_v("Ver"))) + "<td>" + null_cvt(sql_v("Date")) + "<td>" + null_cvt(sql_v("Author")) + "<td align='right'>" + sql_v("IDs") + "<td>" + FileUpdateTime(pas) + "</tr>\n"
+		sql_next
+	loop
+	buf += "</table></div>\n"
+
+	buf += "<h2>コマンドヘルプ シンボルの重複</h2>\n"
+	sql_q "SELECT * FROM (SELECT Name, Mod, count(ID) as IDs, group_concat(Path, ' , ') as Paths FROM Help GROUP BY Name, Mod) WHERE IDs >= 2 ORDER BY lower(Mod), lower(Name)"
+	if stat {
+		buf += "<p>hs ファイル (ドキュメント付けされたヘッダファイルを含む) が重複して存在しているか、hs ファイル内で記述が重複している可能性があります。</p>\n"
+		buf += "<div class=p><table class=bdr>\n"
+		buf += "<tr><th>Symbol<th>Recs<th>Filename</tr>\n"
+		repeat stat
+			astr = sql_v("Mod")
+			if notnull(astr) : astr = " @ " + astr
+			buf += "<tr><td>" + htmlenc(sql_v("Name") + astr) + "<td>" + sql_v("IDs") + " recs<td>" + sql_v("Paths") + "</tr>\n"
+			sql_next
+		loop
+		buf += "</table></div>\n"
+	} else {
+		buf += "<p>問題は見つかりませんでした。</p>\n"
+	}
+
+	buf += foot_basic
+	return
+
+#global

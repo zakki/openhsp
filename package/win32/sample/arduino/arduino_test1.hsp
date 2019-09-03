@@ -1,0 +1,40 @@
+#include "arduino.as"
+
+	;	arduino接続テスト
+	;	COMポートにarduinoを接続して、必ずポート番号を指定してください
+	;
+	comport = 10		; COMポート番号
+
+	; arduino初期化 (COMポート番号、ボーレート)
+	arduino_init comport, 57600
+	if stat {
+		; エラーがあれば終了
+		dialog arduino_error
+		end
+	}
+
+*startup
+	; 起動チェック
+	arduino_exec
+	if stat {
+		; エラーがあれば終了
+		dialog arduino_error
+		end
+	}
+	wait 1
+	if arduino_ready=0 : goto *startup
+
+	; 起動に成功
+	mes "arduinoに接続しました("+arduino_firm_ver+")"
+
+	button "終了",*owari
+	stop
+
+*owari
+	; 通信を終了する
+	arduino_bye
+	end
+
+
+
+

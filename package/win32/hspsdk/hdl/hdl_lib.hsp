@@ -1,0 +1,393 @@
+
+;	Windows 雑用ライブラリ s.programs
+
+#ifndef _HDL_LIB
+#define _HDL_LIB  1
+
+;============================================================
+; benckmark macro
+;============================================================
+
+#uselib "winmm"
+#cfunc global btimer "timeGetTime"
+#define global b0 bench_ot = btimer()
+#define global b1 dialog "bench " + (btimer() - bench_ot) + " ms"
+
+;============================================================
+; get_hsp_appdata_path
+;  HSP が使う Application Data の Path
+;============================================================
+
+#module
+; winapi
+#uselib "kernel32"
+#func GetEnvironmentVariable	"GetEnvironmentVariableA" sptr, sptr, sptr
+;--------------------------------------------------
+#deffunc get_hsp_appdata_path array v1
+	org_dir = dir_cur
+	sdim v1, 1000
+	GetEnvironmentVariable "APPDATA", varptr(v1), 990
+
+	if "" ! v1 {
+		subdir = "Hot Soup Processor"
+		chdir v1
+		dirlist astr, subdir, 5 : if stat = 0 : mkdir subdir // MAKEDIR subdir
+		chdir org_dir
+		v1 += "\\" + subdir
+	}
+
+	if "" = v1 : v1 = org_dir
+	return
+#global
+
+;============================================================
+; ステータスバー モジュール
+;============================================================
+
+#module
+; winapi
+#uselib "comctl32"
+#func InitCommonControlsEx "InitCommonControlsEx" var
+#uselib "user32"
+#func GetWindowRect "GetWindowRect" int, var
+#func DestroyIcon "DestroyIcon" int
+#uselib "shell32"
+#func ExtractIconEx "ExtractIconExA" sptr, sptr, sptr, sptr, sptr
+
+; const
+#define ctype objhwnd(%1)  objinfo(%1, 2)
+#const  WS_CHILD	0x40000000
+#const  WS_VISIBLE	0x10000000
+#define RECT_LEFT	0
+#define RECT_TOP	1
+#define RECT_RIGHT	2
+#define RECT_BOTTOM	3
+;--------------------------------------------------
+#deffunc status_mes int i, str inp
+	if hwnd_status {
+		a = inp
+		sendmsg hwnd_status, 0x0401, i, varptr(a) ; SB_SETTEXT
+		; アイコン消去
+		if icon.i {
+			sendmsg hwnd_status, 0x040F, i, 0 ; SB_SETICON
+			DestroyIcon icon.i
+			icon.i = 0
+		}
+	}
+	return
+;--------------------------------------------------
+#deffunc status_icon int i, str fn, int id
+	if hwnd_status {
+		; アイコン設定
+		if icon.i : DestroyIcon icon.i : icon.i = 0
+		ExtractIconEx fn, id, 0, varptr(icon.i), 1
+		if icon.i : sendmsg hwnd_status, 0x040F, i, icon.i ; SB_SETICON
+	}
+	return
+;--------------------------------------------------
+#deffunc status_resize
+	if hwnd_status {
+		a = ginfo_winx*70/100, ginfo_winx*85/100, -1 ; パーツ位置 (70:15:15 固定)
+		sendmsg hwnd_status, 0x0404, 3, varptr(a) ; SB_SETPARTS
+		sendmsg hwnd_status, 0x0005, 0, 0 ; WM_SIZE
+	}
+	return
+;--------------------------------------------------
+#defcfunc status_height
+	dim a, 4 ; RECT
+	if hwnd_status {
+		GetWindowRect hwnd_status, a
+	}
+	return (a.RECT_BOTTOM - a.RECT_TOP)
+;--------------------------------------------------
+#deffunc status_create
+	; init (4.70 以上の comctl32.dll が必要)
+	a = 8, 0x00000004 ; ICC_BAR_CLASSES
+	InitCommonControlsEx a
+	winobj "msctls_statusbar32", "", 0, WS_CHILD | WS_VISIBLE, 0, 0, 0, 0
+	hwnd_status = objhwnd(stat)
+	dim icon, 3 ; 各パーツのアイコンハンドル格納
+	status_resize ; パーツ初期化
+	return
+; icon sample
+;	status_icon 0, "explorer.exe", 7 ; (i)
+;	status_icon 0, "explorer.exe", 8 ; <!>
+;	status_icon 0, "explorer.exe", 9 ; (X)
+;	status_icon 0, "shell32.dll", 22 ; ○━
+;	status_icon 0, "shell32.dll", 23 ; (?)
+#global
+
+;============================================================
+; ウィンドウ位置のセーブとロード
+;  セーブデータにアプリケーションデータも乗り合い可
+;============================================================
+;  ウィンドウ情報 : cfgdat(0-10)
+;  ユーザーエリア : cfgdat(11-127)
+;  設定ファイルサイズ 512 bytes
+
+; global var cfgdat
+#define global cfgdat _cfgdat@
+
+#module
+; config
+#define CFG_SIZE 512
+
+; winapi
+#uselib "user32"
+#func	ShowWindow		"ShowWindow" int, int
+#func	GetWindowPlacement	"GetWindowPlacement" int, var
+#func	SetWindowPlacement	"SetWindowPlacement" int, var
+#cfunc	GetForegroundWindow	"GetForegroundWindow"
+#cfunc	GetWindowThreadProcessId	"GetWindowThreadProcessId" int, int
+#func	SetForegroundWindow	"SetForegroundWindow" int
+#func	BringWindowToTop	"BringWindowToTop" int
+#func	AttachThreadInput	"AttachThreadInput" int, int, int
+#func	SetWindowLongA		"SetWindowLongA" sptr, sptr, sptr
+#uselib "kernel32"
+#cfunc	GetCurrentThreadId	"GetCurrentThreadId"
+
+; const
+#const  SW_HIDE			0
+#const  SW_SHOWNORMAL		1	; 通常
+#const  SW_SHOWMINIMIZED	2	; アイコン化
+#const  SW_SHOWMAXIMIZED	3	; 最大
+#const  GWL_STYLE		-16
+#const  WS_OVERLAPPEDWINDOW	0x00CF0000
+#const  WS_CLIPCHILDREN		0x02000000
+;--------------------------------------------------
+#deffunc Window_resizable
+	SetWindowLongA hwnd, GWL_STYLE, WS_OVERLAPPEDWINDOW | WS_CLIPCHILDREN
+	return
+;--------------------------------------------------
+#deffunc Window_top	; ウィンドウを通常化
+	; get wp
+	dim wp, 11
+	wp = 44  ; WINDOWPLACEMENT.length
+	GetWindowPlacement hwnd, wp
+
+	if (wp.2 & 3) = SW_SHOWMINIMIZED {
+		ShowWindow hwnd, SW_SHOWNORMAL
+	}
+
+	; force foreground
+	hwt = GetForegroundWindow()
+	if hwt ! hwnd {
+		a = GetWindowThreadProcessId(hwt, 0)
+		b = GetCurrentThreadId()
+		AttachThreadInput a, b, 1
+		SetForegroundWindow hwnd
+		AttachThreadInput a, b, 0
+		BringWindowToTop hwnd
+	}
+	return
+;--------------------------------------------------
+#deffunc Config_restore_window
+	; default window pos
+	if cfgdat ! 44 : cfgdat = 44, 0, 1, -1, -1, -1, -1, ginfo_dispx*20/100, ginfo_dispy*20/100, ginfo_dispx*80/100, ginfo_dispy*90/100
+
+	; restore window
+	SetWindowPlacement hwnd, cfgdat
+	Window_top
+	return
+;--------------------------------------------------
+#deffunc Config_open str p1
+	; set filename
+	cfgfile = p1
+
+	; load config
+	dim cfgdat, 128
+	exist cfgfile
+	if strsize = CFG_SIZE : bload cfgfile, cfgdat
+	return
+;--------------------------------------------------
+#deffunc Config_close
+	cfgdat = 44 ; WINDOWPLACEMENT.length
+	GetWindowPlacement hwnd, cfgdat
+
+	bsave cfgfile, cfgdat, CFG_SIZE
+	return
+;--------------------------------------------------
+; 高 DPI 対応
+#uselib "user32.dll"
+#func SetProcessDPIAware "SetProcessDPIAware"
+#deffunc Window_DPIAware
+	if varptr(SetProcessDPIAware) : SetProcessDPIAware
+	return
+#global
+
+;============================================================
+; プロセス間 メモリ共有 モジュール
+;============================================================
+; 仕様
+; ・保護モード 読み書き可
+; ・最大サイズ 4KB
+
+#module
+; winapi
+#uselib "kernel32"
+#cfunc	CreateFileMapping	"CreateFileMappingA" int, int, int, int, int, str
+#cfunc	GetLastError		"GetLastError"
+#cfunc	MapViewOfFile		"MapViewOfFile" int, int, int, int, int
+#func	UnmapViewOfFile		"UnmapViewOfFile" sptr
+#func	CloseHandle		"CloseHandle" int
+;--------------------------------------------------
+#deffunc filemap_create str inp
+	hMapobj = CreateFileMapping(-1, 0, 4, 0,4096, inp)
+	lasterr = GetLastError()
+	mapptr = MapViewOfFile(hMapobj, 2, 0, 0, 0)
+	return
+;--------------------------------------------------
+#deffunc filemap_close
+	UnmapViewOfFile mapptr
+	CloseHandle hMapobj
+	return
+;--------------------------------------------------
+#defcfunc filemap_viewptr
+	return mapptr
+;--------------------------------------------------
+#defcfunc filemap_already_exists
+	; ERROR_ALREADY_EXISTS 183
+	return (lasterr = 183)
+#global
+
+;============================================================
+; bload_utf_safe
+;============================================================
+
+#module
+; winapi
+#uselib "kernel32"
+#func kMultiByteToWideChar "MultiByteToWideChar" sptr, sptr, sptr, sptr, sptr, sptr
+#func kWideCharToMultiByte "WideCharToMultiByte" sptr, sptr, sptr, sptr, sptr, sptr, sptr, sptr
+
+; pUTF8 to vASCII (from sqlele)
+#deffunc putf_to_vascii_2 int p1, var v1
+	wtmp = ""
+	kMultiByteToWideChar 65001, 0, p1, -1, 0, 0
+	memexpand wtmp, stat * 2 + 16
+	kMultiByteToWideChar 65001, 0, p1, -1, varptr(wtmp), stat
+
+	kWideCharToMultiByte 0, 0, varptr(wtmp), -1, 0, 0, 0, 0
+	memexpand v1, stat + 16
+	kWideCharToMultiByte 0, 0, varptr(wtmp), -1, varptr(v1), stat, 0, 0
+	return
+
+; encode detector
+#define ctype IS_UTF8_BOM(%1)	((lpeek(%1) & 0xffffff) = 0xBFBBEF)
+#define ctype UTF8J_SCORE(%1)	((instr(%1,,"縺")>=0)+(instr(%1,,"繧")>=0)+(instr(%1,,"繝")>=0))
+#define ctype SJISJ_SCORE(%1)	((instr(%1,,"の")>=0)+(instr(%1,,"ー")>=0)+(instr(%1,,"に")>=0))
+
+; bload + utf-8 auto-transcode
+#deffunc bload_utf_safe str fn, var buf
+	buf = ""
+	exist fn
+	if strsize > 0 {
+		sdim buf, strsize + 16
+		bload fn, buf
+		if UTF8J_SCORE(buf) > SJISJ_SCORE(buf) | IS_UTF8_BOM(buf) {
+			if IS_UTF8_BOM(buf) : memcpy buf, buf, strlen(buf)-2, 0, 3 ; cut BOM
+			putf_to_vascii_2 varptr(buf), buf
+		}
+	}
+	return
+#global
+
+;============================================================
+; マウス関係
+;============================================================
+
+#module
+#uselib "user32"
+#cfunc LoadCursorA "LoadCursorA" int, int
+#func SetCursor "SetCursor" int
+#func ScreenToClient "ScreenToClient" int, int
+
+#define global IDC_SIZEWE 32644
+#define global IDC_SIZENS 32645
+#define global IDC_SIZEALL 32646
+
+#deffunc SetMouseCursor int p1
+	h = LoadCursorA(hinst, p1)
+	if h : SetCursor h
+	return
+
+#defcfunc scr_mousex
+	p = ginfo_mx, 0
+	ScreenToClient hwnd, varptr(p)
+	return p.0
+
+#defcfunc scr_mousey
+	p = 0, ginfo_my
+	ScreenToClient hwnd, varptr(p)
+	return p.1
+#global
+
+;============================================================
+; Windows Timer
+;============================================================
+
+#module
+; winapi
+#uselib "user32"
+#func	SetTimer	"SetTimer" int, int, int, int
+#func	KillTimer	"KillTimer" int, int
+;--------------------------------------------------
+#define global timer_setlabel(%1)  oncmd gosub %1, 0x113
+;--------------------------------------------------
+#deffunc timer_start
+	SetTimer hwnd, 333, 60, 0
+	return
+;--------------------------------------------------
+#deffunc timer_stop
+	KillTimer hwnd, 333
+	return
+#global
+
+;============================================================
+; wstrlen
+; ダブルバイト対応 文字数カウント
+;============================================================
+
+#module
+; winapi
+#uselib "kernel32"
+#cfunc MultiByteToWideChar "MultiByteToWideChar" int, int, var, int, int, int
+;--------------------------------------------------
+#defcfunc wstrlen var v
+	return (MultiByteToWideChar(0, 0, v, -1, 0, 0) - 1)
+;--------------------------------------------------
+; DBCS buffer index to UTF-16 char index
+#defcfunc wstrpos var v, int i
+	return MultiByteToWideChar(0, 0, v, i, 0, 0)
+#global
+
+;============================================================
+; misc
+;============================================================
+
+#uselib "kernel32"
+#func GetModuleFileName	"GetModuleFileNameA" int, var, int
+#func GetTempPath		"GetTempPathA" sptr, var
+#func WinExec			"WinExec" sptr, sptr
+
+#uselib "user32"
+#cfunc	MoveWindow	"MoveWindow" sptr, sptr, sptr, sptr, sptr, sptr
+#func	CharLower	"CharLowerA" var
+#func	PostMessage	"PostMessageA" int, int, int, int
+#func	SendMessage	"SendMessageA" int, int, int, int
+; menu
+#func	global CreateMenu		"CreateMenu"
+#cfunc	global CreatePopupMenu	"CreatePopupMenu"
+#func	global AppendMenu		"AppendMenuA"     int,int,int,sptr
+#func	global SetMenu			"SetMenu"         int,int
+#func	global DrawMenuBar		"DrawMenuBar"     int
+#func	global CheckMenuItem	"CheckMenuItem"   int, int, int
+
+; open file skiperror
+#uselib "shell32.dll"
+#func	ShellExecute	"ShellExecuteA" int, str, str, str, str, int
+#define	exec_file(%1)	ShellExecute 0, "", %1, "", "", 1
+
+
+#endif
+

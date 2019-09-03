@@ -1,0 +1,21 @@
+#include "hspinet.as"
+
+	;
+	;	https経由でファイルをダウンロード
+	;	(soupseedにhttps接続でアクセスします)
+	;
+
+	netinit
+	if stat : dialog "ネット接続できません。" : end
+
+	neturl "https://dev.onionsoft.net/seed/"
+
+	mes "DOWNLOAD 開始"
+
+	netload "index.html"
+
+	mes "DOWNLOAD 完了"
+	mes "index.htmlを保存しました。"
+
+	stop
+

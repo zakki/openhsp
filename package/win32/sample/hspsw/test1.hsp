@@ -1,0 +1,59 @@
+;
+;	実績の取得
+;
+#include "hspsw.as"
+
+	;	STEAM環境の初期化
+	steaminit : res=stat
+	if res : dialog "STEAM環境がありません。終了します。("+stat+")" : end
+
+	;	STEAM実績の自動設定
+	steamset_achievement
+	achimax=stat
+
+	;	STEAM実績の手動設定
+;	achimax=2
+;	steamset_max achimax
+;	steamreg_achievement 0,"ACH_WIN_ONE_GAME"
+;	steamreg_achievement 1,"ACH_WIN_100_GAMES"
+
+	;	読み込みリクエストを送る
+	steamreq_status
+*main
+	steamupdate flag		; ループ内で定期的に呼び出す
+
+	color 255,255,255:boxf
+	color 0,0,0:pos 0,0
+	mes "お待ちください..."
+
+	wait 10
+
+	if flag=STEAM_ERROR : goto *go_error
+	if flag!=STEAM_READY : goto *main
+
+*main2
+	steamupdate flag		; ループ内で定期的に呼び出す
+
+	color 255,255,255:boxf
+	color 0,0,0:pos 0,0
+
+	;	実績の表示
+	repeat achimax
+		steamget_achievementstr api,cnt,0
+		steamget_achievementstr moji,cnt,1
+		steamget_achievementstr desc,cnt,2
+		steamget_achievement result,cnt
+		mes "ID:"+cnt+"="+result+" / "+api+" / "+moji+" / "+desc
+	loop
+
+	wait 10
+
+	if flag=STEAM_ERROR : goto *go_error
+	goto *main2
+
+
+*go_error
+	cls 1
+	mes "エラーが発生しました。"
+	stop
+

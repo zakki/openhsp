@@ -1,0 +1,40 @@
+	#include "modclbk3.hsp"
+
+	;	コールバックモジュール modclbk3.hspサンプル
+	;
+	#uselib "user32.dll"
+		#func EnumWindows "EnumWindows" int,int
+		#func GetWindowText "GetWindowTextA" int,int,int
+	
+	title "コールバックモジュール"
+	
+	dim clbkptr,1
+	dim i,1
+	sdim tmpwns,64
+	sdim wns
+	
+	ewlb=*ew
+
+	newclbk3 clbkptr,2,ewlb		; コールバック関数を作成する
+
+	EnumWindows clbkptr,2		; コールバックが必要なAPI
+	
+	title "トップレベルウィンドウ数:"+i
+	mesbox wns,640,480,4,0		; 結果を表示する
+	
+	stop
+	
+*ew
+	;	実際にコールバックを受け取るサブルーチン
+	;
+	dupptr winh,lparam,wparam*4,4
+		//lparam には引数の配列へのメモリアドレスが、
+		//wparam には配列の要素数が格納されているので
+		//このようにして引数を受け取る
+	
+	GetWindowText winh.0,varptr(tmpwns),64
+	wns = wns + str(winh(0)) + "\t" + tmpwns + "\n"
+	
+	i++
+	
+	return 1
