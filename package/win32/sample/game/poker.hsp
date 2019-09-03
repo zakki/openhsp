@@ -1,6 +1,7 @@
 	title "ポーカーゲーム"
 	randomize
-	celload "trump.bmp"
+	;	(素材データはHSPインストールフォルダ以下のhsptvフォルダに入っています)
+	celload dir_tv+"trump.png"
 	trump=stat
 	screen 0,640,480
 	gosub *creset

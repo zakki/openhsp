@@ -1,0 +1,144 @@
+#module
+#uselib "user32.dll"
+#cfunc  EnumDisplayMonitors "EnumDisplayMonitors" sptr, sptr, sptr, int
+#func   GetMonitorInfo      "GetMonitorInfoA"     sptr, sptr
+#uselib "kernel32.dll"
+#func VirtualProtect "VirtualProtect" int,int,int,var
+
+#define FALSE                   0
+#define TRUE                    1
+#define NULL                    0
+#define MaxMonitors             16
+#define MaxRectParameters       4
+#define MaxParameters           5
+#define Prm_API                 0
+#define Prm_max                 1
+#define Prm_cnt                 2
+#define Prm_idx_primary         3
+#define Prm_ptr_rects           4
+// 初期化 ret = GMIinit( 最大値 );
+//        最大値は数えるディスプレイの最大数。1以上MaxMonitors以下の値。
+//        成功ならretは0以外の値、失敗なら0。
+#defcfunc GMIinit int max;
+        if ( (max < 1) || (max > MaxMonitors) ) {
+                return FALSE;
+        }
+
+        dim  prm,    (MaxParameters + 1);
+        dim  rects,  ((max + 1) * MaxRectParameters);
+        dim  bin,    (23 + 1);
+        dim  a_stat
+        mref a_stat, 64;
+
+        bin( 0) = 0x83ec8b55, 0x5653d8c4, 0x145d8b57, 0x28d845c7, 0x8d000000;
+        bin( 5) = 0x8b50d845, 0xff520855, 0x75c08513, 0xebc03304, 0xfc558b2e;
+        bin(10) = 0x7501fa83, 0x084b8b06, 0x8b0c4b89, 0x538b0843, 0x04e0c110;
+        bin(15) = 0x8b104d8b, 0x0004b9f1, 0x3c8d0000, 0x0001b802, 0xa5f30000;
+        bin(20) = 0x5f0843ff, 0xe58b5b5e, 0x0010C25D;
+        prm(Prm_API)         = varptr(GetMonitorInfo);
+        prm(Prm_max)         = max;
+        prm(Prm_cnt)         = 0;
+        prm(Prm_idx_primary) = 0;
+        prm(Prm_ptr_rects)   = varptr(rects);
+
+	old=0
+	VirtualProtect varptr(bin),24*4,$40,old		; メモリプロテクトの設定
+	ret = EnumDisplayMonitors(NULL, NULL, varptr(bin), varptr(prm));
+        return ret;
+// ディスプレイの数を取得しstatに格納。失敗は負数。
+#deffunc GMIcnt
+        if (ret == FALSE) {
+                a_stat = -1;
+        } else {
+                a_stat = prm(Prm_cnt);
+        }
+        return;
+// プライマリー・ディスプレイのインデックスを取得しstatに格納。失敗は負数。
+#deffunc GMIprimary
+        if (ret == FALSE) {
+                a_stat = -1;
+        } else {
+                a_stat = prm(Prm_idx_primary);
+        }
+        return;
+// 指定したディスプレイの、仮想画面内の座標を取得。
+//     ret = GMIrect(idx, rect);
+//       成功 : retは0以外。rectに座標を格納。
+//              rect(0) : 左上X座標, rect(1) : 左上Y座標,
+//              rect(2) : 右下X座標, rect(3) : 右下Y座標
+//       失敗 : retは0。    rectは不定。
+#defcfunc GMIrect int idx, array rect
+        if ( (ret == FALSE) || (idx < 0) || (idx >= prm(Prm_cnt)) ) {
+                return FALSE;
+        }
+        work    = idx * MaxRectParameters;
+        rect(0) = rects(work + 0);
+        rect(1) = rects(work + 1);
+        rect(2) = rects(work + 2);
+        rect(3) = rects(work + 3);
+        return TRUE;
+// 後始末
+#deffunc GMIclear
+        dim prm,   1;
+        dim rects, 1;
+        dim bin,   1;
+        ret = FALSE;
+        return;
+#global
+	
+	ret = GMIinit(4)
+	if ret != 0{
+		GMIcnt
+		discnt = stat
+		if discnt != -1{
+			
+			GMIprimary
+			dispri = stat
+			
+			dim dispostemp,4	
+			dim disinfo,discnt,6
+			dim disinfo2,8
+			
+			repeat discnt
+			dim dispostemp,4
+				if GMIrect(cnt,dispostemp) = 0:discnt = -1:break
+				disinfo(cnt,0) = dispostemp(0)	//poslx プライマリーディスプレイから見たn番目のディスプレイの左上x座標
+				disinfo(cnt,1) = dispostemp(1)	//posly プライマリーディスプレイから見たn番目のディスプレイの左上y座標
+				disinfo(cnt,2) = dispostemp(2)	//posrx プライマリーディスプレイから見たn番目のディスプレイの右下x座標
+				disinfo(cnt,3) = dispostemp(3)	//posrx プライマリーディスプレイから見たn番目のディスプレイの右下y座標
+				disinfo(cnt,4) = dispostemp(2)-dispostemp(0)	//n番目のディスプレイの幅
+				disinfo(cnt,5) = dispostemp(3)-dispostemp(1)	//n番目のディスプレイの高さ
+			loop	
+			
+			repeat discnt
+				if disinfo2(0) >= disinfo(cnt,0):disinfo2(0) = disinfo(cnt,0) //個々のディスプレイで一番小さいx座標
+				if disinfo2(1) >= disinfo(cnt,1):disinfo2(1) = disinfo(cnt,1) //個々のディスプレイで一番小さいy座標
+				if disinfo2(2) <= disinfo(cnt,2):disinfo2(2) = disinfo(cnt,2) //個々のディスプレイで一番大きいx座標
+				if disinfo2(3) <= disinfo(cnt,3):disinfo2(3) = disinfo(cnt,3) //個々のディスプレイで一番大きいy座標
+			loop
+			
+			disinfo2(4) = -1 * (0 - disinfo2(0)) //ディスプレイ全体の最左座標
+			disinfo2(5) = -1 * (0 - disinfo2(1)) //ディスプレイ全体の最上座標
+			disinfo2(6) = abs(disinfo2(0)) + abs(disinfo2(2)) //ディスプレイ全体の横幅
+			disinfo2(7) = abs(disinfo2(1)) + abs(disinfo2(3)) //ディスプレイ全体の縦幅
+		}
+			
+	} else {
+		dialog "初期化失敗"
+		end
+	}
+	GMIclear
+	
+	sdim message,1024
+	message += strf("%d枚のディスプレイがあります\n",discnt)
+	message += strf("プライマリーディスプレイは%d枚目です\n\n",dispri)
+
+	repeat discnt
+		message += strf("%d枚目のディスプレイの情報\n",cnt)
+		message += strf("\t左上座標(%4d,%4d)",disinfo(cnt,0),disinfo(cnt,1))
+		message += strf(" 右下座標(%4d,%4d)",disinfo(cnt,2),disinfo(cnt,3))
+		message += strf(" 幅%4dpx,高さ%4dpx\n",disinfo(cnt,4),disinfo(cnt,5))
+	loop
+	mesbox message,640,480
+	stop
+

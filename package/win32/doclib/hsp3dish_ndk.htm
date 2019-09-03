@@ -34,6 +34,7 @@
 		<li><a href="#EXECTASK">タスク(アクティビティ)呼び出し</a></li>
 		<li><a href="#DISHINI">hsp3dish.ini設定ファイルについて</a></li>
 		<li><a href="#SCALE">マニュアル設定項目について</a></li>
+		<li><a href="#NETWORK">ネットワーク通信について</a></li>
 		<li><a href="#RELEASE">リリースビルド</a></li>
 		<li><a href="#HGIMG4">HGIMG4プロジェクトについて</a></li>
 		<li><a href="#DEVCONTROL">デバイスコントロールについて</a></li>
@@ -425,6 +426,50 @@
 	通常はこのオプションを指定する必要はありませんが、画面のスケーリング等で正しくテクスチャが表示されない場合に試してみてください。<br>
 	カッコ内の数値が0以外の場合は補正がONになります。0の場合は補正がOFFになります。
 	</p>
+
+
+	<h2 id="NETWORK">ネットワーク通信について</h2>
+	<p>
+	android上で、httpload、httpinfo等の命令を使ってネットワーク通信を行うことが可能です。
+	ただし、android8.0以降ではOSの仕様により、httpsアクセス(暗号化された通信)のみを許可し、
+	httpアクセスは基本的に禁止されています。<br>
+	たとえば、「http://www.onionsoft.net」にアクセスする場合は、「https://www.onionsoft.net」に
+	変更することで、通信が可能になります。
+	(不特定のhttpサーバーへのアクセスは、基本的にはできないと考えてください)<br>
+	サーバー側の仕様によってはhttpsでのアクセスが
+	できないことがあります。その場合は、「network_security_config.xml」ファイルを追加して
+	特定のURL(ドメイン)のみhttpアクセスを許可するという方法で、通信を行うことが可能です。<br>
+	それぞれのプロジェクトごとに、http通信先のドメインを登録することができます。
+	まず、「network_security_config.xml」ファイルを新規に作成して、プロジェクトフォルダ以下の
+	res/xmlに配置します。ここで、以下の内容を記述してください。
+	</p>
+	<ul>「network_security_config.xml」の内容<br><br>
+	<pre>
+	&lt;?xml version="1.0" encoding="utf-8"?&gt;
+	&lt;network-security-config&gt;
+	    &lt;domain-config cleartextTrafficPermitted="true"&gt;
+        	&lt;domain includeSubdomains="true">www.onionsoft.net&lt;/domain&gt;
+	    &lt;/domain-config&gt;
+	&lt;/network-security-config&gt;
+	</pre></ul>
+	<p>
+	上の例では、「www.onionsoft.net」をアクセス可能なドメインに指定しています。
+	ここに必要なドメインを記述します。必要であれば、複数のドメインを設定することができます。<br><br>
+	次に、プロジェクトフォルダにある「AndroidManifest.xml」を編集して、「&lt;application～」の行を
+	以下のように書き換えてください。
+	</p>
+	<ul>
+	<pre>
+	&lt;application android:label="@string/app_name" android:icon="@drawable/ic_launcher"<br>
+	 android:networkSecurityConfig="@xml/network_security_config"&gt;
+	</pre></ul>
+	<p>
+	以上で、登録されたドメインのみhttpアクセスが可能になります。<br>
+	あくまでも補助的な方法ですので、できる限りhttpsアクセスをすることが望ましいということを
+	覚えておいてください。
+	</p>
+	</ul>
+
 
 	<h2 id="RELEASE">リリースビルド</h2>
 	<p>

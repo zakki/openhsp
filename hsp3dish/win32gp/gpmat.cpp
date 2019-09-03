@@ -112,8 +112,11 @@ int gpmat::setState(char *name, char *value)
 
 void gpmat::setFilter(Texture::Filter value)
 {
-	MaterialParameter *mprm = _material->getParameter("u_diffuseTexture");
-	if (mprm == NULL) return;
+	MaterialParameter *mprm = _material->getParameter("u_texture");
+    if (mprm == NULL) {
+        mprm = _material->getParameter("u_diffuseTexture");
+        if (mprm == NULL) return;
+    }
 	Texture::Sampler *sampler = mprm->getSampler();
 	if (sampler == NULL) return;
 	sampler->setFilterMode(value, value);
@@ -122,7 +125,10 @@ void gpmat::setFilter(Texture::Filter value)
 int gpmat::updateTex32(char* ptr, int mode)
 {
 	MaterialParameter* mprm = _material->getParameter("u_diffuseTexture");
-	if (mprm == NULL) return -1;
+    if (mprm == NULL) {
+        mprm = _material->getParameter("u_texture");
+        if (mprm == NULL) return -1;
+    }
 	Texture::Sampler* sampler = mprm->getSampler();
 	if (sampler == NULL) return -1;
 	Texture* tex = sampler->getTexture();
@@ -216,8 +222,11 @@ void gpobj::setFilter(Texture::Filter value, int part)
 	if (_model == NULL) return;
 	Material *material = _model->getMaterial(part);
 
-	MaterialParameter *mprm = material->getParameter("u_diffuseTexture");
-	if (mprm == NULL) return;
+	MaterialParameter *mprm = material->getParameter("u_texture");
+    if (mprm == NULL) {
+        mprm = material->getParameter("u_diffuseTexture");
+        if (mprm == NULL) return;
+    }
 	Texture::Sampler *sampler = mprm->getSampler();
 	if (sampler == NULL) return;
 	sampler->setFilterMode(value, value);
@@ -639,17 +648,28 @@ Material *gamehsp::makeMaterialTexture( char *fname, int matopt, Texture *opttex
 
 	if (matopt & GPOBJ_MATOPT_USERBUFFER) {
 		MaterialParameter *mp = material->getParameter("u_diffuseTexture");
-		if (opttex) {
-			Texture::Sampler* sampler = Texture::Sampler::create(opttex);
-			if (sampler) {
-				mp->setValue(sampler);
-				return material;
-			}
-		}
+        if (mp == NULL) {
+            mp = material->getParameter("u_texture");
+        }
+        if (mp) {
+            if (opttex) {
+                Texture::Sampler* sampler = Texture::Sampler::create(opttex);
+                if (sampler) {
+                    mp->setValue(sampler);
+                    return material;
+                }
+            }
+        }
 		return NULL;
 	}
 
-	material->getParameter("u_diffuseTexture")->setValue( fname, mipmap, cubemap );
+    MaterialParameter *mp2 = material->getParameter("u_diffuseTexture");
+    if (mp2 == NULL) {
+        mp2 = material->getParameter("u_texture");
+    }
+    if (mp2) {
+        mp2->setValue( fname, mipmap, cubemap );
+    }
 	return material;
 }
 

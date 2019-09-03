@@ -112,9 +112,9 @@ int gpmat::setState(char *name, char *value)
 
 void gpmat::setFilter(Texture::Filter value)
 {
-	MaterialParameter *mprm = _material->getParameter("u_diffuseTexture");
+	MaterialParameter *mprm = _material->getParameter("u_texture");
     if (mprm == NULL) {
-        mprm = _material->getParameter("u_texture");
+        mprm = _material->getParameter("u_diffuseTexture");
         if (mprm == NULL) return;
     }
 	Texture::Sampler *sampler = mprm->getSampler();
@@ -222,9 +222,9 @@ void gpobj::setFilter(Texture::Filter value, int part)
 	if (_model == NULL) return;
 	Material *material = _model->getMaterial(part);
 
-	MaterialParameter *mprm = material->getParameter("u_diffuseTexture");
+	MaterialParameter *mprm = material->getParameter("u_texture");
     if (mprm == NULL) {
-        mprm = material->getParameter("u_texture");
+        mprm = material->getParameter("u_diffuseTexture");
         if (mprm == NULL) return;
     }
 	Texture::Sampler *sampler = mprm->getSampler();
@@ -647,9 +647,9 @@ Material *gamehsp::makeMaterialTexture( char *fname, int matopt, Texture *opttex
 	setMaterialDefaultBinding( material, -1, matopt );
 
 	if (matopt & GPOBJ_MATOPT_USERBUFFER) {
-		MaterialParameter *mp = material->getParameter("u_texture");
+		MaterialParameter *mp = material->getParameter("u_diffuseTexture");
         if (mp == NULL) {
-            mp = material->getParameter("u_diffuseTexture");
+            mp = material->getParameter("u_texture");
         }
         if (mp) {
             if (opttex) {
@@ -663,9 +663,9 @@ Material *gamehsp::makeMaterialTexture( char *fname, int matopt, Texture *opttex
 		return NULL;
 	}
 
-    MaterialParameter *mp2 = material->getParameter("u_texture");
+    MaterialParameter *mp2 = material->getParameter("u_diffuseTexture");
     if (mp2 == NULL) {
-        mp2 = material->getParameter("u_diffuseTexture");
+        mp2 = material->getParameter("u_texture");
     }
     if (mp2) {
         mp2->setValue( fname, mipmap, cubemap );

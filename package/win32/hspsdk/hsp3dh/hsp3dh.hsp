@@ -126,7 +126,6 @@
 	sdim fname,1024
 	sdim and_package, 256
 
-	tool_zipalign=path_sdk+"\\tools\\zipalign.exe"
 	return
 
 #deffunc initwnd
@@ -1012,6 +1011,17 @@
 		;mes "パッケージ名が無効です" : goto *and_fin
 	}
 
+	and_targetapi=0
+	i=instr(and_targetid,0,"android-")
+	if i>0 {
+		getstr s1,and_targetid,i+8,$22
+		and_targetapi=0+s1
+	}
+	if and_targetapi<18 {
+		dialog "無効なIDです。\n必ず\"android-29\"のような形でIDを指定してください。"
+		goto *and_fin
+	}
+
 	gosub *check_hsplib
 	if res=0 {
 		mes "HSPlibフォルダを確認しています..."
@@ -1058,6 +1068,7 @@
 	basedir=path_proj+"\\"+and_name+"\\"
 	dirlist s1,basedir+"*.*"
 	if stat : mes "すでにプロジェクトが存在しています" : goto *and_fin	
+
 
 	gosub *bat_init
 	tmp+="android create project --target "+and_targetid+" --path ./"+and_name+" --activity "+and_name+" --package "+and_package+"\n"
@@ -1152,7 +1163,8 @@ res\\drawable-mdpi\\ic_launcher.png"}
 	s1=basedir+"AndroidManifest.xml"
 	notesel tmp
 	noteload s1
-	noteadd "    <uses-sdk android:minSdkVersion=\"18\" />",5,0
+	noteadd "    <uses-sdk android:minSdkVersion=\"18\" android:targetSdkVersion=\""+and_targetapi+"\"/>",5,0
+
 	noteadd "	<uses-permission android:name=\"android.permission.ACCESS_NETWORK_STATE\"/>",15,0
 	noteadd "	<uses-permission android:name=\"android.permission.INTERNET\"/>",15,0
 	noteadd "	<uses-permission android:name=\"android.permission.VIBRATE\"/>",15,0
@@ -1275,8 +1287,33 @@ res\\drawable-mdpi\\ic_launcher.png"}
 	gosub *get_prjname
 	if and_name="" : dialog "プロジェクトが指定されていません" : goto *topmenu
 
+	and_targetapi=0
+	basedir=path_proj+"\\"+and_name
+	s1=basedir+"\\project.properties"
+	exist s1
+	if strsize<=0 : dialog "プロジェクトフォルダに以下のファイルがありません。\n("+s1+")" : goto *topmenu
+
+	notesel tmp
+	noteload s1
+	i=instr(tmp,0,"target=android")
+	if i<0 : dialog "project.propertiesファイルからtargetを取得できませんでした。" : goto *topmenu
+	and_targetapi=0+strmid(tmp,i+15,64)
+
+	buildtool_dir = path_sdk+"\\build-tools\\"
+
+	dirlist s1,buildtool_dir+and_targetapi+"*.*",5
+	if stat=0 {
+		dialog "SDKのbuild-toolsに該当APIのフォルダがありませんでした。\n("+buildtool_dir+")"
+		goto *topmenu
+	}
+	notesel s1
+	noteget s2,0
+	buildtool_dir += s2
+	tool_zipalign=buildtool_dir+"\\zipalign.exe"
 	exist tool_zipalign
-	if strsize<=0 : dialog "SDKのtoolsフォルダにzipalignツールがありません。\n("+tool_zipalign+")\nbuild-toolsフォルダからコピーする必要があります。" : goto *topmenu
+	if strsize<=0 : dialog "SDKのbuild-toolsフォルダにzipalignツールがありません。\n("+tool_zipalign+")" : goto *topmenu
+
+	tool_apksigner=buildtool_dir+"\\apksigner"
 
 	initsub
 
@@ -1298,10 +1335,15 @@ res\\drawable-mdpi\\ic_launcher.png"}
 
 	gosub *bat_init
 	tmp+="CD "+and_name+"\n"
-	tmp+="jarsigner -verbose -tsa http://timestamp.digicert.com -keystore ..\\"+and_keystore+".keystore bin\\"+and_name+"-release-unsigned.apk "+and_keystore+"\n"
+	;tmp+="jarsigner -verbose -tsa http://timestamp.digicert.com -sigalg SHA1withRSA -digestalg SHA1 -keystore ..\\"+and_keystore+".keystore bin\\"+and_name+"-release-unsigned.apk "+and_keystore+"\n"
 
 	tmp+="del bin\\"+and_name+".apk\n"
-	tmp+="zipalign -v 4 bin\\"+and_name+"-release-unsigned.apk bin\\"+and_name+".apk\n"
+	tmp+=tool_zipalign+" -v 4 bin\\"+and_name+"-release-unsigned.apk bin\\"+and_name+"-release-unsigned-aligned.apk\n"
+
+	;tmp+="jarsigner -verbose -tsa http://timestamp.digicert.com -keystore ..\\"+and_keystore+".keystore bin\\"+and_name+"-release-unsigned.apk "+and_keystore+"\n"
+
+	tmp+=tool_apksigner+" sign --ks ..\\"+and_keystore+".keystore --out bin\\"+and_name+".apk bin\\"+and_name+"-release-unsigned-aligned.apk\n"
+
 	gosub *bat_save
 
 	exec "go.bat"

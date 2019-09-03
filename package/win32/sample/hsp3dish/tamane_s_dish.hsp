@@ -1,7 +1,10 @@
 #include "hsp3dish.as"
 
+	; webdish素材(hsptvフォルダ)にある素材は
+	; HSP3Dishでそのまま読み込むことが可能です
+
 	tamas=ginfo_newid
-	celload dir_tv+"tamane_s1.png",tamas		; 素材フォルダから読み込みます
+	celload "tamane_s1.png",tamas		; 素材フォルダから読み込みます
 
 	;	標準のサイズで表示
 	screen 0,800,600
