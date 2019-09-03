@@ -5,7 +5,7 @@ Hot Soup Processor ver3.6                           HSP : Hot Soup Processor
 
 ・hsp3関連 更新履歴
 
-	2019/08/30 3.6 beta1
+	2019/09/03 3.6 beta1
 
 	64bitランタイム(hsp3_64)はUTF-8を規定の文字コードに修正
 	MML記述によるFM音源再生をサポートするmucom88プラグインを標準で同梱
@@ -20,6 +20,8 @@ Hot Soup Processor ver3.6                           HSP : Hot Soup Processor
 	[HSP3Dish][android] android4.3.1(API18)以上のOSサポートに修正
 	[HSP3Dish][android][iOS][hsp3js] HSP3Dish Helperの更新
 	[HSP3Dish][android] hsp3dhのプロジェクト新規作成でarm64,x86コードを標準で生成するように修正
+	[HSP3Dish][android] AndroidManifest.xmlにtargetSdkVersionを指定するように修正
+	[HSP3Dish][android] リリース時にapksignerを使用するように修正
 	[hspinet] http/httpsリクエストでPUT/DELETEメソッドに対応(inovia)
 	[HGIMG4] gpscrmat命令を追加
 	[HGIMG4] gpcamera命令に平行投影カメラのオプション設定を追加

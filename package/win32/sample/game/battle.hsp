@@ -15,6 +15,9 @@
 	;	敵の攻撃で「たいりょく」が0になると負けになってしまいます。
 	;	ゴールドを増やしながら長い期間、王国を繁栄させましょう。
 	;
+	;	(素材データはHSPインストールフォルダ以下のhsptvフォルダに入っています)
+	;
+	;
 	name="カードバトルゲーム"
 	randomize
 	screen 0,800,600	; ウィンドウ初期化
@@ -22,7 +25,7 @@
 	title name
 
 	sdim tvdir,256
-	tvdir = dir_exe+"\\hsptv\\"	; HSPTV素材フォルダ
+	tvdir = dir_tv			; HSPTV素材フォルダ
 
 	celload "cardbg.png",3		; 背景
 	celload "btlcard.bmp",4		; カード
