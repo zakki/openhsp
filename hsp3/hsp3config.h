@@ -8,7 +8,7 @@
 //		システム関連ラベル
 //
 #define HSPTITLE "Hot Soup Processor ver."
-#define hspver "3.6b1"
+#define hspver "3.6beta1"
 #define mvscode 1		// minor version code
 #define vercode 0x3601	// version code
 
@@ -19,8 +19,8 @@
 //
 //		移植用のラベル
 //
-//#define JPN			// IME use flag
-//#define JPNMSG		// japanese message flag
+#define JPN			// IME use flag
+#define JPNMSG		// japanese message flag
 
 //
 //	Debug mode functions

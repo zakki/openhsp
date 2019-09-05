@@ -103,7 +103,7 @@ int hsp3win_debugopen( void )
 #ifdef HSPDEBUG
 	if ( h_dbgwin != NULL ) return 0;
 #ifdef HSP64
-	h_dbgwin = LoadLibrary( HSP3DEBUG_MODULE "_64.dll" );
+	h_dbgwin = LoadLibrary( TEXT( HSP3DEBUG_MODULE "_64.dll" ) );
 #else
 #ifndef HSPUTF8
 	h_dbgwin = LoadLibrary(TEXT( HSP3DEBUG_MODULE ".dll" ));
