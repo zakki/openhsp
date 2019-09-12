@@ -386,9 +386,11 @@ int dpm_read( char *fname, void *readmem, int rlen, int seekofs )
 		//	hsptvフォルダを検索する
 		char fn[_MAX_PATH];
 		char fporg[_MAX_PATH];
+		char fname_tmp[_MAX_PATH];
+		strcpy(fname_tmp,fname);
 		GetModuleFileName(NULL, fporg, _MAX_PATH);
 		getpath(fporg,fn,32);
-		getpath(fname,fporg,8);
+		getpath(fname_tmp,fporg,8);
 		CutLastChr(fn, '\\');
 		strcat( fn,"\\hsptv\\" );
 		strcat( fn, fporg );
@@ -439,9 +441,11 @@ int dpm_exist( char *fname )
 		//	hsptvフォルダを検索する
 		char fn[_MAX_PATH];
 		char fporg[_MAX_PATH];
+		char fname_tmp[_MAX_PATH];
+		strcpy(fname_tmp,fname);
 		GetModuleFileName(NULL, fporg, _MAX_PATH);
 		getpath(fporg,fn,32);
-		getpath(fname,fporg,8);
+		getpath(fname_tmp,fporg,8);
 		CutLastChr(fn, '\\');
 		strcat( fn,"\\hsptv\\" );
 		strcat( fn, fporg );
