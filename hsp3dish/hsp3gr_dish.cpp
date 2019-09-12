@@ -1448,7 +1448,7 @@ static int cmdfunc_extcmd( int cmd )
 		node = game->getNode( p1 );
 		if ( node == NULL ) throw HSPERR_ILLEGAL_FUNCTION;
 		str = (char *)node->getId();
-		code_setva( p_pval, p_aptr, HSPVAR_FLAG_STR, &str );
+		code_setva( p_pval, p_aptr, HSPVAR_FLAG_STR, str );
 		break;
 		}
 	case 0x6d:								// setborder
