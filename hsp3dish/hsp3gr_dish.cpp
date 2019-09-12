@@ -1547,9 +1547,14 @@ static int cmdfunc_extcmd( int cmd )
 		p1 = code_getdi( -1 );
 		p2 = code_getdi( 0 );
 		mat = game->makeMaterialFromShader( vshname, fshname, defname );
-		if ( mat == NULL ) throw HSPERR_ILLEGAL_FUNCTION;
-		game->setMaterialDefaultBinding( mat, p1, p2 );
-		p6 = game->makeNewMat(mat, GPMAT_MODE_3D, p1, p2);
+		if (mat == NULL) {
+			//throw HSPERR_ILLEGAL_FUNCTION;
+			p6 = -1;
+		}
+		else {
+			game->setMaterialDefaultBinding(mat, p1, p2);
+			p6 = game->makeNewMat(mat, GPMAT_MODE_3D, p1, p2);
+		}
 		code_setva( p_pval, p_aptr, HSPVAR_FLAG_INT, &p6 );
 		break;
 		}
