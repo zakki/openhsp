@@ -546,8 +546,8 @@ void HspWnd::MakeBmscrWnd( int id, int type, int xx, int yy, int wx, int wy, int
 	rc.right = wx;
 	rc.bottom = wy;
 	if ( AdjustWindowRectEx( &rc, style, FALSE, exstyle ) ) {
-		bm->framesx = rc.right - rc.left - wx;
-		bm->framesy = rc.bottom - rc.top - wy;
+		bm->framesx = (short)(rc.right - rc.left - wx);
+		bm->framesy = (short)(rc.bottom - rc.top - wy);
 	} else {
 		bm->framesx = wfx;
 		bm->framesy = wfy;
@@ -598,7 +598,7 @@ int HspWnd::Picload( int id, char *fname, int mode )
 	long hmWidth, hmHeight;
 	LPPICTURE gpPicture;							// IPicture
     LPSTREAM pstm = NULL;							// IStream‚ðŽæ“¾‚·‚é
-	char fext[8];
+	//char fext[8];
 	int stbmode;
 	HSPAPICHAR *hactmp1 = 0;
 	HSPAPICHAR wfext[8];
