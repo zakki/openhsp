@@ -114,4 +114,7 @@ void code_delstruct_all( PVal *pval );
 
 #define fpconv( fp )  ( reinterpret_cast< void * >(fp) )
 
+char* code_strp(int dsptr);
+int code_strexchange(char *fname, int option);
+
 #endif
