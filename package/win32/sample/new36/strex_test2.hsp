@@ -1,0 +1,29 @@
+;
+;	strexchangeによるローカライズテスト
+;
+;	1. strex_test1.hsp を実行して、strex_test2.hspの文字列リスト(strmap)を出力します
+;	2. strex_test2.strmapをもとにstrex_test2en.strmap(英語版)を作成します
+;	3. strexchange命令でファイルを読み込むと、以降の文字列がstrex_test2en.strmapに置き換わります
+;
+	gosub *wow
+	strexchange "strex_test2en.strmap"
+	gosub *wow
+	stop
+
+*wow
+
+	title "strexchange Test"
+
+	sysfont 0
+	mes "***こんにちは***"
+
+	msg="日本語のスクリプトを\n英語に対応させてみます。\n\tいいかなー?"
+
+	font msgothic,32
+	mes msg
+
+	return
+
+
+
+

@@ -1284,9 +1284,10 @@ static int cmdfunc_intcmd( int cmd )
 		APTR ap;
 
 		ap = code_getva( &pv );		// パラメータ1:変数
+		p = (char*)HspVarCorePtrAPTR(pv, ap);
+
 		sflag = code_getdi( 0 );	// パラメータ2:数値
 
-		p = (char *)HspVarCorePtrAPTR( pv, ap );
 		i = GetNoteLines(p);
 		if ( i <= 0 ) throw HSPERR_ILLEGAL_FUNCTION;
 

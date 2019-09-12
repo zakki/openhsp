@@ -235,6 +235,7 @@ EXPORT BOOL WINAPI hsc_comp ( int p1, int p2, int p3, int p4 )
 	//			( mode: 1=debug/0=no debug )
 	//			(       2=preprocessor only )
 	//			(       4=UTF8 output mode )
+	//			(       8=strmap output mode )
 	//			( ppopt = preprocessor option )
 	//			(       0=default/1=ver2.6 mode )
 	//			(       32=UTF8 input mode )
@@ -279,10 +280,16 @@ EXPORT BOOL WINAPI hsc_comp ( int p1, int p2, int p3, int p4 )
 	}
 
 	cmpmode = p1 & HSC3_MODE_DEBUG;
-	if ( p1 & 4 ) cmpmode |= HSC3_MODE_UTF8;
+	if (p1 & 4) cmpmode |= HSC3_MODE_UTF8;
+	if (p1 & 8) cmpmode |= HSC3_MODE_STRMAP;
 	if ( p3 ) cmpmode |= HSC3_MODE_DEBUGWIN;
 
-	st = hsc3->Compile( fname2, oname, cmpmode );
+	if (p1 & 8) {
+		st = hsc3->CompileStrMap(fname2, oname, cmpmode);
+	}
+	else {
+		st = hsc3->Compile(fname2, oname, cmpmode);
+	}
 	hsc3->PreProcessEnd();
 	if ( st != 0 ) return st;
 	return 0;

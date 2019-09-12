@@ -208,6 +208,7 @@ void CToken::ResetCompiler( void )
 	hed_option = 0;
 	hed_runtime[0] = 0;
 	hed_autoopt_timer = 0;
+	hed_autoopt_strexchange = 0;
 	pp_utf8 = 0;
 }
 
@@ -2671,7 +2672,7 @@ ppresult_t CToken::PP_Module( void )
 	int res,i,id,fl;
 	char *word;
 	char tagname[MODNAME_MAX+1];
-	char tmp[0x4000];
+	//char tmp[0x4000];
 
 	word = (char *)s3; fl = 0;
 	i = GetToken();

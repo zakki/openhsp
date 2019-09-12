@@ -1,0 +1,29 @@
+#include "hspcmp.as"
+
+;hspcmp.dllを呼び出して、HSPスクリプト->strmap出力を行います
+;必ずHSP3.6β2以上のhspcmp.dllを使用してください
+
+	sdim mesbuf,$10000
+	sdim rtname,256
+
+	fname="strex_test2"
+
+	hspname=fname+".hsp" ; スクリプトファイル名
+	objname=fname+".strmap" ; strmapファイル名
+
+	hsc_ini hspname
+	hsc_objname objname
+	hsc_comp 8 ; strmap出力
+	res=stat:if res!=0 : dialog "ERROR" : end
+
+	mes objname+" write done."
+	exist objname
+	if strsize>0 {
+		notesel mesbuf
+		noteload objname
+	}
+
+	objmode 1
+	mesbox mesbuf,636,446,5
+
+	stop

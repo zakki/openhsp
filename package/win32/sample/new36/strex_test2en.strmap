@@ -1,0 +1,11 @@
+;	strmap v0.5 test1.strmap
+&&&&dsmap:17,19,11532
+strexchange Test(EN)
+&&&&dsmap:17,36,13555
+***Hello***
+&&&&dsmap:61,53,59496
+Let's translate a Japanese
+ script into English.
+	Is that okay?
+&&&&dsmap:14,114,9772
+Arial
