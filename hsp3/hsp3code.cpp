@@ -3065,10 +3065,8 @@ rerun:
 				} else {
 					hspctx->msgfunc( hspctx );
 				}
-				if ( hspctx->runmode == RUNMODE_END ) {
-					return RUNMODE_END;
-//					i = hspctx->runmode;
-//					break;
+				if (( hspctx->runmode == RUNMODE_END )||(hspctx->runmode == RUNMODE_ERROR)) {
+					return hspctx->runmode;
 				}
 			}
 #ifdef HSPEMSCRIPTEN
@@ -3087,14 +3085,10 @@ rerun:
 		} else if ( code == HSPERR_EXITRUN ) {
 			i = RUNMODE_EXITRUN;
 		} else {
+			code_catcherror(code);
 			i = RUNMODE_ERROR;
-			hspctx->err = code;
-			hspctx->runmode = i;
-			if ( code_isirq( HSPIRQ_ONERROR ) ) {
-				code_sendirq( HSPIRQ_ONERROR, 0, (int)code, code_getdebug_line() );
-				if ( hspctx->runmode != i ) goto rerun;
-				return i;
-			}
+			if ( hspctx->runmode != i ) goto rerun;
+			return i;
 		}
 	}
 #endif
@@ -3146,10 +3140,8 @@ rerun:
 				} else {
 					hspctx->msgfunc( hspctx );
 				}
-				if ( hspctx->runmode == RUNMODE_END ) {
-					return RUNMODE_END;
-//					i = hspctx->runmode;
-//					break;
+				if ((hspctx->runmode == RUNMODE_END) || (hspctx->runmode == RUNMODE_ERROR)) {
+					return hspctx->runmode;
 				}
 			}
 			return RUNMODE_RUN;
@@ -3166,17 +3158,10 @@ rerun:
 		} else if ( code == HSPERR_EXITRUN ) {
 			i = RUNMODE_EXITRUN;
 		} else {
+			code_catcherror(code);
 			i = RUNMODE_ERROR;
-			hspctx->err = code;
-			hspctx->runmode = i;
-			if ( code_isirq( HSPIRQ_ONERROR ) ) {
-				code_sendirq( HSPIRQ_ONERROR, 0, (int)code, code_getdebug_line() );
-				if ( hspctx->runmode != i ) {
-					prev = 0;
-					return RUNMODE_RUN;
-				}
-				return i;
-			}
+			if (hspctx->runmode != i) goto rerun;
+			return i;
 		}
 	}
 #endif
@@ -3541,6 +3526,28 @@ void code_execirq( IRQDAT *irq, int wparam, int lparam )
 #endif
 	}
 	//Alertf("sublev%d", hspctx->sublev );
+}
+
+
+int code_catcherror(HSPERROR code)
+{
+	//		エラーのIRQイベントを処理する
+	//
+	if (code == HSPERR_NONE) {
+		hspctx->runmode = RUNMODE_END;
+	}
+	else if (code == HSPERR_EXITRUN) {
+		return hspctx->runmode;
+		hspctx->runmode = RUNMODE_EXITRUN;
+	}
+	else {
+		hspctx->err = code;
+		hspctx->runmode = RUNMODE_ERROR;
+		if (code_isirq(HSPIRQ_ONERROR)) {
+			code_sendirq(HSPIRQ_ONERROR, 0, (int)code, code_getdebug_line());
+		}
+	}
+	return hspctx->runmode;
 }
 
 
