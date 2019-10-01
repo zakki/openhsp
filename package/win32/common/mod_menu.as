@@ -8,20 +8,20 @@
 #ifndef __mod_menu__
 #define __mod_menu__
 
+#module "menumod"
+
 ; DLLのロードと関数の宣言・初期化など
 #uselib "user32.dll"
-#func global CreateMenu         "CreateMenu"
-#func global CreatePopupMenu    "CreatePopupMenu"
-#func global AppendMenu         "AppendMenuA"           int, int, int, str
-#func global SetMenu            "SetMenu"               int, int
-#func global DrawMenuBar        "DrawMenuBar"           int
-#func global PostMessage        "PostMessageA"          int, int, sptr, sptr
+#func CreateMenu         "CreateMenu"
+#func CreatePopupMenu    "CreatePopupMenu"
+#func AppendMenu         "AppendMenuA"           int, int, int, str
+#func SetMenu            "SetMenu"               int, int
+#func DrawMenuBar        "DrawMenuBar"           int
+#func PostMessage        "PostMessageA"          int, int, sptr, sptr
 
 ; ウィンドウメッセージを定義
 #const global WM_CLOSE                          0x0010
 #const global WM_COMMAND                        0x0111
-
-#module "menumod"
 
 #deffunc newmenu var _p1, int _p2
 	;

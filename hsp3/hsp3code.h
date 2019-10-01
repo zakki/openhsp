@@ -90,6 +90,7 @@ void code_execirq( IRQDAT *irq, int wparam, int lparam );
 void code_setirq( int id, int opt, int custom, unsigned short *ptr );
 int code_irqresult( int *value );
 void code_enableirq( int id, int sw );
+int code_catcherror(HSPERROR code);
 
 HSP3TYPEINFO *code_gettypeinfo( int type );
 void code_enable_typeinfo( HSP3TYPEINFO *info );

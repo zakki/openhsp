@@ -24,7 +24,7 @@
 	if stbar(act)<0 : dialog "ステータスバー作成に失敗しました" : return
 	sthwnd(act) = objinfo(stbar(act), 2)	; ステータスバーのhWnd
 	dim stsize, 4 		; RECT構造体
-	GetWindowRect sthwnd, stsize
+	GetWindowRect sthwnd(act), stsize
 	stbar_sx(act) = stsize(2) - stsize(0)	; ステータスバーの幅
 	stbar_sy(act) = stsize(3) - stsize(1)	; ステータスバーの高さ
 	return
