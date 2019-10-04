@@ -207,6 +207,7 @@
     <ClInclude Include="..\..\obaq\physics\rock.h" />
     <ClInclude Include="..\..\obaq\physics\vessel.h" />
     <ClInclude Include="..\geometry.h" />
+    <ClInclude Include="..\hgio.h" />
     <ClInclude Include="..\hsp3gr.h" />
     <ClInclude Include="..\hsp3gr_dish.h" />
     <ClInclude Include="..\hspwnd.h" />
@@ -219,6 +220,7 @@
     <ClInclude Include="..\sysreq.h" />
     <ClInclude Include="..\webtask.h" />
     <ClInclude Include="dxsnd.h" />
+    <ClInclude Include="hginc.h" />
     <ClInclude Include="hgiox.h" />
     <ClInclude Include="hgtex.h" />
     <ClInclude Include="hsp3dish.h" />
