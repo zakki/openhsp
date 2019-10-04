@@ -159,14 +159,24 @@ static void hsp3win_dispatch( MSG *msg )
 	}
 #endif
 
-	if ( msg->message==WM_KEYDOWN ) {	// ocheck onkey
-		if ( msg->wParam == 9 ) {
+	if (msg->message == WM_KEYDOWN) {	// ocheck onkey
+		if (msg->wParam == 9) {
 			hsp3gr_nextobj();
 		}
-		if ( code_isirq( HSPIRQ_ONKEY ) ) {
-			code_sendirq( HSPIRQ_ONKEY, (int)MapVirtualKey( msg->wParam, 2 ), (int)msg->wParam, (int)msg->lParam );
+		if (code_isirq(HSPIRQ_ONKEY)) {
+#ifdef HSPERR_HANDLE
+			try {
+#endif
+				code_sendirq(HSPIRQ_ONKEY, (int)MapVirtualKey(msg->wParam, 2), (int)msg->wParam, (int)msg->lParam);
+#ifdef HSPERR_HANDLE
+			}
+			catch (HSPERROR code) {						// HSPƒGƒ‰[—áŠOˆ—
+				code_catcherror(code);
+			}
+#endif
 		}
 	}
+
 }
 
 
