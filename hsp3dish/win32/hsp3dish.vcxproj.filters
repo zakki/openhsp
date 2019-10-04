@@ -251,6 +251,12 @@
     <ClInclude Include="..\..\obaq\physics\vessel.h">
       <Filter>ヘッダー ファイル\obaq</Filter>
     </ClInclude>
+    <ClInclude Include="hginc.h">
+      <Filter>ヘッダー ファイル\win</Filter>
+    </ClInclude>
+    <ClInclude Include="..\hgio.h">
+      <Filter>ヘッダー ファイル\core</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="hsp3.rc">

@@ -1140,7 +1140,7 @@ void hgio_circle( BMSCR *bm, float x1, float y1, float x2, float y2, int mode )
 	if (drawflag == 0) hgio_render_start();
 
 	rate = D3DX_PI * 2.0f / (float)CIRCLE_DIV;
-	sx = fabs(x2-x1); sy = fabs(y2-y1);
+	sx = (float)fabs(x2-x1); sy = (float)fabs(y2-y1);
 	rx = sx * 0.5f;
 	ry = sy * 0.5f;
 	x = x1 + rx;
@@ -1152,8 +1152,8 @@ void hgio_circle( BMSCR *bm, float x1, float y1, float x2, float y2, int mode )
 
 	v = arScreen;
 	for(int i = 1; i<=CIRCLE_DIV + 1; i ++) {
-		v->x = x + cos((float)i * rate)*rx;
-		v->y = y + sin((float)i * rate)*ry;
+		v->x = x + (float)cos((float)i * rate)*rx;
+		v->y = y + (float)sin((float)i * rate)*ry;
 		v->z = 0.0f;
 		v->rhw = 1.0f;
 		v->color = col;
@@ -1425,15 +1425,13 @@ void hgio_setfilter( int type, int opt )
 }
 
 
-#if 1
-
-
-
+#if 0
 void hgio_setcenter( float x, float y )
 {
 	center_x = x;
 	center_y = y;
 }
+
 
 void hgio_drawsprite( hgmodel *mdl, HGMODEL_DRAWPRM *prm )
 {
@@ -1542,7 +1540,7 @@ void hgio_drawsprite( hgmodel *mdl, HGMODEL_DRAWPRM *prm )
 	// ‚Æ‚è‚ ‚¦‚¸’¼Ú•`‰æ(ŽlŠpŒ`)
 	d3ddev->DrawPrimitiveUP(D3DPT_TRIANGLEFAN,2,vertex2D,sizeof(D3DTLVERTEX));
 }
-
+#endif
 
 void hgio_square_tex( BMSCR *bm, int *posx, int *posy, BMSCR *bmsrc, int *uvx, int *uvy )
 {
@@ -1754,8 +1752,6 @@ HWND hgio_gethwnd( void )
 {
 	return master_wnd;
 }
-
-#endif
 
 
 int hgio_celputmulti( BMSCR *bm, int *xpos, int *ypos, int *cel, int count, BMSCR *bmsrc )
