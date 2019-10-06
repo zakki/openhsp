@@ -268,7 +268,11 @@ int MMMan::Play( int num, int ch )
 		if ( ch >= 0 && ch < MIX_MAX_CHANNEL ) {
 			bool loop = m->opt & 1;
 			Mix_HaltChannel( ch );
+#ifdef HSPLINUX
+			Mix_PlayChannel( ch, m->chunk, loop ? -1 : 0 );
+#else
 			Mix_PlayChannel( ch, m->chunk, loop ? -1 : 0 , m->start, m->end );
+#endif
 		}
 	}
 	return 0;

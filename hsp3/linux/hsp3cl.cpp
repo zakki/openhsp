@@ -6,6 +6,8 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <unistd.h>
+#include <time.h>
 
 #include "../strbuf.h"
 #include "../hsp3.h"
@@ -13,18 +15,53 @@
 #include "../supio.h"
 #include "../hsp3gr.h"
 
+#include "hsp3cl.h"
+#include "hsp3ext_sock.h"
+
 /*----------------------------------------------------------*/
 
 static Hsp3 *hsp;
 static HSPCTX *ctx;
+static HSPEXINFO *exinfo;
 
 static char fpas[]={ 'H'-48,'S'-48,'P'-48,'H'-48,
 					 'E'-48,'D'-48,'~'-48,'~'-48 };
 static char optmes[] = "HSPHED~~\0_1_________2_________3______";
 
 static int hsp_wd;
+static int cl_option;
+static FILE *cl_fp;
+
+#define HSP3CL_RESFILE ".hspres"
 
 /*----------------------------------------------------------*/
+
+static void usage1( void )
+{
+static 	char *p[] = {
+	"usage: hsp3cl [options] [filename]",
+	"       -r    output result file to .hspres",
+	"       -p    pause when finished",
+	NULL };
+	int i;
+	for(i=0; p[i]; i++)
+		printf( "%s\n", p[i]);
+}
+
+/*----------------------------------------------------------*/
+
+int gettick( void )
+{
+	int i;
+	timespec ts;
+	double nsec;
+    clock_gettime(CLOCK_REALTIME,&ts);
+    nsec = (double)(ts.tv_nsec) * 0.001 * 0.001;
+    i = (int)ts.tv_sec * 1000 + (int)nsec;
+    //return ((double)(ts.tv_sec) + (double)(ts.tv_nsec) * 0.001 * 0.001 * 0.001);
+	return i;
+}
+
 
 void hsp3win_dialog( char *mes )
 {
@@ -34,47 +71,64 @@ void hsp3win_dialog( char *mes )
 
 void hsp3cl_msgfunc( HSPCTX *hspctx )
 {
+	int tick;
+
 	while(1) {
 
 		switch( hspctx->runmode ) {
 		case RUNMODE_STOP:
-			//		stop–½—ß
-			hsp3win_dialog( "[STOP] Press any key..." );
-			getchar();
+			//		stopå‘½ä»¤
+			if ( cl_option & HSP3CL_OPT1_ERRSTOP ) {
+				hsp3win_dialog( "[STOP] Press any key..." );
+				getchar();
+			}
 			throw HSPERR_NONE;
 
 		case RUNMODE_WAIT:
-			//		wait–½—ß‚É‚æ‚éŽžŠÔ‘Ò‚¿
-			//		(ŽÀÛ‚Ícode_exec_wait‚Étick count‚ð“n‚·)
-			hspctx->runmode = RUNMODE_RUN;
+			//		waitå‘½ä»¤ã«ã‚ˆã‚‹æ™‚é–“å¾…ã¡
+			//		(å®Ÿéš›ã¯code_exec_waitã«tick countã‚’æ¸¡ã™)
+			printf( "wait-%d\n",( hspctx->waitcount) );
+			usleep( ( hspctx->waitcount) * 10000 );
 			//hspctx->runmode = code_exec_wait( tick );
+			hspctx->runmode = RUNMODE_RUN;
 			break;
 
 		case RUNMODE_AWAIT:
-			//		await–½—ß‚É‚æ‚éŽžŠÔ‘Ò‚¿
-			//		(ŽÀÛ‚Ícode_exec_await‚Étick count‚ð“n‚·)
-			hspctx->runmode = RUNMODE_RUN;
-			//hspctx->runmode = code_exec_await( tick );
+			//		awaitå‘½ä»¤ã«ã‚ˆã‚‹æ™‚é–“å¾…ã¡
+			//		(å®Ÿéš›ã¯code_exec_awaitã«tick countã‚’æ¸¡ã™)
+			tick = gettick();
+			if ( code_exec_await( tick ) != RUNMODE_RUN ) {
+					usleep( ( hspctx->waittick - tick) * 1000 );
+			} else {
+				tick = gettick();
+				while( tick < hspctx->waittick ) {	// ç´°ã‹ã„waitã‚’å–ã‚‹
+					usleep( 10000 );
+					tick = gettick();
+				}
+				hspctx->lasttick = tick;
+				hspctx->runmode = RUNMODE_RUN;
+				//hspctx->runmode = RUNMODE_RUN;
+			}
 			break;
 
 		case RUNMODE_END:
-			//		end–½—ß
-#if 0
-			hsp3win_dialog( "[END] Press any key..." );
-			getchar();
-#endif
+			//		endå‘½ä»¤
+			if ( cl_option & HSP3CL_OPT1_ERRSTOP ) {
+				hsp3win_dialog( "[END] Press any key..." );
+				getchar();
+			}
 			throw HSPERR_NONE;
 
 		case RUNMODE_RETURN:
 			throw HSPERR_RETURN_WITHOUT_GOSUB;
 
 		case RUNMODE_ASSERT:
-			//		assert‚Å’†’f
+			//		assertã§ä¸­æ–­
 			hspctx->runmode = RUNMODE_STOP;
 			break;
 
 		case RUNMODE_LOGMES:
-			//		logmes–½—ß
+			//		logmeså‘½ä»¤
 			hspctx->runmode = RUNMODE_RUN;
 			break;
 
@@ -87,7 +141,7 @@ void hsp3cl_msgfunc( HSPCTX *hspctx )
 
 int hsp3cl_init( char *startfile )
 {
-	//		ƒVƒXƒeƒ€ŠÖ˜A‚Ì‰Šú‰»
+	//		ã‚·ã‚¹ãƒ†ãƒ é–¢é€£ã®åˆæœŸåŒ–
 	//		( mode:0=debug/1=release )
 	//
 	int a,orgexe, mode;
@@ -95,14 +149,15 @@ int hsp3cl_init( char *startfile )
 	char a1;
 	char *ss;
 
-	//		HSPŠÖ˜A‚Ì‰Šú‰»
+	//		HSPé–¢é€£ã®åˆæœŸåŒ–
 	//
 	hsp = new Hsp3();
 
 #ifdef HSPDEBUG
 
 	if ( *startfile == 0 ) {
-		printf( "OpenHSP CL ver%s / onion software 1997-2017\n", hspver );
+		printf( "OpenHSP CL ver%s / onion software 1997-2019\n", hspver );
+		usage1();
 		return -1;
 	}
 	hsp->SetFileName( startfile );
@@ -112,7 +167,7 @@ int hsp3cl_init( char *startfile )
 	}
 #endif
 
-	//		ŽÀsƒtƒ@ƒCƒ‹‚©ƒfƒoƒbƒO’†‚©‚ð’²‚×‚é
+	//		å®Ÿè¡Œãƒ•ã‚¡ã‚¤ãƒ«ã‹ãƒ‡ãƒãƒƒã‚°ä¸­ã‹ã‚’èª¿ã¹ã‚‹
 	//
 	mode = 0;
 	orgexe = 0;
@@ -135,9 +190,9 @@ int hsp3cl_init( char *startfile )
 
 	ctx = &hsp->hspctx;
 
-	//		ƒRƒ}ƒ“ƒhƒ‰ƒCƒ“ŠÖ˜A
-	ss = "";								// ƒRƒ}ƒ“ƒhƒ‰ƒCƒ“ƒpƒ‰ƒ[ƒ^[‚ð“ü‚ê‚é
-	sbStrCopy( &ctx->cmdline, ss );			// ƒRƒ}ƒ“ƒhƒ‰ƒCƒ“ƒpƒ‰ƒ[ƒ^[‚ð•Û‘¶
+	//		ã‚³ãƒžãƒ³ãƒ‰ãƒ©ã‚¤ãƒ³é–¢é€£
+	ss = "";								// ã‚³ãƒžãƒ³ãƒ‰ãƒ©ã‚¤ãƒ³ãƒ‘ãƒ©ãƒ¡ãƒ¼ã‚¿ãƒ¼ã‚’å…¥ã‚Œã‚‹
+	sbStrCopy( &ctx->cmdline, ss );			// ã‚³ãƒžãƒ³ãƒ‰ãƒ©ã‚¤ãƒ³ãƒ‘ãƒ©ãƒ¡ãƒ¼ã‚¿ãƒ¼ã‚’ä¿å­˜
 
 	//		Register Type
 	//
@@ -150,15 +205,32 @@ int hsp3cl_init( char *startfile )
 	hsp3typeinit_cl_extcmd( code_gettypeinfo( TYPE_EXTCMD ) );
 	hsp3typeinit_cl_extfunc( code_gettypeinfo( TYPE_EXTSYSVAR ) );
 
+	exinfo = ctx->exinfo2;
+
+	HSP3TYPEINFO *tinfo = code_gettypeinfo( -1 ); //TYPE_USERDEF
+	tinfo->hspctx = ctx;
+	tinfo->hspexinfo = exinfo;
+	hsp3typeinit_sock_extcmd( tinfo );
+
+	cl_option = 0;
+
 	return 0;
 }
 
 
 static void hsp3cl_bye( void )
 {
-	//		HSPŠÖ˜A‚Ì‰ð•ú
+	//		HSPé–¢é€£ã®è§£æ”¾
 	//
 	delete hsp;
+}
+
+
+void hsp3cl_option( int opt )
+{
+	//		HSP3CLã‚ªãƒ—ã‚·ãƒ§ãƒ³è¨­å®š
+	//
+	cl_option = opt;
 }
 
 
@@ -182,20 +254,32 @@ void hsp3cl_error( void )
 	}
 
 	hsp3win_dialog( errmsg );
-	hsp3win_dialog( "[ERROR] Press any key..." );
-	getchar();
+
+	if ( cl_option & HSP3CL_OPT1_RESOUT ) {
+		if ( cl_fp != NULL ) fputs( errmsg, cl_fp );
+	}
+
+	if ( cl_option & HSP3CL_OPT1_ERRSTOP ) {
+		hsp3win_dialog( "[ERROR] Press any key..." );
+		getchar();
+	}
 }
 
 
 int hsp3cl_exec( void )
 {
-	//		ŽÀsƒƒCƒ“‚ðŒÄ‚Ño‚·
+	//		å®Ÿè¡Œãƒ¡ã‚¤ãƒ³ã‚’å‘¼ã³å‡ºã™
 	//
 	int runmode;
 	int endcode;
+
+	if ( cl_option & HSP3CL_OPT1_RESOUT ) {
+		cl_fp = fopen( HSP3CL_RESFILE, "w" );
+	}
+
 rerun:
 
-	//		ŽÀs‚ÌŠJŽn
+	//		å®Ÿè¡Œã®é–‹å§‹
 	//
 	runmode = code_execcmd();
 	if ( runmode == RUNMODE_ERROR ) {
@@ -221,6 +305,11 @@ rerun:
 		ctx->runmode = RUNMODE_RUN;
 		goto rerun;
 	}
+
+	if ( cl_option & HSP3CL_OPT1_RESOUT ) {
+		if ( cl_fp != NULL ) fclose( cl_fp );
+	}
+
 	endcode = ctx->endcode;
 	hsp3cl_bye();
 	return endcode;
