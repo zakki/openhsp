@@ -1,30 +1,30 @@
 #/*-------------------------------------------------------------------------*/
 #
-#   HSP�����^�C���̃r���h�B(mingw�p)
+#   HSPランタイムのビルド。(mingw用)
 #
-#   GNU make �p���C�N�t�@�C��
+#   GNU make 用メイクファイル
 #
-#   (�g����)
+#   (使い方)
 #   make ( <PLATFORM> [ <OBJ> ... ] [ release ] [ all ] ) | ( <PLATFORM> clean ) | cleanall
 #
-#   <PLATFORM> ��
+#   <PLATFORM> は
 #       linux
 #       win32_mingw
 #       win32gui_mingw
 #       win64gui_mingw
-#   �̂ǂꂩ�B
-#   make��all, clean��n���ꍇ��PLATFORM�͕K�v�ł��B
+#   のどれか。
+#   makeにall, cleanを渡す場合もPLATFORMは必要です。
 #
-#   <OBJ> �Ƀt�@�C�����w�肷��Ǝw�肵���t�@�C���݂̂��r���h�Ώۂɂ���B
-#   �w�肵�Ȃ������ꍇ�� <PLATFORM> �ɑΉ��������s�t�@�C����Ώۂɂ���B
+#   <OBJ> にファイルを指定すると指定したファイルのみをビルド対象にする。
+#   指定しなかった場合は <PLATFORM> に対応した実行ファイルを対象にする。
 #
-#   release ���w�肷��ƃ����[�X�r���h�A�����łȂ���΃f�o�b�O�r���h���쐬�ł��܂��B
+#   release を指定するとリリースビルド、そうでなければデバッグビルドを作成できます。
 #
-#   all ���w�肷��� <PLATFORM> �Ɋ֌W�����I�u�W�F�N�g�t�@�C���E���s�t�@�C���S�Ẵ��r���h�B
-#   clean ���w�肷��� <PLATFORM> �Ɋ֌W�����I�u�W�F�N�g�t�@�C���E���s�t�@�C���̍폜�B
-#   cleanall���w�肷��ƃI�u�W�F�N�g�t�@�C���Ǝ��s�t�@�C���̍폜�B
+#   all を指定すると <PLATFORM> に関係したオブジェクトファイル・実行ファイル全てのリビルド。
+#   clean を指定すると <PLATFORM> に関係したオブジェクトファイル・実行ファイルの削除。
+#   cleanallを指定するとオブジェクトファイルと実行ファイルの削除。
 #
-#   HSP�����^�C����Windows 2000�ȍ~�p�ł�
+#   HSPランタイムはWindows 2000以降用です
 #
 #
 #
@@ -32,34 +32,34 @@
 
 #/*-----------------------------------------------------------*/
 #
-#   �ǉ��C���N���[�h�p�X (�I�v�V����)
+#   追加インクルードパス (オプション)
 
 includedir =
 libdir =
 
 #/*-----------------------------------------------------------*/
 #
-#   C++�̃o�[�W����
+#   C++のバージョン
 
 CXXVER = -std=gnu++11
 
 #/*-----------------------------------------------------------*/
 #
-#   ���t���O
-#   ���ꂼ��̃t���O�͂��݂��Ǝg�p�\�ł�
+#   環境フラグ
+#   それぞれのフラグはお互いと使用可能です
 #
 
 ENVFLAGS =
 
-#�R���p�N�g�Ń����^�C�� (win64gui_mingw�̏ꍇ�A������g�p���Ȃ���΂Ȃ�Ȃ�)
+#コンパクト版ランタイム (win64gui_mingwの場合、これを使用しなければならない)
 #ENVFLAGS = -DHSP_COMPACT -DHSP_COM_UNSUPPORTED
 
-#���j�R�[�h�Ń����^�C�� (win32gui_mingw�Awin64gui_mingw�p)
+#ユニコード版ランタイム (win32gui_mingw、win64gui_mingw用)
 #ENVFLAGS =  -DHSPUTF8 -DUNICODE -D_UNICODE
 
 #/*-----------------------------------------------------------*/
 #
-#   �폜�R�}���h
+#   削除コマンド
 #
 
 LINUXRM = rm -rf
@@ -67,7 +67,7 @@ WINRM = del /Q /F
 
 #/*-----------------------------------------------------------*/
 #
-#   �v���b�g�t�H�[������
+#   プラットフォーム判定
 #
 
 PLATFORM =
@@ -100,14 +100,14 @@ endif
 
 #/*-----------------------------------------------------------*/
 #
-#   �v���b�g�t�H�[�����Ƃ̐ݒ�
+#   プラットフォームごとの設定
 #
 
 #/*------------------------------------------*/
 #
-#   gcc �� linux �Ń����^�C�����r���h�B
+#   gcc で linux 版ランタイムをビルド。
 #
-#   ���얢�m�F�B��肪����� makefile.linux �̓��e���Q�Ƃ��Ă��������B
+#   動作未確認。問題があれば makefile.linux の内容を参照してください。
 #
 
 ifneq ($(filter linux,$(PLATFORM)),)
@@ -160,9 +160,9 @@ endif
 
 #/*------------------------------------------*/
 #
-#   mingw �� Windows �R���\�[���Ń����^�C�����r���h�B
+#   mingw で Windows コンソール版ランタイムをビルド。
 #
-#   TDM-GCC (GCC 5.10) �ł���͊m�F
+#   TDM-GCC (GCC 5.10) でこれは確認
 
 ifneq ($(filter win32_mingw,$(PLATFORM)),)
 
@@ -226,9 +226,9 @@ endif
 
 #/*------------------------------------------*/
 #
-#   mingw �� Windows GUI �Ń����^�C�����r���h�B
+#   mingw で Windows GUI 版ランタイムをビルド。
 #
-#   TDM-GCC (GCC 5.10) �ł���͊m�F�B
+#   TDM-GCC (GCC 5.10) でこれは確認。
 #
 
 ifneq ($(filter win32gui_mingw,$(PLATFORM)),)
@@ -295,10 +295,10 @@ endif
 
 #/*------------------------------------------*/
 #
-#   mingw �� Windows GUI �Ń����^�C�����r���h�B
-#   Win64�����^�C��
+#   mingw で Windows GUI 版ランタイムをビルド。
+#   Win64ランタイム
 #
-#   TDM-GCC (GCC 5.10) �ł���͊m�F�B(�R���p�N�g�ł̂݊m�F)
+#   TDM-GCC (GCC 5.10) でこれは確認。(コンパクト版のみ確認)
 #
 
 ifneq ($(filter win64gui_mingw,$(PLATFORM)),)
@@ -366,7 +366,7 @@ endif
 
 #/*------------------------------------------*/
 #
-# �����[�X�E�f�o�b�O�̐؂�ւ��B
+# リリース・デバッグの切り替え。
 #
 
 ifneq ($(filter release,$(MAKECMDGOALS)),)
