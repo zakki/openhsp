@@ -292,14 +292,14 @@ public:
 	int		mtouch_num;					// Active Multi-Touch points
 	HSP3MTOUCH mtouch[BMSCR_MAX_MTOUCH];	// Multi-Touch Info
 
-	float	colorvalue[4];				// ColorRGB value each 0.0～1.0
+	float	colorvalue[4];				// ColorRGB value each 0.0〜1.0
 
 	char	font_curname[RESNAME_MAX];	// Current Font Name
 	int		font_cursize;				// Current Font Size
 	int		font_curstyle;				// Current Font Style
 
 	int		mulcolor;					// Multiplyer Color (RGB)
-	float	mulcolorvalue[4];			// Multiplyer Color value each 0.0～1.0
+	float	mulcolorvalue[4];			// Multiplyer Color value each 0.0〜1.0
 
 	int		buffer_option;				// buffer options for off-screen
 	void	*master_buffer;				// buffer pointer to off-screen
@@ -448,14 +448,14 @@ typedef struct BMSCR
 	int		mtouch_num;					// Active Multi-Touch points
 	HSP3MTOUCH mtouch[BMSCR_MAX_MTOUCH];	// Multi-Touch Info
 
-	float	colorvalue[4];				// ColorRGB value each 0.0～1.0
+	float	colorvalue[4];				// ColorRGB value each 0.0〜1.0
 
 	char	font_curname[RESNAME_MAX];	// Current Font Name
 	int		font_cursize;				// Current Font Size
 	int		font_curstyle;				// Current Font Style
 
 	int		mulcolor;					// Multiplyer Color (RGB)
-	float	mulcolorvalue[4];			// Multiplyer Color value each 0.0～1.0
+	float	mulcolorvalue[4];			// Multiplyer Color value each 0.0〜1.0
 
 	int		buffer_option;				// buffer options for off-screen
 	void	*master_buffer;				// buffer pointer to off-screen

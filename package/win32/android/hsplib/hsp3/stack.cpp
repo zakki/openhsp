@@ -8,7 +8,9 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include "hsp3config.h"
 #include "stack.h"
+#include "supio.h"
 
 /*------------------------------------------------------------*/
 /*
@@ -104,7 +106,7 @@ void StackPush( int type, char *data, int size )
 
 void StackPush( int type, char *str )
 {
-	StackPush( type, str, (int)strlen(str)+1 );
+	StackPush( type, str, (int)STRLEN(str)+1 );
 }
 
 void *StackPushSize( int type, int size )

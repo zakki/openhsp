@@ -2,7 +2,6 @@
 #include <jni.h>
 #include <unistd.h>
 #include <android/sensor.h>
-//#include <android_native_app_glue.h>
 
 #include "javafunc.h"
 
@@ -14,6 +13,8 @@
 #include "hsp3/hsp3struct.h"
 #include "hsp3/hsp3ext.h"
 #include "hsp3embed/hsp3embed.h"
+#include "hsp3/hgio.h"
+#include "hsp3/sysreq.h"
 
 //#define USE_SENSOR
 
@@ -34,15 +35,6 @@ static const ASensor* __accelerometerSensor;
 static const ASensor* __gyroscopeSensor;
 #endif
 
-/*
-void hgio_view( int sx, int sy );
-void hgio_scale( float xx, float yy );
-void hgio_autoscale( int mode );
-void hgio_setstorage( char *path );
-*/
-
-void hgio_mtouchid( int pointid, int xx, int yy, int button, int opt );
-void hgio_setinfo( int type, HSPREAL val );
 
 
 /**
