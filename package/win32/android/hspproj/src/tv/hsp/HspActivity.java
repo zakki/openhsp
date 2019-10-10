@@ -33,6 +33,7 @@ import android.view.ViewGroup.LayoutParams;
 import android.view.ViewGroup.MarginLayoutParams;
 import android.view.Gravity;
 import android.view.View.OnClickListener;
+import android.view.KeyEvent;
 
 import android.widget.Toast;
 import android.widget.PopupWindow;
@@ -265,13 +266,16 @@ public class HspActivity extends NativeActivity {
     }
 
     public int dispDialog( String msg1, String msg2, int type ) {
+
+	msg1 = msg1.replaceAll("\r\n",System.getProperty("line.separator"));	// 改行置換
+
 	if ( type >= 4 ) return -1;
 	if (( type & 2 ) > 0 ) {
 		return ui_dispDialogYN( msg1, msg2, type );
 	}
 	return ui_dispDialog( msg1, msg2, type );
     }
-    
+
     public int addWindowFlag( int type ) {
 	final int addtype;
 	if ( type == 1 ) {

@@ -2,7 +2,6 @@
 #include <jni.h>
 #include <unistd.h>
 #include <android/sensor.h>
-//#include <android_native_app_glue.h>
 
 #include "javafunc.h"
 
@@ -14,6 +13,8 @@
 #include "hsp3/hsp3struct.h"
 #include "hsp3/hsp3ext.h"
 #include "hsp3embed/hsp3embed.h"
+#include "hsp3/hgio.h"
+#include "hsp3/sysreq.h"
 
 //#define USE_SENSOR
 
@@ -26,13 +27,6 @@ static ASensorEvent __sensorEvent;
 static const ASensor* __accelerometerSensor;
 static const ASensor* __gyroscopeSensor;
 #endif
-
-void hgio_view( int sx, int sy );
-void hgio_scale( float xx, float yy );
-void hgio_autoscale( int mode );
-void hgio_setstorage( char *path );
-void hgio_mtouchid( int pointid, int xx, int yy, int button, int opt );
-void hgio_setinfo( int type, HSPREAL val );
 
 
 /**
@@ -77,10 +71,6 @@ static int engine_init_display(struct engine* engine) {
     engine->surface = surface;
     engine->width = w;
     engine->height = h;
-
-    // ボックス表示の初期化
-    //initBox(engine);
-    //hgio_clsmode( 1, 0x000000, 0 );
 
     return 0;
 }

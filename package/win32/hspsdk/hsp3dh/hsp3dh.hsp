@@ -9,10 +9,10 @@
 #include "mod_appconfig.as"
 
 #define APPTITLE "HSP3Dish helper"
-#define APPVER "1.71"
+#define APPVER "1.72"
 #define APP_CONF "\\hsp3dh.cfg"
 
-#define AND_LIBVER 109			; android HSPランタイムの内部バージョン
+#define AND_LIBVER 110			; android HSPランタイムの内部バージョン
 
 #uselib "shell32.dll"
 #cfunc SHBrowseForFolder "SHBrowseForFolder" int
@@ -40,7 +40,7 @@
 	dir_gps="google-play-services_lib"
 	dir_gplib="gameplay"
 	dir_extlib="extlib"
-	dir_hsplib="hsplib36b1"
+	dir_hsplib="hsplib36b2"
 	fname_dpm  = "libhsp3dish.so"
 	;
 	app_winx=-1
@@ -1094,8 +1094,8 @@ res\\drawable-mdpi"}
 
 	prj_flist={"jni\\Android.mk
 jni\\Application.mk
-jni\\main.c
-jni\\maingp.c
+jni\\main.cpp
+jni\\maingp.cpp
 jni\\javafunc.cpp
 jni\\hsp3embed\\hsp3r.cpp
 jni\\hsp3embed\\hsp3r.h
@@ -1169,6 +1169,7 @@ res\\drawable-mdpi\\ic_launcher.png"}
 	noteadd "	<uses-permission android:name=\"android.permission.INTERNET\"/>",15,0
 	noteadd "	<uses-permission android:name=\"android.permission.VIBRATE\"/>",15,0
 	noteadd "	<uses-permission android:name=\"android.permission.WRITE_EXTERNAL_STORAGE\" />",15,0
+	noteadd "	<uses-feature android:name=\"android.hardware.vibrate\" android:required=\"false\" />",15,0
 
 	noteadd "        <activity android:name=\"tv.hsp.HspActivity\"",7,1
 	noteadd "                  android:screenOrientation=\"portrait\"",8,0
@@ -1240,9 +1241,9 @@ res\\drawable-mdpi\\ic_launcher.png"}
 
 	if flag_sensor {
 		;	センサー設定をいじる
-		xmlfile = path_proj+"\\"+and_name+"\\jni\\main.c"
+		xmlfile = path_proj+"\\"+and_name+"\\jni\\main.cpp"
 		gosub *and_modify_sensor_sub
-		xmlfile = path_proj+"\\"+and_name+"\\jni\\maingp.c"
+		xmlfile = path_proj+"\\"+and_name+"\\jni\\maingp.cpp"
 		gosub *and_modify_sensor_sub
 	}
 
@@ -1481,7 +1482,7 @@ res\\drawable-mdpi\\ic_launcher.png"}
 		}
 
 		; main.cを書き換える
-		xmlfile=path_proj+"\\"+and_name+"\\jni\\main.c"
+		xmlfile=path_proj+"\\"+and_name+"\\jni\\main.cpp"
 		gosub *xml_initfile
 		if tmp!="" {
 			s1="// screen size":gosub *xml_search
@@ -2079,7 +2080,7 @@ hspproj.xcodeproj\\project.pbxproj"}
 	dirlist s1,basedir,5
 	if stat=0 : return
 	;
-	exist basedir+"\\main.c"
+	exist basedir+"\\main.cpp"
 	if strsize<=0 : return
 	;
 	if and_copylib!=AND_LIBVER : return	; 内部バージョンのチェック

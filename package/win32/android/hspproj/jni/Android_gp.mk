@@ -7,47 +7,47 @@ LOCAL_CFLAGS := -D__ANDROID__ -Wno-narrowing -DHSPNDK -DHSPEMBED -DHSPDISH -DHSP
 LOCAL_CPPFLAGS  += -fexceptions -std=c++11 -frtti -Wno-switch-enum -Wno-switch -Wno-narrowing
 LOCAL_ARM_MODE := arm
 
-LOCAL_C_INCLUDES += ../hsplib36b1
+LOCAL_C_INCLUDES += ../hsplib36b2
 LOCAL_C_INCLUDES += ../gameplay/src
 LOCAL_C_INCLUDES += ../extlib/src
 
-LOCAL_SRC_FILES := hsp3embed/hsp3r.cpp hsp3embed/hspsource.cpp javafunc.cpp maingp.c \
+LOCAL_SRC_FILES := hsp3embed/hsp3r.cpp hsp3embed/hspsource.cpp javafunc.cpp maingp.cpp \
 PlatformAndroid.cpp \
-../../hsplib36b1/hsp_native_app_glue.c \
-../../hsplib36b1/hsp3embed/hsp3code.cpp \
-../../hsplib36b1/hsp3embed/hsp3embed.cpp \
-../../hsplib36b1/hsp3embed/hspvar_util.cpp \
-../../hsplib36b1/hsp3embed/misc.cpp \
-../../hsplib36b1/hsp3/dpmread.cpp \
-../../hsplib36b1/hsp3/hsp3debug.cpp \
-../../hsplib36b1/hsp3/hsp3gr_dish.cpp \
-../../hsplib36b1/hsp3/hsp3int.cpp \
-../../hsplib36b1/hsp3/hspvar_core.cpp \
-../../hsplib36b1/hsp3/hspvar_double.cpp \
-../../hsplib36b1/hsp3/hspvar_int.cpp \
-../../hsplib36b1/hsp3/hspvar_label.cpp \
-../../hsplib36b1/hsp3/hspvar_str.cpp \
-../../hsplib36b1/hsp3/hspvar_struct.cpp \
-../../hsplib36b1/hsp3/hspwnd_dish.cpp \
-../../hsplib36b1/hsp3/hspwnd_obj.cpp \
-../../hsplib36b1/hsp3/random.cpp \
-../../hsplib36b1/hsp3/stack.cpp \
-../../hsplib36b1/hsp3/strbuf.cpp \
-../../hsplib36b1/hsp3/strnote.cpp \
-../../hsplib36b1/hsp3/sysreq.cpp \
-../../hsplib36b1/hsp3/geometry.cpp \
-../../hsplib36b1/hsp3/ndk/supio_ndk.cpp \
-../../hsplib36b1/hsp3/ndk/hsp3ext_ndk.cpp \
-../../hsplib36b1/hsp3/ndk/stb_image.c \
-../../hsplib36b1/hsp3/ndk/mmman.cpp \
-../../hsplib36b1/hsp3/ndk/webtask_ndk.cpp \
-../../hsplib36b1/hsp3/ndkgp/hgiox.cpp \
-../../hsplib36b1/hsp3/ndkgp/gamehsp.cpp \
-../../hsplib36b1/hsp3/ndkgp/gpcam.cpp \
-../../hsplib36b1/hsp3/ndkgp/gplgt.cpp \
-../../hsplib36b1/hsp3/ndkgp/gpmat.cpp \
-../../hsplib36b1/hsp3/ndkgp/gpphy.cpp \
-../../hsplib36b1/hsp3/ndkgp/gpevent.cpp \
+../../hsplib36b2/hsp_native_app_glue.c \
+../../hsplib36b2/hsp3embed/hsp3code.cpp \
+../../hsplib36b2/hsp3embed/hsp3embed.cpp \
+../../hsplib36b2/hsp3embed/hspvar_util.cpp \
+../../hsplib36b2/hsp3embed/misc.cpp \
+../../hsplib36b2/hsp3/dpmread.cpp \
+../../hsplib36b2/hsp3/hsp3debug.cpp \
+../../hsplib36b2/hsp3/hsp3gr_dish.cpp \
+../../hsplib36b2/hsp3/hsp3int.cpp \
+../../hsplib36b2/hsp3/hspvar_core.cpp \
+../../hsplib36b2/hsp3/hspvar_double.cpp \
+../../hsplib36b2/hsp3/hspvar_int.cpp \
+../../hsplib36b2/hsp3/hspvar_label.cpp \
+../../hsplib36b2/hsp3/hspvar_str.cpp \
+../../hsplib36b2/hsp3/hspvar_struct.cpp \
+../../hsplib36b2/hsp3/hspwnd_dish.cpp \
+../../hsplib36b2/hsp3/hspwnd_obj.cpp \
+../../hsplib36b2/hsp3/random.cpp \
+../../hsplib36b2/hsp3/stack.cpp \
+../../hsplib36b2/hsp3/strbuf.cpp \
+../../hsplib36b2/hsp3/strnote.cpp \
+../../hsplib36b2/hsp3/sysreq.cpp \
+../../hsplib36b2/hsp3/geometry.cpp \
+../../hsplib36b2/hsp3/ndk/supio_ndk.cpp \
+../../hsplib36b2/hsp3/ndk/hsp3ext_ndk.cpp \
+../../hsplib36b2/hsp3/ndk/stb_image.c \
+../../hsplib36b2/hsp3/ndk/mmman.cpp \
+../../hsplib36b2/hsp3/ndk/webtask_ndk.cpp \
+../../hsplib36b2/hsp3/ndkgp/hgiox.cpp \
+../../hsplib36b2/hsp3/ndkgp/gamehsp.cpp \
+../../hsplib36b2/hsp3/ndkgp/gpcam.cpp \
+../../hsplib36b2/hsp3/ndkgp/gplgt.cpp \
+../../hsplib36b2/hsp3/ndkgp/gpmat.cpp \
+../../hsplib36b2/hsp3/ndkgp/gpphy.cpp \
+../../hsplib36b2/hsp3/ndkgp/gpevent.cpp \
 ../../gameplay/src/AbsoluteLayout.cpp \
 ../../gameplay/src/AIAgent.cpp \
 ../../gameplay/src/AIController.cpp \

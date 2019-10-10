@@ -540,11 +540,16 @@ int CToken::GetToken( void )
 			if ( minmode ) val=-val;
 			break;
 		case 2:					// int形式のfloat値を返す
+#if 0
 			val_f = (float)atof( (char *)s3 );
 			if ( minmode ) val_f=-val_f;
 			fpival = (int *)&val_f;
 			val = *fpival;
 			break;
+#endif
+			val_d = atof((char*)s3);
+			if (minmode) val_d = -val_d;
+			return TK_DNUM;
 		case 4:					// double値(指数表記)
 			s3[a++]='e';
 			a1 = *wp;
@@ -1322,17 +1327,9 @@ char *CToken::ExpandToken( char *str, int *type, int ppmode )
 			char *ptr_dval;
 			ptr_dval = lb->GetData2( id );
 			if ( ptr_dval == NULL ) {
-#ifdef HSPWIN
-				_itoa( lb->GetOpt(id), cnvstr, 10 );
-#else
 				sprintf( cnvstr, "%d", lb->GetOpt(id) );
-#endif
 			} else {
-#ifdef HSPWIN
-				_gcvt( *(CALCVAR *)ptr_dval, 64, cnvstr );
-#else
 				sprintf( cnvstr, "%f", *(CALCVAR *)ptr_dval );
-#endif
 			}
 			chk = ReplaceLineBuf( str, (char *)vs, cnvstr, 0, NULL );
 			break;
@@ -3130,6 +3127,7 @@ ppresult_t CToken::Preprocess( char *str )
 	*s3 = 0;
 	wp = (unsigned char *)str;
 	unsigned char topUChar = *wp;
+
 	type = GetToken();
 	if (topUChar != *s3) {
 		type = TK_NONE;

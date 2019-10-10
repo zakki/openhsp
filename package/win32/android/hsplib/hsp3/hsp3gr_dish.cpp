@@ -876,6 +876,44 @@ static int cmdfunc_extcmd( int cmd )
 		break;
 		}
 
+	case 0x2c:								// mouse
+	{
+#ifdef HSPWIN
+		POINT pt;
+		int setdef = 0;			// 既にマイナスの値か?
+		GetCursorPos(&pt);
+		if ((pt.x < 0) || (pt.x < 0)) {
+			if (msact >= 0) setdef = 1;
+		}
+		p1 = code_getdi(pt.x);
+		p2 = code_getdi(pt.y);
+		p3 = code_getdi(setdef);
+		if (p3 == 0) {
+			if (msact >= 0) {
+				if ((p1 < 0) || (p2 < 0)) {
+					msact = ShowCursor(0);
+					break;
+				}
+			}
+		}
+
+		SetCursorPos(p1, p2);
+
+		if (p3 < 0) {
+			msact = ShowCursor(0);
+			break;
+		}
+		if (p3 > 0) {
+			if (msact < 0) { msact = ShowCursor(1); }
+		}
+#else
+		p1 = code_getdi(0);
+		p2 = code_getdi(0);
+		p3 = code_getdi(0);
+#endif
+		break;
+	}
+
 	case 0x2f:								// line
 		p1=code_getdi(0);
 		p2=code_getdi(0);
@@ -1448,7 +1486,7 @@ static int cmdfunc_extcmd( int cmd )
 		node = game->getNode( p1 );
 		if ( node == NULL ) throw HSPERR_ILLEGAL_FUNCTION;
 		str = (char *)node->getId();
-		code_setva( p_pval, p_aptr, HSPVAR_FLAG_STR, &str );
+		code_setva( p_pval, p_aptr, HSPVAR_FLAG_STR, str );
 		break;
 		}
 	case 0x6d:								// setborder
@@ -1547,9 +1585,14 @@ static int cmdfunc_extcmd( int cmd )
 		p1 = code_getdi( -1 );
 		p2 = code_getdi( 0 );
 		mat = game->makeMaterialFromShader( vshname, fshname, defname );
-		if ( mat == NULL ) throw HSPERR_ILLEGAL_FUNCTION;
-		game->setMaterialDefaultBinding( mat, p1, p2 );
-		p6 = game->makeNewMat(mat, GPMAT_MODE_3D, p1, p2);
+		if (mat == NULL) {
+			//throw HSPERR_ILLEGAL_FUNCTION;
+			p6 = -1;
+		}
+		else {
+			game->setMaterialDefaultBinding(mat, p1, p2);
+			p6 = game->makeNewMat(mat, GPMAT_MODE_3D, p1, p2);
+		}
 		code_setva( p_pval, p_aptr, HSPVAR_FLAG_INT, &p6 );
 		break;
 		}
@@ -2586,7 +2629,6 @@ static int cmdfunc_extcmd( int cmd )
 			p6 = MOC_ANGX;
 		}
 		p3 = code_getdi(MOVEMODE_LINEAR);
-		if ( p3 & 16 ) p6|=HGEVENT_MOCOPT_SRCWORK;
 		switch( p3 & 15 ) {
 		case MOVEMODE_LINEAR:
 			ctx->stat = game->AddMoveEvent( p1, p6, (float)dp1, (float)dp2, (float)dp3, p2, 0 );
@@ -2919,6 +2961,7 @@ void hsp3typeinit_extcmd( HSP3TYPEINFO *info )
 	sys_inst = 0;
 	sys_hwnd = 0;
 	sys_hdc = 0;
+	msact = 0;
 
 #ifdef USE_MMAN
 	mmman = new MMMan;
