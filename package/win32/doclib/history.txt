@@ -5,8 +5,10 @@ Hot Soup Processor ver3.6                           HSP : Hot Soup Processor
 
 ・hsp3関連 更新履歴
 
-	2019/10/03 3.6 beta2
+	2019/10/10 3.6 beta2
 
+	#const定義された実数の評価時にエラーが発生することがある不具合を修正
+	float値(1.0f等)の表現を実数(double)値として評価するように修正
 	mouse命令のパラメーターを追加、マルチモニタ環境時にマイナス値を指定できるように修正
 	スクリプトで使用している文字列をまとめて置き換えるstrexchange命令を追加
 	一部の環境でActiveXコントロールが正しく初期化できなかった不具合を修正
@@ -14,6 +16,8 @@ Hot Soup Processor ver3.6                           HSP : Hot Soup Processor
 	複数のウインドウ使用時にmod_stbar.asが正しく動作しない不具合を修正
 	oncmd,onexit,onclickによる割り込み実行時にエラーが表示されない不具合を修正
 	[HGIMG4] getobjname命令で正しい名前が取得できない不具合を修正
+	[HSP3Dish][android] 一部の機種でダイアログの改行コード文字が表示される不具合を修正
+	[HSP3Dish][android] AndroidManifest.xmlにvibrateを必須としない設定を追加
 	[HSP3Dish][Windows] hsp3dish.iniファイルがない場合に起動に失敗する不具合を修正
 	[HSP3Dish][Windows] エラー発生時にDebugウインドウが閉じないことがある不具合を修正
 	[HSP3Dish][Windows] onexit,onkey,onclick,oncmd命令による割り込みをサポート

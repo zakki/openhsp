@@ -1284,9 +1284,10 @@ static int cmdfunc_intcmd( int cmd )
 		APTR ap;
 
 		ap = code_getva( &pv );		// パラメータ1:変数
+		p = (char*)HspVarCorePtrAPTR(pv, ap);
+
 		sflag = code_getdi( 0 );	// パラメータ2:数値
 
-		p = (char *)HspVarCorePtrAPTR( pv, ap );
 		i = GetNoteLines(p);
 		if ( i <= 0 ) throw HSPERR_ILLEGAL_FUNCTION;
 
@@ -1357,9 +1358,9 @@ static void *reffunc_intfunc( int *type_res, int arg )
 	code_next();
 
 	//		返値のタイプをargをもとに設定する
-	//		0～255   : int
-	//		256～383 : string
-	//		384～511 : double(HSPREAL)
+	//		0〜255   : int
+	//		256〜383 : string
+	//		384〜511 : double(HSPREAL)
 	//
 	switch( arg>>7 ) {
 		case 2:										// 返値がstr
@@ -1632,10 +1633,24 @@ static void *reffunc_intfunc( int *type_res, int arg )
 		{
 		char *p;
 		char pathname[HSP_MAX_PATH];
+#if defined(HSPWIN)&&defined(HSPUTF8)
+		HSPAPICHAR *hactmp1 = 0;
+		HSPAPICHAR pw[HSP_MAX_PATH];
+		HSPCHAR *hctmp1 = 0;
+		p = ctx->stmp;
+		strncpy( pathname, code_gets(), HSP_MAX_PATH-1 );
+		p1=code_geti();
+		getpathW( chartoapichar(pathname,&hactmp1), pw, p1 );
+		freehac(&hactmp1);
+		apichartohspchar(pw, &hctmp1);
+		strncpy(p, hctmp1, HSP_MAX_PATH - 1);
+		freehc(&hctmp1);
+#else
 		p = ctx->stmp;
 		strncpy( pathname, code_gets(), HSP_MAX_PATH-1 );
 		p1=code_geti();
 		getpath( pathname, p, p1 );
+#endif
 		ptr = p;
 		break;
 		}
