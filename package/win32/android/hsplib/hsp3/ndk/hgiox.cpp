@@ -2028,9 +2028,9 @@ int hgio_gsel( BMSCR *bm )
 
 int hgio_buffer(BMSCR *bm)
 {
-	//		buffer(描画用画面作成) 未実装
+	//		buffer(描画用画面作成) 
 	//
-	int texid = MakeEmptyTex( bm->sx, bm->sy );
+	int texid = MakeEmptyTexBuffer( bm->sx, bm->sy );
 	if (texid >= 0) {
 		bm->texid = texid;
 	}
@@ -2045,9 +2045,13 @@ int hgio_bufferop(BMSCR* bm, int mode, char *ptr)
 	int texid = bm->texid;
 	if (texid < 0) return -1;
 
+	if (mode & 0x1000) {
+		return UpdateTexStar(texid, mode & 0xfff);
+	}
+
 	switch (mode) {
 	case 0:
-		return 0;
+		return UpdateTex32(texid, ptr, 0);
 	default:
 		return -2;
 	}
