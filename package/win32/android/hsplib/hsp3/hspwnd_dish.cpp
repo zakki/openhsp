@@ -265,6 +265,9 @@ void HspWnd::Resume( void )
 				hgio_texload( (BMSCR *)bm, bm->resname );
 				bm->flag = BMSCR_FLAG_INUSE;
 			}
+			if ( bm->type == HSPWND_TYPE_OFFSCREEN ) {
+				hgio_buffer( (BMSCR *)bm );
+			}
 		}
 	}
 

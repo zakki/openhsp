@@ -16,6 +16,7 @@ Hot Soup Processor ver3.6                           HSP : Hot Soup Processor
 	複数のウインドウ使用時にmod_stbar.asが正しく動作しない不具合を修正
 	oncmd,onexit,onclickによる割り込み実行時にエラーが表示されない不具合を修正
 	[HGIMG4] getobjname命令で正しい名前が取得できない不具合を修正
+	[HSP3Dish] 配列変数の内容をグラフィックデータとして画面に転送するcelbitmap命令を追加
 	[HSP3Dish][android] 一部の機種でダイアログの改行コード文字が表示される不具合を修正
 	[HSP3Dish][android] AndroidManifest.xmlにvibrateを必須としない設定を追加
 	[HSP3Dish][Windows] hsp3dish.iniファイルがない場合に起動に失敗する不具合を修正
