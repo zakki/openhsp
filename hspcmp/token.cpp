@@ -396,7 +396,7 @@ int CToken::GetToken( void )
 	int minmode;
 	unsigned char a1,a2,an;
 	int fpflag;
-	int *fpival;
+//	int *fpival;
 	unsigned char *wp_bak;
 	int ft_bak;
 
@@ -723,7 +723,7 @@ void CToken::Calc_muldiv( CALCVAR &v )
 		Calc_unary(v2);
 		if (op=='*') v1*=v2;
 		else if (op=='/') {
-			if ( (int)v2==0 ) { ttype=TK_CALCERROR; return; }
+			if ( v2==0.0 ) { ttype=TK_CALCERROR; return; }
 			v1/=v2;
 		} else if (op==0x5c) {
 			if ( (int)v2==0 ) { ttype=TK_CALCERROR; return; }
