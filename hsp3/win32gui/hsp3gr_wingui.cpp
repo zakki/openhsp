@@ -1035,11 +1035,14 @@ static int cmdfunc_extcmd( int cmd )
 		PVal *pval;
 		APTR aptr;
 		char *p;
+		int owmode;
 		aptr = code_getva( &pval );
 		if ( pval->flag != HSPVAR_FLAG_INT ) throw HSPERR_TYPE_MISMATCH;
 		p1 = code_getdi( 100 );
 		p = code_gets();
-		ctx->stat = bmscr->AddHSPObjectMultiBox( pval, aptr, p1, p, cmd==0x26 );
+		owmode = 0;
+		if (cmd == 0x26) owmode = 1;
+		ctx->stat = bmscr->AddHSPObjectMultiBox( pval, aptr, p1, p, owmode );
 		break;
 		}
 
