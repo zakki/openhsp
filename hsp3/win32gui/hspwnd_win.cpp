@@ -661,6 +661,8 @@ int HspWnd::Picload( int id, char *fname, int mode )
 		sp_image = stbi_load_from_memory( (unsigned char *)pBuf, size, &psx, &psy, &components, 4 );
 		if ( sp_image == NULL ) return 3;
 
+		if (bm->palmode) return 3;
+
 		if (( mode == 0 )||( mode == 2 )) {
 			int palsw,type;
 			type = bm->type; palsw = bm->palmode;
@@ -670,7 +672,7 @@ int HspWnd::Picload( int id, char *fname, int mode )
 		}
 
 		x = bm->cx; y = bm->cy;
-		bm->RenderAlphaBitmap( psx, psy, components, sp_image );
+		if (bm->RenderAlphaBitmap(psx, psy, components, sp_image)) return 4;
 		bm->Send( x, y, psx, psy );
 
 		stbi_image_free(sp_image);
@@ -1923,6 +1925,7 @@ int Bmscr::RenderAlphaBitmap( int t_psx, int t_psy, int components, unsigned cha
 	p2_ofs = ( t_psx * 4 ) - ( psx * 4 );
 
 	if ( components < 4 ) {
+
 		//		24bit normal copy
 		for(b=0;b<psy;b++) {
 			for(a=0;a<psx;a++) {
