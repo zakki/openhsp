@@ -2936,6 +2936,10 @@ ppresult_t CToken::PP_RuntimeOpt( void )
 	}
 
 	hed_option |= HEDINFO_RUNTIME;
+
+	sprintf(tmp, "\"%s\"", hed_runtime);
+	RegistExtMacro("__runtime__", tmp);			// ランタイム名マクロを更新
+
 	return PPRESULT_SUCCESS;
 }
 

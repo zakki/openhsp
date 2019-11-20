@@ -8,17 +8,22 @@
 ;  (S.Programs HDL”Ä—pƒ‰ƒCƒuƒ‰ƒŠ)
 
 #module
+
+#ifndef _HSP3DISH
+
 ; winapi
 #uselib "kernel32"
 #func GetEnvironmentVariable	"GetEnvironmentVariableA" sptr, sptr, sptr
 ;--------------------------------------------------
-#deffunc get_appdata_path array v1
+#deffunc get_appdata_path array v1, str _appname
 	org_dir = dir_exe
 	sdim v1, 1000
 	GetEnvironmentVariable "APPDATA", varptr(v1), 990
 
 	if "" ! v1 {
-		subdir = "MUCOM88"
+		subdir = _appname
+		if subdir="" : subdir="Hot Soup Processor"
+
 		chdir v1
 		dirlist astr, subdir, 5 : if stat = 0 : mkdir subdir // MAKEDIR subdir
 		chdir org_dir
@@ -28,17 +33,24 @@
 	if "" = v1 : v1 = org_dir
 	return
 
+#endif
+
 
 ;
 ;	easy config data support module
 ;
-#deffunc cfg_init str fname
+#deffunc cfg_init str fname, str appname
 
-	cfg_name = fname
+#ifndef _HSP3DISH
+	get_appdata_path app_dir, appname
+#else
+	app_dir = dir_exe
+#endif
+	cfg_name = app_dir+fname
 	sdim sbuf,$1000
 	sdim s1,$100
 	sdim s2,$100
-	sbuf=";appcfg v0.1\n"
+	sbuf=";appcfg v1.0\n"
 	cur=0
 	return
 

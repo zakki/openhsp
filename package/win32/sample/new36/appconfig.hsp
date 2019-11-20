@@ -1,0 +1,46 @@
+#include "mod_appconfig.as"
+
+#define APPNAME "appconfig"	; アプリ名
+#define INIFILE "config.ini"	; 設定ファイル名
+
+;
+;	アプリ内の設定(変数)をファイルに記録します
+;	簡易的な設定ファイル操作モジュール(mod_appconfig.as)を使用します
+;	Windows上で、Appdata内に設定ファイルを作成して使用します。
+;	(HSP3Dishではアプリのフォルダが使用されます)
+;	HSPの基本命令で作られています(hspdaプラグインにも変数を記録する機能があります)
+;
+
+*app_init
+	;	アプリ設定の初期化(起動時)
+	;
+	test1 = "test1"				; 初期値
+	test2 = 123				; 初期値
+
+	cfg_init INIFILE, APPNAME		; 設定ファイルの初期化
+	cfg_load:modcfg=stat			; 設定ファイルを読み込む
+	if modcfg {				; 設定ファイル項目があるか?
+		test1 = cfg_getvar("test1")	; "test1"の項目を取得(文字列)
+		test2 = 0+cfg_getvar("test2")	; "test2"の項目を取得(数値)
+	}
+
+*app_main
+	;	アプリメイン
+	;
+	cls 1
+	mes "test1:"
+	input test1
+	mes "test2:"
+	input test2
+	button "END",*app_bye
+	stop
+
+*app_bye
+	;	アプリ終了
+	;
+	cfg_init INIFILE, APPNAME		; 設定ファイルの初期化
+	cfg_sets "test1",test1			; "test1"の項目を設定(文字列)
+	cfg_seti "test2",test2			; "test2"の項目を設定(数値)
+	cfg_save				; 設定ファイルを書き込む
+
+	end
