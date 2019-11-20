@@ -1,0 +1,26 @@
+
+#include "mod_dirbox.as"
+
+	;
+	;	リストボックスを使ったファイル選択
+	;	(mod_dirboxモジュールを使用)
+	;	(モジュールの命令詳細はmod_dirbox.asをご覧ください)
+	;
+	dirbox "*.*",0,640,240
+	objsize 640,24
+	button "Select",*select
+*main
+	;	ファイル選択中
+	dirbox_get result
+	if result>0 : goto *select
+	wait 5
+	title ""+dir_cur
+	goto *main
+
+*select
+	;	選択結果を表示
+	dirbox_fullname fname
+	cls
+	mes fname
+
+	stop
