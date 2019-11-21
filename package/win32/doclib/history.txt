@@ -28,6 +28,7 @@ Hot Soup Processor ver3.6                           HSP : Hot Soup Processor
 	[HSP3Dish][Windows] hsp3dish.iniファイルがない場合に起動に失敗する不具合を修正
 	[HSP3Dish][Windows] エラー発生時にDebugウインドウが閉じないことがある不具合を修正
 	[HSP3Dish][Windows] onexit,onkey,onclick,oncmd命令による割り込みをサポート
+	[HSP3Dish][Windows] screen命令による表示サイズ変更、及びフルスクリーンに対応
 
 	2019/09/03 3.6 beta1
 

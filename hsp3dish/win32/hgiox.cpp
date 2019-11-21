@@ -537,6 +537,24 @@ static void ClearDest( int mode, int color, int tex )
 }
 
 
+static void InitTexture(void)
+{
+	//		テクスチャ情報初期化
+	//
+	SetSysReq(SYSREQ_CLSMODE, CLSMODE_NONE);
+	TexSetD3DParam(d3d, d3ddev, target_disp);
+	TexInit();
+
+	//		テキスト表示エリアを初期化
+	//
+	mestexid = RegistTexEmpty(nDestWidth, nDestHeight, 1);
+	if (mestexid >= 0) {
+		//		BMSCRにコピー用のデータを構築する
+		memset(&mestexbm, 0, sizeof(BMSCR));
+		mestexbm.texid = mestexid;
+	}
+}
+
 /*------------------------------------------------------------*/
 /*
 		interface
@@ -579,21 +597,7 @@ void hgio_init( int mode, int sx, int sy, void *hwnd )
 	//
 	Init3DDevicesW( (HWND)hwnd );
 	InitVertexTemp();
-
-	//		テクスチャ情報初期化
-	//
-	TexSetD3DParam( d3d, d3ddev, target_disp );
-	TexInit();
-	SetSysReq( SYSREQ_CLSMODE, CLSMODE_NONE );
-
-	//		テキスト表示エリアを初期化
-	//
-	mestexid = RegistTexEmpty( sx, sy, 1 );
-	if ( mestexid >= 0 ) {
-		//		BMSCRにコピー用のデータを構築する
-		memset( &mestexbm, 0, sizeof(BMSCR) );
-		mestexbm.texid = mestexid;
-	}
+	InitTexture();
 
 	//		infovalをリセット
 	//
@@ -601,6 +605,34 @@ void hgio_init( int mode, int sx, int sy, void *hwnd )
 	for(i=0;i<GINFO_EXINFO_MAX;i++) {
 		infoval[i] = 0.0;
 	}
+}
+
+
+void hgio_rebuild(int sx, int sy, int mode, void *hwnd)
+{
+	//	デバイスを再構築する
+	//
+	hgio_render_end();
+	TexTerm();
+
+	d3ddev->Reset(&d3dapp);		//	Direct3Dデバイス解放
+	RELEASE(d3ddev);
+	delete d3ddev;
+
+	drawflag = 0;
+	nDestWidth = sx;
+	nDestHeight = sy;
+	mestexid = -1;
+	mestexflag = 0;
+
+	SetSysReq(SYSREQ_DXMODE, mode);
+	if (mode) {
+		SetSysReq(SYSREQ_DXWIDTH, sx);
+		SetSysReq(SYSREQ_DXHEIGHT, sy);
+	}
+	master_wnd = (HWND)hwnd;
+	Init3DDevicesW((HWND)hwnd);
+	InitTexture();
 }
 
 
