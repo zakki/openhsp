@@ -1,0 +1,69 @@
+
+	;
+	;	groll命令によるグラフィック面拡大
+	;	(x1,x2,x4に拡大してマウスでドラッグできます)
+	;	(ボタンなどオブジェクト類は拡大されません)
+	;	(マウスの座標などもそのままなので注意してください)
+	;
+	wx=512:wy=512
+	bx=0:by=0
+	px=-1:py=0
+	scalex=1:scaley=1
+	screen 0,wx,wy
+	gosub *box
+	pos 0,0
+	button "x1",*x1
+	button "x2",*x2
+	button "x4",*x4
+
+*start
+	;	グラフィック表示設定
+	groll bx,by,scalex,scaley
+
+*main
+	;	メインループ
+	stick key,$100
+	mx=mousex/scalex:my=mousey/scaley	; マウス座標をスケーリングする
+	gosub *drag
+	await 1000/30
+	goto *main
+
+*x1
+	scalex=1:scaley=1:goto *start
+*x2
+	scalex=2:scaley=2:goto *start
+*x4
+	scalex=4:scaley=4:goto *start
+
+*drag
+	;	ドラッグする
+	if key&$100 : goto *drag_on
+	if px<0 : return
+	bx+=px-mx:by+=py-my
+	groll bx,by
+	px=-1
+	return
+*drag_on
+	if px<0 {
+		px=mx:py=my
+		bx=ginfo_vx:by=ginfo_vy
+		return
+	}
+	x=px-mx:y=py-my
+	groll bx+x,by+y
+	return
+
+*box
+	;	TEST画面
+	color 0,0,128
+	boxf 0,0,wx,wy
+	rgbcolor $ffffff
+	pos 80,0
+	mes "Drag Map..."
+	rgbcolor $ff00
+	repeat 100
+		pos rnd(wx),rnd(wy)
+		mes "*"
+	loop
+	return
+
