@@ -46,7 +46,7 @@
 #else
 	app_dir = dir_exe
 #endif
-	cfg_name = app_dir+fname
+	cfg_name = app_dir+"\\"+fname
 	sdim sbuf,$1000
 	sdim s1,$100
 	sdim s2,$100
