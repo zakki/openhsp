@@ -49,7 +49,6 @@ int main( int argc, char *argv[] )
 	char a1,a2,a3;
 	int b,st;
 	int cmpopt,ppopt,utfopt,pponly,execobj,strmap;
-//	int result;
 	char fname[HSP_MAX_PATH];
 	char fname2[HSP_MAX_PATH];
 	char oname[HSP_MAX_PATH];
@@ -159,6 +158,7 @@ int main( int argc, char *argv[] )
 		if ( execobj & 8 ) {
 			printf("Runtime[%s].\n",oname);
 		} else {
+			int result;
 			printf("Execute from %s runtime[%s](%d).\n",fname,oname,execobj);
 			sprintf(execmd,"%s./%s %s",syspath,oname,fname);
 			//sprintf(execmd,"%s./%s %s >%s.hspres",syspath,oname,fname,syspath);
