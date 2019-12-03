@@ -778,7 +778,8 @@ static int cmdfunc_extcmd( int cmd )
 		break;
 
 	case 0x0a:								// mmstop
-		mmman->Stop();
+		p1 = code_getdi(-1);
+		mmman->StopBank(p1);
 		break;
 
 	case 0x0b:								// mci

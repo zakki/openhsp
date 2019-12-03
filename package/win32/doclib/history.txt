@@ -22,6 +22,7 @@ Hot Soup Processor ver3.6                           HSP : Hot Soup Processor
 	objinfo関数に配置オブジェクト固有の情報(exinfo1,exinfo2)を追加
 	プリプロセッサのシステムマクロとして、ランタイム名を示す__runtime__を追加
 	mod_appconfig.as,mod_dirboxモジュール及び、サンプルを追加
+	mmstop,mmvol,mmpan,mmstatの仕様を標準命令とHSP3Dishで共通化できるように修正
 	[HGIMG4] getobjname命令で正しい名前が取得できない不具合を修正
 	[HSP3Dish] 配列変数の内容をグラフィックデータとして画面に転送するcelbitmap命令を追加
 	[HSP3Dish][android] 一部の機種でダイアログの改行コード文字が表示される不具合を修正
