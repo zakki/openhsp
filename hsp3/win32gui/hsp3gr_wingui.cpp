@@ -1177,9 +1177,7 @@ static int cmdfunc_extcmd( int cmd )
 	{
 		p1 = code_getdi(0);
 		p2 = code_getdi(0);
-		HSPREAL dp1 = code_getdd(bmscr->viewsx);
-		HSPREAL dp2 = code_getdd(bmscr->viewsy);
-		bmscr->SetScroll(p1, p2, dp1, dp2);
+		bmscr->SetScroll(p1, p2);
 		break;
 	}
 	case 0x2f:								// line
