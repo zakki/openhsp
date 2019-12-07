@@ -364,8 +364,6 @@ void Bmscr::Cls( int mode )
 	this->wchg = 0;
 	this->viewx = 0;
 	this->viewy = 0;
-	this->viewsx = 1.0;
-	this->viewsy = 1.0;
 	Viewcalc_reset();
 
 	//		text setting initalize
@@ -976,7 +974,7 @@ int Bmscr::listMTouch( int *outbuf )
 */
 /*------------------------------------------------------------*/
 
-void Bmscr::SetScroll(int xbase, int ybase, HSPREAL xscale, HSPREAL yscale)
+void Bmscr::SetScroll(int xbase, int ybase)
 {
 	//		スクロール基点を設定
 	//
@@ -984,21 +982,6 @@ void Bmscr::SetScroll(int xbase, int ybase, HSPREAL xscale, HSPREAL yscale)
 	viewy = ybase;
 
 	if ((sx == 0) || (sy == 0)) return;
-
-	double px, py;
-	px = xscale; if (px < 1.0) px = 1.0;
-	py = yscale; if (py < 1.0) py = 1.0;
-
-	viewsx = px; viewsxr = 1.0 / px;
-	viewsy = py; viewsyr = 1.0 / py;
-
-	px = (double)(sx) * viewsxr;
-	py = (double)(sy) * viewsyr;
-
-	if ((viewx + (int)px) >= sx) viewx = sx - (int)px;
-	if ((viewy + (int)py) >= sy) viewy = sy - (int)py;
-	if (viewx < 0) viewx = 0;
-	if (viewy < 0) viewy = 0;
 }
 
 void Bmscr::Viewcalc_reset(void)
@@ -1009,12 +992,26 @@ void Bmscr::Viewcalc_reset(void)
 }
 
 
-int Bmscr::Viewcalc_set(HSPREAL* viewmatrix)
+int Bmscr::Viewcalc_set(HSPREAL x, HSPREAL y, HSPREAL p_sx, HSPREAL p_sy)
 {
 	//	Setup viewport
 	//
 	Viewcalc_reset();
-	vp_flag = 1;
+	if ((x==0.0)&&(y==0.0)&&(p_sx==1.0)&&(p_sy==1.0)) {
+		return 0;
+	}
+	if ((p_sx == 0.0) || (p_sy == 0.0)) return -1;
+	hgio_setview((BMSCR*)this,x,y,p_sx,p_sy );
+	return 0;
+}
+
+
+int Bmscr::Viewcalc_setMatrix(HSPREAL* viewmatrix)
+{
+	//	Setup viewport Matrix
+	//
+	Viewcalc_reset();
+	hgio_setviewmat((BMSCR*)this, viewmatrix);
 	return 0;
 }
 
