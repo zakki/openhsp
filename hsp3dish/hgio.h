@@ -75,6 +75,11 @@ char *hgio_getstorage( char *fname );
 char *hgio_getdir( int id );
 void hgio_setmainarg( char *hsp_mainpath, char *cmdprm );
 
+// for Viewport setting
+void hgio_setviewmat(BMSCR* bm, HSPREAL *matrix);
+void hgio_setview(BMSCR* bm, HSPREAL basex, HSPREAL basey, HSPREAL scalex, HSPREAL scaley);
+void hgio_cnvview(BMSCR* bm, int *xaxis, int *yaxis);
+
 // for HGIMG4
 void hgio_draw_gpsprite( Bmscr *bmscr, bool lateflag );
 void hgio_draw_all(Bmscr *bmscr, int option);
