@@ -249,6 +249,7 @@ LRESULT CALLBACK WndProc( HWND hwnd, UINT uMessage, WPARAM wParam, LPARAM lParam
 		if ( exinfo != NULL ) {
 			bm = (Bmscr *)exinfo->HspFunc_getbmscr(0);
 			x = LOWORD(lParam); y = HIWORD(lParam);
+			hgio_cnvview((BMSCR *)bm,&x,&y);
 			bm->savepos[BMSCR_SAVEPOS_MOSUEX] = x;
 			bm->savepos[BMSCR_SAVEPOS_MOSUEY] = y;
 			bm->UpdateAllObjects();
@@ -700,7 +701,7 @@ void hsp3dish_msgfunc( HSPCTX *hspctx )
 #endif
 			break;
 	//	case RUNMODE_LOGMES:
-		case RUNMODE_EXITRUN:
+		case RUNMODE_RESTART:
 		{
 			Bmscr* bm;
 			int hsp_fullscr;
