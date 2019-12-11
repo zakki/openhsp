@@ -229,11 +229,11 @@ static LRESULT InterfaceProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 */
 		case HSED_GETCARETLINE:
 			Footy2GetCaretPosition(footy_defid, (size_t*)&nRet, NULL);
-			return nRet;
+			return nRet+1;
 
 		case HSED_GETCARETPOS:
-//			return FootyGetCaretPos(footy_defid);
-			return 0;	// 2008-02-17 Shark++ 代替機能未実装
+			Footy2GetCaretPosition(footy_defid, NULL, (size_t*)&nRet);
+			return nRet + 1;
 
 		case HSED_SETCARETLINE:
 			return Footy2SetCaretPosition(footy_defid, (int)lParam, 0);	// 2008-02-17 Shark++ SDKを見直す必要あり？SDKで使用されていない？
