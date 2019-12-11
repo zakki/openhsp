@@ -31,6 +31,7 @@ LANGUAGE LANG_JAPANESE, SUBLANG_DEFAULT
 // remains consistent on all systems.
 ONIPAD                  ICON                    "onipad.ico"
 
+
 /////////////////////////////////////////////////////////////////////////////
 //
 // Menu
@@ -264,10 +265,10 @@ FONT 9, "‚l‚r ‚oƒSƒVƒbƒN", 0, 0, 0x0
 BEGIN
     CTEXT           "HSP script editor",IDC_STATIC,41,12,67,8
     ICON            "OniPad",IDC_STATIC,8,8,20,20
-    CTEXT           "For Windows version 3.51",IDC_STATIC,47,19,76,8
-    CTEXT           "Copyright 1997-2019 onion software",IDC_STATIC,0,37,159,8
+    CTEXT           "For Windows version 3.6",IDC_STATIC,47,19,76,8
+    CTEXT           "Copyright 1997-2020 onion software",IDC_STATIC,0,37,159,8
     DEFPUSHBUTTON   "OK",IDOK,49,101,57,14,WS_GROUP
-    CTEXT           "http://hsp.tv/",IDC_STATICLINK,34,85,90,8,SS_NOTIFY
+    CTEXT           "https://hsp.tv/",IDC_STATICLINK,34,85,90,8,SS_NOTIFY
     LTEXT           "Information available at:",IDC_STATIC,30,77,71,8
     CTEXT           "Modified by OpenHSP PROJECT",IDC_STATIC,0,47,159,8
     CTEXT           "Powered by Footy2 Lib.",IDC_STATIC,0,56,159,8
@@ -668,6 +669,7 @@ END
 
 IDB_TOOLBAR             BITMAP                  "toolbar.bmp"
 
+
 /////////////////////////////////////////////////////////////////////////////
 //
 // DESIGNINFO
@@ -818,13 +820,16 @@ END
 
 1                       RT_MANIFEST             "xpstyle.xml"
 
+
 /////////////////////////////////////////////////////////////////////////////
 //
 // Cursor
 //
 
 IDC_ONLINE              CURSOR                  "ln.cur"
+
 IDC_ONURL               CURSOR                  "url.cur"
+
 
 /////////////////////////////////////////////////////////////////////////////
 //
