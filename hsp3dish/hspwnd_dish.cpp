@@ -124,7 +124,7 @@ void HspWnd::Reset( void )
 	sy = hgio_getHeight();
 
 	MakeBmscr( 0, HSPWND_TYPE_MAIN, 0, 0, sx, sy, 0 );
-	
+
 	//		global vals
 	//
 #if 0
@@ -980,46 +980,80 @@ void Bmscr::SetScroll(int xbase, int ybase)
 	//
 	viewx = xbase;
 	viewy = ybase;
-
-	if ((sx == 0) || (sy == 0)) return;
 }
 
 void Bmscr::Viewcalc_reset(void)
 {
 	//	Reset viewport
 	//
-	vp_flag = 0;
+	int i;
+	for (i = 0; i < 4; i++) {
+		vp_viewtrans[i] = 0.0f;
+		vp_viewrotate[i] = 0.0f;
+		vp_viewscale[i] = 0.0f;
+		vp_view3dprm[i] = 0.0f;
+	}
+	vp_flag = BMSCR_VPFLAG_NOUSE;
 }
 
 
-int Bmscr::Viewcalc_set(HSPREAL x, HSPREAL y, HSPREAL p_sx, HSPREAL p_sy)
+int Bmscr::Viewcalc_set(int type, HSPREAL x, HSPREAL y, HSPREAL p_sx, HSPREAL p_sy)
 {
 	//	Setup viewport
 	//
-	Viewcalc_reset();
-	if ((x==0.0)&&(y==0.0)&&(p_sx==1.0)&&(p_sy==1.0)) {
-		return 0;
+	switch (type) {
+	case BMSCR_VPTYPE_OFF:
+		Viewcalc_reset();
+		break;
+	case BMSCR_VPTYPE_TRANSLATE:
+		vp_viewtrans[0] = (float)x;
+		vp_viewtrans[1] = (float)y;
+		vp_viewtrans[2] = (float)p_sx;
+		vp_viewtrans[3] = (float)p_sy;
+		break;
+	case BMSCR_VPTYPE_ROTATE:
+		vp_viewrotate[0] = (float)x;
+		vp_viewrotate[1] = (float)y;
+		vp_viewrotate[2] = (float)p_sx;
+		vp_viewrotate[3] = (float)p_sy;
+		break;
+	case BMSCR_VPTYPE_SCALE:
+		vp_viewscale[0] = (float)x;
+		vp_viewscale[1] = (float)y;
+		vp_viewscale[2] = (float)p_sx;
+		vp_viewscale[3] = (float)p_sy;
+		break;
+	case BMSCR_VPTYPE_3DMATRIX:
+		vp_view3dprm[0] = (float)x;
+		vp_view3dprm[1] = (float)y;
+		vp_view3dprm[2] = (float)p_sx;
+		vp_view3dprm[3] = (float)p_sy;
+		vp_flag = BMSCR_VPFLAG_MATRIX;
+		break;
+	case BMSCR_VPTYPE_2D:
+		if ((x == 0.0) || (y == 0.0)) return -1;
+		vp_viewscale[0] = (float)x;
+		vp_viewscale[1] = (float)y;
+		vp_viewscale[2] = 1.0f;
+		vp_viewscale[3] = 1.0f;
+		vp_viewrotate[0] = 0.0f;
+		vp_viewrotate[1] = 0.0f;
+		vp_viewrotate[2] = (float)p_sx;
+		vp_viewrotate[3] = 0.0f;
+		vp_flag = BMSCR_VPFLAG_2D;
+		break;
+	case BMSCR_VPTYPE_3D:
+		vp_view3dprm[0] = (float)x;
+		vp_view3dprm[1] = (float)y;
+		vp_view3dprm[2] = (float)p_sx;
+		vp_view3dprm[3] = (float)p_sy;
+		vp_flag = BMSCR_VPFLAG_3D;
+		break;
+	default:
+		return -1;
 	}
-	if ((p_sx == 0.0) || (p_sy == 0.0)) return -1;
-	hgio_setview((BMSCR*)this,x,y,p_sx,p_sy );
+	hgio_setview((BMSCR*)this);
 	return 0;
 }
 
-
-int Bmscr::Viewcalc_setMatrix(HSPREAL* viewmatrix)
-{
-	//	Setup viewport Matrix
-	//
-	Viewcalc_reset();
-	hgio_setviewmat((BMSCR*)this, viewmatrix);
-	return 0;
-}
-
-
-void Bmscr::Viewcalc_calc(HSPREAL& axisx, HSPREAL& axisy)
-{
-	//	Calc viewport -> real axis
-	//
-	if (vp_flag == 0) return;
-}
 

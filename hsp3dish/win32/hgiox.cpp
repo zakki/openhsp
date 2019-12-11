@@ -99,6 +99,9 @@ static		BMSCR *backbm;		// 背景消去用のBMSCR(null=NC)
 
 static		HSPREAL infoval[GINFO_EXINFO_MAX];
 
+static		MATRIX mat_proj;	// プロジェクションマトリクス
+static		MATRIX mat_unproj;	// プロジェクション逆変換マトリクス
+
 //		DirectX objects
 //
 static		D3DDISPLAYMODE target_disp;
@@ -614,35 +617,6 @@ void hgio_init( int mode, int sx, int sy, void *hwnd )
 }
 
 
-void hgio_rebuild(int sx, int sy, int mode, void *hwnd)
-{
-	//	デバイスを再構築する
-	//
-	hgio_render_end();
-	TexTerm();
-
-	d3ddev->Reset(&d3dapp);		//	Direct3Dデバイス解放
-	RELEASE(d3ddev);
-	delete d3ddev;
-
-	drawflag = 0;
-	nDestWidth = sx;
-	nDestHeight = sy;
-	mestexid = -1;
-	mestexflag = 0;
-
-	SetSysReq(SYSREQ_DXMODE, mode);
-	if (mode) {
-		SetSysReq(SYSREQ_DXWIDTH, sx);
-		SetSysReq(SYSREQ_DXHEIGHT, sy);
-	}
-	master_wnd = (HWND)hwnd;
-	Init3DDevicesW((HWND)hwnd);
-	InitTexture();
-	GeometryInit();
-}
-
-
 void hgio_clsmode( int mode, int color, int tex )
 {
 	SetSysReq( SYSREQ_CLSMODE, mode );
@@ -782,10 +756,11 @@ int hgio_render_start( void )
 
 	//	標準の投影マトリクスを設定する
 	D3DXMATRIX matrixProj;
-	MATRIX mymat;
+	MATRIX *mymat = &mat_proj;
+	UnitMatrix();
 	OrthoMatrix(0.0f, 0.0f, (float)nDestWidth, (float)nDestHeight, 0.0f, 1.0f);
-	GetCurrentMatrix(&mymat);
-	Mat2D3DMAT(&matrixProj, &mymat);
+	GetCurrentMatrix(mymat);
+	Mat2D3DMAT(&matrixProj, mymat);
 	d3ddev->SetTransform(D3DTS_PROJECTION, &matrixProj);
 
 	//	画面クリア
@@ -794,19 +769,7 @@ int hgio_render_start( void )
 	ClearDest(GetSysReq(SYSREQ_CLSMODE), GetSysReq(SYSREQ_CLSCOLOR), bgtex);
 
 	//	ユーザー設定の投影マトリクスを設定する
-	if (mainbm->vp_flag) {
-		MATRIX *pmat = (MATRIX *)mainbm->vp_matrix;
-		CopyMatrix(&mymat, pmat);
-		Mat2D3DMAT(&matrixProj, pmat);
-		d3ddev->SetTransform(D3DTS_PROJECTION, &matrixProj);
-	}
-
-	//	投影マトリクスの逆行列を設定する
-	MATRIX invmat;
-	//D3DXMatrixInverse(&InvViewport, NULL, &matrixProj);
-	SetCurrentMatrix(&mymat);
-	InverseMatrix(&invmat);
-	SetCurrentMatrix(&invmat);
+	hgio_setview(mainbm);
 
 	//	デバイス初期化
 	InitDraw();
@@ -900,6 +863,16 @@ int hgio_stick( int actsw )
 	if ( GetAsyncKeyState(1)&0x8000 )  ckey|=256;	// mouse_l
 	if ( GetAsyncKeyState(2)&0x8000 )  ckey|=512;	// mouse_r
 	if ( GetAsyncKeyState(9)&0x8000 )  ckey|=1024;	// [tab]
+
+	if (GetAsyncKeyState(90) & 0x8000)  ckey |= 1<<11;	// [z]
+	if (GetAsyncKeyState(88) & 0x8000)  ckey |= 1<<12;	// [x]
+	if (GetAsyncKeyState(67) & 0x8000)  ckey |= 1<<13;	// [c]
+
+	if (GetAsyncKeyState(65) & 0x8000)  ckey |= 1 << 14;	// [a]
+	if (GetAsyncKeyState(87) & 0x8000)  ckey |= 1 << 15;	// [w]
+	if (GetAsyncKeyState(68) & 0x8000)  ckey |= 1 << 16;	// [d]
+	if (GetAsyncKeyState(83) & 0x8000)  ckey |= 1 << 17;	// [s]
+
 	return ckey;
 }
 
@@ -1798,55 +1771,64 @@ int hgio_celputmulti( BMSCR *bm, int *xpos, int *ypos, int *cel, int count, BMSC
 }
 
 
-void hgio_setviewmat(BMSCR* bm, HSPREAL* matrix)
+void hgio_setview(BMSCR* bm)
 {
-	//	ビューポート用マトリクスを指定する
-	//	(4x4マトリクスとして設定する)
+	// vp_flagに応じたビューポートの設定を行う
 	//
 	int i;
-	float* vp = bm->vp_matrix;
-	HSPREAL* mat = matrix;
+	MATRIX *vmat;
+	MATRIX tmpmat;
+	float* vp;
+	vmat = &mat_proj;
+	vp = (float*)vmat;
+	float* mat = (float*)GetCurrentMatrixPtr();
 
-	if (matrix == NULL) {
-		bm->vp_flag = 0;
+	switch (bm->vp_flag) {
+	case BMSCR_VPFLAG_2D:
+		//	2D projection mode
+		UnitMatrix();
+		RotZ(bm->vp_viewrotate[2]);
+		GetCurrentMatrix(&tmpmat);
+		OrthoMatrix(-bm->vp_viewtrans[0], -bm->vp_viewtrans[1], (float)nDestWidth / bm->vp_viewscale[0], (float)nDestHeight / bm->vp_viewscale[1], 0.0f, 1.0f);
+		MulMatrix(&tmpmat);
+		break;
+	case BMSCR_VPFLAG_3D:
+		//	3D projection mode
+		UnitMatrix();
+		RotZ(bm->vp_viewrotate[2]);
+		RotY(bm->vp_viewrotate[1]);
+		RotX(bm->vp_viewrotate[0]);
+		Scale(bm->vp_viewscale[0], bm->vp_viewscale[1], bm->vp_viewscale[2]);
+		Trans(bm->vp_viewtrans[0], bm->vp_viewtrans[1], bm->vp_viewtrans[2]);
+		GetCurrentMatrix(&tmpmat);
+		PerspectiveFOV(bm->vp_view3dprm[0], bm->vp_view3dprm[1], bm->vp_view3dprm[2], 0.0f, 0.0f, (float)nDestWidth / 10, (float)nDestHeight / 10);
+		//PerspectiveFOV(45.0f, 1.0f, 500.0f, 0.0f, 0.0f, (float)nDestWidth / 10, (float)nDestHeight / 10);
+		//PerspectiveWithZBuffer(10.0f, 0.0f, 60.0f, 1.0f, 0.0f);
+		MulMatrix(&tmpmat);
+		break;
+	case BMSCR_VPFLAG_MATRIX:
+		//	user matrix mode
+		mat = &bm->vp_viewtrans[0];
+		break;
+	case BMSCR_VPFLAG_NOUSE:
+	default:
 		return;
 	}
 
-	for (i = 0; i < 16; i++) {
-		*vp++ = (float)*mat++;
-	}
-	bm->vp_flag = 1;
-}
-
-
-void hgio_setview(BMSCR* bm, HSPREAL basex, HSPREAL basey, HSPREAL scalex, HSPREAL scaley)
-{
-	// ビューポートの簡易設定を行う
-	//
-	int i;
-
-	MATRIX vmat;
-
-	UnitMatrix();
-	//RotX(-0.01f);
-	//RotZ(-0.2f);
-//	Trans(0,0,-1.0f);
-//	Trans((float)basex,(float)basey, (float)scalex);
-	GetCurrentMatrix(&vmat);
-
-	//UnitMatrix();
-	//PerspectiveFOV(45.0f, 1.0f, 500.0f, 0.0f, 0.0f, (float)nDestWidth / 10, (float)nDestHeight / 10);
-	//PerspectiveWithZBuffer(10.0f, 0.0f, 60.0f, 1.0f, 0.0f);
-
-	OrthoMatrix((float)-basex, (float)-basey, (float)nDestWidth / (float)scalex, (float)nDestHeight / (float)scaley, 0.0f, 1.0f);
-	MulMatrix(&vmat);
-
-	float* vp = bm->vp_matrix;
-	float* mat = (float *)GetCurrentMatrixPtr();
+	//	mat_projに設定する
 	for (i = 0; i < 16; i++) {
 		*vp++ = *mat++;
 	}
-	bm->vp_flag = 1;
+
+	D3DXMATRIX matrixProj;
+	Mat2D3DMAT(&matrixProj, vmat);
+	d3ddev->SetTransform(D3DTS_PROJECTION, &matrixProj);
+
+	//	投影マトリクスの逆行列を設定する
+	//D3DXMatrixInverse(&InvViewport, NULL, &matrixProj);
+	SetCurrentMatrix(vmat);
+	InverseMatrix(&mat_unproj);
+
 }
 
 
@@ -1875,7 +1857,7 @@ void hgio_cnvview(BMSCR* bm, int* xaxis, int* yaxis)
 //	*xaxis = (int)a2.x;
 //	*yaxis = (int)a2.y;
 
-	ApplyMatrix(&v2, &v1);
+	ApplyMatrix(&mat_unproj, &v2, &v1);
 	*xaxis = (int)v2.x;
 	*yaxis = (int)v2.y;
 }

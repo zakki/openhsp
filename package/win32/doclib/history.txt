@@ -5,7 +5,7 @@ Hot Soup Processor ver3.6                           HSP : Hot Soup Processor
 
 ・hsp3関連 更新履歴
 
-	2019/12/06 3.6 beta2
+	2019/12/11 3.6 beta2
 
 	#const定義された実数の評価時にエラーが発生することがある不具合を修正
 	#const定義の演算時に1.0未満の値で除算した際にエラーが発生する不具合を修正
@@ -22,6 +22,7 @@ Hot Soup Processor ver3.6                           HSP : Hot Soup Processor
 	プリプロセッサのシステムマクロとして、ランタイム名を示す__runtime__を追加
 	mod_appconfig.as,mod_dirboxモジュール及び、サンプルを追加
 	mmstop,mmvol,mmpan,mmstatの仕様を標準命令とHSP3Dishで共通化できるように修正
+	スクリプトエディタのSDK機能のHSED_GETCARETPOSが無効になっていた不具合を修正
 	[HGIMG4] getobjname命令で正しい名前が取得できない不具合を修正
 	[HSP3Dish] 配列変数の内容をグラフィックデータとして画面に転送するcelbitmap命令を追加
 	[HSP3Dish][android] 一部の機種でダイアログの改行コード文字が表示される不具合を修正
@@ -29,7 +30,8 @@ Hot Soup Processor ver3.6                           HSP : Hot Soup Processor
 	[HSP3Dish][Windows] hsp3dish.iniファイルがない場合に起動に失敗する不具合を修正
 	[HSP3Dish][Windows] エラー発生時にDebugウインドウが閉じないことがある不具合を修正
 	[HSP3Dish][Windows] onexit,onkey,onclick,oncmd命令による割り込みをサポート
-	[HSP3Dish][Windows] screen命令による表示サイズ変更、及びフルスクリーンに対応
+	[HSP3Dish][Windows] bgscr,screen命令による表示サイズ変更、及びフルスクリーン化に対応
+	[HSP3Dish][Windows] dialog命令実行後にエラーが出ることがあった不具合を修正
 	[HSP3Dish][hsp3js][linux] MP3サウンド再生に対応
 	[HSP3Dish][android][iOS][hsp3js][linux] プログレッシブJPEGの読み込みに対応
 

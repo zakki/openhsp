@@ -2937,7 +2937,7 @@ BOOL CALLBACK AboutDlgProc (HWND hDlg, UINT iMsg, WPARAM wParam, LPARAM lParam)
 					return TRUE ;
 				case IDC_STATICLINK:
 					if(HIWORD(wParam) == STN_CLICKED){
-						ShellExecute(NULL, NULL, "http://hsp.tv/", NULL, NULL, SW_SHOW);
+						ShellExecute(NULL, NULL, "https://hsp.tv/", NULL, NULL, SW_SHOW);
 						return TRUE;
 					}
 					return  TRUE;

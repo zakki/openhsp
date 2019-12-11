@@ -142,6 +142,7 @@ int  InverseMatrix(MATRIX *mat);
 //  ベクトル＊マトリックス -> ベクトル
 void  ApplyMatrix(VECTOR *v0, VECTOR *v1);
 void  ApplyMatrixN(VECTOR *v0, VECTOR *v1, int nb);
+void  ApplyMatrix(MATRIX* mat, VECTOR* v1, VECTOR* v0);
 //  ベクトル＊マトリックス -> ベクトル（回転のみ）
 void  ApplyMatrixRot(VECTOR *v0, VECTOR *v1);
 //  ベクトル＊マトリックス -> ベクトル（平行移動のみ）

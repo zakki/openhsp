@@ -1165,6 +1165,14 @@ void ApplyMatrix(VECTOR *v1, VECTOR *v0)
 */
 }
 
+void ApplyMatrix(MATRIX* mat, VECTOR *v1, VECTOR *v0)
+{
+  v1->x = (v0->x * mat->m00 + v0->y * mat->m10 + v0->z * mat->m20) + mat->m30;
+  v1->y = (v0->x * mat->m01 + v0->y * mat->m11 + v0->z * mat->m21) + mat->m31;
+  v1->z = (v0->x * mat->m02 + v0->y * mat->m12 + v0->z * mat->m22) + mat->m32;
+  v1->w = (v0->x * mat->m03 + v0->y * mat->m13 + v0->z * mat->m23) + mat->m33;
+}
+
 /*-----------------------------------------------
   ベクトル＊マトリックス -> ベクトル（回転のみ）
 -----------------------------------------------*/
