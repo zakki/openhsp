@@ -14,6 +14,7 @@ LOCAL_SRC_FILES := hsp3embed/hsp3r.cpp hsp3embed/hspsource.cpp javafunc.cpp main
 ../../hsplib36b2/hsp3embed/hspvar_util.cpp \
 ../../hsplib36b2/hsp3embed/misc.cpp \
 ../../hsplib36b2/hsp3/dpmread.cpp \
+../../hsplib36b2/hsp3/geometry.cpp \
 ../../hsplib36b2/hsp3/hsp3debug.cpp \
 ../../hsplib36b2/hsp3/hsp3gr_dish.cpp \
 ../../hsplib36b2/hsp3/hsp3int.cpp \
