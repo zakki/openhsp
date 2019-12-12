@@ -1241,7 +1241,8 @@ static int cmdfunc_extcmd( int cmd )
 			VK_CONTROL, VK_ESCAPE,
 			(GetSystemMetrics(SM_SWAPBUTTON) ? VK_RBUTTON : VK_LBUTTON),
 			(GetSystemMetrics(SM_SWAPBUTTON) ? VK_LBUTTON : VK_RBUTTON),
-			VK_TAB
+			VK_TAB,
+			90, 88, 67, 65, 87, 68, 83		// Z,X,C, A,W,D,S
 		};
 
 		for ( size_t i = 0; i < sizeof(stick_keys) / sizeof(int); i++ ) {
