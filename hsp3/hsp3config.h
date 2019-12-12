@@ -19,8 +19,8 @@
 //
 //		ˆÚA—p‚Ìƒ‰ƒxƒ‹
 //
-#define JPN			// IME use flag
-#define JPNMSG		// japanese message flag
+//#define JPN			// IME use flag
+//#define JPNMSG		// japanese message flag
 
 //
 //	Debug mode functions

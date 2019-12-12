@@ -120,6 +120,13 @@
 #const global GPCNVAXIS_WORLDVIEW (2)
 #const global GPCNVAXIS_WORLD (3)
 
+#const global vptype_off (0)
+#const global vptype_translate (1)
+#const global vptype_rotate (2)
+#const global vptype_scale (3)
+#const global vptype_3dmatrix (4)
+#const global vptype_2d (5)
+#const global vptype_3d (6)
 
 ;
 ;	system request
