@@ -95,6 +95,19 @@ typedef struct HSPOBJINFO
 #define HSPWND_OPTION_OFFSCREEN 32
 #define HSPWND_OPTION_USERSHADER 64
 
+#define BMSCR_VPFLAG_NOUSE	0
+#define BMSCR_VPFLAG_2D	1
+#define BMSCR_VPFLAG_3D	2
+#define BMSCR_VPFLAG_MATRIX 3
+
+#define BMSCR_VPTYPE_OFF		0
+#define BMSCR_VPTYPE_TRANSLATE	1
+#define BMSCR_VPTYPE_ROTATE		2
+#define BMSCR_VPTYPE_SCALE		3
+#define BMSCR_VPTYPE_3DMATRIX	4
+#define BMSCR_VPTYPE_2D			5
+#define BMSCR_VPTYPE_3D			6
+
 #define BMSCR_MAX_MTOUCH	16		// Max Points of Multi-Touch
 typedef struct HSP3MTOUCH
 {
@@ -167,6 +180,7 @@ public:
 	int Pget( int xx, int yy );
 	void Pset( int xx,int yy );
 	void Line( int xx,int yy );
+	void SetScroll(int xbase, int ybase);
 	int Copy( Bmscr *src, int xx, int yy, int psx, int psy );
 	int Zoom( int dx, int dy, Bmscr *src, int xx, int yy, int psx, int psy, int mode );
 
@@ -208,6 +222,8 @@ public:
 	void resetMTouch( void );
 	int listMTouch( int *outbuf );
 
+	void Viewcalc_reset(void);
+	int Viewcalc_set(int type, HSPREAL x, HSPREAL y, HSPREAL p_sx, HSPREAL p_sy );
 
 	//
 	//		Window data structure
@@ -292,18 +308,24 @@ public:
 	int		mtouch_num;					// Active Multi-Touch points
 	HSP3MTOUCH mtouch[BMSCR_MAX_MTOUCH];	// Multi-Touch Info
 
-	float	colorvalue[4];				// ColorRGB value each 0.0〜1.0
+	float	colorvalue[4];				// ColorRGB value each 0.0～1.0
 
 	char	font_curname[RESNAME_MAX];	// Current Font Name
 	int		font_cursize;				// Current Font Size
 	int		font_curstyle;				// Current Font Style
 
 	int		mulcolor;					// Multiplyer Color (RGB)
-	float	mulcolorvalue[4];			// Multiplyer Color value each 0.0〜1.0
+	float	mulcolorvalue[4];			// Multiplyer Color value each 0.0～1.0
 
 	int		buffer_option;				// buffer options for off-screen
 	void	*master_buffer;				// buffer pointer to off-screen
 	HSPREAL	accel_value[BMSCR_SAVEPOS_MAX];		// Accelerometer sensor value
+
+	int		vp_flag;					// Viewport enable flag (0=none)
+	float	vp_viewtrans[4];			// View Translate X,Y,Z,W
+	float	vp_viewrotate[4];			// View Rotate X,Y,Z,W
+	float	vp_viewscale[4];			// View Scale X,Y,Z,W
+	float	vp_view3dprm[4];			// View 3D parameter
 
 private:
 //	void Blt( int mode, Bmscr *src, int xx, int yy, int asx, int asy );
@@ -423,11 +445,11 @@ typedef struct BMSCR
 	//		Class depend data
 	//
 	int		objstyle;					// objects style
-	HSPOBJINFO *mem_obj;				// Window objects
+	HSPOBJINFO* mem_obj;				// Window objects
 	int objmax;							// Max number of obj
 	int objlimit;						// Limit number of obj
 	short savepos[BMSCR_SAVEPOS_MAX];	// saved position
-	void *master_hspwnd;				// Parent hspwnd class
+	void* master_hspwnd;				// Parent hspwnd class
 
 	int		imgbtn;						// Custom Button Flag (-1=none)
 	short	btn_x1, btn_y1;				// Custom Button Image X,Y
@@ -443,23 +465,29 @@ typedef struct BMSCR
 
 	short	tapstat;					// TapStatus
 	short	tapinvalid;					// Invalid Tap Flag
-	HSPOBJINFO *cur_obj;				// Tap active objects
+	HSPOBJINFO* cur_obj;				// Tap active objects
 
 	int		mtouch_num;					// Active Multi-Touch points
 	HSP3MTOUCH mtouch[BMSCR_MAX_MTOUCH];	// Multi-Touch Info
 
-	float	colorvalue[4];				// ColorRGB value each 0.0〜1.0
+	float	colorvalue[4];				// ColorRGB value each 0.0～1.0
 
 	char	font_curname[RESNAME_MAX];	// Current Font Name
 	int		font_cursize;				// Current Font Size
 	int		font_curstyle;				// Current Font Style
 
 	int		mulcolor;					// Multiplyer Color (RGB)
-	float	mulcolorvalue[4];			// Multiplyer Color value each 0.0〜1.0
+	float	mulcolorvalue[4];			// Multiplyer Color value each 0.0～1.0
 
 	int		buffer_option;				// buffer options for off-screen
-	void	*master_buffer;				// buffer pointer to off-screen
+	void* master_buffer;				// buffer pointer to off-screen
 	HSPREAL	accel_value[BMSCR_SAVEPOS_MAX];		// Accelerometer sensor value
+
+	int		vp_flag;					// Viewport enable flag (0=none)
+	float	vp_viewtrans[4];			// View Translate X,Y,Z,W
+	float	vp_viewrotate[4];			// View Rotate X,Y,Z,W
+	float	vp_viewscale[4];			// View Scale X,Y,Z,W
+	float	vp_view3dprm[4];			// View 3D parameter
 
 } BMSCR;
 
