@@ -124,7 +124,7 @@ void HspWnd::Reset( void )
 	sy = hgio_getHeight();
 
 	MakeBmscr( 0, HSPWND_TYPE_MAIN, 0, 0, sx, sy, 0 );
-	
+
 	//		global vals
 	//
 #if 0
@@ -358,6 +358,13 @@ void Bmscr::Cls( int mode )
 	tapstat = 0;
 	tapinvalid = 0;
 	cur_obj = NULL;
+
+	//		Viewport clear
+	//
+	this->wchg = 0;
+	this->viewx = 0;
+	this->viewy = 0;
+	Viewcalc_reset();
 
 	//		text setting initalize
 	//
@@ -959,4 +966,94 @@ int Bmscr::listMTouch( int *outbuf )
 	}
 	return mtouch_num;
 }
+
+
+/*------------------------------------------------------------*/
+/*
+		Viewport
+*/
+/*------------------------------------------------------------*/
+
+void Bmscr::SetScroll(int xbase, int ybase)
+{
+	//		スクロール基点を設定
+	//
+	viewx = xbase;
+	viewy = ybase;
+}
+
+void Bmscr::Viewcalc_reset(void)
+{
+	//	Reset viewport
+	//
+	int i;
+	for (i = 0; i < 4; i++) {
+		vp_viewtrans[i] = 0.0f;
+		vp_viewrotate[i] = 0.0f;
+		vp_viewscale[i] = 0.0f;
+		vp_view3dprm[i] = 0.0f;
+	}
+	vp_flag = BMSCR_VPFLAG_NOUSE;
+}
+
+
+int Bmscr::Viewcalc_set(int type, HSPREAL x, HSPREAL y, HSPREAL p_sx, HSPREAL p_sy)
+{
+	//	Setup viewport
+	//
+	switch (type) {
+	case BMSCR_VPTYPE_OFF:
+		Viewcalc_reset();
+		break;
+	case BMSCR_VPTYPE_TRANSLATE:
+		vp_viewtrans[0] = (float)x;
+		vp_viewtrans[1] = (float)y;
+		vp_viewtrans[2] = (float)p_sx;
+		vp_viewtrans[3] = (float)p_sy;
+		break;
+	case BMSCR_VPTYPE_ROTATE:
+		vp_viewrotate[0] = (float)x;
+		vp_viewrotate[1] = (float)y;
+		vp_viewrotate[2] = (float)p_sx;
+		vp_viewrotate[3] = (float)p_sy;
+		break;
+	case BMSCR_VPTYPE_SCALE:
+		vp_viewscale[0] = (float)x;
+		vp_viewscale[1] = (float)y;
+		vp_viewscale[2] = (float)p_sx;
+		vp_viewscale[3] = (float)p_sy;
+		break;
+	case BMSCR_VPTYPE_3DMATRIX:
+		vp_view3dprm[0] = (float)x;
+		vp_view3dprm[1] = (float)y;
+		vp_view3dprm[2] = (float)p_sx;
+		vp_view3dprm[3] = (float)p_sy;
+		vp_flag = BMSCR_VPFLAG_MATRIX;
+		break;
+	case BMSCR_VPTYPE_2D:
+		if ((x == 0.0) || (y == 0.0)) return -1;
+		vp_viewscale[0] = (float)x;
+		vp_viewscale[1] = (float)y;
+		vp_viewscale[2] = 1.0f;
+		vp_viewscale[3] = 1.0f;
+		vp_viewrotate[0] = 0.0f;
+		vp_viewrotate[1] = 0.0f;
+		vp_viewrotate[2] = (float)p_sx;
+		vp_viewrotate[3] = 0.0f;
+		vp_flag = BMSCR_VPFLAG_2D;
+		break;
+	case BMSCR_VPTYPE_3D:
+		vp_view3dprm[0] = (float)x;
+		vp_view3dprm[1] = (float)y;
+		vp_view3dprm[2] = (float)p_sx;
+		vp_view3dprm[3] = (float)p_sy;
+		vp_flag = BMSCR_VPFLAG_3D;
+		break;
+	default:
+		return -1;
+	}
+	hgio_setview((BMSCR*)this);
+	return 0;
+}
+
 

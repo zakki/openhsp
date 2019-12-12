@@ -13,6 +13,7 @@
 #include "stb_image.h"
 
 #if defined(HSPLINUX) || defined(HSPEMSCRIPTEN)
+#include <unistd.h>
 #include "../../hsp3/hsp3config.h"
 #else
 #include "../hsp3config.h"
@@ -36,20 +37,42 @@
 #include "appengine.h"
 #endif
 
-#if defined(HSPLINUX) || defined(HSPEMSCRIPTEN)
+#if defined(HSPEMSCRIPTEN)
 #define USE_JAVA_FONT
 #define FONT_TEX_SX 512
 #define FONT_TEX_SY 128
+#endif
+
+#if defined(HSPLINUX)
+#include <SDL/SDL_ttf.h>
+#define TTF_FONTFILE "/ipaexg.ttf"
+#define USE_JAVA_FONT
+#define FONT_TEX_SX 512
+#define FONT_TEX_SY 128
+//#include "font_data.h"
+#endif
+
+#if defined(HSPLINUX) || defined(HSPEMSCRIPTEN)
+#ifdef HSPRASPBIAN
+#include "bcm_host.h"
+#include "GLES/gl.h"
+#include "EGL/egl.h"
+#include "EGL/eglext.h"
+#include "SDL/SDL.h"
+
+
+#else
+
 //#include <GLES2/gl2.h>
 //#include <EGL/egl.h>
 #define GL_GLEXT_PROTOTYPES
 #include <GL/gl.h>
 #include <GL/glext.h>
 //#include <GL/glut.h>
-
 #include "SDL/SDL.h"
 #include "SDL/SDL_image.h"
 #include "SDL/SDL_opengl.h"
+#endif
 
 #include "appengine.h"
 extern bool get_key_state(int sym);
@@ -63,24 +86,24 @@ static		HSPREAL infoval[GINFO_EXINFO_MAX];
 
 /*-------------------------------------------------------------------------------*/
 
-#define CIRCLE_DIV 20
+#define CIRCLE_DIV 32
 #define DEFAULT_FONT_NAME ""
 #define DEFAULT_FONT_SIZE 14
 #define DEFAULT_FONT_STYLE 0
 
 //色
 typedef struct{
-    unsigned char r;
-    unsigned char g;
-    unsigned char b;
-    unsigned char a;
+    GLfloat r;
+    GLfloat g;
+    GLfloat b;
+    GLfloat a;
 } Color;
 
 static float linebasex, linebasey;
 
 
 //テクスチャ頂点情報
-static GLfloat panelVertices[]={
+static GLfloat panelVertices[8]={
      0,  0, //左上
      0, -1, //左下
      1,  0, //右上
@@ -88,28 +111,19 @@ static GLfloat panelVertices[]={
 };
 
 //テクスチャUV情報
-static const GLfloat panelUVs[]={
+static const GLfloat panelUVs[8]={
     0.0f, 0.0f, //左上
     0.0f, 1.0f, //左下
     1.0f, 0.0f, //右上
     1.0f, 1.0f, //右下
 };
 
-static GLbyte panelColors[]={
-    0xff, 0xff, 0xff, 0xff,
-    0xff, 0xff, 0xff, 0xff,
-    0xff, 0xff, 0xff, 0xff,
-    0xff, 0xff, 0xff, 0xff,
-};
 
-static GLbyte panelColorsTex[]={
-    0xff, 0xff, 0xff, 0xff,
-    0xff, 0xff, 0xff, 0xff,
-    0xff, 0xff, 0xff, 0xff,
-    0xff, 0xff, 0xff, 0xff,
-};
-
-#define FVAL_BYTE1 (1.0f/256.0f)
+#define FVAL_BYTE1 (1.0f/255.0f)
+#define RGBA2A(col) (FVAL_BYTE1 * ((col>>24)&0xff))
+#define RGBA2R(col) (FVAL_BYTE1 * ((col>>16)&0xff))
+#define RGBA2G(col) (FVAL_BYTE1 * ((col>> 8)&0xff))
+#define RGBA2B(col) (FVAL_BYTE1 * ((col    )&0xff))
 
 //	グラフィックス設定
 static int _bgsx, _bgsy;	//背景サイズ
@@ -142,13 +156,16 @@ static	int  mes_sx, mes_sy;
 static	int  font_size;
 static	int  font_style;
 
-static	GLfloat _line_vertexs[16*3];
-static	GLbyte  _line_colors[16*4];
+static GLfloat _line_colors[8];
+static GLfloat _panelColorsTex[16];
 
 #ifdef HSPIOS
 static	double  total_tick;
 static	CFAbsoluteTime  lastTime;
 #endif
+
+static		MATRIX mat_proj;	// プロジェクションマトリクス
+static		MATRIX mat_unproj;	// プロジェクション逆変換マトリクス
 
 /*------------------------------------------------------------*/
 /*
@@ -157,14 +174,7 @@ static	CFAbsoluteTime  lastTime;
 /*------------------------------------------------------------*/
 
 //テクスチャ頂点情報
-static GLfloat vert2D[]={
-    0,  0, //左上
-    0, -1, //左下
-    1,  0, //右上
-    1, -1, //右下
-};
-
-static GLfloat vertf2D[]={
+static GLfloat vertf2D[8]={
     0,  0, //左上
     0, -1, //左下
     1,  0, //右上
@@ -172,28 +182,21 @@ static GLfloat vertf2D[]={
 };
 
 //テクスチャUV情報
-static GLfloat uv2D[]={
+static GLfloat uvf2D[8]={
     0.0f, 0.0f, //左上
     0.0f, 1.0f, //左下
     1.0f, 0.0f, //右上
     1.0f, 1.0f, //右下
 };
 
-static GLfloat uvf2D[]={
-    0.0f, 0.0f, //左上
-    0.0f, 1.0f, //左下
-    1.0f, 0.0f, //右上
-    1.0f, 1.0f, //右下
-};
-
-#ifndef HSPEMSCRIPTEN
+#if defined(HSPEMSCRIPTEN)
 static void gluPerspective(double fovy, double aspect, double zNear, double zFar) {
     GLfloat xmin, xmax, ymin, ymax;
     ymax = zNear * tan(fovy * M_PI / 360.0);
     ymin = -ymax;
     xmin = ymin * aspect;
     xmax = ymax * aspect;
-    glFrustumf(xmin, xmax, ymin, ymax, zNear, zFar);
+    glFrustum(xmin, xmax, ymin, ymax, zNear, zFar);
 }
 #endif
 
@@ -224,6 +227,7 @@ void hgio_init( int mode, int sx, int sy, void *hwnd )
 	_rateY = 1.0f;
 	_uvfix = 0;
 
+	GeometryInit();
     //色
     hgio_setColor( 0 );
 
@@ -247,19 +251,38 @@ void hgio_init( int mode, int sx, int sy, void *hwnd )
 //	SetSysReq( SYSREQ_CLSCOLOR, 0xffffff );
 
     //クリア色の設定
-	//hgio_reset();
 	Alertf( "Init:HGIOScreen(%d,%d)",sx,sy );
 
 	//フォント準備
-#if defined(HSPNDK) || defined(HSPLINUX) || defined(HSPEMSCRIPTEN)
+#if defined(HSPNDK) || defined(HSPEMSCRIPTEN)
 	#ifdef USE_JAVA_FONT
 	//font_texid = MakeEmptyTex( FONT_TEX_SX, FONT_TEX_SY );
 	#else
 	font_texid = RegistTexMem( font_data, font_data_size );
-	#endif
-#endif
 	font_sx = 16;
 	font_sy = 16;
+	#endif
+#endif
+
+#if defined(HSPLINUX)
+	#ifdef USE_JAVA_FONT
+
+	//TTF初期化
+	char fontpath[HSP_MAX_PATH+1];
+	strcpy( fontpath, hgio_getdir(1) );
+	strcat( fontpath, TTF_FONTFILE );
+
+	if ( TTF_Init() ) {
+		Alertf( "Init:TTF_Init error" );
+	}
+	TexFontInit( fontpath, 18 );
+
+	#else
+	font_texid = RegistTexMem( font_data, font_data_size );
+	font_sx = 16;
+	font_sy = 16;
+	#endif
+#endif
 
 	//		infovalをリセット
 	//
@@ -358,7 +381,7 @@ void hgio_reset( void )
 	ox = (float)_bgsx;
 	oy = (float)_bgsy;
 
-#ifndef HSPEMSCRIPTEN
+#if defined(HSPRASPBIAN)
 	glOrthof( 0, ox, -oy, 0,-100,100);
 #else
 	glOrtho( 0, ox, -oy, 0,-100,100);
@@ -377,6 +400,9 @@ void hgio_reset( void )
 //	glViewport(_originX,_originY, ox, oy );
 //	glViewport(_originX,-_originY, _sizex, _sizey );
     
+
+
+
     //モデリング変換
     glMatrixMode(GL_MODELVIEW);
     glLoadIdentity();
@@ -384,11 +410,12 @@ void hgio_reset( void )
     glDisable(GL_LIGHTING);
     glDisable(GL_CULL_FACE);
     glDisable(GL_DEPTH_TEST);
-    //glClearColor(.7f, .7f, .9f, 1.f);
-    //glShadeModel(GL_SMOOTH);
 #if defined(HSPIOS) || defined(HSPLINUX) || defined(HSPEMSCRIPTEN)
     glDisable(GL_DEPTH_BUFFER_BIT);
 #endif
+
+    //glClearColor(.7f, .7f, .9f, 1.f);
+    //glShadeModel(GL_SMOOTH);
 
     
     //頂点配列の設定
@@ -400,13 +427,26 @@ void hgio_reset( void )
         
     //テクスチャの設定
     glEnableClientState(GL_TEXTURE_COORD_ARRAY);
+
+
 #if defined(HSPLINUX) || defined(HSPEMSCRIPTEN)
 	glDisable(GL_TEXTURE_2D);
 #else
     glEnable(GL_TEXTURE_2D);
 #endif
 
-        
+
+#if defined(HSPNDK) || defined(HSPLINUX) || defined(HSPEMSCRIPTEN)
+	if ( GetSysReq( SYSREQ_CLSMODE ) == CLSMODE_SOLID ) {
+		//指定カラーで消去
+		int ccol = GetSysReq( SYSREQ_CLSCOLOR );
+		hgio_setClear( (ccol>>16)&0xff, (ccol>>8)&0xff, (ccol)&0xff );
+		hgio_clear();
+	}
+#endif
+
+    hgio_setview( mainbm );
+
     //ブレンドの設定
     glEnable(GL_BLEND);
 #ifdef HSPIOS
@@ -418,10 +458,8 @@ void hgio_reset( void )
     glEnable(GL_POINT_SMOOTH);
 
     //前処理
-//    glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_MAG_FILTER,GL_LINEAR); 
-//    glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_MIN_FILTER,GL_LINEAR); 
-    glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_MAG_FILTER,GL_NEAREST); 
-    glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_MIN_FILTER,GL_NEAREST); 
+    glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_MAG_FILTER,GL_NEAREST);
+    glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_MIN_FILTER,GL_NEAREST);
 
 	//テクスチャ設定リセット
 	TexReset();
@@ -433,12 +471,14 @@ void hgio_reset( void )
 #endif
 #endif
 
+
 }
 
 void hgio_term( void )
 {
 	hgio_render_end();
 	TexTerm();
+	GeometryInit();
 }
 
 
@@ -469,6 +509,48 @@ void hgio_setback( BMSCR *bm )
 }
 
 
+int hgio_gsel( BMSCR *bm )
+{
+	//		gsel(描画先変更) 未実装
+	//
+	hgio_render_end();
+	return 0;
+}
+
+
+int hgio_buffer(BMSCR *bm)
+{
+	//		buffer(描画用画面作成) 未実装
+	//
+	int texid = MakeEmptyTexBuffer( bm->sx, bm->sy );
+	if (texid >= 0) {
+		bm->texid = texid;
+	}
+	return 0;
+}
+
+
+int hgio_bufferop(BMSCR* bm, int mode, char *ptr)
+{
+	//		オフスクリーンバッファを操作
+	//
+	int texid = bm->texid;
+	if (texid < 0) return -1;
+
+	if (mode & 0x1000) {
+		return UpdateTexStar(texid, mode & 0xfff);
+	}
+
+	switch (mode) {
+	case 0:
+		return UpdateTex32(texid, ptr, 0);
+	default:
+		return -2;
+	}
+	return 0;
+}
+
+
 /*-------------------------------------------------------------------------------*/
 
 void hgio_clear( void )
@@ -495,10 +577,9 @@ void hgio_setFilterMode( int mode )
     }
 }
 
-void hgio_setBlendMode( int mode, int aval )
+static void setBlendMode( int mode )
 {
-    //ブレンドモード設定
-
+	// mode=2 はアルファあり半透明レート無効なのでアルファを 1.0 で埋める
     switch( mode ) {
         case 0:                     //no blend
         case 1:                     //no blend
@@ -527,45 +608,24 @@ void hgio_setBlendMode( int mode, int aval )
             //glBlendFunc(GL_ONE,GL_ONE_MINUS_SRC_ALPHA);
             break;
     }
+}
+
+void hgio_setTexBlendMode( int mode, int aval )
+{
+    //ブレンドモード設定
+	setBlendMode( mode );
     if ( mode <= 1 ) {
         glDisableClientState(GL_COLOR_ARRAY);
 	} else {
-	    int *i_panelcolor;
-		int mulcolor;
-	    if ( mode >= 2 ) {
-		    if ( mode >= 3 ) {
-				mulcolor = ( aval<<24 );
-			} else {
-				mulcolor = 0xff000000;
-			}
-			if ( mainbm != NULL ) {
-			    int rval,gval,bval;
-				GLbyte *colbyte;
-			    rval = (( mainbm->mulcolor )>>16)&0xff;
-			    gval = (( mainbm->mulcolor )>>8)&0xff;
-			    bval = (( mainbm->mulcolor ))&0xff;
-				colbyte = (GLbyte *)&mulcolor;
-				*colbyte++ = rval;
-				*colbyte++ = gval;
-				*colbyte++ = bval;
-			} else {
-				mulcolor |= 0xffffff;
-			}
-		} else {
-			mulcolor = 0xffffffff;
-		}
-		i_panelcolor = (int *)panelColorsTex;
-		*i_panelcolor++ = mulcolor;
-		*i_panelcolor++ = mulcolor;
-		*i_panelcolor++ = mulcolor;
-		*i_panelcolor++ = mulcolor;
+		GLfloat alpha = mode == 2 ? 1.0f : FVAL_BYTE1*( aval&0xff );
+		_panelColorsTex[3]=_panelColorsTex[7]=_panelColorsTex[11]=_panelColorsTex[15]=alpha;
         glEnableClientState(GL_COLOR_ARRAY);
-        glColorPointer(4,GL_UNSIGNED_BYTE,0,panelColorsTex);
+        glColorPointer(4,GL_FLOAT,0,_panelColorsTex);
     }
     glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_MAG_FILTER,_filter); 
     glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_MIN_FILTER,_filter); 
 }
-
+/*
 void hgio_setBlendModeFlat( int mode )
 {
     //ブレンドモード設定(単色)
@@ -635,14 +695,29 @@ void hgio_setBlendModeFlatAlpha( int mode )
             break;
     }
 }
+*/
 
 //色の指定
 void hgio_setColor( int color )
 {
-    _color.r = (color>>16)&0xff;
-    _color.g = (color>>8)&0xff;
-    _color.b = (color)&0xff;
-    _color.a = 0xff;
+	_color.r = RGBA2R(color);
+	_color.g = RGBA2G(color);
+	_color.b = RGBA2B(color);
+	_color.a = 1.0f;
+}
+
+void hgio_setColorTex( int rval, int gval ,int bval )
+{
+	GLfloat r = FVAL_BYTE1 * rval;
+	GLfloat g = FVAL_BYTE1 * gval;
+	GLfloat b = FVAL_BYTE1 * bval;
+	GLfloat *flp = _panelColorsTex;
+	for (int i=0;i<4;i++) {
+		*flp++ = r;
+		*flp++ = g;
+		*flp++ = b;
+		*flp++ = 1.0f;
+	}
 }
 
 //ライン幅の指定
@@ -663,13 +738,6 @@ void hgio_setOrigin( int x, int y )
 {
     _originX=x;
     _originY=y;
-}
-
-void hgio_scale_point( int xx, int yy, int *x, int *y )
-{
-	*x = ( xx - _originX ) * _rateX;
-
-	*y = ( yy - _originY ) * _rateY;
 }
 
 /*-------------------------------------------------------------------------------*/
@@ -702,8 +770,13 @@ void hgio_setfilter( int type, int opt )
 
 int hgio_title( char *str1 )
 {
-#if defined(HSPLINUX) || defined(HSPEMSCRIPTEN)
+#if defined(HSPEMSCRIPTEN)
 	SDL_WM_SetCaption( (const char *)str1, NULL );
+#endif
+#if defined(HSPLINUX)
+#ifndef HSPRASPBIAN
+	SDL_WM_SetCaption( (const char *)str1, NULL );
+#endif
 #endif
 	return 0;
 }
@@ -712,29 +785,128 @@ int hgio_title( char *str1 )
 int hgio_stick( int actsw )
 {
 	int ckey = 0;
-	if ( mouse_btn ) ckey|=256;	// mouse_l
 #if defined(HSPLINUX) || defined(HSPEMSCRIPTEN)
+#ifndef HSPRASPBIAN
 	if ( get_key_state(SDLK_LEFT) )  ckey|=1;		// [left]
-	if ( get_key_state(SDLK_UP) )    ckey|=2;		// [up]
-	if ( get_key_state(SDLK_RIGHT) ) ckey|=4;		// [right]
-	if ( get_key_state(SDLK_DOWN) )  ckey|=8;		// [down]
-	if ( get_key_state(SDLK_SPACE) ) ckey|=16;		// [spc]
-	if ( get_key_state(SDLK_RETURN) )ckey|=32;		// [ent]
-	if ( get_key_state(SDLK_LCTRL) ) ckey|=64;		// [ctrl]
-	if ( get_key_state(SDLK_ESCAPE) )ckey|=128;	// [esc]
-	if ( get_key_state(SDLK_TAB) )   ckey|=1024;	// [tab]
+	if ( get_key_state(SDLK_UP) )    ckey|=1<<1;		// [up]
+	if ( get_key_state(SDLK_RIGHT) ) ckey|=1<<2;		// [right]
+	if ( get_key_state(SDLK_DOWN) )  ckey|=1<<3;		// [down]
+	if ( get_key_state(SDLK_SPACE) ) ckey|=1<<4;		// [spc]
+	if ( get_key_state(SDLK_RETURN) )ckey|=1<<5;		// [ent]
+	if ( get_key_state(SDLK_LCTRL) || get_key_state(SDLK_RCTRL) ) ckey|=1<<6;		// [ctrl]
+	if ( get_key_state(SDLK_ESCAPE) )ckey|=1<<7;	// [esc]
+	if ( mouse_btn & SDL_BUTTON_LMASK ) ckey|=1<<8;	// mouse_l
+	if ( mouse_btn & SDL_BUTTON_RMASK ) ckey|=1<<9;	// mouse_r
+	if ( get_key_state(SDLK_TAB) )   ckey|=1<<10;	// [tab]
+	
+	if ( get_key_state(SDLK_z) )     ckey|=1<<11;
+	if ( get_key_state(SDLK_x) )     ckey|=1<<12;
+	if ( get_key_state(SDLK_c) )     ckey|=1<<13;
+	
+	if ( get_key_state(SDLK_a) )     ckey|=1<<14;
+	if ( get_key_state(SDLK_w) )     ckey|=1<<15;
+	if ( get_key_state(SDLK_d) )     ckey|=1<<16;
+	if ( get_key_state(SDLK_s) )     ckey|=1<<17;
+#else
+	if ( get_key_state(37) ) ckey|=1;		// [left]
+	if ( get_key_state(38) ) ckey|=2;		// [up]
+	if ( get_key_state(39) ) ckey|=4;		// [right]
+	if ( get_key_state(40) ) ckey|=8;		// [down]
+	if ( get_key_state(32) ) ckey|=16;		// [spc]
+	if ( get_key_state(13) ) ckey|=32;		// [ent]
+	if ( get_key_state(17) ) ckey|=64;		// [ctrl]
+	if ( get_key_state(27) ) ckey|=128;		// [esc]
+	if ( get_key_state(1) )  ckey|=256;		// mouse_l
+	if ( get_key_state(2) )  ckey|=512;		// mouse_r
+	if ( get_key_state(9) )  ckey|=1024;	// [tab]
+#endif
+
+#else
+	if ( mouse_btn ) ckey|=256;	// mouse_l
 #endif
 	return ckey;
 }
 
+#if defined(HSPLINUX) || defined(HSPEMSCRIPTEN)
+#ifndef HSPRASPBIAN
+static const unsigned int key_map[256]={
+	/* 0- */
+	0, 0, 0, 3, 0, 0, 0, 0, SDLK_BACKSPACE, SDLK_TAB, 0, 0, 12, SDLK_RETURN, 0, 0,
+	0, 0, 0, SDLK_PAUSE, SDLK_CAPSLOCK, 0, 0, 0, 0, 0, 0, SDLK_ESCAPE, 0, 0, 0, 0,
+	/* 32- */
+	SDLK_SPACE, SDLK_PAGEUP, SDLK_PAGEDOWN, SDLK_END, SDLK_HOME,
+	SDLK_LEFT, SDLK_UP, SDLK_RIGHT, SDLK_DOWN, 0, SDLK_PRINT, 0, 0, SDLK_INSERT, SDLK_DELETE, SDLK_HELP,
+	/* 48- */
+	SDLK_0, SDLK_1, SDLK_2, SDLK_3, SDLK_4, SDLK_5, SDLK_6, SDLK_7, SDLK_8, SDLK_9,
+	0, 0, 0, 0, 0, 0, 0,
+	/* 65- */
+	SDLK_a, SDLK_b, SDLK_c, SDLK_d, SDLK_e, SDLK_f, SDLK_g, SDLK_h, SDLK_i,
+	SDLK_j, SDLK_k, SDLK_l, SDLK_m, SDLK_n, SDLK_o, SDLK_p, SDLK_q, SDLK_r,
+	SDLK_s, SDLK_t, SDLK_u, SDLK_v, SDLK_w, SDLK_x, SDLK_y, SDLK_z,
+	/* 91- */
+	SDLK_LSUPER, SDLK_RSUPER, 0, 0, 0,
+	SDLK_KP0, SDLK_KP1, SDLK_KP2, SDLK_KP3, SDLK_KP4, SDLK_KP5, SDLK_KP6, SDLK_KP7, SDLK_KP8, SDLK_KP9,
+	SDLK_KP_MULTIPLY, SDLK_KP_PLUS, 0, SDLK_KP_MINUS, SDLK_KP_PERIOD, SDLK_KP_DIVIDE, 
+	/* 112- */
+	SDLK_F1, SDLK_F2, SDLK_F3, SDLK_F4, SDLK_F5, SDLK_F6, SDLK_F7, SDLK_F8, SDLK_F9, SDLK_F10,
+	SDLK_F11, SDLK_F12, SDLK_F13, SDLK_F14, SDLK_F15, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+	/* 136- */
+	0, 0, 0, 0, 0, 0, 0, 0, SDLK_NUMLOCK, 145,
+	0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+	/* 160- */
+	SDLK_LSHIFT, SDLK_RSHIFT, SDLK_LCTRL, SDLK_RCTRL, SDLK_LALT, SDLK_RALT,
+	0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+	/* 186- */
+	SDLK_COLON, SDLK_SEMICOLON, SDLK_COMMA, SDLK_MINUS, SDLK_PERIOD, SDLK_SLASH, SDLK_AT, 
+	0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+	/* 219- */
+	SDLK_LEFTBRACKET, SDLK_BACKSLASH, SDLK_RIGHTBRACKET, SDLK_CARET,
+	0, 0, 0, SDLK_DOLLAR, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+	0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0
+};
+
+bool hgio_getkey( int kcode )
+{
+	bool res = false;
+	switch( kcode ){
+		case 1: res = (mouse_btn & SDL_BUTTON_LMASK) > 0; break;
+		case 2: res = (mouse_btn & SDL_BUTTON_RMASK) > 0; break;
+		case 4: res = (mouse_btn & SDL_BUTTON_MMASK) > 0; break;
+		case 5: res = (mouse_btn & SDL_BUTTON_X1MASK) > 0; break;
+		case 6: res = (mouse_btn & SDL_BUTTON_X2MASK) > 0; break;
+		case 16: res = get_key_state(SDLK_LSHIFT) | get_key_state(SDLK_RSHIFT); break;
+		case 17: res = get_key_state(SDLK_LCTRL) | get_key_state(SDLK_RCTRL); break;
+		case 18: res = get_key_state(SDLK_LALT) | get_key_state(SDLK_RALT); break;
+		default: res = get_key_state( key_map[ kcode & 255 ] ); break;
+	}
+	return res;
+}
+#else
+bool hgio_getkey( int kcode )
+{
+	return get_key_state( kcode );
+}
+#endif
+
+#endif
+
 
 int hgio_font( char *fontname, int size, int style )
 {
+#ifdef HSPLINUX
+	#ifdef USE_JAVA_FONT
+	if ( font_size != size ) {
+		TexFontInit( fontname, size );
+	}
+	#endif
+#endif
+
 	font_size = size;
 	font_style = style;
 #ifdef HSPIOS
     gb_font( size, style, fontname );
 #endif
+
 	return 0;
 }
 
@@ -842,62 +1014,54 @@ int hgio_texload( BMSCR *bm, char *fname )
 /*-------------------------------------------------------------------------------*/
 
 //ポイントカラー設定
-void hgio_panelcolor( int color, int aval )
+void hgio_panelcolor( GLfloat *colors, int color, int aval )
 {
-    int rval,gval,bval;
-    rval = (color>>16)&0xff;
-    gval = (color>>8)&0xff;
-    bval = (color)&0xff;
-    
-    for (int i=0;i<4;i++) {
-        panelColors[i*4  ]=rval;
-        panelColors[i*4+1]=gval;
-        panelColors[i*4+2]=bval;
-        panelColors[i*4+3]=aval;
-    }
+	GLfloat *flp;
+	GLfloat r = RGBA2R(color);
+	GLfloat g = RGBA2G(color);
+	GLfloat b = RGBA2B(color);
+	GLfloat a = FVAL_BYTE1 * (aval&0xff);
+	flp = colors;
+	for (int i=0;i<4;i++) {
+		*flp++ = r;
+		*flp++ = g;
+		*flp++ = b;
+		*flp++ = a;
+	}
+
     glEnableClientState(GL_COLOR_ARRAY);
-    glColorPointer(4,GL_UNSIGNED_BYTE,0,panelColors);
+	glColorPointer(4,GL_FLOAT,0,colors);
 }
 
-//ポイントカラー設定
-void hgio_panelcolor_direct( int id, int color, int aval )
+
+static void setCurrentColor( GLfloat *colors, int vnum )
 {
-    int rval,gval,bval;
-    rval = (color>>16)&0xff;
-    gval = (color>>8)&0xff;
-    bval = (color)&0xff;
-
-    panelColors[id*4  ]=rval;
-    panelColors[id*4+1]=gval;
-    panelColors[id*4+2]=bval;
-    panelColors[id*4+3]=aval;
-
-	if ( id == 3 ) {
-	    glEnableClientState(GL_COLOR_ARRAY);
-	    glColorPointer(4,GL_UNSIGNED_BYTE,0,panelColors);
+	GLfloat *flp;
+	flp = colors;
+	for (int i=0;i<vnum;i++) {
+		*flp++ = _color.r;
+		*flp++ = _color.g;
+		*flp++ = _color.b;
+		*flp++ = _color.a;
 	}
+
+	glEnableClientState(GL_COLOR_ARRAY);
+    glColorPointer(4,GL_FLOAT,0,colors);
 }
 
 //ポイント描画
 void hgio_pset( float x, float y )
 {
-    GLfloat _vertexs[16*3];
-    GLbyte  _colors[16*4];
+    //頂点配列情報
+	GLfloat colors[1*4];
+    GLfloat vert[2]={
+		x, -y
+	};
 
-     //頂点配列情報
-     _vertexs[0]= x;_vertexs[1]=-y;_vertexs[2]=0;
-     
-     //カラー配列情報
-     _colors[0]=_color.r;
-     _colors[1]=_color.g;
-     _colors[2]=_color.b;
-     _colors[3]=_color.a;
-
-    hgio_setBlendModeFlat(0);
+	glDisable(GL_BLEND);
     //glBindTexture(GL_TEXTURE_2D,0);
-    glEnableClientState(GL_COLOR_ARRAY);
-    glVertexPointer(3,GL_FLOAT,0,_vertexs);
-    glColorPointer(4,GL_UNSIGNED_BYTE,0,_colors);
+    glVertexPointer(2,GL_FLOAT,0,vert);
+	setCurrentColor(colors,1);
     glDrawArrays(GL_POINTS,0,1);
 }
 
@@ -905,127 +1069,85 @@ void hgio_pset( float x, float y )
 //矩形の描画
 void hgio_rect( float x, float y, float w, float h )
 {
-    GLfloat _vertexs[16*3];
-    GLbyte  _colors[16*4];
-
     //頂点配列情報
-    _vertexs[0]= x;  _vertexs[1] =-y;  _vertexs[2] =0;
-    _vertexs[3]= x;  _vertexs[4] =-y-h;_vertexs[5] =0;  
-    _vertexs[6]= x+w;_vertexs[7] =-y-h;_vertexs[8] =0;
-    _vertexs[9]= x+w;_vertexs[10]=-y;  _vertexs[11]=0;  
-    
-    //カラー配列情報
-    for (int i=0;i<4;i++) {
-        _colors[i*4  ]=_color.r;
-        _colors[i*4+1]=_color.g;
-        _colors[i*4+2]=_color.b;
-        _colors[i*4+3]=_color.a;
-    }
+	GLfloat colors[4*4];
+	GLfloat vert[8]={
+		x,   -y,
+		x,   -y-h,
+		x+w, -y-h,
+		x+w, -y
+	};
 
-    //ラインの描画
-    hgio_setBlendModeFlat(0);
+	glDisable(GL_BLEND);
     //glBindTexture(GL_TEXTURE_2D,0);
-    glEnableClientState(GL_COLOR_ARRAY);
-    glVertexPointer(3,GL_FLOAT,0,_vertexs);
-    glColorPointer(4,GL_UNSIGNED_BYTE,0,_colors);
+    glVertexPointer(2,GL_FLOAT,0,vert);
+	setCurrentColor(colors,4);
     glDrawArrays(GL_LINE_LOOP,0,4);
 }
 
 //矩形の塗り潰し
 void hgio_boxfill( float x, float y, float w, float h )
 {
-    GLfloat _vertexs[16*3];
-    GLbyte  _colors[16*4];
+    //頂点配列情報
+	GLfloat colors[4*4];
+	GLfloat vert[8]={
+		x,   -y,
+		x,   -y-h,
+		x+w, -y,
+		x+w, -y-h
+	};
 
-     //頂点配列情報
-     _vertexs[0]= x;  _vertexs[1] =-y;  _vertexs[2] =0;
-     _vertexs[3]= x;  _vertexs[4] =-y-h;_vertexs[5] =0;  
-     _vertexs[6]= x+w;_vertexs[7] =-y;  _vertexs[8] =0;
-     _vertexs[9]= x+w;_vertexs[10]=-y-h;_vertexs[11]=0;  
-     
-     //カラー配列情報
-     for (int i=0;i<4;i++) {
-         _colors[i*4  ]=_color.r;
-         _colors[i*4+1]=_color.g;
-         _colors[i*4+2]=_color.b;
-         _colors[i*4+3]=_color.a;
-     }
-
-    //三角形の描画
-    hgio_setBlendModeFlat(0);
-    //glBindTexture(GL_TEXTURE_2D,0);
-    glEnableClientState(GL_COLOR_ARRAY);
-    glVertexPointer(3,GL_FLOAT,0,_vertexs);
-    glColorPointer(4,GL_UNSIGNED_BYTE,0,_colors);
-    glDrawArrays(GL_TRIANGLE_STRIP,0,4);
+	glDisable(GL_BLEND);
+	//glBindTexture(GL_TEXTURE_2D,0);
+	glVertexPointer(2,GL_FLOAT,0,vert);
+	setCurrentColor(colors,4);
+	glDrawArrays(GL_TRIANGLE_STRIP,0,4);
 }
 
 //円の描画
 void hgio_circleLine( float x, float y, float rx, float ry )
 {
-    GLfloat _vertexs[256*3];
-    GLbyte  _colors[256*4];
-    int length=20;
-    
-     //頂点配列情報
-     for (int i=0;i<length;i++) {
-         float angle=2*M_PI*i/length;
-         _vertexs[i*3+0]= x+cos(angle)*rx;
-         _vertexs[i*3+1]=-y+sin(angle)*ry;
-         _vertexs[i*3+2]=0;
-     }
-     
-     //カラー配列情報
-     for (int i=0;i<length;i++) {
-         _colors[i*4  ]=_color.r;
-         _colors[i*4+1]=_color.g;
-         _colors[i*4+2]=_color.b;
-         _colors[i*4+3]=_color.a;
-     }
+    int length = CIRCLE_DIV;
 
-    //ラインの描画
-    hgio_setBlendModeFlat(0);
+	//頂点配列情報
+	GLfloat colors[length*4];
+    GLfloat vert[length*2], *flp;
+	flp = vert;
+	for (int i=0;i<length;i++) {
+		float angle=2*M_PI*i/length;
+		*flp++ =  x+cos(angle)*rx;
+		*flp++ = -y+sin(angle)*ry;
+	}
+
+	glDisable(GL_BLEND);
     //glBindTexture(GL_TEXTURE_2D,0);
-    glEnableClientState(GL_COLOR_ARRAY);
-    glVertexPointer(3,GL_FLOAT,0,_vertexs);
-    glColorPointer(4,GL_UNSIGNED_BYTE,0,_colors);
-    glDrawArrays(GL_LINE_LOOP,0,length);
-    glDrawArrays(GL_POINTS,0,length);
+    glVertexPointer(2,GL_FLOAT,0,vert);
+ 	setCurrentColor(colors,length);
+	glDrawArrays(GL_LINE_LOOP,0,length);
 }
 
 //円の塗り潰し
 void hgio_circleFill( float x, float y, float rx, float ry )
 {
-    GLfloat _vertexs[256*3];
-    GLbyte  _colors[256*4];
-    int length=20+2;
+    int length = CIRCLE_DIV+2;
     
-     //頂点配列情報
-     _vertexs[0]= x;
-     _vertexs[1]=-y;
-     _vertexs[2]=0;
-     for (int i=1;i<length;i++) {
-         float angle=2*M_PI*i/(length-2);
-         _vertexs[i*3+0]= x+cos(angle)*rx;
-         _vertexs[i*3+1]=-y+sin(angle)*ry;
-         _vertexs[i*3+2]=0;
-     }
-     
-     //カラー配列情報
-     for (int i=0;i<length;i++) {
-         _colors[i*4  ]=_color.r;
-         _colors[i*4+1]=_color.g;
-         _colors[i*4+2]=_color.b;
-         _colors[i*4+3]=_color.a;
-     }
+	//頂点配列情報
+	GLfloat colors[length*4];
+    GLfloat vert[length*2], *flp;
+	flp = vert;
+	*flp++ =  x;
+	*flp++ = -y;
+	for (int i=1;i<length;i++) {
+		float angle=2*M_PI*i/(length-2);
+		*flp++ =  x+cos(angle)*rx;
+		*flp++ = -y+sin(angle)*ry;
+	}
 
-    //ラインの描画
-    hgio_setBlendModeFlat(0);
+	glDisable(GL_BLEND);
     //glBindTexture(GL_TEXTURE_2D,0);
-    glEnableClientState(GL_COLOR_ARRAY);
-    glVertexPointer(3,GL_FLOAT,0,_vertexs);
-    glColorPointer(4,GL_UNSIGNED_BYTE,0,_colors);
-    glDrawArrays(GL_TRIANGLE_FAN,0,length);
+    glVertexPointer(2,GL_FLOAT,0,vert);
+  	setCurrentColor(colors,length);
+	glDrawArrays(GL_TRIANGLE_FAN,0,length);
 }
 
 
@@ -1040,22 +1162,23 @@ void hgio_line( BMSCR *bm, float x, float y )
 	//
 	if ( bm == NULL ) return;
 	if ( bm->type != HSPWND_TYPE_MAIN ) throw HSPERR_UNSUPPORTED_FUNCTION;
-	if (drawflag == 0) hgio_render_start();
 
 	hgio_setColor( bm->color );
 
-     //カラー配列情報
-     for (int i=0;i<2;i++) {
-         _line_colors[i*4  ]=_color.r;
-         _line_colors[i*4+1]=_color.g;
-         _line_colors[i*4+2]=_color.b;
-         _line_colors[i*4+3]=_color.a;
-     }
+	//カラー配列情報
+	GLfloat *flp;
+	flp = _line_colors;
+	for (int i=0;i<2;i++) {
+		*flp++ = _color.r;
+		*flp++ = _color.g;
+		*flp++ = _color.b;
+		*flp++ = _color.a;
+	}
 
 	linebasex = x + 0.375f;
 	linebasey = y + 0.375f;
 
-    hgio_setBlendModeFlat(0);
+	glDisable(GL_BLEND);
 	ChangeTex( -1 );
     //glBindTexture(GL_TEXTURE_2D,0);
 }
@@ -1068,17 +1191,18 @@ void hgio_line2( float x, float y )
 	//		(hgio_lineで開始後に必要な回数呼ぶ、hgio_line(NULL)で終了すること)
 	//
 
-     //頂点配列情報
-     _line_vertexs[0]= linebasex;_line_vertexs[1]=-linebasey;_line_vertexs[2]=0;
+	//頂点配列情報
+	GLfloat vert[4];
+	vert[0]= linebasex;
+	vert[1]=-linebasey;
 	linebasex = x + 0.375f;
 	linebasey = y + 0.375f;
-    _line_vertexs[3]= linebasex;_line_vertexs[4]=-linebasey;_line_vertexs[5]=0;
-    
+	vert[2]= linebasex;
+	vert[3]=-linebasey;
 
-    //ラインの描画
+    glVertexPointer(2,GL_FLOAT,0,vert);
     glEnableClientState(GL_COLOR_ARRAY);
-    glVertexPointer(3,GL_FLOAT,0,_line_vertexs);
-    glColorPointer(4,GL_UNSIGNED_BYTE,0,_line_colors);
+    glColorPointer(4,GL_FLOAT,0,_line_colors);
     glDrawArrays(GL_LINE_STRIP,0,2);
 }
 
@@ -1089,7 +1213,6 @@ void hgio_boxf( BMSCR *bm, float x1, float y1, float x2, float y2 )
 	//
 	if ( bm == NULL ) return;
 	if ( bm->type != HSPWND_TYPE_MAIN ) throw HSPERR_UNSUPPORTED_FUNCTION;
-	if (drawflag == 0) hgio_render_start();
 
 	ChangeTex( -1 );
 	hgio_setColor( bm->color );
@@ -1104,7 +1227,6 @@ void hgio_circle( BMSCR *bm, float x1, float y1, float x2, float y2, int mode )
 	float xx,yy,rx,ry;
 	if ( bm == NULL ) return;
 	if ( bm->type != HSPWND_TYPE_MAIN ) throw HSPERR_UNSUPPORTED_FUNCTION;
-	if (drawflag == 0) hgio_render_start();
 
 	rx = ((float)abs(x2-x1))*0.5f;
 	ry = ((float)abs(y2-y1))*0.5f;
@@ -1127,11 +1249,10 @@ void hgio_fillrot( BMSCR *bm, float x, float y, float sx, float sy, float ang )
 {
 	if ( bm == NULL ) return;
 	if ( bm->type != HSPWND_TYPE_MAIN ) throw HSPERR_UNSUPPORTED_FUNCTION;
-	if (drawflag == 0) hgio_render_start();
     
+	GLfloat colors[16];
     GLfloat *flp;
 	GLfloat x0,y0,x1,y1,ofsx,ofsy;
-    int arate;
     
 	ofsx = sx;
 	ofsy = sy;
@@ -1164,8 +1285,9 @@ void hgio_fillrot( BMSCR *bm, float x, float y, float sx, float sy, float ang )
 	ChangeTex( -1 );
 
     glVertexPointer(2,GL_FLOAT,0,vertf2D);
-	hgio_panelcolor( bm->color, bm->gfrate );
-	hgio_setBlendModeFlatAlpha( bm->gmode );
+
+	setBlendMode( bm->gmode );
+	hgio_panelcolor( colors, bm->color, bm->gmode < 3 ? 255 : bm->gfrate );
 
     glDrawArrays(GL_TRIANGLE_STRIP,0,4);
 }
@@ -1180,6 +1302,7 @@ void hgio_fcopy( float distx, float disty, short xx, short yy, short srcsx, shor
 	TEXINF *tex = GetTex( texid );
 	if ( tex->mode == TEXMODE_NONE ) return;
 
+	GLfloat colors[16];
     GLfloat *flp;
     GLfloat x1,y1,x2,y2;
     float ratex,ratey;
@@ -1235,8 +1358,8 @@ void hgio_fcopy( float distx, float disty, short xx, short yy, short srcsx, shor
     glVertexPointer( 2, GL_FLOAT,0,vertf2D );
     glTexCoordPointer( 2,GL_FLOAT,0,uvf2D );
 
-	hgio_setBlendMode( 3, 255 );
-	hgio_panelcolor( color, 255 );
+	setBlendMode( 3 );
+	hgio_panelcolor( colors, color, 255 );
 	
 //    glDisableClientState(GL_COLOR_ARRAY);
     glDrawArrays(GL_TRIANGLE_STRIP,0,4);
@@ -1255,7 +1378,6 @@ void hgio_copy( BMSCR *bm, short xx, short yy, short srcsx, short srcsy, BMSCR *
 	//
 	if ( bm == NULL ) return;
 	if ( bm->type != HSPWND_TYPE_MAIN ) throw HSPERR_UNSUPPORTED_FUNCTION;
-	if (drawflag == 0) hgio_render_start();
 
 	TEXINF *tex = GetTex( bmsrc->texid );
 	if ( tex->mode == TEXMODE_NONE ) return;
@@ -1328,7 +1450,7 @@ void hgio_copy( BMSCR *bm, short xx, short yy, short srcsx, short srcsy, BMSCR *
     glVertexPointer( 2, GL_FLOAT,0,vertf2D );
     glTexCoordPointer( 2,GL_FLOAT,0,uvf2D );
 
-	hgio_setBlendMode( bm->gmode, bm->gfrate );
+	hgio_setTexBlendMode( bm->gmode, bm->gfrate );
 //    glDisableClientState(GL_COLOR_ARRAY);
     glDrawArrays(GL_TRIANGLE_STRIP,0,4);
 }
@@ -1342,7 +1464,6 @@ void hgio_copyrot( BMSCR *bm, short xx, short yy, short srcsx, short srcsy, floa
 	//
 	if ( bm == NULL ) return;
 	if ( bm->type != HSPWND_TYPE_MAIN ) throw HSPERR_UNSUPPORTED_FUNCTION;
-	if (drawflag == 0) hgio_render_start();
 
 	TEXINF *tex = GetTex( bmsrc->texid );
 	if ( tex->mode == TEXMODE_NONE ) return;
@@ -1436,7 +1557,7 @@ void hgio_copyrot( BMSCR *bm, short xx, short yy, short srcsx, short srcsy, floa
     glVertexPointer(2,GL_FLOAT,0,vertf2D);
     glTexCoordPointer(2,GL_FLOAT,0,uvf2D);
 
-	hgio_setBlendMode( bm->gmode, bm->gfrate );
+	hgio_setTexBlendMode( bm->gmode, bm->gfrate );
     //glDisableClientState(GL_COLOR_ARRAY);
     glDrawArrays(GL_TRIANGLE_STRIP,0,4);
 }
@@ -1448,7 +1569,6 @@ void hgio_square_tex( BMSCR *bm, int *posx, int *posy, BMSCR *bmsrc, int *uvx, i
 	//
 	if ( bm == NULL ) return;
 	if ( bm->type != HSPWND_TYPE_MAIN ) throw HSPERR_UNSUPPORTED_FUNCTION;
-	if (drawflag == 0) hgio_render_start();
 
 	TEXINF *tex = GetTex( bmsrc->texid );
 	if ( tex->mode == TEXMODE_NONE ) return;
@@ -1485,7 +1605,7 @@ void hgio_square_tex( BMSCR *bm, int *posx, int *posy, BMSCR *bmsrc, int *uvx, i
     glVertexPointer(2,GL_FLOAT,0,vertf2D);
     glTexCoordPointer(2,GL_FLOAT,0,uvf2D);
 
-	hgio_setBlendMode( bm->gmode, bm->gfrate );
+	hgio_setTexBlendMode( bm->gmode, bm->gfrate );
     //glDisableClientState(GL_COLOR_ARRAY);
     glDrawArrays(GL_TRIANGLE_STRIP,0,4);
 }
@@ -1496,11 +1616,9 @@ void hgio_square( BMSCR *bm, int *posx, int *posy, int *color )
 	//		四角形(square)単色描画
 	//
     GLfloat *flp;
-    int arate;
 
 	if ( bm == NULL ) return;
 	if ( bm->type != HSPWND_TYPE_MAIN ) throw HSPERR_UNSUPPORTED_FUNCTION;
-	if (drawflag == 0) hgio_render_start();
 
     flp = vertf2D;
 
@@ -1516,16 +1634,19 @@ void hgio_square( BMSCR *bm, int *posx, int *posy, int *color )
 	ChangeTex( -1 );
 
     glVertexPointer(2,GL_FLOAT,0,vertf2D);
-    arate = bm->gfrate;
-    if ( bm->gmode < 3 ) arate = 255;
 
-	hgio_panelcolor_direct( 0, color[0], arate );
-	hgio_panelcolor_direct( 1, color[3], arate );
-	hgio_panelcolor_direct( 2, color[1], arate );
-	hgio_panelcolor_direct( 3, color[2], arate );
+	setBlendMode( bm->gmode );
 
-	hgio_setBlendModeFlatAlpha( bm->gmode );
+	GLfloat a = bm->gmode < 3 ? 1.0f : FVAL_BYTE1*(bm->gfrate&0xff);
+	GLfloat colors[16]={
+		RGBA2R( color[0] ), RGBA2G( color[0] ), RGBA2B( color[0] ), a,
+		RGBA2R( color[3] ), RGBA2G( color[3] ), RGBA2B( color[3] ), a,
+		RGBA2R( color[1] ), RGBA2G( color[1] ), RGBA2B( color[1] ), a,
+		RGBA2R( color[2] ), RGBA2G( color[2] ), RGBA2B( color[2] ), a
+	};
 
+	glEnableClientState(GL_COLOR_ARRAY);
+	glColorPointer(4,GL_FLOAT,0,colors);
     glDrawArrays(GL_TRIANGLE_STRIP,0,4);
 }
 
@@ -1548,7 +1669,6 @@ int hgio_celputmulti( BMSCR *bm, int *xpos, int *ypos, int *cel, int count, BMSC
 
 	if ( bm == NULL ) return 0;
 	if ( bm->type != HSPWND_TYPE_MAIN ) throw HSPERR_UNSUPPORTED_FUNCTION;
-	if (drawflag == 0) hgio_render_start();
 
 	total =0;
 
@@ -1616,7 +1736,7 @@ int hgio_gettick( void )
     //return (int)( CFAbsoluteTimeGetCurrent() * 1000.0 );
 #endif
 
-#ifdef HSPEMSCRIPTEN
+#if defined(HSPEMSCRIPTEN)
 	int i;
 	timespec ts;
 	double nsec;
@@ -1629,7 +1749,6 @@ int hgio_gettick( void )
 		init = true;
 		initTime = i;
 	}
-
 	return i - initTime;
 #endif
 }
@@ -1641,6 +1760,9 @@ int hgio_exec( char *msg, char *option, int mode )
 #endif
 #ifdef HSPIOS
     gb_exec( mode, msg );
+#endif
+#ifdef HSPLINUX
+	system(msg);
 #endif
     return 0;
 }
@@ -1696,18 +1818,86 @@ char *hgio_sysinfo( int p2, int *res, char *outbuf )
 	return p1;
 }
 
+
 /*-------------------------------------------------------------------------------*/
+
+static	char dir_hsp[HSP_MAX_PATH+1];
+static	char dir_cmdline[HSP_MAX_PATH+1];
+
+void hgio_setmainarg( char *hsp_mainpath, char *cmdprm )
+{
+	int p,i;
+	strcpy( dir_hsp, hsp_mainpath );
+
+	p = 0; i = 0;
+	while(dir_hsp[i]){
+		if(dir_hsp[i]=='/' || dir_hsp[i]=='\\') p=i;
+		i++;
+	}
+	dir_hsp[p]=0;
+
+	strcpy( dir_cmdline, cmdprm );
+	Alertf( "Init:hgio_setmainarg(%s,%s)",dir_hsp,dir_cmdline );
+}
+
+char *hgio_getdir( int id )
+{
+	//		dirinfo命令の内容を設定する
+	//
+	char dirtmp[HSP_MAX_PATH+1];
+	char *p;
+	
+	*dirtmp = 0;
+	p = dirtmp;
+
+#if defined(HSPLINUX)
+
+	switch( id ) {
+	case 0:				//    カレント(現在の)ディレクトリ
+		getcwd( p, HSP_MAX_PATH );
+		break;
+	case 1:				//    HSPの実行ファイルがあるディレクトリ
+		p = dir_hsp;
+		break;
+	case 2:				//    Windowsディレクトリ
+		break;
+	case 3:				//    Windowsのシステムディレクトリ
+		break;
+	case 4:				//    コマンドライン文字列
+		p = dir_cmdline;
+		break;
+	case 5:				//    HSPTV素材があるディレクトリ
+		strcpy( p, dir_hsp );
+		strcat( p, "/hsptv" );
+		break;
+	default:
+		throw HSPERR_ILLEGAL_FUNCTION;
+	}
+#endif
+
+	return p;
+}
+
+
+/*-------------------------------------------------------------------------------*/
+
+void hgio_scale_point( int xx, int yy, int &x, int & y )
+{
+	x = ( xx - _originX ) * _rateX;
+	y = ( yy - _originY ) * _rateY;
+}
 
 void hgio_touch( int xx, int yy, int button )
 {
     Bmscr *bm;
-	mouse_x = ( xx - _originX ) * _rateX;
-	mouse_y = ( yy - _originY ) * _rateY;
+	hgio_scale_point( xx,yy,mouse_x,mouse_y );
+	hgio_cnvview( mainbm, &mouse_x, &mouse_y );
+	mouse_y=-mouse_y;
 	mouse_btn = button;
     if ( mainbm != NULL ) {
         mainbm->savepos[BMSCR_SAVEPOS_MOSUEX] = mouse_x;
         mainbm->savepos[BMSCR_SAVEPOS_MOSUEY] = mouse_y;
-        mainbm->tapstat = button;
+        mainbm->tapstat = button!=0;
         bm = (Bmscr *)mainbm;
         bm->UpdateAllObjects();
         bm->setMTouchByPointId( 0, mouse_x, mouse_y, button!=0 );
@@ -1720,15 +1910,17 @@ void hgio_mtouch( int old_x, int old_y, int xx, int yy, int button, int opt )
     int x,y,old_x2,old_y2;
     if ( mainbm == NULL ) return;
     bm = (Bmscr *)mainbm;
-	x = ( xx - _originX ) * _rateX;
-	y = ( yy - _originY ) * _rateY;
+    hgio_scale_point( xx,yy,x,y );
+    hgio_cnvview( mainbm, &mouse_x, &mouse_y );
+    mouse_y=-mouse_y;
+
     if ( opt == 0) {
         mouse_x = x;
         mouse_y = y;
         mouse_btn = button;
         mainbm->savepos[BMSCR_SAVEPOS_MOSUEX] = mouse_x;
         mainbm->savepos[BMSCR_SAVEPOS_MOSUEY] = mouse_y;
-        mainbm->tapstat = button;
+        mainbm->tapstat = button!=0;
         bm->UpdateAllObjects();
     }
     if ( old_x >= 0 ) {
@@ -1758,7 +1950,7 @@ void hgio_mtouchid( int pointid, int xx, int yy, int button, int opt )
         mouse_btn = button;
         mainbm->savepos[BMSCR_SAVEPOS_MOSUEX] = mouse_x;
         mainbm->savepos[BMSCR_SAVEPOS_MOSUEY] = mouse_y;
-        mainbm->tapstat = button;
+        mainbm->tapstat = button!=0;
         bm->UpdateAllObjects();
     }
     bm->setMTouchByPointId( pointid, x, y, button!=0 );
@@ -1814,7 +2006,7 @@ void hgio_putTexFont( int x, int y, char *msg, int color )
 
 		tx = ( a & 15 ) * font_sx;
 		ty = ( a >> 4 ) * font_sy;
-		hgio_fcopy( xx, yy, tx, ty, font_sx, font_sy, font_texid, 0xffffff );
+		hgio_fcopy( xx, yy, tx, ty, font_sx, font_sy, font_texid, color );
 		xx += font_sx;
 	}
 
@@ -1901,9 +2093,9 @@ void hgio_SetAlphaModeDG( int efxprm )
             glBlendFunc(GL_SRC_ALPHA,GL_ONE);
             break;
     }
-	panelColorsTex[3] = panelColorsTex[4+3] = panelColorsTex[8+3] = panelColorsTex[12+3] = aval;
+	_panelColorsTex[3] = _panelColorsTex[4+3] = _panelColorsTex[8+3] = _panelColorsTex[12+3] = FVAL_BYTE1 * (aval&0xff);
 	glEnableClientState(GL_COLOR_ARRAY);
-	glColorPointer(4,GL_UNSIGNED_BYTE,0,panelColorsTex);
+	glColorPointer(4,GL_FLOAT,0,_panelColorsTex);
 
     glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_MAG_FILTER,_filter); 
     glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_MIN_FILTER,_filter); 
@@ -1940,25 +2132,8 @@ int hgio_render_start( void )
     gb_render_start();
 #endif
     
-#if defined(HSPNDK) || defined(HSPLINUX) || defined(HSPEMSCRIPTEN)
-	if ( GetSysReq( SYSREQ_CLSMODE ) == CLSMODE_SOLID ) {
-		//指定カラーで消去
-		int ccol = GetSysReq( SYSREQ_CLSCOLOR );
-		hgio_setClear( (ccol>>16)&0xff, (ccol>>8)&0xff, (ccol)&0xff );
-		hgio_clear();
-	}
-#endif
-
 
 	hgio_reset();
-
-
-#if defined(HSPNDK) || defined(HSPLINUX) || defined(HSPEMSCRIPTEN)
-	if ( GetSysReq( SYSREQ_CLSMODE ) == CLSMODE_TEXTURE ) {
-		//テクスチャで消去
-	}
-#endif
-
 
 	drawflag = 1;
 	return 0;
@@ -1975,21 +2150,34 @@ int hgio_render_end( void )
     gb_render_end();
 #endif
 
-#ifdef HSPNDK
-
-	//hgio_setColor( 0xffffff );
-	//hgio_fcopy( 0, 100,  0, 0, 118, 22, 1 );
+#if defined(HSPRASPBIAN) || defined(HSPNDK)
 
     //後処理
     if (appengine->display == NULL) {
         // displayが無い
         return 0;
     }
+	//hgio_setColor( 0xffffff );
+	//hgio_fcopy( 0,80,  0, 0, 256, 128, font_texid, 0xffffff );
+
+
     eglSwapBuffers(appengine->display, appengine->surface);
 #endif
 
-#if defined(HSPLINUX) || defined(HSPEMSCRIPTEN)
+#if defined(HSPEMSCRIPTEN)
 	SDL_GL_SwapBuffers();
+#endif
+#if defined(HSPLINUX)
+
+	//hgio_makeTexFont( msg );
+	//hgio_putTexFont( 0,0, (char *)"This is Test.", -1 );
+	//hgio_setColor( 0xffffff );
+	//hgio_boxfill( 100,200,100,10 );
+	//hgio_fcopy( 0,80,  0, 0, 256, 128, font_texid, 0xffffff );
+
+#ifndef HSPRASPBIAN
+	SDL_GL_SwapBuffers();
+#endif
 #endif
 
 	drawflag = 0;
@@ -1999,10 +2187,7 @@ int hgio_render_end( void )
 
 void hgio_screen( BMSCR *bm )
 {
-	drawflag = 0;
-	if (bm->type == HSPWND_TYPE_MAIN) {
-		mainbm = bm;
-	}
+    mainbm = bm;
 }
 
 
@@ -2017,52 +2202,11 @@ void hgio_delscreen( BMSCR *bm )
 }
 
 
-int hgio_gsel( BMSCR *bm )
-{
-	//		gsel(描画先変更) 未実装
-	//
-	hgio_render_end();
-	return 0;
-}
-
-
-int hgio_buffer(BMSCR *bm)
-{
-	//		buffer(描画用画面作成) 
-	//
-	int texid = MakeEmptyTexBuffer( bm->sx, bm->sy );
-	if (texid >= 0) {
-		bm->texid = texid;
-	}
-	return 0;
-}
-
-
-int hgio_bufferop(BMSCR* bm, int mode, char *ptr)
-{
-	//		オフスクリーンバッファを操作
-	//
-	int texid = bm->texid;
-	if (texid < 0) return -1;
-
-	if (mode & 0x1000) {
-		return UpdateTexStar(texid, mode & 0xfff);
-	}
-
-	switch (mode) {
-	case 0:
-		return UpdateTex32(texid, ptr, 0);
-	default:
-		return -2;
-	}
-	return 0;
-}
-
-
 int hgio_redraw( BMSCR *bm, int flag )
 {
 	if ( bm == NULL ) return -1;
 	if ( bm->type != HSPWND_TYPE_MAIN ) throw HSPERR_UNSUPPORTED_FUNCTION;
+	hgio_screen( bm );
 
 	if ( flag & 1 ) {
 		hgio_render_end();
@@ -2139,6 +2283,103 @@ char *hgio_getstorage( char *fname )
 	return my_storage_path;
 #endif
 	return fname;
+}
+
+
+/*-------------------------------------------------------------------------------*/
+
+void hgio_setview(BMSCR* bm)
+{
+	// vp_flagに応じたビューポートの設定を行う
+	//
+	int i;
+	MATRIX *vmat;
+	MATRIX tmpmat;
+	float* vp;
+	vmat = &mat_proj;
+	vp = (float*)vmat;
+	float* mat = (float*)GetCurrentMatrixPtr();
+
+	switch (bm->vp_flag) {
+	case BMSCR_VPFLAG_2D:
+		//	2D projection mode
+		UnitMatrix();
+		RotZ(bm->vp_viewrotate[2]);
+		GetCurrentMatrix(&tmpmat);
+		OrthoMatrix(-bm->vp_viewtrans[0], -bm->vp_viewtrans[1], (float)_bgsx / bm->vp_viewscale[0], (float)-_bgsy / bm->vp_viewscale[1], 0.0f, 1.0f);
+		MulMatrix(&tmpmat);
+		break;
+	case BMSCR_VPFLAG_3D:
+		//	3D projection mode
+		UnitMatrix();
+		RotZ(bm->vp_viewrotate[2]);
+		RotY(bm->vp_viewrotate[1]);
+		RotX(bm->vp_viewrotate[0]);
+		Scale(bm->vp_viewscale[0], bm->vp_viewscale[1], bm->vp_viewscale[2]);
+		Trans(bm->vp_viewtrans[0], bm->vp_viewtrans[1], bm->vp_viewtrans[2]);
+		GetCurrentMatrix(&tmpmat);
+		PerspectiveFOV(bm->vp_view3dprm[0], bm->vp_view3dprm[1], bm->vp_view3dprm[2], 0.0f, 0.0f, (float)_bgsx / 10, (float)_bgsy / 10);
+		//PerspectiveFOV(45.0f, 1.0f, 500.0f, 0.0f, 0.0f, (float)nDestWidth / 10, (float)nDestHeight / 10);
+		//PerspectiveWithZBuffer(10.0f, 0.0f, 60.0f, 1.0f, 0.0f);
+		MulMatrix(&tmpmat);
+		break;
+	case BMSCR_VPFLAG_MATRIX:
+		//	user matrix mode
+		mat = &bm->vp_viewtrans[0];
+		break;
+	case BMSCR_VPFLAG_NOUSE:
+	default:
+		return;
+	}
+
+	glMatrixMode(GL_PROJECTION);
+	glLoadMatrixf(mat);
+
+	//	mat_projに設定する
+	for (i = 0; i < 16; i++) {
+		*vp++ = *mat++;
+	}
+
+	//D3DXMATRIX matrixProj;
+	//Mat2D3DMAT(&matrixProj, vmat);
+	//d3ddev->SetTransform(D3DTS_PROJECTION, &matrixProj);
+
+	//	投影マトリクスの逆行列を設定する
+	//D3DXMatrixInverse(&InvViewport, NULL, &matrixProj);
+	SetCurrentMatrix(vmat);
+	InverseMatrix(&mat_unproj);
+
+}
+
+
+void hgio_cnvview(BMSCR* bm, int* xaxis, int* yaxis)
+{
+	//	ビュー変換後の座標 -> 元の座標に変換する
+	//	(タッチ位置再現のため)
+	//
+	VECTOR v1,v2;
+	//if (bm->vp_flag == 0) return;
+	v1.x = (float)*xaxis;
+	v1.y = (float)(_bgsy-*yaxis);
+	v1.z = 1.0f;
+	v1.w = 0.0f;
+
+	v1.x -= _bgsx/2;
+	v1.y -= _bgsy/2;
+	v1.x *= 2.0f / float(_bgsx);
+	v1.y *= 2.0f / float(_bgsy);
+
+//	*xaxis = (int)(v1.x);
+//	*yaxis = (int)(v1.y);
+
+//	D3DXVECTOR3 a1,a2;
+//	D3DXVec3TransformCoord(&a2, &D3DXVECTOR3(v1.x, v1.y, v1.z), &InvViewport);
+//	*xaxis = (int)a2.x;
+//	*yaxis = (int)a2.y;
+
+	ApplyMatrix(&mat_unproj, &v2, &v1);
+	*xaxis = (int)v2.x;
+	*yaxis = (int)v2.y;
 }
 
 

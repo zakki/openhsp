@@ -13,6 +13,11 @@
 
 struct BMSCR;
 
+//	for public use
+
+bool hgio_getkey( int kcode );
+void hgio_setColorTex( int rval, int gval ,int bval ); 
+
 //	for internal use
 
 void hgio_clear( void );
@@ -20,8 +25,7 @@ void hgio_reset( void );
 
 void hgio_setClear( int rval, int gval ,int bval );
 void hgio_setFilterMode( int mode );
-void hgio_setBlendMode( int mode, int aval );
-void hgio_setBlendModeFlat( int mode );
+void hgio_setTexBlendMode( int mode, int aval );
 void hgio_putTexFont( int x, int y, char *msg, int color );
 
 //色の指定
@@ -33,7 +37,7 @@ void hgio_setFlipMode( int flipMode );
 //原点の指定
 void hgio_setOrigin( int x, int y );
 //スケーリング
-void hgio_scale_point( int xx, int yy, int *x, int *y );
+void hgio_scale_point( int xx, int yy, int &x, int & y );
 //ポイントカラー設定
 void hgio_panelcolor( int color, int aval );
 
@@ -61,6 +65,5 @@ void hgio_test(void);
 
 int hgio_file_exist( char *fname );
 int hgio_file_read( char *fname, void *ptr, int size, int offset );
-
 
 #endif
