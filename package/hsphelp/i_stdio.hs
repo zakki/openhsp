@@ -8,7 +8,7 @@
 %ver
 3.6
 %note
-ver3.5•W€–½—ß
+ver3.6•W€–½—ß
 %date
 2019/12/12
 %author

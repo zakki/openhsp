@@ -6,9 +6,9 @@
 %type
 HSPシステム変数
 %ver
-3.5
+3.6
 %note
-ver3.5標準
+ver3.6標準
 %date
 2017/09/16
 %author
