@@ -60,9 +60,6 @@
 #define RELEASE(x) 	if(x){x->Release();x=NULL;}
 
 #ifdef HSPWIN
-#pragma comment(lib, "d3d8.lib")
-#pragma comment(lib, "dxguid.lib")
-
 #ifdef GP_USE_ANGLE
 #pragma comment(lib, "libEGL.lib")
 #pragma comment(lib, "libGLESv2.lib")
@@ -188,8 +185,251 @@ static		MATRIX mat_unproj;	// プロジェクション逆変換マトリクス
 
 #define CIRCLE_DIV 16
 #define DEFAULT_FONT_NAME ""
+//#define DEFAULT_FONT_NAME "Arial"
 #define DEFAULT_FONT_SIZE 18
 #define DEFAULT_FONT_STYLE 0
+
+
+/*------------------------------------------------------------*/
+/*
+		Windows Font Service
+*/
+/*------------------------------------------------------------*/
+
+
+#ifdef HSPWIN
+
+static		HFONT htexfont = NULL;	// TEXTURE用のフォント
+static		HFONT htexfont_old;		// TEXTURE用のフォント(保存用)
+static		HDC htexdc;				// Device Context
+static		int drawsx, drawsy;		// 描画サイズ
+static		int fontsystem_sx;		// 横のサイズ
+static		int fontsystem_sy;		// 縦のサイズ
+static		int fontsystem_space;	// spaceの横サイズ
+static		int fontsystem_zspace;	// 全角spaceの横サイズ
+static		TEXTMETRIC tm;
+static		LPBYTE lpFont;
+static		DWORD AlphaTbl[34];
+static		char *def_zspace = "　";
+
+
+long hgio_fontsystem_getcode(unsigned char* pt)
+{
+	//		文字コードを返す(SJIS)
+	unsigned char a1 = *pt;
+
+	//		全角チェック
+	if (a1 >= 129) {					// 全角文字チェック
+		if ((a1 <= 159) || (a1 >= 224)) {
+			long i = (long)a1;
+			return (i<<8)+(long)pt[1];
+		}
+	}
+	return (long)a1;
+}
+ 
+void hgio_fontsystem_term(void)
+{
+	//		フォントレンダリング解放
+	//
+	if (htexfont == NULL) return;
+
+	SelectObject(htexdc, htexfont_old);
+	DeleteObject(htexfont);
+	ReleaseDC(master_wnd, htexdc);
+	htexfont = NULL;
+	if (lpFont) {
+		free(lpFont); lpFont = NULL;
+	}
+}
+
+
+void hgio_fontsystem_init(char* fontname, int size, int style)
+{
+	//		フォントレンダリング初期化
+	//
+	hgio_fontsystem_term();
+
+	htexdc = GetDC(master_wnd);
+	htexfont = NULL;
+
+	if (size >= 0) {
+		int fw;
+		switch (style & 3) {
+		case 1:
+			fw = FW_BOLD;
+			break;
+		case 2:
+			fw = FW_ULTRABOLD;
+			break;
+		case 3:
+			fw = FW_HEAVY;
+			break;
+		default:
+			fw = FW_REGULAR;
+			break;
+		}
+		htexfont = CreateFont(
+			size,						// フォント高さ
+			0,							// 文字幅
+			0,							// テキストの角度	
+			0,							// ベースラインとｘ軸との角度
+			fw,							// フォントの重さ（太さ）
+			((style & 4) != 0),			// イタリック体
+			FALSE,						// アンダーライン
+			FALSE,						// 打ち消し線
+			DEFAULT_CHARSET,			// 文字セット
+			OUT_TT_PRECIS,				// 出力精度
+			CLIP_DEFAULT_PRECIS,		// クリッピング精度
+			PROOF_QUALITY,				// 出力品質
+			DEFAULT_PITCH | FF_MODERN,	// ピッチとファミリー
+			fontname					// 書体名
+		);
+	}
+
+	if (htexfont == NULL) return;
+
+	lpFont = (LPBYTE)malloc(0x10000);			// フォント取得用のワーク
+
+	htexfont_old = (HFONT)SelectObject(htexdc, htexfont);
+	GetTextMetrics(htexdc, &tm);
+	fontsystem_sx = 0;
+	fontsystem_sy = tm.tmHeight;
+
+	long code = 0x20;
+	GetCharWidth(htexdc, code, code, &fontsystem_space);
+	code = hgio_fontsystem_getcode((unsigned char*)def_zspace);
+	GetCharWidth(htexdc, code, code, &fontsystem_zspace);
+
+	for (int i = 0; i < 32; i++) {
+		DWORD aval = i;
+		if (aval > 15) aval = 15;
+		AlphaTbl[i] = (aval << 28) + 0xffffff;
+	}
+	AlphaTbl[0] = 0;
+}
+
+
+int hgio_fontsystem_execsub(long code, unsigned char* buffer, int pitch, int offsetx)
+{
+	//		フォントバッファ取得
+	MAT2 mat;
+	DWORD Size;
+	GLYPHMETRICS gm;
+	GLYPHMETRICS* pgm;
+	int px, ybase;
+	int width, height;
+	int tmpy;
+
+	if (buffer == NULL) {
+		GetCharWidth(htexdc, code, code, &width);
+		return width;
+	}
+	if (fontsystem_sx <= 0) return 0;
+
+	pgm = &gm;
+	ZeroMemory(pgm, sizeof(GLYPHMETRICS));
+
+	long m11 = (long)(1.0 * 65536.0);	long m12 = (long)(0.0 * 65536.0);
+	long m21 = (long)(0.0 * 65536.0);	long m22 = (long)(1.0 * 65536.0);
+	mat.eM11 = *((FIXED*)&m11);	mat.eM12 = *((FIXED*)&m12);
+	mat.eM21 = *((FIXED*)&m21);	mat.eM22 = *((FIXED*)&m22);
+
+
+	// バッファサイズ受信
+//	Size = GetGlyphOutline(htexdc, code, GGO_GRAY4_BITMAP, pgm, 0, NULL, &mat);
+	// バッファ取得
+//	GetGlyphOutline(htexdc, code, GGO_GRAY4_BITMAP, pgm, Size, lpFont, &mat);
+
+	// バッファサイズ受信
+	Size = GetGlyphOutline(htexdc, code, GGO_BITMAP, pgm, 0, NULL, &mat);
+	// バッファ取得
+	GetGlyphOutline(htexdc, code, GGO_BITMAP, pgm, Size, lpFont, &mat);
+
+
+	// フォントピッチ
+	DWORD fontPitch = (Size / gm.gmBlackBoxY) & ~0x03;
+
+	// サイズ取得
+	width = (int)gm.gmBlackBoxX;
+	height = (int)gm.gmBlackBoxY;
+	//Alertf("%d[%d,%d] +%d", code,width,height,pitch);
+
+	// 描画位置を進める量
+	px = gm.gmCellIncX;
+	ybase = tm.tmAscent - gm.gmptGlyphOrigin.y;
+
+	LPDWORD p1 = (LPDWORD)buffer;
+	LPBYTE p2 = lpFont;
+
+	// 転送先のサーフェイスの始点
+	p1 += (offsetx + gm.gmptGlyphOrigin.x) + (ybase * pitch);
+
+	for (int y = 0; y < height; y++)
+	{
+/*		for (int x = 0; x < width; x++)
+		{
+			p1[x] = AlphaTbl[p2[x]];
+		}
+		p1 += pitch;
+		p2 += fontPitch;
+		*/
+		LPBYTE pp;
+		int bmask;
+		bmask = 0x80; pp = p2;
+		for (int x = 0; x < width; x++)
+		{
+			if (bmask == 0) { bmask = 0x80; pp++; }
+			if (*pp & bmask) { p1[x] = 0xffffffff; }
+			bmask >>= 1;
+		}
+		p1 += pitch;
+		p2 += fontPitch;
+
+
+	}
+	
+	return px;
+}
+
+
+void hgio_fontsystem_exec(char* msg, unsigned char* buffer, int pitch, int* out_sx, int* out_sy)
+{
+	//		msgの文字列をテクスチャバッファにレンダリングする
+	//		(bufferがNULLの場合はサイズだけを取得する)
+	//
+	if (htexfont == NULL) return;
+
+	int x = 0;
+	long code;
+	unsigned char *p = (unsigned char*)msg;
+	unsigned char a1;
+
+	while (1) {
+		a1 = *p++;
+		if (a1 == 0) break;
+		if (a1 < 32) continue;
+
+		//		全角チェック
+		code = (long)a1;
+		if (a1 >= 129) {					// 全角文字チェック
+			if ((a1 <= 159) || (a1 >= 224)) {
+				long i = (long)a1;
+				code = (i << 8) + (long)*p;
+				p++;
+			}
+		}
+
+		x += hgio_fontsystem_execsub(code, buffer, pitch, x);
+	}
+
+	fontsystem_sx = x;
+
+	*out_sx = fontsystem_sx;
+	*out_sy = fontsystem_sy;
+}
+
+#endif
 
 
 /*------------------------------------------------------------*/
@@ -279,6 +519,9 @@ int hgio_render_end( void )
 
 	if ( drawflag == 0 ) return 0;
 
+	game->texmesProc();
+
+
 	res = 0;
 
 	if (gselbm == mainbm) {
@@ -331,6 +574,7 @@ int hgio_render_start( void )
 		}
 	}
 
+	hgio_setview(gselbm);
 	drawflag = 1;
 	return 0;
 }
@@ -434,6 +678,9 @@ void hgio_term( void )
 {
 	hgio_render_end();
 	GeometryTerm();
+#ifdef HSPWIN
+	hgio_fontsystem_term();
+#endif
 }
 
 
@@ -644,38 +891,83 @@ int hgio_texload( BMSCR *bm, char *fname )
 }
 
 
-int hgio_mes( BMSCR *bm, char *str1 )
+static void hgio_messub(BMSCR* bm, char* str1)
 {
 	//		mes,print 文字表示
 	//
-	if ((bm->type != HSPWND_TYPE_MAIN) && (bm->type != HSPWND_TYPE_OFFSCREEN)) return -1;
+	int xsize,ysize;
+	if ((bm->type != HSPWND_TYPE_MAIN) && (bm->type != HSPWND_TYPE_OFFSCREEN)) return;
 	if (drawflag == 0) hgio_render_start();
 
-	if ( game ) {
-		bm->printsizex = game->drawFont( bm->cx, bm->cy, str1, (gameplay::Vector4 *)bm->colorvalue, m_tsize );
+	// print per line
+	if (bm->cy >= bm->sy) return;
+
+	if (game) {
+		xsize = game->drawFont(bm->cx, bm->cy, str1, (gameplay::Vector4*)bm->colorvalue, &ysize);
+		if (xsize > bm->printsizex) bm->printsizex = xsize;
+		bm->printsizey += ysize;
+		bm->cy += ysize;
 	}
-	bm->printsizey = m_tsize;
-
-	//DrawTexString( bm->cx, bm->cy, str1 );
-
-	//bm->printsizex = TexGetDrawSizeX();
-	//bm->printsizey = TexGetDrawSizeY();
-	//if ( bm->printsizey <= 0 ) {
-	//	bm->printsizey = m_tsize;
-	//}
-	//Alertf( "%s[%d,%d]",str1,bm->printsizex,bm->printsizey );
-
-	return 0;
 }
 
 
-int hgio_font( char *fontname, int size, int style )
+int hgio_mes(BMSCR* bm, char* str1)
 {
-	//		文字フォント指定
-	//
-	strncpy( m_tfont, fontname, 254 );
-	m_tsize = size;
-	m_tstyle = style;
+	int spcur;
+	int org_cy;
+	unsigned char* p;
+	unsigned char* st;
+	unsigned char a1;
+	unsigned char a2;
+	unsigned char bak_a1;
+
+	org_cy = bm->cy;
+	bm->printsizex = 0;
+	bm->printsizey = 0;
+
+	p = (unsigned char*)str1;
+	st = p;
+	spcur = 0;
+
+	while (1) {
+		a1 = *p;
+		if (a1 == 0) break;
+		if (a1 == 13) {
+			bak_a1 = a1; *p = 0;		// 終端を仮設定
+			hgio_messub(bm, (char*)st);
+			*p = bak_a1;
+			p++; st = p; spcur = 0;		// 終端を戻す
+			a1 = *p;
+			if (a1 == 10) p++;
+			continue;
+		}
+		if (a1 == 10) {
+			bak_a1 = a1; *p = 0;		// 終端を仮設定
+			hgio_messub(bm, (char*)st);
+			*p = bak_a1;
+			p++; st = p; spcur = 0;		// 終端を戻す
+			continue;
+		}
+		/*
+				if (a1&128) {					// UTF8チェック
+					while(1) {
+						a2 = *p;
+						if ( a2==0 ) break;
+						if ( ( a2 & 0xc0 ) != 0x80 ) break;
+						p++; spcur++;
+					}
+				} else {
+					p++; spcur++;
+				}
+		*/
+		p++; spcur++;
+	}
+
+	if (spcur > 0) {
+		hgio_messub(bm, (char*)st);
+	}
+
+	bm->cy = org_cy;
 	return 0;
 }
 
@@ -892,26 +1184,26 @@ void hgio_copy(BMSCR *bm, short xx, short yy, short srcsx, short srcsy, BMSCR *b
 	if (s_psx < 0.0) {
 		psx = -s_psx;
 		tx1 = ((float)xx);
-		tx0 = ((float)(xx + srcsx));
+		tx0 = ((float)(xx + srcsx-1));
 	}
 	else {
 		psx = s_psx;
 		tx0 = ((float)xx);
-		tx1 = ((float)(xx + srcsx));
+		tx1 = ((float)(xx + srcsx-1));
 	}
 	if (s_psy < 0.0) {
 		psy = -s_psy;
 		ty1 = ((float)yy);
-		ty0 = ((float)(yy + srcsy));
+		ty0 = ((float)(yy + srcsy-1));
 	}
 	else {
 		psy = s_psy;
 		ty0 = ((float)yy);
-		ty1 = ((float)(yy + srcsy));
+		ty1 = ((float)(yy + srcsy-1));
 	}
 
-	x1 = ((float)bm->cx);
-	y1 = ((float)bm->cy);
+	x1 = ((float)bm->cx) + 0.5f;
+	y1 = ((float)bm->cy) + 0.5f;
 	x2 = x1 + psx;
 	y2 = y1 + psy;
 
@@ -984,8 +1276,8 @@ int hgio_celputmulti(BMSCR *bm, int *xpos, int *ypos, int *cel, int count, BMSCR
 
 	sx = mat->_texratex;
 	sy = mat->_texratey;
-	psx = bmsrc->divsx;
-	psy = bmsrc->divsy;
+	psx = bmsrc->divsx - 1;
+	psy = bmsrc->divsy - 1;
 	f_psx = (float)psx;
 	f_psy = (float)psy;
 
@@ -1004,8 +1296,8 @@ int hgio_celputmulti(BMSCR *bm, int *xpos, int *ypos, int *cel, int count, BMSCR
 			ty0 = ((float)yy);
 			ty1 = ty0 + f_psy;
 
-			x1 = (float)(*p_xpos - bmsrc->celofsx);
-			y1 = (float)(*p_ypos - bmsrc->celofsy);
+			x1 = ((float)(*p_xpos - bmsrc->celofsx)) + 0.5f;
+			y1 = ((float)(*p_ypos - bmsrc->celofsy)) + 0.5f;
 			x2 = x1 + f_psx;
 			y2 = y1 + f_psy;
 
@@ -1078,8 +1370,8 @@ void hgio_copyrot( BMSCR *bm, short xx, short yy, short srcsx, short srcsy, floa
 	y1 = my1 * ofsx;
 
 	//		基点の算出
-	x = ( (float)bm->cx - (-x0+x1) );
-	y = ( (float)bm->cy - (-y0+y1) );
+	x = ( (float)bm->cx - (-x0+x1) ) + 0.5f;
+	y = ( (float)bm->cy - (-y0+y1) ) + 0.5f;
 
 	//		回転座標の算出
 	ofsx = -psx;
@@ -1094,8 +1386,8 @@ void hgio_copyrot( BMSCR *bm, short xx, short yy, short srcsx, short srcsy, floa
 
 	tx0 = (float)xx;
 	ty0 = (float)yy;
-	tx1 = (float)(xx+srcsx);
-	ty1 = (float)(yy+srcsy);
+	tx1 = (float)(xx+srcsx-1);
+	ty1 = (float)(yy+srcsy-1);
 
 	tx0 *= sx;
 	tx1 *= sx;
@@ -1504,13 +1796,6 @@ void hgio_draw_all(Bmscr *bmscr, int option)
 }
 
 
-void hgio_text_render( void )
-{
-}
-
-
-
-
 
 #ifdef HSPNDK
 //
@@ -1766,6 +2051,30 @@ int hgio_bufferop(BMSCR* bm, int mode, char* ptr)
 }
 
 
+void hgio_text_render(void)
+{
+	//		テキストバッファのレンダリング(WIN32のみ)
+	//
+}
+
+
+int hgio_font(char* fontname, int size, int style)
+{
+	//		文字フォント指定
+	//
+	strncpy(m_tfont, fontname, 254);
+	m_tsize = size;
+	m_tstyle = style;
+
+	hgio_fontsystem_init(fontname, size, style);
+
+	if (game) {
+		game->setFont(m_tfont, m_tsize, m_tstyle);
+	}
+	return 0;
+}
+
+
 /*-------------------------------------------------------------------------------*/
 
 void hgio_setview(BMSCR* bm)
@@ -1813,9 +2122,18 @@ void hgio_setview(BMSCR* bm)
 	}
 
 	//	mat_projに設定する
-	for (i = 0; i < 16; i++) {
-		*vp++ = *mat++;
-	}
+	//for (i = 0; i < 16; i++) {
+	//	*vp++ = *mat++;
+	//}
+
+	bool setinv = (bm == mainbm);
+	Matrix dstmat(
+		mat[0], mat[4], mat[8], mat[12],
+		mat[1], mat[5], mat[9], mat[13],
+		mat[2], mat[6], mat[10], mat[14],
+		mat[3], mat[7], mat[11], mat[15]
+		);
+	game->setUser2DRenderProjectionSystem(&dstmat, setinv);
 
 	//D3DXMATRIX matrixProj;
 	//Mat2D3DMAT(&matrixProj, vmat);
@@ -1823,7 +2141,7 @@ void hgio_setview(BMSCR* bm)
 
 	//	投影マトリクスの逆行列を設定する
 	//D3DXMatrixInverse(&InvViewport, NULL, &matrixProj);
-	SetCurrentMatrix(vmat);
+	//SetCurrentMatrix(vmat);
 	//InverseMatrix(&mat_unproj);
 
 }

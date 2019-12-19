@@ -1140,6 +1140,7 @@ int hsp3dish_reset(void)
 	hsp3dish_setdevinfo( devinfo );
 	hsp3extcmd_sysvars((int)m_hInstance, (int)m_hWnd, 0);
 
+	game->resetScreen();
 	gameplay::Logger::log(gameplay::Logger::LEVEL_INFO, "HGIMG4 %s initalized : %s\n", hspver, devinfo->devname);
 
 #ifdef HSPDEBUG
