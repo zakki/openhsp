@@ -240,7 +240,9 @@ gpevent *gpobj::GetEvent(int entry)
 gamehsp::gamehsp()
 {
 	// コンストラクタ
+#ifdef USE_GPBFONT
 	mFont = NULL;
+#endif
 	_maxobj = 0;
 	_gpobj = NULL;
 	_gpmat = NULL;
@@ -588,6 +590,7 @@ bool gamehsp::init2DRender( void )
 {
 	// 2D用の初期化
 	//
+	proj2Dcode = -2;
 
 	// 2D用のプロジェクション
 	make2DRenderProjection(&_projectionMatrix2Dpreset,getWidth(),getHeight());
@@ -610,6 +613,8 @@ bool gamehsp::init2DRender( void )
     unsigned int elementCount = sizeof(elements) / sizeof(VertexFormat::Element);
     _meshBatch = MeshBatch::create(VertexFormat(elements, elementCount), Mesh::TRIANGLE_STRIP, mesh_material, true, 16, 16 );
 
+	SAFE_RELEASE(mesh_material);
+
 	mesh_material = make2DMaterialForMesh();
 	_meshBatch_line = MeshBatch::create(VertexFormat(elements, elementCount), Mesh::LINES, mesh_material, true, 4, 4 );
 
@@ -630,7 +635,7 @@ void gamehsp::make2DRenderProjection(Matrix *mat,int sx, int sy)
 {
 	//	2Dシステム用のプロジェクションを作成する
 	Matrix::createOrthographicOffCenter(0.0f, (float)sx, (float)sy, 0.0f, -1.0f, 1.0f, mat);
-	mat->translate(0.5f, 0.0f, 0.0f);						// 座標誤差修正のため0.5ドットずらす
+	//mat->translate(0.5f, 0.0f, 0.0f);						// 座標誤差修正のため0.5ドットずらす
 }
 
 
@@ -649,6 +654,8 @@ void gamehsp::update2DRenderProjectionSystem(Matrix *mat)
 	//	2Dシステム用のプロジェクションを再設定する
 	if (_meshBatch) update2DRenderProjection(_meshBatch->getMaterial(), mat);
 	if (_meshBatch_line) update2DRenderProjection(_meshBatch_line->getMaterial(), mat);
+	if (_meshBatch_font) update2DRenderProjection(_fontMaterial, &_projectionMatrix2D);
+
 }
 
 
@@ -658,8 +665,20 @@ void gamehsp::setUser2DRenderProjectionSystem(Matrix* mat, bool updateinv)
 	_projectionMatrix2D = *mat;
 	update2DRenderProjectionSystem(&_projectionMatrix2D);
 	if (updateinv) {
+		proj2Dcode--;
 		_projectionMatrix2D.invert(&_projectionMatrix2Dinv);
 	}
+}
+
+
+void gamehsp::convert2DRenderProjection(Vector4& pos)
+{
+	//	ユーザー用のプロジェクションを逆変換する
+	Vector4 result;
+	_projectionMatrix2Dinv.transformVector(pos,&result);
+	pos.x = result.x;
+	pos.y = result.y;
+	pos.z = result.z;
 }
 
 
@@ -2796,9 +2815,9 @@ float *gamehsp::startPolyTex2D(gpmat *mat, int material_id )
 	}
 	else {
 		//	メイン画面用の2Dプロジェクション
-		if (mat->_target_material_id != -2) {
+		if (mat->_target_material_id != proj2Dcode ) {
 			update2DRenderProjection(mat->_material, &_projectionMatrix2D);
-			mat->_target_material_id = -2;
+			mat->_target_material_id = proj2Dcode;
 		}
 	}
 

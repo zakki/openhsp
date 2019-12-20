@@ -161,6 +161,8 @@ void CloseMemFilePtr( void )
 //
 static		int nDestWidth;		// 描画座標幅
 static		int nDestHeight;	// 描画座標高さ
+static		float _rate_sx,_center_sx;
+static		float _rate_sy, _center_sy;
 
 #ifdef HSPWIN
 static		HWND master_wnd;	// 表示対象Window
@@ -463,6 +465,10 @@ void hgio_init( int mode, int sx, int sy, void *hwnd )
 	drawflag = 0;
 	nDestWidth = sx;
 	nDestHeight = sy;
+	_rate_sx = 2.0f / (float)sx;
+	_rate_sy = 2.0f / (float)sy;
+	_center_sx = (float)sx / 2;
+	_center_sy = (float)sy / 2;
 
 #if defined(HSPNDK) || defined(HSPIOS) || defined(HSPLINUX) || defined(HSPEMSCRIPTEN)
 	_originX = 0;
@@ -1202,8 +1208,8 @@ void hgio_copy(BMSCR *bm, short xx, short yy, short srcsx, short srcsy, BMSCR *b
 		ty1 = ((float)(yy + srcsy-1));
 	}
 
-	x1 = ((float)bm->cx) + 0.5f;
-	y1 = ((float)bm->cy) + 0.5f;
+	x1 = ((float)bm->cx);
+	y1 = ((float)bm->cy);
 	x2 = x1 + psx;
 	y2 = y1 + psy;
 
@@ -1296,8 +1302,8 @@ int hgio_celputmulti(BMSCR *bm, int *xpos, int *ypos, int *cel, int count, BMSCR
 			ty0 = ((float)yy);
 			ty1 = ty0 + f_psy;
 
-			x1 = ((float)(*p_xpos - bmsrc->celofsx)) + 0.5f;
-			y1 = ((float)(*p_ypos - bmsrc->celofsy)) + 0.5f;
+			x1 = ((float)(*p_xpos - bmsrc->celofsx));
+			y1 = ((float)(*p_ypos - bmsrc->celofsy));
 			x2 = x1 + f_psx;
 			y2 = y1 + f_psy;
 
@@ -1370,8 +1376,8 @@ void hgio_copyrot( BMSCR *bm, short xx, short yy, short srcsx, short srcsy, floa
 	y1 = my1 * ofsx;
 
 	//		基点の算出
-	x = ( (float)bm->cx - (-x0+x1) ) + 0.5f;
-	y = ( (float)bm->cy - (-y0+y1) ) + 0.5f;
+	x = ( (float)bm->cx - (-x0+x1) );
+	y = ( (float)bm->cy - (-y0+y1) );
 
 	//		回転座標の算出
 	ofsx = -psx;
@@ -2122,11 +2128,13 @@ void hgio_setview(BMSCR* bm)
 	}
 
 	//	mat_projに設定する
-	//for (i = 0; i < 16; i++) {
-	//	*vp++ = *mat++;
-	//}
+	for (i = 0; i < 16; i++) {
+		*vp++ = *mat++;
+	}
 
 	bool setinv = (bm == mainbm);
+
+	mat = (float*)GetCurrentMatrixPtr();
 	Matrix dstmat(
 		mat[0], mat[4], mat[8], mat[12],
 		mat[1], mat[5], mat[9], mat[13],
@@ -2135,15 +2143,13 @@ void hgio_setview(BMSCR* bm)
 		);
 	game->setUser2DRenderProjectionSystem(&dstmat, setinv);
 
-	//D3DXMATRIX matrixProj;
-	//Mat2D3DMAT(&matrixProj, vmat);
-	//d3ddev->SetTransform(D3DTS_PROJECTION, &matrixProj);
-
-	//	投影マトリクスの逆行列を設定する
-	//D3DXMatrixInverse(&InvViewport, NULL, &matrixProj);
-	//SetCurrentMatrix(vmat);
-	//InverseMatrix(&mat_unproj);
-
+#if 1
+	if (setinv) {
+		//	投影マトリクスの逆行列を設定する
+		SetCurrentMatrix(vmat);
+		InverseMatrix(&mat_unproj);
+	}
+#endif
 }
 
 
@@ -2152,31 +2158,44 @@ void hgio_cnvview(BMSCR* bm, int* xaxis, int* yaxis)
 	//	ビュー変換後の座標 -> 元の座標に変換する
 	//	(タッチ位置再現のため)
 	//
-	VECTOR v1, v2;
-	//if (bm->vp_flag == 0) return;
+
+	if (bm->vp_flag == BMSCR_VPFLAG_NOUSE) return;
+	if (bm->vp_flag == BMSCR_VPFLAG_3D) return;			// 3Dの変換には未対応
+
+#if 0
+	Vector4 v1;
 	v1.x = (float)*xaxis;
 	v1.y = (float)(nDestHeight - *yaxis);
 	v1.z = 1.0f;
 	v1.w = 0.0f;
 
-	v1.x -= nDestWidth / 2;
-	v1.y -= nDestHeight / 2;
-	v1.x *= 2.0f / float(nDestWidth);
-	v1.y *= 2.0f / float(nDestHeight);
+	v1.x -= _center_sx;
+	v1.y -= _center_sy;
+	v1.x *= _rate_sx;
+	v1.y *= _rate_sy;
 
-	//	*xaxis = (int)(v1.x);
-	//	*yaxis = (int)(v1.y);
+	game->convert2DRenderProjection(v1);
+	*xaxis = (int)v1.x;
+	*yaxis = (int)v1.y;
+#endif
 
-	//	D3DXVECTOR3 a1,a2;
-	//	D3DXVec3TransformCoord(&a2, &D3DXVECTOR3(v1.x, v1.y, v1.z), &InvViewport);
-	//	*xaxis = (int)a2.x;
-	//	*yaxis = (int)a2.y;
+#if 1
+	VECTOR v1, v2;
+	v1.x = (float)*xaxis;
+	v1.y = (float)(nDestHeight - *yaxis);
+	v1.z = 1.0f;
+	v1.w = 0.0f;
+
+	v1.x -= _center_sx;
+	v1.y -= _center_sy;
+	v1.x *= _rate_sx;
+	v1.y *= _rate_sy;
 
 	ApplyMatrix(&mat_unproj, &v2, &v1);
 	*xaxis = (int)v2.x;
 	*yaxis = (int)v2.y;
+#endif
 }
-
 
 
 

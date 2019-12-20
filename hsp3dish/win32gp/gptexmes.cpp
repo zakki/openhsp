@@ -375,8 +375,8 @@ void gamehsp::texmesDraw(int x, int y, char* msg, Vector4* p_color)
 	tx1 = tex->ratex;
 	ty1 = tex->ratey;
 
-	x1 = (float)x + 0.5f;
-	y1 = (float)y + 0.5f;
+	x1 = (float)x;
+	y1 = (float)y;
 	x2 = x1 + tex->sx;
 	y2 = y1 + tex->sy;
 

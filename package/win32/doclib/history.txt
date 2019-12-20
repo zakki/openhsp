@@ -27,6 +27,7 @@ Hot Soup Processor ver3.6                           HSP : Hot Soup Processor
 	スクリプトエディタのSDK機能のHSED_GETCARETPOSが無効になっていた不具合を修正
 	[HGIMG4] getobjname命令で正しい名前が取得できない不具合を修正
 	[HGIMG4] 日本語を含むシステムのフォントを使用した文字列表示に対応
+	[HGIMG4] 2D描画に関するシェーダーファイルを内蔵する形に修正
 	[HSP3Dish] 配列変数の内容をグラフィックデータとして画面に転送するcelbitmap命令を追加
 	[HSP3Dish] 2D描画時の座標変換式を指定するviewcalc命令を追加
 	[HSP3Dish][android] 一部の機種でダイアログの改行コード文字が表示される不具合を修正
