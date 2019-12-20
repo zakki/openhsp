@@ -433,6 +433,7 @@ public:
 	void update2DRenderProjection(Material* material, Matrix *mat);
 	void update2DRenderProjectionSystem(Matrix* mat);
 	void setUser2DRenderProjectionSystem(Matrix* mat, bool updateinv);
+	void convert2DRenderProjection(Vector4 &pos);
 
 	/**
 	* Message texture manager
@@ -490,7 +491,9 @@ private:
 	bool init2DRender( void );
 	int Get2N(int val);
 
+#ifdef USE_GPBFONT
 	Font*	mFont;
+#endif
 	float _colrate;
 	int _tex_width;
 	int _tex_height;
@@ -546,6 +549,7 @@ private:
 	Vector3 border2;		// BORDER座標2
 
 	// preset flat mesh
+	int proj2Dcode;								// 2D projection Matrix ID code
 	Matrix _projectionMatrix2Dpreset;			// 2D projection Matrix (画面全体用)
 	Matrix _projectionMatrix2D;					// 2D projection Matrix (システム用)
 	Matrix _projectionMatrix2Dinv;				// 2D projection Matrix (逆変換用)
