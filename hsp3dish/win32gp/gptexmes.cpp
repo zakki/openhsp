@@ -7,9 +7,7 @@
 #include "../supio.h"
 #include "../sysreq.h"
 
-#ifdef HSPWIN
-void hgio_fontsystem_exec(char* msg, unsigned char* buffer, int pitch, int* out_sx, int* out_sy);
-#endif
+int hgio_fontsystem_exec(char* msg, unsigned char* buffer, int pitch, int* out_sx, int* out_sy);
 
 /*------------------------------------------------------------*/
 /*
