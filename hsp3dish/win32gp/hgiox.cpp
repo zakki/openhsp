@@ -41,6 +41,10 @@
 #include "SDL/SDL.h"
 #include "SDL/SDL_image.h"
 #include "SDL/SDL_opengl.h"
+
+#include <SDL/SDL_ttf.h>
+#define TTF_FONTFILE "/ipaexg.ttf"
+
 #endif
 
 #if defined(HSPLINUX)
@@ -49,6 +53,10 @@
 #include "SDL/SDL.h"
 #include "SDL/SDL_image.h"
 //#include "SDL/SDL_opengl.h"
+
+#include <SDL/SDL_ttf.h>
+#define TTF_FONTFILE "/ipaexg.ttf"
+
 #endif
 
 
@@ -395,12 +403,12 @@ int hgio_fontsystem_execsub(long code, unsigned char* buffer, int pitch, int off
 }
 
 
-void hgio_fontsystem_exec(char* msg, unsigned char* buffer, int pitch, int* out_sx, int* out_sy)
+int hgio_fontsystem_exec(char* msg, unsigned char* buffer, int pitch, int* out_sx, int* out_sy)
 {
 	//		msgの文字列をテクスチャバッファにレンダリングする
 	//		(bufferがNULLの場合はサイズだけを取得する)
 	//
-	if (htexfont == NULL) return;
+	if (htexfont == NULL) return -1;
 
 	int x = 0;
 	long code;
@@ -429,6 +437,124 @@ void hgio_fontsystem_exec(char* msg, unsigned char* buffer, int pitch, int* out_
 
 	*out_sx = fontsystem_sx;
 	*out_sy = fontsystem_sy;
+	return 0;
+}
+
+#endif
+
+
+/*-------------------------------------------------------------------------------*/
+/*
+		SDL Font Manage Routines
+*/
+/*-------------------------------------------------------------------------------*/
+
+#if defined(HSPLINUX)||defined(HSPEMSCRIPTEN)
+static	char fontpath[HSP_MAX_PATH+1];
+static	TTF_Font *font = NULL;
+static	int font_defsize;
+static	SDL_Surface *sdlsurf;
+static	int fontsystem_sx;		// 横のサイズ
+static	int fontsystem_sy;		// 縦のサイズ
+
+void TexFontTerm( void )
+{
+	if ( font != NULL ) {
+	    TTF_CloseFont(font);
+	    font = NULL;
+	}
+}
+
+int TexFontInit( char *path, int size )
+{
+	if ( font != NULL ) TexFontTerm();
+
+	if (*path != 0) {
+		strcpy ( fontpath, path );
+	}
+	font = TTF_OpenFont( fontpath, size );
+	font_defsize = size;
+
+	if (font == NULL){
+		Alertf( "Init:TTF_OpenFont error" );
+		return -2;
+	}
+	Alertf( "Init:TTF_Init:%s (%x)",fontpath,font );
+	return 0;
+}
+
+int hgio_fontsystem_exec(char* msg, unsigned char* buffer, int pitch, int* out_sx, int* out_sy)
+{
+	//		msgの文字列をテクスチャバッファにレンダリングする
+	//		(bufferがNULLの場合はサイズだけを取得する)
+	//
+
+	if (buffer == NULL) {
+
+		SDL_Color dcolor={255,255,255,255};
+#if defined(HSPLINUX)
+		sdlsurf = TTF_RenderUTF8_Blended(font, msg, dcolor );
+#else
+		sdlsurf = TTF_RenderText_Solid( font, msg, dcolor );
+#endif
+
+	    if (sdlsurf == NULL) {
+			Alertf( "TTF_Render : error" );
+			return -1;
+		}
+
+		fontsystem_sx = sdlsurf->w;
+		fontsystem_sy = sdlsurf->h;
+
+		//GetCacheMesTextureID(msg,m_tstyle,m_tstyle,&tsx,&tsy,false);
+		*out_sx = fontsystem_sx;
+		*out_sy = fontsystem_sy;
+		return -1;
+	}
+
+    if (sdlsurf == NULL) {
+		return -1;
+	}
+
+	int colors;
+	GLuint texture_format = 0;
+	colors = sdlsurf->format->BytesPerPixel;
+
+	unsigned char *p1;
+	unsigned char *p2 = (unsigned char *)sdlsurf->pixels;
+
+	//Alertf( "Init:Surface(%d,%d) %d mask%x pitch%d",fontsystem_sx,fontsystem_sy,colors,sdlsurf->format->Rmask,sdlsurf->pitch );
+
+	if (colors == 4) {   // alpha
+		for (int y = 0; y < fontsystem_sy; y++)
+		{
+			unsigned char *p1x = p1;
+			for (int x = 0; x < sdlsurf->pitch; x++)
+			{
+				*p1x++ = 0xff;
+				//*p1x++ = *p2++;
+			}
+			p1 += pitch;
+		}
+	} else {			// alphaなし
+		int sx = sdlsurf->pitch / colors;
+		for (int y = 0; y < fontsystem_sy; y++)
+		{
+			unsigned char *p1x = p1;
+			for (int x = 0; x < sx; x++)
+			{
+				*p1x++ = *p2++;
+				*p1x++ = *p2++;
+				*p1x++ = *p2++;
+				*p1x++ = 0xff;
+			}
+			p1 += pitch;
+		}
+	}
+
+    SDL_FreeSurface(sdlsurf);
+
+	return 0;
 }
 
 #endif
@@ -492,6 +618,22 @@ void hgio_init( int mode, int sx, int sy, void *hwnd )
     total_tick = 0.0;
     lastTime = CFAbsoluteTimeGetCurrent();
 #endif
+
+#if defined(HSPLINUX) || defined(HSPEMSCRIPTEN)
+	//TTF初期化
+	char fontpath[HSP_MAX_PATH+1];
+	*fontpath = 0;
+#if defined(HSPLINUX)
+	strcpy( fontpath, hgio_getdir(1) );
+#endif
+	strcat( fontpath, TTF_FONTFILE );
+
+	if ( TTF_Init() ) {
+		Alertf( "Init:TTF_Init error" );
+	}
+	TexFontInit( fontpath, 18 );
+#endif
+
 }
 
 
@@ -686,6 +828,10 @@ void hgio_term( void )
 	GeometryTerm();
 #ifdef HSPWIN
 	hgio_fontsystem_term();
+#endif
+
+#if defined(HSPLINUX) || defined(HSPEMSCRIPTEN)
+	TexFontTerm();
 #endif
 }
 
@@ -2072,7 +2218,16 @@ int hgio_font(char* fontname, int size, int style)
 	m_tsize = size;
 	m_tstyle = style;
 
+#ifdef HSPWIN
 	hgio_fontsystem_init(fontname, size, style);
+#endif
+
+#if defined(HSPLINUX) || defined(HSPEMSCRIPTEN)
+	if ( font_defsize != size ) {
+		//TexFontInit( fontname, size );
+		//TexFontInit( "", size );
+	}
+#endif
 
 	if (game) {
 		game->setFont(m_tfont, m_tsize, m_tstyle);
