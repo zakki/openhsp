@@ -30,12 +30,16 @@ const char *intshd_sprite_vert = {
 };
 
 const char *intshd_sprite_frag = {
+
 	"#ifdef OPENGL_ES\n"
+	"#extension GL_OES_standard_derivatives : enable\n"
 	"#ifdef GL_FRAGMENT_PRECISION_HIGH\n"
 	"precision highp float;\n"
 	"#else\n"
 	"precision mediump float;\n"
 	"#endif\n"
+	"#else\n"
+	"precision mediump float;\n"
 	"#endif\n"
 	"\n"
 	"///////////////////////////////////////////////////////////\n"
@@ -75,7 +79,14 @@ const char *intshd_spritecol_vert = {
 
 const char *intshd_spritecol_frag = {
 	"#ifdef OPENGL_ES\n"
+	"#extension GL_OES_standard_derivatives : enable\n"
+	"#ifdef GL_FRAGMENT_PRECISION_HIGH\n"
 	"precision highp float;\n"
+	"#else\n"
+	"precision mediump float;\n"
+	"#endif\n"
+	"#else\n"
+	"precision mediump float;\n"
 	"#endif\n"
 	"\n"
 	"// Varyings\n"
