@@ -84,28 +84,68 @@ struct TouchPointerData
 TouchPointerData __pointer0;
 TouchPointerData __pointer1;
 
-namespace gameplay
-{
+//#ifdef __cplusplus
+//extern "C" {
+//#endif
 
+void destroyEGLSurface();
+int initEGL();
+void destroyEGLMain();
+unsigned int getEGLDisplayWidth( void );
+unsigned int getEGLDisplayHeight( void );
 
-static double timespec2millis(struct timespec *a)
+//#ifdef __cplusplus
+//}
+//#endif /* __cplusplus */
+
+unsigned int getEGLDisplayWidth( void )
 {
-    GP_ASSERT(a);
-    return (1000.0 * a->tv_sec) + (0.000001 * a->tv_nsec);
+    return __width;
+}
+    
+unsigned int getEGLDisplayHeight( void )
+{
+    return __height;
 }
 
-extern void print(const char* format, ...)
+void destroyEGLSurface()
+{
+    if (__eglDisplay != EGL_NO_DISPLAY)
+    {
+        eglMakeCurrent(__eglDisplay, EGL_NO_SURFACE, EGL_NO_SURFACE, EGL_NO_CONTEXT);
+    }
+
+    if (__eglSurface != EGL_NO_SURFACE)
+    {
+        eglDestroySurface(__eglDisplay, __eglSurface);
+        __eglSurface = EGL_NO_SURFACE;
+    }
+}
+
+void destroyEGLMain()
+{
+    destroyEGLSurface();
+
+    if (__eglContext != EGL_NO_CONTEXT)
+    {
+        eglDestroyContext(__eglDisplay, __eglContext);
+        __eglContext = EGL_NO_CONTEXT;
+    }
+
+    if (__eglDisplay != EGL_NO_DISPLAY)
+    {
+        eglTerminate(__eglDisplay);
+        __eglDisplay = EGL_NO_DISPLAY;
+    }
+}
+
+static void print_log(const char* format, ...)
 {
     GP_ASSERT(format);
     va_list argptr;
     va_start(argptr, format);
     __android_log_vprint(ANDROID_LOG_INFO, "native-activity", format, argptr);
     va_end(argptr); 
-}
-
-extern int strcmpnocase(const char* s1, const char* s2)
-{
-    return strcasecmp(s1, s2);
 }
 
 static EGLenum checkErrorEGL(const char* msg)
@@ -130,7 +170,7 @@ static EGLenum checkErrorEGL(const char* msg)
         "EGL power management event has occurred",
     };
     EGLenum error = eglGetError();
-    print("%s: %s.", msg, errmsg[error - EGL_SUCCESS]);
+    print_log("%s: %s.", msg, errmsg[error - EGL_SUCCESS]);
     return error;
 }
 
@@ -174,31 +214,6 @@ static int getRotation()
     rotation =  env->CallIntMethod(defaultDisplay, getRotation);
 
     return rotation;
-}
-
-
-#ifdef __cplusplus
-extern "C" {
-#endif
-
-void destroyEGLSurface();
-int initEGL();
-void destroyEGLMain();
-unsigned int getEGLDisplayWidth( void );
-unsigned int getEGLDisplayHeight( void );
-
-#ifdef __cplusplus
-}
-#endif /* __cplusplus */
-
-unsigned int getEGLDisplayWidth( void )
-{
-    return __width;
-}
-    
-unsigned int getEGLDisplayHeight( void )
-{
-    return __height;
 }
 
 // Initialized EGL resources.
@@ -364,35 +379,32 @@ error:
     return -1;
 }
 
-void destroyEGLSurface()
-{
-    if (__eglDisplay != EGL_NO_DISPLAY)
-    {
-        eglMakeCurrent(__eglDisplay, EGL_NO_SURFACE, EGL_NO_SURFACE, EGL_NO_CONTEXT);
-    }
 
-    if (__eglSurface != EGL_NO_SURFACE)
-    {
-        eglDestroySurface(__eglDisplay, __eglSurface);
-        __eglSurface = EGL_NO_SURFACE;
-    }
+
+/*------------------------------------------------------------------------------------*/
+
+namespace gameplay
+{
+
+
+extern void print(const char* format, ...)
+{
+    GP_ASSERT(format);
+    va_list argptr;
+    va_start(argptr, format);
+    __android_log_vprint(ANDROID_LOG_INFO, "native-activity", format, argptr);
+    va_end(argptr); 
 }
 
-void destroyEGLMain()
+static double timespec2millis(struct timespec *a)
 {
-    destroyEGLSurface();
+    GP_ASSERT(a);
+    return (1000.0 * a->tv_sec) + (0.000001 * a->tv_nsec);
+}
 
-    if (__eglContext != EGL_NO_CONTEXT)
-    {
-        eglDestroyContext(__eglDisplay, __eglContext);
-        __eglContext = EGL_NO_CONTEXT;
-    }
-
-    if (__eglDisplay != EGL_NO_DISPLAY)
-    {
-        eglTerminate(__eglDisplay);
-        __eglDisplay = EGL_NO_DISPLAY;
-    }
+extern int strcmpnocase(const char* s1, const char* s2)
+{
+    return strcasecmp(s1, s2);
 }
 
 // Display the android virtual keyboard.
