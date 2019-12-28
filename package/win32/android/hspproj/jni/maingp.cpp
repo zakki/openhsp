@@ -8,7 +8,6 @@
 #include <stdio.h>
 #include <stdlib.h>
 
-
 #include "hsp3/hsp3config.h"
 #include "hsp3/hsp3struct.h"
 #include "hsp3/hsp3ext.h"
@@ -18,11 +17,14 @@
 
 //#define USE_SENSOR
 
-extern void destroyEGLSurface();
-extern int initEGL();
-extern void destroyEGLMain();
-extern unsigned int getEGLDisplayWidth( void );
-extern unsigned int getEGLDisplayHeight( void );
+
+void destroyEGLSurface();
+int initEGL();
+void destroyEGLMain();
+unsigned int getEGLDisplayWidth( void );
+unsigned int getEGLDisplayHeight( void );
+
+
 extern struct android_app* __state;
 
 static int *p_runmode;

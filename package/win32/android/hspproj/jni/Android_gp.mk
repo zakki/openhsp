@@ -43,6 +43,7 @@ PlatformAndroid.cpp \
 ../../hsplib36b2/hsp3/ndk/webtask_ndk.cpp \
 ../../hsplib36b2/hsp3/ndkgp/hgiox.cpp \
 ../../hsplib36b2/hsp3/ndkgp/gamehsp.cpp \
+../../hsplib36b2/hsp3/ndkgp/gptexmes.cpp \
 ../../hsplib36b2/hsp3/ndkgp/gpcam.cpp \
 ../../hsplib36b2/hsp3/ndkgp/gplgt.cpp \
 ../../hsplib36b2/hsp3/ndkgp/gpmat.cpp \

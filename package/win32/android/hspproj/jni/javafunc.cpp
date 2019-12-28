@@ -274,6 +274,78 @@ char *j_callFontBitmap( const char *in_str, int fontSize, int style, int *o_widt
 	return rgba;
 }
 
+
+static jobject m_bitmap;
+static jclass m_clazz;
+static JNIEnv *m_env;
+
+char *j_callFontBitmap_s( const char *in_str, int fontSize, int style, int *o_width, int *o_height, int *o_size, int *o_color )
+{
+	AndroidBitmapInfo info;
+	bool bBold;
+	void *pixels;
+	int color;
+	int dsize;
+	int ret;
+
+	m_vm->AttachCurrentThread(&m_env, NULL);
+	m_clazz = m_env->GetObjectClass(m_engine->app->activity->clazz);
+
+    jmethodID methodj = m_env->GetMethodID(m_clazz, "getFontBitmap", "([BIZ)Landroid/graphics/Bitmap;" );
+	jbyteArray text = m_env->NewByteArray( strlen( in_str ) );
+	m_env->SetByteArrayRegion( text, 0, strlen( in_str ), (jbyte*)in_str );
+
+	bBold = true;
+	m_bitmap = m_env->CallObjectMethod( m_engine->app->activity->clazz, methodj, text, fontSize, bBold );
+
+	ret = AndroidBitmap_getInfo( m_env, m_bitmap, &info );
+	if( ret < 0 ){
+		return NULL;
+	}
+	if ( info.format != ANDROID_BITMAP_FORMAT_A_8 &&
+		 info.format != ANDROID_BITMAP_FORMAT_RGBA_8888 &&
+		 info.format != ANDROID_BITMAP_FORMAT_RGBA_4444 ) {
+		return NULL;
+	}
+	ret = AndroidBitmap_lockPixels( m_env, m_bitmap, &pixels );
+	if( ret < 0 ){
+		return NULL;
+	}
+
+	dsize = 0;
+	color = 0;
+
+	if( info.format == ANDROID_BITMAP_FORMAT_A_8){
+		dsize = info.width * info.height;
+		color = 1;
+	}
+	else if( info.format == ANDROID_BITMAP_FORMAT_RGBA_8888 ){
+		dsize = info.width * info.height * 4;
+		color = 4;
+	}
+	else if( info.format == ANDROID_BITMAP_FORMAT_RGBA_4444 ){
+		dsize = info.width * info.height * 2;
+		color = 2;
+	}
+	if( o_width != NULL ) *o_width = info.width;
+	if( o_height != NULL ) *o_height = info.height;
+	if( o_size != NULL ) *o_size = dsize;
+	if( o_color != NULL ) *o_color = color;
+
+	m_env->DeleteLocalRef( text );
+	return (char *)pixels;
+}
+
+void j_callFontBitmap_e( void )
+{
+	AndroidBitmap_unlockPixels( m_env, m_bitmap );
+
+	m_env->DeleteLocalRef( m_bitmap );
+	m_env->DeleteLocalRef( m_clazz );
+
+	m_vm->DetachCurrentThread();
+}
+
 //--------------------------------------------------------------------------
 
 static void makePostParam( char *pair )
