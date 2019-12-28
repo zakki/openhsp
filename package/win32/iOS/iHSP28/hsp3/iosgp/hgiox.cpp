@@ -96,12 +96,12 @@ extern gameplay::Platform *platform;
 static int		mouse_x;
 static int		mouse_y;
 static int		mouse_btn;
-static int   _originX; 	//Œ´“_X
-static int   _originY; 	//Œ´“_Y
-static float _scaleX;	// ƒXƒP[ƒ‹X
-static float _scaleY;	// ƒXƒP[ƒ‹Y
-static float _rateX;	// 1/ƒXƒP[ƒ‹X
-static float _rateY;	// 1/ƒXƒP[ƒ‹Y
+static int   _originX; 	//åŸç‚¹X
+static int   _originY; 	//åŸç‚¹Y
+static float _scaleX;	// ã‚¹ã‚±ãƒ¼ãƒ«X
+static float _scaleY;	// ã‚¹ã‚±ãƒ¼ãƒ«Y
+static float _rateX;	// 1/ã‚¹ã‚±ãƒ¼ãƒ«X
+static float _rateY;	// 1/ã‚¹ã‚±ãƒ¼ãƒ«Y
 
 #ifdef HSPNDK
 static engine	*appengine;
@@ -136,12 +136,12 @@ void InitMemFile( void )
 int OpenMemFilePtr( char *fname )
 {
 	int fsize;
-	fsize = dpm_exist( fname );		// ƒtƒ@ƒCƒ‹‚ÌƒTƒCƒY‚ğæ“¾
+	fsize = dpm_exist( fname );		// ãƒ•ã‚¡ã‚¤ãƒ«ã®ã‚µã‚¤ã‚ºã‚’å–å¾—
 	if ( fsize <= 0 ) return -1;
 	mfptr_depth++;
 	if ( mfptr_depth >= MFPTR_MAX ) return -1;
 	mfptr[mfptr_depth] = (char *)malloc( fsize );
-	dpm_read( fname, mfptr[mfptr_depth], fsize, 0 );	// ƒtƒ@ƒCƒ‹“Ç‚İ‚İ
+	dpm_read( fname, mfptr[mfptr_depth], fsize, 0 );	// ãƒ•ã‚¡ã‚¤ãƒ«èª­ã¿è¾¼ã¿
 	return fsize;
 }
 
@@ -169,31 +169,31 @@ void CloseMemFilePtr( void )
 
 //		Settings
 //
-static		int nDestWidth;		// •`‰æÀ•W•
-static		int nDestHeight;	// •`‰æÀ•W‚‚³
+static		int nDestWidth;		// æç”»åº§æ¨™å¹…
+static		int nDestHeight;	// æç”»åº§æ¨™é«˜ã•
 static		float _rate_sx,_center_sx;
 static		float _rate_sy, _center_sy;
 
 #ifdef HSPWIN
-static		HWND master_wnd;	// •\¦‘ÎÛWindow
+static		HWND master_wnd;	// è¡¨ç¤ºå¯¾è±¡Window
 #endif
-static		int drawflag;		// ƒŒƒ“ƒ_[ŠJnƒtƒ‰ƒO
-static		BMSCR mestexbm;		// ƒeƒLƒXƒg•\¦—pƒ_ƒ~[BMSCR
+static		int drawflag;		// ãƒ¬ãƒ³ãƒ€ãƒ¼é–‹å§‹ãƒ•ãƒ©ã‚°
+static		BMSCR mestexbm;		// ãƒ†ã‚­ã‚¹ãƒˆè¡¨ç¤ºç”¨ãƒ€ãƒŸãƒ¼BMSCR
 
-static		BMSCR *mainbm;		// ƒƒCƒ“ƒXƒNƒŠ[ƒ“‚ÌBMSCR
+static		BMSCR *mainbm;		// ãƒ¡ã‚¤ãƒ³ã‚¹ã‚¯ãƒªãƒ¼ãƒ³ã®BMSCR
 static		HSPREAL infoval[GINFO_EXINFO_MAX];
-static		BMSCR *backbm;		// ”wŒiÁ‹—p‚ÌBMSCR(null=NC)
-static		BMSCR *gselbm;		// •`‰ææ‚ÌBMSCR
+static		BMSCR *backbm;		// èƒŒæ™¯æ¶ˆå»ç”¨ã®BMSCR(null=NC)
+static		BMSCR *gselbm;		// æç”»å…ˆã®BMSCR
 
-static		char m_tfont[256];	// ƒeƒLƒXƒgg—pƒtƒHƒ“ƒg
-static		int m_tsize;		// ƒeƒLƒXƒgg—pƒtƒHƒ“ƒg‚ÌƒTƒCƒY
-static		int m_tstyle;		// ƒeƒLƒXƒgg—pƒtƒHƒ“ƒg‚ÌƒXƒ^ƒCƒ‹w’è
+static		char m_tfont[256];	// ãƒ†ã‚­ã‚¹ãƒˆä½¿ç”¨ãƒ•ã‚©ãƒ³ãƒˆ
+static		int m_tsize;		// ãƒ†ã‚­ã‚¹ãƒˆä½¿ç”¨ãƒ•ã‚©ãƒ³ãƒˆã®ã‚µã‚¤ã‚º
+static		int m_tstyle;		// ãƒ†ã‚­ã‚¹ãƒˆä½¿ç”¨ãƒ•ã‚©ãƒ³ãƒˆã®ã‚¹ã‚¿ã‚¤ãƒ«æŒ‡å®š
 
 static		float center_x,center_y;
 static		float linebasex,linebasey;
 
-static		MATRIX mat_proj;	// ƒvƒƒWƒFƒNƒVƒ‡ƒ“ƒ}ƒgƒŠƒNƒX
-static		MATRIX mat_unproj;	// ƒvƒƒWƒFƒNƒVƒ‡ƒ“‹t•ÏŠ·ƒ}ƒgƒŠƒNƒX
+static		MATRIX mat_proj;	// ãƒ—ãƒ­ã‚¸ã‚§ã‚¯ã‚·ãƒ§ãƒ³ãƒãƒˆãƒªã‚¯ã‚¹
+static		MATRIX mat_unproj;	// ãƒ—ãƒ­ã‚¸ã‚§ã‚¯ã‚·ãƒ§ãƒ³é€†å¤‰æ›ãƒãƒˆãƒªã‚¯ã‚¹
 
 #define CIRCLE_DIV 16
 #define DEFAULT_FONT_NAME ""
@@ -211,27 +211,27 @@ static		MATRIX mat_unproj;	// ƒvƒƒWƒFƒNƒVƒ‡ƒ“‹t•ÏŠ·ƒ}ƒgƒŠƒNƒX
 
 #ifdef HSPWIN
 
-static		HFONT htexfont = NULL;	// TEXTURE—p‚ÌƒtƒHƒ“ƒg
-static		HFONT htexfont_old;		// TEXTURE—p‚ÌƒtƒHƒ“ƒg(•Û‘¶—p)
+static		HFONT htexfont = NULL;	// TEXTUREç”¨ã®ãƒ•ã‚©ãƒ³ãƒˆ
+static		HFONT htexfont_old;		// TEXTUREç”¨ã®ãƒ•ã‚©ãƒ³ãƒˆ(ä¿å­˜ç”¨)
 static		HDC htexdc;				// Device Context
-static		int drawsx, drawsy;		// •`‰æƒTƒCƒY
-static		int fontsystem_sx;		// ‰¡‚ÌƒTƒCƒY
-static		int fontsystem_sy;		// c‚ÌƒTƒCƒY
-static		int fontsystem_space;	// space‚Ì‰¡ƒTƒCƒY
-static		int fontsystem_zspace;	// ‘SŠpspace‚Ì‰¡ƒTƒCƒY
+static		int drawsx, drawsy;		// æç”»ã‚µã‚¤ã‚º
+static		int fontsystem_sx;		// æ¨ªã®ã‚µã‚¤ã‚º
+static		int fontsystem_sy;		// ç¸¦ã®ã‚µã‚¤ã‚º
+static		int fontsystem_space;	// spaceã®æ¨ªã‚µã‚¤ã‚º
+static		int fontsystem_zspace;	// å…¨è§’spaceã®æ¨ªã‚µã‚¤ã‚º
 static		TEXTMETRIC tm;
 static		LPBYTE lpFont;
 static		DWORD AlphaTbl[34];
-static		char *def_zspace = "@";
+static		char *def_zspace = "ã€€";
 
 
 long hgio_fontsystem_getcode(unsigned char* pt)
 {
-	//		•¶šƒR[ƒh‚ğ•Ô‚·(SJIS)
+	//		æ–‡å­—ã‚³ãƒ¼ãƒ‰ã‚’è¿”ã™(SJIS)
 	unsigned char a1 = *pt;
 
-	//		‘SŠpƒ`ƒFƒbƒN
-	if (a1 >= 129) {					// ‘SŠp•¶šƒ`ƒFƒbƒN
+	//		å…¨è§’ãƒã‚§ãƒƒã‚¯
+	if (a1 >= 129) {					// å…¨è§’æ–‡å­—ãƒã‚§ãƒƒã‚¯
 		if ((a1 <= 159) || (a1 >= 224)) {
 			long i = (long)a1;
 			return (i<<8)+(long)pt[1];
@@ -242,7 +242,7 @@ long hgio_fontsystem_getcode(unsigned char* pt)
  
 void hgio_fontsystem_term(void)
 {
-	//		ƒtƒHƒ“ƒgƒŒƒ“ƒ_ƒŠƒ“ƒO‰ğ•ú
+	//		ãƒ•ã‚©ãƒ³ãƒˆãƒ¬ãƒ³ãƒ€ãƒªãƒ³ã‚°è§£æ”¾
 	//
 	if (htexfont == NULL) return;
 
@@ -258,7 +258,7 @@ void hgio_fontsystem_term(void)
 
 void hgio_fontsystem_init(char* fontname, int size, int style)
 {
-	//		ƒtƒHƒ“ƒgƒŒƒ“ƒ_ƒŠƒ“ƒO‰Šú‰»
+	//		ãƒ•ã‚©ãƒ³ãƒˆãƒ¬ãƒ³ãƒ€ãƒªãƒ³ã‚°åˆæœŸåŒ–
 	//
 	hgio_fontsystem_term();
 
@@ -282,26 +282,26 @@ void hgio_fontsystem_init(char* fontname, int size, int style)
 			break;
 		}
 		htexfont = CreateFont(
-			size,						// ƒtƒHƒ“ƒg‚‚³
-			0,							// •¶š•
-			0,							// ƒeƒLƒXƒg‚ÌŠp“x	
-			0,							// ƒx[ƒXƒ‰ƒCƒ“‚Æ‚˜²‚Æ‚ÌŠp“x
-			fw,							// ƒtƒHƒ“ƒg‚Ìd‚³i‘¾‚³j
-			((style & 4) != 0),			// ƒCƒ^ƒŠƒbƒN‘Ì
-			FALSE,						// ƒAƒ“ƒ_[ƒ‰ƒCƒ“
-			FALSE,						// ‘Å‚¿Á‚µü
-			DEFAULT_CHARSET,			// •¶šƒZƒbƒg
-			OUT_TT_PRECIS,				// o—Í¸“x
-			CLIP_DEFAULT_PRECIS,		// ƒNƒŠƒbƒsƒ“ƒO¸“x
-			PROOF_QUALITY,				// o—Í•i¿
-			DEFAULT_PITCH | FF_MODERN,	// ƒsƒbƒ`‚Æƒtƒ@ƒ~ƒŠ[
-			fontname					// ‘‘Ì–¼
+			size,						// ãƒ•ã‚©ãƒ³ãƒˆé«˜ã•
+			0,							// æ–‡å­—å¹…
+			0,							// ãƒ†ã‚­ã‚¹ãƒˆã®è§’åº¦	
+			0,							// ãƒ™ãƒ¼ã‚¹ãƒ©ã‚¤ãƒ³ã¨ï½˜è»¸ã¨ã®è§’åº¦
+			fw,							// ãƒ•ã‚©ãƒ³ãƒˆã®é‡ã•ï¼ˆå¤ªã•ï¼‰
+			((style & 4) != 0),			// ã‚¤ã‚¿ãƒªãƒƒã‚¯ä½“
+			FALSE,						// ã‚¢ãƒ³ãƒ€ãƒ¼ãƒ©ã‚¤ãƒ³
+			FALSE,						// æ‰“ã¡æ¶ˆã—ç·š
+			DEFAULT_CHARSET,			// æ–‡å­—ã‚»ãƒƒãƒˆ
+			OUT_TT_PRECIS,				// å‡ºåŠ›ç²¾åº¦
+			CLIP_DEFAULT_PRECIS,		// ã‚¯ãƒªãƒƒãƒ”ãƒ³ã‚°ç²¾åº¦
+			PROOF_QUALITY,				// å‡ºåŠ›å“è³ª
+			DEFAULT_PITCH | FF_MODERN,	// ãƒ”ãƒƒãƒã¨ãƒ•ã‚¡ãƒŸãƒªãƒ¼
+			fontname					// æ›¸ä½“å
 		);
 	}
 
 	if (htexfont == NULL) return;
 
-	lpFont = (LPBYTE)malloc(0x10000);			// ƒtƒHƒ“ƒgæ“¾—p‚Ìƒ[ƒN
+	lpFont = (LPBYTE)malloc(0x10000);			// ãƒ•ã‚©ãƒ³ãƒˆå–å¾—ç”¨ã®ãƒ¯ãƒ¼ã‚¯
 
 	htexfont_old = (HFONT)SelectObject(htexdc, htexfont);
 	GetTextMetrics(htexdc, &tm);
@@ -324,7 +324,7 @@ void hgio_fontsystem_init(char* fontname, int size, int style)
 
 int hgio_fontsystem_execsub(long code, unsigned char* buffer, int pitch, int offsetx)
 {
-	//		ƒtƒHƒ“ƒgƒoƒbƒtƒ@æ“¾
+	//		ãƒ•ã‚©ãƒ³ãƒˆãƒãƒƒãƒ•ã‚¡å–å¾—
 	MAT2 mat;
 	DWORD Size;
 	GLYPHMETRICS gm;
@@ -348,33 +348,33 @@ int hgio_fontsystem_execsub(long code, unsigned char* buffer, int pitch, int off
 	mat.eM21 = *((FIXED*)&m21);	mat.eM22 = *((FIXED*)&m22);
 
 
-	// ƒoƒbƒtƒ@ƒTƒCƒYóM
+	// ãƒãƒƒãƒ•ã‚¡ã‚µã‚¤ã‚ºå—ä¿¡
 //	Size = GetGlyphOutline(htexdc, code, GGO_GRAY4_BITMAP, pgm, 0, NULL, &mat);
-	// ƒoƒbƒtƒ@æ“¾
+	// ãƒãƒƒãƒ•ã‚¡å–å¾—
 //	GetGlyphOutline(htexdc, code, GGO_GRAY4_BITMAP, pgm, Size, lpFont, &mat);
 
-	// ƒoƒbƒtƒ@ƒTƒCƒYóM
+	// ãƒãƒƒãƒ•ã‚¡ã‚µã‚¤ã‚ºå—ä¿¡
 	Size = GetGlyphOutline(htexdc, code, GGO_BITMAP, pgm, 0, NULL, &mat);
-	// ƒoƒbƒtƒ@æ“¾
+	// ãƒãƒƒãƒ•ã‚¡å–å¾—
 	GetGlyphOutline(htexdc, code, GGO_BITMAP, pgm, Size, lpFont, &mat);
 
 
-	// ƒtƒHƒ“ƒgƒsƒbƒ`
+	// ãƒ•ã‚©ãƒ³ãƒˆãƒ”ãƒƒãƒ
 	DWORD fontPitch = (Size / gm.gmBlackBoxY) & ~0x03;
 
-	// ƒTƒCƒYæ“¾
+	// ã‚µã‚¤ã‚ºå–å¾—
 	width = (int)gm.gmBlackBoxX;
 	height = (int)gm.gmBlackBoxY;
 	//Alertf("%d[%d,%d] +%d", code,width,height,pitch);
 
-	// •`‰æˆÊ’u‚ği‚ß‚é—Ê
+	// æç”»ä½ç½®ã‚’é€²ã‚ã‚‹é‡
 	px = gm.gmCellIncX;
 	ybase = tm.tmAscent - gm.gmptGlyphOrigin.y;
 
 	LPDWORD p1 = (LPDWORD)buffer;
 	LPBYTE p2 = lpFont;
 
-	// “]‘—æ‚ÌƒT[ƒtƒFƒCƒX‚Ìn“_
+	// è»¢é€å…ˆã®ã‚µãƒ¼ãƒ•ã‚§ã‚¤ã‚¹ã®å§‹ç‚¹
 	p1 += (offsetx + gm.gmptGlyphOrigin.x) + (ybase * pitch);
 
 	for (int y = 0; y < height; y++)
@@ -407,8 +407,8 @@ int hgio_fontsystem_execsub(long code, unsigned char* buffer, int pitch, int off
 
 int hgio_fontsystem_exec(char* msg, unsigned char* buffer, int pitch, int* out_sx, int* out_sy)
 {
-	//		msg‚Ì•¶š—ñ‚ğƒeƒNƒXƒ`ƒƒƒoƒbƒtƒ@‚ÉƒŒƒ“ƒ_ƒŠƒ“ƒO‚·‚é
-	//		(buffer‚ªNULL‚Ìê‡‚ÍƒTƒCƒY‚¾‚¯‚ğæ“¾‚·‚é)
+	//		msgã®æ–‡å­—åˆ—ã‚’ãƒ†ã‚¯ã‚¹ãƒãƒ£ãƒãƒƒãƒ•ã‚¡ã«ãƒ¬ãƒ³ãƒ€ãƒªãƒ³ã‚°ã™ã‚‹
+	//		(bufferãŒNULLã®å ´åˆã¯ã‚µã‚¤ã‚ºã ã‘ã‚’å–å¾—ã™ã‚‹)
 	//
 	if (htexfont == NULL) return -1;
 
@@ -422,9 +422,9 @@ int hgio_fontsystem_exec(char* msg, unsigned char* buffer, int pitch, int* out_s
 		if (a1 == 0) break;
 		if (a1 < 32) continue;
 
-		//		‘SŠpƒ`ƒFƒbƒN
+		//		å…¨è§’ãƒã‚§ãƒƒã‚¯
 		code = (long)a1;
-		if (a1 >= 129) {					// ‘SŠp•¶šƒ`ƒFƒbƒN
+		if (a1 >= 129) {					// å…¨è§’æ–‡å­—ãƒã‚§ãƒƒã‚¯
 			if ((a1 <= 159) || (a1 >= 224)) {
 				long i = (long)a1;
 				code = (i << 8) + (long)*p;
@@ -456,8 +456,8 @@ static	char fontpath[HSP_MAX_PATH+1];
 static	TTF_Font *font = NULL;
 static	int font_defsize;
 static	SDL_Surface *sdlsurf;
-static	int fontsystem_sx;		// ‰¡‚ÌƒTƒCƒY
-static	int fontsystem_sy;		// c‚ÌƒTƒCƒY
+static	int fontsystem_sx;		// æ¨ªã®ã‚µã‚¤ã‚º
+static	int fontsystem_sy;		// ç¸¦ã®ã‚µã‚¤ã‚º
 
 void TexFontTerm( void )
 {
@@ -487,8 +487,8 @@ int TexFontInit( char *path, int size )
 
 int hgio_fontsystem_exec(char* msg, unsigned char* buffer, int pitch, int* out_sx, int* out_sy)
 {
-	//		msg‚Ì•¶š—ñ‚ğƒeƒNƒXƒ`ƒƒƒoƒbƒtƒ@‚ÉƒŒƒ“ƒ_ƒŠƒ“ƒO‚·‚é
-	//		(buffer‚ªNULL‚Ìê‡‚ÍƒTƒCƒY‚¾‚¯‚ğæ“¾‚·‚é)
+	//		msgã®æ–‡å­—åˆ—ã‚’ãƒ†ã‚¯ã‚¹ãƒãƒ£ãƒãƒƒãƒ•ã‚¡ã«ãƒ¬ãƒ³ãƒ€ãƒªãƒ³ã‚°ã™ã‚‹
+	//		(bufferãŒNULLã®å ´åˆã¯ã‚µã‚¤ã‚ºã ã‘ã‚’å–å¾—ã™ã‚‹)
 	//
 
 	if (buffer == NULL) {
@@ -538,7 +538,7 @@ int hgio_fontsystem_exec(char* msg, unsigned char* buffer, int pitch, int* out_s
 			}
 			p1 += pitch * sizeof(int);
 		}
-	} else {			// alpha‚È‚µ
+	} else {			// alphaãªã—
 		int sx = sdlsurf->pitch / colors;
 		for (int y = 0; y < fontsystem_sy; y++)
 		{
@@ -569,16 +569,16 @@ int hgio_fontsystem_exec(char* msg, unsigned char* buffer, int pitch, int* out_s
 /*-------------------------------------------------------------------------------*/
 
 #if defined(HSPNDK)
-static	int fontsystem_sx;		// ‰¡‚ÌƒTƒCƒY
-static	int fontsystem_sy;		// c‚ÌƒTƒCƒY
+static	int fontsystem_sx;		// æ¨ªã®ã‚µã‚¤ã‚º
+static	int fontsystem_sy;		// ç¸¦ã®ã‚µã‚¤ã‚º
 static	unsigned char *fontdata_pix;
 static	int fontdata_size;
 static	int fontdata_color;
 
 int hgio_fontsystem_exec(char* msg, unsigned char* buffer, int pitch, int* out_sx, int* out_sy)
 {
-	//		msg‚Ì•¶š—ñ‚ğƒeƒNƒXƒ`ƒƒƒoƒbƒtƒ@‚ÉƒŒƒ“ƒ_ƒŠƒ“ƒO‚·‚é
-	//		(buffer‚ªNULL‚Ìê‡‚ÍƒTƒCƒY‚¾‚¯‚ğæ“¾‚·‚é)
+	//		msgã®æ–‡å­—åˆ—ã‚’ãƒ†ã‚¯ã‚¹ãƒãƒ£ãƒãƒƒãƒ•ã‚¡ã«ãƒ¬ãƒ³ãƒ€ãƒªãƒ³ã‚°ã™ã‚‹
+	//		(bufferãŒNULLã®å ´åˆã¯ã‚µã‚¤ã‚ºã ã‘ã‚’å–å¾—ã™ã‚‹)
 	//
 
 	if (buffer == NULL) {
@@ -662,13 +662,13 @@ int hgio_fontsystem_exec(char* msg, unsigned char* buffer, int pitch, int* out_s
 /*-------------------------------------------------------------------------------*/
 
 #ifdef HSPIOS
-static	int fontsystem_sx;		// ‰¡‚ÌƒTƒCƒY
-static	int fontsystem_sy;		// c‚ÌƒTƒCƒY
+static	int fontsystem_sx;		// æ¨ªã®ã‚µã‚¤ã‚º
+static	int fontsystem_sy;		// ç¸¦ã®ã‚µã‚¤ã‚º
 
 int hgio_fontsystem_exec(char* msg, unsigned char* buffer, int pitch, int* out_sx, int* out_sy)
 {
-	//		msg‚Ì•¶š—ñ‚ğƒeƒNƒXƒ`ƒƒƒoƒbƒtƒ@‚ÉƒŒƒ“ƒ_ƒŠƒ“ƒO‚·‚é
-	//		(buffer‚ªNULL‚Ìê‡‚ÍƒTƒCƒY‚¾‚¯‚ğæ“¾‚·‚é)
+	//		msgã®æ–‡å­—åˆ—ã‚’ãƒ†ã‚¯ã‚¹ãƒãƒ£ãƒãƒƒãƒ•ã‚¡ã«ãƒ¬ãƒ³ãƒ€ãƒªãƒ³ã‚°ã™ã‚‹
+	//		(bufferãŒNULLã®å ´åˆã¯ã‚µã‚¤ã‚ºã ã‘ã‚’å–å¾—ã™ã‚‹)
 	//
 
 	if (buffer == NULL) {
@@ -696,11 +696,11 @@ int hgio_fontsystem_exec(char* msg, unsigned char* buffer, int pitch, int* out_s
 
 void hgio_init( int mode, int sx, int sy, void *hwnd )
 {
-	//		ƒtƒ@ƒCƒ‹ƒT[ƒrƒXİ’è
+	//		ãƒ•ã‚¡ã‚¤ãƒ«ã‚µãƒ¼ãƒ“ã‚¹è¨­å®š
 	//
 	InitMemFile();
 
-	//		İ’è‚Ì‰Šú‰»
+	//		è¨­å®šã®åˆæœŸåŒ–
 	//
 	SetSysReq( SYSREQ_RESULT, 0 );
 	SetSysReq( SYSREQ_RESVMODE, 0 );
@@ -734,7 +734,7 @@ void hgio_init( int mode, int sx, int sy, void *hwnd )
 #endif
 	GeometryInit();
 
-	//		infoval‚ğƒŠƒZƒbƒg
+	//		infovalã‚’ãƒªã‚»ãƒƒãƒˆ
 	//
 	int i;
 	for(i=0;i<GINFO_EXINFO_MAX;i++) {
@@ -748,7 +748,7 @@ void hgio_init( int mode, int sx, int sy, void *hwnd )
 #endif
 
 #if defined(HSPLINUX) || defined(HSPEMSCRIPTEN)
-	//TTF‰Šú‰»
+	//TTFåˆæœŸåŒ–
 	char fontpath[HSP_MAX_PATH+1];
 	*fontpath = 0;
 #if defined(HSPLINUX)
@@ -775,7 +775,7 @@ void hgio_clsmode( int mode, int color, int tex )
 
 int hgio_device_restore( void )
 {
-	//	ƒfƒoƒCƒX‚ÌC•œ
+	//	ãƒ‡ãƒã‚¤ã‚¹ã®ä¿®å¾©
 	//		(0=OK/1=NG)
 	//
 	return 0;
@@ -801,11 +801,11 @@ int hgio_render_end( void )
 	res = 0;
 
 	if (gselbm == mainbm) {
-		// ƒƒCƒ“‰æ–Ê‚Ìê‡‚ÍƒtƒŠƒbƒv
+		// ãƒ¡ã‚¤ãƒ³ç”»é¢ã®å ´åˆã¯ãƒ•ãƒªãƒƒãƒ—
 		if (platform) platform->swapBuffers();
 	}
 	else {
-		// ƒIƒtƒXƒNƒŠ[ƒ“‚Ìê‡
+		// ã‚ªãƒ•ã‚¹ã‚¯ãƒªãƒ¼ãƒ³ã®å ´åˆ
 		game->resumeFrameBuffer();
 	}
 
@@ -837,14 +837,14 @@ int hgio_render_start( void )
         hgio_setinfo( GINFO_EXINFO_GYRO_Z, gyz );
     }
 #endif
-	//ƒV[ƒ“ƒŒƒ“ƒ_[ŠJn
+	//ã‚·ãƒ¼ãƒ³ãƒ¬ãƒ³ãƒ€ãƒ¼é–‹å§‹
 	if (game) {
 		if (gselbm == mainbm) {
-			// ƒƒCƒ“‰æ–Ê‚Ìê‡
+			// ãƒ¡ã‚¤ãƒ³ç”»é¢ã®å ´åˆ
 			game->frame();
 		}
 		else {
-			// ƒIƒtƒXƒNƒŠ[ƒ“‚Ìê‡
+			// ã‚ªãƒ•ã‚¹ã‚¯ãƒªãƒ¼ãƒ³ã®å ´åˆ
 			game->selectFrameBuffer((gameplay::FrameBuffer *)gselbm->master_buffer, gselbm->sx, gselbm->sy);
 		}
 	}
@@ -857,13 +857,13 @@ int hgio_render_start( void )
 
 int hgio_gsel(BMSCR *bm)
 {
-	//		•`‰ææİ’è
-	//		(gsel‘Š“–)
+	//		æç”»å…ˆè¨­å®š
+	//		(gselç›¸å½“)
 	//
 	hgio_render_end();
 	gselbm = bm;
 
-	// ƒvƒƒWƒFƒNƒVƒ‡ƒ“‚Ì‰Šú‰»
+	// ãƒ—ãƒ­ã‚¸ã‚§ã‚¯ã‚·ãƒ§ãƒ³ã®åˆæœŸåŒ–
 	int id = gselbm->texid;
 	if (id >= 0) {
 		gpmat *mat;
@@ -877,8 +877,8 @@ int hgio_gsel(BMSCR *bm)
 
 int hgio_buffer(BMSCR *bm)
 {
-	//		ƒIƒtƒXƒNƒŠ[ƒ“ì¬
-	//		(buffer‘Š“–)
+	//		ã‚ªãƒ•ã‚¹ã‚¯ãƒªãƒ¼ãƒ³ä½œæˆ
+	//		(bufferç›¸å½“)
 	//
 	int option = 0;
 	if (bm->type == HSPWND_TYPE_OFFSCREEN) {
@@ -897,8 +897,8 @@ int hgio_buffer(BMSCR *bm)
 
 void hgio_screen( BMSCR *bm )
 {
-	//		ƒXƒNƒŠ[ƒ“Äİ’è
-	//		(cls‘Š“–)
+	//		ã‚¹ã‚¯ãƒªãƒ¼ãƒ³å†è¨­å®š
+	//		(clsç›¸å½“)
 	//
 	drawflag = 0;
 	if (bm->type == HSPWND_TYPE_MAIN) {
@@ -911,8 +911,8 @@ void hgio_screen( BMSCR *bm )
 
 void hgio_setback(BMSCR *bm)
 {
-	//		”wŒi‰æ‘œ‚Ìİ’è
-	//		(NULL=‚È‚µ)
+	//		èƒŒæ™¯ç”»åƒã®è¨­å®š
+	//		(NULL=ãªã—)
 	//
 	backbm = bm;
 }
@@ -920,8 +920,8 @@ void hgio_setback(BMSCR *bm)
 
 void hgio_delscreen(BMSCR *bm)
 {
-	//		ƒXƒNƒŠ[ƒ“‚ğ”jŠü
-	//		(BmscrƒNƒ‰ƒX‚Ìdelete)
+	//		ã‚¹ã‚¯ãƒªãƒ¼ãƒ³ã‚’ç ´æ£„
+	//		(Bmscrã‚¯ãƒ©ã‚¹ã®deleteæ™‚)
 	//
 	if ( bm->flag == BMSCR_FLAG_NOUSE ) return;
 	if ( bm->texid != -1 ) {
@@ -970,7 +970,7 @@ void hgio_setColorTex( int rval, int gval ,int bval )
 
 int hgio_stick( int actsw )
 {
-	//		stick—p‚Ì“ü—Í‚ğ•Ô‚·
+	//		stickç”¨ã®å…¥åŠ›ã‚’è¿”ã™
 	//
 	int ckey = 0;
 
@@ -1093,8 +1093,8 @@ bool hgio_getkey( int kcode )
 
 int hgio_redraw( BMSCR *bm, int flag )
 {
-	//		redrawƒ‚[ƒhİ’è
-	//		(•K‚¸redraw 0`redraw 1‚ğƒyƒA‚É‚·‚é‚±‚Æ)
+	//		redrawãƒ¢ãƒ¼ãƒ‰è¨­å®š
+	//		(å¿…ãšredraw 0ï½redraw 1ã‚’ãƒšã‚¢ã«ã™ã‚‹ã“ã¨)
 	//
 	if ( bm == NULL ) return -1;
 	if ((bm->type != HSPWND_TYPE_MAIN) && (bm->type != HSPWND_TYPE_OFFSCREEN)) return -1;
@@ -1110,7 +1110,7 @@ int hgio_redraw( BMSCR *bm, int flag )
 
 int hgio_dialog( int mode, char *str1, char *str2 )
 {
-	//		dialog•\¦
+	//		dialogè¡¨ç¤º
 	//
 #ifdef HSPWIN
 	int i,res;
@@ -1133,7 +1133,7 @@ int hgio_dialog( int mode, char *str1, char *str2 )
 
 int hgio_title( char *str1 )
 {
-	//		title•ÏX
+	//		titleå¤‰æ›´
 	//
 #ifdef HSPWIN
 	SetWindowText( master_wnd, str1 );
@@ -1154,7 +1154,7 @@ int hgio_title( char *str1 )
 
 int hgio_texload( BMSCR *bm, char *fname )
 {
-	//		ƒeƒNƒXƒ`ƒƒ“Ç‚İ‚İ
+	//		ãƒ†ã‚¯ã‚¹ãƒãƒ£èª­ã¿è¾¼ã¿
 	//
 	gpmat *mat;
 
@@ -1172,7 +1172,7 @@ int hgio_texload( BMSCR *bm, char *fname )
 
 static void hgio_messub(BMSCR* bm, char* str1)
 {
-	//		mes,print •¶š•\¦
+	//		mes,print æ–‡å­—è¡¨ç¤º
 	//
 	int xsize,ysize;
 	if ((bm->type != HSPWND_TYPE_MAIN) && (bm->type != HSPWND_TYPE_OFFSCREEN)) return;
@@ -1212,23 +1212,23 @@ int hgio_mes(BMSCR* bm, char* str1)
 		a1 = *p;
 		if (a1 == 0) break;
 		if (a1 == 13) {
-			bak_a1 = a1; *p = 0;		// I’[‚ğ‰¼İ’è
+			bak_a1 = a1; *p = 0;		// çµ‚ç«¯ã‚’ä»®è¨­å®š
 			hgio_messub(bm, (char*)st);
 			*p = bak_a1;
-			p++; st = p; spcur = 0;		// I’[‚ğ–ß‚·
+			p++; st = p; spcur = 0;		// çµ‚ç«¯ã‚’æˆ»ã™
 			a1 = *p;
 			if (a1 == 10) p++;
 			continue;
 		}
 		if (a1 == 10) {
-			bak_a1 = a1; *p = 0;		// I’[‚ğ‰¼İ’è
+			bak_a1 = a1; *p = 0;		// çµ‚ç«¯ã‚’ä»®è¨­å®š
 			hgio_messub(bm, (char*)st);
 			*p = bak_a1;
-			p++; st = p; spcur = 0;		// I’[‚ğ–ß‚·
+			p++; st = p; spcur = 0;		// çµ‚ç«¯ã‚’æˆ»ã™
 			continue;
 		}
 		/*
-				if (a1&128) {					// UTF8ƒ`ƒFƒbƒN
+				if (a1&128) {					// UTF8ãƒã‚§ãƒƒã‚¯
 					while(1) {
 						a2 = *p;
 						if ( a2==0 ) break;
@@ -1259,10 +1259,10 @@ int hgio_mes(BMSCR* bm, char* str1)
 
 void hgio_line( BMSCR *bm, float x, float y )
 {
-	//		ƒ‰ƒCƒ“•`‰æ
-	//		(bm!=NULL ‚Ìê‡Aƒ‰ƒCƒ“•`‰æŠJn)
-	//		(bm==NULL ‚Ìê‡Aƒ‰ƒCƒ“•`‰æŠ®—¹)
-	//		(ƒ‰ƒCƒ“‚ÌÀ•W‚Í•K—v‚È”‚¾‚¯hgio_line2‚ğŒÄ‚Ño‚·)
+	//		ãƒ©ã‚¤ãƒ³æç”»
+	//		(bm!=NULL ã®å ´åˆã€ãƒ©ã‚¤ãƒ³æç”»é–‹å§‹)
+	//		(bm==NULL ã®å ´åˆã€ãƒ©ã‚¤ãƒ³æç”»å®Œäº†)
+	//		(ãƒ©ã‚¤ãƒ³ã®åº§æ¨™ã¯å¿…è¦ãªæ•°ã ã‘hgio_line2ã‚’å‘¼ã³å‡ºã™)
 	//
 	if ( bm == NULL ) {
 		return;
@@ -1282,8 +1282,8 @@ void hgio_line( BMSCR *bm, float x, float y )
 
 void hgio_line2( float x, float y )
 {
-	//		ƒ‰ƒCƒ“•`‰æ
-	//		(hgio_line‚ÅŠJnŒã‚É•K—v‚È‰ñ”ŒÄ‚ÔAhgio_line(NULL)‚ÅI—¹‚·‚é‚±‚Æ)
+	//		ãƒ©ã‚¤ãƒ³æç”»
+	//		(hgio_lineã§é–‹å§‹å¾Œã«å¿…è¦ãªå›æ•°å‘¼ã¶ã€hgio_line(NULL)ã§çµ‚äº†ã™ã‚‹ã“ã¨)
 	//
 
 	float *v = game->startLineColor2D();
@@ -1301,7 +1301,7 @@ void hgio_line2( float x, float y )
 
 void hgio_boxf( BMSCR *bm, float x1, float y1, float x2, float y2 )
 {
-	//		‹éŒ`•`‰æ
+	//		çŸ©å½¢æç”»
 	//
 	if ( bm == NULL ) return;
 	if ((bm->type != HSPWND_TYPE_MAIN) && (bm->type != HSPWND_TYPE_OFFSCREEN)) return;
@@ -1334,7 +1334,7 @@ void hgio_boxf( BMSCR *bm, float x1, float y1, float x2, float y2 )
 
 void hgio_circle( BMSCR *bm, float x1, float y1, float x2, float y2, int mode )
 {
-	//		‰~•`‰æ
+	//		å††æç”»
 	//
 	float x,y,rx,ry,sx,sy,rate;
 	if ( bm == NULL ) return;
@@ -1384,7 +1384,7 @@ void hgio_circle( BMSCR *bm, float x1, float y1, float x2, float y2, int mode )
 
 void hgio_fillrot( BMSCR *bm, float x, float y, float sx, float sy, float ang )
 {
-	//		‹éŒ`(‰ñ“])•`‰æ
+	//		çŸ©å½¢(å›è»¢)æç”»
 	//
 	if ( bm == NULL ) return;
 	if ((bm->type != HSPWND_TYPE_MAIN) && (bm->type != HSPWND_TYPE_OFFSCREEN)) return;
@@ -1439,9 +1439,9 @@ void hgio_fillrot( BMSCR *bm, float x, float y, float sx, float sy, float ang )
 
 void hgio_copy(BMSCR *bm, short xx, short yy, short srcsx, short srcsy, BMSCR *bmsrc, float s_psx, float s_psy)
 {
-	//		‰æ‘œƒRƒs[
-	//		texid“à‚Ì(xx,yy)-(xx+srcsx,yy+srcsy)‚ğŒ»İ‚Ì‰æ–Ê‚É(psx,psy)ƒTƒCƒY‚ÅƒRƒs[
-	//		ƒJƒŒƒ“ƒgƒ|ƒWƒVƒ‡ƒ“A•`‰æƒ‚[ƒh‚ÍBMSCR‚©‚çæ“¾
+	//		ç”»åƒã‚³ãƒ”ãƒ¼
+	//		texidå†…ã®(xx,yy)-(xx+srcsx,yy+srcsy)ã‚’ç¾åœ¨ã®ç”»é¢ã«(psx,psy)ã‚µã‚¤ã‚ºã§ã‚³ãƒ”ãƒ¼
+	//		ã‚«ãƒ¬ãƒ³ãƒˆãƒã‚¸ã‚·ãƒ§ãƒ³ã€æç”»ãƒ¢ãƒ¼ãƒ‰ã¯BMSCRã‹ã‚‰å–å¾—
 	//
 	float psx, psy;
 	float x1, y1, x2, y2, sx, sy;
@@ -1517,9 +1517,9 @@ void hgio_copy(BMSCR *bm, short xx, short yy, short srcsx, short srcsy, BMSCR *b
 
 int hgio_celputmulti(BMSCR *bm, int *xpos, int *ypos, int *cel, int count, BMSCR *bmsrc)
 {
-	//		ƒ}ƒ‹ƒ`‰æ‘œƒRƒs[
-	//		int”z—ñ“à‚ÌX,Y,CelID‚ğŒ³‚É“™”{ƒRƒs[‚ğs‚È‚¤(count=ŒÂ”)
-	//		ƒJƒŒƒ“ƒgƒ|ƒWƒVƒ‡ƒ“A•`‰æƒ‚[ƒh‚ÍBMSCR‚©‚çæ“¾
+	//		ãƒãƒ«ãƒç”»åƒã‚³ãƒ”ãƒ¼
+	//		inté…åˆ—å†…ã®X,Y,CelIDã‚’å…ƒã«ç­‰å€ã‚³ãƒ”ãƒ¼ã‚’è¡Œãªã†(count=å€‹æ•°)
+	//		ã‚«ãƒ¬ãƒ³ãƒˆãƒã‚¸ã‚·ãƒ§ãƒ³ã€æç”»ãƒ¢ãƒ¼ãƒ‰ã¯BMSCRã‹ã‚‰å–å¾—
 	//
 	int psx,psy;
 	float f_psx,f_psy;
@@ -1616,9 +1616,9 @@ int hgio_celputmulti(BMSCR *bm, int *xpos, int *ypos, int *cel, int count, BMSCR
 
 void hgio_copyrot( BMSCR *bm, short xx, short yy, short srcsx, short srcsy, float s_ofsx, float s_ofsy, BMSCR *bmsrc, float psx, float psy, float ang )
 {
-	//		‰æ‘œƒRƒs[
-	//		texid“à‚Ì(xx,yy)-(xx+srcsx,yy+srcsy)‚ğŒ»İ‚Ì‰æ–Ê‚É(psx,psy)ƒTƒCƒY‚ÅƒRƒs[
-	//		ƒJƒŒƒ“ƒgƒ|ƒWƒVƒ‡ƒ“A•`‰æƒ‚[ƒh‚ÍBMSCR‚©‚çæ“¾
+	//		ç”»åƒã‚³ãƒ”ãƒ¼
+	//		texidå†…ã®(xx,yy)-(xx+srcsx,yy+srcsy)ã‚’ç¾åœ¨ã®ç”»é¢ã«(psx,psy)ã‚µã‚¤ã‚ºã§ã‚³ãƒ”ãƒ¼
+	//		ã‚«ãƒ¬ãƒ³ãƒˆãƒã‚¸ã‚·ãƒ§ãƒ³ã€æç”»ãƒ¢ãƒ¼ãƒ‰ã¯BMSCRã‹ã‚‰å–å¾—
 	//
 	float x,y,x0,y0,x1,y1,ofsx,ofsy,mx0,mx1,my0,my1;
 	float tx0,ty0,tx1,ty1,sx,sy;
@@ -1648,11 +1648,11 @@ void hgio_copyrot( BMSCR *bm, short xx, short yy, short srcsx, short srcsy, floa
 	x1 = mx1 * ofsx;
 	y1 = my1 * ofsx;
 
-	//		Šî“_‚ÌZo
+	//		åŸºç‚¹ã®ç®—å‡º
 	x = ( (float)bm->cx - (-x0+x1) );
 	y = ( (float)bm->cy - (-y0+y1) );
 
-	//		‰ñ“]À•W‚ÌZo
+	//		å›è»¢åº§æ¨™ã®ç®—å‡º
 	ofsx = -psx;
 	ofsy = -psy;
 	x0 = mx0 * ofsy;
@@ -1727,7 +1727,7 @@ void hgio_setfilter( int type, int opt )
 
 void hgio_square_tex( BMSCR *bm, int *posx, int *posy, BMSCR *bmsrc, int *uvx, int *uvy )
 {
-	//		lŠpŒ`(square)ƒeƒNƒXƒ`ƒƒ•`‰æ
+	//		å››è§’å½¢(square)ãƒ†ã‚¯ã‚¹ãƒãƒ£æç”»
 	//
 	float sx,sy;
 	if ( bm == NULL ) return;
@@ -1779,7 +1779,7 @@ void hgio_square_tex( BMSCR *bm, int *posx, int *posy, BMSCR *bmsrc, int *uvx, i
 
 void hgio_square( BMSCR *bm, int *posx, int *posy, int *color )
 {
-	//		lŠpŒ`(square)’PF•`‰æ
+	//		å››è§’å½¢(square)å˜è‰²æç”»
 	//
 	if ( bm == NULL ) return;
 	if ((bm->type != HSPWND_TYPE_MAIN) && (bm->type != HSPWND_TYPE_OFFSCREEN)) return;
@@ -1819,7 +1819,7 @@ void hgio_square( BMSCR *bm, int *posx, int *posy, int *color )
 
 int hgio_gettick( void )
 {
-    // Œo‰ßŠÔ‚ÌŒv‘ª
+    // çµŒéæ™‚é–“ã®è¨ˆæ¸¬
 #ifdef HSPWIN
 	return timeGetTime();
 #endif
@@ -2053,10 +2053,10 @@ void hgio_draw_gpsprite( Bmscr *bmscr, bool lateflag )
 			bmscr->gfrate = obj->_transparent;
 
 			if (( rot == 0.0f )&&( zx == 1.0f )&&( zy == 1.0f )) {
-				//	•ÏŒ`‚È‚µ
+				//	å¤‰å½¢ãªã—
 				bmscr->CelPut( (Bmscr *)spr->_bmscr, spr->_celid );
 			} else {
-				//	•ÏŒ`‚ ‚è
+				//	å¤‰å½¢ã‚ã‚Š
 				bmscr->CelPut( (Bmscr *)spr->_bmscr, spr->_celid, zx, zy, rot );
 			}
 		}
@@ -2276,7 +2276,7 @@ void hgio_setmainarg( char *hsp_mainpath, char *cmdprm )
 
 char *hgio_getdir( int id )
 {
-	//		dirinfo–½—ß‚Ì“à—e‚ğİ’è‚·‚é
+	//		dirinfoå‘½ä»¤ã®å†…å®¹ã‚’è¨­å®šã™ã‚‹
 	//
 	char dirtmp[HSP_MAX_PATH+1];
 	char *p;
@@ -2285,20 +2285,20 @@ char *hgio_getdir( int id )
 	p = dirtmp;
 
 	switch( id ) {
-	case 0:				//    ƒJƒŒƒ“ƒg(Œ»İ‚Ì)ƒfƒBƒŒƒNƒgƒŠ
+	case 0:				//    ã‚«ãƒ¬ãƒ³ãƒˆ(ç¾åœ¨ã®)ãƒ‡ã‚£ãƒ¬ã‚¯ãƒˆãƒª
 		getcwd( p, HSP_MAX_PATH );
 		break;
-	case 1:				//    HSP‚ÌÀsƒtƒ@ƒCƒ‹‚ª‚ ‚éƒfƒBƒŒƒNƒgƒŠ
+	case 1:				//    HSPã®å®Ÿè¡Œãƒ•ã‚¡ã‚¤ãƒ«ãŒã‚ã‚‹ãƒ‡ã‚£ãƒ¬ã‚¯ãƒˆãƒª
 		p = dir_hsp;
 		break;
-	case 2:				//    WindowsƒfƒBƒŒƒNƒgƒŠ
+	case 2:				//    Windowsãƒ‡ã‚£ãƒ¬ã‚¯ãƒˆãƒª
 		break;
-	case 3:				//    Windows‚ÌƒVƒXƒeƒ€ƒfƒBƒŒƒNƒgƒŠ
+	case 3:				//    Windowsã®ã‚·ã‚¹ãƒ†ãƒ ãƒ‡ã‚£ãƒ¬ã‚¯ãƒˆãƒª
 		break;
-	case 4:				//    ƒRƒ}ƒ“ƒhƒ‰ƒCƒ“•¶š—ñ
+	case 4:				//    ã‚³ãƒãƒ³ãƒ‰ãƒ©ã‚¤ãƒ³æ–‡å­—åˆ—
 		p = dir_cmdline;
 		break;
-	case 5:				//    HSPTV‘fŞ‚ª‚ ‚éƒfƒBƒŒƒNƒgƒŠ
+	case 5:				//    HSPTVç´ æãŒã‚ã‚‹ãƒ‡ã‚£ãƒ¬ã‚¯ãƒˆãƒª
 		strcpy( p, dir_hsp );
 		strcat( p, "/hsptv" );
 		break;
@@ -2313,7 +2313,7 @@ char *hgio_getdir( int id )
 
 int hgio_bufferop(BMSCR* bm, int mode, char* ptr)
 {
-	//		ƒIƒtƒXƒNƒŠ[ƒ“ƒoƒbƒtƒ@‚ğ‘€ì
+	//		ã‚ªãƒ•ã‚¹ã‚¯ãƒªãƒ¼ãƒ³ãƒãƒƒãƒ•ã‚¡ã‚’æ“ä½œ
 	//
 	gpmat* mat;
 	int texid = bm->texid;
@@ -2332,14 +2332,14 @@ int hgio_bufferop(BMSCR* bm, int mode, char* ptr)
 
 void hgio_text_render(void)
 {
-	//		ƒeƒLƒXƒgƒoƒbƒtƒ@‚ÌƒŒƒ“ƒ_ƒŠƒ“ƒO(WIN32‚Ì‚İ)
+	//		ãƒ†ã‚­ã‚¹ãƒˆãƒãƒƒãƒ•ã‚¡ã®ãƒ¬ãƒ³ãƒ€ãƒªãƒ³ã‚°(WIN32ã®ã¿)
 	//
 }
 
 
 int hgio_font(char* fontname, int size, int style)
 {
-	//		•¶šƒtƒHƒ“ƒgw’è
+	//		æ–‡å­—ãƒ•ã‚©ãƒ³ãƒˆæŒ‡å®š
 	//
 	strncpy(m_tfont, fontname, 254);
 	m_tsize = size;
@@ -2367,7 +2367,7 @@ int hgio_font(char* fontname, int size, int style)
 
 void hgio_setview(BMSCR* bm)
 {
-	// vp_flag‚É‰‚¶‚½ƒrƒ…[ƒ|[ƒg‚Ìİ’è‚ğs‚¤
+	// vp_flagã«å¿œã˜ãŸãƒ“ãƒ¥ãƒ¼ãƒãƒ¼ãƒˆã®è¨­å®šã‚’è¡Œã†
 	//
 	int i;
 	MATRIX* vmat;
@@ -2409,7 +2409,7 @@ void hgio_setview(BMSCR* bm)
 		return;
 	}
 
-	//	mat_proj‚Éİ’è‚·‚é
+	//	mat_projã«è¨­å®šã™ã‚‹
 	for (i = 0; i < 16; i++) {
 		*vp++ = *mat++;
 	}
@@ -2427,7 +2427,7 @@ void hgio_setview(BMSCR* bm)
 
 #if 1
 	if (setinv) {
-		//	“Š‰eƒ}ƒgƒŠƒNƒX‚Ì‹ts—ñ‚ğİ’è‚·‚é
+		//	æŠ•å½±ãƒãƒˆãƒªã‚¯ã‚¹ã®é€†è¡Œåˆ—ã‚’è¨­å®šã™ã‚‹
 		SetCurrentMatrix(vmat);
 		InverseMatrix(&mat_unproj);
 	}
@@ -2437,12 +2437,12 @@ void hgio_setview(BMSCR* bm)
 
 void hgio_cnvview(BMSCR* bm, int* xaxis, int* yaxis)
 {
-	//	ƒrƒ…[•ÏŠ·Œã‚ÌÀ•W -> Œ³‚ÌÀ•W‚É•ÏŠ·‚·‚é
-	//	(ƒ^ƒbƒ`ˆÊ’uÄŒ»‚Ì‚½‚ß)
+	//	ãƒ“ãƒ¥ãƒ¼å¤‰æ›å¾Œã®åº§æ¨™ -> å…ƒã®åº§æ¨™ã«å¤‰æ›ã™ã‚‹
+	//	(ã‚¿ãƒƒãƒä½ç½®å†ç¾ã®ãŸã‚)
 	//
 
 	if (bm->vp_flag == BMSCR_VPFLAG_NOUSE) return;
-	if (bm->vp_flag == BMSCR_VPFLAG_3D) return;			// 3D‚Ì•ÏŠ·‚É‚Í–¢‘Î‰
+	if (bm->vp_flag == BMSCR_VPFLAG_3D) return;			// 3Dã®å¤‰æ›ã«ã¯æœªå¯¾å¿œ
 
 #if 0
 	Vector4 v1;
