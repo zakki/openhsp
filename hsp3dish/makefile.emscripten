@@ -17,6 +17,7 @@ CFLAGS = $(CFLAGS_CORE) $(CFLAGS_DEBUG) -DUSE_OBAQ\
 
 CFLAGS_GP = $(CFLAGS_CORE) $(CFLAGS_DEBUG) \
 		  -s FULL_ES2=1 -O3\
+		  -s USE_SDL_TTF=2\
 		  -s ALLOW_MEMORY_GROWTH=1\
 		  -D_LARGEFILE64_SOURCE \
 		  -DHSPDISHGP -I emscripten/extlib/include -I extlib/src -I gameplay/src -I win32gp
