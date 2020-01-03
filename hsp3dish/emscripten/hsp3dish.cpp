@@ -106,8 +106,6 @@ void handleEvent() {
 #ifdef HSPDISHGP
 					x = m->x;
 					y = m->y;
-					hgio_cnvview((BMSCR *)bm, &x, &y);
-					y=-y;
 #else
 					hgio_scale_point( m->x, m->y, x, y );
 					hgio_cnvview((BMSCR *)bm,&x,&y);
