@@ -9,12 +9,12 @@ using namespace gameplay;
  * Texture cache class.
  */
 
-#define TEXMESINF_MAX 256			// ƒeƒNƒXƒ`ƒƒƒLƒƒƒbƒVƒ…‚ÌÅ‘å”
-#define TEXMES_CACHE_DEFAULT 8		// ƒLƒƒƒbƒVƒ…‚ÌƒfƒtƒHƒ‹ƒg¶‘¶ƒtƒŒ[ƒ€
-#define TEXMES_NAME_BUFFER 32		// ƒeƒLƒXƒgƒnƒbƒVƒ…ƒl[ƒ€—pƒoƒbƒtƒ@ƒTƒCƒY
-#define TEXMES_BUFFER_MAX 0x40000	// ‰ŠúƒeƒNƒXƒ`ƒƒƒoƒbƒtƒ@ƒoƒbƒtƒ@ƒTƒCƒY
+#define TEXMESINF_MAX 256			// ãƒ†ã‚¯ã‚¹ãƒãƒ£ã‚­ãƒ£ãƒƒã‚·ãƒ¥ã®æœ€å¤§æ•°
+#define TEXMES_CACHE_DEFAULT 8		// ã‚­ãƒ£ãƒƒã‚·ãƒ¥ã®ãƒ‡ãƒ•ã‚©ãƒ«ãƒˆç”Ÿå­˜ãƒ•ãƒ¬ãƒ¼ãƒ 
+#define TEXMES_NAME_BUFFER 32		// ãƒ†ã‚­ã‚¹ãƒˆãƒãƒƒã‚·ãƒ¥ãƒãƒ¼ãƒ ç”¨ãƒãƒƒãƒ•ã‚¡ã‚µã‚¤ã‚º
+#define TEXMES_BUFFER_MAX 0x40000	// åˆæœŸãƒ†ã‚¯ã‚¹ãƒãƒ£ãƒãƒƒãƒ•ã‚¡ãƒãƒƒãƒ•ã‚¡ã‚µã‚¤ã‚º
 
-// ƒeƒNƒXƒ`ƒƒƒLƒƒƒbƒVƒ…î•ñ
+// ãƒ†ã‚¯ã‚¹ãƒãƒ£ã‚­ãƒ£ãƒƒã‚·ãƒ¥æƒ…å ±
 class gptexmes {
 public:
 	gptexmes();

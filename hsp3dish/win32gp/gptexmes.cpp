@@ -17,7 +17,7 @@ int hgio_fontsystem_exec(char* msg, unsigned char* buffer, int pitch, int* out_s
 
 gptexmes::gptexmes()
 {
-	// ƒRƒ“ƒXƒgƒ‰ƒNƒ^
+	// ã‚³ãƒ³ã‚¹ãƒˆãƒ©ã‚¯ã‚¿
 	flag = 0;
 	text = NULL;
 	_texture = NULL;
@@ -34,7 +34,7 @@ void gptexmes::clear(void)
 		_texture = NULL;
 	}
 	if (text) {
-		free(text);		// Šg’£‚³‚ê‚½ƒl[ƒ€—pƒoƒbƒtƒ@‚ª‚ ‚ê‚Î‰ğ•ú‚·‚é
+		free(text);		// æ‹¡å¼µã•ã‚ŒãŸãƒãƒ¼ãƒ ç”¨ãƒãƒƒãƒ•ã‚¡ãŒã‚ã‚Œã°è§£æ”¾ã™ã‚‹
 		text = NULL;
 	}
 	flag = 0;
@@ -70,15 +70,15 @@ void gptexmes::reset(int width, int height, int p_texsx, int p_texsy, void *data
 
 int gptexmes::registText(char* msg)
 {
-	//		•¶š—ñ‚ğİ’è‚·‚é
+	//		æ–‡å­—åˆ—ã‚’è¨­å®šã™ã‚‹
 	//
 	int mylen = strlen(msg);
 	if (mylen >= (TEXMES_NAME_BUFFER - 1)) {
-		text = (char*)malloc(mylen + 1);		// ƒeƒLƒXƒgƒnƒbƒVƒ…ƒl[ƒ€—pƒoƒbƒtƒ@‚ğì¬‚·‚é
+		text = (char*)malloc(mylen + 1);		// ãƒ†ã‚­ã‚¹ãƒˆãƒãƒƒã‚·ãƒ¥ãƒãƒ¼ãƒ ç”¨ãƒãƒƒãƒ•ã‚¡ã‚’ä½œæˆã™ã‚‹
 		strcpy(text, msg);
 	}
 	else {
-		strcpy(buf, msg);						// •W€ƒoƒbƒtƒ@‚ÉƒRƒs[‚·‚é
+		strcpy(buf, msg);						// æ¨™æº–ãƒãƒƒãƒ•ã‚¡ã«ã‚³ãƒ”ãƒ¼ã™ã‚‹
 	}
 	return 0;
 }
@@ -161,7 +161,7 @@ void gamehsp::texmesTerm(void)
 
 unsigned char*gamehsp::texmesBuffer(int size)
 {
-	//	‹ó‚ÌƒeƒNƒXƒ`ƒƒƒoƒbƒtƒ@‚ğ€”õ‚·‚é
+	//	ç©ºã®ãƒ†ã‚¯ã‚¹ãƒãƒ£ãƒãƒƒãƒ•ã‚¡ã‚’æº–å‚™ã™ã‚‹
 	//
 	if (size > _texmesbuf_max) {
 		free(_texmesbuf);
@@ -175,7 +175,7 @@ unsigned char*gamehsp::texmesBuffer(int size)
 
 gptexmes* gamehsp::addTexmes(void)
 {
-	//	‹ó‚Ìgptexmes‚ğ¶¬‚·‚é
+	//	ç©ºã®gptexmesã‚’ç”Ÿæˆã™ã‚‹
 	//
 	int i;
 	for (i = 0; i < _maxtexmes; i++) {
@@ -192,19 +192,19 @@ gptexmes* gamehsp::addTexmes(void)
 
 void gamehsp::texmesProc(void)
 {
-	//		ƒtƒŒ[ƒ€’PˆÊ‚Å‚ÌƒLƒƒƒbƒVƒ…ƒŠƒtƒŒƒbƒVƒ…
-	//		(ƒLƒƒƒbƒVƒ…ƒTƒ|[ƒg‚ÍA–ˆƒtƒŒ[ƒ€‚²‚Æ‚ÉŒÄ‚Ño‚·‚±‚Æ)
+	//		ãƒ•ãƒ¬ãƒ¼ãƒ å˜ä½ã§ã®ã‚­ãƒ£ãƒƒã‚·ãƒ¥ãƒªãƒ•ãƒ¬ãƒƒã‚·ãƒ¥
+	//		(ã‚­ãƒ£ãƒƒã‚·ãƒ¥ã‚µãƒãƒ¼ãƒˆæ™‚ã¯ã€æ¯ãƒ•ãƒ¬ãƒ¼ãƒ ã”ã¨ã«å‘¼ã³å‡ºã™ã“ã¨)
 	//
 	int i;
 	gptexmes* t;
 	t = _gptexmes;
 	for (i = 0; i < _maxtexmes; i++) {
-		if (t->flag) {							// ƒƒbƒZ[ƒWƒeƒNƒXƒ`ƒƒ‚¾‚Á‚½
+		if (t->flag) {							// ãƒ¡ãƒƒã‚»ãƒ¼ã‚¸ãƒ†ã‚¯ã‚¹ãƒãƒ£ã ã£ãŸæ™‚
 			if (t->life > 0) {
-				t->life--;						// ƒLƒƒƒbƒVƒ…‚Ìƒ‰ƒCƒt‚ğŒ¸‚ç‚·
+				t->life--;						// ã‚­ãƒ£ãƒƒã‚·ãƒ¥ã®ãƒ©ã‚¤ãƒ•ã‚’æ¸›ã‚‰ã™
 			}
 			else {
-				t->clear();						// ƒeƒNƒXƒ`ƒƒ‚ÌƒGƒ“ƒgƒŠ‚ğ”jŠü‚·‚é
+				t->clear();						// ãƒ†ã‚¯ã‚¹ãƒãƒ£ã®ã‚¨ãƒ³ãƒˆãƒªã‚’ç ´æ£„ã™ã‚‹
 			}
 		}
 		t++;
@@ -214,25 +214,25 @@ void gamehsp::texmesProc(void)
 
 int gamehsp::texmesGetCache(char* msg, short mycache)
 {
-	//		ƒLƒƒƒbƒVƒ…Ï‚İ‚Ì•¶š—ñ‚ª‚ ‚ê‚Îid‚ğ•Ô‚·
-	//		(‘¶İ‚µ‚È‚¢ê‡‚Í-1)
+	//		ã‚­ãƒ£ãƒƒã‚·ãƒ¥æ¸ˆã¿ã®æ–‡å­—åˆ—ãŒã‚ã‚Œã°idã‚’è¿”ã™
+	//		(å­˜åœ¨ã—ãªã„å ´åˆã¯-1)
 	//
 	int i;
 	gptexmes* t;
 	t = _gptexmes;
 	for (i = 0; i < _maxtexmes; i++) {
-		if (t->flag) {							// g—p’†‚¾‚Á‚½
-			if (t->hash == mycache) {			// ‚Ü‚¸ƒnƒbƒVƒ…‚ğ”ä‚×‚é
-				if (t->font_size == _fontsize && t->font_style == _fontstyle) {	// ƒTƒCƒYEƒXƒ^ƒCƒ‹‚ğ”ä‚×‚é
+		if (t->flag) {							// ä½¿ç”¨ä¸­ã ã£ãŸæ™‚
+			if (t->hash == mycache) {			// ã¾ãšãƒãƒƒã‚·ãƒ¥ã‚’æ¯”ã¹ã‚‹
+				if (t->font_size == _fontsize && t->font_style == _fontstyle) {	// ã‚µã‚¤ã‚ºãƒ»ã‚¹ã‚¿ã‚¤ãƒ«ã‚’æ¯”ã¹ã‚‹
 					if (t->text) {
 						if (strcmp(msg, t->text) == 0) {
-							t->life = TEXMES_CACHE_DEFAULT;			// ƒLƒƒƒbƒVƒ…‚ğ•Û
+							t->life = TEXMES_CACHE_DEFAULT;			// ã‚­ãƒ£ãƒƒã‚·ãƒ¥ã‚’ä¿æŒ
 							return i;
 						}
 					}
 					else {
 						if (strcmp(msg, t->buf) == 0) {
-							t->life = TEXMES_CACHE_DEFAULT;			// ƒLƒƒƒbƒVƒ…‚ğ•Û
+							t->life = TEXMES_CACHE_DEFAULT;			// ã‚­ãƒ£ãƒƒã‚·ãƒ¥ã‚’ä¿æŒ
 							return i;
 						}
 					}
@@ -256,8 +256,8 @@ gptexmes* gamehsp::texmesGet(int id)
 
 int gamehsp::str2hash(char* msg, int* out_len)
 {
-	//		•¶š—ñ‚ÌŠÈˆÕƒnƒbƒVƒ…‚ğ“¾‚é
-	//		“¯‚Éout_len‚É•¶š—ñ’·‚ğ•Ô‚·
+	//		æ–‡å­—åˆ—ã®ç°¡æ˜“ãƒãƒƒã‚·ãƒ¥ã‚’å¾—ã‚‹
+	//		åŒæ™‚ã«out_lenã«æ–‡å­—åˆ—é•·ã‚’è¿”ã™
 	//
 	int len;
 	short cache;
@@ -266,14 +266,14 @@ int gamehsp::str2hash(char* msg, int* out_len)
 	p = (unsigned char*)msg;
 	len = 0;
 	a1 = *p;
-	cache = ((short)a1) << 8;		// æ“ª‚Ì•¶šƒR[ƒh‚ğãˆÊ8bit‚É‚·‚é
+	cache = ((short)a1) << 8;		// å…ˆé ­ã®æ–‡å­—ã‚³ãƒ¼ãƒ‰ã‚’ä¸Šä½8bitã«ã™ã‚‹
 	while (1) {
 		if (a1 == 0) break;
 		a1 = *p++;
 		len++;
 	}
 	*out_len = len;
-	if (len > 0) {			// I’[‚Ì•¶šƒR[ƒh‚ğ‰ºˆÊ8bit‚É‚·‚é
+	if (len > 0) {			// çµ‚ç«¯ã®æ–‡å­—ã‚³ãƒ¼ãƒ‰ã‚’ä¸‹ä½8bitã«ã™ã‚‹
 		p--;
 		cache += (short)*p;
 	}
@@ -294,9 +294,9 @@ int gamehsp::Get2N(int val)
 
 int gamehsp::texmesRegist(char* msg)
 {
-	//		ƒLƒƒƒbƒVƒ…Ï‚İ‚ÌƒeƒNƒXƒ`ƒƒID‚ğ•Ô‚·(texmesID‚ğ•Ô‚·)
-	//		(ì¬‚³‚ê‚Ä‚¢‚È‚¢ƒƒbƒZ[ƒWƒeƒNƒXƒ`ƒƒ‚Í©“®“I‚Éì¬‚·‚é)
-	//		(ì¬‚Ì•K—v‚ª‚È‚¢ê‡‚Í-1‚ğ•Ô‚·)
+	//		ã‚­ãƒ£ãƒƒã‚·ãƒ¥æ¸ˆã¿ã®ãƒ†ã‚¯ã‚¹ãƒãƒ£IDã‚’è¿”ã™(texmesIDã‚’è¿”ã™)
+	//		(ä½œæˆã•ã‚Œã¦ã„ãªã„ãƒ¡ãƒƒã‚»ãƒ¼ã‚¸ãƒ†ã‚¯ã‚¹ãƒãƒ£ã¯è‡ªå‹•çš„ã«ä½œæˆã™ã‚‹)
+	//		(ä½œæˆã®å¿…è¦ãŒãªã„å ´åˆã¯-1ã‚’è¿”ã™)
 	//
 	int mylen;
 	int mycache;
@@ -305,7 +305,7 @@ int gamehsp::texmesRegist(char* msg)
 	int tsx, tsy, sx, sy;
 	gptexmes* tex;
 
-	mycache = str2hash(msg, &mylen);			// ƒLƒƒƒbƒVƒ…‚ğæ“¾
+	mycache = str2hash(msg, &mylen);			// ã‚­ãƒ£ãƒƒã‚·ãƒ¥ã‚’å–å¾—
 	if (mylen <= 0) return -1;
 
 	texid = texmesGetCache(msg, mycache);
@@ -313,14 +313,14 @@ int gamehsp::texmesRegist(char* msg)
 		tex = texmesGet(texid);
 		_area_px = tex->sx;
 		_area_py = tex->sy;
-		return texid;							// ƒLƒƒƒbƒVƒ…‚ª‚ ‚Á‚½
+		return texid;							// ã‚­ãƒ£ãƒƒã‚·ãƒ¥ãŒã‚ã£ãŸ
 	}
 
-	//		ƒLƒƒƒbƒVƒ…‚ª‘¶İ‚µ‚È‚¢‚Ì‚Åì¬
+	//		ã‚­ãƒ£ãƒƒã‚·ãƒ¥ãŒå­˜åœ¨ã—ãªã„ã®ã§ä½œæˆ
 	tex = addTexmes();
 	if (tex == NULL) return -1;
 
-	//		ƒrƒbƒgƒ}ƒbƒv‚ğì¬
+	//		ãƒ“ãƒƒãƒˆãƒãƒƒãƒ—ã‚’ä½œæˆ
 	pImg = texmesGetFont(msg, &sx, &sy, &tsx, &tsy);
 	tex->reset(sx,sy,tsx,tsy,pImg);
 	_area_px = sx;
@@ -338,7 +338,7 @@ int gamehsp::texmesRegist(char* msg)
 
 void gamehsp::texmesDraw(int x, int y, char* msg, Vector4* p_color)
 {
-	//		ƒtƒHƒ“ƒgƒƒbƒZ[ƒW‚ğ•\¦‚·‚é
+	//		ãƒ•ã‚©ãƒ³ãƒˆãƒ¡ãƒƒã‚»ãƒ¼ã‚¸ã‚’è¡¨ç¤ºã™ã‚‹
 	//
 	int id;
 	gptexmes* tex;
@@ -353,7 +353,7 @@ void gamehsp::texmesDraw(int x, int y, char* msg, Vector4* p_color)
 	tex = texmesGet(id);
 	if (tex==NULL) return;
 
-	//		mesh‚ÌTexture‚ğ·‚µ‘Ö‚¦‚é
+	//		meshã®Textureã‚’å·®ã—æ›¿ãˆã‚‹
 	Uniform* samplerUniform = NULL;
 	for (unsigned int i = 0, count = _spriteEffect->getUniformCount(); i < count; ++i)
 	{
@@ -367,7 +367,7 @@ void gamehsp::texmesDraw(int x, int y, char* msg, Vector4* p_color)
 
 	_fontMaterial->getParameter(samplerUniform->getName())->setValue(tex->_texture);
 
-	//		•`‰æ‚·‚é
+	//		æç”»ã™ã‚‹
 	tx0 = 0.0f;
 	ty0 = 0.0f;
 	tx1 = tex->ratex;
@@ -434,7 +434,7 @@ unsigned char* gamehsp::texmesGetFont(char* msg, int* out_sx, int* out_sy, int *
 
 void gamehsp::setFont(char* fontname, int size, int style)
 {
-	// ƒtƒHƒ“ƒgİ’è
+	// ãƒ•ã‚©ãƒ³ãƒˆè¨­å®š
 	_fontsize = size;
 	_fontstyle = style;
 	_fontname = fontname;
@@ -443,7 +443,7 @@ void gamehsp::setFont(char* fontname, int size, int style)
 
 int gamehsp::drawFont(int x, int y, char* text, Vector4* p_color, int* out_ysize)
 {
-	// ƒtƒHƒ“ƒg‚Å•`‰æ
+	// ãƒ•ã‚©ãƒ³ãƒˆã§æç”»
 	int xsize, ysize;
 
 #ifdef USE_GPBFONT

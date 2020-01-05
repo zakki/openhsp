@@ -57,6 +57,9 @@ int MakeEmptyTexBuffer( int width, int height );
 
 int GetCacheMesTextureID( char *msg, int font_size, int font_style );
 
+int TexFontInit( char *path, int size );
+void TexFontTerm( void );
+
 int UpdateTexStar(int texid, int mode);
 int UpdateTex32(int texid, char* srcptr, int mode);
 
