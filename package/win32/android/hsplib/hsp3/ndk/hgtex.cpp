@@ -12,7 +12,7 @@
 
 #include "stb_image.h"
 
-#ifdef HSPEMSCRIPTEN
+#if defined(HSPLINUX) || defined(HSPEMSCRIPTEN)
 #include "../../hsp3/hsp3config.h"
 #else
 #include "../hsp3config.h"
@@ -40,16 +40,31 @@
 #define USE_JAVA_FONT
 #define FONT_TEX_SX 512
 #define FONT_TEX_SY 128
+#include "appengine.h"
+
 #define GL_GLEXT_PROTOTYPES
 #include <GL/gl.h>
 #include <GL/glext.h>
 
-#include "SDL/SDL.h"
-#include "SDL/SDL_image.h"
-#include "SDL/SDL_opengl.h"
+#include "SDL2/SDL.h"
+#include "SDL2/SDL_image.h"
+#include "SDL2/SDL_opengl.h"
+
+#include <emscripten.h>
+#endif
+
+#ifdef HSPLINUX
 
 #include "appengine.h"
-#include <emscripten.h>
+#define GL_GLEXT_PROTOTYPES
+#include <GL/gl.h>
+#include <GL/glext.h>
+
+#include "SDL2/SDL.h"
+#include "SDL2/SDL_image.h"
+#include "SDL2/SDL_opengl.h"
+#include <SDL2/SDL_ttf.h>
+
 #endif
 
 #include "../supio.h"
@@ -198,6 +213,45 @@ static void star_draw(char *dest, int sx, int sy, int mode)
 
 /*-------------------------------------------------------------------------------*/
 /*
+		Font Manage Routines
+*/
+/*-------------------------------------------------------------------------------*/
+
+#if defined(HSPLINUX)
+static	char fontpath[HSP_MAX_PATH+1];
+static	TTF_Font *font = NULL;
+static	int font_defsize;
+
+void TexFontTerm( void )
+{
+	if ( font != NULL ) {
+	    TTF_CloseFont(font);
+	    font = NULL;
+	}
+}
+
+int TexFontInit( char *path, int size )
+{
+	if ( font != NULL ) TexFontTerm();
+
+	if (*path != 0) {
+		strcpy ( fontpath, path );
+	}
+	font = TTF_OpenFont( fontpath, size );
+	font_defsize = size;
+
+	if (font == NULL){
+		Alertf( "Init:TTF_OpenFont error" );
+		return -2;
+	}
+	//Alertf( "Init:TTF_Init:%s (%x)",fontpath,font );
+	return 0;
+}
+
+#endif
+
+/*-------------------------------------------------------------------------------*/
+/*
 		Texture Manage Routines
 */
 /*-------------------------------------------------------------------------------*/
@@ -276,17 +330,17 @@ void ChangeTex( int id )
 {
 	//	テクスチャ設定
 	//	TexIDではなくOpenGLのIDを渡すこと
-	if ( id == -1 ) {
+	if ( id < 0 ) {
 		curtex = -1;
 	    glBindTexture(GL_TEXTURE_2D,0);
-#if defined(HSPEMSCRIPTEN)
+#if defined(HSPLINUX) || defined(HSPEMSCRIPTEN)
 		glDisable(GL_TEXTURE_2D);
 #endif
 		return;
 	}
 	curtex = id;
     glBindTexture( GL_TEXTURE_2D, id );
-#if defined(HSPEMSCRIPTEN)
+#if defined(HSPLINUX) || defined(HSPEMSCRIPTEN)
 	glEnable(GL_TEXTURE_2D);
 #endif
 }
@@ -439,8 +493,9 @@ int MakeEmptyTex( int width, int height )
 	glBindTexture( GL_TEXTURE_2D, id );
 
 	glTexImage2D( GL_TEXTURE_2D, 0, GL_ALPHA, sx, sy, 0, GL_ALPHA, GL_UNSIGNED_BYTE, NULL );
+
 	texid = SetTex( -1, TEXMODE_MES8, 0, sx, sy, width, height, id );
-	Alertf( "Tex:ID%d (%d,%d) Clear",texid,sx,sy );
+	//Alertf( "Tex:ID%d (%d,%d) Clear",texid,sx,sy );
 	return texid;
 }
 
@@ -462,7 +517,7 @@ int MakeEmptyTexBuffer( int width, int height )
 
 	glTexImage2D( GL_TEXTURE_2D, 0, GL_RGBA, sx, sy, 0, GL_RGBA, GL_UNSIGNED_BYTE, NULL );
 	texid = SetTex( -1, TEXMODE_BUFFER, 0, sx, sy, width, height, id );
-	Alertf( "TexBuf:ID%d (%d,%d) Clear",texid,sx,sy );
+	//Alertf( "TexBuf:ID%d (%d,%d) Clear",texid,sx,sy );
 	return texid;
 }
 
@@ -584,7 +639,7 @@ void TexProc( void )
 	}
 }
 
-#if defined(HSPNDK)||defined(HSPEMSCRIPTEN)
+
 int GetCacheMesTextureID( char *msg, int font_size, int font_style )
 {
 	//		キャッシュ済みのテクスチャIDを返す(OpenGLテクスチャIDを返す)
@@ -772,7 +827,109 @@ int GetCacheMesTextureID( char *msg, int font_size, int font_style )
 
 	return texid;
 #endif
-}
+
+#ifdef HSPLINUX
+
+	GLuint id;
+	int texid;
+	int tsx,tsy;
+	unsigned char *pImg;
+
+	TEXINF *t;
+	int mylen;
+	short mycache;
+	
+	mycache = str2hash( msg, &mylen );			// キャッシュを取得
+	if ( mylen <= 0 ) return -1;
+
+	texid = getCache( msg, mycache, font_size, font_style );
+	if ( texid >= 0 ) {
+		return texid;							// キャッシュがあった
+	}
+
+	//		キャッシュが存在しないので作成
+	if ( font == NULL ) {
+		//Alertf( "No font." );
+		return -1;
+	}
+
+	if ( font_size != font_defsize ) {
+		TexFontInit( fontpath, font_size );
+	}
+
+	SDL_Color dcolor={255,255,255,255};
+	SDL_Surface *surf = TTF_RenderUTF8_Blended(font, msg, dcolor );
+
+    if (surf == NULL) {
+		//Alertf( "TTF_RenderUTF8_Blended : error" );
+		return -1;
+	}
+
+	int colors;
+	GLuint texture_format = 0;
+	tsx = surf->w;
+	tsy = surf->h;
+	colors = surf->format->BytesPerPixel;
+	//Alertf( "Init:Surface(%d,%d) %d mask%x pitch%d",tsx,tsy,colors,surf->format->Rmask,surf->pitch );
+
+	texid = MakeEmptyTex( tsx, tsy );
+	if ( texid < 0 ) return -1;
+
+	t = GetTex( texid );
+	t->hash = mycache;
+	t->font_size = font_size;
+	t->font_style = font_style;
+
+	if ( curmestex >= GetSysReq(SYSREQ_MESCACHE_MAX) ) {	// エントリ数がオーバーしているものは次のフレームで破棄
+		t->life = 0;
+		t->buf[0] = 0;
+	} else {
+		//		キャッシュの登録
+		if ( mylen >= ( TEXMES_NAME_BUFFER - 1 ) ) {
+			t->text = (char *)malloc( mylen+1 );		// テキストハッシュネーム用バッファを作成する
+			strcpy( t->text, msg );
+		} else {
+			strcpy( t->buf, msg );						// 標準バッファにコピーする
+		}
+	}
+
+	id = (GLuint)t->texid;
+
+	glBindTexture( GL_TEXTURE_2D, id );
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+
+	glTexEnvf(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_REPLACE);
+	glPixelStorei( GL_UNPACK_ALIGNMENT, 1);
+
+#ifdef HSPRASPBIAN
+
+	//glTexImage2D( GL_TEXTURE_2D, 0, GL_RGBA, tsx, tsy, 0, GL_RGBA, GL_UNSIGNED_BYTE, surf->pixels );
+	glTexSubImage2D( GL_TEXTURE_2D, 0, (GLint)0, (GLint)0, (GLsizei)tsx, (GLsizei)tsy, GL_RGBA, GL_UNSIGNED_BYTE, surf->pixels );
+
+#else
+	if (colors == 4) {   // alpha
+		if (surf->format->Rmask == 0x000000ff)
+			texture_format = GL_RGBA;
+			else texture_format = GL_BGRA_EXT;
+	} else {             // no alpha
+		if (surf->format->Rmask == 0x000000ff)
+			texture_format = GL_RGB;
+			else texture_format = GL_BGR_EXT;
+	}
+
+	glTexSubImage2D( GL_TEXTURE_2D, 0, (GLint)0, (GLint)0, (GLsizei)tsx, (GLsizei)tsy, texture_format, GL_UNSIGNED_BYTE, surf->pixels );
+	//glTexImage2D( GL_TEXTURE_2D, 0, GL_RGBA, tsx, tsy, 0, texture_format, GL_UNSIGNED_BYTE, surf->pixels );
 #endif
 
+	glBindTexture(GL_TEXTURE_2D, 0);
+	glTexEnvf(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_MODULATE);
 
+    //Clean up the surface
+    SDL_FreeSurface(surf);
+
+	return texid;
+#endif
+
+	return -1;
+}
