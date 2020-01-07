@@ -6,24 +6,23 @@
 	<meta http-equiv="Content-Style-Type" content="text/css">
 	<meta http-equiv="Content-Script-Type" content="text/javascript">
 	<meta name="author" content="OpenHSP3 Project（http://dev.onionsoft.net/trac/wiki）">
-	<meta name="keywords" content="HSP3,HotSoupProcessor3,更新情報,アップデート">
+	<meta name="keywords" content="HSP,HSP3,HotSoupProcessor,更新情報,アップデート">
 	<meta name="description" content="HSPの更新情報を掲載">
 	<link href="../main.css" rel="stylesheet" type="text/css" media="all">
-	<title>HSP3.6 アップデートガイド</title>
+	<title>HSP3 アップデートガイド</title>
 </head>
 <body>
 	<div id="CONTAINER">
 		<!-- ヘッダー -->
-		<p id="COPY">HSP : Hot Soup Processor ver3.6 / onion software 1997-2019(c)</p>
+		<p id="COPY">HSP : Hot Soup Processor ver3.6 / onion software 1997-2020(c)</p>
 		<img src="hsp3ttl.jpg" alt="タイトル" width="640" height="200">
-		<h1>HSP3.6 アップデートガイド</h1>
+		<h1>HSP3 アップデートガイド</h1>
 
 		<!-- 目次 -->
 		<ol>
 			<li><a href="#INTRO">イントロダクション</a></li>
-			<li><a href="#HSP34UPDATE">HSP3.6のアップデート概要</a></li>
-			<li><a href="#DIFF34">HSP3.6の変更点について</a></li>
-			<li><a href="#HSPDISH">HSP3Dishについて</a></li>
+			<li><a href="#HSP3UPDATE">HSP3のアップデート概要</a></li>
+			<li><a href="#LINUX">Linux版の提供について</a></li>
 			<li><a href="#HSPOBSOLETE">パッケージの同梱終了について</a></li>
 			<li><a href="#DIFF2">HSP2との違いについて</a></li>
 			<li><a href="#SUMMARY">HSP3の概要</a>
@@ -35,7 +34,6 @@
 					<li><a href="#SUMMARY_PLUGIN">プラグイン</a></li>
 					<li><a href="#SUMMARY_MODULE">モジュール</a></li>
 					<li><a href="#SUMMARY_LABELVAR">ラベル型変数のサポート</a></li>
-					<li><a href="#SUMMARY_HSPLET">HSPLet</a></li>
 					<li><a href="#SUMMARY_DLL">DLL呼び出し</a></li>
 					<li><a href="#SUMMARY_COM">COM呼び出し</a></li>
 					<li><a href="#SUMMARY_EDITOR">スクリプトエディタ</a></li>
@@ -66,168 +64,69 @@
 		</p>
 		<p>
 			ここでは、HSP3.6とHSP3.5の違いについて。
-			そして、HSP2.61とHSP3全般の違いについて解説していきます。
+			そして、HSP2.xとHSP3全般の違いについて解説していきます。
 		</p>
 
 
-	<h2 id="HSP34UPDATE">HSP3.6のアップデート概要</h2>
+	<h2 id="HSP3UPDATE">HSP3のアップデート概要</h2>
 		<p>
-		HSP3.6は、特に変更を意識することなく、HSP3.5と同様にお使い頂けます。
-		HSP3.6で変更された項目の概要は、以下の通りです。
+		HSP3.6は、特に変更を意識することなく、それまでのHSP3と同様にお使い頂けます。<br>
+		HSP3.6で追加された機能の詳細については、<a href="update36.htm" target="_blank">「HSP3.6新機能ハイライト」</a>を参照してください。
+		また、HSP3の詳細な更新履歴については、<a href="history.txt" target="_blank">「HSP3更新履歴」</a>を参照してください。
 		</p>
-
 		<dl>
-
-			<dt>
-			標準命令の拡充
-			</dt><br>
-			<dd>
-			<p>
-			配置オブジェクトの配色を指定するためのobjcolor命令、24bitカラーコードを指定するためのrgbcolor命令など
-			多くの新機能を搭載しています。<br>
-			また、Unicode文字を標準で使用する新しいランタイム、hsp3utf、hsp3_64などもアップデートされています。
-			いままでの機能はそのままに、ゲームだけでなく、ツール製作や手軽なプロトタイピングに役立つ機能を拡充しています。
-			</p>
-			</dd>
-
-			<dt>
-			プラグイン機能拡充
-			</dt><br>
-			<dd>
-			<p>
-			新規追加プラグイン「hspsw」(Steamプラットフォーム連携API)、「hspmucom」
-			(MML記述によるFM音源楽曲再生プラグイン)、「ZLibWrap.dll」(zipファイルの圧縮解凍)など
-			高度な機能拡張を同梱しており、すぐに利用可能です。
-			</p>
-			</dd>
-
-			<dt>
-			HSP3Dishの機能拡充
-			</dt><br>
-			<dd>
-			<p>
-			iOS/android/html5(WebGL)上での実行をサポートする<a href="http://hsp.tv/make/hsp3dish.html" target="_blank">HSP3Dish</a>の各種機能を拡充しています。
-			最新の端末に対応できる新しいSDKへの対応や、各種センサー情報の取得、ネットワークアクセス、スプライト描画などの機能も拡充しています。
-			幅広いデバイスへの変換をサポートするHSP3Dish Helperツールも、より便利で手軽に利用できようになりました。
-			</p>
-			</dd>
-
-			<dt>
-			HGIMG4プラグインの更新
-			</dt><br>
-			<dd>
-			<p>
-			ハイレベルな3D表現を可能にする<a href="http://hsp.tv/make/hgimg4.html" target="_blank">HGIMG4プラグイン</a>を大幅に更新しています。
-			システムの安定向上のほか、FBXモデル変換時の制約、複製時の制約など細かい使い勝手が向上しています。また、Unityからモデルやアニメーションをインポートする方法などもドキュメントで解説しています。
-			</p>
-			</dd>
-
-			<dt>
-			新しいHSPTV素材
-			</dt><br>
-			<dd>
-			<p>
-			自由に使える素材として、HSPTVフォルダに多くの素材が拡充されています。
-			HSP3オフィシャルキャラクター "珠音（たまね）"を始めとして、プロ生ちゃんコラボ素材など
-			ゲームを中心に幅広く活用することができます。
-			新たなサンプルスクリプトも同梱し、オリジナルの作品作りに活用頂けます。
-			</p>
-			</dd>
-
+			<dt>HSP3.6新機能ハイライト</dt>
+			<dd><p><a href="update36.htm" target="_blank">update36.htm</a></p></dd>
+			<dt>HSP3更新履歴</dt>
+			<dd><p><a href="history.txt" target="_blank">history.txt</a></p></dd>
 		</dl>
-
 		<p>
 		HSP3.6で追加された新機能を手軽に試すことができるサンプルスクリプトが、「sample/new36」フォルダに含まれています。
 		ぜひ新しいサンプルでの動作を、実際に実行してお試しください。
 		</p>
 
 
-		<h2 id="DIFF34">HSP3.6の変更点について</h2>
+	<h2 id="LINUX">Linux版の提供について</h2>
 		<p>
-			HSP3.6は、HSP3.5からのメジャーアップデートバージョンです。
-			HSP3.5をすでに使っているユーザーは、特に意識することなくHSP3.6をお使いいただけるはずです。
+			LinuxのGUI環境(X Window System)及びRaspberry Pi(Raspbian)で動作するバージョンについては、
+			最新版をgithubにて公開しています。
 		</p>
+		<pre>
+	git clone https://github.com/onitama/OpenHSP
+		</pre>
 		<p>
-			HSP3の詳細な更新履歴については、<a href="history.txt">こちら(history.txt)</a>を参照してください。
+			のような形で取得してください。
+			詳しくは、以下のページをご覧ください。
+			最新版の入手及び、インストール方法についても説明されています。
 		</p>
-		<p>
-			HSP3.5から追加変更された主要な項目は以下の通りです。
-		</p>
-		<UL>
-		<LI>標準機能の安定性向上と不具合の修正を行なっています
-		<LI>複数行文字列から特定の文字列を持つ行を検索するnotefind関数を追加しています
-		<LI>変数が格納しているデータのバッファサイズを調べるvarsize関数を追加しています
-		<LI>ソートを行なうための、sortval,sortstr,sortnote,sortget命令を標準で追加しています
-		<LI>実行ファイル作成時のアイコン書き換え、バージョン定義、UPX圧縮に対応しています
-		<LI>ランタイム動作の設定を行なうための新規プリプロセッサ命令、#bootoptを追加しています
-		<LI>デバッグウインドウにコールスタック表示を追加、ログ表示機能を改修
-		<LI>arduino制御、USBIO制御などのサンプルコードを拡充しています
-		<LI>mes,print命令に改行を無効にするオプションが追加されています
-		<LI>await命令を使用しないスクリプトでマルチメディアタイマーによる負荷を抑制しています
-		<LI>コマンドライン版のコードコンパイラを新たに付属しています
-		<LI>スクリプトエディタに関する不具合、機能改善を行なっています
-		<LI>UTF8の文字コードを扱うことのできるランタイムhsp3utfを同梱しています
-		<LI>64bitアプリとして動作するランタイムhsp3_64をβ版として同梱しています
-		<LI>HGIMG4の大幅な更新、ポストエフェクト、イベント制御機能の追加を行なっています
-		<LI>HGIMG4でのみ使用が可能だった、setcls、celputm命令がHSP3Dishすべてで使用可能になっています
-		<LI>HSP3Dish Helperツールも、より便利で手軽に利用できようになりました
-		<LI>hspextプラグインでバイナリデータのシリアル送信を行なうcomputb命令を追加しています
-		<LI>hspinetプラグインでhttps通信、バイナリデータ取得に対応しています
-		<LI>HSP3オフィシャル素材 "珠音（たまね）"を2D,3Dともに大幅に追加しています
-		<LI>HGIMG3にある不具合のいくつかを修正しています
-		<LI>API呼び出しのコールバックを実現するモジュール・modclbk3.hspを同梱しています
-		<LI>llmod3,HGIMG/HGIMGX,HSPDXのプラグイン・モジュールは非推奨となっています
-		<LI>HSPLetのパッケージをフルセットから除外しています
-		</UL>
-		<p>
-		バージョンアップにあたり互換性の影響が出る可能性は、以下があります。これ以外で、問題が出ることは想定していません。
-		</p>
-		<UL>
-		<LI>新規命令として追加されたキーワード(sortval,sortstr,sortnote,sortget,notefind,varsize命令ほか)が既存の変数やラベル名と衝突することがあります
-		<LI>HSP3Dishで使用されるキーワードが標準のコンパイル時にも定義されています。これにより、以下のキーワードを使用している(HSP3Dishを使用しない)スクリプトで変数名やラベル名と衝突することがあります。
-		<UL>
-		gfilter setreq getreq mmvol mmpan mmstat mtlist mtinfo devinfo devinfoi devprm
-		devcontrol httpload httpinfo gmulcolor setcls celputm
-		</UL>
-		<LI>HGIMG4の一部の仕様が変更されています。詳しくは、hgimg4.txtを参照してください
-		<LI>HSPLetのパッケージは同梱されていません。使用する場合は別途ダウンロードが必要となります
-		</UL>
-
-
-	<h2 id="HSPDISH">HSP3Dishについて</h2>
-		<p>
-		HSP3Dishは、HSP3の動作環境を様々なデバイス上で構築するための追加セットです。
-		Windows上で開発したスクリプトを、別なデバイスで動作させるための仕組みを提供します。
-		</p>
-		<p>
-		HSP3Dishランタイムは、通常版のHSP3と比べて機能が制限され、いくつかの特殊な機能が付加されています。
-		HSP3Dishに合わせたスクリプトを作成することで、iPhone/iPad、またはandroidといったスマートフォンやLinux,Webブラウザなど異なるシステム上での動作を実現します。
-		</p>
-		<p>
-		特殊な利用を想定したHSP3DishですがWindows上で使用する上では、
-		DirectXを使用した高速描画や、アルファチャンネルやPNG形式の標準サポートなど、
-		通常のHSP3にはないメリットも持ちあわせています。
-		HSP3Dishは、現在まだ制約や未実装の機能がありますが、
-		新しいHSP3の流れとして今後も進化を続ける予定です。どうぞご期待ください。
-		</p>
-		<p>
-		HSP3Dishの詳細と使用方法については、<a href="hsp3dish_prog.htm">マニュアル(hsp3dish_prog.htm)</a>を参照してください。
-		</p>
+		<pre>
+	HSP3 for Linux/Raspberry Pi
+	<a href="https://hsp.tv/make/hsp3linux_pi.html" target="_blank">https://hsp.tv/make/hsp3linux_pi.html</a>
+		</pre>
 
 
 	<h2 id="HSPOBSOLETE">パッケージの同梱終了について</h2>
 		<p>
-		これまでフルセットに同梱されていたllmod3、HGIMG / HGIMGX (3D描画用プラグイン)パッケージは、同梱されません。
+		これまでのフルセットに同梱されていたllmod3、HGIMG / HGIMGX (3D描画用プラグイン)/HSP3MT(ランタイム)/HSPLetパッケージは、同梱されません。
 		古いパッケージに含まれているランタイムを引き続き使用することは可能ですが、非推奨として扱われているため、マニュアル及びヘルプは、提供されません。
 		</p>
 		<UL>
 		<LI>llmod3 -> HSP3に対応した各種モジュールをご使用ください
 		<LI>HGIMG / HGIMGX (3D描画用プラグイン) -> HGIMG3/HGIMG4をご使用ください
-		<LI>HSPDX (2D描画用プラグイン) -> HSP3DISHをご使用ください(プラグインは同梱されています)
+		<LI>HSPDX (2D描画用プラグイン) -> HSP3DISHをご使用ください
+		<LI>HSP3MTランタイム -> hsp3utfやhsp3_64をご使用ください
+		<LI>HSPLetランタイム -> HSP3Dish(html5)をご使用ください
 		</UL>
 		<p>
 		これらのプラグイン・モジュールは、コードが古くなっており、現行のWindows上での動作が保証されません。
 		既存コードのコンパイル及び実行はサポートされますが、将来のバージョンでは対応されない可能性があります。
+		</p><p>
+		HSPDXプラグインは、古くからの利用者も多く現在のシステムでも実行可能なため、プラグインファイル自体は同梱されていますが、新規で使用することは推奨されません。
+		</p><p>
+		HSP3MTランタイム及びライブラリは、古いシステム向けに作成されたもので、
+		hsp3utfやhsp3_64などの新しいランタイムでも代用が可能です。
+		また、OpenHSPとしてソースが公開されているため、ライブラリそのものの配布も
+		必要がなくなったと判断しています。
 		</p>
 
 
@@ -268,7 +167,7 @@
 
 		<h2 id="SUMMARY">HSP3の概要</h2>
 		<p>
-			HSP2を利用してきたユーザー向けに、HSP3.2の概要を紹介します。
+			HSP2を利用してきたユーザー向けに、HSP3の概要を紹介します。
 		</p>
 		<h3 id="SUMMARY_ENV">動作環境</h3>
 		<p>
@@ -327,15 +226,6 @@
 		<p>
 			ラベル型変数は、スクリプトの任意の位置情報を変数に格納するための仕組みです。
 			ラベル情報を変数に格納することにより、スクリプトの可能性がさらに広がります。
-		</p>
-
-		<h3 id="SUMMARY_HSPLET">HSPLet</h3>
-		<p>
-			HSPLetは、HSPの実行をJavaランタイム上で行なうためのシステムで、
-			これによりWebブラウザでの実行及び、Windows以外のシステムで HSP3のスクリプトを
-			動作させることが可能になります。
-			詳しくは<a href="../hsplet/readme.txt">HSPLetの説明書</a>および
-			<a href="../hsplet/doc/index.html">マニュアル</a>をご覧ください。
 		</p>
 
 		<h3 id="SUMMARY_DLL">DLL呼び出し</h3>
@@ -493,10 +383,6 @@
 			<li>ll_getproc</li>
 			<li>ll_bin</li>
 		</ul>
-		<p>
-			ただし、HSP3.2以降ではllmodに含まれる命令、マクロ等を継承したllmod3が同梱されています。
-			詳しくは、common/llmod3ディレクトリにあるソースを参照してください。
-		</p>
 
 		<h3 id="FROM2_MODULE">モジュール機能の仕様変更</h3>
 		<p>

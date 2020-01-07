@@ -6,7 +6,7 @@
 	<meta http-equiv="Content-Style-Type" content="text/css">
 	<meta http-equiv="Content-Script-Type" content="text/javascript">
 	<meta name="author" content="OpenHSP3 Project（http://dev.onionsoft.net/trac/wiki）">
-	<meta name="keywords" content="HSP3,HotSoupProcessor3,HSP3Dish,android,ndk,google">
+	<meta name="keywords" content="HSP,HSP3,HotSoupProcessor,HSP3Dish,android,ndk,google">
 	<meta name="description" content="HSP3Dish android(NDK)版に関する情報を掲載">
 	<link href="../main.css" rel="stylesheet" type="text/css" media="all">
 	<title>HGIMG4プログラミングガイド</title>
@@ -14,7 +14,7 @@
 <body>
 	<div id="CONTAINER">
 	<!-- ヘッダー -->
-	<p id="COPY">HSP : Hot Soup Processor ver3.6 / onion software 1997-2019(c)</p>
+	<p id="COPY">HSP : Hot Soup Processor ver3.6 / onion software 1997-2020(c)</p>
 	<img src="image/hgimg4ttl.jpg" width="640" height="200" alt="タイトル">
 	<h1>HGIMG4プログラミングガイド</h1>
 
@@ -179,12 +179,10 @@
 	<h2 id="RESOURCE">リソースフォルダについて</h2>
 
 	<p>
-	HGIMG4では、起動時に実行するスクリプトと同じフォルダにある
-	「res」フォルダから必要なリソースを読み込みます。
+	HGIMG4では、3D描画使用時にスクリプトと同じフォルダにある「res」フォルダから必要なリソースを読み込みます。
 	リソースファイルは、「sample/hgimg4/res」のフォルダに含まれています。
 	以下のファイルは、起動のために必要ですので、実行ファイル作成時なども必ず入れておいてください。
 	</p><pre>
-	res/font.gpb
 	res/shaders フォルダ(中のファイルも含む)
 	</pre>
 
@@ -364,103 +362,8 @@
 	<h2 id="UPDATE">HSP3.5版との違い</h2>
 
 	<p>
-	HSP3.6β版で追加変更された項目の概要は以下の通りです。
+	HSP3.6で追加変更された項目については、<a href="update36.htm#HGIMG4">「HSP3.6 新機能ハイライト」</a>を参照してください。
 	</p>
-
-	<ul><li>
-	FBXモデル変換の更新
-	</li><br><p>
-	複雑なFBXモデルを変換する際にエラーが出ることがあった処理を大幅に修正しました。
-	ボーンを含むモデルをアニメーションも含めて正しく変換することができます。
-	新しく、<a href="hgimg4_unity.html">HGIMG4 Unity連携ガイド</a>を同梱しました。
-	3Dツール「Unity」と連携してモデルデータやアニメーションの変換を行う方法を解説しています。
-	この連携を利用して作られた、「プロ生ちゃんデモ」(sample/pronama3d)も
-	サンプルとして同梱されています。
-	</p></ul>
-
-	<ul><li>
-	システムの安定化とエラーログ取得
-	</li><br><p>
-	エラーが発生した際の原因を知るためのログ出力を強化しました。
-	3Dモデルのロード時や、アニメーション適用時、シェーダーコンパイル時などの
-	詳細なエラーがログとして出力されます。
-	また、ログの出力をOn/Offするためのスイッチをsysreq(システムリクエスト)項目に
-	追加されています。
-</p><pre>
-		setreq SYSREQ_LOGWRITE,0	; ログ出力を抑制
-</pre><p>
-	</p></ul>
-
-	<ul><li>
-	gpscrmat命令の追加
-	</li><br><p>
-	gpscrmat命令が追加されています。これにより、オフスクリーンテクスチャバッファを参照する
-	マテリアルを生成します。マテリアルを独自に生成することにより、オフスクリーンにレンダリングされた
-	画像イメージをテクスチャとしてシェーダーから再利用することが可能になります。
-
-	オフスクリーンに描画した内容をテクスチャとして再利用することで、詳細な鏡面反射(映り込み)、
-	影の生成などに応用することができます。
-	</p></ul>
-
-	<ul><li>
-	gpcamera命令に平行投影カメラのオプションを追加
-	</li><br><p>
-	カメラを生成するgpcamera命令にカメラタイプのパラメーターオプションを追加しています。
-	カメラタイプ値に1を指定することで、平行投影(Orthographic)を行うカメラを設定することが可能です。
-	</p></ul>
-
-	<ul><li>
-	キューブマップテクスチャのサポート
-	</li><br><p>
-	マテリアルのオプションパラメーターに、GPOBJ_MATOPT_CUBEMAPが追加されています。
-	キューブマップは、6面方向の画像をまとめた特殊な形式で環境マップやスカイボックスなどに
-	利用することができます。
-	(キューブマップ画像は、+X,-X,+Y,-Y,+Z,-Z放送の6画像を縦に連結した1枚の.PNG形式を使用する
-	必要があります。)
-	</p></ul>
-
-	<ul><li>
-	カメラごとのレンダリンググループ設定
-	</li><br><p>
-	オブジェクトのレンダリンググループを設定する、setobjrender命令が追加されています。
-	これにより、カメラごとに表示する/しないという設定をオブジェクトに与えることができます。
-	また、ライティングのグループも設定することができ、オブジェクトごとにライトの反映を
-	コントロールすることができます。
-</p><pre>
-		setobjrender id,rendergroup,lightgroup
-
-			id(0) : オブジェクトID
-			 rendergroup(1) : レンダリンググループ値
-			lightgroup(1) : ライティンググループ値
-</pre><p>
-	レンダリンググループ値は、カメラやライトが持つレンダリンググループ値と同一である場合は、
-	有効となります。
-	通常は、オブジェクト、カメラともにグループ1が設定されています。特定のカメラからの表示のみ
-	表示を無効にしたい場合などに利用できます。
-	ライティンググループ値は、特定のライトに対して有効/無効を切り替えるものです。
-	ライトが持つライティンググループ値と異なる場合は、ライトが無効となります。
-	それぞれのグループ値は、1,2,4,8,16,32,64,128,256,512,1024,2048,4096,8192,16384,32768の中から
-	任意のビットを組み合わせて指定可能です。
-	</p></ul>
-
-	<ul><li>
-	getang、getangr命令の追加
-	</li><br><p>
-	オブジェクトの回転情報を取得するためのgetang、getangr命令が追加されています。
-	HGIMG4の内部では、クォータニオン形式により回転情報を管理しているため、X,Y,Z回転角度に変換した値となります。
-	また、回転角度を指定するsetang、event_ang、event_setangの命令それぞれに回転順番が異なる命令を用意しています。
-</p><pre>
-		setang (X->Y->Zの順番による回転角度の設定)
-		setangy (Y->X->Zの順番による回転角度の設定)
-		setangz (Z->Y->Xの順番による回転角度の設定)
-		event_ang (X->Y->Zの順番による回転角度のイベント変化)
-		event_angy (Y->X->Zの順番による回転角度のイベント変化)
-		event_angz (Z->Y->Xの順番による回転角度のイベント変化)
-		event_setang (X->Y->Zの順番による回転角度のイベント設定)
-		event_setangy (Y->X->Zの順番による回転角度のイベント設定)
-		event_setangz (Z->Y->Xの順番による回転角度のイベント設定)
-</pre><p>
-	</p></ul>
 
 
 	<h2 id="DIFF_HGIMG3">HGIMG3との違い</h2>
@@ -2137,7 +2040,6 @@
 	</p>
 	<pre>
 	・コリジョンオブジェクトの詳細な接触判定
-	・日本語フォントのサポート
 	・パーティクルとエミッターの詳細設定
 	・マルチテクスチャ、バップマップ、ハイトマップ、LODサポート
 	</pre>
