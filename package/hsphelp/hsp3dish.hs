@@ -11,7 +11,7 @@
 hsp3dish.asをインクルードすること。
 
 %date
-2019/12/03
+2020/01/07
 %author
 onitama
 %dll
@@ -407,5 +407,111 @@ gzoom
 grotate
 gsquare
 celput
+
+
+
+
+%index
+viewcalc
+描画時の座標変換を設定
+%prm
+p1,p2,p3,p4,p5
+p1(0)   : 設定モード
+p2(0.0) : パラメーター1(実数)
+p3(0.0) : パラメーター2(実数)
+p4(0.0) : パラメーター3(実数)
+p5(0.0) : パラメーター4(実数)
+%inst
+2D描画時のX,Y座標に任意の計算を適用します。
+これにより、描画される表示物全体のスケーリングや移動、回転などを行うことができます。
+p1パラメーターで設定モードを指定します。
+設定モードにより、以降の設定される内容が変わります。
+^p
+	マクロ名            値   内容
+	-----------------------------------------------------
+	vptype_off           0   座標変換なし(デフォルト)
+	vptype_translate     1   移動パラメーターを指定
+	vptype_rotate        2   回転パラメーターを指定
+	vptype_scale         3   スケールパラメーターを指定
+	vptype_3dmatrix      4   4×4マトリクスによる座標変換
+	vptype_2d            5   2D座標変換を設定
+	vptype_3d            6   3D座標変換を設定
+^p
+vptype_2dは、基本的な2D座標変換を適用します。
+パラメーター1～3で、X,Yのスケール(倍率)、回転角度(ラジアン単位)を設定することができます。
+^p
+	viewcalc vptype_translate, 移動X, 移動Y
+	viewcalc vptype_2d, スケールX, スケールY, 回転角度(ラジアン)
+^p
+vptype_3dは、3D空間上にマッピングして描画を適用します。
+移動、回転、スケールそれぞれのX,Y,Z値を指定することができます。
+^p
+	viewcalc vptype_translate, 移動X, 移動Y, 移動Z
+	viewcalc vptype_rotate, 回転X, 回転Y, 回転Z
+	viewcalc vptype_scale, スケールX, スケールY, スケールZ
+	viewcalc vptype_3d, カメラ角度(FOV), NearZ値, FarZ値
+^p
+vptype_3dmatrixは、4×4の行列(マトリクス)を指定して座標変換を行います。
+ユーザー自身でマトリクスを作成する場合に使用することができます。
+4×4のm00～m33までのパラメーターを以下のように指定します。
+^p
+	viewcalc vptype_translate, m00, m01, m02, m03
+	viewcalc vptype_rotate, m10, m11, m12, m13
+	viewcalc vptype_scale, m20, m21, m22, m23
+	viewcalc vptype_3dmatrix, m30, m31, m32, m33
+^p
+viewcalc命令を設定した以降の描画に、座標変換が適用されます。
+画面の初期化時は、座標変換なし(vptype_off)が設定されています。
+vptype_3d及びvptype_3dmatrixにより変換設定した場合は、マウスの座標を正しく取得することができなくなるので注意してください。
+
+%href
+pos
+mes
+
+
+%index
+celbitmap
+変数バッファを画像データとして適用する
+%prm
+p1,var
+p1(0)   : ウインドウID
+var     : イメージを置き換えるための配列変数
+%inst
+変数バッファの内容を画像データとして指定されたオフスクリーンバッファを置き換えます。
+あらかじめ、buffer命令により作成したオフスクリーンバッファと、置き換えるための変数バッファを初期化する必要があります。
+オフスクリーンバッファは、buffer命令でscreen_offscreenのオプションを指定して作成してください。
+^p
+	buffer 2,256,256,screen_offscreen
+^p
+その後、バッファを置き換えるための変数バッファを作成します。
+dim命令により、１次元配列を初期化して作成してください。作成するサイズは、オフスクリーンバッファのXサイズ×Yサイズになります。
+^p
+	dim bitmap, 256*256
+^p
+これで、celbitmap命令を使用する準備が整いました。
+celbitmap命令により、オフスクリーンバッファのIDと配列変数を指定することで、変数バッファの内容がそのまま画像イメージとして適用されます。
+変数バッファは、1要素あたり1ドットとなります。1ドットは、32bitの要素をA,R,G,Bそれぞれ8bit単位で格納されるARGB形式のデータとなります。
+たとえば、「$ff204080」(16進数)を指定した場合は、A=$ff(255)、R=$20(32)、G=$40(64)、B=$80(128)となります。(カッコ内は10進数)
+画像データの置き換えは、コストの高い処理になるため、大きなサイズのイメージを置き換える場合、フレームレートが下がることがありますので注意してください。
+
+%sample
+#include "hsp3dish.as"
+
+	buffer 2,256,256,screen_offscreen
+	gsel 0
+	dim bitmap,256*256
+	repeat 256*256
+	bitmap(cnt)=$ff00ffff
+	loop
+*main
+	redraw 0
+	celbitmap 2,bitmap
+	pos 0,0
+	celput 2
+	redraw 1
+	await 1000/30
+	goto *main
+%href
+buffer
 
 
