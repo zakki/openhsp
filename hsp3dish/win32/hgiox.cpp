@@ -1838,7 +1838,7 @@ void hgio_cnvview(BMSCR* bm, int* xaxis, int* yaxis)
 	//	(タッチ位置再現のため)
 	//
 	VECTOR v1,v2;
-	//if (bm->vp_flag == 0) return;
+	if (bm->vp_flag == 0) return;
 	v1.x = (float)*xaxis;
 	v1.y = (float)(nDestHeight-*yaxis);
 	v1.z = 1.0f;
