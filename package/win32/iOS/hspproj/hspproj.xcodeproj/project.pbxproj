@@ -428,9 +428,9 @@
 /* End PBXGroup section */
 
 /* Begin PBXNativeTarget section */
-		1E480DAA1859C4540052A2F2 /* grotate */ = {
+		1E480DAA1859C4540052A2F2 /* hspproj */ = {
 			isa = PBXNativeTarget;
-			buildConfigurationList = 1E480DD71859C4540052A2F2 /* Build configuration list for PBXNativeTarget "grotate" */;
+			buildConfigurationList = 1E480DD71859C4540052A2F2 /* Build configuration list for PBXNativeTarget "hspproj" */;
 			buildPhases = (
 				1E480DA71859C4540052A2F2 /* Sources */,
 				1E480DA81859C4540052A2F2 /* Frameworks */,
@@ -440,8 +440,8 @@
 			);
 			dependencies = (
 			);
-			name = grotate;
-			productName = grotate;
+			name = hspproj;
+			productName = hspproj;
 			productReference = 1E480DAB1859C4540052A2F2 /* hspproj.app */;
 			productType = "com.apple.product-type.application";
 		};
@@ -474,7 +474,7 @@
 			projectDirPath = "";
 			projectRoot = "";
 			targets = (
-				1E480DAA1859C4540052A2F2 /* grotate */,
+				1E480DAA1859C4540052A2F2 /* hspproj */,
 			);
 		};
 /* End PBXProject section */
@@ -723,7 +723,7 @@
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;
 		};
-		1E480DD71859C4540052A2F2 /* Build configuration list for PBXNativeTarget "grotate" */ = {
+		1E480DD71859C4540052A2F2 /* Build configuration list for PBXNativeTarget "hspproj" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
 				1E480DD81859C4540052A2F2 /* Debug */,
