@@ -5,7 +5,7 @@ Hot Soup Processor ver3.6                           HSP : Hot Soup Processor
 
 ・hsp3関連 更新履歴
 
-	2020/01/08 3.6 beta2
+	2020/01/14 3.6 beta2
 
 	システムの言語設定に応じてエラーメッセージを変更するように修正
 	stick命令で[Z][X][C][A][W][D][S]のキー情報を取得できるように修正
@@ -30,6 +30,7 @@ Hot Soup Processor ver3.6                           HSP : Hot Soup Processor
 	[HGIMG4] フォントを使用した日本語を含む文字列表示に対応
 	[HGIMG4] 2D描画に関するシェーダーファイルを内蔵する形に修正
 	[HGIMG4] HGIMG4ツールを更新、マテリアルの確認と編集機能を追加
+	[HGIMG4] システムリクエストにSYSREQ_USEGPBFONT項目を追加
 	[HSP3Dish] 配列変数の内容をグラフィックデータとして画面に転送するcelbitmap命令を追加
 	[HSP3Dish] 2D描画時の座標変換式を指定するviewcalc命令を追加
 	[HSP3Dish][android] 一部の機種でダイアログの改行コード文字が表示される不具合を修正
@@ -39,6 +40,7 @@ Hot Soup Processor ver3.6                           HSP : Hot Soup Processor
 	[HSP3Dish][Windows] onexit,onkey,onclick,oncmd命令による割り込みをサポート
 	[HSP3Dish][Windows] bgscr,screen命令による表示サイズ変更、及びフルスクリーン化に対応
 	[HSP3Dish][Windows] dialog命令実行後にエラーが出ることがあった不具合を修正
+	[HSP3Dish][Windows] ginfoによるデスクトップサイズの取得に対応
 	[HSP3Dish][iOS] 新しいiOS上でアプリが起動しないことがある不具合を修正
 	[HSP3Dish][hsp3js][linux] MP3サウンド再生に対応
 	[HSP3Dish][android][iOS][hsp3js][linux] プログレッシブJPEGの読み込みに対応

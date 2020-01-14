@@ -2758,44 +2758,62 @@ static int cmdfunc_extcmd( int cmd )
 static int get_ginfo( int arg )
 {
 	//HDC hdc;
-	//RECT rect;
-	//POINT pt;
 	//int i,j;
 
-	//if (( arg>=4 )&&( arg<=11 )) GetWindowRect( bmscr->hwnd, &rect);
+#ifdef HSPWIN
+	POINT pt;
+	RECT rect;
+	if (( arg>=4 )&&( arg<=11 )) GetWindowRect((HWND)sys_hwnd, &rect);
+#endif
 
 	switch( arg ) {
 	case 0:
-		//GetCursorPos(&pt);
-		//return pt.x;
+#ifdef HSPWIN
+		GetCursorPos(&pt);
+		return pt.x;
+#else
 		return 0;
+#endif
 	case 1:
-		//GetCursorPos(&pt);
-		//return pt.y;
+#ifdef HSPWIN
+		GetCursorPos(&pt);
+		return pt.y;
+#else
 		return 0;
+#endif
 	case 2:
 		return wnd->GetActive();
 	case 3:
 		return cur_window;
+
+#ifdef HSPWIN
 	case 4:
-		//return rect.left;
+		return rect.left;
 	case 5:
-		//return rect.top;
+		return rect.top;
 	case 6:
-		//return rect.right;
+		return rect.right;
 	case 7:
-		//return rect.bottom;
-		return 0;
+		return rect.bottom;
 	case 8:
 	case 9:
-		//return bmscr->viewx;
-		//return bmscr->viewy;
 		return 0;
 	case 10:
-		//return rect.right - rect.left;
+		return rect.right - rect.left;
 	case 11:
-		//return rect.bottom - rect.top;
+		return rect.bottom - rect.top;
+#else
+	case 4:
+	case 5:
+	case 6:
+	case 7:
+	case 8:
+	case 9:
+	case 10:
+	case 11:
 		return 0;
+#endif
+
 	case 12:
 		//if ( bmscr->type != HSPWND_TYPE_BUFFER ) {
 		//	bmscr->GetClientSize( &i, &j );
@@ -2835,11 +2853,17 @@ static int get_ginfo( int arg )
 //		return i;
 		return 0;
 	case 20:
+#ifdef HSPWIN
+		return GetSystemMetrics( SM_CXSCREEN );
+#else
 		return hgio_getWidth();
-		//return GetSystemMetrics( SM_CXSCREEN );
+#endif
 	case 21:
+#ifdef HSPWIN
+		return GetSystemMetrics( SM_CYSCREEN );
+#else
 		return hgio_getHeight();
-		//return GetSystemMetrics( SM_CYSCREEN );
+#endif
 	case 22:
 		return bmscr->cx;
 	case 23:

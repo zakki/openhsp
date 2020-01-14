@@ -240,9 +240,8 @@ gpevent *gpobj::GetEvent(int entry)
 gamehsp::gamehsp()
 {
 	// コンストラクタ
-#ifdef USE_GPBFONT
+
 	mFont = NULL;
-#endif
 	_maxobj = 0;
 	_gpobj = NULL;
 	_gpmat = NULL;
@@ -259,10 +258,10 @@ gamehsp::gamehsp()
 
 void gamehsp::initialize()
 {
-#ifdef USE_GPBFONT
 	// フォント作成
-	mFont = Font::create("res/font.gpb");
-#endif
+	if (GetSysReq(SYSREQ_USEGPBFONT)) {
+		mFont = Font::create("res/font.gpb");
+	}
 	resetScreen();
 }
 
@@ -272,9 +271,7 @@ void gamehsp::finalize()
 	//
 	deleteAll();
 
-#ifdef USE_GPBFONT
 	SAFE_RELEASE(mFont);
-#endif
 }
 
 

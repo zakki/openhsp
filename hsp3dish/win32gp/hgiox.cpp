@@ -2348,7 +2348,9 @@ int hgio_font(char* fontname, int size, int style)
 	m_tstyle = style;
 
 #ifdef HSPWIN
-	hgio_fontsystem_init(fontname, size, style);
+	if (GetSysReq(SYSREQ_USEGPBFONT) == 0) {
+		hgio_fontsystem_init(fontname, size, style);
+	}
 #endif
 
 #if defined(HSPLINUX) || defined(HSPEMSCRIPTEN)

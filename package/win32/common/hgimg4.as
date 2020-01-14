@@ -185,6 +185,10 @@
 #enum global SYSREQ_LOGWRITE
 #enum global SYSREQ_FIXEDFRAME
 
+#enum global SYSREQ_DRAWNUMOBJ
+#enum global SYSREQ_DRAWNUMPOLY
+#enum global SYSREQ_USEGPBFONT
+
 #const global PLATFORM_WINDOWS 0
 #const global PLATFORM_IOS 1
 #const global PLATFORM_ANDROID 2
