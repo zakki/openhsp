@@ -491,9 +491,8 @@ private:
 	bool init2DRender( void );
 	int Get2N(int val);
 
-#ifdef USE_GPBFONT
 	Font*	mFont;
-#endif
+
 	float _colrate;
 	int _tex_width;
 	int _tex_height;

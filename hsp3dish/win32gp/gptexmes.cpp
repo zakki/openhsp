@@ -446,17 +446,19 @@ int gamehsp::drawFont(int x, int y, char* text, Vector4* p_color, int* out_ysize
 	// フォントで描画
 	int xsize, ysize;
 
-#ifdef USE_GPBFONT
-	if (mFont == NULL) return 0;
-	mFont->start();
-	xsize = mFont->drawText(text, x, y, *p_color, size);
-	mFont->finish();
-	ysize = size;
-#else
+	if ( GetSysReq(SYSREQ_USEGPBFONT) ) {
+		if (mFont == NULL) return 0;
+		mFont->start();
+		xsize = mFont->drawText(text, x, y, *p_color, _fontsize);
+		mFont->finish();
+		ysize = _fontsize;
+		*out_ysize = ysize;
+		return xsize;
+	}
+
 	texmesDraw(x, y, text, p_color);
 	xsize = _area_px;
 	ysize = _area_py;
-#endif
 
 	* out_ysize = ysize;
 	return xsize;
