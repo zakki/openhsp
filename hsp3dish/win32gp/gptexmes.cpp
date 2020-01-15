@@ -365,7 +365,8 @@ void gamehsp::texmesDraw(int x, int y, char* msg, Vector4* p_color)
 		}
 	}
 
-	_fontMaterial->getParameter(samplerUniform->getName())->setValue(tex->_texture);
+	MaterialParameter* mp = _fontMaterial->getParameter(samplerUniform->getName());
+	mp->setValue(tex->_texture);
 
 	//		描画する
 	tx0 = 0.0f;
@@ -375,8 +376,8 @@ void gamehsp::texmesDraw(int x, int y, char* msg, Vector4* p_color)
 
 	x1 = (float)x;
 	y1 = (float)y;
-	x2 = x1 + tex->sx;
-	y2 = y1 + tex->sy;
+	x2 = x1 + tex->sx - 1.0f;
+	y2 = y1 + tex->sy - 1.0f;
 
 	float* v = _bufPolyTex;
 
@@ -399,6 +400,8 @@ void gamehsp::texmesDraw(int x, int y, char* msg, Vector4* p_color)
 	_meshBatch_font->add(_bufPolyTex, 4, indices, 4);
 	_meshBatch_font->finish();
 	_meshBatch_font->draw();
+
+	mp->setValue(0);
 }
 
 
@@ -447,7 +450,10 @@ int gamehsp::drawFont(int x, int y, char* text, Vector4* p_color, int* out_ysize
 	int xsize, ysize;
 
 	if ( GetSysReq(SYSREQ_USEGPBFONT) ) {
-		if (mFont == NULL) return 0;
+		if (mFont == NULL) {
+			mFont = Font::create("res/font.gpb");
+			if (mFont == NULL) return 0;
+		}
 		mFont->start();
 		xsize = mFont->drawText(text, x, y, *p_color, _fontsize);
 		mFont->finish();
