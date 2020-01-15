@@ -204,7 +204,7 @@ static		MATRIX mat_unproj;	// プロジェクション逆変換マトリクス
 #define CIRCLE_DIV 16
 #define DEFAULT_FONT_NAME ""
 //#define DEFAULT_FONT_NAME "Arial"
-#define DEFAULT_FONT_SIZE 18
+#define DEFAULT_FONT_SIZE 16
 #define DEFAULT_FONT_STYLE 0
 
 
@@ -273,19 +273,9 @@ void hgio_fontsystem_init(char* fontname, int size, int style)
 
 	if (size >= 0) {
 		int fw;
-		switch (style & 3) {
-		case 1:
+		fw = FW_REGULAR;
+		if (style&1) {
 			fw = FW_BOLD;
-			break;
-		case 2:
-			fw = FW_ULTRABOLD;
-			break;
-		case 3:
-			fw = FW_HEAVY;
-			break;
-		default:
-			fw = FW_REGULAR;
-			break;
 		}
 		htexfont = CreateFont(
 			size,						// フォント高さ
@@ -293,9 +283,9 @@ void hgio_fontsystem_init(char* fontname, int size, int style)
 			0,							// テキストの角度	
 			0,							// ベースラインとｘ軸との角度
 			fw,							// フォントの重さ（太さ）
-			((style & 4) != 0),			// イタリック体
-			FALSE,						// アンダーライン
-			FALSE,						// 打ち消し線
+			((style & 2) != 0),			// イタリック体
+			((style & 4) != 0),			// アンダーライン
+			((style & 8) != 0),			// 打ち消し線
 			DEFAULT_CHARSET,			// 文字セット
 			OUT_TT_PRECIS,				// 出力精度
 			CLIP_DEFAULT_PRECIS,		// クリッピング精度
@@ -354,16 +344,18 @@ int hgio_fontsystem_execsub(long code, unsigned char* buffer, int pitch, int off
 	mat.eM21 = *((FIXED*)&m21);	mat.eM22 = *((FIXED*)&m22);
 
 
-	// バッファサイズ受信
-//	Size = GetGlyphOutline(htexdc, code, GGO_GRAY4_BITMAP, pgm, 0, NULL, &mat);
-	// バッファ取得
-//	GetGlyphOutline(htexdc, code, GGO_GRAY4_BITMAP, pgm, Size, lpFont, &mat);
-
-	// バッファサイズ受信
-	Size = GetGlyphOutline(htexdc, code, GGO_BITMAP, pgm, 0, NULL, &mat);
-	// バッファ取得
-	GetGlyphOutline(htexdc, code, GGO_BITMAP, pgm, Size, lpFont, &mat);
-
+	if (m_tstyle & 16) {
+		// バッファサイズ受信
+		Size = GetGlyphOutline(htexdc, code, GGO_GRAY4_BITMAP, pgm, 0, NULL, &mat);
+		// バッファ取得
+		GetGlyphOutline(htexdc, code, GGO_GRAY4_BITMAP, pgm, Size, lpFont, &mat);
+	}
+	else {
+		// バッファサイズ受信
+		Size = GetGlyphOutline(htexdc, code, GGO_BITMAP, pgm, 0, NULL, &mat);
+		// バッファ取得
+		GetGlyphOutline(htexdc, code, GGO_BITMAP, pgm, Size, lpFont, &mat);
+	}
 
 	// フォントピッチ
 	DWORD fontPitch = (Size / gm.gmBlackBoxY) & ~0x03;
@@ -383,15 +375,34 @@ int hgio_fontsystem_execsub(long code, unsigned char* buffer, int pitch, int off
 	// 転送先のサーフェイスの始点
 	p1 += (offsetx + gm.gmptGlyphOrigin.x) + (ybase * pitch);
 
+	if (m_tstyle & 16) {
+		if (m_tstyle & 2) {
+			for (int y = 0; y < height; y++)
+			{
+				for (int x = 0; x < width; x++)
+				{
+					p1[x] |= AlphaTbl[p2[x]];
+				}
+				p1 += pitch;
+				p2 += fontPitch;
+			}
+		}
+		else {
+			for (int y = 0; y < height; y++)
+			{
+				for (int x = 0; x < width; x++)
+				{
+					p1[x] = AlphaTbl[p2[x]];
+				}
+				p1 += pitch;
+				p2 += fontPitch;
+			}
+		}
+		return px;
+	}
+
 	for (int y = 0; y < height; y++)
 	{
-/*		for (int x = 0; x < width; x++)
-		{
-			p1[x] = AlphaTbl[p2[x]];
-		}
-		p1 += pitch;
-		p2 += fontPitch;
-		*/
 		LPBYTE pp;
 		int bmask;
 		bmask = 0x80; pp = p2;
@@ -403,8 +414,6 @@ int hgio_fontsystem_execsub(long code, unsigned char* buffer, int pitch, int off
 		}
 		p1 += pitch;
 		p2 += fontPitch;
-
-
 	}
 	
 	return px;
