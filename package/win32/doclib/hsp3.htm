@@ -14,7 +14,7 @@
 <body>
 	<div id="CONTAINER">
 		<!-- ヘッダー -->
-		<p id="COPY">HSP : Hot Soup Processor ver3.6 / onion software 1997-2019(c)</p>
+		<p id="COPY">HSP : Hot Soup Processor ver3.6 / onion software 1997-2020(c)</p>
 		<img src="hsp3ttl.jpg" alt="タイトル" width="640" height="200">
 		<h1>HSP3 概要</h1>
 
@@ -23,11 +23,11 @@
 			<li><a href="#ABOUT_HSP">HSPとは？</a></li>
 			<li><a href="#DOUSA_ENV">動作環境</a></li>
 			<li><a href="#PACKAGE">パッケージ構成</a></li>
+			<li><a href="#ATFIRST">初めて使用する場合</a></li>
 			<li><a href="#INSTALL">インストール</a></li>
 			<li><a href="#UNINSTALL">アンインストール</a></li>
 			<li><a href="#DEMO">デモンストレーション</a></li>
-			<li><a href="#CHANGE31">HSP3.4からの変更点</a></li>
-			<li><a href="#CHANGE2">HSP2からの変更点</a></li>
+			<li><a href="#CHANGE31">HSP3.5からの変更点</a></li>
 			<li><a href="#EDITOR">スクリプトエディタ</a></li>
 			<li><a href="#HSPAT">HSPアシスタント</a></li>
 			<li><a href="#BROWSER">HSPTVブラウザ</a></li>
@@ -126,11 +126,18 @@
 			<dd><p><a href="http://hsp.tv/make/hsp3linux_pi.html" target="_blank">http://hsp.tv/make/hsp3linux_pi.html</a></p></dd>
 		</dl>
 
+		<h2 id="ATFIRST">初めて使用する場合</h2>
+		<p>
+			HSP3を初めて使用する方は、フルパッケージをインストール後に、<a href="hspprog.htm">プログラミング・マニュアル</a>を読み使い始めてください。
+			HSP3の基本的な仕組みや使い方を解説しています。プログラミング初心者の方は、<a href="beginner/START.HTM">HSP入門</a>も併せてご覧ください。<br>
+			既に過去のバージョンをお使いの方は、<a href="update36.htm">HSP3.6 新機能ハイライト</a>や、<a href="update.htm">HSP3アップデートガイド</a>が参考になります。
+		</p>
+
 		<h2 id="INSTALL">インストール</h2>
 		<p>
 			HSP3.6フルセットは、インストーラー付きのバージョンと圧縮ファイル版が用意されています。
-			インストーラーを起動するか、または任意のディレクトリにhsp34フォルダを解凍する
-			ことで使用できるようになります。(推奨ディレクトリは、「c:\hsp34」です)
+			インストーラーを起動するか、または任意のディレクトリにhsp36フォルダを解凍する
+			ことで使用できるようになります。(推奨ディレクトリは、「c:\hsp36」です)
 		</p>
 		<p>
 			HSP3.6以前のバージョンが既にインストールされている場合は、以前のものをアンインストール
@@ -188,14 +195,13 @@
 			すぐに実行・閲覧することができます。
 		</p>
 
-		<h2 id="CHANGE31">HSP3.4からの変更点</h2>
+		<h2 id="CHANGE31">HSP3.5からの変更点</h2>
 		<p>
 			HSP3.6では、上位互換となる形で機能の修正と追加を行なっています。
-			HSP3.4で動作していたスクリプトは、ほとんどの場合、修正することなくHSP3.6で動作させることができます。
-			詳しくは、<a href="update.htm">アップデートガイド</a>を参照してください。
+			HSP3.5で動作していたスクリプトは、ほとんどの場合、修正することなくHSP3.6で動作させることができます。
+			詳しくは、<a href="update36.htm">HSP3.6 新機能ハイライト</a>を参照してください。
 		</p>
 
-		<h2 id="CHANGE2">HSP2からの変更点</h2>
 		<p>
 			HSP3は、以前までの仕様とプログラムを大幅に見直し、再構築したHSPの最新バージョンです。
 			ver2.61までに培われた親しみやすさ、習得のしやすさ、シンプルさといった資産を継承しながら、
@@ -203,7 +209,7 @@
 		</p>
 		<p>
 			以前のバージョンからの変更点や移行のための手順は、
-			<a href="update.htm">アップデートガイド</a>を参照してください。
+			<a href="update.htm">HSP3アップデートガイド</a>を参照してください。
 		</p>
 
 
@@ -215,6 +221,9 @@
 		</p>
 		<p>
 			キーワードのヘルプ参照(F1キー)や、かんたん入力などの支援機能も豊富に搭載されています。
+		</p>
+		<p>
+			英語版Windowsを使用しているユーザー向けに英語版スクリプトエディタ(HSED3_EN.EXE)も同梱されています。インターフェースが英語になっていること以外は、通常のスクリプトエディタと同様にお使い頂けます。
 		</p>
 		<p>
 			スクリプトエディタの使用方法、スクリプトの詳細については、
@@ -361,13 +370,13 @@
 			<dd>
 				<p><a href="http://hspcenter.com" target="_blank">http://hspcenter.com</a></p>
 			</dd>
-			<dt>hsp-devメーリングリスト（HSP周辺ツール開発協力者のためのメーリングリスト）</dt>
-			<dd>
-				<p><a href="http://chatblanc.net/hsp-users/hsp-dev/" target="_blank">http://chatblanc.net/hsp-users/hsp-dev/</a></p>
-			</dd>
 			<dt>HSPバグトラック (不具合の報告、進捗のチェックなど)</dt>
 			<dd>
 				<p><a href="http://dev.onionsoft.net/mantis/" target="_blank">http://dev.onionsoft.net/mantis/</a></p>
+			</dd>
+			<dt>OpenHSP githubリポジトリ</dt>
+			<dd>
+				<p><a href="https://github.com/onitama/OpenHSP" target="_blank">https://github.com/onitama/OpenHSP</a></p>
 			</dd>
 			<dt>HSPWiKi（誰でも書き込めるHSPに関するWiKi）</dt>
 			<dd>
@@ -479,7 +488,7 @@
 			HSP開発システムは、開発の中心となる要素で以下の項目を指します。
 		</p>
 		<ul>
-			<li>HSPスクリプトエディタ(hsed3.exe、hsed3le.exe)</li>
+			<li>HSPスクリプトエディタ(hsed3.exe、hsed3_en.exe、hsed3le.exe)</li>
 			<li>デバッグ実行ランタイム(hsp3.exe、hsp3cl.exe、hsp3debug.dll)</li>
 			<li>HSP拡張ランタイム(hsprt、hsp3c.hrt、hsp3cl.hrt)</li>
 			<li>HSPコードコンパイラ(hspcmp.dll)</li>
@@ -526,7 +535,7 @@
 			<li>HSPDXプラグイン (doclibフォルダ内のhspdx.txtを参照)</li>
 			<li>HSPCVプラグイン (doclibフォルダ内のhspcv.txtを参照)</li>
 			<li>HGIMG3プラグイン (doclibフォルダ内のhgimg3.txtを参照)</li>
-			<li>HGIMG4プラグイン (doclibフォルダ内のhgimg4.txtを参照)</li>
+			<li>HGIMG4プラグイン (doclibフォルダ内のhgimg4.htmlを参照)</li>
 			<li>HSPOGGプラグイン (doclibフォルダ内のhspogg.txtを参照)</li>
 			<li>HSP3IMPプラグイン(doclibフォルダ内のhsp3imp.txtを参照)</li>
 		</ul>
@@ -553,8 +562,7 @@
 			<li>HGIMG3サンプルスクリプト(sample/hgimg3フォルダ内のスクリプト)</li>
 			<li>HGIMG4サンプルスクリプト(sample/hgimg4フォルダ内のスクリプト)</li>
 			<li>HSPCLサンプルスクリプト(sample/hspclフォルダ内のスクリプト)</li>
-			<li>HSP3.4サンプルスクリプト(sample/new34フォルダ内のスクリプト)</li>
-			<li>HSP新規サンプルスクリプト(sample/new35フォルダ内のスクリプト)</li>
+			<li>HSP3.6サンプルスクリプト(sample/new36フォルダ内のスクリプト)</li>
 			<li>HSP3UTFサンプルスクリプト(sample/hsp3utfフォルダ内のスクリプト)</li>
 			<li>HSP3Dishサンプルスクリプト(sample/hsp3dishフォルダ内のスクリプト)</li>
 			<li>スクリーンセーバーサンプルスクリプト(sample/ssaverフォルダ内のスクリプト)</li>
@@ -588,13 +596,13 @@
 			<dt>OpenHSP Development</dt>
 			<dd>
 				<p>
-					<a href="http://www.onionsoft.net/hsp/openhsp/" target="_blank">http://www.onionsoft.net/hsp/openhsp/</a>
+					<a href="https://www.onionsoft.net/hsp/openhsp/" target="_blank">https://www.onionsoft.net/hsp/openhsp/</a>
 				</p>
 			</dd>
 			<dt>OpenHSPプロジェクト・ポータル</dt>
 			<dd>
 				<p>
-					<a href="http://dev.onionsoft.net/trac/wiki" target="_blank">http://dev.onionsoft.net/trac/wiki</a>
+					<a href="https://dev.onionsoft.net/trac/openhsp" target="_blank">https://dev.onionsoft.net/trac/openhsp</a>
 				</p>
 			</dd>
 		</dl>
@@ -626,7 +634,7 @@
 			<dt>HSP学校関係者向け情報ページ</dt>
 			<dd>
 				<p>
-					<a href="http://www.onionsoft.net/hsp/education/index.html" target="_blank">http://www.onionsoft.net/hsp/education/index.html</a>
+					<a href="https://www.onionsoft.net/hsp/education/index.html" target="_blank">https://www.onionsoft.net/hsp/education/index.html</a>
 				</p>
 			</dd>
 			<dt>HSP school center（学校関係者用ページ）</dt>
