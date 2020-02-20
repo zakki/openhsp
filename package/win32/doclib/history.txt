@@ -5,6 +5,10 @@ Hot Soup Processor ver3.6                           HSP : Hot Soup Processor
 
 ・hsp3関連 更新履歴
 
+	2020/02/20 3.6 beta3
+
+	[HGIMG4] .gpbファイルの名前が2文字以下の時にマテリアルの読み込みに失敗する不具合を修正
+
 	2020/01/14 3.6 beta2
 
 	システムの言語設定に応じてエラーメッセージを変更するように修正
