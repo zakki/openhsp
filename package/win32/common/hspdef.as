@@ -112,8 +112,8 @@
 #define global swbreak %tswitch goto *%p1
 #define global swend %tswitch %o0 } *%o
 
-#define global ddim(%1,%2,%3=0,%4=0,%5=0) dimtype %1,3,%2,%3,%4,%5
-#define global ldim(%1,%2,%3=0,%4=0,%5=0) dimtype %1,1,%2,%3,%4,%5
+#define global ddim(%1,%2=1,%3=0,%4=0,%5=0) dimtype %1,3,%2,%3,%4,%5
+#define global ldim(%1,%2=1,%3=0,%4=0,%5=0) dimtype %1,1,%2,%3,%4,%5
 #define global alloc sdim
 
 #define global M_PI	3.14159265358979323846
