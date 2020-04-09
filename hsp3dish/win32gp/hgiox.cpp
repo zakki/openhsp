@@ -1474,22 +1474,22 @@ void hgio_copy(BMSCR *bm, short xx, short yy, short srcsx, short srcsy, BMSCR *b
 	if (s_psx < 0.0) {
 		psx = -s_psx;
 		tx1 = ((float)xx);
-		tx0 = ((float)(xx + srcsx-1));
+		tx0 = ((float)(xx + srcsx));
 	}
 	else {
 		psx = s_psx;
 		tx0 = ((float)xx);
-		tx1 = ((float)(xx + srcsx-1));
+		tx1 = ((float)(xx + srcsx));
 	}
 	if (s_psy < 0.0) {
 		psy = -s_psy;
 		ty1 = ((float)yy);
-		ty0 = ((float)(yy + srcsy-1));
+		ty0 = ((float)(yy + srcsy));
 	}
 	else {
 		psy = s_psy;
 		ty0 = ((float)yy);
-		ty1 = ((float)(yy + srcsy-1));
+		ty1 = ((float)(yy + srcsy));
 	}
 
 	x1 = ((float)bm->cx);
@@ -1566,8 +1566,8 @@ int hgio_celputmulti(BMSCR *bm, int *xpos, int *ypos, int *cel, int count, BMSCR
 
 	sx = mat->_texratex;
 	sy = mat->_texratey;
-	psx = bmsrc->divsx - 1;
-	psy = bmsrc->divsy - 1;
+	psx = bmsrc->divsx;
+	psy = bmsrc->divsy;
 	f_psx = (float)psx;
 	f_psy = (float)psy;
 
@@ -1676,8 +1676,8 @@ void hgio_copyrot( BMSCR *bm, short xx, short yy, short srcsx, short srcsy, floa
 
 	tx0 = (float)xx;
 	ty0 = (float)yy;
-	tx1 = (float)(xx+srcsx-1);
-	ty1 = (float)(yy+srcsy-1);
+	tx1 = (float)(xx+srcsx);
+	ty1 = (float)(yy+srcsy);
 
 	tx0 *= sx;
 	tx1 *= sx;

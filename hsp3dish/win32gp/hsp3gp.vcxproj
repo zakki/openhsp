@@ -280,6 +280,7 @@
     <ClCompile Include="..\..\hsp3\win32gui\hsp3extlib.cpp" />
     <ClCompile Include="..\..\hsp3\win32gui\hsp3ext_win.cpp" />
     <ClCompile Include="..\..\hsp3\win32gui\supio_win.cpp" />
+    <ClCompile Include="..\essprite.cpp" />
     <ClCompile Include="..\geometry.cpp" />
     <ClCompile Include="..\hsp3gr_dish.cpp" />
     <ClCompile Include="..\hspwnd_dish.cpp" />
@@ -319,6 +320,7 @@
     <ClInclude Include="..\..\hsp3\supio.h" />
     <ClInclude Include="..\..\hsp3\win32gui\hspvar_comobj.h" />
     <ClInclude Include="..\..\hsp3\win32gui\hspvar_variant.h" />
+    <ClInclude Include="..\essprite.h" />
     <ClInclude Include="..\geometry.h" />
     <ClInclude Include="..\hsp3ext.h" />
     <ClInclude Include="..\hsp3gr.h" />

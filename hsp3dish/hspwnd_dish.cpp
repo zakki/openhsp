@@ -218,7 +218,7 @@ Bmscr *HspWnd::GetBmscrSafe( int id )
 	//
 	Bmscr *bm;
 	if (( id < 0 )||( id >= bmscr_max )) throw HSPERR_ILLEGAL_FUNCTION;
-	bm = GetBmscr( id );
+	bm = this->GetBmscr( id );
 	if ( bm == NULL ) throw HSPERR_ILLEGAL_FUNCTION;
 	if ( bm->flag == BMSCR_FLAG_NOUSE ) throw HSPERR_ILLEGAL_FUNCTION;
 	return bm;

@@ -135,6 +135,9 @@
     <ClCompile Include="gptexmes.cpp">
       <Filter>ソース ファイル\win</Filter>
     </ClCompile>
+    <ClCompile Include="..\essprite.cpp">
+      <Filter>ソース ファイル\core</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="dxsnd.h">
@@ -268,6 +271,9 @@
     </ClInclude>
     <ClInclude Include="shader_sprite.h">
       <Filter>ヘッダー ファイル\win</Filter>
+    </ClInclude>
+    <ClInclude Include="..\essprite.h">
+      <Filter>ヘッダー ファイル\core</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
