@@ -287,6 +287,7 @@
     <ClCompile Include="..\hspwnd_obj.cpp" />
     <ClCompile Include="..\random.cpp" />
     <ClCompile Include="..\sysreq.cpp" />
+    <ClCompile Include="..\texmes.cpp" />
     <ClCompile Include="..\win32\dxsnd.cpp" />
     <ClCompile Include="..\win32\mmman.cpp" />
     <ClCompile Include="..\win32\webtask_win.cpp" />
@@ -296,7 +297,6 @@
     <ClCompile Include="gplgt.cpp" />
     <ClCompile Include="gpmat.cpp" />
     <ClCompile Include="gpphy.cpp" />
-    <ClCompile Include="gptexmes.cpp" />
     <ClCompile Include="hgiox.cpp" />
     <ClCompile Include="hsp3dish.cpp" />
     <ClCompile Include="main.cpp" />
@@ -330,6 +330,7 @@
     <ClInclude Include="..\random.h" />
     <ClInclude Include="..\supio.h" />
     <ClInclude Include="..\sysreq.h" />
+    <ClInclude Include="..\texmes.h" />
     <ClInclude Include="..\webtask.h" />
     <ClInclude Include="dxsnd.h" />
     <ClInclude Include="gamehsp.h" />
@@ -338,7 +339,6 @@
     <ClInclude Include="gplgt.h" />
     <ClInclude Include="gpmat.h" />
     <ClInclude Include="gpphy.h" />
-    <ClInclude Include="gptexmes.h" />
     <ClInclude Include="hgiox.h" />
     <ClInclude Include="hsp3dish.h" />
     <ClInclude Include="hsp3extlib.h" />

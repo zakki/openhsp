@@ -155,6 +155,10 @@ void gamehsp::texmesTerm(void)
 		free(_texmesbuf);
 		_texmesbuf = NULL;
 	}
+	if (_meshBatch_font) {
+		delete _meshBatch_font;
+		_meshBatch_font = NULL;
+	}
 
 }
 
@@ -181,11 +185,6 @@ gptexmes* gamehsp::addTexmes(void)
 	for (i = 0; i < _maxtexmes; i++) {
 		if (_gptexmes[i].flag == 0) return &_gptexmes[i];
 	}
-	if (_meshBatch_font) {
-		delete _meshBatch_font;
-		_meshBatch_font = NULL;
-	}
-
 	return NULL;
 }
 

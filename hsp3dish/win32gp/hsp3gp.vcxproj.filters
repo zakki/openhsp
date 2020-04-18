@@ -132,10 +132,10 @@
     <ClCompile Include="gpevent.cpp">
       <Filter>ソース ファイル\win</Filter>
     </ClCompile>
-    <ClCompile Include="gptexmes.cpp">
-      <Filter>ソース ファイル\win</Filter>
-    </ClCompile>
     <ClCompile Include="..\essprite.cpp">
+      <Filter>ソース ファイル\core</Filter>
+    </ClCompile>
+    <ClCompile Include="..\texmes.cpp">
       <Filter>ソース ファイル\core</Filter>
     </ClCompile>
   </ItemGroup>
@@ -266,13 +266,13 @@
     <ClInclude Include="gpevent.h">
       <Filter>ヘッダー ファイル\win</Filter>
     </ClInclude>
-    <ClInclude Include="gptexmes.h">
-      <Filter>ヘッダー ファイル\win</Filter>
-    </ClInclude>
     <ClInclude Include="shader_sprite.h">
       <Filter>ヘッダー ファイル\win</Filter>
     </ClInclude>
     <ClInclude Include="..\essprite.h">
+      <Filter>ヘッダー ファイル\core</Filter>
+    </ClInclude>
+    <ClInclude Include="..\texmes.h">
       <Filter>ヘッダー ファイル\core</Filter>
     </ClInclude>
   </ItemGroup>

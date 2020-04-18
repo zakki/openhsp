@@ -16,6 +16,10 @@
 
 #include "hgtex.h"
 
+#define USE_TEXMES
+#ifdef USE_TEXMES
+#include "../texmes.h"
+#endif
 
 #define RELEASE(x) 	if(x){x->Release();x=NULL;}
 
@@ -85,9 +89,14 @@ static		int nDestHeight;	// 描画座標高さ
 
 static		HWND master_wnd;	// 表示対象Window
 static		int drawflag;		// レンダー開始フラグ
+
+#ifdef USE_TEXMES
+static		texmesManager tmes;	// テキストメッセージマネージャー
+#else
 static		int mestexid;		// テキスト表示用テクスチャID
 static		int mestexflag;		// テキスト表示用テクスチャ使用フラグ(0=no/1=ok)
 static		BMSCR mestexbm;		// テキスト表示用ダミーBMSCR
+#endif
 
 static		BMSCR *mainbm;		// メインスクリーンのBMSCR
 static		char m_tfont[256];	// テキスト使用フォント
@@ -555,13 +564,284 @@ static void InitTexture(void)
 
 	//		テキスト表示エリアを初期化
 	//
+#ifdef USE_TEXMES
+	tmes.texmesInit(SYSREQ_MESCACHE_MAX);
+
+#else
 	mestexid = RegistTexEmpty(nDestWidth, nDestHeight, 1);
 	if (mestexid >= 0) {
 		//		BMSCRにコピー用のデータを構築する
 		memset(&mestexbm, 0, sizeof(BMSCR));
 		mestexbm.texid = mestexid;
 	}
+#endif
 }
+
+
+/*------------------------------------------------------------*/
+/*
+		Windows Font Service
+*/
+/*------------------------------------------------------------*/
+
+#ifdef HSPWIN
+
+static		HFONT htexfont = NULL;	// TEXTURE用のフォント
+static		HFONT htexfont_old;		// TEXTURE用のフォント(保存用)
+static		HDC htexdc;				// Device Context
+static		int drawsx, drawsy;		// 描画サイズ
+static		int fontsystem_sx;		// 横のサイズ
+static		int fontsystem_sy;		// 縦のサイズ
+static		int fontsystem_space;	// spaceの横サイズ
+static		int fontsystem_zspace;	// 全角spaceの横サイズ
+static		TEXTMETRIC tm;
+static		bool tbl_init = false;	// AlphaTbl初期化フラグ
+static		BYTE lpFont[0x10000];	// フォント取得用のワーク
+static		DWORD AlphaTbl[34];
+static		char *def_zspace = "　";
+static		int fontsystem_size;
+
+long hgio_fontsystem_getcode(unsigned char* pt)
+{
+	//		文字コードを返す(SJIS)
+	unsigned char a1 = *pt;
+
+	//		全角チェック
+	if (a1 >= 129) {					// 全角文字チェック
+		if ((a1 <= 159) || (a1 >= 224)) {
+			long i = (long)a1;
+			return (i << 8) + (long)pt[1];
+		}
+	}
+	return (long)a1;
+}
+
+void hgio_fontsystem_term(void)
+{
+	//		フォントレンダリング解放
+	//
+	if (htexfont == NULL) return;
+
+	SelectObject(htexdc, htexfont_old);
+	DeleteObject(htexfont);
+	ReleaseDC(master_wnd, htexdc);
+	htexfont = NULL;
+}
+
+
+void hgio_fontsystem_init(char* fontname, int size, int style)
+{
+	//		フォントレンダリング初期化
+	//
+	hgio_fontsystem_term();
+
+	htexdc = GetDC(master_wnd);
+	htexfont = NULL;
+
+	if (size >= 0) {
+		int fw;
+		fw = FW_REGULAR;
+		if (style & 1) {
+			fw = FW_BOLD;
+		}
+		htexfont = CreateFont(
+			size,						// フォント高さ
+			0,							// 文字幅
+			0,							// テキストの角度	
+			0,							// ベースラインとｘ軸との角度
+			fw,							// フォントの重さ（太さ）
+			((style & 2) != 0),			// イタリック体
+			((style & 4) != 0),			// アンダーライン
+			((style & 8) != 0),			// 打ち消し線
+			DEFAULT_CHARSET,			// 文字セット
+			OUT_TT_PRECIS,				// 出力精度
+			CLIP_DEFAULT_PRECIS,		// クリッピング精度
+			PROOF_QUALITY,				// 出力品質
+			DEFAULT_PITCH | FF_MODERN,	// ピッチとファミリー
+			fontname					// 書体名
+		);
+		fontsystem_size = size;
+	}
+
+	if (htexfont == NULL) return;
+
+	htexfont_old = (HFONT)SelectObject(htexdc, htexfont);
+	GetTextMetrics(htexdc, &tm);
+	fontsystem_sx = 0;
+	fontsystem_sy = tm.tmHeight;
+
+	long code = 0x20;
+	GetCharWidth(htexdc, code, code, &fontsystem_space);
+	code = hgio_fontsystem_getcode((unsigned char*)def_zspace);
+	GetCharWidth(htexdc, code, code, &fontsystem_zspace);
+
+	if (tbl_init == false) {
+		for (int i = 0; i < 32; i++) {
+			DWORD aval = i;
+			if (aval > 15) aval = 15;
+			AlphaTbl[i] = (aval << 28) + 0xffffff;
+		}
+		AlphaTbl[0] = 0;
+		tbl_init = true;
+	}
+}
+
+
+void hgio_fontsystem_delete(int id)
+{
+	DeleteTex(id);
+}
+
+
+int hgio_fontsystem_setup(int sx, int sy, void *buffer)
+{
+	int id = RegistTexEmpty(sx,sy,1);
+	if (UpdateTex32(id, (char*)buffer, 0) < 0) return -1;
+	return id;
+}
+
+
+int hgio_fontsystem_execsub(long code, unsigned char* buffer, int pitch, int offsetx)
+{
+	//		フォントバッファ取得
+	MAT2 mat;
+	DWORD Size;
+	GLYPHMETRICS gm;
+	GLYPHMETRICS* pgm;
+	int px, ybase;
+	int width, height;
+//	int tmpy;
+
+	if (buffer == NULL) {
+		GetCharWidth(htexdc, code, code, &width);
+		return width;
+	}
+	if (fontsystem_sx <= 0) return 0;
+
+	pgm = &gm;
+	ZeroMemory(pgm, sizeof(GLYPHMETRICS));
+
+	long m11 = (long)(1.0 * 65536.0);	long m12 = (long)(0.0 * 65536.0);
+	long m21 = (long)(0.0 * 65536.0);	long m22 = (long)(1.0 * 65536.0);
+	mat.eM11 = *((FIXED*)&m11);	mat.eM12 = *((FIXED*)&m12);
+	mat.eM21 = *((FIXED*)&m21);	mat.eM22 = *((FIXED*)&m22);
+
+
+	if (m_tstyle & 16) {
+		// バッファサイズ受信
+		Size = GetGlyphOutline(htexdc, code, GGO_GRAY4_BITMAP, pgm, 0, NULL, &mat);
+		// バッファ取得
+		GetGlyphOutline(htexdc, code, GGO_GRAY4_BITMAP, pgm, Size, lpFont, &mat);
+	}
+	else {
+		// バッファサイズ受信
+		Size = GetGlyphOutline(htexdc, code, GGO_BITMAP, pgm, 0, NULL, &mat);
+		// バッファ取得
+		GetGlyphOutline(htexdc, code, GGO_BITMAP, pgm, Size, lpFont, &mat);
+	}
+
+	// フォントピッチ
+	DWORD fontPitch = (Size / gm.gmBlackBoxY) & ~0x03;
+
+	// サイズ取得
+	width = (int)gm.gmBlackBoxX;
+	height = (int)gm.gmBlackBoxY;
+	//Alertf("%d[%d,%d] +%d", code,width,height,pitch);
+
+	// 描画位置を進める量
+	px = gm.gmCellIncX;
+	ybase = tm.tmAscent - gm.gmptGlyphOrigin.y;
+
+	LPDWORD p1 = (LPDWORD)buffer;
+	LPBYTE p2 = lpFont;
+
+	// 転送先のサーフェイスの始点
+	p1 += (offsetx + gm.gmptGlyphOrigin.x) + (ybase * pitch);
+
+	if (m_tstyle & 16) {
+		if (m_tstyle & 2) {
+			for (int y = 0; y < height; y++)
+			{
+				for (int x = 0; x < width; x++)
+				{
+					p1[x] |= AlphaTbl[p2[x]];
+				}
+				p1 += pitch;
+				p2 += fontPitch;
+			}
+		}
+		else {
+			for (int y = 0; y < height; y++)
+			{
+				for (int x = 0; x < width; x++)
+				{
+					p1[x] = AlphaTbl[p2[x]];
+				}
+				p1 += pitch;
+				p2 += fontPitch;
+			}
+		}
+		return px;
+	}
+
+	for (int y = 0; y < height; y++)
+	{
+		LPBYTE pp;
+		int bmask;
+		bmask = 0x80; pp = p2;
+		for (int x = 0; x < width; x++)
+		{
+			if (bmask == 0) { bmask = 0x80; pp++; }
+			if (*pp & bmask) { p1[x] = 0xffffffff; }
+			bmask >>= 1;
+		}
+		p1 += pitch;
+		p2 += fontPitch;
+	}
+
+	return px;
+}
+
+
+int hgio_fontsystem_exec(char* msg, unsigned char* buffer, int pitch, int* out_sx, int* out_sy)
+{
+	//		msgの文字列をテクスチャバッファにレンダリングする
+	//		(bufferがNULLの場合はサイズだけを取得する)
+	//
+	if (htexfont == NULL) return -1;
+
+	int x = 0;
+	long code;
+	unsigned char *p = (unsigned char*)msg;
+	unsigned char a1;
+
+	while (1) {
+		a1 = *p++;
+		if (a1 == 0) break;
+		if (a1 < 32) continue;
+
+		//		全角チェック
+		code = (long)a1;
+		if (a1 >= 129) {					// 全角文字チェック
+			if ((a1 <= 159) || (a1 >= 224)) {
+				long i = (long)a1;
+				code = (i << 8) + (long)*p;
+				p++;
+			}
+		}
+
+		x += hgio_fontsystem_execsub(code, buffer, pitch, x);
+	}
+
+	fontsystem_sx = x;
+
+	*out_sx = fontsystem_sx;
+	*out_sy = fontsystem_sy;
+	return 0;
+}
+
+#endif
+
 
 /*------------------------------------------------------------*/
 /*
@@ -587,8 +867,10 @@ void hgio_init( int mode, int sx, int sy, void *hwnd )
 	drawflag = 0;
 	nDestWidth = sx;
 	nDestHeight = sy;
+#ifndef USE_TEXMES
 	mestexid = -1;
 	mestexflag = 0;
+#endif
 
 	//		バッファ初期化
 	//
@@ -662,6 +944,9 @@ void hgio_resume( void )
 void hgio_text_render( void )
 {
 	//	テキスト画面描画
+#ifdef USE_TEXMES
+	tmes.texmesProc();
+#else
 	if ( mestexflag ) {
 		int bak_mulcolor;
 
@@ -675,6 +960,7 @@ void hgio_text_render( void )
 		hgio_copy( mainbm, 0, 0, nDestWidth, nDestHeight, &mestexbm, (float)nDestWidth, (float)nDestHeight );
 		mainbm->mulcolor = bak_mulcolor;		// 乗算カラーを元に戻す
 	}
+#endif
 }
 
 
@@ -778,8 +1064,10 @@ int hgio_render_start( void )
 	d3ddev->BeginScene();
 	TexReset();
 	drawflag = 1;
-	mestexflag = 0;
 
+#ifndef USE_TEXMES
+	mestexflag = 0;
+#endif
 	return 0;
 }
 
@@ -834,6 +1122,9 @@ int hgio_getHeight( void )
 void hgio_term( void )
 {
 	hgio_render_end();
+#ifdef USE_TEXMES
+	tmes.texmesTerm();
+#endif
 	TexTerm();
 	Term3DDevices();
 	GeometryTerm();
@@ -933,47 +1224,6 @@ int hgio_texload( BMSCR *bm, char *fname )
 	bm->sy = tex->height;
 	bm->texid = i;
 
-	return 0;
-}
-
-
-int hgio_mes( BMSCR *bm, char *str1 )
-{
-	//		mes,print 文字表示
-	//
-	if ( mestexid < 0 ) return -1;
-	if ( bm->type != HSPWND_TYPE_MAIN ) throw HSPERR_UNSUPPORTED_FUNCTION;
-	if (drawflag == 0) hgio_render_start();
-
-	if ( mestexflag == 0 ) {
-		//	最初の描画時にテキスト画面クリア
-		ClearTex( mestexid, 0 );
-		mestexflag = 1;
-	}
-	DrawTexColor( bm->color );
-	DrawTexOpen( master_wnd, mestexid, m_tfont, m_tsize, m_tstyle );
-	DrawTexString( bm->cx, bm->cy, str1 );
-
-	bm->printsizex = TexGetDrawSizeX();
-	bm->printsizey = TexGetDrawSizeY();
-	if ( bm->printsizey <= 0 ) {
-		bm->printsizey = m_tsize;
-	}
-	//Alertf( "%s[%d,%d]",str1,bm->printsizex,bm->printsizey );
-
-	DrawTexClose();
-
-	return 0;
-}
-
-
-int hgio_font( char *fontname, int size, int style )
-{
-	//		文字フォント指定
-	//
-	strncpy( m_tfont, fontname, 254 );
-	m_tsize = size;
-	m_tstyle = style;
 	return 0;
 }
 
@@ -1377,6 +1627,72 @@ void hgio_copy( BMSCR *bm, short xx, short yy, short srcsx, short srcsy, BMSCR *
 	d3ddev->SetVertexShader(D3DFVF_EXVERTEX);
 	// とりあえず直接描画(四角形)
 	d3ddev->DrawPrimitiveUP(D3DPT_TRIANGLEFAN,2,vertex2DEX,sizeof(D3DEXVERTEX));
+}
+
+
+void hgio_fontcopy(BMSCR *bm, int psx, int psy, int texid)
+{
+	//		画像コピー
+	//		texid内の(xx,yy)-(xx+srcsx,yy+srcsy)を現在の画面に(psx,psy)サイズでコピー
+	//		カレントポジション、描画モードはBMSCRから取得
+	//
+	D3DEXVERTEX *v;
+	TEXINF *tex;
+	float x1, y1, x2, y2, sx, sy;
+	float tx0, ty0, tx1, ty1;
+
+	if (bm == NULL) return;
+	if (bm->type != HSPWND_TYPE_MAIN) {
+		//Alertf( "type%d #%d",bm->type,bm->wid );
+		throw HSPERR_UNSUPPORTED_FUNCTION;
+	}
+	if (drawflag == 0) hgio_render_start();
+
+	tx0 = 0.0f;
+	tx1 = ((float)(psx));
+	ty0 = 0.0f;
+	ty1 = ((float)(psy));
+
+	x1 = ((float)bm->cx) - 0.5f;
+	y1 = ((float)bm->cy) - 0.5f;
+	x2 = x1 + psx;
+	y2 = y1 + psy;
+
+	ChangeTex(texid);
+	tex = GetTex(texid);
+	sx = tex->ratex;
+	sy = tex->ratey;
+
+	tx0 *= sx;
+	tx1 *= sx;
+	ty0 *= sy;
+	ty1 *= sy;
+
+	v = vertex2DEX;
+	v[0].color = v[1].color = v[2].color = v[3].color = (bm->color);
+	SetAlphaMode(2);
+
+	v[3].x = x1;
+	v[3].y = y1;
+	v[3].tu0 = tx0;
+	v[3].tv0 = ty0;
+	v[2].x = x2;
+	v[2].y = y1;
+	v[2].tu0 = tx1;
+	v[2].tv0 = ty0;
+	v[1].x = x2;
+	v[1].y = y2;
+	v[1].tu0 = tx1;
+	v[1].tv0 = ty1;
+	v[0].x = x1;
+	v[0].y = y2;
+	v[0].tu0 = tx0;
+	v[0].tv0 = ty1;
+
+	//デバイスに使用する頂点フォーマットをセットする
+	d3ddev->SetVertexShader(D3DFVF_EXVERTEX);
+	// とりあえず直接描画(四角形)
+	d3ddev->DrawPrimitiveUP(D3DPT_TRIANGLEFAN, 2, vertex2DEX, sizeof(D3DEXVERTEX));
 }
 
 
@@ -1863,5 +2179,162 @@ void hgio_cnvview(BMSCR* bm, int* xaxis, int* yaxis)
 }
 
 
+#ifdef USE_TEXMES
+
+static void hgio_messub(BMSCR* bm, char* msg)
+{
+	//		mes,print 文字表示
+	//
+	int xsize, ysize;
+	if ((bm->type != HSPWND_TYPE_MAIN) && (bm->type != HSPWND_TYPE_OFFSCREEN)) return;
+	if (drawflag == 0) hgio_render_start();
+
+	// print per line
+	if (bm->cy >= bm->sy) return;
+
+	int id;
+	texmes* tex;
+	id = tmes.texmesRegist(msg);
+	if (id < 0) return;
+	tex = tmes.texmesGet(id);
+	if (tex == NULL) return;
+
+	xsize = tex->sx;
+	ysize = tex->sy;
+
+	if (bm->printoffsetx > 0) {			// センタリングを行う(X)
+		int offset = (bm->printoffsetx - xsize) / 2;
+		if (offset > 0) {
+			bm->cx += offset;
+		}
+		bm->printoffsetx = 0;
+	}
+	if (bm->printoffsety > 0) {			// センタリングを行う(Y)
+		int offset = (bm->printoffsety - ysize) / 2;
+		if (offset > 0) {
+			bm->cy += offset;
+		}
+		bm->printoffsety = 0;
+	}
+
+	hgio_fontcopy(bm, xsize, ysize, tex->_texture);
+
+	//xsize = game->drawFont(bm->cx, bm->cy, str1, (gameplay::Vector4*)bm->colorvalue, &ysize);
+	if (xsize > bm->printsizex) bm->printsizex = xsize;
+	bm->printsizey += ysize;
+	bm->cy += ysize;
+}
+
+
+int hgio_mes(BMSCR* bm, char* str1)
+{
+	//		texmesによる文字表示
+	//
+	int spcur;
+	int org_cy;
+	unsigned char* p;
+	unsigned char* st;
+	unsigned char a1;
+	unsigned char bak_a1;
+
+	org_cy = bm->cy;
+	bm->printsizex = 0;
+	bm->printsizey = 0;
+
+	p = (unsigned char*)str1;
+	st = p;
+	spcur = 0;
+
+	while (1) {
+		a1 = *p;
+		if (a1 == 0) break;
+		if (a1 == 13) {
+			bak_a1 = a1; *p = 0;		// 終端を仮設定
+			hgio_messub(bm, (char*)st);
+			*p = bak_a1;
+			p++; st = p; spcur = 0;		// 終端を戻す
+			a1 = *p;
+			if (a1 == 10) p++;
+			continue;
+		}
+		if (a1 == 10) {
+			bak_a1 = a1; *p = 0;		// 終端を仮設定
+			hgio_messub(bm, (char*)st);
+			*p = bak_a1;
+			p++; st = p; spcur = 0;		// 終端を戻す
+			continue;
+		}
+		/*
+				if (a1&128) {					// UTF8チェック
+					while(1) {
+						unsigned char a2;
+						a2 = *p;
+						if ( a2==0 ) break;
+						if ( ( a2 & 0xc0 ) != 0x80 ) break;
+						p++; spcur++;
+					}
+				} else {
+					p++; spcur++;
+				}
+		*/
+		p++; spcur++;
+	}
+
+	if (spcur > 0) {
+		hgio_messub(bm, (char*)st);
+	}
+
+	bm->cy = org_cy;
+	return 0;
+}
+
+#else
+
+int hgio_mes(BMSCR *bm, char *str1)
+{
+	//		mes,print 文字表示
+	//
+	//		従来の文字表示
+	//
+	if (mestexid < 0) return -1;
+	if (bm->type != HSPWND_TYPE_MAIN) throw HSPERR_UNSUPPORTED_FUNCTION;
+	if (drawflag == 0) hgio_render_start();
+
+	if (mestexflag == 0) {
+		//	最初の描画時にテキスト画面クリア
+		ClearTex(mestexid, 0);
+		mestexflag = 1;
+	}
+	DrawTexColor(bm->color);
+	DrawTexOpen(master_wnd, mestexid, m_tfont, m_tsize, m_tstyle);
+	DrawTexString(bm->cx, bm->cy, str1);
+
+	bm->printsizex = TexGetDrawSizeX();
+	bm->printsizey = TexGetDrawSizeY();
+	if (bm->printsizey <= 0) {
+		bm->printsizey = m_tsize;
+	}
+	//Alertf( "%s[%d,%d]",str1,bm->printsizex,bm->printsizey );
+
+	DrawTexClose();
+	return 0;
+}
+#endif
+
+
+int hgio_font(char *fontname, int size, int style)
+{
+	//		文字フォント指定
+	//
+#ifdef USE_TEXMES
+	//Alertf("[%s]%d,%d", fontname, size, style);
+	tmes.setFont(fontname, size, style);
+#else
+	strncpy(m_tfont, fontname, 254);
+	m_tsize = size;
+	m_tstyle = style;
+#endif
+	return 0;
+}
 
 

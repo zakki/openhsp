@@ -214,7 +214,6 @@ static		MATRIX mat_unproj;	// プロジェクション逆変換マトリクス
 */
 /*------------------------------------------------------------*/
 
-
 #ifdef HSPWIN
 
 static		HFONT htexfont = NULL;	// TEXTURE用のフォント
@@ -226,10 +225,11 @@ static		int fontsystem_sy;		// 縦のサイズ
 static		int fontsystem_space;	// spaceの横サイズ
 static		int fontsystem_zspace;	// 全角spaceの横サイズ
 static		TEXTMETRIC tm;
-static		LPBYTE lpFont;
+static		bool tbl_init = false;	// AlphaTbl初期化フラグ
+static		BYTE lpFont[0x10000];	// フォント取得用のワーク
 static		DWORD AlphaTbl[34];
 static		char *def_zspace = "　";
-
+static		int fontsystem_size;
 
 long hgio_fontsystem_getcode(unsigned char* pt)
 {
@@ -240,12 +240,12 @@ long hgio_fontsystem_getcode(unsigned char* pt)
 	if (a1 >= 129) {					// 全角文字チェック
 		if ((a1 <= 159) || (a1 >= 224)) {
 			long i = (long)a1;
-			return (i<<8)+(long)pt[1];
+			return (i << 8) + (long)pt[1];
 		}
 	}
 	return (long)a1;
 }
- 
+
 void hgio_fontsystem_term(void)
 {
 	//		フォントレンダリング解放
@@ -256,9 +256,6 @@ void hgio_fontsystem_term(void)
 	DeleteObject(htexfont);
 	ReleaseDC(master_wnd, htexdc);
 	htexfont = NULL;
-	if (lpFont) {
-		free(lpFont); lpFont = NULL;
-	}
 }
 
 
@@ -274,7 +271,7 @@ void hgio_fontsystem_init(char* fontname, int size, int style)
 	if (size >= 0) {
 		int fw;
 		fw = FW_REGULAR;
-		if (style&1) {
+		if (style & 1) {
 			fw = FW_BOLD;
 		}
 		htexfont = CreateFont(
@@ -293,11 +290,10 @@ void hgio_fontsystem_init(char* fontname, int size, int style)
 			DEFAULT_PITCH | FF_MODERN,	// ピッチとファミリー
 			fontname					// 書体名
 		);
+		fontsystem_size = size;
 	}
 
 	if (htexfont == NULL) return;
-
-	lpFont = (LPBYTE)malloc(0x10000);			// フォント取得用のワーク
 
 	htexfont_old = (HFONT)SelectObject(htexdc, htexfont);
 	GetTextMetrics(htexdc, &tm);
@@ -309,12 +305,15 @@ void hgio_fontsystem_init(char* fontname, int size, int style)
 	code = hgio_fontsystem_getcode((unsigned char*)def_zspace);
 	GetCharWidth(htexdc, code, code, &fontsystem_zspace);
 
-	for (int i = 0; i < 32; i++) {
-		DWORD aval = i;
-		if (aval > 15) aval = 15;
-		AlphaTbl[i] = (aval << 28) + 0xffffff;
+	if (tbl_init == false) {
+		for (int i = 0; i < 32; i++) {
+			DWORD aval = i;
+			if (aval > 15) aval = 15;
+			AlphaTbl[i] = (aval << 28) + 0xffffff;
+		}
+		AlphaTbl[0] = 0;
+		tbl_init = true;
 	}
-	AlphaTbl[0] = 0;
 }
 
 
@@ -327,7 +326,7 @@ int hgio_fontsystem_execsub(long code, unsigned char* buffer, int pitch, int off
 	GLYPHMETRICS* pgm;
 	int px, ybase;
 	int width, height;
-	int tmpy;
+	//	int tmpy;
 
 	if (buffer == NULL) {
 		GetCharWidth(htexdc, code, code, &width);
@@ -415,7 +414,7 @@ int hgio_fontsystem_execsub(long code, unsigned char* buffer, int pitch, int off
 		p1 += pitch;
 		p2 += fontPitch;
 	}
-	
+
 	return px;
 }
 
@@ -1186,6 +1185,7 @@ static void hgio_messub(BMSCR* bm, char* str1)
 	//		mes,print 文字表示
 	//
 	int xsize,ysize;
+	int areasx, areasy;
 	if ((bm->type != HSPWND_TYPE_MAIN) && (bm->type != HSPWND_TYPE_OFFSCREEN)) return;
 	if (drawflag == 0) hgio_render_start();
 
@@ -1193,7 +1193,11 @@ static void hgio_messub(BMSCR* bm, char* str1)
 	if (bm->cy >= bm->sy) return;
 
 	if (game) {
-		xsize = game->drawFont(bm->cx, bm->cy, str1, (gameplay::Vector4*)bm->colorvalue, &ysize);
+		areasx = bm->printoffsetx;
+		areasy = bm->printoffsety;
+		xsize = game->drawFont(bm->cx, bm->cy, str1, (gameplay::Vector4*)bm->colorvalue, &ysize, areasx, areasy);
+		bm->printoffsetx = 0;
+		bm->printoffsety = 0;
 		if (xsize > bm->printsizex) bm->printsizex = xsize;
 		bm->printsizey += ysize;
 		bm->cy += ysize;
@@ -1208,7 +1212,6 @@ int hgio_mes(BMSCR* bm, char* str1)
 	unsigned char* p;
 	unsigned char* st;
 	unsigned char a1;
-	unsigned char a2;
 	unsigned char bak_a1;
 
 	org_cy = bm->cy;
@@ -1238,9 +1241,10 @@ int hgio_mes(BMSCR* bm, char* str1)
 			p++; st = p; spcur = 0;		// 終端を戻す
 			continue;
 		}
-		/*
+#ifdef HSPUTF8
 				if (a1&128) {					// UTF8チェック
 					while(1) {
+						unsigned char a2;
 						a2 = *p;
 						if ( a2==0 ) break;
 						if ( ( a2 & 0xc0 ) != 0x80 ) break;
@@ -1249,7 +1253,7 @@ int hgio_mes(BMSCR* bm, char* str1)
 				} else {
 					p++; spcur++;
 				}
-		*/
+#endif
 		p++; spcur++;
 	}
 
@@ -2352,25 +2356,8 @@ int hgio_font(char* fontname, int size, int style)
 {
 	//		文字フォント指定
 	//
-	strncpy(m_tfont, fontname, 254);
-	m_tsize = size;
-	m_tstyle = style;
-
-#ifdef HSPWIN
-	if (GetSysReq(SYSREQ_USEGPBFONT) == 0) {
-		hgio_fontsystem_init(fontname, size, style);
-	}
-#endif
-
-#if defined(HSPLINUX) || defined(HSPEMSCRIPTEN)
-	if ( font_defsize != size ) {
-		//TexFontInit( fontname, size );
-		//TexFontInit( "", size );
-	}
-#endif
-
 	if (game) {
-		game->setFont(m_tfont, m_tsize, m_tstyle);
+		game->setFont(fontname, size, style);
 	}
 	return 0;
 }
