@@ -144,6 +144,9 @@
     <ClCompile Include="..\texmes.cpp">
       <Filter>ソース ファイル\core</Filter>
     </ClCompile>
+    <ClCompile Include="fontsystem.cpp">
+      <Filter>ソース ファイル\win</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\hsp3\dpmread.h">
@@ -268,6 +271,9 @@
     </ClInclude>
     <ClInclude Include="..\texmes.h">
       <Filter>ヘッダー ファイル\core</Filter>
+    </ClInclude>
+    <ClInclude Include="fontsystem.h">
+      <Filter>ヘッダー ファイル\win</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
