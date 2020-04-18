@@ -17,6 +17,7 @@
 #define RELEASE(x) 	if(x){x->Release();x=NULL;}
 
 #define USE_STAR_FIELD
+#define USE_TEXMES
 
 //		Data
 //
@@ -695,49 +696,68 @@ void SetSrcTex( void *src, int sx, int sy )
 }
 
 
-//======================================================================
-//
-//		テクスチャ・メッセージ関連
-//
-//======================================================================
+void TexDivideSize(int id, int new_divsx, int new_divsy, int new_ofsx, int new_ofsy)
+{
+	//		セル分割サイズを設定
+	//
+	TEXINF *t;
+	t = GetTex(id);
+	if (t->flag == TEXMODE_NONE) return;
 
-int RegistTexEmpty( int w, int h, int tmode )
+	if (new_divsx > 0) t->divsx = new_divsx; else t->divsx = t->sx;
+	if (new_divsy > 0) t->divsy = new_divsy; else t->divsy = t->sy;
+	t->divx = t->sx / t->divsx;
+	t->divy = t->sy / t->divsy;
+	t->celofsx = new_ofsx;
+	t->celofsy = new_ofsy;
+}
+
+int RegistTexEmpty(int w, int h, int tmode)
 {
 	// メッセージエリア用のテクスチャ作成
-	int sel,sx,sy,flag;
+	int sel, sx, sy, flag;
 	D3DSURFACE_DESC desc;
 	LPDIRECT3DTEXTURE8 lpTex;
 
-	if ( tmode==0 ) {
-		if ( CreateTexture2( w,h, D3DFMT_A4R4G4B4, lpTex ) ) {
-			if ( CreateTexture2( w,h, D3DFMT_A8R8G8B8, lpTex ) ) {
-				RELEASE( lpTex );
+	if (tmode == 0) {
+		if (CreateTexture2(w, h, D3DFMT_A4R4G4B4, lpTex)) {
+			if (CreateTexture2(w, h, D3DFMT_A8R8G8B8, lpTex)) {
+				RELEASE(lpTex);
 				return -1;
 			}
 		}
-		
-	} else {
-		if ( CreateTexture2( w,h, D3DFMT_A8R8G8B8, lpTex ) ) {
-			if ( CreateTexture2( w,h, D3DFMT_A4R4G4B4, lpTex ) ) {
-				RELEASE( lpTex );
+
+	}
+	else {
+		if (CreateTexture2(w, h, D3DFMT_A8R8G8B8, lpTex)) {
+			if (CreateTexture2(w, h, D3DFMT_A4R4G4B4, lpTex)) {
+				RELEASE(lpTex);
 				return -1;
 			}
 		}
 	}
 
-	lpTex->GetLevelDesc( 0, &desc );
+	lpTex->GetLevelDesc(0, &desc);
 	// データ
 	sx = desc.Width;
 	sy = desc.Height;
 	flag = TEXMODE_MES8;
-	if ( desc.Format == D3DFMT_A4R4G4B4 ) flag = TEXMODE_MES4;
+	if (desc.Format == D3DFMT_A4R4G4B4) flag = TEXMODE_MES4;
 
 	sel = GetNextTexID();
-	SetTex( sel, flag, 0, sx, sy, sx, sy, lpTex );
+	SetTex(sel, flag, 0, sx, sy, sx, sy, lpTex);
 	return sel;
 }
 
 
+
+#ifndef USE_TEXMES
+
+//======================================================================
+//
+//		テクスチャ・メッセージ関連
+//
+//======================================================================
 
 void ClearTex( int id, int color )
 {
@@ -1580,20 +1600,5 @@ int DrawTestY( void )
 }
 
 
-void TexDivideSize( int id, int new_divsx, int new_divsy, int new_ofsx, int new_ofsy )
-{
-	//		セル分割サイズを設定
-	//
-	TEXINF *t;
-	t = GetTex( id );
-	if ( t->flag == TEXMODE_NONE ) return;
-		
-	if ( new_divsx > 0 ) t->divsx = new_divsx; else t->divsx = t->sx;
-	if ( new_divsy > 0 ) t->divsy = new_divsy; else t->divsy = t->sy;
-	t->divx = t->sx / t->divsx;
-	t->divy = t->sy / t->divsy;
-	t->celofsx = new_ofsx;
-	t->celofsy = new_ofsy;
-}
-
+#endif
 
