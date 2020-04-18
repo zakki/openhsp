@@ -138,6 +138,9 @@
     <ClCompile Include="..\texmes.cpp">
       <Filter>ソース ファイル\core</Filter>
     </ClCompile>
+    <ClCompile Include="..\win32\fontsystem.cpp">
+      <Filter>ソース ファイル\win</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="dxsnd.h">
@@ -274,6 +277,9 @@
     </ClInclude>
     <ClInclude Include="..\texmes.h">
       <Filter>ヘッダー ファイル\core</Filter>
+    </ClInclude>
+    <ClInclude Include="..\win32\fontsystem.h">
+      <Filter>ヘッダー ファイル\win</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

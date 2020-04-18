@@ -72,6 +72,7 @@
 #include "../hgio.h"
 
 #define USE_STAR_FIELD
+#define USE_TEXMES
 
 /*-------------------------------------------------------------------------------*/
 
@@ -270,10 +271,13 @@ void DeleteTexInf( TEXINF *t )
 	//
 	if ( t->mode == TEXMODE_NONE ) return;
 	glDeleteTextures( 1, (GLuint *)&t->texid );
+
+#ifndef NO_TEXMES
 	if ( t->text ) {
 		free( t->text );		// 拡張されたネーム用バッファがあれば解放する
 		t->text = NULL;
 	}
+#endif
 
 	t->mode = TEXMODE_NONE;
 }
@@ -382,9 +386,12 @@ static int SetTex( int sel, short mode, short opt, short sx, short sy, short wid
 	t->ratex = 1.0f / (float)sx;
 	t->ratey = 1.0f / (float)sy;
 	t->texid = (int)texid;
+
+#ifndef NO_TEXMES
 	t->hash = 0;
 	t->life = TEXMES_CACHE_DEFAULT;
 	t->text = NULL;
+#endif
 	return myid;
 }
 
@@ -555,6 +562,8 @@ int UpdateTexStar(int texid, int mode)
 #endif
 }
 
+
+#ifndef USE_TEXMES
 
 /*--------------------------------------------------------------------------------*/
 
@@ -933,3 +942,7 @@ int GetCacheMesTextureID( char *msg, int font_size, int font_style )
 
 	return -1;
 }
+
+#endif
+
+

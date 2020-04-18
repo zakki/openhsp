@@ -1,13 +1,19 @@
 
 #include <stdio.h>
 #include <string.h>
-#include "gamehsp.h"
 
-#include "../../hsp3/hsp3config.h"
-#include "../supio.h"
-#include "../sysreq.h"
+#ifndef HSPDISHGP
+#include <stdio.h>
+#include <stdlib.h>
+#include <math.h>
+#endif
 
-int hgio_fontsystem_exec(char* msg, unsigned char* buffer, int pitch, int* out_sx, int* out_sy);
+#include "../hsp3/hsp3config.h"
+
+#include "supio.h"
+#include "sysreq.h"
+#include "texmes.h"
+#include "hgio.h"
 
 /*------------------------------------------------------------*/
 /*
@@ -15,24 +21,35 @@ int hgio_fontsystem_exec(char* msg, unsigned char* buffer, int pitch, int* out_s
 */
 /*------------------------------------------------------------*/
 
-gptexmes::gptexmes()
+texmes::texmes()
 {
 	// コンストラクタ
 	flag = 0;
 	text = NULL;
+#ifdef HSPDISHGP
 	_texture = NULL;
+#else
+	_texture = -1;
+#endif
 }
 
-gptexmes::~gptexmes()
+texmes::~texmes()
 {
 }
 
-void gptexmes::clear(void)
+void texmes::clear(void)
 {
+#ifdef HSPDISHGP
 	if (_texture) {
 		delete _texture;
 		_texture = NULL;
 	}
+#else
+	if (_texture>=0) {
+		hgio_fontsystem_delete(_texture);
+		_texture = -1;
+	}
+#endif
 	if (text) {
 		free(text);		// 拡張されたネーム用バッファがあれば解放する
 		text = NULL;
@@ -41,7 +58,7 @@ void gptexmes::clear(void)
 }
 
 
-void gptexmes::reset(int width, int height, int p_texsx, int p_texsy, void *data)
+void texmes::reset(int width, int height, int p_texsx, int p_texsy, void *data)
 {
 	clear();
 
@@ -51,12 +68,17 @@ void gptexmes::reset(int width, int height, int p_texsx, int p_texsy, void *data
 	texsx = p_texsx;
 	texsy = p_texsy;
 
+#ifdef HSPDISHGP
 	Texture* texture = Texture::create(Texture::Format::RGBA, texsx, texsy, NULL, false, Texture::TEXTURE_2D);
 	texture->setData((const unsigned char*)data);
 
 	// Bind the texture to the material as a sampler
 	_texture = Texture::Sampler::create(texture); // +ref texture
 	_texture->setFilterMode(Texture::Filter::NEAREST, Texture::Filter::NEAREST);
+#else
+	_texture = hgio_fontsystem_setup( texsx, texsy, data);
+
+#endif
 
 	ratex = ( 1.0f / (float)texsx) * (sx-1);
 	ratey = ( 1.0f / (float)texsy) * (sy-1);
@@ -68,7 +90,7 @@ void gptexmes::reset(int width, int height, int p_texsx, int p_texsy, void *data
 	buf[0] = 0;
 }
 
-int gptexmes::registText(char* msg)
+int texmes::registText(char* msg)
 {
 	//		文字列を設定する
 	//
@@ -91,12 +113,26 @@ int gptexmes::registText(char* msg)
 */
 /*------------------------------------------------------------*/
 
-void gamehsp::texmesInit(void)
+texmesManager::texmesManager()
 {
-	_maxtexmes = TEXMESINF_MAX;
-	if (_maxtexmes <= GetSysReq(SYSREQ_MESCACHE_MAX)) _maxtexmes = GetSysReq(SYSREQ_MESCACHE_MAX)-1;
+	// コンストラクタ
+	_texmes = NULL;
+	_texmesbuf = NULL;
+}
 
-	_gptexmes = new gptexmes[_maxtexmes];
+texmesManager::~texmesManager()
+{
+	texmesTerm();
+}
+
+void texmesManager::texmesInit(int maxmes)
+{
+	texmesTerm();
+
+	_maxtexmes = maxmes;
+	if (_maxtexmes< TEXMESINF_MAX) _maxtexmes = TEXMESINF_MAX;
+
+	_texmes = new texmes[_maxtexmes];
 
 	_fontsize = 0;
 	_fontstyle = 0;
@@ -104,52 +140,24 @@ void gamehsp::texmesInit(void)
 
 	int i;
 	for (i = 0; i < _maxtexmes; i++) {
-		_gptexmes[i].entry = i;
+		_texmes[i].entry = i;
 	}
 
 	_texmesbuf_max = 0;
 	texmesBuffer(TEXMES_BUFFER_MAX);
 
-	int sx = 32;
-	int sy = 32;
-
-	Texture* texture;
-	texture = Texture::create(Texture::Format::RGBA, sx, sy, NULL, false, Texture::TEXTURE_2D);
-	//texture = Texture::create(id, sx, sy, Texture::Format::RGBA);
-	//texture = Texture::create("chr.png");
-	if (texture == NULL) {
-		Alertf("ERR");
-		return;
-	}
-	//texture->setData( (const unsigned char *)data );
-	_fontMaterial = makeMaterialTex2D(texture, GPOBJ_MATOPT_NOMIPMAP);
-	if (_fontMaterial == NULL) {
-		Alertf("ERR");
-		return;
-	}
-	SAFE_RELEASE(texture);
-
-	VertexFormat::Element elements[] =
-	{
-		VertexFormat::Element(VertexFormat::POSITION, 3),
-		VertexFormat::Element(VertexFormat::TEXCOORD0, 2),
-		VertexFormat::Element(VertexFormat::COLOR, 4)
-	};
-
-	unsigned int elementCount = sizeof(elements) / sizeof(VertexFormat::Element);
-	_meshBatch_font = MeshBatch::create(VertexFormat(elements, elementCount), Mesh::TRIANGLE_STRIP, _fontMaterial, true, 16, 256);
 }
 
 
-void gamehsp::texmesTerm(void)
+void texmesManager::texmesTerm(void)
 {
-	if (_gptexmes) {
+	if (_texmes) {
 		int i;
 		for (i = 0; i < _maxtexmes; i++) {
-			_gptexmes[i].clear();
+			_texmes[i].clear();
 		}
-		delete[] _gptexmes;
-		_gptexmes = NULL;
+		delete[] _texmes;
+		_texmes = NULL;
 	}
 	if (_texmesbuf) {
 		free(_texmesbuf);
@@ -159,7 +167,7 @@ void gamehsp::texmesTerm(void)
 }
 
 
-unsigned char*gamehsp::texmesBuffer(int size)
+unsigned char*texmesManager::texmesBuffer(int size)
 {
 	//	空のテクスチャバッファを準備する
 	//
@@ -173,31 +181,29 @@ unsigned char*gamehsp::texmesBuffer(int size)
 }
 
 
-gptexmes* gamehsp::addTexmes(void)
+texmes* texmesManager::addTexmes(void)
 {
-	//	空のgptexmesを生成する
+	//	空のtexmesを生成する
 	//
 	int i;
 	for (i = 0; i < _maxtexmes; i++) {
-		if (_gptexmes[i].flag == 0) return &_gptexmes[i];
+		if (_texmes[i].flag == 0) return &_texmes[i];
 	}
-	if (_meshBatch_font) {
-		delete _meshBatch_font;
-		_meshBatch_font = NULL;
-	}
-
 	return NULL;
 }
 
 
-void gamehsp::texmesProc(void)
+void texmesManager::texmesProc(void)
 {
 	//		フレーム単位でのキャッシュリフレッシュ
 	//		(キャッシュサポート時は、毎フレームごとに呼び出すこと)
 	//
 	int i;
-	gptexmes* t;
-	t = _gptexmes;
+	texmes* t;
+
+	if (_texmes == NULL) return;
+
+	t = _texmes;
 	for (i = 0; i < _maxtexmes; i++) {
 		if (t->flag) {							// メッセージテクスチャだった時
 			if (t->life > 0) {
@@ -212,14 +218,14 @@ void gamehsp::texmesProc(void)
 }
 
 
-int gamehsp::texmesGetCache(char* msg, short mycache)
+int texmesManager::texmesGetCache(char* msg, short mycache)
 {
 	//		キャッシュ済みの文字列があればidを返す
 	//		(存在しない場合は-1)
 	//
 	int i;
-	gptexmes* t;
-	t = _gptexmes;
+	texmes* t;
+	t = _texmes;
 	for (i = 0; i < _maxtexmes; i++) {
 		if (t->flag) {							// 使用中だった時
 			if (t->hash == mycache) {			// まずハッシュを比べる
@@ -245,16 +251,16 @@ int gamehsp::texmesGetCache(char* msg, short mycache)
 }
 
 
-gptexmes* gamehsp::texmesGet(int id)
+texmes* texmesManager::texmesGet(int id)
 {
 	if ((id<0)||(id>=_maxtexmes)) {
 		return NULL;
 	}
-	return &_gptexmes[id];
+	return &_texmes[id];
 }
 
 
-int gamehsp::str2hash(char* msg, int* out_len)
+int texmesManager::str2hash(char* msg, int* out_len)
 {
 	//		文字列の簡易ハッシュを得る
 	//		同時にout_lenに文字列長を返す
@@ -281,7 +287,7 @@ int gamehsp::str2hash(char* msg, int* out_len)
 }
 
 
-int gamehsp::Get2N(int val)
+int texmesManager::Get2N(int val)
 {
 	int res = 1;
 	while (1) {
@@ -292,7 +298,7 @@ int gamehsp::Get2N(int val)
 }
 
 
-int gamehsp::texmesRegist(char* msg)
+int texmesManager::texmesRegist(char* msg)
 {
 	//		キャッシュ済みのテクスチャIDを返す(texmesIDを返す)
 	//		(作成されていないメッセージテクスチャは自動的に作成する)
@@ -303,7 +309,7 @@ int gamehsp::texmesRegist(char* msg)
 	int texid;
 	unsigned char* pImg;
 	int tsx, tsy, sx, sy;
-	gptexmes* tex;
+	texmes* tex;
 
 	mycache = str2hash(msg, &mylen);			// キャッシュを取得
 	if (mylen <= 0) return -1;
@@ -335,74 +341,7 @@ int gamehsp::texmesRegist(char* msg)
 }
 
 
-
-void gamehsp::texmesDraw(int x, int y, char* msg, Vector4* p_color)
-{
-	//		フォントメッセージを表示する
-	//
-	int id;
-	gptexmes* tex;
-	float psx, psy;
-	float x1, y1, x2, y2, sx, sy;
-	float tx0, ty0, tx1, ty1;
-
-	float a_val = 1.0f;
-
-	id = texmesRegist(msg);
-	if (id < 0) return;
-	tex = texmesGet(id);
-	if (tex==NULL) return;
-
-	//		meshのTextureを差し替える
-	Uniform* samplerUniform = NULL;
-	for (unsigned int i = 0, count = _spriteEffect->getUniformCount(); i < count; ++i)
-	{
-		Uniform* uniform = _spriteEffect->getUniform(i);
-		if (uniform && uniform->getType() == GL_SAMPLER_2D)
-		{
-			samplerUniform = uniform;
-			break;
-		}
-	}
-
-	_fontMaterial->getParameter(samplerUniform->getName())->setValue(tex->_texture);
-
-	//		描画する
-	tx0 = 0.0f;
-	ty0 = 0.0f;
-	tx1 = tex->ratex;
-	ty1 = tex->ratey;
-
-	x1 = (float)x;
-	y1 = (float)y;
-	x2 = x1 + tex->sx;
-	y2 = y1 + tex->sy;
-
-	float* v = _bufPolyTex;
-
-	*v++ = x1; *v++ = y2; v++;
-	*v++ = tx0; *v++ = ty1;
-	*v++ = p_color->x; *v++ = p_color->y; *v++ = p_color->z; *v++ = p_color->w;
-	*v++ = x1; *v++ = y1; v++;
-	*v++ = tx0; *v++ = ty0;
-	*v++ = p_color->x; *v++ = p_color->y; *v++ = p_color->z; *v++ = p_color->w;
-	*v++ = x2; *v++ = y2; v++;
-	*v++ = tx1; *v++ = ty1;
-	*v++ = p_color->x; *v++ = p_color->y; *v++ = p_color->z; *v++ = p_color->w;
-	*v++ = x2; *v++ = y1; v++;
-	*v++ = tx1; *v++ = ty0;
-	*v++ = p_color->x; *v++ = p_color->y; *v++ = p_color->z; *v++ = p_color->w;
-
-	static unsigned short indices[] = { 0, 1, 2, 3 };
-
-	_meshBatch_font->start();
-	_meshBatch_font->add(_bufPolyTex, 4, indices, 4);
-	_meshBatch_font->finish();
-	_meshBatch_font->draw();
-}
-
-
-unsigned char* gamehsp::texmesGetFont(char* msg, int* out_sx, int* out_sy, int *out_tsx, int *out_tsy)
+unsigned char* texmesManager::texmesGetFont(char* msg, int* out_sx, int* out_sy, int *out_tsx, int *out_tsy)
 {
 	int sx, sy, size;
 	int pitch,tsx,tsy;
@@ -432,34 +371,19 @@ unsigned char* gamehsp::texmesGetFont(char* msg, int* out_sx, int* out_sy, int *
 }
 
 
-void gamehsp::setFont(char* fontname, int size, int style)
+void texmesManager::setFont(char* fontname, int size, int style)
 {
 	// フォント設定
+	//
+	if ((_fontsize == size)&&(_fontstyle == style)) {
+		if ( strcmp(_fontname.c_str(), fontname )==0 ) {
+			return;
+		}
+	}
 	_fontsize = size;
 	_fontstyle = style;
 	_fontname = fontname;
-}
-
-
-int gamehsp::drawFont(int x, int y, char* text, Vector4* p_color, int* out_ysize)
-{
-	// フォントで描画
-	int xsize, ysize;
-
-#ifdef USE_GPBFONT
-	if (mFont == NULL) return 0;
-	mFont->start();
-	xsize = mFont->drawText(text, x, y, *p_color, size);
-	mFont->finish();
-	ysize = size;
-#else
-	texmesDraw(x, y, text, p_color);
-	xsize = _area_px;
-	ysize = _area_py;
-#endif
-
-	* out_ysize = ysize;
-	return xsize;
+	hgio_fontsystem_init(fontname, size, style);
 }
 
 

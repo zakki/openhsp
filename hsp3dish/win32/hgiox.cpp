@@ -19,6 +19,8 @@
 #define USE_TEXMES
 #ifdef USE_TEXMES
 #include "../texmes.h"
+#include "fontsystem.h"
+void hgio_fontsystem_win32_init(HWND wnd);
 #endif
 
 #define RELEASE(x) 	if(x){x->Release();x=NULL;}
@@ -580,271 +582,6 @@ static void InitTexture(void)
 
 /*------------------------------------------------------------*/
 /*
-		Windows Font Service
-*/
-/*------------------------------------------------------------*/
-
-#ifdef HSPWIN
-
-static		HFONT htexfont = NULL;	// TEXTURE用のフォント
-static		HFONT htexfont_old;		// TEXTURE用のフォント(保存用)
-static		HDC htexdc;				// Device Context
-static		int drawsx, drawsy;		// 描画サイズ
-static		int fontsystem_sx;		// 横のサイズ
-static		int fontsystem_sy;		// 縦のサイズ
-static		int fontsystem_space;	// spaceの横サイズ
-static		int fontsystem_zspace;	// 全角spaceの横サイズ
-static		TEXTMETRIC tm;
-static		bool tbl_init = false;	// AlphaTbl初期化フラグ
-static		BYTE lpFont[0x10000];	// フォント取得用のワーク
-static		DWORD AlphaTbl[34];
-static		char *def_zspace = "　";
-static		int fontsystem_size;
-
-long hgio_fontsystem_getcode(unsigned char* pt)
-{
-	//		文字コードを返す(SJIS)
-	unsigned char a1 = *pt;
-
-	//		全角チェック
-	if (a1 >= 129) {					// 全角文字チェック
-		if ((a1 <= 159) || (a1 >= 224)) {
-			long i = (long)a1;
-			return (i << 8) + (long)pt[1];
-		}
-	}
-	return (long)a1;
-}
-
-void hgio_fontsystem_term(void)
-{
-	//		フォントレンダリング解放
-	//
-	if (htexfont == NULL) return;
-
-	SelectObject(htexdc, htexfont_old);
-	DeleteObject(htexfont);
-	ReleaseDC(master_wnd, htexdc);
-	htexfont = NULL;
-}
-
-
-void hgio_fontsystem_init(char* fontname, int size, int style)
-{
-	//		フォントレンダリング初期化
-	//
-	hgio_fontsystem_term();
-
-	htexdc = GetDC(master_wnd);
-	htexfont = NULL;
-
-	if (size >= 0) {
-		int fw;
-		fw = FW_REGULAR;
-		if (style & 1) {
-			fw = FW_BOLD;
-		}
-		htexfont = CreateFont(
-			size,						// フォント高さ
-			0,							// 文字幅
-			0,							// テキストの角度	
-			0,							// ベースラインとｘ軸との角度
-			fw,							// フォントの重さ（太さ）
-			((style & 2) != 0),			// イタリック体
-			((style & 4) != 0),			// アンダーライン
-			((style & 8) != 0),			// 打ち消し線
-			DEFAULT_CHARSET,			// 文字セット
-			OUT_TT_PRECIS,				// 出力精度
-			CLIP_DEFAULT_PRECIS,		// クリッピング精度
-			PROOF_QUALITY,				// 出力品質
-			DEFAULT_PITCH | FF_MODERN,	// ピッチとファミリー
-			fontname					// 書体名
-		);
-		fontsystem_size = size;
-	}
-
-	if (htexfont == NULL) return;
-
-	htexfont_old = (HFONT)SelectObject(htexdc, htexfont);
-	GetTextMetrics(htexdc, &tm);
-	fontsystem_sx = 0;
-	fontsystem_sy = tm.tmHeight;
-
-	long code = 0x20;
-	GetCharWidth(htexdc, code, code, &fontsystem_space);
-	code = hgio_fontsystem_getcode((unsigned char*)def_zspace);
-	GetCharWidth(htexdc, code, code, &fontsystem_zspace);
-
-	if (tbl_init == false) {
-		for (int i = 0; i < 32; i++) {
-			DWORD aval = i;
-			if (aval > 15) aval = 15;
-			AlphaTbl[i] = (aval << 28) + 0xffffff;
-		}
-		AlphaTbl[0] = 0;
-		tbl_init = true;
-	}
-}
-
-
-void hgio_fontsystem_delete(int id)
-{
-	DeleteTex(id);
-}
-
-
-int hgio_fontsystem_setup(int sx, int sy, void *buffer)
-{
-	int id = RegistTexEmpty(sx,sy,1);
-	if (UpdateTex32(id, (char*)buffer, 0) < 0) return -1;
-	return id;
-}
-
-
-int hgio_fontsystem_execsub(long code, unsigned char* buffer, int pitch, int offsetx)
-{
-	//		フォントバッファ取得
-	MAT2 mat;
-	DWORD Size;
-	GLYPHMETRICS gm;
-	GLYPHMETRICS* pgm;
-	int px, ybase;
-	int width, height;
-//	int tmpy;
-
-	if (buffer == NULL) {
-		GetCharWidth(htexdc, code, code, &width);
-		return width;
-	}
-	if (fontsystem_sx <= 0) return 0;
-
-	pgm = &gm;
-	ZeroMemory(pgm, sizeof(GLYPHMETRICS));
-
-	long m11 = (long)(1.0 * 65536.0);	long m12 = (long)(0.0 * 65536.0);
-	long m21 = (long)(0.0 * 65536.0);	long m22 = (long)(1.0 * 65536.0);
-	mat.eM11 = *((FIXED*)&m11);	mat.eM12 = *((FIXED*)&m12);
-	mat.eM21 = *((FIXED*)&m21);	mat.eM22 = *((FIXED*)&m22);
-
-
-	if (m_tstyle & 16) {
-		// バッファサイズ受信
-		Size = GetGlyphOutline(htexdc, code, GGO_GRAY4_BITMAP, pgm, 0, NULL, &mat);
-		// バッファ取得
-		GetGlyphOutline(htexdc, code, GGO_GRAY4_BITMAP, pgm, Size, lpFont, &mat);
-	}
-	else {
-		// バッファサイズ受信
-		Size = GetGlyphOutline(htexdc, code, GGO_BITMAP, pgm, 0, NULL, &mat);
-		// バッファ取得
-		GetGlyphOutline(htexdc, code, GGO_BITMAP, pgm, Size, lpFont, &mat);
-	}
-
-	// フォントピッチ
-	DWORD fontPitch = (Size / gm.gmBlackBoxY) & ~0x03;
-
-	// サイズ取得
-	width = (int)gm.gmBlackBoxX;
-	height = (int)gm.gmBlackBoxY;
-	//Alertf("%d[%d,%d] +%d", code,width,height,pitch);
-
-	// 描画位置を進める量
-	px = gm.gmCellIncX;
-	ybase = tm.tmAscent - gm.gmptGlyphOrigin.y;
-
-	LPDWORD p1 = (LPDWORD)buffer;
-	LPBYTE p2 = lpFont;
-
-	// 転送先のサーフェイスの始点
-	p1 += (offsetx + gm.gmptGlyphOrigin.x) + (ybase * pitch);
-
-	if (m_tstyle & 16) {
-		if (m_tstyle & 2) {
-			for (int y = 0; y < height; y++)
-			{
-				for (int x = 0; x < width; x++)
-				{
-					p1[x] |= AlphaTbl[p2[x]];
-				}
-				p1 += pitch;
-				p2 += fontPitch;
-			}
-		}
-		else {
-			for (int y = 0; y < height; y++)
-			{
-				for (int x = 0; x < width; x++)
-				{
-					p1[x] = AlphaTbl[p2[x]];
-				}
-				p1 += pitch;
-				p2 += fontPitch;
-			}
-		}
-		return px;
-	}
-
-	for (int y = 0; y < height; y++)
-	{
-		LPBYTE pp;
-		int bmask;
-		bmask = 0x80; pp = p2;
-		for (int x = 0; x < width; x++)
-		{
-			if (bmask == 0) { bmask = 0x80; pp++; }
-			if (*pp & bmask) { p1[x] = 0xffffffff; }
-			bmask >>= 1;
-		}
-		p1 += pitch;
-		p2 += fontPitch;
-	}
-
-	return px;
-}
-
-
-int hgio_fontsystem_exec(char* msg, unsigned char* buffer, int pitch, int* out_sx, int* out_sy)
-{
-	//		msgの文字列をテクスチャバッファにレンダリングする
-	//		(bufferがNULLの場合はサイズだけを取得する)
-	//
-	if (htexfont == NULL) return -1;
-
-	int x = 0;
-	long code;
-	unsigned char *p = (unsigned char*)msg;
-	unsigned char a1;
-
-	while (1) {
-		a1 = *p++;
-		if (a1 == 0) break;
-		if (a1 < 32) continue;
-
-		//		全角チェック
-		code = (long)a1;
-		if (a1 >= 129) {					// 全角文字チェック
-			if ((a1 <= 159) || (a1 >= 224)) {
-				long i = (long)a1;
-				code = (i << 8) + (long)*p;
-				p++;
-			}
-		}
-
-		x += hgio_fontsystem_execsub(code, buffer, pitch, x);
-	}
-
-	fontsystem_sx = x;
-
-	*out_sx = fontsystem_sx;
-	*out_sy = fontsystem_sy;
-	return 0;
-}
-
-#endif
-
-
-/*------------------------------------------------------------*/
-/*
 		interface
 */
 /*------------------------------------------------------------*/
@@ -867,7 +604,9 @@ void hgio_init( int mode, int sx, int sy, void *hwnd )
 	drawflag = 0;
 	nDestWidth = sx;
 	nDestHeight = sy;
-#ifndef USE_TEXMES
+#ifdef USE_TEXMES
+	hgio_fontsystem_win32_init(master_wnd);
+#else
 	mestexid = -1;
 	mestexflag = 0;
 #endif
@@ -2264,7 +2003,7 @@ int hgio_mes(BMSCR* bm, char* str1)
 			p++; st = p; spcur = 0;		// 終端を戻す
 			continue;
 		}
-		/*
+#ifdef HSPUTF8
 				if (a1&128) {					// UTF8チェック
 					while(1) {
 						unsigned char a2;
@@ -2276,7 +2015,7 @@ int hgio_mes(BMSCR* bm, char* str1)
 				} else {
 					p++; spcur++;
 				}
-		*/
+#endif
 		p++; spcur++;
 	}
 
@@ -2337,4 +2076,19 @@ int hgio_font(char *fontname, int size, int style)
 	return 0;
 }
 
+
+#ifdef USE_TEXMES
+void hgio_fontsystem_delete(int id)
+{
+	DeleteTex(id);
+}
+
+
+int hgio_fontsystem_setup(int sx, int sy, void *buffer)
+{
+	int id = RegistTexEmpty(sx, sy, 1);
+	if (UpdateTex32(id, (char*)buffer, 0) < 0) return -1;
+	return id;
+}
+#endif
 

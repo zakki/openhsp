@@ -289,6 +289,7 @@
     <ClCompile Include="..\sysreq.cpp" />
     <ClCompile Include="..\texmes.cpp" />
     <ClCompile Include="..\win32\dxsnd.cpp" />
+    <ClCompile Include="..\win32\fontsystem.cpp" />
     <ClCompile Include="..\win32\mmman.cpp" />
     <ClCompile Include="..\win32\webtask_win.cpp" />
     <ClCompile Include="gamehsp.cpp" />
@@ -332,6 +333,7 @@
     <ClInclude Include="..\sysreq.h" />
     <ClInclude Include="..\texmes.h" />
     <ClInclude Include="..\webtask.h" />
+    <ClInclude Include="..\win32\fontsystem.h" />
     <ClInclude Include="dxsnd.h" />
     <ClInclude Include="gamehsp.h" />
     <ClInclude Include="gpcam.h" />
