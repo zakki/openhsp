@@ -141,6 +141,9 @@
     <ClCompile Include="..\essprite.cpp">
       <Filter>ソース ファイル\core</Filter>
     </ClCompile>
+    <ClCompile Include="..\texmes.cpp">
+      <Filter>ソース ファイル\core</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\hsp3\dpmread.h">
@@ -261,6 +264,9 @@
       <Filter>ヘッダー ファイル\core</Filter>
     </ClInclude>
     <ClInclude Include="..\essprite.h">
+      <Filter>ヘッダー ファイル\core</Filter>
+    </ClInclude>
+    <ClInclude Include="..\texmes.h">
       <Filter>ヘッダー ファイル\core</Filter>
     </ClInclude>
   </ItemGroup>

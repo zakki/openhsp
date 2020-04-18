@@ -382,6 +382,8 @@ void Bmscr::Cls( int mode )
 		savepos[i] = 0;
 		accel_value[i] = (HSPREAL)0.0;
 	}
+	printoffsetx = 0;
+	printoffsety = 0;
 
 	//		CEL initalize
 	//
@@ -465,7 +467,7 @@ void Bmscr::SetFont( char *fontname, int size, int style )
 
 void Bmscr::SetDefaultFont( void )
 {
-	SetFont( font_curname, font_cursize, font_curstyle );
+	SetFontInternal( font_curname, font_cursize, font_curstyle );
 }
 
 

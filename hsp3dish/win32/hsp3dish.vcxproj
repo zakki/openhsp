@@ -179,6 +179,7 @@
     <ClCompile Include="..\obaq\omkedraw.cpp" />
     <ClCompile Include="..\random.cpp" />
     <ClCompile Include="..\sysreq.cpp" />
+    <ClCompile Include="..\texmes.cpp" />
     <ClCompile Include="dxsnd.cpp" />
     <ClCompile Include="hgiox.cpp" />
     <ClCompile Include="hgtex.cpp" />
@@ -220,6 +221,7 @@
     <ClInclude Include="..\random.h" />
     <ClInclude Include="..\supio.h" />
     <ClInclude Include="..\sysreq.h" />
+    <ClInclude Include="..\texmes.h" />
     <ClInclude Include="..\webtask.h" />
     <ClInclude Include="dxsnd.h" />
     <ClInclude Include="hginc.h" />
