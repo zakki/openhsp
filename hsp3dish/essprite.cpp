@@ -570,7 +570,7 @@ int essprite::drawSub(SPOBJ *sp)
 	getSpriteParentAxis(sp, &xx, &yy, 0);
 
 	if (fl & ESSPFLAG_GRAVITY) {
-		//	‚È‚ñ‚¾‚±‚è‚áEEE
+		//	ãªã‚“ã ã“ã‚Šã‚ƒãƒ»ãƒ»ãƒ»
 		//
 		if (sp->fspy != 0) {
 			sp->py += sp->fspy << 8;

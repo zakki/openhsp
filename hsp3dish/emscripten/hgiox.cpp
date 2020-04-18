@@ -16,7 +16,16 @@
 #include <unistd.h>
 #include "../../hsp3/hsp3config.h"
 #else
+#if defined(HSPNDK) || defined(HSPIOS)
 #include "../hsp3config.h"
+#else
+#include "../../hsp3/hsp3config.h"
+#endif
+#endif
+
+#ifdef HSPWIN
+#define STRICT
+#include <windows.h>
 #endif
 
 #ifdef HSPNDK
@@ -37,14 +46,18 @@
 #include "appengine.h"
 #endif
 
-#if defined(HSPEMSCRIPTEN)
-#define USE_JAVA_FONT
-#define FONT_TEX_SX 512
-#define FONT_TEX_SY 128
-#endif
 
 #if defined(HSPLINUX)
 #include <SDL2/SDL_ttf.h>
+#define TTF_FONTFILE "/ipaexg.ttf"
+#define USE_JAVA_FONT
+#define FONT_TEX_SX 512
+#define FONT_TEX_SY 128
+//#include "font_data.h"
+#endif
+
+#if defined(HSPEMSCRIPTEN)
+#include "SDL/SDL_ttf.h"
 #define TTF_FONTFILE "/ipaexg.ttf"
 #define USE_JAVA_FONT
 #define FONT_TEX_SX 512
@@ -93,6 +106,11 @@ extern SDL_Window *window;
 #include "../supio.h"
 #include "../sysreq.h"
 #include "../hgio.h"
+
+#define USE_TEXMES
+#ifdef USE_TEXMES
+#include "../texmes.h"
+#endif
 
 static		HSPREAL infoval[GINFO_EXINFO_MAX];
 
@@ -167,6 +185,10 @@ static	int  font_sx, font_sy;
 static	int  mes_sx, mes_sy;
 static	int  font_size;
 static	int  font_style;
+
+#ifdef USE_TEXMES
+static		texmesManager tmes;	// テキストメッセージマネージャー
+#endif
 
 static GLfloat _line_colors[8];
 static GLfloat _panelColorsTex[16];
@@ -292,6 +314,12 @@ void hgio_init( int mode, int sx, int sy, void *hwnd )
 	font_sx = 16;
 	font_sy = 16;
 	#endif
+#endif
+
+	//		テキスト表示エリアを初期化
+	//
+#ifdef USE_TEXMES
+	tmes.texmesInit(SYSREQ_MESCACHE_MAX);
 #endif
 
 	//		infovalをリセット
@@ -473,8 +501,10 @@ void hgio_reset( void )
 
 	//フォント描画リセット
 #if defined(HSPNDK) || defined(HSPLINUX) || defined(HSPEMSCRIPTEN)
+#ifndef USE_TEXMES
 #ifdef USE_JAVA_FONT
 	TexProc();
+#endif
 #endif
 #endif
 
@@ -483,6 +513,9 @@ void hgio_reset( void )
 
 void hgio_term( void )
 {
+#ifdef USE_TEXMES
+	tmes.texmesTerm();
+#endif
 	hgio_render_end();
 	TexTerm();
 	GeometryInit();
@@ -494,6 +527,9 @@ void hgio_resume( void )
 	//	画面リソースの再構築
 	//
 
+#ifdef USE_TEXMES
+	tmes.texmesInit(SYSREQ_MESCACHE_MAX);
+#endif
 	//テクスチャ初期化
 	TexInit();
 
@@ -1268,6 +1304,79 @@ void hgio_fcopy( float distx, float disty, short xx, short yy, short srcsx, shor
 }
 
 
+void hgio_fontcopy( float distx, float disty, short xx, short yy, short srcsx, short srcsy, int texid, int color )
+{
+	//		画像コピー(フォント用)
+	//		texid内の(xx,yy)-(xx+srcsx,yy+srcsy)を現在の画面に等倍でコピー
+	//		描画モードは3,100%、転送先はdistx,disty
+	//
+	TEXINF *tex = GetTex( texid );
+	if ( tex->mode == TEXMODE_NONE ) return;
+
+	GLfloat colors[16];
+    GLfloat *flp;
+    GLfloat x1,y1,x2,y2;
+    float ratex,ratey;
+
+    flp = vertf2D;
+    x1 = (GLfloat)distx;
+    y1 = (GLfloat)-disty;
+    x2 = x1+srcsx;
+    y2 = y1-srcsy;
+
+    *flp++ = x1;
+    *flp++ = y1;
+    *flp++ = x1;
+    *flp++ = y2;
+    *flp++ = x2;
+    *flp++ = y1;
+    *flp++ = x2;
+    *flp++ = y2;
+
+    //ratex = 1.0f / image.width;
+    //ratey = 1.0f / image.height;
+    ratex = tex->ratex;
+    ratey = tex->ratey;
+
+    flp = uvf2D;
+	if ( _uvfix ) {
+	    x1 = (((GLfloat)xx) + 0.5f) * ratex;
+	    y1 = (((GLfloat)yy) + 0.5f) * ratey;
+	    x2 = ((GLfloat)(xx+srcsx) - 0.5f) * ratex;
+	    y2 = ((GLfloat)(yy+srcsy) - 0.5f) * ratey;
+	} else {
+	    x1 = ((GLfloat)xx) * ratex;
+	    y1 = ((GLfloat)yy) * ratey;
+	    x2 = ((GLfloat)(xx+srcsx)) * ratex;
+	    y2 = ((GLfloat)(yy+srcsy)) * ratey;
+	}
+
+    *flp++ = x1;
+    *flp++ = y1;
+    *flp++ = x1;
+    *flp++ = y2;
+    *flp++ = x2;
+    *flp++ = y1;
+    *flp++ = x2;
+    *flp++ = y2;
+
+	ChangeTex( tex->texid );
+    glVertexPointer( 2, GL_FLOAT,0,vertf2D );
+    glTexCoordPointer( 2,GL_FLOAT,0,uvf2D );
+
+    //ブレンドモード設定
+	setBlendMode( 3 );
+	setColorTex_color(1.0f);
+	glEnableClientState(GL_COLOR_ARRAY);
+	glColorPointer(4,GL_FLOAT,0,_panelColorsTex);
+
+    glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_MAG_FILTER,_filter); 
+    glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_MIN_FILTER,_filter); 
+
+    glDrawArrays(GL_TRIANGLE_STRIP,0,4);
+}
+
+
 void hgio_copy( BMSCR *bm, short xx, short yy, short srcsx, short srcsy, BMSCR *bmsrc, float s_psx, float s_psy )
 {
 	//		画像コピー
@@ -1344,12 +1453,10 @@ void hgio_copy( BMSCR *bm, short xx, short yy, short srcsx, short srcsy, BMSCR *
     *flp++ = ty1;
 
 	ChangeTex( tex->texid );
-//    glBindTexture( GL_TEXTURE_2D, tex->texid );
     glVertexPointer( 2, GL_FLOAT,0,vertf2D );
     glTexCoordPointer( 2,GL_FLOAT,0,uvf2D );
 
 	hgio_setTexBlendMode( bm->gmode, bm->gfrate );
-//    glDisableClientState(GL_COLOR_ARRAY);
     glDrawArrays(GL_TRIANGLE_STRIP,0,4);
 }
 
@@ -1871,6 +1978,108 @@ int hgio_getmousebtn( void )
 
 /*-------------------------------------------------------------------------------*/
 
+void hgio_test(void)
+{
+    // 描画する
+    hgio_render_start();
+    //hgio_clear();
+    
+	//hgio_setColor( 0xff00ff );
+	hgio_boxfill( 100.1,100.2,200.5,50.2 );
+	//hgio_boxfill( 100,200,100,10 );
+	//hgio_setColor( 0xffffff );
+	//hgio_line( 0,0,400,300 );
+	//hgio_setColor( 0xffff00 );
+	//hgio_circleFill( 640,400,200,200 );
+
+	//hgio_putTexFont( 0,0, (char *)"This is Android Test." );
+	//hgio_fcopy( 0,0,  0, 0, 256, 128, font_texid );
+
+    hgio_render_end();
+}
+
+
+//---------TexMesあり---------------------------------------------------------
+
+#ifdef USE_TEXMES
+
+static void hgio_messub(BMSCR* bm, char* msg)
+{
+	//		mes,print 文字表示
+	//
+	int xsize, ysize;
+	if ((bm->type != HSPWND_TYPE_MAIN) && (bm->type != HSPWND_TYPE_OFFSCREEN)) return;
+	if (drawflag == 0) hgio_render_start();
+
+	// print per line
+	if (bm->cy >= bm->sy) return;
+
+	int id;
+	texmes* tex;
+	id = tmes.texmesRegist(msg);
+	if (id < 0) return;
+	tex = tmes.texmesGet(id);
+	if (tex == NULL) return;
+
+	xsize = tex->sx;
+	ysize = tex->sy;
+
+	if (bm->printoffsetx > 0) {			// センタリングを行う(X)
+		int offset = (bm->printoffsetx - xsize) / 2;
+		if (offset > 0) {
+			bm->cx += offset;
+		}
+		bm->printoffsetx = 0;
+	}
+	if (bm->printoffsety > 0) {			// センタリングを行う(Y)
+		int offset = (bm->printoffsety - ysize) / 2;
+		if (offset > 0) {
+			bm->cy += offset;
+		}
+		bm->printoffsety = 0;
+	}
+
+	if (tex->_texture>=0) {
+		hgio_fontcopy( bm->cx, bm->cy, 0, 0, xsize, ysize, tex->_texture, bm->color );
+	}
+
+	//xsize = game->drawFont(bm->cx, bm->cy, str1, (gameplay::Vector4*)bm->colorvalue, &ysize);
+	if (xsize > bm->printsizex) bm->printsizex = xsize;
+	bm->printsizey += ysize;
+	bm->cy += ysize;
+}
+
+int hgio_font(char *fontname, int size, int style)
+{
+	//		文字フォント指定
+	//
+	tmes.setFont(fontname, size, style);
+	return 0;
+}
+
+#else
+
+//---------TexMesなし---------------------------------------------------------
+
+int hgio_font( char *fontname, int size, int style )
+{
+#ifdef HSPLINUX
+	#ifdef USE_JAVA_FONT
+	if ( font_size != size ) {
+		TexFontInit( fontname, size );
+	}
+	#endif
+#endif
+
+	font_size = size;
+	font_style = style;
+#ifdef HSPIOS
+    gb_font( size, style, fontname );
+#endif
+
+	return 0;
+}
+
 #if defined(HSPNDK) || defined(HSPLINUX) || defined(HSPEMSCRIPTEN)
 
 void hgio_putTexFont( int x, int y, char *msg, int color )
@@ -1914,126 +2123,98 @@ void hgio_putTexFont( int x, int y, char *msg, int color )
 #endif
 
 
-void hgio_test(void)
-{
-    // 描画する
-    hgio_render_start();
-    //hgio_clear();
-    
-	//hgio_setColor( 0xff00ff );
-	hgio_boxfill( 100.1,100.2,200.5,50.2 );
-	//hgio_boxfill( 100,200,100,10 );
-	//hgio_setColor( 0xffffff );
-	//hgio_line( 0,0,400,300 );
-	//hgio_setColor( 0xffff00 );
-	//hgio_circleFill( 640,400,200,200 );
-
-	//hgio_putTexFont( 0,0, (char *)"This is Android Test." );
-	//hgio_fcopy( 0,0,  0, 0, 256, 128, font_texid );
-
-    hgio_render_end();
-}
-
-
-int hgio_font( char *fontname, int size, int style )
-{
-#ifdef HSPLINUX
-	#ifdef USE_JAVA_FONT
-	if ( font_size != size ) {
-		TexFontInit( fontname, size );
-	}
-	#endif
-#endif
-
-	font_size = size;
-	font_style = style;
-#ifdef HSPIOS
-    gb_font( size, style, fontname );
-#endif
-
-	return 0;
-}
-
-
 static void hgio_messub( BMSCR *bm, char *str1 )
 {
 	// print per line
+#if defined(HSPNDK) || defined(HSPLINUX) || defined(HSPEMSCRIPTEN)
 	if ( bm->cy >= bm->sy ) return;
 	hgio_putTexFont( bm->cx, bm->cy, str1, bm->color );
 	if ( mes_sx > bm->printsizex ) bm->printsizex = mes_sx;
 	bm->printsizey += mes_sy;
 	bm->cy += mes_sy;
+#endif
+
+#ifdef HSPIOS
+    gb_mes( bm, msg );
+#endif
 }
 
+#endif
 
-int hgio_mes( BMSCR *bm, char *str1 )
+int hgio_mes(BMSCR* bm, char* str1)
 {
-#if defined(HSPNDK) || defined(HSPLINUX) || defined(HSPEMSCRIPTEN)
-
 	int spcur;
 	int org_cy;
-	unsigned char *p;
-	unsigned char *st;
+	unsigned char* p;
+	unsigned char* st;
 	unsigned char a1;
-	unsigned char a2;
 	unsigned char bak_a1;
 
 	org_cy = bm->cy;
 	bm->printsizex = 0;
 	bm->printsizey = 0;
 
-	p = (unsigned char *)str1;
+	p = (unsigned char*)str1;
 	st = p;
 	spcur = 0;
 
-	while(1) {
+	while (1) {
 		a1 = *p;
-		if ( a1 == 0 ) break;
-		if ( a1 == 13 ) {
+		if (a1 == 0) break;
+		if (a1 == 13) {
 			bak_a1 = a1; *p = 0;		// 終端を仮設定
-			hgio_messub( bm, (char *)st );
+			hgio_messub(bm, (char*)st);
 			*p = bak_a1;
 			p++; st = p; spcur = 0;		// 終端を戻す
 			a1 = *p;
-			if ( a1 == 10 ) p++;
+			if (a1 == 10) p++;
 			continue;
 		}
-		if ( a1 == 10 ) {
+		if (a1 == 10) {
 			bak_a1 = a1; *p = 0;		// 終端を仮設定
-			hgio_messub( bm, (char *)st );
+			hgio_messub(bm, (char*)st);
 			*p = bak_a1;
 			p++; st = p; spcur = 0;		// 終端を戻す
 			continue;
 		}
-/*		
-		if (a1&128) {					// UTF8チェック
-			while(1) {
-				a2 = *p;
-				if ( a2==0 ) break;
-				if ( ( a2 & 0xc0 ) != 0x80 ) break;
-				p++; spcur++;
-			}
-		} else {
-			p++; spcur++;
-		}
-*/
+#ifdef HSPUTF8
+				if (a1&128) {					// UTF8チェック
+					while(1) {
+						unsigned char a2;
+						a2 = *p;
+						if ( a2==0 ) break;
+						if ( ( a2 & 0xc0 ) != 0x80 ) break;
+						p++; spcur++;
+					}
+				} else {
+					p++; spcur++;
+				}
+#endif
 		p++; spcur++;
 	}
 
-	if ( spcur > 0 ) {
-		hgio_messub( bm, (char *)st );
+	if (spcur > 0) {
+		hgio_messub(bm, (char*)st);
 	}
 
 	bm->cy = org_cy;
-
-#endif
-
-#ifdef HSPIOS
-    gb_mes( bm, str1 );
-#endif
 	return 0;
 }
 
+#ifdef USE_TEXMES
+void hgio_fontsystem_delete(int id)
+{
+	DeleteTex(id);
+}
+
+
+int hgio_fontsystem_setup(int sx, int sy, void *buffer)
+{
+	int id = MakeEmptyTexBuffer(sx, sy);
+	if (UpdateTex32(id, (char*)buffer, 0) < 0) return -1;
+	return id;
+}
+#endif
 
 /*-------------------------------------------------------------------------------*/
 
@@ -2092,6 +2273,11 @@ int hgio_render_end( void )
 #ifdef HSPIOS
     gb_render_end();
 #endif
+
+#ifdef USE_TEXMES
+	tmes.texmesProc();
+#endif
+
 
 #if defined(HSPRASPBIAN) || defined(HSPNDK)
 
