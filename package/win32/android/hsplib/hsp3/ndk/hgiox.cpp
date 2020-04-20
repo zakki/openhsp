@@ -107,10 +107,7 @@ extern SDL_Window *window;
 #include "../sysreq.h"
 #include "../hgio.h"
 
-#define USE_TEXMES
-#ifdef USE_TEXMES
 #include "../texmes.h"
-#endif
 
 static		HSPREAL infoval[GINFO_EXINFO_MAX];
 
@@ -186,9 +183,7 @@ static	int  mes_sx, mes_sy;
 static	int  font_size;
 static	int  font_style;
 
-#ifdef USE_TEXMES
 static		texmesManager tmes;	// テキストメッセージマネージャー
-#endif
 
 static GLfloat _line_colors[8];
 static GLfloat _panelColorsTex[16];
@@ -316,11 +311,9 @@ void hgio_init( int mode, int sx, int sy, void *hwnd )
 	#endif
 #endif
 
-	//		テキスト表示エリアを初期化
+	//		テキストを初期化
 	//
-#ifdef USE_TEXMES
 	tmes.texmesInit(SYSREQ_MESCACHE_MAX);
-#endif
 
 	//		infovalをリセット
 	//
@@ -499,23 +492,11 @@ void hgio_reset( void )
 	//テクスチャ設定リセット
 	TexReset();
 
-	//フォント描画リセット
-#if defined(HSPNDK) || defined(HSPLINUX) || defined(HSPEMSCRIPTEN)
-#ifndef USE_TEXMES
-#ifdef USE_JAVA_FONT
-	TexProc();
-#endif
-#endif
-#endif
-
-
 }
 
 void hgio_term( void )
 {
-#ifdef USE_TEXMES
 	tmes.texmesTerm();
-#endif
 	hgio_render_end();
 	TexTerm();
 	GeometryInit();
@@ -526,10 +507,8 @@ void hgio_resume( void )
 {
 	//	画面リソースの再構築
 	//
-
-#ifdef USE_TEXMES
 	tmes.texmesInit(SYSREQ_MESCACHE_MAX);
-#endif
+
 	//テクスチャ初期化
 	TexInit();
 
@@ -1304,19 +1283,15 @@ void hgio_fcopy( float distx, float disty, short xx, short yy, short srcsx, shor
 }
 
 
-void hgio_fontcopy( float distx, float disty, short xx, short yy, short srcsx, short srcsy, int texid, int color )
+void hgio_fontcopy( float distx, float disty, float ratex, float ratey, int srcsx, int srcsy, int texid, int color )
 {
 	//		画像コピー(フォント用)
 	//		texid内の(xx,yy)-(xx+srcsx,yy+srcsy)を現在の画面に等倍でコピー
 	//		描画モードは3,100%、転送先はdistx,disty
 	//
-	TEXINF *tex = GetTex( texid );
-	if ( tex->mode == TEXMODE_NONE ) return;
-
 	GLfloat colors[16];
     GLfloat *flp;
     GLfloat x1,y1,x2,y2;
-    float ratex,ratey;
 
     flp = vertf2D;
     x1 = (GLfloat)distx;
@@ -1333,23 +1308,11 @@ void hgio_fontcopy( float distx, float disty, short xx, short yy, short srcsx, s
     *flp++ = x2;
     *flp++ = y2;
 
-    //ratex = 1.0f / image.width;
-    //ratey = 1.0f / image.height;
-    ratex = tex->ratex;
-    ratey = tex->ratey;
-
     flp = uvf2D;
-	if ( _uvfix ) {
-	    x1 = (((GLfloat)xx) + 0.5f) * ratex;
-	    y1 = (((GLfloat)yy) + 0.5f) * ratey;
-	    x2 = ((GLfloat)(xx+srcsx) - 0.5f) * ratex;
-	    y2 = ((GLfloat)(yy+srcsy) - 0.5f) * ratey;
-	} else {
-	    x1 = ((GLfloat)xx) * ratex;
-	    y1 = ((GLfloat)yy) * ratey;
-	    x2 = ((GLfloat)(xx+srcsx)) * ratex;
-	    y2 = ((GLfloat)(yy+srcsy)) * ratey;
-	}
+	x1 = (GLfloat)0.0f;
+	y1 = (GLfloat)0.0f;
+	x2 = (GLfloat)ratex;
+	y2 = (GLfloat)ratey;
 
     *flp++ = x1;
     *flp++ = y1;
@@ -1360,7 +1323,7 @@ void hgio_fontcopy( float distx, float disty, short xx, short yy, short srcsx, s
     *flp++ = x2;
     *flp++ = y2;
 
-	ChangeTex( tex->texid );
+	ChangeTex( texid );
     glVertexPointer( 2, GL_FLOAT,0,vertf2D );
     glTexCoordPointer( 2,GL_FLOAT,0,uvf2D );
 
@@ -1999,10 +1962,6 @@ void hgio_test(void)
 }
 
 
-//---------TexMesあり---------------------------------------------------------
-
-#ifdef USE_TEXMES
-
 static void hgio_messub(BMSCR* bm, char* msg)
 {
 	//		mes,print 文字表示
@@ -2040,10 +1999,9 @@ static void hgio_messub(BMSCR* bm, char* msg)
 	}
 
 	if (tex->_texture>=0) {
-		hgio_fontcopy( bm->cx, bm->cy, 0, 0, xsize, ysize, tex->_texture, bm->color );
+		hgio_fontcopy( bm->cx, bm->cy, tex->ratex, tex->ratey, xsize, ysize, tex->_texture, bm->color );
 	}
 
-	//xsize = game->drawFont(bm->cx, bm->cy, str1, (gameplay::Vector4*)bm->colorvalue, &ysize);
 	if (xsize > bm->printsizex) bm->printsizex = xsize;
 	bm->printsizey += ysize;
 	bm->cy += ysize;
@@ -2056,90 +2014,6 @@ int hgio_font(char *fontname, int size, int style)
 	tmes.setFont(fontname, size, style);
 	return 0;
 }
-
-#else
-
-//---------TexMesなし---------------------------------------------------------
-
-int hgio_font( char *fontname, int size, int style )
-{
-#ifdef HSPLINUX
-	#ifdef USE_JAVA_FONT
-	if ( font_size != size ) {
-		TexFontInit( fontname, size );
-	}
-	#endif
-#endif
-
-	font_size = size;
-	font_style = style;
-#ifdef HSPIOS
-    gb_font( size, style, fontname );
-#endif
-
-	return 0;
-}
-
-#if defined(HSPNDK) || defined(HSPLINUX) || defined(HSPEMSCRIPTEN)
-
-void hgio_putTexFont( int x, int y, char *msg, int color )
-{
-
-#ifdef USE_JAVA_FONT
-	int texid;
-	TEXINF *tinf;
-	texid = GetCacheMesTextureID( msg, font_size, font_style );
-	if ( texid >= 0 ) {
-		tinf = GetTex( texid );
-		mes_sx = tinf->width;
-		mes_sy = tinf->height;
-		hgio_fcopy( x, y, 0, 0, mes_sx, mes_sy, texid, color );
-	}
-
-	//hgio_makeTexFont( msg );
-	//hgio_fcopy( x, y, 0, 0, mes_sx, mes_sy, font_texid, color );
-
-#else
-	int xx,yy,tx,ty;
-	char a;
-	char *p;
-	p = msg;
-	xx = x; yy = y;
-	while(1) {
-		a = (int)*p++;
-		if ( a == 0 ) break;
-
-		tx = ( a & 15 ) * font_sx;
-		ty = ( a >> 4 ) * font_sy;
-		hgio_fcopy( xx, yy, tx, ty, font_sx, font_sy, font_texid, color );
-		xx += font_sx;
-	}
-
-	mes_sx = xx - x;
-	mes_sy = font_sy;
-#endif
-}
-
-#endif
-
-
-static void hgio_messub( BMSCR *bm, char *str1 )
-{
-	// print per line
-#if defined(HSPNDK) || defined(HSPLINUX) || defined(HSPEMSCRIPTEN)
-	if ( bm->cy >= bm->sy ) return;
-	hgio_putTexFont( bm->cx, bm->cy, str1, bm->color );
-	if ( mes_sx > bm->printsizex ) bm->printsizex = mes_sx;
-	bm->printsizey += mes_sy;
-	bm->cy += mes_sy;
-#endif
-
-#ifdef HSPIOS
-    gb_mes( bm, msg );
-#endif
-}
-
-#endif
 
 int hgio_mes(BMSCR* bm, char* str1)
 {
@@ -2201,20 +2075,25 @@ int hgio_mes(BMSCR* bm, char* str1)
 	return 0;
 }
 
-#ifdef USE_TEXMES
 void hgio_fontsystem_delete(int id)
 {
-	DeleteTex(id);
+	glDeleteTextures( 1, (GLuint *)&id );
 }
 
 
 int hgio_fontsystem_setup(int sx, int sy, void *buffer)
 {
-	int id = MakeEmptyTexBuffer(sx, sy);
-	if (UpdateTex32(id, (char*)buffer, 0) < 0) return -1;
-	return id;
+	GLuint id;
+	glGenTextures( 1, &id );
+	glBindTexture( GL_TEXTURE_2D, id );
+	glTexImage2D( GL_TEXTURE_2D, 0, GL_RGBA, sx, sy, 0, GL_RGBA, GL_UNSIGNED_BYTE, NULL );
+
+	int tid = (int)id;
+	ChangeTex( tid );
+	glTexSubImage2D(GL_TEXTURE_2D, 0, 0, 0, sx,sy, GL_RGBA, GL_UNSIGNED_BYTE, (char *)buffer);
+	return tid;
+
 }
-#endif
 
 /*-------------------------------------------------------------------------------*/
 
@@ -2274,9 +2153,7 @@ int hgio_render_end( void )
     gb_render_end();
 #endif
 
-#ifdef USE_TEXMES
 	tmes.texmesProc();
-#endif
 
 
 #if defined(HSPRASPBIAN) || defined(HSPNDK)

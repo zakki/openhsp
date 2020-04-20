@@ -4,14 +4,7 @@
 #ifndef __hgtex_h
 #define __hgtex_h
 
-#define NO_TEXMES
-
 #define TEXINF_MAX 512
-
-#ifndef NO_TEXMES
-#define TEXMES_CACHE_DEFAULT 8		// キャッシュのデフォルト生存フレーム
-#define TEXMES_NAME_BUFFER 32		// テキストハッシュネーム用バッファサイズ
-#endif
 
 // テクスチャ情報
 typedef struct
@@ -25,16 +18,6 @@ short height;		// real y-size
 int texid;			// OpenGL TexID(GLuint)
 float ratex;		// 1/sx
 float ratey;		// 1/sy
-
-#ifndef NO_TEXMES
-short hash;			// Text Hashcode (short)
-short life;			// Text Cache life
-char *text;			// Text Message
-int font_size;		// Text font size
-int font_style;		// Text font style
-char buf[TEXMES_NAME_BUFFER];		// Text Data Buffer
-#endif
-
 } TEXINF;
 
 enum {
