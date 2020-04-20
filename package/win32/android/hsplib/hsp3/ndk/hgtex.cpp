@@ -2,8 +2,6 @@
 //		OpenGL Texture lib (iOS/android/opengl/ndk)
 //			onion software/onitama 2011/11
 //
-
-
 #include <stdio.h>
 #include <stdlib.h>
 #include <time.h>
@@ -13,9 +11,19 @@
 #include "stb_image.h"
 
 #if defined(HSPLINUX) || defined(HSPEMSCRIPTEN)
+#include <unistd.h>
 #include "../../hsp3/hsp3config.h"
 #else
+#if defined(HSPNDK) || defined(HSPIOS)
 #include "../hsp3config.h"
+#else
+#include "../../hsp3/hsp3config.h"
+#endif
+#endif
+
+#ifdef HSPWIN
+#define STRICT
+#include <windows.h>
 #endif
 
 #ifdef HSPNDK
@@ -36,35 +44,61 @@
 #include "appengine.h"
 #endif
 
-#ifdef HSPEMSCRIPTEN
+
+#if defined(HSPLINUX)
+#include <SDL2/SDL_ttf.h>
+#define TTF_FONTFILE "/ipaexg.ttf"
 #define USE_JAVA_FONT
 #define FONT_TEX_SX 512
 #define FONT_TEX_SY 128
-#include "appengine.h"
-
-#define GL_GLEXT_PROTOTYPES
-#include <GL/gl.h>
-#include <GL/glext.h>
-
-#include "SDL2/SDL.h"
-#include "SDL2/SDL_image.h"
-#include "SDL2/SDL_opengl.h"
-
-#include <emscripten.h>
+//#include "font_data.h"
 #endif
 
-#ifdef HSPLINUX
+#if defined(HSPEMSCRIPTEN)
+#include "SDL/SDL_ttf.h"
+#define TTF_FONTFILE "/ipaexg.ttf"
+#define USE_JAVA_FONT
+#define FONT_TEX_SX 512
+#define FONT_TEX_SY 128
+//#include "font_data.h"
+#endif
 
-#include "appengine.h"
+#if defined(HSPLINUX) || defined(HSPEMSCRIPTEN)
+#ifdef HSPRASPBIAN
+#include "bcm_host.h"
+#include "GLES/gl.h"
+#include "EGL/egl.h"
+#include "EGL/eglext.h"
+#include "SDL2/SDL.h"
+
+
+#else
+
+//#include <GLES2/gl2.h>
+//#include <GLES2/gl2ext.h>
+//#include <EGL/egl.h>
+
 #define GL_GLEXT_PROTOTYPES
 #include <GL/gl.h>
 #include <GL/glext.h>
 
+//#include <GL/glut.h>
+
+#ifdef HSPEMSCRIPTEN
+#include "SDL/SDL.h"
+#include "SDL/SDL_image.h"
+#include "SDL/SDL_opengl.h"
+#else
 #include "SDL2/SDL.h"
 #include "SDL2/SDL_image.h"
 #include "SDL2/SDL_opengl.h"
-#include <SDL2/SDL_ttf.h>
+#endif
 
+#endif
+
+#include "appengine.h"
+extern bool get_key_state(int sym);
+extern SDL_Window *window;
 #endif
 
 #include "../supio.h"

@@ -16,7 +16,16 @@
 #include <unistd.h>
 #include "../../hsp3/hsp3config.h"
 #else
+#if defined(HSPNDK) || defined(HSPIOS)
 #include "../hsp3config.h"
+#else
+#include "../../hsp3/hsp3config.h"
+#endif
+#endif
+
+#ifdef HSPWIN
+#define STRICT
+#include <windows.h>
 #endif
 
 #ifdef HSPNDK
@@ -37,14 +46,18 @@
 #include "appengine.h"
 #endif
 
-#if defined(HSPEMSCRIPTEN)
-#define USE_JAVA_FONT
-#define FONT_TEX_SX 512
-#define FONT_TEX_SY 128
-#endif
 
 #if defined(HSPLINUX)
 #include <SDL2/SDL_ttf.h>
+#define TTF_FONTFILE "/ipaexg.ttf"
+#define USE_JAVA_FONT
+#define FONT_TEX_SX 512
+#define FONT_TEX_SY 128
+//#include "font_data.h"
+#endif
+
+#if defined(HSPEMSCRIPTEN)
+#include "SDL/SDL_ttf.h"
 #define TTF_FONTFILE "/ipaexg.ttf"
 #define USE_JAVA_FONT
 #define FONT_TEX_SX 512
