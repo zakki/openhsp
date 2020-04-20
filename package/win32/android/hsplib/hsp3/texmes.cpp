@@ -80,8 +80,8 @@ void texmes::reset(int width, int height, int p_texsx, int p_texsy, void *data)
 
 #endif
 
-	ratex = ( 1.0f / (float)texsx) * (sx-1);
-	ratey = ( 1.0f / (float)texsy) * (sy-1);
+	ratex = ( 1.0f / (float)texsx) * (sx);
+	ratey = ( 1.0f / (float)texsy) * (sy);
 	hash = 0;
 	life = TEXMES_CACHE_DEFAULT;
 	font_size = 0;
