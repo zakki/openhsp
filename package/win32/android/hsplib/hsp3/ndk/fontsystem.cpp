@@ -44,14 +44,18 @@
 #include "appengine.h"
 #endif
 
-#if defined(HSPEMSCRIPTEN)
-#define USE_JAVA_FONT
-#define FONT_TEX_SX 512
-#define FONT_TEX_SY 128
-#endif
 
 #if defined(HSPLINUX)
 #include <SDL2/SDL_ttf.h>
+#define TTF_FONTFILE "/ipaexg.ttf"
+#define USE_JAVA_FONT
+#define FONT_TEX_SX 512
+#define FONT_TEX_SY 128
+//#include "font_data.h"
+#endif
+
+#if defined(HSPEMSCRIPTEN)
+#include "SDL/SDL_ttf.h"
 #define TTF_FONTFILE "/ipaexg.ttf"
 #define USE_JAVA_FONT
 #define FONT_TEX_SX 512
@@ -369,12 +373,15 @@ int hgio_fontsystem_exec(char* msg, unsigned char* buffer, int pitch, int* out_s
 /*-------------------------------------------------------------------------------*/
 
 #if defined(HSPLINUX)||defined(HSPEMSCRIPTEN)
+static	int fontsystem_flag = 0;
 static	char fontpath[HSP_MAX_PATH+1];
 static	TTF_Font *font = NULL;
 static	int font_defsize;
 static	SDL_Surface *sdlsurf;
 static	int fontsystem_sx;		// 横のサイズ
 static	int fontsystem_sy;		// 縦のサイズ
+static	int fontsystem_size;
+static	int fontsystem_style;
 
 void TexFontTerm( void )
 {
@@ -400,6 +407,26 @@ int TexFontInit( char *path, int size )
 	}
 	Alertf( "Init:TTF_Init:%s (%x)",fontpath,font );
 	return 0;
+}
+
+void hgio_fontsystem_term(void)
+{
+	//		フォントレンダリング解放
+	//
+	if (fontsystem_flag) {
+		fontsystem_flag = 0;
+		TexFontTerm();
+	}
+}
+
+void hgio_fontsystem_init(char* fontname, int size, int style)
+{
+	//		フォントレンダリング初期化
+	//
+	TexFontInit("",size);
+	fontsystem_flag = 1;
+	fontsystem_size = size;
+	fontsystem_style = style;
 }
 
 int hgio_fontsystem_exec(char* msg, unsigned char* buffer, int pitch, int* out_sx, int* out_sy)
@@ -600,6 +627,28 @@ int hgio_fontsystem_exec(char* msg, unsigned char* buffer, int pitch, int* out_s
 #ifdef HSPIOS
 static	int fontsystem_sx;		// 横のサイズ
 static	int fontsystem_sy;		// 縦のサイズ
+static	int fontsystem_flag = 0;
+static	int fontsystem_size;
+static	int fontsystem_style;
+
+void hgio_fontsystem_term(void)
+{
+	//		フォントレンダリング解放
+	//
+	if (fontsystem_flag) {
+		fontsystem_flag = 0;
+	}
+}
+
+void hgio_fontsystem_init(char* fontname, int size, int style)
+{
+	//		フォントレンダリング初期化
+	//
+	hgio_fontsystem_term();
+	fontsystem_flag = 1;
+	fontsystem_size = size;
+	fontsystem_style = style;
+}
 
 int hgio_fontsystem_exec(char* msg, unsigned char* buffer, int pitch, int* out_sx, int* out_sy)
 {
@@ -618,7 +667,7 @@ int hgio_fontsystem_exec(char* msg, unsigned char* buffer, int pitch, int* out_s
 	}
 
 	//Alertf( "Init:Surface(%d,%d) %d destpitch%d",fontsystem_sx,fontsystem_sy,fontdata_color,pitch );
-    gpb_textbitmap( msg, m_tsize, m_tstyle, (char *)buffer, pitch );
+    gpb_textbitmap( msg, fontsystem_size, fontsystem_style, (char *)buffer, pitch );
 	return 0;
 }
 #endif
