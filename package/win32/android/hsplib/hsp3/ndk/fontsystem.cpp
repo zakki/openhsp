@@ -47,7 +47,7 @@
 
 #if defined(HSPLINUX)
 #include <SDL2/SDL_ttf.h>
-#define TTF_FONTFILE "/ipaexg.ttf"
+#define USE_TTFFONT
 #define USE_JAVA_FONT
 #define FONT_TEX_SX 512
 #define FONT_TEX_SY 128
@@ -55,12 +55,15 @@
 #endif
 
 #if defined(HSPEMSCRIPTEN)
-#include "SDL/SDL_ttf.h"
-#define TTF_FONTFILE "/ipaexg.ttf"
+#include <emscripten.h>
+#ifdef HSPDISHGP
+#include <SDL/SDL_ttf.h>
+#define USE_TTFFONT
+#endif
 #define USE_JAVA_FONT
 #define FONT_TEX_SX 512
 #define FONT_TEX_SY 128
-//#include "font_data.h"
+int hgio_fontsystem_get_texid(void);
 #endif
 
 #if defined(HSPLINUX) || defined(HSPEMSCRIPTEN)
@@ -95,6 +98,11 @@
 #endif
 
 #endif
+
+#ifdef USE_TTFFONT
+#define TTF_FONTFILE "/ipaexg.ttf"
+#endif
+
 
 #include "appengine.h"
 extern bool get_key_state(int sym);
@@ -372,7 +380,7 @@ int hgio_fontsystem_exec(char* msg, unsigned char* buffer, int pitch, int* out_s
 */
 /*-------------------------------------------------------------------------------*/
 
-#if defined(HSPLINUX)||defined(HSPEMSCRIPTEN)
+#if defined(USE_TTFFONT)
 static	int fontsystem_flag = 0;
 static	char fontpath[HSP_MAX_PATH+1];
 static	TTF_Font *font = NULL;
@@ -620,6 +628,151 @@ int hgio_fontsystem_exec(char* msg, unsigned char* buffer, int pitch, int* out_s
 
 /*-------------------------------------------------------------------------------*/
 /*
+		Emscripten Font Manage Routines
+*/
+/*-------------------------------------------------------------------------------*/
+
+#if defined(HSPEMSCRIPTEN)
+#ifndef USE_TTFFONT
+static	int fontsystem_flag = 0;
+static	int fontsystem_sx;		// 横のサイズ
+static	int fontsystem_sy;		// 縦のサイズ
+static	unsigned char *fontdata_pix;
+static	int fontdata_size;
+static	int fontdata_color;
+static	int fontsystem_size;
+static	int fontsystem_style;
+static	int fontsystem_texid;
+
+static int Get2N(int val)
+{
+	int res = 1;
+	while (1) {
+		if (res >= val) break;
+		res <<= 1;
+	}
+	return res;
+}
+
+int hgio_fontsystem_get_texid(void)
+{
+	return fontsystem_texid;
+}
+
+void hgio_fontsystem_term(void)
+{
+	//		フォントレンダリング解放
+	//
+	if (fontsystem_flag) {
+		fontsystem_flag = 0;
+	}
+}
+
+void hgio_fontsystem_init(char* fontname, int size, int style)
+{
+	//		フォントレンダリング初期化
+	//
+	hgio_fontsystem_term();
+	fontsystem_flag = 1;
+	fontsystem_size = size;
+	fontsystem_style = style;
+}
+
+int hgio_fontsystem_exec(char* msg, unsigned char* buffer, int pitch, int* out_sx, int* out_sy)
+{
+	//		msgの文字列をテクスチャバッファにレンダリングする
+	//		(bufferがNULLの場合はサイズだけを取得する)
+	//
+
+	if (buffer == NULL) {
+
+	EM_ASM_({
+		var d = document.getElementById('hsp3dishFontDiv');
+		if (!d) {
+			d = document.createElement("div");
+			d.id = 'hsp3dishFontDiv';
+			d.style.setProperty("width", "auto");
+			d.style.setProperty("height", "auto");
+			d.style.setProperty("position", "absolute");
+			d.style.setProperty("visibility", "hidden");
+		}
+		d.style.setProperty("font", $1 + "px 'sans-serif'");
+		document.body.appendChild(d);
+
+		var t = document.createTextNode(Pointer_stringify($0));
+		if (d.hasChildNodes())
+			d.removeChild(d.firstChild);
+		d.appendChild(t);
+		}, msg, fontsystem_size);
+	fontsystem_sx = EM_ASM_INT_V({
+		var d = document.getElementById('hsp3dishFontDiv');
+		return d.clientWidth;
+	});
+	fontsystem_sy = EM_ASM_INT_V({
+		var d = document.getElementById('hsp3dishFontDiv');
+		return d.clientHeight;
+	});
+
+		*out_sx = fontsystem_sx;
+		*out_sy = fontsystem_sy;
+		return 0;
+	}
+
+	int sx = Get2N(fontsystem_sx);
+	int sy = Get2N(fontsystem_sy);
+
+	GLuint id;
+	glGenTextures( 1, &id );
+	glBindTexture( GL_TEXTURE_2D, id );
+	glTexImage2D( GL_TEXTURE_2D, 0, GL_RGBA, sx, sy, 0, GL_RGBA, GL_UNSIGNED_BYTE, NULL );
+
+	glBindTexture( GL_TEXTURE_2D, id );
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+
+	glPixelStorei( GL_UNPACK_ALIGNMENT, 1);
+
+	EM_ASM_({
+		var canvas = document.getElementById('hsp3dishFontCanvas');
+		if (canvas) {
+			document.body.removeChild(canvas);
+		}
+		canvas = document.createElement("canvas");
+		canvas.id = 'hsp3dishFontCanvas';
+		canvas.style.setProperty("visibility", "hidden");
+		canvas.width = $2;
+		canvas.height = $3;
+		document.body.appendChild(canvas);
+
+		var context = canvas.getContext("2d");
+		context.font = $1 + "px 'sans-serif'";
+
+		var msg = Pointer_stringify($0);
+		context.clearRect ( 0 , 0 , $2 , $3);
+		context.fillStyle = 'rgba(255, 255, 255, 255)';
+		context.fillText(msg, 0, $1);
+		console.log(msg);
+
+		GLctx.texImage2D(GLctx.TEXTURE_2D, 0, GLctx.RGBA, GLctx.RGBA, GLctx.UNSIGNED_BYTE, canvas);
+		}, msg, fontsystem_size, sx, sy);
+
+
+	glBindTexture(GL_TEXTURE_2D, 0);
+	fontsystem_texid = (int)id;
+
+	//Alertf( "Init:Surface(%d,%d) %d destpitch%d",fontsystem_sx,fontsystem_sy,fontdata_color,pitch );
+	*out_sx = fontsystem_sx;
+	*out_sy = fontsystem_sy;
+
+	return 0;
+}
+
+#endif
+#endif
+
+
+/*-------------------------------------------------------------------------------*/
+/*
 		iOS Font Manage Routines
 */
 /*-------------------------------------------------------------------------------*/
@@ -659,7 +812,7 @@ int hgio_fontsystem_exec(char* msg, unsigned char* buffer, int pitch, int* out_s
 	if (buffer == NULL) {
 		fontsystem_sx = 0;
 		fontsystem_sy = 0;
-		gpb_textsize( msg, m_tsize, m_tstyle, &fontsystem_sx, &fontsystem_sy );
+		gpb_textsize( msg, fontsystem_size, fontsystem_style, &fontsystem_sx, &fontsystem_sy );
 		*out_sx = fontsystem_sx;
 		*out_sy = fontsystem_sy;
 		if (fontsystem_sx==0) return -1;
