@@ -10,8 +10,6 @@
 #include <math.h>
 #include <string.h>
 
-#include "stb_image.h"
-
 #if defined(HSPLINUX) || defined(HSPEMSCRIPTEN)
 #include <unistd.h>
 #include "../../hsp3/hsp3config.h"
@@ -49,7 +47,7 @@
 
 #if defined(HSPLINUX)
 #include <SDL2/SDL_ttf.h>
-#define TTF_FONTFILE "/ipaexg.ttf"
+#define USE_TTFFONT
 #define USE_JAVA_FONT
 #define FONT_TEX_SX 512
 #define FONT_TEX_SY 128
@@ -57,12 +55,15 @@
 #endif
 
 #if defined(HSPEMSCRIPTEN)
-#include "SDL/SDL_ttf.h"
-#define TTF_FONTFILE "/ipaexg.ttf"
+#include <emscripten.h>
+#ifdef HSPDISHGP
+#include <SDL/SDL_ttf.h>
+#define USE_TTFFONT
+#endif
 #define USE_JAVA_FONT
 #define FONT_TEX_SX 512
 #define FONT_TEX_SY 128
-//#include "font_data.h"
+int hgio_fontsystem_get_texid(void);
 #endif
 
 #if defined(HSPLINUX) || defined(HSPEMSCRIPTEN)
@@ -97,6 +98,12 @@
 #endif
 
 #endif
+
+#ifdef USE_TTFFONT
+#include <SDL2/SDL_ttf.h>
+#define TTF_FONTFILE "/ipaexg.ttf"
+#endif
+
 
 #include "appengine.h"
 extern bool get_key_state(int sym);
@@ -2083,6 +2090,9 @@ void hgio_fontsystem_delete(int id)
 
 int hgio_fontsystem_setup(int sx, int sy, void *buffer)
 {
+#if defined(HSPEMSCRIPTEN)
+	return hgio_fontsystem_get_texid();
+#else
 	GLuint id;
 	glGenTextures( 1, &id );
 	glBindTexture( GL_TEXTURE_2D, id );
@@ -2092,7 +2102,7 @@ int hgio_fontsystem_setup(int sx, int sy, void *buffer)
 	ChangeTex( tid );
 	glTexSubImage2D(GL_TEXTURE_2D, 0, 0, 0, sx,sy, GL_RGBA, GL_UNSIGNED_BYTE, (char *)buffer);
 	return tid;
-
+#endif
 }
 
 /*-------------------------------------------------------------------------------*/
