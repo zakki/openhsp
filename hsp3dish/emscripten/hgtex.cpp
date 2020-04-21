@@ -8,8 +8,6 @@
 #include <math.h>
 #include <string.h>
 
-#include "stb_image.h"
-
 #if defined(HSPLINUX) || defined(HSPEMSCRIPTEN)
 #include <unistd.h>
 #include "../../hsp3/hsp3config.h"
@@ -47,7 +45,7 @@
 
 #if defined(HSPLINUX)
 #include <SDL2/SDL_ttf.h>
-#define TTF_FONTFILE "/ipaexg.ttf"
+#define USE_TTFFONT
 #define USE_JAVA_FONT
 #define FONT_TEX_SX 512
 #define FONT_TEX_SY 128
@@ -55,12 +53,15 @@
 #endif
 
 #if defined(HSPEMSCRIPTEN)
-#include "SDL/SDL_ttf.h"
-#define TTF_FONTFILE "/ipaexg.ttf"
+#include <emscripten.h>
+#ifdef HSPDISHGP
+#include <SDL/SDL_ttf.h>
+#define USE_TTFFONT
+#endif
 #define USE_JAVA_FONT
 #define FONT_TEX_SX 512
 #define FONT_TEX_SY 128
-//#include "font_data.h"
+int hgio_fontsystem_get_texid(void);
 #endif
 
 #if defined(HSPLINUX) || defined(HSPEMSCRIPTEN)
@@ -96,6 +97,12 @@
 
 #endif
 
+#ifdef USE_TTFFONT
+#include <SDL2/SDL_ttf.h>
+#define TTF_FONTFILE "/ipaexg.ttf"
+#endif
+
+
 #include "appengine.h"
 extern bool get_key_state(int sym);
 extern SDL_Window *window;
@@ -104,6 +111,10 @@ extern SDL_Window *window;
 #include "../supio.h"
 #include "../sysreq.h"
 #include "../hgio.h"
+
+#include "../texmes.h"
+
+#include "stb_image.h"
 
 #define USE_STAR_FIELD
 #define USE_TEXMES
@@ -449,7 +460,7 @@ int RegistTexMem( unsigned char *ptr, int size )
 			//	Exchange to 2N bitmap
 			char *p;
 			char *p2;
-			int x,y;
+			int y;
 			pImg2 = (unsigned char *)mem_ini( sx * sy * 4 );
 			p = (char *)pImg;
 			p2 = (char *)pImg2;
@@ -480,7 +491,7 @@ int RegistTexMem( unsigned char *ptr, int size )
 		Alertf( "Tex:ID%d (%d,%d)(%dx%d)",texid,sx,sy,tsx,tsy );
 		return texid;
 	}
-	Alertf( "Tex:failed" );
+	Alertf( "Tex:failed(%d)",size );
 	return -1;
 }
 
@@ -495,7 +506,7 @@ int RegistTex( char *fname )
 	int id;
 
 	len = dpm_exist( fname );
-	//Alertf( "Tex:read(%s)(%d)", fname, len );
+	Alertf( "Tex:read(%s)(%d)", fname, len );
 	if ( len < 0 ) return -1;
 	ptr = mem_ini( len );
 	dpm_read( fname, ptr, len, 0 );
@@ -512,7 +523,7 @@ int MakeEmptyTex( int width, int height )
 	GLuint id;
 	int texid;
 	int sx,sy;
-	unsigned char *pImg;
+	//unsigned char *pImg;
 
 	sx = Get2N( width );
 	sy = Get2N( height );
@@ -535,7 +546,7 @@ int MakeEmptyTexBuffer( int width, int height )
 	GLuint id;
 	int texid;
 	int sx,sy;
-	unsigned char *pImg;
+	//unsigned char *pImg;
 
 	sx = Get2N( width );
 	sy = Get2N( height );
