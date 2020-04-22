@@ -1,5 +1,5 @@
 //
-//		Draw lib (directX8)
+//		Draw lib (directX8+TEXMES)
 //			onion software/onitama 2001/6
 //			               onitama 2011/5
 //
@@ -16,12 +16,9 @@
 
 #include "hgtex.h"
 
-#define USE_TEXMES
-#ifdef USE_TEXMES
 #include "../texmes.h"
-#include "fontsystem.h"
+#include "../emscripten/fontsystem.h"
 void hgio_fontsystem_win32_init(HWND wnd);
-#endif
 
 #define RELEASE(x) 	if(x){x->Release();x=NULL;}
 
@@ -92,13 +89,7 @@ static		int nDestHeight;	// 描画座標高さ
 static		HWND master_wnd;	// 表示対象Window
 static		int drawflag;		// レンダー開始フラグ
 
-#ifdef USE_TEXMES
 static		texmesManager tmes;	// テキストメッセージマネージャー
-#else
-static		int mestexid;		// テキスト表示用テクスチャID
-static		int mestexflag;		// テキスト表示用テクスチャ使用フラグ(0=no/1=ok)
-static		BMSCR mestexbm;		// テキスト表示用ダミーBMSCR
-#endif
 
 static		BMSCR *mainbm;		// メインスクリーンのBMSCR
 static		char m_tfont[256];	// テキスト使用フォント
@@ -564,19 +555,9 @@ static void InitTexture(void)
 	TexSetD3DParam(d3d, d3ddev, target_disp);
 	TexInit();
 
-	//		テキスト表示エリアを初期化
+	//		テキストを初期化
 	//
-#ifdef USE_TEXMES
 	tmes.texmesInit(SYSREQ_MESCACHE_MAX);
-
-#else
-	mestexid = RegistTexEmpty(nDestWidth, nDestHeight, 1);
-	if (mestexid >= 0) {
-		//		BMSCRにコピー用のデータを構築する
-		memset(&mestexbm, 0, sizeof(BMSCR));
-		mestexbm.texid = mestexid;
-	}
-#endif
 }
 
 
@@ -604,12 +585,8 @@ void hgio_init( int mode, int sx, int sy, void *hwnd )
 	drawflag = 0;
 	nDestWidth = sx;
 	nDestHeight = sy;
-#ifdef USE_TEXMES
+
 	hgio_fontsystem_win32_init(master_wnd);
-#else
-	mestexid = -1;
-	mestexflag = 0;
-#endif
 
 	//		バッファ初期化
 	//
@@ -683,23 +660,6 @@ void hgio_resume( void )
 void hgio_text_render( void )
 {
 	//	テキスト画面描画
-#ifdef USE_TEXMES
-	tmes.texmesProc();
-#else
-	if ( mestexflag ) {
-		int bak_mulcolor;
-
-		bak_mulcolor = mainbm->mulcolor;
-		mainbm->mulcolor = 0xffffff;			// 乗算カラーを標準に戻す
-
-		mainbm->gfrate = 255;
-		mainbm->gmode = 3;
-		mainbm->cx = 0;
-		mainbm->cy = 0;
-		hgio_copy( mainbm, 0, 0, nDestWidth, nDestHeight, &mestexbm, (float)nDestWidth, (float)nDestHeight );
-		mainbm->mulcolor = bak_mulcolor;		// 乗算カラーを元に戻す
-	}
-#endif
 }
 
 
@@ -720,6 +680,9 @@ int hgio_render_end( void )
 	if( FAILED(hr) ) res = -1;
 	SetSysReq( SYSREQ_DEVLOST, res );
 	drawflag = 0;
+
+	tmes.texmesProc();
+
 	return res;
 }
 
@@ -804,9 +767,6 @@ int hgio_render_start( void )
 	TexReset();
 	drawflag = 1;
 
-#ifndef USE_TEXMES
-	mestexflag = 0;
-#endif
 	return 0;
 }
 
@@ -861,9 +821,7 @@ int hgio_getHeight( void )
 void hgio_term( void )
 {
 	hgio_render_end();
-#ifdef USE_TEXMES
 	tmes.texmesTerm();
-#endif
 	TexTerm();
 	Term3DDevices();
 	GeometryTerm();
@@ -1918,8 +1876,6 @@ void hgio_cnvview(BMSCR* bm, int* xaxis, int* yaxis)
 }
 
 
-#ifdef USE_TEXMES
-
 static void hgio_messub(BMSCR* bm, char* msg)
 {
 	//		mes,print 文字表示
@@ -2027,57 +1983,17 @@ int hgio_mes(BMSCR* bm, char* str1)
 	return 0;
 }
 
-#else
-
-int hgio_mes(BMSCR *bm, char *str1)
-{
-	//		mes,print 文字表示
-	//
-	//		従来の文字表示
-	//
-	if (mestexid < 0) return -1;
-	if (bm->type != HSPWND_TYPE_MAIN) throw HSPERR_UNSUPPORTED_FUNCTION;
-	if (drawflag == 0) hgio_render_start();
-
-	if (mestexflag == 0) {
-		//	最初の描画時にテキスト画面クリア
-		ClearTex(mestexid, 0);
-		mestexflag = 1;
-	}
-	DrawTexColor(bm->color);
-	DrawTexOpen(master_wnd, mestexid, m_tfont, m_tsize, m_tstyle);
-	DrawTexString(bm->cx, bm->cy, str1);
-
-	bm->printsizex = TexGetDrawSizeX();
-	bm->printsizey = TexGetDrawSizeY();
-	if (bm->printsizey <= 0) {
-		bm->printsizey = m_tsize;
-	}
-	//Alertf( "%s[%d,%d]",str1,bm->printsizex,bm->printsizey );
-
-	DrawTexClose();
-	return 0;
-}
-#endif
-
 
 int hgio_font(char *fontname, int size, int style)
 {
 	//		文字フォント指定
 	//
-#ifdef USE_TEXMES
 	//Alertf("[%s]%d,%d", fontname, size, style);
 	tmes.setFont(fontname, size, style);
-#else
-	strncpy(m_tfont, fontname, 254);
-	m_tsize = size;
-	m_tstyle = style;
-#endif
 	return 0;
 }
 
 
-#ifdef USE_TEXMES
 void hgio_fontsystem_delete(int id)
 {
 	DeleteTex(id);
@@ -2090,5 +2006,4 @@ int hgio_fontsystem_setup(int sx, int sy, void *buffer)
 	if (UpdateTex32(id, (char*)buffer, 0) < 0) return -1;
 	return id;
 }
-#endif
 
