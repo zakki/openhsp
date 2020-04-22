@@ -144,7 +144,7 @@
     <ClCompile Include="..\texmes.cpp">
       <Filter>ソース ファイル\core</Filter>
     </ClCompile>
-    <ClCompile Include="fontsystem.cpp">
+    <ClCompile Include="..\emscripten\fontsystem.cpp">
       <Filter>ソース ファイル\win</Filter>
     </ClCompile>
   </ItemGroup>
@@ -272,7 +272,7 @@
     <ClInclude Include="..\texmes.h">
       <Filter>ヘッダー ファイル\core</Filter>
     </ClInclude>
-    <ClInclude Include="fontsystem.h">
+    <ClInclude Include="..\emscripten\fontsystem.h">
       <Filter>ヘッダー ファイル\win</Filter>
     </ClInclude>
   </ItemGroup>
