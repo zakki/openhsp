@@ -163,11 +163,13 @@ static int handleEvent( void ) {
 				break;
 			}
 		case SDL_KEYDOWN:
-			keys[event.key.keysym.scancode] = true;
+			if (event.key.keysym.scancode < SDLK_SCANCODE_MAX)
+				keys[event.key.keysym.scancode] = true;
 			//printf("key down: sym %d scancode %d\n", event.key.keysym.sym, event.key.keysym.scancode);
 			break;
 		case SDL_KEYUP:
-			keys[event.key.keysym.scancode] = false;
+			if (event.key.keysym.scancode < SDLK_SCANCODE_MAX)
+				keys[event.key.keysym.scancode] = false;
 			//printf("key up: sym %d scancode %d\n", event.key.keysym.sym, event.key.keysym.scancode);
 			break;
 		case SDL_QUIT: /** ウィンドウのxボタンやctrl-Cを押した場合 */
@@ -179,7 +181,11 @@ static int handleEvent( void ) {
 
 bool get_key_state(int sym)
 {
-	return keys[sym];
+	if (sym >= 0 && sym < SDLK_SCANCODE_MAX) {
+		return keys[sym];
+	} else {
+		return false;
+	}
 }
 
 static void hsp3dish_initwindow( engine* p_engine, int sx, int sy, char *windowtitle )
@@ -557,7 +563,7 @@ int hsp3dish_init( char *startfile )
 		return 1;
 	}
 
-	for (int i = 0; i < SDLK_LAST; i++) {
+	for (int i = 0; i < SDLK_SCANCODE_MAX; i++) {
 		keys[i] = false;
 	}
 
