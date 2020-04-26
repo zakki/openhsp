@@ -1684,9 +1684,9 @@ var LibrarySDL = {
 
   SDL_WM_SetCaption: function(title, icon) {
     if (title && typeof Module['setWindowTitle'] !== 'undefined') {
-      Module['setWindowTitle'](Pointer_stringify(title));
+      Module['setWindowTitle'](UTF8ToString(title));
     }
-    icon = icon && Pointer_stringify(icon);
+    icon = icon && UTF8ToString(icon);
   },
 
   SDL_EnableKeyRepeat: function(delay, interval) {
@@ -2958,7 +2958,7 @@ var LibrarySDL = {
   },
 
   TTF_OpenFont: function(filename, size) {
-    filename = FS.standardizePath(Pointer_stringify(filename));
+    filename = FS.standardizePath(UTF8ToString(filename));
     var id = SDL.fonts.length;
     SDL.fonts.push({
       name: filename, // but we don't actually do anything with it..
@@ -2973,7 +2973,7 @@ var LibrarySDL = {
 
   TTF_RenderText_Solid: function(font, text, color) {
     // XXX the font and color are ignored
-    text = Pointer_stringify(text) || ' '; // if given an empty string, still return a valid surface
+    text = UTF8ToString(text) || ' '; // if given an empty string, still return a valid surface
     var fontData = SDL.fonts[font];
     var w = SDL.estimateTextWidth(fontData, text);
     var h = fontData.size;
@@ -2997,7 +2997,7 @@ var LibrarySDL = {
   TTF_SizeText: function(font, text, w, h) {
     var fontData = SDL.fonts[font];
     if (w) {
-      {{{ makeSetValue('w', '0', 'SDL.estimateTextWidth(fontData, Pointer_stringify(text))', 'i32') }}};
+      {{{ makeSetValue('w', '0', 'SDL.estimateTextWidth(fontData, UTF8ToString(text))', 'i32') }}};
     }
     if (h) {
       {{{ makeSetValue('h', '0', 'fontData.size', 'i32') }}};
@@ -3229,7 +3229,7 @@ var LibrarySDL = {
   },
 
   SDL_SetWindowTitle: function(window, title) {
-    if (title) document.title = Pointer_stringify(title);
+    if (title) document.title = UTF8ToString(title);
   },
 
   SDL_GetWindowSize: function(window, width, height){
@@ -3381,7 +3381,7 @@ var LibrarySDL = {
 
   SDL_RWFromFile: function(_name, mode) {
     var id = SDL.rwops.length; // TODO: recycle ids when they are null
-    var name = Pointer_stringify(_name)
+    var name = UTF8ToString(_name)
     SDL.rwops.push({ filename: name, mimetype: Browser.getMimetype(name) });
     return id;
   },

@@ -389,7 +389,7 @@ static int hsp3dish_devcontrol( char *cmd, int p1, int p2, int p3 )
 		if (syncdir.size() > 0) {
 			// IDBに保存
 			EM_ASM_({
-				var dir = Pointer_stringify($0);
+				var dir = UTF8ToString($0);
 				FS.syncfs(function (err) {
 					console.log("syncfs", err);
 					});
@@ -782,7 +782,7 @@ int hsp3dish_exec( void )
 		// IDBから読み込み
 		fs_initialized = false;
 		EM_ASM_({
-			var dir = Pointer_stringify($0);
+			var dir = UTF8ToString($0);
 			FS.mkdir(dir);
 			FS.mount(IDBFS, {}, dir);
 			FS.syncfs(true, function (err) {
