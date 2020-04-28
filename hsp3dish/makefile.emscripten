@@ -1,12 +1,13 @@
 CC = emcc
 CXX = em++
 AR = emar
-#CFLAGS = -Wall -DHSPDISH -DHSPEMSCRIPTEN -DHSPDEBUG -fpermissive -g4 --js-opts 0 -s SAFE_HEAP=1 -s USE_TYPED_ARRAYS=2 -s LEGACY_GL_EMULATION=1
-#CFLAGS = -Wall -DHSPDISH -DHSPEMSCRIPTEN -DHSPDEBUG -fpermissive -g4 -s USE_TYPED_ARRAYS=2 -s LEGACY_GL_EMULATION=1
+#CFLAGS = -Wall -DHSPDISH -DHSPEMSCRIPTEN -DHSPDEBUG -fpermissive -g4 --js-opts 0 -s SAFE_HEAP=1 -s LEGACY_GL_EMULATION=1
+#CFLAGS = -Wall -DHSPDISH -DHSPEMSCRIPTEN -DHSPDEBUG -fpermissive -g4 -s LEGACY_GL_EMULATION=1
 
 CFLAGS_CORE = -Wall -DHSPDISH -DHSPEMSCRIPTEN -DHSPDEBUG \
-	   -fpermissive \
-	   -s USE_TYPED_ARRAYS=2 -s DISABLE_EXCEPTION_CATCHING=0 \
+	   -fpermissive -s WASM=0 \
+	   -s "EXTRA_EXPORTED_RUNTIME_METHODS=['addRunDependency', 'removeRunDependency', 'FS_createPreloadedFile']" \
+	   -s DISABLE_EXCEPTION_CATCHING=0 \
 	   --memory-init-file 0
 CFLAGS_DEBUG =
 #CFLAGS_DEBUG = -g3 --js-opts 0
