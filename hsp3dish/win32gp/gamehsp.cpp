@@ -2733,8 +2733,8 @@ void gamehsp::texmesDraw(int x, int y, char* msg, Vector4* p_color, int areasx, 
 
 	x1 = (float)x + offsetx;
 	y1 = (float)y + offsety;
-	x2 = x1 + tex->sx - 1.0f;
-	y2 = y1 + tex->sy - 1.0f;
+	x2 = x1 + tex->sx;
+	y2 = y1 + tex->sy;
 
 	float* v = _bufPolyTex;
 

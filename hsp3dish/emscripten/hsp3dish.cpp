@@ -506,7 +506,6 @@ int hsp3dish_init( char *startfile )
 
 	char *env_wx = getenv( "HSP_WX" );
 	if ( env_wx ) {
-		printf("ENV %s\n",env_wx);
 		int v = atoi( env_wx );
 		if ( v > 0 ) {
 			hsp_wx = v;
@@ -515,7 +514,6 @@ int hsp3dish_init( char *startfile )
 
 	char *env_wy = getenv( "HSP_WY" );
 	if ( env_wy ) {
-		printf("ENV %s\n",env_wy);
 		int v = atoi( env_wy );
 		if ( v > 0 ) {
 			hsp_wy = v;
@@ -526,13 +524,11 @@ int hsp3dish_init( char *startfile )
 
 	char *env_sx = getenv( "HSP_SX" );
 	if ( env_sx ) {
-		printf("ENV %s\n",env_sx);
 		sx = atof( env_sx );
 	}
 
 	char *env_sy = getenv( "HSP_SY" );
 	if ( env_sy ) {
-		printf("ENV %s\n",env_sy);
 		sy = atof( env_sy );
 	}
 
