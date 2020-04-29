@@ -5,8 +5,8 @@ AR = emar
 #CFLAGS = -Wall -DHSPDISH -DHSPEMSCRIPTEN -DHSPDEBUG -fpermissive -g4 -s LEGACY_GL_EMULATION=1
 
 CFLAGS_CORE = -Wall -DHSPDISH -DHSPEMSCRIPTEN -DHSPDEBUG \
-	   -fpermissive -s WASM=0 \
-	   -s "EXTRA_EXPORTED_RUNTIME_METHODS=['addRunDependency', 'removeRunDependency', 'FS_createPreloadedFile']" \
+	   -fpermissive -s WASM=0 -s ALLOW_MEMORY_GROWTH=1 \
+	   -s "EXTRA_EXPORTED_RUNTIME_METHODS=['addRunDependency', 'removeRunDependency', 'FS_createPreloadedFile', 'FS_createPath']" \
 	   -s DISABLE_EXCEPTION_CATCHING=0 \
 	   --memory-init-file 0
 CFLAGS_DEBUG =
@@ -18,14 +18,13 @@ CFLAGS = $(CFLAGS_CORE) $(CFLAGS_DEBUG) -DUSE_OBAQ\
 	   -s LEGACY_GL_EMULATION=1
 
 CFLAGS_GP = $(CFLAGS_CORE) $(CFLAGS_DEBUG) \
-		  -s FULL_ES2=1\
+		  -s FULL_ES2=1 -s ERROR_ON_UNDEFINED_SYMBOLS=0 \
 		  -s USE_SDL=2 -s USE_SDL_TTF=2\
-		  -s ALLOW_MEMORY_GROWTH=1\
 		  -D_LARGEFILE64_SOURCE -O3\
 		  -DHSPDISHGP -I emscripten/extlib/include -I extlib/src -I gameplay/src -I win32gp
 
 CFLAGS_EXTLIB = $(CFLAGS_CORE) $(CFLAGS_DEBUG) \
-		  -s FULL_ES2=1\
+		  -s FULL_ES2=1 -s ERROR_ON_UNDEFINED_SYMBOLS=0 \
 		  -D_LARGEFILE64_SOURCE -O3\
 		  -I emscripten/extlib/include -I extlib/src -I gameplay/src
 

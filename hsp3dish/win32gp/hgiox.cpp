@@ -36,6 +36,7 @@
 #endif
 
 #ifdef HSPEMSCRIPTEN
+int hgio_fontsystem_get_texid(void);
 #define GL_GLEXT_PROTOTYPES
 #include <GL/gl.h>
 #include <GL/glext.h>
@@ -272,13 +273,11 @@ void hgio_init( int mode, int sx, int sy, void *hwnd )
     lastTime = CFAbsoluteTimeGetCurrent();
 #endif
 
-#if defined(HSPLINUX) || defined(HSPEMSCRIPTEN)
+#if defined(HSPLINUX)
 	//TTF‰Šú‰»
 	char fontpath[HSP_MAX_PATH+1];
 	*fontpath = 0;
-#if defined(HSPLINUX)
 	strcpy( fontpath, hgio_getdir(1) );
-#endif
 	strcat( fontpath, TTF_FONTFILE );
 
 	if ( TTF_Init() ) {
@@ -1779,6 +1778,36 @@ void hgio_touch( int xx, int yy, int button )
     }
 }
 
+void hgio_mtouchid( int pointid, int xx, int yy, int button, int opt )
+{
+    Bmscr *bm;
+    int x,y;
+
+    if ( mainbm == NULL ) return;
+    bm = (Bmscr *)mainbm;
+	x = ( xx - _originX ) * _rateX;
+	y = ( yy - _originY ) * _rateY;
+    if ( opt == 0 ) {
+        mouse_x = x;
+        mouse_y = y;
+        mouse_btn = button;
+        mainbm->savepos[BMSCR_SAVEPOS_MOSUEX] = mouse_x;
+        mainbm->savepos[BMSCR_SAVEPOS_MOSUEY] = mouse_y;
+        mainbm->tapstat = button;
+        bm->UpdateAllObjects();
+    }
+    bm->setMTouchByPointId( pointid, x, y, button!=0 );
+}
+
+void hgio_mtouchidf( int pointid, float xx, float yy, int button, int opt )
+{
+    int realx,realy;
+    realx=(int)(xx*nDestWidth);
+    realy=(int)(yy*nDestHeight);
+	hgio_mtouchid(pointid,realx,realy,button,opt);
+}
+
+
 #endif
 
 
@@ -1877,6 +1906,13 @@ int hgio_font(char* fontname, int size, int style)
 	return 0;
 }
 
+
+#if defined(HSPEMSCRIPTEN)
+int hgio_fontsystem_setup(int sx, int sy, void *buffer)
+{
+	return hgio_fontsystem_get_texid();
+}
+#endif
 
 /*-------------------------------------------------------------------------------*/
 

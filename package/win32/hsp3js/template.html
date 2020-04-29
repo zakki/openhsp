@@ -304,16 +304,6 @@ $$$mkdirrequest$$$
       },
     };
 
-    Module.preRun.push(function() {
-        ENV.HSP_WX = "$$$scrsize_x$$$";//スクリプトの動作解像度
-        ENV.HSP_WY = "$$$scrsize_y$$$";
-        ENV.HSP_SX = "$$$dispsize_x$$$";//表示解像度
-        ENV.HSP_SY = "$$$dispsize_y$$$";
-        ENV.HSP_AUTOSCALE = "0";//スケーリングモード
-        ENV.HSP_FPS = "0";//フレームレート
-        ENV.HSP_LIMIT_STEP = "5000";//ブラウザに処理を返すまでの実行ステップ数
-    });
-
 $$$datarequest$$$
 
     function processPackageData(arrayBuffer) {
@@ -343,6 +333,14 @@ $$$requestonload$$$
         fetchedCallback = processPackageData;
       }
     
+        ENV.HSP_WX = "$$$scrsize_x$$$";//スクリプトの動作解像度
+        ENV.HSP_WY = "$$$scrsize_y$$$";
+        ENV.HSP_SX = "$$$dispsize_x$$$";//表示解像度
+        ENV.HSP_SY = "$$$dispsize_y$$$";
+        ENV.HSP_AUTOSCALE = "0";//スケーリングモード
+        ENV.HSP_FPS = "0";//フレームレート
+        ENV.HSP_LIMIT_STEP = "5000";//ブラウザに処理を返すまでの実行ステップ数
+
   }
   if (Module['calledRun']) {
     runWithFS();
@@ -352,6 +350,42 @@ $$$requestonload$$$
   }
 
 })();
+
+				window.audioContext = new (window.AudioContext || window.webkitAudioContext)();
+
+				var fixAudioContext = function (e) {
+					var context = window.audioContext;
+					if (context) {
+						// Create empty buffer
+						var buffer = context.createBuffer(1, 1, 22050);
+						var source = context.createBufferSource();
+						source.buffer = buffer;
+						// Connect to output (speakers)
+						source.connect(context.destination);
+						// Play sound
+						if (source.start) {
+							source.start(0);
+						} else if (source.play) {
+							source.play(0);
+						} else if (source.noteOn) {
+							source.noteOn(0);
+						}
+
+
+						//const soundEffect = new Audio();
+						//soundEffect.play();
+
+
+					}
+					// Remove events
+					document.removeEventListener('touchstart', fixAudioContext);
+					document.removeEventListener('touchend', fixAudioContext);
+				};
+				// iOS 6-8
+				document.addEventListener('touchstart', fixAudioContext);
+				// iOS 9
+				document.addEventListener('touchend', fixAudioContext);
+
     </script>
     <script async type="text/javascript" src="hsp3dish.js"></script>
   <p>powered by <a href="http://hsp.tv/make/hsp3dish.html" target="_blank">hsp3dish.js</a> / OpenHSP</p>

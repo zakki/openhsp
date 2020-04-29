@@ -1737,7 +1737,7 @@ hspproj.xcodeproj\\project.pbxproj"}
 	sdim outbuf, maxsize
 
 	js_memsize = 0+js_memopt
-	if js_memsize<0 || js_memsize>=8192 : mes "メモリサイズ指定が無効です。" : goto *cnv_jsok
+	if js_memsize<64 || js_memsize>=8192 : mes "メモリサイズ指定が無効です。" : goto *cnv_jsok
 	js_memsize *= 1048576
 
 	;	.data作成
@@ -1823,7 +1823,7 @@ hspproj.xcodeproj\\project.pbxproj"}
 	;	メモリオプション
 	s1=""
 	if js_memsize>0 {
-		s1="TOTAL_MEMORY: "+js_memsize+","
+		s1="INITIAL_MEMORY: "+js_memsize+","
 	}
 	strrep outbuf, "$$$memoptions$$$", s1
 
