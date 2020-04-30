@@ -1055,13 +1055,14 @@ static void hsp3dish_bye( void )
 	//
 	if ( hsp != NULL ) { delete hsp; hsp = NULL; }
 
+	DllManager().free_all_library();
+
 	if ( m_hWnd != NULL ) {
 		hgio_term();
 		DestroyWindow( m_hWnd );
 		m_hWnd = NULL;
 	}
 
-	DllManager().free_all_library();
 
 	//		システム関連の解放
 	//

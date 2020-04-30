@@ -17,6 +17,24 @@
 #include "supio.h"
 #include "hspwnd.h"
 
+
+/*------------------------------------------------------------*/
+/*
+		Object base interface
+*/
+/*------------------------------------------------------------*/
+
+Hsp3ObjBase::Hsp3ObjBase(void)
+{
+	messx = -1;
+	messy = -1;
+	value = 0;
+}
+
+Hsp3ObjBase::~Hsp3ObjBase(void)
+{
+}
+
 /*------------------------------------------------------------*/
 /*
 		Object callback interface
@@ -24,60 +42,93 @@
 /*------------------------------------------------------------*/
 
 static int *notice_ptr;
+static int bmscr_obj_ival;
+static double bmscr_obj_dval;
 
 void SetObjectEventNoticePtr( int *ptr )
 {
-	//		イベント時の値ポインタを設定
+	//		イベント時の値ポインタを設定(stat値)
 	//
 	notice_ptr = ptr;
 }
 
-static void Object_JumpEvent( HSPOBJINFO *info, int wparam )
+static void Object_JumpEvent(HSPOBJINFO *info, int wparam)
 {
-	if ( info->enableflag == 0 ) return;
-	*notice_ptr = info->owsize;
+	if (info->enableflag == 0) return;
+	*notice_ptr = info->owsize;				// statを更新
 
-	if ( info->btnset->jumpmode & 1 ) {
-		code_call( (unsigned short *)info->btnset->ptr );
-	} else {
-		code_setpci( (unsigned short *)info->btnset->ptr );
+	Hsp3ObjButton *btn = (Hsp3ObjButton *)info->btnset;
+	if (btn == NULL) return;
+
+	if (btn->jumpmode & 1) {
+		code_call((unsigned short *)btn->ptr);
+	}
+	else {
+		code_setpci((unsigned short *)btn->ptr);
 	}
 
+}
+
+static void Object_SendSetVar(HSPOBJINFO *obj)
+{
+	HSP3VARSET *var = obj->varset;
+	if (var == NULL) return;
+	code_setva(var->pval, var->aptr, var->type, var->ptr);
+}
+
+static void Object_ApplyFont(HSPOBJINFO *info)
+{
+	Bmscr *bm;
+	char *fn = "";
+
+	bm = (Bmscr *)info->bm;
+#ifdef HSPWIN
+	if (info->fontmode & HSPOBJ_FONTMODE_GUIFONT) {
+		fn = "MS UI Gothic";
+	}
+#endif
+	if (info->owmode & HSPOBJ_OPTION_SETFONT) {
+		if (info->fontname) {
+			fn = (char *)info->fontname->c_str();
+		}
+	}
+	bm->SetFontInternal(fn, info->fontsize, info->fontstyle);
 }
 
 static void Object_ButtonDraw( HSPOBJINFO *info )
 {
 	Bmscr *bm;
-	HSP3BTNSET *btn;
 	int col1,col2,tcol;
 	int x1,x2,y1,y2;
 
 	bm = (Bmscr *)info->bm;
-	bm->SetFontInternal( "", 18, 0 );
+	Object_ApplyFont(info);
+
+	Hsp3ObjButton *btn = (Hsp3ObjButton *)info->btnset;
+	if (btn == NULL) return;
 
 	x1 = info->x; y1 = info->y;
 	x2 = info->x + info->sx - 1; y2 = info->y + info->sy - 1;
 
-	btn = info->btnset;
-	tcol = 0xff000000;
-	//tcol = 0xffffffff;
+	tcol = info->fontcolor & 0xffffff;
+	//tcol = 0xffffff;
 	if ( info->srcid < 0 ) {
 		//	グラデーションによる標準ボタン
 		if ( info->enableflag ) {
 			if ( info->tapflag == 1 ) {
-				col1 = 0xff909090; col2 = 0xffc0c0c0;
+				col1 = 0x909090; col2 = 0xc0c0c0;
 				//col1 = 0xff202020; col2 = 0xff404040;
 			} else {
-				col1 = 0xfff0f0f0; col2 = 0xffc0c0c0;
+				col1 = 0xf0f0f0; col2 = 0xc0c0c0;
 				//col1 = 0xff404040; col2 = 0xff606060;
 			}
 		} else {
-			col1 = 0xff808080; col2 = 0xff606060; tcol = 0xff404040;
+			col1 = 0x808080; col2 = 0x606060; tcol = 0x404040;
 		}
 		bm->gmode = 0;
 		bm->gfrate = 255;
 		bm->GradFill( x1+1, y1+1, info->sx-2, info->sy-2, 1, col1, col2 );
-		bm->Setcolor( 0xff808080 );
+		bm->Setcolor( 0x808080 );
 		bm->cx = x1; bm->cy = y1;
 		bm->Line( x2, y1 );
 		bm->Line( x2, y2 );
@@ -91,7 +142,7 @@ static void Object_ButtonDraw( HSPOBJINFO *info )
 				col1 = btn->push_x; col2 = btn->push_y;
 			}
 		} else {
-			tcol = 0xff808080;
+			tcol = 0x808080;
 		}
 		bm->gmode = 3;
 		bm->gfrate = 255;
@@ -113,7 +164,197 @@ static void Object_ButtonDraw( HSPOBJINFO *info )
 		bm->cx++;
 		bm->cy++;
 	}
-	bm->Print( info->btnset->name );
+	bm->Print( (char *)info->btnset->name.c_str() );
+}
+
+static void Object_CheckBoxDraw(HSPOBJINFO *info)
+{
+	Bmscr *bm;
+	int tcol;
+	int bgcol;
+	int x1, x2, y1, y2;
+	int fontmode;
+
+	Object_ApplyFont(info);
+
+	bm = (Bmscr *)info->bm;
+	Hsp3ObjButton *btn = (Hsp3ObjButton *)info->btnset;
+	if (btn == NULL) return;
+
+	tcol = info->fontcolor;
+	if (info->enableflag == 0) tcol = 0xff808080;
+	//if (info->tapflag == 1) tcol = 0xff808080;
+
+	x1 = info->x; y1 = info->y;
+	x2 = info->x + info->sx - 1; y2 = info->y + info->sy - 1;
+
+	bgcol = 0;
+	fontmode = info->fontmode & 3;
+	switch (fontmode) {
+	case HSPOBJ_FONTMODE_OPAQUE:
+		bgcol = 0xff000000 | (info->backcolor & 0xffffff);
+		break;
+	case HSPOBJ_FONTMODE_TRANSPARENT:
+		bgcol = 0x80000000 | ( info->backcolor & 0xffffff );
+		break;
+	default:
+		break;
+	}
+
+	if (bgcol != 0) {
+		bm->gmode = 3;
+		bm->gfrate = bgcol >> 24;
+		bm->Setcolor(bgcol);
+		bm->Boxfill(x1, y1, x2, y2, 1);
+	}
+
+	//bm->gmode = 0;
+	//bm->gfrate = 255;
+	//bm->GradFill(x1 + 1, y1 + 1, info->sx - 2, info->sy - 2, 1, col1, col2);
+	//bm->Setcolor(tcol);
+
+	bm->gmode = 3;
+	bm->gfrate = 255;
+	bm->Setcolor(tcol);
+	bm->cx = x1+ ( info->fontsize * 2 );
+	bm->cy = y1;
+	bm->printoffsety = info->sy;
+	bm->Print((char *)info->btnset->name.c_str());
+
+	int fsize = info->fontsize;
+	int y = (info->sy - bm->printsizey)/2;
+	if (y < 0) y = 0;
+	x1 = x1 + fsize / 2;
+	y1 = y1+y;
+	x2 = x1 + fsize;
+	y2 = y1 + bm->printsizey;
+
+	bm->Boxfill(x1 - 1, y1 - 1, x2 + 1, y1);
+	bm->Boxfill(x1 - 1, y2, x2 + 1, y2 + 1);
+	bm->Boxfill(x1 - 1, y1 - 1, x1, y2 + 1);
+	bm->Boxfill(x2, y1 - 1, x2 + 1, y2 + 1);
+
+	if (btn->value) {
+		bm->Boxfill(x1+2, y1+2, x2-2, y2-2);
+	}
+
+}
+
+static void Object_CheckBox(HSPOBJINFO *info, int wparam)
+{
+	if (info->enableflag == 0) return;
+
+	Hsp3ObjBase *btn = info->btnset;
+	if (btn == NULL) return;
+
+	if (btn->value) {
+		bmscr_obj_ival = 0;
+	}
+	else {
+		bmscr_obj_ival = 1;
+	}
+	btn->value = bmscr_obj_ival;
+	Object_SendSetVar(info);
+
+}
+
+static void Object_InputBoxDraw(HSPOBJINFO *info)
+{
+	Bmscr *bm;
+	int tcol;
+	int bgcol;
+	int x1, x2, y1, y2;
+	int fontmode;
+
+	Object_ApplyFont(info);
+
+	bm = (Bmscr *)info->bm;
+	Hsp3ObjInput *btn = (Hsp3ObjInput *)info->btnset;
+	if (btn == NULL) return;
+
+	tcol = info->fontcolor;
+	if (info->enableflag == 0) tcol = 0xff808080;
+
+	x1 = info->x; y1 = info->y;
+	x2 = info->x + info->sx - 1; y2 = info->y + info->sy - 1;
+
+	bgcol = 0;
+	fontmode = info->fontmode & 3;
+	switch (fontmode) {
+	case HSPOBJ_FONTMODE_OPAQUE:
+		bgcol = 0xff000000 | (info->backcolor & 0xffffff);
+		break;
+	case HSPOBJ_FONTMODE_TRANSPARENT:
+		bgcol = 0x80000000 | (info->backcolor & 0xffffff);
+		break;
+	default:
+		break;
+	}
+
+	if (bgcol != 0) {
+		bm->gmode = 3;
+		bm->gfrate = bgcol >> 24;
+		bm->Setcolor(bgcol);
+		bm->Boxfill(x1, y1, x2, y2, 1);
+
+		bm->Setcolor(0);
+		bm->Boxfill(x1, y1, x2, y1+1);
+		bm->Boxfill(x1, y2-1, x2, y2);
+		bm->Boxfill(x1, y1, x1+1, y2);
+		bm->Boxfill(x2-1, y1, x2, y2);
+	}
+
+	bm->gmode = 3;
+	bm->gfrate = 255;
+	bm->Setcolor(tcol);
+	bm->cx = x1+2;
+	bm->cy = y1+2;
+	bm->printoffsety = info->sy;
+	bm->Print(&btn->tpos);
+}
+
+
+static void Object_SetValueName(HSPOBJINFO *info, int type, void *ptr)
+{
+	Hsp3ObjBase *btn = info->btnset;
+	if (btn == NULL) return;
+
+	switch (type) {
+	case TYPE_STRING:
+		btn->name = (char *)ptr;
+		break;
+	case TYPE_INUM:
+	case TYPE_DNUM:
+		btn->name = (char *)HspVarCoreCnv(type, TYPE_STRING, ptr);
+		break;
+	default:
+		throw HSPERR_TYPE_MISMATCH;
+	}
+}
+
+static void Object_SetValue(HSPOBJINFO *info, int type, void *ptr)
+{
+	Hsp3ObjBase *btn = info->btnset;
+	if (btn == NULL) return;
+
+	switch (type) {
+	case TYPE_STRING:
+		btn->name = (char *)ptr;
+		break;
+	case TYPE_INUM:
+		btn->value = *(int *)ptr;
+		bmscr_obj_ival = btn->value;
+		Object_SendSetVar(info);
+		break;
+	case TYPE_DNUM:
+		btn->dval = *(HSPREAL *)ptr;
+		btn->value = (int)btn->dval;
+		bmscr_obj_ival = btn->value;
+		Object_SendSetVar(info);
+		break;
+	default:
+		throw HSPERR_TYPE_MISMATCH;
+	}
 }
 
 /*---------------------------------------------------------------------------*/
@@ -155,6 +396,34 @@ void Bmscr::SetObjectMode( int id, int owmode )
 }
 
 
+void Bmscr::SetHSPObjectFont(int id)
+{
+	int a;
+	HSPOBJINFO *obj;
+
+	obj = GetHSPObjectSafe(id);
+	if (obj->owmode == HSPOBJ_NONE) return;
+
+	a = objmode & 3;
+	switch (a) {
+	case 0:
+	default:
+		obj->fontsize = 18;
+		break;
+	case 1:
+		obj->fontmode |= HSPOBJ_FONTMODE_GUIFONT;
+		obj->fontsize = 12;
+		break;
+	case 2:
+		obj->fontsize = font_cursize;
+		obj->fontstyle = font_curstyle;
+		obj->owmode |= HSPOBJ_OPTION_SETFONT;
+		obj->fontname = new std::string(font_curname);
+		break;
+	}
+}
+
+
 int Bmscr::NewHSPObject( void )
 {
 	//		空きIDを探す
@@ -193,6 +462,7 @@ HSPOBJINFO *Bmscr::AddHSPObject( int id, int mode )
 	obj->owid = 0;
 	obj->owsize = 0;
 	obj->btnset = NULL;
+	obj->varset = NULL;
 
 	obj->x = this->cx;
 	obj->y = this->cy;
@@ -200,6 +470,30 @@ HSPOBJINFO *Bmscr::AddHSPObject( int id, int mode )
 	obj->sy = this->oy;
 	obj->tapflag = 0;
 	obj->srcid = -1;
+
+	obj->fontmode = HSPOBJ_FONTMODE_OPAQUE;
+	obj->fontedit = 0;
+	obj->fontsize = 0;
+	obj->fontstyle = 0;
+	obj->fontname = NULL;
+
+	if (objmode & 4) {
+		obj->fontcolor = objcolor;
+		obj->backcolor = color;
+	}
+	else {
+		obj->fontcolor = 0;
+		obj->backcolor = 0xe1e1e1;
+	}
+
+	if (objmode & 8) {
+		obj->fontmode = HSPOBJ_FONTMODE_TRANSPARENT;
+	}
+	if (objmode & 16) {
+		obj->fontmode = HSPOBJ_FONTMODE_NONE;
+	}
+
+	SetHSPObjectFont(id);
 
 	return obj;
 }
@@ -227,49 +521,55 @@ void Bmscr::DeleteHSPObject( int id )
 
 	if ( obj->owmode == HSPOBJ_NONE ) return;
 	if ( obj->func_delete != NULL ) obj->func_delete( obj );
-	if ( obj->btnset != NULL ) {
-		sbFree( obj->btnset ); obj->btnset = NULL;
+	if (obj->btnset != NULL) {
+		delete obj->btnset; obj->btnset = NULL;
+	}
+	if (obj->varset != NULL) {
+		sbFree(obj->varset); obj->varset = NULL;
+	}
+	if (obj->fontname != NULL) {
+		delete obj->fontname; obj->fontname = NULL;
 	}
 	obj->owmode = HSPOBJ_NONE;
 }
 
 
-int Bmscr::AddHSPObjectButton( char *name, int flag, void *callptr )
+void Bmscr::UpdateHSPObject(int id, int type, void *ptr)
 {
-	//		create push button
+	//		オブジェクトに値を設定する
 	//
-	int id;
 	HSPOBJINFO *obj;
-	HSP3BTNSET *btn;
+	obj = GetHSPObjectSafe(id);
+	if (obj->func_objprm != NULL) {
+		obj->func_objprm(obj, type, ptr);
+	}
+	else {
+		throw HSPERR_UNSUPPORTED_FUNCTION;
+	}
+}
 
-	id = NewHSPObject();
-	obj = AddHSPObject( id, HSPOBJ_TAB_ENABLE );
 
-	obj->owid = -1;
-	obj->owsize = id;
+HSPOBJINFO *Bmscr::AddHSPVarEventObject(int id, int mode, PVal *pval, APTR aptr, int type, void *ptr)
+{
+	HSPOBJINFO *obj;
+	HSP3VARSET *vset;
+	obj = AddHSPObject(id, mode);
 
-	btn = (HSP3BTNSET *)sbAlloc( sizeof(HSP3BTNSET) );
-	obj->btnset = btn;
+	vset = (HSP3VARSET *)sbAlloc(sizeof(HSP3VARSET));
+	obj->varset = vset;
 
-	strncpy( btn->name, name, 63 );
-	btn->jumpmode = flag;
-	btn->ptr = callptr;
-	btn->messx = -1;
-	btn->messy = -1;
-
-	obj->func_draw = Object_ButtonDraw;
-	obj->func_notice = Object_JumpEvent;
-	//obj->func_delete = Object_WindowDelete;
-	//obj->func_objprm = Object_SetInputBox;
-	Posinc( oy );
-	return id;
+	vset->pval = pval;
+	vset->aptr = aptr;
+	vset->type = type;
+	vset->ptr = ptr;
+	return obj;
 }
 
 
 void Bmscr::SetButtonImage( int id, int bufid, int x1, int y1, int x2, int y2, int x3, int y3 )
 {
 	HSPOBJINFO *obj;
-	HSP3BTNSET *bset;
+	Hsp3ObjButton *bset;
 
 	obj = GetHSPObjectSafe( id );
 
@@ -277,7 +577,7 @@ void Bmscr::SetButtonImage( int id, int bufid, int x1, int y1, int x2, int y2, i
 
 	obj->srcid = bufid;
 
-	bset = obj->btnset;
+	bset = (Hsp3ObjButton *)obj->btnset;
 	if ( bset != NULL ) {
 		bset->normal_x = x1;
 		bset->normal_y = y1;
@@ -288,6 +588,114 @@ void Bmscr::SetButtonImage( int id, int bufid, int x1, int y1, int x2, int y2, i
 	}
 }
 
+
+int Bmscr::AddHSPObjectButton(char *name, int flag, void *callptr)
+{
+	//		create push button
+	//
+	int id;
+	HSPOBJINFO *obj;
+	Hsp3ObjButton *btn;
+
+	id = NewHSPObject();
+	obj = AddHSPObject(id, HSPOBJ_TAB_ENABLE | HSPOBJ_OPTION_SETFONT);
+
+	obj->owid = -1;
+	obj->owsize = id;
+
+	btn = new Hsp3ObjButton;
+	obj->btnset = btn;
+
+	btn->name = name;
+	btn->jumpmode = flag;
+	btn->ptr = callptr;
+
+	obj->func_draw = Object_ButtonDraw;
+	obj->func_notice = Object_JumpEvent;
+	obj->func_objprm = Object_SetValueName;
+	//obj->func_delete = Object_WindowDelete;
+	Posinc(oy);
+	return id;
+}
+
+
+int Bmscr::AddHSPObjectCheckBox(char *name, PVal *pval, APTR aptr)
+{
+	//		create push button
+	//
+	int id;
+	int *iptr;
+	HSPOBJINFO *obj;
+	Hsp3ObjBase *btn;
+
+	id = NewHSPObject();
+	obj = AddHSPVarEventObject(id, HSPOBJ_TAB_ENABLE | HSPOBJ_OPTION_SETFONT, pval, aptr, TYPE_INUM, (void *)&bmscr_obj_ival);
+
+	btn = new Hsp3ObjButton;
+	obj->btnset = btn;
+	btn->name = name;
+
+	obj->func_draw = Object_CheckBoxDraw;
+	obj->func_notice = Object_CheckBox;
+	obj->func_objprm = Object_SetValue;
+	//obj->func_delete = Object_WindowDelete;
+	Posinc(oy);
+
+	iptr = (int *)HspVarCorePtrAPTR(pval, aptr);
+	if (*iptr) btn->value = 1;
+
+	return id;
+}
+
+
+int Bmscr::AddHSPObjectInput(PVal *pval, APTR aptr, int sizex, int sizey, char *defval, int limit, int mode)
+{
+	//		create input box
+	//
+	int id, max, tabstop, type;
+	HSPOBJINFO *obj;
+	Hsp3ObjInput *btn;
+
+	id = NewHSPObject();
+	max = 16;
+	tabstop = HSPOBJ_TAB_ENABLE;
+	type = mode & 15;
+	if (type == HSPOBJ_INPUT_STR) max = limit;
+
+//	if (mode & HSPOBJ_INPUT_HSCROLL) ws |= WS_HSCROLL;
+	if (mode & HSPOBJ_INPUT_MULTILINE) {
+		tabstop = HSPOBJ_TAB_DISABLE;
+		//tabstop |= HSPOBJ_TAB_SKIP;
+		max = 0;
+	}
+	else {
+		tabstop |= HSPOBJ_TAB_SELALLTEXT;
+	}
+
+	if (mode & HSPOBJ_INPUT_READONLY) {
+		tabstop = HSPOBJ_TAB_SKIP;
+	}
+
+	obj = AddHSPVarEventObject(id, tabstop | HSPOBJ_OPTION_SETFONT, pval, aptr, type, (void *)&bmscr_obj_ival);
+
+	btn = new Hsp3ObjInput;
+	obj->btnset = btn;
+	//btn->name = defval;
+	btn->tpos.setCaret(0);
+	btn->tpos.setString(defval);
+
+	obj->func_draw = Object_InputBoxDraw;
+	//obj->func_delete = Object_WindowDelete;
+	//obj->func_objprm = Object_SetInputBox;
+
+	Posinc(sizey);
+	return id;
+}
+
+
+//-------------------------------------------------------
+//	Object Draw Service
+//-------------------------------------------------------
 
 int Bmscr::DrawAllObjects( void )
 {
@@ -399,3 +807,5 @@ int Bmscr::UpdateAllObjects( void )
 
 	return -1;
 }
+
+

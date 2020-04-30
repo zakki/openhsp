@@ -5,12 +5,15 @@
 #ifndef __hspwnd_dish_h
 #define __hspwnd_dish_h
 
+#include <string>
 #include "../hsp3/hsp3config.h"
 #include "../hsp3/hsp3code.h"
 
 //	Window Object Info
 //
 #define HSPOBJ_LIMIT_DEFAULT	128
+
+#define HSPOBJ_OPTION_SETFONT	0x100
 
 #define HSPOBJ_INPUT_STR 2
 #define HSPOBJ_INPUT_DOUBLE 3
@@ -19,11 +22,42 @@
 #define HSPOBJ_INPUT_READONLY 0x200
 #define HSPOBJ_INPUT_HSCROLL 0x400
 
+#define HSPOBJ_FONTMODE_NONE 0
+#define HSPOBJ_FONTMODE_OPAQUE 1
+#define HSPOBJ_FONTMODE_TRANSPARENT 2
+#define HSPOBJ_FONTMODE_GUIFONT 4
+
 #define HSPOBJ_NONE 0
 #define HSPOBJ_TAB_ENABLE 1
 #define HSPOBJ_TAB_DISABLE 2
 #define HSPOBJ_TAB_SKIP 3
 #define HSPOBJ_TAB_SELALLTEXT 4
+
+#define TEXMESPOS_MAX 256			// ポジション情報の最大数
+
+class texmesPos
+{
+public:
+	//	TEXMESPOS class
+	//
+	texmesPos(void);
+	~texmesPos(void);
+	void setString( char *str );
+	int getPosX( int id );
+	int getPosFromX( int x );
+	void setCaret(int id);
+	char *getMessage(void);
+
+	int texid;					// texmes ID
+	int length;					// string length
+	int maxlength;				// maxlength
+	std::string msg;			// button name
+
+	int caret;					// caret flag
+	int caret_cnt;				// caret blink counter
+
+	short pos[TEXMESPOS_MAX];	// position table
+};
 
 typedef struct HSP3VARSET
 {
@@ -35,15 +69,24 @@ typedef struct HSP3VARSET
 	void *ptr;
 } HSP3VARSET;
 
-typedef struct HSP3BTNSET
-{
-	//	HSP3BTNSET structure
-	//	(HSP3VARSETと同サイズにすること)
+class Hsp3ObjBase {
+public:
+	//	HSP3OBJBASE
 	//
-	char name[64];				// button name
+	Hsp3ObjBase(void);
+	~Hsp3ObjBase(void);
+	std::string name;			// button name
 	short messx, messy;			// message rect size
+	int value;					// master value
+	HSPREAL dval;				// master value (dval)
+};
 
-	//	参照元
+class Hsp3ObjButton : public Hsp3ObjBase {
+public:
+	//	Hsp3Object for button
+	//
+
+	//	image参照元
 	short normal_x, normal_y;	// 通常時
 	short push_x, push_y;		// 押下時
 	short focus_x, focus_y;		// フォーカス時
@@ -51,7 +94,21 @@ typedef struct HSP3BTNSET
 	short jumpmode;				// jump mode
 	short ext;					// dummy
 	void *ptr;					// jump 呼び出し先
-} HSP3BTNSET;
+};
+
+class Hsp3ObjChkbox : public Hsp3ObjBase {
+public:
+	//	Hsp3Object for check box
+	//
+
+};
+
+class Hsp3ObjInput : public Hsp3ObjBase {
+public:
+	//	Hsp3Object for input box
+	//
+	texmesPos tpos;
+};
 
 typedef struct HSPOBJINFO
 {
@@ -70,7 +127,16 @@ typedef struct HSPOBJINFO
 	short tapflag;		// タップフラグ
 	short srcid;		// 参照BufferID
 
-	HSP3BTNSET *btnset;	// objectから設定される情報
+	short fontmode;		// フォント設定モード(HSPOBJ_FONTMODE_*)
+	short fontedit;		// フォントエディット(0=none/1=edit/2=multiline)
+	short fontsize;		// フォントサイズ
+	short fontstyle;	// フォントスタイル
+	int fontcolor;		// テキスト色
+	int backcolor;		// 背景色
+	std::string *fontname;	// font name
+
+	Hsp3ObjBase *btnset;	// objectから設定される情報
+	HSP3VARSET *varset;	// objectから設定される情報
 
 	//		callback function
 	void	(*func_draw)( struct HSPOBJINFO * );
@@ -166,6 +232,7 @@ public:
 	void Title( char *str );
 	void Setcolor( int a1, int a2, int a3 );
 	void Setcolor( int icolor );
+	void Setcolor2( int rgbcolor );
 	void SetMulcolor( int a1, int a2, int a3 );
 	void SetHSVColor( int hval, int sval, int vval );
 	int BmpSave( char *fname );
@@ -174,8 +241,9 @@ public:
 	void SetFontInternal( char *fontname, int size, int style );
 	void SetDefaultFont( void );
 
-	void Print( char *mes );
-	void Boxfill( int x1,int y1,int x2,int y2 );
+	void Print(char *mes, int sw = 0);
+	void Print(texmesPos *tpos);
+	void Boxfill(int x1, int y1, int x2, int y2, int mode=0);
 	void Circle( int x1,int y1,int x2,int y2, int mode );
 	int Pget( int xx, int yy );
 	void Pset( int xx,int yy );
@@ -203,14 +271,22 @@ public:
 	HSPOBJINFO *AddHSPObject( int id, int mode );
 	HSPOBJINFO *GetHSPObject( int id );
 	HSPOBJINFO *GetHSPObjectSafe( int id );
+	HSPOBJINFO *AddHSPVarEventObject(int id, int mode, PVal *pval, APTR aptr, int type, void *ptr);
 	void DeleteHSPObject( int id );
 	void EnableObject( int id, int sw );
 	void SetObjectMode( int id, int owmode );
 	int DrawAllObjects( void );
 	int UpdateAllObjects( void );
 
+	void SetButtonImage(int id, int bufid, int x1, int y1, int x2, int y2, int x3, int y3);
+	void SetHSPObjectFont(int id);
+	void SendHSPObjectNotice(int wparam);
+	void UpdateHSPObject(int id, int type, void *ptr);
+
 	int AddHSPObjectButton( char *name, int eventid, void *callptr );
-	void SetButtonImage( int id, int bufid, int x1, int y1, int x2, int y2, int x3, int y3 );
+	int AddHSPObjectCheckBox(char *name, PVal *pval, APTR aptr);
+	int AddHSPObjectInput(PVal *pval, APTR aptr, int sizex, int sizey, char *defval, int limit, int mode);
+	int AddHSPObjectMultiBox(PVal *pval, APTR aptr, int psize, char *defval, int mode);
 
 	void setMTouch( HSP3MTOUCH *mt, int x, int y, bool touch );
 	void setMTouchByPoint( int old_x, int old_y, int x, int y, bool touch );
@@ -264,7 +340,7 @@ public:
 //	HFONT	hfont;				// FONT handle
 //	HFONT	holdfon;			// FONT handle (old)
 //	COLORREF color;				// text color code
-	int		 color;				// text color code
+	int		color;				// text color code
 	int		textspeed;			// slow text speed
 	int		cx2,cy2;			// slow text cursor x,y
 	int		tex,tey;			// slow text limit x,y
@@ -320,6 +396,8 @@ public:
 	int		buffer_option;				// buffer options for off-screen
 	void	*master_buffer;				// buffer pointer to off-screen
 	HSPREAL	accel_value[BMSCR_SAVEPOS_MAX];		// Accelerometer sensor value
+
+	int		objcolor;					// object color code
 
 	int		vp_flag;					// Viewport enable flag (0=none)
 	float	vp_viewtrans[4];			// View Translate X,Y,Z,W
@@ -428,7 +506,7 @@ typedef struct BMSCR
 //	HFONT	hfont;				// FONT handle
 //	HFONT	holdfon;			// FONT handle (old)
 //	COLORREF color;				// text color code
-	int		 color;				// text color code
+	int		color;				// text color code
 	int		textspeed;			// slow text speed
 	int		cx2,cy2;			// slow text cursor x,y
 	int		tex,tey;			// slow text limit x,y
@@ -484,6 +562,8 @@ typedef struct BMSCR
 	int		buffer_option;				// buffer options for off-screen
 	void* master_buffer;				// buffer pointer to off-screen
 	HSPREAL	accel_value[BMSCR_SAVEPOS_MAX];		// Accelerometer sensor value
+
+	int		objcolor;					// object color code
 
 	int		vp_flag;					// Viewport enable flag (0=none)
 	float	vp_viewtrans[4];			// View Translate X,Y,Z,W

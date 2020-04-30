@@ -694,6 +694,33 @@ int hgio_texload( BMSCR *bm, char *fname )
 }
 
 
+int hgio_mestex(BMSCR *bm, texmesPos *tpos)
+{
+	//		TEXMESPOS‚É‚æ‚é•¶Žš•\Ž¦
+	//
+	int xsize, ysize;
+	int areasx, areasy;
+	if ((bm->type != HSPWND_TYPE_MAIN) && (bm->type != HSPWND_TYPE_OFFSCREEN)) return -1;
+	if (drawflag == 0) hgio_render_start();
+
+	// print per line
+	if (bm->cx >= bm->sx) return -1;
+	if (bm->cy >= bm->sy) return -1;
+
+	if (game) {
+		areasx = bm->printoffsetx;
+		areasy = bm->printoffsety;
+		xsize = game->drawFont(bm->cx, bm->cy, tpos, (gameplay::Vector4*)bm->colorvalue, &ysize, areasx, areasy);
+		bm->printoffsetx = 0;
+		bm->printoffsety = 0;
+		if (xsize > bm->printsizex) bm->printsizex = xsize;
+		bm->printsizey += ysize;
+		bm->cy += ysize;
+	}
+	return 0;
+}
+
+
 static void hgio_messub(BMSCR* bm, char* str1)
 {
 	//		mes,print •¶Žš•\Ž¦
@@ -704,6 +731,7 @@ static void hgio_messub(BMSCR* bm, char* str1)
 	if (drawflag == 0) hgio_render_start();
 
 	// print per line
+	if (bm->cx >= bm->sx) return;
 	if (bm->cy >= bm->sy) return;
 
 	if (game) {
@@ -828,11 +856,11 @@ void hgio_line2( float x, float y )
 }
 
 
-void hgio_boxf( BMSCR *bm, float x1, float y1, float x2, float y2 )
+void hgio_boxfAlpha(BMSCR *bm, float x1, float y1, float x2, float y2, int alphamode)
 {
 	//		‹éŒ`•`‰æ
 	//
-	if ( bm == NULL ) return;
+	if (bm == NULL) return;
 	if ((bm->type != HSPWND_TYPE_MAIN) && (bm->type != HSPWND_TYPE_OFFSCREEN)) return;
 	if (drawflag == 0) hgio_render_start();
 
@@ -842,22 +870,28 @@ void hgio_boxf( BMSCR *bm, float x1, float y1, float x2, float y2 )
 	float b_val = bm->colorvalue[2];
 	//float a_val = bm->colorvalue[3];
 
-	float a_val = game->setPolyColorBlend( 0, 0 );
-	game->setPolyDiffuse2D( r_val, g_val, b_val, a_val );
+	float a_val = game->setPolyColorBlend(0, 0);
+	game->setPolyDiffuse2D(r_val, g_val, b_val, a_val);
 
 	*v++ = x1; *v++ = y2; v++;
-	v+=4;
+	v += 4;
 	//*v++ = r_val; *v++ = g_val; *v++ = b_val; *v++ = a_val;
 	*v++ = x1; *v++ = y1; v++;
-	v+=4;
+	v += 4;
 	//*v++ = r_val; *v++ = g_val; *v++ = b_val; *v++ = a_val;
 	*v++ = x2; *v++ = y2; v++;
-	v+=4;
+	v += 4;
 	//*v++ = r_val; *v++ = g_val; *v++ = b_val; *v++ = a_val;
 	*v++ = x2; *v++ = y1; v++;
 	//*v++ = r_val; *v++ = g_val; *v++ = b_val; *v++ = a_val;
 
 	game->drawPolyColor2D();
+}
+
+
+void hgio_boxf( BMSCR *bm, float x1, float y1, float x2, float y2 )
+{
+	hgio_boxfAlpha(bm, x1, y1, x2, y2, 0);
 }
 
 
@@ -1806,7 +1840,6 @@ void hgio_mtouchidf( int pointid, float xx, float yy, int button, int opt )
     realy=(int)(yy*nDestHeight);
 	hgio_mtouchid(pointid,realx,realy,button,opt);
 }
-
 
 #endif
 

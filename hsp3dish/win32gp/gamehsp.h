@@ -356,7 +356,8 @@ public:
 
 	void drawTest( int matid );
 	void setFont(char *fontname, int size, int style);
-	int drawFont(int x, int y, char* text, Vector4* p_color, int* out_ysize, int areasx=0, int areasy=0);
+	int drawFont(int x, int y, char* text, Vector4* p_color, int* out_ysize, int areasx = 0, int areasy = 0);
+	int drawFont(int x, int y, texmesPos* tpos, Vector4* p_color, int* out_ysize, int areasx = 0, int areasy = 0);
 
 	int getObjectVector( int objid, int moc, Vector4 *prm );
 	void getNodeVector( gpobj *obj, Node *node, int moc, Vector4 *prm );
@@ -440,6 +441,7 @@ public:
 	*/
 	void texmesProc(void);
 	void texmesDraw(int x, int y, char* msg, Vector4* p_color,int areasx=0, int areasy=0);
+	void texmesDrawId(int x, int y, int id, Vector4* p_color, int areasx=0, int areasy=0);
 
 protected:
     /**
