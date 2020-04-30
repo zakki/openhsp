@@ -3,6 +3,7 @@
 #include "../../hsp3/hsp3config.h"
 #include "../supio.h"
 #include "../sysreq.h"
+#include "../hspwnd.h"
 
 #include "shader_sprite.h"
 
@@ -2686,9 +2687,17 @@ void gamehsp::texmesProc(void)
 
 void gamehsp::texmesDraw(int x, int y, char* msg, Vector4* p_color, int areasx, int areasy)
 {
+	int id;
+	id = tmes.texmesRegist(msg);
+	if (id < 0) return;
+	texmesDrawId(x, y, id, p_color, areasx, areasy);
+}
+
+
+void gamehsp::texmesDrawId(int x, int y, int id, Vector4* p_color, int areasx, int areasy)
+{
 	//		フォントメッセージを表示する
 	//
-	int id;
 	int offsetx, offsety;
 	texmes* tex;
 //	float psx, psy;
@@ -2697,9 +2706,7 @@ void gamehsp::texmesDraw(int x, int y, char* msg, Vector4* p_color, int areasx, 
 
 	float a_val = 1.0f;
 
-	id = tmes.texmesRegist(msg);
-	if (id < 0) return;
-	tex = tmes.texmesGet(id);
+	tex = tmes.texmesUpdateLife(id);
 	if (tex == NULL) return;
 
 	//		meshのTextureを差し替える
@@ -2759,6 +2766,31 @@ void gamehsp::texmesDraw(int x, int y, char* msg, Vector4* p_color, int areasx, 
 	_meshBatch_font->draw();
 
 	mp->setValue(0);
+}
+
+
+int gamehsp::drawFont(int x, int y, texmesPos* tpos, Vector4* p_color, int* out_ysize, int areasx, int areasy)
+{
+	// フォントで描画(tpos版)
+	int xsize, ysize;
+
+	if (GetSysReq(SYSREQ_USEGPBFONT)) {
+		return 0;
+	}
+
+	int id = tpos->texid;
+	if (id < 0) {
+		id = tmes.texmesRegist(tpos->getMessage(), tpos);
+		if (id < 0) return -1;
+		tpos->texid = id;
+	}
+
+	texmesDrawId(x, y, id, p_color, areasx, areasy);
+	xsize = tmes._area_px;
+	ysize = tmes._area_py;
+
+	*out_ysize = ysize;
+	return xsize;
 }
 
 

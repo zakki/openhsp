@@ -285,6 +285,7 @@
     <ClCompile Include="..\geometry.cpp" />
     <ClCompile Include="..\hsp3gr_dish.cpp" />
     <ClCompile Include="..\hspwnd_dish.cpp" />
+    <ClCompile Include="..\hspwnd_edit.cpp" />
     <ClCompile Include="..\hspwnd_obj.cpp" />
     <ClCompile Include="..\random.cpp" />
     <ClCompile Include="..\sysreq.cpp" />

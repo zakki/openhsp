@@ -76,30 +76,30 @@ typedef struct BGMAP
 	int viewx, viewy;	//	Map view axis
 	int buferid;		//	Map parts buffer ID
 	int bgoption;		//	BG option
-	int tpflag;			//	åˆæˆãƒ‘ãƒ©ãƒ¡ãƒ¼ã‚¿ãƒ¼
+	int tpflag;			//	‡¬ƒpƒ‰ƒ[ƒ^[
 } BGMAP;
 
 typedef struct SPOBJ
 {
 	int	fl;				//	exist flag (ESSPFLAG_*)
-	int xx;				//  X axis (16bitå›ºå®šå°‘æ•°)
-	int yy;				//	Y axis (16bitå›ºå®šå°‘æ•°)
+	int xx;				//  X axis (16bitŒÅ’è­”)
+	int yy;				//	Y axis (16bitŒÅ’è­”)
 	int px;				//	Gravity/Move X parameters
 	int py;				//	Gravity/Move X parameters
 	int prg;			//	Move program counter
 	int ani;			//	chr anim counter
 	int chr;			//	chr code
 	int type;			//	Attribute type
-	int fspx,fspy;		//  è½ä¸‹é€Ÿåº¦
-	int bound;			//  å›ºã•
-	int boundflag;		//  ãƒã‚¦ãƒ³ãƒ‰ã•ã›ã‚‹ãƒ•ãƒ©ã‚°(1=X 2=Y)
-	int option;			//	è¡¨ç¤ºã‚ªãƒ—ã‚·ãƒ§ãƒ³ (ESSPOPT_*)
-	int priority;		//	å„ªå…ˆé †ä½
-	int tpflag;			//	Î±å€¤(0-255)+effectãƒ‘ãƒ©ãƒ¡ãƒ¼ã‚¿ãƒ¼
-	int fadeprm;		//	Î±ãƒ•ã‚§ãƒ¼ãƒ‰ãƒ‘ãƒ©ãƒ¡ãƒ¼ã‚¿ãƒ¼
-	int zoomx;			//	Xæ–¹å‘å€ç‡(16bitå›ºå®šå°‘æ•°)
-	int zoomy;			//	Yæ–¹å‘å€ç‡(16bitå›ºå®šå°‘æ•°)
-	int	rotz;			//	å›è»¢è§’åº¦
+	int fspx,fspy;		//  —‰º‘¬“x
+	int bound;			//  ŒÅ‚³
+	int boundflag;		//  ƒoƒEƒ“ƒh‚³‚¹‚éƒtƒ‰ƒO(1=X 2=Y)
+	int option;			//	•\¦ƒIƒvƒVƒ‡ƒ“ (ESSPOPT_*)
+	int priority;		//	—Dæ‡ˆÊ
+	int tpflag;			//	ƒ¿’l(0-255)+effectƒpƒ‰ƒ[ƒ^[
+	int fadeprm;		//	ƒ¿ƒtƒF[ƒhƒpƒ‰ƒ[ƒ^[
+	int zoomx;			//	X•ûŒü”{—¦(16bitŒÅ’è­”)
+	int zoomy;			//	Y•ûŒü”{—¦(16bitŒÅ’è­”)
+	int	rotz;			//	‰ñ“]Šp“x
 	int	splink;			//	link to other sprite
 } SPOBJ;
 
@@ -192,11 +192,11 @@ private:
 	int		ox1, oy1, ox2, oy2;	// valid area
 	int		land_x, land_y;		// common ground axis
 	double	pi, pans;
-	int		resox, resoy;		// ç”»é¢è§£åƒåº¦
-	int		rrate;				// å‘¨ã®åˆ†è§£èƒ½
-	int* vpx, *vpy;				// sin,cosãƒ†ãƒ¼ãƒ–ãƒ«
+	int		resox, resoy;		// ‰æ–Ê‰ğ‘œ“x
+	int		rrate;				// ü‚Ì•ª‰ğ”\
+	int* vpx, *vpy;				// sin,cosƒe[ƒuƒ‹
 
-	int		dotshift;			// åº§æ¨™ã‚·ãƒ•ãƒˆå€¤
+	int		dotshift;			// À•WƒVƒtƒg’l
 
 	int		df_bsx, df_bsy, df_colx, df_coly;
 	int		df_colsx, df_colsy, df_tpflag;

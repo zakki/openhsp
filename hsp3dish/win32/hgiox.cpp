@@ -657,12 +657,6 @@ void hgio_resume( void )
 }
 
 
-void hgio_text_render( void )
-{
-	//	テキスト画面描画
-}
-
-
 int hgio_render_end( void )
 {
 	HRESULT hr;
@@ -1005,15 +999,35 @@ static void SetAlphaMode( int p_alpha )
 }
 
 
-static int GetCopyTexAlpha( BMSCR *bm )
+static int GetCopyTexAlpha(BMSCR *bm)
 {
+	//		ブレント設定
 	int alpha;
 
-	SetAlphaMode( bm->gmode );
-	if ( bm->gmode < 3 ) {
+	SetAlphaMode(bm->gmode);
+	if (bm->gmode < 3) {
 		alpha = 0xff000000;
-	} else {
-		alpha = ( bm->gfrate & 0xff ) << 24;
+	}
+	else {
+		alpha = (bm->gfrate & 0xff) << 24;
+	}
+	return alpha;
+}
+
+
+static int GetCopyTexAlphaMes(BMSCR *bm)
+{
+	//		Alphaを含むテクスチャ用のブレント設定
+	int alpha;
+	int gmode;
+	gmode = bm->gmode;
+	if (gmode < 3) gmode = 3;
+	SetAlphaMode(gmode);
+	if (bm->gmode < 3) {
+		alpha = 0xff000000;
+	}
+	else {
+		alpha = (bm->gfrate & 0xff) << 24;
 	}
 	return alpha;
 }
@@ -1115,21 +1129,29 @@ void hgio_line2( float x, float y )
 }
 
 
-void hgio_boxf( BMSCR *bm, float x1, float y1, float x2, float y2 )
+void hgio_boxfAlpha(BMSCR *bm, float x1, float y1, float x2, float y2, int alphamode)
 {
 	//		矩形描画
 	//
+	int col;
 	D3DEXVERTEXC *v;
 
-	if ( bm == NULL ) return;
-	if ( bm->type != HSPWND_TYPE_MAIN ) throw HSPERR_UNSUPPORTED_FUNCTION;
+	if (bm == NULL) return;
+	if (bm->type != HSPWND_TYPE_MAIN) throw HSPERR_UNSUPPORTED_FUNCTION;
 	if (drawflag == 0) hgio_render_start();
 
-	ChangeTex( -1 );
-	SetAlphaMode( 0 );
+	ChangeTex(-1);
+
+	if (alphamode == 0) {
+		col = bm->color;
+		SetAlphaMode(0);
+	}
+	else {
+		col = GetCopyTexAlpha(bm) | (bm->color & 0xffffff);
+	}
 
 	v = vertex2DEXC;
-	v[0].color = v[1].color = v[2].color = v[3].color = bm->color;
+	v[0].color = v[1].color = v[2].color = v[3].color = col;
 
 	v[3].x = (float)x1;
 	v[3].y = (float)y1;
@@ -1139,13 +1161,19 @@ void hgio_boxf( BMSCR *bm, float x1, float y1, float x2, float y2 )
 	v[1].y = (float)y2;
 	v[0].x = (float)x1;
 	v[0].y = (float)y2;
-	
-	d3ddev->SetRenderState( D3DRS_ALPHATESTENABLE, FALSE );
+
+	d3ddev->SetRenderState(D3DRS_ALPHATESTENABLE, FALSE);
 
 	//デバイスに使用する頂点フォーマットをセットする
 	d3ddev->SetVertexShader(D3DFVF_EXVERTEXC);
 	// とりあえず直接描画(四角形)
-	d3ddev->DrawPrimitiveUP(D3DPT_TRIANGLEFAN,2, vertex2DEXC,sizeof(D3DEXVERTEXC));
+	d3ddev->DrawPrimitiveUP(D3DPT_TRIANGLEFAN, 2, vertex2DEXC, sizeof(D3DEXVERTEXC));
+}
+
+
+void hgio_boxf( BMSCR *bm, float x1, float y1, float x2, float y2 )
+{
+	hgio_boxfAlpha(bm, x1, y1, x2, y2, 0);
 }
 
 
@@ -1365,9 +1393,17 @@ void hgio_fontcopy(BMSCR *bm, int psx, int psy, int texid)
 	ty0 *= sy;
 	ty1 *= sy;
 
+	int col;
+	if (GetSysReq(SYSREQ_FIXMESALPHA)) {
+		col = bm->color;
+		SetAlphaMode(2);
+	}
+	else {
+		col = GetCopyTexAlphaMes(bm) | (bm->color & 0xffffff);
+	}
+
 	v = vertex2DEX;
-	v[0].color = v[1].color = v[2].color = v[3].color = (bm->color);
-	SetAlphaMode(2);
+	v[0].color = v[1].color = v[2].color = v[3].color = col;
 
 	v[3].x = x1;
 	v[3].y = y1;
@@ -1876,23 +1912,65 @@ void hgio_cnvview(BMSCR* bm, int* xaxis, int* yaxis)
 }
 
 
-static void hgio_messub(BMSCR* bm, char* msg)
+int hgio_mestex(BMSCR *bm, texmesPos *tpos)
+{
+	//		TEXMESPOSによる文字表示
+	//
+	int xsize, ysize;
+	if ((bm->type != HSPWND_TYPE_MAIN) && (bm->type != HSPWND_TYPE_OFFSCREEN)) return -1;
+	if (drawflag == 0) hgio_render_start();
+
+	// print per line
+	if (bm->cy >= bm->sy) return -1;
+	if (bm->cx >= bm->sx) return -1;
+
+	int id = tpos->texid;
+	if (id < 0) {
+		id = tmes.texmesRegist(tpos->getMessage(), tpos);
+		if (id < 0) return -1;
+		tpos->texid = id;
+	}
+
+	texmes* tex;
+	tex = tmes.texmesUpdateLife(id);
+	if (tex == NULL) return -1;
+
+	xsize = tex->sx;
+	ysize = tex->sy;
+
+	hgio_fontcopy(bm, xsize, ysize, tex->_texture);
+
+	bm->cy += ysize;
+	bm->printsizex = xsize;
+	bm->printsizey = ysize;
+	return 0;
+}
+
+
+int hgio_mes(BMSCR* bm, char* msg)
 {
 	//		mes,print 文字表示
 	//
 	int xsize, ysize;
-	if ((bm->type != HSPWND_TYPE_MAIN) && (bm->type != HSPWND_TYPE_OFFSCREEN)) return;
+	if ((bm->type != HSPWND_TYPE_MAIN) && (bm->type != HSPWND_TYPE_OFFSCREEN)) return -1;
 	if (drawflag == 0) hgio_render_start();
 
 	// print per line
-	if (bm->cy >= bm->sy) return;
+	if (bm->cy >= bm->sy) return -1;
+
+	if (*msg == 0) {
+		ysize = tmes._fontsize;
+		bm->printsizey += ysize;
+		bm->cy += ysize;
+		return 0;
+	}
 
 	int id;
 	texmes* tex;
 	id = tmes.texmesRegist(msg);
-	if (id < 0) return;
+	if (id < 0) return -1;
 	tex = tmes.texmesGet(id);
-	if (tex == NULL) return;
+	if (tex == NULL) return -1;
 
 	xsize = tex->sx;
 	ysize = tex->sy;
@@ -1918,68 +1996,6 @@ static void hgio_messub(BMSCR* bm, char* msg)
 	if (xsize > bm->printsizex) bm->printsizex = xsize;
 	bm->printsizey += ysize;
 	bm->cy += ysize;
-}
-
-
-int hgio_mes(BMSCR* bm, char* str1)
-{
-	//		texmesによる文字表示
-	//
-	int spcur;
-	int org_cy;
-	unsigned char* p;
-	unsigned char* st;
-	unsigned char a1;
-	unsigned char bak_a1;
-
-	org_cy = bm->cy;
-	bm->printsizex = 0;
-	bm->printsizey = 0;
-
-	p = (unsigned char*)str1;
-	st = p;
-	spcur = 0;
-
-	while (1) {
-		a1 = *p;
-		if (a1 == 0) break;
-		if (a1 == 13) {
-			bak_a1 = a1; *p = 0;		// 終端を仮設定
-			hgio_messub(bm, (char*)st);
-			*p = bak_a1;
-			p++; st = p; spcur = 0;		// 終端を戻す
-			a1 = *p;
-			if (a1 == 10) p++;
-			continue;
-		}
-		if (a1 == 10) {
-			bak_a1 = a1; *p = 0;		// 終端を仮設定
-			hgio_messub(bm, (char*)st);
-			*p = bak_a1;
-			p++; st = p; spcur = 0;		// 終端を戻す
-			continue;
-		}
-#ifdef HSPUTF8
-				if (a1&128) {					// UTF8チェック
-					while(1) {
-						unsigned char a2;
-						a2 = *p;
-						if ( a2==0 ) break;
-						if ( ( a2 & 0xc0 ) != 0x80 ) break;
-						p++; spcur++;
-					}
-				} else {
-					p++; spcur++;
-				}
-#endif
-		p++; spcur++;
-	}
-
-	if (spcur > 0) {
-		hgio_messub(bm, (char*)st);
-	}
-
-	bm->cy = org_cy;
 	return 0;
 }
 
