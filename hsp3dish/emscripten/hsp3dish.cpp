@@ -199,7 +199,7 @@ static void hsp3dish_initwindow( engine* p_engine, int sx, int sy, char *windowt
 	printf("INIT %dx%d %s\n", sx,sy,windowtitle);
 
 	// Slightly different SDL initialization
-	if ( SDL_Init(SDL_INIT_VIDEO) != 0 ) {
+	if ( SDL_Init(SDL_INIT_VIDEO | SDL_INIT_JOYSTICK) != 0 ) {
 		printf("Unable to initialize SDL: %s\n", SDL_GetError());
 		return;
 	}

@@ -87,13 +87,18 @@ int hgio_fontsystem_get_texid(void);
 #include "SDL/SDL.h"
 #include "SDL/SDL_image.h"
 #include "SDL/SDL_opengl.h"
+#include "SDL/SDL_joystick.h"
 #else
 #include "SDL2/SDL.h"
 #include "SDL2/SDL_image.h"
 #include "SDL2/SDL_opengl.h"
+#include "SDL2/SDL_joystick.h"
 #endif
 
 #endif
+
+#define MAX_CONTROLLER 32
+static SDL_Joystick *joystick[MAX_CONTROLLER] = {};
 
 #ifdef USE_TTFFONT
 #include <SDL2/SDL_ttf.h>
@@ -897,6 +902,52 @@ bool hgio_getkey( int kcode )
 }
 #endif
 
+#endif
+
+
+#if defined(HSPLINUX) || defined(HSPEMSCRIPTEN)
+int hgio_stick2( int id, int *state )
+{
+	if (id < 0 || id >= MAX_CONTROLLER) {
+		Alertf( "bad id:%d", id );
+		state[0] = 0;
+		return 1;
+	}
+	if (joystick[id] == nullptr) {
+	joystick[id] = SDL_JoystickOpen(id);
+
+	//ジョイスティック名取得
+	const char* name = SDL_JoystickName(id);
+		Alertf( "open id:%d name:%s", id, name );
+	}
+	if (joystick[id] == nullptr) {
+		Alertf( "no joystick id:%d" );
+		return 2;
+	}
+	state[0] = 52;
+	state[1] = 255;
+	int num_axes = SDL_JoystickNumAxes(joystick[id]);
+	if (num_axes > 6)
+		num_axes = 6;
+	for (int i = 0; i < 6; i++) {
+		state[i + 2] = 0x8000 + SDL_JoystickGetAxis(joystick[id], i);
+	}
+	int num_buttons = SDL_JoystickNumButtons(joystick[id]);
+	if (num_buttons > 32)
+		num_buttons = 32;
+	int buttons = 0;
+	int num_pressed = 0;
+	for (int i = 0; i < num_buttons; i++) {
+		int pressed = SDL_JoystickGetButton(joystick[id], i);
+		if (pressed)
+			Alertf( "pressed button:%d/%d", i, num_buttons );
+		buttons |= pressed << i;
+		num_pressed ++;
+	}
+	state[8] = buttons;
+	state[9] = num_pressed;
+	return 0;
+}
 #endif
 
 
