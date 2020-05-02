@@ -3435,6 +3435,22 @@ static int cmdfunc_extcmd( int cmd )
 
 #endif
 
+	case 0x240:								// joyGetPosEx
+		{
+		PVal *pval;
+		APTR aptr;
+		int res;
+		p1 = code_getdi(0);
+		aptr = code_getva( &pval );
+
+		int* dst = (int* )HspVarCorePtrAPTR( pval, aptr );
+		HspVarCoreAllocBlock( pval, (PDAT *)dst, 12 );
+		dst = (int *)HspVarCorePtrAPTR( pval, aptr );
+
+		ctx->stat = hgio_stick2( p1, dst );
+		break;
+		}
+
 	default:
 		throw HSPERR_UNSUPPORTED_FUNCTION;
 	}

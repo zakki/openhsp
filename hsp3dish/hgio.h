@@ -40,6 +40,7 @@ void hgio_setback( BMSCR *bm );
 int hgio_dialog( int mode, char *str1, char *str2 );
 int hgio_title( char *str1 );
 int hgio_stick( int actsw );
+int hgio_stick2( int id, int *state );
 
 int hgio_font( char *fontname, int size, int style );
 int hgio_mes( BMSCR *bm, char *str1 );

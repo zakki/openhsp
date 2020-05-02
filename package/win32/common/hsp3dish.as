@@ -215,6 +215,61 @@
 #define global REQ_DEFAULT_DAMPER (SYSREQ_DEFAULT_DAMPER)
 #define global REQ_DEFAULT_FRICTION (SYSREQ_DEFAULT_FRICTION)
 
+#module "joy"
+
+#const BORDER_LOW   32768 - 4096
+#const BORDER_HIGH  32768 + 4096
+
+#regcmd 9
+#cmd _joyGetPosEx $240
+
+#deffunc joyGetPosEx array p1, int p2
+	p1.15=0:p1=52,255
+	_joyGetPosEx p2,p1
+	return
+
+#deffunc jstick_org var p1, int p2
+
+	;	jstick 変数,ポート番号
+	;	(stick命令互換の値を変数に返す)
+	;
+	if modjoy_err@ : goto *jstick_resume
+	;
+	jdata.15=0:jdata=52,255
+	_joyGetPosEx p2,jdata
+	if stat!=0 : goto *jstick_err
+	res=(jdata.8)<<4
+	if jdata.2<BORDER_LOW : res|=1
+	if jdata.2>BORDER_HIGH : res|=4
+	if jdata.3<BORDER_LOW : res|=2
+	if jdata.3>BORDER_HIGH : res|=8
+	p1=res
+	return
+*jstick_resume
+	_joyGetPosEx p2,jdata
+	if stat!=0 : goto *jstick_err
+	p1=0
+	modjoy_err@=0
+	return
+*jstick_err
+	p1=0
+	modjoy_err@=1
+	return
+
+#deffunc jstick var _p1, int _p2, int _p3
+
+	;	jstick 変数,ポート番号
+	;	(stick命令互換の値を変数に返す)
+	;
+	stick@hsp key_now,$3ff
+	jstick_org jkey,_p3
+	key_now|=jkey
+	trg_key=key_now^last_key&key_now
+	last_key=key_now
+	_p1 = (last_key & _p2) + ( trg_key & (0xffff ^ _p2) )
+	return
+
+#global
 
 #endif
 
