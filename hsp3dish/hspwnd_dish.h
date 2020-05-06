@@ -13,7 +13,9 @@
 //
 #define HSPOBJ_LIMIT_DEFAULT	128
 
-#define HSPOBJ_OPTION_SETFONT	0x100
+#define HSPOBJ_OPTION_SETFONT	0x1000
+#define HSPOBJ_OPTION_EDITSEL	0x2000
+#define HSPOBJ_OPTION_MULTISEL	0x4000
 
 #define HSPOBJ_INPUT_STR 2
 #define HSPOBJ_INPUT_DOUBLE 3
@@ -33,30 +35,96 @@
 #define HSPOBJ_TAB_SKIP 3
 #define HSPOBJ_TAB_SELALLTEXT 4
 
+#define HSPOBJ_NOTICE_NONE 0
+#define HSPOBJ_NOTICE_KEY_BUFFER 0x8000
+#define HSPOBJ_NOTICE_CLICK 0x10000
+#define HSPOBJ_NOTICE_CLICK_END 0x10001
+#define HSPOBJ_NOTICE_CLICK_MOVE 0x10002
+#define HSPOBJ_NOTICE_KEY_BS (8)
+#define HSPOBJ_NOTICE_KEY_DEL (46)
+#define HSPOBJ_NOTICE_KEY_LEFT (37)
+#define HSPOBJ_NOTICE_KEY_UP (38)
+#define HSPOBJ_NOTICE_KEY_RIGHT (39)
+#define HSPOBJ_NOTICE_KEY_DOWN (40)
+#define HSPOBJ_NOTICE_KEY_HOME (36)
+#define HSPOBJ_NOTICE_KEY_END (35)
+#define HSPOBJ_NOTICE_KEY_INS (45)
+#define HSPOBJ_NOTICE_KEY_SCROLL_UP (33)
+#define HSPOBJ_NOTICE_KEY_SCROLL_DOWN (34)
+#define HSPOBJ_NOTICE_KEY_TAB (9)
+#define HSPOBJ_NOTICE_KEY_CR (13)
+
+#define HSPOBJ_NOTICE_KEY_SHIFTADD (0x1000)
+#define HSPOBJ_NOTICE_KEY_SLEFT (37+HSPOBJ_NOTICE_KEY_SHIFTADD)
+#define HSPOBJ_NOTICE_KEY_SUP (38+HSPOBJ_NOTICE_KEY_SHIFTADD)
+#define HSPOBJ_NOTICE_KEY_SRIGHT (39+HSPOBJ_NOTICE_KEY_SHIFTADD)
+#define HSPOBJ_NOTICE_KEY_SDOWN (40+HSPOBJ_NOTICE_KEY_SHIFTADD)
+#define HSPOBJ_NOTICE_KEY_SHOME (36+HSPOBJ_NOTICE_KEY_SHIFTADD)
+#define HSPOBJ_NOTICE_KEY_SEND (35+HSPOBJ_NOTICE_KEY_SHIFTADD)
+#define HSPOBJ_NOTICE_KEY_SSCROLL_UP (33+HSPOBJ_NOTICE_KEY_SHIFTADD)
+#define HSPOBJ_NOTICE_KEY_SSCROLL_DOWN (34+HSPOBJ_NOTICE_KEY_SHIFTADD)
+
 #define TEXMESPOS_MAX 256			// ポジション情報の最大数
+#define TEXMES_MODE_NONE (0)
+#define TEXMES_MODE_CENTERX (1)
+#define TEXMES_MODE_CENTERY (2)
 
 class texmesPos
 {
 public:
 	//	TEXMESPOS class
+	//	単一行の文字列と文字位置を管理します
 	//
 	texmesPos(void);
 	~texmesPos(void);
-	void setString( char *str );
+	void invalidate(void);
 	int getPosX( int id );
 	int getPosFromX( int x );
-	void setCaret(int id);
-	char *getMessage(void);
+	void setCaret(int id= TEXMESPOS_MAX);
+	void setCaretHome(bool select = false);
+	void setCaretEnd(bool select = false);
+	void moveCaret(int value, bool select=false);
+	void setCaretFromX( int x );
+	int getCaretX(void);
+	void setString(char *str);
+	char *getString(void);
+	void addStringFromCaret(char *str);
+	void deleteStringFromCaret(bool backspace = true);
+	void toggleInsertMode(void);
+	void setMaxLength(int max);
+	void deleteAttribue(void);
+	int addAttribue(int startid, int attr);
+	void setSize(int sizex, int sizey);
+	void setSelection(int *sel);
+	void setSelection(int start, int end);
+	bool getSelection(int *start, int *end);
+	bool deleteStringSelection(void);
+	void clearSelection(void);
 
+	int mode;					// mode flag (TEXMES_MODE_*)
 	int texid;					// texmes ID
 	int length;					// string length
 	int maxlength;				// maxlength
+	int printysize;				// print y-size (-1=none)
+	bool insert_mode;			// insert mode flag
 	std::string msg;			// button name
 
 	int caret;					// caret flag
 	int caret_cnt;				// caret blink counter
+	int lastcx, lastcy;			// last print size
+
+	int sx, sy;					// size limit
+	int index_offset;			// index offset for multiline
+	int *selection;				// selection reference
+	short *attribute;			// extra attribute data
 
 	short pos[TEXMESPOS_MAX];	// position table
+
+protected:
+	void validateInternalString(void);
+	int validateString(char *str, int max = 0);
+	int GetMultibyteCharacter(unsigned char *text);
+	int getStringByteFromPos(int pos);
 };
 
 typedef struct HSP3VARSET
@@ -108,6 +176,8 @@ public:
 	//	Hsp3Object for input box
 	//
 	texmesPos tpos;
+	int sel_start;				// selection start
+	int sel_end;				// selection end
 };
 
 typedef struct HSPOBJINFO
@@ -266,6 +336,8 @@ public:
 
 	int NewHSPObject( void );
 	void ResetHSPObject( void );
+	int ActivateHSPObject(int id);
+	void SelectEditHSPObject(void);
 	void NextObject( int plus );
 
 	HSPOBJINFO *AddHSPObject( int id, int mode );
@@ -407,6 +479,13 @@ public:
 
 	int		printoffsetx;				// print offset-x (for centering) 0=none
 	int		printoffsety;				// print offset-y (for centering) 0=none
+	int		tapobj_posx;				// Tap Object position-x (tap start)
+	int		tapobj_posy;				// Tap Object position-y (tap start)
+	int		tapobj_posex;				// Tap Object position-x (tap end)
+	int		tapobj_posey;				// Tap Object position-y (tap end)
+	int		keybuf_index;				// key buffer index
+	unsigned char keybuf[8];			// key buffer for editor input
+	int		cur_objid;					// Focus object ID
 private:
 //	void Blt( int mode, Bmscr *src, int xx, int yy, int asx, int asy );
 //	void CnvRGB16( PTRIVERTEX target, DWORD src );
@@ -573,6 +652,13 @@ typedef struct BMSCR
 
 	int		printoffsetx;				// print offset-x (for centering) 0=none
 	int		printoffsety;				// print offset-y (for centering) 0=none
+	int		tapobj_posx;				// Tap Object position-x (tap start)
+	int		tapobj_posy;				// Tap Object position-y (tap start)
+	int		tapobj_posex;				// Tap Object position-x (tap end)
+	int		tapobj_posey;				// Tap Object position-y (tap end)
+	int		keybuf_index;				// key buffer index
+	unsigned char keybuf[8];			// key buffer for editor input
+	int		cur_objid;					// Focus object ID
 } BMSCR;
 
 #endif

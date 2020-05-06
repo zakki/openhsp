@@ -1355,7 +1355,7 @@ void hgio_copy( BMSCR *bm, short xx, short yy, short srcsx, short srcsy, BMSCR *
 }
 
 
-void hgio_fontcopy(BMSCR *bm, int psx, int psy, int texid)
+void hgio_fontcopy(BMSCR *bm, int x, int y, int psx, int psy, int texid, int basex, int basey)
 {
 	//		画像コピー
 	//		texid内の(xx,yy)-(xx+srcsx,yy+srcsy)を現在の画面に(psx,psy)サイズでコピー
@@ -1373,13 +1373,13 @@ void hgio_fontcopy(BMSCR *bm, int psx, int psy, int texid)
 	}
 	if (drawflag == 0) hgio_render_start();
 
-	tx0 = 0.0f;
+	tx0 = ((float)(basex));
 	tx1 = ((float)(psx));
-	ty0 = 0.0f;
+	ty0 = ((float)(basey));
 	ty1 = ((float)(psy));
 
-	x1 = ((float)bm->cx) - 0.5f;
-	y1 = ((float)bm->cy) - 0.5f;
+	x1 = ((float)x) - 0.5f;
+	y1 = ((float)y) - 0.5f;
 	x2 = x1 + psx;
 	y2 = y1 + psy;
 
@@ -1916,17 +1916,21 @@ int hgio_mestex(BMSCR *bm, texmesPos *tpos)
 {
 	//		TEXMESPOSによる文字表示
 	//
+	int mode, x, y, sx, sy;
+	int orgx, orgy;
+	int tx, ty;
 	int xsize, ysize;
+	int esx, esy;
 	if ((bm->type != HSPWND_TYPE_MAIN) && (bm->type != HSPWND_TYPE_OFFSCREEN)) return -1;
 	if (drawflag == 0) hgio_render_start();
 
 	// print per line
-	if (bm->cy >= bm->sy) return -1;
-	if (bm->cx >= bm->sx) return -1;
+	orgx = bm->cx;
+	orgy = bm->cy;
 
 	int id = tpos->texid;
 	if (id < 0) {
-		id = tmes.texmesRegist(tpos->getMessage(), tpos);
+		id = tmes.texmesRegist(tpos->getString(), tpos);
 		if (id < 0) return -1;
 		tpos->texid = id;
 	}
@@ -1935,10 +1939,51 @@ int hgio_mestex(BMSCR *bm, texmesPos *tpos)
 	tex = tmes.texmesUpdateLife(id);
 	if (tex == NULL) return -1;
 
+	mode = tpos->mode;
 	xsize = tex->sx;
 	ysize = tex->sy;
+	tpos->printysize = ysize;
 
-	hgio_fontcopy(bm, xsize, ysize, tex->_texture);
+	x = orgx; y = orgy;
+	tx = 0; ty = 0;
+
+	sx = tpos->sx;
+	if (sx <= 0) {
+		sx = bm->sx - orgx;
+		if (sx <= 0) return -1;
+	}
+	sy = tpos->sy;
+	if (sy <= 0) {
+		sy = bm->sy - orgy;
+		if (sy <= 0) return -1;
+	}
+	esx = x + sx;
+	esy = y + sy;
+
+	if (mode & TEXMES_MODE_CENTERX) {
+		int px = (sx - xsize) / 2;
+		if (px < 0) { px = 0; }
+		x += px;
+	}
+	if (mode & TEXMES_MODE_CENTERY) {
+		int py = (sy - ysize) / 2;
+		if (py < 0) { py = 0; }
+		y += py;
+	}
+	tpos->lastcx = x;
+	tpos->lastcy = y;
+
+	if ( tpos->attribute == NULL ) {
+		if ((x + xsize) >= esx) {
+			xsize = esx - x;
+			if (xsize <= 0) return -1;
+		}
+		if ((y + ysize) >= esy) {
+			ysize = esy - y;
+			if (ysize <= 0) return -1;
+		}
+		hgio_fontcopy(bm, x, y, xsize, ysize, tex->_texture, tx, ty);
+	}
 
 	bm->cy += ysize;
 	bm->printsizex = xsize;
@@ -1990,7 +2035,7 @@ int hgio_mes(BMSCR* bm, char* msg)
 		bm->printoffsety = 0;
 	}
 
-	hgio_fontcopy(bm, xsize, ysize, tex->_texture);
+	hgio_fontcopy(bm, bm->cx, bm->cy, xsize, ysize, tex->_texture, 0, 0);
 
 	//xsize = game->drawFont(bm->cx, bm->cy, str1, (gameplay::Vector4*)bm->colorvalue, &ysize);
 	if (xsize > bm->printsizex) bm->printsizex = xsize;

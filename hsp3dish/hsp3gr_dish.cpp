@@ -968,6 +968,11 @@ static int cmdfunc_extcmd( int cmd )
 		break;
 	}
 
+	case 0x2d:								// objsel
+		p1 = code_getdi(0);
+		ctx->stat = bmscr->ActivateHSPObject(p1);
+		break;
+
 	case 0x2e:								// groll
 	{
 		p1 = code_getdi(0);

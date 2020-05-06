@@ -355,9 +355,6 @@ void Bmscr::Cls( int mode )
 	//		object initalize
 	//
 	ResetHSPObject();
-	tapstat = 0;
-	tapinvalid = 0;
-	cur_obj = NULL;
 
 	//		Viewport clear
 	//
@@ -386,6 +383,7 @@ void Bmscr::Cls( int mode )
 	}
 	printoffsetx = 0;
 	printoffsety = 0;
+	keybuf_index = 0;
 
 	//		CEL initalize
 	//
@@ -493,12 +491,6 @@ void Bmscr::Print(texmesPos *tpos)
 	int x1, y1;
 	x1 = cx; y1 = cy;
 	hgio_mestex((BMSCR *)this, tpos);
-	if (tpos->caret>=0) {
-		tpos->caret_cnt++;
-		if ((tpos->caret_cnt & 16) == 0) {
-			Boxfill(x1, y1, x1+2, y1 + printsizey);
-		}
-	}
 }
 
 
