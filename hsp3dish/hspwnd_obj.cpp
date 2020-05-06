@@ -41,6 +41,7 @@ Hsp3ObjBase::~Hsp3ObjBase(void)
 */
 /*------------------------------------------------------------*/
 
+static bool bmscr_obj_drawflag;
 static int *notice_ptr;
 static int bmscr_obj_ival;
 static double bmscr_obj_dval;
@@ -55,6 +56,9 @@ void SetObjectEventNoticePtr( int *ptr )
 static void Object_JumpEvent(HSPOBJINFO *info, int wparam)
 {
 	if (info->enableflag == 0) return;
+
+	if (wparam != HSPOBJ_NOTICE_CLICK_END) return;
+
 	*notice_ptr = info->owsize;				// statを更新
 
 	Hsp3ObjButton *btn = (Hsp3ObjButton *)info->btnset;
@@ -71,9 +75,29 @@ static void Object_JumpEvent(HSPOBJINFO *info, int wparam)
 
 static void Object_SendSetVar(HSPOBJINFO *obj)
 {
+	//	オブジェクトに関連付けされた変数の値を更新する
+	//
 	HSP3VARSET *var = obj->varset;
 	if (var == NULL) return;
 	code_setva(var->pval, var->aptr, var->type, var->ptr);
+}
+
+static void Object_SendSetVar(HSPOBJINFO *obj, int type, void *ptr)
+{
+	//	オブジェクトに関連付けされた変数の値を更新する
+	//	(任意の型とポインタによる更新)
+	//
+	HSP3VARSET *var = obj->varset;
+	if (var == NULL) return;
+
+	if (var->type == type) {
+		//	同じタイプの場合はそのまま代入する
+		code_setva(var->pval, var->aptr, var->type, ptr);
+		return;
+	}
+	//	型の変換
+	char *p = (char *)HspVarCoreCnv(type, var->type, ptr);
+	code_setva(var->pval, var->aptr, var->type, p);
 }
 
 static void Object_ApplyFont(HSPOBJINFO *info)
@@ -244,6 +268,8 @@ static void Object_CheckBox(HSPOBJINFO *info, int wparam)
 {
 	if (info->enableflag == 0) return;
 
+	if (wparam != HSPOBJ_NOTICE_CLICK_END) return;
+
 	Hsp3ObjBase *btn = info->btnset;
 	if (btn == NULL) return;
 
@@ -256,6 +282,47 @@ static void Object_CheckBox(HSPOBJINFO *info, int wparam)
 	btn->value = bmscr_obj_ival;
 	Object_SendSetVar(info);
 
+}
+
+static void Object_InputBoxDrawSub(Bmscr *bm, int x, int y, texmesPos *tpos, int color, bool cursor)
+{
+	//	1行描画+カーソル
+	//
+	int x1 = x+2;
+	int y1 = y+2;
+
+	//	透明度の設定
+	bm->gmode = 3;
+	bm->gfrate = 255;
+
+	//	文字を描画
+	bm->Setcolor(color);
+	bm->cx = x1;
+	bm->cy = y1;
+	bm->Print(tpos);
+
+	int py = tpos->printysize;
+	x1 = tpos->lastcx;
+	y1 = tpos->lastcy;
+	if (cursor) {
+		//	カーソルを描画
+		int offset = tpos->getCaretX();
+		tpos->caret_cnt++;
+		if ((tpos->caret_cnt & 16) == 0) {
+			bm->Boxfill(x1+ offset, y1, x1 + offset + 2, y1 + py);
+		}
+	}
+
+	int sel_1, sel_2;
+	bool selok = tpos->getSelection(&sel_1,&sel_2);
+	if (selok) {
+		bm->gmode = 3;
+		bm->gfrate = 64;
+		int xx1 = tpos->pos[sel_1];
+		int xx2 = tpos->pos[sel_2];
+		bm->Setcolor(0xff);
+		bm->Boxfill(x1+xx1, y1, x1+xx2, y1 + py, 1);
+	}
 }
 
 static void Object_InputBoxDraw(HSPOBJINFO *info)
@@ -291,7 +358,10 @@ static void Object_InputBoxDraw(HSPOBJINFO *info)
 		break;
 	}
 
+	btn->tpos.setSize(info->sx-4, info->sy-4);
+
 	if (bgcol != 0) {
+		//	背景を描画
 		bm->gmode = 3;
 		bm->gfrate = bgcol >> 24;
 		bm->Setcolor(bgcol);
@@ -304,15 +374,131 @@ static void Object_InputBoxDraw(HSPOBJINFO *info)
 		bm->Boxfill(x2-1, y1, x2, y2);
 	}
 
-	bm->gmode = 3;
-	bm->gfrate = 255;
-	bm->Setcolor(tcol);
-	bm->cx = x1+2;
-	bm->cy = y1+2;
-	bm->printoffsety = info->sy;
-	bm->Print(&btn->tpos);
+	Object_InputBoxDrawSub(bm, x1, y1, &btn->tpos, tcol, bmscr_obj_drawflag);
 }
 
+
+static void Object_InputBoxApplyVAR(HSPOBJINFO *info)
+{
+	//	editの内容をvarに反映させる
+	Bmscr *bm = (Bmscr *)info->bm;
+	Hsp3ObjInput *edit = (Hsp3ObjInput *)info->btnset;
+	if (edit == NULL) return;
+	HSP3VARSET *var = info->varset;
+	if (var == NULL) return;
+
+}
+
+
+static void Object_InputBox(HSPOBJINFO *info, int wparam)
+{
+	if (info->enableflag == 0) return;
+
+	Bmscr *bm = (Bmscr *)info->bm;
+	Hsp3ObjInput *edit = (Hsp3ObjInput *)info->btnset;
+	if (edit == NULL) return;
+
+	bool update = false;
+	switch (wparam) {
+	case HSPOBJ_NOTICE_CLICK:
+	{
+		bm->SelectEditHSPObject();
+		int cur = edit->tpos.getPosFromX(bm->tapobj_posx);
+		edit->tpos.setCaret(cur);
+		edit->sel_start = cur;
+		edit->sel_end = cur;
+	break;
+	}
+	case HSPOBJ_NOTICE_CLICK_END:
+	case HSPOBJ_NOTICE_CLICK_MOVE:
+	{
+		int cur = edit->tpos.getPosFromX(bm->tapobj_posex);
+		edit->tpos.setCaret(cur);
+		edit->sel_end = cur;
+		break;
+	}
+
+	case HSPOBJ_NOTICE_KEY_SLEFT:
+		edit->tpos.moveCaret(-1,true);
+		break;
+	case HSPOBJ_NOTICE_KEY_LEFT:
+		edit->tpos.moveCaret(-1);
+		break;
+	case HSPOBJ_NOTICE_KEY_SRIGHT:
+		edit->tpos.moveCaret(1, true);
+		break;
+	case HSPOBJ_NOTICE_KEY_RIGHT:
+		edit->tpos.moveCaret(1);
+		break;
+	case HSPOBJ_NOTICE_KEY_SHOME:
+		edit->tpos.setCaretHome(true);
+		break;
+	case HSPOBJ_NOTICE_KEY_HOME:
+		edit->tpos.setCaretHome();
+		break;
+	case HSPOBJ_NOTICE_KEY_SEND:
+		edit->tpos.setCaretEnd(true);
+		break;
+	case HSPOBJ_NOTICE_KEY_END:
+		edit->tpos.setCaretEnd();
+		break;
+	case HSPOBJ_NOTICE_KEY_INS:
+		edit->tpos.toggleInsertMode();
+		break;
+	case HSPOBJ_NOTICE_KEY_BS:
+		edit->tpos.deleteStringFromCaret(true);
+		update = true;
+		break;
+	case HSPOBJ_NOTICE_KEY_DEL:
+		edit->tpos.deleteStringFromCaret(false);
+		update = true;
+		break;
+
+	case HSPOBJ_NOTICE_KEY_UP:
+	case HSPOBJ_NOTICE_KEY_DOWN:
+	case HSPOBJ_NOTICE_KEY_SCROLL_UP:
+	case HSPOBJ_NOTICE_KEY_SCROLL_DOWN:
+	case HSPOBJ_NOTICE_KEY_SUP:
+	case HSPOBJ_NOTICE_KEY_SDOWN:
+	case HSPOBJ_NOTICE_KEY_SSCROLL_UP:
+	case HSPOBJ_NOTICE_KEY_SSCROLL_DOWN:
+	case HSPOBJ_NOTICE_KEY_TAB:
+	case HSPOBJ_NOTICE_KEY_CR:
+		break;
+	case HSPOBJ_NOTICE_KEY_BUFFER:
+		edit->tpos.addStringFromCaret((char *)bm->keybuf);
+		update = true;
+		break;
+	default:
+		if ((wparam < 0x100)&&((wparam >= 32))) {
+			unsigned char *buf = bm->keybuf;
+			buf[0] = (unsigned char)wparam;
+			buf[1] = 0;
+			edit->tpos.addStringFromCaret((char *)buf);
+			update = true;
+		}
+		break;
+	}
+
+	if (update) {
+		char *buf = edit->tpos.getString();
+		Object_SendSetVar(info, HSPVAR_FLAG_STR,buf);
+	}
+}
+
+static void Object_SetInputBox(HSPOBJINFO *info, int type, void *ptr)
+{
+	Bmscr *bm = (Bmscr *)info->bm;
+	Hsp3ObjInput *edit = (Hsp3ObjInput *)info->btnset;
+	if (edit == NULL) return;
+
+	char *p = (char *)HspVarCoreCnv(type, TYPE_STRING, ptr);
+	edit->tpos.setString(p);
+	edit->tpos.setCaret();
+
+	char *buf = edit->tpos.getString();
+	Object_SendSetVar(info, HSPVAR_FLAG_STR, buf);
+}
 
 static void Object_SetValueName(HSPOBJINFO *info, int type, void *ptr)
 {
@@ -358,71 +544,6 @@ static void Object_SetValue(HSPOBJINFO *info, int type, void *ptr)
 }
 
 /*---------------------------------------------------------------------------*/
-
-void Bmscr::ResetHSPObject( void )
-{
-	//		すべてのObjectをリセットする
-	//
-	int i;
-	if ( mem_obj != NULL ) {
-		for( i=0;i<objmax;i++ ) {
-			DeleteHSPObject( i );
-		}
-		sbFree( mem_obj );
-	}
-	mem_obj = NULL;
-	objmax = 0;
-	objlimit = HSPOBJ_LIMIT_DEFAULT;
-}
-
-
-void Bmscr::EnableObject( int id, int sw )
-{
-	HSPOBJINFO *obj;
-	obj = GetHSPObjectSafe( id );
-	if ( obj->owmode == HSPOBJ_NONE ) throw HSPERR_ILLEGAL_FUNCTION;
-	obj->enableflag = sw;
-//	EnableWindow( obj->hCld, sw!=0 );
-}
-
-
-void Bmscr::SetObjectMode( int id, int owmode )
-{
-	HSPOBJINFO *obj;
-	obj = GetHSPObjectSafe( id );
-	if ( obj->owmode == HSPOBJ_NONE ) throw HSPERR_ILLEGAL_FUNCTION;
-	if ( owmode <= 0 ) throw HSPERR_ILLEGAL_FUNCTION;
-	obj->owmode = owmode;
-}
-
-
-void Bmscr::SetHSPObjectFont(int id)
-{
-	int a;
-	HSPOBJINFO *obj;
-
-	obj = GetHSPObjectSafe(id);
-	if (obj->owmode == HSPOBJ_NONE) return;
-
-	a = objmode & 3;
-	switch (a) {
-	case 0:
-	default:
-		obj->fontsize = 18;
-		break;
-	case 1:
-		obj->fontmode |= HSPOBJ_FONTMODE_GUIFONT;
-		obj->fontsize = 12;
-		break;
-	case 2:
-		obj->fontsize = font_cursize;
-		obj->fontstyle = font_curstyle;
-		obj->owmode |= HSPOBJ_OPTION_SETFONT;
-		obj->fontname = new std::string(font_curname);
-		break;
-	}
-}
-
 
 int Bmscr::NewHSPObject( void )
 {
@@ -676,17 +797,26 @@ int Bmscr::AddHSPObjectInput(PVal *pval, APTR aptr, int sizex, int sizey, char *
 		tabstop = HSPOBJ_TAB_SKIP;
 	}
 
-	obj = AddHSPVarEventObject(id, tabstop | HSPOBJ_OPTION_SETFONT, pval, aptr, type, (void *)&bmscr_obj_ival);
+	obj = AddHSPVarEventObject(id, tabstop | HSPOBJ_OPTION_SETFONT | HSPOBJ_OPTION_EDITSEL,
+		pval, aptr, type, (void *)&bmscr_obj_ival);
 
 	btn = new Hsp3ObjInput;
 	obj->btnset = btn;
+
 	//btn->name = defval;
-	btn->tpos.setCaret(0);
+	btn->tpos.setMaxLength(max);
 	btn->tpos.setString(defval);
+	btn->tpos.setCaret();
+	btn->tpos.mode = TEXMES_MODE_CENTERY;
+
+	btn->sel_start = 0;
+	btn->sel_end = 0;
+	btn->tpos.setSelection( &btn->sel_start );
 
 	obj->func_draw = Object_InputBoxDraw;
+	obj->func_notice = Object_InputBox;
+	obj->func_objprm = Object_SetInputBox;
 	//obj->func_delete = Object_WindowDelete;
-	//obj->func_objprm = Object_SetInputBox;
 
 	Posinc(sizey);
 	return id;
@@ -697,6 +827,100 @@ int Bmscr::AddHSPObjectInput(PVal *pval, APTR aptr, int sizex, int sizey, char *
 //	Object Draw Service
 //-------------------------------------------------------
 
+void Bmscr::ResetHSPObject(void)
+{
+	//		すべてのObjectをリセットする
+	//
+	int i;
+	if (mem_obj != NULL) {
+		for (i = 0; i < objmax; i++) {
+			DeleteHSPObject(i);
+		}
+		sbFree(mem_obj);
+	}
+	mem_obj = NULL;
+	objmax = 0;
+	objlimit = HSPOBJ_LIMIT_DEFAULT;
+
+	tapstat = 0;
+	tapinvalid = 0;
+	cur_obj = NULL;
+	cur_objid = -1;
+}
+
+
+int Bmscr::ActivateHSPObject(int id)
+{
+	//		フォーカスをONにする
+	//
+	HSPOBJINFO *obj;
+
+	if (id < 0) {
+		return cur_objid;
+	}
+	if (id >= objmax) {
+		cur_objid = -1;
+		return -1;
+	}
+	obj = GetHSPObject(id);
+	if (obj->owmode == HSPOBJ_NONE) {
+		cur_objid = -1;
+		return -2;
+	}
+	cur_objid = id;
+	SelectEditHSPObject();
+	return 0;
+}
+
+
+void Bmscr::EnableObject(int id, int sw)
+{
+	HSPOBJINFO *obj;
+	obj = GetHSPObjectSafe(id);
+	if (obj->owmode == HSPOBJ_NONE) throw HSPERR_ILLEGAL_FUNCTION;
+	obj->enableflag = sw;
+	//	EnableWindow( obj->hCld, sw!=0 );
+}
+
+
+void Bmscr::SetObjectMode(int id, int owmode)
+{
+	HSPOBJINFO *obj;
+	obj = GetHSPObjectSafe(id);
+	if (obj->owmode == HSPOBJ_NONE) throw HSPERR_ILLEGAL_FUNCTION;
+	if (owmode <= 0) throw HSPERR_ILLEGAL_FUNCTION;
+	obj->owmode = owmode;
+}
+
+
+void Bmscr::SetHSPObjectFont(int id)
+{
+	int a;
+	HSPOBJINFO *obj;
+
+	obj = GetHSPObjectSafe(id);
+	if (obj->owmode == HSPOBJ_NONE) return;
+
+	a = objmode & 3;
+	switch (a) {
+	case 0:
+	default:
+		obj->fontsize = 18;
+		break;
+	case 1:
+		obj->fontmode |= HSPOBJ_FONTMODE_GUIFONT;
+		obj->fontsize = 12;
+		break;
+	case 2:
+		obj->fontsize = font_cursize;
+		obj->fontstyle = font_curstyle;
+		obj->owmode |= HSPOBJ_OPTION_SETFONT;
+		obj->fontname = new std::string(font_curname);
+		break;
+	}
+}
+
+
 int Bmscr::DrawAllObjects( void )
 {
 
@@ -705,6 +929,9 @@ int Bmscr::DrawAllObjects( void )
 	int i;
 	int bak_mulcolor;
 	HSPOBJINFO *info;
+
+	if (this->objmax == 0) return 0;
+
 	info = this->mem_obj;
 	if ( info == NULL ) return -1;
 
@@ -713,13 +940,54 @@ int Bmscr::DrawAllObjects( void )
 
 	for( i=0;i<this->objmax;i++ ) {
 		if ( info->owmode != HSPOBJ_NONE ) {
+			bmscr_obj_drawflag = (i==cur_objid);
 			if ( info->func_draw != NULL ) info->func_draw( info );
 		}
 		info++;
 	}
 
 	SetMulcolor( (bak_mulcolor>>16)&0xff, (bak_mulcolor>>8)&0xff, (bak_mulcolor)&0xff );				// 乗算カラーを元に戻す
-	return -1;
+	return 0;
+}
+
+
+void Bmscr::SendHSPObjectNotice(int wparam)
+{
+	//		DishSystemObjectに通知コード(HSPOBJ_NOTICE_*)を送る
+	//
+	HSPOBJINFO *info;
+
+	if (this->objmax == 0) return;
+	if (this->cur_objid < 0) return;
+
+	info = GetHSPObject(this->cur_objid);
+	if (info == NULL) return;
+	if (info->owmode != HSPOBJ_NONE) {
+		if (info->func_notice != NULL) {
+			info->func_notice(info, wparam);
+		}
+	}
+}
+
+
+void Bmscr::SelectEditHSPObject(void)
+{
+	//		オブジェクトの文字列選択をリセットする
+	//		(新規の選択時に必ず呼ぶこと)
+	int i;
+	HSPOBJINFO *info;
+	info = this->mem_obj;
+	if (info == NULL) return;
+
+	for (i = 0; i < this->objmax; i++) {
+		if (info->owmode != HSPOBJ_NONE) {
+			if (info->owmode & HSPOBJ_OPTION_EDITSEL) {
+				Hsp3ObjInput *edit = (Hsp3ObjInput *)info->btnset;
+				if (edit) { edit->sel_start = 0; edit->sel_end = 0; }
+			}
+		}
+		info++;
+	}
 }
 
 
@@ -731,6 +999,7 @@ int Bmscr::UpdateAllObjects( void )
 	HSPOBJINFO *info;
 	HSPOBJINFO *focus;
 	int focustap;
+	int focusid;
 	info = this->mem_obj;
 	if ( info == NULL ) return -1;
 
@@ -755,13 +1024,22 @@ int Bmscr::UpdateAllObjects( void )
 			x = msx - info->x;
 			if (( x>=0 )&&( x<info->sx )) {
 				tap = this->tapstat;
+				if ((this->tapobj_posex != x) || (this->tapobj_posey != y)) {
+					this->tapobj_posex = x;
+					this->tapobj_posey = y;
+					if (info->func_notice != NULL) {
+						info->func_notice(info, HSPOBJ_NOTICE_CLICK_MOVE);
+					}
+				}
 			}
 		}
 		info->tapflag = tap;
 		if ( this->tapstat == 0 ) {
 			this->cur_obj = NULL;
 			if ( tap >= 0 ) {
-				info->func_notice( info, tap );
+				if (info->func_notice != NULL) {
+					info->func_notice(info, HSPOBJ_NOTICE_CLICK_END);
+				}
 			}
 		}
 		return -1;
@@ -770,19 +1048,23 @@ int Bmscr::UpdateAllObjects( void )
 	//		まだ何も押していない状態
 	//
 	focus = NULL;
+	focusid = -1;
 	focustap = 0;
 	for( i=0;i<this->objmax;i++ ) {
 		if ( info->owmode != HSPOBJ_NONE ) {
-			if ( info->func_notice != NULL ) {
-				tap = -1;
-				y = msy - info->y;
-				if (( y>=0 )&&( y<info->sy )) {
-					x = msx - info->x;
-					if (( x>=0 )&&( x<info->sx )) {
-						tap = this->tapstat;
-						focus = info;
-						focustap = tap;
-					}
+			tap = -1;
+			y = msy - info->y;
+			if (( y>=0 )&&( y<info->sy )) {
+				x = msx - info->x;
+				if (( x>=0 )&&( x<info->sx )) {
+					tap = this->tapstat;
+					focus = info;
+					focustap = tap;
+					focusid = i;
+					this->tapobj_posx = x;
+					this->tapobj_posy = y;
+					this->tapobj_posex = x;
+					this->tapobj_posey = y;
 				}
 			}
 		}
@@ -793,17 +1075,19 @@ int Bmscr::UpdateAllObjects( void )
 
 	//		押したボタンの判定
 	//
-	//if ( info->tapflag == 0 ) {
-		if ( this->tapstat == 1 ) {
-			if ( focus != NULL ) {
-				this->tapinvalid = 0;
-				this->cur_obj = focus;
-				focus->tapflag = focustap;
-			} else {
-				this->tapinvalid = 1;
+	if ( this->tapstat == 1 ) {
+		if ( focus != NULL ) {
+			this->tapinvalid = 0;
+			this->cur_obj = focus;
+			cur_objid = focusid;
+			focus->tapflag = focustap;
+			if (focus->func_notice != NULL) {
+				focus->func_notice(focus, HSPOBJ_NOTICE_CLICK);
 			}
+		} else {
+			this->tapinvalid = 1;
 		}
-	//}
+	}
 
 	return -1;
 }
