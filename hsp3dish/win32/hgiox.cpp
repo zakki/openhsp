@@ -104,6 +104,9 @@ static		HSPREAL infoval[GINFO_EXINFO_MAX];
 static		MATRIX mat_proj;	// プロジェクションマトリクス
 static		MATRIX mat_unproj;	// プロジェクション逆変換マトリクス
 
+static		HCURSOR cursor_arrow;	// 通常カーソル
+static		HCURSOR cursor_ibeam;	// テキストエリア用カーソル
+
 //		DirectX objects
 //
 static		D3DDISPLAYMODE target_disp;
@@ -612,6 +615,11 @@ void hgio_init( int mode, int sx, int sy, void *hwnd )
 	for(i=0;i<GINFO_EXINFO_MAX;i++) {
 		infoval[i] = 0.0;
 	}
+
+	//		カーソル読み込み
+	//
+	cursor_arrow = LoadCursor(NULL, IDC_ARROW);
+	cursor_ibeam = LoadCursor(NULL, IDC_IBEAM);
 }
 
 
@@ -869,9 +877,39 @@ int hgio_redraw( BMSCR *bm, int flag )
 
 	if ( flag & 1 ) {
 		hgio_render_end();
+		int curtick = hgio_gettick();
+		if (bm->prevtime) {
+			bm->passed_time = curtick - bm->prevtime;
+		}
+		bm->prevtime = curtick;
 	} else {
 		hgio_render_start();
 	}
+
+	//	ウインドウアクティブの更新
+	//
+	HWND hwnd;
+	hwnd = GetActiveWindow();
+	if (hwnd != master_wnd) {
+		bm->window_active = 0;
+	}
+	else {
+		bm->window_active = 1;
+	}
+
+	//	カーソルの更新
+	//
+	HSPOBJINFO *info = bm->cur_mo_obj;
+	HCURSOR hc = cursor_arrow;
+
+	if (info) {
+		if (info->owmode & (HSPOBJ_OPTION_EDITSEL| HSPOBJ_OPTION_MULTISEL)) {
+			hc = cursor_ibeam;
+		}
+	}
+	SetCursor(hc);
+	SetClassLong(hwnd, -12, (LONG)hc);
+
 	return 0;
 }
 
@@ -1927,25 +1965,7 @@ int hgio_mestex(BMSCR *bm, texmesPos *tpos)
 	// print per line
 	orgx = bm->cx;
 	orgy = bm->cy;
-
-	int id = tpos->texid;
-	if (id < 0) {
-		id = tmes.texmesRegist(tpos->getString(), tpos);
-		if (id < 0) return -1;
-		tpos->texid = id;
-	}
-
-	texmes* tex;
-	tex = tmes.texmesUpdateLife(id);
-	if (tex == NULL) return -1;
-
 	mode = tpos->mode;
-	xsize = tex->sx;
-	ysize = tex->sy;
-	tpos->printysize = ysize;
-
-	x = orgx; y = orgy;
-	tx = 0; ty = 0;
 
 	sx = tpos->sx;
 	if (sx <= 0) {
@@ -1957,6 +1977,42 @@ int hgio_mestex(BMSCR *bm, texmesPos *tpos)
 		sy = bm->sy - orgy;
 		if (sy <= 0) return -1;
 	}
+
+	int id = tpos->texid;
+	if (id < 0) {
+		char *str = tpos->getString();
+		id = tmes.texmesRegist(str, tpos);
+		if (id < 0) {
+			ysize = tmes._fontsize;
+			x = orgx; y = orgy;
+			if (mode & TEXMES_MODE_CENTERX) {
+				int px = sx / 2;
+				x += px;
+			}
+			if (mode & TEXMES_MODE_CENTERY) {
+				int py = (sy - ysize) / 2;
+				if (py < 0) { py = 0; }
+				y += py;
+			}
+			tpos->lastcx = x;
+			tpos->lastcy = y;
+			tpos->printysize = ysize;
+			return -1;
+		}
+		tpos->texid = id;
+	}
+
+	texmes* tex;
+	tex = tmes.texmesUpdateLife(id);
+	if (tex == NULL) return -1;
+
+	xsize = tex->sx;
+	ysize = tex->sy;
+	tpos->printysize = ysize;
+
+	x = orgx; y = orgy;
+	tx = 0; ty = 0;
+
 	esx = x + sx;
 	esy = y + sy;
 
@@ -2067,4 +2123,43 @@ int hgio_fontsystem_setup(int sx, int sy, void *buffer)
 	if (UpdateTex32(id, (char*)buffer, 0) < 0) return -1;
 	return id;
 }
+
+
+void hgio_editputclip(BMSCR* bm, char *str)
+{
+	//		クリップボードコピー
+	//
+	HGLOBAL hg;
+	char *strMem;
+	if (!OpenClipboard(master_wnd)) return;
+	EmptyClipboard();
+
+	int len = strlen(str)+1;
+	hg = GlobalAlloc(GHND | GMEM_SHARE, len);
+	strMem = (char *)GlobalLock(hg);
+	strcpy(strMem, str);
+	GlobalUnlock(hg);
+
+	SetClipboardData(CF_TEXT, hg);
+	CloseClipboard();
+}
+
+
+char *hgio_editgetclip(BMSCR* bm)
+{
+	//		クリップボードペースト文字列取得
+	//
+	HGLOBAL hg;
+	char *strClip;
+	if (OpenClipboard(master_wnd) && (hg = GetClipboardData(CF_TEXT))) {
+		char *p = code_stmp(GlobalSize(hg));
+		strClip = (char *)GlobalLock(hg);
+		strcpy(p, strClip);
+		GlobalUnlock(hg);
+		CloseClipboard();
+		return p;
+	}
+	return NULL;
+}
+
 

@@ -227,7 +227,7 @@ static void Object_CheckBoxDraw(HSPOBJINFO *info)
 
 	if (bgcol != 0) {
 		bm->gmode = 3;
-		bm->gfrate = bgcol >> 24;
+		bm->gfrate = ( bgcol >> 24 ) & 0xff;
 		bm->Setcolor(bgcol);
 		bm->Boxfill(x1, y1, x2, y2, 1);
 	}
@@ -284,9 +284,37 @@ static void Object_CheckBox(HSPOBJINFO *info, int wparam)
 
 }
 
+static void Object_InputBoxDrawBoxf(Bmscr *bm, texmesPos *tpos, int clip_x, int clip_y, int p_x1, int p_y1, int p_x2, int p_y2, int sw )
+{
+	//	クリッピング付きのboxf
+	//
+	int x1, y1, x2, y2;
+	int cx1, cy1, cx2, cy2;
+
+	cx1 = clip_x;
+	cy1 = clip_y;
+	cx2 = clip_x + tpos->sx;
+	cy2 = clip_y + tpos->sy;
+
+	x1 = p_x1; y1 = p_y1;
+	if (x1 > cx2) return;
+	if (y1 > cy2) return;
+	if (x1 < cx1) x1 = cx1;
+	if (y1 < cy1) y1 = cy1;
+
+	x2 = p_x2; y2 = p_y2;
+	if (x2 < cx1) return;
+	if (y2 < cy1) return;
+	if (x2 >= cx2) x2 = cx2-1;
+	if (y2 >= cy2) y2 = cy2-1;
+
+	bm->Boxfill(x1, y1, x2, y2, sw);
+}
+
+
 static void Object_InputBoxDrawSub(Bmscr *bm, int x, int y, texmesPos *tpos, int color, bool cursor)
 {
-	//	1行描画+カーソル
+	//	1行描画+カーソル表示
 	//
 	int x1 = x+2;
 	int y1 = y+2;
@@ -307,9 +335,10 @@ static void Object_InputBoxDrawSub(Bmscr *bm, int x, int y, texmesPos *tpos, int
 	if (cursor) {
 		//	カーソルを描画
 		int offset = tpos->getCaretX();
-		tpos->caret_cnt++;
-		if ((tpos->caret_cnt & 16) == 0) {
-			bm->Boxfill(x1+ offset, y1, x1 + offset + 2, y1 + py);
+		tpos->caret_cnt+=bm->passed_time;
+		if ((tpos->caret_cnt & 512) == 0) {
+			//bm->Boxfill(x1+ offset, y1, x1 + offset + 2, y1 + py);
+			Object_InputBoxDrawBoxf(bm,tpos, x1, y1, x1 + offset, y1, x1 + offset + 2, y1 + py,0);
 		}
 	}
 
@@ -321,7 +350,8 @@ static void Object_InputBoxDrawSub(Bmscr *bm, int x, int y, texmesPos *tpos, int
 		int xx1 = tpos->pos[sel_1];
 		int xx2 = tpos->pos[sel_2];
 		bm->Setcolor(0xff);
-		bm->Boxfill(x1+xx1, y1, x1+xx2, y1 + py, 1);
+		//bm->Boxfill(x1+xx1, y1, x1+xx2, y1 + py, 1);
+		Object_InputBoxDrawBoxf(bm, tpos, x1, y1, x1 + xx1, y1, x1 + xx2, y1 + py, 1);
 	}
 }
 
@@ -363,7 +393,7 @@ static void Object_InputBoxDraw(HSPOBJINFO *info)
 	if (bgcol != 0) {
 		//	背景を描画
 		bm->gmode = 3;
-		bm->gfrate = bgcol >> 24;
+		bm->gfrate = (bgcol >> 24) & 0xff;
 		bm->Setcolor(bgcol);
 		bm->Boxfill(x1, y1, x2, y2, 1);
 
@@ -387,6 +417,74 @@ static void Object_InputBoxApplyVAR(HSPOBJINFO *info)
 	HSP3VARSET *var = info->varset;
 	if (var == NULL) return;
 
+}
+
+
+static int Object_InputBoxApplyFuncKey(HSPOBJINFO *info, int code)
+{
+	//		ファンクションキーを処理する
+	//		(HSPOBJ_NOTICE_KEY_F* を送信する)
+	//		(返値 0=OK、1=更新あり、マイナス値はエラー)
+	//
+	if ((code < HSPOBJ_NOTICE_KEY_F1) || (code > HSPOBJ_NOTICE_KEY_F12)) return -1;
+/*
+	switch (code) {
+	default:
+		break;
+	}
+*/
+	Alertf("FUNC");
+	return 0;
+}
+
+
+static int Object_InputBoxApplySpecialKey(HSPOBJINFO *info, int code)
+{
+	//		コントロールキーを処理する
+	//		(ctrl+A～Zを1～26として送信する)
+	//		0=OK、それ以外はNG
+	//
+	int key;
+	Bmscr *bm = (Bmscr *)info->bm;
+	Hsp3ObjInput *edit = (Hsp3ObjInput *)info->btnset;
+	if (edit == NULL) return -1;
+
+	if ((code >= HSPOBJ_NOTICE_KEY_F1) && (code <= HSPOBJ_NOTICE_KEY_F12)) {
+		return Object_InputBoxApplyFuncKey(info, code);
+	}
+
+	if ((code < 1) || (code > 26)) return -1;
+	key = code + '@';
+	switch (key) {
+	case 'A':
+		edit->tpos.allSelection();
+		return 0;
+	case 'C':
+	case 'X':
+	{
+		std::string selstr;
+		int res = edit->tpos.getSelectionString(selstr);
+		if (res) {
+			hgio_editputclip((BMSCR *)bm,(char *)selstr.c_str());
+		}
+		if (key == 'X') {
+			edit->tpos.deleteStringSelection();
+		}
+		return 0;
+	}
+	case 'V':
+	{
+		char *buf = hgio_editgetclip((BMSCR *)bm);
+		if (buf) {
+			edit->tpos.addStringFromCaret((char *)buf);
+		}
+		return 0;
+	}
+	default:
+		break;
+	}
+
+	return 0;
 }
 
 
@@ -469,7 +567,15 @@ static void Object_InputBox(HSPOBJINFO *info, int wparam)
 		edit->tpos.addStringFromCaret((char *)bm->keybuf);
 		update = true;
 		break;
+
 	default:
+		if (wparam & HSPOBJ_NOTICE_KEY_CTRLADD) {
+			int code = wparam & (HSPOBJ_NOTICE_KEY_CTRLADD - 1);
+			if (Object_InputBoxApplySpecialKey(info, code ) > 0) {
+				update = true;
+			}
+			break;
+		}
 		if ((wparam < 0x100)&&((wparam >= 32))) {
 			unsigned char *buf = bm->keybuf;
 			buf[0] = (unsigned char)wparam;
@@ -846,6 +952,7 @@ void Bmscr::ResetHSPObject(void)
 	tapinvalid = 0;
 	cur_obj = NULL;
 	cur_objid = -1;
+	cur_mo_obj = NULL;
 }
 
 
@@ -941,7 +1048,10 @@ int Bmscr::DrawAllObjects( void )
 	for( i=0;i<this->objmax;i++ ) {
 		if ( info->owmode != HSPOBJ_NONE ) {
 			bmscr_obj_drawflag = (i==cur_objid);
-			if ( info->func_draw != NULL ) info->func_draw( info );
+			if (window_active == 0) bmscr_obj_drawflag = false;
+			if (info->func_draw != NULL) {
+				info->func_draw(info);
+			}
 		}
 		info++;
 	}
@@ -1050,6 +1160,7 @@ int Bmscr::UpdateAllObjects( void )
 	focus = NULL;
 	focusid = -1;
 	focustap = 0;
+	this->cur_mo_obj = NULL;
 	for( i=0;i<this->objmax;i++ ) {
 		if ( info->owmode != HSPOBJ_NONE ) {
 			tap = -1;
@@ -1061,6 +1172,7 @@ int Bmscr::UpdateAllObjects( void )
 					focus = info;
 					focustap = tap;
 					focusid = i;
+					this->cur_mo_obj = info;
 					this->tapobj_posx = x;
 					this->tapobj_posy = y;
 					this->tapobj_posex = x;

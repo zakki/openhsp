@@ -35,6 +35,9 @@
 #define HSPOBJ_TAB_SKIP 3
 #define HSPOBJ_TAB_SELALLTEXT 4
 
+#define HSPOBJ_NOTICE_KEY_CTRLADD (0x2000)
+#define HSPOBJ_NOTICE_KEY_SHIFTADD (0x1000)
+
 #define HSPOBJ_NOTICE_NONE 0
 #define HSPOBJ_NOTICE_KEY_BUFFER 0x8000
 #define HSPOBJ_NOTICE_CLICK 0x10000
@@ -54,7 +57,19 @@
 #define HSPOBJ_NOTICE_KEY_TAB (9)
 #define HSPOBJ_NOTICE_KEY_CR (13)
 
-#define HSPOBJ_NOTICE_KEY_SHIFTADD (0x1000)
+#define HSPOBJ_NOTICE_KEY_F1 (112)
+#define HSPOBJ_NOTICE_KEY_F2 (113)
+#define HSPOBJ_NOTICE_KEY_F3 (114)
+#define HSPOBJ_NOTICE_KEY_F4 (115)
+#define HSPOBJ_NOTICE_KEY_F5 (116)
+#define HSPOBJ_NOTICE_KEY_F6 (117)
+#define HSPOBJ_NOTICE_KEY_F7 (118)
+#define HSPOBJ_NOTICE_KEY_F8 (119)
+#define HSPOBJ_NOTICE_KEY_F9 (120)
+#define HSPOBJ_NOTICE_KEY_F10 (121)
+#define HSPOBJ_NOTICE_KEY_F11 (122)
+#define HSPOBJ_NOTICE_KEY_F12 (123)
+
 #define HSPOBJ_NOTICE_KEY_SLEFT (37+HSPOBJ_NOTICE_KEY_SHIFTADD)
 #define HSPOBJ_NOTICE_KEY_SUP (38+HSPOBJ_NOTICE_KEY_SHIFTADD)
 #define HSPOBJ_NOTICE_KEY_SRIGHT (39+HSPOBJ_NOTICE_KEY_SHIFTADD)
@@ -100,6 +115,8 @@ public:
 	bool getSelection(int *start, int *end);
 	bool deleteStringSelection(void);
 	void clearSelection(void);
+	void allSelection(void);
+	int getSelectionString(std::string &out);
 
 	int mode;					// mode flag (TEXMES_MODE_*)
 	int texid;					// texmes ID
@@ -485,7 +502,11 @@ public:
 	int		tapobj_posey;				// Tap Object position-y (tap end)
 	int		keybuf_index;				// key buffer index
 	unsigned char keybuf[8];			// key buffer for editor input
-	int		cur_objid;					// Focus object ID
+	int		cur_objid;					// Select focus object ID
+	int		window_active;				// Window active flag (0=none/1=active)
+	HSPOBJINFO *cur_mo_obj;				// Mouse over focus object
+	int		prevtime;					// previous frame time
+	int		passed_time;				// Passed millisecond from previous frame
 private:
 //	void Blt( int mode, Bmscr *src, int xx, int yy, int asx, int asy );
 //	void CnvRGB16( PTRIVERTEX target, DWORD src );
@@ -658,7 +679,11 @@ typedef struct BMSCR
 	int		tapobj_posey;				// Tap Object position-y (tap end)
 	int		keybuf_index;				// key buffer index
 	unsigned char keybuf[8];			// key buffer for editor input
-	int		cur_objid;					// Focus object ID
+	int		cur_objid;					// Select focus object ID
+	int		window_active;				// Window active flag (0=none/1=active)
+	HSPOBJINFO *cur_mo_obj;				// Mouse over focus object
+	int		prevtime;					// previous frame time
+	int		passed_time;				// Passed millisecond from previous frame
 } BMSCR;
 
 #endif

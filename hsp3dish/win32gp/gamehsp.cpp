@@ -2684,30 +2684,15 @@ void gamehsp::texmesProc(void)
 	tmes.texmesProc();
 }
 
-
-void gamehsp::texmesDraw(int x, int y, char* msg, Vector4* p_color, int areasx, int areasy)
+void gamehsp::texmesDrawClip(void *bmscr, int x, int y, int psx, int psy, texmes *tex, int basex, int basey)
 {
-	int id;
-	id = tmes.texmesRegist(msg);
-	if (id < 0) return;
-	texmesDrawId(x, y, id, p_color, areasx, areasy);
-}
-
-
-void gamehsp::texmesDrawId(int x, int y, int id, Vector4* p_color, int areasx, int areasy)
-{
-	//		フォントメッセージを表示する
+	//		画像コピー
+	//		texid内の(xx,yy)-(xx+srcsx,yy+srcsy)を現在の画面に(psx,psy)サイズでコピー
+	//		カレントポジション、描画モードはBMSCRから取得
 	//
-	int offsetx, offsety;
-	texmes* tex;
-//	float psx, psy;
-	float x1, y1, x2, y2;
+	//	float psx, psy;
+	float x1, y1, x2, y2, sx, sy;
 	float tx0, ty0, tx1, ty1;
-
-	float a_val = 1.0f;
-
-	tex = tmes.texmesUpdateLife(id);
-	if (tex == NULL) return;
 
 	//		meshのTextureを差し替える
 	Uniform* samplerUniform = NULL;
@@ -2724,39 +2709,44 @@ void gamehsp::texmesDrawId(int x, int y, int id, Vector4* p_color, int areasx, i
 	MaterialParameter* mp = _fontMaterial->getParameter(samplerUniform->getName());
 	mp->setValue(tex->_texture);
 
-	//		描画する
-	tx0 = 0.0f;
-	ty0 = 0.0f;
-	tx1 = tex->ratex;
-	ty1 = tex->ratey;
+	tx0 = ((float)(basex));
+	tx1 = ((float)(basex+psx));
+	ty0 = ((float)(basey));
+	ty1 = ((float)(basey+psy));
 
-	offsetx = 0; offsety = 0;
-	if (areasx > 0) {
-		offsetx = (areasx - tex->sx) / 2;
-	}
-	if (areasy > 0) {
-		offsety = (areasy - tex->sy) / 2;
-	}
+	x1 = ((float)x);
+	y1 = ((float)y);
+	x2 = x1 + psx;
+	y2 = y1 + psy;
 
-	x1 = (float)x + offsetx;
-	y1 = (float)y + offsety;
-	x2 = x1 + tex->sx;
-	y2 = y1 + tex->sy;
+	sx = tex->ratex;
+	sy = tex->ratey;
+
+	tx0 *= sx;
+	tx1 *= sx;
+	ty0 *= sy;
+	ty1 *= sy;
 
 	float* v = _bufPolyTex;
 
+	BMSCR *bm = (BMSCR *)bmscr;
+	float r_val = bm->colorvalue[0];
+	float g_val = bm->colorvalue[1];
+	float b_val = bm->colorvalue[2];
+	float a_val = setPolyColorBlend(bm->gmode, bm->gfrate);
+
 	*v++ = x1; *v++ = y2; v++;
 	*v++ = tx0; *v++ = ty1;
-	*v++ = p_color->x; *v++ = p_color->y; *v++ = p_color->z; *v++ = p_color->w;
+	*v++ = r_val; *v++ = g_val; *v++ = b_val; *v++ = a_val;
 	*v++ = x1; *v++ = y1; v++;
 	*v++ = tx0; *v++ = ty0;
-	*v++ = p_color->x; *v++ = p_color->y; *v++ = p_color->z; *v++ = p_color->w;
+	*v++ = r_val; *v++ = g_val; *v++ = b_val; *v++ = a_val;
 	*v++ = x2; *v++ = y2; v++;
 	*v++ = tx1; *v++ = ty1;
-	*v++ = p_color->x; *v++ = p_color->y; *v++ = p_color->z; *v++ = p_color->w;
+	*v++ = r_val; *v++ = g_val; *v++ = b_val; *v++ = a_val;
 	*v++ = x2; *v++ = y1; v++;
 	*v++ = tx1; *v++ = ty0;
-	*v++ = p_color->x; *v++ = p_color->y; *v++ = p_color->z; *v++ = p_color->w;
+	*v++ = r_val; *v++ = g_val; *v++ = b_val; *v++ = a_val;
 
 	static unsigned short indices[] = { 0, 1, 2, 3 };
 
@@ -2769,53 +2759,25 @@ void gamehsp::texmesDrawId(int x, int y, int id, Vector4* p_color, int areasx, i
 }
 
 
-int gamehsp::drawFont(int x, int y, texmesPos* tpos, Vector4* p_color, int* out_ysize, int areasx, int areasy)
-{
-	// フォントで描画(tpos版)
-	int xsize, ysize;
-
-	if (GetSysReq(SYSREQ_USEGPBFONT)) {
-		return 0;
-	}
-
-	int id = tpos->texid;
-	if (id < 0) {
-		id = tmes.texmesRegist(tpos->getMessage(), tpos);
-		if (id < 0) return -1;
-		tpos->texid = id;
-	}
-
-	texmesDrawId(x, y, id, p_color, areasx, areasy);
-	xsize = tmes._area_px;
-	ysize = tmes._area_py;
-
-	*out_ysize = ysize;
-	return xsize;
-}
-
-
-int gamehsp::drawFont(int x, int y, char* text, Vector4* p_color, int* out_ysize, int areasx, int areasy )
+int gamehsp::drawFont(void *bmscr, int x, int y, char* text, int* out_ysize)
 {
 	// フォントで描画
 	int xsize, ysize;
+	Vector4 p_color;
+	BMSCR *bm = (BMSCR *)bmscr;
 
-	if (GetSysReq(SYSREQ_USEGPBFONT)) {
-		if (mFont == NULL) {
-			mFont = Font::create("res/font.gpb");
-			if (mFont == NULL) return 0;
-		}
-		mFont->start();
-		xsize = mFont->drawText(text, x, y, *p_color, tmes._fontsize);
-		mFont->finish();
-		ysize = tmes._fontsize;
-		*out_ysize = ysize;
-		return xsize;
+	if (mFont == NULL) {
+		mFont = Font::create("res/font.gpb");
+		if (mFont == NULL) return 0;
 	}
-
-	texmesDraw(x, y, text, p_color,areasx,areasy);
-	xsize = tmes._area_px;
-	ysize = tmes._area_py;
-
+	p_color.x = bm->colorvalue[0];
+	p_color.y = bm->colorvalue[1];
+	p_color.z = bm->colorvalue[2];
+	p_color.w = bm->colorvalue[3];
+	mFont->start();
+	xsize = mFont->drawText(text, x, y, p_color, tmes._fontsize);
+	mFont->finish();
+	ysize = tmes._fontsize;
 	*out_ysize = ysize;
 	return xsize;
 }

@@ -191,6 +191,7 @@ void texmesPos::addStringFromCaret(char *str)
 	cur = getStringByteFromPos(caret);
 	addcnt = validateString(str);
 	if (addcnt == 0) return;
+
 	if (insert_mode) {
 		msg.insert(cur, str);
 	}
@@ -198,8 +199,9 @@ void texmesPos::addStringFromCaret(char *str)
 		char *p = getString();
 		int cur2 = getStringByteFromPos(caret+addcnt);
 		p += cur2;
-		msg = msg.substr(0,cur) + str + p;
+		msg = msg.substr(0, cur) +str + p;
 	}
+
 	caret += addcnt;
 	validateInternalString();
 	invalidate();
@@ -212,19 +214,43 @@ bool texmesPos::deleteStringSelection(void)
 	//
 	int cur, cur2;
 	int sel_1, sel_2;
+
 	if (getSelection(&sel_1, &sel_2)) {
+
 		setCaret(sel_1);
 		cur = getStringByteFromPos(sel_1);
 		cur2 = getStringByteFromPos(sel_2);
 		char *p = getString();
 		p += cur2;
 		msg = msg.substr(0, cur) + p;
+
 		validateInternalString();
 		invalidate();
 		clearSelection();
 		return true;
 	}
 	return false;
+}
+
+
+int texmesPos::getSelectionString(std::string &out)
+{
+	//		選択範囲の文字列を取得する
+	//
+	int res = 0;
+	int cur, cur2;
+	int sel_1, sel_2;
+	if (getSelection(&sel_1, &sel_2)) {
+		setCaret(sel_1);
+		cur = getStringByteFromPos(sel_1);
+		cur2 = getStringByteFromPos(sel_2);
+		res = cur2 - cur;
+		out.clear();
+		if (res > 0) {
+			out = msg.substr(cur, res);
+		}
+	}
+	return res;
 }
 
 
@@ -317,7 +343,8 @@ void texmesPos::validateInternalString(void)
 		}
 		if ((a1 == 13) || (a1 == 10)) {		// CR/LFの場合はそこで打ち切る
 			modstr = true;
-			*p = 0; break;
+			*p = 0;
+			break;
 		}
 		if (a1 < 32) {						// コントロールコードは空白に変換
 			*p = 32;
@@ -331,12 +358,14 @@ void texmesPos::validateInternalString(void)
 		count++;
 		if (count >= left) {
 			modstr = true;
-			*p = 0;	break;
+			*p = 0;
+			break;
 		}
 	}
 
 	length = count;
 	setCaret(caret);
+
 	if (modstr) {
 		msg = src;
 	}
@@ -489,4 +518,19 @@ bool texmesPos::getSelection(int *start, int *end)
 	return selok;
 }
 
+
+void texmesPos::allSelection(void)
+{
+	//		すべてを選択する
+	//
+	if (selection == NULL) {
+		return;
+	}
+	int orgcaret;
+	orgcaret = caret;
+	clearSelection();
+	setCaret(0);
+	setCaretEnd(true);
+	setCaret(orgcaret);
+}
 

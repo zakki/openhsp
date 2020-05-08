@@ -356,8 +356,7 @@ public:
 
 	void drawTest( int matid );
 	void setFont(char *fontname, int size, int style);
-	int drawFont(int x, int y, char* text, Vector4* p_color, int* out_ysize, int areasx = 0, int areasy = 0);
-	int drawFont(int x, int y, texmesPos* tpos, Vector4* p_color, int* out_ysize, int areasx = 0, int areasy = 0);
+	int drawFont(void *bmscr, int x, int y, char* text, int* out_ysize);
 
 	int getObjectVector( int objid, int moc, Vector4 *prm );
 	void getNodeVector( gpobj *obj, Node *node, int moc, Vector4 *prm );
@@ -440,8 +439,8 @@ public:
 	* Message texture service
 	*/
 	void texmesProc(void);
-	void texmesDraw(int x, int y, char* msg, Vector4* p_color,int areasx=0, int areasy=0);
-	void texmesDrawId(int x, int y, int id, Vector4* p_color, int areasx=0, int areasy=0);
+	void texmesDrawClip(void *bmscr, int x, int y, int psx, int psy, texmes *tex, int basex, int basey);
+	texmesManager *getTexmesManager(void) { return &tmes; };
 
 protected:
     /**
