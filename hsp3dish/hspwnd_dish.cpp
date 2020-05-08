@@ -384,6 +384,8 @@ void Bmscr::Cls( int mode )
 	printoffsetx = 0;
 	printoffsety = 0;
 	keybuf_index = 0;
+	prevtime = 0;
+	passed_time = 0;
 
 	//		CEL initalize
 	//
@@ -392,6 +394,7 @@ void Bmscr::Cls( int mode )
 	//		all update
 	//
 	fl_udraw = fl_dispw;
+	window_active = 1;
 
 	//		Update HGI/O
 	//

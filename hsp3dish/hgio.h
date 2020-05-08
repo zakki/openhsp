@@ -92,6 +92,10 @@ void hgio_fontsystem_delete(int id);
 int hgio_fontsystem_setup(int sx, int sy, void *buffer);
 int hgio_fontsystem_exec(char* msg, unsigned char* buffer, int pitch, int* out_sx, int* out_sy, texmesPos *lineinfo=NULL);
 
+// for edit component
+void hgio_editputclip(BMSCR* bm, char *str);
+char *hgio_editgetclip(BMSCR* bm);
+
 
 enum {
 CLSMODE_NONE = 0,

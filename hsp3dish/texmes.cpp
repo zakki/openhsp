@@ -94,8 +94,8 @@ void texmes::reset(int width, int height, int p_texsx, int p_texsy, void *data)
 
 #endif
 
-	ratex = ( 1.0f / (float)texsx) * sx;
-	ratey = ( 1.0f / (float)texsy) * sy;
+	ratex = ( 1.0f / (float)texsx);
+	ratey = ( 1.0f / (float)texsy);
 	hash = 0;
 	life = TEXMES_CACHE_DEFAULT;
 	font_size = 0;
@@ -109,7 +109,7 @@ int texmes::registText(char* msg)
 	//		•¶Žš—ñ‚ðÝ’è‚·‚é
 	//
 	int mylen = strlen(msg);
-	if (mylen >= (TEXMES_NAME_BUFFER - 1)) {
+	if (mylen >= TEXMES_NAME_BUFFER) {
 		int size = mylen + 1;
 		if ( size > textsize) {
 			if (text != NULL) {
@@ -125,7 +125,6 @@ int texmes::registText(char* msg)
 	}
 	return 0;
 }
-
 
 
 /*------------------------------------------------------------*/

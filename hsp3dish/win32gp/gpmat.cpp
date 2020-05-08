@@ -389,8 +389,8 @@ float gamehsp::setMaterialBlend( Material* material, int gmode, int gfrate )
 			state->setBlendDst(RenderState::BLEND_ZERO);
 			alpha = 1.0f;
             break;
-        case 1:                     //blend+alpha one
-        case 2:                     //blend+alpha one
+		case 1:                     //blend+alpha one
+		case 2:                     //blend+alpha one
 			state->setBlendSrc(RenderState::BLEND_SRC_ALPHA);
 			state->setBlendDst(RenderState::BLEND_ONE_MINUS_SRC_ALPHA);
 			alpha = 1.0f;

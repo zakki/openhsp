@@ -403,6 +403,108 @@ LRESULT CALLBACK WndProc( HWND hwnd, UINT uMessage, WPARAM wParam, LPARAM lParam
 		}
 		return 0;
 
+	case WM_CHAR:
+		if (exinfo != NULL) {			// inputオブジェクト用
+			Bmscr* bm = (Bmscr*)exinfo->HspFunc_getbmscr(0);
+			if (bm) {
+				int wparam = (int)wParam;
+				if (bm->keybuf_index == 0) {
+					int sjflg = 0;
+					if (wparam >= 0x81) if (wparam < 0xa0) sjflg++;
+					if (wparam >= 0xe0) sjflg++;
+
+					if (sjflg) {
+						bm->keybuf[0] = (unsigned char)(wparam & 0xff);
+						bm->keybuf_index++;
+					}
+					else {
+						if (wparam >= 32) bm->SendHSPObjectNotice(wparam);
+					}
+				}
+				else {
+					bm->keybuf[1] = (unsigned char)(wparam & 0xff);
+					bm->keybuf[2] = 0;
+					bm->keybuf_index = 0;
+					bm->SendHSPObjectNotice(HSPOBJ_NOTICE_KEY_BUFFER);
+				}
+			}
+		}
+		return 0;
+
+	case WM_KEYDOWN:
+		if (exinfo != NULL) {			// inputオブジェクト用
+			int wparam = (int)wParam;
+			int iparam = (int)MapVirtualKey(wparam, 2);
+			bool notice = false;
+
+			if (iparam != 0) {
+				if ((wparam >= 'A') && (wparam <= 'Z')) {
+					if (GetKeyState(VK_CONTROL) < 0) {
+						wparam = HSPOBJ_NOTICE_KEY_CTRLADD + (wparam - '@');
+						notice = true;
+					}
+				}
+				switch (wparam) {
+				case HSPOBJ_NOTICE_KEY_BS:	// WM_CHARで送信されるCTRL+H
+				case HSPOBJ_NOTICE_KEY_TAB:
+				case HSPOBJ_NOTICE_KEY_CR:
+					notice = true;
+					break;
+				default:
+					break;
+				}
+				if (notice) {
+					Bmscr* bm = (Bmscr*)exinfo->HspFunc_getbmscr(0);
+					if (bm) {
+						bm->SendHSPObjectNotice(wparam);
+					}
+				}
+			}
+			else {
+				switch (wparam) {
+				case HSPOBJ_NOTICE_KEY_DEL:
+				case HSPOBJ_NOTICE_KEY_INS:
+					notice = true;
+					break;
+				case HSPOBJ_NOTICE_KEY_F1:
+				case HSPOBJ_NOTICE_KEY_F2:
+				case HSPOBJ_NOTICE_KEY_F3:
+				case HSPOBJ_NOTICE_KEY_F4:
+				case HSPOBJ_NOTICE_KEY_F5:
+				case HSPOBJ_NOTICE_KEY_F6:
+				case HSPOBJ_NOTICE_KEY_F7:
+				case HSPOBJ_NOTICE_KEY_F8:
+				case HSPOBJ_NOTICE_KEY_F9:
+				case HSPOBJ_NOTICE_KEY_F10:
+				case HSPOBJ_NOTICE_KEY_F11:
+				case HSPOBJ_NOTICE_KEY_F12:
+					notice = true;
+					wparam += HSPOBJ_NOTICE_KEY_CTRLADD;
+					break;
+				case HSPOBJ_NOTICE_KEY_LEFT:
+				case HSPOBJ_NOTICE_KEY_UP:
+				case HSPOBJ_NOTICE_KEY_RIGHT:
+				case HSPOBJ_NOTICE_KEY_DOWN:
+				case HSPOBJ_NOTICE_KEY_HOME:
+				case HSPOBJ_NOTICE_KEY_END:
+				case HSPOBJ_NOTICE_KEY_SCROLL_UP:
+				case HSPOBJ_NOTICE_KEY_SCROLL_DOWN:
+					notice = true;
+					if (GetKeyState(VK_SHIFT) < 0) wparam += HSPOBJ_NOTICE_KEY_SHIFTADD;
+					break;
+				default:
+					break;
+				}
+				if (notice) {
+					Bmscr* bm = (Bmscr*)exinfo->HspFunc_getbmscr(0);
+					if (bm) {
+						bm->SendHSPObjectNotice(wparam);
+					}
+				}
+			}
+
+		}
+		return 0;
 
 	case WM_QUERYENDSESSION:
 	case WM_CLOSE:
