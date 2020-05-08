@@ -45,6 +45,7 @@ OBJS = \
 	../hsp3/hspvar_struct.bc \
 	hspwnd_dish.bc \
 	hspwnd_obj.bc \
+	hspwnd_edit.bc \
 	random.bc \
 	../hsp3/stack.bc \
 	../hsp3/strbuf.bc \
@@ -83,6 +84,7 @@ OBJS_GP = \
 	../hsp3/hspvar_struct.gp.bc \
 	hspwnd_dish.gp.bc \
 	hspwnd_obj.gp.bc \
+	hspwnd_edit.gp.bc \
 	random.gp.bc \
 	../hsp3/stack.gp.bc \
 	../hsp3/strbuf.gp.bc \
