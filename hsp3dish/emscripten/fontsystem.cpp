@@ -56,6 +56,10 @@
 
 #if defined(HSPEMSCRIPTEN)
 #include <emscripten.h>
+#ifdef HSPDISHGP
+#include <SDL/SDL_ttf.h>
+#define USE_TTFFONT
+#endif
 #define USE_JAVA_FONT
 #define FONT_TEX_SX 512
 #define FONT_TEX_SY 128
@@ -330,7 +334,7 @@ int hgio_fontsystem_execsub(long code, unsigned char* buffer, int pitch, int off
 }
 
 
-int hgio_fontsystem_exec(char* msg, unsigned char* buffer, int pitch, int* out_sx, int* out_sy)
+int hgio_fontsystem_exec(char* msg, unsigned char* buffer, int pitch, int* out_sx, int* out_sy, texmesPos *info)
 {
 	//		msgの文字列をテクスチャバッファにレンダリングする
 	//		(bufferがNULLの場合はサイズだけを取得する)
@@ -338,6 +342,7 @@ int hgio_fontsystem_exec(char* msg, unsigned char* buffer, int pitch, int* out_s
 	if (htexfont == NULL) return -1;
 
 	int x = 0;
+	int count = 0;
 	long code;
 	unsigned char *p = (unsigned char*)msg;
 	unsigned char a1;
@@ -356,15 +361,26 @@ int hgio_fontsystem_exec(char* msg, unsigned char* buffer, int pitch, int* out_s
 				p++;
 			}
 		}
-
+		if (info) {
+			if (count < info->maxlength) {
+				info->pos[count] = (short)x;
+			}
+		}
 		x += hgio_fontsystem_execsub(code, buffer, pitch, x);
+		count++;
 	}
 
 	fontsystem_sx = x;
 
+	if (info) {
+		if (count < info->maxlength) {
+			info->pos[count] = (short)x;
+		}
+		info->length = count;
+	}
 	*out_sx = fontsystem_sx;
 	*out_sy = fontsystem_sy;
-	return 0;
+	return count;
 }
 
 #endif
@@ -433,7 +449,7 @@ void hgio_fontsystem_init(char* fontname, int size, int style)
 	fontsystem_style = style;
 }
 
-int hgio_fontsystem_exec(char* msg, unsigned char* buffer, int pitch, int* out_sx, int* out_sy)
+int hgio_fontsystem_exec(char* msg, unsigned char* buffer, int pitch, int* out_sx, int* out_sy, texmesPos *info)
 {
 	//		msgの文字列をテクスチャバッファにレンダリングする
 	//		(bufferがNULLの場合はサイズだけを取得する)
@@ -542,7 +558,7 @@ void hgio_fontsystem_init(char* fontname, int size, int style)
 	fontsystem_style = style;
 }
 
-int hgio_fontsystem_exec(char* msg, unsigned char* buffer, int pitch, int* out_sx, int* out_sy)
+int hgio_fontsystem_exec(char* msg, unsigned char* buffer, int pitch, int* out_sx, int* out_sy, texmesPos *info)
 {
 	//		msgの文字列をテクスチャバッファにレンダリングする
 	//		(bufferがNULLの場合はサイズだけを取得する)
@@ -674,7 +690,7 @@ void hgio_fontsystem_init(char* fontname, int size, int style)
 	fontsystem_style = style;
 }
 
-int hgio_fontsystem_exec(char* msg, unsigned char* buffer, int pitch, int* out_sx, int* out_sy)
+int hgio_fontsystem_exec(char* msg, unsigned char* buffer, int pitch, int* out_sx, int* out_sy, texmesPos *info)
 {
 	//		msgの文字列をテクスチャバッファにレンダリングする
 	//		(bufferがNULLの場合はサイズだけを取得する)
@@ -799,7 +815,7 @@ void hgio_fontsystem_init(char* fontname, int size, int style)
 	fontsystem_style = style;
 }
 
-int hgio_fontsystem_exec(char* msg, unsigned char* buffer, int pitch, int* out_sx, int* out_sy)
+int hgio_fontsystem_exec(char* msg, unsigned char* buffer, int pitch, int* out_sx, int* out_sy, texmesPos *info)
 {
 	//		msgの文字列をテクスチャバッファにレンダリングする
 	//		(bufferがNULLの場合はサイズだけを取得する)
