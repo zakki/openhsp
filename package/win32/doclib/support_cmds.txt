@@ -208,6 +208,17 @@ ginfo_intid	,sys|macro
 ginfo_newid	,sys|macro
 ginfo_sx	,sys|macro
 ginfo_sy	,sys|macro
+ginfo_sel	,sys|macro
+
+objmode_normal	,sys|macro
+objmode_guifont	,sys|macro
+objmode_usefont	,sys|macro
+gsquare_grad	,sys|macro
+
+iparam	,sys|func
+wparam	,sys|func
+lparam	,sys|func
+
 notemax	,sys|macro
 do	,sys|macro
 until	,sys|macro
@@ -228,6 +239,8 @@ alloc	,sys|macro
 m_pi	,sys|macro
 rad2deg	,sys|macro
 deg2rad	,sys|macro
+mes	,sys|func
+print	,sys|func
 
 
 HSP3Dish非互換コマンド
@@ -241,11 +254,21 @@ font	,sys|func
 picload	,sys|func
 celload	,sys|func
 gmode	,sys|func
-mes	,sys|func
-print	,sys|func
 
 exec	,sys|func
 dialog	,sys|func
+
+title	,sys|func
+onexit	,sys|func
+onerror	,sys|func
+onkey	,sys|func
+onclick	,sys|func
+oncmd	,sys|func
+
+delete	,sys|func
+mkdir	,sys|func
+chdir	,sys|func
+dirlist	,sys|func
 
 
 HSP3Dish非互換コマンド
@@ -254,14 +277,6 @@ HSP3Dish非互換コマンド
 chdpm	,sys|func
 memfile	,sys|func
 bcopy	,sys|func
-delete	,sys|func
-mkdir	,sys|func
-chdir	,sys|func
-dirlist	,sys|func
-
-title	,sys|func
-onexit	,sys|func
-onerror	,sys|func
 
 dupptr	,sys|func
 
@@ -271,17 +286,19 @@ sendmsg	,sys|func|1
 #func	,pre|func
 #cfunc	,pre|func
 
-
-HSP3Dishサポート外コマンド
+chkbox	,sys|func
+input	,sys|func
+newlab	,sys|func
+objsel	,sys|func
+objskip	,sys|func
+objmode	,sys|func
+objcolor,sys|func
 
 mouse	,sys|func
 run	,sys|func
 objinfo	,sys|func
 sysinfo	,sys|func
 thismod	,sys|func
-onkey	,sys|func
-onclick	,sys|func
-oncmd	,sys|func
 newcom	,sys|func|1
 querycom	,sys|func|1
 delcom	,sys|func|1
@@ -297,9 +314,7 @@ cnvwtos	,sys|func|1
 comevdisp	,sys|func|1
 libptr	,sys|func|1
 listbox	,sys|func
-chkbox	,sys|func
 combox	,sys|func
-input	,sys|func
 mesbox	,sys|func
 bmpsave	,sys|func
 palcolor	,sys|func
@@ -307,22 +322,12 @@ palette	,sys|func
 sysfont	,sys|func
 chgdisp	,sys|func
 syscolor	,sys|func
-newlab	,sys|func
-resume	,sys|func
-yield	,sys|func
-pget	,sys|func
 mci	,sys|func
-objsel	,sys|func
-groll	,sys|func
 mref	,sys|func
 mcall	,sys|func
 newmod	,sys|func
 delmod	,sys|func
 split	,sys|func
-
-objskip	,sys|func
-objmode	,sys|func
-objcolor,sys|func
 
 #usecom	,pre|func
 #defint	,pre|func
@@ -333,20 +338,22 @@ objcolor,sys|func
 #modinit	,pre|func
 #modterm	,pre|func
 
-HSP3Dishサポート外システム変数・関数・マクロ
+
+HSP3Dishサポート外コマンド
+
+resume	,sys|func
+yield	,sys|func
+pget	,sys|func
+groll	,sys|func
+
+
+HSP3Dish非互換ステム変数・関数・マクロ
+(これらはWindows上でのみ動作し、他のデバイスでは無視されます)
 
 hwnd	,sys|func
 hinstance	,sys|func
 hdc	,sys|func
-iparam	,sys|func
-wparam	,sys|func
-lparam	,sys|func
-ginfo_paluse	,sys|macro
-ginfo_sel	,sys|macro
-ginfo_wx1	,sys|macro
-ginfo_wy1	,sys|macro
-ginfo_wx2	,sys|macro
-ginfo_wy2	,sys|macro
+
 dir_cur	,sys|macro
 dir_exe	,sys|macro
 dir_win	,sys|macro
@@ -354,17 +361,24 @@ dir_sys	,sys|macro
 dir_cmdline	,sys|macro
 dir_desktop	,sys|macro
 dir_mydoc	,sys|macro
+
 font_normal	,sys|macro
 font_bold	,sys|macro
 font_italic	,sys|macro
 font_underline	,sys|macro
 font_strikeout	,sys|macro
 font_antialias	,sys|macro
-objmode_normal	,sys|macro
-objmode_guifont	,sys|macro
-objmode_usefont	,sys|macro
-gsquare_grad	,sys|macro
+
 msgothic	,sys|macro
 msmincho	,sys|macro
+
+
+HSP3Dishサポート外システム変数・関数・マクロ
+
+ginfo_paluse	,sys|macro
+ginfo_wx1	,sys|macro
+ginfo_wy1	,sys|macro
+ginfo_wx2	,sys|macro
+ginfo_wy2	,sys|macro
 
 
