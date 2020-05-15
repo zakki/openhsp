@@ -683,12 +683,20 @@ int hgio_dialog( int mode, char *str1, char *str2 )
 	res = MessageBox( master_wnd, str1, str2, i );
 	return res;
 #endif
-#if defined(HSPLINUX) || defined(HSPEMSCRIPTEN)
-	return 0;
+#ifdef HSPNDK
+	j_dispDialog( str1, str2, mode );
 #endif
 #ifdef HSPIOS
     gpb_dialog( mode, str1, str2 );
     //Alertf( str1 );
+#endif
+#ifdef HSPLINUX
+	{
+	int i = 0;
+	if (mode>=16) return 0;
+	if (mode&1) i|=SDL_MESSAGEBOX_WARNING; else i|=SDL_MESSAGEBOX_INFORMATION;
+	SDL_ShowSimpleMessageBox(i, str2, str1, NULL);
+	}
 #endif
 	return 0;
 }
@@ -1200,7 +1208,7 @@ int hgio_celputmulti(BMSCR *bm, int *xpos, int *ypos, int *cel, int count, BMSCR
 	if (drawflag == 0) hgio_render_start();
 
 	gpmat *mat = game->getMat(bmsrc->texid);
-	if (mat == NULL) return NULL;
+	if (mat == NULL) return 0;
 	master_v = game->startPolyTex2D(mat, bm->texid);
 	if (master_v == NULL) return 0;
 
@@ -2045,11 +2053,11 @@ int hgio_fontsystem_setup(int sx, int sy, void *buffer)
 #endif
 
 
-#ifdef HSPWIN
 void hgio_editputclip(BMSCR* bm, char *str)
 {
 	//		クリップボードコピー
 	//
+#ifdef HSPWIN
 	HGLOBAL hg;
 	char *strMem;
 	if (!OpenClipboard(master_wnd)) return;
@@ -2063,6 +2071,10 @@ void hgio_editputclip(BMSCR* bm, char *str)
 
 	SetClipboardData(CF_TEXT, hg);
 	CloseClipboard();
+#endif
+#if (defined(HSPLINUX)||defined(HSPEMSCRIPTEN))
+	SDL_SetClipboardText( (const char *)str );
+#endif
 }
 
 
@@ -2070,6 +2082,7 @@ char *hgio_editgetclip(BMSCR* bm)
 {
 	//		クリップボードペースト文字列取得
 	//
+#ifdef HSPWIN
 	HGLOBAL hg;
 	char *strClip;
 	if (OpenClipboard(master_wnd) && (hg = GetClipboardData(CF_TEXT))) {
@@ -2080,9 +2093,14 @@ char *hgio_editgetclip(BMSCR* bm)
 		CloseClipboard();
 		return p;
 	}
+#endif
+#if (defined(HSPLINUX)||defined(HSPEMSCRIPTEN))
+	if ( SDL_HasClipboardText() ) {
+		return (SDL_GetClipboardText());
+	}
+#endif
 	return NULL;
 }
-#endif
 
 /*-------------------------------------------------------------------------------*/
 

@@ -299,7 +299,7 @@ void hgio_init( int mode, int sx, int sy, void *hwnd )
 #endif
 
 #if defined(HSPLINUX)
-	#ifdef USE_JAVA_FONT
+	#ifdef USE_TTFFONT
 
 	//TTF初期化
 	char fontpath[HSP_MAX_PATH+1];
@@ -764,12 +764,22 @@ void hgio_clsmode( int mode, int color, int tex )
 
 int hgio_getWidth( void )
 {
+#ifdef HSPLINUX
+	SDL_DisplayMode dm;
+	SDL_GetDesktopDisplayMode(0,&dm);
+	return dm.w;
+#endif
 	return _bgsx;
 }
 
 
 int hgio_getHeight( void )
 {
+#ifdef HSPLINUX
+	SDL_DisplayMode dm;
+	SDL_GetDesktopDisplayMode(0,&dm);
+	return dm.h;
+#endif
 	return _bgsy;
 }
 
@@ -1784,6 +1794,14 @@ int hgio_dialog( int mode, char *str1, char *str2 )
     gb_dialog( mode, str1, str2 );
     //Alertf( str1 );
 #endif
+#ifdef HSPLINUX
+	{
+	int i = 0;
+	if (mode>=16) return 0;
+	if (mode&1) i|=SDL_MESSAGEBOX_WARNING; else i|=SDL_MESSAGEBOX_INFORMATION;
+	SDL_ShowSimpleMessageBox(i, str2, str1, NULL);
+	}
+#endif
 	return 0;
 }
 
@@ -2183,6 +2201,29 @@ int hgio_fontsystem_setup(int sx, int sy, void *buffer)
 #endif
 }
 
+
+void hgio_editputclip(BMSCR* bm, char *str)
+{
+	//		クリップボードコピー
+	//
+#if (defined(HSPLINUX)||defined(HSPEMSCRIPTEN))
+	SDL_SetClipboardText( (const char *)str );
+#endif
+}
+
+
+char *hgio_editgetclip(BMSCR* bm)
+{
+	//		クリップボードペースト文字列取得
+	//
+#if (defined(HSPLINUX)||defined(HSPEMSCRIPTEN))
+	if ( SDL_HasClipboardText() ) {
+		return (SDL_GetClipboardText());
+	}
+#endif
+	return NULL;
+}
+
 /*-------------------------------------------------------------------------------*/
 
 
@@ -2306,6 +2347,11 @@ int hgio_redraw( BMSCR *bm, int flag )
 
 	if ( flag & 1 ) {
 		hgio_render_end();
+		int curtick = hgio_gettick();
+		if (bm->prevtime) {
+			bm->passed_time = curtick - bm->prevtime;
+		}
+		bm->prevtime = curtick;
 	} else {
 		hgio_render_start();
 	}
