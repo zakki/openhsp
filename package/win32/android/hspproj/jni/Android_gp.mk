@@ -32,6 +32,7 @@ PlatformAndroid.cpp \
 ../../hsplib36b3/hsp3/hspvar_struct.cpp \
 ../../hsplib36b3/hsp3/hspwnd_dish.cpp \
 ../../hsplib36b3/hsp3/hspwnd_obj.cpp \
+../../hsplib36b3/hsp3/hspwnd_edit.cpp \
 ../../hsplib36b3/hsp3/random.cpp \
 ../../hsplib36b3/hsp3/stack.cpp \
 ../../hsplib36b3/hsp3/strbuf.cpp \
