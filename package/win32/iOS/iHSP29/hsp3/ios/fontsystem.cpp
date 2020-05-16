@@ -40,7 +40,7 @@
 #include <OpenGLES/ES1/gl.h>
 #include <OpenGLES/ES1/glext.h>
 #include <CoreFoundation/CoreFoundation.h>
-#include "iOSBridge.h"
+#include "iOSgpBridge.h"
 #include "appengine.h"
 #endif
 
@@ -334,7 +334,7 @@ int hgio_fontsystem_execsub(long code, unsigned char* buffer, int pitch, int off
 }
 
 
-int hgio_fontsystem_exec(char* msg, unsigned char* buffer, int pitch, int* out_sx, int* out_sy)
+int hgio_fontsystem_exec(char* msg, unsigned char* buffer, int pitch, int* out_sx, int* out_sy, texmesPos *info)
 {
 	//		msgの文字列をテクスチャバッファにレンダリングする
 	//		(bufferがNULLの場合はサイズだけを取得する)
@@ -342,6 +342,7 @@ int hgio_fontsystem_exec(char* msg, unsigned char* buffer, int pitch, int* out_s
 	if (htexfont == NULL) return -1;
 
 	int x = 0;
+	int count = 0;
 	long code;
 	unsigned char *p = (unsigned char*)msg;
 	unsigned char a1;
@@ -360,15 +361,26 @@ int hgio_fontsystem_exec(char* msg, unsigned char* buffer, int pitch, int* out_s
 				p++;
 			}
 		}
-
+		if (info) {
+			if (count < info->maxlength) {
+				info->pos[count] = (short)x;
+			}
+		}
 		x += hgio_fontsystem_execsub(code, buffer, pitch, x);
+		count++;
 	}
 
 	fontsystem_sx = x;
 
+	if (info) {
+		if (count < info->maxlength) {
+			info->pos[count] = (short)x;
+		}
+		info->length = count;
+	}
 	*out_sx = fontsystem_sx;
 	*out_sy = fontsystem_sy;
-	return 0;
+	return count;
 }
 
 #endif
@@ -390,6 +402,33 @@ static	int fontsystem_sx;		// 横のサイズ
 static	int fontsystem_sy;		// 縦のサイズ
 static	int fontsystem_size;
 static	int fontsystem_style;
+
+int GetMultibyteCharacter(unsigned char *text)
+{
+	//		マルチバイト文字のサイズを得る
+	//
+	const unsigned char *p = text;
+	unsigned char a1;
+	int mulchr = 1;
+
+	a1 = *p;
+
+	if (a1 & 0x80) {				// 全角文字チェック(UTF8)
+		int utf8bytes = 0;
+		if ((a1 & 0xe0) == 0x0c0) utf8bytes = 1;
+		if ((a1 & 0xf0) == 0x0e0) utf8bytes = 2;
+		if ((a1 & 0xf8) == 0x0f0) utf8bytes = 3;
+
+		int utf8cnt = 0;
+		while (utf8bytes > 0) {
+			if ((*(++p) & 0xc0) != 0x80) break;
+			utf8cnt++;
+			utf8bytes--;
+		}
+		mulchr += utf8cnt;
+	}
+	return mulchr;
+}
 
 void TexFontTerm( void )
 {
@@ -413,7 +452,7 @@ int TexFontInit( char *path, int size )
 		Alertf( "Init:TTF_OpenFont error" );
 		return -2;
 	}
-	Alertf( "Init:TTF_Init:%s (%x)",fontpath,font );
+	//Alertf( "Init:TTF_Init:%s (%x)",fontpath,font );
 	return 0;
 }
 
@@ -437,13 +476,85 @@ void hgio_fontsystem_init(char* fontname, int size, int style)
 	fontsystem_style = style;
 }
 
-int hgio_fontsystem_exec(char* msg, unsigned char* buffer, int pitch, int* out_sx, int* out_sy)
+int hgio_fontsystem_exec_pos(char* msg, texmesPos *info)
+{
+	unsigned char *p = (unsigned char*)msg;
+	unsigned char a1;
+	unsigned char code[8];
+	int i;
+	int x = 0;
+	int count = 0;
+	int mulchr;
+	int w,h;
+	int c;
+	int ww,hh,adv;
+
+	w = 0; h = 0;
+
+	while (1) {
+		a1 = *p;
+		if (a1 == 0) break;
+		if (a1 < 32) { p++; continue; }
+
+		if (count < info->maxlength) {
+			info->pos[count] = (short)x;
+		}
+
+		mulchr = GetMultibyteCharacter(p);
+		i = 0;
+		while(1) {
+			if (mulchr<=0) break;
+			code[i++] = *p++;
+			mulchr--;
+		}
+		code[i] = 0;
+
+		// UTF8->UTF32に変換
+		switch(i) {
+		case 2:
+			c = ((int)(code[0] & 0x1f))<<6;
+			c |= code[1] & 0x3f;
+			break;
+		case 3:
+			c  = ((int)(code[0] & 0x0f))<<12;
+			c |= ((int)(code[1] & 0x3f))<<6;
+			c |= code[2] & 0x3f;
+			break;
+		case 4:
+			c  = ((int)(code[0] & 0x07))<<18;
+			c |= ((int)(code[1] & 0x3f))<<12;
+			c |= ((int)(code[2] & 0x3f))<<6;
+			c |= code[3] & 0x3f;
+			break;
+		default:
+			c = (int)code[0];
+			break;
+		}
+		TTF_GlyphMetrics(font, (Uint16)c, &w, &ww, &h, &hh, &adv);
+		x += adv;
+		//TTF_SizeUTF8(font, (const char *)code, &w, &h);
+		//x += w;
+		count++;
+	}
+
+	if (count < info->maxlength) {
+	info->pos[count] = (short)x;
+	}
+	info->length = count;
+	return 0;
+}
+
+int hgio_fontsystem_exec(char* msg, unsigned char* buffer, int pitch, int* out_sx, int* out_sy, texmesPos *info)
 {
 	//		msgの文字列をテクスチャバッファにレンダリングする
 	//		(bufferがNULLの場合はサイズだけを取得する)
 	//
 
 	if (buffer == NULL) {
+
+		if (info) {
+			hgio_fontsystem_exec_pos(msg,info);
+		}
 
 		SDL_Color dcolor={255,255,255,255};
 		sdlsurf = TTF_RenderUTF8_Blended(font, msg, dcolor );
@@ -546,7 +657,7 @@ void hgio_fontsystem_init(char* fontname, int size, int style)
 	fontsystem_style = style;
 }
 
-int hgio_fontsystem_exec(char* msg, unsigned char* buffer, int pitch, int* out_sx, int* out_sy)
+int hgio_fontsystem_exec(char* msg, unsigned char* buffer, int pitch, int* out_sx, int* out_sy, texmesPos *info)
 {
 	//		msgの文字列をテクスチャバッファにレンダリングする
 	//		(bufferがNULLの場合はサイズだけを取得する)
@@ -678,7 +789,7 @@ void hgio_fontsystem_init(char* fontname, int size, int style)
 	fontsystem_style = style;
 }
 
-int hgio_fontsystem_exec(char* msg, unsigned char* buffer, int pitch, int* out_sx, int* out_sy)
+int hgio_fontsystem_exec(char* msg, unsigned char* buffer, int pitch, int* out_sx, int* out_sy, texmesPos *info)
 {
 	//		msgの文字列をテクスチャバッファにレンダリングする
 	//		(bufferがNULLの場合はサイズだけを取得する)
@@ -699,7 +810,7 @@ int hgio_fontsystem_exec(char* msg, unsigned char* buffer, int pitch, int* out_s
 		d.style.setProperty("font", $1 + "px 'sans-serif'");
 		document.body.appendChild(d);
 
-		var t = document.createTextNode(Pointer_stringify($0));
+		var t = document.createTextNode(UTF8ToString($0));
 		if (d.hasChildNodes())
 			d.removeChild(d.firstChild);
 		d.appendChild(t);
@@ -747,7 +858,7 @@ int hgio_fontsystem_exec(char* msg, unsigned char* buffer, int pitch, int* out_s
 		var context = canvas.getContext("2d");
 		context.font = $1 + "px 'sans-serif'";
 
-		var msg = Pointer_stringify($0);
+		var msg = UTF8ToString($0);
 		context.clearRect ( 0 , 0 , $2 , $3);
 		context.fillStyle = 'rgba(255, 255, 255, 255)';
 		context.fillText(msg, 0, $1);
@@ -803,7 +914,7 @@ void hgio_fontsystem_init(char* fontname, int size, int style)
 	fontsystem_style = style;
 }
 
-int hgio_fontsystem_exec(char* msg, unsigned char* buffer, int pitch, int* out_sx, int* out_sy)
+int hgio_fontsystem_exec(char* msg, unsigned char* buffer, int pitch, int* out_sx, int* out_sy, texmesPos *info)
 {
 	//		msgの文字列をテクスチャバッファにレンダリングする
 	//		(bufferがNULLの場合はサイズだけを取得する)

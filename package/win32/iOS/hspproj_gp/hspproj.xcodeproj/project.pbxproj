@@ -369,6 +369,7 @@
 		1ECA32BB22C728C700729976 /* premake4.lua in Resources */ = {isa = PBXBuildFile; fileRef = 1ECA320422C728C600729976 /* premake4.lua */; };
 		1ECA32BC22C728C700729976 /* btConvexHull.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 1ECA320922C728C600729976 /* btConvexHull.cpp */; };
 		1ECA32BD22C728C700729976 /* btAlignedAllocator.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 1ECA320A22C728C600729976 /* btAlignedAllocator.cpp */; };
+		1ECB15482470283500A2A6BE /* hspwnd_edit.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 1ECB15472470283500A2A6BE /* hspwnd_edit.cpp */; };
 		1EE7FBB71E73FF1A0099D10F /* gameplay-main-ios.mm in Sources */ = {isa = PBXBuildFile; fileRef = 1EE7FBB61E73FF1A0099D10F /* gameplay-main-ios.mm */; };
 		1EE7FBC91E740C770099D10F /* CoreMotion.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 1EE7FBC81E740C770099D10F /* CoreMotion.framework */; };
 /* End PBXBuildFile section */
@@ -1161,6 +1162,7 @@
 		1ECA320922C728C600729976 /* btConvexHull.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = btConvexHull.cpp; sourceTree = "<group>"; };
 		1ECA320A22C728C600729976 /* btAlignedAllocator.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = btAlignedAllocator.cpp; sourceTree = "<group>"; };
 		1ECA320B22C728C600729976 /* btHashMap.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = btHashMap.h; sourceTree = "<group>"; };
+		1ECB15472470283500A2A6BE /* hspwnd_edit.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = hspwnd_edit.cpp; sourceTree = "<group>"; };
 		1EE7FBB61E73FF1A0099D10F /* gameplay-main-ios.mm */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.objcpp; name = "gameplay-main-ios.mm"; path = "../gameplay/src/gameplay-main-ios.mm"; sourceTree = "<group>"; };
 		1EE7FBC81E740C770099D10F /* CoreMotion.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CoreMotion.framework; path = System/Library/Frameworks/CoreMotion.framework; sourceTree = SDKROOT; };
 /* End PBXFileReference section */
@@ -1604,6 +1606,7 @@
 		1E9FB806244F021000133406 /* hsp3 */ = {
 			isa = PBXGroup;
 			children = (
+				1ECB15472470283500A2A6BE /* hspwnd_edit.cpp */,
 				1E9FB896244F050000133406 /* ios */,
 				1E9FB807244F021000133406 /* hsp3int.cpp */,
 				1E9FB808244F021000133406 /* strbuf.h */,
@@ -2384,6 +2387,7 @@
 				1ECA324F22C728C700729976 /* btCollisionObject.cpp in Sources */,
 				1E9FB88A244F021000133406 /* gpmat.cpp in Sources */,
 				1E7726611E72B73000191206 /* Label.cpp in Sources */,
+				1ECB15482470283500A2A6BE /* hspwnd_edit.cpp in Sources */,
 				1ECA327422C728C700729976 /* btOptimizedBvh.cpp in Sources */,
 				1ECA323522C728C700729976 /* btRaycastCallback.cpp in Sources */,
 				1E7726621E72B73000191206 /* Layout.cpp in Sources */,
