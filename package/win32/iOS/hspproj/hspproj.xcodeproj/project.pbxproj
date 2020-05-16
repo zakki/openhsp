@@ -70,6 +70,7 @@
 		1EA5558F189A462D00344013 /* icon57.png in Resources */ = {isa = PBXBuildFile; fileRef = 1EA5558C189A462D00344013 /* icon57.png */; };
 		1EA55590189A462D00344013 /* icon58.png in Resources */ = {isa = PBXBuildFile; fileRef = 1EA5558D189A462D00344013 /* icon58.png */; };
 		1EA55591189A462D00344013 /* icon120.png in Resources */ = {isa = PBXBuildFile; fileRef = 1EA5558E189A462D00344013 /* icon120.png */; };
+		1ECB15462470278C00A2A6BE /* hspwnd_edit.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 1ECB15452470278C00A2A6BE /* hspwnd_edit.cpp */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -193,6 +194,7 @@
 		1EA5558C189A462D00344013 /* icon57.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = icon57.png; sourceTree = "<group>"; };
 		1EA5558D189A462D00344013 /* icon58.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = icon58.png; sourceTree = "<group>"; };
 		1EA5558E189A462D00344013 /* icon120.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = icon120.png; sourceTree = "<group>"; };
+		1ECB15452470278C00A2A6BE /* hspwnd_edit.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = hspwnd_edit.cpp; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -356,6 +358,7 @@
 		1E9FB752244EFEB100133406 /* hsp3 */ = {
 			isa = PBXGroup;
 			children = (
+				1ECB15452470278C00A2A6BE /* hspwnd_edit.cpp */,
 				1E9FB753244EFEB100133406 /* hsp3int.cpp */,
 				1E9FB754244EFEB100133406 /* strbuf.h */,
 				1E9FB755244EFEB100133406 /* hspwnd_dish.cpp */,
@@ -562,6 +565,7 @@
 				1E9FB7BE244EFEB100133406 /* geometry.cpp in Sources */,
 				1E9FB7B0244EFEB100133406 /* Canvas.mm in Sources */,
 				1E9FB7AE244EFEB100133406 /* HspViewController.mm in Sources */,
+				1ECB15462470278C00A2A6BE /* hspwnd_edit.cpp in Sources */,
 				1E9FB7D1244EFEB100133406 /* webtask_ios.cpp in Sources */,
 				1E9FB7CC244EFEB100133406 /* fontsystem.cpp in Sources */,
 				1E9FB7C3244EFEB100133406 /* essprite.cpp in Sources */,

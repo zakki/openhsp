@@ -36,6 +36,7 @@
 #endif
 
 #ifdef HSPEMSCRIPTEN
+int hgio_fontsystem_get_texid(void);
 #define GL_GLEXT_PROTOTYPES
 #include <GL/gl.h>
 #include <GL/glext.h>
@@ -186,6 +187,8 @@ static		float _rate_sy, _center_sy;
 
 #ifdef HSPWIN
 static		HWND master_wnd;	// 表示対象Window
+static		HCURSOR cursor_arrow;	// 通常カーソル
+static		HCURSOR cursor_ibeam;	// テキストエリア用カーソル
 #endif
 static		int drawflag;		// レンダー開始フラグ
 static		BMSCR mestexbm;		// テキスト表示用ダミーBMSCR
@@ -272,19 +275,24 @@ void hgio_init( int mode, int sx, int sy, void *hwnd )
     lastTime = CFAbsoluteTimeGetCurrent();
 #endif
 
-#if defined(HSPLINUX) || defined(HSPEMSCRIPTEN)
+#if defined(HSPLINUX)
 	//TTF初期化
 	char fontpath[HSP_MAX_PATH+1];
 	*fontpath = 0;
-#if defined(HSPLINUX)
 	strcpy( fontpath, hgio_getdir(1) );
-#endif
 	strcat( fontpath, TTF_FONTFILE );
 
 	if ( TTF_Init() ) {
 		Alertf( "Init:TTF_Init error" );
 	}
 	TexFontInit( fontpath, 18 );
+#endif
+
+#ifdef HSPWIN
+	//		カーソル読み込み
+	//
+	cursor_arrow = LoadCursor(NULL, IDC_ARROW);
+	cursor_ibeam = LoadCursor(NULL, IDC_IBEAM);
 #endif
 
 }
@@ -624,9 +632,41 @@ int hgio_redraw( BMSCR *bm, int flag )
 
 	if ( flag & 1 ) {
 		hgio_render_end();
+		int curtick = hgio_gettick();
+		if (bm->prevtime) {
+			bm->passed_time = curtick - bm->prevtime;
+		}
+		bm->prevtime = curtick;
 	} else {
 		hgio_render_start();
 	}
+
+#ifdef HSPWIN
+	//	ウインドウアクティブの更新
+	//
+	HWND hwnd;
+	hwnd = GetActiveWindow();
+	if (hwnd != master_wnd) {
+		bm->window_active = 0;
+	}
+	else {
+		bm->window_active = 1;
+	}
+
+	//	カーソルの更新
+	//
+	HSPOBJINFO *info = bm->cur_mo_obj;
+	HCURSOR hc = cursor_arrow;
+
+	if (info) {
+		if (info->owmode & (HSPOBJ_OPTION_EDITSEL | HSPOBJ_OPTION_MULTISEL)) {
+			hc = cursor_ibeam;
+		}
+	}
+	SetCursor(hc);
+	SetClassLong(hwnd, -12, (LONG)hc);
+#endif
+
 	return 0;
 }
 
@@ -643,12 +683,20 @@ int hgio_dialog( int mode, char *str1, char *str2 )
 	res = MessageBox( master_wnd, str1, str2, i );
 	return res;
 #endif
-#if defined(HSPLINUX) || defined(HSPEMSCRIPTEN)
-	return 0;
+#ifdef HSPNDK
+	j_dispDialog( str1, str2, mode );
 #endif
 #ifdef HSPIOS
     gpb_dialog( mode, str1, str2 );
     //Alertf( str1 );
+#endif
+#ifdef HSPLINUX
+	{
+	int i = 0;
+	if (mode>=16) return 0;
+	if (mode&1) i|=SDL_MESSAGEBOX_WARNING; else i|=SDL_MESSAGEBOX_INFORMATION;
+	SDL_ShowSimpleMessageBox(i, str2, str1, NULL);
+	}
 #endif
 	return 0;
 }
@@ -695,88 +743,165 @@ int hgio_texload( BMSCR *bm, char *fname )
 }
 
 
-static void hgio_messub(BMSCR* bm, char* str1)
+int hgio_mestex(BMSCR *bm, texmesPos *tpos)
 {
-	//		mes,print 文字表示
+	//		TEXMESPOSによる文字表示
 	//
-	int xsize,ysize;
-	int areasx, areasy;
-	if ((bm->type != HSPWND_TYPE_MAIN) && (bm->type != HSPWND_TYPE_OFFSCREEN)) return;
+	int mode, x, y, sx, sy;
+	int orgx, orgy;
+	int tx, ty;
+	int xsize, ysize;
+	int esx, esy;
+	if ((bm->type != HSPWND_TYPE_MAIN) && (bm->type != HSPWND_TYPE_OFFSCREEN)) return -1;
 	if (drawflag == 0) hgio_render_start();
 
-	// print per line
-	if (bm->cy >= bm->sy) return;
+	texmesManager *tmes = game->getTexmesManager();
 
-	if (game) {
-		areasx = bm->printoffsetx;
-		areasy = bm->printoffsety;
-		xsize = game->drawFont(bm->cx, bm->cy, str1, (gameplay::Vector4*)bm->colorvalue, &ysize, areasx, areasy);
-		bm->printoffsetx = 0;
-		bm->printoffsety = 0;
-		if (xsize > bm->printsizex) bm->printsizex = xsize;
-		bm->printsizey += ysize;
-		bm->cy += ysize;
+	// print per line
+	orgx = bm->cx;
+	orgy = bm->cy;
+	mode = tpos->mode;
+
+	sx = tpos->sx;
+	if (sx <= 0) {
+		sx = bm->sx - orgx;
+		if (sx <= 0) return -1;
 	}
+	sy = tpos->sy;
+	if (sy <= 0) {
+		sy = bm->sy - orgy;
+		if (sy <= 0) return -1;
+	}
+
+	int id = tpos->texid;
+	if (id < 0) {
+		char *str = tpos->getString();
+		id = tmes->texmesRegist(str, tpos);
+		if (id < 0) {
+			ysize = tmes->_fontsize;
+			x = orgx; y = orgy;
+			if (mode & TEXMES_MODE_CENTERX) {
+				int px = sx / 2;
+				x += px;
+			}
+			if (mode & TEXMES_MODE_CENTERY) {
+				int py = (sy - ysize) / 2;
+				if (py < 0) { py = 0; }
+				y += py;
+			}
+			tpos->lastcx = x;
+			tpos->lastcy = y;
+			tpos->printysize = ysize;
+			return -1;
+		}
+		tpos->texid = id;
+	}
+
+	texmes* tex;
+	tex = tmes->texmesUpdateLife(id);
+	if (tex == NULL) return -1;
+
+	xsize = tex->sx;
+	ysize = tex->sy;
+	tpos->printysize = ysize;
+
+	x = orgx; y = orgy;
+	tx = 0; ty = 0;
+
+	esx = x + sx;
+	esy = y + sy;
+
+	if (mode & TEXMES_MODE_CENTERX) {
+		int px = (sx - xsize) / 2;
+		if (px < 0) { px = 0; }
+		x += px;
+	}
+	if (mode & TEXMES_MODE_CENTERY) {
+		int py = (sy - ysize) / 2;
+		if (py < 0) { py = 0; }
+		y += py;
+	}
+	tpos->lastcx = x;
+	tpos->lastcy = y;
+
+	if (tpos->attribute == NULL) {
+		if ((x + xsize) >= esx) {
+			xsize = esx - x;
+			if (xsize <= 0) return -1;
+		}
+		if ((y + ysize) >= esy) {
+			ysize = esy - y;
+			if (ysize <= 0) return -1;
+		}
+		game->texmesDrawClip( bm, x, y, xsize, ysize, tex, tx, ty);
+	}
+
+	bm->cy += ysize;
+	bm->printsizex = xsize;
+	bm->printsizey = ysize;
+	return 0;
 }
 
 
-int hgio_mes(BMSCR* bm, char* str1)
+int hgio_mes(BMSCR* bm, char* msg)
 {
-	int spcur;
-	int org_cy;
-	unsigned char* p;
-	unsigned char* st;
-	unsigned char a1;
-	unsigned char bak_a1;
+	//		mes,print 文字表示
+	//
+	int xsize, ysize;
+	if ((bm->type != HSPWND_TYPE_MAIN) && (bm->type != HSPWND_TYPE_OFFSCREEN)) return -1;
+	if (drawflag == 0) hgio_render_start();
 
-	org_cy = bm->cy;
-	bm->printsizex = 0;
-	bm->printsizey = 0;
-
-	p = (unsigned char*)str1;
-	st = p;
-	spcur = 0;
-
-	while (1) {
-		a1 = *p;
-		if (a1 == 0) break;
-		if (a1 == 13) {
-			bak_a1 = a1; *p = 0;		// 終端を仮設定
-			hgio_messub(bm, (char*)st);
-			*p = bak_a1;
-			p++; st = p; spcur = 0;		// 終端を戻す
-			a1 = *p;
-			if (a1 == 10) p++;
-			continue;
-		}
-		if (a1 == 10) {
-			bak_a1 = a1; *p = 0;		// 終端を仮設定
-			hgio_messub(bm, (char*)st);
-			*p = bak_a1;
-			p++; st = p; spcur = 0;		// 終端を戻す
-			continue;
-		}
-#ifdef HSPUTF8
-				if (a1&128) {					// UTF8チェック
-					while(1) {
-						unsigned char a2;
-						a2 = *p;
-						if ( a2==0 ) break;
-						if ( ( a2 & 0xc0 ) != 0x80 ) break;
-						p++; spcur++;
-					}
-				} else {
-					p++; spcur++;
-				}
-#endif
-		p++; spcur++;
+	if (GetSysReq(SYSREQ_USEGPBFONT)) {
+		xsize = game->drawFont( bm, bm->cx, bm->cy, msg, &ysize );
+		bm->printsizex = xsize;
+		bm->printsizey = ysize;
+		bm->cy += ysize;
+		return 0;
 	}
 
-	if (spcur > 0) {
-		hgio_messub(bm, (char*)st);
+	texmesManager *tmes = game->getTexmesManager();
+
+	// print per line
+	if (bm->cy >= bm->sy) return -1;
+
+	if (*msg == 0) {
+		ysize = tmes->_fontsize;
+		bm->printsizey += ysize;
+		bm->cy += ysize;
+		return 0;
 	}
 
-	bm->cy = org_cy;
+	int id;
+	texmes* tex;
+	id = tmes->texmesRegist(msg);
+	if (id < 0) return -1;
+	tex = tmes->texmesGet(id);
+	if (tex == NULL) return -1;
+
+	xsize = tex->sx;
+	ysize = tex->sy;
+
+	if (bm->printoffsetx > 0) {			// センタリングを行う(X)
+		int offset = (bm->printoffsetx - xsize) / 2;
+		if (offset > 0) {
+			bm->cx += offset;
+		}
+		bm->printoffsetx = 0;
+	}
+	if (bm->printoffsety > 0) {			// センタリングを行う(Y)
+		int offset = (bm->printoffsety - ysize) / 2;
+		if (offset > 0) {
+			bm->cy += offset;
+		}
+		bm->printoffsety = 0;
+	}
+
+	game->texmesDrawClip(bm, bm->cx, bm->cy, xsize, ysize, tex, 0, 0);
+
+	//xsize = game->drawFont(bm->cx, bm->cy, str1, (gameplay::Vector4*)bm->colorvalue, &ysize);
+	if (xsize > bm->printsizex) bm->printsizex = xsize;
+	bm->printsizey += ysize;
+	bm->cy += ysize;
 	return 0;
 }
 
@@ -829,11 +954,11 @@ void hgio_line2( float x, float y )
 }
 
 
-void hgio_boxf( BMSCR *bm, float x1, float y1, float x2, float y2 )
+void hgio_boxfAlpha(BMSCR *bm, float x1, float y1, float x2, float y2, int alphamode)
 {
 	//		矩形描画
 	//
-	if ( bm == NULL ) return;
+	if (bm == NULL) return;
 	if ((bm->type != HSPWND_TYPE_MAIN) && (bm->type != HSPWND_TYPE_OFFSCREEN)) return;
 	if (drawflag == 0) hgio_render_start();
 
@@ -843,22 +968,35 @@ void hgio_boxf( BMSCR *bm, float x1, float y1, float x2, float y2 )
 	float b_val = bm->colorvalue[2];
 	//float a_val = bm->colorvalue[3];
 
-	float a_val = game->setPolyColorBlend( 0, 0 );
-	game->setPolyDiffuse2D( r_val, g_val, b_val, a_val );
+	float a_val;
+	if (alphamode) {
+		a_val = game->setPolyColorBlend(bm->gmode, bm->gfrate);
+	}
+	else {
+		a_val = game->setPolyColorBlend(0, 0);
+	}
+
+	game->setPolyDiffuse2D(r_val, g_val, b_val, a_val);
 
 	*v++ = x1; *v++ = y2; v++;
-	v+=4;
+	v += 4;
 	//*v++ = r_val; *v++ = g_val; *v++ = b_val; *v++ = a_val;
 	*v++ = x1; *v++ = y1; v++;
-	v+=4;
+	v += 4;
 	//*v++ = r_val; *v++ = g_val; *v++ = b_val; *v++ = a_val;
 	*v++ = x2; *v++ = y2; v++;
-	v+=4;
+	v += 4;
 	//*v++ = r_val; *v++ = g_val; *v++ = b_val; *v++ = a_val;
 	*v++ = x2; *v++ = y1; v++;
 	//*v++ = r_val; *v++ = g_val; *v++ = b_val; *v++ = a_val;
 
 	game->drawPolyColor2D();
+}
+
+
+void hgio_boxf( BMSCR *bm, float x1, float y1, float x2, float y2 )
+{
+	hgio_boxfAlpha(bm, x1, y1, x2, y2, 0);
 }
 
 
@@ -1070,7 +1208,7 @@ int hgio_celputmulti(BMSCR *bm, int *xpos, int *ypos, int *cel, int count, BMSCR
 	if (drawflag == 0) hgio_render_start();
 
 	gpmat *mat = game->getMat(bmsrc->texid);
-	if (mat == NULL) return NULL;
+	if (mat == NULL) return 0;
 	master_v = game->startPolyTex2D(mat, bm->texid);
 	if (master_v == NULL) return 0;
 
@@ -1556,9 +1694,9 @@ HWND hgio_gethwnd( void )
 */
 /*------------------------------------------------------------*/
 
-void hgio_draw_gpsprite( Bmscr *bmscr, bool lateflag )
+void hgio_draw_gpsprite(Bmscr *bmscr, bool lateflag)
 {
-	float zx,zy,rot;
+	float zx, zy, rot;
 	gpobj *obj;
 	gpspr *spr;
 
@@ -1566,12 +1704,12 @@ void hgio_draw_gpsprite( Bmscr *bmscr, bool lateflag )
 	if ((bmscr->type != HSPWND_TYPE_MAIN) && (bmscr->type != HSPWND_TYPE_OFFSCREEN)) return;
 	if (drawflag == 0) hgio_render_start();
 
-	game->findSpriteObj( lateflag );
-	while(1) {
+	game->findSpriteObj(lateflag);
+	while (1) {
 		obj = game->getNextSpriteObj();
-		if ( obj == NULL ) break;
+		if (obj == NULL) break;
 		spr = obj->_spr;
-		if ( spr ) {
+		if (spr) {
 
 			zx = spr->_scale.x;
 			zy = spr->_scale.y;
@@ -1582,12 +1720,13 @@ void hgio_draw_gpsprite( Bmscr *bmscr, bool lateflag )
 			bmscr->gmode = spr->_gmode;
 			bmscr->gfrate = obj->_transparent;
 
-			if (( rot == 0.0f )&&( zx == 1.0f )&&( zy == 1.0f )) {
+			if ((rot == 0.0f) && (zx == 1.0f) && (zy == 1.0f)) {
 				//	変形なし
-				bmscr->CelPut( (Bmscr *)spr->_bmscr, spr->_celid );
-			} else {
+				bmscr->CelPut((Bmscr *)spr->_bmscr, spr->_celid);
+			}
+			else {
 				//	変形あり
-				bmscr->CelPut( (Bmscr *)spr->_bmscr, spr->_celid, zx, zy, rot );
+				bmscr->CelPut((Bmscr *)spr->_bmscr, spr->_celid, zx, zy, rot);
 			}
 		}
 	}
@@ -1603,7 +1742,6 @@ void hgio_draw_all(Bmscr *bmscr, int option)
 
 	game->drawAll(option);
 }
-
 
 
 #ifdef HSPNDK
@@ -1779,6 +1917,35 @@ void hgio_touch( int xx, int yy, int button )
     }
 }
 
+void hgio_mtouchid( int pointid, int xx, int yy, int button, int opt )
+{
+    Bmscr *bm;
+    int x,y;
+
+    if ( mainbm == NULL ) return;
+    bm = (Bmscr *)mainbm;
+	x = ( xx - _originX ) * _rateX;
+	y = ( yy - _originY ) * _rateY;
+    if ( opt == 0 ) {
+        mouse_x = x;
+        mouse_y = y;
+        mouse_btn = button;
+        mainbm->savepos[BMSCR_SAVEPOS_MOSUEX] = mouse_x;
+        mainbm->savepos[BMSCR_SAVEPOS_MOSUEY] = mouse_y;
+        mainbm->tapstat = button;
+        bm->UpdateAllObjects();
+    }
+    bm->setMTouchByPointId( pointid, x, y, button!=0 );
+}
+
+void hgio_mtouchidf( int pointid, float xx, float yy, int button, int opt )
+{
+    int realx,realy;
+    realx=(int)(xx*nDestWidth);
+    realy=(int)(yy*nDestHeight);
+	hgio_mtouchid(pointid,realx,realy,button,opt);
+}
+
 #endif
 
 
@@ -1877,6 +2044,63 @@ int hgio_font(char* fontname, int size, int style)
 	return 0;
 }
 
+
+#if defined(HSPEMSCRIPTEN)
+int hgio_fontsystem_setup(int sx, int sy, void *buffer)
+{
+	return hgio_fontsystem_get_texid();
+}
+#endif
+
+
+void hgio_editputclip(BMSCR* bm, char *str)
+{
+	//		クリップボードコピー
+	//
+#ifdef HSPWIN
+	HGLOBAL hg;
+	char *strMem;
+	if (!OpenClipboard(master_wnd)) return;
+	EmptyClipboard();
+
+	int len = strlen(str) + 1;
+	hg = GlobalAlloc(GHND | GMEM_SHARE, len);
+	strMem = (char *)GlobalLock(hg);
+	strcpy(strMem, str);
+	GlobalUnlock(hg);
+
+	SetClipboardData(CF_TEXT, hg);
+	CloseClipboard();
+#endif
+#if (defined(HSPLINUX)||defined(HSPEMSCRIPTEN))
+	SDL_SetClipboardText( (const char *)str );
+#endif
+}
+
+
+char *hgio_editgetclip(BMSCR* bm)
+{
+	//		クリップボードペースト文字列取得
+	//
+#ifdef HSPWIN
+	HGLOBAL hg;
+	char *strClip;
+	if (OpenClipboard(master_wnd) && (hg = GetClipboardData(CF_TEXT))) {
+		char *p = code_stmp(GlobalSize(hg));
+		strClip = (char *)GlobalLock(hg);
+		strcpy(p, strClip);
+		GlobalUnlock(hg);
+		CloseClipboard();
+		return p;
+	}
+#endif
+#if (defined(HSPLINUX)||defined(HSPEMSCRIPTEN))
+	if ( SDL_HasClipboardText() ) {
+		return (SDL_GetClipboardText());
+	}
+#endif
+	return NULL;
+}
 
 /*-------------------------------------------------------------------------------*/
 
