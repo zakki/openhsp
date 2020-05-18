@@ -400,7 +400,7 @@ static inline LRESULT GetText(int nFootyID, HANDLE hPipe)
 	dwSize = Footy2GetTextLength(nFootyID, LM_CRLF);
 	lpBuffer = (char *)malloc(dwSize + 1);
 	if(lpBuffer == NULL) return -1;
-	nRet = Footy2GetText(nFootyID, lpBuffer, LM_CRLF, dwSize);
+	nRet = Footy2GetText(nFootyID, lpBuffer, LM_CRLF, dwSize+1);
 	if(nRet == FOOTY2ERR_NONE){
 		if(!WriteFile(hPipe, lpBuffer, dwSize, &dwNumberOfBytesWritten, NULL)){
 			free(lpBuffer);
