@@ -95,9 +95,10 @@
 	x1=0:y1=0		; ‰æ–Ê¶ã‚ÌÀ•W
 	x2=480:y2=800		; ‰æ–Ê‰E‰º‚ÌÀ•W
 
+	screen 0,x2,y2
+
 	celload "hsplogo8.png",1
 
-	screen 0,x2,y2
 	title "HSP logo demo"
 	max=64
 

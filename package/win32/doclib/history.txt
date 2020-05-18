@@ -11,11 +11,13 @@ Hot Soup Processor ver3.6                           HSP : Hot Soup Processor
 	hsedsdkのhsed_gettextで最後の1文字が取得されない不具合を修正
 	モジュール型変数に別のモジュール型変数値を代入した際に元のデストラクタが呼ばれない不具合を修正
 	stick命令互換で動作するmod_joystick2.asモジュールを追加
+	[HSP3Dish] フォント描画時の負荷を軽減
+	[HSP3Dish] mes(print)命令の改行処理がHSP3標準と違っていたのを修正
 	[HSP3Dish] mes(print)命令の描画が標準でgmodeのブレント設定を反映するように修正
 	[HSP3Dish] objmode,objsel,objprm,objcolor命令のサポートを追加
-	[HSP3Dish][hsp3js] mobileデバイスで音が再生されない不具合を修正
+	[HSP3Dish][hsp3js] WebAssembly形式で変換できるオプションを追加
 	[HSP3Dish][hsp3js] mobileデバイスのタッチ操作が反映されない不具合を修正
-	[HSP3Dish] フォント描画時の負荷を軽減
+	[HSP3Dish][hsp3js] mobileデバイスで音が再生されない不具合を修正
 	[HSP3Dish][Linux] bgscr,screen命令による表示サイズ変更、及びフルスクリーン化に対応
 	[HSP3Dish] input,chkbox命令による配置オブジェクトをサポート(Windows/Linuxのみ)
 	[HSP3Dish] GUI配置オブジェクトのフォントをHSP標準に近い形に修正

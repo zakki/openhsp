@@ -76,6 +76,7 @@
 	flag_hgimg=0
 	flag_sensor=0
 	flag_xhgimg=0
+	js_webasm = 0
 
 	get_hsp_appdata_path app_dir
 
@@ -105,6 +106,7 @@
 		flag_xhgimg = 0+cfg_getvar("flag_xhgimg")
 		ios_org=cfg_getvar("ios_org")
 		ios_ident=cfg_getvar("ios_ident")
+		js_webasm = 0+cfg_getvar("js_webasm")
 	}
 	if and_targetid="" : and_targetid="\"android-29\""
 	if and_keystore="" : and_keystore="hspapp"
@@ -532,6 +534,7 @@
 
 	objsize 160,24
 	chkbox "HGIMG4を使用する",js_gpmode
+	chkbox "WebAssemblyを使用する",js_webasm
 
 	pos 312,118
 	objsize 160,48
@@ -706,6 +709,8 @@
 	cfg_seti "flag_hgimg",flag_hgimg
 	cfg_seti "flag_sensor",flag_sensor
 	cfg_seti "flag_xhgimg",flag_xhgimg
+
+	cfg_seti "js_webasm",js_webasm
 
 	cfg_sets "ios_org",ios_org
 	cfg_sets "ios_ident",ios_ident
@@ -1726,7 +1731,6 @@ hspproj.xcodeproj\\project.pbxproj"}
 	dataname=myfile+".data" ; .dataファイル名
 	htmlname=myfile+".html" ; htmlファイル名
 	hspjsname="hsp3dish.js"
-	if js_gpmode : hspjsname="hsp3dish-gp.js"
 
 	tmp=mydir+objname+"\n"
 	dim jspack_start,64
@@ -1736,7 +1740,9 @@ hspproj.xcodeproj\\project.pbxproj"}
 	maxsize=$10000
 	sdim outbuf, maxsize
 
-	js_memsize = 0+js_memopt
+	s1=js_memopt
+	if s1="" : s1="200"
+	js_memsize = 0+s1
 	if js_memsize<64 || js_memsize>=8192 : mes "メモリサイズ指定が無効です。" : goto *cnv_jsok
 	js_memsize *= 1048576
 
@@ -1828,9 +1834,29 @@ hspproj.xcodeproj\\project.pbxproj"}
 	strrep outbuf, "$$$memoptions$$$", s1
 
 	;	HGIMG4オプション
+	;
+	jsfname=""
+	wafname=""
+	if js_webasm {
+		jsfname="hsp3dishw.js"
+		wafname="hsp3dish.wasm"
+		hspjsname=jsfname
+	}
+	if js_gpmode {
+		jsfname="hsp3dish-gp.js"
+		if js_webasm {
+			jsfname="hsp3dishw-gp.js"
+			wafname="hsp3dish-gp.wasm"
+		}
+		hspjsname=jsfname
+	}
+
+	if jsfname!="" {
+		strrep outbuf, "hsp3dish.js", jsfname
+	}
+
 	s1=""
 	if js_gpmode {
-		strrep outbuf, "hsp3dish.js", "hsp3dish-gp.js"
 		s1="Module['FS_createPath']('/', 'res', true, true);\nModule['FS_createPath']('/res', 'shaders', true, true);\n"
 	}
 	strrep outbuf, "$$$mkdirrequest$$$", s1
@@ -1842,9 +1868,15 @@ hspproj.xcodeproj\\project.pbxproj"}
 	notesel outbuf
 	s1 = dir_exe+"\\hsp3js\\"+hspjsname
 	noteload s1
-
 	notesave hspjsname
 	buf+="["+hspjsname+"]を作成しました.\n"
+
+	if wafname!="" {
+		notesel outbuf
+		s1 = dir_exe+"\\hsp3js\\"+wafname
+		bcopy s1,wafname
+		buf+="["+wafname+"]を作成しました.\n"
+	}
 
 	buf+="※作成されたファイルをwebブラウザで閲覧可能なサーバーにアップロードしてください。\n"
 
