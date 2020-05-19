@@ -5,12 +5,13 @@ Hot Soup Processor ver3.6                           HSP : Hot Soup Processor
 
 ・hsp3関連 更新履歴
 
-	2020/05/18 3.6 beta3
+	2020/05/20 3.6 beta3
 
 	500時間以上起動したPC上でwait,await命令の待ち時間が正しく反映されなくなる不具合を修正
 	hsedsdkのhsed_gettextで最後の1文字が取得されない不具合を修正
 	モジュール型変数に別のモジュール型変数値を代入した際に元のデストラクタが呼ばれない不具合を修正
 	stick命令互換で動作するmod_joystick2.asモジュールを追加
+	[hspcmp] hsphelpフォルダのキーワード検索オプションを追加
 	[HSP3Dish] フォント描画時の負荷を軽減
 	[HSP3Dish] mes(print)命令の改行処理がHSP3標準と違っていたのを修正
 	[HSP3Dish] mes(print)命令の描画が標準でgmodeのブレント設定を反映するように修正

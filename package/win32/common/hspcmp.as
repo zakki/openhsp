@@ -72,3 +72,8 @@
 #func aht_linkmod aht_linkmod 0
 #func aht_unlinkmod aht_unlinkmod 0
 
+#func hman_init hman_init $202
+#func hman_search hman_search $202
+#func hman_getresult hman_getresult $202
+
+
