@@ -527,7 +527,7 @@ LRESULT CALLBACK WndProc( HWND hwnd, UINT uMessage, WPARAM wParam, LPARAM lParam
 #endif
 			if (retval != RUNMODE_END) return 0;
 		}
-		code_puterror(HSPERR_NONE);
+		//code_puterror(HSPERR_NONE);
 		PostQuitMessage(0);
 		return (uMessage == WM_QUERYENDSESSION) ? true : false;
 		}
@@ -1272,12 +1272,6 @@ void hsp3dish_bye(void)
 	if (h_dbgwin != NULL) { FreeLibrary(h_dbgwin); h_dbgwin = NULL; }
 #endif
 
-	DllManager().free_all_library();
-
-	//		HSPŠÖ˜A‚Ì‰ð•ú
-	//
-	if (hsp != NULL) { delete hsp; hsp = NULL; }
-
 	if (m_hWnd != NULL) {
 		hgio_term();
 		DestroyWindow(m_hWnd);
@@ -1300,6 +1294,10 @@ void hsp3dish_bye(void)
 	    delete game;
 	}
 
+	//		HSPŠÖ˜A‚Ì‰ð•ú
+	//
+	if (hsp != NULL) { delete hsp; hsp = NULL; }
+	DllManager().free_all_library();
 }
 
 
