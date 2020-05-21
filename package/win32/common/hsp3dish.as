@@ -224,7 +224,6 @@
 #define __essprite__
 
 #regcmd 9
-#cmd gpreset $60
 #cmd es_ini $200
 #cmd es_window $201
 #cmd es_area $202
@@ -252,7 +251,7 @@
 #cmd es_draw $218
 #cmd es_gravity $219
 #cmd es_bound $21a
-#cmd es_blink $21b
+#cmd es_fade $21b
 #cmd es_effect $21c
 #cmd es_move $21d
 #cmd es_setpri $21e
@@ -268,8 +267,9 @@
 #cmd es_bgmap $228
 #cmd es_putbg $229
 #cmd es_bgmes $22a
-#cmd es_parent $22b
+#cmd es_setparent $22b
 #cmd es_modaxis $22c
+#cmd es_setrot $22d
 
 
 #define global es_fmes mes
