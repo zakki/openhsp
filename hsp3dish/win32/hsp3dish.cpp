@@ -508,7 +508,7 @@ LRESULT CALLBACK WndProc( HWND hwnd, UINT uMessage, WPARAM wParam, LPARAM lParam
 #endif
 			if (retval != RUNMODE_END) return 0;
 		}
-		code_puterror(HSPERR_NONE);
+		//code_puterror(HSPERR_NONE);
 		PostQuitMessage(0);
 		return (uMessage == WM_QUERYENDSESSION) ? true : false;
 		}
@@ -1139,10 +1139,6 @@ int hsp3dish_init( HINSTANCE hInstance, char *startfile )
 
 static void hsp3dish_bye( void )
 {
-	//		Window関連の解放
-	//
-	hsp3dish_drawoff();
-
 	//		タイマーの開放
 	//
 	if ( timer_period != -1 ) {
@@ -1156,18 +1152,16 @@ static void hsp3dish_bye( void )
 	if (h_dbgwin != NULL) { FreeLibrary(h_dbgwin); h_dbgwin = NULL; }
 #endif
 
-	//		HSP関連の解放
-	//
-	if ( hsp != NULL ) { delete hsp; hsp = NULL; }
-
-	DllManager().free_all_library();
-
 	if ( m_hWnd != NULL ) {
 		hgio_term();
 		DestroyWindow( m_hWnd );
 		m_hWnd = NULL;
 	}
 
+	//		HSP関連の解放
+	//
+	if (hsp != NULL) { delete hsp; hsp = NULL; }
+	DllManager().free_all_library();
 
 	//		システム関連の解放
 	//
