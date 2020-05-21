@@ -58,6 +58,7 @@ int essprite::init(int maxsprite, int maxchr, int rotrate, int maxmap)
 {
 	reset();
 	dotshift = 16;
+	dotshift_base = 1 << dotshift;
 
 	spkaz = maxsprite;
 	if (spkaz <= 0) spkaz = 512;
@@ -237,19 +238,8 @@ void essprite::setResolution(HspWnd* wnd, int sx, int sy)
 	bmscr = wnd->GetBmscr(0);
 	main_sx = sx;
 	main_sy = sy;
-	setWindow(0,0,0,0,0);
-}
 
-
-void essprite::setWindow(int x, int y, int x2, int y2, int cutoff)
-{
-	int sx, sy;
-	tpx = x; tpy = y;
-	sx = x2; if (sx <= 0) sx = main_sx;
-	sy = y2; if (sy <= 0) sy = main_sy;
-	window_sx = sx;
-	window_sy = sy;
-	setArea(-128 , -128 , (sx + 128), (sy + 128));
+	setArea(-128, -128, (sx + 128), (sy + 128));
 	land_x = sx;
 	land_y = sy;
 }
@@ -346,42 +336,48 @@ void essprite::clear(int p1, int p2)
 
 void essprite::setTransparentMode(int tp)
 {
-	bmscr->gmode = 3;
-	bmscr->gfrate = 255;
+	bmscr->gmode = ((tp>>8) & 15 );
+	bmscr->gfrate = ( tp & 255 );
 }
 
 
-int essprite::put(int xx, int yy, int chrno, int tpflag)
+int essprite::put(int xx, int yy, int chrno, int tpflag, int zoomx, int zoomy, int rotz)
 {
 	//		sprite put
 	//
+	bool deform;
 	int a, x, y, ix, iy, nx, ny;
+	int vx, vy;
+	double rot;
 
+	deform = false;
 	x = xx; y = yy;
 	if ((chrno < 0) || (chrno >= chrkaz)) return -1;
 	chr = &mem_chr[chrno];
 	nx = chr->bsx; ny = chr->bsy;
 	ix = chr->bx; iy = chr->by;
 
-	if (x < 0) {
-		a = x + nx; if (a <= 0) return -1;
-		x = 0; ix += nx - a; nx = a;
+	if ((zoomx != dotshift_base) || (zoomy != dotshift_base) || (rotz != 0)) {
+		deform = true;
+		x += nx / 2;
+		y += ny / 2;
+		vx = (nx * zoomx) >> dotshift;
+		vy = (ny * zoomy) >> dotshift;
+		rot = pans * -rotz;
 	}
-	a = window_sx - nx;
-	if (x > a) {
-		if (x > window_sx) return -1;
-		nx -= x - a;
+	else {
+		vx = nx; vy = ny;
 	}
 
+	if (x < 0) {
+		a = x + vx; if (a <= 0) return -1;
+	}
+	if (x > main_sx) return -1;
+
 	if (y < 0) {
-		a = y + ny; if (a <= 0) return -1;
-		y = 0; iy += ny - a; ny = a;
+		a = y + vy; if (a <= 0) return -1;
 	}
-	a = window_sy - ny;
-	if (y > a) {
-		if (y > window_sy) return -1;
-		ny -= y - a;
-	}
+	if (y > main_sx) return -1;
 
 	Bmscr* src = hspwnd->GetBmscrSafe(chr->wid);
 	if (src == NULL) return -1;
@@ -392,6 +388,11 @@ int essprite::put(int xx, int yy, int chrno, int tpflag)
 	int tp = tpflag;
 	if (tp < 0) tp = chr->tpflag;
 	setTransparentMode(tp);
+
+	if (deform) {
+		bmscr->FillRotTex(vx, vy, (float)rot, src, ix, iy, nx, ny);
+		return 0;
+	}
 	bmscr->Copy(src, ix, iy, nx, ny);
 	return 0;
 }
@@ -589,8 +590,7 @@ int essprite::drawSub(SPOBJ *sp)
 					}
 				}
 				else {
-					land = tpy << dotshift;
-					if (yy < land) {
+					if (yy < 0) {
 						sp->yy = prevyy;
 						y = abs(sp->py);
 						if (y < 0) y = 0;
@@ -621,8 +621,7 @@ int essprite::drawSub(SPOBJ *sp)
 					}
 				}
 				else {
-					land = tpx << dotshift;
-					if (xx < land) {
+					if (xx < 0) {
 						sp->xx = prevxx;
 						x = abs(sp->px);
 						if (x < 0) x = 0;
@@ -669,7 +668,7 @@ int essprite::drawSub(SPOBJ *sp)
 
 	//		send to screen
 	//
-	put(x + ofsx, y + ofsy, sp->chr, sp->tpflag);
+	put(x + ofsx, y + ofsy, sp->chr, sp->tpflag, sp->zoomx, sp->zoomy, sp->rotz);
 	res++;
 
 nodraw:
@@ -828,12 +827,17 @@ int essprite::setSpriteChr(int spno, int chrno)
 
 int essprite::setSpriteAddDir(int spno, int direction, int dirrate)
 {
-	int ax, ay, aa, adir;
+	int ax, ay, aa, adir, rot;
 
 	aa = dirrate;
-	adir = abs( direction % rrate );
-	ax = (vpx[adir] << 6) * aa / 100;
-	ay = (vpy[adir] << 6) * aa / 100;
+	rot = direction;
+	while (1) {
+		if ( rot >= 0 ) break;
+		rot += rrate;
+	}
+	adir = rot % rrate;
+	ax = (vpx[adir] << (dotshift - 10)) * aa / 100;
+	ay = (vpy[adir] << (dotshift - 10)) * aa / 100;
 
 	SPOBJ* sp = getObj(spno);
 	if (sp == NULL) return -1;
@@ -861,7 +865,7 @@ int essprite::setSpriteAim(int spno, int xx, int yy, int dirrate)
 }
 
 
-int essprite::setParent(int spno, int parent, int option)
+int essprite::setSpriteParent(int spno, int parent, int option)
 {
 	SPOBJ* sp = getObj(spno);
 	if (sp == NULL) return -1;
@@ -905,8 +909,8 @@ SPOBJ *essprite::resetSprite(int spno)
 	sp->priority = 0;
 	sp->tpflag = 0;
 	sp->fadeprm = 0;
-	sp->zoomx = 0;
-	sp->zoomy = 0;
+	sp->zoomx = dotshift_base;
+	sp->zoomy = dotshift_base;
 	sp->rotz = 0;
 	sp->splink = 0;
 
@@ -983,6 +987,54 @@ int essprite::setBound(int p1, int p2, int p3)
 
 	sp->bound = p2;
 	sp->boundflag = p3;
+	return 0;
+}
+
+
+int essprite::setSpriteFade(int id, int sw, int timer)
+{
+	int fl;
+	int i;
+	SPOBJ *sp = getObj(id);
+	if (sp == NULL) return -1;
+
+	i = timer & 0xff;
+	fl = sp->fl & ~(ESSPFLAG_BLINK | 0xff);
+	switch (sw) {
+	case 1:
+		fl |= i;
+		break;
+	case 3:
+		fl |= i | ESSPFLAG_BLINK;
+		break;
+	default:
+		break;
+	}
+	sp->fl = fl;
+	return 0;
+}
+
+
+int essprite::setSpriteEffect(int id, int tpflag, int mulcolor)
+{
+	SPOBJ *sp = getObj(id);
+	if (sp == NULL) return -1;
+
+	sp->tpflag = tpflag;
+	return 0;
+}
+
+
+int essprite::setSpriteRotate(int id, int angle, int zoomx, int zoomy)
+{
+	SPOBJ *sp = getObj(id);
+	if (sp == NULL) return -1;
+
+	if (zoomx >= 0) sp->zoomx = zoomx << dotshift;
+	if (zoomy >= 0) sp->zoomy = zoomy << dotshift;
+
+	sp->rotz = angle;
+
 	return 0;
 }
 

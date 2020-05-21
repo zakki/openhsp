@@ -2864,7 +2864,7 @@ static int cmdfunc_extcmd( int cmd )
 		p3 = code_getdi(0);
 		p4 = code_getdi(0);
 		p5 = code_getdi(0);
-		sprite->setWindow(p1,p2,p3,p4,p5);
+		//sprite->setWindow(p1,p2,p3,p4,p5);
 		break;
 	}
 	case 0x202:								// es_area
@@ -2885,7 +2885,7 @@ static int cmdfunc_extcmd( int cmd )
 		p1 = code_geti();
 		p2 = code_geti();
 		p3 = code_getdi(100);
-		p4 = code_getdi(0);
+		p4 = code_getdi(0x3ff);
 		sprite->setSize(p1, p2, p3, p4);
 		break;
 	}
@@ -3209,19 +3209,48 @@ static int cmdfunc_extcmd( int cmd )
 		else throw HSPERR_UNSUPPORTED_FUNCTION;
 		break;
 	}
-	case 0x21b:								// es_blink
+	case 0x21b:								// es_fade
+	{
+		p1 = code_getdi(0);
+		p2 = code_getdi(0);
+		p3 = code_getdi(0);
+		if (sprite->sprite_enable) {
+			ctx->stat = sprite->setSpriteFade(p1, p2, p3);
+		}
+		else throw HSPERR_UNSUPPORTED_FUNCTION;
+		break;
+	}
 	case 0x21c:								// es_effect
+	{
+		p1 = code_getdi(0);
+		p2 = code_getdi(0x3ff);
+		p3 = code_getdi(-1);
+		if (sprite->sprite_enable) {
+			ctx->stat = sprite->setSpriteEffect(p1, p2, p3);
+		}
+		else throw HSPERR_UNSUPPORTED_FUNCTION;
+		break;
+	}
 	case 0x21d:								// es_move
 	case 0x21e:								// es_setpri
+	{
+		throw HSPERR_UNSUPPORTED_FUNCTION;
+		break;
+	}
 	case 0x21f:								// es_put
 	{
 		//		put a character (type0)
-		//		es_put x,y,chr
+		//		es_put x,y,chr, effect, zoomx, zoomy, angle
+		int p7;
 		p1 = code_geti();
 		p2 = code_geti();
 		p3 = code_getdi(0);
+		p4 = code_getdi(-1);
+		p5 = code_getdi(0x10000);
+		p6 = code_getdi(0x10000);
+		p7 = code_getdi(0);
 		if (sprite->sprite_enable) {
-			sprite->put(p1, p2, p3);
+			sprite->put(p1, p2, p3, p4, p5, p6, p7);
 		} else throw HSPERR_UNSUPPORTED_FUNCTION;
 		break;
 	}
@@ -3248,11 +3277,16 @@ static int cmdfunc_extcmd( int cmd )
 	}
 	case 0x223:								// es_dist
 	{
+		PVal* p_pval;
+		APTR p_aptr;
+		int res;
+		p_aptr = code_getva(&p_pval);
 		p1 = code_getdi(0);
 		p2 = code_getdi(0);
 		p3 = code_getdi(0);
 		p4 = code_getdi(0);
-		ctx->stat = sprite->utilGetDistance(p1, p2, p3, p4);
+		res = sprite->utilGetDistance(p1, p2, p3, p4);
+		code_setva(p_pval, p_aptr, HSPVAR_FLAG_INT, &res);
 		break;
 	}
 	case 0x224:								// es_opt
@@ -3440,15 +3474,15 @@ static int cmdfunc_extcmd( int cmd )
 		ctx->stat = res;
 		break;
 	}
-	case 0x22b:								// es_parent
+	case 0x22b:								// es_setparent
 	{
 		//		Set Parent (type0)
-		//		es_parent spno, parentid, option
+		//		es_setparent spno, parentid, option
 		p1 = code_getdi(0);
 		p2 = code_getdi(0);
 		p3 = code_getdi(0);
 		if (sprite->sprite_enable) {
-			ctx->stat = sprite->setParent(p1, p2, p3);
+			ctx->stat = sprite->setSpriteParent(p1, p2, p3);
 		}
 		else throw HSPERR_UNSUPPORTED_FUNCTION;
 		break;
@@ -3465,6 +3499,20 @@ static int cmdfunc_extcmd( int cmd )
 		p6 = code_getdi(0);
 		if (sprite->sprite_enable) {
 			ctx->stat = sprite->modifySpriteAxis(p1, p2, p3, p4, p5, p6);
+		}
+		else throw HSPERR_UNSUPPORTED_FUNCTION;
+		break;
+	}
+	case 0x22d:								// es_setrot
+	{
+		//		Set Rotate (type0)
+		//		es_setrot spno, angle, zoomx, zoomy
+		p1 = code_getdi(0);
+		p2 = code_getdi(0);
+		p3 = code_getdi(-1);
+		p4 = code_getdi(-1);
+		if (sprite->sprite_enable) {
+			ctx->stat = sprite->setSpriteRotate(p1, p2, p3, p4);
 		}
 		else throw HSPERR_UNSUPPORTED_FUNCTION;
 		break;
