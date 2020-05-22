@@ -142,6 +142,23 @@
 #define global notefind_first (1)
 #define global notefind_instr (2)
 
+#define global objlayer_min (0)
+#define global objlayer_bg (1)
+#define global objlayer_normal (2)
+#define global objlayer_posteff (3)
+#define global objlayer_max (4)
+
+#define global objlayer_cmdinit (1)
+#define global objlayer_cmdterm (2)
+#define global objlayer_cmdprmi (3)
+#define global objlayer_cmdprms (4)
+#define global objlayer_cmdprmd (5)
+#define global objlayer_cmddraw (6)
+#define global objlayer_cmdtime (7)
+
+#define global objlayer_info_axis (5)
+#define global objlayer_info_size (6)
+
 
 #ifndef _DEBUG
 #undef assert
