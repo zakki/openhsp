@@ -634,28 +634,14 @@ static int cmdfunc_extcmd( int cmd )
 		p3 = code_getdi( 0 );
 		p4 = code_getdi( 0 );
 		p5 = code_getdi( 0 );
-		if ( p1&1 ) {
-			if (( p1 & 16 ) == 0 ) {
-				if (bmscr->objmax) {
-					bmscr->DrawAllObjects();	// オブジェクトを描画する
-					bmscr->SetDefaultFont();	// フォントを元に戻す
-				}
-			}
-		} else {
-			if ( p1 & 16 ) {
-				if (bmscr->objmax) {
-					bmscr->DrawAllObjects();	// オブジェクトを描画する
-					bmscr->SetDefaultFont();	// フォントを元に戻す
-				}
-				break;
-			}
-		}
+
 		bgtex = GetSysReq( SYSREQ_CLSTEX );
 		if ( bgtex >= 0 ) {
 			src = wnd->GetBmscrSafe( bgtex );
 		} else {
 			src = NULL;
 		}
+		hgio_setback((BMSCR *)src);
 
 #ifdef HSPLINUX
 #ifdef HSPRASPBIAN
@@ -668,8 +654,25 @@ static int cmdfunc_extcmd( int cmd )
 		}
 #endif
 #endif
-		hgio_setback( (BMSCR *)src );
+		if (p1 & 1) {
+			if (bmscr->objmax) {
+				bmscr->SendHSPLayerObjectNotice(HSPOBJ_OPTION_LAYER_POSTEFF, HSPOBJ_LAYER_CMD_DRAW);
+				bmscr->DrawAllObjects();	// オブジェクトを描画する
+				bmscr->SetDefaultFont();	// フォントを元に戻す
+				bmscr->SendHSPLayerObjectNotice(HSPOBJ_OPTION_LAYER_MAX, HSPOBJ_LAYER_CMD_DRAW);
+			}
+		}
+
 		ctx->stat = hgio_redraw( (BMSCR *)bmscr, p1 );
+
+		if ((p1 & 1)==0) {
+			if (bmscr->objmax) {
+				bmscr->SetDefaultFont();	// フォントを元に戻す
+				bmscr->SendHSPLayerObjectNotice(HSPOBJ_OPTION_LAYER_BG, HSPOBJ_LAYER_CMD_DRAW);
+				bmscr->SendHSPLayerObjectNotice(HSPOBJ_OPTION_LAYER_NORMAL, HSPOBJ_LAYER_CMD_DRAW);
+				bmscr->SetDefaultFont();	// フォントを元に戻す
+			}
+		}
 		break;
 		}
 
@@ -1406,6 +1409,17 @@ static int cmdfunc_extcmd( int cmd )
 		dp4 = code_getdd(0.0);
 		p1 = bmscr->Viewcalc_set(p1, dp1, dp2, dp3, dp4);
 		if (p1) throw HSPERR_ILLEGAL_FUNCTION;
+		break;
+		}
+	case 0x50:								// layerobj
+		{
+		unsigned short *sbr;
+		p1 = code_getdi(bmscr->sx);
+		p2 = code_getdi(bmscr->sy);
+		p3 = code_getdi(HSPOBJ_OPTION_LAYER_MIN);
+		sbr = code_getlb2();
+		p4 = code_getdi(0);
+		ctx->stat = bmscr->AddHSPObjectLayer(p1, p2, p3, p4, 0, (void *)sbr);
 		break;
 		}
 
@@ -3688,6 +3702,18 @@ static void *reffunc_function( int *type_res, int arg )
 		}
 		break;
 
+	case 0x001:								// objinfo
+		{
+		int *iptr;
+		int p1, p2;
+		p1 = code_geti();
+		p2 = code_geti();
+		if ((p1 < 0) || (p1 >= bmscr->objmax)) throw HSPERR_ILLEGAL_FUNCTION;
+		iptr = (int *)bmscr->GetHSPObject(p1);
+		if (p2 < 0) throw HSPERR_ILLEGAL_FUNCTION;
+		reffunc_intfunc_ivalue = iptr[p2];
+		break;
+		}
 
 	case 0x002:								// dirinfo
 		p1 = code_geti();
@@ -3792,6 +3818,7 @@ void hsp3typeinit_extcmd( HSP3TYPEINFO *info )
 	type = exinfo->nptype;
 	val = exinfo->npval;
 	wnd = new HspWnd();
+	wnd->hspctx = ctx;
 	bmscr = wnd->GetBmscr( 0 );
 	SetObjectEventNoticePtr( &ctx->stat );
 
