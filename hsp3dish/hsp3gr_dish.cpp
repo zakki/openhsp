@@ -3818,7 +3818,7 @@ void hsp3typeinit_extcmd( HSP3TYPEINFO *info )
 	type = exinfo->nptype;
 	val = exinfo->npval;
 	wnd = new HspWnd();
-	wnd->hspctx = ctx;
+	wnd->SetHSPCTX(ctx);
 	bmscr = wnd->GetBmscr( 0 );
 	SetObjectEventNoticePtr( &ctx->stat );
 
@@ -3877,6 +3877,7 @@ void hsp3excmd_rebuild_window(void)
 {
 	if (wnd) delete wnd;
 	wnd = new HspWnd();
+	wnd->SetHSPCTX(ctx);
 	bmscr = wnd->GetBmscr(0);
 }
 

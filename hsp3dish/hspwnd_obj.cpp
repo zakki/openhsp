@@ -739,7 +739,7 @@ HSPOBJINFO *Bmscr::AddHSPObject( int id, int mode )
 
 	HspWnd *wnd = (HspWnd *)this->master_hspwnd;
 	if (wnd) {
-		obj->hspctx = wnd->hspctx;
+		obj->hspctx = wnd->GetHSPCTX();
 	}
 
 	obj->x = this->cx;
@@ -989,15 +989,28 @@ int Bmscr::AddHSPObjectLayer(int sizex, int sizey, int layer, int val, int mode,
 	int id, lay;
 	HSPOBJINFO *obj;
 
+	lay = layer & 0xff;
+	if (lay < HSPOBJ_OPTION_LAYER_MIN) lay = HSPOBJ_OPTION_LAYER_MIN;
+	if (lay > HSPOBJ_OPTION_LAYER_MAX) lay = HSPOBJ_OPTION_LAYER_MAX;
+
+	if (( layer & HSPOBJ_OPTION_LAYER_MULTI ) == 0) {		// èdï°ìoò^ÇåüèoÇ∑ÇÈ
+		obj = mem_obj;
+		for (int i = 0; i < objmax; i++) {
+			if (obj->owmode != HSPOBJ_NONE) {
+				if (obj->owmode & HSPOBJ_OPTION_LAYEROBJ) {
+					if (obj->hCld == callptr) return -1;
+				}
+			}
+			obj++;
+		}
+	}
+
 	id = NewHSPObject();
 
 	obj = AddHSPObject(id, HSPOBJ_OPTION_LAYEROBJ | HSPOBJ_TAB_SKIP);
 	obj->owid = id;
 	obj->owsize = this->wid;
 
-	lay = layer;
-	if (lay < HSPOBJ_OPTION_LAYER_MIN) lay = HSPOBJ_OPTION_LAYER_MIN;
-	if (lay > HSPOBJ_OPTION_LAYER_MAX) lay = HSPOBJ_OPTION_LAYER_MAX;
 	obj->enableflag = lay;
 	obj->exinfo1 = val;
 	obj->exinfo2 = 0;
@@ -1008,8 +1021,8 @@ int Bmscr::AddHSPObjectLayer(int sizex, int sizey, int layer, int val, int mode,
 	obj->sy = sizey;
 	obj->hCld = callptr;
 
-	//obj->func_notice = Object_LayerNotice;
-	//obj->func_delete = Object_LayerDelete;
+	obj->func_notice = Object_LayerNotice;
+	obj->func_delete = Object_LayerDelete;
 	obj->func_objprm = Object_SetLayerObject;
 	Posinc(sizey);
 

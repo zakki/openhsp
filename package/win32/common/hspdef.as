@@ -147,6 +147,7 @@
 #define global objlayer_normal (2)
 #define global objlayer_posteff (3)
 #define global objlayer_max (4)
+#define global objlayer_multi ($100)
 
 #define global objlayer_cmdinit (1)
 #define global objlayer_cmdterm (2)
