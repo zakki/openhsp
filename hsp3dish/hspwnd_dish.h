@@ -41,6 +41,7 @@
 #define HSPOBJ_OPTION_LAYER_NORMAL 2
 #define HSPOBJ_OPTION_LAYER_POSTEFF 3
 #define HSPOBJ_OPTION_LAYER_MAX 4
+#define HSPOBJ_OPTION_LAYER_MULTI 0x100
 
 #define HSPOBJ_LAYER_CMD_NONE (0)
 #define HSPOBJ_LAYER_CMD_INIT (1)
@@ -544,6 +545,8 @@ public:
 	HspWnd( void );
 	~HspWnd( void );
 	void Resume( void );
+	void SetHSPCTX(HSPCTX *ctx) { hspctx = ctx; };
+	HSPCTX *GetHSPCTX(void) { return hspctx; };
 
 	void SetMasterSize( int m_sx, int m_sy );
 	void SetMasterInstance( void *m_inst );
@@ -562,7 +565,6 @@ public:
 	//
 	int mouse_x, mouse_y;
 	int sys_iprm, sys_wprm, sys_lprm;
-	HSPCTX *hspctx;				// HSP context
 
 private:
 	void Reset( void );
@@ -580,6 +582,7 @@ private:
 
 	//	Info for HSP3Dish Device
 	HSP3DEVINFO devinfo;
+	HSPCTX *hspctx;				// HSP context
 };
 
 

@@ -1,0 +1,75 @@
+sdim buf,$10000
+
+	wx=640:wy=480
+
+	s1="OKOKOK"
+	objsize 120,24
+	pos 0,0:input s1
+	pos 130,0
+	button "STR",*go2
+	pos 260,0
+	button "INT",*go
+	pos 390,0
+	button "DBL",*go3
+	pos 520,0
+	button "DEL",*godel
+	pos 0,30
+	layerobj wx,400,objlayer_normal,*layprm,100
+	id_lay=stat
+*main
+	redraw 0
+	redraw 1
+	await 1000/30
+	goto *main
+
+*go
+	objprm id_lay,123
+	goto *main
+*go2
+	objprm id_lay,s1
+	goto *main
+*go3
+	objprm id_lay,45.6
+	goto *main
+*godel
+	clrobj id_lay
+	goto *main
+
+*layprm
+	;	レイヤーオブジェクトの処理
+	;
+	switch lparam
+	case objlayer_cmdinit
+		lay_message="Layer object."
+		swbreak
+	case objlayer_cmdprmi
+		lay_message=""+iparam
+		swbreak
+	case objlayer_cmdprms
+		lay_message=refstr
+		swbreak
+	case objlayer_cmdprmd
+		lay_message=""+refdval
+		swbreak
+	case objlayer_cmddraw
+		gosub *lay_draw
+		swbreak
+	swend
+
+	;title "PRM="+iparam+"/OBJ="+wparam+"/CMD="+lparam
+	return
+
+*lay_draw
+	;	描画処理
+	i=objinfo(wparam,objlayer_info_axis):x=i&0xffff:y=i>>16
+	i=objinfo(wparam,objlayer_info_size):sx=i&0xffff:sy=i>>16
+	color 160,160,160
+	boxf x,y,x+sx,y+sy
+	if iparam&8 {		; 点滅させる
+		color 0,0,0
+		pos x+100,y+sy/2:mes lay_message
+	}
+	return
+
+
+
