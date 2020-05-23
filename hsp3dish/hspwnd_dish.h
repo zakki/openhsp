@@ -35,6 +35,22 @@
 #define HSPOBJ_TAB_SKIP 3
 #define HSPOBJ_TAB_SELALLTEXT 4
 
+#define HSPOBJ_OPTION_LAYEROBJ 0x8000
+#define HSPOBJ_OPTION_LAYER_MIN 0
+#define HSPOBJ_OPTION_LAYER_BG 1
+#define HSPOBJ_OPTION_LAYER_NORMAL 2
+#define HSPOBJ_OPTION_LAYER_POSTEFF 3
+#define HSPOBJ_OPTION_LAYER_MAX 4
+
+#define HSPOBJ_LAYER_CMD_NONE (0)
+#define HSPOBJ_LAYER_CMD_INIT (1)
+#define HSPOBJ_LAYER_CMD_TERM (2)
+#define HSPOBJ_LAYER_CMD_PRMI (3)
+#define HSPOBJ_LAYER_CMD_PRMS (4)
+#define HSPOBJ_LAYER_CMD_PRMD (5)
+#define HSPOBJ_LAYER_CMD_DRAW (6)
+#define HSPOBJ_LAYER_CMD_TIME (7)
+
 #define HSPOBJ_NOTICE_KEY_CTRLADD (0x2000)
 #define HSPOBJ_NOTICE_KEY_SHIFTADD (0x1000)
 
@@ -221,9 +237,11 @@ typedef struct HSPOBJINFO
 	int fontcolor;		// テキスト色
 	int backcolor;		// 背景色
 	std::string *fontname;	// font name
+	int exinfo1, exinfo2;	// extra info
 
 	Hsp3ObjBase *btnset;	// objectから設定される情報
 	HSP3VARSET *varset;	// objectから設定される情報
+	HSPCTX *hspctx;
 
 	//		callback function
 	void	(*func_draw)( struct HSPOBJINFO * );
@@ -371,11 +389,13 @@ public:
 	void SetHSPObjectFont(int id);
 	void SendHSPObjectNotice(int wparam);
 	void UpdateHSPObject(int id, int type, void *ptr);
+	void SendHSPLayerObjectNotice(int layer, int cmd);
 
 	int AddHSPObjectButton( char *name, int eventid, void *callptr );
 	int AddHSPObjectCheckBox(char *name, PVal *pval, APTR aptr);
 	int AddHSPObjectInput(PVal *pval, APTR aptr, int sizex, int sizey, char *defval, int limit, int mode);
 	int AddHSPObjectMultiBox(PVal *pval, APTR aptr, int psize, char *defval, int mode);
+	int AddHSPObjectLayer(int sizex, int sizey, int layer, int val, int mode, void *callptr);
 
 	void setMTouch( HSP3MTOUCH *mt, int x, int y, bool touch );
 	void setMTouchByPoint( int old_x, int old_y, int x, int y, bool touch );
@@ -542,6 +562,7 @@ public:
 	//
 	int mouse_x, mouse_y;
 	int sys_iprm, sys_wprm, sys_lprm;
+	HSPCTX *hspctx;				// HSP context
 
 private:
 	void Reset( void );

@@ -649,6 +649,50 @@ static void Object_SetValue(HSPOBJINFO *info, int type, void *ptr)
 	}
 }
 
+static void Object_LayerDelete(HSPOBJINFO *info)
+{
+	info->hspctx->iparam = info->owsize;
+	info->hspctx->wparam = info->owid;
+	info->hspctx->lparam = HSPOBJ_LAYER_CMD_TERM;
+	code_call((unsigned short *)info->hCld);
+}
+
+static void Object_LayerNotice(HSPOBJINFO *info, int wparam)
+{
+	info->hspctx->iparam = info->exinfo2;
+	info->hspctx->wparam = info->owid;
+	info->hspctx->lparam = wparam;
+	code_call((unsigned short *)info->hCld);
+	info->exinfo2++;
+}
+
+static void Object_SetLayerObject(HSPOBJINFO *info, int type, void *ptr)
+{
+	int ptype = HSPOBJ_LAYER_CMD_PRMI;
+	int iparam = 0;
+	switch (type) {
+	case TYPE_STRING:
+		ptype = HSPOBJ_LAYER_CMD_PRMS;
+		strncpy(info->hspctx->refstr, (char *)ptr, HSPCTX_REFSTR_MAX - 1);
+		break;
+	case TYPE_INUM:
+		iparam = *(int *)ptr;
+		break;
+	case TYPE_DNUM:
+		ptype = HSPOBJ_LAYER_CMD_PRMD;
+		info->hspctx->refdval = *(HSPREAL *)ptr;
+		iparam = (int)info->hspctx->refdval;
+		break;
+	default:
+		throw HSPERR_TYPE_MISMATCH;
+	}
+	info->hspctx->iparam = iparam;
+	info->hspctx->wparam = info->owid;
+	info->hspctx->lparam = ptype;
+	code_call((unsigned short *)info->hCld);
+}
+
+
 /*---------------------------------------------------------------------------*/
 
 int Bmscr::NewHSPObject( void )
@@ -690,6 +734,13 @@ HSPOBJINFO *Bmscr::AddHSPObject( int id, int mode )
 	obj->owsize = 0;
 	obj->btnset = NULL;
 	obj->varset = NULL;
+	obj->exinfo1 = 0;
+	obj->exinfo2 = 0;
+
+	HspWnd *wnd = (HspWnd *)this->master_hspwnd;
+	if (wnd) {
+		obj->hspctx = wnd->hspctx;
+	}
 
 	obj->x = this->cx;
 	obj->y = this->cy;
@@ -767,6 +818,8 @@ void Bmscr::UpdateHSPObject(int id, int type, void *ptr)
 	//
 	HSPOBJINFO *obj;
 	obj = GetHSPObjectSafe(id);
+	if (obj->owmode == HSPOBJ_NONE) return;
+
 	if (obj->func_objprm != NULL) {
 		obj->func_objprm(obj, type, ptr);
 	}
@@ -929,6 +982,47 @@ int Bmscr::AddHSPObjectInput(PVal *pval, APTR aptr, int sizex, int sizey, char *
 }
 
 
+int Bmscr::AddHSPObjectLayer(int sizex, int sizey, int layer, int val, int mode, void *callptr)
+{
+	//		create screen layer object
+	//
+	int id, lay;
+	HSPOBJINFO *obj;
+
+	id = NewHSPObject();
+
+	obj = AddHSPObject(id, HSPOBJ_OPTION_LAYEROBJ | HSPOBJ_TAB_SKIP);
+	obj->owid = id;
+	obj->owsize = this->wid;
+
+	lay = layer;
+	if (lay < HSPOBJ_OPTION_LAYER_MIN) lay = HSPOBJ_OPTION_LAYER_MIN;
+	if (lay > HSPOBJ_OPTION_LAYER_MAX) lay = HSPOBJ_OPTION_LAYER_MAX;
+	obj->enableflag = lay;
+	obj->exinfo1 = val;
+	obj->exinfo2 = 0;
+
+	obj->x = cx;
+	obj->y = cy;
+	obj->sx = sizex;
+	obj->sy = sizey;
+	obj->hCld = callptr;
+
+	//obj->func_notice = Object_LayerNotice;
+	//obj->func_delete = Object_LayerDelete;
+	obj->func_objprm = Object_SetLayerObject;
+	Posinc(sizey);
+
+	obj->hspctx->iparam = val;
+	obj->hspctx->wparam = id;
+	obj->hspctx->lparam = HSPOBJ_LAYER_CMD_INIT;
+	code_call((unsigned short *)callptr);
+
+	return id;
+}
+
+
+
 //-------------------------------------------------------
 //	Object Draw Service
 //-------------------------------------------------------
@@ -1047,9 +1141,9 @@ int Bmscr::DrawAllObjects( void )
 
 	for( i=0;i<this->objmax;i++ ) {
 		if ( info->owmode != HSPOBJ_NONE ) {
-			bmscr_obj_drawflag = (i==cur_objid);
-			if (window_active == 0) bmscr_obj_drawflag = false;
 			if (info->func_draw != NULL) {
+				bmscr_obj_drawflag = (i==cur_objid);
+				if (window_active == 0) bmscr_obj_drawflag = false;
 				info->func_draw(info);
 			}
 		}
@@ -1073,9 +1167,33 @@ void Bmscr::SendHSPObjectNotice(int wparam)
 	info = GetHSPObject(this->cur_objid);
 	if (info == NULL) return;
 	if (info->owmode != HSPOBJ_NONE) {
-		if (info->func_notice != NULL) {
-			info->func_notice(info, wparam);
+		if ((info->owmode & HSPOBJ_OPTION_LAYEROBJ) == 0) {
+			if (info->func_notice != NULL) {
+				info->func_notice(info, wparam);
+			}
 		}
+	}
+}
+
+
+void Bmscr::SendHSPLayerObjectNotice(int layer, int cmd)
+{
+	//		レイヤーオブジェクトの通知処理
+	//
+	int i;
+	HSPOBJINFO *obj;
+	obj = mem_obj;
+	for (i = 0; i < objmax; i++) {
+		if (obj->owmode) {
+			if (obj->owmode & HSPOBJ_OPTION_LAYEROBJ) {
+				if (obj->enableflag == layer) {
+					if (obj->func_notice != NULL) {
+						obj->func_notice(obj, cmd);
+					}
+				}
+			}
+		}
+		obj++;
 	}
 }
 
@@ -1162,21 +1280,23 @@ int Bmscr::UpdateAllObjects( void )
 	focustap = 0;
 	this->cur_mo_obj = NULL;
 	for( i=0;i<this->objmax;i++ ) {
-		if ( info->owmode != HSPOBJ_NONE ) {
-			tap = -1;
-			y = msy - info->y;
-			if (( y>=0 )&&( y<info->sy )) {
-				x = msx - info->x;
-				if (( x>=0 )&&( x<info->sx )) {
-					tap = this->tapstat;
-					focus = info;
-					focustap = tap;
-					focusid = i;
-					this->cur_mo_obj = info;
-					this->tapobj_posx = x;
-					this->tapobj_posy = y;
-					this->tapobj_posex = x;
-					this->tapobj_posey = y;
+		if (info->owmode != HSPOBJ_NONE) {
+			if ((info->owmode & HSPOBJ_OPTION_LAYEROBJ) == 0) {
+				tap = -1;
+				y = msy - info->y;
+				if ((y >= 0) && (y < info->sy)) {
+					x = msx - info->x;
+					if ((x >= 0) && (x < info->sx)) {
+						tap = this->tapstat;
+						focus = info;
+						focustap = tap;
+						focusid = i;
+						this->cur_mo_obj = info;
+						this->tapobj_posx = x;
+						this->tapobj_posy = y;
+						this->tapobj_posex = x;
+						this->tapobj_posey = y;
+					}
 				}
 			}
 		}
