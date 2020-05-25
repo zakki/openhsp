@@ -601,61 +601,20 @@ static char *code_checkarray_obj( PVal *pval, int *mptype )
 	//
 	char *ptr;
 	HspVarProc *varproc;
-/*
-	FlexValue *fv;
-	if ( pval->support & HSPVAR_SUPPORT_STRUCTACCEPT ) {			// 構造体受け付け
-		code_checkarray( pval );
-		if ( pval->support & HSPVAR_SUPPORT_CLONE ) {				// クローンのチェック
-			fv = (FlexValue *)HspVarCorePtr( pval );
-			*mptype = fv->clonetype;
-			return (fv->ptr);
-		}
-		if (( type != TYPE_STRUCT )||( exflg )) {
-			*mptype = MPTYPE_VAR;
-			return HspVarCorePtr( pval );
-		}
-		varproc = HspVarCoreGetProc( pval->flag );
-		ptr = varproc->ArrayObject( pval, mptype );
-		return ptr;
-	}
-
-	if ( pval->support & HSPVAR_SUPPORT_CLONE ) {				// クローンのチェック
-		fv = (FlexValue *)HspVarCorePtr( pval );
-		*mptype = fv->clonetype;
-		return (fv->ptr);
-	}
-*/
-
 	*mptype = pval->flag;
 	HspVarCoreReset( pval );										// 配列ポインタをリセットする
 
 	if ( type == TYPE_MARK ) {
 		if ( val == '(' ) {											// 配列がある場合
 			code_next();
-//			if ( pval->support & HSPVAR_SUPPORT_ARRAYOBJ ) {
 				varproc = HspVarCoreGetProc( pval->flag );
 				ptr = (char *)varproc->ArrayObjectRead( pval, mptype );
 				code_next();											// ')'を読み飛ばす
 				return ptr;
-//			}
-//			code_checkarray( pval );
 		}
 	}
 	return (char *)HspVarCorePtr( pval );
 }
-
-
-/*
-static char *code_get_varsub( PVal *pval, int *restype )
-{
-	//		pvalの実体を検索する(HSPVAR_SUPPORT_ARRAYOBJ時のみ)
-	//		( 返値が実体ポインタとなる )
-	//
-	char *ptr;
-	ptr = (char *)code_checkarray_obj( pval, restype );
-	return code_get_proxyvar( ptr, restype );
-}
-*/
 
 
 char *code_get_proxyvar( char *ptr, int *mptype )
@@ -1516,7 +1475,6 @@ void code_expandstruct( char *p, STRUCTDAT *st, int option )
 
 	for(i=0;i<st->prmmax;i++) {							// パラメーターを取得
 		out = p + prm->offset;
-		//Alertf("(%d)type%d index%d/%d offset%d", st->subid, prm->mptype, st->prmindex + i, st->prmmax, prm->offset);
 		switch( prm->mptype ) {
 		case MPTYPE_INUM:
 			*(int *)out = code_getdi(0);
