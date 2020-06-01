@@ -9,7 +9,7 @@
 
 	screen 0,640,480			; スクリーン初期化
 
-	es_ini					; スプライト初期化
+	es_ini					; スプライトを初期化
 
 	buffer 3
 	picload "testchr.png"
@@ -25,13 +25,13 @@
 
 *main
 	stick key,15
-	if key&1 : rot++			; [<-]キーで回転させる
-	if key&4 : rot--			; [->]キーで回転させる
+	if key&1 : rot=rot+1			; [<-]キーで回転させる
+	if key&4 : rot=rot-1			; [->]キーで回転させる
 
 	es_setrot 0,rot				; 角度を設定する
 
 	redraw 0
-	es_draw					; スプライト描画
+	es_draw					; スプライトを描画
 	redraw 1
 
 	await 1000/60				; タスク更新

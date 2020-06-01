@@ -78,7 +78,7 @@
 
 	;	“Gƒ~ƒTƒCƒ‹
 	;
-	if rnd(10)<3 : goto *noset
+	if rnd(10)<5 : goto *noset
 	es_getpos n,x,y
 	es_new a,128
 	es_set a,x,y,3

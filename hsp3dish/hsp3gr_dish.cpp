@@ -3110,25 +3110,28 @@ static int cmdfunc_extcmd( int cmd )
 	case 0x212:								// es_pos
 	{
 		//		set sprite x,y pos data (type0)
-		//		es_pos spno, x, y
+		//		es_pos spno, x, y, opt
 		p1 = code_getdi(0);
 		p2 = code_getdi(0);
 		p3 = code_getdi(0);
+		p4 = code_getdi(0);
 		if (sprite->sprite_enable) {
-			ctx->stat = sprite->setSpritePos(p1, p2, p3);
+			ctx->stat = sprite->setSpritePos(p1, p2, p3, p4);
 		}
 		else throw HSPERR_UNSUPPORTED_FUNCTION;
 		break;
 	}
-	case 0x213:								// es_posd
+	case 0x213:								// es_setrot
 	{
-		//		set sprite x,y pos data (type0)
-		//		es_posd spno, x, y
+		//		Set Rotate (type0)
+		//		es_setrot spno, angle, zoomx, zoomy, rate%
 		p1 = code_getdi(0);
 		p2 = code_getdi(0);
-		p3 = code_getdi(0);
+		p3 = code_getdi(-1);
+		p4 = code_getdi(-1);
+		p5 = code_getdi(100);
 		if (sprite->sprite_enable) {
-			ctx->stat = sprite->setSpritePos(p1, p2, p3, true);
+			ctx->stat = sprite->setSpriteRotate(p1, p2, p3, p4, p5);
 		}
 		else throw HSPERR_UNSUPPORTED_FUNCTION;
 		break;
@@ -3147,15 +3150,13 @@ static int cmdfunc_extcmd( int cmd )
 		else throw HSPERR_UNSUPPORTED_FUNCTION;
 		break;
 	}
-	case 0x215:								// es_aposd
+	case 0x215:								// es_setgosub
 	{
-		//		sprite axis add data set (type0)
-		//		es_aposd spno, px, py
+		unsigned short *sbr;
 		p1 = code_getdi(0);
-		p2 = code_getdi(0);
-		p3 = code_getdi(0);
+		sbr = code_getlb2();
 		if (sprite->sprite_enable) {
-			ctx->stat = sprite->setSpriteAddPos(p1, p2, p3, true);
+			sprite->setSpriteCallback(p1, sbr);
 		}
 		else throw HSPERR_UNSUPPORTED_FUNCTION;
 		break;
@@ -3246,9 +3247,18 @@ static int cmdfunc_extcmd( int cmd )
 		break;
 	}
 	case 0x21d:								// es_move
-	case 0x21e:								// es_setpri
 	{
 		throw HSPERR_UNSUPPORTED_FUNCTION;
+		break;
+	}
+	case 0x21e:								// es_setpri
+	{
+		p1 = code_getdi(0);
+		p2 = code_getdi(0);
+		if (sprite->sprite_enable) {
+			sprite->setSpritePriority(p1,p2);
+		}
+		else throw HSPERR_UNSUPPORTED_FUNCTION;
 		break;
 	}
 	case 0x21f:								// es_put
@@ -3513,20 +3523,6 @@ static int cmdfunc_extcmd( int cmd )
 		p6 = code_getdi(0);
 		if (sprite->sprite_enable) {
 			ctx->stat = sprite->modifySpriteAxis(p1, p2, p3, p4, p5, p6);
-		}
-		else throw HSPERR_UNSUPPORTED_FUNCTION;
-		break;
-	}
-	case 0x22d:								// es_setrot
-	{
-		//		Set Rotate (type0)
-		//		es_setrot spno, angle, zoomx, zoomy
-		p1 = code_getdi(0);
-		p2 = code_getdi(0);
-		p3 = code_getdi(-1);
-		p4 = code_getdi(-1);
-		if (sprite->sprite_enable) {
-			ctx->stat = sprite->setSpriteRotate(p1, p2, p3, p4);
 		}
 		else throw HSPERR_UNSUPPORTED_FUNCTION;
 		break;
