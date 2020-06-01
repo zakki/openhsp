@@ -20,6 +20,14 @@ extern "C" {
 #define ESSPFLAG_BLINK (0x8000)
 #define ESSPFLAG_NODISP (0x10000)
 
+#define ESSPSET_POS (0)
+#define ESSPSET_ADDPOS (1)
+#define ESSPSET_FALL (2)
+#define ESSPSET_BOUNCE (3)
+#define ESSPSET_ZOOM (4)
+#define ESSPSET_DIRECT (0x1000)
+#define ESSPSET_MASKBIT (0x2000)
+
 #define ESSPOPT_NONE (0)
 #define ESSPOPT_EXTDISP (1)
 #define ESSPOPT_FADEIN (4)
@@ -101,6 +109,8 @@ typedef struct SPOBJ
 	int zoomy;			//	Yï˚å¸î{ó¶(16bitå≈íËè≠êî)
 	int	rotz;			//	âÒì]äpìx
 	int	splink;			//	link to other sprite
+	unsigned short *sbr;//	callback
+
 } SPOBJ;
 
 class essprite {
@@ -137,7 +147,7 @@ public:
 
 	int setSpriteFlag(int spno, int flag);
 	int setSpritePosChr(int spno, int xx, int yy, int chrno, int option, int pri);
-	int setSpritePos(int spno, int xx, int yy, bool realaxis=false);
+	int setSpritePos(int spno, int xx, int yy, int opt=0);
 	int setSpriteAddPos(int spno, int xx, int yy, bool realaxis = false);
 	int setSpriteAddPosRate(int spno, int xx, int yy, int rate);
 	int setSpriteChr(int spno, int chrno);
@@ -150,7 +160,9 @@ public:
 	int setSpriteParent(int spno, int parent, int option);
 	int setSpriteFade(int p1, int p2, int p3);
 	int setSpriteEffect(int id, int tpflag, int mulcolor);
-	int setSpriteRotate(int id, int angle, int zoomx, int zoomy);
+	int setSpriteRotate(int id, int angle, int zoomx, int zoomy, int rate);
+	void setSpritePriority(int id, int pri);
+	void setSpriteCallback(int p1, unsigned short *callback = NULL);
 
 	SPOBJ* getObj(int id);
 	BGMAP* getMap(int id);

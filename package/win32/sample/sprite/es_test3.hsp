@@ -10,8 +10,9 @@
 	;------------------------------------------------------------------
 
 	screen 0,640,480			; スクリーン初期化
-	es_ini					; スプライト初期化
 *start
+	es_ini					; スプライトを初期化
+
 	buffer 3
 	picload "testchr.png"
 	es_size 64,64,50
@@ -20,7 +21,7 @@
 
 	gsel 0
 
-	myx=100:myy=100
+	myx=300:myy=200
 	es_set 0,myx,myy,0		; メインのスプライト
 
 *main
@@ -34,7 +35,7 @@
 	color 64,64,64
 	boxf					; 背景を塗りつぶし
 
-	es_draw					; スプライト描画
+	es_draw					; スプライトを描画
 
 	rgbcolor $ffffff
 	pos 0,0:mes "Sprite Sample"		; 文字列を描画

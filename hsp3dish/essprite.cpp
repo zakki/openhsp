@@ -311,6 +311,22 @@ int essprite::setLink(int p1, int p2)
 }
 
 
+void essprite::setSpritePriority(int id, int pri)
+{
+	SPOBJ *sp = getObj(id);
+	if (sp == NULL) return;
+	sp->priority = pri;
+}
+
+
+void essprite::setSpriteCallback(int p1, unsigned short *callback)
+{
+	SPOBJ *sp = getObj(p1);
+	if (sp == NULL) return;
+	sp->sbr = callback;
+}
+
+
 void essprite::clear(int spno)
 {
 	SPOBJ *sp = getObj(spno);
@@ -693,15 +709,23 @@ nodraw:
 int essprite::draw(int start, int num, int dispflag, int sortflag)
 {
 	int a, a1, a2;
+	HSPCTX *ctx = hspwnd->GetHSPCTX();
 
 	a1 = start; a2 = num;
 	if (a2 < 0) a2 = spkaz - a1;
 	a1 = a1 + a2 - 1;
 	for (a = 0; a < a2; a++) {
-		SPOBJ* sp = getObj(a1--);
+		SPOBJ* sp = getObj(a1);
 		if (sp->fl) {
 			drawSub(sp);
+			if (sp->sbr) {
+				ctx->iparam = a1;
+				ctx->wparam = sp->type;
+				ctx->lparam = sp->chr;
+				code_call(sp->sbr);
+			}
 		}
+		a1--;
 	}
 	return 0;
 }
@@ -743,44 +767,110 @@ int essprite::setSpriteType(int spno, int type)
 }
 
 
-int essprite::setSpritePos(int spno, int xx, int yy, bool realaxis)
+int essprite::setSpritePos(int spno, int xx, int yy, int option)
 {
+	int opt, dotmask;
+	int x, y;
 	SPOBJ* sp = getObj(spno);
 	if (sp == NULL) return -1;
-	if (realaxis) {
-		sp->xx = xx;
-		sp->yy = yy;
+
+	bool biton = ( option & ESSPSET_MASKBIT ) != 0;
+	if (option & ESSPSET_DIRECT) {
+		x = xx;
+		y = yy;
+	} else {
+		x = xx << dotshift;
+		y = yy << dotshift;
+		dotmask = dotshift_base - 1;
 	}
-	else {
-		sp->xx = xx << dotshift;
-		sp->yy = yy << dotshift;
+	opt = option & (ESSPSET_DIRECT - 1);
+	switch (opt) {
+	case ESSPSET_POS:
+		if (biton) {
+			x |= sp->xx & dotmask;
+			y |= sp->yy & dotmask;
+		}
+		sp->xx = x;
+		sp->yy = y;
+		break;
+	case ESSPSET_ADDPOS:
+		if (biton) {
+			x |= sp->px & dotmask;
+			y |= sp->py & dotmask;
+		}
+		sp->px = x;
+		sp->py = y;
+		break;
+	case ESSPSET_FALL:
+		if (biton) {
+			x |= sp->fspx & dotmask;
+			y |= sp->fspy & dotmask;
+		}
+		sp->fspx = x;
+		sp->fspy = y;
+		break;
+	case ESSPSET_BOUNCE:
+		if (biton) {
+			x |= sp->bound & dotmask;
+			y |= sp->boundflag & dotmask;
+		}
+		sp->bound = x;
+		sp->boundflag = y;
+		break;
+	case ESSPSET_ZOOM:
+		if (biton) {
+			x |= sp->zoomx & dotmask;
+			y |= sp->zoomy & dotmask;
+		}
+		sp->zoomx = x;
+		sp->zoomy = y;
+		break;
+	default:
+		return -1;
 	}
+
 	return spno;
 }
 
 
 int essprite::getSpritePos(int* xpos, int* ypos, int spno, int option)
 {
+	int x,y,opt;
 	SPOBJ* sp = getObj(spno);
 	if (sp == NULL) return -1;
 	if (sp->fl == 0) return -1;
 
-	switch (option) {
-	case 0:
-		*xpos = sp->xx >> dotshift;
-		*ypos = sp->yy >> dotshift;
+	opt = option & (ESSPSET_DIRECT - 1);
+	switch (opt) {
+	case ESSPSET_POS:
+		x = sp->xx;
+		y = sp->yy;
 		break;
-	case 1:
-		*xpos = sp->px >> dotshift;
-		*ypos = sp->py >> dotshift;
+	case ESSPSET_ADDPOS:
+		x = sp->px;
+		y = sp->py;
 		break;
-	case 2:
-		*xpos = sp->zoomx >> dotshift;
-		*ypos = sp->zoomy >> dotshift;
+	case ESSPSET_FALL:
+		x = sp->fspx;
+		y = sp->fspy;
+		break;
+	case ESSPSET_BOUNCE:
+		x = sp->bound;
+		y = sp->boundflag;
+		break;
+	case ESSPSET_ZOOM:
+		x = sp->zoomx;
+		y = sp->zoomy;
 		break;
 	default:
 		return -1;
 	}
+	if ((option & ESSPSET_DIRECT)==0) {
+		x = x >> dotshift;
+		y = y >> dotshift;
+	}
+	*xpos = x;
+	*ypos = y;
 	return 0;
 }
 
@@ -913,6 +1003,7 @@ SPOBJ *essprite::resetSprite(int spno)
 	sp->zoomy = dotshift_base;
 	sp->rotz = 0;
 	sp->splink = 0;
+	sp->sbr = NULL;
 
 	sp->xx = 0;
 	sp->yy = 0;
@@ -1025,13 +1116,19 @@ int essprite::setSpriteEffect(int id, int tpflag, int mulcolor)
 }
 
 
-int essprite::setSpriteRotate(int id, int angle, int zoomx, int zoomy)
+int essprite::setSpriteRotate(int id, int angle, int zoomx, int zoomy, int rate)
 {
 	SPOBJ *sp = getObj(id);
 	if (sp == NULL) return -1;
 
-	if (zoomx >= 0) sp->zoomx = zoomx << dotshift;
-	if (zoomy >= 0) sp->zoomy = zoomy << dotshift;
+	if (zoomx >= 0) {
+		int ax = (zoomx << dotshift) * rate / 100;
+		sp->zoomx = ax;
+	}
+	if (zoomy >= 0) {
+		int ay = (zoomy << dotshift) * rate / 100;
+		sp->zoomy = ay;
+	}
 
 	sp->rotz = angle;
 
