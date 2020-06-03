@@ -5,10 +5,13 @@ Hot Soup Processor ver3.6                           HSP : Hot Soup Processor
 
 ・hsp3関連 更新履歴
 
-	2020/05/25 3.6 beta3
+	2020/06/03 3.6 beta3
 
+	mes(print)命令に影付け、縁取りなどの描画オプションを追加
 	ユーザー定義による配置オブジェクトを追加するlayerobj命令を追加
+	on～命令などによる割り込みコールバックルーチンの制約を厳格化してエラーチェックを追加
 	500時間以上起動したPC上でwait,await命令の待ち時間が正しく反映されなくなる不具合を修正
+	スクリプトエディタの最終行へ移動メニューが動作していなかった不具合を修正
 	hsedsdkのhsed_gettextで最後の1文字が取得されない不具合を修正
 	モジュール型変数に別のモジュール型変数値を代入した際に元のデストラクタが呼ばれない不具合を修正
 	stick命令互換で動作するmod_joystick2.asモジュールを追加
@@ -19,7 +22,6 @@ Hot Soup Processor ver3.6                           HSP : Hot Soup Processor
 	[HSP3Dish] フォント描画時の負荷を軽減
 	[HSP3Dish] アプリケーション終了処理時の不正なアクセスを修正
 	[HSP3Dish] mes(print)命令の改行処理がHSP3標準と違っていたのを修正
-	[HSP3Dish] mes(print)命令の描画が標準でgmodeのブレント設定を反映するように修正
 	[HSP3Dish] objmode,objsel,objprm,objcolor,objenable命令のサポートを追加
 	[HSP3Dish][hsp3js] WebAssembly形式で変換できるオプションを追加
 	[HSP3Dish][hsp3js] mobileデバイスのタッチ操作が反映されない不具合を修正

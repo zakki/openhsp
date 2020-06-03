@@ -27,6 +27,11 @@
 #define global gmode_sub (6)
 #define global gmode_pixela (7)
 
+#define global mesopt_nocr (1)
+#define global mesopt_shadow (2)
+#define global mesopt_outline (4)
+#define global mesopt_gmode (16)
+
 #define global ginfo_mx ginfo(0)
 #define global ginfo_my ginfo(1)
 #define global ginfo_act ginfo(2)
