@@ -458,9 +458,9 @@
 #cmd es_type $210
 #cmd es_kill $211
 #cmd es_pos $212
-#cmd es_posd $213
+#cmd es_setrot $213
 #cmd es_apos $214
-#cmd es_aposd $215
+#cmd es_setgosub $215
 #cmd es_adir $216
 #cmd es_aim $217
 #cmd es_draw $218
@@ -484,8 +484,6 @@
 #cmd es_bgmes $22a
 #cmd es_setparent $22b
 #cmd es_modaxis $22c
-#cmd es_setrot $22d
-
 
 #define global es_fmes mes
 #define global es_bye
@@ -523,6 +521,14 @@
 #define global ESSPFLAG_NODISP (0x10000)
 
 #define global ESSPPAT_1SHOT (0x1000)
+
+#define global ESSPSET_POS (0)
+#define global ESSPSET_ADDPOS (1)
+#define global ESSPSET_FALL (2)
+#define global ESSPSET_BOUNCE (3)
+#define global ESSPSET_ZOOM (4)
+#define global ESSPSET_DIRECT (0x1000)
+#define global ESSPSET_MASKBIT (0x2000)
 
 #define global ESSPOPT_NONE (0)
 #define global ESSPOPT_EXTDISP (1)

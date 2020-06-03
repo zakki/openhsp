@@ -2368,14 +2368,18 @@ LRESULT CALLBACK EditProc (HWND hwnd, UINT iMsg, WPARAM wParam, LPARAM lParam)
 				//	Message from cursor menu
 
 				case IDM_JUMP:
-					DialogBox (hInst, "JumpBox", hwnd, (DLGPROC)JumpDlgProc);
+				{
+					DialogBox(hInst, "JumpBox", hwnd, (DLGPROC)JumpDlgProc);
 					if (cln == -1) return 0;
+					int maxline = Footy2GetLines(activeFootyID) - 1;
+					if (cln < 0) cln = 0;
+					if (cln > maxline) cln = maxline;
 					Footy2SetCaretPosition(activeFootyID, cln, 0);
 					PutLineNumber();
 					return 0;
-
+				}
 				case IDM_LBTM:
-					Footy2SetCaretPosition(activeFootyID, Footy2GetLines(activeFootyID), 0);
+					Footy2SetCaretPosition(activeFootyID, Footy2GetLines(activeFootyID)-1, 0);
 					PutLineNumber();
 					return 0;
 
