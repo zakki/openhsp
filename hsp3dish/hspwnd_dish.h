@@ -101,6 +101,13 @@
 #define TEXMES_MODE_CENTERX (1)
 #define TEXMES_MODE_CENTERY (2)
 
+#define HSPMES_FONT_EFFSIZE_DEFAULT (1)
+#define HSPMES_NOCR (1)
+#define HSPMES_SHADOW (2)
+#define HSPMES_OUTLINE (4)
+#define HSPMES_GMODE (16)
+
+
 class texmesPos
 {
 public:
@@ -347,7 +354,9 @@ public:
 	void SetFontInternal( char *fontname, int size, int style );
 	void SetDefaultFont( void );
 
-	void Print(char *mes, int sw = 0);
+	void Print(char *mes, int sw);
+	int PrintSub(char *mes);
+
 	void Print(texmesPos *tpos);
 	void Boxfill(int x1, int y1, int x2, int y2, int mode=0);
 	void Circle( int x1,int y1,int x2,int y2, int mode );
@@ -508,6 +517,7 @@ public:
 	HSPREAL	accel_value[BMSCR_SAVEPOS_MAX];		// Accelerometer sensor value
 
 	int		objcolor;					// object color code
+	int		fonteff_size;				// effect size for font
 
 	int		vp_flag;					// Viewport enable flag (0=none)
 	float	vp_viewtrans[4];			// View Translate X,Y,Z,W
@@ -688,6 +698,7 @@ typedef struct BMSCR
 	HSPREAL	accel_value[BMSCR_SAVEPOS_MAX];		// Accelerometer sensor value
 
 	int		objcolor;					// object color code
+	int		fonteff_size;				// effect size for font
 
 	int		vp_flag;					// Viewport enable flag (0=none)
 	float	vp_viewtrans[4];			// View Translate X,Y,Z,W

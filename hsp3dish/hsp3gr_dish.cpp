@@ -563,7 +563,7 @@ static int cmdfunc_extcmd( int cmd )
 		ptr = code_getdsi( "" );
 		code_stmpstr(ptr);
 		sw = code_getdi(0);
-		bmscr->Print(ctx->stmp,sw);
+		bmscr->Print(ptr,sw);
 		break;
 		}
 	case 0x10:								// title
@@ -591,12 +591,15 @@ static int cmdfunc_extcmd( int cmd )
 		bmscr->Cls( p1 );
 		break;
 	case 0x14:								// font
-		{
+	{
 		char fontname[256];
 		strncpy( fontname, code_gets(), 255 );
 		p1 = code_getdi( 12 );
 		p2 = code_getdi( 0 );
+		p3 = code_getdi(HSPMES_FONT_EFFSIZE_DEFAULT);
 		bmscr->SetFont( fontname, p1, p2 );
+		bmscr->fonteff_size = p3;
+		ctx->stat = 0;
 		break;
 		}
 	case 0x16:								// objsize
@@ -1396,6 +1399,10 @@ static int cmdfunc_extcmd( int cmd )
 	case 0x4e:								// rgbcolor
 		p1 = code_getdi(0);
 		p2 = code_getdi(0);
+		if (p2 == 1) {
+			bmscr->Setcolor2(p1);
+			break;
+		}
 		bmscr->Setcolor(p1);
 		break;
 

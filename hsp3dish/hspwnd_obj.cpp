@@ -188,7 +188,7 @@ static void Object_ButtonDraw( HSPOBJINFO *info )
 		bm->cx++;
 		bm->cy++;
 	}
-	bm->Print( (char *)info->btnset->name.c_str() );
+	bm->Print( (char *)info->btnset->name.c_str(), 0 );
 }
 
 static void Object_CheckBoxDraw(HSPOBJINFO *info)
@@ -243,7 +243,7 @@ static void Object_CheckBoxDraw(HSPOBJINFO *info)
 	bm->cx = x1+ ( info->fontsize * 2 );
 	bm->cy = y1;
 	bm->printoffsety = info->sy;
-	bm->Print((char *)info->btnset->name.c_str());
+	bm->Print((char *)info->btnset->name.c_str(), 0);
 
 	int fsize = info->fontsize;
 	int y = (info->sy - bm->printsizey)/2;
