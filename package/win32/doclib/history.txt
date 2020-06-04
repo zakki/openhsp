@@ -24,6 +24,7 @@ Hot Soup Processor ver3.6                           HSP : Hot Soup Processor
 	[HSP3Dish] アプリケーション終了処理時の不正なアクセスを修正
 	[HSP3Dish] mes(print)命令の改行処理がHSP3標準と違っていたのを修正
 	[HSP3Dish] objmode,objsel,objprm,objcolor,objenable命令のサポートを追加
+	[HSP3Dish][hsp3js] デバッグ情報を付加して変換できるオプションを追加
 	[HSP3Dish][hsp3js] WebAssembly形式で変換できるオプションを追加
 	[HSP3Dish][hsp3js] mobileデバイスのタッチ操作が反映されない不具合を修正
 	[HSP3Dish][hsp3js] mobileデバイスで音が再生されない不具合を修正

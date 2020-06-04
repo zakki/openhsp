@@ -10,7 +10,7 @@
 %note
 ver3.6•W€–½—ß
 %date
-2020/05/22
+2020/06/04
 %author
 onitama
 %url

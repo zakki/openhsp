@@ -49,6 +49,7 @@ struct engine;
 extern char *hsp_mainpath;
 
 //typedef BOOL (CALLBACK *HSP3DBGFUNC)(HSP3DEBUG *,int,int,int);
+void hsp3dish_msgfunc( HSPCTX *hspctx );
 
 /*----------------------------------------------------------*/
 
@@ -61,6 +62,7 @@ static char fpas[]={ 'H'-48,'S'-48,'P'-48,'H'-48,
 static char optmes[] = "HSPHED~~\0_1_________2_________3______";
 
 static int hsp_wx, hsp_wy, hsp_wd, hsp_ss;
+static int hsp_wposx, hsp_wposy, hsp_wstyle;
 static int drawflag;
 static int hsp_fps;
 static int hsp_limit_step_per_frame;
@@ -75,7 +77,7 @@ static int hsp_sscnt, hsp_ssx, hsp_ssy;
 
 #define SDLK_SCANCODE_MAX 0x200
 static bool keys[SDLK_SCANCODE_MAX];
-SDL_Window *window;
+SDL_Window *window = NULL;
 static SDL_Renderer *renderer;
 static SDL_GLContext context;
 
@@ -158,6 +160,34 @@ static int handleEvent( void ) {
 	SDL_Event event;
 	while (SDL_PollEvent(&event)) {
 		switch(event.type) {
+		case SDL_FINGERMOTION:
+		case SDL_FINGERDOWN:
+			{
+				//int id;
+				float x,y;
+				Bmscr *bm;
+				bm = (Bmscr *)exinfo->HspFunc_getbmscr(0);
+				x = event.tfinger.x * bm->sx;
+				y = event.tfinger.y * bm->sy;
+				//id = event.tfinger.touchId;
+				//hgio_mtouchid( id, (int)x, (int)y, 1, 0 );
+				hgio_touch( (int)x, (int)y, 1 );
+				break;
+			}
+		case SDL_FINGERUP:
+			{
+				//int id;
+				float x,y;
+				Bmscr *bm;
+				bm = (Bmscr *)exinfo->HspFunc_getbmscr(0);
+				x = event.tfinger.x * bm->sx;
+				y = event.tfinger.y * bm->sy;
+				//id = event.tfinger.touchId;
+				//hgio_mtouchid( id, (int)x, (int)y, 1, 0 );
+				hgio_touch( (int)x, (int)y, 0 );
+				break;
+			}
+
 		case SDL_MOUSEMOTION:
 			{
 				Bmscr *bm;
@@ -199,15 +229,138 @@ static int handleEvent( void ) {
 				break;
 			}
 		case SDL_KEYDOWN:
-			keys[event.key.keysym.scancode] = true;
+			{
+			int wparam = 0;
+			int code = (int)event.key.keysym.scancode;
+			if (code < SDLK_SCANCODE_MAX) {
+				keys[code] = true;
+			}
+			switch(code) {
+			case SDL_SCANCODE_BACKSPACE:
+				wparam = HSPOBJ_NOTICE_KEY_BS;
+				break;
+			case SDL_SCANCODE_TAB:
+				wparam = HSPOBJ_NOTICE_KEY_TAB;
+				break;
+			case SDL_SCANCODE_RETURN:
+				wparam = HSPOBJ_NOTICE_KEY_CR;
+				break;
+			case SDL_SCANCODE_DELETE:
+				wparam = HSPOBJ_NOTICE_KEY_DEL;
+				break;
+			case SDL_SCANCODE_INSERT:
+				wparam = HSPOBJ_NOTICE_KEY_INS;
+				break;
+			case SDL_SCANCODE_F1:
+				wparam = HSPOBJ_NOTICE_KEY_F1 + HSPOBJ_NOTICE_KEY_CTRLADD;
+				break;
+			case SDL_SCANCODE_F2:
+				wparam = HSPOBJ_NOTICE_KEY_F2 + HSPOBJ_NOTICE_KEY_CTRLADD;
+				break;
+			case SDL_SCANCODE_F3:
+				wparam = HSPOBJ_NOTICE_KEY_F3 + HSPOBJ_NOTICE_KEY_CTRLADD;
+				break;
+			case SDL_SCANCODE_F4:
+				wparam = HSPOBJ_NOTICE_KEY_F4 + HSPOBJ_NOTICE_KEY_CTRLADD;
+				break;
+			case SDL_SCANCODE_F5:
+				wparam = HSPOBJ_NOTICE_KEY_F5 + HSPOBJ_NOTICE_KEY_CTRLADD;
+				break;
+			case SDL_SCANCODE_F6:
+				wparam = HSPOBJ_NOTICE_KEY_F6 + HSPOBJ_NOTICE_KEY_CTRLADD;
+				break;
+			case SDL_SCANCODE_F7:
+				wparam = HSPOBJ_NOTICE_KEY_F7 + HSPOBJ_NOTICE_KEY_CTRLADD;
+				break;
+			case SDL_SCANCODE_F8:
+				wparam = HSPOBJ_NOTICE_KEY_F8 + HSPOBJ_NOTICE_KEY_CTRLADD;
+				break;
+			case SDL_SCANCODE_F9:
+				wparam = HSPOBJ_NOTICE_KEY_F9 + HSPOBJ_NOTICE_KEY_CTRLADD;
+				break;
+			case SDL_SCANCODE_F10:
+				wparam = HSPOBJ_NOTICE_KEY_F10 + HSPOBJ_NOTICE_KEY_CTRLADD;
+				break;
+			case SDL_SCANCODE_F11:
+				wparam = HSPOBJ_NOTICE_KEY_F11 + HSPOBJ_NOTICE_KEY_CTRLADD;
+				break;
+			case SDL_SCANCODE_F12:
+				wparam = HSPOBJ_NOTICE_KEY_F12 + HSPOBJ_NOTICE_KEY_CTRLADD;
+				break;
+			case SDL_SCANCODE_LEFT:
+				wparam = HSPOBJ_NOTICE_KEY_LEFT;
+				break;
+			case SDL_SCANCODE_UP:
+				wparam = HSPOBJ_NOTICE_KEY_UP;
+				break;
+			case SDL_SCANCODE_RIGHT:
+				wparam = HSPOBJ_NOTICE_KEY_RIGHT;
+				break;
+			case SDL_SCANCODE_DOWN:
+				wparam = HSPOBJ_NOTICE_KEY_DOWN;
+				break;
+			case SDL_SCANCODE_HOME:
+				wparam = HSPOBJ_NOTICE_KEY_HOME;
+				break;
+			case SDL_SCANCODE_END:
+				wparam = HSPOBJ_NOTICE_KEY_END;
+				break;
+			case SDL_SCANCODE_PAGEUP:
+				wparam = HSPOBJ_NOTICE_KEY_SCROLL_UP;
+				break;
+			case SDL_SCANCODE_PAGEDOWN:
+				wparam = HSPOBJ_NOTICE_KEY_SCROLL_DOWN;
+				break;
+			}
+			if ((code >= SDL_SCANCODE_A)&&(code <= SDL_SCANCODE_Z)) {
+				if (keys[SDL_SCANCODE_LCTRL]||keys[SDL_SCANCODE_RCTRL]) {
+					wparam = (code-SDL_SCANCODE_A) + 1 + HSPOBJ_NOTICE_KEY_CTRLADD;
+				}
+			}
+			if ( wparam > 0 ) {
+				if (keys[SDL_SCANCODE_LSHIFT]||keys[SDL_SCANCODE_RSHIFT]) {
+					wparam += HSPOBJ_NOTICE_KEY_SHIFTADD;
+				}
+				Bmscr *bm;
+				bm = (Bmscr *)exinfo->HspFunc_getbmscr(0);
+				if (bm) {
+					bm->SendHSPObjectNotice(wparam);
+				}
+			}
 			//printf("key down: sym %d scancode %d\n", event.key.keysym.sym, event.key.keysym.scancode);
 			break;
+			}
 		case SDL_KEYUP:
-			keys[event.key.keysym.scancode] = false;
+			if (event.key.keysym.scancode < SDLK_SCANCODE_MAX) {
+				keys[event.key.keysym.scancode] = false;
+			}
 			//printf("key up: sym %d scancode %d\n", event.key.keysym.sym, event.key.keysym.scancode);
 			break;
+
+		case SDL_TEXTINPUT:
+			{
+				Bmscr *bm;
+				bm = (Bmscr *)exinfo->HspFunc_getbmscr(0);
+				strcpy((char *)bm->keybuf,event.text.text);
+				bm->keybuf_index = 0;
+				bm->SendHSPObjectNotice(HSPOBJ_NOTICE_KEY_BUFFER);
+				break;
+			}
+
 		case SDL_QUIT: /** ウィンドウのxボタンやctrl-Cを押した場合 */
+			{
+			int id,retval;
+			id = 0;
+			if (code_isirq(HSPIRQ_ONEXIT)) {
+				int iparam = 0;
+				retval = code_sendirq(HSPIRQ_ONEXIT, iparam, id, 0);
+				if (retval == RUNMODE_INTJUMP) retval = code_execcmd2();	// onexit goto時は実行してみる
+				if (retval != RUNMODE_END) return 0;
+			}
+			code_puterror(HSPERR_NONE);
 			res = -1;
+			break;
+			}
 		}
 	}
 	return res;
@@ -218,41 +371,54 @@ bool get_key_state(int sym)
 	return keys[sym];
 }
 
-static void hsp3dish_initwindow( engine* p_engine, int sx, int sy, char *windowtitle )
+void hsp3dish_dialog( char *mes )
 {
-	printf("INIT %dx%d %s\n", sx,sy,windowtitle);
+	//SDL_ShowSimpleMessageBox(SDL_MESSAGEBOX_ERROR, "Error", mes, window);
+	printf( "%s\n", mes );
+}
 
-	// Slightly different SDL initialization
-	if ( SDL_Init(SDL_INIT_VIDEO) != 0 ) {
-		printf("Unable to initialize SDL: %s\n", SDL_GetError());
-		return;
+static int hsp3dish_initwindow( engine* p_engine, int sx, int sy, int autoscale, char *windowtitle )
+{
+	int flags;
+	int hsp_fullscr = hsp_wstyle & 0x100;
+
+	flags = SDL_WINDOW_OPENGL;
+	if (hsp_fullscr) {
+		flags |= SDL_WINDOW_FULLSCREEN;
+		hsp_wposx = 0;
+		hsp_wposy = 0;
+	} else {
+		if ( hsp_wstyle & 0x10000) {
+			flags |= SDL_WINDOW_BORDERLESS;
+		}
 	}
-
-	window = SDL_CreateWindow( "HSPDish ver" hspver, SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED, sx, sy, SDL_WINDOW_OPENGL );
+	window = SDL_CreateWindow( windowtitle, hsp_wposx, hsp_wposy, sx, sy, flags );
 	if ( window==NULL ) {
 		printf("Unable to set window: %s\n", SDL_GetError());
-		return;
+		return -1;
 	}
 	SDL_GL_SetAttribute( SDL_GL_DOUBLEBUFFER, 1 );
 	context = SDL_GL_CreateContext(window);
 	if ( window==NULL ) {
 		printf("Unable to set GLContext: %s\n", SDL_GetError());
-		return;
+		return -1;
 	}
 
 	// 描画APIに渡す
 	hgio_init( 0, sx, sy, p_engine );
 	hgio_clsmode( CLSMODE_SOLID, 0xffffff, 0 );
 
+	if ( sx != hsp_wx || sy != hsp_wy ) {
+#ifndef HSPDISHGP
+		hgio_view( sx, sy );
+		hgio_size( hsp_wx, hsp_wy );
+		hgio_autoscale( autoscale );
+#endif
+	}
+
 	// マルチタッチ初期化
 	//MTouchInit( m_hWnd );
-}
-
-
-void hsp3dish_dialog( char *mes )
-{
-	//MessageBox( NULL, mes, "Error",MB_ICONEXCLAMATION | MB_OK );
-	printf( "%s\n", mes );
+	return 0;
 }
 
 
@@ -341,75 +507,6 @@ int hsp3dish_await( int tick )
 }
 
 
-void hsp3dish_msgfunc( HSPCTX *hspctx )
-{
-	int tick;
-
-	if ( handleEvent() ) {
-		hspctx->runmode = RUNMODE_END;
-	}
-
-	while(1) {
-		// logmes なら先に処理する
-		if ( hspctx->runmode == RUNMODE_LOGMES ) {
-			printf( "%s\r\n",ctx->stmp );
-			hspctx->runmode = RUNMODE_RUN;
-			return;
-		}
-
-		switch( hspctx->runmode ) {
-		case RUNMODE_STOP:
-			return;
-		case RUNMODE_WAIT:
-			tick = hgio_gettick();
-			hspctx->runmode = code_exec_wait( tick );
-		case RUNMODE_AWAIT:
-			//	高精度タイマー
-			tick = hgio_gettick();					// すこし早めに抜けるようにする
-			if ( code_exec_await( tick ) != RUNMODE_RUN ) {
-					SDL_Delay( ( hspctx->waittick - tick) / 2 );
-			} else {
-				tick = hgio_gettick();
-				while( tick < hspctx->waittick ) {	// 細かいwaitを取る
-					SDL_Delay(1);
-					tick = hgio_gettick();
-				}
-				hspctx->lasttick = tick;
-				hspctx->runmode = RUNMODE_RUN;
-#ifndef HSPDEBUG
-				if ( ctx->hspstat & HSPSTAT_SSAVER ) {
-					if ( hsp_sscnt ) hsp_sscnt--;
-				}
-#endif
-			}
-			break;
-//		case RUNMODE_END:
-//			throw HSPERR_NONE;
-		case RUNMODE_RETURN:
-			throw HSPERR_RETURN_WITHOUT_GOSUB;
-		case RUNMODE_INTJUMP:
-			throw HSPERR_INTJUMP;
-		case RUNMODE_ASSERT:
-			hspctx->runmode = RUNMODE_STOP;
-#ifdef HSPDEBUG
-			hsp3dish_debugopen();
-#endif
-			break;
-	//	case RUNMODE_LOGMES:
-		case RUNMODE_RESTART:
-		{
-			//	rebuild window
-
-			hspctx->runmode = RUNMODE_RUN;
-			break;
-		}
-		default:
-			return;
-		}
-	}
-}
-
-
 /*----------------------------------------------------------*/
 //		デバイスコントロール関連
 /*----------------------------------------------------------*/
@@ -474,6 +571,53 @@ static void hsp3dish_savelog( void )
 	}
 }
 #endif
+
+int hsp3dish_init_sub( int sx, int sy, int autoscale )
+{
+	//		システム関連の初期化(HSP以外)
+	//
+	int res;
+	for (int i = 0; i < SDLK_SCANCODE_MAX; i++) {
+		keys[i] = false;
+	}
+
+	//		Register Type
+	//
+	drawflag = 0;
+	ctx->msgfunc = hsp3dish_msgfunc;
+
+	//		Initalize Window
+	//
+	res = hsp3dish_initwindow( NULL, sx, sy, autoscale, "HSPDish ver" hspver );
+	if (res) return res;
+
+//	hsp3typeinit_dllcmd( code_gettypeinfo( TYPE_DLLFUNC ) );
+//	hsp3typeinit_dllctrl( code_gettypeinfo( TYPE_DLLCTRL ) );
+
+#ifdef HSPDISHGP
+	//		Initalize gameplay
+	//
+	game = new gamehsp;
+
+	gameplay::Logger::set(gameplay::Logger::LEVEL_INFO, logfunc);
+	gameplay::Logger::set(gameplay::Logger::LEVEL_WARN, logfunc);
+	gameplay::Logger::set(gameplay::Logger::LEVEL_ERROR, logfunc);
+
+
+	//	platform = gameplay::Platform::create( game, NULL, hsp_wx, hsp_wy, false );
+	platform = gameplay::Platform::create( game, NULL, hsp_wx, hsp_wy, false );
+	if ( platform == NULL ) {
+		//hsp3dish_dialog( (char *)gplog.c_str() );
+		hsp3dish_dialog( "OpenGL initalize failed." );
+		hsp3dish_savelog();
+		return 1;
+	}
+	platform->enterMessagePump();
+	game->frame();
+#endif
+
+	return 0;
+}
 
 int hsp3dish_init( char *startfile )
 {
@@ -551,54 +695,22 @@ int hsp3dish_init( char *startfile )
 	if ( sy == 0 ) sy = hsp_wy;
 
 //#endif
-
-	for (int i = 0; i < SDLK_SCANCODE_MAX; i++) {
-		keys[i] = false;
-	}
-
 	ctx = &hsp->hspctx;
 
-	//		Register Type
-	//
-	drawflag = 0;
-	ctx->msgfunc = hsp3dish_msgfunc;
-
-	//		Initalize Window
-	//
-	hsp3dish_initwindow( NULL, sx, sy, "HSPDish ver" hspver );
-
-	if ( sx != hsp_wx || sy != hsp_wy ) {
-#ifndef HSPDISHGP
-		hgio_view( hsp_wx, hsp_wy );
-		hgio_size( sx, sy );
-		hgio_autoscale( autoscale );
-#endif
-	}
-
-//	hsp3typeinit_dllcmd( code_gettypeinfo( TYPE_DLLFUNC ) );
-//	hsp3typeinit_dllctrl( code_gettypeinfo( TYPE_DLLCTRL ) );
-
-#ifdef HSPDISHGP
-	//		Initalize gameplay
-	//
-	game = new gamehsp;
-
-	gameplay::Logger::set(gameplay::Logger::LEVEL_INFO, logfunc);
-	gameplay::Logger::set(gameplay::Logger::LEVEL_WARN, logfunc);
-	gameplay::Logger::set(gameplay::Logger::LEVEL_ERROR, logfunc);
-
-
-	//	platform = gameplay::Platform::create( game, NULL, hsp_wx, hsp_wy, false );
-	platform = gameplay::Platform::create( game, NULL, hsp_wx, hsp_wy, false );
-	if ( platform == NULL ) {
-		//hsp3dish_dialog( (char *)gplog.c_str() );
-		hsp3dish_dialog( "OpenGL initalize failed." );
-		hsp3dish_savelog();
+	// Slightly different SDL initialization
+	if ( SDL_Init(SDL_INIT_VIDEO) != 0 ) {
+		hsp3dish_dialog("Unable to initialize SDL");
 		return 1;
 	}
-	platform->enterMessagePump();
-	game->frame();
-#endif
+
+	//		Window initalize
+	//
+	hsp_wstyle = 0;
+	hsp_wposx = SDL_WINDOWPOS_UNDEFINED;
+	hsp_wposy = SDL_WINDOWPOS_UNDEFINED;
+	if ( hsp3dish_init_sub(sx,sy,autoscale) ) {
+		return 1;
+	}
 
 	//		Initalize GUI System
 	//
@@ -609,21 +721,19 @@ int hsp3dish_init( char *startfile )
 
 #ifdef USE_OBAQ
 	{
-	HSP3TYPEINFO *tinfo = code_gettypeinfo( -1 );// TYPE_USERDEF
+	HSP3TYPEINFO *tinfo = code_gettypeinfo( TYPE_USERDEF );
 	tinfo->hspctx = ctx;
 	tinfo->hspexinfo = exinfo;
 	hsp3typeinit_dw_extcmd( tinfo );
 	}
 #endif
 
-#if 1
 	{
 	HSP3TYPEINFO *tinfo = code_gettypeinfo( -1 ); //TYPE_USERDEF
 	tinfo->hspctx = ctx;
 	tinfo->hspexinfo = exinfo;
 	hsp3typeinit_sock_extcmd( tinfo );
 	}
-#endif
 
 	//		Initalize DEVINFO
 	HSP3DEVINFO *devinfo;
@@ -640,39 +750,6 @@ int hsp3dish_init( char *startfile )
 #endif
 
 	return 0;
-}
-
-
-static void hsp3dish_bye( void )
-{
-	//		Window関連の解放
-	//
-	hsp3dish_drawoff();
-
-#ifdef HSPDISHGP
-	//		gameplay関連の解放
-	//
-	if (platform != NULL) {
-		platform->shutdownInternal();
-		delete platform;
-	}
-
-	if (GetSysReq(SYSREQ_LOGWRITE)) {
-		hsp3dish_savelog();
-	}
-
-	if (game != NULL) {
-		//game->exit();
-	    delete game;
-	}
-#endif
-
-#ifdef DEVCTRL_IO
-	hsp3dish_termdevinfo_io();
-#endif
-	//		HSP関連の解放
-	//
-	if ( hsp != NULL ) { delete hsp; hsp = NULL; }
 }
 
 
@@ -696,6 +773,64 @@ void hsp3dish_error( void )
 	}
 	hsp3dish_debugopen();
 	hsp3dish_dialog( errmsg );
+}
+
+
+static void hsp3dish_bye_sub( void )
+{
+	//		クリーンアップ
+	//
+#ifdef HSPERR_HANDLE
+	try {
+#endif
+		hsp->Dispose();
+#ifdef HSPERR_HANDLE
+	}
+	catch (HSPERROR code) {						// HSPエラー例外処理
+		hsp->hspctx.err = code;
+		hsp3dish_error();
+	}
+#endif
+
+	//		Window関連の解放
+	//
+	hsp3dish_drawoff();
+	hgio_term();
+
+#ifdef HSPDISHGP
+	//		gameplay関連の解放
+	//
+	if (platform != NULL) {
+		platform->shutdownInternal();
+		delete platform;
+	}
+	if (game != NULL) {
+		//game->exit();
+	    delete game;
+	}
+#endif
+
+	if (window) {
+		SDL_DestroyWindow(window);
+	}
+}
+
+static void hsp3dish_bye( void )
+{
+#ifdef HSPDISHGP
+	if (GetSysReq(SYSREQ_LOGWRITE)) {
+		hsp3dish_savelog();
+	}
+#endif
+	hsp3dish_bye_sub();
+	SDL_Quit();
+
+#ifdef DEVCTRL_IO
+	hsp3dish_termdevinfo_io();
+#endif
+	//		HSP関連の解放
+	//
+	if ( hsp != NULL ) { delete hsp; hsp = NULL; }
 }
 
 
@@ -735,4 +870,97 @@ int hsp3dish_exec( void )
 	hsp3dish_bye();
 	return endcode;
 }
+
+
+void hsp3dish_msgfunc( HSPCTX *hspctx )
+{
+	int tick;
+
+	if ( handleEvent() ) {
+		hspctx->runmode = RUNMODE_END;
+	}
+
+	while(1) {
+		// logmes なら先に処理する
+		if ( hspctx->runmode == RUNMODE_LOGMES ) {
+			printf( "%s\r\n",ctx->stmp );
+			hspctx->runmode = RUNMODE_RUN;
+			return;
+		}
+
+		switch( hspctx->runmode ) {
+		case RUNMODE_STOP:
+			return;
+		case RUNMODE_WAIT:
+			tick = hgio_gettick();
+			hspctx->runmode = code_exec_wait( tick );
+		case RUNMODE_AWAIT:
+			//	高精度タイマー
+			tick = hgio_gettick();					// すこし早めに抜けるようにする
+			if ( code_exec_await( tick ) != RUNMODE_RUN ) {
+					SDL_Delay( ( hspctx->waittick - tick) / 2 );
+			} else {
+				tick = hgio_gettick();
+				while( tick < hspctx->waittick ) {	// 細かいwaitを取る
+					SDL_Delay(1);
+					tick = hgio_gettick();
+				}
+				hspctx->lasttick = tick;
+				hspctx->runmode = RUNMODE_RUN;
+#ifndef HSPDEBUG
+				if ( ctx->hspstat & HSPSTAT_SSAVER ) {
+					if ( hsp_sscnt ) hsp_sscnt--;
+				}
+#endif
+			}
+			break;
+//		case RUNMODE_END:
+//			throw HSPERR_NONE;
+		case RUNMODE_RETURN:
+			throw HSPERR_RETURN_WITHOUT_GOSUB;
+		case RUNMODE_INTJUMP:
+			throw HSPERR_INTJUMP;
+		case RUNMODE_ASSERT:
+			hspctx->runmode = RUNMODE_STOP;
+#ifdef HSPDEBUG
+			hsp3dish_debugopen();
+#endif
+			break;
+	//	case RUNMODE_LOGMES:
+		case RUNMODE_RESTART:
+		{
+			//	rebuild window
+
+			Bmscr* bm;
+			bm = (Bmscr*)exinfo->HspFunc_getbmscr(0);
+			hsp_wx = bm->sx;
+			hsp_wy = bm->sy;
+			hsp_wposx = bm->cx;
+			hsp_wposy = bm->cy;
+			if ( hsp_wposx < 0 ) hsp_wposx = SDL_WINDOWPOS_UNDEFINED;
+			if ( hsp_wposy < 0 ) hsp_wposy = SDL_WINDOWPOS_UNDEFINED;
+			hsp_wstyle = bm->buffer_option;
+			hsp3dish_bye_sub();
+
+			if ( hsp_wstyle & 0x100 ) {
+				SDL_DisplayMode dm;
+				SDL_GetDesktopDisplayMode(0,&dm);
+				hsp_wx = dm.w; hsp_wy = dm.h;
+			}
+			if ( hsp3dish_init_sub(hsp_wx,hsp_wy,0) ) {
+				return;
+			}
+#ifdef USE_OBAQ
+			HSP3TYPEINFO *tinfo = code_gettypeinfo( TYPE_USERDEF );
+			hsp3typeinit_dw_restart( tinfo );
+#endif
+			hspctx->runmode = RUNMODE_RUN;
+			break;
+		}
+		default:
+			return;
+		}
+	}
+}
+
 

@@ -1,7 +1,7 @@
 %ver
-3.5
+3.6
 %date
-2017/09/08
+2020/06/04
 %group
 入出力制御命令
 
@@ -9,13 +9,13 @@
 ユーザー拡張命令
 
 %note
-mod_joystick.asをインクルードすること。
+mod_joystick2.asをインクルードすること。
 
 %author
 MIA / onitama
 
 %dll
-mod_joystick
+mod_joystick2
 
 %port
 Win
@@ -66,15 +66,18 @@ jstick
 stick命令互換の値を取得する
 
 %prm
-p1, p2
+p1, p2, p3
 p1 : 代入する変数
-p2 : ポート番号
+p2 : 非トリガータイプキー指定
+p3 : ポート番号
 
 %inst
 stick命令互換の値を変数に返します。
-エラーが発生した場合は、以降の取得がキャンセルされ、変数「modjoy_err」が1になります。
-変数「modjoy_err」が0の間はジョイスティックの値を取りにいきます。
-
+stick命令によるキーボードの取得も同時に行い、ジョイスティックとキーボードの入力に同時に対応します。
+p1,p2で指定されたパラメーターは、stick命令と同じ機能を持ちます。
+エラーが発生した場合は、以降の取得がキャンセルされ、再度接続された場合に取得を再開します。
+使用する場合は、「#include "mod_joystick2.as"」を記述してください。
+(従来の「mod_joystick.as」を指定した場合は、以前の古い仕様で動作します。)
 
 %href
 joyGetPosEx

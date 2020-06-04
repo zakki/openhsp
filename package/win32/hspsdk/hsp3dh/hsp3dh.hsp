@@ -65,6 +65,8 @@
 	js_memsize=0
 	hspjsname="hsp3dish.js"
 	js_gpmode=0
+	js_webasm = 0
+	js_debug = 0
 
 	ios_proj=""
 	ios_org="hsp3dish"
@@ -76,7 +78,6 @@
 	flag_hgimg=0
 	flag_sensor=0
 	flag_xhgimg=0
-	js_webasm = 0
 
 	get_hsp_appdata_path app_dir
 
@@ -535,6 +536,7 @@
 	objsize 160,24
 	chkbox "HGIMG4を使用する",js_gpmode
 	chkbox "WebAssemblyを使用する",js_webasm
+	chkbox "デバッグ情報を出力する",js_debug
 
 	pos 312,118
 	objsize 160,48
@@ -1722,6 +1724,8 @@ hspproj.xcodeproj\\project.pbxproj"}
 
 	s1=js_fname
 	hspcomp_mode=4
+	if js_debug : hspcomp_mode|=1
+
 	gosub *hspcomp
 	if res!=0 : dialog "エラーが発生しました。" : goto *cnv_jsok
 
