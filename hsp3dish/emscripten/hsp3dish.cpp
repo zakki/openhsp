@@ -645,11 +645,48 @@ int hsp3dish_init( char *startfile )
 }
 
 
+void hsp3dish_error( void )
+{
+	char errmsg[1024];
+	char *msg;
+	char *fname;
+	HSPERROR err;
+	int ln;
+	err = code_geterror();
+	ln = code_getdebug_line();
+	msg = hspd_geterror(err);
+	fname = code_getdebug_name();
+
+	if ( ln < 0 ) {
+		sprintf( errmsg, "#Error %d --> %s\n",(int)err,msg );
+		fname = NULL;
+	} else {
+		sprintf( errmsg, "#Error %d in line %d (%s)\n-->%s\n",(int)err, ln, fname, msg );
+	}
+	hsp3dish_debugopen();
+	hsp3dish_dialog( errmsg );
+}
+
+
 static void hsp3dish_bye( void )
 {
 	//		Window関連の解放
 	//
 	hsp3dish_drawoff();
+
+	//		クリーンアップ
+	//
+#ifdef HSPERR_HANDLE
+	try {
+#endif
+		hsp->Dispose();
+#ifdef HSPERR_HANDLE
+	}
+	catch (HSPERROR code) {						// HSPエラー例外処理
+		hsp->hspctx.err = code;
+		hsp3dish_error();
+	}
+#endif
 
 	//		タイマーの開放
 	//
@@ -676,29 +713,6 @@ static void hsp3dish_bye( void )
 	// 	DestroyWindow( m_hWnd );
 	// 	m_hWnd = NULL;
 	// }
-}
-
-
-void hsp3dish_error( void )
-{
-	char errmsg[1024];
-	char *msg;
-	char *fname;
-	HSPERROR err;
-	int ln;
-	err = code_geterror();
-	ln = code_getdebug_line();
-	msg = hspd_geterror(err);
-	fname = code_getdebug_name();
-
-	if ( ln < 0 ) {
-		sprintf( errmsg, "#Error %d --> %s\n",(int)err,msg );
-		fname = NULL;
-	} else {
-		sprintf( errmsg, "#Error %d in line %d (%s)\n-->%s\n",(int)err, ln, fname, msg );
-	}
-	hsp3dish_debugopen();
-	hsp3dish_dialog( errmsg );
 }
 
 
