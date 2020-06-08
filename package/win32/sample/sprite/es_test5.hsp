@@ -35,6 +35,11 @@
 	myx=100:myy=100
 	es_set 0,myx,myy,0
 
+*gmain2
+	redraw 0
+	redraw 1:await 1000/30
+	stick key:if (key&32)=0 : goto *gmain2
+
 	a=0
 	tt=0
 	bgx=0
@@ -63,7 +68,7 @@
 	gcnt+
 	if gres=0 : goto *gmain
 	gwt++
-	if gwt<100 : goto *gmain
+	goto *gmain
 
 *owari
 	es_bye
