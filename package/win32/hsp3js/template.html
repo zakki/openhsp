@@ -351,10 +351,10 @@ $$$requestonload$$$
 
 })();
 
-				window.audioContext = new (window.AudioContext || window.webkitAudioContext)();
 
 				var fixAudioContext = function (e) {
-					var context = window.audioContext;
+				        SDL.openAudioContext();
+					var context = SDL.audioContext;
 					if (context) {
 						// Create empty buffer
 						var buffer = context.createBuffer(1, 1, 22050);
@@ -370,21 +370,27 @@ $$$requestonload$$$
 						} else if (source.noteOn) {
 							source.noteOn(0);
 						}
-
-
 						//const soundEffect = new Audio();
 						//soundEffect.play();
-
-
+					      console.log('audio unlock:');
 					}
+
+					var target = document;
+					//var target = document.getElementById('canvas');
+
 					// Remove events
-					document.removeEventListener('touchstart', fixAudioContext);
-					document.removeEventListener('touchend', fixAudioContext);
+					target.removeEventListener('touchstart', fixAudioContext);
+					target.removeEventListener('touchend', fixAudioContext);
+					target.removeEventListener('mousedown', fixAudioContext);
 				};
+				//var target = document.getElementById('canvas');
+				var target = document;
 				// iOS 6-8
-				document.addEventListener('touchstart', fixAudioContext);
+				target.addEventListener('touchstart', fixAudioContext);
 				// iOS 9
-				document.addEventListener('touchend', fixAudioContext);
+				target.addEventListener('touchend', fixAudioContext);
+				target.addEventListener('mousedown', fixAudioContext);
+
 
     </script>
     <script async type="text/javascript" src="hsp3dish.js"></script>
