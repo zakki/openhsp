@@ -9,7 +9,7 @@
 #include "mod_appconfig.as"
 
 #define APPTITLE "HSP3Dish helper"
-#define APPVER "1.73"
+#define APPVER "1.74"
 #define APP_CONF "\\hsp3dh.cfg"
 
 #define AND_LIBVER 111			; android HSPランタイムの内部バージョン
@@ -1816,8 +1816,8 @@ hspproj.xcodeproj\\project.pbxproj"}
 		noteget ff,cnt
 		if instr(ff,0,".ax")>0 : ff=getpath(ff,8)
 		i=jspack_start(cnt):i2=i+jspack_size(cnt)
-		s1+="      new DataRequest("+i+", "+i2+", 0, 0).open('GET', '/"+ff+"');\n"
-		s2+="          DataRequest.prototype.requests[\"/"+ff+"\"].onload();\n"
+		s1+="      new DataRequest("+i+", "+i2+", 0, 0).open('GET', '"+ff+"');\n"
+		s2+="          DataRequest.prototype.requests[\""+ff+"\"].onload();\n"
 	loop
 
 	strrep outbuf, "$$$datarequest$$$", s1
