@@ -2,8 +2,8 @@
 //
 //	hsp3code.cpp header
 //
-#ifndef __hsp3code_h
-#define __hsp3code_h
+#ifndef HSP3CODE_H
+#define HSP3CODE_H
 
 #include "hsp3debug.h"
 #include "hsp3struct.h"
@@ -12,13 +12,17 @@ extern PVal *mpval;
 
 void code_init( void );
 void code_bye( void );
+void code_cleanup(void);
 void code_termfunc( void );
 void code_setctx( HSPCTX *ctx );
 void code_resetctx( HSPCTX *ctx );
 HSPCTX *code_getctx( void );
 void code_setpc( const unsigned short *pc );
 void code_setpci( const unsigned short *pc );
-void code_call( const unsigned short *pc );
+void code_call(const unsigned short *pc);
+void code_callback(const unsigned short *pc);
+void cmdfunc_return( void );
+unsigned short *code_getpcbak( void );
 
 int code_execcmd( void );
 int code_execcmd2( void );
@@ -68,6 +72,7 @@ char *code_getsptr( int *type );
 
 int code_debug_init( void );
 int code_getdebug_line( void );
+int code_getdebug_line( unsigned short *pt );
 char *code_getdebug_name( void );
 int code_getdebug_seekvar( const char *name );
 char *code_getdebug_varname( int val_id );
@@ -92,6 +97,7 @@ int code_catcherror(HSPERROR code);
 HSP3TYPEINFO *code_gettypeinfo( int type );
 void code_enable_typeinfo( HSP3TYPEINFO *info );
 
+int code_getdbgmode( void );
 HSP3DEBUG *code_getdbg( void );
 char *code_inidbg( void );
 void code_adddbg( char *name, int val );
@@ -103,16 +109,15 @@ char *code_dbgvarinf( char *target, int option );
 void code_dbgcurinf( void );
 void code_dbgclose( char *buf );
 int code_dbgset( int id );
+char *code_dbgcallstack( void );
 void code_dbgtrace( void );
 
 void code_delstruct( PVal *in_pval, APTR in_aptr );
 void code_delstruct_all( PVal *pval );
 
-/*
-	rev 43
-	mingwでのエラーに対処。
-//  関数ポインタ -> void *　への変換用。 
-*/
-#define fpconv( fp )  ( reinterpret_cast< void * >( reinterpret_cast< long >( fp ) ) )
+#define fpconv( fp )  ( reinterpret_cast< void * >(fp) )
+
+char* code_strp(int dsptr);
+int code_strexchange(char *fname, int option);
 
 #endif

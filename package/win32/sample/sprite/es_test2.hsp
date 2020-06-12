@@ -19,7 +19,7 @@
 	gsel 0
 
 	es_set 0,320,200,0			; スプライトを配置
-	es_setrot 0,rot,4,4			; 4x4倍サイズで表示する
+	es_setrot 0,rot,400,400			; 4x4倍サイズで表示する
 	es_effect 0,$380			; 半透明 ( gmode 3,,,128 相当 )
 	rot=0
 

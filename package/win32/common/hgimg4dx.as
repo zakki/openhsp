@@ -537,5 +537,12 @@
 #define global ESSPOPT_ADDCOLOR (16)
 #define global ESSPOPT_SUBCOLOR (32)
 
+#define global ESDRAW_NORMAL (0)
+#define global ESDRAW_NOMOVE (1)
+#define global ESDRAW_NOANIM (2)
+#define global ESDRAW_NOCALLBACK (4)
+#define global ESDRAW_NODISP (8)
+#define global ESDRAW_NOSORT (16)
+
 #endif
 

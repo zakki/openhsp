@@ -35,11 +35,6 @@
 	myx=100:myy=100
 	es_set 0,myx,myy,0
 
-*gmain2
-	redraw 0
-	redraw 1:await 1000/30
-	stick key:if (key&32)=0 : goto *gmain2
-
 	a=0
 	tt=0
 	bgx=0
@@ -47,7 +42,7 @@
 	gres=0
 	gwt=0
 *gmain
-	stick ky,$1f				; キーの情報を取得
+	stick ky,$3f				; キーの情報を取得
 	if ky&$80 : goto *owari			; [ESC]中断チェック
 
 	redraw 0

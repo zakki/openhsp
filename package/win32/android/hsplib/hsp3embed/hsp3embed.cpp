@@ -46,7 +46,7 @@ extern "C" {
 	static void logfunc( gameplay::Logger::Level level, const char *msg )
 	{
 		gplog += msg;
-#ifdef HSPIOS
+#if defined(HSPIOS)||defined(HSPNDK)
         Alert( msg );
 #endif
 	}

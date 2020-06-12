@@ -22,7 +22,7 @@
 	gsel 0
 
 	myx=300:myy=200
-	es_set 0,myx,myy,0		; メインのスプライト
+	es_set 0,myx,myy,0			; メインのスプライト
 
 *main
 	stick ky,$1f				; カーソルキーの情報を取得
