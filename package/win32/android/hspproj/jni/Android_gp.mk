@@ -42,7 +42,6 @@ PlatformAndroid.cpp \
 ../../hsplib36b3/hsp3/ndk/fontsystem.cpp \
 ../../hsplib36b3/hsp3/ndk/supio_ndk.cpp \
 ../../hsplib36b3/hsp3/ndk/hsp3ext_ndk.cpp \
-../../hsplib36b3/hsp3/ndk/stb_image.c \
 ../../hsplib36b3/hsp3/ndk/mmman.cpp \
 ../../hsplib36b3/hsp3/ndk/webtask_ndk.cpp \
 ../../hsplib36b3/hsp3/ndkgp/hgiox.cpp \
@@ -141,6 +140,7 @@ PlatformAndroid.cpp \
 ../../gameplay/src/Slider.cpp \
 ../../gameplay/src/Sprite.cpp \
 ../../gameplay/src/SpriteBatch.cpp \
+../../gameplay/src/stb_image.cpp \
 ../../gameplay/src/Technique.cpp \
 ../../gameplay/src/Terrain.cpp \
 ../../gameplay/src/TerrainPatch.cpp \

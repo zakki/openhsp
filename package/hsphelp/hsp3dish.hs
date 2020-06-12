@@ -11,7 +11,7 @@
 hsp3dish.asをインクルードすること。
 
 %date
-2020/01/07
+2020/06/10
 %author
 onitama
 %dll

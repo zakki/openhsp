@@ -25,7 +25,7 @@
 	repeat 100
 	a=rnd(64):spd=rnd(10)*25+250
 	x=rnd(640):y=rnd(480)
-	es_set cnt,x,y,0
+	es_set cnt,x,y,1
 	es_adir cnt,a,spd
 	es_flag cnt,ESSPFLAG_XBOUNCE+ESSPFLAG_YBOUNCE+ESSPFLAG_MOVE	; X,YƒoƒEƒ“ƒhİ’è
 	loop

@@ -1142,7 +1142,7 @@ static void customstack_delete( STRUCTDAT *st, char *stackptr )
 }
 
 
-static void cmdfunc_return( void )
+void cmdfunc_return( void )
 {
 	//		return execute
 	//
