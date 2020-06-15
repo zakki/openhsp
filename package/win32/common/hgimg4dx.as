@@ -12,6 +12,10 @@
 #define global screen_offscreen (32)
 #define global screen_usergcopy (64)
 
+#define global celbitmap_bgr (0)
+#define global celbitmap_rgb (1)
+#define global celbitmap_capture (16)
+
 #const global FILTER_NONE 0
 #const global FILTER_LINEAR 1
 #const global FILTER_LINEAR2 2
