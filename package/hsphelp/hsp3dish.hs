@@ -473,9 +473,10 @@ mes
 celbitmap
 •Ï”ƒoƒbƒtƒ@‚ð‰æ‘œƒf[ƒ^‚Æ‚µ‚Ä“K—p‚·‚é
 %prm
-p1,var
+p1,var,p2
 p1(0)   : ƒEƒCƒ“ƒhƒEID
 var     : ƒCƒ[ƒW‚ð’u‚«Š·‚¦‚é‚½‚ß‚Ì”z—ñ•Ï”
+p2(0)   : “®ìƒIƒvƒVƒ‡ƒ“
 %inst
 •Ï”ƒoƒbƒtƒ@‚Ì“à—e‚ð‰æ‘œƒf[ƒ^‚Æ‚µ‚ÄŽw’è‚³‚ê‚½ƒIƒtƒXƒNƒŠ[ƒ“ƒoƒbƒtƒ@‚ð’u‚«Š·‚¦‚Ü‚·B
 ‚ ‚ç‚©‚¶‚ßAbuffer–½—ß‚É‚æ‚èì¬‚µ‚½ƒIƒtƒXƒNƒŠ[ƒ“ƒoƒbƒtƒ@‚ÆA’u‚«Š·‚¦‚é‚½‚ß‚Ì•Ï”ƒoƒbƒtƒ@‚ð‰Šú‰»‚·‚é•K—v‚ª‚ ‚è‚Ü‚·B
@@ -490,9 +491,21 @@ dim–½—ß‚É‚æ‚èA‚PŽŸŒ³”z—ñ‚ð‰Šú‰»‚µ‚Äì¬‚µ‚Ä‚­‚¾‚³‚¢Bì¬‚·‚éƒTƒCƒY‚ÍAƒIƒtƒXƒ
 ^p
 ‚±‚ê‚ÅAcelbitmap–½—ß‚ðŽg—p‚·‚é€”õ‚ª®‚¢‚Ü‚µ‚½B
 celbitmap–½—ß‚É‚æ‚èAƒIƒtƒXƒNƒŠ[ƒ“ƒoƒbƒtƒ@‚ÌID‚Æ”z—ñ•Ï”‚ðŽw’è‚·‚é‚±‚Æ‚ÅA•Ï”ƒoƒbƒtƒ@‚Ì“à—e‚ª‚»‚Ì‚Ü‚Ü‰æ‘œƒCƒ[ƒW‚Æ‚µ‚Ä“K—p‚³‚ê‚Ü‚·B
-•Ï”ƒoƒbƒtƒ@‚ÍA1—v‘f‚ ‚½‚è1ƒhƒbƒg‚Æ‚È‚è‚Ü‚·B1ƒhƒbƒg‚ÍA32bit‚Ì—v‘f‚ðA,R,G,B‚»‚ê‚¼‚ê8bit’PˆÊ‚ÅŠi”[‚³‚ê‚éARGBŒ`Ž®‚Ìƒf[ƒ^‚Æ‚È‚è‚Ü‚·B
-‚½‚Æ‚¦‚ÎAu$ff204080v(16i”)‚ðŽw’è‚µ‚½ê‡‚ÍAA=$ff(255)AR=$20(32)AG=$40(64)AB=$80(128)‚Æ‚È‚è‚Ü‚·B(ƒJƒbƒR“à‚Í10i”)
+•Ï”ƒoƒbƒtƒ@‚ÍA1—v‘f‚ ‚½‚è1ƒhƒbƒg‚Æ‚È‚è‚Ü‚·B1ƒhƒbƒg‚ÍA32bit‚Ì—v‘f‚ðR,G,B,A‚»‚ê‚¼‚ê8bit’PˆÊ‚ÅŠi”[‚³‚ê‚éRGBŒ`Ž®‚Ìƒf[ƒ^‚Æ‚È‚è‚Ü‚·B
+‚½‚Æ‚¦‚ÎAu$ff204080v(16i”)‚ðŽw’è‚µ‚½ê‡‚ÍAA=$ff(255)AB=$20(32)AG=$40(64)AR=$80(128)‚Æ‚È‚è‚Ü‚·B(ƒJƒbƒR“à‚Í10i”)
 ‰æ‘œƒf[ƒ^‚Ì’u‚«Š·‚¦‚ÍAƒRƒXƒg‚Ì‚‚¢ˆ—‚É‚È‚é‚½‚ßA‘å‚«‚ÈƒTƒCƒY‚ÌƒCƒ[ƒW‚ð’u‚«Š·‚¦‚éê‡AƒtƒŒ[ƒ€ƒŒ[ƒg‚ª‰º‚ª‚é‚±‚Æ‚ª‚ ‚è‚Ü‚·‚Ì‚Å’ˆÓ‚µ‚Ä‚­‚¾‚³‚¢B
+p2ƒpƒ‰ƒ[ƒ^[‚É‚æ‚èA’u‚«Š·‚¦‚ÌŒ`Ž®‚â“®ì‚ðŽw’è‚·‚é‚±‚Æ‚ª‚Å‚«‚Ü‚·B
+^p
+ ’l  ƒ}ƒNƒ             “®ì
+---------------------------------------------------------
+  0  celbitmap_rgb      $aabbggrrŒ`Ž®‚Åƒf[ƒ^‚ð•ÛŽ‚·‚é
+  1  celbitmap_bgr      $aarrggbbŒ`Ž®‚Åƒf[ƒ^‚ð•ÛŽ‚·‚é
+  16 celbitmap_capture  •`‰æ‰æ–Ê‚Ì“à—e‚ð•Ï”‚É“Ç‚Ýo‚·
+^p
+
+’Êí‚ÍAOpenGL‚Ì•W€‚É‡‚í‚¹‚½celbitmap_rgb‚ÌŒ`Ž®‚ªŽg—p‚³‚ê‚Ü‚·BƒIƒvƒVƒ‡ƒ“‚Écelbitmap_bgr‚ðŽw’è‚µ‚½ê‡‚ÍADirectX•W€‚É‡‚í‚¹‚½ARGB‚Ì•À‚Ñ‚É‚È‚è‚Ü‚·B
+celbitmap_capture‚ðŽw’è‚µ‚½ê‡‚ÍA•`‰ææ‚Ì‰æ–Êã‚Ìƒf[ƒ^‚ð”z—ñ•Ï”‚É“Ç‚Ýo‚µ‚Ü‚·B(“Ç‚Ýo‚µ‚ÌƒTƒCƒY‚ÍƒIƒtƒXƒNƒŠ[ƒ“ƒoƒbƒtƒ@‚ÌƒTƒCƒY‚É‚È‚è‚Ü‚·)
+
 
 %sample
 #include "hsp3dish.as"
