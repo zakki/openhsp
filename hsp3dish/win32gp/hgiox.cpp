@@ -2140,7 +2140,13 @@ static int GetSurface(int x, int y, int sx, int sy, int px, int py, void *res, i
 	//
 	int ybase = nDestHeight - (sy - y);
 
+#ifdef	GP_USE_ANGLE
+	return -1;
+#else
+#if defined(HSPWIN)||defined(HSPLINUX)
 	glReadBuffer(GL_BACK);
+#endif
+#endif
 
 	// OpenGL‚Å‰æ–Ê‚É•`‰æ‚³‚ê‚Ä‚¢‚é“à—e‚ðƒoƒbƒtƒ@‚ÉŠi”[
 	glReadPixels(

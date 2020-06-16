@@ -505,6 +505,7 @@ p2パラメーターにより、置き換えの形式や動作を指定することができます。
 
 通常は、OpenGLの標準に合わせたcelbitmap_rgbの形式が使用されます。オプションにcelbitmap_bgrを指定した場合は、DirectX標準に合わせたARGBの並びになります。
 celbitmap_captureを指定した場合は、描画先の画面上のデータを配列変数に読み出します。(読み出しのサイズはオフスクリーンバッファのサイズになります)
+※celbitmap_captureオプションは、実験的な実装です。現在は、Windows(DirectX版HGIMG4を除く)、Linux版でのみ使用できますのでご了承ください。
 
 
 %sample
