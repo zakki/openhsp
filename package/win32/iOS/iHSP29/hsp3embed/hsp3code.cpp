@@ -1142,7 +1142,7 @@ static void customstack_delete( STRUCTDAT *st, char *stackptr )
 }
 
 
-static void cmdfunc_return( void )
+void cmdfunc_return( void )
 {
 	//		return execute
 	//
@@ -2591,7 +2591,7 @@ int code_exec_await( int tick )
 {
 	//		時間待ち(await)
 	//
-	if ( hspctx->waittick < 0 ) {
+	if ( hspctx->waittick == -1 ) {
 		if ( hspctx->lasttick == 0 ) hspctx->lasttick = tick;
 		hspctx->waittick = hspctx->lasttick + hspctx->waitcount;
 	}
