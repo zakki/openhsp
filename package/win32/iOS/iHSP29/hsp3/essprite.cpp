@@ -16,6 +16,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <math.h>
+#include <algorithm>
 
 #include "essprite.h"
 #include "supio.h"
@@ -58,6 +59,7 @@ int essprite::init(int maxsprite, int maxchr, int rotrate, int maxmap)
 {
 	reset();
 	dotshift = 16;
+	dotshift_base = 1 << dotshift;
 
 	spkaz = maxsprite;
 	if (spkaz <= 0) spkaz = 512;
@@ -237,19 +239,8 @@ void essprite::setResolution(HspWnd* wnd, int sx, int sy)
 	bmscr = wnd->GetBmscr(0);
 	main_sx = sx;
 	main_sy = sy;
-	setWindow(0,0,0,0,0);
-}
 
-
-void essprite::setWindow(int x, int y, int x2, int y2, int cutoff)
-{
-	int sx, sy;
-	tpx = x; tpy = y;
-	sx = x2; if (sx <= 0) sx = main_sx;
-	sy = y2; if (sy <= 0) sy = main_sy;
-	window_sx = sx;
-	window_sy = sy;
-	setArea(-128 , -128 , (sx + 128), (sy + 128));
+	setArea(-128, -128, (sx + 128), (sy + 128));
 	land_x = sx;
 	land_y = sy;
 }
@@ -268,7 +259,7 @@ void essprite::setSize(int p1, int p2, int p3, int p4)
 	rate = p3;
 	if (rate == 0) rate = 100;
 	df_bsx = p1; df_bsy = p2;
-	bsx = df_bsx << dotshift; bsy = df_bsy << dotshift;
+	bsx = df_bsx; bsy = df_bsy;
 	nx = bsx *rate / 100;
 	ny = bsy *rate / 100;
 	df_colx = (bsx - nx) / 2;
@@ -321,6 +312,22 @@ int essprite::setLink(int p1, int p2)
 }
 
 
+void essprite::setSpritePriority(int id, int pri)
+{
+	SPOBJ *sp = getObj(id);
+	if (sp == NULL) return;
+	sp->priority = pri;
+}
+
+
+void essprite::setSpriteCallback(int p1, unsigned short *callback)
+{
+	SPOBJ *sp = getObj(p1);
+	if (sp == NULL) return;
+	sp->sbr = callback;
+}
+
+
 void essprite::clear(int spno)
 {
 	SPOBJ *sp = getObj(spno);
@@ -346,42 +353,43 @@ void essprite::clear(int p1, int p2)
 
 void essprite::setTransparentMode(int tp)
 {
-	bmscr->gmode = 3;
-	bmscr->gfrate = 255;
+	bmscr->gmode = ((tp>>8) & 15 );
+	bmscr->gfrate = ( tp & 255 );
 }
 
 
-int essprite::put(int xx, int yy, int chrno, int tpflag)
+int essprite::put(int xx, int yy, int chrno, int tpflag, int zoomx, int zoomy, int rotz)
 {
 	//		sprite put
 	//
-	int a, x, y, ix, iy, nx, ny;
+	bool deform;
+	int x, y, ix, iy, nx, ny;
+	int vx, vy;
+	double rot;
 
+	deform = false;
 	x = xx; y = yy;
 	if ((chrno < 0) || (chrno >= chrkaz)) return -1;
 	chr = &mem_chr[chrno];
 	nx = chr->bsx; ny = chr->bsy;
 	ix = chr->bx; iy = chr->by;
 
-	if (x < 0) {
-		a = x + nx; if (a <= 0) return -1;
-		x = 0; ix += nx - a; nx = a;
+	if ((zoomx != dotshift_base) || (zoomy != dotshift_base) || (rotz != 0)) {
+		deform = true;
+		x += nx / 2;
+		y += ny / 2;
+		vx = (nx * zoomx) >> dotshift;
+		vy = (ny * zoomy) >> dotshift;
+		rot = pans * -rotz;
 	}
-	a = window_sx - nx;
-	if (x > a) {
-		if (x > window_sx) return -1;
-		nx -= x - a;
+	else {
+		vx = nx; vy = ny;
 	}
 
-	if (y < 0) {
-		a = y + ny; if (a <= 0) return -1;
-		y = 0; iy += ny - a; ny = a;
-	}
-	a = window_sy - ny;
-	if (y > a) {
-		if (y > window_sy) return -1;
-		ny -= y - a;
-	}
+	if ((x + vx) <= 0) return -1;
+	if (x > main_sx) return -1;
+	if ((y + vy) <= 0) return -1;
+	if (y > main_sx) return -1;
 
 	Bmscr* src = hspwnd->GetBmscrSafe(chr->wid);
 	if (src == NULL) return -1;
@@ -392,6 +400,11 @@ int essprite::put(int xx, int yy, int chrno, int tpflag)
 	int tp = tpflag;
 	if (tp < 0) tp = chr->tpflag;
 	setTransparentMode(tp);
+
+	if (deform) {
+		bmscr->FillRotTex(vx, vy, (float)rot, src, ix, iy, nx, ny);
+		return 0;
+	}
 	bmscr->Copy(src, ix, iy, nx, ny);
 	return 0;
 }
@@ -431,14 +444,33 @@ int essprite::find(int chktype, int spno, int endspno, int step)
 int essprite::checkCollisionSub(SPOBJ* sp)
 {
 	int x1, y1;
+	int chrcolx, chrcoly, chrcolsx, chrcolsy;
+
 	chr = &mem_chr[sp->chr];
-	x1 = (sp->xx) + (chr->colx);
-	y1 = (sp->yy) + (chr->coly);
+
+	int zoomx = sp->zoomx;
+	int zoomy = sp->zoomy;
+
+	chrcolx = chr->colx * zoomx;
+	chrcoly = chr->coly * zoomy;
+	chrcolsx = chr->colsx * zoomx;
+	chrcolsy = chr->colsy * zoomy;
+
+	x1 = (sp->xx) + chrcolx;
+	y1 = (sp->yy) + chrcoly;
+
+	if ((zoomx != dotshift_base) || (zoomy != dotshift_base)) {
+		int px = (chr->bsx << dotshift) - (chr->bsx * zoomx);
+		int py = (chr->bsy << dotshift) - (chr->bsy * zoomy);
+		x1 += px / 2;
+		y1 += py / 2;
+	}
+
 	if (colex <= x1) return 0;
 	if (coley <= y1) return 0;
 
-	if ((x1 + chr->colsx) > colx) {
-		if ((y1 + chr->colsy) > coly) {
+	if ((x1 + chrcolsx) > colx) {
+		if ((y1 + chrcolsy) > coly) {
 			return 1;
 		}
 	}
@@ -458,10 +490,28 @@ int essprite::checkCollision(int spno, int chktype)
 	if (ssp==NULL) return -1;
 	chr = getChr(ssp->chr);
 	if (chr == NULL) return -1;
-	colx = (ssp->xx) + (chr->colx);
-	coly = (ssp->yy) + (chr->coly);
-	colex = colx + chr->colsx;
-	coley = coly + chr->colsy;
+
+	int zoomx = ssp->zoomx;
+	int zoomy = ssp->zoomy;
+	int chrcolx, chrcoly, chrcolsx, chrcolsy;
+
+	chrcolx = chr->colx * zoomx;
+	chrcoly = chr->coly * zoomy;
+	chrcolsx = chr->colsx * zoomx;
+	chrcolsy = chr->colsy * zoomy;
+
+	colx = (ssp->xx) + chrcolx;
+	coly = (ssp->yy) + chrcoly;
+
+	if ((zoomx != dotshift_base) || (zoomy != dotshift_base)) {
+		int px = (chr->bsx << dotshift) - (chr->bsx * zoomx);
+		int py = (chr->bsy << dotshift) - (chr->bsy * zoomy);
+		colx += px / 2;
+		coly += py / 2;
+	}
+
+	colex = colx + chrcolsx;
+	coley = coly + chrcolsy;
 
 	SPOBJ* sp = getObj(0);
 	if (sp == NULL) return -1;
@@ -532,12 +582,12 @@ int essprite::modifySpriteAxis(int spno, int endspno, int type, int x, int y, in
 }
 
 
-int essprite::drawSub(SPOBJ *sp)
+int essprite::drawSubMove(SPOBJ *sp, int mode)
 {
 	//		1 sprite draw (on sp)
 	//
 	int fl, x, y, land,res, xx, yy, prevxx, prevyy;
-	int next, bsx, bsy;
+	int bsx, bsy;
 
 	//		flag pre check
 	//
@@ -589,8 +639,7 @@ int essprite::drawSub(SPOBJ *sp)
 					}
 				}
 				else {
-					land = tpy << dotshift;
-					if (yy < land) {
+					if (yy < 0) {
 						sp->yy = prevyy;
 						y = abs(sp->py);
 						if (y < 0) y = 0;
@@ -621,8 +670,7 @@ int essprite::drawSub(SPOBJ *sp)
 					}
 				}
 				else {
-					land = tpx << dotshift;
-					if (xx < land) {
+					if (xx < 0) {
 						sp->xx = prevxx;
 						x = abs(sp->px);
 						if (x < 0) x = 0;
@@ -656,7 +704,6 @@ int essprite::drawSub(SPOBJ *sp)
 		}
 	}
 
-
 	//		Flag blink check
 	//
 	if (fl & 255) {
@@ -664,26 +711,51 @@ int essprite::drawSub(SPOBJ *sp)
 		if ((fl & 255) == 0) fl = 0;
 		if ((fl & 255) == 128) fl ^= 128;
 		sp->fl = fl;
-		if ((fl & (ESSPFLAG_BLINK|1)) == 1) goto nodraw;
 	}
+
+	return res;
+}
+
+
+int essprite::drawSubPut(SPOBJ *sp, int mode)
+{
+	//		1 sprite draw (on sp)
+	//
+	int res = 0;
+	int fl,x,y,xx,yy;
+	int next;
+
+	fl = sp->fl;
+	if (fl & ESSPFLAG_NODISP) return 0;
+	if ((fl & (ESSPFLAG_BLINK | 1)) == 1) return 0;
+
+	xx = sp->xx;
+	yy = sp->yy;
+
+	getSpriteParentAxis(sp, &xx, &yy, 0);
+
+	x = xx >> dotshift; y = yy >> dotshift;
 
 	//		send to screen
 	//
-	put(x + ofsx, y + ofsy, sp->chr, sp->tpflag);
-	res++;
+	if (mode & ESDRAW_NODISP) {
+		put(x + ofsx, y + ofsy, sp->chr, sp->tpflag, sp->zoomx, sp->zoomy, sp->rotz);
+		res++;
+	}
 
-nodraw:
 	//		chr animation process
 	//
-	if (sp->ani) {
-		sp->ani--;
-		if (sp->ani == 0) {
-			chr = &mem_chr[sp->chr];
-			next = chr->lknum;
-			if (next < 0) { sp->fl = 0; return 0; }	// next<0 wipe
-			sp->chr = next;
-			chr = &mem_chr[sp->chr];
-			sp->ani = chr->lktime;
+	if (mode & ESDRAW_NOANIM) {
+		if (sp->ani) {
+			sp->ani--;
+			if (sp->ani == 0) {
+				chr = &mem_chr[sp->chr];
+				next = chr->lknum;
+				if (next < 0) { sp->fl = 0; return 0; }	// next<0 wipe
+				sp->chr = next;
+				chr = &mem_chr[sp->chr];
+				sp->ani = chr->lktime;
+			}
 		}
 	}
 
@@ -691,20 +763,92 @@ nodraw:
 }
 
 
-int essprite::draw(int start, int num, int dispflag, int sortflag)
+static bool less_int_1(SPRDATA const& lhs, SPRDATA const& rhs)
 {
-	int a, a1, a2;
+	int cmp = (lhs.ikey - rhs.ikey);
+	return (cmp < 0);
+}
+
+
+int essprite::draw(int start, int num, int mode, int start_pri, int end_pri)
+{
+	//		draw all sprites
+	//
+	SPOBJ* sp;
+	int i, a, a1, a2, mode_p;
+	bool priselect = false;
+	HSPCTX *ctx = hspwnd->GetHSPCTX();
+	mode_p = mode ^ -1;
+	SPRDATA *selspr = new SPRDATA[spkaz];
+	SPRDATA *spr;
+	int maxspr = 0;
 
 	a1 = start; a2 = num;
-	if (a2 < 0) a2 = spkaz - a1;
-	a1 = a1 + a2 - 1;
-	for (a = 0; a < a2; a++) {
-		SPOBJ* sp = getObj(a1--);
-		if (sp->fl) {
-			drawSub(sp);
-		}
+	if (a1 < 0) a1 = 0;
+	if (a2 < 0) a2 = spkaz;
+	if (a1 >= spkaz) return -1;
+	if ((a1 + a2) >= spkaz) a2 = spkaz-a1;
+
+	if ((start_pri >= 0) && (end_pri >= 0)) {
+		if (start_pri <= end_pri) priselect = true;
 	}
-	return 0;
+
+	a = a1 + a2 - 1;
+	sp = getObj(a);
+	spr = selspr;
+
+	for (i = 0; i < a2; i++) {
+		if (sp->fl) {
+			if (priselect) {
+				if ((start_pri<=sp->priority) && (end_pri >= sp->priority)) {
+					spr->ikey = sp->priority;
+					spr->info = a;
+					spr++;
+					maxspr++;
+				}
+			}
+			else {
+				spr->info = a;
+				spr++;
+				maxspr++;
+			}
+		}
+		sp--;
+		a--;
+	}
+
+	if (mode_p & ESDRAW_NOSORT) priselect = false;
+
+	if (priselect) {
+		std::sort(selspr, selspr + maxspr, less_int_1);
+	}
+
+	spr = selspr;
+	for (i = 0; i < maxspr; i++) {
+		sp = getObj(spr->info);
+		if (sp->fl) {
+			if (mode_p & ESDRAW_NOMOVE) {
+				drawSubMove(sp, mode_p);
+			}
+			if (sp->fl) {
+				if (mode_p & ESDRAW_NOCALLBACK) {
+					if (sp->sbr) {
+						ctx->iparam = a1;
+						ctx->wparam = sp->type;
+						ctx->lparam = sp->chr;
+						code_call(sp->sbr);
+					}
+				}
+			}
+			if (sp->fl) {
+				drawSubPut(sp, mode_p);
+			}
+		}
+		spr++;
+	}
+
+	delete selspr;
+	return maxspr;
 }
 
 
@@ -744,44 +888,110 @@ int essprite::setSpriteType(int spno, int type)
 }
 
 
-int essprite::setSpritePos(int spno, int xx, int yy, bool realaxis)
+int essprite::setSpritePos(int spno, int xx, int yy, int option)
 {
+	int opt, dotmask;
+	int x, y;
 	SPOBJ* sp = getObj(spno);
 	if (sp == NULL) return -1;
-	if (realaxis) {
-		sp->xx = xx;
-		sp->yy = yy;
+
+	bool biton = ( option & ESSPSET_MASKBIT ) != 0;
+	if (option & ESSPSET_DIRECT) {
+		x = xx;
+		y = yy;
+	} else {
+		x = xx << dotshift;
+		y = yy << dotshift;
+		dotmask = dotshift_base - 1;
 	}
-	else {
-		sp->xx = xx << dotshift;
-		sp->yy = yy << dotshift;
+	opt = option & (ESSPSET_DIRECT - 1);
+	switch (opt) {
+	case ESSPSET_POS:
+		if (biton) {
+			x |= sp->xx & dotmask;
+			y |= sp->yy & dotmask;
+		}
+		sp->xx = x;
+		sp->yy = y;
+		break;
+	case ESSPSET_ADDPOS:
+		if (biton) {
+			x |= sp->px & dotmask;
+			y |= sp->py & dotmask;
+		}
+		sp->px = x;
+		sp->py = y;
+		break;
+	case ESSPSET_FALL:
+		if (biton) {
+			x |= sp->fspx & dotmask;
+			y |= sp->fspy & dotmask;
+		}
+		sp->fspx = x;
+		sp->fspy = y;
+		break;
+	case ESSPSET_BOUNCE:
+		if (biton) {
+			x |= sp->bound & dotmask;
+			y |= sp->boundflag & dotmask;
+		}
+		sp->bound = x;
+		sp->boundflag = y;
+		break;
+	case ESSPSET_ZOOM:
+		if (biton) {
+			x |= sp->zoomx & dotmask;
+			y |= sp->zoomy & dotmask;
+		}
+		sp->zoomx = x;
+		sp->zoomy = y;
+		break;
+	default:
+		return -1;
 	}
+
 	return spno;
 }
 
 
 int essprite::getSpritePos(int* xpos, int* ypos, int spno, int option)
 {
+	int x,y,opt;
 	SPOBJ* sp = getObj(spno);
 	if (sp == NULL) return -1;
 	if (sp->fl == 0) return -1;
 
-	switch (option) {
-	case 0:
-		*xpos = sp->xx >> dotshift;
-		*ypos = sp->yy >> dotshift;
+	opt = option & (ESSPSET_DIRECT - 1);
+	switch (opt) {
+	case ESSPSET_POS:
+		x = sp->xx;
+		y = sp->yy;
 		break;
-	case 1:
-		*xpos = sp->px >> dotshift;
-		*ypos = sp->py >> dotshift;
+	case ESSPSET_ADDPOS:
+		x = sp->px;
+		y = sp->py;
 		break;
-	case 2:
-		*xpos = sp->zoomx >> dotshift;
-		*ypos = sp->zoomy >> dotshift;
+	case ESSPSET_FALL:
+		x = sp->fspx;
+		y = sp->fspy;
+		break;
+	case ESSPSET_BOUNCE:
+		x = sp->bound;
+		y = sp->boundflag;
+		break;
+	case ESSPSET_ZOOM:
+		x = sp->zoomx;
+		y = sp->zoomy;
 		break;
 	default:
 		return -1;
 	}
+	if ((option & ESSPSET_DIRECT)==0) {
+		x = x >> dotshift;
+		y = y >> dotshift;
+	}
+	*xpos = x;
+	*ypos = y;
 	return 0;
 }
 
@@ -828,12 +1038,17 @@ int essprite::setSpriteChr(int spno, int chrno)
 
 int essprite::setSpriteAddDir(int spno, int direction, int dirrate)
 {
-	int ax, ay, aa, adir;
+	int ax, ay, aa, adir, rot;
 
 	aa = dirrate;
-	adir = abs( direction % rrate );
-	ax = (vpx[adir] << 6) * aa / 100;
-	ay = (vpy[adir] << 6) * aa / 100;
+	rot = direction;
+	while (1) {
+		if ( rot >= 0 ) break;
+		rot += rrate;
+	}
+	adir = rot % rrate;
+	ax = (vpx[adir] << (dotshift - 10)) * aa / 100;
+	ay = (vpy[adir] << (dotshift - 10)) * aa / 100;
 
 	SPOBJ* sp = getObj(spno);
 	if (sp == NULL) return -1;
@@ -861,7 +1076,7 @@ int essprite::setSpriteAim(int spno, int xx, int yy, int dirrate)
 }
 
 
-int essprite::setParent(int spno, int parent, int option)
+int essprite::setSpriteParent(int spno, int parent, int option)
 {
 	SPOBJ* sp = getObj(spno);
 	if (sp == NULL) return -1;
@@ -905,10 +1120,11 @@ SPOBJ *essprite::resetSprite(int spno)
 	sp->priority = 0;
 	sp->tpflag = 0;
 	sp->fadeprm = 0;
-	sp->zoomx = 0;
-	sp->zoomy = 0;
+	sp->zoomx = dotshift_base;
+	sp->zoomy = dotshift_base;
 	sp->rotz = 0;
 	sp->splink = 0;
+	sp->sbr = NULL;
 
 	sp->xx = 0;
 	sp->yy = 0;
@@ -987,6 +1203,60 @@ int essprite::setBound(int p1, int p2, int p3)
 }
 
 
+int essprite::setSpriteFade(int id, int sw, int timer)
+{
+	int fl;
+	int i;
+	SPOBJ *sp = getObj(id);
+	if (sp == NULL) return -1;
+
+	i = timer & 0xff;
+	fl = sp->fl & ~(ESSPFLAG_BLINK | 0xff);
+	switch (sw) {
+	case 1:
+		fl |= i;
+		break;
+	case 3:
+		fl |= i | ESSPFLAG_BLINK;
+		break;
+	default:
+		break;
+	}
+	sp->fl = fl;
+	return 0;
+}
+
+
+int essprite::setSpriteEffect(int id, int tpflag, int mulcolor)
+{
+	SPOBJ *sp = getObj(id);
+	if (sp == NULL) return -1;
+
+	sp->tpflag = tpflag;
+	return 0;
+}
+
+
+int essprite::setSpriteRotate(int id, int angle, int zoomx, int zoomy, int rate)
+{
+	SPOBJ *sp = getObj(id);
+	if (sp == NULL) return -1;
+
+	if (zoomx >= 0) {
+		int ax = (1 << dotshift) * zoomx / 100;
+		sp->zoomx = ax;
+	}
+	if (zoomy >= 0) {
+		int ay = (1 << dotshift) * zoomy / 100;
+		sp->zoomy = ay;
+	}
+
+	sp->rotz = angle;
+
+	return 0;
+}
+
+
 /*------------------------------------------------------------*/
 /*
 		BG Map Process
@@ -1019,7 +1289,7 @@ int essprite::setMap(int def_bgno, int* varptr, int mapsx, int mapsy, int sx, in
 	bg->viewy = 0;
 	bg->buferid = buffer;
 	bg->bgoption = option;
-	bg->tpflag = 0;
+	bg->tpflag = 0x3ff;
 
 	return bgno;
 }

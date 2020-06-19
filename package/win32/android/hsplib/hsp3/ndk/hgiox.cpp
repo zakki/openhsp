@@ -559,6 +559,35 @@ int hgio_buffer(BMSCR *bm)
 }
 
 
+static int GetSurface(int x, int y, int sx, int sy, int px, int py, void *res, int mode)
+{
+	//	VRAMの情報を取得する
+	//
+	int ybase = _bgsy - (sy - y);
+
+#ifdef	GP_USE_ANGLE
+	return -1;
+#else
+#if defined(HSPWIN)||defined(HSPLINUX)
+	glReadBuffer(GL_BACK);
+#endif
+#endif
+
+	// OpenGLで画面に描画されている内容をバッファに格納
+	glReadPixels(
+		x,              //読み取る領域の左下隅のx座標
+		ybase,          //読み取る領域の左下隅のy座標
+		sx,             //読み取る領域の幅
+		sy,             //読み取る領域の高さ
+		GL_RGBA,		//取得したい色情報の形式
+		GL_UNSIGNED_BYTE,  //読み取ったデータを保存する配列の型
+		res                //ビットマップのピクセルデータ（実際にはバイト配列）へのポインタ
+	);
+
+	return 0;
+}
+
+
 int hgio_bufferop(BMSCR* bm, int mode, char *ptr)
 {
 	//		オフスクリーンバッファを操作
@@ -572,10 +601,16 @@ int hgio_bufferop(BMSCR* bm, int mode, char *ptr)
 
 	switch (mode) {
 	case 0:
-		return UpdateTex32(texid, ptr, 0);
+	case 1:
+		return UpdateTex32(texid, ptr, mode);
+	case 16:
+	case 17:
+		GetSurface(0, 0, bm->sx, bm->sy, 1, 1, ptr, mode & 15);
+		return 0;
 	default:
 		return -2;
 	}
+
 	return 0;
 }
 
@@ -764,6 +799,18 @@ void hgio_clsmode( int mode, int color, int tex )
 
 int hgio_getWidth( void )
 {
+	return _bgsx;
+}
+
+
+int hgio_getHeight( void )
+{
+	return _bgsy;
+}
+
+
+int hgio_getDesktopWidth( void )
+{
 #ifdef HSPLINUX
 	SDL_DisplayMode dm;
 	SDL_GetDesktopDisplayMode(0,&dm);
@@ -773,7 +820,7 @@ int hgio_getWidth( void )
 }
 
 
-int hgio_getHeight( void )
+int hgio_getDesktopHeight( void )
 {
 #ifdef HSPLINUX
 	SDL_DisplayMode dm;
@@ -1727,48 +1774,42 @@ int hgio_celputmulti( BMSCR *bm, int *xpos, int *ypos, int *cel, int count, BMSC
 
 /*-------------------------------------------------------------------------------*/
 
+#if defined(HSPLINUX) || defined(HSPNDK)
+    static time_t basetick;
+    static bool tick_reset = false;
+#endif
 
 int hgio_gettick( void )
 {
-#if defined(HSPLINUX) || defined(HSPNDK)
+    // 経過時間の計測
+
+#if defined(HSPLINUX) || defined(HSPNDK) || defined(HSPEMSCRIPTEN)
 	int i;
 	timespec ts;
 	double nsec;
     clock_gettime(CLOCK_REALTIME,&ts);
     nsec = (double)(ts.tv_nsec) * 0.001 * 0.001;
-    i = (int)ts.tv_sec * 1000 + (int)nsec;
-    //return ((double)(ts.tv_sec) + (double)(ts.tv_nsec) * 0.001 * 0.001 * 0.001);
-	return i;
+    //i = (int)ts.tv_sec * 1000 + (int)nsec;
+    time_t sec = ts.tv_sec;
+    if ( tick_reset ) {
+	sec -= basetick;
+    } else {
+	tick_reset = true;
+	basetick = sec;
+	sec = 0;
+     }
+    i =((int)sec) * 1000 + (int)nsec;
+    return i;
 #endif
 
-    // 経過時間の計測
 #ifdef HSPIOS
     CFAbsoluteTime now;
     now = CFAbsoluteTimeGetCurrent();
     total_tick += now - lastTime;
     lastTime = now;
-#endif
-
-#ifdef HSPIOS
     return (int)(total_tick * 1000.0 );
-    //return (int)( CFAbsoluteTimeGetCurrent() * 1000.0 );
 #endif
 
-#if defined(HSPEMSCRIPTEN)
-	int i;
-	timespec ts;
-	double nsec;
-	static bool init = false;
-	static int initTime = 0;
-	clock_gettime(CLOCK_REALTIME,&ts);
-	nsec = (double)(ts.tv_nsec) * 0.001 * 0.001;
-	i = (int)ts.tv_sec * 1000 + (int)nsec;
-	if (!init) {
-		init = true;
-		initTime = i;
-	}
-	return i - initTime;
-#endif
 }
 
 int hgio_exec( char *msg, char *option, int mode )

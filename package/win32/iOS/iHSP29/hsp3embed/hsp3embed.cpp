@@ -46,7 +46,7 @@ extern "C" {
 	static void logfunc( gameplay::Logger::Level level, const char *msg )
 	{
 		gplog += msg;
-#ifdef HSPIOS
+#if defined(HSPIOS)||defined(HSPNDK)
         Alert( msg );
 #endif
 	}
@@ -200,9 +200,7 @@ int hsp3eb_init( void )
 	}
 //	Alertf( "---Init HSP3\n" );
 
-#ifndef HSPIOS
 	platform->enterMessagePump();
-#endif
 //	Alertf( "---enterMessagePump OK\n" );
 
        if (Game::getInstance()->getState() == Game::UNINITIALIZED)

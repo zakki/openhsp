@@ -3641,15 +3641,19 @@ static int get_ginfo( int arg )
 	case 20:
 #ifdef HSPWIN
 		return GetSystemMetrics( SM_CXSCREEN );
-#else
-		return hgio_getWidth();
 #endif
+#ifdef HSPLINUX
+		return hgio_getDesktopWidth();
+#endif
+		return hgio_getWidth();
 	case 21:
 #ifdef HSPWIN
 		return GetSystemMetrics( SM_CYSCREEN );
-#else
-		return hgio_getHeight();
 #endif
+#ifdef HSPLINUX
+		return hgio_getDesktopHeight();
+#endif
+		return hgio_getHeight();
 	case 22:
 		return bmscr->cx;
 	case 23:
@@ -3883,6 +3887,12 @@ void hsp3excmd_rebuild_window(void)
 	wnd = new HspWnd();
 	wnd->SetHSPCTX(ctx);
 	bmscr = wnd->GetBmscr(0);
+
+#ifdef USE_ESSPRITE
+	if (sprite) delete sprite;
+	sprite = new essprite;
+	sprite->setResolution( wnd, bmscr->sx, bmscr->sy);
+#endif
 }
 
 

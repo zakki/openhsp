@@ -608,6 +608,28 @@ int hgio_getHeight( void )
 }
 
 
+int hgio_getDesktopWidth( void )
+{
+#ifdef HSPLINUX
+	SDL_DisplayMode dm;
+	SDL_GetDesktopDisplayMode(0,&dm);
+	return dm.w;
+#endif
+	return nDestWidth;
+}
+
+
+int hgio_getDesktopHeight( void )
+{
+#ifdef HSPLINUX
+	SDL_DisplayMode dm;
+	SDL_GetDesktopDisplayMode(0,&dm);
+	return dm.h;
+#endif
+	return nDestHeight;
+}
+
+
 void hgio_term( void )
 {
 	hgio_render_end();
@@ -1611,6 +1633,11 @@ void hgio_square( BMSCR *bm, int *posx, int *posy, int *color )
 }
 
 
+#if defined(HSPLINUX) || defined(HSPNDK)
+    static time_t basetick;
+    static bool tick_reset = false;
+#endif
+
 int hgio_gettick( void )
 {
     // Œo‰ßŽžŠÔ‚ÌŒv‘ª
@@ -1618,21 +1645,23 @@ int hgio_gettick( void )
 	return timeGetTime();
 #endif
 
-#if defined(HSPLINUX) || defined(HSPNDK)
+#if defined(HSPLINUX) || defined(HSPNDK) || defined(HSPEMSCRIPTEN)
 	int i;
 	timespec ts;
 	double nsec;
-	static bool init = false;
-	static int initTime = 0;
-	clock_gettime(CLOCK_REALTIME,&ts);
-	nsec = (double)(ts.tv_nsec) * 0.001 * 0.001;
-	i = (int)ts.tv_sec * 1000 + (int)nsec;
-	if (!init) {
-		init = true;
-		initTime = i;
-	}
-
-	return i - initTime;
+    clock_gettime(CLOCK_REALTIME,&ts);
+    nsec = (double)(ts.tv_nsec) * 0.001 * 0.001;
+    //i = (int)ts.tv_sec * 1000 + (int)nsec;
+    time_t sec = ts.tv_sec;
+    if ( tick_reset ) {
+	sec -= basetick;
+    } else {
+	tick_reset = true;
+	basetick = sec;
+	sec = 0;
+     }
+    i =((int)sec) * 1000 + (int)nsec;
+    return i;
 #endif
 
 #ifdef HSPIOS
@@ -1643,21 +1672,6 @@ int hgio_gettick( void )
     return (int)(total_tick * 1000.0 );
 #endif
 
-#if defined(HSPEMSCRIPTEN)
-	int i;
-	timespec ts;
-	double nsec;
-	static bool init = false;
-	static int initTime = 0;
-	clock_gettime(CLOCK_REALTIME,&ts);
-	nsec = (double)(ts.tv_nsec) * 0.001 * 0.001;
-	i = (int)ts.tv_sec * 1000 + (int)nsec;
-	if (!init) {
-		init = true;
-		initTime = i;
-	}
-	return i - initTime;
-#endif
 }
 
 
