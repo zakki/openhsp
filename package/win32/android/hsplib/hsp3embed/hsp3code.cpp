@@ -2335,18 +2335,11 @@ HSP3TYPEINFO *code_gettypeinfo( int type )
 	//		指定されたタイプのHSP3TYPEINFO構造体を取得します。
 	//		( typeがマイナスの場合は、新規typeIDを発行 )
 	//
-	//		指定されたタイプのHSP3TYPEINFO構造体を取得します。
-	//		( typeがマイナスの場合は、新規typeIDを発行 )
-	//
 	int id;
 	HSP3TYPEINFO *info;
 	id = type;
 	if ( id < 0 ) {
-		id = tinfo_cur;
-	}
-
-	if ( id >= tinfo_cur ) {
-		tinfo_cur = id + 1;
+		id = tinfo_cur++;
 		hsp3tinfo = (HSP3TYPEINFO *)sbExpand( (char *)hsp3tinfo, sizeof(HSP3TYPEINFO) * tinfo_cur );
 		hsp3typeinit_default( id );
 	}
