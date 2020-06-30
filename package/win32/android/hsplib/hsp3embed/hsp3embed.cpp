@@ -16,6 +16,7 @@
 
 #include "hsp3r.h"
 #include "hsp3embed.h"
+#include "../hsp3/sysreq.h"
 
 //#define USE_OBAQ
 
@@ -107,7 +108,7 @@ int hsp3eb_await( int tick )
 {
 	//		時間待ち(await)
 	//
-	if ( ctx->waittick < 0 ) {
+	if ( ctx->waittick == -1 ) {
 		if ( ctx->lasttick == 0 ) ctx->lasttick = tick;
 		ctx->waittick = ctx->lasttick + ctx->waitcount;
 	}
@@ -202,7 +203,9 @@ int hsp3eb_init( void )
 	}
 //	Alertf( "---Init HSP3\n" );
 
+#ifndef HSPIOS
 	platform->enterMessagePump();
+#endif
 //	Alertf( "---enterMessagePump OK\n" );
 
        if (Game::getInstance()->getState() == Game::UNINITIALIZED)

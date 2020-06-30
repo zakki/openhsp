@@ -1774,7 +1774,7 @@ int hgio_celputmulti( BMSCR *bm, int *xpos, int *ypos, int *cel, int count, BMSC
 
 /*-------------------------------------------------------------------------------*/
 
-#if defined(HSPLINUX) || defined(HSPNDK)
+#if defined(HSPLINUX) || defined(HSPNDK) || defined(HSPEMSCRIPTEN)
     static time_t basetick;
     static bool tick_reset = false;
 #endif
