@@ -1633,7 +1633,7 @@ void hgio_square( BMSCR *bm, int *posx, int *posy, int *color )
 }
 
 
-#if defined(HSPLINUX) || defined(HSPNDK)
+#if defined(HSPLINUX) || defined(HSPNDK) || defined(HSPEMSCRIPTEN)
     static time_t basetick;
     static bool tick_reset = false;
 #endif
