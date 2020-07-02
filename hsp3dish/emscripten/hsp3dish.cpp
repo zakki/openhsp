@@ -104,28 +104,32 @@ static int handleEvent( void ) {
 			//Alertf("down: %f,%f  %d\n", event.tfinger.x,event.tfinger.y,event.tfinger.fingerId);
 		case SDL_FINGERMOTION:
 			{
-				//int id;
+				int xx,yy;
 				float x,y;
 				Bmscr *bm;
 				bm = (Bmscr *)exinfo->HspFunc_getbmscr(0);
 				x = event.tfinger.x * bm->sx;
 				y = event.tfinger.y * bm->sy;
 				int id = event.tfinger.fingerId;
-				hgio_mtouchid( id, (int)x, (int)y, 1, 0 );
-				//hgio_touch( (int)x, (int)y, 1 );
+				xx = (int)x; yy = (int)y;
+				hgio_cnvview((BMSCR *)bm,&xx,&yy);
+				hgio_mtouchid( id, xx, yy, 1, 0 );
+				//hgio_touch( xx, yy, 1 );
 				break;
 			}
 		case SDL_FINGERUP:
 			{
-				//int id;
+				int xx,yy;
 				float x,y;
 				Bmscr *bm;
 				bm = (Bmscr *)exinfo->HspFunc_getbmscr(0);
 				x = event.tfinger.x * bm->sx;
 				y = event.tfinger.y * bm->sy;
 				int id = event.tfinger.fingerId;
-				hgio_mtouchid( id, (int)x, (int)y, 0, 0 );
-				//hgio_touch( (int)x, (int)y, 0 );
+				xx = (int)x; yy = (int)y;
+				hgio_cnvview((BMSCR *)bm,&xx,&yy);
+				hgio_mtouchid( id, xx, yy, 0, 0 );
+				//hgio_touch( xx, yy, 0 );
 				//Alertf("up  : %f,%f  %d\n", event.tfinger.x,event.tfinger.y,event.tfinger.fingerId);
 				break;
 			}
