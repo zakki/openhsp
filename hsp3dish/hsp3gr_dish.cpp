@@ -3376,14 +3376,14 @@ static int cmdfunc_extcmd( int cmd )
 		//		es_patanim var, num, x, y, anim_wait, chrno, window_id
 		//		option=(0:loop,0x1000=1shot,0x2000=wipe)
 		int i,res,p7,sx,sy;
-		PVal* p_pval;
-		APTR p_aptr;
-		p_aptr = code_getva(&p_pval);
+		//PVal* p_pval;
+		//APTR p_aptr;
+		//p_aptr = code_getva(&p_pval);
+		p1 = code_getdi(-1);
 		p7 = code_getdi(1);
 		p3 = code_geti();
 		p4 = code_geti();
 		p5 = code_getdi(1);
-		p1 = code_getdi(-1);
 		p6 = code_getdi(cur_window);
 		res = -1;
 		p2 = p7 & 0xfff;
@@ -3408,7 +3408,7 @@ static int cmdfunc_extcmd( int cmd )
 		}
 		else throw HSPERR_UNSUPPORTED_FUNCTION;
 		ctx->stat = res;
-		code_setva(p_pval, p_aptr, HSPVAR_FLAG_INT, &res);
+		//code_setva(p_pval, p_aptr, HSPVAR_FLAG_INT, &res);
 		break;
 	}
 	case 0x227:								// es_getpos

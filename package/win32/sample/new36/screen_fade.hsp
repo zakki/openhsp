@@ -1,0 +1,36 @@
+;#include "hsp3dish.as"
+#include "layer_fade.as"
+
+	;
+	;	layer_fadeモジュール テスト
+	;	(標準ランタイム、HSP3Dish、HGIMG4で使用可能です)
+	;
+	;	layer_fade命令でレイヤーオブジェクトを登録
+	;	fadein , fadeout命令でフェードを実行
+	;	fadespeed prm : フェードスピードを設定
+	;	fadecolor prm : フェード色を設定(RGB色)
+	;
+	screen 0,640,480
+	objsize 200,40
+	button gosub "FadeIn",*go_fadein
+	button gosub "FadeOut",*go_fadeout
+	layer_fade
+*main
+	redraw 0
+	rgbcolor $c0c0c0:boxf
+	rgbcolor $40c0e0:pos 60,200
+	font msgothic,40
+	mes "layer_fadeモジュールによる\nフェードイン・アウト",mesopt_shadow
+	redraw 1
+	await 1000/60
+	goto *main
+
+*go_fadein
+	fadein
+	return
+
+*go_fadeout
+	fadeout
+	return
+
+

@@ -91,7 +91,6 @@ p3‚Í“–‚½‚è”»’è‚ðs‚È‚¤Û‚Ìƒqƒbƒgƒ`ƒFƒbƒN—Ìˆæ‚ªA ‰½%‚É‚È‚é‚©‚ðŽw’è‚µ‚Ü‚·B100‚ðŽ
 0‚ðŽw’è‚·‚é‚ÆA‚»‚ÌƒLƒƒƒ‰ƒNƒ^‚Í“–‚½‚è”»’è‚ðŽ‚½‚È‚­‚È‚è‚Ü‚·B
 p4‚ÍA“ÁŽêŒø‰Ê(EP’l)‚ÌƒfƒtƒHƒ‹ƒgÝ’è‚É‚È‚è‚Ü‚·B’Êí‚ÍÈ—ª‚µ‚Ä\‚¢‚Ü‚¹‚ñB
 “ÁŽêŒø‰Ê(EP’l)ƒpƒ‰ƒ[ƒ^[‚ÍA”¼“§–¾‚â‰ÁŽZ‡¬‚È‚Ç‚ÌÝ’è‚ðŽw’è‚µ‚Ü‚·BÚ×‚ÍA•W€ƒXƒvƒ‰ƒCƒgƒvƒƒOƒ‰ƒ~ƒ“ƒOƒKƒCƒh‚ðŽQÆ‚µ‚Ä‚­‚¾‚³‚¢B
-p4‚ÍA
 ^
 ƒLƒƒƒ‰ƒNƒ^‚ÌX,YƒTƒCƒY‚É‚Í“Á‚É§ŒÀ‚Í‚ ‚è‚Ü‚¹‚ñ‚ªA ƒIƒtƒXƒNƒŠ[ƒ“ƒoƒbƒtƒ@‚©‚ç‚Í‚Ýo‚·‚æ‚¤‚ÈƒLƒƒƒ‰ƒNƒ^ƒpƒ^[ƒ“‚ÌŽw’è‚Í–³Œø‚É‚È‚è‚Ü‚·B
 es_size–½—ß‚ÌÝ’è‚ÍAˆÈ~‚ÌƒLƒƒƒ‰ƒNƒ^’è‹`‚Å‚¸‚Á‚Æ—LŒø‚É‚È‚è‚Ü‚·B
