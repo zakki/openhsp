@@ -30,6 +30,7 @@
 #define global mesopt_nocr (1)
 #define global mesopt_shadow (2)
 #define global mesopt_outline (4)
+#define global mesopt_light (8)
 #define global mesopt_gmode (16)
 
 #define global ginfo_mx ginfo(0)

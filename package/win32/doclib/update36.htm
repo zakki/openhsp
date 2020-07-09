@@ -142,6 +142,7 @@
 			   1   : mesopt_nocr    : 最後に改行しない
 			   2   : mesopt_shadow  : 影付き文字を描画する
 			   4   : mesopt_outline : 縁取り文字を描画する
+			   8   : mesopt_light   : 影付き/縁取りを簡易描画する
 			   16  : mesopt_gmode   : gmodeの設定を反映する(HSP3Dishのみ)</pre>
 		<p>
 			オプションに2またはmesopt_shadowを指定した場合は、影の付いた文字を描画します。
@@ -238,7 +239,6 @@
 		以下の状況で呼び出されるラベル、またはユーザー定義命令はコールバックルーチンとして扱われます。
 		</p>
 		<pre class="quote">
-	・onkey,onexit,onerror,oncmd,onclick割り込み (gosubのみ)
 	・#deffunc命令で定義されるクリーンアップ命令の実行時
 	・モジュール型変数のコンストラクタ、デストラクタ実行時
 	・配置オブジェクト(objlayer)によるユーザー割り込み
