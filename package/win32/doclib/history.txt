@@ -5,7 +5,7 @@ Hot Soup Processor ver3.6                           HSP : Hot Soup Processor
 
 ・hsp3関連 更新履歴
 
-	2020/06/19 3.6 beta3
+	2020/07/09 3.6 beta3
 
 	mes(print)命令に影付け、縁取りなどの描画オプションを追加
 	ユーザー定義による配置オブジェクトを追加するlayerobj命令を追加
@@ -17,6 +17,7 @@ Hot Soup Processor ver3.6                           HSP : Hot Soup Processor
 	stick命令互換で動作するmod_joystick2.asモジュールを追加
 	β2版でgroll命令の制限が正しく行われていなかった不具合を修正
 	β2版でobaq関連命令が正しく初期化されていなかった不具合を修正
+	webdish素材をhsptvフォルダ内に追加、hsptv_res.asヘッダを追加
 	[hsp3utf] getpath命令の小文字変換で文字列が壊れることがある不具合を修正
 	[hsp3_64] ラベル型の引数受け渡しでエラーが発生する問題を修正
 	[hspcmp] hsphelpフォルダのキーワード検索オプションを追加
