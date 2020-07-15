@@ -36,6 +36,7 @@
 #endif
 
 #ifdef HSPEMSCRIPTEN
+#include <emscripten.h>
 int hgio_fontsystem_get_texid(void);
 #define GL_GLEXT_PROTOTYPES
 #include <GL/gl.h>
@@ -845,6 +846,11 @@ int hgio_dialog( int mode, char *str1, char *str2 )
 	if (mode&1) i|=SDL_MESSAGEBOX_WARNING; else i|=SDL_MESSAGEBOX_INFORMATION;
 	SDL_ShowSimpleMessageBox(i, str2, str1, NULL);
 	}
+#endif
+#ifdef HSPEMSCRIPTEN
+	EM_ASM_({
+		alert(UTF8ToString($0));
+	},str1 );
 #endif
 	return 0;
 }
@@ -1705,8 +1711,26 @@ int hgio_exec( char *stmp, char *option, int mode )
 	}
 	if (i < 32) return -1;
 #endif
+#ifdef HSPNDK
+	j_callActivity( stmp, option, mode );
+#endif
 #ifdef HSPIOS
-    gpb_exec( mode, stmp );
+    gb_exec( mode, stmp );
+#endif
+#ifdef HSPLINUX
+	system(stmp);
+#endif
+
+#ifdef HSPEMSCRIPTEN
+	{
+	EM_ASM_({
+		if ($1>=16) {
+			window.open(UTF8ToString($0));
+		} else {
+			window.eval(UTF8ToString($0));
+		}
+	},stmp,mode );
+	}
 #endif
 	return 0;
 }
