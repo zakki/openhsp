@@ -5,6 +5,11 @@ Hot Soup Processor ver3.6                           HSP : Hot Soup Processor
 
 ・hsp3関連 更新履歴
 
+	2020/09/03 3.6 beta4
+
+	UTF8のソースが引数付きマクロの展開に失敗することがある不具合を修正
+	アイコン埋め込み(iconins.exe)がhsp3dishの書き換えに失敗する不具合を修正
+
 	2020/07/09 3.6 beta3
 
 	mes(print)命令に影付け、縁取りなどの描画オプションを追加

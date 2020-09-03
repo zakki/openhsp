@@ -1145,8 +1145,8 @@ static int cmdfunc_extcmd( int cmd )
 	case 0x3c:								// celload
 		{
 		//int i;
-		char fname[64];
-		strncpy( fname, code_gets(), 63 );
+		char fname[HSP_MAX_PATH];
+		strncpy( fname, code_gets(), HSP_MAX_PATH-1);
 		p1 = code_getdi( -1 );
 		p2 = code_getdi( 0 );
 		if ( p1 < 0 ) p1 = wnd->GetEmptyBufferId();
