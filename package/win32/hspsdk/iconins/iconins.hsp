@@ -310,8 +310,20 @@ end
 		notesel buf_exe
 		noteload path_exe
 		size_exe = strsize
-	/*
-	;	｢DPMX｣文字列のバイナリ検索
+
+		pos_dpmx = GetDPMXAddress(path_exe)
+		if pos_dpmx < 0{
+			;errorno = 20	// [｢DPMX｣文字列が見つかりません]
+			;goto *error
+			goto *getDPMX2
+		}
+	;	DPMXデータ読み込み
+		size_dpmx = size_exe - pos_dpmx
+		sdim buf_dpmx, size_dpmx
+		memcpy buf_dpmx, buf_exe, size_dpmx, , pos_dpmx
+return
+*getDPMX2
+	;	｢DPMX｣文字列のバイナリ検索(古いバイナリ形式に対応)
 	
 		point_exe = varptr(buf_exe)
 		keyword = "DPMX"
@@ -327,17 +339,13 @@ end
 	;		｢DPMX｣文字列のカウント
 			if cnt > 0 : pos_dpmx = i - 1 : break
 		loop
-	*/
-		pos_dpmx = GetDPMXAddress(path_exe)
-		if pos_dpmx < 0{
-			errorno = 20	// [｢DPMX｣文字列が見つかりません]
-			goto *error
-		}
+
 	;	DPMXデータ読み込み
 		size_dpmx = size_exe - pos_dpmx
 		sdim buf_dpmx, size_dpmx
 		memcpy buf_dpmx, buf_exe, size_dpmx, , pos_dpmx
 return
+
 *fix
 /*----------------------------------------------------------------------------
 	変更後処理
