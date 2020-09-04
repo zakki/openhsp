@@ -540,21 +540,32 @@ static int cmdfunc_extcmd( int cmd )
 		mmman->StopBank( p1 );
 		break;
 #endif
-
-
-#if 0
-	case 0x0d:								// pget
-		p1 = code_getdi( bmscr->cx );
-		p2 = code_getdi( bmscr->cy );
-		bmscr->Pget( p1, p2 );
-		break;
+	case 0x0b:								// mci
+#ifdef HSPWIN
+		ctx->stat = mmman->SendMCI(code_gets());
+		strncpy(ctx->refstr, mmman->GetMCIResult(), HSPCTX_REFSTR_MAX - 1);
+#else
+		code_gets();
 #endif
+		break;
 
 	case 0x0c:								// pset
 		p1 = code_getdi( bmscr->cx );
 		p2 = code_getdi( bmscr->cy );
 		bmscr->Pset( p1, p2 );
 		break;
+
+#if 0
+	case 0x0d:								// pget
+		p1 = code_getdi(bmscr->cx);
+		p2 = code_getdi(bmscr->cy);
+		bmscr->Pget(p1, p2);
+		break;
+	case 0x0e:								// syscolor
+		p1 = code_getdi(0);
+		bmscr->SetSystemcolor(p1);
+		break;
+#endif
 
 	case 0x0f:								// mes,print
 		{
@@ -3892,6 +3903,12 @@ void hsp3excmd_rebuild_window(void)
 	if (sprite) delete sprite;
 	sprite = new essprite;
 	sprite->setResolution( wnd, bmscr->sx, bmscr->sy);
+#endif
+
+#ifdef USE_MMAN
+	delete mmman;
+	mmman = new MMMan;
+	mmman->Reset(ctx->wnd_parent);
 #endif
 }
 
