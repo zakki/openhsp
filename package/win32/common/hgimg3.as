@@ -108,7 +108,7 @@
 
 #define global event_delobj(%1) event_prmset %1,PRMSET_FLAG,0
 
-#regcmd 18
+#regcmd *
 #cmd _hgini $00
 #cmd hgreset $01
 #cmd hgbye $02

@@ -5,7 +5,7 @@ Hot Soup Processor ver3.6                           HSP : Hot Soup Processor
 
 ・hsp3関連 更新履歴
 
-	2020/09/08 3.6 beta4
+	2020/09/15 3.6 beta4
 
 	UTF8のソースが引数付きマクロの展開に失敗することがある不具合を修正
 	アイコン埋め込み(iconins.exe)がhsp3dishの書き換えに失敗する不具合を修正
@@ -17,6 +17,7 @@ Hot Soup Processor ver3.6                           HSP : Hot Soup Processor
 	[HSP3Dish][Windows] celload,picload命令で64文字以上のパス名がエラーになる不具合を修正
 	[HSP3Dish] 標準スプライトのESDRAW_NOSORTオプションが正しく動作していない不具合を修正
 	[HSP3Dish] β3版の標準スプライトでスプライト描画後の割り込み時のiparamが正しく設定されなかった不具合を修正
+	[HGIMG3] 拡張プラグインを指定した場合に正しく動作しないことがある不具合を修正
 	[HGIMG4] フォントの生成時にメモリリークが起こるのを修正
 	[HGIMG4][Windows] packfileからの読み込み及びdpmファイルに仮対応(Windowsプラットフォームのみ)
 
