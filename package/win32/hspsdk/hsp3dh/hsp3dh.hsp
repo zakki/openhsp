@@ -9,10 +9,10 @@
 #include "mod_appconfig.as"
 
 #define APPTITLE "HSP3Dish helper"
-#define APPVER "1.74"
+#define APPVER "1.75"
 #define APP_CONF "\\hsp3dh.cfg"
 
-#define AND_LIBVER 111			; android HSPランタイムの内部バージョン
+#define AND_LIBVER 112			; android HSPランタイムの内部バージョン
 
 #uselib "shell32.dll"
 #cfunc SHBrowseForFolder "SHBrowseForFolder" int
@@ -40,7 +40,7 @@
 	dir_gps="google-play-services_lib"
 	dir_gplib="gameplay"
 	dir_extlib="extlib"
-	dir_hsplib="hsplib36b3"
+	dir_hsplib="hsplib36b4"
 	fname_dpm  = "libhsp3dish.so"
 	;
 	app_winx=-1
@@ -1343,14 +1343,11 @@ res\\drawable-mdpi\\ic_launcher.png"}
 
 	gosub *bat_init
 	tmp+="CD "+and_name+"\n"
-	;tmp+="jarsigner -verbose -tsa http://timestamp.digicert.com -sigalg SHA1withRSA -digestalg SHA1 -keystore ..\\"+and_keystore+".keystore bin\\"+and_name+"-release-unsigned.apk "+and_keystore+"\n"
 
 	tmp+="del bin\\"+and_name+".apk\n"
 	tmp+=tool_zipalign+" -v 4 bin\\"+and_name+"-release-unsigned.apk bin\\"+and_name+"-release-unsigned-aligned.apk\n"
 
-	;tmp+="jarsigner -verbose -tsa http://timestamp.digicert.com -keystore ..\\"+and_keystore+".keystore bin\\"+and_name+"-release-unsigned.apk "+and_keystore+"\n"
-
-	tmp+=tool_apksigner+" sign --ks ..\\"+and_keystore+".keystore --out bin\\"+and_name+".apk bin\\"+and_name+"-release-unsigned-aligned.apk\n"
+	tmp+=tool_apksigner+" sign --ks ..\\"+and_keystore+".keystore --v2-signing-enabled true --v1-signing-enabled true --out bin\\"+and_name+".apk bin\\"+and_name+"-release-unsigned-aligned.apk\n"
 
 	gosub *bat_save
 
@@ -1736,12 +1733,16 @@ hspproj.xcodeproj\\project.pbxproj"}
 	htmlname=myfile+".html" ; htmlファイル名
 	hspjsname="hsp3dish.js"
 
+	sdim tmp,$10000
 	tmp=mydir+objname+"\n"
-	dim jspack_start,64
-	dim jspack_size,64
+	dim jspack_start,1024
+	dim jspack_size,1024
 	jspack_cnt=0
 	jspack_cur=0
-	maxsize=$10000
+	maxsize=$20000
+	sdim s1,$1000
+	sdim s2,$1000
+
 	sdim outbuf, maxsize
 
 	s1=js_memopt
@@ -1802,6 +1803,7 @@ hspproj.xcodeproj\\project.pbxproj"}
 	buf+="["+dataname+"]を作成しました.\n"
 
 	;	template.htmlの書き換え
+	sdim outbuf, $10000
 	notesel outbuf
 	s1 = dir_exe+"\\hsp3js\\template.html"
 	noteload s1
@@ -1809,6 +1811,9 @@ hspproj.xcodeproj\\project.pbxproj"}
 	strrep outbuf, "$$$title$$$", myfile+" - HSP3Dish"
 	strrep outbuf, "$$$hspax$$$", myfile
 	strrep outbuf, "$$$datasize$$$", ""+jspack_cur
+
+	sdim s1,$10000
+	sdim s2,$10000
 
 	s1="":s2=""
 	notesel tmp
@@ -1820,10 +1825,12 @@ hspproj.xcodeproj\\project.pbxproj"}
 		s2+="          DataRequest.prototype.requests[\""+ff+"\"].onload();\n"
 	loop
 
-	strrep outbuf, "$$$datarequest$$$", s1
 	strrep outbuf, "$$$requestonload$$$", s2
+	strrep outbuf, "$$$datarequest$$$", s1
 
 	;	サイズ設定
+	sdim s1,$100
+	sdim s2,$100
 	s1=""+dishwx : s2=""+dishwy
 	strrep outbuf, "$$$scrsize_x$$$", s1
 	strrep outbuf, "$$$scrsize_y$$$", s2
