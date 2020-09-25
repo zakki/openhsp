@@ -59,6 +59,7 @@
 		<li><a href="#EVENT">イベントリスト</a></li>
 		<li><a href="#MEMLIMIT">登録の限界数について</a></li>
 		<li><a href="#ERRORLOG">エラーログ</a></li>
+		<li><a href="#PACKFILE">PACKFILEの対応について</a></li>
 		<li><a href="#LICENCE">著作権とライセンス</a></li>
 		<li><a href="#ANGLE_LICENCE">Project Angleの著作権とライセンス</a></li>
 		<li><a href="#PRONAMA_LICENCE">プロ生ちゃんサンプルデータの著作権とライセンス</a></li>
@@ -2167,6 +2168,19 @@
 	<p>
 	<img src="image/hgimg4_sample.jpg">
 	</p>
+
+
+	<h2 id="PACKFILE">PACKFILEの対応について</h2>
+
+	<p>
+	HSP3.6β4以降で、PACKFILEマネージャによってパックされたファイル(.dpmファイル及び実行ファイル埋め込み)の
+	読み込みに仮対応しています。<br>
+	ただし、これはまだ一時的な対応でテクスチャ画像やシェーダーの読み込みには対応していますが、.gpb、.material
+	など一部のファイルはサポートされていません。
+	また、PACKFILEの制約により長いファイル名には対応していません。<br>
+	これらに対応できる新しいPACKFILEマネージャを開発していますので、それまでの一時的な対応として利用するようにしてください。
+	</p>
+
 
 	<h2 id="LICENCE">著作権とライセンス</h2>
 
