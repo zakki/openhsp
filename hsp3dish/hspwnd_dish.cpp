@@ -481,6 +481,8 @@ void Bmscr::SetFont( char *fontname, int size, int style )
 
 void Bmscr::SetDefaultFont( void )
 {
+	printoffsetx = 0;
+	printoffsety = 0;
 	SetFontInternal( font_curname, font_cursize, font_curstyle );
 }
 
