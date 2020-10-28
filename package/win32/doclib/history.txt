@@ -5,9 +5,10 @@ Hot Soup Processor ver3.6                           HSP : Hot Soup Processor
 
 ・hsp3関連 更新履歴
 
-	2020/10/26 3.6 beta5
+	2020/10/28 3.6 beta5
 
 	β4版のmes(print)の表示位置が配置オブジェクトを出すとおかしくなる不具合を修正
+	[HSP3Dish][hsp3js] HGIMG4の描画を高速化
 
 	2020/09/24 3.6 beta4
 
