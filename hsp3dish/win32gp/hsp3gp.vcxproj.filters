@@ -298,4 +298,9 @@
   <ItemGroup>
     <Xml Include="XPStyle.xml" />
   </ItemGroup>
+  <ItemGroup>
+    <None Include="..\..\hsp3\call_extfunc64.asm">
+      <Filter>ソース ファイル\win</Filter>
+    </None>
+  </ItemGroup>
 </Project>

@@ -18,8 +18,13 @@
 #include <direct.h>
 #include <shlobj.h>
 
+#if defined(HSP64)
+#pragma comment(lib, "dsound.lib")
+#pragma comment(lib, "dxguid.lib")
+#else
 #pragma comment(lib, "d3d8.lib")
 #pragma comment(lib, "dxguid.lib")
+#endif
 #endif
 
 /*
