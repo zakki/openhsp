@@ -158,7 +158,7 @@ EXPORT BOOL WINAPI computb( HSPEXINFO *hei, int p1, int p2, int p3 )
 	ap = hei->HspFunc_prm_getva( &pv );		// パラメータ1:変数
 	sd = (char *)Hsp3GetBlockSize( hei, pv, ap, &size );
 	_p2 = hei->HspFunc_prm_getdi(size-1);	// パラメータ2:整数値
-	if ( _p2 >= size ) _p2=size-1;
+	if ( _p2 > size ) _p2=size;
 
 	success = WriteFile(comHandle, sd, _p2, &numWrite, 0);
 	if (!success) return 0;
