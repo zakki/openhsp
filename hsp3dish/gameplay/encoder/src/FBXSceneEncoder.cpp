@@ -115,7 +115,7 @@ void FBXSceneEncoder::write(const string& filepath, const EncoderArguments& argu
     if (arguments.textOutputEnabled())
     {
         int pos = outputFilePath.find_last_of('.');
-        if (pos > 2)
+        if (pos > 0)
         {
             string path = outputFilePath.substr(0, pos);
             path.append(".xml");
@@ -139,7 +139,7 @@ void FBXSceneEncoder::write(const string& filepath, const EncoderArguments& argu
     if (arguments.outputMaterialEnabled())
     {
         int pos = outputFilePath.find_last_of('.');
-        if (pos > 2)
+        if (pos > 0)
         {
             string path = outputFilePath.substr(0, pos);
             path.append(".material");
