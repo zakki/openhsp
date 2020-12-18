@@ -115,8 +115,8 @@
 
 //
 // マクロ
-#define global ctype hsed_getmajorver(%1) (%1 >> 16 & 0xFFFF)
-#define global ctype hsed_getminorver(%1) (%1 >> 8 & 0xFF)
+#define global ctype hsed_getmajorver(%1) (%1 >> 12 & 0xF) // 12～32
+#define global ctype hsed_getminorver(%1) (%1 >> 8 & 0xF) // 8～12
 #define global ctype hsed_getbetaver(%1)  (%1 & 0xFF)
 
 //
@@ -233,7 +233,7 @@
 // バージョンの数値を文字列に変換
 #deffunc hsed_cnvverstr int nVersion
 	sdim _refstr, 4096
-	_refstr = "" + hsed_getmajorver(nVersion) + "." + strf("%02d", hsed_getminorver(nVersion))
+	_refstr = "" + hsed_getmajorver(nVersion) + "." + hsed_getminorver(nVersion)
 	if hsed_getbetaver(nVersion): _refstr += "b" + hsed_getbetaver(nVersion)
 	return _refstr
 

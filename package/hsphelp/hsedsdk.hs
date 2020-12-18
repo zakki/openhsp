@@ -2,10 +2,10 @@
 hsedsdk
 
 %ver
-3.3
+3.6
 
 %date
-2009/08/01
+2020/12/17
 
 %author
 onitama
@@ -432,8 +432,7 @@ p2に指定する値は以下の通りです。HGV_で始まる定数を用いても、括弧内の数字を用いて
 html{
 <table border="1"><tr><th>HGV_PUBLICVER(0)</th>
 <td>パブリック バージョン(エディタ公開時点での次のバージョン)。
-16進数で<ul><li>上4桁メジャー バージョン</li><li>5～6桁目マイナー バージョン</li><li>
-7～8桁目βバージョン(βでなければ0)</li></ul>を表します。(例:Ver1.02b3→$00010203)<br />
+16進数で<ul><li>下から4桁メジャー バージョン</li><li>下から3桁目マイナー バージョン</li></ul>を表します。(例:Ver3.6beta3→$0003603)<br />
 hsed_getmajorver(), hsed_getminorver(), hsed_getbetaver()で各値を取得できます。<br />
 また、hsed_cnvverstrで、文字列に変換することも可能です。</td></tr>
 <tr><th>HGV_PRIVATEVER(1)</th>
@@ -442,7 +441,7 @@ hsed_getmajorver(), hsed_getminorver(), hsed_getbetaver()で各値を取得できます。<
 <td>hspcmp.dllからhsc_verで取得したバージョン(文字列)が代入されます。</td></tr>
 <tr><th>HGV_FOOTYVER(3)</th>
 <td>FootyからGetFootyVerで取得したバージョンが代入されます。
-バージョンを100倍した数値が返ります。(例:Ver1.23→123)</td></tr>
+バージョンを100倍した数値が返ります。(例:Ver3.6→0x3600)</td></tr>
 <tr><th nowrap>HGV_FOOTYBETAVER(4)</th>
 <td>FootyからGetFootyBetaVerで取得したバージョンが代入されます。
 ベータ バージョンがそのまま代入されます。

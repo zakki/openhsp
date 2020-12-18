@@ -266,7 +266,7 @@ BEGIN
     CTEXT           "HSP script editor",IDC_STATIC,41,12,67,8
     ICON            "OniPad",IDC_STATIC,8,8,20,20
     LTEXT           "For Windows version 3.6",IDC_STATIC,47,19,94,8
-    CTEXT           "Copyright 1997-2020 onion software",IDC_STATIC,0,37,159,8
+    CTEXT           "Copyright 1997-2021 onion software",IDC_STATIC,0,37,159,8
     DEFPUSHBUTTON   "OK",IDOK,49,101,57,14,WS_GROUP
     CTEXT           "https://hsp.tv/",IDC_STATICLINK,34,85,90,8,SS_NOTIFY
     LTEXT           "Information available at:",IDC_STATIC,30,77,71,8
@@ -837,8 +837,8 @@ IDC_ONURL               CURSOR                  "url.cur"
 //
 
 VS_VERSION_INFO VERSIONINFO
- FILEVERSION 3,5,1,0
- PRODUCTVERSION 3,5,1,0
+ FILEVERSION 3,6,1,0
+ PRODUCTVERSION 3,6,1,0
  FILEFLAGSMASK 0x1fL
 #ifdef _DEBUG
  FILEFLAGS 0x9L
@@ -854,13 +854,13 @@ BEGIN
         BLOCK "041104b0"
         BEGIN
             VALUE "FileDescription", "HSP Script Editor"
-            VALUE "FileVersion", "3.5.1.0"
+            VALUE "FileVersion", "3.6.1.0"
             VALUE "InternalName", "Script Editor"
-            VALUE "LegalCopyright", "Copyright (C) 1997-2018 Onion Software/onitama"
+            VALUE "LegalCopyright", "Copyright (C) 1997-2021 Onion Software/onitama"
             VALUE "OriginalFilename", "hsed3.exe"
-            VALUE "PrivateBuild", "1.05"
+            VALUE "PrivateBuild", "1.06"
             VALUE "ProductName", "Hot Soup Processor"
-            VALUE "ProductVersion", "3.5.1.0"
+            VALUE "ProductVersion", "3.6.1.0"
         END
     END
     BLOCK "VarFileInfo"
