@@ -5,10 +5,11 @@ Hot Soup Processor ver3.6                           HSP : Hot Soup Processor
 
 ・hsp3関連 更新履歴
 
-	2020/12/17 3.6 beta5
+	2020/12/20 3.6 beta5
 
 	hspextプラグインのcomputb命令が変数バッファサイズを少なく認識する不具合を修正
 	β4版のmes(print)の表示位置が配置オブジェクトを出すとおかしくなる不具合を修正
+	[HGIMG4] FBXから.gpbファイルの変換時に単一のノードを変換するように修正
 	[HSP3Dish][hsp3js] HGIMG4の描画を高速化
 	[HSP3Dish][android] β4版のライブラリフォルダ名が間違っていた不具合を修正
 

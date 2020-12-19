@@ -964,6 +964,7 @@ void FBXSceneEncoder::loadModel(FbxNode* fbxNode, Node* node)
         Model* model = new Model();
         model->setMesh(mesh);
 		node->setModel(model);
+		//printf("#Model[%s]\n",node->getId().c_str());
 		
 		loadSkin(fbxMesh, model, fbxNode);
         if (model->getSkin())
@@ -1000,7 +1001,13 @@ void FBXSceneEncoder::loadMaterial(FbxNode* fbxNode)
     Node* node = findNode(fbxNode);
     Model* model = (node) ? node->getModel() : NULL;
 
-    const int materialCount = fbxNode->GetMaterialCount();
+	const int materialCount = fbxNode->GetMaterialCount();
+	if (materialCount == 0) {
+		if (model) {
+			printf("#Warning No Material node [%s]\n", node->getId().c_str());
+		}
+	}
+
     for (int index = 0; index < materialCount; ++index)
     {
         FbxSurfaceMaterial* fbxMaterial = fbxNode->GetMaterial(index);
