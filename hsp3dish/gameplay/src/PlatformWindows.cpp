@@ -638,7 +638,7 @@ bool createWindow(WindowCreationParams* params, HWND* hwnd, HDC* hdc)
     return true;
 }
 
-bool initializeGL(WindowCreationParams* params)
+bool initializeGL(WindowCreationParams* params, void* attachToWindow)
 {
     // Create a temporary window and context to we can initialize GLEW and get access
     // to additional OpenGL extension functions. This is a neccessary evil since the
@@ -646,16 +646,8 @@ bool initializeGL(WindowCreationParams* params)
     HWND hwnd = NULL;
     HDC hdc = NULL;
 
-    if (params)
-    {
-        if (!createWindow(params, &hwnd, &hdc))
-            return false;
-    }
-    else
-    {
-        hwnd = __hwnd;
-        hdc = __hdc;
-    }
+    if (!createWindow(params, &hwnd, &hdc))
+        return false;
 
     PIXELFORMATDESCRIPTOR pfd;
     memset(&pfd, 0, sizeof(PIXELFORMATDESCRIPTOR));
@@ -899,12 +891,11 @@ bool initializeGL(WindowCreationParams* params)
     }
 
     // Create new/final window if needed
-    if (params)
+    DestroyWindow(hwnd);
+    hwnd = NULL;
+    hdc = NULL;
+    if (!attachToWindow)
     {
-        //DestroyWindow(hwnd);
-        hwnd = NULL;
-        hdc = NULL;
-
         if (!createWindow(params, &__hwnd, &__hdc))
         {
             wglDeleteContext(tempContext);
@@ -947,8 +938,10 @@ bool initializeGL(WindowCreationParams* params)
     {
         // Context is already here, just use it.
         __hrc = tempContext;
-        __hwnd = hwnd;
-        __hdc = hdc;
+        if (!attachToWindow) {
+            __hwnd = hwnd;
+            __hdc = hdc;
+        }
     }
 
     // Vertical sync.
@@ -1091,9 +1084,6 @@ Platform* Platform::create(Game* game, void* attachToWindow, int sizex, int size
         }
     }
 
-
-    if (!__attachToWindow)
-    {
     // Register our window class.
     WNDCLASSEX wc;
     wc.cbSize = sizeof(WNDCLASSEX);
@@ -1115,6 +1105,8 @@ Platform* Platform::create(Game* game, void* attachToWindow, int sizex, int size
         goto error;
     }
 
+    if (!__attachToWindow)
+    {
     if (params.fullscreen)
     {
         DEVMODE dm;
@@ -1135,7 +1127,7 @@ Platform* Platform::create(Game* game, void* attachToWindow, int sizex, int size
         }
     }
 
-    if (!initializeGL(&params))
+    if (!initializeGL(&params, __attachToWindow))
         goto error;
 
     // Show the window.
@@ -1170,7 +1162,7 @@ Platform* Platform::create(Game* game, void* attachToWindow, int sizex, int size
 			}
 		}
 
-		if (!initializeGL(NULL))
+		if (!initializeGL(&params, __attachToWindow))
             goto error;
     }
 
