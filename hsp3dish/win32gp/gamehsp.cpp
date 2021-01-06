@@ -23,6 +23,7 @@ CLSMODE_MAX,
 
 // material defines for load model
 static std::string model_defines;
+static std::string model_defines_shade;
 
 extern bool hasParameter( Material* material, const char* name );
 
@@ -84,6 +85,7 @@ void gpobj::reset( int id )
 	_fade = 0;
 	_rendergroup = 1;
 	_lightgroup = 1;
+	_lighthash = 0;
 
 	_usegpmat = -1;
 	_usegpphy = -1;
@@ -402,6 +404,58 @@ void gamehsp::hookGetSysReq( int reqid )
 }
 
 
+void gamehsp::resetCurrentLight(int lightmax, int plightmax, int slightmax)
+{
+	//	カレントライトの初期化
+	//
+	_max_dlight = lightmax;
+	if (_max_dlight < 0) _max_dlight = GetSysReq(SYSREQ_DLIGHT_MAX);
+	if (_max_dlight >= BUFSIZE_MULTILIGHT) _max_dlight = BUFSIZE_MULTILIGHT-1;
+	if (_max_dlight > BUFSIZE_MULTILIGHT) _max_dlight = BUFSIZE_MULTILIGHT;
+	if (_max_dlight < 1) _max_dlight = 1;
+	for (int i = 0; i < BUFSIZE_MULTILIGHT; i++) { _dir_light[i] = _deflight; }
+
+	_max_plight = plightmax;
+	if (_max_plight <0) _max_plight = GetSysReq(SYSREQ_PLIGHT_MAX);
+	if (_max_plight >= BUFSIZE_MULTILIGHT) _max_plight = BUFSIZE_MULTILIGHT - 1;
+	if (_max_plight > BUFSIZE_MULTILIGHT) _max_plight = BUFSIZE_MULTILIGHT;
+	for (int i = 0; i < BUFSIZE_MULTILIGHT; i++) { _point_light[i] = _deflight; }
+
+	_max_slight = slightmax;
+	if (_max_slight <0) _max_slight = GetSysReq(SYSREQ_SLIGHT_MAX);
+	if (_max_slight >= BUFSIZE_MULTILIGHT) _max_slight = BUFSIZE_MULTILIGHT - 1;
+	if (_max_slight > BUFSIZE_MULTILIGHT) _max_slight = BUFSIZE_MULTILIGHT;
+	for (int i = 0; i < BUFSIZE_MULTILIGHT; i++) { _spot_light[i] = _deflight; }
+
+	_curlight_hash = (_max_slight<<16)|(_max_plight<<8)|(_max_dlight);
+
+	//	シェーダー用のdefine定義を作成
+	//
+	char tmp[8];
+	light_defines = "MODULATE_ALPHA";
+	nolight_defines = "MODULATE_ALPHA";
+	if (_max_dlight) {
+		light_defines += ";DIRECTIONAL_LIGHT_COUNT ";
+		sprintf(tmp, "%d", _max_dlight);
+		//itoa(_max_dlight,tmp,10);
+		light_defines += tmp;// std::to_string(_max_dlight);
+	}
+	if (_max_plight) {
+		light_defines += ";POINT_LIGHT_COUNT ";
+		sprintf(tmp, "%d", _max_plight);
+		//itoa(_max_plight, tmp, 10);
+		light_defines += tmp;// std::to_string(_max_plight);
+	}
+	if (_max_slight) {
+		light_defines += ";SPOT_LIGHT_COUNT ";
+		sprintf(tmp, "%d", _max_slight);
+		//itoa(_max_slight, tmp, 10);
+		light_defines += tmp;// std::to_string(_max_slight);
+	}
+	splight_defines = light_defines + ";SPECULAR";
+}
+
+
 void gamehsp::resetScreen( int opt )
 {
 	if ( opt == 1 ) {
@@ -463,17 +517,7 @@ void gamehsp::resetScreen( int opt )
 	_deflight = makeNewLgt(-1, GPLGT_OPT_NORMAL);
 	selectLight(_deflight);
 
-	_max_dlight = GetSysReq(SYSREQ_DLIGHT_MAX);
-	if (_max_dlight > BUFSIZE_MULTILIGHT) _max_dlight = BUFSIZE_MULTILIGHT;
-	for (int i = 0; i<_max_dlight; i++) { _dir_light[i] = _deflight; }
-
-	_max_plight = GetSysReq(SYSREQ_PLIGHT_MAX);
-	if (_max_plight > BUFSIZE_MULTILIGHT) _max_plight = BUFSIZE_MULTILIGHT;
-	for (int i = 0; i<_max_plight; i++) { _point_light[i] = _deflight; }
-
-	_max_slight = GetSysReq(SYSREQ_SLIGHT_MAX);
-	if (_max_slight > BUFSIZE_MULTILIGHT) _max_slight = BUFSIZE_MULTILIGHT;
-	for (int i = 0; i<_max_slight; i++) { _spot_light[i] = _deflight; }
+	resetCurrentLight();
 
 	// シェーダー定義文字列を生成
 	setupDefines();
@@ -1276,7 +1320,7 @@ int gamehsp::drawSceneObject(gpobj *camobj)
 					//	Alphaのモジュレート設定
 					gameplay::MaterialParameter *prm_modalpha = obj->_prm_modalpha;
 					if (prm_modalpha) { prm_modalpha->setValue(obj->getAlphaRate()); }
-					drawNodeRecursive(obj->_node, wireflag);
+					drawNodeRecursive(node, wireflag);
 					num++;
 				}
 			}
@@ -1711,7 +1755,7 @@ int gamehsp::makeFloorNode( float xsize, float ysize, int color, int matid )
 	Material *material;
 	if (matid < 0) {
 		int matopt = 0;
-		if (_curlight < 0) matopt |= GPOBJ_MATOPT_NOLIGHT;
+		//if (_curlight < 0) matopt |= GPOBJ_MATOPT_NOLIGHT;
 		material = makeMaterialColor(color, matopt);
 		makeNewModel(obj, floorMesh, material);
 	}
@@ -1770,7 +1814,7 @@ int gamehsp::makePlateNode( float xsize, float ysize, int color, int matid )
 	Material *material;
 	if ( matid < 0 ) {
 		int matopt = 0;
-		if ( _curlight < 0 ) matopt |= GPOBJ_MATOPT_NOLIGHT;
+		//if ( _curlight < 0 ) matopt |= GPOBJ_MATOPT_NOLIGHT;
 		material = makeMaterialColor( color, matopt );
 		makeNewModel(obj, floorMesh, material);
 	}
@@ -1811,7 +1855,7 @@ int gamehsp::makeBoxNode( float size, int color, int matid )
 	Material *material;
 	if ( matid < 0 ) {
 		int matopt = 0;
-		if ( _curlight < 0 ) matopt |= GPOBJ_MATOPT_NOLIGHT;
+		//if ( _curlight < 0 ) matopt |= GPOBJ_MATOPT_NOLIGHT;
 		material = makeMaterialColor( color, matopt );
 		makeNewModel(obj, mesh, material);
 	}
@@ -1855,65 +1899,85 @@ int gamehsp::makeBoxNode( float size, int color, int matid )
 }
 
 
-bool gamehsp::makeModelNodeSub(Node *rootnode, int nest)
+bool gamehsp::makeModelNodeMaterialSub(Node *rootnode, int nest)
 {
 	Node *node = rootnode;
 	Material *mat;
-	Vector3 *vambient;
 	int part, tecs, prms;
 
-	gpobj *lgt;
-	Node *light_node;
-	lgt = getObj(_curlight);
-	if (lgt == NULL) node = NULL;
-	light_node = lgt->_node;
-	if (light_node == NULL) node = NULL;
-	vambient = (Vector3 *)&lgt->_vec[GPOBJ_USERVEC_DIR];
-
-	while (node != NULL) {
-		part = 0;
-		mat = NULL;
-		Drawable* drawable = node->getDrawable();
-		Model* model = dynamic_cast<Model*>(drawable);
-		if (model){
-			Technique *tec = NULL;
-			mat = model->getMaterial(0);
-			part = model->getMeshPartCount();
-			tecs = 0; prms = 0;
-			if (part) {
-				for (int i = 0; i < part; i++){
-					mat = model->getMaterial(i);
-					if (mat) {
-						//tec = mat->getTechniqueByIndex(0);
-						//mat->getParameter("u_directionalLightColor[0]")->setValue(Vector3(1, 1, 0));
-						if (hasParameter(mat, "u_directionalLightColor[0]")) {
-							mat->getParameter("u_directionalLightColor[0]")->bindValue(light_node->getLight(), &Light::getColor);
-						}
-						//mat->getParameter("u_directionalLightDirection[0]")->setValue(&directionalLightVector);
-						if (hasParameter(mat, "u_directionalLightDirection[0]")) {
-							mat->getParameter("u_directionalLightDirection[0]")->bindValue(light_node, &Node::getForwardVectorView);
-						}
-						if (hasParameter(mat, "u_ambientColor")) {
-							mat->getParameter("u_ambientColor")->setValue(vambient);
-						}
-					}
+	part = 0;
+	mat = NULL;
+	Drawable* drawable = node->getDrawable();
+	Model* model = dynamic_cast<Model*>(drawable);
+	if (model) {
+		Technique *tec = NULL;
+		mat = model->getMaterial(0);
+		part = model->getMeshPartCount();
+		tecs = 0; prms = 0;
+		if (part) {
+			for (int i = 0; i < part; i++) {
+				mat = model->getMaterial(i);
+				if (mat) {
+					setMaterialDefaultBinding(mat);
 				}
 			}
 		}
-		node = node->getNextSibling();
 	}
 
-	node = rootnode->getFirstChild();
-	if (node != NULL) {
-		makeModelNodeSub(node, nest + 1);
+	Node *pnode = node->getFirstChild();
+	while (1) {
+		if (pnode == NULL) break;
+		makeModelNodeMaterialSub(pnode, nest + 1);
+		pnode = pnode->getNextSibling();
 	}
 	return true;
 }
 
 
-std::string gamehsp::passCallback(Pass* pass, void* cookie)
+bool gamehsp::makeModelNodeSub(Node *rootnode, int nest)
 {
-	return model_defines;
+	Node *node = rootnode;
+	Material *mat;
+	int part, tecs, prms;
+
+	part = 0;
+	mat = NULL;
+	Drawable* drawable = node->getDrawable();
+	Model* model = dynamic_cast<Model*>(drawable);
+	if (model){
+		Technique *tec = NULL;
+		mat = model->getMaterial(0);
+		part = model->getMeshPartCount();
+		tecs = 0; prms = 0;
+		if (part) {
+			for (int i = 0; i < part; i++){
+				mat = model->getMaterial(i);
+				if (mat) {
+					setLightMaterialParameter(mat);
+				}
+			}
+		}
+	}
+
+	Node *pnode = node->getFirstChild();
+	while (1) {
+		if (pnode == NULL) break;
+		makeModelNodeSub(pnode, nest + 1);
+		pnode = pnode->getNextSibling();
+	}
+	return true;
+}
+
+
+std::string gamehsp::passCallback(Pass* pass, void* cookie, const char *defs)
+{
+	char *shade = strstr((char *)defs,"DIRECTIONAL_LIGHT_COUNT");
+	GP_WARN("DEFS:%s",defs);
+//	Alertf("%s\r\n%s", defs, model_defines_shade.c_str());
+	if (shade == NULL) {
+		return model_defines;			//光源計算がない場合
+	}
+	return model_defines_shade;			//光源計算を行う場合
 }
 
 
@@ -1935,6 +1999,13 @@ int gamehsp::makeModelNode(char *fname, char *idname, char *defs)
 	Node *node;
 
 	model_defines = defs;
+	model_defines_shade = defs;
+
+	if (*defs != 0) {
+		model_defines_shade += ";";
+	}
+	model_defines_shade += light_defines;
+
 	Material* boxMaterial = Material::create(fn2,gamehsp::passCallback,NULL);
 	if (boxMaterial == NULL) return -1;
 
@@ -1951,7 +2022,7 @@ int gamehsp::makeModelNode(char *fname, char *idname, char *defs)
 		char *rootid;
 		rootNode = Node::create("objRoot");
 		rootid = NULL;
-		scene = bundle->loadScene();
+		scene = bundle->loadScene(NULL, gamehsp::passCallback);
 		if (scene == NULL) {
 			Alertf("Scene not found.(%s)", fname);
 			return -1;
@@ -1978,7 +2049,7 @@ int gamehsp::makeModelNode(char *fname, char *idname, char *defs)
 			Node *subnode = Node::create("Subobj");
 			subnode->setDrawable(node->getDrawable());
 			subnode->setId(node->getId());
-			subnode->setRefNode(node);
+			//subnode->setRefNode(node);
 			rootNode->addChild(subnode);
 		}
 
@@ -1993,8 +2064,7 @@ int gamehsp::makeModelNode(char *fname, char *idname, char *defs)
 		SAFE_RELEASE(scene);
 	}
 
-	//obj->updateParameter(boxMaterial);
-	//updateNodeMaterial(rootNode, boxMaterial);
+	makeModelNodeMaterialSub(rootNode, 0);
 	makeModelNodeSub(rootNode, 0);
 
 	if (_curscene >= 0) {
@@ -2036,6 +2106,8 @@ void gamehsp::makeNewModel( gpobj *obj, Mesh *mesh, Material *material )
 	obj->_model = model;
 	obj->updateParameter( material );
 	SAFE_RELEASE(model);
+
+	obj->_lighthash = _curlight_hash;		// ライティングのハッシュ値を設定する
 }
 
 
@@ -2055,32 +2127,6 @@ int gamehsp::makeNewModelWithMat( gpobj *obj, Mesh *mesh, int matid )
 
 	//Alertf("[%x]===",new_material);
 	makeNewModel(obj, mesh, new_material);
-
-#if 0
-	Technique *tec = new_material->getTechnique();
-	Pass *pass = tec->getPassByIndex(0);
-	Effect *effect = pass->getEffect();
-
-	//new_material = Material::create( effect );
-	for (unsigned int i = 0, count = tec->getParameterCount(); i < count; ++i)
-	{
-		MaterialParameter *mp = tec->getParameterByIndex(i);
-		Alertf( "%d: [%s]",i, mp->getName() );
-	}
-
-	// Search for the first sampler uniform in the effect.
-	Uniform* samplerUniform = NULL;
-	for (unsigned int i = 0, count = effect->getUniformCount(); i < count; ++i)
-	{
-		Uniform* uniform = effect->getUniform(i);
-		if (uniform && uniform->getType() == GL_SAMPLER_2D)
-		{
-			samplerUniform = uniform;
-			Alertf("[%s] passcount%d [%s][%x]", samplerUniform->getName(), tec->getPassCount(), pass->getId(), new_material);
-			break;
-		}
-	}
-#endif
 
 	obj->_usegpmat = matid;
 	return 0;
@@ -2271,8 +2317,17 @@ int gamehsp::makeCloneNode( int objid, int mode, int eventID )
 		}
 
 		newobj->_mode = obj->_mode;
-		newobj->_usegpmat = obj->_usegpmat;
+		newobj->_timer = obj->_timer;
+		newobj->_mygroup = obj->_mygroup;
+		newobj->_colgroup = obj->_colgroup;
 		newobj->_shape = obj->_shape;
+		newobj->_usegpmat = obj->_usegpmat;
+		newobj->_transparent = obj->_transparent;
+		newobj->_fade = obj->_fade;
+		newobj->_rendergroup = obj->_rendergroup;
+		newobj->_lightgroup = obj->_lightgroup;
+		newobj->_lighthash = obj->_lighthash;
+
 		newobj->_sizevec = obj->_sizevec;
 
 		node->setUserObject(NULL);
@@ -3160,4 +3215,19 @@ int gamehsp::convertAxis(Vector3 *res, Vector3 *pos, int mode)
 
 	return 0;
 }
+
+int gamehsp::setObjLight(int objid)
+{
+	//		ライト設定
+	//
+	gpobj *obj = getObj(objid);
+	if (obj == NULL) return NULL;
+
+	Node *rootNode = obj->_node;
+	if (rootNode) {
+		makeModelNodeSub(rootNode, 0);
+	}
+	return 0;
+}
+
 

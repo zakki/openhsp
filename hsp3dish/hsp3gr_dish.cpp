@@ -1531,8 +1531,9 @@ static int cmdfunc_extcmd( int cmd )
 	case 0x65:								// gppostefx
 		break;
 	case 0x66:								// gpuselight
-		p1 = code_getdi( 0 );
-		p2 = game->selectLight( p1 );
+		p1 = code_getdi(0);
+		p2 = code_getdi(0);
+		p2 = game->selectLight( p1,p2 );
 		if (p2) throw HSPERR_ILLEGAL_FUNCTION;
 		break;
 	case 0x67:								// gpusecamera
@@ -2823,7 +2824,21 @@ static int cmdfunc_extcmd( int cmd )
 		ctx->stat = game->AddChangeEvent(p1, MOC_ANGX, (float)dp1, (float)dp2, (float)dp3, (float)dp4, (float)dp5, (float)dp6);
 		break;
 	}
-	case 0x150:								// gpmeshvertex
+	case 0x150:								// gpresetlight
+	{
+		p1 = code_getdi(-1);
+		p2 = code_getdi(-1);
+		p3 = code_getdi(-1);
+		game->resetCurrentLight(p1,p2,p3);
+		break;
+	}
+	case 0x151:								// setobjlight
+	{
+		p1 = code_getdi(0);
+		ctx->stat = game->setObjLight(p1);
+		break;
+	}
+	case 0x152:								// gpmeshvertex
 	{
 		PVal* pv1;
 		PVal* pv2;
@@ -2836,7 +2851,7 @@ static int cmdfunc_extcmd( int cmd )
 		aptr3 = code_getva(&pv3);
 		break;
 	}
-	case 0x151:								// gpmeshnormal
+	case 0x153:								// gpmeshnormal
 	{
 		PVal* pv1;
 		PVal* pv2;
@@ -2849,7 +2864,7 @@ static int cmdfunc_extcmd( int cmd )
 		aptr3 = code_getva(&pv3);
 		break;
 	}
-	case 0x152:								// gpmeshuv
+	case 0x154:								// gpmeshuv
 	{
 		PVal* pv1;
 		PVal* pv2;
@@ -2859,7 +2874,7 @@ static int cmdfunc_extcmd( int cmd )
 		aptr2 = code_getva(&pv2);
 		break;
 	}
-	case 0x153:								// gpmesh
+	case 0x155:								// gpmesh
 	{
 		PVal* pv1;
 		PVal* pv2;

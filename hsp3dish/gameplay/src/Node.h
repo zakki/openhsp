@@ -607,11 +607,6 @@ public:
      */
     Node* clone() const;
 
-#ifdef HSPDISH
-	Node* getRefNode() const;
-	void setRefNode(Node *node);
-#endif
-
 protected:
 
     /**
@@ -729,12 +724,6 @@ protected:
     mutable BoundingSphere _bounds;
     /** The dirty bits used for optimization. */
     mutable int _dirtyBits;
-
-#ifdef HSPDISH
-	/** Reference node for MeshDraw */
-	Node* _refnode;
-	mutable Matrix _worldref;
-#endif
 
 };
 

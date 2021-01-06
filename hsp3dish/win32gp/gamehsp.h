@@ -186,6 +186,7 @@ public:
 	int _fade;							// フェード設定(0=なし/+-で増減)
 	int _rendergroup;					// レンダリンググループ
 	int _lightgroup;					// ライティンググループ
+	int _lighthash;						// ライティングハッシュ値
 
 	gpspr *_spr;						// 生成された2Dスプライト情報
 	gpphy *_phy;						// 生成されたコリジョン情報
@@ -207,9 +208,28 @@ public:
 
 #define BUFSIZE_POLYCOLOR 32
 #define BUFSIZE_POLYTEX 64
-#define BUFSIZE_MULTILIGHT 16
+#define BUFSIZE_MULTILIGHT 10
 
 #define DEFAULT_ANIM_CLIPNAME "_idle"
+
+#define PARAMNAME_LIGHT_MAXSIZE 32
+#define PARAMNAME_LIGHT_DIRECTION "u_directionalLightDirection[0]"
+#define PARAMNAME_LIGHT_COLOR "u_directionalLightColor[0]"
+#define PARAMNAME_LIGHT_AMBIENT "u_ambientColor"
+#define PARAMNAME_LIGHT_POINTCOLOR "u_pointLightColor[0]"
+#define PARAMNAME_LIGHT_POINTPOSITION "u_pointLightPosition[0]"
+#define PARAMNAME_LIGHT_POINTRANGE "u_pointLightRangeInverse[0]"
+
+#define PARAMNAME_LIGHT_SPOTCOLOR "u_spotLightColor[0]"
+#define PARAMNAME_LIGHT_SPOTPOSITION "u_spotLightPosition[0]"
+#define PARAMNAME_LIGHT_SPOTDIRECTION "u_spotLightDirection[0]"
+#define PARAMNAME_LIGHT_SPOTRANGE "u_spotLightRangeInverse[0]"
+#define PARAMNAME_LIGHT_SPOTINNER "u_spotLightInnerAngleCos[0]"
+#define PARAMNAME_LIGHT_SPOTOUTER "u_spotLightOuterAngleCos[0]"
+
+#define LIGHT_OPT_NORMAL (0)
+#define LIGHT_OPT_POINT (1)
+#define LIGHT_OPT_SPOT (2)
 
 //	gamehsp Object
 class gamehsp: public Game
@@ -234,7 +254,7 @@ public:
 	/**
 	* for PassCallback
 	*/
-	static std::string passCallback(Pass* pass, void* cookie);
+	static std::string passCallback(Pass* pass, void* cookie, const char *defs);
 
 	/*
 		HSP Support Functions
@@ -261,6 +281,7 @@ public:
 	int *getObjectPrmPtr( int objid, int prmid );
 	int getObjectPrm( int objid, int prmid, int *outptr );
 	int setObjectPrm( int objid, int prmid, int value );
+	int setObjLight( int objid );
 
 	char *getAnimId(int objid, int index, int option);
 	int getAnimPrm(int objid, int index, int option, int *res);
@@ -309,7 +330,6 @@ public:
 	int drawSceneObject(gpobj *camobj);
 
 	int selectScene( int sceneid );
-	int selectLight( int lightid );
 	int selectCamera( int camid );
 
 	void makeNewModel( gpobj *obj, Mesh *mesh, Material *material );
@@ -322,6 +342,7 @@ public:
 	int makeModelNode( char *fname, char *idname, char *defs );
 
 	bool makeModelNodeSub(Node *node, int nest);
+	bool makeModelNodeMaterialSub(Node *node, int nest);
 
 	int makeCloneNode( int objid, int mode, int eventid );
 	int makeSpriteObj( int celid, int gmode, void *bmscr );
@@ -342,7 +363,8 @@ public:
 	Material *makeMaterialColor( int color, int lighting );
 	Material *makeMaterialTexture( char *fname, int matopt, Texture *opttex = NULL);
 	Material *makeMaterialFromShader( char *vshd, char *fshd, char *defs );
-	void setMaterialDefaultBinding( Material* material, int icolor, int matopt );
+	void setMaterialDefaultBinding(Material* material);
+	void setMaterialDefaultBinding(Material* material, int icolor, int matopt);
 	float setMaterialBlend( Material* material, int gmode, int gfrate );
 	Material *makeMaterialTex2D(Texture *texture, int matopt);
 	int getTextureWidth( void );
@@ -375,8 +397,12 @@ public:
 	int lookAtObject( int objid, Vector4 *prm );
 	void lookAtNode(Node* node, const Vector3& target );
 
+	// light
+	void resetCurrentLight( int lightmax=-1, int plightmax=-1, int slightmax=-1 );
+	void setLightMaterialParameter(Material* material);
+	int selectLight(int lightid, int index = 0);
+	int getSelectLight(int index = 0, int opt = 0);
 	void updateLightVector( gpobj *obj, int moc );
-
 
 	// physics
 	gpphy *getPhy( int id );
@@ -511,7 +537,6 @@ private:
 
 	// default scene
 	int _curscene;
-	int _curlight;
 	int _deflight;
 	int _curcamera;
 	int _defcamera;
@@ -533,6 +558,7 @@ private:
 	int _dir_light[BUFSIZE_MULTILIGHT];
 	int _point_light[BUFSIZE_MULTILIGHT];
 	int _spot_light[BUFSIZE_MULTILIGHT];
+	int _curlight_hash;
 
 	// Obj support value
 	Vector3 border1;		// BORDER座標1
@@ -560,6 +586,22 @@ private:
 	std::string	nolight_defines;
 	std::string	splight_defines;
 
+	char lightname_ambient[PARAMNAME_LIGHT_MAXSIZE];
+	char lightname_color[PARAMNAME_LIGHT_MAXSIZE];
+	char lightname_direction[PARAMNAME_LIGHT_MAXSIZE];
+
+	char lightname_pointcolor[PARAMNAME_LIGHT_MAXSIZE];
+	char lightname_pointposition[PARAMNAME_LIGHT_MAXSIZE];
+	char lightname_pointrange[PARAMNAME_LIGHT_MAXSIZE];
+
+	char lightname_spotcolor[PARAMNAME_LIGHT_MAXSIZE];
+	char lightname_spotposition[PARAMNAME_LIGHT_MAXSIZE];
+	char lightname_spotdirection[PARAMNAME_LIGHT_MAXSIZE];
+	char lightname_spotrange[PARAMNAME_LIGHT_MAXSIZE];
+	char lightname_spotinner[PARAMNAME_LIGHT_MAXSIZE];
+	char lightname_spotouter[PARAMNAME_LIGHT_MAXSIZE];
+
+	// preset user defines
 	std::string	user_vsh;
 	std::string	user_fsh;
 	std::string	user_defines;

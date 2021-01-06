@@ -429,6 +429,9 @@
 #cmd event_wangz $14b
 #cmd event_wangr $14c
 
+#cmd gpresetlight $150
+#cmd setobjlight $151
+
 
 #define fsin(%1,%2) %1=sin(%2)
 #define fcos(%1,%2) %1=cos(%2)

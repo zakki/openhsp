@@ -646,6 +646,187 @@ bool createWindow(WindowCreationParams* params, HWND* hwnd, HDC* hdc)
     return true;
 }
 
+#if defined(GP_USE_ANGLE)
+bool initializeGL(WindowCreationParams* params)
+{
+	// Create a temporary window and context to we can initialize GLEW and get access
+	// to additional OpenGL extension functions. This is a neccessary evil since the
+	// function for querying GL extensions is a GL extension itself.
+	HWND hwnd = __hwnd;
+	HDC hdc = __hdc;
+
+	PIXELFORMATDESCRIPTOR pfd;
+	memset(&pfd, 0, sizeof(PIXELFORMATDESCRIPTOR));
+	pfd.nSize = sizeof(PIXELFORMATDESCRIPTOR);
+	pfd.nVersion = 1;
+	pfd.dwFlags = PFD_DOUBLEBUFFER | PFD_SUPPORT_OPENGL | PFD_DRAW_TO_WINDOW;
+	pfd.iPixelType = PFD_TYPE_RGBA;
+	pfd.cColorBits = DEFAULT_COLOR_BUFFER_SIZE;
+	pfd.cDepthBits = DEFAULT_DEPTH_BUFFER_SIZE;
+	pfd.cStencilBits = DEFAULT_STENCIL_BUFFER_SIZE;
+	pfd.iLayerType = PFD_MAIN_PLANE;
+
+	int pixelFormat = ChoosePixelFormat(hdc, &pfd);
+	if (pixelFormat == 0)
+	{
+		//DestroyWindow(hwnd);
+		GP_ERROR("Failed to choose a pixel format.");
+		return false;
+	}
+
+	if (!SetPixelFormat(hdc, pixelFormat, &pfd))
+	{
+		//DestroyWindow(hwnd);
+		GP_ERROR("Failed to set the pixel format.");
+		return false;
+	}
+
+	// Hard-coded to 32-bit/OpenGL ES 2.0.
+	// NOTE: EGL_SAMPLE_BUFFERS, EGL_SAMPLES and EGL_DEPTH_SIZE MUST remain at the beginning of the attribute list
+	// since they are expected to be at indices 0-5 in config fallback code later.
+	// EGL_DEPTH_SIZE is also expected to
+	EGLint eglConfigAttrs[] =
+	{
+		EGL_SAMPLE_BUFFERS, params ? (params->samples > 0 ? 1 : 0) : 0,
+		EGL_SAMPLES, params ? params->samples : 0,
+		EGL_DEPTH_SIZE, 24,
+		EGL_RED_SIZE, 8,
+		EGL_GREEN_SIZE, 8,
+		EGL_BLUE_SIZE, 8,
+		EGL_ALPHA_SIZE, 8,
+		EGL_STENCIL_SIZE, 8,
+		EGL_SURFACE_TYPE, EGL_WINDOW_BIT,
+		EGL_RENDERABLE_TYPE, EGL_OPENGL_ES2_BIT,
+		EGL_NONE
+	};
+	__multiSampling = params && params->samples > 0;
+
+	EGLint eglConfigCount;
+	const EGLint eglContextAttrs[] =
+	{
+		EGL_CONTEXT_CLIENT_VERSION, 2,
+		EGL_NONE
+	};
+
+	const EGLint eglSurfaceAttrs[] =
+	{
+		EGL_RENDER_BUFFER, EGL_BACK_BUFFER,
+		EGL_NONE
+	};
+
+	if (__eglDisplay == EGL_NO_DISPLAY && __eglContext == EGL_NO_CONTEXT)
+	{
+		// Get the EGL display and initialize.
+		__eglDisplay = eglGetDisplay(EGL_DEFAULT_DISPLAY);
+		if (__eglDisplay == EGL_NO_DISPLAY)
+		{
+			DestroyWindow(hwnd);
+			GP_ERROR("eglGetDisplay");
+			return false;
+		}
+
+		if (eglInitialize(__eglDisplay, NULL, NULL) != EGL_TRUE)
+		{
+			DestroyWindow(hwnd);
+			GP_ERROR("eglInitialize");
+			return false;
+		}
+
+		// Try both 24 and 16-bit depth sizes since some hardware (i.e. Tegra) does not support 24-bit depth
+		bool validConfig = false;
+		EGLint depthSizes[] = { 24, 16 };
+		for (unsigned int i = 0; i < 2; ++i)
+		{
+			eglConfigAttrs[1] = params ? (params->samples > 0 ? 1 : 0) : 0;
+			eglConfigAttrs[3] = params ? params->samples : 0;
+			eglConfigAttrs[5] = depthSizes[i];
+
+			if (eglChooseConfig(__eglDisplay, eglConfigAttrs, &__eglConfig, 1, &eglConfigCount) == EGL_TRUE && eglConfigCount > 0)
+			{
+				validConfig = true;
+				break;
+			}
+
+			if (params && params->samples > 0)
+			{
+				// Try lowering the MSAA sample size until we find a  config
+				int sampleCount = params->samples;
+				while (sampleCount)
+				{
+					GP_WARN("No EGL config found for depth_size=%d and samples=%d. Trying samples=%d instead.", depthSizes[i], sampleCount, sampleCount / 2);
+					sampleCount /= 2;
+					eglConfigAttrs[1] = sampleCount > 0 ? 1 : 0;
+					eglConfigAttrs[3] = sampleCount;
+					if (eglChooseConfig(__eglDisplay, eglConfigAttrs, &__eglConfig, 1, &eglConfigCount) == EGL_TRUE && eglConfigCount > 0)
+					{
+						validConfig = true;
+						break;
+					}
+				}
+
+				__multiSampling = sampleCount > 0;
+
+				if (validConfig)
+					break;
+			}
+			else
+			{
+				GP_WARN("No EGL config found for depth_size=%d.", depthSizes[i]);
+			}
+		}
+
+		if (!validConfig)
+		{
+			DestroyWindow(hwnd);
+			GP_ERROR("eglChooseConfig");
+			return false;
+		}
+
+		__eglContext = eglCreateContext(__eglDisplay, __eglConfig, EGL_NO_CONTEXT, eglContextAttrs);
+		if (__eglContext == EGL_NO_CONTEXT)
+		{
+			DestroyWindow(hwnd);
+			GP_ERROR("eglCreateContext");
+			return false;
+		}
+	}
+
+	__eglSurface = eglCreateWindowSurface(__eglDisplay, __eglConfig, hwnd, eglSurfaceAttrs);
+	if (__eglSurface == EGL_NO_SURFACE)
+	{
+		DestroyWindow(hwnd);
+		GP_ERROR("eglCreateWindowSurface");
+		return false;
+	}
+
+	if (eglMakeCurrent(__eglDisplay, __eglSurface, __eglSurface, __eglContext) != EGL_TRUE)
+	{
+		DestroyWindow(hwnd);
+		GP_ERROR("eglMakeCurrent");
+		return false;
+	}
+
+	__hwnd = hwnd;
+	__hdc = hdc;
+
+	// Set vsync.
+	eglSwapInterval(__eglDisplay, WINDOW_VSYNC ? 1 : 0);
+
+	// Initialize OpenGL ES extensions.
+	__glExtensions = (const char*)glGetString(GL_EXTENSIONS);
+
+	if (strstr(__glExtensions, "GL_OES_vertex_array_object") || strstr(__glExtensions, "GL_ARB_vertex_array_object"))
+	{
+		// Disable VAO extension for now.
+		glBindVertexArray = (PFNGLBINDVERTEXARRAYOESPROC)eglGetProcAddress("glBindVertexArrayOES");
+		glDeleteVertexArrays = (PFNGLDELETEVERTEXARRAYSOESPROC)eglGetProcAddress("glDeleteVertexArraysOES");
+		glGenVertexArrays = (PFNGLGENVERTEXARRAYSOESPROC)eglGetProcAddress("glGenVertexArraysOES");
+		glIsVertexArray = (PFNGLISVERTEXARRAYOESPROC)eglGetProcAddress("glIsVertexArrayOES");
+	}
+	return true;
+}
+#else
+
 bool initializeGL(WindowCreationParams* params)
 {
     // Create a temporary window and context to we can initialize GLEW and get access
@@ -683,150 +864,6 @@ bool initializeGL(WindowCreationParams* params)
         return false;
     }
 
-#if defined(GP_USE_ANGLE)
-    // Hard-coded to 32-bit/OpenGL ES 2.0.
-    // NOTE: EGL_SAMPLE_BUFFERS, EGL_SAMPLES and EGL_DEPTH_SIZE MUST remain at the beginning of the attribute list
-    // since they are expected to be at indices 0-5 in config fallback code later.
-    // EGL_DEPTH_SIZE is also expected to
-    EGLint eglConfigAttrs[] =
-    {
-        EGL_SAMPLE_BUFFERS, params ? (params->samples > 0 ? 1 : 0) : 0,
-        EGL_SAMPLES, params ? params->samples : 0,
-        EGL_DEPTH_SIZE, 24,
-        EGL_RED_SIZE, 8,
-        EGL_GREEN_SIZE, 8,
-        EGL_BLUE_SIZE, 8,
-        EGL_ALPHA_SIZE, 8,
-        EGL_STENCIL_SIZE, 8,
-        EGL_SURFACE_TYPE, EGL_WINDOW_BIT,
-        EGL_RENDERABLE_TYPE, EGL_OPENGL_ES2_BIT,
-        EGL_NONE
-    };
-    __multiSampling = params && params->samples > 0;
-
-    EGLint eglConfigCount;
-    const EGLint eglContextAttrs[] =
-    {
-        EGL_CONTEXT_CLIENT_VERSION, 2,
-        EGL_NONE
-    };
-
-    const EGLint eglSurfaceAttrs[] =
-    {
-        EGL_RENDER_BUFFER, EGL_BACK_BUFFER,
-        EGL_NONE
-    };
-
-    if (__eglDisplay == EGL_NO_DISPLAY && __eglContext == EGL_NO_CONTEXT)
-    {
-        // Get the EGL display and initialize.
-        __eglDisplay = eglGetDisplay(EGL_DEFAULT_DISPLAY);
-        if (__eglDisplay == EGL_NO_DISPLAY)
-        {
-            DestroyWindow(hwnd);
-            GP_ERROR("eglGetDisplay");
-            return false;
-        }
-
-        if (eglInitialize(__eglDisplay, NULL, NULL) != EGL_TRUE)
-        {
-            DestroyWindow(hwnd);
-            GP_ERROR("eglInitialize");
-            return false;
-        }
-
-        // Try both 24 and 16-bit depth sizes since some hardware (i.e. Tegra) does not support 24-bit depth
-        bool validConfig = false;
-        EGLint depthSizes[] = { 24, 16 };
-        for (unsigned int i = 0; i < 2; ++i)
-        {
-            eglConfigAttrs[1] = params ? (params->samples > 0 ? 1 : 0) : 0;
-            eglConfigAttrs[3] = params ? params->samples : 0;
-            eglConfigAttrs[5] = depthSizes[i];
-
-            if (eglChooseConfig(__eglDisplay, eglConfigAttrs, &__eglConfig, 1, &eglConfigCount) == EGL_TRUE && eglConfigCount > 0)
-            {
-                validConfig = true;
-                break;
-            }
-
-            if (params && params->samples > 0)
-            {
-                // Try lowering the MSAA sample size until we find a  config
-                int sampleCount = params->samples;
-                while (sampleCount)
-                {
-                    GP_WARN("No EGL config found for depth_size=%d and samples=%d. Trying samples=%d instead.", depthSizes[i], sampleCount, sampleCount / 2);
-                    sampleCount /= 2;
-                    eglConfigAttrs[1] = sampleCount > 0 ? 1 : 0;
-                    eglConfigAttrs[3] = sampleCount;
-                    if (eglChooseConfig(__eglDisplay, eglConfigAttrs, &__eglConfig, 1, &eglConfigCount) == EGL_TRUE && eglConfigCount > 0)
-                    {
-                        validConfig = true;
-                        break;
-                    }
-                }
-
-                __multiSampling = sampleCount > 0;
-
-                if (validConfig)
-                    break;
-            }
-            else
-            {
-                GP_WARN("No EGL config found for depth_size=%d.", depthSizes[i]);
-            }
-        }
-
-        if (!validConfig)
-        {
-            DestroyWindow(hwnd);
-            GP_ERROR("eglChooseConfig");
-            return false;
-        }
-
-        __eglContext = eglCreateContext(__eglDisplay, __eglConfig, EGL_NO_CONTEXT, eglContextAttrs);
-        if (__eglContext == EGL_NO_CONTEXT)
-        {
-            DestroyWindow(hwnd);
-            GP_ERROR("eglCreateContext");
-            return false;
-        }
-    }
-
-    __eglSurface = eglCreateWindowSurface(__eglDisplay, __eglConfig, hwnd, eglSurfaceAttrs);
-    if (__eglSurface == EGL_NO_SURFACE)
-    {
-        DestroyWindow(hwnd);
-        GP_ERROR("eglCreateWindowSurface");
-        return false;
-    }
-
-    if (eglMakeCurrent(__eglDisplay, __eglSurface, __eglSurface, __eglContext) != EGL_TRUE)
-    {
-        DestroyWindow(hwnd);
-        GP_ERROR("eglMakeCurrent");
-        return false;
-    }
-
-    __hwnd = hwnd;
-    __hdc = hdc;
-
-    // Set vsync.
-    eglSwapInterval(__eglDisplay, WINDOW_VSYNC ? 1 : 0);
-
-    // Initialize OpenGL ES extensions.
-    __glExtensions = (const char*)glGetString(GL_EXTENSIONS);
-
-    if (strstr(__glExtensions, "GL_OES_vertex_array_object") || strstr(__glExtensions, "GL_ARB_vertex_array_object"))
-    {
-        // Disable VAO extension for now.
-        glBindVertexArray = (PFNGLBINDVERTEXARRAYOESPROC)eglGetProcAddress("glBindVertexArrayOES");
-        glDeleteVertexArrays = (PFNGLDELETEVERTEXARRAYSOESPROC)eglGetProcAddress("glDeleteVertexArraysOES");
-        glGenVertexArrays = (PFNGLGENVERTEXARRAYSOESPROC)eglGetProcAddress("glGenVertexArraysOES");
-        glIsVertexArray = (PFNGLISVERTEXARRAYOESPROC)eglGetProcAddress("glIsVertexArrayOES");
-    }
-#else
     HGLRC tempContext = wglCreateContext(hdc);
     if (!tempContext)
     {
@@ -845,8 +882,6 @@ bool initializeGL(WindowCreationParams* params)
         return false;
     }
 
-#if 1
-	
 	if( wglChoosePixelFormatARB && wglCreateContextAttribsARB )
     {
     // Choose pixel format using wglChoosePixelFormatARB, which allows us to specify
@@ -957,7 +992,6 @@ bool initializeGL(WindowCreationParams* params)
         __hwnd = hwnd;
         __hdc = hdc;
     }
-#endif
 
     // Vertical sync.
     if (wglSwapIntervalEXT) 
@@ -990,9 +1024,10 @@ bool initializeGL(WindowCreationParams* params)
         glRenderbufferStorage = glRenderbufferStorageEXT;
         glRenderbufferStorageMultisample = glRenderbufferStorageMultisampleEXT;
     }
-#endif
     return true;
 }
+#endif
+
 
 Platform* Platform::create(Game* game, void* attachToWindow, int sizex, int sizey, bool fullscreen )
 {
