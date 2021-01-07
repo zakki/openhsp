@@ -300,12 +300,15 @@ void gamehsp::setLightMaterialParameter(Material* material)
 		if (light_node) {
 			// ライトの方向設定
 			lightname_direction[28] = '0' + i;	// "u_directionalLightDirection[0]"
-			if (hasParameter(material, lightname_direction))
+			if (hasParameter(material, lightname_direction)) {
 				material->getParameter(lightname_direction)->bindValue(light_node, &Node::getForwardVectorView);
+			}
 			// ライトの色設定
 			lightname_color[24] = '0' + i;	// "u_directionalLightColor[0]"
-			if (hasParameter(material, lightname_color))
-				material->getParameter(lightname_color)->setValue(light_node->getLight()->getColor());
+			if (hasParameter(material, lightname_color)) {
+				material->getParameter(lightname_color)->bindValue(light_node, &Node::getLightColor);
+				//material->getParameter(lightname_color)->setValue(light_node->getLight()->getColor());
+			}
 		}
 	}
 	//	ポイントライト
@@ -322,12 +325,15 @@ void gamehsp::setLightMaterialParameter(Material* material)
 				}
 				// ライトの色設定
 				lightname_pointcolor[18] = '0' + i;	// "u_pointLightColor[0]"
-				if (hasParameter(material, lightname_pointcolor))
-					material->getParameter(lightname_pointcolor)->setValue(lg->getColor());
+				if (hasParameter(material, lightname_pointcolor)) {
+					material->getParameter(lightname_pointcolor)->bindValue(light_node, &Node::getLightColor);
+					//material->getParameter(lightname_pointcolor)->setValue(lg->getColor());
+				}
 				// ライトの範囲
 				lightname_pointrange[25] = '0' + i;	// "u_pointLightRangeInverse[0]"
-				if (hasParameter(material, lightname_pointrange))
+				if (hasParameter(material, lightname_pointrange)) {
 					material->getParameter(lightname_pointrange)->setValue(lg->getRangeInverse());
+				}
 			}
 		}
 	}
@@ -349,18 +355,23 @@ void gamehsp::setLightMaterialParameter(Material* material)
 				}
 				// ライトの色設定
 				lightname_spotcolor[17] = '0' + i;	// "u_spotLightColor[0]"
-				if (hasParameter(material, lightname_spotcolor))
-					material->getParameter(lightname_spotcolor)->setValue(lg->getColor());
+				if (hasParameter(material, lightname_spotcolor)) {
+					material->getParameter(lightname_spotcolor)->bindValue(light_node, &Node::getLightColor);
+					//material->getParameter(lightname_spotcolor)->setValue(lg->getColor());
+				}
 				// ライトの範囲
 				lightname_spotrange[24] = '0' + i;	// "u_spotLightRangeInverse[0]"
-				if (hasParameter(material, lightname_spotrange))
+				if (hasParameter(material, lightname_spotrange)) {
 					material->getParameter(lightname_spotrange)->setValue(lg->getRangeInverse());
+				}
 				lightname_spotinner[25] = '0' + i;	// "u_spotLightInnerAngleCos[0]"
-				if (hasParameter(material, lightname_spotinner))
+				if (hasParameter(material, lightname_spotinner)) {
 					material->getParameter(lightname_spotinner)->setValue(lg->getInnerAngleCos());
+				}
 				lightname_spotouter[25] = '0' + i;	// "u_spotLightOuterAngleCos[0]"
-				if (hasParameter(material, lightname_spotouter))
+				if (hasParameter(material, lightname_spotouter)) {
 					material->getParameter(lightname_spotouter)->setValue(lg->getOuterAngleCos());
+				}
 			}
 		}
 	}
@@ -401,6 +412,7 @@ void gamehsp::setMaterialDefaultBinding( Material* material, int icolor, int mat
 {
 	Vector4 color;
 
+	//	シェーダーに必要なパラメーターを反映させる
 	setMaterialDefaultBinding(material);
 
 	//	カレントライトを反映させる

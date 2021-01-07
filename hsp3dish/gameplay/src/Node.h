@@ -406,6 +406,13 @@ public:
     Vector3 getActiveCameraTranslationView() const;
 
     /**
+     * Returns the color vector of the Light node
+     *
+     * @return The color vector of the Light node
+     */
+    Vector3 getLightColor() const;
+
+    /**
      * Gets the first animation in the node hierarchy with the specified ID.
      *
      * @param id The ID of the animation to get. Returns the first animation if ID is NULL.

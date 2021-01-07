@@ -633,6 +633,20 @@ Vector3 Node::getActiveCameraTranslationView() const
     return Vector3::zero();
 }
 
+
+#ifdef HSPDISH
+Vector3 Node::getLightColor(void) const
+{
+    if (_light == NULL) {
+        return Vector3::zero();
+    }
+    Vector3 vector = _light->getColor();
+    return vector;
+}
+
+#endif
+
+
 void Node::hierarchyChanged()
 {
     // When our hierarchy changes our world transform is affected, so we must dirty it.

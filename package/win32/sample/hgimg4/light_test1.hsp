@@ -9,67 +9,34 @@ title "HGIMG4 Test"
 
 	gpreset
 	gpresetlight 1,1			; ポイントライトを1個追加する
+	setcls CLSMODE_SOLID, $404040		; 背景色
 
-	setcls CLSMODE_SOLID, $404040
-
-	setcolor GPOBJ_LIGHT, 0.5,0,0		; 標準ライトカラーを設定
+	setcolor GPOBJ_LIGHT, 0.3,0.3,0.3	; 標準ライトカラーを設定
 	setdir GPOBJ_LIGHT, 0.2,0.2,0.2		; 標準アンビエントカラーを設定
 
-	gpbox id_model, 0.5, $00ff00		; 箱ノードを生成する
+	;	ポイントライトを設定します
+	gpnull id_light				; ヌルノードを生成する
+	gplight id_light, GPOBJ_LGTOPT_POINT,6	; ポイントライトとして設定する
+	setcolor id_light, 0,1,0		; ライトカラーを設定
+	setpos id_light, 0, 0.5, 0		; ライトの座標を設定
+	gpuselight id_light			; ポイントライトをカレントに登録する
 
-	;	箱をライトとして設定します
-	;	何もないモデルをライトにする場合はgpnullで生成してください
-	gplight id_model, GPOBJ_LGTOPT_POINT,10	; ポイントライトとして設定する
-	setcolor id_model, 0,1,0			; ライトカラーを設定
-	gpuselight id_model				; ポイントライトを使用する
+	setpos GPOBJ_CAMERA, 0,2,6		; カメラ位置を設定
+	gplookat GPOBJ_CAMERA, 0,0.3,0		; カメラから指定した座標を見る
 
-	;	モデルをたくさん配置する
-	i=-1
-	mdx=10:mdz=10				; X,Z方向の個数
-	px=20.0/mdx:pz=20.0/mdz			; 間隔を計算する
-	z=-10.0					; 配置開始Z座標
-	repeat mdz
-	x=-10.0					; 配置開始X座標
-	repeat mdx
-		if i<0 {
-			gpload id_base,"res/duck"; モデル読み込み
-			;gpbox id_base, 1	; 箱ノードを生成する
-			i=id_base
-		} else {
-			gpclone i, id_base	; クローンでモデルを作成する
-		}
-		setpos i, x,1,z
-		x+=px
-	loop
-	z+=pz
-	loop
+	;	3Dモデルを生成
+	;	(生成される3Dモデルはカレントライトの影響を受けます)
+	gpbox id_model, 1			; 箱ノードを生成する
+	setpos id_model, -1,0.5,0
 
-	gpfloor id_floor, 40,40, $00ffff	; 床ノードを追加
+	gpbox id_model2, 1			; 箱ノードを生成する
+	setpos id_model2, 1,0.5,0
 
-	gosub *caminit
-
-	myx=0.0:myy=3.0:myz=0.0				; 光源の座標
-	px=0.0:pz=0.0
-	tx=0.0:tz=0.0
-	rate = 0.01				; 光源が動く速さ
+	gpfloor id_floor, 40,40, $808080	; 床ノードを追加
 
 *main
 	stick key,15+256
 	if key&128 : end
-
-	gosub *cammove
-
-	dx=tx-myx:dz=tz-myz
-	if (absf(dx)+absf(dz))<5 {
-		;	光源のターゲット座標を決定する
-		tx=double(-10+rnd(20))
-		tz=double(-10+rnd(20))
-	}
-	px=limitf(px+dx*rate,-0.3,0.3)
-	pz=limitf(pz+dz*rate,-0.3,0.3)
-	myx+=px
-	myz+=pz
-	setpos id_model, myx, myy, myz
 
 	redraw 0			; 描画開始
 
@@ -83,32 +50,3 @@ title "HGIMG4 Test"
 	await 1000/60			; 待ち時間
 
 	goto *main
-
-
-*caminit
-	camx=0.0:camy=3.0:camz=3.0
-	return
-
-*cammove
-	;	タッチでカメラ位置を動かす
-	a=key&256
-	if dragmd {	; ドラッグ中
-		if a {
-			camx=0.05*(mousex-dragx)+cx
-			camy=0.05*(mousey-dragy)+cz
-		} else {
-			dragmd=0
-		}
-	} else {	; ドラッグなし
-		if a {
-			cx=camx:cz=camz
-			dragx=mousex:dragy=mousey
-			dragmd=1
-		}
-	}
-	setpos GPOBJ_CAMERA, camx,camy,camz		; カメラ位置を設定
-	gplookat GPOBJ_CAMERA, 0,1.8,0		; カメラから指定した座標を見る
-	return
-
-
-
