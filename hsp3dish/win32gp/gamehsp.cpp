@@ -1373,6 +1373,22 @@ void gamehsp::drawAll( int option )
 }
 
 
+Drawable *gamehsp::getDrawable(Node *node)
+{
+	Drawable* drawable = node->getDrawable();
+	if (drawable) return drawable;
+
+	Node *pnode = node->getFirstChild();
+	while (1) {
+		if (pnode == NULL) break;
+		drawable = getDrawable(pnode);
+		if (drawable) return drawable;
+		pnode = pnode->getNextSibling();
+	}
+	return NULL;
+}
+
+
 bool gamehsp::pickupNode(Node *node, int deep)
 {
 	Drawable* drawable = node->getDrawable();
@@ -1983,15 +1999,25 @@ std::string gamehsp::passCallback(Pass* pass, void* cookie, const char *defs)
 
 int gamehsp::makeModelNode(char *fname, char *idname, char *defs)
 {
-	char fn[512];
-	char fn2[512];
+	char fn[1024];
+	char fn2[1024];
+	char fn3[1024];
 	gpobj *obj = addObj();
 	if (obj == NULL) return -1;
 
 	getpath(fname, fn, 1);
 	strcpy(fn2, fn);
-	strcat(fn, ".gpb");
-	strcat(fn2, ".material");
+	strcpy(fn3, fn);
+
+	if (strstr2(fn, DEFAULT_GPB_FILEEXT) == NULL) {
+		strcat(fn, DEFAULT_GPB_FILEEXT);
+	}
+	if (strstr2(fn2, DEFAULT_MATERIAL_FILEEXT) == NULL) {
+		strcat(fn2, DEFAULT_MATERIAL_FILEEXT);
+	}
+	if (strstr2(fn3, DEFAULT_PHYSISCS_FILEEXT) == NULL) {
+		strcat(fn3, DEFAULT_PHYSISCS_FILEEXT);
+	}
 
 	Bundle *bundle = Bundle::create(fn);
 	Node *rootNode;
@@ -2082,6 +2108,14 @@ int gamehsp::makeModelNode(char *fname, char *idname, char *defs)
 	// 初期化パラメーターを保存
 	obj->_shape = GPOBJ_SHAPE_MODEL;
 
+#if 0
+	Properties* properties = Properties::create(fn3);
+	if (properties != NULL)
+	{
+		rootNode->setCollisionObject(properties);
+		SAFE_DELETE(properties);
+	}
+#endif
 	return obj->_id;
 }
 
@@ -2506,6 +2540,9 @@ void gamehsp::updateAll( void )
 
     if ( getState() == PAUSED ) return;
 
+	//	Update physics and animation
+	updateAnimation();
+
 	gpobj *obj = _gpobj;
 	for(i=0;i<_maxobj;i++) {
 		if (obj->isVisible()) {
@@ -2519,6 +2556,7 @@ void gamehsp::updateAll( void )
 		}
 		obj++;
 	}
+
 }
 
 

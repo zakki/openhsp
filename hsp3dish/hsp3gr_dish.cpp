@@ -1846,7 +1846,8 @@ static int cmdfunc_extcmd( int cmd )
 		p1 = code_getdi( 0 );
 		fp1 = (float)code_getdd( 1.0 );
 		fp2 = (float)code_getdd( 0.5 );
-		ctx->stat = game->setObjectBindPhysics( p1, fp1, fp2 );
+		p2 = code_getdi(0);
+		ctx->stat = game->setObjectBindPhysics( p1, fp1, fp2, p2 );
 		break;
 	case 0x7e:								// gpcamera
 		p1 = code_getdi( 0 );
@@ -2204,34 +2205,33 @@ static int cmdfunc_extcmd( int cmd )
 		break;
 	case 0xe5:								// fvdir
 		{
-/*
-		VECTOR v;
+		VECTOR *v;
 		VECTOR ang;
 		p_vec = code_getvvec();
-		code_getvec( &v );
+		code_getvec( &p_vec1);
+		v = (VECTOR *)&p_vec1;
 		p1 = code_getdi( 0 );
 		SetVector( &ang, (float)p_vec[0], (float)p_vec[1], (float)p_vec[2], 1.0f );
 		InitMatrix();
 		switch( p1 ) {
-		case HGMODEL_ROTORDER_ZYX:
+		case 0:
 			RotZ( ang.z );
 			RotY( ang.y );
 			RotX( ang.x );
 			break;
-		case HGMODEL_ROTORDER_XYZ:
+		case 1:
 			RotX( ang.x );
 			RotY( ang.y );
 			RotZ( ang.z );
 			break;
-		case HGMODEL_ROTORDER_YXZ:
+		case 2:
 			RotY( ang.y );
 			RotX( ang.x );
 			RotZ( ang.z );
 			break;
 		}
-		ApplyMatrix( &ang, &v );
+		ApplyMatrix( &ang, v );
 		code_setvec( p_vec, &ang );
-*/
 		break;
 		}
 	case 0xe6:								// fvmin
@@ -2777,6 +2777,11 @@ static int cmdfunc_extcmd( int cmd )
 	case 0x125:								// event_addcolor
 	case 0x126:								// event_addwork
 	case 0x127:								// event_addwork2
+	case 0x128:								// event_setaxang
+	case 0x129:								// event_setangx
+	case 0x12a:								// event_setangy
+	case 0x12b:								// event_setangz
+	case 0x12c:								// event_setangr
 		p1 = code_getdi(0);
 		dp1 = code_getdd(0.0);
 		dp2 = code_getdd(0.0);

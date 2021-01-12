@@ -131,11 +131,6 @@ void main()
     _baseColor = vec4(gray, gray, gray,texture2D(u_diffuseTexture, v_texCoord).a);
     gl_FragColor.a = _baseColor.a;
 
-    #if defined(TEXTURE_DISCARD_ALPHA)
-    if (gl_FragColor.a < 0.5)
-        discard;
-    #endif
-
     #if defined(LIGHTING)
 
     gl_FragColor.rgb = getLitPixel();
@@ -154,5 +149,10 @@ void main()
 
     #if defined(MODULATE_ALPHA)
     gl_FragColor.a *= u_modulateAlpha;
+    #endif
+
+    #if !defined(TEXTURE_NODISCARD_ALPHA)
+    if (gl_FragColor.a < 0.005)
+        discard;
     #endif
 }

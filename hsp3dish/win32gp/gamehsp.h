@@ -110,6 +110,7 @@ GPPSET_MAX
 #define GPOBJ_MATOPT_USERBUFFER (256)
 #define GPOBJ_MATOPT_MIRROR (512)
 #define GPOBJ_MATOPT_CUBEMAP (1024)
+#define GPOBJ_MATOPT_NODISCARD (2048)
 
 #define GPDRAW_OPT_OBJUPDATE (1)
 #define GPDRAW_OPT_DRAWSCENE (2)
@@ -231,6 +232,10 @@ public:
 #define LIGHT_OPT_POINT (1)
 #define LIGHT_OPT_SPOT (2)
 
+#define DEFAULT_GPB_FILEEXT ".gpb"
+#define DEFAULT_MATERIAL_FILEEXT ".material"
+#define DEFAULT_PHYSISCS_FILEEXT ".physics"
+
 //	gamehsp Object
 class gamehsp: public Game
 {
@@ -276,6 +281,7 @@ public:
 	Node *getNode( int objid );
 	Light *getLight( int lgtid );
 	Camera *getCamera( int camid );
+	Drawable *getDrawable(Node *node);
 	int setObjName( int objid, char *name );
 	char *getObjName( int objid );
 	int *getObjectPrmPtr( int objid, int prmid );
@@ -406,8 +412,8 @@ public:
 
 	// physics
 	gpphy *getPhy( int id );
-	int setObjectBindPhysics( int objid, float mass, float friction );
-	gpphy *setPhysicsObjectAuto( gpobj *obj, float mass, float friction );
+	int setObjectBindPhysics( int objid, float mass, float friction, int option=0 );
+	gpphy *setPhysicsObjectAuto( gpobj *obj, float mass, float friction, int option=0 );
 	int objectPhysicsApply( int objid, int type, Vector3 *prm );
 
 	// sprite

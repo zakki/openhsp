@@ -445,6 +445,10 @@ optƒpƒ‰ƒ[ƒ^[‚É‚æ‚èAƒ}ƒeƒŠƒAƒ‹‚ÌÝ’è‚ð•ÏX‚·‚é‚±‚Æ‚ª‚Å‚«‚Ü‚·B
 	GPOBJ_MATOPT_NOZTEST    ZƒeƒXƒg‚ð–³Œø‚É‚·‚é
 	GPOBJ_MATOPT_NOZWRITE   Zƒoƒbƒtƒ@‘‚«ž‚Ý‚ð–³Œø‚É‚·‚é
 	GPOBJ_MATOPT_BLENDADD   ƒvƒŒƒ“ƒhƒ‚[ƒh‚ð‰ÁŽZ‚ÉÝ’è‚·‚é
+	GPOBJ_MATOPT_SPECULAR   ŒõŒ¹ŒvŽZŽž‚ÉƒXƒyƒLƒ…ƒ‰[‚ð“K—p‚µ‚Ü‚·
+	GPOBJ_MATOPT_MIRROR     ”½“]‚µ‚½‰æ‘œ‚Æ‚µ‚Ä•\Ž¦‚·‚é
+	GPOBJ_MATOPT_CUBEMAP    ƒLƒ…[ƒuƒ}ƒbƒv‚Æ‚µ‚ÄÝ’è‚·‚é
+	GPOBJ_MATOPT_NODISCARD  ƒ¿ƒ`ƒƒƒ“ƒlƒ‹‚É‚æ‚éƒsƒNƒZƒ‹”jŠü‚ð–³Œø‚É‚·‚é
 ^p
 ³í‚Éƒ}ƒeƒŠƒAƒ‹‚ª¶¬‚Å‚«‚È‚©‚Á‚½ê‡‚ÍAƒGƒ‰[3(ƒpƒ‰ƒ[ƒ^‚Ì’l‚ªˆÙí‚Å‚·)‚ª”­¶‚µ‚Ü‚·B
 ³‚µ‚­¶¬‚³‚ê‚½ê‡‚ÍAvar‚ÅŽw’è‚³‚ê‚½•Ï”‚Éƒ}ƒeƒŠƒAƒ‹ID(®”’l)‚ª‘ã“ü‚³‚ê‚Ü‚·B
@@ -486,6 +490,9 @@ optƒpƒ‰ƒ[ƒ^[‚É‚æ‚èAƒ}ƒeƒŠƒAƒ‹‚ÌÝ’è‚ð•ÏX‚·‚é‚±‚Æ‚ª‚Å‚«‚Ü‚·B
 	GPOBJ_MATOPT_NOZTEST    ZƒeƒXƒg‚ð–³Œø‚É‚·‚é
 	GPOBJ_MATOPT_NOZWRITE   Zƒoƒbƒtƒ@‘‚«ž‚Ý‚ð–³Œø‚É‚·‚é
 	GPOBJ_MATOPT_BLENDADD   ƒvƒŒƒ“ƒhƒ‚[ƒh‚ð‰ÁŽZ‚ÉÝ’è‚·‚é
+	GPOBJ_MATOPT_SPECULAR   ŒõŒ¹ŒvŽZŽž‚ÉƒXƒyƒLƒ…ƒ‰[‚ð“K—p‚µ‚Ü‚·
+	GPOBJ_MATOPT_MIRROR     ”½“]‚µ‚½‰æ‘œ‚Æ‚µ‚Ä•\Ž¦‚·‚é
+	GPOBJ_MATOPT_NODISCARD  ƒ¿ƒ`ƒƒƒ“ƒlƒ‹‚É‚æ‚éƒsƒNƒZƒ‹”jŠü‚ð–³Œø‚É‚·‚é
 ^p
 ³í‚Éƒ}ƒeƒŠƒAƒ‹‚ª¶¬‚Å‚«‚È‚©‚Á‚½ê‡‚ÍAƒGƒ‰[3(ƒpƒ‰ƒ[ƒ^‚Ì’l‚ªˆÙí‚Å‚·)‚ª”­¶‚µ‚Ü‚·B
 ³‚µ‚­¶¬‚³‚ê‚½ê‡‚ÍAvar‚ÅŽw’è‚³‚ê‚½•Ï”‚Éƒ}ƒeƒŠƒAƒ‹ID(®”’l)‚ª‘ã“ü‚³‚ê‚Ü‚·B
@@ -526,6 +533,10 @@ optƒpƒ‰ƒ[ƒ^[‚É‚æ‚èAƒ}ƒeƒŠƒAƒ‹‚ÌÝ’è‚ð•ÏX‚·‚é‚±‚Æ‚ª‚Å‚«‚Ü‚·B
 	GPOBJ_MATOPT_NOZTEST    ZƒeƒXƒg‚ð–³Œø‚É‚·‚é
 	GPOBJ_MATOPT_NOZWRITE   Zƒoƒbƒtƒ@‘‚«ž‚Ý‚ð–³Œø‚É‚·‚é
 	GPOBJ_MATOPT_BLENDADD   ƒvƒŒƒ“ƒhƒ‚[ƒh‚ð‰ÁŽZ‚ÉÝ’è‚·‚é
+	GPOBJ_MATOPT_SPECULAR   ŒõŒ¹ŒvŽZŽž‚ÉƒXƒyƒLƒ…ƒ‰[‚ð“K—p‚µ‚Ü‚·
+	GPOBJ_MATOPT_MIRROR     ”½“]‚µ‚½‰æ‘œ‚Æ‚µ‚Ä•\Ž¦‚·‚é
+	GPOBJ_MATOPT_CUBEMAP    ƒLƒ…[ƒuƒ}ƒbƒv‚Æ‚µ‚ÄÝ’è‚·‚é
+	GPOBJ_MATOPT_NODISCARD  ƒ¿ƒ`ƒƒƒ“ƒlƒ‹‚É‚æ‚éƒsƒNƒZƒ‹”jŠü‚ð–³Œø‚É‚·‚é
 ^p
 ³í‚Éƒ}ƒeƒŠƒAƒ‹‚ª¶¬‚Å‚«‚È‚©‚Á‚½ê‡‚ÍAƒGƒ‰[3(ƒpƒ‰ƒ[ƒ^‚Ì’l‚ªˆÙí‚Å‚·)‚ª”­¶‚µ‚Ü‚·B
 ³‚µ‚­¶¬‚³‚ê‚½ê‡‚ÍAvar‚ÅŽw’è‚³‚ê‚½•Ï”‚Éƒ}ƒeƒŠƒAƒ‹ID(®”’l)‚ª‘ã“ü‚³‚ê‚Ü‚·B
@@ -852,15 +863,18 @@ gppbind
 %group
 Šg’£‰æ–Ê§Œä–½—ß
 %prm
-objid,mass,friction
+objid,mass,friction,option
 objid(0)      : ƒIƒuƒWƒFƒNƒgID
 mass(1)       : d‚³
 friction(0.5) : –€ŽCŒW”
+option(0)     : Ý’èƒIƒvƒVƒ‡ƒ“
 %inst
 ƒm[ƒhƒIƒuƒWƒFƒNƒg‚É‘Î‚µ‚ÄAŠî–{“I‚È•¨—Ý’è‚ðs‚È‚¢‚Ü‚·B
 massƒpƒ‰ƒ[ƒ^[‚Í•¨‘Ì‚Ìd‚³Bfrictionƒpƒ‰ƒ[ƒ^[‚Í–€ŽCŒW”‚Å‚·B’l‚ðÈ—ª‚µ‚½ê‡‚ÍAƒfƒtƒHƒ‹ƒg’l‚ªŽg—p‚³‚ê‚Ü‚·B
 d‚³(mass)‚ð0‚É‚·‚é‚±‚Æ‚ÅÃ“I„‘Ì(Õ“Ë‚Í‚·‚é‚ªA“®‚©‚È‚¢)‚Æ‚µ‚ÄÝ’è‚³‚ê‚Ü‚·B
 ‚»‚êˆÈŠO‚Ìê‡‚ÍA•¨—–@‘¥‚É]‚Á‚Ä°‚Ì‚ ‚éêŠ‚Ü‚Å—Ž‰º‚µ‚Ü‚·B
+^
+gppbind–½—ß‚ÍŠî–{“I‚È•¨—“Á«‚¾‚¯‚ðÝ’è‚µ‚Ü‚·BÚ×‚È•¨—ƒpƒ‰ƒ[ƒ^[‚ðÝ’è‚·‚éê‡‚É‚ÍAgppset–½—ß‚ðŽg—p‚µ‚ÄÝ’è‚ðs‚Á‚Ä‚­‚¾‚³‚¢B
 ^
 ¦•¨—‹““®‚ðÝ’è‚·‚éê‡‚ÍA•K‚¸°(’n–Ê)‚Æ‚È‚é•”•ª‚ðì¬‚µ‚Ä‚¨‚¢‚Ä‚­‚¾‚³‚¢B
 gpfloor–½—ß‚É‚æ‚Á‚Ä¶¬‚³‚ê‚½°‚É•W€“I‚È•¨—“Á«‚ðÝ’è‚·‚é‚±‚Æ‚ÅAŒÅ’è‚³‚ê‚½°–Ê‚ð¶¬‚·‚é‚±‚Æ‚ª‚Å‚«‚Ü‚·B
@@ -868,9 +882,25 @@ gpfloor–½—ß‚É‚æ‚Á‚Ä¶¬‚³‚ê‚½°‚É•W€“I‚È•¨—“Á«‚ðÝ’è‚·‚é‚±‚Æ‚ÅAŒÅ’è‚³‚ê‚½°–
 ^
 •¨—Ý’è‚ðs‚È‚Á‚½ƒm[ƒhƒIƒuƒWƒFƒNƒg‚ÍA‚»‚êˆÈ~Ž©—§‚µ‚Ä“®ì‚·‚é‚æ‚¤‚É‚È‚èAsetpos‚È‚Ç‚ÌÀ•W•ÏX‚Í–³Œø‚Æ‚È‚è‚Ü‚·B
 •¨‘Ì‚É—Í‚ð‰Á‚¦‚½‚¢ê‡‚ÍAgppapply–½—ß‚ðŽg—p‚µ‚Ä‚­‚¾‚³‚¢B
+^
+optionƒpƒ‰ƒ[ƒ^[‚É‚æ‚èÝ’èŽž‚ÌƒIƒvƒVƒ‡ƒ“‚ð•t‰Á‚µ‚Ü‚·BˆÈ‰º‚Ìƒ}ƒNƒ‚ðŽw’è‚·‚é‚±‚Æ‚ª‚Å‚«‚Ü‚·B
+^p
+	  opt’l               |  “à—e
+	--------------------------------------------------------------
+
+	  GPPBIND_NOSCALE        ƒRƒŠƒWƒ‡ƒ“‚Éƒm[ƒh‚ÌƒXƒP[ƒ‹‚ð”½‰f‚³‚¹‚È‚¢
+	  GPPBIND_MESH           ƒRƒŠƒWƒ‡ƒ“‚Æ‚µ‚Äƒm[ƒh‚Ìƒ‚ƒfƒ‹‚ð”½‰f‚³‚¹‚é
+^p
+ƒm[ƒhƒIƒuƒWƒFƒNƒg‚É•¨—Ý’è‚ðs‚È‚¤‚ÆAÚG”»’è‚ðs‚¤î•ñ(ƒRƒŠƒWƒ‡ƒ“)‚ªì¬‚³‚ê‚Ü‚·B
+
+” ƒm[ƒhA°ƒm[ƒhA”Âƒm[ƒh‚Í‚»‚ê‚¼‚ê‚ÌŒ`ó‚ðƒRƒŠƒWƒ‡ƒ“‚Æ‚µ‚Äˆµ‚¢‚Ü‚·Boption‚ÉAGPPBIND_NOSCALE‚ðŽw’è‚µ‚½ê‡‚ÍAƒXƒP[ƒ‹‚ª”½‰f‚³‚ê‚Ä‚¢‚È‚¢‚à‚Æ‚à‚Æ‚ÌŒ`ó‚ªƒRƒŠƒWƒ‡ƒ“‚Æ‚È‚è‚Ü‚·B
+3Dƒ‚ƒfƒ‹ƒm[ƒh‚ÍA•W€‚Å‚Íƒ‚ƒfƒ‹‘S‘Ì‚ð•¢‚¤ƒXƒtƒBƒA(‹…‘Ì)‚ðƒRƒŠƒWƒ‡ƒ“‚Æ‚µ‚Äì¬‚µ‚Ü‚·B‚½‚¾‚µAoption‚ÉGPPBIND_MESH‚ðŽw’è‚µ‚½ê‡‚ÍAƒ‚ƒfƒ‹‚ÌŒ`ó‚»‚Ì‚à‚Ì‚ðƒRƒŠƒWƒ‡ƒ“‚Æ‚µ‚Äˆµ‚¢‚Ü‚·B‚½‚¾‚µA•¡ŽG‚Èƒ‚ƒfƒ‹Œ`ó‚ðƒRƒŠƒWƒ‡ƒ“‚É‚µ‚½ê‡AÚG”»’è‚É‚©‚©‚é•‰‰×‚ª‘‘å‚µ‚Ü‚·B
+ƒRƒŠƒWƒ‡ƒ“‚ÍAƒ‚ƒfƒ‹‚ÌŒ`ó‚Æ‚Í“Æ—§‚µ‚½î•ñ‚Æ‚È‚è‚Ü‚·BƒRƒŠƒWƒ‡ƒ“‚ªì¬‚³‚ê‚½Œã‚ÍAƒm[ƒh‚ÌƒXƒP[ƒ‹’l‚Í”½‰f‚³‚ê‚Ü‚¹‚ñ‚Ì‚Å’ˆÓ‚µ‚Ä‚­‚¾‚³‚¢B
+
 
 %href
 gppapply
+gppset
 
 
 %index

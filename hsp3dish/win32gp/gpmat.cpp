@@ -709,6 +709,11 @@ Material *gamehsp::makeMaterialTexture( char *fname, int matopt, Texture *opttex
 		strcat(extradefs,";MIRRORTEX");
 		defs = extradefs;
 	}
+	if (matopt & GPOBJ_MATOPT_NODISCARD) {
+		strcpy(extradefs, defs);
+		strcat(extradefs, ";TEXTURE_NODISCARD_ALPHA");
+		defs = extradefs;
+	}
 
 	//material = makeMaterialFromShader("res/shaders/simpletex.vert", "res/shaders/simpletex.frag", defs);
 	material = makeMaterialFromShader("res/shaders/textured.vert", "res/shaders/textured.frag", defs);

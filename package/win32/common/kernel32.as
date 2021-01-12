@@ -705,7 +705,11 @@
 	#func global SetEnvironmentVariableA "SetEnvironmentVariableA" sptr,sptr
 	#func global SetEnvironmentVariableW "SetEnvironmentVariableW" wptr,wptr
 	#func global SetErrorMode "SetErrorMode" sptr
+#ifdef setevent
+	#func global _SetEvent "SetEvent" sptr
+#else
 	#func global SetEvent "SetEvent" sptr
+#endif
 	#func global SetFileApisToANSI "SetFileApisToANSI"
 	#func global SetFileApisToOEM "SetFileApisToOEM"
 	#define global SetFileAttributes SetFileAttributesA

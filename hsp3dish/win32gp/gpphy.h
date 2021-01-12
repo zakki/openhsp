@@ -13,6 +13,8 @@ using namespace gameplay;
 #define GPPAPPLY_TORQUE (2)
 #define GPPAPPLY_TORQUE_IMPULSE (3)
 
+#define BIND_PHYSICS_NOSCALE (1)
+#define BIND_PHYSICS_MESH (2)
 
 //  HGIMG4 Physics Object
 class gpphy {
@@ -23,6 +25,7 @@ public:
 	int setParameter( int prmid, Vector3 *prm );
 	void bindNodeAsBox( Node *node, Vector3 &size, PhysicsRigidBody::Parameters *rigParams );
 	void bindNodeAsSphere( Node *node, float radius, Vector3 &center, PhysicsRigidBody::Parameters *rigParams );
+	void bindNodeAsMesh(Node *node, Mesh *mesh, PhysicsRigidBody::Parameters *rigParams);
 
 	short _flag;						// 存在フラグ
 	short _mark;						// マーク処理用

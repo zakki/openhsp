@@ -556,6 +556,7 @@ public:
      * @param url The URL pointing to the Properties object defining the physics collision object.
      */
     PhysicsCollisionObject* setCollisionObject(const char* url);
+	PhysicsCollisionObject* setCollisionObject(Properties* properties);
 
     /**
      * Gets the AI agent assigned to this node
@@ -685,7 +686,6 @@ private:
      */
     Node& operator=(const Node&);
 
-    PhysicsCollisionObject* setCollisionObject(Properties* properties);
 
 protected:
 
