@@ -150,12 +150,12 @@ void main()
     gl_FragColor *= u_modulateColor;
     #endif
 
+    #if !defined(TEXTURE_NODISCARD_ALPHA)
+    if (gl_FragColor.a < 0.005) discard;
+    #endif
+
     #if defined(MODULATE_ALPHA)
     gl_FragColor.a *= u_modulateAlpha;
     #endif
 
-    #if !defined(TEXTURE_NODISCARD_ALPHA)
-    if (gl_FragColor.a < 0.005)
-        discard;
-    #endif
 }
