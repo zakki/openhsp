@@ -2892,6 +2892,35 @@ static int cmdfunc_extcmd( int cmd )
 		p3 = code_getdi(0);
 		break;
 	}
+	case 0x156:								// gppcontact
+	{
+		PVal* pv1;
+		APTR aptr1;
+		int res;
+		aptr1 = code_getva(&pv1);
+		p1 = code_getdi(0);
+		res = game->getPhysicsContact( p1 );
+		code_setva(pv1, aptr1, HSPVAR_FLAG_INT, &res);
+		break;
+	}
+	case 0x157:								// gppinfo
+	{
+		PVal* pv1;
+		APTR aptr1;
+		VECTOR pos;
+		gppinfo *info;
+		Vector3 *vec3;
+		p_vec = code_getvvec();
+		aptr1 = code_getva(&pv1);
+		p1 = code_getdi(0);
+		p2 = code_getdi(0);
+		info = game->getPhysicsContactInfo(p1, p2);
+		vec3 = &info->_pos;
+		SetVector(&pos, vec3->x, vec3->y, vec3->z, info->_force);
+		code_setvec(p_vec, &pos);
+		code_setva(pv1, aptr1, HSPVAR_FLAG_INT, &info->_objid);
+		break;
+	}
 
 
 #endif

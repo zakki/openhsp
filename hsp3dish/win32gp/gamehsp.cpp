@@ -255,6 +255,7 @@ gamehsp::gamehsp()
 	_meshBatch_line = NULL;
 	_meshBatch_font = NULL;
 	_spriteEffect = NULL;
+	_collision_callback = NULL;
 }
 
 void gamehsp::initialize()
@@ -322,6 +323,10 @@ void gamehsp::deleteAll( void )
 		_scene->removeAllNodes();
 		_scene->setActiveCamera(NULL);
 		SAFE_RELEASE(_scene);
+	}
+	if ( _collision_callback ) {
+		delete 	_collision_callback;
+		_collision_callback = NULL;
 	}
 
 }
@@ -576,6 +581,8 @@ void gamehsp::resetScreen( int opt )
 	unsigned int elementCount = sizeof(elements) / sizeof(VertexFormat::Element);
 	_meshBatch_font = MeshBatch::create(VertexFormat(elements, elementCount), Mesh::TRIANGLE_STRIP, _fontMaterial, true, 16, 256);
 
+	PhysicsController *pc = Game::getInstance()->getPhysicsController();
+	_collision_callback = new CollisionCallback(pc);
 }
 
 
@@ -1450,71 +1457,6 @@ void gamehsp::pickupAll(int option)
 	}
 }
 
-#if 0
-bool gamehsp::updateNodeMaterial( Node* node, Material *material )
-{
-	//	再帰的にノードのマテリアルを設定
-	//
-	Node *sub_node;
-	sub_node = node->getFirstChild();
-	if ( sub_node ) {
-		updateNodeMaterial( sub_node, material );
-	}
-	sub_node = node->getNextSibling();
-	if ( sub_node ) {
-		updateNodeMaterial( sub_node, material );
-	}
-
-	Drawable* drawable = node->getDrawable();
-	Model* model = dynamic_cast<Model*>(drawable);
-    if (model)
-    {
-		model->setMaterial( material );
-    }
-	return true;
-}
-#endif
-
-#if 0
-bool gamehsp::drawScene(Node* node)
-{
-    // If the node visited contains a model, draw it
-	gpobj *obj = (gpobj *)node->getUserObject();
-	Drawable* drawable = node->getDrawable();
-	Model* model = dynamic_cast<Model*>(drawable);
-	if ( obj ) {
-		if ( obj->isVisible( _scenedraw_lateflag ) == false ) return false;
-
-		int mode = obj->_mode;
-		if ( mode & GPOBJ_MODE_XFRONT ) {
-			node->setRotation(_qcam_billboard);
-		}
-		if ( mode & GPOBJ_MODE_CLIP ) {
-			if (node->getBoundingSphere().intersects(_cameraDefault->getFrustum()) == false ) return false;
-		}
-
-		//	Alphaのモジュレート設定
-		gameplay::MaterialParameter *prm_modalpha = obj->_prm_modalpha;
-		if ( prm_modalpha ) { prm_modalpha->setValue( obj->getAlphaRate() ); }
-
-		if ( model ) {
-
-			if ( mode & GPOBJ_MODE_WIRE ) {			// ワイヤーフレーム描画時
-				model->draw(true);
-				return true;
-			}
-
-		}
-	}
-
-    if (model)
-    {
-        model->draw();
-    }
-    return true;
-}
-#endif
-
 int *gamehsp::getObjectPrmPtr( int objid, int prmid )
 {
 	int id;
@@ -1766,8 +1708,6 @@ int gamehsp::makeFloorNode( float xsize, float ysize, int color, int matid )
 		Vector3( -xsize * 0.5f , 0, -ysize * 0.5f ), Vector3( -xsize * 0.5f , 0, ysize * 0.5f ), 
 		Vector3( xsize * 0.5f ,  0, -ysize * 0.5f ), Vector3( xsize * 0.5f , 0, ysize * 0.5f ));
 
-	//Mesh* floorMesh = createFloorMesh( xsize, ysize );
-
 	Material *material;
 	if (matid < 0) {
 		int matopt = 0;
@@ -1792,18 +1732,6 @@ int gamehsp::makeFloorNode( float xsize, float ysize, int color, int matid )
 	// 初期化パラメーターを保存
 	obj->_shape = GPOBJ_SHAPE_FLOOR;
 	obj->_sizevec.set( xsize, 0, ysize );
-
-/*
-	// 物理設定
-	PhysicsRigidBody::Parameters rigParams;
-	rigParams.mass = 0.0f;	// 重さ
-    rigParams.friction = 0.5;
-    rigParams.restitution = 0.75;
-    rigParams.linearDamping = 0.025;
-    rigParams.angularDamping = 0.16;
-	obj->_node->setCollisionObject(PhysicsCollisionObject::RIGID_BODY, 
-		PhysicsCollisionShape::box(Vector3(xsize * 2, 0, ysize * 2)), &rigParams);
-*/
 
 	if ( _curscene >= 0 ) {
 		_scene->addNode( obj->_node );
@@ -1893,23 +1821,9 @@ int gamehsp::makeBoxNode( float size, int color, int matid )
     // メッシュ削除
     SAFE_RELEASE(mesh);
 
-/*
-	// 物理設定
-	PhysicsRigidBody::Parameters rigParams;
-	rigParams.mass = 1.0f;	// 重さ
-	rigParams.friction = 0.5;
-	rigParams.restitution = 0.5;
-	rigParams.linearDamping = 0.1;
-	rigParams.angularDamping = 0.5;
-	obj->_node->setCollisionObject(PhysicsCollisionObject::RIGID_BODY, 
-		PhysicsCollisionShape::box(Vector3(1,1,1)), &rigParams);
-*/
-
 	if ( _curscene >= 0 ) {
 		_scene->addNode( obj->_node );
 	}
-
-	BoundingSphere bound = obj->_node->getBoundingSphere();
 
 	return obj->_id;
 }
@@ -2610,7 +2524,8 @@ int gamehsp::updateObjColi( int objid, float size, int addcol )
 
 	if (size < 0.0f) {
 		bound = obj->_node->getBoundingSphere();
-		bound.radius *= size;							// 自分のサイズを調整する
+		bound.radius *= fabs(size);							// 自分のサイズを調整する
+		//Alertf("s%f", bound.radius);
 
 		for (i = 0; i<_maxobj; i++) {
 			if (atobj->isVisible()) {
@@ -2952,6 +2867,10 @@ Mesh *gamehsp::createCubeMesh( float size )
     mesh->setVertexData(vertices, 0, vertexCount);
     MeshPart* meshPart = mesh->addPart(Mesh::TRIANGLES, Mesh::INDEX16, indexCount, false);
     meshPart->setIndexData(indices, 0, indexCount);
+
+	BoundingSphere sphere;
+	sphere.radius = (float)sqrt((a*a)+(a*a));
+	mesh->setBoundingSphere(sphere);
     return mesh;
 }
 

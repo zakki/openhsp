@@ -167,7 +167,10 @@ public:
      */
     Node* getNode() const;
 
-    /**
+	void setUserPtr(void *ptr) { _userPtr = ptr; }
+	void *getUserPtr(void) { return _userPtr; }
+	
+	/**
      * Returns the collision shape.
      *
      * @return The collision shape.
@@ -334,10 +337,10 @@ protected:
      */
     bool _enabled;
 
-    /**
-     * The list of script listeners.
-     */
-    std::vector<ScriptListener*>* _scriptListeners;
+	/**
+	 * The list of script listeners.
+	 */
+	std::vector<ScriptListener*>* _scriptListeners;
 
 private:
 
@@ -404,6 +407,13 @@ private:
      */
     int _group;
     int _mask;
+
+	/**
+	 * User pointer.
+	 */
+	void *_userPtr;
+
+
 };
 
 }

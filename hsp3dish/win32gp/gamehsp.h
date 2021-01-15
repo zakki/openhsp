@@ -261,6 +261,29 @@ public:
 	*/
 	static std::string passCallback(Pass* pass, void* cookie, const char *defs);
 
+
+	class CollisionCallback : public btCollisionWorld::ContactResultCallback
+	{
+	public:
+		/**
+		 * Constructor.
+		 *
+		 * @param pc The physics controller that owns the callback.
+		 */
+		CollisionCallback(PhysicsController* pc) : _pc(pc) {
+		}
+
+	protected:
+		/**
+			* Internal function used for Bullet integration (do not use or override).
+			*/
+		btScalar addSingleResult(btManifoldPoint& cp, const btCollisionObjectWrapper* a, int partIdA, int indexA, const btCollisionObjectWrapper* b, int partIdB, int indexB);
+
+	private:
+		PhysicsController* _pc;
+	};
+
+
 	/*
 		HSP Support Functions
 	*/
@@ -415,6 +438,8 @@ public:
 	int setObjectBindPhysics( int objid, float mass, float friction, int option=0 );
 	gpphy *setPhysicsObjectAuto( gpobj *obj, float mass, float friction, int option=0 );
 	int objectPhysicsApply( int objid, int type, Vector3 *prm );
+	int getPhysicsContact(int objid);
+	gppinfo *getPhysicsContactInfo(int objid,int index);
 
 	// sprite
 	gpspr *getSpriteObj( int objid );
@@ -540,6 +565,8 @@ private:
 	int _maxevent;
 	gpevent *_gpevent;
 
+	// physics
+	CollisionCallback *_collision_callback;
 
 	// default scene
 	int _curscene;

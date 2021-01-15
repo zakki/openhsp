@@ -435,7 +435,12 @@
 
 #cmd gpresetlight $150
 #cmd setobjlight $151
-
+#cmd gpmeshvertex $152
+#cmd gpmeshnormal $153
+#cmd gpmeshuv $154
+#cmd gpmesh $155
+#cmd gppcontact $156
+#cmd gppinfo $157
 
 #define fsin(%1,%2) %1=sin(%2)
 #define fcos(%1,%2) %1=cos(%2)

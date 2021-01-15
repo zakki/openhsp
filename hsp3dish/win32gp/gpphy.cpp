@@ -14,19 +14,22 @@ gpphy::gpphy()
 {
 	// コンストラクタ
 	_flag = GPPHY_FLAG_NONE;
+	_colObj = NULL;
+	_parent = NULL;
 }
 
 gpphy::~gpphy()
 {
 }
 
-void gpphy::reset( int id )
+void gpphy::reset( gpobj *parent )
 {
 	_mode = 0;
 	_mark = 0;
 	_colObj = NULL;
+	_parent = parent;
 	_flag = GPPHY_FLAG_ENTRY;
-	_id = id;
+	_id = parent->_id;
 }
 
 
@@ -75,12 +78,19 @@ int gpphy::setParameter( int prmid, Vector3 *prm )
 }
 
 
+void gpphy::setCollision(PhysicsCollisionObject *obj)
+{
+	obj->setUserPtr( _parent );
+	_colObj = dynamic_cast<PhysicsRigidBody*>(obj);
+}
+
+
 void gpphy::bindNodeAsBox( Node *node, Vector3 &size, PhysicsRigidBody::Parameters *rigParams )
 {
 	PhysicsCollisionObject *pco;
 	pco =node->setCollisionObject(PhysicsCollisionObject::RIGID_BODY, 
 			PhysicsCollisionShape::box( size ), rigParams );
-	_colObj = dynamic_cast<PhysicsRigidBody*>(pco);
+	setCollision(pco);
 }
 
 
@@ -89,7 +99,7 @@ void gpphy::bindNodeAsSphere(Node *node, float radius, Vector3 &center, PhysicsR
 	PhysicsCollisionObject *pco;
 	pco = node->setCollisionObject(PhysicsCollisionObject::RIGID_BODY,
 		PhysicsCollisionShape::sphere(radius, center), rigParams);
-	_colObj = dynamic_cast<PhysicsRigidBody*>(pco);
+	setCollision(pco);
 }
 
 
@@ -98,7 +108,20 @@ void gpphy::bindNodeAsMesh(Node *node, Mesh *mesh, PhysicsRigidBody::Parameters 
 	PhysicsCollisionObject *pco;
 	pco = node->setCollisionObject(PhysicsCollisionObject::RIGID_BODY,
 		PhysicsCollisionShape::mesh(mesh), rigParams);
-	_colObj = dynamic_cast<PhysicsRigidBody*>(pco);
+	setCollision(pco);
+}
+
+int gpphy::contactTest(btCollisionWorld::ContactResultCallback *callback)
+{
+	if (_colObj == NULL) return -1;
+
+	_ainfo.clear();
+
+	PhysicsController *pc = Game::getInstance()->getPhysicsController();
+	bool res = pc->execContactTest(_colObj, callback);
+	if (res == false) return -1;
+
+	return (int)_ainfo.size();
 }
 
 
@@ -120,6 +143,63 @@ gpphy *gamehsp::getPhy( int objid )
 }
 
 
+gppinfo::gppinfo()
+{
+	_objid = -1;
+}
+gppinfo::~gppinfo()
+{
+}
+
+btScalar gamehsp::CollisionCallback::addSingleResult(btManifoldPoint& cp, const btCollisionObjectWrapper* a, int partIdA, int indexA, const btCollisionObjectWrapper* b, int partIdB, int indexB)
+{
+	// Get pointers to the PhysicsCollisionObject objects.
+	PhysicsCollisionObject* objectA = _pc->getCollisionObject(a->m_collisionObject);
+	PhysicsCollisionObject* objectB = _pc->getCollisionObject(b->m_collisionObject);
+
+	gpobj *objA = (gpobj *)objectA->getUserPtr();
+	gpobj *objB = (gpobj *)objectB->getUserPtr();
+
+//	btScalar dist = cp.getDistance();
+//	if (dist <= 0.0) {
+//		_pc->noticeContact();
+//	}
+
+	gpphy *phy = objA->_phy;
+	if (phy) {
+		gppinfo info;
+		btVector3 pos;
+		info._objid = objB->_id;
+		pos = cp.getPositionWorldOnA();
+		info._pos.set(pos.m_floats[0], pos.m_floats[1], pos.m_floats[2]);
+		info._force = (float)cp.getAppliedImpulse();
+
+		phy->_ainfo.push_back(info);
+	}
+
+//	Alertf("%d:%d (%f)",objA->_id, objB->_id, dist);
+
+	return 0.0;
+}
+
+
+int gamehsp::getPhysicsContact(int objid)
+{
+	gpphy *phy = getPhy(objid);
+	if (phy == NULL) return -1;
+	return phy->contactTest(_collision_callback);
+}
+
+
+gppinfo *gamehsp::getPhysicsContactInfo(int objid, int index)
+{
+	gpphy *phy = getPhy(objid);
+	if (phy == NULL) return NULL;
+	if ((index < 0) || (index >= (int)phy->_ainfo.size())) return NULL;
+	return &phy->_ainfo[index];
+}
+
+
 gpphy *gamehsp::setPhysicsObjectAuto( gpobj *obj, float mass, float friction, int option )
 {
 	gpphy *phy;
@@ -135,6 +215,7 @@ gpphy *gamehsp::setPhysicsObjectAuto( gpobj *obj, float mass, float friction, in
 
 	phy = new gpphy;
 	if ( phy == NULL ) return NULL;
+	phy->reset( obj );
 	
 	PhysicsRigidBody::Parameters rigParams;
 
