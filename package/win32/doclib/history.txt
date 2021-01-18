@@ -5,7 +5,7 @@ Hot Soup Processor ver3.6                           HSP : Hot Soup Processor
 
 ・hsp3関連 更新履歴
 
-	2021/01/14 3.6 beta5
+	2021/01/18 3.6 beta5
 
 	hspextプラグインのcomputb命令が変数バッファサイズを少なく認識する不具合を修正
 	β4版のmes(print)の表示位置が配置オブジェクトを出すとおかしくなる不具合を修正

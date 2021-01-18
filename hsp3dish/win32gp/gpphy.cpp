@@ -70,6 +70,9 @@ int gpphy::setParameter( int prmid, Vector3 *prm )
 	case GPPSET_LINEAR_VELOCITY:
 		_colObj->setLinearVelocity( *prm );
 		break;
+	case GPPSET_MASS_CENTER:
+		_colObj->setCenterOfMassOffset( *prm );
+		break;
 	default:
 		return -1;
 
@@ -155,15 +158,15 @@ btScalar gamehsp::CollisionCallback::addSingleResult(btManifoldPoint& cp, const 
 {
 	// Get pointers to the PhysicsCollisionObject objects.
 	PhysicsCollisionObject* objectA = _pc->getCollisionObject(a->m_collisionObject);
-	PhysicsCollisionObject* objectB = _pc->getCollisionObject(b->m_collisionObject);
-
 	gpobj *objA = (gpobj *)objectA->getUserPtr();
+
+	int colgroup = objA->_colgroup;
+	if (colgroup == 0) return 0.0;
+
+	PhysicsCollisionObject* objectB = _pc->getCollisionObject(b->m_collisionObject);
 	gpobj *objB = (gpobj *)objectB->getUserPtr();
 
-//	btScalar dist = cp.getDistance();
-//	if (dist <= 0.0) {
-//		_pc->noticeContact();
-//	}
+	if ((objB->_mygroup & colgroup) == 0) return 0.0;		// Check collision group
 
 	gpphy *phy = objA->_phy;
 	if (phy) {

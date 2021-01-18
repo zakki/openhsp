@@ -265,6 +265,10 @@ public:
      */
     bool collidesWith(PhysicsCollisionObject* object) const;
 
+	/**
+	 * Sets the center of mass offset for the associated collision shape.
+	 */
+	void setCenterOfMassOffset(const Vector3& centerOfMassOffset) { _motionState->setCenterOfMassOffset(centerOfMassOffset); }
 
 protected:
 

@@ -93,6 +93,7 @@
 #enum global GPPSET_ANGULAR_FACTOR
 #enum global GPPSET_ANGULAR_VELOCITY
 #enum global GPPSET_LINEAR_VELOCITY
+#enum global GPPSET_MASS_CENTER
 
 #const global GPPAPPLY_FORCE (0)
 #const global GPPAPPLY_IMPULSE (1)
