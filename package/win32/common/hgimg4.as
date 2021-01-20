@@ -375,6 +375,7 @@
 #cmd event_prmoff $108
 #cmd event_prmadd $109
 #cmd event_suicide $10a
+#cmd event_delobj $10a
 #cmd event_aim $10b
 #cmd objaim $10c
 #cmd gpscrmat $10d
@@ -434,14 +435,17 @@
 #cmd event_wangz $14b
 #cmd event_wangr $14c
 
+#define event_fade(%1,%2) event_prmset (%1), PRMSET_FADE, (%2)
+
 #cmd gpresetlight $150
 #cmd setobjlight $151
-#cmd gpmeshvertex $152
-#cmd gpmeshnormal $153
-#cmd gpmeshuv $154
+#cmd gpmeshclear $152
+#cmd gpmeshpolygon $153
+#cmd gpmeshadd $154
 #cmd gpmesh $155
 #cmd gppcontact $156
 #cmd gppinfo $157
+#cmd gppraytest $158
 
 #define fsin(%1,%2) %1=sin(%2)
 #define fcos(%1,%2) %1=cos(%2)

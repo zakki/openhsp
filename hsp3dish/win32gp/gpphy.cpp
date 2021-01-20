@@ -252,6 +252,7 @@ gpphy *gamehsp::setPhysicsObjectAuto( gpobj *obj, float mass, float friction, in
 		phy->bindNodeAsBox( node, vec3, &rigParams );
 		break;
 	case GPOBJ_SHAPE_MODEL:
+	case GPOBJ_SHAPE_MESH:
 		{
 		if (option & BIND_PHYSICS_MESH) {
 			Model *model = (Model *)getDrawable(node);
@@ -329,5 +330,29 @@ int gamehsp::objectPhysicsApply( int objid, int type, Vector3 *prm )
 		return -1;
 	}
 	return 0;
+}
+
+
+int gamehsp::execPhysicsRayTest(Vector3 *pos, Vector3 *direction, float distance)
+{
+	//		Ray Test
+	//
+	Ray ray;
+	PhysicsController::HitResult result;
+	ray.setOrigin(*pos);
+	ray.setDirection(*direction);
+	PhysicsController *pc = Game::getInstance()->getPhysicsController();
+
+	bool res = pc->rayTest( ray, distance, &result );
+	if (res == false) return 0;
+
+	PhysicsCollisionObject *cobj = result.object;
+	gpobj *obj = (gpobj *)cobj->getUserPtr();
+	if (obj->_phy == NULL) return -1;
+
+	*pos = result.point;
+	*direction = result.normal;
+
+	return obj->_id;
 }
 

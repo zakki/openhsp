@@ -51,6 +51,7 @@ using namespace gameplay;
 #define GPOBJ_SHAPE_BOX (1)
 #define GPOBJ_SHAPE_FLOOR (2)
 #define GPOBJ_SHAPE_PLATE (3)
+#define GPOBJ_SHAPE_MESH (4)
 #define GPOBJ_SHAPE_SPRITE (16)
 
 enum {
@@ -66,6 +67,7 @@ MOC_AXANG,
 MOC_ANGX,
 MOC_ANGY,
 MOC_ANGZ,
+MOC_FORWARD,
 MOC_MAX
 };
 
@@ -261,8 +263,6 @@ public:
 	* for PassCallback
 	*/
 	static std::string passCallback(Pass* pass, void* cookie, const char *defs);
-
-
 	class CollisionCallback : public btCollisionWorld::ContactResultCallback
 	{
 	public:
@@ -284,6 +284,18 @@ public:
 		PhysicsController* _pc;
 	};
 
+	/**
+	* for free mesh vertex
+	*/
+	class FreeMeshVertex
+	{
+	public:
+		FreeMeshVertex();
+		~FreeMeshVertex();
+		float x, y, z;		// vertex
+		float nx, ny, nz;	// normal
+		float u, v;			// UV
+	};
 
 	/*
 		HSP Support Functions
@@ -441,6 +453,7 @@ public:
 	int objectPhysicsApply( int objid, int type, Vector3 *prm );
 	int getPhysicsContact(int objid);
 	gppinfo *getPhysicsContactInfo(int objid,int index);
+	int execPhysicsRayTest(Vector3 *pos, Vector3 *direction, float distance);
 
 	// sprite
 	gpspr *getSpriteObj( int objid );
@@ -458,7 +471,8 @@ public:
 	float GetTimerFromFrame(int frame);
 	int convertAxis(Vector3 *res, Vector3 *pos, int mode);
 	void storeNextVector(gpevent *myevent);
-
+	int getCurrentFilterMode(void);
+	void setCurrentFilterMode(int mode);
 
 	// 2D draw function
 	float *startPolyTex2D( gpmat *mat, int material_id );
@@ -499,6 +513,13 @@ public:
 	void texmesProc(void);
 	void texmesDrawClip(void *bmscr, int x, int y, int psx, int psy, texmes *tex, int basex, int basey);
 	texmesManager *getTexmesManager(void) { return &tmes; };
+
+	//	free vertex function
+	void clearFreeVertex(void);
+	int addFreeVertex(float x, float y, float z, float nx, float ny, float nz, float u, float v);
+	int addFreeVertexPolygon(int id1, int id2, int id3, int id4=-1);
+	int makeFreeVertexNode(int color, int matid);
+
 
 protected:
     /**
@@ -568,6 +589,10 @@ private:
 
 	// physics
 	CollisionCallback *_collision_callback;
+	std::vector<FreeMeshVertex> _freevertex;	// FreeMeshVertex”z—ñ
+	std::vector<short> _freeindex;				// FreeMeshVertex”z—ñ‚Ìindex
+	float _fv_maxradius;						// FreeMeshVertex radius
+	float _fv_minradius;						// FreeMeshVertex radius
 
 	// default scene
 	int _curscene;
@@ -582,6 +607,7 @@ private:
 	FrameBuffer* _previousFrameBuffer;
 	int _render_numobj;
 	int _render_numpoly;
+	int _filtermode;
 
 	Node *testNode;
 

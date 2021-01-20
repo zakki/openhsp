@@ -785,7 +785,7 @@ PLATEモデルは、光源計算を行ないません。
 
 %href
 addsplate
-setcolor
+setcolor(HGIMG3)
 setsizef
 setuv
 
@@ -813,12 +813,12 @@ addplate命令とほぼ同じですが、光源計算を行なうことと、テクスチャUV座標の指定がで
 
 %href
 addplate
-setcolor
+setcolor(HGIMG3)
 setsizef
 
 
 %index
-setcolor
+setcolor(HGIMG3)
 単色ポリゴン作成設定
 %group
 拡張画面制御命令
@@ -855,7 +855,7 @@ setuv命令によってUVが指定されており、texidが省略された場合は、
 
 %href
 setsizef
-setcolor
+setcolor(HGIMG3)
 setuv
 
 
@@ -1755,23 +1755,6 @@ event_wang
 event_wangr
 event_wscale
 event_wdir
-newevent
-setevent
-
-
-%index
-event_delobj
-オブジェクト削除イベントを追加
-%group
-拡張画面制御命令
-%prm
-id
-id         : イベントID
-%inst
-idで指定しているイベントIDに、オブジェクト削除イベントを追加します。
-オブジェクト削除イベントは、現在イベントを実行しているオブジェクトそのものを削除する命令です。
-%href
-event_regobj
 newevent
 setevent
 

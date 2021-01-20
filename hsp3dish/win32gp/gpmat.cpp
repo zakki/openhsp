@@ -48,6 +48,7 @@ void gpmat::reset( gamehsp *owner, int id )
 	_target_material_id = -1;
 	_matopt = 0;
 	_matcolor = -1;
+	_filtermode = 1;
 }
 
 
@@ -120,6 +121,19 @@ void gpmat::setFilter(Texture::Filter value)
 	Texture::Sampler *sampler = mprm->getSampler();
 	if (sampler == NULL) return;
 	sampler->setFilterMode(value, value);
+}
+
+void gpmat::applyFilterMode(int mode)
+{
+	if (mode == _filtermode) return;
+	_filtermode = mode;
+
+	if (mode == 0) {
+		setFilter(Texture::Filter::NEAREST);
+	}
+	else {
+		setFilter(Texture::Filter::LINEAR);
+	}
 }
 
 int gpmat::updateTex32(char* ptr, int mode)
@@ -502,6 +516,7 @@ int gamehsp::makeNewMat( Material* material, int mode, int color, int matopt )
 	mat->_mode = mode;
 	mat->_matcolor = color;
 	mat->_matopt = matopt;
+	mat->applyFilterMode(1);
 	return mat->_id;
 }
 
@@ -561,6 +576,7 @@ int gamehsp::makeNewMat2D( char *fname, int matopt )
 	mat->_target_material_id = -1;
 	mat->_matcolor = -1;
 	mat->_matopt = matopt;
+	mat->applyFilterMode(0);
 
 	return mat->_id;
 }

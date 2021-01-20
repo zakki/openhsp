@@ -492,28 +492,14 @@ void gamehsp::resetScreen( int opt )
 	_scene = Scene::create();
 	_curscene = 0;
 	_previousFrameBuffer = NULL;
+	_filtermode = 0;
 
 	// カメラ作成
-	//Camera*	camera = Camera::createPerspective(45.0f, getAspectRatio(), 0.01f, 20.0f );
-	//Camera*	camera = Camera::createPerspective(0.25f*3.141592654f, getAspectRatio(), 0.5f, 768.0f );
-	//_cameraDefault = Camera::createPerspective( 45.0f, getAspectRatio(), 0.5f, 768.0f );
-
 	_defcamera = makeNewCam(-1, 45.0f, getAspectRatio(), 0.5f, 768.0f);		// カメラを生成
 	selectCamera( _defcamera );
 
-//	_camera = _scene->addNode("camera");
-//	_camera->setCamera( _cameraDefault );
-//	_scene->setActiveCamera( _cameraDefault );	// カメラ設定
-//	_camera->translate(0, 0, 100);
-//	SAFE_RELEASE(camera);
-
-#if 0
-	_scene->setLightColor( 1.0f, 1.0f, 1.0f );
-
-	Vector3 ldir;
-	ldir.set( -0.5f, 0.0f, -0.3f );
-	_scene->setLightDirection( ldir );
-#endif
+	// free vertex
+	clearFreeVertex();
 
 	// シーンライト作成
 	_scene->setAmbientColor(0.25f, 0.25f, 0.25f);
@@ -533,9 +519,6 @@ void gamehsp::resetScreen( int opt )
 
 	// 2D初期化
 	init2DRender();
-
-	//makeFloorNode( 20.0f, 20.0f, 0x404040 );
-	//makeModelNode( "res/mikuA","mikuA_root" );
 
 	// ビューポート初期化
 	updateViewport( 0, 0, getWidth(), getHeight() );
@@ -759,6 +742,20 @@ void gamehsp::convert2DRenderProjection(Vector4& pos)
 	pos.x = result.x;
 	pos.y = result.y;
 	pos.z = result.z;
+}
+
+
+int gamehsp::getCurrentFilterMode(void)
+{
+	//	現在のフィルターモードを返す
+	return _filtermode;
+}
+
+
+void gamehsp::setCurrentFilterMode(int mode)
+{
+	//	フィルターモードを設定する
+	_filtermode = mode;
 }
 
 
@@ -1204,6 +1201,12 @@ void gamehsp::getNodeVector( gpobj *obj, Node *node, int moc, Vector4 *prm )
 			*prm = obj->_vec[GPOBJ_USERVEC_WORK2];
 		}
 		break;
+	case MOC_FORWARD:
+		if (node) {
+			*(Vector3 *)prm = node->getForwardVector();
+			prm->w = 1.0f;
+		}
+		break;
 	}
 }
 
@@ -1245,10 +1248,10 @@ void gamehsp::getSpriteVector( gpobj *obj, int moc, Vector4 *prm )
 
 int gamehsp::getObjectVector( int objid, int moc, Vector4 *prm )
 {
+	gpobj *obj;
 	int flag_id;
 	flag_id = objid & GPOBJ_ID_FLAGBIT;
 	if ( flag_id == 0 ) {
-		gpobj *obj;
 		obj = getObj( objid );
 		if ( obj == NULL ) return -1;
 		if ( obj->_spr ) {
@@ -1258,7 +1261,31 @@ int gamehsp::getObjectVector( int objid, int moc, Vector4 *prm )
 		getNodeVector( obj, obj->_node, moc, prm );
 		return 0;
 	}
-	getNodeVector( NULL, getNode(objid), moc, prm );
+
+	switch (flag_id) {
+	case GPOBJ_ID_EXFLAG:
+		break;
+	default:
+		return -1;
+	}
+
+	//	GPOBJ_ID_EXFLAGの場合
+	switch (objid) {
+	case GPOBJ_ID_SCENE:
+		setSceneVector(moc, prm);
+		return 0;
+	case GPOBJ_ID_CAMERA:
+		obj = getObj(_defcamera);
+		break;
+	case GPOBJ_ID_LIGHT:
+		obj = getObj(_deflight);
+		break;
+	default:
+		return -1;
+	}
+	if (obj == NULL) return -1;
+
+	getNodeVector( obj, obj->_node, moc, prm );
 	return 0;
 }
 
@@ -2818,7 +2845,7 @@ void gamehsp::colorVector4( int icolor, Vector4 &vec )
 
 Mesh *gamehsp::createCubeMesh( float size )
 {
-    float a = size * 0.5f;
+	float a = size * 0.5f;
     float vertices[] =
     {
         -a, -a,  a,    0.0,  0.0,  1.0,   0.0, 0.0,
@@ -2993,7 +3020,7 @@ void gamehsp::drawPolyTex2D( gpmat *mat )
         GP_ERROR("Bad Material.");
         return;
 	}
-
+	mat->applyFilterMode(_filtermode);
 	mesh->add( _bufPolyTex, 4, indices, 4 );
     mesh->finish();
     mesh->draw();
@@ -3020,7 +3047,8 @@ void gamehsp::finishPolyTex2D( gpmat *mat )
         GP_ERROR("Bad Material.");
         return;
 	}
-    mesh->finish();
+	mat->applyFilterMode(_filtermode);
+	mesh->finish();
     mesh->draw();
 }
 
@@ -3078,18 +3106,12 @@ void gamehsp::drawTest( int matid )
 //	material->getParameter("u_inverseTransposeWorldViewMatrix")->setValue( _camera->getInverseTransposeWorldViewMatrix() );
 //	material->getParameter("u_cameraPosition")->setValue( _camera->getTranslation() );
 
-
-
     static unsigned short indices[] = { 0, 1, 2, 3, 3,4,   4,5,6,7, };
-
-
 
     _meshBatch->start();
     _meshBatch->add( points, 8, indices, 10 );
     _meshBatch->finish();
     _meshBatch->draw();
-
-
 	return;
 }
 
@@ -3185,6 +3207,149 @@ int gamehsp::setObjLight(int objid)
 		makeModelNodeSub(rootNode, 0);
 	}
 	return 0;
+}
+
+
+gamehsp::FreeMeshVertex::FreeMeshVertex()
+{
+	x = y = z = 0.0f;		// vertex
+	nx = ny = nz = 0.0f;	// normal
+	u = v = 0.0f;			// UV
+}
+
+
+gamehsp::FreeMeshVertex::~FreeMeshVertex()
+{
+}
+
+
+void gamehsp::clearFreeVertex(void)
+{
+	_freevertex.clear();
+	_freeindex.clear();
+	_fv_minradius = 0.0f;
+	_fv_maxradius = 0.0f;
+}
+
+
+int gamehsp::addFreeVertex(float x, float y, float z, float nx, float ny, float nz, float u, float v)
+{
+	int res;
+
+	res = _freevertex.size();
+
+	// データの重複チェック
+	for (int i = 0; i < res; i++) {
+		FreeMeshVertex *vv = &_freevertex[i];
+		if ((vv->x == x) && (vv->y == y) && (vv->z == z)) {
+			if ((vv->nx == nx) && (vv->ny == ny) && (vv->nz == nz)) {
+				if ((vv->u == u) && (vv->v == v)) {
+					return i;
+				}
+			}
+		}
+	}
+
+	FreeMeshVertex vert;
+	vert.x = x; vert.y = y; vert.z = z;
+	vert.nx = nx; vert.ny = ny; vert.nz = nz;
+	vert.u = u; vert.v = v;
+	_freevertex.push_back(vert);
+
+	if (x > _fv_maxradius) _fv_maxradius = x;
+	if (y > _fv_maxradius) _fv_maxradius = y;
+	if (z > _fv_maxradius) _fv_maxradius = z;
+	if (x < _fv_minradius) _fv_minradius = x;
+	if (y < _fv_minradius) _fv_minradius = y;
+	if (z < _fv_minradius) _fv_minradius = z;
+
+	return res;
+}
+
+
+int gamehsp::addFreeVertexPolygon(int id1, int id2, int id3, int id4)
+{
+	int res;
+	res = _freeindex.size();
+
+	_freeindex.push_back((short)id1);
+	_freeindex.push_back((short)id2);
+	_freeindex.push_back((short)id3);
+
+	if (id4 >= 0) {
+		_freeindex.push_back((short)id3);
+		_freeindex.push_back((short)id2);
+		_freeindex.push_back((short)id4);
+	}
+
+	return res;
+}
+
+
+int gamehsp::makeFreeVertexNode(int color, int matid)
+{
+	gpobj *obj = addObj();
+	if (obj == NULL) return -1;
+
+	float *vertices = (float *)_freevertex.data();
+	short *indices = (short *)_freeindex.data();
+
+	unsigned int vertexCount = _freevertex.size();
+	unsigned int indexCount = _freeindex.size();
+
+	if ((vertexCount==0) || (indexCount==0)) return -1;
+
+	VertexFormat::Element elements[] =
+	{
+		VertexFormat::Element(VertexFormat::POSITION, 3),
+		VertexFormat::Element(VertexFormat::NORMAL, 3),
+		VertexFormat::Element(VertexFormat::TEXCOORD0, 2)
+	};
+	Mesh* mesh = Mesh::createMesh(VertexFormat(elements, 3), vertexCount, false);
+	if (mesh == NULL)
+	{
+		GP_ERROR("Failed to create user mesh.");
+		return -1;
+	}
+	mesh->setVertexData(vertices, 0, vertexCount);
+	MeshPart* meshPart = mesh->addPart(Mesh::TRIANGLES, Mesh::INDEX16, indexCount, false);
+	meshPart->setIndexData(indices, 0, indexCount);
+
+	float _fv_radius = _fv_maxradius - _fv_minradius;
+	BoundingSphere sphere;
+	sphere.radius = _fv_radius;
+	mesh->setBoundingSphere(sphere);
+
+	Material *material;
+	if (matid < 0) {
+		int matopt = 0;
+		//if ( _curlight < 0 ) matopt |= GPOBJ_MATOPT_NOLIGHT;
+		material = makeMaterialColor(color, matopt);
+		makeNewModel(obj, mesh, material);
+	}
+	else {
+		material = getMaterial(matid);
+		if (material) {
+			makeNewModelWithMat(obj, mesh, matid);
+		}
+		else {
+			material = makeMaterialColor(-1, GPOBJ_MATOPT_NOLIGHT);
+			makeNewModel(obj, mesh, material);
+		}
+	}
+
+	// 初期化パラメーターを保存
+	obj->_shape = GPOBJ_SHAPE_BOX;
+	obj->_sizevec.set(_fv_radius, _fv_radius, _fv_radius);
+
+	// メッシュ削除
+	SAFE_RELEASE(mesh);
+
+	if (_curscene >= 0) {
+		_scene->addNode(obj->_node);
+	}
+
+	return obj->_id;
 }
 
 

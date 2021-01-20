@@ -13,7 +13,7 @@ onitama
 %dll
 hgimg4
 %date
-2019/03/14
+2021/01/18
 %author
 onitama
 %url
@@ -577,6 +577,7 @@ setangr
 setscale
 setdir
 setefx
+setwork2
 
 
 %index
@@ -2218,5 +2219,22 @@ getscale
 getdir
 getefx
 getwork
+
+
+%index
+event_delobj
+オブジェクト削除イベントを追加
+%group
+拡張画面制御命令
+%prm
+id
+id         : イベントID
+%inst
+idで指定しているイベントIDに、オブジェクト削除イベントを追加します。
+オブジェクト削除イベントは、現在イベントを実行しているオブジェクトそのものを削除する命令です。
+%href
+event_regobj
+newevent
+setevent
 
 
