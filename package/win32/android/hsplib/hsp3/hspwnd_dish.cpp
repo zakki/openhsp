@@ -337,7 +337,10 @@ void Bmscr::Init( char *fname )
 		throw HSPERR_PICTURE_MISSING;
 	}
 	Init( sx, sy );
-	strncpy( resname, fname, RESNAME_MAX-1 );
+
+	char _name[HSP_MAX_PATH];
+	getpath( fname, _name, 8 );
+	strncpy( resname, _name, RESNAME_MAX-1 );
 	//Alertf( "(%d,%d)",sx,sy );
 }
 
@@ -388,6 +391,7 @@ void Bmscr::Cls( int mode )
 	keybuf_index = 0;
 	prevtime = 0;
 	passed_time = 0;
+	filtermode = HGIO_FILTER_TYPE_NONE;
 
 	//		CEL initalize
 	//

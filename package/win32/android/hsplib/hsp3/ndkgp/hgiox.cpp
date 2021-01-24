@@ -36,6 +36,7 @@
 #endif
 
 #ifdef HSPEMSCRIPTEN
+#include <emscripten.h>
 int hgio_fontsystem_get_texid(void);
 #define GL_GLEXT_PROTOTYPES
 #include <GL/gl.h>
@@ -498,6 +499,7 @@ int hgio_render_start( void )
 #endif
 	//シーンレンダー開始
 	if (game) {
+		game->setCurrentFilterMode(0);					// フィルターモードをリセットする
 		if (gselbm == mainbm) {
 			// メイン画面の場合
 			game->frame();
@@ -521,6 +523,7 @@ int hgio_gsel(BMSCR *bm)
 	//
 	hgio_render_end();
 	gselbm = bm;
+	game->setCurrentFilterMode(gselbm->filtermode);
 
 	// プロジェクションの初期化
 	int id = gselbm->texid;
@@ -845,6 +848,11 @@ int hgio_dialog( int mode, char *str1, char *str2 )
 	if (mode&1) i|=SDL_MESSAGEBOX_WARNING; else i|=SDL_MESSAGEBOX_INFORMATION;
 	SDL_ShowSimpleMessageBox(i, str2, str1, NULL);
 	}
+#endif
+#ifdef HSPEMSCRIPTEN
+	EM_ASM_({
+		alert(UTF8ToString($0));
+	},str1 );
 #endif
 	return 0;
 }
@@ -1525,19 +1533,15 @@ void hgio_setfilter( int type, int opt )
 	int curid;
 	if (gselbm == NULL) return;
 
+	gselbm->filtermode = type;
+	game->setCurrentFilterMode( type );
+
 	curid = gselbm->texid;
 	if (curid < 0) return;
 	gpmat *mat = game->getMat(curid);
 	if (mat == NULL) return;
-	switch( type ) {
-	case HGIO_FILTER_TYPE_LINEAR:
-	case HGIO_FILTER_TYPE_LINEAR2:
-		mat->setFilter(Texture::Filter::LINEAR);
-		break;
-	default:
-		mat->setFilter(Texture::Filter::NEAREST);
-		break;
-	}
+
+	mat->applyFilterMode(type);
 }
 
 
@@ -1633,7 +1637,7 @@ void hgio_square( BMSCR *bm, int *posx, int *posy, int *color )
 }
 
 
-#if defined(HSPLINUX) || defined(HSPNDK)
+#if defined(HSPLINUX) || defined(HSPNDK) || defined(HSPEMSCRIPTEN)
     static time_t basetick;
     static bool tick_reset = false;
 #endif
@@ -1705,8 +1709,26 @@ int hgio_exec( char *stmp, char *option, int mode )
 	}
 	if (i < 32) return -1;
 #endif
+#ifdef HSPNDK
+	j_callActivity( stmp, option, mode );
+#endif
 #ifdef HSPIOS
-    gpb_exec( mode, stmp );
+    gb_exec( mode, stmp );
+#endif
+#ifdef HSPLINUX
+	system(stmp);
+#endif
+
+#ifdef HSPEMSCRIPTEN
+	{
+	EM_ASM_({
+		if ($1>=16) {
+			window.open(UTF8ToString($0));
+		} else {
+			window.eval(UTF8ToString($0));
+		}
+	},stmp,mode );
+	}
 #endif
 	return 0;
 }

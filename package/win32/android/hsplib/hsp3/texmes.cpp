@@ -88,6 +88,7 @@ void texmes::reset(int width, int height, int p_texsx, int p_texsy, void *data)
 	// Bind the texture to the material as a sampler
 	_texture = Texture::Sampler::create(texture); // +ref texture
 	_texture->setFilterMode(Texture::Filter::NEAREST, Texture::Filter::NEAREST);
+	SAFE_RELEASE(texture);
 
 #else
 	_texture = hgio_fontsystem_setup( texsx, texsy, data);
@@ -351,12 +352,14 @@ int texmesManager::texmesRegist(char* msg, texmesPos *info)
 		return texid;							// キャッシュがあった
 	}
 
+	//		ビットマップを作成
+	pImg = texmesGetFont(msg, &sx, &sy, &tsx, &tsy, info);
+	if (pImg == NULL) return -1;
+
 	//		キャッシュが存在しないので作成
 	tex = addTexmes();
 	if (tex == NULL) return -1;
 
-	//		ビットマップを作成
-	pImg = texmesGetFont(msg, &sx, &sy, &tsx, &tsy, info);
 	tex->reset(sx,sy,tsx,tsy,pImg);
 	_area_px = sx;
 	_area_py = sy;
@@ -380,6 +383,8 @@ unsigned char* texmesManager::texmesGetFont(char* msg, int* out_sx, int* out_sy,
 	}
 
 	hgio_fontsystem_exec(msg, NULL, 0, &sx, &sy, info);
+
+	if ((sx == 0) || (sy == 0)) return NULL;
 
 	tsx = Get2N(sx);
 	tsy = Get2N(sy);

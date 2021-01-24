@@ -1430,7 +1430,7 @@ bool gamehsp::pickupNode(Node *node, int deep)
 	if (model)
 	{
 		unsigned int partCount = model->getMeshPartCount();
-		GP_WARN( "#model %s (deep:%d)(part:%d)",node->getId(), deep, partCount);
+		//GP_WARN( "#model %s (deep:%d)(part:%d)",node->getId(), deep, partCount);
 
 		Material *mat = model->getMaterial(0);
 		if (mat)
@@ -1440,7 +1440,7 @@ bool gamehsp::pickupNode(Node *node, int deep)
 			for (unsigned int i = 0; i < passCount; ++i)
 			{
 				Pass* pass = technique->getPassByIndex(i);
-				GP_WARN("#Pass%d ", i);
+				//GP_WARN("#Pass%d ", i);
 			}
 		}
 
@@ -1448,7 +1448,7 @@ bool gamehsp::pickupNode(Node *node, int deep)
 		if (skin) {
 			Joint *joint = skin->getRootJoint();
 			Node* jointParent = joint->getParent();
-			GP_WARN("#Skin Root:%s", joint->getId());
+			//GP_WARN("#Skin Root:%s", joint->getId());
 		}
 	}
 
@@ -1929,7 +1929,7 @@ bool gamehsp::makeModelNodeSub(Node *rootnode, int nest)
 std::string gamehsp::passCallback(Pass* pass, void* cookie, const char *defs)
 {
 	char *shade = strstr((char *)defs,"DIRECTIONAL_LIGHT_COUNT");
-	GP_WARN("DEFS:%s",defs);
+//	GP_WARN("DEFS:%s",defs);
 //	Alertf("%s\r\n%s", defs, model_defines_shade.c_str());
 	if (shade == NULL) {
 		return model_defines;			//ŒõŒ¹ŒvZ‚ª‚È‚¢ê‡
