@@ -351,12 +351,18 @@
 	gpusershader "res/shaders/sprite.vert", "res/shaders/p_contrast.frag", ""
 	buffer bufid_main,sx,sy,screen_offscreen + screen_usergcopy
 	post_prmsub = *exec_copybuf
+	post_optsub = *opt_contrast
 	gpgetmat cont_mat, bufid_main, GPGETMAT_OPT_SCRMAT
 	contrast_level=2.0		; コントラストしきい値
 	contrast_bright=-0.2		; コントラスト明るさ
 	gpmatprm1 cont_mat, "u_contrast", contrast_level
 	gpmatprm1 cont_mat, "u_brightness", contrast_bright
 	return
+*opt_contrast
+	contrast_level=postopt_p1	; コントラストしきい値
+	contrast_bright=postopt_p1	; コントラスト明るさ
+	return
+
 
 *setup_blur2
 	;	ガウスぼかしフィルター(高品質)

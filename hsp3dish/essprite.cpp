@@ -836,7 +836,7 @@ int essprite::draw(int start, int num, int mode, int start_pri, int end_pri)
 						ctx->iparam = spr->info;
 						ctx->wparam = sp->type;
 						ctx->lparam = sp->chr;
-						code_call(sp->sbr);
+						code_callback(sp->sbr);
 					}
 				}
 			}

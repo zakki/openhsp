@@ -1204,42 +1204,15 @@ static void cmdfunc_gosub( unsigned short *subr, unsigned short *retpc )
 
 	hspctx->prmstack = NULL;
 	code_setpc( subr );
-}
 
-#if 0
-static int cmdfunc_gosub( unsigned short *subr )
-{
-	//		gosub execute
-	//
-	HSPROUTINE r;
-	r.mcsret = mcs;
-	r.stacklev = hspctx->sublev++;
-	r.oldtack = hspctx->prmstack;
-	r.param = NULL;
-	StackPush( TYPE_EX_SUBROUTINE, (char *)&r, sizeof(HSPROUTINE) );
-
-	mcs = subr;
-	code_next();
-
-	//		gosub内で呼び出しを完結させる
-	//
-	while(1) {
-#ifdef HSPDEBUG
-		if ( dbgmode ) code_dbgtrace();					// トレースモード時の処理
-#endif
-		if ( GetTypeInfoPtr( type )->cmdfunc( val ) ) {	// タイプごとの関数振り分け
-			if ( hspctx->runmode == RUNMODE_RETURN ) {
-				cmdfunc_return();
-				break;
-			} else {
-				hspctx->msgfunc( hspctx );
-			}
+	if ( hspctx->callback_flag ) {
+		while(1) {
+			TaskExec();
+			if ( hspctx->runmode == RUNMODE_RETURN ) break;
 		}
 	}
 
-	return RUNMODE_RUN;
 }
-#endif
 
 static int code_callfunc( int cmd, int prmlevel )
 {
@@ -1285,6 +1258,13 @@ static int code_callfunc( int cmd, int prmlevel )
 
 	sbr = (unsigned short *)( st->otindex );
 	code_setpc( sbr );
+
+	if ( hspctx->callback_flag ) {
+		while(1) {
+			TaskExec();
+			if ( hspctx->runmode == RUNMODE_RETURN ) break;
+		}
+	}
 
 	return RUNMODE_RUN;
 }
@@ -1875,6 +1855,9 @@ static int cmdfunc_prog( int cmd )
 		sbr = code_getlb();
 		sbr2 = code_getlb();
 		cmdfunc_gosub( sbr2, sbr );
+		if ( hspctx->callback_flag ) {
+			hspctx->runmode = RUNMODE_RUN;
+		}
 		break;
 		}
 	case 0x02:								// return
@@ -2441,7 +2424,22 @@ void code_call( const unsigned short *pc )
 	mcs = (unsigned short *)GetTaskID();
 	//mcs = mcsbak;
 	cmdfunc_gosub( (unsigned short *)pc, mcs );
-	hspctx->runmode = RUNMODE_RUN;
+	if ( hspctx->callback_flag == 0 ) {
+		hspctx->runmode = RUNMODE_RUN;
+	}
+}
+
+void code_callback( const unsigned short *pc )
+{
+	//		コールバックのサブルーチンジャンプを行なう
+	//
+	mcs = (unsigned short *)GetTaskID();
+	//mcs = mcsbak;
+	hspctx->callback_flag = 1;
+	cmdfunc_gosub( (unsigned short *)pc, mcs );
+	hspctx->callback_flag = 0;
+	if (hspctx->runmode == RUNMODE_END) return;
+	//hspctx->runmode = RUNMODE_RUN;
 }
 
 

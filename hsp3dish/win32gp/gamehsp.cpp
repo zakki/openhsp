@@ -717,7 +717,7 @@ void gamehsp::update2DRenderProjectionSystem(Matrix *mat)
 	//	2Dシステム用のプロジェクションを再設定する
 	if (_meshBatch) update2DRenderProjection(_meshBatch->getMaterial(), mat);
 	if (_meshBatch_line) update2DRenderProjection(_meshBatch_line->getMaterial(), mat);
-	if (_meshBatch_font) update2DRenderProjection(_fontMaterial, &_projectionMatrix2D);
+	if (_meshBatch_font) update2DRenderProjection(_fontMaterial, mat);
 
 }
 
@@ -2430,7 +2430,7 @@ void gamehsp::updateObj( gpobj *obj )
 	//
 	int mode = obj->_mode;
 
-	if (obj->isVisible() == false) return;
+	if (obj->isAlive() == false) return;
 
 	if (obj->executeFade()) {
 		deleteObj(obj->_id);
@@ -2486,13 +2486,13 @@ void gamehsp::updateAll( void )
 
 	gpobj *obj = _gpobj;
 	for(i=0;i<_maxobj;i++) {
-		if (obj->isVisible()) {
+		if (obj->isAlive()) {
 			// Execute Events
 			for (j = 0; j<GPOBJ_MULTIEVENT_MAX; j++) {
 				if (obj->GetEvent(j) != NULL) ExecuteObjEvent(obj, timepass, j);
 			}
 		}
-		if (obj->isVisible()) {
+		if (obj->isAlive()) {
 			updateObj(obj);
 		}
 		obj++;
@@ -2525,7 +2525,7 @@ int gamehsp::updateObjColi( int objid, float size, int addcol )
 		pos = (Vector3 *)&spr->_pos;
 		atobj = _gpobj;
 		for(i=0;i<_maxobj;i++) {
-			if ( atobj->isVisible() ) {
+			if ( atobj->isAlive() ) {
 				if (( atobj->_mygroup & chkgroup )&&( i != objid )) {
 					atspr = atobj->_spr;
 					if ( atspr ) {
@@ -2555,7 +2555,7 @@ int gamehsp::updateObjColi( int objid, float size, int addcol )
 		//Alertf("s%f", bound.radius);
 
 		for (i = 0; i<_maxobj; i++) {
-			if (atobj->isVisible()) {
+			if (atobj->isAlive()) {
 				if ((atobj->_mygroup & chkgroup) && (i != objid)) {
 					node = atobj->_node;
 					if (node) {
@@ -2571,7 +2571,7 @@ int gamehsp::updateObjColi( int objid, float size, int addcol )
 	}
 
 	for (i = 0; i<_maxobj; i++) {
-		if (atobj->isVisible()) {
+		if (atobj->isAlive()) {
 			if ((atobj->_mygroup & chkgroup) && (i != objid)) {
 				node = atobj->_node;
 				if (node) {

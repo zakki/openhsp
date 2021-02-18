@@ -155,6 +155,7 @@ public:
 	gpobj();
 	~gpobj();
 	void reset( int id );				// 初期化
+	bool isAlive(void) { return (_flag != 0); }				// 有効か調べる
 	bool isVisible( void );				// 表示できるか調べる
 	bool isVisible( bool lateflag );	// 表示できるか調べる(lateflagあり)
 	float getAlphaRate( void );			// Alpha値を取得する
