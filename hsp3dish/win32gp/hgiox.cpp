@@ -1713,7 +1713,7 @@ int hgio_exec( char *stmp, char *option, int mode )
 	j_callActivity( stmp, option, mode );
 #endif
 #ifdef HSPIOS
-    gb_exec( mode, stmp );
+    gpb_exec( mode, stmp );
 #endif
 #ifdef HSPLINUX
 	system(stmp);
