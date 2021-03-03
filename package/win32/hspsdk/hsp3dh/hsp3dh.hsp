@@ -67,6 +67,7 @@
 	js_gpmode=0
 	js_webasm = 0
 	js_debug = 0
+	js_template = 0
 
 	ios_proj=""
 	ios_org="hsp3dish"
@@ -108,6 +109,7 @@
 		ios_org=cfg_getvar("ios_org")
 		ios_ident=cfg_getvar("ios_ident")
 		js_webasm = 0+cfg_getvar("js_webasm")
+		js_template = 0+cfg_getvar("js_template")
 	}
 	if and_targetid="" : and_targetid="\"android-29\""
 	if and_keystore="" : and_keystore="hspapp"
@@ -301,7 +303,7 @@
 	objsize 160,24
 	pos 8,68
 	chkbox "出力ソースをUTF-8に変換",flag_utf8
-	chkbox "XCode8用プロジェクトを生成",flag_xcode
+	chkbox "XCode用プロジェクトを生成",flag_xcode
 	pos 32,68+24+24
 	chkbox "HGIMG4を使用する(β)",flag_xhgimg
 
@@ -539,6 +541,8 @@
 	chkbox "デバッグ情報を出力する",js_debug
 
 	pos 312,118
+	objsize 160,24
+	combox js_template,128,"標準のhtml\n黒い背景のhtml"
 	objsize 160,48
 	button "変換",*cnv_js
 
@@ -713,6 +717,7 @@
 	cfg_seti "flag_xhgimg",flag_xhgimg
 
 	cfg_seti "js_webasm",js_webasm
+	cfg_seti "js_template",js_template
 
 	cfg_sets "ios_org",ios_org
 	cfg_sets "ios_ident",ios_ident
@@ -1805,7 +1810,9 @@ hspproj.xcodeproj\\project.pbxproj"}
 	;	template.htmlの書き換え
 	sdim outbuf, $10000
 	notesel outbuf
-	s1 = dir_exe+"\\hsp3js\\template.html"
+	s2 = "template"
+	if js_template>0 : s2+=js_template+1
+	s1 = dir_exe+"\\hsp3js\\"+s2+".html"
 	noteload s1
 
 	strrep outbuf, "$$$title$$$", myfile+" - HSP3Dish"
