@@ -10,7 +10,6 @@ precision mediump float;
 // Uniforms
 uniform sampler2D u_texture;
 uniform float u_brightness;
-uniform float u_contrast;
 
 ///////////////////////////////////////////////////////////
 // Varyings
@@ -21,7 +20,6 @@ varying vec4 v_color;
 void main()
 {
    vec4 col = v_color * texture2D(u_texture, v_texCoord);
-   col.rgb = ((col.rgb - 0.5) * max(u_contrast, 0.0)) + 0.5;
-   col.rgb += u_brightness;
-   gl_FragColor = col;
+
+   gl_FragColor = max(vec4(0.0), (col - u_brightness));
 }
