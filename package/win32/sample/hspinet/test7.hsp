@@ -2,18 +2,18 @@
 
 	;
 	;	ファイルの取得(メモリ上に取得)
-	;	旧HSP3掲示板(onionsoft.net)の検索CGIを直接実行し、結果を取得します
+	;	HSP3掲示板(HSPTV!)の検索CGIを直接実行し、結果を取得します
 	;
 
 	netinit
 	if stat : dialog "ネット接続できません。" : end
 
 	;	URLを指定
-	neturl "http://www.onionsoft.net/hsp/beta/"
+	neturl "http://hsp.tv/play/"
 
 	;	POST形式でCGIにパラメーターを渡す
-	prm = "mode=find&cond=and&log=0&word=script"
-	netrequest_post "betabbs.cgi",prm
+	prm = "list[0]=1&list[1]=1&list[2]&search_select=1&search_place=0&search=HSP3Dish"
+	netrequest_post "pforum.php",prm
 
 	mes "DOWNLOAD 開始"
 
@@ -36,7 +36,8 @@
 	mes "DOWNLOAD 完了"
 
 	netgetv buf
-	mesbox buf,640,400,1
+	nkfcnv res,buf		; HSPの形式に変換
+	mesbox res,640,400,1
 
 	stop
 

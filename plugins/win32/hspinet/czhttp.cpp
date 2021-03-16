@@ -21,13 +21,11 @@ void CzHttp::Terminate( void )
 		InternetCloseHandle( hSession );
 		hSession = NULL;
 	}
-	errstr[0] = 0;
-	req_url[0] = 0;
-	req_path[0] = 0;
-	down_path[0] = 0;
-
-	//	Clear headers
-	if ( req_header != NULL ) { free( req_header ); req_header = NULL; }
+	errstr.clear();
+	req_url.clear();
+	req_path.clear();
+	down_path.clear();
+	req_header.clear();
 
 	ClearVarData();
 }
@@ -41,12 +39,12 @@ void CzHttp::Reset( void )
 	Terminate();
 
 	agent = str_agent;
-	if ( agent == NULL ) agent = "HSPInet(HSP3.1; Windows)";
+	if ( agent == NULL ) agent = "HSPInet(HSP3.6; Windows)";
 
-	if ( proxy_url[0] != 0 ) {
+	if ( proxy_url != "" ) {
 		char *local_prm = NULL;
 		if ( proxy_local ) local_prm = "<local>";
-		hSession = InternetOpen( agent, INTERNET_OPEN_TYPE_PROXY, proxy_url, local_prm, 0 );
+		hSession = InternetOpen( agent, INTERNET_OPEN_TYPE_PROXY, proxy_url.c_str(), local_prm, 0 );
 	} else {
 		hSession = InternetOpen( agent, INTERNET_OPEN_TYPE_DIRECT, NULL, NULL, 0 );
 	}
@@ -55,8 +53,8 @@ void CzHttp::Reset( void )
 		SetError( "初期化に失敗しました" ); return;
 	}
 
-	strcpy( username, "anonymous" );
-	strcpy( userpass, "aaa@aaa.com" );
+	username = "anonymous";
+	userpass = "aaa@aaa.com";
 	ftp_port = INTERNET_DEFAULT_FTP_PORT;
 	ftp_flag = 0;
 
@@ -74,8 +72,8 @@ CzHttp::CzHttp( void )
 	mode = CZHTTP_MODE_NONE;
 	hSession = NULL;
 	proxy_local = 0;
-	proxy_url[0] = 0;
-	req_header = NULL;
+	proxy_url.clear();
+	req_header.clear();
 	vardata = NULL;
 
 	//	接続可能か?
@@ -106,24 +104,24 @@ int CzHttp::Exec( void )
 	//	毎フレーム実行
 	//
 	static char hdr[] = "Content-Type: application/x-www-form-urlencoded\r\n";
-	char req_name[1024];
+	std::string req_name;
 	char *name;
 	BOOL res;
 	int flagmode = 0;
 
 	switch( mode ) {
 	case CZHTTP_MODE_REQUEST:			// httpに接続
-		strcpy( req_name, req_url );
-		strcat( req_name, req_path );
-		hService = InternetOpenUrl( hSession, req_name, req_header, -1L, 0, INTERNET_FLAG_RELOAD );
+		req_name = req_url;
+		req_name += req_path;
+		hService = InternetOpenUrl( hSession, req_name.c_str(), req_header.c_str(), -1L, 0, INTERNET_FLAG_RELOAD );
 		if ( hService == NULL ) {
 			SetError( "無効なURLが指定されました" );
 			break;
 		}
 		mode = CZHTTP_MODE_REQSEND;
 	case CZHTTP_MODE_REQSEND:
-		name = down_path;
-		if ( name[0] == 0 ) name = req_path;
+		name = (char *)down_path.c_str();
+		if ( name[0] == 0 ) name = (char *)req_path.c_str();
 		fp = fopen( name, "wb");
 		if ( fp == NULL ) {
 			SetError( "ダウンロードファイルが作成できません" );
@@ -158,25 +156,25 @@ int CzHttp::Exec( void )
 
 	case CZHTTP_MODE_VARREQUEST:
 		
-		if (strncmp(req_url, "https://", strlen("https://")) == 0){
+		if (strncmp(req_url.c_str(), "https://", strlen("https://")) == 0){
 			varport = INTERNET_DEFAULT_HTTPS_PORT;
 			flagmode= INTERNET_FLAG_RELOAD|INTERNET_FLAG_NO_UI|INTERNET_FLAG_SECURE;
 		}else{
 			flagmode = INTERNET_FLAG_RELOAD|INTERNET_FLAG_NO_UI;
 		}
 
-		strcpy( req_name, req_url2 );
-		strcat( req_name, req_path );
+		req_name = req_url2;
+		req_name += req_path;
 
 		// HTTPに接続
-		hHttpSession = ::InternetConnectA( hSession, varserver, varport, NULL, NULL, INTERNET_SERVICE_HTTP, 0, 0 );
+		hHttpSession = ::InternetConnectA( hSession, varserver.c_str(), varport, NULL, NULL, INTERNET_SERVICE_HTTP, 0, 0 );
 		if ( hHttpSession == NULL ) {
 			SetError( "無効なサーバーが指定されました" );
 			break;
 		}
 
 		// HTTP要求の作成
-		hHttpRequest = ::HttpOpenRequestA( hHttpSession, varstr, req_name, HTTP_VERSION, NULL, NULL, flagmode, 0 );
+		hHttpRequest = ::HttpOpenRequestA( hHttpSession, varstr.c_str(), req_name.c_str(), HTTP_VERSION, NULL, NULL, flagmode, 0 );
 		if ( hHttpSession == NULL ) {
 			SetError( "無効なURLが指定されました" );
 			break;
@@ -187,14 +185,12 @@ int CzHttp::Exec( void )
 
 		// 作成したHTTP要求の発行
 		if ( postdata != NULL ) {
-			char *additional_header = req_header != NULL ? req_header : "";
-			char *header = (char *)malloc( strlen(hdr) + strlen(additional_header) + 1 );
-			strcpy(header, hdr);
-			strcat(header, additional_header);
-			res = ::HttpSendRequestA( hHttpRequest, header, -1L, postdata, (int)postsize/*strlen(postdata)*/ );
-			free(header);
+			std::string header;
+			header = hdr;
+			header += req_header;
+			res = ::HttpSendRequestA( hHttpRequest, header.c_str(), -1L, postdata, (int)postsize/*strlen(postdata)*/ );
 		} else {
-			res = ::HttpSendRequestA( hHttpRequest, req_header, -1L, NULL, 0 );
+			res = ::HttpSendRequestA( hHttpRequest, req_header.c_str(), -1L, NULL, 0 );
 		}
 		if ( res == false ) {
 			InternetCloseHandle( hHttpSession );
@@ -203,27 +199,6 @@ int CzHttp::Exec( void )
 		}
 		// HTTPヘッダ
 		HttpQueryInfo( hHttpRequest, HTTP_QUERY_RAW_HEADERS_CRLF, resphead, resphead_size, 0 );
-/*
-		{
-		// 返されたコンテンツの長さを取得
-		DWORD dwSize = INETBUF_MAX;
-		*buf = 0;
-		res = HttpQueryInfo( hHttpRequest, HTTP_QUERY_CONTENT_LENGTH, buf, &dwSize, 0 );
-		if ( res == false ) {
-			InternetCloseHandle( hHttpRequest );
-			InternetCloseHandle( hHttpSession );
-			SetError( "データサイズ取得ができませんでした" );
-			break;
-		}
-		varsize = atoi(buf);
-		if ( varsize == 0 ) {
-			InternetCloseHandle( hHttpRequest );
-			InternetCloseHandle( hHttpSession );
-			SetError( "ダウンロードできませんでした" );
-			break;
-		}
-		}
-*/
 		varsize = 0x40000;
 		ClearVarData();
 		vardata = (char *)malloc( varsize );
@@ -263,9 +238,9 @@ int CzHttp::Exec( void )
 
 
 	case CZHTTP_MODE_INFOREQ:
-		strcpy( req_name, req_url );
-		strcat( req_name, req_path );
-		hService = InternetOpenUrl( hSession, req_name, req_header, -1L, 0, 0 );
+		req_name = req_url;
+		req_name += req_path;
+		hService = InternetOpenUrl( hSession, req_name.c_str(), req_header.c_str(), -1L, 0, 0 );
 		if ( hService == NULL ) {
 			SetError( "無効なURLが指定されました" );
 			break;
@@ -350,7 +325,7 @@ char *CzHttp::GetError( void )
 {
 	// エラー文字列のポインタを取得
 	//
-	return errstr;
+	return (char *)errstr.c_str();
 }
 
 
@@ -361,7 +336,7 @@ int CzHttp::RequestFile( char *path )
 	if ( mode != CZHTTP_MODE_READY ) {
 		return -1;
 	}
-	strcpy( req_path, path );
+	req_path = path;
 	mode = CZHTTP_MODE_REQUEST;
 	return 0;
 }
@@ -376,16 +351,16 @@ char *CzHttp::RequestFileInfo( char *path )
 {
 	// サーバーにファイル情報を要求
 	//
-	char req_name[1024];
+	std::string req_name;
 	DWORD dwSize = INETBUF_MAX;
 
 	if ( mode != CZHTTP_MODE_READY ) {
 		return NULL;
 	}
-	strcpy( req_name, req_url );
-	strcat( req_name, path );
+	req_name = req_url;
+	req_name += path;
 
-	hService = InternetOpenUrl( hSession, req_name, req_header, -1L, 0, 0 );
+	hService = InternetOpenUrl( hSession, req_name.c_str(), req_header.c_str(), -1L, 0, 0 );
 	if ( hService == NULL ) return NULL;
 
 	buf[0] = 0;
@@ -399,7 +374,7 @@ void CzHttp::SetURL( char *url )
 {
 	// サーバーのURLを設定
 	//
-	strncpy( req_url, url, 1024 );
+	req_url = url;
 }
 
 
@@ -407,7 +382,7 @@ void CzHttp::SetLocalName( char *name )
 {
 	// サーバーのURLを設定
 	//
-	strncpy( down_path, name, 512 );
+	down_path = name;
 }
 
 
@@ -435,10 +410,12 @@ void CzHttp::SetProxy( char *url, int port, int local )
 	//	(URLにNULLを指定するとPROXY無効となる)
 	//
 	if ( url == NULL ) {
-		proxy_url[0] = 0;
+		proxy_url.clear();
 	} else {
-		sprintf( proxy_url, "%s:%d", url, port );
+		char tmp[128];
+		sprintf( tmp, "%s:%d", url, port );
 		proxy_local = local;
+		proxy_url = tmp;
 	}
 	Reset();
 }
@@ -462,11 +439,7 @@ void CzHttp::SetHeader( char *header )
 {
 	// ヘッダ文字列の設定
 	//
-	if ( req_header != NULL ) { free( req_header ); req_header = NULL; }
-	if ( header == NULL ) return;
-	//
-	req_header = (char *)malloc( strlen( header ) + 1 );
-	strcpy( req_header, header );
+	req_header = header;
 }
 
 
@@ -474,7 +447,7 @@ void CzHttp::SetUserName( char *name )
 {
 	// ユーザー名の設定
 	//
-	strncpy( username, name, 255 );
+	username = name;
 }
 
 
@@ -482,7 +455,7 @@ void CzHttp::SetUserPassword( char *pass )
 {
 	// パスワードの設定
 	//
-	strncpy( userpass, pass, 255 );
+	userpass = pass;
 }
 
 
@@ -546,11 +519,11 @@ void CzHttp::AddFlexBuf( char *data, int size )
 void CzHttp::SetVarServerFromURL( void )
 {
 	char *p;
-	char *wr;
 	char a1;
-	p = req_url;
-	wr = varserver;
-	*wr = 0;
+	char tmp[8];
+	p = (char *)req_url.c_str();
+	varserver.clear();
+	tmp[1] = 0;
 	varport = INTERNET_DEFAULT_HTTP_PORT;
 
 	while(1)				// '//'を探す
@@ -579,19 +552,18 @@ void CzHttp::SetVarServerFromURL( void )
 				break;
 			}
 		}
-		*wr++ = a1;
+		tmp[0] = a1;
+		varserver += tmp;
 	}
-	*wr = 0;
 
-	wr = req_url2;
-	*wr++ = '/';
+	req_url2 = "/";
 
 	while(1) {				// 最後まで取り出す
 		a1 = *p++;
 		if ( a1 == 0 ) break;
-		*wr++ = a1;
+		tmp[0] = a1;
+		req_url2 += tmp;
 	}
-	*wr = 0;
 
 }
 
@@ -604,8 +576,8 @@ void CzHttp::SetVarRequestGet( char *path )
 		return;
 	}
 	SetVarServerFromURL();
-	strcpy( varstr, "GET" );
-	strcpy( req_path, path );
+	varstr = "GET";
+	req_path = path;
 	postdata = NULL;
 	mode = CZHTTP_MODE_VARREQUEST;
 }
@@ -619,8 +591,8 @@ void CzHttp::SetVarRequestPost( char *path, char *post )
 		return;
 	}
 	SetVarServerFromURL();
-	strcpy( varstr, "POST" );
-	strcpy( req_path, path );
+	varstr = "POST";
+	req_path = path;
 	postdata = post;
 	postsize = (int)strlen(postdata);
 	mode = CZHTTP_MODE_VARREQUEST;
@@ -634,8 +606,8 @@ void CzHttp::SetVarRequestPost2( char *path, char *post, int size )
 		return;
 	}
 	SetVarServerFromURL();
-	strcpy( varstr, "POST" );
-	strcpy( req_path, path );
+	varstr = "POST";
+	req_path = path;
 	postdata = post;
 	postsize = size;
 	mode = CZHTTP_MODE_VARREQUEST;
@@ -649,8 +621,8 @@ void CzHttp::SetVarRequestPut(char *path, char *post)
 		return;
 	}
 	SetVarServerFromURL();
-	strcpy(varstr, "PUT");
-	strcpy(req_path, path);
+	varstr = "PUT";
+	req_path = path;
 	postdata = post;
 	postsize = (int)strlen(postdata);
 	mode = CZHTTP_MODE_VARREQUEST;
@@ -664,8 +636,8 @@ void CzHttp::SetVarRequestPut2(char *path, char *post, int size)
 		return;
 	}
 	SetVarServerFromURL();
-	strcpy(varstr, "PUT");
-	strcpy(req_path, path);
+	varstr = "PUT";
+	req_path = path;
 	postdata = post;
 	postsize = size;
 	mode = CZHTTP_MODE_VARREQUEST;
@@ -679,8 +651,8 @@ void CzHttp::SetVarRequestDelete(char *path)
 		return;
 	}
 	SetVarServerFromURL();
-	strcpy(varstr, "DELETE");
-	strcpy(req_path, path);
+	varstr = "DELETE";
+	req_path = path;
 	postdata = NULL;
 	mode = CZHTTP_MODE_VARREQUEST;
 }
@@ -699,10 +671,10 @@ int CzHttp::FtpConnect( void )
 	}
 
 	hService = InternetConnect( hSession,
-                                req_url,
+                                req_url.c_str(),
                                 ftp_port,
-                                username,
-                                userpass,
+                                username.c_str(),
+                                userpass.c_str(),
                                 INTERNET_SERVICE_FTP,
                                 ftp_flag,
                                 0 );
@@ -990,7 +962,7 @@ void CzHttp::SetError( char *mes )
 	//	エラー文字列を設定
 	//
 	mode = CZHTTP_MODE_ERROR;
-	strcpy( errstr,mes );
+	errstr = mes;
 }
 
 

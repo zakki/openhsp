@@ -6,6 +6,7 @@
 
 #include <wininet.h>
 #define INETBUF_MAX 4096000
+#include <string>
 
 enum {
 CZHTTP_MODE_NONE = 0,
@@ -116,19 +117,20 @@ private:
 	int ftp_port;			// Ftp port
 	int ftp_flag;			// Ftp flags
 
-	char req_url[1024];		// Request URL
-	char req_url2[1024];	// Request URL (for POST/GET)
-	char req_path[512];		// Request PATH
-	char down_path[512];	// Download PATH
-	char proxy_url[1024];	// Proxy URL
-	char *req_header;		// Request Header (optonal)
-	char username[256];		// User Name string buffer
-	char userpass[256];		// User Pass string buffer
+	std::string req_url;	// Request URL
+	std::string req_url2;	// Request URL (for POST/GET)
+	std::string req_path;	// Request PATH
+	std::string down_path;	// Download PATH
+	std::string proxy_url;	// Proxy URL
+	std::string req_header;	// Request Header (optonal)
+	std::string username;	// User Name string buffer
+	std::string userpass;	// User Pass string buffer
 	char buf[INETBUF_MAX];	// temp
-	char errstr[256];		// Error string buffer
+	std::string errstr;		// Error string buffer
 
-	char varserver[256];	// VarRequest server name
-	char varstr[256];		// VarRequest request token
+	std::string varserver;	// VarRequest server name
+	std::string varstr;		// VarRequest request token
+
 	INTERNET_PORT varport;	// VarRequest server port
 	char *postdata;			// Post data
 	int postsize;			// Post size

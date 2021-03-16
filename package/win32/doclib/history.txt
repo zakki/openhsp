@@ -5,6 +5,10 @@ Hot Soup Processor ver3.6                           HSP : Hot Soup Processor
 
 ・hsp3関連 更新履歴
 
+	2021/03/16 3.6 beta6
+
+	[hspinet] リクエストに関する文字列の長さ制限を撤廃
+
 	2021/03/03 3.6 beta5
 
 	hspextプラグインのcomputb命令が変数バッファサイズを少なく認識する不具合を修正

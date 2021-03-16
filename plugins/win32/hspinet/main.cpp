@@ -10,10 +10,10 @@
 #include <stdlib.h>
 #include <time.h>
 
-#include "../hpi3sample/hsp3plugin.h"
-
 #include "czhttp.h"
 #include "czcrypt.h"
+
+#include "../hpi3sample/hsp3plugin.h"
 
 #include "cJSON.h"
 #include "nkf/nkf32.h"
@@ -1327,7 +1327,7 @@ EXPORT BOOL WINAPI nkfcnv( HSPEXINFO *hei, int p1, int p2, int p3 )
 	char *vptr;
 	int outsize, insize;
 	char opt[1024];
-	cJSON *root;
+//	cJSON *root;
 
 	ap = hei->HspFunc_prm_getva( &pv );		// パラメータ1:変数
 	vptr = (char *)hei->HspFunc_prm_getv();	// パラメータ2:変数

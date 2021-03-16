@@ -8,7 +8,7 @@
 	if stat : dialog "ネット接続できません。" : end
 
 	neturl "http://www.onionsoft.net/"
-	netrequest "index.cgi"
+	netrequest "index.html"
 
 	mes "DOWNLOAD 開始"
 
