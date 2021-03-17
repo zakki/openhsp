@@ -1,0 +1,397 @@
+------------------------------------------------------------------------------
+Hot Soup Processor ver3.3                           HSP : Hot Soup Processor  
+Additional HSP Template & Tools       copyright 1997-2011 (c) onion software  
+------------------------------------------------------------------------------
+
+■ Introduction
+
+AHT (Additional HSP Template & Tools) is Hot Soup Processor ver3.1 or later
+By using with, automatic source generation and cooperation with external data
+We provide various mechanisms to do it.
+
+
+■ Overview of AHT
+
+AHT has various roles.
+
+・ Arrange rules for automatically generating new HSP source scripts
+ Define interdependencies between reusable HSP source scripts
+・ Determine the data formats that can be used by HSP and the dependencies of the tools.
+
+In other words, a method for anyone to easily generate HSP source scripts,
+A mechanism for easily using template scripts and tools
+Think of it as supporting.
+
+In HSP, modules and
+We have provided macros, plugins, etc. But these are
+Each user has created and published it according to their own rules.
+AHT formats this according to a set rule, and various standard forms.
+Reuse and link scripts more easily in a common way
+I am aiming.
+
+Templates are a new concept introduced in HSP3.1.
+The concept of templates used in common programming languages is
+Often refers to advanced mechanisms for code abstraction,
+In the case of HSP, the focus is on providing a simpler "template",
+It will be used to reuse scripts more easily.
+
+AHT provides information and management of reusable HSP source scripts
+It is a general term for the mechanism including tools.
+The definition file used in AHT has the extension ".aht", "AHT file"
+Is called.
+
+
+■ "Easy input" menu
+
+"Easy input" function is available from the standard script editor of HSP3.
+Supports script input by function, right-click menu
+By pressing and selecting the submenu item under "Easy Input"
+You can use it.
+For example, if you select the "Specify color" function,
+A box for entering the specified color in R, G, B or hexadecimal number,
+A dialog will appear in which you can specify from the color swatches.
+Enter the color you want to specify in the dialog and click the "OK" button
+By pressing, the script will be placed at the cursor position in the script editor.
+It will be generated automatically.
+For "Easy input", the keyword of the function you want to use is unknown.
+Intuitive parameters such as time, font name, color code, etc.
+It will help you to enter.
+The "Easy Input" menu is created using the functions of AHT.
+The user can freely edit the menu items, and the degree of freedom
+We can provide high input support.
+The "Easy Input" menu item is the script editor (hsed3.exe).
+Under the "ezinput" folder in the folder where
+It will be searched. That is, the AHT file in the "ezinput" folder
+You can easily add menu items just by copying.
+If you create a new folder under the "ezinput" folder,
+Hierarchical structure is also created in the menu.
+This makes it possible to sort menu items by category.
+Become.
+
+
+■ HSP Template Manager (Peas)
+
+HSP Template Manager (Peas) is a tool mainly for mouse operation.
+You can combine AHT files to create and execute programs.
+It has a function.
+Very simple by combining automatically generated scripts
+For applications, without using a script editor
+You can complete the software.
+HSP Template Manager gives HSP scripts in a new style
+Suggests to create, but an alternative to the script editor
+Is not.
+The best tool depending on the user's style and the required software content
+I would be happy if you could choose.
+
+
+■ AHT file overview
+
+AHT file is a "template" for generating HSP source scripts
+Refers to the format handled by.
+AHT files have a ".aht" extension.
+AHT files are compatible with HSP3 source script files (.hsp)
+There is. Compile the AHT file as it is as the source of HSP3
+It is possible to do it.
+
+AHT files are called AHT headers using preprocessor instructions
+Definition information is specified. Also, using specially formatted comments
+We are defining the dialog interface.
+
+The AHT file can be easily used as a template for the conventional HSP3 source script.
+This is a format for reuse. Traditional scripts with minimal modifications
+It can be treated as an AHT file.
+
+
+■ AHT file header
+
+The AHT file header defines the information in the AHT file.
+Source code as a template by "#aht" preprocessor instruction
+You can specify information about it.
+
+#aht class "class name"
+
+Specify the class name of the AHT file.
+The AHT file must belong to some class.
+Class names are separated by periods, such as "hsp3.std"
+can do.
+The class name is so that AHT files can be operated safely.
+It defines the environment in which it will be used.
+For example, the one created by the standard function of HSP3
+"Hsp3.std", in the case of HGIMG3 environment, "hsp3.hgimg3"
+Make a distinction so that the source code of different environments is not mixed
+It will be an index to do.
+This class name is mainly in HSP Template Manager
+will be used.
+
+#aht name "template name"
+
+Specify the name of the AHT file.
+This definition can be omitted.
+If omitted, the file name will be used as the template name.
+
+#aht author "author name"
+
+Specify the author name of the AHT file.
+This definition can be omitted.
+
+#aht ver "version"
+
+Specifies the version of the AHT file.
+This definition can be omitted.
+
+#aht exp "Explanatory text"
+
+Specifies a description for the AHT file.
+This item will be added by describing more than one.
+This definition can be omitted.
+
+#aht icon "filename"
+
+Specifies an icon file specific to the AHT file.
+This definition can be omitted.
+This item is used by HSP Template Manager.
+
+	#aht iconid 0
+
+Specify the icon ID unique to the AHT file.
+This definition can be omitted.
+This item is used by HSP Template Manager.
+
+#aht helpkw "Help keywords"
+
+Specify the help keyword.
+This keyword is HDL with the help button when you enter it easily
+Specifies the string passed to.
+
+
+■ AHT comment
+
+Redefine specific keyword items by writing AHT comments
+You can register it as a possible item.
+The rules for AHT comments are as follows.
+
+-Add a ";;" comment to the #const or #define instruction.
+-It is possible to specify an option specification character string after the ";;" comment.
+-Predefined parameters are the default
+
+The usual comment is ";", but only if you change it to ";;"
+Recognized as an AHT comment.
+Keywords with AHT comments can be redefined by GUI
+It will be recognized as an item.
+
+Example:
+# const test1 123; It's a normal comment
+# const test2 456 ;; AHT comment
+
+In the above example, test1 and test2 are defined as macros.
+When creating a new source using this source as a template,
+The definition of "456" in test2 can be rewritten by GUI.
+AHT comments have some descriptive rules and keywords
+You can write supplementary information when redefining.
+Separate the format of "option string = parameter" with ","
+I will write while.
+
+Example:
+			#const test1 123 ;;int,min=1,max=10
+
+There are the following types of option strings.
+Also, some parameters can be omitted.
+
+・ Name
+
+Defines the display name of the keyword.
+If the name option is not defined, the definition keyword is
+It will be used as it is as a name.
+If you change the name with this option, the definition keyword and
+There will be a difference in the name. Please use with great care.
+
+Example:
+# const test1 123 ;; name = "name"
+
+・ Int
+
+The keyword indicates that you are defining an integer value.
+Keywords defined by the #const instruction are by default
+The int option is used.
+The minimum and maximum values can be set with the min and max options.
+
+Example:
+			#const test1 123 ;;int,min=1,max=10
+
+・ Double
+
+The keyword indicates that you are defining a real number.
+The minimum and maximum values can be set with the min and max options.
+
+Example:
+			#const test1 0.0 ;;double,min=0.0,max=1.0
+
+・ Str
+
+The keyword indicates that you are defining a string.
+Keywords defined by the #define instruction are by default
+The str option is used.
+
+Example:
+			#define test1 "ABC" ;;str
+
+・ Combox
+
+Indicates that the keyword can be redefined by a combo box.
+Specify the contents of the combo box with the prm and opt options.
+
+Example:
+#define mode 0 ;; combox, prm = "0 \\ n1 \\ n", opt = "waiting for time \\ nwaiting for key input"
+
+・ Chkbox
+
+Indicates that the keyword can be redefined by a checkbox.
+Specify the contents of the check box with the prm and opt options.
+
+・ Color
+
+Indicates that the keyword can be redefined by the file selection dialog.
+If "opt =" rgb "" is additionally specified, the following 3 items are for editing R, G, B values.
+will be used.
+
+Example:
+#define Specified color code $ ffffff ;; color
+
+・ File
+
+Indicates that the keyword can be redefined by the file selection dialog.
+Specify the content of the extension with the prm option.
+
+Example:
+#define image file "" ;; file, prm = "bmp; *. jpg; *. gif"
+
+・ Font
+
+Indicates that the keyword can be redefined by the font selection dialog.
+The following two items are used as the font size and mode.
+
+Example:
+#define Font name "" ;; font, help = "Press the button to select."
+#const font size 13 ;; help = "point"
+#const character mode 0 ;; help = "specify style"
+
+・ Exec
+
+Indicates that the keyword can be redefined by an external tool.
+Specify the external tool name with the opt option.
+
+・ Parts
+
+Refer to the part object placed in the visual editing tool and refer to it.
+Indicates that it will be redefined by part ID.
+Specifies the class string of the part that can be referenced by the prm option.
+(Starting match is enabled for class strings)
+
+・ Pprop
+
+Indicates that the keyword will be redefined in the property string of the part object specified by "parts".
+The referenced parts will be those of the last defined parts option.
+Specify the property content (character string) with the prm option.
+
+・ Popt
+
+Indicates that the keyword will be redefined with the option string of the part object specified by "parts".
+The referenced parts will be those of the last defined parts option.
+Specify the content (character string) of the option with the prm option.
+
+・ Help
+
+Defines a supplementary description string.
+The supplementary explanation is displayed when editing the GUI.
+
+・ Pure
+
+Indicates that the keyword that defines the string is expanded by #ahtout.
+By default, the pure specification is enabled.
+This keyword is provided for explicit purposes and for compatibility.
+
+Example:
+			#define test1 "ABC" ;;pure
+			#ahtmes "ABC="+test1
+
+・ Mes
+
+Indicates that the keyword that defines the string is expanded by #ahtmes.
+When mes is specified for a character string enclosed in double quotes,
+Keywords can be expanded correctly with the #ahtmes command.
+
+・ Read
+
+Disables the control when you edit the defined keyword.
+
+・ Refname
+
+The defined string as the name parameter in the AHT file header
+Redefine. (HSP template manager part display name setting
+Used for. )
+
+・ Withid
+
+Redefine by adding the model ID to the defined character string.
+(Used for the part setting name of HSP Template Manager.)
+
+
+■ AHT message output
+
+Message to the outside using the preprocessor instruction "#ahtmes"
+It is possible to output.
+When the "Easy input" function is used, the source code added on the editor is displayed.
+I'm using it to describe it.
+When using the Peas editor, set the initialization items (items to be added to the beginning of the script)
+I'm using it to describe it.
+
+Like the mes instruction, the #ahtmes instruction connects strings and macros with the "+" operator.
+It can be output.
+
+Example:
+#define Variable to assign a ;; str
+#const Random number range 100 ;; help = "occurs from 0 to specified range -1"
+#ahtmes "" + Variable to be assigned + "= rnd ("+ Range of random numbers + ") \\ t \\ t; Variable" + Variable to be assigned + "is assigned a random number."
+
+Unlike the normal mes instruction, it is defined on the preprocessor.
+Note that you are connecting macros.
+
+
+■ AHT support module
+
+Functions related to AHT are provided by hspcmp.dll and AHT module (mod_aht.as).
+Will be provided. All AHT related tools, including AHT Manager, are now on HSP3
+Therefore, it is created.
+
+
+■ Update history
+
+	2009/06/24 3.2β4
+
+Fixed example of combox option.
+Fixed if.aht for Peas.
+
+	2009/05/14 3.2β3
+
+Added helpkw item to file header options.
+
+	2007/07/15 3.1RC1
+
+HSP Template Manager (Peas) tool officially released.
+
+	2007/06/08 3.1β10
+
+Fixed a bug in the name option of AHT comments.
+
+	2007/02/09 3.1β7
+
+Added AHT comment keyword "pure".
+
+	2006/11/10 3.1β6
+
+First released as a preview version of AHT.
+
+
+------------------------------------------------------------------------------
+                                                        AHT.TXT / end of file 
+------------------------------------------------------------------------------

@@ -1,0 +1,19 @@
+
+ãƒƒT Introduction
+
+mod_usbio.as is a module for using USB-IO from HSP.
+This is a modified version of K-K's mod_usbio.as that was included in HSP3.21.
+It works the same as K-K's USB IO plug-in.
+
+With mod_usbio.as, the functions of the USBIO plug-in can be called from HSP3,
+Does not require a DLL.
+
+For details on how to use it, refer to the instruction manual (usbio.txt) for the USBIO plug-in included with HSP3.21.
+please refer to.
+
+
+ƒcƒLchange history
+
+	2010-07-23 Ver 0.4
+Fixed a bug that an error occurs when the uio_inp instruction is used repeatedly.
+

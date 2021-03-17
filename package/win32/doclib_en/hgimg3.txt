@@ -1,0 +1,2852 @@
+------------------------------------------------------------------------------
+HGIMG ver3.5    REFERENCE MANUAL       High Performance Graphic Image Plugin  
+HSP Extension DLL Reference copyright 2001-2017 (c) onion software
+------------------------------------------------------------------------------
+
+・ Introduction
+
+HGIMG3 can be used with Hot Soup Processor ver3.5 or later.
+It provides various enhancements for drawing the screen.
+HGIMG3 is Windows98, Me, 2000, XP, Vista, 7 or later DirectX 8 or higher
+It works in the installed environment.
+(Since it is included as standard on Windows XP or later, DirectX installation
+No need to)
+
+
+・ Installation
+
+HGIMG3 has the following file structure.
+
+hgimg3.txt (this file)
+hsp3hg.exe (runtime for execution)
+
+common folder (HGIMG3 header file)
+hsphelp folder (HGIMG3 help file)
+runtime folder (HGIMG3 custom runtime)
+sample folder (HGIMG3 sample script & data)
+
+When creating a script using HGIMG3, at the beginning of the script
+Be sure to add the line "#include" hgimg3.as "".
+With the above, the function of HSP has been extended, and the instructions described in this reference are
+You will be able to use it.
+First of all, try running the included sample script.
+You should be able to see a simple usage example of the enhanced functionality.
+The sample script is sample / hgimg3 under the HSP installation folder.
+It is prepared in.
+
+
+揃important point
+
+HGIMG3 is not an extension plugin with an external DLL file.
+It is provided as a runtime file that includes the functions of HSP3.0.
+Be sure to use a version of the compiler that supports the HGIMG3 runtime.
+Please use (hspcmp.dll) or a script editor.
+In addition, HSP3 is a code generator (hspcmp.dll) that supports the execution runtime.
+Please use. (HSP 3.2 or higher recommended)
+
+
+・ Copyright and license
+
+The rights of the original software (executable file) created by the user using HGIMG3 are
+It belongs to the user who created it.
+The original software (executable file) created by the user using HGIMG3,
+You can freely display, distribute, and sell at communication, spot sale, storefront, etc.
+No license fee is required.
+
+However, HGIMG3 uses the Xiph.org Foundation for Ogg Vorvis format file decoding.
+The library is used, and when distributing the executable file,
+The following license notation is required according to the regulations.
+
+	--------------------------------------------------------------------------------
+I am using the following libraries for Ogg Vorvis format file decoding
+	libvorbis : Copyright (c) 2002-2004 Xiph.org Foundation
+	--------------------------------------------------------------------------------
+(Be sure to include the text containing the above content in the distribution.)
+
+The copyright of the HGIM G3 runtime belongs to onion software.
+onion software does not guarantee any damage caused by this program.
+Use at your own risk.
+
+The HGIMG3 runtime and its accompanying sample script data
+Basically, under the BSD license, attachment, duplication, reorganization, and redistribution regardless of whether it is paid or free of charge.
+can.
+However, please be sure to include the following license notation in that case.
+(This distributes runtime files (.hrt) and sample scripts, data
+It is a notation when doing. Original software (executable file) that I made
+When distributing, only the license notation of libvorbis above is fine. )
+
+	--------------------------------------------------------------------------------
+	HGIMG3 : Made with base technology of OpenHSP
+	Copyright (C) 1997-2017, Onion Software/onitama.
+	All rights reserved.
+I am using the following libraries for Ogg Vorvis format file decoding
+	libvorbis : Copyright (c) 2002-2004 Xiph.org Foundation
+	--------------------------------------------------------------------------------
+
+(Be sure to include the text containing the above content in the distribution.)
+
+
+・ Overview of HGIM G3
+
+HGIMG3 is an application using advanced 2D and 3D graphics from HSP
+An extension plugin for creating.
+Wide range from 2D games using sprites to full-scale software using 3D models
+You can use it.
+
+The main functions supported by HGIM G3 are as follows.
+
+・ Advanced drawing system for DirectX and full color mode
+・ Drawing engine that can set 2D sprites, 3D polygons, etc. with common commands
+・ 2D sprite rotation enlargement / reduction, α composition, transparent color removal processing, tiling (BG display)
+・ World management that can mix 2D sprites and 3D polygons on 3D coordinates
+・ It is possible to manage polygon models with a 3D hierarchical structure.
+・ Animation display of 3D one-skin model using bones is possible
+・ Animation-style rendering (toon shading) display is possible
+-BMP, JPG, GIF, PNG, DDS, TGA, TIFF format texture support
+-Texture rendering function for Japanese fonts including antialiasing
+-Support for texture images including alpha channel
+-Sprite display, movement management and collision detection functions
+・ Geometry calculation by floating point number corresponding to HSP3
+・ The event list registration function enables highly flexible autonomous processing.
+-Equipped with a time scale mode that calculates movement from the amount of movement per unit time
+-Supports reading 3D data in DXF format
+-Equipped with easy-to-use direct drawing commands
+
+The main instructions work compatible with the version (HGIMG2) attached to Ver2.61, but
+Due to the consolidation of functions, some instructions are incompatible or obsolete.
+Also, since the details such as flags and modes are different, the previous script
+If you want to port and use it, you need to modify it.
+On the contrary, there are many parts that have been extended more conveniently for HSP3.0.
+It is possible to learn HGIMG3 while keeping the idea of HGIMG2 and the mechanism of instructions as it is.
+You should be able to do it, so please take advantage of the new features of HGIM G3.
+
+The following functions have been removed compared to the version (HGIMG2) attached to Ver2.61.
+
+・ Motion playback with original animation format (ma)
+-Reference and change of polygon information and hierarchy information, save in mx format
+-Polygon scan function that searches for the corresponding polygon from the 2D position on the screen
+-Automatic change of MOC parameters of objmov system has been replaced by the event function.
+-The falloff rendering function has been removed and a timescale mode has been installed.
+
+HGIMG3 has more features than the previous version (HGIMG2),
+It is easier to learn and has fewer instructions and parameters for normal use.
+Aiming to easily utilize advanced 2D / 3D functions from beginners to advanced users
+It is designed.
+
+
+繝サ Notes on the current version
+
+The following symptoms have been reported as known bugs. Please note.
+
+-When the parent-child relationship of an object becomes multi-layered, the parameters are converted multiple times.
+-The x format model data does not support the parent-child relationship by the objchild instruction.
+-The line segment model does not support the setting of the drawing area by hgview.
+
+We plan to implement major enhancements in the future on the successor plug-in, HGIM G4.
+Regarding HGIMG3, we would like to continue to maintain defects and respond to detailed requests.
+thinking about.
+
+
+ツキChange log
+
+	2017/05/25 ( Ver3.5β5 )
+
+Fixed a bug that sorting by OBJ_SORT may fail.
+
+	2014/01/11 ( Ver3.4β3 )
+
+Fixed a bug that the window size is not reflected correctly when initializing again with the hgini command after finishing with the hgbye command.
+
+
+	2013/04/10 ( Ver3.32b )
+
+Fixed a bug that vector values are not recognized correctly by fv ~ type instructions such as fvdir.
+Fixed a bug that an error occurs in the cleanup process at the end of the application
+
+	2013/03/15 ( Ver3.32a )
+
+Fixed a bug that vector values are not reflected correctly in fv ~ type instructions such as fvdir in 3.32 release version.
+
+	2013/01/29 ( Ver3.32RC1 )
+
+Fixed to use DirectSound software buffer by default when playing ogg
+Fixed a bug that loop points are not initialized during ogg playback
+Added switch to use DirectSound software buffer when playing ogg
+Added stream buffer size setting for ogg playback
+Fixed the conversion method when an invalid character string is input by the str2fv instruction.
+
+	2012/06/14 ( Ver3.31β1 )
+
+Supports reading x-files that do not contain template definitions
+
+	2011/07/07 ( Ver3.3β3 )
+
+Fixed a bug that array information may not be set correctly with the objgetfv instruction.
+
+	2010/04/28 ( Ver3.21a )
+
+Fixed a bug that the semi-transparency setting by setefx may not be reflected correctly on models other than x format.
+Corrected the old part of the document and reference notation
+Supports HGIMG upward compatible dxfload instruction
+
+	2010/03/17 ( Ver3.21 )
+
+Fixed a bug that freezes when playing time with dmmstat immediately after playing ogg stream on some OS
+
+	2010/03/15 ( Ver3.21RC3 )
+
+Fixed a bug that the Y-axis value is positive or negative in the coordinate transformation of hgcnvaxis.
+Added volsamp.hsp, a sample to set the natural volume
+Fixed a bug that line segments by addline command are not displayed correctly.
+Fixed a bug that font drawing by fprt command is blurred depending on the texture interpolation method.
+Fixed to save the moving component when changing the rotation component of the hierarchy with the setxinfo command
+Added SYSREQ_FPUPRESERVE option to system request
+
+	2010/02/17 ( Ver3.21RC2 )
+
+Separated texture filter specifications for direct drawing commands (fprt, etc.) into SYSREQ_2DFILTER2
+
+	2010/01/28 ( Ver3.21RC1 )
+
+Fixed an issue where the cross product calculation (fvouter) was incorrect
+Fixed a bug that some memory was not initialized properly by hgreset
+Supports drawing of objects of OBAQ (Physics Engine) plugin
+Added emitter-related instructions (hgemit, etc.)
+Added groupmod instruction
+Added line segment model (addline instruction) support
+
+	2009/10/21 ( Ver3.2a )
+
+Fixed a bug that CPU utilization may be higher than HSP3.1
+
+	2009/07/27 ( Ver3.2RC1 )
+
+Fixed a bug that the timer value could not be taken when the system was reinitialized with hgreset etc.
+Added OBJ_SORT to object mode
+Added hgcnvaxis instruction
+Added cnvaxis and objsort samples
+
+	2009/05/01 ( Ver3.2β3 )
+
+Added 2D Elements Editor (elm2d) tools and samples
+Added OBJ_FIRST to object mode
+
+	2009/03/11 ( Ver3.2β2 )
+
+Added parameter description for hgprm instruction.
+Added delmodel instruction.
+Added definition of macro, EPRIM_FAN.
+Fixed a bug that sometimes got stuck when using a parameter change event such as event_pos and a loop by event_jump together.
+
+	2008/03/28 ( Ver3.2βtest1 )
+
+Added explanation and sample about effect model.
+Added explanation and sample about mesh map.
+Added object modes for extended collisions.
+Added object gaze and auto-tracking to camera modes.
+Added meshmap, getvarmap, objwalk, objfloor, getcolvec, and getnearobj instructions.
+Added help for unexplained instructions wave_init, wave_apply, wave_set.
+
+	2007/08/25 ( Ver3.1FIX1 )
+
+Fixed a bug that texture specification is not reflected in multiple object display with OBJ_LATE specified.
+
+	2007/07/15 ( Ver3.1RC1 )
+
+Corrected the description about the license.
+
+	2007/06/04 ( Ver3.1β10 )
+
+Added hggettime and hgsettime instructions to get and set real-time timers.
+Fixed a bug that an error occurs when using the event_delobj instruction in a module.
+
+	2007/04/06 ( Ver3.1β8 )
+
+Fixed a bug that the display is broken when drawing a 32-bit texture with the texmes instruction.
+Fixed to automatically recover when the device is disabled by [Ctrl] + [Alt] + [Del] etc.
+Fixed a bug that the font display by the fprt command is broken in some environments.
+Added some sample scripts.
+
+	2007/02/07 ( Ver3.1β7 )
+
+Added an option to control MIPMAP generation with the hgsetreq instruction.
+Fixed to recognize the line feed code in the message with the texmes instruction.
+Added texopt instruction to set character spacing, line spacing, and character antialiasing.
+Added hgview instruction to set the viewport.
+Fixed a bug that an error might occur in the texmes instruction.
+Added optional parameters for hgdraw instruction.
+
+	2006/11/10 ( Ver3.1β6 )
+
+Supports semi-transparent display of effect models.
+Added event_eprim, event_aim, and event_objact instructions for event list operations.
+Fixed so that -1 can be specified for the animation ID at the end with the objact instruction.
+Fixed a bug that toon shading conversion fails when there are many materials.
+Added parameters for modelcols and setcolscale instructions.
+Added objaim and hgprm instructions.
+Supports stream playback in Ogg Vorbis format with DirectSound function.
+
+	2006/07/23 ( Ver3.1β5 )
+
+Added instructions (dmm ~) to support the basic functions of DirectSound.
+Fixed a bug that the scale may not be applied correctly when displaying the x format hierarchical model.
+Added an option to specify vertex coordinates and UV coordinates to the setxinfo and getxinfo instructions.
+Added SYSREQ_QUATALG option to sysreq instruction.
+Added Z-buffer ignore mode to the 留 composite value option of the 3D model.
+Added objproj instruction to change the projection mode of an object.
+Added event_regobj and event_delobj instructions for event list operation.
+Added addeprim and seteprim instructions for creating and setting effects models.
+Fixed to recognize the start frame of animation information in x format.
+Added SYSREQ_DXVSYNC and SYSREQ_DEFTIMER options to the hgsetreq instruction.
+Added option for setborder instruction.
+Added a parameter for specifying the event ID to the regobj instruction.
+Corrected so that the accuracy of the hgsync instruction can be improved and the load factor can be acquired.
+Added objchild instruction to set the parent-child relationship of objects.
+Fixed a bug that repeated texture specification (16) of addmesh command cannot be used.
+
+	2006/07/03 ( Ver3.1β4 )
+
+Fixed a bug that the rotation order when displaying the x format model was different from other models.
+Fixed a bug that the shadow color when displaying the x format model becomes strange when ambient is specified.
+Added model order instruction to set the rotation order of the model.
+Added display option with hemispherical lighting to modelshade command.
+
+	2006/04/25 ( Ver3.1β3 )
+
+Fixed a bug that the texture ID may not be reflected when the texture ID is specified by the addplate command.
+Fixed a bug that the light source calculation of the model added by the addbox instruction is not reflected correctly.
+Fixed not to update Z buffer when semi-transparent is specified when displaying x format model.
+Added translucent mode (1024 ~) that performs color subtraction with RGB values.
+Fixed a bug that the display order of x format model and other 3D polygon model is not correct.
+Added model shade instruction to set 3D model shading mode.
+Fixed a bug that the Y coordinate of the camera gaze mode is inverted and recognized.
+Added a switch that is compatible with the previous one in the behavior of the camera gaze mode.
+Add plate instruction added to help.
+Added a parameter to specify the texture ID to the addbox and addmesh instructions.
+Fixed a bug that a gap is created when a rectangular parallelepiped is specified with the addbox command.
+
+	2006/03/14 ( Ver3.1β2 )
+
+Fixed a bug that animation cannot be played independently when the same model is displayed multiple times.
+Fixed a bug that the light source calculation of the boneless model is affected by the scale.
+Added an option for texture interpolation to the hgsetreq instruction.
+Fixed to use texture bilinear interpolation by default when drawing in 3D.
+
+	2005/12/22 ( Ver3.1β1 )
+
+Fixed Z-buffer updates for 2D objects to be disabled.
+Added getobjcoli instruction.
+Added getobjmodel instruction.
+Added setcolscale instruction.
+Added modelcols instruction.
+Added objexist instruction.
+Fixed a bug that the size parameter of the addbox instruction is not recognized.
+Fixed to be able to use relative values for parameter changes due to events.
+
+	2005/11/28 ( Ver3.1β1 )
+
+Fixed an incorrect description of settoonedge.
+Fixed a bug that the material is not reflected when toon shading of the boneless model.
+	2005/08/30 ( Ver3.0a )
+
+Build with HSP3.0a library.
+Fixed to be able to set the maximum number of animations by x-files.
+Fixed so that normal recalculation when reading x-file can be turned ON / OFF.
+Fixed a bug that the material may shift when reading x-files.
+Fixed a bug that addition / subtraction composition cannot be performed when drawing a model using x-files.
+Added OBJ_LATE flag for drawing semi-transparent objects.
+Fixed a bug that the event_uv instruction does not work for the plate model.
+Fixed the texture specified by the clstex instruction to be set as the background.
+
+	2005/08/01 ( Ver3.0 )
+
+Build with HSP3.0 library.
+
+	2005/07/13 ( Ver3.0β8 )
+
+Build with HSP3.0硫12 library.
+
+	2005/06/23 ( Ver3.0β7 )
+
+Corrected the interpolation method of rotation animation to be spherical linear.
+Fixed incorrect light source calculation for boneless models.
+Partially changed the parameter specifications of the getxinfo instruction.
+Supports reading and writing of material information by getxinfo and setxinfo commands.
+
+	2005/06/22 ( Ver3.0β6 )
+
+Fixed the part where the light color and ambient color were not reflected properly.
+Supports mesh display that depends 100% on one bone.
+Corrected so that the camera angle of view (FOV) and display range (near, far) parameters are reflected.
+Fixed to correct the camera aspect ratio according to the window size.
+Fixed to be able to get DirectX COM pointer with hggetreq instruction.
+Added getxinfo and setxinfo instructions.
+
+	2005/06/15 ( Ver3.0β5 )
+
+Build with HSP3.0硫10 library.
+Fixed that the light color and ambient color were not reflected correctly.
+Fixed to return the speed to the default when switching animations.
+Added reglight and objlight instructions.
+
+	2005/05/27 ( Ver3.0β4 )
+
+Build with HSP3.0硫8 library.
+Added hgline and hgcapture instructions.
+Fixed a bug that some models including bones are not displayed correctly.
+Added a parameter to specify the texture ID to the addspr and addplate instructions.
+Fixed a bug that event_set type instructions do not work properly when parameters are omitted.
+
+	2005/04/12 ( Ver3.0β3 )
+
+Build with HSP3.0硫7 library. Supports debug windows.
+Added modelspeed instruction.
+
+	2005/03/23 ( Ver3.0β2 )
+
+Fixed not to recalculate the normal when reading the x-file.
+Fixed a bug that the calculation order of fvouter, fvsub, and fvdiv instructions was reversed.
+Added addxanim instruction for registering multiple animations.
+Added objact, objspeed, getanim instructions for animation settings.
+
+	2005/02/25 ( Ver3.0β1 )
+
+First appearance as a test version.
+
+
+・ Instruction list (main)
+
+hgini yofs, ysize DLL initialization
+hgreset Initialize scene information
+hgdraw mode Draw
+Freeing the hgbye DLL
+hgsync val wait for time
+hgsetreq type, val system request settings
+hggetreq val, type Get system request
+
+setborder sx, sy, sz, option Object scope setting
+clscolor color background color setting
+clstex id background texture settings
+setfont cx, cy, px, sw original font definition
+fprt "mes", x, y Definition font string display
+
+cammode mode Camera mode setting
+
+objact ObjID, anim, mode Start specified animation
+
+setuv tx0, ty0, tx1, ty1 Specify registered texture UV coordinates
+setsizef sx, sy Specify the width and height of the registered model
+addbox var, sx, sy, texid Create a box model
+addplate var, mode, sx, sy, texid Create plate (PLATE) model
+addspr var, mode, x1, y1, x2, y2, texid Create 2D sprite model
+addxfile model, "filename" Read model file
+
+Registration of regobj var, ModelID, mode, EventID objects
+Delete delobj ObjID object
+setobjmodel ObjID, ModelID Object model settings
+setobjmode id, mode, sw Object mode settings
+setcoli id, mygroup, enegroup Object collision settings
+collision judgment of getcoli val, id, distance object
+findobj exmode, group object search
+nextobj val Search for the next object
+
+clsblur val Blur setting
+setcolor r, g, b Monochromatic polygon creation settings
+falpha val Set font character α value
+
+
+・ Instruction list (auxiliary)
+
+set selmoc id, mocofs MOC information
+selpos id Set moving coordinates to MOC information
+selang id Set rotation angle to MOC information
+selscale id Set scale to MOC information
+seldir id Set movement amount to MOC information
+
+selcam ofs Set camera to MOC information
+selcpos Set camera coordinates to MOC information
+selcang Set camera angle to MOC information
+selcint Set camera gaze point to MOC information
+
+sellight id, ofs Set light source to MOC information
+sellpos id Set light source coordinates to MOC information
+sellang id Set the light source angle to MOC information
+sellcolor id Set the light source color to MOC information
+
+objset1 ofs, x Set MOC information
+objadd1 ofs, x Add MOC information
+objsetf1 ofs, x Set MOC information
+objaddf1 ofs, x Add MOC information
+objset1r ofs, x Set MOC information
+
+objset2 ofs, x, y Set MOC information
+objadd2 ofs, x, y Add MOC information
+objsetf2 ofs, x, y Set MOC information
+objaddf2 ofs, x, y Add MOC information
+objset2r ofs, x, y Set MOC information
+
+objset3 x, y, z Set MOC information
+objadd3 x, y, z Add MOC information
+objsetf3 x, y, z Set MOC information
+objaddf3 Add x, y, z MOC information
+objset3r x, y, z Set MOC information
+
+objgetfv fv Get MOC information
+objsetfv fv Set MOC information
+objaddfv fv Add MOC information
+objgetv v Get MOC information as an integer value
+objsetv v Set MOC information as an integer value
+objgetstr sval Get MOC information as a string
+
+fvset fv, x, y, z vector setting
+fvseti fv, x, y, z Vector setting from integer values
+fvadd fv, x, y, z vector addition
+fvsub fv, x, y, z vector subtraction
+fvmul fv, x, y, z vector multiplication
+fvdiv fv, x, y, z vector division
+fvdir fv, x, y, z vector rotation
+fvmin fv, x, y, z vector maximum value
+fvmax fv, x, y, z vector minimum value
+fvouter fv, x, y, z vector cross product
+fvinner fv, x, y, z vector dot product
+fvface Get the angle from the fv, x, y, z coordinates
+fvunit fv vector normalization
+fsin fval, rot Ask for sign
+fcos fval, rot Ask for cosine
+fsqr fval, prm Find the square root
+froti fval, prm Convert integer angle to decimal value
+
+fv2str fv Convert vector to string
+str2fv fv, "x, y, z" Convert string to vector
+str2f fval, "val" Convert string to decimal value
+f2str val, fval Convert decimal values to strings
+
+settex x, y, sw, mode Register texture
+
+modelscale id, x, y, z Model scaling
+modelshade id, mode Model shading mode setting
+
+dxfload "file" Load a DXF format file
+
+
+・ Outline of operation
+
+HGIMG3 can reproduce the same display and optimized speed on all machines
+It is being developed. Models without 3D accelerator (notebook type or onboard)
+(Models with video chips, etc.), but without significant performance degradation
+It can be operated. In addition, initialization can be done easily and DirectX
+Minimize defects due to version mismatch and driver compatibility
+I am aiming.
+
+In HGIMG3, drawing is managed in units of "model" and "object".
+is. Many of the HSP instructions did what they wanted without any preparation,
+In HGIMG3, "register" what you use as the first preparation stage, and put it together later
+I take the style of drawing everything. This is not intuitive, but it makes processing more efficient.
+And can be speeded up. HGIMG3 has more than 100 types of instructions at first
+You may be confused by its complexity, but the minimum usage is small, so little by little.
+Please use and remember.
+
+If you want to put out some kind of picture, you need to register the "model" first.
+"Model" is
+
+・ 2D sprite
+・ 3D sprite (board)
+・ Cube
+・ 3D model
+
+There are various types such as, and there are various setting items according to each type.
+For example, if you want to display a 2D picture on the screen, you can select "Model" of type "2D Sprite".
+Must be registered first.
+"2D sprite" has pictures (textures) and animation settings used for display.
+Yes, it is OK if you set the necessary items.
+
+Nothing is displayed on the screen just by registering the "model".
+The "model" is the material to be displayed on the screen. May be displayed on the screen
+Think of something as a stock in advance.
+
+After "Model", register "Object".
+"Object" is a vessel that has information about "which model to put out in which place"
+It's like. The "model" pointed to by the "object" is displayed on the screen.
+An "object" is just a vessel, so if you want to display the same object on two screens,
+If you register one "model" and register two "objects" with that model
+It will be good. The "model" has information about its shape and color itself,
+The "object" has the location and movement settings for displaying the "model" on the screen.
+Please think.
+
+Based on these concepts, many commands for controlling 2D and 3D images are prepared.
+is.
+Internally, HGIMG3 manages and calculates parameters using 32-bit floating point numbers.
+is. In the part of the instruction parameter that requires a decimal number, specify the real number of HSP3.0 and
+It fully supports real variables.
+For example
+
+			objadd3 1.0, 1.5, 2.0
+
+It is possible to specify by a real value like. Also,
+
+			objadd3 1, 1, 2
+
+It also accepts integer values such as.
+
+The problem with software that uses a large amount of images and 3D data is the load on drawing.
+In other words, it takes time to draw a picture.
+
+
+
+HGIMG3 is a time scale that calculates movement from the amount of movement per unit time.
+By installing a mode, at a higher frame rate on a high-speed machine
+By operating, it absorbs the difference in operating speed on the screen depending on the machine specifications
+You can.
+
+
+・ Initialization and drawing method
+
+In HGIMG3, please perform the initialization according to the following procedure.
+
+	;------------------------------------------------------------------
+	screen 0,320,240,0
+hgini; initialization of hgimg
+	;------------------------------------------------------------------
+
+The hgini instruction is an instruction that performs all initialization of the plug-in.
+The size of the window that is active when the hgini instruction is executed, and
+Initialize based on the color mode.
+In the above example, we decided to draw in full color mode with 320x240 dots.
+Become.
+
+Initialization cannot be performed continuously.
+When reinitializing, execute after performing all termination processing with the hgbye instruction.
+Please try to.
+
+In addition, the hgbye instruction performs all termination processing.
+The hgbye instruction itself is an automatic cleanup instruction that is automatically done at the end of HSP.
+It is called and usually does not need to be written.
+
+After initialization, you can display the registered objects at any time.
+It will be in a state.
+In HGIMG3, drawing is done as follows.
+
+	;------------------------------------------------------------------
+	*main
+; Drawing main
+		;
+hgdraw; drawing process
+hgsync 10; wait for time
+		goto *main
+	;------------------------------------------------------------------
+
+With the hgdraw instruction, all the drawing that HGIM G3 is in charge of is done.
+At this time, make the window of the drawing destination active by the gsel command etc.
+Please do not forget.
+After that, wait for a time (wait) with the hgsync instruction. For "hgsync 10"
+Wait for 10ms.
+If you be sure to enter these two commands, all drawing and waiting time processing will be completed.
+There is no need to put HSP wait or await instructions.
+
+
+・ Model setting command
+
+In order to register the model, the instructions differ depending on the type.
+The main registration methods are as follows.
+
+・ 2D sprite
+
+setuv tx0, ty0, tx1, ty1; UV coordinate settings
+addspr val, mode; create a 2D sprite model
+
+To the size of the upper left (tx0, ty0) and lower right (tx1, ty1) of the texture coordinates
+Create a 2D sprite model of the appropriate size.
+You can rotate, scale, composite, etc.
+The model ID is assigned to the variable val.
+This is followed by the texture (image) loaded by the texload instruction.
+If the mode value of the addspr instruction is 0, the transparent color removal process is not performed.
+When the mode value is 1, the specified color is treated as a transparent color and drawn.
+
+・ 2DBG map
+
+setbg sx, sy, cx, cy; Map size, chip size setting
+addbg val, winsizex, winsizey, sw; Create 2DBG map model
+
+BG map display with map size (sx, sy) and chip size (cx, cy)
+Create a model.
+The model ID is assigned to the variable val.
+This is followed by the texture (image) loaded by the texload instruction.
+
+・ Single color 3D sprite (board)
+
+setsizef sx, sy; Board size setting
+setcolor 0,255,0; Color setting
+addplate val, mode; Create a plate (PLATE) model
+
+Create a model of a square polygon (board) with a vertical and horizontal size of (sx, sy).
+The color will be green (R = 0, G = 255, B = 0).
+The model ID is assigned to the variable val.
+If the mode value is 2, the light source is calculated.
+
+・ 3D sprite (board)
+
+setsizef sx, sy; Board size setting
+setuv tx0, ty0, tx1, ty1; UV coordinate settings
+addplate val, mode; Create a plate (PLATE) model
+
+The texture coordinates are on the upper left (tx0, ty0) and lower right (tx1, ty1).
+Create a model of a square polygon (board) with a vertical and horizontal size of (sx, sy).
+The model ID is assigned to the variable val.
+This is followed by the texture (image) loaded by the texload instruction.
+If the mode value of the addplate instruction is 0, the transparent color removal process is not performed.
+When the mode value is 1, the specified color is treated as a transparent color and drawn.
+
+・ Single color box (cube)
+
+setsizef sx, sy; Box size setting
+setcolor 255,0,0; Color setting
+addbox val, 2; Create a box model
+
+Create a box (cube) model of size (sx, sy).
+The color is red (R = 255, G = 0, B = 0), and the light source is calculated.
+The model ID is assigned to the variable val.
+
+・ Box using texture (cube)
+
+setsizef sx, sy; Box size setting
+setuv tx0, ty0, tx1, ty1; UV coordinate settings
+addbox val; create a box model
+
+Create a box (cube) model of size (sx, sy).
+As for the texture coordinates, the upper left (tx0, ty0) and the lower right (tx1, ty1) are one surface.
+Furthermore, three faces from (tx0, (ty1-ty0) +1) and (tx0, ((ty1-ty0) +1) * 2)
+A box model with a texture is created.
+The model ID is assigned to the variable val.
+This is followed by the texture (image) loaded by the texload instruction.
+
+・ 3D model
+
+addxfile model, "filename"; Read model file
+
+Read the polygon model file (extension x) specified by "filename"
+Register as a model. Also, the texture will be loaded at the same time.
+When finished, the model ID will be assigned to the specified variable name.
+
+・ Line segment
+
+addline model, -1, $ ffffffff; Create a line model
+
+Create a model to draw a white line.
+The model ID is assigned to the variable model.
+The vector for drawing the line is the one set in the work group.
+
+There are other auxiliary instructions such as adddxf as instructions for adding a model.
+See the reference for details.
+
+
+-Object setting command
+
+When registering an object
+
+regobj variable name, model ID, mode
+
+Use the instruction of.
+In regobj, it is necessary to specify the model ID that has already been registered and the mode.
+There is.
+Select the mode from the following.
+
+Label | Content
+		--------------------------------------------------------------
+OBJ_HIDE Hide (remove from screen)
+OBJ_TREE Tree attribute (Y axis only faces front)
+OBJ_XFRONT Front attribute (always faces the screen)
+OBJ_MOVE XYZ Enable movement amount
+OBJ_FLIP Invert in border area
+OBJ_BORDER Enable border area
+OBJ_LATE Always drawn later (for translucent objects)
+OBJ_FIRST Always drawn first
+OBJ_SORT Automatically drawn from the back (for 3D objects)
+OBJ_LOOKAT Always face the direction of a specific object
+OBJ_LAND Y Keep coordinates constant
+OBJ_GROUND Recognized as ground
+OBJ_STAND Place on the ground
+OBJ_GRAVITY Enable gravity calculation
+OBJ_STATIC Recognized as an obstacle
+OBJ_BOUND Repulsion on the ground (for mesh map collision)
+OBJ_ALIEN Aim at target (for mesh map collision)
+OBJ_WALKCLIP Limited to movement (for mesh map collision)
+OBJ_EMITTER Become an emitter-generating object
+
+To select multiple items at the same time, like "OBJ_LATE | OBJ_MOVE"
+Please specify by separating with "|". If nothing is specified, set it to 0
+You can omit it.
+The default mode of the object depends on the model type.
+Since it is set, there is usually no need to set it.
+Also, if a mode is specified for the model with the setmode instruction, that mode will be
+It is also inherited by the object.
+
+When the object is registered normally, the object ID is added to the variable.
+Will be returned. The object ID is followed by the object's parameters and
+This number is required to change the settings.
+
+The instructions to change the object settings later are as follows.
+
+setobjm ObjID, ModelID Object model settings
+setobjmode id, mode, sw Object mode settings
+setcoli id, mygroup, enegroup Object collision settings
+
+You can also set the object with the MOC setting command.
+For more information, see About MOC configuration instructions.
+The following registers a model of a 2D sprite and then uses it as an object
+This is an example of a script to register.
+
+Example:
+Sprite registration
+				;
+setuv 0,0,79,79; UV coordinate specification
+addspr pchr; Model registration
+texload "rock2.bmp"; Texture registration
+regobj mychr, pchr, OBJ_2D; Object registration
+
+
+-About the object parameter setting command
+
+In HGIMG3, each "object" has an independent parameter.
+The display and operation are determined according to the contents.
+These "object parameters" are the display position, rotation angle, size, and amount of movement.
+It has multiple pieces of information such as, and all are stored as floating point numbers.
+All parameters can be changed and retrieved to any value, and the event list can be displayed.
+By using it, you can increase or decrease the value so that it becomes an arbitrary value after the specified frame.
+Various controls are possible.
+
+The "object" of HGIMG3 has the following parameters.
+
+Group offset0 offset1 offset2 offset3
+	--------------------------------------------------------------
+pos [X coordinate] [Y coordinate] [Z coordinate] [Unused]
+ang [X rotation angle] [Y rotation angle] [Z rotation angle] [Unused]
+scale [X Magnification] [Y Magnification] [Z Magnification] [Unused]
+dir [X movement amount] [Y movement amount] [Z movement amount] [Unused]
+efx [α composite value] [Unused] [Unused] [Unused]
+work [workX] [workY] [workZ] [unused]
+
+The parameter treats four values as one group.
+For example, "Group pos" stores the X, Y, Z coordinates to display.
+If you change this "group pos", the display position on the screen will also change.
+
+To actually set the parameters, use the following instructions.
+
+		setpos id,x,y,z
+		setang id,x,y,z
+		setscale id,x,y,z
+		setdir id,x,y,z
+		setefx id,x,y,z
+		setwork id,x,y,z
+
+Set three parameters (x, y, z) for each group
+can. id is for identifying individual objects
+Specify the object ID. The object ID is set by the regobj instruction.
+The number returned when the object is registered.
+The x, y, z parameters can be integers or real numbers.
+If you omit the value specification, it will be processed as the value 0.
+
+Each group of objects has the following meanings:
+
+Group pos: (initial value: 0,0,0)
+Specifies the X, Y, Z coordinates of the object.
+For 2D objects, (X, Y) is used for the coordinates
+Z is treated as a priority (0.0 to 1.0).
+In addition, the coordinates of the 2D object are (0,0) at the center of the screen.
+
+Group ang: (initial value: 0,0,0)
+Specifies the X, Y, Z angles that the object is facing.
+The unit of angle is radian (π * 2 in one lap).
+Objects are always rotated in the order Z-> Y-> X.
+
+Group scale: (Initial value: 1,1,1)
+Specifies the magnification (X, Y, Z axes) of the object.
+
+Group dir: (initial value: 0,0,0)
+Specifies the amount of movement of the object in the X, Y, and Z directions.
+It is referenced when the mode of OBJ_MOVE is set.
+
+Group efx: (Initial value: 256,0,0,0)
+Sets special effects for objects.
+It stores 4 values,
+Offset 0: [留 composite value]
+Offset 1: [EFX1]
+Offset 2: [EFX2]
+Offset 3: [EFX3]
+It has become.
+(* In the current version, group E only supports 留 composite values)
+
+The 留 composite value specifies the degree to which the background and the object are composited.
+
+留 composite value = 0 to 255: Performs 留 composite (blend) with the background
+留 composite value = 256 to 511: No composite (normal time)
+α composite value = 512 to 767: Performs color addition (modulate) with the background
+α composite value = 768 to 1023: Perform background and α value subtraction (subtract)
+α composite value = 1024 to 1279: Perform background and color subtraction (substract2)
+α composite value = 1280 to 1535: No composite (ignore Z)
+
+When synthesizing, the larger the α synthesis value, the higher the percentage of synthesis.
+It will be done. α synthesis is processed without distinction between shading, 2D and 3D
+Will be done.
+
+Α value subtraction (subtract) subtracts the α value from the RGB value of the background.
+Color subtraction (substract2) is a texture that draws against the RGB values of the background.
+RGB now. At this time, the α value is not reflected.
+(Please note that the operation is partially different from the HSP standard color subtraction.)
+The mode of no composition (ignore Z) is valid only for 3D models.
+Does not update the Z-buffer or perform a depth test.
+
+Group work: (Initial value: 0,0,0,0)
+A generic parameter used in the event list.
+
+
+Some "objects" perform special actions, these are
+Some use parameters for other purposes.
+
+"Camera object"
+
+The camera object is the one that shows the viewpoint to be displayed on the screen.
+HGOBJ_CAMERA is the object ID of the camera object.
+
+Example:
+; Set the camera coordinates to (0,0,20)
+			setpos HGOBJ_CAMERA,0,0,20
+
+Only for camera objects, the group parameters have the following meanings:
+You will have.
+
+Group offset0 offset1 offset2 offset3
+	--------------------------------------------------------------
+pos [X coordinate] [Y coordinate] [Z coordinate] [Unused]
+ang [X rotation angle] [Y rotation angle] [Z rotation angle] [Unused]
+scale [X Magnification] [Y Magnification] [Z Magnification] [Unused]
+dir [X gaze coordinates] [Y gaze coordinates] [Z gaze coordinates] [unused]
+efx [FOV] [NearZ value] [FarZ value] [Unused]
+
+dir indicates the gazing point (coordinates that the camera pays attention to).
+(However, it is referenced only when the gazing mode is set by the cammode command.)
+Each parameter of efx shows the detailed settings of the camera.
+FOV is the angle of view (the value that adjusts the perspective) in radians.
+Specify it. By default, 45 degrees (π / 4) is specified.
+NearZ and FarZ specify the Z-axis range (Z clipping range) for display.
+To do. NearZ is in the foreground (how close the object is drawn),
+FarZ indicates the back (how far the object is drawn).
+By default, NearZ is set to 0.5 and FarZ is set to 768.0.
+The camera's efx group parameters are compatible with those of HGIMG 2.61
+Please note that there is no such thing.
+
+"Light object"
+
+A light object that represents a light that shines light on a model in 3D space.
+Exists.
+HGOBJ_LIGHT is the object ID of the standard light object.
+Light objects can be added arbitrarily by the reglight command.
+
+Example:
+; Set the light orientation to (0,0.4, -0.1)
+			setang HGOBJ_LIGHT,0,0.4,-0.1
+
+Only for light objects, the group parameters have the following meanings:
+You will have.
+
+Group offset0 offset1 offset2 offset3
+	--------------------------------------------------------------
+pos [X coordinate] [Y coordinate] [Z coordinate] [Unused]
+ang [X rotation angle] [Y rotation angle] [Z rotation angle] [Unused]
+scale [Color R] [Color G] [Color B] [Unused]
+dir [ambientR] [ambientG] [ambientB] [unused]
+	  efx       [range]      [falloff]   [theta]      [phi]
+
+Group scale is the light color parameter, group dir is the ambient color parameter
+Used as. Each parameter has R, G, B elements from 0.0 to 255.0
+It will be the expressed value.
+By default, the light color is (255,255,255) and the ambient color is (0,0,0).
+It is set. Light source calculation depends on shading mode
+Varies. For details, refer to the modelshade instruction or
+See About Shading Mode Settings.
+Group efx is an extended setting for point lights, spot lights,
+Ignored in the current version.
+(The dir and scale group parameters of the light are compatible with those of HGIMG2.61
+Please note that there is no such thing. )
+
+In the current version, in shading mode 1 for X format models
+Since the scale (color) parameter of the light is not reflected,
+note that.
+
+The following is the instruction to get the value of the object parameter.
+
+		getpos id,x,y,z
+		getang id,x,y,z
+		getscale id,x,y,z
+		getdir id,x,y,z
+		getefx id,x,y,z
+		getwork id,x,y,z
+
+In these instructions, specify the variable name of the read destination in x, y, z.
+
+Example:
+Read the camera coordinates into variables a, b, c
+			getpos HGOBJ_CAMERA,a,b,c
+
+In the above example, the variable a has the X coordinate, the variable b has the Y coordinate, and the variable c has the Z coordinate.
+Each is assigned as a real number type.
+To get the parameter as an integer value, use the following instruction.
+
+		getposi id,x,y,z
+		getangi id,x,y,z
+		getscalei id,x,y,z
+		getdiri id,x,y,z
+		getefxi id,x,y,z
+		getworki id,x,y,z
+
+Instructions with an "i" added at the end are assigned to variables as integer values.
+Used when handling coordinates only as integers or when you want to speed up
+can do.
+
+In addition, an instruction for directly adding parameters is prepared.
+It has been.
+
+		addpos id,x,y,z
+		addang id,x,y,z
+		addscale id,x,y,z
+		adddir id,x,y,z
+		addefx id,x,y,z
+		addwork id,x,y,z
+
+Add three parameters (x, y, z) to each group
+To do.
+
+Example:
+; Move the object with object ID 5 by X + 10, Y-20
+			addpos 5, 10, -20, 0
+
+These instructions are like adding and subtracting parameter values directly.
+Useful in case.
+
+Among the parameters, "group ang" is for storing angles,
+Usually specified in radians.
+However, radians can be difficult to use intuitively, so
+Instructions for operating with integer values are provided only for "group ang".
+
+		setangr id,x,y,z
+		addangr id,x,y,z
+		getangr id,x,y,z
+
+In these instructions, rotation information is treated as one lap from 0 to 255.
+That is, 0 is 0 degrees, 64 is 90 degrees, 128 is 180 degrees, and so on.
+This is a fast and easy way to set angles using integers.
+When specifying in units finer than 256 steps of angle,
+Please use normal radian units.
+
+Another way to set object parameters
+There is a way to do it. This is called a "MOC configuration instruction"
+This is a method using an instruction set. "MOC setting instruction" is used in HGIMG2
+Get more detailed parameters and perform calculations with the setting method that was used.
+It is possible to do it.
+
+For more information about "MOC setting instructions", see "About MOC setting instructions".
+please refer to.
+
+
+・ About direct drawing command
+
+In HGIMG3, objects are registered and drawn together.
+Along with the method, there is a direct drawing command to issue a drawing when the direct command is executed.
+It is prepared.
+The direct drawing command is regardless of the registered object or model.
+You can draw any rectangle or texture on the screen.
+
+Since the direct drawing command must always draw between hgdraw and hgsync,
+be careful.
+
+Example:
+; Drawing main
+			;
+		*main
+hgdraw; drawing process
+			color 255,0,0
+			hgrect 320,240,0,100,100
+hgsync 10; wait for time
+			goto *main
+
+The following are the direct drawing commands.
+The hgrect and hgrotate instructions operate in the same way as the standard grect and grottate instructions, respectively.
+Since it is an instruction set to be performed on the screen of HGIMG3, it is ported from the standard instruction.
+It is also effective in situations where you do.
+
+hgrect p1, p2, p3, p4, p5, p6 Direct drawing of rectangle
+
+p1 = 0 to (0): Rectangle center X coordinate
+p2 = 0 to (0): Y coordinate of the center of the rectangle
+p3 = 0 to (0.0): Rotation angle (unit is radian)
+p4 = 0 ~ (?): X size
+p5 = 0 ~ (?): Y size
+
+A rectangle (rectangle) of the size specified in (p4, p5) centered on the coordinates specified in (p1, p2)
+Draws in the currently set color.
+You can specify the rotation angle as a real number with p3.
+The unit of angle is radians (starting from 0 and going around at 2π).
+The grect instruction reflects the copy mode specification set in gmode.
+
+If gmode is 0,1, normal fill.
+If gmode is 3, it will be translucent at the specified rate.
+When gmode is 5 or 6, color addition and color subtraction are performed respectively.
+If the size specification of (p4, p5) is omitted, it is set by the gmode instruction.
+The copy size is used.
+
+
+hgrotate p1, p2, p3, p4, p5, p6 Direct drawing of rectangular image
+
+p1 = 0 ~ (0): Texture ID
+p2 = 0 to (0): Upper left X coordinate of copy source
+p3 = 0 to (0): Upper left Y coordinate of copy source
+p4 = 0 to (0.0): Rotation angle (unit is radian)
+p5 = 0 ~ (?): X size
+p6 = 0 ~ (?): Y size
+
+The hgrotate command performs texture drawing processing including rotation in the specified rectangular range.
+I will do it. Specify the texture ID of the copy source with p1, and copy with (p2, p3)
+Specify the coordinates corresponding to the original image. (Similar to the gcopy instruction)
+The copy destination is the window ID specified for the current drawing destination.
+Copy to the coordinates centered on the location set by the pos instruction.
+At that time, you can specify the rotation angle with a real number with p3.
+The unit of angle is radians (starting from 0 and going around at 2π).
+In (p5, p6), specify the X and Y sizes after copying.
+Also, the X and Y sizes of the copy source are the defaults set by the gmode instruction.
+The copy size is used.
+That is, a size larger than the size specified by the gmode instruction (p5, p6)
+If specified in, it will be enlarged.
+If (p5, p6) is omitted, the size is the same as the copy source, that is, the same size.
+A copy will be made.
+
+The hgrotate instruction reflects the copy mode specification set in gmode.
+(See the gmode instruction reference for details)
+
+
+
+・ About the event list
+
+For the event list, prepare a fixed flow process (event) in advance.
+And to apply it to individual objects
+It is a function.
+
+In order to use the event list, it can be roughly divided.
+
+"Create event list" and "Apply event list"
+
+There are two stages.
+First, decide a specific process in advance in "Create event list"
+Put. For example, "Move to XX coordinates" or "Add one X coordinate"
+You can decide the detailed operation for various parameters such as.
+Such processing is called an event, and a collection of multiple events is called an event list.
+I try to call it.
+
+To create an event list, write as follows.
+
+Example:
+newevent ev1; get new event ID
+			event_setpos ev1, 10,20,30
+
+In the above example, to set (10,20,30) as the coordinate parameter
+I'm creating an event and assigning its ID to the variable ev1.
+When creating a new event, be sure to use the newevent instruction to enter the event ID.
+I will get it. Next, with an event registration command such as event_setpos,
+Events will be added to the specified event ID.
+Once the event ID is acquired, the scene reset (hgreset instruction) is performed.
+The event list is deleted by the delevent instruction.
+It will be retained until it is done.
+
+The event created in this way can be applied to the object at any time.
+You can.
+
+Example:
+newevent ev1; get new event ID
+			event_setpos ev1, 10,20,30
+Apply ev1 event to objid object
+			setevent objid, ev1
+
+In this example, the ev1 event list for the object indicated by objid,
+In other words, the process of setting (10,20,30) as coordinates is applied.
+In this way, in the event, the actions for the parameters are summarized.
+It can be registered and it works to reflect it on a specific object.
+hold.
+In event_setpos, the event of coordinate setting is registered, but other than that
+Instructions for setting parameters are also provided.
+
+		event_setpos eventid, x, y, z
+		event_setang eventid, x, y, z
+		event_setangr eventid, x, y, z
+		event_setscale eventid, x, y, z
+		event_setdir eventid, x, y, z
+		event_setefx eventid, x, y, z
+		event_setwork eventid, x, y, z
+
+Specify the X, Y, Z values to be set for each group as real numbers or integer values
+can.
+Also,
+
+		event_setpos eventid, x1, y1, z1, x2, y2, z2
+
+By specifying the range of X, Y, Z as in, it was specified by a random number.
+You can also have the values in the range automatically generated.
+
+Example:
+newevent ev1; get new event ID
+			event_setpos ev1, 10,20,30,30,20,50
+
+In the above example, the values from XYZ = (10 to 30,20,30 to 50) are set.
+Not only the setting, but also the event that adds to the parameter value
+You can register.
+
+		event_addpos eventid, x, y, z
+		event_addang eventid, x, y, z
+		event_addangr eventid, x, y, z
+		event_addscale eventid, x, y, z
+		event_adddir eventid, x, y, z
+		event_addefx eventid, x, y, z
+		event_addwork eventid, x, y, z
+
+These instructions are for (X, Y, Z) parameters for a particular group of parameters.
+Add the values. (By specifying a negative value, it will be subtracted.)
+
+In the event, in addition to parameter setting, processing according to the passage of time
+You can add it.
+
+Example:
+newevent ev1; get new event ID
+			event_pos ev1, 20, 0,10,20
+
+In the above example, the event that moves to the coordinates (0,10,20) after 20 frames
+You will be registered. Objects to which this event is applied are automatically
+Moves to the specified coordinates for 20 frames.
+
+There is also an event_wait instruction for registering a simple wait time.
+In the event_wait event, the next
+Wait for event processing.
+
+By registering multiple event_pos events, the route of movement can be set.
+It is possible to specify in detail.
+
+Example:
+newevent ev1; get new event ID
+			event_pos ev1, 20, 10,0,0
+			event_wait ev1, 20
+			event_pos ev1, 20, 10,10,0
+			event_wait ev1, 20
+			event_pos ev1, 20, 0,10,0
+			event_wait ev1, 20
+			event_pos ev1, 20, 0,0,0
+			event_wait ev1, 20
+
+In the above example, in the order of (10,0,0)-> (10,10,0)-> (0,10,0)-> (0,0,0)
+Make a move.
+Splines are used by default for interpolation of coordinate movements such as event_pos.
+(It is also possible to specify the interpolation method arbitrarily in the instruction option)
+
+If you want to specify the parameter relative (difference from the original value),
+Specifies relative specification options.
+
+Example:
+newevent ev1; get new event ID
+			event_pos ev1, 20, 10,10,0, 3
+			event_wait ev1, 20
+			event_pos ev1, 20, 10,-10,0, 3
+			event_wait ev1, 20
+			event_pos ev1, 20, 10,10,0, 3
+			event_wait ev1, 20
+			event_pos ev1, 20, 10,-10,0, 3
+			event_wait ev1, 20
+
+In the above example, if the original coordinates were at (0,0,0),
+Move in the order of (10,10,0)-> (20,0,0)-> (30,10,0)-> (40,0,0).
+
+By combining parameter addition and the event_wait event
+You can make continuous parameter changes.
+
+Example:
+newevent ev1; get new event ID
+			event_addpos ev1, 0,1,0
+			event_wait ev1, 10
+			event_addpos ev1, -1,0,0
+			event_wait ev1, 20
+
+In the above example, the first 10 frames continue to add 1 to Y, then
+20 frames will continue to -1 the X coordinate.
+In addition, the event_jump instruction is used to iterate over the event.
+It can be used.
+
+Example:
+newevent ev1; get new event ID
+			event_addpos ev1, 0,1,0
+			event_wait ev1, 20
+			event_addpos ev1, 0,-1,0
+			event_wait ev1, 20
+			event_jump ev1, 0, 100
+
+In the above example, the Y coordinate is added / subtracted by 1 every 20 frames.
+Will be repeated.
+event_jump is specified in the registered event list
+Return the process to the location. This will keep you doing certain things forever
+It is possible to create an event list.
+
+The event_prmon instruction is used to set various parameters of the object.
+Register the event.
+Directly sets the specified value for the following parameter ID.
+
+Parameter ID Contents
+		---------------------------------------
+PRMSET_MODE operation mode
+PRMSET_FLAG Existence flag
+PRMSET_SHADE Shading mode
+PRMSET_TIMER timer
+PRMSET_MYGROUP Collision group value
+PRMSET_COLGROUP Target group value
+
+PRMSET_MODE sets various flags specified by the setobjmode instruction.
+You can do it from the event.
+PRMSET_FLAG can set the flag value.
+The flag value has the following meanings.
+
+Flag value Contents
+		---------------------------------------
+1 Object valid
+2 Object display enabled
+4 Automatic movement of objects is enabled
+
+The flag value is the sum of the respective values.
+Normally, the flag value of the initialized object is 7.
+Also, if PRMSET_FLAG is set to 0, the object itself will be displayed.
+Delete.
+
+Example:
+event_prmset ev1, PRMSET_FLAG, 0; Delete object
+
+If you want to erase yourself at the end of the event, use the method above
+Please be sure to delete it.
+
+This allows for routine processing (explosions, missile trajectories, etc.) that occurs in games, etc.
+It can be smartly separated and managed as an event list.
+The event list has a wide range of applications, but there are many types of instructions.
+It may seem difficult at first, but remember while using each one
+If you go, you should be able to save a lot of time and effort in scripting.
+
+The event set by the setevent command is one object
+It is possible to apply up to 4 at the same time.
+
+Also, the event set in the object by the setevent instruction is deleted.
+It is also possible to do. See the instruction reference for more information.
+
+In addition to the instructions listed here, parameters such as mode and flags
+Various applications such as events for operation are possible.
+For details on each instruction, refer to the help.
+
+
+・ About the emitter (new)
+
+An emitter is one that can spawn multiple objects at once.
+It's a special mechanism. With any combination such as random parameters
+Think of it as an object generator that you can generate.
+When creating a new emitter, be sure to use the new emit instruction to set the emitter ID.
+You need to get it.
+After that, various operations are performed by the emitter setting command starting with "emit_".
+You can register.
+The object does not spawn as soon as the emitter is created.
+It is generated when necessary after setting various generation conditions in advance.
+When you actually use the emitter, you can always use the hgemit command.
+In addition to being able to generate it, the setobjemit command is used for the object.
+It is also possible to apply.
+For details, refer to the help of the following emitter-related instructions.
+
+create a newemit emitter
+Remove delemit emitter
+emit_size Set the emission range of the emitter
+emit_speed Emitter speed setting
+emit_angmul Set the angle factor of the emitter
+emit_angopt Set the angle addition value of the emitter
+emit_model Set the emission model of the emitter
+emit_event Emitter event settings
+emit_num Set the number of emitters generated
+emit_group Emitter group settings
+hgemit Emitter generation execution
+Apply emitter to setobjemit object
+
+
+・ About MOC setting command
+
+MOC stands for MOC (Motion Object Controller) and is divided into multiple groups.
+A mechanism to manage separate vector parameters (values of x, y, z) collectively
+It points.
+
+MOC configuration instructions are for object parameters in a way that is compatible with HGIMG2.
+An instruction set for performing operations.
+For normal use and users who are new to HGIMG3, even if you do not remember it
+You can manipulate object parameters.
+
+The "object" of HGIMG3 has the following parameters.
+(Same as the list of "About object parameter setting instruction")
+
+"Object parameters"
+
+Group offset0 offset1 offset2 offset3
+		--------------------------------------------------------------
+A [X coordinate] [Y coordinate] [Z coordinate] [Unused]
+B [X rotation angle] [Y rotation angle] [Z rotation angle] [Unused]
+C [X Magnification] [Y Magnification] [Z Magnification] [Unused]
+D [X movement amount] [Y movement amount] [Z movement amount] [Unused]
+E [留 composite value] [Unused] [Unused] [Unused]
+F [Work value X] [Work value X] [Work value X] [Unused]
+
+Parameters 0 to offset exist in groups A to F, respectively.
+By updating those parameters, you can also update the objects displayed on the screen.
+It will be reflected.
+As an instruction to specify which group should be rewritten
+
+selpos id Set moving coordinates (group A) in MOC information
+selang id Set rotation angle (group B) to MOC information
+selscale id Set scale (group C) to MOC information
+seldir id Set movement amount (group D) in MOC information
+selefx id Set special effect (group E) to MOC information
+selwork id Set work value (group F) in MOC information
+
+there is. id will be the object ID (number).
+A set of MOC configuration instructions is provided to update these parameters.
+To set, first, "Which group of which object should be rewritten
+Do you want to? Next, specify which part of offset 0 to 3 to change
+Two steps are required.
+
+When specifying a group of camera objects,
+
+set selcpos camera coordinates (group A) as MOC information
+selcang Set camera angle (group B) to MOC information
+selcint Set camera gaze point (Group C) to MOC information
+
+Use the.
+
+When specifying a group of light objects,
+
+sellpos id Set light source coordinates (group A) to MOC information
+sellang id Set light source angle (group B) to MOC information
+sellcolor id Set light source color (group C) to MOC information
+
+Use the.
+Also, as an instruction to set the group directly by value,
+
+selmoc id, group Specify MOC group of object
+selcam group Specify MOC group for camera
+sellight id, ofs Set light source to MOC information
+
+there is. ABC… is assigned to group in the order of 012….
+Once the group is specified, the next step is to set the actual values. This is diverse
+There is a setting method, but the simplest method is
+
+objset1 ofs, x Set MOC information
+
+In the instruction of, specify the offset number for ofs and the value to be set for x.
+You can now set the desired parameters to any value.
+x can be a real number or an integer value.
+(Objsetf1 for HGIMG compatibility is also available.)
+
+In addition, an instruction to set two parameters at the same time,
+
+objset2 ofs, x, y Set MOC information
+
+Is also available. It has two parameters, such as the X and Y coordinates of the 2D sprite.
+This is a convenient instruction when specifying as a set. In this case, the specified offset
+And the next offset are subject to setting.
+(Objsetf2 for HGIMG compatibility is also available.)
+
+And an instruction to set three parameters at the same time,
+
+objset3 x, y, z Set MOC information
+
+Is prepared as well. Here, offsets 0,1,2 are always set.
+Become. This instruction is convenient when you want to specify X, Y, Z values such as 3D coordinates at the same time.
+(Objset f3 for HGIMG compatibility is also available.)
+
+In addition to these
+
+objadd1 ofs, x Add MOC information
+objaddf1 ofs, x Add MOC information
+objadd2 ofs, x, y Add MOC information
+objaddf2 ofs, x, y Add MOC information
+objadd3 x, y, z Add MOC information
+objaddf3 Add x, y, z MOC information
+
+Adds the specified value to the value stored in the target parameter
+It is an instruction. It is also possible to subtract by using a negative value for the added value.
+
+In the place where you specify the angle as a parameter in the one that sets MOC information
+There are dedicated instructions to use.
+Like objset1r, it has an "r" at the end.
+This is a parameter that should normally specify an angle in radians, as an integer value.
+It is possible to specify.
+
+objset1r ofs, x Set MOC information
+objset2r ofs, x, y Set MOC information
+objset3r x, y, z Set MOC information
+
+These instructions can handle rotation information in units of 0 to 255 as one lap.
+
+Finally, the parameter is extracted to a variable, and conversely, the FV format explained later to the variable.
+Instructions are provided to set the value stored in in to the parameter.
+
+objgetfv fv Get MOC information
+objsetfv fv Set MOC information
+objaddfv fv Add MOC information
+objgetv v Get MOC information as an integer value
+objsetv v Set MOC information as an integer value
+
+Efficiently manage and change many parameters by using these instructions
+You can do it.
+
+
+・ Floating point support instruction
+
+Floating point support instructions are for handling information such as decimal numbers and vector values.
+It is a group of instructions. The expression FV value comes out as a method of storing a vector in a variable.
+However, this does not assign one value like "variable name = 1.0"
+As a real type array variable such as "variable name .0 = X: variable name .1 = Y: variable name .2 = Z"
+This format stores three elements (X, Y, Z).
+
+By using FV values, information such as 3D coordinates and angles (vectors) can be relatively obtained.
+You can organize and handle it. In the instruction to calculate the FV value, it is divided into three elements at the same time.
+Because it is calculated for each element, it is simpler and faster than calculating for each element.
+You can do the processing.
+
+fvseti fv, x, y, z Vector setting from integer values
+
+fv = variable name to which the FV value is assigned
+(x, y, z) = integer value
+
+Substitute the integer value specified by (x, y, z) as a vector into the FV value.
+
+fvset fv, x, y, z vector setting
+
+fv = variable name to which the FV value is assigned
+(x, y, z) = real number
+
+Substitute the integer value specified by (x, y, z) as a vector into the FV value.
+
+fvadd fv, x, y, z vector addition
+fvsub fv, x, y, z vector subtraction
+fvmul fv, x, y, z vector multiplication
+fvdiv fv, x, y, z vector division
+
+fv = variable name to which the FV value is assigned
+(x, y, z) = calculated value (real value)
+
+The FV value stored in the variable specified by fv and the specified
+Performs decimal (X, Y, Z) operations in parallel.
+
+fvdir fv, x, y, z vector rotation
+
+fv = variable name to which the FV value is assigned
+(x, y, z) = rotation angle (real value)
+
+The vector (FV value) stored in the variable specified by fv,
+Rotates to the X, Y, Z angle specified by the decimal value (X, Y, Z).
+
+fvmin fv, x, y, z vector maximum value
+
+fv = variable name to which the FV value is assigned
+(x, y, z) = comparison value (real value)
+
+The FV value stored in the variable specified by fv and
+Compare the decimal values (X, Y, Z) and substitute the one with the larger value.
+Used to truncate each element of the FV value to the minimum value.
+
+fvmax fv, x, y, z vector minimum value
+
+fv = variable name to which the FV value is assigned
+(x, y, z) = comparison value (real value)
+
+The FV value stored in the variable specified by fv and
+Compare the decimal values (X, Y, Z) and substitute the one with the smaller value.
+Used to truncate each element of the FV value to the maximum value.
+
+fvouter fv, x, y, z vector cross product
+
+fv = variable name to which the FV value is assigned
+(x, y, z) = Vector value to be calculated (real value)
+
+The FV value stored in the variable specified by fv and
+Find and substitute the outer product of the vector specified by the decimal value (X, Y, Z).
+
+fvinner fv, x, y, z vector dot product
+
+fv = variable name to which the FV value is assigned
+(x, y, z) = Vector value to be calculated (real value)
+
+The FV value stored in the variable specified by fv and
+Find the inner product of the vectors specified by the decimal values (X, Y, Z) and assign them to fv.0.
+
+fvface Get the angle from the fv, x, y, z coordinates
+
+fv = variable name to which the FV value is assigned
+(x, y, z) = X, Y, Z coordinate values (real values)
+
+The base point is the vector (FV value) stored in the variable specified by fv.
+From the X, Y, Z coordinates, find the rotation angle to see the specified X, Y, Z coordinates in a straight line.
+Substitute.
+
+fvunit fv vector normalization
+
+fv = variable name to which the FV value is assigned
+
+Normalizes the vector (FV value) stored in the variable specified by fv.
+
+fsin fval, rot Ask for sign
+
+fval = variable name to which the float value is assigned
+rot = rotation angle (real number)
+
+Assigns the sine value of the angle specified by rot to the variable specified by fval.
+The unit of angle is radians.
+
+fcos fval, rot Ask for cosine
+
+fval = variable name to which the float value is assigned
+rot = rotation angle (real number)
+
+Assigns the cosine value of the angle specified by rot to the variable specified by fval.
+The unit of angle is radians.
+
+fsqr fval, prm Find the square root
+
+fval = variable name to which the float value is assigned
+prm = value used for operation (real number)
+
+Assigns the square root of the value specified by prm to the variable specified by fval.
+
+froti fval, prm Convert integer angle to decimal value
+
+fval = variable name to which the float value is assigned
+angle value from prm = 0 to 1023 (integer)
+
+An integer value (0 to 1023) specified by prm is used to indicate the angle.
+Convert to fval to a radian angle value of -π to + π and substitute it.
+
+fv2str fv Convert vector to string
+
+The vector (FV value) stored in the variable specified by fv is converted into a character string.
+Converts and returns the result in the system variable refstr.
+
+str2fv fv, "x, y, z" Convert string to vector
+
+The character string information specified by "x, y, z" is used as an X, Y, Z decimal value separated by ",".
+Read and store in the variable specified by fv.
+
+str2f fval, "val" Convert string to decimal value
+
+Reads the character string information specified by "val" as a decimal value, and reads it.
+Stores in the variable specified by fval.
+
+f2str val, fval Convert decimal values to strings
+
+Converts the decimal value specified by fval to a character string, and of the character string type specified by val
+Returns the result in a variable.
+
+f2i v, x, y, z Convert decimal values to integer values
+
+Converts a decimal value (X, Y, Z) to an integer value and assigns it to a variable of the numeric type specified by v.
+To do. The result is stored in each element of "v.0 = x: v.1 = y: v.2 = z" respectively.
+
+
+・ About DirectX
+
+The points to note when using DirectX are as follows.
+
+-DirectX8 or higher runtime must be installed
+-Full color mode is always selected when using DirectX
+-The vertical and horizontal size of the texture is read according to 2 to the nth power (2,4,8,16 ...)
+
+Some video cards do not support texture formats
+You may get an error. The texture formats supported by HGIMG3 are
+They are "A8R8G8B8", "X8R8G8B8", "A1R5G5B5" and "X1R5G5B5". The texture is in this
+It is converted to the optimum format for use.
+Future versions will also support indexed color textures.
+
+Special features such as one-skin model drawing and toon shading
+A vertex shader is used. Video card, hardware processing
+If it supports the vertex shader by, it will be processed faster.
+Even if it doesn't support hardware-processed vertex shaders
+It is drawn normally by software processing.
+
+
+・ Instruction reference
+
+
+For details of each instruction, please refer to the help file (* .hs) of HSP Help Manager.
+It is provided.
+The included "hgimg3.hs" file is the directory where HSP is installed.
+Help manager by copying to the "hsphelp" folder in
+You can search by and refer to by one-key help.
+
+
+・ About DirectX full screen mode
+
+By specifying 1 for the SYSREQ_DXMODE mode with the hgsetreq instruction,
+Full screen mode is selected when initialized with the hgini instruction.
+The resolution at full screen is specified by SYSREQ_DXWIDTH and SYSREQ_DXHEIGHT.
+Currently supports dynamic switching between full screen and window mode
+I have not.
+
+Example:
+
+;Initial setting
+		;
+bgscr 0,640,480,0; Full screen always created with bgscr
+		cls 4
+hgsetreq SYSREQ_DXMODE, 1; specify full screen mode
+hgsetreq SYSREQ_DXWIDTH, 640; full screen resolution X
+hgsetreq SYSREQ_DXHEIGHT,480; full screen resolution Y
+		hgini
+
+
+・ About 3D model format
+
+HGIMG3 can read and use 3D models in x format.
+x format is a standard DirectX file format, 3D model information, node information,
+Information such as materials and animations is saved.
+
+The x format read by HGIMG3 is compatible with DirectX 8 or later skin mesh.
+Various tools that can output one-skin models and animations for x format output
+Please prepare the corresponding one separately.
+
+Plugin validation is primarily through the Lightwave 7.5 DirectX Export plugin
+The output data is used.
+
+* When outputting with LW DirectX Export, select the text format.
+* Color settings for each vertex are not supported.
+* The x format that stores multiple animations is not supported.
+* Frame interpolation is not performed for Matrix Key specification.
+
+SOFTIMAGE | XSI Mod Tool for verification of animation and one-skin models
+The .x file output by and the .x file output by RokDeBone2
+We are checking the operation.
+
+3D model data in mx format supported by HGIMG2 is read only
+It will be supported. Animation data in ma format and hierarchical information in mx format are available.
+Please note that it cannot be used with HGIM G3.
+
+
+・ About Japanese font drawing function
+
+HGIMG3 uses textures for font drawing to send Japanese messages
+It is possible to display it. You can use the mes command on the DirectX screen
+I couldn't, and the fprt instruction only supported alphabetic fonts.
+By using font drawing textures, you can use Japanese through textures.
+You will be able to draw freely.
+The following script is an example of actually using the Japanese font drawing function.
+
+Example:
+
+texmake 256,128; Font drawing texture preparation
+mest = stat; Save texture ID in variable mest
+texcls mest, $ 004000; Clear font drawing texture
+font "MS Gothic", 22,1; Font selection
+color 255,255,255; Set drawing color
+texmes "Japanese message.", Mest, 0,0; Draw font at (0,0)
+
+The font drawing texture can be generated by the texmake command.
+The texmake instruction allocates a texture area of the specified size on VRAM.
+At this time, the texture format can be specified as an option.
+If the creation mode is 0 or omitted, a 16bit texture (A4R4G4B4) will be created.
+When the creation mode is other than 0, it will be a 32-bit texture (A8R8G8B8).
+16bit textures are faster and more compatible, but more
+Specify a 32-bit texture for high-precision message drawing.
+
+Font drawing on the texture is performed by the texmes command.
+At this time, the color set by the color command and the color set by the font command
+The font information is referenced.
+A message is displayed on the screen just by drawing a font on the texture.
+It will not be. Paste the font drawing texture into some model
+It is necessary to display directly on the screen with the grotate command or the like.
+Please note that there are two stages, drawing on the texture and drawing on the actual screen.
+Is required. As for the texture, the content once drawn is the same, so every frame
+It is not necessary to draw the same contents with the texmes instruction every time.
+
+
+・ About texture format
+
+HGIMG3 offers two methods for loading textures.
+One is the texload command, which loads the texture via the HSP buffer.
+The other is the texload2 instruction that loads the texture using the DirectX API.
+There are the following differences between these two types of instructions.
+
+・ Texload command
+
+Register the texture via the HSP screen buffer (settex instruction is used).
+Bmp, jpg, gif formats are available.
+It does not support the alpha channel.
+It is automatically converted to (A8R8G8B8) or (A1R5G5B5) format.
+If the texture size is incorrect, black pixels are automatically added and registered.
+
+・ Texload2 instruction
+
+Register the texture using the DirectX API.
+Bmp, jpg, gif, png, dds, tga, tiff formats are available.
+It supports the alpha channel.
+The pixel format is automatically converted to the optimum one.
+If the texture size is incorrect, enlarge / reduce it and register it.
+
+Basically, the texture containing the alpha channel is the texload2 instruction,
+If you don't want the texture to be scaled automatically, use the texload command.
+You should use it.
+For textures used in x-format model data, the texload2 instruction
+It will be the same operation as.
+
+
+・ About toon shading
+
+Animation-like drawing processing (toon shading) for model data in x format
+It is possible to apply. Toon shading is a single color polygon part
+By replacing it with an appropriate color and drawing the outline, an animation-like expression is performed.
+Animation-like shading is not performed on the part where the texture is pasted.
+Please note.
+
+The easiest way to apply toon shading to your model is
+Use the maketoon instruction.
+
+Example:
+		addxfile m_xmodel,"monster.x"
+		maketoon m_xmodel,1
+
+This will create an internally automatically created toon texture (toon).
+A texture optimized for shading) is applied to the model.
+The toon texture tells you what color to draw with respect to the intensity of the light.
+Shown for each material color, one for each model
+You will need a toon texture.
+
+If you set the create mode to 2 like "make to on m_xmodel, 2",
+The toon texture is saved as a file with the name "toon.bmp".
+By processing this file by yourself, you can use the colors of toon shading.
+You can freely change the ratio of shadows.
+The Y-axis of the toon texture consists of 8 dots per material.
+The top dot indicates the original material color.
+The bottom 4 dots (Y = 4-7) are actually drawn during toon shading
+It becomes color information. At this time, the stronger the influence of light, the larger the X-axis.
+(0 is the minimum and 127 is the maximum on the X axis.)
+The toon texture modified by yourself is applied by the loadtoon command.
+can do.
+
+Example:
+		addxfile m_xmodel,"monster.x"
+		loadtoon m_xmodel,"t_mons.bmp"
+
+Make detailed settings for toon shading with the seto on edge command
+can do. The parameters of the settoonedge instruction are as follows.
+
+settoonedge Settings for toon shading
+
+		settoonedge p1,p2,p3,p4
+
+p1: Model ID
+p2 (0): Edge color (RGB code)
+p3 (0): Z offset
+p4 (0): X offset
+
+Make settings for toon shading of the model specified in p1.
+In p2, specify the edge color code (RRGGBB).
+For p3 and p4, the edge offset can be specified by the real value.
+You can adjust the thickness of the contour line by changing the Z offset (p3).
+The default value for Z offset is set to 0.005.
+The X offset (p4) specifies the X-direction origin of the texture used for toon shading.
+The default value of the X offset is set to 0.5, in this case centering on the half of the X direction.
+The U value of the texture will be calculated.
+
+
+・ About switching between multiple animations
+
+Switching multiple animation data for x format model data
+It is possible to play.
+First of all, add the data including the whole model and the first animation to the addxfile instruction.
+If you want to read more and register only animations additionally, use the addxanim command.
+Use as many as you need.
+When reading multiple animation data, the model and bone configuration must be the same.
+Must be output from.
+The following is reading three files, "wait.x", "walk.x", and "run.x".
+This is a sample.
+
+Example:
+addxfile m_xmodel, "wait.x"; animation index 0
+addxanim m_xmodel, "walk.x"; Animation index 1
+addxanim m_xmodel, "run.x"; Animation index 2
+
+If you load multiple animations, the animation index value will be
+It starts from 0 and is assigned in the order of 1, 2, 3 ...
+The animation index value is the actual animation with the objact instruction.
+It will be specified when switching.
+The parameters of the objact instruction are as follows.
+
+objact ObjID, Anim, mode Start specified animation
+
+ObjID: Object ID
+Anim: Animation index value
+mode (0): Setting mode (0 = immediate / 1 = at the end)
+
+For the previous sample,
+
+Example:
+objact obj, 0; Play "wait.x"
+objact obj, 1; Play "walk.x"
+objact obj, 2; Play "run.x"
+
+It becomes the parameter.
+When switching animations with the objact command, select the setting mode.
+can do.
+
+objact obj, 0; Play "wait.x"
+
+In the case of, the switch is performed immediately when the instruction is executed.
+If you play the animation in setting mode 0, the playback speed will be the default value.
+It will be returned and the setting will be repeated playback.
+
+objact obj, 0,1; Play "wait.x"
+
+If 1 is specified for the setting mode, the currently playing animation will be displayed.
+After it finishes, it will switch to the set animation.
+
+The animation playback speed is changed individually by the objspeed command.
+It is possible. Also, the animation currently being played by the getanim instruction.
+You can get information about.
+For details, refer to the help of the objspeed and getanim instructions.
+
+
+・ About drawing semi-transparent objects
+
+In HGIMG3, drawing is performed in the order of registration (in ascending order of ID).
+However, if you need to consider the drawing order of translucent objects, etc.
+Specify OBJ_SORT or OBJ_LATE in the object mode setting
+please.
+Objects for which OBJ_SORT is set are drawn in order from the back when displayed.
+Sorting is done like this. (Valid only for 3D objects)
+Objects with OBJ_LATE set will be drawn later than usual.
+This makes it possible to draw translucently without blocking the objects in the back.
+
+
+・ About the operation of the camera gaze mode
+
+The hgsetreq command can be used to set the operation in camera gaze mode.
+In HGIMG3.1, the operation of the camera gaze mode has been corrected, so
+Previously created scripts may not work properly.
+In that case, please set the compatible camera mode as follows.
+
+Example:
+hgsetreq SYSREQ_OLDCAM, 1; Set HGIMG3.0 compatible camera mode
+
+
+・ About texture interpolation
+
+The hgsetreq command can be used to set the texture interpolation mode for 2D / 3D drawing.
+Is possible.
+
+Macro name Contents (default value)
+		-----------------------------------------------------
+SYSREQ_2DFILTER 2D texture interpolation mode when drawing (1)
+SYSREQ_2DFILTER2 2D Texture interpolation mode for direct drawing (1)
+SYSREQ_3DFILTER Texture interpolation mode when drawing in 3D (2)
+
+Example:
+hgsetreq SYSREQ_2DFILTER, 2; Set texture interpolation mode for 2D drawing
+
+The texture interpolation mode can be set separately for 2D and 3D.
+SYSREQ_2DFILTER is applied to the 2D object registered by the addspr instruction.
+In addition, SYSREQ_2DFILTER2 is applied to direct drawing commands (fprt, etc.).
+It is possible to switch in frame units, but it is not possible to set in object units.
+The mode value to be set has the following meanings.
+
+Mode value Contents (DirectX macro name)
+		-----------------------------------------------------
+1 Nearest (without interpolation) (D3DTEXF_POINT)
+2 Bilinear interpolation (D3DTEXF_LINEAR)
+3 Anisotropic filtering (D3DTEXF_ANISOTROPIC)
+6 4 Sample Tent Filter (D3DTEXF_PYRAMIDALQUAD)
+7 4 sample Gaussian filter (D3DTEXF_GAUSSIANQUAD)
+
+Under normal circumstances, the mode value is 1 (no interpolation) or 2 (bilinear interpolation).
+We recommend that you select either one.
+
+
+-About setting the rotation order of objects
+
+Set the order in which the XYZ axis rotations are applied when displaying 3D objects
+can.
+The rotation order can be set for each model.
+The format of the modelorder instruction is as follows.
+
+modelorder Model ID, mode (0-2)
+
+The mode value can be one of the following:
+
+
+Mode value macro Rotation order
+		------------------------------------------------------
+		    0     HGMODEL_ROTORDER_ZYX   Z->Y->X
+		    1     HGMODEL_ROTORDER_XYZ   X->Y->Z
+		    2     HGMODEL_ROTORDER_YXZ   Y->X->Z
+
+
+The default model has a mode value of 0.
+(However, mode value 1 is the default only for x format models.)
+
+The modelorder instruction sets the orientation of an object that cannot be resolved by any means.
+It is provided for configuration and compatibility with existing data.
+Normally, it is not a required instruction in the range of use.
+
+
+・ About shading mode setting
+
+Choose from several options for how to write your 3D model
+It is possible to.
+The modelshade instruction sets the shading mode of the specified model ID.
+Set. Shading mode is performed when the model is displayed
+Shows how to calculate the light source.
+The format of the modelshade instruction is as follows.
+
+modelshade Model ID, shading mode (0-2)
+
+The mode value can be one of the following:
+
+Mode value Contents
+		-----------------------------------------------------
+0 Constant (no light source calculation)
+1 Gouraud (DirectX standard light source calculation)
+2 hemispherical lighting
+
+When the mode value is 0, the light source is not calculated and the material color is always kept as it is.
+Reflect. (Constant shading)
+When the mode value is 0, the light color and ambient color are taken into consideration.
+Calculate the light source. The display color in this case is
+
+Brightness = Light intensity * Light color * Material color + Ambient color
+
+Is used. (If the brightness exceeds 255, it will be 255.)
+When the mode value is 2, the light color is the celestial sphere color and the ambient color is the ground color.
+Hemispherical lighting calculations are performed.
+Hemispherical lighting is softer than DirectX standard light source calculation
+You can express fine shadows.
+The current version applies hemispherical lighting only to x-format models
+can do.
+Also, please note that the scale (color) parameter of the light is not currently reflected in shading mode 1.
+
+
+・ About animation interpolation mode
+
+It is possible to select the interpolation mode of the X-Files model animation.
+Interpolation mode, mainly inter-keyframe animation of bone deformation models
+The behavior changes. According to the animation tool that output the X file
+Please make a selection.
+
+By setting in the following format, it will be reflected in the models registered after that.
+
+hgsetreq SYSREQ_QUATALG, mode value
+
+Mode 0 = QuaternionSlerp (Standard Spherical Linear Interpolation)
+Mode 1 = QuaternionSquad
+
+By default
+
+		hgsetreq SYSREQ_QUATALG,0
+
+It is in the state of.
+
+
+・ About the effect model
+
+HGIMG3 creates effect models to assist special effects and expressions.
+We support this.
+The effect model is a polygon with an arbitrary color with a phosphorescent expression.
+It is to be displayed. Various shapes can be expressed by setting parameters.
+Possible, internally, without the need for additional files or texture images
+It can be easily used to generate a shape.
+
+The effect model is generated by the addprim instruction.
+
+addeprim mdid, EPRIM_CIRCLE; Create effect model
+
+In the above example, create an effect model with the shape EPRIM_CIRCLE,
+Assign the model ID to the variable mdid.
+The following four types can be specified for the shape specified by the second parameter.
+
+EPRIM_CIRCLE Yen
+EPRIM_CIRCLE2 Jagged circle
+EPRIM_SQUARE Rounded rectangle
+EPRIM_FAN Polygon with any number of vertices
+
+After first specifying the basic shape, use the seteprim instruction for detailed parameters.
+It will be possible to set.
+
+		seteprim Model,Param,Value
+
+Model: Model ID
+Param: Parameter ID
+Value: The value to set for the parameter
+
+Specify the following values for the parameter ID specified by seteprim.
+
+ID content
+	---------------------------------------------------------
+0 Phosphorus part size (real number)
+1 General-purpose parameter (1) (real number)
+2 General-purpose parameters (2) (real numbers)
+3 General-purpose parameters (3) (real numbers)
+4 General-purpose parameters (4) (real numbers)
+5 General-purpose parameters (5) (real numbers)
+6 General-purpose parameters (6) (real numbers)
+7 General-purpose parameters (7) (real numbers)
+8 General parameters (8) (real numbers)
+16 Vertex color (1) (RGBA value specified by integer)
+17 Vertex color (2) (RGBA value specified by integer)
+18 Vertex color (3) (RGBA value specified by integer)
+19 Vertex color (4) (RGBA value specified by integer)
+
+General-purpose parameters 1 to 8 and vertex colors 1 to 4 play a role depending on the basic shape.
+It will change.
+Also, the size of the phosphorescent part is always set to 0.2 as the default.
+
+When specifying the vertex color, it is an RGBA value with an integer.
+RGBA is shown in 32 bits with 8 bits each, like 0xaarrggbb in hexadecimal.
+Specify.
+(For example, in the case of 0xff123456, A (留 value) = ff, R = 12, G = 34, B = 56)
+
+Vertex colors (1) to (4) set each vertex color including phosphorescence.
+By default, the following color codes are set.
+
+Vertex color (1): 0xffffffff (white)
+Vertex color (2): 0xff00ffff (water white)
+Vertex color (3): 0xff0000ff (blue)
+Vertex color (4): 0x00000080 (transparent dark blue)
+
+Notice that the alpha value (transparency) is enabled for the vertex color.
+When the 留 value is 0, it is completely transparent. 0xff (255) is completely opaque.
+By making good use of these values, you can create expressions that are dimly shining.
+Useful for special effects. When displaying a model that includes translucency,
+Add OBJ_LATE (always a setting that will always be drawn later) to the object's mode
+Please be so. Also, effects are often expressed in 2D.
+Also set the mode of OBJ_XFRONT (always facing the screen) for use
+There will be a need.
+
+The details of the parameters corresponding to each shape are as follows.
+
+・ EPRIM_CIRCLE (yen)
+
+EPRIM_CIRCLE draws a circle with a set number of vertices.
+It is possible to make an ellipse by changing the magnification in the XY direction.
+
+General parameters (1): Number of vertices (default: 20)
+Generic parameter (2): Magnification in X direction (default: 1.0)
+General parameters (3): Magnification in Y direction (default: 1.0)
+
+・ EPRIM_CIRCLE2 (Jagged circle)
+
+EPRIM_CIRCLE2 draws a circle (hexadecagon).
+Among them, four radii can be freely specified,
+Repeating this 4 times will make the circle go around.
+This creates a jagged or gear-like shape.
+Can be expressed.
+
+General parameters (1): Radius 1 (default: 1.0)
+General parameters (2): Radius 2 (default: 0.5)
+General parameters (3): Radius 3 (default: 1.0)
+General parameters (4): Radius 4 (default: 0.5)
+
+・ EPRIM_SQUARE (square with rounded corners)
+
+EPRIM_SQUARE draws a rectangle with rounded corners.
+Various shapes can be created by specifying the XY size for the four vertices.
+It is possible to express.
+
+Generic parameter (1): Vertex X1 (default: 0.4)
+Generic parameter (2): Vertex Y1 (default: 0.1)
+Generic parameter (3): Vertex X2 (default: 0.5)
+Generic parameter (4): Vertex Y2 (default: 0.1)
+Generic parameter (5): Vertex X3 (default: 0.5)
+Generic parameter (6): Vertex Y3 (default: 0.5)
+Generic parameter (7): Vertex X4 (default: 0.5)
+Generic parameter (8): Vertex Y4 (default: 0.5)
+
+・ EPRIM_FAN (polygon with any number of vertices)
+
+EPRIM_FAN draws a polygon with any number of vertices.
+A semicircle can be expressed by setting parameters.
+
+General parameters (1): Distance from center (default: 1.0)
+General parameters (2): Start angle (0.0 to 1.0) (default: 0.75)
+General parameters (3): Full width angle (0.0 to 1.0) (default: 0.5)
+Generic parameter (4): Number of vertices (default: 12)
+
+After changing the generation parameters with the seteprim instruction, when displaying
+The vertex coordinates are reconstructed.
+To reduce the processing load, execute the seteprim instruction every frame.
+Avoid using and change the parameters only when necessary.
+Embed seteprim specification in event list by event_eprim instruction
+It is possible. This causes the parameters to change over time
+You can register the effect model.
+
+
+・ About mesh map
+
+From HGIMG3.2, terrain generation and collision detection by mesh map
+Features are supported.
+This gives the height information to the mesh model created by the addmesh instruction.
+To add or express the terrain of the ground with a specific texture as a part
+It is what makes it possible. This allows the character to move along the uneven ground.
+You can move it and easily generate textures for the terrain.
+In addition, it supports simple physics calculations, and of objects according to the inclination of the terrain.
+It is possible for the system to handle repulsion and dropping.
+
+■ Mesh map information by two-dimensional array
+
+In the mesh map, information such as height is stored in an integer type two-dimensional array.
+It is possible to set. This is called mesh map information.
+Typically, you set the height of each vertex of the mesh to create a rugged ground.
+Used for Besides that, information update of X, Y, Z coordinates, UV coordinates, etc.
+It also supports settings.
+The mesh map information is set by the meshmap instruction.
+
+meshmap var, model ID, 0,0.1
+
+In the above example, the two-dimensional array stored in the variable specified as var
+Sets the mesh map information to the mesh map specified by the model ID.
+At that time, the integer value multiplied by 0.1 is applied as the Y coordinate (height).
+
+The element size of the 2D array is always one more than the number of divisions of the mesh map.
+Please note that For example, a mesh divided into 10x10
+The number of vertices on the map will be 11x11. In other words, as a two-dimensional array,
+It should be initialized with the size of the number of vertices, such as "dim var, 11, 11".
+
+■ Use of image maps
+
+A function to create mesh map information based on grayscale image information
+It is prepared. As a result, the undulations of the mesh map are created from the image data.
+It is possible to.
+The mesh map information is created by the getvarmap command.
+
+		getvarmap var,30,30,0
+
+In the above example, the reference source image (information on the HSP drawing screen) is set to a 30x30 area.
+Split and assign the result to the variable var.
+(The number of vertices actually created is 31x31.)
+
+■ Generation of terrain data using image maps
+
+By applying the mesh map information generation function from the image map, it can be applied to the ground.
+You will be able to easily create the displayed texture UV.
+This divides the predetermined elements (ground, road, water surface) into four parts.
+The drawn texture is properly pasted on the mesh map.
+You can reflect it on the map based on the image showing the road and the water surface.
+
+sx = 32: sy = 32; mesh split size
+dim vmap, sx + 1, sy + 1; Variables in mesh map information
+setuv 0,0,256,256; Specify texture (dummy)
+addmesh m_mesh, sx, sy, 0,160,160; Model registration (ground)
+texload "mapbg4.bmp"; Ground texture
+buffer 3; Prepare HSP buffer for reading
+picload "g_road.bmp"; Image showing the position of the road
+getvarmap vmap, sx, sy, 1; Convert road position
+picload "g_river.bmp"; Image showing the location of water
+getvarmap vmap, sx, sy, 2; Convert water position
+meshmap vmap, m_mesh, $ 100; Set meshmap
+gsel 0; Return the drawing destination
+
+In the above example, based on the images "g_road.bmp" and "g_river.bmp"
+Topography texture (mapbg4.bmp) on a mesh map divided into 32x32
+It will be pasted automatically.
+
+■ Movement on the mesh map
+
+Place objects on a rugged mesh map and move them easily
+It is possible.
+First, for the object recognized as the ground, set OBJ_GROUND as the mode.
+Must be set in advance.
+And for objects placed on the ground, OBJ_STAND is set as the mode.
+Set.
+After making these settings, you can move it with the objwalk command.
+The mesh map is recognized as the ground, and the coordinates along the undulations are set.
+Describe the objwalk instruction in the following format.
+
+objwalk variable, object ID, px, py, pz
+
+The direction specified by (px, py, pz) for the object specified by the object ID.
+Move to (vector). If there are undulations, move on top of them
+In addition to doing it, obstacles are also taken into consideration.
+The variable specified by the first parameter is the magnitude (vector) actually moved.
+Is substituted. (Variables are assigned values to elements 0 and 2 as a double type array)
+
+In this connection, on the Y coordinate of the object that appears when moving over the ground
+The offset value for this can be set.
+This is displayed by shifting the specified value upward from the coordinates corresponding to the ground.
+It is a function to do. Depending on the center coordinates of the model, it will be buried in the ground
+Avoid things that can happen.
+
+objfloor object ID, offset value
+
+In the above example, the specified object ID is shifted up by the offset value (real number).
+Set to display.
+
+Various information obtained when moving by the objwalk command is obtained by the getcolvec command.
+It is possible to get it. Information on the ground on which the current object is grounded
+You can refer to parameters related to tilt and so on.
+See the getcolvec instruction reference for more information.
+
+■ Extended collision (obstacle)
+
+In addition to the mesh map recognized as the ground when moving by the objwalk command
+Objects that are recognized as obstacles are considered.
+This is called extended collision, which is different from normal collision detection (getcoli instruction).
+You can set the parameters.
+
+The following preparations are required to recognize an object as an obstacle.
+
+-OBJ_STATIC mode setting
+-Extended collision parameter settings
+・ Collision group settings
+
+First, the object that becomes an obstacle specifies OBJ_STATIC as the mode.
+is needed. Then set the extended collision parameters.
+This is a size and repulsion setting for object collision detection.
+Use the modelcols or setcolscale instructions.
+In the current version, all obstacles are recognized as cylindrical objects.
+(More complex shapes will be recognizable in future versions.)
+Finally, you need to set the collision group.
+This belongs to the object, as was done in conventional collision detection.
+It determines the group and the group to be collided with.
+If the collision group to be collided with is not set, it will be an obstacle.
+Is not recognized.
+
+Based on this information, it detects collisions with obstacles when moving objects.
+Take appropriate workarounds.
+When colliding with an obstacle, consider the weight (repulsive force) of each object and other
+Push out an object to move it.
+
+■ Automatic object movement and gravity calculation
+
+In HGIMG3, usually when OBJ_MOVE is specified as the object mode,
+The amount of movement of the dir group is automatically added to the coordinates (automatic movement mode).
+If OBJ_STAND is specified for the object's mode, that is, on the ground
+In the state of moving on, the specification of OBJ_MOVE is also a specification to move on the ground
+I will. (The same operation as the objwalk command is automatically performed every frame.)
+Furthermore, when OBJ_GRAVITY is added to the object mode,
+Gravity calculation is automatically performed considering the inclination of the ground and obstacles.
+It is set as the movement amount of the dir group. That is, on a sloping ground
+Placed objects automatically slide down the ground
+It will be. It also repels when it hits an obstacle or the ground.
+(Since this is a simple gravity calculation that prioritizes speed,
+It may differ from the strict laws of physics. )
+Some parameters related to gravity calculation can be set by the hgprm instruction.
+I can do it.
+
+hgprm 4, 0.5; bound coefficient
+hgprm 5, 1.0, 0.95; resistance (air, ground)
+
+In the above example, the value of the friction due to the bounce coefficient and air resistance on the ground is set.
+doing.
+
+■ Range clip
+
+When moving over the ground, make sure you are within the mesh map
+Please keep in mind. If there is no ground to recognize, move normally as it is
+Will be done. Falling objects will continue to fall forever
+I will end up.
+To avoid this phenomenon, a range clip function has been added.
+This is to limit the range of movement for the X and Z axes.
+When OBJ_WALKCLIP is specified as the object mode, the setborder instruction is used.
+You will not be able to get out of the set X, Z clip range.
+For the Y direction, the lower limit is set by the ground mesh map,
+The upward limit can be determined by the hgprm instruction.
+
+hgprm 2,-80; movable altitude
+
+In the above example, the Y coordinate can only move upwards up to -80.
+
+■ Automatic tracking camera
+
+Move the camera while capturing the character on the undulating mesh map
+If you have to consider obstacles and the height of the ground, the program is very
+It gets complicated.
+Starting with HGIMG3.2, new camera modes include mesh maps and obstacles.
+Added auto-tracking mode to properly follow the target object in consideration
+It has been. In auto-tracking mode, any object on the camera's gaze point
+After specifying, set the collision of the camera itself, and collide with obstacles
+Avoid being buried in the ground.
+This makes it easy to create games such as third-person perspective games.
+The auto-tracking mode is set in the following format.
+
+cammode CAM_MODE_AUTOMOVE, object ID
+
+In the above example, the object specified by the object ID is automatically tracked.
+It will be.
+In the automatic tracking mode, the work group of the object includes the distance to the target and
+Put the height from the ground and the offset value of the target coordinates in the dir group.
+You can leave it.
+
+		setdir HGOBJ_CAMERA, x, y, z
+
+In the above example, for the gazing point of the object coordinates to be automatically tracked,
+Add (x, y, z). This allows you to gaze inside the target object
+You can fine-tune the position.
+
+		setwork HGOBJ_CAMERA, camdist, camrotate, camheight
+
+In the above example, as camdist, the distance from the target object, as camheight
+Specifies the height of the camera.
+camrotate will automatically track the next time if you specify a special parameter other than 0.
+Sometimes the viewpoint is rotated by the specified value. After rotation, camrotate parameter
+Is reset to 0. This is because the user can rotate the viewpoint arbitrarily
+It is an option provided and usually does not need to be set.
+
+Auto-tracking mode is not only for navigating on the mesh map, but also for certain
+It can be used universally as a camera mode for gazing at objects.
+Also, to gaze only at a specific object without automatic movement.
+CAM_MODE_LOOKOBJ mode has also been added.
+
+■ Ripples generation function
+
+Along with the mesh map, the ripple generation function is supported.
+This is based on the height information of the grid divided into arbitrary sizes, and the transmission of ripples and
+It calculates elasticity. However, strict physics is performed
+Not that, the amount of calculation is at a simple level that prioritizes performance.
+It is suppressed. These functions are used for on-screen effects and effects.
+can do.
+
+Use the ripple generation function in the following procedure.
+First, create an array variable to store the grid initialization and mesh height information.
+Must be kept.
+
+		sx=32:sy=32
+		dim vmap,sx+1,sy+1
+		wave_init sx,sy
+
+The above example will generate a 32x32 grid.
+The array variable is always an integer type, and both X and Y are one larger than the grid size.
+Please note that it will be initialized. (The number of vertices is one from the number of grid divisions
+Because it will increase)
+The height of the initialized grid can be set with the following instructions.
+(Array variables are only used to read buffer information.
+Assigning to the array variable itself does not update the internal buffer. )
+
+		wave_set 4,5,100
+
+In the above example, the grid (4,5) is set to a height of 100.
+The height information is specified as an integer.
+
+The actual operation is performed when the wave_apply instruction is executed.
+
+		wave_apply vmap,1
+
+In this example, after calculating the elasticity of the set grid, the variable vmap
+Substitute the result.
+
+		wave_apply vmap,2
+
+In the above example, after calculating the ripples, the result is assigned to the variable vmap.
+(Be sure to call and update the ripple calculation every frame.)
+
+In order to reflect the array variable to which the calculation result is assigned in the mesh map
+Finally, you need to execute the meshmap instruction.
+
+		meshmap vmap,m_mesh,0,0.1
+
+In the above example, based on the value of the array variable assigned to vmap
+Sets the height in the mesh map of the model ID assigned to m_mesh.
+The content of vmap is an integer type, but the magnification is specified as 0.1 with the 4th parameter.
+Therefore, the value is actually set to 1/10.
+
+
+・ About object general-purpose user information
+
+From HGIMG3.2, add general-purpose user information to all objects
+You can now do it.
+It has three integer values that the user can freely save and reference.
+Become. When you need to save multiple object-specific information
+You can use it freely.
+
+Object general purpose vector information
+
+setcolscale object ID, x, y, z, 2
+
+It is set in. (x, y, z are arbitrary integer values)
+To refer to the set contents,
+
+getcolvec v1, v2, v3, object ID, 18
+
+Specify as.
+In this example, the user information is assigned to the variables v1, v2, v3.
+
+
+・ About sound related support
+
+From 3.1β5 version, the basic sound playback function is included in HGIM G3.
+It is possible to play sound effects in games, etc. without adding a plug-in.
+Normally, sound-related features are not used.
+The sound function is enabled only when the initialization is performed by the dmmini instruction.
+If sound-related functions are not initialized even when using HGIMG3,
+No sound APIs such as DirectSound are used.
+If you use HGIM G3 and other sound related plug-ins, you can use it as usual.
+
+The following commands are provided for the sound playback function.
+
+dmmini sound function initialization
+dmmbye sound function termination processing
+dmmreset Reset sound function settings
+Delete dmmdel sound data
+dmmvol Sound data volume setting
+dmmpan Sound data pan settings
+dmmloop Sound data loop settings
+dmmload Sound data loading
+dmmplay Sound data playback
+dmmstop Sound data playback stop
+dmmstat Sound data status acquisition
+
+See help for instruction details.
+As for sound related functions, DirectSound of DirectX 8 or later is used as well as 3D functions.
+I'm using. Compared to the built-in multimedia function of HSP3,
+You can use volume setting, simultaneous playback of multiple sounds, status acquisition, etc.
+You will be able to do it.
+
+
+・ About the maximum number of registrations
+
+If the number of objects to be registered or the number of models is insufficient, separate
+The maximum number must be set with the hgsetreq instruction.
+The following example sets the maximum number of objects to 1024.
+
+hgsetreq SYSREQ_MAXOBJ,1024; extend maximum number of objects
+
+The main items that can be set with hgsetreq are as follows.
+
+Macro name Contents
+		-----------------------------------------------------
+SYSREQ_MAXMODEL Maximum number of models
+SYSREQ_MAXOBJ Maximum number of objects
+SYSREQ_MAXTEX Maximum number of textures
+SYSREQ_DXMODE Full screen mode switch
+SYSREQ_DXHWND window handle (reference only)
+SYSREQ_DXWIDTH Horizontal size in full screen mode
+SYSREQ_DXHEIGHT Vertical size in full screen mode
+SYSREQ_COLORKEY Transparent color code when registering texture
+Cause code when SYSREQ_RESVMODE error occurs (reference only)
+SYSREQ_MAXEVENT Maximum number of events
+SYSREQ_MDLANIM Maximum number of animations per model
+SYSREQ_CALCNORMAL X file model normal recalculation switch
+SYSREQ_2DFILTER 2D texture interpolation mode when drawing
+SYSREQ_3DFILTER Texture interpolation mode when drawing in 3D
+SYSREQ_OLDCAM Operation in camera gaze mode
+SYSREQ_QUATALG X-Files model animation interpolation mode
+SYSREQ_DXVSYNC VSYNC wait mode in full screen mode
+SYSREQ_DEFTIMER hgsync time wait mode (0 = HGIMG3 / 1 = await)
+SYSREQ_NOMIPMAP Texture MIPMAP generation mode (0 = automatic / 1 = no MIPMAP)
+SYSREQ_DEVLOST DirectX device existence flag (0 = existence / -1 = lost)
+SYSREQ_MAXEMITTER Maximum number of emitters
+SYSREQ_THROUGHFLAG X-direction border processing flag (0 = normal / 1 = through)
+SYSREQ_OBAQMATBUF Number of material buffers for OBAQ
+SYSREQ_2DFILTER2 2D Texture interpolation mode for direct drawing
+SYSREQ_FPUPRESERVE FPU calculation accuracy setting option (0 = single precision / 1 = no change)
+SYSREQ_DSSOFTWARE Using software sound buffer (1 = ON, 0 = OFF)
+SYSREQ_DSGLOBAL Global Sound Focus (1 = ON, 0 = OFF)
+SYSREQ_DSBUFSEC ogg Stream playback buffer size (in seconds)
+
+The packet size that existed up to HGIMG2.61 is obsolete.
+The default values of the items mainly used are as follows.
+
+Macro name Contents (default value)
+		-----------------------------------------------------
+SYSREQ_MAXMODEL Maximum number of models (4096)
+SYSREQ_MAXOBJ Maximum number of objects (512)
+SYSREQ_MAXTEX Maximum number of textures (512)
+SYSREQ_DXMODE Full screen mode switch (0)
+SYSREQ_DXWIDTH Horizontal size in full screen mode (640)
+SYSREQ_DXHEIGHT Vertical size in full screen mode (480)
+SYSREQ_COLORKEY Transparent color code when registering texture (0)
+SYSREQ_MAXEVENT Maximum number of events (512)
+SYSREQ_MAXEVENT Maximum number of events (512)
+SYSREQ_MDLANIM Maximum number of animations per model (16)
+SYSREQ_CALCNORMAL X file model normal recalculation switch (0)
+SYSREQ_FPUPRESERVE FPU calculation accuracy setting option (0)
+SYSREQ_DSSOFTWARE Using the software sound buffer (1)
+SYSREQ_DSGLOBAL Global Sound Focus (1)
+SYSREQ_DSBUFSEC ogg Stream playback buffer size (2)
+
+
+-About directX parameter reference
+
+Some DirectX related parameters are set by the hggetreq instruction.
+It is possible to get it.
+
+Macro name Contents
+		-----------------------------------------------------
+Cause code when SYSREQ_RESULT error occurs (reference only)
+SYSREQ_RESVMODE Status code (reference only)
+SYSREQ_PTRD3D DIRECT3D8 COM pointer (reference only)
+SYSREQ_PTRD3DDEV DIRECT3DDEVICE8 COM pointer (reference only)
+
+	SYSREQ_RESULT
+
+The cause code when an error occurs is stored.
+When an error occurs when initializing with the hgini instruction
+You may be able to identify the error by reference.
+
+1: Failed to get DIRECT3D8
+2: GetAdapterDisplayMode failed
+3: Failed to get DIRECT3DDEVICE8
+
+	SYSREQ_RESVMODE
+
+The status code is stored after initialization.
+bit0-7 shows the D3DFORMAT value (see DirectX SDK).
+You can know the pixel format of the initialized screen.
+If bit12 is 1 ($ 1000), DirectX emulates
+Indicates that you are operating in mode (D3DDEVTYPE_REF).
+
+	SYSREQ_PTRD3D
+	SYSREQ_PTRD3DDEV
+
+Contains the DirectX COM pointer used inside the HGIMG3.
+The COM pointers for DIRECT3D8 and DIRECT3DDEVICE8, respectively.
+is showing. In combination with the COM call function of HSP3
+By using it, you can use the DirectX API directly.
+
+
+・ About Ogg Vorbis stream playback
+
+The OggVorbis format is a license-free compressed audio file format.
+Compared to mp3 format, there is no licensing problem and it is not affected by the OS environment.
+Since it can be used, it is suitable for embedded formats such as games.
+HGIMG3 plays files with the extension ".ogg" by stream.
+In addition to being able to support seamless loops to any point
+doing. This makes it easy to incorporate very high quality music.
+You can do it.
+Support for more information on creating and encoding OggVorbis format files
+We do not do this, so please prepare materials and tools separately.
+
+From 3.32RC1 version, set the ogg stream playback buffer with the hgsetreq instruction.
+You can do it. The following is an example of the settings.
+
+hgsetreq SYSREQ_DSBUFSEC, 2; Stream buffer size (in seconds)
+hgsetreq SYSREQ_DSGLOBAL, 1; Flag to play sound even out of focus (1 = ON, 0 = OFF)
+hgsetreq SYSREQ_DSSOFTWARE, 1; Flag to use software buffer (1 = ON, 0 = OFF)
+
+The value shown above is the default value.
+DirectX sound buffer is a hardware sound buffer
+A software sound buffer is provided for hardware mixing
+Hardware is set automatically on possible devices.
+In versions prior to 3.32RC1, the setting to use the hardware sound buffer
+However, in 3.32RC1 version or later, it was set to use the software sound buffer.
+It has been changed.
+This setting is on the hardware side when mixing sound playback for each application.
+It depends on whether you get help or the CPU handles it, but from Windows Vista
+Since the sound management method for each application has changed, the software sound buffer has been changed.
+Recommended to use. If you have a modern high-speed CPU, use the software sound buffer.
+It is unlikely that it will be a heavy process, but on the contrary, it is an old machine or Windows XP or earlier.
+If there is a special purpose such as reducing the load on the OS etc., leave the processing to the hardware side
+please try.
+
+
+・ About OBAQ support function
+
+A function that supports display in cooperation with the OBAQ (physics engine) plug-in
+Has been added.
+The OBAQ plugin usually draws on the HSP window,
+The objects managed by OBAQ remain the same, and only drawing is done with HGIMG3 in DirectX.
+It will be in the form of doing.
+Very fast and accurate display compared to drawing with the OBAQ plug-in alone
+Can be realized.
+When using OBAQ from HGIMG3, be sure to read the headers in the following order.
+give me.
+
+		#include "hgimg3.as"
+		#include "obaq.as"
+
+Next, initialize in the following order.
+By passing the data pointer on the OBAQ side to HGIMG3, it will be linked.
+
+;Initial setting
+		;
+		hgini
+qreset; OBAQ initialization
+		qgetptr obaq_ptr
+		hgobaq obaq_ptr, 0
+
+The main drawing loop looks like this:
+
+	*main
+; Drawing main
+		;
+qexec; Updating objects with OBAQ
+hgdraw; drawing process
+hgsync 10; wait for time
+		goto *main
+
+There is no need for a draw command (qdraw) on the OBAQ plugin side.
+Be sure to include qexec for physical operation.
+After that, if you set the object with the instruction on the OBAQ side, HGIMG3 will be automatically set.
+It is displayed in the drawing process of.
+
+The OBAQ plug-in does 2D-based processing, so it goes to a flat surface.
+You can only draw.
+However, the OBAQ screen is pasted on the 3D polygon board on HGIMG3 and drawn.
+3D mode is available for.
+In that case, initialize as follows.
+
+;Initial setting
+		;
+		hgini
+qreset; OBAQ initialization
+		qgetptr obaq_ptr
+hgobaq obaq_ptr, 0, 1; 3D mode
+
+OBAQ model
+		;
+		addobaq3d m_obaq
+		regobj obj, m_obaq
+		setscale obj, 0.25,0.25,0.25
+
+The addobaq3d instruction adds a model to draw the OBAQ.
+By registering this as an object, you can use it at any position and angle in 3D.
+You can draw.
+In OBAQ3D mode, the debug display of OBAQ objects is disabled, so
+Be sure to set the material such as mat_wire with the qmat instruction.
+
+On HGIMG3, in addition to the drawing method (material) of the OBAQ plug-in,
+A mode for drawing lines using textures (mat_wire3) has been added.
+This makes it possible to draw not only simple lines but also decorated lines and thick lines.
+It is possible. in this case,
+
+qmat OBAQ object ID, mat_wire3, texture ID, cell ID
+qmat2 OBAQ object ID, 0,0, 0, line thickness
+
+It will be specified as. Depending on the zoomy parameter specified in qmat2
+You can change the thickness. Below is a texture called "line.tga"
+Here is an example of a script that draws a line using it.
+
+
+Preparation of line texture
+		;
+		texload2 "line.tga"
+		lntex = stat
+
+OBAQ border
+		;
+		qmat 0,mat_wire3,lntex
+qmat2 0, 0,0, 0,16; Line thickness (zoomy)
+
+
+・ About FPU accuracy setting option
+
+Floating point unit (FPU) accuracy is now float (32bit) when DirectX is initialized
+It will be set. As a result, even those that were normally calculated in double (64bit)
+It will be reduced to 32bit accuracy. It handles a lot of data at high speed
+This is for many applications and has similar settings.
+However, if you want to perform highly accurate calculations on HSP, or if you want to use the physics engine OBAQ
+When you want to get the same accuracy as when running on a normal HSP3,
+It is possible to leave the settings of the FPU accuracy setting options as they are.
+Set SYSREQ_FPUPRESERVE to 1 in the system request by the hgsetreq instruction.
+By doing so, the calculation will be executed with normal accuracy. (However, the processing speed is reduced
+To do)
+
+hgsetreq SYSREQ_FPUPRESERVE, 1
+		hgini
+
+
+・ About detailed settings related to sound
+
+Detailed settings related to the sound playback function can be made with the hgsetreq command.
+The hgsetreq instruction provides the following setting items.
+
+・ SYSREQ_DSSOFTWARE
+
+Sets the use of software sound buffers (1 = ON, 0 = OFF)
+(Default is 1 = ON)
+The software sound buffer mixes the sound with the CPU
+It is a setting to do. By setting "0 = OFF", the hardware
+Mixing is enabled. This is on older hardware and OS
+This will reduce the CPU load.
+Software sound buffer can be used on Windows Vista and above
+Recommended. Normally, the default (1 = ON) is fine.
+
+・ SYSREQ_DSGLOBAL
+
+Global sound focus (1 = ON, 0 = OFF)
+(Default is 1 = ON)
+Global sound focus is enabled in the application window
+Sets whether to play the sound only when it is (focused).
+By default (1 = ON), global sound focus is enabled and
+The sound will always be played.
+By setting "0 = OFF", the application window will open.
+When it is out of focus, the sound will not play.
+
+-SYSREQ_DSBUFSEC
+
+ogg stream playback buffer size (in seconds)
+(Default is 2)
+Specifies the size of the internal buffer for playing the ogg stream.
+The default is 2 (seconds). Normally you don't need to change it,
+If you want to reduce file access or spend more time to reduce the load
+Please set when assigning.
+The longer the number of seconds you specify, the more memory will be consumed.
+
+	----------------------------------------------------------------------
+
+Be sure to set the detailed sound settings before executing the dmmini instruction.
+The contents are reflected when the dmmini instruction is executed.
+
+hgsetreq SYSREQ_DSBUFSEC, 2; Stream buffer size (in seconds)
+hgsetreq SYSREQ_DSGLOBAL, 1; Flag to play sound even out of focus (1 = ON, 0 = OFF)
+hgsetreq SYSREQ_DSSOFTWARE, 1; Flag to use software buffer (1 = ON, 0 = OFF)
+		dmmini
+
+
+・ About device lost
+
+DirectX used by HGIMG3 is used for computer sleep and unintended
+Loss of drawing device (device lost) occurs due to change of screen mode
+You may.
+HGIMG3 tries to recover from device lost as much as possible,
+If the recovery fails, you will need to start over from the point where the screen is initialized.
+Device lost does not occur in normal use,
+More kind software by supporting device lost in case of unexpected operation
+You can create it.
+To detect device lost, use the hggetreq instruction to set the value of SYSREQ_DEVLOST.
+Please get it. If this value is non-zero, device lost has occurred.
+
+		hgini
+	*main
+		hggetreq devlost,SYSREQ_DEVLOST
+		if devlost : goto *lost
+hgdraw; drawing
+		hgsync 16
+		goto *main
+	*lost
+Device lost
+		hgini
+; ~ Required initialization processing ~
+		goto *main
+
+As shown above, check the device lost just before drawing,
+If initialization is required, write the program as appropriate.
+
+
+・ About HGIMG3 compatible tools
+
+The following are recommended as 3D tools compatible with HGIM G3.
+In addition to this, it is possible to use tools that handle x format and mx format.
+
+[3DACE room]
+	http://hp.vector.co.jp/authors/VA017881/
+
+Free software 3DACE that can intuitively perform 3D modeling has been released
+is. It supports output in MX format and X format.
+
+	[metaseq.net]
+	http://www.metaseq.net/
+
+Metasequoia is a 3D modeling tool created by O.Mizno.
+The free version of Metasequoia LE is readily available online and
+It is possible to create 3D data and output it in x format.
+For reading quite a variety of formats with Metasequoia itself or plugins
+Since it is supported, the possibility of conversion from existing 3D files is greatly expanded.
+
+
+-------------------------------------------------------------------------------
+                                                HSP users manual / end of file 
+-------------------------------------------------------------------------------

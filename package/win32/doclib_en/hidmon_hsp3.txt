@@ -1,0 +1,145 @@
+------------------------------------------------------------------------------
+HSP REFERENCE MANUAL                                HSP : Hot Soup Processor  
+HSP Extension Module Reference (c) onion software
+------------------------------------------------------------------------------
+
+繝サ Introduction
+
+hidmon.as provides various functions of HIDaspx connected via USB via hidmon.dll.
+This is a definition file for HSP3 to call.
+HIDaspx is an AVR microcomputer connected via USB as a standard HID.
+It is a device that can be used without a dedicated driver by recognizing it.
+For details, refer to the following page.
+	http://www-ice.yamagata-cit.ac.jp/ken/senshu/sitedev/index.php?AVR/HIDaspx#qa9690db
+
+hidmon.as allows you to call the functions of hidmon.dll from HSP3.
+Various controls can be described by HSP script.
+
+
+ツキHow to Use
+
+By copying the following files to the folder where HSP3 is installed
+It can be easily called from various scripts.
+
+hidmon.dll-> HSP3 installation folder (same level as hsp3.exe)
+hidmon.as-> in common of HSP3 installation folder
+
+hidmon.dll is a plugin file that is used with HSP3.EXE.
+Please use ver3.1 or above as the HSP to use. For HSP ver2.61 and earlier
+Please note that it is not supported.
+Even if you create an EXE file, put hidden.dll in the same folder as the EXE file.
+It will not work unless it is placed in. (You cannot add a DLL to the packfile.)
+
+When using dll, add the following declaration to the beginning of the script.
+
+		#include "hidmon.as"
+
+After that, you can use the following functions.
+
+hidinit hidmon initialization
+hidbye hidmon finished
+hidpoke port, value, mask write port
+usbpeek (port) port read
+
+When using hidmon.dll, be sure to call hidinit first.
+By initializing various settings, all B ports are prepared as output ports.
+The result of initialization is reflected in the system variable stat.
+If stat is 0, it indicates that the initialization was successful.
+Otherwise, an error has occurred.
+Follow the procedure below to initialize.
+
+		hidinit
+		if stat<0 {
+dialog "Failed to initialize USB device."
+			end
+		}
+mes "UsbInit Success"
+
+Initialization parameters can be specified in the hidinit instruction.
+If the initialization parameter is omitted, the connected HIDaspx device will be displayed.
+Search automatically.
+You can specify the serial ID of the device as a character string in the initialization parameter.
+
+Example:
+hidinit "1234"; Initialize serial "1234" device
+
+For the commercial version of HIDaspx device, prefix it with "#" to initialize it.
+Please go. (Hida Pio, etc.)
+
+Example:
+hidinit "#"; Initialize commercial equipment (automatic selection)
+hidinit "# 1234"; Initialize serial "1234" commercial equipment
+
+After initialization, you can write with hidpoke and read with hidpeek.
+You will be able to do it.
+hidpoke is described as follows.
+
+hidpoke port, value, mask write port
+
+For port, specify the port address of HIDaspx.
+In addition to specifying the port address numerically, set the following variables that are set in advance.
+It is also possible to specify.
+
+Variable port name
+		--------------------------------
+		portb      portB
+		portd      portD
+		pinb       pinB
+		pind       pinD
+		ddrb       DDRB
+		ddrd       DDRD
+
+For value, specify a 1-byte value from 0 to 255.
+If you want to mask a specific bit, specify a mask value for mask.
+If mask is omitted or set to 0, the value of value is written as it is.
+
+hidpeek is a function that reads the contents of a port.
+It is possible to read a 1-byte value into a variable as a function as shown below.
+
+		value=hidpeek(pind)
+
+The port address specified by hidpeek is the same as the port address of hidpoke.
+It will be a value.
+
+It is also possible to directly call the function of hidden.dll.
+
+UsbInit "string"; Initialization. (Return value = stat)
+UsbExit; Exit. (Return value = stat)
+UsbPoke int adr, int arena, int data, int mask; write
+Return value = UsbPeek (int adr, int arena); Read 1 byte
+Return value = PortAddress ("string"); Converts the port name of ATtiny2313 to an address.
+
+These functions / instructions provide the same functions as the functions of hidmon.dll.
+See the hidden manual for more information.
+
+USB control termination processing is performed by the hidbye command.
+This is done automatically at the end of the program, so you usually don't need to call it
+There is none.
+
+
+ツキChange log
+
+	2010/7/23 ver0.2
+
+Replace hidmon.dll with the latest version
+Fixed the process of passing USB initialization parameters (compatible with commercial devices such as Hida Pio)
+
+	2010/2/3 ver0.1
+
+First version.
+
+
+繝サ Copyright and license
+
+You are free to modify, distribute, and publish hidmon.as and samples.
+hidmon.dll is created and published by iruka and senshu.
+Please check the distributor's site for the license rules.
+
+	AVR/HIDmon
+	http://www-ice.yamagata-cit.ac.jp/ken/senshu/sitedev/index.php?AVR/HIDmon
+	HIDmon88
+	http://hp.vector.co.jp/authors/VA000177/html/HIDmon88.html
+
+Hidapio
+	http://www.ne.jp/asahi/ja/asd/gijutu/HIDapio/
+

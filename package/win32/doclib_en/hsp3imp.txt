@@ -1,0 +1,161 @@
+------------------------------------------------------------------------------
+HSP3IMP.DLL ver3.5                                  HSP : Hot Soup Processor  
+HSP Extension DLL Reference copyright 1999-2017 (c) onion software
+------------------------------------------------------------------------------
+
+ÅE Introduction
+
+This DLL is used to call functions equivalent to Hot Soup Processor ver3.5 from the outside.
+It is something to use.
+HSP3IMP.DLL has the same functionality as the HSP3 runtime.
+For applications written in common languages such as C / C ++ as well as HSP
+HSP functions can be added.
+The operation screen of HSP3IMP.DLL is a child window of the specified window.
+Since it works, you can use the screen of HSP3 in the same way as pasting parts.
+Is possible.
+
+You can also use HSP3IMP.DLL itself as an HSP plug-in.
+In that case, place HSP3IMP.DLL in the same directory as HSP3.EXE.
+Please use it.
+
+
+-Call from script
+
+To call the DLL from an HSP script, add the following line to the beginning of the script
+please do it.
+
+	#include "hsp3imp.as"
+
+After that, instructions will be added to use the functions of HSP3IMP.DLL.
+
+
+ÅE Instruction details
+
+	hspini mode,xsize,ysize,handle
+
+mode: Initialization mode ($ 100 = Initialize as child window)
+bit0 = window hidden (ON / OFF)
+bit1 = Current directory change prohibited (ON / OFF)
+
+xsize: HSP initialization window size (X)
+ysize: HSP initialization window size (Y)
+handle: Parent window handle (HWND)
+
+Initialize HSP3IMP.DLL.
+Initializes HSP3 and reads the object file.
+Before executing hspini, make various settings with the hspprm instruction.
+Must be kept.
+	hspbye
+
+Destroy the instance of HSP3 initialized by the hspini instruction.
+It must be executed at the end to finish HSP3.
+
+	hspexec
+
+Executes the HSP3 task initialized by the hspini instruction.
+The hspexec instruction is issued until the executed code ends or an error occurs.
+I won't come back. (In the meantime, HSP3 tasks will run.)
+HSP3IMP.DLL should only work as a single task
+Please note that it is a prerequisite.
+
+	hspprm p1,p2,p3,p4
+
+Make settings and get information about HSP3IMP.DLL.
+The contents specified from p2 to p4 change depending on the value of p1.
+Refer to the following for the parameters to be set.
+
+		p1(mode)
+		-----------------------------------------------------------
+0 Specify display offset from parent window
+(Set the X and Y offset values with p2 and p3)
+1 Specify startup parameter (used only for HSPTV)
+0x100 Get pointer to HSPCTX structure
+(The result will be written to the address specified in p4)
+0x101 Function specification to initialize extended instruction
+(Register a function that takes an HSP3TYPEINFO pointer as an argument on p4)
+0x102 Specify HSP3 object file name
+(Set the address where the file name is stored in p4)
+
+
+-Call from C / C ++
+
+You can call it from C with the following code.
+
+	typedef BOOL (CALLBACK *HSP3FUNC)(int,int,int,int);
+	typedef BOOL (CALLBACK *HSP3FUNC2)(int,int,int,void *);
+	HINSTANCE h_hspimp;
+	HSP3FUNC hspini;
+	HSP3FUNC hspbye;
+	HSP3FUNC hspexec;
+	HSP3FUNC2 hspprm;
+
+// System Initalize (when using COM)
+	if ( FAILED( CoInitializeEx( NULL, COINIT_APARTMENTTHREADED) ) ) {
+Alertf ("OLE initialization failed");
+		goto cleanup;
+	}
+	OleInitialize( NULL );
+	InitCommonControls();
+
+	h_hspimp = LoadLibrary( "hsp3imp.dll" );
+	if ( h_hspimp != NULL ) {
+		hspini = (HSP3FUNC)GetProcAddress( h_hspimp, "_hspini@16" );
+		hspbye = (HSP3FUNC)GetProcAddress( h_hspimp, "_hspbye@16" );
+		hspexec = (HSP3FUNC)GetProcAddress( h_hspimp, "_hspexec@16" );
+		hspprm = (HSP3FUNC2)GetProcAddress( h_hspimp, "_hspprm@16" );
+	}
+
+The function call looks like this:
+
+hspprm (0, offsetx, offsety, NULL); // X, Y offset
+hspini (0x100, sizex, sizey, (int) hWnd); // HSP initialization
+hspprm (0x100, 0, 0, & hspctx); // Get HSPCTX
+hspexec (0,0,0,0); // HSP execution
+hspbye (0,0,0,0); // HSP termination process
+
+	if ( h_hspimp != NULL ) {
+		FreeLibrary( h_hspimp );
+		h_hspimp = NULL;
+	}
+
+
+important point
+
+HSP3IMP.DLL provides almost the same functionality as HSP3.
+Please note the following points as some parts are not supported.
+
+Å° COM initialization (CoInitializeEx, etc.) is not performed inside HSP3IMP.DLL.
+When using COM related instructions, as in "Calling from C / C ++"
+You will need the initialization code. (When used as a HSP3 plug-in,
+No problem. )
+
+Å° run instruction is not supported
+Å° The function to clear the mouse cursor by the mouse command is not supported.
+Å° Delete instruction is not supported
+Å° You cannot access system related folders such as windows
+
+If you have any notices or comments about this version,
+Please send it to the mail or the bulletin board of HSP.
+
+
+license
+
+The copyright of HSP3IMP.DLL belongs to onion software.
+onion software is responsible for any damage caused by this program.
+We do not guarantee. Use at your own risk.
+
+HSP3IMP.DLL is basically attached under the BSD license regardless of whether it is paid or free of charge.
+It can be duplicated, reorganized and redistributed.
+However, because it uses the same runtime as HSP3.EXE
+When distributing, specify the HSP license notation (hsplicense.txt)
+Please note that you need to.
+(For explicit license notation, include hsplicense.txt in the distribution or
+Or make sure to include the same content as hsplicense.txt in the document. )
+
+Feel free to develop scripts and software that support HSP3IMP.DLL.
+No thank you. It can be published and distributed regardless of commercial or non-commercial use.
+
+
+-------------------------------------------------------------------------------
+                                                HSP users manual / end of file 
+-------------------------------------------------------------------------------

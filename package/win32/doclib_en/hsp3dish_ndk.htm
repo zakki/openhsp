@@ -1,0 +1,880 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html lang="ja">
+<head>
+	<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+	<meta http-equiv="Content-Language" content="ja">
+	<meta http-equiv="Content-Style-Type" content="text/css">
+	<meta http-equiv="Content-Script-Type" content="text/javascript">
+	<meta name="author" content="OpenHSP3 Project">
+	<meta name="keywords" content="HSP3,HotSoupProcessor3,HSP3Dish,android,ndk,google">
+<meta name = "description" content = "Information about HSP3Dish android (NDK) version">
+	<link href="../main.css" rel="stylesheet" type="text/css" media="all">
+<title> HSP3 Dish android (NDK) version programming guide </title>
+</head>
+<body>
+	<div id="CONTAINER">
+<!-Header->
+	<p id="COPY">HSP : HSP3Dish / onion software 2021(c)</p>
+	<img src="hsp3dish.jpg" width="640" height="200" alt="title">
+<h1> HSP3 Dish android (NDK) version programming guide </h1>
+
+<!-Table of Contents->
+	<ol>
+<li> <a href="#ABOUT"> Android version HSP3Dish overview </a> </li>
+<li> <a href="#PREPARE"> Preparing the environment </a> </li>
+<li> <a href="#SDKSETUP"> Platform API installation </a> </li>
+<li> <a href="#DHSETUP"> HSP3Dish Helper settings </a> </li>
+<li> <a href="#DHNEWPROJ"> Create a new project </a> </li>
+<li> <a href="#LIBFOLDER"> About the library folder </a> </li>
+<li> <a href="#DHPROJ"> Project build </a> </li>
+<li> <a href="#SAMPLE"> Sample project </a> </li>
+<li> <a href="#RUNPROJ"> Transfer and execution to the actual machine </a> </li>
+<li> <a href="#DATAFILE"> Data file preparation </a> </li>
+<li> <a href="#SYSINFO"> Get system information </a> </li>
+<li> <a href="#EXECTASK"> Task (activity) call </a> </li>
+<li> <a href="#DISHINI"> About the hsp3dish.ini configuration file </a> </li>
+<li> <a href="#SCALE"> About manual setting items </a> </li>
+<li> <a href="#NETWORK"> About network communication </a> </li>
+<li> <a href="#RELEASE"> Release build </a> </li>
+<li> <a href="#HGIMG4"> About the HGIMG4 project </a> </li>
+<li> <a href="#DEVCONTROL"> About device control </a> </li>
+<li> <a href="#ADMOB"> AdMob ad serving </a> </li>
+<li> <a href="#FONTMES"> mes, print command </a> </li>
+<li> <a href="#NOTICE"> Notes and restrictions for android version </a> </li>
+<li> <a href="#NEWVER"> Android version will be updated </a> </li>
+	</ol>
+
+<h2 id = "ABOUT"> Android version HSP3Dish overview </h2>
+	<p>
+The android version of HSP3Dish is a runtime of HSP3Dish that runs on android OS-equipped models (smartphones, tablets, etc.).
+It is possible to reproduce the functions supported by HSP3Dish for Windows on android OS.
+(The android version of HSP3Dish is intended to execute the Windows version of the script, and does not reproduce the HSP3 development system itself on android.)
+	<br>
+In this manual, we will explain how to use the android version and points to note.
+	<br>
+	<br>
+Currently, in order to build a file that can be executed on android, it is necessary to set the environment for development. There is no cost to build a development environment. All can be prepared for free.
+These work on Windows and you can check the operation on the connected android device.
+	<br>
+The HSP3Dish Helper tool is included to assist you in building with HSP3Dish.
+This makes it possible to build for android relatively smoothly.
+	</p>
+
+	<p>
+In order to operate on the actual android machine, the following is required.
+	<ul>
+<li> android development environment (SDK)-> <a href="https://developer.android.com/studio/index.html" target="_blank"> [Download site] </a>
+	<ul><p>
+You only need to get the command line tools from <a href="https://developer.android.com/studio/index.html#downloads" target="_blank"> Download Options </a> There is.
+However, after <b> SDK Tools, Revision 25.3.0 (March 2017 version), the command line tools (android command) required for build are no longer included. </b> You can download the latest version of the previous version from the following URL, so please use that.
+(In future versions, we plan to switch to builds with Android Studio instead of command line tools.)
+	<ul><p>
+<a href="https://dl.google.com/android/repository/tools_r25.2.5-windows.zip" target="_blank"> Android SDK Tools, Revision 25.2.5 (January 2017) [Download Link] < / a>
+	</p></ul>
+Install the contents of the zip archive in any folder. The recommended folder is "c: \\ android \\ android-sdk". <br>
+(You should be able to retrieve the "tools" folder from the SDK Tools. Make sure it looks like "c: \\ android \\ android-sdk \\ tools")
+
+	</p></ul>
+<li> JDK (Java Development Kit)-> <a href="http://www.oracle.com/technetwork/java/index.html" target="_blank"> [Download Site] </a>
+	<ul><p>
+Please install the JDK (Java Development Kit). JRE8 + JDK8 is recommended. <br>
+* JDK7 (ver1.7) is not recommended because the apk file is not signed correctly.
+* If you are in a 64-bit environment, please use the 64-bit version. The 32-bit version is recommended only if the SDK Tools are for a 32-bit environment.
+	</p></ul>
+<li> Android NDK (Native Development Kit) Development Environment-> <a href="https://developer.android.com/ndk/downloads/index.html" target="_blank"> [Download Site] </a >
+	<ul><p>
+Unzip the latest version of the Windows zip archive to any folder. The recommended folder is "c: \\ android \\ android-ndk ~". <br> (The confirmed operation versions are r12b, r14, r17c. Versions older than r10 are not supported.) <br>
+
+* If you are in a 64-bit environment, please use the 64-bit version. The 32-bit version is recommended only if the SDK Tools are for a 32-bit environment.
+	</p></ul>
+<li> Apache Ant (development aid tool)-> <a href="http://ant.apache.org/" target="_blank"> [Download site] </a>
+	<ul><p>
+Unzip the latest version of the zip archive to any folder. The recommended folder is "c: \\ android \\ apache-ant ~". <br>
+The recommended version of ant is 1.9.4 or later.
+	</p></ul>
+	</ul>
+	</p>
+	<ul><img src="hsp3dish/s_and2.jpg"><br></ul>
+	<br>
+	<p>
+If you unzip the archive to the recommended folder, you will see something like the above. (Use alphabetic characters only, no spaces in the folder name)
+	</p>
+
+<h2 id = "DHSETUP"> HSP3 Dish Helper settings </h2>
+	<p>
+Launch HSP3Dish Helper (hsp3dh.exe) in the HSP installation folder (must be updated with the latest version of the HSP3Dish development set).
+	<br>
+	</p>
+	<ul><img src="hsp3dish/s_and1.jpg"><br></ul>
+	<br>
+	<p>
+On the screen displayed by pressing the "Option" button, set the location of the installed folder such as android development environment (SDK).
+	</p>
+	<ul><img src="hsp3dish/s_and5.jpg"><br></ul>
+	<br>
+	<p>
+If it is installed in the recommended folder, it will have the above settings.
+	<br>
+The final "Project" folder setting indicates the starting point of the project folder created when building the app for android. The recommended folder is "c: \\ android".
+	</p>
+
+<h2 id = "SDKSETUP"> Platform API installation </h2>
+	<p>
+First, install the Platform API required for the build.
+You can start HSP3Dish Helper (hsp3dh.exe) and start it from the "SDK Manager" button on the "Options" tab.
+	</p>
+	<ul><img src="hsp3dish/s_and_sdkman.jpg"><br></ul>
+	<br>
+	<p>
+This tool allows you to install the required APIs. (Must be connected to the net)
+	<br>
+A checkbox for the API corresponding to each version is displayed in the form of "Android 10 (API 29)".
+Be sure to check "Android SDK Tools", "Android SDK Platform-tools", "Android SDK Build-tools" (latest Rev.) and "Android 10 (API 29)".
+(The API version indicates the level of API that can be used in the program, and it has nothing to do with the version of the device to install. Normally, if you install "Android 10 (API 29)", it can be operated on most devices. I will.)
+	<br>
+Click the "Install packages ..." button to download and install.
+"Installed" is added to the installed items.
+	<br>
+	<br>
+(If you use it in an environment where you cannot connect to the Internet for some reason, use a place where you can temporarily connect to the Internet.
+After installation, if you prepare the android development environment (SDK) folder itself, there is no problem with the build. )
+	</p>
+
+<h2 id = "DHNEWPROJ"> Create a new project </h2>
+	<p>
+Launch HSP3Dish Helper (hsp3dh.exe) and press the "android" button at the bottom center to enter android build mode.
+	<br>
+	</p>
+	<ul><img src="hsp3dish/s_and6.jpg"><br></ul>
+	<br>
+	<p>
+The above dialog for creating a new project is displayed. (If it is not a new project, click the "New project" button)
+	<br>
+By setting the following items and clicking the "New" button, the folder of the specified project will be created and you will be ready to build for android.
+When developing an app for android, you must always create one project file for each app. The project folder is created starting from the location set in the setting menu.
+	</p>
+	<ul>
+<li> Project name </li> <br> <p>
+It will be the title name of the project. Specify only English characters that do not include spaces.
+	</p>
+	<li>ID</li><br><p>
+Set the target ID of the build. The target ID is a number that specifies the API version of the SDK. By default, "" android-29 "" (10) is specified. Normally, you do not need to change it. Use the defaults unless you have a specific reason to do so.
+<br>
+If you need another target ID, select the ID from the field displayed by pressing without including the "ID ..." button and enter it.
+	</p>
+	<ul><p><img src="hsp3dish/s_and8.jpg"></p></ul>
+<li> Package name </li> <br> <p>
+It will be the information to identify the application. The package name is required to be unique with other package names.
+It is usually recommended to use the reverse ordering of domains from top-level domains. For example, specify it hierarchically, such as "net.onionsoft.testapp".
+Specify only English characters that do not include spaces in the name. <a href="http://ja.wikipedia.org/wiki/%E3%83%91%E3%83%83%E3%82%B1%E3%83%BC%E3%82%B8_%28Java% Please also refer to 29 "target =" _ blank "> Java package naming convention </a>.
+	<br>
+If you omit the package name, the string automatically generated from the date and project name will be applied.
+	</p>
+<li> Use AdMob </li> <br> <p>
+Please check this when creating an ad distribution app using AdMob.
+Google Play Services and Android Support Library are required. For more information, see AdMob Ad Delivery.
+	</p>
+<li> Do not build ARM64 </li> <br> <p>
+Check this to disable code generation for 64-bit ARM processors.
+Normally, use it without checking it (ARM64 build enabled).
+If you want to run it on an old Android device that is not 64bit, you can shorten the build time by checking it.
+	</p>
+<li> Don't build x86 </li> <br> <p>
+Check this to disable code generation for x86 processors.
+Normally, use it without checking it (x86 build enabled).
+If you want to run on android device with android simulator and x86 processor, please enable x86 build.
+If not, you can shorten the build time by checking it.
+	</p>
+<li> Use HGIM G4 </li> <br> <p>
+Check this if you want to use a script written for HGIM G4.
+For information on creating an HGIMG4 project, refer to the "About the HGIMG4 Project" section.
+	</p>
+<li> Use sensors </li> <br> <p>
+Enable device acceleration and gyro sensor reading.
+If you do not use the sensor, you can reduce battery consumption by unchecking it.
+	</p>
+	</ul>
+
+
+<h2 id = "LIBFOLDER"> About the library folder </h2>
+	<p>
+When creating a new project, the library folder required for build is created. The library folder is created in the project's base (root) folder, which is set as an option. <br>
+The ones created as library folders are as follows.
+	</p>
+	<ul>
+<li> hsplib36 ~ Folder </li> <br> <p>
+Contains the runtime sources needed to build HSP3Dish.
+Different HSP versions use different folder names, such as "hsplib36b1" to avoid conflicts with older libraries.
+	</p>
+<li> gameplay folder </li> <br> <p>
+Contains the source for the gameplay runtime needed to build HGIMG4.
+	</p>
+<li> extlib folder </li> <br> <p>
+Contains the sources for the various libraries needed to build HGIMG4.
+	</p>
+	</ul>
+	<p>
+By starting HSP3Dish Helper (hsp3dh.exe) and pressing the "Update Library" button on the "Options" tab, the contents of the project folder will be overwritten. Please do this when you update or replace the HSP.
+	</p>
+	<p>
+The sources in the hsplib36 ~ folder contain the HSP3Dish runtime sources shared by each project.
+The user can change the source by himself, but please note that the source may be overwritten and updated by updating HSP3Dish helper.
+	</p>
+
+
+<h2 id = "DHPROJ"> Build project </h2>
+	<p>
+Launch HSP3Dish Helper (hsp3dh.exe) and press the "android" button at the bottom center to enter android build mode.
+	<br>
+	</p>
+	<ul><img src="hsp3dish/s_and7.jpg"><br></ul>
+	<br>
+	<p>
+The above project build dialog will be displayed. (If it is not a build, press the "Existing project" button)
+	<br>
+By building the project, the specified HSP script and data file will be output as a format (apk file) that can be executed by android.
+In the development of the android application, the final output result is the apk file that summarizes all the programs and data for execution.
+	<br>
+The items to be set in the dialog are as follows.
+	</p>
+	<ul>
+<li> Source script </li> <br> <p>
+Normally, leave this item blank and place the HSP script (.hsp) used by the project in the "hsp" folder under the project folder.
+(If there are multiple HSP scripts, the file named "main.hsp" has priority.)
+If you want to specify the script file directly without using the "hsp" folder, you can select the file by pressing the "Browse" button of the source script item. <br>
+In either case, the HSP script (.hsp) must always be a script written for HSP3Dish.
+If the target script does not exist, the source script will not be converted. <br>
+If the "hsp3dish.ini" file exists in the folder, the settings such as screen size and scaling will be reflected. For more information, see the section About the hsp3dish.ini configuration file.
+	</p>
+<li> Data file (dpm) </li> <br> <p>
+Specifies the dpm file that contains the data referenced by the script. The dpm file is the format used by HSP, and multiple files are packed into one dpm file. (By pressing the "Create ..." button, you can pack all the files in the specified folder into a file called data.dpm and specify that file.) <br>
+<b> * It has been confirmed that the dpm file is not recognized correctly on android9 or later OS. We plan to support it in future versions, but currently it is recommended to use the assets folder instead of the dpm file. <br> </b>
+If the data file specification is blank, the dpm file will not be referenced.
+For more information, see <a href="#DATAFILE"> Preparing the data file </a>.
+	</p>
+<li> Project name </li> <br> <p>
+Select the project you want to build. A folder for your project has been created and you can choose one of the ones that are ready to build.
+(Pressing the "Update" button will search the project folder again.)
+	</p>
+	<p>
+After specifying items such as the project name, click the "Build" button to start the build. It automatically converts HSP source scripts, compiles NDK, and generates packages.
+	<br>
+The result of the build is displayed in the console window.
+	</p>
+	<ul><img src="hsp3dish/s_and9.jpg"><br></ul>
+	<p>
+When it ends normally, the message "Completed" is displayed, and the apk file is generated in the bin under the project folder.
+	<br>
+By pressing the "Clean" button, you can discard the built data and initialize the project folder. If you want to build the whole thing again, please discard the data by "cleaning" once.
+	</p>
+	</ul>
+
+<h2 id = "SAMPLE"> Sample project </h2>
+	<p>
+	<img src="hsp3dish/s_block3.jpg" style="float:right;">
+The sample / hsp3dish folder contains sample scripts for using HSP3Dish.
+Specify the HSP3Dish sample (block3.hsp) of breakout in the source script,
+You can run the build leaving the data file (dpm) blank.
+	</p>
+	<br clear="all">
+
+<h2 id = "RUNPROJ"> Transfer and execution to the actual machine </h2>
+	<p>
+After building the project, you can transfer it to the actual android machine or simulator to check it.
+(When running on the simulator, start "AVD Manager" from the "Options" tab of HSP3Dish helper, and set and start the simulator to use it.)
+	<br>
+Transfer (install) the pre-built apk file by connecting the actual android device via USB and pressing the "Transfer" button while it is recognized by the OS.
+After that, execute the transferred application from the application list.
+	<br>
+The connection settings of the actual android device differ depending on the device model. Please refer to the following sites.
+	</p><ul>
+
+
+<li> <a href="http://www.atmarkit.co.jp/ait/articles/1602/19/news044.html" target="_blank"> Turn on "Developer Options" [@ IT] </a> </li>
+	</ul><p>
+Even if you cannot transfer to the actual machine, you can transfer the apk file generated by the build via the net or USB memory, install it, and check the execution.
+	<br>
+You can display the execution log by pressing the "Logcat" button. You can check the error and initialization message from HSP when transferring to the actual machine and executing.
+	</p>
+
+<h2 id = "DATAFILE"> Data file preparation </h2>
+	<p>
+The data file referenced by the script can be prepared in two ways.
+One is to copy the files to the assets folder inside the project directory. Basically, use this method.
+The assets folder can contain all the files used for reading, including image files. <br>
+However, please note that unlike Windows, the file name is case-sensitive, so you need to write the file name correctly.
+<br><br>
+The other method is to copy the file to the data folder (generate data.dpm) set in the "Data file (dpm)" item and use it. <br>
+
+<b> * It has been confirmed that the dpm file is not recognized correctly on android9 or later OS. We plan to support it in future versions, but currently it is recommended to use the assets folder instead of the dpm file. <br> </b>
+
+If you want to use data or encryption that you don't want people to see, make sure to use the data folder in data.dpm.
+However, please note that sound files (wav, mp3, etc.) are not recognized.
+Also, please note that reading from a file pack by data.dpm has the same restrictions as the HSP packfile specification (file name length is 12 characters or less).
+Be sure to put the sound files in the assets folder. <br>
+	</p>
+
+<h2 id = "SYSINFO"> Get system information </h2>
+	<p>
+It is now possible to get the OS version and device name using the sysinfo function.
+You can get a string like "android 2.3.3" with sysinfo (0). This makes it possible to determine the OS and version currently running in the source. <br>
+You can also get the device name with sysinfo (2). Currently, other items in the sysinfo function are not supported.
+	</p>
+
+<h2 id = "EXECTASK"> Task (activity) call </h2>
+	<p>
+Other tasks (activities) can be called by the exec instruction.
+	</p>
+	<ul><pre>
+exec "package name", 0, "class name"
+	</pre></ul>
+	<p>
+If the second parameter (execution mode) is 0, it depends on the "package name" and "class name".
+Specifies the task to perform.
+If you need to unlock the security, describe the class to be started in <intent-filter> of "AndroidManifest.xml".
+	</p>
+	<p>
+An easier way to do this is to call the app by specifying the URI.
+	</p>
+	<ul><pre>
+exec "URI string", 16
+	</pre></ul>
+	<p>
+For example, if "http://hsp.tv" is specified for the URI, the default web browser will be opened and displayed as the URL.
+Start the dialer with "tel: 123456789". There are various other calling methods supported by the OS.
+	</p>
+
+<h2 id = "DISHINI"> About the hsp3dish.ini configuration file </h2>
+	<p>
+If there is a setting file "hsp3dish.ini" in the "hsp" folder (the folder where HSP scripts are installed) in the project folder, that setting will be reflected at build time. <br>
+"Hsp3dish.ini" is a file to refer to the settings such as screen size when executing on Windows. See the <a href="hsp3dish_prog.htm#INIFILE"> HSP3Dish Programming Manual </a> for more information.
+By writing like "parameter name = setting value", the setting will be reflected when building android.
+	</p>
+	<ul><pre>
+Parameter name Setting contents
+		----------------------------------------
+wx screen X (horizontal) size
+wy screen Y (vertical) size
+autoscale autoscaling value
+	</pre></ul>
+	<p>
+If you want to adjust the screen scaling automatically, set the auto scaling value like "autoscale = 0".
+You can scale the drawn screen size appropriately and display it on the current screen. <br>
+The details of the automatic scaling value are as follows.
+	</p>
+	<ul><pre>
+0: Optimal size that fits on the entire screen (aspect ratio is maintained)
+1: Scale based on the size in the X direction (aspect ratio is maintained)
+2: Scale based on the size in the Y direction (aspect ratio is maintained)
+3: Ignore the aspect ratio and display it on the entire screen
+	</pre></ul>
+	<p>
+The orientation of portrait (vertical screen) and landscape (horizontal screen) is automatically set according to the specified screen size.
+	<br>
+If "hsp3dish.ini" does not exist, or if the settings are not written, no particular changes will be made.
+If you want to set manually without using the "hsp3dish.ini" file, read the item "About manual setting items".
+	</p>
+
+<h2 id = "SCALE"> About manual setting items </h2>
+	<p>
+By editing the main.cpp source in the jni folder, you can make various settings related to HSP3Dish. <br>
+<b> Normally, prepare the setting file "hsp3dish.ini" in the "hsp" folder and set it. This section describes how to modify the source code and set it manually. </b> <br>
+Modify the following line in the source code (near 160 lines) that starts with "static void engine_handle_cmd".
+	</p>
+	<ul><pre>
+		//hgio_view( 480, 320 );
+		//hgio_scale( 1.0f, 1.0f );
+		//hgio_autoscale( 0 );
+	</pre></ul>
+	<p>
+Items that start with "//" are commented out and do not work.
+By default, scaling is not set, so it should look like the above. <br>
+	</p>
+	<ul><pre>
+		hgio_view( 480, 320 );
+	</pre></ul>
+	<p>
+First, delete the "//" to enable the hgio_view line. Set the original screen size (resolution at which the script operates) using hgio_view. The above example shows that the horizontal size is 480 and the vertical size is 320.
+	</p>
+	<ul><pre>
+		hgio_scale( 2.0f, 2.0f );
+	</pre></ul>
+	<p>
+If you want to display at the specified magnification, enable the hgio_scale line. With hgio_scale, the original screen size is displayed at the specified magnification. Use this if you want to fix the magnification. In general, we recommend using hgio_autoscale.
+	</p>
+	<ul><pre>
+		hgio_autoscale( 0 );
+	</pre></ul>
+	<p>
+If you want the screen scaling to be adjusted automatically, enable the hgio_autoscale line. With hgio_autoscale, the drawn screen size is scaled appropriately and displayed on the current screen. <br>
+The numbers in parentheses allow you to specify several scaling methods.
+	</p>
+	<ul><pre>
+0: Optimal size that fits on the entire screen (aspect ratio is maintained)
+1: Scale based on the size in the X direction (aspect ratio is maintained)
+2: Scale based on the size in the Y direction (aspect ratio is maintained)
+3: Ignore the aspect ratio and display it on the entire screen
+	</pre></ul>
+	<p>
+Scaling settings are made at startup. It cannot be changed while the script is running.
+	</p>
+	<ul><pre>
+		hgio_uvfix( 1 );
+	</pre></ul>
+	<p>
+Corrects the phenomenon that adjacent pixels are blended when the texture is enlarged.
+Normally, it is not necessary to specify this option, but please try it when the texture is not displayed correctly due to screen scaling etc. <br>
+If the number in parentheses is other than 0, the correction will be ON. If it is 0, the correction will be OFF.
+	</p>
+
+
+<h2 id = "NETWORK"> About network communication </h2>
+	<p>
+It is possible to perform network communication using commands such as httpload and httpinfo on android.
+However, in android8.0 or later, due to the OS specifications, only https access (encrypted communication) is allowed.
+http access is basically prohibited. <br>
+For example, if you want to access "http://www.onionsoft.net", go to "https://www.onionsoft.net"
+By changing it, communication becomes possible.
+(Please think that access to an unspecified http server is basically impossible) <br>
+Access via https is possible depending on the specifications on the server side.
+There are things you can't do. In that case, add the "network_security_config.xml" file
+It is possible to communicate by allowing http access only to a specific URL (domain). <br>
+You can register the domain of http communication destination for each project.
+First, create a new "network_security_config.xml" file and under the project folder
+Place it in res / xml. Here, please describe the following contents.
+	</p>
+<ul> Contents of "network_security_config.xml" <br> <br>
+	<pre>
+	&lt;?xml version="1.0" encoding="utf-8"?&gt;
+	&lt;network-security-config&gt;
+	    &lt;domain-config cleartextTrafficPermitted="true"&gt;
+        	&lt;domain includeSubdomains="true">www.onionsoft.net&lt;/domain&gt;
+	    &lt;/domain-config&gt;
+	&lt;/network-security-config&gt;
+	</pre></ul>
+	<p>
+In the above example, "www.onionsoft.net" is specified as an accessible domain.
+Describe the required domain here. You can configure multiple domains if you wish. <br> <br>
+Next, edit "AndroidManifest.xml" in the project folder and add the "& lt; application ~" line.
+Please rewrite as follows.
+	</p>
+	<ul>
+	<pre>
+	&lt;application android:label="@string/app_name" android:icon="@drawable/ic_launcher"<br>
+	 android:networkSecurityConfig="@xml/network_security_config"&gt;
+	</pre></ul>
+	<p>
+With the above, http access is possible only for the registered domain. <br>
+Since it is an auxiliary method to the last, it is desirable to access https as much as possible.
+Please remember.
+	</p>
+	</ul>
+
+
+<h2 id = "RELEASE"> Release build </h2>
+	<p>
+You can generate a signed apk file by doing a release build from HSP3Dish Helper. This makes it possible to register the created app on Google Play (Android Market).
+The general procedure for publishing is as follows.
+	</p>
+	<p><b>
+* After 2019/08/01, API28 (android9) is required for SDK for apps registered on Google Play.
+Please note that the application to be released and built must be built by installing the SDK of API 28 or later. </b>
+	</p>
+	<ul>
+<li> Register as a developer on Google (paid registration is required to distribute the app) </li>
+<li> Create a certificate (keystore) for signing </li>
+<li> Perform a release build with HSP3Dish Helper </li>
+<li> Upload from Android Developer Console </li>
+	</ul>
+	<p>
+I will explain step by step.
+	</p>
+	<ul>
+<li> Register as a developer with Google </li>
+	<pre>	<a href="http://developer.android.com/">http://developer.android.com/</a></pre>
+	<ul>
+	<p>
+Open the android developer page and select the publish details page.
+Sign in with your Google account and enter the developer information appropriately to register. <br>
+(Enter the phone number including the country code. In Japan, it is a rule to add "81" at the beginning and omit the "0" at the beginning of the area code. "03-1234-5678" In that case, it will be "+ 81-3-1234-5678".) <br>
+Next, use Google Checkout to settle your registration. You can make payments using a credit card, etc. <br>
+When all is done, you will be able to access the Android Developer Console page.
+If you want to register a paid app, you need to set up account information such as a bank account.
+	</p>
+	</ul>
+<li> Create a certificate (keystore) for signing </li>
+	<ul>
+	<br><p>
+First, start HSP3Dish Helper and open the new project page on the android tab.
+Then press the "Create KEY" button. (The key name can be left as "hspapp") <br>
+A command prompt screen will open, asking for information on the following items. Enter them from the keyboard. It is recommended to enter all in half-width English characters.
+	</p>
+<pre> ・ Password
+·Reenter password
+・ First and last name
+・ Organizational unit name (department / department name)
+・ Organization name (company / organization name)
+・ City name or area name (city name)
+・ State name or local name (prefecture name)
+・ Country code (Enter 81 for Japan)
+・ Are you sure? (Enter "y")
+-Key password (enter Enter) </pre>
+	<p>
+This will create a "hspapp.keystore" file in the root of your project folder.
+Please do not delete this file and keep it in a safe place as it is necessary for signing the app.
+	</p>
+	</ul>
+<li> Perform a release build with HSP3Dish Helper </li>
+	<br><p>
+Open the existing project page in the android tab of HSP3Dish Helper.
+Select the project you want to build and perform a normal build to confirm that it works properly. <br>
+Then press the "Release" button. Run the release build of your app and sign it.
+At this time, the command prompt screen will open and you will be asked for a password. Enter the password you entered when you created "hspapp.keystore". <br>
+With the above, the file of "project name.apk" is generated in the bin folder of the project.
+	</p>
+<li> Upload from Android Developer Console </li>
+	<br><p>
+On the Android Developer Console page, add a new app and upload the generated "project name.apk" file.
+(The files with project name-debug.apk and project name-release.apk are unsigned and will be invalid.) <br>
+When registering on Google Play, you need to set introductory text, screenshots, support information, etc. <br>
+Publish the app to the public by activating the uploaded apk file and pressing the publish button. (There is a delay of several hours before it is actually released) <br>
+The published information can be modified at any time from the Android Developer Console.
+If you want to update the file, please do a release build again, replace the apk file and then activate it.
+However, you need to increase the version number in order to update. Please update the values ​​of the android: versionCode and android: versionName items in the "AndroidManifest.xml" file used by the project before performing the release build.
+	</p>
+	<br><p><b>
+* In the new android SDK, the zipalign tool used for signing is included in a different folder. If you get the error "No zipalign tools" when you press the "Release" button, copy the latest "zipalign.exe" file under build-tools in the SDK folder under tools in the SDK folder. please.
+	</b></p>
+	</ul>
+
+
+<h2 id = "HGIMG4"> About the HGIMG4 project </h2>
+	<p>
+Basically, you can use HGIM G4 script with the same specifications as the Windows version. <br>
+	</p>
+	<ul><img src="hsp3dish/pronama3d.png"><br>
+Kei Kurui (Professional student) (C) Pronama LLC
+	</ul>
+	<br>
+	<p>
+The HGIMG4 project takes a very long time to build for the first time.
+Also, because it uses the OpenGL / ES2 function, it may not work or may be slow depending on the environment and model of the android terminal. <br>
+In HGIMG4, files such as res folder and shader are always required at startup.
+From the "res folder" in the "sample / hgimg4" folder of HSP, to the HGIMG4 project folder for android
+Copy it under "assets". (The folder structure is "assets / res / ...") <br>
+The minimum required files are as follows.
+	</p>
+	<pre>
+		res/font.gpb
+Shader files in the res / shaders folder
+	</pre>
+	<p>
+Please note that the following functions are not supported. It will be supported in a future version.
+	</p>
+	<ul>
+<li> Screen size specification and scaling are not supported (manual setting items such as hgio_view / hgio_scale do not work) </li> <br>
+<li> AdMob display is not supported </li> <br>
+	</ul>
+
+<h2 id = "DEVCONTROL"> About device control </h2>
+	<p>
+It is possible to access Android device-specific functions with commands such as devcontrol. <br>
+	</p>
+	<pre>
+devcontrol "control command", parameter 1, parameter 2, parameter 3
+	</pre>
+	<p>
+Perform device control in the above format.
+On Android devices, the control command specified as a character string recognizes the following.
+(The control command string must match exactly, including case.) <br>
+Note that an error does not occur even if you write a control command that is not recognized.
+	</p>
+	<pre>
+Control command content
+	-------------------------------------------
+vibrate Vibrate operation (parameter 1)
+AdMob Displaying ads with AdMob
+	</pre>
+	<p>
+For example
+	</p>
+	<pre>
+		devcontrol "vibrate",400
+	</pre>
+	<p>
+Instructs the device to perform a vibrate operation. <br>
+The length of vibration (in milliseconds) can be changed by changing the value of the parameter.
+	</p>
+
+
+<h2 id = "ADMOB"> AdMob ad serving </h2>
+	<ul>
+<li> About updating from traditional AdMob </li> <br>
+	<p>
+HSP3Dish 3.5 version does not have this limitation as we are switching to the new AdMob library using Google Firebase.
+If you want to update a project that uses the old AdMob library, recreate the new project.
+	</p>
+	</ul>
+
+	<ul>
+<li> Preparation for ad delivery </li> <br>
+	<p>
+With HSP3Dish, it is possible to create an ad distribution model application using AdMob.
+With proper settings, you will be able to serve ads and earn money from the HSP3Dish app.
+AdMob is a mobile ad distribution mechanism provided by Google. By incorporating this into the app, you can get advertising fees even if it is a free app. <br>
+In order to install AdMob, you need to prepare according to the following procedure. <br> <br>
+
+1. Create an AdMob account
+<br><br>
+Register an account and fill in the required information such as payment information. <br>
+	<a href="https://www.google.co.jp/admob/" target="_blank">https://www.google.co.jp/admob/</a>
+<br><br>
+2. Get unit ID
+<br><br>
+Log in to the AdMob web page and perform "Register new app".
+(It is possible even when the app has not been published on Google Play yet) <br>
+You can get the unit ID by filling in the required items.
+<br><br>
+3. Create a project using AdMob
+<br><br>
+Create a new project. At that time, be sure to check the "Use AdMob" check box.
+Other settings are the same as when creating a normal new project.
+<br><br>
+4. Unit ID registration
+<br><br>
+Edit the "src / tv / hsp / HspActivity.java" file under the project folder.
+	</p>
+<pre>
+		static final String APP_ID = "ca-app-pub-???????????????????????????";
+</pre>
+	<p>
+Look for the line. Replace this APP_ID part with the app ID string you got on your AdMob web page.
+This app ID identifies the publisher of your ad.
+<pre>
+		static final String BANNER_AD_UNIT_ID = "ca-app-pub-???????????????????????????";
+		static final String INTERSTITIAL_AD_UNIT_ID = "ca-app-pub-???????????????????????????";
+</pre>
+	<p>
+Look for the line. For BANNER_AD_UNIT_ID and INTERSTITIAL_AD_UNIT_ID, specify the ad unit ID.
+BANNER_AD_UNIT_ID specifies the ad unit ID used in banner ads.
+INTERSTITIAL_AD_UNIT_ID specifies the ad unit ID used in interstitial ads.
+Use these IDs in your production app.
+<br><br>
+5. Add AdMob display script
+<br><br>
+Make sure to enable AdMob at the right time when you run the script.
+It is recommended to enable it after the loading of image and audio resources such as the title screen and game menu has settled down.
+(AdMob tasks may be delayed when the CPU load is high) <br>
+If you enable AdMob,
+	</p>
+<pre>
+devcontrol "AdMob", 0; Enable AdMob
+</pre>
+	<p>
+Please write in the script. (The "AdMob" string correctly identifies the case)
+In Windows and iOS, this description is ignored, but if you want to execute it only on Android when executing multiple models, you can describe it as follows.
+	</p>
+<pre>
+		getreq v_platform,SYSREQ_PLATFORM
+		if ( v_platform = PLATFORM_ANDROID ) {
+devcontrol "AdMob", 0; Enable AdMob
+		}
+</pre>
+	<p>
+"Devcontrol" AdMob "" starts displaying AdMob at the first execution, and even if it is executed after that
+Since it is ignored, there is no problem even if it is executed many times when the title screen is displayed.
+By default, your ad will appear as a banner at the bottom of the screen.
+(At this time, make sure that the device is connected to the Internet)
+<br><br>
+With the above preparation, you can build an application using AdMob.
+	</p>
+	</ul>
+
+	<ul>
+<li> Build AdMob project </li> <br>
+	<p>
+After the project update is completed, the rest is from the HSP3Dish helper, just like a normal HSP3Dish.
+You can build the project. <br>
+If an error occurs during build, refer to the error message etc.
+Check if there are any problems with the project settings.
+<br><br>
+If the build is successful, you can transfer it to your device to see it run.
+<br><br>
+If you want to check the execution many times, please register the test terminal.
+The registration of the test terminal is specified in the source of the src / tv / hsp / HspActivity.java file. <br>
+Make sure you have the following line:
+Google also recommends using a test ad unit ID. <br>
+	<a href="https://firebase.google.com/docs/admob/android/quick-start?hl=ja" target="_blank">https://firebase.google.com/docs/admob/android/quick-start?hl=ja</a>
+	</p>
+<pre>
+		static final String TestDeviceID = "********************************";
+</pre>
+	<p>
+In the operation check on the device, it is necessary to enter the device ID in the "**** ~" part.
+(For emulators, specify AdRequest.DEVICE_ID_EMULATOR instead of "**** ~".) <br>
+The device ID of the terminal is displayed in the log in the device monitor when AdMob is displayed.
+	</p>
+<pre>
+"To get test ads on this device, call adRequest.addTestDevice ("******************************** "); "
+</pre>
+	<p>
+Message will be played, so you can check it there.
+The device monitor can be started by pressing the "Device monitor" button on the "Options" tab of HSP3Dish Helper.
+You can see more detailed logs than LogCat.
+(You will also see an ad display error and a message about the problem)
+	</p>
+	</ul>
+
+	<ul>
+<li> About interstitial advertising </li> <br>
+	<p>
+You can display interstitial ads using the full screen. <br>
+<pre>
+devcontrol "AdMob", 16; Show interstitial ads
+</pre>
+	<p>
+Interstitial ads will be displayed once each time you request a display.
+It can also be used in combination with regular banner ads, allowing for a wider range of uses.
+	</p>
+	</ul>
+
+	<ul>
+<li> App release </li> <br>
+	<p>
+Apps that support AdMob display can be built in the same way as regular HSP3Dish apps and distributed from Google Play.
+Don't forget to remove the test device registration code at the time of release.
+	</p>
+<pre>
+     		.addTestDevice(TestDeviceID)
+</pre>
+	<p>
+This line is for registering the test terminal.
+It is described in two places in the source of the src / tv / hsp / HspActivity.java file. <br>
+If the test is over and you want to release it as a production app,
+	</p>
+<pre>
+     		//.addTestDevice(TestDeviceID)
+</pre>
+	<p>
+Don't forget to modify the code to invalidate the registration by putting "//" at the beginning like.
+	</p>
+	</ul>
+
+
+<h2 id = "FONTMES"> About mes, print command </h2>
+	<p>
+HSP3Dish supports character string drawing of mes and print instructions using the built-in font. (HGIM G4 is not applicable because it draws with font data) <br>
+The font name specified by the font command is ignored and the font size is reflected. Also, the font style only supports standard (0) and bold (1). <br>
+Since the process of acquiring fonts on android is a heavy burden on the system, the content (texture) once drawn is cached on the HSP3Dish side to speed up the process.
+Normally, you should be able to use it without being aware of this mechanism. <br>
+If you want to control the cache function, describe the setting with the setreq instruction. (It does not affect Windows and iOS versions)
+<pre>
+setreq SYSREQ_MESCACHE_MAX, 64; Specifies the maximum number of cache registrations
+</pre>
+The internal operation of the cache is that if there is a character string with exactly the same content as the message once displayed,
+The previous data will be reused and displayed.
+However, the cache that was not displayed for 8 frames will be discarded. <br>
+The maximum number of caches that can be retained is 64 by default.
+The cache setting range is 0 to 128 as a guide, and even if the value is large, it does not necessarily mean that the speed will be increased.
+Please understand that message display is a costly process for the purpose of suppressing a noticeable slowdown. <br>
+If the maximum number of cache registrations is set to 0, the cache will not speed up.
+	</p>
+
+
+<h2 id = "NOTICE"> Notes and restrictions for android version </h2>
+	<ul>
+<li> Information that can be entered </li>
+	<p>
+In addition to reflecting the tapped coordinates in mousex and mousey, you can get the ON / OFF of the click (tap) by the stick command.
+In addition, advanced touch information (multi-touch, etc.) can be acquired by using the mtlist and mtinfo commands.
+Multi-point touch information (multi-touch) can only be obtained if the device supports it.
+Please note that some Android devices may not support multi-touch on your hardware.
+	</p>
+<li> About image format </li>
+	<p>
+The following formats can be used for images loaded by the celload and picload commands.
+PNG format is recommended when using the alpha channel.
+	<ul>
+<li> JPEG baseline (progressive JPEG is not supported) </li>
+<li> PNG (1bit, 2bit, 4bit, 8bit, 24bit, 24bit + alpha channel format supported) </li>
+<li> TGA (subset) </li>
+<li> BMP (monochrome, RLE compression not supported) </li>
+<li> PSD (read only RGB 24bit) </li>
+	<li>GIF</li>
+	<li>HDR (radiance rgbE format)</li>
+	<li>PIC (Softimage PIC)</li>
+	</ul>
+	</p>
+<li> About gmode constraints </li>
+	<p>
+The current version does not support gmode 6 (color subtraction).
+This is a limitation only for the android (NDK) version. We plan to support it in future versions.
+	</p>
+<li> About image size </li>
+	<p>
+When reading an image whose vertical and horizontal sizes are not 2 ^ n, that is, 1,2,4,8,16,32,64,128,256,512,1024 ..., some overhead will be incurred due to internal conversion.
+(Usually you don't have to worry too much. It requires extra CPU resources when loading a large number of images)
+	<br>
+Image files can be placed in the assets folder inside the project directory.
+	</p>
+<li> Playable sound files </li>
+	<p>
+We have received reports that if the number of buffers read simultaneously by the mmload instruction exceeds 30, it will not be played back correctly. <br>
+This is due to OpenSL / ES restrictions on android, and we plan to fix this issue.
+In a hurry, please keep the number of buffers used by mmload to 30 or less by switching as necessary.
+(Especially when playing music, it is not necessary to play at the same time, so it is better to share one buffer ID) <br>
+In addition, since it is a limitation only on android, there is no problem on Windows and iOS.
+	</p>
+	<p>
+Sounds correspond to files with the extensions ".wav", ".mp3", ".ogg" and ".aac".
+Please note that not all formats are supported for .aac and .ogg.
+".Wav" and ".mp3" are widely supported formats in all hsp3dish including Windows version. <br>
+Be sure to put the sound files in the assets folder inside your project directory. If you include it in data.dpm, it cannot be read from the system side of the OS.
+	</p>
+<li> About screen rotation </li>
+	<p>
+The current version does not support automatic screen rotation during execution. Be sure to create it with specifications that operate with the vertical and horizontal screens fixed. <br>
+If the screen size is specified by the hsp3dish.ini setting file, the vertical screen and horizontal screen are automatically set. <br>
+If you want to set the screen orientation (rotation) manually, you can rewrite AndroidManifest.xml to control it.
+	</p>
+	<pre>
+        &ltactivity android:name="android.app.NativeActivity"
+	          android:screenOrientation="portrait"
+                  android:label="@string/app_name"&gt
+	</pre>
+	<p>
+If the parameter specified in the "android: screenOrientation =" line is "portrait", it is a vertical screen. In the case of "landscape", each is fixed to the horizontal screen.
+	</p>
+<li> About saving data </​​li>
+	<p>
+Data files can be read and written to application-specific folders using the bsave and bload commands.
+If only the file name (half-width English characters) is specified without including "/", the application-specific folder
+(The location indicated by "/ data / data / <your package name> / files") will be accessed.
+This folder is usually set to be inaccessible to applications other than yourself.
+(If the file name starts with "/", the full path is specified.)
+	</p>
+	</ul>
+
+<h2 id = "NEWVER"> Android version will be updated </h2>
+	<p>
+The following features will be added with higher priority in order from the top.
+	</p>
+	<ul>
+<li> Acquisition of various system information </li>
+<li> Camera and browser call support </li>
+	</ul>
+	<p>
+The version upgrade will be announced on the HSP official site HSPTV !, so please check back from time to time.
+	</p>
+
+<!-Footer->
+	<ul id="FOOTER">
+<li> <a href="#CONTAINER"> Return to top of this page </a> </li>
+<li> <a href="../index.htm"> Return to index </a> </li>
+	</ul>
+	<a href="https://www.onionsoft.net/">
+		<img src="onibtn.gif" width="147" height="50" alt="ONION software" id="ONIBTN">
+	</a>
+</div><!-- container -->
+</body>
+</html>

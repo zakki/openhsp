@@ -1,0 +1,674 @@
+------------------------------------------------------------------------------
+HSPDA ver3.5 REFERENCE MANUAL                       HSP : Hot Soup Processor  
+HSP Extension DLL Reference copyright 1999-2017 (c) onion software
+------------------------------------------------------------------------------
+
+・ Introduction
+
+This DLL can be used in various ways by using it with Hot Soup Processor ver3.0 or later.
+It is a plug-in module that can be expanded.
+By using this extension DLL, new instructions are added and various data can be added.
+Access function can be controlled from HSP.
+
+
+・ Installation
+
+The extension plug-in file, HSPDA.DLL, has HSED3.EXE and HSP3.EXE.
+Place it in the same location as the directory.
+(If HSPDA.DLL is not in the same directory as the HSP3.EXE used for execution
+Will result in an error)
+Also, when creating a script, use HSPDA.AS in the same direction as the script.
+Put it in the bird and be sure to add the line "#include" hspda.as "" at the beginning of the script
+please. With the above, the function of HSP has been expanded and explained in this reference.
+You will be able to use the instructions you are using.
+First of all, try running the included sample script.
+You should be able to see a simple usage example of the enhanced functionality.
+
+
+・ About variable data access instruction
+
+The variable data access instruction is a part of the variable data or a part of the variable data when the script is executed.
+It has a function to save and load everything in a file.
+This complicates the management of array variables and module variables.
+You will be able to easily input and output data.
+In HSP, you can use bload and bsave instructions for input / output of a single variable,
+It is possible to store a string type array or multiple variables in one file.
+I could not do it.
+The variable data access instruction is as easy and secure as possible to store variable data.
+Created to support loading.
+(For text file input / output, use the noteload and notesave instructions as before.
+Please use it. The variable data access instruction makes the variable buffer itself unique
+Suitable for reading and writing in file format. )
+
+The hard part is if you want to save all the variable data without thinking
+
+vsave "filename"
+
+Please run the. This alone puts everything in the "filename" file
+Variable information is saved.
+Conversely, if you want to read all variable data from a file,
+
+vload "filename"
+
+Please run the.
+I want to easily add functions such as save / load to my own scripts and tools
+It is a convenient command at times.
+If you want to specify variables individually and save the data in a file,
+
+		vsave_start
+vsave_put variable name
+vsave_put variable name
+vsave_end "filename"
+
+Like, between "vsave_start" and "vsave_end", enter the variable name you want to save.
+Please describe after the vsave_put instruction.
+To read this, it looks like this:
+
+vload_start "filename"
+vload_get variable name
+vload_get variable name
+		vload_end
+
+However, for reading, even if you do not specify the variable name
+Only the variables stored in the file are read, so
+
+vload "filename"
+
+There is no problem even if.
+
+In this way, the data held by the variable and the file are exchanged with each other.
+can do. For details on each instruction, see the reference and
+See help.
+
+Normally, it's okay if you know this much, but with variable data storage
+There are some caveats about the loading mechanism, so keep in mind
+It's okay.
+
+Saving variables saves the contents of variables, including arrays and module variables,
+Clone variables, comobj type, and variant type variables are not included.
+Also, it is possible to save label type variables, but when reading, the label information will be normal.
+Please note that it may not be possible.
+
+The stored variable data is generated as a binary file in its own format.
+The file name including the extension can be given arbitrarily.
+(The recommended extension for the plug-in is ".VAR" or ".HVF".)
+
+"Variable name" and "memory contents managed by variable" are recorded in the saved data.
+It has become. HSPDA plugin always puts variable names in HSP intermediate code
+"#Cmpopt varname 1" is specified in the header to output.
+As a result, the variable name will be changed even when the EXE file or object file is output.
+It is saved internally as data. So if the variable names are the same
+You can also read from variable data saved from a completely different script
+I can do it. To the last, if only the variable name and its contents are recorded
+Please remember.
+"Memory contents managed by variables" also includes information about arrays of variables.
+Includes. All the reserved contents of the array will be saved.
+Also, for the character string type, the entire contents of the buffer are saved.
+Reserved even if only part of the buffer is used as string data
+Saves all memory. (It does not depend on the exit code of the character.)
+
+At the time of reading, the specified variable name and the variable name recorded in the file are
+Data is retrieved only if they match.
+The variable name recorded in the file is not defined at the time of reading
+Please note that there is no such thing. To the last, define even once in the script
+The contents from the file will be assigned to the variables that exist.
+(Even on the side that reads variables, define the variables to be read in advance.
+It means that you need to keep it. Save and load with the same script
+If so, there is no problem. )
+In addition, the module type variable is the time when it was saved and the module name,
+If the number of module variable definitions is not the same, it will not be read.
+
+The variable data access instruction will be updated in the future.
+Code introduction and encryption to identify files for each application
+We plan to offer options such as.
+We are also considering serializing in XML format in the future.
+
+
+揃Change log
+
+	2015/02/13
+
+The sortval, sortstr, sortnote, sortget instructions have been implemented as standard instructions and have been removed from the HSPDA plugin.
+
+	2011/01/17
+
+Fixed a bug that the sortval instruction may freeze (BT # 233)
+
+	2010/10/18
+
+Fixed a bug that an error may occur in sortval.
+
+	2009/7/30
+
+Fixed a bug that the ascending / descending order of sortval is not reflected correctly.
+
+	2009/6/9
+
+Fixed buffer overflow with xnoteadd.
+Fixed a bug that some character strings are not sorted in ASCII code order with sortnote and sortstr.
+Fixed a bug that the number of blank lines increased in sortnote
+
+	2009/5/14
+
+Supports label type changes.
+
+	2007/4/4
+
+Added variable data access instruction.
+
+	2005/6/3
+
+Modified sortnote and sortstr instructions exclusively for HSP3.
+Added rndf_ini, rndf_get, and rndf_geti instructions.
+
+	2002/4/16
+
+Fixed a bug that unrelated double-byte characters are hit in the search.
+Fixed csvflag to work properly.
+Fixed a bug that double-byte character judgment fails with csvstr and csvnote commands.
+
+	2002/3/30
+
+Added delimiter character specification to csvstr and csvnote commands.
+Added csvsel, csvres, csvflag, csvopt, csvfind instructions.
+
+	2000/5/1
+
+Fixed a bug that some sort results are incorrect.
+Fixed a bug that the end of the string buffer is broken by the sortnote instruction.
+
+	1999/12/2
+
+Included with ver2.5.
+
+
+ツキimportant point
+
+HSPDA.DLL is a plug-in file that is used at the same time as HSP3.EXE.
+Please use ver3.2 or above as the HSP to use. For HSP ver2.61 and earlier
+Please note that it is not supported.
+Even if you create an EXE file, put HSPDA.DLL in the same directory as the EXE file.
+It will not work unless it is placed in. Also, you cannot add DLLs to the packfile.
+
+
+繝サ Copyright (license) and contact information
+
+Of the original software (executable file) created by the user using HSP
+The right belongs to the user who created it.
+HSPDA.DLL can be freely distributed regardless of whether it is paid or free of charge.
+There is no obligation to display the copyright.
+Onion software copyrights the original software created by the user
+I have no claim.
+
+The HSPDA plug-in is a copyrighted work of onion software.
+onion software is responsible for any damage caused by this program.
+We do not guarantee. Use at your own risk.
+HSPDA.DLL is compiled with Microsoft Visual C ++ 2005.
+
+
+・ Instruction list
+
+Convert one row of csvstr CSV to an array
+csvnote Convert one line of CSV to memory note
+
+xnotesel Exclusive memory note initialization
+xnoteadd Exclusive memory note item added
+
+csvsel Select the target buffer for CSV search
+csvres Specify CSV search result output buffer
+csvflag Set item flags for CSV search
+csvopt Set CSV search options
+csvfind Perform CSV search
+
+rndf_ini Initialization of real random numbers
+rndf_get Get real random numbers
+rndf_geti Get random numbers
+
+getvarid get variable ID
+getvarname Get variable name
+getmaxvar Get the maximum number of variable IDs
+vsave Save all variables
+vload Load all variables
+vsave_start Start variable storage
+vsave_put Specify variable to save
+vsave_end End of variable save
+vload_start Start reading variables
+vload_get Specify variable to read
+vload_end End of variable loading
+
+
+繝サ Data access command
+
+An instruction set for easily handling various data formats such as text and CSV.
+From CSV format files by combining with memory notepad instructions
+It is possible to retrieve the data.
+
+csvstr p1, p2, p3 Convert one CSV line to an array
+
+p1 = string type array variable name to which the result is assigned
+p2 = string extracted from one CSV line
+p3 = Delimited character code
+
+ツキDescription
+
+Only one line of data extracted from CSV format data,
+Expands to a string type array variable.
+CSV format is text data separated by ",".
+For example, four "," separated by "," such as "a, b, c, d"
+If you have a string, you can use the csvstr instruction
+Like "a.0 =" a "" "a.1 =" b "" "a.2 =" c "" "a.3 =" d ""
+Each element can be assigned to an array variable separately.
+The array variable specified by p1 is always a string type array variable.
+is needed.
+
+Exceeded the number of characters reserved in the array variable and the limit of the array
+The part is ignored. (Error or data corruption
+Will not be)
+
+You can specify the delimiter character with p3.
+If p3 is omitted or set to 0, "," is used.
+You can support tab-delimited csv files by specifying 9.
+
+System variables if an error occurs during instruction execution
+stat will be 1. System variables if converted successfully
+stat will be 0.
+
+
+csvnote p1, p2, p3 Convert one line of CSV to memory note
+
+p1 = string type variable name to which the result is assigned
+p2 = string extracted from one CSV line
+p3 = Delimited character code
+
+揃Description
+
+Only one line of data extracted from CSV format data,
+Expands to a string type variable in memory notepad format.
+CSV format is text data separated by ",".
+For example, four "," separated by "," such as "a, b, c, d"
+If you have a string, you can use the csvstr instruction
+With a memory notepad instruction such as "" a \\ nb \\ nc \\ nd \\ n ""
+Substitute as data to be handled (data separated by "\\ n")
+can do.
+
+You can specify the delimiter character with p3.
+If p3 is omitted or set to 0, "," is used.
+You can support tab-delimited csv files by specifying 9.
+
+System variables if an error occurs during instruction execution
+stat will be 1. System variables if converted successfully
+stat will be 0.
+
+
+xnotesel p1, p2 Exclusive memory note initialization
+
+p1 = Target string type variable name
+p2 = maximum number of items (256 by default)
+
+揃Description
+
+Initializes the exclusive memory note.
+The target variable and the reference count are reset.
+
+Exclusive memory notes are used in memory notepad instructions
+Like the one, long string type data with one item per line
+is. However, exclusive memory notes have only different items (lines).
+Cannot be added.
+Reference counting when trying to add an item that you already have
+Only updated, not actually added. This will
+Storing the same string without duplication, duplicate statistics,
+It can be applied to character string search, etc.
+
+For exclusive memory notes, specify the target variable with xnotesel and
+If necessary, also set the maximum number of items.
+After that, every time the xnoteadd instruction is executed, an exclusive memory note
+Items will be added to the variables of.
+
+
+xnoteadd p1 Add exclusive memory note item
+
+p1 = string added to exclusive memory note
+
+揃Description
+
+Adds an item to the exclusive memory note.
+The item must be a string that does not contain line breaks.
+When executed, the index with the added item will be displayed on the system.
+Assigned to the variable stat.
+
+Items that are already in the exclusive memory note are not added.
+In that case, the items already included in the system variable stat
+The index is assigned and the item's reference count is incremented by one.
+The reference count of an item can be obtained with the sort get instruction.
+
+
+csvsel val, mode Select the target buffer for CSV search
+
+val: Variable name that stores the character string to be searched by CSV
+mode: Delimited character code
+
+揃Description
+
+Select the buffer to be searched for CSV.
+Specify a variable that stores a CSV format or notepad format character string
+can.
+You can specify the delimiter character in mode.
+If mode is omitted or set to 0, "," is used.
+You can support tab-delimited csv files by specifying 9.
+
+
+csvres val Specify CSV search result output buffer
+
+val: Variable name to output CSV search results
+
+揃Description
+
+Specifies the CSV search result output buffer.
+It must be a string type variable with a certain size.
+Secure the size in advance with the sdim instruction etc. according to the expected output result
+Please keep it. Normally, about 32000 bytes is enough.
+If the size of the output result overflows the buffer,
+The search will be interrupted within the specified buffer size, so
+No buffer overflow will occur.
+
+
+csvflag id, val Set item flag for CSV search
+
+id: Item ID
+val: Set value (0 to 255)
+
+揃Description
+
+Set the flag for each item that is the target of CSV search.
+The item id is set to 0 for the leftmost item and 1 to the right for each delimiter.
+It will increase.
+
+
+csvopt p1 Set CSV search options
+
+p1: Optional value
+
+揃Description
+
+Set options for CSV search.
+You can specify the following values: To specify more than one, "+" or "|"
+It can be connected with the operator of.
+
+CCSV_OPT_ANDMATCH AND search
+CCSV_OPT_NOCASE Equalize half-width uppercase and lowercase letters
+CCSV_OPT_ZENKAKU Equalize full-width and half-width
+CCSV_OPT_ADDLINE Add line number to the beginning
+CCSV_OPT_EXPRESSION Regular expression specified (not implemented)
+
+
+csvfind "string", p1, p2 Perform CSV search
+
+"string": Search keyword
+p1: Maximum number of result outputs (0 = unlimited)
+p2: Start index of result output (0 = beginning)
+
+Perform a CSV search.
+Be sure to specify the buffer (csvsel) to be searched and the output destination (csvres).
+is needed.
+Extract CSV rows containing the keyword specified by "string" into the result buffer
+To go. Keywords are specified over multiple lines (memory notepad format)
+can do.
+When the AND search option is entered in the csvopt instruction, all multiple keywords
+Extracts only matching rows. If not, multiple keywords
+It is an OR search that retrieves rows that match any of them.
+
+
+rndf_ini p1 Real random number initialization
+
+p1 (-1): Initialization seed value
+
+揃Description
+
+Initializes real random numbers.
+You can specify the seed (seed value) used for initialization in p1.
+Random obtained from the clock if p1 is omitted or -1 is specified
+The seed value is set.
+Because the real random numbers are initialized when the plugin is initialized,
+It is not always necessary to include the rndf_ini instruction.
+
+
+rndf_get p1 Get real random numbers
+
+p1: Variable name to which a real random number is assigned
+
+揃Description
+
+Get a real random number and assign it to the variable specified by p1.
+Real random numbers are real numbers that are greater than or equal to 0 and less than 1.
+Generated by the Mersenne Twister algorithm.
+
+
+rndf_geti p1, p2 Get random numbers
+
+p1: Variable name to which a real random number is assigned
+p2 (100): Range value of random numbers to be generated
+
+Description
+
+Integer Random number is acquired and assigned to the variable specified by p1.
+Random numbers are integers greater than or equal to 0 and less than the number specified by p2.
+The random numbers obtained here are real random numbers obtained by rndf_get.
+It is generated by the same algorithm (Mersenne Twister) as.
+
+
+-Variable data access command
+
+getvarid p1, "name" Get variable ID
+
+p1: Variable name to which the result is assigned
+"name": variable name
+
+Description
+
+Converts the variable name to the variable ID.
+The variable ID is a number managed inside the HSP system.
+Values starting from 0 are assigned.
+The result is assigned to the variable specified by p1.
+If the variable name does not exist, -1 is assigned.
+
+
+getvarname p1, p2 Get variable name
+
+p1: Variable name to which the result is assigned
+p2: Variable ID
+
+Description
+
+Get the variable name from the variable ID.
+The variable ID is a number managed inside the HSP system.
+Values starting from 0 are assigned.
+The result is assigned to the variable specified by p1.
+If the corresponding variable ID does not exist, an empty string ("") will be displayed.
+It will be substituted.
+
+
+getmaxvar p1 Get the maximum number of variable IDs
+
+p1: Variable name to which the result is assigned
+
+Description
+
+Gets the maximum number of variable IDs currently available.
+The result is assigned to the variable specified by p1.
+The variable ID is a number managed inside the HSP system.
+Values starting from 0 are assigned.
+If the maximum number is 10, the available variable IDs are 0-9.
+
+
+vsave "filename" Save all variables
+
+"filename": filename
+
+Description
+
+Saves all defined variable data to a file.
+The file specified by "filename" is created.
+The saved file is sent by the vload command or vload_start command.
+It can be used to read variable data.
+The vsave instruction sets the contents of all variables to arrays and module variables as well.
+Save including, but cloned variables, comobj type, variant type
+Variables are not included.
+Also, it is possible to save a label type variable, but it is normal when reading.
+Please note that it may not be the label information.
+If successful, the system variable stat is assigned 0.
+If the process is not completed correctly, the system variable stat is non-zero.
+It will be a value.
+
+
+vload "filename" Load all variables
+
+"filename": filename
+
+揃Description
+
+Reads all defined variables from the file.
+The file specified by "filename" is a vsave instruction or
+Variable data must be saved by the vsave_start instruction.
+The vload instruction puts all currently defined variable names into a file
+Search from the stored data and find the one with the same name
+Read.
+Variables that are not saved in the file retain their original contents.
+In addition, the module type variable is the time when it was saved and the module name,
+If the number of module variable definitions is not the same, it will not be read.
+If successful, the system variable stat is assigned 0.
+If the process is not completed correctly, the system variable stat is non-zero.
+It will be a value.
+
+
+vsave_start Start variable storage
+
+揃Description
+
+Starts variable saving by individual specification.
+Be sure to start with the vsave_start instruction and then with the vsave_put instruction
+After specifying the required variables, it is necessary to execute the vsave_end instruction at the end.
+There is.
+Variable saving by individual specification saves arbitrary variable data to a file
+Similar to the vsave instruction, except that it can.
+If successful, the system variable stat is assigned 0.
+If the process is not completed correctly, the system variable stat is non-zero.
+It will be a value.
+
+
+vsave_put p1 Specify variable to save
+
+p1: Variables to save
+
+揃Description
+
+Specify the variable to be saved by individual specification.
+Be sure to execute the vsave_start instruction first.
+Variable saving by individual specification saves arbitrary variable data to a file
+Similar to the vsave instruction, except that it can.
+Saves the contents of all variables, including arrays and module variables,
+Clone variables, comobj type, and variant type variables are targeted.
+No.
+Also, it is possible to save a label type variable, but it is normal when reading.
+Please note that it may not be the label information.
+If successful, the system variable stat is assigned 0.
+If the process is not completed correctly, the system variable stat is non-zero.
+It will be a value.
+
+
+vsave_end "filename" End of variable save
+
+"filename": filename
+
+揃Description
+
+Ends variable saving by individual specification.
+Be sure to execute the vsave_start instruction first.
+When executed, the file specified by "filename" will be created.
+If successful, the system variable stat is assigned 0.
+If the process is not completed correctly, the system variable stat is non-zero.
+It will be a value.
+
+
+vload_start "filename" Start reading variables
+
+"filename": filename
+
+揃Description
+
+Variable reading by individual specification is started.
+Be sure to start with the vload_start instruction and then with the vload_get instruction
+After specifying the required variables, it is necessary to execute the vload_end instruction at the end.
+There is.
+When reading variables by individual specification, arbitrary variable data can be read from a file.
+Similar to the vload instruction, except that it can be read.
+If successful, the system variable stat is assigned 0.
+If the process is not completed correctly, the system variable stat is non-zero.
+It will be a value.
+
+
+vload_get p1 Specify variable to read
+
+p1: Variable to read
+
+揃Description
+
+Specify the variable to be read from the file by individual specification.
+Be sure to execute the vload_start instruction first.
+When reading variables by individual specification, arbitrary variable data can be read from a file.
+Similar to the vload instruction, except that it can be read.
+The vload_get instruction saves the specified variable name in a file
+When searching from the data and there is data with the same name
+Read.
+If it is not saved in a file, the contents of the variable are preserved.
+In addition, the module type variable is the time when it was saved and the module name,
+If the number of module variable definitions is not the same, it will not be read.
+If successful, the system variable stat is assigned 0.
+If the process is not completed correctly, the system variable stat is non-zero.
+It will be a value.
+
+
+vload_end End of variable loading
+
+揃Description
+
+Ends variable reading by individual specification.
+Be sure to execute the vload_start instruction first.
+If successful, the system variable stat is assigned 0.
+If the process is not completed correctly, the system variable stat is non-zero.
+It will be a value.
+
+
+揃Finally
+
+Those who reported bugs in the plugin, pointed out the source error
+We would like to thank Ma_Ts for giving us this.
+
+
+・ About real random numbers
+
+Generation by Mersenne Twister is used to obtain real random numbers.
+For implementation, we used the source code by Makoto Matsumoto and Takushi Nishimura.
+I also referred to the source of muu who suggested the implementation with HSP.
+
+	http://www.math.sci.hiroshima-u.ac.jp/~m-mat/MT/mt.html
+
+	Coded by Takuji Nishimura and Makoto Matsumoto.
+	Copyright (C) 1997 - 2002, Makoto Matsumoto and Takuji Nishimura,
+	All rights reserved.                          
+
+	THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
+	"AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
+	LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR
+	A PARTICULAR PURPOSE ARE DISCLAIMED.  IN NO EVENT SHALL THE COPYRIGHT OWNER OR
+	CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL,
+	EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO,
+	PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR
+	PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF
+	LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING
+	NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
+	SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+
+
+-------------------------------------------------------------------------------
+                                                HSP users manual / end of file 
+-------------------------------------------------------------------------------

@@ -1,0 +1,143 @@
+------------------------------------------------------------------------------
+HSPOGG ver3.4 REFERENCE MANUAL                      HSP : Hot Soup Processor  
+HSP Extension Extension DLL Reference copyright 2007-2014 (c) onion software
+------------------------------------------------------------------------------
+
+・ Introduction
+
+This DLL can be used with Hot Soup Processor ver3 or later.
+Waveform playback using Direct Sound and music data in Ogg Vorbis format
+It is a plug-in that can be played.
+
+HSPOGG features sound feature commands (dmm ~) that can be used with the HGIMG3
+Is equivalent to. When you want to use only the sound function without using the 3D function etc.
+It can be used when you want to combine it with other drawing plug-ins.
+
+
+・ Overview of HSPOGG functions
+
+By using HSPOGG, from simple sound playback to high-quality music playback
+Can be done widely.
+The formats that HSPOGG can handle are as follows.
+
+-WAV format Used for playing short sounds such as sound effects.
+Monaural (1ch) or stereo (2ch),
+It supports 8 / 16bit PCM format.
+Multiple waveforms can be played back at the same time.
+It is possible to get whether any waveform is playing.
+
+-OGG format Supports Ogg Vorbis format waveform compression format.
+Monaural (1ch) or stereo (2ch),
+Supports any bit rate.
+You can specify any loop point and play repeatedly.
+It is possible to get the stream position during playback.
+
+
+・ Installation
+
+The extension plug-in file, HSPOGG.DLL, has HSED3.EXE and HSP3.EXE.
+Place it in the same location as the directory.
+(If HSPOGG.DLL is not in the same directory as the HSP3.EXE used for execution
+Will result in an error)
+Also, put HSPOGG.AS in the same directory as the script, or in the common folder.
+Must have been copied.
+When using HSPOGG, be sure to start the script with "#include" hspogg.as ""
+Please add the line. With the above, the function of HSP is expanded, and this
+You will be able to use the instructions described in the reference.
+(If you want to use it at the same time as the HGIMG3 plugin, you need to specify "hspogg.as".
+There is none. The equivalent function is already included in "hgimg3.as". )
+
+
+揃Change log
+
+	2010/03/17 ( Ver3.21RC4 )
+
+Fixed a bug that freezes when playing time with dmmstat immediately after playing ogg stream on some OS
+Fixed a bug that invalidated when there are double-byte characters in the file name of dmmload
+
+	2010/02/16 ( Ver3.21RC2 )
+
+Fixed a bug that threads may not be released when using the sound function in HSPOGG
+
+	2007/6/1 ver3.1
+
+First version.
+
+
+揃important point
+
+HSPOGG.DLL is a plug-in file that is used at the same time as HSP3.EXE.
+Please use ver3.1 or above as the HSP to use. For HSP ver2.61 and earlier
+Please note that it is not supported.
+Even if you create an EXE file, put HSPOGG.DLL in the same directory as the EXE file.
+It will not work unless it is placed in. Also, you cannot add DLLs to the packfile.
+Also, when embedding data in an exe file, a wav format file can be specified.
+However, you cannot specify an ogg format file (stream data).
+
+
+・ About Ogg Vorbis stream playback
+
+The OggVorbis format is a license-free compressed audio file format.
+Compared to mp3 format, there is no licensing problem and it is not affected by the OS environment.
+Since it can be used, it is suitable for embedded formats such as games.
+
+HSPOGG plays files with the extension ".ogg" by stream
+In addition to being able to support seamless loops to any point
+doing. This makes it easy to incorporate very high quality music.
+You can do it.
+Support for more information on creating and encoding OggVorbis format files
+We do not do this, so please prepare materials and tools separately.
+
+
+・ Copyright and license
+
+The rights of the original software (executable file) created by the user using HSPOGG are
+It belongs to the user who created it.
+However, the HSPOGG runtime has the Xiph.org Foundation for Ogg Vorvis format file decoding.
+You are using the library of, and you need to write the following according to the distribution regulations.
+
+	--------------------------------------------------------------------------------
+I am using the following libraries for Ogg Vorvis format file decoding
+	libvorbis : Copyright (c) 2002-2004 Xiph.org Foundation
+	--------------------------------------------------------------------------------
+
+(License notation should include text containing the above content in the distribution.)
+
+If the above items are met, the original created by the user using HSPOGG.DLL
+Freely communicate, display, distribute, and sell software (executable files) at spot sales, storefronts, etc.
+can. No license fee is required.
+
+The copyright of HSPOGG belongs to onion software.
+onion software does not guarantee any damage caused by this program.
+Use at your own risk.
+You can also freely modify and publish the attached sample script.
+
+HSPOGG.DLL is basically paid or free under the BSD license.
+It can be attached, duplicated, reorganized and redistributed.
+However, please be sure to include the license notation in that case.
+
+
+・ Instruction list
+
+dmmini sound function initialization
+dmmbye sound function termination processing
+dmmreset Reset sound function settings
+Delete dmmdel sound data
+dmmvol Sound data volume setting
+dmmpan Sound data pan settings
+dmmloop Sound data loop settings
+dmmload Sound data loading
+dmmplay Sound data playback
+dmmstop Sound data playback stop
+dmmstat Sound data status acquisition
+
+See help for instruction details.
+As for sound related functions, DirectSound of DirectX 8 or later is used as well as 3D functions.
+I'm using. Compared to the built-in multimedia function of HSP3,
+You can use volume setting, simultaneous playback of multiple sounds, status acquisition, etc.
+You will be able to do it.
+
+
+-------------------------------------------------------------------------------
+                                                HSP users manual / end of file 
+-------------------------------------------------------------------------------

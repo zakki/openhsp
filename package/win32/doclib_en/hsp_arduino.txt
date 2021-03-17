@@ -1,0 +1,198 @@
+------------------------------------------------------------------------------
+HSP REFERENCE MANUAL                                HSP : Hot Soup Processor  
+HSP Extension Module Reference (c) onion software
+------------------------------------------------------------------------------
+
+・ Introduction
+
+arduino.as is based on USB-connected arduino device and firmata protocol
+To control various hardware by performing serial communication
+It is an expansion module.
+
+arduino.as allows you to call the functions of the arduino device from HSP3,
+Various controls can be described by HSP script.
+
+For more information about arduino, please refer to the following page.
+	https://www.arduino.cc/
+
+
+・ Preparation for use
+
+In order to use this module, it is connected to Windows via USB in advance.
+You need to configure your arduino device properly.
+(Basic information about arduino and how to operate it are not explained here.)
+
+1. Prepare an arduino device
+
+You need a device (board) even if nothing else.
+Can be used with arduino, arduino uno, arduino mega and other Arduino IDEs
+Please prepare a compatible board so that it can be connected to Windows.
+
+2. Preparing for serial connection
+
+By installing Arduino IDE, the official tool of arduino,
+You can perform serial communication with a USB-connected arduino device.
+(For compatible boards, you may need to install the driver separately.)
+A serial COM port is assigned when connecting to Windows.
+Keep in mind that they will be numbered according to your environment, such as COM4 and COM5.
+
+3. Upload firmata to your device
+
+For arduino devices to work with the firmata protocol
+Please upload the sketch.
+From the Arduino IDE, "File"-> "Sketch Example"-> "Firmata"->
+Prepare "Standard Firmata" and upload (write to the microcomputer board)
+Please go.
+
+This completes the preparation of Windows and arduino devices.
+
+
+揃How to Use
+
+arduino.as uses the following files.
+Make sure each file is up to date.
+
+hspext.dll-> HSP3 installation folder (same level as hsp3.exe)
+arduino.as-> in common of HSP3 installation folder
+
+hspext.dll is a plugin file that is used at the same time as arduino.as.
+When making the script an executable file, put hspext.dll in the same folder
+Please note that you need to keep it.
+Please use ver3.4 or above as the HSP to use. For HSP ver2.61 and earlier
+Please note that it is not supported. (You cannot add a DLL to the packfile.)
+Even if you create an EXE file, put hidden.dll in the same folder as the EXE file.
+It will not work unless it is placed in.
+
+When using the module, add the following declaration to the beginning of the script.
+
+		#include "arduino.as"
+
+After that, you can use the following functions.
+
+arduino_init port, baud arduino communication initialization
+arduino_bye End of arduino communication
+arduino_exec Execution of arduino reception processing
+delay ms wait time
+pinmode pin, outmode Pin mode setting
+digitalWrite pin, value Digital data output
+analogWrite pin, value Output analog data
+digitalRead pin Read digital data
+analogRead analogpin Read analog data
+analogReport pin, sw Analog data read settings
+digitalReport port, sw Digital data read settings
+analogInterval pin, ms Analog data read interval setting
+When using arduino.as, be sure to call arduino_init first.
+In the arduino_init instruction, enter the COM port number and baud rate parameters.
+Must be specified correctly.
+COM port number communicating with Arduino IDE and firmata
+Please describe the baud rate you are using (usually 57600) appropriately.
+
+The arduino_init instruction initializes serial communication via USB.
+The result of initialization is reflected in the system variable stat.
+If stat is 0, it indicates that the initialization was successful.
+Otherwise, an error has occurred.
+Follow the procedure below to initialize.
+
+; arduino initialization (COM port number, baud rate)
+		arduino_init 5, 57600
+		if stat {
+End if there is an error
+			dialog arduino_error
+			end
+		}
+; Startup check
+	*startup
+		arduino_exec
+		if stat {
+End if there is an error
+			dialog arduino_error
+			end
+		}
+		wait 1
+		if arduino_ready=0 : goto *startup
+
+Successful startup
+mes "Connected to arduino (" + arduino_firm_ver + ")"
+
+
+The arduino_exec instruction monitors serial communication and sends a message from arduino.
+To process. Make sure to run it at regular intervals while the application is running.
+
+After initialization, use instructions such as pinmode, digitalWrite, analogWrite, etc.
+Various outputs can be performed.
+The instruction specifications are based on arduino and firmata.
+
+DigitalWrite is described as follows.
+
+		digitalWrite pin, value
+
+For example, "digitalWrite 13, D_HIGH" sets pin 13 to ON.
+When analog output is performed on pin 9 in PWM mode, it is as follows.
+
+		pinmode 9, MODE_PWM
+		analogWrite 9, 255
+
+The pinmode instruction can specify some modes specified by firmata.
+The following modes are defined as macros.
+
+Mode name Contents
+		--------------------------------
+MODE_INPUT digital input
+MODE_OUTPUT digital output
+MODE_ANALOG Analog output
+MODE_PWM PWM control (output)
+MODE_SERVO Servo control (output)
+
+For the output value of the analogWrite instruction, specify a 1-byte value from 0 to 255.
+"D_LOW" (0) and "D_HIGH" (255) are defined as macro definitions for output.
+
+The digitalRead function is a function that reads the contents of the digital input pin.
+It is possible to read the value into a variable as a function as shown below.
+
+		value=digitalRead(10)
+
+In the above example, the input state of pin 10 is acquired as a variable.
+The result can be a value of 255 (ON) or 0 (OFF).
+
+The analogRead function is a function that reads the contents of the analog input pin.
+
+analogReport 0, 1; Setting to read analog port 0
+value = analogRead (0); Read the actual value
+
+After initialization, use the analogReport instruction to read the specified port
+Please note that you need to get started.
+It is also possible to set the analog port read cycle with the analogInterval instruction.
+
+USB control termination processing is performed by the arduino_bye command.
+This is done automatically at the end of the program, so you usually don't need to call it
+There is none.
+
+
+揃important point
+
+arduino Firmata is based on version 2.5.
+Older Firmata may not work properly.
+
+It is made with an instruction system similar to the script of the arduino IDE,
+Please note that it is not fully compatible.
+Analog pins by analogRead function by default to avoid unnecessary notifications
+Read notification is turned off. Be sure to use the analogReport instruction
+Note that you need to start reading the analog port.
+
+
+ツキChange log
+
+	2016/6/28 ver0.1
+
+First version.
+
+
+繝サ Copyright and license
+
+arduino.as and samples were created by ONION software / onitama.
+The latest version can be obtained from HSPTV !, OpenHSP, etc.
+You are free to modify, distribute, and publish samples and modules without any restrictions.
+
+	arduino Firmata
+	https://www.arduino.cc/en/Reference/Firmata
+

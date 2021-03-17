@@ -1,0 +1,831 @@
+------------------------------------------------------------------------------
+HSPINET ver3.6 REFERENCE MANUAL                     HSP : Hot Soup Processor  
+HSP Extension Extension DLL Reference copyright 2005-2020 (c) onion software
+------------------------------------------------------------------------------
+
+・ Introduction
+
+This DLL can be used with Hot Soup Processor ver3 or later.
+Internet access function of Windows Wininet.dll module and
+Network-related data exchange (character code conversion, various protocols
+Enables features such as encoding / decoding) and encryption.
+By using HSPINET, the following functions are supported.
+
+Internet access via http, ftp protocol
+Communication with CGI and Web API (GET, POST format support)
+Mutual conversion of various character codes (sjis, jis, euc, unicode)
+BASE64 and URL encoding / decoding
+Encryption / decryption in RC4 (Arc Four) format
+Acquisition of hash value in MD5, CRC32 format
+Data input / output in JSON format
+
+
+・ Overview of how to use
+
+When using HSPINET, be sure to start the script with "#include" hspinet.as ""
+Please add the line. With the above, the function of HSP has been extended, and this reference
+You will be able to use the instructions that are being explained.
+First of all, try running the included sample script.
+You should be able to see a simple usage example of the enhanced functionality.
+
+HSPINET.DLL is broadly divided into "http-related instructions", "ftp-related instructions", and "data processing-related instructions".
+It is divided.
+"Data processing related instructions" are for processing data in files and memory.
+It handles hash values such as MD5 and CRC32, and converts to character codes and various formats.
+"Http-related instructions" are initialized by the netinit instruction, and then various instructions are used.
+We will communicate with the http server.
+http related instructions basically download files from the server to the local machine
+It is assumed that it will come.
+To download the file, you need to specify the URL and the file name.
+In URL specification, set the address on the net excluding the file to be downloaded
+I will do it. For example, "http://www.onionsoft.net/hsp/".
+After that, use the netload command, netrequest command, netfileinfo command, etc. to change the file name.
+Specify. For example, if "index.html" is specified, it is set first.
+File from "http://www.onionsoft.net/hsp/index.html" together with URL specification
+It will be downloaded.
+
+"Ftp-related instructions" are initialized by the netinit instruction, and then various instructions are used.
+It is for communicating with the ftp server. Download from ftp server,
+It has many features including uploading.
+
+HSPINET.DLL makes it easy to check and download files on the net.
+It is prepared for file processing.
+For more advanced network operations and unsupported protocols
+Perform socket communication such as HSPSOCK.DLL.
+Also, the current version cannot process multiple streams in parallel.
+
+
+揃Change log
+
+	2019/09/03 ver3.6 beta1
+
+(Reflected modified version by inovia in OpenHSP)
+Supports PUT / DELETE method in http / https request
+
+	2017/9/13  ver3.5β6
+
+(Reflected modified version by inovia in OpenHSP)
+Fixed neturl to be able to specify URL starting with https: //
+Changed so that you can get the error contents with ftp result even if there is an error
+Supports saving binary files
+Removed sample Twitter-related script (because authentication was required)
+
+	2015/05/27 ver3.5β2
+
+(Reflects OpenHSP modification by zakki)
+Fixed a bug that memory was not allocated correctly with the ftpdirlist instruction.
+
+	2012/07/13 ver3.31RC1
+
+Added PASSIVE mode connection option to ftpopen instruction
+
+	2012/5/29  ver3.31β1
+
+Supports acquisition of binary data by netgetv instruction (BT # 240)
+Fixed a bug that FTP port number specification is ignored (BT # 248)
+Added getenv instruction to get environment variables.
+Added getenvprm instruction to retrieve specific information from a string.
+Added getctime instruction to get date and time in asctime format and RFC1123 format.
+	2010/3/16  ver3.21RC3
+
+The HSP calling convention for netexec instructions has been restored as before.
+Reverted dll generation to Visual Studio 2005.
+
+	2010/2/16  ver3.21RC2
+
+All the functions of nkf.dll are included in hspinet.dll.
+(Nkfcnv and nkfguess for HSP are also available)
+Added JSON format support.
+Added Twitter related script to the sample.
+
+	2010/1/28 ver3.21RC1
+
+Added RC4 / BASE64 support.
+Added an email sending script to the sample.
+
+	2009/6/14  ver3.2β4
+
+Extract the downloaded data to memory instead of a file
+Added netgetv, netrequest_get, and netrequest_post instructions.
+Added support for cgi calls in POST format.
+
+	2007/3/9  ver1.2
+
+Fixed a bug that the 4th parameter of ftpopen could not be specified.
+
+	2005/6/29 ver1.1
+
+Added ftp related instructions.
+
+	2005/5/7 ver1.0
+
+First version.
+
+
+ツキimportant point
+
+HSPINET.DLL is a plug-in file that is used at the same time as HSP3.EXE.
+Please use ver3.0 or above as the HSP to use. For HSP ver2.61 and earlier
+Please note that it is not supported.
+Even if you create an EXE file, put HSPINET.DLL in the same directory as the EXE file.
+It will not work unless it is placed in. Also, you cannot add DLLs to the packfile.
+
+
+繝サ License and contact information
+
+Of the original software (executable file) created by the user using HSP
+The right belongs to the user who created it.
+The license is BSD license like HSP.
+You can freely distribute HSPINET.DLL regardless of whether it is paid or free of charge.
+However, as an OpenHSP and cJSON derivative, the following notation is written in the document etc.
+Please write. (There is no obligation to publish the source)
+
+-hspinet license notation (from here) ------------------------------------------ ---
+
+  OpenHSP Copyright (c) 1997-2017, Onion Software/onitama.
+  NKF Copyright (C) 1987, FUJITSU LTD. (I.Ichikawa).
+  NKF Copyright (C) 1996-2009, The nkf Project.
+  cJSON Copyright (c) 2009 Dave Gamble
+ 
+  Permission is hereby granted, free of charge, to any person obtaining a copy
+  of this software and associated documentation files (the "Software"), to deal
+  in the Software without restriction, including without limitation the rights
+  to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+  copies of the Software, and to permit persons to whom the Software is
+  furnished to do so, subject to the following conditions:
+ 
+  The above copyright notice and this permission notice shall be included in
+  all copies or substantial portions of the Software.
+ 
+  THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+  IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+  FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+  AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+  LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+  OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+  THE SOFTWARE.
+
+-hspinet license notation (up to here) ------------------------------------------ ---
+
+Onion software copyrights the original software created by the user
+I have no claim.
+onion software is responsible for any damage caused by this program.
+We do not guarantee. Use at your own risk.
+HSPINET.DLL is compiled with Microsoft Visual Studio 2005.
+
+
+・ Instruction list
+
+netinit Initialize net connection
+netterm termination of net connection
+netexec Performs the smallest unit of processing
+Get netmode mode
+neterror Get neterror string
+neturl URL settings
+netdlname Download name setting
+netproxy Proxy settings
+netagent agent settings
+netheader header string settings
+netrequest http request issuance
+netload http file acquisition
+netfileinfo http file information acquisition
+netsize Get file receive size
+filecrc Get CRC32 of file
+filemd5 Get MD5 of a file
+ftpopen Start an FTP session
+ftpclose end FTP session
+ftpresult Get FTP processing result string
+ftpdir FTP directory move
+ftpdirlist Get FTP directory list 1
+ftpdirlist2 Get FTP directory list 2
+ftpcmd Execute FTP command
+ftprmdir Delete FTP directory
+ftpmkdir Create FTP directory
+ftpget get FTP file
+ftpput FTP file transmission
+ftprename FTP file rename
+ftpdelete FTP file deletion
+
+netrequest_get http request issuance (GET)
+netrequest_post http request issuance (POST)
+netgetv get the result of http request
+
+Character code conversion by nkfcnv NKF
+nkfguess Get the character code recognition result by NKF
+getenv environment variable get
+getctime Get date and time with a string
+
+
+
+・ Http-related commands
+
+An instruction set for accessing the http server via Wininet.dll.
+
+netinit Initialize net connection
+
+Initializes Wininet.dll.
+When using an instruction that starts with net ~, be sure to execute it only once at the beginning.
+is needed. After execution, the result is stored in the system variable stat.
+If it is 0, it means that it ended normally, otherwise it means that an error has occurred.
+
+
+netterm termination of net connection
+
+Finish Wininet.dll.
+Normally, this instruction is called automatically at the end of the program, so
+There is no need to write it in a script.
+
+
+netexec p1 Executes the smallest unit of processing
+
+p1: Variable to which the processing result is assigned
+
+Performs the smallest unit of processing.
+Time-consuming processing such as waiting for a response from the server or downloading
+Execute in small units.
+In the main program, wait time (wait) finely with await instruction etc.
+You need to call the netexec instruction while taking it.
+
+Example:
+Loop to wait for results
+			repeat
+			netexec res
+			if res : break
+			await 50
+			loop
+
+After execution, the result is assigned to the variable specified by p1.
+If the content is 0, it means that processing is ongoing.
+If the content is 1 or more, it means that the process has completed normally.
+If the content is negative, it means that some kind of error has occurred.
+is showing.
+If stat becomes a value other than 0, take appropriate action accordingly.
+Please process it on the script side.
+
+
+netmode Get p1 mode
+
+p1: Variable to which the mode value is assigned
+
+Gets the current processing mode.
+The mode value is assigned to the variable specified by p1.
+The contents of the mode value are as follows.
+http request should be issued in the state of INET_MODE_READY
+please.
+ftp requests should now be issued in the state of INET_MODE_FTPREADY
+please.
+
+Label | Value State
+		------------------------------------------------------
+INET_MODE_NONE | 0 Uninitialized state
+INET_MODE_READY | 1 Waiting state
+INET_MODE_REQUEST | 2 http request acceptance
+INET_MODE_REQSEND | 3 http Request is being sent
+INET_MODE_DATAWAIT | 4 http receiving data
+INET_MODE_DATAEND | 5 http Data reception end processing in progress
+INET_MODE_INFOREQ | 6 http Information request is being sent
+INET_MODE_INFORECV | 7 http Information data is being received
+INET_MODE_FTPREADY | 8 ftp standby
+INET_MODE_FTPDIR | 9 Getting ftp directory information
+INET_MODE_FTPREAD | 10 Receiving ftp file
+INET_MODE_FTPWRITE | 11 Sending ftp file
+INET_MODE_FTPCMD | 12 ftp command transmission termination processing in progress
+INET_MODE_FTPRESULT | 13 ftp server reply data is being received
+INET_MODE_ERROR | 14 Error status
+
+
+neterror p1 Get neterror string
+
+p1: Variable to which the error string is assigned
+
+Gets a string that shows the details when an error occurs.
+It is assigned as a character string to the variable specified by p1.
+
+
+neturl "URL" URL setting
+
+"URL": A string indicating the URL
+
+http Set the URL to make the request.
+Set the URL including the scheme name without the file name
+is needed.
+In the case of "http://www.onionsoft.net/hsp/index.html",
+Please set up to "http://www.onionsoft.net/hsp/".
+Be sure to set the URL by the neturl command first for http requests.
+Please go. At the time of executing the neturl instruction
+No http request has been issued yet.
+Issuing an http request is a netrequest instruction or a netload instruction
+It is done by.
+
+
+netrequest "FileName" http request issuance
+
+"FileName": The name of the file making the request
+
+Make an http request.
+First, specify the URL excluding the file name with the neturl instruction.
+is needed.
+After issuing the http request with the netrequest instruction, the netexec instruction
+Therefore, it is necessary to perform the reception process on the script side.
+A netload command for automatic reception processing is also provided separately.
+
+
+netload "FileName" http file acquisition
+
+"FileName": The name of the file making the request
+
+Make an http request.
+First, specify the URL excluding the file name with the neturl instruction.
+is needed.
+The netload instruction suspends processing until the file acquisition is completed.
+It is possible to easily retrieve files, but large files and
+If the reception condition is poor, the screen will remain stopped.
+Please note that there is a possibility.
+If you want to perform another process in parallel while receiving a file,
+Make an http request using the netrequest instruction.
+
+
+netfileinfo p1, "FileName" http file information acquisition
+
+p1: Variable name to which file information is assigned
+"FileName": The name of the file making the request
+
+Get the file information on the http server.
+First, specify the URL excluding the file name with the neturl instruction.
+is needed.
+If the acquisition is successful, the value of the system variable stat becomes 0 and specified by p1.
+The information string returned by the server in string type is assigned to the variable.
+If acquisition fails, the system variable stat is assigned a non-zero value.
+The type of information returned by the server depends on the http server.
+For details, refer to the explanation of http protocol such as RFC.
+The netfileinfo instruction suspends processing until the file acquisition is completed.
+
+
+netdlname "FileName" Download name setting
+
+"FileName": File name when downloaded
+
+Set the file name when retrieving the file.
+If the file name is not set by the netdlname instruction,
+The file name that made the http request is used.
+Even if you specify an empty string ("") in the netdlname instruction
+The file name that made the http request is used.
+
+
+netproxy "ServerName", p1, p2 Proxy settings
+
+"ServerName": File name to make the request
+p1 (0): Port number
+p2 (0): Local connection flag
+
+Set the proxy server used for http connections.
+In "ServerName", set the proxy server name.
+If you specify an empty string (""), no proxy is set.
+Specifies the proxy server port number used by http on p1.
+Whether to exclude local addresses from proxy access on p2
+Please set. If 1, only the local address is from the proxy
+It will be excluded. If 0, proxy including local address
+To use.
+When the netproxy instruction is executed, the previous session is canceled and
+The settings made by the neturl instruction and the netheader instruction are reset.
+
+Example:
+			netinit
+if stat: dialog "Cannot connect to the internet.": End
+			netproxy "proxy_server",8080,1
+			neturl "http://ww.onionsoft.net/hsp/"
+			netload "index.html"
+
+
+netagent "AgentName" agent settings
+
+"AgentName": Agent name to be set
+
+The string of agent information passed to the server when connecting to http
+Set. The agent name specified in "AgentName" is set.
+If you specify an empty string (""), it will be the default setting.
+When the netagent instruction is executed, the previous session is canceled and
+The settings made by the neturl and netheader instructions are reset.
+
+
+netheader "HeaderString" Header string settings
+
+"HeaderString": String added to the header
+
+Set the header string passed to the server when connecting to http.
+If you specify an empty string (""), it will not be set.
+The header string usually does not need to be set, but from what
+It can be used to set additional information and operation settings.
+The header string set by the netheader instruction is the request after that.
+Applies to all.
+
+Example:
+Add referrer
+			netheader "Referer:http://www.onionsoft.net/\n\n"
+
+
+netsize p1 Get file receive size
+
+p1: Variable to which the file reception size is assigned
+
+File for http request issued by netrequest instruction
+Gets how much size has been received.
+The file reception size is assigned to the variable specified by p1.
+The file reception size is the content received by the netexec instruction.
+It is for checking. By acquiring file information in advance
+By checking the file size, it is possible to measure the rate of progress.
+
+
+netrequest_get "FileName" http request issuance (GET)
+
+"FileName": The name of the file making the request
+
+Make an http request.
+Similar to the netrequest command, but with the downloaded data image
+You can get it as data in memory, not as a file.
+
+In "FileName", specify the name of the file to make the request.
+First, specify the URL excluding the file name with the neturl instruction.
+is needed.
+
+After issuing the http request with the netrequest instruction, the netexec instruction
+Therefore, it is necessary to perform the reception process on the script side.
+After the processing is completed, use the netgetv instruction to input data with any variable.
+You can receive it.
+
+
+netrequest_post "FileName", p1 http request issuance (POST)
+"FileName": The name of the file making the request
+p1: Character string type variable name that stores the data for POST
+
+Make an http request.
+Similar to the netrequest command, but with the downloaded data image
+You can get it as data in memory, not as a file.
+It also supports CGI parameter passing in POST format.
+
+In "FileName", specify the name of the file to make the request.
+First, specify the URL excluding the file name with the neturl instruction.
+is needed.
+In p1, specify the variable name that stores the data for POST.
+Variables are string type and POST format data is stored in advance.
+is needed. POST format data is specified by GET format URL
+It is similar to the parameters separated by "&".
+However, when sending binary data, put the data in a character string
+Must be encoded. The netrequest_post instruction was passed
+Since the character string is issued as POST data as it is, this encoding is
+Please do it in advance.
+
+Example:
+Specify the URL
+			neturl "http://www.onionsoft.net/hsp/beta/"
+
+Pass parameters to CGI in POST format
+			prm = "mode=find&cond=and&log=0&word=script"
+			netrequest_post "betabbs.cgi",prm
+
+After issuing the http request with the netrequest instruction, the netexec instruction
+Therefore, it is necessary to perform the reception process on the script side.
+After the processing is completed, use the netgetv instruction to input data with any variable.
+You can receive it.
+
+
+netgetv p1 http Get the result of the request
+
+p1: Variable to which data is assigned
+
+http request by netrequest_get and netrequest_post instructions
+Get the result.
+Be sure to complete the download by receiving the netexec instruction.
+Please make sure that you get the data.
+The variable specified by p1 automatically secured the required size
+It is initialized as a string type. (Initialize variables in advance,
+You don't need to reserve memory. )
+After executing the instruction, the data size is assigned to the system variable stat.
+
+
+-File related instructions
+
+A set of instructions for accessing local files.
+It can be used regardless of net ~ related instructions.
+
+filecrc p1, "FileName" Get CRC32 of file
+
+p1: Variable name to which the CRC value is assigned
+"FileName": File name to check CRC
+
+Finds the CRC32 of the specified file and assigns it to the variable on p1.
+CRC32 is a 32-bit number calculated based on the contents of the file.
+It can be used to check the contents of files.
+
+
+filemd5 p1, "FileName" Get MD5 of file
+
+p1: Variable name to which the MD5 value is assigned
+"FileName": MD5 file name to check
+
+Finds the MD5 of the specified file and assigns it to the variable on p1.
+The MD5 value is a string type, such as "f96b697d7cb7938d525a2f31aaf161d0"
+Expressed as a 32-character hexadecimal number.
+Use the MD5 value as a hash value that uniquely represents the contents of the file
+can do. For more information, see the MD5 documentation.
+It can be used to check the contents of files.
+
+
+ftpopen p1, p2, p3, p4 Start an FTP session
+
+p1: ftp server address (string)
+p2: ftp login user name (string)
+p3: ftp login user password (string)
+p4: Port number (optional)
+
+Connect to the ftp server and start a session.
+p1 is the server address, p2 is the user name, and p3 is the password.
+Specify to connect to ftp.
+You can specify the port number with the p4 parameter.
+If you omit p4, the standard port number is used.
+If the execution is successful, 0 is assigned to the system variable stat and the system variable stat is assigned.
+If it fails, another value will be assigned.
+It is necessary to initialize by the netinit instruction in advance.
+After starting an ftp session, you can only use ftp related instructions
+I can do it. Be sure to use other internet operations such as http
+Make sure to terminate the ftp session with the ftpclose command.
+
+
+ftpclose end FTP session
+
+Terminates the session started by the ftpopen instruction.
+
+
+ftpresult p1 Get FTP processing result string
+
+p1: Variable to which the FTP processing result string is assigned
+
+Server reply message for processing by ftp related instructions
+Get it and assign it to the variable specified in p1.
+It is assigned as character string data to the variable of p1.
+This instruction must be used after starting an ftp session with the ftpopen instruction.
+Please use.
+
+
+ftpdir p1, p2 FTP directory move
+
+p1: Variable to which the current directory location is assigned
+p2: Destination directory name (character string)
+
+The current directory name on the ftp server is added to the variable specified by p1.
+Is assigned as character string data.
+If you specify a directory name for p2, move to that location.
+If you omit the specification of p2, the directory will not be moved.
+If the execution is successful, 0 is assigned to the system variable stat and the system variable stat is assigned.
+If it fails, another value will be assigned.
+This instruction must be used after starting an ftp session with the ftpopen instruction.
+Please use.
+
+
+ftpdirlist Get FTP directory list 1
+
+List the files in the current directory on the ftp server
+Make a request to get it. The actual file list is
+Use the ftpdirlist2 instruction.
+If the execution is successful, 0 is assigned to the system variable stat and the system variable stat is assigned.
+If it fails, another value will be assigned.
+This instruction must be used after starting an ftp session with the ftpopen instruction.
+Please use.
+
+
+ftpdirlist2 p1 Get FTP directory list 2
+
+p1: Variable to which the file list is assigned
+
+This instruction always starts an ftp session with the ftpopen instruction,
+Use after the file list acquisition is completed by the ftpdirlist instruction
+give me.
+The following is an example of getting the file list.
+
+Example:
+Loop to wait for results
+			ftpdirlist
+			repeat
+			netexec mode
+			if res : break
+			await 50
+			loop
+			ftpdirlist2 res
+
+File list acquisition is a request by the ftpdirlist command,
+Waiting for reception by netexec instruction, acquisition of result by ftpdirlist2 instruction
+It is necessary to divide into three steps.
+The file list assigned to p1 is for each entry per line.
+It will be delimited multi-line character string data.
+One line is in the order of "" file name "", file size, modification date and time.
+It will be separated by ",".
+
+
+ftpcmd p1 Executing FTP command
+
+p1: FTP command string to execute
+
+Executes the FTP command specified by p1.
+If the execution is successful, 0 is assigned to the system variable stat and the system variable stat is assigned.
+If it fails, another value will be assigned.
+This instruction must be used after starting an ftp session with the ftpopen instruction.
+Please use.
+
+ftprmdir p1 Delete FTP directory
+
+p1: Character string indicating the directory to be deleted
+
+Deletes the directory specified by p1.
+If the execution is successful, 0 is assigned to the system variable stat and the system variable stat is assigned.
+If it fails, another value will be assigned.
+This instruction must be used after starting an ftp session with the ftpopen instruction.
+Please use.
+
+ftpmkdir p1 Create FTP directory
+
+p1: Character string indicating the directory to be created
+
+Creates the directory specified by p1.
+If the execution is successful, 0 is assigned to the system variable stat and the system variable stat is assigned.
+If it fails, another value will be assigned.
+This instruction must be used after starting an ftp session with the ftpopen instruction.
+Please use.
+
+ftpget p1, p2, p3 FTP file acquisition
+
+p1: File name (character string) obtained from the server
+p2 (""): Locally created file name (string)
+p3 (0): Transfer mode (0 = binary / 1 = ASCII)
+
+Get the file on the ftp server.
+Specify the file name on the server with p1.
+Specify the name of the file downloaded and created with p2.
+If p2 is omitted or "" is specified, the same name as p1 is used.
+Will be done.
+Specify the transfer mode with p3. Omit transfer mode or set to 0
+If specified, it will be binary data. If specified as 1, it will be as binary data.
+It will be transferred as ASCII data.
+If the execution is successful, 0 is assigned to the system variable stat and the system variable stat is assigned.
+If it fails, another value will be assigned.
+This instruction must be used after starting an ftp session with the ftpopen instruction.
+Please use.
+
+ftpput p1, p2, p3 FTP file transmission
+
+p1: File name (character string) created on the server
+p2 (""): File name (string) sent locally
+p3 (0): Transfer mode (0 = binary / 1 = ASCII)
+
+Send the file on an ftp server.
+Specify the file name to be created on the server with p1.
+Specify the file name sent locally with p2.
+If p2 is omitted or "" is specified, the same name as p1 is used.
+Will be done.
+Specify the transfer mode with p3. Omit transfer mode or set to 0
+If specified, it will be binary data. If specified as 1, it will be as binary data.
+It will be transferred as ASCII data.
+If the execution is successful, 0 is assigned to the system variable stat and the system variable stat is assigned.
+If it fails, another value will be assigned.
+This instruction must be used after starting an ftp session with the ftpopen instruction.
+Please use.
+
+ftprename p1, p2 FTP file rename
+
+p1: Change source file name (character string)
+p2: New file name (string)
+
+Rename the file on the ftp server.
+Specify the source file name with p1 and the new file name with p2.
+If the execution is successful, 0 is assigned to the system variable stat and the system variable stat is assigned.
+If it fails, another value will be assigned.
+This instruction must be used after starting an ftp session with the ftpopen instruction.
+Please use.
+
+ftpdelete p1 FTP file deletion
+
+p1: File name to delete (character string)
+
+Delete the file on the ftp server.
+If the execution is successful, 0 is assigned to the system variable stat and the system variable stat is assigned.
+If it fails, another value will be assigned.
+This instruction must be used after starting an ftp session with the ftpopen instruction.
+Please use.
+
+
+・ Nkf related instructions
+
+hspinet.dll contains the functions of nkf.dll (equivalent to nkf-2.1.0).
+nkf is for mutual conversion of various character codes such as SJIS, JIS, EUC, UTF-8, UTF-16, etc.
+The library. From HSP, you can use the following 2 instructions, as well as
+It is possible to call various API functions.
+(See nkf_doc.txt in the doclib folder for more information)
+
+nkfcnv p1, p2, "option", p3, p4 Perform character code conversion by NKF
+p1: Variable to which the converted character string is assigned
+p2: Variable to which the conversion source string is assigned
+"option": NKF conversion option
+p3 (-1): Character string size of conversion source
+p4 (-1): Maximum output destination buffer size
+
+For the character string stored in the variable specified by p2
+Performs character code conversion by NKF and assigns the result to the variable specified by p1.
+You can specify NKF conversion options with "option".
+As a result, the input character code and the output character code can be changed.
+It can be specified arbitrarily.
+If the "option" parameter is omitted, the input code is automatically detected.
+It is converted to SJIS.
+Below is a list of the main options. (Multiple optional strings
+It is also possible to specify continuously)
+Many other specifications are possible.
+See nkf_doc.txt in the doclib folder for more information.
+
+Option content
+		---------------------------------------------
+j Convert to JIS
+e Convert to EUC
+s Convert to SJIS
+w Convert to UTF8
+J The conversion source is assumed to be JIS (ISO-2022-JP).
+E The conversion source is assumed to be EUC (AT & T).
+S conversion source assumes SJIS
+W Conversion source assumes UTF-8
+W16 conversion source assumes UTF-16 (Little Endian)
+W16B conversion source assumes UTF-16 (Big Endian)
+
+In p3, specify the character string size (number of bytes) of the conversion source.
+If p3 is omitted or a negative value, the input is in C format.
+It is automatically calculated as ansi string.
+In p4, specify the output destination buffer size.
+No conversions beyond this size will be performed.
+If p4 is omitted or a negative value, the default size (32KB) is
+will be used.
+The variable specified by p1 automatically creates a string-sized buffer.
+It will be initialized after securing it. Initialize with sdim in advance
+No need to.
+
+nkfguess p1 Get the character code recognition result by NKF
+
+p1: Variable to which the resulting string is assigned
+
+Acquires the recognized conversion source character code when converted by the nkfcnv instruction.
+The result is assigned as a string to the variable specified by p1.
+Be sure to convert with the nkfcnv instruction first.
+
+
+・ Other orders
+
+getenv p1, "name" Get environment variables
+
+p1: Variable to which the resulting string is assigned
+"name": environment variable name
+
+Gets the value of an environment variable and assigns it to the variable.
+The result is assigned as a string type.
+The variable buffer is automatically adjusted to fit the string.
+If the corresponding environment variable name does not exist, "" (character string of length 0) is displayed.
+It will be substituted.
+
+
+getctime p1, mode Get date and time by string
+p1: Variable to which the resulting string is assigned
+mode (0): Specify the format to be acquired
+
+Get the date and time as a string.
+The format to be acquired is specified by the value of mode.
+
+mode contents
+		---------------------------------------------
+0 Current time (local) by the asctime function in C language
+Example: Sun Nov 6 08:49:37 1994
+1 Current time (GMT / UTC) by the asctime function in C language
+Example: Sun Nov 6 08:49:37 1994
+2 Date format defined in RFC 1123
+Example: Sun, 06 Nov 1994 08:49:37 GMT
+
+
+getenvprm p1, p2, "name", code Get specified string element
+
+p1: Variable to which the resulting string is assigned
+p2: String type variable to which the search content is assigned
+"name": element name
+code: Delimiter code (default is'&')
+
+The getenvprm instruction has a specific delimiter, such as "A = 123 & B = 456 & C = 789".
+From the character string separated by the character code ("&" in this case)
+Extract the one whose first part matches "name".
+Multiple information as a character string by passing CGI parameters etc.
+It is used to retrieve a specific item from the passed items.
+For example, if the variable a is assigned "A = 123 & B = 456 & C = 789"
+When "getenv prm res, a," B = "" is executed, the variable res is "789".
+The string is assigned.
+The variable specified by p2 is a string type and is pre-initialized.
+is needed.
+If there is no corresponding element name, "" (character string of length 0) is
+It will be substituted.
+It is possible to specify the delimiter code for code.
+If you omit the code specification,'&' is used.
+
+
+-------------------------------------------------------------------------------
+                                                HSP users manual / end of file 
+-------------------------------------------------------------------------------

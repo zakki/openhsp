@@ -1,0 +1,218 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html lang="ja">
+<head>
+	<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+	<meta http-equiv="Content-Language" content="ja">
+	<meta http-equiv="Content-Style-Type" content="text/css">
+	<meta http-equiv="Content-Script-Type" content="text/javascript">
+	<meta name="author" content="OpenHSP3 Project">
+	<meta name="keywords" content="HSP,HSP3,HotSoupProcessor3,HSPTV,Browser">
+<meta name = "description" content = "Information about HSPTV browser posted">
+	<link href="../main.css" rel="stylesheet" type="text/css" media="all">
+<title> HSPTV Browser </title>
+</head>
+<body>
+	<div id="CONTAINER">
+<!-Header->
+		<p id="COPY">HSP : Hot Soup Processor ver3.6 / onion software 1997-2021(c)</p>
+		<img src="hsp3ttl.jpg" alt="title" width="640" height="200">
+<h1> HSPTV browser </h1>
+
+<!-Table of Contents->
+		<ol>
+<li> <a href="#STARTING"> Launch HSPTV Browser </a> </li>
+<li> <a href="#SET_OPTION"> Option settings </a> </li>
+<li> <a href="#BROWSER_MENU"> Browser menu </a> </li>
+<li> <a href="#PRG_DETAIL"> Program details </a> </li>
+<li> <a href="#SECURITY"> Security </a> </li>
+<li> <a href="#ON_HSPTV"> About the development of programs that run on HSPTV </a> </li>
+<li> <a href="#POLICY"> Content Policy </a> </li>
+<li> <a href="#RESET"> Reset settings </a> </li>
+<li> <a href="#LICENCE"> License </a> </li>
+		</ol>
+
+<!-Body->
+<h2 id = "STARTING"> Start HSPTV browser </h2>
+		<p>
+Start from the shortcut icon of "HSPTV" or
+By starting "hsptv.exe" in the folder where HSP3 is installed
+You can use the HSPTV browser.
+		</p>
+		<img src="img/browser_start.jpg" alt="title" height="119" width="600">
+
+<h2 id = "SET_OPTION"> Option settings </h2>
+		<img src="img/browser_config_s.jpg" alt="screen" height="234" width="301" style="float:right;">
+		<p>
+At the first startup, a screen for setting the user name etc. is displayed.
+Register your user name and configure Internet connection settings such as PROXY if necessary.
+When you press the "Start HSPTV" button, it will connect to the HSPTV server and automatically get the latest content.
+Even later, by selecting the "Options" channel, you can select optional items such as user information.
+The setting screen is displayed. Each item has the following meanings.
+		</p>
+		<dl>
+<dt> <img src = "img / browser_n1.gif" alt = "1." height = "42" width = "46"> User name (up to 20 English characters only) </dt>
+<dd> <p> Set the user name to use in the HSPTV content.
+It sets the handle name of the user registered in the ranking etc.
+It is not used for authentication or personal identification. </p> </dd>
+			
+<dt> <img src = "img / browser_n2.gif" alt = "2." height = "42" width = "46"> Trip key (up to 20 English characters only) </dt>
+<dd> <p> Set to access information required only by a specific user.
+This item will be used in a future version and is currently meaningless. </p> </dd>
+
+<dt> <img src = "img / browser_n3.gif" alt = "3." height = "42" width = "46"> Data storage directory </dt>
+<dd> <p> Set the directory for downloading content. If you set it as "c: \\ hsptv \\", the content data will be saved under the set directory. If left blank, the "hsptv" folder in the same folder as hsptv.exe will be used. Normally, you do not need to set this item. </p> </dd>
+<dt> <img src = "img / browser_n4.gif" alt = "4." height = "42" width = "46"> Offline mode </dt>
+<dd> <p> If checked, the mode will be offline. In offline mode, no internet connection is made. Only content stored as a cache can be executed. </p> </dd>
+<dt> <img src = "img / browser_n5.gif" alt = "5." height = "42" width = "46"> PROXY server </dt>
+<dd> <p> Computers inside firewalls such as companies and schools
+Set the PROXY server address to use for your Internet connection (for example, "192.168.1.1").
+HSPTV uses the same http port (80) as the WEB browser, so
+Access is possible by setting up the same http proxy server.
+(If you don't know the proxy server settings, please contact your network administrator.) </P> </dd>
+
+<dt> <img src = "img / browser_n6.gif" alt = "6." height = "42" width = "46"> PROXY port </dt>
+<dd> <p> Set the port number for connecting to the PROXY server (example: "8080").
+Set the port number to be used as the http proxy server in the same way as the PROXY server. </p> </dd>
+		</dl>
+
+<h2 id = "BROWSER_MENU"> Browser menu </h2>
+		<img src="img/browser_menu_s.jpg" alt="menu" height="234" width="301" style="float:right;">
+		<p>
+In the main menu, the executable programs are displayed on the right side of the screen.
+On the left side of the screen, an icon for selecting the type (channel) of the displayed content is displayed.
+Click the program name to display the details of the contents.
+If you press the "PLAY" button or the "& gt;" button to the right of the program name,
+It will automatically download the content and start running.
+		</p>
+
+		<dl>
+			<dt><img src="img/browser_n1.gif" alt="1." height="42" width="46">
+"Turn off TV" button </dt>
+<dd> <p> Close the "HSP TV Browser". </p> </dd>
+<dt> <img src = "img / browser_n2.gif" alt = "2." height = "42" width = "46"> "x" button </dt>
+<dd> <p> Close the "HSP TV Browser". </p> </dd>
+<dt> <img src = "img / browser_n3.gif" alt = "3." height = "42" width = "46"> "HOME" button (house mark) </dt>
+<dd> <p> The "HOME" button (house mark) in the "HSP TV Browser" frame is
+It is for interrupting the execution of the program. anytime,
+You can forcibly exit the program running in the "HSP TV Browser" and return to the menu. </p> </dd>
+<dt> <img src = "img / browser_n4.gif" alt = "4." height = "42" width = "46"> Program name </dt>
+<dd> <p> If checked, the mode will be offline. In offline mode
+Does not connect to the internet. Only content stored as a cache
+You can do it. </p> </dd>
+<dt> <img src = "img / browser_n5.gif" alt = "5." height = "42" width = "46"> "& gt;" button </dt>
+<dd> <p> Automatically download the content and start running.
+        Internet connection is not available in offline mode.
+Only content stored as a cache can be executed. </p> </dd>
+		</dl>
+
+<h2 id = "PRG_DETAIL"> Program details </h2>
+		<p><img src="img/browser_program_s.jpg" alt="program" height="234" width="301" style="float:right;">
+When the program details are displayed, buttons are displayed according to the contents. </p>
+		<dl>
+<dt> <img src = "img / browser_n1.gif" alt = "1." height = "42" width = "46"> "Clean" button </dt>
+<dd> <p> Clears the cached information of the displayed program from the hard disk.
+In the "HSP TV browser", the data of the program once started is cached on the hard disk.
+Saved and speeds up startup from time. I started many programs and ran out of hard disk space
+In case or when you do not need the cache, you can clear the cache data by pressing the "Clean" button.
+You can use the hard disk efficiently with. </p> </dd>
+<dt> <img src = "img / browser_n2.gif" alt = "2." height = "42" width = "46"> "Details page" button </dt>
+<dd> <p> Open the related page about the displayed program with a web browser (Internet connection environment required).
+When there is a homepage recommended by the provider such as supplementary information about the program and ranking
+A button is displayed. </p> </dd>
+<dt> <img src = "img / browser_n3.gif" alt = "3." height = "42" width = "46"> "PLAY" button </dt>
+<dd> <p> Execute the displayed program. Programmatically within the HSPTV window
+It is divided into those that work and those that work in an external window.
+In both cases, just press the "PLAY" button and the latest version will be downloaded automatically and execution will start. </p> </dd>
+<dt> <img src = "img / browser_n4.gif" alt = "4." height = "42" width = "46"> "Back" button </dt>
+<dd> <p> Returns to the list of programs. </p> </dd>
+		</dl>
+
+<h2 id = "SECURITY"> About security </h2>
+		<p>
+"HSP TV Browser" allows you to easily download and execute programs.
+We have some security measures in place.
+		</p>
+		<p>
+As a general rule, programs that run on the HSPTV browser are content download folders (optional items).
+Does not write or refer to files other than (settable) (a warning dialog will be displayed if absolutely necessary).
+In addition, we will not collect user information other than the optional items set on the "HSPTV browser" and will not send it over the network.
+		</p>
+		<p>
+The user name of the option item sets the handle name of the user registered in the ranking etc.
+It is not used for authentication or personal identification.
+		</p>
+		<p>
+The program content provided by the "HSP TV Browser" has been carefully reviewed and carefully reviewed.
+We strive to prevent malicious behavior, but we do not guarantee all safety.
+Please execute the content at your own risk.
+		</p>
+
+<h2 id = "ON_HSPTV"> About the development of programs that run on HSPTV </h2>
+		<p>
+We have summarized the functions required to create a program that runs on the "HSP TV Browser".
+The module file "hsptv.as" is provided.
+By adding "#include" hsptv.as "" at the beginning of the script, the operation on "HSPTV browser" can be performed.
+You can test it.
+For details, refer to the manual "<a href="hsptv_api.txt"> hsptv_api.txt </a>" of the HSPTV browser compatible program.
+		</p>
+		<p>
+HSPTV browser compatible programs are recruited and registered irregularly at HSP program contests.
+More information is available on the HSPTV site.
+		</p>
+
+<h2 id = "POLICY"> Content Policy </h2>
+		<p>
+The "HSPTV program content" provided by the portal site "HSPTV" is
+It is provided with the following policy.
+		</p>
+		<ul>
+<li> Can be viewed correctly in all recommended environments </li>
+<li> Content that can be viewed with confidence at all ages </li>
+<li> Information is not acquired from the user except for the information set in the option item </li>
+<li> We will not provide or disclose information about users to third parties without permission </li>
+<li> We are not responsible for any damage caused by the user's use of content </li>
+		</ul>
+
+<h2 id = "RESET"> Reset settings </h2>
+		<img src="img/reset_s.jpg" alt="reset" width="302" height="235" style="float:right;">
+		<p>
+If for some reason you need to reset the settings, in the "hsptv" folder in the HSP installation directory
+It is possible to return to the initial state by returning the setting file "hsptv.cfg" to the same contents as "backup.cfg".
+You can copy "backup.cfg" or rewrite the contents with a text editor.
+		</p>
+
+<h2 id = "LICENCE"> License </h2>
+		<p>
+The copyright of the program running on the "HSP TV browser" belongs to the respective creators.
+Onion software owns the copyright of the program and mechanism of the "HSP TV browser" itself.
+		</p>
+		<p>
+It is not possible to divert, analyze, or modify the server data and distribution protocol used by the "HSPTV Browser" without permission.
+It is prohibited. The rights of program creators distributed by onion software and "HSP TV browser"
+Please do not infringe.
+		</p>
+		<p>
+"HSP TV Browser" is distributed in the form of being bundled with "HSP3". The rules for redistribution are the same as for "HSP3".
+As long as it is done free of charge, you are free to do it.
+		</p>
+		<p>
+Problems with menus and individually operating content will be updated from time to time through the network.
+If you have any problems or bug reports, please let us know on the "HSPTV site".
+		</p>
+		<dl>
+           <dt> HSPTV site </dt>
+			<dd><p><a href="https://hsp.tv/">https://hsp.tv/</a></p></dd>
+		</dl>
+
+<!-Footer->
+		<ul id="FOOTER">
+<li> <a href="#CONTAINER"> Return to top of this page </a> </li>
+<li> <a href="../index.htm"> Return to list of documents </a> </li>
+			<li><a href="https://hsp.tv/">Go to HSPTV page</a></li>
+		</ul>
+		<a href="https://www.onionsoft.net/hsp/">
+			<img src="img/onibtn.gif" width="147" height="50" alt="ONION software" id="ONIBTN">
+		</a>
+	</div><!-- container -->
+</body>
+</html>

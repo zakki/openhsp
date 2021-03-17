@@ -1,0 +1,827 @@
+------------------------------------------------------------------------------
+HSPCV ver3.4 REFERENCE MANUAL                       HSP : Hot Soup Processor  
+HSP Extension Extension DLL Reference Copyright 2007-2014 (c) onion software
+------------------------------------------------------------------------------
+
+・ Introduction
+
+By using this DLL with Hot Soup Processor ver3.3 or later,
+Easily use the functions of OpenCV (Intel Open Source Computer Vision Library)
+It is a plug-in that can be used.
+HSPCV contains all the functions in the plug-in DLL, basically
+It works on Windows 98 or later.
+No additional modules or DLLs need to be installed.
+
+
+・ Overview of HSPCV functions
+
+By using HSPCV, it is possible to handle advanced image processing and algorithms.
+I can do it. In addition, reading and writing of various formats (PNG, JPEG, TIFF, etc.) and
+Movie (avi) file operations, reading capture devices such as USB cameras, etc.
+It provides many functions related to video.
+
+The main functions supported by HSPCV are as follows.
+
+・ Image of arbitrary size Image operation (copy, addition, subtraction, multiplication, etc.)
+・ High-quality resizing, smoothing, and rotation of images
+・ Extraction, inversion, and color conversion based on the threshold value from the image
+-Reading and saving image files (supported formats are as follows)
+
+		Windows bitmaps - BMP, DIB
+		JPEG files - JPEG, JPG, JPE
+		Portable Network Graphics - PNG
+		Portable image format - PBM, PGM, PPM
+		Sun rasters - SR, RAS
+		TIFF files - TIFF, TIF
+		OpenEXR HDR images - EXR
+		JPEG 2000 images - JP2
+
+・ Image acquisition via a capture device such as a USB camera
+・ Reading and saving avi video files
+・ Image recognition such as face extraction
+-Template matching that extracts areas close to any image
+
+
+・ Overview of usage
+
+The extension plug-in file, HSPCV.DLL, has HSED3.EXE and HSP3.EXE.
+Place it in the same location as the directory.
+(If HSPCV.DLL is not in the same directory as the HSP3.EXE used for execution
+Will result in an error)
+Also, put HSPCV.AS in the same directory as the script, or in the common folder.
+Must have been copied.
+When using HSPCV, be sure to start the script with "#include" hspcv.as ""
+Please add the line. With the above, the function of HSP is expanded, and this
+You will be able to use the instructions described in the reference.
+First of all, try running the sample script (in the sample / hspcv folder)
+please try.
+You should be able to see a simple usage example of the enhanced functionality.
+
+
+揃Change log
+
+	2010/10/18 ver3.22
+
+Fixed a bug that a memory leak occurs in the cvsmooth instruction
+
+
+	2009/6/24 ver3.2beta4
+
+Further fixed memory leak in cvfacedetect instruction
+Fixed help for default parameters of cvgetimg
+Fixed a bug that failed when executing cvthreshold in grayscale buffer
+Added cvj2opt instruction to set JPEG-2000 save options
+
+
+	2009/3/9 ver3.2beta2
+
+Fixed a bug that a memory leak occurs in the cvfacedetect instruction
+
+
+	2007/4/1 ver3.1
+
+First version.
+
+
+ツキimportant point
+
+HSPCV.DLL is a plug-in file that is used at the same time as HSP3.EXE.
+Please use ver3.1 or above as the HSP to use. For HSP ver2.61 and earlier
+Please note that it is not supported.
+Even if you create an EXE file, put HSPCV.DLL in the same directory as the EXE file.
+It will not work unless it is placed in. Also, you cannot add DLLs to the packfile.
+
+
+繝サ Copyright and license
+
+Original software (executable) created by the user using HSPCV.DLL
+Rights belong to the user who created it.
+
+The OpenCV library (1.0) included in HSPCV is BSD License.
+It is necessary to specify the copyright notice of the library part listed below.
+(There are no restrictions on embedding or distribution, and the source code must be published.
+there is no. )
+
+	-----------------------------------------------------------------------
+The OpenCV library (1.0) included in HSPCV is the copyrighted work of Intel Corporation.
+
+	Open Source Computer Vision Library 
+	Copyright (C) 2000-2006, Intel Corporation, all rights reserved.
+
+The libjpeg library included in the OpenCV library (1.0) is a copyrighted work of IJG.
+	Copyright (C) 1991-1998, Thomas G. Lane.
+	this software is based in part on the work of the Independent JPEG Group
+
+The libpng library included in the OpenCV library (1.0) is the following copyrighted work.
+
+	libpng version 1.2.8 - December 3, 2004
+	Copyright (c) 1998-2004 Glenn Randers-Pehrson
+	(Version 0.96 Copyright (c) 1996, 1997 Andreas Dilger)
+	(Version 0.88 Copyright (c) 1995, 1996 Guy Eric Schalnat, Group 42, Inc.)
+
+The zlib library included in the OpenCV library (1.0) is the following copyrighted work.
+
+	Copyright (C) 1995-2004 Jean-loup Gailly and Mark Adler
+
+The JasPer library included in the OpenCV library (1.0) is the following copyrighted work.
+
+	JasPer Version 2.0
+
+	Copyright (c) 1999-2000 Image Power, Inc.
+	Copyright (c) 1999-2000 The University of British Columbia
+	Copyright (c) 2001-2003 Michael David Adams
+
+The following xml file included in the package was created by Rainer Lienhart.
+	haarcascade_frontalface_default.xml
+	haarcascade_frontalface_alt.xml
+	haarcascade_frontalface_alt2.xml
+
+	HSPCV.DLL
+	Copyright (C) 2007, Onion Software, all rights reserved.
+	This software is provided by the copyright holders and contributors "as is" and
+	any express or implied warranties, including, but not limited to, the implied
+	warranties of merchantability and fitness for a particular purpose are disclaimed.
+	-----------------------------------------------------------------------
+
+(License notation should include text containing the above content in the distribution.)
+
+If the above items are met, the original created by the user using HSPCV.DLL
+Freely communicate, display, distribute, and sell software (executable files) at spot sales, storefronts, etc.
+can. No license fee is required.
+
+HSPCV.DLL is copyrighted by onion software.
+onion software does not guarantee any damage caused by this program.
+Use at your own risk.
+You can also freely modify and publish the attached sample script.
+
+HSPCV.DLL is basically paid or free under the BSD license.
+It can be attached, duplicated, reorganized and redistributed.
+However, please be sure to include the license notation in that case.
+
+
+・ Instruction list
+
+cvreset HSPCV initialization
+cvsel Target CV buffer settings
+cvbuffer Initialize CV buffer
+cvresize Image resizing
+cvgetimg image acquisition
+cvputimg Write to CV buffer
+cvload image file loading
+cvsave image file writing
+cvj2opt JPEG-2000 save option setting
+cvgetinfo Get CV buffer information
+cvsmooth Image smoothing
+cvthreshold Get image with threshold
+cvrotate image rotation
+cvarea Specifying the copy source area
+cvcopy image copy
+XOR operation of cvxors image
+cvflip Image inversion
+cvloadxml Loading XML file
+cvfacedetect image face recognition
+cvgetface Get recognized coordinates
+cvmatch Image matching check
+cvconvert Color mode conversion
+
+cvcapture Start camera capture
+cvgetcapture acquisition of captured image
+cvendcapture End of camera capture
+Start cvopenavi avi file acquisition
+cvgetavi avi Get file image
+End of cvcloseavi avi file acquisition
+Start cvmakeavi avi file output
+Output image to cvputavi avi file
+End of cvendavi avi file output
+
+
+・ Overview of how to use
+
+HSPCV has multiple image buffers managed by the plug-in side.
+This is called a "CV buffer" and is managed by a number (ID) from 0 to 63.
+It is similar to the screen buffer managed by HSP, but what is the screen information on the HSP side?
+Be careful not to confuse it with the HSP screen buffer number (ID) as it is independent.
+give me.
+The "CV buffer" can store image information in any size.
+The "CV buffer" is used after initial initialization.
+
+		cvbuffer 0,640,480
+
+Initializes the "CV buffer" ID0 with a size of 640x480 dots.
+Also,
+
+		cvload "test.jpg",0
+
+Then, in the contents of the image file "test.jpg", set the ID0 of "CV buffer"
+Initialize.
+The only instructions for initialization are cvbuffer and cvload.
+In addition, it will always be full color (RGB 24bit) at the stage of initialization.
+
+The initialized "CV buffer" can be used for operations such as copying, resizing, and image processing.
+You can do it.
+The contents of "CV buffer" are not linked to the HSP screen, so they are displayed on the screen.
+To display the data from "CV buffer" to "HSP screen buffer"
+Must be forwarded. The instruction for that is cvgetimg.
+
+		cvgetimg 0
+
+Specified the contents of "CV buffer" ID0 in the current operation window (gsel)
+Transfer to screen).
+If you want to match the current window size to the size of the "CV buffer"
+
+		cvgetimg 0,1
+
+Specify as.
+On the contrary, it is also possible to transfer the HSP screen to the "CV buffer" side.
+
+		cvputimg 0
+
+Set the current operation window (screen specified by gsel) to "CV buffer" ID0
+forward. ("CV buffer" must be pre-initialized)
+
+The above is the basic usage.
+HSPCV makes it easy to call some of the huge functions of OpenCV from HSP.
+It is what I did. Please refer to the reference for each function.
+
+
+・ CV buffer related instructions
+
+A set of instructions for manipulating images and image files via OpenCV.
+
+cvreset HSPCV initialization
+
+Discards all "CV buffers" of HSPCV and restores the initial state.
+Initialization is performed automatically at the start and end of HSPCV.
+Use the cvreset instruction when you want to explicitly initialize.
+
+
+cvbuffer p1, p2, p3 Initialize the CV buffer
+
+p1 (0): CV buffer ID
+p2 (640): Horizontal pixel size
+p3 (480): Vertical pixel size
+
+Initializes the CV buffer with the specified size.
+By initializing the buffer, various image processing becomes possible.
+The CV buffer is initialized in full color mode (8 bits each for RGB).
+
+
+cvsel p1 Target CV buffer settings
+
+p1: CV buffer ID
+
+Set the standard operation destination CV buffer ID.
+If omitted when specifying the CV buffer ID in the parameter,
+The standard destination CV buffer ID is used.
+
+
+cvresize p1, p2, p3, p4 Image resizing
+
+p1 (0): Horizontal pixel size
+p2 (0): Vertical pixel size
+p3: CV buffer ID
+p4 (1): Interpolation algorithm
+
+Resizes the CV buffer to the size specified in (p1, p2).
+Specify the target CV buffer ID in p3.
+If omitted, the ID set by the cvsel instruction is used.
+Specify the interpolation algorithm with p4.
+You can select one of the following contents to be specified in p4.
+
+CV_INTER_NN --Nearest Neighbor
+CV_INTER_LINEAR --Bilinear (default)
+CV_INTER_AREA --Resampling around pixels
+(Moire can be reduced)
+CV_INTER_CUBIC --bicubic
+
+
+cvgetimg p1, p2 Image acquisition
+
+p1: CV buffer ID
+p2 (0): Acquisition mode
+
+Transfer the contents of the CV buffer to the HSP window buffer.
+The window buffer of the HSP that is the transfer destination is specified by the gsel instruction.
+This is the current operation destination window ID.
+Specify the CV buffer ID that is the transfer source with p1.
+If omitted, the ID set by the cvsel instruction is used.
+With p2, you can specify the transfer method.
+If p2 is 0, transfer with HSP window buffer size as it is
+I will do it. If 1 is specified for p2, it will be the same size as the CV buffer.
+Transfer after changing the window buffer size of HSP.
+
+
+cvputimg p1 Write to CV buffer
+
+p1: CV buffer ID
+
+Transfers the contents of the HSP window buffer to the CV buffer.
+The window buffer of the HSP that is the transfer source is specified by the gsel instruction.
+This is the current operation destination window ID.
+Specify the CV buffer ID to be the transfer destination with p1.
+If omitted, the ID set by the cvsel instruction is used.
+
+
+cvload "filename", p1 Load image file
+
+"filename": image file name
+p1: CV buffer ID
+
+Initializes the CV buffer with the contents of the specified image file.
+Specify the target CV buffer ID with p1.
+If omitted, the ID set by the cvsel instruction is used.
+
+The format of the image file is determined by the file extension.
+The formats and extensions that can be used are as follows.
+
+			Windows bitmaps - BMP, DIB
+			JPEG files - JPEG, JPG, JPE
+			Portable Network Graphics - PNG
+			Portable image format - PBM, PGM, PPM
+			Sun rasters - SR, RAS
+			TIFF files - TIFF, TIF
+			OpenEXR HDR images - EXR
+			JPEG 2000 images - JP2
+
+If the process ends normally, the system variable stat will be 0.
+If any error occurs, the system variable stat is non-zero
+It will be a value.
+
+Embedded in executable and DPM files with #pack, #epack, etc.
+Please note that the file cannot be read.
+
+
+cvsave "filename", p1, p2 Write image file
+
+"filename": image file name
+p1: CV buffer ID
+p2: Option value
+
+Saves the contents of the CV buffer with the specified image file name.
+Specify the target CV buffer ID with p1.
+If omitted, the ID set by the cvsel instruction is used.
+
+The format of the image file is determined by the file extension.
+The formats and extensions that can be used are as follows.
+
+			Windows bitmaps - BMP, DIB
+			JPEG files - JPEG, JPG, JPE
+			Portable Network Graphics - PNG
+			Portable image format - PBM, PGM, PPM
+			Sun rasters - SR, RAS
+			TIFF files - TIFF, TIF
+			OpenEXR HDR images - EXR
+			JPEG 2000 images - JP2
+
+The option value specified by p2 is the setting for each format.
+It is for specifying.
+Currently, only the quality (0 to 100) when saving in JPEG format can be specified.
+If you omit the specification of p2, when saving in JPEG format,
+Quality 95 is used.
+
+If the process ends normally, the system variable stat will be 0.
+If any error occurs, the system variable stat is non-zero
+It will be a value.
+
+
+cvj2opt "format", "option" JPEG-2000 save option setting
+
+"format": format string
+"option": option string
+
+Detailed settings when JPEG-2000 format (.jp2) is specified with the cvsave instruction
+I will do it. The format string should be one of the following:
+Can be specified. (Specified a format other than JPEG
+Even in that case, please note that the extension remains jp2)
+
+Format string format
+		----------------------------------------
+			mif	    My Image Format
+			pnm	    Portable Graymap/Pixmap
+			bmp	    Microsoft Bitmap
+			ras	    Sun Rasterfile
+			jp2	    JPEG2000 JP2 File Format Syntax
+			jpc	    JPEG2000 Code Stream Syntax
+			jpg	    JPEG
+			pgx	    JPEG2000 VM Format
+
+Additional settings can be made using the option character string.
+
+Example:
+				cvj2opt "jp2","rate=0.1"
+				cvsave "test2000.jp2"
+
+The setting method of the option character string differs depending on the format.
+For more information, command line tools included in the jasper library
+See jasper options.
+		http://www.ece.uvic.ca/~mdadams/jasper/
+
+
+cvgetinfo p1, p2, p3 Get CV buffer information
+
+p1: Variable for which CV buffer information is acquired
+p2: CV buffer ID
+p3: CV buffer information ID
+
+Get information about the CV buffer and assign it to a variable on p1.
+Specify the target CV buffer ID in p2.
+If omitted, the ID set by the cvsel instruction is used.
+
+You can specify the type of information to be acquired with p3.
+The macros that can be specified for p3 are as follows.
+
+Macro content
+			-------------------------------------------
+CVOBJ_INFO_SIZEX Horizontal size
+CVOBJ_INFO_SIZEY Vertical size
+CVOBJ_INFO_CHANNEL Number of channels
+CVOBJ_INFO_BIT Number of bits per channel
+
+
+cvsmooth p1, p2, p3, p4, p5 Image smoothing
+
+p1: Smoothing type
+		p2 : param1
+		p3 : param2
+		p4 : param3
+p5: CV buffer ID
+
+Apply smoothing to the CV buffer.
+Specify the target CV buffer ID in p5.
+If omitted, the ID set by the cvsel instruction is used.
+
+The macros that can be specified with p1 are as follows.
+
+		CV_BLUR_NO_SCALE
+(Add pixel values in the area of param1 x param2)
+
+		CV_BLUR
+(After adding the pixel values in the area of param1 x param2,
+Scale with 1 / (param1 * param2))
+
+		CV_GAUSSIAN
+(param1 x param2 Gaussian filter)
+
+		CV_MEDIAN
+(param1 x param2 median filter)
+
+		CV_BILATERAL
+(3 × 3 bilateral filter (param1 = color dispersion, param2 = spatial dispersion))
+		http://www.dai.ed.ac.uk/CVonline/LOCAL_COPIES/MANDUCHI1/Bilateral_Filtering.html 
+
+The parameter of "param1 x param2" specifies an odd number of 1 or more.
+is needed.
+
+
+cvthreshold p1, p2, p3, p4 Get images with threshold
+
+p1: Binarization type
+p2: Threshold (real number)
+p3: Pixel value after binarization (real number)
+p4: CV buffer ID
+
+The CV buffer is binarized based on the threshold value.
+Specify the target CV buffer ID in p4.
+If omitted, the ID set by the cvsel instruction is used.
+The macros that can be specified with p1 are as follows.
+
+		CV_THRESH_BINARY     : val = (val > thresh ? MAX:0)
+		CV_THRESH_BINARY_INV : val = (val > thresh ? 0:MAX)
+		CV_THRESH_TRUNC      : val = (val > thresh ? thresh:val)
+		CV_THRESH_TOZERO     : val = (val > thresh ? val:0)
+		CV_THRESH_TOZERO_INV : val = (val > thresh ? 0:val)
+
+
+cvrotate p1, p2, p3, p4, p5, p6 Rotate image
+
+p1 (0): Angle (real number)
+p2 (1): Scale (real number)
+p3 (0): X offset of center coordinates (real number)
+p4 (0): Y offset of center coordinates (real number)
+p5: Interpolation algorithm
+p6: CV buffer ID
+
+Rotate the entire CV buffer.
+Set the angle (360 degrees around) with p1 and the scale with p2.
+You can specify the center offset with (p3, p4).
+In p5, specify the interpolation algorithm during rotation.
+You can select one of the following to specify on p5.
+
+CV_INTER_NN --Nearest Neighbor
+CV_INTER_LINEAR --Bilinear (default)
+CV_INTER_AREA --Resampling around pixels
+(Moire can be reduced)
+CV_INTER_CUBIC --bicubic
+
+There is also an option that can be specified for p5 at the same time.
+
+CV_WARP_FILL_OUTLIERS-Fills Outlier Pixels
+CV_WARP_INVERSE_MAP --Rotate in inverse matrix
+
+By default, CV_INTER_LINEAR + CV_WARP_FILL_OUTLIERS
+It is specified.
+Specify the target CV buffer ID in p6.
+If omitted, the ID set by the cvsel instruction is used.
+
+
+cvarea p1, p2, p3, p4 Specifying the copy source area
+
+p1 (0): Copy source X coordinate
+p2 (0): Copy source Y coordinate
+p3 (0): Copy area X size
+p4 (0): Copy area Y size
+
+Specify the copy source area when copying an image with the cvcopy instruction.
+If all the parameters are 0, or omit all the parameters and use the cvarea instruction.
+If executed, the entire CV buffer will be targeted.
+
+
+cvcopy p1, p2, p3, p4, p5 Image copy
+
+p1 (0): Copy source CV buffer ID
+p2 (0): Copy destination X coordinate
+p3 (0): Copy destination Y coordinate
+p4: Copy destination CV buffer ID
+p5 (0): Arithmetic options
+
+Copy the contents of the CV buffer to another CV buffer.
+The CV buffer ID specified in p1 is used as the copy source.
+When copying a part of the buffer, use the cvarea instruction to change the position and size.
+Must be set in advance.
+Perform some operations when copying with the operation option of p5
+It is possible. The macros that can be specified for p5 are as follows.
+
+CVCOPY_SET
+CVCOPY_ADD (addition)
+CVCOPY_SUB (subtraction)
+CVCOPY_MUL (multiplication)
+CVCOPY_DIF (difference)
+CVCOPY_AND (logical product)
+
+Specify the copy destination CV buffer ID in p4.
+If omitted, the ID set by the cvsel instruction is used.
+
+Match the color mode of the CV buffer between the copy source and copy destination.
+is needed. Grayscale (black and white) screen and full color screen
+It cannot be mixed and copied.
+
+
+cvxors p1, p2, p3, p4 XOR operation of images
+
+p1 (255): R-value used in XOR operation
+p2 (255): G value used in XOR operation
+p3 (255): B value used in XOR operation
+p4: Copy destination CV buffer ID
+
+XOR the contents of the CV buffer.
+From p1 to p3, specify the calculated value (0 to 255) for the RGB value.
+Specify the target CV buffer ID in p4.
+If omitted, the ID set by the cvsel instruction is used.
+
+
+cvflip p1, p2 Image inversion
+
+p1 (0): Inversion mode
+p2: Copy destination CV buffer ID
+
+Inverts the contents of the CV buffer.
+You can specify the inversion mode with p1.
+If p1 is 0, it will be upside down.
+If p1 is 1 or more, it will be flipped horizontally.
+If p1 is a negative value, it will be flipped vertically and horizontally.
+
+Specify the target CV buffer ID in p2.
+If omitted, the ID set by the cvsel instruction is used.
+
+
+cvloadxml "filename" Loading XML file
+
+"filename": XML file name to read
+
+Reads the file specified by "filename" as an XML file.
+XML files should be prepared in advance when necessary for face recognition of images, etc.
+Must be loaded.
+
+If the process ends normally, the system variable stat will be 0.
+If any error occurs, the system variable stat is non-zero
+It will be a value.
+
+Embedded in executable and DPM files with #pack, #epack, etc.
+Please note that the file cannot be read.
+
+
+cvfacedetect p1, p2 Image face recognition
+
+p1: CV buffer ID
+p2 (1): Scale value (real number)
+
+Recognize a specific pattern from the image in the CV buffer.
+An xml file with pattern parameters in advance
+It must be loaded with the cvloadxml instruction.
+
+Specify the target CV buffer ID with p1.
+If omitted, the ID set by the cvsel instruction is used.
+
+You can set the scale during processing with p2.
+If you specify a value greater than 1 here, the buffer size will be changed during processing.
+It will be reduced and processed. Time with large images etc.
+It is recommended to specify in such cases.
+
+After execution, the system variable stat returns the number recognized.
+If stat is 0, it means that it is not recognized at all.
+If stat is 1 or more, the area recognized by the cvgetface instruction is displayed.
+You can get it.
+
+
+cvgetface p1, p2, p3, p4 Get recognized coordinates
+
+p1: Variable to which the recognized X coordinate is assigned
+p2: Variable to which the recognized Y coordinate is assigned
+p3: Variable to which the recognized X size is assigned
+p4: Variable to which the recognized Y size is assigned
+
+Gets the area recognized by the cvfacedetect instruction.
+Coordinate values are assigned as integers to the variables p1 to p4.
+Repeat as many times as the number recognized by the cvfacedetect command
+You can get the area.
+
+If it can be obtained normally, the system variable stat will be set after execution.
+It will be 0. System variables if no data is available
+stat will be 1.
+
+
+cvmatch p1, p2, p3, p4, p5 Image matching inspection
+
+p1: Variable to which the recognized X coordinate is assigned
+p2: Variable to which the recognized Y coordinate is assigned
+p3: Matching type
+p4: Matching source CV buffer ID
+p5: Matching destination CV buffer ID
+
+From the matching destination CV buffers, the matching source CV buffer
+Finds the area closest to and returns the result.
+After execution, the resulting coordinates are assigned to the variables specified in (p1, p2).
+Specifies the type of evaluation method used for matching in p3.
+The macros that can be specified in p3 are as follows.
+
+		CV_TM_SQDIFF
+			R(x,y)=sumx',y'[T(x',y')-I(x+x',y+y')]^2
+
+		CV_TM_SQDIFF_NORMED
+R (x, y) = sumx', y'[T (x', y')-I (x + x', y + y')] ^ 2 / sqrt [sumx', y'T (x', y') ^ 2 ・ sumx', y'I (x + x', y + y') ^ 2]
+
+		CV_TM_CCORR
+R (x, y) = sumx', y'[T (x', y')  I (x + x', y + y')]
+
+		CV_TM_CCORR_NORMED
+R (x, y) = sumx', y'[T (x', y')  I (x + x', y + y')] / sqrt [sumx', y'T (x', y') ) ^ 2 ・ sumx', y'I (x + x', y + y') ^ 2]
+
+		CV_TM_CCOEFF
+R (x, y) = sumx', y'[T'(x', y')  I'(x + x', y + y')],
+where T'(x', y') = T (x', y') --1 / (w ・ h) ・ sumx ", y" T (x ", y")
+I'(x + x', y + y') = I (x + x', y + y') ―― 1 / (w ・ h) ・ sumx ", y" I (x + x ", y + y ")
+
+		CV_TM_CCOEFF_NORMED
+R (x, y) = sumx', y'[T'(x', y')  I'(x + x', y + y')] / sqrt [sumx', y'T'(x') , y') ^ 2 ・ sumx', y'I'(x + x', y + y') ^ 2]
+
+Specify the target CV buffer ID in p5.
+If omitted, the ID set by the cvsel instruction is used.
+
+The cvmatch instruction only searches for the closest area.
+It does not guarantee that they are exactly the same.
+
+
+cvconvert p1, p2 Color mode conversion
+
+p1 (0): Conversion mode
+p2: CV buffer ID
+
+Converts the CV buffer to the color mode specified by p1.
+If p1 is 0, the full color screen becomes a grayscale (black and white) screen.
+When p1 is 1, the grayscale (black and white) screen becomes a full-color screen,
+Convert each.
+Specify the target CV buffer ID in p2.
+If omitted, the ID set by the cvsel instruction is used.
+
+
+・ Video related instructions
+
+For manipulating camera captures and video files via OpenCV
+Instruction set.
+
+cvcapture p1, p2 Start camera capture
+
+p1 (0): Camera ID
+p2: CV buffer ID
+
+Starts input from the capture device.
+In p1, specify the camera ID to identify the camera.
+The values that can be specified with p1 are as follows.
+If multiple devices are connected, add the values one by one
+It is possible to identify by doing.
+
+Macro value content
+		-------------------------------------------------
+CV_CAP_ANY 0 All available devices
+		CV_CAP_MIL      100	Matrox Imaging Library
+		CV_CAP_VFW      200	Video for Windows
+CV_CAP_IEEE1394 300 IEEE1394 (Not supported in the current version)
+
+CV buffer ID to save the image captured by p2
+Specify.
+If omitted, the ID set by the cvsel instruction is used.
+
+After starting camera capture, use the cvgetcapture command
+You can get the image for each frame.
+Also, when it is no longer needed, be sure to use the cvend capture instruction.
+You need to finish the capture.
+
+
+cvgetcapture acquisition of captured image
+
+The frame image of the capture initiated by the cvcapture command
+To get The CV buffer to be acquired is the cvcapture instruction.
+It will be the set ID.
+
+
+cvendcapture End of camera capture
+
+Terminates the capture initiated by the cvcapture instruction.
+
+
+cvopenavi "filename", p1 avi Start file acquisition
+
+"filename": avi video file name
+p1: CV buffer ID
+
+Start inputting from the avi video file.
+You can get the frames in the specified file
+Will be.
+
+CV buffer ID to save the image captured by p1
+Specify.
+If omitted, the ID set by the cvsel instruction is used.
+
+After starting to get the avi file, use the cvgetavi command
+You can get the image for each frame.
+Also, when it is no longer needed, be sure to use the cvcloseavi command.
+It is necessary to finish the acquisition of the avi file.
+
+The cvopenavi instruction simply simplifies the contents of the avi file.
+It is a function to take out, and it is not for normal video playback
+There is none. To the last, take out the frame and perform processing
+Think of it as an auxiliary function for.
+Also, the avi files that can be handled by the cvopenavi instruction are
+Limited to the old format avi format, all avi files
+It cannot be opened.
+
+
+cvgetavi avi Get file image
+
+Frame image of avi file started by cvopenavi command
+To get The CV buffer to be acquired is the cvcapture instruction.
+It will be the set ID.
+
+
+End of cvcloseavi avi file acquisition
+
+Terminates the avi file acquisition started by the cvopenavi instruction.
+
+
+cvmakeavi "filename", p1, p2, p3 avi Start file output
+
+"filename": Output avi video file name
+p1 (-1): 32bit Codec code
+p2 (29.97): Real frame rate (fps)
+p3: CV buffer ID
+
+Starts output to avi video file.
+Creates an avi file with the specified file name.
+
+Specify the 32-bit code (FOURCC) of the codec with p1.
+If you specify -1 for p1, a dialog for selecting a codec opens.
+Specify the real frame rate (fps) with p2.
+If p2 is omitted, it will be 29.97fps.
+
+Specify the CV buffer ID that holds the output image in p3.
+If omitted, the ID set by the cvsel instruction is used.
+
+After the output starts, the image for each frame is displayed by the cvputavi command.
+You need to register and finally call the cvendavi instruction.
+
+
+Output image to cvputavi avi file
+
+Frame image in avi file started by cvmakeavi command
+add.
+The referenced CV buffer will be the ID set by the cvmakeavi instruction.
+
+
+End of cvendavi avi file output
+
+Terminates the avi file output started by the cvmakeavi instruction.
+
+
+-------------------------------------------------------------------------------
+                                                HSP users manual / end of file 
+-------------------------------------------------------------------------------

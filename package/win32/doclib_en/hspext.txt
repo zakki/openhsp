@@ -1,0 +1,1869 @@
+------------------------------------------------------------------------------
+HSPEXT ver3.5  REFERENCE MANUAL                     HSP : Hot Soup Processor  
+HSP Extension DLL Reference copyright 1999-2016 (c) onion software
+------------------------------------------------------------------------------
+
+・ Introduction
+
+This DLL can be used in various ways by using it with Hot Soup Processor ver3 or later.
+It is a plug-in module that can be expanded.
+By using this extension DLL, many new instructions have been added, and registry operations,
+Simple mathematical functions, serial communication, extended dialog display, extended file access, etc.
+Many functions will be controlled from HSP.
+These instructions are for tools and utilities that cannot be realized by HSP alone.
+There are many things that are useful for creating, and it enables more advanced application development.
+
+
+・ Overview of usage
+
+The extension plug-in file, HSPEXT.DLL, has HSED3.EXE and HSP3.EXE.
+Place it in the same location as the directory.
+(If HSPEXT.DLL is not in the same directory as the HSP3.EXE used for execution
+Will result in an error)
+Also, when creating a script, use hspext.as in the same direction as the script.
+Put it in the bird and be sure to add the line "#include" hspext.as "" at the beginning of the script
+please. With the above, the function of HSP has been expanded and explained in this reference.
+You will be able to use the instructions you are using.
+First of all, try running the included sample script.
+You should be able to see a simple usage example of the enhanced functionality.
+
+
+揃Change log
+
+	2016/6/27
+
+Added Computb instruction to send arbitrary binary data to serial port
+
+	2009/3/09
+
+Fixed to be able to specify the 10th (COM10) or higher of the serial port (sharkpp)
+Fixed a bug that freezes and errors occur in pipeput and pipeget (sharkpp)
+
+	2007/7/15
+
+Fixed a bug in the dirlist2 instruction.
+
+	2004/5/21
+
+Fixed a bug that the specification of copy source Y coordinate is not reflected correctly in the grotate command.
+Fixed a bug that double-byte characters cannot be used on Windows 2000 or later with the aplstr instruction.
+
+	2004/3/1
+
+Added grottate, grect, and gsquare commands to transform and rotate images.
+
+	2003/3/1
+
+Compstat for getting the status of the communication port device, and for controlling
+Added comcontrol instruction.
+
+	2002/5/13
+
+Added dirlist2 related instructions to get folder information including subdirectories.
+Removed sysinfo instruction.
+
+	2001/9/9
+
+Fixed a bug that the item ID was not released by the fxdir instruction.
+Fixed wrong temporary directory acquisition with fxdir instruction.
+
+	2000/11/5
+
+Fixed a bug that the clipsetg instruction cannot be used on Windows 2000.
+
+	2000/5/1
+
+Added computc / pipeexec / pipeget / pipeput instructions.
+Made FAT32 compatible with free disk space acquisition by fxinfo instruction.
+
+	1999/12/2
+
+Included with ver2.5.
+
+
+揃important point
+
+HSPEXT.DLL is a plug-in file that is used at the same time as HSP3.EXE.
+Even if you create an EXE file, put HSPEXT.DLL in the same directory as the EXE file.
+It will not work unless it is placed in. Also, you cannot add DLLs to the packfile.
+
+HSP main body has been confirmed to work on Windows95, 98, NT3.51 or later, 2000, XP, etc.
+Whether the extension plugin including HSPEXT.DLL works on all versions
+Not guaranteed.
+When publishing software that uses HSPEXT.DLL, specify only those that have been confirmed to work.
+Please.
+
+
+・ Copyright and contact information
+
+Of the original software (executable file) created by the user using HSP
+The right belongs to the user who created it.
+HSPEXT.DLL can be freely distributed regardless of whether it is paid or free of charge.
+There is no obligation to display the copyright.
+Onion software copyrights the original software created by the user
+I have no claim.
+
+The HSPEXT plug-in is a copyrighted work of onion software.
+onion software is responsible for any damage caused by this program.
+We do not guarantee. Use at your own risk.
+HSPEXT.DLL is compiled with Microsoft Visual Studio.NET 2003.
+
+
+・ Instruction list
+
+Full color screen operation command
+
+gfini p1, p2 Set the target screen
+gfcopy p1 translucent copy
+gfdec p1, p2, p3 Screen color subtraction
+gfinc p1, p2, p3 Screen color addition
+hsvcolor p1, p2, p3 HSV format color specification
+
+
+Extended screen operation command
+
+grect p1, p2, p3, p4, p5 Fill with a rotating rectangle
+grotate p1, p2, p3, p4, p5, p6 Rotate and copy rectangular image
+gsquare p1, p2, p3, p4, p5 Copy any square image
+
+
+System information acquisition command
+
+sysinfo p1, p2 Get system information
+sysexit p1 Notify system of termination
+
+
+Simple math function instructions
+
+emath p1 Specify fixed decimal precision
+emstr p1, p2, p3 Convert fixed decimals to strings
+emcnv p1, "val" Convert string to fixed decimal
+emint p1, p2 Convert fixed decimals to integers
+emsin p1, p2 Ask for signature
+emcos p1, p2 Ask for cosine
+emsqr p1, p2 Find the square root
+ematan p1, p2, p3 Find the arc tangent
+
+
+Registry manipulation instructions
+
+regkey p1, "key-name", p2 Registry key specification
+getreg p1, "section", p2, p3 Registry read
+setreg p1, "section", p2, p3 Write to registry
+regkill p1, "key-name" registry key deleted
+reglist p1, p2 Get registry list
+
+
+Serial communication command
+
+comopen p1, "protocol" Initialize serial port
+comclose Release serial port
+computc p1 Send to serial port
+computb var, size Send binary to serial port
+comput "send-string" send to serial port
+comgetc p1 Received from serial port
+comget p1, p2 Receive a string from the serial port
+comstat p1 Serial port status acquisition
+comcontrol p1 Special control for serial port
+
+
+Extended file access instruction
+
+fxcopy p1, "dest", p2 Copy / move files
+fxren p1, "new name" renamed
+fxinfo p1, p2, p3 Get drive information
+fxaget p1, "file" Get file attributes
+fxaset "file", p1 Set file attributes
+fxtget p1, "file" Get timestamp
+fxtset p1, "file" Set timestamp
+selfolder p1, "message" Folder selection dialog
+fxshort p1, "file" Get DOS file name
+fxdir p1, p2 Get special directory name
+fxlink p1, create "path" shortcut
+lzdist "path" Specify the compression / decompression destination directory
+lzcopy "name" compression decompression copy
+
+
+Clipboard access instructions
+
+clipset "strings" clipboard text transfer
+clipsetg clipboard image transfer
+clipget p1, p2 clipboard text get
+
+
+Application capture instructions
+
+aplsel "window name", p1 Capture any window
+aplobj "object name", p1 Capture any object
+activate the aplact window
+default aplfocus key destination
+aplstr "strings" keying strings
+aplkey p1, p2 key code transmission
+aplkeyu p1, p2 key press down send
+aplkeyd p1, p2 key up transmission
+aplget p1, p2 Get the object string
+apledit p1, p2, p3 Edit control information acquisition
+pipeput p1 Send 1 byte to the pipe
+pipeget p1 Execution monitoring with pipe
+pipeexec p1, "filename", p2 Execution with pipe
+
+
+・ Full-color screen operation command
+
+This is a graphic operation command dedicated to full color mode.
+Fade the specified range toward black, fade toward white,
+It is possible to make a semi-transparent copy.
+
+
+gfini p1, p2 Set the target screen
+
+p1 = 0 to (0): X size (dot unit) for screen operation
+p2 = 0 to (0): Y size (dot unit) for screen operation
+
+揃Description
+
+Full-color screen Set the target screen for which operation commands are to be issued.
+Be sure to set the target screen with the gfini command, and then use other full-color
+Use screen manipulation instructions.
+In the gfini instruction, the window currently selected by the gsel instruction
+From the current position, draw the size specified by p1 and p2
+will do.
+Be sure to do it for the screen that has been initialized in full color mode.
+give me.
+
+gfcopy p1 translucent copy
+
+p1 = 0-100 (0): Semi-transparent copy rate (%)
+
+揃Description
+
+Copies the screen image at the rate specified by p1.
+The copy destination will be the screen set by the gfini instruction.
+The copy source is set as the drawing destination when the gfcopy instruction is executed.
+It will be the current position of the screen that is being displayed.
+The rate for p1 is 0-100 (%) and 100% is a normal copy.
+The actual screen is not updated just by executing this command.
+It will be reflected only after updating the screen with "redraw 1" etc.
+
+gfdec p1, p2, p3 Screen color subtraction
+
+p1, p2, p3 = 0 to 255 (0): Color code (brightness of R, G, B)
+
+揃Description
+
+For all dots in the screen set by the gfini command
+Subtracts the numbers specified by p1, p2, and p3.
+p1 is for R, p2 is for G, and p3 is for B.
+This slowly fades in full color mode
+It is effective when you want to get the effect of going (fade out).
+The actual screen is not updated just by executing this command.
+It will be reflected only after updating the screen with "redraw 1" etc.
+
+gfinc p1, p2, p3 Screen color addition
+
+p1, p2, p3 = 0 to 255 (0): Color code (brightness of R, G, B)
+
+Description
+
+For all dots in the screen set by the gfini command
+Adds the values specified by p1, p2, and p3.
+p1 is for R, p2 is for G, and p3 is for B.
+This slowly turns the color white in full color mode
+It is effective when producing the effect of Iku (whiteout).
+The actual screen is not updated just by executing this command.
+It will be reflected only after updating the screen with "redraw 1" etc.
+
+hsvcolor p1, p2, p3 HSV format color specification
+
+p1 = 0 to 191 (0): HSV format H value
+p2 = 0 to 255 (0): HSV format S value
+p3 = 0 to 255 (0): HSV format V value
+
+Description
+
+Specify the color in HSV format. The color specified here is
+Used in graphic instructions such as the mes, pset, and boxf instructions.
+Use it as the HSV format version of the color instruction.
+
+
+・ Extended screen operation command
+
+grect p1, p2, p3, p4, p5, p6 Fill with a rotating rectangle
+p1 = 0 to (0): Rectangle center X coordinate
+p2 = 0 to (0): Y coordinate of the center of the rectangle
+p3 = 0 to (0): Rotation angle (4096 = 360 degrees)
+p4 = 0 ~ (?): X size
+p5 = 0 ~ (?): Y size
+p6 = 0 to (0): Palette code
+
+揃Description
+
+With the coordinates specified in (p1, p2) as the center, the size specified in (p4, p5)
+Draw a rectangle (rectangle).
+The color to be drawn shall be the one specified by the color command or the palcolor command.
+Become.
+You can specify the rotation angle with p3.
+The angle starts at 0 and goes around (360 degrees) at 4096.
+The grect instruction reflects the copy mode specification set in gmode.
+If gmode is 0,1, normal fill.
+If gmode is 3, it will be translucent at the specified rate.
+When gmode is 5 or 6, color addition and color subtraction are performed respectively.
+If the size specification of (p4, p5) is omitted, it is set by the gmode instruction.
+The copy size is used.
+In palette mode, fill with the palette code specified on p6
+It will be done. Also, translucent processing is not executed in palette mode.
+
+grotate p1, p2, p3, p4, p5, p6 Rotate and copy rectangular image
+p1 = 0 to (0): Copy source window ID
+p2 = 0 to (0): Upper left X coordinate of copy source
+p3 = 0 to (0): Upper left Y coordinate of copy source
+p4 = 0 to (0): Rotation angle (4096 = 360 degrees)
+p5 = 0 ~ (?): X size
+p6 = 0 ~ (?): Y size
+
+揃Description
+
+The grotate instruction performs processing including rotation in the gcopy instruction.
+Specify the copy source window ID with p1, and the original image to be copied with (p2, p3).
+Specify the corresponding coordinates. (Similar to the gcopy instruction)
+The copy destination is the window ID specified for the current drawing destination.
+Copy to the coordinates centered on the location set by the pos instruction.
+At that time, you can specify the rotation angle with p3.
+The angle starts at 0 and goes around (360 degrees) at 4096.
+In (p5, p6), specify the X and Y sizes after copying.
+Also, the X and Y sizes of the copy source are the defaults set by the gmode instruction.
+The copy size is used.
+That is, a size larger than the size specified by the gmode instruction (p5, p6)
+If specified in, it will be enlarged.
+If (p5, p6) is omitted, the size is the same as the copy source, that is, the same size.
+A copy will be made.
+
+In the grotate instruction, all the copy mode specifications set in gmode are specified.
+It will be reflected.
+The transparent color setting and the semi-transparent setting are all the same as when copying with the gcopy command.
+Works equally well. (See the gmode instruction reference for details)
+
+Semi-transparency processing is not executed in palette mode.
+Also, between different screen modes (palette mode and full color mode)
+Copying will result in an error.
+
+gsquare p1, p2, p3, p4, p5 Copy any square image
+
+p1 = 0 to (0): Copy source window ID (filled if negative value)
+p2 = variable name: Numeric array variable name where the copy destination X coordinates are stored
+p3 = variable name: Numeric array variable name where the copy destination Y coordinates are stored
+p4 = variable name: Numeric array variable name where the copy source X coordinates are stored
+p5 = variable name: Numeric array variable name where the copy source Y coordinates are stored
+
+揃Description
+
+Copy or fill a rectangle with any 4 points.
+In p1, specify the window ID of the image copy source.
+If you specify a negative value such as -1 for p1, fill it instead of copying the image.
+Will be done.
+At that time, in full color mode, it was specified by the color and palcolor instructions.
+It will be filled with color. In palette mode, specified by p1
+Fills with a value of -1 as the palette code.
+(-1 to -256 correspond to palette codes 0 to 255)
+
+For p2 and p3, specify the variables that store the four coordinates of the copy destination in the array.
+For p4 and p5, specify the variables that store the four coordinates of the copy source in the array.
+For array variables, the coordinates are set in the order of upper left (0), upper right (1), lower right (2), lower left (3).
+Must be included.
+It is not necessary to specify (p4, p5) when filling.
+
+For the gsquare instruction, all the copy mode specifications set in gmode are specified.
+It will be reflected.
+The transparent color setting and the semi-transparent setting are all the same as when copying with the gcopy command.
+Works equally well. (See the gmode instruction reference for details)
+
+Semi-transparency processing is not executed in palette mode.
+Also, between different screen modes (palette mode and full color mode)
+Copying will result in an error.
+
+
+・ System information acquisition command
+
+This is an instruction set for acquiring Windows system information.
+In addition to system information acquisition, system shutdown, reboot, logoff, etc.
+It is possible to make a notification.
+
+sysexit p1 Notify system of termination
+
+p1 = 0 to (0): End type specification
+
+揃Description
+
+Shut down a running Windows system.
+Windows will exit according to the type specified in p1.
+When this instruction is executed, all applications will be terminated.
+I will do it. Use with great care, such as saving the script you are creating
+give me. Also, after the sysexit instruction, put the end instruction and put the HSP script.
+Please also end.
+The type specification specified by p1 is as follows.
+
+Type content
+		-----------------------------------------------------------
+0 Log off
+1 Reboot
+2 Shut down
+3 Turn off the power
+
+When turning off the power, specify to turn off the power after shutdown.
+give me. In OS with user authority such as Windows NT, 2000, XP, authority is
+If you do not have it, you may not be able to terminate it.
+
+
+・ Simple mathematical function instructions
+
+An instruction set to support mathematical functions using fixed point numbers.
+This is for simple decimal operations that can be used with current integer operations
+Thing. It is not suitable for high-precision technical calculations. Movement on the screen, effects, etc.
+It is suitable for light applications where you want to use trigonometric functions in small places.
+Currently supported functions are sine, cosine, arctangent,
+There are four routes. In addition to this, conversion between fixed decimals and integers and conversion to character strings
+Etc. are supported.
+The fixed decimals handled by this instruction set are ordinary 32-bit integers, integer part 24bit + decimal part 8bit.
+(Default setting. It is possible to change it.) It is divided and used.
+This allows you to use expressions such as four arithmetic operations just like regular integers.
+For example, a value of 10 for a 32-bit integer becomes 2560 for a fixed decimal of 24 + 8bit.
+By using the simple mathematical function instruction set, you can convert a number of 24 + 8bit to a 32-bit integer,
+It is possible to convert to a character string in a format that includes a decimal point.
+
+
+emath p1 Specify fixed decimal precision
+
+p1 = 2 to 30 (8): Fixed decimal bit precision
+
+揃Description
+
+Simple Mathematical Function Sets the precision of fixed decimals used throughout the instruction set.
+Specify the number of bits of precision with p1. For example, if you specify 16.
+The format is "integer 16bit + decimal 16bit".
+The higher the fixed decimal bit precision, the more accurate decimal point calculation without error is possible.
+However, the range that can be handled by the integer part becomes narrower.
+By default, it is set to 8bit.
+
+emstr p1, p2, p3 Convert fixed decimals to strings
+
+p1 = variable name: String type variable name where the character string is stored
+p2 = 0 ~: Fixed decimal value
+p3 = 1 to (10): Number of digits in the character string to be converted
+
+揃Description
+
+Converts a fixed decimal value to a string containing a decimal point.
+The converted character string is assigned to the character string type variable specified in p1.
+Specify a fixed decimal value (variable to which is assigned) to be converted in p2
+To do. You can specify the number of digits to be converted with p3.
+If you omit the specification of p3, it will be 10 digits.
+
+emcnv p1, "val" Convert string to fixed decimal
+
+p1 = variable name: numeric variable name where fixed decimals are stored
+"val": A string indicating a fixed decimal number
+
+揃Description
+
+Converts the character string specified by "val" to a fixed decimal value and assigns it to the variable of p1.
+To do. For example, if you specify the string "3.1415", it will be a fixed decimal.
+Convert to and store.
+
+emint p1, p2 Convert fixed decimals to integers
+
+p1 = variable name: String type variable name where the character string is stored
+p2 = 0 ~: Fixed decimal value
+
+揃Description
+
+Converts a fixed decimal value to a normal 32-bit integer and assigns it to the numeric variable specified by p1.
+To do. When converting to an integer, all fractional parts are truncated.
+
+emsin p1, p2 Ask for signature
+
+p1 = variable name: numeric string type variable name where the result is stored
+p2 = 0 ~: Angle (fixed decimal)
+
+揃Description
+
+Finds the sine value of the angle specified by p2 and assigns it to the variable specified by p1.
+For the angle of p2, specify a fixed decimal value. The unit is 1.0 starting from 0
+It is a numerical value that makes one rotation.
+Looking at the value of p2 as a 32-bit integer value, it starts from 0, 64 is 90 degrees, 128 is 180 degrees,
+192 is 270 degrees and 256 is 360 degrees (when the precision of the fixed decimal is 8 bits).
+
+emcos p1, p2 Ask for cosine
+
+p1 = variable name: numeric string type variable name where the result is stored
+p2 = 0 ~: Angle (fixed decimal)
+
+揃Description
+
+Finds the cosine value of the angle specified by p2 and assigns it to the variable specified by p1.
+For the angle of p2, specify a fixed decimal value. The unit is 1.0 starting from 0
+It is a numerical value that makes one rotation.
+Looking at the value of p2 as a 32-bit integer value, it starts from 0, 64 is 90 degrees, 128 is 180 degrees,
+192 is 270 degrees and 256 is 360 degrees (when the precision of the fixed decimal is 8 bits).
+
+emsqr p1, p2 Find the square root
+
+p1 = variable name: numeric string type variable name where the result is stored
+p2 = 0 ~: Fixed decimal
+
+揃Description
+
+Find the square root of the fixed decimal number specified by p2 and assign it to the variable specified by p1.
+To do. If you specify a negative value or 0 for p2, 0 is returned.
+
+ematan p1, p2, p3 Find the arc tangent
+
+p1 = variable name: numeric string type variable name where the result is stored
+p2 = 0 ~: X value
+p3 = 0 ~: Y value
+
+揃Description
+
+Find the Y / X arctangent and assign it to the variable specified by p1.
+This is mainly used to find the angle between two points.
+To find the angle between the coordinates (X1, Y1) and the coordinates (X2, Y2), the difference between the coordinates,
+Specify (X2-X1) for the X value and (Y2-Y1) for the Y value.
+The angle value assigned to p1 is the unit of angle used in the emsin and emcos instructions.
+Same as (starting from 0 and making one revolution at 1.0).
+
+
+-Registry operation command
+
+An instruction set for reading and writing Windows95 (NT) registry information.
+In addition to storing the settings of various applications in the registry,
+The operation settings of Windows itself are also important data that is saved in detail.
+Registry manipulation instructions give access to all information, but wrong
+If you write system information, the worst situation is that the system will not work.
+Be careful when manipulating the registry as it will cause it.
+
+
+regkey p1, "key-name", p2 Registry key specification
+
+p1 = 0 to (0): Key group specification
+"key-name": Key name specification
+p2 = 0 to 1 (0): Existing key (0) / New creation (1) Mode switch
+
+揃Description
+
+Specifies the registry key to access. Read and write the registry
+When doing so, be sure to first specify the key and read / write mode with the regkey instruction.
+I have to keep it.
+In p1, specify the key group. Choose from the following:
+
+		    p1  key group
+		  --------------------------------
+		     0 : HKEY_CURRENT_USER
+		     1 : HKEY_LOCAL_MACHINE
+		     2 : HKEY_USERS
+		     3 : HKEY_CLASSES_ROOT
+4: HKEY_DYN_DATA (Windows95 / 98 only)
+5: HKEY_PERFORMANCE_DATA (Windows NT only)
+
+In "key-name", use "\\\\" like "Software \\\\ OnionSoftware \\\\ hsed"
+Separate the tree and specify the hierarchy.
+Finally, set the read / write mode with p2. Read if p2 is 0
+The mode is set and the contents of the section specified by the getreg instruction are read.
+You will be able to. If p2 is 1, it will be in new creation mode.
+Adds the section specified by the setreg instruction.
+Set p2 to 0 to read or modify an existing registry.
+After executing the regkey instruction, the result is returned in the system variable stat.
+If the system variable stat is non-zero, then some error has occurred
+It shows that.
+
+getreg p1, "section", p2, p3 Registry read
+
+p1 = variable name: variable name to read
+"section": Specify section name
+p2 = 0 to 1 (0): Type specification
+p3 = 1 to (64): Read size specification
+
+揃Description
+
+Reads the contents of the specified section into the variable specified by p1.
+Specify the location of the registry to access with the regkey instruction in advance
+Must be used from. The target registry location is specified
+If not, an error will be displayed.
+Specify the type with p2, the code of the type is as follows.
+
+		    p2  type code
+		  --------------------------------
+0: Numerical value (32bit)
+1: String
+2: Binary data
+
+Specify the read size with p3. This is a string or binary type
+It is enabled when you select.
+After executing the instruction, the result is returned in the system variable stat.
+If the system variable stat is non-zero, then some error has occurred
+It shows that.
+
+setreg p1, "section", p2, p3 Write to registry
+
+p1 = variable name: variable name to write
+"section": Specify section name
+p2 = 0 to 1 (0): Type specification
+p3 = 1 ~ (64): Write size specification
+
+揃Description
+
+Writes the contents of the variable specified by p1 to the specified section.
+Specify the location of the registry to access with the regkey instruction in advance
+Must be used from. The target registry location is specified
+If not, an error will be displayed.
+Specify the type with p2, the code of the type is as follows.
+
+		    p2  type code
+		  --------------------------------
+0: Numerical value (32bit)
+1: String
+2: Binary data
+
+Specify the write size with p3. It chose the binary type
+Only valid at times.
+After executing the instruction, the result is returned in the system variable stat.
+If the system variable stat is non-zero, then some error has occurred
+It shows that.
+
+regkill p1, "key-name" registry key deleted
+
+p1 = 0 to (0): Key group specification
+"key-name": Key name specification
+
+揃Description
+
+Deletes the specified registry key.
+In p1, specify the key group. Choose from the following:
+
+		    p1  key group
+		  --------------------------------
+		     0 : HKEY_CURRENT_USER
+		     1 : HKEY_LOCAL_MACHINE
+		     2 : HKEY_USERS
+		     3 : HKEY_CLASSES_ROOT
+4: HKEY_DYN_DATA (Windows95 / 98 only)
+5: HKEY_PERFORMANCE_DATA (Windows NT only)
+
+In "key-name", use "\\\\" like "Software \\\\ OnionSoftware \\\\ hsed"
+Separate the tree and specify the hierarchy.
+After executing the instruction, the result is returned in the system variable stat.
+If the system variable stat is non-zero, then some error has occurred
+It shows that.
+If there are more keys under the specified registry key
+You should be careful. If the OS is Windows NT, further under the registry key
+If the key is included, an error will occur and it cannot be deleted.
+When creating a script that works on both Windows95 (98) / NT
+Please be careful about this point.
+
+reglist p1, p2 Get registry list
+
+p1 = variable name: variable name to read
+p2 = 0 to 1 (0): Mode specification
+
+揃Description
+
+Gets the list of registry keys at the specified location.
+Specify the location of the registry to access with the regkey instruction in advance
+Must be kept.
+When the mode of p2 is 0, the "section list" is acquired, and when the mode is 1, the mode is 1.
+You will get the "key list".
+For example, "Software \\\\ OnionSoftware \\\\ hsed"
+There are two registry keys called "Software \\\\ OnionSoftware \\\\ hspcomm"
+If so, the key list below the location of "Software \\\\ Onion Software"
+Becomes "hsed" and "hspcomm".
+This will put what keys and sections in the registry tree
+You can check if it exists.
+The acquired information is assigned to the string type variable specified in p1.
+Each item is acquired in the form separated by a line feed (\\ n), so in advance
+It is safer to have enough variable buffers.
+The acquired character string is a memory notepad command, a listbox command, or a combox command.
+You can use it as it is.
+
+
+・ Serial communication command
+
+An instruction set for controlling external devices connected to the serial (COM) port.
+Normally, it is used for communication with communication devices such as modems, but there are other serial connections as well.
+With an image scanner, various control devices, or another computer connected in reverse
+Communication is possible. You can also access the printer port with the same instruction set.
+Serial communication instructions only support basic communication, so advanced control
+Cannot be done. For serial communication instructions, only one port at a time
+I can't control it. Building software that monitors multiple serial ports at the same time
+Please note that it cannot be done.
+Once the serial port is initialized, other applications can open it until it is opened.
+Don't forget to open the port last, as it will be unusable.
+give me. Especially so that you do not press the close box during communication and end
+Create a script that calls attention at the end, such as with the onexit command.
+
+
+comopen p1, "protocol" Initialize serial port
+
+p1 = 0 to (0): COM port number
+"protocol": Protocol specification string
+
+揃Description
+
+Initializes the serial port so that it can send and receive.
+When using the serial communication instruction set, first use the comopen instruction on the port.
+It needs to be initialized.
+Use p1 to specify the COM port number. If it is 1, COM1 is supported, if it is 2, COM2 ... is supported.
+To do. If p1 is 0, then the printer (parallel) port is not serial
+Will be specified.
+You can write a protocol specification string with "protocol".
+The protocol specification character string must be described as follows.
+
+		"baud=1200 parity=N data=8 stop=1"
+
+In the above example, the baud rate is 1200 bps, no parity bit, data bit 8,
+It is specified as stop bit 1.
+If nothing is written in "protocol" (specify ""), the current default value is
+will be used. Normally, you don't have to specify anything.
+If the serial port is successfully initialized, the value of the system variable stat will be 0.
+If the initialization fails, the value of the system variable stat will be 1.
+
+
+comclose Release serial port
+
+揃Description
+
+Ends communication with the serial port.
+The serial port initialized with the comopen instruction must be the last with the comclose instruction.
+Need to be released.
+If the program ends without the port being released by the comclose instruction,
+Note that other programs will never be able to access the port.
+please.
+
+computc p1 Send to serial port
+
+p1 = 0 to 255 (0): Transmission data (1 byte)
+
+揃Description
+
+Sends 1 byte of numeric data specified by p1 to the serial port.
+After executing the instruction, the result is returned in the system variable stat.
+If the system variable stat is 0, it means that communication has failed and has not been sent.
+
+comput "send-string" Send string to serial port
+
+"send-string": Send string
+
+揃Description
+
+Sends the character string specified by "send-string" to the serial port.
+After executing the instruction, the result is returned in the system variable stat.
+If the system variable stat is 0, it means that communication has failed and has not been sent.
+If it is 1 or more, the number of bytes (characters) that was successfully transmitted is assigned.
+
+comgetc p1 Received from serial port
+
+p1 = Numeric variable: Variable name to which received data is assigned
+
+揃Description
+
+Receives 1 byte from the serial port and assigns it to the variable specified by p1.
+After executing the instruction, the result is returned in the system variable stat.
+If the system variable stat is 0, it indicates that the receive buffer is empty.
+is.
+
+comget p1, p2 Receive a string from the serial port
+
+p1 = string type variable: variable name to which received data is assigned
+p2 = 1 ~ (64): Specify the number of received characters
+
+揃Description
+
+Receives a string from the serial port and assigns it to the variable specified on p1.
+You can specify the number of characters to receive with p2.
+After executing the instruction, the result is returned in the system variable stat.
+If the system variable stat is 0, it indicates that the receive buffer is empty.
+is.
+If the reception is successful, the character string is assigned to p1 and the system variable stat is actually assigned.
+The number of received characters is substituted.
+
+
+comstat p1 Serial port status acquisition
+
+p1 = Numeric array variable: Variable name to which state data is assigned
+
+揃Description
+
+Gets the serial port status and assigns it to the variable specified in p1.
+The following information is assigned to the variable specified by p1 from p1.0 to p1.3 in the array.
+If the status acquisition is successful, the system variable stat will be 0.
+If an error occurs, the system variable stat will be 1.
+
+	-----------------------------------------------------------------------
+	a.0
+When an error occurs, the following combination of error flags is assigned.
+
+CE_RXOVER 0x0001 Receive buffer overflow.
+CE_OVERRUN 0x0002 Overrun error.
+CE_RXPARITY 0x0004 Parity error when receiving.
+CE_FRAME 0x0008 Framing error.
+CE_BREAK 0x0010 Break state.
+CE_TXFULL 0x0100 The send buffer is full.
+CE_PTO 0x0200 Timeout.
+CE_IOE 0x0400 General I / O error.
+CE_DNS 0x0800 No device selected.
+CE_OOP 0x1000 Out of feed error.
+CE_MODE 0x8000 This is an unsupported mode.
+
+	a.1
+The following device status flags are assigned.
+
+bit0 fCtsHold ON: Send waits for CTS
+bit1 fDsrHold ON: Send waits for DSR
+bit2 fRlsdHold ON: Send waits for RLSD (CD)
+bit3 fXoffHold ON: Transmission is stopped because XOFF was transmitted.
+bit4 fXoffSent ON: Transmission is stopped because XOFF was transmitted.
+bit5 fEof ON: Received EOF
+bit6 fTxim ON: Data remains in the send buffer
+
+	a.2
+cbInQue Number of bytes of data in the receive buffer
+	a.3
+cbOutQue Number of bytes of data in the send buffer
+	-----------------------------------------------------------------------
+
+
+comcontrol p1 Special control for serial port
+
+p1 = 1 to 9 (0): Special control function specification
+
+Gives special control to the serial port.
+With p1, specify the function to control from the following.
+
+Value function
+		-----------------------------------------------------------------------
+SETXOFF 1 Sends as if a XOFF character was received.
+SETXON 2 Sends as if a XON character was received.
+SETRTS 3 Sends an RTS (send request) signal.
+CLRRTS 4 Clears the RTS (send request) signal.
+SETDTR 5 Sends a DTR (data terminal ready) signal.
+CLRDTR 6 Clears the DTR (data terminal ready) signal.
+RESETDEV 7 Resets the device
+SETBREAK 8 Characters Suspends transmission and disconnects the transmission line.
+CLRBREAK 9 Cancels the disconnection status of the transmission line and resumes character transmission.
+
+If the status acquisition is successful, the system variable stat will be 0.
+If an error occurs, the system variable stat will be 1.
+
+
+-Extended file access command
+
+More advanced file operations that were not possible with HSP standard file operation instructions alone,
+And the command to get the file system information.
+It is possible to acquire and set the status of the specified file or drive.
+
+
+fxcopy p1, "dest", p2 Copy / move files
+
+p1 = variable: Character string type variable name that stores the file name of the copy source
+"dest": Copy destination path name
+p2 = 0,1 (0): Mode specification (0 = copy / 1 = move)
+
+揃Description
+
+Copies or moves the specified file to another path.
+In p1, specify the variable name that stores the copy source file name in advance.
+In "dest", specify the destination directory or drive.
+Depending on the mode of p2, you can specify either copy or move.
+If you omit the specification of p2, it will be a copy.
+If you specify a move mode, the original file is deleted. However,
+The move must be in the same drive.
+
+Example:
+			a="test.bin"
+fxcopy a, "c: \\\\ temp"; copy "test.bin" to C: \\ temp
+
+The fxcopy instruction uses the Windows shell to copy and move at high speed.
+Faster than HSP bcopy instruction, but access to the file specified by packfile
+Please note that you cannot.
+If the instruction fails to execute, the system variable stat is assigned 1. Finished normally
+If you do, the system variable stat will be 0.
+
+
+fxren p1, "new name" renamed
+
+p1 = variable: string type variable name that stores the original file name
+"new name": new file name
+
+揃Description
+
+Renames the specified file to the file name specified by "new name".
+In p1, specify the variable name that stores the original file name in advance.
+For "new name", specify a new file name.
+If the instruction fails to execute, the system variable stat is assigned 1. Finished normally
+If you do, the system variable stat will be 0.
+
+
+fxinfo p1, p2, p3 Get drive information
+
+p1 = variable: variable name where information is stored
+p2 = 0 to (0): Drive specification
+p3 = 0 to (0): Information type specification
+
+Description
+
+Assigns information about the drive specified in p2 to the variable specified in p1.
+The drive specified by p2 is the current drive if it is 0, the A drive if it is 1, and the drive if it is 2.
+B drive ... 1 to 26 correspond to A to Z drives.
+In p3, you can get various drive information by specifying the information type.
+I can do it. The numerical values that can be specified with p3 are as follows.
+
+content of p3 variable type information
+		  --------------------------------
+0: Numeric type: Remaining capacity of drive (byte)
+1: Numeric type: Number of sectors per cluster
+2: Numeric type: Number of bytes per sector
+3: Numeric type: Number of free clusters
+4: Numeric type: Total number of clusters
+8: Numeric type: Drive type
+16: String type: Volume label name
+17: String type: File system name
+18: Numeric type: Volume serial number
+19: Numeric type: Maximum number of file characters that can be used
+20: Numeric type: File system flag
+32: Character string type: Remaining capacity of drive (byte) (supports large capacity)
+
+The type assigned to the variable of p1 differs depending on the specified type. Types 16 and 17
+You must specify a string type variable in advance.
+The details of the drive type value that can be obtained with type 8 are as follows.
+
+Type content
+		  --------------------------------
+0: Unknown drive
+1: No drive
+2: Removable disk
+3: Hard disk
+4: Remote (network) drive
+5: CD-ROM drive
+6: RAM disk
+
+If the instruction fails to execute, the system variable stat is assigned 1. Finished normally
+If you do, the system variable stat will be 0.
+
+The remaining capacity of the drive obtained by specifying 0 for p3 is a value up to 2 Gbyte.
+Become. If the value exceeds 2G, specify 32 for p3 and set the size as a character string.
+Please use the method to obtain.
+
+
+fxaget p1, "file" Get file attributes
+
+p1 = variable name: numeric variable name where information is stored
+"file": Specify file name
+
+揃Description
+
+Reads the attributes of the file specified by "file" and assigns them to the variables specified by p1.
+The read attributes include the following numbers.
+
+Attribute content
+		  --------------------------------
+$ 1: Write-protected
+$ 2: Hidden files
+$ 4: System
+$ 10: Directory
+$ 20: Archive
+$ 80: Standard type
+$ 100: Temporary file
+$ 800: Compressed file
+$ 1000: Offline
+
+If multiple attributes are set at the same time, the value will be the sum of the respective values.
+If the instruction fails to execute, the system variable stat is assigned 1. Finished normally
+If you do, the system variable stat will be 0.
+
+
+fxaset "file", p1 Set file attributes
+
+"file": Specify file name
+p1 = 0 to (0): Attribute to set
+
+Description
+
+Set the attribute specified by p1 to the file specified by "file".
+The following numerical values can be used for the attribute value specified by p1.
+
+Attribute content
+		  --------------------------------
+$ 1: Write-protected
+$ 2: Hidden files
+$ 4: System
+$ 10: Directory
+$ 20: Archive
+$ 80: Standard type
+$ 100: Temporary file
+$ 800: Compressed file
+$ 1000: Offline
+
+If you want to set multiple attributes at the same time, add the values of each.
+If the instruction fails to execute, the system variable stat is assigned 1. Finished normally
+If you do, the system variable stat will be 0.
+
+
+fxtget p1, "file" Get timestamp
+
+p1 = variable name: Numeric array variable name where information is stored
+"file": Specify file name
+
+Description
+
+Get the time stamp information of the file specified by "file" and specify it by p1
+Assign to a variable. However, the variable of p1 is an array variable, which is a numeric type and has 24 or more elements.
+You must reserve enough memory to put it in.
+Therefore, the variables specified by the fxtget and fxtset instructions are dim instructions in advance.
+Please use it after declaring an array such as "dim a, 24".
+The acquired time stamp information is assigned to each element of the array variable.
+For example, if you specify "fxt get a," test "", the information will be in variables a.0 to a.23.
+It will be substituted. The details of the values assigned to each element of the array are as follows.
+
+Element content
+		  --------------------------------
+0: Year of creation (AD)
+1: Month of creation date
+2: Creation date day of the week (Sunday = 0)
+3: Date of creation
+4: At the time of creation date
+5: For the creation date
+6: Seconds of creation date
+7: Milliseconds of creation date
+		  --------------------------------
+8: Year of update date (AD)
+9: Update date month
+10: Update day of the week (Sunday = 0)
+11: Update date
+12: At the time of update date
+13: Update date
+14: Second of update date
+15: Update date milliseconds
+		  --------------------------------
+16: Year of the last access date (AD)
+17: Month of last access date
+18: Last access day of the week (Sunday = 0)
+19: Last access date
+20: At the time of the last access date
+21: For the last access date
+22: Seconds of last access date
+23: Milliseconds of last access date
+		  --------------------------------
+
+If the instruction fails to execute, the system variable stat is assigned 1. Finished normally
+If you do, the system variable stat will be 0.
+
+
+fxtset p1, "file" Set timestamp
+
+p1 = variable name: Numerical array variable name that stores the information to be set
+"file": Specify file name
+
+揃Description
+
+The time stamp information of the file specified by "file" is the variable specified by p1.
+Change to one. However, the variable of p1 is an array variable, which is a numeric type and has 24 or more elements.
+You must reserve enough memory to put it in.
+The array variable specified by p1 has the same format as that used by the fxtget instruction.
+For details on the values specified for array variables, refer to the explanation of the fxtget instruction.
+If the instruction fails to execute, the system variable stat is assigned 1. Finished normally
+If you do, the system variable stat will be 0.
+
+The time stamp set by the fxtset instruction depends on the file system of the OS.
+It may not be set completely. This is a complete file system
+Because it doesn't save time in form. For example, for Windows 95 (FAT)
+The time of the last access date is not recorded. It will be the date only. Also in seconds
+The data is also roughly recorded.
+
+
+selfolder p1, "message" Folder selection dialog
+
+p1 = variable name: String type variable name that stores the selected path name
+"message": The character string displayed in the dialog
+
+Description
+
+Display the folder selection dialog used in the Windows system,
+Get the folder name.
+If the selection is successful, the system variable stat is assigned 0.
+If there is an error or cancellation during selection, the system variable stat
+The value will be 1.
+If selected successfully, the full pathname to the folder will be the variable specified in p1.
+It will be substituted. Also, the folder name is assigned to the system variable refstr.
+In the "message" part, specify the character string displayed above when the dialog is displayed.
+can do. If you specify "" "," Please select a folder ".
+Is displayed.
+
+
+fxshort p1, "file" Get DOS file name
+
+p1 = variable name: String type variable name where information is stored
+"file": Specify file name
+
+揃Description
+
+Convert the file specified by "file" to a DOS file name and specify it by p1
+Assign to a variable.
+The file name specified in "file" is the long file used in Windows.
+Must be a name.
+Get the file name to pass to the DOS prompt application etc.
+It can be used in cases such as.
+
+
+fxdir p1, p2 Get special directory name
+
+p1 = variable name: String type variable name where information is stored
+p2 = 0 to (0): Type of directory information to be acquired
+
+Description
+
+Assigns the directory name of the type specified in p2 to the variable specified in p1.
+Get the various directory names used by the Windows system with this instruction
+can.
+The numerical values that can be specified with p2 are as follows.
+
+p2 Contents to be acquired
+		  ------------------------------------------------------------
+-2: Windows temporary folder
+-1: Windows System folder
+2: Folder in the Start Menu "Programs" group
+5: "My Documents" folder
+6: Folder with "favorites"
+7: "Startup" folder
+8: "Recent Documents" folder
+9: "Send To" folder
+11: Start menu folder
+16: Desktop folder
+21: Template folder
+26: Application Data folder
+27: Printer device folder
+32: Internet cache folder
+33: Internet Cookies folder
+34: Internet history folder
+
+If there is an error in the specification or an error occurs, the system variable stat will be displayed.
+1 is assigned. Upon successful completion, the system variable stat will be 0.
+
+
+fxlink p1, create "path" shortcut
+
+p1 = variable name: String type variable name where the shortcut name is stored
+"path": full pathname of the underlying file
+
+揃Description
+
+Shortcut to the file specified in p2 with the name specified in p1
+Create in the current directory.
+The string type variable that stores the shortcut name is specified in p1.
+Must be. Also, shortcut names include extensions, drives, etc.
+Specify it without including the directory name.
+(Not visible in Explorer, but automatically extended to .lnk
+Become)
+For p2, specify the location of the shortcut destination with the full path.
+Also, specify a URL such as "http://www.onionsoft.net/hsp/" for p2.
+Will create an internet shortcut.
+
+If there is an error in the specification or an error occurs, the system variable stat will be displayed.
+1 is assigned. Upon successful completion, the system variable stat will be 0.
+
+
+lzdist "path" Specify the compression / decompression destination directory
+
+"path": Decompression copy destination directory of lzcopy instruction
+
+揃Description
+
+Specify the decompression copy destination directory of the lzcopy instruction.
+When executing the lzcopy instruction, be sure to use the lzdist instruction to set the copy destination in advance.
+Must be specified.
+
+
+lzcopy "name" compression decompression copy
+
+"name": Compressed file name
+
+揃Description
+
+Copy while decompressing Microsoft's compress.exe format compressed file
+I will do it.
+The compressed file specified by "name" in the current directory,
+Copy it in the decompressed form to the directory specified by the lzdist instruction.
+For "name", specify a name that does not include an extension (up to 8 characters).
+When executing the lzcopy instruction, be sure to use the lzdist instruction to set the copy destination in advance.
+Must be specified.
+
+If there is an error in the specification or an error occurs, the system variable stat will be displayed.
+1 is assigned. Upon successful completion, the system variable stat will be 0.
+
+
+dirlist2 p1, "filemask", p2, p3 Get extended directories
+
+p1 = variable name: size of the entire directory information
+"filemask": Filemask for list
+p2 = 0 to (0): Acquisition mode
+p3 = 0 to (0): Directory delimiter
+
+ツキDescription
+
+Get directory information.
+You can search in more detail than the standard instruction dirlist.
+The dirlist2 instruction is completed in three steps.
+
+1. Select what to get with the dirlist2h instruction
+竊貼r\n2. Start acquisition with the dirlist2 instruction
+竊貼r\n3. Get the result with the dirlist2r instruction
+The dirlist2 instruction acquires directory information in a fixed mode.
+I will. The result can be obtained with the dirlist2r instruction.
+
+If the dirlist2 instruction ends normally, information is sent to the system variable stat.
+The total number of acquired files will be substituted.
+The details of the acquisition mode are as follows.
+
+
+
+"filemask" is a wildcard like "*. *" Like the dirlist instruction
+It will be the search file name as specified.
+
+With p3, it is possible to specify the directory delimiter at the time of acquisition.
+If 0 or omitted, "\\" is used.
+
+Mode values can be summed and combined.
+When mode 1 (bit0) is specified, all under the current directory
+Recursively search the directory to get file information.
+
+Mode What is acquired
+		---------------------------------------------------------------
+0 List of all files under the current directory
+1 File list in the current directory
+2 Do not include hidden files and system attribute files in the list
+
+
+dirlist2h p1, p2 Extended directory acquisition settings
+
+p1 = 0 to (0): List List flag
+p2 = 0 to (0): List delimiter
+
+Description
+
+Set the details of directory information acquisition by the dirlist2 instruction.
+For the actual information acquisition method, refer to the explanation of the dirlist2 instruction.
+
+The items specified by the list flag on p1 are separated by the delimiter.
+It will be available as text information.
+List List flags are as follows.
+
+Flag What is acquired
+	    -----------------------------------------------------------------
+1 Full path file name
+2 File name excluding path name
+4 File size
+8 File modification date
+16 File update time
+128 pathname only
+
+Flag values can be added and combined.
+If p1 is 0 or omitted, then all flags have been specified.
+You can specify the symbol that separates the list with p2.
+If p2 is 0 or omitted, "," is specified.
+
+
+dirlist2r p1 Get extended directory 2
+
+p1 = variable name: variable to get directory information
+
+ツキDescription
+
+The information obtained by the dirlist2 instruction is assigned to the variable.
+Be sure to use a variable that has more memory than the size returned by the dirlist2 instruction.
+You need to do it against.
+For the actual information acquisition method, refer to the explanation of the dirlist2 instruction.
+
+
+繝サ Clipboard access command
+
+This command transfers or retrieves data to the Windows clipboard.
+Other applications by sending text and image data to the clipboard
+Data exchange with and is easy.
+
+
+clipset "strings" clipboard text transfer
+
+"strings": Strings to send to the clipboard
+
+ツキDescription
+
+Sends the character strings specified by "strings" to the clipboard.
+The text data sent to the clipboard is used by other applications.
+You can paste with.
+
+
+clipsetg clipboard image transfer
+
+揃Description
+
+The currently selected screen is used as bitmap data in the clipboard.
+will send. The image data sent to the clipboard can be used for other applications.
+You can paste by using the option.
+
+
+clipget p1, p2 clipboard text get
+
+p1 = variable: variable name where information is stored
+p2 = 0 to (64): Maximum number of characters
+
+揃Description
+
+Read the contents of the text sent to the clipboard,
+Assigns to the string type variable specified by p1.
+The content to be read was copied by another application, etc.
+Text only. Images and sounds cannot be retrieved.
+If p2 is omitted, up to 64 characters can be read.
+To read a character string of 64 characters or more, specify the maximum number of characters in p2.
+give me. (Sufficient buffer is secured for the variable to be read in advance.
+Must be)
+
+
+繝サ Application capture command
+
+Application capture instructions are all running on Windows
+Very capable of getting information about objects and sending messages
+A powerful set of instructions.
+This allows you to control the behavior of other applications from HSP.
+You will be able to do it.
+For details on how to use it, see the section "How to use the application capture instruction".
+please refer to.
+
+aplsel "window name", p1 Capture any window
+
+"window name": Title name of the window to get
+p1 = 0 to (0): Start ID
+
+ツキDescription
+
+Captures the specified window and prepares to send a message.
+In "window name", enter the character string displayed in the window title.
+Search for windows by specifying.
+"window name" can omit the ending string.
+For example, a window named "HSP Script Editor"
+Only "HSP" or the string "HSP Sukuri" will match.
+However, if there is a title with the same name, which window will
+It will be unclear if it will match.
+Determine the search ID to start the search by specifying the start ID in p1
+can do. This search ID is for all windows (and tasks)
+The ID number of is assigned in order from 0.
+If you write "aplsel" ", p1", the window with search ID p1 will be captured.
+can do.
+If the aplsel instruction is executed and the window search is successful,
+The system variable stat is assigned 0 and the system variable refstr is accurate.
+The window title name is substituted.
+If the window search fails, 1 is assigned to the system variable stat and
+You cannot send messages.
+
+
+aplobj "object name", p1 Capture any object
+
+"object name": Class name of the object to get
+p1 = 0 to (0): Start object ID
+
+揃Description
+
+Objects (controls) belonging to the window captured by the aplsel command
+And prepare to send a message.
+Specify the class name of the object (control) in "object name"
+By searching for the object.
+In p1, specify the search object ID to start the search by specifying the start ID.
+You can decide. This ID is priced starting from 0.
+You can capture the object ID by writing "aplsel" ", p1"
+I will.
+If the aplobj instruction is executed and the object is successfully searched,
+The system variable stat is assigned 0 and the system variable refstr is accurate.
+The class name of the object is assigned.
+If the window search fails, 1 is assigned to the system variable stat and
+You cannot send messages.
+
+
+activate the aplact window
+
+揃Description
+
+Activate the window captured by the aplsel instruction and the aplobj instruction
+And make it ready for keyboard input.
+When sending a key to a window other than HSP with aplkey command etc.
+The window must be active with the aplact instruction.
+
+
+default aplfocus key destination
+
+揃Description
+
+Resets the window to which the key is sent to the default.
+By default, the keyboard of the currently active window
+Keys are sent to objects that have input focus.
+
+
+aplstr "strings" keying strings
+
+"strings": Key strings to send
+
+揃Description
+
+The character string specified by "strings" is used as keyboard input data.
+Send to the target object.
+The aplstr instruction can send the string as it is,
+Information on special keys such as the [ALT] key cannot be sent.
+The aplstr instruction only queues key information.
+In order to reflect the result of actually pressing, wait or await instruction is added later.
+Must be included. If you send too much information at once, the queue will
+It may overflow and not be sent properly.
+The aplstr instruction is recognized by all applications
+Not limited. If the transmission of the aplstr instruction is not accepted, the aplkey instruction
+Please try it with.
+
+
+aplkey p1, p2 key code transmission
+
+p1 = 0 to (0): Key code
+p2 = 0 to (0): Special key code
+	            ( 1 = SHIFT / 2 = CTRL / 4 = ALT )
+
+揃Description
+
+Sends the keyed information to the target object.
+Specify the key code with p1. This is used in the getkey instruction
+It is the same as the key code. (See table below)
+Use p2 to specify a special key. If it is 1, the shift key, if it is 2,
+If it is CTRL key or 4, it means that the ALT key is pressed at the same time.
+The aplkey instruction only queues key information.
+Immediately after the wait or await instruction to reflect the result of the actual press
+Must be included.
+If you specify 0 for p1, only the special key code information is sent.
+
+Key code list
+		------------------------------------------
+3 = Cancel ([CTRL] + [BREAK])
+4 = 3 button Button in the middle of the mouse
+8 = [BACKSPACE] (PC98 [BS])
+		        9 = [TAB]
+		       13 = [ENTER]
+		       16 = [SHIFT]
+		       17 = [CTRL]
+18 = [ALT] (PC98 [GRPH])
+		       20 = [CAPSLOCK]
+		       27 = [ESC]
+32 = space bar
+33 = [PAGE UP] (PC98 [ROLLDOWN])
+34 = [PAGEDOWN] (PC98 [ROLLUP])
+35 = [END] (PC98 [HELP])
+36 = [HOME] (PC98 [HOMECLR])
+37 = Cursor key [<-]
+38 = Cursor key [竊曽
+39 = Cursor key [->]
+40 = Cursor key [竊転
+		------------------------------------------
+48 to 57 = [0] to [9] (main keyboard)
+65 ~ 90 = [A] ~ [Z]
+96 to 105 = [0] to [9] (numeric keypad)
+112 ~ 121 = Function keys [F1] ~ [F10]
+		------------------------------------------
+
+
+aplkeyd p1, p2 key press down send
+
+p1 = 0 to (0): Key code
+p2 = 0 to (0): Special key code
+	            ( 1 = SHIFT / 2 = CTRL / 4 = ALT )
+
+ツキDescription
+
+Sends the keyed information to the target object.
+Specify the key code with p1. This is used in the getkey instruction
+It is the same as the key code.
+Use p2 to specify a special key. If it is 1, the shift key, if it is 2,
+If it is CTRL key or 4, it means that the ALT key is pressed at the same time.
+Unlike the aplkey instruction, the aplkeyd instruction sends only the information that the key was pressed.
+To do. If you want to keep pressing a key, or if you pressed multiple keys at that time
+Please use it when you want to create a state.
+Also, after sending the information that the key was pressed with the aplkeyd command, be sure to press the key.
+You must send the information that you released it with the aplkeyu instruction.
+The aplkeyd instruction only queues key information.
+Immediately after the wait or await instruction to reflect the result of the actual press
+Must be included.
+If you specify 0 for p1, only the special key code information is sent.
+
+
+aplkeyu p1, p2 key up transmission
+
+p1 = 0 to (0): Key code
+p2 = 0 to (0): Special key code
+	            ( 1 = SHIFT / 2 = CTRL / 4 = ALT )
+
+揃Description
+
+The information that the key is released is sent to the target object.
+Specify the key code with p1. This is used in the getkey instruction
+It is the same as the key code.
+Use p2 to specify a special key. If it is 1, the shift key, if it is 2,
+If it is CTRL key or 4, it means that the ALT key is pressed at the same time.
+The aplkeyu instruction sends only the information that the key was released.
+Be sure to use it as a pair with the aplkeyd instruction.
+If p1 is omitted, the key code specified by the aplkeyd instruction and the special
+The same key code is used.
+The aplkeyu instruction only queues key information.
+Immediately after the wait or await instruction to reflect the result of the actual press
+Must be included.
+
+
+aplget p1, p2 Get the object string
+
+p1 = variable: variable name to read the string of the object
+p2 = 0 to (64): Maximum number of characters
+
+揃Description
+
+Get the character string set in the object selected by the aplobj instruction
+To do. If the object is "BUTTON" etc., it will be set there
+The character string is displayed in the title if it is a window.
+Read the string.
+If p2 is omitted, up to 64 characters can be read.
+To read a character string of 64 characters or more, specify the maximum number of characters in p2.
+give me. (Sufficient buffer is secured for the variable to be read in advance.
+Must be)
+If the window specification is the default in the aplfocus instruction
+The title string of the currently active window is read.
+Calling the edits of the "EDIT" object with the aplget instruction
+can not. For information other than the edited contents of the "EDIT" object,
+It can be obtained with the apledit instruction.
+
+
+apledit p1, p2, p3 Edit control information acquisition
+
+p1 = variable: numeric variable name where information is stored
+p2 = 0 to 2: Acquisition information No.
+p3 = 0 ~: Row index specification
+
+揃Description
+
+Get information about the "EDIT" type object selected by the aplobj instruction
+To do. Specify the variable name to read in p1 and set the information type in p2.
+Specify.
+
+p2 = 0: Current cursor position (1 byte unit)
+p2 = 1: Total number of lines
+p2 = 2: Number of characters on the line specified by p3
+
+The parameter p3 is meaningful only when 2 is specified for p2.
+Also, when p2 is 0 (cursor position acquisition), the variable specified by p1 is added to the beginning.
+Number of bytes from to cursor, system variables if there is a selection
+Substitutes the number of bytes in the range selected from the cursor position in stat
+Will be done.
+
+(The number of characters is in Unicode when using Windows XP Common Control 6.0.)
+
+
+pipeexec p1, "filename", p2 Execution with pipe
+
+p1 = variable: string type variable name that stores standard output
+"filename": The name of the file to be executed
+p2 = 0 to 1 (0): Window display switch
+
+揃Description
+
+Executes the file specified by "filename".
+Executable file gets standard input and standard output settings through a pipe
+Will be possible.
+The pipeexec instruction is mainly a win32 console application (DOS)
+Supports execution of 32-bit applications that run at prompts)
+It is a function for. In addition, 16-bit applications and batches
+Please note that you cannot specify a file.
+
+Specify the executable file with "filename". Not full path specified
+If so, the standard search path will be used.
+If you specify command line options, follow the file name
+Specify it as in the DOS prompt.
+(Example: "notepad.exe readme.txt")
+
+The variable buffer specified by p1 stores the standard output at runtime.
+Secured a large buffer in advance with "sdim buf, 32000" etc.
+Be sure to specify the one.
+Specify window display ON / OFF with p2. By default
+It will be 0 (not displayed).
+After executing the pipeexec instruction, be sure to monitor until the process ends with pipeget.
+please.
+
+
+pipeget p1 Execution monitoring with pipe
+
+p1 = variable: string type variable name where the result is stored
+
+揃Description
+
+Monitor the process executed by the pipeexec instruction.
+In p1, put a string type variable that serves as a buffer to get pipe information.
+Must be specified.
+The status of file execution by pipeexec is set in the system variable stat.
+Will be returned.
+
+stat value | content | content of variable p1
+		---------------------------------------------------------
+0 | Execution end | No change
+1 | Preparing for execution | No change
+2 | Getting StdOutput | StdOutput
+3 | Getting StdError | StdError
+4 | Termination processing | No change
+
+Normally, after executing the pipeexec instruction, the stat value becomes 0 with the pipeget instruction.
+Continue monitoring while inserting wait / await instructions until (end of execution).
+
+Example:
+
+			sdim ln,4096
+			sdim buf,32000
+
+			pipeexec buf,"notepad.exe",1
+if stat: dialog "could not run": end
+
+mes "Running ..."
+
+			repeat
+pipeget ln; get / update pipe
+if stat = 0: break; Exit the loop when execution ends
+			wait 10
+			loop
+
+mes "Execution completed ..."
+			mes buf
+
+			stop
+
+The size obtained in one execution is the character string type specified by p1.
+Since it will be up to the buffer size reserved by the variable,
+The buffer never overflows.
+Normally, if you try to allocate a buffer of about 4096 characters, the problem is
+No (eg "sdim buf, 4096").
+
+
+pipeput p1 Send 1 byte to the pipe
+
+p1 = 0 to 255 (0): Send code
+
+揃Description
+
+Specified in p1 for the process being executed by the pipeexec instruction
+Send the code as standard input.
+
+
+-How to use the application capture command
+
+Application Capture is another application running on Windows
+Is a set of instructions for operating from HSP.
+Application capture instructions apply to all objects on Windows
+It is possible to send a message.
+As a result, batch processing of finer movements and the range of applications as a launcher can be expanded.
+It will spread further.
+
+In this version, key input transmission to the specified object, fixed message
+It is possible to send.
+In the future, it will be possible to send many messages such as mouse movements and clicks.
+It's a schedule.
+
+* Currently, with the application capture command, Japanese to other windows
+Converted to Unicode on Windows NT and 2000 when sending a message
+Therefore, it may not work properly. please note that.
+
+By using key input transmission, it was input even though there was no input from the keyboard.
+You can create the same state as time. HSP script with keyed information
+It can be sent from.
+Try running the sample scripts "aplkey.as" and "aplkey2.as" as a trial.
+give me. Even though I haven't entered anything myself, the Notepad application is selfish
+It starts moving, starts typing text, and loads the file.
+Also, there should be some samples that make the HSP script editor work on its own.
+In this way, it is possible for someone to perform automatic driving that seems to be operating.
+The function is application capture.
+
+Application capture is also a task or window running on Windows
+Find out all of the above, check if the application is running twice, etc.
+You can also look it up.
+
+When using application capture, at least know the operating principle of Windows
+Must be kept. However, if you know the basics of HSP scripting,
+It's not that difficult.
+First, try running the sample script "aplkey3.as".
+Windows is running many windows and invisible tasks at the same time.
+Visible windows usually have a title bar with some string
+It is displayed. In "aplkey3.as", this window and task list is listed above.
+It is displayed in the list box. HSP window is also a script editor
+I think that the window is also displayed.
+And in Windows, each of these windows can be used as a child's window.
+A number of objects are subordinate. In HSP, with button command, mesbox command, etc.
+I will place the objects on the screen, but in the same way with other software, window
+Various objects are placed on the top.
+In the list of "aplkey3.as", select the script editor and press the [CHECK] button.
+If you look at it, you can see that the objects that depend on it (also called controls in Windows)
+The list is displayed in the list box below.
+Thus, in Windows, the window and all the objects that come with it are systematic.
+Is managed in the same way. Send messages directly to these objects
+By doing so, you can control the application.
+
+Let's take an example of actually using the application capture instruction.
+The general flow is as follows.
+
+1. 1. Select the window to operate (aplsel command)
+2. Select an object that depends on the window to be operated (aplobj instruction)
+3. 3. Activate the window of the operation destination (aplact instruction)
+4. Send key input (aplkey command, aplstr command)
+
+First, use the aplsel instruction to select the window to operate. If you choose a window,
+Search for the window by the character string displayed in the title.
+If the title is long, you can search by just specifying the first few characters.
+For example, if you want to select a window called "HSP Script Editor"
+
+aplsel "HSP Script Editor"
+
+It is searched by writing. Only the first string, omitting the rest,
+
+aplsel "HSP"
+
+Or
+
+aplsel "HSP Sk"
+
+It is also possible to write as. However, there are multiple windows with the same name
+In that case, I don't know which one matches.
+
+After selecting the window, the object that depends on it is selected with the aplobj instruction.
+This is what object you are using for each application
+It depends on. Some applications do not have objects.
+At that time, it is not necessary to select the object with the aplobj instruction.
+The aplobj instruction searches for an object by class name. The class name is an object
+A character string that indicates the type of code. In the sample script "aplkey3.as", each
+You can see the list of class names of the objects used by the window,
+Generally, the following names are used.
+
+		--------------------------------------
+| Edit | Input Box |
+| Button | Push Button |
+| ListBox | Listbox |
+| ComboBox | Combo Box |
+| Static | Fixed text |
+| ScrollBar | Scrollbar |
+| MDIClient | MDI's child window |
+		--------------------------------------
+
+For example, you are using an object to enter characters, such as a text editor
+If so, there should be an object using a class called "Edit" and the button
+If so, there should be a "Button".
+From these, select and specify the name of the object you want to send.
+For example
+
+		aplobj "EDIT"
+
+Now, select the "Edit" object as the destination.
+However, there are some cases where there are multiple "Edit" objects.
+In such a case
+
+		aplobj "EDIT",3
+
+You have to specify the number of "Edit" object by giving an ID like
+It will not be. This ID is the same as the number displayed in "aplkey3.as".
+
+After choosing a destination, you must activate it.
+Many applications (especially when choosing a menu) use windows
+If you do not activate it, key input will not be accepted.
+Then, execute the aplact instruction. This was chosen with the aplsel and aplobj instructions
+This command activates the destination object.
+
+Now you are ready to go. After that, instead of actually pressing the keyboard
+Just send the key message sent from HSP.
+Keystrokes are sent using the aplkey and aplstr instructions.
+The aplkey command specifies a button and sends information that it has been pressed once.
+The aplstr instruction specifies a character string and sends all its contents as key information.
+Since these two instructions are transmitted in different ways, the application
+Some do not respond to the aplkey instruction and some do not respond to the aplstr instruction.
+Please note that there may be.
+The aplstr instruction can send many keystrokes at once,
+You cannot use the [ALT] key to select a menu or the [CTRL] key.
+The aplkey instruction can send key information such as [ALT] and [CTRL],
+Only basic keys can be sent. Use properly according to the purpose
+please. In addition, the aplkeyd instruction, which makes the operation of the aplkey instruction more detailed, and
+The aplkeyu instruction is also available.
+
+The aplstr instruction can mainly be used to send a string to the input box.
+For example
+
+aplsel "HSP Script Editor"
+		aplobj "EDIT"
+		aplact
+		wait 10
+		aplstr "TEST KEYBOARD DATA..."
+		wait 10
+
+If you use like, the character string specified in the editor part of the script editor will be
+It will be entered.
+Don't forget to put a wait or await instruction after the aplstr and aplkey instructions.
+give me. The key transmission is only accumulated in the Windows queue, so I actually pressed it
+It will not happen until the wait is entered.
+
+For example, how to use the aplkey instruction
+
+aplsel "HSP Script Editor"
+		aplobj "EDIT"
+		aplact
+		wait 10
+		aplkey 'F',4
+		wait 10
+		aplkey 'O'
+		wait 10
+
+Use like.
+"Aplkey'F', 4" sends information by pressing the "F" key while holding down [ALT]
+To do. The second parameter is a special key specification.
+If it is 1, the shift key is pressed, if it is 2, the CTRL key is pressed, and if it is 4, the ALT key is pressed at the same time.
+It will be. When omitted or 0, the special key is not pressed.
+By pressing [ALT] + [F] keys, you can select File (F) from the menu.
+Next, pressing the "O" key with "aplkey'O'" means "Open file (O)".
+Choose.
+
+Exactly the same as pressing a key on the application like this
+By specifying it on the HSP script, automatic processing becomes possible.
+Automatic processing is difficult to set up at the beginning, but if you do the same thing over and over again,
+It can be very convenient.
+
+Finally, key transmission can also be done directly to the object on HSP.
+You can select the object from the HSP window, but it's easier.
+You can do it.
+
+		objsel 0
+		aplfocus
+		aplstr "TEST KEYBOARD DATA..."
+		wait 10
+
+In the above example, for the object with ID0 selected by the objsel instruction,
+The aplstr command sends the string as if it were entered from the keyboard.
+This can be done with the objprm instruction, but you can operate the cursor and add characters.
+Depending on the idea, you may be able to do something interesting.
+
+The hardest part of application capture is with the desired window
+Finding an object. This was created by another software developer
+The structure is complicated because you have to guess and find the object.
+I think it's very difficult to find the case.
+You can use "aplkey3.as" to find a list of windows and objects
+You can, but depending on the software, the objects may have a hierarchical structure.
+There is. Especially, there are many windows made with recent C ++ and MDI.
+In software, etc., multiple objects are subordinate to the object.
+It's not uncommon. In such a case, use the aplobj instruction to create an object.
+After selecting, also use the aplobj command to select the underlying object.
+please. In "aplkey3.as", press the [MORE] button and in the list below
+Objects below the selected object are now displayed
+is.
+
+・ Additional information (2000/11/5)
+
+In Windows2000, when double-byte characters are sent by the aplstr command
+A bug that causes garbled characters has been confirmed.
+This is a problem with some applications and is currently under investigation.
+
+
+-------------------------------------------------------------------------------
+                                                HSP users manual / end of file 
+-------------------------------------------------------------------------------

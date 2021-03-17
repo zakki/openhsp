@@ -1,87 +1,87 @@
 <!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
 <html lang="ja">
 <head>
-	<meta http-equiv="Content-Type" content="text/html; charset=Shift_JIS">
+	<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
 	<meta http-equiv="Content-Language" content="ja">
 	<meta http-equiv="Content-Style-Type" content="text/css">
 	<meta http-equiv="Content-Script-Type" content="text/javascript">
-	<meta name="author" content="OpenHSP3 Project�ihttp://dev.onionsoft.net/trac/wiki�j">
+	<meta name="author" content="OpenHSP3 Project">
 	<meta name="keywords" content="HSP3,HotSoupProcessor3,HSPTV">
-	<meta name="description" content="HSPTV�Ɋւ�������f��">
+	<meta name="description" content="HSPTVに関する情報を掲載">
 	<link href="../main.css" rel="stylesheet" type="text/css" media="all">
-	<title>HSPTV�t�H���_�f�ވꗗ</title>
+	<title>HSPTVフォルダ素材一覧</title>
 </head>
 <body>
 	<div id="CONTAINER">
-		<!-- �w�b�_�[ -->
-		<p id="COPY">HSP : Hot Soup Processor ver3.6 / onion software 1997-2020(c)</p>
-		<h1>HSPTV�t�H���_�f�ވꗗ</h1>
+		<!-- ヘッダー -->
+		<p id="COPY">HSP : Hot Soup Processor ver3.6 / onion software 1997-2021(c)</p>
+		<h1>HSPTVフォルダ素材一覧</h1>
 
-		<h2 id="ABOUT">�f�ނɂ���</h2>
+		<h2 id="ABOUT">素材について</h2>
 		<p>
-�uHSPTV�t�H���_�f�ށv�́A��i�𔭕\����ۂɎ��R�Ɏg�p���邱�Ƃ̂ł���摜�Ɖ��̃f�[�^�t�@�C���ł��B��y�ȃ��C�Z���X�ŁAHSP�ȊO�̍�i�ł��g�p���邱�Ƃ��\�ł��B <br>
-�܂��AWeb���HSP�̃X�N���v�g�����J�ł���A<a href="webdish.html">�uWebDish�T�[�r�X�v</a>�Ŏ��R�ɎQ�Ƃ��邱�Ƃ��ł��܂��B
-		�uHSPTV�t�H���_�f�ށv�uWebDish�f�ށv�����p���āA�����̍�i������邱�Ƃ�����Ă��܂��B
+「HSPTVフォルダ素材」は、作品を発表する際に自由に使用することのできる画像と音のデータファイルです。手軽なライセンスで、HSP以外の作品でも使用することが可能です。 <br>
+また、Web上でHSPのスクリプトを公開できる、<a href="webdish.html">「WebDishサービス」</a>で自由に参照することができます。
+		「HSPTVフォルダ素材」「WebDish素材」を活用して、多くの作品が作られることを願っています。
 		</p>
 		<pre>
-		HSP3.6 WebDish�f�ރf�[�^
+		HSP3.6 WebDish素材データ
 		<a href="https://dev.onionsoft.net/seed/webdish_res.html" target="_blank">https://dev.onionsoft.net/seed/webdish_res.html</a>
 		</pre>
 
-		<h2 id="USEAGE">�f�ނ̎Q��</h2>
+		<h2 id="USEAGE">素材の参照</h2>
 		<p>
-		HSP�X�N���v�g����A��y�ɑf�ނ��Q�Ƃ��邱�Ƃ��ł��܂��B
+		HSPスクリプトから、手軽に素材を参照することができます。
 		</p>
 		<pre>
 			picload dir_tv+"bg01.jpg"
 		</pre>
 		<p>
-		�udir_tv+�v�ɑ����ăt�@�C�������L�q���邱�ƂŁAHSPTV�t�H���_���Q�Ƃ���܂��B
-		(HSP3Dish�ł́Adir_tv�����Ȃ��Ă��W����HSPTV�t�H���_���̑f�ނ���������܂��B)<br>
-		���s�t�@�C�����쐬���Ĕz�z����ꍇ�́A�K�v�ȑf�ނ�����#pack�܂���#epack���߂�
-		���\�[�X�Ƃ��Ēǉ�����K�v������܂��̂Œ��ӂ��Ă��������B<br>
-		HSP3.6��3�ȍ~�ł́A���\�[�X���܂Ƃ߂ēǂݍ��ނ��߂̃��W���[�����p�ӂ���Ă��܂��B
+		「dir_tv+」に続けてファイル名を記述することで、HSPTVフォルダが参照されます。
+		(HSP3Dishでは、dir_tvを入れなくても標準でHSPTVフォルダ内の素材が検索されます。)<br>
+		実行ファイルを作成して配布する場合は、必要な素材だけを#packまたは#epack命令で
+		リソースとして追加する必要がありますので注意してください。<br>
+		HSP3.6β3以降では、リソースをまとめて読み込むためのモジュールが用意されています。
 		</p>
 		<pre>
 			#include "hsptv_res.as"
 		</pre>
 		<p>
-		�X�N���v�g�̍ŏ��ŏ�̂悤�ȋL�q���s�����ƂŁA�ȉ��̖��߂��ǉ�����܂��B
+		スクリプトの最初で上のような記述を行うことで、以下の命令が追加されます。
 		</p>
 		<pre>
-		hsptv_se _p1		���ʉ����܂Ƃ߂ēǂݍ���
-			_p1 : 1=�V���v�����ʉ�(SE01�`SE15)
-			_p1 : 2=���A�����ʉ�(SND01�`SND19)
-		(�ȍ~�� mmplay SE01 �ȂǂōĐ��ł��܂�)
+		hsptv_se _p1		効果音をまとめて読み込む
+			_p1 : 1=シンプル効果音(SE01～SE15)
+			_p1 : 2=リアル効果音(SND01～SND19)
+		(以降は mmplay SE01 などで再生できます)
 
-		hsptv_tamadot _p1	�쉹�����2D�h�b�g�G�f�ނ�ǂݍ���
-			_p1 : 0=64�~64 1=32�~32
-		( tamadot �ɉ�ʃo�b�t�@ID���������܂� )
-		( ceput tamadot,�ԍ� �ŕ\���ł���悤�ɂȂ�܂� )
+		hsptv_tamadot _p1	珠音ちゃん2Dドット絵素材を読み込む
+			_p1 : 0=64×64 1=32×32
+		( tamadot に画面バッファIDが代入されます )
+		( ceput tamadot,番号 で表示できるようになります )
 
-		hsptv_tamane _p1	�쉹�����2D�����G�f�ނ�ǂݍ���
-			_p1 : 0=256�~512�h�b�g�A1�`8=512�~1024�h�b�g
-		( tamas �ɉ�ʃo�b�t�@ID���������܂� )
-		( ceput tamas,�ԍ� �ŕ\���ł���悤�ɂȂ�܂� )
+		hsptv_tamane _p1	珠音ちゃん2D立ち絵素材を読み込む
+			_p1 : 0=256×512ドット、1～8=512×1024ドット
+		( tamas に画面バッファIDが代入されます )
+		( ceput tamas,番号 で表示できるようになります )
 
-		hsptv_tamasc _p1	�쉹����񐧕��f�ނ�ǂݍ���
-			_p1 : 1�`5(�o���G�[�V����)
-		( tamasc �ɉ�ʃo�b�t�@ID���������܂� )
+		hsptv_tamasc _p1	珠音ちゃん制服素材を読み込む
+			_p1 : 1～5(バリエーション)
+		( tamasc に画面バッファIDが代入されます )
 
-		hsptv_keisc _p1		�v��������񐧕��f�ނ�ǂݍ���
-			_p1 : 1�`5(�o���G�[�V����)
-		( keisc �ɉ�ʃo�b�t�@ID���������܂� )
+		hsptv_keisc _p1		プロ生ちゃん制服素材を読み込む
+			_p1 : 1～5(バリエーション)
+		( keisc に画面バッファIDが代入されます )
 
-		hsptv_tamawiz _p1	�쉹����񖂖@�g���f�ނ�ǂݍ���
-			_p1 : 1�`10(�o���G�[�V����)
-		( tamawiz �ɉ�ʃo�b�t�@ID���������܂� )
+		hsptv_tamawiz _p1	珠音ちゃん魔法使い素材を読み込む
+			_p1 : 1～10(バリエーション)
+		( tamawiz に画面バッファIDが代入されます )
 
-		hsptv_keiknight _p1	�v���������R�m�g���f�ނ�ǂݍ���
-			_p1 : 1�`10(�o���G�[�V����)
-		( keiknight �ɉ�ʃo�b�t�@ID���������܂� )
+		hsptv_keiknight _p1	プロ生ちゃん騎士使い素材を読み込む
+			_p1 : 1～10(バリエーション)
+		( keiknight に画面バッファIDが代入されます )
 		</pre>
 
-		<h2 id="GRAPHICS">�摜�ꗗ</h2>
+		<h2 id="GRAPHICS">画像一覧</h2>
 		<pre>
 
 	<a href="../hsptv/baku.png">baku.png</a>
@@ -206,7 +206,7 @@
 	<a href="../hsptv/yama2.jpg">yama2.jpg</a>
 		</pre>
 
-		<h2 id="SOUND">�T�E���h�ꗗ</h2>
+		<h2 id="SOUND">サウンド一覧</h2>
 		<pre>
 
 	<a href="../hsptv/bgm04.mid">bgm04.mid</a>
@@ -267,42 +267,42 @@
 		</pre>
 
 
-		<h2 id="LICENCE">���쌠�ƃ��C�Z���X</h2>
+		<h2 id="LICENCE">著作権とライセンス</h2>
 		<p>
 
 		<p>
-		HSPTV�t�H���_�f�ނ́AHSP(Hot Soup Procrssor)�t���Z�b�g�̈ꕔ�Ƃ��Ē񋟂���Aonion software�����쌠�������Ă��܂��B
+		HSPTVフォルダ素材は、HSP(Hot Soup Procrssor)フルセットの一部として提供され、onion softwareが著作権を持っています。
 		</p>
 		<p>
-		HSPTV�t�H���_�f�ނ́A���[�U�[���\�t�g���쐬����ۂɁA���R�Ɏg�p�E���ρE�z�z���邱�Ƃ��ł��܂��B
-		���쌠�\�L������ꍇ�́A�ȉ��̂悤�Ɍf�ڂ��������B
+		HSPTVフォルダ素材は、ユーザーがソフトを作成する際に、自由に使用・改変・配布することができます。
+		著作権表記をする場合は、以下のように掲載ください。
 		</p>
 		<pre>
-		HSP3.6 WebDish�f�ރf�[�^
+		HSP3.6 WebDish素材データ
 		https://dev.onionsoft.net/seed/webdish_res.html
 		</pre>
 		<p>
-		�v���������A�y�уv���������R���{�f�ނ́A�v��������񗘗p�K�C�h���C���ɏ]���Ĕz�z����Ă��܂��B
+		プロ生ちゃん、及びプロ生ちゃんコラボ素材は、プロ生ちゃん利用ガイドラインに従って配布されています。
 		</p>
 		<pre>
 		https://kei.pronama.jp/guideline/
 		(C) Pronama LLC
 		</pre>
 		<p>
-		HSPTV�t�H���_�f�ނ��g�p���Ă����쌠�\�L���s�Ȃ��`���͂���܂���B
-		�������A���p���p�E�f�ނ��̂��̂�̔�����ꍇ�́A�����(onion software)�܂ł��A�������肢�v���܂��B
-		�ꕔ�̃f�[�^�������āA���p���p�ł����Ă������p�𐧌����邱�Ƃ͂���܂���̂ŁA
-		�ʂɃ��C�Z���X�̒񋟂ɂ��Ă��ē������Ē����܂��B
+		HSPTVフォルダ素材を使用しても著作権表記を行なう義務はありません。
+		ただし、商用利用・素材そのものを販売する場合は、著作者(onion software)までご連絡をお願い致します。
+		一部のデータを除いて、商用利用であってもご利用を制限することはありませんので、
+		個別にライセンスの提供についてご案内させて頂きます。
 		</p>
 
 
-		<!-- �t�b�^�[ -->
+		<!-- フッター -->
 		<ul id="FOOTER">
-			<li><a href="#CONTAINER">���̃y�[�W��1�ԏ�ɖ߂�</a></li>
-			<li><a href="../index.htm">�h�L�������g�̈ꗗ�ɖ߂�</a></li>
-			<li><a href="http://hsp.tv/">Go to HSPTV page</a></li>
+			<li><a href="#CONTAINER">このページの1番上に戻る</a></li>
+			<li><a href="../index.htm">ドキュメントの一覧に戻る</a></li>
+			<li><a href="https://hsp.tv/">Go to HSPTV page</a></li>
 		</ul>
-		<a href="http://www.onionsoft.net/hsp/">
+		<a href="https://www.onionsoft.net/hsp/">
 			<img src="img/onibtn.gif" width="147" height="50" alt="ONION software" id="ONIBTN">
 		</a>
 	</div><!-- container -->

@@ -1,0 +1,375 @@
+------------------------------------------------------------------------------
+HSPTVAPP ver0.9 REFERENCE MANUAL                    HSP : Hot Soup Processor  
+HSP Extension Extension DLL Reference copyright 2005-2014 (c) onion software
+------------------------------------------------------------------------------
+
+・ Introduction
+
+This DLL can be used with Hot Soup Processor ver3 or later.
+Provides the ability to access HSPTVAPP network services.
+With HSPTVAPP, you can easily add the net ranking function to the program created by HSP.
+In addition, the function to update the data on the server allows it to be used for various purposes depending on the idea.
+HSPTVAPP is available free of charge.
+
+What you can do with HSPT PAPP
+
+・ You can add net total high score ranking to the program created by HSP.
+・ User name, comment, etc. can be added to the ranking.
+・ It can be used in the same command and method as the ranking creation on the HSPTV browser.
+-You can distribute the program distributed by the HSPTV browser in the executable format.
+(You can share the ranking with the HSPTV browser)
+
+HSPTVAPP is a system for managing rankings such as scores and sharing them online.
+Information is updated immediately, but it is intended for asynchronous data sharing.
+Not suitable for real-time updates.
+
+
+・ Overview of how to use
+
+Add the following line to the beginning of the script to test the HSPTVAPP compatible program
+please.
+
+		#include "hsptvapp.as"
+
+Now you can use the operation check and ranking function of HSPTVAPP.
+The instructions related to the ranking function are the instructions used in the script for the HSPTV browser.
+It is compatible.
+
+HSPTVAPP creates a program in the same process as HSPTV browser ranking support.
+Testing is possible. First, after confirming with a local (not connected to the network) test,
+Please connect to the network.
+
+
+・ Acquisition of startup code
+
+When you actually make a network connection and use HSPTVAPP, it is called a startup code.
+You will need a string for identification. The startup code identifies you as a legitimate user.
+
+The startup code can be obtained on the SoupSeed site.
+(In the current beta version, it was linked to the works registered in the HSP Program Contest 2012.
+You can only get the startup code. At the time of official service, new program registration and
+We are planning to accept the issuance of startup code. )
+
+SoupSeed site
+		http://dev.onionsoft.net/seed/
+
+The HSPTVAPP ID and startup code are registered in the SoupSeed user menu.
+It is displayed by pressing the "Get ID for HSPT VAPP" button prepared for each program (work).
+The startup code prepared for each individual program is added to the hsptv_start instruction immediately after the script starts.
+By specifying it as a parameter, the net connection is enabled.
+
+hsptv_start "Startup code"
+
+Local if you do not use the hsptv_start instruction or if an empty string ("") is specified
+It goes into the test mode (when not connected to the network). In this case, in the same folder as hsptvapp.dll
+When the "hsptvdat.txt" file for saving the ranking is created and connected to the server
+It works the same.
+If the hsptv_start command enables the internet connection, then on the HSPTV! Server
+Ranking data is referenced.
+It also enables the PROXY (proxy) server that is set as user information.
+
+
+・ About ranking function
+
+Ranking information can be retained by the function of HSPTVAPP.
+This provides information such as "score", "user name", and "comment" to the running software.
+It is stored in a certain amount and can be used for various purposes such as recording high score information of games.
+
+The information saved by the ranking function is as follows.
+
+■ Score
+
+A 32-bit integer value. Negative values cannot be handled.
+The top 30 are retained in descending order of score value.
+
+■ User name
+
+The data that accompanies the score.
+The information of the user name that registered the score is retained as a character string.
+Username set in HSPTV browser options
+The name will be used automatically. (Up to 20 English characters only)
+
+■ Comment
+
+The data that accompanies the score.
+Comments (additional information) of the user who registered the score
+Hold as a string.
+This item is not only used for comments at the time of registration
+Freely on the program side, such as adding information about software
+It is possible to use it.
+Comments can hold up to 255 characters.
+
+Actually, the program is registered on the HSPTV server, and the HSPTV browser is registered from the net
+When delivered, the score information is retained on the server and the user's information is displayed.
+It functions as an internet ranking to record.
+
+Testing to create HSPTV compatible program (script editor)
+When running from), keep the score information in the current directory
+Local file (hsptvdat.txt) is created and registered on the server
+Simulates the same situation as at time.
+(During the testing phase, no information is sent to the HSPTV server.)
+
+In the program created by the user, "score", "user name", "comment"
+You can freely get and update the information of.
+Of course it can be used to retain high scores and retain other information
+It can also be applied to do.
+The server records up to 30 data in descending order of score value.
+However, how many items should be displayed by the program, which items should be displayed,
+It is also up to you how to determine the score value.
+
+If you want to create a program that uses the ranking function, this document
+Read and agree to the "About server transmission" section described in
+Start on.
+
+
+・ About user information
+
+There are some user settings for using HSPTVAPP.
+
+■ Name (up to 20 characters)
+
+The name of the user used when registering the ranking.
+You can set up to 20 characters using only English characters that do not include spaces.
+
+■ User key (up to 32 characters)
+
+It will be an encrypted string to identify the legitimate user.
+This item is currently unused. Will be used in future expansions.
+
+■ PROXY address (up to 63 characters)
+
+Specify the address when using the PROXY (proxy) server for communication.
+If you do not need it, leave it as an empty string.
+
+■ PROXY port (up to 63 characters)
+
+Specify the port number when using a PROXY (proxy) server for communication.
+If you do not need it, leave it as an empty string.
+
+These are the same items that the user sets in the HSPTV browser.
+In HSPTVAPP, it is an independent program, so edit the user setting items.
+You need to implement the functionality yourself.
+In the sample program (hsptv_test.hsp), a simple user setting edit screen is displayed.
+It is available, so please refer to it.
+
+For user information, put "hsptvapp.ini" as a configuration file in the folder containing the dll.
+It is possible to prepare and save it. The configuration file can be easily created by extension instructions.
+It is possible to access.
+
+
+・ Instruction reference
+
+By using "hsptvapp.as", the following instructions can be newly used.
+Become.
+
+hsptv_start "code" HSPTVAPP communication start
+
+"code": Startup code string
+
+HSPTVAPP starts communicating with the server.
+You need to specify a string called the startup code for "code".
+Startup code is available only to program authors on the SoupSeed site
+It's like a password issued.
+If the startup code is recognized correctly, then from the HSPTV! Server
+You will be able to get ranking information.
+Specify an empty string ("") for the hsptv_start instruction, or use the hsptv_start instruction.
+If not executed, it will be in local test mode and will communicate with the server.
+The test is done on the machine running the script without.
+
+
+hsptv_up p1, "comment", p2 Ranking data update
+
+p1: Score value (32bit integer value)
+"comment": Comment string (up to 256 bytes)
+p2: Optional function value
+
+Update the ranking data.
+Reflects score and comment information.
+If the score is negative, only the latest data will be acquired.
+(If communication is enabled, this instruction causes communication with the server.
+Assuming that it will take some time to complete this instruction
+Create a program. )
+For comments, the information of the character string to be set is up to 256 bytes (255 half-width characters).
+It can be specified by the content.
+If the optional function value is omitted or 0 is specified,
+Update the data as normal ranking (highest score).
+When 0x1000 (4096) is specified as the option value, it is specified by p1.
+Clear the index score (set the score to 0).
+When 0x2000 (8192) is specified as the option value,
+The user name is not reflected and an empty string is always set.
+Option values can be specified by adding multiple values.
+(When clearing the contents of the data, option value 0x1000 and
+Please use in combination with 0x2000. )
+
+
+hsptv_getrank var1, var2, var3, rank Rank data acquisition
+
+var1: Variable name to which score information is assigned
+var2: Variable name to which user name information is assigned
+var3: Variable name to which comment information is assigned
+rank: Rank index (0-29)
+
+Read the contents of the ranking data into variables.
+This instruction sends the data updated by the hsptv_up instruction.
+It is read into a variable.
+The content to be read is the last time the hsptv_up instruction was executed.
+It will be the information at the time.
+As for the rank value, 0 is the 1st place and 29 is the 30th place.
+var1 is initialized as a numeric type, and var2 and var3 are initialized as a string type.
+With this instruction, no communication occurs, so the information cannot be read.
+It will be done immediately.
+
+
+hsptv_getini var, id Get user information
+
+var: Variable name to which user information is assigned
+id: User information ID
+
+Gets the HSPTVAPP user information and assigns it to a variable.
+Specify the user information ID obtained by id.
+
+ID: Contents
+			------------------------
+0: Name
+1: User key
+2: PROXY address
+3: PROXY port
+
+If a non-existent information ID is specified, it exits without assigning anything.
+
+
+hsptv_setini "string", id user information setting
+
+"string": String to set
+id: User information ID
+
+Set the HSPTVAPP user information.
+Specify the user information ID obtained by id.
+
+ID: Contents
+			------------------------
+0: Name
+1: User key
+2: PROXY address
+3: PROXY port
+
+If a non-existent information ID is specified, it will exit without doing anything.
+
+
+hsptv_saveini Save user information
+
+Save the user information data as a file.
+User information is stored as a configuration file in the folder containing the dll.
+Create and save "hsptvapp.ini".
+The contents of this configuration file are automatically loaded at startup.
+
+
+・ About server transmission
+
+When actually delivered from the server, for registration and acquisition of ranking information
+Network communication is performed.
+Before sending the information for the first time, "Reflect the current information on the HSPTV server.
+Is that okay? Is displayed and only when "Yes" is selected
+The transmission will be made.
+(At the test stage, "Can I reflect the above information?"
+A dialog is displayed. )
+
+Communication with the server may take some time depending on the network load and environment.
+There is. Create a program that assumes that it will take some time
+Put it down please. Programs that update data in real time
+Cannot be created. Also, to reduce the load on the server, once every 5 seconds
+Please try not to make it more frequent than access.
+Network bandwidth for registering programs that place more server load than necessary
+In order to secure it, we may be forced to suspend it temporarily, so
+Please note that.
+
+Communication with the server is via the http protocol.
+The PROXY server set for communication is used.
+
+Ranking information stored on the HSPTV server side is basically distributed.
+It is managed independently for each software, and from other than the corresponding software
+It will not be accessed.
+The HSPTV server retains and manages ranking information as much as possible
+We will do it, but it is just a service of the current situation, and about the contents
+We do not guarantee it.
+All information is unavoidably destroyed due to an accident or update.
+Please note that there is a possibility.
+
+
+・ About sample script
+
+Sample script is in the sample directory hsptvapp as "hsptv_test.hsp"
+It is recorded.
+This script can display and update the information of the top 10 people.
+It is also possible to set and save user information.
+
+
+・ About receivable character strings
+
+Communication with the HSPTV ranking server is done after encoding the string into another code
+It will be done. Most strings, including Japanese, can be sent,
+Garbled characters may occur in some double-byte characters and special characters.
+Also, since the "&" symbol is converted to another character at the transmission stage,
+Normal results cannot be expected. When converting binary data to a character string, etc.
+Be especially careful.
+
+
+・ Future version upgrade schedule
+
+HSPTVAPP aims to provide an integrated service for user data over the network.
+I would like to add various functions.
+We are considering the following functions as a future version upgrade plan.
+
+■ Increase in the number of rankings held
+(Aiming to maintain more rankings while considering the system load etc.)
+■ Retention of user data
+(Prepare a small data storage area for each user and build a cloud system)
+■ Server item management
+(Provides a function that allows the server to generate and manage items that can be held by the user)
+
+
+Change log
+
+	2013/03/08 ver0.9
+
+First version.
+
+
+important point
+
+When creating a program with HSPTVAPP, enter the HSPTVAPP ID and startup code provided by the server.
+Please manage it carefully and keep it under strict control to prevent unauthorized use.
+If the startup code is leaked to the outside, other users can illegally access the ranking
+It will be.
+If it is described in the format of "hsptv_start" startup code "" in the script, it will be converted to an executable file at the time of conversion.
+Since it is encrypted, there is usually no problem. Put the startup code string in an external file, registry, etc.
+Be careful not to save it.
+HSPTVAPP operates the service in cooperation with the HSPTV! Server, which is the HSP official site.
+HSPTV! Administrators are forced to use HSPTV! Administrators in the event of annoying acts, false applications, or inappropriate behavior by users.
+Please note that at our discretion, we may suspend your HSPTVAPP ID account and deprive you of your SoupSeed user rights.
+In addition, the administrator of HSPTV! May suspend or change the operation of the system without prior notice to the user for various maintenance.
+There is. HSPTVAPP is a non-warranty service. The administrator of HSPTV! Is responsible for any loss, intentional or negligent, caused by HSPTVAPP.
+We cannot take any responsibility for any damages. Please operate at the responsibility of the user.
+HSPTV! And SoupSeed administrators will not disclose personal information to third parties without prior permission.
+(Except when there is a legal problem and there is a request from a government agency and the administrator deems it necessary)
+
+HSPTVAPP.DLL is a plug-in file that is used at the same time as HSP3.
+Please use ver3.0 or above as the HSP to use. For HSP ver2.61 and earlier
+Please note that it is not supported.
+Even if you create an EXE file, put HSPTVAPP.DLL in the same directory as the EXE file.
+It will not work unless it is placed in. Also, you cannot add DLLs to the packfile.
+
+
+・ Copyright and license
+
+HSPTVAPP services and plug-ins are copyrighted works of onion software.
+onion software is responsible for any damage caused by this program.
+We do not guarantee. Use at your own risk.
+
+HSPTVAPP plug-ins and archives can be freely reorganized and redistributed under the BSD license.
+You can do it.
+
+
+-------------------------------------------------------------------------------
+                                                HSP users manual / end of file 
+-------------------------------------------------------------------------------

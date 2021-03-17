@@ -1,263 +1,263 @@
 <!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
 <html lang="ja">
 <head>
-	<meta http-equiv="Content-Type" content="text/html; charset=Shift_JIS">
+	<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
 	<meta http-equiv="Content-Language" content="ja">
 	<meta http-equiv="Content-Style-Type" content="text/css">
 	<meta http-equiv="Content-Script-Type" content="text/javascript">
-	<meta name="author" content="OpenHSP3 Project�ihttp://dev.onionsoft.net/trac/wiki�j">
-	<meta name="keywords" content="HSP3,HotSoupProcessor3,HSPTV">
-	<meta name="description" content="HSPTV�Ɋւ�������f��">
+	<meta name="author" content="OpenHSP3 Project（http://dev.onionsoft.net/trac/wiki）">
+	<meta name="keywords" content="HSP,HSP3,HotSoupProcessor3,HSPTV">
+	<meta name="description" content="Peasに関する情報を掲載">
 	<link href="../main.css" rel="stylesheet" type="text/css" media="all">
-	<title>Peas�G�f�B�^�}�j���A��</title>
+	<title>Peasエディタマニュアル</title>
 </head>
 <body>
 	<div id="CONTAINER">
-		<!-- �w�b�_�[ -->
-		<p id="COPY">HSP : Hot Soup Processor ver3.6 / onion software 1997-2019(c)</p>
-		<img src="hsp3ttl.jpg" alt="�^�C�g��" width="640" height="200">
-		<h1>Peas�G�f�B�^�}�j���A��</h1>
+		<!-- ヘッダー -->
+		<p id="COPY">HSP : Hot Soup Processor ver3.6 / onion software 1997-2021(c)</p>
+		<img src="hsp3ttl.jpg" alt="title" width="640" height="200">
+		<h1>Peasエディタマニュアル</h1>
 
-		<!-- �ڎ� -->
+		<!-- 目次 -->
 		<ol>
-			<li><a href="#ABOUT">Peas�G�f�B�^�Ƃ�</a></li>
-			<li><a href="#SET_PART">�p�[�c�̔z�u</a></li>
-			<li><a href="#EXEC_SHORT">�ȒP�ȃv���O�����̎��s</a></li>
-			<li><a href="#PARTS_CTRL">�p�[�c�̊Ǘ�</a></li>
-			<li><a href="#LABEL">���x���p�[�c</a></li>
-			<li><a href="#VAR">�ϐ��p�[�c</a></li>
-			<li><a href="#CAN">Peas�G�f�B�^���ł��邱��</a></li>
-			<li><a href="#MAKE_PARTS">�p�[�c�̍쐬�ɂ���</a></li>
-			<li><a href="#LICENCE">���쌠�ƃ��C�Z���X</a></li>
+			<li><a href="#ABOUT">Peasエディタとは</a></li>
+			<li><a href="#SET_PART">パーツの配置</a></li>
+			<li><a href="#EXEC_SHORT">簡単なプログラムの実行</a></li>
+			<li><a href="#PARTS_CTRL">パーツの管理</a></li>
+			<li><a href="#LABEL">ラベルパーツ</a></li>
+			<li><a href="#VAR">変数パーツ</a></li>
+			<li><a href="#CAN">Peasエディタができること</a></li>
+			<li><a href="#MAKE_PARTS">パーツの作成について</a></li>
+			<li><a href="#LICENCE">著作権とライセンス</a></li>
 		</ol>
 
-		<h2 id="ABOUT">Peas�G�f�B�^�Ƃ�</h2>
-		<img src="img/s_peas.jpg" width="320" height="249" alt="Peas�G�f�B�^�X�N���[���V���b�g" style="float:right;">
+		<h2 id="ABOUT">Peasエディタとは</h2>
+		<img src="img/s_peas.jpg" width="320" height="249" alt="Peas editor" style="float:right;">
 		<p>
-			�uPeas�G�f�B�^�v�́A�v���O�����̌��ƂȂ�v�f(�p�[�c)�����o�I�ɔz�u���āA
-			�����I��HSP�̃X�N���v�g�𐶐����邽�߂̃c�[���ł��B
+			「Peasエディタ」は、プログラムの元となる要素(パーツ)を視覚的に配置して、
+			自動的にHSPのスクリプトを生成するためのツールです。
 		</p>
 		<p>
-			�uPeas�v�̃V���[�g�J�b�g�A�C�R������N�����邩�A HSP3���C���X�g�[������Ă���t�H���_�́uahtman.exe�v��
-			�N�������邱�Ƃ�Peas�G�f�B�^���g�p���邱�Ƃ��ł��܂��B
+			「Peas」のショートカットアイコンから起動するか、 HSP3がインストールされているフォルダの「ahtman.exe」を
+			起動させることでPeasエディタを使用することができます。
 		</p>
 		<p>
-			�uPeas�G�f�B�^�v�́A��{�I�ȃX�N���v�g�̗���������ڂɂ��킩��悤�ɂ���ق��A
-			���܂����v�f�����̏C�����X�N���v�g�G�f�B�^���g�킸�ɍs�Ȃ����Ƃ��ł��A
-			���܂Ńv���O���~���O�ɐG��Ă��Ȃ������l��A���S�҂ɂƂ��Ă̐V�����I�����ƂȂ���̂ł��B
-		</p>
-
-
-		<h2 id="SET_PART">�p�[�c�̔z�u</h2>
-		<img src="img/s_peas_parts2.jpg" alt="�p�[�c�ꗗ���" width="320" height="205" style="float:right;">
-		<p>
-			Peas�G�f�B�^�ł́A��ʏ�ɒu���ꂽ�p�[�c�ɏ]���ăv���O����������܂��B
-			��ʏ�Ƀp�[�c��z�u����ɂ́A�u�ǉ��v�{�^���������Ă��������B
-			�z�u���邱�Ƃ̂ł���p�[�c�ꗗ��ʂ��\������܂��B
-			���̒�����A�p�[�c���E�N���b�N�őI������ƁA���C���̉�ʏ�ɔz�u����܂��B
-		</p>
-		<p>
-			�z�u���ꂽ�p�[�c�́A�}�E�X�̍��{�^���������Ȃ���h���b�O���邱�Ƃňړ������邱�Ƃ��ł��܂��B
-			�p�[�c�̈ʒu�́A�ǂ��ɒu����Ă��Ă���肠��܂���B
-		</p>
-		<p>
-			�p�[�c�ɂ́A�������̎�ނ�����܂��B
-			���ʂ̂���W�N�\�[�p�Y���̂悤�ȃp�[�c�́A�v���O�����̗���Ɏg�p������̂ŁA
-			�p�[�c���m����łȂ����Ƃ��ł��܂��B���łȂ��ꂽ�p�[�c�́A���Ԃɓ��e�����s����܂��B
-			�ڂ����́u�v���O�����̗���v���Q�Ƃ��Ă��������B
-		</p>
-		<p>
-			���ʂ̂Ȃ���������Ƃ����p�[�c�́A���\�[�X�p�[�c�ƌĂ΂�Ă��āA���łȂ��邱�Ƃ͂ł��܂���B
-			���̂���胊�\�[�X�p�[�c�́A���̃p�[�c���炢�ł����p���邱�Ƃ��ł��܂��B
-			���Ƃ��΁A���y�̃��\�[�X�p�[�c��z�u���Ă������ƂŁA���ł��v���O�����ォ��w�肵��
-			���y�𗬂����Ƃ��ł���悤�ɂȂ�܂��B�v���O������Ŏg�p����f�ނ�\�񂷂�悤�Ȃ��̂���
-			�l���Ă����Ƃ����ł��傤�B
+			「Peasエディタ」は、基本的なスクリプトの流れを見た目にもわかるようにするほか、
+			決まった要素だけの修正をスクリプトエディタを使わずに行なうことができ、
+			今までプログラミングに触れてこなかった人や、初心者にとっての新しい選択肢となるものです。
 		</p>
 
-		<h2 id="EXEC_SHORT">�ȒP�ȃv���O�����̎��s</h2>
-		<img src="img/s_peas_prop1.jpg" alt="�u�z�[���v�p�[�c �v���p�e�B�\�����" width="336" height="189" style="float:right;">
+
+		<h2 id="SET_PART">パーツの配置</h2>
+		<img src="img/s_peas_parts2.jpg" alt="parts" width="320" height="205" style="float:right;">
 		<p>
-			���ۂɊȒP�ȃv���O����������ē��삳���Ă݂܂��傤�B
-			�܂��u�ǉ��v�{�^���ŁA�u�z�[���v�̃p�[�c��z�u���Ă��������B
-			�u�z�[���v�̃p�[�c�́A�v���O�������J�n����X�^�[�g�n�_�ƂȂ���̂ŁA
-			�K���ŏ��ɔz�u���Ȃ���΂Ȃ�܂���B
-			�u�z�[���v�̃p�[�c���J���ƁA��ʂ̂悤�ȁu�v���p�e�B�ҏW�E�B���h�E�v���\������܂��B
-			����́A�u�z�[���v�̃p�[�c�Ɋւ�����e��ҏW���邽�߂̉�ʂŁA
-			�����ō�肽�����̂ɍ��킹�ĕύX���邱�Ƃ��ł��܂��B
-			���Ƃ��΁A�u�^�C�g�����v��ύX����ƁA�E�B���h�E��̃^�C�g���o�[�ɕ\�������^�C�g�����ς��܂��B
-			���e�̕ҏW���I�������A�uOK�v�������ĕҏW���e���m�肳���Ă��������B
-			�u�v���p�e�B�ҏW�E�B���h�E�v���o�Ă���Ԃ́A���C����ʂő��̑���͂ł��Ȃ��Ȃ�̂ŁA���ӂ��Ă��������B
+			Peasエディタでは、画面上に置かれたパーツに従ってプログラムが作られます。
+			画面上にパーツを配置するには、「追加」ボタンを押してください。
+			配置することのできるパーツ一覧画面が表示されます。
+			この中から、パーツを右クリックで選択すると、メインの画面上に配置されます。
 		</p>
 		<p>
-			���ɁA�u���O��t���ĕۑ��v�{�^���������ăv���W�F�N�g��ۑ����Ă��������B
-			�v���O�����𓮍삳����ꍇ�ɂ́A�v���W�F�N�g�ɖ��O�����ĕۑ����Ă����K�v������܂��B
-			Peas�G�f�B�^�ł́A�W���Łu�}�C�h�L�������g�v�t�H���_���g�p����܂��B
-			�����ł́A�킩��₷���悤�Ɂu�}�C�h�L�������g�v��Ɂu�e�X�g�v���̖��O�Ńv���W�F�N�g��ۑ����Ă��������B
-		</p>
-		<img src="img/s_peas_prop2.jpg" alt="�u�摜�\���v�p�[�c �v���p�e�B�\�����" width="336" height="189" style="float:right;">
-		<p>
-			�����āA��ʂɊG���o���Ă݂邱�Ƃɂ��܂��傤�B
-			���炩���߁A�v���W�F�N�g��ۑ������u�}�C�h�L�������g�v�t�H���_�ɁAbmp��jpeg�`���̉摜�t�@�C����
-			�P�R�s�[���Ă����Ă��������B
-			�����ł͗�Ƃ��āAHSP3.1��peas�T���v���t�H���_�ɂ���uback.jpg�v���g�p���܂��B
+			配置されたパーツは、マウスの左ボタンを押しながらドラッグすることで移動させることができます。
+			パーツの位置は、どこに置かれていても問題ありません。
 		</p>
 		<p>
-			���C���́u�ǉ��v�{�^���Łu�摜�\���v�̃p�[�c��I�����Ă��������B
-			���ɔz�u����Ă���u�z�[���v�ɐڑ������`�ŁA�u�摜�\���v�p�[�c���z�u����܂��B
-			�u�v���p�e�B�ҏW�E�B���h�E�v���\������A�\�����邽�߂̉摜����͂��鍀�ڂ��o�Ă���͂��ł��B
-			�����ŁA�����قǗp�ӂ����摜�t�@�C�����w�肵�܂��B
-			�t�@�C���̎w��́A�u�I���v�{�^���������āA�t�@�C���I���_�C�A���O�̒��Ŏw�肷�邱�Ƃ��ł��܂��B
-			�I�����邱�Ƃ��ł�����A���Ƃ́uOK�v�������Ċm�肳���Ă��������B
+			パーツには、いくつかの種類があります。
+			凹凸のあるジクソーパズルのようなパーツは、プログラムの流れに使用するもので、
+			パーツ同士を線でつなぐことができます。線でつながれたパーツは、順番に内容が実行されます。
+			詳しくは「プログラムの流れ」を参照してください。
 		</p>
 		<p>
-			����ŁA�摜��\������v���O�����̗��ꂪ�������܂����B
-			�z�u����Ă���u�z�[���v�Ɓu�摜�\���v�����Őڑ�����Ă���̂��m�F���Ă��������B
-			����́A�v���O�����̃X�^�[�g�n�_�ł���z�[���̎��ɁA�u�摜�\���v�����s����邱�Ƃ������Ă��܂��B
-			��ʏ�ɔz�u����Ă���p�[�c�́A�D���Ȉʒu�Ɉړ������č\���܂���B
-			�����̌��₷���`�Ɏ��R�Ɉړ������邱�Ƃ��ł��܂��B
-			�������A�����܂ł��ڑ��̐��́A�p�[�c�̉E���ɂ���ˋN����o�āA���̃p�[�c�̍����ɂȂ���܂��B
-			�܂�A������E�ɗ���Ă����悤�Ƀp�[�c��z�u����̂���{�ɂȂ�̂Œ��ӂ��Ă��������B
-		</p>
-		<p>
-			�����܂łł�����A���C���́u���s�v�{�^���Ńv���O���������ۂɓ��삳���邱�Ƃ��ł��܂��B
-			�������w�肵���^�C�g���̃E�B���h�E���\������A���̒��Ɏw�肵���摜�t�@�C�����o�Ă���ΐ����ł��B
-		</p>
-		<p>
-			�������e��ύX������m�F���������ɂ́A�p�[�c���N���b�N���đI��������A�u�ҏW�v�̃{�^����������
-			���ł��u�v���p�e�B�ҏW�E�B���h�E�v���o�ē��e���C�����邱�Ƃ��ł��܂��B
-		</p>
-		<p>
-			���̍�Ƃ��J��Ԃ��Ȃ���A�����̃v���O����������������̂��uPeas�G�f�B�^�v�̃X�^�C���ł��B
-			�������z�u�����p�[�c�̈ʒu����e�́A���ׂăv���W�F�N�g�t�@�C���ɕۑ����āA���ł��Ăяo�����Ƃ�
-			�ł��܂��B�܂��A�u���s�v�{�^���������ƁA�v���W�F�N�g�t�@�C���Ɠ����t�H���_�ɁA
-			�v���W�F�N�g�t�@�C���Ɠ������O�Ŋg���q���u.hsp�v�̃X�N���v�g�t�@�C������������܂��B
-			���̃t�@�C���́A�uPeas�G�f�B�^�v�ŕҏW�������e��HSP�X�N���v�g�ɕϊ��������̂ŁA
-			HSP�X�N���v�g�G�f�B�^���璼�ڎ��s������A���s�t�@�C�����쐬���邱�Ƃ��ł��܂��B
-		</p>
-		<p>
-			HSP3.1��peas�T���v���t�H���_(sample/peas)�ɂ��A�������̃v���W�F�N�g�t�@�C����
-			�T���v���Ƃ��ėp�ӂ���Ă��܂��̂ŁA�Q�l�ɂ��Ă݂Ă��������B
+			凹凸のないすっきりとしたパーツは、リソースパーツと呼ばれていて、線でつなげることはできません。
+			そのかわりリソースパーツは、他のパーツからいつでも利用することができます。
+			たとえば、音楽のリソースパーツを配置しておくことで、いつでもプログラム上から指定した
+			音楽を流すことができるようになります。プログラム上で使用する素材を予約するようなものだと
+			考えておくといいでしょう。
 		</p>
 
-		<h2 id="PARTS_CTRL">�p�[�c�̊Ǘ�</h2>
+		<h2 id="EXEC_SHORT">簡単なプログラムの実行</h2>
+		<img src="img/s_peas_prop1.jpg" alt="home" width="336" height="189" style="float:right;">
 		<p>
-			��ʏ�ɔz�u���ꂽ�p�[�c�́A���R�ɏ�Ԃ̕ύX���s�Ȃ����Ƃ��ł��܂��B
-			�p�[�c�́u�ǉ��v�{�^���ɂ���Ă����ł���ʏ�ɔz�u���邱�Ƃ��ł��A
-			�u�폜�v�{�^���őI�������p�[�c���폜���邱�Ƃ��ł��܂��B
+			実際に簡単なプログラムを作って動作させてみましょう。
+			まず「追加」ボタンで、「ホーム」のパーツを配置してください。
+			「ホーム」のパーツは、プログラムを開始するスタート地点となるもので、
+			必ず最初に配置しなければなりません。
+			「ホーム」のパーツを開くと、画面のような「プロパティ編集ウィンドウ」が表示されます。
+			これは、「ホーム」のパーツに関する内容を編集するための画面で、
+			自分で作りたいものに合わせて変更することができます。
+			たとえば、「タイトル名」を変更すると、ウィンドウ上のタイトルバーに表示されるタイトルが変わります。
+			内容の編集が終わったら、「OK」を押して編集内容を確定させてください。
+			「プロパティ編集ウィンドウ」が出ている間は、メイン画面で他の操作はできなくなるので、注意してください。
 		</p>
 		<p>
-			�z�u�����ʂ́A�y�[�W�Ǘ����s�Ȃ��Ă��܂��B�E��ɕ\������Ă���uPage 1/3�v��
-			�y�[�W���������Ă��܂��B�y�[�W���ɂ́A�u���݂̃y�[�W�ԍ�/�ő�y�[�W�ԍ��v
-			�̌`�ŕ\������܂��B
-			�p�[�c�̓��e����s�ƃy�[�W�͊֌W����܂���B
-			�����܂ł��A�p�[�c���z�u�����ꏊ���ς�邾���̂��̂ł��B
+			次に、「名前を付けて保存」ボタンを押してプロジェクトを保存してください。
+			プログラムを動作させる場合には、プロジェクトに名前をつけて保存しておく必要があります。
+			Peasエディタでは、標準で「マイドキュメント」フォルダが使用されます。
+			ここでは、わかりやすいように「マイドキュメント」上に「テスト」等の名前でプロジェクトを保存してください。
+		</p>
+		<img src="img/s_peas_prop2.jpg" alt="parts select" width="336" height="189" style="float:right;">
+		<p>
+			続いて、画面に絵を出してみることにしましょう。
+			あらかじめ、プロジェクトを保存した「マイドキュメント」フォルダに、bmpやjpeg形式の画像ファイルを
+			１つコピーしておいてください。
+			ここでは例として、HSP3.1のpeasサンプルフォルダにある「back.jpg」を使用します。
 		</p>
 		<p>
-			�y�[�W�́A���C���́u���v�u���v�{�^���ňړ��ł���ق��A�y�[�W�����w�肵��
-			�u�y�[�W�v�{�^���������Ē��ڃW�����v���邱�Ƃ��\�ł��B
-			(�ő�y�[�W���́A�y�[�W���𒼐ڎw�肷�邱�ƂŊg�傳��܂��B)
-			�܂��A���ł��uHome�v�{�^���Ńy�[�W0�ɖ߂邱�Ƃ��ł��܂��B
+			メインの「追加」ボタンで「画像表示」のパーツを選択してください。
+			既に配置されている「ホーム」に接続される形で、「画像表示」パーツが配置されます。
+			「プロパティ編集ウィンドウ」が表示され、表示するための画像を入力する項目が出てくるはずです。
+			ここで、さきほど用意した画像ファイルを指定します。
+			ファイルの指定は、「選択」ボタンを押して、ファイル選択ダイアログの中で指定することができます。
+			選択することができたら、あとは「OK」を押して確定させてください。
 		</p>
 		<p>
-			�p�[�c�̐ڑ��Ɛؒf�́A���ł��s�Ȃ����Ƃ��ł��܂��B
-			��{�I�ɁA���łȂ��ꂽ�p�[�c�͏��ԂɎ��s����Ă����A�����؂ꂽ�ꏊ�Œ�~���܂��B
-			�p�[�c���I�����ꂽ��ԂŁu�ؒf�v�{�^���������ƁA���̃p�[�c�Ƃ̐ڑ����؂�܂��B
-			�܂��A�ڑ�����Ă��Ȃ��p�[�c���I�����ꂽ��ԂŁu�ڑ��v�{�^���������āA
-			�u�I�����ꂽ�p�[�c��ڑ����܂��B��낵���ł����H�v�Ƃ����_�C�A���O���o�Ă��鎞�ɁA
-			�ڑ��������p�[�c���ēx�I�����āuOK�v���������ƂŁA�Q�̃p�[�c���ڑ�����܂��B
+			これで、画像を表示するプログラムの流れが完成しました。
+			配置されている「ホーム」と「画像表示」が線で接続されているのを確認してください。
+			これは、プログラムのスタート地点であるホームの次に、「画像表示」が実行されることを示しています。
+			画面上に配置されているパーツは、好きな位置に移動させて構いません。
+			自分の見やすい形に自由に移動させることができます。
+			ただし、あくまでも接続の線は、パーツの右側にある突起から出て、次のパーツの左側につながります。
+			つまり、左から右に流れていくようにパーツを配置するのが基本になるので注意してください。
+		</p>
+		<p>
+			ここまでできたら、メインの「実行」ボタンでプログラムを実際に動作させることができます。
+			自分が指定したタイトルのウィンドウが表示され、その中に指定した画像ファイルが出ていれば成功です。
+		</p>
+		<p>
+			もし内容を変更したり確認したい時には、パーツをクリックして選択した後、「編集」のボタンを押せば
+			いつでも「プロパティ編集ウィンドウ」が出て内容を修正することができます。
+		</p>
+		<p>
+			この作業を繰り返しながら、自分のプログラムを完成させるのが「Peasエディタ」のスタイルです。
+			自分が配置したパーツの位置や内容は、すべてプロジェクトファイルに保存して、いつでも呼び出すことが
+			できます。また、「実行」ボタンを押すと、プロジェクトファイルと同じフォルダに、
+			プロジェクトファイルと同じ名前で拡張子が「.hsp」のスクリプトファイルが生成されます。
+			このファイルは、「Peasエディタ」で編集した内容をHSPスクリプトに変換したもので、
+			HSPスクリプトエディタから直接実行したり、実行ファイルを作成することができます。
+		</p>
+		<p>
+			HSP3.1のpeasサンプルフォルダ(sample/peas)にも、いくつかのプロジェクトファイルが
+			サンプルとして用意されていますので、参考にしてみてください。
+		</p>
+
+		<h2 id="PARTS_CTRL">パーツの管理</h2>
+		<p>
+			画面上に配置されたパーツは、自由に状態の変更を行なうことができます。
+			パーツは「追加」ボタンによっていくつでも画面上に配置することができ、
+			「削除」ボタンで選択したパーツを削除することができます。
+		</p>
+		<p>
+			配置する画面は、ページ管理を行なっています。右上に表示されている「Page 1/3」が
+			ページ情報を示しています。ページ情報には、「現在のページ番号/最大ページ番号」
+			の形で表示されます。
+			パーツの内容や実行とページは関係ありません。
+			あくまでも、パーツが配置される場所が変わるだけのものです。
+		</p>
+		<p>
+			ページは、メインの「←」「→」ボタンで移動できるほか、ページ数を指定して
+			「ページ」ボタンを押して直接ジャンプすることも可能です。
+			(最大ページ数は、ページ数を直接指定することで拡大されます。)
+			また、いつでも「Home」ボタンでページ0に戻ることができます。
+		</p>
+		<p>
+			パーツの接続と切断は、いつでも行なうことができます。
+			基本的に、線でつながれたパーツは順番に実行されていき、線が切れた場所で停止します。
+			パーツが選択された状態で「切断」ボタンを押すと、次のパーツとの接続が切れます。
+			また、接続されていないパーツが選択された状態で「接続」ボタンを押して、
+			「選択されたパーツを接続します。よろしいですか？」というダイアログが出ている時に、
+			接続したいパーツを再度選択して「OK」を押すことで、２つのパーツが接続されます。
 		</p>
 			
-		<h2 id="LABEL">���x���p�[�c</h2>
+		<h2 id="LABEL">ラベルパーツ</h2>
 		<p>
-			�u���x���v�p�[�c�́A�v���O�����̈ʒu���������߂Ɏg�p����ڈ�̂悤�Ȃ��̂ł��B
-			�u�ǉ��v�{�^������u���x���v�̃p�[�c��z�u���邱�ƂŁA
-			���̏ꏊ����W�����v����ꍇ�̖ڈ����邱�Ƃ��ł��܂��B
+			「ラベル」パーツは、プログラムの位置を示すために使用する目印のようなものです。
+			「追加」ボタンから「ラベル」のパーツを配置することで、
+			他の場所からジャンプする場合の目印を作ることができます。
 		</p>
 		<p>
-			�u���x���v�p�[�c�ɂ́A�u�W�����v�v�̃p�[�c��A�u��������v�܂��́u�{�^���v�Ȃǂ̃p�[�c����
-			�w�肷�邱�Ƃ��ł��܂��B
-			���s���ɃW�����v���s�Ȃ���ƁA�w�肳�ꂽ���x��������s�𑱂��܂��B
+			「ラベル」パーツには、「ジャンプ」のパーツや、「条件分岐」または「ボタン」などのパーツから
+			指定することができます。
+			実行時にジャンプが行なわれると、指定されたラベルから実行を続けます。
 		</p>
 		<p>
-			���x���p�[�c�Ɏ����@�\�����̂��A�u�T�u���[�`���v�p�[�c�ł��B
-			���̃p�[�c�́A�u���x���v�Ɠ��l�ɖ��O��t���Ėڈ�ɂ��邱�Ƃ��ł��܂����A
-			���̃p�[�c�ɘA�����ꂽ�p�[�c�̎��s���I������ɁA�Ăяo�����ɖ߂邽�߂̃T�u���[�`���Ƃ���
-			�@�\�����邱�Ƃ��ł��܂��B
-			(�����W�����v�̍ۂɁA��ʂ��u�T�u���[�`���Ăяo���v�ɂ��邱�ƂŁA�u�T�u���[�`���v�p�[�c��
-			�Ăяo�����Ƃ��ł��܂��B)
-		</p>
-
-		<h2 id="VAR">�ϐ��p�[�c</h2>
-		<p>
-			�u�ϐ��v�p�[�c�́A�v���O�������œ��e��ύX���邱�Ƃ̂ł���u���ꕨ�v�ƂȂ���̂ł��B
-			�p�[�c�̒ǉ�����u���\�[�X�v�̃J�e�S����I�����āA�u�ϐ��v��I�����邱�ƂŁA
-			�u�ϐ��v�p�[�c����ʏ�ɔz�u���邱�Ƃ��ł��܂��B
-		</p>
-		<p>
-			�ϐ��p�[�c�́A���l�╶����Ȃǂ�ێ����Ă��āA�v���O�����̎��s����
-			�u�ϐ�����v�Ȃǂ̃p�[�c�ɂ��A���̓��e��ύX���邱�Ƃ��\�ł��B
-			�܂��A�ϐ����ێ�������e�����Ƃɏ������s�Ȃ��u��������v�u�ϐ��\���v�Ȃǂ��p�ӂ���Ă��܂��B
+			ラベルパーツに似た機能を持つのが、「サブルーチン」パーツです。
+			このパーツは、「ラベル」と同様に名前を付けて目印にすることができますが、
+			このパーツに連結されたパーツの実行を終えた後に、呼び出し元に戻るためのサブルーチンとして
+			機能させることができます。
+			(分岐やジャンプの際に、種別を「サブルーチン呼び出し」にすることで、「サブルーチン」パーツを
+			呼び出すことができます。)
 		</p>
 
-		<h2 id="CAN">Peas�G�f�B�^���ł��邱��</h2>
+		<h2 id="VAR">変数パーツ</h2>
 		<p>
-			Peas�G�f�B�^�́A���o�I�Ƀp�[�c��z�u���ăX�N���v�g�𐶐����邱�Ƃ��ł��锽�ʁA
-			HSP�X�N���v�g�G�f�B�^���Œ��ڃX�N���v�g����͂���l�ɂƂ��ẮA�ʓ|���Ɗ����镔��������ł��傤�B
+			「変数」パーツは、プログラム中で内容を変更することのできる「入れ物」となるものです。
+			パーツの追加から「リソース」のカテゴリを選択して、「変数」を選択することで、
+			「変数」パーツを画面上に配置することができます。
 		</p>
 		<p>
-			Peas�G�f�B�^�́AHSP�̃X�N���v�g�쐬����⏕���邽�߂̂��̂ŁA
-			���ׂĂ̍�Ƃ�Peas�G�f�B�^�ōs�Ȃ����Ƃ͑z�肵�Ă��܂���B
-			�������A����̌��܂�����Ƃ�A�����ȒP�ȃX�N���v�g�̍쐬�A�v���O�����̊w�K�ȂǁA
-			Peas�G�f�B�^�����ʓI�ɗ��p�����ʂ͏��Ȃ��Ȃ��ƍl���Ă��܂��B
-		</p>
-		<p>
-			���łɓ��삵�Ă���HSP�X�N���v�g�̃\�[�X���APeas�G�f�B�^�ɑΉ�����AHT�t�@�C���ɕύX���邱�Ƃ́A
-			����قǓ������܂���B
-			���Ƃ��΁A�A�h�x���`���[�Q�[���̃X�N���v�g���A���[�U�[�ύX�\�ȕ�����ҏW�ł���悤��
-			AHT�t�@�C���Ƃ��Č��J���āA��ʂ̐l��Peas�G�f�B�^�����ŃQ�[���̍쐬���s�Ȃ��d�g�݂�
-			�񋟂��邱�Ƃ��\�ł��B
-		</p>
-		<p>
-			HSP�X�N���v�g��g�߂�l�́A����y�ɓ��e���C���ł���AHT�Ƃ����`�Œ񋟂��s�Ȃ��A
-			HSP�X�N���v�g��g�߂Ȃ��l�́A���̃G�f�B�^����o�����āA���x���A�b�v���邱�Ƃ��ł���B
-			����Ȋ����\�z���邱�Ƃ��APeas�G�f�B�^�̖ڕW�ł���A����������Ɍ����ăA�b�v�f�[�g���s�Ȃ��Ă���
-			�\��ł��B
+			変数パーツは、数値や文字列などを保持していて、プログラムの実行中に
+			「変数代入」などのパーツにより、その内容を変更することが可能です。
+			また、変数が保持する内容をもとに処理を行なう「条件分岐」「変数表示」などが用意されています。
 		</p>
 
-		<h2 id="MAKE_PARTS">�p�[�c�̍쐬�ɂ���</h2>
+		<h2 id="CAN">Peasエディタができること</h2>
 		<p>
-			Peas�G�f�B�^�Œǉ��\�ȃp�[�c�́AAHT�t�@�C���̎d�l�ɏ]���ă��[�U�[�����R�ɍ쐬�\�ł��B
-			�p�[�c�́Aahtman.exe�Ɠ����ꏊ�́uAHT�v�t�H���_�ȉ����猟������܂��B
-			���̃t�H���_�ɁAaht�t�@�C����ǉ����邱�ƂŁA�ǉ��̃p�[�c�Ƃ��ĔF������܂��B
+			Peasエディタは、視覚的にパーツを配置してスクリプトを生成することができる反面、
+			HSPスクリプトエディタ等で直接スクリプトを入力する人にとっては、面倒だと感じる部分もあるでしょう。
 		</p>
 		<p>
-			AHT�t�@�C���́A��{�I��HSP�̃\�[�X�X�N���v�g�t�@�C���Ɠ��l�̌`���ɂȂ��Ă���A
-			�R�����g�̋L�q��aht�̎d�l�ɍ��킹�邱�ƂŁA�p�����[�^�[�̕ҏW���ڂȂǂ�ݒ肷�邱�Ƃ��ł��܂��B
-			AHT�t�@�C���ɂ��Ă̏ڍׂ́A<a href="aht.txt">AHT�}�j���A��(aht.txt)</a>���Q�Ƃ��Ă��������B
+			Peasエディタは、HSPのスクリプト作成環境を補助するためのもので、
+			すべての作業をPeasエディタで行なうことは想定していません。
+			しかし、流れの決まった作業や、ごく簡単なスクリプトの作成、プログラムの学習など、
+			Peasエディタを効果的に利用する場面は少なくないと考えています。
+		</p>
+		<p>
+			すでに動作しているHSPスクリプトのソースを、Peasエディタに対応したAHTファイルに変更することは、
+			それほど難しくありません。
+			たとえば、アドベンチャーゲームのスクリプトを、ユーザー変更可能な部分を編集できるように
+			AHTファイルとして公開して、一般の人がPeasエディタだけでゲームの作成を行なう仕組みを
+			提供することも可能です。
+		</p>
+		<p>
+			HSPスクリプトを組める人は、より手軽に内容を修正できるAHTという形で提供を行ない、
+			HSPスクリプトを組めない人は、このエディタから出発して、レベルアップすることができる。
+			そんな環境を構築することが、Peasエディタの目標であり、今後もそこに向けてアップデートを行なっていく
+			予定です。
+		</p>
+
+		<h2 id="MAKE_PARTS">パーツの作成について</h2>
+		<p>
+			Peasエディタで追加可能なパーツは、AHTファイルの仕様に従ってユーザーが自由に作成可能です。
+			パーツは、ahtman.exeと同じ場所の「AHT」フォルダ以下から検索されます。
+			このフォルダに、ahtファイルを追加することで、追加のパーツとして認識されます。
+		</p>
+		<p>
+			AHTファイルは、基本的にHSPのソーススクリプトファイルと同様の形式になっており、
+			コメントの記述をahtの仕様に合わせることで、パラメーターの編集項目などを設定することができます。
+			AHTファイルについての詳細は、<a href="aht.txt">AHTマニュアル(aht.txt)</a>を参照してください。
 		</p>
 
 
-		<h2 id="LICENCE">���쌠�ƃ��C�Z���X</h2>
+		<h2 id="LICENCE">著作権とライセンス</h2>
 		<p>
-			Peas�G�f�B�^��onion software�����쌠�������Ă��܂��B
+			Peasエディタはonion softwareが著作権を持っています。
 		</p>
 		<p>
-			�uPeas�G�f�B�^�v�́A�uHSP3�v�ɓ��������`�Ŕz�z����Ă��܂��B
-			�Ĕz�z�̋K��́A�uHSP3�v�Ɠ��l�ł��B�����ōs�Ȃ������́A���R�ɍs�Ȃ��Ē����č\���܂���B 
+			「Peasエディタ」は、「HSP3」に同梱される形で配布されています。
+			再配布の規定は、「HSP3」と同様です。無償で行なわれる限りは、自由に行なって頂いて構いません。 
 		</p>
 		<p>
-			�uPeas�G�f�B�^�v�̃\�[�X�X�N���v�g�́AHSPSDK�Ɋ܂܂�Ă���A
-			�N�ł����R�ɉ����A���ҁA�Ĕz�z���s�Ȃ����Ƃ��\�ł��B
-			�Ĕz�z�́A�\�[�X�X�N���v�g�`�Ԃł��A���s�t�@�C���̌`�Ԃł����Ă��\���܂���B
+			「Peasエディタ」のソーススクリプトは、HSPSDKに含まれており、
+			誰でも自由に改造、改編、再配布を行なうことが可能です。
+			再配布は、ソーススクリプト形態でも、実行ファイルの形態であっても構いません。
 		</p>
 
-		<!-- �t�b�^�[ -->
+		<!-- フッター -->
 		<ul id="FOOTER">
-			<li><a href="#CONTAINER">���̃y�[�W��1�ԏ�ɖ߂�</a></li>
-			<li><a href="../index.htm">�h�L�������g�̈ꗗ�ɖ߂�</a></li>
-			<li><a href="http://hsp.tv/">Go to HSPTV page</a></li>
+			<li><a href="#CONTAINER">このページの1番上に戻る</a></li>
+			<li><a href="../index.htm">ドキュメントの一覧に戻る</a></li>
+			<li><a href="https://hsp.tv/">Go to HSPTV page</a></li>
 		</ul>
-		<a href="http://www.onionsoft.net/hsp/">
+		<a href="https://www.onionsoft.net/hsp/">
 			<img src="img/onibtn.gif" width="147" height="50" alt="ONION software" id="ONIBTN">
 		</a>
 	</div><!-- container -->

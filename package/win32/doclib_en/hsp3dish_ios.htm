@@ -1,0 +1,627 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html lang="ja">
+<head>
+	<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+	<meta http-equiv="Content-Language" content="ja">
+	<meta http-equiv="Content-Style-Type" content="text/css">
+	<meta http-equiv="Content-Script-Type" content="text/javascript">
+	<meta name="author" content="OpenHSP3 Project">
+	<meta name="keywords" content="HSP3,HotSoupProcessor3,HSP3Dish,iOS,iPhone,iPad">
+<meta name = "description" content = "Information about HSP3Dish iOS version">
+	<link href="../main.css" rel="stylesheet" type="text/css" media="all">
+<title> HSP3Dish iOS Programming Guide </title>
+</head>
+<body>
+	<div id="CONTAINER">
+<!-Header->
+	<p id="COPY">HSP : HSP3Dish / onion software 2021(c)</p>
+	<img src="hsp3dish.jpg" width="640" height="200" alt="title">
+<h1> HSP3Dish iOS Version Programming Guide </h1>
+
+<!-Table of Contents->
+	<ol>
+<li> <a href="#ABOUT"> Overview of HSP3Dish for iOS </a> </li>
+<li> <a href="#PREPARE"> Preparing the environment </a> </li>
+<li> <a href="#SAMPLE"> About iOS folder </a> </li>
+<li> <a href="#MAKECPP"> Script preparation </a> </li>
+<li> <a href="#RUNPROJ"> Run and configure HSP3Dish </a> </li>
+<li> <a href="#APPICON"> App name and icon settings </a> </li>
+<li> <a href="#BSAVE"> Save user data by bsave command </a> </li>
+<li> <a href="#RESOURCE"> About the data in the Resource folder </a> </li>
+<li> <a href="#EXECURL"> Support for exec instructions </a> </li>
+<li> <a href="#SENSOR"> Accelerometer support </a> </li>
+<li> <a href="#DIALOG"> Support for dialog instructions </a> </li>
+<li> <a href="#RETINA"> Retina display support </a> </li>
+<li> <a href="#UNIVERSAL"> Universal app support </a> </li>
+<li> <a href="#ROTATE"> About screen rotation </a> </li>
+<li> <a href="#DEVCONTROL"> About device control </a> </li>
+<li> <a href="#SIGNING"> What to do when an error occurs </a> </li>
+<li> <a href="#RELEASE"> About registration on the App Store </a> </li>
+<li> <a href="#ADMOB"> AdMob support </a> </li>
+<li> <a href="#HGIMG4"> About the HGIMG4 project </a> </li>
+<li> <a href="#NOTICE"> Notes and restrictions for iOS </a> </li>
+<li> <a href="#NEWVER"> iOS version will be updated </a> </li>
+	</ol>
+
+<h2 id = "ABOUT"> Overview of HSP3Dish for iOS </h2>
+	<p>
+HSP3Dish for iOS is a runtime of HSP3Dish that runs on iOS-equipped models (iPhone series, iPad series, iPod Touch).
+It is possible to reproduce the functions supported by HSP3Dish for Windows on iOS.
+(The iOS version of HSP3Dish is intended to execute the Windows version of the script, and does not reproduce the HSP3 development system itself on iOS.)
+	<br>
+In this manual, we will explain how to use the iOS version and points to note.
+	</p>
+
+<h2 id = "PREPARE"> Preparing the environment </h2>
+	<p>
+Currently, in order to operate on the actual iPhone / iPad, Mac OS X environment and development tool Xcode 9 or later are required, and iOS Developer Program (paid) is required for distribution in the store. <br>
+The process required up to this point is no different from normal iPhone / iPad development. For details, refer to various materials such as the iOS Developer Program homepage.
+	</p>
+	<pre>
+	iOS Developer Program
+	<a href="https://developer.apple.com/programs/jp/">https://developer.apple.com/programs/jp/</a>
+	</pre>
+	<p>
+In this document, we will explain how to install HSP3 Dish on the assumption that Xcode will actually work and the program can be transferred to the actual iPhone / iPad.
+For the preparations up to that point, please refer to the existing manuals.
+	<br>
+The version of XCode used for verification is XCode 9.
+The SDK version to be used is assumed to be iOS12 or later, and the operating environment is assumed to be iOS10 or later.
+	</p>
+
+<h2 id = "SAMPLE"> About iOS folder </h2>
+	<p>
+	<img src="hsp3dish/s_block3.jpg" style="float:right;">
+The iOS folder contains the basic project for the HSP3Dish runtime and xcode.
+
+	<ul>
+<li> iHSP30 folder --HSP3Dish runtime body </li>
+<li> gameplay folder-runtime for HGIM G4 </li>
+<li> extlib folder --library for HG IMG4 </li>
+<li> hspproj folder --HSP3Dish basic project </li>
+<li> hspproj_gp folder --HGIGG4 basic project </li>
+	</ul>
+
+	<br>
+Basically, create a project for iOS using HSP3Dish Helper.
+Runtimes and libraries should be copied as needed.
+	<br clear="all">
+	</p>
+
+<h2 id = "MAKECPP"> Script preparation </h2>
+	<p>
+If you want the script to run on iOS, first create a project on Windows.
+Start HSP3Dish Helper (hsp3dh.exe), which is a conversion tool.
+(You can also start it by selecting the "Convert specified file to C source" menu from the "Tools" menu of the script editor.) <br>
+When the tool starts, make sure that the "Source Conversion" tab is selected, and set the following contents. <br>
+	</p>
+
+	<ul>
+<li> Source Script-HSP source script to work. You can select from the file dialog with the "Browse" button. </li>
+<li> Project name --This will be the project name on XCode. It is necessary to specify only single-byte alphanumeric characters (without spaces). </li>
+<li> Organization --This is the Organization name specified for the project on XCode. Please enter the name of the creator or organization. .. </li>
+<li> Identifier --This is the Identifier (creator identification name) name specified for the project on XCode. It is necessary to specify only single-byte alphanumeric characters (without spaces). You need to specify a string that is unique to other authors. Normally, the URL is reversed and specified as "net.onionsoft". The AppID (Bundle Identifier) ​​is obtained by adding the project name to this Identifier. The App ID will be required when operating on the actual device or registering on the App Store, so be prepared in advance.
+(For example, if the Identifier is "net.onionsoft" and the project name is "block3", the AppID will be "net.onionsoft.block3".) </Li>
+	</ul>
+	<p>
+After making the above specifications, click the "Convert" button.
+At this time, don't forget to check "Generate project for XCode8" and "Convert output source to UTF-8".
+(Also, if you are using the HGIMG4 runtime, check "Use HGIMG4" as well.)
+	</p>
+	<p>
+	<img src="hsp3dish/s_and1.jpg"><br>
+	</p>
+	<p>
+If it ends normally, the project folder for XCode (the folder name specified by the project name) will be created in the same folder as the script.
+This completes the script and project preparation.
+	</p>
+
+
+<h2 id = "RUNPROJ"> Run and configure HSP3Dish </h2>
+
+	<p>
+If you want to actually run it on iOS, you need to compile the project on XCode. <br>
+Copy the project folder for XCode and the "iHSP30" folder (included in the iOS folder in the HSP archive) output in <a href="#MAKECPP"> Script preparation </a> to MacOSX. please. <br>
+	</p>
+	<p>
+Be sure to place the "iHSP30" folder in the same hierarchy as the created project folder. <br>
+(For the HGIMG4 project, place "extlib" and "gameplay" in the same way.)
+	</p>
+	<p>
+	<img src="hsp3dish/s_folder.jpg"><br>
+	</p>
+
+	<p>
+Open the project folder and start the "hspproj.xcodeproj" file inside.
+XCode will launch automatically and the project will be loaded.
+	</p>
+
+	<p>
+	<img src="hsp3dish/s_code3.png"><br>
+	</p>
+
+	<p>
+If you have additional data files such as images and sounds, you need to copy them to the "Resource" folder and select "Add Files to" hspproj "..." from the "File" menu to register the resource files in the project. there is. <br>
+By registering the files under Resource on XCode, it is possible to read data files such as images from the script.
+	</p>
+
+	<p>
+	<img src="hsp3dish/s_addfiles.png"><br>
+	</p>
+
+	<p>
+When using HGIMG4, add the "res" folder as a reference (reference) under the Resource folder.
+All files under the "res" folder will be treated as resources.
+	</p>
+
+	<p>
+	<img src="hsp3dish/s_folderref.png"><br>
+	</p>
+
+	<p>
+If you want to use the pre-packed file (data.dpm), refer to the item "About the data in the Resource folder".
+	</p>
+
+	<p>
+Basically, if you press the execute button (>>) on the upper left from this state, it will compile and execute on the selected device. <br>
+In addition, the following settings can be made according to the contents of the application.
+	</p>
+
+	<p>
+When running HSP3Dish, the HSP runtime initialization code written in AppDelegate.m is referenced.
+(When using HGIMG4, this setting is invalid. When using HGIMG4, all available screen areas will be drawn.) <br>
+By editing this content on XCode, you can change various settings. <br>
+To edit AppDelegate.m, select the folder icon in the view on the left side of the screen to display the project file tree. Click the AppDelegate.m item in it to display the contents in the editor.
+	</p>
+
+	<p>
+	<img src="hsp3dish/s_code4.jpg"><br>
+	</p>
+
+	<pre>
+// Create and add views
+	    HspView* view=[[HspView alloc] initWithFrame:[[UIScreen mainScreen] applicationFrame]];
+
+	    [view startFrame:60];
+	    [view useRetina];
+	    //    [view dispRotate:3];
+	    [view useMultiTouch];
+	    [view dispViewX:480 Y:800];
+	    [view dispAutoScale:0];
+	    [view clsMode:1 color:0xffffff];
+	    //    [view useAccelerometer:1.0f / 30.0f];
+	</pre>
+
+	<p>
+In the above part, the initialization code with standard settings (480 x 800, 60 frames) is written.
+Lines that start with "//" are recognized as comments, and the written content is invalid.
+If necessary, you can enable the setting by deleting "//".
+The content of each line has the following meanings:
+	</p>
+	<br>
+
+	<pre>
+	    [view startFrame:60];
+	</pre>
+	<p>
+This setting allows you to control the frame rate at which the task is executed.
+Normally, by specifying 60, it is 60 frames per second (fps), but you can change this value.
+Unlike normal HSP, the iOS version of HSP3Dish executes in the specified frame rate as a unit.
+It is possible to specify a high frame rate, but the load on the CPU will affect battery consumption, so
+We recommend that you keep the value as low as possible.
+	</p>
+	<pre>
+	    [view clsMode:1 color:0xffffff];
+	</pre>
+	<p>
+With this setting, you can change whether to clear (erase) the screen at the start of drawing by "redraw 0".
+By default, clear is enabled and the background color is white (0xffffff). <br>
+If you set "cls Mode: 0", the screen will not be cleared, so you need to clear it yourself.
+(When clearing the screen by yourself, it is an option setting to avoid clearing duplicates.) <br>
+"Color: 0xffffff" specifies the color to be cleared, and describes the RGB code in hexadecimal.
+	</p>
+	<pre>
+	    [view useRetina];
+	</pre>
+	<p>
+With this setting, on models with Retina display (iPhone 4 or later), the resolution can be doubled for processing.
+(It is necessary to create an application with a high resolution such as 640 x 960 in advance)
+Models without a Retina display will maintain normal resolution.
+If you do not want to use the Retina display intentionally, put a comment "//" to disable it.
+	</p>
+	<pre>
+	    [view useMultiTouch];
+	</pre>
+	<p>
+By adding this setting, it is possible to acquire multi-touch information using the mtlist and mtinfo commands. <br>
+If this is not specified, even if you touch multiple points, it will be considered as one touch.
+	</p>
+	<pre>
+	    [view dispViewX:480 Y:800];
+	</pre>
+	<p>
+You can set the resolution (expected resolution) at which the script operates.
+Be sure to set it when using the screen scaling function (dispAutoScale, dispScaleX). The above example shows that the horizontal size is 480 and the vertical size is 800. <br>
+If this item is commented out (disabled), the entire device resolution at startup will be valid as it is, and the script will be able to perform processing according to the screen size.
+	</p>
+
+	<pre>
+	    [view dispScaleX:2.0f Y:2.0f];
+	</pre>
+	<p>
+The original screen size is displayed at the specified magnification. Use this if you want to fix the magnification. Use dispAutoScale to set automatically according to the screen size.
+	</p>
+
+	<pre>
+	    [view dispAutoScale:0];
+	</pre>
+	<p>
+Appropriately scales the drawn screen size and displays it on the current screen. <br>
+The numbers in parentheses allow you to specify several scaling methods.
+	</p>
+	<ul><pre>
+0: Optimal size that fits on the entire screen (aspect ratio is maintained)
+1: Scale based on the size in the X direction (aspect ratio is maintained)
+2: Scale based on the size in the Y direction (aspect ratio is maintained)
+3: Ignore the aspect ratio and display it on the entire screen
+	</pre></ul>
+	<p>
+Scaling settings are made at startup. It cannot be changed while the script is running.
+	</p>
+	<pre>
+	    [view useAccelerometer:1.0f / 30.0f];
+	</pre>
+	<p>
+By adding this setting, it is possible to get the value of the accelerometer. <br>
+The value you specify sets the reading interval for the sensor. With the above settings, acquisition is performed in 1/30 second units.
+Accelerometer values ​​are in the system variables ginfo_accx, ginfo_accy, and ginfo_accz, respectively.
+The values ​​on the X, Y, and Z axes are assigned as real numbers.
+This is the acceleration of each coordinate axis obtained in the range of -1.0 to +1.0. <br>
+Do not add this setting if you do not use accelerometers. Acquiring sensor information consumes extra battery.
+In an environment where the accelerometer cannot be used, such as on Windows, 0.0 is acquired.
+	</p>
+
+	<p>
+	<img src="hsp3dish/s_iphone.jpg"><br>
+	</p>
+
+
+<h2 id = "APPICON"> App name and icon settings </h2>
+
+	<p>
+The project comes with a default icon (HSP soup cup icon), app name and splash screen. <br>
+You can see these settings by selecting the General item for your project.
+	</p>
+	<p>
+	<img src="hsp3dish/s_appicon.jpg"><br>
+	</p>
+	<p>
+The following three files are registered as the minimum required icon files.
+Each image is the same but has a different resolution. If you want to use the image you prepared, replace the icon file.
+	</p>
+	<ul><pre>
+icon57.png --Icon used as standard on iOS (57 x 57 dots)
+icon58.png --Icon used in Spotlight and setting screen (58 x 58 dots)
+icon120.png --Icon used as standard on iOS with Retina display (120 x 120 dots)
+	</pre></ul>
+
+	<p>
+The splash screen is the screen that is displayed when the application is started, and different files are prepared for each screen size.
+The following three files are registered as the minimum required files.
+If you want to use the image you prepared, replace the image file.
+	</p>
+	<ul><pre>
+Default.png --Splash screen used on older models (320 x 480 dots)
+Default@2x.png --Splash screen for Retina display (640 x 960 dots)
+Default-568h@2x.png --Splash screen for 4 inch Retina display (640 x 1136 dots)
+	</pre></ul>
+
+	<p>
+The app name displayed on iOS is set in the InfoPlist.strings file.
+You can edit it by selecting InfoPlist.strings in the Supporting Files folder in your project's file tree.
+	</p>
+
+	<p>
+	<img src="hsp3dish/s_infoplist.jpg"><br>
+	</p>
+	<ul><pre>
+InfoPlist.strings (English)-Setting app names in English
+InfoPlist.strings (Japanese) --Setting app name in Japanese
+	</pre></ul>
+
+	<p>
+Two types of projects, Japanese and English, are registered. Select each file and
+	</p>
+	<ul><pre>
+		CFBundleDisplayName = "hspproj";
+	</pre></ul>
+	<p>
+Please rewrite the "hspproj" character string in the part marked with and set the application name.
+If you want to add a name in another language, add localization from XCode and make the same settings.
+	</p>
+
+
+<h2 id = "BSAVE"> Save user data by bsave command </h2>
+	<p>
+The bsave instruction allows you to save the contents of the variable buffer as user data.
+(You cannot specify a folder on iOS, so please specify only the file name.) <br>
+The saved data can be read by the bload instruction by specifying the same file name.
+The bsave instruction cannot save a file with the same name as the file in the resource.
+User data is stored in different areas for each application. Data cannot be shared between different applications.
+	</p>
+
+<h2 id = "RESOURCE"> About the data in the Resource folder </h2>
+	<p>
+Create a Resource folder for the image and audio data files read from the script.
+It can be read by adding it to the project.
+However, please note that unlike Windows, the file name is case-sensitive, so you need to write the file name correctly. <br>
+It is possible to access data packed with multiple files by adding the data.dpm file to the resource.
+The data.dpm file can be created on the HSP development system on Windows. For details, refer to the items such as dpm file and pack file.
+Also, please note that HSP3Dish cannot include files accessed by the iOS system such as audio files (wav, mp3, etc.) and icons. The file name length limit (up to 12 characters) is the same as the HSP packfile specification.
+	</p>
+
+<h2 id = "EXECURL"> Support for exec instructions </h2>
+	<p>
+By specifying the URL scheme with the exec instruction, you can open the Safari browser with the specified URL.
+	</p>
+	<pre>
+	exec "http://hsp.tv/",16
+	</pre>
+	<p>
+In the above example, we will open the "hsp.tv" site.
+Make sure to specify 16 (execute associated application) for the second parameter as in Windows.
+	</p>
+
+<h2 id = "DIALOG"> Support for dialog instructions </h2>
+	<p>
+Supports system dialog display.
+Only types 0 to 3 are supported. However, the warning icon etc. like the Windows version is not displayed.
+If you select the "Yes" or "No" option, the same result as for the Windows version will be assigned to the system variable stat.
+	</p>
+
+<h2 id = "SENSOR"> Accelerometer support </h2>
+	<p>
+The iOS version supports the acquisition of accelerometer information. You need to add the required initialization to AppDelegate.m. See <a href="#RUNPROJ"> Running and configuring HSP3Dish </a> for more information. <br>
+Currently, the Windows version cannot read the same values ​​as accelerometers, so be sure to write code to test according to the runtime you are running.
+	</p>
+
+<h2 id = "RETINA"> Retina display support </h2>
+	<p>
+You can make it compatible with Retina displays by enabling the initialization of AppDelegate.m ("[view use Retina];"). <br>
+Create an app with a high-definition size such as 640x960 (640x1136 for iPhone 5) in advance, and then make the settings.
+	</p>
+	<pre>
+	    [view useRetina];
+	</pre>
+	<p>
+With this setting, it will be reflected correctly on models with Retina display, and will be displayed in reduced size on models without Retina display.
+	</p>
+
+<h2 id = "UNIVERSAL"> Universal app support </h2>
+	<p>
+If you want to build the project as a Universal app (the same app works on both iPad and iPhone)
+Change the project's General item-> Deployment Info-> Deployment Target to Universal. <br>
+After that, you will be able to make settings for each iPhone and iPad, so make the same settings and build. <br>
+For Universal apps, either use the view dispViewX item at initialization in AppDelegate.m to correctly specify the resolution used by the app and scale.
+Please note that it is necessary to check the screen initialization size (ginfo_sx, gfino_sy, etc.) on the application side and then perform drawing corresponding to it.
+	</p>
+	<img src="hsp3dish/s_universal.jpg"><br>
+
+
+<h2 id = "ROTATE"> About screen rotation </h2>
+	<p>
+The current version does not support automatic screen rotation during execution. Be sure to create it with specifications that operate with the vertical and horizontal screens fixed. <br>
+You can set the screen orientation with the Device Orientation checkbox in TARGETS-> General in the hspproj settings.
+Be sure to check either Portrait, Upside Down or Landscape Left, Landscape Right. <br>
+In the previous version, the rotation was set by setting "view disp Rotate:" in the settings in AppDelegate.m.
+The setting by "view disp Rotate:" is also left for compatibility, but in XCode 6 or later, please set by Device Orientation.
+
+	</p>
+
+<h2 id = "DEVCONTROL"> About device control </h2>
+	<p>
+It is possible to access iOS device-specific functions with commands such as devcontrol. <br>
+	</p>
+	<pre>
+devcontrol "control command", parameter 1, parameter 2, parameter 3
+	</pre>
+	<p>
+Perform device control in the above format.
+On iOS devices, the control command specified as a character string recognizes the following.
+(The control command string must match exactly, including case.) <br>
+Note that an error does not occur even if you write a control command that is not recognized.
+	</p>
+	<pre>
+Control command content
+	-------------------------------------------
+vibrate Vibrate operation
+sound System sound playback (parameter 1)
+	</pre>
+	<p>
+For example
+	</p>
+	<pre>
+		devcontrol "vibrate"
+	</pre>
+	<p>
+Instructs the device to perform a vibrate operation. <br>
+Some control commands recognize numeric parameters.
+	</p>
+	<pre>
+		devcontrol "sound",1000
+	</pre>
+	<p>
+Plays a built-in sound (Sound ID = 1000).
+Various built-in sounds can be played by changing the numerical values ​​of the parameters.
+(The sound ID can be 1000-117. For more information, see the iOS AudioServicesPlaySystemSound function reference.)
+	</p>
+
+<h2 id = "SIGNING"> About handling in case of error </h2>
+	<p>
+A Code Signing Error may occur when transferring or compiling the actual device.
+This often happens when the Provisioning Profile and Bundle Identifier do not match.
+When you register for iOS development, you will need a Provisioning Profile, but please make sure that it matches the Identifier (app identification name such as onion software. *) Of the App ID specified at that time.
+	</p>
+	<img src="hsp3dish/ios_signing1.jpg"><br>
+	<p>
+If the Code Signing Identity and Provisioning Profile in the TARGETS-> Build Settings-> Code Signing Error item of the project are not specified correctly, an error will occur.
+	</p>
+	<img src="hsp3dish/ios_signing2.jpg"><br>
+	<p>
+If the Provisioning Profile is not properly installed on the device, you will also get an error during the transfer.
+In this case, check whether the device registration is correct and the encryption key settings are correct, and then compile again.
+	</p>
+
+
+<h2 id = "RELEASE"> About registration to the App Store </h2>
+	<p>
+Even if you create an app using HSP3Dish, you can register it in the App Store using the same procedure as for normal app development. <br>
+By registering on the App Store, users other than you will be able to download and run the app. Also, if you set it as a paid application, you can sell it on the App Store.
+	<br>
+If you have already registered as a Developer, the general flow is as follows.
+	</p>
+	<ul>
+<li> Create an AppID for use in your app from the "iOS Provisioning Portal" site </li>
+<li> Create a Distribution Provisioning Profile and download the configuration file </li>
+<li> Register the provisioning profile for Distribution created in the environment where xcode is running </li>
+<li> In the project on xcode, set the profile for distribution in Code Signing in Build Settings </li>
+<li> Build in Release mode and make sure there are no errors </li>
+<li> Register the app on the "iTunes Connect" site. Set the app name, screenshot, etc. and set the status to "Waiting For Upload" </li>
+<li> Execute the "Product"-> "Archive" menu from xcode to create a file for uploading </li>
+<li> The Organizer window will open automatically, so validate the file </li>
+<li> If Validate is successful, select "Submit" to upload to the server </li>
+<li> After a successful upload, Apple will review it. You can check the progress on the iTunes Connect site </li>
+<li> If you pass the screening successfully, the app will be published on the App Store </li>
+	</ul>
+	<p>
+The registration process is so complicated that it is rare that everything will work from the beginning.
+Learn how to register by referring to the documents published by Apple and the materials on the Internet. <br>
+Already, works by HSP3 Dish are gradually appearing on the App Store.
+You can publish your work to the world market, so please try it.
+	</p>
+	<p>
+* Due to Apple's rules, you cannot apply for binaries that do not include 64-bit codes. Be sure to use the HSP3Dish 3.5 β3 or later runtime to create the file.
+Also, be sure to set "No" to "Build Active Architecture Only" in the project build settings. "Build Active Architecture Only" has settings for PROJECT and TARGETS respectively, so make sure that "No" is set for both.
+Also, make sure that "Standard Architectures" (armv7, arm64) is selected for the Architectures item.
+	</p>
+
+<h2 id = "IAD"> About iAd support </h2>
+	<p>
+The iAd system supported by HSP3.4 has been discontinued. <br>
+	<p>
+	</p>
+
+<h2 id = "ADMOB"> AdMob support </h2>
+	<p>
+AdMob's system for displaying ads within the app is a new system integrated with Google Firebase.
+We plan to support the new version of AdMob in future versions. Please wait a moment now.
+	</p>
+
+<h2 id = "HGIMG4"> About the HGIMG4 project </h2>
+	<p>
+This version supports building HGIM G4 scripts. <br>
+Please note that it is currently β-compatible and various functions are restricted.
+	</p>
+	<ul><img src="hsp3dish/pronama3d.png"><br>
+Kei Kurui (Professional student) (C) Pronama LLC
+	</ul>
+	<br>
+	<p>
+In addition to increasing the size of the app, the HGIMG4 project may slow down depending on the device environment and model. (We will aim to support a wide range of terminals in the future, so please wait for a while) <br>
+In HGIMG4, files such as res folder and shader are always required at startup. (The folder structure is "Resouces / res / ...") <br>
+The minimum required files are as follows.
+	</p>
+	<pre>
+		res/font.gpb
+Files under res / shaders
+	</pre>
+	<p>
+Please note that the following functions are not supported. It will be supported in a future version.
+	</p>
+	<ul>
+<li> Screen size specification and scaling are not supported (manual setting items such as hgio_view / hgio_scale do not work) </li> <br>
+<li> Sensor value is always obtained </li> <br>
+<li> Always receive multi-touch information </li> <br>
+<li> Not compatible with off-screen rendering (currently investigating the cause and fixing it) </li> <br>
+<li> When using with XCode9, the project setting must be Legacy Build System <br>
+		<img src="hsp3dish/s_legacybuild.png"><br>
+	</li>
+	</ul>
+
+
+<h2 id = "NOTICE"> Notes and restrictions for iOS </h2>
+	<ul>
+<li> Information that can be entered </li>
+	<p>
+The tapped coordinates are reflected in mousex and mousey.
+You can also get the click (tap) ON / OFF by the stick command.
+	</p>
+<li> About image format </li>
+	<p>
+The following formats can be used for images loaded by the celload and picload commands. PNG format is recommended for iOS.
+	<ul>
+<li> JPEG baseline (progressive JPEG is not supported) </li>
+<li> PNG (8bit, 24bit, 24bit + alpha channel format supported) </li>
+<li> TGA (subset) </li>
+<li> BMP (monochrome, RLE compression not supported) </li>
+<li> PSD (read only RGB 24bit) </li>
+	<li>GIF</li>
+	<li>HDR (radiance rgbE format)</li>
+	<li>PIC (Softimage PIC)</li>
+	</ul>
+	</p>
+<li> About image size </li>
+	<p>
+Images whose vertical and horizontal sizes are not 2 ^ n, that is, 1,2,4,8,16,32,64,128,256,512,1024,2048 ...
+When reading, some overhead is incurred due to the internal conversion.
+(Usually you don't have to worry too much. It requires extra CPU resources when loading a large number of images)
+	</p>
+<li> Playable sound files </li>
+	<p>
+It supports files with the extensions ".wav", ".mp3", ".caf", and ".aac".
+For compressed audio files, it is not recommended to load a lot of music at the same time, as all waveforms will be expanded into memory when loaded with the mmload command.
+The ".caf" and ".aac" formats are supported on Mac and iOS.
+".Wav" and ".mp3" are widely supported formats in all hsp3dish including Windows version.
+	</p>
+<li> About mes, print instructions </li>
+	<p>
+It is not recommended to rewrite many character strings at once because the character string drawing by the mes and print instructions is a very costly (execution time) process. <br>
+The drawing of the character string has a cache inside the system, and the previously drawn contents are displayed at high speed,
+Please note that processing that displays many different character strings for each frame will be a heavy load. <br>
+If the characters to be displayed are only English characters, prepare and use the character data yourself in advance.
+You can get good performance. (Please refer to test1.hsp etc. of hsp3dish sample)
+
+	</p>
+<li> About closing the app </li>
+	<p>
+In the iOS version, the end command does not terminate the app (the process is the same as the stop command).
+The iOS app creation guidelines require that the program itself not terminate. <br>
+Unlike Windows and android, on iOS, it is possible to make it so that there is no action of quitting the application
+Please note that you will be asked.
+	</p>
+	</ul>
+
+<h2 id = "NEWVER"> iOS version will be updated </h2>
+	<p>
+The following features will be added with higher priority in order from the top.
+	</p>
+	<ul>
+<li> Acquisition of various system information </li>
+<li> http connection, browser call support </li>
+<li> Settings for various services such as GAMECENTER and Google Play Services </li>
+	</ul>
+	<p>
+The version upgrade will be announced on the HSP official site HSPTV !, so please check back from time to time.
+	</p>
+
+<!-Footer->
+	<ul id="FOOTER">
+<li> <a href="#CONTAINER"> Return to top of this page </a> </li>
+<li> <a href="../index.htm"> Return to index </a> </li>
+	</ul>
+	<a href="https://www.onionsoft.net/">
+		<img src="onibtn.gif" width="147" height="50" alt="ONION software" id="ONIBTN">
+	</a>
+</div><!-- container -->
+</body>
+</html>

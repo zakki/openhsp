@@ -1,6 +1,6 @@
 ------------------------------------------------------------------------------
 HSP ver3.6 beta TESTING MANUAL                      HSP : Hot Soup Processor  
-ＨＳＰβテスト版説明書               Copyright 2020 (c) ONION software/onitama
+ＨＳＰβテスト版説明書               Copyright 2021 (c) ONION software/onitama
 ------------------------------------------------------------------------------
 
 ・はじめに

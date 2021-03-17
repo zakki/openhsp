@@ -1,0 +1,345 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html lang="ja">
+<head>
+	<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+	<meta http-equiv="Content-Language" content="ja">
+	<meta http-equiv="Content-Style-Type" content="text/css">
+	<meta http-equiv="Content-Script-Type" content="text/javascript">
+	<meta name="author" content="OpenHSP3 Project">
+	<meta name="keywords" content="HSP,HSP3,HotSoupProcessor,HSP3Dish">
+	<meta name="description" content="HSP3の概要">
+	<link href="../main.css" rel="stylesheet" type="text/css" media="all">
+	<title>HSP3 Windows</title>
+</head>
+<body>
+	<div id="CONTAINER">
+		<!-- ヘッダー -->
+		<p id="COPY">HSP : Hot Soup Processor ver3.6 / onion software 1997-2021(c)</p>
+		<img src="hsp3ttl.jpg" alt="title" width="640" height="200">
+		<h1>HSP3 Windows</h1>
+
+		<!-- 目次 -->
+		<ol>
+			<li><a href="#ABOUT_HSP">概要</a></li>
+			<li><a href="#DOUSA_ENV">動作環境</a></li>
+			<li><a href="#PACKAGE">パッケージ構成</a></li>
+			<li><a href="#ATFIRST">初めて使用する場合</a></li>
+			<li><a href="#INSTALL">インストール</a></li>
+			<li><a href="#UNINSTALL">アンインストール</a></li>
+			<li><a href="#DEMO">デモンストレーション</a></li>
+			<li><a href="#CHANGE31">HSP3.5からの変更点</a></li>
+			<li><a href="#EDITOR">スクリプトエディタ</a></li>
+			<li><a href="#HSPAT">HSPアシスタント</a></li>
+			<li><a href="#BROWSER">HSPTVブラウザ</a></li>
+			<li><a href="#HDL">HSP Docs Library(HDL)</a></li>
+			<li><a href="#COPYRIGHT">著作権、ライセンスについて</a></li>
+		</ol>
+
+		<h2 id="ABOUT_HSP">概要</h2>
+		<p>
+		HSP Windowsは、Microsoft Windows上で動作するHSP3の開発環境です。<br>
+		スクリプトによるプログラミングが可能なHSP3ファミリーの中で、最も標準的な開発環境となります。
+		このドキュメントでは、Windows版に固有の機能や起動方法について説明しています。
+		基本的な説明は、<a href="hsp3.htm">HSP3概要</a>をご覧ください。
+		</p>
+
+		<h2 id="DOUSA_ENV">動作環境</h2>
+		<ul>
+			<li>Microsoft Windows 2000、XP ( NT4.0以降を含む )、Vista、7、8、8.1、10</li>
+		</ul>
+		<p>
+			HSP3.6は32bitアプリケーションの動作するほぼすべてのWindowsで動作します。<br>
+			また、Windows 7、8、8.1、10及びVistaの64bit(x64)版での動作を確認しています。
+		</p>
+		<pre>
+		Windows 2000より以前のバージョンでは、標準の「HSPスクリプトエディタ」は動作致しません。
+		簡易版エディタ(hsed3le.exe)をご使用頂けば、標準的なHSPの機能はご使用頂けます。
+		また、InternetExplorer4.0以降がインストールされているWindows 95上でも動作可能ですが、保証外となります。
+
+		日本語版以外のWindowsでは、標準の「HSPスクリプトエディタ」で文字化けが発生することがあります。
+		その場合は、<a href="https://hsp.tv/make/downlist.html" target="_blank">HSPTV!サイトのダウンロードリスト</a>から、対応するツールを選択することができます。
+		</pre>
+		<p>
+		</p>
+		<p>
+			640×480以上の解像度と、256色以上の表示が可能なディスプレイが必要になります。
+			必要なメモリ量は表示する画像サイズなどで変化します。
+		</p>
+		<p>
+			HSPは単体で動作します。標準的な機能において、追加のDLLやランタイムをインストールする必要はありません。
+		<br>
+		</p>
+
+		<h2 id="PACKAGE">パッケージ構成</h2>
+		<p>
+			HSP3.6フルセットは、オープンソースとして公開されているOpenHSP技術をベースに、
+			Windows上で手軽にプログラミングを楽しむことができるよう構成されています。
+			スクリプトを記述するための「HSPスクリプトエディタ」を始めとして、
+			視覚的にプログラムの動作を確認することができるツール「Peas」、
+			ユーザーが作成したコンテンツを楽しめる「HSPTVブラウザ」などを備えた、
+			初心者から上級者まで、あらゆる場面で幅広く使うことのできる統合的な開発環境となっています。
+		</p>
+
+		<h2 id="ATFIRST">初めて使用する場合</h2>
+		<p>
+			HSP3を初めて使用する方は、フルパッケージをインストール後に、<a href="hspprog.htm">プログラミング・マニュアル</a>を読み使い始めてください。
+			HSP3の基本的な仕組みや使い方を解説しています。プログラミング初心者の方は、<a href="beginner/START.HTM">HSP入門</a>も併せてご覧ください。<br>
+			既に過去のバージョンをお使いの方は、<a href="update36.htm">HSP3.6 新機能ハイライト</a>や、<a href="update.htm">HSP3アップデートガイド</a>が参考になります。
+		</p>
+
+		<h2 id="INSTALL">インストール</h2>
+		<p>
+			HSP3.6フルセットは、インストーラー付きのバージョンと圧縮ファイル版が用意されています。
+			インストーラーを起動するか、または任意のディレクトリにhsp36フォルダを解凍する
+			ことで使用できるようになります。(推奨ディレクトリは、「c:\hsp36」です)
+		</p>
+		<p>
+			HSP3.6以前のバージョンが既にインストールされている場合は、以前のものをアンインストール
+			してから、新しいバージョンをインストールすることを推奨します。
+			ただし、HSP3.6のインストーラーは、インストール先のフォルダ以外にファイルの追加を行ないませんので、
+			以前のバージョンと競合することはありません。(過去のバージョンと同時に利用することも可能です。)
+		</p>
+		<p>
+			Windows 2000以降(XP、Vista、7、8、8.1、10等)では、HSP3.6のインストールフォルダに書き込み権限が必要になります。
+			インストーラーのデフォルトディレクトリ(/HSP35)にインストールを行なった場合なども、
+			管理者権限を持ったユーザーで実行するようにしてください。
+		</p>
+		<p>
+			Windows Vista以降をお使いの方は、User Account Control (UAC) の機能により、
+			インストールの際に管理者権限を要求されることがあります。
+			この時は、管理者権限で処理を続行して頂くようお願い致します。
+		</p>
+
+		<h2 id="UNINSTALL">アンインストール</h2>
+		<p>
+			インストーラーによりHSPのインストールを行なった場合は、付属のアンインストーラーによりプログラムの削除が可能です。
+			手動でインストールを行なった場合は、フォルダをまとめて削除することでアンインストールすることができます。
+		</p>
+		<p>
+			Windows Vista以降のOSで、Program Files以下にHSPがインストールされている場合は、
+			HSPTVブラウザやドキュメントビューアーの追加データが、バーチャルストアに残される可能性があります。
+			以下のデータを合わせて削除することで、追加のファイルを含めたアンインストールを行なうことができます。
+			<pre>
+		C:\Users\（ユーザー名）\AppData\Roaming\Hot Soup Processor 
+		C:\Users\（ユーザー名）\AppData\Local\VirtualStore 以下のHSPインストールフォルダ			</pre>
+		</p>
+		<p>
+
+			標準のスクリプトエディタは、標準で以下のレジストリに設定を保存します。必要な場合は、こちらの削除も行なってください。
+			<pre>
+		HKEY_CURRENT_USER\Software\OnionSoftware\hsed3_3
+			</pre>
+		</p>
+
+
+		<h2 id="DEMO">デモンストレーション</h2>
+		<p>
+			まず、「スタートメニュー」のプログラムグループから「Hot Soup Processor 3.6」→「サンプルデモ」
+			を起動させてみてください。HSPのサンプルデモが始まります。
+			（メニュー登録されていない場合は、展開されたディレクトリにある、HSP3DEMO.EXEを起動させてみてください。）
+		</p>
+		<p>
+			このデモは実際にHSPを使って動作しています。メニューから項目を選択することで、
+			色々なデモンストレーションを見ることができます。
+		</p>
+		<p>
+			また、「スタートメニュー」のプログラムグループから「Hot Soup Processor 3.6」→「HSPアシスタント」
+			を選択することで。HSPサンプルスクリプトを閲覧するための「HSPアシスタント」が起動します。
+			「HSPアシスタント」で、「Sample」のボタンを押してからファイルを選択するだけで、
+			すぐに実行・閲覧することができます。
+		</p>
+
+		<h2 id="CHANGE31">HSP3.5からの変更点</h2>
+		<p>
+			HSP3.6では、上位互換となる形で機能の修正と追加を行なっています。
+			HSP3.5で動作していたスクリプトは、ほとんどの場合、修正することなくHSP3.6で動作させることができます。
+			詳しくは、<a href="update36.htm">HSP3.6 新機能ハイライト</a>を参照してください。
+		</p>
+
+		<p>
+			HSP3は、以前までの仕様とプログラムを大幅に見直し、再構築したHSPの最新バージョンです。
+			ver2.61までに培われた親しみやすさ、習得のしやすさ、シンプルさといった資産を継承しながら、
+			より幅広い応用と汎用性を持たせた環境を提供すべく開発されています。
+		</p>
+		<p>
+			以前のバージョンからの変更点や移行のための手順は、
+			<a href="update.htm">HSP3アップデートガイド</a>を参照してください。
+		</p>
+
+
+		<h2 id="EDITOR">スクリプトエディタ</h2>
+		<p>
+			HSPスクリプトエディタ(HSED3.EXE)は、HSPのスクリプトを手軽に編集、実行
+			することができる専用のテキストエディタです。
+			余計な準備をすることなく、直接スクリプトを書いてF5キーを押すだけで実行させることができます。
+		</p>
+		<p>
+			キーワードのヘルプ参照(F1キー)や、かんたん入力などの支援機能も豊富に搭載されています。
+		</p>
+		<p>
+			英語版Windowsを使用しているユーザー向けに英語版スクリプトエディタ(HSED3_EN.EXE)も同梱されています。インターフェースが英語になっていること以外は、通常のスクリプトエディタと同様にお使い頂けます。
+		</p>
+		<p>
+			スクリプトエディタの使用方法、スクリプトの詳細については、
+			<a href="hspprog.htm">プログラミングマニュアル</a>をお読み下さい。
+		</p>
+
+		<h2 id="HSPAT">HSPアシスタント</h2>
+		<img src="img/s_hspat2.jpg" style="float:right;">
+		<p>
+			HSPアシスタントにより、命令の検索、サンプルスクリプトの参照、ネットワーク素材取得などを行なうことができます。
+		</p>
+		<p>
+			「スタートメニュー」のプログラムグループから「Hot Soup Processor 3.6」→「HSPアシスタント」
+			を選択することで、HSPアシスタントが起動されます。
+			(メニュー登録されていない場合は、展開されたディレクトリにある、HSPAT.EXEを起動させてみてください。)
+		</p>
+		<p>
+			HSPアシスタントについての詳細は、<a href="hspat.htm">別途マニュアル（hspat.htm）</a>を参照してください。
+		</p>
+
+		<h2 id="BROWSER">HSPTVブラウザ</h2>
+		<img src="img/tvscr.jpg" alt="HSPTV Browser" width="280" height="219" style="float:right;">
+		<p>
+			HSPTVブラウザを使用することにより、オンライン上のHSP情報、最新ソフトウェアを手軽に
+			ダウンロードして楽しむことができます。
+		</p>
+		<p>
+			「スタートメニュー」のプログラムグループから「Hot Soup Processor 3.6」→「HSPTVブラウザ」
+			を選択することで、HSPTVブラウザが起動されます。
+			(メニュー登録されていない場合は、展開されたディレクトリにある、HSPTV.EXEを起動させてみてください。)
+		</p>
+		<p>
+			HSPTVブラウザは、ネットワークに接続して自動的に最新の情報へ更新します。
+			必ずネットワークへの接続と、設定の確認を行なってください。
+		</p>
+		<p>
+			HSPTVブラウザについての詳細は、<a href="hsptv.htm">別途マニュアル（hsptv.htm）</a>を参照してください。
+		</p>
+
+		<h2 id="HDL">HSP Docs Library(HDL)</h2>
+		<img src="HSP Docs Library/img_thumbs.png" style="float:right;">
+		<p>
+			HSP Docs Library (HDL) は、HSP のドキュメントをすべてまとめて 検索・閲覧 するためのブラウザです。
+			従来のヘルプブラウザに替わって使用することができるドキュメントのビューアーです。
+			HSP Docs Library (HDL) により、HSPのヘルプだけでなくドキュメント及びサンプルスクリプトも含めた
+			統合的な検索とシームレスなリンクが行なわれ、スクリプトの開発効率を高めます。
+		</p>
+		<p>
+			「スタートメニュー」のプログラムグループから「Hot Soup Processor 3.6」→「ドキュメントブラウザ」
+			を選択することで起動されます。
+			（メニュー登録されていない場合は、展開されたディレクトリにある、HDL.EXEを起動させてください。）
+		</p>
+		<p>
+			HSP Docs Libraryについての詳細は、<a href="HSP Docs Library/hdl_usage.htm">別途マニュアル（hdl_usage.htm）</a>を参照してください。
+		</p>
+
+
+		<h2 id="COPYRIGHT">著作権、ライセンスについて</h2>
+		<p>
+			HSP3.6フルセットは、「HSP開発システム」と「追加コンポーネント」で構成された複合パッケージとなっています。
+			HSP開発システムは、開発の中心となる要素で以下の項目を指します。
+		</p>
+		<ul>
+			<li>HSPスクリプトエディタ(hsed3.exe、hsed3_en.exe、hsed3le.exe)</li>
+			<li>デバッグ実行ランタイム(hsp3.exe、hsp3cl.exe、hsp3debug.dll)</li>
+			<li>HSP拡張ランタイム(hsprt、hsp3c.hrt、hsp3cl.hrt)</li>
+			<li>HSPコードコンパイラ(hspcmp.dll)</li>
+			<li>HSP3Dishシステム(hsp3dish.exe、hsp3dh.exe、hsp3cnv.exe)</li>
+			<li>HSPTVブラウザ(hsptv.exe)</li>
+			<li>Peasエディタ(ahtman.exe)</li>
+		</ul>
+		<p>
+			HSP開発システムに含まれるファイルは、<em>BSDライセンスのもと自由に添付・複製・改編・再配布することが
+			できます。その際には<a href="hsplicense.txt">HSPのライセンス表記(hsplicense.txt)</a>を明示するようにしてください。</em>
+		</p>
+		<p>
+			（HSPを使って作られた実行ファイルでは、このライセンスは適用されません。
+			あくまでも、HSP開発システムに含まれるファイルをそのまま公開する場合に適用されます。
+			ユーザーが作成したオリジナルのソフトウェアに関するライセンスについては、
+			「<a href="hsp3.htm#LICENCE">HSPによって作られたソフトウェアのライセンスについて</a>」の項目を参照してください。）
+		</p>
+		<p>
+			（ライセンス表記の明示は、配布物の中にhsplicense.txtを含めるか、またはドキュメント内に
+			hsplicense.txtと同じ内容を含めるようにしてください。企業内や学校内などでの利用は
+			無償として扱って頂いて構いません。）
+		</p>
+		<p>
+			HSP開発システムは、基本的に無保証で提供されますが、商利用に関するサポートなどは、
+			onion software(onitama@onionsoft.net)までメールにて連絡を頂ければ、
+			検討させていただきます。 
+		</p>
+		<p>
+			HSP開発システムの著作権はonion softwareにあります。
+			onion softwareは本プログラムによって生じた、いかなる損害についても保証いたしません。
+			自己の責任の範囲で使用してください。
+		</p>
+		<p>
+			追加コンポーネントは、開発の補助と利便性を高める要素で以下の項目を指します。
+			追加コンポーネントの著作権とライセンスは、それぞれ権利者が異なります。
+			詳しくは、それぞれのドキュメントを参照してください。
+		</p>
+		<ul>
+			<li>HSP Docs Library (doclib/HSP Docs Libraryフォルダ内のreadme.txtを参照)</li>
+			<li>d3module (doclibフォルダ内のd3module.txtを参照)</li>
+			<li>Artlet2D (doclibフォルダ内のArtlet2D.txtを参照)</li>
+			<li>SQLele (doclibフォルダ内のSQLele.txtを参照)</li>
+			<li>OBAQプラグイン (doclibフォルダ内のobaq.txtを参照)</li>
+			<li>HSPDXプラグイン (doclibフォルダ内のhspdx.txtを参照)</li>
+			<li>HSPCVプラグイン (doclibフォルダ内のhspcv.txtを参照)</li>
+			<li>HGIMG3プラグイン (doclibフォルダ内のhgimg3.txtを参照)</li>
+			<li>HGIMG4プラグイン (doclibフォルダ内のhgimg4.htmlを参照)</li>
+			<li>HSPOGGプラグイン (doclibフォルダ内のhspogg.txtを参照)</li>
+			<li>HSP3IMPプラグイン(doclibフォルダ内のhsp3imp.txtを参照)</li>
+		</ul>
+		<p>
+			<em>以下に示された追加コンポーネントは、onion softwareが著作権を保有していますが、
+			BSDライセンスのもと自由に添付、複製、改編、再配布することができます。</em>
+			再配布は、有償・無償を問わず行なうことができ、onion softwareの著作権表示義務もありません。
+			以下の追加コンポーネントとともに配布されたオリジナルのソフトウェアに対して
+			onion softwareが著作権を主張することはありません。
+		</p>
+		<ul>
+			<li>HSPTV素材データ(/hsptv)及びそのサンプルスクリプト</li>
+			<li>HGIMGプラグイン (hgimg.dll、hgimgx.dll)及びそのサンプルスクリプト</li>
+			<li>HSPDAプラグイン (hspda.dll)及びそのサンプルスクリプト</li>
+			<li>HSPDBプラグイン (hspdb.dll)及びそのサンプルスクリプト</li>
+			<li>HSPEXTプラグイン (hspext.dll)及びそのサンプルスクリプト</li>
+			<li>HSPSOCKプラグイン (hspsock.dll)及びそのサンプルスクリプト</li>
+			<li>HSPINETプラグイン (hspinet.dll)及びそのサンプルスクリプト</li>
+			<li>HSPPRINTプラグイン (hspprint.dll)及びそのサンプルスクリプト</li>
+			<li>HSP基本サンプルスクリプト(sample/basicフォルダ内のスクリプト)</li>
+			<li>COMサンプルスクリプト(sample/comobjフォルダ内のスクリプト)</li>
+			<li>ゲームサンプルスクリプト(sample/gameフォルダ内のスクリプト)</li>
+			<li>HGIMGサンプルスクリプト(sample/hgimgフォルダ内のスクリプト)</li>
+			<li>HGIMG3サンプルスクリプト(sample/hgimg3フォルダ内のスクリプト)</li>
+			<li>HGIMG4サンプルスクリプト(sample/hgimg4フォルダ内のスクリプト)</li>
+			<li>HSPCLサンプルスクリプト(sample/hspclフォルダ内のスクリプト)</li>
+			<li>HSP3.6サンプルスクリプト(sample/new36フォルダ内のスクリプト)</li>
+			<li>HSP3UTFサンプルスクリプト(sample/hsp3utfフォルダ内のスクリプト)</li>
+			<li>HSP3Dishサンプルスクリプト(sample/hsp3dishフォルダ内のスクリプト)</li>
+			<li>スクリーンセーバーサンプルスクリプト(sample/ssaverフォルダ内のスクリプト)</li>
+			<li>HSPプログラミングマニュアル等HSPの各種技術資料(doclib/hspsdkフォルダ内)</li>
+		</ul>
+		<p>
+			<em>以下に示されたファイルは、HSPフルセットに限って配布を許可されているものです。
+			単体での複製、改編、再配布は許可していませんので、ご注意ください。</em>
+		</p>
+		<ul>
+			<li>HSPデモンストレーションのデータファイル(sample/demoフォルダ内のデータ)</li>
+
+		</ul>
+
+
+		<!-- フッター -->
+		<ul id="FOOTER">
+			<li><a href="#CONTAINER">このページの1番上に戻る</a></li>
+			<li><a href="../index.htm">ドキュメントの一覧に戻る</a></li>
+			<li><a href="https://hsp.tv/">Go to HSPTV page</a></li>
+		</ul>
+		<a href="https://www.onionsoft.net/hsp/">
+			<img src="img/onibtn.gif" width="147" height="50" alt="ONION software" id="ONIBTN">
+		</a>
+	</div><!-- container -->
+</body>
+</html>

@@ -1,0 +1,435 @@
+------------------------------------------------------------------------------
+HSPSW ver3.6 REFERENCE MANUAL                       HSP : Hot Soup Processor  
+HSP Extension Extension DLL Reference copyright 2005-2020 (c) onion software
+------------------------------------------------------------------------------
+
+・ Introduction
+
+This DLL can be used with Hot Soup Processor ver3 or later.
+Enables the Steam integration function of the STEAMWORKS SDK.
+The following features are supported by using HSPSW:
+
+Acquisition / cancellation / reset of STEAM achievements
+Get / set STEAM status value
+
+
+・ Overview of how to use
+
+When using HSPSW, be sure to start the script with "#include" hspsw.as ""
+Please add the line. With the above, the function of HSP has been extended, and this reference
+You will be able to use the instructions that are being explained.
+
+Be sure to use HSPSW.DLL in an environment where STEAM is installed.
+At runtime, place the following files in the same folder as HSPSW.DLL
+is needed.
+
+		steam_api.dll			STEAMWORKS API DLL
+sdkencryptedappticket.dll DLL attached to STEAMWORKS SDK
+
+These files are included in the STEAMWORKS SDK files.
+Download from the steamworks page (https://partner.steamgames.com/)
+Files from within the SDK package (steamworks_sdk_???. Zip) that can be
+Please copy and use.
+The DLL is contained in the following folders in the archive.
+
+	/sdk/public/steam/lib/win32/sdkencryptedappticket.dll
+	/sdk/redistributable_bin/steam_api.dll
+
+
+・ Preparation in advance
+
+This plug-in calls the functionality of the STEAMWORKS SDK.
+First, refer to the documentation for STEAM and the STEAM WORKS SDK.
+Please understand how it works.
+
+When using it in your own app, enter the app ID, achievements, status, etc.
+It is necessary to set in advance on the STEAM side.
+
+In this plugin sample, STEAM's sample game "Spacewar"
+I am testing with (APPID 480).
+The app ID is specified in the "steam_appid.txt" file.
+If you want to test with your own app, use a text editor etc.
+Please correct the contents of "steam_appid.txt".
+Be sure to place "steam_appid.txt" in the same folder as HSPSW.DLL
+Put it down please.
+
+
+・ Achievement table
+
+The following steps are required to implement STEAM achievements.
+
+1. Set achievements on the achievement settings page of Steamworks app management
+2. Create an achievement table on the HSPSW.DLL plugin
+3. Request the latest information on the performance table
+4. Acquire / cancel achievements
+
+The code to write on the HSPSW.DLL plugin is 2-4.
+
+The data that one achievement has is as follows
+
+API Name: Calling string (English string), also known as Achievement ID.
+Display Name: Name of the achievement to be displayed (UTF-8 string)
+Description: Description of the displayed achievement (UTF-8 string)
+
+Please set in advance on the Steamworks app management page.
+The most important is the API Name, which is a string such as "ACH_WIN_ONE_GAME"
+Manage. You must always specify a different string for each achievement.
+
+The achievement table is for accumulating achievement information in HSPSW.DLL.
+Memory area. Create in advance when acquiring achievement information
+is needed.
+
+The achievement table can be created in two ways: automatic creation and manual creation.
+Automatic creation registers all the list of achievements set in the game.
+This can be done with the steamset_achievement command.
+Normally, there is no problem with automatically creating the performance table.
+When creating manually, specify the maximum number of tables with the steamset_max instruction.
+Later, we will register the API KEY with the steamreg_achievement instruction.
+
+After creating the achievement table, use the steamreq_status command to get the latest information.
+Please get it. The steamreq_status instruction simply gets to the server
+You just make a request, so you have to wait until you actually receive the data
+There is.
+
+For each frame, call the steamupdate instruction to always use the STEAM API
+Please monitor and update the status.
+During the request, the flag value obtained by the steamupdate instruction is in communication.
+It is in status (STEAM_GETSTAT).
+If this goes to the ready status (STEAM_READY), it's correct
+Indicates that the achievement table and status have been updated.
+
+After getting the achievement table, you can perform the following operations.
+
+You can get the actual status with the steamget_achievement command.
+You can get the actual character string data by the steamget_achievementstr command.
+
+steamunlock_achievement, steamunlock_achievementkey command
+You can cancel the achievements.
+by steamclear_achievement, steamclear_achievementkey command
+Achievements can be cleared (returned before cancellation).
+Achievement clearing is only available during the testing phase.
+Please note that it is not supported on the actual app.
+
+Achievement cancellation must always be implemented on the application.
+Also, if you cancel the achievement, communication to the server will be performed immediately afterwards.
+The flag value obtained by the steamupdate instruction is from the status during communication (STEAM_GETSTAT).
+Make sure you get a ready status (STEAM_READY).
+
+
+・ Status value (STEAM game data)
+
+To implement STEAM game data reading and writing, the following steps are required.
+
+1. Set the game data on the settings page of Steamworks App Management
+2. Request the latest information
+3. Get and set the status value
+
+The status value is the game data set on the settings page of the Steamworks app management.
+Hold an integer value (int value) or a real number (float value) on the server and use it from the application.
+It is possible to update the numerical value.
+Game data is linked to achievements, and achievements can be canceled based on the game data value.
+It is used to calculate the achievement level of achievements based on game data.
+All of these definitions are made on the app management settings page.
+
+The status value is managed as a set with the achievement table.
+When the latest data is acquired from the server by the steamreq_status instruction
+The status value is also updated.
+
+To get the status value, use the steamget_status and steamget_statusf commands.
+To use. (For float values, use the instruction with "f")
+
+To set the status value, use the steamset_status and steamset_statusf instructions.
+To use. (For float values, use the instruction with "f")
+If you set a status value, the server will be communicated immediately.
+The flag value obtained by the steamupdate instruction is from the status during communication (STEAM_GETSTAT).
+Make sure you get a ready status (STEAM_READY).
+When setting the status values collectively, it is not necessary to wait for communication each time.
+There is none.
+
+Example:
+			steamset_status "NumGames",99
+			steamset_statusf "MaxFeetTraveled",1.1
+			repeat
+				steamupdate flag
+				if flag=STEAM_READY : break
+				if flag=STEAM_ERROR : break
+			loop
+
+
+・ Ranking (Steam ranking)
+
+Rankings (Steam rankings) will be available in future versions.
+
+
+・ Instruction list
+
+Initialization of steaminit STEAM API
+End of steambye STEAM API
+steamupdate STEAM API update
+steamset_max Initialization of actual table
+steamreq_status Status acquisition request
+
+steamset_achievement Achievement table automatic setting
+steamreg_achievement Achievement table setting
+steamget_achievement Acquire actual table value
+steamget_achievementstr Acquire achievement table string
+steamunlock_achievement Unlock achievements
+steamunlock_achievementkey Unlock achievements
+steamclear_achievement Clear achievements
+steamclear_achievementkey Clear achievements
+
+steamset_status Setting the status value
+steamset_statusf Setting the status value
+steamget_status Get status value
+steamget_statusf Get status value
+
+
+・ Details of instructions
+
+Initialization of steaminit STEAM API
+
+Initialize the STEAM API.
+Please do it only once at the beginning.
+After execution, the result is stored in the system variable stat.
+If it is 0, it means that it ended normally, otherwise it means that an error has occurred.
+If you can't connect to the network or STEAM isn't running
+If so, an error will occur.
+
+
+End of steambye STEAM API
+
+Performs the termination process of STEAM API.
+It will be called automatically at the end of the program, so
+Normally you do not need to do this.
+
+
+steamupdate var STEAM API update
+
+var: variable to which the flag value is assigned
+
+Updates the STEAM API.
+Here, information is acquired from STEAM and communication processing is performed.
+Must be called at regular intervals.
+Normally, use it in the main drawing frame loop.
+After execution, the flag value is stored in the specified variable.
+The contents of the flag value are as follows.
+
+Label | Value State
+		------------------------------------------------------
+STEAM_NONE | 0 Uninitialized state
+STEAM_ERROR | 1 Error status
+STEAM_READY | 2 Standby
+STEAM_GETSTAT | 3 Sending request
+
+Flag value is set to STEAM_GETSTAT during request communication etc.
+It has become. Be sure to check back to STEAM_READY.
+If any error occurs, it will be STEAM_ERROR.
+In that case, perform appropriate recovery processing such as making a request again.
+Please implement.
+
+
+steamset_achievement Achievement table automatic setting
+
+The achievement table is set automatically.
+The achievement table is for accumulating necessary achievement information in advance.
+The internal area.
+This command automatically lists the achievements set in the game.
+Register in the achievement table.
+If you want to set the performance table manually, steamset_max and
+Use the steamreg_achievement instruction.
+
+The number of achievements automatically set after execution is stored in the system variable stat.
+If the system variable stat is 0, it indicates that it was not set.
+
+
+steamset_max p1 Performance table initialization
+
+p1 (0): Number of achievements managed in the achievement table
+
+Initialize to manually set the actual table.
+Specifies the number of achievements managed in the achievement table on p1.
+After that, set an arbitrary achievement table with steamreg_achievement
+can do.
+
+
+steamreg_achievement index, "APINAME" achievement table setting
+
+index (0): Index of achievements to be set (0 ~)
+"APINAME": API Name of the actual result to be set
+
+Manually set the performance table.
+Specify the index value of the actual result starting from 0 in index.
+In "APINAME", specify the preset API Name.
+After execution, the result is stored in the system variable stat.
+If it is 0, it means that it ended normally, otherwise it means that an error has occurred.
+
+
+steamreq_status Status acquisition request
+Get the latest information on achievements and status values from the STEAM server
+Make a request.
+After executing this instruction, communication to the server is performed.
+The flag value acquired by the steamupdate instruction is from during communication (STEAM_GETSTAT)
+Make sure you are ready (STEAM_READY).
+
+Example:
+			steamreq_status
+			repeat
+				steamupdate flag
+				if flag=STEAM_READY : break
+				if flag=STEAM_ERROR : break
+			loop
+
+
+steamget_achievement var, index Get actual table value
+
+var: Variable to which the result is assigned
+index (0): Index of achievements to be acquired (0 ~)
+
+Acquires the information of achievement release set in the achievement table.
+The result is assigned as an integer type to the variable specified by var.
+The information for unlocking achievements will be as follows.
+
+-1: Achievements have been released
+0: Achievement has not been released
+
+After execution, the result is stored in the system variable stat.
+If it is 0, it means that it ended normally, otherwise it means that an error has occurred.
+
+
+steamget_achievementstr var, index, type Actual table string acquisition
+
+var: Variable to which the result is assigned
+index (0): Index of achievements to be acquired (0 ~)
+type (0): type of value to get
+
+Acquires the information set in the achievement table.
+The result is assigned as a string type to the variable specified by var.
+The type value of the value to be acquired is as follows.
+
+			0  : API Name
+1: Display Name: Name of the achievement to be displayed (UTF-8 character string)
+2: Description: Description of the displayed achievement (UTF-8 character string)
+
+After execution, the result is stored in the system variable stat.
+If it is 0, it means that it ended normally, otherwise it means that an error has occurred.
+
+
+steamunlock_achievement index Unlock achievements
+
+index (0): Actual table index (0 ~)
+
+Cancels the specified achievement.
+After executing this instruction, communication to the server will be performed, so
+Make sure that the update is done correctly.
+
+
+steamunlock_achievementkey "API Name" Unlock achievements
+
+"API Name": Achievement API Name
+
+Cancels the specified achievement.
+After executing this instruction, communication to the server will be performed, so
+Make sure that the update is done correctly.
+
+
+steamclear_achievement index Clear achievements
+
+index (0): Actual table index (0 ~)
+
+Resets the specified achievement (returns to the state before cancellation).
+Achievement clearing is only available during the testing phase.
+Please note that it is not supported on the actual app.
+After executing this instruction, communication to the server will be performed, so
+Make sure that the update is done correctly.
+
+
+steamclear_achievementkey "API Name" Clear achievements
+
+"API Name": Achievement API Name
+
+Resets the specified achievement (returns to the state before cancellation).
+Achievement clearing is only available during the testing phase.
+Please note that it is not supported on the actual app.
+After executing this instruction, communication to the server will be performed, so
+Make sure that the update is done correctly.
+
+
+steamset_status "API Name", p1 Status value setting
+
+"API Name": Status value API Name
+p1 (0): Status value to set
+
+Sets the specified status value as an integer.
+After execution, the result is stored in the system variable stat.
+If it is 0, it means that it ended normally, otherwise it means that an error has occurred.
+After executing this instruction, communication to the server will be performed, so
+Make sure that the update is done correctly.
+
+
+steamset_statusf "API Name", p1 Status value setting
+
+"API Name": Status value API Name
+p1 (0): Status value to set (real number)
+
+Sets the specified status value as a real number.
+After execution, the result is stored in the system variable stat.
+If it is 0, it means that it ended normally, otherwise it means that an error has occurred.
+After executing this instruction, communication to the server will be performed, so
+Make sure that the update is done correctly.
+
+
+steamget_status var, "API Name" Get status value
+
+var: Variable to which the result is assigned
+"API Name": Status value API Name
+
+Gets the specified status value.
+The result is assigned as an integer to the variable specified by var.
+After execution, the result is stored in the system variable stat.
+If it is 0, it means that it ended normally, otherwise it means that an error has occurred.
+
+
+steamget_statusf var, "API Name" Get status value
+
+var: Variable to which the result is assigned
+"API Name": Status value API Name
+
+Gets the specified status value.
+The result is assigned in real type to the variable specified by var.
+After execution, the result is stored in the system variable stat.
+If it is 0, it means that it ended normally, otherwise it means that an error has occurred.
+
+
+揃Change log
+
+	2018/09/30
+
+First version.
+
+
+揃important point
+
+HSPSW.DLL is a plug-in file that is used at the same time as HSP3.EXE.
+Please use ver3.0 or above as the HSP to use. For HSP ver2.61 and earlier
+Please note that it is not supported.
+Even if you create an EXE file, put HSPSW.DLL in the same directory as the EXE file.
+It will not work unless it is placed in. Also, you cannot add DLLs to the packfile.
+
+
+・ License and contact information
+
+Of the original software (executable file) created by the user using HSP
+The right belongs to the user who created it.
+The license is BSD license like HSP.
+You can freely distribute HSPSW.DLL regardless of whether it is paid or free of charge.
+
+Onion software copyrights the original software created by the user
+I have no claim.
+onion software is responsible for any damage caused by this program.
+We do not guarantee. Use at your own risk.
+HSPSW.DLL is compiled with Microsoft Visual Studio 2017.
+
+
+-------------------------------------------------------------------------------
+                                                HSP users manual / end of file 
+-------------------------------------------------------------------------------

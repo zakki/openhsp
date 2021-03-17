@@ -1,0 +1,457 @@
+nkf --Document for Kanji code conversion filter for network
+(This document is based on the nkf-2.1.0 document nkf.doc)
+
+Å° Overview
+
+    nkf
+    Is a kanji code designed for reading and writing emails and news on the network.
+    This is a conversion filter.
+
+    The feature of this nkf is the statistical automatic recognition function of the input kanji code system.
+    Therefore, the user does not need to know what the input kanji code system is, but the output kanji.
+    You only have to specify the code system.
+    However, although this judgment mechanism is not perfect in theory, it is used for ordinary news and emails.
+    The message is secure and works reliably.
+
+    Currently, the input kanji code system that nkf can recognize is the so-called JIS code.
+    (Based on ISO-2022-JP), Shift_JIS (MS Kanji code), Japanese EUC (AT & T)
+    Code), UTF-8, or UTF-16.
+    These are also the Kanji code systems to be output.
+    If you do not specify a file, the input will be standard input.
+    The output is standard output.
+
+
+Å° Option
+
+    The options that can be specified are as follows. Can be continued like -mu.
+    ('-' Is not required when specifying with SetNkfOption)
+
+    -j Output JIS code.
+
+    -e Print EUC code.
+
+    -s Output Shift_JIS code.
+
+    -w -w8[0] -w16[BL][0]
+        Output Unicode.
+
+        -w -w80
+            Output UTF8 code. (No BOM)
+
+        -w8 Output UTF8 code.
+
+        -w16 -w16B0
+            Output UTF16 code. (No Big Endian / BOM)
+
+        -w16B
+            Output UTF16 code. (With Big Endian / BOM)
+
+        -w16L
+            Output UTF16 code. (With Little Endian / BOM)
+
+        -w16L0
+            Output UTF16 code. (No Little Endian / BOM)
+
+    -m[BQSN0]
+        Decrypt MIME. (Default) ISO-2022-JP (B encode) and ISO-8859-1
+        Decode only (Q encode). When decoding ISO-8859-1 (Latin-1), -l
+        Flags are also needed. -m0 does not decrypt MIME. -mB, -mQ
+        Then, it is processed as if it is BASE64, Q encoded.
+
+        -mB Decrypt the MIME base64 stream. Remove headers, etc.
+
+        -mQ Decipher the MIME quoted stream.
+
+        -mS Tighten MIME checks (default)
+
+        -mN Loosen the MIME check
+
+        -m0 Do not decrypt MIME.
+
+        -mS is the content of the declaration followed by encoded-text
+        Check the integrity of. -mN is MIME delimited by line breaks
+        Etc. are also deciphered. Decoding may not stop.
+
+    -M[BQ]
+        Convert to MIME.
+
+        -M Convert to header format
+
+        -Convert to MB base64 stream
+
+        -Convert to MQ Quoted stream
+
+    -J -E -S -W
+        Specifies the nature of the expected input code.
+
+        -J Assume ISO-2022-JP.
+
+        -E Assume Japanese EUC (AT & T).
+
+        -S Assume Shift_JIS. So-called half-width kana (JIS X 0201 katakana)
+            Also accept.
+
+        -W Assume UTF-8.
+
+        -W8 Assume UTF-8.
+
+        -W16
+            UTF-16 (Little Endian) is assumed.
+
+        -W16B
+            UTF-16 (Big Endian) is assumed.
+
+        -W16L
+            UTF-16 (Little Endian) is assumed.
+
+    -x The so-called half-width kana (JIS X 0201 katakana) that is usually performed
+        From so-called double-byte kana (JIS X 0208 katakana)
+        Save half-width kana without converting to. Input is 1 byte of Shift_JIS
+        Kana, SO / SI, ESC-(-I, SSO are accepted. Output is in Japanese EUC
+        ESC-(-I is used by default in SSO and JIS codes.
+
+    -X So-called half-width kana (JIS X 0201 katakana) to so-called full-width kana (JIS X 0208)
+        Convert to katakana).
+
+    -B Broken JIS code. Suppose the ESC is gone.
+
+        -B1 ESC-(, ESC- $ followed by any code
+
+        -B2 Forces back to ASCII after line break
+
+    -f[*m*[-*n*]]
+        * N * margins so that there are * m * characters per line
+        Perform simple shaping as. The default is 60 characters and 10 margins
+        Is.
+
+    -Z[0-3]
+        JIS X 0208 Converts alphanumeric characters and some symbols to ASCII.
+        That is, full-width is converted to half-width.
+
+        -Z -Z0
+            Convert X0208 alphabet to ASCII.
+
+        -Z1 JIS X 0208 Converts Japanese character spacing to one ASCII space.
+
+        -Z2 JIS X 0208 Converts Japanese character spacing to ASCII space two.
+
+        -Z3>, <, Åh, &, are converted to & gt ;, & lt ;, & quot ;, & amp ;.
+
+    -b Perform buffering output. (Default)
+
+    -u Do not buffer on output. ssh localhost | nkf -u
+        And so on.
+
+    -t do nothing.
+
+    -I Converts Kanji codes other than ISO-2022-JP to Å¨.
+
+    -i[@B]
+        Specify the sequence that specifies JIS kanji.
+
+        -i @ JIS X 0208-1978 is used.
+
+        -iB JIS X 0208-1983 / 1990 is used.
+
+    -o[BJH]
+        Specifies the sequence that specifies the 1-byte alphanumeric character set.
+
+        -oB Use US-ASCII as the 1-byte alphanumeric character set.
+
+        -oJ Use JIS X 0201 Roman as the 1-byte alphanumeric character set.
+
+        -oH ESC (H is the early JUNET
+            It was used only in the code and should not be used at this time.
+
+    -r Convert ROT13 / 47.
+
+    -g Outputs the result of automatic determination.
+
+    -T Output in text mode. (Valid only on MS-DOS)
+
+    -l Treat the code 0x80-0xfe as ISO-8859-1 (Latin-1). JIS
+        Valid only in combination with code output. Incompatible with -s, -e, -x.
+
+    -O Output to a file. Unnecessary feature on UNIX but Windows and MSDOS
+        Then it seems necessary.
+        The last file name will be the output file name and will be overwritten, not the argument immediately after.
+        Be careful as it will end up. Nkf.out if there is no file name.
+
+    -L[uwm] -d -c
+        Convert the line feed code.
+
+        -Lu -d
+            unix (LF)
+
+        -Lw -c
+            windows (CRLF)
+
+        -Lm mac (CR)
+
+        No conversion by default.
+
+    --ic=<input_codeset --oc=<output_codeset>>
+        Specify the input / output Kanji code system.
+
+        ISO-2022-JP
+            So-called JIS code. Same as -j, -J.
+
+        ISO-2022-JP-1
+            The format specified in RFC 2237. Includes JIS X 0212.
+
+        ISO-2022-JP-3
+            The format specified in RFC 2237. Includes JIS X 0213.
+
+        EUC-JP
+            EUC code. Same as -e, -E.
+
+        EUC-JISX0213
+            EUC-JP using JIS X 0213: 2000 as the character set.
+
+        EUC-JIS-2004
+            EUC-JP using JIS X 0213: 2004 for the character set.
+
+        eucJP-ascii
+            EucJP-ascii defined by the Open Group Japan Vender Council. -x
+            Is implicitly specified.
+
+        eucJP-ms
+            Euc-JPms defined by the Open Group Japan Vender Council. -x
+            Is implicitly specified.
+
+        CP51932
+            Micorosft Code Page 51932. -x is implicitly specified.
+
+        Shift_JIS
+            Shift_JIS. Same as -s, -S.
+
+        Shift_JISX0213
+            Shift_JIS using JIS X 0213: 2000 for the character set.
+
+        Shift_JIS-2004
+            Shift_JIS using JIS X 0213: 2004 for the character set.
+
+        CP932
+            Micorosft Code Page 932. -x is implicitly specified.
+
+        UTF-8 UTF-8N
+            UTF-8 without BOM. Same as -w, -W.
+
+        UTF-8-BOM
+            UTF-8 with BOM. Same as -w8 or -W.
+
+        UTF8-MAC
+            UTF8-MAC. Combines compatible disassembled hiragana, katakana, etc.
+            Only input is supported.
+
+        UTF-16 UTF-16BE-BOM
+            Big Endian UTF-16 with BOM. Same as -w16B, -W16B.
+
+        UTF-16BE
+            Big Endian UTF-16 without BOM. -w16B0. Same as -W16B.
+
+        UTF-16LE-BOM
+            UTF-16 of Little Endian with BOM. Same as -w16L, -W16L.
+
+        UTF-16LE
+            UTF-16 for Little Endian without BOM. Same as -w16L0, -W16L.
+
+    --fj --unix --mac --msdos --windows
+        Make the conversion suitable for these systems.
+
+    --jis --euc --sjis --mime --base64
+        Make the corresponding conversion.
+
+    --hiragana --katakana
+        Hiragana and Katakana conversion
+
+    --fb-{skip, html, xml, perl, java, subchar}
+        From Unicode to Shift_JIS, EUC-JP, ISO-2022-JP
+        When converting to, you can specify how to handle the characters that could not be converted.
+
+    --prefix=*escape character**target character*..
+        2nd byte when converting from EUC-JP to Shift_JIS
+        You can add an escape character before the character that appears in. Argument 1
+        The character is an escape character, 2
+        Specifies the character to be escaped after the first character.
+
+        For example
+
+        With --prefix = \\ $ @, the second character of Shift_JIS is $ or @
+        Is inserted before it, with --prefix = @@, Shift_JIS
+        When @ comes in the second character of, @ is inserted before it
+
+    --no-cp932ext
+        NEC special characters, NEC-selected IBM extended characters (89-92) extended in CP932
+        Ward), does not convert IBM extended characters.
+
+    --no-best-fit-chars
+        Unicode
+        When converting from, characters that do not ensure round-trip safety are not converted.
+        Specifying with -x when converting from Unicode to Unicode makes nkf UTF
+        It can be used for format conversion.
+        (Conversely, if you do not specify this, some characters will not be saved)
+
+        Force to specify this option when converting strings related to paths
+        Highly recommended.
+
+    --cap-input, --url-input
+        Converts the hexadecimal number following: and% to a character, respectively
+
+    --numchar-input
+        Convert Unicode character references like & # ....;
+
+    --in-place[=*SUFFIX*] --overwrite[=*SUFFIX*]
+        Replace the original file with the conversion result.
+        It is also possible to rewrite multiple files.
+        The time stamp and permissions of the original file are preserved.
+        Currently created date and time and inode
+        Will change, but there is no guarantee that this implementation will remain in the future.
+
+    --guess
+        Output the result of automatic discrimination
+
+    --help
+        Display a brief description of the command.
+
+    -V Show nkf settings.
+
+    -v --version
+        Display the version of nkf.
+
+    --Ignore subsequent options
+
+    --exec-in
+        nkf [options] --exec-in cmd args ... will output cmd output nkf
+        (Define EXEC_IO in config.h)
+        Valid only when compiling with
+
+    --exec-out
+        nkf [options] --exec-out cmd args ... will output nkf to cmd
+        (Define EXEC_IO in config.h)
+        Valid only when compiling with
+
+Å° BUGS
+
+    Actually, the judgment of the input code system is Shift_JIS and EUC.
+    It is an automatic judgment of, and it is confirmed when the first identifiable character arrives.
+    Then, during the unspecified period, it is stored in the hold buffer and processed after confirmation.
+    Therefore, 7-bit JIS is always recognized. Shift_JIS, EUC
+    Mixing is fine in most cases. However, Shift_JIS so-called half-width kana
+    (JIS X 0201 Katakana) and EUC Kanji cannot be distinguished.
+    Therefore, by default Shift_JIS
+    It is assumed that there is no so-called half-width kana. (That is, Shift_JIS or EUC
+    If in doubt, consider it as EUC)
+
+    Unicode
+    It does not support conversion of non-Japanese parts of, but --no-best-fit-chars
+    If you specify, it is possible to convert between UTF-8 and UTF-16.
+
+Å° ACKNOWLEDGE
+
+    Thank you very much for the following people.
+
+  nkf 1.4
+    morb@fujitsu, kiss@ayumi.stars.flab.fujitsu, cen122@flab.fujitsu,
+    Thanks to yuki@flab.fujitsu and others from fujitsu & flab.fujitsu for their cooperation.
+    shinoda@cs.titech, kato@cs.titech, uematsu@cs.titech TNX
+    kono@ie.u-ryukyu.ac.jp void@merope.pleiades.or.jp (Kusakabe Youichi)
+    NIDE Naoyuki <nide@ics.nara-wu.ac.jp> ohta@src.ricoh.co.jp (Junn Ohta)
+    inouet@strl.nhk.or.jp (Tomoyuki Inoue) kiri@pulser.win.or.jp (Tetsuaki
+    Kiriyama) Kimihiko Sato <sato@sail.t.u-tokyo.ac.jp>
+    a_kuroe@kuroe.aoba.yokohama.jp (Akihiko Kuroe) kono@ie.u-ryukyu.ac.jp
+    (Shinji Kono) GHG00637@nifty-serve.or.jp (COW)
+
+  nkf 1.9-
+    Shinji Kono
+    Akio Furukawa
+    Andy Taki
+    From: OHARA Shigeki
+    Fumitaka Kitagawa
+    Hiroaki Sengoku
+    Ikuhiro MORITA
+    Yoshiharu ITO
+    Junn Ohta
+    KAWAMURA Masao
+    Kazuhiko Mori
+    Keitaro Isokawa
+    Ken-ichi Hirose
+    Ki-ichiro SATO
+    Kiwamu Aoyama
+    Koichi Hirayama
+    Mitsuru Hase (Mitsuru Hase)
+    OHARA Shigeki
+    Rei FURUKAWA
+    Satoru Takabayashi
+    Shigeyuki Takagi
+    Shin MICHIMUKO
+    Tadamasa Teranishi
+    TOYODA Jiro
+    TSUCHIYA Masatoshi
+    Tsutomu Sakai
+    YAMASHITA Junji (Yoshikazu Yamashita)
+    Yasuyuki Sato
+    Yoshiaki Yanagihara
+    hat@so-net
+    DCC Engineering Department Watanabe
+    Katope / Takashi Kato
+    Kabe dais
+    Hirose Masaaki
+    Intranet System Co., Ltd. Matsuo
+    Fumitoshi Ukai
+    Takehiko Shiozaki (SHIOZAKI Takehiko)
+    Masao Kawamura (Media Lab.)
+    Koji Kono
+    Kise "Winter Cat" Hiroshi @ Tropical Okinawa
+    Tomohiko Kanai
+    Yuji Katsura (Masashi Katsura)
+    League of China
+    Kuniyoshi
+    Akihiko Kuroe
+    Masayasu Miyake
+    Makoto Yamakura
+    Yoshito Yamamoto
+    Yuji Yamano
+    Norikatsu Shigemura
+    Motoyasu Kojima
+    Ken Ueda
+    Koji Arai
+    Chieko Mori
+    Kazuhiko Mori
+    Takafumi Mizuno
+    Kazutoshi Maeji
+    Nakasone @ Parallel Trust Research Institute
+    Eiichiro Inotani == Eiichiro Itani
+    Hideyuki Fujiwara
+    Masayuki Hatta
+    Toshiya Ogawa
+    Takashi Mochizuki
+    Kimura (@ Graduate School of Mathematical Sciences, University of Tsukuba)
+    Toshiaki Nomura
+    Arioka @ Minolta
+    Akihiro Arisawa
+    Kazuki Ochiai
+    Ryo Hayashi
+    Osamu Kuniyasu
+    Yusuke Kinoshita
+    Takahiro Tanaka
+    Naoki Tsuruya
+    Nobuyoshi Nakata
+    Hirofumi Watanabe
+    MoonWolf
+    sava
+
+Å° AUTHOR
+
+    Toru Ichikawa ichikawa@flab.fujitsu.co.jp (was ichikawa@fujitsu.JUNET)
+    Shinji Kono kono@ie.u-ryukyu.acjp
+    Rei FURUKAWA furukawa@tcp-ip.or.jp
+    Naruse
+    mastodon
+
+    http://sourceforge.jp/projects/nkf/
+
+    Copyright (C) 1987, FUJITSU LTD. (I.Ichikawa).
+
+    Copyright (C) 1996-2009, The nkf Project.
+

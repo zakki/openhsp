@@ -1,0 +1,144 @@
+------------------------------------------------------------------------------
+HSPMUCOM REFERENCE MANUAL                           HSP : Hot Soup Processor  
+HSP Extension Extension DLL Reference copyright 2007-2020 (c) onion software
+------------------------------------------------------------------------------
+
+・ Introduction
+
+This DLL can be used with Hot Soup Processor ver3 or later.
+Playback of waveforms and music data using MUCOM88 emulation
+It is a plugin that can be done.
+
+Hot Soup Processor Official HP
+	https://hsp.tv/
+
+
+・ Overview of HSPMUCOM functions
+
+FM sound source driver that was working on NEC's PC-8801 series
+A tool called MUCOM88 (MUSIC LALF) can be run on Windows.
+MUCOM88 HSP MUCOM is a DLL that summarizes the functions of Windows.
+
+From simple music playback to MML interpretation by using HSPMUCOM
+You can control a wide range from the scripting language.
+The formats that can be handled by HSPMUCOM are as follows.
+
+-MUC format In the format of MUCOM88 (MUSIC LALF) that runs on PC-8801.
+Described MML (excluding line numbers) SJIS format text file
+What was saved as.
+FM sound source (YM2608) 6 voices, ADPCM 1 voice and rhythm sound source 6 voices, PSG 3 voices
+Control is possible.
+For details on MML, refer to the MUCOM 88 manual.
+
+-MUB format A file format in which the MUC format is converted to binary.
+Contains performance data, FM tone, and ADPCM data.
+
+For Windows sound playback processing, use DirectSound of DirectX 8 or later.
+I'm using. In the environment of Windows XP or later, additional components
+It can be operated without preparation.
+
+FM sound source and PSG sound emulation are synthesized at 32bit / 55KHz.
+It is being output. Older machines can be overloaded.
+
+
+・ Installation
+
+To use from HSP, the extension plug-in file, HSPMUCOM.DLL,
+HSP installation folder (HSED3.EXE and the folder containing HSP3.EXE)
+Please copy and use it.
+Also, make HSPMUCOM.AS in the same directory as the script,
+Or it must be copied in the common folder.
+
+If you created the executable file from HSP, put HSPMUCOM.DLL in the same folder
+Please include it.
+
+When using HSPMUCOM, be sure to start the script
+Add the line "#include" hspmucom.as "".
+With the above, the function of HSP has been extended, and the instructions described in this reference are
+You will be able to use it.
+
+
+・ Copyright and license
+
+HSPMUCOM is published as part of the Open MUCOM88 project.
+See below for the Open MUCOM88 project.
+
+	Open MUCOM88
+	https://onitama.tv/mucom88/
+
+The copyright of HSPMUCOM belongs to Onitama (onion software).
+onion software is responsible for any damage caused by this program.
+We do not guarantee. Use at your own risk.
+You can also freely modify and publish the attached HSP script.
+
+HSPMUCOM.DLL and source code are freely introduced as long as they are free (non-profit).
+It can be duplicated and redistributed. In that case, be sure to document
+Be sure to include the license notation as well.
+
+・ Portable Z80 emulation author Yasuo Kuwahara
+	  http://www.geocities.jp/kwhr0/
+・ Fmgen author cisc
+	  http://www.retropc.net/cisc/
+・ MUCOM88 author Yuzo Koshiro
+	  https://twitter.com/yuzokoshiro
+・ HSPMUCOM Author Onitama (ONION software)
+	  https://www.onionsoft.net/
+
+Original software created by the user using HSPMUCOM
+The rights to (executable) belong to the user who created it.
+However, the HSPMUCOM runtime includes fmgen and Portable Z80 emulation.
+You are using the library and must follow the distribution rules.
+
+The distribution rules for the fmgen source code are as follows.
+
+-The fmgen source code is copyrighted by the author (cisc@retropc.net).
+
+・ This source code is provided as it is.
+Does not include any implicit or explicit warranty.
+
+・ I used this source code, I didn't use it,
+Occurred or expected to occur with respect to what was not available
+The author is not responsible for any damage.
+
+・ This source code can be freely modified / incorporated / incorporated as long as the following restrictions are met.
+It can be distributed and used.
+
+1. Specify the origin (author, copyright) of this software.
+2. Use free software when distributing.
+3. When distributing the modified source code, specify the modified contents.
+4. When distributing the source code, do not modify this text at all
+Attach it as it is.
+
+・ We would appreciate it if you could contact the author at the time of publication.
+
+-Commercial software (including shareware), part of this source code, or
+Before incorporating all of them, it is necessary to obtain the consent of the author.
+
+For more information about each library, see their source code and documentation.
+Please refer.
+For paid / commercial distribution, please contact the author separately.
+
+
+・ Instruction list
+
+mucominit MUCOM88 initialization
+Release mucombye MUCOM88
+mucomreset reset MUCOM 88
+mucomplay music playback
+mucomstop Stop playing
+mucomfade fade out playback
+mucomload Music data loading
+mucomloadpcm PCM data reading
+mucomloadvoice FM tone data reading
+mucomcomp MML compilation
+mucomres MUCOM88 Get execution result
+mucomstat MUCOM88 status acquisition
+Get mucomtag tag data
+mucomloadtag tag data loading
+
+See help for instruction details.
+
+
+-------------------------------------------------------------------------------
+                                                HSP users manual / end of file 
+-------------------------------------------------------------------------------

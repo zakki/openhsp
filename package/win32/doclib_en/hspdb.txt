@@ -1,0 +1,165 @@
+------------------------------------------------------------------------------
+HSPDB ver3.4  REFERENCE MANUAL                      HSP : Hot Soup Processor  
+HSP Extension DLL Reference copyright 2004-2014 (c) onion software
+------------------------------------------------------------------------------
+
+・ Introduction
+
+This DLL can be used with Hot Soup Processor ver3 or later for Windows.
+It is a plug-in that enables access to various databases via ODBC.
+New instructions are added by using this extension DLL.
+By using HSPDB, Oracle, MS-SQL Server, dBase, Paradox, etc.
+Access a database with the corresponding ODBC driver and control with SQL
+Will be possible. To use HSPDB, ODBC and compatible drivers for Windows
+Must be installed.
+
+
+・ Overview of usage
+
+The extension plug-in file, HSPDB.DLL, has an executable file such as HSP3.EXE.
+Place it in the same location as the directory.
+When using HSPDB, be sure to say "#include" hspdb.as "" at the beginning of the script.
+Please add a line. With the above, the function of HSP has been expanded and explained in this reference.
+You will be able to use the instructions you are using.
+First of all, try running the included sample script (test ??. As).
+You should be able to see a simple usage example of the enhanced functionality.
+
+
+ツキChange log
+
+	2003/9/1 ver1.1
+
+Fixed a bug that the end code (0) may not be acquired correctly.
+
+	2003/3/7 ver1.0
+
+First version.
+The operation test is performed in the environment of MySQL + MyODBC.
+
+
+ツキimportant point
+
+HSPDB.DLL is a plug-in file that is used at the same time as HSP3.EXE.
+Even if you create an EXE file, put HSPDB.DLL in the same directory as the EXE file.
+It will not work unless it is placed in. Also, you cannot add DLLs to the packfile.
+
+
+繝サ Copyright and contact information
+
+Of the original software (executable file) created by the user using HSP
+The right belongs to the user who created it.
+HSPDB.DLL can be freely distributed regardless of whether it is paid or free of charge.
+There is no obligation to display the copyright.
+Onion software copyrights the original software created by the user
+I have no claim.
+
+The HSPDB plug-in is a copyrighted work of onion software.
+onion software is responsible for any damage caused by this program.
+We do not guarantee. Use at your own risk.
+HSPDB.DLL is compiled with Microsoft Visual C ++ 7.1.
+
+
+・ Instruction list
+
+Initialize dbini ODBC
+dbbye HSPDB termination processing
+dbopen "...", mode Connect to DB
+dbclose disconnect DB
+dbstat Get current state
+dbspchr p1 Specify the delimiter
+dbsend "..." send SQL string
+dbgets p1 Get the result string
+
+
+・ ODBC instruction
+
+An instruction set for accessing various databases via ODBC.
+
+Initialize dbini ODBC
+
+Initialize ODBC.
+It must be done only once at the beginning.
+After execution, the result is stored in the system variable stat.
+If it is 0, it means that it ended normally, otherwise it means that an error has occurred.
+
+
+dbbye HSPDB termination processing
+
+Performs the termination processing of the entire HSPDB.
+Normally, this instruction is called automatically at the end of the program, so
+There is no need to write it in a script.
+
+
+dbopen "...", mode Connect to DB
+
+"..." = Connection specification string
+mode = connection mode (0 to 1, default = 0)
+
+Starts a connection to the DB specified by the connection specification character string.
+In addition to being able to specify a DSN name such as "DSN = TEST", the connection specification string
+It is possible to describe various parameters such as drivers and files as character strings.
+For more information on the connection specification string, refer to the ODBC related documents.
+If the connection mode is 1, a dialog for confirming the connection will pop up.
+If the connection mode is 0, the connection will be made with the specified character string.
+After execution, the result is stored in the system variable stat.
+If it is 0, it means that it ended normally, otherwise it means that an error has occurred.
+
+
+dbclose disconnect DB
+
+Disconnects the DB connected by the dbopen instruction.
+
+
+dbstat Get current state
+
+Assign the current connection status etc. to the system variable stat.
+
+stat | state
+		------------------------------------------------------
+1 Error occurred
+2 Cutting
+3 Connecting
+4 Waiting for SQL response
+
+
+dbspchr p1 Specify the delimiter
+
+p1 = 0 to 255 (character code)
+
+Set the character to separate the items of the result obtained by the dbgets instruction.
+Normally, items are separated by ",", but if you want to use different characters, set it.
+Please go. For example, if you specify "dbspchr 9", the TAB code will be
+It becomes a delimiter.
+
+
+dbsend "..." send SQL string
+
+"..." = SQL string
+
+Sends the control string according to the SQL syntax to the connected DB.
+After execution, the result is stored in the system variable stat.
+If it is 0, it means that it ended normally, otherwise it means that an error has occurred.
+If it ends normally, you can get the result with the dbgets instruction.
+
+
+dbgets p1 Get the result string
+
+p1 = variable name to which the resulting string is assigned
+
+Gets the result for the SQL string sent by the dbsend instruction.
+In p1, you need to specify the variable name to which the result string will be assigned.
+The variable specified by p1 is forced to be a string type, and the size of the variable buffer is
+Receive as much data as you can (buffer never overflows).
+After execution, the result is stored in the system variable stat.
+If it is 0, it means that the data was received normally.
+A value of 1 indicates that an error occurred while retrieving the result.
+A case of 2 indicates that there is no more data to receive.
+When retrieving data, retrieving large data in multiple batches
+There is a possibility, so if the content of the system variable stat is 0,
+Run dbgets again and loop until it receives the data to the end
+please.
+
+
+-------------------------------------------------------------------------------
+                                                HSP users manual / end of file 
+-------------------------------------------------------------------------------

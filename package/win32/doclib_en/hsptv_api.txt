@@ -1,0 +1,287 @@
+------------------------------------------------------------------------------
+HSPTV API ver3.5 REFERENCE MANUAL                   HSP : Hot Soup Processor  
+HSP Extension Module Reference copyright 2016 (c) onion software
+------------------------------------------------------------------------------
+
+・ Introduction
+
+Here, it is supported by Hot Soup Processor ver3.3 or later,
+Explanation about program creation compatible with HSPTV browser and attached
+I will explain about the module.
+By using the HSPTV API, a program that runs on HSPTV
+Features such as testing and ranking creation are available.
+
+
+・ Overview of how to use
+
+Add the following line to the beginning of the script to test the HSPTV compatible program
+please.
+
+		#include "hsptv.as"
+
+Now you can use the operation check and ranking function on HSPTV.
+Become.
+Also, when you execute the script, the HSPTV browser will start and operate.
+
+
+・ About standard image
+
+A standard image is available for use with the HSPTV browser.
+The standard image is stored as hsptv_img.bmp in the hsptv folder.
+Please use it as an image material that can be used in common in all environments.
+You can load the image with the following script.
+
+; For HSPTV browser ・ Load standard image
+		celload dir_tv+"hsptv_img.bmp",1
+
+In the above example, the standard image (hsptv_img.bmp) is loaded into image buffer 1. The hsptv_img.bmp file should not be modified, deleted or modified by the user.
+For the contents of the image, please check the image file directly.
+16x16, 32x32, 64x64 dot material that can be used for general purposes as a 512x512 image
+It is packed. It can be used for various purposes and purposes depending on the idea.
+
+
+・ About ranking function
+
+HSPTV compatible programs can use the function to retain ranking information.
+I can do it. This is the "score" and "user name" for the running software.
+It stores a certain amount of information such as "comments" and has a high score for the game.
+It can be used for various purposes such as recording information.
+
+The information saved by the ranking function is as follows.
+
+■ Score
+
+A 32-bit integer value. Negative values cannot be handled.
+The top 30 are retained in descending order of score value.
+
+■ User name
+
+The data that accompanies the score.
+The information of the user name that registered the score is retained as a character string.
+Username set in HSPTV browser options
+The name will be used automatically. (Up to 20 English characters only)
+
+■ Comment
+
+The data that accompanies the score.
+Comments (additional information) of the user who registered the score
+Hold as a string.
+This item is not only used for comments at the time of registration
+Freely on the program side, such as adding information about software
+It is possible to use it.
+Comments can hold up to 255 characters.
+
+Actually, the program is registered on the HSPTV server, and the HSPTV browser is registered from the net
+When delivered, the score information is retained on the server and the user's information is displayed.
+It functions as an internet ranking to record.
+
+Testing to create HSPTV compatible program (script editor)
+When running from), keep the score information in the current directory
+Local file (hsptvdat.txt) is created and registered on the server
+Simulates the same situation as at time.
+(During the testing phase, no information is sent to the HSPTV server.)
+
+In the program created by the user, "score", "user name", "comment"
+You can freely get and update the information of.
+Of course it can be used to retain high scores and retain other information
+It can also be applied to do.
+The server records up to 30 data in descending order of score value.
+However, how many items should be displayed by the program, which items should be displayed,
+It is also up to you how to determine the score value.
+
+If you want to create a program that uses the ranking function, this document
+Read and agree to the "About server transmission" section described in
+Start on.
+
+
+・ About additional instructions
+
+By using "hsptv.as", the following instructions can be newly used.
+Become.
+
+hsptv_up p1, "comment", p2 HSPTV data update
+
+p1: Score value (32bit integer value)
+"comment": Comment string (up to 256 bytes)
+p2: Optional function value
+
+Update HSPTV data.
+Reflects score and comment information.
+If the score is negative, only the latest data will be acquired.
+(For HSPTV distribution programs, this command causes the server
+Communication with will occur. By the end of this instruction, to some extent
+Create the program assuming that it will take time. )
+For comments, the information of the character string to be set is up to 256 bytes (255 half-width characters).
+It can be specified by the content.
+If the optional function value is omitted or 0 is specified,
+Update the data as normal ranking (highest score).
+When 0x1000 (4096) is specified as the option value, it is specified by p1.
+Clear the index score (set the score to 0).
+When 0x2000 (8192) is specified as the option value,
+The user name is not reflected and an empty string is always set.
+Option values can be specified by adding multiple values.
+(When clearing the contents of the data, option value 0x1000 and
+Please use in combination with 0x2000. )
+
+
+hsptv_getrank var1, var2, var3, rank HSPTV data acquisition
+
+var1: Variable name to which score information is assigned
+var2: Variable name to which user name information is assigned
+var3: Variable name to which comment information is assigned
+rank: Rank index (0-29)
+
+Read the contents of HSPTV data into a variable.
+This instruction sends the data updated by the hsptv_up instruction.
+It is read into a variable.
+The content to be read is the last time the hsptv_up instruction was executed.
+It will be the information at the time.
+As for the rank value, 0 is the 1st place and 29 is the 30th place.
+var1 is initialized as a numeric type, and var2 and var3 are initialized as a string type.
+With this instruction, no communication occurs, so the information cannot be read.
+It will be done immediately.
+
+
+・ About server transmission
+
+When actually delivered from the server, for registration and acquisition of ranking information
+Network communication is performed.
+Before sending the information for the first time, "Reflect the current information on the HSPTV server.
+Is that okay? Is displayed and only when "Yes" is selected
+The transmission will be made.
+(At the test stage, "Can I reflect the above information?"
+A dialog is displayed. )
+
+Communication with the server may take some time depending on the network load and environment.
+There is. Create a program that assumes that it will take some time
+Put it down please. Programs that update data in real time
+Cannot be created. Also, to reduce the load on the server, once every 5 seconds
+Please try not to make it more frequent than access.
+Network bandwidth for registering programs that place more server load than necessary
+In order to secure it, we may be forced to suspend it temporarily, so
+Please note that.
+
+Communication with the server is via the http protocol.
+The settings of the HSPTV browser are used as they are for the settings of the PROXY server, etc.
+
+Ranking information stored on the HSPTV server side is basically distributed.
+It is managed independently for each software, and from other than the corresponding software
+It will not be accessed.
+The HSPTV server retains and manages ranking information as much as possible
+We will do it, but it is just a service of the current situation, and about the contents
+We do not guarantee it.
+All information is unavoidably destroyed due to an accident or update.
+Please note that there is a possibility.
+
+
+・ About sample script
+
+The following script is written as "hsptv_test.hsp" in the sample directory misc
+It is recorded.
+This script can display and update the information of the top 10 people.
+
+	#include "hsptv.as"
+
+		score=1000
+		sdim comm,64
+mes "HSPTV data update registration test"
+hsptv_up -1, ""; Update the information first
+gosub * update; Display ranking information
+
+		pos 500,32:objsize 120,24
+mes "score"
+		input score
+mes "comment"
+		input comm
+button "update", * send
+button "end", * ok
+		stop
+
+	*send
+		hsptv_up score, comm
+		gosub *update
+		stop
+	*ok
+		end
+
+	*update
+		color 255,255,255
+boxf 0,32,500,480; clear background
+		color 0,0,0
+		pos 0,32
+repeat 10; Show only top 10
+hsptv_getrank rscore, ruser, rcomm, cnt; Get information
+		rank=cnt+1
+		mes "#"+rank+":"+rscore+"("+ruser+") "
+mes "Comment:" + rcomm
+		loop
+		return
+
+In addition, a sample for using standard images, "hsptv_test2.hsp"
+"Hsptv_test3.hsp" is also included.
+
+
+・ About receivable character strings
+
+Communication with the HSPTV server is done after encoding the string into another code
+It will be done. Most strings, including Japanese, can be sent,
+Garbled characters may occur in some double-byte characters and special characters.
+Also, since the "&" symbol is converted to another character at the transmission stage,
+Normal results cannot be expected. When converting binary data to a character string, etc.
+Be especially careful.
+
+
+揃Change log
+
+	2011/7/26  ver3.3RC1
+
+Added description of standard image.
+
+	2007/7/13  ver3.2β4
+
+Expanded the comment string of hsptv_up to a maximum of 256 bytes.
+
+	2007/7/28  ver3.1
+
+Released as the official version.
+
+	2007/7/20  ver3.1RC1
+
+First version.
+
+
+揃important point
+
+hsptv.as is just for testing programs that run on the HSPTV browser
+This is a file to use. Executable file using hsptv.as
+It cannot be created.
+
+The HSPTV compatible program restricts the following functions for security reasons.
+
+-File deletion function (delete command)
+-Mouse cursor display control (cursor erase with mouse -1)
+-Access to folders used by the system such as windows
+
+Please do not use these functions in HSPTV compatible programs.
+If used, it will be invalid or an error will occur.
+
+The program actually delivered on the HSPTV browser is sent to the HSPTV server.
+If you do not register, it will not reach other users.
+Registration to the HSPTV server can be done on the HSPTV site such as the HSP Program Contest.
+It is held irregularly. See the HSPTV site for more information.
+
+
+・ Copyright and license
+
+
+The HSPTV and hsptv modules are copyrighted works of onion software.
+onion software is responsible for any damage caused by this program.
+We do not guarantee. Use at your own risk.
+
+The hsptv module (hsptv.as) can be freely reorganized and redistributed under the BSD license.
+You can do it.
+
+
+-------------------------------------------------------------------------------
+                                                HSP users manual / end of file 
+-------------------------------------------------------------------------------

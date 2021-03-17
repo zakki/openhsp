@@ -1,184 +1,184 @@
-nkf - $B%M%C%H%o!<%/MQ4A;z%3!<%IJQ49%U%#%k%?$N;qNA(B
-($B$3$N%I%-%e%a%s%H$O!"(Bnkf-2.1.0$B$N%I%-%e%a%s%H(Bnkf.doc$B$r85$K:n@.$5$l$F$$$^$9(B)
+nkf - ƒlƒbƒgƒ[ƒN—pŠ¿ŽšƒR[ƒh•ÏŠ·ƒtƒBƒ‹ƒ^‚ÌŽ‘—¿
+(‚±‚ÌƒhƒLƒ…ƒƒ“ƒg‚ÍAnkf-2.1.0‚ÌƒhƒLƒ…ƒƒ“ƒgnkf.doc‚ðŒ³‚Éì¬‚³‚ê‚Ä‚¢‚Ü‚·)
 
-$B"#35MW(B
+¡ŠT—v
 
     nkf
-    $B$O%M%C%H%o!<%/$G%a!<%k$d%K%e!<%9$NFI$_=q$-$r$9$k$?$a$K:n$i$l$?!"4A;z%3!<(B
-    $B%I$NJQ49%U%#%k%?$G$"$k!#(B
+    ‚Íƒlƒbƒgƒ[ƒN‚Åƒ[ƒ‹‚âƒjƒ…[ƒX‚Ì“Ç‚Ý‘‚«‚ð‚·‚é‚½‚ß‚Éì‚ç‚ê‚½AŠ¿ŽšƒR[
+    ƒh‚Ì•ÏŠ·ƒtƒBƒ‹ƒ^‚Å‚ ‚éB
 
-    $B$3$N(Bnkf$B$NFCD'$H$7$F$O!"F~NO4A;z%3!<%I7O$NE}7WE*$J<+F0G'<15!G=$,$"$k!#(B
-    $B$3$N$?$a!"MxMQ<T$O!"F~NO4A;z%3!<%I7O$,2?$G$"$k$+$rCN$i$J$/$F$b!"=PNO4A;z(B
-    $B%3!<%I7O$N$_;XDj$9$l$PNI$$$3$H$K$J$k!#(B
-    $B$?$@!"$3$NH=Dj5!9=$O!"M}O@E*$K$O40A4$G$O$J$$$,!"DL>o$N%K%e!<%9$d%a!<%k$N(B
-    $B%a%C%;!<%8$K$D$$$F$O3N<B$KF0:n$9$k0BA4$J$b$N$K$O$J$C$F$$$k!#(B
+    ‚±‚Ìnkf‚Ì“Á’¥‚Æ‚µ‚Ä‚ÍA“ü—ÍŠ¿ŽšƒR[ƒhŒn‚Ì“Œv“I‚ÈŽ©“®”FŽ¯‹@”\‚ª‚ ‚éB
+    ‚±‚Ì‚½‚ßA—˜—pŽÒ‚ÍA“ü—ÍŠ¿ŽšƒR[ƒhŒn‚ª‰½‚Å‚ ‚é‚©‚ð’m‚ç‚È‚­‚Ä‚àAo—ÍŠ¿Žš
+    ƒR[ƒhŒn‚Ì‚ÝŽw’è‚·‚ê‚Î—Ç‚¢‚±‚Æ‚É‚È‚éB
+    ‚½‚¾A‚±‚Ì”»’è‹@\‚ÍA—˜_“I‚É‚ÍŠ®‘S‚Å‚Í‚È‚¢‚ªA’Êí‚Ìƒjƒ…[ƒX‚âƒ[ƒ‹‚Ì
+    ƒƒbƒZ[ƒW‚É‚Â‚¢‚Ä‚ÍŠmŽÀ‚É“®ì‚·‚éˆÀ‘S‚È‚à‚Ì‚É‚Í‚È‚Á‚Ä‚¢‚éB
 
-    $B8=:_!"(Bnkf$B$,G'<1$G$-$kF~NO$N4A;z%3!<%I7O$O!"$$$o$f$k(B JIS $B%3!<%I(B
-    (ISO-2022-JP $B$K4p$E$/$b$N(B)$B!"(BShift_JIS (MS $B4A;z%3!<%I(B)$B!"(B $BF|K\8l(B EUC (AT&T
-    $B%3!<%I(B)$B!"(BUTF-8$B!"(BUTF-16 $B$N$$$:$l$+$G$"$k!#(B
-    $B=PNO$9$k4A;z%3!<%I7O$b!"$3$l$i$G$"$k!#(B
-    $BF~NO$O!"%U%!%$%k$r;XDj$7$J$1$l$P!"I8=`F~NO$H$J$k!#(B
-    $B=PNO$OI8=`=PNO$G$"$k!#(B
+    Œ»ÝAnkf‚ª”FŽ¯‚Å‚«‚é“ü—Í‚ÌŠ¿ŽšƒR[ƒhŒn‚ÍA‚¢‚í‚ä‚é JIS ƒR[ƒh
+    (ISO-2022-JP ‚ÉŠî‚Ã‚­‚à‚Ì)AShift_JIS (MS Š¿ŽšƒR[ƒh)A “ú–{Œê EUC (AT&T
+    ƒR[ƒh)AUTF-8AUTF-16 ‚Ì‚¢‚¸‚ê‚©‚Å‚ ‚éB
+    o—Í‚·‚éŠ¿ŽšƒR[ƒhŒn‚àA‚±‚ê‚ç‚Å‚ ‚éB
+    “ü—Í‚ÍAƒtƒ@ƒCƒ‹‚ðŽw’è‚µ‚È‚¯‚ê‚ÎA•W€“ü—Í‚Æ‚È‚éB
+    o—Í‚Í•W€o—Í‚Å‚ ‚éB
 
 
-$B"#%*%W%7%g%s(B
+¡ƒIƒvƒVƒ‡ƒ“
 
-    $B;XDj$G$-$k%*%W%7%g%s$O!"0J2<$NDL$j!#(B -mu $B$N$h$&$KB3$1$k$3$H$,$G$-$k!#(B
-    (SetNkfOption$B$G;XDj$9$k>l9g$K$O(B'-'$B$OI,MW$"$j$^$;$s(B)
+    Žw’è‚Å‚«‚éƒIƒvƒVƒ‡ƒ“‚ÍAˆÈ‰º‚Ì’Ê‚èB -mu ‚Ì‚æ‚¤‚É‘±‚¯‚é‚±‚Æ‚ª‚Å‚«‚éB
+    (SetNkfOption‚ÅŽw’è‚·‚éê‡‚É‚Í'-'‚Í•K—v‚ ‚è‚Ü‚¹‚ñ)
 
-    -j  JIS $B%3!<%I$r=PNO$9$k!#(B
+    -j  JIS ƒR[ƒh‚ðo—Í‚·‚éB
 
-    -e  EUC $B%3!<%I$r=PNO$9$k!#(B
+    -e  EUC ƒR[ƒh‚ðo—Í‚·‚éB
 
-    -s  Shift_JIS $B%3!<%I$r=PNO$9$k!#(B
+    -s  Shift_JIS ƒR[ƒh‚ðo—Í‚·‚éB
 
     -w -w8[0] -w16[BL][0]
-        Unicode $B$r=PNO$9$k!#(B
+        Unicode ‚ðo—Í‚·‚éB
 
         -w -w80
-            UTF8 $B%3!<%I$r=PNO$9$k!#(B (BOM $BL5$7(B)
+            UTF8 ƒR[ƒh‚ðo—Í‚·‚éB (BOM –³‚µ)
 
-        -w8 UTF8 $B%3!<%I$r=PNO$9$k!#(B
+        -w8 UTF8 ƒR[ƒh‚ðo—Í‚·‚éB
 
         -w16 -w16B0
-            UTF16 $B%3!<%I$r=PNO$9$k!#(B (Big Endian / BOM $BL5$7(B)
+            UTF16 ƒR[ƒh‚ðo—Í‚·‚éB (Big Endian / BOM –³‚µ)
 
         -w16B
-            UTF16 $B%3!<%I$r=PNO$9$k!#(B (Big Endian / BOM $BM-$j(B)
+            UTF16 ƒR[ƒh‚ðo—Í‚·‚éB (Big Endian / BOM —L‚è)
 
         -w16L
-            UTF16 $B%3!<%I$r=PNO$9$k!#(B (Little Endian / BOM $BM-$j(B)
+            UTF16 ƒR[ƒh‚ðo—Í‚·‚éB (Little Endian / BOM —L‚è)
 
         -w16L0
-            UTF16 $B%3!<%I$r=PNO$9$k!#(B (Little Endian / BOM $BL5$7(B)
+            UTF16 ƒR[ƒh‚ðo—Í‚·‚éB (Little Endian / BOM –³‚µ)
 
     -m[BQSN0]
-        MIME $B$r2rFI$9$k!#(B($B%G%U%)%k%H(B) ISO-2022-JP (B encode) $B$H(B ISO-8859-1
-        (Q encode) $B$N$_$r2rFI$9$k!#(B ISO-8859-1 (Latin-1) $B$r2rFI$9$k;~$O!"(B-l
-        $B%U%i%0$bI,MW$G$"$k!#(B -m0 $B$G$O(B MIME $B$r2rFI$7$J$$!#(B -mB, -mQ
-        $B$G$O!"(BBASE64, Q encode $B$5$l$F$$$k$b$N$H$7$F=hM}$9$k!#(B
+        MIME ‚ð‰ð“Ç‚·‚éB(ƒfƒtƒHƒ‹ƒg) ISO-2022-JP (B encode) ‚Æ ISO-8859-1
+        (Q encode) ‚Ì‚Ý‚ð‰ð“Ç‚·‚éB ISO-8859-1 (Latin-1) ‚ð‰ð“Ç‚·‚éŽž‚ÍA-l
+        ƒtƒ‰ƒO‚à•K—v‚Å‚ ‚éB -m0 ‚Å‚Í MIME ‚ð‰ð“Ç‚µ‚È‚¢B -mB, -mQ
+        ‚Å‚ÍABASE64, Q encode ‚³‚ê‚Ä‚¢‚é‚à‚Ì‚Æ‚µ‚Äˆ—‚·‚éB
 
-        -mB MIME base64 stream $B$r2rFI$9$k!#(B $B%X%C%@$J$I$O<h$j=|$/$3$H!#(B
+        -mB MIME base64 stream ‚ð‰ð“Ç‚·‚éB ƒwƒbƒ_‚È‚Ç‚ÍŽæ‚èœ‚­‚±‚ÆB
 
-        -mQ MIME quoted stream $B$r2rFI$9$k!#(B
+        -mQ MIME quoted stream ‚ð‰ð“Ç‚·‚éB
 
-        -mS MIME $B$N%A%'%C%/$r87$7$/$9$k(B ($B%G%U%)%k%H(B)
+        -mS MIME ‚Ìƒ`ƒFƒbƒN‚ðŒµ‚µ‚­‚·‚é (ƒfƒtƒHƒ‹ƒg)
 
-        -mN MIME $B$N%A%'%C%/$r4K$/$9$k(B
+        -mN MIME ‚Ìƒ`ƒFƒbƒN‚ðŠÉ‚­‚·‚é
 
-        -m0 MIME $B$r2rFI$7$J$$!#(B
+        -m0 MIME ‚ð‰ð“Ç‚µ‚È‚¢B
 
-        -mS $B$O!"@k8@$NFbMF$H!"$=$N8e$KB3$/(B encoded-text
-        $B$N@09g@-$r%A%'%C%/$9$k!#(B -mN $B$O!"2~9T$G@Z$i$l$?(B MIME
-        $B$J$I$b2rFI$9$k!#2rFI$,;_$^$i$J$$$3$H$b$"$k!#(B
+        -mS ‚ÍAéŒ¾‚Ì“à—e‚ÆA‚»‚ÌŒã‚É‘±‚­ encoded-text
+        ‚Ì®‡«‚ðƒ`ƒFƒbƒN‚·‚éB -mN ‚ÍA‰üs‚ÅØ‚ç‚ê‚½ MIME
+        ‚È‚Ç‚à‰ð“Ç‚·‚éB‰ð“Ç‚ªŽ~‚Ü‚ç‚È‚¢‚±‚Æ‚à‚ ‚éB
 
     -M[BQ]
-        MIME $B$KJQ49$9$k!#(B
+        MIME ‚É•ÏŠ·‚·‚éB
 
-        -M  $B%X%C%@7A<0$KJQ49$9$k(B
+        -M  ƒwƒbƒ_Œ`Ž®‚É•ÏŠ·‚·‚é
 
-        -MB base64 stream $B$KJQ49$9$k(B
+        -MB base64 stream ‚É•ÏŠ·‚·‚é
 
-        -MQ Quoted stream $B$KJQ49$9$k(B
+        -MQ Quoted stream ‚É•ÏŠ·‚·‚é
 
     -J -E -S -W
-        $B4|BT$5$l$kF~NO%3!<%I$N@-<A$r;XDj$9$k!#(B
+        Šú‘Ò‚³‚ê‚é“ü—ÍƒR[ƒh‚Ì«Ž¿‚ðŽw’è‚·‚éB
 
-        -J  ISO-2022-JP $B$r2>Dj$9$k!#(B
+        -J  ISO-2022-JP ‚ð‰¼’è‚·‚éB
 
-        -E  $BF|K\8l(B EUC (AT&T) $B$r2>Dj$9$k!#(B
+        -E  “ú–{Œê EUC (AT&T) ‚ð‰¼’è‚·‚éB
 
-        -S  Shift_JIS $B$r2>Dj$9$k!#(B $B$$$o$f$kH>3Q%+%J(B (JIS X 0201 $BJR2>L>(B)
-            $B$b<u$1F~$l$k!#(B
+        -S  Shift_JIS ‚ð‰¼’è‚·‚éB ‚¢‚í‚ä‚é”¼ŠpƒJƒi (JIS X 0201 •Ð‰¼–¼)
+            ‚àŽó‚¯“ü‚ê‚éB
 
-        -W  UTF-8 $B$r2>Dj$9$k!#(B
+        -W  UTF-8 ‚ð‰¼’è‚·‚éB
 
-        -W8 UTF-8 $B$r2>Dj$9$k!#(B
+        -W8 UTF-8 ‚ð‰¼’è‚·‚éB
 
         -W16
-            UTF-16 (Little Endian)$B$r2>Dj$9$k!#(B
+            UTF-16 (Little Endian)‚ð‰¼’è‚·‚éB
 
         -W16B
-            UTF-16 (Big Endian)$B$r2>Dj$9$k!#(B
+            UTF-16 (Big Endian)‚ð‰¼’è‚·‚éB
 
         -W16L
-            UTF-16 (Little Endian)$B$r2>Dj$9$k!#(B
+            UTF-16 (Little Endian)‚ð‰¼’è‚·‚éB
 
-    -x  $BDL>o$*$3$J$o$l$k!"$$$o$f$kH>3Q%+%J(B (JIS X 0201 $BJR2>L>(B)
-        $B$+$i$$$o$f$kA43Q%+%J(B (JIS X 0208 $BJR2>L>(B)
-        $B$X$NJQ49$r9T$o$:!"H>3Q%+%J$rJ]B8$9$k!#(B $BF~NO$O!"(BShift_JIS $B$N(B 1byte
-        $B%+%J!"(BSO/SI$B!"(BESC-(-I, SSO $B$r<u$1IU$1$k!#(B $B=PNO$O!"F|K\8l(B EUC $BCf$G$O(B
-        SSO$B!"(BJIS $B%3!<%ICf$G$O(B ESC-(-I $B$r%G%U%)%k%H$GMQ$$$k!#(B
+    -x  ’Êí‚¨‚±‚È‚í‚ê‚éA‚¢‚í‚ä‚é”¼ŠpƒJƒi (JIS X 0201 •Ð‰¼–¼)
+        ‚©‚ç‚¢‚í‚ä‚é‘SŠpƒJƒi (JIS X 0208 •Ð‰¼–¼)
+        ‚Ö‚Ì•ÏŠ·‚ðs‚í‚¸A”¼ŠpƒJƒi‚ð•Û‘¶‚·‚éB “ü—Í‚ÍAShift_JIS ‚Ì 1byte
+        ƒJƒiASO/SIAESC-(-I, SSO ‚ðŽó‚¯•t‚¯‚éB o—Í‚ÍA“ú–{Œê EUC ’†‚Å‚Í
+        SSOAJIS ƒR[ƒh’†‚Å‚Í ESC-(-I ‚ðƒfƒtƒHƒ‹ƒg‚Å—p‚¢‚éB
 
-    -X  $B$$$o$f$kH>3Q%+%J(B (JIS X 0201 $BJR2>L>(B) $B$r(B $B$$$o$f$kA43Q%+%J(B (JIS X 0208
-        $BJR2>L>(B) $B$X$HJQ49$9$k!#(B
+    -X  ‚¢‚í‚ä‚é”¼ŠpƒJƒi (JIS X 0201 •Ð‰¼–¼) ‚ð ‚¢‚í‚ä‚é‘SŠpƒJƒi (JIS X 0208
+        •Ð‰¼–¼) ‚Ö‚Æ•ÏŠ·‚·‚éB
 
-    -B  $B2u$l$?(B (Broken) JIS $B%3!<%I!#(B ESC $B$,$J$/$J$C$?$H2>Dj$9$k!#(B
+    -B  ‰ó‚ê‚½ (Broken) JIS ƒR[ƒhB ESC ‚ª‚È‚­‚È‚Á‚½‚Æ‰¼’è‚·‚éB
 
-        -B1 ESC-(, ESC-$ $B$N$"$H$N%3!<%I$rLd$o$J$$(B
+        -B1 ESC-(, ESC-$ ‚Ì‚ ‚Æ‚ÌƒR[ƒh‚ð–â‚í‚È‚¢
 
-        -B2 $B2~9T$N$"$H$K6/@)E*$K(B ASCII $B$KLa$9(B
+        -B2 ‰üs‚Ì‚ ‚Æ‚É‹­§“I‚É ASCII ‚É–ß‚·
 
     -f[*m*[-*n*]]
-        $B0l9T(B *m* $BJ8;z$K$J$k$h$&$K!"%^!<%8%s$r(B *n*
-        $B$H$7$F4JC1$J@07A$r$*$3$J$&!#(B $B%G%U%)%k%H$OJ8;z?t$O(B 60$B!"%^!<%8%s$O(B 10
-        $B$G$"$k!#(B
+        ˆês *m* •¶Žš‚É‚È‚é‚æ‚¤‚ÉAƒ}[ƒWƒ“‚ð *n*
+        ‚Æ‚µ‚ÄŠÈ’P‚È®Œ`‚ð‚¨‚±‚È‚¤B ƒfƒtƒHƒ‹ƒg‚Í•¶Žš”‚Í 60Aƒ}[ƒWƒ“‚Í 10
+        ‚Å‚ ‚éB
 
     -Z[0-3]
-        JIS X 0208 $B1Q?t;z$H<c43$N5-9f$r(B ASCII $B$KJQ49$9$k!#(B
-        $B$D$^$j!"A43Q$rH>3Q$KJQ49$9$k!#(B
+        JIS X 0208 ‰p”Žš‚ÆŽáŠ±‚Ì‹L†‚ð ASCII ‚É•ÏŠ·‚·‚éB
+        ‚Â‚Ü‚èA‘SŠp‚ð”¼Šp‚É•ÏŠ·‚·‚éB
 
         -Z -Z0
             Convert X0208 alphabet to ASCII.
 
-        -Z1 JIS X 0208 $BOB;z4V3V$r(B ASCII space $B0l$D$KJQ49$9$k!#(B
+        -Z1 JIS X 0208 ˜aŽšŠÔŠu‚ð ASCII space ˆê‚Â‚É•ÏŠ·‚·‚éB
 
-        -Z2 JIS X 0208 $BOB;z4V3V$r(B ASCII space $BFs$D$KJQ49$9$k!#(B
+        -Z2 JIS X 0208 ˜aŽšŠÔŠu‚ð ASCII space “ñ‚Â‚É•ÏŠ·‚·‚éB
 
-        -Z3 $B!d!"!c!"!I!"!u!"$r(B &gt;$B!"(B&lt;$B!"(B&quot;$B!"(B&amp; $B$KJQ49$9$k!#(B
+        -Z3 „AƒAhA•A‚ð &gt;A&lt;A&quot;A&amp; ‚É•ÏŠ·‚·‚éB
 
-    -b  $B%P%C%U%!%j%s%0=PNO$r9T$&!#(B($B%G%U%)%k%H(B)
+    -b  ƒoƒbƒtƒ@ƒŠƒ“ƒOo—Í‚ðs‚¤B(ƒfƒtƒHƒ‹ƒg)
 
-    -u  $B=PNO;~$K!"%P%C%U%!%j%s%0$7$J$$!#(B ssh localhost | nkf -u
-        $B$H$$$&$h$&$K;H$&!#(B
+    -u  o—ÍŽž‚ÉAƒoƒbƒtƒ@ƒŠƒ“ƒO‚µ‚È‚¢B ssh localhost | nkf -u
+        ‚Æ‚¢‚¤‚æ‚¤‚ÉŽg‚¤B
 
-    -t  $B2?$b$7$J$$!#(B
+    -t  ‰½‚à‚µ‚È‚¢B
 
-    -I  ISO-2022-JP $B0J30$N4A;z%3!<%I$r".$KJQ49!#(B
+    -I  ISO-2022-JP ˆÈŠO‚ÌŠ¿ŽšƒR[ƒh‚ð¬‚É•ÏŠ·B
 
     -i[@B]
-        JIS $B4A;z$r;X<($9$k%7!<%1%s%9$r;XDj$9$k!#(B
+        JIS Š¿Žš‚ðŽwŽ¦‚·‚éƒV[ƒPƒ“ƒX‚ðŽw’è‚·‚éB
 
-        -i@ JIS X 0208-1978 $B$rMQ$$$k!#(B
+        -i@ JIS X 0208-1978 ‚ð—p‚¢‚éB
 
-        -iB JIS X 0208-1983/1990 $B$rMQ$$$k!#(B
+        -iB JIS X 0208-1983/1990 ‚ð—p‚¢‚éB
 
     -o[BJH]
-        1 $B%P%$%H1Q?tJ8;z%;%C%H$r;X<($9$k%7!<%1%s%9$r;XDj$9$k!#(B
+        1 ƒoƒCƒg‰p”•¶ŽšƒZƒbƒg‚ðŽwŽ¦‚·‚éƒV[ƒPƒ“ƒX‚ðŽw’è‚·‚éB
 
-        -oB 1 $B%P%$%H1Q?tJ8;z%;%C%H$H$7$F(B US-ASCII $B$rMQ$$$k!#(B
+        -oB 1 ƒoƒCƒg‰p”•¶ŽšƒZƒbƒg‚Æ‚µ‚Ä US-ASCII ‚ð—p‚¢‚éB
 
-        -oJ 1 $B%P%$%H1Q?tJ8;z%;%C%H$H$7$F(B JIS X 0201 Roman $B$rMQ$$$k!#(B
+        -oJ 1 ƒoƒCƒg‰p”•¶ŽšƒZƒbƒg‚Æ‚µ‚Ä JIS X 0201 Roman ‚ð—p‚¢‚éB
 
-        -oH ESC ( H $B$O=i4|$N(B JUNET
-            $B%3!<%I$G$N$_MQ$$$i$l$?$b$N$G!"8=:_$O;H$C$F$O$J$i$J$$!#(B
+        -oH ESC ( H ‚Í‰Šú‚Ì JUNET
+            ƒR[ƒh‚Å‚Ì‚Ý—p‚¢‚ç‚ê‚½‚à‚Ì‚ÅAŒ»Ý‚ÍŽg‚Á‚Ä‚Í‚È‚ç‚È‚¢B
 
-    -r  ROT13/47 $B$NJQ49$r$9$k!#(B
+    -r  ROT13/47 ‚Ì•ÏŠ·‚ð‚·‚éB
 
-    -g  $B<+F0H=JL$N7k2L$r=PNO$7$^$9!#(B
+    -g  Ž©“®”»•Ê‚ÌŒ‹‰Ê‚ðo—Í‚µ‚Ü‚·B
 
-    -T  $B%F%-%9%H%b!<%I$G=PNO$9$k!#(B(MS-DOS $B>e$G$N$_8zNO$r;}$D(B)
+    -T  ƒeƒLƒXƒgƒ‚[ƒh‚Åo—Í‚·‚éB(MS-DOS ã‚Å‚Ì‚ÝŒø—Í‚ðŽ‚Â)
 
-    -l  0x80-0xfe $B$N%3!<%I$r(B ISO-8859-1 (Latin-1) $B$H$7$F07$&!#(B JIS
-        $B%3!<%I%"%&%H%W%C%H$H$NAH9g$;$_$N$_M-8z!#(B -s, -e, -x $B$H$ON>N)$7$J$$!#(B
+    -l  0x80-0xfe ‚ÌƒR[ƒh‚ð ISO-8859-1 (Latin-1) ‚Æ‚µ‚Äˆµ‚¤B JIS
+        ƒR[ƒhƒAƒEƒgƒvƒbƒg‚Æ‚Ì‘g‡‚¹‚Ý‚Ì‚Ý—LŒøB -s, -e, -x ‚Æ‚Í—¼—§‚µ‚È‚¢B
 
-    -O  $B%U%!%$%k$K=PNO$9$k!#(B UNIX $B$G$OITMW$J5!G=$@$,(B Windows $B$d(B MSDOS
-        $B$G$OI,MW$i$7$$!#(B
-        $BD>8e$N0z$-?t$G$J$/!":G8e$N%U%!%$%kL>$,=PNO%U%!%$%kL>$H$J$j>e=q$-$5$l(B
-        $B$F$7$^$&$N$GCm0U!#(B $B%U%!%$%kL>$,$J$$>l9g$O(B nkf.out$B!#(B
+    -O  ƒtƒ@ƒCƒ‹‚Éo—Í‚·‚éB UNIX ‚Å‚Í•s—v‚È‹@”\‚¾‚ª Windows ‚â MSDOS
+        ‚Å‚Í•K—v‚ç‚µ‚¢B
+        ’¼Œã‚Ìˆø‚«”‚Å‚È‚­AÅŒã‚Ìƒtƒ@ƒCƒ‹–¼‚ªo—Íƒtƒ@ƒCƒ‹–¼‚Æ‚È‚èã‘‚«‚³‚ê
+        ‚Ä‚µ‚Ü‚¤‚Ì‚Å’ˆÓB ƒtƒ@ƒCƒ‹–¼‚ª‚È‚¢ê‡‚Í nkf.outB
 
     -L[uwm] -d -c
-        $B2~9T%3!<%I$rJQ49$9$k!#(B
+        ‰üsƒR[ƒh‚ð•ÏŠ·‚·‚éB
 
         -Lu -d
             unix (LF)
@@ -188,172 +188,172 @@ nkf - $B%M%C%H%o!<%/MQ4A;z%3!<%IJQ49%U%#%k%?$N;qNA(B
 
         -Lm mac (CR)
 
-        $B%G%U%)%k%H$G$OJQ49$7$J$$!#(B
+        ƒfƒtƒHƒ‹ƒg‚Å‚Í•ÏŠ·‚µ‚È‚¢B
 
     --ic=<input_codeset --oc=<output_codeset>>
-        $BF~NO!&=PNO$N4A;z%3!<%I7O$r;XDj$7$^$9!#(B
+        “ü—ÍEo—Í‚ÌŠ¿ŽšƒR[ƒhŒn‚ðŽw’è‚µ‚Ü‚·B
 
         ISO-2022-JP
-            $B$$$o$f$k(B JIS $B%3!<%I!#(B-j, -J $B$HF1$8!#(B
+            ‚¢‚í‚ä‚é JIS ƒR[ƒhB-j, -J ‚Æ“¯‚¶B
 
         ISO-2022-JP-1
-            RFC 2237 $B$KDj$a$i$l$?7A<0!#(B JIS X 0212 $B$r4^$`!#(B
+            RFC 2237 ‚É’è‚ß‚ç‚ê‚½Œ`Ž®B JIS X 0212 ‚ðŠÜ‚ÞB
 
         ISO-2022-JP-3
-            RFC 2237 $B$KDj$a$i$l$?7A<0!#(B JIS X 0213 $B$r4^$`!#(B
+            RFC 2237 ‚É’è‚ß‚ç‚ê‚½Œ`Ž®B JIS X 0213 ‚ðŠÜ‚ÞB
 
         EUC-JP
-            EUC $B%3!<%I!#(B-e, -E $B$HF1$8!#(B
+            EUC ƒR[ƒhB-e, -E ‚Æ“¯‚¶B
 
         EUC-JISX0213
-            $BJ8;z=89g$K(B JIS X 0213:2000 $B$rMQ$$$?(B EUC-JP$B!#(B
+            •¶ŽšW‡‚É JIS X 0213:2000 ‚ð—p‚¢‚½ EUC-JPB
 
         EUC-JIS-2004
-            $BJ8;z=89g$K(B JIS X 0213:2004 $B$rMQ$$$?(B EUC-JP$B!#(B
+            •¶ŽšW‡‚É JIS X 0213:2004 ‚ð—p‚¢‚½ EUC-JPB
 
         eucJP-ascii
-            $B%*!<%W%s%0%k!<%WF|K\%Y%s%@6(5D2q$,Dj5A$7$?(B eucJP-ascii$B!#(B -x
-            $B$,0EL[$N$&$A$K;XDj$5$l$k!#(B
+            ƒI[ƒvƒ“ƒOƒ‹[ƒv“ú–{ƒxƒ“ƒ_‹¦‹c‰ï‚ª’è‹`‚µ‚½ eucJP-asciiB -x
+            ‚ªˆÃ–Ù‚Ì‚¤‚¿‚ÉŽw’è‚³‚ê‚éB
 
         eucJP-ms
-            $B%*!<%W%s%0%k!<%WF|K\%Y%s%@6(5D2q$,Dj5A$7$?(B euc-JPms$B!#(B -x
-            $B$,0EL[$N$&$A$K;XDj$5$l$k!#(B
+            ƒI[ƒvƒ“ƒOƒ‹[ƒv“ú–{ƒxƒ“ƒ_‹¦‹c‰ï‚ª’è‹`‚µ‚½ euc-JPmsB -x
+            ‚ªˆÃ–Ù‚Ì‚¤‚¿‚ÉŽw’è‚³‚ê‚éB
 
         CP51932
-            Micorosft Code Page 51932$B!#(B -x $B$,0EL[$N$&$A$K;XDj$5$l$k!#(B
+            Micorosft Code Page 51932B -x ‚ªˆÃ–Ù‚Ì‚¤‚¿‚ÉŽw’è‚³‚ê‚éB
 
         Shift_JIS
-            Shift_JIS$B!#(B -s, -S $B$HF1$8!#(B
+            Shift_JISB -s, -S ‚Æ“¯‚¶B
 
         Shift_JISX0213
-            $BJ8;z=89g$K(B JIS X 0213:2000 $B$rMQ$$$?(B Shift_JIS$B!#(B
+            •¶ŽšW‡‚É JIS X 0213:2000 ‚ð—p‚¢‚½ Shift_JISB
 
         Shift_JIS-2004
-            $BJ8;z=89g$K(B JIS X 0213:2004 $B$rMQ$$$?(B Shift_JIS$B!#(B
+            •¶ŽšW‡‚É JIS X 0213:2004 ‚ð—p‚¢‚½ Shift_JISB
 
         CP932
-            Micorosft Code Page 932$B!#(B -x $B$,0EL[$N$&$A$K;XDj$5$l$k!#(B
+            Micorosft Code Page 932B -x ‚ªˆÃ–Ù‚Ì‚¤‚¿‚ÉŽw’è‚³‚ê‚éB
 
         UTF-8 UTF-8N
-            BOM $BL5$7$N(B UTF-8$B!#(B -w, -W $B$HF1$8!#(B
+            BOM –³‚µ‚Ì UTF-8B -w, -W ‚Æ“¯‚¶B
 
         UTF-8-BOM
-            BOM $BIU$-$N(B UTF-8$B!#(B-w8 $B$^$?$O(B -W $B$HF1$8!#(B
+            BOM •t‚«‚Ì UTF-8B-w8 ‚Ü‚½‚Í -W ‚Æ“¯‚¶B
 
         UTF8-MAC
-            UTF8-MAC$B!#8_49J,2r$5$l$?$R$i$,$J!&%+%?%+%JEy$r7k9g$7$^$9!#(B
-            $BF~NO$N$_$NBP1~$G$9!#(B
+            UTF8-MACBŒÝŠ·•ª‰ð‚³‚ê‚½‚Ð‚ç‚ª‚ÈEƒJƒ^ƒJƒi“™‚ðŒ‹‡‚µ‚Ü‚·B
+            “ü—Í‚Ì‚Ý‚Ì‘Î‰ž‚Å‚·B
 
         UTF-16 UTF-16BE-BOM
-            BOM $BM-$j$G(B Big Endian $B$N(B UTF-16$B!#(B -w16B, -W16B $B$HF1$8!#(B
+            BOM —L‚è‚Å Big Endian ‚Ì UTF-16B -w16B, -W16B ‚Æ“¯‚¶B
 
         UTF-16BE
-            BOM $BL5$7$G(B Big Endian $B$N(B UTF-16$B!#(B -w16B0. -W16B $B$HF1$8!#(B
+            BOM –³‚µ‚Å Big Endian ‚Ì UTF-16B -w16B0. -W16B ‚Æ“¯‚¶B
 
         UTF-16LE-BOM
-            BOM $BM-$j$G(B Little Endian $B$N(B UTF-16$B!#(B -w16L, -W16L $B$HF1$8!#(B
+            BOM —L‚è‚Å Little Endian ‚Ì UTF-16B -w16L, -W16L ‚Æ“¯‚¶B
 
         UTF-16LE
-            BOM $BL5$7$G(B Little Endian $B$N(B UTF-16$B!#(B -w16L0, -W16L $B$HF1$8!#(B
+            BOM –³‚µ‚Å Little Endian ‚Ì UTF-16B -w16L0, -W16L ‚Æ“¯‚¶B
 
     --fj --unix --mac --msdos --windows
-        $B$3$l$i$N%7%9%F%`$KE,$7$?JQ49$r$7$^$9!#(B
+        ‚±‚ê‚ç‚ÌƒVƒXƒeƒ€‚É“K‚µ‚½•ÏŠ·‚ð‚µ‚Ü‚·B
 
     --jis --euc --sjis --mime --base64
-        $BBP1~$9$kJQ49$r$7$^$9!#(B
+        ‘Î‰ž‚·‚é•ÏŠ·‚ð‚µ‚Ü‚·B
 
     --hiragana --katakana
-        $BJ?2>L>!"JR2>L>JQ49(B
+        •½‰¼–¼A•Ð‰¼–¼•ÏŠ·
 
     --fb-{skip, html, xml, perl, java, subchar}
-        Unicode $B$+$i(B Shift_JIS, EUC-JP, ISO-2022-JP
-        $B$KJQ49$9$k:]$K!"JQ49$G$-$J$+$C$?J8;z$r$I$&07$&$+$r;XDj$G$-$^$9!#(B
+        Unicode ‚©‚ç Shift_JIS, EUC-JP, ISO-2022-JP
+        ‚É•ÏŠ·‚·‚éÛ‚ÉA•ÏŠ·‚Å‚«‚È‚©‚Á‚½•¶Žš‚ð‚Ç‚¤ˆµ‚¤‚©‚ðŽw’è‚Å‚«‚Ü‚·B
 
     --prefix=*escape character**target character*..
-        EUC-JP $B$+$i(B Shift_JIS $B$X$NJQ49$N:]!"(B2 $B%P%$%HL\(B
-        $B$K8=$l$?J8;z$NA0$K%(%9%1!<%WJ8;z$r$D$1$k$3$H$,$G$-$^$9!#(B $B0z?t$N(B 1
-        $BJ8;zL\$,%(%9%1!<%WJ8;z!"(B2
-        $BJ8;zL\0J9_$K%(%9%1!<%W$5$l$k$Y$-J8;z$r;XDj$7$^$9!#(B
+        EUC-JP ‚©‚ç Shift_JIS ‚Ö‚Ì•ÏŠ·‚ÌÛA2 ƒoƒCƒg–Ú
+        ‚ÉŒ»‚ê‚½•¶Žš‚Ì‘O‚ÉƒGƒXƒP[ƒv•¶Žš‚ð‚Â‚¯‚é‚±‚Æ‚ª‚Å‚«‚Ü‚·B ˆø”‚Ì 1
+        •¶Žš–Ú‚ªƒGƒXƒP[ƒv•¶ŽšA2
+        •¶Žš–ÚˆÈ~‚ÉƒGƒXƒP[ƒv‚³‚ê‚é‚×‚«•¶Žš‚ðŽw’è‚µ‚Ü‚·B
 
-        $BNc$($P!"(B
+        —á‚¦‚ÎA
 
-        --prefix=\$@ $B$H$9$k$H!"(BShift_JIS $B$N(B 2 $BJ8;zL\$K(B $ $B$+(B @
-        $B$,Mh$?$i!"$=$NA0$K(B \ $B$,A^F~$5$l$^$9(B --prefix=@@ $B$H$9$k$H!"(BShift_JIS
-        $B$N(B 2 $BJ8;zL\$K(B @ $B$,Mh$?$i!"$=$NA0$K(B @ $B$,A^F~$5$l$^$9(B
+        --prefix=\$@ ‚Æ‚·‚é‚ÆAShift_JIS ‚Ì 2 •¶Žš–Ú‚É $ ‚© @
+        ‚ª—ˆ‚½‚çA‚»‚Ì‘O‚É \ ‚ª‘}“ü‚³‚ê‚Ü‚· --prefix=@@ ‚Æ‚·‚é‚ÆAShift_JIS
+        ‚Ì 2 •¶Žš–Ú‚É @ ‚ª—ˆ‚½‚çA‚»‚Ì‘O‚É @ ‚ª‘}“ü‚³‚ê‚Ü‚·
 
     --no-cp932ext
-        CP932 $B$K$*$$$F3HD%$5$l$?!"(BNEC $BFC<lJ8;z!"(BNEC $BA*Dj(B IBM $B3HD%J8;z(B (89-92
-        $B6h(B)$B!"(BIBM $B3HD%J8;z$rJQ49$7$^$;$s!#(B
+        CP932 ‚É‚¨‚¢‚ÄŠg’£‚³‚ê‚½ANEC “ÁŽê•¶ŽšANEC ‘I’è IBM Šg’£•¶Žš (89-92
+        ‹æ)AIBM Šg’£•¶Žš‚ð•ÏŠ·‚µ‚Ü‚¹‚ñB
 
     --no-best-fit-chars
         Unicode
-        $B$+$i$NJQ49$N:]$K!"1}I|0BA4@-$,3NJ]$5$l$J$$J8;z$NJQ49$r9T$$$^$;$s!#(B
-        Unicode $B$+$i(B Unicode $B$NJQ49$N:]$K(B -x $B$H6&$K;XDj$9$k$H!"(Bnkf $B$r(B UTF
-        $B7A<0$NJQ49$KMQ$$$k$3$H$,$G$-$^$9!#(B
-        ($B5U$K8@$($P!"$3$l$r;XDj$7$J$$$H0lIt$NJ8;z$,J]B8$5$l$^$;$s(B)
+        ‚©‚ç‚Ì•ÏŠ·‚ÌÛ‚ÉA‰•œˆÀ‘S«‚ªŠm•Û‚³‚ê‚È‚¢•¶Žš‚Ì•ÏŠ·‚ðs‚¢‚Ü‚¹‚ñB
+        Unicode ‚©‚ç Unicode ‚Ì•ÏŠ·‚ÌÛ‚É -x ‚Æ‹¤‚ÉŽw’è‚·‚é‚ÆAnkf ‚ð UTF
+        Œ`Ž®‚Ì•ÏŠ·‚É—p‚¢‚é‚±‚Æ‚ª‚Å‚«‚Ü‚·B
+        (‹t‚ÉŒ¾‚¦‚ÎA‚±‚ê‚ðŽw’è‚µ‚È‚¢‚Æˆê•”‚Ì•¶Žš‚ª•Û‘¶‚³‚ê‚Ü‚¹‚ñ)
 
-        $B%Q%9$K4X$o$kJ8;zNs$rJQ49$9$k:]$K$O!"$3$N%*%W%7%g%s$r;XDj$9$k$3$H$r6/(B
-        $B$/?d>)$7$^$9!#(B
+        ƒpƒX‚ÉŠÖ‚í‚é•¶Žš—ñ‚ð•ÏŠ·‚·‚éÛ‚É‚ÍA‚±‚ÌƒIƒvƒVƒ‡ƒ“‚ðŽw’è‚·‚é‚±‚Æ‚ð‹­
+        ‚­„§‚µ‚Ü‚·B
 
     --cap-input, --url-input
-        $B$=$l$>$l(B :$B!"(B% $B$KB3$/(B 16 $B?J?t$rJ8;z$KJQ49$9$k(B
+        ‚»‚ê‚¼‚ê :A% ‚É‘±‚­ 16 i”‚ð•¶Žš‚É•ÏŠ·‚·‚é
 
     --numchar-input
-        &#....; $B$N$h$&$J(B Unicode $BJ8;z;2>H$rJQ49$9$k(B
+        &#....; ‚Ì‚æ‚¤‚È Unicode •¶ŽšŽQÆ‚ð•ÏŠ·‚·‚é
 
     --in-place[=*SUFFIX*] --overwrite[=*SUFFIX*]
-        $B85$N%U%!%$%k$rJQ497k2L$GCV$-49$($k!#(B
-        $BJ#?t$N%U%!%$%k$r=q$-49$($k$3$H$b2DG=!#(B
-        $B85$N%U%!%$%k$N%?%$%`%9%?%s%W$H%Q!<%_%C%7%g%s$,J];}$5$l$k!#(B
-        $B8=:_!":n@.F|;~$d(B inode
-        $B$OJQ99$5$l$k$,!">-Mh$K$o$?$C$F$3$N<BAu$N$^$^$G$"$kJ]>Z$OL5$$!#(B
+        Œ³‚Ìƒtƒ@ƒCƒ‹‚ð•ÏŠ·Œ‹‰Ê‚Å’u‚«Š·‚¦‚éB
+        •¡”‚Ìƒtƒ@ƒCƒ‹‚ð‘‚«Š·‚¦‚é‚±‚Æ‚à‰Â”\B
+        Œ³‚Ìƒtƒ@ƒCƒ‹‚Ìƒ^ƒCƒ€ƒXƒ^ƒ“ƒv‚Æƒp[ƒ~ƒbƒVƒ‡ƒ“‚ª•ÛŽ‚³‚ê‚éB
+        Œ»ÝAì¬“úŽž‚â inode
+        ‚Í•ÏX‚³‚ê‚é‚ªA«—ˆ‚É‚í‚½‚Á‚Ä‚±‚ÌŽÀ‘•‚Ì‚Ü‚Ü‚Å‚ ‚é•ÛØ‚Í–³‚¢B
 
     --guess
-        $B<+F0H=JL$N7k2L$r=PNO$9$k(B
+        Ž©“®”»•Ê‚ÌŒ‹‰Ê‚ðo—Í‚·‚é
 
     --help
-        $B%3%^%s%I$N4JC1$J@bL@$rI=<($9$k!#(B
+        ƒRƒ}ƒ“ƒh‚ÌŠÈ’P‚Èà–¾‚ð•\Ž¦‚·‚éB
 
-    -V  nkf $B$N@_Dj$rI=<($9$k!#(B
+    -V  nkf ‚ÌÝ’è‚ð•\Ž¦‚·‚éB
 
     -v --version
-        nkf $B$N%P!<%8%g%s$rI=<($9$k!#(B
+        nkf ‚Ìƒo[ƒWƒ‡ƒ“‚ð•\Ž¦‚·‚éB
 
-    --  $B$3$l0J9_$N%*%W%7%g%s$rL5;k$9$k(B
+    --  ‚±‚êˆÈ~‚ÌƒIƒvƒVƒ‡ƒ“‚ð–³Ž‹‚·‚é
 
     --exec-in
-        nkf [options] --exec-in cmd args... $B$H$d$k$H!"(Bcmd $B$N=PNO$r(B nkf
-        $B$NF~NO$H$9$k(B (config.h $B$G(B EXEC_IO $B$r(B define
-        $B$7$F%3%s%Q%$%k$7$?;~$N$_M-8z(B)
+        nkf [options] --exec-in cmd args... ‚Æ‚â‚é‚ÆAcmd ‚Ìo—Í‚ð nkf
+        ‚Ì“ü—Í‚Æ‚·‚é (config.h ‚Å EXEC_IO ‚ð define
+        ‚µ‚ÄƒRƒ“ƒpƒCƒ‹‚µ‚½Žž‚Ì‚Ý—LŒø)
 
     --exec-out
-        nkf [options] --exec-out cmd args... $B$H$d$k$H!"(Bnkf $B$N=PNO$r(B cmd
-        $B$NF~NO$H$9$k(B (config.h $B$G(B EXEC_IO $B$r(B define
-        $B$7$F%3%s%Q%$%k$7$?;~$N$_M-8z(B)
+        nkf [options] --exec-out cmd args... ‚Æ‚â‚é‚ÆAnkf ‚Ìo—Í‚ð cmd
+        ‚Ì“ü—Í‚Æ‚·‚é (config.h ‚Å EXEC_IO ‚ð define
+        ‚µ‚ÄƒRƒ“ƒpƒCƒ‹‚µ‚½Žž‚Ì‚Ý—LŒø)
 
-$B"#(BBUGS
+¡BUGS
 
-    $B<B$O!"F~NO$N%3!<%I7O$NH=Dj$O!"(BShift_JIS $B$H(B EUC
-    $B$H$N<+F0H=Dj$G$"$j!":G=i$KFCDj$G$-$kJ8;z$,Mh$?;~E@$G3NDj$7$F$7$^$&!#(B
-    $B$=$7$F!"FCDjITG=$N4V$OJ]N1%P%C%U%!$K$?$a$F$*$+$l!"3NDj8e$K=hM}$5$l$k!#(B
-    $B$3$N$?$a!"(B7 $B%S%C%H(B JIS $B$O>o$KG'<1$5$l$k!#(B Shift_JIS$B!"(BEUC
-    $B:.9g$b$[$H$s$I$N>l9g$OLdBj$,$J$$!#(B $B$?$@$7!"(BShift_JIS $B$N$$$o$f$kH>3Q%+%J(B
-    (JIS X 0201 $BJR2>L>(B) $B$H(B EUC $B4A;z$,<1JL$G$-$J$$!#(B
-    $B$7$?$,$C$F!"%G%U%)%k%H$G$O(B Shift_JIS
-    $B$N$$$o$f$kH>3Q%+%J$O$J$$$H2>Dj$7$F$$$k!#(B ($B$D$^$j!"(BShift_JIS $B$+(B EUC
-    $B$+LB$C$?;~$O(B EUC $B$H$_$J$9(B)
+    ŽÀ‚ÍA“ü—Í‚ÌƒR[ƒhŒn‚Ì”»’è‚ÍAShift_JIS ‚Æ EUC
+    ‚Æ‚ÌŽ©“®”»’è‚Å‚ ‚èAÅ‰‚É“Á’è‚Å‚«‚é•¶Žš‚ª—ˆ‚½Žž“_‚ÅŠm’è‚µ‚Ä‚µ‚Ü‚¤B
+    ‚»‚µ‚ÄA“Á’è•s”\‚ÌŠÔ‚Í•Û—¯ƒoƒbƒtƒ@‚É‚½‚ß‚Ä‚¨‚©‚êAŠm’èŒã‚Éˆ—‚³‚ê‚éB
+    ‚±‚Ì‚½‚ßA7 ƒrƒbƒg JIS ‚Íí‚É”FŽ¯‚³‚ê‚éB Shift_JISAEUC
+    ¬‡‚à‚Ù‚Æ‚ñ‚Ç‚Ìê‡‚Í–â‘è‚ª‚È‚¢B ‚½‚¾‚µAShift_JIS ‚Ì‚¢‚í‚ä‚é”¼ŠpƒJƒi
+    (JIS X 0201 •Ð‰¼–¼) ‚Æ EUC Š¿Žš‚ªŽ¯•Ê‚Å‚«‚È‚¢B
+    ‚µ‚½‚ª‚Á‚ÄAƒfƒtƒHƒ‹ƒg‚Å‚Í Shift_JIS
+    ‚Ì‚¢‚í‚ä‚é”¼ŠpƒJƒi‚Í‚È‚¢‚Æ‰¼’è‚µ‚Ä‚¢‚éB (‚Â‚Ü‚èAShift_JIS ‚© EUC
+    ‚©–À‚Á‚½Žž‚Í EUC ‚Æ‚Ý‚È‚·)
 
     Unicode
-    $B$NF|K\8l0J30$NItJ,$NJQ49$K$OBP1~$7$F$$$J$$$,!"(B--no-best-fit-chars
-    $B$r;XDj$9$l$P!"(BUTF-8 $B$H(B UTF-16 $B$NAj8_JQ49$r$9$k$3$H$O2DG=$G$"$k!#(B
+    ‚Ì“ú–{ŒêˆÈŠO‚Ì•”•ª‚Ì•ÏŠ·‚É‚Í‘Î‰ž‚µ‚Ä‚¢‚È‚¢‚ªA--no-best-fit-chars
+    ‚ðŽw’è‚·‚ê‚ÎAUTF-8 ‚Æ UTF-16 ‚Ì‘ŠŒÝ•ÏŠ·‚ð‚·‚é‚±‚Æ‚Í‰Â”\‚Å‚ ‚éB
 
-$B"#(BACKNOWLEDGE
+¡ACKNOWLEDGE
 
-    $B0J2<$N$+$?$,$?!"$I$&$b$"$j$,$H$&$4$6$$$^$7$?!#(B
+    ˆÈ‰º‚Ì‚©‚½‚ª‚½A‚Ç‚¤‚à‚ ‚è‚ª‚Æ‚¤‚²‚´‚¢‚Ü‚µ‚½B
 
   nkf 1.4
     morb@fujitsu, kiss@ayumi.stars.flab.fujitsu, cen122@flab.fujitsu,
-    yuki@flab.fujitsu $BB>!"(Bfujitsu & flab.fujitsu $B$N3'$5$s$N6(NO$K46<U!#(B
+    yuki@flab.fujitsu ‘¼Afujitsu & flab.fujitsu ‚ÌŠF‚³‚ñ‚Ì‹¦—Í‚ÉŠ´ŽÓB
     shinoda@cs.titech, kato@cs.titech, uematsu@cs.titech TNX
     kono@ie.u-ryukyu.ac.jp void@merope.pleiades.or.jp (Kusakabe Youichi)
     NIDE Naoyuki <nide@ics.nara-wu.ac.jp> ohta@src.ricoh.co.jp (Junn Ohta)
@@ -363,13 +363,13 @@ nkf - $B%M%C%H%o!<%/MQ4A;z%3!<%IJQ49%U%#%k%?$N;qNA(B
     (Shinji Kono) GHG00637@nifty-serve.or.jp (COW)
 
   nkf 1.9-
-    $B2OLn??<#(B
+    ‰Í–ì^Ž¡
     Akio Furukawa
     Andy Taki
     From: OHARA Shigeki
     Fumitaka Kitagawa
     Hiroaki Sengoku
-    Ikuhiro MORITA ($B?9ED(B $B0i9((B)
+    Ikuhiro MORITA (X“c ˆçG)
     Yoshiharu ITO
     Junn Ohta
     KAWAMURA Masao
@@ -379,8 +379,8 @@ nkf - $B%M%C%H%o!<%/MQ4A;z%3!<%IJQ49%U%#%k%?$N;qNA(B
     Ki-ichiro SATO
     Kiwamu Aoyama
     Koichi Hirayama
-    Mitsuru Hase ($BD9C+!!K~(B)
-    OHARA Shigeki ($BBg86(B $B=E<y(B)
+    Mitsuru Hase (’·’J@–ž)
+    OHARA Shigeki (‘åŒ´ dŽ÷)
     Rei FURUKAWA
     Satoru Takabayashi
     Shigeyuki Takagi
@@ -389,64 +389,64 @@ nkf - $B%M%C%H%o!<%/MQ4A;z%3!<%IJQ49%U%#%k%?$N;qNA(B
     TOYODA Jiro
     TSUCHIYA Masatoshi
     Tsutomu Sakai
-    YAMASHITA Junji ($B;32<(B $B=c;J(B)
+    YAMASHITA Junji (ŽR‰º ƒŽi)
     Yasuyuki Sato
     Yoshiaki Yanagihara
     hat@so-net
-    $B#D#C#C5;=QItEOJU(B
-    $B$+$H$Z(B / $B2CF#(B $B5.;J(B
-    $B$+$Y(Bdais
-    $B$R$m$;(B $B$^$5$"$-(B
-    $B%$%s%H%i%M%C%H%7%9%F%`(B($B3t(B)$B>>Hx(B
-    $B1-;tJ8IR(B
-    $B1v:j(B $B5#I'(B(SHIOZAKI Takehiko)
-    $B2OB<2mIW(B (Media Lab.)
-    $B2OLn(B $B9/;J(B
-    $B4n@%!HE_G-!I9@!wFn9q2-Fl(B
-    $B6b0f(B $BCRI'(B
-    $B7KED(B $BM4;K(B ($B$+$D$i$@(B $B$^$5$7(B)
-    $B9b6659LA(B
-    $B9q5H(B
-    $B9u9>L@I'(B
-    $B;0Bp@5BY(B
-    $B;3AR(B $B??(B
-    $B;3K\(B $BK'?M(B
-    $B;3LnM5;J(B ($B$d$^$N$f$&$8(B)
-    $B=EB<K!9n(B
-    $B>.Eg4pLw(B
-    $B>eED!!7r(B
-    $B?70f(B $B9/;J(B (Koji Arai)
-    $B?9!!@i3(;R(B
-    $B?9!!OBI'(B
-    $B?eLn(B $B5.J8(B
-    $BA0COOB=S(B
-    $BCg=!:,!wJBNs?.Mj8&(B
-    $BCvC+(B $B1Q0lO:(B == Eiichiro Itani
-    $BF#86!!=(9T(B
-    $BH,ED(B $B??9T(B (Masayuki Hatta)
-    $BHx@nIRLi(B
-    $BK>7n(B $B9';V(B
-    $BLZB<(B ($B!wC^GHBg3X?t3X8&5f2J(B)
-    $BLnB<=S>4(B
-    $BM-2,!w%_%N%k%?(B
-    $BM-Bt(B $BL@9((B
-    $BMn9g0l4n(B
-    $BNS(B $BN<(B
-    $BT"0B(B $B<#(B
-    $BLZ2<(B $BM:2p(B
-    $BEDCfN4M5(B
-    $BDaC+D><y(B
-    $BCfED?-1Y(B
-    $B$o$?$J$Y$R$m$U$_(B
+    ‚c‚b‚b‹Zp•”“n•Ó
+    ‚©‚Æ‚Ø / ‰Á“¡ ‹MŽi
+    ‚©‚×dais
+    ‚Ð‚ë‚¹ ‚Ü‚³‚ ‚«
+    ƒCƒ“ƒgƒ‰ƒlƒbƒgƒVƒXƒeƒ€(Š”)¼”ö
+    ‰LŽ”•¶•q
+    ‰–è ‹B•F(SHIOZAKI Takehiko)
+    ‰Í‘º‰ë•v (Media Lab.)
+    ‰Í–ì NŽi
+    Šì£g“~”Lh_—“ì‘‰«“ê
+    ‹àˆä ’q•F
+    Œj“c —SŽj (‚©‚Â‚ç‚¾ ‚Ü‚³‚µ)
+    ‚‹´‹X–¿
+    ‘‹g
+    •]–¾•F
+    ŽO‘î³‘×
+    ŽR‘q ^
+    ŽR–{ –Fl
+    ŽR–ì—TŽi (‚â‚Ü‚Ì‚ä‚¤‚¶)
+    d‘º–@Ž
+    ¬“‡Šî–õ
+    ã“c@Œ’
+    Vˆä NŽi (Koji Arai)
+    X@çŠGŽq
+    X@˜a•F
+    …–ì ‹M•¶
+    ‘O’n˜ar
+    ’‡@ª—•À—ñM—ŠŒ¤
+    ’–’J ‰pˆê˜Y == Eiichiro Itani
+    “¡Œ´@Gs
+    ”ª“c ^s (Masayuki Hatta)
+    ”öì•q–ç
+    –]ŒŽ FŽu
+    –Ø‘º (—’}”g‘åŠw”ŠwŒ¤‹†‰È)
+    –ì‘ºr²
+    —L‰ª—ƒ~ƒmƒ‹ƒ^
+    —L‘ò –¾G
+    —Ž‡ˆêŠì
+    —Ñ —º
+    š ˆÀ Ž¡
+    –Ø‰º —Y‰î
+    “c’†—²—T
+    ’ß’J’¼Ž÷
+    ’†“cL‰x
+    ‚í‚½‚È‚×‚Ð‚ë‚Ó‚Ý
     MoonWolf
     sava
 
-$B"#(BAUTHOR
+¡AUTHOR
 
-    $B;T@n(B $B;j(B ichikawa@flab.fujitsu.co.jp (was ichikawa@fujitsu.JUNET)
-    $B2OLn(B $B??<#(B kono@ie.u-ryukyu.acjp
+    Žsì ŽŠ ichikawa@flab.fujitsu.co.jp (was ichikawa@fujitsu.JUNET)
+    ‰Í–ì ^Ž¡ kono@ie.u-ryukyu.acjp
     Rei FURUKAWA furukawa@tcp-ip.or.jp
-    $B@.@%(B
+    ¬£
     mastodon
 
     http://sourceforge.jp/projects/nkf/

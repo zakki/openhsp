@@ -1,0 +1,130 @@
+Å|Å|Å|Å|Å|Å|Å|Å|Å|Å|Å|Å|Å|Å|Å|Å|Å|Å|Å|Å|Å|Å|Å|Å|Å|Å|Å|Å|Å|Å|Å|Å|Å|Å|Å|Å|Å|Å|Å|Å|Å|Å|Å|Å|Å|Å|Å|Å|Å|Å|Å|Å|Å|Å|Å|Å|Å|Å|Å|Å|Å|Å|Å|Å|Å|Å|Å|Å|Å|Å|Å|Å|Å|Å|Å|Å|Å|Å|Å|Å|Å|Å|Å|Å|Å|Å|Å|Å|Å|Å|Å|Å|Å|Å|Å|Å|Å|Å|Å|Å|Å|Å|Å|Å|Å|Å|Å|
+HSP USB-IO plug-in Ver 0.30
+
+<Production> K-K
+<Development environment> VC ++ 2005
+<Operation check> Thinkpad X60 + Windows XP
+<Transfer> Possible
+Å|Å|Å|Å|Å|Å|Å|Å|Å|Å|Å|Å|Å|Å|Å|Å|Å|Å|Å|Å|Å|Å|Å|Å|Å|Å|Å|Å|Å|Å|Å|Å|Å|Å|Å|Å|Å|Å|Å|Å|Å|Å|Å|Å|Å|Å|Å|Å|Å|Å|Å|Å|Å|Å|Å|Å|Å|Å|Å|Å|Å|Å|Å|Å|Å|Å|Å|Å|Å|Å|Å|Å|Å|Å|Å|Å|Å|Å|Å|Å|Å|Å|Å|Å|Å|Å|Å|Å|Å|Å|Å|Å|Å|Å|Å|Å|Å|Å|Å|Å|Å|Å|Å|Å|Å|Å|Å|
+
+1. 1. About this DLL
+It was sold by Morphy Planning (http://www.morphyplanning.co.jp/)
+It is a plug-in for using USB-IO from HSP.
+
+Since the Morphy project that used to sell USB-IO has disappeared,
+I didn't have an inexpensive USB-IO,
+The same thing from Technokit (http://www.technokit.biz/) for junior high school
+It is sold as a teaching material.
+
+It also supports USB-IO of Km2Net (http://km2net.com/) (03.12.08).
+
+
+I intend to handle multiple USB-IOs, but I haven't verified it very much.
+If it doesn't work, please contact us.
+
+2. Install & run
+Copy hspusbio.dll to the HSP folder.
+When executing the created exe, place it in the same directory as the exe.
+
+3. 3. how to use
+Include hspusbio.as at the beginning of the script.
+Search and initialize USB-IO with uio_find, and then
+Read and write with uio_inp / out.
+You can switch between multiple USB-IOs with uio_seldev.
+(Automatically the first time you run uio_inp / out without running uio_find
+uio_find is called. However, since it is only the first time, USB-IO was removed once,
+If it is inserted again, it will not work properly, so explicitly set uio_find
+please call me)
+
+In the case of HSP3.0, there is mod_usbio.as implemented as a module, so
+If you include it, you can use it without DLL.
+
+Instruction description
+„ÉÉT Uio_find
+Search and initialize USB-IO from the device.
+If it fails, an error code will be returned to stat.
+ÉcÉLError code
+0: Normal
+1: No required driver (for example, if you have not connected USB-IO yet)
+2: USB-IO is not connected
+
+„ÉÉT Uio_free
+Release USB-IO.
+It is called automatically when HSP is finished, but even if you call it manually
+There is no harm.
+
+„ÉÉT Uio_out p1, p2 (, p3)
+p1‚ÄÉí Output I / O port address (0 to 1)
+p2‚ÄÉí Output content (8 bits)
+p3‚ÄÉí mode
+If it fails, 1 is returned to stat
+If 1 is specified for p3, a pulse is sent to p1 of port 1 to rewrite port 0.
+
+„ÉÉT Uio_inp p1, p2 (, p3)
+8-bit read
+p1‚ÄÉí Variable to read data
+p2‚ÄÉí I / O port address (0 to 1)
+p3‚ÄÉí mode
+If it fails, a non-zero value will be returned to stat.
+If 1 is specified for p3, a pulse is sent to p1 of port 1 and read from port 0.
+
+ÅE Uio_getdevs
+The number of connected USB-IOs returns to stat.
+
+ÅE Uio_seldev p1
+p1Åc number (value obtained from 0 to uio_getdevs)
+Specify the number to use when multiple USB-IOs are connected.
+
+4. Uninstall
+Please delete the following files.
+
+5. About files
+hspusbio.dll (main body)
+hspusbio.txt (file you are reading now)
+hspusbio.as (include header)
+usbiotest.as (sample script)
+mod_usbio.as (module for HSP3)
+
+6. About copyright
+The copyright belongs to KK.
+Also, for any damage caused by this program
+We do not guarantee. Please use at your own risk.
+There are no particular restrictions on its use. Not limited to commercial and non-commercial
+Feel free to use it.
+There are no restrictions when distributing it at the same time as the created software.
+If you would like to reprint or publish in a magazine, please contact me.
+If possible, always keep the latest version.
+
+7. change point
+	Ver 0.1(02.09.24)
+ÅE For the time being, the functions that seem to be necessary
+	Ver 0.1c(02.09.26)
+ÅE Correct the explanation
+ÅE To be able to use commands 16 to 23 for the time being
+ÅE Minor correction
+-Significantly reduced DLL size
+	Ver 0.1d(03.08.18)
+ÅE Compatible with techno kit USB-IO
+	Ver 0.1e(03.12.08)
+ÅE Compatible with Km2Net's USB-IO
+	2004-10-24 Ver 0.1f
+-Fixed an incorrect input on Windows XP
+	2004-10-31 Ver 0.2
+-Corrected to ensure that IO data can be read
+ÅE Improved reading speed
+	2005-06-22 Ver 0.21
+-Fixed opening devices multiple times when uio_find was repeated
+-Uio_find now resets uio_seldev settings
+	2007-05-14 Ver 0.30
+-Changed the development environment to VC ++ 2005 Express Edition
+-Fixed the problem that it does not work on Windows Vista
+-Added module for HSP3 (mod_usbio.as)
+ÅE Close unused USB-IO
+
+8. Other
+If you like, you can change the extension of the DLL to HPI.
+
+The latest version of this program can be found on the homepage.
+K-K (Kousuke Kawahira) kawa0701@binzume.net
+	HomePage http://www.binzume.net/
+Å|Å|Å|Å|Å|Å|Å|Å|Å|Å|Å|Å|Å|Å|Å|Å|Å|Å|Å|Å|Å|Å|Å|Å|Å|Å|Å|Å|Å|Å|Å|Å|Å|Å|Å|Å|Å|Å|Å|Å|Å|Å|Å|Å|Å|Å|Å|Å|Å|Å|Å|Å|Å|Å|Å|Å|Å|Å|Å|Å|Å|Å|Å|Å|Å|Å|Å|Å|Å|Å|Å|Å|Å|Å|Å|Å|Å|Å|Å|Å|Å|Å|Å|Å|Å|Å|Å|Å|Å|Å|Å|Å|Å|Å|Å|Å|Å|Å|Å|Å|Å|Å|Å|Å|Å|Å|Å|

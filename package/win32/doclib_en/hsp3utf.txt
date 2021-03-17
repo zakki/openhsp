@@ -1,0 +1,100 @@
+------------------------------------------------------------------------------
+HSP3UTF  ver3.5                                     HSP : Hot Soup Processor  
+Users Manual                               copyright 2017 (c) onion software  
+------------------------------------------------------------------------------
+
+・ What is HSP3UTF?
+
+HSP3UTF runs the standard HSP3 runtime on a unicode (UTF-8) character basis.
+It has the same function as the normal HSP3 runtime, but only handles strings.
+It is unicode (UTF-8).
+It is possible to handle characters that cannot be expressed by the standard HSP that handles SJIS character codes.
+We plan to continue evolving as the new HSP3.
+
+
+・ How to use HSP3Dish
+
+You need to add the following code to the first line:
+
+	#include "hsp3utf.as"
+
+After that, you can write the source like a normal HSP3 script.
+The operation and handling of character strings is the same as usual, but with the noteload and notesave instructions
+The text file to be handled is UTF-8 code.
+
+The sample script is included in the sample / hsp3utf folder, so
+Please try to reference.
+
+
+・ Conversion by hspcmp
+
+In the current version, the character code to be edited with the script editor is
+Since it is SJIS, the source code itself cannot be written in unicode.
+However, write the source code in UTF-8 format with your own editor and write it in UTF-8 format.
+By compiling with the command line compiler (hspcmp)
+It is also possible to describe the source in UTF-8 format.
+From the command line
+
+		hspcmp -i script.hsp
+
+By executing like, script.hsp is converted to script.ax as UTF-8 format.
+
+
+-Newly added instructions
+
+To support SJIS format strings when using HSP3UTF runtime
+You can use some additional instructions.
+
+cnvatos (p1) Convert ANSI string to regular string
+
+p1 = variable: the name of the variable from which the contents are read
+
+Read the data stored in the variable as an ANSI (Shift JIS) character string,
+A function that returns a converted string.
+
+cnvstoa p1, "string" Converts regular strings to ANSI strings
+
+p1 = variable: variable name to write the result
+"string": conversion source string
+
+Converts the data specified in "Character string" to ANSI (Shift JIS) character string
+Save it in the variable buffer.
+Convert to the variable specified by p1 as a character string type in advance
+You need to ensure that you have a sufficient buffer size.
+
+Please note that these instructions will result in an error in standard HSP3.
+
+
+・ About dll call
+
+The character string passed in str, sptr format when calling the dll from the HSP3UTF runtime is
+The string is passed in SJIS code for compatibility with normal HSP3.
+However, the character string stored in the variable and the character string in the buffer are not converted, so
+Please note that the character code may not be passed correctly in some plugins and APIs.
+To the last, the HSP3UTF runtime is a system that handles UTF8 format, so
+Please be aware that it may not be compatible with normal HSP3.
+
+
+ツキFuture plans
+
+The HSP3UTF runtime will be tested for stable operation in the future.
+Eventually the runtime of HSP3Dish, HGIMG4, HSP3_64, HSP3MT
+We are considering replacing it with UTF-8 base.
+(It is already working on UTF-8 base on android, iOS, emscripten of HSP3Dish)
+
+The regular versions of HSP3 and HGIMG3 will continue to be provided with the same character code.
+
+
+繝サ Acknowledgments
+
+hsp3utf is included based on the one created and published by tds12.
+
+tds12
+	https://twitter.com/lltds12
+
+We would like to thank everyone who made many corrections and advice on the OpenHSP and HSPTV! Bulletin boards.
+
+
+-------------------------------------------------------------------------------
+                                                HSP users manual / end of file 
+-------------------------------------------------------------------------------

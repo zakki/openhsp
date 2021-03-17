@@ -1,385 +1,385 @@
 <!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
 <html lang="ja">
 <head>
-	<meta http-equiv="Content-Type" content="text/html; charset=Shift_JIS">
+	<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
 	<meta http-equiv="Content-Language" content="ja">
 	<meta http-equiv="Content-Style-Type" content="text/css">
 	<meta http-equiv="Content-Script-Type" content="text/javascript">
-	<meta name="author" content="OpenHSP3 Project�ihttp://dev.onionsoft.net/trac/wiki�j">
+	<meta name="author" content="OpenHSP3 Project">
 	<meta name="keywords" content="HSP3,HotSoupProcessor3,HSP3Dish,android,ndk,google">
-	<meta name="description" content="HSP3Dish android(NDK)�łɊւ�������f��">
+	<meta name="description" content="HSP3Dish android(NDK)版に関する情報を掲載">
 	<link href="../main.css" rel="stylesheet" type="text/css" media="all">
-	<title>HSP3Dish android(NDK)�Ńv���O���~���O�K�C�h</title>
+	<title>HSP3Dish android(NDK)版プログラミングガイド</title>
 </head>
 <body>
 	<div id="CONTAINER">
-	<!-- �w�b�_�[ -->
-	<p id="COPY">HSP : HSP3Dish / onion software 2020(c)</p>
-	<img src="hsp3dish.jpg" width="640" height="200" alt="�^�C�g��">
-	<h1>HSP3Dish android(NDK)�Ńv���O���~���O�K�C�h</h1>
+	<!-- ヘッダー -->
+	<p id="COPY">HSP : HSP3Dish / onion software 2021(c)</p>
+	<img src="hsp3dish.jpg" width="640" height="200" alt="title">
+	<h1>HSP3Dish android(NDK)版プログラミングガイド</h1>
 
-	<!-- �ڎ� -->
+	<!-- 目次 -->
 	<ol>
-		<li><a href="#ABOUT">android�� HSP3Dish�T�v</a></li>
-		<li><a href="#PREPARE">���̏���</a></li>
-		<li><a href="#SDKSETUP">Platform API�C���X�g�[��</a></li>
-		<li><a href="#DHSETUP">HSP3Dish Helper�̐ݒ�</a></li>
-		<li><a href="#DHNEWPROJ">�V�K�v���W�F�N�g�̍쐬</a></li>
-		<li><a href="#LIBFOLDER">���C�u�����t�H���_�ɂ���</a></li>
-		<li><a href="#DHPROJ">�v���W�F�N�g�̃r���h</a></li>
-		<li><a href="#SAMPLE">�T���v���v���W�F�N�g</a></li>
-		<li><a href="#RUNPROJ">���@�ւ̓]���Ǝ��s</a></li>
-		<li><a href="#DATAFILE">�f�[�^�t�@�C���̏���</a></li>
-		<li><a href="#SYSINFO">�V�X�e�����̎擾</a></li>
-		<li><a href="#EXECTASK">�^�X�N(�A�N�e�B�r�e�B)�Ăяo��</a></li>
-		<li><a href="#DISHINI">hsp3dish.ini�ݒ�t�@�C���ɂ���</a></li>
-		<li><a href="#SCALE">�}�j���A���ݒ荀�ڂɂ���</a></li>
-		<li><a href="#NETWORK">�l�b�g���[�N�ʐM�ɂ���</a></li>
-		<li><a href="#RELEASE">�����[�X�r���h</a></li>
-		<li><a href="#HGIMG4">HGIMG4�v���W�F�N�g�ɂ���</a></li>
-		<li><a href="#DEVCONTROL">�f�o�C�X�R���g���[���ɂ���</a></li>
-		<li><a href="#ADMOB">AdMob�ɂ��L���z�M</a></li>
-		<li><a href="#FONTMES">mes,print���߂ɂ���</a></li>
-		<li><a href="#NOTICE">android�ł̒��ӎ����A����</a></li>
-		<li><a href="#NEWVER">android�ł̍X�V�\��</a></li>
+		<li><a href="#ABOUT">android版 HSP3Dish概要</a></li>
+		<li><a href="#PREPARE">環境の準備</a></li>
+		<li><a href="#SDKSETUP">Platform APIインストール</a></li>
+		<li><a href="#DHSETUP">HSP3Dish Helperの設定</a></li>
+		<li><a href="#DHNEWPROJ">新規プロジェクトの作成</a></li>
+		<li><a href="#LIBFOLDER">ライブラリフォルダについて</a></li>
+		<li><a href="#DHPROJ">プロジェクトのビルド</a></li>
+		<li><a href="#SAMPLE">サンプルプロジェクト</a></li>
+		<li><a href="#RUNPROJ">実機への転送と実行</a></li>
+		<li><a href="#DATAFILE">データファイルの準備</a></li>
+		<li><a href="#SYSINFO">システム情報の取得</a></li>
+		<li><a href="#EXECTASK">タスク(アクティビティ)呼び出し</a></li>
+		<li><a href="#DISHINI">hsp3dish.ini設定ファイルについて</a></li>
+		<li><a href="#SCALE">マニュアル設定項目について</a></li>
+		<li><a href="#NETWORK">ネットワーク通信について</a></li>
+		<li><a href="#RELEASE">リリースビルド</a></li>
+		<li><a href="#HGIMG4">HGIMG4プロジェクトについて</a></li>
+		<li><a href="#DEVCONTROL">デバイスコントロールについて</a></li>
+		<li><a href="#ADMOB">AdMobによる広告配信</a></li>
+		<li><a href="#FONTMES">mes,print命令について</a></li>
+		<li><a href="#NOTICE">android版の注意事項、制限</a></li>
+		<li><a href="#NEWVER">android版の更新予定</a></li>
 	</ol>
 
-	<h2 id="ABOUT">android�� HSP3Dish�T�v</h2>
+	<h2 id="ABOUT">android版 HSP3Dish概要</h2>
 	<p>
-	android�� HSP3Dish�́Aandroid OS���ڋ@��(�X�}�[�g�t�H���A�^�u���b�g��)��œ��삷��HSP3Dish�̃����^�C���ł��B
-	Windows�� HSP3Dish���T�|�[�g����@�\��android OS��ōČ����邱�Ƃ��\�ł��B
-	(android�� HSP3Dish�́AWindows�ł̃X�N���v�g�����s�����邱�Ƃ�ړI�Ƃ��Ă���AHSP3�J���V�X�e�����̂��̂�android��ōČ�������̂ł͂���܂���B)
+	android版 HSP3Dishは、android OS搭載機種(スマートフォン、タブレット等)上で動作するHSP3Dishのランタイムです。
+	Windows版 HSP3Dishがサポートする機能をandroid OS上で再現することが可能です。
+	(android版 HSP3Dishは、Windows版のスクリプトを実行させることを目的としており、HSP3開発システムそのものをandroid上で再現するものではありません。)
 	<br>
-	���̃}�j���A���ł́Aandroid�ł̗��p���@�A���ӓ_�Ȃǂ�������Ă����܂��B
+	このマニュアルでは、android版の利用方法、注意点などを説明していきます。
 	<br>
 	<br>
-	����ł�android��Ŏ��s�ł���t�@�C�����r���h���邽�߂ɂ́A�J���̂��߂̊��ݒ���s�Ȃ��K�v������܂��B�J�����̍\�z�ɔ�p�͂�����܂���B���ׂĖ����ŏ������邱�Ƃ��ł��܂��B
-	�����́AWindows��œ��삵�A�ڑ�����Ă���android�f�o�C�X��œ���̊m�F���s�Ȃ����Ƃ��ł��܂��B
+	現状ではandroid上で実行できるファイルをビルドするためには、開発のための環境設定を行なう必要があります。開発環境の構築に費用はかかりません。すべて無料で準備することができます。
+	これらは、Windows上で動作し、接続されているandroidデバイス上で動作の確認を行なうことができます。
 	<br>
-	HSP3Dish�ł̃r���h���x�����邽�߂́AHSP3Dish Helper�c�[������������Ă��܂��B
-	����ɂ��A��r�I�X���[�Y��android�����Ƀr���h���s�Ȃ����Ƃ��\�ɂȂ�܂��B
+	HSP3Dishでのビルドを支援するための、HSP3Dish Helperツールが同梱されています。
+	これにより、比較的スムーズにandroid向けにビルドを行なうことが可能になります。
 	</p>
 
 	<p>
-	android�̎��@��œ��삳���邽�߂ɂ́A�ȉ����K�v�ƂȂ�܂��B
+	androidの実機上で動作させるためには、以下が必要となります。
 	<ul>
-	<li>android�J����(SDK) �� <a href="https://developer.android.com/studio/index.html" target="_blank">[�_�E�����[�h�T�C�g]</a>
+	<li>android開発環境(SDK) → <a href="https://developer.android.com/studio/index.html" target="_blank">[ダウンロードサイト]</a>
 	<ul><p>
-	<a href="https://developer.android.com/studio/index.html#downloads" target="_blank">Download Options(�_�E�����[�h�I�v�V����)</a>����A�R�}���h���C�� �c�[���݂̂���肷��K�v������܂��B
-	�������A<b>SDK Tools, Revision 25.3.0 (2017�N3����)�ȍ~�́A�r���h�ɕK�v�ȃR�}���h���C���c�[��(android command)����������Ȃ��Ȃ�܂����B</b>����ȑO�̃o�[�W�����ōŐV�̂��̂��ȉ���URL����_�E�����[�h�ł��܂��̂ŁA����������g�p���������B
-	(�����̃o�[�W�����ł́A�R�}���h���C���c�[���ł͂Ȃ�Android Studio�𕹗p�����r���h�ɐ؂�ւ��čs���\��ł��B)
+	<a href="https://developer.android.com/studio/index.html#downloads" target="_blank">Download Options(ダウンロードオプション)</a>から、コマンドライン ツールのみを入手する必要があります。
+	ただし、<b>SDK Tools, Revision 25.3.0 (2017年3月版)以降は、ビルドに必要なコマンドラインツール(android command)が同梱されなくなりました。</b>それ以前のバージョンで最新のものを以下のURLからダウンロードできますので、そちらをご使用ください。
+	(将来のバージョンでは、コマンドラインツールではなくAndroid Studioを併用したビルドに切り替えて行く予定です。)
 	<ul><p>
-	<a href="https://dl.google.com/android/repository/tools_r25.2.5-windows.zip" target="_blank">Android SDK Tools, Revision 25.2.5 (January 2017) [�_�E�����[�h�����N]</a>
+	<a href="https://dl.google.com/android/repository/tools_r25.2.5-windows.zip" target="_blank">Android SDK Tools, Revision 25.2.5 (January 2017) [ダウンロードリンク]</a>
 	</p></ul>
-	zip�A�[�J�C�u�̓��e��C�ӂ̃t�H���_�ɃC���X�g�[�����Ă��������B�����t�H���_�́A�uc:\android\android-sdk�v�ł��B<br>
-	(SDK Tools����́utools�v�t�H���_�����o����͂��ł��B�uc:\android\android-sdk\tools�v�̂悤�Ȍ`�ɂȂ�悤�ɂ��Ă�������)
+	zipアーカイブの内容を任意のフォルダにインストールしてください。推奨フォルダは、「c:\android\android-sdk」です。<br>
+	(SDK Toolsからは「tools」フォルダが取り出せるはずです。「c:\android\android-sdk\tools」のような形になるようにしてください)
 
 	</p></ul>
-	<li>JDK(Java Development Kit) �� <a href="http://www.oracle.com/technetwork/java/index.html" target="_blank">[�_�E�����[�h�T�C�g]</a>
+	<li>JDK(Java Development Kit) → <a href="http://www.oracle.com/technetwork/java/index.html" target="_blank">[ダウンロードサイト]</a>
 	<ul><p>
-	JDK (Java Development Kit)���C���X�g�[�����Ă��������BJRE8+JDK8�𐄏����܂��B<br>
-	��JDK7(ver1.7)�́Aapk�t�@�C���̏������������s�Ȃ��Ȃ����ߐ�������܂���B
-	��64bit���̕���64bit�ł����g�p���������BSDK Tools��32bit���p�̏ꍇ�̂݁A32bit�ł𐄏����܂��B
+	JDK (Java Development Kit)をインストールしてください。JRE8+JDK8を推奨します。<br>
+	※JDK7(ver1.7)は、apkファイルの署名が正しく行なわれないため推奨されません。
+	※64bit環境の方は64bit版をご使用ください。SDK Toolsが32bit環境用の場合のみ、32bit版を推奨します。
 	</p></ul>
-	<li>Android NDK�iNative Development Kit�j�J���� �� <a href="https://developer.android.com/ndk/downloads/index.html" target="_blank">[�_�E�����[�h�T�C�g]</a>
+	<li>Android NDK（Native Development Kit）開発環境 → <a href="https://developer.android.com/ndk/downloads/index.html" target="_blank">[ダウンロードサイト]</a>
 	<ul><p>
-	�ŐV�ł�Windows��zip�A�[�J�C�u��C�ӂ̃t�H���_�ɉ𓀂��Ă��������B�����t�H���_�́A�uc:\android\android-ndk�`�v�ł��B<br>	(����m�F�ς݂̃o�[�W�����́Ar12b,r14,r17c�ł��Br10�����Â��o�[�W�����ɂ͑Ή����Ă��܂���)<br>
+	最新版のWindows版zipアーカイブを任意のフォルダに解凍してください。推奨フォルダは、「c:\android\android-ndk～」です。<br>	(動作確認済みのバージョンは、r12b,r14,r17cです。r10よりも古いバージョンには対応していません)<br>
 
-	��64bit���̕���64bit�ł����g�p���������BSDK Tools��32bit���p�̏ꍇ�̂݁A32bit�ł𐄏����܂��B
+	※64bit環境の方は64bit版をご使用ください。SDK Toolsが32bit環境用の場合のみ、32bit版を推奨します。
 	</p></ul>
-	<li>Apache Ant(�J���⏕�c�[��) �� <a href="http://ant.apache.org/" target="_blank">[�_�E�����[�h�T�C�g]</a>
+	<li>Apache Ant(開発補助ツール) → <a href="http://ant.apache.org/" target="_blank">[ダウンロードサイト]</a>
 	<ul><p>
-	�ŐV�ł�zip�A�[�J�C�u��C�ӂ̃t�H���_�ɉ𓀂��Ă��������B�����t�H���_�́A�uc:\android\apache-ant�`�v�ł��B<br>
-	��������ant�̃o�[�W�����́A1.9.4�ȍ~�ł��B
+	最新版のzipアーカイブを任意のフォルダに解凍してください。推奨フォルダは、「c:\android\apache-ant～」です。<br>
+	推奨するantのバージョンは、1.9.4以降です。
 	</p></ul>
 	</ul>
 	</p>
 	<ul><img src="hsp3dish/s_and2.jpg"><br></ul>
 	<br>
 	<p>
-	��������t�H���_�ɃA�[�J�C�u���𓀂����ꍇ�A��̂悤�ȏ�ԂɂȂ�܂��B(�p�����̂݁A�X�y�[�X���܂܂Ȃ��t�H���_�����g�p���Ă�������)
+	推奨するフォルダにアーカイブを解凍した場合、上のような状態になります。(英文字のみ、スペースを含まないフォルダ名を使用してください)
 	</p>
 
-	<h2 id="DHSETUP">HSP3Dish Helper�̐ݒ�</h2>
+	<h2 id="DHSETUP">HSP3Dish Helperの設定</h2>
 	<p>
-	HSP�C���X�g�[���t�H���_(�ŐV�ł�HSP3Dish�J���Z�b�g�ɂ��A�b�v�f�[�g����Ă���K�v������܂�)�ɂ���HSP3Dish Helper(hsp3dh.exe)���N�����Ă��������B
+	HSPインストールフォルダ(最新版のHSP3Dish開発セットによりアップデートされている必要があります)にあるHSP3Dish Helper(hsp3dh.exe)を起動してください。
 	<br>
 	</p>
 	<ul><img src="hsp3dish/s_and1.jpg"><br></ul>
 	<br>
 	<p>
-	�u�I�v�V�����v�{�^���������ĕ\��������ʂŁAandroid�J����(SDK)�Ȃǂ̃C���X�g�[���s�Ȃ����t�H���_�̏ꏊ��ݒ肵�Ă��������B
+	「オプション」ボタンを押して表示される画面で、android開発環境(SDK)などのインストール行なったフォルダの場所を設定してください。
 	</p>
 	<ul><img src="hsp3dish/s_and5.jpg"><br></ul>
 	<br>
 	<p>
-	��������t�H���_�ɃC���X�g�[�����ꂽ�ꍇ�A��̂悤�Ȑݒ�ɂȂ�܂��B
+	推奨するフォルダにインストールされた場合、上のような設定になります。
 	<br>
-	�Ō�́u�v���W�F�N�g�v�t�H���_�ݒ�́Aandroid�p�ɃA�v�����r���h����ۂɍ쐬�����v���W�F�N�g�t�H���_�̋N�_�ɂȂ�ʒu�������܂��B�����t�H���_�́A�uc:\android�v�ł��B
+	最後の「プロジェクト」フォルダ設定は、android用にアプリをビルドする際に作成されるプロジェクトフォルダの起点になる位置を示します。推奨フォルダは、「c:\android」です。
 	</p>
 
-	<h2 id="SDKSETUP">Platform API�C���X�g�[��</h2>
+	<h2 id="SDKSETUP">Platform APIインストール</h2>
 	<p>
-	�ŏ��ɁA�r���h�ɕK�v��Platform API�̃C���X�g�[�����s���Ă��������B
-	HSP3Dish Helper(hsp3dh.exe)���N�����āA�u�I�v�V�����v�^�u�́uSDK�}�l�[�W���[�v�{�^������N�����邱�Ƃ��ł��܂��B
+	最初に、ビルドに必要なPlatform APIのインストールを行ってください。
+	HSP3Dish Helper(hsp3dh.exe)を起動して、「オプション」タブの「SDKマネージャー」ボタンから起動することができます。
 	</p>
 	<ul><img src="hsp3dish/s_and_sdkman.jpg"><br></ul>
 	<br>
 	<p>
-	���̃c�[���ɂ��A�K�v��API���C���X�g�[�����邱�Ƃ��ł��܂��B(�l�b�g�ɐڑ�����Ă���K�v������܂�)
+	このツールにより、必要なAPIをインストールすることができます。(ネットに接続されている必要があります)
 	<br>
-	�uAndroid 10 (API 29)�v�̂悤�Ȍ`�ŁA���ꂼ��̃o�[�W�����ɑΉ�����API�̃`�F�b�N�{�b�N�X���\������܂��B
-	���̒��ŁA�uAndroid SDK Tools�v�uAndroid SDK Platform-tools�v�uAndroid SDK Build-tools�v(�ŐV��Rev.)�uAndroid 10 (API 29)�v�̓`�F�b�N�����ĕK���C���X�g�[������悤�ɂ��Ă��������B
-	 (API�o�[�W�����̓v���O�����Ŏg�p�ł���API�̃��x�����������̂ŁA�C���X�g�[������[���̃o�[�W�����Ƃ͊֌W����܂���B�ʏ�́A�uAndroid 10 (API 29)�v���C���X�g�[������΂قƂ�ǂ̒[���œ��삳���邱�Ƃ��ł��܂��B)
+	「Android 10 (API 29)」のような形で、それぞれのバージョンに対応したAPIのチェックボックスが表示されます。
+	この中で、「Android SDK Tools」「Android SDK Platform-tools」「Android SDK Build-tools」(最新のRev.)「Android 10 (API 29)」はチェックを入れて必ずインストールするようにしてください。
+	 (APIバージョンはプログラムで使用できるAPIのレベルを示すもので、インストールする端末のバージョンとは関係ありません。通常は、「Android 10 (API 29)」をインストールすればほとんどの端末で動作させることができます。)
 	<br>
-	�uInstall packages...�v�̃{�^�����������ƂŁA�_�E�����[�h�ƃC���X�g�[�����s�Ȃ��܂��B
-	�C���X�g�[�����ꂽ���ڂ́A�uInstalled�v�̕\�����t������܂��B
+	「Install packages...」のボタンを押すことで、ダウンロードとインストールが行なわれます。
+	インストールされた項目は、「Installed」の表示が付加されます。
 	<br>
 	<br>
-	(���炩�̗��R�Ńl�b�g�ڑ����ł��Ȃ����Ŏg�p����ꍇ�́A�ꎞ�I�Ƀl�b�g�ڑ��\�ȏꏊ��
-	�C���X�g�[�����s�Ȃ�����Aandroid�J����(SDK)�t�H���_���̂��̂�p�ӂ���΁A�r���h�ɂ͖�肠��܂���B)
+	(何らかの理由でネット接続ができない環境で使用する場合は、一時的にネット接続可能な場所で
+	インストールを行なった後、android開発環境(SDK)フォルダそのものを用意すれば、ビルドには問題ありません。)
 	</p>
 
-	<h2 id="DHNEWPROJ">�V�K�v���W�F�N�g�̍쐬</h2>
+	<h2 id="DHNEWPROJ">新規プロジェクトの作成</h2>
 	<p>
-	HSP3Dish Helper(hsp3dh.exe)���N�����āA�������ɂ���uandroid�v�{�^���������āAandroid�r���h�̃��[�h�ɂ��܂��B
+	HSP3Dish Helper(hsp3dh.exe)を起動して、中央下にある「android」ボタンを押して、androidビルドのモードにします。
 	<br>
 	</p>
 	<ul><img src="hsp3dish/s_and6.jpg"><br></ul>
 	<br>
 	<p>
-	��̂悤�ȃv���W�F�N�g�V�K�쐬�̃_�C�A���O���\������܂��B(�V�K�쐬�ɂȂ��Ă��Ȃ��ꍇ�́A�u�V�K�v���W�F�N�g�v�̃{�^���������ĉ�����)
+	上のようなプロジェクト新規作成のダイアログが表示されます。(新規作成になっていない場合は、「新規プロジェクト」のボタンを押して下さい)
 	<br>
-	�ȉ��̍��ڂ�ݒ肵�āu�V�K�쐬�v�{�^�����������ƂŁA�w�肵���v���W�F�N�g�̃t�H���_���쐬����Aandroid�p�̃r���h�����������܂��B
-	android�p�A�v���̊J���ł́A1�̃A�v���ɂ��K��1�̃v���W�F�N�g�t�@�C�����쐬����K�v������܂��B�v���W�F�N�g�̃t�H���_�́A�ݒ胁�j���[�Őݒ肳��Ă���ꏊ���N�_�ɍ쐬����܂��B
+	以下の項目を設定して「新規作成」ボタンを押すことで、指定したプロジェクトのフォルダが作成され、android用のビルド準備が整います。
+	android用アプリの開発では、1つのアプリにつき必ず1つのプロジェクトファイルを作成する必要があります。プロジェクトのフォルダは、設定メニューで設定されている場所を起点に作成されます。
 	</p>
 	<ul>
-	<li>�v���W�F�N�g��</li><br><p>
-	�v���W�F�N�g�̃^�C�g�����ƂȂ�܂��B�X�y�[�X���܂܂Ȃ��p�����݂̂Ŏw�肵�Ă��������B
+	<li>プロジェクト名</li><br><p>
+	プロジェクトのタイトル名となります。スペースを含まない英文字のみで指定してください。
 	</p>
 	<li>ID</li><br><p>
-	�r���h�̃^�[�Q�b�gID��ݒ肵�܂��B�^�[�Q�b�gID�́ASDK��API�o�[�W�������w�肷�邽�߂̔ԍ��ɂȂ�܂��B�f�t�H���g�Łu"android-29"�v(10)���w�肳��Ă��܂��B�ʏ�́A�ύX����K�v�͂���܂���B���ɗ��R���Ȃ�����́A�f�t�H���g�̂܂܎g�p���Ă��������B
+	ビルドのターゲットIDを設定します。ターゲットIDは、SDKのAPIバージョンを指定するための番号になります。デフォルトで「"android-29"」(10)が指定されています。通常は、変更する必要はありません。特に理由がない限りは、デフォルトのまま使用してください。
 <br>
-���̃^�[�Q�b�gID���K�v�ȏꍇ�́A�uID...�v�{�^�����܂߂������ĕ\�������ꗓ�̒�����ID��I��œ��͂��Ă��������B
+他のターゲットIDが必要な場合は、「ID...」ボタンを含めず押して表示される一欄の中からIDを選んで入力してください。
 	</p>
 	<ul><p><img src="hsp3dish/s_and8.jpg"></p></ul>
-	<li>�p�b�P�[�W��</li><br><p>
-	�A�v�������ʂ��邽�߂̏��ƂȂ�܂��B�p�b�P�[�W���ɂ́A���̃p�b�P�[�W���Əd�����Ȃ����̂����߂��܂��B
-	�ʏ�́A�h���C�����g�b�v���x���h���C������t���@�ɕ��ׂ����̂��g�����Ƃ���������Ă��܂��B���Ƃ��΁A�unet.onionsoft.testapp�v�̂悤�ɊK�w�I�Ɏw�肵�܂��B
-	���̂ɂ́A�X�y�[�X���܂܂Ȃ��p�����݂̂Ŏw�肵�Ă��������B<a href="http://ja.wikipedia.org/wiki/%E3%83%91%E3%83%83%E3%82%B1%E3%83%BC%E3%82%B8_%28Java%29" target="_blank">Java�̃p�b�P�[�W�����K��</a>�Ȃǂ��Q�l�ɂ��Ă݂Ă��������B
+	<li>パッケージ名</li><br><p>
+	アプリを識別するための情報となります。パッケージ名には、他のパッケージ名と重複しない名称が求められます。
+	通常は、ドメインをトップレベルドメインから逆方法に並べたものを使うことが推奨されています。たとえば、「net.onionsoft.testapp」のように階層的に指定します。
+	名称には、スペースを含まない英文字のみで指定してください。<a href="http://ja.wikipedia.org/wiki/%E3%83%91%E3%83%83%E3%82%B1%E3%83%BC%E3%82%B8_%28Java%29" target="_blank">Javaのパッケージ命名規約</a>なども参考にしてみてください。
 	<br>
-	�p�b�P�[�W�����ȗ������ꍇ�́A���t�ƃv���W�F�N�g�����玩���I�ɐ�������镶���񂪓K�p����܂��B
+	パッケージ名を省略した場合は、日付とプロジェクト名から自動的に生成される文字列が適用されます。
 	</p>
-	<li>AdMob���g�p����</li><br><p>
-	AdMob�ɂ��L���z�M�A�v�����쐬����ꍇ�Ƀ`�F�b�N�����Ă��������B
-	Google Play Services�y��Android Support Library���K�v�ƂȂ�܂��B�ڂ����́A�uAdMob�ɂ��L���z�M�v���Q�Ƃ��Ă��������B
+	<li>AdMobを使用する</li><br><p>
+	AdMobによる広告配信アプリを作成する場合にチェックを入れてください。
+	Google Play Services及びAndroid Support Libraryが必要となります。詳しくは、「AdMobによる広告配信」を参照してください。
 	</p>
-	<li>ARM64���r���h���Ȃ�</li><br><p>
-	�`�F�b�N�����邱�Ƃ�64bit����ARM�v���Z�b�T�̃R�[�h�̐����𖳌��ɂ��܂��B
-	�ʏ�́A�`�F�b�N�����Ȃ����(ARM64�r���h�L��)�Ŏg�p���Ă��������B
-	64bit�łȂ��Â�Android�[���Ŏ��s������ꍇ�ɂ́A�`�F�b�N�����邱�ƂŃr���h���Ԃ�Z�k���邱�Ƃ��\�ł��B
+	<li>ARM64をビルドしない</li><br><p>
+	チェックを入れることで64bit向けARMプロセッサのコードの生成を無効にします。
+	通常は、チェックを入れない状態(ARM64ビルド有効)で使用してください。
+	64bitでない古いAndroid端末で実行させる場合には、チェックを入れることでビルド時間を短縮することが可能です。
 	</p>
-	<li>x86���r���h���Ȃ�</li><br><p>
-	�`�F�b�N�����邱�Ƃ�x86�����v���Z�b�T�̃R�[�h�̐����𖳌��ɂ��܂��B
-	�ʏ�́A�`�F�b�N�����Ȃ����(x86�r���h�L��)�Ŏg�p���Ă��������B
-	android�V�~�����[�^�[�y��x86�v���Z�b�T�𓋍ڂ���android�[���œ��삳����ꍇ�́Ax86�r���h��L���ɂ��Ă��������B
-	�����łȂ��ꍇ�́A�`�F�b�N�����邱�ƂŃr���h���Ԃ�Z�k���邱�Ƃ��\�ł��B
+	<li>x86をビルドしない</li><br><p>
+	チェックを入れることでx86向けプロセッサのコードの生成を無効にします。
+	通常は、チェックを入れない状態(x86ビルド有効)で使用してください。
+	androidシミュレーター及びx86プロセッサを搭載したandroid端末で動作させる場合は、x86ビルドを有効にしてください。
+	そうでない場合は、チェックを入れることでビルド時間を短縮することが可能です。
 	</p>
-	<li>HGIMG4���g�p����</li><br><p>
-	HGIMG4�����ɍ��ꂽ�X�N���v�g���g�p����ꍇ�Ƀ`�F�b�N�����Ă��������B
-	HGIMG4�̃v���W�F�N�g�쐬�ɂ��ẮA�uHGIMG4�v���W�F�N�g�ɂ��āv�̍��ڂ��Q�Ƃ��Ă��������B
+	<li>HGIMG4を使用する</li><br><p>
+	HGIMG4向けに作られたスクリプトを使用する場合にチェックを入れてください。
+	HGIMG4のプロジェクト作成については、「HGIMG4プロジェクトについて」の項目を参照してください。
 	</p>
-	<li>�Z���T�[���g�p����</li><br><p>
-	�f�o�C�X�̉����x�A�W���C���Z���T�[�̓ǂݎ���L���ɂ��܂��B
-	�Z���T�[���g�p���Ȃ��ꍇ�́A�`�F�b�N���O���Ă������ƂŃo�b�e���[�̏���Ȃǂ�}���邱�Ƃ��ł��܂��B
+	<li>センサーを使用する</li><br><p>
+	デバイスの加速度、ジャイロセンサーの読み取りを有効にします。
+	センサーを使用しない場合は、チェックを外しておくことでバッテリーの消費などを抑えることができます。
 	</p>
 	</ul>
 
 
-	<h2 id="LIBFOLDER">���C�u�����t�H���_�ɂ���</h2>
+	<h2 id="LIBFOLDER">ライブラリフォルダについて</h2>
 	<p>
-	�V�K�v���W�F�N�g�쐬���ɁA�r���h�ɕK�v�ƂȂ郉�C�u�����t�H���_���쐬����܂��B���C�u�����t�H���_�́A�I�v�V�����ɐݒ肳�ꂽ�v���W�F�N�g�̊�{(���[�g)�t�H���_���ɍ쐬����܂��B<br>
-	���C�u�����t�H���_�Ƃ��č쐬�������̂́A�ȉ��̒ʂ�ł��B
+	新規プロジェクト作成時に、ビルドに必要となるライブラリフォルダが作成されます。ライブラリフォルダは、オプションに設定されたプロジェクトの基本(ルート)フォルダ内に作成されます。<br>
+	ライブラリフォルダとして作成されるものは、以下の通りです。
 	</p>
 	<ul>
-	<li>hsplib36�`�t�H���_</li><br><p>
-	HSP3Dish�̃r���h�ɕK�v�ȃ����^�C���̃\�[�X���܂܂�Ă��܂��B
-	�Â����C�u�����Ƃ̋�����h�����߁A�uhsplib36b1�v�̂悤��HSP�̃o�[�W�������ƂɈقȂ�t�H���_�����g�p����܂��B
+	<li>hsplib36～フォルダ</li><br><p>
+	HSP3Dishのビルドに必要なランタイムのソースが含まれています。
+	古いライブラリとの競合を防ぐため、「hsplib36b1」のようにHSPのバージョンごとに異なるフォルダ名が使用されます。
 	</p>
-	<li>gameplay�t�H���_</li><br><p>
-	HGIMG4�̃r���h�ɕK�v��gameplay�����^�C���̃\�[�X���܂܂�Ă��܂��B
+	<li>gameplayフォルダ</li><br><p>
+	HGIMG4のビルドに必要なgameplayランタイムのソースが含まれています。
 	</p>
-	<li>extlib�t�H���_</li><br><p>
-	HGIMG4�̃r���h�ɕK�v�Ȋe�탉�C�u�����̃\�[�X���܂܂�Ă��܂��B
+	<li>extlibフォルダ</li><br><p>
+	HGIMG4のビルドに必要な各種ライブラリのソースが含まれています。
 	</p>
 	</ul>
 	<p>
-	HSP3Dish Helper(hsp3dh.exe)���N�����āA�u�I�v�V�����v�^�u�́u���C�u�����X�V�v�{�^�����������ƂŁA�v���W�F�N�g�t�H���_�̓��e���ŐV�ɏ㏑������܂��BHSP�̃A�b�v�f�[�g�⍷���ւ����s�Ȃ����ꍇ�ɍs�Ȃ��Ă����Ă��������B
+	HSP3Dish Helper(hsp3dh.exe)を起動して、「オプション」タブの「ライブラリ更新」ボタンを押すことで、プロジェクトフォルダの内容が最新に上書きされます。HSPのアップデートや差し替えを行なった場合に行なっておいてください。
 	</p>
 	<p>
-	hsplib36�`�t�H���_���̃\�[�X�ɂ́A�e�v���W�F�N�g���狤�L�����HSP3Dish�����^�C���̃\�[�X���܂܂�܂��B
-	���[�U�[���Ǝ��Ƀ\�[�X��ύX���邱�Ƃ��ł��܂����AHSP3Dish helper�̃A�b�v�f�[�g���Ń\�[�X���㏑���X�V����Ă��܂����Ƃ�����܂��̂ŁA���ӂ��Ă��������B
+	hsplib36～フォルダ内のソースには、各プロジェクトから共有されるHSP3Dishランタイムのソースが含まれます。
+	ユーザーが独自にソースを変更することもできますが、HSP3Dish helperのアップデート等でソースが上書き更新されてしまうことがありますので、注意してください。
 	</p>
 
 
-	<h2 id="DHPROJ">�v���W�F�N�g�̃r���h</h2>
+	<h2 id="DHPROJ">プロジェクトのビルド</h2>
 	<p>
-	HSP3Dish Helper(hsp3dh.exe)���N�����āA�������ɂ���uandroid�v�{�^���������āAandroid�r���h�̃��[�h�ɂ��܂��B
+	HSP3Dish Helper(hsp3dh.exe)を起動して、中央下にある「android」ボタンを押して、androidビルドのモードにします。
 	<br>
 	</p>
 	<ul><img src="hsp3dish/s_and7.jpg"><br></ul>
 	<br>
 	<p>
-	��̂悤�ȃv���W�F�N�g�r���h�̃_�C�A���O���\������܂��B(�r���h�ɂȂ��Ă��Ȃ��ꍇ�́A�u�����v���W�F�N�g�v�̃{�^���������ĉ�����)
+	上のようなプロジェクトビルドのダイアログが表示されます。(ビルドになっていない場合は、「既存プロジェクト」のボタンを押して下さい)
 	<br>
-	�v���W�F�N�g�̃r���h���s�Ȃ����ƂŁA�w�肳�ꂽHSP�X�N���v�g�y�уf�[�^�t�@�C����android�Ŏ��s�ł���`��(apk�t�@�C��)�Ƃ��ďo�͂���܂��B
-	android�p�A�v���̊J���ł́A���s�̂��߂̃v���O�����ƃf�[�^�����ׂĂ܂Ƃ߂�apk�t�@�C�����ŏI�I�ȏo�͌��ʂƂȂ�܂��B
+	プロジェクトのビルドを行なうことで、指定されたHSPスクリプト及びデータファイルをandroidで実行できる形式(apkファイル)として出力されます。
+	android用アプリの開発では、実行のためのプログラムとデータをすべてまとめたapkファイルが最終的な出力結果となります。
 	<br>
-	�_�C�A���O�Őݒ肷�鍀�ڂ́A�ȉ��̒ʂ�ł��B
+	ダイアログで設定する項目は、以下の通りです。
 	</p>
 	<ul>
-	<li>�\�[�X�X�N���v�g</li><br><p>
-	�ʏ�́A���̍��ڂ͋󗓂̂܂܂ŁA�v���W�F�N�g���g�p����HSP�X�N���v�g(.hsp)�́A�v���W�F�N�g�t�H���_�ȉ��́uhsp�v�t�H���_���ɔz�u���Ă��������B
-	(HSP�X�N���v�g����������ꍇ�́A�umain.hsp�v�Ƃ������O�̃t�@�C�����D�悳��܂��B)
-	�uhsp�v�t�H���_���g�킸�ɁA���ڃX�N���v�g�t�@�C�����w�肷��ꍇ�́A�\�[�X�X�N���v�g���ڂ́u�Q�Ɓv�{�^���������āA�t�@�C����I�����邱�Ƃ��ł��܂��B<br>
-	������̏ꍇ���AHSP�X�N���v�g(.hsp)�́A�K��HSP3Dish�p�ɋL�q���ꂽ�X�N���v�g�łȂ���΂Ȃ�܂���B
-	�ΏۂƂȂ�X�N���v�g�����݂��Ȃ��ꍇ�́A�\�[�X�X�N���v�g�̕ϊ��͍s�Ȃ��܂���B<br>
-	�t�H���_�Ɂuhsp3dish.ini�v�t�@�C�������݂���ꍇ�́A��ʃT�C�Y��X�P�[�����O�Ȃǂ̐ݒ肪���f����܂��B�ڂ����́A�uhsp3dish.ini�ݒ�t�@�C���ɂ��āv�̍����Q�Ƃ��Ă��������B
+	<li>ソーススクリプト</li><br><p>
+	通常は、この項目は空欄のままで、プロジェクトが使用するHSPスクリプト(.hsp)は、プロジェクトフォルダ以下の「hsp」フォルダ内に配置してください。
+	(HSPスクリプトが複数ある場合は、「main.hsp」という名前のファイルが優先されます。)
+	「hsp」フォルダを使わずに、直接スクリプトファイルを指定する場合は、ソーススクリプト項目の「参照」ボタンを押して、ファイルを選択することができます。<br>
+	いずれの場合も、HSPスクリプト(.hsp)は、必ずHSP3Dish用に記述されたスクリプトでなければなりません。
+	対象となるスクリプトが存在しない場合は、ソーススクリプトの変換は行なわれません。<br>
+	フォルダに「hsp3dish.ini」ファイルが存在する場合は、画面サイズやスケーリングなどの設定が反映されます。詳しくは、「hsp3dish.ini設定ファイルについて」の項を参照してください。
 	</p>
-	<li>�f�[�^�t�@�C��(dpm)</li><br><p>
-	�X�N���v�g����Q�Ƃ����f�[�^���i�[����Ă���dpm�t�@�C�����w�肵�܂��Bdpm�t�@�C���́AHSP�Ŏg�p���Ă���`���ŁA�����̃t�@�C����1��dpm�t�@�C���Ƀp�b�N����Ă��܂��B(�u�쐬...�v�{�^�����������ƂŁA�w�肵���t�H���_���ɂ��邷�ׂẴt�@�C����data.dpm�Ƃ����t�@�C���Ƀp�b�N���āA���̃t�@�C�����w�肷�邱�Ƃ��ł��܂��B)<br>
-	<b>��android9�ȍ~��OS�ŁAdpm�t�@�C�����������F������Ȃ��s����m�F����Ă��܂��B����̃o�[�W�����őΉ�����\��ł����A����ł�dpm�t�@�C�����g�p�����Aassets�t�H���_���g�p���邱�Ƃ𐄏����Ă��܂��B<br></b>
-	�f�[�^�t�@�C���̎w�肪�󗓂̏ꍇ�́Adpm�t�@�C���̎Q�Ƃ͂���܂���B
-	�ڂ����́A<a href="#DATAFILE">�f�[�^�t�@�C���̏���</a>���Q�Ƃ��Ă��������B
+	<li>データファイル(dpm)</li><br><p>
+	スクリプトから参照されるデータが格納されているdpmファイルを指定します。dpmファイルは、HSPで使用している形式で、複数のファイルが1つのdpmファイルにパックされています。(「作成...」ボタンを押すことで、指定したフォルダ内にあるすべてのファイルをdata.dpmというファイルにパックして、そのファイルを指定することができます。)<br>
+	<b>※android9以降のOSで、dpmファイルが正しく認識されない不具合が確認されています。今後のバージョンで対応する予定ですが、現状ではdpmファイルを使用せず、assetsフォルダを使用することを推奨しています。<br></b>
+	データファイルの指定が空欄の場合は、dpmファイルの参照はされません。
+	詳しくは、<a href="#DATAFILE">データファイルの準備</a>を参照してください。
 	</p>
-	<li>�v���W�F�N�g��</li><br><p>
-	�r���h�̑ΏۂƂȂ�v���W�F�N�g��I�����܂��B�v���W�F�N�g�̃t�H���_���쐬����āA�r���h�̏����������Ă�����̂̒�����A1��I�����邱�Ƃ��ł��܂��B
-	(�u�X�V�v�{�^�����������ƂŁA�v���W�F�N�g�̃t�H���_���Č�������܂��B)
+	<li>プロジェクト名</li><br><p>
+	ビルドの対象となるプロジェクトを選択します。プロジェクトのフォルダが作成されて、ビルドの準備が整っているものの中から、1つを選択することができます。
+	(「更新」ボタンを押すことで、プロジェクトのフォルダが再検索されます。)
 	</p>
 	<p>
-	�v���W�F�N�g���Ȃǂ̍��ڂ��w�肵����A�u�r���h�v�{�^�����������ƂŃr���h���J�n����܂��BHSP�̃\�[�X�X�N���v�g�̕ϊ��y��NDK�̃R���p�C������p�b�P�[�W�̐����܂ł����ׂĎ����ōs�Ȃ��܂��B
+	プロジェクト名などの項目を指定した後、「ビルド」ボタンを押すことでビルドが開始されます。HSPのソーススクリプトの変換及びNDKのコンパイルからパッケージの生成までをすべて自動で行ないます。
 	<br>
-	�r���h�̌��ʂ́Aconsole�E�B���h�E�ɕ\������܂��B
+	ビルドの結果は、consoleウィンドウに表示されます。
 	</p>
 	<ul><img src="hsp3dish/s_and9.jpg"><br></ul>
 	<p>
-	����ɏI������ƁA�u�I�����܂����v�̃��b�Z�[�W���\������A�v���W�F�N�g�t�H���_�ȉ���bin�ɁAapk�t�@�C������������Ă��܂��B
+	正常に終了すると、「終了しました」のメッセージが表示され、プロジェクトフォルダ以下のbinに、apkファイルが生成されています。
 	<br>
-	�u�N���[���v�{�^�����������ƂŁA�r���h���ꂽ�f�[�^��j�����ăv���W�F�N�g�t�H���_�����������邱�Ƃ��ł��܂��B�S�̂��ēx�r���h����ꍇ�ɂ́A��x�u�N���[���v�ɂ��f�[�^��j�����Ă����Ă��������B
+	「クリーン」ボタンを押すことで、ビルドされたデータを破棄してプロジェクトフォルダを初期化することができます。全体を再度ビルドする場合には、一度「クリーン」によりデータを破棄しておいてください。
 	</p>
 	</ul>
 
-	<h2 id="SAMPLE">�T���v���v���W�F�N�g</h2>
+	<h2 id="SAMPLE">サンプルプロジェクト</h2>
 	<p>
 	<img src="hsp3dish/s_block3.jpg" style="float:right;">
-	sample/hsp3dish�t�H���_�ɂ́AHSP3Dish���g�����߂̃T���v���X�N���v�g���܂܂�Ă��܂��B
-	�u���b�N������HSP3Dish�T���v��(block3.hsp)���A�\�[�X�X�N���v�g�Ɏw�肵�āA
-	�f�[�^�t�@�C��(dpm)�͋󗓂̂܂܁A�r���h�����s���邱�Ƃ��ł��܂��B
+	sample/hsp3dishフォルダには、HSP3Dishを使うためのサンプルスクリプトが含まれています。
+	ブロック崩しのHSP3Dishサンプル(block3.hsp)を、ソーススクリプトに指定して、
+	データファイル(dpm)は空欄のまま、ビルドを実行することができます。
 	</p>
 	<br clear="all">
 
-	<h2 id="RUNPROJ">���@�ւ̓]���Ǝ��s</h2>
+	<h2 id="RUNPROJ">実機への転送と実行</h2>
 	<p>
-	�v���W�F�N�g�̃r���h������������Aandroid�̎��@�܂��̓V�~�����[�^�ɓ]�����Ċm�F���邱�Ƃ��\�ł��B
-	(�V�~�����[�^��ł̎��s����ꍇ�́AHSP3Dish helper�́u�I�v�V�����v�^�u����uAVD�}�l�[�W���[�v���N�����āA�V�~�����[�^��ݒ�E�N�����Ă��g�p��������)
+	プロジェクトのビルドが完了したら、androidの実機またはシミュレータに転送して確認することが可能です。
+	(シミュレータ上での実行する場合は、HSP3Dish helperの「オプション」タブから「AVDマネージャー」を起動して、シミュレータを設定・起動してご使用ください)
 	<br>
-	android�̎��@��USB�Őڑ����AOS����F������Ă����ԂŁu�]���v�{�^�����������ƂŁA�r���h�ς݂�apk�t�@�C����]��(�C���X�g�[��)���܂��B
-	��̓A�v���P�[�V�����ꗗ����A�]�������A�v���̎��s���s�Ȃ��Ă��������B
+	androidの実機をUSBで接続し、OSから認識されている状態で「転送」ボタンを押すことで、ビルド済みのapkファイルを転送(インストール)します。
+	後はアプリケーション一覧から、転送したアプリの実行を行なってください。
 	<br>
-	android���@�̐ڑ��ݒ�ɂ��ẮA�f�o�C�X�̋@�킲�ƂɈقȂ�܂��B�ȉ��̃T�C�g�Ȃǂ��Q�l�ɂ��Ă݂Ă��������B
+	android実機の接続設定については、デバイスの機種ごとに異なります。以下のサイトなどを参考にしてみてください。
 	</p><ul>
 
 
-	<li><a href="http://www.atmarkit.co.jp/ait/articles/1602/19/news044.html" target="_blank">�u�J���Ҍ����I�v�V�����v���I���ɂ��� [@IT]</a></li>
+	<li><a href="http://www.atmarkit.co.jp/ait/articles/1602/19/news044.html" target="_blank">「開発者向けオプション」をオンにする [@IT]</a></li>
 	</ul><p>
-	���@�ւ̓]�����ł��Ȃ��ꍇ�ł��A�r���h�Ő������ꂽapk�t�@�C�����l�b�g��USB���������o�R���ē]�����ăC���X�g�[�����s�Ȃ����s�̊m�F�����邱�Ƃ��\�ł��B
+	実機への転送ができない場合でも、ビルドで生成されたapkファイルをネットやUSBメモリを経由して転送してインストールを行ない実行の確認をすることも可能です。
 	<br>
-	�uLogcat�v�{�^���������Ď��s���O��\�������邱�Ƃ��\�ł��B���@�ɓ]�����Ď��s�����ۂ́AHSP����̃G���[�⏉�������b�Z�[�W���m�F���邱�Ƃ��ł��܂��B
+	「Logcat」ボタンを押して実行ログを表示させることが可能です。実機に転送して実行した際の、HSPからのエラーや初期化メッセージを確認することができます。
 	</p>
 
-	<h2 id="DATAFILE">�f�[�^�t�@�C���̏���</h2>
+	<h2 id="DATAFILE">データファイルの準備</h2>
 	<p>
-	�X�N���v�g����Q�Ƃ����f�[�^�t�@�C����2�ʂ�̕��@�ŗp�ӂ��邱�Ƃ��ł��܂��B
-	1�́A�v���W�F�N�g�f�B���N�g������assets�t�H���_�Ƀt�@�C�����R�s�[����Ƃ������̂ł��B��{�I�ɂ́A������̕��@���g�p���Ă��������B
-	assets�t�H���_�ɂ́A�摜�t�@�C�����n�߂Ƃ��ēǂݍ��݂Ɏg�p����t�@�C�������ׂē���Ă������Ƃ��ł��܂��B<br>
-	�������AWindows�Ƃ͈قȂ�t�@�C�����̑啶���E����������ʂ���܂��̂Ő������t�@�C�������L�q����K�v������܂��̂ł����ӂ��������B
+	スクリプトから参照されるデータファイルは2通りの方法で用意することができます。
+	1つは、プロジェクトディレクトリ内のassetsフォルダにファイルをコピーするというものです。基本的には、こちらの方法を使用してください。
+	assetsフォルダには、画像ファイルを始めとして読み込みに使用するファイルをすべて入れておくことができます。<br>
+	ただし、Windowsとは異なりファイル名の大文字・小文字が区別されますので正しくファイル名を記述する必要がありますのでご注意ください。
 <br><br>
-	����1�̕��@�́A�u�f�[�^�t�@�C��(dpm)�v�̍��ڂŐݒ肳��Ă���f�[�^�t�H���_(data.dpm�𐶐����܂�)�Ƀt�@�C�����R�s�[���Ďg�p������@�ł��B<br>
+	もう1つの方法は、「データファイル(dpm)」の項目で設定されているデータフォルダ(data.dpmを生成します)にファイルをコピーして使用する方法です。<br>
 
-	<b>��android9�ȍ~��OS�ŁAdpm�t�@�C�����������F������Ȃ��s����m�F����Ă��܂��B����̃o�[�W�����őΉ�����\��ł����A����ł�dpm�t�@�C�����g�p�����Aassets�t�H���_���g�p���邱�Ƃ𐄏����Ă��܂��B<br></b>
+	<b>※android9以降のOSで、dpmファイルが正しく認識されない不具合が確認されています。今後のバージョンで対応する予定ですが、現状ではdpmファイルを使用せず、assetsフォルダを使用することを推奨しています。<br></b>
 
-	�l�Ɍ���ꂽ���Ȃ��f�[�^��Í������g�p�������l�́Adata.dpm�̃f�[�^�t�H���_���g�p����悤�ɂ��Ă��������B
-	�������A�T�E���h�t�@�C��(wav,mp3�Ȃ�)�͔F������Ȃ��̂Œ��ӂ��Ă��������B
-	�܂��Adata.dpm�ɂ��t�@�C���p�b�N����̓ǂݏo���ɂ́AHSP��packfile�d�l�Ɠ��l�̐���(�t�@�C�����̒���12�����ȓ�)������܂��̂Œ��ӂ��Ă��������B
-	�T�E���h�̃t�@�C���͕K���Aassets�t�H���_�ɓ����悤�ɂ��Ă��������B<br>
+	人に見られたくないデータや暗号化を使用したい人は、data.dpmのデータフォルダを使用するようにしてください。
+	ただし、サウンドファイル(wav,mp3など)は認識されないので注意してください。
+	また、data.dpmによるファイルパックからの読み出しには、HSPのpackfile仕様と同様の制限(ファイル名の長さ12文字以内)がありますので注意してください。
+	サウンドのファイルは必ず、assetsフォルダに入れるようにしてください。<br>
 	</p>
 
-	<h2 id="SYSINFO">�V�X�e�����̎擾</h2>
+	<h2 id="SYSINFO">システム情報の取得</h2>
 	<p>
-	sysinfo�֐��ɂ��OS�o�[�W�����y�сA�f�o�C�X�����擾���邱�Ƃ��\�ɂȂ�܂����B
-	sysinfo(0)�ŁA�uandroid 2.3.3�v�̂悤�ȕ�������擾���邱�Ƃ��ł��܂��B����ɂ��A�\�[�X���Ō��ݓ��삵�Ă���OS��o�[�W�����𔻕ʉ\�ł��B<br>
-	�܂��Asysinfo(2)�ŁA�f�o�C�X�����擾���邱�Ƃ��ł��܂��B���݁Asysinfo�֐��̑��̍��ڂ̓T�|�[�g����Ă��܂���B
+	sysinfo関数によりOSバージョン及び、デバイス名を取得することが可能になりました。
+	sysinfo(0)で、「android 2.3.3」のような文字列を取得することができます。これにより、ソース中で現在動作しているOSやバージョンを判別可能です。<br>
+	また、sysinfo(2)で、デバイス名を取得することができます。現在、sysinfo関数の他の項目はサポートされていません。
 	</p>
 
-	<h2 id="EXECTASK">�^�X�N(�A�N�e�B�r�e�B)�Ăяo��</h2>
+	<h2 id="EXECTASK">タスク(アクティビティ)呼び出し</h2>
 	<p>
-	exec���߂ɂ��A���̃^�X�N(�A�N�e�B�r�e�B)���Ăяo�����Ƃ��\�ł��B
+	exec命令により、他のタスク(アクティビティ)を呼び出すことが可能です。
 	</p>
 	<ul><pre>
-		exec "�p�b�P�[�W��", 0, "�N���X��"
+		exec "パッケージ名", 0, "クラス名"
 	</pre></ul>
 	<p>
-	�Q�Ԗڂ̃p�����[�^�[(���s���[�h)��0�̏ꍇ�́A�u�p�b�P�[�W���v�u�N���X���v�ɂ��A
-	���s����^�X�N���w�肵�܂��B
-	�Z�L�����e�B�̉������K�v�ȏꍇ�́A�uAndroidManifest.xml�v��<intent-filter>�ɋN������N���X���L�q���Ă��������B
+	２番目のパラメーター(実行モード)が0の場合は、「パッケージ名」「クラス名」により、
+	実行するタスクを指定します。
+	セキュリティの解除が必要な場合は、「AndroidManifest.xml」の<intent-filter>に起動するクラスを記述してください。
 	</p>
 	<p>
-	����y�Ɏ��s�����i�Ƃ��āAURI���w�肵�ăA�v�����Ăяo�����@������܂��B
+	より手軽に実行する手段として、URIを指定してアプリを呼び出す方法があります。
 	</p>
 	<ul><pre>
-		exec "URI������", 16
+		exec "URI文字列", 16
 	</pre></ul>
 	<p>
-	���Ƃ��΁AURI�Ɂuhttp://hsp.tv�v���w�肵���ꍇ�́A�K���web�u���E�U���J��URL�Ƃ��ĕ\�����܂��B
-	�utel:123456789�v�ɂ��_�C�A���[���N�����܂��B���ɂ�OS���T�|�[�g����l�X�ȌĂяo�����@�����݂��܂��B
+	たとえば、URIに「http://hsp.tv」を指定した場合は、規定のwebブラウザを開きURLとして表示します。
+	「tel:123456789」によりダイアラーを起動します。他にもOSがサポートする様々な呼び出し方法が存在します。
 	</p>
 
-	<h2 id="DISHINI">hsp3dish.ini�ݒ�t�@�C���ɂ���</h2>
+	<h2 id="DISHINI">hsp3dish.ini設定ファイルについて</h2>
 	<p>
-	�v���W�F�N�g�t�H���_���ɂ���uhsp�v�t�H���_(HSP�X�N���v�g��ݒu����t�H���_)�ɐݒ�t�@�C���uhsp3dish.ini�v������ꍇ�́A���̐ݒ肪�r���h���ɔ��f����܂��B<br>
-	�uhsp3dish.ini�v�́AWindows��Ŏ��s����ۂɉ�ʃT�C�Y�Ȃǂ̐ݒ���Q�Ƃ��邽�߂̃t�@�C���ł��B�ڂ����́A<a href="hsp3dish_prog.htm#INIFILE">HSP3Dish�v���O���~���O�}�j���A��</a>���Q�Ƃ��Ă��������B
-	�u�p�����[�^�[��=�ݒ�l�v�̂悤�ɋL�q���邱�ƂŁAandroid�̃r���h���ɐݒ肪���f����܂��B
+	プロジェクトフォルダ内にある「hsp」フォルダ(HSPスクリプトを設置するフォルダ)に設定ファイル「hsp3dish.ini」がある場合は、その設定がビルド時に反映されます。<br>
+	「hsp3dish.ini」は、Windows上で実行する際に画面サイズなどの設定を参照するためのファイルです。詳しくは、<a href="hsp3dish_prog.htm#INIFILE">HSP3Dishプログラミングマニュアル</a>を参照してください。
+	「パラメーター名=設定値」のように記述することで、androidのビルド時に設定が反映されます。
 	</p>
 	<ul><pre>
-		�p�����[�^�[��          �ݒ���e
+		パラメーター名          設定内容
 		----------------------------------------
-		wx			��ʂ�X(��)�T�C�Y
-		wy			��ʂ�Y(�c)�T�C�Y
-		autoscale		�����X�P�[�����O�l
+		wx			画面のX(横)サイズ
+		wy			画面のY(縦)サイズ
+		autoscale		自動スケーリング値
 	</pre></ul>
 	<p>
-	��ʂ̃X�P�[�����O�������I�ɒ����������ꍇ�́A�uautoscale=0�v�̂悤�ɁA�����X�P�[�����O�l��ݒ肵�Ă��������B
-	�`�悵����ʃT�C�Y��K�؂Ɋg��k�����A���݂̃X�N���[���ɕ\�������邱�Ƃ��ł��܂��B<br>
-	�����X�P�[�����O�l�̏ڍׂ͈ȉ��̒ʂ�ł��B
+	画面のスケーリングを自動的に調整したい場合は、「autoscale=0」のように、自動スケーリング値を設定してください。
+	描画した画面サイズを適切に拡大縮小し、現在のスクリーンに表示させることができます。<br>
+	自動スケーリング値の詳細は以下の通りです。
 	</p>
 	<ul><pre>
-		0 : ��ʑS�̂Ɏ��܂�œK�ȑ傫��(�c����͈ێ�)
-		1 : X�����̃T�C�Y����Ɋg��k��(�c����͈ێ�)
-		2 : Y�����̃T�C�Y����Ɋg��k��(�c����͈ێ�)
-		3 : �c����͖������ĉ�ʑS�̂ɕ\��
+		0 : 画面全体に収まる最適な大きさ(縦横比は維持)
+		1 : X方向のサイズを基準に拡大縮小(縦横比は維持)
+		2 : Y方向のサイズを基準に拡大縮小(縦横比は維持)
+		3 : 縦横比は無視して画面全体に表示
 	</pre></ul>
 	<p>
-	�w�肳�ꂽ��ʃT�C�Y�ɂ���āAportrait(�c���)�Alandscape(�����)�̌����������I�ɐݒ肳��܂��B
+	指定された画面サイズによって、portrait(縦画面)、landscape(横画面)の向きが自動的に設定されます。
 	<br>
-	�uhsp3dish.ini�v�����݂��Ȃ��ꍇ��A�ݒ肪������Ă��Ȃ��ꍇ�́A���ɕύX�͍s�Ȃ��܂���B
-	�uhsp3dish.ini�v�t�@�C�����g�p�����ɁA�}�j���A���Őݒ���s�Ȃ��ꍇ�́A�u�}�j���A���ݒ荀�ڂɂ��āv�̍��ڂ����ǂ݉������B
+	「hsp3dish.ini」が存在しない場合や、設定が書かれていない場合は、特に変更は行なわれません。
+	「hsp3dish.ini」ファイルを使用せずに、マニュアルで設定を行なう場合は、「マニュアル設定項目について」の項目をお読み下さい。
 	</p>
 
-	<h2 id="SCALE">�}�j���A���ݒ荀�ڂɂ���</h2>
+	<h2 id="SCALE">マニュアル設定項目について</h2>
 	<p>
-	jni�t�H���_����main.cpp�\�[�X��ҏW���邱�ƂŁAHSP3Dish�Ɋւ���e��ݒ���s�Ȃ��܂��B<br>
-	<b>�ʏ�́A�uhsp�v�t�H���_�ɐݒ�t�@�C���uhsp3dish.ini�v��p�ӂ��Đݒ���s�Ȃ��Ă��������B�����ł́A�\�[�X�R�[�h���C�����āA�}�j���A���Őݒ肷����@�ɂ��Đ������Ă��܂��B</b><br>
-	�ustatic void engine_handle_cmd�v�Ŏn�܂�\�[�X�R�[�h(160�s�t��)�ɂ���ȉ��̍s���C�����܂��B
+	jniフォルダ内のmain.cppソースを編集することで、HSP3Dishに関する各種設定を行ないます。<br>
+	<b>通常は、「hsp」フォルダに設定ファイル「hsp3dish.ini」を用意して設定を行なってください。ここでは、ソースコードを修正して、マニュアルで設定する方法について説明しています。</b><br>
+	「static void engine_handle_cmd」で始まるソースコード(160行付近)にある以下の行を修正します。
 	</p>
 	<ul><pre>
 		//hgio_view( 480, 320 );
@@ -387,63 +387,63 @@
 		//hgio_autoscale( 0 );
 	</pre></ul>
 	<p>
-	�s�����u//�v�ɂȂ��Ă��鍀�ڂ́A�R�����g�A�E�g����@�\���܂���B
-	�����ݒ�ł́A�X�P�[�����O�̐ݒ�͍s�Ȃ��Ă��܂���̂ŁA��̂悤�ɂȂ��Ă���͂��ł��B<br>
+	行頭が「//」になっている項目は、コメントアウトされ機能しません。
+	初期設定では、スケーリングの設定は行なっていませんので、上のようになっているはずです。<br>
 	</p>
 	<ul><pre>
 		hgio_view( 480, 320 );
 	</pre></ul>
 	<p>
-	�܂��A�u//�v���������āAhgio_view�̍s��L���ɂ��܂��Bhgio_view�ɂ��A���Ƃ��Ƃ̉�ʃT�C�Y(�X�N���v�g�����삷��𑜓x)��ݒ肵�Ă��������B��̗�ł́A���T�C�Y��480�A�c�T�C�Y��320�ł��邱�Ƃ������Ă��܂��B
+	まず、「//」を消去して、hgio_viewの行を有効にします。hgio_viewにより、もともとの画面サイズ(スクリプトが動作する解像度)を設定してください。上の例では、横サイズが480、縦サイズが320であることを示しています。
 	</p>
 	<ul><pre>
 		hgio_scale( 2.0f, 2.0f );
 	</pre></ul>
 	<p>
-	�w�肵���{���ŕ\�����s�Ȃ������ꍇ�́Ahgio_scale�̍s��L���ɂ��܂��Bhgio_scale�ɂ��A���Ƃ��Ƃ̉�ʃT�C�Y�ɑ΂��āA�w�肵���{���ŕ\�����s�Ȃ��܂��B�{�����Œ肵�����ꍇ�ɂ́A��������g�p���Ă��������B�ʏ�́Ahgio_autoscale���g�p���邱�Ƃ𐄏����܂��B
+	指定した倍率で表示を行ないたい場合は、hgio_scaleの行を有効にします。hgio_scaleにより、もともとの画面サイズに対して、指定した倍率で表示を行ないます。倍率を固定したい場合には、こちらを使用してください。通常は、hgio_autoscaleを使用することを推奨します。
 	</p>
 	<ul><pre>
 		hgio_autoscale( 0 );
 	</pre></ul>
 	<p>
-	��ʂ̃X�P�[�����O�������I�ɒ����������ꍇ�́Ahgio_autoscale�̍s��L���ɂ��܂��Bhgio_autoscale�ɂ��A�`�悵����ʃT�C�Y��K�؂Ɋg��k�����A���݂̃X�N���[���ɕ\�������܂��B<br>
-	�J�b�R���̐��l�ŁA�X�P�[�����O�̕��@���������w�肷�邱�Ƃ��ł��܂��B
+	画面のスケーリングを自動的に調整したい場合は、hgio_autoscaleの行を有効にします。hgio_autoscaleにより、描画した画面サイズを適切に拡大縮小し、現在のスクリーンに表示させます。<br>
+	カッコ内の数値で、スケーリングの方法をいくつか指定することができます。
 	</p>
 	<ul><pre>
-		0 : ��ʑS�̂Ɏ��܂�œK�ȑ傫��(�c����͈ێ�)
-		1 : X�����̃T�C�Y����Ɋg��k��(�c����͈ێ�)
-		2 : Y�����̃T�C�Y����Ɋg��k��(�c����͈ێ�)
-		3 : �c����͖������ĉ�ʑS�̂ɕ\��
+		0 : 画面全体に収まる最適な大きさ(縦横比は維持)
+		1 : X方向のサイズを基準に拡大縮小(縦横比は維持)
+		2 : Y方向のサイズを基準に拡大縮小(縦横比は維持)
+		3 : 縦横比は無視して画面全体に表示
 	</pre></ul>
 	<p>
-	�X�P�[�����O�̐ݒ�́A�N�����ɍs�Ȃ��܂��B�X�N���v�g���s���ɕύX���邱�Ƃ͂ł��܂���B
+	スケーリングの設定は、起動時に行なわれます。スクリプト実行中に変更することはできません。
 	</p>
 	<ul><pre>
 		hgio_uvfix( 1 );
 	</pre></ul>
 	<p>
-	�e�N�X�`�����g�債���ۂɁA�ׂ̃s�N�Z�����u�����h����Ă��܂����ۂ�␳���܂��B
-	�ʏ�͂��̃I�v�V�������w�肷��K�v�͂���܂��񂪁A��ʂ̃X�P�[�����O���Ő������e�N�X�`�����\������Ȃ��ꍇ�Ɏ����Ă݂Ă��������B<br>
-	�J�b�R���̐��l��0�ȊO�̏ꍇ�͕␳��ON�ɂȂ�܂��B0�̏ꍇ�͕␳��OFF�ɂȂ�܂��B
+	テクスチャを拡大した際に、隣のピクセルがブレンドされてしまう現象を補正します。
+	通常はこのオプションを指定する必要はありませんが、画面のスケーリング等で正しくテクスチャが表示されない場合に試してみてください。<br>
+	カッコ内の数値が0以外の場合は補正がONになります。0の場合は補正がOFFになります。
 	</p>
 
 
-	<h2 id="NETWORK">�l�b�g���[�N�ʐM�ɂ���</h2>
+	<h2 id="NETWORK">ネットワーク通信について</h2>
 	<p>
-	android��ŁAhttpload�Ahttpinfo���̖��߂��g���ăl�b�g���[�N�ʐM���s�����Ƃ��\�ł��B
-	�������Aandroid8.0�ȍ~�ł�OS�̎d�l�ɂ��Ahttps�A�N�Z�X(�Í������ꂽ�ʐM)�݂̂������A
-	http�A�N�Z�X�͊�{�I�ɋ֎~����Ă��܂��B<br>
-	���Ƃ��΁A�uhttp://www.onionsoft.net�v�ɃA�N�Z�X����ꍇ�́A�uhttps://www.onionsoft.net�v��
-	�ύX���邱�ƂŁA�ʐM���\�ɂȂ�܂��B
-	(�s�����http�T�[�o�[�ւ̃A�N�Z�X�́A��{�I�ɂ͂ł��Ȃ��ƍl���Ă�������)<br>
-	�T�[�o�[���̎d�l�ɂ���Ă�https�ł̃A�N�Z�X��
-	�ł��Ȃ����Ƃ�����܂��B���̏ꍇ�́A�unetwork_security_config.xml�v�t�@�C����ǉ�����
-	�����URL(�h���C��)�̂�http�A�N�Z�X��������Ƃ������@�ŁA�ʐM���s�����Ƃ��\�ł��B<br>
-	���ꂼ��̃v���W�F�N�g���ƂɁAhttp�ʐM��̃h���C����o�^���邱�Ƃ��ł��܂��B
-	�܂��A�unetwork_security_config.xml�v�t�@�C����V�K�ɍ쐬���āA�v���W�F�N�g�t�H���_�ȉ���
-	res/xml�ɔz�u���܂��B�����ŁA�ȉ��̓��e���L�q���Ă��������B
+	android上で、httpload、httpinfo等の命令を使ってネットワーク通信を行うことが可能です。
+	ただし、android8.0以降ではOSの仕様により、httpsアクセス(暗号化された通信)のみを許可し、
+	httpアクセスは基本的に禁止されています。<br>
+	たとえば、「http://www.onionsoft.net」にアクセスする場合は、「https://www.onionsoft.net」に
+	変更することで、通信が可能になります。
+	(不特定のhttpサーバーへのアクセスは、基本的にはできないと考えてください)<br>
+	サーバー側の仕様によってはhttpsでのアクセスが
+	できないことがあります。その場合は、「network_security_config.xml」ファイルを追加して
+	特定のURL(ドメイン)のみhttpアクセスを許可するという方法で、通信を行うことが可能です。<br>
+	それぞれのプロジェクトごとに、http通信先のドメインを登録することができます。
+	まず、「network_security_config.xml」ファイルを新規に作成して、プロジェクトフォルダ以下の
+	res/xmlに配置します。ここで、以下の内容を記述してください。
 	</p>
-	<ul>�unetwork_security_config.xml�v�̓��e<br><br>
+	<ul>「network_security_config.xml」の内容<br><br>
 	<pre>
 	&lt;?xml version="1.0" encoding="utf-8"?&gt;
 	&lt;network-security-config&gt;
@@ -453,10 +453,10 @@
 	&lt;/network-security-config&gt;
 	</pre></ul>
 	<p>
-	��̗�ł́A�uwww.onionsoft.net�v���A�N�Z�X�\�ȃh���C���Ɏw�肵�Ă��܂��B
-	�����ɕK�v�ȃh���C�����L�q���܂��B�K�v�ł���΁A�����̃h���C����ݒ肷�邱�Ƃ��ł��܂��B<br><br>
-	���ɁA�v���W�F�N�g�t�H���_�ɂ���uAndroidManifest.xml�v��ҏW���āA�u&lt;application�`�v�̍s��
-	�ȉ��̂悤�ɏ��������Ă��������B
+	上の例では、「www.onionsoft.net」をアクセス可能なドメインに指定しています。
+	ここに必要なドメインを記述します。必要であれば、複数のドメインを設定することができます。<br><br>
+	次に、プロジェクトフォルダにある「AndroidManifest.xml」を編集して、「&lt;application～」の行を
+	以下のように書き換えてください。
 	</p>
 	<ul>
 	<pre>
@@ -464,378 +464,378 @@
 	 android:networkSecurityConfig="@xml/network_security_config"&gt;
 	</pre></ul>
 	<p>
-	�ȏ�ŁA�o�^���ꂽ�h���C���̂�http�A�N�Z�X���\�ɂȂ�܂��B<br>
-	�����܂ł��⏕�I�ȕ��@�ł��̂ŁA�ł������https�A�N�Z�X�����邱�Ƃ��]�܂����Ƃ������Ƃ�
-	�o���Ă����Ă��������B
+	以上で、登録されたドメインのみhttpアクセスが可能になります。<br>
+	あくまでも補助的な方法ですので、できる限りhttpsアクセスをすることが望ましいということを
+	覚えておいてください。
 	</p>
 	</ul>
 
 
-	<h2 id="RELEASE">�����[�X�r���h</h2>
+	<h2 id="RELEASE">リリースビルド</h2>
 	<p>
-	HSP3Dish Helper���烊���[�X�r���h���s�Ȃ��ƁA���������apk�t�@�C���𐶐����邱�Ƃ��ł��܂��B����ɂ��AGoogle Play(Android �}�[�P�b�g)�ɍ쐬�����A�v����o�^���邱�Ƃ��\�ɂȂ�܂��B
-	���J���邽�߂́A�����܂��Ȏ菇�͈ȉ��̒ʂ�ł��B
+	HSP3Dish Helperからリリースビルドを行なうと、署名入りのapkファイルを生成することができます。これにより、Google Play(Android マーケット)に作成したアプリを登録することが可能になります。
+	公開するための、おおまかな手順は以下の通りです。
 	</p>
 	<p><b>
-	��2019/08/01�ȍ~�AGoogle Play�ɓo�^����A�v���́ASDK��API28(android9)���K�{�ɂȂ�܂��B
-	�����[�X�r���h����A�v���́AAPI28�ȍ~��SDK���C���X�g�[�����ăr���h����K�v������܂��̂ł����ӂ��������B</b>
+	※2019/08/01以降、Google Playに登録するアプリは、SDKにAPI28(android9)が必須になります。
+	リリースビルドするアプリは、API28以降のSDKをインストールしてビルドする必要がありますのでご注意ください。</b>
 	</p>
 	<ul>
-	<li>Google�ɊJ���ғo�^���s�Ȃ�(�A�v����z�z���邽�߂ɂ́A�L���̓o�^���K�v�ɂȂ�܂�)</li>
-	<li>�����̂��߂̏ؖ���(keystore)���쐬����</li>
-	<li>HSP3Dish Helper�Ń����[�X�r���h���s�Ȃ�</li>
-	<li>Android Developer Console����A�b�v���[�h����</li>
+	<li>Googleに開発者登録を行なう(アプリを配布するためには、有償の登録が必要になります)</li>
+	<li>署名のための証明書(keystore)を作成する</li>
+	<li>HSP3Dish Helperでリリースビルドを行なう</li>
+	<li>Android Developer Consoleからアップロードする</li>
 	</ul>
 	<p>
-	����ǂ��Đ������Ă����܂��B
+	順を追って説明していきます。
 	</p>
 	<ul>
-	<li>Google�ɊJ���ғo�^���s�Ȃ�</li>
+	<li>Googleに開発者登録を行なう</li>
 	<pre>	<a href="http://developer.android.com/">http://developer.android.com/</a></pre>
 	<ul>
 	<p>
-	android�̃f�x���b�p�[�y�[�W���J���A�u���J�v(publish)�̏ڍ׃y�[�W��I�����܂��B
-	Google�A�J�E���g�ŃT�C���C�����s�Ȃ��A�J���ҏ���K�؂ɓ��͂��ēo�^���s�Ȃ��܂��B<br>
-	(�d�b�ԍ��̓��͂́A���ԍ����܂߂čs�Ȃ��܂��B���{�̏ꍇ�͐擪�Ɂu81�v��t���A�s�O�ǔԂ̐擪�u0�v���Ȃ��̂����܂�ł��B�u03-1234-5678�v�̏ꍇ�́A�u+81-3-1234-5678�v�ƂȂ�܂��B)<br>
-	���ɁAGoogle Checkout�𗘗p���ēo�^�̌��ς��s�Ȃ��܂��B�N���W�b�g�J�[�h�����g���Ďx�������s�Ȃ����Ƃ��ł��܂��B<br>
-	���ׂďI������ƁAAndroid Developer Console�̃y�[�W�ɃA�N�Z�X�ł���悤�ɂȂ�܂��B
-	�L���A�v����o�^����ꍇ�́A����ɋ�s�̌����Ȃǂ̃A�J�E���g����ݒ肷��K�v������܂��B
+	androidのデベロッパーページを開き、「公開」(publish)の詳細ページを選択します。
+	Googleアカウントでサインインを行ない、開発者情報を適切に入力して登録を行ないます。<br>
+	(電話番号の入力は、国番号を含めて行ないます。日本の場合は先頭に「81」を付け、市外局番の先頭「0」を省くのが決まりです。「03-1234-5678」の場合は、「+81-3-1234-5678」となります。)<br>
+	次に、Google Checkoutを利用して登録の決済を行ないます。クレジットカード等を使って支払いを行なうことができます。<br>
+	すべて終了すると、Android Developer Consoleのページにアクセスできるようになります。
+	有料アプリを登録する場合は、さらに銀行の口座などのアカウント情報を設定する必要があります。
 	</p>
 	</ul>
-	<li>�����̂��߂̏ؖ���(keystore)���쐬����</li>
+	<li>署名のための証明書(keystore)を作成する</li>
 	<ul>
 	<br><p>
-	�܂��AHSP3Dish Helper���N�����Aandroid�^�u�̐V�K�v���W�F�N�g�y�[�W���J���܂��B
-	���ɁA�uKEY�쐬�v�{�^���������܂��B(�L�[���́A�uhspapp�v�̂܂܂Ŗ�肠��܂���)<br>
-	�R�}���h�v�����v�g�̉�ʂ��J���A�ȉ��̍��ڂɂ��ď������߂Ă���̂ŃL�[�{�[�h������͂��Ă��������B���ׂĔ��p�p�����œ��͂��邱�Ƃ𐄏����܂��B
+	まず、HSP3Dish Helperを起動し、androidタブの新規プロジェクトページを開きます。
+	次に、「KEY作成」ボタンを押します。(キー名は、「hspapp」のままで問題ありません)<br>
+	コマンドプロンプトの画面が開き、以下の項目について情報を求めてくるのでキーボードから入力してください。すべて半角英文字で入力することを推奨します。
 	</p>
-	<pre>	�E�p�X���[�h
-	�E�p�X���[�h�ē���
-	�E����
-	�E�g�D�P�ʖ�(����E������)
-	�E�g�D��(��ЁE�c�̖�)
-	�E�s�s���܂��͒n�於(�s������)
-	�E�B���܂��͒n����(�s���{����)
-	�E���ԍ�(���{�̏ꍇ��81�����)
-	�E��낵���ł���?(�uy�v�����)
-	�E���p�X���[�h(Enter�����)</pre>
+	<pre>	・パスワード
+	・パスワード再入力
+	・姓名
+	・組織単位名(部門・部署名)
+	・組織名(会社・団体名)
+	・都市名または地域名(市町村名)
+	・州名または地方名(都道府県名)
+	・国番号(日本の場合は81を入力)
+	・よろしいですか?(「y」を入力)
+	・鍵パスワード(Enterを入力)</pre>
 	<p>
-	�ȏ�ŁA�uhspapp.keystore�v�t�@�C�����v���W�F�N�g�t�H���_�̃��[�g�ɍ쐬����܂��B
-	���̃t�@�C���́A�A�v�������̂��߂ɕK�v�Ȃ̂ŁA�폜���Ȃ��ő�؂ɕۊǂ��Ă����Ă��������B
+	以上で、「hspapp.keystore」ファイルがプロジェクトフォルダのルートに作成されます。
+	このファイルは、アプリ署名のために必要なので、削除しないで大切に保管しておいてください。
 	</p>
 	</ul>
-	<li>HSP3Dish Helper�Ń����[�X�r���h���s�Ȃ�</li>
+	<li>HSP3Dish Helperでリリースビルドを行なう</li>
 	<br><p>
-	HSP3Dish Helper�́Aandroid�^�u�Ŋ����v���W�F�N�g�y�[�W���J���܂��B
-	�r���h�������v���W�F�N�g��I�����A�ʏ�̃r���h���s�Ȃ��Đ���ɓ��삷�邱�Ƃ��m�F���Ă��������B<br>
-	���Ɂu�����[�X�v�{�^���������Ă��������B�A�v���̃����[�X�r���h�����s���A�������s�Ȃ��܂��B
-	���̎��A�R�}���h�v�����v�g�̉�ʂ��J���A�p�X���[�h�����߂���̂Łuhspapp.keystore�v���쐬�������ɓ��͂����p�X���[�h����͂��Ă��������B<br>
-	�ȏ�ŁA�v���W�F�N�g��bin�t�H���_�Ɂu�v���W�F�N�g��.apk�v�̃t�@�C������������܂��B
+	HSP3Dish Helperの、androidタブで既存プロジェクトページを開きます。
+	ビルドしたいプロジェクトを選択し、通常のビルドを行なって正常に動作することを確認してください。<br>
+	次に「リリース」ボタンを押してください。アプリのリリースビルドを実行し、署名を行ないます。
+	この時、コマンドプロンプトの画面が開き、パスワードを求められるので「hspapp.keystore」を作成した時に入力したパスワードを入力してください。<br>
+	以上で、プロジェクトのbinフォルダに「プロジェクト名.apk」のファイルが生成されます。
 	</p>
-	<li>Android Developer Console����A�b�v���[�h����</li>
+	<li>Android Developer Consoleからアップロードする</li>
 	<br><p>
-	Android Developer Console�̃y�[�W�ŁA�V�K�̃A�v����ǉ����A�������ꂽ�u�v���W�F�N�g��.apk�v�̃t�@�C�����A�b�v���[�h���Ă��������B
-	(�v���W�F�N�g��-debug.apk��A�v���W�F�N�g��-release.apk�̃t�@�C���͏�������Ă��܂���̂ŁA�����ɂȂ�܂�)<br>
-	Google Play�ɓo�^���s�Ȃ��ꍇ�́A�Љ��X�N���[���V���b�g�A�T�|�[�g���Ȃǂ�ݒ肷��K�v������܂��B<br>
-	�A�b�v���[�h����apk�t�@�C����activate(�L����)���Apublish(���J)�{�^�����������ƂŁA�A�v������ʂɌ��J���܂��B(���ۂɌ��J�����܂ŁA�����Ԃ̒x��������܂�)<br>
-	���J����Ă�����́AAndroid Developer Console����A���ł��C�����s�Ȃ����Ƃ��ł��܂��B
-	�t�@�C�����X�V����ꍇ�́A�ēx�����[�X�r���h���s�Ȃ��āAapk�t�@�C���������ւ������activate(�L����)���Ă��������B
-	�������A�X�V���s�Ȃ����߂ɂ́A�o�[�W�����ԍ����グ��K�v������܂��B�v���W�F�N�g���g�p���Ă���uAndroidManifest.xml�v�t�@�C���́Aandroid:versionCode�Aandroid:versionName���ڂ̐��l���X�V���Ă���A�����[�X�r���h���s�Ȃ��悤�ɂ��Ă��������B
+	Android Developer Consoleのページで、新規のアプリを追加し、生成された「プロジェクト名.apk」のファイルをアップロードしてください。
+	(プロジェクト名-debug.apkや、プロジェクト名-release.apkのファイルは署名されていませんので、無効になります)<br>
+	Google Playに登録を行なう場合は、紹介文やスクリーンショット、サポート情報などを設定する必要があります。<br>
+	アップロードしたapkファイルをactivate(有効化)し、publish(公開)ボタンを押すことで、アプリを一般に公開します。(実際に公開されるまで、数時間の遅延があります)<br>
+	公開されている情報は、Android Developer Consoleから、いつでも修正を行なうことができます。
+	ファイルを更新する場合は、再度リリースビルドを行なって、apkファイルを差し替えた後にactivate(有効化)してください。
+	ただし、更新を行なうためには、バージョン番号を上げる必要があります。プロジェクトが使用している「AndroidManifest.xml」ファイルの、android:versionCode、android:versionName項目の数値を更新してから、リリースビルドを行なうようにしてください。
 	</p>
 	<br><p><b>
-	��android�̐V����SDK�ł́A�����Ɏg�p�����zipalign�c�[�����قȂ�t�H���_�Ɏ��^����Ă��܂��B�u�����[�X�v�{�^�����������ۂɁuzipalign�c�[��������܂���B�v�Ƃ����G���[���o��ꍇ�́ASDK�t�H���_��build-tools�ȉ��ɂ���ŐV�́uzipalign.exe�v�t�@�C�����ASDK�t�H���_��tools�ȉ��ɃR�s�[���Ă��������B
+	※androidの新しいSDKでは、署名に使用されるzipalignツールが異なるフォルダに収録されています。「リリース」ボタンを押した際に「zipalignツールがありません。」というエラーが出る場合は、SDKフォルダのbuild-tools以下にある最新の「zipalign.exe」ファイルを、SDKフォルダのtools以下にコピーしてください。
 	</b></p>
 	</ul>
 
 
-	<h2 id="HGIMG4">HGIMG4�v���W�F�N�g�ɂ���</h2>
+	<h2 id="HGIMG4">HGIMG4プロジェクトについて</h2>
 	<p>
-	��{�I�ɂ́AWindows�łƓ��l�̎d�l��HGIMG4�X�N���v�g���g�p�ł��܂��B<br>
+	基本的には、Windows版と同様の仕様でHGIMG4スクリプトを使用できます。<br>
 	</p>
 	<ul><img src="hsp3dish/pronama3d.png"><br>
-	��� �d�i�v���������j (C) Pronama LLC
+	暮井 慧（プロ生ちゃん） (C) Pronama LLC
 	</ul>
 	<br>
 	<p>
-	HGIMG4�v���W�F�N�g�́A����̃r���h�ɔ��Ɏ��Ԃ�������܂��B
-	�܂��AOpenGL/ES2�̋@�\���g�p���邽��android�[���̊���@��ɂ���ẮA���삵�Ȃ�������A�x���Ȃ邱�Ƃ�����܂��B<br>
-	HGIMG4�ł́A�N�����ɕK��res�t�H���_�y�уV�F�[�_�[���̃t�@�C�����K�v�ɂȂ�܂��B
-	HSP�́usample/hgimg4�v�t�H���_�ɂ���ures�t�H���_�v����android�p��HGIMG4�v���W�F�N�g�t�H���_��
-	�uassets�v�ȉ��ɃR�s�[���Ă��������B(�uassets/res/�c�v�Ƃ����t�H���_�\���ɂȂ�܂�)<br>
-	�Œ���K�v�ȃt�@�C���͈ȉ��ɂȂ�܂��B
+	HGIMG4プロジェクトは、初回のビルドに非常に時間がかかります。
+	また、OpenGL/ES2の機能を使用するためandroid端末の環境や機種によっては、動作しなかったり、遅くなることがあります。<br>
+	HGIMG4では、起動時に必ずresフォルダ及びシェーダー等のファイルが必要になります。
+	HSPの「sample/hgimg4」フォルダにある「resフォルダ」からandroid用のHGIMG4プロジェクトフォルダの
+	「assets」以下にコピーしてください。(「assets/res/…」というフォルダ構成になります)<br>
+	最低限必要なファイルは以下になります。
 	</p>
 	<pre>
 		res/font.gpb
-		res/shaders �t�H���_���̃V�F�[�_�[�t�@�C��
+		res/shaders フォルダ内のシェーダーファイル
 	</pre>
 	<p>
-	�ȉ��̋@�\�ɂ��ẮA���Ή��Ȃ̂Œ��ӂ��Ă��������B�����̃o�[�W�����őΉ�����\��ł��B
+	以下の機能については、未対応なので注意してください。将来のバージョンで対応する予定です。
 	</p>
 	<ul>
-	<li>��ʂ̃T�C�Y�w��A�X�P�[�����O�ɑΉ����Ă��܂���(hgio_view/hgio_scale���̃}�j���A���ݒ荀�ڂ��@�\���܂���)</li><br>
-	<li>AdMob�̕\���ɔ�Ή��ł�</li><br>
+	<li>画面のサイズ指定、スケーリングに対応していません(hgio_view/hgio_scale等のマニュアル設定項目も機能しません)</li><br>
+	<li>AdMobの表示に非対応です</li><br>
 	</ul>
 
-	<h2 id="DEVCONTROL">�f�o�C�X�R���g���[���ɂ���</h2>
+	<h2 id="DEVCONTROL">デバイスコントロールについて</h2>
 	<p>
-	Android�f�o�C�X�ŗL�̋@�\��devcontrol�Ȃǂ̖��߂ŃA�N�Z�X���邱�Ƃ��\�ł��B<br>
+	Androidデバイス固有の機能にdevcontrolなどの命令でアクセスすることが可能です。<br>
 	</p>
 	<pre>
-		devcontrol "�R���g���[���R�}���h",�p�����[�^�[1,�p�����[�^�[2,�p�����[�^�[3
+		devcontrol "コントロールコマンド",パラメーター1,パラメーター2,パラメーター3
 	</pre>
 	<p>
-	��̂悤�ȏ����ŁA�f�o�C�X�R���g���[�����s�Ȃ��܂��B
-	Android�f�o�C�X��ł́A������Ƃ��Ďw�肷��R���g���[���R�}���h�́A�ȉ���F�����܂��B
-	(�R���g���[���R�}���h�̕�����́A�啶�����������܂߂Ċ��S�Ɉ�v����K�v������܂��B)<br>
-	�F�����Ȃ��R���g���[���R�}���h���L�q�����ꍇ���G���[�͔������܂���̂Œ��ӂ��Ă��������B
+	上のような書式で、デバイスコントロールを行ないます。
+	Androidデバイス上では、文字列として指定するコントロールコマンドは、以下を認識します。
+	(コントロールコマンドの文字列は、大文字小文字も含めて完全に一致する必要があります。)<br>
+	認識しないコントロールコマンドを記述した場合もエラーは発生しませんので注意してください。
 	</p>
 	<pre>
-	�R���g���[���R�}���h    ���e
+	コントロールコマンド    内容
 	-------------------------------------------
-	vibrate			�o�C�u(�U��)����(�p�����[�^�[1)
-	AdMob			AdMob�ɂ��L���̕\��
+	vibrate			バイブ(振動)動作(パラメーター1)
+	AdMob			AdMobによる広告の表示
 	</pre>
 	<p>
-	���Ƃ��΁A
+	たとえば、
 	</p>
 	<pre>
 		devcontrol "vibrate",400
 	</pre>
 	<p>
-	�́A�o�C�u(�U��)������s�Ȃ��悤�f�o�C�X�Ɏw�����o���܂��B<br>
-	�p�����[�^�[�̐��l��ς��邱�Ƃɂ��A�U���̒���(�~���b�P��)��ς��邱�Ƃ��ł��܂��B
+	は、バイブ(振動)動作を行なうようデバイスに指示を出します。<br>
+	パラメーターの数値を変えることにより、振動の長さ(ミリ秒単位)を変えることができます。
 	</p>
 
 
-	<h2 id="ADMOB">AdMob�ɂ��L���z�M</h2>
+	<h2 id="ADMOB">AdMobによる広告配信</h2>
 	<ul>
-	<li>�]����AdMob����̍X�V�ɂ���</li><br>
+	<li>従来のAdMobからの更新について</li><br>
 	<p>
-	HSP3Dish 3.5�łł́AGoogle Firebase���g�p�����V����AdMob���C�u�����ɐ؂�ւ��Ă���̂ŁA���̐����͂���܂���B
-	�Â�AdMob���C�u�������g�p����v���W�F�N�g���X�V����ꍇ�́A�V�K�Ńv���W�F�N�g���쐬�������Ă��������B
+	HSP3Dish 3.5版では、Google Firebaseを使用した新しいAdMobライブラリに切り替えているので、この制限はありません。
+	古いAdMobライブラリを使用するプロジェクトを更新する場合は、新規でプロジェクトを作成し直してください。
 	</p>
 	</ul>
 
 	<ul>
-	<li>�L���z�M�̂��߂̏���</li><br>
+	<li>広告配信のための準備</li><br>
 	<p>
-	HSP3Dish�ł�AdMob���g�����L���z�M���f���̃A�v�����쐬���邱�Ƃ��\�ł��B
-	�K�؂ɐݒ���s�Ȃ����ƂŁAHSP3Dish�̃A�v������L����z�M���A���v�𓾂邱�Ƃ��ł���悤�ɂȂ�܂��B
-	AdMob��Google���񋟂��郂�o�C���L���z�M�̎d�g�݂ł��B������A�v���ɑg�ݍ��ނ��ƂŁA�����A�v���ł����Ă��L�����𓾂邱�Ƃ��ł��܂��B<br>
-	AdMob��g�ݍ��ނ��߂ɂ́A�ȉ��̎菇�ŏ������s�Ȃ��Ă����K�v������܂��B<br><br>
+	HSP3DishではAdMobを使った広告配信モデルのアプリを作成することが可能です。
+	適切に設定を行なうことで、HSP3Dishのアプリから広告を配信し、収益を得ることができるようになります。
+	AdMobはGoogleが提供するモバイル広告配信の仕組みです。これをアプリに組み込むことで、無料アプリであっても広告料を得ることができます。<br>
+	AdMobを組み込むためには、以下の手順で準備を行なっておく必要があります。<br><br>
 
-	1. AdMob�A�J�E���g�̍쐬
+	1. AdMobアカウントの作成
 <br><br>
-	�A�J�E���g��o�^���A�x�������Ȃǂ̕K�v�������L�����܂��B<br>
+	アカウントを登録し、支払い情報などの必要事項を記入します。<br>
 	<a href="https://www.google.co.jp/admob/" target="_blank">https://www.google.co.jp/admob/</a>
 <br><br>
-	2. ���j�b�gID�̎擾
+	2. ユニットIDの取得
 <br><br>
-	AdMob��web�y�[�W�Ƀ��O�C�����A�u�V�����A�v���̓o�^�v���s�Ȃ��܂��B
-	(�A�v�����܂�Google Play�Ō��J����Ă��Ȃ��i�K�ł��\�ł�)<br>
-	�K�v�������L�����邱�ƂŁA���j�b�gID���擾���邱�Ƃ��ł��܂��B
+	AdMobのwebページにログインし、「新しいアプリの登録」を行ないます。
+	(アプリがまだGoogle Playで公開されていない段階でも可能です)<br>
+	必要事項を記入することで、ユニットIDを取得することができます。
 <br><br>
-	3. AdMob���g�p����v���W�F�N�g�̍쐬
+	3. AdMobを使用するプロジェクトの作成
 <br><br>
-	�V�K�v���W�F�N�g���쐬���܂��B���̍ۂɁA�K���uAdMob���g�p����v�̃`�F�b�N�{�b�N�X��ON�ɂ��Ă����Ă��������B
-	����ȊO�̐ݒ�́A�ʏ�̐V�K�v���W�F�N�g�쐬�ƕς�肠��܂���B
+	新規プロジェクトを作成します。その際に、必ず「AdMobを使用する」のチェックボックスをONにしておいてください。
+	それ以外の設定は、通常の新規プロジェクト作成と変わりありません。
 <br><br>
-	4. ���j�b�gID�̓o�^
+	4. ユニットIDの登録
 <br><br>
-	�v���W�F�N�g�̃t�H���_�ȉ��́usrc/tv/hsp/HspActivity.java�v�t�@�C����ҏW���܂��B
+	プロジェクトのフォルダ以下の「src/tv/hsp/HspActivity.java」ファイルを編集します。
 	</p>
 <pre>
 		static final String APP_ID = "ca-app-pub-???????????????????????????";
 </pre>
 	<p>
-	�̍s��T���Ă��������B����APP_ID�̕������AAdMob��web�y�[�W�Ŏ擾�����A�v��ID������ɒu�������Ă��������B
-	���̃A�v��ID�ɂ��A�L���̔z�M�҂����肳��܂��B
+	の行を探してください。このAPP_IDの部分を、AdMobのwebページで取得したアプリID文字列に置き換えてください。
+	このアプリIDにより、広告の配信者が特定されます。
 <pre>
 		static final String BANNER_AD_UNIT_ID = "ca-app-pub-???????????????????????????";
 		static final String INTERSTITIAL_AD_UNIT_ID = "ca-app-pub-???????????????????????????";
 </pre>
 	<p>
-	�̍s��T���Ă��������BBANNER_AD_UNIT_ID��INTERSTITIAL_AD_UNIT_ID�ɂ́A�L�����j�b�gID���w�肵�܂��B
-	BANNER_AD_UNIT_ID�́A�o�i�[�L���Ŏg�p�����L�����j�b�gID���w�肵�܂��B
-	INTERSTITIAL_AD_UNIT_ID�́A�C���^�[�X�e�B�V�����L���Ŏg�p�����L�����j�b�gID���w�肵�܂��B
-	������ID�͖{�Ԃ̃A�v���Ŏg�p���܂��B
+	の行を探してください。BANNER_AD_UNIT_IDとINTERSTITIAL_AD_UNIT_IDには、広告ユニットIDを指定します。
+	BANNER_AD_UNIT_IDは、バナー広告で使用される広告ユニットIDを指定します。
+	INTERSTITIAL_AD_UNIT_IDは、インタースティシャル広告で使用される広告ユニットIDを指定します。
+	これらのIDは本番のアプリで使用します。
 <br><br>
-	5. AdMob�\���X�N���v�g�̒ǉ�
+	5. AdMob表示スクリプトの追加
 <br><br>
-	�X�N���v�g���s���̓K�؂ȃ^�C�~���O��AdMob��L���ɂ���悤�ɂ��Ă��������B
-	�^�C�g����ʂ�A�Q�[�����j���[�Ȃǉ摜�≹���̃��\�[�X�ǂݍ��݂�������������ɗL���ɂ��邱�Ƃ𐄏����܂��B
-	(CPU���ׂ��������ɂ́AAdMob�̃^�X�N���x�����邱�Ƃ�����܂�)<br>
-	AdMob��L���ɂ���ꍇ�́A
+	スクリプト実行時の適切なタイミングでAdMobを有効にするようにしてください。
+	タイトル画面や、ゲームメニューなど画像や音声のリソース読み込みが落ち着いた後に有効にすることを推奨します。
+	(CPU負荷が高い時には、AdMobのタスクが遅延することがあります)<br>
+	AdMobを有効にする場合は、
 	</p>
 <pre>
-		devcontrol "AdMob",0		; AdMob��L���ɂ���
+		devcontrol "AdMob",0		; AdMobを有効にする
 </pre>
 	<p>
-	���X�N���v�g�ɋL�q���Ă��������B("AdMob"�̕�����͑召�����𐳊m�Ɏ��ʂ��܂�)
-	Windows��iOS�ł́A���̋L�q�͖�������܂����A�����@����s����Android��ł̂ݎ��s�������ꍇ�́A�ȉ��̂悤�ɋL�q���邱�Ƃ��ł��܂��B
+	をスクリプトに記述してください。("AdMob"の文字列は大小文字を正確に識別します)
+	WindowsやiOSでは、この記述は無視されますが、複数機種実行時にAndroid上でのみ実行したい場合は、以下のように記述することができます。
 	</p>
 <pre>
 		getreq v_platform,SYSREQ_PLATFORM
 		if ( v_platform = PLATFORM_ANDROID ) {
-			devcontrol "AdMob",0		; AdMob��L���ɂ���
+			devcontrol "AdMob",0		; AdMobを有効にする
 		}
 </pre>
 	<p>
-	�udevcontrol "AdMob"�v�́A�ŏ��̎��s����AdMob�\�����J�n���A����ȍ~�͎��s���Ă�
-	��������܂��̂ŁA�^�C�g����ʕ\�����Ȃǂɉ��x�ł����s����Ă���肠��܂���B
-	�f�t�H���g�ł́A��ʉ��Ƀo�i�[�Ƃ��čL�����\������܂��B
-	(���̎��A�f�o�C�X���l�b�g�ڑ��\�ȏ�Ԃł��邱�Ƃ��m�F���Ă����Ă�������)
+	「devcontrol "AdMob"」は、最初の実行時にAdMob表示を開始し、それ以降は実行しても
+	無視されますので、タイトル画面表示時などに何度でも実行されても問題ありません。
+	デフォルトでは、画面下にバナーとして広告が表示されます。
+	(この時、デバイスがネット接続可能な状態であることを確認しておいてください)
 <br><br>
-	�ȏ�̏�����AdMob���g�p�����A�v�����r���h���邱�Ƃ��\�ɂȂ�܂��B
+	以上の準備でAdMobを使用したアプリをビルドすることが可能になります。
 	</p>
 	</ul>
 
 	<ul>
-	<li>AdMob�v���W�F�N�g�̃r���h</li><br>
+	<li>AdMobプロジェクトのビルド</li><br>
 	<p>
-	�v���W�F�N�g�̍X�V������������A��͒ʏ��HSP3Dish�Ɠ��l�ɁAHSP3Dish helper����
-	�v���W�F�N�g�̃r���h���s�Ȃ����Ƃ��ł��܂��B<br>
-	�r���h���ɃG���[�����������ꍇ�́A�G���[���b�Z�[�W�Ȃǂ��Q�l�ɂ��Ȃ���A
-	�v���W�F�N�g�̐ݒ�ɖ�肪�Ȃ����m�F�����Ă��������B
+	プロジェクトの更新が完了したら、後は通常のHSP3Dishと同様に、HSP3Dish helperから
+	プロジェクトのビルドを行なうことができます。<br>
+	ビルド時にエラーが発生した場合は、エラーメッセージなどを参考にしながら、
+	プロジェクトの設定に問題がないか確認をしてください。
 <br><br>
-	�r���h������������A�f�o�C�X�ɓ]�����Ď��s���m�F���邱�Ƃ��ł��܂��B
+	ビルドが成功したら、デバイスに転送して実行を確認することができます。
 <br><br>
-	���s�̊m�F�����x���s�Ȃ��ꍇ�ɂ́A�e�X�g�p�[���̓o�^���s�Ȃ��Ă����Ă��������B
-	�e�X�g�p�[���̓o�^�́Asrc/tv/hsp/HspActivity.java�t�@�C���̃\�[�X�Ŏw�肵�܂��B<br>
-	�ȉ��̍s�����邱�Ƃ��m�F���Ă��������B
-	�܂��AGoogle�ł́A�e�X�g�p�̍L�����j�b�gID���g�p���邱�Ƃ𐄏����Ă��܂��B<br>
+	実行の確認を何度も行なう場合には、テスト用端末の登録を行なっておいてください。
+	テスト用端末の登録は、src/tv/hsp/HspActivity.javaファイルのソースで指定します。<br>
+	以下の行があることを確認してください。
+	また、Googleでは、テスト用の広告ユニットIDを使用することを推奨しています。<br>
 	<a href="https://firebase.google.com/docs/admob/android/quick-start?hl=ja" target="_blank">https://firebase.google.com/docs/admob/android/quick-start?hl=ja</a>
 	</p>
 <pre>
 		static final String TestDeviceID = "********************************";
 </pre>
 	<p>
-	�f�o�C�X��̓���`�F�b�N�ł́A"****�`"�̕����ɁA�f�o�C�XID���L������K�v������܂��B
-	(�G�~�����[�^�[�̏ꍇ�́A"****�`"�̑����AdRequest.DEVICE_ID_EMULATOR���w�肵�Ă��������B)<br>
-	�[���̃f�o�C�XID�́AAdMob�\�����Ƀf�o�C�X���j�^���̃��O�ɁA
+	デバイス上の動作チェックでは、"****～"の部分に、デバイスIDを記入する必要があります。
+	(エミュレーターの場合は、"****～"の代わりにAdRequest.DEVICE_ID_EMULATORを指定してください。)<br>
+	端末のデバイスIDは、AdMob表示時にデバイスモニタ内のログに、
 	</p>
 <pre>
-	�u To get test ads on this device, call adRequest.addTestDevice("********************************");�v
+	「 To get test ads on this device, call adRequest.addTestDevice("********************************");」
 </pre>
 	<p>
-	�Ƃ������b�Z�[�W������܂��̂ŁA�����Ŋm�F���邱�Ƃ��ł��܂��B
-	�f�o�C�X���j�^�́AHSP3Dish Helper�́A�u�I�v�V�����v�^�u�́uDevice���j�^�[�v�{�^���������ċN�������邱�Ƃ��ł��܂��B
-	LogCat�����ڍׂȃ��O���\������܂��B
-	(�L���̕\���G���[��A���Ɋւ��郁�b�Z�[�W���\������܂�)
+	というメッセージが流れますので、そこで確認することができます。
+	デバイスモニタは、HSP3Dish Helperの、「オプション」タブの「Deviceモニター」ボタンを押して起動させることができます。
+	LogCatよりも詳細なログが表示されます。
+	(広告の表示エラーや、問題に関するメッセージも表示されます)
 	</p>
 	</ul>
 
 	<ul>
-	<li>�C���^�[�X�e�B�V�����L���ɂ���</li><br>
+	<li>インタースティシャル広告について</li><br>
 	<p>
-	�S��ʂ��g�p�����C���^�[�X�e�B�V�����L����\�������邱�Ƃ��ł��܂��B<br>
+	全画面を使用したインタースティシャル広告を表示させることができます。<br>
 <pre>
-		devcontrol "AdMob",16		; �C���^�[�X�e�B�V�����L����\������
+		devcontrol "AdMob",16		; インタースティシャル広告を表示する
 </pre>
 	<p>
-	�C���^�[�X�e�B�V�����L���͕\���̃��N�G�X�g���s�Ȃ����тɁA�P��\������܂��B
-	�ʏ�̃o�i�[�L���ƕ��p���邱�Ƃ��\�Ȃ̂ŁA��蕝�L�����p���\�ɂȂ�܂��B
+	インタースティシャル広告は表示のリクエストを行なうたびに、１回表示されます。
+	通常のバナー広告と併用することも可能なので、より幅広い活用が可能になります。
 	</p>
 	</ul>
 
 	<ul>
-	<li>�A�v���̃����[�X</li><br>
+	<li>アプリのリリース</li><br>
 	<p>
-	AdMob�̕\�����T�|�[�g�����A�v���́A�ʏ��HSP3Dish�A�v���Ɠ��l�̕��@�Ńr���h���AGoogle Play����z�M���邱�Ƃ��\�ł��B
-	�����[�X���ɂ́A�e�X�g�p�[���̓o�^�R�[�h���폜����̂�Y��Ȃ��悤�ɂ��Ă��������B
+	AdMobの表示をサポートしたアプリは、通常のHSP3Dishアプリと同様の方法でビルドし、Google Playから配信することが可能です。
+	リリース時には、テスト用端末の登録コードを削除するのを忘れないようにしてください。
 	</p>
 <pre>
      		.addTestDevice(TestDeviceID)
 </pre>
 	<p>
-	���̍s�́A�e�X�g�p�[����o�^���邽�߂̂��̂ł��B
-	src/tv/hsp/HspActivity.java�t�@�C���̃\�[�X���łQ�����L�q����Ă��܂��B<br>
-	�e�X�g���I�����āA�{�Ԃ̃A�v���Ƃ��ă����[�X����ꍇ�ɂ́A
+	この行は、テスト用端末を登録するためのものです。
+	src/tv/hsp/HspActivity.javaファイルのソース内で２か所記述されています。<br>
+	テストが終了して、本番のアプリとしてリリースする場合には、
 	</p>
 <pre>
      		//.addTestDevice(TestDeviceID)
 </pre>
 	<p>
-	�̂悤�ɐ擪�Ɂu//�v�����ēo�^�𖳌��ɂ���R�[�h�ɏC�����邱�Ƃ�Y��Ȃ��ł��������B
+	のように先頭に「//」を入れて登録を無効にするコードに修正することを忘れないでください。
 	</p>
 	</ul>
 
 
-	<h2 id="FONTMES">mes,print���߂ɂ���</h2>
+	<h2 id="FONTMES">mes,print命令について</h2>
 	<p>
-	HSP3Dish�ł́A�����t�H���g�ɂ��mes�y��print���߂̕�����`��ɑΉ����Ă��܂��B(HGIMG4�̓t�H���g�f�[�^�ɂ��`����s�����ߊY�����܂���)<br>
-	font���߂Ŏw�肷��Afont���͖�������A�t�H���g�T�C�Y�͔��f����܂��B�܂��A�t�H���g�X�^�C���͕W��(0)�Ƒ�����(1)�ɂ̂ݑΉ����Ă��܂��B<br>
-	android��̃t�H���g���擾���鏈���́A�V�X�e���̕��S���傫�����߈�x�`�悵�����e(�e�N�X�`��)��HSP3Dish���ŃL���b�V�����邱�Ƃō���������d�g�݂ɂȂ��Ă��܂��B
-	�ʏ�́A���̎d�g�݂ɂ��Ĉӎ����邱�ƂȂ��g�p���邱�Ƃ��ł���͂��ł��B<br>
-	�L���b�V���@�\�̃R���g���[�����s�Ȃ������ꍇ�́Asetreq���߂ɂ��ݒ���L�q���Ă��������B(Windows,iOS�łɂ͉e������܂���)
+	HSP3Dishでは、内蔵フォントによるmes及びprint命令の文字列描画に対応しています。(HGIMG4はフォントデータによる描画を行うため該当しません)<br>
+	font命令で指定する、font名は無視され、フォントサイズは反映されます。また、フォントスタイルは標準(0)と太文字(1)にのみ対応しています。<br>
+	android上のフォントを取得する処理は、システムの負担が大きいため一度描画した内容(テクスチャ)はHSP3Dish側でキャッシュすることで高速化する仕組みになっています。
+	通常は、この仕組みについて意識することなく使用することができるはずです。<br>
+	キャッシュ機能のコントロールを行ないたい場合は、setreq命令により設定を記述してください。(Windows,iOS版には影響ありません)
 <pre>
-		setreq SYSREQ_MESCACHE_MAX, 64	; �L���b�V���̍ő�o�^�����w�肷��
+		setreq SYSREQ_MESCACHE_MAX, 64	; キャッシュの最大登録数を指定する
 </pre>
-	�L���b�V���̓�������Ƃ��ẮA��x�\���������b�Z�[�W�Ƃ܂������������e�̕����񂪂������ꍇ�ɁA
-	�ȑO�̃f�[�^���ė��p���ĕ\�����邱�ƂɂȂ�܂��B
-	�������A�W�t���[���̊ԕ\������Ȃ������L���b�V���͔j������܂��B<br>
-	�ێ������L���b�V���̍ő�o�^���́A�f�t�H���g��64�ɂȂ��Ă��܂��B
-	�L���b�V���̐ݒ�͈͂́A0�`128���ڈ��ŁA���l���傫���Ă������������Ƃ͌���܂���B
-	�����܂ł��A�����ȑ��x�ቺ��}�����邱�Ƃ��ړI�ŁA���Ƃ��ƃ��b�Z�[�W�\���̓R�X�g�̍��������ł��邱�Ƃ��������̏�g�p���Ă��������B<br>
-	�L���b�V���̍ő�o�^����0�ɐݒ肵���ꍇ�́A�L���b�V���ɂ�鍂�����͍s�Ȃ��܂���B
+	キャッシュの内部動作としては、一度表示したメッセージとまったく同じ内容の文字列があった場合に、
+	以前のデータを再利用して表示することになります。
+	ただし、８フレームの間表示されなかったキャッシュは破棄されます。<br>
+	保持されるキャッシュの最大登録数は、デフォルトで64になっています。
+	キャッシュの設定範囲は、0～128が目安で、数値が大きくても高速化されるとは限りません。
+	あくまでも、顕著な速度低下を抑制することが目的で、もともとメッセージ表示はコストの高い処理であることをご理解の上使用してください。<br>
+	キャッシュの最大登録数を0に設定した場合は、キャッシュによる高速化は行なわれません。
 	</p>
 
 
-	<h2 id="NOTICE">android�ł̒��ӎ����A����</h2>
+	<h2 id="NOTICE">android版の注意事項、制限</h2>
 	<ul>
-	<li>���͉\�ȏ��</li>
+	<li>入力可能な情報</li>
 	<p>
-	�^�b�v�������W��mousex,mousey�ɔ��f�����ق��Astick���߂ɂ��A�N���b�N(�^�b�v)��ON/OFF���擾�\�ł��B
-	�܂��Amtlist�Amtinfo���߂ɂ�荂�x�ȃ^�b�`���(�}���`�^�b�`�Ȃ�)���擾���邱�Ƃ��ł��܂��B
-	�����|�C���g�̃^�b�`���(�}���`�^�b�`)�́A�f�o�C�X���T�|�[�g���Ă���ꍇ�̂ݎ擾�\�ł��B
-	Android�f�o�C�X�ɂ���ẮA�n�[�h�E�F�A���}���`�^�b�`���T�|�[�g���Ă��Ȃ��ꍇ������܂��̂ŁA���ӂ��Ă��������B
+	タップした座標がmousex,mouseyに反映されるほか、stick命令により、クリック(タップ)のON/OFFを取得可能です。
+	また、mtlist、mtinfo命令により高度なタッチ情報(マルチタッチなど)を取得することができます。
+	複数ポイントのタッチ情報(マルチタッチ)は、デバイスがサポートしている場合のみ取得可能です。
+	Androidデバイスによっては、ハードウェアがマルチタッチをサポートしていない場合がありますので、注意してください。
 	</p>
-	<li>�摜�t�H�[�}�b�g�ɂ���</li>
+	<li>画像フォーマットについて</li>
 	<p>
-	celload�Apicload���߂Ȃǂœǂݍ��܂��摜�́A�ȉ��̃t�H�[�}�b�g���g�p�ł��܂��B
-	�A���t�@�`�����l�����g�p����ꍇ�́APNG�`������������܂��B
+	celload、picload命令などで読み込まれる画像は、以下のフォーマットが使用できます。
+	アルファチャンネルを使用する場合は、PNG形式が推奨されます。
 	<ul>
-	<li>JPEG baseline (�v���O���b�V�uJPEG�͔�T�|�[�g)</li>
-	<li>PNG (1bit�A2bit�A4bit�A8bit�A24bit�A24bit+�A���t�@�`�����l���`���ɑΉ�)</li>
-	<li>TGA (�T�u�Z�b�g)</li>
-	<li>BMP (�����ARLE���k�͔�T�|�[�g)</li>
-	<li>PSD (RGB24bit�̂ݓǂݏo��)</li>
+	<li>JPEG baseline (プログレッシブJPEGは非サポート)</li>
+	<li>PNG (1bit、2bit、4bit、8bit、24bit、24bit+アルファチャンネル形式に対応)</li>
+	<li>TGA (サブセット)</li>
+	<li>BMP (白黒、RLE圧縮は非サポート)</li>
+	<li>PSD (RGB24bitのみ読み出し)</li>
 	<li>GIF</li>
 	<li>HDR (radiance rgbE format)</li>
 	<li>PIC (Softimage PIC)</li>
 	</ul>
 	</p>
-	<li>gmode�̐���ɂ���</li>
+	<li>gmodeの制約について</li>
 	<p>
-	���݂̃o�[�W�����ł́Agmode 6(�F���Z)�̓T�|�[�g����Ă��܂���B
-	����́Aandroid(NDK)�ł݂̂̐��񎖍��ł��B�����̃o�[�W�����ł́A�Ή����s�Ȃ��Ă����\��ł��B
+	現在のバージョンでは、gmode 6(色減算)はサポートされていません。
+	これは、android(NDK)版のみの制約事項です。将来のバージョンでは、対応を行なっていく予定です。
 	</p>
-	<li>�摜�T�C�Y�ɂ���</li>
+	<li>画像サイズについて</li>
 	<p>
-	�c�E���̃T�C�Y��2^n�̃T�C�Y�A�܂�1,2,4,8,16,32,64,128,256,512,1024�c�łȂ��摜��ǂݍ��ގ��ɂ́A�����ŕϊ����s�Ȃ����ߑ����̃I�[�o�[�w�b�h���������܂��B
-	(�ʏ�͂���قǋC�ɂ���K�v�͂���܂���B��ʂ̉摜��ǂݍ��ޏꍇ��CPU���\�[�X���]�v�ɕK�v�ƂȂ�܂�)
+	縦・横のサイズが2^nのサイズ、つまり1,2,4,8,16,32,64,128,256,512,1024…でない画像を読み込む時には、内部で変換を行なうため多少のオーバーヘッドが発生します。
+	(通常はそれほど気にする必要はありません。大量の画像を読み込む場合にCPUリソースが余計に必要となります)
 	<br>
-	�摜�t�@�C���̓v���W�F�N�g�f�B���N�g������assets�t�H���_�ɓ���邱�Ƃ��ł��܂��B
+	画像ファイルはプロジェクトディレクトリ内のassetsフォルダに入れることができます。
 	</p>
-	<li>�Đ��\�ȃT�E���h�t�@�C���ɂ���</li>
+	<li>再生可能なサウンドファイルについて</li>
 	<p>
-	mmload���߂œ����ɓǂݍ��ރo�b�t�@�̐���30�𒴂����ꍇ�A�������Đ�����Ȃ��񍐂𒸂��Ă��܂��B<br>
-	����́Aandroid���OpenSL/ES��̐���ɂ����̂ŁA���̖��͏C�����Ă����\��ł��B
-	�Ƃ�}���́Ammload�Ŏg�p����o�b�t�@�̐���K�v�ɉ����Đ؂�ւ���Ȃǂ���30�ȉ��ɗ}����悤���肢�v���܂��B
-	(���ɉ��y�̍Đ��Ȃǂ́A�����ɍs�Ȃ��K�v���Ȃ��̂�1�̃o�b�t�@ID�����L����悤�ɂ������������ł�)<br>
-	���Aandroid�ゾ���̐����Ȃ̂ŁAWindows��iOS��ł͖�肠��܂���B
+	mmload命令で同時に読み込むバッファの数が30を超えた場合、正しく再生されない報告を頂いています。<br>
+	これは、android上のOpenSL/ES上の制約によるもので、この問題は修正していく予定です。
+	とり急ぎは、mmloadで使用するバッファの数を必要に応じて切り替えるなどして30以下に抑えるようお願い致します。
+	(特に音楽の再生などは、同時に行なう必要がないので1つのバッファIDを共有するようにした方がいいです)<br>
+	尚、android上だけの制限なので、WindowsやiOS上では問題ありません。
 	</p>
 	<p>
-	�T�E���h�́A�g���q���u.wav�v�u.mp3�v�u.ogg�v�u.aac�v�̃t�@�C���ɑΉ����Ă��܂��B
-	.aac��.ogg�ɂ��ẮA���ׂẴt�H�[�}�b�g���T�|�[�g���Ă��Ȃ��̂Œ��ӂ��Ă��������B
-	�u.wav�v�u.mp3�v�ɂ��ẮAWindows�ł��܂߂��ׂĂ�hsp3dish�ŕ��L���T�|�[�g����Ă���`���ł��B<br>
-	�T�E���h�̃t�@�C���͕K���v���W�F�N�g�f�B���N�g������assets�t�H���_�ɓ����悤�ɂ��Ă��������Bdata.dpm�Ɋ܂߂��OS�̃V�X�e��������ǂݎ�邱�Ƃ��ł��܂���B
+	サウンドは、拡張子が「.wav」「.mp3」「.ogg」「.aac」のファイルに対応しています。
+	.aacや.oggについては、すべてのフォーマットをサポートしていないので注意してください。
+	「.wav」「.mp3」については、Windows版を含めすべてのhsp3dishで幅広くサポートされている形式です。<br>
+	サウンドのファイルは必ずプロジェクトディレクトリ内のassetsフォルダに入れるようにしてください。data.dpmに含めるとOSのシステム側から読み取ることができません。
 	</p>
-	<li>��ʂ̉�]�ɂ���</li>
+	<li>画面の回転について</li>
 	<p>
-	���݂̃o�[�W�����ł́A���s���̉�ʎ�����]�ɂ͑Ή����Ă��܂���B�K���A�c�E����ʂ��Œ肵�ē��삷��d�l�ō쐬���Ă��������B<br>
-	hsp3dish.ini�ݒ�t�@�C���ɂ��A��ʃT�C�Y���w�肳��Ă���ꍇ�́A�����I�ɏc��ʁE����ʂ̐ݒ肪�s�Ȃ��܂��B<br>
-	�}�j���A���ŁA��ʂ̌���(��])��ݒ肵�����ꍇ�́AAndroidManifest.xml�����������Đ��䂷�邱�Ƃ��\�ł��B
+	現在のバージョンでは、実行中の画面自動回転には対応していません。必ず、縦・横画面を固定して動作する仕様で作成してください。<br>
+	hsp3dish.ini設定ファイルにより、画面サイズが指定されている場合は、自動的に縦画面・横画面の設定が行なわれます。<br>
+	マニュアルで、画面の向き(回転)を設定したい場合は、AndroidManifest.xmlを書き換えて制御することが可能です。
 	</p>
 	<pre>
         &ltactivity android:name="android.app.NativeActivity"
@@ -843,36 +843,36 @@
                   android:label="@string/app_name"&gt
 	</pre>
 	<p>
-	�uandroid:screenOrientation=�v�̍s�Ŏw�肳��Ă���p�����[�^�[���A"portrait"�̏ꍇ�͏c��ʁB"landscape"�̏ꍇ�́A����ʂɂ��ꂼ��Œ肳��܂��B
+	「android:screenOrientation=」の行で指定されているパラメーターが、"portrait"の場合は縦画面。"landscape"の場合は、横画面にそれぞれ固定されます。
 	</p>
-	<li>�f�[�^�̕ۑ��ɂ���</li>
+	<li>データの保存について</li>
 	<p>
-	bsave�Abload���߂ɂ���ăA�v���P�[�V�����ŗL�̃t�H���_�Ƀf�[�^�t�@�C���̓ǂݏ������\�ł��B
-	�u/�v���܂߂��t�@�C����(���p�p����)�̂ݎw�肳�ꂽ�ꍇ�́A�A�v���P�[�V�����ŗL�̃t�H���_
-(�u/data/data/<�����̃p�b�P�[�W��>/files�v�Ŏ������ꏊ)���A�N�Z�X�ΏۂƂȂ�܂��B
-	���̃t�H���_�͒ʏ�́A�����ȊO�̃A�v���P�[�V��������̓A�N�Z�X�ł��Ȃ��ݒ�ɂȂ��Ă��܂��B
-	(�t�@�C�������u/�v�Ŏn�܂����ꍇ�́A�t���p�X�w��ƂȂ�܂��B)
+	bsave、bload命令によってアプリケーション固有のフォルダにデータファイルの読み書きが可能です。
+	「/」を含めずファイル名(半角英文字)のみ指定された場合は、アプリケーション固有のフォルダ
+(「/data/data/<自分のパッケージ名>/files」で示される場所)がアクセス対象となります。
+	このフォルダは通常は、自分以外のアプリケーションからはアクセスできない設定になっています。
+	(ファイル名が「/」で始まった場合は、フルパス指定となります。)
 	</p>
 	</ul>
 
-	<h2 id="NEWVER">android�ł̍X�V�\��</h2>
+	<h2 id="NEWVER">android版の更新予定</h2>
 	<p>
-	�ȉ��̋@�\�͍���A�ォ�珇�ɍ����D��x�Œǉ������\��ł��B
+	以下の機能は今後、上から順に高い優先度で追加される予定です。
 	</p>
 	<ul>
-	<li>�e��V�X�e�����擾</li>
-	<li>�J�����A�u���E�U�̌Ăяo���T�|�[�g</li>
+	<li>各種システム情報取得</li>
+	<li>カメラ、ブラウザの呼び出しサポート</li>
 	</ul>
 	<p>
-	�o�[�W�����A�b�v�̍��m�́AHSP�I�t�B�V�����T�C�gHSPTV!�ɂčs�Ȃ��܂��̂ŁA�������m�F���������B
+	バージョンアップの告知は、HSPオフィシャルサイトHSPTV!にて行なわれますので、随時ご確認ください。
 	</p>
 
-	<!-- �t�b�^�[ -->
+	<!-- フッター -->
 	<ul id="FOOTER">
-		<li><a href="#CONTAINER">���̃y�[�W��1�ԏ�ɖ߂�</a></li>
-		<li><a href="../index.htm">�C���f�b�N�X�ɖ߂�</a></li>
+		<li><a href="#CONTAINER">このページの1番上に戻る</a></li>
+		<li><a href="../index.htm">インデックスに戻る</a></li>
 	</ul>
-	<a href="http://www.onionsoft.net/">
+	<a href="https://www.onionsoft.net/">
 		<img src="onibtn.gif" width="147" height="50" alt="ONION software" id="ONIBTN">
 	</a>
 </div><!-- container -->

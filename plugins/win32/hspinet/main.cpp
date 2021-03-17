@@ -23,6 +23,7 @@
 static CzHttp *http;
 
 #define NKFBUF_DEFAULTSIZE 0x8000
+#define URLENCODE_BUFFERSIZE 0x40000
 
 static	char *nkfbuf = NULL;	// nkf変換バッファ
 static	int	nkfsize;			// nkf変換バッファサイズ
@@ -892,11 +893,11 @@ EXPORT BOOL WINAPI urlencode( HSPEXINFO *hei, int p1, int p2, int p3 )
 	char *ss;
 	PVal *pv;
 	APTR ap;
-	char urltmp[4096];
+	char urltmp[URLENCODE_BUFFERSIZE];
 
 	ap = hei->HspFunc_prm_getva( &pv );			// パラメータ1:変数
 	ss = hei->HspFunc_prm_gets();				// パラメータ2:文字列
-	http->UrlEncode( urltmp, 4096, ss );
+	http->UrlEncode( urltmp, URLENCODE_BUFFERSIZE, ss );
 	hei->HspFunc_prm_setva( pv, ap, HSPVAR_FLAG_STR, urltmp );	// 変数に値を代入
 	return 0;
 }

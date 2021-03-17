@@ -1,299 +1,299 @@
 <!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
 <html lang="ja">
 <head>
-	<meta http-equiv="Content-Type" content="text/html; charset=Shift_JIS">
+	<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
 	<meta http-equiv="Content-Language" content="ja">
 	<meta http-equiv="Content-Style-Type" content="text/css">
 	<meta http-equiv="Content-Script-Type" content="text/javascript">
-	<meta name="author" content="OpenHSP3 Project�ihttp://dev.onionsoft.net/trac/wiki�j">
+	<meta name="author" content="OpenHSP3 Project">
 	<meta name="keywords" content="HSP3,HotSoupProcessor3,HSP3Dish,WebGL,JavaScript,hsp3dish.js">
-	<meta name="description" content="HSP3Dish hsp3dish.js�łɊւ�������f��">
+	<meta name="description" content="HSP3Dish hsp3dish.js版に関する情報を掲載">
 	<link href="../main.css" rel="stylesheet" type="text/css" media="all">
-	<title>HSP3Dish WebGL/html5��(hsp3dish.js)�v���O���~���O�K�C�h</title>
+	<title>HSP3Dish WebGL/html5版(hsp3dish.js)プログラミングガイド</title>
 </head>
 <body>
 	<div id="CONTAINER">
-	<!-- �w�b�_�[ -->
+	<!-- ヘッダー -->
 	<p id="COPY">HSP : HSP3Dish / onion software 2021(c)</p>
-	<img src="hsp3dish.jpg" width="640" height="200" alt="�^�C�g��">
-	<h1>hsp3dish.js (WebGL/html5��)<br><br>�v���O���~���O�K�C�h</h1>
+	<img src="hsp3dish.jpg" width="640" height="200" alt="title">
+	<h1>hsp3dish.js (WebGL/html5版)<br><br>プログラミングガイド</h1>
 
-	<!-- �ڎ� -->
+	<!-- 目次 -->
 	<ol>
-		<li><a href="#ABOUT">hsp3dish.js�T�v</a></li>
-		<li><a href="#LOGIC">hsp3dish.js�̎d�g��</a></li>
-		<li><a href="#CONVERT">HSP3Dish Helper�ɂ��ϊ�</a></li>
-		<li><a href="#BROWSE">�u���E�U��ł̎��s</a></li>
-		<li><a href="#SCRSIZE">�\���T�C�Y�̃X�P�[�����O</a></li>
-		<li><a href="#MEDIA">���f�B�A�t�@�C���̍Đ�</a></li>
-		<li><a href="#EXEC">exec,dialog���߂ɂ��u���E�U����<span class="new">�iNew!�j</span></a></li>
-		<li><a href="#NOTICE">���������E���m�̖��_</a></li>
-		<li><a href="#FUTURE">����̗\��</a></li>
-		<li><a href="#LICENSE">���C�Z���X�E�ӎ�</a></li>
+		<li><a href="#ABOUT">hsp3dish.js概要</a></li>
+		<li><a href="#LOGIC">hsp3dish.jsの仕組み</a></li>
+		<li><a href="#CONVERT">HSP3Dish Helperによる変換</a></li>
+		<li><a href="#BROWSE">ブラウザ上での実行</a></li>
+		<li><a href="#SCRSIZE">表示サイズのスケーリング</a></li>
+		<li><a href="#MEDIA">メディアファイルの再生</a></li>
+		<li><a href="#EXEC">exec,dialog命令によるブラウザ制御<span class="new">（New!）</span></a></li>
+		<li><a href="#NOTICE">制限事項・既知の問題点</a></li>
+		<li><a href="#FUTURE">今後の予定</a></li>
+		<li><a href="#LICENSE">ライセンス・謝辞</a></li>
 	</ol>
 
-	<h2 id="ABOUT">hsp3dish.js�T�v</h2>
+	<h2 id="ABOUT">hsp3dish.js概要</h2>
 	<p>
-	hsp3dish.js�́AWebGL���T�|�[�g����WEB�u���E�U��œ��삷��HSP3Dish�̃����^�C���ł��B
-	Windows�� HSP3Dish���T�|�[�g����@�\�𑽂���WEB�u���E�U��ōČ����邱�Ƃ��\�ł��B
-	����ɂ��AWindows�����łȂ�MacOS��Linux�ȂǗl�X��OS��ł̓��삪�\�ɂȂ�A�C���X�g�[���̎�ԂȂ���y�ɁAHSP�̃A�v���P�[�V���������s�����邱�Ƃ��ł���悤�ɂȂ�܂��B
+	hsp3dish.jsは、WebGLをサポートしたWEBブラウザ上で動作するHSP3Dishのランタイムです。
+	Windows版 HSP3Dishがサポートする機能を多くのWEBブラウザ上で再現することが可能です。
+	これにより、WindowsだけでなくMacOSやLinuxなど様々なOS上での動作が可能になり、インストールの手間なく手軽に、HSPのアプリケーションを実行させることができるようになります。
 	<br>
-	���̃}�j���A���ł́Ahsp3dish.js�ł̗��p���@�A���ӓ_�Ȃǂ�������Ă����܂��B
+	このマニュアルでは、hsp3dish.js版の利用方法、注意点などを説明していきます。
 	<br>
 	<br>
-	����ɂ́AWebGL�Ή��̃u���E�U���K�v�ł��B�ȉ��̊��ł̓�����m�F���Ă��܂��B
+	動作には、WebGL対応のブラウザが必要です。以下の環境での動作を確認しています。
 	<UL>
 	<LI>Chrome
 	<LI>Firefox
 	<LI>Safari
 	<LI>Internet Explorer 11
 	<LI>Microsoft Edge
-	<LI>Firefox ���o�C���u���E�U(Android)
+	<LI>Firefox モバイルブラウザ(Android)
 	</UL>
 	<br>
-	HSP3Dish�X�N���v�g�̕ϊ����x�����邽�߂́AHSP3Dish Helper�c�[������������Ă��܂��B
-	����ɂ��A��r�I�X���[�Y��hsp3dish.js�����ɕϊ����s�Ȃ����Ƃ��\�ɂȂ�܂��B
-	(���A������m�F���邽�߂ɂ́A�������A�b�v���[�h�\�ȃz�[���y�[�W���A���[�J���œ��삷��WEB�T�[�o�[���K�v�ƂȂ�܂��B)
+	HSP3Dishスクリプトの変換を支援するための、HSP3Dish Helperツールが同梱されています。
+	これにより、比較的スムーズにhsp3dish.js向けに変換を行なうことが可能になります。
+	(尚、動作を確認するためには、自分がアップロード可能なホームページか、ローカルで動作するWEBサーバーが必要となります。)
 	</p>
 
-	<h2 id="LOGIC">hsp3dish.js�̎d�g��</h2>
+	<h2 id="LOGIC">hsp3dish.jsの仕組み</h2>
 	<p>
-	hsp3dish.js�́A	<a href="http://llvm.org/" target="_blank">llvm�R���p�C��</a>�A�y��<a href="https://github.com/kripken/emscripten" target="_blank">Emscripten</a>���g�p���āA
-	HSP3�����^�C����JavaScript�y��WebAssembly�����ɕϊ��������̂ł��B
-	HSP3�̃I���W�i���\�[�X�����ɂ��Ă��邽�߁A����̌݊����������A�A�b�v�f�[�g���e�ՂȃV�X�e���ɂȂ��Ă��܂��B
+	hsp3dish.jsは、	<a href="http://llvm.org/" target="_blank">llvmコンパイラ</a>、及び<a href="https://github.com/kripken/emscripten" target="_blank">Emscripten</a>を使用して、
+	HSP3ランタイムをJavaScript及びWebAssembly向けに変換したものです。
+	HSP3のオリジナルソースを元にしているため、動作の互換性が高く、アップデートも容易なシステムになっています。
 	<br>
-	iOS�ŁAandroid�ł�HSP3Dish�́AHSP�̃X�N���v�g���l�C�e�B�u�R�[�h�ɕϊ�������Ŏ��s���Ă��܂����A
-	hsp3dish.js�́AHSP�̃X�N���v�g�𒆊ԃR�[�h�ɏo�͂�������(.ax�I�u�W�F�N�g�t�@�C��)�����Ƃɂ��āA�C���^�v���^(�������s)�Ƃ��ē��삵�܂��B����́AWindows�ł�HSP3Dish�Ɠ���̃v���O�����ƂȂ��Ă���A�ɂ߂č����݊����������Ă��܂��B
+	iOS版、android版のHSP3Dishは、HSPのスクリプトをネイティブコードに変換した上で実行していますが、
+	hsp3dish.jsは、HSPのスクリプトを中間コードに出力したもの(.axオブジェクトファイル)をもとにして、インタプリタ(逐次実行)として動作します。これは、Windows版のHSP3Dishと同一のプログラムとなっており、極めて高い互換性を持っています。
 	<br>
-	�X�N���v�g�̎��s���x�́A�u���E�U�����s���Ă���}�V����CPU���x�AVM�̑��x�Ɉˑ����܂����A�ŋ߂�PC�ł���Ύ��p�I�Ȕ͈͂œ��삵�܂��B
+	スクリプトの実行速度は、ブラウザを実行しているマシンのCPU速度、VMの速度に依存しますが、最近のPCであれば実用的な範囲で動作します。
 	</p>
 
-	<h2 id="CONVERT">HSP3Dish Helper�ɂ��ϊ�</h2>
+	<h2 id="CONVERT">HSP3Dish Helperによる変換</h2>
 	<p>
-	HSP�C���X�g�[���t�H���_(�ŐV�ł�HSP3Dish�J���Z�b�g�ɂ��A�b�v�f�[�g����Ă���K�v������܂�)�ɂ���HSP3Dish Helper(hsp3dh.exe)���N�����Ă��������B
+	HSPインストールフォルダ(最新版のHSP3Dish開発セットによりアップデートされている必要があります)にあるHSP3Dish Helper(hsp3dh.exe)を起動してください。
 	<br>
 	</p>
 	<ul><img src="hsp3dish/s_js1.jpg"><br></ul>
 	<br>
 	<p>
-	���ɕ���ł���uhsp3dish.js�v�̃{�^���������āAhsp3dish.js�ϊ��̃��[�h�ɂ��Ă��������B��̂悤�ȕ\���ɂȂ�͂��ł��B
+	下に並んでいる「hsp3dish.js」のボタンを押して、hsp3dish.js変換のモードにしてください。上のような表示になるはずです。
 	<br>
-	���̃_�C�A���O���ɕK�v�ȏ���ݒ肵�A�u�ϊ��v�{�^�����������ƂŁAweb�u���E�U��̓���ɕK�v�ȃt�@�C�������ׂč쐬����܂��B�_�C�A���O�Őݒ肷�鍀�ڂ́A�ȉ��̒ʂ�ł��B
+	このダイアログ内に必要な情報を設定し、「変換」ボタンを押すことで、webブラウザ上の動作に必要なファイルがすべて作成されます。ダイアログで設定する項目は、以下の通りです。
 	</p>
 	<ul>
-	<li>�\�[�X�X�N���v�g</li><br><p>
-	�ϊ����邽�߂�HSP�X�N���v�g(.hsp)���w�肵�܂��B�K��HSP3Dish�p�ɋL�q���ꂽ�X�N���v�g�łȂ���΂Ȃ�܂���B�u�Q�Ɓv�{�^�����������ƂŁA�t�@�C���I���_�C�A���O���J�����Ƃ��ł��܂��B<br>
-	�X�N���v�g�t�@�C�����́A�K��<b>�u���p�p���݂̂̃t�@�C����(���{��(�S�p)���g��Ȃ�)�v</b>�悤�ɒ��ӂ��Ă��������B<br>
-	����������ʃT�C�Y�́A�\�[�X�X�N���v�g�Ɠ���t�H���_�ɂ���hsp3dish.ini�t�@�C���̐ݒ肪�g�p����܂��Bhsp3dish.ini�t�@�C���̐ݒ�ɂ��ẮA<a href="hsp3dish_prog.htm#INIFILE">�u�N���ݒ�t�@�C���ɂ��āv</a>�̍��ڂ��Q�Ƃ��Ă��������B
+	<li>ソーススクリプト</li><br><p>
+	変換するためのHSPスクリプト(.hsp)を指定します。必ずHSP3Dish用に記述されたスクリプトでなければなりません。「参照」ボタンを押すことで、ファイル選択ダイアログを開くことができます。<br>
+	スクリプトファイル名は、必ず<b>「半角英数のみのファイル名(日本語(全角)を使わない)」</b>ように注意してください。<br>
+	生成される画面サイズは、ソーススクリプトと同一フォルダにあるhsp3dish.iniファイルの設定が使用されます。hsp3dish.iniファイルの設定については、<a href="hsp3dish_prog.htm#INIFILE">「起動設定ファイルについて」</a>の項目を参照してください。
 	</p>
-	<li>�f�[�^�t�H���_</li><br><p>
-	�f�[�^�t�H���_�́Apicload���߂�bload���߂ȂǁA�X�N���v�g���œǂݍ��܂��t�@�C��(�摜�f�[�^�A�T�E���h�f�[�^�Ȃǂ��܂�)���������邽�߂̂��̂ł��B<br>
-	�u�\�[�X�X�N���v�g�v�Ŏw�肵���t�H���_�ȉ��́udata�v�t�H���_���f�[�^�t�H���_�Ƃ��ĔF�����܂��B
-	�X�N���v�g����ǂݍ��܂��t�@�C���́A�f�[�^�t�H���_�ɂ܂Ƃ߂Ċi�[���Ă����Ă��������B<br>
-	�f�[�^�t�H���_�����ɂ���t�@�C�������ׂăf�[�^�t�@�C��(.data�̊g���q)�Ƃ��ăp�b�N����܂��B�s�v�ȃt�@�C�����܂܂�Ă���ƁA���ʂɗe�ʂ�����Ă��܂��̂ŁA�K���K�v�ȃt�@�C��������u���悤�ɂ��Ă��������B<br>
-	�f�[�^�t�H���_�Ɋ܂܂��t�@�C���́A�K��<b>�u���p�p���݂̂̃t�@�C����(���{��(�S�p)���g��Ȃ�)�v</b>�悤�ɒ��ӂ��Ă��������B�܂��A�w�肳�ꂽ�f�[�^�t�H���_�݂̂������ΏۂƂȂ�A�T�u�t�H���_�͊܂܂�܂���B
-	�f�[�^�t�@�C�����K�v�Ȃ��ꍇ�́A�󗓂ɂ��Ă����č\���܂���B
+	<li>データフォルダ</li><br><p>
+	データフォルダは、picload命令やbload命令など、スクリプト中で読み込まれるファイル(画像データ、サウンドデータなども含む)を準備するためのものです。<br>
+	「ソーススクリプト」で指定したフォルダ以下の「data」フォルダをデータフォルダとして認識します。
+	スクリプトから読み込まれるファイルは、データフォルダにまとめて格納しておいてください。<br>
+	データフォルダが内にあるファイルをすべてデータファイル(.dataの拡張子)としてパックされます。不要なファイルが含まれていると、無駄に容量を消費してしまうので、必ず必要なファイルだけを置くようにしてください。<br>
+	データフォルダに含まれるファイルは、必ず<b>「半角英数のみのファイル名(日本語(全角)を使わない)」</b>ように注意してください。また、指定されたデータフォルダのみが検索対象となり、サブフォルダは含まれません。
+	データファイルが必要なし場合は、空欄にしておいて構いません。
 	</p>
-	<li>�������T�C�Y</li><br><p>
-	�u���E�U���s���Ɋm�ۂ���郁�����u���b�N�̏���l��ݒ肷�邱�Ƃ��ł��܂��B
-	�󗓂̏ꍇ�́A�f�t�H���g�̒l(200���K�o�C�g)���g�p����܂��B
-	�ʏ�́A�f�t�H���g�l�Ŗ�肠��܂��񂪁A�K�͂̑傫���X�N���v�g��c��ȃf�[�^���g�p����ꍇ�́A100�����傫���l���w�肵�Ă��������B(500���w�肵���ꍇ�́A500���K�o�C�g�ƂȂ�܂��B)<br>
-	(�u���E�U���s���ɁAhsp3dish.js�R���\�[���ɁuCannot enlarge memory arrays.�v�Ƃ����\�����o��ꍇ�́A�������u���b�N�̏���l�𒲐����Ă݂Ă��������B)
+	<li>メモリサイズ</li><br><p>
+	ブラウザ実行時に確保されるメモリブロックの上限値を設定することができます。
+	空欄の場合は、デフォルトの値(200メガバイト)が使用されます。
+	通常は、デフォルト値で問題ありませんが、規模の大きいスクリプトや膨大なデータを使用する場合は、100よりも大きい値を指定してください。(500を指定した場合は、500メガバイトとなります。)<br>
+	(ブラウザ実行時に、hsp3dish.jsコンソールに「Cannot enlarge memory arrays.」という表示が出る場合は、メモリブロックの上限値を調整してみてください。)
 	</p>
-	<li>HGIMG4���g�p����</li><br><p>
-	HGIMG4�̃X�N���v�g��ϊ����܂��B���s���ɂ́uhsp3dish-gp.js�v���K�v�ɂȂ�܂��B<br>
-	HGIMG4���g�p����f�[�^�́A�u�\�[�X�X�N���v�g�v�Ŏw�肵���t�H���_�ȉ��́ures�v�ures/shaders�v�ɔz�u���Ă����Ă��������B(sample/hgimg4���ɂ���܂�)
-	<br><b>�����݂̃o�[�W�����ł́A�|�X�g�G�t�F�N�g�ȂǂŎg�p����I�t�X�N���[���`�施�߂��g�p���邱�Ƃ��ł��܂���̂ŁA���ӂ��Ă��������B</b>
+	<li>HGIMG4を使用する</li><br><p>
+	HGIMG4のスクリプトを変換します。実行時には「hsp3dish-gp.js」が必要になります。<br>
+	HGIMG4が使用するデータは、「ソーススクリプト」で指定したフォルダ以下の「res」「res/shaders」に配置しておいてください。(sample/hgimg4内にあります)
+	<br><b>※現在のバージョンでは、ポストエフェクトなどで使用するオフスクリーン描画命令を使用することができませんので、注意してください。</b>
 	</p>
-	<li>WebAssembly���g�p����</li><br><p>
-	WebAssembly�`���ɕϊ����܂��B���s���ɂ́u.wasm�v�t�@�C�����ǉ��ŕK�v�ɂȂ�܂��B<br>
-	WebAssembly�`���ɂ��邱�ƂŁA�ǂݍ��݂���s���x�̍������Ȃǂ����҂ł��܂��B
-	�������AWeb�u���E�U�̃T�|�[�g�������Ă��邽�߁A���݂͂܂������I�Ȏ����ɂȂ��Ă��܂��B
+	<li>WebAssemblyを使用する</li><br><p>
+	WebAssembly形式に変換します。実行時には「.wasm」ファイルが追加で必要になります。<br>
+	WebAssembly形式にすることで、読み込みや実行速度の高速化などが期待できます。
+	ただし、Webブラウザのサポートが限られているため、現在はまだ実験的な実装になっています。
 	</p>
-	<li>�f�o�b�O�����o�͂���</li><br><p>
-	�X�N���v�g��ϊ�����ۂɃf�o�b�O�����܂߂��f�[�^�𐶐����܂��B<br>
-	�f�o�b�O�����o�͂��邱�Ƃɂ���āA�u���E�U��ł̎��s���ɃG���[�����������ۂɁA
-	�s�ԍ���\�[�X�X�N���v�g�̃t�@�C�������Q�Ƃ��邱�Ƃ��ł��܂��B
-	�u���E�U���s���ɂǂ��ŃG���[�������������킩��Ȃ��ꍇ�́A�f�o�b�O�����o�͂��Ċm�F���Ă݂Ă��������B
+	<li>デバッグ情報を出力する</li><br><p>
+	スクリプトを変換する際にデバッグ情報を含めたデータを生成します。<br>
+	デバッグ情報を出力することによって、ブラウザ上での実行時にエラーが発生した際に、
+	行番号やソーススクリプトのファイル名を参照することができます。
+	ブラウザ実行時にどこでエラーが発生したかわからない場合は、デバッグ情報を出力して確認してみてください。
 	</p>
 	</ul>
 	<p>
-	�ݒ肪�ł�����A�u�ϊ��v�{�^���������Ă��������B
-	���̍ۂɁA��̃R���{�{�b�N�X��html�e���v���[�g�̎�ނ�I�����邱�Ƃ��ł��܂��B���݂́A�W����html(���̔w�i)�ƁA�����w�i��html��I�����邱�Ƃ��ł��܂��B
+	設定ができたら、「変換」ボタンを押してください。
+	その際に、上のコンボボックスでhtmlテンプレートの種類を選択することができます。現在は、標準のhtml(白の背景)と、黒い背景のhtmlを選択することができます。
 	<br>
-	�ϊ����s�����ƂŁA�X�N���v�g��f�[�^�t�@�C����hsp3dish.js�����ɐ�������܂��B<br>
-	���������t�@�C���́A�ȉ��̒ʂ�ł��B
+	変換を行うことで、スクリプトやデータファイルがhsp3dish.js向けに生成されます。<br>
+	生成されるファイルは、以下の通りです。
 	</p>
 	<ul>
-	<li>(�\�[�X�X�N���v�g��).html �t�@�C��</li>
-	<li>(�\�[�X�X�N���v�g��).data �t�@�C��</li>
-	<li>hsp3dish.js �t�@�C�� (HGIMG4�g�p���́Ahsp3dish-gp.js)</li>
-	<li>hsp3dish.wasm �t�@�C�� (HGIMG4�g�p���́Ahsp3dish-gp.wasm)</li>
+	<li>(ソーススクリプト名).html ファイル</li>
+	<li>(ソーススクリプト名).data ファイル</li>
+	<li>hsp3dish.js ファイル (HGIMG4使用時は、hsp3dish-gp.js)</li>
+	<li>hsp3dish.wasm ファイル (HGIMG4使用時は、hsp3dish-gp.wasm)</li>
 	</ul>
 	<p>
-	���̃\�[�X�X�N���v�g������t�H���_�ɁA�����̃t�@�C������������Ă���͂��ł��B
-	(���Ƃ��΁Ablock3.hsp��ϊ������ꍇ�́Ablock3.html��block3.data����������܂��B)<br>
-	�����Ő������ꂽ�t�@�C�����AWEB��ɃA�b�v���[�h���邾���ŁAWEB�u���E�U��ł̎��s���\�ł��B<br>
-	.html�t�@�C���́AWEB�u���E�U�ォ��J�����߂�HTML�t�@�C���ƂȂ�܂��B
-	���Ƃ��΁A�uwww.onionsoft.net/hsp/hsp3js/�v�Ƃ����ꏊ�ɃA�b�v���[�h���s�Ȃ����ꍇ�́A
-	�uhttp://www.onionsoft.net/hsp/hsp3js/block3.html�v�����s�̂��߂�URL�ƂȂ�܂��B<br>
-	.data�t�@�C���́AHTML�t�@�C������JavaScript����ǂݍ��܂��f�[�^�t�@�C���ŁA���s�ɕK�v�ȃf�[�^�����ׂĊ܂܂�Ă��܂��B
+	元のソーススクリプトがあるフォルダに、これらのファイルが生成されているはずです。
+	(たとえば、block3.hspを変換した場合は、block3.htmlとblock3.dataが生成されます。)<br>
+	ここで生成されたファイルを、WEB上にアップロードするだけで、WEBブラウザ上での実行が可能です。<br>
+	.htmlファイルは、WEBブラウザ上から開くためのHTMLファイルとなります。
+	たとえば、「www.onionsoft.net/hsp/hsp3js/」という場所にアップロードを行なった場合は、
+	「http://www.onionsoft.net/hsp/hsp3js/block3.html」が実行のためのURLとなります。<br>
+	.dataファイルは、HTMLファイル内のJavaScriptから読み込まれるデータファイルで、実行に必要なデータがすべて含まれています。
 	<br>
-	�uhsp3dish.js�v�uhsp3dish-gp.js�v�t�@�C���́AHSP�����^�C���̊j�ƂȂ镔���ŁAWEB���HSP3Dish�����s������ꍇ�ɕK���K�v�ƂȂ�܂��B
-	����́A���ׂẴX�N���v�g�œ���ƂȂ邽�߁A�����t�H���_�ɕ�����.html��.data��u�����ꍇ�ł��A���p���邱�Ƃ��\�ł��B<br>
-	WebAssembly�`���ɕϊ������ꍇ�́Ahsp3dish.wasm �t�@�C�� (HGIMG4�g�p���́Ahsp3dish-gp.wasm)����������܂��B(�ʏ펞�͐�������܂���)
-	���̃t�@�C�����A�uhsp3dish.js�v�Ɠ��l�ɃT�[�o�[�ɃA�b�v���[�h���Ă��������B
+	「hsp3dish.js」「hsp3dish-gp.js」ファイルは、HSPランタイムの核となる部分で、WEB上でHSP3Dishを実行させる場合に必ず必要となります。
+	これは、すべてのスクリプトで同一となるため、同じフォルダに複数の.htmlと.dataを置いた場合でも、共用することが可能です。<br>
+	WebAssembly形式に変換した場合は、hsp3dish.wasm ファイル (HGIMG4使用時は、hsp3dish-gp.wasm)が生成されます。(通常時は生成されません)
+	このファイルも、「hsp3dish.js」と同様にサーバーにアップロードしてください。
 	</p>
 
 
-	<h2 id="BROWSE">�u���E�U��ł̎��s</h2>
+	<h2 id="BROWSE">ブラウザ上での実行</h2>
 	<p>
 	<a href="http://www.onionsoft.net/hsp/hsp3js/block3.html" target="_blank"><img src="hsp3dish/s_js2.jpg" style="float:right;"></a>
-	HSP3Dish Helper���琶�����ꂽ�A.html�t�@�C���A.data�t�@�C���A�y��hsp3dish.js�t�@�C����WEB��ɃA�b�v���[�h���邱�Ƃɂ��A�u���E�U��Ŏ��s�����邱�Ƃ��ł��܂��B
-	���[�J���t�@�C����.html�t�@�C�����J���Ă��N������܂���B�K���AWEB�T�[�o�[��Ƀt�@�C����ݒu����悤�ɂ��Ă��������B
+	HSP3Dish Helperから生成された、.htmlファイル、.dataファイル、及びhsp3dish.jsファイルをWEB上にアップロードすることにより、ブラウザ上で実行させることができます。
+	ローカルファイルの.htmlファイルを開いても起動されません。必ず、WEBサーバー上にファイルを設置するようにしてください。
 	<br>
-	<a href="http://www.onionsoft.net/hsp/hsp3js/block3.html" target="_blank">������̃y�[�W</a>����A���ۂ�block3.hsp�X�N���v�g�̓�����m�F���邱�Ƃ��ł��܂��B
+	<a href="http://www.onionsoft.net/hsp/hsp3js/block3.html" target="_blank">こちらのページ</a>から、実際にblock3.hspスクリプトの動作を確認することができます。
 	<br>
-	�f�t�H���g�Ő������ꂽhtml�t�@�C���ł́A�uResize Cavas(�\���̈�̃��T�C�Y�w��)�v�uLock/hide mouse pointer(�}�E�X�|�C���^���B��)�v�`�F�b�N�{�b�N�X�A�uFullscreen(�t���X�N���[���\��)�v�̃{�^�����t������܂��B
+	デフォルトで生成されたhtmlファイルでは、「Resize Cavas(表示領域のリサイズ指定)」「Lock/hide mouse pointer(マウスポインタを隠す)」チェックボックス、「Fullscreen(フルスクリーン表示)」のボタンが付加されます。
 	<br>
-	�܂����s��ʂ̉����ɂ́Ahsp3dish.js�̃R���\�[��(�V�X�e�����b�Z�[�W�\���G���A)���z�u����܂��B
+	また実行画面の下部には、hsp3dish.jsのコンソール(システムメッセージ表示エリア)が配置されます。
 	<br>
-	html�t�@�C���́A���[�U�[�����R�ɉ��ς��Ē����č\���܂���B���C�A�E�g�A�z�u���͔C�ӂŒ������s�Ȃ��Ă��������B
+	htmlファイルは、ユーザーが自由に改変して頂いて構いません。レイアウト、配置等は任意で調整を行なってください。
 	<br>
 
 	</p>
 	<br clear="all">
 
 
-	<h2 id="SCRSIZE">�\���T�C�Y�̃X�P�[�����O</h2>
+	<h2 id="SCRSIZE">表示サイズのスケーリング</h2>
 	<p>
-	html�t�@�C����ҏW���邱�ƂŁA�\���T�C�Y�A�X�P�[�����O���̑��̐ݒ���s�Ȃ����Ƃ��ł��܂��B
-	�������ꂽ�A.html�t�@�C�����e�L�X�g�G�f�B�^�ŊJ���A�ȉ��̏ꏊ��ҏW���Ă��������B
+	htmlファイルを編集することで、表示サイズ、スケーリングその他の設定を行なうことができます。
+	生成された、.htmlファイルをテキストエディタで開き、以下の場所を編集してください。
 	</p>
 	<ul><pre>
 	    Module.preRun.push(function() {
-	        ENV.HSP_WX = "480";//�X�N���v�g�̓���𑜓x
+	        ENV.HSP_WX = "480";//スクリプトの動作解像度
 	        ENV.HSP_WY = "800";
-	        ENV.HSP_SX = "480";//�\���𑜓x
+	        ENV.HSP_SX = "480";//表示解像度
 	        ENV.HSP_SY = "800";
-	        ENV.HSP_AUTOSCALE = "0";//�X�P�[�����O���[�h
-	        ENV.HSP_FPS = "0";//�t���[�����[�g
-	        ENV.HSP_LIMIT_STEP = "15000";//�u���E�U�ɏ�����Ԃ��܂ł̎��s�X�e�b�v��
+	        ENV.HSP_AUTOSCALE = "0";//スケーリングモード
+	        ENV.HSP_FPS = "0";//フレームレート
+	        ENV.HSP_LIMIT_STEP = "15000";//ブラウザに処理を返すまでの実行ステップ数
 	    });
 	</pre></ul>
 	<p>
-	�uENV.HSP_WX�v�uENV.HSP_WY�v�Ŏw�肳��Ă��鐔�l���A�X�N���v�g�̓���𑜓x�T�C�Y(X,Y)�ƂȂ�܂��B
-	����́A�X�N���v�g�̕ϊ�����hsp3dish.ini�t�@�C������擾���ꂽ�l���ݒ肳��Ă��܂��B<br>
-	�uENV.HSP_SX�v�uENV.HSP_SY�v�Ŏw�肳��Ă��鐔�l���A���ۂ�WEB�u���E�U��ŕ\�������𑜓x�T�C�Y(X,Y)�ƂȂ�܂��B
-	�X�N���v�g�̓���𑜓x�ƕ\���𑜓x���قȂ�ꍇ�ɁA�X�P�[�����O(�g��k��)���s�Ȃ����߂̐ݒ肪�uENV.HSP_AUTOSCALE�v���ڂɂȂ�܂��B�f�t�H���g�Łu0�v���w�肳��Ă��܂����A�ȉ��̒l��ݒ肷�邱�Ƃ��\�ł��B
+	「ENV.HSP_WX」「ENV.HSP_WY」で指定されている数値が、スクリプトの動作解像度サイズ(X,Y)となります。
+	これは、スクリプトの変換時にhsp3dish.iniファイルから取得された値が設定されています。<br>
+	「ENV.HSP_SX」「ENV.HSP_SY」で指定されている数値が、実際にWEBブラウザ上で表示される解像度サイズ(X,Y)となります。
+	スクリプトの動作解像度と表示解像度が異なる場合に、スケーリング(拡大縮小)を行なうための設定が「ENV.HSP_AUTOSCALE」項目になります。デフォルトで「0」が指定されていますが、以下の値を設定することが可能です。
 	</p>
 	<ul><pre>
-		0 : ��ʑS�̂Ɏ��܂�œK�ȑ傫��(�c����͈ێ�)
-		1 : X�����̃T�C�Y����Ɋg��k��(�c����͈ێ�)
-		2 : Y�����̃T�C�Y����Ɋg��k��(�c����͈ێ�)
-		3 : �c����͖������ĉ�ʑS�̂ɕ\��
+		0 : 画面全体に収まる最適な大きさ(縦横比は維持)
+		1 : X方向のサイズを基準に拡大縮小(縦横比は維持)
+		2 : Y方向のサイズを基準に拡大縮小(縦横比は維持)
+		3 : 縦横比は無視して画面全体に表示
 	</pre></ul>
 	<p>
-	���̑��̃I�v�V�������A�ȉ��̒ʂ�ݒ肷�邱�Ƃ��ł��܂��B<br>
-	�uHSP_FPS�v�ŌŒ�̃t���[�����[�g���w�肵�܂��B30�̏ꍇ��30FPS(30/1000�b)�ōX�V���s�Ȃ��܂��B0(�f�t�H���g)�̏ꍇ�́A�t���[�������u���E�U�ɔC���܂�(requestAnimationFrame)�B<br>
-	�uHSP_LIMIT_STEP�v�́A�����I�Ƀu���E�U�ɏ�����Ԃ��܂ł̎��s�X�e�b�v�����w�肵�܂��B�f�t�H���g�Łu15000�v���w�肳��Ă��܂��B���܂�傫���ƃX�N���v�g�⏈���n�ɖ�肪�L�������Ƀu���E�U�̉������Ȃ��Ȃ��Ă��܂��̂Œ��ӂ��Ă��������B
+	その他のオプションも、以下の通り設定することができます。<br>
+	「HSP_FPS」で固定のフレームレートを指定します。30の場合は30FPS(30/1000秒)で更新を行ないます。0(デフォルト)の場合は、フレーム数をブラウザに任せます(requestAnimationFrame)。<br>
+	「HSP_LIMIT_STEP」は、強制的にブラウザに処理を返すまでの実行ステップ数を指定します。デフォルトで「15000」が指定されています。あまり大きいとスクリプトや処理系に問題が有った時にブラウザの応答がなくなってしまうので注意してください。
 	</p>
 
 
-	<h2 id="MEDIA">���f�B�A�t�@�C���̍Đ�</h2>
+	<h2 id="MEDIA">メディアファイルの再生</h2>
 	<p>
-	���݂̃o�[�W�����ł́A���f�B�A�t�@�C���Đ��Ɋւ��Ď����I�ȑΉ��ƂȂ��Ă��܂��B
+	現在のバージョンでは、メディアファイル再生に関して試験的な対応となっています。
 	</p>
 	<ul><pre>
-		�Ewav,mp3�`���̍Đ��ɑΉ����Ă��܂�(mmload,mmplay����)
-		�Eogg�`���͈ꕔ�̃u���E�U�̂ݑΉ����Ă��܂�(mmload,mmplay����)
-		�EChrome�y�сAFirefox��ł̓�����m�F���Ă��܂�
-		�EIE11��ł͓��삵�܂���(�G���[�ɂ͂Ȃ�܂���)
-		�Emci���߂ɂ͑Ή����Ă��܂���
-		�E����̍Đ��ɂ͑Ή����Ă��܂���
+		・wav,mp3形式の再生に対応しています(mmload,mmplay命令)
+		・ogg形式は一部のブラウザのみ対応しています(mmload,mmplay命令)
+		・Chrome及び、Firefox上での動作を確認しています
+		・IE11上では動作しません(エラーにはなりません)
+		・mci命令には対応していません
+		・動画の再生には対応していません
 	</pre></ul>
 	<p>
-	mmload���߂œǂݍ��݉\�ȃt�H�[�}�b�g�́A�u.wav�v�u.mp3�v�u.ogg�v�ł��B<br>
-	���f�B�A�t�@�C���̓��\�[�X�Ƃ��Ėc��ȃT�C�Y�ɂȂ�ꍇ�����邽�߁A�N�����ɂ��ׂă������ɓǂݍ��ތ��݂̃��\�[�X�Ǘ��ł́A��ʂ̊y�Ȃ𗬂������ɂ͌����Ă��܂���B
-	���̓_�́A����̃o�[�W�����ł͉��ǂ��Ă��������ƍl���Ă��܂��B
+	mmload命令で読み込み可能なフォーマットは、「.wav」「.mp3」「.ogg」です。<br>
+	メディアファイルはリソースとして膨大なサイズになる場合があるため、起動時にすべてメモリに読み込む現在のリソース管理では、大量の楽曲を流す処理には向いていません。
+	この点は、今後のバージョンでは改良していきたいと考えています。
 	</p>
 
 
-	<h2 id="EXEC">exec,dialog���߂ɂ��u���E�U����</h2>
+	<h2 id="EXEC">exec,dialog命令によるブラウザ制御</h2>
 	<p>
-	dialog���߂ɂ��A�W���I�ȃu���E�U�̃_�C�A���O��\�����邱�Ƃ��ł��܂��B
-	(�W���_�C�A���O�ȊO�̃R�����_�C�A���O�̓T�|�[�g���Ă��܂���)
+	dialog命令により、標準的なブラウザのダイアログを表示することができます。
+	(標準ダイアログ以外のコモンダイアログはサポートしていません)
 	<br>
-	exec���߂ɂ��A���ׂ������x���Ńu���E�U�𐧌䂷�邱�Ƃ��\�ł��B
-	�ʏ��exec���߂́AOS�̃R�}���h���Ăяo�����߂̋@�\�ł����A
-	hsp3dish.js�ł́AJavaScript�̃R�[�h�𒼐ڎ��s����������������Ă��܂��B
+	exec命令により、より細かいレベルでブラウザを制御することが可能です。
+	通常のexec命令は、OSのコマンドを呼び出すための機能ですが、
+	hsp3dish.jsでは、JavaScriptのコードを直接実行させる役割を持っています。
 	</p>
 	<ul><pre>
 		exec "alert('TEST');"
 	</pre></ul>
 	<p>
-	����ɂ��AJavaScript�����@�\��HSP�X�N���v�g�̒�����Ăяo�����Ƃ��ł��܂��B
-	�������AJavaScript�̕��@�ŃG���[�����������ꍇ�́A�u���E�U�̃G���[�Œ�~���邱�Ƃ�
-	����܂��̂Œ��ӂ��ċL�q���Ă��������B<br>
-	exec���߂̃I�v�V�����l��16���w�肷�邱�Ƃɂ��A�V�����J���y�[�W��URL���w�肷�邱�Ƃ��ł��܂��B
+	これにより、JavaScriptが持つ機能をHSPスクリプトの中から呼び出すことができます。
+	ただし、JavaScriptの文法でエラーが発生した場合は、ブラウザのエラーで停止することが
+	ありますので注意して記述してください。<br>
+	exec命令のオプション値に16を指定することにより、新しく開くページのURLを指定することができます。
 	</p>
 	<ul><pre>
 		exec "https://hsp.tv",16
 	</pre></ul>
 	<p>
-	���̗�ł́A�uhttps://hsp.tv�v��URL��V�����u���E�U�ŊJ���܂��B
+	この例では、「https://hsp.tv」のURLを新しくブラウザで開きます。
 	<br>
-	exec���߂ɂ��AHSP���̃v���O�����ƘA�g���āAWEB�y�[�W���J������
-	�u���E�U�̕\����ύX����Ȃǂ̏������\�ɂȂ�܂��B
+	exec命令により、HSP側のプログラムと連携して、WEBページを開いたり
+	ブラウザの表示を変更するなどの処理が可能になります。
 	</p>
 
 
-	<h2 id="NOTICE">���������E���m�̖��_</h2>
+	<h2 id="NOTICE">制限事項・既知の問題点</h2>
 	<p>
-	���݂̃o�[�W�����ł́A�ȉ��̐�������������܂��B
-	����ȊO�̋@�\�ɂ��ẮA��{�I��HSP3Dish�Ɠ����ƂȂ�܂��B
-	</p>
-	<ul><pre>
-		�E���f�B�A�֘A�̋@�\(�u���E�U�A�t�@�C���^�C�v�ɂ�鐧������)
-		�EHGIMG4�̃I�t�X�N���[���`�施�߂͖��T�|�[�g
-		�EDPM�t�@�C���͎g�p�ł��܂���
-		�Ebsave���߂Ȃǃt�@�C���̐ÓI�ȕۑ��͂ł��܂���
-	</pre></ul>
-	<p>
-	�܂��A���m�̖��Ƃ��Ĉȉ����񍐂���Ă��܂��B
+	現在のバージョンでは、以下の制限事項があります。
+	それ以外の機能については、基本的にHSP3Dishと同等となります。
 	</p>
 	<ul><pre>
-		�EIE11�Ń}���`���f�B�A�֘A�̖��߂����삵�Ȃ�
+		・メディア関連の機能(ブラウザ、ファイルタイプによる制限あり)
+		・HGIMG4のオフスクリーン描画命令は未サポート
+		・DPMファイルは使用できません
+		・bsave命令などファイルの静的な保存はできません
 	</pre></ul>
 	<p>
-	���̑��AWEB�u���E�U��œ��삵�Ă��邱�Ƃ���A�قȂ铮��A�\�����s����\��������܂��B
-	���݂́A�f�[�^�t�@�C�����܂Ƃ߂ēǂݍ���ł��邽�߁A��K�͂ȃA�v���P�[�V����(�摜���ʂɎg�p����Ȃ�)�́A
-	�d���Ȃ�����A�������ł��Ȃ����Ƃ�����܂��̂Œ��ӂ��������B
-	</p>
-
-
-	<h2 id="FUTURE">����̗\��</h2>
-	<p>
-	hsp3dish.js�́AWEB��Ŏ�y��HSP�̎��s���s�Ȃ����Ƃ��āA������@�\���g�[���Ă����\��ł��B
-	�ȉ��́A����̃o�[�W�����A�b�v�Ō������Ă���@�\�ł��B
-	�����̃o�[�W�����ł́A��荂���݊����Ƌ@�\�̌����ڎw���Ă��������ƍl���Ă��܂��B
+	また、既知の問題として以下が報告されています。
 	</p>
 	<ul><pre>
-		�E�l�b�g���[�N�g�������̎���
-		�ESoupSeed�Ƃ̘A�g�@�\
-		�EWEB��ł̃R�[�h�ҏW�y�уR���p�C�����s
+		・IE11でマルチメディア関連の命令が動作しない
+	</pre></ul>
+	<p>
+	その他、WEBブラウザ上で動作していることから、異なる動作、表示が行われる可能性があります。
+	現在は、データファイルをまとめて読み込んでいるため、大規模なアプリケーション(画像を大量に使用するなど)は、
+	重くなったり、処理ができないことがありますので注意ください。
+	</p>
+
+
+	<h2 id="FUTURE">今後の予定</h2>
+	<p>
+	hsp3dish.jsは、WEB上で手軽にHSPの実行を行なう環境として、今後も機能を拡充していく予定です。
+	以下は、今後のバージョンアップで検討している機能です。
+	将来のバージョンでは、より高い互換性と機能の向上を目指していきたいと考えています。
+	</p>
+	<ul><pre>
+		・ネットワーク拡張処理の実装
+		・SoupSeedとの連携機能
+		・WEB上でのコード編集及びコンパイル実行
 	</pre></ul>
 
 
-	<h2 id="LICENSE">���C�Z���X�E�ӎ�</h2>
+	<h2 id="LICENSE">ライセンス・謝辞</h2>
 	<p>
-	���[�U�[�́A<a href="hsp3dish_prog.htm#LICENCE">HSP3Dish�Ɠ��l�̃��C�Z���X(BSD���C�Z���X)</a>�ŁAhsp3dish.js/hsp3dish-gp.js�𗘗p���邱�Ƃ��ł��܂��B
-	�ȉ��̃��C�Z���X�\�L���A�t�@�C���Ɋ܂܂�Ă��܂��̂ŁAhsp3dish.js/hsp3dish-gp.js�t�@�C�������ς����ɂ��̂܂܃z�[���y�[�W�ɃA�b�v���[�h���Ă��g�p���������B
-	����ȊO�̏ꏊ�ɁA���C�Z���X�y�ђ���҂Ɋւ������\������`���͂���܂���B�܂��A���p�ɂ������Ă͏��p�A�񏤗p���킸���C�Z���X���͕K�v����܂���B
+	ユーザーは、<a href="hsp3dish_prog.htm#LICENCE">HSP3Dishと同様のライセンス(BSDライセンス)</a>で、hsp3dish.js/hsp3dish-gp.jsを利用することができます。
+	以下のライセンス表記が、ファイルに含まれていますので、hsp3dish.js/hsp3dish-gp.jsファイルを改変せずにそのままホームページにアップロードしてご使用ください。
+	それ以外の場所に、ライセンス及び著作者に関する情報を表示する義務はありません。また、利用にあたっては商用、非商用を問わずライセンス料は必要ありません。
 	</p>
 	<p>
-	hsp3dish.js/hsp3dish-gp.js�𒼐ڃ����N���Ďg�p����ꍇ�́A�uhttp://www.onionsoft.net/hsp/v36/hsp3js/hsp3dish.js�v�uhttp://www.onionsoft.net/hsp/v36/hsp3js/hsp3dish-gp.js�v�����g�p���������B
-	(�������A�������ׂ���������ꍇ��A�Z�L�����e�B�̌��O������ȂǁA�^�p�Ɏx�Ⴊ������ꍇ�͓��e���ύX����邱�Ƃ�����܂��̂ł��������������B)
+	hsp3dish.js/hsp3dish-gp.jsを直接リンクして使用する場合は、「http://www.onionsoft.net/hsp/v36/hsp3js/hsp3dish.js」「http://www.onionsoft.net/hsp/v36/hsp3js/hsp3dish-gp.js」をご使用ください。
+	(ただし、高い負荷が発生する場合や、セキュリティの懸念があるなど、運用に支障が生じる場合は内容が変更されることがありますのでご了承ください。)
 	</p>
 	<ul><pre>
 	Copyright (C) 1997-, Onion Software/onitama.
@@ -324,29 +324,29 @@
 	POSSIBILITY OF SUCH DAMAGE.
 	</pre></ul>
 	<p>
-	hsp3dish.js/hsp3dish-gp.js�́A<a href="http://peppermint.jp/" target="_blank">zakki����</a>�ɂ���Ď������ꂽEmscripten��HSP3Dish���x�[�X�ɍ쐬�������̂ł��B
-	�}���`���f�B�A�@�\�A�`��@�\�̉��P��K-s����ɂ����͒����܂����B
-	�f���炵���V�X�e�����J������zakki����A���ӌ������񂹂��������������̕��X�Ɋ��Ӓv���܂��B
+	hsp3dish.js/hsp3dish-gp.jsは、<a href="http://peppermint.jp/" target="_blank">zakkiさん</a>によって実装されたEmscripten版HSP3Dishをベースに作成したものです。
+	マルチメディア機能、描画機能の改善をK-sさんにご協力頂きました。
+	素晴らしいシステムを開発したzakkiさん、ご意見をお寄せいただいた多くの方々に感謝致します。
 	<br>
-	Emscripten��HSP3Dish�́AOpenHSP�̔h�����ƂȂ��Ă��܂��B�\�[�X�R�[�h�́AOpenHSP���|�W�g������擾���邱�Ƃ��ł��܂��B
+	Emscripten版HSP3Dishは、OpenHSPの派生物となっています。ソースコードは、OpenHSPリポジトリから取得することができます。
 	</p>
 	<ul><pre>
 		OpenHSP Development
 		<a href="http://dev.onionsoft.net/trac/openhsp/" target="_blank">http://dev.onionsoft.net/trac/openhsp/</a>
 
-		Emscripten��HSP3Dish WiKi
+		Emscripten版HSP3Dish WiKi
 		<a href="http://dev.onionsoft.net/trac/openhsp/wiki/DirTrunk/Hsp3dish/Emscripten" target="_blank">http://dev.onionsoft.net/trac/openhsp/wiki/DirTrunk/Hsp3dish/Emscripten</a>
 
 		zakki
 		<a href="https://twitter.com/k_matsuzaki" target="_blank">https://twitter.com/k_matsuzaki</a>
 	</pre></ul>
 
-	<!-- �t�b�^�[ -->
+	<!-- フッター -->
 	<ul id="FOOTER">
-		<li><a href="#CONTAINER">���̃y�[�W��1�ԏ�ɖ߂�</a></li>
-		<li><a href="../index.htm">�C���f�b�N�X�ɖ߂�</a></li>
+		<li><a href="#CONTAINER">このページの1番上に戻る</a></li>
+		<li><a href="../index.htm">インデックスに戻る</a></li>
 	</ul>
-	<a href="http://www.onionsoft.net/">
+	<a href="https://www.onionsoft.net/">
 		<img src="onibtn.gif" width="147" height="50" alt="ONION software" id="ONIBTN">
 	</a>
 </div><!-- container -->
