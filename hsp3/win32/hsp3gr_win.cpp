@@ -9,6 +9,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <math.h>
+#include <tchar.h>
 #include <direct.h>
 #include <shlobj.h>
 
@@ -23,6 +24,10 @@
 #include "../win32gui/filedlg.h"
 
 #include "hsp3gr_win.h"
+
+#ifdef HSPUTF8
+#pragma execution_character_set("utf-8")
+#endif
 
 /*------------------------------------------------------------*/
 /*
@@ -109,61 +114,66 @@ void ExecFile( char *stmp, char *ps, int mode )
 #define CSIDL_HISTORY                   0x0022
 */
 
-static char *getdir( int id )
+static char* getdir(int id)
 {
 	//		dirinfo命令の内容をstmpに設定する
 	//
-	char *p;
-	char *ss;
-	char fname[_MAX_PATH+1];
+	char* p;
+	TCHAR pw[_MAX_PATH + 1];
+	char* ss;
+	TCHAR fname[_MAX_PATH + 1];
+	char* resp8;
 	p = ctx->stmp;
+	HSPCHAR* hctmp1 = 0;
 
-	switch( id ) {
+	switch (id) {
 	case 0:				//    カレント(現在の)ディレクトリ
-		_getcwd( p, _MAX_PATH );
+		_tgetcwd(pw, _MAX_PATH);
 		break;
 	case 1:				//    HSPの実行ファイルがあるディレクトリ
-		GetModuleFileName( NULL,fname,_MAX_PATH );
-		getpath( fname, p, 32 );
+		GetModuleFileName(NULL, fname, _MAX_PATH);
+		getpathW(fname, pw, 32);
 		break;
 	case 2:				//    Windowsディレクトリ
-		GetWindowsDirectory( p, _MAX_PATH );
+		GetWindowsDirectory(pw, _MAX_PATH);
 		break;
 	case 3:				//    Windowsのシステムディレクトリ
-		GetSystemDirectory( p, _MAX_PATH );
+		GetSystemDirectory(pw, _MAX_PATH);
 		break;
 	case 4:				//    コマンドライン文字列
-		ss = GetCommandLine();
-		ss = strsp_cmds( ss );
-#ifdef HSPDEBUG
-		ss = strsp_cmds( ss );
-#endif
-		sbStrCopy( &(ctx->stmp), ss );
+		ss = ctx->cmdline;
+		sbStrCopy(&(ctx->stmp), ss);
 		p = ctx->stmp;
 		return p;
 	case 5:				//    HSPTV素材があるディレクトリ
 #if defined(HSPDEBUG)||defined(HSP3IMP)
-		GetModuleFileName( NULL,fname,_MAX_PATH );
-		getpath( fname, p, 32 );
-		CutLastChr( p, '\\' );
-		strcat( p, "\\hsptv\\" );
+		GetModuleFileName(NULL, fname, _MAX_PATH);
+		getpathW(fname, pw, 32);
+		apichartohspchar(pw, &hctmp1);
+		strcpy(p, hctmp1);
+		freehc(&hctmp1);
+		CutLastChr(p, '\\');
+		strcat(p, "\\hsptv\\");
 		return p;
 #else
-		*p = 0;
+		p[0] = '\0';
 		return p;
 #endif
 		break;
 	default:
-		if ( id & 0x10000 ) {
-			SHGetSpecialFolderPath( NULL, p, id & 0xffff, FALSE );
+		if (id & 0x10000) {
+			SHGetSpecialFolderPath(NULL, pw, id & 0xffff, FALSE);
 			break;
 		}
 		throw HSPERR_ILLEGAL_FUNCTION;
 	}
-
+	apichartohspchar(pw, &resp8);
+	sbStrCopy(&(ctx->stmp), resp8);
+	freehc(&resp8);
+	p = ctx->stmp;
 	//		最後の'\\'を取り除く
 	//
-	CutLastChr( p, '\\' );
+	CutLastChr(p, '\\');
 	return p;
 }
 
