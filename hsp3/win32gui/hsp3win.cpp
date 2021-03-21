@@ -378,14 +378,29 @@ int hsp3win_init( HINSTANCE hInstance, char *startfile )
 	ctx = &hsp->hspctx;
 
 	{
-	//		コマンドライン関連
+	//		コマンドライン & システムフォルダ関連
+	char *resp8;
 	cl = GetCommandLine();
 	cl = strsp_cmdsW( cl );
 #ifdef HSPDEBUG
 	cl = strsp_cmdsW( cl );
 #endif
-	apichartohspchar(cl,&ss);
-	sbStrCopy( &ctx->cmdline, ss );					// コマンドラインパラメーターを保存
+	apichartohspchar(cl, &resp8);
+	sbStrCopy(&(ctx->stmp), resp8);
+	hsp->SetCommandLinePrm(ctx->stmp);					// コマンドラインパラメーターを保存
+	freehc(&resp8);
+
+	TCHAR pw[HSPCTX_REFSTR_MAX];
+	TCHAR fname[HSPCTX_REFSTR_MAX];
+	GetModuleFileName(NULL, fname, _MAX_PATH);
+	getpathW(fname, pw, 32);
+	apichartohspchar(pw, &resp8);
+	sbStrCopy(&(ctx->stmp), resp8);
+	hsp->SetModuleFilePrm(ctx->stmp);
+	CutLastChr(ctx->stmp, '\\');
+	strcat(ctx->stmp, "\\hsptv\\");
+	hsp->SetHSPTVFolderPrm(ctx->stmp);
+	freehc(&resp8);
 	}
 
 	//		SSaver proc

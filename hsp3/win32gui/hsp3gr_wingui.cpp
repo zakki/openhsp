@@ -169,46 +169,41 @@ static char *getdir( int id )
 	//		dirinfo命令の内容をstmpに設定する
 	//
 	char *p;
-	TCHAR pw[_MAX_PATH+1];
+	TCHAR pw[HSPCTX_REFSTR_MAX];
 	char *ss;
-	TCHAR fname[_MAX_PATH+1];
+	TCHAR fname[HSPCTX_REFSTR_MAX ];
 	char *resp8;
 	p = ctx->stmp;
 	HSPCHAR *hctmp1 = 0;
+	int cutlast = 1;
+	int apiconv = 1;
 
+	*pw = 0;
 	switch( id ) {
 	case 0:				//    カレント(現在の)ディレクトリ
-		_tgetcwd( pw, _MAX_PATH );
+		_tgetcwd( pw, HSPCTX_REFSTR_MAX);
 		break;
 	case 1:				//    HSPの実行ファイルがあるディレクトリ
-		GetModuleFileName( NULL,fname,_MAX_PATH );
-		getpathW( fname, pw, 32 );
+		p = ctx->modfilename;
+		cutlast = 0; apiconv = 0;
 		break;
 	case 2:				//    Windowsディレクトリ
-		GetWindowsDirectory( pw, _MAX_PATH );
+		GetWindowsDirectory( pw, HSPCTX_REFSTR_MAX);
 		break;
 	case 3:				//    Windowsのシステムディレクトリ
-		GetSystemDirectory( pw, _MAX_PATH );
+		GetSystemDirectory( pw, HSPCTX_REFSTR_MAX);
 		break;
 	case 4:				//    コマンドライン文字列
-		ss = ctx->cmdline;
-		sbStrCopy( &(ctx->stmp), ss );
-		p = ctx->stmp;
-		return p;
+		p = ctx->cmdline;
+		cutlast = 0; apiconv = 0;
+		break;
 	case 5:				//    HSPTV素材があるディレクトリ
 #if defined(HSPDEBUG)||defined(HSP3IMP)
-		GetModuleFileName( NULL,fname,_MAX_PATH );
-		getpathW( fname, pw, 32 );
-		apichartohspchar(pw, &hctmp1);
-		strcpy(p, hctmp1);
-		freehc(&hctmp1);
-		CutLastChr( p, '\\' );
-		strcat( p, "\\hsptv\\" );
-		return p;
+		p = ctx->tvfoldername;
 #else
-		p[0] = '\0';
-		return p;
+		p = "";
 #endif
+		cutlast = 0; apiconv = 0;
 		break;
 	default:
 		if ( id & 0x10000 ) {
@@ -217,13 +212,18 @@ static char *getdir( int id )
 		}
 		throw HSPERR_ILLEGAL_FUNCTION;
 	}
-	apichartohspchar(pw,&resp8);
-	sbStrCopy( &(ctx->stmp),resp8);
-	freehc(&resp8);
-	p=ctx->stmp;
+
+	if (apiconv) {
+		apichartohspchar(pw, &resp8);
+		sbStrCopy(&(ctx->stmp), resp8);
+		freehc(&resp8);
+		p = ctx->stmp;
+	}
 	//		最後の'\\'を取り除く
 	//
-	CutLastChr( p, '\\' );
+	if (cutlast) {
+		CutLastChr(p, '\\');
+	}
 	return p;
 }
 
