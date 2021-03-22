@@ -50,6 +50,14 @@ Hsp3::Hsp3()
 	hspctx.modfilename = sbAlloc(HSPCTX_PATH_MAX);
 	hspctx.tvfoldername = sbAlloc(HSPCTX_PATH_MAX);
 	hspctx.homefoldername = sbAlloc(HSPCTX_PATH_MAX);
+
+	//		language setup
+	hspctx.language = HSPCTX_LANGUAGE_EN;				// Default Language
+
+	hspctx.langcode[0] = 'e';
+	hspctx.langcode[1] = 'n';
+	hspctx.langcode[2] = 0;
+	hspctx.langcode[3] = 0;
 }
 
 Hsp3::~Hsp3()
@@ -267,9 +275,6 @@ int Hsp3::Reset( int mode )
 			HspVarCoreClear( pval, HSPVAR_FLAG_INT );	// グローバル変数を0にリセット
 		}
 	}
-
-	//		language setup
-	hspctx.language = HSPCTX_LANGUAGE_EN;				// Default Language
 
 	//		debug
 	//Alertf( "#HSP objcode initalized.(CS=%d/DS=%d/OT=%d/VAR=%d)\n",hsphed->max_cs, hsphed->max_ds, hsphed->max_ot, hsphed->max_val );

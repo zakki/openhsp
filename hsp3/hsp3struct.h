@@ -577,6 +577,7 @@ struct HSPCTX
 	char *modfilename;					// Module File Name Parameters (HSPAPI)
 	char *tvfoldername;					// HSPTV Folder Name Parameters (HSPAPI)
 	char *homefoldername;				// System Folder Name Parameters (HSPAPI)
+	char langcode[4];					// Language country code (2byte ansi)
 };
 
 #define HSPCTX_REFSTR_MAX 4096

@@ -1041,16 +1041,6 @@ int hsp3dish_init( HINSTANCE hInstance, char *startfile )
 
 	ctx = &hsp->hspctx;
 
-	{
-	//		コマンドライン関連
-	ss = GetCommandLine();
-	ss = strsp_cmds( ss );
-#ifdef HSPDEBUG
-	ss = strsp_cmds( ss );
-#endif
-	sbStrCopy( &ctx->cmdline, ss );					// コマンドラインパラメーターを保存
-	}
-
 	//		SSaver proc
 	//
 #if 0

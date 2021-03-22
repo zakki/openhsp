@@ -296,7 +296,6 @@ int hsp3win_init( HINSTANCE hInstance, char *startfile )
 	TCHAR fnamew2[_MAX_PATH + 1];
 #endif
 	char *ss;
-	LPTSTR cl;
 #ifdef HSPDEBUG
 	int i;
 #endif
@@ -377,42 +376,16 @@ int hsp3win_init( HINSTANCE hInstance, char *startfile )
 
 	ctx = &hsp->hspctx;
 
-	{
-	//		コマンドライン & システムフォルダ関連
-	char *resp8;
-	cl = GetCommandLine();
-	cl = strsp_cmdsW( cl );
-#ifdef HSPDEBUG
-	cl = strsp_cmdsW( cl );
-#endif
-	apichartohspchar(cl, &resp8);
-	sbStrCopy(&(ctx->stmp), resp8);
-	hsp->SetCommandLinePrm(ctx->stmp);					// コマンドラインパラメーターを保存
-	freehc(&resp8);
-
-	TCHAR pw[HSPCTX_REFSTR_MAX];
-	TCHAR fname[HSPCTX_REFSTR_MAX];
-	GetModuleFileName(NULL, fname, _MAX_PATH);
-	getpathW(fname, pw, 32);
-	apichartohspchar(pw, &resp8);
-	sbStrCopy(&(ctx->stmp), resp8);
-	hsp->SetModuleFilePrm(ctx->stmp);
-	CutLastChr(ctx->stmp, '\\');
-	strcat(ctx->stmp, "\\hsptv\\");
-	hsp->SetHSPTVFolderPrm(ctx->stmp);
-	freehc(&resp8);
-	}
-
 	//		SSaver proc
 	//
 #ifndef HSPDEBUG
 	if ( hsp_ss ) {
+		LPTSTR cl;
 		cl = GetCommandLine();
 		cl = strsp_cmdsW( cl );
 		hsp_sscnt = 30;
 		a1=tolower(*(cl+1));
 		if (FindWindow(TEXT("oniwndp"), NULL) != NULL) {
-			freehc(&ss);
 			return 2;
 		}
 		if (a1==TEXT('p')) {
@@ -433,7 +406,7 @@ int hsp3win_init( HINSTANCE hInstance, char *startfile )
 		ctx->hspstat |= hsp_ss;
 	}
 #endif
-	freehc(&ss);
+
 	//		Register Type
 	//
 	ctx->msgfunc = hsp3win_msgfunc;
