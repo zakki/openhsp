@@ -1,7 +1,7 @@
 
 //
-//	hsp3dish socketæ‹¡å¼µ(linux)
-//	(æ‹¡å¼µã‚³ãƒãƒ³ãƒ‰ãƒ»é–¢æ•°å‡¦ç†)
+//	hsp3dish socketŠg’£(linux)
+//	(Šg’£ƒRƒ}ƒ“ƒhEŠÖ”ˆ—)
 //
 #include <stdio.h>
 #include <stdlib.h>
@@ -269,10 +269,10 @@ static int sockreadbyte(){
 static int cmdfunc_extcmd( int cmd )
 {
 	//		cmdfunc : TYPE_EXTCMD
-	//		(å†…è”µGUIã‚³ãƒãƒ³ãƒ‰)
+	//		(“à‘ GUIƒRƒ}ƒ“ƒh)
 	//
-	code_next();							// æ¬¡ã®ã‚³ãƒ¼ãƒ‰ã‚’å–å¾—(æœ€åˆã«å¿…ãšå¿…è¦ã§ã™)
-	switch( cmd ) {							// ã‚µãƒ–ã‚³ãƒãƒ³ãƒ‰ã”ã¨ã®åˆ†å²
+	code_next();							// Ÿ‚ÌƒR[ƒh‚ğæ“¾(Å‰‚É•K‚¸•K—v‚Å‚·)
+	switch( cmd ) {							// ƒTƒuƒRƒ}ƒ“ƒh‚²‚Æ‚Ì•ªŠò
 
 	//	command part
 	//
@@ -434,12 +434,12 @@ static void *reffunc_function( int *type_res, int arg )
 {
 	void *ptr;
 
-	//		è¿”å€¤ã®ã‚¿ã‚¤ãƒ—ã‚’è¨­å®šã™ã‚‹
+	//		•Ô’l‚Ìƒ^ƒCƒv‚ğİ’è‚·‚é
 	//
-	*type_res = HSPVAR_FLAG_INT;			// è¿”å€¤ã®ã‚¿ã‚¤ãƒ—ã‚’æŒ‡å®šã™ã‚‹
-	ptr = &reffunc_intfunc_ivalue;			// è¿”å€¤ã®ãƒã‚¤ãƒ³ã‚¿
+	*type_res = HSPVAR_FLAG_INT;			// •Ô’l‚Ìƒ^ƒCƒv‚ğw’è‚·‚é
+	ptr = &reffunc_intfunc_ivalue;			// •Ô’l‚Ìƒ|ƒCƒ“ƒ^
 
-	//			'('ã§å§‹ã¾ã‚‹ã‹ã‚’èª¿ã¹ã‚‹
+	//			'('‚Ån‚Ü‚é‚©‚ğ’²‚×‚é
 	//
 	if ( *type != TYPE_MARK ) throw HSPERR_INVALID_FUNCPARAM;
 	if ( *val != '(' ) throw HSPERR_INVALID_FUNCPARAM;
@@ -453,7 +453,7 @@ static void *reffunc_function( int *type_res, int arg )
 		throw HSPERR_UNSUPPORTED_FUNCTION;
 	}
 
-	//			'('ã§çµ‚ã‚ã‚‹ã‹ã‚’èª¿ã¹ã‚‹
+	//			'('‚ÅI‚í‚é‚©‚ğ’²‚×‚é
 	//
 	if ( *type != TYPE_MARK ) throw HSPERR_INVALID_FUNCPARAM;
 	if ( *val != ')' ) throw HSPERR_INVALID_FUNCPARAM;

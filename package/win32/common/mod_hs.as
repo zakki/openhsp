@@ -28,10 +28,12 @@
 	;		結果は、ih_optに代入されます。
 	;
 
-*ihelp_init
+*ihelp_boot
 	;
 	;	hsファイルライブラリ初期化
 	;	(参照用グローバル変数)
+	;
+	ih_file="hsphelp.idx"			; indexファイル
 	;
 	sdim ih_ansbuf,$8000			; 検索候補バッファ
 	sdim ih_info,$8000				; メッセージ表示バッファ(32K)
@@ -49,8 +51,220 @@
 
 	ih_htmopt = 0					; html出力 ON/OFF flag
 
+	sdim cb_group,512
+
+	if sysinfo(3)=1 {
+		cb_group={"命令概要
+プリプロセッサ命令
+代入命令
+特殊代入命令
+プログラム制御命令
+プログラム制御マクロ
+基本入出力制御命令
+拡張入出力制御命令
+オブジェクト制御命令
+画面制御命令
+拡張画面制御命令
+文字列操作命令
+メモリ管理命令
+マルチメディア制御命令
+ファイル操作命令
+拡張ファイル操作命令
+通信制御命令
+OSシステム制御命令
+HSPシステム制御命令
+その他の命令
+"}
+	} else {
+		cb_group={"Abstract
+Preprocess command
+Substitution command
+Special assignment command
+Program control command
+Program control macro
+Basic I/O control command
+Extended I/O control command
+Object control command
+Screen control command
+Extended screen control command
+String manipulation command
+Memory management command
+Multimedia control command
+File operation command
+Extended file operation command
+Communication control command
+OS system control command
+HSP system control command
+Other commands
+"}
+}
+
+
+
 
 #module "ihelp"
+#deffunc ihelp_init var _p1
+	;
+	;	hsphelpライブラリ初期化
+	;
+	ih_msg="Init HSPhelp.\n"
+
+	idxerror=0				; index構築エラーフラグ
+
+	sdim fl,$4000
+	dirlist fl,"*.hs",1
+	notesel fl
+	flmax=notemax 
+	if flmax=0 : goto *failidx
+
+	fname2=ih_file@				; 書き出しファイル
+	exist fname2
+	if strsize>0 : goto *loadidx
+*initidx
+	ih_msg+="Rebuild index.\n"
+	if idxerror>0 : goto *failidx
+	gosub *mkidx
+	idxerror++
+*loadidx
+	fname2=ih_file@				; idxファイル名
+	exist fname2
+	if strsize<1 : goto *failidx
+	;
+	sdim tmp,$8000				; text一時バッファ(32K)
+	sdim wrt,strsize+4			; idxバッファを確保
+	sdim ln,256
+	hsfilemax=0
+	hsfileok=0
+	notesel wrt
+	noteload fname2
+	repeat notemax
+		noteget ln,cnt
+		if peek(ln,0)!='@' : break
+		i=1
+		getstr fname1,ln,i,','
+		i+=strsize
+		getstr tmp,ln,i,','
+		flsize=0+tmp
+		exist fname1
+		if strsize!=flsize : hsfileok=1
+		hsfilemax++
+	loop
+	if hsfilemax!=flmax : hsfileok=2
+
+	if hsfileok>0 {
+		goto *initidx		; .HSファイルが更新されている
+	}
+	maxkw=(notemax-hsfilemax)/2
+	ih_msg+="Total "+maxkw+" keywords.\n"
+	_p1=ih_msg
+	return 0
+*failidx
+	sdim wrt,64
+	ih_msg+="No index file.\n"
+	_p1=ih_msg
+	return 1
+
+*mkidx
+	;	idxファイル再構築main
+	;
+	ih_msg="idxファイルの更新中...\n"
+
+	fname2=ih_file@				; 書き出しファイル
+	sdim tidx1,$10000			; idx一時バッファ(64K)
+	sdim tidx2,$10000			; idx一時バッファ(64K)
+	sdim hsidx,$10000			; hsidx一時バッファ(64K)
+	sdim wrt,$18000				; idx書き出しバッファ(96K)
+
+	dim flsize,flmax
+	flnum=0
+
+*lp2
+	;	"*.hs"をすべて解析
+	;
+	notesel fl
+	noteget fname1,flnum
+	gosub *docstart
+
+	flnum++
+	if flnum<flmax : goto *lp2
+
+	;	tidxをソートしてwrtを作成
+	;
+	sdim ln,256
+	sortnote tidx1
+	;
+	notesel tidx1
+	i=notemax
+	c=0
+	wrt=""
+	repeat i
+	  notesel tidx1
+	  noteget ln,cnt
+	  c=peek(ln,0)
+	  if c=0 : goto *tchkov
+	  wrt+=ln+"\n"
+	  sortget c,cnt
+	  notesel tidx2
+	  noteget ln,c
+	  wrt+=ln+"\n"
+*tchkov
+	loop
+
+	;	idxファイルをセーブ
+	;
+	wrt = hsidx + wrt
+	;
+	notesel wrt
+	notesave fname2
+	ih_msg+="["+fname2+"] saved.\n"
+
+
+
+*docstart
+	;	hsファイルを解析してidxを作成
+	;
+	exist fname1
+	if strsize<0 : dialog "fatal error" : end
+	hsfsize=strsize
+	sdim buf,hsfsize+4			; hs読み込みバッファ
+	flsize(flnum)=hsfsize
+	hsidx+="@"+fname1+","+hsfsize+"\n"
+
+	sdim a,256
+	sdim ln,256
+	sdim dllname,64
+
+	ih_msg+="file ["+fname1+"] を読み込みます.\n"
+	bload fname1,buf
+	bufmax=strlen(buf)
+
+	i=0:idn=0
+	c=0
+*doc1
+	idn=i					; 行IDを保存
+	getstr ln,buf,i,0:i+=strsize
+	c=peek(ln,0)
+	if c!=$25 : goto *doc2			; '%' check
+	;
+	a=strmid(ln,1,64)
+	if a="dll" : goto *doc3			; "%dll" check
+	if a!="index" : goto *doc2		; "%index" check
+	;
+	getstr a,buf,i,0:i+=strsize		; 次の行を取得
+	getstr ln,buf,i,0:i+=strsize		; その次の行を取得
+	if i>=bufmax : goto *doc2		; error check
+	;
+	tidx1+=a+"\n"
+	tidx2+=""+idn+","+fname1+","+dllname+","+hsfsize+"\n"
+*doc2
+	if i<bufmax : goto *doc1
+	return
+*doc3
+	getstr dllname,buf,i,0:i+=strsize	; 次の行を取得
+	if dllname="none" : dllname=""
+	goto *doc2
+
+
 #deffunc ihelp_open int _p1
 *gethelp
 	;	hsファイル読み込み
@@ -66,7 +280,7 @@
 	ih_ans_dll@ = ans_dll
 	;
 	exist ans_name
-	if strsize<0 : dialog "ファイル["+ans_name+"]がありません." : lnidx=-1 : return
+	if strsize<0 : dialog "No file ["+ans_name+"]." : lnidx=-1 : return
 
 	;	Helpのnote項目を取得
 	;
@@ -90,8 +304,6 @@
 	ih_opt@+=ln
 	goto *gnlp0
 *gnlp1
-
-
 	;	Help本文を取得
 	;
 	sdim buf,$8000				; hs読み込みバッファ
@@ -105,7 +317,9 @@
 	sdim refsel,$4000			; リファレンス情報2(16K)
 	;
 	noteget tmp,0
-	if tmp!="%index" : dialog "Helpデータが異常です\nindexを再構築してください" : lnidx=-1 : return
+	if tmp!="%index" : lnidx=-1 : return 1
+	noteget ans_title,2
+	ih_ans_title@ = ans_title
 	;
 	c=0
 	a=""
@@ -180,10 +394,10 @@
 	ih_prminf@=strmid(ih_prminf@,strsize,4096)	; 残りをパラメータ説明とする
 	;
 	notesel refsel : i=notemax
-	ih_refsel@="関連"+i+"項目\n"
+	ih_refsel@="Related "+i+" keys.\n"
 	ih_refsel@+=refsel
 	;
-	return
+	return 0
 
 
 *getref
@@ -256,7 +470,7 @@
 	;
 	ih_opt=""
 	exist ans_name
-	if strsize<0 : dialog "ファイル["+ans_name+"]がありません." : return
+	if strsize<0 : dialog "No file ["+ans_name+"]." : return
 	;
 	sdim buf,strsize+4			; hs読み込みバッファ
 	sdim a,256
@@ -294,7 +508,7 @@
 	goto *prlp1
 
 *prfin
-	ih_opt@="[種別] "+iopt.0+"\n[グループ]"+ih_group@+"[Version] "+iopt.1+"\n[作成日] "+iopt.2+"\n[作成者] "+iopt.3+"\n[URL]"+iopt.5+"\n[備考]\n"+iopt.4
+	ih_opt@="[Type] "+iopt.0+"\n[Group]"+ih_group@+"[Version] "+iopt.1+"\n[Date] "+iopt.2+"\n[Author] "+iopt.3+"\n[URL]"+iopt.5+"\n[misc]\n"+iopt.4
 	return
 
 
@@ -310,13 +524,6 @@
 	mref _stat,64
 	a=_p1					; 変数a = パラメータ1
 	;
-	fname2="hsphelp.idx"			; idxファイル名
-	exist fname2
-	if strsize<1 : dialog "idxファイルがありません.\n「index作成」でインデックスファイルを作成してください。" : return
-	;
-	sdim wrt,strsize+4			; idxバッファを確保
-	bload fname2,wrt
-	;
 	dim ansln,$1000				; サーチ結果lineバッファ(4096)
 	sdim ansbuf,$8000			; サーチ結果バッファ
 	;
@@ -328,10 +535,15 @@
 *idsrc
 	getstr ln,wrt,i				; lnidxを取得
 	if strsize=0 : goto *chkfin
+	if peek(ln,0)='@' {			; file情報行
+		i+=strsize
+		goto *idsrc
+	}
 	ln2=ln
 	poke ln2,c,0				; ln2をaと同じ長さに合わせる
 
 	if ln2=a : ansln.lnnum=i : ansbuf+=ln+"\n" : lnnum+
+
 	i+=strsize
 	getstr ln,wrt,i:i+=strsize		; 1行を読み飛ばす
 

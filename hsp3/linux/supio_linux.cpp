@@ -1,9 +1,9 @@
 
 //
 //	supio.cpp functions (for Linux)
-//	Linuxç”¨ã®supio.cppã‚’åˆ¥ãƒ•ã‚¡ã‚¤ãƒ«ã¨ã—ã¦ä½œæˆã—ã¾ã—ãŸã€‚
+//	Linux—p‚Ìsupio.cpp‚ğ•Êƒtƒ@ƒCƒ‹‚Æ‚µ‚Äì¬‚µ‚Ü‚µ‚½B
 //
-//	Special thanks to Charlotte at HSPé–‹ç™ºwiki
+//	Special thanks to Charlotte at HSPŠJ”­wiki
 //	http://hspdev-wiki.net/?OpenHSP%2FLinux%2Fhsp3
 //
 //
@@ -91,7 +91,7 @@ void freeac(char **ppc)
 //
 static void _splitpath( char *path, char *p_drive, char *dir, char *fname, char *ext )
 {
-	//		Linuxç”¨ãƒ•ã‚¡ã‚¤ãƒ«ãƒ‘ã‚¹åˆ‡ã‚Šå‡ºã—
+	//		Linux—pƒtƒ@ƒCƒ‹ƒpƒXØ‚èo‚µ
 	//
 	char *p, pathtmp[256];
 
@@ -118,7 +118,7 @@ static void _splitpath( char *path, char *p_drive, char *dir, char *fname, char 
 
 static int wildcard( char *text, char *wc )
 {
-	//		textã«å¯¾ã—ã¦ãƒ¯ã‚¤ãƒ«ãƒ‰ã‚«ãƒ¼ãƒ‰å‡¦ç†ã‚’é©å¿œ
+	//		text‚É‘Î‚µ‚ÄƒƒCƒ‹ƒhƒJ[ƒhˆ—‚ğ“K‰
 	//		return value: yes 1, no 0
 	//
 	if ( wc[0]=='\0' && *text=='\0' ) {
@@ -181,7 +181,7 @@ int mem_save( char *fname, void *mem, int msize, int seekofs )
 
 size_t utf8strlen( const char *target )
 {
-	//		UTF8æ–‡å­—åˆ—ã®é•·ã•ã‚’å¾—ã‚‹
+	//		UTF8•¶š—ñ‚Ì’·‚³‚ğ“¾‚é
 	//
 	unsigned char *p;
 	unsigned char *base;
@@ -190,8 +190,8 @@ size_t utf8strlen( const char *target )
 	base = p;
 	while(1) {
 		a1=*p;if ( a1==0 ) break;
-		p++;							// æ¤œç´¢ä½ç½®ã‚’ç§»å‹•
-		if (a1>=128) {					// å¤šãƒã‚¤ãƒˆæ–‡å­—ãƒã‚§ãƒƒã‚¯
+		p++;							// ŒŸõˆÊ’u‚ğˆÚ“®
+		if (a1>=128) {					// ‘½ƒoƒCƒg•¶šƒ`ƒFƒbƒN
 			if (a1>=192) p++;
 			if (a1>=224) p++;
 			if (a1>=240) p++;
@@ -205,7 +205,7 @@ size_t utf8strlen( const char *target )
 
 void strcase( char *target )
 {
-	//		strã‚’ã™ã¹ã¦å°æ–‡å­—ã«(utf8å¯¾å¿œç‰ˆ)
+	//		str‚ğ‚·‚×‚Ä¬•¶š‚É(utf8‘Î‰”Å)
 	//
 	unsigned char *p;
 	unsigned char a1;
@@ -213,8 +213,8 @@ void strcase( char *target )
 	while(1) {
 		a1=*p;if ( a1==0 ) break;
 		*p=tolower(a1);
-		p++;							// æ¤œç´¢ä½ç½®ã‚’ç§»å‹•
-		if (a1>=128) {					// å¤šãƒã‚¤ãƒˆæ–‡å­—ãƒã‚§ãƒƒã‚¯
+		p++;							// ŒŸõˆÊ’u‚ğˆÚ“®
+		if (a1>=128) {					// ‘½ƒoƒCƒg•¶šƒ`ƒFƒbƒN
 			if (a1>=192) p++;
 			if (a1>=224) p++;
 			if (a1>=240) p++;
@@ -261,7 +261,7 @@ int strcat2( char *str1, char *str2 )
 
 char *strstr2( char *target, char *src )
 {
-	//		strstré–¢æ•°ã®utf8å¯¾å¿œç‰ˆ
+	//		strstrŠÖ”‚Ìutf8‘Î‰”Å
 	//
 	unsigned char *p;
 	unsigned char *s;
@@ -280,8 +280,8 @@ char *strstr2( char *target, char *src )
 			a3=*p2++;if (a3==0) break;
 			if (a2!=a3) break;
 		}
-		p++;							// æ¤œç´¢ä½ç½®ã‚’ç§»å‹•
-		if (a1>=128) {					// å¤šãƒã‚¤ãƒˆæ–‡å­—ãƒã‚§ãƒƒã‚¯
+		p++;							// ŒŸõˆÊ’u‚ğˆÚ“®
+		if (a1>=128) {					// ‘½ƒoƒCƒg•¶šƒ`ƒFƒbƒN
 			if (a1>=192) p++;
 			if (a1>=224) p++;
 			if (a1>=240) p++;
@@ -295,7 +295,7 @@ char *strstr2( char *target, char *src )
 
 char *strchr2( char *target, char code )
 {
-	//		strä¸­æœ€å¾Œã®codeä½ç½®ã‚’æ¢ã™(utf8å¯¾å¿œç‰ˆ)
+	//		str’†ÅŒã‚ÌcodeˆÊ’u‚ğ’T‚·(utf8‘Î‰”Å)
 	//
 	unsigned char *p;
 	unsigned char a1;
@@ -305,8 +305,8 @@ char *strchr2( char *target, char code )
 	while(1) {
 		a1=*p;if ( a1==0 ) break;
 		if ( a1==code ) res=(char *)p;
-		p++;							// æ¤œç´¢ä½ç½®ã‚’ç§»å‹•
-		if (a1>=128) {					// å¤šãƒã‚¤ãƒˆæ–‡å­—ãƒã‚§ãƒƒã‚¯
+		p++;							// ŒŸõˆÊ’u‚ğˆÚ“®
+		if (a1>=128) {					// ‘½ƒoƒCƒg•¶šƒ`ƒFƒbƒN
 			if (a1>=192) p++;
 			if (a1>=224) p++;
 			if (a1>=240) p++;
@@ -369,7 +369,7 @@ int changedir( char *name )
 int delfile( char *name )
 {
 	return unlink( name );
-	//return remove( name );		// ãƒ‡ã‚£ãƒ¬ã‚¯ãƒˆãƒªã«ã‚‚ãƒ•ã‚¡ã‚¤ãƒ«ã«ã‚‚å¯¾å¿œ
+	//return remove( name );		// ƒfƒBƒŒƒNƒgƒŠ‚É‚àƒtƒ@ƒCƒ‹‚É‚à‘Î‰
 }
 
 
@@ -377,7 +377,7 @@ int dirlist( char *fname, char **target, int p3 )
 {
 	//		Linux System
 	//
-	enum { MASK = 3 };			// mode 3ã¾ã§ã®ãƒ“ãƒƒãƒˆåè»¢ç”¨
+	enum { MASK = 3 };			// mode 3‚Ü‚Å‚Ìƒrƒbƒg”½“]—p
 	char *p;
 	unsigned int fl;
 	unsigned int stat_main;
@@ -391,22 +391,22 @@ int dirlist( char *fname, char **target, int p3 )
 
 	//sh = opendir( get_current_dir_name() );
 	getcwd( curdir, _MAX_PATH );
-	sh = opendir( curdir );	// get_current_dir_nameã¯MinGWã§é€šã‚‰ãªã‹ã£ãŸã®ã§ã¨ã‚Šã‚ãˆãš
+	sh = opendir( curdir );	// get_current_dir_name‚ÍMinGW‚Å’Ê‚ç‚È‚©‚Á‚½‚Ì‚Å‚Æ‚è‚ ‚¦‚¸
 
 	fd = readdir( sh );
 	while( fd != NULL ) {
 		p = fd->d_name; fl = 1;
-		if ( *p==0 ) fl=0;			// ç©ºè¡Œã‚’é™¤å¤–
-		if ( *p=='.') {				// '.','..'ã‚’é™¤å¤–
+		if ( *p==0 ) fl=0;			// ‹ós‚ğœŠO
+		if ( *p=='.') {				// '.','..'‚ğœŠO
 			if ( p[1]==0 ) fl=0;
 			if ((p[1]=='.')&&(p[2]==0)) fl=0;
 		}
-		//		è¡¨ç¤º/éè¡¨ç¤ºã®ãƒã‚¹ã‚¯
-		//		Linuxç”¨ãªã®ã§ã‚·ã‚¹ãƒ†ãƒ å±æ€§ã¯è€ƒæ…®ã—ãªã„
+		//		•\¦/”ñ•\¦‚Ìƒ}ƒXƒN
+		//		Linux—p‚È‚Ì‚ÅƒVƒXƒeƒ€‘®«‚Íl—¶‚µ‚È‚¢
 		if (p3!=0 && fl==1) {
 			stat( p, &st );
 			fmask=0;
-			if (p3&4) {				// æ¡ä»¶åè»¢
+			if (p3&4) {				// ğŒ”½“]
 				if (S_ISREG( st.st_mode )&&( *p!='.' )) {
 					fl=0;
 				} else {
@@ -414,11 +414,11 @@ int dirlist( char *fname, char **target, int p3 )
 				}
 			}
 			if ( fl==1 ) {
-				if ((p3^fmask)&1 && S_ISDIR( st.st_mode )) fl=0;	//ãƒ‡ã‚£ãƒ¬ã‚¯ãƒˆãƒª
-				if ((p3^fmask)&2 && ( *p=='.' )) fl=0;				//éš ã—ãƒ•ã‚¡ã‚¤ãƒ«
+				if ((p3^fmask)&1 && S_ISDIR( st.st_mode )) fl=0;	//ƒfƒBƒŒƒNƒgƒŠ
+				if ((p3^fmask)&2 && ( *p=='.' )) fl=0;				//‰B‚µƒtƒ@ƒCƒ‹
 			}
 		}
-		//		ãƒ¯ã‚¤ãƒ«ãƒ‰ã‚«ãƒ¼ãƒ‰å‡¦ç†
+		//		ƒƒCƒ‹ƒhƒJ[ƒhˆ—
 		//
 		if (fl) {
 			fl=wildcard( p, fname );
@@ -454,7 +454,7 @@ int gettime( int index )
 	struct timeval tv;
 	struct tm *lt;
 
-	gettimeofday( &tv, NULL );	// MinGWã ã¨Verã«ã‚ˆã£ã¦é€šã‚Šã¾ã›ã‚“
+	gettimeofday( &tv, NULL );	// MinGW‚¾‚ÆVer‚É‚æ‚Á‚Ä’Ê‚è‚Ü‚¹‚ñ
 	lt = localtime( &tv.tv_sec );
 
 	switch( index ) {
@@ -475,7 +475,7 @@ int gettime( int index )
 	case 7:
 		return (int)tv.tv_usec/10000;
 	case 8:
-		/*	ä¸€å¿œãƒã‚¤ã‚¯ãƒ­ç§’ã¾ã§å–ã‚Œã‚‹	*/
+		/*	ˆê‰ƒ}ƒCƒNƒ•b‚Ü‚Åæ‚ê‚é	*/
 		return (int)tv.tv_usec%10000;
 	}
 	return 0;
@@ -501,8 +501,8 @@ int strsp_get( char *srcstr, char *dststr, char splitchr, int len )
 
 /*
 	rev 44
-	mingw : warning : æ¯”è¼ƒã¯å¸¸ã«å½
-	ã«å¯¾å‡¦
+	mingw : warning : ”äŠr‚Íí‚É‹U
+	‚É‘Îˆ
 */
 	unsigned char a1;
 	unsigned char a2;
@@ -514,7 +514,7 @@ int strsp_get( char *srcstr, char *dststr, char splitchr, int len )
 		a1=srcstr[splc];
 		if (a1==0) break;
 		splc++;
-		if (a1>=128) {					// å¤šãƒã‚¤ãƒˆæ–‡å­—ãƒã‚§ãƒƒã‚¯
+		if (a1>=128) {					// ‘½ƒoƒCƒg•¶šƒ`ƒFƒbƒN
 			if (a1>=192) utf8cnt++;
 			if (a1>=224) utf8cnt++;
 			if (a1>=240) utf8cnt++;
@@ -578,7 +578,7 @@ int GetLimit( int num, int min, int max )
 
 void CutLastChr( char *p, char code )
 {
-	//		æœ€å¾Œã®'\\'ã‚’å–ã‚Šé™¤ã
+	//		ÅŒã‚Ì'\\'‚ğæ‚èœ‚­
 	//
 	char *ss;
 	char *ss2;
@@ -624,11 +624,11 @@ int htoi( char *str )
 
 char *strchr3( char *target, int code, int sw, char **findptr )
 {
-	//		æ–‡å­—åˆ—ä¸­ã®codeä½ç½®ã‚’æ¢ã™(2ãƒã‚¤ãƒˆã‚³ãƒ¼ãƒ‰ã€utf8-4ãƒã‚¤ãƒˆåˆ†å¯¾å¿œç‰ˆ)
-	//		sw = 0 : findptr = æœ€å¾Œã«è¦‹ã¤ã‹ã£ãŸcodeä½ç½®
-	//		sw = 1 : findptr = æœ€åˆã«è¦‹ã¤ã‹ã£ãŸcodeä½ç½®
-	//		sw = 2 : findptr = æœ€åˆã«è¦‹ã¤ã‹ã£ãŸcodeä½ç½®(æœ€åˆã®æ–‡å­—ã®ã¿æ¤œç´¢)
-	//		æˆ»ã‚Šå€¤ : æ¬¡ã®æ–‡å­—ã«ã‚ãŸã‚‹ä½ç½®
+	//		•¶š—ñ’†‚ÌcodeˆÊ’u‚ğ’T‚·(2ƒoƒCƒgƒR[ƒhAutf8-4ƒoƒCƒg•ª‘Î‰”Å)
+	//		sw = 0 : findptr = ÅŒã‚ÉŒ©‚Â‚©‚Á‚½codeˆÊ’u
+	//		sw = 1 : findptr = Å‰‚ÉŒ©‚Â‚©‚Á‚½codeˆÊ’u
+	//		sw = 2 : findptr = Å‰‚ÉŒ©‚Â‚©‚Á‚½codeˆÊ’u(Å‰‚Ì•¶š‚Ì‚İŒŸõ)
+	//		–ß‚è’l : Ÿ‚Ì•¶š‚É‚ ‚½‚éˆÊ’u
 	//
 	unsigned char *p;
 	unsigned char a1;
@@ -680,8 +680,8 @@ char *strchr3( char *target, int code, int sw, char **findptr )
 				}
 			}
 		}
-		p++;							// æ¤œç´¢ä½ç½®ã‚’ç§»å‹•
-		if (a1>=128) {					// å¤šãƒã‚¤ãƒˆæ–‡å­—ãƒã‚§ãƒƒã‚¯
+		p++;							// ŒŸõˆÊ’u‚ğˆÚ“®
+		if (a1>=128) {					// ‘½ƒoƒCƒg•¶šƒ`ƒFƒbƒN
 			if (a1>=192) p++;
 			if (a1>=224) p++;
 			if (a1>=240) p++;
@@ -704,7 +704,7 @@ char *strchr3( char *target, int code, int sw, char **findptr )
 
 void TrimCodeR( char *p, int code )
 {
-	//		æœ€å¾Œã®codeã‚’å–ã‚Šé™¤ã
+	//		ÅŒã‚Ìcode‚ğæ‚èœ‚­
 	//
 	char *ss;
 	char *ss2;
@@ -723,7 +723,7 @@ void TrimCodeR( char *p, int code )
 
 void TrimCode( char *p, int code )
 {
-	//		ã™ã¹ã¦ã®codeã‚’å–ã‚Šé™¤ã
+	//		‚·‚×‚Ä‚Ìcode‚ğæ‚èœ‚­
 	//
 	char *ss;
 	char *ss2;
@@ -737,7 +737,7 @@ void TrimCode( char *p, int code )
 
 void TrimCodeL( char *p, int code )
 {
-	//		æœ€åˆã®codeã‚’å–ã‚Šé™¤ã
+	//		Å‰‚Ìcode‚ğæ‚èœ‚­
 	//
 	char *ss;
 	char *ss2;
@@ -749,7 +749,7 @@ void TrimCodeL( char *p, int code )
 }
 
 //
-//		æ–‡å­—åˆ—ç½®ãæ›ãˆ
+//		•¶š—ñ’u‚«Š·‚¦
 //
 static	char *s_match;
 static	int len_match;
@@ -763,8 +763,8 @@ static	int reptime;
 
 void ReplaceSetMatch(char *src, char *match, char *result, int in_src, int in_match, int in_result)
 {
-	//		ç½®ãæ›ãˆå…ƒã€ç½®ãæ›ãˆå¯¾è±¡ã®ã‚»ãƒƒãƒˆ
-	//		(ã‚ã‚‰ã‹ã˜ã‚ãƒ¡ãƒ¢ãƒªãƒãƒƒãƒ•ã‚¡ã®ç¢ºä¿ãŒå¿…è¦)
+	//		’u‚«Š·‚¦Œ³A’u‚«Š·‚¦‘ÎÛ‚ÌƒZƒbƒg
+	//		(‚ ‚ç‚©‚¶‚ßƒƒ‚ƒŠƒoƒbƒtƒ@‚ÌŠm•Û‚ª•K—v)
 	//
 	s_buffer = src;
 	s_match = match;
@@ -776,7 +776,7 @@ void ReplaceSetMatch(char *src, char *match, char *result, int in_src, int in_ma
 
 char *ReplaceStr( char *repstr )
 {
-	//		ç½®ãæ›ãˆå®Ÿè¡Œ
+	//		’u‚«Š·‚¦Às
 	//
 	char *p;
 	unsigned char a1;
@@ -798,7 +798,7 @@ char *ReplaceStr( char *repstr )
 		if ( a1 == 0 ) break;
 
 		utf8cnt=0;
-		if (a1>=128) {					// å¤šãƒã‚¤ãƒˆæ–‡å­—ãƒã‚§ãƒƒã‚¯
+		if (a1>=128) {					// ‘½ƒoƒCƒg•¶šƒ`ƒFƒbƒN
 			if (a1>=192) utf8cnt++;
 			if (a1>=224) utf8cnt++;
 			if (a1>=240) utf8cnt++;
@@ -806,7 +806,7 @@ char *ReplaceStr( char *repstr )
 			if (a1>=252) utf8cnt++;
 		}
 
-		//	æ¯”è¼ƒã™ã‚‹
+		//	”äŠr‚·‚é
 		psize = 0; csize = 1;
 		if ( a1 == a2 ) {
 			if ( memcmp( p, s_match, len_match ) == 0 ) {
@@ -815,21 +815,21 @@ char *ReplaceStr( char *repstr )
 			}
 		}
 
-		//	ãƒãƒƒãƒ•ã‚¡ãƒã‚§ãƒƒã‚¯
+		//	ƒoƒbƒtƒ@ƒ`ƒFƒbƒN
 		i = cursize + csize;
 		if ( i >= len_result ) {
 			len_result += 0x8000;
 			s_result = sbExpand( s_result, len_result );
 		}
 
-		if ( psize ) {				// ç½®ãæ›ãˆ
+		if ( psize ) {				// ’u‚«Š·‚¦
 
 			memcpy( s_result+cursize, s_rep, csize );
 			p += psize;
 			cursize += csize;
 			reptime++;
 
-		} else {					// ç½®ãæ›ãˆãªã—
+		} else {					// ’u‚«Š·‚¦‚È‚µ
 			s_result[cursize++] = a1;
 			p++;
 			if ( utf8cnt>0 ) {
@@ -847,7 +847,7 @@ char *ReplaceStr( char *repstr )
 
 int ReplaceDone( void )
 {
-	//		ç½®ãæ›ãˆã®å¾Œå‡¦ç†
+	//		’u‚«Š·‚¦‚ÌŒãˆ—
 	//
 	return reptime;
 }

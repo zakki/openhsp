@@ -309,7 +309,7 @@ int MCP3008_FullDuplex(int spich, int adcch){
 
 
 /*----------------------------------------------------------*/
-//		GPIOãƒ‡ãƒã‚¤ã‚¹ã‚³ãƒ³ãƒˆãƒ­ãƒ¼ãƒ«é–¢é€£
+//		GPIOƒfƒoƒCƒXƒRƒ“ƒgƒ[ƒ‹ŠÖ˜A
 /*----------------------------------------------------------*/
 
 #define GPIO_TYPE_NONE 0
@@ -324,7 +324,7 @@ static int gpio_value[GPIO_MAX];
 
 static int echo_file( char *name, char *value )
 {
-	//	echo value > name ã‚’è¡Œãªã†
+	//	echo value > name ‚ðs‚È‚¤
 	//printf( "[%s]<-%s\n",name,value );
 	int fd;
 	fd = open( name, O_WRONLY );
@@ -349,7 +349,7 @@ static int gpio_delport( int port )
 
 	if ( gpio_type[port]==GPIO_TYPE_NONE ) return 0;
 	//echo_file2( GPIO_CLASS "unexport", port );
-	//usleep(100000);		//0.1ç§’å¾…ã¤(å¿µã®ãŸã‚)
+	//usleep(100000);		//0.1•b‘Ò‚Â(”O‚Ì‚½‚ß)
 	gpio_type[port]=GPIO_TYPE_NONE;
 	return 0;
 }
@@ -360,7 +360,7 @@ static int gpio_setport( int port, int type )
 
 	if ( gpio_type[port]==GPIO_TYPE_NONE ) {
 		echo_file2( GPIO_CLASS "export", port );
-		usleep(100000);		//0.1ç§’å¾…ã¤(å¿µã®ãŸã‚)
+		usleep(100000);		//0.1•b‘Ò‚Â(”O‚Ì‚½‚ß)
 	}
 
 	if ( gpio_type[port] == type ) return 0;
@@ -514,7 +514,7 @@ static int hsp3dish_devcontrol( char *cmd, int p1, int p2, int p3 )
 }
 
 /*----------------------------------------------------------*/
-//		ãƒ‡ãƒã‚¤ã‚¹ã‚³ãƒ³ãƒˆãƒ­ãƒ¼ãƒ«é–¢é€£
+//		ƒfƒoƒCƒXƒRƒ“ƒgƒ[ƒ‹ŠÖ˜A
 /*----------------------------------------------------------*/
 static HSP3DEVINFO *mem_devinfo;
 static int devinfo_dummy;

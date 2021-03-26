@@ -9,6 +9,8 @@
 #include <stdio.h>
 #include <string.h>
 #include <ctype.h>
+#include <unistd.h>
+#include <string>
 #include "hsp3cl.h"
 #include "../hsp3config.h"
 
@@ -21,10 +23,26 @@ int main( int argc, char *argv[] )
 
 #ifdef HSPDEBUG
 	char a1,a2,a3;
-	int b,st;
+	int b,st,index;
+	char mydir[1024];
+	char *cl;
+	std::string clopt;
+	std::string clmod;
 
 	p = "";
 	st = 0;
+	index = 0;
+
+	cl = argv[0];
+	if (*cl=='/') {
+		clmod = cl;
+	} else {
+		getcwd( mydir, 1024 );
+		clmod = mydir;
+		clmod += "/";
+		clmod += cl;
+	}
+
 	for (b=1;b<argc;b++) {
 		a1=*argv[b];a2=tolower(*(argv[b]+1));
 #ifdef HSPLINUX
@@ -32,7 +50,13 @@ int main( int argc, char *argv[] )
 #else
 		if ((a1!='/')&&(a1!='-')) {
 #endif
-			p = argv[b];
+			if ( index == 0 ) {
+				p = argv[b];
+			} else {
+				if ( index > 1 ) clopt+=" ";
+				clopt += argv[b];
+			}
+			index++;
 		} else {
 			switch (a2) {
 			case 'r':
@@ -48,6 +72,9 @@ int main( int argc, char *argv[] )
 #else
 	p = NULL;
 #endif
+
+	hsp3cl_cmdline((char *)clopt.c_str());
+	hsp3cl_modname((char *)clmod.c_str());
 
 	res = hsp3cl_init( p );
 	if ( res ) return res;
