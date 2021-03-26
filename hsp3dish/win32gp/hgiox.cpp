@@ -37,6 +37,7 @@
 
 #ifdef HSPEMSCRIPTEN
 #include <emscripten.h>
+#include <unistd.h>
 int hgio_fontsystem_get_texid(void);
 #define GL_GLEXT_PROTOTYPES
 #include <GL/gl.h>
@@ -74,6 +75,7 @@ extern SDL_Window *window;
 #include "../hgio.h"
 #include "../supio.h"
 #include "../sysreq.h"
+#include "../hsp3ext.h"
 
 #ifdef HSPWIN
 void hgio_fontsystem_win32_init(HWND wnd);
@@ -403,7 +405,7 @@ void hgio_init( int mode, int sx, int sy, void *hwnd )
 	//TTF初期化
 	char fontpath[HSP_MAX_PATH+1];
 	*fontpath = 0;
-	strcpy( fontpath, hgio_getdir(1) );
+	strcpy( fontpath, hsp3ext_getdir(1) );
 	strcat( fontpath, TTF_FONTFILE );
 
 	if ( TTF_Init() ) {
@@ -1678,62 +1680,6 @@ int hgio_gettick( void )
 
 }
 
-
-int hgio_exec( char *stmp, char *option, int mode )
-{
-#ifdef HSPWIN
-	int i,j;
-	j=SW_SHOWDEFAULT;if (mode&2) j=SW_SHOWMINIMIZED;
-
-	if ( *option != 0 ) {
-		SHELLEXECUTEINFO exinfo;
-		memset( &exinfo, 0, sizeof(SHELLEXECUTEINFO) );
-		exinfo.cbSize = sizeof(SHELLEXECUTEINFO);
-		exinfo.fMask = SEE_MASK_INVOKEIDLIST;
-		exinfo.hwnd = master_wnd;
-		exinfo.lpVerb = option;
-		exinfo.lpFile = stmp;
-		exinfo.nShow = SW_SHOWNORMAL;
-		if (ShellExecuteEx(&exinfo) == false) return-1;
-		return 0;
-	}
-		
-	if ( mode&16 ) {
-		i = (int)ShellExecute( NULL,NULL,stmp,"","",j );
-	}
-	else if ( mode&32 ) {
-		i = (int)ShellExecute( NULL,"print",stmp,"","",j );
-	}
-	else {
-		i=WinExec( stmp,j );
-	}
-	if (i < 32) return -1;
-#endif
-#ifdef HSPNDK
-	j_callActivity( stmp, option, mode );
-#endif
-#ifdef HSPIOS
-    gpb_exec( mode, stmp );
-#endif
-#ifdef HSPLINUX
-	system(stmp);
-#endif
-
-#ifdef HSPEMSCRIPTEN
-	{
-	EM_ASM_({
-		if ($1>=16) {
-			window.open(UTF8ToString($0));
-		} else {
-			window.eval(UTF8ToString($0));
-		}
-	},stmp,mode );
-	}
-#endif
-	return 0;
-}
-
-
 HSPREAL hgio_getinfo( int type )
 {
 	int i;
@@ -1751,95 +1697,6 @@ void hgio_setinfo( int type, HSPREAL val )
 	if (( i >= 0 )&&( i < GINFO_EXINFO_MAX)) {
 		infoval[i] = val;
 	}
-}
-
-char *hgio_sysinfo( int p2, int *res, char *outbuf )
-{
-	//		System strings get
-	//
-#if HSPWIN
-	int fl;
-	char pp[128];
-	char *p1;
-	BOOL success;
-	DWORD version;
-	DWORD size;
-	DWORD *mss;
-	SYSTEM_INFO si;
-	MEMORYSTATUS ms;
-
-	fl = HSPVAR_FLAG_INT;
-	p1 = outbuf;
-	size = HSP_MAX_PATH;
-
-	if (p2&16) {
-		GetSystemInfo(&si);
-	}
-	if (p2&32) {
-		GlobalMemoryStatus(&ms);
-		mss=(DWORD *)&ms;
-		*(int *)p1 = (int)mss[p2&15];
-		*res = fl;
-		return p1;
-	}
-
-	switch(p2) {
-	case 0:
-		strcpy(p1, "Windows");
-		version = GetVersion();
-		if ((version & 0x80000000) == 0) strcat(p1,"NT");
-									else strcat(p1,"9X");
-		sprintf( pp," ver%d.%d", static_cast< int >( version&0xff ), static_cast< int >( (version&0xff00)>>8 ) );
-		strcat( p1, pp );
-		fl=HSPVAR_FLAG_STR;
-		break;
-	case 1:
-		success = GetUserName( p1,&size );
-		fl = HSPVAR_FLAG_STR;
-		break;
-	case 2:
-		success = GetComputerName(p1, &size );
-		fl = HSPVAR_FLAG_STR;
-		break;
-	case 16:
-		*(int *)p1 = (int)si.dwProcessorType;
-		break;
-	case 17:
-		*(int *)p1 = (int)si.dwNumberOfProcessors;
-		break;
-	default:
-		return NULL;
-	}
-	*res = fl;
-	return p1;
-#else
-	int fl;
-	char *p1;
-	fl = HSPVAR_FLAG_STR;
-	p1 = outbuf;
-	*p1=0;
-
-	switch(p2) {
-	case 0:
-#ifdef HSPNDK
-		strcpy(p1, "Android");
-#endif
-#ifdef HSPIOS
-        //strcpy(p1, "iOS");
-        gpb_getSysVer( p1 );
-#endif
-		fl=HSPVAR_FLAG_STR;
-		break;
-	case 1:
-		break;
-	case 2:
-		break;
-	default:
-		return NULL;
-	}
-	*res = fl;
-	return p1;
-#endif
 }
 
 #ifdef HSPWIN
@@ -2106,65 +1963,6 @@ void hgio_mtouchidf( int pointid, float xx, float yy, int button, int opt )
     realx=(int)(xx*nDestWidth);
     realy=(int)(yy*nDestHeight);
 	hgio_mtouchid(pointid,realx,realy,button,opt);
-}
-
-#endif
-
-
-/*-------------------------------------------------------------------------------*/
-
-#if defined(HSPLINUX)
-
-static	char dir_hsp[HSP_MAX_PATH+1];
-static	char dir_cmdline[HSP_MAX_PATH+1];
-
-void hgio_setmainarg( char *hsp_mainpath, char *cmdprm )
-{
-	int p,i;
-	strcpy( dir_hsp, hsp_mainpath );
-
-	p = 0; i = 0;
-	while(dir_hsp[i]){
-		if(dir_hsp[i]=='/' || dir_hsp[i]=='\\') p=i;
-		i++;
-	}
-	dir_hsp[p]=0;
-
-	strcpy( dir_cmdline, cmdprm );
-}
-
-char *hgio_getdir( int id )
-{
-	//		dirinfo命令の内容を設定する
-	//
-	char dirtmp[HSP_MAX_PATH+1];
-	char *p;
-	
-	*dirtmp = 0;
-	p = dirtmp;
-
-	switch( id ) {
-	case 0:				//    カレント(現在の)ディレクトリ
-		getcwd( p, HSP_MAX_PATH );
-		break;
-	case 1:				//    HSPの実行ファイルがあるディレクトリ
-		p = dir_hsp;
-		break;
-	case 2:				//    Windowsディレクトリ
-		break;
-	case 3:				//    Windowsのシステムディレクトリ
-		break;
-	case 4:				//    コマンドライン文字列
-		p = dir_cmdline;
-		break;
-	case 5:				//    HSPTV素材があるディレクトリ
-		strcpy( p, dir_hsp );
-		strcat( p, "/hsptv" );
-		break;
-	default:
-		throw HSPERR_ILLEGAL_FUNCTION;
-	}
-	return p;
 }
 
 #endif

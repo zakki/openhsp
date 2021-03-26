@@ -113,6 +113,7 @@ extern SDL_Window *window;
 #include "../supio.h"
 #include "../sysreq.h"
 #include "../hgio.h"
+#include "../hsp3ext.h"
 
 #include "../texmes.h"
 
@@ -303,7 +304,7 @@ void hgio_init( int mode, int sx, int sy, void *hwnd )
 
 	//TTF初期化
 	char fontpath[HSP_MAX_PATH+1];
-	strcpy( fontpath, hgio_getdir(1) );
+	strcpy( fontpath, hsp3ext_getdir(1) );
 	strcat( fontpath, TTF_FONTFILE );
 
 	if ( TTF_Init() ) {
@@ -1814,33 +1815,6 @@ int hgio_gettick( void )
 
 }
 
-int hgio_exec( char *msg, char *option, int mode )
-{
-#ifdef HSPNDK
-	j_callActivity( msg, option, mode );
-#endif
-#ifdef HSPIOS
-    gb_exec( mode, msg );
-#endif
-#ifdef HSPLINUX
-	system(msg);
-#endif
-
-#ifdef HSPEMSCRIPTEN
-	{
-	EM_ASM_({
-		if ($1>=16) {
-			window.open(UTF8ToString($0));
-		} else {
-			window.eval(UTF8ToString($0));
-		}
-	},msg,mode );
-	}
-#endif
-
-    return 0;
-}
-
 int hgio_dialog( int mode, char *str1, char *str2 )
 {
 #ifdef HSPNDK
@@ -1865,106 +1839,6 @@ int hgio_dialog( int mode, char *str1, char *str2 )
 #endif
 	return 0;
 }
-
-char *hgio_sysinfo( int p2, int *res, char *outbuf )
-{
-	int fl;
-	char *p1;
-	fl = HSPVAR_FLAG_STR;
-	p1 = outbuf;
-	*p1=0;
-
-	switch(p2) {
-	case 0:
-#ifdef HSPNDK
-		{
-		char tmp[256];
-		strcpy( tmp, j_getinfo( JAVAFUNC_INFO_VERSION ) );
-		strcpy( p1, "android " );
-		strcat( p1, tmp );
-		}
-#endif
-#ifdef HSPIOS
-        gb_getSysVer( p1 );
-#endif
-        break;
-	case 1:
-		break;
-	case 2:
-#ifdef HSPNDK
-		j_getinfo( JAVAFUNC_INFO_DEVICE );
-#endif
-#ifdef HSPIOS
-        gb_getSysModel( p1 );
-#endif
-		break;
-	default:
-		return NULL;
-	}
-	*res = fl;
-	return p1;
-}
-
-
-/*-------------------------------------------------------------------------------*/
-
-static	char dir_hsp[HSP_MAX_PATH+1];
-static	char dir_cmdline[HSP_MAX_PATH+1];
-
-void hgio_setmainarg( char *hsp_mainpath, char *cmdprm )
-{
-	int p,i;
-	strcpy( dir_hsp, hsp_mainpath );
-
-	p = 0; i = 0;
-	while(dir_hsp[i]){
-		if(dir_hsp[i]=='/' || dir_hsp[i]=='\\') p=i;
-		i++;
-	}
-	dir_hsp[p]=0;
-
-	strcpy( dir_cmdline, cmdprm );
-	Alertf( "Init:hgio_setmainarg(%s,%s)",dir_hsp,dir_cmdline );
-}
-
-char *hgio_getdir( int id )
-{
-	//		dirinfo命令の内容を設定する
-	//
-	char dirtmp[HSP_MAX_PATH+1];
-	char *p;
-	
-	*dirtmp = 0;
-	p = dirtmp;
-
-#if defined(HSPLINUX)
-
-	switch( id ) {
-	case 0:				//    カレント(現在の)ディレクトリ
-		getcwd( p, HSP_MAX_PATH );
-		break;
-	case 1:				//    HSPの実行ファイルがあるディレクトリ
-		p = dir_hsp;
-		break;
-	case 2:				//    Windowsディレクトリ
-		break;
-	case 3:				//    Windowsのシステムディレクトリ
-		break;
-	case 4:				//    コマンドライン文字列
-		p = dir_cmdline;
-		break;
-	case 5:				//    HSPTV素材があるディレクトリ
-		strcpy( p, dir_hsp );
-		strcat( p, "/hsptv" );
-		break;
-	default:
-		throw HSPERR_ILLEGAL_FUNCTION;
-	}
-#endif
-
-	return p;
-}
-
 
 /*-------------------------------------------------------------------------------*/
 

@@ -19,7 +19,7 @@
 #include "../supio.h"
 #include "../hgio.h"
 #include "../sysreq.h"
-//#include "../hsp3ext.h"
+#include "../hsp3ext.h"
 #include "../../hsp3/strnote.h"
 #include "../../hsp3/linux/hsp3ext_sock.h"
 
@@ -68,6 +68,10 @@ static int hsp_fps;
 static int hsp_limit_step_per_frame;
 static std::string syncdir;
 static bool fs_initialized = false;
+
+static int cl_option;
+static char *cl_cmdline = "";
+static char *cl_modname = "";
 
 //static	HWND m_hWnd;
 
@@ -591,8 +595,8 @@ int hsp3dish_init_sub( int sx, int sy, int autoscale )
 	res = hsp3dish_initwindow( NULL, sx, sy, autoscale, "HSPDish ver" hspver );
 	if (res) return res;
 
-//	hsp3typeinit_dllcmd( code_gettypeinfo( TYPE_DLLFUNC ) );
-//	hsp3typeinit_dllctrl( code_gettypeinfo( TYPE_DLLCTRL ) );
+	hsp3typeinit_dllcmd( code_gettypeinfo( TYPE_DLLFUNC ) );
+	hsp3typeinit_dllctrl( code_gettypeinfo( TYPE_DLLCTRL ) );
 
 #ifdef HSPDISHGP
 	//		Initalize gameplay
@@ -677,8 +681,6 @@ int hsp3dish_init( char *startfile )
 		return 1;
 	}
 
-	hgio_setmainarg( hsp_mainpath, startfile );
-
 	sx = 0; sy = 0; autoscale = 0;
 //#ifdef HSPDEBUG
 	if ( OpenIniFile( "hsp3dish.ini" ) == 0 ) {
@@ -696,6 +698,13 @@ int hsp3dish_init( char *startfile )
 
 //#endif
 	ctx = &hsp->hspctx;
+
+	//		コマンドライン関連
+	hsp->SetCommandLinePrm( cl_cmdline );		// コマンドラインパラメーターを保存
+	hsp->SetModuleFilePrm( cl_modname );			// モジュール名を保存
+
+	hsp3typeinit_dllcmd( code_gettypeinfo( TYPE_DLLFUNC ) );
+	hsp3typeinit_dllctrl( code_gettypeinfo( TYPE_DLLCTRL ) );
 
 	// Slightly different SDL initialization
 	if ( SDL_Init(SDL_INIT_VIDEO) != 0 ) {
@@ -965,5 +974,32 @@ void hsp3dish_msgfunc( HSPCTX *hspctx )
 		}
 	}
 }
+
+
+void hsp3dish_option( int opt )
+{
+	//		HSP3オプション設定
+	//
+	cl_option = opt;
+}
+
+
+void hsp3dish_cmdline( char *cmdline )
+{
+	//		HSP3オプション設定
+	//
+	cl_cmdline = cmdline;						// コマンドラインパラメーターを入れる
+}
+
+
+void hsp3dish_modname( char *modname )
+{
+	//		HSP3オプション設定
+	//
+	cl_modname = modname;						// arg[0]パラメーターを入れる
+}
+
+
+
 
 
