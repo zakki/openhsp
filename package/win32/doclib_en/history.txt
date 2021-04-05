@@ -7,7 +7,10 @@ Update history copyright 1997-2021 (c) onion software
 
 	2021/03/16 3.6 beta6
 
+Fixed a bug that an extra space is inserted in the command line argument when creating an executable file.
 [hspinet] Removed string length limit for requests
+Fixed the Windows version of HSP3, HSP3CL, and HSP3Dish so that dirinfo and sysinfo have the same specifications.
+Added F1 key (one-key help) function to the script editor for Linux / Raspberry Pi
 
 	2021/03/03 3.6 beta5
 
