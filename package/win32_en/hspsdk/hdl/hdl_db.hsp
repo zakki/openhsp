@@ -1,0 +1,853 @@
+
+;============================================================
+;	HDL Create DB part
+;============================================================
+
+#include "sqlele.hsp"
+#include "hdl_lib.hsp"
+#ifndef notnull
+ #define global ctype notnull(%1) peek(%1)
+#endif
+
+#define global HDL_PF 1
+
+/*
+	データベース フォーマット
+
+	; ディレクトリ一覧
+	Dirs
+		ID
+		Dir		; Hoge\Foo
+		Chksum	; update-check
+
+	; ファイル一覧
+	Files
+		ID
+		Path	; Hoge\Foo\Bar.txt
+		Dir		; == Dirs.Dir
+		Fn		; bar.txt (lower)
+		Chksum	; update-check
+
+	; hs ヘルプデータ
+	Help
+		ID
+		Name
+		Summary
+		Mod
+		Ver
+		Date
+		Author
+		Group3
+		Prm
+		Prm2
+		Inst
+		Sample
+		Href
+		Portinf
+		Port
+		Url
+		Type
+		Note
+		Path	; == Files.Path
+
+	; txt, htm, hsp ファイルの検索インデックス (内容は実体からロードする)
+	Docs
+		ID
+		Path	; == Files.Path
+		Type	; == Files.Type {txt, htm, hsp} only
+		Title
+		Catego
+		Search	; Index data
+		SmryIdx	; Summary start index
+*/
+
+;============================================================
+; HDL プログレスバー モジュール
+;============================================================
+
+#module
+;------------------------------------------------------------
+#define PGWID 11
+#deffunc progress_pos int p1 ; (0 - 1000)
+	if inited = 0 {
+		; init
+		inited = 1
+		wx = 360
+		wy = 100
+		bgscr PGWID, wx, wy, , (ginfo_dispx-wx)/2, (ginfo_dispy-wy)/2
+		title "HDL SYNC"
+
+		; background
+		color 85, 85, 153 : boxf
+		color 255, 255, 255 : boxf 3, 3, wx-4, wy-4
+		color : pos 15, 15 : font "Meiryo", 12 : mes "ドキュメント ファイルの情報を集めています。\nしばらくお待ちください ..."
+		color 222, 222, 222 : boxf 10, 70, 349, 79
+		color 85, 85, 153
+	}
+	gsel PGWID
+	boxf 10, 70, p1 * 339 / 1000 + 10, 79
+	gsel 0
+	return
+
+;------------------------------------------------------------
+#deffunc progress_close
+	if inited {
+		gsel PGWID, -1
+		gsel 0
+		inited = 0
+		await
+	}
+	return
+
+#global
+
+;============================================================
+; note_merge モジュール
+;============================================================
+
+#module
+;------------------------------------------------------------
+; 文字列マージ (重複行カット) (改行区切り)
+; prm : note
+#defcfunc note_merge str st1_
+	; ソース = 連結した文字列
+	st1 = st1_
+	oup = ""
+
+	; 連結した文字列の各行を配列に分解
+	split st1, "\n", astr
+	c = stat
+
+	; 重複行が無いように文字列を再構成
+	repeat c
+		c = cnt
+		repeat c + 1
+			if cnt = c {
+				if notnull(oup) : oup += "\n"
+				oup += astr.c
+				break
+			}
+			if astr.cnt = astr.c { ; 重複する行は除外
+				break
+			}
+		loop
+	loop
+	return oup
+
+;------------------------------------------------------------
+; 文字列アンマージ (改行区切り)
+; prm : note_default, note_sub
+#defcfunc note_unmerge str st1_, str st2_
+	st1 = st1_
+	st2 = st2_
+	oup = ""
+
+	; 連結した文字列の各行を配列に分解
+	split st2, "\n", astr
+	c = stat
+
+	; 除外文字列を除去しながらソース文字列を再構成
+	p = 0
+	repeat ; src2
+		getstr bstr, st1, p  ,,99999
+		if strsize = 0 : break
+		p += strsize
+
+		repeat c
+			if bstr = astr.cnt { ; sub 文字列に含まれる行は除外
+				break
+			}
+			if cnt+1 = c {
+				if notnull(oup) : oup += "\n"
+				oup += bstr
+			}
+		loop
+	loop
+	return oup
+#global
+
+;============================================================
+; HDL データベースモジュール
+;============================================================
+
+#module
+;------------------------------------------------------------
+; winapi
+#uselib "user32"
+#func	CharLower	"CharLowerA" var
+#uselib "kernel32"
+#func	FindFirstFile	"FindFirstFileA" str, var
+#func	FindNextFile	"FindNextFileA" int, var
+#func	FindClose	"FindClose" int
+
+;------------------------------------------------------------
+; = HDL_getsum(str fn)
+; ファイルの更新チェック値を求める (ワイルドカード対応) (ファイルが存在しなければ 0)
+#defcfunc HDL_getsum str p1
+	dest = 0
+	dim tmp, 80	; struct WIN32_FIND_DATA
+	FindFirstFile p1, tmp
+	h = stat
+	if h ! -1 {
+		repeat
+			; (WIN32_FIND_DATA)tmp よりチェック値作成
+			dest += tmp.8 * 137 + tmp.5 ; (size * 137 + time)
+
+			FindNextFile h, tmp
+			if stat = 0 : break
+		loop
+		FindClose h
+	}
+	return dest
+
+;------------------------------------------------------------
+; stat := 0
+#deffunc HDL_stat0
+	return 0
+
+;------------------------------------------------------------
+; HDL_getdata_hs
+; hs ファイルからデータを取得
+#deffunc HDL_getdata_hs  var vpath, var vtype
+
+; Field ID
+#define C_NAME		0	; %index  line 1
+#define C_SUMMARY	1	; %index  line 2-
+#define C_INST		2	; %inst
+#define C_PRM		3	; %prm    line 1
+#define C_PRM2		4	; %prm    line 2-
+#define C_SAMPLE	5	; %sample
+#define C_HREF		6	; %href
+#define C_PORTINF	7	; %portinfo
+#define C_PORT		8	; %port
+#define C_GROUP		9	; %group
+#define C_TYPE		10	; %type
+#define C_NOTE		11	; %note
+#define C_URL		12	; %url
+#define C_VER		13	; %ver
+#define C_DATE		14	; %date
+#define C_MOD		15	; %dll
+#define C_AUTHOR	16	; %author
+#define C_MAX		17	; 配列の最大値
+#define C_VOID		999	; (無効なメンバ)
+
+	bload_utf_safe vpath, buf
+
+	if instr(buf,,"%") < 0 : return
+
+	buf += "\n\n%index"
+
+	; ドキュメンテーションコメント HSPコメント パッチ
+	astr = getpath(vpath, 2|16)
+	if astr = ".hsp" | astr = ".as" : strrep buf, "*/", "\n%x\n"
+
+	; テキストプロセッサ リセット
+	sdim record_default,	64, C_MAX
+	sdim record,		64, C_MAX
+	p = 0
+	c_curr = C_VOID
+	accum = ""
+
+	; テキストプロセッサ
+	repeat
+		; 処理ライン取得
+		getstr astr, buf, p  ,,99999
+		if strsize = 0 : break
+		p += strsize
+		a = peek(astr)
+
+		; '%' エスケープ (%%hgoehgoe..)
+		if wpeek(astr) = 0x2525 {
+			memcpy astr, astr, strsize + 1, , 1
+			a = '*'
+		}
+
+		; フィールドタグ処理
+		if a = '%' {
+			; コメント除去, 小文字化
+			getstr astr, astr, , ' '
+			getstr astr, astr, , ';'
+			getstr astr, astr, , 9
+			CharLower astr
+
+			; フィールド ストア
+			if c_curr ! C_VOID {
+				; 末尾の CRLF をカット
+				a = strlen(accum)
+				if a >= 3 {
+					repeat , 1
+						if peek(accum, a-cnt) / 5 ! 2 {
+							poke accum, a-cnt+1
+							break
+						}
+					loop
+				}
+
+				; 結合モード
+				if diffmode {
+					if diffmode > 0{
+						; 統合モード
+						record.c_curr = note_merge(record.c_curr + "\n" + accum)
+					} else {
+						; 除外モード
+						record.c_curr = note_unmerge(record.c_curr, accum)
+					}
+				} else {
+					; 絶対モード (通常) - フィールドに値をそのまま入れる
+					record.c_curr = accum
+				}
+			}
+
+			; デフォルト値
+			c_curr = C_VOID	; フィールドセレクト
+			r = 1		; 改行可フラグ リセット (= enabled)
+			diffmode = 0	; 差分記述モード リセット (= off)
+
+			; レコード開始
+			if astr = "%index" {
+
+				; シンボルがある場合
+				if notnull(record.C_NAME) {
+					; レコード挿入
+					sql_q "INSERT INTO Help (Name,Summary,Inst,Prm,Prm2,Sample,Href,Portinf,Port,Group3,Type,Note,Url,Ver,Date,Mod,Author,Path) VALUES ("+prm_text(record.C_NAME)+","+prm_text(record.C_SUMMARY)+","+prm_text(record.C_INST)+","+prm_text(record.C_PRM)+","+prm_text(record.C_PRM2)+","+prm_text(record.C_SAMPLE)+","+prm_text(record.C_HREF)+","+prm_text(record.C_PORTINF)+","+prm_text(record.C_PORT)+","+prm_text(record.C_GROUP)+","+prm_text(record.C_TYPE)+","+prm_text(record.C_NOTE)+","+prm_text(record.C_URL)+","+prm_text(record.C_VER)+","+prm_text(record.C_DATE)+","+prm_text(record.C_MOD)+","+prm_text(record.C_AUTHOR)+","+prm_text(vpath)+")"
+
+				; シンボルがない場合
+				} else {
+					; 現在のフィールド値をデフォルト値と設定
+					repeat C_MAX
+						record_default.cnt = record.cnt
+					loop
+				}
+
+				; 全フィールド値をデフォルトに設定
+				repeat C_MAX
+					record.cnt = record_default.cnt
+				loop
+
+				; 対象フィールド設定
+				c_curr = C_NAME
+
+			; フィールド選択
+			} else:if astr = "%prm"		{ c_curr = C_PRM	}
+			else:if astr = "%inst"		{ c_curr = C_INST	}
+			else:if astr = "%sample"	{ c_curr = C_SAMPLE	}
+			else:if astr = "%href"		{ c_curr = C_HREF	}
+			else:if astr = "%dll"		{ c_curr = C_MOD	: r = 0 }
+			else:if astr = "%ver"		{ c_curr = C_VER	: r = 0 }
+			else:if astr = "%date"		{ c_curr = C_DATE	}
+			else:if astr = "%author"	{ c_curr = C_AUTHOR	}
+			else:if astr = "%url"		{ c_curr = C_URL	}
+			else:if astr = "%note"		{ c_curr = C_NOTE	}
+			else:if astr = "%type"		{ c_curr = C_TYPE	: r = 0 }
+			else:if astr = "%group"		{ c_curr = C_GROUP	: r = 0 }
+			else:if astr = "%port"		{ c_curr = C_PORT	}
+			else:if astr = "%portinfo"	{ c_curr = C_PORTINF	}
+			else:if astr = "%port+"		{ c_curr = C_PORT	: diffmode =  1 }
+			else:if astr = "%port-"		{ c_curr = C_PORT	: diffmode = -1 }
+			else:if astr = "%href+"		{ c_curr = C_HREF	: diffmode =  1 }
+			else:if astr = "%href-"		{ c_curr = C_HREF	: diffmode = -1 }
+			else:if astr = "%author+"	{ c_curr = C_AUTHOR	: diffmode =  1 }
+			else:if astr = "%author-"	{ c_curr = C_AUTHOR	: diffmode = -1 }
+			else:if astr = "%url+"		{ c_curr = C_URL	: diffmode =  1 }
+			else:if astr = "%url-"		{ c_curr = C_URL	: diffmode = -1 }
+
+			; これから取得する値を空リセット
+			poke accum ;= ""
+
+			continue
+		}
+
+		; 無効メンバとコメント
+		if (c_curr = C_VOID) | (a = ';') {
+			continue
+		}
+
+		; タグ行を空行に変換
+		if (a = '^') : if (astr="^") | (astr="^p") | (astr="^P") {
+			poke astr ;= ""
+		}
+
+		; 行 追加
+		if notnull(accum) * r {
+			accum += "\n" + astr
+		} else {
+			accum += astr
+		}
+
+		; メンバ固有の処理
+		if notnull(accum) {
+			; %index  2 行目以降は summary に移行
+			if c_curr = C_NAME {
+				record.c_curr = accum	; ストア
+				poke accum ;= ""	; accum リセット
+
+				c_curr = C_SUMMARY
+				r = 0
+
+			; %prm  2 行目以降は prm2 に移行
+			} else:if c_curr = C_PRM {
+				record.c_curr = accum	; ストア
+				poke accum ;= ""	; accum リセット
+
+				c_curr = C_PRM2
+				r = 1
+
+			; 1 行しか書けないフィールドは、以降の行を無効化
+			} else:if r = 0 {
+				record.c_curr = accum	; ストア
+				c_curr = C_VOID
+			}
+		}
+	loop
+
+	return
+
+;------------------------------------------------------------
+; HDL_insert_docs
+; Docs にデータ挿入 (Path, Type, Title, Search)
+#deffunc HDL_insert_docs  var v1, var v2, var v3, var v4
+
+	; Catego 値作成
+	astr = getpath(v1, 32)
+	astr = strmid(astr, instr(astr, 0, "\\")+1, 999)
+	if instr(astr, 0, "\\") > 0 : poke astr, instr(astr, 0, "\\")
+
+	; トリム
+	sql_q "SELECT trim(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace( "+prm_text(v4)+"||' '||"+prm_text(v1)+", '---',' '),'***',' '),'///',' '),'===',' '),'___',' '),'━',' '),'─',' '),'￣',' '),'■■',' '),'□□',' '),'－－－',' '),'　',' '),'\t',' '),'\n',' '),'      ',' '),'     ',' '),'    ',' '),'   ',' '),'  ',' '))", v4
+
+	; SmryIdx ; 本文の始まりそうなオフセット位置
+	a = instr(v4,, "#SKM#") ; 開始位置マーカー
+	if a >= 0 {
+		memset v4, ' ', 5, a ; マーカーの削除
+		a += 5
+	}
+	; 代替マーカー
+	if a < 0 : a = instr(v4,, "はじめに") : if a > 500 : a = -1
+	if a < 0 : a = instr(v4,, "概要") : if a > 500 : a = -1
+	if a < 0 : a = instr(v4,, "SUMMARY") : if a > 500 : a = -1
+	if a < 0 : a = instr(v4,, "Summary") : if a > 500 : a = -1
+	if a < 0 : a = instr(v4,, "DESCRIPTION") : if a > 500 : a = -1
+	if a < 0 : a = instr(v4,, "Description") : if a > 500 : a = -1
+	if a < 0 : a = instr(v4,, "title \"") : if a > 500 : a = -1
+	if a < 0 : a = instr(v4,, "#include") : if a > 500 : a = -1
+	if a < 0 : a = 0
+
+	; 挿入
+	sql_q "INSERT INTO Docs (Path, Type, Title, Catego, Search, SmryIdx) VALUES ("+prm_text(v1)+","+prm_text(v2)+","+prm_text(v3)+","+prm_text(astr)+","+prm_text(v4)+","+prm_i(wstrpos(v4, a) + 1)+")"
+	return
+
+;------------------------------------------------------------
+; HDL_getdata_htm
+; HTML (*ML) からデータを取得
+#deffunc HDL_getdata_htm  var vpath, var vtype
+
+	bload_utf_safe vpath, buf
+
+	; HTML 解釈準備 (tmp 作成)
+	sdim tmp, 8000
+	memcpy tmp, buf, limit(strlen(buf), 1, 7990)
+	CharLower tmp
+
+	; Frameset ならインデックス化しない
+	if instr(tmp, , "<frameset") > 0 : return
+
+	; コメント類を除去
+	repeat 3
+		if cnt = 0 {
+			astr = "<!--"
+			bstr = "-->"
+		} else:if cnt = 1 {
+			astr = "<style"
+			bstr = "</style>"
+		} else:if cnt = 2 {
+			astr = "<script"
+			bstr = "</script>"
+		}
+		repeat
+			a = instr(tmp, 0, astr)
+			b = instr(tmp, 0, bstr)
+			if a >= 0 & b > a {
+				memset tmp, 'X', b-a, a+2
+				memset buf, 'X', b-a, a+2
+			} else {
+				break
+			}
+		loop
+	loop
+
+	; Title を求める
+	ttle = ""
+	a = instr(tmp, , "<title>")
+	b = instr(tmp, , "</title>")
+	if a > 0 & b > a {
+		ttle = strmid(buf, a+7, b-a-7)
+
+		; Title 文字参照変換
+		sql_q "SELECT replace(replace(replace(replace(replace(replace("+prm_text(ttle)+",'&lt;','<'),'&gt;','>'),'&nbsp;',' '),'&#160;',' '),'&quot;','\"'),'&amp;','&')", ttle
+	}
+	if ttle = "" {
+		; Title = ファイル名
+		ttle = getpath(vpath, 8)
+	}
+
+	; サマリ開始位置マーカーを設定 "#SKM#"
+	repeat
+		if cnt = 0 : astr = "</h2>"
+		if cnt = 1 : astr = "</h1>"
+		if cnt = 2 : astr = "</h3>"
+		if cnt = 3 : astr = "</title>"
+		if cnt = 4 : break
+
+		a = instr(tmp, , astr)
+		if a > 0 {
+			bstr = "#SKM#           "
+			memcpy buf, bstr, strlen(astr), a, 0
+			break
+		}
+	loop
+
+	; タグを適当に消す (単区間コピー)
+	c0 = instr(buf, 0, "<")
+	if c0 >= 0 {
+		c1 = c0
+		c2 = c0
+		repeat
+			a = instr(buf, c1, "<") : if a = -1 : a = strlen(buf)-c1
+			c2 += a
+			memcpy buf, buf, c2-c1, c0, c1 : c0 += c2-c1
+			c1 += a
+			a = instr(buf, c1, ">") : if a = -1 : break
+			c1 += a + 1
+			c2 += a + 1
+		loop
+		poke buf, c0
+	}
+
+	; HTML 文字参照変換
+	sql_q "SELECT replace(replace(replace(replace(replace(replace("+prm_text(buf)+",'&lt;','<'),'&gt;','>'),'&nbsp;',' '),'&#160;',' '),'&quot;','\"'),'&amp;','&')", buf
+
+	; レコード 挿入
+	HDL_insert_docs vpath, vtype, ttle, buf
+	return
+
+;------------------------------------------------------------
+; HDL_getdata_hsp
+; HSP スクリプトからデータを取得 (with カテゴリ判別)
+#deffunc HDL_getdata_hsp  var vpath, var vtype
+
+	bload_utf_safe vpath, buf
+
+	; Title = ファイル名
+	ttle = getpath(vpath, 8)
+
+	; コメント記号削除
+	sql_q "SELECT replace(replace("+prm_text(buf)+",';',' '),'//',' ')", buf
+
+	; レコード 挿入
+	HDL_insert_docs vpath, vtype, ttle, buf
+	return
+
+;------------------------------------------------------------
+; HDL_getdata_txt
+; プレーンテキストからデータを取得
+#deffunc HDL_getdata_txt  var vpath, var vtype
+
+	bload_utf_safe vpath, buf
+
+	; Title = ファイル名
+	ttle = getpath(vpath, 8)
+
+	; データをそのまま挿入
+	HDL_insert_docs vpath, vtype, ttle, buf
+	return
+
+;------------------------------------------------------------
+; HDL_getdir (再帰)
+; ディレクトリを探索して列挙
+#deffunc HDL_getdir str dir, str ogdir, local dbuf, local pp
+	; 前処理
+	dirlist dbuf, dir, 5 : if stat = 0 : return
+	chdir dir
+
+	; このディレクトリが未登録ならば 登録
+	path = ogdir + dir
+	sql_q "SELECT ID FROM Dirs WHERE Dir=" + prm_text(path)
+	if stat = 0 {
+		sql_q "INSERT INTO Dirs (Dir, Chksum) VALUES (" + prm_text(path) + ", 0)"
+	}
+
+	; サブディレクトリを再帰探索
+	dirlist dbuf, "*.*", 5
+	pp = 0
+	repeat stat
+		getstr fn, dbuf, pp
+		if strsize = 0 : break
+		pp += strsize
+		HDL_getdir fn, ogdir+dir+"\\"
+	loop
+
+	; 後処理
+	chdir ".."
+	return
+
+;------------------------------------------------------------
+; HDL_reload
+; データベース再構築 フロント
+;
+;・HDL_reload 実行中の UI のレスポンスをよくするため、割り込み (wait) が有効になっている
+;・その関係で、UI はカレントディレクトリを変更してはいけない
+;・また、UI によるトランザクションの発生は推奨されない
+;
+#deffunc HDL_reload
+	if locked : return 0	; 再入防止
+	locked = 1
+
+	; 0. バイパス処理
+	; ディレクトリチェックで変化がなければファイルもディレクトリも変化していない、よって再列挙不要
+	sql_q "SELECT Dir, Chksum FROM Dirs", rs
+	count = stat
+	if count {
+		errs = 0
+		repeat count
+			sql_move cnt, rs
+			if HDL_getsum( sql_v("Dir", rs) + "\\*.*" ) ! sql_i("Chksum", rs) {
+				errs++ ; 差異あれば break
+				break
+			}
+			await
+		loop
+		if errs = 0 {
+			locked = 0
+			return 0
+		}
+	}
+
+	; 前処理
+	sql_q "BEGIN"
+	basedir = dir_cur ; d:\hoge\foo
+	upd = 0
+
+/*
+	チェック手順
+	1. ディレクトリ列挙
+	2. ディレクトリチェック
+	 3. ファイル列挙
+	 4. ファイルチェック
+	  5. データレコード作成
+*/
+
+	; 1. ディレクトリ列挙
+	HDL_getdir "doclib", ""
+	HDL_getdir "common", ""
+	HDL_getdir "hsphelp", ""
+	HDL_getdir "sample", ""
+
+	; 2. ディレクトリチェック
+	sql_q "SELECT Dir, Chksum FROM Dirs ORDER BY Dir", rs
+	count = stat
+	astr = "" ; ファイルチェック対象のディレクトリ名
+	repeat count
+		sql_move cnt, rs
+		dir  = sql_v("Dir", rs)
+		gsum = sql_i("Chksum", rs)
+		nsum = HDL_getsum( dir + "\\*.*" )
+
+		if gsum ! nsum {
+			; Dirs テーブル更新
+			if nsum = 0 {
+				; ディレクトリが削除された → Dirs テーブルから削除
+				sql_q "DELETE FROM Dirs WHERE Dir=" + prm_text(dir)
+
+				; 関連テーブルからも一括削除
+				sql_q "DELETE FROM Files WHERE Dir=" + prm_text(dir)
+				sql_q "DELETE FROM Help WHERE Path LIKE " + prm_text(dir) + "||'\\%'"
+				sql_q "DELETE FROM Docs WHERE Path LIKE " + prm_text(dir) + "||'\\%'"
+				upd++
+
+			} else {
+				; ディレクトリ 新規 or 変更 → 現在のチェックサムを登録
+				sql_q "UPDATE Dirs SET Chksum=" + prm_i(nsum) + " WHERE Dir=" + prm_text(dir)
+
+				; ファイルチェックするディレクトリ名リスト (for sql)
+				astr += "'" + sqesc(dir) + "',"
+
+				; 3. ファイル列挙
+				chdir dir
+				dirlist buf, "*.*", 3
+				a = stat
+				chdir basedir
+
+				; 拡張子マスクを設定
+				gf_mask = "<.bmp><.gif><.jpg><.png>"
+				if instr(dir,, "doclib") = 0 {		gf_mask += "<.hs><.hsp><.htm><.html><.txt>"
+				} else:if instr(dir,, "common") = 0 {	gf_mask += "<.as><.hsp>"
+				} else:if instr(dir,, "hsphelp") = 0 {	gf_mask += "<.hs>"
+				} else:if instr(dir,, "sample") = 0 {	gf_mask += "<.hsp>"
+				}
+
+				p = 0
+				repeat a
+					getstr fn, buf, p
+					if strsize = 0 : break
+					p += strsize
+
+					; 拡張子マスクをチェック
+					if instr(gf_mask,, "<" + getpath(fn, 2|16) + ">") >= 0 {
+
+						; このファイルが未登録ならば 登録
+						path = dir + "\\" + fn
+						if gsum = 0 {
+							HDL_stat0 ; もともとディレクトリが未登録なら チェック省略
+						} else {
+							sql_q "SELECT ID FROM Files WHERE Path=" + prm_text(path) ; (filename Case 変更は別ファイルと見なされる)
+						}
+
+						if stat = 0 {
+							sql_q "INSERT INTO Files (Path, Dir, Fn, Chksum) VALUES (" + prm_text(path) + "," + prm_text(dir) + ",lower(" + prm_text(fn) + "), 0)"
+						}
+					}
+				loop
+			}
+		}
+	loop
+
+#if HDL_PF
+	; ディスクキャッシュを使った並列読み込み。複数論理プロセッサ環境でのみ多少速くなる。
+	; (重要でない機能)
+	; 今回追加された document files を、実読み込みと同じ順番で列挙
+	sql_q "SELECT 'hdl <pf>?'||group_concat(Df,'?') as Cmd, sum(Num) as Num FROM (SELECT '\\'||Dir||'?'||group_concat(Fn,'?') as Df, count(Fn) as Num FROM (SELECT Dir, Fn FROM Files WHERE Chksum=0 and (Fn LIKE '%.as' OR Fn LIKE '%.hs' OR Fn LIKE '%.hsp' OR Fn LIKE '%.htm' OR Fn LIKE '%.html' OR Fn LIKE '%.txt') ORDER BY Dir, Fn) GROUP BY Dir)"
+	if sql_i("Num") > 99 {
+		bstr = sql_v("Cmd")
+		if strlen(bstr) > 32700 : poke bstr, 32700 ; <- 長さ制限 patch
+	;	mesbox bstr,640,480,1:stop
+		WinExec@ bstr, 5
+	}
+#endif
+
+	; 4. ファイルチェック
+	sql_q "SELECT Path, Chksum FROM Files WHERE Dir IN (" + astr + "'') ORDER BY Dir, Fn", rs
+	count = stat
+	repeat count
+		sql_move cnt, rs
+		path = sql_v("Path", rs)
+		gsum = sql_i("Chksum", rs)
+		nsum = HDL_getsum( path )
+
+		if gsum ! nsum {
+			progress_pos (cnt * 1000 / count)
+			await
+			upd++
+
+			if gsum ! 0 {
+				; 元データレコードがある場合 削除
+				sql_q "DELETE FROM Help WHERE Path LIKE " + prm_text(path)
+				sql_q "DELETE FROM Docs WHERE Path LIKE " + prm_text(path)
+			}
+			if nsum = 0 {
+				; ファイルが削除された → Files テーブルから削除
+				sql_q "DELETE FROM Files WHERE Path=" + prm_text(path)
+
+			} else {
+				; ファイルが追加・変更された → 現在のチェックサムを登録
+				sql_q "UPDATE Files SET Chksum=" + prm_i(nsum) + " WHERE Path=" + prm_text(path)
+
+				; 5. データレコード作成
+				ext = getpath(path, 2|16)	; 拡張子 ".xxxx"
+				type = strmid(ext, 1, 3)	; Type は拡張子の頭 3 文字まで
+
+				; common ディレクトリ下の HSP script は hs として認識 (ドキュメンテーションコメントつき hs)
+				if (instr(path,, "common\\") = 0) & (ext = ".as" | ext = ".hsp") : type = "hs"
+
+				if type = "hs" {
+					HDL_getdata_hs  path, type
+				} else:if type = "hsp" {
+					HDL_getdata_hsp path, type
+				} else:if type = "htm" {
+					HDL_getdata_htm path, type
+				} else:if type = "txt"  {
+					HDL_getdata_txt path, type
+				}
+			}
+		}
+	loop
+
+	progress_close
+
+	sql_q "COMMIT"
+
+	locked = 0
+	return upd
+
+;------------------------------------------------------------
+; HDL_createtable
+; テーブル + インデックス作成
+#deffunc HDL_createtable
+	; Files, Help, Docs テーブル 構築
+	sql_q "CREATE TABLE IF NOT EXISTS Dirs (ID INTEGER PRIMARY KEY, Dir, Chksum)"
+	sql_q "CREATE INDEX IF NOT EXISTS IX_Dirs1 ON Dirs (Dir)"
+	sql_q "CREATE TABLE IF NOT EXISTS Files (ID INTEGER PRIMARY KEY, Path, Dir, Fn, Chksum)"
+	sql_q "CREATE INDEX IF NOT EXISTS IX_Files1 ON Files (Path)"
+	sql_q "CREATE TABLE IF NOT EXISTS Help (ID INTEGER PRIMARY KEY, Name, Summary, Mod, Ver, Date, Author, Group3, Prm, Prm2, Inst, Sample, Href, Portinf, Port, Url, Type, Note, Path)"
+	sql_q "CREATE TABLE IF NOT EXISTS Docs (ID INTEGER PRIMARY KEY, Path, Type, Title, Catego, Search, SmryIdx)"
+
+	sql_q "CREATE INDEX IF NOT EXISTS IX_Files2 ON Files (Dir)"
+	sql_q "CREATE INDEX IF NOT EXISTS IX_Files3 ON Files (Fn)"
+	sql_q "CREATE INDEX IF NOT EXISTS IX_Help1 ON Help (Name)"
+	sql_q "CREATE INDEX IF NOT EXISTS IX_Help2 ON Help (Mod)"
+	sql_q "CREATE INDEX IF NOT EXISTS IX_Help3 ON Help (Path)"
+	sql_q "CREATE INDEX IF NOT EXISTS IX_Docs1 ON Docs (Path)"
+	return
+
+#global
+
+#if HDL_PF
+;============================================================
+; prefetch
+; コマンドラインで指定されたファイルを OS にキャッシュさせる
+; 区切り文字 '?'
+; コマンドライン最大文字数 32768bytes
+;============================================================
+
+	buf = dir_cmdline
+	if instr(buf, ,"<pf>?") = 0 {
+		basepath = dir_cur
+		p = 0
+		repeat
+			getstr astr, buf, p, '?', 222
+			if strsize = 0 : break
+			p += strsize
+
+			if peek(astr) = '\\' { ; chdir 情報
+				chdir basepath + astr
+			} else {
+				exist astr
+				if strsize >= 0 {
+					memexpand astr, strsize
+					bload astr, astr ; ディスクから読み取り
+				}
+			}
+			await
+		loop
+		end
+	}
+#endif
+
+;============================================================
+; 単体テスト
+;============================================================
+
+#ifndef HDL_BROWSER
+	sql_open "test.db"
+
+	b0
+
+	HDL_createtable
+	HDL_reload
+
+	b1
+
+	sql_close
+	delete "test.db"
+	end
+#endif
+

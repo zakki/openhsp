@@ -1,0 +1,187 @@
+/* hdlcss 1.41 */
+body {
+	/* ページ全体のフォント設定 */
+	font: 10.9pt Meiryo;
+	line-height: 1.5;
+
+	background: #fff;
+	color: #000;
+	margin: 0;
+	padding: 0;
+}
+
+input {
+	font-family: Meiryo;
+}
+
+/* nav, tabs */
+nav.top {
+	font-size: 10.3pt;
+	line-height: 1.5;
+	margin: 0 22px;
+}
+nav.tabs {
+	font-size: 10.1pt;
+	line-height: 1.5;
+	margin: 5px 11px;
+	padding: 0 6px;
+	background: #dee;
+}
+nav.tabs b, nav.tabs a, nav.tabs em {
+	display: inline-block;
+	color: #333;
+	padding: 0 5px;;
+}
+nav.tabs em {
+	background: #559;
+	color: #fff;
+}
+
+h1 {
+	font-size: 12pt;
+	line-height: 1.3;
+	margin: 0;
+	padding: 5px 22px;
+
+	color: #fff;
+	background: #559;
+}
+footer {
+	text-align: right;
+	margin: 44px 0 0 0;
+	padding: 4px 22px;
+
+	color: #fff;
+	background: #cdd;
+}
+h2 {
+	font-size: 11pt;
+	line-height: 1.2;
+	margin: 11px;
+	padding: 2px 11px;
+
+	color: #337;
+
+	border-style: solid;
+	border-color: #559;
+	border-width: 0 0 1px 0;
+}
+
+/* anchor default */
+a {
+	color: #00c;
+	text-decoration: none;
+}
+a:hover, a:active {
+	text-decoration: underline;
+}
+
+/* control block */
+form, div.control {
+	text-align: center;
+	margin: 11px;
+}
+
+/* menu item */
+div.mh1, div.mh2, div.mh3 {
+	padding: 1px 0;
+}
+div.md1, div.md2 {
+	margin: 0 11px;
+}
+div.mh1 a,
+div.mh2 a,
+div.mh3 {
+	display: block;
+	padding: 3px 11px;
+}
+div.mh1 a:hover, div.mh1 a:active,
+div.mh2 a:hover, div.mh2 a:active,
+div.mh3 a:hover, div.mh3 a:active {
+	text-decoration: none;
+}
+div.mh1 a {
+	color: #fff;
+	background: #099;
+	font-weight: bold;
+}
+div.mh1 a:hover, div.mh1 a:active {
+	background: #088;
+}
+div.mh2 a {
+	color: #337;
+	font-weight: bold;
+	border: solid 1px #337;
+	border-style: none none solid none;
+}
+div.mh2 a:hover, div.mh2 a:active {
+	background: #eee;
+}
+div.mh3 {
+	color: #777;
+	background: #eff;
+	border: solid 1px #ddd;
+	border-style: none none solid none;
+}
+div.md1 p {
+	margin: 7px 0 0 0;
+	padding: 0 0 7px 11px;
+	border: solid 1px #ddd;
+	border-style: none none solid none;
+}
+
+/* paragraph */
+pre, p, .p {
+	margin: 11px 22px;
+}
+pre.p {
+	font-family: Meiryo;;
+}
+p.summary {
+	color: #337;
+	font-weight: bold;
+}
+pre {
+	/* pre で自動折り返し */
+	word-wrap: break-word;
+	white-space: pre-wrap;
+}
+pre.script {
+	/* script view */
+	background: #eee;
+	margin: 11px;
+	padding: 4px;
+	border: solid #559;
+	border-width: 0 0 0 3px;
+	line-height: 1.1;
+}
+
+/* symbol */
+span.symbol {
+	/* シンボル */
+	color: #00c;
+	font-weight: bold;
+}
+span.arg {
+	/* 引数 */
+	color: #060;
+	font-weight: bold;
+}
+
+/* table bordered */
+table.bdr {
+	border: solid 2px #559;
+	border-collapse: collapse;
+}
+table.bdr th,
+table.bdr td {
+	border: solid 1px #559;
+}
+table.bdr th {
+	background: #dff;
+}
+
+/* keyword emphasis */
+div span.kwd, p span.kwd, pre span.kwd {
+	background: rgba(255, 255, 0, 0.5);
+}

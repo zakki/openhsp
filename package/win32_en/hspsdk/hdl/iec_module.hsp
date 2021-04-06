@@ -1,0 +1,555 @@
+
+;============================================================
+; IEC module
+; IE コンポーネント制御
+;============================================================
+/*
+
+ファンクション
+・IEC_construct
+・IEC_destruct
+・IEC_navigate_to "url", "frame"
+・IEC_focus
+・IEC_execwb
+・IEC_hwnd()
+
+内外共有変数
+・ieBrowser
+・ieEvent
+
+内部ラベル
+・iec_onkey
+・iec_event
+
+外部ラベル
+・iec_event_global  <-- アプリ寄りの細かい制御は外部で行う
+
+*/
+;------------------------------------------------------------
+; モジュール内に書くと 3.0 ではエラーが出る
+#usecom IAxWinAmbientDispatch "{B6EA2051-048A-11D1-82B9-00C04FB9942E}"
+#usecom IOleInPlaceActiveObject "{00000117-0000-0000-C000-000000000046}"
+#comfunc OIPAO_TranslateAccelerator 5 var
+
+;------------------------------------------------------------
+#module
+
+; global var
+#define global ieEvent		ieEvent@iec
+#define global ieBrowser	ieBrowser@iec
+
+; atl apis
+#uselib "atl.dll"
+#func AtlAxWinInit "AtlAxWinInit"
+#func AtlAxGetHost "AtlAxGetHost" int, var ; input hwnd, output IUnknown
+
+; ie event
+#define DIID_DWebBrowserEvents2     "{34A715A0-6587-11D0-924A-0020AFC7AC4D}"
+; exdispid.h
+#define global DISPID_STATUSTEXTCHANGE     102
+#define global DISPID_TITLECHANGE          113   // sent when the document title changes
+#define global DISPID_BEFORENAVIGATE2      250   // hyperlink clicked on
+#define global DISPID_NEWWINDOW2           251
+#define global DISPID_NAVIGATECOMPLETE2    252   // UIActivate new document
+#define global DISPID_DOCUMENTCOMPLETE     259   // new document goes ReadyState_Complete
+#define global DISPID_FILEDOWNLOAD         270   // Fired to indicate the File Download dialog is opening
+#define global DISPID_NAVIGATEERROR        271   // Fired to indicate the a binding error has occured
+
+; DocHostFlags
+#define	DOCHOSTUIFLAG_DIALOG	0x1
+#define	DOCHOSTUIFLAG_DISABLE_HELP_MENU	0x2
+#define	DOCHOSTUIFLAG_NO3DBORDER	0x4
+#define	DOCHOSTUIFLAG_SCROLL_NO	0x8
+#define	DOCHOSTUIFLAG_DISABLE_SCRIPT_INACTIVE	0x10
+#define	DOCHOSTUIFLAG_OPENNEWWIN	0x20
+#define	DOCHOSTUIFLAG_DISABLE_OFFSCREEN	0x40
+#define	DOCHOSTUIFLAG_FLAT_SCROLLBAR	0x80
+#define	DOCHOSTUIFLAG_DIV_BLOCKDEFAULT	0x100
+#define	DOCHOSTUIFLAG_ACTIVATE_CLIENTHIT_ONLY	0x200
+#define	DOCHOSTUIFLAG_OVERRIDEBEHAVIORFACTORY	0x400
+#define	DOCHOSTUIFLAG_CODEPAGELINKEDFONTS	0x800
+#define	DOCHOSTUIFLAG_URL_ENCODING_DISABLE_UTF8	0x1000
+#define	DOCHOSTUIFLAG_URL_ENCODING_ENABLE_UTF8	0x2000
+#define	DOCHOSTUIFLAG_ENABLE_FORMS_AUTOCOMPLETE	0x4000
+#define	DOCHOSTUIFLAG_ENABLE_INPLACE_NAVIGATION	0x10000
+#define	DOCHOSTUIFLAG_IME_ENABLE_RECONVERSION	0x20000
+#define	DOCHOSTUIFLAG_THEME	0x40000
+#define	DOCHOSTUIFLAG_NOTHEME	0x80000
+#define	DOCHOSTUIFLAG_NOPICS	0x100000
+#define	DOCHOSTUIFLAG_NO3DOUTERBORDER	0x200000
+#define	DOCHOSTUIFLAG_DELEGATESIDOFDISPATCH	0x400000
+
+; apis
+#uselib "user32"
+#cfunc	FindWindowEx	"FindWindowExA" int, int, sptr, sptr
+#func	SetFocus	"SetFocus" int
+
+;------------------------------------------------------------
+#deffunc IEC_construct
+	;--------------------------------------------------
+	; Trident obj
+
+	AtlAxWinInit
+
+	axobj ieBrowser, "Shell.Explorer.2", 640, 480
+	idIE = stat
+	hwndIE = objinfo(idIE, 2) ; hwnd of IE
+
+	newcom pUnk
+	AtlAxGetHost hwndIE, pUnk
+	querycom pObj, pUnk, IAxWinAmbientDispatch@ ; このインターフェイスには、ホストされるコントロールまたはコンテナの特性を指定するためのメソッドがどうたら
+
+	; DOCHOSTUIFLAG の変更 (ボーダー、オートコンプリート など)
+	pObj("DocHostFlags") = DOCHOSTUIFLAG_ENABLE_FORMS_AUTOCOMPLETE | DOCHOSTUIFLAG_THEME | DOCHOSTUIFLAG_NO3DBORDER
+	; ex. コンテキストメニューの禁止
+;	pObj("AllowContextMenu") = 0 ; VARIANT_FALSE = 0, VARIANT_TRUE = 0xffff
+
+	delcom pObj
+	delcom pUnk
+
+	comevent ieEvent, ieBrowser, DIID_DWebBrowserEvents2, *iec_event ; IE のイベント取得
+	querycom ieOIPAO, ieBrowser, IOleInPlaceActiveObject@ ; キー操作用
+	onkey gosub *iec_onkey
+	return
+
+;------------------------------------------------------------
+#deffunc IEC_destruct  onexit
+	if hwndIE {
+		onkey 0
+		delcom ieOIPAO
+		delcom ieEvent
+		delcom ieBrowser
+	;	AtlAxWinTerm
+		hwndIE = 0
+	}
+	return
+
+;------------------------------------------------------------
+#deffunc IEC_navigate_to  str p2, str p3
+	if hwndIE {
+		flgDocumentComp = 0
+
+		; navigate to
+		ieBrowser->"Navigate" p2, 0, p3  ; 環境によってはここでウィンドウが強制的にアクティブ化されてしまう
+
+		; DocumentComplete するまで待つ (*iec_event 依存)
+		repeat
+			await
+			if flgDocumentComp : break
+		loop
+	}
+	return
+
+;------------------------------------------------------------
+*iec_event
+	if locked : title "iec_event locked error" : return 0 ; 再入防止
+	locked = 1
+
+	dispid = comevdisp(ieEvent)
+
+	; onDocumentComplete
+	if dispid = DISPID_DOCUMENTCOMPLETE {
+		flgDocumentComp = 1
+	}
+
+	gosub *iec_event_global@
+
+	locked = 0
+	return 0
+
+;------------------------------------------------------------
+*iec_onkey
+/*
+	key patch
+	9	Tab
+	27	Esc
+	46	Del
+	116	F5
+*/
+	if varuse(ieOIPAO) {
+		; ctrl と同時押しの場合、メッセージ処理
+		getkey k, 17
+		; ただし下記との組み合わせは ignore
+		if wparam = 'N' : k = 0
+		if wparam = 'O' : k = 0
+		if wparam = 'S' : k = 0
+
+		; コンテナからのアクセラレータキーメッセージ処理
+		if (wparam = 9) | (wparam = 27) | (wparam = 46) | (wparam = 116) | k {
+			a = 0, $100, wparam, lparam, 0, 0, 0
+			OIPAO_TranslateAccelerator@ ieOIPAO, a
+		}
+	}
+	return
+
+;------------------------------------------------------------
+#deffunc IEC_focus
+	if hwndIE {
+		h = FindWindowEx(hwndIE, 0, "Shell Embedding", 0)
+		if h : h = FindWindowEx(h, 0, "Shell DocObject View", 0)
+		if h : h = FindWindowEx(h, 0, "Internet Explorer_Server", 0)
+		if h : SetFocus h
+	}
+	return
+
+;------------------------------------------------------------
+#defcfunc IEC_hwnd
+	return hwndIE
+
+;------------------------------------------------------------
+#deffunc IEC_execwb  int p1, int p2, int p3
+	if varuse(ieBrowser) {
+		ieBrowser->"ExecWB" p1, 0, p2, p3
+	}
+	return
+
+#const global OLECMDID_OPEN	1
+#const global OLECMDID_NEW	2
+#const global OLECMDID_SAVE	3
+#const global OLECMDID_SAVEAS	4
+#const global OLECMDID_SAVECOPYAS	5
+#const global OLECMDID_PRINT	6
+#const global OLECMDID_PRINTPREVIEW	7
+#const global OLECMDID_PAGESETUP	8
+#const global OLECMDID_SPELL	9
+#const global OLECMDID_PROPERTIES	10
+#const global OLECMDID_CUT	11
+#const global OLECMDID_COPY	12
+#const global OLECMDID_PASTE	13
+#const global OLECMDID_PASTESPECIAL	14
+#const global OLECMDID_UNDO	15
+#const global OLECMDID_REDO	16
+#const global OLECMDID_SELECTALL	17
+#const global OLECMDID_CLEARSELECTION	18
+#const global OLECMDID_ZOOM	19
+#const global OLECMDID_GETZOOMRANGE	20
+#const global OLECMDID_UPDATECOMMANDS	21
+#const global OLECMDID_REFRESH	22
+#const global OLECMDID_STOP	23
+#const global OLECMDID_HIDETOOLBARS	24
+#const global OLECMDID_SETPROGRESSMAX	25
+#const global OLECMDID_SETPROGRESSPOS	26
+#const global OLECMDID_SETPROGRESSTEXT	27
+#const global OLECMDID_SETTITLE	28
+#const global OLECMDID_SETDOWNLOADSTATE	29
+#const global OLECMDID_STOPDOWNLOAD	30
+#const global OLECMDID_ONTOOLBARACTIVATED	31
+#const global OLECMDID_FIND	32
+#const global OLECMDID_DELETE	33
+#const global OLECMDID_HTTPEQUIV	34
+#const global OLECMDID_HTTPEQUIV_DONE	35
+#const global OLECMDID_ENABLE_INTERACTION	36
+#const global OLECMDID_ONUNLOAD	37
+#const global OLECMDID_PROPERTYBAG2	38
+#const global OLECMDID_PREREFRESH	39
+#const global OLECMDID_SHOWSCRIPTERROR	40
+#const global OLECMDID_SHOWMESSAGE	41
+#const global OLECMDID_SHOWFIND	42
+#const global OLECMDID_SHOWPAGESETUP	43
+#const global OLECMDID_SHOWPRINT	44
+#const global OLECMDID_CLOSE	45
+#const global OLECMDID_ALLOWUILESSSAVEAS	46
+#const global OLECMDID_DONTDOWNLOADCSS	47
+#const global OLECMDID_UPDATEPAGESTATUS	48
+#const global OLECMDID_PRINT2	49
+#const global OLECMDID_PRINTPREVIEW2	50
+#const global OLECMDID_SETPRINTTEMPLATE	51
+#const global OLECMDID_GETPRINTTEMPLATE	52
+#const global OLECMDID_PAGEACTIONBLOCKED	55
+#const global OLECMDID_PAGEACTIONUIQUERY	56
+#const global OLECMDID_FOCUSVIEWCONTROLS	57
+#const global OLECMDID_FOCUSVIEWCONTROLSQUERY	58
+#const global OLECMDID_SHOWPAGEACTIONMENU	59
+#const global OLECMDID_ADDTRAVELENTRY	60
+#const global OLECMDID_UPDATETRAVELENTRY	61
+#const global OLECMDID_UPDATEBACKFORWARDSTATE	62
+#const global OLECMDID_OPTICAL_ZOOM	63
+#const global OLECMDID_OPTICAL_GETZOOMRANGE	64
+#const global OLECMDID_WINDOWSTATECHANGED	65
+#global
+
+
+
+
+; 以下 IE コンポーネントで最新のレンダリングモード (HTML5) を有効にするレジストリ設定
+; (by inovia さん)
+; hsp.tv 掲示板で inovia さんが投稿されていたスクリプトをまるごとコピーしました。
+; イチから書くとなると非常に面倒なところでした。
+
+#module _Mod_Reg_
+// 
+// レジストリの読み書きモジュール
+// 削除や列挙機能はなし
+// 
+#uselib "advapi32"
+#func RegQueryValueExA "RegQueryValueExA" int, str, int, int, int, int
+#func RegOpenKeyExA "RegOpenKeyExA" int, str, int, int, int
+#func RegCloseKey "RegCloseKey" int
+#func RegCreateKeyExA "RegCreateKeyExA" int, str, int, int, int, int, int, int, int
+#func RegSetValueExA "RegSetValueExA" int, str, int, int, int, int
+
+#define global HKEY_CLASSES_ROOT 		0x80000000
+#define global HKEY_CURRENT_USER 		0x80000001
+#define global HKEY_LOCAL_MACHINE 		0x80000002
+#define global HKEY_USERS 				0x80000003
+#define global HKEY_PERFORMANCE_DATA 	0x80000004
+#define global HKEY_CURRENT_CONFIG 		0x80000005
+#define global HKEY_DYN_DATA 			0x80000006
+
+#define KEY_QUERY_VALUE 	0x0001
+#define KEY_SET_VALUE		0x0002
+#define REG_SZ 				0x00000001
+#define REG_DWORD 			0x00000004
+
+//
+// GetLastErrorRegistryAPI - 本モジュール内で呼び出されたAPIの戻り値を取得します
+// 
+#defcfunc GetLastErrorRegistryAPI
+return lastRegAPIResult
+
+//
+// GetRegistryValueInt - 指定されたレジストリの値を数値型で読み込みます
+// 
+// 第1引数：	レジストリのサブツリー（ルートキー）を以下の定数で指定します
+// 　　　　		HKEY_CLASSES_ROOT
+// 　　　　		HKEY_CURRENT_USER
+// 　　　　		HKEY_LOCAL_MACHINE
+// 　　　　		HKEY_USERS
+// 　　　　		HKEY_PERFORMANCE_DATA
+// 　　　　		HKEY_CURRENT_CONFIG
+// 　　　　		HKEY_DYN_DATA
+//				が指定可能。
+// 第2引数：	レジストリのサブキーを文字列で指定します
+// 				例："SOFTWARE\\Microsoft\\Internet Explorer"
+// 第3引数：	レジストリエントリを文字列で指定します
+//				例："svcVersion"
+// 第4引数：	結果を受け取る変数を指定します
+// 
+// 戻り値：		マイナス値=エラー, それ以外=読込サイズ(bytes)
+// 
+#deffunc GetRegistryValueInt int subTree, str subKey, str regEntry, var ret
+
+	hRegKey = 0
+	ret = 0
+	RegOpenKeyExA subTree, subKey, 0, KEY_QUERY_VALUE, varptr(hRegKey)
+	lastRegAPIResult = stat
+	if 0 == hRegKey {
+		return -1
+	}
+	readBytes = 4
+	RegQueryValueExA hRegKey, regEntry, 0, 0, varptr(ret), varptr(readBytes)
+	lastRegAPIResult = stat
+	if lastRegAPIResult {
+		RegCloseKey hRegKey
+		return -2
+	}
+	RegCloseKey hRegKey
+	return readBytes
+
+//
+// GetRegistryValueStr - 指定されたレジストリの値を文字列型で読み込みます
+// 
+// 第1引数：	レジストリのサブツリー（ルートキー）を以下の定数で指定します
+// 　　　　		HKEY_CLASSES_ROOT
+// 　　　　		HKEY_CURRENT_USER
+// 　　　　		HKEY_LOCAL_MACHINE
+// 　　　　		HKEY_USERS
+// 　　　　		HKEY_PERFORMANCE_DATA
+// 　　　　		HKEY_CURRENT_CONFIG
+// 　　　　		HKEY_DYN_DATA
+//				が指定可能。
+// 第2引数：	レジストリのサブキーを文字列で指定します
+// 				例："SOFTWARE\\Microsoft\\Internet Explorer"
+// 第3引数：	レジストリエントリを文字列で指定します
+//				例："svcVersion"
+// 第4引数：	結果を受け取る変数を指定します
+// 
+// 戻り値：		マイナス値=エラー, それ以外=読込サイズ(bytes)
+// 
+#deffunc GetRegistryValueStr int subTree, str subKey, str regEntry, var ret
+
+	hRegKey = 0
+	sdim ret
+	RegOpenKeyExA subTree, subKey, 0, KEY_QUERY_VALUE, varptr(hRegKey)
+	lastRegAPIResult = stat
+	if 0 == hRegKey {
+		return -1
+	}
+	// 必要なサイズを取得します
+	readBytes = 0
+	RegQueryValueExA hRegKey, regEntry, 0, 0, 0, varptr(readBytes)
+	lastRegAPIResult = stat
+	if lastRegAPIResult {
+		RegCloseKey hRegKey
+		return -2
+	}
+	if 0 == readBytes {
+		RegCloseKey hRegKey
+		return readBytes
+	}
+	sdim ret, readBytes + 1 
+	RegQueryValueExA hRegKey, regEntry, 0, 0, varptr(ret), varptr(readBytes)
+	lastRegAPIResult = stat
+	if lastRegAPIResult {
+		RegCloseKey hRegKey
+		return -3
+	}
+	RegCloseKey hRegKey
+	return readBytes
+	
+//
+// SetRegistryValueInt - 指定されたレジストリの値を数値型で書き込みます
+// 
+// 第1引数：	レジストリのサブツリー（ルートキー）を以下の定数で指定します
+// 　　　　		HKEY_CLASSES_ROOT
+// 　　　　		HKEY_CURRENT_USER
+// 　　　　		HKEY_LOCAL_MACHINE
+// 　　　　		HKEY_USERS
+// 　　　　		HKEY_PERFORMANCE_DATA
+// 　　　　		HKEY_CURRENT_CONFIG
+// 　　　　		HKEY_DYN_DATA
+//				が指定可能。
+// 第2引数：	レジストリのサブキーを文字列で指定します
+// 				例："SOFTWARE\\Microsoft\\Internet Explorer"
+// 第3引数：	レジストリエントリを文字列で指定します
+//				例："svcVersion"
+// 第4引数：	書き込む値（数値型）
+// 
+// 戻り値：		マイナス値=エラー, 0=成功
+// 
+#deffunc SetRegistryValueInt int subTree, str subKey, str regEntry, int value
+	hRegKey = 0
+	RegCreateKeyExA subTree, subKey, 0, 0, 0, KEY_SET_VALUE, 0, varptr(hRegKey), 0
+	lastRegAPIResult = stat
+	if 0 == hRegKey {
+		return -1
+	}
+	_value = value
+	RegSetValueExA hRegKey, regEntry, 0, REG_DWORD, varptr(_value), 4
+	lastRegAPIResult = stat
+	if lastRegAPIResult {
+		RegCloseKey hRegKey
+		return -2
+	}
+	RegCloseKey hRegKey
+return 0
+
+//
+// SetRegistryValueStr - 指定されたレジストリの値を文字列型で書き込みます
+// 
+// 第1引数：	レジストリのサブツリー（ルートキー）を以下の定数で指定します
+// 　　　　		HKEY_CLASSES_ROOT
+// 　　　　		HKEY_CURRENT_USER
+// 　　　　		HKEY_LOCAL_MACHINE
+// 　　　　		HKEY_USERS
+// 　　　　		HKEY_PERFORMANCE_DATA
+// 　　　　		HKEY_CURRENT_CONFIG
+// 　　　　		HKEY_DYN_DATA
+//				が指定可能。
+// 第2引数：	レジストリのサブキーを文字列で指定します
+// 				例："SOFTWARE\\Microsoft\\Internet Explorer"
+// 第3引数：	レジストリエントリを文字列で指定します
+//				例："svcVersion"
+// 第4引数：	書き込む値（文字列型）
+// 
+// 戻り値：		マイナス値=エラー, 0=成功
+// 
+#deffunc SetRegistryValueStr int subTree, str subKey, str regEntry, str value
+	hRegKey = 0
+	RegCreateKeyExA subTree, subKey, 0, 0, 0, KEY_SET_VALUE, 0, varptr(hRegKey), 0
+	lastRegAPIResult = stat
+	if 0 == hRegKey {
+		return -1
+	}
+	strValueSize = strlen(value) + 1
+	sdim _value, strValueSize
+	_value = value
+	
+	RegSetValueExA hRegKey, regEntry, 0, REG_SZ, varptr(_value), strValueSize
+	lastRegAPIResult = stat
+	if lastRegAPIResult {
+		RegCloseKey hRegKey
+		return -2
+	}
+	RegCloseKey hRegKey
+return 0
+#global
+
+#module _mod_IE_Ver_
+#uselib "kernel32"
+#func GetModuleFileNameA "GetModuleFileNameA" int, int, int
+#define FEATURE_BROWSER_EMULATION "SOFTWARE\\Microsoft\\Internet Explorer\\Main\\FeatureControl\\FEATURE_BROWSER_EMULATION"
+#define FEATURE_GPU_RENDERING "SOFTWARE\\Microsoft\\Internet Explorer\\Main\\FeatureControl\\FEATURE_GPU_RENDERING"
+#define FEATURE_USE_LEGACY_JSCRIPT "SOFTWARE\\Microsoft\\Internet Explorer\\Main\\FeatureControl\\FEATURE_USE_LEGACY_JSCRIPT"
+
+// IEのバージョンを取得する関数
+#defcfunc GetIEVersion
+	GetRegistryValueStr HKEY_LOCAL_MACHINE, "SOFTWARE\\Microsoft\\Internet Explorer", "svcVersion", version
+	if stat <= 0 {
+		GetRegistryValueStr HKEY_LOCAL_MACHINE, "SOFTWARE\\Microsoft\\Internet Explorer", "Version", version
+	}
+	split version, ".", ieVer
+	if 0 < stat {
+		return ieVer(0)
+	}
+return ""
+// 現在のプロセス名を取得する関数
+#defcfunc GetProcessName
+	sdim exe_path, 260 + 1
+	GetModuleFileNameA 0, varptr(exe_path), 260
+return getpath(exe_path, 8)
+
+//
+// SetIEConfigEmulation
+// 指定されたIEのバージョンをエミュレーションするよう設定します。
+//
+// 第1引数：	IEのバージョンを文字列で指定します("9","10","11"など)
+//				GetIEVersion()関数を利用すると、インストールされているIEのバージョンを指定できます
+// 第2引数：	対象の実行ファイルの名前を指定します
+//				GetProcessName()関数を利用すると、実行中のプロセス名を指定できます
+// 戻り値：		マイナス値=エラー, 0=成功
+//
+#deffunc SetIEConfigEmulation str ieVersion, str exeName
+	SetRegistryValueInt HKEY_CURRENT_USER, FEATURE_BROWSER_EMULATION, exeName, int(ieVersion)*1000
+return stat
+
+//
+// SetIEConfigGPURendering
+// GPUを使用してレンダリングするよう設定します。
+//
+// 第1引数：	0 = GPUを使用しない
+//				1 = GPUを使用する
+// 第2引数：	対象の実行ファイルの名前を指定します
+//				GetProcessName()関数を利用すると、実行中のプロセス名を指定できます
+// 戻り値：		マイナス値=エラー, 0=成功
+//
+#deffunc SetIEConfigGPURendering int flag, str exeName
+	SetRegistryValueInt HKEY_CURRENT_USER, FEATURE_GPU_RENDERING, exeName, flag
+return stat
+
+//
+// SetIEConfigLegacyJScript
+// 古いJavaScriptエンジンを使用するよう設定します。
+//
+// 第1引数：	0 = 古いJavaScriptエンジンを使用しない（Chakraエンジン）
+//				1 = 古いJavaScriptエンジンを使用する（JScriptエンジン）
+// 第2引数：	対象の実行ファイルの名前を指定します
+//				GetProcessName()関数を利用すると、実行中のプロセス名を指定できます
+// 戻り値：		マイナス値=エラー, 0=成功
+//
+#deffunc SetIEConfigLegacyJScript int flag, str exeName
+	SetRegistryValueInt HKEY_CURRENT_USER, FEATURE_USE_LEGACY_JSCRIPT, exeName, flag
+return stat
+#global
+
+	if int(GetIEVersion()) >= 9 {
+		// インストールされているバージョンをサポートするように設定する
+		// もし、IE11が入っている場合は、そのバージョンをサポートします。
+		SetIEConfigEmulation GetIEVersion(), GetProcessName()
+
+		// GPUを利用したレンダリングを行う
+	;	SetIEConfigGPURendering 1, GetProcessName()
+
+		// 古いJavaScriptエンジンを使用しない(Chakraエンジン)
+		SetIEConfigLegacyJScript 0, GetProcessName()
+	}

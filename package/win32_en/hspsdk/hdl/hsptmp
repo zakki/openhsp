@@ -1,0 +1,588 @@
+
+;============================================================
+;	HDL
+;		version 1.43 update 2019/04/02 Eng
+;			s.programs http://spn.php.xdomain.jp/
+;============================================================
+
+	appname	= "HSP Docs Library"
+	appver	= "1.43"
+	appsig	= "s.programs 2007-2019"
+	sig_css	= "/* hdlcss 1.41 */"
+
+; make option
+#packopt name		"hdl"
+#packopt hide		1
+#packopt xsize		1
+#packopt ysize		1
+#packopt icon		"hdl_ico.ico"
+#packopt lang		"1033"
+#packopt version	"version.txt"
+
+; includes
+#define global HDL_BROWSER 1  ; HDL Browser からのインクルードであることを示す
+#include "sqlele.hsp"
+#include "hdl_lib.hsp"
+#include "hdl_cgi.hsp"
+#include "hdl_db.hsp"
+#include "hhw.hsp"
+#include "iec_module.hsp"
+/*
+	; src fils
+	hdl.hsp
+		sqlele.hsp
+		hdl_lib.hsp
+		hdl_db.hsp ; --- standalone
+			*sqlele.hsp
+			*hdl_lib.hsp
+		hdl_cgi.hsp ; --- standalone
+			*sqlele.hsp
+			*hdl_lib.hsp
+		hhw.hsp ; --- standalone
+			gpm.hsp
+			*hdl_lib.hsp
+		iec_module.hsp
+*/
+
+; application define
+#define global WM_APP_ACTIVATE	0x8001
+#define global WM_APP_SEARCH	0x8002
+#define global WM_APP_REBUILD	0x8003
+#define global WM_APP_CALLQUERY	0x8004
+#const CMD_HO	111
+#const CMD_BK	222
+#const CMD_FW	333
+#const CMD_FIND	444
+#const CMD_ABOUT 555
+#const CMD_OZ	999
+
+;============================================================
+; 起動時分岐
+;============================================================
+
+#ifdef _DEBUG
+	ModuleFileName = dir_cur + "\\hdl.exe" ; test 用
+#else
+	sdim ModuleFileName, 1000
+	GetModuleFileName 0, ModuleFileName, 999
+#endif
+
+	; パラメータ
+	; ・"/hsedit:hoge"   hs エディタ起動
+
+	; HDL インスタンスがすでにある場合：
+	;  ・""          アクティブ化
+	;  ・"hoge"      検索
+	;  ・"/rebuild:" リビルド・検索
+
+	astr = dir_cmdline
+
+	;----------------------------------------
+	; HHW 起動 (/hsedit:hoge\hoge.hs>foo)
+
+	if instr(astr,,"/hsedit:") = 0 {
+		hhw_start strmid(astr, 8, 999), "Help Source Editor", "(in HDL " + appver + ")", appsig
+		end
+	}
+
+	;----------------------------------------
+	; 同時起動制御 (option)(/rebuild:hoge)
+
+	filemap_create "hdl_filemap"			; 共有メモリを使用
+	dupptr map_hwnd, filemap_viewptr()  , 4   , 4	; 最初に起動した HDL の hwnd
+	dupptr map_str,  filemap_viewptr()+4, 1024, 2	; 共有文字列
+
+	; すでに filemap があれば : 共有メモリにクエリ文字列を置いて hwnd にメッセージを送る
+	if filemap_already_exists() {
+		if astr = "" {
+			; アクティブ化のみ
+			PostMessage map_hwnd, WM_APP_ACTIVATE
+
+		} else:if instr(astr,,"/rebuild:") = 0 {
+
+			; リビルド・キーワード送信
+			SendMessage map_hwnd, WM_APP_REBUILD
+			map_str = strmid(astr, 9, 999)
+			PostMessage map_hwnd, WM_APP_SEARCH
+
+		} else {
+			; アクティブ化・キーワード 送信
+			SendMessage map_hwnd, WM_APP_ACTIVATE
+			map_str = astr
+			PostMessage map_hwnd, WM_APP_SEARCH
+		}
+
+		filemap_close
+		end
+	}
+
+	; HDL 非動作時の rebuild 要求は ignore
+	if instr(astr,,"/rebuild:") = 0 : end
+
+;============================================================
+; HDL 本体起動!!
+;============================================================
+
+	Window_DPIAware
+	status_create	; ステータスバー 作成
+
+	; メニュー 作成
+	; 拡大率
+	hmenuZoom = CreatePopupMenu()
+	AppendMenu hmenuZoom, $00, CMD_OZ + 200, "200%"
+	AppendMenu hmenuZoom, $00, CMD_OZ + 175, "175%"
+	AppendMenu hmenuZoom, $00, CMD_OZ + 150, "150%"
+	AppendMenu hmenuZoom, $00, CMD_OZ + 125, "125%"
+	AppendMenu hmenuZoom, $00, CMD_OZ + 110, "110%"
+	AppendMenu hmenuZoom, $00, CMD_OZ + 100, "100%"
+	AppendMenu hmenuZoom, $00, CMD_OZ +  90, "90%"
+	AppendMenu hmenuZoom, $00, CMD_OZ +  75, "75%"
+	AppendMenu hmenuZoom, $00, CMD_OZ +  50, "50%"
+	; ユーザー補助
+	hmenuAid = CreatePopupMenu()
+	AppendMenu hmenuAid, $10, hmenuZoom, "Zoom (&Z)"
+	AppendMenu hmenuAid, $00, CMD_FIND, "Search (Ctrl-F)"
+	AppendMenu hmenuAid, $00, CMD_ABOUT, "Version Information"
+	; メニューバー
+	CreateMenu : hmenu = stat
+	AppendMenu hmenu, $00, CMD_HO, "Head(&H)"
+	AppendMenu hmenu, $00, CMD_BK, "<< Back(&B)"
+	AppendMenu hmenu, $00, CMD_FW, "Forward >>"
+	AppendMenu hmenu, $10, hmenuAid, "View(&V)"
+	;
+	SetMenu hwnd, hmenu
+	DrawMenuBar hwnd
+
+	; 割り込み登録
+	oncmd gosub *event_WM_ACTIVATE, 0x0006
+	oncmd gosub *event_WM_SIZE, 0x0005
+	oncmd gosub *event_WM_GETMINMAXINFO, 0x0024
+	oncmd gosub *event_WM_APPCOMMAND, 0x0319
+	; WM_APP_
+	oncmd gosub *event_WM_APP_ACTIVATE, WM_APP_ACTIVATE
+	oncmd gosub *event_WM_APP_SEARCH, WM_APP_SEARCH
+	oncmd gosub *event_WM_APP_REBUILD, WM_APP_REBUILD
+	oncmd gosub *event_WM_APP_CALLQUERY, WM_APP_CALLQUERY
+	; std
+	onexit gosub *endapp
+	oncmd gosub *event_WM_COMMAND, 0x0111
+
+	map_hwnd = hwnd	; 同時起動制御用 hwnd
+
+	IEC_construct	; IE コンポ 作成
+
+	; 基本 path
+	basepath = dir_cur
+
+	; get temp\
+	sdim temppath, 1000
+	GetTempPath 990, temppath
+	; get temp\HDL\ (1.32)
+	subdir = "HDL"
+	chdir temppath
+	dirlist astr, subdir, 5 : if stat = 0 : mkdir subdir
+	chdir basepath
+	temppath += subdir + "\\"
+
+	; appdata path
+	get_hsp_appdata_path APPDATAPATH
+
+	; load config / restore window
+	Config_open APPDATAPATH + "\\hdl_config_" + StrHash(ModuleFileName) + ".dat"
+	Window_resizable ; ウィンドウサイズ可変化
+	Config_restore_window ; <--------- show window ---------------
+	gsel 0, 1 ; helpman.exe から起動したときの不明なバグ対策
+	await
+
+	sql_open APPDATAPATH + "\\hdl_data_" + StrHash(ModuleFileName) + ".db"
+
+	; db version check
+	#define DBVER		0x140
+	#define db_ver		cfgdat(12)
+	if db_ver ! DBVER {
+		db_ver = DBVER
+
+		gosub *delete_cachefiles
+
+		sql_q "DROP TABLE IF EXISTS Dirs"
+		sql_q "DROP TABLE IF EXISTS Files"
+		sql_q "DROP TABLE IF EXISTS Help"
+		sql_q "DROP TABLE IF EXISTS Docs"
+		HDL_createtable
+	}
+
+	; .css バージョンチェック
+	msg = ""
+	repeat 2
+		if cnt {
+			astr = "hdlmenu.css"
+		} else {
+			astr = "hdlmain.css"
+		}
+		exist astr
+		if strsize >= 0 {
+			sdim bstr, 64
+			bload astr, bstr, strlen(sig_css)
+			if sig_css ! bstr : msg += "CSS ファイル " + astr + " は有効なバージョンではありません。同梱の .css ファイルをプログラムと同じフォルダにコピーしてください。\n\n"
+		} else {
+			msg += astr + " が見つかりません。同梱の .css ファイルをプログラムと同じフォルダにコピーしてください。\n\n"
+		}
+	loop
+	if msg ! "" : dialog msg, , appname
+
+#ifdef _DEBUG
+	gosub *delete_cachefiles ; デバッグ時キャッシュ除去
+#endif
+
+	gosub *startup_query
+
+	stop
+
+;============================================================
+; HDL クエリ処理サブルーチン
+;============================================================
+
+#deffunc ExecQuery str p1, str p2
+
+	; GET cmd, arg, kwd; hdl:?cmd=arg,kwd
+	bstr = p1
+	cmd = "" : arg = "" : kwd = ""
+	i = instr(bstr,,",") : if i > 0 : kwd = URLDec(strmid(bstr, i+1, 999)) : poke bstr, i
+	i = instr(bstr,,"=") : if i > 0 : arg = URLDec(strmid(bstr, i+1, 999)) : poke bstr, i
+	i = instr(bstr,,"?") : if i > 0 : cmd = URLDec(strmid(bstr, i+1, 999))
+
+	; ブラウザ側の実装で処理するクエリをフィルタ
+
+	; hs エディタで開く
+	if cmd = "hsedit" {
+		WinExec "hdl /hsedit:" + arg, 5
+		return
+	}
+
+	; ファイルを開く
+	if cmd = "opfile" {
+		exec_file arg
+		return
+	}
+
+	; フォルダを開く
+	if cmd = "opdir" {
+		WinExec "explorer " + arg, 5
+		return
+	}
+
+	; hdls で両フレームを更新するパッチ (この動作はブラウザ側の実装)
+	if cmd = "hdls" {
+		sql_q "SELECT ID FROM Help WHERE Name=" + prm_text(arg)
+		if stat = 0 : sql_q "SELECT ID FROM Help WHERE lower(Name)=lower("+prm_text(arg)+")"
+		if stat {
+			; 一致コマンドヘルプがある場合
+			ExecQuery "hdl:?r=" + tmparr, "hdlmain" ; <--- 再入注意
+		}
+	}
+
+	; f=xx (= htm) の場合に直接遷移させる (IE ESC での操作を多少緩和) (1.33)
+	if cmd = "f" {
+		sql_q "SELECT Path FROM Docs WHERE Type='htm' AND ID="+arg, bstr
+		if stat {
+			IEC_navigate_to basepath + "\\" + bstr, p2
+			return
+		}
+	}
+
+	; フィルタされなかったクエリを HDL_CGI_q にデータ要求
+	; 前にナビゲートしたファイルが残ってたら使う
+
+	bstr = ModuleFileName + appver + p1
+	fn = temppath + "HDL" + StrHash(bstr) + ".HTM"
+	exist fn
+	if strsize <= 0 {
+		status_mes 1, "Unpacking ..."
+		HDL_CGI_q p1 ; -> global var buf
+		bsave fn, buf, strlen(buf)
+		status_mes 1, ""
+	}
+	; 表示
+	IEC_navigate_to fn, p2
+
+	return
+
+;============================================================
+; イベントプロシージャ
+;============================================================
+
+;--------------------------------------------------
+; リサイズ時の最大最小値 ( = 無制限)
+*event_WM_GETMINMAXINFO
+	return 0
+
+;--------------------------------------------------
+; IE コンポにフォーカス
+*event_WM_ACTIVATE
+	if wparam & 0xf : IEC_focus
+	return 0
+
+;--------------------------------------------------
+; resize
+*event_WM_SIZE
+	status_resize ; ステータスバー フィット
+	a = MoveWindow(IEC_hwnd(),  0, 0, ginfo_winx, ginfo_winy - status_height(),  1)
+	return
+
+;--------------------------------------------------
+; application command (マウス サイドボタン)
+*event_WM_APPCOMMAND
+	cmd = lparam >> 16 & 0x7fff ; == GET_APPCOMMAND_LPARAM(lParam)
+	if cmd = 1 {
+		ieBrowser->"GoBack"
+		return 0
+	}
+	if cmd = 2 {
+		ieBrowser->"GoForward"
+		return 0
+	}
+	return
+
+;--------------------------------------------------
+; メニュー
+*event_WM_COMMAND
+	if lparam = 0 {
+		i = wparam & 0xffff ; CMD ID
+		if i >= CMD_OZ {
+			IEC_execwb  OLECMDID_OPTICAL_ZOOM, i - CMD_OZ
+
+		} else:if i = CMD_FIND {
+			IEC_execwb  OLECMDID_FIND
+
+		} else:if i = CMD_HO {
+*menu_cmd_ho
+			ExecQuery "hdl:?frameset", ""
+			ExecQuery "hdl:?index", "hdlmain"
+			ExecQuery "hdl:?hdls=", "hdlmenu"
+
+			gosub *hdl_reload_sub
+			if stat : goto *menu_cmd_ho ; 繰返し
+
+		} else:if i = CMD_ABOUT {
+			ExecQuery "hdl:?about", "hdlmain"
+
+		} else:if i = CMD_BK {
+			ieBrowser->"GoBack"
+
+		} else:if i = CMD_FW {
+			ieBrowser->"GoForward"
+		}
+		return 0
+	}
+	return
+
+;--------------------------------------------------
+; ie event
+*iec_event_global
+	dispid = comevdisp(ieEvent)
+
+	; onBeforeNavigate2
+	if dispid = DISPID_BEFORENAVIGATE2 {
+
+		; パラメータ取得
+		comevarg newurl, ieEvent, 1, 1			; URL
+		comevarg TargetFrameName, ieEvent, 3	; TargetFrameName
+		comevarg Cancel, ieEvent, 6, 2			; Cancel (Variant)
+
+		if instr(newurl,,"hdl:") ! 0 {
+			; file:///X:/～/hoge.txt , D:\～\hoge.txt -> hdl:?f=x 変換 (1.32)
+			sql_q "SELECT ID FROM Docs WHERE (Type='hsp' OR Type='txt') AND replace(" + prm_text(newurl) + ",'/','\\') LIKE '%'||Path", astr
+			if stat = 1 {
+				newurl = "hdl:?f=" + astr
+			} else {
+				; file:///～～.hsp/as に限って、Files に登録されていればエディタ等で開く
+				sql_q "SELECT ID FROM Files WHERE (Path like '%.hsp' or Path like '%.as') and replace(" + prm_text(newurl) + ",'/','\\') LIKE '%'||Path", astr
+				if stat = 1 {
+					Cancel("val") = 1
+					exec_file newurl
+				}
+			}
+		}
+
+		; URL フィルタ
+		if instr(newurl,,"hdl:") = 0 {
+
+			; hdl: クエリの処理
+			Cancel("val") = 1
+			PostMessage hwnd, WM_APP_CALLQUERY ; 再入防止 (1.31)
+		;×	ExecQuery newurl, TargetFrameName
+
+		} else:if (instr(newurl,,"https:")=0) | (instr(newurl,,"http:")=0) | (instr(newurl,,"ftp:")=0) {
+
+			; Web 系スキームは別アプリに丸投げ (hdl: スキームがあるため、HDL ブラウザはセキュアではない)
+			Cancel("val") = 1 ; ナビゲーションキャンセル
+			exec_file newurl
+
+		}
+		; フィルタされなかった URL を許可 (file: res: about: mailto: C: D: ...)
+
+		delcom Cancel
+		return
+	}
+
+	; onStatusTextChange
+	if dispid = DISPID_STATUSTEXTCHANGE {
+
+		; ステータスバー 表示内容 取得
+		comevarg strstat, ieEvent, 0, 1
+
+		if strstat ! strstat_dif {
+			strstat_dif = strstat
+
+			; hdl: スキームのリンクの場合、内容を変換して表示
+			if instr(strstat,,"hdl:") = 0 {
+
+				; GET cmd, arg, kwd; hdl:?cmd=arg,kwd
+				bstr = strstat
+				cmd = "" : arg = "" : kwd = ""
+				i = instr(bstr,,",") : if i > 0 : kwd = URLDec(strmid(bstr, i+1, 999)) : poke bstr, i
+				i = instr(bstr,,"=") : if i > 0 : arg = URLDec(strmid(bstr, i+1, 999)) : poke bstr, i
+				i = instr(bstr,,"?") : if i > 0 : cmd = URLDec(strmid(bstr, i+1, 999))
+
+				; クエリに応じたステータスに変換
+				if cmd = "r" {
+					sql_q "SELECT Name || ' - ' || Summary FROM Help WHERE ID=" + int(arg), astr
+					if stat : strstat = astr
+				} else:if cmd = "f" {
+					sql_q "SELECT Path FROM Docs WHERE ID=" + int(arg), astr
+					if stat : strstat = astr
+				} else {
+					strstat = cmd + " " + arg
+					strrep strstat, "index cat:", "Category: "
+					if stat : strrep strstat, "@", " "
+				}
+
+				; 出力
+				status_mes 0, strstat
+				status_icon 0, ModuleFileName
+
+			} else {
+				; 標準の表示
+				status_mes 0, strstat
+
+				; リンク先が Docs テーブル内のファイルならアイコンを表示 (1.32)
+				strstat = URLDec(strstat)
+				sql_q "SELECT ID FROM Files WHERE replace(" + prm_text(strstat) + ",'/','\\') LIKE '%'||Path", astr
+				if stat = 1 {
+					status_icon 0, ModuleFileName
+				}
+			}
+		}
+
+		return
+	}
+
+	; OnTitleChange
+	if dispid = DISPID_TITLECHANGE {
+		; パラメータ取得
+		comevarg text, ieEvent, 0, 1
+		title text
+	}
+
+	return
+
+;--------------------------------------------------
+; exit event
+*endapp
+	gsel 0, -1
+	oncmd 0
+	IEC_destruct
+	filemap_close
+	Config_close
+	randomize
+	if rnd(77) = 42 : sql_q "VACUUM" : gosub *delete_cachefiles ; clean
+	sql_close
+	end
+	return
+
+;-------------------------------------------------- WM_APP_ACTIVATE
+; 他プロセスからのアクティブ化指令
+*event_WM_APP_ACTIVATE
+	Window_top
+	await
+	return 0
+
+;-------------------------------------------------- WM_APP_SEARCH
+; 他プロセスからのクエリ WM_APP_SEARCH
+*event_WM_APP_SEARCH
+	ExecQuery "hdl:?hdls=" + URLEnc(map_str), "hdlmenu"
+	return 0
+
+;-------------------------------------------------- WM_APP_REBUILD
+; 他プロセスからのクエリ WM_APP_REBUILD
+*event_WM_APP_REBUILD
+	gosub *hdl_reload_sub
+	return 0
+
+;--------------------------------------------------
+; 自プロセスより call query
+*event_WM_APP_CALLQUERY
+	ExecQuery newurl, TargetFrameName
+	return 0
+
+;============================================================
+; 雑サブルーチン
+;============================================================
+
+;--------------------------------------------------
+; 起動クエリの発行
+*startup_query
+
+	ExecQuery "hdl:?frameset", ""
+
+	if "" = dir_cmdline {
+		; 起動引数ない場合 トップページ
+		ExecQuery "hdl:?index", "hdlmain"
+		ExecQuery "hdl:?hdls=", "hdlmenu"
+
+	} else {
+		; ワンキーヘルプの場合
+		sql_q "SELECT ID FROM Help WHERE lower(Name)=lower('"+sqesc(dir_cmdline)+"')"
+		if stat = 0 {
+			; 一致キーワードがない場合
+			ExecQuery "hdl:?index", "hdlmain"
+			ExecQuery "hdl:?hdls=" + URLEnc(dir_cmdline), "hdlmenu"
+		} else {
+			; 一致キーワードがある場合 (hdlmain も更新される)
+			ExecQuery "hdl:?hdls=" + URLEnc(dir_cmdline), "hdlmenu"
+		}
+	}
+
+	; 更新チェック
+	gosub *hdl_reload_sub
+	if stat : goto *startup_query ; 繰返し
+
+	return
+
+;--------------------------------------------------
+; 更新チェック
+*hdl_reload_sub
+
+	status_mes 2, "Working..."
+	HDL_reload
+	a = stat
+	if a : gosub *delete_cachefiles
+	status_mes 2, ""
+
+	return a
+
+;--------------------------------------------------
+; キャッシュを全削除
+*delete_cachefiles
+
+	chdir temppath
+	dirlist buf, "HDL*.HTM", 3
+	notesel buf
+	repeat stat
+		noteget fn, cnt
+		delete fn
+	loop
+	noteunsel
+	chdir basepath
+
+	return

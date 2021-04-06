@@ -1,0 +1,89 @@
+/* hdlcss 1.41 */
+body {
+	/* ページ全体のフォント設定 */
+	font-family: Meiryo;
+	font-size: 10.3pt;
+	line-height: 1.2;
+
+	background: #fff;
+	color: #000;
+	margin: 0;
+	padding: 0;
+}
+
+input {
+	font-family: Meiryo;
+}
+
+h1, form, div.control, footer {
+	font-size: 10.3pt;
+	font-weight: normal;
+	text-align: center;
+	margin: 8px 0;
+}
+footer {
+	color: #fff;
+	background: #cdd;
+	padding: 5px;
+	margin: 22px 0 0 0;
+}
+
+/* anchor default */
+a {
+	color: #00c;
+	text-decoration: none;
+}
+a:hover, a:active {
+	text-decoration: underline;
+}
+
+/* menu item */
+div.mh1, div.mh2, div.mh3 {
+	padding: 1px 0px;
+}
+div.mh1 a,
+div.mh2 a,
+div.mh3 {
+	display: block;
+	padding: 3px 5px;
+}
+div.mh1 a:hover, div.mh1 a:active,
+div.mh2 a:hover, div.mh2 a:active,
+div.mh3 a:hover, div.mh3 a:active {
+	text-decoration: none;
+}
+div.mh1 a {
+	font-weight: bold;
+	color: #fff;
+	background: #559;
+}
+div.mh1 a:hover, div.mh1 a:active {
+	background: #448;
+}
+div.mh2 a {
+	color: #000;
+	background: #dde;
+}
+div.mh2 a:hover, div.mh2 a:active {
+	background: #ccd;
+}
+div.mh3 {
+	color: #777;
+	background: #eff;
+	border: solid 1px #ddd;
+	border-style: none none solid none;
+}
+div.md1 p {
+	margin: 1px 0;
+	padding: 1px 7px;
+
+	border: solid 1px #ddd;
+	border-style: none none solid none;
+
+	word-wrap: break-word;
+}
+
+/* keyword emphasis */
+div.md1 span.kwd {
+	background: rgba(255, 255, 0, 0.5);
+}
