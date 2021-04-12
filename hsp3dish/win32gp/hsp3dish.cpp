@@ -1296,6 +1296,11 @@ void hsp3dish_bye(void)
 	if (h_dbgwin != NULL) { FreeLibrary(h_dbgwin); h_dbgwin = NULL; }
 #endif
 
+	//		HSPŠÖ˜A‚Ì‰ð•ú
+	//
+	if (hsp != NULL) { delete hsp; hsp = NULL; }
+	DllManager().free_all_library();
+
 	if (m_hWnd != NULL) {
 		hgio_term();
 		DestroyWindow(m_hWnd);
@@ -1318,10 +1323,6 @@ void hsp3dish_bye(void)
 	    delete game;
 	}
 
-	//		HSPŠÖ˜A‚Ì‰ð•ú
-	//
-	if (hsp != NULL) { delete hsp; hsp = NULL; }
-	DllManager().free_all_library();
 }
 
 
