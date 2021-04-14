@@ -1299,7 +1299,6 @@ void hsp3dish_bye(void)
 	//		HSPŠÖ˜A‚Ì‰ð•ú
 	//
 	if (hsp != NULL) { delete hsp; hsp = NULL; }
-	DllManager().free_all_library();
 
 	if (m_hWnd != NULL) {
 		hgio_term();
@@ -1323,6 +1322,7 @@ void hsp3dish_bye(void)
 	    delete game;
 	}
 
+	DllManager().free_all_library();
 }
 
 

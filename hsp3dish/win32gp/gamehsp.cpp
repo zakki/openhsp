@@ -1258,6 +1258,17 @@ int gamehsp::getObjectVector( int objid, int moc, Vector4 *prm )
 			getSpriteVector( obj, moc, prm );
 			return 0;
 		}
+		if (obj->_phy) {
+			gpphy* phy = obj->_phy;
+			if (phy->_option & BIND_PHYSICS_MESH) {		// •¨—Meshƒm[ƒh‚Ìê‡‚ÍŽÀÛ‚ÌNode‚ðŽQÆ‚·‚é
+				Node* realnode = obj->_node;
+				if (realnode) realnode = realnode->getFirstChild();
+				if (realnode) {
+					getNodeVector(obj, realnode, moc, prm);
+					return 0;
+				}
+			}
+		}
 		getNodeVector( obj, obj->_node, moc, prm );
 		return 0;
 	}
@@ -1326,14 +1337,19 @@ int gamehsp::drawSceneObject(gpobj *camobj)
 	int i,num;
 	gpobj *obj = _gpobj;
 
-	int target_group = 0;
-	if (camobj) target_group = camobj->_rendergroup;
+	int target_group = 1;
+	if (camobj) {
+		target_group = camobj->_rendergroup;
+	}
 
 	num = 0;
 	for (i = 0; i < _maxobj; i++) {
 		if (obj->isVisible(_scenedraw_lateflag)) {
 			if (target_group) {
-				if ((target_group & obj->_rendergroup) == 0) continue;
+				if ((target_group & obj->_rendergroup) == 0) {
+					obj++;
+					continue;
+				}
 			}
 			Node *node = obj->_node;
 			if (node) {
@@ -1657,6 +1673,10 @@ int gamehsp::addAnimId(int objid, char *name, int start, int end, int option)
 	}
 	else {
 		p_end = (unsigned long)end;
+	}
+	if ( p_start > p_end ) {
+		GP_WARN("Animation Range Invalid");
+		return -2;
 	}
 	clip = anim->createClip(name, p_start, p_end);
 	clip->setRepeatCount(AnimationClip::REPEAT_INDEFINITE);
