@@ -20,6 +20,8 @@
 									"{275c23e2-3747-11d0-9fea-00aa003f8646}"
 #comfunc MuLang_ConvertString 9 var, int, int, var, var, var, var
 
+ml=0
+
 #deffunc _encode_init
 	newcom ml, IMultiLanguage
 	return

@@ -9,6 +9,8 @@ mod_regexp
 Internet Explorer 5.5 ˆÈã‚ª•K—v
 %********************************************************************/
 #module
+oReg=0
+oMatches=0
 #deffunc _endregexp onexit
 	delcom oReg
 	return

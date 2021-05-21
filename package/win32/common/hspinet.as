@@ -106,6 +106,7 @@
 
 	netrequest@ _p1
 
+	res=0
 	repeat
 	netexec@ res
 	if res : break
@@ -114,6 +115,7 @@
 
 	if res > 0 : return
 
+	estr=0
 	neterror@ estr
 	dialog "ƒGƒ‰[:"+estr
 	return
