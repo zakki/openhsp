@@ -59,6 +59,9 @@ void bms_send( BMSCR *bm, int x, int y, int sx, int sy );
 #define code_getd exinfo->HspFunc_prm_getd
 #define code_getdd exinfo->HspFunc_prm_getdd
 
+#define code_getns exinfo->HspFunc_prm_getns
+#define code_getnds exinfo->HspFunc_prm_getnds
+
 #define stat ctx->stat
 #define active_window (*exinfo->actscr)
 

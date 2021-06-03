@@ -1,6 +1,6 @@
 ------------------------------------------------------------------------------
-Hot Soup Processor ver3.3                           HSP : Hot Soup Processor  
-SDK仕様ガイド                         copyright 1997-2011 (c) onion software  
+Hot Soup Processor ver3.6                           HSP : Hot Soup Processor  
+SDK仕様ガイド                         copyright 1997-2021 (c) onion software  
 ------------------------------------------------------------------------------
 
 ・プラグイン開発マニュアル
@@ -54,6 +54,11 @@ HSP拡張プラグインの規定
 
 
 このドキュメントのバージョン履歴
+
+	■HSP ver3.6RC1
+
+	HSP3.6で修正されたBMSCR構造体メンバについて明記しました。
+	HSPEXINFO構造体内のHspFunc_getobj/HspFunc_setobjのオブジェクトID範囲チェックを追加しました。
 
 	■HSP ver3.2β4
 
@@ -734,6 +739,16 @@ HSP3TypeFunctionの初期化
 	独自に、中間コードを読み取って処理を行なうような特殊な場面でのみ
 	使用してください。
 
+	char *code_getns( void );
+	char *code_getnds( char *defstr );
+
+	HSP3.5から追加された項目です。
+	文字列パラメーターを取得するcode_gets/code_getdsと基本的な機能は変わりませんが、
+	ランタイムがunicode版(hsp3utf)だった場合、HSP内部の形式であるUTF-8の文字列をそのまま取得します。
+	(通常のcode_gets/code_getdsは、Windows APIの形式であるUTF-16に変換されます)
+	unicode版に対応したプラグインを作成する場合は、取得される文字コードの違いに注意してください。
+
+	------------------------------------------------------------------------
 	パラメーターの取得方法は、HSP2.6のSDKで採用された$202タイプで
 	使用されていたHSPEXINFO構造体と互換性があります。
 	HSP3でも同様に、HSPEXINFO構造体を使用しており、以下のような内容に
@@ -808,6 +823,11 @@ HSP3TypeFunctionの初期化
 	char *(*HspFunc_varname)( int id );
 	int (*HspFunc_seekvar)( const char *name );
 
+	//		Enhanced data (3.5)
+	//
+	char *(*HspFunc_prm_getns)(void);
+	char *(*HspFunc_prm_getnds)(const char *defstr);
+
 	} HSPEXINFO;
 
 	HSP2.6から拡張されたり、削除されたフィールドもありますが、
@@ -818,6 +838,7 @@ HSP3TypeFunctionの初期化
 	関数を呼び出すためのマクロになっているだけです。
 	過去に作成したHSP2.6用のプラグインを3.0用に移植する場合には、この点に
 	留意すればある程度作業が軽減されると思います。
+	------------------------------------------------------------------------
 
 
 内部情報の取得と設定
@@ -827,6 +848,7 @@ HSP3TypeFunctionの初期化
 	void *getbmscr( int wid );
 
 	widで指定したウインドゥIDの情報を返します。
+	ウインドウIDが不正な場合はエラー例外が発生します。
 	HSP3の標準GUIを使用している場合は、BMSCR構造体へのポインタになります。
 	BMSCR構造体についての詳細は、別項を参照してください。
 	また、現在の操作先ウインドゥIDは、active_windowマクロによって取得する
@@ -836,6 +858,7 @@ HSP3TypeFunctionの初期化
 
 	widで指定したウインドゥIDに配置されている、idで指定された番号の
 	オブジェクト情報を取得します。
+	ウインドウID、オブジェクトIDが不正な場合はエラー例外が発生します。
 	取得されたデータは、infで指定されたポインタにコピーされます。
 	HSP3の標準GUIを使用している場合は、infにはHSPOBJINFO構造体の内容が
 	コピーされることになります。
@@ -847,6 +870,7 @@ HSP3TypeFunctionの初期化
 
 	widで指定したウインドゥIDに配置されている、idで指定された番号の
 	オブジェクト情報を設定します。
+	ウインドウID、オブジェクトIDが不正な場合はエラー例外が発生します。
 	infで指定されたポインタから内部データにコピーされます。
 	HSP3の標準GUIを使用している場合は、infにはHSPOBJINFO構造体の内容が
 	コピーされることになります。
@@ -1030,7 +1054,10 @@ BMSCR構造体について
 		char	*prtmes;			// slow message ptr
 		int		focflg;				// focus set flag
 		int		objmode;			// object set mode
-		LOGFONT	logfont;			// logical font
+
+		LOGFONT	*logfont;			// logical font
+		int		logopt[14];			// dummy padding
+
 		int		style;				// extra window style
 		int		gfrate;				// halftone copy rate
 		int		tabmove;			// object TAB move mode
@@ -1039,7 +1066,7 @@ BMSCR構造体について
 
 		//		Class depend data
 		//
-		int		objstyle;					// objects style	
+		int		objstyle;					// objects style
 		HSPOBJINFO *mem_obj;				// Window objects
 		int objmax;							// Max number of obj
 		int objlimit;						// Limit number of obj
@@ -1056,6 +1083,12 @@ BMSCR構造体について
 		short	divx, divy;					// Divide value for CEL
 		short	divsx, divsy;				// CEL size
 		short	celofsx, celofsy;			// CEL center offset
+
+		COLORREF objcolor;					// object color code
+		int		fonteff_size;				// effect size for font
+
+		int		vp_flag;					// Viewport enable flag (0=none)
+		float	vp_matrix[16];				// Viewport matrix
 
 	} BMSCR;
 
@@ -1213,10 +1246,17 @@ BMSCR構造体について
 	この値は、内部で使用するだけなので変更しないで下さい。
 
 	int		objmode;			// object set mode
-	LOGFONT	logfont;			// logical font
 
 	objmodeは、objmode命令で設定されているモードが格納されます。
-	logfontは選択された論理フォント構造体が格納されます。
+
+	LOGFONT	*logfont;			// logical font (HSP3.6以降)
+	LOGFONT	logfont;			// logical font (HSP3.6以前)
+
+	logfontは選択された論理フォントの構造体が格納されます。
+	HSP3.6以前はLOGFONT構造体が定義されていましたが、HSP3.6以降はポインタに変更されています。
+	プラグインでこの項目を操作することはほとんどないと思われますが、該当する場合は注意してください。
+	HSP3.6以降でも、パディング領域を入れているため従来の構造体からサイズ自体に変更はないので、
+	この変更により、他のメンバが影響を受けることはありません。
 
 	int		style;				// extra window style
 
@@ -1277,6 +1317,20 @@ BMSCR構造体について
 	divx, divyは、X,Y方向の分割数となります。
 	divsx, divsyは、1素材あたりのサイズが保存されます。
 	celofsx, celofsyは、中心点座標となります。
+
+	COLORREF objcolor;					// object color code
+
+	objcolor命令で設定された色情報を保存します。
+
+	int		fonteff_size;				// effect size for font
+
+	font命令で設定されるメッセージ修飾のさいず情報を保存します。
+
+	int		vp_flag;					// Viewport enable flag (0=none)
+	float	vp_matrix[16];				// Viewport matrix
+
+	viewcalc命令で設定される座標変換モード及びマトリクス情報が保存されます。
+	この領域は、HSP3Dishでのみ使用され、標準のHSP3では使用されません。
 
 
 ビットマップ画面への直接書き込み
@@ -2431,6 +2485,20 @@ code_getprmの注意点
 	(code_getvaで取得されるPValポインタ)とは異なるので注意してください。
 	また、mpvalポインタはシステムが管理しているため、値の修正や、
 	型の変更など、構造体の内容が変更される処理は避けて下さい。
+
+
+BMSCR構造体のlogfontメンバについて
+
+	BMSCR構造体のlogfontメンバが、HSP3.6から変更になっています。
+
+	LOGFONT	*logfont;			// logical font (HSP3.6以降)
+	LOGFONT	logfont;			// logical font (HSP3.6以前)
+
+	logfontは選択された論理フォントの構造体が格納されます。
+	HSP3.6以前はLOGFONT構造体が定義されていましたが、HSP3.6以降はポインタに変更されています。
+	プラグインでこの項目を操作することはほとんどないと思われますが、該当する場合は注意してください。
+	HSP3.6以降でも、パディング領域を入れているため従来の構造体からサイズ自体に変更はないので、
+	この変更により、他のメンバが影響を受けることはありません。
 
 
 関数を作成する上での注意点

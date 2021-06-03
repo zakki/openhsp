@@ -1536,7 +1536,7 @@ int ex_getobj( int wid, int id, void *inf )
 	Bmscr *bm;
 	HSPOBJINFO *obj;
 	bm = wnd->GetBmscrSafe( wid );
-	obj = bm->GetHSPObject( id );
+	obj = bm->GetHSPObjectSafe( id );
 	memcpy( inf, obj, sizeof(HSPOBJINFO) );
 	return 0;
 }
@@ -1546,7 +1546,7 @@ int ex_setobj( int wid, int id, const void *inf )
 	Bmscr *bm;
 	HSPOBJINFO *obj;
 	bm = wnd->GetBmscrSafe( wid );
-	obj = bm->GetHSPObject( id );
+	obj = bm->GetHSPObjectSafe( id );
 	memcpy( obj, inf, sizeof(HSPOBJINFO) );
 	return 0;
 }

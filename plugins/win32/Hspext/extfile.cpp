@@ -426,6 +426,7 @@ static char dirlist_header_buffer[MAX_PATH];
 static int dirlist_info_mode = 0xffff;
 static int dirlist_info_split = ',';
 static char *dirlist_info_opt[4];
+static int dirlist_filetotal;
 
 #define DIRLIST_INFO_FULLNAME 1
 #define DIRLIST_INFO_NAME 2
@@ -486,6 +487,7 @@ static void dirlist2ini( int split )
 	dirlist_spchr[0] = dirlist_split;
 	dirlist_spchr[1] = 0;
 	*dirlist_ptr = 0;
+	dirlist_filetotal = 0;
 }
 
 	
@@ -575,6 +577,7 @@ static int dirlist2sub( char *filemask, int flag, char *prefix )
 				if ( fflag ) {
 					fnum++;
 					fadd = 0;
+					dirlist_filetotal++;
 					if (  dirlist_info_mode & DIRLIST_INFO_FULLNAME ) {
 						//		add full name
 						strcpy( tmp2, prefix );
@@ -678,7 +681,7 @@ EXPORT BOOL WINAPI dirlist2( int *p1, char *p2, int p3, int p4 )
 	rsize = dirlist_cur + 1;
 	if ( rsize<64 ) rsize=64;
 	*p1 = rsize;
-	return -ff;
+	return -dirlist_filetotal;
 }
 
 
