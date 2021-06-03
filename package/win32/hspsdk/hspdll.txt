@@ -39,12 +39,12 @@ HSP拡張プラグインの規定
 	旨をドキュメント等に明記して、なるべくHSP本体の入手先、
 
 	「HSPTV!」
-	http://hsp.tv/
+	https://hsp.tv/
 
 	または、
 
 	「Hot Soup Processor Page」
-	http://www.onionsoft.net/hsp/
+	https://www.onionsoft.net/hsp/
 
 	を明記してもらえると嬉しいです。
 
@@ -55,10 +55,14 @@ HSP拡張プラグインの規定
 
 このドキュメントのバージョン履歴
 
-	■HSP ver3.6RC1
+	■HSP ver3.6
 
 	HSP3.6で修正されたBMSCR構造体メンバについて明記しました。
 	HSPEXINFO構造体内のHspFunc_getobj/HspFunc_setobjのオブジェクトID範囲チェックを追加しました。
+
+	■HSP ver3.5
+
+	HSP3.6で追加されたパラメーター取得、code_getns/code_getndsについて追記しました。
 
 	■HSP ver3.2β4
 
@@ -745,8 +749,11 @@ HSP3TypeFunctionの初期化
 	HSP3.5から追加された項目です。
 	文字列パラメーターを取得するcode_gets/code_getdsと基本的な機能は変わりませんが、
 	ランタイムがunicode版(hsp3utf)だった場合、HSP内部の形式であるUTF-8の文字列をそのまま取得します。
-	(通常のcode_gets/code_getdsは、Windows APIの形式であるUTF-16に変換されます)
-	unicode版に対応したプラグインを作成する場合は、取得される文字コードの違いに注意してください。
+	(通常のcode_gets/code_getdsは、unicode版(hsp3utf)であっても通常のHSPと同様の文字コード(SJIS)に変換されます。
+	unicode版に対応したプラグインを作成する場合に、code_getns/code_getndsを
+	ご使用ください。
+	(呼び出し元のHSPランタイムがunicodeかどうかを判別するには、
+	HSPCTX構造体のhspstatを参照してください。)
 
 	------------------------------------------------------------------------
 	パラメーターの取得方法は、HSP2.6のSDKで採用された$202タイプで

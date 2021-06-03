@@ -9,6 +9,9 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include "hsp3plugin.h"
+//#include "hsp3debug.h"
+//#include "hsp3struct.h"
+//#include "hspwnd.h"
 
 void DrawLine( BMSCR *bm, int x1, int y1, int x2, int y2, int color );
 
@@ -62,19 +65,19 @@ static void newcmd3( void )
 	case HSPVAR_FLAG_STR:								// パラメーターが文字列だった時
 		{
 		char *str = (char *)mpval->pt;
-		sprintf( out,"%s\n",str );
+		sprintf( out,"%s\n%s\n", pathname, str );
 		break;
 		}
 	case HSPVAR_FLAG_DOUBLE:									// パラメーターが実数だった時
 		{
 		double *ptr = (double *)mpval->pt;
-		sprintf( out,"%f\n",*ptr );
+		sprintf( out,"%s\n%f\n", pathname, *ptr );
 		break;
 		}
 	case HSPVAR_FLAG_INT:									// パラメーターが整数だった時
 		{
 		int *ptr = (int *)mpval->pt;
-		sprintf( out,"%d\n",*ptr );
+		sprintf( out,"%s\n%d\n", pathname, *ptr );
 		break;
 		}
 	default:

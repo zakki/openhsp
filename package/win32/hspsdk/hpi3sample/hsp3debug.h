@@ -50,6 +50,7 @@ HSPERR_DLL_ERROR,
 HSPERR_COMDLL_ERROR,
 HSPERR_NORETVAL,
 HSPERR_FUNCTION_SYNTAX,
+HSPERR_INVALID_CALLBACK,
 
 HSPERR_INTJUMP,					// 割り込みジャンプ時
 HSPERR_EXITRUN,					// 外部ファイル実行
@@ -96,14 +97,22 @@ typedef struct HSP3DEBUG
 	//	[in] system value
 	//	(初期化後に設定されます)
 	//
-	void 	*hspctx;
+	struct HSPCTX 	*hspctx;
 	//
 	char *	(* get_value) (int);			// debug情報取得コールバック
 	char *	(* get_varinf) (char *,int);	// 変数情報取得コールバック
 	void	(* dbg_close) (char *);			// debug情報取得終了
 	void	(* dbg_curinf)( void );			// 現在行・ファイル名の取得
 	int		(* dbg_set) (int);				// debugモード設定
+	char *  (* dbg_callstack) ( void );     // コールスタックの取得
 
 } HSP3DEBUG;
+
+// Debug Module
+
+#define HSP3DEBUG_MODULE "hsp3debug"
+#define HSP3DEBUG_INIT "debugini"
+#define HSP3DEBUG_NOTICE "debug_notice"
+
 
 #endif
