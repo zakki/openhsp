@@ -61,12 +61,12 @@
 	;	jstick 変数,ポート番号
 	;	(stick命令互換の値を変数に返す)
 	;
-	stick@hsp key_now,$3ff
+	stick@hsp key_now,$3ffff
 	jstick_org jkey,_p3
 	key_now|=jkey
 	trg_key=key_now^last_key&key_now
 	last_key=key_now
-	_p1 = (last_key & _p2) + ( trg_key & (0xffff ^ _p2) )
+	_p1 = (last_key & _p2) + ( trg_key & (0xfffff ^ _p2) )
 	return
 
 #global
