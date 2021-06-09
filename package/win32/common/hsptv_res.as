@@ -190,7 +190,7 @@
 	return
 
 
-#deffunc hsptv_tamawiz int _p1, local i
+#deffunc hsptv_tamawiz int _p1, local _hsptv_i
 
 	;
 	;	Žì‰¹‚¿‚á‚ñ–‚–@Žg‚¢‘fÞ‚ð“Ç‚Ýž‚Þ
@@ -201,17 +201,17 @@
 	hsptv_resinit
 	if tamawiz=0 : tamawiz=ginfo_newid
 	if (_p1=0)  : return
-	i=_p1
-	if i>5 {
-		i=i-5
-		celload tvfolder+"tamane_wizard2_"+_i+".png",tamawiz
+	_hsptv_i=_p1
+	if _hsptv_i>5 {
+		_hsptv_i=_hsptv_i-5
+		celload tvfolder+"tamane_wizard2_"+_hsptv_i+".png",tamawiz
 		return
 	}
-	celload tvfolder+"tamane_wizard1_"+_i+".png",tamawiz
+	celload tvfolder+"tamane_wizard1_"+_hsptv_i+".png",tamawiz
 	return
 
 
-#deffunc hsptv_keiknight int _p1, local i
+#deffunc hsptv_keiknight int _p1, local _hsptv_i
 
 	;
 	;	ƒvƒ¶‚¿‚á‚ñ‹RŽmŽg‚¢‘fÞ‚ð“Ç‚Ýž‚Þ
@@ -222,13 +222,13 @@
 	hsptv_resinit
 	if keiknight=0 : keiknight=ginfo_newid
 	if (_p1=0)  : return
-	i=_p1
-	if i>5 {
-		i=i-5
-		celload tvfolder+"kei_knight2_"+_i+".png",keiknight
+	_hsptv_i=_p1
+	if _hsptv_i>5 {
+		_hsptv_i=_hsptv_i-5
+		celload tvfolder+"kei_knight2_"+_hsptv_i+".png",keiknight
 		return
 	}
-	celload tvfolder+"kei_knight1_"+_i+".png",keiknight
+	celload tvfolder+"kei_knight1_"+_hsptv_i+".png",keiknight
 	return
 
 
