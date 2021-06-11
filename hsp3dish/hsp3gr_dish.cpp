@@ -606,6 +606,13 @@ static int cmdfunc_extcmd( int cmd )
 				bmscr->SetDefaultFont();	// ƒtƒHƒ“ƒg‚ðŒ³‚É–ß‚·
 			}
 		}
+
+#ifdef USE_ESSPRITE
+		if ((p1 & 1) && (bmscr->wid==0)) {
+			sprite->updateFrame();						// sprite frame update
+		}
+#endif
+
 		break;
 		}
 
@@ -3208,7 +3215,7 @@ static int cmdfunc_extcmd( int cmd )
 		p4 = code_getdi(-1);
 		p5 = code_getdi(-1);
 		if (sprite->sprite_enable) {
-			sprite->draw(p1, p2, p3, p4, p5);
+			ctx->stat = sprite->draw(p1, p2, p3, p4, p5);
 		}
 		else throw HSPERR_UNSUPPORTED_FUNCTION;
 		break;
@@ -3238,8 +3245,8 @@ static int cmdfunc_extcmd( int cmd )
 	case 0x21b:								// es_fade
 	{
 		p1 = code_getdi(0);
-		p2 = code_getdi(0);
-		p3 = code_getdi(0);
+		p2 = code_getdi(1);
+		p3 = code_getdi(30);
 		if (sprite->sprite_enable) {
 			ctx->stat = sprite->setSpriteFade(p1, p2, p3);
 		}

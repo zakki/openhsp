@@ -19,6 +19,10 @@ extern "C" {
 #define ESSPFLAG_YBOUNCE (0x4000)
 #define ESSPFLAG_BLINK (0x8000)
 #define ESSPFLAG_NODISP (0x10000)
+#define ESSPFLAG_FADEIN (0x20000)
+#define ESSPFLAG_FADEOUT (0x40000)
+#define ESSPFLAG_TIMERWIPE (0x80000)
+
 
 #define ESSPSET_POS (0)
 #define ESSPSET_ADDPOS (1)
@@ -27,13 +31,6 @@ extern "C" {
 #define ESSPSET_ZOOM (4)
 #define ESSPSET_DIRECT (0x1000)
 #define ESSPSET_MASKBIT (0x2000)
-
-#define ESSPOPT_NONE (0)
-#define ESSPOPT_EXTDISP (1)
-#define ESSPOPT_FADEIN (4)
-#define ESSPOPT_FADEOUT (8)
-#define ESSPOPT_ADDCOLOR (16)
-#define ESSPOPT_SUBCOLOR (32)
 
 #define ESDRAW_NORMAL (0)
 #define ESDRAW_NOMOVE (1)
@@ -103,14 +100,14 @@ typedef struct SPOBJ
 	int yy;				//	Y axis (16bit固定少数)
 	int px;				//	Gravity/Move X parameters
 	int py;				//	Gravity/Move X parameters
-	int prg;			//	Move program counter
+	int progress;		//	Move progress counter
 	int ani;			//	chr anim counter
 	int chr;			//	chr code
 	int type;			//	Attribute type
 	int fspx,fspy;		//  落下速度
 	int bound;			//  固さ
 	int boundflag;		//  バウンドさせるフラグ(1=X 2=Y)
-	int option;			//	表示オプション (ESSPOPT_*)
+	int option;			//	ユーザーオプション値
 	int priority;		//	優先順位
 	int tpflag;			//	α値(0-255)+effectパラメーター
 	int fadeprm;		//	αフェードパラメーター
@@ -118,6 +115,8 @@ typedef struct SPOBJ
 	int zoomy;			//	Y方向倍率(16bit固定少数)
 	int	rotz;			//	回転角度
 	int	splink;			//	link to other sprite
+	int timer;			//	カウントダウンタイマー値
+	int timer_base;		//	カウントダウンタイマー初期値
 	unsigned short *sbr;//	callback
 
 } SPOBJ;
@@ -128,6 +127,7 @@ public:
 	~essprite();
 	void reset(void);
 	int init(int maxsprite=512, int maxchr=1024, int rotrate=64, int maxmap=16);
+	void updateFrame(void);
 	void setResolution(HspWnd *wnd, int sx, int sy);
 	void setArea(int x, int y, int sx, int sy );
 	void setSize(int p1, int p2, int p3, int p4);
@@ -169,6 +169,8 @@ public:
 
 	int setSpriteParent(int spno, int parent, int option);
 	int setSpriteFade(int p1, int p2, int p3);
+	void resetTimer(SPOBJ* sp);
+	void execTimerFade(SPOBJ* sp);
 	int setSpriteEffect(int id, int tpflag, int mulcolor);
 	int setSpriteRotate(int id, int angle, int zoomx, int zoomy, int rate);
 	void setSpritePriority(int id, int pri);
@@ -231,6 +233,8 @@ private:
 
 	int		colx, coly, colex, coley;
 	int		fade_mode, fade_upd, fade_val, fade_tar;
+
+	int		framecount;			// frame count
 };
 
 //	sprite pack info ( for sort )

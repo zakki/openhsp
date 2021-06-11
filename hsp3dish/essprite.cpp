@@ -140,6 +140,7 @@ int essprite::init(int maxsprite, int maxchr, int rotrate, int maxmap)
 	def_fspy = 0x100;
 	def_bound = 128;
 	def_boundflag = 3;
+	framecount = 0;
 
 	setOffset(0, 0);
 	sprite_enable = true;
@@ -174,6 +175,13 @@ void essprite::reset(void)
 	}
 
 }
+
+
+void essprite::updateFrame(void)
+{
+	framecount++;
+}
+
 
 SPOBJ *essprite::getObj(int id)
 {
@@ -704,17 +712,51 @@ int essprite::drawSubMove(SPOBJ *sp, int mode)
 		}
 	}
 
-	//		Flag blink check
+	//		Flag timer check
 	//
-	if (fl & 255) {
-		fl--;
-		if ((fl & 255) == 0) fl = 0;
-		if ((fl & 255) == 128) fl ^= 128;
-		sp->fl = fl;
+	if (sp->timer) {
+		if (fl & (ESSPFLAG_FADEIN | ESSPFLAG_FADEOUT)) {
+			execTimerFade(sp);
+		}
+		if (sp->timer > 0) {
+			sp->timer--;
+			if (sp->timer == 0) {
+				if (fl & ESSPFLAG_TIMERWIPE) {
+					sp->fl = 0;
+				}
+				resetTimer(sp);
+			}
+		}
 	}
 
 	return res;
 }
+
+
+void essprite::execTimerFade(SPOBJ* sp)
+{
+	//		Execute timer fade event
+	//
+	int fl = sp->fl;
+	int tpmode = (sp->tpflag & 0xffffff00);
+	int timer = sp->timer;
+	int fadeprm = sp->fadeprm;
+	int res = 0;
+	bool fadedone = false;
+
+	if (timer <= 1) fadedone = true;
+
+	res = timer * fadeprm / sp->timer_base;
+	if (res < 0) res = 0;
+	if (res > fadeprm) res = fadedone;
+	if (fadedone) res = 0;
+
+	if (fl & ESSPFLAG_FADEIN) {
+		res = fadeprm - res;
+	}
+	sp->tpflag = res | tpmode;
+}
+
 
 
 int essprite::drawSubPut(SPOBJ *sp, int mode)
@@ -727,7 +769,9 @@ int essprite::drawSubPut(SPOBJ *sp, int mode)
 
 	fl = sp->fl;
 	if (fl & ESSPFLAG_NODISP) return 0;
-	if ((fl & (ESSPFLAG_BLINK | 1)) == 1) return 0;
+	if ( fl & ESSPFLAG_BLINK) {
+		if (framecount & 1) return 0;
+	}
 
 	xx = sp->xx;
 	yy = sp->yy;
@@ -1111,7 +1155,7 @@ SPOBJ *essprite::resetSprite(int spno)
 	sp->fl = ESSPFLAG_STATIC;
 	sp->type = 1;
 	sp->px = 0; sp->py = 0;
-	sp->prg = 0;
+	sp->progress = 0;
 	sp->fspx = def_fspx;
 	sp->fspy = def_fspy;
 	sp->bound = def_bound;
@@ -1124,6 +1168,8 @@ SPOBJ *essprite::resetSprite(int spno)
 	sp->zoomy = dotshift_base;
 	sp->rotz = 0;
 	sp->splink = 0;
+	sp->timer = 0;
+	sp->timer_base = 0;
 	sp->sbr = NULL;
 
 	sp->xx = 0;
@@ -1203,6 +1249,12 @@ int essprite::setBound(int p1, int p2, int p3)
 }
 
 
+void essprite::resetTimer( SPOBJ *sp )
+{
+	sp->fl = sp->fl & ~(ESSPFLAG_BLINK | ESSPFLAG_FADEIN | ESSPFLAG_FADEOUT | ESSPFLAG_TIMERWIPE);
+}
+
+
 int essprite::setSpriteFade(int id, int sw, int timer)
 {
 	int fl;
@@ -1210,18 +1262,39 @@ int essprite::setSpriteFade(int id, int sw, int timer)
 	SPOBJ *sp = getObj(id);
 	if (sp == NULL) return -1;
 
-	i = timer & 0xff;
-	fl = sp->fl & ~(ESSPFLAG_BLINK | 0xff);
+	i = timer;
+	resetTimer(sp);
+	fl = sp->fl;
+
+	if (sw & 1) {
+		fl |= ESSPFLAG_TIMERWIPE;
+	}
+
 	switch (sw) {
-	case 1:
-		fl |= i;
+	case 4:
+	case 5:
+		if (i > 0) {
+			fl |= ESSPFLAG_FADEOUT;
+			sp->timer_base = i;
+			sp->fadeprm = sp->tpflag & 255;
+		}
 		break;
+	case 6:
+	case 7:
+		if (i > 0) {
+			fl |= ESSPFLAG_FADEIN;
+			sp->timer_base = i;
+			sp->fadeprm = sp->tpflag & 255;
+		}
+		break;
+	case 2:
 	case 3:
-		fl |= i | ESSPFLAG_BLINK;
+		fl |= ESSPFLAG_BLINK;
 		break;
 	default:
-		break;
+		return -1;
 	}
+	sp->timer = i;
 	sp->fl = fl;
 	return 0;
 }

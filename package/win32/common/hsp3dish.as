@@ -298,6 +298,9 @@
 #define global ESI_ZOOMX 17
 #define global ESI_ZOOMY 18
 #define global ESI_ROTZ 19
+#define global ESI_SPLINK 20
+#define global ESI_TIMER 21
+#define global ESI_TIMERBASE 22
 
 #define global ESSPFLAG_NONE (0)
 #define global ESSPFLAG_STATIC (0x100)
@@ -320,19 +323,20 @@
 #define global ESSPSET_DIRECT (0x1000)
 #define global ESSPSET_MASKBIT (0x2000)
 
-#define global ESSPOPT_NONE (0)
-#define global ESSPOPT_EXTDISP (1)
-#define global ESSPOPT_FADEIN (4)
-#define global ESSPOPT_FADEOUT (8)
-#define global ESSPOPT_ADDCOLOR (16)
-#define global ESSPOPT_SUBCOLOR (32)
-
 #define global ESDRAW_NORMAL (0)
 #define global ESDRAW_NOMOVE (1)
 #define global ESDRAW_NOANIM (2)
 #define global ESDRAW_NOCALLBACK (4)
 #define global ESDRAW_NODISP (8)
 #define global ESDRAW_NOSORT (16)
+
+#define global ESSPF_TIMEWIPE (1)
+#define global ESSPF_BLINK (2)
+#define global ESSPF_BLINKWIPE (3)
+#define global ESSPF_FADEOUT (4)
+#define global ESSPF_FADEOUTWIPE (5)
+#define global ESSPF_FADEIN (6)
+#define global ESSPF_FADEINWIPE (7)
 
 #endif
 
