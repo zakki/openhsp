@@ -22,6 +22,10 @@ extern "C" {
 #define ESSPFLAG_FADEIN (0x20000)
 #define ESSPFLAG_FADEOUT (0x40000)
 #define ESSPFLAG_TIMERWIPE (0x80000)
+#define ESSPFLAG_BLINK2 (0x100000)
+#define ESSPFLAG_EFADE (0x200000)
+#define ESSPFLAG_EFADE2 (0x400000)
+#define ESSPFLAG_MOVEROT (0x800000)
 
 
 #define ESSPSET_POS (0)
@@ -42,6 +46,21 @@ extern "C" {
 #define ESSPLINK_BGMAP (0x10000)
 
 #define ESMAP_OPT_IGNORE0 (1)
+
+#define ESSPF_TIMEWIPE (1)
+#define ESSPF_BLINK (2)
+#define ESSPF_BLINKWIPE (3)
+#define ESSPF_BLINK2 (4)
+#define ESSPF_BLINKWIPE2 (5)
+#define ESSPF_FADEOUT (6)
+#define ESSPF_FADEOUTWIPE (7)
+#define ESSPF_FADEIN (8)
+#define ESSPF_FADEINWIPE (9)
+#define ESSPF_EFADE (10)
+#define ESSPF_EFADEWIPE (11)
+#define ESSPF_EFADE2 (12)
+#define ESSPF_EFADEWIPE2 (13)
+
 
 //
 //	sprite move flag (fl) condition :
@@ -117,6 +136,8 @@ typedef struct SPOBJ
 	int	splink;			//	link to other sprite
 	int timer;			//	カウントダウンタイマー値
 	int timer_base;		//	カウントダウンタイマー初期値
+	int protz;			//	Move RotZ parameter
+	int pzoomx, pzoomy;	//	Move ZoomX,ZoomY parameters
 	unsigned short *sbr;//	callback
 
 } SPOBJ;
@@ -160,6 +181,7 @@ public:
 	int setSpritePos(int spno, int xx, int yy, int opt=0);
 	int setSpriteAddPos(int spno, int xx, int yy, bool realaxis = false);
 	int setSpriteAddPosRate(int spno, int xx, int yy, int rate);
+	int setSpriteAddRotZoom(int spno, int rotz, int zoomx, int zoomy);
 	int setSpriteChr(int spno, int chrno);
 	int setSpriteType(int spno, int type);
 	int setSpriteAddDir(int spno, int direction, int dirrate);
@@ -170,7 +192,6 @@ public:
 	int setSpriteParent(int spno, int parent, int option);
 	int setSpriteFade(int p1, int p2, int p3);
 	void resetTimer(SPOBJ* sp);
-	void execTimerFade(SPOBJ* sp);
 	int setSpriteEffect(int id, int tpflag, int mulcolor);
 	int setSpriteRotate(int id, int angle, int zoomx, int zoomy, int rate);
 	void setSpritePriority(int id, int pri);
@@ -198,6 +219,10 @@ public:
 	//	Open Parameters
 	//
 	bool	sprite_enable;
+
+protected:
+	void execTimerFade(SPOBJ* sp);
+	void execTimerEndFade(SPOBJ* sp);
 
 private:
 	//	Parameters

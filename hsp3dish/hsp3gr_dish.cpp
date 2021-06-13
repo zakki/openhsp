@@ -3545,6 +3545,20 @@ static int cmdfunc_extcmd( int cmd )
 		else throw HSPERR_UNSUPPORTED_FUNCTION;
 		break;
 	}
+	case 0x22d:								// es_arot
+	{
+		//		Set Rot,Zoom adder (type0)
+		//		es_arot spno, addrot, addzoomx, addzoomy
+		p1 = code_getdi(0);
+		p2 = code_getdi(0);
+		p3 = code_getdi(0);
+		p4 = code_getdi(0);
+		if (sprite->sprite_enable) {
+			ctx->stat = sprite->setSpriteAddRotZoom(p1, p2, p3, p4);
+		}
+		else throw HSPERR_UNSUPPORTED_FUNCTION;
+		break;
+	}
 
 
 #endif
