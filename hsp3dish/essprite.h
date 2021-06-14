@@ -33,6 +33,7 @@ extern "C" {
 #define ESSPSET_FALL (2)
 #define ESSPSET_BOUNCE (3)
 #define ESSPSET_ZOOM (4)
+#define ESSPSET_ADDZOOM (5)
 #define ESSPSET_DIRECT (0x1000)
 #define ESSPSET_MASKBIT (0x2000)
 

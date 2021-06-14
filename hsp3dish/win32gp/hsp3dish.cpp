@@ -899,7 +899,7 @@ void hsp3dish_msgfunc( HSPCTX *hspctx )
 			gameplay::Logger::set(gameplay::Logger::LEVEL_WARN, logfunc);
 			gameplay::Logger::set(gameplay::Logger::LEVEL_ERROR, logfunc);
 
-			platform = gameplay::Platform::create( game, m_hWnd, hsp_wx, hsp_wy, hsp_fullscr!=0 );
+			platform = gameplay::Platform::create(game, m_hWnd, hsp_wx, hsp_wy, hsp_fullscr!=0);
 			if (platform == NULL) {
 				hsp3dish_dialog("OpenGL initalize failed.");
 			}
@@ -1130,6 +1130,13 @@ int hsp3dish_init(HINSTANCE hInstance, char *startfile, HWND hParent)
 	return 0;
 }
 
+
+void* hsp3dish_getinstance(void)
+{
+	return m_hInstance;
+}
+
+
 int hsp3dish_reset(void)
 {
 	//		Register Type
@@ -1144,7 +1151,7 @@ int hsp3dish_reset(void)
 	wndClass.cbClsExtra = 0;
 	wndClass.cbWndExtra = 0;
 	wndClass.hInstance = m_hInstance;
-	wndClass.hIcon = LoadIcon(NULL, MAKEINTRESOURCE(128));
+	wndClass.hIcon = LoadIcon(m_hInstance, MAKEINTRESOURCE(128));
 	wndClass.hIconSm = NULL;
 	wndClass.hCursor = LoadCursor(NULL, IDC_ARROW);
 	wndClass.hbrBackground = (HBRUSH)GetStockObject(WHITE_BRUSH);  // No brush - we are going to paint our own background
