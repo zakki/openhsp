@@ -633,9 +633,9 @@ private:
 	MeshBatch* _meshBatch;						// MeshBatch for Polygon
 	MeshBatch* _meshBatch_line;					// MeshBatch for Line
 	MeshBatch* _meshBatch_font;					// MeshBatch for Font
-	Material* _fontMaterial;
 
 	Effect *_spriteEffect;
+	Effect *_spritecolEffect;
 	float _bufPolyColor[BUFSIZE_POLYCOLOR];
 	float _bufPolyTex[BUFSIZE_POLYTEX];
 

@@ -966,7 +966,7 @@ bool initializeGL(WindowCreationParams* params)
     {
         WGL_CONTEXT_MAJOR_VERSION_ARB, 3,
         WGL_CONTEXT_MINOR_VERSION_ARB, 1,
-        0
+		0
     };
 
     if (!(__hrc = wglCreateContextAttribsARB(__hdc, 0, attribs) ) )

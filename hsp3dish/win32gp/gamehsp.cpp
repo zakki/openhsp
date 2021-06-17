@@ -255,6 +255,7 @@ gamehsp::gamehsp()
 	_meshBatch_line = NULL;
 	_meshBatch_font = NULL;
 	_spriteEffect = NULL;
+	_spritecolEffect = NULL;
 	_collision_callback = NULL;
 }
 
@@ -318,6 +319,7 @@ void gamehsp::deleteAll( void )
 	}
 
 	SAFE_RELEASE(_spriteEffect);
+	SAFE_RELEASE(_spritecolEffect);
 
 	if (_scene) {
 		_scene->removeAllNodes();
@@ -547,12 +549,12 @@ void gamehsp::resetScreen( int opt )
 		return;
 	}
 	//texture->setData( (const unsigned char *)data );
+	Material* _fontMaterial;
 	_fontMaterial = makeMaterialTex2D(texture, GPOBJ_MATOPT_NOMIPMAP);
 	if (_fontMaterial == NULL) {
 		Alertf("ERR");
 		return;
 	}
-	SAFE_RELEASE(texture);
 
 	VertexFormat::Element elements[] =
 	{
@@ -566,6 +568,10 @@ void gamehsp::resetScreen( int opt )
 
 	PhysicsController *pc = Game::getInstance()->getPhysicsController();
 	_collision_callback = new CollisionCallback(pc);
+
+	SAFE_RELEASE(texture);
+	SAFE_RELEASE(_fontMaterial);
+
 }
 
 
@@ -660,26 +666,30 @@ bool gamehsp::init2DRender( void )
 
 	// スプライト用のshader
 	_spriteEffect = Effect::createFromSource(intshd_sprite_vert, intshd_sprite_frag);
-	//_spriteEffect = Effect::createFromFile(SPRITE_VSH, SPRITE_FSH);
 	if ( _spriteEffect == NULL ) {
         GP_ERROR("2D shader initalize failed.");
         return false;
 	}
+	_spritecolEffect = Effect::createFromSource(intshd_spritecol_vert, intshd_spritecol_frag);
+	if (_spritecolEffect == NULL) {
+		GP_ERROR("2D shader initalize failed.");
+		return false;
+	}
 
 	// MeshBatch for FlatPolygon Draw
-	Material* mesh_material = make2DMaterialForMesh();
     VertexFormat::Element elements[] =
     {
         VertexFormat::Element(VertexFormat::POSITION, 3),
         VertexFormat::Element(VertexFormat::COLOR, 4)
     };
-    unsigned int elementCount = sizeof(elements) / sizeof(VertexFormat::Element);
-    _meshBatch = MeshBatch::create(VertexFormat(elements, elementCount), Mesh::TRIANGLE_STRIP, mesh_material, true, 16, 16 );
-
+	unsigned int elementCount = sizeof(elements) / sizeof(VertexFormat::Element);
+	Material* mesh_material = make2DMaterialForMesh();
+	_meshBatch = MeshBatch::create(VertexFormat(elements, elementCount), Mesh::TRIANGLE_STRIP, mesh_material, true, 16, 16 );
 	SAFE_RELEASE(mesh_material);
 
 	mesh_material = make2DMaterialForMesh();
 	_meshBatch_line = MeshBatch::create(VertexFormat(elements, elementCount), Mesh::LINES, mesh_material, true, 4, 4 );
+	SAFE_RELEASE(mesh_material);
 
 	int i;
 	for(i=0;i<BUFSIZE_POLYCOLOR;i++) {
@@ -689,7 +699,6 @@ bool gamehsp::init2DRender( void )
 		_bufPolyTex[i] = 0.0f;
 	}
 
-	SAFE_RELEASE(mesh_material);
 	return true;
 }
 
@@ -717,7 +726,7 @@ void gamehsp::update2DRenderProjectionSystem(Matrix *mat)
 	//	2Dシステム用のプロジェクションを再設定する
 	if (_meshBatch) update2DRenderProjection(_meshBatch->getMaterial(), mat);
 	if (_meshBatch_line) update2DRenderProjection(_meshBatch_line->getMaterial(), mat);
-	if (_meshBatch_font) update2DRenderProjection(_fontMaterial, mat);
+	if (_meshBatch_font) update2DRenderProjection(_meshBatch_font->getMaterial(), mat);
 
 }
 
@@ -2761,7 +2770,7 @@ void gamehsp::texmesDrawClip(void *bmscr, int x, int y, int psx, int psy, texmes
 		}
 	}
 
-	MaterialParameter* mp = _fontMaterial->getParameter(samplerUniform->getName());
+	MaterialParameter* mp = _meshBatch_font->getMaterial()->getParameter(samplerUniform->getName());
 	mp->setValue(tex->_texture);
 
 	tx0 = ((float)(basex));
@@ -3140,10 +3149,8 @@ Material* gamehsp::make2DMaterialForMesh( void )
 {
 	RenderState::StateBlock *state;
 	Material* mesh_material = NULL;
-	Effect* _spritecol = Effect::createFromSource(intshd_spritecol_vert, intshd_spritecol_frag);
-//	Effect* _spritecol = Effect::createFromFile(SPRITECOL_VSH, SPRITECOL_FSH);
-	if (_spritecol) {
-		mesh_material = Material::create(_spritecol);
+	if (_spritecolEffect) {
+		mesh_material = Material::create(_spritecolEffect);
 	}
 	//Material* mesh_material = Material::create(SPRITECOL_VSH, SPRITECOL_FSH, NULL);
 	if ( mesh_material == NULL ) {
