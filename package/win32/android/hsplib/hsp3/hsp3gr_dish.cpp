@@ -45,6 +45,7 @@ char *hsp3dish_getlog(void);		// for gameplay3d log
 #include "supio.h"
 #include "sysreq.h"
 #include "webtask.h"
+#include "hsp3ext.h"
 
 #ifdef HSPWIN
 #include "win32/dxsnd.h"
@@ -140,88 +141,6 @@ static int select_objmoc;
 //					HSP system support
 /*----------------------------------------------------------*/
 
-static void ExecFile( char *stmp, char *ps, int mode )
-{
-	//	外部ファイル実行
-	hgio_exec( stmp, ps, mode );
-}
-
-static char *getdir( int id )
-{
-	//		dirinfo命令の内容をstmpに設定する
-	//
-	char *p;
-#ifdef HSPWIN
-	char *ss;
-	char fname[HSP_MAX_PATH+1];
-#endif
-	p = ctx->stmp;
-
-	*p = 0;
-
-	switch( id ) {
-	case 0:				//    カレント(現在の)ディレクトリ
-#ifdef HSPWIN
-		_getcwd( p, _MAX_PATH );
-#endif
-		break;
-	case 1:				//    HSPの実行ファイルがあるディレクトリ
-#ifdef HSPWIN
-		GetModuleFileName( NULL,fname,_MAX_PATH );
-		getpath( fname, p, 32 );
-#endif
-		break;
-	case 2:				//    Windowsディレクトリ
-#ifdef HSPWIN
-		GetWindowsDirectory( p, _MAX_PATH );
-#endif
-		break;
-	case 3:				//    Windowsのシステムディレクトリ
-#ifdef HSPWIN
-		GetSystemDirectory( p, _MAX_PATH );
-#endif
-		break;
-	case 4:				//    コマンドライン文字列
-#ifdef HSPWIN
-		ss = ctx->cmdline;
-		sbStrCopy( &(ctx->stmp), ss );
-		p = ctx->stmp;
-		return p;
-#endif
-		break;
-	case 5:				//    HSPTV素材があるディレクトリ
-#ifdef HSPWIN
-#if defined(HSPDEBUG)||defined(HSP3IMP)
-		GetModuleFileName( NULL,fname,_MAX_PATH );
-		getpath( fname, p, 32 );
-		CutLastChr( p, '\\' );
-		strcat( p, "\\hsptv\\" );
-		return p;
-#else
-		*p = 0;
-		return p;
-#endif
-#endif
-		break;
-	default:
-#ifdef HSPWIN
-		if ( id & 0x10000 ) {
-			SHGetSpecialFolderPath( NULL, p, id & 0xffff, FALSE );
-			break;
-		}
-#endif
-		throw HSPERR_ILLEGAL_FUNCTION;
-	}
-
-#ifdef HSPWIN
-	//		最後の'\\'を取り除く
-	//
-	CutLastChr( p, '\\' );
-#endif
-	return p;
-}
-
-
 static int sysinfo( int p2 )
 {
 	//		System strings get
@@ -229,7 +148,7 @@ static int sysinfo( int p2 )
 	int fl;
 	char *p1;
 
-	p1 = hgio_sysinfo( p2, &fl, ctx->stmp );
+	p1 = hsp3ext_sysinfo(p2, &fl, ctx->stmp);
 	if ( p1 == NULL ) {
 		p1 = ctx->stmp;
 		*p1 = 0;
@@ -488,7 +407,7 @@ static int cmdfunc_extcmd( int cmd )
 		fname = code_stmpstr( code_gets() );
 		p1 = code_getdi( 0 );
 		ps = code_getds( "" );
-		ExecFile( fname, ps, p1 );
+		hsp3ext_execfile(fname, ps, p1);
 
         ctx->waitcount = 0;
         ctx->runmode = RUNMODE_WAIT;
@@ -687,6 +606,13 @@ static int cmdfunc_extcmd( int cmd )
 				bmscr->SetDefaultFont();	// フォントを元に戻す
 			}
 		}
+
+#ifdef USE_ESSPRITE
+		if ((p1 & 1) && (bmscr->wid==0)) {
+			sprite->updateFrame();						// sprite frame update
+		}
+#endif
+
 		break;
 		}
 
@@ -3289,7 +3215,7 @@ static int cmdfunc_extcmd( int cmd )
 		p4 = code_getdi(-1);
 		p5 = code_getdi(-1);
 		if (sprite->sprite_enable) {
-			sprite->draw(p1, p2, p3, p4, p5);
+			ctx->stat = sprite->draw(p1, p2, p3, p4, p5);
 		}
 		else throw HSPERR_UNSUPPORTED_FUNCTION;
 		break;
@@ -3319,8 +3245,8 @@ static int cmdfunc_extcmd( int cmd )
 	case 0x21b:								// es_fade
 	{
 		p1 = code_getdi(0);
-		p2 = code_getdi(0);
-		p3 = code_getdi(0);
+		p2 = code_getdi(1);
+		p3 = code_getdi(30);
 		if (sprite->sprite_enable) {
 			ctx->stat = sprite->setSpriteFade(p1, p2, p3);
 		}
@@ -3619,6 +3545,20 @@ static int cmdfunc_extcmd( int cmd )
 		else throw HSPERR_UNSUPPORTED_FUNCTION;
 		break;
 	}
+	case 0x22d:								// es_arot
+	{
+		//		Set Rot,Zoom adder (type0)
+		//		es_arot spno, addrot, addzoomx, addzoomy
+		p1 = code_getdi(0);
+		p2 = code_getdi(0);
+		p3 = code_getdi(0);
+		p4 = code_getdi(0);
+		if (sprite->sprite_enable) {
+			ctx->stat = sprite->setSpriteAddRotZoom(p1, p2, p3, p4);
+		}
+		else throw HSPERR_UNSUPPORTED_FUNCTION;
+		break;
+	}
 
 
 #endif
@@ -3809,11 +3749,7 @@ static void *reffunc_function( int *type_res, int arg )
 
 	case 0x002:								// dirinfo
 		p1 = code_geti();
-#if defined(HSPLINUX)
-		ptr = hgio_getdir( p1 );
-#else
-		ptr = getdir( p1 );
-#endif
+		ptr = hsp3ext_getdir( p1 );
 		*type_res = HSPVAR_FLAG_STR;
 		break;
 

@@ -9,10 +9,10 @@
 #include "mod_appconfig.as"
 
 #define APPTITLE "HSP3Dish helper"
-#define APPVER "1.76"
+#define APPVER "1.77"
 #define APP_CONF "\\hsp3dh.cfg"
 
-#define AND_LIBVER 113			; android HSPランタイムの内部バージョン
+#define AND_LIBVER 114			; android HSPランタイムの内部バージョン
 
 #uselib "shell32.dll"
 #cfunc SHBrowseForFolder "SHBrowseForFolder" int
@@ -40,7 +40,7 @@
 	dir_gps="google-play-services_lib"
 	dir_gplib="gameplay"
 	dir_extlib="extlib"
-	dir_hsplib="hsplib36b5"
+	dir_hsplib="hsplib36r1"
 	fname_dpm  = "libhsp3dish.so"
 	;
 	app_winx=-1
