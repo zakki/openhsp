@@ -274,7 +274,14 @@ int gamehsp::deleteMat( int id )
 		delete mat->_mesh;
 		mat->_mesh = NULL;
 	}
-    SAFE_RELEASE( mat->_material );
+
+	Material* material = mat->_material;
+	if (material) {
+		material->removeParameter("u_texture");
+		material->removeParameter("u_diffuseTexture");
+
+		SAFE_RELEASE(material);
+	}
 	return 0;
 }
 

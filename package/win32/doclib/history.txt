@@ -5,8 +5,9 @@ Hot Soup Processor ver3.6                           HSP : Hot Soup Processor
 
 ・hsp3関連 更新履歴
 
-	2021/06/18 3.6 RC1
+	2021/06/21 3.6 RC1
 
+	β2版でmouse命令の動作が過去のものと異なっていたのを修正、ヘルプに追記
 	[HGIMG4][Windows] gpreset命令実行時のメモリリークを修正
 	[HGIMG4][Windows] β5版でウインドウアイコンが表示されない不具合を修正
 	[HGIMG4][Windows] β5版でフルスクリーンの指定が動作しない不具合を修正
