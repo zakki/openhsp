@@ -1410,7 +1410,8 @@ static int cmdfunc_extcmd( int cmd )
 #ifdef HSPDISHGP
 
 	case 0x60:								// gpreset
-		p1 = code_getdi( 0 );
+		p1 = code_getdi( -1 );
+		wnd->resetBuffers();
 		game->resetScreen( p1 );
 		break;
 	case 0x61:								// gpdraw
