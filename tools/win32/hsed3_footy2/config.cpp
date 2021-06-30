@@ -496,7 +496,7 @@ static void reg_save( void )
 	reg_setkey( hKey, "URLUnderLine", color.Clickable.URLUnderLine.Conf );
 	reg_setkey( hKey, "Mail", color.Clickable.Mail.Conf );
 	reg_setkey( hKey, "MailUnderLine", color.Clickable.MailUnderLine.Conf );
-	reg_setkey( hKey, "Label", color.Clickable.Label.Conf );
+	reg_setkey( hKey, "LinkLabel", color.Clickable.Label.Conf );
 	reg_setkey( hKey, "LabelUnderLine", color.Clickable.LabelUnderLine.Conf );
 	reg_setkey( hKey, "UserFunction1", color.UserFunction.UserFunction1.Conf );
 	reg_setkey( hKey, "UserFunction2", color.UserFunction.UserFunction2.Conf );
@@ -538,7 +538,7 @@ static void reg_save( void )
 	reg_setkey( hKey, "URLUnderLine", color.Clickable.URLUnderLine.Combo );
 	reg_setkey( hKey, "Mail", color.Clickable.Mail.Combo );
 	reg_setkey( hKey, "MailUnderLine", color.Clickable.MailUnderLine.Combo );
-	reg_setkey( hKey, "Label", color.Clickable.Label.Combo );
+	reg_setkey( hKey, "LinkLabel", color.Clickable.Label.Combo );
 	reg_setkey( hKey, "LabelUnderLine", color.Clickable.LabelUnderLine.Combo );
 	reg_setkey( hKey, "UserFunction1", color.UserFunction.UserFunction1.Combo );
 	reg_setkey( hKey, "UserFunction2", color.UserFunction.UserFunction2.Combo );
@@ -702,7 +702,7 @@ static void reg_load( void )
 			reg_getkey( hKey, "URLUnderLine", (int *)&(color.Clickable.URLUnderLine.Conf) );
 			reg_getkey( hKey, "Mail", (int *)&(color.Clickable.Mail.Conf) );
 			reg_getkey( hKey, "MailUnderLine", (int *)&(color.Clickable.MailUnderLine.Conf) );
-			reg_getkey( hKey, "Label", (int *)&(color.Clickable.Label.Conf) );
+			reg_getkey( hKey, "LinkLabel", (int *)&(color.Clickable.Label.Conf) );
 			reg_getkey( hKey, "LabelUnderLine", (int *)&(color.Clickable.LabelUnderLine.Conf) );
 			reg_getkey( hKey, "UserFunction1", (int *)&(color.UserFunction.UserFunction1.Conf) );
 			reg_getkey( hKey, "UserFunction2", (int *)&(color.UserFunction.UserFunction2.Conf) );
@@ -745,7 +745,7 @@ static void reg_load( void )
 			reg_getkey( hKey, "URLUnderLine", (int *)&(color.Clickable.URLUnderLine.Combo) );
 			reg_getkey( hKey, "Mail", (int *)&(color.Clickable.Mail.Combo) );
 			reg_getkey( hKey, "MailUnderLine", (int *)&(color.Clickable.MailUnderLine.Combo) );
-			reg_getkey( hKey, "Label", (int *)&(color.Clickable.Label.Combo) );
+			reg_getkey( hKey, "LinkLabel", (int *)&(color.Clickable.Label.Combo) );
 			reg_getkey( hKey, "LabelUnderLine", (int *)&(color.Clickable.LabelUnderLine.Combo) );
 			reg_getkey( hKey, "UserFunction1", (int *)&(color.UserFunction.UserFunction1.Combo) );
 			reg_getkey( hKey, "UserFunction2", (int *)&(color.UserFunction.UserFunction2.Combo) );
@@ -1014,7 +1014,7 @@ static void ini_save( void )
 	ini_setkey( filename, "Color", "URLUnderLine", color.Clickable.URLUnderLine.Conf );
 	ini_setkey( filename, "Color", "Mail", color.Clickable.Mail.Conf );
 	ini_setkey( filename, "Color", "MailUnderLine", color.Clickable.MailUnderLine.Conf );
-	ini_setkey( filename, "Color", "Label", color.Clickable.Label.Conf );
+	ini_setkey( filename, "Color", "LinkLabel", color.Clickable.Label.Conf );
 	ini_setkey( filename, "Color", "LabelUnderLine", color.Clickable.LabelUnderLine.Conf );
 	ini_setkey( filename, "Color", "UserFunction1", color.UserFunction.UserFunction1.Conf );
 	ini_setkey( filename, "Color", "UserFunction2", color.UserFunction.UserFunction2.Conf );
@@ -1052,7 +1052,7 @@ static void ini_save( void )
 	ini_setkey( filename, "UserColor", "URLUnderLine", color.Clickable.URLUnderLine.Combo );
 	ini_setkey( filename, "UserColor", "Mail", color.Clickable.Mail.Combo );
 	ini_setkey( filename, "UserColor", "MailUnderLine", color.Clickable.MailUnderLine.Combo );
-	ini_setkey( filename, "UserColor", "Label", color.Clickable.Label.Combo );
+	ini_setkey( filename, "UserColor", "LinkLabel", color.Clickable.Label.Combo );
 	ini_setkey( filename, "UserColor", "LabelUnderLine", color.Clickable.LabelUnderLine.Combo );
 	ini_setkey( filename, "UserColor", "UserFunction1", color.UserFunction.UserFunction1.Combo );
 	ini_setkey( filename, "UserColor", "UserFunction2", color.UserFunction.UserFunction2.Combo );
@@ -1191,7 +1191,7 @@ static void ini_load()
 		ini_getkey( filename, "Color", "URLUnderLine", (int *)&(color.Clickable.URLUnderLine.Conf) );
 		ini_getkey( filename, "Color", "Mail", (int *)&(color.Clickable.Mail.Conf) );
 		ini_getkey( filename, "Color", "MailUnderLine", (int *)&(color.Clickable.MailUnderLine.Conf) );
-		ini_getkey( filename, "Color", "Label", (int *)&(color.Clickable.Label.Conf) );
+		ini_getkey( filename, "Color", "LinkLabel", (int *)&(color.Clickable.Label.Conf) );
 		ini_getkey( filename, "Color", "LabelUnderLine", (int *)&(color.Clickable.LabelUnderLine.Conf) );
 		ini_getkey( filename, "Color", "UserFunction1", (int *)&(color.UserFunction.UserFunction1.Conf) );
 		ini_getkey( filename, "Color", "UserFunction2", (int *)&(color.UserFunction.UserFunction2.Conf) );
@@ -1229,7 +1229,7 @@ static void ini_load()
 		ini_getkey( filename, "UserColor", "URLUnderLine", (int *)&(color.Clickable.URLUnderLine.Combo) );
 		ini_getkey( filename, "UserColor", "Mail", (int *)&(color.Clickable.Mail.Combo) );
 		ini_getkey( filename, "UserColor", "MailUnderLine", (int *)&(color.Clickable.MailUnderLine.Combo) );
-		ini_getkey( filename, "UserColor", "Label", (int *)&(color.Clickable.Label.Combo) );
+		ini_getkey( filename, "UserColor", "LinkLabel", (int *)&(color.Clickable.Label.Combo) );
 		ini_getkey( filename, "UserColor", "LabelUnderLine", (int *)&(color.Clickable.LabelUnderLine.Combo) );
 		ini_getkey( filename, "UserColor", "UserFunction1", (int *)&(color.UserFunction.UserFunction1.Combo) );
 		ini_getkey( filename, "UserColor", "UserFunction2", (int *)&(color.UserFunction.UserFunction2.Combo) );

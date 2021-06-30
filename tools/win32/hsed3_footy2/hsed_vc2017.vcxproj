@@ -19,7 +19,7 @@
     <ProjectGuid>{A599DDBE-AF26-446B-A144-17BF357A4E60}</ProjectGuid>
     <RootNamespace>hsed</RootNamespace>
     <Keyword>Win32Proj</Keyword>
-    <WindowsTargetPlatformVersion>10.0.16299.0</WindowsTargetPlatformVersion>
+    <WindowsTargetPlatformVersion>7.0</WindowsTargetPlatformVersion>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="Configuration">
@@ -65,11 +65,15 @@
     <OutDir>Release\</OutDir>
     <IntDir>Release\</IntDir>
     <LinkIncremental>false</LinkIncremental>
+    <TargetName>hsed3</TargetName>
+    <GenerateManifest>true</GenerateManifest>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='release_en|Win32'">
     <OutDir>Release_en\</OutDir>
     <IntDir>Release_en\</IntDir>
     <LinkIncremental>false</LinkIncremental>
+    <TargetName>hsed3_en</TargetName>
+    <GenerateManifest>false</GenerateManifest>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <ClCompile>
@@ -111,7 +115,6 @@
     <Link>
       <AdditionalOptions>/FORCE:MULTIPLE %(AdditionalOptions)</AdditionalOptions>
       <AdditionalDependencies>comsuppw.lib;%(AdditionalDependencies)</AdditionalDependencies>
-      <OutputFile>$(OutDir)hsed3.exe</OutputFile>
       <IgnoreSpecificDefaultLibraries>libc.lib;%(IgnoreSpecificDefaultLibraries)</IgnoreSpecificDefaultLibraries>
       <GenerateDebugInformation>false</GenerateDebugInformation>
       <SubSystem>Windows</SubSystem>
@@ -121,6 +124,13 @@
       <DataExecutionPrevention />
       <TargetMachine>MachineX86</TargetMachine>
     </Link>
+    <Manifest>
+      <OutputManifestFile>$(IntDir)$(TargetName)$(TargetExt).embed.manifest</OutputManifestFile>
+      <AdditionalManifestFiles>$(ProjectDir)xpstyle.xml</AdditionalManifestFiles>
+    </Manifest>
+    <ManifestResourceCompile>
+      <ResourceOutputFileName>$(IntDir)$(TargetName)$(TargetExt).embed.manifest.res</ResourceOutputFileName>
+    </ManifestResourceCompile>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='release_en|Win32'">
     <ClCompile>
@@ -141,7 +151,7 @@
     <Link>
       <AdditionalOptions>/FORCE:MULTIPLE %(AdditionalOptions)</AdditionalOptions>
       <AdditionalDependencies>comsuppw.lib;%(AdditionalDependencies)</AdditionalDependencies>
-      <OutputFile>$(OutDir)hsed3.exe</OutputFile>
+      <OutputFile>$(OutDir)$(TargetName)$(TargetExt)</OutputFile>
       <IgnoreSpecificDefaultLibraries>libc.lib;%(IgnoreSpecificDefaultLibraries)</IgnoreSpecificDefaultLibraries>
       <GenerateDebugInformation>false</GenerateDebugInformation>
       <SubSystem>Windows</SubSystem>
@@ -152,6 +162,13 @@
       </DataExecutionPrevention>
       <TargetMachine>MachineX86</TargetMachine>
     </Link>
+    <Manifest>
+      <AdditionalManifestFiles>$(ProjectDir)xpstyle.xml</AdditionalManifestFiles>
+      <OutputManifestFile>$(IntDir)$(TargetName)$(TargetExt).embed.manifest</OutputManifestFile>
+    </Manifest>
+    <ManifestResourceCompile>
+      <ResourceOutputFileName>$(IntDir)$(TargetName)$(TargetExt).embed.manifest.res</ResourceOutputFileName>
+    </ManifestResourceCompile>
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="aboutdlg.cpp" />

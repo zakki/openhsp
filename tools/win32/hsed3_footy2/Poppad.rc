@@ -858,9 +858,9 @@ BEGIN
             VALUE "InternalName", "スクリプト エディタ"
             VALUE "LegalCopyright", "Copyright (C) 1997-2021 Onion Software/onitama"
             VALUE "OriginalFilename", "hsed3.exe"
-            VALUE "PrivateBuild", "1.06"
+            VALUE "PrivateBuild", "1.10"
             VALUE "ProductName", "Hot Soup Processor"
-            VALUE "ProductVersion", "3.6.1.0"
+            VALUE "ProductVersion", "3.6"
         END
     END
     BLOCK "VarFileInfo"
