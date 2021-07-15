@@ -138,6 +138,12 @@
 #const global GPPBIND_NOSCALE (1)
 #const global GPPBIND_MESH (2)
 
+#const global GPNODEINFO_NODE (0)
+#const global GPNODEINFO_MODEL (1)
+#const global GPNODEINFO_NAME (0x100)
+#const global GPNODEINFO_CHILD (0x101)
+#const global GPNODEINFO_SIBLING (0x102)
+
 ;
 ;	system request
 ;
@@ -446,6 +452,7 @@
 #cmd gppcontact $156
 #cmd gppinfo $157
 #cmd gppraytest $158
+#cmd gpnodeinfo $159
 
 #define fsin(%1,%2) %1=sin(%2)
 #define fcos(%1,%2) %1=cos(%2)
@@ -542,7 +549,7 @@
 #define global ESSPFLAG_STATIC (0x100)
 #define global ESSPFLAG_MOVE (0x200)
 #define global ESSPFLAG_GRAVITY (0x400)
-#define global ESSPFLAG_BGLINK (0x800)
+#define global ESSPFLAG_SPLINK (0x800)
 #define global ESSPFLAG_NOWIPE (0x1000)
 #define global ESSPFLAG_XBOUNCE (0x2000)
 #define global ESSPFLAG_YBOUNCE (0x4000)

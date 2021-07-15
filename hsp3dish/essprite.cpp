@@ -538,21 +538,21 @@ int essprite::checkCollision(int spno, int chktype)
 }
 
 
-int essprite::getSpriteParentAxis(SPOBJ *sp, int* xx, int* yy, int depth)
+int essprite::getSpriteParentAxis(SPOBJ *sp, int& xx, int& yy, int depth)
 {
 	if (sp->fl & ESSPFLAG_SPLINK) {
 		int link = sp->splink;
 		if (link & ESSPLINK_BGMAP) {
 			BGMAP* bg = getMap(link & (ESSPLINK_BGMAP-1));
 			if (bg == NULL) return -1;
-			xx -= bg->viewx;
-			yy -= bg->viewy;
+			xx -= bg->viewx << dotshift;
+			yy -= bg->viewy << dotshift;
 			return 0;
 		}
 		SPOBJ* p = getObj(link);
 		if (p == NULL) return -1;
-		xx += p->xx;
-		yy += p->yy;
+		xx += p->xx << dotshift;
+		yy += p->yy << dotshift;
 		if (depth < 16) {		// Nest loop cancel
 			getSpriteParentAxis(sp, xx, yy, depth + 1);
 		}
@@ -630,7 +630,7 @@ int essprite::drawSubMove(SPOBJ *sp, int mode)
 	xx = sp->xx;
 	yy = sp->yy;
 
-	getSpriteParentAxis(sp, &xx, &yy, 0);
+	getSpriteParentAxis(sp, xx, yy, 0);
 
 	if (fl & ESSPFLAG_GRAVITY) {
 		//	‚È‚ñ‚¾‚±‚è‚áEEE
@@ -816,7 +816,7 @@ int essprite::drawSubPut(SPOBJ *sp, int mode)
 	xx = sp->xx;
 	yy = sp->yy;
 
-	getSpriteParentAxis(sp, &xx, &yy, 0);
+	getSpriteParentAxis(sp, xx, yy, 0);
 
 	x = xx >> dotshift; y = yy >> dotshift;
 
@@ -1460,6 +1460,8 @@ int essprite::setMapPos(int bgno, int x, int y)
 	if (bg == NULL) return -1;
 	if (bg->varptr == NULL) return -1;
 
+	if (x < 0) x = 0;
+	if (y < 0) y = 0;
 	bg->viewx = x;
 	bg->viewy = y;
 
@@ -1530,6 +1532,8 @@ int essprite::putMap(int xx, int yy, int bgno )
 	sy = bg->sizey;
 	vx = bg->viewx;
 	vy = bg->viewy;
+	if (vx < 0) vx = 0;
+	if (vy < 0) vy = 0;
 	vpx = vx % divx;
 	vpy = vy % divy;
 	if (vpx > 0) sx++;

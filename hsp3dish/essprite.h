@@ -201,7 +201,7 @@ public:
 	SPOBJ* getObj(int id);
 	BGMAP* getMap(int id);
 	CHRREF* getChr(int id);
-	int getSpriteParentAxis(SPOBJ *sp, int *xx, int *yy, int depth);
+	int getSpriteParentAxis(SPOBJ *sp, int &xx, int &yy, int depth);
 
 	int getEmptyChrNo(void);
 	int getEmptySpriteNo(void);

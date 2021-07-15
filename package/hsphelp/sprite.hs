@@ -273,7 +273,7 @@ p1‚ÅŽw’è‚µ‚½•Ï”–¼‚ÉAp2‚ÌƒXƒvƒ‰ƒCƒgNo.‚Ìî•ñ‚ð‘ã“ü‚µ‚Ü‚·B
 17     ESI_ZOOMX       X•\Ž¦”{—¦
 18     ESI_ZOOMY       Y•\Ž¦”{—¦
 19     ESI_ROTZ        ‰ñ“]Šp“x
-20     ESI_SPLINK      ƒŠƒ“ƒN‚·‚éƒXƒvƒ‰ƒCƒgNo.(–¢Žg—p)
+20     ESI_SPLINK      ƒŠƒ“ƒN‚·‚éƒXƒvƒ‰ƒCƒgNo.
 21     ESI_TIMER       ƒ^ƒCƒ}[’l
 22     ESI_TIMERBASE   ƒ^ƒCƒ}[’l(ƒ}ƒXƒ^[)
 23     ESI_PROTZ       ‰ñ“]Šp“x(‰ÁŽZ’l)
@@ -325,7 +325,7 @@ p1‚ÅŽw’è‚³‚ê‚½ƒXƒvƒ‰ƒCƒgNo.‚ªŽ‚Âp2‚Ìƒpƒ‰ƒ[ƒ^[‚ð’¼Úp3‚Ì’l‚É‘‚«Š·‚¦‚Ü‚·B
 17     ESI_ZOOMX       X•\Ž¦”{—¦
 18     ESI_ZOOMY       Y•\Ž¦”{—¦
 19     ESI_ROTZ        ‰ñ“]Šp“x
-20     ESI_SPLINK      ƒŠƒ“ƒN‚·‚éƒXƒvƒ‰ƒCƒgNo.(–¢Žg—p)
+20     ESI_SPLINK      ƒŠƒ“ƒN‚·‚éƒXƒvƒ‰ƒCƒgNo.
 21     ESI_TIMER       ƒ^ƒCƒ}[’l
 22     ESI_TIMERBASE   ƒ^ƒCƒ}[’l(ƒ}ƒXƒ^[)
 23     ESI_PROTZ       ‰ñ“]Šp“x(‰ÁŽZ’l)
@@ -481,7 +481,7 @@ flag’l=
   bit 8 :  $100 ƒXƒvƒ‰ƒCƒg•\Ž¦ON [ESSPFLAG_STATIC]
   bit 9 :  $200 ƒXƒvƒ‰ƒCƒgˆÚ“®ON [ESSPFLAG_MOVE]
   bit10 :  $400 Ž©—R—Ž‰ºˆÚ“®ON [ESSPFLAG_GRAVITY]
-  bit11 :  $800 BG‚ÆƒŠƒ“ƒN‚µ‚ÄˆÚ“®(–¢ŽÀ‘•) [ESSPFLAG_BGLINK]
+  bit11 :  $800 e‚ÆƒŠƒ“ƒN‚µ‚ÄˆÚ“® [ESSPFLAG_SPLINK]
   bit12 : $1000 ƒ{[ƒ_[Á‹Ž–³ŒøON [ESSPFLAG_NOWIPE]
   bit13 : $2000 ƒ{[ƒ_[X‚Å”½“]SWITCH [ESSPFLAG_XBOUNCE]
   bit14 : $4000 ƒ{[ƒ_[Y‚Å”½“]SWITCH [ESSPFLAG_YBOUNCE]
@@ -1124,9 +1124,10 @@ p5(0)=•\Ž¦ŠJŽnƒ}ƒbƒvYˆÊ’u
 Žw’è‚³‚ê‚½BGNo.‚ÌBGƒ}ƒbƒv‚ð•\Ž¦‚µ‚Ü‚·B
 ‚ ‚ç‚©‚¶‚ßes_bgmap–½—ß‚ÅBGƒ}ƒbƒv‚ÌƒTƒCƒY‚âƒp[ƒcî•ñ‚È‚Ç‚ð‰Šú‰»‚·‚é•K—v‚ª‚ ‚è‚Ü‚·B
 (p2,p3)ƒpƒ‰ƒ[ƒ^[‚Å‰æ–Êã‚Ì•\Ž¦ŠJŽnˆÊ’u(¶ã)‚ðŽw’è‚µ‚Ü‚·B
-(p4,p5)ƒpƒ‰ƒ[ƒ^[‚Åƒ}ƒbƒv‚Ì•\Ž¦ŠJŽnˆÊ’u(¶ã)‚ðŽw’è‚µ‚Ü‚·B
+(p4,p5)ƒpƒ‰ƒ[ƒ^[‚Åƒ}ƒbƒv‚Ì•\Ž¦ŠJŽnˆÊ’u(¶ã)‚ðƒhƒbƒg’PˆÊ‚ÅŽw’è‚µ‚Ü‚·B
 ’Êí‚ÍAƒ}ƒbƒv‘S‘Ì‚Ì’†‚Å(0,0)‚ÌˆÊ’u‚©‚çƒ}ƒbƒv‚ð•\Ž¦‚µ‚Ü‚·B
 ƒ}ƒbƒv‚Ì•\Ž¦ŠJŽnˆÊ’u‚ðŽw’è‚·‚é‚±‚Æ‚É‚æ‚èA‘S‘Ìƒ}ƒbƒv‚Ìˆê•”‚ð•\Ž¦‚µ‚Ä‚¢‚éŽž‚ÌA¶ã‚É‚ ‚½‚éƒ}ƒbƒv‚ÌˆÊ’u‚ð•ÏX‚·‚é‚±‚Æ‚ª‚Å‚«‚Ü‚·B
+L‚¢ƒ}ƒbƒv‚ðƒXƒNƒ[ƒ‹•\Ž¦‚³‚¹‚é‚æ‚¤‚Èê‡‚ÉAƒ}ƒbƒv‚Ì•\Ž¦ŠJŽnˆÊ’u(p4,p5)‚ð—˜—p‚·‚é‚±‚Æ‚ª‚Å‚«‚Ü‚·B
 %href
 es_bgmap
 
@@ -1174,7 +1175,7 @@ p2ƒpƒ‰ƒ[ƒ^[‚Ée‚ÌƒXƒvƒ‰ƒCƒgNo.‚ðÝ’è‚·‚é‚±‚Æ‚É‚æ‚èAe‚ÌÀ•W‚©‚ç‚Ì‘Š‘Î“I‚ÈÀ•
 p2‚Éƒ}ƒCƒiƒX’l‚ðŽw’è‚µ‚½ê‡‚ÍAeƒXƒvƒ‰ƒCƒg‚ÌÝ’è‚ð‰ðœ‚µA’Êí‚ÌƒXƒvƒ‰ƒCƒg•\Ž¦‚É–ß‚è‚Ü‚·B
 ^
 p3ƒpƒ‰ƒ[ƒ^[‚ÌÝ’èƒIƒvƒVƒ‡ƒ“‚Í’Êí‚Í0‚ðŽw’è‚µ‚Ä‚­‚¾‚³‚¢B
-p3‚É1‚ðŽw’è‚·‚é‚±‚Æ‚É‚æ‚èABGƒ}ƒbƒv‚ðe‚Æ‚µ‚Ä•\Ž¦‚·‚éƒXƒvƒ‰ƒCƒgÝ’è‚É‚È‚è‚Ü‚·B
+p3‚É1‚ðŽw’è‚·‚é‚±‚Æ‚É‚æ‚èABGƒ}ƒbƒv‚ðe‚Æ‚µ‚Ä•\Ž¦‚·‚éƒXƒvƒ‰ƒCƒgÝ’è‚É‚È‚è‚Ü‚·B‚»‚Ìê‡‚ÍAp2ƒpƒ‰ƒ[ƒ^[‚ÉBGNo.‚ðŽw’è‚·‚é‚±‚Æ‚ª‚Å‚«‚Ü‚·B
 
 
 %index

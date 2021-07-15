@@ -572,6 +572,7 @@ void gamehsp::resetScreen( int opt )
 	SAFE_RELEASE(texture);
 	SAFE_RELEASE(_fontMaterial);
 
+	touchNode = NULL;
 }
 
 
@@ -1138,6 +1139,10 @@ int gamehsp::setObjectVector( int objid, int moc, Vector4 *prm )
 	case GPOBJ_ID_LIGHT:
 		obj = getObj( _deflight );
 		break;
+	case GPOBJ_ID_TOUCHNODE:
+		if (touchNode == NULL) return -1;
+		setNodeVector(NULL, touchNode, moc, prm);
+		return 0;
 	default:
 		return -1;
 	}
@@ -1300,6 +1305,10 @@ int gamehsp::getObjectVector( int objid, int moc, Vector4 *prm )
 	case GPOBJ_ID_LIGHT:
 		obj = getObj(_deflight);
 		break;
+	case GPOBJ_ID_TOUCHNODE:
+		if (touchNode == NULL) return -1;
+		getNodeVector(NULL, touchNode, moc, prm);
+		return 0;
 	default:
 		return -1;
 	}
@@ -3379,4 +3388,107 @@ int gamehsp::makeFreeVertexNode(int color, int matid)
 	return obj->_id;
 }
 
+
+bool gamehsp::getNodeFromNameSub(Node* node, char *name, int deep)
+{
+	if (tempNode != NULL) return true;
+	if (strcmp(node->getId(), name) == 0) {
+		tempNode = node;
+		return true;
+	}
+
+	Node* pnode = node->getFirstChild();
+	while (1) {
+		if (pnode == NULL) break;
+		if (getNodeFromNameSub(pnode, name, deep + 1)) return true;
+		pnode = pnode->getNextSibling();
+	}
+
+	return false;
+}
+
+
+Node* gamehsp::getNodeFromName(int objid, char* name)
+{
+	gpobj* obj = getObj(objid);
+	if (obj == NULL) return NULL;
+	if (name == NULL) return NULL;
+
+	tempNode = NULL;
+
+	Node* node = obj->_node;
+	if (*name == 0) {
+		tempNode = node;
+		return tempNode;
+	}
+
+	while (1) {
+		if (node == NULL) break;
+		getNodeFromNameSub(node, name, 0);
+		if (tempNode != NULL) break;
+		node = node->getNextSibling();
+	}
+	return tempNode;
+}
+
+
+int gamehsp::getNodeInfo(int objid, int option, char* name, int *result)
+{
+	int res = 0;
+	Node* node = getNodeFromName(objid, name);
+	if (node == NULL) {
+		*result = -1;
+		return -1;
+	}
+	switch(option) {
+	case GPNODEINFO_NODE:
+		touchNode = node;
+		*result = GPOBJ_ID_TOUCHNODE;
+		break;
+	case GPNODEINFO_MODEL:
+	{
+		Drawable* drawable = node->getDrawable();
+		Model* model = dynamic_cast<Model*>(drawable);
+		if (model) {
+			touchNode = node;
+			*result = GPOBJ_ID_TOUCHNODE;
+		}
+		else {
+			*result = -1;
+		}
+		break;
+	}
+	default:
+		return -1;
+	}
+	return res;
+}
+
+
+int gamehsp::getNodeInfoString(int objid, int option, char* name, std::string* res)
+{
+	int result = 0;
+	Node* node = getNodeFromName(objid, name);
+	if (node == NULL) return -1;
+	switch (option) {
+	case GPNODEINFO_NAME:
+		*res = node->getId();
+		break;
+	case GPNODEINFO_CHILD:
+		node = node->getFirstChild();
+		if (node) {
+			*res = node->getId();
+		}
+		break;
+	case GPNODEINFO_SIBLING:
+		node = node->getNextSibling();
+		if (node) {
+			*res = node->getId();
+		}
+		break;
+	default:
+		return -1;
+	}
+	return result;
+}
 
