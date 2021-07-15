@@ -1464,7 +1464,7 @@ bool gamehsp::pickupNode(Node *node, int deep)
 	if (model)
 	{
 		unsigned int partCount = model->getMeshPartCount();
-		//GP_WARN( "#model %s (deep:%d)(part:%d)",node->getId(), deep, partCount);
+		GP_WARN( "#model %s (deep:%d)(part:%d)",node->getId(), deep, partCount);
 
 		Material *mat = model->getMaterial(0);
 		if (mat)
@@ -1482,8 +1482,11 @@ bool gamehsp::pickupNode(Node *node, int deep)
 		if (skin) {
 			Joint *joint = skin->getRootJoint();
 			Node* jointParent = joint->getParent();
-			//GP_WARN("#Skin Root:%s", joint->getId());
+			GP_WARN("#Skin Root:%s", joint->getId());
 		}
+	}
+	else {
+		GP_WARN("#node %s (deep:%d)", node->getId(), deep);
 	}
 
 	if (model) {
@@ -3397,6 +3400,18 @@ bool gamehsp::getNodeFromNameSub(Node* node, char *name, int deep)
 		return true;
 	}
 
+	Drawable* drawable = node->getDrawable();
+	Model* model = dynamic_cast<Model*>(drawable);
+	if (model) {
+		MeshSkin *skin = model->getSkin();
+		if (skin) {
+			Node *root = skin->getRootNode();
+			if (root) {
+				if (getNodeFromNameSub(root, name, deep + 1)) return true;
+			}
+		}
+	}
+
 	Node* pnode = node->getFirstChild();
 	while (1) {
 		if (pnode == NULL) break;
@@ -3486,6 +3501,21 @@ int gamehsp::getNodeInfoString(int objid, int option, char* name, std::string* r
 			*res = node->getId();
 		}
 		break;
+	case GPNODEINFO_SKINROOT:
+	{
+		Drawable* drawable = node->getDrawable();
+		Model* model = dynamic_cast<Model*>(drawable);
+		if (model) {
+			MeshSkin *skin = model->getSkin();
+			if (skin) {
+				Node *root = skin->getRootNode();
+				if (root) {
+					*res = root->getId();
+				}
+			}
+		}
+		break;
+	}
 	default:
 		return -1;
 	}

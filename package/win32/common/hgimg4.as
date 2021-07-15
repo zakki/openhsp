@@ -143,6 +143,7 @@
 #const global GPNODEINFO_NAME (0x100)
 #const global GPNODEINFO_CHILD (0x101)
 #const global GPNODEINFO_SIBLING (0x102)
+#const global GPNODEINFO_SKINROOT (0x103)
 
 ;
 ;	system request
