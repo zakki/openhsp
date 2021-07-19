@@ -1152,6 +1152,61 @@ int gamehsp::setObjectVector( int objid, int moc, Vector4 *prm )
 }
 
 
+
+void gamehsp::getNodeVectorExternal(gpobj* obj, Node* node, int moc, Vector4* prm)
+{
+	switch (moc) {
+	case MOC_POS:
+		if (node) {
+			*(Vector3*)prm = node->getTranslationView();
+			prm->w = 0.0f;
+		}
+		break;
+	case MOC_WORK:
+		if (node) {
+			*(Vector3*)prm = node->getTranslationWorld();
+			prm->w = 0.0f;
+		}
+		break;
+	case MOC_QUAT:
+		if (node) {
+			Quaternion quat;
+			quat = node->getRotation();
+			prm->x = quat.x;
+			prm->y = quat.y;
+			prm->z = quat.z;
+			prm->w = quat.w;
+		}
+		break;
+	case MOC_SCALE:
+		if (node) {
+			*(Vector3*)prm = node->getScale();
+			prm->w = 1.0f;
+		}
+		break;
+	case MOC_ANGX:
+		if (node) {
+			Quaternion quat;
+			double roll, pitch, yaw;
+			quat = node->getRotation();
+			QuaternionToEulerAngles(quat, roll, pitch, yaw);
+			prm->x = roll;
+			prm->y = pitch;
+			prm->z = yaw;
+			prm->w = 0.0f;
+		}
+		break;
+
+	case MOC_FORWARD:
+		if (node) {
+			*(Vector3*)prm = node->getForwardVector();
+			prm->w = 1.0f;
+		}
+		break;
+	}
+}
+
+
 void gamehsp::getNodeVector( gpobj *obj, Node *node, int moc, Vector4 *prm )
 {
 	switch(moc) {
@@ -1307,7 +1362,7 @@ int gamehsp::getObjectVector( int objid, int moc, Vector4 *prm )
 		break;
 	case GPOBJ_ID_TOUCHNODE:
 		if (touchNode == NULL) return -1;
-		getNodeVector(NULL, touchNode, moc, prm);
+		getNodeVectorExternal(NULL, touchNode, moc, prm);
 		return 0;
 	default:
 		return -1;

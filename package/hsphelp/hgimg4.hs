@@ -1973,3 +1973,42 @@ gpmeshadd
 gpmesh
 
 
+%index
+gpnodeinfo
+3Dモデルの階層情報を取得する
+%group
+拡張画面制御命令
+%prm
+var,objid,option,"name"
+var       : 結果が代入される変数名
+objid(0)  : オブジェクトID
+option(0) : メッシュ頂点ID1
+name      : 階層ノード名
+%inst
+gpload命令で読み込まれた3Dモデルの階層情報を取得して、varで指定された変数に結果を代入します。
+objidで指定した3Dモデルが持つ階層を名前によって指定することで個別のノードを特定します。
+(階層の名前(ノード名)は、3Dモデル作成時にあらかじめ付けられています。すべての階層を取得する際には、mod_gputilモジュールのgptree_get命令をご使用ください。)
+option値により、代入される結果を選択することができます。option値に指定できる値は、以下の通りです。
+^p
+	オプション値          | 取得される内容
+	--------------------------------------------------------------
+	GPNODEINFO_NODE         該当するノードを示すオブジェクトID
+	GPNODEINFO_MODEL        該当するモデルノードを示すオブジェクトID
+	GPNODEINFO_NAME         該当するノード名(*)
+	GPNODEINFO_CHILD        階層が持つ子のノード名(*)
+	GPNODEINFO_SIBLING      同じ階層にある隣のノード名(*)
+	GPNODEINFO_SKINROOT     スキンメッシュが持っているノード名(*)
+
+    (*) 結果の文字列が代入されます
+^p
+GPNODEINFO_NODEを指定した場合は、指定された名前を持つ階層を示す特別なオブジェクトIDの値が代入されます。
+このオブジェクトIDを使用して、getpos、getang、getquatなどそれぞれの階層が持つ座標や回転情報を取得することができます。
+GPNODEINFO_MODELを指定した場合は、描画するモデルを持った階層のみオブジェクトIDが取得されます。
+GPNODEINFO_CHILD、GPNODEINFO_SIBLING、GPNODEINFO_SKINROOTのオプションは、他の階層との繋がりを取得します。これにより、ノードの階層を調べることができます。
+処理が正常に終了した場合は、システム変数statに0が代入されます。エラーが発生した場合は、システム変数statにマイナス値が代入されます。
+
+%href
+gpload
+
+
+

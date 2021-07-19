@@ -433,7 +433,8 @@ public:
 	int drawFont(void *bmscr, int x, int y, char* text, int* out_ysize);
 
 	int getObjectVector( int objid, int moc, Vector4 *prm );
-	void getNodeVector( gpobj *obj, Node *node, int moc, Vector4 *prm );
+	void getNodeVector(gpobj* obj, Node* node, int moc, Vector4* prm);
+	void getNodeVectorExternal(gpobj* obj, Node* node, int moc, Vector4* prm);
 	void getSpriteVector( gpobj *obj, int moc, Vector4 *prm );
 
 	int setObjectVector( int objid, int moc, Vector4 *prm );

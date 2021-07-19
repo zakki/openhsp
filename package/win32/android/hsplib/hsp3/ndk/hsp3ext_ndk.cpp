@@ -15,6 +15,30 @@
 #include "../../hsp3embed/hsp3embed.h"
 #include "../../javafunc.h"
 
+
+/*------------------------------------------------------------*/
+/*
+		System Information initialization
+*/
+/*------------------------------------------------------------*/
+
+static HSPCTX *hspctx;		// Current Context
+static HSPEXINFO *exinfo;	// Info for Plugins
+
+static void InitSystemInformation(void)
+{
+	//		コマンドライン & システムフォルダ関連
+	hspctx->modfilename = "";
+	hspctx->homefoldername = "";
+	hspctx->tvfoldername = "";
+
+	hspctx->langcode[0] = 'j';
+	hspctx->langcode[1] = 'a';
+	hspctx->langcode[2] = 0;
+	hspctx->language = HSPCTX_LANGUAGE_JP;
+}
+
+
 /*----------------------------------------------------------*/
 //		DevInfo Call
 /*----------------------------------------------------------*/
@@ -112,31 +136,6 @@ static int cmdfunc_dllcmd( int cmd )
 }
 
 
-static void *reffunc_dllcmd( int *type_res, int arg )
-{
-	//		reffunc : TYPE_DLLFUNC
-	//		(拡張DLL関数)
-	//
-
-	//			'('で始まるかを調べる
-	//
-	if ( *type != TYPE_MARK ) throw ( HSPERR_INVALID_FUNCPARAM );
-	if ( *val != '(' ) throw ( HSPERR_INVALID_FUNCPARAM );
-
-	*type_res = HSPVAR_FLAG_INT;
-	//exec_dllcmd( arg, STRUCTDAT_OT_FUNCTION );
-	reffunc_intfunc_ivalue = hspctx->stat;
-
-	//			')'で終わるかを調べる
-	//
-	if ( *type != TYPE_MARK ) throw ( HSPERR_INVALID_FUNCPARAM );
-	if ( *val != ')' ) throw ( HSPERR_INVALID_FUNCPARAM );
-	code_next();
-
-	return &reffunc_intfunc_ivalue;
-}
-
-
 static int termfunc_dllcmd( int option )
 {
 	//		termfunc : TYPE_DLLCMD
@@ -150,12 +149,12 @@ void hsp3typeinit_dllcmd( HSP3TYPEINFO *info )
 
 	hspctx = info->hspctx;
 	exinfo = info->hspexinfo;
-	type = exinfo->nptype;
-	val = exinfo->npval;
-	exflg = exinfo->npexflg;
+	//type = exinfo->nptype;
+	//val = exinfo->npval;
+	//exflg = exinfo->npexflg;
 
 	info->cmdfunc = cmdfunc_dllcmd;
-	info->reffunc = reffunc_dllcmd;
+	//info->reffunc = reffunc_dllcmd;
 	info->termfunc = termfunc_dllcmd;
 
 	InitSystemInformation();
@@ -228,6 +227,5 @@ void hsp3ext_execfile(char* msg, char* option, int mode)
 #ifdef HSPIOS
     gb_exec( mode, msg );
 #endif
-    return 0;
 }
 
