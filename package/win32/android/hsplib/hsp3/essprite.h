@@ -201,7 +201,7 @@ public:
 	SPOBJ* getObj(int id);
 	BGMAP* getMap(int id);
 	CHRREF* getChr(int id);
-	int getSpriteParentAxis(SPOBJ *sp, int *xx, int *yy, int depth);
+	int getSpriteParentAxis(SPOBJ *sp, int &xx, int &yy, int depth);
 
 	int getEmptyChrNo(void);
 	int getEmptySpriteNo(void);
@@ -246,6 +246,7 @@ private:
 	double	pi, pans;
 	int		resox, resoy;		// 画面解像度
 	int		rrate;				// 周の分解能
+
 	int* vpx, *vpy;				// sin,cosテーブル
 
 	int		dotshift;			// 座標シフト値

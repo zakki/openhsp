@@ -246,6 +246,7 @@ private:
 	double	pi, pans;
 	int		resox, resoy;		// 画面解像度
 	int		rrate;				// 周の分解能
+
 	int* vpx, *vpy;				// sin,cosテーブル
 
 	int		dotshift;			// 座標シフト値

@@ -10,7 +10,7 @@
 
 #include "../hsp3/strbuf.h"
 //#include "../hsp3/hsp3.h"
-//#include "../hsp3/hsp3ext.h"
+#include "../hsp3/hsp3ext.h"
 #include "../hsp3/hsp3gr.h"
 #include "../hsp3/supio.h"
 
@@ -130,6 +130,11 @@ void hsp3eb_execstart( void )
     hsp3typeinit_extcmd( code_gettypeinfo( TYPE_EXTCMD )  );
     hsp3typeinit_extfunc( code_gettypeinfo( TYPE_EXTSYSVAR ) );
     
+	//		Initalize external DLL System
+	//
+	hsp3typeinit_dllcmd( code_gettypeinfo( TYPE_DLLFUNC ) );
+	hsp3typeinit_dllctrl( code_gettypeinfo( TYPE_DLLCTRL ) );
+
 #ifdef USE_OBAQ
     hsp3typeinit_dw_extcmd( code_gettypeinfo( -1 ) ); // TYPE_USERDEF
     //hsp3typeinit_dw_extfunc( code_gettypeinfo( TYPE_USERDEF+1 ) );

@@ -27,7 +27,7 @@ static HSPEXINFO *exinfo;	// Info for Plugins
 
 static void InitSystemInformation(void)
 {
-	//		ƒRƒ}ƒ“ƒhƒ‰ƒCƒ“ & ƒVƒXƒeƒ€ƒtƒHƒ‹ƒ_ŠÖ˜A
+	//		ã‚³ãƒžãƒ³ãƒ‰ãƒ©ã‚¤ãƒ³ & ã‚·ã‚¹ãƒ†ãƒ ãƒ•ã‚©ãƒ«ãƒ€é–¢é€£
 	hspctx->modfilename = "";
 	hspctx->homefoldername = "";
 	hspctx->tvfoldername = "";
@@ -120,11 +120,11 @@ void hsp3dish_setdevinfo( void )
 static int cmdfunc_dllcmd( int cmd )
 {
 	//		cmdfunc : TYPE_DLLCTRL
-	//		(Šg’£DLLƒRƒ“ƒgƒ[ƒ‹ƒRƒ}ƒ“ƒh)
+	//		(æ‹¡å¼µDLLã‚³ãƒ³ãƒˆãƒ­ãƒ¼ãƒ«ã‚³ãƒžãƒ³ãƒ‰)
 	//
-	code_next();							// ŽŸ‚ÌƒR[ƒh‚ðŽæ“¾(Å‰‚É•K‚¸•K—v‚Å‚·)
+	code_next();							// æ¬¡ã®ã‚³ãƒ¼ãƒ‰ã‚’å–å¾—(æœ€åˆã«å¿…ãšå¿…è¦ã§ã™)
 
-	switch( cmd ) {							// ƒTƒuƒRƒ}ƒ“ƒh‚²‚Æ‚Ì•ªŠò
+	switch( cmd ) {							// ã‚µãƒ–ã‚³ãƒžãƒ³ãƒ‰ã”ã¨ã®åˆ†å²
 	case 0x00:								// newcom
 		throw (HSPERR_UNSUPPORTED_FUNCTION);
 

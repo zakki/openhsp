@@ -113,6 +113,7 @@ extern SDL_Window *window;
 #include "../supio.h"
 #include "../sysreq.h"
 #include "../hgio.h"
+#include "../hsp3ext.h"
 
 #include "../texmes.h"
 
@@ -303,7 +304,7 @@ void hgio_init( int mode, int sx, int sy, void *hwnd )
 
 	//TTF初期化
 	char fontpath[HSP_MAX_PATH+1];
-	strcpy( fontpath, hgio_getdir(1) );
+	strcpy( fontpath, hsp3ext_getdir(1) );
 	strcat( fontpath, TTF_FONTFILE );
 
 	if ( TTF_Init() ) {
@@ -569,7 +570,9 @@ static int GetSurface(int x, int y, int sx, int sy, int px, int py, void *res, i
 	return -1;
 #else
 #if defined(HSPWIN)||defined(HSPLINUX)
+#ifndef HSPRASPBIAN
 	glReadBuffer(GL_BACK);
+#endif
 #endif
 #endif
 
@@ -1295,6 +1298,7 @@ void hgio_fillrot( BMSCR *bm, float x, float y, float sx, float sy, float ang )
 }
 
 
+#if 0
 void hgio_fcopy( float distx, float disty, short xx, short yy, short srcsx, short srcsy, int texid, int color )
 {
 	//		画像コピー(フォント用)
@@ -1374,6 +1378,7 @@ void hgio_fcopy( float distx, float disty, short xx, short yy, short srcsx, shor
 	glDisable(GL_TEXTURE_2D);
 #endif
 }
+#endif
 
 
 void hgio_fontcopy( BMSCR *bm, float distx, float disty, float ratex, float ratey, int srcsx, int srcsy, int texid, int basex, int basey )
@@ -1420,20 +1425,45 @@ void hgio_fontcopy( BMSCR *bm, float distx, float disty, float ratex, float rate
     *flp++ = x2;
     *flp++ = y2;
 
+#if defined(HSPLINUX) || defined(HSPEMSCRIPTEN)
+	glEnable(GL_TEXTURE_2D);
+#endif
+
 	ChangeTex( texid );
     glVertexPointer( 2, GL_FLOAT,0,vertf2D );
     glTexCoordPointer( 2,GL_FLOAT,0,uvf2D );
 
     //ブレンドモード設定
-	setBlendMode( 3 );
-	setColorTex_color(1.0f);
-	glEnableClientState(GL_COLOR_ARRAY);
-	glColorPointer(4,GL_FLOAT,0,_panelColorsTex);
+    int mode;
+	if (GetSysReq(SYSREQ_FIXMESALPHA)) {
+		mode = 2;
+	} else {
+		mode = bm->gmode;
+	}
+	setBlendMode( mode );
+
+    if ( mode <= 1 ) {
+        glDisableClientState(GL_COLOR_ARRAY);
+	} else {
+		GLfloat alpha;
+	    if ( mode >= 3 ) {
+			alpha = FVAL_BYTE1*( bm->gfrate );
+		} else {
+			alpha = 1.0f;
+		}
+		setColorTex_color(alpha);
+        glEnableClientState(GL_COLOR_ARRAY);
+        glColorPointer(4,GL_FLOAT,0,_panelColorsTex);
+    }
 
     glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_MAG_FILTER,_filter); 
     glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_MIN_FILTER,_filter); 
 
     glDrawArrays(GL_TRIANGLE_STRIP,0,4);
+
+#if defined(HSPLINUX) || defined(HSPEMSCRIPTEN)
+	glDisable(GL_TEXTURE_2D);
+#endif
 }
 
 
@@ -1774,7 +1804,7 @@ int hgio_celputmulti( BMSCR *bm, int *xpos, int *ypos, int *cel, int count, BMSC
 
 /*-------------------------------------------------------------------------------*/
 
-#if defined(HSPLINUX) || defined(HSPNDK)
+#if defined(HSPLINUX) || defined(HSPNDK) || defined(HSPEMSCRIPTEN)
     static time_t basetick;
     static bool tick_reset = false;
 #endif
@@ -1812,20 +1842,6 @@ int hgio_gettick( void )
 
 }
 
-int hgio_exec( char *msg, char *option, int mode )
-{
-#ifdef HSPNDK
-	j_callActivity( msg, option, mode );
-#endif
-#ifdef HSPIOS
-    gb_exec( mode, msg );
-#endif
-#ifdef HSPLINUX
-	system(msg);
-#endif
-    return 0;
-}
-
 int hgio_dialog( int mode, char *str1, char *str2 )
 {
 #ifdef HSPNDK
@@ -1843,108 +1859,13 @@ int hgio_dialog( int mode, char *str1, char *str2 )
 	SDL_ShowSimpleMessageBox(i, str2, str1, NULL);
 	}
 #endif
+#ifdef HSPEMSCRIPTEN
+	EM_ASM_({
+		alert(UTF8ToString($0));
+	},str1 );
+#endif
 	return 0;
 }
-
-char *hgio_sysinfo( int p2, int *res, char *outbuf )
-{
-	int fl;
-	char *p1;
-	fl = HSPVAR_FLAG_STR;
-	p1 = outbuf;
-	*p1=0;
-
-	switch(p2) {
-	case 0:
-#ifdef HSPNDK
-		{
-		char tmp[256];
-		strcpy( tmp, j_getinfo( JAVAFUNC_INFO_VERSION ) );
-		strcpy( p1, "android " );
-		strcat( p1, tmp );
-		}
-#endif
-#ifdef HSPIOS
-        gb_getSysVer( p1 );
-#endif
-        break;
-	case 1:
-		break;
-	case 2:
-#ifdef HSPNDK
-		j_getinfo( JAVAFUNC_INFO_DEVICE );
-#endif
-#ifdef HSPIOS
-        gb_getSysModel( p1 );
-#endif
-		break;
-	default:
-		return NULL;
-	}
-	*res = fl;
-	return p1;
-}
-
-
-/*-------------------------------------------------------------------------------*/
-
-static	char dir_hsp[HSP_MAX_PATH+1];
-static	char dir_cmdline[HSP_MAX_PATH+1];
-
-void hgio_setmainarg( char *hsp_mainpath, char *cmdprm )
-{
-	int p,i;
-	strcpy( dir_hsp, hsp_mainpath );
-
-	p = 0; i = 0;
-	while(dir_hsp[i]){
-		if(dir_hsp[i]=='/' || dir_hsp[i]=='\\') p=i;
-		i++;
-	}
-	dir_hsp[p]=0;
-
-	strcpy( dir_cmdline, cmdprm );
-	Alertf( "Init:hgio_setmainarg(%s,%s)",dir_hsp,dir_cmdline );
-}
-
-char *hgio_getdir( int id )
-{
-	//		dirinfo命令の内容を設定する
-	//
-	char dirtmp[HSP_MAX_PATH+1];
-	char *p;
-	
-	*dirtmp = 0;
-	p = dirtmp;
-
-#if defined(HSPLINUX)
-
-	switch( id ) {
-	case 0:				//    カレント(現在の)ディレクトリ
-		getcwd( p, HSP_MAX_PATH );
-		break;
-	case 1:				//    HSPの実行ファイルがあるディレクトリ
-		p = dir_hsp;
-		break;
-	case 2:				//    Windowsディレクトリ
-		break;
-	case 3:				//    Windowsのシステムディレクトリ
-		break;
-	case 4:				//    コマンドライン文字列
-		p = dir_cmdline;
-		break;
-	case 5:				//    HSPTV素材があるディレクトリ
-		strcpy( p, dir_hsp );
-		strcat( p, "/hsptv" );
-		break;
-	default:
-		throw HSPERR_ILLEGAL_FUNCTION;
-	}
-#endif
-
-	return p;
-}
-
 
 /*-------------------------------------------------------------------------------*/
 

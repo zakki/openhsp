@@ -937,7 +937,7 @@ int essprite::draw(int start, int num, int mode, int start_pri, int end_pri)
 		spr++;
 	}
 
-	delete selspr;
+	delete [] selspr;
 	return maxspr;
 }
 

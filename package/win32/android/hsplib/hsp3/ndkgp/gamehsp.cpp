@@ -572,6 +572,7 @@ void gamehsp::resetScreen( int opt )
 	SAFE_RELEASE(texture);
 	SAFE_RELEASE(_fontMaterial);
 
+	touchNode = NULL;
 }
 
 
@@ -1138,12 +1139,71 @@ int gamehsp::setObjectVector( int objid, int moc, Vector4 *prm )
 	case GPOBJ_ID_LIGHT:
 		obj = getObj( _deflight );
 		break;
+	case GPOBJ_ID_TOUCHNODE:
+		if (touchNode == NULL) return -1;
+		setNodeVector(NULL, touchNode, moc, prm);
+		return 0;
 	default:
 		return -1;
 	}
 	if ( obj == NULL ) return -1;
 	setNodeVector( obj, obj->_node, moc, prm );
 	return 0;
+}
+
+
+
+void gamehsp::getNodeVectorExternal(gpobj* obj, Node* node, int moc, Vector4* prm)
+{
+	switch (moc) {
+	case MOC_POS:
+		if (node) {
+			*(Vector3*)prm = node->getTranslationView();
+			prm->w = 0.0f;
+		}
+		break;
+	case MOC_WORK:
+		if (node) {
+			*(Vector3*)prm = node->getTranslationWorld();
+			prm->w = 0.0f;
+		}
+		break;
+	case MOC_QUAT:
+		if (node) {
+			Quaternion quat;
+			quat = node->getRotation();
+			prm->x = quat.x;
+			prm->y = quat.y;
+			prm->z = quat.z;
+			prm->w = quat.w;
+		}
+		break;
+	case MOC_SCALE:
+		if (node) {
+			*(Vector3*)prm = node->getScale();
+			prm->w = 1.0f;
+		}
+		break;
+	case MOC_ANGX:
+		if (node) {
+			Quaternion quat;
+			double roll, pitch, yaw;
+			quat = node->getRotation();
+			QuaternionToEulerAngles(quat, roll, pitch, yaw);
+			prm->x = roll;
+			prm->y = pitch;
+			prm->z = yaw;
+			prm->w = 0.0f;
+		}
+		break;
+
+	case MOC_FORWARD:
+		if (node) {
+			*(Vector3*)prm = node->getForwardVector();
+			prm->w = 1.0f;
+		}
+		break;
+	}
 }
 
 
@@ -1300,6 +1360,10 @@ int gamehsp::getObjectVector( int objid, int moc, Vector4 *prm )
 	case GPOBJ_ID_LIGHT:
 		obj = getObj(_deflight);
 		break;
+	case GPOBJ_ID_TOUCHNODE:
+		if (touchNode == NULL) return -1;
+		getNodeVectorExternal(NULL, touchNode, moc, prm);
+		return 0;
 	default:
 		return -1;
 	}
@@ -1455,7 +1519,7 @@ bool gamehsp::pickupNode(Node *node, int deep)
 	if (model)
 	{
 		unsigned int partCount = model->getMeshPartCount();
-		//GP_WARN( "#model %s (deep:%d)(part:%d)",node->getId(), deep, partCount);
+		GP_WARN( "#model %s (deep:%d)(part:%d)",node->getId(), deep, partCount);
 
 		Material *mat = model->getMaterial(0);
 		if (mat)
@@ -1473,8 +1537,11 @@ bool gamehsp::pickupNode(Node *node, int deep)
 		if (skin) {
 			Joint *joint = skin->getRootJoint();
 			Node* jointParent = joint->getParent();
-			//GP_WARN("#Skin Root:%s", joint->getId());
+			GP_WARN("#Skin Root:%s", joint->getId());
 		}
+	}
+	else {
+		GP_WARN("#node %s (deep:%d)", node->getId(), deep);
 	}
 
 	if (model) {
@@ -3379,4 +3446,134 @@ int gamehsp::makeFreeVertexNode(int color, int matid)
 	return obj->_id;
 }
 
+
+bool gamehsp::getNodeFromNameSub(Node* node, char *name, int deep)
+{
+	if (tempNode != NULL) return true;
+	if (strcmp(node->getId(), name) == 0) {
+		tempNode = node;
+		return true;
+	}
+
+	Drawable* drawable = node->getDrawable();
+	Model* model = dynamic_cast<Model*>(drawable);
+	if (model) {
+		MeshSkin *skin = model->getSkin();
+		if (skin) {
+			Node *root = skin->getRootNode();
+			if (root) {
+				if (getNodeFromNameSub(root, name, deep + 1)) return true;
+			}
+		}
+	}
+
+	Node* pnode = node->getFirstChild();
+	while (1) {
+		if (pnode == NULL) break;
+		if (getNodeFromNameSub(pnode, name, deep + 1)) return true;
+		pnode = pnode->getNextSibling();
+	}
+
+	return false;
+}
+
+
+Node* gamehsp::getNodeFromName(int objid, char* name)
+{
+	gpobj* obj = getObj(objid);
+	if (obj == NULL) return NULL;
+	if (name == NULL) return NULL;
+
+	tempNode = NULL;
+
+	Node* node = obj->_node;
+	if (*name == 0) {
+		tempNode = node;
+		return tempNode;
+	}
+
+	while (1) {
+		if (node == NULL) break;
+		getNodeFromNameSub(node, name, 0);
+		if (tempNode != NULL) break;
+		node = node->getNextSibling();
+	}
+	return tempNode;
+}
+
+
+int gamehsp::getNodeInfo(int objid, int option, char* name, int *result)
+{
+	int res = 0;
+	Node* node = getNodeFromName(objid, name);
+	if (node == NULL) {
+		*result = -1;
+		return -1;
+	}
+	switch(option) {
+	case GPNODEINFO_NODE:
+		touchNode = node;
+		*result = GPOBJ_ID_TOUCHNODE;
+		break;
+	case GPNODEINFO_MODEL:
+	{
+		Drawable* drawable = node->getDrawable();
+		Model* model = dynamic_cast<Model*>(drawable);
+		if (model) {
+			touchNode = node;
+			*result = GPOBJ_ID_TOUCHNODE;
+		}
+		else {
+			*result = -1;
+		}
+		break;
+	}
+	default:
+		return -1;
+	}
+	return res;
+}
+
+
+int gamehsp::getNodeInfoString(int objid, int option, char* name, std::string* res)
+{
+	int result = 0;
+	Node* node = getNodeFromName(objid, name);
+	if (node == NULL) return -1;
+	switch (option) {
+	case GPNODEINFO_NAME:
+		*res = node->getId();
+		break;
+	case GPNODEINFO_CHILD:
+		node = node->getFirstChild();
+		if (node) {
+			*res = node->getId();
+		}
+		break;
+	case GPNODEINFO_SIBLING:
+		node = node->getNextSibling();
+		if (node) {
+			*res = node->getId();
+		}
+		break;
+	case GPNODEINFO_SKINROOT:
+	{
+		Drawable* drawable = node->getDrawable();
+		Model* model = dynamic_cast<Model*>(drawable);
+		if (model) {
+			MeshSkin *skin = model->getSkin();
+			if (skin) {
+				Node *root = skin->getRootNode();
+				if (root) {
+					*res = root->getId();
+				}
+			}
+		}
+		break;
+	}
+	default:
+		return -1;
+	}
+	return result;
+}
 
