@@ -73,8 +73,6 @@ static int termfunc_dllcmd( int option )
 
 void hsp3typeinit_dllcmd( HSP3TYPEINFO *info )
 {
-	InitSystemInformation();
-
 	hspctx = info->hspctx;
 	exinfo = info->hspexinfo;
 	//type = exinfo->nptype;
@@ -101,8 +99,25 @@ void hsp3typeinit_dllctrl( HSP3TYPEINFO *info )
 
 char* hsp3ext_getdir(int id)
 {
-	return "";
+	char *p = "";
+	switch (id) {
+	case 0:				//    カレント(現在の)ディレクトリ
+	case 1:				//    HSPの実行ファイルがあるディレクトリ
+	case 2:				//    Windowsディレクトリ
+	case 3:				//    Windowsのシステムディレクトリ
+	case 4:				//    コマンドライン文字列
+	case 5:				//    HSPTV素材があるディレクトリ
+	case 0x10005:			//    マイドキュメント
+		break;
+	case 6:				//    ランゲージコード
+		p = hspctx->langcode;
+		break;
+	default:
+		throw HSPERR_ILLEGAL_FUNCTION;
+	}
+	return p;
 }
+
 
 
 char *hsp3ext_sysinfo(int p2, int* res, char* outbuf)
@@ -138,6 +153,10 @@ char *hsp3ext_sysinfo(int p2, int* res, char* outbuf)
 #ifdef HSPIOS
         gb_getSysModel( p1 );
 #endif
+		break;
+	case 3:
+		fl = HSPVAR_FLAG_INT;
+		*(int*)p1 = hspctx->language;
 		break;
 	default:
 		return NULL;

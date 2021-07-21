@@ -24,18 +24,22 @@
 
 static HSPCTX *hspctx;		// Current Context
 static HSPEXINFO *exinfo;	// Info for Plugins
+static char homefolder[256];
 
 static void InitSystemInformation(void)
 {
 	//		コマンドライン & システムフォルダ関連
 	hspctx->modfilename = "";
-	hspctx->homefoldername = "";
 	hspctx->tvfoldername = "";
 
-	hspctx->langcode[0] = 'j';
-	hspctx->langcode[1] = 'a';
-	hspctx->langcode[2] = 0;
-	hspctx->language = HSPCTX_LANGUAGE_JP;
+	strcpy( homefolder, j_getinfo( JAVAFUNC_INFO_FILESDIR ) );
+	hspctx->homefoldername = homefolder;
+
+	strcpy( hspctx->langcode, j_getinfo( JAVAFUNC_INFO_LOCALE ) );
+
+	if (( hspctx->langcode[0] == 'j' )&&( hspctx->langcode[1] == 'p' )&&( hspctx->langcode[2] == 'n' )) {
+		hspctx->language = HSPCTX_LANGUAGE_JP;
+	}
 }
 
 
@@ -145,8 +149,6 @@ static int termfunc_dllcmd( int option )
 
 void hsp3typeinit_dllcmd( HSP3TYPEINFO *info )
 {
-	InitSystemInformation();
-
 	hspctx = info->hspctx;
 	exinfo = info->hspexinfo;
 	//type = exinfo->nptype;
@@ -173,7 +175,25 @@ void hsp3typeinit_dllctrl( HSP3TYPEINFO *info )
 
 char* hsp3ext_getdir(int id)
 {
-	return "";
+	char *p = "";
+	switch (id) {
+	case 0:				//    カレント(現在の)ディレクトリ
+	case 1:				//    HSPの実行ファイルがあるディレクトリ
+	case 2:				//    Windowsディレクトリ
+	case 3:				//    Windowsのシステムディレクトリ
+	case 4:				//    コマンドライン文字列
+	case 5:				//    HSPTV素材があるディレクトリ
+		break;
+	case 6:				//    ランゲージコード
+		p = hspctx->langcode;
+		break;
+	case 0x10005:			//    マイドキュメント
+		p = hspctx->homefoldername;
+		break;
+	default:
+		throw HSPERR_ILLEGAL_FUNCTION;
+	}
+	return p;
 }
 
 
@@ -205,11 +225,15 @@ char *hsp3ext_sysinfo(int p2, int* res, char* outbuf)
 		break;
 	case 2:
 #ifdef HSPNDK
-		j_getinfo( JAVAFUNC_INFO_DEVICE );
+		strcpy( p1, j_getinfo( JAVAFUNC_INFO_DEVICE ) );
 #endif
 #ifdef HSPIOS
         gb_getSysModel( p1 );
 #endif
+		break;
+	case 3:
+		fl = HSPVAR_FLAG_INT;
+		*(int*)p1 = hspctx->language;
 		break;
 	default:
 		return NULL;
