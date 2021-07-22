@@ -462,8 +462,8 @@
 			);
 			dependencies = (
 			);
-			name = grotate;
-			productName = grotate;
+			name = hspproj;
+			productName = hspproj;
 			productReference = 1E480DAB1859C4540052A2F2 /* hspproj.app */;
 			productType = "com.apple.product-type.application";
 		};
