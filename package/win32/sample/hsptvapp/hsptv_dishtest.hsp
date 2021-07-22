@@ -1,0 +1,85 @@
+#include "hsp3dish.as"
+#include "hsptvapp_dish.as"
+
+	;
+	;	HSPTVAPP互換のハイスコア保存テスト
+	;	( hsp3dish.js/Webdishでオンライン対応させることができます)
+	;
+
+	title "HSPTVデータの更新登録テスト"
+
+*wpwp
+
+	hsptv_start ""				; ネット接続時にはスタートアップコードを指定します
+	hsptv_getmode i
+
+	redraw 0
+	pos 0,0:mes "お待ちください..."+i
+	redraw 1
+	await 1000/60
+
+	score=1000
+	sdim comm,64
+	comm="*ゆゆゆ*"
+	u_name="USER"
+
+	hsptv_user u_name
+
+	hsptv_up -1,""				; 最初に情報を更新しておく
+
+	hsptv_getmode i
+	if i=0 : goto *neterror
+
+*main1
+	cls
+	button "SEND",*send
+	button "UP",*send_up
+	button "DOWN",*send_down
+
+*main
+	redraw 0
+	gosub *update				; ランキング情報の表示
+
+	pos 0,120
+	mes "スコア:\n"+score
+	mes "コメント:\n"+comm
+
+	redraw 1
+	await 1000/60
+	goto *main
+
+*send
+	;	スコアを更新
+	;
+	hsptv_up score, comm
+	goto *main
+
+*update
+	;	スコア表示のサブルーチン
+	;
+	pos 100,32
+	repeat 10				; 上位10位のみ表示
+	hsptv_getrank rscore,ruser,rcomm,cnt	; 情報を取得する
+	rank=cnt+1
+	mes "#"+rank+":"+rscore+"("+ruser+") "
+	mes "COM:"+rcomm
+	loop
+	return
+
+*send_up
+	score+=100
+	goto *main
+*send_down
+	score-=100
+	goto *main
+
+*neterror
+	redraw 0
+	pos 0,0:mes "ERROR..."
+	redraw 1
+	await 1000/60
+	goto *neterror
+
+
+
+

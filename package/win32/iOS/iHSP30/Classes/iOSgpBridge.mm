@@ -19,14 +19,14 @@
 */
 /*------------------------------------------------------------*/
 
-int gpb_dialog( int type, char *msg, char *msg_sub )
+int gb_dialog( int type, char *msg, char *msg_sub )
 {
     //Alertf( "dialog: %s,%d", msg, type);
     //[hspview dispDialog:type Msg:msg MsgSub:msg_sub];
     return 0;
 }
 
-int gpb_exec( int type, char *name )
+int gb_exec( int type, char *name )
 {
 	NSString *fname = [[NSString alloc] initWithUTF8String:name];
     [[UIApplication sharedApplication] openURL:[NSURL URLWithString:fname]];
@@ -34,16 +34,24 @@ int gpb_exec( int type, char *name )
     return 0;
 }
 
-void gpb_getSysModel( char *outbuf )
+void gb_getSysModel( char *outbuf )
 {
 	NSString *dev = [[UIDevice currentDevice]model];
     sprintf( outbuf, "%s", [dev cStringUsingEncoding:1] );
 }
 
-void gpb_getSysVer( char *outbuf )
+void gb_getSysVer( char *outbuf )
 {
 	NSString *version = [[UIDevice currentDevice]systemVersion];
     sprintf( outbuf, "iOS %s", [version cStringUsingEncoding:1] );
+}
+
+void gb_getLocale( char *outbuf )
+{
+    NSLocale *locale = [NSLocale currentLocale];
+    NSString *locstr = [locale objectForKey:NSLocaleLanguageCode];
+    sprintf( outbuf, "%s", [locstr cStringUsingEncoding:1] );
+    //NSLog( @"------%s",outbuf );
 }
 
 

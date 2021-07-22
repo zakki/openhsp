@@ -503,6 +503,13 @@ void gb_getSysVer( char *outbuf )
 }
 
 
+void gb_getLocale( char *outbuf )
+{
+    NSLocale *locale = [NSLocale currentLocale];
+    NSString *locstr = [locale objectForKey:NSLocaleLanguageCode];
+    sprintf( outbuf, "%s", [locstr cStringUsingEncoding:1] );
+    //NSLog( @"------%s",outbuf );
+}
 
 
 static int mestext_sx;

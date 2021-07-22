@@ -14,7 +14,11 @@
 #include "../sysreq.h"
 #include "../../hsp3embed/hsp3embed.h"
 
+#ifdef HSPDISHGP
+#include "iOSgpBridge.h"
+#else
 #include "iOSBridge.h"
+#endif
 
 /*------------------------------------------------------------*/
 /*
@@ -32,10 +36,10 @@ static void InitSystemInformation(void)
 	hspctx->homefoldername = "";
 	hspctx->tvfoldername = "";
 
-	hspctx->langcode[0] = 'j';
-	hspctx->langcode[1] = 'a';
-	hspctx->langcode[2] = 0;
-	hspctx->language = HSPCTX_LANGUAGE_JP;
+    gb_getLocale(hspctx->langcode);
+    if ((hspctx->langcode[0]=='j')&&(hspctx->langcode[1]=='a')) {
+        hspctx->language = HSPCTX_LANGUAGE_JP;
+    }
 }
 
 
@@ -132,14 +136,6 @@ char *hsp3ext_sysinfo(int p2, int* res, char* outbuf)
 
 	switch(p2) {
 	case 0:
-#ifdef HSPNDK
-		{
-		char tmp[256];
-		strcpy( tmp, j_getinfo( JAVAFUNC_INFO_VERSION ) );
-		strcpy( p1, "android " );
-		strcat( p1, tmp );
-		}
-#endif
 #ifdef HSPIOS
         gb_getSysVer( p1 );
 #endif
@@ -147,9 +143,6 @@ char *hsp3ext_sysinfo(int p2, int* res, char* outbuf)
 	case 1:
 		break;
 	case 2:
-#ifdef HSPNDK
-		j_getinfo( JAVAFUNC_INFO_DEVICE );
-#endif
 #ifdef HSPIOS
         gb_getSysModel( p1 );
 #endif
