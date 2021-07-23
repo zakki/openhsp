@@ -282,12 +282,14 @@ LRESULT CALLBACK WndProc( HWND hwnd, UINT uMessage, WPARAM wParam, LPARAM lParam
 			HWND hCtrl = (HWND)lParam;
 			HSPOBJINFO *hspobj = bm->TrackHSPObject(hCtrl);
 			if ( hspobj != NULL ) {
-				HBRUSH brush_bg = hspobj->br_back;
-				if ( brush_bg != NULL ) {
-					SetBkMode(hDC, OPAQUE);
-					SetTextColor(hDC, hspobj->color_text);
-					SetBkColor(hDC,hspobj->color_back);
-					return (LRESULT)brush_bg;
+				if (hspobj->hspctx) {
+					HBRUSH brush_bg = hspobj->br_back;
+					if (brush_bg != NULL) {
+						SetBkMode(hDC, OPAQUE);
+						SetTextColor(hDC, hspobj->color_text);
+						SetBkColor(hDC, hspobj->color_back);
+						return (LRESULT)brush_bg;
+					}
 				}
 			}
 		}
