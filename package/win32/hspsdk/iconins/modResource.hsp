@@ -93,7 +93,7 @@ return _buffer_current
 	writeWord thismod, ptr, getPtr(thismod) - ptr - 2 
 return
 #modcfunc verStr array v
-return strf("%u, %u, %u, %u", v(0), v(1), v(2), v(3))
+return strf("%u.%u.%u.%u", v(0), v(1), v(2), v(3))
 #modfunc buildVerInfo
 
 	setPropVal thismod, "FileVersion", verStr(thismod, _fileVer)
