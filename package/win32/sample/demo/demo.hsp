@@ -1,5 +1,5 @@
 ;------------------------------------------------------
-;	HSP3 demo for ver3.5 ( sample script )
+;	HSP3 demo for ver3.6 ( sample script )
 ;------------------------------------------------------
 
 #include "hspogg.as"
@@ -226,7 +226,7 @@
 *boot
 	;	デモ開始
 	;
-	title "HSP3.5 Demonstration"
+	title "HSP3.6 Demonstration"
 
 #ifdef RELEASE
 	chdir dir_exe+"\\sample\\demo\\"
@@ -267,10 +267,9 @@
 	;
 	;objmode 1+16,1
 	font msgothic,16,1+16
-	x=114:y=240:color 192,192,255
-	pos x+1,y+1:mes "ＨＳＰの世界へようこそ。メニューのボタンを押してください。"
+	x=114:y=240:objcolor 192,192,255
 	color 0,0,160
-	pos x,y:mes "ＨＳＰの世界へようこそ。メニューのボタンを押してください。"
+	pos x,y:mes "ＨＳＰ３の世界へようこそ。メニューのボタンを押してください。",mesopt_outline
 	font msgothic,16,1
 	x=294:y=280:pos x,y
 	objsize 80,24,30
@@ -283,12 +282,13 @@
 	button "quit",*owari
 	objimage -1
 	x=390:y=282:pos x,y
-	mes "はじめにお読みください"
-	mes "HSPデモンストレーション"
-	mes "HSP総合マニュアルを開く"
-	mes "HSPアシスタントを開く"
-	mes "スクリプトを編集する"
-	mes "終了"
+	color 0,0,0
+	mes "はじめにお読みください",mesopt_shadow
+	mes "HSPデモンストレーション",mesopt_shadow
+	mes "HSP総合マニュアルを開く",mesopt_shadow
+	mes "HSPアシスタントを開く",mesopt_shadow
+	mes "スクリプトを編集する",mesopt_shadow
+	mes "終了",mesopt_shadow
 
 *main1
 	;	メインメニュー画面待ち
@@ -348,7 +348,7 @@
 
 *see_home
 	snd 1
-	exec "http://hsp.tv/",16
+	exec "https://hsp.tv/",16
 	stop
 *see_begin
 	snd 1
@@ -436,9 +436,9 @@
 
 	;	ブラークリア
 	;
-	repeat 16
+	repeat 32
 	redraw 0
-	gblur 2
+	gblur 1
 	redraw 1
 	sndexec
 	await 12
@@ -451,7 +451,7 @@
 	snd 2
 	mkwall "・HSPとは?"
 	text 10:color 0,0,128:textmode 2:color 255,255,255
-	emes "ＨＳＰは、Windows上で手軽に使えるインタプリタ言語です。
+	emes "ＨＳＰ３は、Windows上で手軽に使えるインタプリタ言語です。
 	emes "テキストによるスクリプトを書くだけで、誰にでも簡単に
 	emes "ウインドゥズ上で動作する、2D・3D画像を使ったゲームや"
 	emes "スクリーンセーバー、ツールや実用ソフトなどの
@@ -467,7 +467,7 @@
 	emes "・付属エディタですぐに使い始めることができる" 
 	emes "・作ったプログラムは自由に再配布が可能"
 	emes "・拡張プラグイン・モジュールによる機能拡張"
-	emes "・２０年以上に渡る多くのユーザー資産と使用実績"
+	emes "・２５年以上に渡る多くのユーザー資産と使用実績"
 	emes "・オープンな仕様の中間言語インタプリタを搭載" 
 
 	gosub *waitclick
@@ -508,6 +508,9 @@
 	pos 138+64,230:button "RND",*idrnd
 	;
 	pos 60,300:ids="ここにメッセージを入れてください。"
+	objcolor 0,255,240
+	color 64,128,64
+	objmode objmode_usecolor+objmode_guifont
 	mesbox ids,320,100,1
 	button "GO",*idmes
 	;
@@ -653,7 +656,7 @@
 
 	gsel 3
 	font msgothic,32,1+16
-	a="・HSP3.5の主要機能"
+	a="・HSP3.6の主要機能"
 	x=240:y=32
 	pos x+2,y+2:color 0,0,0:mes a
 	pos x,y:color 192,192,255:mes a
@@ -677,7 +680,7 @@
 ●高機能な3D表示とゲーム機能
 ●各種画像フォーマット入出力
 ●WEBカメラ、画像認識等の利用
-●http,ftp,rss,xml等のサポート
+●TCP/IP,シリアル通信サポート
 ●Windows COM、ActiveXの利用"}
 
 	z=0
@@ -727,7 +730,7 @@
 	text 10:color 0,0,128:textmode 2:color 255,255,255
 
 	emes "HSPはホームページ上でサポートを行なっています。"
-	emes "http://hsp.tv/
+	emes "https://hsp.tv/
 	mes ""
 	emes "ＨＳＰについての最新情報、サンプルスクリプト、"
 	emes "FAQ、などのコーナーがあります。ＨＳＰについての"
@@ -796,7 +799,7 @@
 
 *edmes
 	mes "HSP DEMO script"
-	mes "copyright 2014 onion software"
+	mes "copyright 2021 onion software"
 	mes "   Music by CHOBIN,onitama"
 	mes "   Music Arranged by ArStudio"
 	mes "   Logo designed by sencha and"
