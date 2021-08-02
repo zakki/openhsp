@@ -6,7 +6,7 @@
 %type
 拡張命令
 %ver
-3.4
+3.6
 %note
 hspprint.asをインクルードすること。
 
