@@ -1,5 +1,7 @@
 ;------------------------------------------------------
 ;	HSP3 demo for ver3.6 ( sample script )
+;	onion software/onitama
+;	サウンドコントロール追加 : Arue (2021/8/6)
 ;------------------------------------------------------
 
 #include "hspogg.as"
@@ -24,14 +26,16 @@
 
 	dmmini
 	m_defvol=0
-	m_vol=0
+	m_vol=0			//音量（最小-10000～最大0）
 	m_fade=0
+	m_level=0.25		//音量レベル追加（最小0.0～最大1.0で音量を管理）
 
 	dmmload "theme.ogg",0
 	dmmloop 0,268435		; ループポイント設定
 	dmmload "oot06.ogg",2
 	dmmloop 2,671328		; ループポイント設定
 	dmmload tvfolder@+"se_tyuiin.wav",1
+	dmmvol 1, vol2db(m_level)	//効果音の音量をただちに適用
 #endif
 	celload tvfolder@+"bgpeas.bmp",5
 	celload tvfolder@+"logop.bmp",6
@@ -40,6 +44,22 @@
 	celload tvfolder@+"btn_hard.bmp",9
 	gsel 0
 
+	return
+
+#define maxvol 1.0	//最大音量値
+#defcfunc vol2db double p1	//p1のボリューム値（0.0～1.0）をデシベル値（-10000～0.0）に変換する関数
+	if( p1 < 0.005 ):return -10000.0    //最低値を設定しておかないと0除算してしまう
+	if p1>maxvol:return 0.0				//最大デシベルは0.0
+	return ( ( 20.0 * (logf(p1)/logf(10)) ) * 100.0 )	//デシベル値を返す
+
+#defcfunc getVolume	//現在のボリュームを0.0～1.0で返す関数
+	return m_level		//音量値を返す
+#deffunc setVolume double p1	//p1の音量を現在のBGMに適用する（以降再生のBGMにも適用される）
+	if m_level!limitf(p1,0.0,1.0):{	//以前と音量が違えば設定する
+		m_level=limitf(p1,0.0,1.0)		//ボリューム値を記憶
+		dmmvol m_id, vol2db(m_level)	//現在再生中BGMに音量を割り当てる
+		dmmvol 1, vol2db(m_level)		//効果音にもこの時点で割り当てる
+	}
 	return
 
 #deffunc demo_term
@@ -74,7 +94,7 @@
 	m_vol=m_defvol
 	m_fade=0
 	m_id=id
-	dmmvol id, m_vol
+	dmmvol id,vol2db((10000.0+m_vol)/10000*m_level)	//音量にm_levelを反映させる
 *nobgm
 	dmmplay id
 #endif
@@ -87,14 +107,13 @@
 	;
 #ifdef USE_SOUND
 	if m_fade=0 : return
-	m_vol+=m_fade
-	if m_vol<-4000 : m_vol+=m_fade*2
-	if m_vol<=-8000 {
+	m_vol+=m_fade*3
+	if m_vol<=-10000 {			//ボリューム値でフェードするので完全に音が消えてから音を止めるようにした　-8000　→　-10000に修正
 		sndoff
 		return
 	}
 	if m_vol>=0 : m_vol=0 : m_fade=0
-	dmmvol m_id,m_vol
+	dmmvol m_id,vol2db((10000.0+m_vol)/10000*m_level)	//音量にm_levelを反映させる
 #endif
 	return
 
@@ -290,6 +309,14 @@
 	mes "スクリプトを編集する",mesopt_shadow
 	mes "終了",mesopt_shadow
 
+	//スピーカ描画セットアップ
+	//※※コントローラが配置されるシーンはredraw 1の更新範囲が狭いので配置と大きさに注意！
+	#define VCsize 32	//ボリュームアイコンのサイズ
+	#define VCx 32		//ボリュームアイコンの位置X
+	#define VCy 150		//ボリュームアイコンの位置Y
+	#define VCcnt 8		//ボリュームアイコンの波紋の数
+	font "webdings",VCsize	//ボリュームコントロール描画用にフォントを変更
+
 *main1
 	;	メインメニュー画面待ち
 	;
@@ -302,6 +329,20 @@
 	loop
 	pos 268,48:gmode 6,logosx,logosy,256:gcopy 6
 	;
+	
+	//ボリュームコントロール
+	color	//コントローラの色
+	pos VCx,VCy:mes "X"	//スピーカ描画（webdings）
+	stick key,256:if key:{		//マウスが押し下げされている場合
+		if mousex>VCx & mousex<VCx+VCcnt*8+VCsize*2 & abs(mousey-VCy-VCsize/2)<VCsize:{	//ボリュームコントローラ上にポインタがある
+			setVolume double(mousex-(VCx+VCsize/2))/(VCcnt*8)	//ボリュームの値を更新
+		}
+	}
+	repeat VCcnt,1	//ボリュームコントロール（スピーカからの波紋）を描画
+		gmode 3,4,(cnt+1)*VCsize/VCcnt,160-(cnt>getVolume()*VCcnt)*112	//波紋の大きさを決定。濃度は現在の音量まで濃く描画
+		grect cnt*8+VCx+VCsize/2,VCy+VCsize/2	//波紋を描画
+	loop
+	
 	redraw 1,0,0,640,200
 	wait 10
 	;
@@ -319,7 +360,7 @@
 	redraw 0
 	text 0:color 0,0,128:textmode 2:color 255,255,255
 	emes {"
-このデモプログラムは、Hot Soup Processor Ver.3の
+このデモプログラムは、Hot Soup Processor (HSP3)の
 機能と使い方の紹介をするためのものです。
 メインメニューから見たい項目を選んでボタンを押して
 ください。
@@ -451,7 +492,7 @@
 	snd 2
 	mkwall "・HSPとは?"
 	text 10:color 0,0,128:textmode 2:color 255,255,255
-	emes "ＨＳＰ３は、Windows上で手軽に使えるインタプリタ言語です。
+	emes "HSP3は、Windows上で手軽に使えるインタプリタ言語です。
 	emes "テキストによるスクリプトを書くだけで、誰にでも簡単に
 	emes "ウインドゥズ上で動作する、2D・3D画像を使ったゲームや"
 	emes "スクリーンセーバー、ツールや実用ソフトなどの
@@ -713,7 +754,7 @@
 	;	HSPデモ(テキスト表示2)
 	;
 	cls 4
-	mkwall "・HSPができること"
+	mkwall "・HSP3ができること"
 	text 10:color 0,0,128:textmode 2:color 255,255,255
 
 	emes "ビジュアルノベルから本格的な3Dシューティングまで"
