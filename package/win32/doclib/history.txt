@@ -5,6 +5,11 @@ Hot Soup Processor ver3.6                           HSP : Hot Soup Processor
 
 ・hsp3関連 更新履歴
 
+	2021/08/10 3.6
+
+	HSPデモンストレーションの音量を変更
+	ヘルプとドキュメントの更新
+
 	2021/07/23 3.6 RC2
 
 	winobj命令で生成されたウインドウに色の変更メッセージが送られる不具合を修正
