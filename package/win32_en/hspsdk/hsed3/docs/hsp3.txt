@@ -1,0 +1,94 @@
+--------------------------------------------------------------------------------
+ Hot Soup Processor Script Editor External Tool SDK for HSP3
+--------------------------------------------------------------------------------
+
+E Introduction
+
+This manual is for HSP script editor (hereinafter referred to as editor) only.
+About SDK usage and precautions for developing external tools using HSP3
+I will explain.
+
+
+
+E Basic usage
+
+Use hsedsdk.as in sdk \\ hsp3 as the source directory or
+Copy to the common directory. And on the sauce
+Just write #include "hsedsdk.as".
+After that, you can use instructions (functions).
+See the sample for details.
+
+
+
+E Instruction (function) reference
+
+hsed_exist --Check if the editor is running
+1 for stat if the editor was running, 0 for not running
+It will be substituted.
+
+hsed_getver p1, p2 --Get editor version
+Gets the version of the editor of the type specified in p2 and assigns it to p1.
+If acquisition fails, substitute -1 for p1 in principle.
+However, if HGV_HSPCMPVER is specified in p2, "Error" is assigned.
+
+The values assigned to stat are as follows.
+0: Successful acquisition
+1: Editor not found
+2: I couldn't make a pipe
+3: The editor did not return the correct value (including if p2 is incorrect)
+
+The values specified for p2 are as follows. Even with constants starting with HGV_
+You can use the numbers in parentheses.
+HGV_PUBLICVER (0): Public version (next version at the time of editor release).
+First 4 digits major version in hexadecimal, 5th to 6th digits minor version
+        7th-8th digit ƒÀ version (0 if not ƒÀ). (Example: Ver1.02b3-> $ 0100203)
+You can get each value with hsed_getmajorver (), hsed_getminorver (), hsed_getbetaver ().
+You can also convert it to a string with hsed_cnvverstr.
+HGV_PRIVATEVER (1): Private version. It has the same format as HGV_PUBLICBER.
+HGV_HSPCMPVER (2): The version (character string) obtained by hsc_ver from hspcmp.dll is assigned.
+HGV_FOOTYVER (3): The version obtained by GetFootyVer from Footy is substituted.
+The value obtained by multiplying the version by 100 is returned. (Example: Ver1.23-> 123)
+HGV_FOOTYBETAVER (4): The version obtained by GetFootyBetaVer from Footy is substituted.
+The beta version will be substituted as is.
+If it is not a beta version, 0 is assigned.
+
+hsed_getwnd p1, p2 (, p3)-Get editor window handle
+Gets the window handle of the type of editor specified by p2 and assigns it to p1.
+If you specify HGW_EDIT in p2, you need to specify the Football ID in p3.
+If the acquisition fails, substitute 0 for p1.
+
+The values assigned to stat are as follows.
+0: Successful acquisition
+1: Editor not found
+2: The editor did not return the correct value (including if p2 is incorrect)
+
+The values specified for p2 are as follows. Even with constants starting with HGW_
+You can use the numbers in parentheses.
+HGW_MAIN (0): Main window
+HGW_CLIENT (1): Client window
+HGW_TAB (2): Tab window
+HGW_EDIT (3): Footy window
+HGW_TOOLBAR (4): Toolbar
+HGW_STATUSBAR (5): Status bar
+
+hsed_getmajorver (p1)-Extract major version
+Extracts only the major version from the version specified by p1.
+The value that can be specified here is HGV_PUBLICVER or HGV_PRIVATEVER for hsed_getver.
+Only the version obtained by specifying.
+
+hsed_getminorver (p1) --extract minor version
+Extracts only minor versions from the version specified by p1.
+The value that can be specified here is HGV_PUBLICVER or HGV_PRIVATEVER for hsed_getver.
+Only the version obtained by specifying.
+
+hsed_getbetaver (p1)-extract beta version
+Extracts only the beta version from the version specified by p1.
+The value that can be specified here is HGV_PUBLICVER or HGV_PRIVATEVER for hsed_getver.
+Only the version obtained by specifying.
+
+hsed_cnvverstr p1-convert version to string
+Converts the version specified by p1 to a string and assigns it to refstr.
+It is in the format of "(major version). (Minor version)".
+However, in the case of beta version, "b (beta version)" is added at the end.
+The value that can be specified here is HGV_PUBLICVER or HGV_PRIVATEVER for hsed_getver.
+Only the version obtained by specifying.

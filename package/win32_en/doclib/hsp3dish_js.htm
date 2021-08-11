@@ -101,9 +101,9 @@ Normally, the default value is fine, but if you have a large script or a large a
 (If the hsp3dish.js console displays "Cannot enlarge memory arrays." When running the browser, try adjusting the upper limit of the memory block.)
 	</p>
 <li> Use HGIM G4 </li> <br> <p>
-Converts HGIMG4 scripts. "Hsp3dish-gp.js" is required at the time of execution. <br>
+Convert HGIMG4 scripts. "Hsp3dish-gp.js" is required at the time of execution. <br>
 Place the data used by HGIMG4 in "res" and "res / shaders" under the folder specified in "Source Script". (Located in sample / hgimg4)
-<br> <b> * Please note that the off-screen drawing commands used for post-effects cannot be used in the current version. </b>
+<br> <b> * Please note that the off-screen drawing commands used for post effects etc. cannot be used in the current version. </b>
 	</p>
 <li> Use WebAssembly </li> <br> <p>
 Convert to WebAssembly format. An additional ".wasm" file is required at runtime. <br>
@@ -114,7 +114,7 @@ However, due to limited support for web browsers, it is still an experimental im
 Generates data including debug information when converting the script. <br>
 By outputting debug information, when an error occurs during execution on the browser,
 You can refer to the line number and the file name of the source script.
-If you don't know where the error occurred when you run the browser, try printing out the debug information and checking.
+If you don't know where the error occurred when running the browser, try printing out the debug information and checking.
 	</p>
 	</ul>
 	<p>
@@ -131,7 +131,7 @@ The generated files are as follows.
 <li> hsp3dish.wasm file (hsp3dish-gp.wasm when using HGIMG4) </li>
 	</ul>
 	<p>
-These files should have been generated in the folder that contains the original source script.
+These files should have been generated in the folder where the original source script is located.
 (For example, if you convert block3.hsp, block3.html and block3.data will be generated.) <br>
 Simply upload the file generated here on the WEB and it can be executed on the WEB browser. <br>
 The .html file is an HTML file that can be opened from a web browser.
@@ -182,10 +182,10 @@ ENV.HSP_LIMIT_STEP = "15000"; // Number of execution steps until processing is r
 	    });
 	</pre></ul>
 	<p>
-The numerical values ​​specified in "ENV.HSP_WX" and "ENV.HSP_WY" are the operating resolution size (X, Y) of the script.
+The numerical values ​​specified in "ENV.HSP_WX" and "ENV.HSP_WY" are the operating resolution sizes (X, Y) of the script.
 This is set to the value obtained from the hsp3dish.ini file during the script conversion. <br>
-The numerical values ​​specified in "ENV.HSP_SX" and "ENV.HSP_SY" are the resolution sizes (X, Y) actually displayed on the WEB browser.
-If the operating resolution of the script and the display resolution are different, the setting for scaling (enlargement / reduction) will be the "ENV.HSP_AUTOSCALE" item. "0" is specified by default, but the following values ​​can be set.
+The numerical value specified by "ENV.HSP_SX" and "ENV.HSP_SY" is the resolution size (X, Y) actually displayed on the WEB browser.
+If the operating resolution and display resolution of the script are different, the setting for scaling (enlargement / reduction) will be the "ENV.HSP_AUTOSCALE" item. "0" is specified by default, but the following values ​​can be set.
 	</p>
 	<ul><pre>
 0: Optimal size that fits on the entire screen (aspect ratio is maintained)
@@ -214,7 +214,7 @@ The current version has experimental support for playing media files.
 	</pre></ul>
 	<p>
 The formats that can be read by the mmload instruction are ".wav", ".mp3", and ".ogg". <br>
-Since media files can be huge as resources, the current resource management of reading all of them into memory at startup is not suitable for playing a large number of songs.
+Since media files can be huge as resources, current resource management, which reads everything into memory at startup, is not suitable for playing a large number of songs.
 We would like to improve this point in future versions.
 	</p>
 
@@ -241,7 +241,7 @@ You can specify the URL of the newly opened page by specifying 16 as the option 
 		exec "https://hsp.tv",16
 	</pre></ul>
 	<p>
-In this example, the URL "https://hsp.tv" will be opened in a new browser.
+In this example, the URL "https://hsp.tv" is newly opened in the browser.
 	<br>
 By using the exec command, you can open a WEB page in cooperation with the program on the HSP side.
 Processing such as changing the display of the browser becomes possible.
@@ -257,7 +257,7 @@ Other functions are basically the same as HSP3Dish.
 ・ Media-related functions (limited by browser and file type)
 ・ HGIMG4 off-screen drawing command is not supported
 ・ DPM files cannot be used
--Files such as the bsave instruction cannot be saved statically.
+-Files such as the bsave command cannot be saved statically.
 	</pre></ul>
 	<p>
 In addition, the following have been reported as known issues.
@@ -267,7 +267,7 @@ In addition, the following have been reported as known issues.
 	</pre></ul>
 	<p>
 In addition, since it is running on a web browser, different actions and displays may occur.
-Currently, data files are read in bulk, so large applications (such as using a lot of images) can
+Currently, data files are read in bulk, so large applications (such as using a lot of images) can use it.
 Please note that it may become heavy or cannot be processed.
 	</p>
 

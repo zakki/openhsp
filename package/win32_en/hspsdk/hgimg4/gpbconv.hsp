@@ -1,0 +1,262 @@
+
+	;
+	;	gpb converter
+	;	onion software/onitama 2013/5
+	;
+
+#packopt name "gpbconv"
+#include "hspext.as"
+#include "mod_gpmaterial.as"
+
+#define APPTITLE "GPB converter"
+#define APPVER "0.6"
+
+	randomize
+
+	sdim s1,256:sdim s2,256
+	wx=640:wy=800	; ウィンドウサイズ
+	wtx=640:wty=60
+
+	sdim buf,$10000
+	sdim buftxt,$10000
+
+	sdim fname,1024
+
+	goto *boot
+
+#deffunc inittab
+
+	rgbcolor $88dddd
+	boxf 0,0,wtx,wty
+	x=4:y=4:px=120
+	objsize px-4,20
+	pos x,y
+	button gosub "変換",*chg_mode
+	pos x+px,y
+	button gosub "マテリアル",*chg_mode
+	pos x+px*2,y
+	button gosub "プレビュー",*chg_mode
+
+	rgbcolor $88dddd
+	boxf 0,20,wtx,wty
+	x=4+120*tab:y=24
+	rgbcolor $880000
+	boxf x,y,x+116,y+4
+
+	return
+
+*chg_mode
+	tab=stat
+	return
+
+
+#deffunc initwnd
+
+	screen 0,wx,wy,0
+	title APPTITLE +" ver."+APPVER
+	gsel 0,1
+	cls 4
+	syscolor 15:boxf
+	sysfont 17
+	color 0,0,0
+	tab=0
+	return
+
+#deffunc initsub
+
+	clrobj
+	inittab
+
+	syscolor 15:boxf 0,wty,wx,wy
+	sysfont 17
+
+	;mesbox buftxt,wx,320,0
+	;objsize 160,24
+	;pos wx-168,480-32
+	;button gosub "閉じる",*closesub
+
+	pos 8,wty+8
+	color 0,0,0
+
+	return
+
+*closesub
+	gsel 1,-1
+	gsel 0
+	return
+
+
+#deffunc execcmd str _p1
+
+	sdim tmp,$20000
+	cmd = _p1
+
+	pipeexec tmp,cmd
+	if stat : dialog "コマンドラインの実行に失敗しました" : return -1
+
+	lnbak=""
+	repeat
+	pipeget ln
+	if stat=0 : break
+	wait 10
+	title ""+cnt
+	loop
+
+	buf+=tmp
+
+	buf=""
+	i=0
+	repeat
+		getstr s1,tmp,i,10
+		if strsize=0 : break
+		i+=strsize
+		buf+=s1
+		buf+="\n"
+	loop
+
+	gsel 1
+	objprm 0,buf
+	gsel 0
+
+	return 0
+
+;--------------------------------------------------------------------------------
+
+*boot
+	;	アプリケーション開始
+	;
+	initwnd
+
+
+*go_menu
+	mytab=tab
+	matname=""
+	initsub
+	if tab=1 : goto *go_tab1
+	if tab=2 : goto *go_tab2
+
+*go_tab0
+	mes "HGIMG4(gameplay)で使用可能なgpbファイルを作成します。"
+
+	;sdim mdl_file,256
+	flag_mat=1
+
+	y=100
+	pos 8,y
+	mes "モデルデータ:"
+	objsize 390,24
+	input fname: id_fname=stat
+	objsize 64,24
+	pos 408,y+10:button "参照...",*selfile
+
+	objsize 160,24
+	pos 8,y+38
+	chkbox ".materialを出力",flag_mat
+	chkbox "構造をXMLに出力",flag_xml
+
+	pos 460,y+48
+	objsize 160,48
+	button "変換",*mkgpb
+
+	goto *topmenu
+
+*go_tab1
+	mes "gpbマテリアルファイルの編集を行います。"
+
+	y=100
+	pos 8,y
+*go_tab1fs
+	objsize 160,48
+	button ".material読み込み",*selmat
+
+	goto *topmenu
+
+*go_tab2
+	mes "gpbファイルのプレビューを行います。"
+	mes "(準備中)"
+	goto *topmenu
+
+
+*topmenu
+	if mytab!=tab : goto *go_menu
+	wait 3
+	goto *topmenu
+
+
+*selfile
+	dialog "fbx;*.dae",16,"3D Model File"
+	fname=refstr
+	if stat : objprm id_fname,fname
+	goto *topmenu
+
+*mkgpb
+	;	hsp convert only
+	;
+	if fname="" : stop
+
+	initsub
+
+	mydir=getpath(fname,32)
+	myfile=getpath(fname,8+16)
+	opt=""
+	if flag_mat : opt+="-m "
+	if flag_xml : opt+="-t "
+
+	mes "変換中..."
+
+	chdir mydir
+	exec "cmd.exe /c "+dir_exe+"\\gameplay-encoder.exe -g:auto "+opt+myfile+" >log.txt"
+
+	mes "終了しました。"
+	button "ログ表示",*go_log
+	button "OK",*go_menu
+
+	pos 0,300
+	mesbox buf,wx,500,0:id_txt=stat
+	goto *topmenu
+*go_log
+	notesel buf
+	exist "log.txt"
+	if strsize>0 {
+		noteload "log.txt"
+		objprm id_txt,buf
+	}
+	goto *topmenu
+
+*selmat
+	dialog "material",16,"gpb Material"
+	if stat=0 : goto *topmenu
+
+	matname=refstr
+	mydir=getpath(matname,32)
+	myfile=getpath(matname,8+16)
+	i_mat=-1
+*selmat1
+	matload matname
+
+*selmat2
+	bak_imat=i_mat
+	initsub
+	mes "マテリアルファイル編集 ("+myfile+")"
+
+	y=100
+	pos 8,y
+	objsize 600,24
+	listbox i_mat,240,list_mat
+
+	if i_mat>=0 {
+		matgui i_mat
+		button "変更",*selmat4
+	}
+*selmat3
+	if bak_imat!=i_mat : goto *selmat2
+	if mytab!=tab : goto *go_menu
+	wait 3
+	goto *selmat3
+
+*selmat4
+	matgui_apply
+	matmake i_mat
+	matsave
+
+	goto *selmat1

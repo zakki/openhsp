@@ -1,0 +1,695 @@
+------------------------------------------------------------------------------
+HSP3 Data Format Document v0.2 HSP: Hot Soup Processor
+Hot soup processor copyright 2011 (c) onion software
+------------------------------------------------------------------------------
+
+・ Introduction
+
+This document describes the file specifications and internal operation of Hot Soup Processor ver3.0 or later.
+It describes about.
+
+The HSP3 data format material is published as part of OpenHSP and is published as part of OpenHSP.
+The same license as OpenHSP is applied.
+
+Materials and source code can be freely reorganized for personal use and research.
+Please use it. When publishing the reorganized product on the Internet or for commercial use
+If you want to create something that will be open to the general public, please email the author in advance.
+We would be grateful if you could contact us (not obligatory).
+Hot Soup Processor including HSP2 and HSP3
+Onion Software / onitama plays a central role in maintaining and managing the language specifications.
+is.
+Prioritize the convenience of current users and manage HSP specifications in a way that does not cause confusion
+We would be grateful if you could cooperate in order to continue.
+
+For documents and tips created based on materials, or for tools,
+Feel free to publish it.
+
+HSP3 data format materials can be freely reorganized based on the BSD license.
+It can be duplicated, published and distributed.
+When publishing a derivative, be sure to specify the following copyright notice
+please.
+Also, if necessary, please add the copyright notice of the reorganizer.
+
+OpenHSP
+Copyright (C) 1997-2011, Onion Software/onitama.
+All rights reserved.
+
+Redistribution and use in source and binary forms, with or without modification, are permitted provided that the following conditions are met:
+
+Redistributions of source code must retain the above copyright notice, this list of conditions and the following disclaimer. 
+Redistributions in binary form must reproduce the above copyright notice, this list of conditions and the following disclaimer in the documentation and/or other materials provided with the distribution. 
+Neither the name of the Onion Software nor the names of its contributors may be used to endorse or promote products derived from this software without specific prior written permission. 
+
+THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+
+
+・ Hsp3 code output
+
+The HSP3 code generator (hspcmp.dll) is a textual HSP3 source.
+Convert the code to an ax format file (HSP object file).
+At that time, replace the source code with hsp3 intermediate code.
+Preprocessor instructions, macro definition instructions, labels, external reference information, etc.
+It will be resolved during conversion and converted to the appropriate format.
+HSP runtime (hsp3.exe etc.) reads ax format file and
+Execute while reading the hsp3 intermediate code sequentially.
+
+HSP3 source code (.hsp)
+↓
+Intermediate code replacement after pre-processing
+↓
+ax format file (.ax)
+
+
+・ Ax file format
+
+The following data is stored in the ax format file (HSP object file)
+It has been. For each block, refer to the offset from the AX header information.
+You can identify the position on the file by doing.
+
+┌───────────┐
+│ AX header information │
+├───────────┤
+│ Option Info (OPTBUF) │
+├───────────┤
+│ Code Segment (CS) │
+├───────────┤
+│ Data Segment (DS) │
+├───────────┤
+│ Object Temp (OT) │
+├───────────┤
+│ Debug Info (DINFO) │
+├───────────┤
+│ Lib Info (LINFO) │
+├───────────┤
+│ Func Info (FINFO) │
+├───────────┤
+│ Module Info (MINFO) │
+├───────────┤
+│ Func Info2 (FINFO2) │
+├───────────┤
+│ HPI Info (HPIBUF) │
+└───────────┘
+
+The contents of each data structure are as follows.
+
+・ AX header information
+
+For details of AX header information, refer to the following structure.
+(Defined in hsp3struct.h)
+
+	typedef struct HSPHED
+	{
+	//		HSP3.0 header structure
+	//
+
+	char	h1;					// magic code1
+	char	h2;					// magic code2
+	char	h3;					// magic code3
+	char	h4;					// magic code4
+	int		version;			// version number info
+	int		max_val;			// max count of VAL Object
+	int		allsize;			// total file size
+
+	int		pt_cs;				// ptr to Code Segment
+	int		max_cs;				// size of CS
+	int		pt_ds;				// ptr to Data Segment
+	int		max_ds;				// size of DS
+
+	int		pt_ot;				// ptr to Object Temp
+	int		max_ot;				// size of OT
+	int		pt_dinfo;			// ptr to Debug Info
+	int		max_dinfo;			// size of DI
+
+	int		pt_linfo;			// ptr to LibInfo(2.3)
+	int		max_linfo;			// size of LibInfo(2.3)
+	int		pt_finfo;			// ptr to FuncInfo(2.3)
+	int		max_finfo;			// size of FuncInfo(2.3)
+
+	int		pt_minfo;			// ptr to ModInfo(2.5)
+	int		max_minfo;			// size of ModInfo(2.5)
+	int		pt_finfo2;			// ptr to FuncInfo2(2.5)
+	int		max_finfo2;			// size of FuncInfo2(2.5)
+
+	int		pt_hpidat;			// ptr to HPIDAT(3.0)
+	short		max_hpi;			// size of HPIDAT(3.0)
+	short		max_varhpi;			// Num of Vartype Plugins(3.0)
+	int		bootoption;			// bootup options
+	int		runtime;			// ptr to runtime name
+
+	} HSPHED;
+
+"Ptr to ~" indicates from the beginning of the file where the data actually exists
+The offset value.
+The "size of ~" indicates the size of the data block.
+
+For magic code 1 to 4, the character string code of "HSP3" is entered.
+version contains the version of the code generator.
+(In the case of 3.1, it will be 0x0301.)
+
+The following flags are stored in bootoption.
+
+#define HSPHED_BOOTOPT_DEBUGWIN 1 // Debug window display at startup
+#define HSPHED_BOOTOPT_RUNTIME 0x1000 // Enable dynamic runtime
+
+When dynamic runtime is specified, runtime name (file name) data is set in runtime.
+The block position (offset from the beginning of the file) is stored.
+
+
+・ Code Segment (CS)
+
+Contains information on the HSP intermediate code format where the source was expanded.
+From the beginning of the source script, it is replaced with intermediate code and stored.
+For more information on the code, see the "hsp3 Intermediate Code Format" section.
+
+・ Data Segment (DS)
+
+Contains fixed data such as character strings.
+The size is indefinite, and character strings and real number data are stored in sequence.
+Hereinafter, when referring to this item, it is referred to as "DS offset value".
+
+・ Object Temp (OT)
+
+The offset value on CS corresponding to the label ID is stored.
+
+・ Debug Info (DINFO)
+
+Contains CS location information corresponding to the line number.
+For more information, see Debug Info (DINFO) Details.
+
+・ Lib Info (LINFO)
+
+Information on external calls (DLL, etc.) is stored.
+
+・ Func Info (FINFO)
+・ Func Info2 (FINFO2)
+
+Contains information about structures such as module and DLL definitions.
+
+・ Mod Info (MINFO)
+
+Contains information about the module.
+
+・ HPI Info (HPIBUF)
+
+Contains information about the HSP3 extension plug-in.
+The information is written as an array of HPIDAT structures (defined in hsp3struct.h).
+
+		typedef struct HPIDAT {
+			short	flag;		// flag info
+			short	option;
+			int	libname;	// lib name index (DS)
+			int	funcname;	// function name index (DS)
+			void	*libptr;	// lib handle
+		} HPIDAT;
+
+libname and funcname are DS offset values that indicate the DLL name and initialization function name.
+libptr is a reserved area for writing at runtime run time.
+The HPIDAT structure is just information for the HSP3 extension plug-in,
+HSP2.x compatible plugins are treated as external DLL calls, here
+Not included.
+
+・ Option Info (OPTBUF)
+
+Contains optional information such as the runtime specified at compile time.
+
+
+・ Hsp3 intermediate code format
+
+HSP is an interpreter that executes after converting a source script into intermediate code.
+Keywords, strings, numbers, etc. included in the script are converted to intermediate code.
+The hsp3 intermediate code format is similar to the format used in hsp2.
+It has been created.
+
+There are two types of intermediate codes, depending on the range of values to be handled.
+
+
+	[32bit code]
+		MSB                          LSB
+┌─┬──┬──┬──┬──────┐
+│ 0 │ Ex2 │ Ex1 │ Ex0 │ Type │
+└─┴──┴──┴──┴──────┘
+		                   +
+┌─────────────────┐
+│ Code (16bit) │ │
+└─────────────────┘
+
+	[48bit code]
+		MSB                          LSB
+┌─┬──┬──┬──┬──────┐
+│ 1 │ Ex2 │ Ex1 │ Ex0 │ Type │
+└─┴──┴──┴──┴──────┘
+		                   +
+┌─────────────────┐
+│ Code (32bit) │
+└─────────────────┘
+
+Basically, 16bit (short) value is one unit.
+The Type value is bit0 to bit11 (0 to 0xfff). (Define the mask value with the CSTYPE macro)
+The Ex0 value is bit12 (0x1000). (Define the value with the EXFLG_0 macro)
+The Ex1 value is bit13 (0x2000). (Define the value with the EXFLG_1 macro)
+The Ex2 value is bit14 (0x4000). (Define the value with the EXFLG_2 macro)
+If the Code value is between 0x0000 and 0xffff (unsigned), to reduce the size
+It is stored in 32bit code format.
+If the Code value is 0x10000 or more, it will be fully stored in 32bit in 48bit format.
+In the case of 48bit format, bit15 (0x8000) in the first 16bit is ON.
+
+The Type value identifies the type of code stored.
+
+Type | Macro | Type
+	-----------------------------------------------------------
+0 | TYPE_MARK | Symbol (code = character code)
+1 | TYPE_VAR | User-defined variable (code = variable ID)
+2 | TYPE_STRING | String (code = DS offset)
+3 | TYPE_DNUM | Real value (code = DS offset)
+4 | TYPE_INUM | Integer value (code = value)
+5 | TYPE_STRUCT | Module Variable / Structure (code = minfoID)
+6 | TYPE_XLABEL | Unused
+7 | TYPE_LABEL | Label name (code = OT offset)
+8 | TYPE_INTCMD | HSP internal (core) instruction (code = command ID)
+9 | TYPE_EXTCMD | HSP extension (machine dependent) instruction (code = command ID)
+10 | TYPE_EXTSYSVAR | HSP extension (model dependent) system variable (code = command ID)
+11 | TYPE_CMPCMD | Comparison instruction (code = command ID)
+12 | TYPE_MODCMD | User extension instructions / functions (code = command ID)
+13 | TYPE_INTFUNC | HSP Internal (Core) Function (code = Command ID)
+14 | TYPE_SYSVAR | HSP internal (core) system variable (code = command ID)
+15 | TYPE_PROGCMD | Program control instruction (code = command ID)
+16 | TYPE_DLLFUNC | External DLL extension instructions / functions (code = command ID)
+17 | TYPE_DLLCTRL | Extended DLL control command (code = command ID)
+18 | TYPE_USERDEF | HSP3 extension plug-in command (code = command ID)
+
+
+Ex1 value is a flag indicating that it is the beginning of a line (if it is 1, it will be the beginning of a line),
+Ex2 value is a flag indicating that it is a parameter delimiter (if it is 1, it is delimited)
+It has become.
+The Ex0 value indicates that the parameter is a single value with no operations or variables.
+Used as a flag (added in HSP 3.3 and later).
+
+TYPE_USERDEF type and later are used for instructions extended by plug-ins, etc.
+Will be done. (The maximum type value is 0x1fff)
+
+The reserved keyword types and codes that are set as standard in HSP are as follows.
+(Excerpt from the code generator hspcmd.cpp)
+
+	char 	s_rec[1]= "", *hsp_prestr[] =
+	{
+	//
+	//	label check
+	//	  | opt value
+	//	  | |
+	//	  | | type
+	//	  | | | keyword
+	//	  | | |  |
+	//	  | | |  |
+	//	"$000 8 goto",
+	//
+	s_rec,
+
+	//	program control commands (ver3.0)
+
+	"$000 15 goto",
+	"$001 15 gosub",
+	"$002 15 return",
+	"$003 15 break",
+	"$004 15 repeat",
+	"$005 15 loop",
+	"$006 15 continue",
+	"$007 15 wait",
+	"$008 15 await",
+
+	"$009 15 dim",
+	"$00a 15 sdim",
+//	"$00d 15 skiperr",				// delete
+	"$00b 15 foreach",				// (ver3.0)
+//	"$00c 15 eachchk",				// (ver3.0) hidden
+	"$00d 15 dimtype",				// (ver3.0)
+	"$00e 15 dup",
+	"$00f 15 dupptr",				// (ver3.0)
+
+	"$010 15 end",
+	"$011 15 stop",
+	"$012 15 newmod",				// (ver3.0)
+//	"$013 15 setmod",				// (ver3.0)
+	"$014 15 delmod",				// (ver3.0)
+//	"$015 15 alloc",				// (changed 3.0)
+	"$016 15 mref",					// (ver2.5)
+	"$017 15 run",
+	"$018 15 exgoto",				// ver2.6
+	"$019 15 on",					// ver2.6
+	"$01a 15 mcall",				// (ver3.0)
+	"$01b 15 assert",				// (ver3.0)
+	"$01c 15 logmes",				// (ver3.0)
+	"$01d 15 newlab",				// (ver3.2)
+	"$01e 15 resume",				// (ver3.2)
+	"$01f 15 yield",				// (ver3.2)
+
+//	"$015 15 logmode",				// (ver2.55)
+//	"$016 15 logmes",				// (ver2.55)
+
+	//	enhanced command (ver2.6)
+
+	"$10000 8 onexit",
+	"$10001 8 onerror",
+	"$10002 8 onkey",
+	"$10003 8 onclick",
+	"$10004 8 oncmd",
+
+	"$011 8 exist",
+	"$012 8 delete",
+	"$013 8 mkdir",
+	"$014 8 chdir",
+
+	"$015 8 dirlist",
+	"$016 8 bload",
+	"$017 8 bsave",
+	"$018 8 bcopy",
+	"$019 8 memfile",				// (changed on ver2.6*)
+
+	//	no macro command (ver2.61)
+	//
+	"$000 11 if",
+	"$001 11 else",
+
+	//	normal commands
+
+	"$01a 8 poke",
+	"$01b 8 wpoke",
+	"$01c 8 lpoke",
+	"$01d 8 getstr",
+	"$01e 8 chdpm",					// (3.0)
+	"$01f 8 memexpand",				// (3.0)
+	"$020 8 memcpy",				// (ver2.55)
+	"$021 8 memset",				// (ver2.55)
+
+	"$022 8 notesel",				// (changed on ver2.55)
+	"$023 8 noteadd",				// (changed on ver2.55)
+	"$024 8 notedel",				// (changed on ver2.55)
+	"$025 8 noteload",				// (changed on ver2.6*)
+	"$026 8 notesave",				// (changed on ver2.6*)
+	"$027 8 randomize",				// (changed on ver3.0)
+	"$028 8 noteunsel",				// (changed on ver3.0)
+	"$029 8 noteget",				// (changed on ver2.55)
+	"$02a 8 split",					// (ver3.2)
+
+	//	enhanced command (ver2.2)
+
+	"$10000 9 button",
+
+	"$001 9 chgdisp",
+	"$002 9 exec",
+	"$003 9 dialog",
+
+//	"$007 9 palfade",				// delete
+//	"$009 9 palcopy",				// delete
+
+	"$008 9 mmload",
+	"$009 9 mmplay",
+	"$00a 9 mmstop",
+	"$00b 9 mci",
+
+	"$00c 9 pset",
+	"$00d 9 pget",
+	"$00e 9 syscolor",				// (ver3.0)
+
+	"$00f 9 mes",
+	"$00f 9 print",
+	"$010 9 title",
+	"$011 9 pos",
+	"$012 9 circle",				// (ver3.0)
+	"$013 9 cls",
+	"$014 9 font",
+	"$015 9 sysfont",
+	"$016 9 objsize",
+	"$017 9 picload",
+	"$018 9 color",
+	"$019 9 palcolor",
+	"$01a 9 palette",
+	"$01b 9 redraw",
+	"$01c 9 width",
+	"$01d 9 gsel",
+	"$01e 9 gcopy",
+	"$01f 9 gzoom",
+	"$020 9 gmode",
+	"$021 9 bmpsave",
+
+//	"$022 9 text",					// delete
+
+	"$022 9 hsvcolor",				// (ver3.0)
+	"$023 9 getkey",
+
+	"$024 9 listbox",
+	"$025 9 chkbox",
+	"$026 9 combox",
+
+	"$027 9 input",
+	"$028 9 mesbox",
+	"$029 9 buffer",
+	"$02a 9 screen",
+	"$02b 9 bgscr",
+
+	"$02c 9 mouse",
+	"$02d 9 objsel",
+	"$02e 9 groll",
+	"$02f 9 line",
+
+	"$030 9 clrobj",
+	"$031 9 boxf",
+
+	//	enhanced command (ver2.3)
+
+	"$032 9 objprm",
+	"$033 9 objmode",
+	"$034 9 stick",
+//	"$041 9 objsend",				// delete
+	"$035 9 grect",					// (ver3.0)
+	"$036 9 grotate",				// (ver3.0)
+	"$037 9 gsquare",				// (ver3.0)
+	"$038 9 gradf",					// (ver3.2)
+	"$039 9 objimage",				// (ver3.2)
+	"$03a 9 objskip",				// (ver3.2)
+	"$03b 9 objenable",				// (ver3.2)
+	"$03c 9 celload",				// (ver3.2)
+	"$03d 9 celdiv",				// (ver3.2)
+	"$03e 9 celput",				// (ver3.2)
+
+	//	enhanced command (ver3.0)
+
+	"$000 17 newcom",
+	"$001 17 querycom",
+	"$002 17 delcom",
+	"$003 17 cnvstow",
+	"$004 17 comres",
+	"$005 17 axobj",
+	"$006 17 winobj",
+	"$007 17 sendmsg",
+	"$008 17 comevent",
+	"$009 17 comevarg",
+	"$00a 17 sarrayconv",
+	//"$00b 17 variantref",
+
+	"$100 17 callfunc",
+	"$101 17 cnvwtos",
+	"$102 17 comevdisp",
+	"$103 17 libptr",
+
+	//	3.0 system vals
+
+	"$000 14 system",
+	"$001 14 hspstat",
+	"$002 14 hspver",
+	"$003 14 stat",
+	"$004 14 cnt",
+	"$005 14 err",
+	"$006 14 strsize",
+	"$007 14 looplev",					// (ver2.55)
+	"$008 14 sublev",					// (ver2.55)
+	"$009 14 iparam",					// (ver2.55)
+	"$00a 14 wparam",					// (ver2.55)
+	"$00b 14 lparam",					// (ver2.55)
+	"$00c 14 refstr",
+	"$00d 14 refdval",					// (3.0)
+
+	//	3.0 internal function
+	"$000 13 int",
+	"$001 13 rnd",
+	"$002 13 strlen",
+	"$003 13 length",					// (3.0)
+	"$004 13 length2",					// (3.0)
+	"$005 13 length3",					// (3.0)
+	"$006 13 length4",					// (3.0)
+	"$007 13 vartype",					// (3.0)
+	"$008 13 gettime",
+	"$009 13 peek",
+	"$00a 13 wpeek",
+	"$00b 13 lpeek",
+	"$00c 13 varptr",					// (3.0)
+	"$00d 13 varuse",					// (3.0)
+	"$00e 13 noteinfo",					// (3.0)
+	"$00f 13 instr",
+	"$010 13 abs",						// (3.0)
+	"$011 13 limit",					// (3.0)
+
+	//	3.0 string function
+	"$100 13 str",
+	"$101 13 strmid",
+	"$103 13 strf",
+	"$104 13 getpath",
+	"$105 13 strtrim",					// (3.2)
+
+	//	3.0 math function
+	"$180 13 sin",
+	"$181 13 cos",
+	"$182 13 tan",
+	"$183 13 atan",
+	"$184 13 sqrt",
+	"$185 13 double",
+	"$186 13 absf",
+	"$187 13 expf",
+	"$188 13 logf",
+	"$189 13 limitf",
+	"$18a 13 powf",						// (3.3)
+
+	//	3.0 external sysvar,function
+
+	"$000 10 mousex",
+	"$001 10 mousey",
+	"$002 10 mousew",					// (3.0)
+	"$003 10 hwnd",						// (3.0)
+	"$004 10 hinstance",				// (3.0)
+	"$005 10 hdc",						// (3.0)
+
+	"$100 10 ginfo",
+	"$101 10 objinfo",
+	"$102 10 dirinfo",
+	"$103 10 sysinfo",
+
+	"$ffffffff 5 thismod",
+
+	"*"
+	};
+
+
+・ Hsp3 intermediate code expansion (parameter)
+
+In the hsp3 intermediate code, the parameter is described after the instruction.
+Parameters are operated on the stack by Reverse Polish Notation.
+
+The procedure that the runtime performs during the actual parameter calculation is as follows.
+
+If the parameter is a variable or a fixed value (TYPE_VAR, TYPE_INUM, etc.)
+Put that value on the stack.
+If the parameter indicates an operator (TYPE_MARK),
+The operation of the two elements loaded on the stack is performed, and the result is stacked on the stack.
+The Code values that are interpreted as operators are:
+
+Code value Macro name Contents
+	--------------------------------------------------------------
+0 CALCCODE_ADD Addition (+)
+1 CALCCODE_SUB Subtraction (-)
+2 CALCCODE_MUL integration (*)
+3 CALCCODE_DIV division (/)
+4 CALCCODE_MOD Surplus (\\)
+5 CALCCODE_AND AND (&)
+6 CALCCODE_OR OR (|)
+7 CALCCODE_XOR Exclusive OR (^)
+8 CALCCODE_EQ Same comparison (=)
+9 CALCCODE_NE Non-identical comparison (!)
+10 Greater than CALCCODE_GT (<)
+11 Less than CALCCODE_LT (>)
+12 CALCCODE_GTEQ or higher (<=)
+13 CALCCODE_LTEQ or less (> =)
+14 CALCCODE_RR Bit shift right (>>)
+15 CALCCODE_LR Bit shift left (<<)
+
+0x3f (63) may be used as a special Code value.
+This is a dummy code if you omit the parameter
+It is to be inserted.
+(When specifying parameters that include abbreviations such as "1,, 2"
+Dummy is inserted in the form of "1", "dummy", "2". )
+
+
+・ Hsp3 intermediate code expansion (variable)
+
+In the intermediate code, parameters with the type of TYPE_VAR specify variables.
+is showing. This type of Code value indicates the variable ID.
+
+The variable ID is in the context (HSPCTX structure) of the runtime.
+It is an element of the variable information array held by the mem_var member.
+That is, hspctx-> mem_var [0] is the variable with ID0.
+
+Also, if an array is specified, immediately after
+TYPE_MARK type followed by an intermediate code with a'(' Code.
+Then the array elements are expanded as well as the parameters
+Finally, an intermediate code with TYPE_MARK type with')' Code appears.
+
+At the beginning of the line (first intermediate code), there is a code with the type of TYPE_VAR
+If there is, it indicates a variable assignment.
+As a parameter with the type of assignment operator TYPE_VAR following the variable
+Will be specified. The code for the assignment operator is a macro similar to a parameter
+It is possible to use (CALCCODE_ *).
+
+
+・ Hsp3 intermediate code expansion (comparison)
+
+Intermediate code with a type of TYPE_CMPCMD will issue a comparison instruction
+is showing.
+This type of Code value indicates an if instruction if it is 0 and an else instruction if it is 1.
+
+Only in the case of the comparison instruction, the offset value of 16-bit length is immediately after the intermediate code.
+It is embedded.
+The offset value is when the comparison instruction is incorrect (skips after the if instruction).
+If) the jump destination in CS is recorded as a relative value.
+
+
+・ Debug Info (DINFO) details
+
+The Debug Info (DINFO) segment contains information about script debugging.
+It is stored. Mainly, error display and debugging on the runtime
+It is used to assist the display on the window.
+(DINFO data is upward compatible with HSP2.x debug data.)
+Debug Info (DINFO) is applied to the object at the time of release (when the exe file is created).
+Not included.
+
+The DINFO data is followed by a string of unsigned 8-bit data.
+
+Value content
+	--------------------------------------------------------------
+255 End of data string
+254 Source file specification (* 1)
+253 Variable name data specification (* 2)
+252 The next 16-bit value is the CS offset to the next line
+Other CS offset values up to the next line
+
+	*1
+The next 24-bit value is the DS offset value that indicates the source file name.
+The following 16-bit value becomes the value of the referenced line number.
+If the DS offset value is 0, only the line number is specified.
+	*2
+The next 24-bit value is the DS offset value to the variable name.
+Furthermore, 0 is stored as a dummy value for the following 16-bit value.
+This data is stored in the Debug Info (DINFO) segment in the order of variable IDs.
+It is set continuously.
+
+
+Change log
+
+	2011/05/12 ver0.2
+
+Partially revised to match HSP3.3.
+
+	2007/11/01 ver0.1
+
+First version.
+
+
+contact address
+
+For inquiries, impressions, and opinions regarding OpenHSP, please send them to the following e-mail address.
+Please note that it may take some time to reply to the email.
+
+        Homepage: http://www.onionsoft.net/openhsp/
+                  http://hsp.tv/
+        e-mail  : onitama@onionsoft.net
+
+-------------------------------------------------------------------------------
+                                                HSP users manual / end of file 
+-------------------------------------------------------------------------------

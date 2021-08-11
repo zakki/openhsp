@@ -30,7 +30,7 @@ HSP runtime information
 System variables
 
 %inst
-HSP runtime information is assigned as an integer value. The following information is the sum of all the following information.
+HSP runtime information is assigned as an integer value. All of the following information is the sum of the values.
  Debug mode = 1
  When the screen saver is started = 2
  Console mode = 16
@@ -178,7 +178,7 @@ Number of bytes to read
 System variables
 
 %inst
-The number of bytes read by the getstr, exist, bload instructions, etc. is assigned.
+The number of bytes read by the getstr, exist, bload command, etc. is assigned.
 
 %href
 bload
@@ -268,7 +268,7 @@ Let
 ;---------------------------------------------------------------------
 %index
 wparam
-WParam on interrupt
+WParam at interrupt
 
 %group
 System variables
@@ -408,7 +408,7 @@ Let
 ;---------------------------------------------------------------------
 %index
 notemax
-Number of lines in memory notepad
+Number of lines in the memory notepad
 
 %group
 System variables
@@ -927,7 +927,7 @@ Window ID at the time of message interrupt
 System variables
 
 %inst
-The window ID at the time of message interrupt set by the oncmd instruction is assigned.
+The window ID at the time of message interrupt set by the oncmd command is assigned.
 ^
 * This system variable is defined in hspdef.as as a macro.
 
@@ -1134,7 +1134,7 @@ System variables
 %inst
 The path of the HSPTV directory (folder) is assigned as a character string.
 It can be used to refer to the resources provided as standard in the HSPTV directory.
-dir_tv is retrieved only during debug execution and returns an empty string ("") if it is running as an executable (.exe) file. Note that when creating an executable file for software that uses files in the HSPTV directory, it is necessary to specify the required files with the #pack instruction.
+dir_tv is retrieved only during debug execution and returns an empty string ("") if it is running as an run (.exe) file. Note that when creating an executable file for software that uses files in the HSPTV directory, it is necessary to specify the required files with the #pack command.
 ^
 * This system variable is defined in hspdef.as as a macro.
 

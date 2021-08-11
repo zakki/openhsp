@@ -1,0 +1,425 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+
+<html lang="ja">
+
+	<head>
+		<meta http-equiv="content-type" content="text/html;charset=UTF-8">
+<meta lang = "ja" name = "keywords" content = "HSP, Hot Soup Processor, HSPTV, HSP3, HSP3.2, ONION software, onitama, hot soup, processor, interpreter, language, HSP">
+		<meta name="generator" content="Adobe GoLive">
+<title> Introduction to HSP </title>
+		<link href="main.css" type="text/css" rel="stylesheet" media="all">
+	</head>
+
+	<body background="images/back6.gif" link="blue" leftmargin="0" marginheight="0" marginwidth="0" topmargin="0">
+		<div align="center">
+			
+			<table width="800" border="0" cellspacing="0" cellpadding="0">
+				<tr>
+					<td align="left" valign="top" bgcolor="white" width="169">
+					
+					<br>
+						<table width="150" border="0" cellspacing="0" cellpadding="0" height="354">
+							<tr height="30">
+								<td height="30" background="images/back_menuue.gif">
+									<p class="leftsubmenu"><a href="COVER.HTM">Start!</a></p>
+								</td>
+							</tr>
+							<tr height="30">
+								<td height="30" background="images/back_submenu.gif">
+									<p class="leftsubmenu"><a href="START-1.HTM">Step1</a></p>
+								</td>
+							</tr>
+							<tr height="30">
+								<td height="30" background="images/back_submenu.gif">
+									<p class="leftsubmenu"><a href="START-2.HTM">Step2</a></p>
+								</td>
+							</tr>
+							<tr height="30">
+								<td height="30" background="images/back_submenu.gif">
+									<p class="leftsubmenu"><a href="START-3.HTM">Step3</a></p>
+								</td>
+							</tr>
+							<tr height="30">
+								<td height="30" background="images/back_submenu.gif">
+									<p class="leftsubmenu"><a href="START-4.HTM">Step4</a></p>
+								</td>
+							</tr>
+							<tr height="30">
+								<td height="30" background="images/back_submenu.gif">
+									<p class="leftsubmenu" style="color:#009999; font-weight:bold;">Step5</p>
+								</td>
+							</tr>
+							<tr height="30">
+								<td height="30" background="images/back_submenu.gif">
+									<p class="leftsubmenu"><a href="START-6.HTM">Step6</a></p>
+								</td>
+							</tr>
+							<tr height="30">
+								<td height="30" background="images/back_submenu.gif">
+									<p class="leftsubmenu"><a href="START-7.HTM">Step7</a></p>
+								</td>
+							</tr>
+							<tr height="30">
+								<td height="30" background="images/back_submenu.gif">
+									<p class="leftsubmenu"><a href="START-8.HTM">Step8</a></p>
+								</td>
+							</tr>
+							<tr height="30">
+								<td height="30" background="images/back_submenu.gif">
+									<p class="leftsubmenu"><a href="START-9.HTM">Final</a></p>
+								</td>
+							</tr>
+							<tr height="30">
+								<td height="30" background="images/back_submenu.gif">
+									<p class="leftsubmenu"><a href="THANKS.HTM">Special thanks</a></p>
+								</td>
+							</tr>
+							<tr height="30">
+								<td height="30" background="images/back_menusita.gif">
+									<p class="leftsubmenu"><a href="START.HTM">Cover</a></p>
+								</td>
+							</tr>
+						</table>
+						<br>
+					</td>
+					<td align="left" valign="top" bgcolor="white">
+						<div class="contents">
+							<div class="section">
+<h2 class = "play"> step5: Let's flag the script </h2>
+								<br>
+<p> You know that a script is a collection of instructions and is executed in order from the first line. If you execute all the lines, it may stop as it is. Now let's not only learn the instructions that control the flow of the program. It seems difficult to write like this. <br>
+									<br>
+Now let's flag the script. Eh ?? What is a flag ?? That is to put a mark on a specific line in the script. When a mountaineer climbs a mountain, he stands up. For example, this script, <br>
+									<br>
+								</p>
+								<table width="592" border="0" cellspacing="0" cellpadding="0">
+									<tr>
+										<td width="45">
+											<p><b>*hata1</b></p>
+										</td>
+										<td>
+											<p></p>
+										</td>
+									</tr>
+									<tr>
+										<td width="45">
+											<p></p>
+										</td>
+										<td>
+											<p><b>cls</b></p>
+										</td>
+									</tr>
+									<tr>
+										<td width="45">
+											<p><b>*hata2</b></p>
+										</td>
+										<td>
+											<p></p>
+										</td>
+									</tr>
+									<tr>
+										<td width="45">
+											<p></p>
+										</td>
+										<td>
+<p> <b> mes "Yes, hello" </b> </p>
+										</td>
+									</tr>
+									<tr>
+										<td width="45">
+											<p><b>*hata3</b></p>
+										</td>
+										<td>
+											<p></p>
+										</td>
+									</tr>
+									<tr>
+										<td width="45">
+											<p></p>
+										</td>
+										<td>
+<p> <b> mes "This is a test to raise a flag" </b> </p>
+										</td>
+									</tr>
+								</table>
+								<p><br>
+There are three flags on it. Yes, the lines "* hata1", "* hata2", and "* hata3". By entering the name in English letters after the "* (asterisk)", you can put your favorite name anywhere you like and raise the flag. The promise here is <br>
+									<br>
+								</p>
+								<img src="images/btn_extention.gif">
+								<div class="enroll">
+									<ol>
+Do not put TAB first, unlike the <li> instruction
+										
+Name after <li> * with alphabetic characters (up to 59 characters)
+										
+<li> The same name must not exist more than once
+									
+									</ol>
+								</div>
+								<p><br>
+However, I think the question naturally arises, is there anything just because I had a hard time raising the flag? If you run the script in the above example with F5, <br>
+									<br>
+<b> Yes, hello <br>
+It's a test to raise a flag </b> <br>
+									<br>
+As you have learned so far, you will only get the result of executing the instructions in order from the first line. It seems that the flag that was set up is also ignored. Now let's modify the script as follows: <br>
+									<br>
+								</p>
+								<table width="592" border="0" cellspacing="0" cellpadding="0">
+									<tr>
+										<td width="45">
+											<p><b>*hata1</b></p>
+										</td>
+										<td>
+											<p></p>
+										</td>
+									</tr>
+									<tr>
+										<td width="45">
+											<p></p>
+										</td>
+										<td>
+											<p><b>cls<br>
+														goto *hata3</b></p>
+										</td>
+									</tr>
+									<tr>
+										<td width="45">
+											<p><b>*hata2</b></p>
+										</td>
+										<td>
+											<p></p>
+										</td>
+									</tr>
+									<tr>
+										<td width="45">
+											<p></p>
+										</td>
+										<td>
+<p> <b> mes "Yes, hello" </b> </p>
+										</td>
+									</tr>
+									<tr>
+										<td width="45">
+											<p><b>*hata3</b></p>
+										</td>
+										<td>
+											<p></p>
+										</td>
+									</tr>
+									<tr>
+										<td width="45">
+											<p></p>
+										</td>
+										<td>
+<p> <b> mes "This is a test to raise a flag" </b> </p>
+										</td>
+									</tr>
+								</table>
+								<p><br>
+This time, the mysterious command "go to * hata3" came out on the third line. For the time being, let's execute it without thinking about anything. <br>
+									<br>
+<b> This is a test to raise a flag </b> <br>
+									<br>
+Only the line that says is coming out. This is because the command "goto" changed the flow of the script. In other words, the "goto" instruction has the function of changing the execution flow to the flag with the name specified by the parameter. For the first time, the flags that have been raised will be useful. The instruction executed from the 1st line skips the 4th and 5th lines by the "goto" instruction on the 3rd line, suddenly jumps to the 6th line with "* hata3", and is executed again from there. I went. <br>
+									<br>
+The purpose of raising the flag in this way is to specify the location when you want to take the script flow to another location. And this is officially called "label" in HSP. Let's stop the name of these flags and call them labels. It's cool. That's why the 6th line is a label named "* hata3". The "goto" instruction jumps to the specified label. <br>
+									<br>
+And with this label, the application is even wider. Now let's enter a new script like this: <br>
+									<br>
+								</p>
+								<table width="592" border="0" cellspacing="0" cellpadding="0">
+									<tr>
+										<td width="45"></td>
+										<td>
+											<p><b>cls<br>
+mes "Press the button" <br>
+													button "PUSH",*hata1<br>
+													button "BYE",*hata2<br>
+														stop</b></p>
+										</td>
+									</tr>
+									<tr>
+										<td width="45">
+											<p><b>*hata1</b></p>
+										</td>
+										<td>
+											<p></p>
+										</td>
+									</tr>
+									<tr>
+										<td width="45">
+											<p></p>
+										</td>
+										<td>
+<p> <b> mes "Oh, I pushed it" <br>
+														stop</b></p>
+										</td>
+									</tr>
+									<tr>
+										<td width="45">
+											<p><b>*hata2</b></p>
+										</td>
+										<td>
+											<p></p>
+										</td>
+									</tr>
+									<tr>
+										<td width="45">
+											<p></p>
+										</td>
+										<td>
+											<p><b>end</b></p>
+										</td>
+									</tr>
+								</table>
+<p> You've come up with new instructions, stop and end. The stop instruction stops execution on the spot, and the end instruction closes the window and terminates the program itself. Keep in mind that it is an important instruction to control the flow together with the goto instruction. </p>
+								<br>
+								<img src="images/btn_extention.gif" alt="" height="29" width="29" border="0"><br>
+								<table width="589" border="0" cellspacing="2" cellpadding="0" bgcolor="#ccffff">
+									<tr>
+										<td align="center" bgcolor="#ccffff">
+<p> Statement </p>
+										</td>
+										<td align="center" bgcolor="#ccffff">
+<p> Parameters </p>
+										</td>
+										<td align="center" bgcolor="#ccffff">
+<p> Meaning </p>
+										</td>
+									</tr>
+									<tr>
+										<td align="center" bgcolor="white">
+											<p>stop</p>
+										</td>
+										<td align="center" bgcolor="white">
+<p> None </p>
+										</td>
+										<td align="center" bgcolor="white">
+<p> Stop execution </p>
+										</td>
+									</tr>
+									<tr>
+										<td align="center" bgcolor="white">
+											<p>end</p>
+										</td>
+										<td align="center" bgcolor="white">
+<p> None </p>
+										</td>
+										<td align="center" bgcolor="white">
+<p> End execution </p>
+										</td>
+									</tr>
+									<tr>
+										<td align="center" bgcolor="white">
+											<p>goto</p>
+										</td>
+										<td align="center" bgcolor="white">
+<p> Label </p>
+										</td>
+										<td align="center" bgcolor="white">
+<p> Jump to the specified label </p>
+										</td>
+									</tr>
+									<tr>
+										<td align="center" bgcolor="white">
+											<p>button<br>
+											</p>
+										</td>
+										<td align="center" bgcolor="white">
+<p> Strings, labels <br>
+											</p>
+										</td>
+										<td align="center" bgcolor="white">
+<p> Display button, jump to specified label when pressed </p>
+										</td>
+									</tr>
+								</table>
+								<br>
+<p> Then let's execute it immediately. Now, the button has finally appeared. If you click on the button that says "PUSH", you should see the message "Oh, you pressed it." Then, when you click the "BYE" button, the window closes and ends. <br>
+									<br>
+The "button" instruction that first appeared here has the following functions. <br>
+									<br>
+									<img src="images/btn_extention.gif"></p>
+								<div class="enroll">
+									<ol>
+<li> Show pushbutton
+										
+Display the specified character on the <li> button
+										
+Jump to the specified label when the <li> button is pressed
+									
+									</ol>
+								</div>
+								<p><br>
+This "button" instruction has two parameters unlike the previous instructions. In the case of the third line, there is a part called "" PUSH "" and a part called "* hata1". Even if there are multiple parameters attached to the instruction like this, it will come out more and more from now on. At that time, it is a promise to put ", (comma)" between the parameters. So <br>
+									<br>
+								</p>
+								<table border="0" cellspacing="0" cellpadding="0">
+									<tr>
+										<td align="center" width="40">
+											<p>button</p>
+										</td>
+										<td align="center" width="80">
+											<p>"PUSH"<b>,</b></p>
+										</td>
+										<td align="center" width="80">
+											<p>*hata1</p>
+										</td>
+									</tr>
+									<tr>
+										<td align="center" width="40">
+<p> ｜ </p>
+										</td>
+										<td align="center" width="80">
+<p> ｜ </p>
+										</td>
+										<td align="center" width="80">
+<p> ｜ </p>
+										</td>
+									</tr>
+									<tr>
+										<td align="center" width="40">
+<p> Instruction </p>
+										</td>
+										<td align="center" width="80">
+<p> Parameter 1 </p>
+										</td>
+										<td align="center" width="80">
+<p> Parameter 2 </p>
+										</td>
+									</tr>
+								</table>
+								<br>
+It will be separated by <p>. The "button" command specifies the character string to be displayed on the button in parameter 1 and the label to jump when pressed in parameter 2. <br>
+									<br>
+What happens when you press the "BYE" button? It jumps to the label "* hata2", and beyond that there is an "end" instruction. This command is very easy. As the name implies, it is an instruction that ends the script. When the "end" instruction is executed, the window is closed and the application itself is terminated. It is the same as selecting alt + F4 or the "Close" menu. <br>
+									<br>
+By the way, this will further expand the range of applications. By pressing a button, another image is displayed, another message is displayed, and so on, there is a great possibility. Let's review here a little, and if you remember it properly, let's move on to the next. </p>
+							</div>
+							<div class="section">
+								<table>
+									<tr>
+										<td><a href="START-6.HTM"><img src="images/btn_next.gif" alt="" height="29" width="29" border="0"></a></td>
+<td> <font size = "-1"> <a href="START-6.HTM"> step6: Is this the launcher? !! </a> </font> </td>
+									</tr>
+								</table>
+							</div>
+						</div>
+					</td>
+				</tr>
+			</table>
+															<div align="center">
+			<table width="800" border="0" cellspacing="0" cellpadding="0">
+					<tr>
+					<td align="center">
+							<p style="color:#333333; font-size:10px; margin:5px 0px">ONION software Copyright 1997-2009(c) All rights reserved.<br>
+							</p>
+						</td>
+				</tr>
+				</table>
+		</div></div>
+	</body>
+
+</html>

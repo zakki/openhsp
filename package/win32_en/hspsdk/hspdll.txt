@@ -1,0 +1,2458 @@
+------------------------------------------------------------------------------
+Hot Soup Processor ver3.3                           HSP : Hot Soup Processor  
+SDK Specification Guide copyright 1997-2011 (c) onion software
+------------------------------------------------------------------------------
+
+E Plugin development manual
+
+Introduction
+
+This text is for plug-in development compatible with Hot Soup Processor ver3.0 or later.
+Contains commentary and resources for.
+HSP plugins are an advanced way to extend HSP.
+It is a means for those who want to use HSP more advanced, so if you do not understand
+It doesn't matter if you don't read it.
+
+This text is intended for anyone with knowledge of the C or C ++ language.
+Also, if you have knowledge of Windows programming, you can use HSP resources more deeply.
+You can use it. Even if you don't understand Windows programming at all
+Some programming is possible, such as rewriting the screen only with memory access
+is.
+
+
+HSP extension plug-in regulations
+
+External programs recognized by HSP to extend various resources and functions
+It is called "HSP extension plug-in".
+HSP extension plug-in is a "DLL program" that calls external files,
+A "static library" that calls statically linked ones
+It is available from either of.
+
+There are no particular restrictions on creating "HSP extension plug-ins". you,
+Whether you make it for personal use or for distribution or sale
+You may operate it without the permission of the author of HSP (ONION software).
+
+However, problems and troubles caused by using "HSP extension plug-in"
+HSP author (ONION software) cannot take responsibility.
+
+When distributing "HSP extension plug-in", it is an extension plug-in compatible with HSP.
+Please specify the fact in the document etc. and get the HSP main body as much as possible,
+
+"HSP TV!"
+	http://hsp.tv/
+
+or,
+
+"Hot Soup Processor Page"
+	http://www.onionsoft.net/hsp/
+
+I would be grateful if you could specify.
+
+Also, the extension of "HSP extension plug-in DLL" should use either DLL or HPI.
+Recommended. The extension HPI is used to distinguish it from a normal DLL and in the Windows settings.
+It is for those who want to deal with the case where the extension DLL disappears.
+
+
+Version history of this document
+
+¡ HSP ver3.2 ƒÀ4
+
+Fixed BMSCR structure members added in HSP3.2.
+The header file in the hpi3sample folder is also updated.
+
+¡ HSP ver3.1ƒÀ9
+
+Fixed because the member contents of HSPCTX became incompatible in ƒÀ8.
+(Fixed the HSPCTX structure.)
+If you are writing the HSP3 plug-in with ƒÀ8, sorry to trouble you, but with the ƒÀ9 version
+Please rebuild it again.
+
+¡ HSP ver3.1ƒÀ8
+
+Added the source of the new plugin.
+Added a service related to variable names. (Fixed the HSPEXINFO structure.)
+
+¡ HSP ver3.1 ƒÀ7
+
+The folder structure has been partially changed.
+The standard plug-in source code is included as a sample source.
+The hpi3type project is included as a sample to extend the variable type.
+A debug version of hsp3.exe that does not catch exception errors (Windows errors) is included.
+The script editor SDK is included.
+
+¡ HSP ver3.1 ƒÀ6
+
+Added multithreaded libraries, hsp3dlib_mt.lib and hsp3lib_mt.lib.
+
+¡ HSP ver3.1 ƒÀ4
+
+Fixed the HSPEXINFO structure.
+
+¡ HSP ver3.0a
+
+Fixed the behavior of the HspFunc_prm_getv function in the HSPEXINFO structure.
+It is compatible with HSP2.61 and the value of mpval can be referenced.
+Added the variable type extension number parameter to #regcmd.
+
+¡ HSP ver3.0 ƒÀ12
+
+Fixed so that ObjectWrite is not called when the array is not specified.
+
+¡ HSP ver3.0ƒÀ11
+
+Corrected function parameter acquisition specifications.
+Added PVal identification information HSPVAR_SUPPORT_TEMPVAR (temporary variable).
+Added support functions for array variable operations such as HspFunc_dim.
+
+¡ HSP ver3.0 ƒÀ9
+
+Part of the explanation has been supplemented and corrected.
+
+¡ HSP ver3.0 ƒÀ8
+
+Fixed the HSPEXINFO structure.
+Please note that you will need to rebuild the plugin source.
+
+¡ HSP ver3.0 ƒÀ7
+
+Added "About HSP header information" and "About library information".
+
+¡ HSP ver3.0 ƒÀ6
+
+The directory structure has been changed.
+
+¡ HSP ver3.0ƒÀ2
+
+Changed to distribute HSP SDK independently from HSP full set.
+
+¡ HSP ver3.0 ƒ¿12
+
+Partially modified the HspVarProc structure.
+
+¡ HSP ver3.0ƒ¿11
+
+Partially modified the HspVarProc structure.
+The HSPEXINFO structure has been partially modified.
+
+¡ HSP ver3.0 ƒ¿10
+
+Partially modified the HspVarProc structure.
+The HSPEXINFO structure has been partially modified.
+
+¡ HSP ver3.0 ƒ¿8
+
+The HSPCTX structure has been partially modified.
+
+¡ HSP ver3.0 ƒ¿7
+
+The code_getv and code_setv functions are now in code_getva and code_setva, respectively.
+It has changed. Since the value to be handled has also changed, change the previous source
+Thank you.
+Partially changed the contents of the HspVarProc structure.
+
+¡ HSP ver3.0 ƒ¿5
+
+Updated part of the structure.
+Includes HSP3Var Function sample.
+
+¡ HSP ver3.0 ƒ¿4
+
+Includes samples and documentation for plug-in creation.
+It is not compatible with plugins up to ver 2.61.
+Also, please note that the specifications are subject to change for the beta version.
+
+
+About the sample program
+
+Sample programs, header files for plug-in creation, etc.
+It is located in the "hpi3sample" directory.
+The included sample source contains some example creations.
+
+
+What you need for plugin development
+
+When using HSP extension plug-in DLL, Windows 32bit DLL is dynamically
+Link For static libraries, link with HSP runtime
+You will be able to create a runtime that includes the plug-in.
+
+Windows APIs and libraries can be used for plug-in development without any restrictions.
+Any language is acceptable as long as you can create DLLs and libraries.
+In this text, basically as a tool for creating DLLs
+The explanation is for Microsoft Visual C ++ (6.0 or later).
+You can also create DLLs in Borland C ++ or C ++ Builder, but compile and link
+You may need to make some modifications for this.
+
+
+Differences from plug-ins up to Ver2.61
+
+In HSP3, the definition of plugin is slightly different from the previous version.
+HSP3 has a function to call an external DLL with an arbitrary argument, and simply call the DLL.
+If you just do it, it will be distinguished from extension plugins.
+The HSP3 plug-in is a dedicated DLL that works in conjunction with the HSP3 system.
+You can access more resources than a regular external DLL call.
+The differences between the two are summarized below.
+
+E HSP3 plug-in
+
+Registered by #regcmd and #cmd commands
+New instructions / functions and variable types can be created
+Access to variable type manipulation and management information
+Automatic buffer allocation and event capture are possible
+
+-DLL call
+
+Registered by #uselib and #func instructions
+New instructions can be created
+Access to variable type manipulation and management information
+Automatic buffer allocation and event capture are possible
+
+Operates as an HSP3 plug-in by modifying the source code of the plug-in.
+Because you can let it, you can bring out all the functions by all means
+We would be grateful if you could release it as a new HSP3 plug-in.
+
+
+Compatibility with Ver2.61 plug-in
+
+Currently, it supports all plug-in rules of HSP2.5 or later,
+Please note that there are some restrictions due to changes in the internal specifications of HSP3.0.
+
+-The BMSCR structure can only refer to the fields from flag to color.
+-The PVal structure is compatible with the ver2.5 PVAL2 structure.
+-The flag field (type type value) and len field (array information) of the PVal structure
+It cannot be rewritten on the DLL side.
+-The string type array variable cannot be accessed from the PVal structure.
+-The same buffer as refstr is used for the stmp field of the HSPEXINFO structure.
+
+In other respects, the same information as HSP ver2.61 will be passed.
+Please note that the following restrictions will occur with HSP2.61 compatible plug-ins.
+please.
+Also, plugin compatibility guarantees the operation of all HSP 2.x plugins.
+It's not a thing.
+
+-When assigning a value to a variable from a plug-in, the buffer is not automatically expanded.
+(Be careful not to cause a buffer overflow)
+
+
+HSP3 system overview
+
+The HSP3 system has a structure in which the execution part of the code is divided into several blocks.
+HSP3TypeFunction performs execution and reference for each keyword category (type),
+HSP3VarFunction manages data for each type stored in variables.
+Each block can be separated arbitrarily and distributed to a plug-in (external DLL)
+It is possible.
+
+HSP3 core system
+
+HSP3 Code Manager
+
+HSP3TypeFunction (Built-in instruction)
+HSP3TypeFunction (drawing command)
+HSP3TypeFunction (multimedia instruction)
+HSP3TypeFunction (extended instruction)
+HSP3TypeFunction (mathematical function)
+
+HSP3 Storage Manager
+
+		HSP3VarFunction (int)
+		HSP3VarFunction (str)
+		HSP3VarFunction (double)
+
+		HSP3VarFunction (unicode) (*option)
+		HSP3VarFunction (variant) (*option)
+		HSP3VarFunction (COM automation) (*option)
+
+
+HSP3 Plugin Overview
+
+HSP3 plugins extend HSP3 system in several ways
+can do.
+Here, we will explain the outline and method of expansion by dividing it into three methods.
+
+¡ HSP3 DLL Function
+
+You can register new HSP instructions as an external DLL.
+Access various system information such as HSP3 parameters and variables.
+can.
+In most cases, it can be extended in this way.
+Items that cannot be extended with HSP3DLL Function include the addition of functions and system variables.
+Fine system control such as adding variable types is applicable.
+If you want to extend these, HSP3TypeFunction and HSP3VarFunction
+Must be extended using.
+For details, see "Instruction extension using HSP3DLL Function".
+please refer to.
+Most of the extension plug-ins included with HSP3 are created in this format.
+It has been.
+
+¡ HSP3 Type Function
+
+Extends instructions, system variables, and functions.
+One FunctionType is assigned to one HSP3TypeFunction.
+Sub IDs from 0 to 0xffffffff are assigned to one HSP3TypeFunction.
+You can define keywords.
+When HSP is executed, HSP3TypeFunction will be displayed when the registered keyword appears.
+It will be called.
+HSP3TypeFunction is used at initialization, termination, instruction execution, value reference, and more.
+You can set a callback function each time an HSP event occurs.
+Inside each callback function, while combining with sub ID information etc.
+It must be created to perform the function.
+Until HSP2, one function was prepared for each keyword (instruction),
+From HSP3, you only need to prepare a function for each HSP3TypeFunction.
+Become.
+Think of FunctionType as a number to roughly divide the categories.
+From the aspect of efficiency, assign different FunctionType to each system variable, function, and instruction.
+It is recommended to keep it.
+FunctionType is assigned a value from 16 in the order in which the extension plug-in is registered.
+increase. FunctionType can be registered up to 8192.
+
+¡ HSP3Var Function
+
+Extends the type to store in a variable.
+One VarType is assigned to one HSP3VarFunction.
+One HSP3VarFunction is memory management for storing values, various operations,
+You need to do type conversion, array management, etc.
+Note that VarType is a different value than FunctionType.
+The same applies to integers (int), real numbers (double), and character strings (string) provided as standard.
+It is made by a mechanism. For the type used as standard, as a sample
+The source code is provided.
+
+
+About instruction extension using HSP3DLL Function
+
+In HSP3.0, as a more convenient means of instruction extension, a function to freely call an external DLL is provided.
+I'm waiting. This is for calling WIN32API and HSP2.5 and later plugins.
+It plays a role, but also provides other functionality as an extension for HSP3.
+It is possible.
+DLL calls can be defined and executed as follows.
+
+example:
+#uselib "a.dll"; use "a.dll"
+#func newfunc newfunc pexinfo; Register newfunc instruction
+newfunc 1,2,3; execute new instruction
+
+In the above example, the function exported from "a.dll" as "newfunc"
+After registering as a newfunc instruction, it is called.
+On the called newfunc function side,
+
+#define EXPORT extern "C" __declspec (dllexport) // For VC ++
+
+	EXPORT BOOL WINAPI newfunc( HSPEXINFO *hei )
+	{
+		int p1,p2,p3;
+p1 = hei-> HspFunc_prm_getdi (0); // Parameter 1: Integer
+p2 = hei-> HspFunc_prm_getdi (0); // Parameter 2: Integer
+p3 = hei-> HspFunc_prm_getdi (0); // Parameter 3: Integer
+		return 0;
+	}
+
+You can get the parameters directly and perform any processing in the form of.
+This method is the same as the plug-in convention $ 202 in HSP 2.61.
+Since all functions and information in the HSPEXINFO structure can be used,
+Please consider it as a means to easily add instructions.
+However, this method is only provided as a means of extending the instruction.
+Finer system control such as adding functions and system variables and adding variable types
+If you want to do it, use HSP3TypeFunction and HSP3VarFunction as before.
+Needs expansion.
+
+
+About type ID
+
+HSP3 uses type IDs to distinguish between different types such as numbers and strings
+I am doing it.
+The IDs used as the type of value stored in the variable are:
+
+#define HSPVAR_FLAG_STR 2 // SJIS string (str)
+#define HSPVAR_FLAG_DOUBLE 3 // 64bit real number (double)
+#define HSPVAR_FLAG_INT 4 // 32bit integer (int)
+
+Any other value will be treated as an extended VarType.
+The parameters and information used by the plug-in use these values as standard.
+Can be handled. Also, the above type can be used as the value returned by the plugin function.
+Can be specified.
+The character string is in C format (8-bit string with end code 0 added) and Japanese is ShiftJIS.
+Please note that it is stored in code.
+
+The type ID may indicate the code of HSP3TypeFunction in addition to the type information.
+It will be used. (Also known as Function Type)
+
+#define TYPE_INTCMD 8 // Built-in instructions
+#define TYPE_EXTCMD 9 // Built-in GUI instruction
+#define TYPE_EXTSYSVAR 10 // Built-in GUI system variables
+#define TYPE_CMPCMD 11 // Built-in instruction (if / else)
+#define TYPE_MODCMD 12 // Module instruction
+#define TYPE_INTFUNC 13 // Built-in function
+#define TYPE_SYSVAR 14 // Built-in system variables
+#define TYPE_PROGCMD 15 // Built-in instruction (program control)
+
+Type ID 16 and later will be the type extended by the plug-in.
+These type IDs don't need to be very aware inside the plugin.
+Built-in instructions by replacing the built-in type ID or defining keywords
+It is possible to replace itself or change the keyword.
+In HSP (console mode) for command prompt, the type of built-in GUI is
+It will be invalid.
+
+
+Initialization of HSP3TypeFunction
+
+The HSP3TypeFunction plugin is called by the C function form (stdcall).
+When calling as a DLL, write the following preprocessor instructions in the HSP source
+please.
+
+#regcmd "initialization function name", "DLL file name", variable type extension number
+
+This will cause the initialization function in the DLL file specified when the HSP runtime starts
+Will be called.
+The initialization function name must specify the exact name exported from the DLL
+It will not be. When exporting from VC ++, "_" is at the beginning and at the end
+Since "@ 4" is added, describe the name including it.
+(For DLLs created with a compiler other than VC ++, the export name rule is
+Varies. For details, refer to the materials for each environment. )
+The variable type extension number is a parameter specified when extending the HSP3VarFunction.
+If you want to extend only the HSP3TypeFunction, you can either 0 or omit it.
+When extending HSP3VarFunction, it is necessary to specify the number to be extended.
+
+In the included sample, it is called "hsp3cmdinit" in "hpi3sample.dll".
+The function is registered, but in that case,
+
+example:
+		#regcmd "_hsp3cmdinit@4","hpi3sample.dll"
+
+It looks like.
+The initialization function receives the following parameters:
+(EXPORT macro can be used only in VC ++. In other environments, it is exported separately.
+You need to add a specification to do so. )
+
+	EXPORT void WINAPI hsp3cmdinit( HSP3TYPEINFO *info )
+	{
+// Plugin initialization (register execution / termination processing)
+	//
+hsp3sdk_init (info); // Initialize SDK (do it first)
+info-> cmdfunc = cmdfunc; // Registration of execution function (cmdfunc)
+info-> reffunc = reffunc; // Registration of reference function (reffunc)
+info-> termfunc = termfunc; // Registration of termination function (termfunc)
+	}
+
+In the initialization function, specify the appropriate function for the HSP3TYPEINFO structure provided first.
+This will enable the plug-in function.
+The HSP3TYPEINFO structure has the following structure.
+
+	typedef struct {
+// Information for each type
+// (* items are set in the parent application)
+		//
+short type; // * type type value
+short option; // * Option information
+HSPCTX * hspctx; // * Pointer to HSP Context structure
+HSPEXINFO * hspexinfo; // * Pointer to HSPEXINFO structure
+
+// Function information
+		//
+int (* cmdfunc) (int); // Command receiving function
+void * (* reffunc) (int *, int); // Reference receiving function
+int (* termfunc) (int); // End receiving function
+
+// Event callback function
+		//
+int (* msgfunc) (int, int, int); // Window message callback
+int (* eventfunc) (int, int, int, void *); // HSP event callback
+
+	} HSP3TYPEINFO;
+
+hsp3sdk_init has a function that supports plugin creation
+It is included in "hsp3plugin.cpp". When using hsp3plugin.cpp,
+Please call it first.
+After that, the execution function (cmdfunc), the reference function (reffunc), and the termination function (termfunc)
+Substitute for the structure. (If you don't need it, you don't need to substitute it.)
+If necessary, you can also register an event callback function (eventfunc) etc.
+can. When using the event callback function, specify option separately
+need to do it. For more information, see the event callback function.
+please refer to.
+The term func is a function that is called at the end of the HSP runtime.
+Specify. Be sure to release the resources reserved in the plugin at the end.
+please.
+
+This completes the initialization.
+After that, it is registered when the keyword registered at the time of execution appears.
+The function will be called.
+Keyword registration is described as follows in the script.
+
+#cmd new keyword sub ID
+
+#cmd must always be written after #regcmd.
+Below is an example from the sample.
+
+example:
+		#cmd newcmd $000
+		#cmd newcmd2 $001
+		#cmd newcmd3 $002
+
+In the above example, the keyword "newcmd" is sub-ID0.
+The keyword "newcmd2" is sub ID1,
+The keyword "newcmd3" is registered as sub ID2.
+
+cmdfunc (command receiving function) has registered keywords of HSP
+It is a processing routine when it is executed as an instruction.
+The simplest command receiving function looks like this:
+
+	static int cmdfunc( int cmd )
+	{
+// Execution processing (called when executing an instruction)
+		//
+code_next (); // Get the following code (required first)
+
+switch (cmd) {// Branch for each subcommand
+
+		case 0x00:								// newcmd
+			:
+Processing when the sub ID is 0
+			:
+			break;
+
+		default:
+			puterror( HSPERR_UNSUPPORTED_FUNCTION );
+		}
+		return RUNMODE_RUN;
+	}
+
+The sub ID is passed as an argument to cmdfunc.
+It is standard to describe the corresponding processing separately by a switch statement etc.
+It will be the creation method.
+The return value can be selected from the following.
+
+RUNMODE_RUN // Continue execution
+RUNMODE_WAIT // wait
+RUNMODE_AWAIT // await
+RUNMODE_STOP // Stop execution
+RUNMODE_END // End execution
+
+In reffunc (reference receiving function), the registered keyword is
+Performs processing when it appears as a part of an expression in HSP parameters.
+The reference receiving function receives the sub-ID information,
+As a result, it should return some value.
+In the reference receiving function, either a system variable or a function
+You can create it.
+A system variable that returns a value determined for each sub ID
+Also, the one that gets the parameter in parentheses and returns the result based on it
+It can be treated as a function.
+
+The simplest, reference-receiving function looks like this:
+
+static int ref_ival; // Variable area for return value
+
+	static void *reffunc( int *type_res, int cmd )
+	{
+// System variable execution process (called when referencing a value)
+	//
+switch (cmd) {// Branch for each subcommand
+
+	case 0x00:					// newcmd
+
+ref_ival = 123; // Set the return value to ival
+		break;
+
+	default:
+		puterror( HSPERR_UNSUPPORTED_FUNCTION );
+	}
+
+* type_res = HSPVAR_FLAG_INT; // Specify the return type as an integer
+	return (void *)&ref_ival;
+	}
+
+In the above example, sub ID0 (newcmd) is treated as a system variable.
+If sub ID0 appears, the value 123 is an integer value (HSPVAR_FLAG_INT)
+Returns as.
+When processing as a function, it will be as follows.
+
+static int ref_ival; // Variable area for return value
+
+	static void *reffunc( int *type_res, int cmd )
+	{
+// Function execution process (called when referencing a value)
+	//
+// Find out if it starts with'('
+	//
+	if ( *type != TYPE_MARK ) throw HSPERR_INVALID_FUNCPARAM;
+	if ( *val != '(' ) throw HSPERR_INVALID_FUNCPARAM;
+	code_next();
+
+
+switch (cmd) {// Branch for each subcommand
+
+	case 0x00:				// newcmd
+
+p1 = code_geti (); // Get integer value (no default)
+ref_ival = p1 * 2; // Set the return value to ival
+		break;
+
+	default:
+		puterror( HSPERR_UNSUPPORTED_FUNCTION );
+	}
+
+// Find out if it ends with')'
+	//
+	if ( *type != TYPE_MARK ) throw HSPERR_INVALID_FUNCPARAM;
+	if ( *val != ')' ) throw HSPERR_INVALID_FUNCPARAM;
+	code_next();
+
+* type_res = HSPVAR_FLAG_INT; // Specify the return type as an integer
+	return (void *)&ref_ival;
+	}
+
+The basic flow is the same in the above example.
+The difference from system variables is that the next keyword is in "(" parentheses.
+The part to check if it is, and the closing parenthesis at the end is ")"
+Check if it is. And getting the parameters
+By the way. Parameter acquisition method is used for instruction execution processing
+It will be exactly the same as the method.
+
+
+Get parameters
+
+You can get parameters in instructions and functions.
+If "hsp3sdk_init" is called, use the following function
+You can get the parameters.
+If an error occurs, execution will be interrupted at that point.
+(In the HSP2 plug-in SDK, error check is performed at the end of parameter acquisition.
+I had to do it, but in HSP3 I got an error trap due to an internal exception.
+There is no need to check because it is done. )
+
+	int code_getdi( int defval );
+
+Gets an integer value. If the parameter is omitted, defval
+Returns as the default value.
+If it is a real number (double), get the one converted to an integer.
+Other types will result in an error.
+
+	int code_geti( void );
+
+Same as code_getdi, but with no default value.
+If the parameter is omitted, an error will occur.
+
+	double code_getdd( double defstr );
+
+Get the real number. If the parameter is omitted, defval
+Returns as the default value.
+If it is an integer (int), get the one converted to a real number.
+Other types will result in an error.
+
+	double code_getd( void );
+
+Same as code_getdd, but with no default value.
+If the parameter is omitted, an error will occur.
+
+	char *code_getds( char *defstr );
+
+Gets a pointer to a string. If the parameter is omitted
+Returns defstr as the default.
+Types other than strings will result in an error.
+The pointer obtained here is only until the next parameter is acquired.
+Not valid. Another parameter after getting the string
+If you get (including not only strings but also integers and real numbers)
+Character data will be destroyed, so be sure to save it on the parameter acquisition side.
+Please try to.
+Also, getting a string can return very long data.
+There is, so when copying, limit it to the required length, or
+Make sure you have enough memory to fit the string size.
+
+	char *code_gets( void );
+
+Same as code_getds, but with no default value.
+If the parameter is omitted, an error will occur.
+
+	unsigned short *code_getlb( void );
+
+Gets the pointer on the script indicated by the label.
+The label obtained here is the jump destination or subroutine call.
+It can be treated as a target.
+If a label other than the label is specified, an error will occur.
+
+	APTR code_getva( PVal **pval );
+
+The PVal pointer of the variable specified as a parameter and the APTR
+Get a pointer.
+If a variable other than a variable is specified, an error will occur.
+The APTR pointer is the value of the array element,
+The PVal pointer points to the information in which the variable information is stored.
+It becomes a pointer.
+You can check the type of the obtained variable with PVal-> flag.
+Use code_setv to assign to the retrieved variable.
+
+	void code_setva( PVal *pval, APTR aptr, int type, void *ptr );
+
+Assign values to variables based on APTR and PVal pointers.
+The type of the value to be assigned to type (HSPVAR_FLAG_ *) is stored in ptr.
+Specify the pointer.
+If the type stored in the variable is different from the type to be assigned,
+It is initialized to the type to be assigned and then assigned.
+
+	int code_getprm( void );
+
+Get one parameter.
+The parameter type does not matter. By the return value of this function,
+You can check the situation. The return value will be one of the following:
+
+#define PARAM_OK 0 // Obtained normally
+#define PARAM_SPLIT -1 // Obtained normally (*)
+#define PARAM_END -2 // It was the end of the sentence
+#define PARAM_DEFAULT -3 // Omitted
+#define PARAM_ENDSPLIT -4 //')'
+
+(*) PARAM_SPLIT has the same meaning as PARAM_OK, but the next parameter to take is
+Indicates PARAM_ENDSPLIT (end of parentheses).
+PARAM_SPLIT is not the case when you get the parameters in parentheses
+Will not be returned. Also, the last parameter is the default value (PARAM_DEFAULT)
+In the case of, when the following parameters are acquired, PARAM_SPLIT is not returned.
+Please note that PARAM_ENDSPLIT will come.
+
+If PARAM_OK and PARAM_SPLIT are returned, the variable mpval is the parameter
+It is created as a variable that indicates the content.
+(For any other return value, mpval is disabled.)
+Actually, "mpval-> pt" is a pointer where the value of the parameter is stored,
+"Mpval-> flag" is the parameter type (HSPVAR_FLAG_ *).
+(Even if a variable is specified as a parameter, mpval will take the variable itself
+It does not serve as a pointer. mpval is always temporary with the resulting value assigned
+It becomes a variable of)
+
+If PARAM_DEFAULT is returned, it means that the parameter has been omitted.
+indicate.
+If there are no parameters to get, PARAM_END or PARAM_ENDSPLIT
+I will return. PARAM_ENDSPLIT indicates that the parameters in parentheses have ended
+It will be the value shown.
+
+	void *code_getv( void );
+
+It is a function for calling the $ 202 convention that is compatible with ver2.61 prepared in HSPEXINFO.
+The $ 202 convention call uses the mpval pointer to get the PVal pointer.
+Refer to. The code_getv function was obtained by updating the mpval pointer
+Indicates a pointer to a variable.
+
+	void code_next( void );
+
+Get the following intermediate code.
+The acquired parameters are reflected in * type and * val.
+* type is the value of "TYPE_ *", and * val is the value indicating the content.
+This instruction usually does not need to be used for parameter acquisition.
+Only in special situations where the intermediate code is read and processed independently
+Please use.
+
+The parameter acquisition method is the $ 202 type adopted in the SDK of HSP2.6.
+Compatible with the HSPEXINFO structure used.
+Similarly, HSP3 uses the HSPEXINFO structure, and the contents are as follows.
+It has become.
+
+	typedef struct HSPEXINFO
+	{
+	//		HSP internal info data (2.6)
+	//
+	short ver;		// Version Code
+	short min;		// Minor Version
+	//
+	int *er;		// Not Use
+	char *pstr;		// String Buffer (master)
+	char *stmp;		// String Buffer (sub)
+	PVal **mpval;		// Master PVAL
+	//
+	int *actscr;		// Active Window ID
+	int *nptype;		// Next Parameter Type
+	int *npval;			// Next Parameter Value
+	int *strsize;		// StrSize Buffer
+	char *refstr;		// RefStr Buffer
+	//
+	void *(*HspFunc_prm_getv)( void );
+	int (*HspFunc_prm_geti)( void );
+	int (*HspFunc_prm_getdi)( const int defval );
+	char *(*HspFunc_prm_gets)( void );
+	char *(*HspFunc_prm_getds)( const char *defstr );
+	int (*HspFunc_val_realloc)( PVal *pv, int size, int mode );
+	int (*HspFunc_fread)( char *fname, void *readmem, int rlen, int seekofs );
+	int (*HspFunc_fsize)( char *fname );
+	void *(*HspFunc_getbmscr)( int wid );
+	int (*HspFunc_getobj)( int wid, int id, void *inf );
+	int (*HspFunc_setobj)( int wid, int id, const void *inf );
+
+	//		HSP internal info data (3.0)
+	//
+	int *npexflg;	// Next Parameter ExFlg
+	void *hspctx;	// HSP context ptr
+
+	//		Enhanced data (3.0)
+	//
+	int (*HspFunc_addobj)( int wid );
+	void (*HspFunc_puterror)( HSPERROR error );
+	HspVarProc *(*HspFunc_getproc)( int type );
+	HspVarProc *(*HspFunc_seekproc)( const char *name );
+
+	void (*HspFunc_prm_next)( void );
+	int (*HspFunc_prm_get)( void );
+	double (*HspFunc_prm_getd)( void );
+	double (*HspFunc_prm_getdd)( double defval );
+	unsigned short *(*HspFunc_prm_getlb)( void );
+	PVal *(*HspFunc_prm_getpval)( void );
+	APTR (*HspFunc_prm_getva)( PVal **pval );
+	void (*HspFunc_prm_setva)( PVal *pval, APTR aptr, int type, const void *ptr );
+	char *(*HspFunc_malloc)( int size );
+	void (*HspFunc_free)( void *ptr );
+	char *(*HspFunc_expand)( char *ptr, int size );
+	IRQDAT *(*HspFunc_addirq)( void );
+	int (*HspFunc_hspevent)( int event, int prm1, int prm2, void *prm3 );
+	void (*HspFunc_registvar)( int flag, HSPVAR_COREFUNC func );
+	void (*HspFunc_setpc)( const unsigned short *pc );
+	void (*HspFunc_call)( const unsigned short *pc );
+	void (*HspFunc_mref)( PVal *pval, int prm );
+
+	void (*HspFunc_dim)( PVal *pval, int flag, int len0, int len1, int len2, int len3, int len4 );
+	void (*HspFunc_redim)( PVal *pval, int lenid, int len );
+	void (*HspFunc_array)( PVal *pval, int offset );
+
+	//		Enhanced data (3.1)
+	//
+	char *(*HspFunc_varname)( int id );
+	int (*HspFunc_seekvar)( const char *name );
+
+	} HSPEXINFO;
+
+Some fields have been extended or removed from HSP2.6,
+The contents are similar in many respects such as getting parameters.
+The HSPEXINFO structure is defined in hsp3plugin.h with the name exinfo.
+Even if you write like "exinfo-> HspFunc_prm_geti ();" in the plugin
+No problem. The function (code_geti) described in this section is applicable from exinfo.
+It's just a macro to call a function.
+When porting the plug-in for HSP2.6 created in the past for 3.0, this point should be considered.
+If you keep this in mind, the work will be reduced to some extent.
+
+
+Acquisition and setting of internal information
+
+The following functions can be used to access the resources on the HSP side.
+
+	void *getbmscr( int wid );
+
+Returns the window ID information specified by wid.
+If you are using the standard HSP3 GUI, this is a pointer to a BMSCR structure.
+For more information on the BMSCR structure, see the separate section.
+Also, the current operation destination window ID is obtained by the active_window macro.
+can do.
+
+	int getobj( int wid, int id, void *inf );
+
+The number specified by id, which is located in the window ID specified by wid
+Get object information.
+The retrieved data is copied to the pointer specified by inf.
+If you are using the standard HSP3 GUI, inf contains the contents of the HSPOBJINFO structure.
+It will be copied.
+For the HSPOBJINFO structure, refer to the item about object information.
+please.
+The return value will be 0 if successful, and any other value will indicate an error.
+
+	int setobj( int wid, int id, void *inf );
+
+The number specified by id, which is located in the window ID specified by wid
+Set the object information.
+It is copied to the internal data from the pointer specified by inf.
+If you are using the standard HSP3 GUI, inf contains the contents of the HSPOBJINFO structure.
+It will be copied.
+For the HSPOBJINFO structure, refer to the item about object information.
+please.
+The return value will be 0 if successful, and any other value will indicate an error.
+
+	int addobj( int wid );
+
+A new object ID is generated and returned to the window ID specified by wid.
+It is used when the plug-in side creates its own object.
+When you generate an object ID with this function, be sure to set the correct information with setobj.
+Please try to.
+
+	HspVarProc *HspFunc_getproc( int type );
+
+HspVarProc structure for processing the type specified by type (HSPVAR_FLAG_ *)
+Returns a pointer.
+
+	HspVarProc *seekproc( char *name );
+
+Returns an HspVarProc structure pointer to handle the type specified by name.
+name is a character string of the type name (int, str, double, etc.) set for each type.
+Specify. As a result, processing including types extended by plug-ins etc. can be performed.
+You can get and set the information to do.
+
+	void *hspmalloc( int size );
+	void hspfree( void *ptr );
+	char *hspexpand( char *ptr, int size );
+
+hspmalloc and hspfree go through the memory manager managed inside HSP
+Allocates and releases memory. (It is used in the same way as malloc / free.)
+hspmalloc and hspfree work very fast with a small size (64 bytes)
+To do. Also, all memory is automatically released at the end of HSP.
+hspexpand reallocates already allocated memory with a larger size.
+The contents held up to now will not be changed.
+
+	int code_event( int event, int prm1, int prm2, void *prm3 );
+
+Raises HSP internal events.
+For more information, see About HSP events.
+
+	void puterror( HSPERROR err );
+
+Raises an HSP error.
+The error code specified for err is defined in hsp3plugin.h.
+Please note that this function will not come back after being executed.
+
+	IRQDAT *addirq( void );
+
+Add an interrupt factor.
+Unique interrupts for Windows window messages, similar to oncmd
+You can add it.
+
+	void registvar( int flag, HSPVAR_COREFUNC func );
+
+Register the storage core function (HspVarProc).
+For flag, specify the existing type ID or new ID (-1).
+Pass the address of the initialization function (HSPVAR_COREFUNC) to func.
+The storage core function must be registered when the HSP3TypeFunction is initialized.
+You have to do it.
+
+	void code_setpc( unsigned short *pc );
+
+Go to the label specified on the pc.
+The label uses the value obtained by code_getlb.
+
+	void code_call( unsigned short *pc );
+
+Make a subroutine call (gosub) to the label specified on the pc.
+The label uses the value obtained by code_getlb.
+
+
+	void (*HspFunc_dim)( PVal *pval, int flag, int len0, int len1, int len2, int len3, int len4 );
+
+Initializes the variable specified by pval with the specified array element.
+The operation is the same as the dim instruction.
+len1 to len4 are the maximum number for each dimension. The unused dimension is 0.
+len0 specifies the initial size when one element has a variable size.
+(It is a numerical value corresponding to 256 of "sdim a, 256".)
+Specify the type to be initialized with flag.
+
+	void (*HspFunc_array)( PVal *pval, int offset );
+
+Used to create a pval that points to the specified array element.
+The elements of each dimension can be set arbitrarily by the following procedure.
+
+HspVarCoreReset (pval); // Reset array pointer
+HspFunc_array (pval, 0); // 1st dimension
+HspFunc_array (pval, 0); // 2nd dimension
+HspFunc_array (pval, 0); // 3rd dimension
+HspFunc_array (pval, 0); // 4th dimension
+
+Pval created by HspFunc_array becomes an array element in pval-> offset
+The offset value (APTR) for access is set.
+
+	void (*HspFunc_redim)( PVal *pval, int lenid, int len );
+
+Expands the array of specified variables.
+Expands the pval variable to the size of len for the specified number of dimensions lenid (1-4).
+
+	char *(*HspFunc_varname)( int id );
+
+Gets the variable name of the specified ID.
+The ID starts from 0 and the maximum number of variable IDs (max_val member of the HSPHED structure) is valid.
+This function is only available if the HSP object contains variable name information
+You can get it. Otherwise, "" "is always returned.
+(Variable name information can be set by the #cmpopt command.)
+
+	int (*HspFunc_seekvar)( const char *name );
+
+Gets the variable ID with the specified variable name.
+IDs start at 0 and have the maximum number of variable IDs (max_val members of the HSPHED structure).
+If no such variable name is found, -1 is returned.
+This function is only available if the HSP object contains variable name information
+You can get it. Otherwise, -1 is always returned.
+(Variable name information can be set by the #cmpopt command.)
+
+
+About BMSCR structure
+
+The BMSCR structure contains all the information about the window.
+From window size, HWND handle, device context information, etc.
+You can get most of the information about windows.
+
+The BMSCR structure is the same as the structure of the same name used in the SDK up to HSP 2.61.
+It is compatible in many parts.
+The program that operates by referring to the BMSCR structure is the BMSCR structure of HSP3 as it is.
+But you can use it. For parts where compatibility cannot be maintained
+It has been renamed or the field has been removed.
+There are also some items that have been added from HSP3.
+
+The big change from HSP2 is that the field that shows the information of the object
+This is where the HSPOBJINFO structure is based.
+Be sure to use getobj / setobj for object information.
+
+	typedef struct BMSCR
+	{
+		//
+		//		Window data structure
+		//
+		int		flag;				// used flag
+		int		sx;					// X-size
+		int		sy;					// Y-size
+		int		palmode;			// palmode
+		HDC		hdc;				// buffer HDC
+		BYTE	*pBit;				// bitmap pointer
+		BITMAPINFOHEADER *pbi;		// infoheader
+		HBITMAP	dib;				// bitmap handle(DIB)
+		HBITMAP	old;				// bitmap handle(OLD)
+		RGBQUAD *pal;				// palette table
+		HPALETTE hpal;				// palette handle
+		HPALETTE holdpal;			// palette handle (old)
+		int		pals;				// palette entries
+		HWND	hwnd;				// window handle
+		HINSTANCE hInst;			// Instance of program
+		int		infsize;			// *pbi alloc memory size
+		int		bmpsize;			// *pBit alloc memory size
+
+		//		Window object setting
+		//
+		int		type;				// setting type
+		int		wid;				// window ID
+		short	fl_dispw;			// display window flag
+		short	fl_udraw;			// update draw window
+		int		wx,wy,wchg;			// actual window size x,y
+		int		viewx,viewy;		// buffer view point x,y
+		int		lx,ly;				// buffer view size x,y
+		int		cx,cy;				// object cursor x,y
+		int		ox,oy,py;			// object size x,y,py
+		int		texty;				// text Y-axis size
+		int		gx,gy,gmode;		// gcopy size
+		HBRUSH	hbr;				// BRUSH handle
+		HPEN	hpn;				// PEN handle
+		HFONT	hfont;				// FONT handle
+		HFONT	holdfon;			// FONT handle (old)
+		COLORREF color;				// text color code
+		int		textspeed;			// slow text speed
+		int		cx2,cy2;			// slow text cursor x,y
+		int		tex,tey;			// slow text limit x,y
+		char	*prtmes;			// slow message ptr
+		int		focflg;				// focus set flag
+		int		objmode;			// object set mode
+		LOGFONT	logfont;			// logical font
+		int		style;				// extra window style
+		int		gfrate;				// halftone copy rate
+		int		tabmove;			// object TAB move mode
+		int		sx2;				// actual bitmap X size
+		SIZE	printsize;			// print,mes extent size
+
+		//		Class depend data
+		//
+		int		objstyle;					// objects style	
+		HSPOBJINFO *mem_obj;				// Window objects
+		int objmax;							// Max number of obj
+		int objlimit;						// Limit number of obj
+		short savepos[BMSCR_SAVEPOS_MAX];	// saved position
+		void *master_hspwnd;				// Parent hspwnd class
+		short	palcolor;					// Palette color code
+		short	textstyle;					// Extra text style
+		short	framesx, framesy;			// Window frame xy-size
+
+		int		imgbtn;						// Custom Button Flag (-1=none)
+		short	btn_x1, btn_y1;				// Custom Button Image X,Y
+		short	btn_x2, btn_y2;				// Custom Button Image X,Y (press)
+		short	btn_x3, btn_y3;				// Custom Button Image X,Y (mouse over)
+		short	divx, divy;					// Divide value for CEL
+		short	divsx, divsy;				// CEL size
+		short	celofsx, celofsy;			// CEL center offset
+
+	} BMSCR;
+
+Details of each field are as follows.
+
+	int		flag;			// used flag
+
+A flag indicating whether a screen managed by BMSCR is used.
+
+		#define BMSCR_FLAG_NOUSE	0
+		#define BMSCR_FLAG_INUSE	1
+
+Is set to either.
+
+	int		sx;			// X-size
+	int		sy;			// Y-size
+	int		sx2;			// actual bitmap X size
+	int		palmode;		// palmode
+
+The size of the initialized screen is stored.
+sx and sy are the number of dots in the X and Y directions.
+sx2 has a horizontal bitmap size (not the number of dots)
+Stores in bytes.
+One of the following is set for palmode.
+
+		#define BMSCR_PALMODE_FULLCOLOR	0
+		#define BMSCR_PALMODE_PALETTECOLOR	1
+
+	HDC		hdc;			// buffer HDC
+
+Contains the device context of the screen.
+You can use this handle to draw on the screen with the GDI function.
+Note that this is a bitmap in memory
+It's a device context. Even if you draw here, the actual
+No change occurs on the window screen. On the actual window screen
+In order to reflect the change, redraw using HSP's redraw command etc.
+Do or get the device context to the actual window with the GetDC instruction
+You need to get and draw.
+
+	BYTE	*pBit;				// bitmap pointer
+
+The start address of the memory where the screen bitmap data is stored.
+You can use this pointer to write data directly to the screen.
+When writing data directly to memory, you need to be careful. For more information,
+See Writing directly to the bitmap screen.
+
+	BITMAPINFOHEADER *pbi;		// infoheader
+	HBITMAP	dib;				// bitmap handle(DIB)
+	HBITMAP	old;				// bitmap handle(OLD)
+
+Information about bitmaps that manage screen data.
+Since the old member is only used for work, a fixed value is stored.
+not.
+
+	RGBQUAD *pal;				// palette table
+	HPALETTE hpal;				// palette handle
+	HPALETTE holdpal;			// palette handle (old)
+	int		pals;			// palette entries
+
+Information on the palette applied to the screen.
+Since the holdpal member is only used for the work, a fixed value is stored.
+It will not be. Change the palette as much as possible with the instructions on the HSP side.
+Keep this member for reference only.
+
+	HWND	hwnd;				// window handle
+
+This is the window handle that is the drawing destination of the screen.
+
+	HANDLE	hInst;				// Instance of program
+
+An instance for a program that manages windows.
+
+	int		infsize;		// *pbi alloc memory size
+	int		bmpsize;		// *pBit alloc memory size
+
+This work shows the amount of memory used when initializing screen data.
+
+	int		type;			// setting type
+
+Indicates the screen attributes.
+The contents indicated by the numerical values are as follows.
+
+		#define HSPWND_TYPE_NONE 0
+		#define HSPWND_TYPE_BUFFER 1
+		#define HSPWND_TYPE_MAIN 2
+		#define HSPWND_TYPE_BGSCR 3
+
+	int		wid;			// window ID
+
+Indicates the window ID.
+
+	short	fl_dispw;			// display window flag
+	short	fl_udraw;			// update draw window
+
+Whether the screen is displayed as a window,
+A flag that indicates whether the screen needs to be refreshed.
+
+	int		wx,wy,wchg;		// actual window size x,y
+	int		viewx,viewy;		// buffer view point x,y
+	int		lx,ly;			// buffer view size x,y
+
+In a window that can be scrolled by the scroll bar,
+Display window size, original coordinates to be transferred from within the screen, range to be transferred
+And so on.
+
+	int		cx,cy;			// object cursor x,y
+
+Indicates the current position.
+
+	int		ox,oy,py;		// object size x,y,py
+
+Indicates the size of the object specified by the objsize instruction.
+The py member is the number of dots when increasing the current position in the Y direction.
+increase.
+
+	int		texty;			// text Y-axis size
+
+Indicates the size of the currently selected character font in the Y direction.
+
+	int		gx,gy,gmode;		// gcopy size
+	int		gfrate;			// halftone copy rate
+
+Indicates the screen copy size and mode specified by the gmode command.
+gfrate stores the rate at the time of image copying by translucency.
+
+	HBRUSH	hbr;				// BRUSH handle
+	HPEN	hpn;				// PEN handle
+
+An object that indicates a brush and pen with the color specified by the color command
+It is a handle.
+
+	HFONT	hfont;				// FONT handle
+	HFONT	holdfon;			// FONT handle (old)
+
+The object handle of the font specified by the font instruction.
+holdfon is for work and does not have a fixed value.
+
+	COLORREF color;			// text color code
+
+Indicates the color data specified by the color instruction.
+
+	int		textspeed;		// slow text speed
+
+Indicates the display speed of the text specified by the text command.
+
+	int		cx2,cy2;		// slow text cursor x,y
+	int		tex,tey;		// slow text limit x,y
+	char	*prtmes;			// slow message ptr
+
+It is a work to display a character string slowly.
+
+	int		focflg;				// focus set flag
+
+focflg is used as a temporary flag for initial focus.
+Do not change this value as it is for internal use only.
+
+	int		objmode;			// object set mode
+	LOGFONT	logfont;			// logical font
+
+objmode stores the mode set by the objmode instruction.
+logfont stores the selected logical font structure.
+
+	int		style;				// extra window style
+
+Contains window-specific styles (set by the screen instruction).
+
+	int		tabmove;			// object TAB move mode
+
+tabmode stores a flag as to whether to move the object focus with the [TAB] key.
+
+	SIZE	printsize;			// print,mes extent size
+
+printsize stores the rectangular range of the message displayed by the mes and print commands.
+(Can be obtained with the ginfo command)
+
+	int		objstyle;			// objects style
+
+Stores the style applied to the object.
+
+	HSPOBJINFO *mem_obj;		// Window objects
+	int objmax;					// Max number of obj
+	int objlimit;				// Limit number of obj
+
+mem_obj is a pointer that stores object information (HSPOBJINFO)
+It is stored. From this location, as many data as objmax are stored continuously
+is. Also, when the value of objmax reaches objlimit, a warning is displayed.
+There is no limit to the number of objects themselves, but the number to issue a warning is
+It is set.
+
+	short savepos[BMSCR_SAVEPOS_MAX];	// saved position
+
+Information such as the coordinates of the mouse pointer is saved.
+
+	void *master_hspwnd;		// Parent hspwnd class
+
+Contains pointers to the classes that manage the BMSCR structure.
+Normally, this pointer is not used by plugins.
+
+	short	palcolor;			// Palette color code
+
+Saves the palette number when the palette color is specified.
+
+	short	framesx, framesy;		// Window frame xy-size
+
+Stores the size (number of dots) used in the window frame.
+
+	int		imgbtn;			// Custom Button Flag (-1=none)
+	short	btn_x1, btn_y1;			// Custom Button Image X,Y
+	short	btn_x2, btn_y2;			// Custom Button Image X,Y (press)
+	short	btn_x3, btn_y3;			// Custom Button Image X,Y (mouse over)
+
+Saves the button installation parameters set by the objimage command.
+
+	short	divx, divy;			// Divide value for CEL
+	short	divsx, divsy;			// CEL size
+	short	celofsx, celofsy;		// CEL center offset
+
+Saves the division information of the image material set by the celdiv command.
+divx and divy are the number of divisions in the X and Y directions.
+For divsx and divsy, the size per material is saved.
+celofsx and celofsy are the coordinates of the center point.
+
+
+Write directly to the bitmap screen
+
+The screen bitmap data is stored in the pBit member of the BMSCR structure.
+The start address of the memory is stored. Use this to directly display data on the screen
+Can be written.
+
+By accessing the memory directly, it is possible to process several times faster than when using GDI.
+Will be. Also, since you can freely access the dot unit of the screen, special effects and
+It is also very convenient for image conversion.
+
+However, there are some things to keep in mind.
+
+1. 1. The correspondence between the screen and the memory address is upside down.
+
+For some reason, Windows bitmap management goes up from the bottom line.
+It has a structure that goes on. Due to this mysterious structure, the upper left corner of the screen has ever been
+Those who are accustomed to the structure that goes down from the bottom may suffer.
+
+For example, the screen size is 640x480 and the range (0,0)-(639,479) is in memory.
+If so, the first memory indicated by pBit corresponds to the coordinates (lower left) of (0,479).
+
+From there, the address increases in the X direction (right), but proceeds to (639,479).
+Next is (0,478). And again, proceed to (639,478), then
+It will be (0,477). Dot data are lined up by repeating this until (639,0).
+  is.
+
+Dot data depends on the number of screen colors (palmode member).
+
+In full color mode, 1 dot 3 bytes (24 bits) "B, G, R, B, G, R ..."
+The brightness of each color is shown in the order of. Also, in the palette mode,
+The palette code is shown in 1 dot 1 byte (8 bits).
+
+2. 2. If you write to the memory outside the range of the screen, a general protection fault will occur and it will stop.
+
+The bitmap screen is just a space in memory. Out of range here
+Writing data to is a Windows error and HSP exits with a general protection fault.
+The range of the screen can be known by the sx and sy members. From the range based on this
+Please be careful not to come out.
+
+The address indicating any point X, Y on the screen can be calculated by the following formula.
+
+(In palette mode (256 colors))
+
+x = X coordinates;
+y = Y coordinate;
+	      width = (sx+3)&~3;
+	      vram_adr = pBit + ( ( sy - 1 - y ) * width ) + x;
+
+(In full color mode (16.7 million colors))
+
+x = X coordinates;
+y = Y coordinate;
+	      width = ((sx*3)+3)&~3;
+	      vram_adr = pBit + ( ( sy - 1 - y ) * width ) + ( x * 3 );
+
+3. 3. After rewriting the bitmap, you need to update the actual screen
+
+This is also true when drawing with GDI functions using the hdc member.
+As you can tell, even if you draw on a bitmap in memory, it's actually
+No change occurs on the window screen.
+
+The screen on the memory and the window on the actual screen are different. Screen in memory
+After updating, copy the contents to the window on the actual screen and update
+  Have to.
+
+The easiest way to reflect the changes is to redraw using the HSP redraw instruction.
+Is to do. This updates and rewrites the full screen, so it's all about
+It is better to update with the redraw command at once after rewriting the screen on the memory
+It's efficient. This method is also fast enough compared to GDI.
+
+Another way is to use the hwnd member with the GetDC instruction to the actual window.
+Get the device context and update it yourself.
+
+For this method, please refer to the functions supported by "HSP Support Routines".
+It is relatively easy to do by using it.
+See the hsp3plugin.cpp source file for more information.
+
+
+About object information
+
+From HSP3, object information is managed based on the HSPOBJINFO structure.
+It was changed to a shape. As a result, only a limited number of windows have been used so far.
+Eliminate the restrictions that could not be placed, and another user later such as a plug-in
+You can now add new types of objects.
+Objects can be used for general purposes as information held by windows.
+You can do it. For example, a new shaped button with a plugin
+Or placing controls that are not supported by default
+It is possible.
+The HSPOBJINFO structure has the following contents.
+
+	typedef struct HSPOBJINFO
+	{
+		//		Object Info (3.0)
+		//
+short owmode; // object mode
+short option; // object option (unused / internal object is 0)
+void * bm; // Pointer to the BMSCR structure where the object is located
+HWND hCld; // object handle
+int owid; // Value of object (general purpose)
+int owsize; // Used size of object (general purpose)
+
+HSP3VARSET varset; // Variable information set from object
+
+		//		callback function
+		void	(*func_notice)( struct HSPOBJINFO *, int );
+		void	(*func_objprm)( struct HSPOBJINFO *, int, void * );
+		void	(*func_delete)( struct HSPOBJINFO * );
+
+	} HSPOBJINFO;
+
+The HSPOBJINFO structure can be obtained and set from the plugin.
+Details of each field are as follows.
+
+short owmode; // object mode
+
+Stores the mode of the object.
+One of the following is stored as a value.
+
+#define HSPOBJ_NONE 0 // Invalid
+#define HSPOBJ_TAB_ENABLE 1 // TAB focus can be moved
+#define HSPOBJ_TAB_DISABLE 2 // TAB focus cannot be moved
+#define HSPOBJ_TAB_SKIP 3 // Skip TAB focus
+
+	void	*bm;
+
+Contains pointers to the placed BMSCR structure.
+
+HWND hCld; // object handle
+
+Contains the window handles of the placed object.
+
+short option; // object option (unused / internal object is 0)
+int owid; // Value of object (general purpose)
+int owsize; // Used size of object (general purpose)
+HSP3VARSET varset; // Variable information set from object
+
+A field that can be used universally in object processing routines.
+varset mainly modifies the contents of variables as well as the contents of objects
+Used to store case variable information.
+
+	void	(*func_notice)( HSPOBJINFO *, int );
+	void	(*func_objprm)( HSPOBJINFO *, int, void * );
+	void	(*func_delete)( HSPOBJINFO * );
+
+Stores the object's processing routine as a callback function.
+func_delete is a function that is called when an object is destroyed.
+Be sure to delete the created object here.
+func_notice is called when a window message is notified
+It becomes a function. The contents of wParam are passed to the int parameter.
+In order to generate func_notice callback, in HSP window
+I have to put in a control that sends WM_COMMAND messages
+It will not be. Also, as the code that accompanies the WM_COMMAND message,
+(MESSAGE_HSPOBJ + object ID) must be set.
+func_objprm is when the value is sent directly to the object from the objprm instruction.
+Specify the function to process. The argument int has a parameter type (HSPVAR_FLAG_ *)
+void * indicates a pointer to a parameter.
+By setting the HSPOBJINFO structure with these callback functions
+You can freely expand your own objects.
+
+
+About HSP event
+
+HSP events are for notifying events that occur at runtime inside HSP.
+Information can be obtained and replaced for each of several categories
+It has become. For example, you can make file input / output compatible with other devices,
+Plugin existing behavior such as extending the read format of picload instructions
+It is designed to be controlled from.
+
+There are several categories of HSP events, within the plugin's initialization function.
+It is possible to specify a callback function when an event occurs.
+The following categories are available.
+
+#define HSPEVENT_ENABLE_COMMAND 1 // At the time of 1 step execution
+#define HSPEVENT_ENABLE_HSPIRQ 2 // When an interrupt occurs in HSP
+#define HSPEVENT_ENABLE_GETKEY 4 // At key check
+#define HSPEVENT_ENABLE_FILE 8 // When inputting / outputting files
+#define HSPEVENT_ENABLE_MEDIA 16 // When inputting / outputting media
+#define HSPEVENT_ENABLE_PICLOAD 32 // When executing the picload command
+
+To raise an event callback, select the event type
+Must be set in the field.
+Below is a function called eventfunc with HSPEVENT_ENABLE_GETKEY set
+This is an example of registration.
+
+// Set the event type that raises the event callback
+	info->option = HSPEVENT_ENABLE_GETKEY;
+info-> eventfunc = eventfunc; // Registration of event function (eventfunc)
+
+With this, when an event occurs at the time of key check such as getkey instruction or stick instruction
+The event function will be called.
+It is possible to specify duplicate categories. However, one step execution
+The HSPEVENT_ENABLE_COMMAND category for monitoring is set for all
+Since the event will be generated when the instruction is executed, the overall execution speed will be slowed down.
+Make sure to use this category for debugging purposes.
+
+The following is for handling the event that occurred from HSPEVENT_ENABLE_GETKEY
+This is an example of an event processing function.
+
+	static int eventfunc( int event, int prm1, int prm2, void *prm3 )
+	{
+// Event processing (called when HSP event occurs)
+		//
+		switch( event ) {
+		case HSPEVENT_GETKEY:
+			{
+			int *ival;
+			ival = (int *)prm3;
+			*ival = 123;
+			return 1;
+			}
+		}
+		return 0;
+	}
+
+In the above example, the result obtained by the getkey instruction is replaced with the value 123.
+In this way, in the event processing function, the contents are replaced from the event type,
+Or you need to write a series of actions to get.
+The event handling function now returns a non-zero value if it replaces the value
+please. Just got the contents of the event or did not process it
+If so, please return 0. This will ensure proper event handling.
+also,
+If multiple plugins are trying to get events in the same category
+Plugins are processed in the order in which they were registered.
+If 0 is returned (not rewritten), events in the same category will be sent.
+The event is also passed to another plugin that is getting it.
+If a non-zero value is returned, the event ends at that point. After that
+No processing is passed to the plugin.
+
+It is also possible to raise HSP events from plugins.
+
+	int code_event( int event, int prm1, int prm2, void *prm3 );
+
+You can pass events directly to HSP with the function of.
+This allows you to jump to a specific label, jump to a subroutine,
+You can assign to variables, etc.
+These events are mainly for object processing on windows, etc.
+It is being used.
+
+There are the following types of HSP events.
+The contents of the parameters passed for each event are different.
+
+	HSPEVENT_COMMAND
+prm1: Intermediate code type ID
+prm2: Intermediate code sub ID
+prm3: None
+
+An event that occurs every time HSP executes one instruction.
+It is used internally to create execution history and so on.
+
+	HSPEVENT_HSPIRQ
+		prm1 : IRQ ID#
+prm2: iparam value
+prm3: IRQDAT pointer
+
+Processing event when HSP internal interrupt occurs.
+
+	HSPEVENT_GETKEY
+prm1: key code
+		prm2 : option
+prm3: Return pointer
+
+This interrupt is hooked when the key input is checked.
+
+	HSPEVENT_STICK
+prm1: None
+prm2: None
+prm3: Return pointer
+
+This is an interrupt that is hooked when checking the stick instruction.
+
+	HSPEVENT_FNAME
+prm1: None
+prm2: None
+prm3: string pointer
+
+Register the path name used for file-related interrupts.
+
+	HSPEVENT_FREAD
+prm1: Offset from the beginning
+prm2: Read size
+prm3: read pointer
+
+Reads the file specified by HSPEVENT_FNAME into memory.
+
+	HSPEVENT_FWRITE
+prm1: Offset from the beginning
+prm2: write size
+prm3: pointer to data
+
+Writes the data in memory to the file specified by HSPEVENT_FNAME.
+
+	HSPEVENT_FEXIST
+prm1: None
+prm2: None
+prm3: None
+
+Check the size of the file specified by HSPEVENT_FNAME.
+The result is returned in the system variable stat.
+
+	HSPEVENT_FDELETE
+prm1: None
+prm2: None
+prm3: None
+
+Deletes the file specified by HSPEVENT_FNAME.
+
+	HSPEVENT_FMKDIR
+prm1: None
+prm2: None
+prm3: None
+
+Creates the directory specified by HSPEVENT_FNAME.
+
+	HSPEVENT_FCHDIR
+prm1: None
+prm2: None
+prm3: None
+
+Moves to the directory specified by HSPEVENT_FNAME.
+
+	HSPEVENT_FCOPY
+prm1: None
+prm2: None
+prm3: Pointer to the destination file name
+
+Copies the file specified by HSPEVENT_FNAME.
+
+	HSPEVENT_FDIRLIST1
+prm1: dirlist option
+prm2: None
+prm3: Result pointer (char **)
+
+In the directory from the wildcard specified by HSPEVENT_FNAME
+Get the file list.
+
+	HSPEVENT_FDIRLIST2
+prm1: None
+prm2: None
+prm3: None
+
+Discards the memory allocated by HSPEVENT_FDIRLIST1.
+Always called after HSPEVENT_FDIRLIST1.
+
+	HSPEVENT_GETPICSIZE
+prm1: None
+prm2: None
+prm3: Return pointer
+
+Prepares to read the image file specified by HSPEVENT_FNAME.
+Int type information of X and Y size is returned to the pointer indicated by prm3.
+
+	HSPEVENT_PICLOAD
+prm1: None
+prm2: None
+prm3: Device context handle (HDC)
+
+Image file read by HSPEVENT_GETPICSIZE
+Draw on the actual device.
+
+
+
+About HSPCTX structure
+
+The HSPCTX structure stores information about the basic operation of HSPs.
+You can also refer to it by the name ctx from the plugin.
+
+	typedef struct HSPCTX
+	{
+	//	HSP Context
+	//
+	HSPHED *hsphed;						// HSP object file header
+	unsigned short *mcs;				// current code segment ptr
+	unsigned short *mem_mcs;			// code segment ptr
+	char *mem_mds;						// data segment ptr
+	unsigned char *mem_di;				// Debug info ptr
+	int *mem_ot;						// object temp segment ptr
+
+	IRQDAT *mem_irq;					// IRQ data ptr
+	int irqmax;							// IRQ data count
+	int iparam;							// IRQ Info data1
+	int wparam;							// IRQ Info data2
+	int lparam;							// IRQ Info data3
+
+	PVal *mem_var;						// var storage index
+	HSPEXINFO30 exinfo;					// HSP function data(3.0)
+	int runmode;						// HSP execute mode
+	int waitcount;						// counter for wait
+	int waitbase;						// wait sleep base
+	int waittick;						// next tick for await
+	int lasttick;						// previous tick
+	int sublev;							// subroutine level
+	LOOPDAT mem_loop[HSP3_REPEAT_MAX];	// repeat loop info
+	int looplev;						// repeat loop level
+	HSPERROR err;						// error code
+	int hspstat;						// HSP status
+	int stat;							// sysvar 'stat'
+	int strsize;						// sysvar 'strsize'
+	char *refstr;						// RefStr Buffer
+	char *fnbuffer;						// buffer for FILENAME
+	void *instance;						// Instance Handle (windows)
+	int intwnd_id;						// Window ID (interrupt)
+	PVal *note_pval;					// MemNote pval
+	APTR note_aptr;						// MemNote aptr
+	PVal *notep_pval;					// MemNote pval (previous)
+	APTR notep_aptr;					// MemNote aptr (previous)
+	char *stmp;							// String temporary buffer
+
+	void *prmstack;						// Current parameter stack area
+	LIBDAT *mem_linfo;					// Library info
+	STRUCTPRM *mem_minfo;				// Parameter info
+	STRUCTDAT *mem_finfo;				// Function/Struct info
+	int retval_level;					// subroutine level (return code)
+	int endcode;						// End result code
+	void (*msgfunc) (HSPCTX *);			// Message Callback Proc.
+	void *wnd_parent;					// Parent Window Handle
+	double refdval;						// sysvar 'refdval'
+	char *cmdline;						// Command Line Parameters
+
+	HSPEXINFO *exinfo2;					// HSP function data(3.1)
+
+	} HSPCTX;
+
+Below are the details of each field.
+
+	HSPHED *hsphed;			// HSP object file header
+
+Stores header pointers for HSP object files (ax files).
+
+	unsigned short *mcs;		// current code segment ptr
+	unsigned short *mem_mcs;	// code segment ptr
+
+Stores the position of the code being executed and the pointer where the intermediate code is stored.
+
+	char *mem_mds;			// data segment ptr
+
+Stores a data segment pointer where various data are stored.
+
+	unsigned char *mem_di;		// Debug info ptr
+
+Stores the area (Debug info) pointer where debug information is stored.
+
+	int *mem_ot;			// object temp segment ptr
+
+Stores the area (OT segment) pointer where the label information is stored.
+
+	IRQDAT *mem_irq;		// IRQ data ptr
+	int irqmax;			// IRQ data count
+
+Stores interrupt factor (IRQDAT) information inside HSP.
+irqmax is the number of IRQDATs stored.
+
+	int iparam;			// IRQ Info data1
+	int wparam;			// IRQ Info data2
+	int lparam;			// IRQ Info data3
+
+Holds the contents of the system variables iparam, wparam, lparam.
+
+	PVal *mem_var;			// var storage index
+
+Stores a pointer where global variable information is stored.
+
+	HSPEXINFO30 exinfo;		// HSP function data
+
+Contains the HSPEXINFO30 structure.
+This data is prepared for HSP3.0 compatibility.
+Normally, refer to the exinfo2 member to use the HSPEXINFO structure.
+
+	int runmode;			// HSP execute mode
+
+Stores the execution mode.
+
+	int waitcount;			// counter for wait
+
+Stores the counter for wait / await instructions.
+
+	int waitbase;			// wait sleep base
+
+Stores the Sleep time unit of the await instruction.
+
+	int waittick;			// next tick for await
+	int lasttick;			// previous tick
+
+Stores the next tick in the await instruction and the number of previous ticks.
+
+	int sublev;			// subroutine level
+
+Stores the number of nested subroutines.
+
+	LOOPDAT mem_loop[HSP3_REPEAT_MAX];	// repeat loop info
+	int looplev;			// repeat loop level
+
+Stores information used in repeat to loop instructions.
+
+	HSPERROR err;			// error code
+
+Stores the error code when an error occurs.
+
+	int hspstat;			// HSP status
+
+Stores the contents of the system variable hspstat.
+
+	int stat;			// sysvar 'stat'
+
+Stores the contents of the system variable stat.
+
+	int strsize;			// sysvar 'strsize'
+
+Stores the contents of the system variable strsize.
+
+	char *refstr;			// RefStr Buffer
+
+Stores the contents of the system variable refstr.
+
+	void *instance;			// Instance Handle (windows)
+
+Stores a Windows instance handle.
+
+	char *fnbuffer;			// buffer for FILENAME
+
+A pointer to the primary storage buffer for the file name used during interrupts.
+
+	void *intwnd_save;		// Window Handle (interrupt)
+
+Saves the handle of the window to which the Windows message was sent.
+
+	PVal *note_pval;					// MemNote pval
+	APTR note_aptr;						// MemNote aptr
+
+Memory Stores information about variables selected by notepad instructions (notesel).
+
+	PVal *notep_pval;					// MemNote pval (previous)
+	APTR notep_aptr;					// MemNote aptr (previous)
+
+It stores the information before it was selected by the notesel instruction.
+
+	char *stmp;						// String temporary buffer
+
+This area can be used for the return value of a function or for temporarily saving a character string when interpreting an instruction.
+It is a character string pointer that can be handled by strbuf (sb ~) type libraries.
+
+	void *prmstack;						// Current parameter stack area
+
+Stores stack parameters referenced in subroutines and user-defined instructions.
+Multiple pieces of information are stored in stack parameters.
+
+	LIBDAT *mem_linfo;					// Library info
+
+Stores pointers to LIBDAT structures that manage information such as external DLLs and COM.
+
+	STRUCTPRM *mem_minfo;				// Parameter info
+
+Stores pointers to STRUCTPRM structures that manage argument information such as external DLLs and COM.
+
+	STRUCTDAT *mem_finfo;				// Function/Struct info
+
+A STRUCTDAT structure that manages information about module variables and user-defined instruction parameters
+Stores the pointer.
+
+	int retval_level;					// subroutine level (return code)
+Stores the subroutine nesting level when an interrupt occurs.
+This value is managed by the system.
+
+	int endcode;						// End result code
+
+Stores the result code passed to the system at the end of the script.
+
+	void (*msgfunc) (HSPCTX *);			// Message Callback Proc.
+
+Stores a pointer to a function that handles window messages.
+
+	void *wnd_parent;					// Parent Window Handle
+
+Stores the parent window information passed when the HSP window is created.
+
+	double refdval;						// sysvar 'refdval'
+
+Stores the contents of the system variable refdval.
+
+	char *cmdline;						// Command Line Parameters
+
+Stores command line parameters.
+
+	HSPEXINFO *exinfo2;					// HSP function data(3.1)
+
+Stores a pointer to the HSPEXINFO structure.
+This member is only available since HSP 3.1.
+
+
+About library information
+
+The following members in the HSPCTX structure provide the library information defined in the script.
+is showing. The following members are many composites such as external DLLs, COMs, module variables, etc.
+The parameters are saved.
+
+	LIBDAT *mem_linfo;				// Library info
+
+Provides a pointer to a LIBDAT structure that stores library information.
+The LIBDAT structure is defined as follows:
+
+		typedef struct LIBDAT {
+			int	flag;		// initalize flag
+			int	nameidx;	// function name index (DS)
+						// Interface IID ( Com Object )
+			void	*hlib;		// Lib handle
+			int	clsid;		// CLSID (DS) ( Com Object )
+		} LIBDAT;
+
+Library information is managed by indexes from mem_linfo [0] to mem_linfo [??].
+is. Actually, the library information is referenced from mem_finfo.
+
+The LIBDAT structure contains information corresponding to #uselib, #usecom, etc.
+For each piece of information, the flag member determines the type of information.
+The value of flag can be one of the following:
+
+#define LIBDAT_FLAG_NONE 0 // Invalid
+#define LIBDAT_FLAG_DLL 1 // DLL (not imported)
+#define LIBDAT_FLAG_DLLINIT 2 // DLL (imported)
+#define LIBDAT_FLAG_MODULE 3 // Module variable
+#define LIBDAT_FLAG_COMOBJ 4 // Predefined COM object
+
+nameidx is a DS index that indicates the library (DLL) name or interface IID
+Is stored. DS index is the index in mem_mds (data segment)
+indicate. (& hspctx-> mem_mds [DS index] to get the actual pointer
+can do. )
+hlib stores the handles of the imported DLL.
+clsid stores the DS index that indicates the class ID when the COM object is defined.
+
+
+	STRUCTDAT *mem_finfo;				// Function/Struct info
+
+A pointer to a STRUCTDAT structure that stores individual information such as function information
+Offers.
+The STRUCTDAT structure is defined as follows.
+
+		typedef struct STRUCTDAT {
+			short	index;		// base LIBDAT index
+			short	subid;		// struct index
+			int	prmindex;	// STRUCTPRM index(MINFO)
+			int	prmmax;		// number of STRUCTPRM
+			int	nameidx;	// name index (DS)
+			int	size;		// struct size (stack)
+			int	otindex;	// OT index(Module) / cleanup flag(Dll)
+			void	*proc;		// proc address
+		} STRUCTDAT;
+
+STRUCTDAT is a single user-defined instruction defined by a script.
+Contains information about (#deffunc, #func, #comfunc).
+index indicates the corresponding library information index.
+(The LIBDAT structure indicated by index is related.)
+The subid stores the index ID of the function information (itself).
+(It will be the index of "& hspctx-> mem_finfo [index ID]".)
+However, special types store the following values:
+
+#define STRUCTPRM_SUBID_DLL -3 // External DLL definition command
+#define STRUCTPRM_SUBID_DLLINIT -4 // External DLL definition instruction (*)
+#define STRUCTPRM_SUBID_OLDDLL -5 // External DLL definition instruction
+#define STRUCTPRM_SUBID_OLDDLLINIT -6 // External DLL definition instruction (*)
+#define STRUCTPRM_SUBID_COMOBJ -7 // COM call instruction
+
+STRUCTPRM_SUBID_OLDDLL, STRUCTPRM_SUBID_OLDDLLINIT,
+Indicates that legacy instructions (2.x compatible) are possible.
+If (*) INIT is added, it means that it has been imported.
+   is showing.
+
+Information about the actual parameters can be found in the parameter information indicated by prmindex.
+It is stored. Parameter information is "& hspctx-> mem_minfo [prmindex]"
+Recorded in the STRUCTPRM structure obtained by.
+prmmax indicates the number of parameter information. For example, prmmax is 3
+In the case, a total of 3 parameters of "prmindex, prmindex + 1, prmindex + 2"
+Indicates that this function information is retained. in short,
+There are as many information as the number of prmmax from prmindex.
+nameidx is the name string (or function name) of the function information
+The indicated DS index is stored.
+size stores the size (in bytes) in memory used by the parameter.
+The function address imported at the time of the external DLL definition instruction is stored in proc.
+The content of otindex is divided according to the type of information.
+
+At the time of user-defined instruction: OT index (label information)
+At the time of external DLL definition instruction: Cleanup instruction flag (0 to 1)
+At the time of COM object definition command: Import ID (ordinal number)
+When module variable information: 0 (none)
+
+
+	STRUCTPRM *mem_minfo;				// Parameter info
+
+Provides a pointer to a STRUCTPRM structure that provides parameter information.
+Parameter information is referenced from the function information.
+The STRUCTPRM structure is defined as follows.
+
+		typedef struct STRUCTPRM {
+			short	mptype;		// Parameter type
+			short	subid;		// struct index
+			int	offset;		// offset from top
+		} STRUCTPRM;
+
+mptype stores a value that indicates the type of the parameter.
+The parameter type usually has the following values:
+
+		#define MPTYPE_NONE 0
+#define MPTYPE_VAR 1 // Variable
+#define MPTYPE_STRING 2 // string
+#define MPTYPE_DNUM 3 // Real number (64bit floating point number)
+#define MPTYPE_INUM 4 // Integer
+#define MPTYPE_STRUCT 5 // Module variable type
+#define MPTYPE_LABEL 7 // Label type
+
+#define MPTYPE_LOCALVAR -1 // Local variables
+#define MPTYPE_ARRAYVAR -2 // Array variable
+#define MPTYPE_SINGLEVAR -3 // Variable itself (no array)
+#define MPTYPE_FLOAT -4 // 32bit floating point
+#define MPTYPE_STRUCTTAG -5 // Module variable type tag
+#define MPTYPE_LOCALSTRING -6 // Local string
+#define MPTYPE_MODULEVAR -7 // Module variable name
+#define MPTYPE_PPVAL -8 // Pointer to PVAL
+#define MPTYPE_PBMSCR -9 // Pointer to BMSCR
+#define MPTYPE_PVARPTR -10 // Pointer to variable information
+#define MPTYPE_IMODULEVAR -11 // Module variable name
+
+#define MPTYPE_IOBJECTVAR -12 // COM object type
+#define MPTYPE_LOCALWSTR -13 // Local string (Unicode)
+		#define MPTYPE_FLEXSPTR -14	// sptr
+		#define MPTYPE_FLEXWPTR -15	// wptr
+#define MPTYPE_PTR_REFSTR -16 // Pointer to refstr
+
+The subid usually stores its own ID (parameter information index)
+It has been.
+However, special types store the following values:
+
+#define STRUCTPRM_SUBID_STACK -1 // Local variables in the stack
+
+
+About PVal structure
+
+The PVal structure contains information to indicate the data stored in the variable.
+It is defined in hspvar_core.h as follows.
+
+	//	PVAL structure
+	//
+	typedef struct
+	{
+		//	Memory Data structure (2.5 compatible)
+		//
+		short	flag;		// type of val
+		short	mode;		// mode (0=normal/1=clone/2=alloced)
+		int		len[5];		// length of array 4byte align (dim)
+		int		size;		// size of Val
+		char	*pt;		// ptr to array
+
+		//	Memory Data structure (3.0 compatible)
+		//
+		void	*master;	// Master pointer for data
+		short	autoresize;	// Auto Array Expand Flag
+		short	arraycnt;	// Array Set Count
+		int		offset;		// Array Data Offset
+		int		arraymul;	// Array Multiple Value 
+	} PVal;
+
+The first field is fully compatible with HSP2.5 and later PVAL2 structures.
+Many features have been enhanced with fields that have been extended since HSP3.0.
+All processing related to the PVal structure is done via the storage core function.
+Because it does, it is rare to work with each field directly.
+Details of each field are as follows.
+
+	short	flag;		// type of val
+
+Contains the type of the variable.
+It can be one of the following, or an extended VarType value.
+
+#define HSPVAR_FLAG_STR 2 // SJIS string (str)
+#define HSPVAR_FLAG_DOUBLE 3 // 64bit real number (double)
+#define HSPVAR_FLAG_INT 4 // 32bit integer (int)
+
+	short	mode;		// mode (0=normal/1=clone/2=alloced)
+
+Contains the mode in which the variable was created.
+It can be one of the following values:
+
+#define HSPVAR_MODE_NONE -1 // Invalid
+#define HSPVAR_MODE_MALLOC 1 // Normally allocated memory
+#define HSPVAR_MODE_CLONE 2 // Clone variable
+
+	int	len[5];		// length of array 4byte align (dim)
+
+Contains information about the size of the array.
+When dim p1, p2, p3, p4, p1 becomes len [1], p2 becomes len [2],
+p3 is the value of len [3] and p4 is the value of len [4].
+
+	int		size;		// size of Val
+
+The size of the entire memory allocated by the variable is stored.
+
+	char	*pt;		// ptr to Val
+
+A pointer to memory where the contents of the actual variable are stored.
+Normally, if it is an array variable, it is continuous from the address specified here.
+Space is reserved for the array.
+Be sure to use some types, such as strings, as they may be different.
+Manipulation of the values held by variables is via storage core functions.
+Please do it.
+
+	short	autoresize;	// Auto Array Expand Flag
+	short	arraycnt;	// Array Set Count
+	int		offset;		// Array Data Offset
+	int		arraymul;	// Array Multiple Value 
+	void	*master;	// Master pointer for data
+
+The above fields are optional on the storage core function side.
+You can use it. Mainly stores information about variable length arrays
+is.
+
+
+About storage core function (HspVarProc)
+
+
+The HspVarProc structure is used to store information for each type stored in variables.
+Thing. Corefunc (storage core function) set in this structure
+Allows you to manage new types.
+It is defined in hspvar_core.h as follows.
+
+	//		command execute core function
+	//
+	typedef struct
+	{
+// Data field
+	//
+short flag; // type type value (set by the parent application)
+short aftertype; // Type value after calculation
+short version; // Type type runtime version (0x100 = 1.0)
+unsigned short support; // Support status flag (HSPVAR_SUPPORT_ *)
+short basesize; // Size used by one data (byte) / -1 for variable length
+short opt; // (unused)
+
+char * vartype_name; // Pointer to type type name string
+char * user; // User data (unused)
+
+// For system reference / type conversion
+	//
+	void *(*Cnv)( void *buffer, int flag );
+	void *(*CnvCustom)( void *buffer, int flag );
+	PDAT *(*GetPtr)( PVal *pval );
+
+void * (* ArrayObjectRead) (PVal * pval, int * mptype); // Specify array elements (associative array / read)
+void (* ArrayObject) (PVal * pval); // Specify array elements (associative array / ready to write)
+void (* ObjectWrite) (PVal * pval, void * data, int type); // Substitution when HSPVAR_SUPPORT_NOCONVERT is specified
+void (* ObjectMethod) (PVal * pval); // Specify method for variable
+
+void (* Alloc) (PVal * pval, PVal * pval2); // Allocate variable memory
+void (* Free) (PVal * pval); // Free variable memory
+
+int (* GetSize) (void * pdat); // Returns the memory size used by the element (because of variable length)
+
+// Returns the pointer and size of the variable buffer (binary)
+// (If the element is variable length (str), only the corresponding 1 array binary)
+// (Full array binary if the element is fixed length (int, double))
+// (Size returns memory allocation size)
+	void *(*GetBlockSize)( PVal *pval, PDAT *pdat, int *size );
+
+// Reserve a block of memory for binary data
+// (Force the block size when the element is variable length (str))
+// (Do nothing for fixed length)
+	void (*AllocBlock)( PVal *pval, PDAT *pdat, int size );
+
+// Substitution function (type matching is guaranteed)
+	//
+	void (*Set)( PVal *pval, PDAT *pdat, void *in );
+
+// Arithmetic function (type matching is guaranteed)
+	//
+	void (*AddI)( PDAT *pval, void *val );
+	void (*SubI)( PDAT *pval, void *val );
+	void (*MulI)( PDAT *pval, void *val );
+	void (*DivI)( PDAT *pval, void *val );
+	void (*ModI)( PDAT *pval, void *val );
+
+	void (*AndI)( PDAT *pval, void *val );
+	void (*OrI)( PDAT *pval, void *val );
+	void (*XorI)( PDAT *pval, void *val );
+
+	void (*EqI)( PDAT *pval, void *val );
+	void (*NeI)( PDAT *pval, void *val );
+	void (*GtI)( PDAT *pval, void *val );
+	void (*LtI)( PDAT *pval, void *val );
+	void (*GtEqI)( PDAT *pval, void *val );
+	void (*LtEqI)( PDAT *pval, void *val );
+
+	void (*RrI)( PDAT *pval, void *val );
+	void (*LrI)( PDAT *pval, void *val );
+	} HspVarProc;
+
+
+short flag; // type type value (set by the parent application)
+
+The ID number assigned to each type is set.
+HSPVAR_FLAG_INT etc. also show type type values.
+The type value is set in the flag field of the PVal structure.
+
+short aftertype; // Type value after calculation
+
+If you have an operator whose type changes after the operation, use this field
+Notifies the system of the type value after calculation.
+
+short version; // Type type runtime version (0x100 = 1.0)
+unsigned short support; // Support status flag (HSPVAR_SUPPORT_ *)
+short basesize; // Size used by one data (byte) / -1 for variable length
+short opt; // (unused)
+char * vartype_name; // Pointer to type type name string
+char * user; // User data (unused)
+
+Set the type information when initializing the storage core function
+is needed. Based on this information, the internal operation is determined.
+Support is set by selecting multiple contents from the following.
+
+HSPVAR_SUPPORT_STORAGE // Fixed length storage support
+HSPVAR_SUPPORT_FLEXSTORAGE // Variable length storage support
+HSPVAR_SUPPORT_FIXEDARRAY // Array support
+HSPVAR_SUPPORT_FLEXARRAY // Variable length array support
+HSPVAR_SUPPORT_ARRAYOBJ // Associative array support
+HSPVAR_SUPPORT_FLEXSIZE // Variable length of data for each element
+HSPVAR_SUPPORT_CLONE // Clone operation
+HSPVAR_SUPPORT_USER1 // User flag 1
+HSPVAR_SUPPORT_USER2 // User flag 2
+
+When the variable is initialized, the contents are copied to the support field of the PVal structure.
+vartype_name is the information to identify the type by name.
+Must be set in lowercase letters so that the name does not overlap with other types
+You need to be careful.
+
+User data and user flags are stored on the storage core function side.
+Flag information that can be used freely.
+
+
+	PDAT *(*GetPtr)( PVal *pval );
+
+Returns the first pointer that contains the actual data indicated by PVal.
+(PDAT * indicates a pointer to the actual data.)
+Offset information (PVal-> offset) if array variables are supported
+It is necessary to obtain the actual pointer of the data based on it.
+
+
+void * (* ArrayObjectRead) (PVal * pval, int * mptype); // Specify array elements (associative array / read)
+void (* ArrayObject) (PVal * pval); // Specify array elements (associative array / ready to write)
+void (* ObjectWrite) (PVal * pval, void * data, int type); // Substitution when HSPVAR_SUPPORT_NOCONVERT is specified
+void (* ObjectMethod) (PVal * pval); // Specify method for variable
+
+When the type has associative array support (HSPVAR_SUPPORT_ARRAYOBJ),
+Called to specify an array.
+The HSP3 core is at the stage of parsing the intermediate code next to the variable name.
+Call the function. ArrayObject, ArrayObjectRead function properly intermediate code
+You need to parse it and return the value.
+ArrayObject is specified as an array when assigning a variable or specifying a variable as a parameter.
+Called at times. After checking the array contents with ArrayObject, the system
+If an assignment is made, call ObjectWrite.
+The ObjectWrite function must assign the appropriate values to the variables according to the array elements.
+
+ArrayObjectRead is called when the contents of a variable are referenced.
+At this time, substitute the type type (HSPVAR_FLAG_ *) of the value to be returned into (* mptype), and
+Pass the actual pointer of the data as the return value.
+If the type type of the value to be returned can be your own type, you can leave (* mptype) as it is.
+The parsing of intermediate code is in the HSPEXINFO structure as well as instructions and functions.
+It is possible to get the value using a function.
+The ObjectMethod function is executed when the method is called by the mcall instruction.
+Is to be done. You can provide an execution mechanism that is unique to each type.
+
+
+	void *(*Cnv)( void *buffer, int flag );
+
+To convert from the type requested by flag to your own type
+It becomes a function. What is requested by flag is built-in type
+Only with HSPVAR_FLAG_INT, HSPVAR_FLAG_DOUBLE, HSPVAR_FLAG_STR
+Otherwise, you can generate an HSPVAR_ERROR_TYPEMISS error.
+The buffer is a pointer to the data that has the requested type.
+You need to convert this and return it as a return value.
+Do not change the contents of the buffer.
+
+
+	void *(*CnvCustom)( void *buffer, int flag );
+
+To convert from your own type to the type requested by flag
+It becomes a function. What is requested by flag is built-in type
+Only with HSPVAR_FLAG_INT, HSPVAR_FLAG_DOUBLE, HSPVAR_FLAG_STR
+Otherwise, you can generate an HSPVAR_ERROR_TYPEMISS error.
+The buffer is a pointer to the data that has the requested type.
+You need to convert this and return it as a return value.
+Do not change the contents of the buffer.
+This function performs a newly created type operation on a built-in type value.
+Called for type conversion when trying to do it.
+
+
+	void (*Copy)( void *in, void *out );
+
+Copy the contents of in to out according to the size of the type.
+
+
+void (* Alloc) (PVal * pval, PVal * pval2); // Allocate variable memory
+
+Allocate the size required by the pval variable and perform initialization.
+If pval2 is NULL, it will be new data.
+If pval2 is specified, inherit the contents of pval2 and reallocate.
+Indicates to do. In this case, based on the size and pt of pval2
+Be sure to copy the contents. Also, release pt at the same time
+You have to do it.
+
+example:
+		if ( pval2 != NULL ) {
+			memcpy( pt, pval->pt, pval->size );
+			free( pval->pt );
+		}
+
+
+void (* Free) (PVal * pval); // Free variable memory
+
+Frees the memory allocated by pval.
+In most cases, the HSP3 core will make the call automatically.
+
+
+int (* GetSize) (void * pdat); // Returns the memory size used by the element (because of variable length)
+
+Returns the size (in bytes) of the content indicated by pdat.
+This function is used when the data size of one element is variable length (basesize is -1).
+Will be called. Normally, set the same size as basesize back
+Please.
+
+
+	void *(*GetBlockSize)( PVal *pval, PDAT *pdat, int *size );
+
+Returns a pointer and size of the variable buffer (binary).
+If the element has a variable length, only the corresponding one array of binaries will be targeted.
+If the element has a fixed length (int, double, etc.), it returns a full array binary.
+It also returns the memory allocation size in (* size).
+
+
+	void (*AllocBlock)( PVal *pval, PDAT *pdat, int size );
+
+Reserve a block of memory for binary data.
+When forcibly securing the block size when the element has a variable length (str etc.)
+will be used. Normally, you don't have to do anything for a fixed length.
+
+void (* Set) (PVal * pval, PDAT * pdat, void * in); // Substitution
+void (* AddI) (PDAT * pdat, void * val); // Operator +
+void (* SubI) (PDAT * pdat, void * val); // Operator-
+void (* MulI) (PDAT * pdat, void * val); // operator *
+void (* DivI) (PDAT * pdat, void * val); // operator /
+void (* ModI) (PDAT * pdat, void * val); // Operator \\
+
+void (* AndI) (PDAT * pdat, void * val); // Operator &
+void (* OrI) (PDAT * pdat, void * val); // Operator |
+void (* XorI) (PDAT * pdat, void * val); // Operator ^
+
+void (* EqI) (PDAT * pdat, void * val); // Operator =
+void (* NeI) (PDAT * pdat, void * val); // Operator! =
+void (* GtI) (PDAT * pdat, void * val); // Operator <
+void (* LtI) (PDAT * pdat, void * val); // Operator>
+void (* GtEqI) (PDAT * pdat, void * val); // Operator <=
+void (* LtEqI) (PDAT * pdat, void * val); // Operator> =
+
+void (* RrI) (PDAT * pdat, void * val); // Operator >>
+void (* LrI) (PDAT * pdat, void * val); // Operator <<
+
+Arithmetic functions corresponding to each operator.
+The data passed by PDAT is guaranteed to match its type.
+The arithmetic function returns the arithmetic result of pdat and val to pdat.
+
+
+About HSP header information
+
+The HSPHED structure is a collection of information contained in HSP file objects.
+It can be referenced from hsphed in the HSPCTX structure.
+The HSPHED structure is defined in hsp3struct.h as follows:
+
+	typedef struct HSPHED
+	{
+	//		HSP3.0 header structure
+	//
+
+	char	h1;					// magic code1
+	char	h2;					// magic code2
+	char	h3;					// magic code3
+	char	h4;					// magic code4
+	int		version;			// version number info
+	int		max_val;			// max count of VAL Object
+	int		allsize;			// total file size
+
+	int		pt_cs;				// ptr to Code Segment
+	int		max_cs;				// size of CS
+	int		pt_ds;				// ptr to Data Segment
+	int		max_ds;				// size of DS
+
+	int		pt_ot;				// ptr to Object Temp
+	int		max_ot;				// size of OT
+	int		pt_dinfo;			// ptr to Debug Info
+	int		max_dinfo;			// size of DI
+
+	int		pt_linfo;			// ptr to LibInfo(2.3)
+	int		max_linfo;			// size of LibInfo(2.3)
+	int		pt_finfo;			// ptr to FuncInfo(2.3)
+	int		max_finfo;			// size of FuncInfo(2.3)
+
+	int		pt_minfo;			// ptr to ModInfo(2.5)
+	int		max_minfo;			// size of ModInfo(2.5)
+	int		pt_finfo2;			// ptr to FuncInfo2(2.5)
+	int		max_finfo2;			// size of FuncInfo2(2.5)
+
+	int		pt_hpidat;			// ptr to HPIDAT(3.0)
+	int		max_hpi;			// size of HPIDAT(3.0)
+	int		bootoption;			// bootup options
+	int		runtime;			// ptr to runtime name
+
+	} HSPHED;
+
+
+Get and set array variables
+
+The array element is also fetched at the same time by code_getva which gets the variable name.
+Basically, the variable name is a PVal pointer, and the array element is an APTR value.
+Will be acquired.
+An APTR value of 0 indicates that no array element has been specified.
+APTR shows the index of the array element.
+The upper limit is the maximum index value after converting all dimensions to one dimension.
+If it is a one-dimensional array, APTR 0,1,2 ... is the same as the array element.
+There is no problem thinking.
+
+The APTR obtained by code_getva is range checked, so
+In normal use, it is not necessary to check the range on the plug-in side.
+
+If you want to set array elements arbitrarily on the plug-in side,
+Use the HspFunc_array function.
+
+It is possible to specify elements in the following form.
+(APTR value = pval-> offset value)
+
+HspVarCoreReset (pval); // Reset array pointer
+HspFunc_array (pval, 0); // 1st dimension
+HspFunc_array (pval, 0); // 2nd dimension
+HspFunc_array (pval, 0); // 3rd dimension
+HspFunc_array (pval, 0); // 4th dimension
+
+You can also extend the array with the HspFunc_redim function.
+
+		void (*HspFunc_redim)( PVal *pval, int lenid, int len );
+
+This function expands the array of specified variables.
+Expands the pval variable to the size of len for the specified number of dimensions lenid (1-4).
+
+
+Notes on code_getprm
+
+In the code_getprm function to get indefinite type parameters,
+This is done via the mpval variable, which provides temporary parameter storage.
+mpval is a PVal pointer for the variable specified in the script
+Please note that it is different from (PVal pointer obtained by code_getva).
+Also, since the mpval pointer is managed by the system, you can modify the value or
+Avoid processing that changes the contents of the structure, such as changing the type.
+
+
+Precautions when creating a function
+
+If you have a long loop inside a DLL function, you can do Windows-wide tasks.
+Please try to return as soon as possible as it will rob you.
+This is the same as the notes about HSP tasks.
+HSP itself is running single thread, but on the plugin side
+It is also possible to operate with multiple threads. Even in that case, on the HSP side
+Be careful not to rewrite the value during execution.
+
+
+Lastly
+
+For inquiries, impressions, opinions, etc. regarding this document, please send an email below.
+Please contact the address. (For replying to inquiries, time
+Please note that it may take some time. )
+See readme.txt for operational licenses.
+
+	Homepage: http://www.onionsoft.net/
+        e-mail  : onitama@onionsoft.net
+
+------------------------------------------------------------------------------
+                                                     HSPDLL.TXT / end of file 
+------------------------------------------------------------------------------

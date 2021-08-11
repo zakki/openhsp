@@ -1,0 +1,327 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+
+<html lang="ja">
+
+	<head>
+		<meta http-equiv="content-type" content="text/html;charset=UTF-8">
+<meta lang = "ja" name = "keywords" content = "HSP, Hot Soup Processor, HSPTV, HSP3, HSP3.2, ONION software, onitama, hot soup, processor, interpreter, language, HSP">
+		<meta name="generator" content="Adobe GoLive">
+<title> Introduction to HSP </title>
+		<link href="main.css" type="text/css" rel="stylesheet" media="all">
+	</head>
+
+	<body background="images/back6.gif" link="blue" leftmargin="0" marginheight="0" marginwidth="0" topmargin="0">
+		<div align="center">
+			
+			<table width="800" border="0" cellspacing="0" cellpadding="0">
+				<tr>
+					<td align="left" valign="top" bgcolor="white" width="169">
+					
+					<br>
+						<table width="150" border="0" cellspacing="0" cellpadding="0" height="354">
+							<tr height="30">
+								<td height="30" background="images/back_menuue.gif">
+									<p class="leftsubmenu"><a href="COVER.HTM">Start!</a></p>
+								</td>
+							</tr>
+							<tr height="30">
+								<td height="30" background="images/back_submenu.gif">
+									<p class="leftsubmenu"><a href="START-1.HTM">Step1</a></p>
+								</td>
+							</tr>
+							<tr height="30">
+								<td height="30" background="images/back_submenu.gif">
+									<p class="leftsubmenu"><a href="START-2.HTM">Step2</a></p>
+								</td>
+							</tr>
+							<tr height="30">
+								<td height="30" background="images/back_submenu.gif">
+									<p class="leftsubmenu"><a href="START-3.HTM">Step3</a></p>
+								</td>
+							</tr>
+							<tr height="30">
+								<td height="30" background="images/back_submenu.gif">
+									<p class="leftsubmenu"><a href="START-4.HTM">Step4</a></p>
+								</td>
+							</tr>
+							<tr height="30">
+								<td height="30" background="images/back_submenu.gif">
+									<p class="leftsubmenu"><a href="START-5.HTM">Step5</a></p>
+								</td>
+							</tr>
+							<tr height="30">
+								<td height="30" background="images/back_submenu.gif">
+									<p class="leftsubmenu"><a href="START-6.HTM">Step6</a></p>
+								</td>
+							</tr>
+							<tr height="30">
+								<td height="30" background="images/back_submenu.gif">
+									<p class="leftsubmenu"><a href="START-7.HTM">Step7</a></p>
+								</td>
+							</tr>
+							<tr height="30">
+								<td height="30" background="images/back_submenu.gif">
+									<p class="leftsubmenu" style="color:#009999; font-weight:bold;">Step8</p>
+								</td>
+							</tr>
+							<tr height="30">
+								<td height="30" background="images/back_submenu.gif">
+									<p class="leftsubmenu"><a href="START-9.HTM">Final</a></p>
+								</td>
+							</tr>
+							<tr height="30">
+								<td height="30" background="images/back_submenu.gif">
+									<p class="leftsubmenu"><a href="THANKS.HTM">Special thanks</a></p>
+								</td>
+							</tr>
+							<tr height="30">
+								<td height="30" background="images/back_menusita.gif">
+									<p class="leftsubmenu"><a href="START.HTM">Cover</a></p>
+								</td>
+							</tr>
+						</table>
+						<br>
+					</td>
+					<td align="left" valign="top" bgcolor="white">
+						<div class="contents">
+							
+							<div class="section">
+<h2 class = "play"> step8: More advanced condition judgment </h2>
+<p> The end of this "Introduction to HSP" is finally approaching. After that, if you master the function unique to the script called condition judgment, the basic part is over. After that, you will be able to make various software depending on the application. <br>
+									<br>
+When it comes to conditional judgment, I have a feeling that it is likely to make some difficult judgment, but that is, <br>
+									<br>
+<b> "Compare variables with numbers" </b> <br>
+									<br>
+It is. And as a result of the comparison, we do something different ... That is the processing unique to scripts, and it is a point that can be applied. <br>
+									<br>
+In HSP, there is only one instruction to judge the condition. Just remember this one. But before that, there's something to remember. <br>
+									<br>
+In HSP, the principle of script is to write one instruction on one line and execute it in order from the first line, but in fact, <br>
+									<br>
+<b> You can write multiple instructions on one line </b> <br>
+									<br>
+It is. But I haven't said it before because doing it from the beginning complicates the script and makes it hard to see. I'll explain how to write multiple instructions on one line, but if you put too many instructions on one line more than necessary, you will end up with a spaghetti script that you won't understand at all later. Please use it with caution. So, to write multiple instructions on one line, simply <br>
+									<br>
+								</p>
+								<br>
+								<img src="images/btn_extention.gif"><br>
+								<div class="enroll">
+<p> Multiple instructions can be written on one line by separating them with ": (colon)" </p>
+								</div>
+								<br>
+								<p><br>
+It was. That is, <br>
+									<br>
+									<b>x=150<br>
+											y=100<br>
+											pos x,y </b><br>
+									<br>
+The three-line script, <br>
+									<br>
+									<b>x=150:y=100:pos x,y </b><br>
+									<br>
+If you write, it will fit in one line. If this is hard to see, <br>
+									<br>
+									<b>x=150 : y=100 : pos x,y</b><br>
+									<br>
+You can freely open a space like this. Writing multiple instructions on one line like this is called "<font color =" # 33cccc "> multi-statement </font>". With this, the density of the script will increase and it will look cool. However, please try to aim for a script that is easy to read. <br>
+									<br>
+Now that I've learned "<font color =" # 66cccc "> multi-statement </font>", I'll return to the conditional judgment. The only instruction for conditional judgment, it is </p>
+								<br>
+								<img src="images/btn_extention.gif"><br>
+								<div class="enroll">
+<p> if conditional expression: An instruction to be executed when the condition is correct. </p>
+								</div>
+								<br>
+<p> Here comes the mysterious word conditional expression. That means </p>
+								<br>
+								<img src="images/btn_extention.gif" alt="" height="29" width="29" border="0"><br>
+								<table width="455" border="0" cellspacing="2" cellpadding="0" bgcolor="#ccffff">
+									<tr>
+										<td align="center" bgcolor="#ccffff">
+<p> Conditional expression </p>
+										</td>
+										<td align="center" bgcolor="#ccffff">
+<p> Meaning </p>
+										</td>
+									</tr>
+									<tr>
+										<td align="center" bgcolor="white">
+<p> Variable name = Numerical value </p>
+										</td>
+										<td align="center" bgcolor="white">
+<p> Variable contents and numbers are the same </p>
+										</td>
+									</tr>
+									<tr>
+										<td align="center" bgcolor="white">
+<p> Variable name! Numerical value </p>
+										</td>
+										<td align="center" bgcolor="white">
+<p> Variable contents and numbers are not the same </p>
+										</td>
+									</tr>
+									<tr>
+										<td align="center" bgcolor="white">
+<p> Variable name & lt; Numeric value </p>
+										</td>
+										<td align="center" bgcolor="white">
+<p> Numbers are larger than the contents of variables </p>
+										</td>
+									</tr>
+									<tr>
+										<td align="center" bgcolor="white">
+<p> Variable name & gt; Numeric value </p>
+										</td>
+										<td align="center" bgcolor="white">
+<p> Numbers are smaller than the contents of variables </p>
+										</td>
+									</tr>
+								</table>
+								<br>
+<p> It's like this. The conditional expression specifies the conditions for comparing variables and numbers. The criteria for judging the conditions are <br>
+									<br>
+									<b>hen&lt;10</b><br>
+									<br>
+Then, is the content of the variable hen less than 10? What can we do by making a conditional judgment with this ?? For example, by combining this with the "goto" instruction, you can create a loop that repeats the same thing a specified number of times. <br>
+								</p>
+								<br>
+								<table width="592" border="0" cellspacing="0" cellpadding="0">
+									<tr>
+										<td width="45">
+											<p></p>
+										</td>
+										<td>
+											<p><b>kai=0</b></p>
+										</td>
+									</tr>
+									<tr>
+										<td width="45">
+											<p><b>*kuri</b></p>
+										</td>
+										<td>
+											<p></p>
+										</td>
+									</tr>
+									<tr>
+										<td width="45">
+											<p></p>
+										</td>
+										<td>
+<p> <b> mes "Repeat." <br>
+														kai=kai+1<br>
+													if kai &lt; 10 : goto *kuri<br>
+												</b></p>
+										</td>
+									</tr>
+								</table>
+								<p><br>
+In the above example, the contents of the variable kai are added one by one, and the same place is repeated by the "goto" command until it reaches 10. If you do this, you will see 10 "Repeat" messages. Here is one example using conditional judgment. Let's look at another example. <br>
+								</p>
+								<br>
+								<table width="568" border="0" cellspacing="0" cellpadding="0">
+									<tr>
+										<td width="61">
+											<p></p>
+										</td>
+										<td>
+											<p><b>cls<br>
+														kai=0<br>
+mes "Press the button" <br>
+													button "PUSH",*gopush<br>
+													button "END",*goend<br>
+														stop</b></p>
+										</td>
+									</tr>
+									<tr>
+										<td width="61">
+											<p><b>*gopush</b></p>
+										</td>
+										<td>
+											<p></p>
+										</td>
+									</tr>
+									<tr>
+										<td width="61">
+											<p></p>
+										</td>
+										<td>
+											<p><b>kai=kai+1<br>
+														stop</b></p>
+										</td>
+									</tr>
+									<tr>
+										<td width="61">
+											<p><b>*goend</b></p>
+										</td>
+										<td>
+											<p></p>
+										</td>
+									</tr>
+									<tr>
+										<td width="61">
+											<p></p>
+										</td>
+										<td>
+											<p><b>if kai &gt; 0 : goto *owari<br>
+mes "Press the" PUSH "button at least once" <br>
+														stop</b></p>
+										</td>
+									</tr>
+									<tr>
+										<td width="61">
+											<p><b>*owari</b></p>
+										</td>
+										<td>
+											<p></p>
+										</td>
+									</tr>
+									<tr>
+										<td width="61">
+											<p></p>
+										</td>
+										<td>
+											<p><b>cls<br>
+mes "You pressed the" PUSH "button" + kai + "times" <br>
+														stop</b></p>
+										</td>
+									</tr>
+								</table>
+								<p><br>
+In this example, two buttons, "PUSH" and "END", are displayed, and when the "END" button is pressed, the number of times "PUSH" has been pressed so far is displayed. However, if you press "END" before pressing "PUSH" even once, a message calling attention to "Please press the" PUSH "button at least once" is displayed. I'm making a decision. <br>
+									<br>
+In this way, it can also be used to determine whether a specific message has been read or a button has been pressed by entwining it with a variable. <br>
+									<br>
+By using conditional judgment in this way, you will be able to write more advanced scripts. It is an indispensable command when making a simple adventure game. <br>
+									<br>
+There are still many HSP commands available, but you should be able to create various software such as launchers, CG collections, media browsers, and venture games just by using the commands you have learned so far. First of all, let's learn the basics firmly and create a script within a reasonable range. <br>
+									<br>
+Now that I have explained the basics of how to write scripts, HSP still has various instructions and usages. That's ... let's talk about it at another time. <br>
+								</p>
+							</div>
+							<div class="section">
+								<table>
+									<tr>
+										<td><a href="START-9.HTM"><img src="images/btn_next.gif" alt="" height="29" width="29" border="0"></a></td>
+<td> <font size = "-1"> <a href="START-9.HTM"> To the final chapter </a> </font> </td>
+									</tr>
+								</table>
+							</div>
+						</div>
+					</td>
+				</tr>
+			</table>
+															<div align="center">
+			<table width="800" border="0" cellspacing="0" cellpadding="0">
+					<tr>
+					<td align="center">
+							<p style="color:#333333; font-size:10px; margin:5px 0px">ONION software Copyright 1997-2009(c) All rights reserved.<br>
+							</p>
+						</td>
+				</tr>
+				</table>
+		</div></div>
+	</body>
+
+</html>

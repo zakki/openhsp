@@ -1,0 +1,304 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+
+<html lang="ja">
+
+	<head>
+		<meta http-equiv="content-type" content="text/html;charset=UTF-8">
+<meta lang = "ja" name = "keywords" content = "HSP, Hot Soup Processor, HSPTV, HSP3, HSP3.2, ONION software, onitama, hot soup, processor, interpreter, language, HSP">
+		<meta name="generator" content="Adobe GoLive">
+<title> Introduction to HSP </title>
+		<link href="main.css" type="text/css" rel="stylesheet" media="all">
+	</head>
+
+	<body background="images/back6.gif" link="blue" leftmargin="0" marginheight="0" marginwidth="0" topmargin="0">
+		<div align="center">
+			
+			<table width="800" border="0" cellspacing="0" cellpadding="0">
+				<tr>
+					<td align="left" valign="top" bgcolor="white" width="169">
+					
+					<br>
+						<table width="150" border="0" cellspacing="0" cellpadding="0" height="354">
+							<tr height="30">
+								<td height="30" background="images/back_menuue.gif">
+									<p class="leftsubmenu"><a href="COVER.HTM">Start!</a></p>
+								</td>
+							</tr>
+							<tr height="30">
+								<td height="30" background="images/back_submenu.gif">
+									<p class="leftsubmenu"><a href="START-1.HTM">Step1</a></p>
+								</td>
+							</tr>
+							<tr height="30">
+								<td height="30" background="images/back_submenu.gif">
+									<p class="leftsubmenu"><a href="START-2.HTM">Step2</a></p>
+								</td>
+							</tr>
+							<tr height="30">
+								<td height="30" background="images/back_submenu.gif">
+									<p class="leftsubmenu"><a href="START-3.HTM">Step3</a></p>
+								</td>
+							</tr>
+							<tr height="30">
+								<td height="30" background="images/back_submenu.gif">
+									<p class="leftsubmenu"><a href="START-4.HTM">Step4</a></p>
+								</td>
+							</tr>
+							<tr height="30">
+								<td height="30" background="images/back_submenu.gif">
+									<p class="leftsubmenu"><a href="START-5.HTM">Step5</a></p>
+								</td>
+							</tr>
+							<tr height="30">
+								<td height="30" background="images/back_submenu.gif">
+									<p class="leftsubmenu"><a href="START-6.HTM">Step6</a></p>
+								</td>
+							</tr>
+							<tr height="30">
+								<td height="30" background="images/back_submenu.gif">
+									<p class="leftsubmenu" style="color:#009999; font-weight:bold;">Step7</p>
+								</td>
+							</tr>
+							<tr height="30">
+								<td height="30" background="images/back_submenu.gif">
+									<p class="leftsubmenu"><a href="START-8.HTM">Step8</a></p>
+								</td>
+							</tr>
+							<tr height="30">
+								<td height="30" background="images/back_submenu.gif">
+									<p class="leftsubmenu"><a href="START-9.HTM">Final</a></p>
+								</td>
+							</tr>
+							<tr height="30">
+								<td height="30" background="images/back_submenu.gif">
+									<p class="leftsubmenu"><a href="THANKS.HTM">Special thanks</a></p>
+								</td>
+							</tr>
+							<tr height="30">
+								<td height="30" background="images/back_menusita.gif">
+									<p class="leftsubmenu"><a href="START.HTM">Cover</a></p>
+								</td>
+							</tr>
+						</table>
+						<br>
+					</td>
+					<td align="left" valign="top" bgcolor="white">
+						<div class="contents">
+							
+							<div class="section">
+<h2 class = "play"> step7: Let's use variables </h2>
+<p> The script is getting longer, isn't it? This can be complicated and difficult to read. Comments are useful in such cases. A comment is to put your favorite characters as a comment in the script. However, there are rules on how to write comments, as it should not be mistaken for an instruction. For example, <br>
+									<br>
+<b>; This line is a comment <br>
+mes "message"; This part is a comment </b> <br>
+									<br>
+Use like. That is </p>
+								<br>
+								<img src="images/btn_extention.gif"><br>
+								<div class="enroll">
+<p> After "; (semicolon)", it becomes a comment and is ignored. </p>
+								</div>
+								<br>
+It means <p>. Whether you write an instruction or a sentence after the ";" has no effect on the execution of the script. So <br>
+									<br>
+<b> exec "notepad"; Start Notepad </b> <br>
+									<br>
+You can easily add annotations like this. This is recommended because it makes it easier to see what is happening on which line when you review the script later. <br>
+									<br>
+Now, let's get into the main subject, "Let's use variables." You might wonder what variables are in the first place. As it is, if you want to change the current position, <br>
+									<br>
+<b> pos 150,80; Change current position to (150,80) </b> <br>
+									<br>
+I specified a numerical value like this. You can replace this with a variable. Then, <br>
+									<br>
+<b> x = 150; Substitute 150 for variable x <br>
+y = 80; Substitute 80 for variable y <br>
+pos x, y; change current position to (x, y) </b> <br>
+									<br>
+It will be like this. The current position is still changed to (150,80). Ehhhh ?? Why eh ?? <br>
+									<br>
+Variables are often likened to "things". It is a "thing" that remembers the numerical values. Give a name to "Iremono". For example, <br>
+									<br>
+<b> "The one named x" </b> <br>
+									<br>
+Of course, you can put something inside the "Iremono". <br>
+									<br>
+<b> "Put the number 100 in the x" </b> <br>
+									<br>
+You can put numbers inside like this. This "container" is a variable. So, the above words are <br>
+									<br>
+<b> "Put the number 100 in the variable x" </b> <br>
+									<br>
+Please think that. If you write this in a script, <br>
+									<br>
+									<b>x=100</b><br>
+									<br>
+Will be. Putting numbers in variables in this way is called "assignment". When you make an assignment, a number is stored in the variable, and after that, you can use the variable as a substitute for the number. </p>
+								<br>
+								<img src="images/btn_extention.gif"><br>
+								<div class="enroll">
+<p> "Assignment" is to make a variable remember a numerical value <br>
+"Assignment" is performed by "variable name" + "= (equal)" + "numerical value" </p>
+								</div>
+								<br>
+Remember <p> well. </p>
+								<table width="141" border="0" cellspacing="0" cellpadding="0">
+									<tr>
+										<td align="center" width="45">
+											<p><b>hensu</b></p>
+										</td>
+										<td align="center" width="19">
+											<p><b>=</b></p>
+										</td>
+										<td align="center">
+											<p><b>1234</b></p>
+										</td>
+									</tr>
+									<tr>
+										<td align="center" width="45">
+											<p><b>|</b></p>
+										</td>
+										<td align="center" width="19"></td>
+										<td align="center">
+<p> <b> ｜ </b> </p>
+										</td>
+									</tr>
+									<tr>
+										<td align="center" width="45">
+<p> <b> Variable name </b> </p>
+										</td>
+										<td align="center" width="19">
+											<p></p>
+										</td>
+										<td align="center">
+<p> <b> Number to substitute </b> </p>
+										</td>
+									</tr>
+								</table>
+								<br>
+Only <p> assignment is written in a special way unlike other instructions, but it is easy once you understand it because it is similar to an arithmetic expression. The variable name is an alphabetic name (up to 20 characters), and the number that can be remembered is an integer value such as "123" or a decimal value such as "1.5". <br>
+									<br>
+There are more rules for variable names. Do not use the same word as the command. You don't know if it's an instruction or a variable. Also, don't use the same name as the label described earlier. <br>
+									<br>
+Variables can be assigned at any time and can be changed any number of times in the script. Since one variable remembers only one number, the last assigned number will always be remembered. For example, <br>
+									<br>
+									<b>hen=150<br>
+											cls 1<br>
+											hen=50</b><br>
+									<br>
+In a script like this, the variable hen was assigned the number 150 on the first line, but the variable hen was changed to 50 on the third line. At this point, the previously assigned 150 will disappear. <br>
+									<br>
+But just saying it here doesn't really make sense. Therefore, let's actually check the numerical value stored in the variable. You can do that with the "mes" command that came up earlier. The "mes" command is <br>
+									<br>
+<b> mes "string" + variable name </b> <br>
+									<br>
+You can display the contents of the variable after the string with. You can also connect strings and variable names one after another by using the "+ (plus)" sign. Let's enter the following script using this. <br>
+									<br>
+									<b>hen=150<br>
+mes "The number of the current variable hen is" + hen + "." <br>
+											hen=50<br>
+mes "The number of the current variable hen is" + hen + "." <br>
+											stop<br>
+									</b><br>
+When I run this script ... <br>
+									<br>
+<b> The number of the current variable hen is 150. <br>
+The number of the current variable hen is 50. </b> <br>
+									<br>
+Is displayed. In other words, at the time of the second line, the variable hen remembered the numerical value of 150, but since there was a new assignment in the third line, the variable hen had a numerical value of 50 in the fourth line. .. <br>
+									<br>
+Now that we know this, let's return to the original script. <br>
+									<br>
+									<b>x=150<br>
+											y=80<br>
+											pos x,y </b><br>
+									<br>
+After all, the script <br>
+									<br>
+									<b>pos 150,80</b><br>
+									<br>
+It is the same as specifying. I think I'm just using names instead of numbers. You might think that. No, but it's actually very versatile and convenient. The key to that. That is the formula. <br>
+									<br>
+Until now, I wrote numbers such as 100 and 20 directly in the place where I put a numerical value as a parameter. And I also learned that you can write variables other than that. But, no, actually, I could have written a mathematical formula. Eh ?? This time, it is a mistake to think that there is another element ??, and it means that numbers and variables can be mixed and written according to the calculation formula. That is a mathematical formula. That is, <br>
+								</p>
+								<br>
+								<img src="images/btn_extention.gif"><br>
+								<div class="enroll">
+<p> A mathematical formula is a numerical value and a variable, or they are connected by a calculation formula and written. </P>
+								</div>
+It is <p>. The formula is, in other words, <br>
+									<b>1+1</b><br>
+Or <br>
+									<b>125+200-32 </b><br>
+And. It is a so-called arithmetic expression. So <br>
+									<b>pos 150,100</b><br>
+Not <br>
+									<b>pos 100+50,50*2 </b><br>
+But it's okay. This is also the same as "150,100". No, you might wonder what "50 * 2" is ?? In HSP, the symbols used in the calculation are as follows. <br>
+								</p>
+								<br>
+								<img src="images/btn_extention.gif"><br>
+								<div class="enroll">
+<p> "+" is addition <br>
+"-" Is subtraction <br>
+"*" Is multiplication (×) <br>
+"/" Is division (÷) </p>
+								</div>
+<p> The keyboard does not have symbols such as "x" and "÷", so I use a different number instead. Therefore, "50 * 2" is 50 times 2. You can mix variables with this, so <br>
+									<br>
+									<b>x=30<br>
+											y=100<br>
+											pos x,y<br>
+mes "1. Banme" <br>
+											pos x,y+50<br>
+mes "2. Banme" </b> <br>
+									<br>
+Can be used like. In this example, messages are displayed at (30,100) and (30,150). Moreover, in this case, when you say "I want to move the whole thing up a little more ...", you can change the location of the two messages at once by simply changing y = 100 on the second line to y = 80, etc. reason. In this example, it's easy because there are only two messages, but if this is a message with about 10 lines, it will be very convenient compared to the trouble of changing the numerical value of the "pos" instruction one by one. <br>
+									<br>
+Formulas can also be used in variable assignments. <br>
+									<br>
+									<b>x=5<br>
+											y=10<br>
+											z=x*8/y </b><br>
+									<br>
+Try using it like <br>
+									<br>
+									<b>hen=0<br>
+											hen=hen+1 </b><br>
+									<br>
+Use like. In the above example, 0 is assigned to the variable hen in the first line. But what happens in the second line ?? The variable hen is 0 before it is assigned to the variable hen in the second line. The variable hen is assigned to the variable hen again by adding 1 to it, so the variable hen becomes 1 ... without having to think so complicatedly, <br>
+								</p>
+								<br>
+								<img src="images/btn_extention.gif"><br>
+								<div class="enroll">
+<p> hen = hen + 1 adds 1 to the contents of the variable hen <br>
+									</p>
+								</div>
+All you have to do is remember <p>. In this way, the pattern of changing the value of the original variable by calculation is often used, so you can think of it as a cliché and remember it. Now, do you understand how to use variables in general ?? In this next part, let's explain the application further. <br>
+								</p>
+							</div>
+							<div class="section">
+								<table>
+									<tr>
+										<td><a href="START-8.HTM"><img src="images/btn_next.gif" alt="" height="29" width="29" border="0"></a></td>
+<td> <font size = "-1"> <a href="START-8.HTM"> step8: More advanced condition judgment </a> </font> </td>
+									</tr>
+								</table>
+							</div>
+						</div>
+					</td>
+				</tr>
+			</table>
+															<div align="center">
+			<table width="800" border="0" cellspacing="0" cellpadding="0">
+					<tr>
+					<td align="center">
+							<p style="color:#333333; font-size:10px; margin:5px 0px">ONION software Copyright 1997-2009(c) All rights reserved.<br>
+							</p>
+						</td>
+				</tr>
+				</table>
+		</div></div>
+	</body>
+
+</html>

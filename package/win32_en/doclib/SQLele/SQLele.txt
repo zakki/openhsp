@@ -1,0 +1,175 @@
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+	SQLele for SQLite3, HSP3
+		version 1.17 update 2018/06/07
+			s.programs http://spn.php.xdomain.jp/
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+ Required environment ｜ HSP 3.x + sqlite3.dll (included)
+ Operating environment │ Windows 2000 or later (IA32)
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+
+ overview
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+SQLele is a module for easy handling of SQLite with HSP.
+
+For example, media player file lists, address books and calendars
+Data, Undo / Redo management of image processing software, dialogue of characters in the game,
+Save data and high score. .. ..
+
+A data structure is set up to manage the data inside such applications.
+For total operation with character string operation instructions and memory operation instructions, sorting and extraction
+Most users who have some experience writing routines with HSP
+I think it has.
+
+I think that is enough for many apps in terms of function and performance, but if complicated data
+If you want to efficiently develop apps that handle SQLite, you can use SQLite, a free SQL day.
+Why not try using a tabass engine?
+
+With SQLite, you only need to add one DLL to your HSP app to apply
+The SQL database will be available within the computer.
+
+
+ how to use
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+In the Script directory, the module sqlele.hsp and sample scripts,
+Contains sqlite3.dll.
+
+To use SQLele features, in the user script directory
+Put sqlite3.dll and include sqlele.hsp.
+
+Details of each instruction can be found in the hs help sqlele.hs. This file
+By putting it in the hsphelp directory under the HSP installation directory
+Help will be available from the Help Manager.
+
+Detailed usage is described in the help and sample script, so here
+I will introduce it to the extent of an image.
+
+・ Main instructions / functions
+
+The following are commonly used instructions and functions.
+
+ sql_open "filename"; open database file
+
+ sql_q "SQL statement" [, arr]; Execute SQL statement and receive the result if any
+
+ sql_v ("Column name" [, arr]); See recordset variable data
+
+ sql_next [arr]; See the following record data
+
+ sql_close; close database
+
+・ Mini sample
+
+The current time is additionally recorded in the "log table" each time it is executed, and the contents of the table are recorded.
+This is an example script to display.
+
+#include "sqlele.hsp"
+
+sql_open "sample.db"
+
+If there is no "log table", create a table
+sql_q "CREATE TABLE IF NOT EXISTS [Log Table] (ID INTEGER PRIMARY KEY, [Content])"
+
+Add record
+sql_q "INSERT INTO [log table] ([content]) VALUES (datetime ('now','localtime'))"
+
+Extract all the data in the table
+sql_q "SELECT * FROM [log table]"
+	count = stat
+
+mes "Number of records:" + count + ""
+	repeat count
+mes "ID =" + sql_v (" ID") + ", content =" + sql_v (" content")
+		sql_next
+	loop
+
+	sql_close
+
+SQLele is an easy specification that allows you to focus only on writing SQL statements, so SQLite's flexibility
+Combined with the soft specifications, I think that it is easy for SQL beginners to handle.
+
+In addition, SQLite has such things as input / output of BLOB data and acceleration by bind variables.
+Many of the features are available.
+
+
+ Restrictions / Specifications
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+-When SELECT is performed with the sql_q instruction, all the results are temporarily stored in the recordset variable.
+  It will be stored. Therefore, the specifications are simple, but the results are enormous.
+  In that case, the response time will be slow and it may consume a lot of memory.
+  (Be careful especially when using BLOBs)
+
+-Database character strings (including table name and column name) saved by SQLele
+  The encoding will be UTF-8. In SQLele, other character codes are
+  Not supported. When read by HSP, convert to Shift_JIS format
+  Will be done.
+
+-The usage of SQLele itself is simple, but the grammar of SQL and the usage peculiar to SQLite,
+  You have to find out the tuning method etc. by yourself.
+
+More detailed information can be found on the distribution page.
+http://spn.php.xdomain.jp/hsp_sqlele.htm
+
+
+ Copyright free
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+SQLele (module body, sample) is copyright-free.
+
+SQLite is open to the public domain and can be used freely
+increase.
+
+SQLite developer
+http://www.sqlite.org/
+
+
+ Release notes
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+1.17 2018/06/07
+-Speed up the sqesc () function
+
+1.16 2018/06/01
+-Partially changed the error message
+-Update the bundled sqlite3.dll SQLite version 3.23.1
+・ Notation change due to website relocation
+-Delete the document thumbnail image
+
+1.15 2010/02/22
+-Fixed a bug when switching between multiple databases
+-Changed to create a recordset variable even if the result record of SELECT is 0.
+
+1.14 R2 (the module itself has not changed) 2010/02/04
+-Addition / change of documents and sample scripts
+-Added document thumbnail file (for HSP Document Library)
+-Updated the attached sqlite3.dll version to 3.6.22
+
+1.14 2009/05/09
+-Addition of sql_collist () function
+・ Improved recovery process when busy / locked
+ (Improved stability when writing to a single DB file from multiple processes)
+-Updated the attached sqlite3.dll version to 3.6.14
+・ Improvement of help description
+
+1.13 2008/06/13
+-Fixed to convert the error message from UTF-8 to Shift_JIS and display it.
+
+1.12 2008/06/06
+-Fixed a bug related to reading NULL values
+-Updated the attached sqlite3.dll version to 3.5.9
+
+1.11 2007/12/03
+-Corrected to convert the column name of recordset variable from UTF-8 to Shift_JIS
+・ Improved retry processing when busy
+・ Corrected sample comment mistakes
+-Updated the attached sqlite3.dll version from 3.4.2 to 3.5.3.
+
+1.10 2007/09/27
+-Changed to convert from Shift_JIS to UTF-8 when passing a string to SQLite database
+  ** Incompatible with databases containing Japanese strings created with SQLele 1.0 **
+  (This will prevent mistakes in LIKE operations from occurring.)
+-Added measures against multiple inclusions in sqlele.hsp
+-Fixed a bug in the sqesc function
+・ Fix help mistakes
+
+1.0 2007/09/10
+・ First release version

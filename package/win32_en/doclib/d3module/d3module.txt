@@ -1,0 +1,199 @@
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+	d3module
+		version 1.68 update 2018/06/01
+			s.programs http://spn.php.xdomain.jp/
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+ Required environment ｜ HSP 3.x
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+
+ overview
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+d3module is a module that enables simple 3D drawing with only HSP standard instructions.
+This is
+
+The purpose of developing d3module is to "extend HSP standard drawing instructions to 3D".
+By including d3m.hsp, HSP standard pset and
+You can now use 3D drawing commands in a format similar to commands such as line and circle.
+I will.
+
+Same execution result in many environments because it does not depend on DirectX or 3D accelerator
+Can be obtained.
+
+d3module is a very poor 3D drawing system with no concept of light source or z sort.
+However, sometimes the wire-based 3D space that feels a little nostalgic is also interesting.
+it might be.
+
+Areas for d3module:
+・ Three-dimensional mathematical graph drawing
+・ Visualization of 3D physics simulation, etc.
+
+Areas where d3module is not suitable:
+・ 3D games in general
+・ Fields that require high-speed processing
+
+
+ About the demo
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+d3m_techdemo.exe (d3module techdemo) is created only with standard HSP instructions
+This is a demonstration program of d3module.
+
+・ About the song
+
+In this techdemo, we will use Vijore, a song released by onoken.
+It has received.
+
+onoken's site: http://www.axsword.com/
+
+With d3module techdemo, a long period of time that goes far beyond your usual working style
+I continued to write code over the years, but it was this that kept me motivated during that time
+Thanks to the wonderful music.
+
+
+ How to use the module
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+Module d3m.hsp and sample scripts in the module_sample directory
+Is included.
+
+If you include d3m.hsp, you can use the instructions of d3module.
+
+Details of each instruction can be found in hs help d3mhelp.hs. This file
+In the hsphelp directory under the HSP installation directory
+Help will be available from the Help Manager.
+
+If this is your first time using it, take a look at the sample scripts in order.
+In the form of gradually raising the level from a simple sample, for new orders
+Since the usage is explained in detail, you can master the basic usage in a short time.
+I think it will be.
+
+More detailed information can be found on the distribution page.
+http://spn.php.xdomain.jp/hsp_d3m.htm
+
+
+ Copyright free
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+The d3module (module body, sample, demo script) is in the public domain.
+For modification of d3module and publication of programs incorporating d3module
+There are no restrictions.
+
+If a modified version is released, it should be distinguished from the original
+Please.
+
+The copyright of the music of techdemo belongs to onoken.
+
+
+ Release notes
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+1.68 2018/06/01
+-Importing HSP3Dish compatible patches for d3timer
+繝サ Readjust the techdemo production to match modern hardware and reduce the load
+ツキ Ended HSPLet support for techdemo scripts
+繝サ Adjustment of some sample scripts
+繝サ Notation change due to website relocation
+-Delete the document thumbnail image
+
+1.67 R2 2010/02/12 (There is no change in the module body)
+-Change sample scripts and documents
+繝サ Changes to techdemo
+-Added document thumbnail file (for HSP Document Library)
+繝サ D3module 1.10 for HSP 2.55 / 2.6 is no longer included.
+
+1.67 2008/05/01
+-Changed to draw small particles sharper
+-Added measures for multiple inclusion of d3m.hsp
+
+1.66 2006/12/24
+-Added the function to create polygonal particles to the particle creation routine.
+  (See help for d3mkparticle)
+-Fixed d3circle to draw very small circles
+・ (1.66 credit modified version) Updated the URL of the music producer in the document and techdemo
+・ (1.66 Help error correction version) d3vrotate Help error correction etc.
+
+1.63 2006/02/14
+・ Improved compatibility with HSPLet @Mac with particle drawing system
+-Changed so that odd dot diameters can be drawn with the d3circle command.
+
+1.61 2005/12/08
+-Extension of d3texture instruction (addition of surface division function with arbitrary number)
+  (The surface division code is provided by Yuki.)
+
+1.60 2005/12/07
+・ Implementation of local coordinate system
+ --Addition of d3setlocal instruction
+-Addition of d3vrotate command (spatial rotation operation around arbitrary axis)
+-Publishing the internal command d3vpos (adding help)
+・ Disclosure of internal variables d3wincx and d3wincy (center coordinates of 2D screen)
+
+1.51 2005/10/14
+-Added the d3ribbonto command as a variation of the surface drawing command.
+-Fixed the problem that some vertices are missing 1 dot with the d3box instruction.
+
+1.50 2005/09/24
+-Supports HSP 3.0 (HSP 2.x is not supported)
+・ Double-precision real numbering of coordinate information (simplification of mathematical expressions, relaxation of coordinate value restrictions)
+・ Acceleration of internal calculation
+-Change the unit of angle to be input with the d3roate command to radians.
+-Added surface drawing command, etc.
+   d3square Fill and draw a square plane
+   d3texture Paste the image on a square plane
+   d3timer () winmm.dll timeGetTime () itself
+   d3getfps () get fps
+-Abolished instructions that are no longer needed due to the new features of HSP 3.0
+   d3sqrt (obsolete) Get square root
+   d3sin (obsolete) sin acquisition
+   d3cos (obsolete) cos acquisition
+   Acquired d3sincos (obsolete) sin, cos
+   d3atan (obsolete) Acquired atan
+   d3fp (obsolete) Set the accuracy of d3sin, d3cos, d3atan, d3roate
+   d3gethorizon (obsolete) horizon y coordinate acquisition
+   d3init (obsolete) d3module initialization
+-Organize the functions of particle drawing commands
+   Changed d3particle drawing mode to follow gmode
+   Changed d3particlem drawing mode to follow gmode
+   d3particler (additional instruction)
+   d3particlemr (additional instruction)
+・ Unlimited particle drawing size
+-Abolished the upper limit of particle ID
+
+1.10 2004/03/20
+-Added particle drawing command
+   d3mkparticle Create particles
+   d3ldparticle particle image load
+   d3particle Draw particles
+   d3particlem Draw particles at the drawing position immediately before
+-Added d3gethorizon instruction
+-Fixed a bug that the size of the circle was wrong with the d3circle instruction.
+-Fixed the d3arrow command so that the arrow takes depth into consideration.
+・ Organize some instructions
+   d3horizon (obsolete)
+   d3setcenter (obsolete)
+   d3setzoom (obsolete)
+   d3cbrt (obsolete)
+-Abolished the variable d3depth (using the system variable stat)
+-Abolished the constant D3MVER
+-Changed so that the d3init instruction does not have to be executed explicitly.
+
+1.05 2003/07/05
+・ Addition of d3atan instruction
+
+1.04 c01 2003/06/23
+・ Improved performance and reduced size
+
+1.04 2003/05/27
+-Clipping is done with d3line and d3box.
+・ Addition of d3horizon instruction
+
+1.01 2003/04/27
+・ Speeding up d3circle
+・ Modification of attached sample
+
+1.00 2003/04/27
+-The bit precision of sin / cos can now be selected with 10 bits or less.
+-Added some drawing commands
+
+beta 4a
+-Fixed the attached source so that it can be compiled with HSP 2.6
+
+beta
+・ First release version

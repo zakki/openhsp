@@ -1,0 +1,32 @@
+
+	;
+	;	HSP help index build script
+	;		onitama/onion software 1999,2021
+	;
+	#include "hsp3cl.as"
+	#include "mod_hs.as"
+	#packopt name "mkindex"
+	;
+	;
+	ihelp_init msg
+	mes msg
+
+
+	ihelp_find "gettime"
+	if stat=0 {
+		mes "Not found."
+		stop
+	}
+
+	ihelp_open 0
+
+
+	mes ih_ans_key+" "+ih_fncprm+"     ["+ih_ans_title+"]"
+	mes ih_prminf
+	mes ih_info
+
+	mes "Group:"+ih_group
+	mes "Module:"+ih_ans_dll
+	mes "Reference:"
+	mes ih_refinf
+

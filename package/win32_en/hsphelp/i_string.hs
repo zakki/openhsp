@@ -36,7 +36,7 @@ p4 = 0 to 255: ASCII code of delimiter character
 p5 = 0 to (1024): Maximum number of characters to read
 
 %inst
-Reads the contents of an arbitrary location in the buffer in memory as a character string into a variable.
+Reads the contents of any location in the buffer in memory as a string into a variable.
 The character string is read until there is a code 00 or a line feed code. The line feed code is not included in the string.
 ^
 You can also specify a delimiter character code and retrieve a character string delimited by any character.
@@ -70,7 +70,7 @@ String manipulation command
 %prm
 p1,p2,p3
 p1 = Character string: Character string or variable name to be added / changed
-p2 = 0 to (-1): Index to add
+p2 = 0 to (-1): Index to be added
 p3 = 0 to 1 (0): Overwrite mode specification (0 = add / 1 = overwrite)
 
 %inst
@@ -112,7 +112,7 @@ p1 = 0 ~: Index to delete
 
 %inst
 Deletes the specified index on the memory notepad.
-The contents of the index specified by p1 are deleted, and the subsequent indexes are shifted one by one.
+The contents of the index specified by p1 are deleted, and subsequent indexes are shifted one by one.
 ^
 In order to use the memory notepad instructions (noteget, noteadd, notedel, noteinfo), you must first set the target buffer with the notesel instruction.
 
@@ -289,7 +289,7 @@ Checks if the string specified by "string" exists in the string type variable sp
 If the specified string is found, the index value is returned. This starts with 0 as the first character of the character string and increases in order of 1, 2, 3 ... (similar to the index specified by the strmid instruction).
 Please note that it does not start from 1.
 (If p2 is specified, the index will start from p2 (0).)
-(If p2 is negative, -1 is always returned.)
+(If p2 is a negative value, -1 is always returned.)
 If the specified string is not found, -1 is returned.
 %href
 strmid
@@ -364,7 +364,7 @@ p2 = 0 ~: Specify information type
 %inst
 The character string indicating the file path specified in p1 is converted into the type of information specified in p2 and returned as a character string.
 ^p
-Example:
+example :
 	a="c:\\disk\\test.bmp"
 	b = getpath(a,8+1)
 	mes b
@@ -400,12 +400,12 @@ String manipulation function
 %prm
 ("format",p1...)
 "format": Format string
-p1: Formatting parameter
+p1: Formatting parameters
 %inst
 Returns a string that is an integer or real number converted to a string in the proper format.
 In "format", specify the following format specification string.
 ^p
-Example:
+example :
 	a=123
 mes strf ("decimal [% d]", a)
 mes strf ("hexadecimal [% x]", a)
@@ -420,7 +420,7 @@ In the part indicating the parameter specified after p1, specify after "%".
 If multiple parameters are specified in the format, separate the parameters with "," and describe the parameters in succession.
 If you want to display the normal "%" symbol, specify "%%".
 ^p
-Example:
+example :
 	a=1:b=2.0:c="ABC"
 	mes strf("[%03d] [%f] [%s]",a,b,c)
 ^p
@@ -531,7 +531,7 @@ If p2 is omitted, it will be removed only if both ends of the string are specifi
 You can specify the character code to be removed with p3.
 If p3 is omitted, it will be a half-width space (32).
 ^p
-Example:
+example :
 	a=" ABC DEF "
 	b = strtrim(a,0,' ')
 	mes b
@@ -547,8 +547,8 @@ The details of the value indicating the removal position specified by p2 are as 
 ^p
 For the character code specified in p3, you can specify a 2-byte code that indicates double-byte characters.
 ^p
-Example:
-s = "Hello, my name is double-byte characters"
+example :
+s = "Hello, this is full-width characters."
 zenspace = ""; Full-width space
 code = wpeek (zenspace, 0); Get the code for double-byte space
 	mes strtrim(s,3,code)
@@ -571,7 +571,7 @@ p1 = variable: variable to which the original string is assigned
 p2 = variable: variable to which the split element is assigned
 
 %inst
-Assigns the element divided by the specified string to the variable.
+Assigns the element divided by the specified character string to the variable.
 For example, you can extract the elements of "12", "34", and "56" from a character string separated by "," such as "12,34,56" and assign them to different variables.
 In p1, specify the variable name to which the original string was assigned. (Variable must be of type string)
 Specify the character string to separate to "string".
@@ -579,7 +579,7 @@ After p2, specify the variable name to which the divided element is assigned.
 You can specify any number of variables to be assigned, separated by ",".
 The divided elements are assigned in order from the first specified variable.
 ^p
-Example:
+example :
 	buf="12,34,56"
 	split buf, ",", a, b, c
 	mes a
@@ -589,7 +589,7 @@ Example:
 If the number of original elements is less than the number of variables specified, the remaining variables are assigned an empty string ("").
 If there are more divided elements than the specified number of variables, they will be assigned to the specified array of variables.
 ^p
-Example:
+example :
 	buf="12,34,56,78"
 	split buf, ",", results
 	repeat stat

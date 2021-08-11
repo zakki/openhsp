@@ -1,0 +1,105 @@
+--------------------------------------------------------------------------------
+ Hot Soup Processor Script Editor External Tools Development Manual
+--------------------------------------------------------------------------------
+
+繝サ Introduction
+
+This manual is for HSP script editor (hereinafter referred to as editor) only.
+This is a manual that describes how to develop external tools and points to note.
+Due to the nature of the current editor being a beta version, there is a possibility of specification changes and defects.
+Please be aware that there is.
+
+
+
+ツキbasic specifications
+We have prepared a window (hidden) to access the editor.
+The external tool gets the handle of that window with FindWindow (Ex) and
+Send a message to that window to get information and perform operations
+Become.
+Sending and receiving character strings is done via pipes.
+
+
+
+繝サ About words and phrases in the document
+Footy: The name of the library used by the editor, in this document
+It refers to the input part (like input that can be created with HSP).
+
+
+
+繝サ Access procedure
+(1) Get the window handle with FindWindow (Ex).
+(2) * Only when dealing with character strings * Create a pipe and use DuplicateHandle to open the editor
+Create a handle that can be read / written.
+(3) Request / perform the operation you want to perform the information required by SendMessage.
+(4) * Only when handling a character string * Close the handle with CloseHandle.
+See the sample for details.
+
+
+
+・ Message reference
+HSED_GETVER (WM_APP)-Get various versions
+wParam: Type of version information required (indented below)
+lParam: Varies by wParam
+Return value: Varies with wParam. If wParam is incorrect, -1 is returned.
+
+	wParam: HGV_PUBLICVER(0)
+lParam: Ignored.
+Return value: Returns the public version of the editor.
+First 4 digits major version in hexadecimal, 5th to 6th digits minor version
+7th-8th digit β version (0 if not β). (Example: Ver1.02b3-> 0x00010203)
+Description: The public version is linked with the version of HSP itself,
+Please note that there is no guarantee that they will match.
+
+	wParam: HGV_PRIVATEVER(1)
+lParam: Ignored.
+Return value: Returns the private version of the editor.
+The format is the same as HGV_PUBLICVER.
+Description: When it is released by hsp-dev ML because it is not linked with the version of HSP itself
+It is the version to be set.
+
+	wParam: HGV_HSPCMPVER(2)
+lParam: handle of pipe written by editor
+Return value: Number of bytes written to the pipe on success (including null characters), -1 on failure
+Description: Version information (character string) obtained from hspcmp.dll is sent to the passed pipe.
+Write.
+
+	wParam: HGV_FOOTYVER(3)
+lParam: Ignored.
+Return value: The return value of GetFootyVer of the Footy library is returned as it is. ,
+The value obtained by multiplying the version by 100 (decimal number) is returned. (Example: Ver1.23-> 123)
+
+	wParam: HGV_FOOTYBETAVER(4)
+lParam: Ignored.
+Return value: The return value of GetFootyBetaVer of Footy library is returned as it is.
+When the minor version of the editor Ver1.04b3 is released,
+The beta version will be returned as is. (ver *. ** 硫1-> 1)
+
+HSED_GETWND (WM_APP + 0x100)-Get handles for various windows
+wParam: The type of window that requires a handle (indented below).
+lParam: Varies with wParam.
+Return value: Returns the handles of various windows.
+
+	wParam: HGW_MAIN(0)
+lParam: Ignored.
+Description: The window handle of the main window is returned.
+
+	wParam: HGW_CLIENT(1)
+lParam: Ignored.
+Description: The window handle of the client window (below the tab)
+I will return.
+
+	wParam: HGW_TAB(2)
+lParam: Ignored.
+Description: The window handle of the tab control is returned.
+
+	wParam: HGW_EDIT(3)
+lParam: Specify the ID of the Football you want to get.
+Description: The Football window handle with the specified ID will be returned.
+
+	wParam: HGW_TOOLBAR(4)
+lParam: Ignored.
+Description: The toolbar window handle is returned.
+
+	wParam: HGW_STATUSBAR(5)
+lParam: Ignored.
+Description: The window handle of the status bar is returned.

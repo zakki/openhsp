@@ -22,7 +22,7 @@
 	<ol>
 <li> <a href="#ABOUT"> Overview of HSP3Dish for iOS </a> </li>
 <li> <a href="#PREPARE"> Preparing the environment </a> </li>
-<li> <a href="#SAMPLE"> About iOS folder </a> </li>
+<li> <a href="#SAMPLE"> About iOS folders </a> </li>
 <li> <a href="#MAKECPP"> Script preparation </a> </li>
 <li> <a href="#RUNPROJ"> Run and configure HSP3Dish </a> </li>
 <li> <a href="#APPICON"> App name and icon settings </a> </li>
@@ -35,7 +35,7 @@
 <li> <a href="#UNIVERSAL"> Universal app support </a> </li>
 <li> <a href="#ROTATE"> About screen rotation </a> </li>
 <li> <a href="#DEVCONTROL"> About device control </a> </li>
-<li> <a href="#SIGNING"> What to do when an error occurs </a> </li>
+<li> <a href="#SIGNING"> Response in case of error </a> </li>
 <li> <a href="#RELEASE"> About registration on the App Store </a> </li>
 <li> <a href="#ADMOB"> AdMob support </a> </li>
 <li> <a href="#HGIMG4"> About the HGIMG4 project </a> </li>
@@ -54,7 +54,7 @@ In this manual, we will explain how to use the iOS version and points to note.
 
 <h2 id = "PREPARE"> Preparing the environment </h2>
 	<p>
-Currently, in order to operate on the actual iPhone / iPad, Mac OS X environment and development tool Xcode 9 or later are required, and iOS Developer Program (paid) is required for distribution in the store. <br>
+Currently, in order to operate on the actual iPhone / iPad, MacOSX environment and development tool Xcode12 or later are required, and iOS Developer Program (paid) is required for distribution in the store. <br>
 The process required up to this point is no different from normal iPhone / iPad development. For details, refer to various materials such as the iOS Developer Program homepage.
 	</p>
 	<pre>
@@ -65,8 +65,8 @@ The process required up to this point is no different from normal iPhone / iPad 
 In this document, we will explain how to install HSP3 Dish on the assumption that Xcode will actually work and the program can be transferred to the actual iPhone / iPad.
 For the preparations up to that point, please refer to the existing manuals.
 	<br>
-The version of XCode used for verification is XCode 9.
-The SDK version to be used is assumed to be iOS12 or later, and the operating environment is assumed to be iOS10 or later.
+The version of XCode used for verification is XCode 12.
+The SDK version to be used is assumed to be iOS14 or later, and the operating environment is assumed to be iOS10 or later.
 	</p>
 
 <h2 id = "SAMPLE"> About iOS folder </h2>
@@ -217,7 +217,7 @@ We recommend that you keep the value as low as possible.
 With this setting, you can change whether to clear (erase) the screen at the start of drawing by "redraw 0".
 By default, clear is enabled and the background color is white (0xffffff). <br>
 If you set "cls Mode: 0", the screen will not be cleared, so you need to clear it yourself.
-(When clearing the screen by yourself, it is an option setting to avoid clearing duplicates.) <br>
+(When clearing the screen by yourself, it is an option setting to avoid clearing duplicately.) <br>
 "Color: 0xffffff" specifies the color to be cleared, and describes the RGB code in hexadecimal.
 	</p>
 	<pre>
@@ -256,7 +256,7 @@ The original screen size is displayed at the specified magnification. Use this i
 	    [view dispAutoScale:0];
 	</pre>
 	<p>
-Appropriately scales the drawn screen size and displays it on the current screen. <br>
+Scales the drawn screen size appropriately and displays it on the current screen. <br>
 The numbers in parentheses allow you to specify several scaling methods.
 	</p>
 	<ul><pre>
@@ -345,9 +345,9 @@ If you want to add a name in another language, add localization from XCode and m
 	<p>
 The bsave instruction allows you to save the contents of the variable buffer as user data.
 (You cannot specify a folder on iOS, so please specify only the file name.) <br>
-The saved data can be read by the bload instruction by specifying the same file name.
-The bsave instruction cannot save a file with the same name as the file in the resource.
-User data is stored in different areas for each application. Data cannot be shared between different applications.
+The saved data can be read by the bload command by specifying the same file name.
+The bsave instruction cannot save a file with the same name as the file on the resource.
+User data is stored in a different area for each application. Data cannot be shared between different applications.
 	</p>
 
 <h2 id = "RESOURCE"> About the data in the Resource folder </h2>
@@ -368,7 +368,7 @@ By specifying the URL scheme with the exec instruction, you can open the Safari 
 	exec "http://hsp.tv/",16
 	</pre>
 	<p>
-In the above example, we will open the "hsp.tv" site.
+In the above example, the site of "hsp.tv" is opened.
 Make sure to specify 16 (execute associated application) for the second parameter as in Windows.
 	</p>
 
@@ -376,7 +376,7 @@ Make sure to specify 16 (execute associated application) for the second paramete
 	<p>
 Supports system dialog display.
 Only types 0 to 3 are supported. However, the warning icon etc. like the Windows version is not displayed.
-If you select the "Yes" or "No" option, the same result as for the Windows version will be assigned to the system variable stat.
+If you select the "Yes" or "No" option, the same result as in the Windows version will be assigned to the system variable stat.
 	</p>
 
 <h2 id = "SENSOR"> Accelerometer support </h2>
@@ -399,7 +399,7 @@ With this setting, it will be reflected correctly on models with Retina display,
 
 <h2 id = "UNIVERSAL"> Universal app support </h2>
 	<p>
-If you want to build the project as a Universal app (the same app works on both iPad and iPhone)
+If you want to build the project as a Universal app (the same app works on both iPad and iPhone),
 Change the project's General item-> Deployment Info-> Deployment Target to Universal. <br>
 After that, you will be able to make settings for each iPhone and iPad, so make the same settings and build. <br>
 For Universal apps, either use the view dispViewX item at initialization in AppDelegate.m to correctly specify the resolution used by the app and scale.
@@ -438,7 +438,7 @@ vibrate Vibrate operation
 sound System sound playback (parameter 1)
 	</pre>
 	<p>
-For example
+for example,
 	</p>
 	<pre>
 		devcontrol "vibrate"
@@ -456,7 +456,7 @@ Various built-in sounds can be played by changing the numerical values ​​of 
 (The sound ID can be 1000-117. For more information, see the iOS AudioServicesPlaySystemSound function reference.)
 	</p>
 
-<h2 id = "SIGNING"> About handling in case of error </h2>
+<h2 id = "SIGNING"> Response in case of error </h2>
 	<p>
 A Code Signing Error may occur when transferring or compiling the actual device.
 This often happens when the Provisioning Profile and Bundle Identifier do not match.
@@ -476,12 +476,12 @@ In this case, check whether the device registration is correct and the encryptio
 <h2 id = "RELEASE"> About registration to the App Store </h2>
 	<p>
 Even if you create an app using HSP3Dish, you can register it in the App Store using the same procedure as for normal app development. <br>
-By registering on the App Store, users other than you will be able to download and run the app. Also, if you set it as a paid application, you can sell it on the App Store.
+By registering in the App Store, users other than you will be able to download and run the app. Also, if you set it as a paid application, you can sell it on the App Store.
 	<br>
 If you have already registered as a Developer, the general flow is as follows.
 	</p>
 	<ul>
-<li> Create an AppID for use in your app from the "iOS Provisioning Portal" site </li>
+<li> Create an App ID for use in your app from the "iOS Provisioning Portal" site </li>
 <li> Create a Distribution Provisioning Profile and download the configuration file </li>
 <li> Register the provisioning profile for Distribution created in the environment where xcode is running </li>
 <li> In the project on xcode, set the profile for distribution in Code Signing in Build Settings </li>
@@ -496,7 +496,7 @@ If you have already registered as a Developer, the general flow is as follows.
 	<p>
 The registration process is so complicated that it is rare that everything will work from the beginning.
 Learn how to register by referring to the documents published by Apple and the materials on the Internet. <br>
-Already, works by HSP3 Dish are gradually appearing on the App Store.
+Already, works by HSP3Dish are gradually appearing on the App Store.
 You can publish your work to the world market, so please try it.
 	</p>
 	<p>
@@ -527,7 +527,7 @@ Kei Kurui (Professional student) (C) Pronama LLC
 	</ul>
 	<br>
 	<p>
-In addition to increasing the size of the app, the HGIMG4 project may slow down depending on the device environment and model. (We will aim to support a wide range of terminals in the future, so please wait for a while) <br>
+In addition to increasing the size of the application, the HGIMG4 project may slow down depending on the device environment and model. (We will aim to support a wide range of terminals in the future, so please wait for a while) <br>
 In HGIMG4, files such as res folder and shader are always required at startup. (The folder structure is "Resouces / res / ...") <br>
 The minimum required files are as follows.
 	</p>
@@ -554,7 +554,7 @@ Please note that the following functions are not supported. It will be supported
 <li> Information that can be entered </li>
 	<p>
 The tapped coordinates are reflected in mousex and mousey.
-You can also get the click (tap) ON / OFF by the stick command.
+You can also get click (tap) ON / OFF by stick command.
 	</p>
 <li> About image format </li>
 	<p>
@@ -563,7 +563,7 @@ The following formats can be used for images loaded by the celload and picload c
 <li> JPEG baseline (progressive JPEG is not supported) </li>
 <li> PNG (8bit, 24bit, 24bit + alpha channel format supported) </li>
 <li> TGA (subset) </li>
-<li> BMP (monochrome, RLE compression not supported) </li>
+<li> BMP (black and white, RLE compression not supported) </li>
 <li> PSD (read only RGB 24bit) </li>
 	<li>GIF</li>
 	<li>HDR (radiance rgbE format)</li>
@@ -578,7 +578,7 @@ When reading, some overhead is incurred due to the internal conversion.
 	</p>
 <li> Playable sound files </li>
 	<p>
-It supports files with the extensions ".wav", ".mp3", ".caf", and ".aac".
+It corresponds to files with the extensions ".wav", ".mp3", ".caf" and ".aac".
 For compressed audio files, it is not recommended to load a lot of music at the same time, as all waveforms will be expanded into memory when loaded with the mmload command.
 The ".caf" and ".aac" formats are supported on Mac and iOS.
 ".Wav" and ".mp3" are widely supported formats in all hsp3dish including Windows version.
@@ -594,7 +594,7 @@ You can get good performance. (Please refer to test1.hsp etc. of hsp3dish sample
 	</p>
 <li> About closing the app </li>
 	<p>
-In the iOS version, the end command does not terminate the app (the process is the same as the stop command).
+In the iOS version, the application is not terminated by the end command (the process is the same as the stop command).
 The iOS app creation guidelines require that the program itself not terminate. <br>
 Unlike Windows and android, on iOS, it is possible to make it so that there is no action of quitting the application
 Please note that you will be asked.

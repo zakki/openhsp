@@ -1,0 +1,630 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+
+<html lang="ja">
+
+	<head>
+		<meta http-equiv="content-type" content="text/html;charset=UTF-8">
+<meta lang = "ja" name = "keywords" content = "HSP, Hot Soup Processor, HSPTV, HSP3, HSP3.2, ONION software, onitama, hot soup, processor, interpreter, language, HSP">
+		<meta name="generator" content="Adobe GoLive">
+<title> Introduction to HSP </title>
+		<link href="main.css" type="text/css" rel="stylesheet" media="all">
+	</head>
+
+	<body background="images/back6.gif" link="blue" leftmargin="0" marginheight="0" marginwidth="0" topmargin="0">
+		<div align="center">
+			
+			<table width="800" border="0" cellspacing="0" cellpadding="0">
+				<tr>
+					<td align="left" valign="top" bgcolor="white" width="169">
+					
+					<br>
+						<table width="150" border="0" cellspacing="0" cellpadding="0" height="354">
+							<tr height="30">
+								<td height="30" background="images/back_menuue.gif">
+									<p class="leftsubmenu"><a href="COVER.HTM">Start!</a></p>
+								</td>
+							</tr>
+							<tr height="30">
+								<td height="30" background="images/back_submenu.gif">
+									<p class="leftsubmenu"><a href="START-1.HTM">Step1</a></p>
+								</td>
+							</tr>
+							<tr height="30">
+								<td height="30" background="images/back_submenu.gif">
+									<p class="leftsubmenu"><a href="START-2.HTM">Step2</a></p>
+								</td>
+							</tr>
+							<tr height="30">
+								<td height="30" background="images/back_submenu.gif">
+									<p class="leftsubmenu"><a href="START-3.HTM">Step3</a></p>
+								</td>
+							</tr>
+							<tr height="30">
+								<td height="30" background="images/back_submenu.gif">
+									<p class="leftsubmenu"><a href="START-4.HTM">Step4</a></p>
+								</td>
+							</tr>
+							<tr height="30">
+								<td height="30" background="images/back_submenu.gif">
+									<p class="leftsubmenu"><a href="START-5.HTM">Step5</a></p>
+								</td>
+							</tr>
+							<tr height="30">
+								<td height="30" background="images/back_submenu.gif">
+									<p class="leftsubmenu" style="color:#009999; font-weight:bold;">Step6</p>
+								</td>
+							</tr>
+							<tr height="30">
+								<td height="30" background="images/back_submenu.gif">
+									<p class="leftsubmenu"><a href="START-7.HTM">Step7</a></p>
+								</td>
+							</tr>
+							<tr height="30">
+								<td height="30" background="images/back_submenu.gif">
+									<p class="leftsubmenu"><a href="START-8.HTM">Step8</a></p>
+								</td>
+							</tr>
+							<tr height="30">
+								<td height="30" background="images/back_submenu.gif">
+									<p class="leftsubmenu"><a href="START-9.HTM">Final</a></p>
+								</td>
+							</tr>
+							<tr height="30">
+								<td height="30" background="images/back_submenu.gif">
+									<p class="leftsubmenu"><a href="THANKS.HTM">Special thanks</a></p>
+								</td>
+							</tr>
+							<tr height="30">
+								<td height="30" background="images/back_menusita.gif">
+									<p class="leftsubmenu"><a href="START.HTM">Cover</a></p>
+								</td>
+							</tr>
+						</table>
+						<br>
+					</td>
+					<td align="left" valign="top" bgcolor="white">
+						<div class="contents">
+						
+							<div class="section">
+<h2 class = "play"> step6: Is this the launcher ?! </h2>
+<p> You can now display messages, buttons, and images, but you can't lay out the screen, and the screen looks a little uncool. Now let's make some adjustments around that. The new command is </p>
+								<br>
+								<img src="images/btn_extention.gif" alt="" height="29" width="29" border="0"><br>
+								<table width="589" border="0" cellspacing="2" cellpadding="0" bgcolor="#ccffff">
+									<tr>
+										<td align="center" bgcolor="#ccffff">
+<p> Statement </p>
+										</td>
+										<td align="center" bgcolor="#ccffff">
+<p> Parameters </p>
+										</td>
+										<td align="center" bgcolor="#ccffff">
+<p> Meaning </p>
+										</td>
+									</tr>
+									<tr>
+										<td align="center" bgcolor="white">
+											<p>pos</p>
+										</td>
+										<td align="center" bgcolor="white">
+<p> X coordinate, Y coordinate </p>
+										</td>
+										<td align="center" bgcolor="white">
+<p> Set the specified coordinates to the current position </p>
+										</td>
+									</tr>
+									<tr>
+										<td align="center" bgcolor="white">
+											<p>color</p>
+										</td>
+										<td align="center" bgcolor="white">
+<p> R, G, B brightness values </p>
+										</td>
+										<td align="center" bgcolor="white">
+<p> Specify text color </p>
+										</td>
+									</tr>
+								</table>
+								<br>
+It is <p>. When displaying characters and buttons, they are always arranged vertically in the order in which they are displayed from the upper left of the screen. This doesn't mean that there was no layout. Actually, in HSP, the position where characters and buttons are displayed is the current position.
+I call it. In word processing software, the position where you start typing characters is called a cursor or caret, and for some reason HSP displays characters and buttons from the current position. You can't see it on the screen, but think of it as having a cursor on the screen that says "I'll put a button or letter from here."
+After displaying a character or button, the current position automatically moves to the beginning of the next line. That's why, until now, they were lined up vertically.
+The "pos" instruction changes this current position. For example, </p>
+
+<br><table border=0 cellpadding=2 bgcolor="#ffffff">
+<tr>
+<td>
+											<p><b>pos</b></p>
+										</td><td>
+											<p><b>100,50</b></p>
+										</td>
+</tr>
+<tr>
+<td>
+											<p><b>mes</b></p>
+										</td><td>
+<p> <b> "Yaho" </b> </p>
+										</td>
+</tr>
+</table>
+								<br>
+If specified as <p>, the current position will be moved to the position where the X coordinate is 100 and the Y coordinate is 50, and then the message "Yaho" will be displayed. The coordinates of (X, Y) are in 1-dot units with the upper left as (0,0), so in the above example, the 100th dot from the left and the 50th dot from the top are "Yaho". Is displayed. Similarly, </p>
+								<br>
+								<table border=0 cellpadding=2 bgcolor="#ffffff">
+<tr>
+<td>
+											<p><b>pos</b></p>
+										</td><td>
+											<p><b>30,200</b></p>
+										</td>
+</tr>
+<tr>
+<td>
+											<p><b>button</b></p>
+										</td><td>
+											<p><b>"OK",*hata1</b></p>
+										</td>
+</tr>
+</table>
+								<br>
+If you write like <p>, a button with "OK" written at the coordinates (30,200) will be displayed.
+To do. And one more. Change the current position with the "pos" instruction
+After that, after displaying characters and buttons, Karen automatically starts the next line.
+When the to position is changed, align it with the X coordinate specified by the "pos" command.
+Can be done. in short,
+</p>
+								<br>
+								<table border=0 cellpadding=2 bgcolor="#ffffff">
+<tr>
+<td>
+											<p><b>pos</b></p>
+										</td><td>
+											<p><b>50,80</b></p>
+										</td>
+</tr>
+<tr>
+<td>
+											<p><b>mes</b></p>
+										</td><td>
+<p> <b> "1. Today" </b> </p>
+										</td>
+</tr>
+<tr>
+<td>
+											<p><b>mes</b></p>
+										</td><td>
+<p> <b> "2. Good weather" </b> </p>
+										</td>
+</tr>
+<tr>
+<td>
+											<p><b>mes</b></p>
+										</td><td>
+<p> <b> "It was 3." </b> </p>
+										</td>
+</tr>
+</table>
+								<br>
+Messages like <p> are lined up vertically.
+Now, let's learn another command. It is, for example, </p>
+								<br>
+								<table border=0 cellpadding=2 bgcolor="#ffffff">
+<tr>
+<td>
+											<p><b>cls</b></p>
+										</td><td>
+											<p><b>1</b></p>
+										</td>
+</tr>
+<tr>
+<td>
+											<p><b>color</b></p>
+										</td><td>
+											<p><b>255,0,0</b></p>
+										</td>
+</tr>
+<tr>
+<td>
+											<p><b>mes</b></p>
+										</td><td>
+<p> <b> "Red!" </B> </p>
+										</td>
+</tr>
+<tr>
+<td>
+											<p><b>color</b></p>
+										</td><td>
+											<p><b>0,0,255</b></p>
+										</td>
+</tr>
+<tr>
+<td>
+											<p><b>mes</b></p>
+										</td><td>
+<p> <b> "Blue!" </B> </p>
+										</td>
+</tr>
+</table>
+								<br>
+<p> Use it like this. The "color" command changes the color of the displayed characters.
+There is a function. It seems difficult because there are 3 parameters, but
+It is said that the screen of the computer displays three colors, R, G, and B.
+I don't think it's difficult for those who know that. </p>
+								<br>
+								<img src="images/btn_extention.gif"><br>
+								<div class="enroll">
+<p> color Red brightness value, green brightness value, blue brightness value </p>
+								</div>
+								<br>
+<p> Specify the color like this. Up to 16.7 million colors on Windows
+This is the simplest way to get it out and specify it.
+The brightness value is how bright the component is. 0 is the most
+It is dark and 255 is the brightest. How to specify the color
+If you don't know, just remember the following settings. </p> <br>
+
+										<table border=0 cellpadding=5 bgcolor="white">
+											<tr>
+												<td bgcolor="white">
+													<p><b>color</b></p>
+												</td>
+												<td bgcolor="white">
+													<p><b>0</b></p>
+												</td>
+												<td bgcolor="white">
+													<p><b>,0</b></p>
+												</td>
+												<td bgcolor="white">
+													<p><b>,0</b></p>
+												</td>
+												<td bgcolor="white">
+<p> <b>; <-Black </b> </p>
+												</td>
+											</tr>
+											<tr>
+												<td bgcolor="white">
+													<p><b>color</b></p>
+												</td>
+												<td bgcolor="white">
+													<p><b>0</b></p>
+												</td>
+												<td bgcolor="white">
+													<p><b>,0</b></p>
+												</td>
+												<td bgcolor="white">
+													<p><b>,255</b></p>
+												</td>
+												<td bgcolor="white">
+<p> <b>; <-blue </b> </p>
+												</td>
+											</tr>
+											<tr>
+												<td bgcolor="white">
+													<p><b>color</b></p>
+												</td>
+												<td bgcolor="white">
+													<p><b>255</b></p>
+												</td>
+												<td bgcolor="white">
+													<p><b>,0</b></p>
+												</td>
+												<td bgcolor="white">
+													<p><b>,0</b></p>
+												</td>
+												<td bgcolor="white">
+<p> <b>; <-red </b> </p>
+												</td>
+											</tr>
+											<tr>
+												<td bgcolor="white">
+													<p><b>color</b></p>
+												</td>
+												<td bgcolor="white">
+													<p><b>255</b></p>
+												</td>
+												<td bgcolor="white">
+													<p><b>,0</b></p>
+												</td>
+												<td bgcolor="white">
+													<p><b>,255</b></p>
+												</td>
+												<td bgcolor="white">
+<p> <b>; <-purple </b> </p>
+												</td>
+											</tr>
+											<tr>
+												<td bgcolor="white">
+													<p><b>color</b></p>
+												</td>
+												<td bgcolor="white">
+													<p><b>0</b></p>
+												</td>
+												<td bgcolor="white">
+													<p><b>,255</b></p>
+												</td>
+												<td bgcolor="white">
+													<p><b>,0</b></p>
+												</td>
+												<td bgcolor="white">
+<p> <b>; <-green </b> </p>
+												</td>
+											</tr>
+											<tr>
+												<td bgcolor="white">
+													<p><b>color</b></p>
+												</td>
+												<td bgcolor="white">
+													<p><b>0</b></p>
+												</td>
+												<td bgcolor="white">
+													<p><b>,255</b></p>
+												</td>
+												<td bgcolor="white">
+													<p><b>,255</b></p>
+												</td>
+												<td bgcolor="white">
+<p> <b>; <-Light blue </b> </p>
+												</td>
+											</tr>
+											<tr>
+												<td bgcolor="white">
+													<p><b>color</b></p>
+												</td>
+												<td bgcolor="white">
+													<p><b>255</b></p>
+												</td>
+												<td bgcolor="white">
+													<p><b>,255</b></p>
+												</td>
+												<td bgcolor="white">
+													<p><b>,0</b></p>
+												</td>
+												<td bgcolor="white">
+<p> <b>; <-Yellow </b> </p>
+												</td>
+											</tr>
+											<tr>
+												<td bgcolor="white">
+													<p><b>color</b></p>
+												</td>
+												<td bgcolor="white">
+													<p><b>255</b></p>
+												</td>
+												<td bgcolor="white">
+													<p><b>,255</b></p>
+												</td>
+												<td bgcolor="white">
+													<p><b>,255</b></p>
+												</td>
+												<td bgcolor="white">
+<p> <b>; <-white </b> </p>
+												</td>
+											</tr>
+										</table>
+								<br>
+<p> Now, when you reach here, display your favorite image file with a free layout.
+You should now be able to write scripts to select and display.
+Here's one more command you need to make a launcher.
+prize. </p> <br>
+<img src="images/btn_extention.gif" alt="" height="29" width="29" border="0"><br>
+								<table width="589" border="0" cellspacing="2" cellpadding="0" bgcolor="#ccffff">
+									<tr>
+										<td align="center" bgcolor="#ccffff">
+<p> Statement </p>
+										</td>
+										<td align="center" bgcolor="#ccffff">
+<p> Parameters </p>
+										</td>
+										<td align="center" bgcolor="#ccffff">
+<p> Meaning </p>
+										</td>
+									</tr>
+									<tr>
+										<td align="center" bgcolor="white">
+											<p>exec</p>
+										</td>
+										<td align="center" bgcolor="white">
+<p> String </p>
+										</td>
+										<td align="center" bgcolor="white">
+<p> Execute the specified program </p>
+										</td>
+									</tr>
+								</table>
+								<br>
+<p> The launcher is the selected program (application)
+A program like a menu to run. With the touch of a button
+It's a Windows notepad or a menu that starts a calculator.
+vinegar. It is this "exec" instruction that makes this possible. This is HS
+Call another program (application) from P and start it
+It is an instruction to go. Easy to use, <br>
+									<br><b>exec "notepad"<br>
+									</b></p>
+<p><br>
+Just specify the file name like. "" Notepad "" is correct, "
+"NOTEPAD.EXE" ", but you don't have to bother to write it when it is an EXE file.
+Notepad is a Windows notepad. "Accessory" guru
+The application in the loop. I pressed the button and jumped
+If you put this command first, Notepad will start with the push of a button.
+The launcher is complete ...
+And another point of this command is <br>
+									<br>
+									<b>exec "notepad HSP3.TXT"</b><br>
+									<br>
+									
+Specify the file name with a space after the program name as in
+By doing so, it will open the specified file. In the above example
+Automatically open the file "HSP3.TXT" in Notepad
+Will give you. <br> <br> You have to be careful about the file name you want to open, such as HSP3.TXT.
+When you specify, the file is in the same directory as the script file
+Or it must be in the directory specified in the PATH
+Uto. The directory specified in the PATH is usually a Windows system.
+Since it is the directory that contains the system, it is a standard Windows system tool.
+NOTEPAD.EXE, that is, Notepad can be called properly ...
+So even if you try to call a tool that you installed later
+It doesn't automatically search the hard disk, so
+It's possible that the file can't be found ...
+	<br>
+									<br>
+With this instruction, it becomes possible to realize functions that cannot be done by HSP by using an external program. For example, if you want to make a music collection, a movie collection, etc., <br>
+									<br>
+									 <b>exec "mplayer SAMP.AVI"</b><br>
+									<br>
+If you specify like, you can open and display the AVI video file "SAMP.AVI" in the media player, and <br>
+									<br>
+									<b>exec "mplayer SAMP.MID"</b><br>
+									<br>
+If you specify as, you can easily play a standard MIDI file called "SAMP.MID". Besides, you can specify any file that can be played by the media player such as mp3 and wma. Since mplayer (media player) and notepad (notepad) are Windows-standard software, they can be started on any Windows, but non-standard software such as MS-WORD, which is not prepared as standard, can be started. If you create a script to start it, it will not work outside of that environment. Be careful when creating scripts that will be distributed to an unspecified number of people. <br>
+									<br>
+That's it for this part, with an example of a simple script at the end. Remaster how to use buttons and labels before proceeding. <br>
+									</p><br>
+<table border=0 cellpadding=0 bgcolor="#ffffff"><tr>
+<td>
+											<p><b>cls</b></p>
+										</td><td>
+											<p><b>1</b></p>
+										</td>
+</tr>
+<tr>
+<td>
+											<p><b>pos</b></p>
+										</td><td>
+											<p><b>100,50</b></p>
+										</td>
+</tr>
+<tr>
+<td>
+											<p><b>mes</b></p>
+										</td><td>
+<p> <b> "Calculator" </b> </p>
+										</td>
+</tr>
+<tr>
+<td>
+											<p><b>mes</b></p>
+										</td><td>
+<p> <b> "Notepad" </b> </p>
+										</td>
+</tr>
+<tr>
+<td>
+											<p><b>mes</b></p>
+										</td><td>
+<p> <b> "End" </b> </p>
+										</td>
+</tr>
+<tr>
+<td>
+											<p><b>pos</b></p>
+										</td><td>
+											<p><b>20,50</b></p>
+										</td>
+</tr>
+<tr>
+<td>
+											<p><b>button</b></p>
+										</td><td>
+											<p><b>"CALC",*mkcalc</b></p>
+										</td>
+</tr>
+<tr>
+<td>
+											<p><b>button</b></p>
+										</td><td>
+											<p><b>"MEMO",*mkmemo</b></p>
+										</td>
+</tr>
+<tr>
+<td>
+											<p><b>button</b></p>
+										</td><td>
+											<p><b>"END",*owari</b></p>
+										</td>
+</tr>
+<tr>
+										<td>
+											<p><b>stop</b></p>
+										</td>
+									</tr>
+<tr>
+<td>
+											<p>
+												
+											</p>
+										</td><td>
+											<p><b>*mkcalc</b></p>
+										</td>
+</tr>
+<tr>
+<td>
+											<p><b>exec</b></p>
+										</td><td>
+											<p><b>"calc"</b></p>
+										</td>
+</tr>
+<tr>
+										<td>
+											<p><b>stop</b></p>
+										</td>
+									</tr>
+<tr>
+<td>
+											<p>
+												
+											</p>
+										</td><td>
+											<p><b>*mkmemo</b></p>
+										</td>
+</tr>
+<tr>
+<td>
+											<p><b>exec</b></p>
+										</td><td>
+											<p><b>"notepad"</b></p>
+										</td>
+</tr>
+<tr>
+										<td>
+											<p><b>stop</b></p>
+										</td>
+									</tr>
+<tr>
+<td>
+											<p>
+												
+											</p>
+										</td><td>
+											<p><b>*owari</b></p>
+										</td>
+</tr>
+<tr>
+										<td>
+											<p><b>end</b></p>
+										</td>
+									</tr>
+</table>
+</div>
+							<div class="section">
+								<table>
+									<tr>
+										<td><a href="START-7.HTM"><img src="images/btn_next.gif" alt="" height="29" width="29" border="0"></a></td>
+<td> <font size = "-1"> <a href="START-7.HTM"> step7: Let's use variables </a> </font> </td>
+									</tr>
+								</table>
+							</div>
+						</div>
+					</td>
+				</tr>
+			</table>
+															<div align="center">
+			<table width="800" border="0" cellspacing="0" cellpadding="0">
+					<tr>
+					<td align="center">
+							<p style="color:#333333; font-size:10px; margin:5px 0px">ONION software Copyright 1997-2009(c) All rights reserved.<br>
+							</p>
+						</td>
+				</tr>
+				</table>
+		</div></div>
+	</body>
+
+</html>

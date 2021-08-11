@@ -1,0 +1,39 @@
+#include "hspcmp.as"
+
+	;	キーワードを検索してヘルプを表示する
+
+	;	hsphelpフォルダに移動する
+	s1=dir_exe
+	chdir s1
+	dirlist s2,"hsphelp",5
+	if stat {
+		chdir "hsphelp"
+	}
+
+	sdim res,$10000
+
+	s1=dir_cur
+	hman_init s1
+	if stat {
+		hman_getresult res
+		dialog res
+		end
+	}
+
+	objsize 200,30
+
+	key="netload"
+	input key
+	button "Query",*go
+	mesbox res,640,400
+	obj_mes=stat
+	stop
+
+*go
+	hman_search key
+	hman_getresult res
+
+	objprm obj_mes,res
+	stop
+
+

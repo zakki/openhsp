@@ -1,0 +1,325 @@
+
+笏≫煤笏≫煤笏≫煤笏≫煤笏≫煤笏≫煤笏≫煤笏≫煤笏≫煤笏≫煤笏≫煤笏≫煤笏≫煤笏≫煤笏≫煤笏≫煤笏≫煤笏―r\nhs file specification
+笏≫煤笏≫煤笏≫煤笏≫煤笏≫煤笏≫煤笏≫煤笏≫煤笏≫煤笏≫煤笏≫煤笏≫煤笏≫煤笏≫煤笏≫煤笏≫煤笏≫煤笏―r\n Introduction
+		Version 2.0 R2 update 2018/06/01
+			s.programs http://spn.php.xdomain.jp/
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+
+This document is a help file for HSP Help Manager "hs file"
+It defines the specifications of.
+ Revision history
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+
+2004/04/07 (Implementation of HSP HELP Browser 1.40)
+ツキcreate
+2005/05/25 (Implementation of HSP HELP Browser 1.50)
+-Added escape specifications for the special characters'%' and'^' at the beginning of the line.
+
+-Added functional notation specification for parameter format
+-Abolished renaming of duplicate symbol names
+2006/07/16 (hs file specification Version 2.0)
+-Abolished the distinction between global members and local members
+
+-Supports new field tags% port and% portinfo
+-Added specifications for difference description
+-Removed the escape specification for the special character'^' at the beginning of the line.
+
+
+-Deleted the description of capacity limit
+繝サ Generalization of terms
+ --Page-> "Record"
+ --Members-> "Fields"
+ --Member-defined keywords-> "Field tags"
+
+2018/06/01 Version 2.0 R2
+-Deleted the display font specification of the commentary
+-Removed complicated description related to compatibility with "old specifications" before 2005
+
+
+ Definition of terms
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+繝サ Hs file
+The text file that stores the help information for the help manager is called "hs file".
+is. The extension is hs. Shift_JIS is used as the character code.
+
+ツキrecord
+Explanatory texts and sample screens that describe certain symbols (such as instructions) used by HSP.
+A group of data (fields) such as a record is called a record. On the help page
+One page is one record. The hs file contains one or more records
+Will be.
+
+ツキfield
+A field is each element contained in a record. Command names, headings, commentary, etc.
+That's it. All fields are string data.
+
+Help data is treated as a simple card-type database of records and fields.
+increase.
+
+
+ Basic format
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+The hs file format is a format that describes help information for plain text databases.
+It's Basically, it is a format in which text sentences are written as they are in a file.
+
+Use "field tags" starting with the character'%' to control records and fields
+To do. The field tag is the field record of which text is written after the tag.
+Declare whether it belongs to the mode.
+
+There are the following types of field tags.
+
+  (Tag) (Content)
+ツキ% Index symbol name, heading
+-% Prm parameter list, parameter description
+繝サ% Inst commentary
+繝サ% Sample sample script
+繝サ% Href related items
+繝サ Plugins / modules using% dll
+繝サ% Ver version
+ツキ% Date date
+繝サ% Author Author
+繝サ% Url related URL
+繝サ% Note Remarks (Supplementary information, etc.)
+繝サ% Type type
+繝サ% Group group
+繝サ% Port compatible environment
+ツキ% Portinfo porting tips
+
+Field tags must be written at the beginning of the line. It is not case sensitive. centre
+The field value is from the line after the field tag to the line before the next field tag, or
+It will be the text data written by the end of the file. How are field tags
+You can write them in any order.
+
+% index is a particularly important and special tag that not only controls fields but also separates records.
+It has a role to do. The information in one record is from% index to the next% index
+It will be the value written by the end of the file. Therefore, the record included in the hs file
+There will be as many data as there are% indexes in the file.
+
+Also, the value described in the field tag from the beginning of the file to the first% index is that.
+It is the default value for all records in the hs file. For example, the first% index
+If you describe the supported environment with% port by then, the records included in the hs file will be recorded.
+If the% port tag is not included, the value described first will be adopted. Expressly 
+If a value is set, it takes precedence.
+
+If there is an unknown field tag (eg% hoge) in the hs file, ignore the value in it
+Will be done. Also, the character string included from the beginning of the file to the first field tag is also the same.
+It will be ignored.
+
+*
+If there is a line starting with'%' in the description, etc., start the line with'%%' to make the field
+You can prevent it from being recognized as a tag.
+
+
+ Format of each field
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+Before explaining the rules for writing each field, I will explain the rules that are common to all fields.
+vinegar.
+
+All fields except the symbol name (% index) are optional. Description omitted, differential
+Field values that do not have an ortho value are empty.
+
+Line breaks in sentences are automatically wrapped according to the display size of the viewer, so in the middle of the sentence
+We recommend that you do not break lines, but break lines at each paragraph. Also, letters and numbers should be
+It is recommended to use single-byte characters.
+
+The description rules for each field are as follows.
+
+◆% index (symbol name, heading)
+Describe the symbol name and heading. Write the symbol name on the first line and the heading on the second line.
+when. This field tag is the starting point for writing records. Omission of symbol name
+You can not.
+
+Headings should be as short as possible, concisely describing the function of the symbol. In the headline
+Cannot use line breaks.
+
+◆% prm (parameter list, parameter description)
+Describe the parameters of instructions and macros. Parameter list (parameter format) on the first line,
+Describe the outline of each parameter from the second line onward.
+
+For symbols that do not have parameters, do not write "no parameters" etc. and feel
+Please omit the description of the tag. Also, when the parameter is described as a function expression, the parameter
+Enclose the catalyst in parentheses ().
+
+◆% inst (commentary)
+Write a commentary. This part is the main part of the help page.
+
+◆% sample (sample script)
+Write a sample script.
+
+If the first character of a line is a semicolon';', it is treated as a comment in the hs file and there is no line.
+Please note that it will be seen.
+
+◆% href (related item)
+Describe the related symbols separated by line breaks.
+
+◆% dll (plug-in / module used)
+If there is a plug-in or module to use, describe the name. Write only one line
+I can.
+
+This description cannot be omitted in help that is not a standard HSP function. Mods that do not use DLL
+Even if it is, it is necessary to describe the module file name and so on.
+
+◆% ver (version)
+Describe the version. Only one line can be written.
+
+◆% date
+Describe the date. If necessary for update history etc., you can write over multiple lines
+to come.
+
+◆% author
+Describe the author's name. If you want to use a joint name, write it in multiple lines.
+
+◆% url (related URL)
+Describe the relevant URL. If you write multiple URLs, use multiple lines.
+
+◆% note (Remarks)
+If there are any remarks or notes, describe them. It can be written over multiple lines.
+
+◆% type
+Describes the type of symbol. Description examples are "extended instructions", "user extended instructions", and so on.
+Only one line can be written.
+
+◆% group
+Describes a group to classify functions. Description examples are "screen control command", "character string operation command",
+For example, "input / output control instruction". Only one line can be written.
+
+◆% port (supported environment)
+Describes a flag string that indicates which platform the HSP execution environment corresponds to.
+
+Write the flag string exactly in uppercase and lowercase. Multiple platforms
+If it can be executed with, write it on multiple lines. The following flags are currently decided
+I have.
+
+ (Flag) (Environment)
+・ Win Windows version HSP
+・ Mac Macintosh version HSP
+・ Let HSPLet
+・ Cli command line version HSP
+
+◆% portinfo (porting tips)
+Here are some tips for porting between platforms.
+
+
+ Field diff description
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+The field tags below are the differences from the default value (written up to the first% index)
+Supports the description of.
+
+-Added to% port + compatible environment flag
+% Port-Excluded from supported environment flags
+
+For example, if you have the following hs file description,
+
+- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
+% port; default
+Win
+Let
+
+%index
+test1
+% port +; Difference (additional)
+Mac
+
+%index
+test2
+% port-; diff (exclude)
+Let
+- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
+
+The value of the% port field of the symbol test1 is 3 lines with Mac added to the default value.
+Therefore, the value of the% port field of test2 is one line excluding Let from the default value.
+increase.
+
+You can also write both% port + and% port- in one record. Also, at the time of addition
+Flags that are already included will not be added in duplicate.
+
+
+ About comments
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+Lines beginning with the semicolon character';' are considered comments and are ignored. Also, start with'%'
+In the whole tag line, the';' after the tag string is treated as a comment.
+
+(Example of comment)
+; -------- comment
+%index ; -------- comment
+
+Especially if you use';' for script comments in the sample script, put it at the beginning of the line
+Please be careful not to write in. Comment if there is a space or tab before the';'
+Not considered.
+
+
+ Handling of tags (^)
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+Lines with only "^" or "^ p" are treated as blank lines.
+
+
+ hs file description example
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+;---------------------------------------------------------------
+Hs file sample
+; (hs specification version 2.0)
+;---------------------------------------------------------------
+
+% dll; module name
+hhx_db.hsp
+
+%ver
+2.0
+
+%date
+2006/07/16
+
+%author
+sprocket
+
+%url
+http://spn.php.xdomain.jp/
+
+%note
+Include hhx_db.hsp.
+
+%type
+User extension instructions
+
+%group
+hs database processing
+
+%port
+Win
+
+The values of the fields defined so far will be the default values for subsequent records.
+
+%index
+HHX_init_load_db
+load hs database
+
+%inst
+Load the hs database file (hhx.db) located in the current directory. this
+If the instruction succeeds, the system variable stat returns 0.
+
+If the hs file has been updated, or if hhx.db does not exist, stat will return 1.
+vinegar. In that case, reconfigure hhx.db with the HHX_init_rebuild_db instruction.
+
+After executing HHX_init_load_db and HHX_init_rebuild_db, use the HHX_init_extract_db instruction to database.
+You need to expand the loaded database in memory.
+
+%sample
+#include "hhx_db.hsp"
+
+HHX database load sequence
+	mes "loading..."
+	HHX_init_load_db
+	if stat {
+		mes "rebuilding db..."
+		HHX_init_rebuild_db
+	}
+	HHX_init_extract_db
+	mes "complete."
+
+%href
+HHX_init_rebuild_db
+HHX_init_extract_db
+
+
+[EOF]

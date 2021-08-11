@@ -1,0 +1,258 @@
+<!doctype html>
+<meta charset="utf-8">
+
+<link rel="StyleSheet" type="text/css" href="spn.css">
+
+<title> How to use HSP Docs Library, how to write documents </title>
+
+<h1> How to use HSP Docs Library, how to write documents </h1>
+
+<p><img src='hdl_360_2.png'></p>
+
+<p> HSP Docs Library (HDL) is a browser for searching and browsing HSP documents at once. </p>
+
+<p> hs Help files, txt / HTML documents, sample scripts can be searched in bulk or cross-referenced. </p>
+
+<h2> Files read by HSP Docs Library </h2>
+
+The files in the <p> library are searched for in the following directories: </p>
+
+<table>
+<tr> <th> Directory <th> Files to be searched </tr>
+<tr><td>doclib<td>*.hs *.txt *.htm *.html *.hsp</tr>
+<tr><td>hsphelp<td>*.hs</tr>
+<tr><td>sample<td>*.hsp</tr>
+<tr style ='color: # 777;'> <td> common <td> * .as * .hsp (documented header file) </tr>
+</table>
+
+<p> If you want to add new documentation to the HDL library, place the files in the doclib directory. </p>
+
+<p> For each plugin or module, create a category directory under the doclib directory and create a category directory.
+If you put together related documents (hs, hsp samples, txt, HTML documents and images used in them, style sheets, etc.),
+It will be easier to manage even if the number of files increases.
+</p>
+
+<b> Shift_JIS </b> and <b> UTF-8 </b> are supported for the character code of the <p> document. This document is stored in UTF-8. </p>
+
+<h2> HSP Docs Library Documentation Section </h2>
+
+<p> In HDL, the set of loaded files is called a library. The library is <b> command help </b>, <b> documentation </b>, <b> sample </b>
+ It is divided into three sections.
+Each section is further subdivided into categories. Below the category is the page that is the body of the content.
+
+The contents of the <p> .hs help file are distributed to the <b> Command Help </b> section. The categories in the command help section are divided according to the plugin used.
+</p>
+
+The <p> .txt .htm .html file is sorted into the <b> Documents </b> section. </p>
+
+The <p> .hsp files are distributed in the <b> Samples </b> section.
+The categories in the document section and the sample section are separated by the name of the directory where the files are actually located. Files that do not belong to a subdirectory fall into the "default" category.
+</p>
+
+<p style ='color: # 777;'> If there is a documented header file (.as .hsp) in the common directory, its contents will be sorted to the command help section.
+
+<h2> How to create hs file </h2>
+
+<p> HDL supports HSP's own hs format help file as a help file for command help manuals.
+
+See <a href="HS_BIBLE.txt"> HS_BIBLE.txt </a> for the format of the <p> hs file.
+
+<h3> hs file inline HTML </h3>
+
+<p> In HDL, directly between the line written "html {" and the line written "} html" in the% inst field of the hs file.
+ There is a feature called "inline HTML" that displays as HTML.
+
+<p> This is a display specification of HDL, not a specification as an hs file, and some HTML representations can be used in the hs file.
+
+<pre class="script">
+; hs file format example
+
+%index
+stickf
+Get keystroke information
+
+%inst
+The stickf function returns an OR value for multiple key states, such as:
+<span class="hshtm">html{
+&lt;table border=1&gt;
+& lt; tr & gt; & lt; th & gt; Value & lt; / th & gt; & lt; th & gt; Key & lt; / th & gt; & lt; / tr & gt;
+& lt; tr & gt; & lt; td & gt; 1 & lt; / td & gt; & lt; td & gt; Cursor key left (<-) & lt; / td & gt; & lt; / tr & gt;
+& lt; tr & gt; & lt; td & gt; 2 & lt; / td & gt; & lt; td & gt; On the cursor key (↑) & lt; / td & gt; & lt; / tr & gt;
+& lt; tr & gt; & lt; td & gt; 4 & lt; / td & gt; & lt; td & gt; Cursor key right (->) & lt; / td & gt; & lt; / tr & gt;
+& lt; tr & gt; & lt; td & gt; 8 & lt; / td & gt; & lt; td & gt; Cursor down (↓) & lt; / td & gt; & lt; / tr & gt;
+& lt; tr & gt; & lt; td & gt; 16 & lt; / td & gt; & lt; td & gt; Spacebar & lt; / td & gt; & lt; / tr & gt;
+& lt; tr & gt; & lt; td & gt; 32 & lt; / td & gt; & lt; td & gt; Enter key & lt; / td & gt; & lt; / tr & gt;
+& lt; tr & gt; & lt; td & gt; 64 & lt; / td & gt; & lt; td & gt; Ctrl key & lt; / td & gt; & lt; / tr & gt;
+& lt; tr & gt; & lt; td & gt; 128 & lt; / td & gt; & lt; td & gt; ESC key & lt; / td & gt; & lt; / tr & gt;
+&lt;/table&gt;
+}html</span>
+</pre>
+
+<p> For inline HTML sections, the HTML format inside is not checked by HDL.
+If incorrect HTML is written, the layout of the entire page may be corrupted, so be sure to check it carefully when distributing hs data.
+Also, avoid using HTML for decorative purposes that are not relevant to the meaning of the information.
+
+<p> Do not write active scripts (javascript, etc.) in inline HTML.
+Some keywords related to script execution are restricted in use. The style of the elements used in inline HTML can be influenced by external CSS.
+
+The document type for the <p> HDL output page is <b> HTML 5 </b>.
+
+<aside>
+<h3> (Not recommended due to complexity) Header file and hs doc comment </h3>
+
+<p> HDL reads header files (.as .hsp) under the common directory as <b> documented header files </b>.
+
+A <p> documented header file is a header file with <b> documentation comments </b> in hs format added.
+A file that has both a function as a header file and a function as a command help manual.
+
+<p> When writing a doc comment in an HSP script, use a format like the one below.
+This script meets its specifications, both as an HSP script and as an hs help file, and works correctly in either format.
+
+<pre class="script">
+;============================================================
+Header file with doc comment
+;============================================================
+<span> / * ~ Module information (hs default record)
+%dll
+dxmodule
+
+%ver
+1.67
+
+%date
+2008/05/01
+
+% * / </span>; <--- After this, it will be a comment as an hs file.
+;------------------------------------------------------------
+
+#module
+
+;===========================================================
+<span> / * ~ Document part
+%index
+dxsetcam
+Camera position setting
+
+%prm
+x1, y1, z1, x2, y2, z2
+
+%inst
+Set the camera coordinates x1, y1, z1 and orientation (target position x2, y2, z2).
+
+%group
+3D control instructions
+
+%*/</span>
+;------------------------------------------------------------
+; ~ Implementation part
+#deffunc dxsetcam double p1, double p2, double p3, double p4, double p5, double p6
+	//
+	return
+//
+#global
+</pre>
+
+<p> The doc comment is described in the multi-line comment (/ * ~ * /) of the HSP script according to the format specifications of the hs help file.
+This multi-line comment containing hs-formatted field tags is called a <b> document block </b>.
+
+<p> Use the% symbol at the end of the document block so that subsequent comments are in hs format.
+In hs format, if there is an undefined field tag, the following lines are considered comments.
+If you forget to do this, even the HSP script part may be recognized as part of the hs document.
+
+<p> It is recommended to write one of the following for the description of this part.
+
+<pre class="script">
+<span>%*/</span>
+</pre>
+
+<pre class="script">
+<span>%rem
+*/</span>
+</pre>
+
+<p> A multi-line comment (/ * ~ * /) cannot be expressed as a document in a document block.
+
+<p> Files written according to this rule only need to change the extension to .hs.
+It can also be read from hs help tools that do not support doc comments.
+</aside>
+
+<aside>
+<h2> Document thumbnail image (obsolete in HDL 1.40) </h2>
+
+<p> The thumbnail image display function for documents has been abolished because it is complicated and not widely used. </p>
+</aside>
+
+<h2> Request to document creator </h2>
+
+<p> When creating documents and sample scripts, keep the following points in mind to improve visibility and searchability. </p>
+
+<h3> Give the HTML document an appropriate title </h3>
+
+The content of the title tag in the <p> HTML file is recognized as the title of the document.
+The title should be easy to understand what the content of the document is. </p>
+
+<h3> Give texts and sample scripts descriptive file names </h3>
+
+<p> The title of the sample script or txt file is the file name.
+Filenames like "test1.hsp" should be avoided as you cannot guess what they are. </p>
+
+<p> This is also true for sample and document directory names (= category names). </p>
+
+<h3> hs file line breaks are left to the viewer's automatic wrapping </h3>
+
+<p> If you start a new line in the body of the hs file with a fixed number of characters,
+It may be difficult to read depending on the window size and font size of the viewer.
+Leave paragraph wrapping to the viewer's window width.
+</p>
+
+<h3> Do not specify fixed width of HTML document </h3>
+
+<p> The width of the HTML document should not be fixed to an absolute value, but should be readable even if the browser window width is reduced.
+</p>
+
+<aside>
+
+<h2> (Reference) Basic form of instruction command help </h2>
+
+<p> Regarding the explanation text of the command command help, the following paragraph style seems to tend to make the text simpler and easier to understand. </p>
+
+<p> Paragraph ・ This command does ○○○. (Description of function) <br>
+<br>
+Paragraph ・ Specify ○○○ in p1. This value is. .. .. (Explanation of arguments) <br>
+<br>
+Paragraph ・ Specify ○○○ in p2. This value is. .. .. (Explanation of arguments) <br>
+<br>
+Paragraph ・ The points to note with this command are: .. .. (Explanation of precautions and restrictions) <br>
+<br>
+Paragraph ・ If this instruction is successful, the system variable stat will be displayed. .. .. (Explanation of return value) <br>
+</p>
+
+<h3> Bad example </h3>
+
+<p><b>dxsetlocal</b></p>
+
+<p> This instruction uses a coordinate transformation matrix specified by px to pz and m00 to m22, except for dxsetcam.
+Set as the local coordinate system that applies to all dxmodule instructions. </p>
+
+<p>… × Sentence structure is complicated </p>
+
+<h3> A good example </h3>
+
+<p><b>dxsetlocal</b></p>
+
+<p> Set the local coordinate system. <br>
+<br>
+Specify the coordinate transformation matrix with px ~ pz, m00 ~ m22. <br>
+<br>
+The local coordinate system applies to all dxmodule instructions except dxsetcam. <br>
+</p>
+
+<p>… ○ Easy </p>
+
+</aside>
+
+<h2> Update information </h2>
+
+<p> The latest version of HDL is available on s.programe net <a href="http://spn.php.xdomain.jp/"> http://spn.php.xdomain.jp/ </a> It has been.
+
+<footer>HSP Docs Library - <a href="http://spn.php.xdomain.jp/">s.programs</a></footer>

@@ -65,11 +65,11 @@ In order to operate on the actual android machine, the following is required.
 	<ul>
 <li> android development environment (SDK)-> <a href="https://developer.android.com/studio/index.html" target="_blank"> [Download site] </a>
 	<ul><p>
-You only need to get the command line tools from <a href="https://developer.android.com/studio/index.html#downloads" target="_blank"> Download Options </a> There is.
+You only need to get the command line tools from <a href="https://developer.android.com/studio/index.html#downloads" target="_blank"> Download Options </a> I have.
 However, after <b> SDK Tools, Revision 25.3.0 (March 2017 version), the command line tools (android command) required for build are no longer included. </b> You can download the latest version of the previous version from the following URL, so please use that.
 (In future versions, we plan to switch to builds with Android Studio instead of command line tools.)
 	<ul><p>
-<a href="https://dl.google.com/android/repository/tools_r25.2.5-windows.zip" target="_blank"> Android SDK Tools, Revision 25.2.5 (January 2017) [Download Link] < / a>
+<a href="https://dl.google.com/android/repository/tools_r25.2.5-windows.zip" target="_blank"> Android SDK Tools, Revision 25.2.5 (January 2017) [Download link] < / a>
 	</p></ul>
 Install the contents of the zip archive in any folder. The recommended folder is "c: \\ android \\ android-sdk". <br>
 (You should be able to retrieve the "tools" folder from the SDK Tools. Make sure it looks like "c: \\ android \\ android-sdk \\ tools")
@@ -97,7 +97,7 @@ The recommended version of ant is 1.9.4 or later.
 	<ul><img src="hsp3dish/s_and2.jpg"><br></ul>
 	<br>
 	<p>
-If you unzip the archive to the recommended folder, you will see something like the above. (Use alphabetic characters only, no spaces in the folder name)
+If you unzip the archive to the recommended folder, you will see something like the above. (Use alphabetic characters only, folder names without spaces)
 	</p>
 
 <h2 id = "DHSETUP"> HSP3 Dish Helper settings </h2>
@@ -130,7 +130,7 @@ This tool allows you to install the required APIs. (Must be connected to the net
 	<br>
 A checkbox for the API corresponding to each version is displayed in the form of "Android 10 (API 29)".
 Be sure to check "Android SDK Tools", "Android SDK Platform-tools", "Android SDK Build-tools" (latest Rev.) and "Android 10 (API 29)".
-(The API version indicates the level of API that can be used in the program, and it has nothing to do with the version of the device to install. Normally, if you install "Android 10 (API 29)", it can be operated on most devices. I will.)
+(The API version indicates the level of API that can be used in the program, and it has nothing to do with the version of the device to install. Normally, if you install "Android 10 (API 29)", it can be operated on most devices. increase.)
 	<br>
 Click the "Install packages ..." button to download and install.
 "Installed" is added to the installed items.
@@ -138,6 +138,10 @@ Click the "Install packages ..." button to download and install.
 	<br>
 (If you use it in an environment where you cannot connect to the Internet for some reason, use a place where you can temporarily connect to the Internet.
 After installation, if you prepare the android development environment (SDK) folder itself, there is no problem with the build. )
+	</p>
+	<p>
+* New apps for publishing on Google Play must be registered in android 11 (API30) and AAB (Android App Bundle) formats from August 2021. <br>
+Build in AAB format will be supported at an early stage, so <a href="https://www.onionsoft.net/wp/archives/category/hsp/download" target="_blank"> β test version Be sure to check for updates </a>.
 	</p>
 
 <h2 id = "DHNEWPROJ"> Create a new project </h2>
@@ -155,7 +159,7 @@ When developing an app for android, you must always create one project file for 
 	</p>
 	<ul>
 <li> Project name </li> <br> <p>
-It will be the title name of the project. Specify only English characters that do not include spaces.
+It will be the title name of the project. Specify only alphabetic characters that do not include spaces.
 	</p>
 	<li>ID</li><br><p>
 Set the target ID of the build. The target ID is a number that specifies the API version of the SDK. By default, "" android-29 "" (10) is specified. Normally, you do not need to change it. Use the defaults unless you have a specific reason to do so.
@@ -171,7 +175,7 @@ Specify only English characters that do not include spaces in the name. <a href=
 If you omit the package name, the string automatically generated from the date and project name will be applied.
 	</p>
 <li> Use AdMob </li> <br> <p>
-Please check this when creating an ad distribution app using AdMob.
+Please check when creating an ad distribution application by AdMob.
 Google Play Services and Android Support Library are required. For more information, see AdMob Ad Delivery.
 	</p>
 <li> Do not build ARM64 </li> <br> <p>
@@ -180,7 +184,7 @@ Normally, use it without checking it (ARM64 build enabled).
 If you want to run it on an old Android device that is not 64bit, you can shorten the build time by checking it.
 	</p>
 <li> Don't build x86 </li> <br> <p>
-Check this to disable code generation for x86 processors.
+Check to disable code generation for x86 processors.
 Normally, use it without checking it (x86 build enabled).
 If you want to run on android device with android simulator and x86 processor, please enable x86 build.
 If not, you can shorten the build time by checking it.
@@ -250,10 +254,10 @@ If the "hsp3dish.ini" file exists in the folder, the settings such as screen siz
 Specifies the dpm file that contains the data referenced by the script. The dpm file is the format used by HSP, and multiple files are packed into one dpm file. (By pressing the "Create ..." button, you can pack all the files in the specified folder into a file called data.dpm and specify that file.) <br>
 <b> * It has been confirmed that the dpm file is not recognized correctly on android9 or later OS. We plan to support it in future versions, but currently it is recommended to use the assets folder instead of the dpm file. <br> </b>
 If the data file specification is blank, the dpm file will not be referenced.
-For more information, see <a href="#DATAFILE"> Preparing the data file </a>.
+See <a href="#DATAFILE"> Preparing Datafiles </a> for more information.
 	</p>
 <li> Project name </li> <br> <p>
-Select the project you want to build. A folder for your project has been created and you can choose one of the ones that are ready to build.
+Select the project you want to build. A folder for your project will be created and you can choose one of the ones that are ready to build.
 (Pressing the "Update" button will search the project folder again.)
 	</p>
 	<p>
@@ -280,7 +284,7 @@ You can run the build leaving the data file (dpm) blank.
 
 <h2 id = "RUNPROJ"> Transfer and execution to the actual machine </h2>
 	<p>
-After building the project, you can transfer it to the actual android machine or simulator to check it.
+After the project build is completed, you can transfer it to the actual android machine or simulator and check it.
 (When running on the simulator, start "AVD Manager" from the "Options" tab of HSP3Dish helper, and set and start the simulator to use it.)
 	<br>
 Transfer (install) the pre-built apk file by connecting the actual android device via USB and pressing the "Transfer" button while it is recognized by the OS.
@@ -300,7 +304,7 @@ You can display the execution log by pressing the "Logcat" button. You can check
 <h2 id = "DATAFILE"> Data file preparation </h2>
 	<p>
 The data file referenced by the script can be prepared in two ways.
-One is to copy the files to the assets folder inside the project directory. Basically, use this method.
+One is to copy the files to the assets folder in your project directory. Basically, use this method.
 The assets folder can contain all the files used for reading, including image files. <br>
 However, please note that unlike Windows, the file name is case-sensitive, so you need to write the file name correctly.
 <br><br>
@@ -318,12 +322,12 @@ Be sure to put the sound files in the assets folder. <br>
 	<p>
 It is now possible to get the OS version and device name using the sysinfo function.
 You can get a string like "android 2.3.3" with sysinfo (0). This makes it possible to determine the OS and version currently running in the source. <br>
-You can also get the device name with sysinfo (2). Currently, other items in the sysinfo function are not supported.
+You can also get the device name with sysinfo (2).
 	</p>
 
 <h2 id = "EXECTASK"> Task (activity) call </h2>
 	<p>
-Other tasks (activities) can be called by the exec instruction.
+Other tasks (activities) can be called by the exec command.
 	</p>
 	<ul><pre>
 exec "package name", 0, "class name"
@@ -346,7 +350,7 @@ Start the dialer with "tel: 123456789". There are various other calling methods 
 
 <h2 id = "DISHINI"> About the hsp3dish.ini configuration file </h2>
 	<p>
-If there is a setting file "hsp3dish.ini" in the "hsp" folder (the folder where HSP scripts are installed) in the project folder, that setting will be reflected at build time. <br>
+If there is a setting file "hsp3dish.ini" in the "hsp" folder (folder where HSP scripts are installed) in the project folder, the setting will be reflected at build time. <br>
 "Hsp3dish.ini" is a file to refer to the settings such as screen size when executing on Windows. See the <a href="hsp3dish_prog.htm#INIFILE"> HSP3Dish Programming Manual </a> for more information.
 By writing like "parameter name = setting value", the setting will be reflected when building android.
 	</p>
@@ -355,7 +359,7 @@ Parameter name Setting contents
 		----------------------------------------
 wx screen X (horizontal) size
 wy screen Y (vertical) size
-autoscale autoscaling value
+autoscale autoscale value
 	</pre></ul>
 	<p>
 If you want to adjust the screen scaling automatically, set the auto scaling value like "autoscale = 0".
@@ -378,7 +382,7 @@ If you want to set manually without using the "hsp3dish.ini" file, read the item
 <h2 id = "SCALE"> About manual setting items </h2>
 	<p>
 By editing the main.cpp source in the jni folder, you can make various settings related to HSP3Dish. <br>
-<b> Normally, prepare the setting file "hsp3dish.ini" in the "hsp" folder and set it. This section describes how to modify the source code and set it manually. </b> <br>
+<b> Normally, prepare the setting file "hsp3dish.ini" in the "hsp" folder and configure the settings. This section describes how to modify the source code and set it manually. </b> <br>
 Modify the following line in the source code (near 160 lines) that starts with "static void engine_handle_cmd".
 	</p>
 	<ul><pre>
@@ -394,7 +398,7 @@ By default, scaling is not set, so it should look like the above. <br>
 		hgio_view( 480, 320 );
 	</pre></ul>
 	<p>
-First, delete the "//" to enable the hgio_view line. Set the original screen size (resolution at which the script operates) using hgio_view. The above example shows that the horizontal size is 480 and the vertical size is 320.
+First, delete the "//" to enable the hgio_view line. Please set the original screen size (resolution at which the script operates) with hgio_view. The above example shows that the horizontal size is 480 and the vertical size is 320.
 	</p>
 	<ul><pre>
 		hgio_scale( 2.0f, 2.0f );
@@ -473,7 +477,7 @@ Please remember.
 
 <h2 id = "RELEASE"> Release build </h2>
 	<p>
-You can generate a signed apk file by doing a release build from HSP3Dish Helper. This makes it possible to register the created app on Google Play (Android Market).
+You can generate a signed apk file by doing a release build from HSP3Dish Helper. This makes it possible to register the created application on Google Play (Android Market).
 The general procedure for publishing is as follows.
 	</p>
 	<p><b>
@@ -510,7 +514,7 @@ Then press the "Create KEY" button. (The key name can be left as "hspapp") <br>
 A command prompt screen will open, asking for information on the following items. Enter them from the keyboard. It is recommended to enter all in half-width English characters.
 	</p>
 <pre> ・ Password
-·Reenter password
+·Re-enter password
 ・ First and last name
 ・ Organizational unit name (department / department name)
 ・ Organization name (company / organization name)
@@ -518,7 +522,7 @@ A command prompt screen will open, asking for information on the following items
 ・ State name or local name (prefecture name)
 ・ Country code (Enter 81 for Japan)
 ・ Are you sure? (Enter "y")
--Key password (enter Enter) </pre>
+・ Key password (enter Enter) </pre>
 	<p>
 This will create a "hspapp.keystore" file in the root of your project folder.
 Please do not delete this file and keep it in a safe place as it is necessary for signing the app.
@@ -529,7 +533,7 @@ Please do not delete this file and keep it in a safe place as it is necessary fo
 Open the existing project page in the android tab of HSP3Dish Helper.
 Select the project you want to build and perform a normal build to confirm that it works properly. <br>
 Then press the "Release" button. Run the release build of your app and sign it.
-At this time, the command prompt screen will open and you will be asked for a password. Enter the password you entered when you created "hspapp.keystore". <br>
+At this time, a command prompt screen will open and you will be asked for a password. Enter the password you entered when you created "hspapp.keystore". <br>
 With the above, the file of "project name.apk" is generated in the bin folder of the project.
 	</p>
 <li> Upload from Android Developer Console </li>
@@ -596,7 +600,7 @@ vibrate Vibrate operation (parameter 1)
 AdMob Displaying ads with AdMob
 	</pre>
 	<p>
-For example
+for example,
 	</p>
 	<pre>
 		devcontrol "vibrate",400
@@ -606,10 +610,39 @@ Instructs the device to perform a vibrate operation. <br>
 The length of vibration (in milliseconds) can be changed by changing the value of the parameter.
 	</p>
 
+	<p>
+You can also get system information with the devinfo command. <br>
+	</p>
+	<pre>
+devinfo variable name, "information name"
+	</pre>
+	<p>
+Perform device control in the above format.
+On Android devices, the control command specified as a character string recognizes the following.
+(The control command string must match exactly, including case.) <br>
+Note that an error does not occur even if you write a control command that is not recognized.
+	</p>
+	<pre>
+Information name Contents
+	-------------------------------------------
+name Terminal type name (terminal name can be obtained by sysinfo (2))
+locale Locale information
+	</pre>
+	<p>
+for example,
+	</p>
+	<pre>
+		devinfo a,"locale"
+	</pre>
+	<p>
+Assigns the information of Loril to the variable a. <br>
+	</p>
+
+
 
 <h2 id = "ADMOB"> AdMob ad serving </h2>
 	<ul>
-<li> About updating from traditional AdMob </li> <br>
+<li> About updating from conventional AdMob </li> <br>
 	<p>
 HSP3Dish 3.5 version does not have this limitation as we are switching to the new AdMob library using Google Firebase.
 If you want to update a project that uses the old AdMob library, recreate the new project.
@@ -721,7 +754,7 @@ The device ID of the terminal is displayed in the log in the device monitor when
 Message will be played, so you can check it there.
 The device monitor can be started by pressing the "Device monitor" button on the "Options" tab of HSP3Dish Helper.
 You can see more detailed logs than LogCat.
-(You will also see an ad display error and a message about the problem)
+(You will also see ads display errors and messages about problems)
 	</p>
 	</ul>
 
@@ -767,7 +800,7 @@ HSP3Dish supports character string drawing of mes and print instructions using t
 The font name specified by the font command is ignored and the font size is reflected. Also, the font style only supports standard (0) and bold (1). <br>
 Since the process of acquiring fonts on android is a heavy burden on the system, the content (texture) once drawn is cached on the HSP3Dish side to speed up the process.
 Normally, you should be able to use it without being aware of this mechanism. <br>
-If you want to control the cache function, describe the setting with the setreq instruction. (It does not affect Windows and iOS versions)
+If you want to control the cache function, describe the setting with the setreq command. (It does not affect Windows and iOS versions)
 <pre>
 setreq SYSREQ_MESCACHE_MAX, 64; Specifies the maximum number of cache registrations
 </pre>
@@ -798,7 +831,7 @@ PNG format is recommended when using the alpha channel.
 <li> JPEG baseline (progressive JPEG is not supported) </li>
 <li> PNG (1bit, 2bit, 4bit, 8bit, 24bit, 24bit + alpha channel format supported) </li>
 <li> TGA (subset) </li>
-<li> BMP (monochrome, RLE compression not supported) </li>
+<li> BMP (black and white, RLE compression not supported) </li>
 <li> PSD (read only RGB 24bit) </li>
 	<li>GIF</li>
 	<li>HDR (radiance rgbE format)</li>
@@ -817,7 +850,7 @@ When reading an image whose vertical and horizontal sizes are not 2 ^ n, that is
 	<br>
 Image files can be placed in the assets folder inside the project directory.
 	</p>
-<li> Playable sound files </li>
+<li> About playable sound files </li>
 	<p>
 We have received reports that if the number of buffers read simultaneously by the mmload instruction exceeds 30, it will not be played back correctly. <br>
 This is due to OpenSL / ES restrictions on android, and we plan to fix this issue.
@@ -826,10 +859,10 @@ In a hurry, please keep the number of buffers used by mmload to 30 or less by sw
 In addition, since it is a limitation only on android, there is no problem on Windows and iOS.
 	</p>
 	<p>
-Sounds correspond to files with the extensions ".wav", ".mp3", ".ogg" and ".aac".
+Sound corresponds to files with extensions ".wav", ".mp3", ".ogg" and ".aac".
 Please note that not all formats are supported for .aac and .ogg.
 ".Wav" and ".mp3" are widely supported formats in all hsp3dish including Windows version. <br>
-Be sure to put the sound files in the assets folder inside your project directory. If you include it in data.dpm, it cannot be read from the system side of the OS.
+Be sure to put the sound files in the assets folder in your project directory. If you include it in data.dpm, it cannot be read from the system side of the OS.
 	</p>
 <li> About screen rotation </li>
 	<p>
@@ -848,7 +881,7 @@ If the parameter specified in the "android: screenOrientation =" line is "portra
 <li> About saving data </​​li>
 	<p>
 Data files can be read and written to application-specific folders using the bsave and bload commands.
-If only the file name (half-width English characters) is specified without including "/", the application-specific folder
+If only the file name (half-width English characters) is specified without including "/", the folder is unique to the application.
 (The location indicated by "/ data / data / <your package name> / files") will be accessed.
 This folder is usually set to be inaccessible to applications other than yourself.
 (If the file name starts with "/", the full path is specified.)

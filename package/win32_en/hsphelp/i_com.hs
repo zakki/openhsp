@@ -6,9 +6,9 @@
 %type
 Built-in instructions
 %ver
-3.5
+3.6
 %note
-ver3.5 standard instruction
+ver3.6 standard instruction
 %date
 2015/02/25
 %author
@@ -39,14 +39,14 @@ If the variable in p1 is not a COM object type, it will be initialized as a COM 
 If it is already a COM object type, the previous object will be destroyed.
 You can specify the class ID or program ID (ProgID) with p2.
 ^p
-Example:
+example:
 	newcom ie, "InternetExplorer.Application"	; ProgID
 ^p
 In the above example, the program ID is used for initialization.
 This initializes the variable ie as a COM object type variable.
-It is also possible to specify the interface name already defined by the #usecom instruction and initialize it.
+In addition, it is possible to initialize by specifying the interface name already defined by the #usecom instruction.
 ^p
-Example:
+example:
 	#define IID_IDirectMusicPerformance8 "{679c4137-c62e-4147-b2b4-9d569acb254c}"
 	#define IID_IDirectMusicLoader8      "{19e7c08c-0a44-4e6a-a116-595a7cd5de8c}"
 #usecom IDirectMusicLoader8 IID_IDirectMusicLoader8 CLSID_DirectMusicLoader8
@@ -89,10 +89,10 @@ p1: Variable name
 Deletes an instance of a variable of COM object type specified in p1.
 p1 must be a variable whose COM object type has already been set by the newcom instruction.
 ^p
-Example:
+example:
 	delcom v
 ^p
-The delcom instruction decrements the referenced count of the initialized COM object and invalidates the instance set in the variable.
+The delcom instruction decrements the reference count of the initialized COM object and invalidates the instance set in the variable.
 Normally, the created COM object instance is automatically destroyed inside HSP, so there is no need to explicitly destroy it with the delcom instruction.
 ^
 A variable of COM object type that has been destroyed once cannot be used until it is initialized again by the newcom instruction.
@@ -203,7 +203,7 @@ p4 (0): Acquisition mode (0 = normal conversion, 1 = conversion to character str
 
 %inst
 Gets the event parameters (arguments) in the event subroutine of the variable (COM object type) specified by p2.
-The variable specified in p2 must have been initialized by the come event instruction.
+The variable specified by p2 must be initialized by the come event instruction.
 You must always get it in the event subroutine.
 
 You can specify the index of the parameter with p3. The index is a number starting from 0, and the valid index range differs depending on the event.
@@ -237,11 +237,11 @@ The mode values that can be specified are as follows.
 ^p
 p3 Contents
 ---------------------------------------------
-Create a SafeArray from the entire 0-column variable p2 and set it to the Variant type variable p1.
+Create a SafeArray from the entire 0-column variable p2 and set it to the Variant variable p1.
       Store
 1 SafeArray stored in Variant type variable p2 is changed to array variable p1
       Store The area of p1 is reclaimed.
-2 SafeArray from binary data of only p2 to p4 bytes of variables
+2 SafeArray from binary data of only 4 bytes from variable p2
       Create (VT_UI1 type) and store it in p1.
 3 One-dimensional SafeArray (VT_UI1 type) stored in Variant type variable p2
       Or VT_I1 type) binary data is stored in the variable p1.

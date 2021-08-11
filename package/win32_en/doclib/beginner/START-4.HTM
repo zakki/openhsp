@@ -1,0 +1,233 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+
+<html lang="ja">
+
+	<head>
+		<meta http-equiv="content-type" content="text/html;charset=UTF-8">
+<meta lang = "ja" name = "keywords" content = "HSP, Hot Soup Processor, HSPTV, HSP3, HSP3.2, ONION software, onitama, hot soup, processor, interpreter, language, HSP">
+		<meta name="generator" content="Adobe GoLive">
+<title> Introduction to HSP </title>
+		<link href="main.css" type="text/css" rel="stylesheet" media="all">
+	</head>
+
+	<body background="images/back6.gif" link="blue" leftmargin="0" marginheight="0" marginwidth="0" topmargin="0">
+		<div align="center">
+			
+			<table width="800" border="0" cellspacing="0" cellpadding="0">
+				<tr>
+					<td align="left" valign="top" bgcolor="white" width="169">
+					
+					<br>
+						<table width="150" border="0" cellspacing="0" cellpadding="0" height="354">
+							<tr height="30">
+								<td height="30" background="images/back_menuue.gif">
+									<p class="leftsubmenu"><a href="COVER.HTM">Start!</a></p>
+								</td>
+							</tr>
+							<tr height="30">
+								<td height="30" background="images/back_submenu.gif">
+									<p class="leftsubmenu"><a href="START-1.HTM">Step1</a></p>
+								</td>
+							</tr>
+							<tr height="30">
+								<td height="30" background="images/back_submenu.gif">
+									<p class="leftsubmenu"><a href="START-2.HTM">Step2</a></p>
+								</td>
+							</tr>
+							<tr height="30">
+								<td height="30" background="images/back_submenu.gif">
+									<p class="leftsubmenu"><a href="START-3.HTM">Step3</a></p>
+								</td>
+							</tr>
+							<tr height="30">
+								<td height="30" background="images/back_submenu.gif">
+									<p class="leftsubmenu" style="color:#009999; font-weight:bold;">Step4</p>
+								</td>
+							</tr>
+							<tr height="30">
+								<td height="30" background="images/back_submenu.gif">
+									<p class="leftsubmenu"><a href="START-5.HTM">Step5</a></p>
+								</td>
+							</tr>
+							<tr height="30">
+								<td height="30" background="images/back_submenu.gif">
+									<p class="leftsubmenu"><a href="START-6.HTM">Step6</a></p>
+								</td>
+							</tr>
+							<tr height="30">
+								<td height="30" background="images/back_submenu.gif">
+									<p class="leftsubmenu"><a href="START-7.HTM">Step7</a></p>
+								</td>
+							</tr>
+							<tr height="30">
+								<td height="30" background="images/back_submenu.gif">
+									<p class="leftsubmenu"><a href="START-8.HTM">Step8</a></p>
+								</td>
+							</tr>
+							<tr height="30">
+								<td height="30" background="images/back_submenu.gif">
+									<p class="leftsubmenu"><a href="START-9.HTM">Final</a></p>
+								</td>
+							</tr>
+							<tr height="30">
+								<td height="30" background="images/back_submenu.gif">
+									<p class="leftsubmenu"><a href="THANKS.HTM">Special thanks</a></p>
+								</td>
+							</tr>
+							<tr height="30">
+								<td height="30" background="images/back_menusita.gif">
+									<p class="leftsubmenu"><a href="START.HTM">Cover</a></p>
+								</td>
+							</tr>
+						</table>
+						<br>
+					</td>
+					<td align="left" valign="top" bgcolor="white">
+						<div class="contents">
+							<div class="section">
+<h2 class = "play"> step4: Let's issue a command </h2>
+<p> Let's take a look at the super-easy script I wrote earlier. <br>
+									<br>
+									<b>picload "HSP3TTL.JPG"</b></p>
+								<p><br>
+Can you vaguely imagine that the first line means to display the image file ?? In HSP, the statement using words like this is written in the script, and it is processed in order from the first line. It is supposed to be done. For example, <br>
+									<br>
+									<b>picload "HSP3TTL.JPG"<br>
+										picload "ABC.BMP"</b></p>
+								<p><br>
+If you write two lines like this, the first line will be executed and then the second line will be executed. The second line reads the image file "ABC.BMP". (In this case, the file with this name must be in "My Documents") <br>
+Words that describe work such as "picload" are called "instructions" or "statements." Also, the part of "" HSP3TTL.JPG "" used together with the instruction is called a parameter. The second line "stop" is also one of the instructions. Organizing it, </p>
+								<br>
+								<img src="images/btn_extention.gif" alt="" height="29" width="29" border="0"><br>
+								<table width="589" border="0" cellspacing="2" cellpadding="0" bgcolor="#ccffff">
+									<tr>
+										<td align="center" bgcolor="#ccffff">
+<p> Statement </p>
+										</td>
+										<td align="center" bgcolor="#ccffff">
+<p> Parameters </p>
+										</td>
+										<td align="center" bgcolor="#ccffff">
+<p> Meaning </p>
+										</td>
+									</tr>
+									<tr>
+										<td align="center" bgcolor="white">
+											<p>picload</p>
+										</td>
+										<td align="center" bgcolor="white">
+<p> File name </p>
+										</td>
+										<td align="center" bgcolor="white">
+<p> Display image file </p>
+										</td>
+									</tr>
+								</table>
+								<br>
+It looks like <p>. In other words, the command "picload" gives an instruction to "display the image file", and the parameter "" HSP3TTL.JPG "" becomes the file name. HSP has instructions with various functions. Most of them are designed so that you can specify them in detail by writing numerical values or letters in the parameters. In HSP, <br>
+									<br>
+								</p>
+								<br>
+								<img src="images/btn_extention.gif">
+								<div class="enroll">
+									<ol>
+Specify the content of the work to be performed with the <li> command + parameter
+										
+There must be a space between the <li> instruction and the parameter.
+									
+									</ol>
+								</div>
+								<p><br>
+Remember that. Don't forget to leave one or more spaces between the instructions and the parameters. <br>
+									<br>
+									<b>picload "HSP3TTL.JPG"</b><br>
+									<br>
+Is correct, but <br>
+									<br>
+									<b>pic load "HSP3TTL.JPG"<br>
+										picload"HSP3TTL.JPG"</b><br>
+									<br>
+Writing like this is not good. I get an error. <br>
+									<br>
+But that's not fun, so let's write a script with a lot more different instructions. Well then, <br>
+								</p>
+								<br>
+								<img src="images/btn_extention.gif" alt="" height="29" width="29" border="0"><br>
+								<table width="589" border="0" cellspacing="2" cellpadding="0" bgcolor="#ccffff">
+									<tr>
+										<td align="center" bgcolor="#ccffff">
+<p> Statement </p>
+										</td>
+										<td align="center" bgcolor="#ccffff">
+<p> Parameters </p>
+										</td>
+										<td align="center" bgcolor="#ccffff">
+<p> Meaning </p>
+										</td>
+									</tr>
+									<tr>
+										<td align="center" bgcolor="white">
+											<p>cls</p>
+										</td>
+										<td align="center" bgcolor="white">
+<p> Numbers from 0 to 4 </p>
+										</td>
+										<td align="center" bgcolor="white">
+<p> Clear the screen </p>
+										</td>
+									</tr>
+									<tr>
+										<td align="center" bgcolor="white">
+											<p>mes</p>
+										</td>
+										<td align="center" bgcolor="white">
+<p> String </p>
+										</td>
+										<td align="center" bgcolor="white">
+<p> Display message </p>
+										</td>
+									</tr>
+								</table>
+								<br>
+								<p><br>
+Let's use the command. The command "cls" clears and cleans what is displayed on the screen. By specifying a numerical value from 0 to 4 in the parameter, you can specify the color to clear. 0 is white, 4 is black, and so on. "Mes" is an instruction to display the character string specified by the parameter on the screen. Let's write a script like this using these. <br>
+									<br>
+									<b>cls 0<br>
+mes "Hello, this is HSP." <br>
+mes "End" </b> <br>
+									<br>
+In the HSP Script Editor, select "New" from the "File" menu to start writing from scratch. Don't hesitate to delete the two-line script you wrote earlier and start writing a new one. Once you've entered the script, press F5 to run it. <br>
+									<br>
+<b> Hello, this is HSP. <br>
+The end </b> <br>
+									<br>
+Did the message appear on the screen ?? If you don't see it, there must be a typo somewhere. If you come out, try modifying it a little and try it further. <br>
+You can also try setting the parameter of the "cls" instruction to 1 or changing the character string displayed by the "mes" instruction. As with the "picload" command above, when you specify a character string or file name as a parameter, you must enclose both ends with "" (double quotation marks). This is also an HSP rule, so don't forget. <br>
+									<br>
+Can you somehow see what the script looks like? But it's just the beginning, it's time to go. </p>
+							</div>
+							<div class="section">
+								<table>
+									<tr>
+										<td><a href="START-5.HTM"><img src="images/btn_next.gif" alt="" height="29" width="29" border="0"></a></td>
+<td> <font size = "-1"> <a href="START-5.HTM"> step5: Let's flag the script </a> </font> </td>
+									</tr>
+								</table>
+							</div>
+						</div>
+					</td>
+				</tr>
+			</table>
+															<div align="center">
+			<table width="800" border="0" cellspacing="0" cellpadding="0">
+					<tr>
+					<td align="center">
+							<p style="color:#333333; font-size:10px; margin:5px 0px">ONION software Copyright 1997-2009(c) All rights reserved.<br>
+							</p>
+						</td>
+				</tr>
+				</table>
+		</div></div>
+	</body>
+
+</html>

@@ -1,0 +1,75 @@
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+	Artlet2D
+		version 1.01 R3.1 update 2018/06/16
+			s.programs http://spn.php.xdomain.jp/
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+ Required environment ｜ HSP 3.x
+ Operating environment │ Windows XP or later
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+
+ overview
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+Artlet2D utilizes GDI + with alpha channel (transparency component) for HSP
+It is a module for handling image data of.
+Apart from the HSP standard drawing commands, the following functions can be used.
+
+-Pixel format 32bit ARGB virtual image buffer
+-Mutual image copy between HSP screen and Artlet2D virtual image (alCopy ~)
+-Drawing functions for basic figures such as line segments, ellipses, and rectangles, and free curves (alDraw ~, alFill ~)
+-Drawing anti-aliased smooth edges
+-Color instruction with alpha value (alColor)
+・ Gradient brush, texture brush (alGradientColor, alTextureImage)
+・ Free pen width, various pen styles (alPen ~)
+-Automatic wrapping within a rectangular area-Text display that can be vertically and horizontally aligned (alDrawText)
+・ Smooth image enlargement / reduction copy (alStretch ~)
+・ Transparency of specified color range, gamma adjustment, brightness adjustment by color matrix, translucency,
+  Copy mode such as sepia conversion (alCopyMode ~)
+-Change of drawing position and rotation angle by coordinate conversion matrix (alTransModeOffsetRotateZoom,
+   alTransModeRotateAt)
+-Reading and writing png files with alpha channel (alLoadFile, alSaveFile)
+
+
+ how to use
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+Module a2d.hsp and sample scripts in the module_sample directory
+Is included.
+
+Include a2d.hsp to make Artlet2D instructions available.
+
+Details of each instruction can be found in hs help a2dhelp.hs. This file
+In the hsphelp directory under the HSP installation directory
+Help will be available from the Help Manager.
+
+More detailed information can be found on the distribution page.
+http://spn.php.xdomain.jp/hsp_artlet2d.htm
+
+
+ Copyright free
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+The Artlet2D module is copyright free.
+
+
+ Release notes
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+1.01 R3.1 2018/06/16
+-Fixed an error in the hs help file
+
+1.01 R3 2018/06/01
+-Corrected some hs help files
+-End of bundling gdiplus.dll for Windows 9x / 2000
+・ Notation change due to website relocation
+-Delete the document thumbnail image
+
+1.01 R2 2010/02/04 (There is no change in the module itself)
+・ Document and sample script changes
+-Added document thumbnail file (for HSP Document Library)
+・ Included gdiplus.dll update
+
+1.01 2008/08/29
+-Fixed a bug in the alCreateImage command
+-Corrected help mistakes for alErase instructions
+
+1.0 2008/08/09
+・ Official version (formerly Alphaimage)
