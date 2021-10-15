@@ -1011,7 +1011,11 @@ void FBXSceneEncoder::loadMaterial(FbxNode* fbxNode)
     for (int index = 0; index < materialCount; ++index)
     {
         FbxSurfaceMaterial* fbxMaterial = fbxNode->GetMaterial(index);
-        string materialName(fbxMaterial->GetName());
+
+		char* ansiname;
+		FbxUTF8ToAnsi(fbxMaterial->GetName(), ansiname);
+		string materialName(ansiname);
+		FbxFree(ansiname);
 
 		unsigned int jointcount = 0;
 		if (model) {
@@ -1020,7 +1024,6 @@ void FBXSceneEncoder::loadMaterial(FbxNode* fbxNode)
 				jointcount = skin->getJointCount();
 			}
 		}
-
         fixMaterialName(materialName);
 		if (jointcount>0) {                    // FIX : aboid same material name of different joint count (onitama)
 			materialName+="_";
@@ -1029,8 +1032,9 @@ void FBXSceneEncoder::loadMaterial(FbxNode* fbxNode)
 
         Material* material = NULL;
         map<string, Material*>::iterator it = _materials.find(materialName);
-		//printf( "Material(%s)(%d)\n",materialName.c_str(),jointcount );
-        if (it != _materials.end())
+
+		//printf("Material(%s)(%d)\n", materialName.c_str(), jointcount);
+		if (it != _materials.end())
         {
             // This material was already loaded so don't load it again
             material = it->second;
@@ -1147,8 +1151,13 @@ void FBXSceneEncoder::loadMaterialFileTexture(FbxFileTexture* fileTexture, Mater
     }
     if (sampler)
     {
-		string fname = _OptionFilePath + GetFileNameFromPath(fileTexture->GetRelativeFileName());
-        sampler->set("absolutePath", fileTexture->GetFileName());
+		char* ansiname;
+		char* ansiname2;
+		FbxUTF8ToAnsi(fileTexture->GetRelativeFileName(), ansiname);
+		FbxUTF8ToAnsi(fileTexture->GetFileName(), ansiname2);
+
+		string fname = _OptionFilePath + GetFileNameFromPath(ansiname);
+        sampler->set("absolutePath", ansiname2);
         sampler->set("relativePath", fname );
         sampler->set("wrapS", fileTexture->GetWrapModeU() == FbxTexture::eClamp ? CLAMP : REPEAT);
         sampler->set("wrapT", fileTexture->GetWrapModeV() == FbxTexture::eClamp ? CLAMP : REPEAT);
@@ -1175,7 +1184,11 @@ void FBXSceneEncoder::loadMaterialFileTexture(FbxFileTexture* fileTexture, Mater
                 material->addDefine(TEXTURE_OFFSET);
             }
         }
-    }
+
+		FbxFree(ansiname);
+		FbxFree(ansiname2);
+
+	}
 }
 
 void FBXSceneEncoder::loadMaterialUniforms(FbxSurfaceMaterial* fbxMaterial, Material* material)
@@ -1488,13 +1501,20 @@ void fixMaterialName(string& name)
 {
     static int unnamedCount = 0;
 
-    for (string::size_type i = 0, len = name.length(); i < len; ++i)
-    {
-        if (!isalnum(name[i]))
-            name[i] = '_';
-    }
+	if (EncoderArguments::getInstance()->fixMaterialNameEnabled()) {
+		for (string::size_type i = 0, len = name.length(); i < len; ++i)
+		{
+			if (!isalnum(name[i]))
+				name[i] = '_';
+		}
+	}
 
-    if (name.length() == 0)
+	bool makeName = EncoderArguments::getInstance()->makeMaterialNameEnabled();
+	if (name.length() == 0)
+	{
+		makeName = true;
+	}
+    if (makeName)
     {
         ostringstream stream;
         stream << "unnamed_" << (++unnamedCount);

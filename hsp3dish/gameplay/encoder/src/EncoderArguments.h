@@ -188,6 +188,9 @@ public:
     bool mergeAnimationEnabled() const;
 	const std::string getMergeAnimationFBXName() const;
 
+	bool fixMaterialNameEnabled() const;
+	bool makeMaterialNameEnabled() const;
+
 private:
 
     /**
@@ -236,6 +239,9 @@ private:
 
     bool _mergeAnimation;
     std::string _mergeAnimationFBXName;
+
+	bool _fixMaterialName;
+	bool _makeMaterialName;
 
     std::vector<std::string> _groupAnimationNodeId;
     std::vector<std::string> _groupAnimationAnimationId;
