@@ -5,11 +5,12 @@
 	;
 
 #packopt name "gpbconv"
+#runtime "hsp3c"
 #include "hspext.as"
 #include "mod_gpmaterial.as"
 
 #define APPTITLE "GPB converter"
-#define APPVER "0.6"
+#define APPVER "0.7"
 
 	randomize
 
@@ -21,6 +22,10 @@
 	sdim buftxt,$10000
 
 	sdim fname,1024
+
+	flag_xml=0
+	flag_xa=0
+	flag_xf=0
 
 	goto *boot
 
@@ -149,10 +154,12 @@
 	objsize 64,24
 	pos 408,y+10:button "参照...",*selfile
 
-	objsize 160,24
+	objsize 220,24
 	pos 8,y+38
 	chkbox ".materialを出力",flag_mat
 	chkbox "構造をXMLに出力",flag_xml
+	chkbox "マテリアル名を英文字のみに修正",flag_xa
+	chkbox "マテリアル名を自動設定",flag_xf
 
 	pos 460,y+48
 	objsize 160,48
@@ -201,6 +208,8 @@
 	opt=""
 	if flag_mat : opt+="-m "
 	if flag_xml : opt+="-t "
+	if flag_xa : opt+="-xa "
+	if flag_xf : opt+="-xf "
 
 	mes "変換中..."
 
