@@ -5,9 +5,10 @@ Hot Soup Processor ver3.7                           HSP : Hot Soup Processor
 
 ・hsp3関連 更新履歴
 
-	2021/08/10 3.7 beta1
+	2021/12/10 3.7 beta1
 
-	[HGIMG4][Windows] fbx->gpb変換時のマテリアル名修正オプションを追加
+	[HSP3Dish][android] 端末エミュレータ上で単色描画が正しく行われない不具合を修正
+	[HGIMG4] fbx->gpb変換時のマテリアル名修正オプションを追加
 
 	2021/08/10 3.6
 

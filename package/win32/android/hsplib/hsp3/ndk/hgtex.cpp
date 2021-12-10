@@ -335,16 +335,24 @@ void ChangeTex( int id )
 	if ( id < 0 ) {
 		curtex = -1;
 	    glBindTexture(GL_TEXTURE_2D,0);
+#if defined(HSPNDK)
+		glDisableClientState(GL_TEXTURE_COORD_ARRAY);
+#endif
 #if defined(HSPLINUX) || defined(HSPEMSCRIPTEN)
 		glDisable(GL_TEXTURE_2D);
 #endif
 		return;
 	}
-	curtex = id;
-    glBindTexture( GL_TEXTURE_2D, id );
-#if defined(HSPLINUX) || defined(HSPEMSCRIPTEN)
-	glEnable(GL_TEXTURE_2D);
+	if ( curtex != id ) {
+		curtex = id;
+		glBindTexture(GL_TEXTURE_2D, id);
+#if defined(HSPNDK)
+		glEnableClientState(GL_TEXTURE_COORD_ARRAY);
 #endif
+#if defined(HSPLINUX) || defined(HSPEMSCRIPTEN)
+		glEnable(GL_TEXTURE_2D);
+#endif
+	}
 }
 
 
