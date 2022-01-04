@@ -7,9 +7,10 @@
 #include "hspext.as"
 #include "hspinet.as"
 #include "mod_appconfig.as"
+#include "zipfile.as"
 
 #define APPTITLE "HSP3Dish helper"
-#define APPVER "1.77"
+#define APPVER "1.8"
 #define APP_CONF "\\hsp3dh.cfg"
 
 #define AND_LIBVER 114			; android HSPランタイムの内部バージョン
@@ -23,6 +24,13 @@
 #uselib "KERNEL32.DLL"
 #func global RemoveDirectory "RemoveDirectoryA" sptr
 
+#define GRADLE_URL "https://services.gradle.org/distributions/"
+#define GRADLE_BIN "gradle-7.3-bin.zip"
+#define GRADLE_DIR "gradle-7.3"
+#define ANDROIDSDK_LICENSE "android-sdk-license"
+#define NDK_VERSION "22.1.7171670"
+#define AND_TARGETDEFAULT "31"
+#define AND_TOOLDEFAULT "31.0.0"
 
 	;
 	;	HSP3Dish Helper tool
@@ -58,6 +66,11 @@
 	and_fname=""
 	and_keystore=""
 	and_copylib=0
+
+	path_gradle=""
+	and_gradle=0
+	and_gradleapi=0
+	and_gradlesdk=0
 
 	js_pack=""
 	js_fname=""
@@ -100,6 +113,12 @@
 		and_fname=cfg_getvar("and_fname")
 		and_keystore=cfg_getvar("and_keystore")
 		and_copylib=0+cfg_getvar("and_copylib")
+
+		path_gradle=cfg_getvar("path_gradle")
+		and_gradle=0+cfg_getvar("and_gradle")
+		and_gradleapi=0+cfg_getvar("and_gradleapi")
+		and_gradlesdk=0+cfg_getvar("and_gradlesdk")
+
 		flag_admob = 0+cfg_getvar("flag_admob")
 		flag_arm = 0+cfg_getvar("flag_arm")
 		flag_x86 = 0+cfg_getvar("flag_x86")
@@ -169,6 +188,7 @@
 
 #deffunc execcmd str _p1
 
+	;	コマンドライン実行
 	sdim tmp,$20000
 	sdim buf,$20000
 	cmd = app_dir+"\\"+_p1
@@ -208,25 +228,6 @@
 
 	return 0
 
-#if 0
-#deffunc selfolder array fpath
-	;	フォルダ選択
-	;
-	dim prm,16
-	sdim stitle,260
-	sdim fname,260
-	sdim fpath,260
-
-	SubTitle="フォルダを選択してください"
-	prm(0)=hwnd,0,varptr(fname),varptr(stitle)
-	prm(4)=0x01,0,0,0
-	res = SHBrowseForFolder(varptr(prm))
-	if res = 0 : return -1
-
-	SHGetPathFromIDList res,varptr(fpath)
-	CoTaskMemFree res
-	return 0
-#endif
 
 //  DirCopy src, dest, モード(1= 移動 2= コピー 3= 削除 4= リネーム(同一Disc内))
 #deffunc DirCopy str FromFolder,str ToFolder,int mode
@@ -280,7 +281,8 @@
 	;
 	initalize
 	onexit *owari
-
+	netinit
+	if stat : dialog "ネット接続環境がありません。" : end
 
 *topmenu
 	if app_mode>=3 : goto *jsmenu
@@ -355,10 +357,8 @@
 
 	pos 8,30
 
-	if path_java="" : goto *andmenu2
-	if path_sdk="" : goto *andmenu2
-	if path_ndk="" : goto *andmenu2
-	if path_ant="" : goto *andmenu2
+	gosub *and_validsdk
+	if and_gradle=0 : goto *andmenu2
 	if path_proj="" : goto *andmenu2
 
 	if app_mode>1 : goto *andmenu_proj
@@ -367,10 +367,13 @@
 	objsize 240,24
 	input and_name
 	objsize 100,24
-	pos 280,45:mes "ID:"
-	pos 300,41:input and_targetid
-	objsize 60,24
-	pos 410,41:button "ID...",*view_ids
+	pos 280,45:mes "API:"
+	pos 310,45:mes AND_TARGETDEFAULT
+	pos 350,45:mes "TOOL:"
+	pos 390,45:mes AND_TOOLDEFAULT
+	
+	;objsize 60,24
+	;pos 410,41:button "ID...",*view_ids
 
 	pos 8,70
 	mes "パッケージ名:"
@@ -380,8 +383,8 @@
 	objsize 160,24
 	pos 8,110
 	chkbox "AdMobを使用する",flag_admob
-	chkbox "ARM64をビルドしない",flag_arm
-	chkbox "x86をビルドしない",flag_x86
+	;chkbox "ARM64をビルドしない",flag_arm
+	;chkbox "x86をビルドしない",flag_x86
 	chkbox "HGIMG4を使用する",flag_hgimg
 	chkbox "センサーを使用する",flag_sensor
 	;objenable stat,0
@@ -409,7 +412,7 @@
 	goto *andmenu3
 
 *andmenu2
-	mes "android環境のオプションが設定されていません。"
+	mes "androidの開発環境が設定されていません。"
 	mes "下のオプションボタンを押して設定を行なってください。"
 	goto *andmenu3
 
@@ -586,26 +589,33 @@
 	pos 408,y:button "参照...",*selpath_java
 	y+=30
 
-	pos 8,y+3:mes "SDKフォルダ"
+	pos 8,y+3:mes "SDK Gradle"
 	objsize 320,24
-	pos 80,y:input path_sdk
+	pos 80,y:input path_gradle
 	objsize 64,24
-	pos 408,y:button "参照...",*selpath_sdk
+	pos 408,y:button "参照...",*selpath_gradle
 	y+=30
 
-	pos 8,y+3:mes "NDKフォルダ"
-	objsize 320,24
-	pos 80,y:input path_ndk
-	objsize 64,24
-	pos 408,y:button "参照...",*selpath_ndk
-	y+=30
+	;pos 8,y+3:mes "SDKフォルダ"
+	;objsize 320,24
+	;pos 80,y:input path_sdk
+	;objsize 64,24
+	;pos 408,y:button "参照...",*selpath_sdk
+	;y+=30
 
-	pos 8,y+3:mes "antフォルダ"
-	objsize 320,24
-	pos 80,y:input path_ant
-	objsize 64,24
-	pos 408,y:button "参照...",*selpath_ant
-	y+=30
+	;pos 8,y+3:mes "NDKフォルダ"
+	;objsize 320,24
+	;pos 80,y:input path_ndk
+	;objsize 64,24
+	;pos 408,y:button "参照...",*selpath_ndk
+	;y+=30
+
+	;pos 8,y+3:mes "antフォルダ"
+	;objsize 320,24
+	;pos 80,y:input path_ant
+	;objsize 64,24
+	;pos 408,y:button "参照...",*selpath_ant
+	;y+=30
 
 	pos 8,y+3:mes "プロジェクト"
 	objsize 320,24
@@ -615,19 +625,21 @@
 	y+=30
 
 	objsize 102,30
-	pos 8,y
-	button "SDKマネージャー",*exec_sdkman
+	;pos 8,y
+	;button "SDKマネージャー",*exec_sdkman
+	;pos 8+110,y
+	;button "ライブラリ更新",*and_libcopy
 	pos 8+110,y
-	button "ライブラリ更新",*and_libcopy
+	button "SDKセットアップ",*and_gradlesetup
 
 	pos 8+110*2,y+6
-	mes "ライブラリバージョン:"+AND_LIBVER
+	mes "HSP3ライブラリ : "+dir_hsplib
 	;button "AdMobセットアップ",*exec_admob
 
-	pos 8,y+34
-	button "Deviceモニター",*exec_devmon
-	pos 8+110,y+34
-	button "AVDマネージャー",*exec_avdman
+	;pos 8,y+34
+	;button "Deviceモニター",*exec_devmon
+	;pos 8+110,y+34
+	;button "AVDマネージャー",*exec_avdman
 
 	y=tooly
 	objsize 148,48
@@ -673,7 +685,12 @@
 *selpath_proj
 	selfolder s1,"プロジェクトのルートフォルダを指定してください" : if stat : goto *optmenu_1
 	path_proj = s1
-	objprm 8, s1
+	objprm 4, s1
+	stop
+*selpath_gradle
+	selfolder s1,"android SDK gradleインストールフォルダを指定してください" : if stat : goto *optmenu_1
+	path_gradle = s1
+	objprm 2, s1
 	stop
 *selfile_pack
 	selfolder s1,"データフォルダを指定してください"
@@ -708,6 +725,11 @@
 	cfg_sets "and_fname",and_fname
 	cfg_sets "and_keystore",and_keystore
 	cfg_seti "and_copylib",and_copylib
+
+	cfg_sets "path_gradle",path_gradle
+	cfg_seti "and_gradle",and_gradle
+	cfg_seti "and_gradleapi",and_gradleapi
+	cfg_seti "and_gradlesdk",and_gradlesdk
 
 	cfg_seti "flag_admob",flag_admob
 	cfg_seti "flag_arm",flag_arm
@@ -875,10 +897,10 @@
 	notesel tmp
 	tmp="@ECHO OFF\n"
 	tmp+="SET JAVA_HOME="+path_java+"\n"
-	tmp+="SET NDK_ROOT="+path_ndk+"\n"
-	tmp+="SET ANT_HOME="+path_ant+"\n"
-	tmp+="SET PATH="+path_ant+"\\bin;"+path_sdk+"\\tools;"+path_sdk+"\\platform-tools;"+path_ndk+";"+path_java+"\\bin;"
-	tmp+="%PATH%\n"
+	tmp+="SET NDK_ROOT="+path_gradle+"\\ndk\\"+NDK_VERSION+"\n"
+	tmp+="SET ANDROID_HOME="+path_gradle+"\n"
+	tmp+="SET SDK_ROOT="+path_gradle+"\n"
+	tmp+="SET PATH=%PATH%;%ANDROID_SDK_ROOT%\cmdline-tools\latest\bin;%ANDROID_SDK_ROOT%\platform-tools;%ANDROID_SDK_ROOT%\gradle-7.3\bin;"+path_java+"\\bin;\n"
 	s1="C:":if peek(path_proj,1)=':' {
 		poke s1,0,peek(path_proj,0)
 	}
@@ -895,7 +917,7 @@
 
 *xml_init
 	;	androidManifest.xmlを操作する
-	xmlfile = path_proj+"\\"+and_name+"\\AndroidManifest.xml"
+	xmlfile = path_proj+"\\"+and_name+"\\app\\src\\main\\AndroidManifest.xml"
 	gosub *xml_initfile
 	;
 	return
@@ -914,11 +936,12 @@
 	;	s1を含む行を探す
 	;	res:-1=NG/0～=index
 	notesel tmp
-	res=-1
-	repeat notemax
-		noteget xml_ln,cnt
-		if instr(xml_ln,0,s1)>=0 : res=cnt : break
-	loop
+	res = notefind(s1,notefind_instr)
+	if res>=0 : noteget xml_ln,res
+	;repeat notemax
+	;	noteget xml_ln,cnt
+	;	if instr(xml_ln,0,s1)>=0 : res=cnt : break
+	;loop
 	return
 
 *xml_save
@@ -962,48 +985,120 @@
 	mes "終了しました。"
 	goto *and_fin
 
-*and_libcopy
-	;	android lib update
+*and_validsdk
+	;	android sdk valid check
 	;
-	dialog "HSP3Dishシステムライブラリを上書き更新します。よろしいですか?",3
-	if stat!=6 : goto *and_fin
+	and_gradle=0
+	if path_gradle="" {
+		and_msg="SDK Gradleフォルダが設定されていません"
+		return
+	}
+	path_gradle=strtrim(path_gradle,2,'\\')
+	s1=path_gradle+"\\cmdline-tools\\bin\\"
+	sdkmanager = s1+"sdkmanager.bat"
+	dirlist s2,s1+"*.*"
+	if stat>0 {
+		exist sdkmanager
+		if strsize>0 : and_gradle=1
+	}
+	if and_gradle=0 {
+		and_msg="SDK Gradleフォルダにcmdline-toolsがありません。\nマニュアルを参照して、コマンドラインツールを配置してください。"
+		return
+	}
+	s1=path_gradle+"\\cmdline-tools\\latest\\bin\\"
+	dirlist s2,s1+"*.*"
+	if stat>0 {
+		exist s1+"sdkmanager.bat"
+		if strsize>0 {
+			sdkmanager = s1+"sdkmanager.bat"
+		}
+		if strsize<0 : and_gradle=0
+	}
+	if and_gradle<1 {
+		and_msg="SDK Gradleフォルダに最新のツールがありません。\nオプションからSDKセットアップを行ってください。"
+		return
+	}
+
+	s1=path_gradle+"\\"+GRADLE_DIR+"\\bin\\"
+	exist s1+"gradle.bat"
+	if strsize<0 : and_gradle=0
+	if and_gradle<1 {
+		and_msg="SDK Gradleフォルダに"+GRADLE_DIR+"がありません。\nオプションからSDKセットアップを行ってください。"
+		return
+	}
+
+	and_msg="SDK Gradleフォルダの最新ツールを使用します。"
+	return
+
+*and_gradlesetup
+	;	android sdk initalize
 	;
+	;sdkmanager --sdk_root=d:\and_sdk\ "cmdline-tools;latest"
+	;android-31
+
 	initsub
 	gsel 1
+	if path_gradle="" {
+		mes "SDK Gradleフォルダが設定されていません"
+		goto *and_fin
+	}
+	mes "Gradleのダウンロード中..."
+
+	neturl GRADLE_URL
+	chdir path_gradle
+	netrequest GRADLE_BIN
+	res=0
+	repeat
+	netexec res
+	if res : break
+	await 50
+	loop
+	if res < 0 {
+		neterror s1:mes s1
+		goto *and_fin
+	}
+	exist path_gradle+"\\"+GRADLE_BIN
+	if strsize<1 {
+		mes "Gradleのダウンロードに失敗しました。"
+		goto *and_fin
+	}
+	mes "zipファイルを解凍しています..."
+	ZipExtract GRADLE_BIN, dir_cur
+
+	;	sdk initalize
+	gosub *and_validsdk
+	if and_gradle<1 {
+		mes and_msg
+		goto *and_fin
+	}
+
+	;	ライセンスファイルを作成する
+	s1=path_gradle+"\\licenses"
+	dirlist s2,s1+"\\*.*"
+	if stat<=0 {
+		mkdir s1
+	}
+	s2="\n24333f8a63b6825ea9c5514f83c2829b004d1fee"
+	notesel s2
+	notesave s1+"\\"+ANDROIDSDK_LICENSE
+	
+	mes "最新ツールを取得しています、しばらくお待ちください..."
 	;
 	gosub *bat_init
-	tmp+="RMDIR /S /Q \""+path_proj+"\\"+dir_gplib+"\"\n"
-	tmp+="RMDIR /S /Q \""+path_proj+"\\"+dir_extlib+"\"\n"
-	tmp+="RMDIR /S /Q \""+path_proj+"\\"+dir_hsplib+"\"\n"
-	;
+	tmp+="CALL "+sdkmanager+" --sdk_root="+path_gradle+"\\ \"cmdline-tools;latest\"\n"
+	tmp+="CALL "+sdkmanager+" --sdk_root="+path_gradle+"\\ \"platforms;android-"+AND_TARGETDEFAULT+"\"\n"
+	tmp+="CALL "+sdkmanager+" --sdk_root="+path_gradle+"\\ \"build-tools;"+AND_TOOLDEFAULT+"\"\n"
+	tmp+="CALL "+sdkmanager+" --sdk_root="+path_gradle+"\\ \"ndk;"+NDK_VERSION+"\"\n"
+	;tmp+="bitsadmin.exe /TRANSFER htmlget "+GRADLE_URL+GRADLE_BIN+" "+path_gradle+"\\"+GRADLE_BIN+"\n"
 	gosub *bat_save
 	;
 	execcmd "go.bat"
 	if stat {
 		gsel 1
-		mes "エラーが発生しました。フォルダの削除ができません。"
+		mes "エラーが発生しました。SDKツールの初期化に失敗しました。"
 		goto *and_fin
 	}
-	;
 	await 50
-	;
-	gsel 1
-	mes "HSPlibフォルダを設定しています..."
-	gosub *setup_hsplib
-	if res {
-		gsel 1
-		mes "HSPlibフォルダが作成できません。\n「オプション」のプロジェクトフォルダを正しく設定してください。"
-	}
-	await 50
-	;
-	gsel 1
-	mes "gameplayフォルダを設定しています..."
-	gosub *setup_hspgp
-	if res {
-		gsel 1
-		mes "gameplayフォルダが作成できません"
-		goto *and_fin
-	}
 	;
 	gsel 1
 	mes "終了しました。"
@@ -1016,13 +1111,14 @@
 	initsub
 	gsel 1
 
-	if and_targetid="" : mes "無効なIDです" : goto *and_fin
 	if and_name="" : mes "プロジェクト名が無効です" : goto *and_fin
 	if and_package="" {
 		and_package=strf("hsp%04d%02d%02d",gettime(0),gettime(1),gettime(3) )+"."+and_name
 		;mes "パッケージ名が無効です" : goto *and_fin
 	}
 
+#if 0
+	if and_targetid="" : mes "無効なIDです" : goto *and_fin
 	and_targetapi=0
 	i=instr(and_targetid,0,"android-")
 	if i>0 {
@@ -1033,65 +1129,84 @@
 		dialog "無効なIDです。\n必ず\"android-29\"のような形でIDを指定してください。"
 		goto *and_fin
 	}
-
-	gosub *check_hsplib
-	if res=0 {
-		mes "HSPlibフォルダを確認しています..."
-	} else {
-		mes "HSPlibフォルダを設定しています..."
-		gosub *setup_hsplib
-		if res {
-			dialog "HSPlibフォルダが作成できません。\n「オプション」のプロジェクトフォルダを正しく設定してください。"
-		}
-		goto *and_setgp
-	}
-
-	if flag_admob {
-		;gosub *check_admob
-		;if res {
-		;	dialog "AdMob(GooglePlayServices)が設定されていません"
-		;	goto *and_fin
-		;}
-	}
-
-	if flag_hgimg {
-		gosub *check_hspgp
-		if res=0 {
-			mes "gameplayフォルダを確認しています..."
-		} else {
-			goto *and_setgp
-		}
-	}
-	goto *and_start2
-
-*and_setgp
-	mes "gameplayフォルダを設定しています..."
-	gosub *setup_hspgp
-	if res {
-		dialog "gameplayフォルダが作成できません"
-		goto *and_fin
-	}
-	goto *and_start2
-
+#endif
 
 *and_start2
 	mes "処理中..."
 
 	basedir=path_proj+"\\"+and_name+"\\"
 	dirlist s1,basedir+"*.*"
-	if stat : mes "すでにプロジェクトが存在しています" : goto *and_fin	
-
+	if stat : mes "すでにプロジェクトが存在しています["+basedir+"]" : goto *and_fin	
 
 	gosub *bat_init
-	tmp+="android create project --target "+and_targetid+" --path ./"+and_name+" --activity "+and_name+" --package "+and_package+"\n"
-	;tmp+="android create project --target "+and_targetid+" --path ./"+and_name+" --activity "+and_name+" --package "+and_package+" --gradle -v 1.12\n"
+	projtemp = dir_exe+"\\android\\hspproj"
+	if flag_hgimg : projtemp+="hg"
+	tmp+="XCOPY \""+projtemp+"\" \""+basedir+"\" /S /E /Y /I\n"
 	gosub *bat_save
-
+	;
 	execcmd "go.bat"
 	if stat : goto *and_fin
 
 	;	create project後にフォルダを改変
 	;
+	gsel 1
+	mes "プロジェクトの更新中..."
+	errflag=0
+
+	buildgradle=basedir+"\\app\\build.gradle"
+	sdim bgbuf,$4000
+	notesel bgbuf
+	noteload buildgradle
+	strrep bgbuf,"tv.hsp.hspproj",and_package
+	notesave buildgradle
+
+	mainjava="MainActivity.java"
+	s2=projtemp+"\\app\\src\\main\\java\\tv\\hsp\\hspproj\\"+mainjava
+	noteload s2
+	strrep bgbuf,"tv.hsp.hspproj",and_package
+	s2=basedir+"app\\src\\main\\java\\"
+	;	パッケージ名->フォルダ名に分解する
+	i=0
+	repeat
+		getstr s1,and_package,i,'.'
+		if strsize<=0 : break
+		i+=strsize
+		s2+=s1
+		mkdir s2
+		s2+="\\"
+	loop
+	notesave s2+mainjava
+	mes "["+mainjava+"]を作成しました。"
+	delete basedir+"\\app\\src\\main\\java\\tv\\hsp\\hspproj\\"+mainjava
+
+	s1=basedir+"app\\src\\main\\AndroidManifest.xml"
+	noteload s1
+	strrep bgbuf,"tv.hsp.hspproj",and_package
+	notesave s1
+
+	s1=basedir+"app\\src\\main\\res\\values\\strings.xml"
+	noteload s1
+	strrep bgbuf,"hspproj",and_name
+	notesave s1
+
+	if flag_sensor {
+		;	センサー設定をいじる
+		xmlfile = path_proj+"\\"+and_name+"\\app\\jni\\main.cpp"
+		gosub *and_modify_sensor_sub
+	}
+
+	goto *and_cpok
+
+
+
+
+
+
+
+
+
+
+
 	prj_dlist={"assets
 src\\tv
 src\\tv\\hsp
@@ -1118,10 +1233,6 @@ res\\drawable-hdpi\\ic_launcher.png
 res\\drawable-ldpi\\ic_launcher.png
 res\\drawable-mdpi\\ic_launcher.png"}
 
-	gsel 1
-	mes "プロジェクトの更新中..."
-
-	errflag=0
 
 	notesel prj_dlist
 	repeat notemax
@@ -1259,6 +1370,10 @@ res\\drawable-mdpi\\ic_launcher.png"}
 		gosub *and_modify_sensor_sub
 	}
 
+
+
+
+*and_cpok
 	gsel 1
 	objprm 0,buf
 	mes "終了しました。"
@@ -1368,19 +1483,14 @@ res\\drawable-mdpi\\ic_launcher.png"}
 	gosub *get_prjname
 	if and_name="" : dialog "プロジェクトが指定されていません" : goto *topmenu
 
-	basedir=path_proj+"\\"+and_name+"\\bin\\"
-	s1 = and_name+"-debug.apk"
-	exist basedir+s1
-	if strsize<=0 : dialog "ビルドされたファイルがありません" : goto *topmenu
-
 	initsub
 	gsel 1
 
 	mes "処理中..."
 
 	gosub *bat_init
-	tmp+="CD "+and_name+"\\bin\n"
-	tmp+="adb install -r "+and_name+"-debug.apk\n"
+	tmp+="CD "+and_name+"\n"
+	tmp+="gradlew installDebug\n"
 	gosub *bat_save
 
 	execcmd "go.bat"
@@ -1403,14 +1513,8 @@ res\\drawable-mdpi\\ic_launcher.png"}
 	mes "処理中..."
 
 	gosub *bat_init
-
-	s1=path_proj+"\\"+and_name+"\\obj\\local\\*.*"
-	tmp+="DEL /F /Q "+s1+"\n"
-	tmp+="ECHO "+s1+"\n"
-
 	tmp+="CD "+and_name+"\n"
-	tmp+="ant clean\n"
-
+	tmp+="gradlew clean\n"
 	gosub *bat_save
 
 	execcmd "go.bat"
@@ -1464,7 +1568,7 @@ res\\drawable-mdpi\\ic_launcher.png"}
 
 	hsplog=buf
 
-	basedir=path_proj+"\\"+and_name+"\\jni\\hsp3embed\\"
+	basedir=path_proj+"\\"+and_name+"\\app\\jni\\hsp3embed\\"
 	bcopy cppname, basedir+"hspsource.cpp"
 
 
@@ -1491,7 +1595,7 @@ res\\drawable-mdpi\\ic_launcher.png"}
 		}
 
 		; main.cを書き換える
-		xmlfile=path_proj+"\\"+and_name+"\\jni\\main.cpp"
+		xmlfile=path_proj+"\\"+and_name+"\\app\\jni\\main.cpp"
 		gosub *xml_initfile
 		if tmp!="" {
 			s1="// screen size":gosub *xml_search
@@ -1516,44 +1620,24 @@ res\\drawable-mdpi\\ic_launcher.png"}
 	goto *nohsp_conv
 
 *nohsp_conv
-	gsel 1
-	mes "NDKビルド処理中..."
-
-	gosub *bat_init
-	tmp+="CD "+and_name+"\n"
-	tmp+="ndk-build NDK_DEBUG=0\n"
-
-	gosub *bat_save
-
-	execcmd "go.bat"
-	if stat : goto *and_fin
-
-	ndklog=buf
-	i=instr(buf,0,"Install")
-	if i<0 {
-		notesel buf
-		notesave path_proj+"\\"+and_name+"\\ndk-build.log"
-		gsel 1 : mes "NDKのビルドに失敗しました" : goto *and_fin
-	}
-
 	if and_pack="" : goto *nohsp_pack
 
 	gsel 1
-	mes "packfile処理中..."
-	exist and_pack
-	if strsize<=0 : mes "data.dpmがありません" : goto *and_fin
+	;mes "packfile処理中..."
+	;exist and_pack
+	;if strsize<=0 : mes "data.dpmがありません" : goto *and_fin
 
 	;	libsフォルダにコピーする
-	basedir=path_proj+"\\"+and_name+"\\libs\\"
-	dirlist tmp,basedir+"*.*",5
-	notesel tmp
-	repeat notemax
-		noteget s1,cnt
-		if s1!="" {
-			;mes "make ["+basedir+s1+"\\"+fname_dpm+"] ..."
-			bcopy and_pack, basedir+s1+"\\"+fname_dpm
-		}
-	loop
+	;basedir=path_proj+"\\"+and_name+"\\libs\\"
+	;dirlist tmp,basedir+"*.*",5
+	;notesel tmp
+	;repeat notemax
+	;	noteget s1,cnt
+	;	if s1!="" {
+	;		;mes "make ["+basedir+s1+"\\"+fname_dpm+"] ..."
+	;		bcopy and_pack, basedir+s1+"\\"+fname_dpm
+	;	}
+	;loop
 
 *nohsp_pack
 
@@ -1562,17 +1646,23 @@ res\\drawable-mdpi\\ic_launcher.png"}
 
 	gosub *bat_init
 	tmp+="CD "+and_name+"\n"
-	tmp+="ant debug\n"
+	tmp+="gradlew assembleDebug\n"
 	gosub *bat_save
 
 	execcmd "go.bat"
 	if stat : goto *and_fin
 
-	buf = hsplog + "\n" + ndklog + "\n" + buf
-
 	gsel 1
-	mes "終了しました。"
 	objprm 0,buf
+
+	i=instr(buf,0,"BUILD SUCCESSFUL")
+	if i<0 {
+		notesel buf
+		notesave path_proj+"\\"+and_name+"\\build.log"
+		mes "ビルドに失敗しました" : goto *and_fin
+	}
+
+	mes "終了しました。"
 	goto *and_fin
 
 *mkxcode5
