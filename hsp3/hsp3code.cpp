@@ -1833,12 +1833,24 @@ static int cmdfunc_var( int cmd )
 				return RUNMODE_RUN;
 			}
 		}
-		if (( pval->flag != mpval->flag )||( pval->flag == HSPVAR_FLAG_STRUCT )) {
+		if (pval->flag == HSPVAR_FLAG_STRUCT) {
 			// HSPVAR_FLAG_STRUCTの場合は常に既存のデータをクリアする
-			if ( aptr != 0 ) throw HSPERR_INVALID_ARRAYSTORE;	// 型変更の場合は配列要素0のみ
-			HspVarCoreClear( pval, mpval->flag );		// 最小サイズのメモリを確保
-			proc = HspVarCoreGetProc( pval->flag );
-			dst = proc->GetPtr( pval );					// PDATポインタを取得
+			if (aptr != 0) {
+				if (pval->flag != mpval->flag) {
+					throw HSPERR_INVALID_ARRAYSTORE;	// 型変更の場合は配列要素0のみ
+				}
+			}
+			HspVarCoreClear(pval, mpval->flag);		// 最小サイズのメモリを確保
+			proc = HspVarCoreGetProc(pval->flag);
+			dst = proc->GetPtr(pval);					// PDATポインタを取得
+		}
+		else {
+			if (pval->flag != mpval->flag) {
+				if (aptr != 0) throw HSPERR_INVALID_ARRAYSTORE;	// 型変更の場合は配列要素0のみ
+				HspVarCoreClear(pval, mpval->flag);		// 最小サイズのメモリを確保
+				proc = HspVarCoreGetProc(pval->flag);
+				dst = proc->GetPtr(pval);					// PDATポインタを取得
+			}
 		}
 		proc->Set( pval, dst, ptr );
 		if ( exflg ) return RUNMODE_RUN;

@@ -19,7 +19,7 @@
 #uselib "kernel32.dll"
 #func OpenProcess@hsedsdk "OpenProcess" int, int, int
 #func GetCurrentProcess@hsedsdk "GetCurrentProcess"
-#func DuplicateHandle@hsedsdk "DuplicateHandle" int, int, int, var, int, int, int
+#func DuplicateHandle@hsedsdk "DuplicateHandle" int, int, int, sptr, int, int, int
 #func CloseHandle@hsedsdk "CloseHandle" int
 #func CreatePipe@hsedsdk "CreatePipe" var, var, int, int
 #func ReadFile@hsedsdk "ReadFile" int, var, int, var, int
@@ -125,8 +125,14 @@
 	if hReadPipe:  CloseHandle hReadPipe:  hReadPipe  = 0
 	if hWritePipe: CloseHandle hWritePipe: hWritePipe = 0
 
-	if hDupReadPipe:  CloseHandle hDupReadPipe:  hDupReadPipe  = 0
-	if hDupWritePipe: CloseHandle hDupWritePipe: hDupWritePipe = 0
+	GetWindowThreadProcessID@hsedsdk hIF, dwProcessID
+	OpenProcess@hsedsdk PROCESS_ALL_ACCESS@hsedsdk, 0, dwProcessID
+	hHsedProc = stat
+
+	if hDupReadPipe:  DuplicateHandle hHsedProc, hDupReadPipe,  0, 0, 0, 0, 0x1: hDupReadPipe  = 0
+	if hDupWritePipe: DuplicateHandle hHsedProc, hDupWritePipe, 0, 0, 0, 0, 0x1: hDupWritePipe = 0
+
+	CloseHandle@hsedsdk hHsedProc
 	return
 
 //
@@ -142,8 +148,8 @@
 	GetCurrentProcess@hsedsdk
 	hCurProc = stat
 
-	DuplicateHandle@hsedsdk hCurProc, hReadPipe,  hHsedProc, hDupReadPipe,  0, 0, DUPLICATE_SAME_ACCESS@hsedsdk
-	DuplicateHandle@hsedsdk hCurProc, hWritePipe, hHsedProc, hDupWritePipe, 0, 0, DUPLICATE_SAME_ACCESS@hsedsdk
+	DuplicateHandle@hsedsdk hCurProc, hReadPipe,  hHsedProc, varptr(hDupReadPipe),  0, 0, DUPLICATE_SAME_ACCESS@hsedsdk
+	DuplicateHandle@hsedsdk hCurProc, hWritePipe, hHsedProc, varptr(hDupWritePipe), 0, 0, DUPLICATE_SAME_ACCESS@hsedsdk
 
 	CloseHandle@hsedsdk hHsedProc
 	if hDupReadPipe == 0 | hDupWritePipe == 0: hsed_uninitduppipe: return 1

@@ -527,6 +527,7 @@ char *CToken::GetTokenCG( char *str, int option )
 			if ( *vs == 0 ) {
 				vs = (unsigned char *)GetLineCG();
 				cg_orgline++;
+				if (vs == NULL) return NULL;
 			}
 			ttype = TK_STRING; cg_str = (char *)vs;
 			return PickLongStringCG( (char *)vs );

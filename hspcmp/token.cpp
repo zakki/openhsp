@@ -1164,7 +1164,8 @@ char *CToken::ExpandToken( char *str, int *type, int ppmode )
 			if (wrtbuf!=NULL) wrtbuf->PutStr( "{\"" );
 			mulstr = LMODE_STR;
 			*type = TK_STRING;
-			return ExpandStrEx( (char *)vs+2 );
+			char *pp = ExpandStrEx( (char *)vs+2 );
+			return pp;
 		}
 	}
 
@@ -1340,13 +1341,14 @@ char *CToken::ExpandToken( char *str, int *type, int ppmode )
 			char *ptr_dval;
 			ptr_dval = lb->GetData2( id );
 			if ( ptr_dval == NULL ) {
-				sprintf( cnvstr, "%d", lb->GetOpt(id) );
+				sprintf(cnvstr, "%d", lb->GetOpt(id));
 			} else {
-				sprintf( cnvstr, "%f", *(CALCVAR *)ptr_dval );
+				sprintf(cnvstr, "%.16f", *(CALCVAR*)ptr_dval);
 			}
 			chk = ReplaceLineBuf( str, (char *)vs, cnvstr, 0, NULL );
 			break;
 			}
+
 		case LAB_TYPE_PPINTMAC:
 			//		ì‡ïîÉ}ÉNÉç
 			//

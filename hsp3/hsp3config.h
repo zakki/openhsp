@@ -8,9 +8,9 @@
 //		システム関連ラベル
 //
 #define HSPTITLE "Hot Soup Processor ver."
-#define hspver "3.6"
-#define mvscode 7		// minor version code
-#define vercode 0x3607	// version code
+#define hspver "3.7beta1"
+#define mvscode 1		// minor version code
+#define vercode 0x3701	// version code
 
 #define HSPERR_HANDLE		// HSPエラー例外を有効にします
 #define SYSERR_HANDLE		// システムエラー例外を有効にします
@@ -20,7 +20,7 @@
 //		移植用のラベル
 //
 //#define JPN			// IME use flag
-//#define JPNMSG		// japanese message flag
+#define JPNMSG		// japanese message flag
 
 //
 //	Debug mode functions

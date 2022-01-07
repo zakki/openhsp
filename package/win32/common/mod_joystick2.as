@@ -11,8 +11,8 @@
 ;「jstick 変数,トリガー指定,ポート番号」の書式で使用できます。
 ;
 ;エラーの処理と自動復帰にも対応しています。
-;(エラーが発生している間は、変数「modjoy_err」が1になります。)
-;変数「modjoy_err」が0の間はジョイスティックの値を取りにいきます。
+;(エラーが発生している間は、変数「modjoy_err(ポート)」が1になります。)
+;変数「modjoy_err(ポート)」が0の間はジョイスティックの値を取りにいきます。
 ;(※既存のjstick命令はjstick_org命令に置き換えました)
 
 #module "joy"
@@ -33,7 +33,7 @@
 	;	jstick 変数,ポート番号
 	;	(stick命令互換の値を変数に返す)
 	;
-	if modjoy_err@ : goto *jstick_resume
+	if modjoy_err@(p2) : goto *jstick_resume
 	;
 	jdata.15=0:jdata=52,255
 	_joyGetPosEx p2,jdata
@@ -49,11 +49,11 @@
 	_joyGetPosEx p2,jdata
 	if stat!=0 : goto *jstick_err
 	p1=0
-	modjoy_err@=0
+	modjoy_err@(p2)=0
 	return
 *jstick_err
 	p1=0
-	modjoy_err@=1
+	modjoy_err@(p2)=1
 	return
 
 #deffunc jstick var _p1, int _p2, int _p3

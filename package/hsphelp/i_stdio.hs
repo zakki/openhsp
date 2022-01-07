@@ -75,7 +75,7 @@ onclick *inkey
 stop
 *inkey
 if lparam>>30:stop
-mes iparam
+mes wparam
 stop
 
 
