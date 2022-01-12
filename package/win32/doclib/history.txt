@@ -5,8 +5,9 @@ Hot Soup Processor ver3.7beta                       HSP : Hot Soup Processor
 
 ・hsp3関連 更新履歴
 
-	2022/01/07 3.7 beta1
+	2022/01/12 3.7 beta1
 
+	hsp3cランタイムの運用を廃止
 	hsedsdkでメモリリークとハンドルリークが起きる不具合を修正
 	UTF8ランタイム使用時のコンパイルに_hsputf8ラベルを定義するように修正
 	複数行文字列の終端がない場合に落ちることがあった不具合を修正

@@ -1116,7 +1116,8 @@
 	notesave buildgradle
 
 	mainjava="MainActivity.java"
-	s2=projtemp+"\\app\\src\\main\\java\\tv\\hsp\\hspproj\\"+mainjava
+	mainjdir=projtemp+"\\app\\src\\main\\java\\tv\\hsp\\hspproj\\"
+	s2=mainjdir+mainjava
 	noteload s2
 	strrep bgbuf,"tv.hsp.hspproj",and_package
 	s2=basedir+"app\\src\\main\\java\\"
@@ -1135,7 +1136,11 @@
 	delete basedir+"\\app\\src\\main\\java\\tv\\hsp\\hspproj\\"+mainjava
 
 	s1=basedir+"app\\src\\main\\AndroidManifest.xml"
-	noteload s1
+	if flag_admob {
+		noteload dir_exe+"\\android\\AndroidManifestAdmob.xml"
+	} else {
+		noteload s1
+	}
 	strrep bgbuf,"tv.hsp.hspproj",and_package
 	notesave s1
 
@@ -1160,178 +1165,10 @@
 		mes "AdMobの設定を行っています..."
 		strrep tmp,s1,"// adding Admob SDK"+s2+"    implementation 'com.google.android.gms:play-services-ads:20.5.0'"+s2+"    "+s1
 		gosub *xml_save
+		;
+		bcopy dir_exe+"\\android\\HspActivityAdmob.java", basedir+"\\app\\src\\main\\java\\tv\\hsp\\HspActivity.java"
 	}
 
-	goto *and_cpok
-
-
-	prj_dlist={"assets
-src\\tv
-src\\tv\\hsp
-hsp
-libs
-jni
-jni\\hsp3embed
-res\\drawable-xhdpi
-res\\drawable-hdpi
-res\\drawable-ldpi
-res\\drawable-mdpi"}
-
-	prj_flist={"jni\\Android.mk
-jni\\Application.mk
-jni\\main.cpp
-jni\\maingp.cpp
-jni\\javafunc.cpp
-jni\\hsp3embed\\hsp3r.cpp
-jni\\hsp3embed\\hsp3r.h
-jni\\hsp3embed\\hspsource.cpp
-src\\tv\\hsp\\HspActivity.java
-res\\drawable-xhdpi\\ic_launcher.png
-res\\drawable-hdpi\\ic_launcher.png
-res\\drawable-ldpi\\ic_launcher.png
-res\\drawable-mdpi\\ic_launcher.png"}
-
-
-	notesel prj_dlist
-	repeat notemax
-		noteget s1,cnt
-		dirlist s2, basedir+s1, 5
-		if stat = 0 {
-			mkdir basedir+s1
-		}
-	loop
-
-	notesel prj_flist
-	repeat notemax
-		noteget s1,cnt
-		s2 = dir_exe+"\\android\\hspproj\\"+s1
-		buf+="Copying "+s1+"...\n"
-		exist s2
-		if strsize<=0 : dialog "ファイル["+s1+"]がありません。" : errflag++ : break
-		bcopy s2,basedir+s1
-	loop
-
-	if flag_hgimg {
-		s1="jni\\Android.mk"	; HGIMG4用のandroid.mk
-		s2 = dir_exe+"\\android\\hspproj\\jni\\Android_gp.mk"
-		buf+="Copying "+s1+"...\n"
-		exist s2
-		if strsize>0 {
-			bcopy s2,basedir+s1
-		}
-		s1="jni\\PlatformAndroid.cpp"	; HGIMG4用のPlatformAndroid.cpp
-		s2 = dir_exe+"\\android\\hspproj\\"+s1
-		buf+="Copying "+s1+"...\n"
-		exist s2
-		if strsize>0 {
-			bcopy s2,basedir+s1
-		}
-	}
-
-	if flag_admob {
-		s1 = basedir+"src\\tv\\hsp\\HspActivity.java"
-		s2 = dir_exe+"\\android\\hspproj\\src\\tv\\hsp\\HspActivityAdMob.java"
-		bcopy s2,s1
-		s1 = basedir+"res\\values\\version.xml"
-		s2 = dir_exe+"\\android\\hspproj\\res\\values\\version.xml"
-		exist s2
-		if strsize>0 : bcopy s2,s1
-		;gosub *copy_admob		; jarファイルのコピー
-	}
-
-	;gosub *copy_http		; httpクラスファイルのコピー
-
-	s1=basedir+"AndroidManifest.xml"
-	notesel tmp
-	noteload s1
-	noteadd "    <uses-sdk android:minSdkVersion=\"18\" android:targetSdkVersion=\""+and_targetapi+"\"/>",5,0
-
-	noteadd "	<uses-permission android:name=\"android.permission.ACCESS_NETWORK_STATE\"/>",15,0
-	noteadd "	<uses-permission android:name=\"android.permission.INTERNET\"/>",15,0
-	noteadd "	<uses-permission android:name=\"android.permission.VIBRATE\"/>",15,0
-	noteadd "	<uses-permission android:name=\"android.permission.WRITE_EXTERNAL_STORAGE\" />",15,0
-	noteadd "	<uses-feature android:name=\"android.hardware.vibrate\" android:required=\"false\" />",15,0
-
-	noteadd "        <activity android:name=\"tv.hsp.HspActivity\"",7,1
-	noteadd "                  android:screenOrientation=\"portrait\"",8,0
-	noteadd "                  android:theme=\"@android:style/Theme.Black.NoTitleBar.Fullscreen\"",9,0
-	noteadd "            <meta-data android:name=\"android.app.lib_name\"",11,0
-	noteadd "                    android:value=\""+and_name+"\" />",12,0
-
-	if flag_admob {
-
-	noteadd "        <meta-data android:name=\"com.google.android.gms.version\"",7,0
-	noteadd "            android:value=\"@integer/google_play_services_version\"/>",8,0
-	noteadd "        <activity android:name=\"com.google.android.gms.ads.AdActivity\"",9,0
-	noteadd "            android:theme=\"@android:style/Theme.Translucent\"",10,0
-	noteadd "            android:configChanges=\"keyboard|keyboardHidden|orientation|screenLayout|uiMode|screenSize|smallestScreenSize\"/>",11,0
-	}
-
-	noteadd "        <uses-library android:name=\"org.apache.http.legacy\" android:required=\"false\"/>",7
-
-	notesave s1
-
-	s1=basedir+"jni\\Android.mk"
-	notesel tmp
-	noteload s1
-	noteadd "LOCAL_MODULE    := "+and_name,4,1
-	notesave s1
-
-	s1=basedir+"jni\\hsp3embed\\hsp3r.cpp"
-	s3="*":poke s3,0,10
-	notesel tmp
-	noteload s1
-	outbuf=""
-	i=0
-	repeat
-		getstr s2,tmp,i,10
-		if strsize=0 : break
-		i+=strsize
-		if instr(s2,0,fname_dpm)>=0 {
-			outbuf+="    dpm_ini( \"/data/data/"+and_package+"/lib/"+fname_dpm+"\",0,-1,-1 );"
-		} else {
-			outbuf+=s2
-		}
-		outbuf+=s3
-	loop
-	notesel outbuf
-	notesave s1
-
-	gsel 1
-	if errflag : mes "エラーのため処理を中断しました" : goto *and_fin
-
-	;if flag_admob {
-	;	outbuf=buf
-	;	gosub *bat_init
-	;	tmp+="android update project --target "+and_targetid+" --path ./"+and_name+" --library ../google-play-services_lib\n"
-	;	gosub *bat_save
-	;	execcmd "go.bat"
-	;	if stat : goto *and_fin
-	;	buf=outbuf+buf
-	;}
-
-	abilist="APP_ABI := armeabi-v7a"
-	if flag_arm=0 : abilist+=" arm64-v8a"
-	if flag_x86=0 : abilist+=" x86 x86_64"
-
-	xmlfile=path_proj+"\\"+and_name+"\\jni\\Application.mk"
-	gosub *xml_initfile
-	s1="APP_ABI :=":gosub *xml_search
-	if res>0 : noteadd abilist,res,1		; APP_ABIの項目を更新する
-	gosub *xml_save
-
-	if flag_sensor {
-		;	センサー設定をいじる
-		xmlfile = path_proj+"\\"+and_name+"\\jni\\main.cpp"
-		gosub *and_modify_sensor_sub
-		xmlfile = path_proj+"\\"+and_name+"\\jni\\maingp.cpp"
-		gosub *and_modify_sensor_sub
-	}
-
-
-
-
-*and_cpok
 	gsel 1
 	objprm 0,buf
 	mes "終了しました。"
@@ -1361,7 +1198,12 @@ res\\drawable-mdpi\\ic_launcher.png"}
 	;	logcat
 	;
 	gosub *bat_init
-	tmp+="adb logcat -s native-activity\n"
+	getkey a,16
+	if a=0 {
+		tmp+="adb logcat -s native-activity\n"
+	} else {
+		tmp+="adb logcat\n"
+	}
 	gosub *bat_save
 
 	exec "go.bat"

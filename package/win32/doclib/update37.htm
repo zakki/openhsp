@@ -1,0 +1,83 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html lang="ja">
+<head>
+	<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+	<meta http-equiv="Content-Language" content="ja">
+	<meta http-equiv="Content-Style-Type" content="text/css">
+	<meta http-equiv="Content-Script-Type" content="text/javascript">
+	<meta name="author" content="OpenHSP3 Project">
+	<meta name="keywords" content="HSP,HSP3,Hot Soup Processor,更新情報,アップデート">
+	<meta name="description" content="HSPの更新情報を掲載">
+	<link href="../main.css" rel="stylesheet" type="text/css" media="all">
+	<title>HSP3.7 新機能ハイライト</title>
+</head>
+<body>
+	<div id="CONTAINER">
+		<!-- ヘッダー -->
+		<p id="COPY">HSP : Hot Soup Processor ver3.7 / onion software 1997-2022(c)</p>
+		<img src="hsp3ttl.jpg" alt="title" width="640" height="200">
+		<h1>HSP3.7 新機能ハイライト</h1>
+
+		<!-- 目次 -->
+		<ol>
+			<li><a href="#HSP3UPDATE">HSP3.7アップデート概要</a></li>
+			<li><a href="#HSP3C">コンパクト(hsp3c)版ランタイムについて</a></li>
+		</ol>
+		
+		<!-- 本文 -->
+	<h2 id="HSP3UPDATE">HSP3.7のアップデート概要</h2>
+		<p>
+		HSP3.7は、特に変更を意識することなく、HSP3.6と同様にお使い頂けます。
+		HSP3.7で変更された項目の概要は、以下の通りです。
+		</p>
+
+		<dl>
+
+			<dt>
+			HSP3Dish android版のビルド機能修正
+			</dt><br>
+			<dd>
+			<p>
+			<a href="hsp3dish_prog.htm">HSP3Dish</a>のandroid向けビルド機能を大きく変更しています。<br>
+			HSP3.6までのantツールを使用したビルドから、Gradleを使用した最新のビルド方法に変更されています。
+			これにより、Google Playストアでの配信に必要となるaab形式のファイルをビルドすることが可能になります。<br>
+			今まで通りデバイスへの変換をサポートするHSP3Dish Helperツールをご利用頂けますが、いままでandroid向けに作成されていたプロジェクトとは互換性がないため、新規に作成する必要があるのでご注意ください。<br>
+			また、新しいHSP3Dish Helperでは、androidエミュレータの作成・実行、リリースバージョンの管理、ビルド後の自動実行などの機能が追加されています。
+			</p>
+			</dd>
+
+			<dt>
+			HSP3不具合の修正
+			</dt><br>
+			<dd>
+			<p>
+			HSP3インタプリアコア部分で、HSP3.6リリース後に報告されたいくつかの不具合が修正されています。<br>
+			モジュール型配列変数の代入時の不具合、#constで定義されたdouble型実数値の有効桁数が少なかった不具合などが修正されています。
+			</p>
+			</dd>
+
+		</dl>
+
+
+	<h2 id="HSP3C">コンパクト(hsp3c)版ランタイムについて</h2>
+		<p>
+		HSP3.6までのコンパクト版ランタイム(hsp3c)は、HSP3.7から運用を廃止しています。<br>
+		コンパクト版ランタイムは、Windows 98以降の動作をサポートするために古いコンパイラを使用していましたが、
+		ファイルサイズの僅かな削減以外のメリットが少なく、現行のOS上で実行の効率が悪いことから同梱を終了ることとしました。<br>
+		hsp3cを使用していたユーザーは、引き続き標準のHSP3ランタイムをご使用頂くようお願い致します。
+		</p>
+
+
+
+		<!-- フッター -->
+		<ul id="FOOTER">
+			<li><a href="#CONTAINER">このページの1番上に戻る</a></li>
+			<li><a href="../index.htm">ドキュメントの一覧に戻る</a></li>
+			<li><a href="https://hsp.tv/">Go to HSPTV page</a></li>
+		</ul>
+		<a href="https://www.onionsoft.net/hsp/">
+			<img src="img/onibtn.gif" width="147" height="50" alt="ONION software" id="ONIBTN">
+		</a>
+	</div><!-- container -->
+</body>
+</html>
