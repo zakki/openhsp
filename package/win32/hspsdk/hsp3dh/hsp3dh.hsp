@@ -111,7 +111,7 @@
 		path_proj=cfg_getvar("path_proj")
 		flag_utf8 = 0+cfg_getvar("flag_utf8")
 		and_name=cfg_getvar("and_name")
-		and_pack=cfg_getvar("and_pack")
+		;and_pack=cfg_getvar("and_pack")
 		;and_targetid = cfg_getvar("and_target")
 		and_fname=cfg_getvar("and_fname")
 		and_keystore=cfg_getvar("and_keystore")
@@ -391,7 +391,7 @@
 	pos 8,110
 	chkbox "AdMobを使用する",flag_admob
 	;chkbox "ARM64をビルドしない",flag_arm
-	;chkbox "x86をビルドしない",flag_x86
+	chkbox "x86をビルドしない",flag_x86
 	chkbox "HGIMG4を使用する",flag_hgimg
 	chkbox "センサーを使用する",flag_sensor
 	;objenable stat,0
@@ -432,11 +432,13 @@
 	pos 408,41:button "参照...",*selfile2
 
 	pos 8,70
-	mes "データファイル(dpm): (空白の場合は未使用)"
-	objsize 390,24
-	input and_pack
-	objsize 64,24
-	pos 408,82:button "作成...",*selfile_pack
+	;mes "データファイル(dpm): (空白の場合は未使用)"
+	;objsize 390,24
+	;input and_pack
+	;objsize 64,24
+	;pos 408,82:button "作成...",*selfile_pack
+	objsize 160,24
+	pos 310,82:button "Assetフォルダを開く",*open_asset
 
 	gosub *upd_prj
 	pos 8,110
@@ -716,6 +718,14 @@
 		objprm 2, and_pack
 	}
 	stop
+*open_asset
+	gosub *get_prjname
+	if and_name="" : stop
+	basedir=path_proj+"\\"+and_name+"\\app\\src\\main\\assets"
+	dirlist s1,basedir,5
+	if stat=0 : stop
+	exec "explorer "+basedir
+	stop
 
 *owari
 	;	アプリケーション終了
@@ -735,7 +745,7 @@
 	cfg_sets "path_proj",path_proj
 
 	cfg_sets "and_name",and_name
-	cfg_sets "and_pack",and_pack
+	;cfg_sets "and_pack",and_pack
 	cfg_sets "and_target",and_targetid
 	cfg_sets "and_fname",and_fname
 	cfg_sets "and_keystore",and_keystore
@@ -1157,6 +1167,18 @@
 		gosub *and_modify_sensor_sub
 	}
 
+	if flag_x86=0 {
+		; x86を追加する
+		xmlfile=basedir+"app\\jni\\Application.mk"
+		gosub *xml_initfile
+		s1="APP_ABI :=":gosub *xml_search
+		if res>0 {
+			xml_ln+=" x86 x86_64"
+			noteadd xml_ln,res,1		; APP_ABIの項目を更新する
+			gosub *xml_save
+		}
+	}
+
 	;	admob設定
 	if flag_admob {
 		xmlfile = path_proj+"\\"+and_name+"\\app\\build.gradle"
@@ -1213,6 +1235,7 @@
 *and_keyman
 	;	リリースマネージャー起動
 	;
+	gosub *get_prjname
 	if and_name="" : dialog "プロジェクトが指定されていません" : goto *topmenu
 	;
 	xmlfile=path_proj+"\\"+and_name+"\\app\\build.gradle"
@@ -1569,6 +1592,11 @@
 	gosub *bat_save
 	execcmd "go.bat"
 	if stat : goto *and_fin
+
+	i=instr(buf,0,"BUILD SUCCESSFUL")
+	if i<0 {
+		mes "転送に失敗しました" : goto *and_fin
+	}
 
 	mes "実行します..."
 	gosub *bat_init
