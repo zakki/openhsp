@@ -122,8 +122,8 @@ extern SDL_Window *window;
 /*-------------------------------------------------------------------------------*/
 
 static TEXINF texinf[TEXINF_MAX];
-static int curtex;				// ç¾åœ¨é¸æŠã•ã‚Œã¦ã„ã‚‹ãƒ†ã‚¯ã‚¹ãƒãƒ£ID
-static int curmestex;			// ãƒ¡ãƒƒã‚»ãƒ¼ã‚¸ç”¨ã«ã‚­ãƒ£ãƒƒã‚·ãƒ¥ã•ã‚ŒãŸãƒ†ã‚¯ã‚¹ãƒãƒ£æ•°
+static int curtex;				// Œ»İ‘I‘ğ‚³‚ê‚Ä‚¢‚éƒeƒNƒXƒ`ƒƒID
+static int curmestex;			// ƒƒbƒZ[ƒW—p‚ÉƒLƒƒƒbƒVƒ…‚³‚ê‚½ƒeƒNƒXƒ`ƒƒ”
 
 /*------------------------------------------------------------*/
 /*
@@ -147,11 +147,11 @@ static char *m_stars_pixel = NULL;
 
 static void star_init(void)
 {
-	//	æ˜Ÿ(StarField)ã®åˆæœŸåŒ–
+	//	¯(StarField)‚Ì‰Šú‰»
 	m_stars_count = 0;
 	m_stars_enabled = 1;
 
-	//	ãƒ†ãƒ¼ãƒ–ãƒ«ä½œæˆ
+	//	ƒe[ƒuƒ‹ì¬
 	unsigned int shiftreg;
 	int i;
 
@@ -161,7 +161,7 @@ static void star_init(void)
 		int enabled = ((shiftreg & 0x1fe01) == 0x1fe00);
 		int color = (~shiftreg & 0x1f8) >> 3;
 		m_stars[i] = color | (enabled << 7);
-		// LFSRã«ã‚ˆã‚‹ä¹±æ•°ç”Ÿæˆ
+		// LFSR‚É‚æ‚é—”¶¬
 		shiftreg = (shiftreg >> 1) | ((((shiftreg >> 12) ^ ~shiftreg) & 1) << 16);
 	}
 
@@ -205,7 +205,7 @@ static void star_term(void)
 
 static void star_draw_y(unsigned char *dest, int y, int maxx, int offset)
 {
-	//	æ˜Ÿ(StarField)ã®æç”»(1line)
+	//	¯(StarField)‚Ì•`‰æ(1line)
 	int x;
 	int ofs;
 	unsigned int *ptr;
@@ -232,7 +232,7 @@ static void star_draw_y(unsigned char *dest, int y, int maxx, int offset)
 
 static void star_draw(char *dest, int sx, int sy, int mode)
 {
-	//	æ˜Ÿ(StarField)ã®æç”»
+	//	¯(StarField)‚Ì•`‰æ
 	if (m_stars_enabled == 0) return;
 
 	int y;
@@ -265,7 +265,7 @@ static void star_draw(char *dest, int sx, int sy, int mode)
 
 TEXINF *GetTex( int id )
 {
-	//	TEXINF idã‹ã‚‰æ§‹é€ ä½“ã‚’å–å¾—
+	//	TEXINF id‚©‚ç\‘¢‘Ì‚ğæ“¾
 	//
 	return &texinf[id];
 }
@@ -273,7 +273,7 @@ TEXINF *GetTex( int id )
 
 void DeleteTexInf( TEXINF *t )
 {
-	//	TEXINFã®ãƒ†ã‚¯ã‚¹ãƒãƒ£ã‚’ç ´æ£„
+	//	TEXINF‚ÌƒeƒNƒXƒ`ƒƒ‚ğ”jŠü
 	//
 	if ( t->mode == TEXMODE_NONE ) return;
 	glDeleteTextures( 1, (GLuint *)&t->texid );
@@ -283,7 +283,7 @@ void DeleteTexInf( TEXINF *t )
 
 void DeleteTex( int id )
 {
-	//	TEXINF idã®ãƒ†ã‚¯ã‚¹ãƒãƒ£ã‚’ç ´æ£„
+	//	TEXINF id‚ÌƒeƒNƒXƒ`ƒƒ‚ğ”jŠü
 	//
 	DeleteTexInf( GetTex( id ) );
 }
@@ -291,7 +291,7 @@ void DeleteTex( int id )
 
 void TexReset( void )
 {
-	//	ãƒªã‚»ãƒƒãƒˆ
+	//	ƒŠƒZƒbƒg
 	//
 	curtex = -1;
 }
@@ -299,7 +299,7 @@ void TexReset( void )
 
 void TexInit( void )
 {
-	//	åˆæœŸåŒ–
+	//	‰Šú‰»
 	//
 	int i;
 	for(i=0;i<TEXINF_MAX;i++) {
@@ -315,7 +315,7 @@ void TexInit( void )
 
 void TexTerm( void )
 {
-	//	çµ‚äº†å‡¦ç†
+	//	I—¹ˆ—
 	//
 	int i;
 
@@ -330,8 +330,8 @@ void TexTerm( void )
 
 void ChangeTex( int id )
 {
-	//	ãƒ†ã‚¯ã‚¹ãƒãƒ£è¨­å®š
-	//	TexIDã§ã¯ãªãOpenGLã®IDã‚’æ¸¡ã™ã“ã¨
+	//	ƒeƒNƒXƒ`ƒƒİ’è
+	//	TexID‚Å‚Í‚È‚­OpenGL‚ÌID‚ğ“n‚·‚±‚Æ
 	if ( id < 0 ) {
 		curtex = -1;
 	    glBindTexture(GL_TEXTURE_2D,0);
@@ -350,7 +350,7 @@ void ChangeTex( int id )
 
 static int GetNextTex( void )
 {
-	//		æ–°è¦ã®TEXINF idã‚’ä½œæˆã™ã‚‹
+	//		V‹K‚ÌTEXINF id‚ğì¬‚·‚é
 	//
 	int i,sel;
 	sel = -1;
@@ -363,7 +363,7 @@ static int GetNextTex( void )
 
 static int SetTex( int sel, short mode, short opt, short sx, short sy, short width, short height, GLuint texid )
 {
-	//		TEXINFã‚’è¨­å®šã™ã‚‹
+	//		TEXINF‚ğİ’è‚·‚é
 	//
 	TEXINF *t;
 	int myid;
@@ -402,8 +402,8 @@ static int Get2N( int val )
 
 int RegistTexMem( unsigned char *ptr, int size )
 {
-	//		ãƒ¡ãƒ¢ãƒªä¸Šã®ç”»åƒãƒ•ã‚¡ã‚¤ãƒ«ãƒ‡ãƒ¼ã‚¿ã‹ã‚‰ãƒ†ã‚¯ã‚¹ãƒãƒ£èª­ã¿è¾¼ã¿
-	//		(TEXINFã®idã‚’è¿”ã™)
+	//		ƒƒ‚ƒŠã‚Ì‰æ‘œƒtƒ@ƒCƒ‹ƒf[ƒ^‚©‚çƒeƒNƒXƒ`ƒƒ“Ç‚İ‚İ
+	//		(TEXINF‚Ìid‚ğ•Ô‚·)
 	//
 	GLuint id;
 	int texid, tsx,tsy,comp;
@@ -459,8 +459,8 @@ int RegistTexMem( unsigned char *ptr, int size )
 
 int RegistTex( char *fname )
 {
-	//		ç”»åƒãƒ•ã‚¡ã‚¤ãƒ«ã‹ã‚‰ãƒ†ã‚¯ã‚¹ãƒãƒ£èª­ã¿è¾¼ã¿
-	//		(TEXINFã®idã‚’è¿”ã™)
+	//		‰æ‘œƒtƒ@ƒCƒ‹‚©‚çƒeƒNƒXƒ`ƒƒ“Ç‚İ‚İ
+	//		(TEXINF‚Ìid‚ğ•Ô‚·)
 	//
 	char *ptr;
 	int len;
@@ -479,7 +479,7 @@ int RegistTex( char *fname )
 
 int MakeEmptyTex( int width, int height )
 {
-	//		ãƒ¡ãƒƒã‚»ãƒ¼ã‚¸ç”¨ã®ç©ºãƒ†ã‚¯ã‚¹ãƒãƒ£ã‚’ä½œæˆã™ã‚‹
+	//		ƒƒbƒZ[ƒW—p‚Ì‹óƒeƒNƒXƒ`ƒƒ‚ğì¬‚·‚é
 	//
 	GLuint id;
 	int texid;
@@ -502,7 +502,7 @@ int MakeEmptyTex( int width, int height )
 
 int MakeEmptyTexBuffer( int width, int height )
 {
-	//		æ›¸ãæ›ãˆå¯èƒ½ãªç©ºãƒ†ã‚¯ã‚¹ãƒãƒ£ã‚’ä½œæˆã™ã‚‹
+	//		‘‚«Š·‚¦‰Â”\‚È‹óƒeƒNƒXƒ`ƒƒ‚ğì¬‚·‚é
 	//
 	GLuint id;
 	int texid;

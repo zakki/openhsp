@@ -23,7 +23,7 @@
 
 texmes::texmes()
 {
-	// ã‚³ãƒ³ã‚¹ãƒˆãƒ©ã‚¯ã‚¿
+	// ƒRƒ“ƒXƒgƒ‰ƒNƒ^
 	flag = 0;
 	text = NULL;
 	textsize = 0;
@@ -60,7 +60,7 @@ void texmes::terminate(void)
 {
 	clear();
 	if (text) {
-		free(text);		// æ‹¡å¼µã•ã‚ŒãŸãƒãƒ¼ãƒ ç”¨ãƒãƒƒãƒ•ã‚¡ãŒã‚ã‚Œã°è§£æ”¾ã™ã‚‹
+		free(text);		// Šg’£‚³‚ê‚½ƒl[ƒ€—pƒoƒbƒtƒ@‚ª‚ ‚ê‚Î‰ğ•ú‚·‚é
 		text = NULL;
 	}
 }
@@ -107,7 +107,7 @@ void texmes::reset(int width, int height, int p_texsx, int p_texsy, void *data)
 
 int texmes::registText(char* msg)
 {
-	//		æ–‡å­—åˆ—ã‚’è¨­å®šã™ã‚‹
+	//		•¶š—ñ‚ğİ’è‚·‚é
 	//
 	int mylen = strlen(msg);
 	if (mylen >= TEXMES_NAME_BUFFER) {
@@ -116,13 +116,13 @@ int texmes::registText(char* msg)
 			if (text != NULL) {
 				free(text);
 			}
-			text = (char*)malloc(size);		// ãƒ†ã‚­ã‚¹ãƒˆãƒãƒƒã‚·ãƒ¥ãƒãƒ¼ãƒ ç”¨ãƒãƒƒãƒ•ã‚¡ã‚’ä½œæˆã™ã‚‹
+			text = (char*)malloc(size);		// ƒeƒLƒXƒgƒnƒbƒVƒ…ƒl[ƒ€—pƒoƒbƒtƒ@‚ğì¬‚·‚é
 			textsize = size;
 		}
 		strcpy(text, msg);
 	}
 	else {
-		strcpy(buf, msg);						// æ¨™æº–ãƒãƒƒãƒ•ã‚¡ã«ã‚³ãƒ”ãƒ¼ã™ã‚‹
+		strcpy(buf, msg);						// •W€ƒoƒbƒtƒ@‚ÉƒRƒs[‚·‚é
 	}
 	return 0;
 }
@@ -136,7 +136,7 @@ int texmes::registText(char* msg)
 
 texmesManager::texmesManager()
 {
-	// ã‚³ãƒ³ã‚¹ãƒˆãƒ©ã‚¯ã‚¿
+	// ƒRƒ“ƒXƒgƒ‰ƒNƒ^
 	_texmes = NULL;
 	_texmesbuf = NULL;
 }
@@ -190,7 +190,7 @@ void texmesManager::texmesTerm(void)
 
 unsigned char*texmesManager::texmesBuffer(int size)
 {
-	//	ç©ºã®ãƒ†ã‚¯ã‚¹ãƒãƒ£ãƒãƒƒãƒ•ã‚¡ã‚’æº–å‚™ã™ã‚‹
+	//	‹ó‚ÌƒeƒNƒXƒ`ƒƒƒoƒbƒtƒ@‚ğ€”õ‚·‚é
 	//
 	if (size > _texmesbuf_max) {
 		free(_texmesbuf);
@@ -204,7 +204,7 @@ unsigned char*texmesManager::texmesBuffer(int size)
 
 texmes* texmesManager::addTexmes(void)
 {
-	//	ç©ºã®texmesã‚’ç”Ÿæˆã™ã‚‹
+	//	‹ó‚Ìtexmes‚ğ¶¬‚·‚é
 	//
 	int i;
 	for (i = 0; i < _maxtexmes; i++) {
@@ -216,8 +216,8 @@ texmes* texmesManager::addTexmes(void)
 
 void texmesManager::texmesProc(void)
 {
-	//		ãƒ•ãƒ¬ãƒ¼ãƒ å˜ä½ã§ã®ã‚­ãƒ£ãƒƒã‚·ãƒ¥ãƒªãƒ•ãƒ¬ãƒƒã‚·ãƒ¥
-	//		(ã‚­ãƒ£ãƒƒã‚·ãƒ¥ã‚µãƒãƒ¼ãƒˆæ™‚ã¯ã€æ¯ãƒ•ãƒ¬ãƒ¼ãƒ ã”ã¨ã«å‘¼ã³å‡ºã™ã“ã¨)
+	//		ƒtƒŒ[ƒ€’PˆÊ‚Å‚ÌƒLƒƒƒbƒVƒ…ƒŠƒtƒŒƒbƒVƒ…
+	//		(ƒLƒƒƒbƒVƒ…ƒTƒ|[ƒg‚ÍA–ˆƒtƒŒ[ƒ€‚²‚Æ‚ÉŒÄ‚Ño‚·‚±‚Æ)
 	//
 	int i;
 	texmes* t;
@@ -226,12 +226,12 @@ void texmesManager::texmesProc(void)
 
 	t = _texmes;
 	for (i = 0; i < _maxtexmes; i++) {
-		if (t->flag) {							// ãƒ¡ãƒƒã‚»ãƒ¼ã‚¸ãƒ†ã‚¯ã‚¹ãƒãƒ£ã ã£ãŸæ™‚
+		if (t->flag) {							// ƒƒbƒZ[ƒWƒeƒNƒXƒ`ƒƒ‚¾‚Á‚½
 			if (t->life > 0) {
-				t->life--;						// ã‚­ãƒ£ãƒƒã‚·ãƒ¥ã®ãƒ©ã‚¤ãƒ•ã‚’æ¸›ã‚‰ã™
+				t->life--;						// ƒLƒƒƒbƒVƒ…‚Ìƒ‰ƒCƒt‚ğŒ¸‚ç‚·
 			}
 			else {
-				t->clear();						// ãƒ†ã‚¯ã‚¹ãƒãƒ£ã®ã‚¨ãƒ³ãƒˆãƒªã‚’ç ´æ£„ã™ã‚‹
+				t->clear();						// ƒeƒNƒXƒ`ƒƒ‚ÌƒGƒ“ƒgƒŠ‚ğ”jŠü‚·‚é
 			}
 		}
 		t++;
@@ -241,25 +241,25 @@ void texmesManager::texmesProc(void)
 
 int texmesManager::texmesGetCache(char* msg, short mycache)
 {
-	//		ã‚­ãƒ£ãƒƒã‚·ãƒ¥æ¸ˆã¿ã®æ–‡å­—åˆ—ãŒã‚ã‚Œã°idã‚’è¿”ã™
-	//		(å­˜åœ¨ã—ãªã„å ´åˆã¯-1)
+	//		ƒLƒƒƒbƒVƒ…Ï‚İ‚Ì•¶š—ñ‚ª‚ ‚ê‚Îid‚ğ•Ô‚·
+	//		(‘¶İ‚µ‚È‚¢ê‡‚Í-1)
 	//
 	int i;
 	texmes* t;
 	t = _texmes;
 	for (i = 0; i < _maxtexmes; i++) {
-		if (t->flag) {							// ä½¿ç”¨ä¸­ã ã£ãŸæ™‚
-			if (t->hash == mycache) {			// ã¾ãšãƒãƒƒã‚·ãƒ¥ã‚’æ¯”ã¹ã‚‹
-				if (t->font_size == _fontsize && t->font_style == _fontstyle) {	// ã‚µã‚¤ã‚ºãƒ»ã‚¹ã‚¿ã‚¤ãƒ«ã‚’æ¯”ã¹ã‚‹
+		if (t->flag) {							// g—p’†‚¾‚Á‚½
+			if (t->hash == mycache) {			// ‚Ü‚¸ƒnƒbƒVƒ…‚ğ”ä‚×‚é
+				if (t->font_size == _fontsize && t->font_style == _fontstyle) {	// ƒTƒCƒYEƒXƒ^ƒCƒ‹‚ğ”ä‚×‚é
 					if (t->text) {
 						if (strcmp(msg, t->text) == 0) {
-							t->life = TEXMES_CACHE_DEFAULT;			// ã‚­ãƒ£ãƒƒã‚·ãƒ¥ã‚’ä¿æŒ
+							t->life = TEXMES_CACHE_DEFAULT;			// ƒLƒƒƒbƒVƒ…‚ğ•Û
 							return i;
 						}
 					}
 					else {
 						if (strcmp(msg, t->buf) == 0) {
-							t->life = TEXMES_CACHE_DEFAULT;			// ã‚­ãƒ£ãƒƒã‚·ãƒ¥ã‚’ä¿æŒ
+							t->life = TEXMES_CACHE_DEFAULT;			// ƒLƒƒƒbƒVƒ…‚ğ•Û
 							return i;
 						}
 					}
@@ -293,8 +293,8 @@ texmes* texmesManager::texmesUpdateLife(int id)
 
 int texmesManager::str2hash(char* msg, int* out_len)
 {
-	//		æ–‡å­—åˆ—ã®ç°¡æ˜“ãƒãƒƒã‚·ãƒ¥ã‚’å¾—ã‚‹
-	//		åŒæ™‚ã«out_lenã«æ–‡å­—åˆ—é•·ã‚’è¿”ã™
+	//		•¶š—ñ‚ÌŠÈˆÕƒnƒbƒVƒ…‚ğ“¾‚é
+	//		“¯‚Éout_len‚É•¶š—ñ’·‚ğ•Ô‚·
 	//
 	int len;
 	short cache;
@@ -303,14 +303,14 @@ int texmesManager::str2hash(char* msg, int* out_len)
 	p = (unsigned char*)msg;
 	len = 0;
 	a1 = *p;
-	cache = ((short)a1) << 8;		// å…ˆé ­ã®æ–‡å­—ã‚³ãƒ¼ãƒ‰ã‚’ä¸Šä½8bitã«ã™ã‚‹
+	cache = ((short)a1) << 8;		// æ“ª‚Ì•¶šƒR[ƒh‚ğãˆÊ8bit‚É‚·‚é
 	while (1) {
 		if (a1 == 0) break;
 		a1 = *p++;
 		len++;
 	}
 	*out_len = len;
-	if (len > 0) {			// çµ‚ç«¯ã®æ–‡å­—ã‚³ãƒ¼ãƒ‰ã‚’ä¸‹ä½8bitã«ã™ã‚‹
+	if (len > 0) {			// I’[‚Ì•¶šƒR[ƒh‚ğ‰ºˆÊ8bit‚É‚·‚é
 		p--;
 		cache += (short)*p;
 	}
@@ -330,9 +330,9 @@ int texmesManager::Get2N(int val)
 
 int texmesManager::texmesRegist(char* msg, texmesPos *info)
 {
-	//		ã‚­ãƒ£ãƒƒã‚·ãƒ¥æ¸ˆã¿ã®ãƒ†ã‚¯ã‚¹ãƒãƒ£IDã‚’è¿”ã™(texmesIDã‚’è¿”ã™)
-	//		(ä½œæˆã•ã‚Œã¦ã„ãªã„ãƒ¡ãƒƒã‚»ãƒ¼ã‚¸ãƒ†ã‚¯ã‚¹ãƒãƒ£ã¯è‡ªå‹•çš„ã«ä½œæˆã™ã‚‹)
-	//		(ä½œæˆã®å¿…è¦ãŒãªã„å ´åˆã¯-1ã‚’è¿”ã™)
+	//		ƒLƒƒƒbƒVƒ…Ï‚İ‚ÌƒeƒNƒXƒ`ƒƒID‚ğ•Ô‚·(texmesID‚ğ•Ô‚·)
+	//		(ì¬‚³‚ê‚Ä‚¢‚È‚¢ƒƒbƒZ[ƒWƒeƒNƒXƒ`ƒƒ‚Í©“®“I‚Éì¬‚·‚é)
+	//		(ì¬‚Ì•K—v‚ª‚È‚¢ê‡‚Í-1‚ğ•Ô‚·)
 	//
 	int mylen;
 	int mycache;
@@ -341,7 +341,7 @@ int texmesManager::texmesRegist(char* msg, texmesPos *info)
 	int tsx, tsy, sx, sy;
 	texmes* tex;
 
-	mycache = str2hash(msg, &mylen);			// ã‚­ãƒ£ãƒƒã‚·ãƒ¥ã‚’å–å¾—
+	mycache = str2hash(msg, &mylen);			// ƒLƒƒƒbƒVƒ…‚ğæ“¾
 	if (mylen <= 0) return -1;
 
 	texid = texmesGetCache(msg, mycache);
@@ -349,14 +349,14 @@ int texmesManager::texmesRegist(char* msg, texmesPos *info)
 		tex = texmesGet(texid);
 		_area_px = tex->sx;
 		_area_py = tex->sy;
-		return texid;							// ã‚­ãƒ£ãƒƒã‚·ãƒ¥ãŒã‚ã£ãŸ
+		return texid;							// ƒLƒƒƒbƒVƒ…‚ª‚ ‚Á‚½
 	}
 
-	//		ãƒ“ãƒƒãƒˆãƒãƒƒãƒ—ã‚’ä½œæˆ
+	//		ƒrƒbƒgƒ}ƒbƒv‚ğì¬
 	pImg = texmesGetFont(msg, &sx, &sy, &tsx, &tsy, info);
 	if (pImg == NULL) return -1;
 
-	//		ã‚­ãƒ£ãƒƒã‚·ãƒ¥ãŒå­˜åœ¨ã—ãªã„ã®ã§ä½œæˆ
+	//		ƒLƒƒƒbƒVƒ…‚ª‘¶İ‚µ‚È‚¢‚Ì‚Åì¬
 	tex = addTexmes();
 	if (tex == NULL) return -1;
 
@@ -411,7 +411,7 @@ unsigned char* texmesManager::texmesGetFont(char* msg, int* out_sx, int* out_sy,
 
 void texmesManager::setFont(char* fontname, int size, int style)
 {
-	// ãƒ•ã‚©ãƒ³ãƒˆè¨­å®š
+	// ƒtƒHƒ“ƒgİ’è
 	//
 	if ((_fontsize == size)&&(_fontstyle == style)) {
 		if ( strcmp(_fontname.c_str(), fontname )==0 ) {

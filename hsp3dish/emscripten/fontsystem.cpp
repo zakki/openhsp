@@ -121,21 +121,21 @@ extern SDL_Window *window;
 
 #ifdef HSPWIN
 
-static		HWND master_wnd;	// è¡¨ç¤ºå¯¾è±¡Window
+static		HWND master_wnd;	// •\Ž¦‘ÎÛWindow
 
-static		HFONT htexfont = NULL;	// TEXTUREç”¨ã®ãƒ•ã‚©ãƒ³ãƒˆ
-static		HFONT htexfont_old;		// TEXTUREç”¨ã®ãƒ•ã‚©ãƒ³ãƒˆ(ä¿å­˜ç”¨)
+static		HFONT htexfont = NULL;	// TEXTURE—p‚ÌƒtƒHƒ“ƒg
+static		HFONT htexfont_old;		// TEXTURE—p‚ÌƒtƒHƒ“ƒg(•Û‘¶—p)
 static		HDC htexdc;				// Device Context
-static		int drawsx, drawsy;		// æç”»ã‚µã‚¤ã‚º
-static		int fontsystem_sx;		// æ¨ªã®ã‚µã‚¤ã‚º
-static		int fontsystem_sy;		// ç¸¦ã®ã‚µã‚¤ã‚º
-static		int fontsystem_space;	// spaceã®æ¨ªã‚µã‚¤ã‚º
-static		int fontsystem_zspace;	// å…¨è§’spaceã®æ¨ªã‚µã‚¤ã‚º
+static		int drawsx, drawsy;		// •`‰æƒTƒCƒY
+static		int fontsystem_sx;		// ‰¡‚ÌƒTƒCƒY
+static		int fontsystem_sy;		// c‚ÌƒTƒCƒY
+static		int fontsystem_space;	// space‚Ì‰¡ƒTƒCƒY
+static		int fontsystem_zspace;	// ‘SŠpspace‚Ì‰¡ƒTƒCƒY
 static		TEXTMETRIC tm;
-static		bool tbl_init = false;	// AlphaTblåˆæœŸåŒ–ãƒ•ãƒ©ã‚°
-static		BYTE lpFont[0x10000];	// ãƒ•ã‚©ãƒ³ãƒˆå–å¾—ç”¨ã®ãƒ¯ãƒ¼ã‚¯
+static		bool tbl_init = false;	// AlphaTbl‰Šú‰»ƒtƒ‰ƒO
+static		BYTE lpFont[0x10000];	// ƒtƒHƒ“ƒgŽæ“¾—p‚Ìƒ[ƒN
 static		DWORD AlphaTbl[34];
-static		char *def_zspace = "ã€€";
+static		char *def_zspace = "@";
 static		int fontsystem_size;
 static		int fontsystem_style;
 
@@ -147,11 +147,11 @@ void hgio_fontsystem_win32_init(HWND wnd)
 
 long hgio_fontsystem_getcode(unsigned char* pt)
 {
-	//		æ–‡å­—ã‚³ãƒ¼ãƒ‰ã‚’è¿”ã™(SJIS)
+	//		•¶ŽšƒR[ƒh‚ð•Ô‚·(SJIS)
 	unsigned char a1 = *pt;
 
-	//		å…¨è§’ãƒã‚§ãƒƒã‚¯
-	if (a1 >= 129) {					// å…¨è§’æ–‡å­—ãƒã‚§ãƒƒã‚¯
+	//		‘SŠpƒ`ƒFƒbƒN
+	if (a1 >= 129) {					// ‘SŠp•¶Žšƒ`ƒFƒbƒN
 		if ((a1 <= 159) || (a1 >= 224)) {
 			long i = (long)a1;
 			return (i << 8) + (long)pt[1];
@@ -162,7 +162,7 @@ long hgio_fontsystem_getcode(unsigned char* pt)
 
 void hgio_fontsystem_term(void)
 {
-	//		ãƒ•ã‚©ãƒ³ãƒˆãƒ¬ãƒ³ãƒ€ãƒªãƒ³ã‚°è§£æ”¾
+	//		ƒtƒHƒ“ƒgƒŒƒ“ƒ_ƒŠƒ“ƒO‰ð•ú
 	//
 	if (htexfont == NULL) return;
 
@@ -175,7 +175,7 @@ void hgio_fontsystem_term(void)
 
 void hgio_fontsystem_init(char* fontname, int size, int style)
 {
-	//		ãƒ•ã‚©ãƒ³ãƒˆãƒ¬ãƒ³ãƒ€ãƒªãƒ³ã‚°åˆæœŸåŒ–
+	//		ƒtƒHƒ“ƒgƒŒƒ“ƒ_ƒŠƒ“ƒO‰Šú‰»
 	//
 	hgio_fontsystem_term();
 
@@ -189,20 +189,20 @@ void hgio_fontsystem_init(char* fontname, int size, int style)
 			fw = FW_BOLD;
 		}
 		htexfont = CreateFont(
-			size,						// ãƒ•ã‚©ãƒ³ãƒˆé«˜ã•
-			0,							// æ–‡å­—å¹…
-			0,							// ãƒ†ã‚­ã‚¹ãƒˆã®è§’åº¦
-			0,							// ãƒ™ãƒ¼ã‚¹ãƒ©ã‚¤ãƒ³ã¨ï½˜è»¸ã¨ã®è§’åº¦
-			fw,							// ãƒ•ã‚©ãƒ³ãƒˆã®é‡ã•ï¼ˆå¤ªã•ï¼‰
-			((style & 2) != 0),			// ã‚¤ã‚¿ãƒªãƒƒã‚¯ä½“
-			((style & 4) != 0),			// ã‚¢ãƒ³ãƒ€ãƒ¼ãƒ©ã‚¤ãƒ³
-			((style & 8) != 0),			// æ‰“ã¡æ¶ˆã—ç·š
-			DEFAULT_CHARSET,			// æ–‡å­—ã‚»ãƒƒãƒˆ
-			OUT_TT_PRECIS,				// å‡ºåŠ›ç²¾åº¦
-			CLIP_DEFAULT_PRECIS,		// ã‚¯ãƒªãƒƒãƒ”ãƒ³ã‚°ç²¾åº¦
-			PROOF_QUALITY,				// å‡ºåŠ›å“è³ª
-			DEFAULT_PITCH | FF_MODERN,	// ãƒ”ãƒƒãƒã¨ãƒ•ã‚¡ãƒŸãƒªãƒ¼
-			fontname					// æ›¸ä½“å
+			size,						// ƒtƒHƒ“ƒg‚‚³
+			0,							// •¶Žš•
+			0,							// ƒeƒLƒXƒg‚ÌŠp“x
+			0,							// ƒx[ƒXƒ‰ƒCƒ“‚Æ‚˜Ž²‚Æ‚ÌŠp“x
+			fw,							// ƒtƒHƒ“ƒg‚Ìd‚³i‘¾‚³j
+			((style & 2) != 0),			// ƒCƒ^ƒŠƒbƒN‘Ì
+			((style & 4) != 0),			// ƒAƒ“ƒ_[ƒ‰ƒCƒ“
+			((style & 8) != 0),			// ‘Å‚¿Á‚µü
+			DEFAULT_CHARSET,			// •¶ŽšƒZƒbƒg
+			OUT_TT_PRECIS,				// o—Í¸“x
+			CLIP_DEFAULT_PRECIS,		// ƒNƒŠƒbƒsƒ“ƒO¸“x
+			PROOF_QUALITY,				// o—Í•iŽ¿
+			DEFAULT_PITCH | FF_MODERN,	// ƒsƒbƒ`‚Æƒtƒ@ƒ~ƒŠ[
+			fontname					// ‘‘Ì–¼
 		);
 		fontsystem_size = size;
 		fontsystem_style = style;
@@ -234,7 +234,7 @@ void hgio_fontsystem_init(char* fontname, int size, int style)
 
 int hgio_fontsystem_execsub(long code, unsigned char* buffer, int pitch, int offsetx)
 {
-	//		ãƒ•ã‚©ãƒ³ãƒˆãƒãƒƒãƒ•ã‚¡å–å¾—
+	//		ƒtƒHƒ“ƒgƒoƒbƒtƒ@Žæ“¾
 	MAT2 mat;
 	DWORD Size;
 	GLYPHMETRICS gm;
@@ -259,34 +259,34 @@ int hgio_fontsystem_execsub(long code, unsigned char* buffer, int pitch, int off
 
 
 	if (fontsystem_style & 16) {
-		// ãƒãƒƒãƒ•ã‚¡ã‚µã‚¤ã‚ºå—ä¿¡
+		// ƒoƒbƒtƒ@ƒTƒCƒYŽóM
 		Size = GetGlyphOutline(htexdc, code, GGO_GRAY4_BITMAP, pgm, 0, NULL, &mat);
-		// ãƒãƒƒãƒ•ã‚¡å–å¾—
+		// ƒoƒbƒtƒ@Žæ“¾
 		GetGlyphOutline(htexdc, code, GGO_GRAY4_BITMAP, pgm, Size, lpFont, &mat);
 	}
 	else {
-		// ãƒãƒƒãƒ•ã‚¡ã‚µã‚¤ã‚ºå—ä¿¡
+		// ƒoƒbƒtƒ@ƒTƒCƒYŽóM
 		Size = GetGlyphOutline(htexdc, code, GGO_BITMAP, pgm, 0, NULL, &mat);
-		// ãƒãƒƒãƒ•ã‚¡å–å¾—
+		// ƒoƒbƒtƒ@Žæ“¾
 		GetGlyphOutline(htexdc, code, GGO_BITMAP, pgm, Size, lpFont, &mat);
 	}
 
-	// ãƒ•ã‚©ãƒ³ãƒˆãƒ”ãƒƒãƒ
+	// ƒtƒHƒ“ƒgƒsƒbƒ`
 	DWORD fontPitch = (Size / gm.gmBlackBoxY) & ~0x03;
 
-	// ã‚µã‚¤ã‚ºå–å¾—
+	// ƒTƒCƒYŽæ“¾
 	width = (int)gm.gmBlackBoxX;
 	height = (int)gm.gmBlackBoxY;
 	//Alertf("%d[%d,%d] +%d", code,width,height,pitch);
 
-	// æç”»ä½ç½®ã‚’é€²ã‚ã‚‹é‡
+	// •`‰æˆÊ’u‚ði‚ß‚é—Ê
 	px = gm.gmCellIncX;
 	ybase = tm.tmAscent - gm.gmptGlyphOrigin.y;
 
 	LPDWORD p1 = (LPDWORD)buffer;
 	LPBYTE p2 = lpFont;
 
-	// è»¢é€å…ˆã®ã‚µãƒ¼ãƒ•ã‚§ã‚¤ã‚¹ã®å§‹ç‚¹
+	// “]‘—æ‚ÌƒT[ƒtƒFƒCƒX‚ÌŽn“_
 	p1 += (offsetx + gm.gmptGlyphOrigin.x) + (ybase * pitch);
 
 	if (fontsystem_style & 16) {
@@ -336,8 +336,8 @@ int hgio_fontsystem_execsub(long code, unsigned char* buffer, int pitch, int off
 
 int hgio_fontsystem_exec(char* msg, unsigned char* buffer, int pitch, int* out_sx, int* out_sy, texmesPos *info)
 {
-	//		msgã®æ–‡å­—åˆ—ã‚’ãƒ†ã‚¯ã‚¹ãƒãƒ£ãƒãƒƒãƒ•ã‚¡ã«ãƒ¬ãƒ³ãƒ€ãƒªãƒ³ã‚°ã™ã‚‹
-	//		(bufferãŒNULLã®å ´åˆã¯ã‚µã‚¤ã‚ºã ã‘ã‚’å–å¾—ã™ã‚‹)
+	//		msg‚Ì•¶Žš—ñ‚ðƒeƒNƒXƒ`ƒƒƒoƒbƒtƒ@‚ÉƒŒƒ“ƒ_ƒŠƒ“ƒO‚·‚é
+	//		(buffer‚ªNULL‚Ìê‡‚ÍƒTƒCƒY‚¾‚¯‚ðŽæ“¾‚·‚é)
 	//
 	if (htexfont == NULL) return -1;
 
@@ -352,9 +352,9 @@ int hgio_fontsystem_exec(char* msg, unsigned char* buffer, int pitch, int* out_s
 		if (a1 == 0) break;
 		if (a1 < 32) continue;
 
-		//		å…¨è§’ãƒã‚§ãƒƒã‚¯
+		//		‘SŠpƒ`ƒFƒbƒN
 		code = (long)a1;
-		if (a1 >= 129) {					// å…¨è§’æ–‡å­—ãƒã‚§ãƒƒã‚¯
+		if (a1 >= 129) {					// ‘SŠp•¶Žšƒ`ƒFƒbƒN
 			if ((a1 <= 159) || (a1 >= 224)) {
 				long i = (long)a1;
 				code = (i << 8) + (long)*p;
@@ -398,14 +398,14 @@ static	char fontpath[HSP_MAX_PATH+1];
 static	TTF_Font *font = NULL;
 static	int font_defsize;
 static	SDL_Surface *sdlsurf;
-static	int fontsystem_sx;		// æ¨ªã®ã‚µã‚¤ã‚º
-static	int fontsystem_sy;		// ç¸¦ã®ã‚µã‚¤ã‚º
+static	int fontsystem_sx;		// ‰¡‚ÌƒTƒCƒY
+static	int fontsystem_sy;		// c‚ÌƒTƒCƒY
 static	int fontsystem_size;
 static	int fontsystem_style;
 
 int GetMultibyteCharacter(unsigned char *text)
 {
-	//		ãƒžãƒ«ãƒãƒã‚¤ãƒˆæ–‡å­—ã®ã‚µã‚¤ã‚ºã‚’å¾—ã‚‹
+	//		ƒ}ƒ‹ƒ`ƒoƒCƒg•¶Žš‚ÌƒTƒCƒY‚ð“¾‚é
 	//
 	const unsigned char *p = text;
 	unsigned char a1;
@@ -413,7 +413,7 @@ int GetMultibyteCharacter(unsigned char *text)
 
 	a1 = *p;
 
-	if (a1 & 0x80) {				// å…¨è§’æ–‡å­—ãƒã‚§ãƒƒã‚¯(UTF8)
+	if (a1 & 0x80) {				// ‘SŠp•¶Žšƒ`ƒFƒbƒN(UTF8)
 		int utf8bytes = 0;
 		if ((a1 & 0xe0) == 0x0c0) utf8bytes = 1;
 		if ((a1 & 0xf0) == 0x0e0) utf8bytes = 2;
@@ -458,7 +458,7 @@ int TexFontInit( char *path, int size )
 
 void hgio_fontsystem_term(void)
 {
-	//		ãƒ•ã‚©ãƒ³ãƒˆãƒ¬ãƒ³ãƒ€ãƒªãƒ³ã‚°è§£æ”¾
+	//		ƒtƒHƒ“ƒgƒŒƒ“ƒ_ƒŠƒ“ƒO‰ð•ú
 	//
 	if (fontsystem_flag) {
 		fontsystem_flag = 0;
@@ -468,7 +468,7 @@ void hgio_fontsystem_term(void)
 
 void hgio_fontsystem_init(char* fontname, int size, int style)
 {
-	//		ãƒ•ã‚©ãƒ³ãƒˆãƒ¬ãƒ³ãƒ€ãƒªãƒ³ã‚°åˆæœŸåŒ–
+	//		ƒtƒHƒ“ƒgƒŒƒ“ƒ_ƒŠƒ“ƒO‰Šú‰»
 	//
 	TexFontInit("",size);
 	fontsystem_flag = 1;
@@ -509,7 +509,7 @@ int hgio_fontsystem_exec_pos(char* msg, texmesPos *info)
 		}
 		code[i] = 0;
 
-		// UTF8->UTF32ã«å¤‰æ›
+		// UTF8->UTF32‚É•ÏŠ·
 		switch(i) {
 		case 2:
 			c = ((int)(code[0] & 0x1f))<<6;
@@ -546,8 +546,8 @@ int hgio_fontsystem_exec_pos(char* msg, texmesPos *info)
 
 int hgio_fontsystem_exec(char* msg, unsigned char* buffer, int pitch, int* out_sx, int* out_sy, texmesPos *info)
 {
-	//		msgã®æ–‡å­—åˆ—ã‚’ãƒ†ã‚¯ã‚¹ãƒãƒ£ãƒãƒƒãƒ•ã‚¡ã«ãƒ¬ãƒ³ãƒ€ãƒªãƒ³ã‚°ã™ã‚‹
-	//		(bufferãŒNULLã®å ´åˆã¯ã‚µã‚¤ã‚ºã ã‘ã‚’å–å¾—ã™ã‚‹)
+	//		msg‚Ì•¶Žš—ñ‚ðƒeƒNƒXƒ`ƒƒƒoƒbƒtƒ@‚ÉƒŒƒ“ƒ_ƒŠƒ“ƒO‚·‚é
+	//		(buffer‚ªNULL‚Ìê‡‚ÍƒTƒCƒY‚¾‚¯‚ðŽæ“¾‚·‚é)
 	//
 
 	if (buffer == NULL) {
@@ -597,7 +597,7 @@ int hgio_fontsystem_exec(char* msg, unsigned char* buffer, int pitch, int* out_s
 			}
 			p1 += pitch * sizeof(int);
 		}
-	} else {			// alphaãªã—
+	} else {			// alpha‚È‚µ
 		int sx = sdlsurf->pitch / colors;
 		for (int y = 0; y < fontsystem_sy; y++)
 		{
@@ -629,8 +629,8 @@ int hgio_fontsystem_exec(char* msg, unsigned char* buffer, int pitch, int* out_s
 
 #if defined(HSPNDK)
 static	int fontsystem_flag = 0;
-static	int fontsystem_sx;		// æ¨ªã®ã‚µã‚¤ã‚º
-static	int fontsystem_sy;		// ç¸¦ã®ã‚µã‚¤ã‚º
+static	int fontsystem_sx;		// ‰¡‚ÌƒTƒCƒY
+static	int fontsystem_sy;		// c‚ÌƒTƒCƒY
 static	unsigned char *fontdata_pix;
 static	int fontdata_size;
 static	int fontdata_color;
@@ -640,7 +640,7 @@ static	int fontsystem_style;
 
 void hgio_fontsystem_term(void)
 {
-	//		ãƒ•ã‚©ãƒ³ãƒˆãƒ¬ãƒ³ãƒ€ãƒªãƒ³ã‚°è§£æ”¾
+	//		ƒtƒHƒ“ƒgƒŒƒ“ƒ_ƒŠƒ“ƒO‰ð•ú
 	//
 	if (fontsystem_flag) {
 		fontsystem_flag = 0;
@@ -649,7 +649,7 @@ void hgio_fontsystem_term(void)
 
 void hgio_fontsystem_init(char* fontname, int size, int style)
 {
-	//		ãƒ•ã‚©ãƒ³ãƒˆãƒ¬ãƒ³ãƒ€ãƒªãƒ³ã‚°åˆæœŸåŒ–
+	//		ƒtƒHƒ“ƒgƒŒƒ“ƒ_ƒŠƒ“ƒO‰Šú‰»
 	//
 	hgio_fontsystem_term();
 	fontsystem_flag = 1;
@@ -659,8 +659,8 @@ void hgio_fontsystem_init(char* fontname, int size, int style)
 
 int hgio_fontsystem_exec(char* msg, unsigned char* buffer, int pitch, int* out_sx, int* out_sy, texmesPos *info)
 {
-	//		msgã®æ–‡å­—åˆ—ã‚’ãƒ†ã‚¯ã‚¹ãƒãƒ£ãƒãƒƒãƒ•ã‚¡ã«ãƒ¬ãƒ³ãƒ€ãƒªãƒ³ã‚°ã™ã‚‹
-	//		(bufferãŒNULLã®å ´åˆã¯ã‚µã‚¤ã‚ºã ã‘ã‚’å–å¾—ã™ã‚‹)
+	//		msg‚Ì•¶Žš—ñ‚ðƒeƒNƒXƒ`ƒƒƒoƒbƒtƒ@‚ÉƒŒƒ“ƒ_ƒŠƒ“ƒO‚·‚é
+	//		(buffer‚ªNULL‚Ìê‡‚ÍƒTƒCƒY‚¾‚¯‚ðŽæ“¾‚·‚é)
 	//
 
 	if (buffer == NULL) {
@@ -746,8 +746,8 @@ int hgio_fontsystem_exec(char* msg, unsigned char* buffer, int pitch, int* out_s
 #if defined(HSPEMSCRIPTEN)
 #ifndef USE_TTFFONT
 static	int fontsystem_flag = 0;
-static	int fontsystem_sx;		// æ¨ªã®ã‚µã‚¤ã‚º
-static	int fontsystem_sy;		// ç¸¦ã®ã‚µã‚¤ã‚º
+static	int fontsystem_sx;		// ‰¡‚ÌƒTƒCƒY
+static	int fontsystem_sy;		// c‚ÌƒTƒCƒY
 static	unsigned char *fontdata_pix;
 static	int fontdata_size;
 static	int fontdata_color;
@@ -772,7 +772,7 @@ int hgio_fontsystem_get_texid(void)
 
 void hgio_fontsystem_term(void)
 {
-	//		ãƒ•ã‚©ãƒ³ãƒˆãƒ¬ãƒ³ãƒ€ãƒªãƒ³ã‚°è§£æ”¾
+	//		ƒtƒHƒ“ƒgƒŒƒ“ƒ_ƒŠƒ“ƒO‰ð•ú
 	//
 	if (fontsystem_flag) {
 		fontsystem_flag = 0;
@@ -781,7 +781,7 @@ void hgio_fontsystem_term(void)
 
 void hgio_fontsystem_init(char* fontname, int size, int style)
 {
-	//		ãƒ•ã‚©ãƒ³ãƒˆãƒ¬ãƒ³ãƒ€ãƒªãƒ³ã‚°åˆæœŸåŒ–
+	//		ƒtƒHƒ“ƒgƒŒƒ“ƒ_ƒŠƒ“ƒO‰Šú‰»
 	//
 	hgio_fontsystem_term();
 	fontsystem_flag = 1;
@@ -791,8 +791,8 @@ void hgio_fontsystem_init(char* fontname, int size, int style)
 
 int hgio_fontsystem_exec(char* msg, unsigned char* buffer, int pitch, int* out_sx, int* out_sy, texmesPos *info)
 {
-	//		msgã®æ–‡å­—åˆ—ã‚’ãƒ†ã‚¯ã‚¹ãƒãƒ£ãƒãƒƒãƒ•ã‚¡ã«ãƒ¬ãƒ³ãƒ€ãƒªãƒ³ã‚°ã™ã‚‹
-	//		(bufferãŒNULLã®å ´åˆã¯ã‚µã‚¤ã‚ºã ã‘ã‚’å–å¾—ã™ã‚‹)
+	//		msg‚Ì•¶Žš—ñ‚ðƒeƒNƒXƒ`ƒƒƒoƒbƒtƒ@‚ÉƒŒƒ“ƒ_ƒŠƒ“ƒO‚·‚é
+	//		(buffer‚ªNULL‚Ìê‡‚ÍƒTƒCƒY‚¾‚¯‚ðŽæ“¾‚·‚é)
 	//
 
 	if (buffer == NULL) {
@@ -914,15 +914,15 @@ int hgio_fontsystem_exec(char* msg, unsigned char* buffer, int pitch, int* out_s
 /*-------------------------------------------------------------------------------*/
 
 #ifdef HSPIOS
-static	int fontsystem_sx;		// æ¨ªã®ã‚µã‚¤ã‚º
-static	int fontsystem_sy;		// ç¸¦ã®ã‚µã‚¤ã‚º
+static	int fontsystem_sx;		// ‰¡‚ÌƒTƒCƒY
+static	int fontsystem_sy;		// c‚ÌƒTƒCƒY
 static	int fontsystem_flag = 0;
 static	int fontsystem_size;
 static	int fontsystem_style;
 
 void hgio_fontsystem_term(void)
 {
-	//		ãƒ•ã‚©ãƒ³ãƒˆãƒ¬ãƒ³ãƒ€ãƒªãƒ³ã‚°è§£æ”¾
+	//		ƒtƒHƒ“ƒgƒŒƒ“ƒ_ƒŠƒ“ƒO‰ð•ú
 	//
 	if (fontsystem_flag) {
 		fontsystem_flag = 0;
@@ -931,7 +931,7 @@ void hgio_fontsystem_term(void)
 
 void hgio_fontsystem_init(char* fontname, int size, int style)
 {
-	//		ãƒ•ã‚©ãƒ³ãƒˆãƒ¬ãƒ³ãƒ€ãƒªãƒ³ã‚°åˆæœŸåŒ–
+	//		ƒtƒHƒ“ƒgƒŒƒ“ƒ_ƒŠƒ“ƒO‰Šú‰»
 	//
 	hgio_fontsystem_term();
 	fontsystem_flag = 1;
@@ -941,8 +941,8 @@ void hgio_fontsystem_init(char* fontname, int size, int style)
 
 int hgio_fontsystem_exec(char* msg, unsigned char* buffer, int pitch, int* out_sx, int* out_sy, texmesPos *info)
 {
-	//		msgã®æ–‡å­—åˆ—ã‚’ãƒ†ã‚¯ã‚¹ãƒãƒ£ãƒãƒƒãƒ•ã‚¡ã«ãƒ¬ãƒ³ãƒ€ãƒªãƒ³ã‚°ã™ã‚‹
-	//		(bufferãŒNULLã®å ´åˆã¯ã‚µã‚¤ã‚ºã ã‘ã‚’å–å¾—ã™ã‚‹)
+	//		msg‚Ì•¶Žš—ñ‚ðƒeƒNƒXƒ`ƒƒƒoƒbƒtƒ@‚ÉƒŒƒ“ƒ_ƒŠƒ“ƒO‚·‚é
+	//		(buffer‚ªNULL‚Ìê‡‚ÍƒTƒCƒY‚¾‚¯‚ðŽæ“¾‚·‚é)
 	//
 
 	if (buffer == NULL) {

@@ -126,7 +126,7 @@ static		HSPREAL infoval[GINFO_EXINFO_MAX];
 #define DEFAULT_FONT_SIZE 14
 #define DEFAULT_FONT_STYLE 0
 
-//è‰²
+//F
 typedef struct{
     GLfloat r;
     GLfloat g;
@@ -137,20 +137,20 @@ typedef struct{
 static float linebasex, linebasey;
 
 
-//ãƒ†ã‚¯ã‚¹ãƒãƒ£é ‚ç‚¹æƒ…å ±
+//ƒeƒNƒXƒ`ƒƒ’¸“_î•ñ
 static GLfloat panelVertices[8]={
-     0,  0, //å·¦ä¸Š
-     0, -1, //å·¦ä¸‹
-     1,  0, //å³ä¸Š
-     1, -1, //å³ä¸‹
+     0,  0, //¶ã
+     0, -1, //¶‰º
+     1,  0, //‰Eã
+     1, -1, //‰E‰º
 };
 
-//ãƒ†ã‚¯ã‚¹ãƒãƒ£UVæƒ…å ±
+//ƒeƒNƒXƒ`ƒƒUVî•ñ
 static const GLfloat panelUVs[8]={
-    0.0f, 0.0f, //å·¦ä¸Š
-    0.0f, 1.0f, //å·¦ä¸‹
-    1.0f, 0.0f, //å³ä¸Š
-    1.0f, 1.0f, //å³ä¸‹
+    0.0f, 0.0f, //¶ã
+    0.0f, 1.0f, //¶‰º
+    1.0f, 0.0f, //‰Eã
+    1.0f, 1.0f, //‰E‰º
 };
 
 
@@ -160,26 +160,26 @@ static const GLfloat panelUVs[8]={
 #define RGBA2G(col) (FVAL_BYTE1 * ((col>> 8)&0xff))
 #define RGBA2B(col) (FVAL_BYTE1 * ((col    )&0xff))
 
-//	ã‚°ãƒ©ãƒ•ã‚£ãƒƒã‚¯ã‚¹è¨­å®š
-static int _bgsx, _bgsy;	//èƒŒæ™¯ã‚µã‚¤ã‚º
-static int _sizex, _sizey;	//åˆæœŸã‚µã‚¤ã‚º
-static Color _color;   	//è‰²
-static int   _flipMode;	//ãƒ•ãƒªãƒƒãƒ—
-static int   _originX; 	//åŸç‚¹X
-static int   _originY; 	//åŸç‚¹Y
-static GLint  _filter;	//ãƒ•ã‚£ãƒ«ã‚¿
+//	ƒOƒ‰ƒtƒBƒbƒNƒXİ’è
+static int _bgsx, _bgsy;	//”wŒiƒTƒCƒY
+static int _sizex, _sizey;	//‰ŠúƒTƒCƒY
+static Color _color;   	//F
+static int   _flipMode;	//ƒtƒŠƒbƒv
+static int   _originX; 	//Œ´“_X
+static int   _originY; 	//Œ´“_Y
+static GLint  _filter;	//ƒtƒBƒ‹ƒ^
 static float center_x, center_y;
-static float _scaleX;	// ã‚¹ã‚±ãƒ¼ãƒ«X
-static float _scaleY;	// ã‚¹ã‚±ãƒ¼ãƒ«Y
-static float _rateX;	// 1/ã‚¹ã‚±ãƒ¼ãƒ«X
-static float _rateY;	// 1/ã‚¹ã‚±ãƒ¼ãƒ«Y
+static float _scaleX;	// ƒXƒP[ƒ‹X
+static float _scaleY;	// ƒXƒP[ƒ‹Y
+static float _rateX;	// 1/ƒXƒP[ƒ‹X
+static float _rateY;	// 1/ƒXƒP[ƒ‹Y
 static int _uvfix;		// UVFix
 
 static int		drawflag;
 static engine	*appengine;
 static BMSCR    *mainbm = NULL;
 
-static		BMSCR *backbm;		// èƒŒæ™¯æ¶ˆå»ç”¨ã®BMSCR(null=NC)
+static		BMSCR *backbm;		// ”wŒiÁ‹—p‚ÌBMSCR(null=NC)
 
 static int		mouse_x;
 static int		mouse_y;
@@ -191,7 +191,7 @@ static	int  mes_sx, mes_sy;
 static	int  font_size;
 static	int  font_style;
 
-static		texmesManager tmes;	// ãƒ†ã‚­ã‚¹ãƒˆãƒ¡ãƒƒã‚»ãƒ¼ã‚¸ãƒãƒãƒ¼ã‚¸ãƒ£ãƒ¼
+static		texmesManager tmes;	// ƒeƒLƒXƒgƒƒbƒZ[ƒWƒ}ƒl[ƒWƒƒ[
 
 static GLfloat _line_colors[8];
 static GLfloat _panelColorsTex[16];
@@ -201,8 +201,8 @@ static	double  total_tick;
 static	CFAbsoluteTime  lastTime;
 #endif
 
-static		MATRIX mat_proj;	// ãƒ—ãƒ­ã‚¸ã‚§ã‚¯ã‚·ãƒ§ãƒ³ãƒãƒˆãƒªã‚¯ã‚¹
-static		MATRIX mat_unproj;	// ãƒ—ãƒ­ã‚¸ã‚§ã‚¯ã‚·ãƒ§ãƒ³é€†å¤‰æ›ãƒãƒˆãƒªã‚¯ã‚¹
+static		MATRIX mat_proj;	// ƒvƒƒWƒFƒNƒVƒ‡ƒ“ƒ}ƒgƒŠƒNƒX
+static		MATRIX mat_unproj;	// ƒvƒƒWƒFƒNƒVƒ‡ƒ“‹t•ÏŠ·ƒ}ƒgƒŠƒNƒX
 
 /*------------------------------------------------------------*/
 /*
@@ -210,20 +210,20 @@ static		MATRIX mat_unproj;	// ãƒ—ãƒ­ã‚¸ã‚§ã‚¯ã‚·ãƒ§ãƒ³é€†å¤‰æ›ãƒãƒˆãƒªã‚¯ã‚¹
 */
 /*------------------------------------------------------------*/
 
-//ãƒ†ã‚¯ã‚¹ãƒãƒ£é ‚ç‚¹æƒ…å ±
+//ƒeƒNƒXƒ`ƒƒ’¸“_î•ñ
 static GLfloat vertf2D[8]={
-    0,  0, //å·¦ä¸Š
-    0, -1, //å·¦ä¸‹
-    1,  0, //å³ä¸Š
-    1, -1, //å³ä¸‹
+    0,  0, //¶ã
+    0, -1, //¶‰º
+    1,  0, //‰Eã
+    1, -1, //‰E‰º
 };
 
-//ãƒ†ã‚¯ã‚¹ãƒãƒ£UVæƒ…å ±
+//ƒeƒNƒXƒ`ƒƒUVî•ñ
 static GLfloat uvf2D[8]={
-    0.0f, 0.0f, //å·¦ä¸Š
-    0.0f, 1.0f, //å·¦ä¸‹
-    1.0f, 0.0f, //å³ä¸Š
-    1.0f, 1.0f, //å³ä¸‹
+    0.0f, 0.0f, //¶ã
+    0.0f, 1.0f, //¶‰º
+    1.0f, 0.0f, //‰Eã
+    1.0f, 1.0f, //‰E‰º
 };
 
 #if defined(HSPEMSCRIPTEN)
@@ -246,14 +246,14 @@ static void gluPerspective(double fovy, double aspect, double zNear, double zFar
 void hgio_init( int mode, int sx, int sy, void *hwnd )
 {
 #ifdef HSPIOS
-	gb_init();	//		IOS ã‚°ãƒ©ãƒ•ã‚£ãƒƒã‚¯åˆæœŸåŒ–
+	gb_init();	//		IOS ƒOƒ‰ƒtƒBƒbƒN‰Šú‰»
     gb_reset( sx, sy );
 #endif
     
-	//ãƒ†ã‚¯ã‚¹ãƒãƒ£åˆæœŸåŒ–
+	//ƒeƒNƒXƒ`ƒƒ‰Šú‰»
 	TexInit();
 
-	//èƒŒæ™¯ã‚µã‚¤ã‚º
+	//”wŒiƒTƒCƒY
 	_bgsx = sx;
 	_bgsy = sy;
 	_sizex = sx;
@@ -266,7 +266,7 @@ void hgio_init( int mode, int sx, int sy, void *hwnd )
 
 	GeometryInit();
 
-	//ã‚°ãƒ©ãƒ•ã‚£ãƒƒã‚¯ã‚¹è¨­å®š
+	//ƒOƒ‰ƒtƒBƒbƒNƒXİ’è
 	_flipMode = GRAPHICS_FLIP_NONE;
 	_originX = 0;
 	_originY = 0;
@@ -277,7 +277,7 @@ void hgio_init( int mode, int sx, int sy, void *hwnd )
 	appengine = (engine *)hwnd;
 	hgio_touch( 0,0,0 );
 
-	//		è¨­å®šã®åˆæœŸåŒ–
+	//		İ’è‚Ì‰Šú‰»
 	//
 	SetSysReq( SYSREQ_RESULT, 0 );
 	SetSysReq( SYSREQ_RESVMODE, 0 );
@@ -285,10 +285,10 @@ void hgio_init( int mode, int sx, int sy, void *hwnd )
 	SetSysReq( SYSREQ_CLSCOLOR, 0 );
 //	SetSysReq( SYSREQ_CLSCOLOR, 0xffffff );
 
-    //ã‚¯ãƒªã‚¢è‰²ã®è¨­å®š
+    //ƒNƒŠƒAF‚Ìİ’è
 	Alertf( "Init:HGIOScreen(%d,%d)",sx,sy );
 
-	//ãƒ•ã‚©ãƒ³ãƒˆæº–å‚™
+	//ƒtƒHƒ“ƒg€”õ
 #if defined(HSPNDK) || defined(HSPEMSCRIPTEN)
 	#ifdef USE_JAVA_FONT
 	//font_texid = MakeEmptyTex( FONT_TEX_SX, FONT_TEX_SY );
@@ -302,7 +302,7 @@ void hgio_init( int mode, int sx, int sy, void *hwnd )
 #if defined(HSPLINUX)
 	#ifdef USE_TTFFONT
 
-	//TTFåˆæœŸåŒ–
+	//TTF‰Šú‰»
 	char fontpath[HSP_MAX_PATH+1];
 	strcpy( fontpath, hsp3ext_getdir(1) );
 	strcat( fontpath, TTF_FONTFILE );
@@ -319,11 +319,11 @@ void hgio_init( int mode, int sx, int sy, void *hwnd )
 	#endif
 #endif
 
-	//		ãƒ†ã‚­ã‚¹ãƒˆã‚’åˆæœŸåŒ–
+	//		ƒeƒLƒXƒg‚ğ‰Šú‰»
 	//
 	tmes.texmesInit(SYSREQ_MESCACHE_MAX);
 
-	//		infovalã‚’ãƒªã‚»ãƒƒãƒˆ
+	//		infoval‚ğƒŠƒZƒbƒg
 	//
 	int i;
 	for(i=0;i<GINFO_EXINFO_MAX;i++) {
@@ -410,7 +410,7 @@ void hgio_uvfix( int mode )
 
 void hgio_reset( void )
 {
-    //æŠ•å½±å¤‰æ›
+    //“Š‰e•ÏŠ·
     glMatrixMode(GL_PROJECTION);
     glLoadIdentity();
 
@@ -430,7 +430,7 @@ void hgio_reset( void )
 //    glOrthof( 0, _bgsx * _scaleX, -_bgsy * _scaleY, 0,-100,100);
     //glTranslatef(engine->width/2,engine->height/2,0);
 
-    //ãƒ“ãƒ¥ãƒ¼ãƒãƒ¼ãƒˆå¤‰æ›
+    //ƒrƒ…[ƒ|[ƒg•ÏŠ·
 	_originX = ( _sizex - (ox * _scaleX) ) / 2;
 	_originY = ( _sizey - (oy * _scaleY) ) / 2;
 //    Alertf( "(%f,%f)(%d,%d)(%f,%f)",ox,oy,_originX, _originY, _scaleX,_scaleY );
@@ -439,7 +439,7 @@ void hgio_reset( void )
 //	glViewport(_originX,_originY, ox, oy );
 //	glViewport(_originX,-_originY, _sizex, _sizey );
 
-    //ãƒ¢ãƒ‡ãƒªãƒ³ã‚°å¤‰æ›
+    //ƒ‚ƒfƒŠƒ“ƒO•ÏŠ·
     glMatrixMode(GL_MODELVIEW);
     glLoadIdentity();
 
@@ -454,14 +454,14 @@ void hgio_reset( void )
     //glShadeModel(GL_SMOOTH);
 
     
-    //é ‚ç‚¹é…åˆ—ã®è¨­å®š
+    //’¸“_”z—ñ‚Ìİ’è
     glVertexPointer(2,GL_FLOAT,0,panelVertices);
     glEnableClientState(GL_VERTEX_ARRAY);
     
-    //UVã®è¨­å®š
+    //UV‚Ìİ’è
     glTexCoordPointer(2,GL_FLOAT,0,panelUVs);
         
-    //ãƒ†ã‚¯ã‚¹ãƒãƒ£ã®è¨­å®š
+    //ƒeƒNƒXƒ`ƒƒ‚Ìİ’è
     glEnableClientState(GL_TEXTURE_COORD_ARRAY);
 
 
@@ -474,7 +474,7 @@ void hgio_reset( void )
 
 #if defined(HSPNDK) || defined(HSPLINUX) || defined(HSPEMSCRIPTEN)
 	if ( GetSysReq( SYSREQ_CLSMODE ) == CLSMODE_SOLID ) {
-		//æŒ‡å®šã‚«ãƒ©ãƒ¼ã§æ¶ˆå»
+		//w’èƒJƒ‰[‚ÅÁ‹
 		int ccol = GetSysReq( SYSREQ_CLSCOLOR );
 		hgio_setClear( (ccol>>16)&0xff, (ccol>>8)&0xff, (ccol)&0xff );
 		hgio_clear();
@@ -483,21 +483,21 @@ void hgio_reset( void )
 
     hgio_setview( mainbm );
 
-    //ãƒ–ãƒ¬ãƒ³ãƒ‰ã®è¨­å®š
+    //ƒuƒŒƒ“ƒh‚Ìİ’è
     glEnable(GL_BLEND);
 #ifdef HSPIOS
     glBlendEquationOES(GL_FUNC_ADD_OES);
 #endif
     glBlendFunc(GL_ONE,GL_ONE_MINUS_SRC_ALPHA);
 
-    //ãƒã‚¤ãƒ³ãƒˆã®è¨­å®š
+    //ƒ|ƒCƒ“ƒg‚Ìİ’è
     glEnable(GL_POINT_SMOOTH);
 
-    //å‰å‡¦ç†
+    //‘Oˆ—
     glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_MAG_FILTER,GL_NEAREST);
     glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_MIN_FILTER,GL_NEAREST);
 
-	//ãƒ†ã‚¯ã‚¹ãƒãƒ£è¨­å®šãƒªã‚»ãƒƒãƒˆ
+	//ƒeƒNƒXƒ`ƒƒİ’èƒŠƒZƒbƒg
 	TexReset();
 
 }
@@ -513,11 +513,11 @@ void hgio_term( void )
 
 void hgio_resume( void )
 {
-	//	ç”»é¢ãƒªã‚½ãƒ¼ã‚¹ã®å†æ§‹ç¯‰
+	//	‰æ–ÊƒŠƒ\[ƒX‚ÌÄ\’z
 	//
 	tmes.texmesInit(SYSREQ_MESCACHE_MAX);
 
-	//ãƒ†ã‚¯ã‚¹ãƒãƒ£åˆæœŸåŒ–
+	//ƒeƒNƒXƒ`ƒƒ‰Šú‰»
 	TexInit();
 
 #if defined(HSPNDK) || defined(HSPLINUX) || defined(HSPEMSCRIPTEN)
@@ -532,8 +532,8 @@ void hgio_resume( void )
 
 void hgio_setback( BMSCR *bm )
 {
-	//		èƒŒæ™¯ç”»åƒã®è¨­å®š
-	//		(NULL=ãªã—)
+	//		”wŒi‰æ‘œ‚Ìİ’è
+	//		(NULL=‚È‚µ)
 	//
 	backbm = bm;
 }
@@ -541,7 +541,7 @@ void hgio_setback( BMSCR *bm )
 
 int hgio_gsel( BMSCR *bm )
 {
-	//		gsel(æç”»å…ˆå¤‰æ›´) æœªå®Ÿè£…
+	//		gsel(•`‰ææ•ÏX) –¢À‘•
 	//
 	hgio_render_end();
 	return 0;
@@ -550,7 +550,7 @@ int hgio_gsel( BMSCR *bm )
 
 int hgio_buffer(BMSCR *bm)
 {
-	//		buffer(æç”»ç”¨ç”»é¢ä½œæˆ) æœªå®Ÿè£…
+	//		buffer(•`‰æ—p‰æ–Êì¬) –¢À‘•
 	//
 	int texid = MakeEmptyTexBuffer( bm->sx, bm->sy );
 	if (texid >= 0) {
@@ -562,7 +562,7 @@ int hgio_buffer(BMSCR *bm)
 
 static int GetSurface(int x, int y, int sx, int sy, int px, int py, void *res, int mode)
 {
-	//	VRAMã®æƒ…å ±ã‚’å–å¾—ã™ã‚‹
+	//	VRAM‚Ìî•ñ‚ğæ“¾‚·‚é
 	//
 	int ybase = _bgsy - (sy - y);
 
@@ -576,15 +576,15 @@ static int GetSurface(int x, int y, int sx, int sy, int px, int py, void *res, i
 #endif
 #endif
 
-	// OpenGLã§ç”»é¢ã«æç”»ã•ã‚Œã¦ã„ã‚‹å†…å®¹ã‚’ãƒãƒƒãƒ•ã‚¡ã«æ ¼ç´
+	// OpenGL‚Å‰æ–Ê‚É•`‰æ‚³‚ê‚Ä‚¢‚é“à—e‚ğƒoƒbƒtƒ@‚ÉŠi”[
 	glReadPixels(
-		x,              //èª­ã¿å–ã‚‹é ˜åŸŸã®å·¦ä¸‹éš…ã®xåº§æ¨™
-		ybase,          //èª­ã¿å–ã‚‹é ˜åŸŸã®å·¦ä¸‹éš…ã®yåº§æ¨™
-		sx,             //èª­ã¿å–ã‚‹é ˜åŸŸã®å¹…
-		sy,             //èª­ã¿å–ã‚‹é ˜åŸŸã®é«˜ã•
-		GL_RGBA,		//å–å¾—ã—ãŸã„è‰²æƒ…å ±ã®å½¢å¼
-		GL_UNSIGNED_BYTE,  //èª­ã¿å–ã£ãŸãƒ‡ãƒ¼ã‚¿ã‚’ä¿å­˜ã™ã‚‹é…åˆ—ã®å‹
-		res                //ãƒ“ãƒƒãƒˆãƒãƒƒãƒ—ã®ãƒ”ã‚¯ã‚»ãƒ«ãƒ‡ãƒ¼ã‚¿ï¼ˆå®Ÿéš›ã«ã¯ãƒã‚¤ãƒˆé…åˆ—ï¼‰ã¸ã®ãƒã‚¤ãƒ³ã‚¿
+		x,              //“Ç‚İæ‚é—Ìˆæ‚Ì¶‰º‹÷‚ÌxÀ•W
+		ybase,          //“Ç‚İæ‚é—Ìˆæ‚Ì¶‰º‹÷‚ÌyÀ•W
+		sx,             //“Ç‚İæ‚é—Ìˆæ‚Ì•
+		sy,             //“Ç‚İæ‚é—Ìˆæ‚Ì‚‚³
+		GL_RGBA,		//æ“¾‚µ‚½‚¢Fî•ñ‚ÌŒ`®
+		GL_UNSIGNED_BYTE,  //“Ç‚İæ‚Á‚½ƒf[ƒ^‚ğ•Û‘¶‚·‚é”z—ñ‚ÌŒ^
+		res                //ƒrƒbƒgƒ}ƒbƒv‚ÌƒsƒNƒZƒ‹ƒf[ƒ^iÀÛ‚É‚ÍƒoƒCƒg”z—ñj‚Ö‚Ìƒ|ƒCƒ“ƒ^
 	);
 
 	return 0;
@@ -593,7 +593,7 @@ static int GetSurface(int x, int y, int sx, int sy, int px, int py, void *res, i
 
 int hgio_bufferop(BMSCR* bm, int mode, char *ptr)
 {
-	//		ã‚ªãƒ•ã‚¹ã‚¯ãƒªãƒ¼ãƒ³ãƒãƒƒãƒ•ã‚¡ã‚’æ“ä½œ
+	//		ƒIƒtƒXƒNƒŠ[ƒ“ƒoƒbƒtƒ@‚ğ‘€ì
 	//
 	int texid = bm->texid;
 	if (texid < 0) return -1;
@@ -644,7 +644,7 @@ void hgio_setFilterMode( int mode )
     }
 }
 
-//è‰²ã®æŒ‡å®š
+//F‚Ìw’è
 /*
 static void hgio_setColorTex( int rval, int gval ,int bval )
 {
@@ -716,7 +716,7 @@ static void setColorTex_mulcolor( float alpha )
 
 static void setBlendMode( int mode )
 {
-	// mode=2 ã¯ã‚¢ãƒ«ãƒ•ã‚¡ã‚ã‚ŠåŠé€æ˜ãƒ¬ãƒ¼ãƒˆç„¡åŠ¹ãªã®ã§ã‚¢ãƒ«ãƒ•ã‚¡ã‚’ 1.0 ã§åŸ‹ã‚ã‚‹
+	// mode=2 ‚ÍƒAƒ‹ƒtƒ@‚ ‚è”¼“§–¾ƒŒ[ƒg–³Œø‚È‚Ì‚ÅƒAƒ‹ƒtƒ@‚ğ 1.0 ‚Å–„‚ß‚é
     switch( mode ) {
         case 0:                     //no blend
         case 1:                     //no blend
@@ -749,7 +749,7 @@ static void setBlendMode( int mode )
 
 static void hgio_setTexBlendMode( int mode, int aval )
 {
-    //ãƒ–ãƒ¬ãƒ³ãƒ‰ãƒ¢ãƒ¼ãƒ‰è¨­å®š
+    //ƒuƒŒƒ“ƒhƒ‚[ƒhİ’è
 	setBlendMode( mode );
 
     if ( mode <= 1 ) {
@@ -770,20 +770,20 @@ static void hgio_setTexBlendMode( int mode, int aval )
     glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_MIN_FILTER,_filter); 
 }
 
-//ãƒ©ã‚¤ãƒ³å¹…ã®æŒ‡å®š
+//ƒ‰ƒCƒ“•‚Ìw’è
 void hgio_setLineWidth( int lineWidth )
 {
     glLineWidth(lineWidth);
     glPointSize(lineWidth*0.6f);
 }
 
-//ãƒ•ãƒªãƒƒãƒ—ãƒ¢ãƒ¼ãƒ‰ã®æŒ‡å®š
+//ƒtƒŠƒbƒvƒ‚[ƒh‚Ìw’è
 void hgio_setFlipMode( int flipMode )
 {
     _flipMode=flipMode;
 }
 
-//åŸç‚¹ã®æŒ‡å®š
+//Œ´“_‚Ìw’è
 void hgio_setOrigin( int x, int y )
 {
     _originX=x;
@@ -987,7 +987,7 @@ int hgio_texload( BMSCR *bm, char *fname )
 
 /*-------------------------------------------------------------------------------*/
 
-//ãƒã‚¤ãƒ³ãƒˆã‚«ãƒ©ãƒ¼è¨­å®š
+//ƒ|ƒCƒ“ƒgƒJƒ‰[İ’è
 void hgio_panelcolor( GLfloat *colors, int color, int aval )
 {
 	GLfloat *flp;
@@ -1035,10 +1035,10 @@ static void setCurrentColor( GLfloat *colors, int vnum )
     glColorPointer(4,GL_FLOAT,0,colors);
 }
 
-//ãƒã‚¤ãƒ³ãƒˆæç”»
+//ƒ|ƒCƒ“ƒg•`‰æ
 void hgio_pset( float x, float y )
 {
-    //é ‚ç‚¹é…åˆ—æƒ…å ±
+    //’¸“_”z—ñî•ñ
 	GLfloat colors[1*4];
     GLfloat vert[2]={
 		x, -y
@@ -1052,10 +1052,10 @@ void hgio_pset( float x, float y )
 }
 
 
-//çŸ©å½¢ã®æç”»
+//‹éŒ`‚Ì•`‰æ
 void hgio_rect( float x, float y, float w, float h )
 {
-    //é ‚ç‚¹é…åˆ—æƒ…å ±
+    //’¸“_”z—ñî•ñ
 	GLfloat colors[4*4];
 	GLfloat vert[8]={
 		x,   -y,
@@ -1072,10 +1072,10 @@ void hgio_rect( float x, float y, float w, float h )
 }
 
 
-//çŸ©å½¢ã®å¡—ã‚Šæ½°ã—
+//‹éŒ`‚Ì“h‚è’×‚µ
 void hgio_boxfill( float x, float y, float w, float h )
 {
-    //é ‚ç‚¹é…åˆ—æƒ…å ±
+    //’¸“_”z—ñî•ñ
 	GLfloat colors[4*4];
 	GLfloat vert[8]={
 		x,   -y,
@@ -1091,12 +1091,12 @@ void hgio_boxfill( float x, float y, float w, float h )
 	glDrawArrays(GL_TRIANGLE_STRIP,0,4);
 }
 
-//å††ã®æç”»
+//‰~‚Ì•`‰æ
 void hgio_circleLine( float x, float y, float rx, float ry )
 {
     int length = CIRCLE_DIV;
 
-	//é ‚ç‚¹é…åˆ—æƒ…å ±
+	//’¸“_”z—ñî•ñ
 	GLfloat colors[length*4];
     GLfloat vert[length*2], *flp;
 	flp = vert;
@@ -1113,12 +1113,12 @@ void hgio_circleLine( float x, float y, float rx, float ry )
 	glDrawArrays(GL_LINE_LOOP,0,length);
 }
 
-//å††ã®å¡—ã‚Šæ½°ã—
+//‰~‚Ì“h‚è’×‚µ
 void hgio_circleFill( float x, float y, float rx, float ry )
 {
     int length = CIRCLE_DIV+2;
     
-	//é ‚ç‚¹é…åˆ—æƒ…å ±
+	//’¸“_”z—ñî•ñ
 	GLfloat colors[length*4];
     GLfloat vert[length*2], *flp;
 	flp = vert;
@@ -1142,10 +1142,10 @@ void hgio_circleFill( float x, float y, float rx, float ry )
 
 void hgio_line( BMSCR *bm, float x, float y )
 {
-	//		ãƒ©ã‚¤ãƒ³æç”»
-	//		(bm!=NULL ã®å ´åˆã€ãƒ©ã‚¤ãƒ³æç”»é–‹å§‹)
-	//		(bm==NULL ã®å ´åˆã€ãƒ©ã‚¤ãƒ³æç”»å®Œäº†)
-	//		(ãƒ©ã‚¤ãƒ³ã®åº§æ¨™ã¯å¿…è¦ãªæ•°ã ã‘hgio_line2ã‚’å‘¼ã³å‡ºã™)
+	//		ƒ‰ƒCƒ“•`‰æ
+	//		(bm!=NULL ‚Ìê‡Aƒ‰ƒCƒ“•`‰æŠJn)
+	//		(bm==NULL ‚Ìê‡Aƒ‰ƒCƒ“•`‰æŠ®—¹)
+	//		(ƒ‰ƒCƒ“‚ÌÀ•W‚Í•K—v‚È”‚¾‚¯hgio_line2‚ğŒÄ‚Ño‚·)
 	//
 	if ( bm == NULL ) return;
 	if ( bm->type != HSPWND_TYPE_MAIN ) throw HSPERR_UNSUPPORTED_FUNCTION;
@@ -1161,14 +1161,14 @@ void hgio_line( BMSCR *bm, float x, float y )
 }
 
 
-//ãƒ©ã‚¤ãƒ³ã®æç”»
+//ƒ‰ƒCƒ“‚Ì•`‰æ
 void hgio_line2( float x, float y )
 {
-	//		ãƒ©ã‚¤ãƒ³æç”»
-	//		(hgio_lineã§é–‹å§‹å¾Œã«å¿…è¦ãªå›æ•°å‘¼ã¶ã€hgio_line(NULL)ã§çµ‚äº†ã™ã‚‹ã“ã¨)
+	//		ƒ‰ƒCƒ“•`‰æ
+	//		(hgio_line‚ÅŠJnŒã‚É•K—v‚È‰ñ”ŒÄ‚ÔAhgio_line(NULL)‚ÅI—¹‚·‚é‚±‚Æ)
 	//
 
-	//é ‚ç‚¹é…åˆ—æƒ…å ±
+	//’¸“_”z—ñî•ñ
 	GLfloat vert[4];
 	vert[0]= linebasex;
 	vert[1]=-linebasey;
@@ -1186,7 +1186,7 @@ void hgio_line2( float x, float y )
 
 void hgio_boxfAlpha(BMSCR *bm, float x1, float y1, float x2, float y2, int alphamode)
 {
-	//		çŸ©å½¢æç”»
+	//		‹éŒ`•`‰æ
 	//
 	if ( bm == NULL ) return;
 	if ( bm->type != HSPWND_TYPE_MAIN ) throw HSPERR_UNSUPPORTED_FUNCTION;
@@ -1198,7 +1198,7 @@ void hgio_boxfAlpha(BMSCR *bm, float x1, float y1, float x2, float y2, int alpha
 	float w = (x2-x1);
 	float h = (y2-y1);
 
-    //é ‚ç‚¹é…åˆ—æƒ…å ±
+    //’¸“_”z—ñî•ñ
 	GLfloat colors[4*4];
 	GLfloat vert[8]={
 		x,   -y,
@@ -1227,7 +1227,7 @@ void hgio_boxf( BMSCR *bm, float x1, float y1, float x2, float y2 )
 
 void hgio_circle( BMSCR *bm, float x1, float y1, float x2, float y2, int mode )
 {
-	//		å††æç”»
+	//		‰~•`‰æ
 	//
 	float xx,yy,rx,ry;
 	if ( bm == NULL ) return;
@@ -1248,7 +1248,7 @@ void hgio_circle( BMSCR *bm, float x1, float y1, float x2, float y2, int mode )
 }
 
 
-//		çŸ©å½¢(å›è»¢)æç”»
+//		‹éŒ`(‰ñ“])•`‰æ
 //
 void hgio_fillrot( BMSCR *bm, float x, float y, float sx, float sy, float ang )
 {
@@ -1301,9 +1301,9 @@ void hgio_fillrot( BMSCR *bm, float x, float y, float sx, float sy, float ang )
 #if 0
 void hgio_fcopy( float distx, float disty, short xx, short yy, short srcsx, short srcsy, int texid, int color )
 {
-	//		ç”»åƒã‚³ãƒ”ãƒ¼(ãƒ•ã‚©ãƒ³ãƒˆç”¨)
-	//		texidå†…ã®(xx,yy)-(xx+srcsx,yy+srcsy)ã‚’ç¾åœ¨ã®ç”»é¢ã«ç­‰å€ã§ã‚³ãƒ”ãƒ¼
-	//		æç”»ãƒ¢ãƒ¼ãƒ‰ã¯3,100%ã€è»¢é€å…ˆã¯distx,disty
+	//		‰æ‘œƒRƒs[(ƒtƒHƒ“ƒg—p)
+	//		texid“à‚Ì(xx,yy)-(xx+srcsx,yy+srcsy)‚ğŒ»İ‚Ì‰æ–Ê‚É“™”{‚ÅƒRƒs[
+	//		•`‰æƒ‚[ƒh‚Í3,100%A“]‘—æ‚Ídistx,disty
 	//
 	TEXINF *tex = GetTex( texid );
 	if ( tex->mode == TEXMODE_NONE ) return;
@@ -1383,9 +1383,9 @@ void hgio_fcopy( float distx, float disty, short xx, short yy, short srcsx, shor
 
 void hgio_fontcopy( BMSCR *bm, float distx, float disty, float ratex, float ratey, int srcsx, int srcsy, int texid, int basex, int basey )
 {
-	//		ç”»åƒã‚³ãƒ”ãƒ¼(ãƒ•ã‚©ãƒ³ãƒˆç”¨)
-	//		texidå†…ã®(xx,yy)-(xx+srcsx,yy+srcsy)ã‚’ç¾åœ¨ã®ç”»é¢ã«ç­‰å€ã§ã‚³ãƒ”ãƒ¼
-	//		æç”»ãƒ¢ãƒ¼ãƒ‰ã¯3,100%ã€è»¢é€å…ˆã¯distx,disty
+	//		‰æ‘œƒRƒs[(ƒtƒHƒ“ƒg—p)
+	//		texid“à‚Ì(xx,yy)-(xx+srcsx,yy+srcsy)‚ğŒ»İ‚Ì‰æ–Ê‚É“™”{‚ÅƒRƒs[
+	//		•`‰æƒ‚[ƒh‚Í3,100%A“]‘—æ‚Ídistx,disty
 	//
     GLfloat *flp;
     GLfloat x1,y1,x2,y2;
@@ -1433,7 +1433,7 @@ void hgio_fontcopy( BMSCR *bm, float distx, float disty, float ratex, float rate
     glVertexPointer( 2, GL_FLOAT,0,vertf2D );
     glTexCoordPointer( 2,GL_FLOAT,0,uvf2D );
 
-    //ãƒ–ãƒ¬ãƒ³ãƒ‰ãƒ¢ãƒ¼ãƒ‰è¨­å®š
+    //ƒuƒŒƒ“ƒhƒ‚[ƒhİ’è
     int mode;
 	if (GetSysReq(SYSREQ_FIXMESALPHA)) {
 		mode = 2;
@@ -1469,9 +1469,9 @@ void hgio_fontcopy( BMSCR *bm, float distx, float disty, float ratex, float rate
 
 void hgio_copy( BMSCR *bm, short xx, short yy, short srcsx, short srcsy, BMSCR *bmsrc, float s_psx, float s_psy )
 {
-	//		ç”»åƒã‚³ãƒ”ãƒ¼
-	//		texidå†…ã®(xx,yy)-(xx+srcsx,yy+srcsy)ã‚’ç¾åœ¨ã®ç”»é¢ã«(psx,psy)ã‚µã‚¤ã‚ºã§ã‚³ãƒ”ãƒ¼
-	//		ã‚«ãƒ¬ãƒ³ãƒˆãƒã‚¸ã‚·ãƒ§ãƒ³ã€æç”»ãƒ¢ãƒ¼ãƒ‰ã¯BMSCRã‹ã‚‰å–å¾—
+	//		‰æ‘œƒRƒs[
+	//		texid“à‚Ì(xx,yy)-(xx+srcsx,yy+srcsy)‚ğŒ»İ‚Ì‰æ–Ê‚É(psx,psy)ƒTƒCƒY‚ÅƒRƒs[
+	//		ƒJƒŒƒ“ƒgƒ|ƒWƒVƒ‡ƒ“A•`‰æƒ‚[ƒh‚ÍBMSCR‚©‚çæ“¾
 	//
 	if ( bm == NULL ) return;
 	if ( bm->type != HSPWND_TYPE_MAIN ) throw HSPERR_UNSUPPORTED_FUNCTION;
@@ -1553,9 +1553,9 @@ void hgio_copy( BMSCR *bm, short xx, short yy, short srcsx, short srcsy, BMSCR *
 
 void hgio_copyrot( BMSCR *bm, short xx, short yy, short srcsx, short srcsy, float s_ofsx, float s_ofsy, BMSCR *bmsrc, float psx, float psy, float ang )
 {
-	//		ç”»åƒã‚³ãƒ”ãƒ¼
-	//		texidå†…ã®(xx,yy)-(xx+srcsx,yy+srcsy)ã‚’ç¾åœ¨ã®ç”»é¢ã«(psx,psy)ã‚µã‚¤ã‚ºã§ã‚³ãƒ”ãƒ¼
-	//		ã‚«ãƒ¬ãƒ³ãƒˆãƒã‚¸ã‚·ãƒ§ãƒ³ã€æç”»ãƒ¢ãƒ¼ãƒ‰ã¯BMSCRã‹ã‚‰å–å¾—
+	//		‰æ‘œƒRƒs[
+	//		texid“à‚Ì(xx,yy)-(xx+srcsx,yy+srcsy)‚ğŒ»İ‚Ì‰æ–Ê‚É(psx,psy)ƒTƒCƒY‚ÅƒRƒs[
+	//		ƒJƒŒƒ“ƒgƒ|ƒWƒVƒ‡ƒ“A•`‰æƒ‚[ƒh‚ÍBMSCR‚©‚çæ“¾
 	//
 	if ( bm == NULL ) return;
 	if ( bm->type != HSPWND_TYPE_MAIN ) throw HSPERR_UNSUPPORTED_FUNCTION;
@@ -1584,13 +1584,13 @@ void hgio_copyrot( BMSCR *bm, short xx, short yy, short srcsx, short srcsy, floa
 	x1 = mx1 * ofsx;
 	y1 = my1 * ofsx;
     
-	//		åŸºç‚¹ã®ç®—å‡º
+	//		Šî“_‚ÌZo
 	x = ( (float)bm->cx - (-x0+x1) );
 	y = ( (float)bm->cy - (-y0+y1) );
     
 	/*-------------------------------*/
     
-	//		å›è»¢åº§æ¨™ã®ç®—å‡º
+	//		‰ñ“]À•W‚ÌZo
 	ofsx = -psx;
 	ofsy = -psy;
 	x0 = mx0 * ofsy;
@@ -1660,7 +1660,7 @@ void hgio_copyrot( BMSCR *bm, short xx, short yy, short srcsx, short srcsy, floa
 
 void hgio_square_tex( BMSCR *bm, int *posx, int *posy, BMSCR *bmsrc, int *uvx, int *uvy )
 {
-	//		å››è§’å½¢(square)ãƒ†ã‚¯ã‚¹ãƒãƒ£æç”»
+	//		lŠpŒ`(square)ƒeƒNƒXƒ`ƒƒ•`‰æ
 	//
 	if ( bm == NULL ) return;
 	if ( bm->type != HSPWND_TYPE_MAIN ) throw HSPERR_UNSUPPORTED_FUNCTION;
@@ -1708,7 +1708,7 @@ void hgio_square_tex( BMSCR *bm, int *posx, int *posy, BMSCR *bmsrc, int *uvx, i
 
 void hgio_square( BMSCR *bm, int *posx, int *posy, int *color )
 {
-	//		å››è§’å½¢(square)å˜è‰²æç”»
+	//		lŠpŒ`(square)’PF•`‰æ
 	//
     GLfloat *flp;
 
@@ -1748,9 +1748,9 @@ void hgio_square( BMSCR *bm, int *posx, int *posy, int *color )
 
 int hgio_celputmulti( BMSCR *bm, int *xpos, int *ypos, int *cel, int count, BMSCR *bmsrc )
 {
-	//		ãƒãƒ«ãƒç”»åƒã‚³ãƒ”ãƒ¼
-	//		inté…åˆ—å†…ã®X,Y,CelIDã‚’å…ƒã«ç­‰å€ã‚³ãƒ”ãƒ¼ã‚’è¡Œãªã†(count=å€‹æ•°)
-	//		ã‚«ãƒ¬ãƒ³ãƒˆãƒã‚¸ã‚·ãƒ§ãƒ³ã€æç”»ãƒ¢ãƒ¼ãƒ‰ã¯BMSCRã‹ã‚‰å–å¾—
+	//		ƒ}ƒ‹ƒ`‰æ‘œƒRƒs[
+	//		int”z—ñ“à‚ÌX,Y,CelID‚ğŒ³‚É“™”{ƒRƒs[‚ğs‚È‚¤(count=ŒÂ”)
+	//		ƒJƒŒƒ“ƒgƒ|ƒWƒVƒ‡ƒ“A•`‰æƒ‚[ƒh‚ÍBMSCR‚©‚çæ“¾
 	//
 	int psx,psy;
 	float f_psx,f_psy;
@@ -1811,7 +1811,7 @@ int hgio_celputmulti( BMSCR *bm, int *xpos, int *ypos, int *cel, int count, BMSC
 
 int hgio_gettick( void )
 {
-    // çµŒéæ™‚é–“ã®è¨ˆæ¸¬
+    // Œo‰ßŠÔ‚ÌŒv‘ª
 
 #if defined(HSPLINUX) || defined(HSPNDK) || defined(HSPEMSCRIPTEN)
 	int i;
@@ -1978,7 +1978,7 @@ int hgio_getmousebtn( void )
 
 void hgio_test(void)
 {
-    // æç”»ã™ã‚‹
+    // •`‰æ‚·‚é
     hgio_render_start();
     //hgio_clear();
     
@@ -1999,7 +1999,7 @@ void hgio_test(void)
 
 int hgio_font(char *fontname, int size, int style)
 {
-	//		æ–‡å­—ãƒ•ã‚©ãƒ³ãƒˆæŒ‡å®š
+	//		•¶šƒtƒHƒ“ƒgw’è
 	//
 	tmes.setFont(fontname, size, style);
 	return 0;
@@ -2007,7 +2007,7 @@ int hgio_font(char *fontname, int size, int style)
 
 int hgio_mes(BMSCR* bm, char* msg)
 {
-	//		mes,print æ–‡å­—è¡¨ç¤º
+	//		mes,print •¶š•\¦
 	//
 	int xsize, ysize;
 	if ((bm->type != HSPWND_TYPE_MAIN) && (bm->type != HSPWND_TYPE_OFFSCREEN)) return -1;
@@ -2033,14 +2033,14 @@ int hgio_mes(BMSCR* bm, char* msg)
 	xsize = tex->sx;
 	ysize = tex->sy;
 
-	if (bm->printoffsetx > 0) {			// ã‚»ãƒ³ã‚¿ãƒªãƒ³ã‚°ã‚’è¡Œã†(X)
+	if (bm->printoffsetx > 0) {			// ƒZƒ“ƒ^ƒŠƒ“ƒO‚ğs‚¤(X)
 		int offset = (bm->printoffsetx - xsize) / 2;
 		if (offset > 0) {
 			bm->cx += offset;
 		}
 		bm->printoffsetx = 0;
 	}
-	if (bm->printoffsety > 0) {			// ã‚»ãƒ³ã‚¿ãƒªãƒ³ã‚°ã‚’è¡Œã†(Y)
+	if (bm->printoffsety > 0) {			// ƒZƒ“ƒ^ƒŠƒ“ƒO‚ğs‚¤(Y)
 		int offset = (bm->printoffsety - ysize) / 2;
 		if (offset > 0) {
 			bm->cy += offset;
@@ -2059,7 +2059,7 @@ int hgio_mes(BMSCR* bm, char* msg)
 
 int hgio_mestex(BMSCR *bm, texmesPos *tpos)
 {
-	//		TEXMESPOSã«ã‚ˆã‚‹æ–‡å­—è¡¨ç¤º
+	//		TEXMESPOS‚É‚æ‚é•¶š•\¦
 	//
 	int mode, x, y, sx, sy;
 	int orgx, orgy;
@@ -2181,7 +2181,7 @@ int hgio_fontsystem_setup(int sx, int sy, void *buffer)
 
 void hgio_editputclip(BMSCR* bm, char *str)
 {
-	//		ã‚¯ãƒªãƒƒãƒ—ãƒœãƒ¼ãƒ‰ã‚³ãƒ”ãƒ¼
+	//		ƒNƒŠƒbƒvƒ{[ƒhƒRƒs[
 	//
 #if (defined(HSPLINUX)||defined(HSPEMSCRIPTEN))
 	SDL_SetClipboardText( (const char *)str );
@@ -2191,7 +2191,7 @@ void hgio_editputclip(BMSCR* bm, char *str)
 
 char *hgio_editgetclip(BMSCR* bm)
 {
-	//		ã‚¯ãƒªãƒƒãƒ—ãƒœãƒ¼ãƒ‰ãƒšãƒ¼ã‚¹ãƒˆæ–‡å­—åˆ—å–å¾—
+	//		ƒNƒŠƒbƒvƒ{[ƒhƒy[ƒXƒg•¶š—ñæ“¾
 	//
 #if (defined(HSPLINUX)||defined(HSPEMSCRIPTEN))
 	if ( SDL_HasClipboardText() ) {
@@ -2264,9 +2264,9 @@ int hgio_render_end( void )
 
 #if defined(HSPRASPBIAN) || defined(HSPNDK)
 
-    //å¾Œå‡¦ç†
+    //Œãˆ—
     if (appengine->display == NULL) {
-        // displayãŒç„¡ã„
+        // display‚ª–³‚¢
         return 0;
     }
 	//hgio_setColor( 0xffffff );
@@ -2409,7 +2409,7 @@ char *hgio_getstorage( char *fname )
 
 void hgio_setview(BMSCR* bm)
 {
-	// vp_flagã«å¿œã˜ãŸãƒ“ãƒ¥ãƒ¼ãƒãƒ¼ãƒˆã®è¨­å®šã‚’è¡Œã†
+	// vp_flag‚É‰‚¶‚½ƒrƒ…[ƒ|[ƒg‚Ìİ’è‚ğs‚¤
 	//
 	int i;
 	MATRIX *vmat;
@@ -2454,7 +2454,7 @@ void hgio_setview(BMSCR* bm)
 	glMatrixMode(GL_PROJECTION);
 	glLoadMatrixf(mat);
 
-	//	mat_projã«è¨­å®šã™ã‚‹
+	//	mat_proj‚Éİ’è‚·‚é
 	for (i = 0; i < 16; i++) {
 		*vp++ = *mat++;
 	}
@@ -2463,7 +2463,7 @@ void hgio_setview(BMSCR* bm)
 	//Mat2D3DMAT(&matrixProj, vmat);
 	//d3ddev->SetTransform(D3DTS_PROJECTION, &matrixProj);
 
-	//	æŠ•å½±ãƒãƒˆãƒªã‚¯ã‚¹ã®é€†è¡Œåˆ—ã‚’è¨­å®šã™ã‚‹
+	//	“Š‰eƒ}ƒgƒŠƒNƒX‚Ì‹ts—ñ‚ğİ’è‚·‚é
 	//D3DXMatrixInverse(&InvViewport, NULL, &matrixProj);
 	SetCurrentMatrix(vmat);
 	InverseMatrix(&mat_unproj);
@@ -2473,8 +2473,8 @@ void hgio_setview(BMSCR* bm)
 
 void hgio_cnvview(BMSCR* bm, int* xaxis, int* yaxis)
 {
-	//	ãƒ“ãƒ¥ãƒ¼å¤‰æ›å¾Œã®åº§æ¨™ -> å…ƒã®åº§æ¨™ã«å¤‰æ›ã™ã‚‹
-	//	(ã‚¿ãƒƒãƒä½ç½®å†ç¾ã®ãŸã‚)
+	//	ƒrƒ…[•ÏŠ·Œã‚ÌÀ•W -> Œ³‚ÌÀ•W‚É•ÏŠ·‚·‚é
+	//	(ƒ^ƒbƒ`ˆÊ’uÄŒ»‚Ì‚½‚ß)
 	//
 	VECTOR v1,v2;
 	if (bm==NULL) return;
