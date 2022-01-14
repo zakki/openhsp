@@ -1,10 +1,10 @@
 Hot Soup Processor (HSP)
-Copyright (C) 1997-2021, Onion Software/onitama, all rights reserved.
+Copyright (C) 1997-2022, Onion Software/onitama, all rights reserved.
 Made with base technology of OpenHSP.
 
 
 OpenHSP
-Copyright (C) 1997-2021, Onion Software/onitama.
+Copyright (C) 1997-2022, Onion Software/onitama.
 All rights reserved.
 
 Redistribution and use in source and binary forms, with or without modification, are permitted provided that the following conditions are met:

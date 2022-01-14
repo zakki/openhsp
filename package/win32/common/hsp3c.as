@@ -3,7 +3,7 @@
 ;
 #ifndef __hsp3c__
 #define __hsp3c__
-#runtime "hsp3c"
+;#runtime "hsp3c"		; obsolete
 #endif
 
 

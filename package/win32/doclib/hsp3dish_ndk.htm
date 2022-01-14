@@ -27,6 +27,7 @@
 		<li><a href="#DHNEWPROJ">新規プロジェクトの作成</a></li>
 		<li><a href="#DHPROJ">プロジェクトのビルド</a></li>
 		<li><a href="#SAMPLE">サンプルプロジェクト</a></li>
+		<li><a href="#EMULATOR">androidエミュレータ</a></li>
 		<li><a href="#RUNPROJ">実機への転送と実行</a></li>
 		<li><a href="#DATAFILE">データファイルの準備</a></li>
 		<li><a href="#SYSINFO">システム情報の取得</a></li>
@@ -73,7 +74,7 @@
 	※英文字のみ、スペースを含まないフォルダ名を使用してください<br>
 	(commandlinetools-winからは「cmdline-tools」フォルダが取り出せるはずです。「c:\and-sdk\cmdline-tools」のような形になるようにしてください)
 	</p></ul>
-	<li>JDK(Java Development Kit) → <a href="http://www.oracle.com/technetwork/java/index.html" target="_blank">[ダウンロードサイト]</a>
+	<li>JDK(Java Development Kit) → <a href="https://www.oracle.com/java/technologies/downloads/" target="_blank">[ダウンロードサイト]</a>
 	<ul><p>
 	JDK (Java Development Kit)をインストールしてください。JavaSE 16、またはJavaSE 17を推奨します。<br>
 	</p></ul>
@@ -136,7 +137,7 @@
 	<li>パッケージ名</li><br><p>
 	アプリを識別するための情報となります。パッケージ名には、他のパッケージ名と重複しない名称が求められます。
 	通常は、ドメインをトップレベルドメインから逆方法に並べたものを使うことが推奨されています。たとえば、「net.onionsoft.testapp」のように階層的に指定します。
-	名称には、スペースを含まない英文字のみで指定してください。<a href="http://ja.wikipedia.org/wiki/%E3%83%91%E3%83%83%E3%82%B1%E3%83%BC%E3%82%B8_%28Java%29" target="_blank">Javaのパッケージ命名規約</a>なども参考にしてみてください。
+	名称には、スペースを含まない英文字のみで指定してください。<a href="https://ja.wikipedia.org/wiki/%E3%83%91%E3%83%83%E3%82%B1%E3%83%BC%E3%82%B8_%28Java%29" target="_blank">Javaのパッケージ命名規約</a>なども参考にしてみてください。
 	<br>
 	パッケージ名を省略した場合は、日付とプロジェクト名から自動的に生成される文字列が適用されます。
 	</p>
@@ -209,9 +210,24 @@
 	<p>
 	<img src="hsp3dish/s_block3.jpg" style="float:right;">
 	sample/hsp3dishフォルダには、HSP3Dishを使うためのサンプルスクリプトが含まれています。
-	ブロック崩しのHSP3Dishサンプル(block3.hsp)と設定ファイル(hsp3dish.ini)をプロジェクトのhspフォルダにコピーして、ビルドを実行することができます。
+	ブロック崩しのHSP3Dishサンプル(block3.hsp)と設定ファイル(hsp3dish.ini)をプロジェクトのhspフォルダにコピーして、ビルドを実行することができます。<br>
+	他のサンプルも同様にビルドすることが可能です。画像やサウンドのデータを使用するサンプルの場合は、Assetsフォルダにコピーするのを忘れないでください。
 	</p>
 	<br clear="all">
+
+
+	<h2 id="EMULATOR">androidエミュレータ</h2>
+	<p>
+	SDKが正しくセットアップされていれば、AVD(Android仮想デバイス)を作成してエミュレータを起動することが可能です。
+	「オプション」タブの「AVDマネージャー」ボタンを押してAVDマネージャーのモードに入ります。
+	</p>
+	<ul><img src="hsp3dish/s_and8.png"><br></ul>
+	<p>
+	最初に、AVD(Android仮想デバイス)を作成する必要があります。左上の選択リストから必要なデバイスを選択してください。標準的なスマホであれば、Pixel2～4などを選択します。<br>
+	次にNameの部分にAVDの名称を入力してください。「MyAVD」など英文字のわかりやすい名前を指定します。その後、「AVD作成」ボタンを押すとデバイスが作成されます。<br>
+	以降は、「起動」ボタンを押すことで指定された名前の仮想デバイスを起動することができます。仮想デバイス上でAdMobを含むアプリの実行テストを行うことが可能です。
+	</p>
+
 
 	<h2 id="RUNPROJ">実機への転送と実行</h2>
 	<p>
@@ -224,13 +240,12 @@
 	<br>
 	android実機の接続設定については、デバイスの機種ごとに異なります。以下のサイトなどを参考にしてみてください。
 	</p><ul>
-
-
 	<li><a href="https://www.atmarkit.co.jp/ait/articles/1602/19/news044.html" target="_blank">「開発者向けオプション」をオンにする [@IT]</a></li>
 	</ul><p>
 	実機への転送ができない場合でも、ビルドで生成されたapkファイルをネットやUSBメモリを経由して転送してインストールを行ない実行の確認をすることも可能です。
 	<br>
-	「Logcat」ボタンを押して実行ログを表示させることが可能です。実機に転送して実行した際の、HSPからのエラーや初期化メッセージを確認することができます。
+	また、「Logcat」ボタンを押して実行ログを表示させることが可能です。実機に転送して実行した際の、HSPからのエラーや初期化メッセージを確認することができます。
+	([Shift]キーを押しながら「Logcat」ボタンを押すことでandroid上のすべてのイベントログを確認することができます、システムメッセージなどを確認する場合にご使用ください)
 	</p>
 
 	<h2 id="DATAFILE">データファイルの準備</h2>
@@ -268,7 +283,7 @@
 		exec "URI文字列", 16
 	</pre></ul>
 	<p>
-	たとえば、URIに「http://hsp.tv」を指定した場合は、規定のwebブラウザを開きURLとして表示します。
+	たとえば、URIに「https://hsp.tv」を指定した場合は、規定のwebブラウザを開きURLとして表示します。
 	「tel:123456789」によりダイアラーを起動します。他にもOSがサポートする様々な呼び出し方法が存在します。
 	</p>
 

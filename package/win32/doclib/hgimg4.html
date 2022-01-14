@@ -14,7 +14,7 @@
 <body>
 	<div id="CONTAINER">
 	<!-- ヘッダー -->
-	<p id="COPY">HSP : Hot Soup Processor ver3.6 / onion software 1997-2021(c)</p>
+	<p id="COPY">HSP : Hot Soup Processor ver3.7 / onion software 1997-2022(c)</p>
 	<img src="image/hgimg4ttl.jpg" width="640" height="200" alt="title">
 	<h1>HGIMG4プログラミングガイド</h1>
 
@@ -28,8 +28,8 @@
 		<li><a href="#COMMANDS">命令一覧(メイン)</a></li>
 		<li><a href="#COMMANDS_OBJ">命令一覧(オブジェクト操作)</a></li>
 		<li><a href="#COMMANDS_SUB">命令一覧(補助)</a></li>
-		<li><a href="#RUNTIME_NOTICE">HGIMG4ランタイムの制限<span class="new">（New!）</span></a></li>
-		<li><a href="#UPDATE">HSP3.5版との違い</a></li>
+		<li><a href="#RUNTIME_NOTICE">HGIMG4ランタイムの制限</a></li>
+		<li><a href="#UPDATE">HSP3.6版との違い</a></li>
 		<li><a href="#DIFF_HGIMG3">HGIMG3との違い</a></li>
 		<li><a href="#INITALIZE">初期化と描画の方法</a></li>
 		<li><a href="#3DABSTRACT">3D動作の概要</a></li>
@@ -37,12 +37,12 @@
 		<li><a href="#FONTMES">フォント表示</a></li>
 		<li><a href="#MODE_OBJ">オブジェクトのモード設定</a></li>
 		<li><a href="#CAMERA">カメラの設定</a></li>
-		<li><a href="#LIGHT">ライトの設定<span class="new">（New!）</span></a></li>
+		<li><a href="#LIGHT">ライトの設定</a></li>
 		<li><a href="#COLLISION">コリジョングループ設定と衝突検知</a></li>
 		<li><a href="#RENDERGRP">レンダリンググループ設定</a></li>
 		<li><a href="#PHYSICS">物理挙動の設定<span class="new">（New!）</span></a></li>
 		<li><a href="#MATERIAL">マテリアルの設定</a></li>
-		<li><a href="#3DMODEL">3Dモデルデータの表示</a></li>
+		<li><a href="#3DMODEL">3Dモデルデータの表示<span class="new">（New!）</span></a></li>
 		<li><a href="#GPBMATERIAL">3Dモデルデータのマテリアルについて</a></li>
 		<li><a href="#GPBLIGHT">3Dモデルデータのライティング</a></li>
 		<li><a href="#SCENE">シーンの描画について</a></li>
@@ -57,9 +57,9 @@
 		<li><a href="#2DSHADER">2D描画時の独自シェーダー設定</a></li>
 		<li><a href="#RENDERBUFFER">レンダリングバッファ</a></li>
 		<li><a href="#EVENT">イベントリスト</a></li>
-		<li><a href="#POSTEFFECT">ポストエフェクト<span class="new">（New!）</span></a></li>
-		<li><a href="#FREEMESH">自由な形状の作成<span class="new">（New!）</span></a></li>
-		<li><a href="#NODEINFO">階層情報の取得<span class="new">（New!）</span></a></li>
+		<li><a href="#POSTEFFECT">ポストエフェクト</a></li>
+		<li><a href="#FREEMESH">自由な形状の作成</a></li>
+		<li><a href="#NODEINFO">階層情報の取得</a></li>
 		<li><a href="#MEMLIMIT">登録の限界数について</a></li>
 		<li><a href="#ERRORLOG">エラーログ</a></li>
 		<li><a href="#PACKFILE">PACKFILEの対応について</a></li>
@@ -71,7 +71,7 @@
 
 	<h2 id="ABOUT">はじめに</h2>
 	<p>
-	HGIMG4は、Hot Soup Processor ver3.6以降とともに使用することで、画面の描画に関する様々な機能拡張を提供します。
+	HGIMG4は、Hot Soup Processor ver3.7以降とともに使用することで、画面の描画に関する様々な機能拡張を提供します。
 	</p>
 	<ul>
 		HGIMG4の特徴<br><br>
@@ -129,7 +129,7 @@
 		hsp3gp.exe (OpenGL実行用ランタイム)<br>
 		hsp3gpdx.exe (DirectX実行用ランタイム)<br>
 <br>
-		docs/hgimg4.txt (このファイル)<br>
+		docs/hgimg4.html (このファイル)<br>
 		commonフォルダ (HGIMG4ヘッダファイル)<br>
 		hsphelpフォルダ (HGIMG4ヘルプファイル)<br>
 		runtimeフォルダ (HGIMG4カスタムランタイム)<br>
@@ -143,7 +143,7 @@
 	</p>
 	<ul><ul><ul>
 		Windows 7以降(OpenGL版)、XP以降(DirectX9版)<br>
-		Android 5.0以降<br>
+		Android 5.1以降<br>
 		iOS 10以降<br>
 		Raspberry Pi (raspbian)<br>
 		SDL/OpenGLをサポートするLinux環境<br>
@@ -381,10 +381,10 @@
 	</p>
 
 
-	<h2 id="UPDATE">HSP3.5版との違い</h2>
+	<h2 id="UPDATE">HSP3.6版との違い</h2>
 
 	<p>
-	HSP3.6で追加変更された項目については、<a href="update36.htm#HGIMG4">「HSP3.6 新機能ハイライト」</a>を参照してください。
+	HSP3.7で追加変更された項目については、<a href="update37.htm#HGIMG4">「HSP3.7 新機能ハイライト」</a>を参照してください。
 	</p>
 
 
@@ -1364,11 +1364,15 @@ optionパラメーターにより設定時のオプションを付加します�
 	(内部でコマンドラインツールのgameplay-encoder.exeを呼び出します)
 		</p>
 		<p>
-		<img src="img/hsp36_material.png">
+		<img src="image/gpbconvert.png">
 		</p>
 		<p>
 	HGIMG4ツールでは、fbx形式のファイルを.gpb形式に変換することが可能です。
 	また、.gpb形式とともに読み込まれるマテリアル情報(.material)の出力・確認が可能です。
+<br><br>
+	通常は、「.materialを出力」にチェックをつけて変換を行ってください。<br>
+	「構造をXMLに出力」にチェックをつけると確認のためにノードの親子関係をXMLファイルとして出力します。(.gpbの変換は行われません)<br>
+	「マテリアル名を英文字のみに修正」「マテリアル名を自動設定」のチェックは変換の際のオプションになります。マテリアル名に日本語など英文字以外を含む場合、正しく認識されないことがあります。その場合は、チェックを入れて変換を行ってください。
 <br><br>
 	fbx形式は、Autodesk社の3Dツールで使用されている標準的な3D形式です。
 	3Dツール「Unity」を使って、fbx形式の変換や確認を行うことが可能です。
@@ -1398,7 +1402,11 @@ optionパラメーターにより設定時のオプションを付加します�
 	.materialファイルは、HGIMG4ツールから確認・編集を行うことが可能です。
 	HGIMG4ツールは、HSPスクリプトエディタの「ツール」メニューから「HGIMG4ツールを開く」を選択するか、
 	「gpbconv.exe」を直接実行してください。
-	<br>
+		</p>
+		<p>
+		<img src="img/hsp36_material.png">
+		</p>
+		<p>
 	以下は、マテリアル情報に含まれるテキスト内容の例です。
 	複数のマテリアルが含まれている場合は、「material マテリアル名」に続く「{」から「}」の範囲が設定になります。
 	</p>

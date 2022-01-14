@@ -2000,7 +2000,8 @@ int Bmscr::RenderAlphaBitmap( int t_psx, int t_psy, int components, unsigned cha
 	int psx,psy;
 	BYTE *p;
 	BYTE *p2;
-	BYTE a1,a2,a3,a4,a4r;
+	BYTE a1, a2, a3;
+	WORD a4, a4r;
 	int p_ofs, p2_ofs;
 
 	x = this->cx;
@@ -2048,7 +2049,8 @@ int Bmscr::RenderAlphaBitmap( int t_psx, int t_psy, int components, unsigned cha
 	short ha;
 	for(b=0;b<psy;b++) {
 		for(a=0;a<psx;a++) {
-			a1=*p2++;a2=*p2++;a3=*p2++;a4=*p2++;a4r=255-a4;
+			a1 = *p2++; a2 = *p2++; a3 = *p2++; a4 = *p2++; a4 += a4 >> 7; a4r = 256 - a4;
+
 			if ( a4r == 0 ) {
 				*p++=a3;
 				*p++=a2;

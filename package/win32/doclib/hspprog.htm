@@ -15,7 +15,7 @@
 
 	<div id="CONTAINER">
 		<!-- ヘッダー -->
-		<p id="COPY"><a id="top" class="head">HSP : Hot Soup Processor ver3.6 / onion software 1997-2021(c)</a></p>
+		<p id="COPY"><a id="top" class="head">HSP : Hot Soup Processor ver3.7 / onion software 1997-2022(c)</a></p>
 		<img src="hsp3ttl.jpg" alt="title" width="640" height="200">
 		<h1>プログラミング・マニュアル</h1>
 
@@ -43,7 +43,6 @@
 					<li><a href="#EX_MACRO">HSP拡張マクロ</a></li>
 					<li><a href="#COLORING_AND_TAB">スクリプトの色分けとタブ</a></li>
 					<li><a href="#EASY_INPUT">かんたん入力</a></li>
-					<li><a href="#PEAS_EDITOR">Peasエディタ</a></li>
 					<li><a href="#HSPUTF">UTF8対応版ランタイムの利用について</a></li>
 					<li><a href="#HSP64">64bit(x64)対応版ランタイムの利用について</a></li>
 					<li><a href="#HSED3CUSTOM">スクリプトエディタの拡張機能について</a></li>
@@ -379,15 +378,6 @@
 					HGIMG4はHSP3Dishランタイムの上位互換で動作します。
 				</p>
 			</dd>
-			<dt>コンパクト版HSPランタイム(hsp3c)</dt>
-			<dd>
-				<p>
-					コンパクト版HSPランタイムは、Windowsの互換性を重視して古いコンパイラで作成されており、Windows98以降の幅広いWindows OSをサポートします。
-					過去のOSやスクリプトを使用する場合にご使用ください。
-					最新のOSを使用する場合は、コンパクト版は推奨されません。標準HSP3など他のランタイムの方が効率よく実行されます。
-					コンパクト版HSPランタイムはHSP3標準ランタイムと同等の機能を持っており、制約や制限などはありません。
-				</p>
-			</dd>
 			<dt>HSP3UTFランタイム(hsp3utf)</dt>
 			<dd>
 				<p>
@@ -553,11 +543,11 @@
 		</table>
 
 		<p>
-			次の例では、「test.scr」というスクリーンセーバーを「hsp3c.hrt」というランタイムを使用して作成します。
+			次の例では、「test.scr」というスクリーンセーバーを「hsp3utf.hrt」というランタイムを使用して作成します。
 		</p>
 		<pre>	#packopt type 2
 	#packopt name "test"
-	#packopt runtime "hsp3c.hrt"</pre>
+	#packopt runtime "hsp3utf.hrt"</pre>
 		<p>
 			尚、「start.ax」はデフォルトで暗号化されたものがpackfileに追加されます。
 			また、「#packopt runtime "ランタイムファイル名"」で指定された
@@ -866,33 +856,6 @@
 			することができるようになります。
 			AHTについての詳細は、別途ドキュメントaht.txtを参照してください。
 		</p>
-
-		<h3 id="PEAS_EDITOR">Peasエディタ</h3>
-		<p>
-			スクリプトエディタに替わるもう1つのスクリプト作成環境<em>Peasエディタ</em>が
-			同梱されています。これは、メニューから「Peasエディタ」を選択するか、または直接
-			「ahtman.exe」から起動させて使用します。
-		</p>
-		<p>
-			「Peasエディタ」は、メイン画面の「追加」ボタンからパーツを選択し、
-			「編集」ボタンによりパーツの内容を編集することができます。
-			これは、ahtフォルダに含まれているAHTテンプレートファイルを1つの
-			アイコン(パーツ)と見なして、マウス操作と簡単なパラメーター調整だけで
-			視覚的にスクリプト作成を行なう支援をするものです。
-		</p>
-		<p>
-			「Peasエディタ」は、HSPテンプレートツール(AHT)の技術をベースに
-			作成されており、モジュール「mod_aht.as」とともにすべてHSPで作成
-			されています。
-		</p>
-		<p>
-			「Peasエディタ」は、ソースコードが公開されており、誰でも自由に機能の
-			改編、拡張、再配布を行なうことが可能です。
-		</p>
-		<p>
-			「Peasエディタ」の詳細は、別途ドキュメント<a href="peas.htm">peas.htm</a>を参照してください。
-		</p>
-
 
 		<h3 id="HSPUTF">UTF8対応版ランタイムの利用について</h3>
 		<p>
@@ -3345,9 +3308,9 @@ owari         → mes "OK"</pre>
 			COMオブジェクトのメソッドを実行する場合は、mcall命令を使用します。
 		</p>
 		<pre>; 例
-    mcall ie,"Navigate","http://www.onionsoft.net/"</pre>
+    mcall ie,"Navigate","https://www.onionsoft.net/"</pre>
 		<p>
-			上の例では、"Navigate"というメソッドを"http://www.onionsoft.net/"という
+			上の例では、"Navigate"というメソッドを"https://www.onionsoft.net/"という
 			文字列型の引数を渡して実行します。
 			引数の数や、型はそのままメソッドに渡されることになります。
 			実行したメソッドの返値は、comres命令で設定された変数に代入されます。
@@ -3359,7 +3322,7 @@ owari         → mes "OK"</pre>
 			mcall命令の特殊な記述方法として、以下のように書くことも可能です。
 		</p>
 		<pre>; 例
-    ie-&gt;"Navigate" "http://www.onionsoft.net/"</pre>
+    ie-&gt;"Navigate" "https://www.onionsoft.net/"</pre>
 		<p>
 			変数に続いて「-&gt;」とメソッド名を記述し、パラメーターを指定します。
 			これは、C++等と近い記述方法を利用したい人のためにあるもので、
