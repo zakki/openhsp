@@ -43,12 +43,12 @@ int hgio_fontsystem_get_texid(void);
 #include <GL/gl.h>
 #include <GL/glext.h>
 //#include <GL/glut.h>
-#include "SDL/SDL.h"
-#include "SDL/SDL_image.h"
-#include "SDL/SDL_opengl.h"
+#include "SDL2/SDL.h"
+#include "SDL2/SDL_image.h"
+#include "SDL2/SDL_opengl.h"
 
-#include <SDL/SDL_ttf.h>
-#define TTF_FONTFILE "/ipaexg.ttf"
+//#include <SDL/SDL_ttf.h>
+//#define TTF_FONTFILE "/ipaexg.ttf"
 
 extern bool get_key_state(int sym);
 extern SDL_Window *window;

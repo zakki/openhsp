@@ -102,14 +102,6 @@ BEGIN
         MENUITEM "ペイントツールを開く(&W)...",           IDM_PAINT
         MENUITEM SEPARATOR
         MENUITEM "オプション(&O)...",                IDM_OPTION
-        POPUP "レガシーツール(&R)"
-        BEGIN
-            MENUITEM "PACKFILE編集(&E)...",           IDM_PACKED
-            MENUITEM "DPMファイル作成(&P)",               IDM_PACKGO
-            MENUITEM "EXEファイル作成(&M)...",            IDM_MKEXE1
-            MENUITEM "スクリーンセーバー作成(&S)",             IDM_MKEXE2
-            MENUITEM "スクリプト自動作成(&T)...",            IDM_AHTTOOL
-        END
     END
     POPUP "外部ツール(&X)"
     BEGIN
@@ -1021,7 +1013,6 @@ STRINGTABLE
 BEGIN
     IDM_PAINT               "ペイントツールを起動する"
     IDM_HGIMG4TOOL          "HGIMG4ツールを開く"
-    IDM_REGACYTOOL          "レガシー機能を呼び出す"
 END
 
 #endif    // 日本語 (日本) resources

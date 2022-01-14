@@ -102,14 +102,6 @@ BEGIN
         MENUITEM "Paint Tool(&W)...",           IDM_PAINT
         MENUITEM SEPARATOR
         MENUITEM "Options(&O)...",              IDM_OPTION
-        POPUP "Legacy Tools(&R)"
-        BEGIN
-            MENUITEM "Edit PACKFILE(&E)...",        IDM_PACKED
-            MENUITEM "Make .DPM(&P)",               IDM_PACKGO
-            MENUITEM "Make .EXE(&M)...",            IDM_MKEXE1
-            MENUITEM "Make Screen Saver(&S)",       IDM_MKEXE2
-            MENUITEM "HSP Peas(&T)...",             IDM_AHTTOOL
-        END
     END
     POPUP "ExtTool(&X)"
     BEGIN
