@@ -9,7 +9,7 @@
 #include "mod_appconfig.as"
 
 #define APPTITLE "HSP3Dish helper"
-#define APPVER "1.8"
+#define APPVER "1.81"
 #define APP_CONF "\\hsp3dh.cfg"
 
 #define AND_LIBVER 114			; android HSPランタイムの内部バージョン
@@ -156,6 +156,9 @@
 	sdim ln,$10000
 	sdim fname,1024
 	sdim and_package, 256
+	sdim s1, $2000
+	sdim s2, $2000
+	sdim s3, $2000
 
 	return
 
@@ -176,7 +179,7 @@
 	syscolor 15:boxf
 	sysfont 17
 	color 0,0,0
-	mesbox buftxt,wx,320,0
+	mesbox buftxt,wx,320,1
 
 	objsize 160,24
 	pos wx-168,480-32
@@ -192,45 +195,80 @@
 	gsel 0
 	return
 
+#define EM_SETSEL $B1
+#define EM_REPLACESEL $C2
 
 #deffunc execcmd str _p1
 
 	;	コマンドライン実行
-	sdim tmp,$20000
+	sdim tmp,$100000
 	sdim buf,$20000
+	sdim lntmp,$2000
 	cmd = app_dir+"\\"+_p1
 	pipeexec tmp,cmd,1
 	if stat : dialog "コマンドラインの実行に失敗しました" : return -1
 
-	lnbak=""
+	gsel 1
+	edit_hwnd = objInfo(0,2)
 	repeat
 	pipeget ln
 	if stat=0 : break
-	;if stat=2 {
-	;	if ln!=lnbak : buf+=ln
-	;	lnbak=ln
-	;}
-	if strlen(tmp)>=$1f000 {	; オーバーフロー対策
-		buf+=tmp
-		tmp=""
-	}
-	await 10
+	await 0
 	loop
-	buf+=tmp
 
-	tmp=""
+	buf=""
 	i=0
 	repeat
-		getstr s1,buf,i,10
+		getstr lntmp,tmp,i,10
 		if strsize=0 : break
 		i+=strsize
-		tmp+=s1
-		tmp+="\n"
+		buf+=lntmp+"\n"
 	loop
-	buf = tmp
+	objprm 0,buf
+	gsel 0
+	return 0
+
+#deffunc execcmd2 str _p1
+
+	;	コマンドライン実行(output付き)
+	sdim tmp,$100000
+	sdim buf,$20000
+	sdim addbuf,$4000
+	sdim lntmp,$2000
+	cmd = app_dir+"\\"+_p1
+	pipeexec tmp,cmd,1
+	if stat : dialog "コマンドラインの実行に失敗しました" : return -1
 
 	gsel 1
 	objprm 0,buf
+	edit_hwnd = objInfo(0,2)
+
+	repeat
+	pipeget ln,1
+	if stat=0 : break
+	if ln!="" {
+		getstr lntmp,ln,0,10
+		addbuf+=lntmp+"\n"
+		continue
+	}
+	if addbuf!="" {
+		sendmsg edit_hwnd,EM_EM_SETSEL,0,-1
+		sendmsg edit_hwnd,EM_EM_SETSEL,-1,-1
+		sendmsg edit_hwnd,EM_REPLACESEL,-1,addbuf
+		buf+=addbuf
+		addbuf=""
+	}
+	await 10
+	loop
+	if addbuf!="" {
+		sendmsg edit_hwnd,EM_EM_SETSEL,0,-1
+		sendmsg edit_hwnd,EM_EM_SETSEL,-1,-1
+		sendmsg edit_hwnd,EM_REPLACESEL,-1,addbuf
+		buf+=addbuf
+		addbuf=""
+	}
+
+	;objprm 0,buf
 	gsel 0
 
 	return 0
@@ -1071,7 +1109,7 @@
 	;tmp+="bitsadmin.exe /TRANSFER htmlget "+GRADLE_URL+GRADLE_BIN+" "+path_gradle+"\\"+GRADLE_BIN+"\n"
 	gosub *bat_save
 	;
-	execcmd "go.bat"
+	execcmd2 "go.bat"
 	if stat {
 		gsel 1
 		mes "エラーが発生しました。SDKツールの初期化に失敗しました。"
@@ -1372,11 +1410,11 @@
 	tmp+="gradlew bundleRelease\n"
 	gosub *bat_save
 
-	execcmd "go.bat"
+	execcmd2 "go.bat"
 	if stat : goto *and_fin
 
 	gsel 1
-	mes and_name+".aabを作成しました。"
+	mes "aabファイルを作成しました。"
 	goto *and_fin
 
 *and_exec
@@ -1395,7 +1433,7 @@
 	tmp+="gradlew installDebug\n"
 	gosub *bat_save
 
-	execcmd "go.bat"
+	execcmd2 "go.bat"
 	if stat : goto *and_fin
 
 	gsel 1
@@ -1419,7 +1457,7 @@
 	tmp+="gradlew clean\n"
 	gosub *bat_save
 
-	execcmd "go.bat"
+	execcmd2 "go.bat"
 	if stat : goto *and_fin
 
 	gsel 1
@@ -1568,7 +1606,7 @@
 	tmp+="gradlew assembleDebug\n"
 	gosub *bat_save
 
-	execcmd "go.bat"
+	execcmd2 "go.bat"
 	if stat : goto *and_fin
 
 	gsel 1
@@ -1588,7 +1626,7 @@
 	tmp+="CD "+and_name+"\n"
 	tmp+="gradlew installDebug\n"
 	gosub *bat_save
-	execcmd "go.bat"
+	execcmd2 "go.bat"
 	if stat : goto *and_fin
 
 	i=instr(buf,0,"BUILD SUCCESSFUL")
@@ -1601,7 +1639,7 @@
 	tmp+="CD "+and_name+"\n"
 	tmp+="adb shell am start -n "+build_package+"/tv.hsp.HspActivity\n"
 	gosub *bat_save
-	execcmd "go.bat"
+	execcmd2 "go.bat"
 	if stat : goto *and_fin
 
 *and_norun

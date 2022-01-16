@@ -386,7 +386,7 @@ static int maxsize;
 static int dosp_cursor = 0;
 static int dosp_readpt = 0;
 
-#define PIPEGET_BUFFER_MAX 4096
+#define PIPEGET_BUFFER_MAX 0x8000
 
 static char *Hsp3GetBlockSize(HSPEXINFO* hei, PVal* pv, APTR ap, int* size)
 {
@@ -538,7 +538,7 @@ EXPORT BOOL WINAPI pipeget(PVal *p1, int p2, int p3, int p4 )
 		} else {
 			if( 0 < ReadCount ) {
 				// StdOut‚ð“Ç‚Þ
-				ReadFile(hPipe1Read, pipebuf, min(bsize-1, ReadCount), &ReadCount, NULL) ;
+				ReadFile(hPipe1Read, pipebuf, min(PIPEGET_BUFFER_MAX -1, ReadCount), &ReadCount, NULL) ;
 				pipebuf[ReadCount] = 0;
 				dosp_cursor += ReadCount;
 				if (dosp_cursor>=maxsize) throw HSPERR_BUFFER_OVERFLOW;
@@ -547,7 +547,7 @@ EXPORT BOOL WINAPI pipeget(PVal *p1, int p2, int p3, int p4 )
 				return -2;
 			} else if( 0 < ReadError ) {
 				// StdErr‚ð“Ç‚Þ
-				ReadFile(hPipe3Read, pipebuf, min(bsize-1, ReadError), &ReadError, NULL) ;
+				ReadFile(hPipe3Read, pipebuf, min(PIPEGET_BUFFER_MAX -1, ReadError), &ReadError, NULL) ;
 				pipebuf[ReadError] = 0;
 				dosp_cursor += ReadError;
 				if (dosp_cursor >= maxsize) throw HSPERR_BUFFER_OVERFLOW;
