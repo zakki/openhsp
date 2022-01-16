@@ -11,7 +11,8 @@
 #include <winuser.h>
 #include <shlobj.h>
 
-#include "hspdll.h"
+#include "../hpi3sample/hsp3plugin.h"
+
 #include "fcpoly.h"
 
 int WINAPI hspext_DllMain (HINSTANCE hInstance, DWORD fdwReason, PVOID pvReserved)

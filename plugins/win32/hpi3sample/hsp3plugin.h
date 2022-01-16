@@ -12,9 +12,14 @@
 #define EXPORT __declspec (dllexport)
 #endif
 
-#include "hsp3debug.h"			// hsp3 error code
-#include "hsp3struct.h"			// hsp3 core define
-#include "hspwnd.h"				// hsp3 windows define
+#ifndef HSPWIN
+#define HSPWIN
+#endif
+
+#include "../../../hsp3/hsp3config.h"
+#include "../../../hsp3/hsp3debug.h"			// hsp3 error code
+#include "../../../hsp3/hsp3struct.h"			// hsp3 core define
+#include "../../../hsp3/hspwnd.h"				// hsp3 windows define
 
 extern int p1,p2,p3,p4,p5,p6;
 extern int *type;

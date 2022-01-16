@@ -11,8 +11,9 @@
 #include <winuser.h>
 #include <shlobj.h>
 
+#include <string>
 
-#include "hspdll.h"
+#include "../hpi3sample/hsp3plugin.h"
 
 
 /*------------------------------------------------------------*/
@@ -381,12 +382,41 @@ static STARTUPINFO si;
 static PROCESS_INFORMATION pi;
 static char StdIn[16];
 
-EXPORT BOOL WINAPI pipeexec( char *p1, char *p2, int p3, int p4 )
+static int maxsize;
+static int dosp_cursor = 0;
+static int dosp_readpt = 0;
+
+#define PIPEGET_BUFFER_MAX 4096
+
+static char *Hsp3GetBlockSize(HSPEXINFO* hei, PVal* pv, APTR ap, int* size)
 {
-	//		process execute with pipe (type5)
+	//		(HSP3用)
+	//		pv,apからメモリブロックを取得する
+	//
+	PDAT* pd;
+	HspVarProc* proc;
+	proc = hei->HspFunc_getproc(pv->flag);
+	pv->offset = ap;
+	pd = proc->GetPtr(pv);
+	return (char *)proc->GetBlockSize(pv, pd, size);
+}
+
+EXPORT BOOL WINAPI pipeexec(HSPEXINFO* hei, int _p1, int _p2, int _p3)
+{
+	//		process execute with pipe (type$202)
 	//			pipeexec buf, "command-line", hide_sw
 	//
 	int result;
+	int hidesw;
+	std::string cmdline;
+
+	PVal* pv;
+	APTR ap;
+	char* ss;
+	ap = hei->HspFunc_prm_getva(&pv);		// パラメータ1:変数
+	ss = hei->HspFunc_prm_gets();			// パラメータ2:文字列
+	cmdline = ss;
+	hidesw = hei->HspFunc_prm_getdi(0);		// パラメータ3:整数値
 
 	// Make StdOut Pipe
 	CreatePipe(&hPipe1Read, &hPipe1Write, NULL, 4096);
@@ -404,7 +434,7 @@ EXPORT BOOL WINAPI pipeexec( char *p1, char *p2, int p3, int p4 )
 	memset(&si, 0, sizeof(si));
 	si.cb = sizeof(si);
 
-	if ( p3 ) {
+	if (hidesw) {
 		si.dwFlags = STARTF_USESTDHANDLES;
 	}
 	else {
@@ -419,8 +449,12 @@ EXPORT BOOL WINAPI pipeexec( char *p1, char *p2, int p3, int p4 )
 	*StdIn = 0;
 	strcat ( StdIn, "\x1a" );	 // EOF
 
-	result = CreateProcess( NULL, p2, NULL, NULL, TRUE, NORMAL_PRIORITY_CLASS | CREATE_NO_WINDOW, NULL, NULL, &si, &pi );
-	dosp_buf = p1;
+	result = CreateProcess( NULL, (char *)cmdline.c_str(), NULL, NULL, TRUE, NORMAL_PRIORITY_CLASS | CREATE_NO_WINDOW, NULL, NULL, &si, &pi );
+
+	if (pv->flag != HSPVAR_FLAG_STR) throw HSPERR_TYPE_MISMATCH;
+	dosp_buf = Hsp3GetBlockSize( hei, pv,ap,&maxsize );
+	dosp_cursor = 0;
+	dosp_readpt = 0;
 
 	if ( result ) {
 		dosp_mode = 0;
@@ -433,19 +467,58 @@ EXPORT BOOL WINAPI pipeexec( char *p1, char *p2, int p3, int p4 )
 }
 
 
+static int GetBufferFromCursor(char *buf, BOOL linebreak)
+{
+	//		バッファを取得する
+	//
+	int size = 0;
+	if (dosp_readpt >= dosp_cursor) return 0;
 
-EXPORT BOOL WINAPI pipeget( PVAL2 *p1, int p2, int p3, int p4 )
+	if (linebreak == false) {
+		strcpy(buf, dosp_buf + dosp_readpt);
+		size = dosp_cursor - dosp_readpt;
+		dosp_readpt = dosp_cursor;
+		return size;
+	}
+
+	char a1;
+	while (1) {
+		a1 = dosp_buf[dosp_readpt];
+		if (a1 == 0) break;
+		buf[size] = a1;
+		dosp_readpt++;
+		size++;
+		if (a1 == 10) {
+			break;
+		}
+	}
+	buf[size] = 0;
+	return size;
+}
+
+
+EXPORT BOOL WINAPI pipeget(PVal *p1, int p2, int p3, int p4 )
 {
 	//		get process status (type$83)
-	//			pipeget var
+	//			pipeget var, mode
+	//			(mode:0=normal,1=line)
 	//
 	DWORD ReadCount = 0, ReadError = 0;
 	DWORD WriteSize = 0;
+
+	char pipebuf[PIPEGET_BUFFER_MAX];
+
 	char *Buf;
 	int bsize;
+
 	Buf = p1->pt;
 	bsize = (p1->len[1])<<2;
+	if (p1->flag != HSPVAR_FLAG_STR) throw HSPERR_TYPE_MISMATCH;
+	Buf[0] = 0;
+
 	BOOL bRetStdOut, bRetStdErr;
+	BOOL lineBreak = false;
+	if (p2 != 0) lineBreak = true;
 
 	switch( dosp_mode ) {
 	case 0:
@@ -465,15 +538,21 @@ EXPORT BOOL WINAPI pipeget( PVAL2 *p1, int p2, int p3, int p4 )
 		} else {
 			if( 0 < ReadCount ) {
 				// StdOutを読む
-				ReadFile(hPipe1Read, Buf, min(bsize-1, ReadCount), &ReadCount, NULL) ;
-				Buf[ReadCount] = 0;
-				strcat( dosp_buf, Buf );
+				ReadFile(hPipe1Read, pipebuf, min(bsize-1, ReadCount), &ReadCount, NULL) ;
+				pipebuf[ReadCount] = 0;
+				dosp_cursor += ReadCount;
+				if (dosp_cursor>=maxsize) throw HSPERR_BUFFER_OVERFLOW;
+				strcat( dosp_buf, pipebuf );
+				GetBufferFromCursor( Buf, lineBreak );
 				return -2;
 			} else if( 0 < ReadError ) {
 				// StdErrを読む
-				ReadFile(hPipe3Read, Buf, min(bsize-1, ReadError), &ReadError, NULL) ;
-				Buf[ReadError] = 0;
-				strcat( dosp_buf, Buf );
+				ReadFile(hPipe3Read, pipebuf, min(bsize-1, ReadError), &ReadError, NULL) ;
+				pipebuf[ReadError] = 0;
+				dosp_cursor += ReadError;
+				if (dosp_cursor >= maxsize) throw HSPERR_BUFFER_OVERFLOW;
+				strcat( dosp_buf, pipebuf );
+				GetBufferFromCursor(Buf, lineBreak);
 				return -3;
 			} else if( 0 == ReadCount && 0 == ReadError ) {
 				if( WAIT_OBJECT_0 == WaitForSingleObject(pi.hProcess, 0) ) {
@@ -495,6 +574,7 @@ EXPORT BOOL WINAPI pipeget( PVAL2 *p1, int p2, int p3, int p4 )
 		dosp_mode = -1;
 		return -4;
 	default:
+		if (GetBufferFromCursor(Buf, lineBreak) > 0) return -4;
 		break;
 	}
 	return 0;

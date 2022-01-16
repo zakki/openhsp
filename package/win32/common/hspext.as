@@ -66,7 +66,7 @@
 #func lzcopy lzcopy $16
 #func lzdist lzdist 6
 
-#func pipeexec pipeexec 5
+#func pipeexec pipeexec $202
 #func pipeput pipeput 0
 #func pipeget pipeget $83
 

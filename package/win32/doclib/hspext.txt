@@ -30,6 +30,11 @@ HSPEXT ver3.5  REFERENCE MANUAL                     HSP : Hot Soup Processor
 
 ・更新履歴
 
+	2022/1/16
+
+		pipeexec命令のバッファオーバーフローチェックを追加
+		pipeget命令に1行ずつ取得するオプションを追加
+
 	2016/6/27
 
 		シリアルポートに任意のバイナリデータを送信するcomputb命令を追加

@@ -7,7 +7,9 @@
 #include <windows.h>
 #include <string.h>
 #include <math.h>
-#include "hspdll.h"
+
+#include "../hpi3sample/hsp3plugin.h"
+
 #include "fcpoly.h"
 
 extern int resY0, resY1;		// fcpoly.cpp‚Å’è‹`
@@ -159,7 +161,7 @@ static void bms_send( BMSCR *bm, int x, int y, int sx, int sy )
 	if ( bm->fl_udraw == 0 ) return;
 	if ( bm->fl_dispw == 0 ) return;
 	hdc=GetDC( bm->hwnd );
-	BitBlt( hdc, x-bm->xx, y-bm->yy, sx, sy, bm->hdc,x,y, SRCCOPY );
+	BitBlt( hdc, x-bm->viewx, y-bm->viewy, sx, sy, bm->hdc,x,y, SRCCOPY );
 	ReleaseDC( bm->hwnd,hdc );
 }
 

@@ -11,7 +11,7 @@
 #include <shlobj.h>
 #include <objbase.h>
 
-#include "hspdll.h"
+#include "../hpi3sample/hsp3plugin.h"
 
 /*------------------------------------------------------------*/
 

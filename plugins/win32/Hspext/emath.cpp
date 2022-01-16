@@ -12,9 +12,7 @@
 #include <winuser.h>
 #include <shlobj.h>
 
-
-#include "hspdll.h"
-
+#include "../hpi3sample/hsp3plugin.h"
 
 /*------------------------------------------------------------*/
 /*
