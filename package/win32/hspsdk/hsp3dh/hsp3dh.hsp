@@ -1366,8 +1366,6 @@
 	gsel 1
 	mes and_name+"ƒrƒ‹ƒhˆ—’†..."
 
-	goto *and_fin
-
 	gosub *bat_init
 	tmp+="CD "+and_name+"\n"
 	tmp+="SET RELEASE_PASSWORD="+and_keypass+"\n"
