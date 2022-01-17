@@ -1,0 +1,57 @@
+;	パイプを使用して、コマンドラインを実行するサンプル2
+;	mesboxで作成したテキストボックスに進捗を追記します
+;
+#include "hspext.as"
+
+#define EM_SETSEL $B1
+#define EM_REPLACESEL $C2
+
+	cmd="ipconfig /all"		; 実行するコマンド
+
+	sdim editbuf,$10000		; mesboxバッファ
+	sdim tmp,$100000		; 一時バッファ(1MB)
+	sdim buf,$20000			; 追記バッファ
+	sdim addbuf,$4000		; 中間バッファ
+	sdim lntmp,$2000		; 行取得バッファ
+	sdim ln,$2000			; 行取得バッファ
+
+	mesbox editbuf,640,200,0:obj_edit=stat
+	edit_hwnd = objInfo(obj_edit,2)
+
+	pipeexec buf,cmd,1		; 実行開始
+	if stat : dialog "実行できませんでした" : end
+	mes cmd+" を実行中..."
+
+	repeat
+	pipeget ln,1			; 1行ずつ取得する
+	if stat=0 : break
+	if ln!="" {
+		;	取得した行を中間バッファに貯める
+		getstr lntmp,ln,0,10
+		addbuf+=lntmp+"\n"
+		continue
+	}
+	;	中間バッファを追記する
+	if addbuf!="" {
+		sendmsg edit_hwnd,EM_EM_SETSEL,0,-1
+		sendmsg edit_hwnd,EM_EM_SETSEL,-1,-1
+		sendmsg edit_hwnd,EM_REPLACESEL,-1,addbuf
+		buf+=addbuf
+		addbuf=""
+	}
+	await 10
+	loop
+
+	;	残った中間バッファを追記する
+	if addbuf!="" {
+		sendmsg edit_hwnd,EM_EM_SETSEL,0,-1
+		sendmsg edit_hwnd,EM_EM_SETSEL,-1,-1
+		sendmsg edit_hwnd,EM_REPLACESEL,-1,addbuf
+		buf+=addbuf
+		addbuf=""
+	}
+
+	mes "実行を終了しました"
+	stop
+
+

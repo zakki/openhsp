@@ -179,7 +179,7 @@
 	syscolor 15:boxf
 	sysfont 17
 	color 0,0,0
-	mesbox buftxt,wx,320,1
+	mesbox buftxt,wx,320,0
 
 	objsize 160,24
 	pos wx-168,480-32
@@ -1347,8 +1347,7 @@
 	dialog s1,17,"keystore file"
 	if stat=0 : stop
 	fname=refstr
-	exname=getpath(fname,2)		; ファイル名の拡張子を取得
-	if exname="" : fname+="."+s1
+	fname = getpath(fname,1) + "." + s1
 	and_keyfile=fname
 	objprm 0,and_keyfile
 	;

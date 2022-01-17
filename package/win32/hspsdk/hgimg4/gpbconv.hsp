@@ -5,17 +5,19 @@
 	;
 
 #packopt name "gpbconv"
-#runtime "hsp3c"
 #include "hspext.as"
 #include "mod_gpmaterial.as"
 
 #define APPTITLE "GPB converter"
-#define APPVER "0.7"
+#define APPVER "0.8"
+
+#define EM_SETSEL $B1
+#define EM_REPLACESEL $C2
 
 	randomize
 
 	sdim s1,256:sdim s2,256
-	wx=640:wy=800	; ウィンドウサイズ
+	wx=640:wy=720	; ウィンドウサイズ
 	wtx=640:wty=60
 
 	sdim buf,$10000
@@ -212,17 +214,55 @@
 	if flag_xf : opt+="-xf "
 
 	mes "変換中..."
+	mes ""
 
-	chdir mydir
-	exec "cmd.exe /c "+dir_exe+"\\gameplay-encoder.exe -g:auto "+opt+myfile+" >log.txt"
-
-	mes "終了しました。"
-	button "ログ表示",*go_log
+	buftxt=""
+	mesbox buftxt,wx-16,500,0:id_txt=stat
+	edit_hwnd = objInfo(id_txt,2)
+	objsize 120,24
+	;button "ログ表示",*go_log
 	button "OK",*go_menu
 
-	pos 0,300
-	mesbox buf,wx,500,0:id_txt=stat
+	chdir mydir
+	cmd = dir_exe+"\\gameplay-encoder.exe -g:auto "+opt+myfile
+
+	;	コマンドライン実行(output付き)
+	sdim tmp,$100000
+	sdim buf,$20000
+	sdim addbuf,$4000
+	sdim lntmp,$2000
+	sdim ln,$2000
+	pipeexec tmp,cmd,1
+	if stat : dialog "コマンドラインの実行に失敗しました" : goto *topmenu
+
+	repeat
+	pipeget ln,1
+	if stat=0 : break
+	if ln!="" {
+		getstr lntmp,ln,0,10
+		addbuf+=lntmp+"\n"
+		continue
+	}
+	if addbuf!="" {
+		sendmsg edit_hwnd,EM_EM_SETSEL,0,-1
+		sendmsg edit_hwnd,EM_EM_SETSEL,-1,-1
+		sendmsg edit_hwnd,EM_REPLACESEL,-1,addbuf
+		buf+=addbuf
+		addbuf=""
+	}
+	await 10
+	loop
+	if addbuf!="" {
+		sendmsg edit_hwnd,EM_EM_SETSEL,0,-1
+		sendmsg edit_hwnd,EM_EM_SETSEL,-1,-1
+		sendmsg edit_hwnd,EM_REPLACESEL,-1,addbuf
+		buf+=addbuf
+		addbuf=""
+	}
+
+	mes "終了しました。"
 	goto *topmenu
+
 *go_log
 	notesel buf
 	exist "log.txt"
@@ -251,7 +291,7 @@
 	y=100
 	pos 8,y
 	objsize 600,24
-	listbox i_mat,240,list_mat
+	listbox i_mat,200,list_mat
 
 	if i_mat>=0 {
 		matgui i_mat
