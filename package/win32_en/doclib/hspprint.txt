@@ -1,0 +1,168 @@
+------------------------------------------------------------------------------
+HSPDB ver3.4  REFERENCE MANUAL                      HSP : Hot Soup Processor  
+HSP Extension DLL Reference copyright 2004-2014 (c) onion software
+------------------------------------------------------------------------------
+
+・ Introduction
+
+hspprint can be used on Windows with Hot Soup Processor ver3 or later.
+It is a plug-in that enables image printing on the connected printer device.
+This extension DLL adds new instructions for printing.
+In order to use hspprint.dll, Windows 2000 or later system and valid
+Printer device with driver installed (local or network)
+will become necessary.
+hspprint is a simple plugin for printing a specified image.
+Printing of characters using arbitrary fonts and printing of vector data are not supported.
+Please check the functions of the plug-in before using it.
+
+
+・ Overview of usage
+
+The extension plug-in file, hspprint.dll, has an executable file such as HSP3.EXE.
+Place it in the same location as the directory.
+When using hspprint, be sure to say "#include" hspprint.as "" at the beginning of the script.
+Please add a line. With the above, the function of HSP has been expanded and explained in this reference.
+You will be able to use the instructions you are doing.
+First of all, try the attached sample script (sample / hspprint / test ??. As)
+Try running it. You should be able to see a simple usage example of the enhanced functionality.
+
+
+ツキChange log
+
+	2014/1/11 ver1.0
+
+First version.
+
+
+ツキimportant point
+
+hspprint.dll is a plug-in file (DLL) that is used at the same time as HSP3.EXE.
+Even if you created an EXE file, put hspprint.dll in the same directory as the EXE file.
+It will not work unless it is placed in. Also, you cannot add a DLL to the packfile.
+
+
+繝サ Copyright and contact information
+
+Original software (executable file) created by the user using HSP
+The right belongs to the user who created it.
+You can freely distribute hspprint.dll regardless of whether it is paid or free of charge.
+There is no copyright notice obligation.
+Onion software copyrights the original software created by the user
+I will not insist.
+
+The hspprint plugin is a copyrighted work of onion software.
+onion software is responsible for any damage caused by this program.
+We do not guarantee. Use at your own risk.
+hspprint.dll is compiled with Microsoft Visual C ++.
+
+
+・ Instruction list
+
+prnflags flag Set printer enumeration flags
+enumprn variable Enumerate printers
+propprn variable 1, variable 2, id, type Get printer information
+execprn id, x, y, sx, sy, bx, by, bsx, bsy, "name" Start printer printing
+getdefprn variable Get the specified printer
+prndialog id Opens the printer settings dialog
+
+
+・ Instruction details
+
+
+prnflags flag Set printer enumeration flags
+
+flag = printer enumeration flag
+
+Sets the get flag for the printer list that the hspprint plugin enumerates.
+The value specified for flag becomes the acquisition flag.
+The following flags can be specified. (Multiple can be combined)
+
+Definition name Contents
+		----------------------------------------------
+PRINTER_ENUM_LOCAL Local printer
+PRINTER_ENUM_CONNECTIONS Printers with established connections
+PRINTER_ENUM_SHARED Printer with shared attributes enabled
+
+Default setting if flag value is 0 or omitted
+(PRINTER_ENUM_LOCAL + PRINTER_ENUM_CONNECTIONS) is used.
+
+
+enumprn variable Enumerate printers
+
+Variable = variable name to which the resulting string is assigned
+
+Gets the list of connected printer names as a character string.
+If multiple printers are recognized, a multi-line string will be assigned.
+The number of printers assigned after the instruction is executed is assigned to the system variable stat.
+Printer ID0, printer ID1 ... in order from the first line of the list acquired by the enumprn instruction.
+The ID number will correspond.
+
+
+propprn variable 1, variable 2, id, type Get printer information
+
+Variable 1 = variable name to which the value of result X is assigned
+Variable 2 = variable name to which the value of result Y is assigned
+id = Printer ID (0 ~)
+type = Information type to be retrieved
+
+Get information about the printer and assign it to variable 1 and variable 2.
+Specify the printer ID with id. The printer ID was obtained by the enumprn instruction.
+It will be the one shown by the numerical value of 0,1,2… in order from the list.
+
+The information to be assigned will be the content specified by type (information type).
+Select the information type from the following.
+
+Information type Content
+		----------------------------------------------
+0 Page resolution in Vixel units X, Y
+Physical size of one page X, Y (device unit)
+2 Distance to printable area X, Y (device unit)
+3 Physical page size X, Y (in mm)
+
+If X, Y values are assigned, the variable will be set to an integer type.
+
+
+execprn id, x, y, sx, sy, bx, by, bsx, bsy, "name" Start printer printing
+
+id = Printer ID (0 ~)
+x, y = image position in the print page X, Y coordinates
+sx, sy = image size in printed page X, Y
+bx, by = Upper left X, Y coordinates of the printed image
+bsx, bsy = image size to be printed X, Y
+"name" = document name
+
+The image of the current operation window is printed by the printer.
+Specify the printer ID with id. The printer ID was obtained by the enumprn instruction.
+It will be the one shown by the numerical value of 0,1,2… in order from the list.
+
+The size specified by (bsx, bsy) from the coordinates (bx, by) in the image buffer of HSP
+It will be printed. If bx and by are omitted, 0 is used respectively.
+If bsx and bsy are omitted, the maximum screen size will be used.
+
+You can specify the position in the printed page with (x, y).
+This can be specified on a pixel-by-pixel basis within the page resolution range.
+You can also specify the size in that case with (sx, sy).
+
+"name" is the document name displayed in the print queue.
+If you omit "name", "hspdoc" is used.
+
+
+getdefprn variable Get the specified printer
+
+Variable = variable name to which the resulting string is assigned
+
+Gets the default printer name and assigns it to a variable.
+
+
+prndialog id Opens the printer settings dialog
+
+id = Printer ID (0 ~)
+
+Opens the printer settings dialog.
+Specify the printer ID with id. The printer ID was obtained by the enumprn instruction.
+It will be the one shown by the numerical value of 0,1,2… in order from the list.
+
+
+-------------------------------------------------------------------------------
+                                                HSP users manual / end of file 
+-------------------------------------------------------------------------------
