@@ -72,7 +72,7 @@ void hsp3win_dialog( char *mes )
 #ifdef HSPDEBUG
 char *hsp3win_debug( int type )
 {
-	//		ƒfƒoƒbƒOî•ñæ“¾
+	//		ãƒ‡ãƒãƒƒã‚°æƒ…å ±å–å¾—
 	//
 	char *p;
 	p = code_inidbg();
@@ -98,7 +98,7 @@ char *hsp3win_debug( int type )
 
 int hsp3win_debugopen( void )
 {
-	//		ƒfƒoƒbƒOƒEƒCƒ“ƒhƒD•\¦
+	//		ãƒ‡ãƒãƒƒã‚°ã‚¦ã‚¤ãƒ³ãƒ‰ã‚¥è¡¨ç¤º
 	//
 #ifdef HSPDEBUG
 	if ( h_dbgwin != NULL ) return 0;
@@ -139,7 +139,7 @@ static void hsp3win_dispatch( MSG *msg )
 	DispatchMessage( msg );
 
 #ifndef HSPDEBUG
-	//		ƒXƒNƒŠ[ƒ“ƒZ[ƒo[I—¹ƒ`ƒFƒbƒN
+	//		ã‚¹ã‚¯ãƒªãƒ¼ãƒ³ã‚»ãƒ¼ãƒãƒ¼çµ‚äº†ãƒã‚§ãƒƒã‚¯
 	//
 	if ( ctx->hspstat & HSPSTAT_SSAVER ) {
 		int x,y;
@@ -170,7 +170,7 @@ static void hsp3win_dispatch( MSG *msg )
 				code_sendirq(HSPIRQ_ONKEY, (int)MapVirtualKey(msg->wParam, 2), (int)msg->wParam, (int)msg->lParam);
 #ifdef HSPERR_HANDLE
 			}
-			catch (HSPERROR code) {						// HSPƒGƒ‰[—áŠOˆ—
+			catch (HSPERROR code) {						// HSPã‚¨ãƒ©ãƒ¼ä¾‹å¤–å‡¦ç†
 				code_catcherror(code);
 			}
 #endif
@@ -186,7 +186,7 @@ void hsp3win_msgfunc( HSPCTX *hspctx )
 	int tick;
 
 	while(1) {
-		// logmes ‚È‚çæ‚Éˆ—‚·‚é
+		// logmes ãªã‚‰å…ˆã«å‡¦ç†ã™ã‚‹
 		if ( hspctx->runmode == RUNMODE_LOGMES ) {
 			hspctx->runmode = RUNMODE_RUN;
 #ifdef HSPDEBUG
@@ -217,17 +217,17 @@ void hsp3win_msgfunc( HSPCTX *hspctx )
 			break;
 		case RUNMODE_WAIT:
 			if ( timer_period == -1 ) {
-				//	’Êí‚Ìƒ^ƒCƒ}[
+				//	é€šå¸¸ã®ã‚¿ã‚¤ãƒãƒ¼
 				tick = GetTickCount();
 			} else {
-				//	‚¸“xƒ^ƒCƒ}[
+				//	é«˜ç²¾åº¦ã‚¿ã‚¤ãƒãƒ¼
 				tick = timeGetTime();
 			}
 			hspctx->runmode = code_exec_wait( tick );
 		case RUNMODE_AWAIT:
 			if ( timer_period == -1 ) {
 
-				//	’Êí‚Ìƒ^ƒCƒ}[
+				//	é€šå¸¸ã®ã‚¿ã‚¤ãƒãƒ¼
 				tick = GetTickCount();
 				if ( code_exec_await( tick ) != RUNMODE_RUN ) {
 					MsgWaitForMultipleObjects(0, NULL, FALSE, hspctx->waittick - tick, QS_ALLINPUT );
@@ -239,13 +239,13 @@ void hsp3win_msgfunc( HSPCTX *hspctx )
 #endif
 				}
 			} else {
-				//	‚¸“xƒ^ƒCƒ}[
-				tick = timeGetTime()+5;				// ‚·‚±‚µ‘‚ß‚É”²‚¯‚é‚æ‚¤‚É‚·‚é
+				//	é«˜ç²¾åº¦ã‚¿ã‚¤ãƒãƒ¼
+				tick = timeGetTime()+5;				// ã™ã“ã—æ—©ã‚ã«æŠœã‘ã‚‹ã‚ˆã†ã«ã™ã‚‹
 				if ( code_exec_await( tick ) != RUNMODE_RUN ) {
 					MsgWaitForMultipleObjects(0, NULL, FALSE, hspctx->waittick - tick, QS_ALLINPUT );
 				} else {
 					tick = timeGetTime();
-					while( tick < hspctx->waittick ) {	// ×‚©‚¢wait‚ğæ‚é
+					while( tick < hspctx->waittick ) {	// ç´°ã‹ã„waitã‚’å–ã‚‹
 						Sleep(1);
 						tick = timeGetTime();
 					}
@@ -282,7 +282,7 @@ void hsp3win_msgfunc( HSPCTX *hspctx )
 
 int hsp3win_init( HINSTANCE hInstance, char *startfile )
 {
-	//		ƒVƒXƒeƒ€ŠÖ˜A‚Ì‰Šú‰»
+	//		ã‚·ã‚¹ãƒ†ãƒ é–¢é€£ã®åˆæœŸåŒ–
 	//		( mode:0=debug/1=release )
 	//
 	int a,orgexe, mode;
@@ -308,7 +308,7 @@ int hsp3win_init( HINSTANCE hInstance, char *startfile )
 #endif
 	InitCommonControls();
 
-	//		HSPŠÖ˜A‚Ì‰Šú‰»
+	//		HSPé–¢é€£ã®åˆæœŸåŒ–
 	//
 	hsp = new Hsp3();
 	hsp->hspctx.instance = (void *)hInstance;
@@ -335,7 +335,7 @@ int hsp3win_init( HINSTANCE hInstance, char *startfile )
 #endif
 
 
-	//		Àsƒtƒ@ƒCƒ‹‚©ƒfƒoƒbƒO’†‚©‚ğ’²‚×‚é
+	//		å®Ÿè¡Œãƒ•ã‚¡ã‚¤ãƒ«ã‹ãƒ‡ãƒãƒƒã‚°ä¸­ã‹ã‚’èª¿ã¹ã‚‹
 	//
 	mode = 0;
 	orgexe=0;
@@ -359,7 +359,7 @@ int hsp3win_init( HINSTANCE hInstance, char *startfile )
 		hsp->SetPackValue( hsp_sum, hsp_dec );
 	}
 #ifndef HSPWINGUIDLL
-	//		‹N“®ƒtƒ@ƒCƒ‹‚ÌƒfƒBƒŒƒNƒgƒŠ‚ğƒJƒŒƒ“ƒg‚É‚·‚é
+	//		èµ·å‹•ãƒ•ã‚¡ã‚¤ãƒ«ã®ãƒ‡ã‚£ãƒ¬ã‚¯ãƒˆãƒªã‚’ã‚«ãƒ¬ãƒ³ãƒˆã«ã™ã‚‹
 	//
 #ifndef HSPDEBUG
 	if (( hsp_wd & 2 ) == 0 ) {
@@ -401,7 +401,7 @@ int hsp3win_init( HINSTANCE hInstance, char *startfile )
 		if (a1==TEXT('s')) {
 			ShowCursor(FALSE);
 		} else {
-			hsp_ss = 0;								// ƒXƒNƒŠ[ƒ“ƒZ[ƒo[ˆÈŠO‚Íƒ‚[ƒhOFF
+			hsp_ss = 0;								// ã‚¹ã‚¯ãƒªãƒ¼ãƒ³ã‚»ãƒ¼ãƒãƒ¼æ™‚ä»¥å¤–ã¯ãƒ¢ãƒ¼ãƒ‰OFF
 		}
 		ctx->hspstat |= hsp_ss;
 	}
@@ -417,12 +417,12 @@ int hsp3win_init( HINSTANCE hInstance, char *startfile )
 #endif
 
 
-	// timerGetTimeŠÖ”‚É‚æ‚é¸“xƒAƒbƒv(ƒÊ•b’PˆÊ)
+	// timerGetTimeé–¢æ•°ã«ã‚ˆã‚‹ç²¾åº¦ã‚¢ãƒƒãƒ—(Î¼ç§’å˜ä½)
 	timer_period = -1;
 	if (( ctx->hsphed->bootoption & HSPHED_BOOTOPT_NOMMTIMER ) == 0 ) {
 		TIMECAPS caps;
 		if ( timeGetDevCaps(&caps,sizeof(TIMECAPS)) == TIMERR_NOERROR ){
-			// ƒ}ƒ‹ƒ`ƒƒfƒBƒAƒ^ƒCƒ}[‚ÌƒT[ƒrƒX¸“x‚ğÅ‘å‚É
+			// ãƒãƒ«ãƒãƒ¡ãƒ‡ã‚£ã‚¢ã‚¿ã‚¤ãƒãƒ¼ã®ã‚µãƒ¼ãƒ“ã‚¹ç²¾åº¦ã‚’æœ€å¤§ã«
 			timer_period = caps.wPeriodMin;
 			timeBeginPeriod( timer_period );
 		}
@@ -467,7 +467,7 @@ void hsp3win_error(void)
 
 void hsp3win_bye( void )
 {
-	//		ƒ^ƒCƒ}[‚ÌŠJ•ú
+	//		ã‚¿ã‚¤ãƒãƒ¼ã®é–‹æ”¾
 	//
 #ifdef HSPERR_HANDLE
 	try {
@@ -475,7 +475,7 @@ void hsp3win_bye( void )
 		hsp->Dispose();
 #ifdef HSPERR_HANDLE
 	}
-	catch (HSPERROR code) {						// HSPƒGƒ‰[—áŠOˆ—
+	catch (HSPERROR code) {						// HSPã‚¨ãƒ©ãƒ¼ä¾‹å¤–å‡¦ç†
 		hsp->hspctx.err = code;
 		hsp3win_error();
 	}
@@ -487,17 +487,17 @@ void hsp3win_bye( void )
 	}
 
 #ifdef HSPDEBUG
-	//		ƒfƒoƒbƒOƒEƒCƒ“ƒhƒD‚Ì‰ğ•ú
+	//		ãƒ‡ãƒãƒƒã‚°ã‚¦ã‚¤ãƒ³ãƒ‰ã‚¥ã®è§£æ”¾
 	//
 	if ( h_dbgwin != NULL ) { FreeLibrary( h_dbgwin ); h_dbgwin = NULL; }
 #endif
 
-	//		HSPŠÖ˜A‚Ì‰ğ•ú
+	//		HSPé–¢é€£ã®è§£æ”¾
 	//
 	if (hsp != NULL) { delete hsp; hsp = NULL; }
 	DllManager().free_all_library();
 
-	//		ƒVƒXƒeƒ€ŠÖ˜A‚Ì‰ğ•ú
+	//		ã‚·ã‚¹ãƒ†ãƒ é–¢é€£ã®è§£æ”¾
 	//
 #ifndef HSP_COM_UNSUPPORTED
 	OleUninitialize();
@@ -508,14 +508,14 @@ void hsp3win_bye( void )
 
 int hsp3win_exec( void )
 {
-	//		ÀsƒƒCƒ“‚ğŒÄ‚Ño‚·
+	//		å®Ÿè¡Œãƒ¡ã‚¤ãƒ³ã‚’å‘¼ã³å‡ºã™
 	//
 	int runmode;
 	int endcode;
 rerun:
 	hsp3win_msgfunc( ctx );
 
-	//		ƒfƒoƒbƒOƒEƒCƒ“ƒhƒD—p
+	//		ãƒ‡ãƒãƒƒã‚°ã‚¦ã‚¤ãƒ³ãƒ‰ã‚¥ç”¨
 	//
 #ifdef HSPDEBUG
 	if ( ctx->hsphed->bootoption & HSPHED_BOOTOPT_DEBUGWIN ) {
@@ -523,7 +523,7 @@ rerun:
 	}
 #endif
 
-	//		Às‚ÌŠJn
+	//		å®Ÿè¡Œã®é–‹å§‹
 	//
 	runmode = code_execcmd();
 	if ( runmode == RUNMODE_ERROR ) {

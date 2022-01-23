@@ -1,8 +1,8 @@
 
 //
 //	HSP3 stack support
-//	(”Ä—pƒXƒ^ƒbƒNƒ}ƒl[ƒWƒƒ[)
-//	(int,double,string‚È‚Ç‚Ì‰Â•Ï’·ƒf[ƒ^‚ğpush,pop‚Å‚«‚Ü‚·)
+//	(æ±ç”¨ã‚¹ã‚¿ãƒƒã‚¯ãƒãƒãƒ¼ã‚¸ãƒ£ãƒ¼)
+//	(int,double,stringãªã©ã®å¯å¤‰é•·ãƒ‡ãƒ¼ã‚¿ã‚’push,popã§ãã¾ã™)
 //	onion software/onitama 2004/6
 //
 #include <stdio.h>

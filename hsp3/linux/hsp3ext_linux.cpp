@@ -34,7 +34,7 @@ static int reset_flag = 0;
 
 static void InitSystemInformation(void)
 {
-	//		ƒRƒ}ƒ“ƒhƒ‰ƒCƒ“ & ƒVƒXƒeƒ€ƒtƒHƒ‹ƒ_ŠÖ˜A
+	//		ã‚³ãƒãƒ³ãƒ‰ãƒ©ã‚¤ãƒ³ & ã‚·ã‚¹ãƒ†ãƒ ãƒ•ã‚©ãƒ«ãƒ€é–¢é€£
 	char *cl;
 	char dir_hsp[HSP_MAX_PATH+1];
 	int p,i;
@@ -80,11 +80,11 @@ static void InitSystemInformation(void)
 static int cmdfunc_dllcmd( int cmd )
 {
 	//		cmdfunc : TYPE_DLLCTRL
-	//		(Šg’£DLLƒRƒ“ƒgƒ[ƒ‹ƒRƒ}ƒ“ƒh)
+	//		(æ‹¡å¼µDLLã‚³ãƒ³ãƒˆãƒ­ãƒ¼ãƒ«ã‚³ãƒãƒ³ãƒ‰)
 	//
-	code_next();							// Ÿ‚ÌƒR[ƒh‚ğæ“¾(Å‰‚É•K‚¸•K—v‚Å‚·)
+	code_next();							// æ¬¡ã®ã‚³ãƒ¼ãƒ‰ã‚’å–å¾—(æœ€åˆã«å¿…ãšå¿…è¦ã§ã™)
 
-	switch( cmd ) {							// ƒTƒuƒRƒ}ƒ“ƒh‚²‚Æ‚Ì•ªŠò
+	switch( cmd ) {							// ã‚µãƒ–ã‚³ãƒãƒ³ãƒ‰ã”ã¨ã®åˆ†å²
 	case 0x00:								// newcom
 		throw (HSPERR_UNSUPPORTED_FUNCTION);
 
@@ -99,10 +99,10 @@ static int cmdfunc_dllcmd( int cmd )
 static void *reffunc_dllcmd( int *type_res, int arg )
 {
 	//		reffunc : TYPE_DLLFUNC
-	//		(Šg’£DLLŠÖ”)
+	//		(æ‹¡å¼µDLLé–¢æ•°)
 	//
 
-	//			'('‚Ån‚Ü‚é‚©‚ğ’²‚×‚é
+	//			'('ã§å§‹ã¾ã‚‹ã‹ã‚’èª¿ã¹ã‚‹
 	//
 	if ( *type != TYPE_MARK ) throw ( HSPERR_INVALID_FUNCPARAM );
 	if ( *val != '(' ) throw ( HSPERR_INVALID_FUNCPARAM );
@@ -111,7 +111,7 @@ static void *reffunc_dllcmd( int *type_res, int arg )
 	//exec_dllcmd( arg, STRUCTDAT_OT_FUNCTION );
 	reffunc_intfunc_ivalue = hspctx->stat;
 
-	//			')'‚ÅI‚í‚é‚©‚ğ’²‚×‚é
+	//			')'ã§çµ‚ã‚ã‚‹ã‹ã‚’èª¿ã¹ã‚‹
 	//
 	if ( *type != TYPE_MARK ) throw ( HSPERR_INVALID_FUNCPARAM );
 	if ( *val != ')' ) throw ( HSPERR_INVALID_FUNCPARAM );
@@ -186,43 +186,43 @@ char *hsp3ext_sysinfo(int p2, int* res, char* outbuf)
 
 char* hsp3ext_getdir(int id)
 {
-	//		dirinfo–½—ß‚Ì“à—e‚ğİ’è‚·‚é
+	//		dirinfoå‘½ä»¤ã®å†…å®¹ã‚’è¨­å®šã™ã‚‹
 	//
 	char *p = hspctx->stmp;
 	*p = 0;
 	int cutlast = 0;
 
 	switch( id ) {
-	case 0:				//    ƒJƒŒƒ“ƒg(Œ»İ‚Ì)ƒfƒBƒŒƒNƒgƒŠ
+	case 0:				//    ã‚«ãƒ¬ãƒ³ãƒˆ(ç¾åœ¨ã®)ãƒ‡ã‚£ãƒ¬ã‚¯ãƒˆãƒª
 #if defined(HSPLINUX)||defined(HSPEMSCRIPTEN)
 		getcwd( p, HSP_MAX_PATH );
 		cutlast = 1;
 #endif
 		break;
-	case 1:				//    HSP‚ÌÀsƒtƒ@ƒCƒ‹‚ª‚ ‚éƒfƒBƒŒƒNƒgƒŠ
+	case 1:				//    HSPã®å®Ÿè¡Œãƒ•ã‚¡ã‚¤ãƒ«ãŒã‚ã‚‹ãƒ‡ã‚£ãƒ¬ã‚¯ãƒˆãƒª
 		p = hspctx->modfilename;
 		break;
-	case 2:				//    WindowsƒfƒBƒŒƒNƒgƒŠ
+	case 2:				//    Windowsãƒ‡ã‚£ãƒ¬ã‚¯ãƒˆãƒª
 		break;
-	case 3:				//    Windows‚ÌƒVƒXƒeƒ€ƒfƒBƒŒƒNƒgƒŠ
+	case 3:				//    Windowsã®ã‚·ã‚¹ãƒ†ãƒ ãƒ‡ã‚£ãƒ¬ã‚¯ãƒˆãƒª
 		break;
-	case 4:				//    ƒRƒ}ƒ“ƒhƒ‰ƒCƒ“•¶š—ñ
+	case 4:				//    ã‚³ãƒãƒ³ãƒ‰ãƒ©ã‚¤ãƒ³æ–‡å­—åˆ—
 		p = hspctx->cmdline;
 		break;
-	case 5:				//    HSPTV‘fŞ‚ª‚ ‚éƒfƒBƒŒƒNƒgƒŠ
+	case 5:				//    HSPTVç´ æãŒã‚ã‚‹ãƒ‡ã‚£ãƒ¬ã‚¯ãƒˆãƒª
 		p = hspctx->tvfoldername;
 		break;
-	case 6:				//    ƒ‰ƒ“ƒQ[ƒWƒR[ƒh
+	case 6:				//    ãƒ©ãƒ³ã‚²ãƒ¼ã‚¸ã‚³ãƒ¼ãƒ‰
 		p = hspctx->langcode;
 		break;
-	case 0x10005:			//    ƒ}ƒCƒhƒLƒ…ƒƒ“ƒg
+	case 0x10005:			//    ãƒã‚¤ãƒ‰ã‚­ãƒ¥ãƒ¡ãƒ³ãƒˆ
 		p = hspctx->homefoldername;
 		break;
 	default:
 		throw HSPERR_ILLEGAL_FUNCTION;
 	}
 
-	//		ÅŒã‚Ì'/'‚ğæ‚èœ‚­
+	//		æœ€å¾Œã®'/'ã‚’å–ã‚Šé™¤ã
 	//
 	if (cutlast) {
 		CutLastChr(p, '/');

@@ -10,9 +10,9 @@
 #include "hgio.h"
 #include "supio.h"
 
-static int	sysreq[SYSREQ_MAX];		// ‰ŠúÝ’èƒf[ƒ^ƒv[ƒ‹
-static float sysreqf[SYSREQ_MAX];		// ‰ŠúÝ’èƒf[ƒ^ƒv[ƒ‹
-static char dbgmsg[512];			// ƒfƒoƒbƒO—pƒƒbƒZ[ƒWƒv[ƒ‹
+static int	sysreq[SYSREQ_MAX];		// åˆæœŸè¨­å®šãƒ‡ãƒ¼ã‚¿ãƒ—ãƒ¼ãƒ«
+static float sysreqf[SYSREQ_MAX];		// åˆæœŸè¨­å®šãƒ‡ãƒ¼ã‚¿ãƒ—ãƒ¼ãƒ«
+static char dbgmsg[512];			// ãƒ‡ãƒãƒƒã‚°ç”¨ãƒ¡ãƒƒã‚»ãƒ¼ã‚¸ãƒ—ãƒ¼ãƒ«
 
 void SetSysReq( int reqid, int val )
 {

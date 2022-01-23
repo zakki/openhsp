@@ -6,7 +6,7 @@
 #define __hspvar_variant_h
 
 
-#ifndef HSP_COM_UNSUPPORTED		//iCOM ƒTƒ|[ƒg‚È‚µ”Å‚Ìƒrƒ‹ƒh‚Íƒtƒ@ƒCƒ‹‘S‘Ì‚ğ–³‹j
+#ifndef HSP_COM_UNSUPPORTED		//ï¼ˆCOM ã‚µãƒãƒ¼ãƒˆãªã—ç‰ˆã®ãƒ“ãƒ«ãƒ‰æ™‚ã¯ãƒ•ã‚¡ã‚¤ãƒ«å…¨ä½“ã‚’ç„¡è¦–ï¼‰
 
 
 #define WIN32_LEAN_AND_MEAN		// Exclude rarely-used stuff from Windows headers
@@ -42,10 +42,10 @@ enum {
 #define HSPVAR_VARIANT_PARAM_MAX 12
 
 typedef struct {
-	VARIANT *var;							// •Ï”‚Ì”z—ñ—v‘f (VARIANT)
-	int id;									// ƒvƒƒpƒeƒBID
-	int dimcount;							// SafeArray ŸŒ³”
-	long index[HSPVAR_VARIANT_PARAM_MAX];	// SafeArray ƒCƒ“ƒfƒbƒNƒX
+	VARIANT *var;							// å¤‰æ•°ã®é…åˆ—è¦ç´  (VARIANT)
+	int id;									// ãƒ—ãƒ­ãƒ‘ãƒ†ã‚£ID
+	int dimcount;							// SafeArray æ¬¡å…ƒæ•°
+	long index[HSPVAR_VARIANT_PARAM_MAX];	// SafeArray ã‚¤ãƒ³ãƒ‡ãƒƒã‚¯ã‚¹
 } VariantParam;
 
 void HspVarVariant_Init( HspVarProc *p );

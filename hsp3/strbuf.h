@@ -25,21 +25,21 @@ typedef struct
 {
 	//	String Data structure
 	//
-	short flag;						// 使用フラグ(0=none/other=busy)
-	short exflag;					// 拡張フラグ(未使用)
-	STRBUF *intptr;					// 自身のアドレス
-	int size;						// 確保サイズ
-	char *ptr;						// バッファポインタ
-	STRBUF *extptr;					// 外部バッファポインタ(STRINF)
-	void *opt;						// オプション(ユーザー定義用)
+	short flag;						// 菴ｿ逕ｨ繝輔Λ繧ｰ(0=none/other=busy)
+	short exflag;					// 諡｡蠑ｵ繝輔Λ繧ｰ(譛ｪ菴ｿ逕ｨ)
+	STRBUF *intptr;					// 閾ｪ霄ｫ縺ｮ繧｢繝峨Ξ繧ｹ
+	int size;						// 遒ｺ菫昴し繧､繧ｺ
+	char *ptr;						// 繝舌ャ繝輔ぃ繝昴う繝ｳ繧ｿ
+	STRBUF *extptr;					// 螟夜Κ繝舌ャ繝輔ぃ繝昴う繝ｳ繧ｿ(STRINF)
+	void *opt;						// 繧ｪ繝励す繝ｧ繝ｳ(繝ｦ繝ｼ繧ｶ繝ｼ螳夂ｾｩ逕ｨ)
 } STRINF;
 
 struct STRBUF
 {
 	//	String Data structure
 	//
-	STRINF inf;						// バッファ情報
-	char data[STRBUF_BLOCKSIZE] HSP_ALIGN_DOUBLE;	// 内部バッファ
+	STRINF inf;						// 繝舌ャ繝輔ぃ諠�蝣ｱ
+	char data[STRBUF_BLOCKSIZE] HSP_ALIGN_DOUBLE;	// 蜀�驛ｨ繝舌ャ繝輔ぃ
 };
 
 void sbInit( void );

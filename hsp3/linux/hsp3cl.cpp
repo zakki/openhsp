@@ -80,7 +80,7 @@ void hsp3cl_msgfunc( HSPCTX *hspctx )
 
 		switch( hspctx->runmode ) {
 		case RUNMODE_STOP:
-			//		stop–½—ß
+			//		stopå‘½ä»¤
 			if ( cl_option & HSP3CL_OPT1_ERRSTOP ) {
 				hsp3win_dialog( "[STOP] Press any key..." );
 				getchar();
@@ -88,22 +88,22 @@ void hsp3cl_msgfunc( HSPCTX *hspctx )
 			throw HSPERR_NONE;
 
 		case RUNMODE_WAIT:
-			//		wait–½—ß‚É‚æ‚éŠÔ‘Ò‚¿
-			//		(ÀÛ‚Ícode_exec_wait‚Étick count‚ğ“n‚·)
+			//		waitå‘½ä»¤ã«ã‚ˆã‚‹æ™‚é–“å¾…ã¡
+			//		(å®Ÿéš›ã¯code_exec_waitã«tick countã‚’æ¸¡ã™)
 			usleep( ( hspctx->waitcount) * 10000 );
 			//hspctx->runmode = code_exec_wait( tick );
 			hspctx->runmode = RUNMODE_RUN;
 			break;
 
 		case RUNMODE_AWAIT:
-			//		await–½—ß‚É‚æ‚éŠÔ‘Ò‚¿
-			//		(ÀÛ‚Ícode_exec_await‚Étick count‚ğ“n‚·)
+			//		awaitå‘½ä»¤ã«ã‚ˆã‚‹æ™‚é–“å¾…ã¡
+			//		(å®Ÿéš›ã¯code_exec_awaitã«tick countã‚’æ¸¡ã™)
 			tick = gettick();
 			if ( code_exec_await( tick ) != RUNMODE_RUN ) {
 					usleep( ( hspctx->waittick - tick) * 1000 );
 			} else {
 				tick = gettick();
-				while( tick < hspctx->waittick ) {	// ×‚©‚¢wait‚ğæ‚é
+				while( tick < hspctx->waittick ) {	// ç´°ã‹ã„waitã‚’å–ã‚‹
 					usleep( 10000 );
 					tick = gettick();
 				}
@@ -114,7 +114,7 @@ void hsp3cl_msgfunc( HSPCTX *hspctx )
 			break;
 
 		case RUNMODE_END:
-			//		end–½—ß
+			//		endå‘½ä»¤
 			if ( cl_option & HSP3CL_OPT1_ERRSTOP ) {
 				hsp3win_dialog( "[END] Press any key..." );
 				getchar();
@@ -125,12 +125,12 @@ void hsp3cl_msgfunc( HSPCTX *hspctx )
 			throw HSPERR_RETURN_WITHOUT_GOSUB;
 
 		case RUNMODE_ASSERT:
-			//		assert‚Å’†’f
+			//		assertã§ä¸­æ–­
 			hspctx->runmode = RUNMODE_STOP;
 			break;
 
 		case RUNMODE_LOGMES:
-			//		logmes–½—ß
+			//		logmeså‘½ä»¤
 			hspctx->runmode = RUNMODE_RUN;
 			break;
 
@@ -143,7 +143,7 @@ void hsp3cl_msgfunc( HSPCTX *hspctx )
 
 int hsp3cl_init( char *startfile )
 {
-	//		ƒVƒXƒeƒ€ŠÖ˜A‚Ì‰Šú‰»
+	//		ã‚·ã‚¹ãƒ†ãƒ é–¢é€£ã®åˆæœŸåŒ–
 	//		( mode:0=debug/1=release )
 	//
 	int a,orgexe, mode;
@@ -151,7 +151,7 @@ int hsp3cl_init( char *startfile )
 	char a1;
 	char *ss;
 
-	//		HSPŠÖ˜A‚Ì‰Šú‰»
+	//		HSPé–¢é€£ã®åˆæœŸåŒ–
 	//
 	hsp = new Hsp3();
 
@@ -169,7 +169,7 @@ int hsp3cl_init( char *startfile )
 	}
 #endif
 
-	//		Àsƒtƒ@ƒCƒ‹‚©ƒfƒoƒbƒO’†‚©‚ğ’²‚×‚é
+	//		å®Ÿè¡Œãƒ•ã‚¡ã‚¤ãƒ«ã‹ãƒ‡ãƒãƒƒã‚°ä¸­ã‹ã‚’èª¿ã¹ã‚‹
 	//
 	mode = 0;
 	orgexe = 0;
@@ -192,9 +192,9 @@ int hsp3cl_init( char *startfile )
 
 	ctx = &hsp->hspctx;
 
-	//		ƒRƒ}ƒ“ƒhƒ‰ƒCƒ“ŠÖ˜A
-	hsp->SetCommandLinePrm( cl_cmdline );		// ƒRƒ}ƒ“ƒhƒ‰ƒCƒ“ƒpƒ‰ƒ[ƒ^[‚ğ•Û‘¶
-	hsp->SetModuleFilePrm( cl_modname );			// ƒ‚ƒWƒ…[ƒ‹–¼‚ğ•Û‘¶
+	//		ã‚³ãƒãƒ³ãƒ‰ãƒ©ã‚¤ãƒ³é–¢é€£
+	hsp->SetCommandLinePrm( cl_cmdline );		// ã‚³ãƒãƒ³ãƒ‰ãƒ©ã‚¤ãƒ³ãƒ‘ãƒ©ãƒ¡ãƒ¼ã‚¿ãƒ¼ã‚’ä¿å­˜
+	hsp->SetModuleFilePrm( cl_modname );			// ãƒ¢ã‚¸ãƒ¥ãƒ¼ãƒ«åã‚’ä¿å­˜
 
 	//		Register Type
 	//
@@ -222,7 +222,7 @@ int hsp3cl_init( char *startfile )
 
 static void hsp3cl_bye( void )
 {
-	//		HSPŠÖ˜A‚Ì‰ğ•ú
+	//		HSPé–¢é€£ã®è§£æ”¾
 	//
 	delete hsp;
 }
@@ -230,7 +230,7 @@ static void hsp3cl_bye( void )
 
 void hsp3cl_option( int opt )
 {
-	//		HSP3CLƒIƒvƒVƒ‡ƒ“İ’è
+	//		HSP3CLã‚ªãƒ—ã‚·ãƒ§ãƒ³è¨­å®š
 	//
 	cl_option = opt;
 }
@@ -238,17 +238,17 @@ void hsp3cl_option( int opt )
 
 void hsp3cl_cmdline( char *cmdline )
 {
-	//		HSP3CLƒIƒvƒVƒ‡ƒ“İ’è
+	//		HSP3CLã‚ªãƒ—ã‚·ãƒ§ãƒ³è¨­å®š
 	//
-	cl_cmdline = cmdline;						// ƒRƒ}ƒ“ƒhƒ‰ƒCƒ“ƒpƒ‰ƒ[ƒ^[‚ğ“ü‚ê‚é
+	cl_cmdline = cmdline;						// ã‚³ãƒãƒ³ãƒ‰ãƒ©ã‚¤ãƒ³ãƒ‘ãƒ©ãƒ¡ãƒ¼ã‚¿ãƒ¼ã‚’å…¥ã‚Œã‚‹
 }
 
 
 void hsp3cl_modname( char *modname )
 {
-	//		HSP3CLƒIƒvƒVƒ‡ƒ“İ’è
+	//		HSP3CLã‚ªãƒ—ã‚·ãƒ§ãƒ³è¨­å®š
 	//
-	cl_modname = modname;						// arg[0]ƒpƒ‰ƒ[ƒ^[‚ğ“ü‚ê‚é
+	cl_modname = modname;						// arg[0]ãƒ‘ãƒ©ãƒ¡ãƒ¼ã‚¿ãƒ¼ã‚’å…¥ã‚Œã‚‹
 }
 
 
@@ -286,7 +286,7 @@ void hsp3cl_error( void )
 
 int hsp3cl_exec( void )
 {
-	//		ÀsƒƒCƒ“‚ğŒÄ‚Ño‚·
+	//		å®Ÿè¡Œãƒ¡ã‚¤ãƒ³ã‚’å‘¼ã³å‡ºã™
 	//
 	int runmode;
 	int endcode;
@@ -297,7 +297,7 @@ int hsp3cl_exec( void )
 
 rerun:
 
-	//		Às‚ÌŠJn
+	//		å®Ÿè¡Œã®é–‹å§‹
 	//
 	runmode = code_execcmd();
 	if ( runmode == RUNMODE_ERROR ) {

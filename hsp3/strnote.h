@@ -4,9 +4,9 @@
 #ifndef __strnote_h
 #define __strnote_h
 
-#define STRNOTE_FIND_MATCH 0	// Š®‘Sˆê’v
-#define STRNOTE_FIND_FIRST 1	// ‘O•ûˆê’v
-#define STRNOTE_FIND_INSTR 2	// •”•ªˆê’v
+#define STRNOTE_FIND_MATCH 0	// å®Œå…¨ä¸€è‡´
+#define STRNOTE_FIND_FIRST 1	// å‰æ–¹ä¸€è‡´
+#define STRNOTE_FIND_INSTR 2	// éƒ¨åˆ†ä¸€è‡´
 
 //  class
 class CStrNote {

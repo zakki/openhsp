@@ -1,6 +1,4 @@
 
-#pragma execution_character_set ("utf-8")
-
 #define HSPAPICHAR wchar_t
 #define HSPCHAR char
 

@@ -4,7 +4,7 @@
 //	onion software/onitama 2004/10
 //
 
-#ifndef HSP_COM_UNSUPPORTED		//�iCOM �T�|�[�g�Ȃ��ł̃r���h���̓t�@�C���S�̂𖳎��j
+#ifndef HSP_COM_UNSUPPORTED		//（COM サポートなし版のビルド時はファイル全体を無視）
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -38,9 +38,9 @@ static PDAT *HspVarComobj_GetPtr( PVal *pval )
 
 static void *HspVarComobj_Cnv( const void *buffer, int flag )
 {
-	//		���N�G�X�g���ꂽ�^ -> �����̌^�ւ̕ϊ����s�Ȃ�
-	//		(�g�ݍ��݌^�ɂ̂ݑΉ���OK)
-	//		(�Q�ƌ��̃f�[�^��j�󂵂Ȃ�����)
+	//		リクエストされた型 -> 自分の型への変換を行なう
+	//		(組み込み型にのみ対応でOK)
+	//		(参照元のデータを破壊しないこと)
 	//
 	throw HSPERR_INVALID_TYPE;
 	return (void *)buffer;
@@ -49,10 +49,10 @@ static void *HspVarComobj_Cnv( const void *buffer, int flag )
 
 static void *HspVarComobj_CnvCustom( const void *buffer, int flag )
 {
-	//		(�J�X�^���^�C�v�̂�)
-	//		�����̌^ -> ���N�G�X�g���ꂽ�^ �ւ̕ϊ����s�Ȃ�
-	//		(�g�ݍ��݌^�ɑΉ�������)
-	//		(�Q�ƌ��̃f�[�^��j�󂵂Ȃ�����)
+	//		(カスタムタイプのみ)
+	//		自分の型 -> リクエストされた型 への変換を行なう
+	//		(組み込み型に対応させる)
+	//		(参照元のデータを破壊しないこと)
 	//
 	throw HSPERR_INVALID_TYPE;
 	return (void *)buffer;
@@ -60,14 +60,14 @@ static void *HspVarComobj_CnvCustom( const void *buffer, int flag )
 
 static void HspVarComobj_Free( PVal *pval )
 {
-	//		PVAL�|�C���^�̕ϐ����������������
+	//		PVALポインタの変数メモリを解放する
 	//
 	IUnknown** ppunk;
 	if ( pval->master ) {
 		FreeDispParams( (ComDispParams *)pval->master );
 	}
 	if ( pval->mode == HSPVAR_MODE_MALLOC ) {
-		// (�ꎞ�ϐ��Ɋ܂܂��I�u�W�F�N�g�� Release ���Ȃ�)
+		// (一時変数に含まれるオブジェクトは Release しない)
 		if ( (pval->support & HSPVAR_SUPPORT_TEMPVAR) == 0 ) {
 #ifdef HSP_COMOBJ_DEBUG
 			COM_DBG_MSG( "HspVarComobj_Free()\n" );
@@ -87,17 +87,17 @@ static void HspVarComobj_Free( PVal *pval )
 
 static void HspVarComobj_Alloc( PVal *pval, const PVal *pval2 )
 {
-	//		pval�ϐ����K�v�Ƃ���T�C�Y���m�ۂ���B
-	//		(pval�����łɊm�ۂ���Ă��郁��������͌Ăяo�������s�Ȃ�)
-	//		(pval2��NULL�̏ꍇ�́A�V�K�f�[�^)
-	//		(pval2���w�肳��Ă���ꍇ�́Apval2�̓��e���p�����čĊm��)
+	//		pval変数が必要とするサイズを確保する。
+	//		(pvalがすでに確保されているメモリ解放は呼び出し側が行なう)
+	//		(pval2がNULLの場合は、新規データ)
+	//		(pval2が指定されている場合は、pval2の内容を継承して再確保)
 	//
 	int count,size;
 	IUnknown **ppunk;
 #ifdef HSP_COMOBJ_DEBUG
 	COM_DBG_MSG( "HspVarComobj_Alloc()\n" );
 #endif
-	if ( pval->len[1] < 1 ) pval->len[1] = 1;		// �z����Œ� 1 �͊m�ۂ���
+	if ( pval->len[1] < 1 ) pval->len[1] = 1;		// 配列を最低 1 は確保する
 	count = HspVarCoreCountElems(pval);
 	size  = count * sizeof( IUnknown* );
 	ppunk = (IUnknown **)sbAlloc( size );
@@ -108,7 +108,7 @@ static void HspVarComobj_Alloc( PVal *pval, const PVal *pval2 )
 		sbFree( pval->pt );
 		if ( pval->master ) sbFree( pval->master );
 	}
-	pval->master = NULL;		// ComDispParams �p
+	pval->master = NULL;		// ComDispParams 用
 	pval->pt = (char *)ppunk;
 	pval->size = size;
 
@@ -116,7 +116,7 @@ static void HspVarComobj_Alloc( PVal *pval, const PVal *pval2 )
 
 static void HspVarComobj_ObjectMethod( PVal *pval )
 {
-	//		���\�b�h�̎��s
+	//		メソッドの実行
 	//
 	VARIANT vres;
 	HRESULT hr;
@@ -129,32 +129,32 @@ static void HspVarComobj_ObjectMethod( PVal *pval )
 	ppunk = (IUnknown **)pval->pt;
 	if ( ! IsVaridComPtr(ppunk) ) throw HSPERR_COMDLL_ERROR;
 
-	// ���\�b�h������ DISPID ���擾
+	// メソッド名から DISPID を取得
 	ps = code_gets();
 	dispid = get_dispid( *ppunk, ps, &bVariantRet );
 #ifdef HSP_COMOBJ_DEBUG
 	COM_DBG_MSG( "ObjectMethod() : pObj=0x%p : PropName=\"%s\" (DISPID=%d)\n", *ppunk, ps, dispid);
 #endif
-	// ���\�b�h�p�����[�^�̎擾�E���\�b�h���s
+	// メソッドパラメータの取得・メソッド実行
 	VariantInit( &vres );
 	hr = CallDispMethod( *ppunk, dispid, &vres );
-	comget_variantres( &vres, hr, bVariantRet );				// �Ԓl���擾
+	comget_variantres( &vres, hr, bVariantRet );				// 返値を取得
 	VariantClear( &vres );
 }
 
 static int code_get_element( PVal *pval )
 {
-	// �ϐ��̔z��v�f�̎擾
+	// 変数の配列要素の取得
 	//
 	PVal pvalTemp;
 	int chk, idx;
 	HspVarCoreReset(pval);
 	while (1) {
-		HspVarCoreCopyArrayInfo( &pvalTemp, pval );			// ��Ԃ�ۑ�
+		HspVarCoreCopyArrayInfo( &pvalTemp, pval );			// 状態を保存
 		chk = code_get();
-		HspVarCoreCopyArrayInfo( pval, &pvalTemp );			// ��Ԃ𕜋A
+		HspVarCoreCopyArrayInfo( pval, &pvalTemp );			// 状態を復帰
 		if ( chk == PARAM_ENDSPLIT ) {
-			if ( pval->arraycnt == 0 ) throw HSPERR_BAD_ARRAY_EXPRESSION;	// a() �\�L�̓G���[
+			if ( pval->arraycnt == 0 ) throw HSPERR_BAD_ARRAY_EXPRESSION;	// a() 表記はエラー
 			break;
 		}
 		if ( chk != PARAM_OK && chk != PARAM_SPLIT ) throw HSPERR_ARRAY_OVERFLOW;
@@ -167,27 +167,27 @@ static int code_get_element( PVal *pval )
 
 static void HspVarComobj_ArrayObject( PVal *pval )
 {
-	//		�z��v�f�̎w�� (�A�z�z��p)
+	//		配列要素の指定 (連想配列用)
 	//
 	IUnknown** ppunk;
 	int chk;
 	DISPID dispid;
 	ComDispParams *paramdata;
 
-	// �z��v�f�̎擾
+	// 配列要素の取得
 	chk = code_get_element( pval );
-	if ( chk == PARAM_ENDSPLIT ) return;	// �z��v�f���w�肳�ꂽ�ꍇ�͂��̂܂�
+	if ( chk == PARAM_ENDSPLIT ) return;	// 配列要素が指定された場合はそのまま
 
-	// �v���p�e�B�ݒ莞
+	// プロパティ設定時
 	ppunk = (IUnknown **)HspVarComobj_GetPtr( pval );
 	if ( ! IsVaridComPtr(ppunk) ) throw HSPERR_COMDLL_ERROR;
-	// �v���p�e�B������ DISPID ���擾
+	// プロパティ名から DISPID を取得
 	if ( mpval->flag != HSPVAR_FLAG_STR ) throw HSPERR_TYPE_MISMATCH;
 	dispid = get_dispid( *ppunk, (char *)(mpval->pt), NULL );
 #ifdef HSP_COMOBJ_DEBUG
 	COM_DBG_MSG( "ArrayObject() : pObj=0x%p : PropName=\"%s\" (DISPID=%d)\n", *ppunk, mpval->pt, dispid);
 #endif
-	// �p�����[�^�擾���ێ����Ă���
+	// パラメータ取得し保持しておく
 	paramdata = PrepForPutDispProp( *ppunk, dispid );
 	if ( pval->master ) FreeDispParams( (ComDispParams *)pval->master );
 	pval->master = paramdata;
@@ -195,14 +195,14 @@ static void HspVarComobj_ArrayObject( PVal *pval )
 
 static void HspVarComobj_ObjectWrite( PVal *pval, void *data, int vtype )
 {
-	//		�ό^�̑��
+	//		可変型の代入
 	//
 	ComDispParams *paramdata;
 	HRESULT hr;
 #ifdef HSP_COMOBJ_DEBUG
 	COM_DBG_MSG( "ObjectWrite()\n" );
 #endif
-	// �v���p�e�B�ݒ莞
+	// プロパティ設定時
 	paramdata = (ComDispParams *)pval->master;
 	if ( paramdata == NULL ) throw ( HSPERR_COMDLL_ERROR );
 	hr = PutDispProp( paramdata, data, vtype );
@@ -258,7 +258,7 @@ static void get_interfacename( IUnknown *punk, VARIANT *vres )
 
 static void *HspVarComobj_ArrayObjectRead( PVal *pval, int *mptype )
 {
-	//		�z��v�f�̎w�� (�A�z�z��/�ǂݏo��)
+	//		配列要素の指定 (連想配列/読み出し)
 	//
 	void *ptr;
 	IUnknown **ppunk;
@@ -269,13 +269,13 @@ static void *HspVarComobj_ArrayObjectRead( PVal *pval, int *mptype )
 	char *propname;
 	HRESULT hr = S_OK;
 
-	// �z��v�f�̎擾
+	// 配列要素の取得
 	chk = code_get_element( pval );
 	ppunk = (IUnknown **)HspVarComobj_GetPtr( pval );
-	if ( chk == PARAM_ENDSPLIT ) return ppunk;		// �z��v�f���w�肳�ꂽ�ꍇ�͂��̂܂�
+	if ( chk == PARAM_ENDSPLIT ) return ppunk;		// 配列要素が指定された場合はそのまま
 
-	// �v���p�e�B�擾��
-	// �v���p�e�B������ DISPID ���擾
+	// プロパティ取得時
+	// プロパティ名から DISPID を取得
 	if ( ! IsVaridComPtr(ppunk) ) throw ( HSPERR_COMDLL_ERROR );
 	if ( mpval->flag != HSPVAR_FLAG_STR ) throw ( HSPERR_TYPE_MISMATCH );
 	propname = (char *)(mpval->pt);
@@ -294,7 +294,7 @@ static void *HspVarComobj_ArrayObjectRead( PVal *pval, int *mptype )
 #ifdef HSP_COMOBJ_DEBUG
 		COM_DBG_MSG( "ArrayObjectRead() : pObj=0x%p : PropName=\"%s\" (DISPID=%d)\n", *ppunk, mpval->pt, dispid);
 #endif
-	// �p�����[�^���擾�E�v���p�e�B�擾
+	// パラメータを取得・プロパティ取得
 		hr = GetDispProp( *ppunk, dispid, &vres );
 	}
 	ptr = comget_variant( &vres, mptype, noconvret );
@@ -307,14 +307,14 @@ static void *HspVarComobj_ArrayObjectRead( PVal *pval, int *mptype )
 // Size
 static int HspVarComobj_GetSize( const PDAT *pdatl )
 {
-	//		(���Ԃ̃|�C���^���n����܂�)
+	//		(実態のポインタが渡されます)
 	return sizeof(IUnknown*);
 }
 
 // Using
 static int HspVarComobj_GetUsing( const PDAT *pdat )
 {
-	//		(���Ԃ̃|�C���^���n����܂�)
+	//		(実態のポインタが渡されます)
 	return IsVaridComPtr((IUnknown**)pdat);
 }
 
@@ -326,7 +326,7 @@ static void HspVarComobj_Set( PVal *pval, PDAT *pdat, const void *in )
 	ppunkDst = (IUnknown **)pdat;
 	ppunkSrc = (IUnknown **)in;
 	if ( pval->support & HSPVAR_SUPPORT_TEMPVAR ) {
-		// ����悪�ꎞ�ϐ��̏ꍇ�� AddRef() ���Ȃ�
+		// 代入先が一時変数の場合は AddRef() しない
 		*ppunkDst = *ppunkSrc;
 #ifdef HSP_COMOBJ_DEBUG
 		COM_DBG_MSG( "ppunkDst is Temporary objedct.\n");
@@ -408,11 +408,11 @@ void HspVarComobj_Init( HspVarProc *p )
 	p->RrI = HspVarComobj_Invalid;
 	p->LrI = HspVarComobj_Invalid;
 */
-	p->vartype_name = "comobj";				// �^�C�v��
-	p->version = 0x001;					// �^�^�C�v�����^�C���o�[�W����(0x100 = 1.0)
+	p->vartype_name = "comobj";				// タイプ名
+	p->version = 0x001;					// 型タイプランタイムバージョン(0x100 = 1.0)
 	p->support = HSPVAR_SUPPORT_STORAGE | HSPVAR_SUPPORT_ARRAYOBJ | HSPVAR_SUPPORT_NOCONVERT | HSPVAR_SUPPORT_VARUSE;
-										// �T�|�[�g�󋵃t���O(HSPVAR_SUPPORT_*)
-	p->basesize = sizeof(void*);	// �P�̃f�[�^���g�p����T�C�Y(byte) / �ϒ��̎���-1
+										// サポート状況フラグ(HSPVAR_SUPPORT_*)
+	p->basesize = sizeof(void*);	// １つのデータが使用するサイズ(byte) / 可変長の時は-1
 }
 
 /*------------------------------------------------------------*/

@@ -29,9 +29,9 @@ static PDAT *HspVarStruct_GetPtr( PVal *pval )
 /*
 static void *HspVarStruct_Cnv( const void *buffer, int flag )
 {
-	//		���N�G�X�g���ꂽ�^ -> �����̌^�ւ̕ϊ����s�Ȃ�
-	//		(�g�ݍ��݌^�ɂ̂ݑΉ���OK)
-	//		(�Q�ƌ��̃f�[�^��j�󂵂Ȃ�����)
+	//		リクエストされた型 -> 自分の型への変換を行なう
+	//		(組み込み型にのみ対応でOK)
+	//		(参照元のデータを破壊しないこと)
 	//
 	throw HSPERR_INVALID_TYPE;
 	return buffer;
@@ -40,10 +40,10 @@ static void *HspVarStruct_Cnv( const void *buffer, int flag )
 
 static void *HspVarStruct_CnvCustom( const void *buffer, int flag )
 {
-	//		(�J�X�^���^�C�v�̂�)
-	//		�����̌^ -> ���N�G�X�g���ꂽ�^ �ւ̕ϊ����s�Ȃ�
-	//		(�g�ݍ��݌^�ɑΉ�������)
-	//		(�Q�ƌ��̃f�[�^��j�󂵂Ȃ�����)
+	//		(カスタムタイプのみ)
+	//		自分の型 -> リクエストされた型 への変換を行なう
+	//		(組み込み型に対応させる)
+	//		(参照元のデータを破壊しないこと)
 	//
 	throw HSPERR_INVALID_TYPE;
 	return buffer;
@@ -52,13 +52,13 @@ static void *HspVarStruct_CnvCustom( const void *buffer, int flag )
 
 static void HspVarStruct_Free( PVal *pval )
 {
-	//		PVAL�|�C���^�̕ϐ����������������
+	//		PVALポインタの変数メモリを解放する
 	//
 	int i;
 	FlexValue *fv;
 	if ( pval->mode == HSPVAR_MODE_MALLOC ) {
 
-		code_delstruct_all( pval );					// �f�X�g���N�^������ΌĂяo��
+		code_delstruct_all( pval );					// デストラクタがあれば呼び出す
 
 		fv = (FlexValue *)pval->pt;
 		for(i=0;i<pval->len[1];i++) {
@@ -73,20 +73,20 @@ static void HspVarStruct_Free( PVal *pval )
 
 static void HspVarStruct_Alloc( PVal *pval, const PVal *pval2 )
 {
-	//		pval�ϐ����K�v�Ƃ���T�C�Y���m�ۂ���B
-	//		(pval�����łɊm�ۂ���Ă��郁��������͌Ăяo�������s�Ȃ�)
-	//		(pval2��NULL�̏ꍇ�́A�V�K�f�[�^)
-	//		(pval2���w�肳��Ă���ꍇ�́Apval2�̓��e���p�����čĊm��)
+	//		pval変数が必要とするサイズを確保する。
+	//		(pvalがすでに確保されているメモリ解放は呼び出し側が行なう)
+	//		(pval2がNULLの場合は、新規データ)
+	//		(pval2が指定されている場合は、pval2の内容を継承して再確保)
 	//
 
-	// FLEXVAL_TYPE_NONE == 0 �Ȃ̂ŁA0���ߏ������Ŗ��Ȃ�
+	// FLEXVAL_TYPE_NONE == 0 なので、0埋め初期化で問題ない
 	HspVarCoreAllocPODArray(pval, pval2, sizeof(FlexValue));
 }
 
 /*
 static void *HspVarStruct_ArrayObject( PVal *pval, int *mptype )
 {
-	//		�z��v�f�̎w�� (������/�A�z�z��p)
+	//		配列要素の指定 (文字列/連想配列用)
 	//
 	throw( HSPERR_UNSUPPORTED_FUNCTION );
 	return NULL;
@@ -96,14 +96,14 @@ static void *HspVarStruct_ArrayObject( PVal *pval, int *mptype )
 // Size
 static int HspVarStruct_GetSize( const PDAT *pdat )
 {
-	//		(���Ԃ̃|�C���^���n����܂�)
+	//		(実態のポインタが渡されます)
 	return sizeof(FlexValue);
 }
 
 // Using
 static int HspVarStruct_GetUsing( const PDAT *pdat )
 {
-	//		(���Ԃ̃|�C���^���n����܂�)
+	//		(実態のポインタが渡されます)
 	FlexValue *fv;
 	fv = (FlexValue *)pdat;
 	return fv->type;
@@ -180,11 +180,11 @@ void HspVarStruct_Init( HspVarProc *p )
 	p->RrI = HspVarStruct_Invalid;
 	p->LrI = HspVarStruct_Invalid;
 */
-	p->vartype_name = "struct";				// �^�C�v��
-	p->version = 0x001;					// �^�^�C�v�����^�C���o�[�W����(0x100 = 1.0)
+	p->vartype_name = "struct";				// タイプ名
+	p->version = 0x001;					// 型タイプランタイムバージョン(0x100 = 1.0)
 	p->support = HSPVAR_SUPPORT_STORAGE | HSPVAR_SUPPORT_FLEXARRAY | HSPVAR_SUPPORT_VARUSE;
-										// �T�|�[�g�󋵃t���O(HSPVAR_SUPPORT_*)
-	p->basesize = sizeof(FlexValue);	// �P�̃f�[�^���g�p����T�C�Y(byte) / �ϒ��̎���-1
+										// サポート状況フラグ(HSPVAR_SUPPORT_*)
+	p->basesize = sizeof(FlexValue);	// １つのデータが使用するサイズ(byte) / 可変長の時は-1
 }
 
 /*------------------------------------------------------------*/

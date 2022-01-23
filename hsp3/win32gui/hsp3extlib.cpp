@@ -148,8 +148,8 @@ hsp3::CDllManager & DllManager()
 
 static void BindLIB( LIBDAT *lib, char *name )
 {
-	//		ƒ‰ƒCƒuƒ‰ƒŠ‚ÌƒoƒCƒ“ƒh‚ğs‚È‚¤
-	//		(name:Œã‚©‚ç—^‚¦‚é‚Ìƒ‰ƒCƒuƒ‰ƒŠ–¼)
+	//		ãƒ©ã‚¤ãƒ–ãƒ©ãƒªã®ãƒã‚¤ãƒ³ãƒ‰ã‚’è¡Œãªã†
+	//		(name:å¾Œã‹ã‚‰ä¸ãˆã‚‹æ™‚ã®ãƒ©ã‚¤ãƒ–ãƒ©ãƒªå)
 	//
 	int i;
 	char *n;
@@ -171,8 +171,8 @@ static void BindLIB( LIBDAT *lib, char *name )
 
 static int BindFUNC( STRUCTDAT *st, char *name )
 {
-	//		ƒtƒ@ƒ“ƒNƒVƒ‡ƒ“‚ÌƒoƒCƒ“ƒh‚ğs‚È‚¤
-	//		(name:Œã‚©‚ç—^‚¦‚é‚Ìƒtƒ@ƒ“ƒNƒVƒ‡ƒ“–¼)
+	//		ãƒ•ã‚¡ãƒ³ã‚¯ã‚·ãƒ§ãƒ³ã®ãƒã‚¤ãƒ³ãƒ‰ã‚’è¡Œãªã†
+	//		(name:å¾Œã‹ã‚‰ä¸ãˆã‚‹æ™‚ã®ãƒ•ã‚¡ãƒ³ã‚¯ã‚·ãƒ§ãƒ³å)
 	//
 	int i;
 	char *n;
@@ -202,7 +202,7 @@ static int BindFUNC( STRUCTDAT *st, char *name )
 
 static void ExitFunc( STRUCTDAT *st )
 {
-	//		I—¹ŠÖ”‚ÌŒÄ‚Ño‚µ
+	//		çµ‚äº†æ™‚é–¢æ•°ã®å‘¼ã³å‡ºã—
 	//
 	int p[16];
 	FARPROC pFn;
@@ -219,7 +219,7 @@ static void ExitFunc( STRUCTDAT *st )
 
 static int Hsp3ExtAddPlugin( void )
 {
-	//		ƒvƒ‰ƒOƒCƒ“‚Ì“o˜^
+	//		ãƒ—ãƒ©ã‚°ã‚¤ãƒ³ã®ç™»éŒ²
 	//
 	int i;
 	HSPHED *hed;
@@ -353,17 +353,17 @@ void Hsp3ExtLibTerm( void )
 	int i;
 	STRUCTDAT *st;
 
-	// ƒNƒŠ[ƒ“ƒAƒbƒv“o˜^‚³‚ê‚Ä‚¢‚éƒ†[ƒU[’è‹`ŠÖ”E–½—ßŒÄ‚Ño‚µ
+	// ã‚¯ãƒªãƒ¼ãƒ³ã‚¢ãƒƒãƒ—ç™»éŒ²ã•ã‚Œã¦ã„ã‚‹ãƒ¦ãƒ¼ã‚¶ãƒ¼å®šç¾©é–¢æ•°ãƒ»å‘½ä»¤å‘¼ã³å‡ºã—
 	for(i=0;i<prmmax;i++) {
 		st = GetPRM(i);
 		if ( st->index >= 0 ) {
 			if ( st->otindex & STRUCTDAT_OT_CLEANUP ) {
-				ExitFunc( st );			// ƒNƒŠ[ƒ“ƒAƒbƒvŠÖ”‚ğŒÄ‚Ño‚·
+				ExitFunc( st );			// ã‚¯ãƒªãƒ¼ãƒ³ã‚¢ãƒƒãƒ—é–¢æ•°ã‚’å‘¼ã³å‡ºã™
 			}
 		}
 	}
 
-	//	HPIDAT‚Ì‰ğ•ú
+	//	HPIDATã®è§£æ”¾
 	if (hpidat != NULL) { free( hpidat); hpidat = NULL; }
 
 }
@@ -377,7 +377,7 @@ void Hsp3ExtLibTerm( void )
 
 /*
 	rev 43
-	mingw(gcc) —p‚ÌƒR[ƒh’Ç‰Á
+	mingw(gcc) ç”¨ã®ã‚³ãƒ¼ãƒ‰è¿½åŠ 
 */
 
 #ifndef HSP64
@@ -386,17 +386,17 @@ void Hsp3ExtLibTerm( void )
 
 __declspec( naked ) int __cdecl call_extfunc( void *proc, int *prm, int prms )
 {
-	// ŠO•”ŠÖ”ŒÄ‚Ño‚µiVC++ ‚ÌƒCƒ“ƒ‰ƒCƒ“ƒAƒZƒ“ƒuƒ‰‚ğg—pj
+	// å¤–éƒ¨é–¢æ•°å‘¼ã³å‡ºã—ï¼ˆVC++ ã®ã‚¤ãƒ³ãƒ©ã‚¤ãƒ³ã‚¢ã‚»ãƒ³ãƒ–ãƒ©ã‚’ä½¿ç”¨ï¼‰
 	//
 	__asm {
 		push	ebp
 		mov		ebp,esp
 
-		;# ebp+8	: ŠÖ”‚Ìƒ|ƒCƒ“ƒ^
-		;# ebp+12	: ˆø”‚ª“ü‚Á‚½INT‚Ì”z—ñ
-		;# ebp+16	: ˆø”‚Ì”ipush‚·‚é‰ñ”j
+		;# ebp+8	: é–¢æ•°ã®ãƒã‚¤ãƒ³ã‚¿
+		;# ebp+12	: å¼•æ•°ãŒå…¥ã£ãŸINTã®é…åˆ—
+		;# ebp+16	: å¼•æ•°ã®æ•°ï¼ˆpushã™ã‚‹å›æ•°ï¼‰
 
-		;# ƒpƒ‰ƒ[ƒ^‚ğnpŒÂpush‚·‚é
+		;# ãƒ‘ãƒ©ãƒ¡ãƒ¼ã‚¿ã‚’npå€‹pushã™ã‚‹
 		mov		eax, dword ptr [ebp+12]
 		mov		ecx, dword ptr [ebp+16]
 		jmp		_$push_chk
@@ -408,10 +408,10 @@ __declspec( naked ) int __cdecl call_extfunc( void *proc, int *prm, int prms )
 		dec		ecx
 		jge		_$push
 
-		;# ŠÖ”ŒÄ‚Ño‚µ
+		;# é–¢æ•°å‘¼ã³å‡ºã—
 		call	dword ptr [ebp+8]
 
-		;# –ß‚è’l‚Í eax ‚É“ü‚é‚Ì‚Å‚»‚Ì‚Ü‚ÜƒŠƒ^[ƒ“
+		;# æˆ»ã‚Šå€¤ã¯ eax ã«å…¥ã‚‹ã®ã§ãã®ã¾ã¾ãƒªã‚¿ãƒ¼ãƒ³
 		leave
 		ret
 	}
@@ -421,14 +421,14 @@ __declspec( naked ) int __cdecl call_extfunc( void *proc, int *prm, int prms )
 
 int __cdecl call_extfunc( void * proc, int * prm, int prms )
 {
-	// ŠO•”ŠÖ”ŒÄ‚Ño‚µiGCC ‚ÌŠg’£ƒCƒ“ƒ‰ƒCƒ“ƒAƒZƒ“ƒuƒ‰‚ğg—pj
+	// å¤–éƒ¨é–¢æ•°å‘¼ã³å‡ºã—ï¼ˆGCC ã®æ‹¡å¼µã‚¤ãƒ³ãƒ©ã‚¤ãƒ³ã‚¢ã‚»ãƒ³ãƒ–ãƒ©ã‚’ä½¿ç”¨ï¼‰
     int ret = 0;
     __asm__ volatile (
 		"pushl  %%ebp;"
 		"movl   %%esp, %%ebp;"
 		"jmp    _push_chk;"
 
-		// ƒpƒ‰ƒ[ƒ^‚ğprmsŒÂpush‚·‚é
+		// ãƒ‘ãƒ©ãƒ¡ãƒ¼ã‚¿ã‚’prmså€‹pushã™ã‚‹
 	"_push:"
 		"pushl  ( %2, %3, 4 );"
 
@@ -459,7 +459,7 @@ int __cdecl call_extfunc( void * proc, int * prm, int prms )
 
 int cnvwstr( void *out, char *in, int bufsize )
 {
-	//	hspchar->unicode ‚É•ÏŠ·
+	//	hspchar->unicode ã«å¤‰æ›
 	//
 #ifndef HSPUTF8 
 	return MultiByteToWideChar( CP_ACP, 0, in, -1, (LPWSTR)out, bufsize );
@@ -471,14 +471,14 @@ int cnvwstr( void *out, char *in, int bufsize )
 
 int cnvsjis( void *out, char *in, int bufsize )
 {
-	//	unicode->sjis ‚É•ÏŠ·
+	//	unicode->sjis ã«å¤‰æ›
 	//
 	return WideCharToMultiByte( CP_ACP, 0, (LPCWSTR)in, -1, (LPSTR)out, bufsize, NULL, NULL);
 }
 
 int cnvu8(void *out, wchar_t *in, int bufsize)
 {
-	//  unicode->utf8‚É•ÏŠ·
+	//  unicode->utf8ã«å¤‰æ›
 	//
 	return WideCharToMultiByte(CP_UTF8, 0, (LPCWSTR)in, -1, (LPSTR)out, bufsize, NULL, NULL);
 }
@@ -486,10 +486,10 @@ int cnvu8(void *out, wchar_t *in, int bufsize)
 
 static char *prepare_localstr( char *src, int mode )
 {
-	//	DLL “n‚µ‚Ì‚½‚ß‚Ì•¶š—ñ‚ğ€”õ‚·‚é
+	//	DLL æ¸¡ã—ã®ãŸã‚ã®æ–‡å­—åˆ—ã‚’æº–å‚™ã™ã‚‹
 	//		mode:0=ansi/1=unicode
 	//
-	//	g—pŒã‚Í sbFree() ‚Å‰ğ•ú‚·‚é‚±‚Æ
+	//	ä½¿ç”¨å¾Œã¯ sbFree() ã§è§£æ”¾ã™ã‚‹ã“ã¨
 	//
 	int srcsize;
 	char *dst;
@@ -529,13 +529,13 @@ static int code_expand_next( char *, const STRUCTDAT *, int );
 
 int code_expand_and_call( const STRUCTDAT *st )
 {
-	//	ƒpƒ‰ƒ[ƒ^‚Ìæ“¾‚¨‚æ‚ÑŠÖ”ŒÄ‚Ño‚µiÄ‹Aˆ—‚É‚æ‚éj
+	//	ãƒ‘ãƒ©ãƒ¡ãƒ¼ã‚¿ã®å–å¾—ãŠã‚ˆã³é–¢æ•°å‘¼ã³å‡ºã—ï¼ˆå†å¸°å‡¦ç†ã«ã‚ˆã‚‹ï¼‰
 	//
-	//	’Êí‚Ì DLL ŠÖ”ŒÄ‚Ño‚µ‚© COM ƒƒ\ƒbƒhŒÄ‚Ño‚µ‚©‚Ç‚¤‚©‚Í
-	//	STRUCTDAT ‚Ì“à—e‚©‚ç”»’f‚µ‚Ü‚·B
+	//	é€šå¸¸ã® DLL é–¢æ•°å‘¼ã³å‡ºã—ã‹ COM ãƒ¡ã‚½ãƒƒãƒ‰å‘¼ã³å‡ºã—ã‹ã©ã†ã‹ã¯
+	//	STRUCTDAT ã®å†…å®¹ã‹ã‚‰åˆ¤æ–­ã—ã¾ã™ã€‚
 	//
-	//	DLL ŠÖ”ŒÄ‚Ño‚µ‚Í st->proc ‚ÉŠÖ”ƒAƒhƒŒƒX‚ğƒZƒbƒg‚µ‚Ä
-	//	‚¨‚©‚È‚¯‚ê‚Î‚È‚è‚Ü‚¹‚ñi BindFUNC() ‚É‚æ‚èjB
+	//	DLL é–¢æ•°å‘¼ã³å‡ºã—æ™‚ã¯ st->proc ã«é–¢æ•°ã‚¢ãƒ‰ãƒ¬ã‚¹ã‚’ã‚»ãƒƒãƒˆã—ã¦
+	//	ãŠã‹ãªã‘ã‚Œã°ãªã‚Šã¾ã›ã‚“ï¼ˆ BindFUNC() ã«ã‚ˆã‚Šï¼‰ã€‚
 	//
 	int result;
 
@@ -558,19 +558,19 @@ int code_expand_and_call( const STRUCTDAT *st )
 
 static int code_expand_next( char *prmbuf, const STRUCTDAT *st, int index )
 {
-	//	Ÿ‚Ìƒpƒ‰ƒ[ƒ^‚ğæ“¾i‚¨‚æ‚ÑŠÖ”ŒÄ‚Ño‚µjiÄ‹Aˆ—j
+	//	æ¬¡ã®ãƒ‘ãƒ©ãƒ¡ãƒ¼ã‚¿ã‚’å–å¾—ï¼ˆãŠã‚ˆã³é–¢æ•°å‘¼ã³å‡ºã—ï¼‰ï¼ˆå†å¸°å‡¦ç†ï¼‰
 	//
 	int result;
 	HSPAPICHAR *hactmp1 = 0;
 	if ( index == st->prmmax ) {
-		// ŠÖ”i‚Ü‚½‚Íƒƒ\ƒbƒhj‚ÌŒÄ‚Ño‚µ
+		// é–¢æ•°ï¼ˆã¾ãŸã¯ãƒ¡ã‚½ãƒƒãƒ‰ï¼‰ã®å‘¼ã³å‡ºã—
 		//if ( !code_getexflg() ) throw HSPERR_TOO_MANY_PARAMETERS;
 		switch ( st->subid ) {
 		case STRUCTPRM_SUBID_DLL:
 		case STRUCTPRM_SUBID_DLLINIT:
 		case STRUCTPRM_SUBID_OLDDLL:
 		case STRUCTPRM_SUBID_OLDDLLINIT:
-			// ŠO•” DLL ŠÖ”‚ÌŒÄ‚Ño‚µ
+			// å¤–éƒ¨ DLL é–¢æ•°ã®å‘¼ã³å‡ºã—
 #ifdef HSP64
 			result = call_extfunc(st->proc, (INT_PTR *)prmbuf, st->prmmax);
 #else
@@ -579,7 +579,7 @@ static int code_expand_next( char *prmbuf, const STRUCTDAT *st, int index )
 			break;
 #ifndef HSP_COM_UNSUPPORTED
 		case STRUCTPRM_SUBID_COMOBJ:
-			// COM ƒƒ\ƒbƒh‚ÌŒÄ‚Ño‚µ
+			// COM ãƒ¡ã‚½ãƒƒãƒ‰ã®å‘¼ã³å‡ºã—
 			result = call_method2( prmbuf, st );
 			break;
 #endif
@@ -602,7 +602,7 @@ static int code_expand_next( char *prmbuf, const STRUCTDAT *st, int index )
 	APTR aptr;
 	PVal *pval;
 	int chk;
-	// ˆÈ‰º‚Ìƒ|ƒCƒ“ƒ^i‚Ü‚½‚ÍƒIƒuƒWƒFƒNƒgj‚ÍŒÄo‚µŒã‚É‰ğ•ú
+	// ä»¥ä¸‹ã®ãƒã‚¤ãƒ³ã‚¿ï¼ˆã¾ãŸã¯ã‚ªãƒ–ã‚¸ã‚§ã‚¯ãƒˆï¼‰ã¯å‘¼å‡ºã—å¾Œã«è§£æ”¾
 	void *localbuf = NULL;
 	IUnknown *punklocal = NULL;
 
@@ -630,7 +630,7 @@ static int code_expand_next( char *prmbuf, const STRUCTDAT *st, int index )
 		localbuf = sbAlloc( sizeof(PVal) );
 		pval_dst = (PVal *)localbuf;
 		*pval_dst = *pval;
-		if ( pval->flag & HSPVAR_SUPPORT_FLEXSTORAGE ) {	// ver2.5ŒİŠ·‚Ì‚½‚ß‚Ì•ÏŠ·
+		if ( pval->flag & HSPVAR_SUPPORT_FLEXSTORAGE ) {	// ver2.5äº’æ›ã®ãŸã‚ã®å¤‰æ›
 			HspVarCoreGetBlockSize( pval, HspVarCorePtrAPTR( pval, aptr ), &srcsize );
 			pval_dst->len[1] = (srcsize+3)/4;
 			pval_dst->len[2] = 1;
@@ -676,7 +676,7 @@ static int code_expand_next( char *prmbuf, const STRUCTDAT *st, int index )
 		aptr = code_getva( &pval );
 		if ( pval->flag != TYPE_COMOBJ ) throw ( HSPERR_TYPE_MISMATCH );
 		punklocal = *(IUnknown **)HspVarCorePtrAPTR( pval, aptr );
-		if ( punklocal ) punklocal->AddRef();	// ŒÄo‚µŒã‚É‰ğ•ú‚·‚é
+		if ( punklocal ) punklocal->AddRef();	// å‘¼å‡ºã—å¾Œã«è§£æ”¾ã™ã‚‹
 		*(void **)out = (void *)punklocal;
 		break;
 #endif
@@ -684,8 +684,8 @@ static int code_expand_next( char *prmbuf, const STRUCTDAT *st, int index )
 		throw ( HSPERR_UNSUPPORTED_FUNCTION );
 	}
 
-	// Ÿ‚Ìƒpƒ‰ƒ[ƒ^‚Ìæ‚èo‚µiÄ‹A“I‚Éˆ—j
-	// (—áŠOˆ—‚É‚æ‚è“®“IŠm•Û‚µ‚½ƒIƒuƒWƒFƒNƒg‚ğŠmÀ‚É‰ğ•ú‚·‚é)
+	// æ¬¡ã®ãƒ‘ãƒ©ãƒ¡ãƒ¼ã‚¿ã®å–ã‚Šå‡ºã—ï¼ˆå†å¸°çš„ã«å‡¦ç†ï¼‰
+	// (ä¾‹å¤–å‡¦ç†ã«ã‚ˆã‚Šå‹•çš„ç¢ºä¿ã—ãŸã‚ªãƒ–ã‚¸ã‚§ã‚¯ãƒˆã‚’ç¢ºå®Ÿã«è§£æ”¾ã™ã‚‹)
 	try {
 		result = code_expand_next( prmbuf, st, index + 1 );
 	}
@@ -705,7 +705,7 @@ int exec_dllcmd( int cmd, int mask )
 	FARPROC pFn;
 	int result;
 
-	code_next();							// Ÿ‚ÌƒR[ƒh‚ğæ“¾(Å‰‚É•K‚¸•K—v‚Å‚·)
+	code_next();							// æ¬¡ã®ã‚³ãƒ¼ãƒ‰ã‚’å–å¾—(æœ€åˆã«å¿…ãšå¿…è¦ã§ã™)
 
 	if ( cmd >= prmmax ) {
 		throw ( HSPERR_UNSUPPORTED_FUNCTION );
@@ -746,7 +746,7 @@ int exec_dllcmd( int cmd, int mask )
 int cmdfunc_dllcmd( int cmd )
 {
 	//		cmdfunc : TYPE_DLLCMD
-	//		(Šg’£DLLƒRƒ}ƒ“ƒh)
+	//		(æ‹¡å¼µDLLã‚³ãƒãƒ³ãƒ‰)
 	//
 	return exec_dllcmd( cmd, STRUCTDAT_OT_STATEMENT );
 }

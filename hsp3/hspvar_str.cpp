@@ -25,10 +25,10 @@ static HspVarProc *myproc;
 
 static char **GetFlexBufPtr( PVal *pval, int num )
 {
-	//		�ϒ��o�b�t�@�̃|�C���^�𓾂�
+	//		可変長バッファのポインタを得る
 	//
 	char **pp;
-	if ( num == 0 ) return &(pval->pt);		// ID#0�́Apt���|�C���^�ƂȂ�
+	if ( num == 0 ) return &(pval->pt);		// ID#0は、ptがポインタとなる
 	pp = (char **)(pval->master);
 	return &pp[num];
 }
@@ -45,9 +45,9 @@ static PDAT *HspVarStr_GetPtr( PVal *pval )
 
 static void *HspVarStr_Cnv( const void *buffer, int flag )
 {
-	//		���N�G�X�g���ꂽ�^ -> �����̌^�ւ̕ϊ����s�Ȃ�
-	//		(�g�ݍ��݌^�ɂ̂ݑΉ���OK)
-	//		(�Q�ƌ��̃f�[�^��j�󂵂Ȃ�����)
+	//		リクエストされた型 -> 自分の型への変換を行なう
+	//		(組み込み型にのみ対応でOK)
+	//		(参照元のデータを破壊しないこと)
 	//
 	switch( flag ) {
 	case HSPVAR_FLAG_INT:
@@ -72,10 +72,10 @@ static void *HspVarStr_Cnv( const void *buffer, int flag )
 /*
 static void *HspVarStr_CnvCustom( const void *buffer, int flag )
 {
-	//		(�J�X�^���^�C�v�̂�)
-	//		�����̌^ -> ���N�G�X�g���ꂽ�^ �ւ̕ϊ����s�Ȃ�
-	//		(�g�ݍ��݌^�ɑΉ�������)
-	//		(�Q�ƌ��̃f�[�^��j�󂵂Ȃ�����)
+	//		(カスタムタイプのみ)
+	//		自分の型 -> リクエストされた型 への変換を行なう
+	//		(組み込み型に対応させる)
+	//		(参照元のデータを破壊しないこと)
 	//
 	return buffer;
 }
@@ -83,8 +83,8 @@ static void *HspVarStr_CnvCustom( const void *buffer, int flag )
 
 static int GetVarSize( PVal *pval )
 {
-	//		PVAL�|�C���^�̕ϐ����K�v�Ƃ���T�C�Y���擾����
-	//		(size�t�B�[���h�ɐݒ肳���)
+	//		PVALポインタの変数が必要とするサイズを取得する
+	//		(sizeフィールドに設定される)
 	//
 	int size;
 	size = pval->len[1];
@@ -98,7 +98,7 @@ static int GetVarSize( PVal *pval )
 
 static void HspVarStr_Free( PVal *pval )
 {
-	//		PVAL�|�C���^�̕ϐ����������������
+	//		PVALポインタの変数メモリを解放する
 	//
 	char **pp;
 	int i,size;
@@ -116,23 +116,23 @@ static void HspVarStr_Free( PVal *pval )
 
 static void HspVarStr_Alloc( PVal *pval, const PVal *pval2 )
 {
-	//		pval�ϐ����K�v�Ƃ���T�C�Y���m�ۂ���B
-	//		(pval�����łɊm�ۂ���Ă��郁��������͌Ăяo�������s�Ȃ�)
-	//		(pval2��NULL�̏ꍇ�́A�V�K�f�[�^�Blen[0]�Ɋm�ۃo�C�g������������)
-	//		(pval2���w�肳��Ă���ꍇ�́Apval2�̓��e���p�����čĊm��)
+	//		pval変数が必要とするサイズを確保する。
+	//		(pvalがすでに確保されているメモリ解放は呼び出し側が行なう)
+	//		(pval2がNULLの場合は、新規データ。len[0]に確保バイト数が代入される)
+	//		(pval2が指定されている場合は、pval2の内容を継承して再確保)
 	//
 	char **pp;
 	int i, i2, size, bsize;
 	PVal oldvar;
-	if ( pval->len[1] < 1 ) pval->len[1] = 1;		// �z����Œ�1�͊m�ۂ���
-	if ( pval2 != NULL ) oldvar = *pval2;			// �g�����͈ȑO�̏���ۑ�����
+	if ( pval->len[1] < 1 ) pval->len[1] = 1;		// 配列を最低1は確保する
+	if ( pval2 != NULL ) oldvar = *pval2;			// 拡張時は以前の情報を保存する
 
 	size = GetVarSize( pval );
 	pval->mode = HSPVAR_MODE_MALLOC;
 	pval->master = (char *)calloc( size, 1 );
 	if ( pval->master == NULL ) throw HSPERR_OUT_OF_MEMORY;
 
-	if ( pval2 == NULL ) {							// �z��g���Ȃ�
+	if ( pval2 == NULL ) {							// 配列拡張なし
 		bsize = pval->len[0];
 		if ( bsize < STRBUF_BLOCKSIZE ) { bsize = STRBUF_BLOCKSIZE; }
 		for(i=0;i<(int)(size/sizeof(char *));i++) {
@@ -147,9 +147,9 @@ static void HspVarStr_Alloc( PVal *pval, const PVal *pval2 )
 	for(i=0;i<(int)(size/sizeof(char *));i++) {
 		pp = GetFlexBufPtr( pval, i );
 		if ( i>=i2 ) {
-			*pp = sbAllocClear( 64 );				// �V�K�m�ە�
+			*pp = sbAllocClear( 64 );				// 新規確保分
 		} else {
-			*pp = *GetFlexBufPtr( &oldvar, i );		// �m�ۍς݃o�b�t�@
+			*pp = *GetFlexBufPtr( &oldvar, i );		// 確保済みバッファ
 		}
 		sbSetOption( *pp, (void *)pp );
 	}
@@ -160,8 +160,8 @@ static void HspVarStr_Alloc( PVal *pval, const PVal *pval2 )
 /*
 static void *HspVarStr_ArrayObject( PVal *pval, int *arg )
 {
-	//		�z��v�f�̎w�� (������/�A�z�z��p)
-	//		( Reset��Ɏ����������A���ŌĂ΂�܂� )
+	//		配列要素の指定 (文字列/連想配列用)
+	//		( Reset後に次元数だけ連続で呼ばれます )
 	//
 	throw HSPERR_UNSUPPORTED_FUNCTION;
 }
@@ -285,11 +285,11 @@ void HspVarStr_Init( HspVarProc *p )
 //	p->RrI = HspVarStr_Invalid;
 //	p->LrI = HspVarStr_Invalid;
 
-	p->vartype_name = "str";			// �^�C�v��
-	p->version = 0x001;					// �^�^�C�v�����^�C���o�[�W����(0x100 = 1.0)
+	p->vartype_name = "str";			// タイプ名
+	p->version = 0x001;					// 型タイプランタイムバージョン(0x100 = 1.0)
 	p->support = HSPVAR_SUPPORT_FLEXSTORAGE | HSPVAR_SUPPORT_FLEXARRAY;
-										// �T�|�[�g�󋵃t���O(HSPVAR_SUPPORT_*)
-	p->basesize = -1;					// �P�̃f�[�^���g�p����T�C�Y(byte) / �ϒ��̎���-1
+										// サポート状況フラグ(HSPVAR_SUPPORT_*)
+	p->basesize = -1;					// １つのデータが使用するサイズ(byte) / 可変長の時は-1
 }
 
 /*------------------------------------------------------------*/

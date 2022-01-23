@@ -1,7 +1,7 @@
 
 //
 //	HSP3 internal command
-//	(“à‘ ƒRƒ}ƒ“ƒhEŠÖ”ˆ—)
+//	(å†…è”µã‚³ãƒãƒ³ãƒ‰ãƒ»é–¢æ•°å‡¦ç†)
 //	onion software/onitama 2004/6
 //
 #include <stdio.h>
@@ -66,7 +66,7 @@ typedef struct {
 		double dkey;
 		char *skey;
 	} as;
-	int info; // ƒ\[ƒg‚Ì‘O‚É‚±‚Ì—v‘f‚ª‚ ‚Á‚½ˆÊ’u
+	int info; // ã‚½ãƒ¼ãƒˆã®å‰ã«ã“ã®è¦ç´ ãŒã‚ã£ãŸä½ç½®
 } DATA;
 
 static bool less_int_1(DATA const& lhs, DATA const& rhs)
@@ -439,7 +439,7 @@ static HSPREAL getEase( HSPREAL value )
 	}
 
 	if ( ease_reverse != reverse ) {
-		ease_reverse = reverse;			// ƒŠƒo[ƒX‚Ì“®ì
+		ease_reverse = reverse;			// ãƒªãƒãƒ¼ã‚¹æ™‚ã®å‹•ä½œ
 		if ( ease_reverse ) {
 			ease_start = ease_start_org + ease_diff_org;
 			ease_diff = -ease_diff_org;
@@ -527,7 +527,7 @@ static char *note_update( void )
 	return p;
 }
 
-// ƒfƒXƒgƒ‰ƒNƒ^‚Å©“®“I‚É sbFree ‚ğŒÄ‚Ô
+// ãƒ‡ã‚¹ãƒˆãƒ©ã‚¯ã‚¿ã§è‡ªå‹•çš„ã« sbFree ã‚’å‘¼ã¶
 class CAutoSbFree {
 public:
 	CAutoSbFree(char **pptr);
@@ -565,7 +565,7 @@ static void cnvformat_expand( char **p, int *capacity, int len, int n )
 
 static char *cnvformat( void )
 {
-	//		ƒtƒH[ƒ}ƒbƒg•t‚«•¶š—ñ‚ğì¬‚·‚é
+	//		ãƒ•ã‚©ãƒ¼ãƒãƒƒãƒˆä»˜ãæ–‡å­—åˆ—ã‚’ä½œæˆã™ã‚‹
 	//
 #if ( WIN32 || _WIN32 ) && ! __CYGWIN__
 #define SNPRINTF _snprintf
@@ -594,7 +594,7 @@ static char *cnvformat( void )
 		int val_type;
 		void *val_ptr;
 
-		// '%' ‚Ü‚Å‚ğƒRƒs[
+		// '%' ã¾ã§ã‚’ã‚³ãƒ”ãƒ¼
 		i = 0;
 		while( fp[i] != '\0' && fp[i] != '%' ) {
 			i ++;
@@ -605,7 +605,7 @@ static char *cnvformat( void )
 		fp += i;
 		if ( *fp == '\0' ) break;
 
-		// •ÏŠ·w’è‚ğ“Ç‚İ fmt ‚ÉƒRƒs[
+		// å¤‰æ›æŒ‡å®šã‚’èª­ã¿ fmt ã«ã‚³ãƒ”ãƒ¼
 		i = (int)strspn( fp + 1, " #+-.0123456789" ) + 1;
 		strncpy( fmt, fp, sizeof fmt );
 		fmt[sizeof(fmt)-1] = '\0';
@@ -616,7 +616,7 @@ static char *cnvformat( void )
 		fp ++;
 
 #if ( WIN32 || _WIN32 ) && ! __CYGWIN__
-		if ( specifier == 'I' ) {				// I64 prefix‘Î‰(VC++‚Ì‚İ)
+		if ( specifier == 'I' ) {				// I64 prefixå¯¾å¿œ(VC++ã®ã¿)
 			if ((fp[0]=='6')&&(fp[1]='4')) {
 				memcpy( fmt+i+1, fp, 3 );
 				fmt[i+4] = 0;
@@ -633,7 +633,7 @@ static char *cnvformat( void )
 			continue;
 		}
 
-		// ˆø”‚ğæ“¾
+		// å¼•æ•°ã‚’å–å¾—
 		if ( code_get() <= PARAM_END ) throw HSPERR_INVALID_FUNCPARAM;
 		switch (specifier) {
 		case 'd': case 'i': case 'c': case 'o': case 'x': case 'X': case 'u': case 'p':
@@ -652,7 +652,7 @@ static char *cnvformat( void )
 			throw HSPERR_INVALID_FUNCPARAM;
 		}
 
-		// snprintf ‚ª¬Œ÷‚·‚é‚Ü‚Åƒoƒbƒtƒ@‚ğL‚°‚Ä‚¢‚«A•ÏŠ·‚ğs‚¤
+		// snprintf ãŒæˆåŠŸã™ã‚‹ã¾ã§ãƒãƒƒãƒ•ã‚¡ã‚’åºƒã’ã¦ã„ãã€å¤‰æ›ã‚’è¡Œã†
 		while (1) {
 			int n;
 			int space = capacity - len - 1;
@@ -687,7 +687,7 @@ static char *cnvformat( void )
 
 static void var_set_str_len( PVal *pval, APTR aptr, char *str, int len )
 {
-	//		•Ï”‚Éstr‚©‚çlenƒoƒCƒg‚Ì•¶š—ñ‚ğ‘ã“ü‚·‚é
+	//		å¤‰æ•°ã«strã‹ã‚‰lenãƒã‚¤ãƒˆã®æ–‡å­—åˆ—ã‚’ä»£å…¥ã™ã‚‹
 	//
 	HspVarProc *proc = HspVarCoreGetProc( HSPVAR_FLAG_STR );
 	if ( pval->flag != HSPVAR_FLAG_STR ) {
@@ -706,13 +706,13 @@ static void var_set_str_len( PVal *pval, APTR aptr, char *str, int len )
 static int cmdfunc_intcmd( int cmd )
 {
 	//		cmdfunc : TYPE_INTCMD
-	//		(“à‘ ƒRƒ}ƒ“ƒh)
+	//		(å†…è”µã‚³ãƒãƒ³ãƒ‰)
 	//
 	int p1,p2,p3;
 	//
-	code_next();							// Ÿ‚ÌƒR[ƒh‚ğæ“¾(Å‰‚É•K‚¸•K—v‚Å‚·)
+	code_next();							// æ¬¡ã®ã‚³ãƒ¼ãƒ‰ã‚’å–å¾—(æœ€åˆã«å¿…ãšå¿…è¦ã§ã™)
 
-	switch( cmd ) {							// ƒTƒuƒRƒ}ƒ“ƒh‚²‚Æ‚Ì•ªŠò
+	switch( cmd ) {							// ã‚µãƒ–ã‚³ãƒãƒ³ãƒ‰ã”ã¨ã®åˆ†å²
 
 	case 0x00:								// onexit
 	case 0x01:								// onerror
@@ -723,8 +723,8 @@ static int cmdfunc_intcmd( int cmd )
 
 /*
 	rev 45
-	•s‹ï‡ : (onxxxŒn–½—ß) (ƒ‰ƒxƒ‹Œ^•Ï”)  Œ`®‚Ì‘®‚ÅƒGƒ‰[
-	‚É‘Îˆ
+	ä¸å…·åˆ : (onxxxç³»å‘½ä»¤) (ãƒ©ãƒ™ãƒ«å‹å¤‰æ•°)  å½¢å¼ã®æ›¸å¼ã§ã‚¨ãƒ©ãƒ¼
+	ã«å¯¾å‡¦
 */
 
 		int tval = *type;
@@ -739,13 +739,13 @@ static int cmdfunc_intcmd( int cmd )
 				tval = TYPE_LABEL;
 		}
 
-		if (( tval != TYPE_PROGCMD )&&( tval != TYPE_LABEL )) {		// ON/OFFØ‚è‘Ö‚¦
+		if (( tval != TYPE_PROGCMD )&&( tval != TYPE_LABEL )) {		// ON/OFFåˆ‡ã‚Šæ›¿ãˆ
 			int i = code_geti();
 			code_enableirq( cmd, i );
 			break;
 		}
 
-		if ( tval == TYPE_PROGCMD ) {	// ƒWƒƒƒ“ƒv•û–@w’è
+		if ( tval == TYPE_PROGCMD ) {	// ã‚¸ãƒ£ãƒ³ãƒ—æ–¹æ³•æŒ‡å®š
 			opt = *val;
 			if ( opt >= 2 ) throw HSPERR_SYNTAX;
 			code_next();
@@ -1033,9 +1033,9 @@ static int cmdfunc_intcmd( int cmd )
 		}
 	case 0x27:								// randomize
 #ifdef HSPWIN
-		p2 = (int)GetTickCount();	// Windows‚Ìê‡‚Ítick‚ğƒV[ƒh’l‚Æ‚·‚é
+		p2 = (int)GetTickCount();	// Windowsã®å ´åˆã¯tickã‚’ã‚·ãƒ¼ãƒ‰å€¤ã¨ã™ã‚‹
 #else
-		p2 = (int)time(0);			// WindowsˆÈŠO‚Ìƒ‰ƒ“ƒ_ƒ€ƒV[ƒh’l
+		p2 = (int)time(0);			// Windowsä»¥å¤–ã®ãƒ©ãƒ³ãƒ€ãƒ ã‚·ãƒ¼ãƒ‰å€¤
 #endif
 		p1 = code_getdi( p2 );
 #ifdef HSPRANDMT
@@ -1063,7 +1063,7 @@ static int cmdfunc_intcmd( int cmd )
 		}
 	case 0x2a:								// split
 		{
-		//	w’è‚µ‚½•¶š—ñ‚Å•ªŠ„‚³‚ê‚½—v‘f‚ğ‘ã“ü‚·‚é(fujidig)
+		//	æŒ‡å®šã—ãŸæ–‡å­—åˆ—ã§åˆ†å‰²ã•ã‚ŒãŸè¦ç´ ã‚’ä»£å…¥ã™ã‚‹(fujidig)
 		PVal *pval = NULL;
 		int aptr = 0;
 		char *sptr;
@@ -1082,8 +1082,8 @@ static int cmdfunc_intcmd( int cmd )
 		while (1) {
 			newsptr = strstr2( sptr, sep );
 			if ( !is_last && *exinfo->npexflg & EXFLG_1 ) {
-				// •ªŠ„Œ‹‰Ê‚Ì”‚ªŠi”[‚·‚é•Ï”‚æ‚è‘½‚¯‚ê‚ÎÅŒã‚Ì•Ï”‚É”z—ñ‚ÅŠi”[‚µ‚Ä‚¢‚­
-				// ‚½‚¾‚µÅŒã‚Ì—v‘f‚ª a.2 ‚Ì‚æ‚¤‚É—v‘fw’è‚ª‚ ‚ê‚Î‚»‚êˆÈ~‚Í‘S‚­Ši”[‚µ‚È‚¢
+				// åˆ†å‰²çµæœã®æ•°ãŒæ ¼ç´ã™ã‚‹å¤‰æ•°ã‚ˆã‚Šå¤šã‘ã‚Œã°æœ€å¾Œã®å¤‰æ•°ã«é…åˆ—ã§æ ¼ç´ã—ã¦ã„ã
+				// ãŸã ã—æœ€å¾Œã®è¦ç´ ãŒ a.2 ã®ã‚ˆã†ã«è¦ç´ æŒ‡å®šãŒã‚ã‚Œã°ãã‚Œä»¥é™ã¯å…¨ãæ ¼ç´ã—ãªã„
 				if ( aptr != 0 ) pval = NULL;
 				is_last = 1;
 				aptr = 0;
@@ -1106,7 +1106,7 @@ static int cmdfunc_intcmd( int cmd )
 			}
 			n ++;
 			if ( newsptr == NULL ) {
-				// Ši”[‚·‚é•Ï”‚Ì”‚ª•ªŠ„‚Å‚«‚½”‚æ‚è‘½‚¯‚ê‚Îc‚Á‚½•Ï”‚»‚ê‚¼‚ê‚É‹ó•¶š—ñ‚ğŠi”[‚·‚é
+				// æ ¼ç´ã™ã‚‹å¤‰æ•°ã®æ•°ãŒåˆ†å‰²ã§ããŸæ•°ã‚ˆã‚Šå¤šã‘ã‚Œã°æ®‹ã£ãŸå¤‰æ•°ãã‚Œãã‚Œã«ç©ºæ–‡å­—åˆ—ã‚’æ ¼ç´ã™ã‚‹
 				while( ( *exinfo->npexflg & EXFLG_1 ) == 0 ) {
 					aptr = code_getva( &pval );
 					code_setva( pval, aptr, HSPVAR_FLAG_STR, "" );
@@ -1178,8 +1178,8 @@ static int cmdfunc_intcmd( int cmd )
 		APTR ap;
 		int order;
 
-		ap = code_getva( &p1 );		// ƒpƒ‰ƒ[ƒ^1:•Ï”
-		order = code_getdi( 0 );	// ƒpƒ‰ƒ[ƒ^2:”’l
+		ap = code_getva( &p1 );		// ãƒ‘ãƒ©ãƒ¡ãƒ¼ã‚¿1:å¤‰æ•°
+		order = code_getdi( 0 );	// ãƒ‘ãƒ©ãƒ¡ãƒ¼ã‚¿2:æ•°å€¤
 
 		i=p1->len[1];
 		if (i<=0) throw HSPERR_ILLEGAL_FUNCTION;
@@ -1200,7 +1200,7 @@ static int cmdfunc_intcmd( int cmd )
 				std::sort(dtmp, dtmp + i, less_double_0);
 			}
 			for(a=0;a<i;a++) {
-				code_setva( p1, a, HSPVAR_FLAG_DOUBLE, &(dtmp[a].as.dkey) );	// •Ï”‚É’l‚ğ‘ã“ü
+				code_setva( p1, a, HSPVAR_FLAG_DOUBLE, &(dtmp[a].as.dkey) );	// å¤‰æ•°ã«å€¤ã‚’ä»£å…¥
 			}
 			break;
 			}
@@ -1239,8 +1239,8 @@ static int cmdfunc_intcmd( int cmd )
 		HspVarProc *proc;
 		char **pvstr;
 
-		ap = code_getva( &pv );		// ƒpƒ‰ƒ[ƒ^1:•Ï”
-		order = code_getdi( 0 );	// ƒpƒ‰ƒ[ƒ^2:”’l
+		ap = code_getva( &pv );		// ãƒ‘ãƒ©ãƒ¡ãƒ¼ã‚¿1:å¤‰æ•°
+		order = code_getdi( 0 );	// ãƒ‘ãƒ©ãƒ¡ãƒ¼ã‚¿2:æ•°å€¤
 
 		if ( pv->flag != 2 ) throw HSPERR_TYPE_MISMATCH;
 		if (( pv->len[2] != 0 )||( ap != 0 )) throw HSPERR_ILLEGAL_FUNCTION;
@@ -1263,7 +1263,7 @@ static int cmdfunc_intcmd( int cmd )
 			std::sort(dtmp, dtmp + i, less_str_0);
 		}
 
-		pvstr = (char **)(pv->master);	// •Ï”‚É’¼Úsbƒ|ƒCƒ“ƒ^‚ğ‘‚«–ß‚·
+		pvstr = (char **)(pv->master);	// å¤‰æ•°ã«ç›´æ¥sbãƒã‚¤ãƒ³ã‚¿ã‚’æ›¸ãæˆ»ã™
 		for(i=0;i<len;i++) {
 			if ( i == 0 ) {
 				pv->pt = dtmp[i].as.skey;
@@ -1284,10 +1284,10 @@ static int cmdfunc_intcmd( int cmd )
 		PVal *pv;
 		APTR ap;
 
-		ap = code_getva( &pv );		// ƒpƒ‰ƒ[ƒ^1:•Ï”
+		ap = code_getva( &pv );		// ãƒ‘ãƒ©ãƒ¡ãƒ¼ã‚¿1:å¤‰æ•°
 		p = (char*)HspVarCorePtrAPTR(pv, ap);
 
-		sflag = code_getdi( 0 );	// ƒpƒ‰ƒ[ƒ^2:”’l
+		sflag = code_getdi( 0 );	// ãƒ‘ãƒ©ãƒ¡ãƒ¼ã‚¿2:æ•°å€¤
 
 		i = GetNoteLines(p);
 		if ( i <= 0 ) throw HSPERR_ILLEGAL_FUNCTION;
@@ -1305,7 +1305,7 @@ static int cmdfunc_intcmd( int cmd )
 		stmp = code_stmp( (int)DataToNoteLen( dtmp, i ) + 1 );
 		DataToNote( dtmp, stmp, i );
 
-		code_setva( pv, ap, HSPVAR_FLAG_STR, stmp );	// •Ï”‚É’l‚ğ‘ã“ü
+		code_setva( pv, ap, HSPVAR_FLAG_STR, stmp );	// å¤‰æ•°ã«å€¤ã‚’ä»£å…¥
 
 		break;
 		}
@@ -1342,7 +1342,7 @@ static HSPREAL reffunc_intfunc_value;
 static void *reffunc_intfunc( int *type_res, int arg )
 {
 	//		reffunc : TYPE_INTFUNC
-	//		(“à‘ ŠÖ”)
+	//		(å†…è”µé–¢æ•°)
 	//
 	void *ptr;
 	int chk;
@@ -1352,29 +1352,29 @@ static void *reffunc_intfunc( int *type_res, int arg )
 	char *sval;
 	int p1,p2,p3;
 
-	//			'('‚Ån‚Ü‚é‚©‚ğ’²‚×‚é
+	//			'('ã§å§‹ã¾ã‚‹ã‹ã‚’èª¿ã¹ã‚‹
 	//
 	if ( *type != TYPE_MARK ) throw HSPERR_INVALID_FUNCPARAM;
 	if ( *val != '(' ) throw HSPERR_INVALID_FUNCPARAM;
 	code_next();
 
-	//		•Ô’l‚Ìƒ^ƒCƒv‚ğarg‚ğ‚à‚Æ‚Éİ’è‚·‚é
-	//		0`255   : int
-	//		256`383 : string
-	//		384`511 : double(HSPREAL)
+	//		è¿”å€¤ã®ã‚¿ã‚¤ãƒ—ã‚’argã‚’ã‚‚ã¨ã«è¨­å®šã™ã‚‹
+	//		0ï½255   : int
+	//		256ï½383 : string
+	//		384ï½511 : double(HSPREAL)
 	//
 	switch( arg>>7 ) {
-		case 2:										// •Ô’l‚ªstr
-			*type_res = HSPVAR_FLAG_STR;			// •Ô’l‚Ìƒ^ƒCƒv‚ğw’è‚·‚é
-			ptr = NULL;								// •Ô’l‚Ìƒ|ƒCƒ“ƒ^
+		case 2:										// è¿”å€¤ãŒstr
+			*type_res = HSPVAR_FLAG_STR;			// è¿”å€¤ã®ã‚¿ã‚¤ãƒ—ã‚’æŒ‡å®šã™ã‚‹
+			ptr = NULL;								// è¿”å€¤ã®ãƒã‚¤ãƒ³ã‚¿
 			break;
-		case 3:										// •Ô’l‚ªdouble
-			*type_res = HSPVAR_FLAG_DOUBLE;			// •Ô’l‚Ìƒ^ƒCƒv‚ğw’è‚·‚é
-			ptr = &reffunc_intfunc_value;			// •Ô’l‚Ìƒ|ƒCƒ“ƒ^
+		case 3:										// è¿”å€¤ãŒdouble
+			*type_res = HSPVAR_FLAG_DOUBLE;			// è¿”å€¤ã®ã‚¿ã‚¤ãƒ—ã‚’æŒ‡å®šã™ã‚‹
+			ptr = &reffunc_intfunc_value;			// è¿”å€¤ã®ãƒã‚¤ãƒ³ã‚¿
 			break;
-		default:									// •Ô’l‚ªint
-			*type_res = HSPVAR_FLAG_INT;			// •Ô’l‚Ìƒ^ƒCƒv‚ğw’è‚·‚é
-			ptr = &reffunc_intfunc_ivalue;			// •Ô’l‚Ìƒ|ƒCƒ“ƒ^
+		default:									// è¿”å€¤ãŒint
+			*type_res = HSPVAR_FLAG_INT;			// è¿”å€¤ã®ã‚¿ã‚¤ãƒ—ã‚’æŒ‡å®šã™ã‚‹
+			ptr = &reffunc_intfunc_ivalue;			// è¿”å€¤ã®ãƒã‚¤ãƒ³ã‚¿
 			break;
 	}
 
@@ -1758,7 +1758,7 @@ static void *reffunc_intfunc( int *type_res, int arg )
 		throw HSPERR_UNSUPPORTED_FUNCTION;
 	}
 
-	//			')'‚ÅI‚í‚é‚©‚ğ’²‚×‚é
+	//			')'ã§çµ‚ã‚ã‚‹ã‹ã‚’èª¿ã¹ã‚‹
 	//
 	if ( *type != TYPE_MARK ) throw HSPERR_INVALID_FUNCPARAM;
 	if ( *val != ')' ) throw HSPERR_INVALID_FUNCPARAM;
@@ -1779,7 +1779,7 @@ static void *reffunc_intfunc( int *type_res, int arg )
 static int termfunc_intcmd( int option )
 {
 	//		termfunc : TYPE_INTCMD
-	//		(“à‘ )
+	//		(å†…è”µ)
 	//
 	return 0;
 }

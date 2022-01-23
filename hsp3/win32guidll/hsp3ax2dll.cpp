@@ -122,9 +122,9 @@ int runproc( void )
 	while(1) {
 
 #ifdef HSPDEBUG
-		if ( code_getdbgmode() ) code_dbgtrace();					// ƒgƒŒ[ƒXƒ‚[ƒhŽž‚Ìˆ—
+		if ( code_getdbgmode() ) code_dbgtrace();					// ãƒˆãƒ¬ãƒ¼ã‚¹ãƒ¢ãƒ¼ãƒ‰æ™‚ã®å‡¦ç†
 #endif
-		if ( code_gettypeinfo( *type )->cmdfunc( *val ) ) {	// ƒ^ƒCƒv‚²‚Æ‚ÌŠÖ”U‚è•ª‚¯
+		if ( code_gettypeinfo( *type )->cmdfunc( *val ) ) {	// ã‚¿ã‚¤ãƒ—ã”ã¨ã®é–¢æ•°æŒ¯ã‚Šåˆ†ã‘
 			if ( ctx->runmode == RUNMODE_END ) {
 				throw HSPERR_NONE;
 			}

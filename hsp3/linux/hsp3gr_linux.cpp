@@ -1,7 +1,7 @@
 
 //
 //	HSP3 graphics command
-//	(GUIŠÖ˜AƒRƒ}ƒ“ƒhEŠÖ”ˆ—)
+//	(GUIé–¢é€£ã‚³ãƒãƒ³ãƒ‰ãƒ»é–¢æ•°å‡¦ç†)
 //	onion software/onitama 2004/6
 //
 #include <stdio.h>
@@ -215,10 +215,10 @@ static void cmdfunc_dialog( void )
 static int cmdfunc_extcmd( int cmd )
 {
 	//		cmdfunc : TYPE_EXTCMD
-	//		(“à‘ GUIƒRƒ}ƒ“ƒh)
+	//		(å†…è”µGUIã‚³ãƒãƒ³ãƒ‰)
 	//
-	code_next();							// Ÿ‚ÌƒR[ƒh‚ğæ“¾(Å‰‚É•K‚¸•K—v‚Å‚·)
-	switch( cmd ) {							// ƒTƒuƒRƒ}ƒ“ƒh‚²‚Æ‚Ì•ªŠò
+	code_next();							// æ¬¡ã®ã‚³ãƒ¼ãƒ‰ã‚’å–å¾—(æœ€åˆã«å¿…ãšå¿…è¦ã§ã™)
+	switch( cmd ) {							// ã‚µãƒ–ã‚³ãƒãƒ³ãƒ‰ã”ã¨ã®åˆ†å²
 
 	case 0x02:								// exec
 		{
@@ -247,7 +247,7 @@ static int cmdfunc_extcmd( int cmd )
 		}
 		ptr = (char *)(HspVarCorePtr(mpval));
 		if ( mpval->flag != HSPVAR_FLAG_STR ) {
-			ptr = (char *)HspVarCoreCnv( mpval->flag, HSPVAR_FLAG_STR, ptr );	// Œ^‚ªˆê’v‚µ‚È‚¢ê‡‚Í•ÏŠ·
+			ptr = (char *)HspVarCoreCnv( mpval->flag, HSPVAR_FLAG_STR, ptr );	// å‹ãŒä¸€è‡´ã—ãªã„å ´åˆã¯å¤‰æ›
 		}
 		printf( "%s\n",ptr );
 		//strsp_ini();
@@ -429,12 +429,12 @@ static void *reffunc_function( int *type_res, int arg )
 {
 	void *ptr;
 
-	//		•Ô’l‚Ìƒ^ƒCƒv‚ğİ’è‚·‚é
+	//		è¿”å€¤ã®ã‚¿ã‚¤ãƒ—ã‚’è¨­å®šã™ã‚‹
 	//
-	*type_res = HSPVAR_FLAG_INT;			// •Ô’l‚Ìƒ^ƒCƒv‚ğw’è‚·‚é
-	ptr = &reffunc_intfunc_ivalue;			// •Ô’l‚Ìƒ|ƒCƒ“ƒ^
+	*type_res = HSPVAR_FLAG_INT;			// è¿”å€¤ã®ã‚¿ã‚¤ãƒ—ã‚’æŒ‡å®šã™ã‚‹
+	ptr = &reffunc_intfunc_ivalue;			// è¿”å€¤ã®ãƒã‚¤ãƒ³ã‚¿
 
-	//			'('‚Ån‚Ü‚é‚©‚ğ’²‚×‚é
+	//			'('ã§å§‹ã¾ã‚‹ã‹ã‚’èª¿ã¹ã‚‹
 	//
 	if ( *type != TYPE_MARK ) throw HSPERR_INVALID_FUNCPARAM;
 	if ( *val != '(' ) throw HSPERR_INVALID_FUNCPARAM;
@@ -460,7 +460,7 @@ static void *reffunc_function( int *type_res, int arg )
 		throw HSPERR_UNSUPPORTED_FUNCTION;
 	}
 
-	//			')'‚ÅI‚í‚é‚©‚ğ’²‚×‚é
+	//			')'ã§çµ‚ã‚ã‚‹ã‹ã‚’èª¿ã¹ã‚‹
 	//
 	if ( *type != TYPE_MARK ) throw HSPERR_INVALID_FUNCPARAM;
 	if ( *val != ')' ) throw HSPERR_INVALID_FUNCPARAM;
@@ -473,7 +473,7 @@ static void *reffunc_function( int *type_res, int arg )
 static int termfunc_extcmd( int option )
 {
 	//		termfunc : TYPE_EXTCMD
-	//		(“à‘ GUI)
+	//		(å†…è”µGUI)
 	//
 #ifdef DEVCTRL_IO
 	hsp3dish_termdevinfo_io();
@@ -495,13 +495,13 @@ void hsp3typeinit_cl_extcmd( HSP3TYPEINFO *info )
 	info->cmdfunc = cmdfunc_extcmd;
 	info->termfunc = termfunc_extcmd;
 
-	//		HSPEXINFO‚ÉŠÖ”‚ğ“o˜^‚·‚é
+	//		HSPEXINFOã«é–¢æ•°ã‚’ç™»éŒ²ã™ã‚‹
 	//
 	exinfo->actscr = &cur_window;					// Active Window ID
 	exinfo->HspFunc_getbmscr = ex_getbmscr;
 	exinfo->HspFunc_mref = ex_mref;
 
-	//		ƒoƒCƒiƒŠƒ‚[ƒh‚ğİ’è
+	//		ãƒã‚¤ãƒŠãƒªãƒ¢ãƒ¼ãƒ‰ã‚’è¨­å®š
 	//
 	//_setmode( _fileno(stdin),  _O_BINARY );
 

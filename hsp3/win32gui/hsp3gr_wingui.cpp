@@ -1,7 +1,7 @@
 
 //
 //	HSP3 graphics command
-//	(GUIŠÖ˜AƒRƒ}ƒ“ƒhEŠÖ”ˆ—)
+//	(GUIé–¢é€£ã‚³ãƒãƒ³ãƒ‰ãƒ»é–¢æ•°å‡¦ç†)
 //	onion software/onitama 2004/6
 //
 #include <windows.h>
@@ -48,7 +48,7 @@ static int ckey,cklast,cktrg;
 static int msact;
 static int dispflg;
 
-extern int resY0, resY1;				// "fcpoly.h"‚Ìƒpƒ‰ƒ[ƒ^[
+extern int resY0, resY1;				// "fcpoly.h"ã®ãƒ‘ãƒ©ãƒ¡ãƒ¼ã‚¿ãƒ¼
 
 #define GSQUARE_MODE_TEXTURE 0
 #define GSQUARE_MODE_COLORFILL 1
@@ -98,8 +98,8 @@ static int chgdisp( int mode, int sx, int sy )
 		if (f==0) break;
 /*
 	rev 43
-	mingw : warning : —L•„†Œ^‚Æ–³•„†Œ^‚Ì”äŠr
-	‚É‘Îˆ
+	mingw : warning : æœ‰ç¬¦å·å‹ã¨ç„¡ç¬¦å·å‹ã®æ¯”è¼ƒ
+	ã«å¯¾å‡¦
 */
 		if ( static_cast< int >( dev.dmPelsWidth ) == sx )
 		  if ( static_cast< int >( dev.dmPelsHeight ) == sy ) {
@@ -154,7 +154,7 @@ static void SetPolyAxis( POLY4 *poly, int num, int x, int y, int tx, int ty )
 
 static void DrawSquareEx( int mode, int color, int attr, int alpha, int *x, int *y, int *texx, int *texy )
 {
-	//		©—R•ÏŒ`ƒXƒvƒ‰ƒCƒg
+	//		è‡ªç”±å¤‰å½¢ã‚¹ãƒ—ãƒ©ã‚¤ãƒˆ
 	//		mode : 0=fullcolor/1=palette
 	//
 	POLY4 *poly;
@@ -191,9 +191,9 @@ static void DrawSquareEx( int mode, int color, int attr, int alpha, int *x, int 
 
 static void DrawSpriteEx( int mode, int attr, int alpha, int x, int y, int sx, int sy, double ang, int tx0, int ty0, int tx1, int ty1, int opx, int opy )
 {
-	//		Šg‘å‰ñ“]ƒXƒvƒ‰ƒCƒg
+	//		æ‹¡å¤§å›è»¢ã‚¹ãƒ—ãƒ©ã‚¤ãƒˆ
 	//		mode : 0=fullcolor/1=palette
-	//		(x,y)Šî“_À•W / (sx,sy)ƒTƒCƒY / (opx,opy)ƒIƒtƒZƒbƒg / ang=Šp“x
+	//		(x,y)åŸºç‚¹åº§æ¨™ / (sx,sy)ã‚µã‚¤ã‚º / (opx,opy)ã‚ªãƒ•ã‚»ãƒƒãƒˆ / ang=è§’åº¦
 	//
 	POLY4 *poly;
 	IAXIS2 *iv;
@@ -213,13 +213,13 @@ static void DrawSpriteEx( int mode, int attr, int alpha, int x, int y, int sx, i
 	x1 = mx1 * ofsx;
 	y1 = my1 * ofsx;
 
-	//		Šî“_‚ÌZo
+	//		åŸºç‚¹ã®ç®—å‡º
 	xx = ( (double)x - (-x0+x1) );
 	yy = ( (double)y - (-y0+y1) );
 
 	/*-------------------------------*/
 
-	//		‰ñ“]À•W‚ÌZo
+	//		å›è»¢åº§æ¨™ã®ç®—å‡º
 	ofsx = (double)-sx;
 	ofsy = (double)-sy;
 	x0 = mx0 * ofsy;
@@ -277,9 +277,9 @@ static void DrawSpriteEx( int mode, int attr, int alpha, int x, int y, int sx, i
 
 static void DrawRectEx( int mode, int color, int alpha, int x, int y, int sx, int sy, double ang )
 {
-	//		‰ñ“]fill
+	//		å›è»¢fill
 	//		mode : 0=fullcolor/1=palette
-	//		(x,y)’†SÀ•W / ang=Šp“x
+	//		(x,y)ä¸­å¿ƒåº§æ¨™ / ang=è§’åº¦
 	//
 	POLY4 *poly;
 	IAXIS2 *iv;
@@ -358,7 +358,7 @@ static int CnvRGB( int color )
 
 static int GetAttrOperation( void )
 {
-	//		gmode‚Ìƒ‚[ƒh‚ğHGIMGŒİŠ·‚Ìattr’l‚É•ÏŠ·‚·‚é
+	//		gmodeã®ãƒ¢ãƒ¼ãƒ‰ã‚’HGIMGäº’æ›ã®attrå€¤ã«å¤‰æ›ã™ã‚‹
 	//
 	int attr;
 	attr = 0;
@@ -392,7 +392,7 @@ static void GRotateSub( Bmscr *bm2, int x, int y, int sx, int sy, int sizex, int
 
 static int *code_getiv( void )
 {
-	//		•Ï”ƒpƒ‰ƒ[ƒ^[‚ğæ“¾(PDATƒ|ƒCƒ“ƒ^)
+	//		å¤‰æ•°ãƒ‘ãƒ©ãƒ¡ãƒ¼ã‚¿ãƒ¼ã‚’å–å¾—(PDATãƒã‚¤ãƒ³ã‚¿)
 	//
 	PVal *pval;
 	pval = code_getpval();
@@ -458,12 +458,12 @@ static void cmdfunc_dialog( void )
 static int cmdfunc_extcmd( int cmd )
 {
 	//		cmdfunc : TYPE_EXTCMD
-	//		(“à‘ GUIƒRƒ}ƒ“ƒh)
+	//		(å†…è”µGUIã‚³ãƒãƒ³ãƒ‰)
 	//
 	int p1,p2,p3,p4,p5,p6;
 
-	code_next();							// Ÿ‚ÌƒR[ƒh‚ğæ“¾(Å‰‚É•K‚¸•K—v‚Å‚·)
-	switch( cmd ) {							// ƒTƒuƒRƒ}ƒ“ƒh‚²‚Æ‚Ì•ªŠò
+	code_next();							// æ¬¡ã®ã‚³ãƒ¼ãƒ‰ã‚’å–å¾—(æœ€åˆã«å¿…ãšå¿…è¦ã§ã™)
+	switch( cmd ) {							// ã‚µãƒ–ã‚³ãƒãƒ³ãƒ‰ã”ã¨ã®åˆ†å²
 
 	case 0x00:								// button
 		{
@@ -821,7 +821,7 @@ static int cmdfunc_extcmd( int cmd )
 		if ( type == TYPE_STRING ) {
 			ptr = (char *)HspVarCoreGetBlockSize( pval, (PDAT *)ptr, &size );
 		} else {
-			ptr = (char *)HspVarCoreCnv( pval->flag, HSPVAR_FLAG_STR, ptr );	// •¶š—ñ‚É•ÏŠ·
+			ptr = (char *)HspVarCoreCnv( pval->flag, HSPVAR_FLAG_STR, ptr );	// æ–‡å­—åˆ—ã«å¤‰æ›
 		}
 		p3 = code_getdi( size );
 		ctx->stat = bmscr->AddHSPObjectInput( pval, aptr, p1, p2, ptr, p3, type );
@@ -897,7 +897,7 @@ static int cmdfunc_extcmd( int cmd )
 	case 0x2c:								// mouse
 		{
 		POINT pt;
-		int setdef = 0;			// Šù‚Éƒ}ƒCƒiƒX‚Ì’l‚©?
+		int setdef = 0;			// æ—¢ã«ãƒã‚¤ãƒŠã‚¹ã®å€¤ã‹?
 		GetCursorPos(&pt);
 		p1 = code_getdi( pt.x );
 		p2 = code_getdi( pt.y );
@@ -1013,11 +1013,11 @@ static int cmdfunc_extcmd( int cmd )
 	case 0x35:								// grect
 		{
 		HSPREAL rot;
-		p1 = code_getdi(0);				// ƒpƒ‰ƒ[ƒ^1:”’l
-		p2 = code_getdi(0);				// ƒpƒ‰ƒ[ƒ^2:”’l
-		rot = code_getdd(0.0);			// ƒpƒ‰ƒ[ƒ^5:”’l
-		p3 = code_getdi(bmscr->gx);		// ƒpƒ‰ƒ[ƒ^3:”’l
-		p4 = code_getdi(bmscr->gy);		// ƒpƒ‰ƒ[ƒ^4:”’l
+		p1 = code_getdi(0);				// ãƒ‘ãƒ©ãƒ¡ãƒ¼ã‚¿1:æ•°å€¤
+		p2 = code_getdi(0);				// ãƒ‘ãƒ©ãƒ¡ãƒ¼ã‚¿2:æ•°å€¤
+		rot = code_getdd(0.0);			// ãƒ‘ãƒ©ãƒ¡ãƒ¼ã‚¿5:æ•°å€¤
+		p3 = code_getdi(bmscr->gx);		// ãƒ‘ãƒ©ãƒ¡ãƒ¼ã‚¿3:æ•°å€¤
+		p4 = code_getdi(bmscr->gy);		// ãƒ‘ãƒ©ãƒ¡ãƒ¼ã‚¿4:æ•°å€¤
 		SetPolyDest( bmscr->pBit, bmscr->sx, bmscr->sy );
 		if ( bmscr->palmode ) p6 = bmscr->palcolor; else p6 = CnvRGB( bmscr->color );
 		DrawRectEx( bmscr->palmode, p6, bmscr->GetAlphaOperation(), p1, p2, p3, p4, rot );
@@ -1031,14 +1031,14 @@ static int cmdfunc_extcmd( int cmd )
 		Bmscr *bm2;
 		HSPREAL rot;
 
-		p1 = code_getdi(0);			// ƒpƒ‰ƒ[ƒ^1:”’l
-		p2 = code_getdi(0);			// ƒpƒ‰ƒ[ƒ^2:”’l
-		p3 = code_getdi(0);			// ƒpƒ‰ƒ[ƒ^3:”’l
-		rot = code_getdd(0.0);		// ƒpƒ‰ƒ[ƒ^6:”’l
-		p4 = code_getdi(bmscr->gx);	// ƒpƒ‰ƒ[ƒ^4:”’l
-		p5 = code_getdi(bmscr->gy);	// ƒpƒ‰ƒ[ƒ^5:”’l
+		p1 = code_getdi(0);			// ãƒ‘ãƒ©ãƒ¡ãƒ¼ã‚¿1:æ•°å€¤
+		p2 = code_getdi(0);			// ãƒ‘ãƒ©ãƒ¡ãƒ¼ã‚¿2:æ•°å€¤
+		p3 = code_getdi(0);			// ãƒ‘ãƒ©ãƒ¡ãƒ¼ã‚¿3:æ•°å€¤
+		rot = code_getdd(0.0);		// ãƒ‘ãƒ©ãƒ¡ãƒ¼ã‚¿6:æ•°å€¤
+		p4 = code_getdi(bmscr->gx);	// ãƒ‘ãƒ©ãƒ¡ãƒ¼ã‚¿4:æ•°å€¤
+		p5 = code_getdi(bmscr->gy);	// ãƒ‘ãƒ©ãƒ¡ãƒ¼ã‚¿5:æ•°å€¤
 
-		bm2 = wnd->GetBmscrSafe( p1 );	// “]‘—Œ³‚ÌBMSCR‚ğæ“¾
+		bm2 = wnd->GetBmscrSafe( p1 );	// è»¢é€å…ƒã®BMSCRã‚’å–å¾—
 		if ( bmscr->palmode != bm2->palmode ) throw HSPERR_ILLEGAL_FUNCTION;
 #if 0
 		int tx0,ty0,tx1,ty1;
@@ -1076,21 +1076,21 @@ static int cmdfunc_extcmd( int cmd )
 		int sqmode;
 
 		bm2 = NULL;
-		ep1 = code_getdi(0);				// ƒpƒ‰ƒ[ƒ^1:”’l
+		ep1 = code_getdi(0);				// ãƒ‘ãƒ©ãƒ¡ãƒ¼ã‚¿1:æ•°å€¤
 		px = code_getiv();
 		py = code_getiv();
 
 		sqmode = GSQUARE_MODE_TEXTURE;
 
 		if ( ep1 >= 0 ) {
-			bm2 = wnd->GetBmscrSafe( ep1 );	// “]‘—Œ³‚ÌBMSCR‚ğæ“¾
+			bm2 = wnd->GetBmscrSafe( ep1 );	// è»¢é€å…ƒã®BMSCRã‚’å–å¾—
 			if ( bmscr->palmode != bm2->palmode ) throw HSPERR_ILLEGAL_FUNCTION;
 			SetPolySource( bm2->pBit, bm2->sx, bm2->sy );
 			color = -1;
 			ptx = code_getiv();
 			pty = code_getiv();
 		} else {
-			if ( ep1 <= -257 ) {			// ƒOƒ‰ƒf[ƒVƒ‡ƒ“ƒ‚[ƒh
+			if ( ep1 <= -257 ) {			// ã‚°ãƒ©ãƒ‡ãƒ¼ã‚·ãƒ§ãƒ³ãƒ¢ãƒ¼ãƒ‰
 				ptx = code_getiv();
 				bmscr->GradFillEx( px, py, ptx );
 				break;
@@ -1108,7 +1108,7 @@ static int cmdfunc_extcmd( int cmd )
 			switch( sqmode ) {
 			case GSQUARE_MODE_TEXTURE:
 				tmp_tx[i] = GetLimit( ptx[i], 0, bm2->sx );
-				tmp_ty[i] = bm2->sy - 1 - GetLimit( pty[i], 0, bm2->sy );	// UV‚Ìã‰º‹t‚É‚·‚é
+				tmp_ty[i] = bm2->sy - 1 - GetLimit( pty[i], 0, bm2->sy );	// UVã®ä¸Šä¸‹é€†ã«ã™ã‚‹
 				break;
 			case GSQUARE_MODE_COLORFILL:
 				tmp_tx[i] = 0;
@@ -1210,15 +1210,15 @@ static int cmdfunc_extcmd( int cmd )
 		zx = code_getdd(1.0);
 		zy = code_getdd(1.0);
 		rot = code_getdd(0.0);
-		bm2 = wnd->GetBmscrSafe( p1 );	// “]‘—Œ³‚ÌBMSCR‚ğæ“¾
+		bm2 = wnd->GetBmscrSafe( p1 );	// è»¢é€å…ƒã®BMSCRã‚’å–å¾—
 
 		if (( rot == 0.0 )&&( zx == 1.0 )&&( zy == 1.0 )) {
-			//		•ÏŒ`‚È‚µ
+			//		å¤‰å½¢ãªã—
 			if ( bmscr->CelPut( bm2, p2 ) ) throw HSPERR_UNSUPPORTED_FUNCTION;
 			break;
 		}
 
-		//	•ÏŒ`‚ ‚è
+		//	å¤‰å½¢ã‚ã‚Š
 		if ( bmscr->palmode != bm2->palmode ) throw HSPERR_ILLEGAL_FUNCTION;
 
 		srcsx = bm2->divsx;
@@ -1238,7 +1238,7 @@ static int cmdfunc_extcmd( int cmd )
 	case 0x3f:								// gfilter
 	case 0x40:								// setreq
 	case 0x41:								// getreq
-		// HSP3Dish—p‚Ì‹@”\
+		// HSP3Dishç”¨ã®æ©Ÿèƒ½
 		throw HSPERR_UNSUPPORTED_FUNCTION;
 		break;
 
@@ -1274,7 +1274,7 @@ static int cmdfunc_extcmd( int cmd )
 	case 0x5d:								// gmulcolor
 	case 0x5e:								// setcls
 	case 0x5f:								// celputm
-		// HSP3Dish—p‚Ì‹@”\
+		// HSP3Dishç”¨ã®æ©Ÿèƒ½
 		throw HSPERR_UNSUPPORTED_FUNCTION;
 		break;
 
@@ -1407,12 +1407,12 @@ static void *reffunc_function( int *type_res, int arg )
 	void *ptr;
 	int p1,p2;
 
-	//		•Ô’l‚Ìƒ^ƒCƒv‚ğİ’è‚·‚é
+	//		è¿”å€¤ã®ã‚¿ã‚¤ãƒ—ã‚’è¨­å®šã™ã‚‹
 	//
-	*type_res = HSPVAR_FLAG_INT;			// •Ô’l‚Ìƒ^ƒCƒv‚ğw’è‚·‚é
-	ptr = &reffunc_intfunc_ivalue;			// •Ô’l‚Ìƒ|ƒCƒ“ƒ^
+	*type_res = HSPVAR_FLAG_INT;			// è¿”å€¤ã®ã‚¿ã‚¤ãƒ—ã‚’æŒ‡å®šã™ã‚‹
+	ptr = &reffunc_intfunc_ivalue;			// è¿”å€¤ã®ãƒã‚¤ãƒ³ã‚¿
 
-	//			'('‚Ån‚Ü‚é‚©‚ğ’²‚×‚é
+	//			'('ã§å§‹ã¾ã‚‹ã‹ã‚’èª¿ã¹ã‚‹
 	//
 	if ( *type != TYPE_MARK ) throw HSPERR_INVALID_FUNCPARAM;
 	if ( *val != '(' ) throw HSPERR_INVALID_FUNCPARAM;
@@ -1453,7 +1453,7 @@ static void *reffunc_function( int *type_res, int arg )
 		throw HSPERR_UNSUPPORTED_FUNCTION;
 	}
 
-	//			')'‚ÅI‚í‚é‚©‚ğ’²‚×‚é
+	//			')'ã§çµ‚ã‚ã‚‹ã‹ã‚’èª¿ã¹ã‚‹
 	//
 	if ( *type != TYPE_MARK ) throw HSPERR_INVALID_FUNCPARAM;
 	if ( *val != ')' ) throw HSPERR_INVALID_FUNCPARAM;
@@ -1466,15 +1466,15 @@ static void *reffunc_function( int *type_res, int arg )
 static void *reffunc_sysvar( int *type_res, int arg )
 {
 	//		reffunc : TYPE_EXTSYSVAR
-	//		(Šg’£ƒVƒXƒeƒ€•Ï”)
+	//		(æ‹¡å¼µã‚·ã‚¹ãƒ†ãƒ å¤‰æ•°)
 	//
 	void *ptr;
 	if ( arg & 0x100 ) return reffunc_function( type_res, arg );
 
-	//		•Ô’l‚Ìƒ^ƒCƒv‚ğİ’è‚·‚é
+	//		è¿”å€¤ã®ã‚¿ã‚¤ãƒ—ã‚’è¨­å®šã™ã‚‹
 	//
-	*type_res = HSPVAR_FLAG_INT;			// •Ô’l‚Ìƒ^ƒCƒv‚ğw’è‚·‚é
-	ptr = &reffunc_intfunc_ivalue;			// •Ô’l‚Ìƒ|ƒCƒ“ƒ^
+	*type_res = HSPVAR_FLAG_INT;			// è¿”å€¤ã®ã‚¿ã‚¤ãƒ—ã‚’æŒ‡å®šã™ã‚‹
+	ptr = &reffunc_intfunc_ivalue;			// è¿”å€¤ã®ãƒã‚¤ãƒ³ã‚¿
 
 	switch( arg ) {
 
@@ -1508,7 +1508,7 @@ static void *reffunc_sysvar( int *type_res, int arg )
 
 static void mmnfunc( void *hwnd )
 {
-	//		ƒ}ƒ‹ƒ`ƒƒfƒBƒAƒR[ƒ‹ƒoƒbƒN
+	//		ãƒãƒ«ãƒãƒ¡ãƒ‡ã‚£ã‚¢ã‚³ãƒ¼ãƒ«ãƒãƒƒã‚¯
 	//
 	mmman->Notify();
 }
@@ -1600,7 +1600,7 @@ void ex_mref( PVal *pval, int prm )
 static int termfunc_extcmd( int option )
 {
 	//		termfunc : TYPE_EXTCMD
-	//		(“à‘ GUI)
+	//		(å†…è”µGUI)
 	//
 #ifndef HSP_COMPACT
 	hgiof_term();
@@ -1635,16 +1635,16 @@ void hsp3typeinit_extcmd( HSP3TYPEINFO *info, int sx, int sy, int wd, int xx, in
 	wnd = new HspWnd( hInstance, cname );
 	wnd->hspctx = ctx;
 
-	flag = wd & 0x100;								// ƒXƒNƒŠ[ƒ“ƒZ[ƒo[ƒvƒŒƒrƒ…[ƒtƒ‰ƒO
+	flag = wd & 0x100;								// ã‚¹ã‚¯ãƒªãƒ¼ãƒ³ã‚»ãƒ¼ãƒãƒ¼ãƒ—ãƒ¬ãƒ“ãƒ¥ãƒ¼ãƒ•ãƒ©ã‚°
 	if ( flag ) wnd->SetParentWindow( ctx->wnd_parent );
-	if ( wd & 1 ) flag |= 2;						// ”ñ•\¦ƒtƒ‰ƒO
+	if ( wd & 1 ) flag |= 2;						// éè¡¨ç¤ºãƒ•ãƒ©ã‚°
 
 	wnd->MakeBmscr( 0,HSPWND_TYPE_MAIN, xx, yy, sx, sy, sx, sy, flag );
 
 /*
 	rev 43
-	mingw : error : ŠÖ”ƒ|ƒCƒ“ƒ^‚©‚ç”ñŠÖ”ƒ|ƒCƒ“ƒ^‚Ö‚Ì•ÏŠ·
-	‚É‘Îˆ
+	mingw : error : é–¢æ•°ãƒã‚¤ãƒ³ã‚¿ã‹ã‚‰éé–¢æ•°ãƒã‚¤ãƒ³ã‚¿ã¸ã®å¤‰æ›
+	ã«å¯¾å‡¦
 */
 	wnd->SetNotifyFunc( fpconv( mmnfunc ) );
 	wnd->SetEventNoticePtr( &ctx->stat );
@@ -1662,7 +1662,7 @@ void hsp3typeinit_extcmd( HSP3TYPEINFO *info, int sx, int sy, int wd, int xx, in
 	info->cmdfunc = cmdfunc_extcmd;
 	info->termfunc = termfunc_extcmd;
 
-	//		HSPEXINFO‚ÉŠÖ”‚ğ“o˜^‚·‚é
+	//		HSPEXINFOã«é–¢æ•°ã‚’ç™»éŒ²ã™ã‚‹
 	//
 	exinfo->actscr = &cur_window;					// Active Window ID
 	exinfo->HspFunc_getbmscr = ex_getbmscr;
@@ -1680,7 +1680,7 @@ void hsp3typeinit_extfunc( HSP3TYPEINFO *info )
 
 void hsp3gr_nextobj( void )
 {
-	//		[TAB]‚ğ‰Ÿ‚µ‚ÄŸ‚Ìobject‚ğ‘I‘ğ
+	//		[TAB]ã‚’æŠ¼ã—ã¦æ¬¡ã®objectã‚’é¸æŠ
 	//
 	Bmscr *bm;
 	int id, plus;
@@ -1698,11 +1698,11 @@ void hsp3gr_nextobj( void )
 #ifdef HSPDEBUG
 void hsp3gr_dbg_gui( void )
 {
-	//		ƒfƒoƒbƒOƒEƒCƒ“ƒhƒD—pî•ñ
+	//		ãƒ‡ãƒãƒƒã‚°ã‚¦ã‚¤ãƒ³ãƒ‰ã‚¥ç”¨æƒ…å ±
 	//
-	code_adddbg( "ƒfƒBƒŒƒNƒgƒŠ", hsp3ext_getdir(0) );
-	code_adddbg( "ƒRƒ}ƒ“ƒhƒ‰ƒCƒ“", hsp3ext_getdir(4) );
-	code_adddbg( "ƒEƒCƒ“ƒhƒDÅ‘å", wnd->GetBmscrMax() );
-	code_adddbg( "ƒJƒŒƒ“ƒgƒEƒCƒ“ƒhƒD", cur_window );
+	code_adddbg( "ãƒ‡ã‚£ãƒ¬ã‚¯ãƒˆãƒª", hsp3ext_getdir(0) );
+	code_adddbg( "ã‚³ãƒãƒ³ãƒ‰ãƒ©ã‚¤ãƒ³", hsp3ext_getdir(4) );
+	code_adddbg( "ã‚¦ã‚¤ãƒ³ãƒ‰ã‚¥æœ€å¤§", wnd->GetBmscrMax() );
+	code_adddbg( "ã‚«ãƒ¬ãƒ³ãƒˆã‚¦ã‚¤ãƒ³ãƒ‰ã‚¥", cur_window );
 }
 #endif

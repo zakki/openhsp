@@ -11,7 +11,7 @@
 
 /*
 	rev 43
-	���Ԃ�V�X�e���w�b�_�B����Ƃ��J�X�^���w�b�_���g���̂��H (naznyark)
+	たぶんシステムヘッダ。それともカスタムヘッダを使うのか？ (naznyark)
 */
 #include "string.h"
 #include "strbuf.h"
@@ -43,14 +43,14 @@ void HspVarCoreInit( void )
 		hspvarproc[i].flag = 0;
 	}
 
-	//		mpval(�e���|�����ϐ�)�����������܂�
-	//		(���Ԃ̏������́A�ϐ��g�p���ɍs�Ȃ��܂�)
+	//		mpval(テンポラリ変数)を初期化します
+	//		(実態の初期化は、変数使用時に行なわれます)
 	PVal *pval;
 	mem_pval = (PVal *)sbAlloc( sizeof(PVal) * HSPVAR_FLAG_MAX );
 	for(i=0;i<HSPVAR_FLAG_MAX;i++) {
 		pval = &mem_pval[i];
 		pval->mode = HSPVAR_MODE_NONE;
-		pval->flag = HSPVAR_FLAG_INT;				// ���̌^
+		pval->flag = HSPVAR_FLAG_INT;				// 仮の型
 	}
 }
 
@@ -69,8 +69,8 @@ void HspVarCoreBye( void )
 
 void HspVarCoreResetVartype( int expand )
 {
-	//		VARTYPE������������(HspVarCoreInit�̌�ŌĂ�)
-	//		(expand�Ɋg������VARTYPE�̐����w�肷��)
+	//		VARTYPEを初期化する(HspVarCoreInitの後で呼ぶ)
+	//		(expandに拡張するVARTYPEの数を指定する)
 	//
 	hspvartype_limit = hspvartype_max + expand;
 	if ( expand >= 0 ) {
@@ -78,13 +78,13 @@ void HspVarCoreResetVartype( int expand )
 		mem_pval = (PVal *)sbExpand( (char *)mem_pval, sizeof(PVal) * hspvartype_limit );
 	}
 
-	//		�W���̌^��o�^����
+	//		標準の型を登録する
 	//
 	HspVarCoreRegisterType( HSPVAR_FLAG_INT, (HSPVAR_COREFUNC)HspVarInt_Init );
 	HspVarCoreRegisterType( HSPVAR_FLAG_STR, (HSPVAR_COREFUNC)HspVarStr_Init );
 	HspVarCoreRegisterType( HSPVAR_FLAG_DOUBLE, (HSPVAR_COREFUNC)HspVarDouble_Init );
 	HspVarCoreRegisterType( HSPVAR_FLAG_STRUCT, (HSPVAR_COREFUNC)HspVarStruct_Init );
-	HspVarCoreRegisterType( HSPVAR_FLAG_LABEL, (HSPVAR_COREFUNC)HspVarLabel_Init );		// ���x���^(3.1)
+	HspVarCoreRegisterType( HSPVAR_FLAG_LABEL, (HSPVAR_COREFUNC)HspVarLabel_Init );		// ラベル型(3.1)
 }
 
 
@@ -99,7 +99,7 @@ int HspVarCoreAddType()
 	//mem_pval = (PVal *)sbExpand( (char *)mem_pval, sizeof(PVal) * hspvartype_max );
 	pval = &mem_pval[id];
 	pval->mode = HSPVAR_MODE_NONE;
-	pval->flag = HSPVAR_FLAG_INT;					// ���̌^
+	pval->flag = HSPVAR_FLAG_INT;					// 仮の型
 	return id;
 }
 
@@ -131,7 +131,7 @@ void HspVarCoreRegisterType( int flag, HSPVAR_COREFUNC func )
 		procs++;
 	}
 
-	//	�������֐��̌Ăяo��
+	//	初期化関数の呼び出し
 
 	func( p );
 }
@@ -141,7 +141,7 @@ void HspVarCoreRegisterType( int flag, HSPVAR_COREFUNC func )
 
 void HspVarCoreDupPtr( PVal *pval, int flag, void *ptr, int size )
 {
-	//		�w�肳�ꂽ�|�C���^����̃N���[���ɂȂ�
+	//		指定されたポインタからのクローンになる
 	//
 	PDAT *buf;
 	HspVarProc *p;
@@ -171,7 +171,7 @@ void HspVarCoreDupPtr( PVal *pval, int flag, void *ptr, int size )
 
 void HspVarCoreDup( PVal *pval, PVal *arg, APTR aptr )
 {
-	//		�w�肳�ꂽ�ϐ��̃N���[���ɂȂ�
+	//		指定された変数のクローンになる
 	//
 	int size;
 	PDAT *buf;
@@ -185,8 +185,8 @@ void HspVarCoreDup( PVal *pval, PVal *arg, APTR aptr )
 
 void HspVarCoreDim( PVal *pval, int flag, int len1, int len2, int len3, int len4 )
 {
-	//		�z����m�ۂ���
-	//		(len1�`len4�́A4byte�P�ʂȂ̂Œ���)
+	//		配列を確保する
+	//		(len1～len4は、4byte単位なので注意)
 	//
 	HspVarProc *p;
 	p = &hspvarproc[ flag ];
@@ -209,8 +209,8 @@ void HspVarCoreDim( PVal *pval, int flag, int len1, int len2, int len3, int len4
 
 void HspVarCoreDimFlex( PVal *pval, int flag, int len0, int len1, int len2, int len3, int len4 )
 {
-	//		�z����m�ۂ���(�ϒ��z��p)
-	//		(len1�`len4�́A4byte�P�ʂȂ̂Œ���)
+	//		配列を確保する(可変長配列用)
+	//		(len1～len4は、4byte単位なので注意)
 	//
 	HspVarProc *p;
 	p = &hspvarproc[ flag ];
@@ -232,7 +232,7 @@ void HspVarCoreDimFlex( PVal *pval, int flag, int len0, int len1, int len2, int 
 
 void HspVarCoreReDim( PVal *pval, int lenid, int len )
 {
-	//		�z����g������
+	//		配列を拡張する
 	//
 	HspVarProc *p;
 	p = &hspvarproc[ pval->flag ];
@@ -243,29 +243,29 @@ void HspVarCoreReDim( PVal *pval, int lenid, int len )
 
 void HspVarCoreClear( PVal *pval, int flag )
 {
-	//		�w��^�C�v�̕ϐ����ŏ��������ŏ���������
+	//		指定タイプの変数を最小メモリで初期化する
 	//
-	HspVarCoreDim( pval, flag, 1, 0, 0, 0 );	// �ŏ��T�C�Y�̃��������m��
+	HspVarCoreDim( pval, flag, 1, 0, 0, 0 );	// 最小サイズのメモリを確保
 }
 
 
 void HspVarCoreClearTemp( PVal *pval, int flag )
 {
-	//		�w��^�C�v�̕ϐ����ŏ��������ŏ���������(�e���|�����p)
+	//		指定タイプの変数を最小メモリで初期化する(テンポラリ用)
 	//
-	HspVarCoreDim( pval, flag, 1, 0, 0, 0 );	// �ŏ��T�C�Y�̃��������m��
+	HspVarCoreDim( pval, flag, 1, 0, 0, 0 );	// 最小サイズのメモリを確保
 	pval->support |= HSPVAR_SUPPORT_TEMPVAR;
 }
 
 
 void *HspVarCoreCnvPtr( PVal *pval, int flag )
 {
-	//		�w�肳�ꂽtype�t���O�ɕϊ����ꂽ�l�̃|�C���^�𓾂�
+	//		指定されたtypeフラグに変換された値のポインタを得る
 	//
 	if ( pval->flag == flag ) {
 		return hspvarproc[ flag ].GetPtr( pval );
 	}
-	//		�^�ϊ�������
+	//		型変換をする
 	void *buf;
 	buf = hspvarproc[ pval->flag ].GetPtr( pval );
 	if ( pval->flag >= HSPVAR_FLAG_USERDEF ) {
@@ -278,8 +278,8 @@ void *HspVarCoreCnvPtr( PVal *pval, int flag )
 #if 0
 PDAT *HspVarCorePtrAPTR( PVal *pv, APTR ofs )
 {
-	//		�ϐ��f�[�^�̎��ԃ|�C���^�𓾂�
-	//		(APTR��pval������Ԃ����߂�)
+	//		変数データの実態ポインタを得る
+	//		(APTRとpvalから実態を求める)
 	//
 	pv->offset=ofs;
 	return hspvarproc[(pv)->flag].GetPtr(pv);
@@ -305,12 +305,12 @@ HspVarProc *HspVarCoreSeekProc( const char *name )
 
 void HspVarCoreArray( PVal *pval, int offset )
 {
-	//		�z��v�f�̎w�� (index)
-	//		( Reset��Ɏ����������A���ŌĂ΂�܂� )
+	//		配列要素の指定 (index)
+	//		( Reset後に次元数だけ連続で呼ばれます )
 	//
 	if ( pval->arraycnt >= 5 ) throw HSPVAR_ERROR_ARRAYOVER;
 	if ( pval->arraycnt == 0 ) {
-		pval->arraymul = 1;			// �ŏ��̒l
+		pval->arraymul = 1;			// 最初の値
 	} else {
 		pval->arraymul *= pval->len[ pval->arraycnt ];
 	}
@@ -335,14 +335,14 @@ int HspVarCoreCountElems( PVal *pval )
 
 void HspVarCoreAllocPODArray( PVal *pval, const PVal *pval2, int basesize )
 {
-	//		pval�ϐ����K�v�Ƃ���T�C�Y���m�ۂ���B
-	//		(pval�����łɊm�ۂ���Ă��郁��������͌Ăяo�������s�Ȃ�)
-	//		(flag�̐ݒ�͌Ăяo�������s�Ȃ�)
-	//		(pval2��NULL�̏ꍇ�́A�V�K�f�[�^)
-	//		(pval2���w�肳��Ă���ꍇ�́Apval2�̓��e���p�����čĊm��)
+	//		pval変数が必要とするサイズを確保する。
+	//		(pvalがすでに確保されているメモリ解放は呼び出し側が行なう)
+	//		(flagの設定は呼び出し側が行なう)
+	//		(pval2がNULLの場合は、新規データ)
+	//		(pval2が指定されている場合は、pval2の内容を継承して再確保)
 	//
 
-	// �z����Œ�1�͊m�ۂ���
+	// 配列を最低1は確保する
 	if ( pval->len[1] < 1 ) pval->len[1] = 1;
 
 	int size = HspVarCoreCountElems(pval) * basesize;
@@ -363,7 +363,7 @@ void HspVarCoreAllocPODArray( PVal *pval, const PVal *pval2, int basesize )
 		}
 	}
 
-	// �V�K�v�f��0����
+	// 新規要素を0埋め
 	if ( size > old_size ) {
 		memset(pt + old_size, 0, (size - old_size));
 	}

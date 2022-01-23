@@ -2,25 +2,25 @@
 //
 //	comstruct.cpp header
 //
-//	COM ƒIƒuƒWƒFƒNƒgî•ñ‚ğŠi”[‚·‚é\‘¢‘Ì
+//	COM ã‚ªãƒ–ã‚¸ã‚§ã‚¯ãƒˆæƒ…å ±ã‚’æ ¼ç´ã™ã‚‹æ§‹é€ ä½“
 //
 #ifndef __comobj_h
 #define __comobj_h
 
 
-#ifndef HSP_COM_UNSUPPORTED		//iCOM ƒTƒ|[ƒg‚È‚µ”Å‚Ìƒrƒ‹ƒh‚Íƒtƒ@ƒCƒ‹‘S‘Ì‚ğ–³‹j
+#ifndef HSP_COM_UNSUPPORTED		//ï¼ˆCOM ã‚µãƒãƒ¼ãƒˆãªã—ç‰ˆã®ãƒ“ãƒ«ãƒ‰æ™‚ã¯ãƒ•ã‚¡ã‚¤ãƒ«å…¨ä½“ã‚’ç„¡è¦–ï¼‰
 
 /*
 	rev 43
-	mingw ; error : IDispatch‚ªéŒ¾‚³‚ê‚Ä‚¢‚È‚¢A‘¼
-	‚É‘Îˆ
+	mingw ; error : IDispatchãŒå®£è¨€ã•ã‚Œã¦ã„ãªã„ã€ä»–
+	ã«å¯¾å‡¦
 */
 #if defined( __GNUC__ )
 #define COM_NO_WINDOWS_H
 #include <oaidl.h>
 #endif
 
-// ƒfƒoƒbƒO—p‚Éì¬‚·‚éê‡‚É’è‹`
+// ãƒ‡ãƒãƒƒã‚°ç”¨ã«ä½œæˆã™ã‚‹å ´åˆã«å®šç¾©
 // #define HSP_COMOBJ_DEBUG
 
 #ifdef HSP_COMOBJ_DEBUG
@@ -36,7 +36,7 @@ void SetComEvent( IUnknown **, IUnknown **, const IID *, unsigned short * );
 void ReleaseComEvent( IUnknown ** );
 BOOL IsSameComObject( IUnknown **, IUnknown ** );
 
-// ˆÈ‰º‚Ì‚Q‚Â‚Íƒ}ƒNƒiƒCƒ“ƒ‰ƒCƒ“ŠÖ”j‚Æ‚µ‚Ä’è‹`
+// ä»¥ä¸‹ã®ï¼’ã¤ã¯ãƒã‚¯ãƒ­ï¼ˆã‚¤ãƒ³ãƒ©ã‚¤ãƒ³é–¢æ•°ï¼‰ã¨ã—ã¦å®šç¾©
 //BOOL IsVaridComPtr( IUnknown** );
 // void CopyComPtr( IUnknown**, IUnknown* );
 #ifdef __cplusplus

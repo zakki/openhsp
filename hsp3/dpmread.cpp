@@ -53,16 +53,16 @@ typedef struct MEMFILE {
 static	MEMFILE memfile = { NULL, 0, -1 };
 
 
-#define	p_optr 0x04			// Àƒf[ƒ^ŠJnƒ|ƒCƒ“ƒ^
-#define p_dent 0x08			// ƒfƒBƒŒƒNƒgƒŠƒGƒ“ƒgƒŠ”
-#define p_dnam 0x0c			// ƒl[ƒ€ƒXƒy[ƒXŠm•ÛƒTƒCƒY(ver2.6)
+#define	p_optr 0x04			// å®Ÿãƒ‡ãƒ¼ã‚¿é–‹å§‹ãƒã‚¤ãƒ³ã‚¿
+#define p_dent 0x08			// ãƒ‡ã‚£ãƒ¬ã‚¯ãƒˆãƒªã‚¨ãƒ³ãƒˆãƒªæ•°
+#define p_dnam 0x0c			// ãƒãƒ¼ãƒ ã‚¹ãƒšãƒ¼ã‚¹ç¢ºä¿ã‚µã‚¤ã‚º(ver2.6)
 
-#define d_farc 0x08			// ˆ³kflag(æ“ª‚ª'\0'‚Ì‚Ì‚İ—LŒø)
-#define d_fasz 0x0c			// ˆ³kŒãsize(æ“ª‚ª'\0'‚Ì‚Ì‚İ—LŒø)
-#define d_fnpt 0x10			// –¼‘OŠi”[ƒ|ƒCƒ“ƒ^(æ“ª‚ª'\0'‚Ì‚Ì‚İ—LŒø)
-#define d_fenc 0x14			// ˆÃ†‰»flag(æ“ª‚ª'\0'‚Ì‚Ì‚İ—LŒø)
-#define d_fent 0x18			// ƒtƒ@ƒCƒ‹Ši”[ƒ|ƒCƒ“ƒ^
-#define d_fsiz 0x1c			// ƒtƒ@ƒCƒ‹size
+#define d_farc 0x08			// åœ§ç¸®flag(å…ˆé ­ãŒ'\0'ã®æ™‚ã®ã¿æœ‰åŠ¹)
+#define d_fasz 0x0c			// åœ§ç¸®å¾Œsize(å…ˆé ­ãŒ'\0'ã®æ™‚ã®ã¿æœ‰åŠ¹)
+#define d_fnpt 0x10			// åå‰æ ¼ç´ãƒã‚¤ãƒ³ã‚¿(å…ˆé ­ãŒ'\0'ã®æ™‚ã®ã¿æœ‰åŠ¹)
+#define d_fenc 0x14			// æš—å·åŒ–flag(å…ˆé ­ãŒ'\0'ã®æ™‚ã®ã¿æœ‰åŠ¹)
+#define d_fent 0x18			// ãƒ•ã‚¡ã‚¤ãƒ«æ ¼ç´ãƒã‚¤ãƒ³ã‚¿
+#define d_fsiz 0x1c			// ãƒ•ã‚¡ã‚¤ãƒ«size
 
 /*----------------------------------------------------------------------------------*/
 
@@ -124,14 +124,14 @@ static int dpmchk( char *fname )
 
 static int dpm_chkmemf( char *fname )
 {
-	//		ƒƒ‚ƒŠƒXƒgƒŠ[ƒ€‚ğƒ`ƒFƒbƒN
+	//		ãƒ¡ãƒ¢ãƒªã‚¹ãƒˆãƒªãƒ¼ãƒ ã‚’ãƒã‚§ãƒƒã‚¯
 	//
 	int i;
 	char *p;
 	char tmp[HSP_MAX_PATH];
 	memf_flag=0;
 	i = *(int *)fname;
-	if (( i == 0x3a4d5044 )||( i == 0x3a6d7064 )) {			// 'DPM:'‚ğƒ`ƒFƒbƒN‚·‚é
+	if (( i == 0x3a4d5044 )||( i == 0x3a6d7064 )) {			// 'DPM:'ã‚’ãƒã‚§ãƒƒã‚¯ã™ã‚‹
 		p = strchr2( fname+4 , ':' );
 		dpm_bye();
 		if ( p != NULL ) {
@@ -142,7 +142,7 @@ static int dpm_chkmemf( char *fname )
 		}
 		return 0;
 	}
-	if (( i == 0x3a4d454d )||( i == 0x3a6d656d )) {			// 'MEM:'‚ğƒ`ƒFƒbƒN‚·‚é
+	if (( i == 0x3a4d454d )||( i == 0x3a6d656d )) {			// 'MEM:'ã‚’ãƒã‚§ãƒƒã‚¯ã™ã‚‹
 		memf_flag = 1;
 		return 1;
 	}
@@ -191,7 +191,7 @@ int dpm_fread( void *mem, int size, FILE *stream )
 	unsigned char ch;
 	int seed1x,seed2x;
 
-	if ( memf_flag ) {							// ƒƒ‚ƒŠƒXƒgƒŠ[ƒ€
+	if ( memf_flag ) {							// ãƒ¡ãƒ¢ãƒªã‚¹ãƒˆãƒªãƒ¼ãƒ æ™‚
 		len = size;
 		if (( memfile.cur + size ) >= memfile.size ) len = memfile.size - memfile.cur;
 		if ( len>0 ) {
@@ -209,7 +209,7 @@ int dpm_fread( void *mem, int size, FILE *stream )
 int dpm_ini( char *fname, long dpmofs, int chksum, int deckey )
 {
 	//
-	//		DPMƒtƒ@ƒCƒ‹“Ç‚İ‚İ‚Ì‰Šú‰»
+	//		DPMãƒ•ã‚¡ã‚¤ãƒ«èª­ã¿è¾¼ã¿ã®åˆæœŸåŒ–
 	//
 	int hedsize;
 	int namsize;
@@ -273,7 +273,7 @@ int dpm_ini( char *fname, long dpmofs, int chksum, int deckey )
 	mem_dpm = (unsigned char *)malloc( hedsize );
 	if ( mem_dpm==NULL ) return -1;
 
-	//		“à•”ƒoƒbƒtƒ@‚ÉDPMƒwƒbƒ_‚ğ“Ç‚İ‚Ş
+	//		å†…éƒ¨ãƒãƒƒãƒ•ã‚¡ã«DPMãƒ˜ãƒƒãƒ€ã‚’èª­ã¿è¾¼ã‚€
 	//
 #if (defined HSPUTF8 && defined HSPWIN)
 	fp=_wfopen( dpmfile,L"rb" );
@@ -285,7 +285,7 @@ int dpm_ini( char *fname, long dpmofs, int chksum, int deckey )
 	fread(mem_dpm, hedsize, 1, fp);
 	fclose(fp);
 
-	//		DPM‚Ìƒ`ƒFƒbƒNƒTƒ€‚ğŒŸØ‚·‚é
+	//		DPMã®ãƒã‚§ãƒƒã‚¯ã‚µãƒ ã‚’æ¤œè¨¼ã™ã‚‹
 	//
 	sum = 0; sumsize = 0;
 	sumseed = ((deckey>>24)&0xff)/7;
@@ -308,7 +308,7 @@ int dpm_ini( char *fname, long dpmofs, int chksum, int deckey )
 		sumsize -= hedsize;
 	}
 
-	//		DPMƒ‚[ƒh‚É‚·‚é
+	//		DPMãƒ¢ãƒ¼ãƒ‰ã«ã™ã‚‹
 	//
 	dpm_flag = 1;
 #if !(defined HSPUTF8 && defined HSPWIN)
@@ -345,7 +345,7 @@ int dpm_read( char *fname, void *readmem, int rlen, int seekofs )
 
 	lpRd=(char *)readmem;
 
-	if ( memf_flag ) {							// ƒƒ‚ƒŠƒXƒgƒŠ[ƒ€
+	if ( memf_flag ) {							// ãƒ¡ãƒ¢ãƒªã‚¹ãƒˆãƒªãƒ¼ãƒ æ™‚
 		dpm_open( fname );
 		memfile.cur = seeksize;
 		a1 = dpm_fread( lpRd, rlen, NULL );
@@ -383,7 +383,7 @@ int dpm_read( char *fname, void *readmem, int rlen, int seekofs )
 #endif
 	if ( ff == NULL ) {
 #if (defined HSPDISH && defined HSPWIN && defined HSPDEBUG)
-		//	hsptvƒtƒHƒ‹ƒ_‚ğŒŸõ‚·‚é
+		//	hsptvãƒ•ã‚©ãƒ«ãƒ€ã‚’æ¤œç´¢ã™ã‚‹
 		char fn[_MAX_PATH];
 		char fporg[_MAX_PATH];
 		char fname_tmp[_MAX_PATH];
@@ -418,7 +418,7 @@ int dpm_exist( char *fname )
 #endif
 
 	dpm_chkmemf( fname );
-	if ( memf_flag ) {					// ƒƒ‚ƒŠƒXƒgƒŠ[ƒ€
+	if ( memf_flag ) {					// ãƒ¡ãƒ¢ãƒªã‚¹ãƒˆãƒªãƒ¼ãƒ æ™‚
 		return memfile.size;
 	}
 
@@ -438,7 +438,7 @@ int dpm_exist( char *fname )
 #endif
 	if (ff==NULL) {
 #if (defined HSPDISH && defined HSPWIN && defined HSPDEBUG)
-		//	hsptvƒtƒHƒ‹ƒ_‚ğŒŸõ‚·‚é
+		//	hsptvãƒ•ã‚©ãƒ«ãƒ€ã‚’æ¤œç´¢ã™ã‚‹
 		char fn[_MAX_PATH];
 		char fporg[_MAX_PATH];
 		char fname_tmp[_MAX_PATH];
@@ -467,7 +467,7 @@ int dpm_exist( char *fname )
 
 int dpm_filebase( char *fname )
 {
-	//		w’èƒtƒ@ƒCƒ‹‚ª‚Ç‚±‚É‚ ‚é‚©‚ğ“¾‚é
+	//		æŒ‡å®šãƒ•ã‚¡ã‚¤ãƒ«ãŒã©ã“ã«ã‚ã‚‹ã‹ã‚’å¾—ã‚‹
 	//		(-1:error/0=file/1=dpm/2=memory)
 	//
 	FILE *ff;
@@ -505,8 +505,8 @@ void dpm_getinf( char *inf )
 	if (dpm_flag==0) a=-1;
 /*
 	rev 43
-	mingw : warning : ‰¼ˆø”:int Àˆø”:long
-	‚É‘Îˆ
+	mingw : warning : ä»®å¼•æ•°:int å®Ÿå¼•æ•°:long
+	ã«å¯¾å‡¦
 */
 #if (defined HSPUTF8 && defined HSPWIN)
 	swprintf( chartoapichar(inf,&hactmp1),L"%s%d",dpm_file,static_cast< int >( a ) );

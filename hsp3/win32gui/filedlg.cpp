@@ -47,36 +47,36 @@ void PopFileInitialize (HWND hwnd)
      ofn.lpTemplateName    = NULL ;
      }
 
-// SJIS‚Ì1ƒoƒCƒg–Ú‚©’²‚×‚é
+// SJISã®1ãƒã‚¤ãƒˆç›®ã‹èª¿ã¹ã‚‹
 #define is_sjis1(c)	 ( ( (unsigned char)(c) >= 0x81 && (unsigned char)(c) <= 0x9F ) || ( (unsigned char)(c) >= 0xE0 && (unsigned char)(c) <= 0xFC ) )
 
 void fd_ini( HWND hwnd, char *extname, char *extinfo )
 {
-	// dialog p1,16,p3/dialog p1,17,p3 ‚Æ OpenFileDialog/SaveFileDialog‚É“n‚·ƒf[ƒ^‚Ì
-	// p1(extname)      p3(extinfo)                    ƒtƒBƒ‹ƒ^—pƒf[ƒ^ 
-	// "txt"            "ƒeƒLƒXƒgƒtƒ@ƒCƒ‹"              "*.txt\0ƒeƒLƒXƒgƒtƒ@ƒCƒ‹(*.txt)\0\0"
-	// "txt;*.text"     "ƒeƒLƒXƒgƒtƒ@ƒCƒ‹"              "*.txt;*.text\0ƒeƒLƒXƒgƒtƒ@ƒCƒ‹(*.txt;*.text)\0\0"
-	// "txt;*.text|log" "ƒeƒLƒXƒgƒtƒ@ƒCƒ‹|ƒƒOƒtƒ@ƒCƒ‹" "*.txt;*.text\0ƒeƒLƒXƒgƒtƒ@ƒCƒ‹(*.txt;*.text)\0*.log\0ƒƒOƒtƒ@ƒCƒ‹(*.log)\0\0"
-	// ";a*.txt"        "ƒeƒLƒXƒgƒtƒ@ƒCƒ‹"              "a*.txt\0ƒeƒLƒXƒgƒtƒ@ƒCƒ‹(a*.txt)\0\0"
+	// dialog p1,16,p3/dialog p1,17,p3 ã¨ OpenFileDialog/SaveFileDialogã«æ¸¡ã™ãƒ‡ãƒ¼ã‚¿ã®
+	// p1(extname)      p3(extinfo)                    ãƒ•ã‚£ãƒ«ã‚¿ç”¨ãƒ‡ãƒ¼ã‚¿ 
+	// "txt"            "ãƒ†ã‚­ã‚¹ãƒˆãƒ•ã‚¡ã‚¤ãƒ«"              "*.txt\0ãƒ†ã‚­ã‚¹ãƒˆãƒ•ã‚¡ã‚¤ãƒ«(*.txt)\0\0"
+	// "txt;*.text"     "ãƒ†ã‚­ã‚¹ãƒˆãƒ•ã‚¡ã‚¤ãƒ«"              "*.txt;*.text\0ãƒ†ã‚­ã‚¹ãƒˆãƒ•ã‚¡ã‚¤ãƒ«(*.txt;*.text)\0\0"
+	// "txt;*.text|log" "ãƒ†ã‚­ã‚¹ãƒˆãƒ•ã‚¡ã‚¤ãƒ«|ãƒ­ã‚°ãƒ•ã‚¡ã‚¤ãƒ«" "*.txt;*.text\0ãƒ†ã‚­ã‚¹ãƒˆãƒ•ã‚¡ã‚¤ãƒ«(*.txt;*.text)\0*.log\0ãƒ­ã‚°ãƒ•ã‚¡ã‚¤ãƒ«(*.log)\0\0"
+	// ";a*.txt"        "ãƒ†ã‚­ã‚¹ãƒˆãƒ•ã‚¡ã‚¤ãƒ«"              "a*.txt\0ãƒ†ã‚­ã‚¹ãƒˆãƒ•ã‚¡ã‚¤ãƒ«(a*.txt)\0\0"
 
 	// Shark++
-	// ¦ MS‚à‘SŠp‚ğ„§‚µ‚Ä‚¢‚½‚µ(ƒƒjƒ…[•¶š—ñ‚¾‚Á‚½‚¯‚Ç)‚à‚¤”¼ŠpÌ‚Ä‚Ä‚à‚¢‚¢‚æ‚Ë...
-	// @ ‚Á‚Ä‚±‚Æ‚Å"Ì§²Ù" ‚Í "ƒtƒ@ƒCƒ‹" ‚É‚µ‚Ü‚µ‚½B
+	// â€» MSã‚‚å…¨è§’ã‚’æ¨å¥¨ã—ã¦ã„ãŸã—(ãƒ¡ãƒ‹ãƒ¥ãƒ¼æ–‡å­—åˆ—ã ã£ãŸã‘ã©)ã‚‚ã†åŠè§’æ¨ã¦ã¦ã‚‚ã„ã„ã‚ˆã­...
+	// ã€€ ã£ã¦ã“ã¨ã§"ï¾Œï½§ï½²ï¾™" ã¯ "ãƒ•ã‚¡ã‚¤ãƒ«" ã«ã—ã¾ã—ãŸã€‚
 
 #define realloc_filter_buffer()                        \
 	pszFilterPtr = (LPTSTR)realloc(pszFilter, (nFilterLen + 1)*sizeof(TCHAR)); \
 	if( NULL == pszFilterPtr ) goto out_of_memory;     \
 	pszFilter = pszFilterPtr
 
-	// ‹æØ‚è•¶š
-	// "|"‹æØ‚è
+	// åŒºåˆ‡ã‚Šæ–‡å­—
+	// "|"åŒºåˆ‡ã‚Š
 	static const TCHAR DELIMITER_PIPE[]  = TEXT("|");
 	static const int  DELIMITER_PIPE_LEN= 1;
-	// "\n"‹æØ‚è
+	// "\n"åŒºåˆ‡ã‚Š
 	static const TCHAR DELIMITER_CR[]    = TEXT("\r\n");
 	static const int  DELIMITER_CR_LEN  = 2;
-	static const TCHAR DEFAULT_DESC[]    = TEXT("ƒtƒ@ƒCƒ‹");
-	static const TCHAR ALL_FILE_FILTER[] = TEXT("‚·‚×‚Ä‚Ìƒtƒ@ƒCƒ‹ (*.*)");
+	static const TCHAR DEFAULT_DESC[]    = TEXT("ãƒ•ã‚¡ã‚¤ãƒ«");
+	static const TCHAR ALL_FILE_FILTER[] = TEXT("ã™ã¹ã¦ã®ãƒ•ã‚¡ã‚¤ãƒ« (*.*)");
 
 	LPTSTR pszFilter = NULL, pszFilterPtr;
 	int nFilterLen;
@@ -104,12 +104,12 @@ void fd_ini( HWND hwnd, char *extname, char *extinfo )
 		finf = finf_next + (*DELIMITER_CR == *finf_next && DELIMITER_CR[1] == finf_next[1] ? DELIMITER_CR_LEN : DELIMITER_PIPE_LEN),
 		nFilterIndex++)
 	{
-		// ‹æØ‚è•¶š‚Å•ªŠ„
+		// åŒºåˆ‡ã‚Šæ–‡å­—ã§åˆ†å‰²
 		for(fext_next = fext; *fext_next &&
 			*DELIMITER_PIPE != *fext_next && *DELIMITER_CR != *fext_next;
 			fext_next++) {
 #ifndef HSPUTF8
-			// SJIS‚Ì1ƒoƒCƒg–Úƒ`ƒFƒbƒN•2•¶š–Ú‚ğ”ò‚Î‚·‚Æ‚«‚Ì'\0'ƒ`ƒFƒbƒN
+			// SJISã®1ãƒã‚¤ãƒˆç›®ãƒã‚§ãƒƒã‚¯ï¼†2æ–‡å­—ç›®ã‚’é£›ã°ã™ã¨ãã®'\0'ãƒã‚§ãƒƒã‚¯
 			if( is_sjis1(*fext_next) && fext_next[1] )
 				fext_next++;
 #endif
@@ -118,7 +118,7 @@ void fd_ini( HWND hwnd, char *extname, char *extinfo )
 			*DELIMITER_PIPE != *finf_next && *DELIMITER_CR != *finf_next;
 			finf_next++) {
 #ifndef HSPUTF8
-			// SJIS‚Ì1ƒoƒCƒg–Úƒ`ƒFƒbƒN•2•¶š–Ú‚ğ”ò‚Î‚·‚Æ‚«‚Ì'\0'ƒ`ƒFƒbƒN
+			// SJISã®1ãƒã‚¤ãƒˆç›®ãƒã‚§ãƒƒã‚¯ï¼†2æ–‡å­—ç›®ã‚’é£›ã°ã™ã¨ãã®'\0'ãƒã‚§ãƒƒã‚¯
 			if( is_sjis1(*finf_next) && finf_next[1] )
 				finf_next++;
 #endif
@@ -135,7 +135,7 @@ void fd_ini( HWND hwnd, char *extname, char *extinfo )
 		if( !*finf_next )
 			finf_next -= DELIMITER_PIPE_LEN;
 
-		// Šg’£q‚Ìæ“ª‚É';'‚ª‚ ‚Á‚½ê‡‚Í"*."‚ğæ“ª‚É‚Â‚¯‚È‚¢ƒ‚[ƒh‚É‚·‚é
+		// æ‹¡å¼µå­ã®å…ˆé ­ã«';'ãŒã‚ã£ãŸå ´åˆã¯"*."ã‚’å…ˆé ­ã«ã¤ã‘ãªã„ãƒ¢ãƒ¼ãƒ‰ã«ã™ã‚‹
 		no_aster = (TEXT(';') == *fext);
 		if( no_aster ) {
 			fext++;
@@ -145,11 +145,11 @@ void fd_ini( HWND hwnd, char *extname, char *extinfo )
 		if( 0 == fext_len ||
 			(TEXT('*') == *fext && 1 == fext_len) )
 		{
-			// Šg’£qw’è‚ª‹ó•¶š or "*" ‚Ìê‡‚ÍƒtƒBƒ‹ƒ^‚É“o˜^‚ğ‚µ‚È‚¢
+			// æ‹¡å¼µå­æŒ‡å®šãŒç©ºæ–‡å­— or "*" ã®å ´åˆã¯ãƒ•ã‚£ãƒ«ã‚¿ã«ç™»éŒ²ã‚’ã—ãªã„
 			continue;
 		}
 
-		// ƒfƒtƒHƒ‹ƒgƒtƒ@ƒCƒ‹–¼w’è
+		// ãƒ‡ãƒ•ã‚©ãƒ«ãƒˆãƒ•ã‚¡ã‚¤ãƒ«åæŒ‡å®š
 		if( 0 == nFilterIndex ) {
 			if( !no_aster )
 				_tcscat(szFileName, TEXT("*."));
@@ -160,19 +160,19 @@ void fd_ini( HWND hwnd, char *extname, char *extinfo )
 		nFilterSeek = nFilterLen;
 		nFilterLen += finf_len + 1 + 2 + fext_len + 1 + 1 + 2 + fext_len + 1 + (no_aster ? -4 : 0);
 		if( 0 == finf_len ) {
-			// ƒtƒ@ƒCƒ‹‚Ìà–¾‚ª‹ó•¶š‚Ìê‡‚ÍŠg’£q+"ƒtƒ@ƒCƒ‹"‚É
+			// ãƒ•ã‚¡ã‚¤ãƒ«ã®èª¬æ˜ãŒç©ºæ–‡å­—ã®å ´åˆã¯æ‹¡å¼µå­+"ãƒ•ã‚¡ã‚¤ãƒ«"ã«
 			nFilterLen += fext_len;
-			nFilterLen += (int)_tcslen(DEFAULT_DESC); // ¦
+			nFilterLen += (int)_tcslen(DEFAULT_DESC); // â€»
 		}
 		realloc_filter_buffer();
 
 		pszFilterPtr = pszFilter + nFilterSeek;
 		*pszFilterPtr = TEXT('\0');
 
-		// ƒtƒBƒ‹ƒ^à–¾
+		// ãƒ•ã‚£ãƒ«ã‚¿èª¬æ˜
 		if( 0 == finf_len ) {
 			_tcsncat(pszFilterPtr, fext, (size_t)fext_len);
-			_tcscat(pszFilterPtr, DEFAULT_DESC); // ¦
+			_tcscat(pszFilterPtr, DEFAULT_DESC); // â€»
 		} else {
 			_tcsncat(pszFilterPtr, finf, (size_t)finf_len);
 		}
@@ -182,14 +182,14 @@ void fd_ini( HWND hwnd, char *extname, char *extinfo )
 		_tcscat(pszFilterPtr,  TEXT(")"));
 		_tcscat(pszFilterPtr,  DELIMITER_PIPE);
 
-		// ƒtƒBƒ‹ƒ^Šg’£q
+		// ãƒ•ã‚£ãƒ«ã‚¿æ‹¡å¼µå­
 		if( !no_aster )
 			_tcscat(pszFilterPtr, TEXT("*."));
 		_tcsncat(pszFilterPtr, fext, (size_t)fext_len);
 		_tcscat(pszFilterPtr,  DELIMITER_PIPE);
 	}
 
-	// "‚·‚×‚Ä‚Ìƒtƒ@ƒCƒ‹ (*.*)" + "\0" + "*.*" + "\0" + "\0"
+	// "ã™ã¹ã¦ã®ãƒ•ã‚¡ã‚¤ãƒ« (*.*)" + "\0" + "*.*" + "\0" + "\0"
 	nFilterSeek = nFilterLen;
 	nFilterLen += (int)_tcslen(ALL_FILE_FILTER) + 1 + (int)_tcslen(TEXT("*.*")) + 1 + 1;
 	realloc_filter_buffer();
@@ -197,11 +197,11 @@ void fd_ini( HWND hwnd, char *extname, char *extinfo )
 	pszFilterPtr = pszFilter + nFilterSeek;
 	*pszFilterPtr = TEXT('\0');
 
-	// ƒtƒBƒ‹ƒ^à–¾
-	_tcscat(pszFilterPtr, ALL_FILE_FILTER); // ¦
+	// ãƒ•ã‚£ãƒ«ã‚¿èª¬æ˜
+	_tcscat(pszFilterPtr, ALL_FILE_FILTER); // â€»
 	_tcscat(pszFilterPtr, DELIMITER_PIPE);
 
-	// ƒtƒBƒ‹ƒ^Šg’£q
+	// ãƒ•ã‚£ãƒ«ã‚¿æ‹¡å¼µå­
 	_tcscat(pszFilterPtr, TEXT("*.*"));
 	_tcscat(pszFilterPtr, DELIMITER_PIPE);
 	_tcscat(pszFilterPtr, DELIMITER_PIPE);
@@ -209,7 +209,7 @@ void fd_ini( HWND hwnd, char *extname, char *extinfo )
 //	for(int i = 0; i < nFilterLen-1; i++) if('\0'==pszFilter[i]) pszFilter[i] = '|';
 //	MessageBox(NULL,pszFilter,"",0);
 
-	// ‹æØ‚è•¶š‚ğ'\0'‚É•ÏŠ·
+	// åŒºåˆ‡ã‚Šæ–‡å­—ã‚’'\0'ã«å¤‰æ›
 	pszFilterPtr = pszFilter;
 	for(nFilterSeek = 0; nFilterSeek < nFilterLen; pszFilterPtr++, nFilterSeek++) {
 #ifndef HSPUTF8
@@ -300,8 +300,8 @@ DWORD fd_selcolor( HWND hwnd, int mode )
 	 }
 /*
 	rev 43
-	mingw : warning : DWORDŒ^‚Ì–ß‚è’l‚É-1‚ğ•Ô‚µ‚Ä‚¢‚é
-	‚É‘Îˆ
+	mingw : warning : DWORDå‹ã®æˆ»ã‚Šå€¤ã«-1ã‚’è¿”ã—ã¦ã„ã‚‹
+	ã«å¯¾å‡¦
 */
 	 	return static_cast< DWORD >( -1 );
      }

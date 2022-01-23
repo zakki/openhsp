@@ -166,7 +166,7 @@ int main( int argc, char *argv[] )
 		}
 	}
 	strcpy( fname2, fname ); cutext( fname2 ); addext( fname2,"i" );
-	addext( fname,"hsp" );			// Šg’£Žq‚ª‚È‚¯‚ê‚Î’Ç‰Á‚·‚é
+	addext( fname,"hsp" );			// æ‹¡å¼µå­ãŒãªã‘ã‚Œã°è¿½åŠ ã™ã‚‹
 
 	//		call main
 
@@ -175,11 +175,11 @@ int main( int argc, char *argv[] )
 	hsc3->SetCommonPath( compath );
 
 	if ( execobj ) {
-		//		ƒ‰ƒ“ƒ^ƒCƒ€‚ð‹N“®
+		//		ãƒ©ãƒ³ã‚¿ã‚¤ãƒ ã‚’èµ·å‹•
 		char execmd[4096];
 		st = hsc3->GetRuntimeFromHeader( fname, oname );
 		if ( st != 1 ) {
-			strcpy( oname, "hsp3.exe" );			// ƒfƒtƒHƒ‹ƒgƒ‰ƒ“ƒ^ƒCƒ€
+			strcpy( oname, "hsp3.exe" );			// ãƒ‡ãƒ•ã‚©ãƒ«ãƒˆãƒ©ãƒ³ã‚¿ã‚¤ãƒ 
 		}
 
 #ifdef HSPLINUX
@@ -197,7 +197,7 @@ int main( int argc, char *argv[] )
 				result = WEXITSTATUS(result);
 				printf("hsed: Process end %d.\n",result);
 				if ( execobj==2 ) {
-					if ( result != 0 ) {			// ƒGƒ‰[‚ª‚ ‚Á‚½Žž
+					if ( result != 0 ) {			// ã‚¨ãƒ©ãƒ¼ãŒã‚ã£ãŸæ™‚
 						while(1) {
 							result = getchar();
 							if (( result == 13 )||( result == 10 )) break;
@@ -221,7 +221,7 @@ int main( int argc, char *argv[] )
 #endif
 
 	} else {
-		//		’Êí‚ÌƒRƒ“ƒpƒCƒ‹
+		//		é€šå¸¸ã®ã‚³ãƒ³ãƒ‘ã‚¤ãƒ«
 		st = hsc3->PreProcess( fname, fname2, ppopt, fname );
 		if (( pponly == 0 )&&( st == 0 )) {
 			st = hsc3->Compile( fname2, oname, cmpopt );

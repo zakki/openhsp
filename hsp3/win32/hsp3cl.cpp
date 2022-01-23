@@ -69,7 +69,7 @@ void hsp3win_dialog( char *mes )
 
 char *hsp3win_debug( int type )
 {
-	//		ƒfƒoƒbƒOî•ñæ“¾
+	//		ãƒ‡ãƒãƒƒã‚°æƒ…å ±å–å¾—
 	//
 	char *p;
 	p = code_inidbg();
@@ -97,7 +97,7 @@ char *hsp3win_debug( int type )
 
 int hsp3win_debugopen( void )
 {
-	//		ƒfƒoƒbƒOƒEƒCƒ“ƒhƒD•\¦
+	//		ãƒ‡ãƒãƒƒã‚°ã‚¦ã‚¤ãƒ³ãƒ‰ã‚¥è¡¨ç¤º
 	//
 #ifdef HSPDEBUG
 	if ( h_dbgwin != NULL ) return 0;
@@ -225,7 +225,7 @@ void hsp3cl_msgfunc( HSPCTX *hspctx )
 
 int hsp3cl_init( char *startfile )
 {
-	//		ƒVƒXƒeƒ€ŠÖ˜A‚Ì‰Šú‰»
+	//		ã‚·ã‚¹ãƒ†ãƒ é–¢é€£ã®åˆæœŸåŒ–
 	//		( mode:0=debug/1=release )
 	//
 	int a,orgexe, mode;
@@ -247,7 +247,7 @@ int hsp3cl_init( char *startfile )
 	InitCommonControls();
 #endif
 
-	//		HSPŠÖ˜A‚Ì‰Šú‰»
+	//		HSPé–¢é€£ã®åˆæœŸåŒ–
 	//
 	hsp = new Hsp3();
 #ifdef HSPCL_WIN
@@ -270,7 +270,7 @@ int hsp3cl_init( char *startfile )
 	hsp->SetFileName( fname );
 
 	if ( i == 0 ) {
-		printf( "OpenHSP CL ver%s / onion software 1997-2021\n", hspver );
+		printf( "OpenHSP CL ver%s / onion software 1997-2022\n", hspver );
 		return -1;
 	}
 #else
@@ -279,7 +279,7 @@ int hsp3cl_init( char *startfile )
 	}
 #endif
 
-	//		Àsƒtƒ@ƒCƒ‹‚©ƒfƒoƒbƒO’†‚©‚ğ’²‚×‚é
+	//		å®Ÿè¡Œãƒ•ã‚¡ã‚¤ãƒ«ã‹ãƒ‡ãƒãƒƒã‚°ä¸­ã‹ã‚’èª¿ã¹ã‚‹
 	//
 	mode = 0;
 	orgexe = 0;
@@ -295,7 +295,7 @@ int hsp3cl_init( char *startfile )
 		hsp->SetPackValue( hsp_sum, hsp_dec );
 	}
 
-	//		‹N“®ƒtƒ@ƒCƒ‹‚ÌƒfƒBƒŒƒNƒgƒŠ‚ğƒJƒŒƒ“ƒg‚É‚·‚é
+	//		èµ·å‹•ãƒ•ã‚¡ã‚¤ãƒ«ã®ãƒ‡ã‚£ãƒ¬ã‚¯ãƒˆãƒªã‚’ã‚«ãƒ¬ãƒ³ãƒˆã«ã™ã‚‹
 	//
 #ifndef HSPDEBUG
 	if (( hsp_wd & 2 ) == 0 ) {
@@ -314,7 +314,7 @@ int hsp3cl_init( char *startfile )
 	ctx = &hsp->hspctx;
 
 	{
-		//		ƒRƒ}ƒ“ƒhƒ‰ƒCƒ“ŠÖ˜A
+		//		ã‚³ãƒãƒ³ãƒ‰ãƒ©ã‚¤ãƒ³é–¢é€£
 		LPTSTR cl;
 		cl = GetCommandLine();
 		cl = strsp_cmdsW(cl);
@@ -322,7 +322,7 @@ int hsp3cl_init( char *startfile )
 		cl = strsp_cmdsW(cl);
 #endif
 		apichartohspchar(cl, &ss);
-		sbStrCopy(&ctx->cmdline, ss);					// ƒRƒ}ƒ“ƒhƒ‰ƒCƒ“ƒpƒ‰ƒ[ƒ^[‚ğ•Û‘¶
+		sbStrCopy(&ctx->cmdline, ss);					// ã‚³ãƒãƒ³ãƒ‰ãƒ©ã‚¤ãƒ³ãƒ‘ãƒ©ãƒ¡ãƒ¼ã‚¿ãƒ¼ã‚’ä¿å­˜
 	}
 
 	//		Register Type
@@ -352,13 +352,13 @@ int hsp3cl_init( char *startfile )
 
 static void hsp3cl_bye( void )
 {
-	//		HSPŠÖ˜A‚Ì‰ğ•ú
+	//		HSPé–¢é€£ã®è§£æ”¾
 	//
 	delete hsp;
 
 	DllManager().free_all_library();
 
-	//		ƒVƒXƒeƒ€ŠÖ˜A‚Ì‰ğ•ú
+	//		ã‚·ã‚¹ãƒ†ãƒ é–¢é€£ã®è§£æ”¾
 	//
 #ifdef HSPCL_WIN
 #ifndef HSP_COM_UNSUPPORTED
@@ -406,13 +406,13 @@ void hsp3cl_error( void )
 
 int hsp3cl_exec( void )
 {
-	//		ÀsƒƒCƒ“‚ğŒÄ‚Ño‚·
+	//		å®Ÿè¡Œãƒ¡ã‚¤ãƒ³ã‚’å‘¼ã³å‡ºã™
 	//
 	int runmode;
 	int endcode;
 rerun:
 
-	//		ƒfƒoƒbƒOƒEƒCƒ“ƒhƒD—p
+	//		ãƒ‡ãƒãƒƒã‚°ã‚¦ã‚¤ãƒ³ãƒ‰ã‚¥ç”¨
 	//
 #ifdef HSPDEBUG
 	if ( ctx->hsphed->bootoption & HSPHED_BOOTOPT_DEBUGWIN ) {
@@ -420,7 +420,7 @@ rerun:
 	}
 #endif
 
-	//		Às‚ÌŠJn
+	//		å®Ÿè¡Œã®é–‹å§‹
 	//
 	runmode = code_execcmd();
 	if ( runmode == RUNMODE_ERROR ) {

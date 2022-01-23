@@ -5,11 +5,11 @@
 #ifndef __comobj_event_h
 #define __comobj_event_h
 
-// �f�o�b�O�p�̏ꍇ�ɒ�`
+// デバッグ用の場合に定義
 // #define HSP_COMEVENT_DEBUG
 
 
-#ifndef HSP_COM_UNSUPPORTED		//�iCOM �T�|�[�g�Ȃ��ł̃r���h���̓t�@�C���S�̂𖳎��j
+#ifndef HSP_COM_UNSUPPORTED		//（COM サポートなし版のビルド時はファイル全体を無視）
 
 /*-----------------------------------------------------------------------------------*/
 

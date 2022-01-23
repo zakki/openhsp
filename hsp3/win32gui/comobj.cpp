@@ -5,7 +5,7 @@
 /*------------------------------------------------------------*/
 
 
-#ifndef HSP_COM_UNSUPPORTED		//iCOM ƒTƒ|[ƒg‚È‚µ”Å‚Ìƒrƒ‹ƒh‚Íƒtƒ@ƒCƒ‹‘S‘Ì‚ğ–³‹j
+#ifndef HSP_COM_UNSUPPORTED		//ï¼ˆCOM ã‚µãƒãƒ¼ãƒˆãªã—ç‰ˆã®ãƒ“ãƒ«ãƒ‰æ™‚ã¯ãƒ•ã‚¡ã‚¤ãƒ«å…¨ä½“ã‚’ç„¡è¦–ï¼‰
 
 #define WIN32_LEAN_AND_MEAN		// Exclude rarely-used stuff from Windows headers
 #include <windows.h>
@@ -42,7 +42,7 @@ void COM_DBG_MSG( const char *sz, ... )
 }
 #endif
 
-// ƒIƒuƒWƒFƒNƒg‰ğ•ú
+// ã‚ªãƒ–ã‚¸ã‚§ã‚¯ãƒˆè§£æ”¾
 void ReleaseComPtr( IUnknown** ppunk )
 {
 	HRESULT hr;
@@ -52,7 +52,7 @@ void ReleaseComPtr( IUnknown** ppunk )
 
 	hr = (*ppunk)->QueryInterface( IID_IEventHandler, (void**)&event );
 	if ( SUCCEEDED(hr) && event != NULL ) {
-		// ƒCƒxƒ“ƒgƒIƒuƒWƒFƒNƒg‚Ìê‡‚Í“à•”ƒJƒEƒ“ƒ^‚ğƒfƒNƒŠƒƒ“ƒg
+		// ã‚¤ãƒ™ãƒ³ãƒˆã‚ªãƒ–ã‚¸ã‚§ã‚¯ãƒˆã®å ´åˆã¯å†…éƒ¨ã‚«ã‚¦ãƒ³ã‚¿ã‚’ãƒ‡ã‚¯ãƒªãƒ¡ãƒ³ãƒˆ
 		event->DecInnerRef();
 		event->Release();
 	}
@@ -74,17 +74,17 @@ void QueryComPtr( IUnknown **ppunkDest, IUnknown *punkSrc, const IID *iid )
 		return;
 	}
 	if ( iid != NULL ) {
-		// iid ‚ª—LŒøƒ|ƒCƒ“ƒ^‚Ìê‡‚Í QueryInterface()
+		// iid ãŒæœ‰åŠ¹ãƒã‚¤ãƒ³ã‚¿ã®å ´åˆã¯ QueryInterface()
 		hr = punkSrc->QueryInterface( *iid, (void**)&punkNew );
 		ReleaseComPtr( ppunkDest );
 		*ppunkDest = ( SUCCEEDED(hr) ? punkNew : NULL );
 	} else {
-		// iid ‚ª NULL ‚Ìê‡‚Í’P‚È‚éƒRƒs[
-		punkSrc->AddRef();		// æ‚É AddRef() ‚µ‚Ä‚¨‚­iquerycom ‚É“¯‚¶•Ï”‚ğw’è‚µ‚½ê‡‚É”õ‚¦‚Äj
+		// iid ãŒ NULL ã®å ´åˆã¯å˜ãªã‚‹ã‚³ãƒ”ãƒ¼
+		punkSrc->AddRef();		// å…ˆã« AddRef() ã—ã¦ãŠãï¼ˆquerycom ã«åŒã˜å¤‰æ•°ã‚’æŒ‡å®šã—ãŸå ´åˆã«å‚™ãˆã¦ï¼‰
 		ReleaseComPtr( ppunkDest );
 		*ppunkDest = punkNew = punkSrc;
 	}
-	// ƒCƒxƒ“ƒgƒIƒuƒWƒFƒNƒg‚Ìê‡‚Í“à•”ƒJƒEƒ“ƒ^‚ğƒCƒ“ƒNƒŠƒƒ“ƒg
+	// ã‚¤ãƒ™ãƒ³ãƒˆã‚ªãƒ–ã‚¸ã‚§ã‚¯ãƒˆã®å ´åˆã¯å†…éƒ¨ã‚«ã‚¦ãƒ³ã‚¿ã‚’ã‚¤ãƒ³ã‚¯ãƒªãƒ¡ãƒ³ãƒˆ
 	if ( punkNew ) {
 		hr = punkNew->QueryInterface( IID_IEventHandler, (void**)&event );
 		if ( SUCCEEDED(hr) && event != NULL ) {
@@ -101,7 +101,7 @@ void QueryComPtr( IUnknown **ppunkDest, IUnknown *punkSrc, const IID *iid )
 #endif
 }
 
-// COMƒCƒxƒ“ƒg‚ğİ’è
+// COMã‚¤ãƒ™ãƒ³ãƒˆã‚’è¨­å®š
 void SetComEvent( IUnknown **ppEv, IUnknown **ppunk, const IID *pCPGuid, unsigned short *callback )
 {
 	IEventHandler *event;
@@ -113,7 +113,7 @@ void SetComEvent( IUnknown **ppEv, IUnknown **ppunk, const IID *pCPGuid, unsigne
 	*ppEv = static_cast<IUnknown*>(event);
 }
 
-// COMƒCƒxƒ“ƒg‚Ìİ’è‚ğ‰ğœiŒ»İ‚Í‚±‚ÌŠÖ”‚ğg—p‚µ‚Ä‚¢‚È‚¢j
+// COMã‚¤ãƒ™ãƒ³ãƒˆã®è¨­å®šã‚’è§£é™¤ï¼ˆç¾åœ¨ã¯ã“ã®é–¢æ•°ã‚’ä½¿ç”¨ã—ã¦ã„ãªã„ï¼‰
 void ReleaseComEvent( IUnknown **ppEv )
 {
 	IEventHandler *event;
@@ -126,7 +126,7 @@ void ReleaseComEvent( IUnknown **ppEv )
 	ReleaseComPtr( ppEv );
 }
 
-// “¯ˆêƒIƒuƒWƒFƒNƒg‚©‚Ç‚¤‚©
+// åŒä¸€ã‚ªãƒ–ã‚¸ã‚§ã‚¯ãƒˆã‹ã©ã†ã‹
 BOOL IsSameComObject( IUnknown **ppunk1, IUnknown **ppunk2 )
 {
 	IUnknown *punk1, *punk2;
@@ -148,7 +148,7 @@ BOOL IsSameComObject( IUnknown **ppunk1, IUnknown **ppunk2 )
 
 /*-----------------------------------------------------------------------------------*/
 /*
-			ƒI[ƒgƒ[ƒVƒ‡ƒ“iIDispatchjŠÖ˜A
+			ã‚ªãƒ¼ãƒˆãƒ¡ãƒ¼ã‚·ãƒ§ãƒ³ï¼ˆIDispatchï¼‰é–¢é€£
 */
 /*-----------------------------------------------------------------------------------*/
 
@@ -161,7 +161,7 @@ static void set_prm_for_invoke( ComDispParams *data, int chk );
 
 HRESULT CallDispMethod( IUnknown* punk, DISPID dispid, VARIANT *result )
 {
-	// ƒƒ\ƒbƒhŒÄ‚Ño‚µ (ƒXƒNƒŠƒvƒg‚©‚çƒpƒ‰ƒ[ƒ^‚Ìæ“¾‚ğs‚¢‚Â‚Â)
+	// ãƒ¡ã‚½ãƒƒãƒ‰å‘¼ã³å‡ºã— (ã‚¹ã‚¯ãƒªãƒ—ãƒˆã‹ã‚‰ãƒ‘ãƒ©ãƒ¡ãƒ¼ã‚¿ã®å–å¾—ã‚’è¡Œã„ã¤ã¤)
 	//
 	HRESULT hr;
 	ComDispParams DispData = { 0 };
@@ -172,7 +172,7 @@ HRESULT CallDispMethod( IUnknown* punk, DISPID dispid, VARIANT *result )
 #ifdef HSP_COMOBJ_DEBUG
 	COM_DBG_MSG( "CallDispMethod() : pObj=0x%p, dispid=%d\n", punk, dispid);
 #endif
-	// VARIANT ‚Æ IDispatch ‚ÌŠmÀ‚È‰ğ•ú‚Ì‚½‚ß‚Ì—áŠOˆ—
+	// VARIANT ã¨ IDispatch ã®ç¢ºå®Ÿãªè§£æ”¾ã®ãŸã‚ã®ä¾‹å¤–å‡¦ç†
 	try {
 		get_prm_for_method( &DispData );
 		hr = DispData.disp->Invoke( dispid, IID_NULL, LOCALE_USER_DEFAULT,
@@ -189,7 +189,7 @@ HRESULT CallDispMethod( IUnknown* punk, DISPID dispid, VARIANT *result )
 
 HRESULT GetDispProp( IUnknown* punk, DISPID dispid, VARIANT *result )
 {
-	// ƒvƒƒpƒeƒBæ“¾ (ƒXƒNƒŠƒvƒg‚©‚çƒpƒ‰ƒ[ƒ^‚Ìæ“¾‚ğs‚¢‚Â‚Â)
+	// ãƒ—ãƒ­ãƒ‘ãƒ†ã‚£å–å¾— (ã‚¹ã‚¯ãƒªãƒ—ãƒˆã‹ã‚‰ãƒ‘ãƒ©ãƒ¡ãƒ¼ã‚¿ã®å–å¾—ã‚’è¡Œã„ã¤ã¤)
 	//
 	HRESULT hr;
 	ComDispParams DispData = { 0 };
@@ -200,7 +200,7 @@ HRESULT GetDispProp( IUnknown* punk, DISPID dispid, VARIANT *result )
 #ifdef HSP_COMOBJ_DEBUG
 	COM_DBG_MSG("GetDispProp() : pObj=0x%p, dispid=%d\n", punk, dispid);
 #endif
-	// VARIANT ‚Æ IDispatch ‚ÌŠmÀ‚È‰ğ•ú‚Ì‚½‚ß‚Ì—áŠOˆ—
+	// VARIANT ã¨ IDispatch ã®ç¢ºå®Ÿãªè§£æ”¾ã®ãŸã‚ã®ä¾‹å¤–å‡¦ç†
 	try {
 		get_prm_for_prop( &DispData );
 		hr = DispData.disp->Invoke( dispid, IID_NULL, LOCALE_USER_DEFAULT,
@@ -217,10 +217,10 @@ HRESULT GetDispProp( IUnknown* punk, DISPID dispid, VARIANT *result )
 
 ComDispParams *PrepForPutDispProp( IUnknown *punk, DISPID dispid  )
 {
-	// ƒvƒƒpƒeƒBİ’è‚Ì‚½‚ß‚Ì€”õ (ƒXƒNƒŠƒvƒg‚©‚çƒpƒ‰ƒ[ƒ^‚Ìæ“¾‚ğs‚¢‚Â‚Â)
+	// ãƒ—ãƒ­ãƒ‘ãƒ†ã‚£è¨­å®šã®ãŸã‚ã®æº–å‚™ (ã‚¹ã‚¯ãƒªãƒ—ãƒˆã‹ã‚‰ãƒ‘ãƒ©ãƒ¡ãƒ¼ã‚¿ã®å–å¾—ã‚’è¡Œã„ã¤ã¤)
 	//
-	// •Ô‚³‚ê‚é ComDispParams \‘¢‘Ì‚ÍŒã‚Å PutDispProp() ‚É“n‚·
-	// ‚»‚ê‚Ü‚Å‚Í PVal ‚Ì master ƒƒ“ƒo‚É•Û‘¶‚µ‚Ä‚¨‚­
+	// è¿”ã•ã‚Œã‚‹ ComDispParams æ§‹é€ ä½“ã¯å¾Œã§ PutDispProp() ã«æ¸¡ã™
+	// ãã‚Œã¾ã§ã¯ PVal ã® master ãƒ¡ãƒ³ãƒã«ä¿å­˜ã—ã¦ãŠã
 	//
 	ComDispParams *data = (ComDispParams *)sbAlloc( sizeof(ComDispParams) );;
 
@@ -245,7 +245,7 @@ ComDispParams *PrepForPutDispProp( IUnknown *punk, DISPID dispid  )
 
 HRESULT PutDispProp( ComDispParams *data, void *setdata, int settype )
 {
-	// ƒvƒƒpƒeƒBİ’è
+	// ãƒ—ãƒ­ãƒ‘ãƒ†ã‚£è¨­å®š
 	//
 	VARIANT *var;
 	HRESULT hr;
@@ -256,9 +256,9 @@ HRESULT PutDispProp( ComDispParams *data, void *setdata, int settype )
 #ifdef HSP_COMOBJ_DEBUG
 	COM_DBG_MSG( "PutDispProp() : pdispObj=0x%p, dispid=%d\n", data->disp, data->dispid);
 #endif
-	// VARIANT ‚Æ IDispatch ‚ÌŠmÀ‚È‰ğ•ú‚Ì‚½‚ß‚Ì—áŠOˆ—
+	// VARIANT ã¨ IDispatch ã®ç¢ºå®Ÿãªè§£æ”¾ã®ãŸã‚ã®ä¾‹å¤–å‡¦ç†
 	try {
-		// İ’è‚·‚éƒf[ƒ^‚ğƒpƒ‰ƒ[ƒ^‚Æ‚µ‚Äİ’è
+		// è¨­å®šã™ã‚‹ãƒ‡ãƒ¼ã‚¿ã‚’ãƒ‘ãƒ©ãƒ¡ãƒ¼ã‚¿ã¨ã—ã¦è¨­å®š
 		if ( data->params.cArgs >= TMP_VARIANT_MAX ) {
 			throw ( HSPERR_TOO_MANY_PARAMETERS );
 		}
@@ -279,7 +279,7 @@ HRESULT PutDispProp( ComDispParams *data, void *setdata, int settype )
 }
 static void free_dispparams( ComDispParams *data )
 {
-	// ƒpƒ‰ƒ[ƒ^‚ªŠi”[‚³‚ê‚½ VARIANT ”z—ñ‚Ì‰ğ•ú
+	// ãƒ‘ãƒ©ãƒ¡ãƒ¼ã‚¿ãŒæ ¼ç´ã•ã‚ŒãŸ VARIANT é…åˆ—ã®è§£æ”¾
 	//
 	VARIANT *var;
 	int count = data->params.cArgs;
@@ -296,7 +296,7 @@ static void free_dispparams( ComDispParams *data )
 
 void FreeDispParams( ComDispParams* data )
 {
-	// PrepForPutDispProp() ‚ª•Ô‚µ‚½ ComDispParams \‘¢‘Ì‚ğ‰ğ•ú
+	// PrepForPutDispProp() ãŒè¿”ã—ãŸ ComDispParams æ§‹é€ ä½“ã‚’è§£æ”¾
 	//
 	if ( data == NULL ) return;
 	free_dispparams( data );
@@ -305,7 +305,7 @@ void FreeDispParams( ComDispParams* data )
 
 static void get_prm_for_prop( ComDispParams *data )
 {
-	// invoke ŒÄ‚Ño‚µƒpƒ‰ƒ[ƒ^‚ğæ“¾iƒvƒƒpƒeƒB—pj
+	// invoke å‘¼ã³å‡ºã—ãƒ‘ãƒ©ãƒ¡ãƒ¼ã‚¿ã‚’å–å¾—ï¼ˆãƒ—ãƒ­ãƒ‘ãƒ†ã‚£ç”¨ï¼‰
 	//
 	int chk;
 
@@ -319,10 +319,10 @@ static void get_prm_for_prop( ComDispParams *data )
 		case PARAM_DEFAULT:
 			set_prm_for_invoke( data, chk );
 #ifdef HSP_COMOBJ_DEBUG
-			COM_DBG_MSG( "get_prm_for_prop() : %d ŒÂ–Ú‚Ìƒpƒ‰ƒ[ƒ^ : chk=%2d, flag=%d\n", data->params.cArgs, chk, mpval->flag);
+			COM_DBG_MSG( "get_prm_for_prop() : %d å€‹ç›®ã®ãƒ‘ãƒ©ãƒ¡ãƒ¼ã‚¿ : chk=%2d, flag=%d\n", data->params.cArgs, chk, mpval->flag);
 #endif
 			break;
-		case PARAM_ENDSPLIT:			// ƒpƒ‰ƒ[ƒ^I’[
+		case PARAM_ENDSPLIT:			// ãƒ‘ãƒ©ãƒ¡ãƒ¼ã‚¿çµ‚ç«¯
 			return;
 		default:
 			throw ( HSPERR_BAD_ARRAY_EXPRESSION );
@@ -332,7 +332,7 @@ static void get_prm_for_prop( ComDispParams *data )
 
 static void get_prm_for_method( ComDispParams *data )
 {
-	// invoke ŒÄ‚Ño‚µƒpƒ‰ƒ[ƒ^‚ğæ“¾iƒƒ\ƒbƒhŒÄ‚Ño‚µ—pj
+	// invoke å‘¼ã³å‡ºã—ãƒ‘ãƒ©ãƒ¡ãƒ¼ã‚¿ã‚’å–å¾—ï¼ˆãƒ¡ã‚½ãƒƒãƒ‰å‘¼ã³å‡ºã—ç”¨ï¼‰
 	//
 	int chk;
 
@@ -342,15 +342,15 @@ static void get_prm_for_method( ComDispParams *data )
 		chk = code_get();
 		switch ( chk ) {
 
-		case PARAM_OK:				// ƒpƒ‰ƒ[ƒ^æ“¾
-		case PARAM_DEFAULT:			// ƒpƒ‰ƒ[ƒ^È—ª
+		case PARAM_OK:				// ãƒ‘ãƒ©ãƒ¡ãƒ¼ã‚¿å–å¾—æ™‚
+		case PARAM_DEFAULT:			// ãƒ‘ãƒ©ãƒ¡ãƒ¼ã‚¿çœç•¥æ™‚
 			set_prm_for_invoke( data, chk );
 #ifdef HSP_COMOBJ_DEBUG
-			COM_DBG_MSG( "get_prm_for_method() : %d ŒÂ–Ú‚Ìƒpƒ‰ƒ[ƒ^ : chk=%2d, flag=%d\n", data->params.cArgs, chk, mpval->flag);
+			COM_DBG_MSG( "get_prm_for_method() : %d å€‹ç›®ã®ãƒ‘ãƒ©ãƒ¡ãƒ¼ã‚¿ : chk=%2d, flag=%d\n", data->params.cArgs, chk, mpval->flag);
 #endif
 			break;
 
-		case PARAM_END:				// ƒpƒ‰ƒ[ƒ^I’[
+		case PARAM_END:				// ãƒ‘ãƒ©ãƒ¡ãƒ¼ã‚¿çµ‚ç«¯
 			return;
 
 		default:
@@ -367,10 +367,10 @@ static void set_prm_for_invoke( ComDispParams *data, int chk )
 	var = &data->prms[ TMP_VARIANT_MAX - 1 - data->params.cArgs ];
 	VariantInit( var );
 	if ( chk == PARAM_DEFAULT ) {
-		var->vt = VT_ERROR;								// ƒfƒtƒHƒ‹ƒg’l‚ğƒZƒbƒg
+		var->vt = VT_ERROR;								// ãƒ‡ãƒ•ã‚©ãƒ«ãƒˆå€¤ã‚’ã‚»ãƒƒãƒˆ
 		var->scode = DISP_E_PARAMNOTFOUND;
 	} else {
-		comset_variant( var, mpval->pt, mpval->flag );	// ƒf[ƒ^ ¨ VARIANT
+		comset_variant( var, mpval->pt, mpval->flag );	// ãƒ‡ãƒ¼ã‚¿ â†’ VARIANT
 	}
 	data->params.rgvarg = var;
 	data->params.cArgs++;
@@ -379,13 +379,13 @@ static void set_prm_for_invoke( ComDispParams *data, int chk )
 
 /*-----------------------------------------------------------------------------------*/
 /*
-			SafeArray ŠÖ˜A
+			SafeArray é–¢é€£
 */
 /*-----------------------------------------------------------------------------------*/
 
 void ConvSafeArray2Var( PVal *pval, SAFEARRAY *psa, VARTYPE vt )
 {
-	// SafeArray ‚©‚ç”z—ñ•Ï”‚É•ÏŠ·
+	// SafeArray ã‹ã‚‰é…åˆ—å¤‰æ•°ã«å¤‰æ›
 	//
 	int i, dimcount, totalcount, elemcount[4]={0,0,0,0};
 	void *pSrc, *pDst;
@@ -456,8 +456,8 @@ void ConvSafeArray2Var( PVal *pval, SAFEARRAY *psa, VARTYPE vt )
 
 SAFEARRAY *ConvVar2SafeArray( PVal *pval, BOOL bVariant, VARTYPE *vtRet )
 {
-	// ”z—ñ•Ï”‚©‚ç SafeArray ‚É•ÏŠ·
-	// bVariant = TRUE ‚Ì‚Æ‚« VARIANT ‚É•ÏŠ·
+	// é…åˆ—å¤‰æ•°ã‹ã‚‰ SafeArray ã«å¤‰æ›
+	// bVariant = TRUE ã®ã¨ã VARIANT ã«å¤‰æ›
 	//
 	SAFEARRAY *psa;
 	VARTYPE vt;
@@ -465,7 +465,7 @@ SAFEARRAY *ConvVar2SafeArray( PVal *pval, BOOL bVariant, VARTYPE *vtRet )
 	void *pSrc, *pDst;
 	SAFEARRAYBOUND sabound[4];
 
-	// •Ï”Œ^ƒ`ƒFƒbƒN‚Æ•ÏŠ·Œã‚Ì VARTYPE
+	// å¤‰æ•°å‹ãƒã‚§ãƒƒã‚¯ã¨å¤‰æ›å¾Œã® VARTYPE
 	switch ( pval->flag ) {
 	case HSPVAR_FLAG_STR:
 		vt = VT_BSTR;
@@ -484,7 +484,7 @@ SAFEARRAY *ConvVar2SafeArray( PVal *pval, BOOL bVariant, VARTYPE *vtRet )
 	}
 	if ( bVariant ) vt = VT_VARIANT;
 
-	// ”z—ñ•Ï”‚ÌŸŒ³”E—v‘f”‚ğ’²‚×‚é
+	// é…åˆ—å¤‰æ•°ã®æ¬¡å…ƒæ•°ãƒ»è¦ç´ æ•°ã‚’èª¿ã¹ã‚‹
 	dimcount = 0;
 	totalcount = 1;
 	for (i=0; i<4; i++) {
@@ -495,7 +495,7 @@ SAFEARRAY *ConvVar2SafeArray( PVal *pval, BOOL bVariant, VARTYPE *vtRet )
 		dimcount++;
 	}
 
-	// SafeArray ì¬Eƒf[ƒ^ƒRƒs[
+	// SafeArray ä½œæˆãƒ»ãƒ‡ãƒ¼ã‚¿ã‚³ãƒ”ãƒ¼
 	psa = SafeArrayCreate( vt, dimcount, sabound );
 	if ( psa == NULL ) throw ( HSPERR_OUT_OF_MEMORY );
 	SafeArrayAccessData( psa, &pDst );

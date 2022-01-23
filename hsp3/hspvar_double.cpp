@@ -30,9 +30,9 @@ static PDAT *HspVarDouble_GetPtr( PVal *pval )
 
 static void *HspVarDouble_Cnv( const void *buffer, int flag )
 {
-	//		���N�G�X�g���ꂽ�^ -> �����̌^�ւ̕ϊ����s�Ȃ�
-	//		(�g�ݍ��݌^�ɂ̂ݑΉ���OK)
-	//		(�Q�ƌ��̃f�[�^��j�󂵂Ȃ�����)
+	//		リクエストされた型 -> 自分の型への変換を行なう
+	//		(組み込み型にのみ対応でOK)
+	//		(参照元のデータを破壊しないこと)
 	//
 	switch( flag ) {
 	case HSPVAR_FLAG_STR:
@@ -52,10 +52,10 @@ static void *HspVarDouble_Cnv( const void *buffer, int flag )
 /*
 static void *HspVarDouble_CnvCustom( const void *buffer, int flag )
 {
-	//		(�J�X�^���^�C�v�̂�)
-	//		�����̌^ -> ���N�G�X�g���ꂽ�^ �ւ̕ϊ����s�Ȃ�
-	//		(�g�ݍ��݌^�ɑΉ�������)
-	//		(�Q�ƌ��̃f�[�^��j�󂵂Ȃ�����)
+	//		(カスタムタイプのみ)
+	//		自分の型 -> リクエストされた型 への変換を行なう
+	//		(組み込み型に対応させる)
+	//		(参照元のデータを破壊しないこと)
 	//
 	return buffer;
 }
@@ -63,8 +63,8 @@ static void *HspVarDouble_CnvCustom( const void *buffer, int flag )
 
 static int GetVarSize( PVal *pval )
 {
-	//		PVAL�|�C���^�̕ϐ����K�v�Ƃ���T�C�Y���擾����
-	//		(size�t�B�[���h�ɐݒ肳���)
+	//		PVALポインタの変数が必要とするサイズを取得する
+	//		(sizeフィールドに設定される)
 	//
 	return HspVarCoreCountElems(pval) * sizeof(double);
 }
@@ -72,7 +72,7 @@ static int GetVarSize( PVal *pval )
 
 static void HspVarDouble_Free( PVal *pval )
 {
-	//		PVAL�|�C���^�̕ϐ����������������
+	//		PVALポインタの変数メモリを解放する
 	//
 	if ( pval->mode == HSPVAR_MODE_MALLOC ) { sbFree( pval->pt ); }
 	pval->pt = NULL;
@@ -88,7 +88,7 @@ static void HspVarDouble_Alloc( PVal *pval, const PVal *pval2 )
 /*
 static void *HspVarDouble_ArrayObject( PVal *pval, int *mptype )
 {
-	//		�z��v�f�̎w�� (������/�A�z�z��p)
+	//		配列要素の指定 (文字列/連想配列用)
 	//
 	throw HSPERR_UNSUPPORTED_FUNCTION;
 	return NULL;
@@ -249,11 +249,11 @@ void HspVarDouble_Init( HspVarProc *p )
 //	p->RrI = HspVarDouble_Invalid;
 //	p->LrI = HspVarDouble_Invalid;
 
-	p->vartype_name = "double";				// �^�C�v��
-	p->version = 0x001;					// �^�^�C�v�����^�C���o�[�W����(0x100 = 1.0)
+	p->vartype_name = "double";				// タイプ名
+	p->version = 0x001;					// 型タイプランタイムバージョン(0x100 = 1.0)
 	p->support = HSPVAR_SUPPORT_STORAGE|HSPVAR_SUPPORT_FLEXARRAY;
-										// �T�|�[�g�󋵃t���O(HSPVAR_SUPPORT_*)
-	p->basesize = sizeof(double);		// �P�̃f�[�^���g�p����T�C�Y(byte) / �ϒ��̎���-1
+										// サポート状況フラグ(HSPVAR_SUPPORT_*)
+	p->basesize = sizeof(double);		// １つのデータが使用するサイズ(byte) / 可変長の時は-1
 }
 
 /*------------------------------------------------------------*/

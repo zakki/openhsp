@@ -21,14 +21,14 @@ public:
 	//
 	Hsp3( void );
 	~Hsp3( void );
-	void Dispose( void );						// HSP ax‚Ì”jŠü
-	int Reset( int mode );						// HSP ax‚Ì‰Šú‰»‚ğs‚È‚¤
-	void SetPackValue( int sum, int dec );		// packfile—p‚Ìİ’èƒf[ƒ^‚ğ“n‚·
-	void SetFileName( char *name );				// axƒtƒ@ƒCƒ‹–¼‚ğw’è‚·‚é
-	void SetCommandLinePrm(char *prm);			// ƒRƒ}ƒ“ƒhƒ‰ƒCƒ“•¶š—ñ‚ğw’è‚·‚é
-	void SetModuleFilePrm(char *prm);			// ƒ‚ƒWƒ…[ƒ‹ƒtƒ@ƒCƒ‹–¼•¶š—ñ‚ğw’è‚·‚é
-	void SetHSPTVFolderPrm(char *prm);			// HSPTVƒtƒHƒ‹ƒ_–¼•¶š—ñ‚ğw’è‚·‚é
-	void SetHomeFolderPrm(char *prm);			// ƒz[ƒ€ƒtƒHƒ‹ƒ_–¼•¶š—ñ‚ğw’è‚·‚é
+	void Dispose( void );						// HSP axã®ç ´æ£„
+	int Reset( int mode );						// HSP axã®åˆæœŸåŒ–ã‚’è¡Œãªã†
+	void SetPackValue( int sum, int dec );		// packfileç”¨ã®è¨­å®šãƒ‡ãƒ¼ã‚¿ã‚’æ¸¡ã™
+	void SetFileName( char *name );				// axãƒ•ã‚¡ã‚¤ãƒ«åã‚’æŒ‡å®šã™ã‚‹
+	void SetCommandLinePrm(char *prm);			// ã‚³ãƒãƒ³ãƒ‰ãƒ©ã‚¤ãƒ³æ–‡å­—åˆ—ã‚’æŒ‡å®šã™ã‚‹
+	void SetModuleFilePrm(char *prm);			// ãƒ¢ã‚¸ãƒ¥ãƒ¼ãƒ«ãƒ•ã‚¡ã‚¤ãƒ«åæ–‡å­—åˆ—ã‚’æŒ‡å®šã™ã‚‹
+	void SetHSPTVFolderPrm(char *prm);			// HSPTVãƒ•ã‚©ãƒ«ãƒ€åæ–‡å­—åˆ—ã‚’æŒ‡å®šã™ã‚‹
+	void SetHomeFolderPrm(char *prm);			// ãƒ›ãƒ¼ãƒ ãƒ•ã‚©ãƒ«ãƒ€åæ–‡å­—åˆ—ã‚’æŒ‡å®šã™ã‚‹
 
 	//	Data
 	//
@@ -37,7 +37,7 @@ public:
 	char *axfile;
 	int	maxvar;
 	int hsp_sum, hsp_dec;
-	int axtype;									// axƒtƒ@ƒCƒ‹‚Ìİ’è(hsp3imp—p)
+	int axtype;									// axãƒ•ã‚¡ã‚¤ãƒ«ã®è¨­å®š(hsp3impç”¨)
 
 private:
 

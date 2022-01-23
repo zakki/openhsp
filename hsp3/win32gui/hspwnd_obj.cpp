@@ -42,7 +42,7 @@ static WNDPROC DefButtonProc;
 
 extern HspWnd *curwnd;
 
-//		1sƒGƒfƒBƒbƒgƒ{ƒbƒNƒX—p
+//		1è¡Œã‚¨ãƒ‡ã‚£ãƒƒãƒˆãƒœãƒƒã‚¯ã‚¹ç”¨
 LRESULT CALLBACK MyEditProc( HWND hwnd , UINT msg , WPARAM wp , LPARAM lp ) {
 	if ( msg==WM_CHAR ) {
 		if (( wp==13 )||( wp==9 )) {
@@ -52,7 +52,7 @@ LRESULT CALLBACK MyEditProc( HWND hwnd , UINT msg , WPARAM wp , LPARAM lp ) {
 	return CallWindowProc( DefEditProc , hwnd , msg , wp , lp);
 }
 
-//		•¡”sƒGƒfƒBƒbƒgƒ{ƒbƒNƒX—p
+//		è¤‡æ•°è¡Œã‚¨ãƒ‡ã‚£ãƒƒãƒˆãƒœãƒƒã‚¯ã‚¹ç”¨
 LRESULT CALLBACK MyEditProc2( HWND hwnd , UINT msg , WPARAM wp , LPARAM lp ) {
 
 	switch(msg) {
@@ -87,7 +87,7 @@ LRESULT CALLBACK MyEditProc2( HWND hwnd , UINT msg , WPARAM wp , LPARAM lp ) {
 	return CallWindowProc( DefEditProc , hwnd , msg , wp , lp);
 }
 
-//		ƒ[ƒhƒ‰ƒbƒv—}§—p
+//		ãƒ¯ãƒ¼ãƒ‰ãƒ©ãƒƒãƒ—æŠ‘åˆ¶ç”¨
 int CALLBACK EditWordBreakProc(LPTSTR lpch, int ichCurrent, int cch, int code)
 {
     return (WB_ISDELIMITER == code) ? 0 : ichCurrent;
@@ -144,7 +144,7 @@ LRESULT CALLBACK MyButtonProc( HWND hwnd , UINT msg , WPARAM wp , LPARAM lp ) {
 
 void SetObjectEventNoticePtr( int *ptr )
 {
-	//		ƒCƒxƒ“ƒg‚Ì’lƒ|ƒCƒ“ƒ^‚ğİ’è
+	//		ã‚¤ãƒ™ãƒ³ãƒˆæ™‚ã®å€¤ãƒã‚¤ãƒ³ã‚¿ã‚’è¨­å®š
 	//
 	notice_ptr = ptr;
 }
@@ -374,7 +374,7 @@ static void Object_SetInputMesBox( HSPOBJINFO *info, int type, void *ptr )
 	HWND hw;
 	hw = info->hCld;
 	Object_SetInputBox( info, type, ptr );
-	Object_StrInput( info, EN_UPDATE<<16 );	// ‘¦”½‰f‚³‚¹‚é
+	Object_StrInput( info, EN_UPDATE<<16 );	// å³æ™‚åæ˜ ã•ã›ã‚‹
 }
 
 
@@ -402,7 +402,7 @@ static void Object_SetCheckBox( HSPOBJINFO *info, int type, void *ptr )
 
 void Bmscr::ResetHSPObject( void )
 {
-	//		‚·‚×‚Ä‚ÌObject‚ğƒŠƒZƒbƒg‚·‚é
+	//		ã™ã¹ã¦ã®Objectã‚’ãƒªã‚»ãƒƒãƒˆã™ã‚‹
 	//
 	int i;
 	if ( mem_obj != NULL ) {
@@ -419,7 +419,7 @@ void Bmscr::ResetHSPObject( void )
 
 int Bmscr::ActivateHSPObject( int id )
 {
-	//		ƒtƒH[ƒJƒX‚ğON‚É‚·‚é
+	//		ãƒ•ã‚©ãƒ¼ã‚«ã‚¹ã‚’ONã«ã™ã‚‹
 	//
 	int a,cid;
 	HWND ow;
@@ -469,7 +469,7 @@ void Bmscr::SetObjectMode( int id, int owmode )
 
 void Bmscr::NextObject( int plus )
 {
-	//		[TAB]‚ğ‰Ÿ‚µ‚ÄŸ‚Ìobject‚ğ‘I‘ğ
+	//		[TAB]ã‚’æŠ¼ã—ã¦æ¬¡ã®objectã‚’é¸æŠ
 	//
 	HWND hw;
 	HSPOBJINFO *obj;
@@ -504,7 +504,7 @@ void Bmscr::NextObject( int plus )
 
 int Bmscr::NewHSPObject( void )
 {
-	//		‹ó‚«ID‚ğ’T‚·
+	//		ç©ºãIDã‚’æ¢ã™
 	//
 	int i,id;
 	id = 0;
@@ -527,7 +527,7 @@ int Bmscr::NewHSPObject( void )
 
 HSPOBJINFO *Bmscr::TrackHSPObject( HWND hwnd )
 {
-	//		ƒIƒuƒWƒFƒNƒg‚Ìƒnƒ“ƒhƒ‹‚©‚ç–{‘Ì‚ğ’T‚·
+	//		ã‚ªãƒ–ã‚¸ã‚§ã‚¯ãƒˆã®ãƒãƒ³ãƒ‰ãƒ«ã‹ã‚‰æœ¬ä½“ã‚’æ¢ã™
 	//
 	int i;
 	if ( mem_obj != NULL ) {
@@ -649,7 +649,7 @@ HSPOBJINFO *Bmscr::GetHSPObjectSafe( int id )
 
 void Bmscr::DeleteHSPObject( int id )
 {
-	//		ƒIƒuƒWƒFƒNƒgíœ
+	//		ã‚ªãƒ–ã‚¸ã‚§ã‚¯ãƒˆå‰Šé™¤
 	//
 	HFONT hf;
 	HSPOBJINFO *obj;
@@ -673,7 +673,7 @@ void Bmscr::DeleteHSPObject( int id )
 
 void Bmscr::UpdateHSPObject( int id, int type, void *ptr )
 {
-	//		ƒIƒuƒWƒFƒNƒg‚É’l‚ğİ’è‚·‚é
+	//		ã‚ªãƒ–ã‚¸ã‚§ã‚¯ãƒˆã«å€¤ã‚’è¨­å®šã™ã‚‹
 	//
 	HSPOBJINFO *obj;
 	obj = GetHSPObjectSafe( id );
@@ -714,7 +714,7 @@ void Bmscr::SetHSPObjectFont( int id )
 
 void Bmscr::SendHSPObjectNotice( int wparam )
 {
-	//		ƒIƒuƒWƒFƒNƒg‚Ì’Ê’mˆ—
+	//		ã‚ªãƒ–ã‚¸ã‚§ã‚¯ãƒˆã®é€šçŸ¥å‡¦ç†
 	//
 	int id;
 	HWND hw;
@@ -733,7 +733,7 @@ void Bmscr::SendHSPObjectNotice( int wparam )
 
 void Bmscr::SendHSPLayerObjectNotice(int layer, int cmd)
 {
-	//		ƒŒƒCƒ„[ƒIƒuƒWƒFƒNƒg‚Ì’Ê’mˆ—
+	//		ãƒ¬ã‚¤ãƒ¤ãƒ¼ã‚ªãƒ–ã‚¸ã‚§ã‚¯ãƒˆã®é€šçŸ¥å‡¦ç†
 	//
 	int i;
 	HSPOBJINFO *obj;
@@ -755,8 +755,8 @@ void Bmscr::SendHSPLayerObjectNotice(int layer, int cmd)
 
 void Bmscr::DrawHSPCustomButton( HSPOBJINFO *obj, HDC drawhdc, int flag )
 {
-	//		ƒI[ƒi[ƒhƒ[‚Ì•`‰æˆ—
-	//		(flag:0=’ÊíA1=ƒtƒH[ƒJƒXA2=‰Ÿ‰º)
+	//		ã‚ªãƒ¼ãƒŠãƒ¼ãƒ‰ãƒ­ãƒ¼ã®æç”»å‡¦ç†
+	//		(flag:0=é€šå¸¸ã€1=ãƒ•ã‚©ãƒ¼ã‚«ã‚¹ã€2=æŠ¼ä¸‹)
 	//
 	int xx,yy;
 	Bmscr *src;
@@ -793,7 +793,7 @@ void Bmscr::DrawHSPCustomButton( HSPOBJINFO *obj, HDC drawhdc, int flag )
 		BitBlt( drawhdc, rect.left, rect.top, rect.right, rect.bottom, src->hdc, xx, yy, SRCCOPY );
 	}
 
-	if ( obj->option & 0x200 ) {			// ƒL[ƒ{[ƒhƒtƒH[ƒJƒX‚ ‚è
+	if ( obj->option & 0x200 ) {			// ã‚­ãƒ¼ãƒœãƒ¼ãƒ‰ãƒ•ã‚©ãƒ¼ã‚«ã‚¹ã‚ã‚Š
 		InflateRect( &rect, -3, -3 );
 		DrawFocusRect( drawhdc, &rect );
 		GetClientRect( obj->hCld, &rect );
@@ -812,7 +812,7 @@ void Bmscr::DrawHSPCustomButton( HSPOBJINFO *obj, HDC drawhdc, int flag )
 
 void Bmscr::SendHSPObjectDraw( int wparam, LPDRAWITEMSTRUCT lparam )
 {
-	//		ƒI[ƒi[ƒhƒ[‚Ì•`‰æˆ—‚ğŒÄ‚Ño‚·(wparam,lparamˆ—)
+	//		ã‚ªãƒ¼ãƒŠãƒ¼ãƒ‰ãƒ­ãƒ¼ã®æç”»å‡¦ç†ã‚’å‘¼ã³å‡ºã™(wparam,lparamå‡¦ç†)
 	//
 	int id,flag;
 	HWND hw;
@@ -852,7 +852,7 @@ int Bmscr::AddHSPObjectButton( char *name, int flag, void *callptr )
 				reinterpret_cast< HMENU >( static_cast< WORD >( MESSAGE_HSPOBJ + id ) ), hInst, NULL );
 	freehac(&hactmp1);
 
-	// ƒ_ƒuƒ‹ƒNƒŠƒbƒN‚Ìó•t‚ğ—}§ 
+	// ãƒ€ãƒ–ãƒ«ã‚¯ãƒªãƒƒã‚¯ã®å—ä»˜ã‚’æŠ‘åˆ¶ 
 	SetClassLong( hw, GCL_STYLE, GetClassLong(hw, GCL_STYLE) & ~CS_DBLCLKS );
 
 	obj = AddHSPJumpEventObject( id, hw, HSPOBJ_TAB_ENABLE|HSPOBJ_OPTION_SETFONT, flag, callptr );
@@ -971,7 +971,7 @@ int Bmscr::AddHSPObjectInput( PVal *pval, APTR aptr, int sizex, int sizey, char 
 	obj->func_delete = Object_WindowDelete;
 	obj->func_objprm = Object_SetInputBox;
 
-	if ( !subcl ) {			// mesbox—p‚ÌobjprmXV‚ğ’Ç‰Á(2011/1/6)
+	if ( !subcl ) {			// mesboxç”¨ã®objprmæ›´æ–°ã‚’è¿½åŠ (2011/1/6)
 		obj->func_objprm = Object_SetInputMesBox;
 	}
 
@@ -1094,7 +1094,7 @@ int Bmscr::AddHSPObjectLayer(int sizex, int sizey, int layer, int val, int mode,
 	if (lay < HSPOBJ_OPTION_LAYER_MIN) lay = HSPOBJ_OPTION_LAYER_MIN;
 	if (lay > HSPOBJ_OPTION_LAYER_MAX) lay = HSPOBJ_OPTION_LAYER_MAX;
 
-	if ((layer & HSPOBJ_OPTION_LAYER_MULTI) == 0) {		// d•¡“o˜^‚ğŒŸo‚·‚é
+	if ((layer & HSPOBJ_OPTION_LAYER_MULTI) == 0) {		// é‡è¤‡ç™»éŒ²ã‚’æ¤œå‡ºã™ã‚‹
 		obj = mem_obj;
 		for (int i = 0; i < objmax; i++) {
 			if (obj->owmode != HSPOBJ_NONE) {

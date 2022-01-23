@@ -3,7 +3,7 @@
 //			onion software/onitama 2001/6
 //
 
-// hsp3c‚Å‚Í‘S‘Ì‚ğ–³‹
+// hsp3cã§ã¯å…¨ä½“ã‚’ç„¡è¦–
 #ifndef HSP_COMPACT
 
 #include <stdio.h>
@@ -14,26 +14,26 @@
 
 //		Settings
 //
-int resY0, resY1;	// ‘‚«Š·‚¦”ÍˆÍ(‚‚³)min,max
+int resY0, resY1;	// æ›¸ãæ›ãˆç¯„å›²(é«˜ã•)min,max
 
 static		SCANDATA *scanData;
-static		char *lpDest;		// •`‰æ‰æ–Ê‚Ìƒoƒbƒtƒ@
-static		int nDestWByte;		// •`‰æÀ•W•byte”
-static		int nDestWidth;		// •`‰æÀ•W•
-static		int nDestWidth2;	// •`‰æÀ•W•(VRAM—p)
-static		int nDestHeight;	// •`‰æÀ•W‚‚³
-static		int DestSize;		// •`‰æ‰æ–Êƒoƒbƒtƒ@‚ÌƒTƒCƒY
-static		int maxysize;		// SCANDATA‚ÌÅ‘å‚‚³
+static		char *lpDest;		// æç”»ç”»é¢ã®ãƒãƒƒãƒ•ã‚¡
+static		int nDestWByte;		// æç”»åº§æ¨™å¹…byteæ•°
+static		int nDestWidth;		// æç”»åº§æ¨™å¹…
+static		int nDestWidth2;	// æç”»åº§æ¨™å¹…(VRAMç”¨)
+static		int nDestHeight;	// æç”»åº§æ¨™é«˜ã•
+static		int DestSize;		// æç”»ç”»é¢ãƒãƒƒãƒ•ã‚¡ã®ã‚µã‚¤ã‚º
+static		int maxysize;		// SCANDATAã®æœ€å¤§é«˜ã•
 
-static		char *lpTex;		// ƒeƒNƒXƒ`ƒƒ‚Ìƒoƒbƒtƒ@
+static		char *lpTex;		// ãƒ†ã‚¯ã‚¹ãƒãƒ£ã®ãƒãƒƒãƒ•ã‚¡
 static		int curtex;			// current texID
-static		int nTexWidth;		// ƒeƒNƒXƒ`ƒƒ•
-static		int nTexWByte;		// ƒeƒNƒXƒ`ƒƒ•byte”
-static		int nTexHeight;		// ƒeƒNƒXƒ`ƒƒ‚‚³
+static		int nTexWidth;		// ãƒ†ã‚¯ã‚¹ãƒãƒ£å¹…
+static		int nTexWByte;		// ãƒ†ã‚¯ã‚¹ãƒãƒ£å¹…byteæ•°
+static		int nTexHeight;		// ãƒ†ã‚¯ã‚¹ãƒãƒ£é«˜ã•
 
-static		unsigned char ck1;	// ƒJƒ‰[ƒL[1
-static		unsigned char ck2;	// ƒJƒ‰[ƒL[2
-static		unsigned char ck3;	// ƒJƒ‰[ƒL[3
+static		unsigned char ck1;	// ã‚«ãƒ©ãƒ¼ã‚­ãƒ¼1
+static		unsigned char ck2;	// ã‚«ãƒ©ãƒ¼ã‚­ãƒ¼2
+static		unsigned char ck3;	// ã‚«ãƒ©ãƒ¼ã‚­ãƒ¼3
 
 /*------------------------------------------------------------*/
 /*
@@ -60,7 +60,7 @@ void hgiof_init( void )
 	dispy = GetSystemMetrics( SM_CYSCREEN );
 	ReleaseDC(NULL,hdc);
 
-	//		ƒoƒbƒtƒ@‰Šú‰»
+	//		ãƒãƒƒãƒ•ã‚¡åˆæœŸåŒ–
 	//
 	lpDest = NULL;
 	lpTex = NULL;
@@ -68,11 +68,11 @@ void hgiof_init( void )
 	scanData = NULL;
 	SetupScanData( dispy );
 
-	//		ƒJƒ‰[ƒL[‰Šú‰»
+	//		ã‚«ãƒ©ãƒ¼ã‚­ãƒ¼åˆæœŸåŒ–
 	//
 	ck1 = 0; ck2 = 0; ck3 = 0;
 
-	//		ƒeƒNƒXƒ`ƒƒî•ñ‰Šú‰»
+	//		ãƒ†ã‚¯ã‚¹ãƒãƒ£æƒ…å ±åˆæœŸåŒ–
 	//
 	TexInit();
 }
@@ -112,11 +112,11 @@ void SetPolyColorKey( int color )
 //-----------------------------------------------------
 //  Calc Polygon ScanLine Data
 //
-static void ScanLine(POLY4 *lpPolyData,  // ƒ|ƒŠƒSƒ“ƒf[ƒ^
-			  int nScrWidth, // •`‰æ‰æ–Ê•
-			  int nScrHeight, // •`‰æ‰æ–Ê‚‚³
-			  int *lpnStartY, // •`‰æ‚ğŠJn‚·‚é Y À•W(out)
-			  int *lpnEndY // •`‰æ‚ğI—¹‚·‚é Y À•W(out)
+static void ScanLine(POLY4 *lpPolyData,  // ãƒãƒªã‚´ãƒ³ãƒ‡ãƒ¼ã‚¿
+			  int nScrWidth, // æç”»ç”»é¢å¹…
+			  int nScrHeight, // æç”»ç”»é¢é«˜ã•
+			  int *lpnStartY, // æç”»ã‚’é–‹å§‹ã™ã‚‹ Y åº§æ¨™(out)
+			  int *lpnEndY // æç”»ã‚’çµ‚äº†ã™ã‚‹ Y åº§æ¨™(out)
 			  )
 {
 	int i,y,v1y,v2y,endY;
@@ -125,15 +125,15 @@ static void ScanLine(POLY4 *lpPolyData,  // ƒ|ƒŠƒSƒ“ƒf[ƒ^
 	IAXIS2 *ftmp;
 	SCANDATA *lpScanData;
 
-	double x,dx;  // •`‰æÀ•WŒvZ—p
+	double x,dx;  // æç”»åº§æ¨™è¨ˆç®—ç”¨
 	double dd;
-	double tx,ty,tdx,tdy; // ƒeƒNƒXƒ`ƒƒÀ•WŒvZ—p
+	double tx,ty,tdx,tdy; // ãƒ†ã‚¯ã‚¹ãƒãƒ£åº§æ¨™è¨ˆç®—ç”¨
 				
-	// •`‰æŠJnˆÊ’uAI—¹ˆÊ’u‰Šú‰»
+	// æç”»é–‹å§‹ä½ç½®ã€çµ‚äº†ä½ç½®åˆæœŸåŒ–
 	*lpnStartY = nScrHeight;
 	*lpnEndY = -1;
 
-	// ƒXƒLƒƒƒ“ƒf[ƒ^‰Šú‰»
+	// ã‚¹ã‚­ãƒ£ãƒ³ãƒ‡ãƒ¼ã‚¿åˆæœŸåŒ–
 	SetupScanData( nScrHeight );
 	lpScanData = scanData;
 
@@ -142,33 +142,33 @@ static void ScanLine(POLY4 *lpPolyData,  // ƒ|ƒŠƒSƒ“ƒf[ƒ^
 		lpScanData[i].maxX = -1;
 	}
 
-	// ƒ|ƒŠƒSƒ“‚ÌŠe•Ó–ˆ‚ÉƒXƒLƒƒƒ“‚·‚é
+	// ãƒãƒªã‚´ãƒ³ã®å„è¾ºæ¯ã«ã‚¹ã‚­ãƒ£ãƒ³ã™ã‚‹
 	for(i=0;i< POLY4N;i++){
 
-		// ’¸“_”Ô†ƒZƒbƒg
+		// é ‚ç‚¹ç•ªå·ã‚»ãƒƒãƒˆ
 		fv1 = &lpPolyData->v[i];
 		if ( (i+1)<POLY4N ) { fv2=fv1+1; } else { fv2=&lpPolyData->v[0]; }
 
-		// ’¸“_ V1 ‚Æ V2 ‚Ì y ²‚ª“¯‚¶(…•½ü‚Ì)
+		// é ‚ç‚¹ V1 ã¨ V2 ã® y è»¸ãŒåŒã˜æ™‚(æ°´å¹³ç·šã®æ™‚)
 		if( fv1->y == fv2->y ){
 
 			y = fv1->y;
 			
-			// ”ÍˆÍŠO‚Ì‚Íƒ`ƒFƒbƒN‚µ‚È‚¢
+			// ç¯„å›²å¤–ã®æ™‚ã¯ãƒã‚§ãƒƒã‚¯ã—ãªã„
 			if((y <  nScrHeight )&&( y >= 0)){
 				
-				// ƒXƒ^[ƒgˆÊ’uŒvZ
+				// ã‚¹ã‚¿ãƒ¼ãƒˆä½ç½®è¨ˆç®—
 				*lpnStartY = min(y,*lpnStartY);
 				*lpnEndY = max(y,*lpnEndY);
 				
-				// ’¸“_ V1 ‚Ì•û‚ª¶‚É‚È‚é‚æ‚¤‚É‚·‚é
+				// é ‚ç‚¹ V1 ã®æ–¹ãŒå·¦ã«ãªã‚‹ã‚ˆã†ã«ã™ã‚‹
 				if( fv1->x > fv2->x ){
 					ftmp = fv1;
 					fv1 = fv2;
 					fv2 = ftmp;
 				}
 				
-				// Max ‚Æ Min ‚ÌŒvZ
+				// Max ã¨ Min ã®è¨ˆç®—
 				if((y >=0 )&&( y <  nScrHeight)){
 					
 					if( fv1->x <  lpScanData[y].minX){
@@ -186,9 +186,9 @@ static void ScanLine(POLY4 *lpPolyData,  // ƒ|ƒŠƒSƒ“ƒf[ƒ^
 
 			}
 		}
-		else{ // ’¸“_ v1 ‚Æ v2 ‚Ì y À•W‚ªˆÙ‚È‚éê‡
+		else{ // é ‚ç‚¹ v1 ã¨ v2 ã® y åº§æ¨™ãŒç•°ãªã‚‹å ´åˆ
 			
-			// ’¸“_ V1 ‚Ì•û‚ªã‚É‚È‚é‚æ‚¤‚É‚·‚é
+			// é ‚ç‚¹ V1 ã®æ–¹ãŒä¸Šã«ãªã‚‹ã‚ˆã†ã«ã™ã‚‹
 			if( fv1->y > fv2->y ) {
 				ftmp = fv1;
 				fv1 = fv2;
@@ -198,37 +198,37 @@ static void ScanLine(POLY4 *lpPolyData,  // ƒ|ƒŠƒSƒ“ƒf[ƒ^
 			v1y = fv1->y;
 			v2y = fv2->y;
 			
-			// ”ÍˆÍŠO‚Ì‚Íƒ`ƒFƒbƒN‚µ‚È‚¢
+			// ç¯„å›²å¤–ã®æ™‚ã¯ãƒã‚§ãƒƒã‚¯ã—ãªã„
 			if((v1y <  nScrHeight )||( v2y >= 0)){
 				
-				// ƒXƒ^[ƒgˆÊ’uŒvZ
+				// ã‚¹ã‚¿ãƒ¼ãƒˆä½ç½®è¨ˆç®—
 				*lpnStartY = min(v1y,*lpnStartY);
 				*lpnEndY = max(v2y,*lpnEndY);
 				
-				// y ‚ª 1 ‘‰Á‚µ‚½‚Ì•`‰æÀ•W‚Å‚Ì x ‚Ì•ÏˆÊ‚Æ
-				// ƒeƒNƒXƒ`ƒƒÀ•W‚Å‚Ì x ‚Æ y ‚Ì•ÏˆÊ‚ğŒvZ
+				// y ãŒ 1 å¢—åŠ ã—ãŸæ™‚ã®æç”»åº§æ¨™ã§ã® x ã®å¤‰ä½ã¨
+				// ãƒ†ã‚¯ã‚¹ãƒãƒ£åº§æ¨™ã§ã® x ã¨ y ã®å¤‰ä½ã‚’è¨ˆç®—
 				
-				//x •ûŒü‚Ì•ÏˆÊŒvZ
+				//x æ–¹å‘ã®å¤‰ä½è¨ˆç®—
 				dd = 1.0f / (double)(v2y-v1y);
 				dx = (double)( fv2->x - fv1->x )*dd;
-				// ƒeƒNƒXƒ`ƒƒÀ•W‚Ì•ÏˆÊŒvZ
+				// ãƒ†ã‚¯ã‚¹ãƒãƒ£åº§æ¨™ã®å¤‰ä½è¨ˆç®—
 				tdx = (double)(fv2->tx - fv1->tx)*dd;
 				tdy = (double)(fv2->ty - fv1->ty)*dd;
 				
-				// ‰Šú•`‰æÀ•WƒZƒbƒg
+				// åˆæœŸæç”»åº§æ¨™ã‚»ãƒƒãƒˆ
 				x = (double)fv1->x;
 				
-				// ‰ŠúƒeƒNƒXƒ`ƒƒÀ•WƒZƒbƒg
+				// åˆæœŸãƒ†ã‚¯ã‚¹ãƒãƒ£åº§æ¨™ã‚»ãƒƒãƒˆ
 				tx = (double)fv1->tx; 
 				ty = (double)fv1->ty;
 				
-				// ƒT[ƒ`”ÍˆÍŒvZ
+				// ã‚µãƒ¼ãƒç¯„å›²è¨ˆç®—
 				endY = min(nScrHeight-1,v2y);
 				
-				// ã‚©‚ç‡‚ÉƒT[ƒ`ŠJn
+				// ä¸Šã‹ã‚‰é †ã«ã‚µãƒ¼ãƒé–‹å§‹
 				for(y = v1y; y <= endY; y++){
 					
-					// Max ‚Æ Min ‚ÌŒvZ
+					// Max ã¨ Min ã®è¨ˆç®—
 					//if((y >=0 )&&( y <  nScrHeight)){
 					if(y>=0){
 						
@@ -246,7 +246,7 @@ static void ScanLine(POLY4 *lpPolyData,  // ƒ|ƒŠƒSƒ“ƒf[ƒ^
 						
 					}
 					
-					// À•WˆÚ“®
+					// åº§æ¨™ç§»å‹•
 					x += dx;
 					tx += tdx;
 					ty += tdy;
@@ -255,7 +255,7 @@ static void ScanLine(POLY4 *lpPolyData,  // ƒ|ƒŠƒSƒ“ƒf[ƒ^
 		}
 	}
 	
-	// ƒXƒ^[ƒgˆÊ’uŒvZ
+	// ã‚¹ã‚¿ãƒ¼ãƒˆä½ç½®è¨ˆç®—
 	*lpnStartY = max(0,*lpnStartY);
 	*lpnEndY = min(nScrHeight,*lpnEndY);
 }
@@ -263,21 +263,21 @@ static void ScanLine(POLY4 *lpPolyData,  // ƒ|ƒŠƒSƒ“ƒf[ƒ^
 
 void DrawPolygonF4( POLY4 *lpPolyData )
 {
-	int x,y; // ƒ‹[ƒv—p
-	int nStartY,nEndY; // •`‰æŠJn‚ğŠJn‚·‚é Y À•WAI—¹À•W
-	int maxX,minX;  // ƒGƒbƒWÀ•W‚ÌÅ‘åÅ¬’l
+	int x,y; // ãƒ«ãƒ¼ãƒ—ç”¨
+	int nStartY,nEndY; // æç”»é–‹å§‹ã‚’é–‹å§‹ã™ã‚‹ Y åº§æ¨™ã€çµ‚äº†åº§æ¨™
+	int maxX,minX;  // ã‚¨ãƒƒã‚¸åº§æ¨™ã®æœ€å¤§æœ€å°å€¤
 //	char *p;
 	short color1;
 	unsigned char color2;
 
-	DWORD_PTR dwScanData,dwDest; // ƒGƒbƒW‚ÌÀ•Wƒf[ƒ^‚Æ“]‘—æ‚Ìƒx[ƒXƒAƒhƒŒƒX
+	DWORD_PTR dwScanData,dwDest; // ã‚¨ãƒƒã‚¸ã®åº§æ¨™ãƒ‡ãƒ¼ã‚¿ã¨è»¢é€å…ˆã®ãƒ™ãƒ¼ã‚¹ã‚¢ãƒ‰ãƒ¬ã‚¹
 //	int x0,x1,x2,y0,y1,y2;
 
 	short alpha,alphaop,ialpha;
 	short cc1,cc2,cc3,a1,a2,a3;
 	unsigned char *up;
 
-	// — •\”»’è
+	// è£è¡¨åˆ¤å®š
 /*
 	x0 = lpPolyData->v[0].x;
 	x1 = lpPolyData->v[1].x;
@@ -287,10 +287,10 @@ void DrawPolygonF4( POLY4 *lpPolyData )
 	y2 = lpPolyData->v[2].y;
 	if ( (x0 - x1) * (y1 - y2) - (x1 - x2) * (y0 - y1) >= 0 ) return;
 */
-	// ƒGƒbƒW‚ÌÀ•W‚ÌƒXƒLƒƒƒ“
+	// ã‚¨ãƒƒã‚¸ã®åº§æ¨™ã®ã‚¹ã‚­ãƒ£ãƒ³
 	ScanLine(lpPolyData, nDestWidth,nDestHeight,&nStartY,&nEndY);
 
-	// ”ÍˆÍŠO‚È‚ç•`‰æ‚µ‚È‚¢
+	// ç¯„å›²å¤–ãªã‚‰æç”»ã—ãªã„
 	if(nStartY >= nDestHeight || nEndY < 0) { resY0 = resY1 = -1; return; }
 
 	resY0 = nStartY;
@@ -300,13 +300,13 @@ void DrawPolygonF4( POLY4 *lpPolyData )
 	color1 = (short)(lpPolyData->color & 0xffff);
 	color2 = (unsigned char)((lpPolyData->color & 0xff0000 ) >>16 );
 
-	// “]‘—æƒoƒbƒtƒ@‚ÆƒXƒLƒƒƒ“ƒf[ƒ^‚Ìƒx[ƒXƒAƒhƒŒƒXƒZƒbƒg
-	// “]‘—æƒoƒbƒtƒ@(DIB)‚Íã‰º‚ª”½“]‚µ‚Ä‚¢‚é‚Ì‚É’ˆÓ((nDestHeight-1-nStartY)‚ÌŠ)
+	// è»¢é€å…ˆãƒãƒƒãƒ•ã‚¡ã¨ã‚¹ã‚­ãƒ£ãƒ³ãƒ‡ãƒ¼ã‚¿ã®ãƒ™ãƒ¼ã‚¹ã‚¢ãƒ‰ãƒ¬ã‚¹ã‚»ãƒƒãƒˆ
+	// è»¢é€å…ˆãƒãƒƒãƒ•ã‚¡(DIB)ã¯ä¸Šä¸‹ãŒåè»¢ã—ã¦ã„ã‚‹ã®ã«æ³¨æ„((nDestHeight-1-nStartY)ã®æ‰€)
 
 	dwDest = (DWORD_PTR)lpDest + (DWORD_PTR)((nDestHeight-1-nStartY)*nDestWByte);
 	dwScanData = (DWORD_PTR)scanData + (DWORD_PTR)(nStartY*sizeof(SCANDATA));
 	
-	//	“§–¾İ’è‚ğ”»’è
+	//	é€æ˜è¨­å®šã‚’åˆ¤å®š
 	//
 	if ( lpPolyData->alpha != 0x100 ) {
 		alphaop = lpPolyData->alpha>>8;
@@ -320,28 +320,28 @@ void DrawPolygonF4( POLY4 *lpPolyData )
 		if ( alphaop == 3 ) goto f4_substract;
 	}
 
-	// nStartY ‚©‚ç nEndY ‚Ü‚Åã‚©‚ç‡‚É•`‰æ
+	// nStartY ã‹ã‚‰ nEndY ã¾ã§ä¸Šã‹ã‚‰é †ã«æç”»
 	for(y = nStartY; y < nEndY; y++){
 	
-		// ƒGƒbƒW‚Ì(“]‘—æ‰æ‘œ(dwDest)ã‚Å‚Ì)À•WƒZƒbƒg
+		// ã‚¨ãƒƒã‚¸ã®(è»¢é€å…ˆç”»åƒ(dwDest)ä¸Šã§ã®)åº§æ¨™ã‚»ãƒƒãƒˆ
 		minX = *(int *)(dwScanData);
 		maxX = *(int *)(dwScanData+4);
 
 		if(minX < 0) minX = 0;
 		if(maxX >= 0){
 
-			// ¶‚©‚ç‰E‚É‰¡‚É•`‰æ‚µ‚Ä‚¢‚­
+			// å·¦ã‹ã‚‰å³ã«æ¨ªã«æç”»ã—ã¦ã„ã
 			maxX = min(nDestWidth,maxX);
 			up = (unsigned char *)dwDest + minX*3;
 			for(x = minX; x < maxX; x++){
 	
-			// ƒRƒs[
+			// ã‚³ãƒ”ãƒ¼
 			*(short *)up = color1;
 			up[2] = color2; up+=3;
 	
 			}
 		}
-		// ƒoƒbƒtƒ@‚ÆƒXƒLƒƒƒ“ƒf[ƒ^‚Ìƒx[ƒXƒAƒhƒŒƒXXV
+		// ãƒãƒƒãƒ•ã‚¡ã¨ã‚¹ã‚­ãƒ£ãƒ³ãƒ‡ãƒ¼ã‚¿ã®ãƒ™ãƒ¼ã‚¹ã‚¢ãƒ‰ãƒ¬ã‚¹æ›´æ–°
 		dwDest -= nDestWByte;
 		dwScanData += sizeof(SCANDATA);
 	}
@@ -422,9 +422,9 @@ f4_substract:
 
 void DrawPolygonTex( POLY4 *lpPolyData )
 {
-	int i2,x,y; // ƒ‹[ƒv—p
-	int nStartY,nEndY; // •`‰æŠJn‚ğŠJn‚·‚é Y À•WAI—¹À•W
-	int maxX,minX;  // ƒGƒbƒWÀ•W‚ÌÅ‘åÅ¬’l
+	int i2,x,y; // ãƒ«ãƒ¼ãƒ—ç”¨
+	int nStartY,nEndY; // æç”»é–‹å§‹ã‚’é–‹å§‹ã™ã‚‹ Y åº§æ¨™ã€çµ‚äº†åº§æ¨™
+	int maxX,minX;  // ã‚¨ãƒƒã‚¸åº§æ¨™ã®æœ€å¤§æœ€å°å€¤
 //	int x0,x1,x2,y0,y1,y2;
 	char *p;
 	char *srcp;
@@ -435,13 +435,13 @@ void DrawPolygonTex( POLY4 *lpPolyData )
 	unsigned char *up;
 	unsigned char *usrcp;
 
-	DWORD_PTR dwTexSize; // ƒeƒNƒXƒ`ƒƒ‚ÌƒTƒCƒY
-	DWORD_PTR dwScanData,dwDest; // ƒGƒbƒW‚ÌÀ•Wƒf[ƒ^‚Æ“]‘—æ‚Ìƒx[ƒXƒAƒhƒŒƒX
+	DWORD_PTR dwTexSize; // ãƒ†ã‚¯ã‚¹ãƒãƒ£ã®ã‚µã‚¤ã‚º
+	DWORD_PTR dwScanData,dwDest; // ã‚¨ãƒƒã‚¸ã®åº§æ¨™ãƒ‡ãƒ¼ã‚¿ã¨è»¢é€å…ˆã®ãƒ™ãƒ¼ã‚¹ã‚¢ãƒ‰ãƒ¬ã‚¹
 
 	//		Texture select
 	//if ( lpPolyData->tex != curtex ) ChangeTex( lpPolyData->tex );
 
-	// — •\”»’è
+	// è£è¡¨åˆ¤å®š
 /*
 	x0 = lpPolyData->v[0].x;
 	x1 = lpPolyData->v[1].x;
@@ -451,23 +451,23 @@ void DrawPolygonTex( POLY4 *lpPolyData )
 	y2 = lpPolyData->v[3].y;
 	if ( (x0 - x1) * (y1 - y2) - (x1 - x2) * (y0 - y1) >= 0 ) return;
 */
-	// ƒGƒbƒW‚ÌÀ•W‚ÌƒXƒLƒƒƒ“
+	// ã‚¨ãƒƒã‚¸ã®åº§æ¨™ã®ã‚¹ã‚­ãƒ£ãƒ³
 	dwTexSize = (DWORD_PTR)(nTexHeight*nTexWByte);
 	ScanLine( lpPolyData, nDestWidth, nDestHeight, &nStartY, &nEndY );
 	
-	// ”ÍˆÍŠO‚È‚ç•`‰æ‚µ‚È‚¢
+	// ç¯„å›²å¤–ãªã‚‰æç”»ã—ãªã„
 	if(nStartY >= nDestHeight || nEndY < 0) { resY0 = resY1 = -1; return; }
 
 	resY0 = nStartY;
 	resY1 = nEndY;
 
-	// “]‘—æƒoƒbƒtƒ@‚ÆƒXƒLƒƒƒ“ƒf[ƒ^‚Ìƒx[ƒXƒAƒhƒŒƒXƒZƒbƒg
-	// “]‘—æƒoƒbƒtƒ@(DIB)‚Íã‰º‚ª”½“]‚µ‚Ä‚¢‚é‚Ì‚É’ˆÓ((nDestHeight-1-nStartY)‚ÌŠ)
+	// è»¢é€å…ˆãƒãƒƒãƒ•ã‚¡ã¨ã‚¹ã‚­ãƒ£ãƒ³ãƒ‡ãƒ¼ã‚¿ã®ãƒ™ãƒ¼ã‚¹ã‚¢ãƒ‰ãƒ¬ã‚¹ã‚»ãƒƒãƒˆ
+	// è»¢é€å…ˆãƒãƒƒãƒ•ã‚¡(DIB)ã¯ä¸Šä¸‹ãŒåè»¢ã—ã¦ã„ã‚‹ã®ã«æ³¨æ„((nDestHeight-1-nStartY)ã®æ‰€)
 	p = (char *)lpDest + ((nDestHeight-1-nStartY)*nDestWByte);
 	dwDest = (DWORD_PTR)p;
 	dwScanData = (DWORD_PTR)scanData + (DWORD_PTR)(nStartY*sizeof(SCANDATA));
 
-	//	“§–¾İ’è‚ğ”»’è
+	//	é€æ˜è¨­å®šã‚’åˆ¤å®š
 	//
 	if ( lpPolyData->alpha != 0x100 ) {
 		alphaop = lpPolyData->alpha>>8;
@@ -479,40 +479,40 @@ void DrawPolygonTex( POLY4 *lpPolyData )
 	if ( lpPolyData->attr & NODE_ATTR_COLKEY ) goto p4trans;
 
 	//
-	//	“§–¾F‚È‚µ•`‰æ
+	//	é€æ˜è‰²ãªã—æç”»
 	//
 	//
-	// nStartY ‚©‚ç nEndY ‚Ü‚Åã‚©‚ç‡‚É•`‰æ
+	// nStartY ã‹ã‚‰ nEndY ã¾ã§ä¸Šã‹ã‚‰é †ã«æç”»
 	for(y = nStartY; y < nEndY; y++){
 	
-	// ƒGƒbƒW‚Ì(“]‘—æ‰æ‘œ(dwDest)ã‚Å‚Ì)À•WƒZƒbƒg
+	// ã‚¨ãƒƒã‚¸ã®(è»¢é€å…ˆç”»åƒ(dwDest)ä¸Šã§ã®)åº§æ¨™ã‚»ãƒƒãƒˆ
 	minX = *(LPLONG)(dwScanData);
 	maxX = *(LPLONG)(dwScanData+4);
 
 	if(maxX >= 0){
 	
-	// ƒeƒNƒXƒ`ƒƒÀ•WŒvZ—p•Ï”(16 bit ŒÅ’è­”)
+	// ãƒ†ã‚¯ã‚¹ãƒãƒ£åº§æ¨™è¨ˆç®—ç”¨å¤‰æ•°(16 bit å›ºå®šå°‘æ•°)
 	
 	tx = *(LPLONG)(dwScanData+8);
 	ty = *(LPLONG)(dwScanData+12);
 	tx <<= 16; 
 	ty <<= 16;
 	
-	// •`‰æÀ•W‚Å x  ‚ª 1 ‘‰Á‚µ‚½‚ÌƒeƒNƒXƒ`ƒƒÀ•W‚Å‚Ì
-	// x ‚Æ y ‚Ì•ÏˆÊ‚ğŒvZ
+	// æç”»åº§æ¨™ã§ x  ãŒ 1 å¢—åŠ ã—ãŸæ™‚ã®ãƒ†ã‚¯ã‚¹ãƒãƒ£åº§æ¨™ã§ã®
+	// x ã¨ y ã®å¤‰ä½ã‚’è¨ˆç®—
 	if(maxX != minX){ 
 	
-	i2 = 0x10000 / (maxX-minX); // DWORD_PTR -> WORD •ÏŠ·
+	i2 = 0x10000 / (maxX-minX); // DWORD_PTR -> WORD å¤‰æ›
 	tdx = ((*(LPLONG)(dwScanData+16)-*(LPLONG)(dwScanData+8)))*i2;
 	tdy = ((*(LPLONG)(dwScanData+20)-*(LPLONG)(dwScanData+12)))*i2;
 
 	}
-	else { // ˆê“_‚Ì
+	else { // ä¸€ç‚¹ã®æ™‚
 	tdx = 0;
 	tdy = 0;
 	}
 	
-	// ¶‘¤ƒGƒbƒW(minX)‚ª 0 ‚æ‚è¬‚³‚¢‚È‚ç 0 ‚É‚È‚é‚Ü‚Å‰ñ‚·
+	// å·¦å´ã‚¨ãƒƒã‚¸(minX)ãŒ 0 ã‚ˆã‚Šå°ã•ã„ãªã‚‰ 0 ã«ãªã‚‹ã¾ã§å›ã™
 
 	while(minX < 0){
 	minX++;
@@ -520,32 +520,32 @@ void DrawPolygonTex( POLY4 *lpPolyData )
 	ty += tdy;
 	}
 	
-	// ¶‚©‚ç‰E‚É‰¡‚É•`‰æ‚µ‚Ä‚¢‚­
+	// å·¦ã‹ã‚‰å³ã«æ¨ªã«æç”»ã—ã¦ã„ã
 	maxX = min(nDestWidth,maxX);
 	p = (char *)(dwDest) + minX*3;
 	for(x = minX; x < maxX; x++){
 	
-	// ƒeƒNƒXƒ`ƒƒƒf[ƒ^‚ğ“Ç‚İ‚Ş“_‚ğŒvZ
+	// ãƒ†ã‚¯ã‚¹ãƒãƒ£ãƒ‡ãƒ¼ã‚¿ã‚’èª­ã¿è¾¼ã‚€ç‚¹ã‚’è¨ˆç®—
 	//dwReadPoint = (DWORD)(nTexHeight-1-(ty>>5))*nTexWidth+(tx>>5);
 	//dwReadPoint = (DWORD)(nTexHeight-1-(ty>>16))*nTexWidth+(tx>>16);
 	//dwReadPoint = (DWORD)((ty>>16))*nTexWByte+((tx>>16)*3);
 //	i2 = ((tx>>16)*3);
 	i2 = ((ty>>16)*nTexWByte)+((tx>>16)*3);
 	
-	// ƒRƒs[
+	// ã‚³ãƒ”ãƒ¼
 	if( i2 < (int)dwTexSize) {
 		srcp = (char *)lpTex + i2;
 		*(short *)p = *(short *)srcp; p+=2; srcp+=2;
 		*p++ = *srcp++;
 	}
 	
-	// ƒeƒNƒXƒ`ƒƒÀ•WˆÚ“®
+	// ãƒ†ã‚¯ã‚¹ãƒãƒ£åº§æ¨™ç§»å‹•
 	tx += tdx;
 	ty += tdy;
 	}
 	}
 	
-	// ƒoƒbƒtƒ@‚ÆƒXƒLƒƒƒ“ƒf[ƒ^‚Ìƒx[ƒXƒAƒhƒŒƒXXV
+	// ãƒãƒƒãƒ•ã‚¡ã¨ã‚¹ã‚­ãƒ£ãƒ³ãƒ‡ãƒ¼ã‚¿ã®ãƒ™ãƒ¼ã‚¹ã‚¢ãƒ‰ãƒ¬ã‚¹æ›´æ–°
 	dwDest -= nDestWByte;
 	dwScanData += sizeof(SCANDATA);
 	}
@@ -554,40 +554,40 @@ void DrawPolygonTex( POLY4 *lpPolyData )
 
 p4trans:
 	//
-	//	“§–¾F‚ ‚è•`‰æ
+	//	é€æ˜è‰²ã‚ã‚Šæç”»
 	//
 	//
-	// nStartY ‚©‚ç nEndY ‚Ü‚Åã‚©‚ç‡‚É•`‰æ
+	// nStartY ã‹ã‚‰ nEndY ã¾ã§ä¸Šã‹ã‚‰é †ã«æç”»
 	for(y = nStartY; y < nEndY; y++){
 	
-	// ƒGƒbƒW‚Ì(“]‘—æ‰æ‘œ(dwDest)ã‚Å‚Ì)À•WƒZƒbƒg
+	// ã‚¨ãƒƒã‚¸ã®(è»¢é€å…ˆç”»åƒ(dwDest)ä¸Šã§ã®)åº§æ¨™ã‚»ãƒƒãƒˆ
 	minX = *(LPLONG)(dwScanData);
 	maxX = *(LPLONG)(dwScanData+4);
 
 	if(maxX >= 0){
 
-		// ƒeƒNƒXƒ`ƒƒÀ•WŒvZ—p•Ï”(16 bit ŒÅ’è­”)
+		// ãƒ†ã‚¯ã‚¹ãƒãƒ£åº§æ¨™è¨ˆç®—ç”¨å¤‰æ•°(16 bit å›ºå®šå°‘æ•°)
 	
 		tx = *(LPLONG)(dwScanData+8);
 		ty = *(LPLONG)(dwScanData+12);
 		tx <<= 16; 
 		ty <<= 16;
 	
-		// •`‰æÀ•W‚Å x  ‚ª 1 ‘‰Á‚µ‚½‚ÌƒeƒNƒXƒ`ƒƒÀ•W‚Å‚Ì
-		// x ‚Æ y ‚Ì•ÏˆÊ‚ğŒvZ
+		// æç”»åº§æ¨™ã§ x  ãŒ 1 å¢—åŠ ã—ãŸæ™‚ã®ãƒ†ã‚¯ã‚¹ãƒãƒ£åº§æ¨™ã§ã®
+		// x ã¨ y ã®å¤‰ä½ã‚’è¨ˆç®—
 		if(maxX != minX){ 
 	
-			i2 = 0x10000 / (maxX-minX); // DWORD_PTR -> WORD •ÏŠ·
+			i2 = 0x10000 / (maxX-minX); // DWORD_PTR -> WORD å¤‰æ›
 			tdx = ((*(LPLONG)(dwScanData+16)-*(LPLONG)(dwScanData+8)))*i2;
 			tdy = ((*(LPLONG)(dwScanData+20)-*(LPLONG)(dwScanData+12)))*i2;
 
 		}
-		else { // ˆê“_‚Ì
+		else { // ä¸€ç‚¹ã®æ™‚
 			tdx = 0;
 			tdy = 0;
 		}
 	
-		// ¶‘¤ƒGƒbƒW(minX)‚ª 0 ‚æ‚è¬‚³‚¢‚È‚ç 0 ‚É‚È‚é‚Ü‚Å‰ñ‚·
+		// å·¦å´ã‚¨ãƒƒã‚¸(minX)ãŒ 0 ã‚ˆã‚Šå°ã•ã„ãªã‚‰ 0 ã«ãªã‚‹ã¾ã§å›ã™
 
 		while(minX < 0){
 			minX++;
@@ -595,15 +595,15 @@ p4trans:
 			ty += tdy;
 		}
 	
-		// ¶‚©‚ç‰E‚É‰¡‚É•`‰æ‚µ‚Ä‚¢‚­
+		// å·¦ã‹ã‚‰å³ã«æ¨ªã«æç”»ã—ã¦ã„ã
 		maxX = min(nDestWidth,maxX);
 		p = (char *)(dwDest + minX*3);
 		for(x = minX; x < maxX; x++) {
 
-			// ƒeƒNƒXƒ`ƒƒƒf[ƒ^‚ğ“Ç‚İ‚Ş“_‚ğŒvZ
+			// ãƒ†ã‚¯ã‚¹ãƒãƒ£ãƒ‡ãƒ¼ã‚¿ã‚’èª­ã¿è¾¼ã‚€ç‚¹ã‚’è¨ˆç®—
 			i2 = ((ty>>16)*nTexWByte)+((tx>>16)*3);
 	
-			// ƒRƒs[
+			// ã‚³ãƒ”ãƒ¼
 			if( i2 < (int)dwTexSize) {
 				srcp = (char *)lpTex + i2;
 				d1=*srcp++;
@@ -617,13 +617,13 @@ p4trans:
 				p+=3;
 			}
 		
-			// ƒeƒNƒXƒ`ƒƒÀ•WˆÚ“®
+			// ãƒ†ã‚¯ã‚¹ãƒãƒ£åº§æ¨™ç§»å‹•
 			tx += tdx;
 			ty += tdy;
 		}
 	}
 	
-	// ƒoƒbƒtƒ@‚ÆƒXƒLƒƒƒ“ƒf[ƒ^‚Ìƒx[ƒXƒAƒhƒŒƒXXV
+	// ãƒãƒƒãƒ•ã‚¡ã¨ã‚¹ã‚­ãƒ£ãƒ³ãƒ‡ãƒ¼ã‚¿ã®ãƒ™ãƒ¼ã‚¹ã‚¢ãƒ‰ãƒ¬ã‚¹æ›´æ–°
 	dwDest -= nDestWByte;
 	dwScanData += sizeof(SCANDATA);
 	}
@@ -631,7 +631,7 @@ p4trans:
 
 p4_blend:
 	//
-	//	•`‰æ(BLEND)
+	//	æç”»(BLEND)
 	//
 	//
 	if ( lpPolyData->attr & NODE_ATTR_COLKEY ) goto p4_tblend;
@@ -646,7 +646,7 @@ p4_blend:
 		tx <<= 16; 
 		ty <<= 16;
 		if(maxX != minX){ 
-			i2 = 0x10000 / (maxX-minX); // DWORD_PTR -> WORD •ÏŠ·
+			i2 = 0x10000 / (maxX-minX); // DWORD_PTR -> WORD å¤‰æ›
 			tdx = ((*(LPLONG)(dwScanData+16)-*(LPLONG)(dwScanData+8)))*i2;
 			tdy = ((*(LPLONG)(dwScanData+20)-*(LPLONG)(dwScanData+12)))*i2;
 		}
@@ -681,7 +681,7 @@ p4_blend:
 
 p4_tblend:
 	//
-	//	“§–¾F‚ ‚è•`‰æ(BLEND)
+	//	é€æ˜è‰²ã‚ã‚Šæç”»(BLEND)
 	//
 	//
 	ialpha = 0x100 - alpha;
@@ -694,7 +694,7 @@ p4_tblend:
 		tx <<= 16; 
 		ty <<= 16;
 		if(maxX != minX){ 
-			i2 = 0x10000 / (maxX-minX); // DWORD_PTR -> WORD •ÏŠ·
+			i2 = 0x10000 / (maxX-minX); // DWORD_PTR -> WORD å¤‰æ›
 			tdx = ((*(LPLONG)(dwScanData+16)-*(LPLONG)(dwScanData+8)))*i2;
 			tdy = ((*(LPLONG)(dwScanData+20)-*(LPLONG)(dwScanData+12)))*i2;
 		}
@@ -733,7 +733,7 @@ p4_tblend:
 
 p4_modulate:
 	//
-	//	•`‰æ(MODULATE)
+	//	æç”»(MODULATE)
 	//
 	//
 	for(y = nStartY; y < nEndY; y++){
@@ -745,7 +745,7 @@ p4_modulate:
 		tx <<= 16; 
 		ty <<= 16;
 		if(maxX != minX){ 
-			i2 = 0x10000 / (maxX-minX); // DWORD_PTR -> WORD •ÏŠ·
+			i2 = 0x10000 / (maxX-minX); // DWORD_PTR -> WORD å¤‰æ›
 			tdx = ((*(LPLONG)(dwScanData+16)-*(LPLONG)(dwScanData+8)))*i2;
 			tdy = ((*(LPLONG)(dwScanData+20)-*(LPLONG)(dwScanData+12)))*i2;
 		}
@@ -783,7 +783,7 @@ p4_modulate:
 
 p4_substract:
 	//
-	//	•`‰æ(MODULATE)
+	//	æç”»(MODULATE)
 	//
 	//
 	for(y = nStartY; y < nEndY; y++){
@@ -795,7 +795,7 @@ p4_substract:
 		tx <<= 16; 
 		ty <<= 16;
 		if(maxX != minX){ 
-			i2 = 0x10000 / (maxX-minX); // DWORD_PTR -> WORD •ÏŠ·
+			i2 = 0x10000 / (maxX-minX); // DWORD_PTR -> WORD å¤‰æ›
 			tdx = ((*(LPLONG)(dwScanData+16)-*(LPLONG)(dwScanData+8)))*i2;
 			tdy = ((*(LPLONG)(dwScanData+20)-*(LPLONG)(dwScanData+12)))*i2;
 		}
@@ -841,23 +841,23 @@ p4_substract:
 
 void DrawPolygonF4P( POLY4 *lpPolyData )
 {
-	int x,y; // ƒ‹[ƒv—p
-	int nStartY,nEndY; // •`‰æŠJn‚ğŠJn‚·‚é Y À•WAI—¹À•W
-	int maxX,minX;  // ƒGƒbƒWÀ•W‚ÌÅ‘åÅ¬’l
+	int x,y; // ãƒ«ãƒ¼ãƒ—ç”¨
+	int nStartY,nEndY; // æç”»é–‹å§‹ã‚’é–‹å§‹ã™ã‚‹ Y åº§æ¨™ã€çµ‚äº†åº§æ¨™
+	int maxX,minX;  // ã‚¨ãƒƒã‚¸åº§æ¨™ã®æœ€å¤§æœ€å°å€¤
 //	char *p;
 	unsigned char color1;
 
-	DWORD_PTR dwScanData,dwDest; // ƒGƒbƒW‚ÌÀ•Wƒf[ƒ^‚Æ“]‘—æ‚Ìƒx[ƒXƒAƒhƒŒƒX
+	DWORD_PTR dwScanData,dwDest; // ã‚¨ãƒƒã‚¸ã®åº§æ¨™ãƒ‡ãƒ¼ã‚¿ã¨è»¢é€å…ˆã®ãƒ™ãƒ¼ã‚¹ã‚¢ãƒ‰ãƒ¬ã‚¹
 //	int x0,x1,x2,y0,y1,y2;
 
 //	short alpha,alphaop,ialpha;
 //	short cc1,cc2,cc3,a1,a2,a3;
 	unsigned char *up;
 
-	// ƒGƒbƒW‚ÌÀ•W‚ÌƒXƒLƒƒƒ“
+	// ã‚¨ãƒƒã‚¸ã®åº§æ¨™ã®ã‚¹ã‚­ãƒ£ãƒ³
 	ScanLine(lpPolyData, nDestWidth,nDestHeight,&nStartY,&nEndY);
 	
-	// ”ÍˆÍŠO‚È‚ç•`‰æ‚µ‚È‚¢
+	// ç¯„å›²å¤–ãªã‚‰æç”»ã—ãªã„
 	if(nStartY >= nDestHeight || nEndY < 0) { resY0 = resY1 = -1; return; }
 
 	resY0 = nStartY;
@@ -866,33 +866,33 @@ void DrawPolygonF4P( POLY4 *lpPolyData )
 	// Fill Color
 	color1 = (unsigned char)( lpPolyData->color & 0xff );
 
-	// “]‘—æƒoƒbƒtƒ@‚ÆƒXƒLƒƒƒ“ƒf[ƒ^‚Ìƒx[ƒXƒAƒhƒŒƒXƒZƒbƒg
-	// “]‘—æƒoƒbƒtƒ@(DIB)‚Íã‰º‚ª”½“]‚µ‚Ä‚¢‚é‚Ì‚É’ˆÓ((nDestHeight-1-nStartY)‚ÌŠ)
+	// è»¢é€å…ˆãƒãƒƒãƒ•ã‚¡ã¨ã‚¹ã‚­ãƒ£ãƒ³ãƒ‡ãƒ¼ã‚¿ã®ãƒ™ãƒ¼ã‚¹ã‚¢ãƒ‰ãƒ¬ã‚¹ã‚»ãƒƒãƒˆ
+	// è»¢é€å…ˆãƒãƒƒãƒ•ã‚¡(DIB)ã¯ä¸Šä¸‹ãŒåè»¢ã—ã¦ã„ã‚‹ã®ã«æ³¨æ„((nDestHeight-1-nStartY)ã®æ‰€)
 
 	dwDest = (DWORD_PTR)lpDest + (DWORD_PTR)((nDestHeight-1-nStartY)*nDestWidth2);
 	dwScanData = (DWORD_PTR)scanData + (DWORD_PTR)(nStartY*sizeof(SCANDATA));
 
-	// nStartY ‚©‚ç nEndY ‚Ü‚Åã‚©‚ç‡‚É•`‰æ
+	// nStartY ã‹ã‚‰ nEndY ã¾ã§ä¸Šã‹ã‚‰é †ã«æç”»
 	for(y = nStartY; y < nEndY; y++){
 	
-		// ƒGƒbƒW‚Ì(“]‘—æ‰æ‘œ(dwDest)ã‚Å‚Ì)À•WƒZƒbƒg
+		// ã‚¨ãƒƒã‚¸ã®(è»¢é€å…ˆç”»åƒ(dwDest)ä¸Šã§ã®)åº§æ¨™ã‚»ãƒƒãƒˆ
 		minX = *(int *)(dwScanData);
 		maxX = *(int *)(dwScanData+4);
 
 		if(minX < 0) minX = 0;
 		if(maxX >= 0){
 
-			// ¶‚©‚ç‰E‚É‰¡‚É•`‰æ‚µ‚Ä‚¢‚­
+			// å·¦ã‹ã‚‰å³ã«æ¨ªã«æç”»ã—ã¦ã„ã
 			maxX = min(nDestWidth,maxX);
 			up = (unsigned char *)dwDest + minX;
 			for(x = minX; x < maxX; x++){
 	
-			// ƒRƒs[
+			// ã‚³ãƒ”ãƒ¼
 			*up++ = color1;
 	
 			}
 		}
-		// ƒoƒbƒtƒ@‚ÆƒXƒLƒƒƒ“ƒf[ƒ^‚Ìƒx[ƒXƒAƒhƒŒƒXXV
+		// ãƒãƒƒãƒ•ã‚¡ã¨ã‚¹ã‚­ãƒ£ãƒ³ãƒ‡ãƒ¼ã‚¿ã®ãƒ™ãƒ¼ã‚¹ã‚¢ãƒ‰ãƒ¬ã‚¹æ›´æ–°
 		dwDest -= nDestWidth2;
 		dwScanData += sizeof(SCANDATA);
 	}
@@ -901,71 +901,71 @@ void DrawPolygonF4P( POLY4 *lpPolyData )
 
 void DrawPolygonTexP( POLY4 *lpPolyData )
 {
-	int i2,x,y; // ƒ‹[ƒv—p
-	int nStartY,nEndY; // •`‰æŠJn‚ğŠJn‚·‚é Y À•WAI—¹À•W
-	int maxX,minX;  // ƒGƒbƒWÀ•W‚ÌÅ‘åÅ¬’l
+	int i2,x,y; // ãƒ«ãƒ¼ãƒ—ç”¨
+	int nStartY,nEndY; // æç”»é–‹å§‹ã‚’é–‹å§‹ã™ã‚‹ Y åº§æ¨™ã€çµ‚äº†åº§æ¨™
+	int maxX,minX;  // ã‚¨ãƒƒã‚¸åº§æ¨™ã®æœ€å¤§æœ€å°å€¤
 	char *p;
 	char d1;
 	DWORD_PTR tx,ty,tdx,tdy; 
 
-	DWORD_PTR dwTexSize; // ƒeƒNƒXƒ`ƒƒ‚ÌƒTƒCƒY
-	DWORD_PTR dwScanData,dwDest; // ƒGƒbƒW‚ÌÀ•Wƒf[ƒ^‚Æ“]‘—æ‚Ìƒx[ƒXƒAƒhƒŒƒX
+	DWORD_PTR dwTexSize; // ãƒ†ã‚¯ã‚¹ãƒãƒ£ã®ã‚µã‚¤ã‚º
+	DWORD_PTR dwScanData,dwDest; // ã‚¨ãƒƒã‚¸ã®åº§æ¨™ãƒ‡ãƒ¼ã‚¿ã¨è»¢é€å…ˆã®ãƒ™ãƒ¼ã‚¹ã‚¢ãƒ‰ãƒ¬ã‚¹
 
-	// ƒGƒbƒW‚ÌÀ•W‚ÌƒXƒLƒƒƒ“
+	// ã‚¨ãƒƒã‚¸ã®åº§æ¨™ã®ã‚¹ã‚­ãƒ£ãƒ³
 	dwTexSize = (DWORD_PTR)(nTexHeight*nTexWidth);
 	ScanLine( lpPolyData, nDestWidth, nDestHeight, &nStartY, &nEndY );
 	
-	// ”ÍˆÍŠO‚È‚ç•`‰æ‚µ‚È‚¢
+	// ç¯„å›²å¤–ãªã‚‰æç”»ã—ãªã„
 	if(nStartY >= nDestHeight || nEndY < 0) { resY0 = resY1 = -1; return; }
 
 	resY0 = nStartY;
 	resY1 = nEndY;
 
-	// “]‘—æƒoƒbƒtƒ@‚ÆƒXƒLƒƒƒ“ƒf[ƒ^‚Ìƒx[ƒXƒAƒhƒŒƒXƒZƒbƒg
-	// “]‘—æƒoƒbƒtƒ@(DIB)‚Íã‰º‚ª”½“]‚µ‚Ä‚¢‚é‚Ì‚É’ˆÓ((nDestHeight-1-nStartY)‚ÌŠ)
+	// è»¢é€å…ˆãƒãƒƒãƒ•ã‚¡ã¨ã‚¹ã‚­ãƒ£ãƒ³ãƒ‡ãƒ¼ã‚¿ã®ãƒ™ãƒ¼ã‚¹ã‚¢ãƒ‰ãƒ¬ã‚¹ã‚»ãƒƒãƒˆ
+	// è»¢é€å…ˆãƒãƒƒãƒ•ã‚¡(DIB)ã¯ä¸Šä¸‹ãŒåè»¢ã—ã¦ã„ã‚‹ã®ã«æ³¨æ„((nDestHeight-1-nStartY)ã®æ‰€)
 	p = (char *)lpDest + ((nDestHeight-1-nStartY)*nDestWidth2);
 	dwDest = (DWORD_PTR)p;
 	dwScanData = (DWORD_PTR)scanData + (DWORD_PTR)(nStartY*sizeof(SCANDATA));
 
-	//	“§–¾İ’è‚ğ”»’è
+	//	é€æ˜è¨­å®šã‚’åˆ¤å®š
 	//
 	if ( lpPolyData->attr & NODE_ATTR_COLKEY ) goto p4transp;
 
 	//
-	//	“§–¾F‚È‚µ•`‰æ
+	//	é€æ˜è‰²ãªã—æç”»
 	//
 	//
-	// nStartY ‚©‚ç nEndY ‚Ü‚Åã‚©‚ç‡‚É•`‰æ
+	// nStartY ã‹ã‚‰ nEndY ã¾ã§ä¸Šã‹ã‚‰é †ã«æç”»
 	for(y = nStartY; y < nEndY; y++){
 	
-	// ƒGƒbƒW‚Ì(“]‘—æ‰æ‘œ(dwDest)ã‚Å‚Ì)À•WƒZƒbƒg
+	// ã‚¨ãƒƒã‚¸ã®(è»¢é€å…ˆç”»åƒ(dwDest)ä¸Šã§ã®)åº§æ¨™ã‚»ãƒƒãƒˆ
 	minX = *(LPLONG)(dwScanData);
 	maxX = *(LPLONG)(dwScanData+4);
 
 	if(maxX >= 0){
 	
-	// ƒeƒNƒXƒ`ƒƒÀ•WŒvZ—p•Ï”(16 bit ŒÅ’è­”)
+	// ãƒ†ã‚¯ã‚¹ãƒãƒ£åº§æ¨™è¨ˆç®—ç”¨å¤‰æ•°(16 bit å›ºå®šå°‘æ•°)
 	
 	tx = *(LPLONG)(dwScanData+8);
 	ty = *(LPLONG)(dwScanData+12);
 	tx <<= 16; 
 	ty <<= 16;
 	
-	// •`‰æÀ•W‚Å x  ‚ª 1 ‘‰Á‚µ‚½‚ÌƒeƒNƒXƒ`ƒƒÀ•W‚Å‚Ì
-	// x ‚Æ y ‚Ì•ÏˆÊ‚ğŒvZ
+	// æç”»åº§æ¨™ã§ x  ãŒ 1 å¢—åŠ ã—ãŸæ™‚ã®ãƒ†ã‚¯ã‚¹ãƒãƒ£åº§æ¨™ã§ã®
+	// x ã¨ y ã®å¤‰ä½ã‚’è¨ˆç®—
 	if(maxX != minX){ 
 	
-	i2 = 0x10000 / (maxX-minX); // DWORD_PTR -> WORD •ÏŠ·
+	i2 = 0x10000 / (maxX-minX); // DWORD_PTR -> WORD å¤‰æ›
 	tdx = ((*(LPLONG)(dwScanData+16)-*(LPLONG)(dwScanData+8)))*i2;
 	tdy = ((*(LPLONG)(dwScanData+20)-*(LPLONG)(dwScanData+12)))*i2;
 
 	}
-	else { // ˆê“_‚Ì
+	else { // ä¸€ç‚¹ã®æ™‚
 	tdx = 0;
 	tdy = 0;
 	}
 	
-	// ¶‘¤ƒGƒbƒW(minX)‚ª 0 ‚æ‚è¬‚³‚¢‚È‚ç 0 ‚É‚È‚é‚Ü‚Å‰ñ‚·
+	// å·¦å´ã‚¨ãƒƒã‚¸(minX)ãŒ 0 ã‚ˆã‚Šå°ã•ã„ãªã‚‰ 0 ã«ãªã‚‹ã¾ã§å›ã™
 
 	while(minX < 0){
 	minX++;
@@ -973,26 +973,26 @@ void DrawPolygonTexP( POLY4 *lpPolyData )
 	ty += tdy;
 	}
 	
-	// ¶‚©‚ç‰E‚É‰¡‚É•`‰æ‚µ‚Ä‚¢‚­
+	// å·¦ã‹ã‚‰å³ã«æ¨ªã«æç”»ã—ã¦ã„ã
 	maxX = min(nDestWidth,maxX);
 	p = (char *)(dwDest) + minX;
 	for(x = minX; x < maxX; x++){
 	
-	// ƒeƒNƒXƒ`ƒƒƒf[ƒ^‚ğ“Ç‚İ‚Ş“_‚ğŒvZ
+	// ãƒ†ã‚¯ã‚¹ãƒãƒ£ãƒ‡ãƒ¼ã‚¿ã‚’èª­ã¿è¾¼ã‚€ç‚¹ã‚’è¨ˆç®—
 	i2 = ((ty>>16)*nTexWidth)+(tx>>16);
 	
-	// ƒRƒs[
+	// ã‚³ãƒ”ãƒ¼
 	if( i2 < (int)dwTexSize) {
 		*p++ = lpTex[i2];
 	}
 	
-	// ƒeƒNƒXƒ`ƒƒÀ•WˆÚ“®
+	// ãƒ†ã‚¯ã‚¹ãƒãƒ£åº§æ¨™ç§»å‹•
 	tx += tdx;
 	ty += tdy;
 	}
 	}
 	
-	// ƒoƒbƒtƒ@‚ÆƒXƒLƒƒƒ“ƒf[ƒ^‚Ìƒx[ƒXƒAƒhƒŒƒXXV
+	// ãƒãƒƒãƒ•ã‚¡ã¨ã‚¹ã‚­ãƒ£ãƒ³ãƒ‡ãƒ¼ã‚¿ã®ãƒ™ãƒ¼ã‚¹ã‚¢ãƒ‰ãƒ¬ã‚¹æ›´æ–°
 	dwDest -= nDestWidth2;
 	dwScanData += sizeof(SCANDATA);
 	}
@@ -1001,40 +1001,40 @@ void DrawPolygonTexP( POLY4 *lpPolyData )
 
 p4transp:
 	//
-	//	“§–¾F‚ ‚è•`‰æ
+	//	é€æ˜è‰²ã‚ã‚Šæç”»
 	//
 	//
-	// nStartY ‚©‚ç nEndY ‚Ü‚Åã‚©‚ç‡‚É•`‰æ
+	// nStartY ã‹ã‚‰ nEndY ã¾ã§ä¸Šã‹ã‚‰é †ã«æç”»
 	for(y = nStartY; y < nEndY; y++){
 	
-	// ƒGƒbƒW‚Ì(“]‘—æ‰æ‘œ(dwDest)ã‚Å‚Ì)À•WƒZƒbƒg
+	// ã‚¨ãƒƒã‚¸ã®(è»¢é€å…ˆç”»åƒ(dwDest)ä¸Šã§ã®)åº§æ¨™ã‚»ãƒƒãƒˆ
 	minX = *(LPLONG)(dwScanData);
 	maxX = *(LPLONG)(dwScanData+4);
 
 	if(maxX >= 0){
 
-		// ƒeƒNƒXƒ`ƒƒÀ•WŒvZ—p•Ï”(16 bit ŒÅ’è­”)
+		// ãƒ†ã‚¯ã‚¹ãƒãƒ£åº§æ¨™è¨ˆç®—ç”¨å¤‰æ•°(16 bit å›ºå®šå°‘æ•°)
 	
 		tx = *(LPLONG)(dwScanData+8);
 		ty = *(LPLONG)(dwScanData+12);
 		tx <<= 16; 
 		ty <<= 16;
 	
-		// •`‰æÀ•W‚Å x  ‚ª 1 ‘‰Á‚µ‚½‚ÌƒeƒNƒXƒ`ƒƒÀ•W‚Å‚Ì
-		// x ‚Æ y ‚Ì•ÏˆÊ‚ğŒvZ
+		// æç”»åº§æ¨™ã§ x  ãŒ 1 å¢—åŠ ã—ãŸæ™‚ã®ãƒ†ã‚¯ã‚¹ãƒãƒ£åº§æ¨™ã§ã®
+		// x ã¨ y ã®å¤‰ä½ã‚’è¨ˆç®—
 		if(maxX != minX){ 
 	
-			i2 = 0x10000 / (maxX-minX); // DWORD_PTR -> WORD •ÏŠ·
+			i2 = 0x10000 / (maxX-minX); // DWORD_PTR -> WORD å¤‰æ›
 			tdx = ((*(LPLONG)(dwScanData+16)-*(LPLONG)(dwScanData+8)))*i2;
 			tdy = ((*(LPLONG)(dwScanData+20)-*(LPLONG)(dwScanData+12)))*i2;
 
 		}
-		else { // ˆê“_‚Ì
+		else { // ä¸€ç‚¹ã®æ™‚
 			tdx = 0;
 			tdy = 0;
 		}
 	
-		// ¶‘¤ƒGƒbƒW(minX)‚ª 0 ‚æ‚è¬‚³‚¢‚È‚ç 0 ‚É‚È‚é‚Ü‚Å‰ñ‚·
+		// å·¦å´ã‚¨ãƒƒã‚¸(minX)ãŒ 0 ã‚ˆã‚Šå°ã•ã„ãªã‚‰ 0 ã«ãªã‚‹ã¾ã§å›ã™
 
 		while(minX < 0){
 			minX++;
@@ -1042,28 +1042,28 @@ p4transp:
 			ty += tdy;
 		}
 	
-		// ¶‚©‚ç‰E‚É‰¡‚É•`‰æ‚µ‚Ä‚¢‚­
+		// å·¦ã‹ã‚‰å³ã«æ¨ªã«æç”»ã—ã¦ã„ã
 		maxX = min(nDestWidth,maxX);
 		p = (char *)(dwDest + minX);
 		for(x = minX; x < maxX; x++) {
 
-			// ƒeƒNƒXƒ`ƒƒƒf[ƒ^‚ğ“Ç‚İ‚Ş“_‚ğŒvZ
+			// ãƒ†ã‚¯ã‚¹ãƒãƒ£ãƒ‡ãƒ¼ã‚¿ã‚’èª­ã¿è¾¼ã‚€ç‚¹ã‚’è¨ˆç®—
 			i2 = ((ty>>16)*nTexWidth)+(tx>>16);
 	
-			// ƒRƒs[
+			// ã‚³ãƒ”ãƒ¼
 			if( i2 < (int)dwTexSize) {
 				d1 = lpTex[i2];
 				if ( d1 ) *p=d1;
 				p++;
 			}
 		
-			// ƒeƒNƒXƒ`ƒƒÀ•WˆÚ“®
+			// ãƒ†ã‚¯ã‚¹ãƒãƒ£åº§æ¨™ç§»å‹•
 			tx += tdx;
 			ty += tdy;
 		}
 	}
 	
-	// ƒoƒbƒtƒ@‚ÆƒXƒLƒƒƒ“ƒf[ƒ^‚Ìƒx[ƒXƒAƒhƒŒƒXXV
+	// ãƒãƒƒãƒ•ã‚¡ã¨ã‚¹ã‚­ãƒ£ãƒ³ãƒ‡ãƒ¼ã‚¿ã®ãƒ™ãƒ¼ã‚¹ã‚¢ãƒ‰ãƒ¬ã‚¹æ›´æ–°
 	dwDest -= nDestWidth2;
 	dwScanData += sizeof(SCANDATA);
 	}
@@ -1079,8 +1079,8 @@ p4transp:
 
 /*
 	rev 43
-	mingw : error : éŒ¾‚ÆCü‚ªˆÙ‚È‚é
-	‚É‘Îˆ
+	mingw : error : å®£è¨€ã¨ä¿®é£¾ãŒç•°ãªã‚‹
+	ã«å¯¾å‡¦
 */
 
 void TexInit( void )

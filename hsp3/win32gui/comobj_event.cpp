@@ -5,50 +5,50 @@
 /*------------------------------------------------------------*/
 /*
     (for HSP 3.0)
-    COM �I�u�W�F�N�g�̃C�x���g�n���h���I�u�W�F�N�g
+    COM オブジェクトのイベントハンドラオブジェクト
 
-    COM �I�u�W�F�N�g�̃C�x���g���󂯎��I�u�W�F�N�g�ł��B
+    COM オブジェクトのイベントを受け取るオブジェクトです。
 
-    �C�x���g�n���h���I�u�W�F�N�g�́A�C�x���g�擾�ɕK�v�ƂȂ�
-    IDispatch �C���^�[�t�F�[�X��񋟂��܂��B
+    イベントハンドラオブジェクトは、イベント取得に必要となる
+    IDispatch インターフェースを提供します。
 
-    �C�x���g�n���h���C���^�[�t�F�[�X�|�C���^ (IID_IEventHandler)
-    �̃����o�֐��͈ȉ��̒ʂ�B
+    イベントハンドラインターフェースポインタ (IID_IEventHandler)
+    のメンバ関数は以下の通り。
 
     HRESULT IEventHandler::Set(IUnknown *pObj, IID* iid, USHORT* callback);
     void    IEventHandler::Reset();
     void    IEventHandler::IncInnerRef();
     void    IEventHandler::DecInnerRef();
 
-      Set() �̓C�x���g�n���h���̐ݒ��ύX���܂��B�ȑO�̐ݒ��
-      �㏑������܂��B
+      Set() はイベントハンドラの設定を変更します。以前の設定は
+      上書きされます。
 
-      Reset() �͊����̃n���h���ݒ���������܂��B
+      Reset() は既存のハンドラ設定を解除します。
 
-      IncInnerRef(), DecInnerRef() ��HSP��COM�^�ϐ�����̎Q��
-      �J�E���g���Ǘ����邽�ߎg�p����܂��B
+      IncInnerRef(), DecInnerRef() はHSPのCOM型変数からの参照
+      カウントを管理するため使用されます。
 
-    �֐�
+    関数
 
     DISPID GetEventDispID( void* iptr );
 
-      �C�x���g���荞�ݏ������ɁA�w�肳�ꂽ�I�u�W�F�N�g����ʒm
-      ���ꂽ�C�x���g�� DISPID ���擾���܂��B���d���荞�ݏ�����
-      �� iptr �� NULL ���w�肵���ꍇ�ɂ́A�����Ƃ��V�����C�x��
-      �g�𔭐��������I�u�W�F�N�g���ΏۂɂȂ�܂��B
+      イベント割り込み処理中に、指定されたオブジェクトから通知
+      されたイベントの DISPID を取得します。多重割り込み処理中
+      に iptr に NULL を指定した場合には、もっとも新しいイベン
+      トを発生させたオブジェクトが対象になります。
 
     VARIANT* GetEventArg( void* iptr, int idx );
 
-      �C�x���g���荞�ݏ������ɁA�w�肳�ꂽ�I�u�W�F�N�g����ʒm
-      ���ꂽ�C�x���g�̎w��C���f�b�N�X�̈�����\��  VARIANT �\
-      ���̂ւ̃|�C���^��Ԃ��܂��B���d���荞�ݏ������� iptr ��
-      NULL  ���w�肵���ꍇ�ɂ́A�����Ƃ��V�����C�x���g�𔭐���
-      �����I�u�W�F�N�g���ΏۂɂȂ�܂��B
+      イベント割り込み処理中に、指定されたオブジェクトから通知
+      されたイベントの指定インデックスの引数を表す  VARIANT 構
+      造体へのポインタを返します。多重割り込み処理中に iptr に
+      NULL  を指定した場合には、もっとも新しいイベントを発生さ
+      せたオブジェクトが対象になります。
 
 */
 
 
-#ifndef HSP_COM_UNSUPPORTED		//�iCOM �T�|�[�g�Ȃ��ł̃r���h���̓t�@�C���S�̂𖳎��j
+#ifndef HSP_COM_UNSUPPORTED		//（COM サポートなし版のビルド時はファイル全体を無視）
 
 
 #define WIN32_LEAN_AND_MEAN		// Exclude rarely-used stuff from Windows headers
@@ -61,8 +61,8 @@
 
 /*
 	rev 43
-	mingw : error : GUIDKIND_DEFAULT_SOURCE_DISP_IID������`
-	�ɑΏ�
+	mingw : error : GUIDKIND_DEFAULT_SOURCE_DISP_IIDが未定義
+	に対処
 */
 #if defined( __GNUC__ )
 #include <olectl.h>
@@ -75,7 +75,7 @@
 
 #ifdef HSP_COMEVENT_DEBUG
 /* for Debug */
-/* GUID �𕶎���`���ɕϊ� */
+/* GUID を文字列形式に変換 */
 static int sprintGuid( char *szguid, REFGUID rguid )
 {
 	if ( rguid == IID_IUnknown  ) return sprintf( szguid, "IID_IUnknown" );
@@ -92,7 +92,7 @@ static DWORD g_dwThreadId;
 
 #endif	// HSP_COMEVENT_DEBUG
 
-// IID_IEventHandler �̎���
+// IID_IEventHandler の実体
 IID IID_IEventHandler = {
 	0x4c7f4354, 0x8a07, 0x4d51, {0xb9, 0xf0, 0x47, 0xba, 0x5c, 0xbe, 0xfe, 0xd7}
 };
@@ -103,17 +103,17 @@ struct ComEventData;
 
 /*
 	rev 43
-	mingw : warning : ComEventHandler �̃f�X�g���N�^�����z�łȂ��B
-	���Ȃ��̂��H�킩��܂���B(naznyark)
+	mingw : warning : ComEventHandler のデストラクタが仮想でない。
+	問題ないのか？わかりません。(naznyark)
 */
 class ComEventHandler : public IEventHandler {
-	ULONG m_ref;				// �C�x���g�I�u�W�F�N�g�Q�ƃJ�E���^
-	int m_refInner;				// HSP COM�I�u�W�F�N�g�ϐ�����̎Q�ƃJ�E���^
-	IUnknown* m_punkObj;		// �I�u�W�F�N�g��IUnknown�C���^�[�t�F�[�X�|�C���^
-	IConnectionPoint* m_pCP;	// IConnectionPoint �C���^�[�t�F�[�X�|�C���^
-	DWORD m_cookie;				// Cookie �l( Advise() ���Ԃ����)
-	IID m_CPGuid;				// �R�l�N�V�����|�C���gIID
-	unsigned short* m_callback;	// HSP�T�u���[�`��(�R�[���o�b�N�p)
+	ULONG m_ref;				// イベントオブジェクト参照カウンタ
+	int m_refInner;				// HSP COMオブジェクト変数からの参照カウンタ
+	IUnknown* m_punkObj;		// オブジェクトのIUnknownインターフェースポインタ
+	IConnectionPoint* m_pCP;	// IConnectionPoint インターフェースポインタ
+	DWORD m_cookie;				// Cookie 値( Advise() より返される)
+	IID m_CPGuid;				// コネクションポイントIID
+	unsigned short* m_callback;	// HSPサブルーチン(コールバック用)
 
 #ifdef HSP_COMEVENT_DEBUG
 	/* For Debug */
@@ -124,7 +124,7 @@ public:
 	ComEventHandler();
 	~ComEventHandler();
 
-	// IDispatch methods (�C�x���g�����p)
+	// IDispatch methods (イベント処理用)
 	STDMETHOD(QueryInterface)(REFIID, void**);
 	STDMETHOD_(ULONG, AddRef)();
 	STDMETHOD_(ULONG, Release)();
@@ -139,8 +139,8 @@ public:
 
 /*
 	rev 43
-	mingw : error : friend static�C���͕s��
-	�ɑΏ�
+	mingw : error : friend static修飾は不正
+	に対処
 */
 #if defined(__GNUC__)
 	friend ComEventData* SearchEventData( void *iptr );
@@ -155,8 +155,8 @@ public:
 
 // Event Data structure (defined as class object)
 //
-// note: �G���[���ɗ�O�� throw ���ꂽ�ꍇ�ł��|�C���^�̂Ȃ��ւ���
-//       ����ɍs����悤�ɃN���X�I�u�W�F�N�g�Ƃ��Ē�`���Ă���܂�
+// note: エラー時に例外が throw された場合でもポインタのつなぎ替えが
+//       正常に行われるようにクラスオブジェクトとして定義してあります
 //
 
 struct ComEventData {
@@ -165,10 +165,10 @@ struct ComEventData {
 	DISPPARAMS* params;
 	VARIANT* result;
 
-	// (���d���荞�݂ɔ�����)
-	ComEventData* prev;			// �P�O�̃C�x���g
-	static ComEventData* now;	// ���ݏ����� (�Ȃ��ꍇ NULL )
-	// static UINT count;			// ���d���荞�݃C�x���g�� (���g�p)
+	// (多重割り込みに備えて)
+	ComEventData* prev;			// １つ前のイベント
+	static ComEventData* now;	// 現在処理中 (ない場合 NULL )
+	// static UINT count;			// 多重割り込みイベント数 (未使用)
 
 	ComEventData(ComEventHandler*, DISPID, DISPPARAMS*, VARIANT*);
 	~ComEventData();
@@ -202,13 +202,13 @@ ComEventData::~ComEventData()
 
 /*
 	rev 43
-	mingw : warning : �����o�̐錾���Ə������q���X�g�̕��я����قȂ�
-	�ɑΏ�
+	mingw : warning : メンバの宣言順と初期化子リストの並び順が異なる
+	に対処
 */
 ComEventHandler::ComEventHandler()
  : m_ref(0), m_refInner(0), m_punkObj(NULL), m_pCP(NULL), m_cookie(0), m_CPGuid( IID_NULL ), m_callback(0)
 {
-	// �Q�ƃJ�E���^ 0 �̏�Ԃō쐬
+	// 参照カウンタ 0 の状態で作成
 
 #ifdef HSP_COMEVENT_DEBUG
 	char fname[64];
@@ -251,11 +251,11 @@ HRESULT STDMETHODCALLTYPE ComEventHandler::Set( IUnknown *pObj, const IID* pCPGu
 		if ( FAILED(hr) ) return hr;
 	}
 
-	// �����ł� IUnknown �C���^�[�t�F�[�X��ێ�
+	// 内部では IUnknown インターフェースを保持
 	pObj->QueryInterface( IID_IUnknown, reinterpret_cast<void**>(&m_punkObj) );
 	m_callback = callback;
 
-	// IConnectionPointContainer ���� IConnectionPoint ���擾
+	// IConnectionPointContainer から IConnectionPoint を取得
 	hr = pObj->QueryInterface( IID_IConnectionPointContainer, reinterpret_cast<void**>(&pCPC) );
 	if ( SUCCEEDED(hr) ) {
 		hr = pCPC->FindConnectionPoint( m_CPGuid, &m_pCP );
@@ -308,7 +308,7 @@ void STDMETHODCALLTYPE ComEventHandler::IncInnerRef()
 	fprintf( fpDebug, "IncInnerRef() : m_refInner=%d :: ", m_refInner+1);
 #endif
 
-	// HSP COM�ϐ�����̎Q�ƃJ�E���^���C���N�������g
+	// HSP COM変数からの参照カウンタをインクリメント
 	AddRef();
 	m_refInner++;
 }
@@ -319,13 +319,13 @@ void STDMETHODCALLTYPE ComEventHandler::DecInnerRef()
 	fprintf( fpDebug, "DecInnerRef() : m_refInner=%d :: ", m_refInner-1);
 #endif
 
-	// HSP COM�ϐ�����̎Q�ƃJ�E���^���f�N�������g
+	// HSP COM変数からの参照カウンタをデクリメント
 	if ( (--m_refInner) <= 0 ) {
-		// �����ǂ�COM�I�u�W�F�N�g�ϐ�������Q�Ƃ���Ă��Ȃ��ꍇ
+		// もうどのCOMオブジェクト変数からも参照されていない場合
 		Reset();
 	}
-	// ���� Release() �ŃI�u�W�F�N�g���g (this) ���j�������\��������
-	// (���� Release() �ȍ~�Ŏ��g�̃����o���Q�Ƃ��Ȃ�����)
+	// この Release() でオブジェクト自身 (this) が破棄される可能性もある
+	// (この Release() 以降で自身のメンバを参照しないこと)
 	Release();
 }
 

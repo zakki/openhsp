@@ -31,8 +31,8 @@ static PDAT *HspVarLabel_GetPtr( PVal *pval )
 
 static int GetVarSize( PVal *pval )
 {
-	//		PVAL�|�C���^�̕ϐ����K�v�Ƃ���T�C�Y���擾����
-	//		(size�t�B�[���h�ɐݒ肳���)
+	//		PVALポインタの変数が必要とするサイズを取得する
+	//		(sizeフィールドに設定される)
 	//
 	return HspVarCoreCountElems(pval) * sizeof(HSPVAR_LABEL);
 }
@@ -40,7 +40,7 @@ static int GetVarSize( PVal *pval )
 
 static void HspVarLabel_Free( PVal *pval )
 {
-	//		PVAL�|�C���^�̕ϐ����������������
+	//		PVALポインタの変数メモリを解放する
 	//
 	if ( pval->mode == HSPVAR_MODE_MALLOC ) { sbFree( pval->pt ); }
 	pval->pt = NULL;
@@ -50,11 +50,11 @@ static void HspVarLabel_Free( PVal *pval )
 
 static void HspVarLabel_Alloc( PVal *pval, const PVal *pval2 )
 {
-	//		pval�ϐ����K�v�Ƃ���T�C�Y���m�ۂ���B
-	//		(pval�����łɊm�ۂ���Ă��郁��������͌Ăяo�������s�Ȃ�)
-	//		(flag�̐ݒ�͌Ăяo�������s�Ȃ�)
-	//		(pval2��NULL�̏ꍇ�́A�V�K�f�[�^)
-	//		(pval2���w�肳��Ă���ꍇ�́Apval2�̓��e���p�����čĊm��)
+	//		pval変数が必要とするサイズを確保する。
+	//		(pvalがすでに確保されているメモリ解放は呼び出し側が行なう)
+	//		(flagの設定は呼び出し側が行なう)
+	//		(pval2がNULLの場合は、新規データ)
+	//		(pval2が指定されている場合は、pval2の内容を継承して再確保)
 	//
 	HspVarCoreAllocPODArray(pval, pval2, sizeof(HSPVAR_LABEL));
 }
@@ -68,7 +68,7 @@ static int HspVarLabel_GetSize( const PDAT *pval )
 // Using
 static int HspVarLabel_GetUsing( const PDAT *pdat )
 {
-	//		(���Ԃ̃|�C���^���n����܂�)
+	//		(実態のポインタが渡されます)
 	return ( *pdat != NULL );
 }
 
@@ -103,11 +103,11 @@ void HspVarLabel_Init( HspVarProc *p )
 	p->Alloc = HspVarLabel_Alloc;
 	p->Free = HspVarLabel_Free;
 
-	p->vartype_name = "label";				// �^�C�v��
-	p->version = 0x001;					// �^�^�C�v�����^�C���o�[�W����(0x100 = 1.0)
+	p->vartype_name = "label";				// タイプ名
+	p->version = 0x001;					// 型タイプランタイムバージョン(0x100 = 1.0)
 	p->support = HSPVAR_SUPPORT_STORAGE | HSPVAR_SUPPORT_FLEXARRAY | HSPVAR_SUPPORT_VARUSE;
-										// �T�|�[�g�󋵃t���O(HSPVAR_SUPPORT_*)
-	p->basesize = sizeof(HSPVAR_LABEL);	// �P�̃f�[�^���g�p����T�C�Y(byte) / �ϒ��̎���-1
+										// サポート状況フラグ(HSPVAR_SUPPORT_*)
+	p->basesize = sizeof(HSPVAR_LABEL);	// １つのデータが使用するサイズ(byte) / 可変長の時は-1
 }
 
 /*------------------------------------------------------------*/

@@ -14,8 +14,8 @@
 
 /*
 	rev 43
-	mingw : error : •s–¾‚ÈŠÖ” tolower
-	‚É‘Îˆ
+	mingw : error : ä¸æ˜ãªé–¢æ•° tolower
+	ã«å¯¾å‡¦
 */
 #if defined( __GNUC__ )
 #include <ctype.h>
@@ -28,8 +28,8 @@
 
 /*
 	rev 43
-	mingw : warning : #pragma comment ‚ğ–³‹‚·‚é
-	‚É‘Îˆ
+	mingw : warning : #pragma comment ã‚’ç„¡è¦–ã™ã‚‹
+	ã«å¯¾å‡¦
 */
 #if defined( _MSC_VER )
 #pragma comment(lib,"winmm.lib")
@@ -203,9 +203,9 @@ void MMMan::Stop( void )
 
 /*
 	rev 43
-	mingw : warning : a ‚Í‘ã“ü‘O‚Ég‚í‚ê‚é
-	‚É‘ÎˆB
-	ÀÛ‚É‚Í‚¨‚±‚è‚¦‚È‚¢B
+	mingw : warning : a ã¯ä»£å…¥å‰ã«ä½¿ã‚ã‚Œã‚‹
+	ã«å¯¾å‡¦ã€‚
+	å®Ÿéš›ã«ã¯ãŠã“ã‚Šãˆãªã„ã€‚
 */
 int MMMan::Load( char *fname, int num, int opt )
 {
@@ -232,7 +232,7 @@ int MMMan::Load( char *fname, int num, int opt )
 		a = atoi( fname+3 );if ( a<1 ) a=1;
 	}
 
-	getpathW(chartoapichar(fname,&hactmp1),wfext,16+2);				// Šg’£q‚ğ¬•¶š‚Åæ‚èo‚·
+	getpathW(chartoapichar(fname,&hactmp1),wfext,16+2);				// æ‹¡å¼µå­ã‚’å°æ–‡å­—ã§å–ã‚Šå‡ºã™
 
 	if (!_tcscmp(wfext,TEXT(".avi"))) {				// when "AVI"
 		flag = MMDATA_MCIVIDEO;
@@ -252,7 +252,7 @@ int MMMan::Load( char *fname, int num, int opt )
 			freehac(&hactmp1);
 			return 1;
 		}
-		if ( getlen < 2000000 ) {			// 2MBˆÈã‚ÍMCI‚©‚çÄ¶
+		if ( getlen < 2000000 ) {			// 2MBä»¥ä¸Šã¯MCIã‹ã‚‰å†ç”Ÿ
 			pt = (char *)malloc( getlen+16 );
 			dpm_read( fname, pt, getlen, 0 );
 			flag = MMDATA_INTWAVE;
@@ -391,7 +391,7 @@ void MMMan::GetInfo( int bank, char **fname, int *num, int *flag, int *opt )
 /*
 int MMMan::GetBusy( void )
 {
-	//		wav‚ªÄ¶’†‚©‚ğ’²‚×‚é
+	//		wavãŒå†ç”Ÿä¸­ã‹ã‚’èª¿ã¹ã‚‹
 	//
 	if ( sndPlaySound( (LPCSTR)"",SND_NOSTOP|SND_NODEFAULT ) == FALSE ) {
 		return 1;

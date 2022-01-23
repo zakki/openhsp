@@ -33,13 +33,13 @@ static PDAT *HspVarInt_GetPtr( PVal *pval )
 
 static void *HspVarInt_Cnv( const void *buffer, int flag )
 {
-	//		���N�G�X�g���ꂽ�^ -> �����̌^�ւ̕ϊ����s�Ȃ�
-	//		(�g�ݍ��݌^�ɂ̂ݑΉ���OK)
-	//		(�Q�ƌ��̃f�[�^��j�󂵂Ȃ�����)
+	//		リクエストされた型 -> 自分の型への変換を行なう
+	//		(組み込み型にのみ対応でOK)
+	//		(参照元のデータを破壊しないこと)
 	//
 	switch( flag ) {
 	case HSPVAR_FLAG_STR:
-		if ( *(char *)buffer == '$' ) {					// 16->10�i��
+		if ( *(char *)buffer == '$' ) {					// 16->10進数
 			conv = htoi( (char *)buffer );
 		} else {
 			conv = atoi( (char *)buffer );
@@ -59,10 +59,10 @@ static void *HspVarInt_Cnv( const void *buffer, int flag )
 /*
 static void *HspVarInt_CnvCustom( const void *buffer, int flag )
 {
-	//		(�J�X�^���^�C�v�̂�)
-	//		�����̌^ -> ���N�G�X�g���ꂽ�^ �ւ̕ϊ����s�Ȃ�
-	//		(�g�ݍ��݌^�ɑΉ�������)
-	//		(�Q�ƌ��̃f�[�^��j�󂵂Ȃ�����)
+	//		(カスタムタイプのみ)
+	//		自分の型 -> リクエストされた型 への変換を行なう
+	//		(組み込み型に対応させる)
+	//		(参照元のデータを破壊しないこと)
 	//
 	return buffer;
 }
@@ -70,8 +70,8 @@ static void *HspVarInt_CnvCustom( const void *buffer, int flag )
 
 static int GetVarSize( PVal *pval )
 {
-	//		PVAL�|�C���^�̕ϐ����K�v�Ƃ���T�C�Y���擾����
-	//		(size�t�B�[���h�ɐݒ肳���)
+	//		PVALポインタの変数が必要とするサイズを取得する
+	//		(sizeフィールドに設定される)
 	//
 	return HspVarCoreCountElems(pval) * sizeof(int);
 }
@@ -79,7 +79,7 @@ static int GetVarSize( PVal *pval )
 
 static void HspVarInt_Free( PVal *pval )
 {
-	//		PVAL�|�C���^�̕ϐ����������������
+	//		PVALポインタの変数メモリを解放する
 	//
 	if ( pval->mode == HSPVAR_MODE_MALLOC ) { sbFree( pval->pt ); }
 	pval->pt = NULL;
@@ -89,10 +89,10 @@ static void HspVarInt_Free( PVal *pval )
 
 static void HspVarInt_Alloc( PVal *pval, const PVal *pval2 )
 {
-	//		pval�ϐ����K�v�Ƃ���T�C�Y���m�ۂ���B
-	//		(pval�����łɊm�ۂ���Ă��郁��������͌Ăяo�������s�Ȃ�)
-	//		(pval2��NULL�̏ꍇ�́A�V�K�f�[�^)
-	//		(pval2���w�肳��Ă���ꍇ�́Apval2�̓��e���p�����čĊm��)
+	//		pval変数が必要とするサイズを確保する。
+	//		(pvalがすでに確保されているメモリ解放は呼び出し側が行なう)
+	//		(pval2がNULLの場合は、新規データ)
+	//		(pval2が指定されている場合は、pval2の内容を継承して再確保)
 	//
 	HspVarCoreAllocPODArray(pval, pval2, sizeof(int));
 }
@@ -100,7 +100,7 @@ static void HspVarInt_Alloc( PVal *pval, const PVal *pval2 )
 /*
 static void *HspVarInt_ArrayObject( PVal *pval, int *mptype )
 {
-	//		�z��v�f�̎w�� (������/�A�z�z��p)
+	//		配列要素の指定 (文字列/連想配列用)
 	//
 	throw HSPERR_UNSUPPORTED_FUNCTION;
 	return NULL;
@@ -270,11 +270,11 @@ void HspVarInt_Init( HspVarProc *p )
 	p->RrI = HspVarInt_RrI;
 	p->LrI = HspVarInt_LrI;
 
-	p->vartype_name = "int";			// �^�C�v��
-	p->version = 0x001;					// �^�^�C�v�����^�C���o�[�W����(0x100 = 1.0)
+	p->vartype_name = "int";			// タイプ名
+	p->version = 0x001;					// 型タイプランタイムバージョン(0x100 = 1.0)
 	p->support = HSPVAR_SUPPORT_STORAGE | HSPVAR_SUPPORT_FLEXARRAY;
-										// �T�|�[�g�󋵃t���O(HSPVAR_SUPPORT_*)
-	p->basesize = sizeof(int);			// �P�̃f�[�^���g�p����T�C�Y(byte) / �ϒ��̎���-1
+										// サポート状況フラグ(HSPVAR_SUPPORT_*)
+	p->basesize = sizeof(int);			// １つのデータが使用するサイズ(byte) / 可変長の時は-1
 }
 
 /*------------------------------------------------------------*/

@@ -32,7 +32,7 @@ static char startax[]={ 'S'-40,'T'-40,'A'-40,'R'-40,'T'-40,
 
 Hsp3::Hsp3()
 {
-	//		‰Šú‰»
+	//		åˆæœŸåŒ–
 	//
 	memset( &hspctx, 0, sizeof(HSPCTX) );
 	code_setctx( &hspctx );
@@ -41,7 +41,7 @@ Hsp3::Hsp3()
 	axfile = NULL;
 	axname = NULL;
 
-	//		•¶š—ñƒoƒbƒtƒ@‚Ì‰Šú‰»
+	//		æ–‡å­—åˆ—ãƒãƒƒãƒ•ã‚¡ã®åˆæœŸåŒ–
 	//
 	hspctx.refstr = sbAlloc(HSPCTX_REFSTR_MAX);
 	hspctx.fnbuffer = sbAlloc(HSP_MAX_PATH);
@@ -62,7 +62,7 @@ Hsp3::Hsp3()
 
 Hsp3::~Hsp3()
 {
-	//		‚·‚×‚Ä”jŠü
+	//		ã™ã¹ã¦ç ´æ£„
 	//
 	code_termfunc();
 	Dispose();
@@ -84,13 +84,13 @@ void Hsp3::SetFileName( char *name )
 
 void Hsp3::Dispose( void )
 {
-	//		ƒNƒŠ[ƒ“ƒAƒbƒv
+	//		ã‚¯ãƒªãƒ¼ãƒ³ã‚¢ãƒƒãƒ—
 	//
 	if (hspctx.mem_mcs == NULL) return;
 	
 	code_cleanup();
 
-	//		ax‚ğ”jŠü
+	//		axã‚’ç ´æ£„
 	//
 	if ( hspctx.mem_var != NULL ) {
 		int i;
@@ -109,7 +109,7 @@ void Hsp3::Dispose( void )
 
 int Hsp3::Reset( int mode )
 {
-	//		ax‚ğ‰Šú‰»
+	//		axã‚’åˆæœŸåŒ–
 	//		mode: 0 = normal(debug) mode
 	//		      other = packfile PTR
 	//
@@ -122,7 +122,7 @@ int Hsp3::Reset( int mode )
 	//		load HSP execute object
 	//
 	axtype = HSP3_AXTYPE_NONE;
-	if ( mode ) {									// "start.ax"‚ğŒÄ‚Ño‚·
+	if ( mode ) {									// "start.ax"ã‚’å‘¼ã³å‡ºã™
 		i = dpm_ini("", mode, hsp_sum, hsp_dec);	// customized EXE mode
 		//axname = NULL;
 	} else {
@@ -130,7 +130,7 @@ int Hsp3::Reset( int mode )
 	}
 
 #ifdef HSP3IMP
-	//		HSP3IMP—p“Ç‚İ‚İ(ˆÃ†‰»ax‘Î‰)
+	//		HSP3IMPç”¨èª­ã¿è¾¼ã¿(æš—å·åŒ–axå¯¾å¿œ)
 	if ( axname == NULL ) {
 		ptr = dpm_readalloc( "start.ax" );
 		if ( ptr == NULL ) {
@@ -149,7 +149,7 @@ int Hsp3::Reset( int mode )
 		if ( ptr == NULL ) return -1;
 	}
 #else
-	//		start.ax“Ç‚İ‚İ
+	//		start.axèª­ã¿è¾¼ã¿
 	if ( axname == NULL ) {
 		unsigned char *p;
 		unsigned char *s;
@@ -166,7 +166,7 @@ int Hsp3::Reset( int mode )
 		*p = 0;
 		if ( sum != 0x6cced385 ) return -1;
 		if ( mode ) {
-			if (dpm_filebase(fname) != 1) return -1;	// DPM,packfile‚©‚ç‚Ì‚İstart.ax‚ğ“Ç‚İ‚Ş
+			if (dpm_filebase(fname) != 1) return -1;	// DPM,packfileã‹ã‚‰ã®ã¿start.axã‚’èª­ã¿è¾¼ã‚€
 		}
 	}
 	else {
@@ -224,7 +224,7 @@ int Hsp3::Reset( int mode )
 	hspctx.dsindex = dsindex;
 	hspctx.dsindex_size = dsindex_size;
 
-	HspVarCoreResetVartype( hsphed->max_varhpi );		// Œ^‚Ì‰Šú‰»
+	HspVarCoreResetVartype( hsphed->max_varhpi );		// å‹ã®åˆæœŸåŒ–
 
 	code_resetctx( &hspctx );		// hsp3code setup
 
@@ -271,8 +271,8 @@ int Hsp3::Reset( int mode )
 		for(i=0;i<maxvar;i++) {
 			PVal *pval = &hspctx.mem_var[i];
 			pval->mode = HSPVAR_MODE_NONE;
-			pval->flag = HSPVAR_FLAG_INT;				// ‰¼‚ÌŒ^
-			HspVarCoreClear( pval, HSPVAR_FLAG_INT );	// ƒOƒ[ƒoƒ‹•Ï”‚ğ0‚ÉƒŠƒZƒbƒg
+			pval->flag = HSPVAR_FLAG_INT;				// ä»®ã®å‹
+			HspVarCoreClear( pval, HSPVAR_FLAG_INT );	// ã‚°ãƒ­ãƒ¼ãƒãƒ«å¤‰æ•°ã‚’0ã«ãƒªã‚»ãƒƒãƒˆ
 		}
 	}
 
@@ -293,28 +293,28 @@ void Hsp3::SetPackValue( int sum, int dec )
 
 void Hsp3::SetCommandLinePrm(char *prm)
 {
-	// ƒRƒ}ƒ“ƒhƒ‰ƒCƒ“•¶š—ñ‚ğw’è‚·‚é
+	// ã‚³ãƒãƒ³ãƒ‰ãƒ©ã‚¤ãƒ³æ–‡å­—åˆ—ã‚’æŒ‡å®šã™ã‚‹
 	sbStrCopy(&hspctx.cmdline, prm);
 }
 
 
 void Hsp3::SetModuleFilePrm(char *prm)
 {
-	// ƒ‚ƒWƒ…[ƒ‹ƒtƒ@ƒCƒ‹–¼•¶š—ñ‚ğw’è‚·‚é
+	// ãƒ¢ã‚¸ãƒ¥ãƒ¼ãƒ«ãƒ•ã‚¡ã‚¤ãƒ«åæ–‡å­—åˆ—ã‚’æŒ‡å®šã™ã‚‹
 	sbStrCopy(&hspctx.modfilename, prm);
 }
 
 
 void Hsp3::SetHSPTVFolderPrm(char *prm)
 {
-	// HSPTVƒtƒHƒ‹ƒ_–¼•¶š—ñ‚ğw’è‚·‚é
+	// HSPTVãƒ•ã‚©ãƒ«ãƒ€åæ–‡å­—åˆ—ã‚’æŒ‡å®šã™ã‚‹
 	sbStrCopy(&hspctx.tvfoldername, prm);
 }
 
 
 void Hsp3::SetHomeFolderPrm(char *prm)
 {
-	// ƒVƒXƒeƒ€ƒtƒHƒ‹ƒ_–¼•¶š—ñ‚ğw’è‚·‚é
+	// ã‚·ã‚¹ãƒ†ãƒ ãƒ•ã‚©ãƒ«ãƒ€åæ–‡å­—åˆ—ã‚’æŒ‡å®šã™ã‚‹
 	sbStrCopy(&hspctx.homefoldername, prm);
 }
 
@@ -337,7 +337,7 @@ void* Hsp3::copy_DAT(char *ptr, size_t size)
 
 LIBDAT *Hsp3::copy_LIBDAT(HSPHED *hsphed, char *ptr, size_t size )
 {
-	//	libdat‚Ì€”õ
+	//	libdatã®æº–å‚™
 	int i,max;
 	int newsize;
 	LIBDAT *mem_dst;
@@ -367,7 +367,7 @@ LIBDAT *Hsp3::copy_LIBDAT(HSPHED *hsphed, char *ptr, size_t size )
 
 STRUCTDAT *Hsp3::copy_STRUCTDAT(HSPHED *hsphed, char *ptr, size_t size)
 {
-	//	structdat‚Ì€”õ
+	//	structdatã®æº–å‚™
 	int i, max;
 	int newsize;
 	STRUCTDAT *mem_dst;
@@ -397,7 +397,7 @@ STRUCTDAT *Hsp3::copy_STRUCTDAT(HSPHED *hsphed, char *ptr, size_t size)
 		if ((dst->index == STRUCTDAT_INDEX_FUNC) ||
 			(dst->index == STRUCTDAT_INDEX_CFUNC) ||
 			(dst->index == STRUCTDAT_INDEX_STRUCT)) {
-			//	STRUCTPRM‚Ìoffset,size’l‚ğ’²®‚·‚é (Šeƒƒ“ƒo‚ÌƒTƒCƒY‚ğ2”{‚É‚·‚é)
+			//	STRUCTPRMã®offset,sizeå€¤ã‚’èª¿æ•´ã™ã‚‹ (å„ãƒ¡ãƒ³ãƒã®ã‚µã‚¤ã‚ºã‚’2å€ã«ã™ã‚‹)
 			int j;
 			dst->size *= 2;
 			for (j = 0; j < dst->prmmax; j++) {

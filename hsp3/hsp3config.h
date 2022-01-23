@@ -5,19 +5,19 @@
 #ifndef __hsp3config_h
 #define __hsp3config_h
 
-//		ƒVƒXƒeƒ€ŠÖ˜Aƒ‰ƒxƒ‹
+//		ã‚·ã‚¹ãƒ†ãƒ é–¢é€£ãƒ©ãƒ™ãƒ«
 //
 #define HSPTITLE "Hot Soup Processor ver."
 #define hspver "3.7beta1"
 #define mvscode 1		// minor version code
 #define vercode 0x3701	// version code
 
-#define HSPERR_HANDLE		// HSPƒGƒ‰[—áŠO‚ğ—LŒø‚É‚µ‚Ü‚·
-#define SYSERR_HANDLE		// ƒVƒXƒeƒ€ƒGƒ‰[—áŠO‚ğ—LŒø‚É‚µ‚Ü‚·
+#define HSPERR_HANDLE		// HSPã‚¨ãƒ©ãƒ¼ä¾‹å¤–ã‚’æœ‰åŠ¹ã«ã—ã¾ã™
+#define SYSERR_HANDLE		// ã‚·ã‚¹ãƒ†ãƒ ã‚¨ãƒ©ãƒ¼ä¾‹å¤–ã‚’æœ‰åŠ¹ã«ã—ã¾ã™
 
 
 //
-//		ˆÚA—p‚Ìƒ‰ƒxƒ‹
+//		ç§»æ¤ç”¨ã®ãƒ©ãƒ™ãƒ«
 //
 //#define JPN			// IME use flag
 #define JPNMSG		// japanese message flag
@@ -33,7 +33,7 @@
 #define dbmes_size 0x10000
 
 //
-//		ŠÂ‹«ƒtƒ‰ƒO:ˆÈ‰º‚Ìƒ‰ƒxƒ‹‚ÍƒRƒ“ƒpƒCƒ‹ƒIƒvƒVƒ‡ƒ“‚Åİ’è‚³‚ê‚Ü‚·
+//		ç’°å¢ƒãƒ•ãƒ©ã‚°:ä»¥ä¸‹ã®ãƒ©ãƒ™ãƒ«ã¯ã‚³ãƒ³ãƒ‘ã‚¤ãƒ«ã‚ªãƒ—ã‚·ãƒ§ãƒ³ã§è¨­å®šã•ã‚Œã¾ã™
 //
 //#define HSPWIN		// Windows(WIN32) version flag
 //#define HSPMAC		// Macintosh version flag
@@ -45,10 +45,10 @@
 //#define HSPEMBED		// HSP3 Embed runtime flag
 //#define HSPEMSCRIPTEN	// EMSCRIPTEN version flag
 //#define HSP64			// 64bit compile flag
-//#define HSPUTF8		// UTF8g—pƒtƒ‰ƒO
+//#define HSPUTF8		// UTF8ä½¿ç”¨ãƒ•ãƒ©ã‚°
 
 //
-//		ŠÂ‹«ƒtƒ‰ƒO‚É•t‰Á‚³‚ê‚éƒIƒvƒVƒ‡ƒ“
+//		ç’°å¢ƒãƒ•ãƒ©ã‚°ã«ä»˜åŠ ã•ã‚Œã‚‹ã‚ªãƒ—ã‚·ãƒ§ãƒ³
 //
 //#define HSPWINGUI		// Windows/GUI (WIN32) version flag
 //#define HSPWINDISH	// Windows/DISH (WIN32) version flag
@@ -57,11 +57,11 @@
 //#define HSPDEBUG	// Debug version flag
 
 //
-//		gccg—p‚Ìƒ`ƒFƒbƒN
+//		gccä½¿ç”¨ã®ãƒã‚§ãƒƒã‚¯
 //
 #if defined(HSPMAC)|defined(HSPIOS)|defined(HSPNDK)|defined(HSPLINUX)|defined(HSPEMSCRIPTEN)
-#define HSPGCC			// GCCg—pƒtƒ‰ƒO
-#define HSPUTF8			// UTF8g—pƒtƒ‰ƒO
+#define HSPGCC			// GCCä½¿ç”¨ãƒ•ãƒ©ã‚°
+#define HSPUTF8			// UTF8ä½¿ç”¨ãƒ•ãƒ©ã‚°
 #endif
 
 #if defined(HSPEMSCRIPTEN)
@@ -75,7 +75,7 @@
 #endif
 
 //
-//		ˆÚA—p‚Ì’è”
+//		ç§»æ¤ç”¨ã®å®šæ•°
 //
 #ifdef HSPWIN
 #define HSP_MAX_PATH	260

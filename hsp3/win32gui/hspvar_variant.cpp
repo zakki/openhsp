@@ -4,7 +4,7 @@
 //	onion software/onitama 2004/10
 //
 
-#ifndef HSP_COM_UNSUPPORTED		//�iCOM �T�|�[�g�Ȃ��ł̃r���h���̓t�@�C���S�̂𖳎��j
+#ifndef HSP_COM_UNSUPPORTED		//（COM サポートなし版のビルド時はファイル全体を無視）
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -40,9 +40,9 @@ static PDAT *HspVarVariant_GetPtr( PVal *pval )
 
 static void *HspVarVariant_Cnv( const void *buffer, int flag )
 {
-	//		���N�G�X�g���ꂽ�^ -> �����̌^�ւ̕ϊ����s�Ȃ�
-	//		(�g�ݍ��݌^�ɂ̂ݑΉ���OK)
-	//		(�Q�ƌ��̃f�[�^��j�󂵂Ȃ�����)
+	//		リクエストされた型 -> 自分の型への変換を行なう
+	//		(組み込み型にのみ対応でOK)
+	//		(参照元のデータを破壊しないこと)
 	//
 	throw HSPERR_INVALID_TYPE;
 	return (void *)buffer;
@@ -51,10 +51,10 @@ static void *HspVarVariant_Cnv( const void *buffer, int flag )
 
 static void *HspVarVariant_CnvCustom( const void *buffer, int flag )
 {
-	//		(�J�X�^���^�C�v�̂�)
-	//		�����̌^ -> ���N�G�X�g���ꂽ�^ �ւ̕ϊ����s�Ȃ�
-	//		(�g�ݍ��݌^�ɑΉ�������)
-	//		(�Q�ƌ��̃f�[�^��j�󂵂Ȃ�����)
+	//		(カスタムタイプのみ)
+	//		自分の型 -> リクエストされた型 への変換を行なう
+	//		(組み込み型に対応させる)
+	//		(参照元のデータを破壊しないこと)
 	//
 	throw HSPERR_INVALID_TYPE;
 	return (void *)buffer;
@@ -63,7 +63,7 @@ static void *HspVarVariant_CnvCustom( const void *buffer, int flag )
 
 static void HspVarVariant_Free( PVal *pval )
 {
-	//		PVAL�|�C���^�̕ϐ����������������
+	//		PVALポインタの変数メモリを解放する
 	//
 	VARIANT *var;
 
@@ -93,17 +93,17 @@ static void HspVarVariant_Free( PVal *pval )
 
 static void HspVarVariant_Alloc( PVal *pval, const PVal *pval2 )
 {
-	//		pval�ϐ����K�v�Ƃ���T�C�Y���m�ۂ���B
-	//		(pval�����łɊm�ۂ���Ă��郁��������͌Ăяo�������s�Ȃ�)
-	//		(pval2��NULL�̏ꍇ�́A�V�K�f�[�^)
-	//		(pval2���w�肳��Ă���ꍇ�́Apval2�̓��e���p�����čĊm��)
+	//		pval変数が必要とするサイズを確保する。
+	//		(pvalがすでに確保されているメモリ解放は呼び出し側が行なう)
+	//		(pval2がNULLの場合は、新規データ)
+	//		(pval2が指定されている場合は、pval2の内容を継承して再確保)
 	//
 	int count,size;
 	VARIANT *var;
 #ifdef HSP_COMOBJ_DEBUG
 	COM_DBG_MSG( "HspVarVariant_Alloc()\n" );
 #endif
-	if ( pval->len[1] < 1 ) pval->len[1] = 1;		// �z����Œ� 1 �͊m�ۂ���
+	if ( pval->len[1] < 1 ) pval->len[1] = 1;		// 配列を最低 1 は確保する
 	count = HspVarCoreCountElems(pval);
 	size  = count * sizeof( VARIANT );
 	var = (VARIANT *)sbAlloc( size );
@@ -122,14 +122,14 @@ static void HspVarVariant_Alloc( PVal *pval, const PVal *pval2 )
 
 static int getMethodID( char *name )
 {
-	// ���\�b�h�����烁�\�b�hID���擾
+	// メソッド名からメソッドIDを取得
 	//
 	return HSPVAR_VARIANT_UNKNOWN;
 }
 
 static int getPropertyID( char *name )
 {
-	// �v���p�e�B�����烁�\�b�hID���擾
+	// プロパティ名からメソッドIDを取得
 	//
 	if ( name[0] == '\0' || stricmp(name,"val") == 0 || stricmp(name,"value") == 0 ) return HSPVAR_VARIANT_VALUE;
 	if ( stricmp(name,"vt") == 0 || stricmp(name,"vartype") == 0 ) return HSPVAR_VARIANT_VARTYPE;
@@ -147,7 +147,7 @@ static int getPropertyID( char *name )
 
 static void HspVarVariant_ObjectMethod( PVal *pval )
 {
-	//		���\�b�h�̎��s
+	//		メソッドの実行
 	//
 	throw HSPERR_UNSUPPORTED_FUNCTION;
 /*
@@ -157,7 +157,7 @@ static void HspVarVariant_ObjectMethod( PVal *pval )
 
 	var = (VARIANT *)pval->pt;
 
-	// ���\�b�h������ DISPID ���擾
+	// メソッド名から DISPID を取得
 	ps = code_gets();
 	id = getMethodID( ps );
 #ifdef HSP_COMOBJ_DEBUG
@@ -172,17 +172,17 @@ static void HspVarVariant_ObjectMethod( PVal *pval )
 
 static int code_get_element( PVal *pval )
 {
-	// �ϐ��̔z��v�f�̎擾
+	// 変数の配列要素の取得
 	//
 	PVal pvalTemp;
 	int chk, idx;
 	HspVarCoreReset(pval);
 	while (1) {
-		HspVarCoreCopyArrayInfo( &pvalTemp, pval );			// ��Ԃ�ۑ�
+		HspVarCoreCopyArrayInfo( &pvalTemp, pval );			// 状態を保存
 		chk = code_get();
-		HspVarCoreCopyArrayInfo( pval, &pvalTemp );			// ��Ԃ𕜋A
+		HspVarCoreCopyArrayInfo( pval, &pvalTemp );			// 状態を復帰
 		if ( chk == PARAM_ENDSPLIT ) {
-			if ( pval->arraycnt == 0 ) throw HSPERR_BAD_ARRAY_EXPRESSION;	// a() �\�L�̓G���[
+			if ( pval->arraycnt == 0 ) throw HSPERR_BAD_ARRAY_EXPRESSION;	// a() 表記はエラー
 			break;
 		}
 		if ( chk != PARAM_OK && chk != PARAM_SPLIT ) throw HSPERR_ARRAY_OVERFLOW;
@@ -195,7 +195,7 @@ static int code_get_element( PVal *pval )
 
 static void code_get_safearray( SAFEARRAY *psa, VariantParam *vprm )
 {
-	// SafeArray �̔z��v�f���擾
+	// SafeArray の配列要素を取得
 	//
 	int i, chk;
 	if ( psa == NULL ) throw HSPERR_ARRAY_OVERFLOW;
@@ -216,18 +216,18 @@ static void code_get_safearray( SAFEARRAY *psa, VariantParam *vprm )
 
 static void HspVarVariant_ArrayObject( PVal *pval )
 {
-	//		�z��v�f�̎w�� (�A�z�z��p)
+	//		配列要素の指定 (連想配列用)
 	//
 	VARIANT* var;
 	int chk, id;
 	VariantParam *vprm;
-	// �z��v�f�̎擾
+	// 配列要素の取得
 	chk = code_get_element( pval );
-	if ( chk == PARAM_ENDSPLIT ) return;	// �z��v�f���w�肳�ꂽ�ꍇ�͂��̂܂�
+	if ( chk == PARAM_ENDSPLIT ) return;	// 配列要素が指定された場合はそのまま
 
-	// �v���p�e�B�ݒ莞
+	// プロパティ設定時
 	var = (VARIANT *)HspVarVariant_GetPtr( pval );
-	// �v���p�e�B������v���p�e�B ID �擾
+	// プロパティ名からプロパティ ID 取得
 	if ( mpval->flag != HSPVAR_FLAG_STR ) throw HSPERR_TYPE_MISMATCH;
 	id = getPropertyID( (char *)(mpval->pt) );
 #ifdef HSP_COMOBJ_DEBUG
@@ -239,7 +239,7 @@ static void HspVarVariant_ArrayObject( PVal *pval )
 	switch ( id ) {
 	case HSPVAR_VARIANT_VALUE:
 		if ( (var->vt & VT_ARRAY) && (chk != PARAM_SPLIT) ) {
-			// SafeArray �̗v�f�����ɍs��
+			// SafeArray の要素を取りに行く
 			SAFEARRAY *psa;
 			if ( var->vt & VT_BYREF ) {
 				psa = *var->pparray;
@@ -257,13 +257,13 @@ static void HspVarVariant_ArrayObject( PVal *pval )
 	default:
 		throw HSPERR_INVALID_PARAMETER;
 	}
-	// ')' �ŕ��Ă��邩�i����ȍ~�Ƀp�����[�^���Ȃ����j
+	// ')' で閉じているか（これ以降にパラメータがないか）
 	if ( code_get() != PARAM_ENDSPLIT ) throw HSPERR_BAD_ARRAY_EXPRESSION;
 }
 
 void comcheck_variant_conv( VARTYPE vt, int vtype )
 {
-	// HSP�ϐ� <=> Variant �Ԃ̌^�`�F�b�N
+	// HSP変数 <=> Variant 間の型チェック
 	//
 	switch ( vtype ) {
 	case HSPVAR_FLAG_STR:
@@ -300,7 +300,7 @@ void comcheck_variant_conv( VARTYPE vt, int vtype )
 
 static void copy_ref_data( VARIANT *var, void *data )
 {
-	// �Q�� (ByRef) Variant �ւ̃f�[�^�R�s�[
+	// 参照 (ByRef) Variant へのデータコピー
 	//  data -> variant
 	//
 	VARTYPE vt;
@@ -311,7 +311,7 @@ static void copy_ref_data( VARIANT *var, void *data )
 	pSrc = data;
 
 	switch ( vt ) {
-	case VT_I4:				// �f�[�^�T�C�Y 4 �o�C�g
+	case VT_I4:				// データサイズ 4 バイト
 	case VT_R4:
 	case VT_ERROR:
 	case VT_UI4:
@@ -319,16 +319,16 @@ static void copy_ref_data( VARIANT *var, void *data )
 	case VT_UINT:
 		*(long *)pDst = *(long *)pSrc;
 		break;
-	case VT_I2:				// �f�[�^�T�C�Y 2 �o�C�g
+	case VT_I2:				// データサイズ 2 バイト
 	case VT_UI2:
 	case VT_BOOL:
 		*(short *)pDst = *(short *)pSrc;
 		break;
-	case VT_I1:				// �f�[�^�T�C�Y 1 �o�C�g
+	case VT_I1:				// データサイズ 1 バイト
 	case VT_UI1:
 		*(char *)pDst = *(char *)pSrc;
 		break;
-	case VT_R8:				// �f�[�^�T�C�Y 8 �o�C�g
+	case VT_R8:				// データサイズ 8 バイト
 	case VT_CY:
 	case VT_DATE:
 	case VT_I8:
@@ -363,19 +363,19 @@ static void copy_ref_data( VARIANT *var, void *data )
 
 void comset_variant_byref( VARIANT *var, void *data, int vtype )
 {
-	//		HSP�ϐ��f�[�^�� Variant (ByRef) �ɑ������
+	//		HSP変数データを Variant (ByRef) に代入する
 	//
 	VARIANT varTemp;
 	VARTYPE vt;
 	void *ptr;
 	HRESULT hr;
 
-	// ����\���ǂ����^�`�F�b�N
+	// 代入可能かどうか型チェック
 	if ( (var->vt & VT_BYREF) == 0 ) throw HSPERR_INVALID_PARAMETER;
 	vt = var->vt & ( VT_TYPEMASK | VT_ARRAY );
 	comcheck_variant_conv( vt, vtype );
 
-	// ��������ꎞ VARIANT ���쐬���Ă���^�ϊ�
+	// いったん一時 VARIANT を作成してから型変換
 	VariantInit( &varTemp );
 	comset_variant( &varTemp, data, vtype );
 	if ( vtype != HSPVAR_FLAG_VARIANT ) {
@@ -383,7 +383,7 @@ void comset_variant_byref( VARIANT *var, void *data, int vtype )
 		if ( FAILED(hr) ) throw HSPERR_INVALID_TYPE;
 	}
 
-	// ���f�[�^�̃|�C���^�擾�����
+	// 元データのポインタ取得し代入
 	ptr = &varTemp.lVal;
 	if ( vt == VT_VARIANT ) ptr = &varTemp;
 	if ( vt == VT_DECIMAL ) ptr = &varTemp.decVal;
@@ -394,7 +394,7 @@ void comset_variant_byref( VARIANT *var, void *data, int vtype )
 
 static void HspVarVariant_ObjectWrite( PVal *pval, void *data, int vtype )
 {
-	//		�ό^�̑��
+	//		可変型の代入
 	//
 	int id;
 	void *ptr;
@@ -416,17 +416,17 @@ static void HspVarVariant_ObjectWrite( PVal *pval, void *data, int vtype )
 
 	case HSPVAR_VARIANT_VALUE:
 		if ( var->vt & VT_BYREF ) {
-			// �Q�� VARIANT �ւ̑��
+			// 参照 VARIANT への代入
 			comset_variant_byref( var, data, vtype );
 		} else {
-			// �l Variant �ւ̑��
+			// 値 Variant への代入
 			comset_variant( var, data, vtype );
 		}
 		break;
 
 	case HSPVAR_VARIANT_ARRAY_ELEMENT:
-		// SafeArray �̗v�f�֑���i������ VARTYPE �͕ύX�ł��Ȃ��j
-		// ����\���ǂ����^�`�F�b�N
+		// SafeArray の要素へ代入（代入先の VARTYPE は変更できない）
+		// 代入可能かどうか型チェック
 		if ( (var->vt & VT_ARRAY) == 0 ) throw HSPERR_INVALID_ARRAYSTORE;
 		if ( var->vt & VT_BYREF ) {
 			psa = *var->pparray;
@@ -439,14 +439,14 @@ static void HspVarVariant_ObjectWrite( PVal *pval, void *data, int vtype )
 			if ( FAILED(hr) || vt == VT_EMPTY ) throw HSPERR_INVALID_ARRAYSTORE;
 		}
 		comcheck_variant_conv( vt, vtype );
-		// ��������ꎞ VARIANT ���쐬���Ă���^�ϊ�
+		// いったん一時 VARIANT を作成してから型変換
 		VariantInit( &varTemp );
 		comset_variant( &varTemp, data, vtype );
 		if ( vtype != HSPVAR_FLAG_VARIANT ) {
 			hr = VariantChangeType( &varTemp, &varTemp, VARIANT_NOVALUEPROP, vt );
 			if ( FAILED(hr) ) throw HSPERR_INVALID_TYPE;
 		}
-		// ���f�[�^�̃|�C���^�擾�����
+		// 元データのポインタ取得し代入
 		ptr = &varTemp.lVal;
 		if ( vt == VT_VARIANT ) ptr = &varTemp;
 		if ( vt == VT_DECIMAL ) ptr = &varTemp.decVal;
@@ -456,7 +456,7 @@ static void HspVarVariant_ObjectWrite( PVal *pval, void *data, int vtype )
 		break;
 
 	case HSPVAR_VARIANT_VARTYPE:
-		// VARIANT �̌^ (VARTYPE) ��ύX
+		// VARIANT の型 (VARTYPE) を変更
 		if ( vtype != HSPVAR_FLAG_INT ) throw HSPERR_INTEGER_REQUIRED;
 		vt = (VARTYPE)( *(int*)data );
 		hr = VariantChangeType( var, var, VARIANT_NOVALUEPROP, vt );
@@ -464,7 +464,7 @@ static void HspVarVariant_ObjectWrite( PVal *pval, void *data, int vtype )
 		break;
 
 	case HSPVAR_VARIANT_ARRAY_PTR:
-		// �n���ꂽ������ SafeArray �ł���Ƃ��đ��
+		// 渡された整数が SafeArray であるとして代入
 		if ( vtype != HSPVAR_FLAG_INT ) throw HSPERR_INVALID_ARRAYSTORE;
 		psa = (SAFEARRAY *)( *(int*)data );
 		if ( psa == NULL ) throw HSPERR_ILLEGAL_FUNCTION;
@@ -476,7 +476,7 @@ static void HspVarVariant_ObjectWrite( PVal *pval, void *data, int vtype )
 		break;
 
 	case HSPVAR_VARIANT_BSTR_PTR:
-		// �n���ꂽ������BSTR�ł���Ƃ��đ��
+		// 渡された整数がBSTRであるとして代入
 		if ( vtype != HSPVAR_FLAG_INT ) throw HSPERR_INVALID_ARRAYSTORE;
 		bstr = (BSTR)( *(int*)data );
 		VariantClear( var );
@@ -492,7 +492,7 @@ static void HspVarVariant_ObjectWrite( PVal *pval, void *data, int vtype )
 
 static void *HspVarVariant_ArrayObjectRead( PVal *pval, int *mptype )
 {
-	//		�z��v�f�̎w�� (�A�z�z��/�ǂݏo��)
+	//		配列要素の指定 (連想配列/読み出し)
 	//
 	VARIANT* var;
 	int chk, id;
@@ -505,23 +505,23 @@ static void *HspVarVariant_ArrayObjectRead( PVal *pval, int *mptype )
 	VARTYPE vt;
 	HRESULT hr;
 
-	// �z��v�f�̎擾
+	// 配列要素の取得
 	chk = code_get_element( pval );
 	var = (VARIANT *)HspVarVariant_GetPtr( pval );
-	if ( chk == PARAM_ENDSPLIT ) return var;		// �z��v�f���w�肳�ꂽ�ꍇ�͂��̂܂�
+	if ( chk == PARAM_ENDSPLIT ) return var;		// 配列要素が指定された場合はそのまま
 
-	// �v���p�e�B�擾��
+	// プロパティ取得時
 	if ( mpval->flag != HSPVAR_FLAG_STR ) throw HSPERR_TYPE_MISMATCH;
 	id = getPropertyID( (char *)(mpval->pt) );
 
 #ifdef HSP_COMOBJ_DEBUG
 	COM_DBG_MSG( "HspVarVariant_ArrayObjectRead() : Property Name=\"%s\" (Property ID=%d)\n", mpval->pt, id);
 #endif
-	// (�f�t�H���g)
+	// (デフォルト)
 	ptr = &vRet;
 	*mptype = HSPVAR_FLAG_INT;
 
-	// �p�����[�^���擾�E�v���p�e�B�擾
+	// パラメータを取得・プロパティ取得
 	switch ( id ) {
 
 	case HSPVAR_VARIANT_VARTYPE:
@@ -535,7 +535,7 @@ static void *HspVarVariant_ArrayObjectRead( PVal *pval, int *mptype )
 
 	case HSPVAR_VARIANT_VALUE:
 		if ( (var->vt & VT_ARRAY) && (chk != PARAM_SPLIT) ) {
-			// SafeArray �̗v�f�����ɍs��
+			// SafeArray の要素を取りに行く
 			if ( var->vt & VT_BYREF ) {
 				psa = *var->pparray;
 			} else {
@@ -543,14 +543,14 @@ static void *HspVarVariant_ArrayObjectRead( PVal *pval, int *mptype )
 			}
 			vprm = (VariantParam *)pval->master;
 			code_get_safearray( psa, vprm );
-			// ����\���ǂ����^�`�F�b�N
+			// 代入可能かどうか型チェック
 			vt = var->vt & VT_TYPEMASK;
 			if ( vt == VT_EMPTY ) {
 				hr = SafeArrayGetVartype( psa, &vt );
 				if ( FAILED(hr) || vt == VT_EMPTY ) throw HSPERR_INVALID_TYPE;
 			}
 			comcheck_variant_conv( vt, *mptype );
-			// ��������ꎞ VARIANT �Ɋi�[���Ă���^�ϊ�
+			// いったん一時 VARIANT に格納してから型変換
 			VariantInit( &varTemp );
 			ptr = &varTemp.lVal;
 			if ( vt == VT_VARIANT ) ptr = &varTemp;
@@ -567,7 +567,7 @@ static void *HspVarVariant_ArrayObjectRead( PVal *pval, int *mptype )
 			}
 			VariantClear( &varTemp );
 		} else {
-			// SafeArray �z��v�f�ȊO�̒l
+			// SafeArray 配列要素以外の値
 			ptr = comget_variant( var, mptype );
 		}
 		break;
@@ -631,7 +631,7 @@ static void *HspVarVariant_ArrayObjectRead( PVal *pval, int *mptype )
 		throw HSPERR_INVALID_PARAMETER;
 	}
 
-	// ')' �ŕ��Ă��邩�i�ȍ~�Ƀp�����[�^���Ȃ����j
+	// ')' で閉じているか（以降にパラメータがないか）
 	if ( code_get() != PARAM_ENDSPLIT ) throw HSPERR_BAD_ARRAY_EXPRESSION;
 
 	return ptr;
@@ -640,14 +640,14 @@ static void *HspVarVariant_ArrayObjectRead( PVal *pval, int *mptype )
 // Size
 static int HspVarVariant_GetSize( const PDAT *pdatl )
 {
-	//		(���Ԃ̃|�C���^���n����܂�)
+	//		(実態のポインタが渡されます)
 	return sizeof(VARIANT);
 }
 
 // Using
 static int HspVarVariant_GetUsing( const PDAT *pdat )
 {
-	//		(���Ԃ̃|�C���^���n����܂�)
+	//		(実態のポインタが渡されます)
 	VARIANT *var = (VARIANT *)pdat;
 	return ( var->vt != VT_EMPTY );
 }
@@ -660,7 +660,7 @@ static void HspVarVariant_Set( PVal *pval, PDAT *pdat, const void *in )
 	varDst = (VARIANT *)pdat;
 	varSrc = (VARIANT *)in;
 	if ( pval->support & HSPVAR_SUPPORT_TEMPVAR ) {
-		// �ꎞ�ϐ��̏ꍇ�͒P�Ȃ郁�����u���b�N�R�s�[
+		// 一時変数の場合は単なるメモリブロックコピー
 		*varDst = *varSrc;
 	} else {
 		VariantCopy( varDst, varSrc );
@@ -731,11 +731,11 @@ void HspVarVariant_Init( HspVarProc *p )
 	p->RrI = HspVarVariant_Invalid;
 	p->LrI = HspVarVariant_Invalid;
 */
-	p->vartype_name = "variant";		// �^�C�v��
-	p->version = 0x001;					// �^�^�C�v�����^�C���o�[�W����(0x100 = 1.0)
+	p->vartype_name = "variant";		// タイプ名
+	p->version = 0x001;					// 型タイプランタイムバージョン(0x100 = 1.0)
 	p->support = HSPVAR_SUPPORT_STORAGE | HSPVAR_SUPPORT_ARRAYOBJ | HSPVAR_SUPPORT_NOCONVERT | HSPVAR_SUPPORT_VARUSE;
-										// �T�|�[�g�󋵃t���O(HSPVAR_SUPPORT_*)
-	p->basesize = sizeof(VARIANT);	// �P�̃f�[�^���g�p����T�C�Y(byte) / �ϒ��̎���-1
+										// サポート状況フラグ(HSPVAR_SUPPORT_*)
+	p->basesize = sizeof(VARIANT);	// １つのデータが使用するサイズ(byte) / 可変長の時は-1
 }
 
 /*------------------------------------------------------------*/

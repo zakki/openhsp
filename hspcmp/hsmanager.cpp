@@ -43,7 +43,7 @@ int HspHelpManager::strsp_get(char splitchr)
 		a1 = srcstr[splc];
 		if (a1 == 0) break;
 		splc++;
-		if (a1 >= 128) {					// ‘½ƒoƒCƒg•¶šƒ`ƒFƒbƒN
+		if (a1 >= 128) {					// å¤šãƒã‚¤ãƒˆæ–‡å­—ãƒã‚§ãƒƒã‚¯
 			if ((a1 >= 192) && (srcstr[splc + utf8cnt] != 0)) utf8cnt++;
 			if ((a1 >= 224) && (srcstr[splc + utf8cnt] != 0)) utf8cnt++;
 			if ((a1 >= 240) && (srcstr[splc + utf8cnt] != 0)) utf8cnt++;
@@ -151,7 +151,7 @@ void HspHelpManager::terminate(void)
 
 int HspHelpManager::initalize(char * pathname)
 {
-	//		index‚ğ‰Šú‰»‚µ‚Ä.HS‚ğg—p‰Â”\‚É‚·‚é
+	//		indexã‚’åˆæœŸåŒ–ã—ã¦.HSã‚’ä½¿ç”¨å¯èƒ½ã«ã™ã‚‹
 	//
 	int res;
 
@@ -185,8 +185,8 @@ int HspHelpManager::initalize(char * pathname)
 
 int HspHelpManager::searchIndex(char * key)
 {
-	//		keyword‚ğindex‚©‚çŒŸõ‚·‚é
-	//		(•Ô’l‚ª0‚Ìê‡‚Í¬Œ÷AÚ×‚ªæ“¾‰Â”\‚É‚È‚éA‚»‚êˆÈŠO‚ÍƒGƒ‰[)
+	//		keywordã‚’indexã‹ã‚‰æ¤œç´¢ã™ã‚‹
+	//		(è¿”å€¤ãŒ0ã®å ´åˆã¯æˆåŠŸã€è©³ç´°ãŒå–å¾—å¯èƒ½ã«ãªã‚‹ã€ãã‚Œä»¥å¤–ã¯ã‚¨ãƒ©ãƒ¼)
 	//
 	int offset;
 	if (indexbuf == NULL) return -1;
@@ -223,8 +223,8 @@ int HspHelpManager::searchIndex(char * key)
 
 int HspHelpManager::getKeywordFromIndex(char * key)
 {
-	//		keyword‚ğindex‚©‚çŒŸõ‚·‚é
-	//		(•Ô’l‚ª0‚Ìê‡‚Í¬Œ÷A‚»‚êˆÈŠO‚ÍƒGƒ‰[)
+	//		keywordã‚’indexã‹ã‚‰æ¤œç´¢ã™ã‚‹
+	//		(è¿”å€¤ãŒ0ã®å ´åˆã¯æˆåŠŸã€ãã‚Œä»¥å¤–ã¯ã‚¨ãƒ©ãƒ¼)
 	//
 	int i, cur, max;
 
@@ -270,7 +270,7 @@ int HspHelpManager::getKeywordFromIndex(char * key)
 
 int HspHelpManager::openHSFile(char * fname, int offset)
 {
-	//		.HSƒtƒ@ƒCƒ‹‚ğ“Ç‚İ‚Ş
+	//		.HSãƒ•ã‚¡ã‚¤ãƒ«ã‚’èª­ã¿è¾¼ã‚€
 	//
 	int res;
 	if (hsbuf) {
@@ -289,7 +289,7 @@ int HspHelpManager::openHSFile(char * fname, int offset)
 		return res;
 	}
 
-	//	•¶š—ñ‚Ì‰Šú‰»
+	//	æ–‡å­—åˆ—ã®åˆæœŸåŒ–
 	m_prm.clear();
 	m_group.clear();
 	m_info.clear();
@@ -322,7 +322,7 @@ char *HspHelpManager::getMessage(void)
 
 int HspHelpManager::getTaggedInfoFromHS(int target_line)
 {
-	//	“Ç‚İ‚ñ‚¾.HS“à‚Å”CˆÓ‚Ìline‚©‚ç1‚Â‚Ìtagî•ñ‚ğæ“¾‚·‚é
+	//	èª­ã¿è¾¼ã‚“ã .HSå†…ã§ä»»æ„ã®lineã‹ã‚‰1ã¤ã®tagæƒ…å ±ã‚’å–å¾—ã™ã‚‹
 	//
 	int i, max;
 	bool addline;
@@ -349,7 +349,7 @@ int HspHelpManager::getTaggedInfoFromHS(int target_line)
 	//m_message += tagname;
 	//m_message += "\r\n";
 
-	if (tagline==false) return -1;				// %ƒ^ƒO‚Å‚Í‚È‚¢
+	if (tagline==false) return -1;				// %ã‚¿ã‚°ã§ã¯ãªã„
 	i++;
 
 	max = hsnote.GetMaxLine();
@@ -361,15 +361,15 @@ int HspHelpManager::getTaggedInfoFromHS(int target_line)
 		addline = true;
 		tagline = false;
 		p = hsnote.GetLineDirect(i);
-		if (p[0] == 0x25) {			// %‚Ìê‡
+		if (p[0] == 0x25) {			// %ã®å ´åˆ
 			addline = false;
 			tagline = true;
 			if (strcmp(p+1, "index") == 0) i = 0;
 		}
-		if (p[0] == 0x3b) {			// ;‚Ìê‡
+		if (p[0] == 0x3b) {			// ;ã®å ´åˆ
 			addline = false;
 		}
-		if (p[0] == 0x5e) {			// ^‚Ìê‡
+		if (p[0] == 0x5e) {			// ^ã®å ´åˆ
 			if ((p[1] == 'p') || (p[1] == 'P')) {
 				tabbed = !tabbed;
 				p = " ";
@@ -396,7 +396,7 @@ int HspHelpManager::getTaggedInfoFromHS(int target_line)
 
 int HspHelpManager::getInfoFromHS(int target_line)
 {
-	//	“Ç‚İ‚ñ‚¾.HS“à‚Å”CˆÓ‚Ìline‚©‚ç‚Ìî•ñ‚ğæ“¾‚·‚é
+	//	èª­ã¿è¾¼ã‚“ã .HSå†…ã§ä»»æ„ã®lineã‹ã‚‰ã®æƒ…å ±ã‚’å–å¾—ã™ã‚‹
 	//
 	int i;
 
@@ -407,7 +407,7 @@ int HspHelpManager::getInfoFromHS(int target_line)
 	i = getTaggedInfoFromHS(i);
 	if (tagname != "index") {
 		m_message += "Bad Index.\r\n";
-		return -2;	// Å‰‚Ìƒ^ƒO‚Í%index‚Ì‚Í‚¸
+		return -2;	// æœ€åˆã®ã‚¿ã‚°ã¯%indexã®ã¯ãš
 	}
 
 	while (1) {
@@ -424,20 +424,20 @@ int HspHelpManager::getInfoFromHS(int target_line)
 	m_message += m_key + " " + m_prm + "\r\n";
 
 	if (m_dll != "") {
-		m_message += "\r\n( ƒvƒ‰ƒOƒCƒ“/ƒ‚ƒWƒ…[ƒ‹ : ";
+		m_message += "\r\n( ãƒ—ãƒ©ã‚°ã‚¤ãƒ³/ãƒ¢ã‚¸ãƒ¥ãƒ¼ãƒ« : ";
 		m_message += m_dll + " )\r\n";
 	}
 
-	m_message += "\r\n‰ğà :\r\n";
+	m_message += "\r\nè§£èª¬ :\r\n";
 	m_message += m_info + "\r\n";
 
 	if (m_ref != "") {
-		m_message += "\r\nŠÖ˜A€–Ú :\r\n";
+		m_message += "\r\né–¢é€£é …ç›® :\r\n";
 		m_message += m_ref + "\r\n";
 	}
 
 	if (m_sample != "") {
-		m_message += "\r\nƒTƒ“ƒvƒ‹ :\r\n";
+		m_message += "\r\nã‚µãƒ³ãƒ—ãƒ« :\r\n";
 		m_message += m_sample + "\r\n";
 	}
 
@@ -463,7 +463,7 @@ int HspHelpManager::getInfoFromHS(int target_line)
 
 int HspHelpManager::getTypesFromHS(char *start, char *limit_addr)
 {
-	//	“Ç‚İ‚ñ‚¾.HS“à‚Åstart`limit_addr‚Ü‚Å‚Ì’è‹`‚ğæ“¾‚·‚é
+	//	èª­ã¿è¾¼ã‚“ã .HSå†…ã§startï½limit_addrã¾ã§ã®å®šç¾©ã‚’å–å¾—ã™ã‚‹
 	//
 	int i,max;
 	char *p;
@@ -475,7 +475,7 @@ int HspHelpManager::getTypesFromHS(char *start, char *limit_addr)
 		if (i >= max) break;
 		tagline = false;
 		p = hsnote.GetLineDirect(i);
-		if (p[0] == 0x25) {			// %‚Ìê‡
+		if (p[0] == 0x25) {			// %ã®å ´åˆ
 			tagname = p + 1;
 			tagline = true;
 		}
