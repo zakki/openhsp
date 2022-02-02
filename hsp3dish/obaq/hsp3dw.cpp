@@ -109,7 +109,7 @@ static void OmkeReset( void )
 	game->init(pVessel);
 	game->random2.setseed(rand() & 32767);
 
-	pVessel->rockbase.setGravity( 0.0f, 0.005f);	// „‘Ì, ƒfƒtƒHƒ‹ƒg‚Í(0.0f, 0.0025f)
+	pVessel->rockbase.setGravity( 0.0f, 0.005f);	// å‰›ä½“, ãƒ‡ãƒ•ã‚©ãƒ«ãƒˆã¯(0.0f, 0.0025f)
 
 	find_id = GetSysReq( SYSREQ_MAXOBAQ );
 }
@@ -132,7 +132,7 @@ static void OmkeBMSCR( BMSCR *bm, float zx, float zy, float ofsx, float ofsy  )
 
 static int OmkeCnvX( float x )
 {
-	//		À•W•ÏŠ·(X)
+	//		åº§æ¨™å¤‰æ›(X)
 	//
 	return (int)(x * zoom_sx + offset_x);
 }
@@ -140,7 +140,7 @@ static int OmkeCnvX( float x )
 
 static int OmkeCnvY( float y )
 {
-	//		À•W•ÏŠ·(Y)
+	//		åº§æ¨™å¤‰æ›(Y)
 	//
 	return (int)(y * zoom_sy + offset_y);
 }
@@ -148,7 +148,7 @@ static int OmkeCnvY( float y )
 
 static float OmkeCnvXR( int x )
 {
-	//		À•W‹t•ÏŠ·(X)
+	//		åº§æ¨™é€†å¤‰æ›(X)
 	//
 	return ((float)x - offset_x ) / zoom_sx;
 }
@@ -156,7 +156,7 @@ static float OmkeCnvXR( int x )
 
 static float OmkeCnvYR( int y )
 {
-	//		À•W‹t•ÏŠ·(Y)
+	//		åº§æ¨™é€†å¤‰æ›(Y)
 	//
 	return ((float)y - offset_y ) / zoom_sy;
 }
@@ -164,7 +164,7 @@ static float OmkeCnvYR( int y )
 
 static void OmkeDrawDebug( ROCK* pR )
 {
-	//		ƒIƒuƒWƒFƒNƒg‚ÌDebug—pƒƒCƒ„[ƒtƒŒ[ƒ€•`‰æ
+	//		ã‚ªãƒ–ã‚¸ã‚§ã‚¯ãƒˆã®Debugç”¨ãƒ¯ã‚¤ãƒ¤ãƒ¼ãƒ•ãƒ¬ãƒ¼ãƒ æç”»
 	//
 	int col;
 	int rate = GetSysReq(SYSREQ_PHYSICS_RATE);
@@ -196,7 +196,7 @@ static void OmkeDrawDebug( ROCK* pR )
 
 	OmkeDrawLineEnd();
 
-	//		’†Sdot
+	//		ä¸­å¿ƒdot
 	//
 	int group = pR->group;
 	col = 0x808080;
@@ -216,7 +216,7 @@ static void OmkeDrawDebug( ROCK* pR )
 
 static void OmkeDrawObjectLine( ROCK* pR, GAMEROCK *gr )
 {
-	//		ƒIƒuƒWƒFƒNƒg‚ÌƒƒCƒ„[ƒtƒŒ[ƒ€•`‰æ
+	//		ã‚ªãƒ–ã‚¸ã‚§ã‚¯ãƒˆã®ãƒ¯ã‚¤ãƒ¤ãƒ¼ãƒ•ãƒ¬ãƒ¼ãƒ æç”»
 	//
 	int col;
 
@@ -245,12 +245,12 @@ static void OmkeDrawObjectLine( ROCK* pR, GAMEROCK *gr )
 
 static void OmkeDrawObjectLine2( ROCK* pR, GAMEROCK *gr )
 {
-	//		ƒIƒuƒWƒFƒNƒg‚ÌƒƒCƒ„[ƒtƒŒ[ƒ€•`‰æ(—ÖŠs‚ ‚è)
+	//		ã‚ªãƒ–ã‚¸ã‚§ã‚¯ãƒˆã®ãƒ¯ã‚¤ãƒ¤ãƒ¼ãƒ•ãƒ¬ãƒ¼ãƒ æç”»(è¼ªéƒ­ã‚ã‚Š)
 	//
 	int col;
 	int x1,y1,x2,y2;
 
-	//		—ÖŠs
+	//		è¼ªéƒ­
 	col = gr->material_subid;
 	OmkeDrawLineStart( col );
 
@@ -284,10 +284,10 @@ static void OmkeDrawObjectLine2( ROCK* pR, GAMEROCK *gr )
 
 static void OmkeDrawObjectSpriteFit( ROCK* pR, GAMEROCK *gr )
 {
-	//		ƒIƒuƒWƒFƒNƒg‚ÌƒXƒvƒ‰ƒCƒg•`‰æ
+	//		ã‚ªãƒ–ã‚¸ã‚§ã‚¯ãƒˆã®ã‚¹ãƒ—ãƒ©ã‚¤ãƒˆæç”»
 	//
 
-	//		’†S‚©‚çƒXƒvƒ‰ƒCƒg‚ğ•`‰æ(Œ`óƒtƒBƒbƒg)
+	//		ä¸­å¿ƒã‹ã‚‰ã‚¹ãƒ—ãƒ©ã‚¤ãƒˆã‚’æç”»(å½¢çŠ¶ãƒ•ã‚£ãƒƒãƒˆ)
 	//
 	int cx,cy;
 	int sx,sy;
@@ -319,11 +319,11 @@ static void OmkeDrawObjectSpriteFit( ROCK* pR, GAMEROCK *gr )
 
 static void OmkeDrawObjectSprite( ROCK* pR, GAMEROCK *gr )
 {
-	//		ƒIƒuƒWƒFƒNƒg‚ÌƒXƒvƒ‰ƒCƒg•`‰æ
+	//		ã‚ªãƒ–ã‚¸ã‚§ã‚¯ãƒˆã®ã‚¹ãƒ—ãƒ©ã‚¤ãƒˆæç”»
 	//
 	BMSCR *bm2;
 
-	//		’†S‚©‚çƒXƒvƒ‰ƒCƒg‚ğ•`‰æ(ƒCƒ[ƒW“™”{)
+	//		ä¸­å¿ƒã‹ã‚‰ã‚¹ãƒ—ãƒ©ã‚¤ãƒˆã‚’æç”»(ã‚¤ãƒ¡ãƒ¼ã‚¸ç­‰å€)
 	//
 	bm2 = (BMSCR *)exinfo->HspFunc_getbmscr( gr->material_id );
 	OmkeDrawSetGMode( gr->material_gmode, gr->material_grate, gr->material_offsetx, gr->material_offsety );
@@ -335,7 +335,7 @@ static void OmkeDrawObjectSprite( ROCK* pR, GAMEROCK *gr )
 
 static void OmkeDraw( int mode )
 {
-	//		‚·‚×‚Ä‚ÌƒIƒuƒWƒFƒNƒg‚ğ•`‰æ
+	//		ã™ã¹ã¦ã®ã‚ªãƒ–ã‚¸ã‚§ã‚¯ãƒˆã‚’æç”»
 	//
 	int i,max;
 	int rate = GetSysReq(SYSREQ_PHYSICS_RATE);
@@ -415,7 +415,7 @@ static void OmkeDraw( int mode )
 
 static int _qaddmodel( void )
 {
-	//		©—Rİ’èƒIƒuƒWƒFƒNƒg’Ç‰Á
+	//		è‡ªç”±è¨­å®šã‚ªãƒ–ã‚¸ã‚§ã‚¯ãƒˆè¿½åŠ 
 	//		qaddmodel var, shape_var, nvertex, x, y, r, sx, sy, colsw, mygroup, exgroup, loggroup
 	//
 	float x1,y1,rot,sx,sy;
@@ -436,8 +436,8 @@ static int _qaddmodel( void )
 	float start_x,start_y;
 	float xx,yy;
 
-	ap = code_getva( &pv );			// ƒpƒ‰ƒ[ƒ^1:•Ï”
-	ap2 = code_getva( &pv2 );		// ƒpƒ‰ƒ[ƒ^2:•Ï”
+	ap = code_getva( &pv );			// ãƒ‘ãƒ©ãƒ¡ãƒ¼ã‚¿1:å¤‰æ•°
+	ap2 = code_getva( &pv2 );		// ãƒ‘ãƒ©ãƒ¡ãƒ¼ã‚¿2:å¤‰æ•°
 	nvertex = code_getdi(-1);
 	x1 = (float)code_getdd(0.0);
 	y1 = (float)code_getdd(0.0);
@@ -508,18 +508,18 @@ static int _qaddmodel( void )
 		}
 	}
 
-	code_setva( pv, ap, TYPE_INUM, &val );	// •Ï”‚É’l‚ğ‘ã“ü
+	code_setva( pv, ap, TYPE_INUM, &val );	// å¤‰æ•°ã«å€¤ã‚’ä»£å…¥
 	return 0;
 }
 
 static int cmdfunc_extcmd( int cmd )
 {
 	//		cmdfunc : TYPE_EXTCMD
-	//		(“à‘ GUIƒRƒ}ƒ“ƒh)
+	//		(å†…è”µGUIã‚³ãƒãƒ³ãƒ‰)
 	//
 	//Alertf( "OmkeCMD:%x",cmd );
-	code_next();							// Ÿ‚ÌƒR[ƒh‚ğæ“¾(Å‰‚É•K‚¸•K—v‚Å‚·)
-	switch( cmd ) {							// ƒTƒuƒRƒ}ƒ“ƒh‚²‚Æ‚Ì•ªŠò
+	code_next();							// æ¬¡ã®ã‚³ãƒ¼ãƒ‰ã‚’å–å¾—(æœ€åˆã«å¿…ãšå¿…è¦ã§ã™)
+	switch( cmd ) {							// ã‚µãƒ–ã‚³ãƒãƒ³ãƒ‰ã”ã¨ã®åˆ†å²
 
 	//	HGIMG part
 	//
@@ -530,7 +530,7 @@ static int cmdfunc_extcmd( int cmd )
 		bm = (BMSCR *)exinfo->HspFunc_getbmscr( 0 );
 		OmkeBMSCR( bm, DEFAULT_ZOOM, DEFAULT_ZOOM, DEFAULT_OFFSET, DEFAULT_OFFSET );
 		if ( game == NULL ) return -1;
-		//	ƒfƒtƒHƒ‹ƒg‚ÌŠO•Ç
+		//	ãƒ‡ãƒ•ã‚©ãƒ«ãƒˆã®å¤–å£
 		game->setBorder( center_x * -0.9f, center_y * -0.9f, center_x * 0.9f, center_y * 0.9f, center_x, center_y );
 		break;
 		}
@@ -539,7 +539,7 @@ static int cmdfunc_extcmd( int cmd )
 		OmkeTerm();
 		break;
 	case 0x02:								// qexec
-		//	GAME‚ÌXV
+		//	GAMEã®æ›´æ–°
 		{
 		//float xx,yy,zz, ang, px,py;
 		//gb_getaccel( &xx, &yy, &zz );
@@ -590,10 +590,10 @@ static int cmdfunc_extcmd( int cmd )
 		double val;
 		PVal *pv;
 		APTR ap;
-		ap = code_getva( &pv );		// ƒpƒ‰ƒ[ƒ^1:•Ï”
+		ap = code_getva( &pv );		// ãƒ‘ãƒ©ãƒ¡ãƒ¼ã‚¿1:å¤‰æ•°
 		type = code_getdi(0);
 		val = (double)GetSysReqF( type );
-		code_setva( pv, ap, TYPE_DNUM, &val );	// •Ï”‚É’l‚ğ‘ã“ü
+		code_setva( pv, ap, TYPE_DNUM, &val );	// å¤‰æ•°ã«å€¤ã‚’ä»£å…¥
 		break;
 		}
 
@@ -626,8 +626,8 @@ static int cmdfunc_extcmd( int cmd )
 		double x,y;
 		int resx,resy;
 		int opt;
-		ap = code_getva( &pv );			// ƒpƒ‰ƒ[ƒ^•Ï”
-		ap2 = code_getva( &pv2 );		// ƒpƒ‰ƒ[ƒ^•Ï”
+		ap = code_getva( &pv );			// ãƒ‘ãƒ©ãƒ¡ãƒ¼ã‚¿å¤‰æ•°
+		ap2 = code_getva( &pv2 );		// ãƒ‘ãƒ©ãƒ¡ãƒ¼ã‚¿å¤‰æ•°
 		x = code_getdd(0.0);
 		y = code_getdd(0.0);
 		opt = code_getdi(0);
@@ -638,14 +638,14 @@ static int cmdfunc_extcmd( int cmd )
 			resy = (int)y;
 			x = OmkeCnvXR(resx);
 			y = OmkeCnvYR(resy);
-			code_setva( pv, ap, TYPE_DNUM, &x );			// •Ï”‚É’l‚ğ‘ã“ü
-			code_setva( pv2, ap2, TYPE_DNUM, &y );			// •Ï”‚É’l‚ğ‘ã“ü
+			code_setva( pv, ap, TYPE_DNUM, &x );			// å¤‰æ•°ã«å€¤ã‚’ä»£å…¥
+			code_setva( pv2, ap2, TYPE_DNUM, &y );			// å¤‰æ•°ã«å€¤ã‚’ä»£å…¥
 			break;
 		default:
 			resx = OmkeCnvX((float)x);
 			resy = OmkeCnvY((float)y);
-			code_setva( pv, ap, TYPE_INUM, &resx );			// •Ï”‚É’l‚ğ‘ã“ü
-			code_setva( pv2, ap2, TYPE_INUM, &resy );		// •Ï”‚É’l‚ğ‘ã“ü
+			code_setva( pv, ap, TYPE_INUM, &resx );			// å¤‰æ•°ã«å€¤ã‚’ä»£å…¥
+			code_setva( pv2, ap2, TYPE_INUM, &resy );		// å¤‰æ•°ã«å€¤ã‚’ä»£å…¥
 			break;
 		}
 		break;
@@ -659,8 +659,8 @@ static int cmdfunc_extcmd( int cmd )
 		int id,type;
 		int resx,resy;
 		id = code_getdi(0);
-		ap = code_getva( &pv );			// ƒpƒ‰ƒ[ƒ^•Ï”
-		ap2 = code_getva( &pv2 );		// ƒpƒ‰ƒ[ƒ^•Ï”
+		ap = code_getva( &pv );			// ãƒ‘ãƒ©ãƒ¡ãƒ¼ã‚¿å¤‰æ•°
+		ap2 = code_getva( &pv2 );		// ãƒ‘ãƒ©ãƒ¡ãƒ¼ã‚¿å¤‰æ•°
 		type = code_getdi(0);
 		if ( game == NULL ) return -1;
 		GAMEROCK *gr = game->getGameRock( id );
@@ -679,8 +679,8 @@ static int cmdfunc_extcmd( int cmd )
 			resy = OmkeCnvY(gr->maxy) - OmkeCnvY(gr->miny) + 1;
 			break;
 		}
-		code_setva( pv, ap, TYPE_INUM, &resx );			// •Ï”‚É’l‚ğ‘ã“ü
-		code_setva( pv2, ap2, TYPE_INUM, &resy );		// •Ï”‚É’l‚ğ‘ã“ü
+		code_setva( pv, ap, TYPE_INUM, &resx );			// å¤‰æ•°ã«å€¤ã‚’ä»£å…¥
+		code_setva( pv2, ap2, TYPE_INUM, &resy );		// å¤‰æ•°ã«å€¤ã‚’ä»£å…¥
 		break;
 		}
 	case 0x0b:								// qaddpoly
@@ -690,7 +690,7 @@ static int cmdfunc_extcmd( int cmd )
 		int val;
 		PVal *pv;
 		APTR ap;
-		ap = code_getva( &pv );		// ƒpƒ‰ƒ[ƒ^1:•Ï”
+		ap = code_getva( &pv );		// ãƒ‘ãƒ©ãƒ¡ãƒ¼ã‚¿1:å¤‰æ•°
 		type = code_getdi(3);
 		x1 = (float)code_getdd(0.0);
 		y1 = (float)code_getdd(0.0);
@@ -706,7 +706,7 @@ static int cmdfunc_extcmd( int cmd )
 			val = game->addShape( type, ROCK::stat_active, ROCK::type_normal, x1, y1, rot, sx, sy, colsw, mygroup, exgroup, loggroup );
 		}
 		//Alertf( "qaddpoly:%d",val );
-		code_setva( pv, ap, TYPE_INUM, &val );	// •Ï”‚É’l‚ğ‘ã“ü
+		code_setva( pv, ap, TYPE_INUM, &val );	// å¤‰æ•°ã«å€¤ã‚’ä»£å…¥
 		break;
 		}
 	case 0x0c:								// qdel
@@ -744,18 +744,18 @@ static int cmdfunc_extcmd( int cmd )
 		APTR ap3;
 		double d1,d2,d3;
 		id = code_getdi(0);
-		ap = code_getva( &pv );			// ƒpƒ‰ƒ[ƒ^•Ï”
-		ap2 = code_getva( &pv2 );		// ƒpƒ‰ƒ[ƒ^•Ï”
-		ap3 = code_getva( &pv3 );		// ƒpƒ‰ƒ[ƒ^•Ï”
+		ap = code_getva( &pv );			// ãƒ‘ãƒ©ãƒ¡ãƒ¼ã‚¿å¤‰æ•°
+		ap2 = code_getva( &pv2 );		// ãƒ‘ãƒ©ãƒ¡ãƒ¼ã‚¿å¤‰æ•°
+		ap3 = code_getva( &pv3 );		// ãƒ‘ãƒ©ãƒ¡ãƒ¼ã‚¿å¤‰æ•°
 		if ( game == NULL ) return -1;
 		ROCK* pR = game->getRock( id );
 		if ( pR == NULL ) return -1;
 		d1 = (double)pR->center.x;
 		d2 = (double)pR->center.y;
 		d3 = (double)pR->angle;
-		code_setva( pv, ap, TYPE_DNUM, &d1 );	// •Ï”‚É’l‚ğ‘ã“ü
-		code_setva( pv2, ap2, TYPE_DNUM, &d2 );	// •Ï”‚É’l‚ğ‘ã“ü
-		code_setva( pv3, ap3, TYPE_DNUM, &d3 );	// •Ï”‚É’l‚ğ‘ã“ü
+		code_setva( pv, ap, TYPE_DNUM, &d1 );	// å¤‰æ•°ã«å€¤ã‚’ä»£å…¥
+		code_setva( pv2, ap2, TYPE_DNUM, &d2 );	// å¤‰æ•°ã«å€¤ã‚’ä»£å…¥
+		code_setva( pv3, ap3, TYPE_DNUM, &d3 );	// å¤‰æ•°ã«å€¤ã‚’ä»£å…¥
 		break;
 		}
 	case 0x0f:								// qweight
@@ -778,15 +778,15 @@ static int cmdfunc_extcmd( int cmd )
 		APTR ap2;
 		double d1,d2;
 		id = code_getdi(0);
-		ap = code_getva( &pv );			// ƒpƒ‰ƒ[ƒ^•Ï”
-		ap2 = code_getva( &pv2 );		// ƒpƒ‰ƒ[ƒ^•Ï”
+		ap = code_getva( &pv );			// ãƒ‘ãƒ©ãƒ¡ãƒ¼ã‚¿å¤‰æ•°
+		ap2 = code_getva( &pv2 );		// ãƒ‘ãƒ©ãƒ¡ãƒ¼ã‚¿å¤‰æ•°
 		if ( game == NULL ) return -1;
 		ROCK* pR = game->getRock( id );
 		if ( pR == NULL ) return -1;
 		d1 = (double)pR->weight;
 		d2 = (double)pR->moment;
-		code_setva( pv, ap, TYPE_DNUM, &d1 );	// •Ï”‚É’l‚ğ‘ã“ü
-		code_setva( pv2, ap2, TYPE_DNUM, &d2 );	// •Ï”‚É’l‚ğ‘ã“ü
+		code_setva( pv, ap, TYPE_DNUM, &d1 );	// å¤‰æ•°ã«å€¤ã‚’ä»£å…¥
+		code_setva( pv2, ap2, TYPE_DNUM, &d2 );	// å¤‰æ•°ã«å€¤ã‚’ä»£å…¥
 		break;
 		}
 	case 0x11:								// qspeed
@@ -813,18 +813,18 @@ static int cmdfunc_extcmd( int cmd )
 		APTR ap3;
 		double d1,d2,d3;
 		id = code_getdi(0);
-		ap = code_getva( &pv );			// ƒpƒ‰ƒ[ƒ^•Ï”
-		ap2 = code_getva( &pv2 );		// ƒpƒ‰ƒ[ƒ^•Ï”
-		ap3 = code_getva( &pv3 );		// ƒpƒ‰ƒ[ƒ^•Ï”
+		ap = code_getva( &pv );			// ãƒ‘ãƒ©ãƒ¡ãƒ¼ã‚¿å¤‰æ•°
+		ap2 = code_getva( &pv2 );		// ãƒ‘ãƒ©ãƒ¡ãƒ¼ã‚¿å¤‰æ•°
+		ap3 = code_getva( &pv3 );		// ãƒ‘ãƒ©ãƒ¡ãƒ¼ã‚¿å¤‰æ•°
 		if ( game == NULL ) return -1;
 		ROCK* pR = game->getRock( id );
 		if ( pR == NULL ) return -1;
 		d1 = (double)pR->speed.x;
 		d2 = (double)pR->speed.y;
 		d3 = (double)pR->rSpeed;
-		code_setva( pv, ap, TYPE_DNUM, &d1 );	// •Ï”‚É’l‚ğ‘ã“ü
-		code_setva( pv2, ap2, TYPE_DNUM, &d2 );	// •Ï”‚É’l‚ğ‘ã“ü
-		code_setva( pv3, ap3, TYPE_DNUM, &d3 );	// •Ï”‚É’l‚ğ‘ã“ü
+		code_setva( pv, ap, TYPE_DNUM, &d1 );	// å¤‰æ•°ã«å€¤ã‚’ä»£å…¥
+		code_setva( pv2, ap2, TYPE_DNUM, &d2 );	// å¤‰æ•°ã«å€¤ã‚’ä»£å…¥
+		code_setva( pv3, ap3, TYPE_DNUM, &d3 );	// å¤‰æ•°ã«å€¤ã‚’ä»£å…¥
 		break;
 		}
 	case 0x13:								// qgroup
@@ -850,18 +850,18 @@ static int cmdfunc_extcmd( int cmd )
 		APTR ap3;
 		int gr1,gr2,gr3;
 		id = code_getdi(0);
-		ap = code_getva( &pv );			// ƒpƒ‰ƒ[ƒ^•Ï”
-		ap2 = code_getva( &pv2 );		// ƒpƒ‰ƒ[ƒ^•Ï”
-		ap3 = code_getva( &pv3 );		// ƒpƒ‰ƒ[ƒ^•Ï”
+		ap = code_getva( &pv );			// ãƒ‘ãƒ©ãƒ¡ãƒ¼ã‚¿å¤‰æ•°
+		ap2 = code_getva( &pv2 );		// ãƒ‘ãƒ©ãƒ¡ãƒ¼ã‚¿å¤‰æ•°
+		ap3 = code_getva( &pv3 );		// ãƒ‘ãƒ©ãƒ¡ãƒ¼ã‚¿å¤‰æ•°
 		if ( game == NULL ) return -1;
 		ROCK* pR = game->getRock( id );
 		if ( pR == NULL ) return -1;
 		gr1 = (int)pR->group;
 		gr2 = (int)pR->exceptGroup;
 		gr3 = (int)pR->recordGroup;
-		code_setva( pv, ap, TYPE_INUM, &gr1 );		// •Ï”‚É’l‚ğ‘ã“ü
-		code_setva( pv2, ap2, TYPE_INUM, &gr2 );	// •Ï”‚É’l‚ğ‘ã“ü
-		code_setva( pv3, ap3, TYPE_INUM, &gr3 );	// •Ï”‚É’l‚ğ‘ã“ü
+		code_setva( pv, ap, TYPE_INUM, &gr1 );		// å¤‰æ•°ã«å€¤ã‚’ä»£å…¥
+		code_setva( pv2, ap2, TYPE_INUM, &gr2 );	// å¤‰æ•°ã«å€¤ã‚’ä»£å…¥
+		code_setva( pv3, ap3, TYPE_INUM, &gr3 );	// å¤‰æ•°ã«å€¤ã‚’ä»£å…¥
 		break;
 		}
 	case 0x15:								// qtype
@@ -882,12 +882,12 @@ static int cmdfunc_extcmd( int cmd )
 		APTR ap;
 		int type;
 		id = code_getdi(0);
-		ap = code_getva( &pv );			// ƒpƒ‰ƒ[ƒ^•Ï”
+		ap = code_getva( &pv );			// ãƒ‘ãƒ©ãƒ¡ãƒ¼ã‚¿å¤‰æ•°
 		if ( game == NULL ) return -1;
 		ROCK* pR = game->getRock( id );
 		if ( pR == NULL ) return -1;
 		type = (int)pR->type;
-		code_setva( pv, ap, TYPE_INUM, &type );		// •Ï”‚É’l‚ğ‘ã“ü
+		code_setva( pv, ap, TYPE_INUM, &type );		// å¤‰æ•°ã«å€¤ã‚’ä»£å…¥
 		break;
 		}
 	case 0x17:								// qstat
@@ -911,15 +911,15 @@ static int cmdfunc_extcmd( int cmd )
 		APTR ap2;
 		int stat,count;
 		id = code_getdi(0);
-		ap = code_getva( &pv );			// ƒpƒ‰ƒ[ƒ^•Ï”
-		ap2 = code_getva( &pv2 );		// ƒpƒ‰ƒ[ƒ^•Ï”
+		ap = code_getva( &pv );			// ãƒ‘ãƒ©ãƒ¡ãƒ¼ã‚¿å¤‰æ•°
+		ap2 = code_getva( &pv2 );		// ãƒ‘ãƒ©ãƒ¡ãƒ¼ã‚¿å¤‰æ•°
 		if ( game == NULL ) return -1;
 		ROCK* pR = game->getRock( id );
 		if ( pR == NULL ) return -1;
 		stat = (int)pR->stat;
 		count = (int)pR->sleepCount;
-		code_setva( pv, ap, TYPE_INUM, &stat );			// •Ï”‚É’l‚ğ‘ã“ü
-		code_setva( pv2, ap2, TYPE_INUM, &count );		// •Ï”‚É’l‚ğ‘ã“ü
+		code_setva( pv, ap, TYPE_INUM, &stat );			// å¤‰æ•°ã«å€¤ã‚’ä»£å…¥
+		code_setva( pv2, ap2, TYPE_INUM, &count );		// å¤‰æ•°ã«å€¤ã‚’ä»£å…¥
 		break;
 		}
 	case 0x19:								// qcollision
@@ -942,9 +942,9 @@ static int cmdfunc_extcmd( int cmd )
 		COLLISIONLOG *log;
 		int id;
 		double x,y;
-		ap = code_getva( &pv );			// ƒpƒ‰ƒ[ƒ^•Ï”
-		ap2 = code_getva( &pv2 );		// ƒpƒ‰ƒ[ƒ^•Ï”
-		ap3 = code_getva( &pv3 );		// ƒpƒ‰ƒ[ƒ^•Ï”
+		ap = code_getva( &pv );			// ãƒ‘ãƒ©ãƒ¡ãƒ¼ã‚¿å¤‰æ•°
+		ap2 = code_getva( &pv2 );		// ãƒ‘ãƒ©ãƒ¡ãƒ¼ã‚¿å¤‰æ•°
+		ap3 = code_getva( &pv3 );		// ãƒ‘ãƒ©ãƒ¡ãƒ¼ã‚¿å¤‰æ•°
 		if ( game == NULL ) return -1;
 		log = game->getCollisionLog();
 		if ( log == NULL ) {
@@ -958,9 +958,9 @@ static int cmdfunc_extcmd( int cmd )
 			x = (double)log->position.x;
 			y = (double)log->position.y;
 		}
-		code_setva( pv, ap, TYPE_INUM, &id );		// •Ï”‚É’l‚ğ‘ã“ü
-		code_setva( pv2, ap2, TYPE_DNUM, &x );		// •Ï”‚É’l‚ğ‘ã“ü
-		code_setva( pv3, ap3, TYPE_DNUM, &y );		// •Ï”‚É’l‚ğ‘ã“ü
+		code_setva( pv, ap, TYPE_INUM, &id );		// å¤‰æ•°ã«å€¤ã‚’ä»£å…¥
+		code_setva( pv2, ap2, TYPE_DNUM, &x );		// å¤‰æ•°ã«å€¤ã‚’ä»£å…¥
+		code_setva( pv3, ap3, TYPE_DNUM, &y );		// å¤‰æ•°ã«å€¤ã‚’ä»£å…¥
 		break;
 		}
 	case 0x1b:								// qgetcol2
@@ -974,9 +974,9 @@ static int cmdfunc_extcmd( int cmd )
 		COLLISIONLOG *log;
 		int id;
 		double dep,x,y;
-		ap = code_getva( &pv );			// ƒpƒ‰ƒ[ƒ^•Ï”
-		ap2 = code_getva( &pv2 );		// ƒpƒ‰ƒ[ƒ^•Ï”
-		ap3 = code_getva( &pv3 );		// ƒpƒ‰ƒ[ƒ^•Ï”
+		ap = code_getva( &pv );			// ãƒ‘ãƒ©ãƒ¡ãƒ¼ã‚¿å¤‰æ•°
+		ap2 = code_getva( &pv2 );		// ãƒ‘ãƒ©ãƒ¡ãƒ¼ã‚¿å¤‰æ•°
+		ap3 = code_getva( &pv3 );		// ãƒ‘ãƒ©ãƒ¡ãƒ¼ã‚¿å¤‰æ•°
 		if ( game == NULL ) return -1;
 		log = game->curlog;
 		if ( log == NULL ) {
@@ -990,9 +990,9 @@ static int cmdfunc_extcmd( int cmd )
 				x = -x; y = -y;
 			}
 		}
-		code_setva( pv, ap, TYPE_DNUM, &dep );		// •Ï”‚É’l‚ğ‘ã“ü
-		code_setva( pv2, ap2, TYPE_DNUM, &x );		// •Ï”‚É’l‚ğ‘ã“ü
-		code_setva( pv3, ap3, TYPE_DNUM, &y );		// •Ï”‚É’l‚ğ‘ã“ü
+		code_setva( pv, ap, TYPE_DNUM, &dep );		// å¤‰æ•°ã«å€¤ã‚’ä»£å…¥
+		code_setva( pv2, ap2, TYPE_DNUM, &x );		// å¤‰æ•°ã«å€¤ã‚’ä»£å…¥
+		code_setva( pv3, ap3, TYPE_DNUM, &y );		// å¤‰æ•°ã«å€¤ã‚’ä»£å…¥
 		break;
 		}
 	case 0x1c:								// qgetcol3
@@ -1003,8 +1003,8 @@ static int cmdfunc_extcmd( int cmd )
 		APTR ap2;
 		COLLISIONLOG *log;
 		double x,y;
-		ap = code_getva( &pv );			// ƒpƒ‰ƒ[ƒ^•Ï”
-		ap2 = code_getva( &pv2 );		// ƒpƒ‰ƒ[ƒ^•Ï”
+		ap = code_getva( &pv );			// ãƒ‘ãƒ©ãƒ¡ãƒ¼ã‚¿å¤‰æ•°
+		ap2 = code_getva( &pv2 );		// ãƒ‘ãƒ©ãƒ¡ãƒ¼ã‚¿å¤‰æ•°
 		if ( game == NULL ) return -1;
 		log = game->curlog;
 		if ( log == NULL ) {
@@ -1013,8 +1013,8 @@ static int cmdfunc_extcmd( int cmd )
 			x = (double)log->bound;
 			y = (double)log->slide;
 		}
-		code_setva( pv, ap, TYPE_DNUM, &x );		// •Ï”‚É’l‚ğ‘ã“ü
-		code_setva( pv2, ap2, TYPE_DNUM, &y );		// •Ï”‚É’l‚ğ‘ã“ü
+		code_setva( pv, ap, TYPE_DNUM, &x );		// å¤‰æ•°ã«å€¤ã‚’ä»£å…¥
+		code_setva( pv2, ap2, TYPE_DNUM, &y );		// å¤‰æ•°ã«å€¤ã‚’ä»£å…¥
 		break;
 		}
 	case 0x1d:								// qmat
@@ -1064,18 +1064,18 @@ static int cmdfunc_extcmd( int cmd )
 		int id;
 		int u1,u2,u3;
 		id = code_getdi(0);
-		ap = code_getva( &pv );			// ƒpƒ‰ƒ[ƒ^•Ï”
-		ap2 = code_getva( &pv2 );		// ƒpƒ‰ƒ[ƒ^•Ï”
-		ap3 = code_getva( &pv3 );		// ƒpƒ‰ƒ[ƒ^•Ï”
+		ap = code_getva( &pv );			// ãƒ‘ãƒ©ãƒ¡ãƒ¼ã‚¿å¤‰æ•°
+		ap2 = code_getva( &pv2 );		// ãƒ‘ãƒ©ãƒ¡ãƒ¼ã‚¿å¤‰æ•°
+		ap3 = code_getva( &pv3 );		// ãƒ‘ãƒ©ãƒ¡ãƒ¼ã‚¿å¤‰æ•°
 		if ( game == NULL ) return -1;
 		GAMEROCK *gr = game->getGameRock( id );
 		if ( gr == NULL ) return -1;
 		u1 = gr->material_type;
 		u2 = gr->material_id;
 		u3 = gr->material_subid;
-		code_setva( pv, ap, TYPE_INUM, &u1 );		// •Ï”‚É’l‚ğ‘ã“ü
-		code_setva( pv2, ap2, TYPE_INUM, &u2 );		// •Ï”‚É’l‚ğ‘ã“ü
-		code_setva( pv3, ap3, TYPE_INUM, &u3 );		// •Ï”‚É’l‚ğ‘ã“ü
+		code_setva( pv, ap, TYPE_INUM, &u1 );		// å¤‰æ•°ã«å€¤ã‚’ä»£å…¥
+		code_setva( pv2, ap2, TYPE_INUM, &u2 );		// å¤‰æ•°ã«å€¤ã‚’ä»£å…¥
+		code_setva( pv3, ap3, TYPE_INUM, &u3 );		// å¤‰æ•°ã«å€¤ã‚’ä»£å…¥
 		break;
 		}
 	case 0x21:								// qgetmat2
@@ -1092,10 +1092,10 @@ static int cmdfunc_extcmd( int cmd )
 		int u1,u2;
 		double u3,u4;
 		id = code_getdi(0);
-		ap = code_getva( &pv );			// ƒpƒ‰ƒ[ƒ^•Ï”
-		ap2 = code_getva( &pv2 );		// ƒpƒ‰ƒ[ƒ^•Ï”
-		ap3 = code_getva( &pv3 );		// ƒpƒ‰ƒ[ƒ^•Ï”
-		ap4 = code_getva( &pv4 );		// ƒpƒ‰ƒ[ƒ^•Ï”
+		ap = code_getva( &pv );			// ãƒ‘ãƒ©ãƒ¡ãƒ¼ã‚¿å¤‰æ•°
+		ap2 = code_getva( &pv2 );		// ãƒ‘ãƒ©ãƒ¡ãƒ¼ã‚¿å¤‰æ•°
+		ap3 = code_getva( &pv3 );		// ãƒ‘ãƒ©ãƒ¡ãƒ¼ã‚¿å¤‰æ•°
+		ap4 = code_getva( &pv4 );		// ãƒ‘ãƒ©ãƒ¡ãƒ¼ã‚¿å¤‰æ•°
 		if ( game == NULL ) return -1;
 		GAMEROCK *gr = game->getGameRock( id );
 		if ( gr == NULL ) return -1;
@@ -1103,10 +1103,10 @@ static int cmdfunc_extcmd( int cmd )
 		u2 = gr->material_offsety;
 		u3 = (double)gr->material_zoomx;
 		u4 = (double)gr->material_zoomy;
-		code_setva( pv, ap, TYPE_INUM, &u1 );		// •Ï”‚É’l‚ğ‘ã“ü
-		code_setva( pv2, ap2, TYPE_INUM, &u2 );		// •Ï”‚É’l‚ğ‘ã“ü
-		code_setva( pv3, ap3, TYPE_DNUM, &u3 );		// •Ï”‚É’l‚ğ‘ã“ü
-		code_setva( pv4, ap4, TYPE_DNUM, &u4 );		// •Ï”‚É’l‚ğ‘ã“ü
+		code_setva( pv, ap, TYPE_INUM, &u1 );		// å¤‰æ•°ã«å€¤ã‚’ä»£å…¥
+		code_setva( pv2, ap2, TYPE_INUM, &u2 );		// å¤‰æ•°ã«å€¤ã‚’ä»£å…¥
+		code_setva( pv3, ap3, TYPE_DNUM, &u3 );		// å¤‰æ•°ã«å€¤ã‚’ä»£å…¥
+		code_setva( pv4, ap4, TYPE_DNUM, &u4 );		// å¤‰æ•°ã«å€¤ã‚’ä»£å…¥
 		break;
 		}
 	case 0x22:								// qgetmat3
@@ -1118,15 +1118,15 @@ static int cmdfunc_extcmd( int cmd )
 		int id;
 		int u1,u2;
 		id = code_getdi(0);
-		ap = code_getva( &pv );			// ƒpƒ‰ƒ[ƒ^•Ï”
-		ap2 = code_getva( &pv2 );		// ƒpƒ‰ƒ[ƒ^•Ï”
+		ap = code_getva( &pv );			// ãƒ‘ãƒ©ãƒ¡ãƒ¼ã‚¿å¤‰æ•°
+		ap2 = code_getva( &pv2 );		// ãƒ‘ãƒ©ãƒ¡ãƒ¼ã‚¿å¤‰æ•°
 		if ( game == NULL ) return -1;
 		GAMEROCK *gr = game->getGameRock( id );
 		if ( gr == NULL ) return -1;
 		u1 = gr->material_gmode;
 		u2 = gr->material_grate;
-		code_setva( pv, ap, TYPE_INUM, &u1 );		// •Ï”‚É’l‚ğ‘ã“ü
-		code_setva( pv2, ap2, TYPE_INUM, &u2 );		// •Ï”‚É’l‚ğ‘ã“ü
+		code_setva( pv, ap, TYPE_INUM, &u1 );		// å¤‰æ•°ã«å€¤ã‚’ä»£å…¥
+		code_setva( pv2, ap2, TYPE_INUM, &u2 );		// å¤‰æ•°ã«å€¤ã‚’ä»£å…¥
 		break;
 		}
 	case 0x23:								// quser
@@ -1164,18 +1164,18 @@ static int cmdfunc_extcmd( int cmd )
 		int id;
 		int u1,u2,u3;
 		id = code_getdi(0);
-		ap = code_getva( &pv );			// ƒpƒ‰ƒ[ƒ^•Ï”
-		ap2 = code_getva( &pv2 );		// ƒpƒ‰ƒ[ƒ^•Ï”
-		ap3 = code_getva( &pv3 );		// ƒpƒ‰ƒ[ƒ^•Ï”
+		ap = code_getva( &pv );			// ãƒ‘ãƒ©ãƒ¡ãƒ¼ã‚¿å¤‰æ•°
+		ap2 = code_getva( &pv2 );		// ãƒ‘ãƒ©ãƒ¡ãƒ¼ã‚¿å¤‰æ•°
+		ap3 = code_getva( &pv3 );		// ãƒ‘ãƒ©ãƒ¡ãƒ¼ã‚¿å¤‰æ•°
 		if ( game == NULL ) return -1;
 		GAMEROCK *gr = game->getGameRock( id );
 		if ( gr == NULL ) return -1;
 		u1 = gr->user1;
 		u2 = gr->user2;
 		u3 = gr->user3;
-		code_setva( pv, ap, TYPE_INUM, &u1 );		// •Ï”‚É’l‚ğ‘ã“ü
-		code_setva( pv2, ap2, TYPE_INUM, &u2 );		// •Ï”‚É’l‚ğ‘ã“ü
-		code_setva( pv3, ap3, TYPE_INUM, &u3 );		// •Ï”‚É’l‚ğ‘ã“ü
+		code_setva( pv, ap, TYPE_INUM, &u1 );		// å¤‰æ•°ã«å€¤ã‚’ä»£å…¥
+		code_setva( pv2, ap2, TYPE_INUM, &u2 );		// å¤‰æ•°ã«å€¤ã‚’ä»£å…¥
+		code_setva( pv3, ap3, TYPE_INUM, &u3 );		// å¤‰æ•°ã«å€¤ã‚’ä»£å…¥
 		break;
 		}
 	case 0x26:								// qgetuser2
@@ -1189,18 +1189,18 @@ static int cmdfunc_extcmd( int cmd )
 		int id;
 		double u4,u5,u6;
 		id = code_getdi(0);
-		ap = code_getva( &pv );			// ƒpƒ‰ƒ[ƒ^•Ï”
-		ap2 = code_getva( &pv2 );		// ƒpƒ‰ƒ[ƒ^•Ï”
-		ap3 = code_getva( &pv3 );		// ƒpƒ‰ƒ[ƒ^•Ï”
+		ap = code_getva( &pv );			// ãƒ‘ãƒ©ãƒ¡ãƒ¼ã‚¿å¤‰æ•°
+		ap2 = code_getva( &pv2 );		// ãƒ‘ãƒ©ãƒ¡ãƒ¼ã‚¿å¤‰æ•°
+		ap3 = code_getva( &pv3 );		// ãƒ‘ãƒ©ãƒ¡ãƒ¼ã‚¿å¤‰æ•°
 		if ( game == NULL ) return -1;
 		GAMEROCK *gr = game->getGameRock( id );
 		if ( gr == NULL ) return -1;
 		u4 = (double)gr->user4;
 		u5 = (double)gr->user5;
 		u6 = (double)gr->user6;
-		code_setva( pv, ap, TYPE_DNUM, &u4 );		// •Ï”‚É’l‚ğ‘ã“ü
-		code_setva( pv2, ap2, TYPE_DNUM, &u5 );		// •Ï”‚É’l‚ğ‘ã“ü
-		code_setva( pv3, ap3, TYPE_DNUM, &u6 );		// •Ï”‚É’l‚ğ‘ã“ü
+		code_setva( pv, ap, TYPE_DNUM, &u4 );		// å¤‰æ•°ã«å€¤ã‚’ä»£å…¥
+		code_setva( pv2, ap2, TYPE_DNUM, &u5 );		// å¤‰æ•°ã«å€¤ã‚’ä»£å…¥
+		code_setva( pv3, ap3, TYPE_DNUM, &u6 );		// å¤‰æ•°ã«å€¤ã‚’ä»£å…¥
 		break;
 		}
 	case 0x27:								// qdamper
@@ -1223,15 +1223,15 @@ static int cmdfunc_extcmd( int cmd )
 		APTR ap2;
 		double d1,d2;
 		id = code_getdi(0);
-		ap = code_getva( &pv );			// ƒpƒ‰ƒ[ƒ^•Ï”
-		ap2 = code_getva( &pv2 );		// ƒpƒ‰ƒ[ƒ^•Ï”
+		ap = code_getva( &pv );			// ãƒ‘ãƒ©ãƒ¡ãƒ¼ã‚¿å¤‰æ•°
+		ap2 = code_getva( &pv2 );		// ãƒ‘ãƒ©ãƒ¡ãƒ¼ã‚¿å¤‰æ•°
 		if ( game == NULL ) return -1;
 		ROCK* pR = game->getRock( id );
 		if ( pR == NULL ) return -1;
 		d1 = (double)pR->damper;
 		d2 = (double)pR->friction;
-		code_setva( pv, ap, TYPE_DNUM, &d1 );	// •Ï”‚É’l‚ğ‘ã“ü
-		code_setva( pv2, ap2, TYPE_DNUM, &d2 );	// •Ï”‚É’l‚ğ‘ã“ü
+		code_setva( pv, ap, TYPE_DNUM, &d1 );	// å¤‰æ•°ã«å€¤ã‚’ä»£å…¥
+		code_setva( pv2, ap2, TYPE_DNUM, &d2 );	// å¤‰æ•°ã«å€¤ã‚’ä»£å…¥
 		break;
 		}
 	case 0x29:								// qpush
@@ -1287,7 +1287,7 @@ static int cmdfunc_extcmd( int cmd )
 		APTR ap;
 		int id;
 		ROCK* pR;
-		ap = code_getva( &pv );			// ƒpƒ‰ƒ[ƒ^•Ï”
+		ap = code_getva( &pv );			// ãƒ‘ãƒ©ãƒ¡ãƒ¼ã‚¿å¤‰æ•°
 		if ( game == NULL ) return -1;
 		id = -1;
 		while(1) {
@@ -1308,7 +1308,7 @@ static int cmdfunc_extcmd( int cmd )
 			}
 			find_id++;
 		}
-		code_setva( pv, ap, TYPE_INUM, &id );		// •Ï”‚É’l‚ğ‘ã“ü
+		code_setva( pv, ap, TYPE_INUM, &id );		// å¤‰æ•°ã«å€¤ã‚’ä»£å…¥
 		break;
 		}
 	case 0x2e:								// qinertia
@@ -1331,23 +1331,23 @@ static int cmdfunc_extcmd( int cmd )
 		APTR ap2;
 		double d1,d2;
 		id = code_getdi(0);
-		ap = code_getva( &pv );			// ƒpƒ‰ƒ[ƒ^•Ï”
-		ap2 = code_getva( &pv2 );		// ƒpƒ‰ƒ[ƒ^•Ï”
+		ap = code_getva( &pv );			// ãƒ‘ãƒ©ãƒ¡ãƒ¼ã‚¿å¤‰æ•°
+		ap2 = code_getva( &pv2 );		// ãƒ‘ãƒ©ãƒ¡ãƒ¼ã‚¿å¤‰æ•°
 		if ( game == NULL ) return -1;
 		ROCK* pR = game->getRock( id );
 		if ( pR == NULL ) return -1;
 		d1 = (double)pR->inertia;
 		d2 = (double)pR->gravity;
-		code_setva( pv, ap, TYPE_DNUM, &d1 );	// •Ï”‚É’l‚ğ‘ã“ü
-		code_setva( pv2, ap2, TYPE_DNUM, &d2 );	// •Ï”‚É’l‚ğ‘ã“ü
+		code_setva( pv, ap, TYPE_DNUM, &d1 );	// å¤‰æ•°ã«å€¤ã‚’ä»£å…¥
+		code_setva( pv2, ap2, TYPE_DNUM, &d2 );	// å¤‰æ•°ã«å€¤ã‚’ä»£å…¥
 		break;
 		}
 	case 0x30:								// qgetversion
 		{
 		PVal *pv;
 		APTR ap;
-		ap = code_getva( &pv );			// ƒpƒ‰ƒ[ƒ^•Ï”
-		code_setva( pv, ap, TYPE_STRING, VERINFO );	// •Ï”‚É’l‚ğ‘ã“ü
+		ap = code_getva( &pv );			// ãƒ‘ãƒ©ãƒ¡ãƒ¼ã‚¿å¤‰æ•°
+		code_setva( pv, ap, TYPE_STRING, VERINFO );	// å¤‰æ•°ã«å€¤ã‚’ä»£å…¥
 		break;
 		}
 	case 0x31:								// qinner
@@ -1356,13 +1356,13 @@ static int cmdfunc_extcmd( int cmd )
 		PVal *pv;
 		APTR ap;
 		float d1,d2;
-		ap = code_getva( &pv );			// ƒpƒ‰ƒ[ƒ^•Ï”
+		ap = code_getva( &pv );			// ãƒ‘ãƒ©ãƒ¡ãƒ¼ã‚¿å¤‰æ•°
 		d1 = (float)code_getdd( 0.0 );
 		d2 = (float)code_getdd( 0.0 );
 		id = code_getdi(-1);
 		if ( game == NULL ) return -1;
 		res = game->CheckInsidePosition( id, d1, d2 );
-		code_setva( pv, ap, TYPE_INUM, &res );	// •Ï”‚É’l‚ğ‘ã“ü
+		code_setva( pv, ap, TYPE_INUM, &res );	// å¤‰æ•°ã«å€¤ã‚’ä»£å…¥
 		break;
 		}
 
@@ -1376,7 +1376,7 @@ static int cmdfunc_extcmd( int cmd )
 static int termfunc_extcmd( int option )
 {
 	//		termfunc : TYPE_EXTCMD
-	//		(“à‘ GUI)
+	//		(å†…è”µGUI)
 	//
 	OmkeTerm();
 	return 0;

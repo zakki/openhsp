@@ -48,7 +48,7 @@ static double bmscr_obj_dval;
 
 void SetObjectEventNoticePtr( int *ptr )
 {
-	//		ƒCƒxƒ“ƒg‚Ì’lƒ|ƒCƒ“ƒ^‚ğİ’è(stat’l)
+	//		ã‚¤ãƒ™ãƒ³ãƒˆæ™‚ã®å€¤ãƒã‚¤ãƒ³ã‚¿ã‚’è¨­å®š(statå€¤)
 	//
 	notice_ptr = ptr;
 }
@@ -59,7 +59,7 @@ static void Object_JumpEvent(HSPOBJINFO *info, int wparam)
 
 	if (wparam != HSPOBJ_NOTICE_CLICK_END) return;
 
-	*notice_ptr = info->owsize;				// stat‚ğXV
+	*notice_ptr = info->owsize;				// statã‚’æ›´æ–°
 
 	Hsp3ObjButton *btn = (Hsp3ObjButton *)info->btnset;
 	if (btn == NULL) return;
@@ -75,7 +75,7 @@ static void Object_JumpEvent(HSPOBJINFO *info, int wparam)
 
 static void Object_SendSetVar(HSPOBJINFO *obj)
 {
-	//	ƒIƒuƒWƒFƒNƒg‚ÉŠÖ˜A•t‚¯‚³‚ê‚½•Ï”‚Ì’l‚ğXV‚·‚é
+	//	ã‚ªãƒ–ã‚¸ã‚§ã‚¯ãƒˆã«é–¢é€£ä»˜ã‘ã•ã‚ŒãŸå¤‰æ•°ã®å€¤ã‚’æ›´æ–°ã™ã‚‹
 	//
 	HSP3VARSET *var = obj->varset;
 	if (var == NULL) return;
@@ -84,18 +84,18 @@ static void Object_SendSetVar(HSPOBJINFO *obj)
 
 static void Object_SendSetVar(HSPOBJINFO *obj, int type, void *ptr)
 {
-	//	ƒIƒuƒWƒFƒNƒg‚ÉŠÖ˜A•t‚¯‚³‚ê‚½•Ï”‚Ì’l‚ğXV‚·‚é
-	//	(”CˆÓ‚ÌŒ^‚Æƒ|ƒCƒ“ƒ^‚É‚æ‚éXV)
+	//	ã‚ªãƒ–ã‚¸ã‚§ã‚¯ãƒˆã«é–¢é€£ä»˜ã‘ã•ã‚ŒãŸå¤‰æ•°ã®å€¤ã‚’æ›´æ–°ã™ã‚‹
+	//	(ä»»æ„ã®å‹ã¨ãƒã‚¤ãƒ³ã‚¿ã«ã‚ˆã‚‹æ›´æ–°)
 	//
 	HSP3VARSET *var = obj->varset;
 	if (var == NULL) return;
 
 	if (var->type == type) {
-		//	“¯‚¶ƒ^ƒCƒv‚Ìê‡‚Í‚»‚Ì‚Ü‚Ü‘ã“ü‚·‚é
+		//	åŒã˜ã‚¿ã‚¤ãƒ—ã®å ´åˆã¯ãã®ã¾ã¾ä»£å…¥ã™ã‚‹
 		code_setva(var->pval, var->aptr, var->type, ptr);
 		return;
 	}
-	//	Œ^‚Ì•ÏŠ·
+	//	å‹ã®å¤‰æ›
 	char *p = (char *)HspVarCoreCnv(type, var->type, ptr);
 	code_setva(var->pval, var->aptr, var->type, p);
 }
@@ -137,7 +137,7 @@ static void Object_ButtonDraw( HSPOBJINFO *info )
 	tcol = info->fontcolor & 0xffffff;
 	//tcol = 0xffffff;
 	if ( info->srcid < 0 ) {
-		//	ƒOƒ‰ƒf[ƒVƒ‡ƒ“‚É‚æ‚é•W€ƒ{ƒ^ƒ“
+		//	ã‚°ãƒ©ãƒ‡ãƒ¼ã‚·ãƒ§ãƒ³ã«ã‚ˆã‚‹æ¨™æº–ãƒœã‚¿ãƒ³
 		if ( info->enableflag ) {
 			if ( info->tapflag == 1 ) {
 				col1 = 0x909090; col2 = 0xc0c0c0;
@@ -159,7 +159,7 @@ static void Object_ButtonDraw( HSPOBJINFO *info )
 		bm->Line( x1, y2 );
 		bm->Line( x1, y1 );
 	} else {
-		//	‰æ‘œ‚É‚æ‚éƒ{ƒ^ƒ“
+		//	ç”»åƒã«ã‚ˆã‚‹ãƒœã‚¿ãƒ³
 		col1 = btn->normal_x; col2 = btn->normal_y;
 		if ( info->enableflag ) {
 			if ( info->tapflag == 1 ) {
@@ -286,7 +286,7 @@ static void Object_CheckBox(HSPOBJINFO *info, int wparam)
 
 static void Object_InputBoxDrawBoxf(Bmscr *bm, texmesPos *tpos, int clip_x, int clip_y, int p_x1, int p_y1, int p_x2, int p_y2, int sw )
 {
-	//	ƒNƒŠƒbƒsƒ“ƒO•t‚«‚Ìboxf
+	//	ã‚¯ãƒªãƒƒãƒ”ãƒ³ã‚°ä»˜ãã®boxf
 	//
 	int x1, y1, x2, y2;
 	int cx1, cy1, cx2, cy2;
@@ -314,16 +314,16 @@ static void Object_InputBoxDrawBoxf(Bmscr *bm, texmesPos *tpos, int clip_x, int 
 
 static void Object_InputBoxDrawSub(Bmscr *bm, int x, int y, texmesPos *tpos, int color, bool cursor)
 {
-	//	1s•`‰æ+ƒJ[ƒ\ƒ‹•\¦
+	//	1è¡Œæç”»+ã‚«ãƒ¼ã‚½ãƒ«è¡¨ç¤º
 	//
 	int x1 = x+2;
 	int y1 = y+2;
 
-	//	“§–¾“x‚Ìİ’è
+	//	é€æ˜åº¦ã®è¨­å®š
 	bm->gmode = 3;
 	bm->gfrate = 255;
 
-	//	•¶š‚ğ•`‰æ
+	//	æ–‡å­—ã‚’æç”»
 	bm->Setcolor(color);
 	bm->cx = x1;
 	bm->cy = y1;
@@ -333,7 +333,7 @@ static void Object_InputBoxDrawSub(Bmscr *bm, int x, int y, texmesPos *tpos, int
 	x1 = tpos->lastcx;
 	y1 = tpos->lastcy;
 	if (cursor) {
-		//	ƒJ[ƒ\ƒ‹‚ğ•`‰æ
+		//	ã‚«ãƒ¼ã‚½ãƒ«ã‚’æç”»
 		int offset = tpos->getCaretX();
 		tpos->caret_cnt+=bm->passed_time;
 		if ((tpos->caret_cnt & 512) == 0) {
@@ -391,7 +391,7 @@ static void Object_InputBoxDraw(HSPOBJINFO *info)
 	btn->tpos.setSize(info->sx-4, info->sy-4);
 
 	if (bgcol != 0) {
-		//	”wŒi‚ğ•`‰æ
+		//	èƒŒæ™¯ã‚’æç”»
 		bm->gmode = 3;
 		bm->gfrate = (bgcol >> 24) & 0xff;
 		bm->Setcolor(bgcol);
@@ -410,7 +410,7 @@ static void Object_InputBoxDraw(HSPOBJINFO *info)
 
 static void Object_InputBoxApplyVAR(HSPOBJINFO *info)
 {
-	//	edit‚Ì“à—e‚ğvar‚É”½‰f‚³‚¹‚é
+	//	editã®å†…å®¹ã‚’varã«åæ˜ ã•ã›ã‚‹
 	Bmscr *bm = (Bmscr *)info->bm;
 	Hsp3ObjInput *edit = (Hsp3ObjInput *)info->btnset;
 	if (edit == NULL) return;
@@ -422,9 +422,9 @@ static void Object_InputBoxApplyVAR(HSPOBJINFO *info)
 
 static int Object_InputBoxApplyFuncKey(HSPOBJINFO *info, int code)
 {
-	//		ƒtƒ@ƒ“ƒNƒVƒ‡ƒ“ƒL[‚ğˆ—‚·‚é
-	//		(HSPOBJ_NOTICE_KEY_F* ‚ğ‘—M‚·‚é)
-	//		(•Ô’l 0=OKA1=XV‚ ‚èAƒ}ƒCƒiƒX’l‚ÍƒGƒ‰[)
+	//		ãƒ•ã‚¡ãƒ³ã‚¯ã‚·ãƒ§ãƒ³ã‚­ãƒ¼ã‚’å‡¦ç†ã™ã‚‹
+	//		(HSPOBJ_NOTICE_KEY_F* ã‚’é€ä¿¡ã™ã‚‹)
+	//		(è¿”å€¤ 0=OKã€1=æ›´æ–°ã‚ã‚Šã€ãƒã‚¤ãƒŠã‚¹å€¤ã¯ã‚¨ãƒ©ãƒ¼)
 	//
 	if ((code < HSPOBJ_NOTICE_KEY_F1) || (code > HSPOBJ_NOTICE_KEY_F12)) return -1;
 /*
@@ -440,9 +440,9 @@ static int Object_InputBoxApplyFuncKey(HSPOBJINFO *info, int code)
 
 static int Object_InputBoxApplySpecialKey(HSPOBJINFO *info, int code)
 {
-	//		ƒRƒ“ƒgƒ[ƒ‹ƒL[‚ğˆ—‚·‚é
-	//		(ctrl+A`Z‚ğ1`26‚Æ‚µ‚Ä‘—M‚·‚é)
-	//		0=OKA‚»‚êˆÈŠO‚ÍNG
+	//		ã‚³ãƒ³ãƒˆãƒ­ãƒ¼ãƒ«ã‚­ãƒ¼ã‚’å‡¦ç†ã™ã‚‹
+	//		(ctrl+Aï½Zã‚’1ï½26ã¨ã—ã¦é€ä¿¡ã™ã‚‹)
+	//		0=OKã€ãã‚Œä»¥å¤–ã¯NG
 	//
 	int key;
 	Bmscr *bm = (Bmscr *)info->bm;
@@ -697,7 +697,7 @@ static void Object_SetLayerObject(HSPOBJINFO *info, int type, void *ptr)
 
 int Bmscr::NewHSPObject( void )
 {
-	//		‹ó‚«ID‚ğ’T‚·
+	//		ç©ºãIDã‚’æ¢ã™
 	//
 	int i,id;
 	id = 0;
@@ -792,7 +792,7 @@ HSPOBJINFO *Bmscr::GetHSPObjectSafe( int id )
 
 void Bmscr::DeleteHSPObject( int id )
 {
-	//		ƒIƒuƒWƒFƒNƒgíœ
+	//		ã‚ªãƒ–ã‚¸ã‚§ã‚¯ãƒˆå‰Šé™¤
 	//
 	HSPOBJINFO *obj;
 	obj = GetHSPObjectSafe( id );
@@ -814,7 +814,7 @@ void Bmscr::DeleteHSPObject( int id )
 
 void Bmscr::UpdateHSPObject(int id, int type, void *ptr)
 {
-	//		ƒIƒuƒWƒFƒNƒg‚É’l‚ğİ’è‚·‚é
+	//		ã‚ªãƒ–ã‚¸ã‚§ã‚¯ãƒˆã«å€¤ã‚’è¨­å®šã™ã‚‹
 	//
 	HSPOBJINFO *obj;
 	obj = GetHSPObjectSafe(id);
@@ -993,7 +993,7 @@ int Bmscr::AddHSPObjectLayer(int sizex, int sizey, int layer, int val, int mode,
 	if (lay < HSPOBJ_OPTION_LAYER_MIN) lay = HSPOBJ_OPTION_LAYER_MIN;
 	if (lay > HSPOBJ_OPTION_LAYER_MAX) lay = HSPOBJ_OPTION_LAYER_MAX;
 
-	if (( layer & HSPOBJ_OPTION_LAYER_MULTI ) == 0) {		// d•¡“o˜^‚ğŒŸo‚·‚é
+	if (( layer & HSPOBJ_OPTION_LAYER_MULTI ) == 0) {		// é‡è¤‡ç™»éŒ²ã‚’æ¤œå‡ºã™ã‚‹
 		obj = mem_obj;
 		for (int i = 0; i < objmax; i++) {
 			if (obj->owmode != HSPOBJ_NONE) {
@@ -1042,7 +1042,7 @@ int Bmscr::AddHSPObjectLayer(int sizex, int sizey, int layer, int val, int mode,
 
 void Bmscr::ResetHSPObject(void)
 {
-	//		‚·‚×‚Ä‚ÌObject‚ğƒŠƒZƒbƒg‚·‚é
+	//		ã™ã¹ã¦ã®Objectã‚’ãƒªã‚»ãƒƒãƒˆã™ã‚‹
 	//
 	int i;
 	if (mem_obj != NULL) {
@@ -1065,7 +1065,7 @@ void Bmscr::ResetHSPObject(void)
 
 int Bmscr::ActivateHSPObject(int id)
 {
-	//		ƒtƒH[ƒJƒX‚ğON‚É‚·‚é
+	//		ãƒ•ã‚©ãƒ¼ã‚«ã‚¹ã‚’ONã«ã™ã‚‹
 	//
 	HSPOBJINFO *obj;
 
@@ -1138,7 +1138,7 @@ void Bmscr::SetHSPObjectFont(int id)
 int Bmscr::DrawAllObjects( void )
 {
 
-	//		DishSystemObject‚ğ•`‰æ‚·‚é
+	//		DishSystemObjectã‚’æç”»ã™ã‚‹
 	//
 	int i;
 	int bak_mulcolor;
@@ -1150,7 +1150,7 @@ int Bmscr::DrawAllObjects( void )
 	if ( info == NULL ) return -1;
 
 	bak_mulcolor = this->mulcolor;
-	SetMulcolor( 255,255,255 );				// æZƒJƒ‰[‚ğ•W€‚É–ß‚·
+	SetMulcolor( 255,255,255 );				// ä¹—ç®—ã‚«ãƒ©ãƒ¼ã‚’æ¨™æº–ã«æˆ»ã™
 
 	for( i=0;i<this->objmax;i++ ) {
 		if ( info->owmode != HSPOBJ_NONE ) {
@@ -1163,14 +1163,14 @@ int Bmscr::DrawAllObjects( void )
 		info++;
 	}
 
-	SetMulcolor( (bak_mulcolor>>16)&0xff, (bak_mulcolor>>8)&0xff, (bak_mulcolor)&0xff );				// æZƒJƒ‰[‚ğŒ³‚É–ß‚·
+	SetMulcolor( (bak_mulcolor>>16)&0xff, (bak_mulcolor>>8)&0xff, (bak_mulcolor)&0xff );				// ä¹—ç®—ã‚«ãƒ©ãƒ¼ã‚’å…ƒã«æˆ»ã™
 	return 0;
 }
 
 
 void Bmscr::SendHSPObjectNotice(int wparam)
 {
-	//		DishSystemObject‚É’Ê’mƒR[ƒh(HSPOBJ_NOTICE_*)‚ğ‘—‚é
+	//		DishSystemObjectã«é€šçŸ¥ã‚³ãƒ¼ãƒ‰(HSPOBJ_NOTICE_*)ã‚’é€ã‚‹
 	//
 	HSPOBJINFO *info;
 
@@ -1191,7 +1191,7 @@ void Bmscr::SendHSPObjectNotice(int wparam)
 
 void Bmscr::SendHSPLayerObjectNotice(int layer, int cmd)
 {
-	//		ƒŒƒCƒ„[ƒIƒuƒWƒFƒNƒg‚Ì’Ê’mˆ—
+	//		ãƒ¬ã‚¤ãƒ¤ãƒ¼ã‚ªãƒ–ã‚¸ã‚§ã‚¯ãƒˆã®é€šçŸ¥å‡¦ç†
 	//
 	int i;
 	HSPOBJINFO *obj;
@@ -1213,8 +1213,8 @@ void Bmscr::SendHSPLayerObjectNotice(int layer, int cmd)
 
 void Bmscr::SelectEditHSPObject(void)
 {
-	//		ƒIƒuƒWƒFƒNƒg‚Ì•¶š—ñ‘I‘ğ‚ğƒŠƒZƒbƒg‚·‚é
-	//		(V‹K‚Ì‘I‘ğ‚É•K‚¸ŒÄ‚Ô‚±‚Æ)
+	//		ã‚ªãƒ–ã‚¸ã‚§ã‚¯ãƒˆã®æ–‡å­—åˆ—é¸æŠã‚’ãƒªã‚»ãƒƒãƒˆã™ã‚‹
+	//		(æ–°è¦ã®é¸æŠæ™‚ã«å¿…ãšå‘¼ã¶ã“ã¨)
 	int i;
 	HSPOBJINFO *info;
 	info = this->mem_obj;
@@ -1234,7 +1234,7 @@ void Bmscr::SelectEditHSPObject(void)
 
 int Bmscr::UpdateAllObjects( void )
 {
-	//		DishSystemObject‚ğXV‚·‚é
+	//		DishSystemObjectã‚’æ›´æ–°ã™ã‚‹
 	//
 	int i,x,y,msx,msy,tap;
 	HSPOBJINFO *info;
@@ -1247,14 +1247,14 @@ int Bmscr::UpdateAllObjects( void )
 	msx = savepos[BMSCR_SAVEPOS_MOSUEX];
 	msy = savepos[BMSCR_SAVEPOS_MOSUEY];
 
-	if ( this->tapinvalid ) {				// ƒ{ƒ^ƒ“‚Ì‚È‚¢êŠ‚Å‰Ÿ‚µ‚½Œã‚Í—£‚·‚Ü‚Å‘Ò‚Â
+	if ( this->tapinvalid ) {				// ãƒœã‚¿ãƒ³ã®ãªã„å ´æ‰€ã§æŠ¼ã—ãŸå¾Œã¯é›¢ã™ã¾ã§å¾…ã¤
 		if ( this->tapstat == 0 ) {
 			this->tapinvalid = 0;
 		}
 		return -1;
 	}
 
-	if ( this->cur_obj != NULL ) {			// ƒ{ƒ^ƒ“‚ÉƒtƒH[ƒJƒX‚µ‚Ä‚¢‚é(‰Ÿ‚µ‚½Œã)
+	if ( this->cur_obj != NULL ) {			// ãƒœã‚¿ãƒ³ã«ãƒ•ã‚©ãƒ¼ã‚«ã‚¹ã—ã¦ã„ã‚‹æ™‚(æŠ¼ã—ãŸå¾Œ)
 
 		//Alertf( "[BtnHold]%d,%d,%d",msx,msy,tapstat );
 
@@ -1286,7 +1286,7 @@ int Bmscr::UpdateAllObjects( void )
 		return -1;
 	}
 
-	//		‚Ü‚¾‰½‚à‰Ÿ‚µ‚Ä‚¢‚È‚¢ó‘Ô
+	//		ã¾ã ä½•ã‚‚æŠ¼ã—ã¦ã„ãªã„çŠ¶æ…‹
 	//
 	focus = NULL;
 	focusid = -1;
@@ -1318,7 +1318,7 @@ int Bmscr::UpdateAllObjects( void )
 
 	//Alertf( "[BtnPush][%x,%d]%d,%d,%d",focus,msx,msy,tapstat );
 
-	//		‰Ÿ‚µ‚½ƒ{ƒ^ƒ“‚Ì”»’è
+	//		æŠ¼ã—ãŸãƒœã‚¿ãƒ³ã®åˆ¤å®š
 	//
 	if ( this->tapstat == 1 ) {
 		if ( focus != NULL ) {

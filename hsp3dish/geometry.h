@@ -29,29 +29,29 @@ typedef float (*FMatRef)[4];
 
 #define VECREF (VECTOR *)(FVRef)
 
-// ®”VECTORŒ^
+// æ•´æ•°VECTORå‹
 typedef struct {
 int x,y,z,w;
 } IVECTOR;
 
 /*
-// ¬”VECTORŒ^
+// å°æ•°VECTORå‹
 typedef struct {
 float x,y,z,w;
 } FVECTOR;
 */
 
-// ®”AXISŒ^
+// æ•´æ•°AXISå‹
 typedef struct {
 int x,y;
 } IAXIS;
 
-// ¬”AXISŒ^
+// å°æ•°AXISå‹
 typedef struct {
 float x,y;
 } FAXIS;
 
-// ®”AXIS2Œ^(UV•t‚«)
+// æ•´æ•°AXIS2å‹(UVä»˜ã)
 typedef struct {
 short x,y,tx,ty;
 } IAXIS2;
@@ -60,14 +60,14 @@ short x,y,tx,ty;
 #define setIAXIS2( a,b,c,d,e ) a.x=(int)b;a.y=(int)c;a.tx=(int)d;a.ty=(int)e;
 
 typedef struct {
-	VECTOR a;			// “§‹•ÏŠ·s—ñ‚ÌŒW”(x, y, z0, z1)
-	VECTOR b;			// “§‹•ÏŠ·s—ñ‚Ì‰ÁZ’l (0, 0, z2, z3)
-	VECTOR ra;			// ŒW”‚Ì‹t”(1/K)
-	VECTOR rb;			// ‰ÁZ’l‚Ì•â” (-K)
-	VECTOR v;			// ‚yƒoƒbƒtƒ@‚ÆƒtƒHƒO‚Ìƒpƒ‰ƒ[ƒ^
-	VECTOR t;			// ƒIƒtƒZƒbƒg‚w‚xÀ•W‚Æ‚yƒoƒbƒtƒ@‚ÆƒtƒHƒO‚Ìƒpƒ‰ƒ[ƒ^
-	VECTOR cmin;		// ƒNƒŠƒbƒvÅ¬”ÍˆÍ{ƒeƒNƒXƒ`ƒƒ•â³ŒW”
-	VECTOR cmax;		// ƒNƒŠƒbƒvÅ‘å”ÍˆÍ
+	VECTOR a;			// é€è¦–å¤‰æ›è¡Œåˆ—ã®ä¿‚æ•°(x, y, z0, z1)
+	VECTOR b;			// é€è¦–å¤‰æ›è¡Œåˆ—ã®åŠ ç®—å€¤ (0, 0, z2, z3)
+	VECTOR ra;			// ä¿‚æ•°ã®é€†æ•°(1/K)
+	VECTOR rb;			// åŠ ç®—å€¤ã®è£œæ•° (-K)
+	VECTOR v;			// ï¼ºãƒãƒƒãƒ•ã‚¡ã¨ãƒ•ã‚©ã‚°ã®ãƒ‘ãƒ©ãƒ¡ãƒ¼ã‚¿
+	VECTOR t;			// ã‚ªãƒ•ã‚»ãƒƒãƒˆï¼¸ï¼¹åº§æ¨™ã¨ï¼ºãƒãƒƒãƒ•ã‚¡ã¨ãƒ•ã‚©ã‚°ã®ãƒ‘ãƒ©ãƒ¡ãƒ¼ã‚¿
+	VECTOR cmin;		// ã‚¯ãƒªãƒƒãƒ—æœ€å°ç¯„å›²ï¼‹ãƒ†ã‚¯ã‚¹ãƒãƒ£è£œæ­£ä¿‚æ•°
+	VECTOR cmax;		// ã‚¯ãƒªãƒƒãƒ—æœ€å¤§ç¯„å›²
 } ViewScreen;
 
 
@@ -90,83 +90,83 @@ void MulVector( VECTOR *dst, VECTOR *v0, VECTOR *v1 );
 void DivVector( VECTOR *dst, VECTOR *v0, float r );
 void ScaleVector( VECTOR *dst, VECTOR *v0, float r );
 
-//  ƒ}ƒgƒŠƒbƒNƒX‰Šú‰»
+//  ãƒãƒˆãƒªãƒƒã‚¯ã‚¹åˆæœŸåŒ–
 void  InitMatrix(void);
-//  ¶èŒn‚É‚·‚é
+//  å·¦æ‰‹ç³»ã«ã™ã‚‹
 void  LeftHand(void);
-//  ‰EèŒn‚É‚·‚é(default)
+//  å³æ‰‹ç³»ã«ã™ã‚‹(default)
 void  RightHand(void);
-//  ƒ}ƒgƒŠƒbƒNƒX‚ÌƒRƒs[
+//  ãƒãƒˆãƒªãƒƒã‚¯ã‚¹ã®ã‚³ãƒ”ãƒ¼
 void  CopyMatrix( MATRIX *src, MATRIX *dst );
-//  ƒ}ƒgƒŠƒbƒNƒX‘Ş”ğ
+//  ãƒãƒˆãƒªãƒƒã‚¯ã‚¹é€€é¿
 void  PushMatrix(void);
-//  ƒ}ƒgƒŠƒbƒNƒX•œ‹A
+//  ãƒãƒˆãƒªãƒƒã‚¯ã‚¹å¾©å¸°
 void  PopMatrix(void);
-//  ƒJƒŒƒ“ƒgƒ}ƒgƒŠƒbƒNƒXæ“¾
+//  ã‚«ãƒ¬ãƒ³ãƒˆãƒãƒˆãƒªãƒƒã‚¯ã‚¹å–å¾—
 void  GetCurrentMatrix(MATRIX *dst);
 MATRIX *GetCurrentMatrixPtr( void );
-//  ƒJƒŒƒ“ƒgƒ}ƒgƒŠƒbƒNƒXİ’è
+//  ã‚«ãƒ¬ãƒ³ãƒˆãƒãƒˆãƒªãƒƒã‚¯ã‚¹è¨­å®š
 void  SetCurrentMatrix(MATRIX *dst);
-//  ƒJƒŒƒ“ƒgƒ}ƒgƒŠƒbƒNƒX‚Ìƒgƒ‰ƒ“ƒX‚ğ“¾‚é
+//  ã‚«ãƒ¬ãƒ³ãƒˆãƒãƒˆãƒªãƒƒã‚¯ã‚¹ã®ãƒˆãƒ©ãƒ³ã‚¹ã‚’å¾—ã‚‹
 void  GetCurrentTrans(VECTOR *v);
-//  ’PˆÊƒ}ƒgƒŠƒbƒNƒX
+//  å˜ä½ãƒãƒˆãƒªãƒƒã‚¯ã‚¹
 void  UnitMatrix(void);
-//  ‚w²‰ñ“]
+//  ï¼¸è»¸å›è»¢
 void  RotX(float x);
-//  ‚x²‰ñ“]
+//  ï¼¹è»¸å›è»¢
 void  RotY(float y);
-//  ‚y²‰ñ“]
+//  ï¼ºè»¸å›è»¢
 void  RotZ(float z);
-//  •½sˆÚ“®
+//  å¹³è¡Œç§»å‹•
 void  Trans(float x, float y, float z);
-//  ƒXƒP[ƒ‹
+//  ã‚¹ã‚±ãƒ¼ãƒ«
 void  Scale(float x, float y, float z);
-//  “§‹“Š‰e
+//  é€è¦–æŠ•å½±
 void  Perspective(float r);
-//  “§‹“Š‰e‚©‚Â‚y‚ğ‚yƒoƒbƒtƒ@’l‚É
+//  é€è¦–æŠ•å½±ã‹ã¤ï¼ºã‚’ï¼ºãƒãƒƒãƒ•ã‚¡å€¤ã«
 void  PerspectiveWithZBuffer(float r, float N, float F, float Zn, float Zf);
 void  PerspectiveFOV(float fov, float Zn, float Zf, float left, float top, float right, float bottom);
 
-//  ƒ}ƒgƒŠƒbƒNƒX“¯m‚ÌÏiƒJƒŒƒ“ƒgƒ}ƒgƒŠƒbƒNƒX‚É¶‚©‚çŠ|‚¯‚éj
+//  ãƒãƒˆãƒªãƒƒã‚¯ã‚¹åŒå£«ã®ç©ï¼ˆã‚«ãƒ¬ãƒ³ãƒˆãƒãƒˆãƒªãƒƒã‚¯ã‚¹ã«å·¦ã‹ã‚‰æ›ã‘ã‚‹ï¼‰
 void  MulMatrix(MATRIX *left);
-//  ƒ}ƒgƒŠƒbƒNƒX“¯m‚ÌÏiƒJƒŒƒ“ƒgƒ}ƒgƒŠƒbƒNƒX‚É‰E‚©‚çŠ|‚¯‚éj
+//  ãƒãƒˆãƒªãƒƒã‚¯ã‚¹åŒå£«ã®ç©ï¼ˆã‚«ãƒ¬ãƒ³ãƒˆãƒãƒˆãƒªãƒƒã‚¯ã‚¹ã«å³ã‹ã‚‰æ›ã‘ã‚‹ï¼‰
 void  MulMatrixR(MATRIX *right);
-//  “]’us—ñ
+//  è»¢ç½®è¡Œåˆ—
 void  Transpose(MATRIX *mat);
-//  ƒ}ƒgƒŠƒbƒNƒX‚Ìs—ñ®
+//  ãƒãƒˆãƒªãƒƒã‚¯ã‚¹ã®è¡Œåˆ—å¼
 float  Determinant(MATRIX *mat);
-//  3x3s—ñ®‚Ì’li‹ts—ñ—pj
+//  3x3è¡Œåˆ—å¼ã®å€¤ï¼ˆé€†è¡Œåˆ—ç”¨ï¼‰
 float  Determinant3(MATRIX *src);
-//  ‹ts—ñ
+//  é€†è¡Œåˆ—
 int  InverseMatrix(MATRIX *mat);
-//  ƒxƒNƒgƒ‹–ƒ}ƒgƒŠƒbƒNƒX -> ƒxƒNƒgƒ‹
+//  ãƒ™ã‚¯ãƒˆãƒ«ï¼Šãƒãƒˆãƒªãƒƒã‚¯ã‚¹ -> ãƒ™ã‚¯ãƒˆãƒ«
 void  ApplyMatrix(VECTOR *v0, VECTOR *v1);
 void  ApplyMatrixN(VECTOR *v0, VECTOR *v1, int nb);
 void  ApplyMatrix(MATRIX* mat, VECTOR* v1, VECTOR* v0);
-//  ƒxƒNƒgƒ‹–ƒ}ƒgƒŠƒbƒNƒX -> ƒxƒNƒgƒ‹i‰ñ“]‚Ì‚İj
+//  ãƒ™ã‚¯ãƒˆãƒ«ï¼Šãƒãƒˆãƒªãƒƒã‚¯ã‚¹ -> ãƒ™ã‚¯ãƒˆãƒ«ï¼ˆå›è»¢ã®ã¿ï¼‰
 void  ApplyMatrixRot(VECTOR *v0, VECTOR *v1);
-//  ƒxƒNƒgƒ‹–ƒ}ƒgƒŠƒbƒNƒX -> ƒxƒNƒgƒ‹i•½sˆÚ“®‚Ì‚İj
+//  ãƒ™ã‚¯ãƒˆãƒ«ï¼Šãƒãƒˆãƒªãƒƒã‚¯ã‚¹ -> ãƒ™ã‚¯ãƒˆãƒ«ï¼ˆå¹³è¡Œç§»å‹•ã®ã¿ï¼‰
 void  ApplyMatrixTrans(VECTOR *v0, VECTOR *v1);
-//  ‚QƒxƒNƒgƒ‹‚ÌŠOÏ
+//  ï¼’ãƒ™ã‚¯ãƒˆãƒ«ã®å¤–ç©
 void  OuterProduct(VECTOR *v1, VECTOR *v2, VECTOR *dst);
-//  ‚QƒxƒNƒgƒ‹‚Ì“àÏ
+//  ï¼’ãƒ™ã‚¯ãƒˆãƒ«ã®å†…ç©
 float  InnerProduct(VECTOR *v1, VECTOR *v2);
-//  ’PˆÊƒxƒNƒgƒ‹
+//  å˜ä½ãƒ™ã‚¯ãƒˆãƒ«
 void  UnitVector(VECTOR *v);
-//  ƒJƒƒ‰ƒ}ƒgƒŠƒbƒNƒX¶¬
+//  ã‚«ãƒ¡ãƒ©ãƒãƒˆãƒªãƒƒã‚¯ã‚¹ç”Ÿæˆ
 void  LookAt(VECTOR *cam_pos, VECTOR *cam_int);
 void  LookAtWithRoll(VECTOR *cam_pos, VECTOR *cam_int, float roll);
 void GetTargetAngle( VECTOR *ang, VECTOR *src, VECTOR *target );
 
-//	View->Screenƒ}ƒgƒŠƒNƒX¶¬
+//	View->Screenãƒãƒˆãƒªã‚¯ã‚¹ç”Ÿæˆ
 void PerspectiveViewScreen( ViewScreen * vs, float scrz, float ax, float ay, 
 	       float xcenter, float ycenter, float zbufsmall, float zbufbig, float D, float F, float fognearz, float fogfarz, float W, float H);
 
-//	•½s“Š‰eƒ}ƒgƒŠƒNƒX¶¬
+//	å¹³è¡ŒæŠ•å½±ãƒãƒˆãƒªã‚¯ã‚¹ç”Ÿæˆ
 void OrthoMatrix(float basex, float basey, float width, float height, float Znear, float Zfar);
 
 
-//	ƒ|ƒŠƒSƒ“ÚG”»’è
+//	ãƒãƒªã‚´ãƒ³æ¥è§¦åˆ¤å®š
 int HasPoint2D( float x, float y, VECTOR *v );
 int HasPoint3D( VECTOR *p, VECTOR *v );
 int IntersectLinePlane( VECTOR *lpoint, VECTOR *lvector, VECTOR *ppoint, VECTOR *pnormal, VECTOR *result );

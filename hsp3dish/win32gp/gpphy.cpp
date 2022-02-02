@@ -12,7 +12,7 @@
 
 gpphy::gpphy()
 {
-	// コンストラクタ
+	// 繧ｳ繝ｳ繧ｹ繝医Λ繧ｯ繧ｿ
 	_flag = GPPHY_FLAG_NONE;
 	_colObj = NULL;
 	_parent = NULL;
@@ -223,7 +223,7 @@ gpphy *gamehsp::setPhysicsObjectAuto( gpobj *obj, float mass, float friction, in
 	
 	PhysicsRigidBody::Parameters rigParams;
 
-	rigParams.mass = mass;	// 重さ
+	rigParams.mass = mass;	// 驥阪＆
 	rigParams.friction = friction;
 	rigParams.restitution = 0.5f;
 	rigParams.linearDamping = 0.1f;

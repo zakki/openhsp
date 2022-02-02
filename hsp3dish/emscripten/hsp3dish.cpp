@@ -300,7 +300,7 @@ static int handleEvent( void ) {
 				break;
 			}
 
-		case SDL_QUIT: /** ƒEƒBƒ“ƒhƒE‚Ìxƒ{ƒ^ƒ“‚âctrl-C‚ğ‰Ÿ‚µ‚½ê‡ */
+		case SDL_QUIT: /** ã‚¦ã‚£ãƒ³ãƒ‰ã‚¦ã®xãƒœã‚¿ãƒ³ã‚„ctrl-Cã‚’æŠ¼ã—ãŸå ´åˆ */
 			res = -1;
 		}
 	}
@@ -338,11 +338,11 @@ static void hsp3dish_initwindow( engine* p_engine, int sx, int sy, char *windowt
 		return;
 	}
 
-	// •`‰æAPI‚É“n‚·
+	// æç”»APIã«æ¸¡ã™
 	hgio_init( 0, sx, sy, p_engine );
 	hgio_clsmode( CLSMODE_SOLID, 0xffffff, 0 );
 
-	// ƒ}ƒ‹ƒ`ƒ^ƒbƒ`‰Šú‰»
+	// ãƒãƒ«ãƒã‚¿ãƒƒãƒåˆæœŸåŒ–
 	//MTouchInit( m_hWnd );
 }
 
@@ -357,7 +357,7 @@ void hsp3dish_dialog( char *mes )
 #ifdef HSPDEBUG
 char *hsp3dish_debug( int type )
 {
-	//		ƒfƒoƒbƒOî•ñæ“¾
+	//		ãƒ‡ãƒãƒƒã‚°æƒ…å ±å–å¾—
 	//
 	char *p;
 	p = code_inidbg();
@@ -383,7 +383,7 @@ char *hsp3dish_debug( int type )
 
 void hsp3dish_drawon( void )
 {
-	//		•`‰æŠJnw¦
+	//		æç”»é–‹å§‹æŒ‡ç¤º
 	//
 	if ( drawflag == 0 ) {
 		hgio_render_start();
@@ -394,7 +394,7 @@ void hsp3dish_drawon( void )
 
 void hsp3dish_drawoff( void )
 {
-	//		•`‰æI—¹w¦
+	//		æç”»çµ‚äº†æŒ‡ç¤º
 	//
 	if ( drawflag ) {
 		hgio_render_end();
@@ -410,8 +410,8 @@ int hsp3dish_debugopen( void )
 
 int hsp3dish_wait( int tick )
 {
-	//		ŠÔ‘Ò‚¿(wait)
-	//		(await‚É•ÏŠ·‚µ‚Ü‚·)
+	//		æ™‚é–“å¾…ã¡(wait)
+	//		(awaitã«å¤‰æ›ã—ã¾ã™)
 	//
 	if ( ctx->waitcount <= 0 ) {
 		ctx->runmode = RUNMODE_RUN;
@@ -424,7 +424,7 @@ int hsp3dish_wait( int tick )
 
 int hsp3dish_await( int tick )
 {
-	//		ŠÔ‘Ò‚¿(await)
+	//		æ™‚é–“å¾…ã¡(await)
 	//
 	if ( ctx->waittick < 0 ) {
 		if ( ctx->lasttick == 0 ) ctx->lasttick = tick;
@@ -444,7 +444,7 @@ void hsp3dish_msgfunc( HSPCTX *hspctx )
 	int tick;
 
 	while(1) {
-		// logmes ‚È‚çæ‚Éˆ—‚·‚é
+		// logmes ãªã‚‰å…ˆã«å‡¦ç†ã™ã‚‹
 		if ( hspctx->runmode == RUNMODE_LOGMES ) {
 			hspctx->runmode = RUNMODE_RUN;
 			return;
@@ -507,7 +507,7 @@ void hsp3dish_msgfunc( HSPCTX *hspctx )
 
 
 /*----------------------------------------------------------*/
-//		ƒfƒoƒCƒXƒRƒ“ƒgƒ[ƒ‹ŠÖ˜A
+//		ãƒ‡ãƒã‚¤ã‚¹ã‚³ãƒ³ãƒˆãƒ­ãƒ¼ãƒ«é–¢é€£
 /*----------------------------------------------------------*/
 static HSP3DEVINFO *mem_devinfo;
 static int devinfo_dummy;
@@ -521,7 +521,7 @@ static int hsp3dish_devcontrol( char *cmd, int p1, int p2, int p3 )
 {
 	if ( strcmp( cmd, "syncfs" )==0 ) {
 		if (syncdir.size() > 0) {
-			// IDB‚É•Û‘¶
+			// IDBã«ä¿å­˜
 			EM_ASM_({
 				var dir = UTF8ToString($0);
 				FS.syncfs(function (err) {
@@ -569,7 +569,7 @@ static void hsp3dish_setdevinfo( HSP3DEVINFO *devinfo )
 
 int hsp3dish_init( char *startfile )
 {
-	//		ƒVƒXƒeƒ€ŠÖ˜A‚Ì‰Šú‰»
+	//		ã‚·ã‚¹ãƒ†ãƒ é–¢é€£ã®åˆæœŸåŒ–
 	//		( mode:0=debug/1=release )
 	//
 	int a,orgexe, mode;
@@ -581,13 +581,13 @@ int hsp3dish_init( char *startfile )
 	InitSysReq();
 
 #ifdef HSPDISHGP
-	SetSysReq( SYSREQ_MAXMATERIAL, 64 );            // ƒ}ƒeƒŠƒAƒ‹‚ÌƒfƒtƒHƒ‹ƒg’l
+	SetSysReq( SYSREQ_MAXMATERIAL, 64 );            // ãƒãƒ†ãƒªã‚¢ãƒ«ã®ãƒ‡ãƒ•ã‚©ãƒ«ãƒˆå€¤
 
 	game = NULL;
 	platform = NULL;
 #endif
 
-	//		HSPŠÖ˜A‚Ì‰Šú‰»
+	//		HSPé–¢é€£ã®åˆæœŸåŒ–
 	//
 	hsp = new Hsp3();
 
@@ -595,7 +595,7 @@ int hsp3dish_init( char *startfile )
 		hsp->SetFileName( startfile );
 	}
 
-	//		Àsƒtƒ@ƒCƒ‹‚©ƒfƒoƒbƒO’†‚©‚ğ’²‚×‚é
+	//		å®Ÿè¡Œãƒ•ã‚¡ã‚¤ãƒ«ã‹ãƒ‡ãƒãƒƒã‚°ä¸­ã‹ã‚’èª¿ã¹ã‚‹
 	//
 	mode = 0;
 	orgexe=0;
@@ -697,9 +697,9 @@ int hsp3dish_init( char *startfile )
 
 	ctx = &hsp->hspctx;
 
-	//		ƒRƒ}ƒ“ƒhƒ‰ƒCƒ“ŠÖ˜A
-	hsp->SetCommandLinePrm( cl_cmdline );		// ƒRƒ}ƒ“ƒhƒ‰ƒCƒ“ƒpƒ‰ƒ[ƒ^[‚ğ•Û‘¶
-	hsp->SetModuleFilePrm( cl_modname );			// ƒ‚ƒWƒ…[ƒ‹–¼‚ğ•Û‘¶
+	//		ã‚³ãƒãƒ³ãƒ‰ãƒ©ã‚¤ãƒ³é–¢é€£
+	hsp->SetCommandLinePrm( cl_cmdline );		// ã‚³ãƒãƒ³ãƒ‰ãƒ©ã‚¤ãƒ³ãƒ‘ãƒ©ãƒ¡ãƒ¼ã‚¿ãƒ¼ã‚’ä¿å­˜
+	hsp->SetModuleFilePrm( cl_modname );			// ãƒ¢ã‚¸ãƒ¥ãƒ¼ãƒ«åã‚’ä¿å­˜
 	hsp3typeinit_dllcmd( code_gettypeinfo( TYPE_DLLFUNC ) );
 	hsp3typeinit_dllctrl( code_gettypeinfo( TYPE_DLLCTRL ) );
 
@@ -790,11 +790,11 @@ void hsp3dish_error( void )
 
 static void hsp3dish_bye( void )
 {
-	//		WindowŠÖ˜A‚Ì‰ğ•ú
+	//		Windowé–¢é€£ã®è§£æ”¾
 	//
 	hsp3dish_drawoff();
 
-	//		ƒNƒŠ[ƒ“ƒAƒbƒv
+	//		ã‚¯ãƒªãƒ¼ãƒ³ã‚¢ãƒƒãƒ—
 	//
 #ifdef HSPERR_HANDLE
 	try {
@@ -802,18 +802,18 @@ static void hsp3dish_bye( void )
 		hsp->Dispose();
 #ifdef HSPERR_HANDLE
 	}
-	catch (HSPERROR code) {						// HSPƒGƒ‰[—áŠOˆ—
+	catch (HSPERROR code) {						// HSPã‚¨ãƒ©ãƒ¼ä¾‹å¤–å‡¦ç†
 		hsp->hspctx.err = code;
 		hsp3dish_error();
 	}
 #endif
 
-	//		ƒ^ƒCƒ}[‚ÌŠJ•ú
+	//		ã‚¿ã‚¤ãƒãƒ¼ã®é–‹æ”¾
 	//
 	emscripten_cancel_main_loop();
 
 #ifdef HSPDISHGP
-	//		gameplayŠÖ˜A‚Ì‰ğ•ú
+	//		gameplayé–¢é€£ã®è§£æ”¾
 	//
 	if ( platform != NULL ) {
 		platform->shutdownInternal();
@@ -824,7 +824,7 @@ static void hsp3dish_bye( void )
 	}
 #endif
 
-	//		HSPŠÖ˜A‚Ì‰ğ•ú
+	//		HSPé–¢é€£ã®è§£æ”¾
 	//
 	if ( hsp != NULL ) { delete hsp; hsp = NULL; }
 
@@ -874,7 +874,7 @@ void hsp3dish_exec_one( void )
 	}
 	handleEvent();
 
-	//		Às‚ÌŠJn
+	//		å®Ÿè¡Œã®é–‹å§‹
 	//
 	static int code_execcmd_state = 0;
 	int runmode;
@@ -930,7 +930,7 @@ void EMSCRIPTEN_KEEPALIVE hsp3dish_sync_done( void )
 int hsp3dish_exec( void )
 {
 	if (syncdir.size() > 0) {
-		// IDB‚©‚ç“Ç‚İ‚İ
+		// IDBã‹ã‚‰èª­ã¿è¾¼ã¿
 		fs_initialized = false;
 		EM_ASM_({
 			var dir = UTF8ToString($0);
@@ -945,11 +945,11 @@ int hsp3dish_exec( void )
 		fs_initialized = true;
 	}
 
-	//		ÀsƒƒCƒ“‚ğŒÄ‚Ño‚·
+	//		å®Ÿè¡Œãƒ¡ã‚¤ãƒ³ã‚’å‘¼ã³å‡ºã™
 	//
 	hsp3dish_msgfunc( ctx );
 
-	//		Às‚ÌŠJn
+	//		å®Ÿè¡Œã®é–‹å§‹
 	//
 	emscripten_set_main_loop(hsp3dish_exec_one, hsp_fps, 1);
 
@@ -959,7 +959,7 @@ int hsp3dish_exec( void )
 
 void hsp3dish_option( int opt )
 {
-	//		HSP3ƒIƒvƒVƒ‡ƒ“İ’è
+	//		HSP3ã‚ªãƒ—ã‚·ãƒ§ãƒ³è¨­å®š
 	//
 	cl_option = opt;
 }
@@ -967,17 +967,17 @@ void hsp3dish_option( int opt )
 
 void hsp3dish_cmdline( char *cmdline )
 {
-	//		HSP3ƒIƒvƒVƒ‡ƒ“İ’è
+	//		HSP3ã‚ªãƒ—ã‚·ãƒ§ãƒ³è¨­å®š
 	//
-	cl_cmdline = cmdline;						// ƒRƒ}ƒ“ƒhƒ‰ƒCƒ“ƒpƒ‰ƒ[ƒ^[‚ğ“ü‚ê‚é
+	cl_cmdline = cmdline;						// ã‚³ãƒãƒ³ãƒ‰ãƒ©ã‚¤ãƒ³ãƒ‘ãƒ©ãƒ¡ãƒ¼ã‚¿ãƒ¼ã‚’å…¥ã‚Œã‚‹
 }
 
 
 void hsp3dish_modname( char *modname )
 {
-	//		HSP3ƒIƒvƒVƒ‡ƒ“İ’è
+	//		HSP3ã‚ªãƒ—ã‚·ãƒ§ãƒ³è¨­å®š
 	//
-	cl_modname = modname;						// arg[0]ƒpƒ‰ƒ[ƒ^[‚ğ“ü‚ê‚é
+	cl_modname = modname;						// arg[0]ãƒ‘ãƒ©ãƒ¡ãƒ¼ã‚¿ãƒ¼ã‚’å…¥ã‚Œã‚‹
 }
 
 

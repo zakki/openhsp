@@ -35,14 +35,14 @@ HWND hgio_gethwnd( void );
 
 HspWnd::HspWnd()
 {
-	//		‰Šú‰»
+	//		åˆæœŸåŒ–
 	//
 	Reset();
 }
 
 HspWnd::~HspWnd()
 {
-	//		‚·‚×‚Ä”jŠü
+	//		ã™ã¹ã¦ç ´æ£„
 	//
 	Dispose();
 }
@@ -55,7 +55,7 @@ HspWnd::~HspWnd()
 
 void HspWnd::Dispose( void )
 {
-	//		”jŠü
+	//		ç ´æ£„
 	//
 	int i;
 	Bmscr *bm;
@@ -133,7 +133,7 @@ void HspWnd::Reset( void )
 	//
 	bmscr_max = 0;
 	mem_bm = NULL;
-	ExpandScreen( 16 );									// ‚Æ‚è‚ ‚¦‚¸
+	ExpandScreen( 16 );									// ã¨ã‚Šã‚ãˆãš
 
 	sx = hgio_getWidth();
 	sy = hgio_getHeight();
@@ -160,7 +160,7 @@ void HspWnd::Reset( void )
 
 void HspWnd::MakeBmscr( int id, int type, int x, int y, int sx, int sy, int option )
 {
-	//		Bmscr(ƒIƒtƒXƒNƒŠ[ƒ“)¶¬
+	//		Bmscr(ã‚ªãƒ•ã‚¹ã‚¯ãƒªãƒ¼ãƒ³)ç”Ÿæˆ
 	//
 	ExpandScreen( id );
 
@@ -186,7 +186,7 @@ void HspWnd::MakeBmscr( int id, int type, int x, int y, int sx, int sy, int opti
 
 void HspWnd::MakeBmscrFromResource( int id, char *fname )
 {
-	//		Bmscr(ƒŠƒ\[ƒX)¶¬
+	//		Bmscr(ãƒªã‚½ãƒ¼ã‚¹)ç”Ÿæˆ
 	//
 	ExpandScreen( id );
 
@@ -229,7 +229,7 @@ int HspWnd::Picload( int id, char *fname, int mode )
 
 Bmscr *HspWnd::GetBmscrSafe( int id )
 {
-	//		ˆÀ‘S‚Èbmscræ“¾
+	//		å®‰å…¨ãªbmscrå–å¾—
 	//
 	Bmscr *bm;
 	if (( id < 0 )||( id >= bmscr_max )) throw HSPERR_ILLEGAL_FUNCTION;
@@ -242,7 +242,7 @@ Bmscr *HspWnd::GetBmscrSafe( int id )
 
 int HspWnd::GetEmptyBufferId( void )
 {
-	//		‹ó‚«ID‚ğæ“¾
+	//		ç©ºãIDã‚’å–å¾—
 	//
 	int i;
 	Bmscr *bm;
@@ -257,7 +257,7 @@ int HspWnd::GetEmptyBufferId( void )
 
 void HspWnd::Resume( void )
 {
-	//		‰æ–Ê‚ÌÄ\’z(ƒtƒŒ[ƒ€ƒoƒbƒtƒ@”jŠü—p)
+	//		ç”»é¢ã®å†æ§‹ç¯‰(ãƒ•ãƒ¬ãƒ¼ãƒ ãƒãƒƒãƒ•ã‚¡ç ´æ£„æ™‚ç”¨)
 	//
 	int i;
 	Bmscr *bm;
@@ -270,7 +270,7 @@ void HspWnd::Resume( void )
 	bm->tapinvalid = 0;
 	bm->cur_obj = NULL;
 
-	//		ƒŠƒ\[ƒX‚ğ“Ç‚İ‚İ’¼‚·
+	//		ãƒªã‚½ãƒ¼ã‚¹ã‚’èª­ã¿è¾¼ã¿ç›´ã™
 	//
 	for(i=1;i<bmscr_max;i++) {
 		bm = GetBmscr(i);
@@ -297,14 +297,14 @@ void HspWnd::Resume( void )
 
 Bmscr::Bmscr()
 {
-	//		bmscr‰Šú‰»
+	//		bmscråˆæœŸåŒ–
 	//
 	flag = BMSCR_FLAG_NOUSE;
 }
 
 Bmscr::~Bmscr()
 {
-	//		Bmscr”jŠü
+	//		Bmscrç ´æ£„
 	//
 	if ( flag == BMSCR_FLAG_INUSE ) {
 		ResetHSPObject();					//		object remove
@@ -504,14 +504,14 @@ void Bmscr::SetDefaultFont( void )
 
 void Bmscr::SetFontInternal( char *fontname, int size, int style )
 {
-	//	“à•”—p‚ÌƒtƒHƒ“ƒg•ÏX(ƒJƒŒƒ“ƒg‚ğc‚·)
+	//	å†…éƒ¨ç”¨ã®ãƒ•ã‚©ãƒ³ãƒˆå¤‰æ›´(ã‚«ãƒ¬ãƒ³ãƒˆã‚’æ®‹ã™)
 	hgio_font( fontname, size, style );
 }
 
 
 void Bmscr::Print(texmesPos *tpos)
 {
-	//		texmesPos‚É‚æ‚é•¶š•\¦
+	//		texmesPosã«ã‚ˆã‚‹æ–‡å­—è¡¨ç¤º
 	//
 	int x1, y1;
 	x1 = cx; y1 = cy;
@@ -521,22 +521,22 @@ void Bmscr::Print(texmesPos *tpos)
 
 void Bmscr::Print(char *mes, int option)
 {
-	//		mes,print‚É‚æ‚é•¶š•\¦
-	//		(option=1‚Ìê‡‚Í‰üs‚µ‚È‚¢‚ÅI—¹)
+	//		mes,printã«ã‚ˆã‚‹æ–‡å­—è¡¨ç¤º
+	//		(option=1ã®å ´åˆã¯æ”¹è¡Œã—ãªã„ã§çµ‚äº†)
 	//
 	int px;
 	int x, y, i;
 	int mycolor = color;
 	x = cx; y = cy;
 
-	if (option & HSPMES_GMODE) {		// gmode‚ğ—LŒø
+	if (option & HSPMES_GMODE) {		// gmodeã‚’æœ‰åŠ¹
 		SetSysReq(SYSREQ_FIXMESALPHA, 0);
 	}
 	else {
 		SetSysReq(SYSREQ_FIXMESALPHA, 1);
 	}
 
-	if (option & HSPMES_SHADOW) {		// ‰e•¶š
+	if (option & HSPMES_SHADOW) {		// å½±æ–‡å­—
 		i = fonteff_size;
 		if (i > 0) {
 			Setcolor(objcolor);
@@ -552,7 +552,7 @@ void Bmscr::Print(char *mes, int option)
 		Setcolor(mycolor);
 		cx = x; cy = y;
 	}
-	if (option & HSPMES_OUTLINE) {		// ƒAƒEƒgƒ‰ƒCƒ“
+	if (option & HSPMES_OUTLINE) {		// ã‚¢ã‚¦ãƒˆãƒ©ã‚¤ãƒ³
 		i = fonteff_size;
 		if (i > 0) {
 			Setcolor(objcolor);
@@ -579,7 +579,7 @@ void Bmscr::Print(char *mes, int option)
 
 	px = PrintSub(mes);
 
-	if (option & HSPMES_NOCR) {		// ‰üs‚µ‚È‚¢
+	if (option & HSPMES_NOCR) {		// æ”¹è¡Œã—ãªã„
 		cx = x + px;
 		cy = y;
 	}
@@ -620,23 +620,23 @@ int Bmscr::PrintSub( char *mes )
 		a1 = *p;
 		if (a1 == 0) break;
 		if (a1 == 13) {
-			bak_a1 = a1; *p = 0;		// I’[‚ğ‰¼İ’è
+			bak_a1 = a1; *p = 0;		// çµ‚ç«¯ã‚’ä»®è¨­å®š
 			hgio_mes((BMSCR *)this, (char*)st);
 			*p = bak_a1;
-			p++; st = p; spcur = 0;		// I’[‚ğ–ß‚·
+			p++; st = p; spcur = 0;		// çµ‚ç«¯ã‚’æˆ»ã™
 			a1 = *p;
 			if (a1 == 10) p++;
 			continue;
 		}
 		if (a1 == 10) {
-			bak_a1 = a1; *p = 0;		// I’[‚ğ‰¼İ’è
+			bak_a1 = a1; *p = 0;		// çµ‚ç«¯ã‚’ä»®è¨­å®š
 			hgio_mes((BMSCR *)this, (char*)st);
 			*p = bak_a1;
-			p++; st = p; spcur = 0;		// I’[‚ğ–ß‚·
+			p++; st = p; spcur = 0;		// çµ‚ç«¯ã‚’æˆ»ã™
 			continue;
 		}
 #ifdef HSPUTF8
-		if (a1 & 128) {					// UTF8ƒ`ƒFƒbƒN
+		if (a1 & 128) {					// UTF8ãƒã‚§ãƒƒã‚¯
 			int utf8bytes = 1;
 			if ((a1 >= 0xc2) && (a1 <= 0xdf)) {
 				utf8bytes = 2;
@@ -792,7 +792,7 @@ int Bmscr::BmpSave( char *fname )
 
 void Bmscr::SetHSVColor( int hval, int sval, int vval )
 {
-	//		hsv‚É‚æ‚éFw’è
+	//		hsvã«ã‚ˆã‚‹è‰²æŒ‡å®š
 	//			h(0-191)/s(0-255)/v(0-255)
 	//
 	int h,s,v;
@@ -804,7 +804,7 @@ void Bmscr::SetHSVColor( int hval, int sval, int vval )
 	//
 	v = vval & 255;
 	s = sval & 255;		// /8
-	//		hsv -> rgb •ÏŠ·
+	//		hsv -> rgb å¤‰æ›
 	//
 	h = hval % 192;
 	i = h/32;
@@ -833,7 +833,7 @@ void Bmscr::SetHSVColor( int hval, int sval, int vval )
 
 void Bmscr::GetClientSize( int *xsize, int *ysize )
 {
-	//		ƒEƒBƒ“ƒhƒE‚ÌƒNƒ‰ƒCƒAƒ“ƒg—Ìˆæ‚ÌƒTƒCƒY‚ğ‹‚ß‚é
+	//		ã‚¦ã‚£ãƒ³ãƒ‰ã‚¦ã®ã‚¯ãƒ©ã‚¤ã‚¢ãƒ³ãƒˆé ˜åŸŸã®ã‚µã‚¤ã‚ºã‚’æ±‚ã‚ã‚‹
 	//
 #if 0
 	RECT rw;
@@ -846,7 +846,7 @@ void Bmscr::GetClientSize( int *xsize, int *ysize )
 
 void Bmscr::GradFill( int _x, int _y, int _sx, int _sy, int mode, int col1, int col2 )
 {
-	//		ƒOƒ‰ƒf[ƒVƒ‡ƒ““h‚è‚Â‚Ô‚µ
+	//		ã‚°ãƒ©ãƒ‡ãƒ¼ã‚·ãƒ§ãƒ³å¡—ã‚Šã¤ã¶ã—
 	//
 	int posx[4];
 	int posy[4];
@@ -870,7 +870,7 @@ void Bmscr::GradFill( int _x, int _y, int _sx, int _sy, int mode, int col1, int 
 
 void Bmscr::FillRot( int x, int y, int dst_sx, int dst_sy, float ang )
 {
-	//		‰ñ“]‹éŒ`“h‚è‚Â‚Ô‚µ(grect—p)
+	//		å›è»¢çŸ©å½¢å¡—ã‚Šã¤ã¶ã—(grectç”¨)
 	//
 	hgio_fillrot( (BMSCR *)this, (float)x, (float)y, (float)dst_sx, (float)dst_sy, ang );
 }
@@ -878,7 +878,7 @@ void Bmscr::FillRot( int x, int y, int dst_sx, int dst_sy, float ang )
 
 void Bmscr::FillRotTex( int dst_sx, int dst_sy, float ang, Bmscr *src, int tx, int ty, int srcx, int srcy )
 {
-	//		‰ñ“]‹éŒ`“h‚è‚Â‚Ô‚µ(grotate—p)
+	//		å›è»¢çŸ©å½¢å¡—ã‚Šã¤ã¶ã—(grotateç”¨)
 	//
 	hgio_copyrot( (BMSCR *)this, tx, ty, srcx, srcy, (float)(dst_sx>>1), (float)(dst_sy>>1), (BMSCR *)src, (float)dst_sx, (float)dst_sy, ang );
 }
@@ -886,7 +886,7 @@ void Bmscr::FillRotTex( int dst_sx, int dst_sy, float ang, Bmscr *src, int tx, i
 
 void Bmscr::SetCelDivideSize( int new_divsx, int new_divsy, int new_ofsx, int new_ofsy )
 {
-	//		ƒZƒ‹•ªŠ„ƒTƒCƒY‚ğİ’è
+	//		ã‚»ãƒ«åˆ†å‰²ã‚µã‚¤ã‚ºã‚’è¨­å®š
 	//
 	if ( new_divsx > 0 ) divsx = new_divsx; else divsx = sx;
 	if ( new_divsy > 0 ) divsy = new_divsy; else divsy = sy;
@@ -899,7 +899,7 @@ void Bmscr::SetCelDivideSize( int new_divsx, int new_divsy, int new_ofsx, int ne
 
 int Bmscr::CelPut( Bmscr *src, int id, float destx, float desty, float ang )
 {
-	//		ƒZƒ‹‚ğƒRƒs[(•Ï”{E‰ñ“])
+	//		ã‚»ãƒ«ã‚’ã‚³ãƒ”ãƒ¼(å¤‰å€ãƒ»å›è»¢)
 	//
 	int xx,yy,texpx,texpy,psx,psy;
 	int bak_cx, bak_cy;
@@ -936,7 +936,7 @@ int Bmscr::CelPut( Bmscr *src, int id, float destx, float desty, float ang )
 
 int Bmscr::CelPut( Bmscr *src, int id )
 {
-	//		ƒZƒ‹‚ğƒRƒs[(ŒÅ’èƒTƒCƒY)
+	//		ã‚»ãƒ«ã‚’ã‚³ãƒ”ãƒ¼(å›ºå®šã‚µã‚¤ã‚º)
 	//
 	int xx,yy,texpx,texpy,psx,psy;
 	int bak_cx, bak_cy;
@@ -972,7 +972,7 @@ int Bmscr::CelPut( Bmscr *src, int id )
 
 void Bmscr::SetFilter( int type )
 {
-	//		•âŠÔƒtƒBƒ‹ƒ^İ’è
+	//		è£œé–“ãƒ•ã‚£ãƒ«ã‚¿è¨­å®š
 	//
 	hgio_setfilter( type, 0 );
 }
@@ -980,7 +980,7 @@ void Bmscr::SetFilter( int type )
 
 void Bmscr::SquareTex( int *dst_x, int *dst_y, Bmscr *src, int *src_x, int *src_y, int mode )
 {
-	//		’¸“_w’è‚É‚æ‚élŠpŒ`•`‰æ(gsquare—p)
+	//		é ‚ç‚¹æŒ‡å®šã«ã‚ˆã‚‹å››è§’å½¢æç”»(gsquareç”¨)
 	//
 	int coltmp[4];
 
@@ -998,7 +998,7 @@ void Bmscr::SquareTex( int *dst_x, int *dst_y, Bmscr *src, int *src_x, int *src_
 
 int Bmscr::BufferOp(int mode, char *ptr)
 {
-	//		ƒeƒNƒXƒ`ƒƒƒoƒbƒtƒ@‚Ì‘€ì
+	//		ãƒ†ã‚¯ã‚¹ãƒãƒ£ãƒãƒƒãƒ•ã‚¡ã®æ“ä½œ
 	//
 	return hgio_bufferop((BMSCR*)this, mode, ptr);
 }
@@ -1122,8 +1122,8 @@ HSP3MTOUCH *Bmscr::getMTouchNew( void )
 
 int Bmscr::listMTouch( int *outbuf )
 {
-	//	ƒ^ƒbƒ`î•ñ‚ÌIDƒŠƒXƒg‚ğ•Ô‚·
-	//	outbuf‚©‚çint”z—ñ‚ğ‘‚«o‚·A•Ô’l‚ÍID‚ÌŒÂ”
+	//	ã‚¿ãƒƒãƒæƒ…å ±ã®IDãƒªã‚¹ãƒˆã‚’è¿”ã™
+	//	outbufã‹ã‚‰inté…åˆ—ã‚’æ›¸ãå‡ºã™ã€è¿”å€¤ã¯IDã®å€‹æ•°
 	//
 	int i;
 	int *buf;
@@ -1150,7 +1150,7 @@ int Bmscr::listMTouch( int *outbuf )
 
 void Bmscr::SetScroll(int xbase, int ybase)
 {
-	//		ƒXƒNƒ[ƒ‹Šî“_‚ğİ’è
+	//		ã‚¹ã‚¯ãƒ­ãƒ¼ãƒ«åŸºç‚¹ã‚’è¨­å®š
 	//
 	viewx = xbase;
 	viewy = ybase;

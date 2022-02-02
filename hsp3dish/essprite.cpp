@@ -633,7 +633,7 @@ int essprite::drawSubMove(SPOBJ *sp, int mode)
 	getSpriteParentAxis(sp, xx, yy, 0);
 
 	if (fl & ESSPFLAG_GRAVITY) {
-		//	なんだこりゃ・・・
+		//	縺ｪ繧薙□縺薙ｊ繧�繝ｻ繝ｻ繝ｻ
 		//
 		if (sp->fspy != 0) {
 			sp->py += sp->fspy << 8;
@@ -843,7 +843,7 @@ int essprite::drawSubPut(SPOBJ *sp, int mode)
 		}
 	}
 
-	if (fl & 255) {						// HSPDX互換のカウントダウンタイマー(互換維持用)
+	if (fl & 255) {						// HSPDX莠呈鋤縺ｮ繧ｫ繧ｦ繝ｳ繝医ム繧ｦ繝ｳ繧ｿ繧､繝槭�ｼ(莠呈鋤邯ｭ謖∫畑)
 		fl--;
 		if ((fl & 255) == 0) fl = 0;
 		sp->fl = fl;

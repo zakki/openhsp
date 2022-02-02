@@ -148,11 +148,11 @@ void Scene::processSceneMeshSub( Node *cnode, int nodeid, int pass )
 
 int Scene::processSceneMesh(int pass)
 {
-	//	ƒV[ƒ““à‚ÌƒƒbƒVƒ…ƒm[ƒh‚ğ‰ğÍ‚µ‚Ä‘g‚İŠ·‚¦‚ğs‚¤
-	//		jointƒm[ƒh‚Æmeshƒm[ƒh‚É•ª‚¯‚é
-	//		jointƒm[ƒh‚É‚ ‚émesh‚Ísceneƒ‹[ƒg‚ÉˆÚ“®‚·‚é
-	//		pass:0  jointƒm[ƒh‚ğ‰ğÍ‚·‚é
-	//		pass:1  jointƒm[ƒh“à‚Ìmesh‚ğˆÚ“®‚·‚é
+	//	ã‚·ãƒ¼ãƒ³å†…ã®ãƒ¡ãƒƒã‚·ãƒ¥ãƒãƒ¼ãƒ‰ã‚’è§£æã—ã¦çµ„ã¿æ›ãˆã‚’è¡Œã†
+	//		jointãƒãƒ¼ãƒ‰ã¨meshãƒãƒ¼ãƒ‰ã«åˆ†ã‘ã‚‹
+	//		jointãƒãƒ¼ãƒ‰ã«ã‚ã‚‹meshã¯sceneãƒ«ãƒ¼ãƒˆã«ç§»å‹•ã™ã‚‹
+	//		pass:0  jointãƒãƒ¼ãƒ‰ã‚’è§£æã™ã‚‹
+	//		pass:1  jointãƒãƒ¼ãƒ‰å†…ã®meshã‚’ç§»å‹•ã™ã‚‹
 	//
 	if (pass==0) {
 		_search_joint.clear();
@@ -171,7 +171,7 @@ int Scene::processSceneMesh(int pass)
 			const char *name = cnode->getId().c_str();
 			printf( "N%d:%d(%s)\n",nodeid,_search_joint[nodeid],name );
 			if (_search_joint[nodeid]==0) {
-				_search_meshNode = cnode;				// jointƒm[ƒh‚Å‚Í‚È‚¢=meshƒm[ƒh‚Æ‚·‚é
+				_search_meshNode = cnode;				// jointãƒãƒ¼ãƒ‰ã§ã¯ãªã„=meshãƒãƒ¼ãƒ‰ã¨ã™ã‚‹
 			}
 		}
 		nodeid++;

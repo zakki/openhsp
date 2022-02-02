@@ -216,12 +216,12 @@ private:
 	int dest_flag;
 	float center_x, center_y;
 
-	int bgclr;			// ”wŒiÁ‹ƒtƒ‰ƒO(0=none)
-	int bgcolor;		// ”wŒiFƒR[ƒh
-	int bgtex;			// ”wŒiƒeƒNƒXƒ`ƒƒƒR[ƒh
+	int bgclr;			// èƒŒæ™¯æ¶ˆå»ãƒ•ãƒ©ã‚°(0=none)
+	int bgcolor;		// èƒŒæ™¯è‰²ã‚³ãƒ¼ãƒ‰
+	int bgtex;			// èƒŒæ™¯ãƒ†ã‚¯ã‚¹ãƒãƒ£ã‚³ãƒ¼ãƒ‰
 
-	int nDestWidth;		// •`‰æÀ•W•
-	int nDestHeight;	// •`‰æÀ•W‚‚³
+	int nDestWidth;		// æç”»åº§æ¨™å¹…
+	int nDestHeight;	// æç”»åº§æ¨™é«˜ã•
 
 	int mestex;			// Font Message TexID
 	int mescx;			// Font Message X-size
@@ -229,12 +229,12 @@ private:
 	int mespx;			// Font Message X-Forward
 	int mesmode;		// Font Message Mode(0=Normal/1=Trans)
 
-	int fntmode;		// 2DƒtƒHƒ“ƒgƒ‚[ƒh
-	int fntalpha;		// 2DƒtƒHƒ“ƒgalpha’l
+	int fntmode;		// 2Dãƒ•ã‚©ãƒ³ãƒˆãƒ¢ãƒ¼ãƒ‰
+	int fntalpha;		// 2Dãƒ•ã‚©ãƒ³ãƒˆalphaå€¤
 
-	int tmes_spacing;	// ƒeƒNƒXƒ`ƒƒƒtƒHƒ“ƒg•`‰æspacing
-	int tmes_lspacing;	// ƒeƒNƒXƒ`ƒƒƒtƒHƒ“ƒg•`‰æsŠÔ
-	int	tmes_mode;		// ƒeƒNƒXƒ`ƒƒƒtƒHƒ“ƒg•`‰æmode
+	int tmes_spacing;	// ãƒ†ã‚¯ã‚¹ãƒãƒ£ãƒ•ã‚©ãƒ³ãƒˆæç”»spacing
+	int tmes_lspacing;	// ãƒ†ã‚¯ã‚¹ãƒãƒ£ãƒ•ã‚©ãƒ³ãƒˆæç”»è¡Œé–“
+	int	tmes_mode;		// ãƒ†ã‚¯ã‚¹ãƒãƒ£ãƒ•ã‚©ãƒ³ãƒˆæç”»mode
 
 	int bgsizex, bgsizey;
 	int bgcsizex, bgcsizey;
@@ -245,16 +245,16 @@ private:
 	int	enum_group;
 	int enum_id;
 
-	float landaxis;		// ’n–Ê‚ÌYÀ•W
-	float landlimit;	// ’n–Ê‚ÌãŒÀYÀ•W
-	float boundfactor;	// ƒoƒEƒ“ƒhŒW”
-	float gainfactor;	// ’ïRŒW”(‹ó’†)
-	float gainfactor2;	// ’ïRŒW”(’nã)
+	float landaxis;		// åœ°é¢ã®Yåº§æ¨™
+	float landlimit;	// åœ°é¢ã®ä¸Šé™Yåº§æ¨™
+	float boundfactor;	// ãƒã‚¦ãƒ³ãƒ‰ä¿‚æ•°
+	float gainfactor;	// æŠµæŠ—ä¿‚æ•°(ç©ºä¸­)
+	float gainfactor2;	// æŠµæŠ—ä¿‚æ•°(åœ°ä¸Š)
 	int	target_id;
 
 	//		Data Area
 	//
-	POLY4 mem_poly4;	// 2D•`‰æÀ•W‚Ìˆêƒoƒbƒtƒ@
+	POLY4 mem_poly4;	// 2Dæç”»åº§æ¨™ã®ä¸€æ™‚ãƒãƒƒãƒ•ã‚¡
 
 	//		3D Data
 	//
@@ -268,14 +268,14 @@ private:
 	hgemitter **mem_emitter;
 
 	int maxsortobj;
-	hgobj **mem_sortobj;	// ƒ\[ƒg—p‚ÌƒIƒuƒWƒFƒNƒgƒf[ƒ^
+	hgobj **mem_sortobj;	// ã‚½ãƒ¼ãƒˆç”¨ã®ã‚ªãƒ–ã‚¸ã‚§ã‚¯ãƒˆãƒ‡ãƒ¼ã‚¿
 
 	//		System Data
 	//
 	hgobj *camera;
 	hgobj *light;
-	VECTOR border1;		// BORDERÀ•W1
-	VECTOR border2;		// BORDERÀ•W2
+	VECTOR border1;		// BORDERåº§æ¨™1
+	VECTOR border2;		// BORDERåº§æ¨™2
 
 /*
 	D3DXMATRIX mProjection;

@@ -97,7 +97,7 @@ void hgobj::Reset( void )
 	xanim.fCurTime = 0.0f;
 #endif
 
-	//	ƒCƒxƒ“ƒg‚ÌƒŠƒZƒbƒg
+	//	ã‚¤ãƒ™ãƒ³ãƒˆã®ãƒªã‚»ãƒƒãƒˆ
 	for(i=0;i<HGOBJ_MULTIEVENT_MAX;i++) {
 		time[i] = 0.0f;
 		event[i] = NULL;
@@ -114,15 +114,15 @@ VECTOR *hgobj::GetVectorPrm( int id )
 void hgobj::LookAt( VECTOR *target )
 {
 	//--------------------------------------------------
-	//	ƒ|ƒWƒVƒ‡ƒ“->’‹“_‚Ì‰ñ“]Šp‚ğ‹‚ß‚é
+	//	ãƒã‚¸ã‚·ãƒ§ãƒ³->æ³¨è¦–ç‚¹ã®å›è»¢è§’ã‚’æ±‚ã‚ã‚‹
 	//--------------------------------------------------
 	VECTOR vec;
 
-	/* ’‹“_->ƒ|ƒWƒVƒ‡ƒ“‚ÌƒxƒNƒgƒ‹ */
+	/* æ³¨è¦–ç‚¹->ãƒã‚¸ã‚·ãƒ§ãƒ³ã®ãƒ™ã‚¯ãƒˆãƒ« */
 	vec.x = prm.pos.x - target->x;
 	vec.y = -prm.pos.y - target->y;
 	vec.z = prm.pos.z - target->z;
-	/* ‰ñ“]Šp */
+	/* å›è»¢è§’ */
 	prm.rot.y = (float)atan2( vec.x, vec.z );
 	prm.rot.x = (float)-atan2( vec.y, sqrt(vec.x*vec.x + vec.z*vec.z) );
 	prm.rot.z = 0.0f;
@@ -132,15 +132,15 @@ void hgobj::LookAt( VECTOR *target )
 void hgobj::TreeAt( VECTOR *target )
 {
 	//--------------------------------------------------
-	//	ƒ|ƒWƒVƒ‡ƒ“->’‹“_‚Ì‰ñ“]Šp‚ğ‹‚ß‚é(Y²‚Ì‚İ)
+	//	ãƒã‚¸ã‚·ãƒ§ãƒ³->æ³¨è¦–ç‚¹ã®å›è»¢è§’ã‚’æ±‚ã‚ã‚‹(Yè»¸ã®ã¿)
 	//--------------------------------------------------
 	VECTOR vec;
 
-	/* ’‹“_->ƒ|ƒWƒVƒ‡ƒ“‚ÌƒxƒNƒgƒ‹ */
+	/* æ³¨è¦–ç‚¹->ãƒã‚¸ã‚·ãƒ§ãƒ³ã®ãƒ™ã‚¯ãƒˆãƒ« */
 	vec.x = prm.pos.x - target->x;
 	vec.y = -prm.pos.y - target->y;
 	vec.z = prm.pos.z - target->z;
-	/* ‰ñ“]Šp */
+	/* å›è»¢è§’ */
 	prm.rot.y = (float)atan2( vec.x, vec.z );
 }
 
@@ -182,7 +182,7 @@ void hgobj::UpdateMatrix( void )
 			prm.spr_x = (float)prm.pos.x;
 			prm.spr_y = (float)prm.pos.y;
 		}
-		matupdate = 1;		// ŒvZÏ‚İƒtƒ‰ƒO
+		matupdate = 1;		// è¨ˆç®—æ¸ˆã¿ãƒ•ãƒ©ã‚°
 		return;
 	}
 	if ( matupdate ) return;
@@ -223,12 +223,12 @@ void hgobj::UpdateMatrix( void )
 
 #if 0
 
-	// dSˆÚ“®
+	// é‡å¿ƒç§»å‹•
 	D3DXMATRIXA16 m;
 	D3DXMatrixIdentity( &m );
 	D3DXMatrixTranslation( &m, pos->x, -pos->y, pos->z );
 
-	// ‰ñ“](z-y-x)
+	// å›è»¢(z-y-x)
 	D3DXMATRIXA16 xrot;
 	D3DXMATRIXA16 yrot;
 	D3DXMATRIXA16 zrot;
@@ -236,7 +236,7 @@ void hgobj::UpdateMatrix( void )
 	D3DXMatrixRotationY( &yrot, prm.rot.y );
 	D3DXMatrixRotationZ( &zrot, prm.rot.z );
 
-	// ƒXƒP[ƒ‹
+	// ã‚¹ã‚±ãƒ¼ãƒ«
 	D3DXMATRIXA16 sc;
 	D3DXMatrixScaling( &sc, prm.scale.x, prm.scale.y, prm.scale.z );
 
@@ -252,7 +252,7 @@ void hgobj::UpdateMatrix( void )
 			m = xrot * yrot * zrot;
 			break;
 		case HGMODEL_ROTORDER_XYZ:
-			m = zrot * yrot * xrot;		// ‚à‚Æ‚Ì‰ñ“]‡˜
+			m = zrot * yrot * xrot;		// ã‚‚ã¨ã®å›è»¢é †åº
 			break;
 		case HGMODEL_ROTORDER_YXZ:
 			m = zrot * xrot * yrot;
@@ -262,7 +262,7 @@ void hgobj::UpdateMatrix( void )
 		mdl->SetScale(sc);
 		rt = 1.0f / 255.0f;
 		mdl->SetLight( (D3DXVECTOR3 *)prm.lightvec, prm.lightcolor->x * rt, prm.lightcolor->y * rt, prm.lightcolor->z * rt );
-		// ƒAƒ“ƒrƒGƒ“ƒgİ’è
+		// ã‚¢ãƒ³ãƒ“ã‚¨ãƒ³ãƒˆè¨­å®š
 		mdl->SetAmbient( prm.ambcolor->x * rt, prm.ambcolor->y * rt, prm.ambcolor->z * rt );
 		return;
 
@@ -272,7 +272,7 @@ void hgobj::UpdateMatrix( void )
 
 	switch( model->GetRotOrder() ) {
 	case HGMODEL_ROTORDER_ZYX:
-		*((D3DXMATRIXA16 *)&prm.mat) = xrot * yrot * zrot * sc * m;		// ‚à‚Æ‚Ì‰ñ“]‡˜
+		*((D3DXMATRIXA16 *)&prm.mat) = xrot * yrot * zrot * sc * m;		// ã‚‚ã¨ã®å›è»¢é †åº
 		break;
 	case HGMODEL_ROTORDER_XYZ:
 		*((D3DXMATRIXA16 *)&prm.mat) = zrot * yrot * xrot * sc * m;
@@ -283,7 +283,7 @@ void hgobj::UpdateMatrix( void )
 	}
 
 	if ( mode & (HGOBJ_MODE_LAND|HGOBJ_MODE_LOOKAT|HGOBJ_MODE_XFRONT|HGOBJ_MODE_TREE) ) {
-		matupdate = 1;		// ŒvZÏ‚İƒtƒ‰ƒO
+		matupdate = 1;		// è¨ˆç®—æ¸ˆã¿ãƒ•ãƒ©ã‚°
 		return;
 	}
 
@@ -295,7 +295,7 @@ void hgobj::UpdateMatrix( void )
 	}
 #endif
 
-	matupdate = 1;		// ŒvZÏ‚İƒtƒ‰ƒO
+	matupdate = 1;		// è¨ˆç®—æ¸ˆã¿ãƒ•ãƒ©ã‚°
 }
 
 

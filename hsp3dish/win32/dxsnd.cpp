@@ -15,7 +15,7 @@
 
 #define RELEASE(x) 	if(x){x->Release();x=NULL;}
 
-//#define USE_OGGVORBIS				// OGGŽg—pƒtƒ‰ƒO
+//#define USE_OGGVORBIS				// OGGä½¿ç”¨ãƒ•ãƒ©ã‚°
 
 #ifdef USE_OGGVORBIS
 #include "ogg/odxt.h"
@@ -26,8 +26,8 @@
 typedef struct
 {
 short flag;			// enable flag
-short volume;		// volume(0`-10000)
-short pan;			// pan(-10000`10000)
+short volume;		// volume(0ï½ž-10000)
+short pan;			// pan(-10000ï½ž10000)
 short speed;		// speed
 int loopptr;		// loop pointer
 LPDIRECTSOUNDBUFFER lpSoundBuffer;	// DxBuffer
@@ -56,19 +56,19 @@ static		int		oggflag;
 */
 /*------------------------------------------------------------*/
 
-//ƒ`ƒƒƒ“ƒNŽæ“¾
+//ãƒãƒ£ãƒ³ã‚¯å–å¾—
 static long GetChunk( unsigned char *pSrcData, unsigned char **ppDstData, unsigned long *pSize )
 {
 	long DataSize = 0;
 
-	// ƒ`ƒƒƒ“ƒNƒTƒCƒYŽæ“¾
+	// ãƒãƒ£ãƒ³ã‚¯ã‚µã‚¤ã‚ºå–å¾—
 	DataSize = *( (long *)pSrcData );
 	pSrcData += 4;
 
-	// ƒf[ƒ^ŽóM—pƒoƒbƒtƒ@¶¬
+	// ãƒ‡ãƒ¼ã‚¿å—ä¿¡ç”¨ãƒãƒƒãƒ•ã‚¡ç”Ÿæˆ
 	(*ppDstData) = new unsigned char [ DataSize ];
 
-	// ƒ`ƒƒƒ“ƒNƒf[ƒ^Žæ“¾
+	// ãƒãƒ£ãƒ³ã‚¯ãƒ‡ãƒ¼ã‚¿å–å¾—
 	memcpy( (*ppDstData), pSrcData, DataSize );
 
 	if ( pSize != NULL) *pSize = DataSize;
@@ -77,20 +77,20 @@ static long GetChunk( unsigned char *pSrcData, unsigned char **ppDstData, unsign
 }
 
 
-//WAVEƒf[ƒ^ƒ`ƒFƒbƒN
+//WAVEãƒ‡ãƒ¼ã‚¿ãƒã‚§ãƒƒã‚¯
 static long CheckWaveData( unsigned char *pFormat, void *pwf )
 {
 	WAVEFORMATEXTENSIBLE *_pwf = (WAVEFORMATEXTENSIBLE *)pwf;
 
 	long result = -1;
 
-	// ƒtƒH[ƒ}ƒbƒgî•ñŽæ“¾
+	// ãƒ•ã‚©ãƒ¼ãƒžãƒƒãƒˆæƒ…å ±å–å¾—
 	unsigned short *format = (unsigned short *)pFormat;
 
 	ZeroMemory( _pwf, sizeof(WAVEFORMATEXTENSIBLE) );
 
 	//=================================================
-	// ƒtƒH[ƒ}ƒbƒg‚²‚Æ‚Éˆ—‚í‚¯
+	// ãƒ•ã‚©ãƒ¼ãƒžãƒƒãƒˆã”ã¨ã«å‡¦ç†ã‚ã‘
 	//=================================================
 	switch ( *format )
 	{
@@ -108,14 +108,14 @@ static long CheckWaveData( unsigned char *pFormat, void *pwf )
 		result = 0;
 		break;
 	//-------------------------------------------------
-	// ƒ}ƒ‹ƒ`ƒ`ƒƒƒ“ƒlƒ‹ ƒEƒF[ƒu ƒtƒH[ƒ}ƒbƒg
+	// ãƒžãƒ«ãƒãƒãƒ£ãƒ³ãƒãƒ« ã‚¦ã‚§ãƒ¼ãƒ– ãƒ•ã‚©ãƒ¼ãƒžãƒƒãƒˆ
 	//-------------------------------------------------
 	case WAVE_FORMAT_EXTENSIBLE:
 		*_pwf = *((WAVEFORMATEXTENSIBLE *)pFormat);
 		result = 1;
 		break;
 	//-------------------------------------------------
-	// ˆ³kWAVE
+	// åœ§ç¸®WAVE
 	//-------------------------------------------------
 	default:
 		_pwf->Format.wFormatTag		= *((unsigned short *)pFormat);	pFormat += 2;
@@ -142,36 +142,36 @@ static unsigned long GetWaveData( unsigned char *pData, unsigned char **ppMaster
 	char Chunk[5]			= "";
 
 	//--------------------------------------------------------
-	// "RIFF"‚Ì•¶Žš—ñ
+	// "RIFF"ã®æ–‡å­—åˆ—
 	//--------------------------------------------------------
 	memcpy( Chunk, pData, 4 );
 	pData += 4;
 	if ( strcmp( "RIFF", Chunk ) ) goto EXIT_DATALOAD;
 
 	//--------------------------------------------------------
-	// RIFFƒf[ƒ^ƒTƒCƒY
+	// RIFFãƒ‡ãƒ¼ã‚¿ã‚µã‚¤ã‚º
 	//--------------------------------------------------------
 	pData += 4;
 
 	//--------------------------------------------------------
-	// "WAVE"‚Ì•¶Žš—ñ
+	// "WAVE"ã®æ–‡å­—åˆ—
 	//--------------------------------------------------------
 	memcpy( Chunk, pData, 4 );
 	pData += 4;
 	if ( strcmp( "WAVE", Chunk ) ) goto EXIT_DATALOAD;
 
 	//========================================================
-	// ƒ`ƒƒƒ“ƒNî•ñŽæ“¾
+	// ãƒãƒ£ãƒ³ã‚¯æƒ…å ±å–å¾—
 	//========================================================
 	while ( TRUE )
 	{
 		unsigned long size = 0;
-		// ‚È‚ñ‚Ìƒ`ƒƒƒ“ƒN‚©‚È`
+		// ãªã‚“ã®ãƒãƒ£ãƒ³ã‚¯ã‹ãªï½ž
 		memcpy( Chunk, pData, 4 );
 		pData += 4;
 
 		//-------------------------------------------------
-		// ƒtƒH[ƒ}ƒbƒg
+		// ãƒ•ã‚©ãƒ¼ãƒžãƒƒãƒˆ
 		//-------------------------------------------------
 		if ( strcmp( "fmt ", Chunk ) == 0 )
 		{
@@ -179,7 +179,7 @@ static unsigned long GetWaveData( unsigned char *pData, unsigned char **ppMaster
 			pData += size;
 		}
 		//-------------------------------------------------
-		// ƒf[ƒ^
+		// ãƒ‡ãƒ¼ã‚¿
 		//-------------------------------------------------
 		else if ( strcmp( "data", Chunk ) == 0 )
 		{
@@ -187,18 +187,18 @@ static unsigned long GetWaveData( unsigned char *pData, unsigned char **ppMaster
 			break;
 		}
 		//-------------------------------------------------
-		// ‚í‚©‚ñ‚Ë
+		// ã‚ã‹ã‚“ã­
 		//-------------------------------------------------
 		else
 		{
-			// ‚È‚ñ‚Å‚¥ˆá‚¤‚ñ‚©‚æ
+			// ãªã‚“ã§ã‡é•ã†ã‚“ã‹ã‚ˆ
 			size = *( (unsigned long *)pData );
 			pData += 4 + size;
 		}
 	}
 
 	//========================================================
-	// WAVEƒf[ƒ^‚Ì’†gŠm”F
+	// WAVEãƒ‡ãƒ¼ã‚¿ã®ä¸­èº«ç¢ºèª
 	//========================================================
 	WaveData = CheckWaveData( pFormat, _pwf );
 
@@ -208,7 +208,7 @@ static unsigned long GetWaveData( unsigned char *pData, unsigned char **ppMaster
 	memcpy( (*ppMasterData), pData, DataSize );
 	result = DataSize;
 
-	// I—¹
+	// çµ‚äº†
 EXIT_DATALOAD:
 	if ( pData != NULL ) delete [] pData;
 	if ( pFormat != NULL ) delete [] pFormat;
@@ -229,7 +229,7 @@ static int GetEmptyEntry( void )
 
 static void ResetSndInf( SNDINF *snd )
 {
-	//	ŠeŽíƒfƒtƒHƒ‹ƒg
+	//	å„ç¨®ãƒ‡ãƒ•ã‚©ãƒ«ãƒˆ
 	snd->volume = 0;
 	snd->pan = 0;
 	snd->speed = 0;
@@ -300,7 +300,7 @@ int SndInit( HWND hWnd )
 
 	sndflg = -1;
 
-	// DirectSound¶¬
+	// DirectSoundç”Ÿæˆ
 	hr = CoCreateInstance(
 		CLSID_DirectSound8,
 		NULL, 
@@ -309,22 +309,22 @@ int SndInit( HWND hWnd )
 		(void **)&lpDirectSound );
 	if FAILED( hr ) return -1;
 
-	// ‰Šú‰»
+	// åˆæœŸåŒ–
 	hr = lpDirectSound->Initialize( NULL );
 	if FAILED( hr ) return -2;
 
-	// ‹¦’²ƒŒƒxƒ‹‚ÌÝ’è
+	// å”èª¿ãƒ¬ãƒ™ãƒ«ã®è¨­å®š
 	hr = lpDirectSound->SetCooperativeLevel( hWnd, DSSCL_PRIORITY );
 	if FAILED( hr ) {
 		hr = lpDirectSound->SetCooperativeLevel( hWnd, DSSCL_NORMAL );
 		if FAILED( hr ) return -3;
 	}
 
-	// ƒvƒ‰ƒCƒ}ƒŠƒTƒEƒ“ƒhƒoƒbƒtƒ@¶¬
+	// ãƒ—ãƒ©ã‚¤ãƒžãƒªã‚µã‚¦ãƒ³ãƒ‰ãƒãƒƒãƒ•ã‚¡ç”Ÿæˆ
 	DSBUFFERDESC desc = { sizeof(DSBUFFERDESC) };
-	desc.dwFlags = DSBCAPS_PRIMARYBUFFER	// ƒvƒ‰ƒCƒ}ƒŠƒoƒbƒtƒ@‚ðì‚é
-        | DSBCAPS_CTRLVOLUME				// ƒ{ƒŠƒ…[ƒ€‚Ì•ÏX‚ð—LŒø‚É‚·‚é
-        | DSBCAPS_CTRLPAN;					// ƒpƒ“‚ð—LŒø‚É‚·‚é
+	desc.dwFlags = DSBCAPS_PRIMARYBUFFER	// ãƒ—ãƒ©ã‚¤ãƒžãƒªãƒãƒƒãƒ•ã‚¡ã‚’ä½œã‚‹
+        | DSBCAPS_CTRLVOLUME				// ãƒœãƒªãƒ¥ãƒ¼ãƒ ã®å¤‰æ›´ã‚’æœ‰åŠ¹ã«ã™ã‚‹
+        | DSBCAPS_CTRLPAN;					// ãƒ‘ãƒ³ã‚’æœ‰åŠ¹ã«ã™ã‚‹
 
 	hr = lpDirectSound->CreateSoundBuffer( &desc, &lpPrimaryBuffer, NULL );
 	if FAILED( hr ) return -4;
@@ -353,7 +353,7 @@ int SndInit( HWND hWnd )
 void SndTerm( void )
 {
 	if ( sndflg == 0 ) {
-		//	I—¹ˆ—
+		//	çµ‚äº†å‡¦ç†
 		SndStopAll();
 		SndReset();
 #ifdef USE_OGGVORBIS
@@ -481,23 +481,23 @@ int SndRegistWav( int newid, char *mem, int option )
 	DataSize = GetWaveData( (unsigned char *)mem, &lpData, &wf );
     if ( DataSize == 0 ) goto EXIT_LOAD;
 
-    // DirectSoundBufferÝ’è
+    // DirectSoundBufferè¨­å®š
 	desc.dwFlags = DSBCAPS_LOCSOFTWARE | DSBCAPS_CTRLPAN | DSBCAPS_CTRLVOLUME | /*DSBCAPS_CTRLFX |*/ DSBCAPS_GLOBALFOCUS;
 	desc.dwBufferBytes = DataSize;
 	desc.lpwfxFormat = &wf.Format;
 
-    // DirectSoundBuffer¶¬
+    // DirectSoundBufferç”Ÿæˆ
     hr = lpDirectSound->CreateSoundBuffer( &desc, &lpTempBuff, NULL );
     if FAILED( hr ) goto EXIT_LOAD;
 
-    // DirectSoundBuffer8Žæ“¾
+    // DirectSoundBuffer8å–å¾—
     hr = lpTempBuff->QueryInterface( IID_IDirectSoundBuffer8, (void **)&lpBuffer );
-    // DirectSoundBufferŠJ•ú
+    // DirectSoundBufferé–‹æ”¾
     lpTempBuff->Release();
 
     if FAILED( hr ) goto EXIT_LOAD;
 
-    // ƒoƒbƒtƒ@‘‚«ž‚Ý
+    // ãƒãƒƒãƒ•ã‚¡æ›¸ãè¾¼ã¿
     hr = lpBuffer->Lock(
                     0, DataSize,
                     &lpSoundData1, &size1,

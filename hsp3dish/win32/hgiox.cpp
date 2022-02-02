@@ -47,14 +47,14 @@ void InitMemFile( void )
 int OpenMemFilePtr( char *fname )
 {
 	int fsize;
-	fsize = dpm_exist( fname );		// ƒtƒ@ƒCƒ‹‚ÌƒTƒCƒY‚ğæ“¾
+	fsize = dpm_exist( fname );		// ãƒ•ã‚¡ã‚¤ãƒ«ã®ã‚µã‚¤ã‚ºã‚’å–å¾—
 	if ( fsize <= 0 ) {
 		return -1;
 	}
 	mfptr_depth++;
 	if ( mfptr_depth >= MFPTR_MAX ) return -1;
 	mfptr[mfptr_depth] = (char *)malloc( fsize );
-	dpm_read( fname, mfptr[mfptr_depth], fsize, 0 );	// ƒtƒ@ƒCƒ‹“Ç‚İ‚İ
+	dpm_read( fname, mfptr[mfptr_depth], fsize, 0 );	// ãƒ•ã‚¡ã‚¤ãƒ«èª­ã¿è¾¼ã¿
 	return fsize;
 }
 
@@ -82,30 +82,30 @@ void CloseMemFilePtr( void )
 
 //		Settings
 //
-static		char *lpDest;		// •`‰æ‰æ–Ê‚Ìƒoƒbƒtƒ@
-static		int nDestWidth;		// •`‰æÀ•W•
-static		int nDestHeight;	// •`‰æÀ•W‚‚³
+static		char *lpDest;		// æç”»ç”»é¢ã®ãƒãƒƒãƒ•ã‚¡
+static		int nDestWidth;		// æç”»åº§æ¨™å¹…
+static		int nDestHeight;	// æç”»åº§æ¨™é«˜ã•
 
-static		HWND master_wnd;	// •\¦‘ÎÛWindow
-static		int drawflag;		// ƒŒƒ“ƒ_[ŠJnƒtƒ‰ƒO
+static		HWND master_wnd;	// è¡¨ç¤ºå¯¾è±¡Window
+static		int drawflag;		// ãƒ¬ãƒ³ãƒ€ãƒ¼é–‹å§‹ãƒ•ãƒ©ã‚°
 
-static		texmesManager tmes;	// ƒeƒLƒXƒgƒƒbƒZ[ƒWƒ}ƒl[ƒWƒƒ[
+static		texmesManager tmes;	// ãƒ†ã‚­ã‚¹ãƒˆãƒ¡ãƒƒã‚»ãƒ¼ã‚¸ãƒãƒãƒ¼ã‚¸ãƒ£ãƒ¼
 
-static		BMSCR *mainbm;		// ƒƒCƒ“ƒXƒNƒŠ[ƒ“‚ÌBMSCR
-static		char m_tfont[256];	// ƒeƒLƒXƒgg—pƒtƒHƒ“ƒg
-static		int m_tsize;		// ƒeƒLƒXƒgg—pƒtƒHƒ“ƒg‚ÌƒTƒCƒY
-static		int m_tstyle;		// ƒeƒLƒXƒgg—pƒtƒHƒ“ƒg‚ÌƒXƒ^ƒCƒ‹w’è
+static		BMSCR *mainbm;		// ãƒ¡ã‚¤ãƒ³ã‚¹ã‚¯ãƒªãƒ¼ãƒ³ã®BMSCR
+static		char m_tfont[256];	// ãƒ†ã‚­ã‚¹ãƒˆä½¿ç”¨ãƒ•ã‚©ãƒ³ãƒˆ
+static		int m_tsize;		// ãƒ†ã‚­ã‚¹ãƒˆä½¿ç”¨ãƒ•ã‚©ãƒ³ãƒˆã®ã‚µã‚¤ã‚º
+static		int m_tstyle;		// ãƒ†ã‚­ã‚¹ãƒˆä½¿ç”¨ãƒ•ã‚©ãƒ³ãƒˆã®ã‚¹ã‚¿ã‚¤ãƒ«æŒ‡å®š
 static		float center_x, center_y;
 
-static		BMSCR *backbm;		// ”wŒiÁ‹—p‚ÌBMSCR(null=NC)
+static		BMSCR *backbm;		// èƒŒæ™¯æ¶ˆå»ç”¨ã®BMSCR(null=NC)
 
 static		HSPREAL infoval[GINFO_EXINFO_MAX];
 
-static		MATRIX mat_proj;	// ƒvƒƒWƒFƒNƒVƒ‡ƒ“ƒ}ƒgƒŠƒNƒX
-static		MATRIX mat_unproj;	// ƒvƒƒWƒFƒNƒVƒ‡ƒ“‹t•ÏŠ·ƒ}ƒgƒŠƒNƒX
+static		MATRIX mat_proj;	// ãƒ—ãƒ­ã‚¸ã‚§ã‚¯ã‚·ãƒ§ãƒ³ãƒãƒˆãƒªã‚¯ã‚¹
+static		MATRIX mat_unproj;	// ãƒ—ãƒ­ã‚¸ã‚§ã‚¯ã‚·ãƒ§ãƒ³é€†å¤‰æ›ãƒãƒˆãƒªã‚¯ã‚¹
 
-static		HCURSOR cursor_arrow;	// ’ÊíƒJ[ƒ\ƒ‹
-static		HCURSOR cursor_ibeam;	// ƒeƒLƒXƒgƒGƒŠƒA—pƒJ[ƒ\ƒ‹
+static		HCURSOR cursor_arrow;	// é€šå¸¸ã‚«ãƒ¼ã‚½ãƒ«
+static		HCURSOR cursor_ibeam;	// ãƒ†ã‚­ã‚¹ãƒˆã‚¨ãƒªã‚¢ç”¨ã‚«ãƒ¼ã‚½ãƒ«
 
 //		DirectX objects
 //
@@ -154,7 +154,7 @@ typedef struct _D3DEXVERTEXC_ {
 	DWORD specular;
 }D3DEXVERTEXC;
 
-//	’¸“_ƒtƒH[ƒ}ƒbƒg
+//	é ‚ç‚¹ãƒ•ã‚©ãƒ¼ãƒãƒƒãƒˆ
 //
 #define D3DFVF_TLVERTEX 		(D3DFVF_XYZRHW | D3DFVF_DIFFUSE | D3DFVF_SPECULAR | D3DFVF_TEX1)
 #define D3DFVF_TLVERTEXC 		(D3DFVF_XYZRHW | D3DFVF_DIFFUSE | D3DFVF_SPECULAR )
@@ -172,7 +172,7 @@ static float linebasex, linebasey;
 
 static void InitDraw( void )
 {
-    d3ddev->SetRenderState( D3DRS_ZENABLE, FALSE);			// T&Lg—p
+    d3ddev->SetRenderState( D3DRS_ZENABLE, FALSE);			// T&Lä½¿ç”¨æ™‚
 //	d3ddev->SetRenderState( D3DRS_ZFUNC, D3DCMP_LESS );
 	d3ddev->SetRenderState( D3DRS_ZWRITEENABLE, FALSE );
 //	d3ddev->SetRenderState( D3DRS_AMBIENT, 0xff808080 );
@@ -181,7 +181,7 @@ static void InitDraw( void )
 	//d3ddev->SetRenderState( D3DRS_CULLMODE, D3DCULL_CCW );
 	//d3ddev->SetRenderState( D3DRS_CULLMODE, D3DCULL_CW );
 
-	d3ddev->SetRenderState(D3DRS_LIGHTING,FALSE);           //ƒ‰ƒCƒeƒBƒ“ƒO‚µ‚È‚¢
+	d3ddev->SetRenderState(D3DRS_LIGHTING,FALSE);           //ãƒ©ã‚¤ãƒ†ã‚£ãƒ³ã‚°ã—ãªã„
 	//d3ddev->SetRenderState(D3DRS_COLORVERTEX,TRUE);
 	d3ddev->SetRenderState( D3DRS_COLORVERTEX, FALSE );
 
@@ -190,12 +190,12 @@ static void InitDraw( void )
 	d3ddev->SetTextureStageState( 0, D3DTSS_MAGFILTER, D3DTEXF_POINT  );
 	d3ddev->SetTextureStageState( 0, D3DTSS_MINFILTER, D3DTEXF_POINT  );
 
-	//	DiffuseA x TextureA ‚ğAlpha’l‚Æ‚·‚é
+	//	DiffuseA x TextureA ã‚’Alphaå€¤ã¨ã™ã‚‹
 	d3ddev->SetTextureStageState( 0,D3DTSS_ALPHAOP,D3DTOP_MODULATE );
 	d3ddev->SetTextureStageState( 0,D3DTSS_ALPHAARG1, D3DTA_TEXTURE );
 	d3ddev->SetTextureStageState( 0,D3DTSS_ALPHAARG2, D3DTA_CURRENT );
 
-	//  ƒ¿ƒeƒXƒg
+	//  Î±ãƒ†ã‚¹ãƒˆ
 	d3ddev -> SetRenderState( D3DRS_ALPHATESTENABLE, TRUE );
 	d3ddev -> SetRenderState( D3DRS_ALPHAREF, 0 );
 	d3ddev -> SetRenderState( D3DRS_ALPHAFUNC, D3DCMP_NOTEQUAL );
@@ -205,24 +205,24 @@ static void InitDraw( void )
 static int Init3DDevicesW( HWND hwnd )
 {
 	//
-	//	Direct3DƒfƒoƒCƒX‰Šú‰»
+	//	Direct3Dãƒ‡ãƒã‚¤ã‚¹åˆæœŸåŒ–
 	//
 	int vmode;
 	D3DDISPLAYMODE dmode;
 	unsigned long VertexShaderVersion;
 
-	//Œ»İ‚ÌƒfƒBƒXƒvƒŒƒCƒ‚[ƒh‚ğ“¾‚é
-	if(FAILED( d3d->GetAdapterDisplayMode(D3DADAPTER_DEFAULT,&dmode)))	//DEFAULTw’è‚Åƒvƒ‰ƒCƒ}ƒŠƒAƒ_ƒvƒ^‚ğ‘I‘ğ
-//	if(FAILED( d3d->GetDisplayMode(&dmode)))	//DEFAULTw’è‚Åƒvƒ‰ƒCƒ}ƒŠƒAƒ_ƒvƒ^‚ğ‘I‘ğ
+	//ç¾åœ¨ã®ãƒ‡ã‚£ã‚¹ãƒ—ãƒ¬ã‚¤ãƒ¢ãƒ¼ãƒ‰ã‚’å¾—ã‚‹
+	if(FAILED( d3d->GetAdapterDisplayMode(D3DADAPTER_DEFAULT,&dmode)))	//DEFAULTæŒ‡å®šã§ãƒ—ãƒ©ã‚¤ãƒãƒªã‚¢ãƒ€ãƒ—ã‚¿ã‚’é¸æŠ
+//	if(FAILED( d3d->GetDisplayMode(&dmode)))	//DEFAULTæŒ‡å®šã§ãƒ—ãƒ©ã‚¤ãƒãƒªã‚¢ãƒ€ãƒ—ã‚¿ã‚’é¸æŠ
 	{
 		SetSysReq( SYSREQ_RESULT, 2 );
 		return FALSE;
 	}
 
-	//ƒoƒbƒNƒT[ƒtƒF[ƒX‚ÌƒtƒH[ƒ}ƒbƒg‚ğƒRƒs[‚µ‚Äg—p‚·‚é
+	//ãƒãƒƒã‚¯ã‚µãƒ¼ãƒ•ã‚§ãƒ¼ã‚¹ã®ãƒ•ã‚©ãƒ¼ãƒãƒƒãƒˆã‚’ã‚³ãƒ”ãƒ¼ã—ã¦ä½¿ç”¨ã™ã‚‹
 	ZeroMemory( &d3dapp, sizeof(d3dapp) );
-	d3dapp.Windowed = TRUE;							//ƒEƒBƒ“ƒhƒEƒ‚[ƒh
-	d3dapp.SwapEffect = D3DSWAPEFFECT_DISCARD;		//‚’¼“¯Šú‚ÅƒtƒŠƒbƒv
+	d3dapp.Windowed = TRUE;							//ã‚¦ã‚£ãƒ³ãƒ‰ã‚¦ãƒ¢ãƒ¼ãƒ‰
+	d3dapp.SwapEffect = D3DSWAPEFFECT_DISCARD;		//å‚ç›´åŒæœŸã§ãƒ•ãƒªãƒƒãƒ—
  
 	d3dapp.BackBufferFormat = dmode.Format;
 	d3dapp.BackBufferCount = 1;
@@ -240,7 +240,7 @@ static int Init3DDevicesW( HWND hwnd )
 		}
 	}
 
-	// Z ƒoƒbƒtƒ@‚Ì©“®ì¬(T&Lg—p)
+	// Z ãƒãƒƒãƒ•ã‚¡ã®è‡ªå‹•ä½œæˆ(T&Lä½¿ç”¨æ™‚)
 	d3dapp.EnableAutoDepthStencil = TRUE;
 	d3dapp.AutoDepthStencilFormat = D3DFMT_D16;
 
@@ -250,14 +250,14 @@ static int Init3DDevicesW( HWND hwnd )
 
 
 	//==============================================================================
-	// ƒVƒF[ƒ_[ƒo[ƒWƒ‡ƒ“æ“¾
+	// ã‚·ã‚§ãƒ¼ãƒ€ãƒ¼ãƒãƒ¼ã‚¸ãƒ§ãƒ³å–å¾—
 	//==============================================================================
 	D3DCAPS8 caps;
 	d3d->GetDeviceCaps( 0, D3DDEVTYPE_HAL, &caps );
 	VertexShaderVersion = caps.VertexShaderVersion;
 
 	//==============================================================================
-	// ƒfƒoƒCƒX‚Ì¶¬
+	// ãƒ‡ãƒã‚¤ã‚¹ã®ç”Ÿæˆ
 	//==============================================================================
 
 	int devset;
@@ -266,7 +266,7 @@ static int Init3DDevicesW( HWND hwnd )
 		devset |= D3DCREATE_FPU_PRESERVE;
 	}
 
-	// ’¸“_ƒVƒF[ƒ_[‚Ì1.1‚Í‚ ‚é‚Ì‚ñ‚©H(‚È‚º‚©1.1‚¾‚Æ“®‚©‚È‚¢‹@í‚ªo‚é‚Ì‚Å‚È‚µ)
+	// é ‚ç‚¹ã‚·ã‚§ãƒ¼ãƒ€ãƒ¼ã®1.1ã¯ã‚ã‚‹ã®ã‚“ã‹ï¼Ÿ(ãªãœã‹1.1ã ã¨å‹•ã‹ãªã„æ©Ÿç¨®ãŒå‡ºã‚‹ã®ã§ãªã—)
 	//	if ( VertexShaderVersion >= D3DVS_VERSION(1,1) )
 	d3ddevtype = D3DDEVTYPE_HAL;
 	if ( VertexShaderVersion >= D3DVS_VERSION(1,0) )
@@ -280,12 +280,12 @@ static int Init3DDevicesW( HWND hwnd )
 				// REFERENCE RASTERIZE
 				if FAILED( d3d->CreateDevice( D3DADAPTER_DEFAULT, D3DDEVTYPE_REF, hwnd, D3DCREATE_SOFTWARE_VERTEXPROCESSING | devset, &d3dapp, &d3ddev ) )
 				{				
-					// ‚¾‚ß‚»‚¤‚Å‚·
-					MessageBox( NULL,"Direct3DƒfƒoƒCƒX‚Ì¶¬‚É¸”s‚µ‚Ü‚µ‚½", "Error" , MB_OK | MB_ICONSTOP );
+					// ã ã‚ãã†ã§ã™
+					MessageBox( NULL,"Direct3Dãƒ‡ãƒã‚¤ã‚¹ã®ç”Ÿæˆã«å¤±æ•—ã—ã¾ã—ãŸ", "Error" , MB_OK | MB_ICONSTOP );
 					SetSysReq( SYSREQ_RESULT, 3 );
 					return false;
 				} else {
-					d3ddevtype = D3DDEVTYPE_REF;				// ŠïÕ“I‚ÉREF‚ª‚ ‚Á‚½ê‡
+					d3ddevtype = D3DDEVTYPE_REF;				// å¥‡è·¡çš„ã«REFãŒã‚ã£ãŸå ´åˆ
 					vmode|=0x1000;
 				}
 			}
@@ -299,12 +299,12 @@ static int Init3DDevicesW( HWND hwnd )
 				// REFERENCE RASTERIZE
 				if FAILED( d3d->CreateDevice( D3DADAPTER_DEFAULT, D3DDEVTYPE_REF, hwnd, D3DCREATE_HARDWARE_VERTEXPROCESSING | D3DCREATE_PUREDEVICE | devset, &d3dapp, &d3ddev ) )
 				{				
-					// ‚¾‚ß‚»‚¤‚Å‚·
-					MessageBox( NULL,"Direct3DƒfƒoƒCƒX‚Ì¶¬‚É¸”s‚µ‚Ü‚µ‚½", "Error" , MB_OK | MB_ICONSTOP );
+					// ã ã‚ãã†ã§ã™
+					MessageBox( NULL,"Direct3Dãƒ‡ãƒã‚¤ã‚¹ã®ç”Ÿæˆã«å¤±æ•—ã—ã¾ã—ãŸ", "Error" , MB_OK | MB_ICONSTOP );
 					SetSysReq( SYSREQ_RESULT, 3 );
 					return false;
 				} else {
-					d3ddevtype = D3DDEVTYPE_REF;				// ŠïÕ“I‚ÉREF‚ª‚ ‚Á‚½ê‡
+					d3ddevtype = D3DDEVTYPE_REF;				// å¥‡è·¡çš„ã«REFãŒã‚ã£ãŸå ´åˆ
 					vmode|=0x1000;
 				}
 			}
@@ -312,7 +312,7 @@ static int Init3DDevicesW( HWND hwnd )
 
 	//D3DXCreateTextureFromFile(pD3DDevice,"chr.bmp",&pTexture);
 
-	//ƒoƒbƒNƒoƒbƒtƒ@‚ğ“¾‚é
+	//ãƒãƒƒã‚¯ãƒãƒƒãƒ•ã‚¡ã‚’å¾—ã‚‹
 	//pD3DDevice->GetBackBuffer(0,D3DBACKBUFFER_TYPE_MONO,&pBackBuffer);
 
 	SetSysReq( SYSREQ_RESVMODE, vmode );
@@ -328,7 +328,7 @@ static int Init3DDevicesW( HWND hwnd )
 static void Term3DDevices( void )
 {
 	//
-	//	Direct3DƒfƒoƒCƒX‰ğ•ú
+	//	Direct3Dãƒ‡ãƒã‚¤ã‚¹è§£æ”¾
 	//
 	d3ddev->Reset(&d3dapp);
 	RELEASE( d3ddev );
@@ -383,7 +383,7 @@ static int Get2N(int val)
 
 int GetSurface( int x, int y, int sx, int sy, int px, int py, void *res, int mode )
 {
-	//	VRAM‚Ìî•ñ‚ğæ“¾‚·‚é
+	//	VRAMã®æƒ…å ±ã‚’å–å¾—ã™ã‚‹
 	//
 	HRESULT hr;
 	IDirect3DSurface8 *pBackBuffer;
@@ -396,7 +396,7 @@ int GetSurface( int x, int y, int sx, int sy, int px, int py, void *res, int mod
 	int i,j,k,ofsx,xand;
 	int sx_fix, sy_fix;
 
-	//ƒoƒbƒNƒoƒbƒtƒ@‚ğ“¾‚é
+	//ãƒãƒƒã‚¯ãƒãƒƒãƒ•ã‚¡ã‚’å¾—ã‚‹
 
 	hr = d3ddev->GetBackBuffer(0,D3DBACKBUFFER_TYPE_MONO,&pBackBuffer);
 	if ( FAILED(hr) ) return -1;
@@ -406,7 +406,7 @@ int GetSurface( int x, int y, int sx, int sy, int px, int py, void *res, int mod
 	if (sx_fix > hgio_getWidth()) { sx_fix = hgio_getWidth(); }
 	if (sy_fix > hgio_getHeight()) { sy_fix = hgio_getHeight(); }
 
-	// ARGB—pƒtƒH[ƒ}ƒbƒg‚ÌƒT[ƒtƒF[ƒX‚ğ‚Â‚­‚é
+	// ARGBç”¨ãƒ•ã‚©ãƒ¼ãƒãƒƒãƒˆã®ã‚µãƒ¼ãƒ•ã‚§ãƒ¼ã‚¹ã‚’ã¤ãã‚‹
 	int main_sx = Get2N(hgio_getWidth());
 	int main_sy = Get2N(hgio_getHeight());
 	hr = d3ddev->CreateImageSurface(main_sx, main_sy, D3DFMT_A8R8G8B8, &pTmp);
@@ -436,7 +436,7 @@ int GetSurface( int x, int y, int sx, int sy, int px, int py, void *res, int mod
 	xand = ( px - 1 )<<2;
 	switch( mode ) {
 	case 0:
-		//	HSPŒİŠ·(RGBA)
+		//	HSPäº’æ›(RGBA)
 		for (j = 0; j < sy_fix; j += py) {
 			hspvram = ((BYTE *)res) + ((sx * 4) * j);
 			base = ((BYTE *)rect.pBits) + rect.Pitch * j;
@@ -450,7 +450,7 @@ int GetSurface( int x, int y, int sx, int sy, int px, int py, void *res, int mod
 		}
 		break;
 	case 1:
-		//	OpenGLŒİŠ·(BGRA)
+		//	OpenGLäº’æ›(BGRA)
 		for (j = 0; j < sy_fix; j += py) {
 			hspvram = ((BYTE *)res) + ((sx * 4) * j);
 			base = ((BYTE *)rect.pBits) + rect.Pitch * j;
@@ -492,16 +492,16 @@ static void ClearDest( int mode, int color, int tex )
 {
 	switch ( mode ) {
 	case CLSMODE_NONE:
-		//Á‹(Zƒoƒbƒtƒ@‚Ì‚İ)
+		//æ¶ˆå»(Zãƒãƒƒãƒ•ã‚¡ã®ã¿)
 		d3ddev->Clear(0,NULL,D3DCLEAR_ZBUFFER,color,1.0f,0);
 		break;
 	case CLSMODE_SOLID:
-		//“h‚è‚Â‚Ô‚µ‚ÄÁ‹
-		d3ddev->Clear(0,NULL,D3DCLEAR_TARGET | D3DCLEAR_ZBUFFER,color,1.0f,0);	// T&Lg—p
+		//å¡—ã‚Šã¤ã¶ã—ã¦æ¶ˆå»
+		d3ddev->Clear(0,NULL,D3DCLEAR_TARGET | D3DCLEAR_ZBUFFER,color,1.0f,0);	// T&Lä½¿ç”¨æ™‚
 		break;
 	case CLSMODE_TEXTURE:
 		{
-		//ƒeƒNƒXƒ`ƒƒ‚ÅÁ‹
+		//ãƒ†ã‚¯ã‚¹ãƒãƒ£ã§æ¶ˆå»
 		int i;
 		D3DTLVERTEX v[4];
 		TEXINF *texinf;
@@ -525,11 +525,11 @@ static void ClearDest( int mode, int color, int tex )
 			if ( v[i].x < 0.0f ) v[i].tu0 = 0.0f; else v[i].tu0 = texinf->ratex * texinf->width;
 			if ( v[i].y < 0.0f ) v[i].tv0 = 0.0f; else v[i].tv0 = texinf->ratey * texinf->height;
 		}
-		//ƒfƒoƒCƒX‚Ég—p‚·‚é’¸“_ƒtƒH[ƒ}ƒbƒg‚ğƒZƒbƒg‚·‚é
+		//ãƒ‡ãƒã‚¤ã‚¹ã«ä½¿ç”¨ã™ã‚‹é ‚ç‚¹ãƒ•ã‚©ãƒ¼ãƒãƒƒãƒˆã‚’ã‚»ãƒƒãƒˆã™ã‚‹
 		d3ddev->SetVertexShader(D3DFVF_TLVERTEX);
-		// ‚Æ‚è‚ ‚¦‚¸’¼Ú•`‰æ(lŠpŒ`)
+		// ã¨ã‚Šã‚ãˆãšç›´æ¥æç”»(å››è§’å½¢)
 		d3ddev->DrawPrimitiveUP(D3DPT_TRIANGLEFAN,2,v,sizeof(D3DTLVERTEX));
-		//@ZƒeƒXƒg‚ğ–ß‚·
+		//ã€€Zãƒ†ã‚¹ãƒˆã‚’æˆ»ã™
 		d3ddev->SetRenderState( D3DRS_ZWRITEENABLE, TRUE );
 		break;
 		}
@@ -567,11 +567,11 @@ static void ClearDest( int mode, int color, int tex )
 			v[i].color = (col<<24);
 			v[i].specular = 0; v[i].tu0 = 0.0f; v[i].tv0 = 0.0f;
 		}
-		//ƒfƒoƒCƒX‚Ég—p‚·‚é’¸“_ƒtƒH[ƒ}ƒbƒg‚ğƒZƒbƒg‚·‚é
+		//ãƒ‡ãƒã‚¤ã‚¹ã«ä½¿ç”¨ã™ã‚‹é ‚ç‚¹ãƒ•ã‚©ãƒ¼ãƒãƒƒãƒˆã‚’ã‚»ãƒƒãƒˆã™ã‚‹
 		d3ddev->SetVertexShader(D3DFVF_TLVERTEX);
-		// ‚Æ‚è‚ ‚¦‚¸’¼Ú•`‰æ(lŠpŒ`)
+		// ã¨ã‚Šã‚ãˆãšç›´æ¥æç”»(å››è§’å½¢)
 		d3ddev->DrawPrimitiveUP(D3DPT_TRIANGLEFAN,2,v,sizeof(D3DTLVERTEX));
-		//@ZƒeƒXƒg‚ğ–ß‚·
+		//ã€€Zãƒ†ã‚¹ãƒˆã‚’æˆ»ã™
 		d3ddev->SetRenderState( D3DRS_ZWRITEENABLE, TRUE );
 //		d3ddev->SetRenderState( D3DRS_ZENABLE, TRUE );
 //		d3ddev->EndScene();
@@ -583,13 +583,13 @@ static void ClearDest( int mode, int color, int tex )
 
 static void InitTexture(void)
 {
-	//		ƒeƒNƒXƒ`ƒƒî•ñ‰Šú‰»
+	//		ãƒ†ã‚¯ã‚¹ãƒãƒ£æƒ…å ±åˆæœŸåŒ–
 	//
 	SetSysReq(SYSREQ_CLSMODE, CLSMODE_NONE);
 	TexSetD3DParam(d3d, d3ddev, target_disp);
 	TexInit();
 
-	//		ƒeƒLƒXƒg‚ğ‰Šú‰»
+	//		ãƒ†ã‚­ã‚¹ãƒˆã‚’åˆæœŸåŒ–
 	//
 	tmes.texmesInit(SYSREQ_MESCACHE_MAX);
 }
@@ -603,11 +603,11 @@ static void InitTexture(void)
 
 void hgio_init( int mode, int sx, int sy, void *hwnd )
 {
-	//		ƒtƒ@ƒCƒ‹ƒT[ƒrƒXİ’è
+	//		ãƒ•ã‚¡ã‚¤ãƒ«ã‚µãƒ¼ãƒ“ã‚¹è¨­å®š
 	//
 	InitMemFile();
 
-	//		İ’è‚Ì‰Šú‰»
+	//		è¨­å®šã®åˆæœŸåŒ–
 	//
 	GeometryInit();
 	SetSysReq( SYSREQ_RESULT, 0 );
@@ -622,11 +622,11 @@ void hgio_init( int mode, int sx, int sy, void *hwnd )
 
 	hgio_fontsystem_win32_init(master_wnd);
 
-	//		ƒoƒbƒtƒ@‰Šú‰»
+	//		ãƒãƒƒãƒ•ã‚¡åˆæœŸåŒ–
 	//
 	lpDest = NULL;
 
-	//	Direct3DƒIƒuƒWƒFƒNƒg‚Ìæ“¾
+	//	Direct3Dã‚ªãƒ–ã‚¸ã‚§ã‚¯ãƒˆã®å–å¾—
 	//
 	d3d = Direct3DCreate8(D3D_SDK_VERSION);
 	if( d3d == NULL ) {
@@ -634,20 +634,20 @@ void hgio_init( int mode, int sx, int sy, void *hwnd )
 		return;
 	}
 
-	//		ƒfƒoƒCƒX‰Šú‰»
+	//		ãƒ‡ãƒã‚¤ã‚¹åˆæœŸåŒ–
 	//
 	Init3DDevicesW( (HWND)hwnd );
 	InitVertexTemp();
 	InitTexture();
 
-	//		infoval‚ğƒŠƒZƒbƒg
+	//		infovalã‚’ãƒªã‚»ãƒƒãƒˆ
 	//
 	int i;
 	for(i=0;i<GINFO_EXINFO_MAX;i++) {
 		infoval[i] = 0.0;
 	}
 
-	//		ƒJ[ƒ\ƒ‹“Ç‚İ‚İ
+	//		ã‚«ãƒ¼ã‚½ãƒ«èª­ã¿è¾¼ã¿
 	//
 	cursor_arrow = LoadCursor(NULL, IDC_ARROW);
 	cursor_ibeam = LoadCursor(NULL, IDC_IBEAM);
@@ -664,7 +664,7 @@ void hgio_clsmode( int mode, int color, int tex )
 
 int hgio_device_restore( void )
 {
-	//	ƒfƒoƒCƒX‚ÌC•œ
+	//	ãƒ‡ãƒã‚¤ã‚¹ã®ä¿®å¾©
 	//		(0=OK/1=NG)
 	//
 	HRESULT hr;
@@ -673,7 +673,7 @@ int hgio_device_restore( void )
 		if( D3DERR_DEVICELOST == hr ) return -1;
 		if( D3DERR_DEVICENOTRESET == hr ) {
 
-			//		ƒfƒoƒCƒXÄ‰Šú‰»
+			//		ãƒ‡ãƒã‚¤ã‚¹å†åˆæœŸåŒ–
 			//
 //			VertexShaderTerm();
 			hr = d3ddev->Reset(&d3dapp);
@@ -705,9 +705,9 @@ int hgio_render_end( void )
 
 	res = 0;
 
-	//ƒeƒNƒXƒ`ƒƒƒXƒe[ƒW‚ÌƒŠƒZƒbƒg
+	//ãƒ†ã‚¯ã‚¹ãƒãƒ£ã‚¹ãƒ†ãƒ¼ã‚¸ã®ãƒªã‚»ãƒƒãƒˆ
 	d3ddev->SetTexture( 0, NULL );
-	//ƒV[ƒ“ƒŒƒ“ƒ_[I—¹
+	//ã‚·ãƒ¼ãƒ³ãƒ¬ãƒ³ãƒ€ãƒ¼çµ‚äº†
 	d3ddev->EndScene();
 	hr =  d3ddev->Present(NULL,NULL,NULL,NULL);
 	if( FAILED(hr) ) res = -1;
@@ -751,17 +751,17 @@ int hgio_render_start( void )
 		hgio_render_end();
 	}
 
-	//	ƒfƒoƒCƒXƒƒXƒg‚Ì‘Î‰
+	//	ãƒ‡ãƒã‚¤ã‚¹ãƒ­ã‚¹ãƒˆæ™‚ã®å¯¾å¿œ
 	//
 	if ( GetSysReq( SYSREQ_DEVLOST ) ) {
 		if ( hgio_device_restore() == 0 ) {
-			SetSysReq( SYSREQ_DEVLOST, 0 );			// ƒfƒoƒCƒX–ß‚Á‚½
+			SetSysReq( SYSREQ_DEVLOST, 0 );			// ãƒ‡ãƒã‚¤ã‚¹æˆ»ã£ãŸ
 		} else {
 			return -1;
 		}
 	}
 
-	//	ƒ}ƒgƒŠƒNƒX‚ğİ’è
+	//	ãƒãƒˆãƒªã‚¯ã‚¹ã‚’è¨­å®š
 	D3DXMATRIX matrixIdentitiy;
 	ZeroMemory(&matrixIdentitiy, sizeof(matrixIdentitiy));
 	matrixIdentitiy._11 = 1.0f;
@@ -775,7 +775,7 @@ int hgio_render_start( void )
 	//Mat2D3DMAT(&matrixView, GetCurrentMatrixPtr());
 	//d3ddev->SetTransform(D3DTS_VIEW, &matrixView);
 
-	//	•W€‚Ì“Š‰eƒ}ƒgƒŠƒNƒX‚ğİ’è‚·‚é
+	//	æ¨™æº–ã®æŠ•å½±ãƒãƒˆãƒªã‚¯ã‚¹ã‚’è¨­å®šã™ã‚‹
 	D3DXMATRIX matrixProj;
 	MATRIX *mymat = &mat_proj;
 	UnitMatrix();
@@ -784,18 +784,18 @@ int hgio_render_start( void )
 	Mat2D3DMAT(&matrixProj, mymat);
 	d3ddev->SetTransform(D3DTS_PROJECTION, &matrixProj);
 
-	//	‰æ–ÊƒNƒŠƒA
+	//	ç”»é¢ã‚¯ãƒªã‚¢
 	int bgtex = -1;
 	if (backbm != NULL) { bgtex = backbm->texid; }
 	ClearDest(GetSysReq(SYSREQ_CLSMODE), GetSysReq(SYSREQ_CLSCOLOR), bgtex);
 
-	//	ƒ†[ƒU[İ’è‚Ì“Š‰eƒ}ƒgƒŠƒNƒX‚ğİ’è‚·‚é
+	//	ãƒ¦ãƒ¼ã‚¶ãƒ¼è¨­å®šã®æŠ•å½±ãƒãƒˆãƒªã‚¯ã‚¹ã‚’è¨­å®šã™ã‚‹
 	hgio_setview(mainbm);
 
-	//	ƒfƒoƒCƒX‰Šú‰»
+	//	ãƒ‡ãƒã‚¤ã‚¹åˆæœŸåŒ–
 	InitDraw();
 
-	//ƒV[ƒ“ƒŒƒ“ƒ_[ŠJn
+	//ã‚·ãƒ¼ãƒ³ãƒ¬ãƒ³ãƒ€ãƒ¼é–‹å§‹
 	d3ddev->BeginScene();
 	TexReset();
 	drawflag = 1;
@@ -806,8 +806,8 @@ int hgio_render_start( void )
 
 void hgio_setback( BMSCR *bm )
 {
-	//		”wŒi‰æ‘œ‚Ìİ’è
-	//		(NULL=‚È‚µ)
+	//		èƒŒæ™¯ç”»åƒã®è¨­å®š
+	//		(NULL=ãªã—)
 	//
 	backbm = bm;
 }
@@ -815,8 +815,8 @@ void hgio_setback( BMSCR *bm )
 
 void hgio_screen( BMSCR *bm )
 {
-	//		ƒXƒNƒŠ[ƒ“Äİ’è
-	//		(cls‘Š“–)
+	//		ã‚¹ã‚¯ãƒªãƒ¼ãƒ³å†è¨­å®š
+	//		(clsç›¸å½“)
 	//
 	drawflag = 0;
 	if (bm->type == HSPWND_TYPE_MAIN) {
@@ -828,8 +828,8 @@ void hgio_screen( BMSCR *bm )
 
 void hgio_delscreen( BMSCR *bm )
 {
-	//		ƒXƒNƒŠ[ƒ“‚ğ”jŠü
-	//		(BmscrƒNƒ‰ƒX‚Ìdelete)
+	//		ã‚¹ã‚¯ãƒªãƒ¼ãƒ³ã‚’ç ´æ£„
+	//		(Bmscrã‚¯ãƒ©ã‚¹ã®deleteæ™‚)
 	//
 	if ( bm->flag == BMSCR_FLAG_NOUSE ) return;
 	if ( bm->texid != -1 ) {
@@ -863,7 +863,7 @@ void hgio_term( void )
 
 int hgio_stick( int actsw )
 {
-	//		stick—p‚Ì“ü—Í‚ğ•Ô‚·
+	//		stickç”¨ã®å…¥åŠ›ã‚’è¿”ã™
 	//
 	HWND hwnd;
 	int ckey = 0;
@@ -900,8 +900,8 @@ int hgio_stick( int actsw )
 
 int hgio_redraw( BMSCR *bm, int flag )
 {
-	//		redrawƒ‚[ƒhİ’è
-	//		(•K‚¸redraw 0`redraw 1‚ğƒyƒA‚É‚·‚é‚±‚Æ)
+	//		redrawãƒ¢ãƒ¼ãƒ‰è¨­å®š
+	//		(å¿…ãšredraw 0ï½redraw 1ã‚’ãƒšã‚¢ã«ã™ã‚‹ã“ã¨)
 	//
 	if ( bm == NULL ) return -1;
 	if ( bm->type != HSPWND_TYPE_MAIN ) throw HSPERR_UNSUPPORTED_FUNCTION;
@@ -918,7 +918,7 @@ int hgio_redraw( BMSCR *bm, int flag )
 		hgio_render_start();
 	}
 
-	//	ƒEƒCƒ“ƒhƒEƒAƒNƒeƒBƒu‚ÌXV
+	//	ã‚¦ã‚¤ãƒ³ãƒ‰ã‚¦ã‚¢ã‚¯ãƒ†ã‚£ãƒ–ã®æ›´æ–°
 	//
 	HWND hwnd;
 	hwnd = GetActiveWindow();
@@ -929,7 +929,7 @@ int hgio_redraw( BMSCR *bm, int flag )
 		bm->window_active = 1;
 	}
 
-	//	ƒJ[ƒ\ƒ‹‚ÌXV
+	//	ã‚«ãƒ¼ã‚½ãƒ«ã®æ›´æ–°
 	//
 	HSPOBJINFO *info = bm->cur_mo_obj;
 	HCURSOR hc = cursor_arrow;
@@ -948,7 +948,7 @@ int hgio_redraw( BMSCR *bm, int flag )
 
 int hgio_dialog( int mode, char *str1, char *str2 )
 {
-	//		dialog•\¦
+	//		dialogè¡¨ç¤º
 	//
 	int i,res;
 	i = 0;
@@ -961,7 +961,7 @@ int hgio_dialog( int mode, char *str1, char *str2 )
 
 int hgio_title( char *str1 )
 {
-	//		title•ÏX
+	//		titleå¤‰æ›´
 	//
 	SetWindowText( master_wnd, str1 );
 	return 0;
@@ -970,12 +970,12 @@ int hgio_title( char *str1 )
 
 int hgio_texload( BMSCR *bm, char *fname )
 {
-	//		ƒeƒNƒXƒ`ƒƒ“Ç‚İ‚İ
+	//		ãƒ†ã‚¯ã‚¹ãƒãƒ£èª­ã¿è¾¼ã¿
 	//
 	int i,fsize;
 	TEXINF *tex;
 
-	fsize = OpenMemFilePtr( fname );				// HSPƒŠƒ\[ƒX‚ğŠÜ‚ß‚ÄŒŸõ‚·‚é
+	fsize = OpenMemFilePtr( fname );				// HSPãƒªã‚½ãƒ¼ã‚¹ã‚’å«ã‚ã¦æ¤œç´¢ã™ã‚‹
 	i = RegistTex( GetMemFilePtr(), fsize, 0, -1, -1, -1 );
 	CloseMemFilePtr();
 	if ( i < 0 ) return i;
@@ -991,7 +991,7 @@ int hgio_texload( BMSCR *bm, char *fname )
 
 int hgio_gsel( BMSCR *bm )
 {
-	//		gsel(•`‰ææ•ÏX)
+	//		gsel(æç”»å…ˆå¤‰æ›´)
 	//
 	hgio_render_end();
 	return 0;
@@ -1000,7 +1000,7 @@ int hgio_gsel( BMSCR *bm )
 
 int hgio_buffer(BMSCR* bm)
 {
-	//		buffer(•`‰æ—p‰æ–Êì¬)
+	//		buffer(æç”»ç”¨ç”»é¢ä½œæˆ)
 	//
 	int texid = RegistTexEmpty(bm->sx, bm->sy, 1);
 	if (texid >= 0) {
@@ -1012,7 +1012,7 @@ int hgio_buffer(BMSCR* bm)
 
 int hgio_bufferop(BMSCR* bm, int mode, char *ptr)
 {
-	//		ƒIƒtƒXƒNƒŠ[ƒ“ƒoƒbƒtƒ@‚ğ‘€ì
+	//		ã‚ªãƒ•ã‚¹ã‚¯ãƒªãƒ¼ãƒ³ãƒãƒƒãƒ•ã‚¡ã‚’æ“ä½œ
 	//
 	int texid = bm->texid;
 	if (texid < 0) return -1;
@@ -1044,7 +1044,7 @@ int hgio_bufferop(BMSCR* bm, int mode, char *ptr)
 
 static void SetAlphaMode( int p_alpha )
 {
-	//		ƒAƒ‹ƒtƒ@ƒuƒŒƒ“ƒhƒIƒyƒŒ[ƒVƒ‡ƒ“ˆ—
+	//		ã‚¢ãƒ«ãƒ•ã‚¡ãƒ–ãƒ¬ãƒ³ãƒ‰ã‚ªãƒšãƒ¬ãƒ¼ã‚·ãƒ§ãƒ³å‡¦ç†
 	//
 	if ( p_alpha < 2 ) {
 		d3ddev->SetRenderState( D3DRS_ALPHATESTENABLE, FALSE );
@@ -1076,7 +1076,7 @@ static void SetAlphaMode( int p_alpha )
 
 static int GetCopyTexAlpha(BMSCR *bm)
 {
-	//		ƒuƒŒƒ“ƒgİ’è
+	//		ãƒ–ãƒ¬ãƒ³ãƒˆè¨­å®š
 	int alpha;
 
 	SetAlphaMode(bm->gmode);
@@ -1092,7 +1092,7 @@ static int GetCopyTexAlpha(BMSCR *bm)
 
 static int GetCopyTexAlphaMes(BMSCR *bm)
 {
-	//		Alpha‚ğŠÜ‚ŞƒeƒNƒXƒ`ƒƒ—p‚ÌƒuƒŒƒ“ƒgİ’è
+	//		Alphaã‚’å«ã‚€ãƒ†ã‚¯ã‚¹ãƒãƒ£ç”¨ã®ãƒ–ãƒ¬ãƒ³ãƒˆè¨­å®š
 	int alpha;
 	int gmode;
 	gmode = bm->gmode;
@@ -1110,7 +1110,7 @@ static int GetCopyTexAlphaMes(BMSCR *bm)
 
 static int SetAlphaModeDG( int p_alpha )
 {
-	//		ƒAƒ‹ƒtƒ@ƒuƒŒƒ“ƒhƒIƒyƒŒ[ƒVƒ‡ƒ“ˆ—(DG—p)
+	//		ã‚¢ãƒ«ãƒ•ã‚¡ãƒ–ãƒ¬ãƒ³ãƒ‰ã‚ªãƒšãƒ¬ãƒ¼ã‚·ãƒ§ãƒ³å‡¦ç†(DGç”¨)
 	//
 	int alpha, alphaop;
 	alphaop = p_alpha >> 8;
@@ -1156,10 +1156,10 @@ static int SetAlphaModeDG( int p_alpha )
 
 void hgio_line( BMSCR *bm, float x, float y )
 {
-	//		ƒ‰ƒCƒ“•`‰æ
-	//		(bm!=NULL ‚Ìê‡Aƒ‰ƒCƒ“•`‰æŠJn)
-	//		(bm==NULL ‚Ìê‡Aƒ‰ƒCƒ“•`‰æŠ®—¹)
-	//		(ƒ‰ƒCƒ“‚ÌÀ•W‚Í•K—v‚È”‚¾‚¯hgio_line2‚ğŒÄ‚Ño‚·)
+	//		ãƒ©ã‚¤ãƒ³æç”»
+	//		(bm!=NULL ã®å ´åˆã€ãƒ©ã‚¤ãƒ³æç”»é–‹å§‹)
+	//		(bm==NULL ã®å ´åˆã€ãƒ©ã‚¤ãƒ³æç”»å®Œäº†)
+	//		(ãƒ©ã‚¤ãƒ³ã®åº§æ¨™ã¯å¿…è¦ãªæ•°ã ã‘hgio_line2ã‚’å‘¼ã³å‡ºã™)
 	//
 	int color;
 	D3DEXVERTEXC *v;
@@ -1179,15 +1179,15 @@ void hgio_line( BMSCR *bm, float x, float y )
 
 	d3ddev->SetRenderState( D3DRS_ALPHATESTENABLE, FALSE );
 
-	//ƒfƒoƒCƒX‚Ég—p‚·‚é’¸“_ƒtƒH[ƒ}ƒbƒg‚ğƒZƒbƒg‚·‚é
+	//ãƒ‡ãƒã‚¤ã‚¹ã«ä½¿ç”¨ã™ã‚‹é ‚ç‚¹ãƒ•ã‚©ãƒ¼ãƒãƒƒãƒˆã‚’ã‚»ãƒƒãƒˆã™ã‚‹
 	d3ddev->SetVertexShader(D3DFVF_EXVERTEXC);
 }
 
 
 void hgio_line2( float x, float y )
 {
-	//		ƒ‰ƒCƒ“•`‰æ
-	//		(hgio_line‚ÅŠJnŒã‚É•K—v‚È‰ñ”ŒÄ‚ÔAhgio_line(NULL)‚ÅI—¹‚·‚é‚±‚Æ)
+	//		ãƒ©ã‚¤ãƒ³æç”»
+	//		(hgio_lineã§é–‹å§‹å¾Œã«å¿…è¦ãªå›æ•°å‘¼ã¶ã€hgio_line(NULL)ã§çµ‚äº†ã™ã‚‹ã“ã¨)
 	//
 	D3DEXVERTEXC *v;
 	v = vertex2DEXC;
@@ -1196,7 +1196,7 @@ void hgio_line2( float x, float y )
 	v[1].x = (float)x;
 	v[1].y = (float)y;
 
-	// ‚Æ‚è‚ ‚¦‚¸’¼Ú•`‰æ(lŠpŒ`)
+	// ã¨ã‚Šã‚ãˆãšç›´æ¥æç”»(å››è§’å½¢)
 	d3ddev->DrawPrimitiveUP(D3DPT_LINELIST,1,vertex2DEXC,sizeof(D3DEXVERTEXC));
 
 	linebasex = x;
@@ -1206,7 +1206,7 @@ void hgio_line2( float x, float y )
 
 void hgio_boxfAlpha(BMSCR *bm, float x1, float y1, float x2, float y2, int alphamode)
 {
-	//		‹éŒ`•`‰æ
+	//		çŸ©å½¢æç”»
 	//
 	int col;
 	D3DEXVERTEXC *v;
@@ -1239,9 +1239,9 @@ void hgio_boxfAlpha(BMSCR *bm, float x1, float y1, float x2, float y2, int alpha
 
 	d3ddev->SetRenderState(D3DRS_ALPHATESTENABLE, FALSE);
 
-	//ƒfƒoƒCƒX‚Ég—p‚·‚é’¸“_ƒtƒH[ƒ}ƒbƒg‚ğƒZƒbƒg‚·‚é
+	//ãƒ‡ãƒã‚¤ã‚¹ã«ä½¿ç”¨ã™ã‚‹é ‚ç‚¹ãƒ•ã‚©ãƒ¼ãƒãƒƒãƒˆã‚’ã‚»ãƒƒãƒˆã™ã‚‹
 	d3ddev->SetVertexShader(D3DFVF_EXVERTEXC);
-	// ‚Æ‚è‚ ‚¦‚¸’¼Ú•`‰æ(lŠpŒ`)
+	// ã¨ã‚Šã‚ãˆãšç›´æ¥æç”»(å››è§’å½¢)
 	d3ddev->DrawPrimitiveUP(D3DPT_TRIANGLEFAN, 2, vertex2DEXC, sizeof(D3DEXVERTEXC));
 }
 
@@ -1254,7 +1254,7 @@ void hgio_boxf( BMSCR *bm, float x1, float y1, float x2, float y2 )
 
 void hgio_circle( BMSCR *bm, float x1, float y1, float x2, float y2, int mode )
 {
-	//		‰~•`‰æ
+	//		å††æç”»
 	//
 	D3DEXVERTEXC *v;
 	D3DEXVERTEXC arScreen[CIRCLE_DIV + 2];
@@ -1285,9 +1285,9 @@ void hgio_circle( BMSCR *bm, float x1, float y1, float x2, float y2, int mode )
 		v++;
 	}
 
-	//ƒfƒoƒCƒX‚Ég—p‚·‚é’¸“_ƒtƒH[ƒ}ƒbƒg‚ğƒZƒbƒg‚·‚é
+	//ãƒ‡ãƒã‚¤ã‚¹ã«ä½¿ç”¨ã™ã‚‹é ‚ç‚¹ãƒ•ã‚©ãƒ¼ãƒãƒƒãƒˆã‚’ã‚»ãƒƒãƒˆã™ã‚‹
 	d3ddev->SetVertexShader(D3DFVF_EXVERTEXC);
-	// ‚Æ‚è‚ ‚¦‚¸’¼Ú•`‰æ(lŠpŒ`)
+	// ã¨ã‚Šã‚ãˆãšç›´æ¥æç”»(å››è§’å½¢)
 	d3ddev->SetRenderState( D3DRS_CULLMODE, D3DCULL_CCW );
 	d3ddev->DrawPrimitiveUP(D3DPT_TRIANGLEFAN,CIRCLE_DIV,arScreen,sizeof(D3DEXVERTEXC));
 	d3ddev->SetRenderState( D3DRS_CULLMODE, D3DCULL_CW );
@@ -1296,7 +1296,7 @@ void hgio_circle( BMSCR *bm, float x1, float y1, float x2, float y2, int mode )
 
 void hgio_fillrot( BMSCR *bm, float x, float y, float sx, float sy, float ang )
 {
-	//		‹éŒ`(‰ñ“])•`‰æ
+	//		çŸ©å½¢(å›è»¢)æç”»
 	//
 	D3DEXVERTEXC *v;
 	float x0,y0,x1,y1,ofsx,ofsy;
@@ -1341,18 +1341,18 @@ void hgio_fillrot( BMSCR *bm, float x, float y, float sx, float sy, float ang )
 	v->y = (-y0-y1) + y;
 	v++;
 
-	//ƒfƒoƒCƒX‚Ég—p‚·‚é’¸“_ƒtƒH[ƒ}ƒbƒg‚ğƒZƒbƒg‚·‚é
+	//ãƒ‡ãƒã‚¤ã‚¹ã«ä½¿ç”¨ã™ã‚‹é ‚ç‚¹ãƒ•ã‚©ãƒ¼ãƒãƒƒãƒˆã‚’ã‚»ãƒƒãƒˆã™ã‚‹
 	d3ddev->SetVertexShader(D3DFVF_EXVERTEXC);
-	// ‚Æ‚è‚ ‚¦‚¸’¼Ú•`‰æ(lŠpŒ`)
+	// ã¨ã‚Šã‚ãˆãšç›´æ¥æç”»(å››è§’å½¢)
 	d3ddev->DrawPrimitiveUP(D3DPT_TRIANGLEFAN,2,vertex2DEXC,sizeof(D3DEXVERTEXC));
 }
 
 
 void hgio_copy( BMSCR *bm, short xx, short yy, short srcsx, short srcsy, BMSCR *bmsrc, float s_psx, float s_psy )
 {
-	//		‰æ‘œƒRƒs[
-	//		texid“à‚Ì(xx,yy)-(xx+srcsx,yy+srcsy)‚ğŒ»İ‚Ì‰æ–Ê‚É(psx,psy)ƒTƒCƒY‚ÅƒRƒs[
-	//		ƒJƒŒƒ“ƒgƒ|ƒWƒVƒ‡ƒ“A•`‰æƒ‚[ƒh‚ÍBMSCR‚©‚çæ“¾
+	//		ç”»åƒã‚³ãƒ”ãƒ¼
+	//		texidå†…ã®(xx,yy)-(xx+srcsx,yy+srcsy)ã‚’ç¾åœ¨ã®ç”»é¢ã«(psx,psy)ã‚µã‚¤ã‚ºã§ã‚³ãƒ”ãƒ¼
+	//		ã‚«ãƒ¬ãƒ³ãƒˆãƒã‚¸ã‚·ãƒ§ãƒ³ã€æç”»ãƒ¢ãƒ¼ãƒ‰ã¯BMSCRã‹ã‚‰å–å¾—
 	//
 	D3DEXVERTEX *v;
 	TEXINF *tex;
@@ -1423,18 +1423,18 @@ void hgio_copy( BMSCR *bm, short xx, short yy, short srcsx, short srcsy, BMSCR *
 	v[0].tu0 = tx0;
 	v[0].tv0 = ty1;
 
-	//ƒfƒoƒCƒX‚Ég—p‚·‚é’¸“_ƒtƒH[ƒ}ƒbƒg‚ğƒZƒbƒg‚·‚é
+	//ãƒ‡ãƒã‚¤ã‚¹ã«ä½¿ç”¨ã™ã‚‹é ‚ç‚¹ãƒ•ã‚©ãƒ¼ãƒãƒƒãƒˆã‚’ã‚»ãƒƒãƒˆã™ã‚‹
 	d3ddev->SetVertexShader(D3DFVF_EXVERTEX);
-	// ‚Æ‚è‚ ‚¦‚¸’¼Ú•`‰æ(lŠpŒ`)
+	// ã¨ã‚Šã‚ãˆãšç›´æ¥æç”»(å››è§’å½¢)
 	d3ddev->DrawPrimitiveUP(D3DPT_TRIANGLEFAN,2,vertex2DEX,sizeof(D3DEXVERTEX));
 }
 
 
 void hgio_fontcopy(BMSCR *bm, int x, int y, int psx, int psy, int texid, int basex, int basey)
 {
-	//		‰æ‘œƒRƒs[
-	//		texid“à‚Ì(xx,yy)-(xx+srcsx,yy+srcsy)‚ğŒ»İ‚Ì‰æ–Ê‚É(psx,psy)ƒTƒCƒY‚ÅƒRƒs[
-	//		ƒJƒŒƒ“ƒgƒ|ƒWƒVƒ‡ƒ“A•`‰æƒ‚[ƒh‚ÍBMSCR‚©‚çæ“¾
+	//		ç”»åƒã‚³ãƒ”ãƒ¼
+	//		texidå†…ã®(xx,yy)-(xx+srcsx,yy+srcsy)ã‚’ç¾åœ¨ã®ç”»é¢ã«(psx,psy)ã‚µã‚¤ã‚ºã§ã‚³ãƒ”ãƒ¼
+	//		ã‚«ãƒ¬ãƒ³ãƒˆãƒã‚¸ã‚·ãƒ§ãƒ³ã€æç”»ãƒ¢ãƒ¼ãƒ‰ã¯BMSCRã‹ã‚‰å–å¾—
 	//
 	D3DEXVERTEX *v;
 	TEXINF *tex;
@@ -1497,18 +1497,18 @@ void hgio_fontcopy(BMSCR *bm, int x, int y, int psx, int psy, int texid, int bas
 	v[0].tu0 = tx0;
 	v[0].tv0 = ty1;
 
-	//ƒfƒoƒCƒX‚Ég—p‚·‚é’¸“_ƒtƒH[ƒ}ƒbƒg‚ğƒZƒbƒg‚·‚é
+	//ãƒ‡ãƒã‚¤ã‚¹ã«ä½¿ç”¨ã™ã‚‹é ‚ç‚¹ãƒ•ã‚©ãƒ¼ãƒãƒƒãƒˆã‚’ã‚»ãƒƒãƒˆã™ã‚‹
 	d3ddev->SetVertexShader(D3DFVF_EXVERTEX);
-	// ‚Æ‚è‚ ‚¦‚¸’¼Ú•`‰æ(lŠpŒ`)
+	// ã¨ã‚Šã‚ãˆãšç›´æ¥æç”»(å››è§’å½¢)
 	d3ddev->DrawPrimitiveUP(D3DPT_TRIANGLEFAN, 2, vertex2DEX, sizeof(D3DEXVERTEX));
 }
 
 
 void hgio_copyrot( BMSCR *bm, short xx, short yy, short srcsx, short srcsy, float s_ofsx, float s_ofsy, BMSCR *bmsrc, float psx, float psy, float ang )
 {
-	//		‰æ‘œƒRƒs[
-	//		texid“à‚Ì(xx,yy)-(xx+srcsx,yy+srcsy)‚ğŒ»İ‚Ì‰æ–Ê‚É(psx,psy)ƒTƒCƒY‚ÅƒRƒs[
-	//		ƒJƒŒƒ“ƒgƒ|ƒWƒVƒ‡ƒ“A•`‰æƒ‚[ƒh‚ÍBMSCR‚©‚çæ“¾
+	//		ç”»åƒã‚³ãƒ”ãƒ¼
+	//		texidå†…ã®(xx,yy)-(xx+srcsx,yy+srcsy)ã‚’ç¾åœ¨ã®ç”»é¢ã«(psx,psy)ã‚µã‚¤ã‚ºã§ã‚³ãƒ”ãƒ¼
+	//		ã‚«ãƒ¬ãƒ³ãƒˆãƒã‚¸ã‚·ãƒ§ãƒ³ã€æç”»ãƒ¢ãƒ¼ãƒ‰ã¯BMSCRã‹ã‚‰å–å¾—
 	//
 	D3DEXVERTEX *v;
 	TEXINF *tex;
@@ -1532,13 +1532,13 @@ void hgio_copyrot( BMSCR *bm, short xx, short yy, short srcsx, short srcsy, floa
 	x1 = mx1 * ofsx;
 	y1 = my1 * ofsx;
 
-	//		Šî“_‚ÌZo
+	//		åŸºç‚¹ã®ç®—å‡º
 	x = ( (float)bm->cx - (-x0+x1) );
 	y = ( (float)bm->cy - (-y0+y1) );
 
 	/*-------------------------------*/
 
-	//		‰ñ“]À•W‚ÌZo
+	//		å›è»¢åº§æ¨™ã®ç®—å‡º
 	ofsx = -psx;
 	ofsy = -psy;
 	x0 = mx0 * ofsy;
@@ -1598,9 +1598,9 @@ void hgio_copyrot( BMSCR *bm, short xx, short yy, short srcsx, short srcsy, floa
 
 	/*-------------------------------*/
 
-	//ƒfƒoƒCƒX‚Ég—p‚·‚é’¸“_ƒtƒH[ƒ}ƒbƒg‚ğƒZƒbƒg‚·‚é
+	//ãƒ‡ãƒã‚¤ã‚¹ã«ä½¿ç”¨ã™ã‚‹é ‚ç‚¹ãƒ•ã‚©ãƒ¼ãƒãƒƒãƒˆã‚’ã‚»ãƒƒãƒˆã™ã‚‹
 	d3ddev->SetVertexShader(D3DFVF_EXVERTEX);
-	// ‚Æ‚è‚ ‚¦‚¸’¼Ú•`‰æ(lŠpŒ`)
+	// ã¨ã‚Šã‚ãˆãšç›´æ¥æç”»(å››è§’å½¢)
 	d3ddev->DrawPrimitiveUP(D3DPT_TRIANGLEFAN,2,vertex2DEX,sizeof(D3DEXVERTEX));
 }
 
@@ -1627,7 +1627,7 @@ void hgio_setfilter( int type, int opt )
 
 void hgio_square_tex( BMSCR *bm, int *posx, int *posy, BMSCR *bmsrc, int *uvx, int *uvy )
 {
-	//		lŠpŒ`(square)ƒeƒNƒXƒ`ƒƒ•`‰æ
+	//		å››è§’å½¢(square)ãƒ†ã‚¯ã‚¹ãƒãƒ£æç”»
 	//
 	D3DEXVERTEX *v;
 	TEXINF *tex;
@@ -1667,16 +1667,16 @@ void hgio_square_tex( BMSCR *bm, int *posx, int *posy, BMSCR *bmsrc, int *uvx, i
 	v->tu0 = ((float)uvx[3]) * sx;
 	v->tv0 = ((float)uvy[3]) * sy;
 
-	//ƒfƒoƒCƒX‚Ég—p‚·‚é’¸“_ƒtƒH[ƒ}ƒbƒg‚ğƒZƒbƒg‚·‚é
+	//ãƒ‡ãƒã‚¤ã‚¹ã«ä½¿ç”¨ã™ã‚‹é ‚ç‚¹ãƒ•ã‚©ãƒ¼ãƒãƒƒãƒˆã‚’ã‚»ãƒƒãƒˆã™ã‚‹
 	d3ddev->SetVertexShader(D3DFVF_EXVERTEX);
-	// ‚Æ‚è‚ ‚¦‚¸’¼Ú•`‰æ(lŠpŒ`)
+	// ã¨ã‚Šã‚ãˆãšç›´æ¥æç”»(å››è§’å½¢)
 	d3ddev->DrawPrimitiveUP(D3DPT_TRIANGLEFAN,2,vertex2DEX,sizeof(D3DEXVERTEX));
 }
 
 
 void hgio_square( BMSCR *bm, int *posx, int *posy, int *color )
 {
-	//		lŠpŒ`(square)’PF•`‰æ
+	//		å››è§’å½¢(square)å˜è‰²æç”»
 	//
 	D3DEXVERTEXC *v;
 	int basecolor;
@@ -1707,9 +1707,9 @@ void hgio_square( BMSCR *bm, int *posx, int *posy, int *color )
 	v->x = (float)posx[3];
 	v->y = (float)posy[3];
 
-	//ƒfƒoƒCƒX‚Ég—p‚·‚é’¸“_ƒtƒH[ƒ}ƒbƒg‚ğƒZƒbƒg‚·‚é
+	//ãƒ‡ãƒã‚¤ã‚¹ã«ä½¿ç”¨ã™ã‚‹é ‚ç‚¹ãƒ•ã‚©ãƒ¼ãƒãƒƒãƒˆã‚’ã‚»ãƒƒãƒˆã™ã‚‹
 	d3ddev->SetVertexShader(D3DFVF_EXVERTEXC);
-	// ‚Æ‚è‚ ‚¦‚¸’¼Ú•`‰æ(lŠpŒ`)
+	// ã¨ã‚Šã‚ãˆãšç›´æ¥æç”»(å››è§’å½¢)
 	d3ddev->DrawPrimitiveUP(D3DPT_TRIANGLEFAN,2,vertex2DEXC,sizeof(D3DEXVERTEXC));
 }
 
@@ -1779,9 +1779,9 @@ HWND hgio_gethwnd( void )
 
 int hgio_celputmulti( BMSCR *bm, int *xpos, int *ypos, int *cel, int count, BMSCR *bmsrc )
 {
-	//		ƒ}ƒ‹ƒ`‰æ‘œƒRƒs[
-	//		int”z—ñ“à‚ÌX,Y,CelID‚ğŒ³‚É“™”{ƒRƒs[‚ğs‚È‚¤(count=ŒÂ”)
-	//		ƒJƒŒƒ“ƒgƒ|ƒWƒVƒ‡ƒ“A•`‰æƒ‚[ƒh‚ÍBMSCR‚©‚çæ“¾
+	//		ãƒãƒ«ãƒç”»åƒã‚³ãƒ”ãƒ¼
+	//		inté…åˆ—å†…ã®X,Y,CelIDã‚’å…ƒã«ç­‰å€ã‚³ãƒ”ãƒ¼ã‚’è¡Œãªã†(count=å€‹æ•°)
+	//		ã‚«ãƒ¬ãƒ³ãƒˆãƒã‚¸ã‚·ãƒ§ãƒ³ã€æç”»ãƒ¢ãƒ¼ãƒ‰ã¯BMSCRã‹ã‚‰å–å¾—
 	//
 	int psx,psy;
 	float f_psx,f_psy;
@@ -1837,7 +1837,7 @@ int hgio_celputmulti( BMSCR *bm, int *xpos, int *ypos, int *cel, int count, BMSC
 
 void hgio_setview(BMSCR* bm)
 {
-	// vp_flag‚É‰‚¶‚½ƒrƒ…[ƒ|[ƒg‚Ìİ’è‚ğs‚¤
+	// vp_flagã«å¿œã˜ãŸãƒ“ãƒ¥ãƒ¼ãƒãƒ¼ãƒˆã®è¨­å®šã‚’è¡Œã†
 	//
 	int i;
 	MATRIX *vmat;
@@ -1879,7 +1879,7 @@ void hgio_setview(BMSCR* bm)
 		return;
 	}
 
-	//	mat_proj‚Éİ’è‚·‚é
+	//	mat_projã«è¨­å®šã™ã‚‹
 	for (i = 0; i < 16; i++) {
 		*vp++ = *mat++;
 	}
@@ -1888,7 +1888,7 @@ void hgio_setview(BMSCR* bm)
 	Mat2D3DMAT(&matrixProj, vmat);
 	d3ddev->SetTransform(D3DTS_PROJECTION, &matrixProj);
 
-	//	“Š‰eƒ}ƒgƒŠƒNƒX‚Ì‹ts—ñ‚ğİ’è‚·‚é
+	//	æŠ•å½±ãƒãƒˆãƒªã‚¯ã‚¹ã®é€†è¡Œåˆ—ã‚’è¨­å®šã™ã‚‹
 	//D3DXMatrixInverse(&InvViewport, NULL, &matrixProj);
 	SetCurrentMatrix(vmat);
 	InverseMatrix(&mat_unproj);
@@ -1898,8 +1898,8 @@ void hgio_setview(BMSCR* bm)
 
 void hgio_cnvview(BMSCR* bm, int* xaxis, int* yaxis)
 {
-	//	ƒrƒ…[•ÏŠ·Œã‚ÌÀ•W -> Œ³‚ÌÀ•W‚É•ÏŠ·‚·‚é
-	//	(ƒ^ƒbƒ`ˆÊ’uÄŒ»‚Ì‚½‚ß)
+	//	ãƒ“ãƒ¥ãƒ¼å¤‰æ›å¾Œã®åº§æ¨™ -> å…ƒã®åº§æ¨™ã«å¤‰æ›ã™ã‚‹
+	//	(ã‚¿ãƒƒãƒä½ç½®å†ç¾ã®ãŸã‚)
 	//
 	VECTOR v1,v2;
 	if (bm->vp_flag == 0) return;
@@ -1929,7 +1929,7 @@ void hgio_cnvview(BMSCR* bm, int* xaxis, int* yaxis)
 
 int hgio_mestex(BMSCR *bm, texmesPos *tpos)
 {
-	//		TEXMESPOS‚É‚æ‚é•¶š•\¦
+	//		TEXMESPOSã«ã‚ˆã‚‹æ–‡å­—è¡¨ç¤º
 	//
 	int mode, x, y, sx, sy;
 	int orgx, orgy;
@@ -2027,7 +2027,7 @@ int hgio_mestex(BMSCR *bm, texmesPos *tpos)
 
 int hgio_mes(BMSCR* bm, char* msg)
 {
-	//		mes,print •¶š•\¦
+	//		mes,print æ–‡å­—è¡¨ç¤º
 	//
 	int xsize, ysize;
 	if ((bm->type != HSPWND_TYPE_MAIN) && (bm->type != HSPWND_TYPE_OFFSCREEN)) return -1;
@@ -2053,14 +2053,14 @@ int hgio_mes(BMSCR* bm, char* msg)
 	xsize = tex->sx;
 	ysize = tex->sy;
 
-	if (bm->printoffsetx > 0) {			// ƒZƒ“ƒ^ƒŠƒ“ƒO‚ğs‚¤(X)
+	if (bm->printoffsetx > 0) {			// ã‚»ãƒ³ã‚¿ãƒªãƒ³ã‚°ã‚’è¡Œã†(X)
 		int offset = (bm->printoffsetx - xsize) / 2;
 		if (offset > 0) {
 			bm->cx += offset;
 		}
 		bm->printoffsetx = 0;
 	}
-	if (bm->printoffsety > 0) {			// ƒZƒ“ƒ^ƒŠƒ“ƒO‚ğs‚¤(Y)
+	if (bm->printoffsety > 0) {			// ã‚»ãƒ³ã‚¿ãƒªãƒ³ã‚°ã‚’è¡Œã†(Y)
 		int offset = (bm->printoffsety - ysize) / 2;
 		if (offset > 0) {
 			bm->cy += offset;
@@ -2080,7 +2080,7 @@ int hgio_mes(BMSCR* bm, char* msg)
 
 int hgio_font(char *fontname, int size, int style)
 {
-	//		•¶šƒtƒHƒ“ƒgw’è
+	//		æ–‡å­—ãƒ•ã‚©ãƒ³ãƒˆæŒ‡å®š
 	//
 	//Alertf("[%s]%d,%d", fontname, size, style);
 	tmes.setFont(fontname, size, style);
@@ -2104,7 +2104,7 @@ int hgio_fontsystem_setup(int sx, int sy, void *buffer)
 
 void hgio_editputclip(BMSCR* bm, char *str)
 {
-	//		ƒNƒŠƒbƒvƒ{[ƒhƒRƒs[
+	//		ã‚¯ãƒªãƒƒãƒ—ãƒœãƒ¼ãƒ‰ã‚³ãƒ”ãƒ¼
 	//
 	HGLOBAL hg;
 	char *strMem;
@@ -2124,7 +2124,7 @@ void hgio_editputclip(BMSCR* bm, char *str)
 
 char *hgio_editgetclip(BMSCR* bm)
 {
-	//		ƒNƒŠƒbƒvƒ{[ƒhƒy[ƒXƒg•¶š—ñæ“¾
+	//		ã‚¯ãƒªãƒƒãƒ—ãƒœãƒ¼ãƒ‰ãƒšãƒ¼ã‚¹ãƒˆæ–‡å­—åˆ—å–å¾—
 	//
 	HGLOBAL hg;
 	char *strClip;

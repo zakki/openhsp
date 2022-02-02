@@ -23,9 +23,9 @@ class gppinfo {
 public:
 	gppinfo();
 	~gppinfo();
-	int _objid;			// Õ“Ë‚µ‚½ObjID
-	Vector3 _pos;		// ˆÊ’u
-	float _force;		// —Í‚Ì‹­‚³
+	int _objid;			// è¡çªã—ãŸObjID
+	Vector3 _pos;		// ä½ç½®
+	float _force;		// åŠ›ã®å¼·ã•
 };
 
 //  HGIMG4 Physics Object
@@ -41,13 +41,13 @@ public:
 	void bindNodeAsMesh(Node *node, Mesh *mesh, PhysicsRigidBody::Parameters *rigParams);
 	int contactTest(btCollisionWorld::ContactResultCallback *callback);
 
-	short _flag;						// ‘¶İƒtƒ‰ƒO
-	short _mark;						// ƒ}[ƒNˆ——p
-	int _option;						// ì¬ƒIƒvƒVƒ‡ƒ“
-	int _id;							// ƒtƒBƒWƒbƒNƒXƒIƒuƒWƒFƒNƒgID
-	PhysicsRigidBody *_colObj;			// ƒRƒŠƒWƒ‡ƒ“ƒIƒuƒWƒFƒNƒg
-	gpobj *_parent;						// e‚Ìgpobj
-	std::vector<gppinfo> _ainfo;		// gppinfo”z—ñ
+	short _flag;						// å­˜åœ¨ãƒ•ãƒ©ã‚°
+	short _mark;						// ãƒãƒ¼ã‚¯å‡¦ç†ç”¨
+	int _option;						// ä½œæˆã‚ªãƒ—ã‚·ãƒ§ãƒ³
+	int _id;							// ãƒ•ã‚£ã‚¸ãƒƒã‚¯ã‚¹ã‚ªãƒ–ã‚¸ã‚§ã‚¯ãƒˆID
+	PhysicsRigidBody *_colObj;			// ã‚³ãƒªã‚¸ãƒ§ãƒ³ã‚ªãƒ–ã‚¸ã‚§ã‚¯ãƒˆ
+	gpobj *_parent;						// è¦ªã®gpobj
+	std::vector<gppinfo> _ainfo;		// gppinfoé…åˆ—
 
 };
 

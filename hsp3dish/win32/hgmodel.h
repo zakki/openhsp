@@ -9,15 +9,15 @@
 
 typedef enum {
 HGMODEL_FLAG_NONE = 0,
-HGMODEL_FLAG_POLY4,		// ‚P–‡ƒ|ƒŠƒSƒ“(plate)
-HGMODEL_FLAG_SMODEL,	// ŽOŠpƒ|ƒŠƒSƒ“ƒ‚ƒfƒ‹(mx,box,mesh...)
-HGMODEL_FLAG_XMODEL,	// Xƒtƒ@ƒCƒ‹ƒ‚ƒfƒ‹
-HGMODEL_FLAG_2DSPRITE,	// 2DƒXƒvƒ‰ƒCƒg
+HGMODEL_FLAG_POLY4,		// ï¼‘æžšãƒãƒªã‚´ãƒ³(plate)
+HGMODEL_FLAG_SMODEL,	// ä¸‰è§’ãƒãƒªã‚´ãƒ³ãƒ¢ãƒ‡ãƒ«(mx,box,mesh...)
+HGMODEL_FLAG_XMODEL,	// Xãƒ•ã‚¡ã‚¤ãƒ«ãƒ¢ãƒ‡ãƒ«
+HGMODEL_FLAG_2DSPRITE,	// 2Dã‚¹ãƒ—ãƒ©ã‚¤ãƒˆ
 HGMODEL_FLAG_CAMERA,
 HGMODEL_FLAG_LIGHT,
-HGMODEL_FLAG_EFXMODEL,	// ƒGƒtƒFƒNƒgƒ‚ƒfƒ‹
-HGMODEL_FLAG_OBAQ3D,	// OBAQ 3Dƒ‚ƒfƒ‹
-HGMODEL_FLAG_LINES,		// ü•ªƒ‚ƒfƒ‹
+HGMODEL_FLAG_EFXMODEL,	// ã‚¨ãƒ•ã‚§ã‚¯ãƒˆãƒ¢ãƒ‡ãƒ«
+HGMODEL_FLAG_OBAQ3D,	// OBAQ 3Dãƒ¢ãƒ‡ãƒ«
+HGMODEL_FLAG_LINES,		// ç·šåˆ†ãƒ¢ãƒ‡ãƒ«
 HGMODEL_FLAG_MAX
 } HGMODEL_FLAG;
 
@@ -38,7 +38,7 @@ typedef struct {
 	VECTOR efx;
 	VECTOR work;
 
-	VECTOR movetemp[6];		// ã‚ÌVECTOR‚Æ“¯‚¶”‚¾‚¯‚ÌÀ•Wƒoƒbƒtƒ@
+	VECTOR movetemp[6];		// ä¸Šã®VECTORã¨åŒã˜æ•°ã ã‘ã®åº§æ¨™ãƒãƒƒãƒ•ã‚¡
 
 	short attr;
 	short tex;

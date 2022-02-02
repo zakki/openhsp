@@ -87,7 +87,7 @@ void OmkeDrawSetGMode( int gmode, int grate, int ofsx, int ofsy )
 
 void OmkeDrawCelPut( int cx, int cy, void *bm_src, int id, float destx, float desty, float ang )
 {
-	//		セルをコピー(変倍・回転)
+	//		繧ｻ繝ｫ繧偵さ繝斐�ｼ(螟牙阪�ｻ蝗櫁ｻ｢)
 	//
 	BMSCR *src;
 	int xx,yy,texpx,texpy,psx,psy;

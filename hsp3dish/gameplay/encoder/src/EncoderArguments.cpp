@@ -10,7 +10,7 @@
 
 // The encoder version number should be incremented when a feature is added to the encoder.
 // The encoder version is not the same as the GPB version.
-#define ENCODER_VERSION "3.6.1 hsp3gp"
+#define ENCODER_VERSION "3.6.0 hsp3gp"
 #define HEIGHTMAP_SIZE_MAX 2049
 
 namespace gameplay
@@ -30,9 +30,7 @@ EncoderArguments::EncoderArguments(size_t argc, const char** argv) :
     _animationGrouping(ANIMATIONGROUP_PROMPT),
     _outputMaterial(false),
     _generateTextureGutter(false),
-    _mergeAnimation(false),
-	_fixMaterialName(false),
-	_makeMaterialName(false)
+    _mergeAnimation(false)
 {
     __instance = this;
 	_textureOptionPath = std::string("res/");
@@ -303,9 +301,7 @@ void EncoderArguments::printUsage() const
         "\t\tFilename is the name of the image (PNG) to be saved.\n" \
         "\t\tMultiple -h arguments can be supplied to generate more than one \n" \
         "\t\theightmap. For 24-bit packed height data use -hp instead of -h.\n" \
-	"  -xa\t\tReplace non-ascii material name.\n" \
-	"  -xf\t\tForce generate material name.\n" \
-		"\n" \
+    "\n" \
     "TMX file options:\n" \
     "  -tg\tEnable texture gutter's around tiles. This will modify any referenced\n" \
     "  \ttile sets to add a 1px border around it to prevent seams.\n"
@@ -368,16 +364,6 @@ bool EncoderArguments::outputMaterialEnabled() const
 bool EncoderArguments::generateTextureGutter() const
 {
     return _generateTextureGutter;
-}
-
-bool EncoderArguments::fixMaterialNameEnabled() const
-{
-	return _fixMaterialName;
-}
-
-bool EncoderArguments::makeMaterialNameEnabled() const
-{
-	return _makeMaterialName;
 }
 
 const char* EncoderArguments::getNodeId() const
@@ -750,17 +736,7 @@ void EncoderArguments::readOption(const std::vector<std::string>& options, size_
                 __logVerbosity = 4;
         }
         break;
-	case 'x':
-		if (str.compare("-xa") == 0) {
-			_fixMaterialName = true;
-		}
-		if (str.compare("-xf") == 0) {
-			_makeMaterialName = true;
-		}
-		break;
-
-	
-	default:
+    default:
         break;
     }
 }

@@ -59,7 +59,7 @@ texmesPos::~texmesPos(void)
 
 void texmesPos::invalidate(void)
 {
-	//	ƒeƒLƒXƒg‚Ì“à—e‚ğÄ‰Šú‰»
+	//	ãƒ†ã‚­ã‚¹ãƒˆã®å†…å®¹ã‚’å†åˆæœŸåŒ–
 	//
 	texid = -1;
 	caret_cnt = 0;
@@ -68,7 +68,7 @@ void texmesPos::invalidate(void)
 
 void texmesPos::setMaxLength(int max)
 {
-	//	Å‘å•¶š”(byte”)‚ğw’è
+	//	æœ€å¤§æ–‡å­—æ•°(byteæ•°)ã‚’æŒ‡å®š
 	if (max <= 0) {
 		maxlength = TEXMESPOS_MAX;
 		return;
@@ -78,7 +78,7 @@ void texmesPos::setMaxLength(int max)
 
 void texmesPos::setString(char *str)
 {
-	//	•¶š—ñ‚ğw’è
+	//	æ–‡å­—åˆ—ã‚’æŒ‡å®š
 	//
 	msg = str;
 	validateInternalString();
@@ -87,7 +87,7 @@ void texmesPos::setString(char *str)
 
 int texmesPos::getPosX(int id)
 {
-	//	index‚ª¦‚·•¶š‚ÌXÀ•W‚ğæ“¾‚·‚é
+	//	indexãŒç¤ºã™æ–‡å­—ã®Xåº§æ¨™ã‚’å–å¾—ã™ã‚‹
 	//
 	if (length == 0) return 0;
 	if (id < 0) return 0;
@@ -97,7 +97,7 @@ int texmesPos::getPosX(int id)
 
 int texmesPos::getPosFromX(int x)
 {
-	//	XÀ•W‚©‚çindex’l‚ğ‹‚ß‚é
+	//	Xåº§æ¨™ã‹ã‚‰indexå€¤ã‚’æ±‚ã‚ã‚‹
 	//
 	int i;
 	if (length == 0) return 0;
@@ -111,7 +111,7 @@ int texmesPos::getPosFromX(int x)
 
 void texmesPos::setCaret(int id)
 {
-	//	ƒLƒƒƒŒƒbƒg‚Ìindex‚ğw’è‚·‚é(‹­§w’è)
+	//	ã‚­ãƒ£ãƒ¬ãƒƒãƒˆã®indexã‚’æŒ‡å®šã™ã‚‹(å¼·åˆ¶æŒ‡å®š)
 	//
 	int i = id;
 	if (i < 0) i = 0;
@@ -123,7 +123,7 @@ void texmesPos::setCaret(int id)
 
 void texmesPos::setCaretHome(bool select)
 {
-	//	ƒLƒƒƒŒƒbƒg‚ğhome‚ÖˆÚ“®‚·‚é
+	//	ã‚­ãƒ£ãƒ¬ãƒƒãƒˆã‚’homeã¸ç§»å‹•ã™ã‚‹
 	//
 	moveCaret(-TEXMESPOS_MAX,select);
 }
@@ -131,7 +131,7 @@ void texmesPos::setCaretHome(bool select)
 
 void texmesPos::setCaretEnd(bool select)
 {
-	//	ƒLƒƒƒŒƒbƒg‚ğend‚ÖˆÚ“®‚·‚é
+	//	ã‚­ãƒ£ãƒ¬ãƒƒãƒˆã‚’endã¸ç§»å‹•ã™ã‚‹
 	//
 	moveCaret(TEXMESPOS_MAX,select);
 }
@@ -139,7 +139,7 @@ void texmesPos::setCaretEnd(bool select)
 
 void texmesPos::moveCaret(int value, bool select)
 {
-	//	ƒLƒƒƒŒƒbƒgˆÊ’u‚Ì‘Š‘ÎˆÚ“®
+	//	ã‚­ãƒ£ãƒ¬ãƒƒãƒˆä½ç½®ã®ç›¸å¯¾ç§»å‹•
 	//
 	int org = caret;
 	setCaret(caret + value);
@@ -150,43 +150,43 @@ void texmesPos::moveCaret(int value, bool select)
 
 	int sel_1, sel_2;
 	if (getSelection(&sel_1, &sel_2)) {
-		//	‘I‘ğ”ÍˆÍ‚ğì¬‚·‚é
+		//	é¸æŠç¯„å›²ã‚’ä½œæˆã™ã‚‹
 		selection[1] = caret;
 	}
 	else {
-		//	V‹K‚Ì‘I‘ğ”ÍˆÍ
+		//	æ–°è¦ã®é¸æŠç¯„å›²
 		setSelection( org, caret );
 	}
 }
 
 void texmesPos::setCaretFromX(int x)
 {
-	//	XÀ•W‚©‚çƒLƒƒƒŒƒbƒgˆÊ’u‚ğİ’è‚·‚é
+	//	Xåº§æ¨™ã‹ã‚‰ã‚­ãƒ£ãƒ¬ãƒƒãƒˆä½ç½®ã‚’è¨­å®šã™ã‚‹
 	//
 	setCaret(getPosFromX(x));
 }
 
 int texmesPos::getCaretX(void)
 {
-	//	ƒLƒƒƒŒƒbƒg‚ÌXÀ•W‚ğæ“¾‚·‚é
+	//	ã‚­ãƒ£ãƒ¬ãƒƒãƒˆã®Xåº§æ¨™ã‚’å–å¾—ã™ã‚‹
 	//
 	return getPosX(caret);
 }
 
 char *texmesPos::getString(void)
 {
-	//	İ’è•¶š—ñ‚Ìæ“¾
+	//	è¨­å®šæ–‡å­—åˆ—ã®å–å¾—
 	//
 	return (char *)msg.c_str();
 }
 
 void texmesPos::addStringFromCaret(char *str)
 {
-	//		ƒLƒƒƒŒƒbƒg‚ÌˆÊ’u‚©‚ç•¶š—ñ‚ğ’Ç‰Á‚·‚é
+	//		ã‚­ãƒ£ãƒ¬ãƒƒãƒˆã®ä½ç½®ã‹ã‚‰æ–‡å­—åˆ—ã‚’è¿½åŠ ã™ã‚‹
 	//
 	int cur, addcnt;
 
-	deleteStringSelection();	//	‘I‘ğ”ÍˆÍ‚ª‚ ‚éê‡‚ÍÁ‹‚·‚é
+	deleteStringSelection();	//	é¸æŠç¯„å›²ãŒã‚ã‚‹å ´åˆã¯æ¶ˆå»ã™ã‚‹
 
 	cur = getStringByteFromPos(caret);
 	addcnt = validateString(str);
@@ -210,7 +210,7 @@ void texmesPos::addStringFromCaret(char *str)
 
 bool texmesPos::deleteStringSelection(void)
 {
-	//		‘I‘ğ”ÍˆÍ‚Ì•¶š—ñ‚ğíœ‚·‚é
+	//		é¸æŠç¯„å›²ã®æ–‡å­—åˆ—ã‚’å‰Šé™¤ã™ã‚‹
 	//
 	int cur, cur2;
 	int sel_1, sel_2;
@@ -235,7 +235,7 @@ bool texmesPos::deleteStringSelection(void)
 
 int texmesPos::getSelectionString(std::string &out)
 {
-	//		‘I‘ğ”ÍˆÍ‚Ì•¶š—ñ‚ğæ“¾‚·‚é
+	//		é¸æŠç¯„å›²ã®æ–‡å­—åˆ—ã‚’å–å¾—ã™ã‚‹
 	//
 	int res = 0;
 	int cur, cur2;
@@ -256,10 +256,10 @@ int texmesPos::getSelectionString(std::string &out)
 
 void texmesPos::deleteStringFromCaret(bool backspace)
 {
-	//		ƒLƒƒƒŒƒbƒg‚ÌˆÊ’u‚©‚ç•¶š—ñ‚ğíœ‚·‚é
+	//		ã‚­ãƒ£ãƒ¬ãƒƒãƒˆã®ä½ç½®ã‹ã‚‰æ–‡å­—åˆ—ã‚’å‰Šé™¤ã™ã‚‹
 	//
 	int cur, cur2;
-	if (deleteStringSelection()) return;	//	‘I‘ğ”ÍˆÍ‚ª‚ ‚éê‡‚ÍÁ‹‚·‚é
+	if (deleteStringSelection()) return;	//	é¸æŠç¯„å›²ãŒã‚ã‚‹å ´åˆã¯æ¶ˆå»ã™ã‚‹
 
 	if (backspace) {
 		if (caret <= 0) return;
@@ -278,7 +278,7 @@ void texmesPos::deleteStringFromCaret(bool backspace)
 
 void texmesPos::toggleInsertMode(void)
 {
-	//		ƒCƒ“ƒT[ƒgƒ‚[ƒh‚ğØ‚è‘Ö‚¦
+	//		ã‚¤ãƒ³ã‚µãƒ¼ãƒˆãƒ¢ãƒ¼ãƒ‰ã‚’åˆ‡ã‚Šæ›¿ãˆ
 	//
 	insert_mode = !insert_mode;
 }
@@ -286,7 +286,7 @@ void texmesPos::toggleInsertMode(void)
 
 int texmesPos::GetMultibyteCharacter(unsigned char *text)
 {
-	//		ƒ}ƒ‹ƒ`ƒoƒCƒg•¶š‚ÌƒTƒCƒY‚ğ“¾‚é
+	//		ãƒãƒ«ãƒãƒã‚¤ãƒˆæ–‡å­—ã®ã‚µã‚¤ã‚ºã‚’å¾—ã‚‹
 	//
 	const unsigned char *p = text;
 	unsigned char a1;
@@ -295,13 +295,13 @@ int texmesPos::GetMultibyteCharacter(unsigned char *text)
 	a1 = *p;
 
 #ifndef HSPUTF8
-	if (a1 >= 129) {				// ‘SŠp•¶šƒ`ƒFƒbƒN(SJIS)
+	if (a1 >= 129) {				// å…¨è§’æ–‡å­—ãƒã‚§ãƒƒã‚¯(SJIS)
 		if ((a1 <= 159) || (a1 >= 224)) {
 			mulchr++;
 		}
 	}
 #else
-	if (a1 & 0x80) {				// ‘SŠp•¶šƒ`ƒFƒbƒN(UTF8)
+	if (a1 & 0x80) {				// å…¨è§’æ–‡å­—ãƒã‚§ãƒƒã‚¯(UTF8)
 		int utf8bytes = 0;
 		if ((a1 & 0xe0) == 0x0c0) utf8bytes = 1;
 		if ((a1 & 0xf0) == 0x0e0) utf8bytes = 2;
@@ -323,8 +323,8 @@ int texmesPos::GetMultibyteCharacter(unsigned char *text)
 
 void texmesPos::validateInternalString(void)
 {
-	//	•s—v‚È•¶š—ñ‚ğæ‚èœ‚­
-	//	(CR/LF‚È‚Ç‚ÌƒRƒ“ƒgƒ[ƒ‹ƒR[ƒh)
+	//	ä¸è¦ãªæ–‡å­—åˆ—ã‚’å–ã‚Šé™¤ã
+	//	(CR/LFãªã©ã®ã‚³ãƒ³ãƒˆãƒ­ãƒ¼ãƒ«ã‚³ãƒ¼ãƒ‰)
 	//
 	char *src = getString();
 	unsigned char *p = (unsigned char *)src;
@@ -334,19 +334,19 @@ void texmesPos::validateInternalString(void)
 	int count = 0;
 	bool modstr = false;
 	int mulchr;
-	left--;			// null—p‚Ìƒoƒbƒtƒ@
+	left--;			// nullç”¨ã®ãƒãƒƒãƒ•ã‚¡
 
 	while (1) {
 		a1 = *p;
 		if (a1 == 0) {
 			break;
 		}
-		if ((a1 == 13) || (a1 == 10)) {		// CR/LF‚Ìê‡‚Í‚»‚±‚Å‘Å‚¿Ø‚é
+		if ((a1 == 13) || (a1 == 10)) {		// CR/LFã®å ´åˆã¯ãã“ã§æ‰“ã¡åˆ‡ã‚‹
 			modstr = true;
 			*p = 0;
 			break;
 		}
-		if (a1 < 32) {						// ƒRƒ“ƒgƒ[ƒ‹ƒR[ƒh‚Í‹ó”’‚É•ÏŠ·
+		if (a1 < 32) {						// ã‚³ãƒ³ãƒˆãƒ­ãƒ¼ãƒ«ã‚³ãƒ¼ãƒ‰ã¯ç©ºç™½ã«å¤‰æ›
 			*p = 32;
 			modstr = true;
 		}
@@ -374,8 +374,8 @@ void texmesPos::validateInternalString(void)
 
 int texmesPos::validateString(char *str, int max)
 {
-	//	•s—v‚È•¶š—ñ‚ğæ‚èœ‚­(validateInternalString‚ÌŠO•”•¶š—ñ—p)
-	//	(CR/LF‚È‚Ç‚ÌƒRƒ“ƒgƒ[ƒ‹ƒR[ƒh)
+	//	ä¸è¦ãªæ–‡å­—åˆ—ã‚’å–ã‚Šé™¤ã(validateInternalStringã®å¤–éƒ¨æ–‡å­—åˆ—ç”¨)
+	//	(CR/LFãªã©ã®ã‚³ãƒ³ãƒˆãƒ­ãƒ¼ãƒ«ã‚³ãƒ¼ãƒ‰)
 	//
 	unsigned char *p = (unsigned char *)str;
 	unsigned char a1;
@@ -383,17 +383,17 @@ int texmesPos::validateString(char *str, int max)
 	int count = 0;
 	int mulchr;
 	if (left <= 0) { left = TEXMESPOS_MAX; }
-	left--;			// null—p‚Ìƒoƒbƒtƒ@
+	left--;			// nullç”¨ã®ãƒãƒƒãƒ•ã‚¡
 
 	while (1) {
 		a1 = *p;
 		if (a1 == 0) {
 			break;
 		}
-		if ((a1 == 13)||(a1 == 10)) {		// CR/LF‚Ìê‡‚Í‚»‚±‚Å‘Å‚¿Ø‚é
+		if ((a1 == 13)||(a1 == 10)) {		// CR/LFã®å ´åˆã¯ãã“ã§æ‰“ã¡åˆ‡ã‚‹
 			*p = 0; break;
 		}
-		if (a1 < 32) {						// ƒRƒ“ƒgƒ[ƒ‹ƒR[ƒh‚Í‹ó”’‚É•ÏŠ·
+		if (a1 < 32) {						// ã‚³ãƒ³ãƒˆãƒ­ãƒ¼ãƒ«ã‚³ãƒ¼ãƒ‰ã¯ç©ºç™½ã«å¤‰æ›
 			*p = 32;
 		}
 		else {
@@ -411,7 +411,7 @@ int texmesPos::validateString(char *str, int max)
 
 int texmesPos::getStringByteFromPos(int pos)
 {
-	//	Caret‚Ì˜_—ˆÊ’u‚©‚ç•¶š—ñ‚Ìæ“ªbyte‚ğ‹‚ß‚é
+	//	Caretã®è«–ç†ä½ç½®ã‹ã‚‰æ–‡å­—åˆ—ã®å…ˆé ­byteã‚’æ±‚ã‚ã‚‹
 	//
 	unsigned char *p = (unsigned char *)getString();
 	unsigned char a1;
@@ -460,7 +460,7 @@ void texmesPos::setSelection(int *sel)
 
 void texmesPos::setSelection(int start, int end)
 {
-	//		‘I‘ğ”ÍˆÍ‚ğİ’è‚É‚·‚é(caret’l‚ğw’è‚·‚é)
+	//		é¸æŠç¯„å›²ã‚’è¨­å®šã«ã™ã‚‹(caretå€¤ã‚’æŒ‡å®šã™ã‚‹)
 	//
 	if (selection) {
 		if (start < 0) {
@@ -481,7 +481,7 @@ void texmesPos::setSelection(int start, int end)
 
 void texmesPos::clearSelection(void)
 {
-	//		‘I‘ğ”ÍˆÍ‚ğ–³Œø‚É‚·‚é
+	//		é¸æŠç¯„å›²ã‚’ç„¡åŠ¹ã«ã™ã‚‹
 	//
 	setSelection(-1, -1);
 }
@@ -489,14 +489,14 @@ void texmesPos::clearSelection(void)
 
 bool texmesPos::getSelection(int *start, int *end)
 {
-	//		‘I‘ğ”ÍˆÍ‚ğ•Ô‚·
-	//		(—LŒø‚Èê‡‚Ítrue‚ğ•Ô‚µ‚ÄAstart,end‚ğİ’è‚·‚é)
+	//		é¸æŠç¯„å›²ã‚’è¿”ã™
+	//		(æœ‰åŠ¹ãªå ´åˆã¯trueã‚’è¿”ã—ã¦ã€start,endã‚’è¨­å®šã™ã‚‹)
 	//
 	bool selok = true;
 	if (selection == NULL) {
 		return false;
 	}
-	//	‘I‘ğ”ÍˆÍ
+	//	é¸æŠç¯„å›²
 	int sel_1, sel_2;
 	sel_1 = selection[0] - index_offset;
 	sel_2 = selection[1] - index_offset;
@@ -521,7 +521,7 @@ bool texmesPos::getSelection(int *start, int *end)
 
 void texmesPos::allSelection(void)
 {
-	//		‚·‚×‚Ä‚ğ‘I‘ğ‚·‚é
+	//		ã™ã¹ã¦ã‚’é¸æŠã™ã‚‹
 	//
 	if (selection == NULL) {
 		return;

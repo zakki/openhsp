@@ -596,10 +596,10 @@ Platform::~Platform()
     if (__hwnd)
     {
 #ifndef GP_USE_ANGLE
-		// Œãˆ—
-		// ƒJƒŒƒ“ƒgƒRƒ“ƒeƒLƒXƒg‚ð–³Œø‚É‚·‚é
+		// å¾Œå‡¦ç†
+		// ã‚«ãƒ¬ãƒ³ãƒˆã‚³ãƒ³ãƒ†ã‚­ã‚¹ãƒˆã‚’ç„¡åŠ¹ã«ã™ã‚‹
 		wglMakeCurrent(NULL, NULL);
-		// ƒJƒŒƒ“ƒgƒRƒ“ƒeƒLƒXƒg‚ðíœ
+		// ã‚«ãƒ¬ãƒ³ãƒˆã‚³ãƒ³ãƒ†ã‚­ã‚¹ãƒˆã‚’å‰Šé™¤
 		wglDeleteContext(__hrc);
 #endif
 

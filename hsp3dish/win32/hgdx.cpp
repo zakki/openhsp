@@ -30,7 +30,7 @@
 
 int hgdx::Reset( void )
 {
-	//		Graphics I/O‰Šú‰»
+	//		Graphics I/OåˆæœŸåŒ–
 	//
 	int i;
 	Terminate();
@@ -40,7 +40,7 @@ int hgdx::Reset( void )
 	//
 	GeometryInit();
 
-	//		Šeíƒpƒ‰ƒ[ƒ^[‰Šú‰»
+	//		å„ç¨®ãƒ‘ãƒ©ãƒ¡ãƒ¼ã‚¿ãƒ¼åˆæœŸåŒ–
 	//
 	hgmode = 2;
 	bgclr = 1;
@@ -124,7 +124,7 @@ void hgdx::Terminate( void )
 	int i;
 	if ( hgmode == 0 ) return;
 	if ( hgmode > 1 ) {
-		//		ƒVƒXƒeƒ€‚Ì”jŠü
+		//		ã‚·ã‚¹ãƒ†ãƒ ã®ç ´æ£„
 		//
 		if ( mem_obj != NULL ) {
 			for(i=0;i<maxobj;i++) { DeleteObj( i ); }
@@ -194,7 +194,7 @@ void hgdx::DeleteObj( int id )
 	hgobj *obj;
 	obj = mem_obj[id];
 	if ( obj != NULL ) {
-		if ( obj->parent != NULL ) {		// e‚ª‚ ‚éê‡‚ÍAe‚©‚çØ‚è—£‚·
+		if ( obj->parent != NULL ) {		// è¦ªãŒã‚ã‚‹å ´åˆã¯ã€è¦ªã‹ã‚‰åˆ‡ã‚Šé›¢ã™
 			hgobj *tmpobj;
 			tmpobj = (hgobj *)obj->parent;
 			tmpobj->child = NULL;
@@ -402,11 +402,11 @@ hgevent *hgdx::AddEvent( int eventid )
 	}
 	ev = new hgevent;
 	ev->id = sel;
-	if ( mem_event[ sel ] == NULL ) {			// V‹KƒCƒxƒ“ƒg‚Ì’Ç‰Á
+	if ( mem_event[ sel ] == NULL ) {			// æ–°è¦ã‚¤ãƒ™ãƒ³ãƒˆã®è¿½åŠ 
 		mem_event[ sel ] = ev;
 	} else {
 		tmp = mem_event[ sel ];
-		while(1) {								// Šù‘¶‚ÌƒCƒyƒ“ƒg‚É’Ç‰Á‚·‚é
+		while(1) {								// æ—¢å­˜ã®ã‚¤ãƒšãƒ³ãƒˆã«è¿½åŠ ã™ã‚‹
 			ev_next = tmp->GetNextEvent();
 			if ( ev_next == NULL ) { tmp->SetNextEvent( ev ); break; }
 			tmp = ev_next;
@@ -597,7 +597,7 @@ int hgdx::AddAnimEvent( int eventid, int anim, int opt, float speed )
 
 void hgdx::StoreNextVector( hgevent *myevent )
 {
-	//		Ÿ‚Ìmovevector‚ğŒŸõ‚µ‚Ä•âŠ®‚·‚é
+	//		æ¬¡ã®movevectorã‚’æ¤œç´¢ã—ã¦è£œå®Œã™ã‚‹
 	//
 	int flag,fl;
 	int target;
@@ -612,8 +612,8 @@ void hgdx::StoreNextVector( hgevent *myevent )
 		if ( ev == NULL ) break;
 		if ( ev == myevent ) break;
 		flag = ev->flag;
-		if (( flag == HGEVENT_FLAG_MOVETARGET2 )||( flag == HGEVENT_FLAG_MOVETARGET4 )) {			// ƒXƒvƒ‰ƒCƒ“ˆÚ“®‚©?
-			if ( ev->target == target ) {															// ©•ª‚Æ“¯‚¶ƒ^[ƒQƒbƒg‚©?
+		if (( flag == HGEVENT_FLAG_MOVETARGET2 )||( flag == HGEVENT_FLAG_MOVETARGET4 )) {			// ã‚¹ãƒ—ãƒ©ã‚¤ãƒ³ç§»å‹•ã‹?
+			if ( ev->target == target ) {															// è‡ªåˆ†ã¨åŒã˜ã‚¿ãƒ¼ã‚²ãƒƒãƒˆã‹?
 				myevent->nextvec = ev->GetEventVector(); return;
 			}
 		}
@@ -628,13 +628,13 @@ void hgdx::StoreNextVector( hgevent *myevent )
 		}
 	}
 
-	myevent->nextvec = myevent->GetEventVector();			// Ÿ‚Ìƒf[ƒ^‚ª‚È‚¢ê‡‚Í©•ª‚Ìvector‚ğ“ü‚ê‚é
+	myevent->nextvec = myevent->GetEventVector();			// æ¬¡ã®ãƒ‡ãƒ¼ã‚¿ãŒãªã„å ´åˆã¯è‡ªåˆ†ã®vectorã‚’å…¥ã‚Œã‚‹
 }
 
 
 void hgdx::ExecuteObjEvent( hgobj *obj, float timepass, int entry )
 {
-	//		ƒCƒxƒ“ƒgÀs
+	//		ã‚¤ãƒ™ãƒ³ãƒˆå®Ÿè¡Œ
 	//
 	hgevent *ev;
 	hgevent *nextev;
@@ -664,7 +664,7 @@ void hgdx::ExecuteObjEvent( hgobj *obj, float timepass, int entry )
 				tval = tbase * ev->timer;
 			}
 			if ( tval >= 1.0f ) {
-				obj->SetEvent( ev->GetNextEvent(), entry );		// Ÿ‚ÌƒCƒxƒ“ƒg‚Öi‚Ş
+				obj->SetEvent( ev->GetNextEvent(), entry );		// æ¬¡ã®ã‚¤ãƒ™ãƒ³ãƒˆã¸é€²ã‚€
 				return;
 			}
 			return;
@@ -672,7 +672,7 @@ void hgdx::ExecuteObjEvent( hgobj *obj, float timepass, int entry )
 			if ( ev->value ) {
 				fl = rand()%100;
 				if ( fl >= ev->value ) {
-					obj->SetEvent( ev->GetNextEvent(), entry );	// ƒCƒxƒ“ƒg‚ğƒpƒX‚·‚é
+					obj->SetEvent( ev->GetNextEvent(), entry );	// ã‚¤ãƒ™ãƒ³ãƒˆã‚’ãƒ‘ã‚¹ã™ã‚‹
 					break;
 				}
 			}
@@ -684,20 +684,20 @@ void hgdx::ExecuteObjEvent( hgobj *obj, float timepass, int entry )
 			if ( ev->target == 0 ) { obj->mode = ev->value; break; }
 			p = (short *)&obj->flag;
 			p[ ev->target - 1 ] = (short)ev->value;
-			obj->SetEvent( ev->GetNextEvent(), entry );	// ƒCƒxƒ“ƒg‚ğƒpƒX‚·‚é
+			obj->SetEvent( ev->GetNextEvent(), entry );	// ã‚¤ãƒ™ãƒ³ãƒˆã‚’ãƒ‘ã‚¹ã™ã‚‹
 			break;
 		case HGEVENT_FLAG_PRMON:
 			if ( ev->target == 0 ) { obj->mode |= ev->value; break; }
 			p = (short *)&obj->flag;
 			p[ ev->target - 1 ] |= (short)ev->value;
-			obj->SetEvent( ev->GetNextEvent(), entry );	// ƒCƒxƒ“ƒg‚ğƒpƒX‚·‚é
+			obj->SetEvent( ev->GetNextEvent(), entry );	// ã‚¤ãƒ™ãƒ³ãƒˆã‚’ãƒ‘ã‚¹ã™ã‚‹
 			break;
 		case HGEVENT_FLAG_PRMOFF:
 			fl = ~ev->value;
 			if ( ev->target == 0 ) { obj->mode &= fl; break; }
 			p = (short *)&obj->flag;
 			p[ ev->target - 1 ] &= (short)fl;
-			obj->SetEvent( ev->GetNextEvent(), entry );	// ƒCƒxƒ“ƒg‚ğƒpƒX‚·‚é
+			obj->SetEvent( ev->GetNextEvent(), entry );	// ã‚¤ãƒ™ãƒ³ãƒˆã‚’ãƒ‘ã‚¹ã™ã‚‹
 			break;
 		case HGEVENT_FLAG_UVANIM:
 			{
@@ -706,11 +706,11 @@ void hgdx::ExecuteObjEvent( hgobj *obj, float timepass, int entry )
 			prm->ua_flag = 1;
 			prm->ua_ofsx = ev->target;
 			prm->ua_ofsy = ev->value;
-			obj->SetEvent( ev->GetNextEvent(), entry );	// ƒCƒxƒ“ƒg‚ğƒpƒX‚·‚é
+			obj->SetEvent( ev->GetNextEvent(), entry );	// ã‚¤ãƒ™ãƒ³ãƒˆã‚’ãƒ‘ã‚¹ã™ã‚‹
 			break;
 			}
 		case HGEVENT_FLAG_MOVETARGET:
-			// target‚Élinear•âŠÔ
+			// targetã«linearè£œé–“
 			v0 = obj->GetVectorPrm( ev->target );
 			v1 = obj->GetVectorPrm( MOC_POS2 + ev->target );
 			if ( ev->source == HGEVENT_SOURCE_VEC ) v2 = ev->GetEventVector();
@@ -728,7 +728,7 @@ void hgdx::ExecuteObjEvent( hgobj *obj, float timepass, int entry )
 			break;
 		case HGEVENT_FLAG_MOVETARGET2:
 			{
-			// target‚Éspline•âŠÔ
+			// targetã«splineè£œé–“
 			VECTOR	key0;
 			VECTOR	key1;
 			VECTOR	key2;
@@ -791,7 +791,7 @@ void hgdx::ExecuteObjEvent( hgobj *obj, float timepass, int entry )
 			break;
 			}
 		case HGEVENT_FLAG_MOVETARGET3:
-			// target‚Élinear•âŠÔ(‘Š‘Î)
+			// targetã«linearè£œé–“(ç›¸å¯¾)
 			v0 = obj->GetVectorPrm( ev->target );
 			v1 = obj->GetVectorPrm( MOC_POS2 + ev->target );
 			if ( ev->source == HGEVENT_SOURCE_VEC ) v2 = ev->GetEventVector();
@@ -808,7 +808,7 @@ void hgdx::ExecuteObjEvent( hgobj *obj, float timepass, int entry )
 			break;
 		case HGEVENT_FLAG_MOVETARGET4:
 			{
-			// target‚Éspline•âŠÔ(‘Š‘Î)
+			// targetã«splineè£œé–“(ç›¸å¯¾)
 			VECTOR	key0;
 			VECTOR	key1;
 			VECTOR	key2;
@@ -871,7 +871,7 @@ void hgdx::ExecuteObjEvent( hgobj *obj, float timepass, int entry )
 			break;
 			}
 		case HGEVENT_FLAG_PLUSTARGET:				
-			// target+=dir:dir+=vec ‚ğÀs‚·‚é
+			// target+=dir:dir+=vec ã‚’å®Ÿè¡Œã™ã‚‹
 			v0 = obj->GetVectorPrm( ev->target );
 			if ( ev->source == HGEVENT_SOURCE_VEC ) {
 				v1 = ev->GetEventVector();
@@ -882,7 +882,7 @@ void hgdx::ExecuteObjEvent( hgobj *obj, float timepass, int entry )
 			break;
 		case HGEVENT_FLAG_SETTARGET:
 			{
-			// target‚ğÄİ’è‚·‚é
+			// targetã‚’å†è¨­å®šã™ã‚‹
 			float t1,t2,t3;
 			v0 = obj->GetVectorPrm( ev->target );
 			v1 = ev->GetEventVector();
@@ -902,18 +902,18 @@ void hgdx::ExecuteObjEvent( hgobj *obj, float timepass, int entry )
 				t3 = (float)( rand() & 1023 );
 				v0->z = v2->z * t3 + v1->z;
 			}
-			obj->SetEvent( ev->GetNextEvent(), entry );	// ƒCƒxƒ“ƒg‚ğƒpƒX‚·‚é
+			obj->SetEvent( ev->GetNextEvent(), entry );	// ã‚¤ãƒ™ãƒ³ãƒˆã‚’ãƒ‘ã‚¹ã™ã‚‹
 			break;
 			}
 		case HGEVENT_FLAG_SUICIDE:
-			// ƒCƒxƒ“ƒg©‘Ì‚ğÁ–Å‚³‚¹‚é
+			// ã‚¤ãƒ™ãƒ³ãƒˆè‡ªä½“ã‚’æ¶ˆæ»…ã•ã›ã‚‹
 			obj->SetEvent( NULL, entry );
 			fl = ev->id;
 			DeleteEvent( fl );
 			return;
 		case HGEVENT_FLAG_REGOBJ:
 			{
-			//	V‚µ‚¢OBJ‚ğİ’è
+			//	æ–°ã—ã„OBJã‚’è¨­å®š
 			int objid;
 			VECTOR	tmp;
 			objid = AddObjWithModel( ev->target );
@@ -923,13 +923,13 @@ void hgdx::ExecuteObjEvent( hgobj *obj, float timepass, int entry )
 			AddVector( &tmp, obj->GetPos(), obj->GetWork() );
 			GetObj(objid)->SetPos( tmp.x, tmp.y, tmp.z );
 			//
-			obj->SetEvent( ev->GetNextEvent(), entry );	// ƒCƒxƒ“ƒg‚ğƒpƒX‚·‚é
+			obj->SetEvent( ev->GetNextEvent(), entry );	// ã‚¤ãƒ™ãƒ³ãƒˆã‚’ãƒ‘ã‚¹ã™ã‚‹
 			break;
 			}
 #if 0
 		case HGEVENT_FLAG_SETEPRIM:
 			{
-			//	eprim‚ğİ’è
+			//	eprimã‚’è¨­å®š
 			hgmodel *model;
 			float t1,val;
 			if ( ev->target < 0 ) {
@@ -951,13 +951,13 @@ void hgdx::ExecuteObjEvent( hgobj *obj, float timepass, int entry )
 					model->SetEfxInfo( ev->value, val );
 				}
 			}
-			//obj->SetEvent( ev->GetNextEvent(), entry );	// ƒCƒxƒ“ƒg‚ğƒpƒX‚·‚é
+			//obj->SetEvent( ev->GetNextEvent(), entry );	// ã‚¤ãƒ™ãƒ³ãƒˆã‚’ãƒ‘ã‚¹ã™ã‚‹
 			break;
 			}
 #endif
 		case HGEVENT_FLAG_AIM:
 			{
-			//	Œü‚«‚ğİ’è
+			//	å‘ãã‚’è¨­å®š
 			int i,j,val,evpass;
 			hgobj *obj2;
 			evpass = 1;
@@ -1089,7 +1089,7 @@ void hgdx::ExecuteObjEvent( hgobj *obj, float timepass, int entry )
 				break;
 			}
 			if ( evpass ) {
-				obj->SetEvent( ev->GetNextEvent(), entry );	// ƒCƒxƒ“ƒg‚ğƒpƒX‚·‚é
+				obj->SetEvent( ev->GetNextEvent(), entry );	// ã‚¤ãƒ™ãƒ³ãƒˆã‚’ãƒ‘ã‚¹ã™ã‚‹
 			}
 			break;
 			}
@@ -1100,7 +1100,7 @@ void hgdx::ExecuteObjEvent( hgobj *obj, float timepass, int entry )
 			if ( v1->x != 0.0f ) {
 				SetObjSpeed( obj->id, v1->x );
 			}
-			obj->SetEvent( ev->GetNextEvent(), entry );	// ƒCƒxƒ“ƒg‚ğƒpƒX‚·‚é
+			obj->SetEvent( ev->GetNextEvent(), entry );	// ã‚¤ãƒ™ãƒ³ãƒˆã‚’ãƒ‘ã‚¹ã™ã‚‹
 			break;
 #endif
 		default:
@@ -1122,7 +1122,7 @@ void hgdx::ExecuteObjEvent( hgobj *obj, float timepass, int entry )
 
 void hgdx::MoveObj( hgobj *obj, float timepass )
 {
-	//	ƒIƒuƒWƒFƒNƒg“®ì
+	//	ã‚ªãƒ–ã‚¸ã‚§ã‚¯ãƒˆå‹•ä½œ
 	//
 	int mode,i;
 //	VECTOR dum;
@@ -1135,18 +1135,18 @@ void hgdx::MoveObj( hgobj *obj, float timepass )
 //	float dot;
 //	float dist;
 
-	//	ƒIƒuƒWƒFƒNƒgƒCƒxƒ“ƒg‚Ìˆ—
+	//	ã‚ªãƒ–ã‚¸ã‚§ã‚¯ãƒˆã‚¤ãƒ™ãƒ³ãƒˆã®å‡¦ç†
 	//
 	for(i=0;i<HGOBJ_MULTIEVENT_MAX;i++) {
 		if ( obj->GetEvent(i) != NULL ) ExecuteObjEvent( obj, timepass, i );
 	}
 
-	//	ƒ‚[ƒh‚²‚Æ‚Ì“®ìƒ`ƒFƒbƒN
+	//	ãƒ¢ãƒ¼ãƒ‰ã”ã¨ã®å‹•ä½œãƒã‚§ãƒƒã‚¯
 	//
 	mode = obj->mode;
 
 	{										
-		// ’Êí‚Ìê‡
+		// é€šå¸¸ã®å ´åˆ
 		if ( mode & HGOBJ_MODE_MOVE ) {
 			v0 = obj->GetVectorPrm( MOC_POS );
 			v1 = obj->GetVectorPrm( MOC_DIR );
@@ -1192,7 +1192,7 @@ void hgdx::MoveObj( hgobj *obj, float timepass )
 		v0->y += ((float)(obj->GetPrm()->ua_ofsy)) * 0.002f;
 	}
 
-	//		©“®”ÍˆÍƒNƒŠƒbƒv
+	//		è‡ªå‹•ç¯„å›²ã‚¯ãƒªãƒƒãƒ—
 	//
 	if ( mode & HGOBJ_MODE_BORDER ) {
 		VECTOR *pos;
@@ -1282,7 +1282,7 @@ void hgdx::MoveObj( hgobj *obj, float timepass )
 		}
 	}
 
-	//	ÅŒã‚ÉƒAƒjƒ[ƒVƒ‡ƒ“ƒtƒŒ[ƒ€‚ğXV‚·‚é
+	//	æœ€å¾Œã«ã‚¢ãƒ‹ãƒ¡ãƒ¼ã‚·ãƒ§ãƒ³ãƒ•ãƒ¬ãƒ¼ãƒ ã‚’æ›´æ–°ã™ã‚‹
 	//
 	obj->UpdateAnimation( 1.0f );
 }
@@ -1290,7 +1290,7 @@ void hgdx::MoveObj( hgobj *obj, float timepass )
 
 void hgdx::DrawObj( hgobj *obj )
 {
-	//	ƒ‚ƒfƒ‹•\¦
+	//	ãƒ¢ãƒ‡ãƒ«è¡¨ç¤º
 	//
 	hgmodel *model = obj->model;
 	obj->UpdateMatrix();
@@ -1350,7 +1350,7 @@ int hgdx::DrawObjAll( void )
 	hgobj *pobj;
 	hgmodel *model;
 
-	//	•\¦ˆ—
+	//	è¡¨ç¤ºå‡¦ç†
 	//
 	total = 0;
 	t = 1.0f;
@@ -1362,7 +1362,7 @@ int hgdx::DrawObjAll( void )
 		if ( pobj != NULL ) {
 			flag = pobj->flag;
 			if ( flag != HGOBJ_FLAG_NONE ) {
-				pobj->matupdate = 0;			// ƒ}ƒgƒŠƒNƒXŒvZƒtƒ‰ƒO‚ğƒŠƒZƒbƒg
+				pobj->matupdate = 0;			// ãƒãƒˆãƒªã‚¯ã‚¹è¨ˆç®—ãƒ•ãƒ©ã‚°ã‚’ãƒªã‚»ãƒƒãƒˆ
 				if (( flag & HGOBJ_FLAG_MOVING )&&( allmove )) MoveObj( pobj, t );
 
 				df = 0;
@@ -1377,7 +1377,7 @@ int hgdx::DrawObjAll( void )
 				total += pobj->drawresult;
 				pobj->drawflag = df;
 				pobj->drawresult = 0;
-			} else {							// ƒIƒuƒWƒFƒNƒg‚Ííœ‚³‚ê‚é
+			} else {							// ã‚ªãƒ–ã‚¸ã‚§ã‚¯ãƒˆã¯å‰Šé™¤ã•ã‚Œã‚‹
 				DeleteObj( pobj->id );
 			}
 		}
@@ -1385,7 +1385,7 @@ int hgdx::DrawObjAll( void )
 	}
 
 	//
-	//		æ‚É•`‰æ‚·‚é‚à‚Ì(HGOBJ_MODE_FIRST‚ ‚è)
+	//		å…ˆã«æç”»ã™ã‚‹ã‚‚ã®(HGOBJ_MODE_FIRSTã‚ã‚Š)
 	//
 	obj = mem_obj;
 	for(i=0;i<maxobj;i++) {
@@ -1393,7 +1393,7 @@ int hgdx::DrawObjAll( void )
 		if ( pobj != NULL ) {
 			if ( pobj->mode & HGOBJ_MODE_FIRST ) {
 				if ( pobj->drawflag ) {
-					DrawObj( pobj );	// ’Êí‚ÌƒIƒuƒWƒFƒNƒg
+					DrawObj( pobj );	// é€šå¸¸ã®ã‚ªãƒ–ã‚¸ã‚§ã‚¯ãƒˆ
 				}
 			}
 		}
@@ -1401,7 +1401,7 @@ int hgdx::DrawObjAll( void )
 	}
 
 	//
-	//		‚Q”Ô–Ú‚É•`‰æ‚·‚é‚à‚Ì(OBJ_LATE‚È‚µ)
+	//		ï¼’ç•ªç›®ã«æç”»ã™ã‚‹ã‚‚ã®(OBJ_LATEãªã—)
 	//
 	obj = mem_obj;
 	for(i=0;i<maxobj;i++) {
@@ -1412,7 +1412,7 @@ int hgdx::DrawObjAll( void )
 					if ( pobj->mode & HGOBJ_MODE_SORT ) {
 						RegistSortObj( pobj );
 					} else {
-						DrawObj( pobj );	// ’Êí‚ÌƒIƒuƒWƒFƒNƒg
+						DrawObj( pobj );	// é€šå¸¸ã®ã‚ªãƒ–ã‚¸ã‚§ã‚¯ãƒˆ
 					}
 				}
 			}
@@ -1421,20 +1421,20 @@ int hgdx::DrawObjAll( void )
 	}
 
 	//
-	//		Zƒ\[ƒgƒIƒuƒWƒFƒNƒg‚Ìˆ—
+	//		Zã‚½ãƒ¼ãƒˆã‚ªãƒ–ã‚¸ã‚§ã‚¯ãƒˆã®å‡¦ç†
 	//
 #if 0
 	SortObjAll();
-	obj = mem_sortobj;							// ƒ\[ƒg‚µ‚½ƒIƒuƒWƒFƒNƒg‚ÌŒŸõ
+	obj = mem_sortobj;							// ã‚½ãƒ¼ãƒˆã—ãŸã‚ªãƒ–ã‚¸ã‚§ã‚¯ãƒˆã®æ¤œç´¢
 	for(i=0;i<maxsortobj;i++) {
 		pobj = *obj;
-		DrawObj( pobj );	// ’Êí‚ÌƒIƒuƒWƒFƒNƒg
+		DrawObj( pobj );	// é€šå¸¸ã®ã‚ªãƒ–ã‚¸ã‚§ã‚¯ãƒˆ
 		pobj->sortdrawflag = 0;
 		obj++;
 	}
 #endif
 	//
-	//		Œã‚Å•`‰æ‚·‚é‚à‚Ì(OBJ_LATE‚ ‚è)
+	//		å¾Œã§æç”»ã™ã‚‹ã‚‚ã®(OBJ_LATEã‚ã‚Š)
 	//
 	obj = mem_obj;
 	for(i=0;i<maxobj;i++) {
@@ -1442,7 +1442,7 @@ int hgdx::DrawObjAll( void )
 		if ( pobj != NULL ) {
 //			if ( pobj->mode & HGOBJ_MODE_LATE ) {
 				if ( pobj->drawflag ) {
-					DrawObj( pobj );	// 2DƒIƒuƒWƒFƒNƒg
+					DrawObj( pobj );	// 2Dã‚ªãƒ–ã‚¸ã‚§ã‚¯ãƒˆ
 				}
 //			}
 		}
@@ -1525,13 +1525,13 @@ void hgdx::SetObjChild( int parentid, int objid )
 
 void hgdx::UpdateLight( void )
 {
-	// ƒ‰ƒCƒg“®ì
+	// ãƒ©ã‚¤ãƒˆå‹•ä½œ
 	//
 	//VECTOR lightvec,lightcolor,ambientcolor;
 	//CopyVector( &lightvec, light->GetRot() );
 	//CopyVector( &lightcolor, light->GetDir() );
-	//ScaleVector( &lightcolor, light->GetDir(), 1.0f / 256.0f );			// ƒ‰ƒCƒgF‚ğİ’è‚·‚é
-	//ScaleVector( &ambientcolor, light->GetEfx(), 1.0f / 256.0f );		// ƒAƒ“ƒrƒGƒ“ƒgF‚ğİ’è‚·‚é
+	//ScaleVector( &lightcolor, light->GetDir(), 1.0f / 256.0f );			// ãƒ©ã‚¤ãƒˆè‰²ã‚’è¨­å®šã™ã‚‹
+	//ScaleVector( &ambientcolor, light->GetEfx(), 1.0f / 256.0f );		// ã‚¢ãƒ³ãƒ“ã‚¨ãƒ³ãƒˆè‰²ã‚’è¨­å®šã™ã‚‹
 	//io.SetLight( &lightvec );
 }
 
@@ -1572,7 +1572,7 @@ int hgdx::UpdateObjColi( int id, float size, int addcol )
 	hgobj **obj;
 	hgobj *o;
 
-	//	•\¦ˆ—
+	//	è¡¨ç¤ºå‡¦ç†
 	//
 	o = mem_obj[id];
 	if ( o == NULL ) return -1;
@@ -1625,9 +1625,9 @@ int hgdx::UpdateObjColi( int id, float size, int addcol )
 
 void hgdx::StartObjFind( int mode, int group )
 {
-	//		ƒIƒuƒWƒFƒNƒgŒŸõİ’è
-	//			mode:œŠO‚·‚éƒ‚[ƒh
-	//			group:‘ÎÛ‚Æ‚È‚écollision group
+	//		ã‚ªãƒ–ã‚¸ã‚§ã‚¯ãƒˆæ¤œç´¢è¨­å®š
+	//			mode:é™¤å¤–ã™ã‚‹ãƒ¢ãƒ¼ãƒ‰
+	//			group:å¯¾è±¡ã¨ãªã‚‹collision group
 	//
 	objfind_exmode = mode;
 	objfind_group = group;
@@ -1637,8 +1637,8 @@ void hgdx::StartObjFind( int mode, int group )
 
 int hgdx::FindObj( void )
 {
-	//		ƒIƒuƒWƒFƒNƒgŒŸõ
-	//			(ret:-1=ŒŸõI—¹)
+	//		ã‚ªãƒ–ã‚¸ã‚§ã‚¯ãƒˆæ¤œç´¢
+	//			(ret:-1=æ¤œç´¢çµ‚äº†)
 	//
 	int i;
 	hgobj *o;
@@ -1796,7 +1796,7 @@ int hgdx::GetNearestObj( int id, float range, int colgroup )
 	float maxrange;
 	float dist;
 
-	//	•\¦ˆ—
+	//	è¡¨ç¤ºå‡¦ç†
 	//
 	o = mem_obj[id];
 	if ( o == NULL ) return -1;

@@ -113,8 +113,8 @@ void hgmodel::RegistData( HGMODEL_FLAG p_flag )
 #if 0
 void hgmodel::DrawSprite( HGMODEL_DRAWPRM *drawprm )
 {
-	//		Šg‘å‰ñ“]ƒXƒvƒ‰ƒCƒg(2D)
-	//		(x,y)’†SÀ•W / (sx,sy)ƒTƒCƒY / ang=Šp“x
+	//		æ‹¡å¤§å›è»¢ã‚¹ãƒ—ãƒ©ã‚¤ãƒˆ(2D)
+	//		(x,y)ä¸­å¿ƒåº§æ¨™ / (sx,sy)ã‚µã‚¤ã‚º / ang=è§’åº¦
 	//
 	POLY4 mem_poly4;
 	POLY4 *poly;

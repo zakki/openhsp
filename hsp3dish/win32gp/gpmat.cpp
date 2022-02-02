@@ -24,7 +24,7 @@ bool hasParameter( Material* material, const char* name );
 
 gpmat::gpmat()
 {
-	// ƒRƒ“ƒXƒgƒ‰ƒNƒ^
+	// ã‚³ãƒ³ã‚¹ãƒˆãƒ©ã‚¯ã‚¿
 	_flag = GPMAT_FLAG_NONE;
 }
 
@@ -314,17 +314,17 @@ void gamehsp::setLightMaterialParameter(Material* material)
 	gpobj *lgt;
 	Node *light_node;
 
-	//	ƒfƒBƒŒƒNƒVƒ‡ƒiƒ‹ƒ‰ƒCƒg
+	//	ãƒ‡ã‚£ãƒ¬ã‚¯ã‚·ãƒ§ãƒŠãƒ«ãƒ©ã‚¤ãƒˆ
 	for (int i = 0; i < _max_dlight; i++) {
 		lgt = getObj(_dir_light[i]);
 		light_node = lgt->_node;
 		if (light_node) {
-			// ƒ‰ƒCƒg‚Ì•ûŒüİ’è
+			// ãƒ©ã‚¤ãƒˆã®æ–¹å‘è¨­å®š
 			lightname_direction[28] = '0' + i;	// "u_directionalLightDirection[0]"
 			if (hasParameter(material, lightname_direction)) {
 				material->getParameter(lightname_direction)->bindValue(light_node, &Node::getForwardVectorView);
 			}
-			// ƒ‰ƒCƒg‚ÌFİ’è
+			// ãƒ©ã‚¤ãƒˆã®è‰²è¨­å®š
 			lightname_color[24] = '0' + i;	// "u_directionalLightColor[0]"
 			if (hasParameter(material, lightname_color)) {
 				material->getParameter(lightname_color)->bindValue(light_node, &Node::getLightColor);
@@ -332,25 +332,25 @@ void gamehsp::setLightMaterialParameter(Material* material)
 			}
 		}
 	}
-	//	ƒ|ƒCƒ“ƒgƒ‰ƒCƒg
+	//	ãƒã‚¤ãƒ³ãƒˆãƒ©ã‚¤ãƒˆ
 	for (int i = 0; i < _max_plight; i++) {
 		lgt = getObj(_point_light[i]);
 		light_node = lgt->_node;
 		if (light_node) {
 			Light *lg = light_node->getLight();
 			if (lg->getLightType() == gameplay::Light::POINT) {
-				// ƒ‰ƒCƒg‚Ì•ûŒüİ’è
+				// ãƒ©ã‚¤ãƒˆã®æ–¹å‘è¨­å®š
 				lightname_pointposition[21] = '0' + i;	// "u_pointLightPosition[0]"
 				if (hasParameter(material, lightname_pointposition)) {
 					material->getParameter(lightname_pointposition)->bindValue(light_node, &Node::getTranslationView);
 				}
-				// ƒ‰ƒCƒg‚ÌFİ’è
+				// ãƒ©ã‚¤ãƒˆã®è‰²è¨­å®š
 				lightname_pointcolor[18] = '0' + i;	// "u_pointLightColor[0]"
 				if (hasParameter(material, lightname_pointcolor)) {
 					material->getParameter(lightname_pointcolor)->bindValue(light_node, &Node::getLightColor);
 					//material->getParameter(lightname_pointcolor)->setValue(lg->getColor());
 				}
-				// ƒ‰ƒCƒg‚Ì”ÍˆÍ
+				// ãƒ©ã‚¤ãƒˆã®ç¯„å›²
 				lightname_pointrange[25] = '0' + i;	// "u_pointLightRangeInverse[0]"
 				if (hasParameter(material, lightname_pointrange)) {
 					material->getParameter(lightname_pointrange)->setValue(lg->getRangeInverse());
@@ -358,14 +358,14 @@ void gamehsp::setLightMaterialParameter(Material* material)
 			}
 		}
 	}
-	//	ƒXƒ|ƒbƒgƒ‰ƒCƒg
+	//	ã‚¹ãƒãƒƒãƒˆãƒ©ã‚¤ãƒˆ
 	for (int i = 0; i < _max_slight; i++) {
 		lgt = getObj(_spot_light[i]);
 		light_node = lgt->_node;
 		if (light_node) {
 			Light *lg = light_node->getLight();
 			if (lg->getLightType() == gameplay::Light::SPOT) {
-				// ƒ‰ƒCƒg‚Ì•ûŒüİ’è
+				// ãƒ©ã‚¤ãƒˆã®æ–¹å‘è¨­å®š
 				lightname_spotposition[20] = '0' + i;	// "u_spotLightPosition[0]"
 				if (hasParameter(material, lightname_spotposition)) {
 					material->getParameter(lightname_spotposition)->bindValue(light_node, &Node::getTranslationView);
@@ -374,13 +374,13 @@ void gamehsp::setLightMaterialParameter(Material* material)
 				if (hasParameter(material, lightname_spotdirection)) {
 					material->getParameter(lightname_spotdirection)->bindValue(light_node, &Node::getForwardVectorView);
 				}
-				// ƒ‰ƒCƒg‚ÌFİ’è
+				// ãƒ©ã‚¤ãƒˆã®è‰²è¨­å®š
 				lightname_spotcolor[17] = '0' + i;	// "u_spotLightColor[0]"
 				if (hasParameter(material, lightname_spotcolor)) {
 					material->getParameter(lightname_spotcolor)->bindValue(light_node, &Node::getLightColor);
 					//material->getParameter(lightname_spotcolor)->setValue(lg->getColor());
 				}
-				// ƒ‰ƒCƒg‚Ì”ÍˆÍ
+				// ãƒ©ã‚¤ãƒˆã®ç¯„å›²
 				lightname_spotrange[24] = '0' + i;	// "u_spotLightRangeInverse[0]"
 				if (hasParameter(material, lightname_spotrange)) {
 					material->getParameter(lightname_spotrange)->setValue(lg->getRangeInverse());
@@ -433,10 +433,10 @@ void gamehsp::setMaterialDefaultBinding( Material* material, int icolor, int mat
 {
 	Vector4 color;
 
-	//	ƒVƒF[ƒ_[‚É•K—v‚Èƒpƒ‰ƒ[ƒ^[‚ğ”½‰f‚³‚¹‚é
+	//	ã‚·ã‚§ãƒ¼ãƒ€ãƒ¼ã«å¿…è¦ãªãƒ‘ãƒ©ãƒ¡ãƒ¼ã‚¿ãƒ¼ã‚’åæ˜ ã•ã›ã‚‹
 	setMaterialDefaultBinding(material);
 
-	//	ƒJƒŒƒ“ƒgƒ‰ƒCƒg‚ğ”½‰f‚³‚¹‚é
+	//	ã‚«ãƒ¬ãƒ³ãƒˆãƒ©ã‚¤ãƒˆã‚’åæ˜ ã•ã›ã‚‹
 	setLightMaterialParameter(material);
 
 	colorVector3( icolor, color );
@@ -471,17 +471,17 @@ void gamehsp::setMaterialDefaultBinding( Material* material, int icolor, int mat
 
 float gamehsp::setMaterialBlend( Material* material, int gmode, int gfrate )
 {
-	//	ƒvƒŒƒ“ƒh•`‰æİ’è
-	//	gmdoe : HSP‚Ìgmode’l
-	//	gfrate : HSP‚Ìgfrate’l
-	//	(–ß‚è’l=alpha’l(0.0`1.0))
+	//	ãƒ—ãƒ¬ãƒ³ãƒ‰æç”»è¨­å®š
+	//	gmdoe : HSPã®gmodeå€¤
+	//	gfrate : HSPã®gfrateå€¤
+	//	(æˆ»ã‚Šå€¤=alphaå€¤(0.0ï½1.0))
 	//
 	RenderState::StateBlock *state;
 	float alpha;
 
 	state = material->getStateBlock();
 
-    //ƒuƒŒƒ“ƒhƒ‚[ƒhİ’è
+    //ãƒ–ãƒ¬ãƒ³ãƒ‰ãƒ¢ãƒ¼ãƒ‰è¨­å®š
     switch( gmode ) {
         case 0:                     //no blend
 			state->setBlendSrc(RenderState::BLEND_ONE);
@@ -516,7 +516,7 @@ float gamehsp::setMaterialBlend( Material* material, int gmode, int gfrate )
 
 int gamehsp::makeNewMat( Material* material, int mode, int color, int matopt )
 {
-	//	ƒ}ƒeƒŠƒAƒ‹‚ğ¶¬‚·‚é
+	//	ãƒãƒ†ãƒªã‚¢ãƒ«ã‚’ç”Ÿæˆã™ã‚‹
 	gpmat *mat = addMat();
 	if ( mat == NULL ) return -1;
 	mat->_material = material;
@@ -530,7 +530,7 @@ int gamehsp::makeNewMat( Material* material, int mode, int color, int matopt )
 
 int gamehsp::makeNewMatFromObj(int objid, int part)
 {
-	//	ƒIƒuƒWƒFƒNƒgŒÅ—L‚Ìƒ}ƒeƒŠƒAƒ‹‚ğQÆ‚·‚é
+	//	ã‚ªãƒ–ã‚¸ã‚§ã‚¯ãƒˆå›ºæœ‰ã®ãƒãƒ†ãƒªã‚¢ãƒ«ã‚’å‚ç…§ã™ã‚‹
 	gpobj *obj = getObj(objid);
 	if (obj == NULL) return -1;
 	if (obj->_model == NULL) return -1;
@@ -546,7 +546,7 @@ int gamehsp::makeNewMatFromObj(int objid, int part)
 
 int gamehsp::makeNewMat2D( char *fname, int matopt )
 {
-	//	ƒ}ƒeƒŠƒAƒ‹‚ğ¶¬‚·‚é(2D)
+	//	ãƒãƒ†ãƒªã‚¢ãƒ«ã‚’ç”Ÿæˆã™ã‚‹(2D)
 	gpmat *mat = addMat();
 	if ( mat == NULL ) return -1;
 
@@ -578,7 +578,7 @@ int gamehsp::makeNewMat2D( char *fname, int matopt )
 	mat->_texratex = 1.0f / (float)_tex_width;
 	mat->_texratey = 1.0f / (float)_tex_height;
 
-	// 2D—p‚ÌƒvƒƒWƒFƒNƒVƒ‡ƒ“
+	// 2Dç”¨ã®ãƒ—ãƒ­ã‚¸ã‚§ã‚¯ã‚·ãƒ§ãƒ³
 	make2DRenderProjection(&mat->_projectionMatrix2D, _tex_width, _tex_height);
 	mat->_target_material_id = -1;
 	mat->_matcolor = -1;
@@ -627,7 +627,7 @@ int gamehsp::makeNewMatFromFB(gameplay::FrameBuffer *fb, int matopt)
 	mat->_texratex = 1.0f / (float)tex_width;
 	mat->_texratey = 1.0f / (float)tex_height;
 
-	// 2D—p‚ÌƒvƒƒWƒFƒNƒVƒ‡ƒ“
+	// 2Dç”¨ã®ãƒ—ãƒ­ã‚¸ã‚§ã‚¯ã‚·ãƒ§ãƒ³
 	make2DRenderProjection(&mat->_projectionMatrix2D, tex_width, tex_height);
 	mat->_target_material_id = -1;
 	mat->_matcolor = -1;
@@ -651,12 +651,12 @@ Material *gamehsp::makeMaterialFromShader(char *vshd, char *fshd, char *defs)
 
 void gamehsp::setupDefines(void)
 {
-	// ƒJƒXƒ^ƒ€ƒVƒF[ƒ_[‚Ì‰Šú‰»
+	// ã‚«ã‚¹ã‚¿ãƒ ã‚·ã‚§ãƒ¼ãƒ€ãƒ¼ã®åˆæœŸåŒ–
 	user_vsh = SPRITE_VSH;
 	user_fsh = SPRITE_FSH;
 	user_defines = "";
 
-	// ƒ‰ƒCƒg‚ÌƒVƒF[ƒ_[ƒpƒ‰ƒ[ƒ^[
+	// ãƒ©ã‚¤ãƒˆã®ã‚·ã‚§ãƒ¼ãƒ€ãƒ¼ãƒ‘ãƒ©ãƒ¡ãƒ¼ã‚¿ãƒ¼
 	strcpy(lightname_ambient, PARAMNAME_LIGHT_AMBIENT);
 	strcpy(lightname_color, PARAMNAME_LIGHT_COLOR);
 	strcpy(lightname_direction, PARAMNAME_LIGHT_DIRECTION);
@@ -677,7 +677,7 @@ void gamehsp::setupDefines(void)
 
 void gamehsp::setUserShader2D(char *vsh, char *fsh, char *defines)
 {
-	// ƒJƒXƒ^ƒ€ƒVƒF[ƒ_[‚Ìİ’è
+	// ã‚«ã‚¹ã‚¿ãƒ ã‚·ã‚§ãƒ¼ãƒ€ãƒ¼ã®è¨­å®š
 	user_vsh = vsh;
 	user_fsh = fsh;
 	user_defines = defines;
@@ -819,7 +819,7 @@ Material *gamehsp::makeMaterialTex2D(Texture *texture, int matopt)
     // Bind the texture to the material as a sampler
     Texture::Sampler* sampler = Texture::Sampler::create(texture); // +ref texture
 
-	sampler->setFilterMode(Texture::Filter::NEAREST, Texture::Filter::NEAREST);		// 2D‚ÍƒfƒtƒHƒ‹ƒg‚ÅƒtƒBƒ‹ƒ^‚È‚µ
+	sampler->setFilterMode(Texture::Filter::NEAREST, Texture::Filter::NEAREST);		// 2Dã¯ãƒ‡ãƒ•ã‚©ãƒ«ãƒˆã§ãƒ•ã‚£ãƒ«ã‚¿ãªã—
 	mesh_material->getParameter(samplerUniform->getName())->setValue(sampler);
 	SAFE_RELEASE(sampler);
 

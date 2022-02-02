@@ -21,11 +21,11 @@
 //		Data
 //
 static		TEXINF texinf[TEXINF_MAX];
-static		char ck1;			// ÉJÉâÅ[ÉLÅ[1
-static		char ck2;			// ÉJÉâÅ[ÉLÅ[2
-static		char ck3;			// ÉJÉâÅ[ÉLÅ[3
+static		char ck1;			// „Ç´„É©„Éº„Ç≠„Éº1
+static		char ck2;			// „Ç´„É©„Éº„Ç≠„Éº2
+static		char ck3;			// „Ç´„É©„Éº„Ç≠„Éº3
 
-static		char *lpTex;		// ÉeÉNÉXÉ`ÉÉÇÃÉoÉbÉtÉ@
+static		char *lpTex;		// „ÉÜ„ÇØ„Çπ„ÉÅ„É£„ÅÆ„Éê„ÉÉ„Éï„Ç°
 static		int curtex;			// current texID
 
 static		D3DDISPLAYMODE target_disp;
@@ -34,19 +34,19 @@ static		LPDIRECT3DDEVICE8 d3ddev;
 
 static		DWORD AlphaTbl[34];
 static		int FixedFontWidth;
-static		HFONT htexfont;		// TEXTUREópÇÃÉtÉHÉìÉg
-static		HFONT htexfont_old;	// TEXTUREópÇÃÉtÉHÉìÉg(ï€ë∂óp)
+static		HFONT htexfont;		// TEXTUREÁî®„ÅÆ„Éï„Ç©„É≥„Éà
+static		HFONT htexfont_old;	// TEXTUREÁî®„ÅÆ„Éï„Ç©„É≥„Éà(‰øùÂ≠òÁî®)
 static		LPBYTE lpFont;
 static		HDC htexdc;
 static		HWND htexwnd;
 static		int htexsize;
 static		int lasttex;
-static		D3DLOCKED_RECT MemTexRect;	// ÉeÉNÉXÉ`ÉÉçÏã∆ÉoÉbÉtÉ@
-static		int drawsx, drawsy;	// ï`âÊÉTÉCÉY
-static		int spacing;		// ï∂éöÇÃä‘äu(dot)
-static		int linespace;		// çsÇÃä‘äu(dot)
-static		int fontoption;		// ÉtÉHÉìÉgï`âÊÉIÉvÉVÉáÉì
-static		int fontrot;		// âÒì]ÉIÉvÉVÉáÉì
+static		D3DLOCKED_RECT MemTexRect;	// „ÉÜ„ÇØ„Çπ„ÉÅ„É£‰ΩúÊ•≠„Éê„ÉÉ„Éï„Ç°
+static		int drawsx, drawsy;	// ÊèèÁîª„Çµ„Ç§„Ç∫
+static		int spacing;		// ÊñáÂ≠ó„ÅÆÈñìÈöî(dot)
+static		int linespace;		// Ë°å„ÅÆÈñìÈöî(dot)
+static		int fontoption;		// „Éï„Ç©„É≥„ÉàÊèèÁîª„Ç™„Éó„Ç∑„Éß„É≥
+static		int fontrot;		// ÂõûËª¢„Ç™„Éó„Ç∑„Éß„É≥
 static		TEXTMETRIC tm;
 
 
@@ -71,11 +71,11 @@ static unsigned int m_star_color[64];
 
 static void star_init(void)
 {
-	//	êØ(StarField)ÇÃèâä˙âª
+	//	Êòü(StarField)„ÅÆÂàùÊúüÂåñ
 	m_stars_count = 0;
 	m_stars_enabled = 1;
 
-	//	ÉeÅ[ÉuÉãçÏê¨
+	//	„ÉÜ„Éº„Éñ„É´‰ΩúÊàê
 	unsigned int shiftreg;
 	int i;
 
@@ -85,7 +85,7 @@ static void star_init(void)
 		int enabled = ((shiftreg & 0x1fe01) == 0x1fe00);
 		int color = (~shiftreg & 0x1f8) >> 3;
 		m_stars[i] = color | (enabled << 7);
-		// LFSRÇ…ÇÊÇÈóêêîê∂ê¨
+		// LFSR„Å´„Çà„Çã‰π±Êï∞ÁîüÊàê
 		shiftreg = (shiftreg >> 1) | ((((shiftreg >> 12) ^ ~shiftreg) & 1) << 16);
 	}
 
@@ -119,7 +119,7 @@ static void star_init(void)
 
 static void star_draw_y(unsigned char *dest, int y, int maxx, int offset)
 {
-	//	êØ(StarField)ÇÃï`âÊ(1line)
+	//	Êòü(StarField)„ÅÆÊèèÁîª(1line)
 	int x;
 	int ofs;
 	unsigned int *ptr;
@@ -146,7 +146,7 @@ static void star_draw_y(unsigned char *dest, int y, int maxx, int offset)
 
 static void star_draw(char *dest, int sx, int sy, int mode)
 {
-	//	êØ(StarField)ÇÃï`âÊ
+	//	Êòü(StarField)„ÅÆÊèèÁîª
 	if (m_stars_enabled == 0) return;
 
 	int y;
@@ -185,7 +185,7 @@ void TexInit( void )
 	}
 
 	TexReset();
-	lpFont = (LPBYTE)malloc( 0x10000 );			// ÉtÉHÉìÉgéÊìæópÇÃÉèÅ[ÉN
+	lpFont = (LPBYTE)malloc( 0x10000 );			// „Éï„Ç©„É≥„ÉàÂèñÂæóÁî®„ÅÆ„ÉØ„Éº„ÇØ
 
 #ifdef USE_STAR_FIELD
 	star_init();
@@ -253,7 +253,7 @@ void SetTex( int sel, int flag, int sw, int sx, int sy, int width, int height, v
 
 static void TexCopySub32( char *dst, char *src, int size )
 {
-	//		(R,G,B) Ç (A8,R8,G8,B8) å`éÆÇ…ÇµÇƒÉRÉsÅ[
+	//		(R,G,B) „Çí (A8,R8,G8,B8) ÂΩ¢Âºè„Å´„Åó„Å¶„Ç≥„Éî„Éº
 	//
 	char *p;
 	char *sp;
@@ -276,7 +276,7 @@ static void TexCopySub32( char *dst, char *src, int size )
 
 static void TexCopySub16( char *dst, char *src, int size )
 {
-	//		(R,G,B) Ç (A1,R5,G5,B5) å`éÆÇ…ÇµÇƒÉRÉsÅ[
+	//		(R,G,B) „Çí (A1,R5,G5,B5) ÂΩ¢Âºè„Å´„Åó„Å¶„Ç≥„Éî„Éº
 	//
 	char *p;
 	char *sp;
@@ -303,7 +303,7 @@ static void TexCopySub16( char *dst, char *src, int size )
 
 static D3DFORMAT GetAvailableFormat( int sw )
 {
-	//		ÉeÉNÉXÉ`ÉÉÇÃégópâ¬î\Ç»ÉtÉHÅ[É}ÉbÉgÇí≤Ç◊ÇÈ
+	//		„ÉÜ„ÇØ„Çπ„ÉÅ„É£„ÅÆ‰ΩøÁî®ÂèØËÉΩ„Å™„Éï„Ç©„Éº„Éû„ÉÉ„Éà„ÇíË™ø„Åπ„Çã
 	//				sw: 0=full color/1=palette 
 	D3DFORMAT ok;
 	HRESULT hr;
@@ -420,7 +420,7 @@ int RegistTex( char *data, int sx, int sy, int width, int height, int sw )
 		return RegistTexFromMemFile( data, sx, width, height );
 	}
 
-	//		ÉJÉâÅ[ÉLÅ[çXêV
+	//		„Ç´„É©„Éº„Ç≠„ÉºÊõ¥Êñ∞
 	//
 	i = 0;
 	//i = GetSysReq( SYSREQ_COLORKEY );
@@ -428,7 +428,7 @@ int RegistTex( char *data, int sx, int sy, int width, int height, int sw )
 	ck2 = (i>>8) & 0xff;
 	ck3 = (i>>16) & 0xff;
 
-	//		ÉtÉHÅ[É}ÉbÉgïœä∑
+	//		„Éï„Ç©„Éº„Éû„ÉÉ„ÉàÂ§âÊèõ
 	//
 	textype = GetAvailableFormat( 0 );
 	if ( textype==D3DFMT_UNKNOWN ) return -2;
@@ -536,7 +536,7 @@ int UpdateTexStar(int texid, int mode)
 	case TEXMODE_MES4:
 		break;
 	case TEXMODE_MES8:
-		// ì]ëóêÊÇÃÉTÅ[ÉtÉFÉCÉXÇÃénì_(32bit)
+		// Ëª¢ÈÄÅÂÖà„ÅÆ„Çµ„Éº„Éï„Çß„Ç§„Çπ„ÅÆÂßãÁÇπ(32bit)
 #ifdef USE_STAR_FIELD
 		char* p;
 		p = (char*)lock.pBits;
@@ -573,7 +573,7 @@ int UpdateTex32(int texid, char * srcptr, int mode)
 	case TEXMODE_MES4:
 		break;
 	case TEXMODE_MES8:
-		// ì]ëóêÊÇÃÉTÅ[ÉtÉFÉCÉXÇÃénì_(32bit)
+		// Ëª¢ÈÄÅÂÖà„ÅÆ„Çµ„Éº„Éï„Çß„Ç§„Çπ„ÅÆÂßãÁÇπ(32bit)
 		char* p;
 		p = (char*)lock.pBits;
 		if (mode & 1) {
@@ -612,7 +612,7 @@ int UpdateTex( int texid, char *data, int sw )
 	char *src;
 	D3DFORMAT textype;
 
-	//		ÉJÉâÅ[ÉLÅ[çXêV
+	//		„Ç´„É©„Éº„Ç≠„ÉºÊõ¥Êñ∞
 	//
 	//i = GetSysReq( SYSREQ_COLORKEY );
 	i = 0;
@@ -628,7 +628,7 @@ int UpdateTex( int texid, char *data, int sw )
 	pTex = (LPDIRECT3DTEXTURE8)texinf->data;
 
 
-	//		ÉtÉHÅ[É}ÉbÉgïœä∑
+	//		„Éï„Ç©„Éº„Éû„ÉÉ„ÉàÂ§âÊèõ
 	//
 	textype = GetAvailableFormat( 0 );
 	if ( textype==D3DFMT_UNKNOWN ) return -2;
@@ -714,7 +714,7 @@ void SetSrcTex( void *src, int sx, int sy )
 
 void TexDivideSize(int id, int new_divsx, int new_divsy, int new_ofsx, int new_ofsy)
 {
-	//		ÉZÉãï™äÑÉTÉCÉYÇê›íË
+	//		„Çª„É´ÂàÜÂâ≤„Çµ„Ç§„Ç∫„ÇíË®≠ÂÆö
 	//
 	TEXINF *t;
 	t = GetTex(id);
@@ -730,7 +730,7 @@ void TexDivideSize(int id, int new_divsx, int new_divsy, int new_ofsx, int new_o
 
 int RegistTexEmpty(int w, int h, int tmode)
 {
-	// ÉÅÉbÉZÅ[ÉWÉGÉäÉAópÇÃÉeÉNÉXÉ`ÉÉçÏê¨
+	// „É°„ÉÉ„Çª„Éº„Ç∏„Ç®„É™„Ç¢Áî®„ÅÆ„ÉÜ„ÇØ„Çπ„ÉÅ„É£‰ΩúÊàê
 	int sel, sx, sy, flag;
 	D3DSURFACE_DESC desc;
 	LPDIRECT3DTEXTURE8 lpTex;
@@ -754,7 +754,7 @@ int RegistTexEmpty(int w, int h, int tmode)
 	}
 
 	lpTex->GetLevelDesc(0, &desc);
-	// ÉfÅ[É^
+	// „Éá„Éº„Çø
 	sx = desc.Width;
 	sy = desc.Height;
 	flag = TEXMODE_MES8;

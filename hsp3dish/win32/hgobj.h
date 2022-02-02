@@ -137,7 +137,7 @@ public:
 	void TreeAt( VECTOR *target );
 	HGMODEL_DRAWPRM *GetPrm( void ) { return &prm; }
 
-	//	Parameters (•À‚Ñ‡‚ğhgevent.h‚ÅQÆ‚µ‚Ä‚¢‚é)
+	//	Parameters (ä¸¦ã³é †ã‚’hgevent.hã§å‚ç…§ã—ã¦ã„ã‚‹)
 	//
 	int		id;
 	int		mode;
@@ -153,11 +153,11 @@ public:
 	short	drawresult;
 	short	matupdate;			// materix update flag
 	short	evtimer;			// timer for event
-	short	landobj;			// Ú’nƒIƒuƒWƒFƒNƒgID
+	short	landobj;			// æ¥åœ°ã‚ªãƒ–ã‚¸ã‚§ã‚¯ãƒˆID
 	short	pushflg;			// collision push flag
-	short	meshx,meshy;		// Ú’nƒƒbƒVƒ…À•W
-	short	pullobj;			// ‰Ÿ‚µo‚³‚ê‚½ƒIƒuƒWƒFƒNƒgID
-	short	pushobj;			// ‰Ÿ‚µo‚µ‚½ƒIƒuƒWƒFƒNƒgID
+	short	meshx,meshy;		// æ¥åœ°ãƒ¡ãƒƒã‚·ãƒ¥åº§æ¨™
+	short	pullobj;			// æŠ¼ã—å‡ºã•ã‚ŒãŸã‚ªãƒ–ã‚¸ã‚§ã‚¯ãƒˆID
+	short	pushobj;			// æŠ¼ã—å‡ºã—ãŸã‚ªãƒ–ã‚¸ã‚§ã‚¯ãƒˆID
 
 	void	*parent;			// parent object
 	void	*child;				// child object
@@ -169,15 +169,15 @@ public:
 	float	speed;
 	float	aniframe;
 
-	float	landy;				// Ú’n–Ê‚ÌYÀ•W
-	float	colofsy;			// ƒ‚ƒfƒ‹’†S–Ê‚©‚ç‚ÌÚ’nƒIƒtƒZƒbƒg
-	VECTOR	landnorm;			// Ú’n–Ê‚Ì–@ü
+	float	landy;				// æ¥åœ°é¢ã®Yåº§æ¨™
+	float	colofsy;			// ãƒ¢ãƒ‡ãƒ«ä¸­å¿ƒé¢ã‹ã‚‰ã®æ¥åœ°ã‚ªãƒ•ã‚»ãƒƒãƒˆ
+	VECTOR	landnorm;			// æ¥åœ°é¢ã®æ³•ç·š
 	int		lookobj;
 
-	int		optinfo[3];			// ”Ä—pƒIƒuƒWƒFƒNƒgî•ñ
+	int		optinfo[3];			// æ±ç”¨ã‚ªãƒ–ã‚¸ã‚§ã‚¯ãƒˆæƒ…å ±
 
 	hgmodel *model;
-	float	sortz;				// ƒ\[ƒg—pZÀ•W
+	float	sortz;				// ã‚½ãƒ¼ãƒˆç”¨Zåº§æ¨™
 	short	sortdrawflag;
 	short	sortoffset;
 

@@ -110,33 +110,33 @@ typedef struct BGMAP
 	int viewx, viewy;	//	Map view axis
 	int buferid;		//	Map parts buffer ID
 	int bgoption;		//	BG option
-	int tpflag;			//	‡¬ƒpƒ‰ƒ[ƒ^[
+	int tpflag;			//	åˆæˆãƒ‘ãƒ©ãƒ¡ãƒ¼ã‚¿ãƒ¼
 } BGMAP;
 
 typedef struct SPOBJ
 {
 	int	fl;				//	exist flag (ESSPFLAG_*)
-	int xx;				//  X axis (16bitŒÅ’è­”)
-	int yy;				//	Y axis (16bitŒÅ’è­”)
+	int xx;				//  X axis (16bitå›ºå®šå°‘æ•°)
+	int yy;				//	Y axis (16bitå›ºå®šå°‘æ•°)
 	int px;				//	Gravity/Move X parameters
 	int py;				//	Gravity/Move X parameters
 	int progress;		//	Move progress counter
 	int ani;			//	chr anim counter
 	int chr;			//	chr code
 	int type;			//	Attribute type
-	int fspx,fspy;		//  —‰º‘¬“x
-	int bound;			//  ŒÅ‚³
-	int boundflag;		//  ƒoƒEƒ“ƒh‚³‚¹‚éƒtƒ‰ƒO(1=X 2=Y)
-	int option;			//	ƒ†[ƒU[ƒIƒvƒVƒ‡ƒ“’l
-	int priority;		//	—Dæ‡ˆÊ
-	int tpflag;			//	ƒ¿’l(0-255)+effectƒpƒ‰ƒ[ƒ^[
-	int fadeprm;		//	ƒ¿ƒtƒF[ƒhƒpƒ‰ƒ[ƒ^[
-	int zoomx;			//	X•ûŒü”{—¦(16bitŒÅ’è­”)
-	int zoomy;			//	Y•ûŒü”{—¦(16bitŒÅ’è­”)
-	int	rotz;			//	‰ñ“]Šp“x
+	int fspx,fspy;		//  è½ä¸‹é€Ÿåº¦
+	int bound;			//  å›ºã•
+	int boundflag;		//  ãƒã‚¦ãƒ³ãƒ‰ã•ã›ã‚‹ãƒ•ãƒ©ã‚°(1=X 2=Y)
+	int option;			//	ãƒ¦ãƒ¼ã‚¶ãƒ¼ã‚ªãƒ—ã‚·ãƒ§ãƒ³å€¤
+	int priority;		//	å„ªå…ˆé †ä½
+	int tpflag;			//	Î±å€¤(0-255)+effectãƒ‘ãƒ©ãƒ¡ãƒ¼ã‚¿ãƒ¼
+	int fadeprm;		//	Î±ãƒ•ã‚§ãƒ¼ãƒ‰ãƒ‘ãƒ©ãƒ¡ãƒ¼ã‚¿ãƒ¼
+	int zoomx;			//	Xæ–¹å‘å€ç‡(16bitå›ºå®šå°‘æ•°)
+	int zoomy;			//	Yæ–¹å‘å€ç‡(16bitå›ºå®šå°‘æ•°)
+	int	rotz;			//	å›è»¢è§’åº¦
 	int	splink;			//	link to other sprite
-	int timer;			//	ƒJƒEƒ“ƒgƒ_ƒEƒ“ƒ^ƒCƒ}[’l
-	int timer_base;		//	ƒJƒEƒ“ƒgƒ_ƒEƒ“ƒ^ƒCƒ}[‰Šú’l
+	int timer;			//	ã‚«ã‚¦ãƒ³ãƒˆãƒ€ã‚¦ãƒ³ã‚¿ã‚¤ãƒãƒ¼å€¤
+	int timer_base;		//	ã‚«ã‚¦ãƒ³ãƒˆãƒ€ã‚¦ãƒ³ã‚¿ã‚¤ãƒãƒ¼åˆæœŸå€¤
 	int protz;			//	Move RotZ parameter
 	int pzoomx, pzoomy;	//	Move ZoomX,ZoomY parameters
 	unsigned short *sbr;//	callback
@@ -244,13 +244,13 @@ private:
 	int		ox1, oy1, ox2, oy2;	// valid area
 	int		land_x, land_y;		// common ground axis
 	double	pi, pans;
-	int		resox, resoy;		// ‰æ–Ê‰ğ‘œ“x
-	int		rrate;				// ü‚Ì•ª‰ğ”\
+	int		resox, resoy;		// ç”»é¢è§£åƒåº¦
+	int		rrate;				// å‘¨ã®åˆ†è§£èƒ½
 
-	int* vpx, *vpy;				// sin,cosƒe[ƒuƒ‹
+	int* vpx, *vpy;				// sin,cosãƒ†ãƒ¼ãƒ–ãƒ«
 
-	int		dotshift;			// À•WƒVƒtƒg’l
-	int		dotshift_base;		// À•WƒVƒtƒg’l(1.0)
+	int		dotshift;			// åº§æ¨™ã‚·ãƒ•ãƒˆå€¤
+	int		dotshift_base;		// åº§æ¨™ã‚·ãƒ•ãƒˆå€¤(1.0)
 
 	int		df_bsx, df_bsy, df_colx, df_coly;
 	int		df_colsx, df_colsy, df_tpflag;
