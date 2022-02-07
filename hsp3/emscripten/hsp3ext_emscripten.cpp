@@ -32,7 +32,7 @@ static int reffunc_intfunc_ivalue;
 
 static void InitSystemInformation(void)
 {
-	//		�R�}���h���C�� & �V�X�e���t�H���_�֘A
+	//		コマンドライン & システムフォルダ関連
 
 }
 
@@ -47,11 +47,11 @@ static void InitSystemInformation(void)
 static int cmdfunc_dllcmd( int cmd )
 {
 	//		cmdfunc : TYPE_DLLCTRL
-	//		(�g��DLL�R���g���[���R�}���h)
+	//		(拡張DLLコントロールコマンド)
 	//
-	code_next();							// ���̃R�[�h���擾(�ŏ��ɕK���K�v�ł�)
+	code_next();							// 次のコードを取得(最初に必ず必要です)
 
-	switch( cmd ) {							// �T�u�R�}���h���Ƃ̕���
+	switch( cmd ) {							// サブコマンドごとの分岐
 	case 0x00:								// newcom
 		throw (HSPERR_UNSUPPORTED_FUNCTION);
 
@@ -66,10 +66,10 @@ static int cmdfunc_dllcmd( int cmd )
 static void *reffunc_dllcmd( int *type_res, int arg )
 {
 	//		reffunc : TYPE_DLLFUNC
-	//		(�g��DLL�֐�)
+	//		(拡張DLL関数)
 	//
 
-	//			'('�Ŏn�܂邩�𒲂ׂ�
+	//			'('で始まるかを調べる
 	//
 	if ( *type != TYPE_MARK ) throw ( HSPERR_INVALID_FUNCPARAM );
 	if ( *val != '(' ) throw ( HSPERR_INVALID_FUNCPARAM );
@@ -78,7 +78,7 @@ static void *reffunc_dllcmd( int *type_res, int arg )
 	//exec_dllcmd( arg, STRUCTDAT_OT_FUNCTION );
 	reffunc_intfunc_ivalue = hspctx->stat;
 
-	//			')'�ŏI��邩�𒲂ׂ�
+	//			')'で終わるかを調べる
 	//
 	if ( *type != TYPE_MARK ) throw ( HSPERR_INVALID_FUNCPARAM );
 	if ( *val != ')' ) throw ( HSPERR_INVALID_FUNCPARAM );
