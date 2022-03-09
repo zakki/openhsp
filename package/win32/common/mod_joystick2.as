@@ -33,6 +33,9 @@
 	;	jstick 変数,ポート番号
 	;	(stick命令互換の値を変数に返す)
 	;
+	if length(modjoy_err@)=1 {
+		dim modjoy_err@,16
+	}
 	if modjoy_err@(p2) : goto *jstick_resume
 	;
 	jdata.15=0:jdata=52,255
