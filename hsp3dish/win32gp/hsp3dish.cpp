@@ -312,8 +312,17 @@ LRESULT CALLBACK WndProc( HWND hwnd, UINT uMessage, WPARAM wParam, LPARAM lParam
 		Bmscr *bm;
 		if ( exinfo != NULL ) {
 			bm = (Bmscr *)exinfo->HspFunc_getbmscr(0);
-			bm->tapstat = 0;
-			bm->UpdateAllObjects();
+#ifdef HSPERR_HANDLE
+			try {
+#endif
+				bm->tapstat = 0;
+				bm->UpdateAllObjects();
+#ifdef HSPERR_HANDLE
+			}
+			catch (HSPERROR code) {						// HSPエラー例外処理
+				code_catcherror(code);
+			}
+#endif
 			if ( mt_flag ) {
 				if( GetMessageExtraInfo() == 0 ) {
 					bm->setMTouchByPointId( -1, -1, -1, false );
@@ -329,8 +338,17 @@ LRESULT CALLBACK WndProc( HWND hwnd, UINT uMessage, WPARAM wParam, LPARAM lParam
 		Bmscr *bm;
 		if ( exinfo != NULL ) {
 			bm = (Bmscr *)exinfo->HspFunc_getbmscr(0);
-			bm->tapstat = 1;
-			bm->UpdateAllObjects();
+#ifdef HSPERR_HANDLE
+			try {
+#endif
+				bm->tapstat = 1;
+				bm->UpdateAllObjects();
+#ifdef HSPERR_HANDLE
+			}
+			catch (HSPERROR code) {						// HSPエラー例外処理
+				code_catcherror(code);
+			}
+#endif
 			if ( mt_flag ) {
 				if( GetMessageExtraInfo() == 0 ) {
 					bm->setMTouchByPointId( -1, bm->savepos[BMSCR_SAVEPOS_MOSUEX], bm->savepos[BMSCR_SAVEPOS_MOSUEY], true );

@@ -227,7 +227,16 @@ LRESULT CALLBACK WndProc( HWND hwnd, UINT uMessage, WPARAM wParam, LPARAM lParam
 			id = (int)GetWindowLongPtr( hwnd, GWLP_USERDATA );
 			bm =curwnd->GetBmscr( id );
 			//Alertf( "%d,%x,%x (%d)",id,wParam,lParam , ( wParam & (MESSAGE_HSPOBJ-1)) );
-			bm->SendHSPObjectNotice( (int)wParam );
+#ifdef HSPERR_HANDLE
+			try {
+#endif
+				bm->SendHSPObjectNotice( (int)wParam );
+#ifdef HSPERR_HANDLE
+			}
+			catch (HSPERROR code) {						// HSPエラー例外処理
+				code_catcherror(code);
+			}
+#endif
 		}
 		return 0;
 
