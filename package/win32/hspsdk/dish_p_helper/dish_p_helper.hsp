@@ -1,0 +1,1563 @@
+;-----------------------------------------------------------------------
+;
+; Dish P Helper
+;
+; Ver 2.0
+;
+; HSP3Dish Helper用 プロジェクト補助アプリケーション
+;
+; By. しまくろねこ
+;
+;-----------------------------------------------------------------------
+#cmpopt varinit 1							; 変数未初期化のチェック(0:チェックなし, 1:チェックあり)
+
+#packopt name		"dish_p_helper"
+#packopt type 		0
+#packopt icon		"icon.ico"
+#packopt xsize 		640
+#packopt ysize 		480
+#packopt hide		1
+#packopt orgpath	1
+
+
+#include "hspext.as"
+#include "encode.as"
+#include "shell32.as"
+
+#uselib "ImageHlp.dll"
+#func global MakeSureDirectoryPathExists		"MakeSureDirectoryPathExists" sptr
+
+
+;-----------------------------------------------------------------------
+#const WINDOW_WIDTH								640
+#const WINDOW_HEIGHT							480
+
+#define APPLICATION_TITLE						"Dish P Helper"
+#define APPLICATION_VER							"Ver 2.0"
+
+#define CONFIG_FILE_NAME						"dish_p_helper_dat.ini"
+#define CONFIG_WINDOW_POS_X						"#window_pos_x="
+#define CONFIG_WINDOW_POS_y						"#window_pos_y="
+
+#const FILE_NAME_MAX							8
+#const FILE_NAME_INDEX_ANDROID_MANIFEST_XML		0
+#const FILE_NAME_INDEX_PROJECT_PROPERTIES		1
+#const FILE_NAME_INDEX_MAIN_C					2
+#const FILE_NAME_INDEX_MAIN_CPP					3
+#const FILE_NAME_INDEX_STRINGS_XML				4
+#const FILE_NAME_INDEX_STRINGS_XML_JA			5
+#const FILE_NAME_INDEX_BUILD_GRADLE				6
+#const FILE_NAME_INDEX_MAIN_ACTIVITY_JAVA		7
+
+#const POS_X_PROJECT							0
+#const POS_Y_PROJECT							0
+#const POS_X_VERSION_CODE						1
+#const POS_Y_VERSION_CODE						1
+#const POS_X_VERSION_NAME						2
+#const POS_Y_VERSION_NAME						2
+#const POS_X_MIN_SDK_VERSION					3
+#const POS_Y_MIN_SDK_VERSION					3
+#const POS_X_PROJECT_TARGET						4
+#const POS_Y_PROJECT_TARGET						4
+#const POS_X_TARGET_SDK_VERSION					5
+#const POS_Y_TARGET_SDK_VERSION					5
+#const POS_X_SCREEN_ORIENTATION					6
+#const POS_Y_SCREEN_ORIENTATION					6
+#const POS_X_HGIO_VIEW_WIDTH					7
+#const POS_Y_HGIO_VIEW_WIDTH					7
+#const POS_X_HGIO_VIEW_HEIGHT					8
+#const POS_Y_HGIO_VIEW_HEIGHT					8
+#const POS_X_HGIO_SCALE_WIDTH					9
+#const POS_Y_HGIO_SCALE_WIDTH					9
+#const POS_X_HGIO_SCALE_HEIGHT					10
+#const POS_Y_HGIO_SCALE_HEIGHT					10
+#const POS_X_HGIO_AUTOSCALE						11
+#const POS_Y_HGIO_AUTOSCALE						11
+#const POS_X_HSP3DISH_INI						12
+#const POS_Y_HSP3DISH_INI						12
+#const POS_X_RES_VALUES							13
+#const POS_Y_RES_VALUES							13
+#const POS_X_RES_VALUES_JA						14
+#const POS_Y_RES_VALUES_JA						14
+#const POS_X_INPUT_CHECK						15
+#const POS_Y_INPUT_CHECK						15
+#const POS_X_TEKIYOU							16
+#const POS_Y_TEKIYOU							16
+#const POS_X_APPLICATION_ID_1					17
+#const POS_Y_APPLICATION_ID_1					17
+#const POS_X_APPLICATION_ID_2					18
+#const POS_Y_APPLICATION_ID_2					18
+
+#define HSP3DISH_INI							"hsp3dish.ini"
+
+#define FILE_NAME_ANDROID_MANIFEST_XML			"src\\main\\AndroidManifest.xml"
+#define FILE_NAME_MAIN_C						"jni\\main.c"
+#define FILE_NAME_MAIN_CPP						"jni\\main.cpp"
+#define FILE_NAME_STRINGS_XML					"src\\main\\res\\values\\strings.xml"
+#define FILE_NAME_STRINGS_XML_JA				"src\\main\\res\\values-ja\\strings.xml"
+#define FILE_NAME_STRINGS_XML_JA_RES			"src\\main\\res"
+#define FILE_NAME_STRINGS_XML_JA_FOLDER			"values-ja"
+#define FILE_NAME_BUILD_GRADLE					"build.gradle"
+#define FILE_NAME_MAIN_ACTIVITY_JAVA			"MainActivity.java"
+
+#define CFG_WINZ								"%%winx"
+#define CFG_WINY								"%%winy"
+#define CFG_MODE								"%%mode"
+#define CFG_FLAG_UTF8							"%%flag_utf8"
+#define CFG_PATH_JAVA							"%%path_java"
+#define CFG_PATH_SDK							"%%path_sdk"
+#define CFG_PATH_NDK							"%%path_ndk"
+#define CFG_PATH_ANT							"%%path_ant"
+#define CFG_PATH_PROJ							"%%path_proj"
+#define CFG_AND_NAME							"%%and_name"
+#define CFG_AND_PACK							"%%and_pack"
+#define CFG_AND_TARGET							"%%and_target"
+#define CFG_AND_FNAME							"%%and_fname"
+#define CFG_AND_KEYSTORE						"%%and_keystore"
+#define CFG_FLAG_ADMOB							"%%flag_admob"
+#define CFG_IOS_ORG								"%%ios_org"
+#define CFG_IOS_IDENT							"%%ios_ident"
+
+#define	COMMAND_LINE_PRJ						"-prj"
+#define	COMMAND_LINE_VC							"-vc"
+#define	COMMAND_LINE_VN							"-vn"
+#define	COMMAND_LINE_MSDK						"-msdk"
+#define	COMMAND_LINE_TSDK						"-tsdk"
+#define COMMAND_LINE_PACK						"-pak"
+#define	COMMAND_LINE_SCR						"-scr"
+#define	COMMAND_LINE_HGV						"-hgv"
+#define	COMMAND_LINE_HGS						"-hgs"
+#define	COMMAND_LINE_HGA						"-hga"
+#define	COMMAND_LINE_APE						"-ape"
+#define	COMMAND_LINE_APJ						"-apj"
+
+#const global FALSE								0
+#const global TRUE								1
+
+#const FONT_SIZE								12
+#const TEXTBOX_HEIGHT							22
+#const OBJECT_SPAN								26
+
+#uselib "msvcrt"
+#func rename "rename" str, str
+
+
+;***********************************************************************
+#module local_mod
+
+#uselib "kernel32"
+#func GetEnvironmentVariable					"GetEnvironmentVariableA" sptr, sptr, sptr
+
+
+#define HSP3_APPDATA_FOLDER						"Hot Soup Processor"
+#define HSP3DISH_HELPER_CONFIG_FILE				"hsp3dh.cfg"
+
+#define UTF8_BOM_B								int("$EF")
+#define UTF8_BOM_O								int("$BB")
+#define UTF8_BOM_M								int("$BF")
+
+#define FILE_NAME_ANDROID_MANIFEST_XML			"src\\main\\AndroidManifest.xml"
+
+;-----------------------------------------------------------------------
+#deffunc local func_read_hsp3dh_cfg var str_buff
+
+	sdim hsp3dh_cfg_file, 1024
+
+	GetEnvironmentVariable "APPDATA", varptr(hsp3dh_cfg_file), 990
+	hsp3dh_cfg_file + = "\\" + HSP3_APPDATA_FOLDER + "\\" + HSP3DISH_HELPER_CONFIG_FILE
+
+	exist hsp3dh_cfg_file
+
+	if strsize >= 0 {
+		notesel str_buff
+		noteload hsp3dh_cfg_file
+		noteunsel
+	}
+
+	return
+
+;-----------------------------------------------------------------------
+#defcfunc local cfunc_get_hsp3dh_cfg var str_buff, str select_buff
+
+	get_line	= ""
+	get_value	= ""
+	get_split	= ""
+	get_head	= ""
+	get_body	= ""
+	re_buff		= ""
+
+	notesel str_buff
+
+	repeat notemax
+
+		noteget get_line, cnt
+
+		if peek(get_line, 0) == ';' {
+
+			get_value = strmid(get_line, 1, strlen(get_line) - 1)
+			split get_value, "=", get_split
+			get_head = strtrim(get_split(0), 0, ' ')
+			get_body = strtrim(get_split(1), 0, ' ')
+
+			if get_head == select_buff {
+				re_buff = get_body
+				break
+			}
+
+		}
+
+	loop
+
+	noteunsel
+
+	return re_buff
+
+;-----------------------------------------------------------------------
+#deffunc local func_dish_p_helper_ini_file_write str file_name, var str_buff
+
+	sdim dish_p_helper_ini_file, 1024
+
+	GetEnvironmentVariable "APPDATA", varptr(dish_p_helper_ini_file), 990
+	dish_p_helper_ini_file + = "\\" + HSP3_APPDATA_FOLDER + "\\" + file_name
+
+	bsave dish_p_helper_ini_file, str_buff, strlen(str_buff)
+
+	return
+
+;-----------------------------------------------------------------------
+#defcfunc local func_dish_p_helper_ini_file_read str file_name, var file_buff
+
+	sdim dish_p_helper_ini_file, 1024
+
+	GetEnvironmentVariable "APPDATA", varptr(dish_p_helper_ini_file), 990
+	dish_p_helper_ini_file + = "\\" + HSP3_APPDATA_FOLDER + "\\" + file_name
+
+	re = FALSE
+
+	exist dish_p_helper_ini_file
+	if strsize >= 0 {
+		sdim file_buff, strsize
+		bload dish_p_helper_ini_file, file_buff, strsize
+		re = TRUE
+	}
+
+	return re
+
+;-----------------------------------------------------------------------
+#deffunc local func_read_file str file_name, var str_buff, var re_utf8_flag
+
+	re_utf8_flag = FALSE
+
+	exist file_name
+
+	if strsize >= 0 {
+		sdim str_buff, strsize
+		notesel str_buff
+		noteload file_name
+		noteunsel
+
+		bom1 = 0
+		bom2 = 0
+		bom3 = 0
+		bom1 = peek(str_buff, 0)
+		bom2 = peek(str_buff, 1)
+		bom3 = peek(str_buff, 2)
+
+		if bom1 == UTF8_BOM_B {
+			if bom2 == UTF8_BOM_O {
+				if bom3 == UTF8_BOM_M {
+					str_buff		= strmid(str_buff, 3, strlen(str_buff) - 3)
+					re_utf8_flag	= TRUE
+				}
+			}
+		}
+	}
+
+	return
+
+;-----------------------------------------------------------------------
+#deffunc local func_add_bom var str_buff
+
+/*
+	sdim bom, 3
+	poke bom, 0, UTF8_BOM_B
+	poke bom, 1, UTF8_BOM_O
+	poke bom, 2, UTF8_BOM_M
+
+	str_buff = bom + str_buff
+*/
+	return
+
+;-----------------------------------------------------------------------
+#defcfunc local cfunc_get_comboi_item var str_buff, int select_index
+
+	sp = ""
+	split str_buff, "\n", sp
+	return sp(select_index)
+
+	return
+
+;-----------------------------------------------------------------------
+#defcfunc local cfunc_get_android_manifest_xml_tag_AND_build_gradle_info var str_buff, str search_buff, var get_all_buff, str tokun, str double_ct, int read_mode
+
+	re_buff = ""
+	c_index = 0
+
+	lf = ""
+	poke lf,,10
+
+	switch read_mode
+	case 0
+		a = instr(str_buff, 0, search_buff)
+		if a >= 0 {
+			b = instr(str_buff, a, lf)
+			str_line = strmid(str_buff, a, b)
+			strrep str_line, lf, ""
+			get_all_buff = str_line
+			line_split = ""
+			split str_line, " ", line_split
+			re_buff = line_split(1)
+		}
+		swbreak
+	case 1
+		a = instr(str_buff, 0, search_buff)
+
+		if a >= 0 {
+			c_index	= a + strlen(search_buff)
+			b		= instr(str_buff, c_index, tokun)
+			if b >= 0 {
+				c_index	+= b + strlen(tokun)
+				c		= instr(str_buff, c_index, double_ct)
+				if c >= 0 {
+					c_index	+= c + strlen(double_ct)
+					d		= instr(str_buff, c_index, double_ct)
+					if d >= 0 {
+						re_buff			= strmid(str_buff, c_index, d)
+						c_index			+= d + strlen(double_ct)
+						e				= c_index - a
+						get_all_buff	= strmid(str_buff, a, e)
+					}
+				}
+			}
+		}
+		swbreak
+	swend
+
+	return re_buff
+
+;-----------------------------------------------------------------------
+;                                       main_c  , "//"            ,     "hgio_scale", hgio_scale_index, hgio_scale_width, hgio_scale_height, hgio_scale_all, TRUE
+#deffunc local func_get_main_c_info var str_buff, str comment_buff, str search_buff, var cmb_index, var c_width, var c_height, var get_all_buff, int string_mode
+
+	notesel str_buff
+
+	repeat notemax
+		line_buff = ""
+		noteget line_buff, cnt
+		v = instr(line_buff, 0, "void ")
+		if v >= 0 : continue
+		a = line_buff
+		strrep line_buff, "\t", ""
+		strrep line_buff, " ", ""
+		strrep line_buff, "(", ""
+		strrep line_buff, ")", ""
+		sp = ""
+		split line_buff, ";", sp
+		line_buff = sp(0)
+		c = instr(line_buff, 0, search_buff)
+		if c >= 0 {
+			i = instr(line_buff, 0, comment_buff)
+			if i >= 0 : cmb_index = 0 : else : cmb_index = 1
+			d = instr(line_buff, 0, ";")
+			strrep line_buff, comment_buff, ""
+			strrep line_buff, search_buff, ""
+			sp = ""
+			split line_buff, ",", sp
+			switch string_mode
+			case FALSE
+				c_width		= int(sp(0))
+				c_height	= int(sp(1))
+				swbreak
+			case TRUE
+				c_width		= sp(0)
+				c_height	= sp(1)
+				swbreak
+			swend
+			sp = ""
+			split a, ";", sp
+			a = sp(0)
+			strrep a, "\t", ""
+			get_all_buff = a
+			break
+		}
+	loop
+
+	noteunsel
+
+	return
+
+;-----------------------------------------------------------------------
+#defcfunc local cfunc_get_strings_xml_tag_info var str_buff, var get_all_buff
+
+#define STRING_NAME		"<string name=\"app_name\">"
+#define STRING_END		"</string>"
+
+	re_buff = ""
+
+	c = instr(str_buff, 0, STRING_NAME)
+	i = instr(str_buff, 0, STRING_END)
+
+	if c >= 0 {
+		if i >= 0 {
+			re_buff			= strmid(str_buff, c + strlen(STRING_NAME), i - (c + strlen(STRING_NAME)))
+			get_all_buff	= strmid(str_buff, c, strlen(STRING_NAME) + strlen(re_buff) + strlen(STRING_END))
+		}
+	}
+
+	return re_buff
+
+;-----------------------------------------------------------------------
+#defcfunc local cfunc_get_project_properties_info var str_buff, str search_buff, var get_all_buff
+
+	re_buff = ""
+
+	c = instr(str_buff, 0, search_buff)
+
+	if c >= 0 {
+		cr	= strf("%c", int("$0A"))
+		i	= instr(str_buff, c + strlen(search_buff), cr)
+
+		if i >= 0 {
+			re_buff			= strmid(str_buff, c + strlen(search_buff), i)
+			get_all_buff	= strmid(str_buff, c, strlen(search_buff) + strlen(re_buff))
+		}
+	}
+
+	return re_buff
+
+;-----------------------------------------------------------------------
+#defcfunc local cfunc_get_application_mk_info var str_buff, str search_buff, var hit_row
+
+	re			= 0
+	line_buff	= ""
+	hit_row		= -1
+
+	notesel str_buff
+
+	repeat notemax
+		noteget line_buff, cnt
+		strrep line_buff, " ", ""
+		if line_buff == search_buff {
+			re		= 1
+			hit_row	= cnt
+			break
+		}
+	loop
+
+	noteunsel
+
+	return re
+
+;-----------------------------------------------------------------------
+#deffunc local func_file_write str write_file_name, var str_buff
+
+	func_add_bom@local_mod str_buff
+
+	notesel str_buff
+
+	notesave write_file_name
+
+	noteunsel
+
+	return
+
+;-----------------------------------------------------------------------
+#defcfunc local cfunc_get_exist_android_manifest_xml_file str get_buff
+
+	re_buff		= ""
+	list_buff	= get_buff
+	split_buff	= ""
+
+	split list_buff, "\n", split_buff
+	split_num = stat
+
+	repeat split_num
+		exist split_buff(cnt) + "\\" + FILE_NAME_ANDROID_MANIFEST_XML
+		if strsize >= 0 {
+			re_buff += split_buff(cnt) + "\n"
+		}
+	loop
+
+	return re_buff
+
+
+;-----------------------------------------------------------------------
+#deffunc local func_line int x1, int y1, int x2, int y2
+
+	color 0, 0, 0		: line x1, y1, x2, y2
+	color 255, 255, 255	: line x1 + 1, y1 + 1, x2 + 1, y2 + 1
+	return
+
+#global
+;***********************************************************************
+
+	current_dir		= dir_cur
+	cmd_line_flg	= FALSE
+
+	gosub *command_line_get
+
+	switch cmd_line_flg
+	case FALSE
+		title APPLICATION_TITLE + " - " + APPLICATION_VER
+		gosub *config_file_read
+		gosub *screen_init
+		swbreak
+	case TRUE
+		screen 0, WINDOW_WIDTH, WINDOW_HEIGHT, screen_hide
+		swbreak
+	swend
+
+	gosub *variabled_init
+	gosub *hsp3df_cfg_read
+	gosub *object_init
+	gosub *path_project_read_set
+	gosub *object_info_set
+
+	if cmd_line_flg == FALSE {
+		onexit goto *config_file_write
+	}
+
+*main_lutin
+
+	redraw 0
+	gosub *screen_cls
+	gosub *put_string
+	gosub *project_index_change_check
+	gosub *combo_index_check
+	redraw 1
+
+	wait 1
+
+	if cmd_line_flg == FALSE {
+		goto *main_lutin
+	}
+
+	end
+
+;-----------------------------------------------------------------------
+*config_file_read
+
+	win_pos_x = 0
+	win_pos_y = 0
+
+	file_buff = ""
+
+	re = func_dish_p_helper_ini_file_read@local_mod(CONFIG_FILE_NAME, file_buff)
+
+	if re {
+
+		notesel file_buff
+
+		line_buff = ""
+		repeat notemax
+			noteget line_buff, cnt
+			strrep line_buff, " ", ""
+			if instr(line_buff, 0, CONFIG_WINDOW_POS_X) >= 0 : win_pos_x = int(strmid(line_buff, strlen(CONFIG_WINDOW_POS_X), strlen(line_buff) - strlen(CONFIG_WINDOW_POS_X)))
+			if instr(line_buff, 0, CONFIG_WINDOW_POS_Y) >= 0 : win_pos_y = int(strmid(line_buff, strlen(CONFIG_WINDOW_POS_Y), strlen(line_buff) - strlen(CONFIG_WINDOW_POS_Y)))
+		loop
+
+		noteunsel
+	}
+
+	return
+
+;-----------------------------------------------------------------------
+*screen_init
+
+	screen 0, WINDOW_WIDTH, WINDOW_HEIGHT, 0, win_pos_x, win_pos_y
+
+	redraw 0
+	syscolor 15
+	boxf
+	redraw 1
+
+	return
+
+;-----------------------------------------------------------------------
+*variabled_init
+
+	; オブジェクト等の表示位置
+	dim pos_x, 100
+	dim pos_y, 100
+
+	x_left							= 15
+
+	pos_x(POS_X_PROJECT)			= x_left
+	pos_y(POS_Y_PROJECT)			= 20
+
+	pos_x(POS_X_VERSION_CODE)		= x_left
+	pos_y(POS_Y_VERSION_CODE)		= pos_y(POS_Y_PROJECT) + (OBJECT_SPAN * 2)
+
+	pos_x(POS_X_VERSION_NAME)		= 335
+	pos_y(POS_Y_VERSION_NAME)		= pos_y(POS_Y_VERSION_CODE)
+
+	pos_x(POS_X_MIN_SDK_VERSION)	= x_left
+	pos_y(POS_Y_MIN_SDK_VERSION)	= pos_y(POS_Y_VERSION_NAME) + OBJECT_SPAN
+
+	pos_x(POS_X_PROJECT_TARGET)		= 335
+	pos_y(POS_Y_PROJECT_TARGET)		= pos_y(POS_Y_MIN_SDK_VERSION)
+
+	pos_x(POS_X_TARGET_SDK_VERSION)	= x_left
+	pos_y(POS_Y_TARGET_SDK_VERSION)	= pos_y(POS_Y_PROJECT_TARGET) + OBJECT_SPAN
+
+	pos_x(POS_X_APPLICATION_ID_1)	= 335
+	pos_y(POS_Y_APPLICATION_ID_1)	= pos_y(POS_Y_MIN_SDK_VERSION)
+
+	pos_x(POS_X_APPLICATION_ID_2)	= 335
+	pos_y(POS_Y_APPLICATION_ID_2)	= pos_y(POS_Y_PROJECT_TARGET) + OBJECT_SPAN
+
+	pos_x(POS_X_SCREEN_ORIENTATION)	= x_left
+	pos_y(POS_Y_SCREEN_ORIENTATION)	= pos_y(POS_Y_PROJECT_TARGET) + (OBJECT_SPAN * 3)
+
+	pos_x(POS_X_HGIO_VIEW_WIDTH)	= x_left
+	pos_y(POS_Y_HGIO_VIEW_WIDTH)	= pos_y(POS_Y_SCREEN_ORIENTATION) + OBJECT_SPAN
+
+	pos_x(POS_X_HGIO_VIEW_HEIGHT)	= x_left
+	pos_y(POS_Y_HGIO_VIEW_HEIGHT)	= pos_y(POS_Y_SCREEN_ORIENTATION) + OBJECT_SPAN
+
+	pos_x(POS_X_HGIO_SCALE_WIDTH)	= x_left
+	pos_y(POS_Y_HGIO_SCALE_WIDTH)	= pos_y(POS_Y_HGIO_VIEW_HEIGHT) + OBJECT_SPAN
+
+	pos_x(POS_X_HGIO_SCALE_HEIGHT)	= x_left
+	pos_y(POS_Y_HGIO_SCALE_HEIGHT)	= pos_y(POS_Y_HGIO_VIEW_HEIGHT) + OBJECT_SPAN
+	pos_x(POS_X_HGIO_AUTOSCALE)		= x_left
+	pos_y(POS_Y_HGIO_AUTOSCALE)		= pos_y(POS_Y_HGIO_SCALE_HEIGHT) + OBJECT_SPAN
+
+	pos_x(POS_X_HSP3DISH_INI)		= x_left
+	pos_y(POS_X_HSP3DISH_INI)		= pos_y(POS_Y_HGIO_VIEW_WIDTH)
+
+	pos_x(POS_X_RES_VALUES)			= x_left
+	pos_y(POS_Y_RES_VALUES)			= pos_y(POS_Y_HGIO_AUTOSCALE) + (OBJECT_SPAN * 2)
+
+	pos_x(POS_X_RES_VALUES_JA)		= x_left
+	pos_y(POS_Y_RES_VALUES_JA)		= pos_y(POS_Y_RES_VALUES) + OBJECT_SPAN
+
+	pos_x(POS_X_INPUT_CHECK)		= x_left
+	pos_y(POS_Y_INPUT_CHECK)		= pos_y(POS_Y_RES_VALUES_JA) + 40
+
+	pos_x(POS_X_TEKIYOU)			= x_left
+	pos_y(POS_Y_TEKIYOU)			= pos_y(POS_Y_INPUT_CHECK) + 30
+
+	; hsp3dh.cfg の中身
+	hsp3dh_cfg_buff					= ""
+
+	; xml 等の中身
+	android_manifest_xml			= ""
+	project_properties				= ""
+	main_c							= ""
+	strings_xml						= ""
+	strings_xml_ja					= ""
+	re_utf8_flag					= FALSE
+
+	; xml 等のファイル名
+	sdim file_name, 1024, FILE_NAME_MAX
+
+	; オブジェクト内容変数
+	project_item					= ""
+	project_index					= 0
+	project_index_copy				= 0
+	version_code					= ""
+	version_name					= ""
+
+	min_sdk_version					= ""
+	project_target					= ""
+	target_sdk_version				= ""
+	application_id					= ""
+
+	screen_orientation_item			= "portrait:(縦)\nlandscape:(横)"
+	screen_orientation_index		= 0
+	hgio_view_item					= "使用しない\n使用する"
+	hgio_view_index					= 0
+	hgio_view_width					= "800"
+	hgio_view_height				= "480"
+	hgio_scale_item					= "使用しない\n使用する"
+	hgio_scale_index				= 0
+	hgio_scale_width				= "1.0f"
+	hgio_scale_height				= "1.0f"
+	hgio_autoscale_item				= "使用しない\n使用する"
+	hgio_autoscale_index			= 0
+	hgio_autoscale_value_item		= "0:(画面全体に収まる最適な大きさ(縦横比は維持))\n1:(X方向のサイズを基準に拡大縮小(縦横比は維持))\n2:(Y方向のサイズを基準に拡大縮小(縦横比は維持))\n3:(縦横比は無視して画面全体に表示)"
+	hgio_autoscale_value_index		= 0
+	res_values						= ""
+	res_values_ja_item				= "使用しない\n使用する"
+	res_values_ja_index				= 0
+	res_values_ja					= ""
+
+	; ダミー
+	dummy							= 0
+
+	return
+
+;-----------------------------------------------------------------------
+*hsp3df_cfg_read
+
+	func_read_hsp3dh_cfg@local_mod hsp3dh_cfg_buff
+
+	return
+
+;-----------------------------------------------------------------------
+*object_init
+
+	objmode 2
+
+	; プロジェクト名、バージョンコード、バージョンネーム
+	font msgothic, 18
+	objsize 420, 120
+	pos pos_x(POS_X_PROJECT)			+ 190,	pos_y(POS_Y_PROJECT)			- 3	: combox project_index,	320, project_item							: obj_id_project			= stat
+
+	font msgothic, FONT_SIZE
+	pos pos_x(POS_X_VERSION_CODE)		+ 190,	pos_y(POS_Y_VERSION_CODE)		- 3	: input version_code,	96, TEXTBOX_HEIGHT, 128						: obj_id_version_code		= stat
+	pos pos_x(POS_X_VERSION_NAME)		+ 190,	pos_y(POS_Y_VERSION_NAME)		- 3	: input version_name,	96, TEXTBOX_HEIGHT, 128						: obj_id_version_name		= stat
+
+	font msgothic, FONT_SIZE
+	; 最小要求API(ID)レベル, 対象API(ID)レベル, ターゲットSDK
+	objsize 420, 120 : objmode 2
+	pos pos_x(POS_X_MIN_SDK_VERSION)	+ 190,	pos_y(POS_Y_MIN_SDK_VERSION)	- 3	: input min_sdk_version, 96, TEXTBOX_HEIGHT, 128					: obj_id_min_sdk_version	= stat
+	;pos pos_x(POS_X_PROJECT_TARGET)		+ 190,	pos_y(POS_Y_PROJECT_TARGET)		- 3	: input project_target,	96, TEXTBOX_HEIGHT, 128						: obj_id_project_target		= stat
+	pos pos_x(POS_X_TARGET_SDK_VERSION)	+ 190,	pos_y(POS_X_TARGET_SDK_VERSION)	- 3	: input target_sdk_version, 96, TEXTBOX_HEIGHT, 128					: obj_id_target_sdk_version	= stat
+	; application_Id/パッケージ名
+	pos pos_x(POS_X_APPLICATION_ID_2),			pos_y(POS_Y_APPLICATION_ID_2)	- 3	: input application_id, 285, TEXTBOX_HEIGHT, 128					: obj_id_application_id		= stat
+
+	; 画面の向き
+	objsize 200, 120 : objmode 2
+	pos pos_x(POS_X_SCREEN_ORIENTATION) + 190,	pos_y(POS_X_SCREEN_ORIENTATION) - 3	: combox screen_orientation_index, 120, screen_orientation_item		: obj_id_screen_orientation	= stat
+	; スケーリング
+	objsize 100, 120 : objmode 2
+	; 画面サイズ
+	pos pos_x(POS_X_HGIO_VIEW_WIDTH)	+ 190,	pos_y(POS_Y_HGIO_VIEW_WIDTH)	- 3	: combox hgio_view_index,	120,	hgio_view_item					: obj_id_hgio_view			= stat
+	pos pos_x(POS_X_HGIO_VIEW_WIDTH)	+ 325,	pos_y(POS_Y_HGIO_VIEW_WIDTH)	- 3	: input hgio_view_width,	64,		TEXTBOX_HEIGHT, 128				: obj_id_hgio_view_width	= stat
+	pos pos_x(POS_X_HGIO_VIEW_HEIGHT)	+ 430,	pos_y(POS_Y_HGIO_VIEW_HEIGHT)	- 3	: input hgio_view_height,	64,		TEXTBOX_HEIGHT, 128				: obj_id_hgio_view_height	= stat
+	; 画面表示倍率
+	pos pos_x(POS_X_HGIO_SCALE_WIDTH)	+ 190,	pos_y(POS_Y_HGIO_SCALE_WIDTH)	- 3	: combox hgio_scale_index,	120,	hgio_scale_item					: obj_id_hgio_scale			= stat
+	pos pos_x(POS_X_HGIO_SCALE_WIDTH)	+ 325,	pos_y(POS_Y_HGIO_SCALE_WIDTH)	- 3	: input hgio_scale_width,	64,		TEXTBOX_HEIGHT, 128				: obj_id_hgio_scale_width	= stat
+	pos pos_x(POS_X_HGIO_SCALE_HEIGHT)	+ 430,	pos_y(POS_Y_HGIO_SCALE_HEIGHT)	- 3	: input hgio_scale_height,	64,		TEXTBOX_HEIGHT, 128				: obj_id_hgio_scale_height	= stat
+	; 自動拡大縮小
+	objsize 100, 120 : objmode 2
+	pos pos_x(POS_X_HGIO_AUTOSCALE)		+ 190,	pos_y(POS_Y_HGIO_AUTOSCALE)		- 3	: combox hgio_autoscale_index, 120, hgio_autoscale_item				: obj_id_hgio_autoscale_e	= stat
+	objsize 310, 120
+	pos pos_x(POS_X_HGIO_AUTOSCALE)		+ 300,	pos_y(POS_Y_HGIO_AUTOSCALE)	 	- 3	: combox hgio_autoscale_value_index, 120, hgio_autoscale_value_item	: obj_id_hgio_autoscale		= stat
+
+	objsize 110, 24
+	pos pos_x(POS_X_HSP3DISH_INI)		+ 500,	pos_y(POS_X_HSP3DISH_INI)	 	- 3	: button gosub "hsp3dish.ini出力", *hsp3dish_ini_write
+
+	; アプリ名
+	pos pos_x(POS_X_RES_VALUES)			+ 190,	pos_y(POS_Y_RES_VALUES)			- 3	: input res_values, 305, TEXTBOX_HEIGHT, 128						: obj_id_res_values			= stat
+	objsize 100, 120 : objmode 2
+	pos pos_x(POS_X_RES_VALUES_JA)		+ 190,	pos_y(POS_Y_RES_VALUES_JA)		- 3	: combox res_values_ja_index, 120, res_values_ja_item				: obj_id_res_values_ja_e	= stat
+	pos pos_x(POS_X_RES_VALUES_JA)		+ 300,	pos_y(POS_Y_RES_VALUES_JA)		- 3	: input res_values_ja, 305, TEXTBOX_HEIGHT, 128						: obj_id_res_values_ja		= stat
+
+	; 未入力をチェック
+	objsize 125, 24
+	pos pos_x(POS_X_INPUT_CHECK)		+ 480,	pos_y(POS_Y_INPUT_CHECK)			: input_check = 1 : chkbox "未入力をチェック", input_check			: obj_id_input_check		= stat
+
+	; 適用
+	objsize 125, 50
+	pos pos_x(POS_X_TEKIYOU)			+ 480,	pos_y(POS_Y_TEKIYOU)			- 3	: button gosub "適用", *tekiyou										: obj_id_tekiyou			= stat
+
+	objsel obj_id_project
+
+	return
+
+;-----------------------------------------------------------------------
+*path_project_read_set
+
+	project_path = cfunc_get_hsp3dh_cfg@local_mod(hsp3dh_cfg_buff, CFG_PATH_PROJ)
+	android_name = cfunc_get_hsp3dh_cfg@local_mod(hsp3dh_cfg_buff, CFG_AND_NAME)
+
+	if strlen(project_path) == 0 {
+		dialog "HSP3Dish helperにてプロジェクトフォルダが設定されていません。\n終了します。", 1, "プロジェクトフォルダ未設定"
+		end
+	}
+
+	chdir project_path
+	dirlist project_item, "*.*", 5
+
+	objprm obj_id_project, project_item
+
+	notesel project_item
+
+	repeat notemax
+		get_line = ""
+		noteget get_line, cnt
+		if get_line == android_name {
+			objprm obj_id_project, cnt
+			break
+		}
+	loop
+
+	return
+
+;-----------------------------------------------------------------------
+*object_info_set
+
+	project_split = ""
+	split project_item, "\n", project_split
+	title "<" + project_split(project_index) + "> - " + APPLICATION_TITLE + " " + APPLICATION_VER
+
+	android_manifest_xml			= ""
+	main_c							= ""
+	main_cpp						= ""
+	strings_xml						= ""
+	strings_xml_ja					= ""
+	build_gradle					= ""
+	main_activity_java				= ""
+
+	version_code					= ""
+	version_name					= ""
+	screen_orientation_index		= 0
+	hgio_view_index					= 0
+	hgio_view_width					= ""
+	hgio_view_height				= ""
+	hgio_scale_index				= 0
+	hgio_scale_width				= ""
+	hgio_scale_height				= ""
+	hgio_autoscale_index			= 0
+	hgio_autoscale_value_index		= 0
+	res_values						= ""
+	res_values_ja_index				= 0
+	res_values_ja					= ""
+	armv7_index						= 0
+
+
+	project_folder = project_path + "\\" + cfunc_get_comboi_item@local_mod(project_item, project_index) + "\\app\\"
+
+	file_name(FILE_NAME_INDEX_ANDROID_MANIFEST_XML)	= project_folder + FILE_NAME_ANDROID_MANIFEST_XML
+	file_name(FILE_NAME_INDEX_MAIN_C)				= project_folder + FILE_NAME_MAIN_C
+	file_name(FILE_NAME_INDEX_MAIN_CPP)				= project_folder + FILE_NAME_MAIN_CPP
+	file_name(FILE_NAME_INDEX_STRINGS_XML)			= project_folder + FILE_NAME_STRINGS_XML
+	file_name(FILE_NAME_INDEX_STRINGS_XML_JA)		= project_folder + FILE_NAME_STRINGS_XML_JA
+	file_name(FILE_NAME_INDEX_BUILD_GRADLE)			= project_folder + FILE_NAME_BUILD_GRADLE
+
+	; AndroidManifest.xml の読み込み
+	func_read_file@local_mod file_name(FILE_NAME_INDEX_ANDROID_MANIFEST_XML), android_manifest_xml, re_utf8_flag
+	android_manifest_xml = utf8n2sjis(android_manifest_xml)
+
+	; jni\main.c の読み込み
+	func_read_file@local_mod file_name(FILE_NAME_INDEX_MAIN_C), main_c, re_utf8_flag
+	main_c = utf8n2sjis(main_c)
+
+	; jni\main.cpp の読み込み
+	func_read_file@local_mod file_name(FILE_NAME_INDEX_MAIN_CPP), main_cpp, re_utf8_flag
+	main_cpp = utf8n2sjis(main_cpp)
+
+	; res\values\strings.xml の読み込み
+	func_read_file@local_mod file_name(FILE_NAME_INDEX_STRINGS_XML), strings_xml, re_utf8_flag
+	strings_xml = utf8n2sjis(strings_xml)
+
+	; res\values-ja\strings.xml の読み込み
+	func_read_file@local_mod file_name(FILE_NAME_INDEX_STRINGS_XML_JA), strings_xml_ja, re_utf8_flag
+	strings_xml_ja = utf8n2sjis(strings_xml_ja)
+
+	; app\build.gradle の読み込み
+	func_read_file@local_mod file_name(FILE_NAME_INDEX_BUILD_GRADLE), build_gradle, re_utf8_flag
+	build_gradle = utf8n2sjis(build_gradle)
+
+	; コンボボックス
+	objprm obj_id_project, project_index
+
+	; xmlファイル等から情報を読み取り、オブジェクトにセットしていく
+	varsion_code_all 		= "";versionCode 1
+	version_code			= cfunc_get_android_manifest_xml_tag_AND_build_gradle_info@local_mod(build_gradle, "versionCode", varsion_code_all, " ", "", 0)
+	objprm obj_id_version_code, version_code
+
+	version_name_all 		= "";versionName "1.0"
+	version_name			= cfunc_get_android_manifest_xml_tag_AND_build_gradle_info@local_mod(build_gradle, "versionName", version_name_all, " ", "\"", 1)
+	objprm obj_id_version_name, version_name
+
+	min_sdk_version_all 	= "";minSdk 10
+	min_sdk_version			= cfunc_get_android_manifest_xml_tag_AND_build_gradle_info@local_mod(build_gradle, "minSdk", min_sdk_version_all, " ", "", 0)
+	objprm obj_id_min_sdk_version, min_sdk_version
+
+	target_sdk_version_all 	= "";targetSdk 31
+	target_sdk_version		= cfunc_get_android_manifest_xml_tag_AND_build_gradle_info@local_mod(build_gradle, "targetSdk", target_sdk_version_all, " ", "", 0)
+	objprm obj_id_target_sdk_version, target_sdk_version
+
+	application_id_all 		= "";applicationId "com.simakuroneko.test2"
+	application_id			= cfunc_get_android_manifest_xml_tag_AND_build_gradle_info@local_mod(build_gradle, "applicationId", application_id_all, " ", "\"", 1)
+	objprm obj_id_application_id, application_id
+
+	manifest_xml_package_all = "";\app\src\main\AndroidManifest.xml
+	manifest_xml_package	= cfunc_get_android_manifest_xml_tag_AND_build_gradle_info@local_mod(android_manifest_xml, "package", manifest_xml_package_all, "=", "\"", 1)
+
+	split_dummy = ""
+	split application_id, ".", split_dummy
+	sdim split_application_id, 1024, stat
+	split application_id, ".", split_application_id
+	main_activity_java_path	= ""
+	repeat length(split_application_id)
+		main_activity_java_path += split_application_id(cnt) + "\\"
+	loop
+	file_name(FILE_NAME_INDEX_MAIN_ACTIVITY_JAVA) = project_folder + "src\\main\\java\\" + main_activity_java_path + FILE_NAME_MAIN_ACTIVITY_JAVA
+	; app\src\main\java ～ MainActivity.java の読み込み
+	func_read_file@local_mod file_name(FILE_NAME_INDEX_MAIN_ACTIVITY_JAVA), main_activity_java, re_utf8_flag
+	package_all 			= ""
+	package					= cfunc_get_android_manifest_xml_tag_AND_build_gradle_info@local_mod(main_activity_java, "package", package_all, " ", "", 0)
+	strrep package, ";", ""
+
+	screen_orientation_all	= "";android:screenOrientation="portrait"
+	screen_orientation_buff	= cfunc_get_android_manifest_xml_tag_AND_build_gradle_info@local_mod(android_manifest_xml, "android:screenOrientation", screen_orientation_all, "=", "\"", 1)
+	switch screen_orientation_buff
+	case "portrait"  : screen_orientation_index = 0 : swbreak
+	case "landscape" : screen_orientation_index = 1 : swbreak
+	swend
+	objprm obj_id_screen_orientation, screen_orientation_index
+
+	if strlen(main_c) == 0 {
+		if strlen(main_cpp) > 0 {
+			main_c = main_cpp
+		}
+	}
+
+	hgio_view_all			= ""
+	func_get_main_c_info@local_mod main_c, "//", "hgio_view", hgio_view_index, hgio_view_width, hgio_view_height, hgio_view_all, FALSE
+	objprm obj_id_hgio_view, hgio_view_index
+	objprm obj_id_hgio_view_width, hgio_view_width
+	objprm obj_id_hgio_view_height, hgio_view_height
+
+	hgio_scale_all			= ""
+	func_get_main_c_info@local_mod main_c, "//", "hgio_scale", hgio_scale_index, hgio_scale_width, hgio_scale_height, hgio_scale_all, TRUE
+	objprm obj_id_hgio_scale, hgio_scale_index
+	objprm obj_id_hgio_scale_width, hgio_scale_width
+	objprm obj_id_hgio_scale_height, hgio_scale_height
+
+	hgio_autoscale_all		= ""
+	func_get_main_c_info@local_mod main_c, "//", "hgio_autoscale", hgio_autoscale_index, hgio_autoscale_value_index, dummy, hgio_autoscale_all, FALSE
+	objprm obj_id_hgio_autoscale_e, hgio_autoscale_index
+	objprm obj_id_hgio_autoscale, hgio_autoscale_value_index
+
+	res_values_all			= ""
+	res_values				= cfunc_get_strings_xml_tag_info@local_mod(strings_xml, res_values_all)
+	objprm obj_id_res_values, res_values
+
+	res_values_ja_all		= ""
+	res_values_ja			= cfunc_get_strings_xml_tag_info@local_mod(strings_xml_ja, res_values_ja_all)
+	objprm obj_id_res_values_ja, res_values_ja
+
+	if strlen(res_values_ja) > 0 : res_values_ja_index = 1
+	objprm obj_id_res_values_ja_e, res_values_ja_index
+
+	return
+
+;-----------------------------------------------------------------------
+*screen_cls
+
+	win_pos_x = ginfo(4)
+	win_pos_y = ginfo(5)
+
+	syscolor 15
+	boxf
+
+	func_line@local_mod x_left, 55, WINDOW_WIDTH - x_left, 55
+	func_line@local_mod x_left, 155, WINDOW_WIDTH - x_left, 155
+	func_line@local_mod x_left, 285, WINDOW_WIDTH - x_left, 285
+	func_line@local_mod x_left, 365, WINDOW_WIDTH - x_left, 365
+
+	return
+
+;-----------------------------------------------------------------------
+*put_string
+
+	font msgothic, FONT_SIZE
+
+	color 0, 0, 0
+
+	pos pos_x(POS_X_PROJECT),					pos_y(POS_Y_PROJECT)			: mes "プロジェクト名"
+
+	pos pos_x(POS_X_VERSION_CODE),				pos_y(POS_Y_VERSION_CODE)		: mes "バージョンコード(versionCode)"
+	pos pos_x(POS_X_VERSION_NAME),				pos_y(POS_Y_VERSION_NAME)		: mes "バージョンネーム(versionName)"
+	pos pos_x(POS_X_MIN_SDK_VERSION),			pos_y(POS_Y_MIN_SDK_VERSION)	: mes "最小要求API(minSdk)"
+	pos pos_x(POS_X_TARGET_SDK_VERSION),		pos_y(POS_Y_TARGET_SDK_VERSION)	: mes "ターゲットAPI(targetSdk)"
+
+	pos pos_x(POS_X_APPLICATION_ID_1),			pos_y(POS_Y_APPLICATION_ID_1)	: mes "パッケージ名(package/applicationId)"
+
+	pos pos_x(POS_X_SCREEN_ORIENTATION),		pos_y(POS_Y_SCREEN_ORIENTATION)	: mes "画面の向き(screenOrientation)"
+
+	pos pos_x(POS_X_HGIO_VIEW_WIDTH),			pos_y(POS_Y_HGIO_VIEW_WIDTH)	: mes "画面サイズ(hgio_view)"
+	pos pos_x(POS_X_HGIO_VIEW_WIDTH)	+ 300, 	pos_y(POS_Y_HGIO_VIEW_WIDTH)	: mes "横"
+	pos pos_x(POS_X_HGIO_VIEW_HEIGHT)	+ 405,	pos_y(POS_Y_HGIO_VIEW_HEIGHT)	: mes "縦"
+
+	pos pos_x(POS_X_HGIO_SCALE_WIDTH),			pos_y(POS_Y_HGIO_SCALE_WIDTH)	: mes "画面表示倍率(hgio_scale)"
+	pos pos_x(POS_X_HGIO_SCALE_WIDTH)	+ 300,	pos_y(POS_Y_HGIO_SCALE_WIDTH)	: mes "横"
+	pos pos_x(POS_X_HGIO_SCALE_HEIGHT)	+ 405,	pos_y(POS_Y_HGIO_SCALE_HEIGHT)	: mes "縦"
+
+	pos pos_x(POS_X_HGIO_AUTOSCALE),			pos_y(POS_X_HGIO_AUTOSCALE)		: mes "自動拡大縮小(hgio_autoscale)"
+
+	pos pos_x(POS_X_RES_VALUES),				pos_y(POS_Y_RES_VALUES)			: mes "アプリ名(英語)"
+	pos pos_x(POS_X_RES_VALUES_JA),				pos_y(POS_Y_RES_VALUES_JA)		: mes "アプリ名(日本語)"
+
+	return
+
+
+;-----------------------------------------------------------------------
+*tekiyou
+
+	if strlen(cfunc_get_comboi_item@local_mod(project_item, project_index)) == 0 {
+		dialog "プロジェクトが選択されていません", 1
+		return
+	}
+
+	if cmd_line_flg == FALSE {
+		dialog "変更内容を適用してもよろしいですか？", 2, "適用前の確認"
+		if stat == 7 {
+			return
+		}
+	}
+
+	if cmd_line_flg == FALSE {	; コマンドラインから処理された場合はチェックしない
+		if input_check == TRUE {
+			; -------------- 未入力データがないかチェック
+			if strlen(version_code) == 0 {
+				dialog "『バージョンコード(versionCode)』が未入力です。", 1
+				objsel obj_id_version_code
+				return
+			}
+
+			if strlen(version_name) == 0 {
+				dialog "『バージョンネーム(versionName)』が未入力です。", 1
+				objsel obj_id_version_name
+				return
+			}
+
+			if strlen(min_sdk_version) == 0 {
+				dialog "『最小要求API(minSdk)』が未入力です。", 1
+				objsel obj_id_min_sdk_version
+				return
+			}
+
+			if strlen(target_sdk_version) == 0 {
+				dialog "『ターゲットSDK(targetSdk)』が未入力です。", 1
+				objsel obj_id_target_sdk_version
+				return
+			}
+
+			if hgio_view_index == TRUE {
+				if strlen(hgio_view_width) == 0 {
+					dialog "『画面サイズ(hgio_view)』の『横』が未入力です。", 1
+					objsel obj_id_hgio_view_width
+					return
+				}
+				if strlen(hgio_view_height) == 0 {
+					dialog "『画面サイズ(hgio_view)』の『縦』が未入力です。", 1
+					objsel obj_id_hgio_view_height
+					return
+				}
+			}
+
+			if hgio_scale_index == TRUE {
+				if strlen(hgio_scale_width) == 0 {
+					dialog "『画面表示倍率(hgio_scale)』の『横』が未入力です。", 1
+					objsel obj_id_hgio_scale_width
+					return
+				}
+				if strlen(hgio_scale_height) == 0 {
+					dialog "『画面表示倍率(hgio_scale)』の『縦』が未入力です。", 1
+					objsel obj_id_hgio_scale_height
+					return
+				}
+			}
+
+			if strlen(res_values) == 0 {
+				dialog "『アプリ名(英語)』が未入力です。", 1
+				objsel obj_id_res_values
+				return
+			}
+
+			if res_values_ja_index == TRUE {
+				if strlen(res_values_ja) == 0 {
+					dialog "『アプリ名(日本語)』が未入力です。", 1
+					objsel obj_id_res_values_ja
+					return
+				}
+			}
+		}
+
+		if strlen(application_id) == 0 {
+			dialog "『パッケージ名(package/applicationId)』が未入力です。", 1
+			objsel obj_id_application_id
+			return
+		}
+		split_application_dummy = ""
+		split application_id, ".", split_application_dummy
+		i = stat
+		sdim split_application_id, 1024, i
+		split application_id, ".", split_application_id
+
+		if i == 1 {
+			dialog "『パッケージ名(package/applicationId)』が正しくありません。\n区切り文字に「 . 」を入力してください。", 1
+			objsel obj_id_application_id
+			return
+		}
+
+		err_flg = FALSE
+		repeat i
+			if strlen(split_application_id(cnt)) == 0 {
+				dialog "『パッケージ名(package/applicationId)』の入力が正しくありません。", 1
+				objsel obj_id_application_id
+				err_flg = TRUE
+				break
+			}
+		loop
+		if err_flg {
+			return
+		}
+	}
+
+	objenable obj_id_tekiyou, FALSE
+
+	cur_dir = dir_cur
+
+	; -------------- app\src\main\AndroidManifest.xml
+	utf8_buff = ""
+	copy_buff = android_manifest_xml
+
+	v = "package=\"" + application_id + "\""
+	strrep copy_buff, manifest_xml_package_all, v
+
+	switch screen_orientation_index
+	case 0 : v = "android:screenOrientation=\"portrait\""  : swbreak
+	case 1 : v = "android:screenOrientation=\"landscape\"" : swbreak
+	swend
+	strrep copy_buff, screen_orientation_all, v
+
+	sjis2utf8n utf8_buff, copy_buff
+
+	func_file_write@local_mod file_name(FILE_NAME_INDEX_ANDROID_MANIFEST_XML), utf8_buff
+
+	; -------------- app\jni\main.c
+	; -------------- app\jni\main.cpp
+	utf8_buff = ""
+	copy_buff = main_c
+
+	v = ""
+	if hgio_view_index == 0 : v += "//"
+	v += "hgio_view( " + hgio_view_width + ", " + hgio_view_height + " )"
+	strrep copy_buff, hgio_view_all, v
+
+	v = ""
+	if hgio_scale_index == 0 : v += "//"
+	v += "hgio_scale( " + hgio_scale_width + ", " + hgio_scale_height + " )"
+	strrep copy_buff, hgio_scale_all, v
+
+	v = ""
+	if hgio_autoscale_index == 0 : v += "//"
+	v += "hgio_autoscale( " + hgio_autoscale_value_index + " )"
+	strrep copy_buff, hgio_autoscale_all, v
+
+	sjis2utf8n utf8_buff, copy_buff
+
+	exist file_name(FILE_NAME_INDEX_MAIN_C)
+	if strsize >= 0 {
+		; ------- jni\main.c
+		func_file_write@local_mod file_name(FILE_NAME_INDEX_MAIN_C), utf8_buff
+	} else {
+		exist file_name(FILE_NAME_INDEX_MAIN_CPP)
+		if strsize >= 0 {
+			; ------- jni\main.cpp
+			func_file_write@local_mod file_name(FILE_NAME_INDEX_MAIN_CPP), utf8_buff
+		}
+	}
+
+
+	; -------------- res\values\strings.xml
+	utf8_buff = ""
+	copy_buff = strings_xml
+
+	v = "<string name=\"app_name\">" + res_values + "</string>"
+	strrep copy_buff, res_values_all, v
+
+	sjis2utf8n utf8_buff, copy_buff
+
+	func_file_write@local_mod file_name(FILE_NAME_INDEX_STRINGS_XML), utf8_buff
+
+	; -------------- res\values-ja\strings.xml
+	utf8_buff = ""
+
+	switch res_values_ja_index	;アプリ名(日本語)...res_values_ja_index = 0:使用しない, 1:使用する
+	case 0
+			v = ""
+			dirlist v, project_folder + FILE_NAME_STRINGS_XML_JA_RES + "\\" + FILE_NAME_STRINGS_XML_JA_FOLDER, 5
+			if stat == 1 {
+				; values-ja\フォルダごとを削除
+				rmdir = project_folder + FILE_NAME_STRINGS_XML_JA_RES + "\\" + FILE_NAME_STRINGS_XML_JA_FOLDER
+				exec "cmd.exe /C rmdir /s /q \"" + rmdir + "\"", 2
+			}
+		swbreak
+	case 1
+		if strlen(res_values_ja) > 0 {
+
+			copy_buff = strings_xml_ja
+
+			if strlen(strings_xml_ja) > 0 {
+				v = "<string name=\"app_name\">" + res_values_ja + "</string>"
+				strrep copy_buff, res_values_ja_all, v
+			}
+
+			v = ""
+			dirlist v, project_folder + FILE_NAME_STRINGS_XML_JA_RES + "\\" + FILE_NAME_STRINGS_XML_JA_FOLDER, 5
+			if stat == 0 {
+				copy_buff  = ""
+				copy_buff += "<?xml version=\"1.0\" encoding=\"utf-8\"?>\n"
+				copy_buff += "<resources>\n"
+				copy_buff += "    <string name=\"app_name\">" + res_values_ja + "</string>\n"
+				copy_buff += "</resources>\n"
+				chdir project_folder + FILE_NAME_STRINGS_XML_JA_RES
+				mkdir FILE_NAME_STRINGS_XML_JA_FOLDER
+				wait 100
+			}
+
+			dirlist v, project_folder + FILE_NAME_STRINGS_XML_JA_RES + "\\" + FILE_NAME_STRINGS_XML_JA_FOLDER, 5
+			if stat == 1 {
+				sjis2utf8n utf8_buff, copy_buff
+				func_file_write@local_mod file_name(FILE_NAME_INDEX_STRINGS_XML_JA), utf8_buff
+			}
+
+		}
+
+		swbreak
+	swend
+
+	; -------------- app\build.gradle
+	utf8_buff = ""
+	copy_buff = build_gradle
+
+	v = "applicationId \"" + application_id + "\""
+	strrep copy_buff, application_id_all, v
+
+	v = "minSdk " + min_sdk_version
+	strrep copy_buff, min_sdk_version_all, v
+
+	v = "targetSdk " + target_sdk_version
+	strrep copy_buff, target_sdk_version_all, v
+
+	v = "versionCode " + version_code
+	strrep copy_buff, varsion_code_all, v
+
+	v = "versionName \"" + version_name + "\""
+	strrep copy_buff, version_name_all, v
+
+	sjis2utf8n utf8_buff, copy_buff
+
+	func_file_write@local_mod file_name(FILE_NAME_INDEX_BUILD_GRADLE), utf8_buff
+
+	; -------------- project\test2\app\src\main\java\com\simakuroneko\test2\MainActivity.java
+	copy_buff = main_activity_java
+
+	; -------------- パッケージ名を書き換え(まだここでは「MainActivity.java」は保存しない)
+	v = "package " + application_id + ";"
+	strrep copy_buff, package_all, v
+
+	; -------------- フォルダごと削除
+	split_package_dummy = package
+	split package, ".", split_package_dummy
+	split_package_cnt = stat
+
+	delete_folder = project_folder + "src\\main\\java\\" + split_package_dummy(0)
+	exec "cmd.exe /C rmdir /s /q \"" + delete_folder + "\"", 2
+
+	wait 100
+
+	; -------------- 「.」で繋ぎ合わさった文字列を分解
+	split_package_dummy = package
+	split application_id, ".", split_package_dummy
+	application_id_cnt = stat
+	sdim split_application_id, 1024, application_id_cnt + 1
+	split application_id, ".", split_application_id
+
+	repeat application_id_cnt
+		if cnt < application_id_cnt {
+			split_application_id(application_id_cnt - cnt) = split_application_id(application_id_cnt - (cnt + 1))
+		}
+	loop
+	split_application_id(0) = ""
+
+	; -------------- 「.」で分解された文字列（フォルダ名）を繋ぎ合わせる
+	join_path = ""
+	repeat application_id_cnt
+		join_path = join_path + "\\" + split_application_id(cnt + 1)
+	loop
+	join_path = strmid(join_path, 1, strlen(join_path) - 1)
+
+	get_file_path = project_folder + "src\\main\\java\\" + join_path
+
+	; -------------- フォルダをまとめて作成
+	MakeSureDirectoryPathExists get_file_path + "\\"
+
+	wait 100
+
+	; -------------- 「MainActivity.java」を繋ぎ合わせた最後のフォルダ名に保存
+	chdir cur_dir
+	save_file_name = get_file_path + "\\" + FILE_NAME_MAIN_ACTIVITY_JAVA
+	bsave save_file_name, copy_buff, strlen(copy_buff)
+
+	package = application_id
+	file_name(FILE_NAME_INDEX_MAIN_ACTIVITY_JAVA) = save_file_name
+
+	; -------------- コマンドラインから起動されてなければダイアログを表示して終了
+	if cmd_line_flg == FALSE {
+		dialog "適用完了"
+		objenable obj_id_tekiyou, TRUE
+	}
+
+	return
+
+;-----------------------------------------------------------------------
+*config_file_write
+
+	file_buff  = ""
+	file_buff += CONFIG_WINDOW_POS_X + win_pos_x + "\n"
+	file_buff += CONFIG_WINDOW_POS_Y + win_pos_y + "\n"
+
+	func_dish_p_helper_ini_file_write@local_mod CONFIG_FILE_NAME, file_buff
+
+	end
+
+;-----------------------------------------------------------------------
+*command_line_get
+
+/*
+	-prj=test;
+	-vc=1;
+	-vn=1.0;
+	-msdk=10;
+	-pt=android-21;
+	-tsdk=26;
+	-scr=0;
+	-hgv=320,480;
+	-hgs=1.0f,1.0f;
+	-hga=0;
+	-ape=test app;
+	-apj=テストアプリ;
+	-armv7=0;
+*/
+
+	;dish_p_helper.exe -prj=test; -vc=1; -vn=1.0; -msdk=10; -pt=android-21; -tsdk=26; -scr=0; -hgv=320,480; -hgs=1.0f,1.0f; -hga=0; -ape/test app; -apj=テストアプリ; -armv7=0;
+
+	;コマンドライン取得
+	cmd_line_buff		= dirinfo(4)	;command_line_buff = dir_cmdline
+	cmd_line_flg		= FALSE
+
+	cmd_line_split		= ""
+	cut_cmd_line		= ""
+	cmd_line_name		= ""
+
+	cmd_line_prj		= ""
+	cmd_line_vc			= ""
+	cmd_line_vn			= ""
+	cmd_line_msdk		= ""
+	cmd_line_tsdk		= ""
+	cmd_line_scr		= ""
+	cmd_line_hgv		= ""
+	cmd_line_hgv_width	= ""
+	cmd_line_hgv_height	= ""
+	cmd_line_hgs		= ""
+	cmd_line_hgs_width	= ""
+	cmd_line_hgs_height	= ""
+	cmd_line_hga		= ""
+	cmd_line_ape		= ""
+	cmd_line_apj		= ""
+
+	if strlen(cmd_line_buff) > 0 {
+
+		split cmd_line_buff, ";", cmd_line_split
+		cmd_line_max = stat
+
+		repeat cmd_line_max
+			cut_cmd_line = strtrim(cmd_line_split(cnt), 0, ' ')
+			split cut_cmd_line, "=", cmd_line_name
+			strrep cmd_line_name(0), " ", ""
+			switch cmd_line_name(0)
+			case COMMAND_LINE_PRJ								;"-prj"
+				cmd_line_flg	= TRUE
+				cmd_line_prj	= cmd_line_name(1) : swbreak
+			case COMMAND_LINE_VC								;"-vc"
+				cmd_line_flg	= TRUE
+				cmd_line_vc		= cmd_line_name(1) : swbreak
+			case COMMAND_LINE_VN								;"-vn"
+				cmd_line_flg	= TRUE
+				cmd_line_vn		= cmd_line_name(1) : swbreak
+			case COMMAND_LINE_MSDK								;"-msdk"
+				cmd_line_flg	= TRUE
+				cmd_line_msdk	= cmd_line_name(1) : swbreak
+			case COMMAND_LINE_TSDK								;"-tsdk"
+				cmd_line_flg	= TRUE
+				cmd_line_tsdk	= cmd_line_name(1) : swbreak
+			case COMMAND_LINE_PACK								;"-pak"
+				cmd_line_flg	= TRUE
+				cmd_line_pack	= cmd_line_name(1) : swbreak
+			case COMMAND_LINE_SCR								;"-scr"
+				cmd_line_flg	= TRUE
+				cmd_line_scr	= cmd_line_name(1) : swbreak
+			case COMMAND_LINE_HGV								;"-hgv"
+				cmd_line_flg	= TRUE
+				strrep cmd_line_name(1), " ", ""
+				split cmd_line_name(1), ",",  cmd_line_hgv
+				cmd_line_hgv_width	= cmd_line_hgv(0)
+				cmd_line_hgv_height	= cmd_line_hgv(1)
+				swbreak
+			case COMMAND_LINE_HGS								;"-hgs/"
+				cmd_line_flg	= TRUE
+				strrep cmd_line_name(1), " ", ""
+				split cmd_line_name(1), ",",  cmd_line_hgs
+				cmd_line_hgs_width	= cmd_line_hgs(0)
+				cmd_line_hgs_height	= cmd_line_hgs(1)
+				swbreak
+			case COMMAND_LINE_HGA								;"-hga/"
+				cmd_line_flg	= TRUE
+				cmd_line_hga	= cmd_line_name(1) : swbreak
+			case COMMAND_LINE_APE								;"-ape/"
+				cmd_line_flg	= TRUE
+				cmd_line_ape	= cmd_line_name(1) : swbreak
+			case COMMAND_LINE_APJ								;"-apj/
+				cmd_line_flg	= TRUE
+				cmd_line_apj	= cmd_line_name(1) : swbreak
+			swend
+		loop
+
+	}
+
+	return
+
+;-----------------------------------------------------------------------
+*finish_execute_make
+
+	finish_before_file = dirinfo(1) + "\\" + cmd_line_prj + "_end.dmy"
+	save_buff = ""
+
+	bsave finish_before_file, save_buff, 0
+
+	return
+
+;-----------------------------------------------------------------------
+*finish_execute_rename
+
+	finish_after_file = dirinfo(1) + "\\" + cmd_line_prj + "_end.txt"
+
+	exist finish_after_file
+	if strsize >= 0 {
+		delete finish_after_file
+		wait 100
+	}
+
+	rename finish_before_file, finish_after_file
+
+	return
+
+;-----------------------------------------------------------------------
+*command_line_value_set
+
+	if strlen(cmd_line_vc) > 0			: version_code					= cmd_line_vc
+	if strlen(cmd_line_vn) > 0			: version_name					= cmd_line_vn
+	if strlen(cmd_line_msdk) > 0		: min_sdk_version				= cmd_line_msdk
+	if strlen(cmd_line_tsdk) > 0		: target_sdk_version			= cmd_line_tsdk
+	if strlen(cmd_line_pack) > 0		: application_id				= cmd_line_pack
+	if strlen(cmd_line_scr) > 0			: screen_orientation_index		= int(cmd_line_scr)
+	if strlen(cmd_line_hgv_width) > 0	: hgio_view_width 				= cmd_line_hgv_width	: hgio_view_index		= 1
+	if strlen(cmd_line_hgv_height) > 0	: hgio_view_height				= cmd_line_hgv_height	: hgio_view_index		= 1
+	if strlen(cmd_line_hgs_width) > 0	: hgio_scale_width				= cmd_line_hgs_width	: hgio_scale_index		= 1
+	if strlen(cmd_line_hgs_height) > 0	: hgio_scale_height				= cmd_line_hgs_height	: hgio_scale_index		= 1
+	if strlen(cmd_line_hga) > 0			: hgio_autoscale_value_index	= int(cmd_line_hga)		: hgio_autoscale_index	= 1
+	if strlen(cmd_line_ape) > 0			: res_values					= cmd_line_ape
+	if strlen(cmd_line_apj) > 0			: res_values_ja					= cmd_line_apj			: res_values_ja_index	= 1
+
+	return
+
+;-----------------------------------------------------------------------
+*project_index_change_check
+
+	if project_index_copy != project_index {
+		project_index_copy = project_index
+		gosub *object_info_set
+
+		if cmd_line_flg == TRUE {
+			notesel project_item
+			repeat notemax
+				line_buff = ""
+				noteget line_buff, cnt
+				if line_buff == cmd_line_prj {
+					project_index = cnt
+					break
+				}
+			loop
+			noteunsel
+			gosub *object_info_set
+			gosub *command_line_value_set
+			gosub *tekiyou
+			gosub *finish_execute_make
+			gosub *finish_execute_rename
+		}
+
+	}
+
+	return
+
+;-----------------------------------------------------------------------
+*hsp3dish_ini_write
+
+	dim bi, 8
+	sdim sztmp, $206
+	ttl	= HSP3DISH_INI + "を保存するフォルダを選択"
+	bi	= 0, 0, varptr(sztmp), varptr(ttl), 1, 0, 0, 0
+	SHBrowseForFolder varptr(bi)
+	idl = stat
+	SHGetPathFromIDList idl, varptr(sztmp)
+	
+	if stat {
+		cur_dir = dir_cur
+		chdir sztmp
+
+		save_buff  = ""
+		save_buff += "; hsp3dish settings\n"
+		save_buff += "wx=" + hgio_view_width + "\n"
+		save_buff += "wy=" + hgio_view_height + "\n"
+
+		bsave HSP3DISH_INI, save_buff, strlen(save_buff)
+
+		chdir cur_dir
+
+		dialog sztmp + "\nに " + HSP3DISH_INI + " を出力しました。", 0, "出力完了"
+	}
+
+	return
+
+;-----------------------------------------------------------------------
+*combo_index_check
+
+	if hgio_view_index == TRUE {
+		objenable obj_id_hgio_view_width, TRUE
+		objenable obj_id_hgio_view_height, TRUE
+	} else {
+		objenable obj_id_hgio_view_width, FALSE
+		objenable obj_id_hgio_view_height, FALSE
+	}
+
+	if hgio_scale_index == TRUE {
+		objenable obj_id_hgio_scale_width, TRUE
+		objenable obj_id_hgio_scale_height, TRUE
+	} else {
+		objenable obj_id_hgio_scale_width, FALSE
+		objenable obj_id_hgio_scale_height, FALSE
+	}
+
+	if hgio_autoscale_index == TRUE {
+		objenable obj_id_hgio_autoscale, TRUE
+	} else {
+		objenable obj_id_hgio_autoscale, FALSE
+	}
+
+	if res_values_ja_index == TRUE {
+		objenable obj_id_res_values_ja, TRUE
+	} else {
+		objenable obj_id_res_values_ja, FALSE
+	}
+
+	return

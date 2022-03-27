@@ -1,0 +1,419 @@
+;-----------------------------------------------------------------------
+;
+; Andoird/iOSアイコン作成ツール
+;
+; Ver 0.2
+;
+; By. しまくろねこ
+;
+;-----------------------------------------------------------------------
+#cmpopt varinit 0								; 変数未初期化のチェック(0:チェックなし, 1:チェックあり)
+
+
+#packopt name "android_ios_make_icon"
+#packopt type 0
+#packopt xsize 440
+#packopt ysize 200
+#packopt hide 0
+#packopt orgpath 0
+
+
+#define APP_VERSION					"0.2"
+
+#uselib "shlwapi.dll"
+#func PathIsDirectory "PathIsDirectoryA" sptr	; 指定されたパスが存在しない場合は 0 が返る
+
+
+#include "a2d.hsp"
+#include "shell32.as"
+#include "hspext.as"
+
+#define ctype RGB(%1, %2, %3) (%1 << 16 | %2 << 8 | %3)
+#define global alZoomImageToImage(%1 = 0, %2 = 0, %3 = 0, %4 = 0, %5 = 0, %6 = 0, %7 = 0, %8 = 0, %9 = 0, %10 = 0)	alStretchImageToImage %1, %2, %3, %4, %5, %6, (%7) - ((%9) < 0) * (%9), (%8) - ((%10) < 0) * (%10), %9, %10
+
+#const FALSE						0
+#const TRUE							1
+
+//--------------------------------------------------------- スクリーンID
+#const SCREEN_ID_SELECT_AND_IOS		0
+#const SCREEN_ID_SELECT_PNG_FILE	1
+#const SCREEN_ID_ANDROID			2
+#const SCREEN_ID_IOS				3
+#const SCREEN_ID_PNG_SIZE			4
+
+//--------------------------------------------------------- ウィンドウサイズ
+#const SCREEN_WIDTH_AND_IOS_SELECT	440
+#const SCREEN_HEIGHT_AND_IOS_SELECT	200
+#const SCREEN_WIDTH_ANDROID			660
+#const SCREEN_HEIGHT_ANDROID		260
+#const SCREEN_WIDTH_IOS				660
+#const SCREEN_HEIGHT_IOS			260
+
+//--------------------------------------------------------- Android用
+#const ANDROID_ICON_CNT_MAX			100		; アイコンファイルの最高個数
+#const ANDROID_DEFAULT_WIDTH		512		; 元となる画像の横サイズ
+#const ANDROID_DEFAULT_HEIGHT		512		; 元となる画像の縦サイズ
+
+#define NAME_RES_PATH				"\\app\\src\\main\\res"
+#define NAME_AND_WILD_ICON_NAME		"*.png"
+
+//--------------------------------------------------------- iOS用
+#const IOS_ICON_CNT_MAX				100
+#const IOS_DEFAULT_WIDTH			180		; 元となる画像の横サイズ
+#const IOS_DEFAULT_HEIGHT			180		; 元となる画像の縦サイズ
+
+#define NAME_PROJECT_PATH			"\\hspproj\\"
+#define NAME_IOS_WILD_ICON_NAME		"icon*.png"
+
+//--------------------------------------------------------- オブジェクトID
+#const OBJ_ID_CNT_MAX				100
+#const OBJ_ID_SELECT_FOLDER			0
+#const OBJ_ID_SELECT_PNG			1
+#const OBJ_ID_RES_STAT				2
+
+//---------------------------------------------------------
+
+	dim obj_id, OBJ_ID_CNT_MAX
+	sdim make_icon_folder, 65536
+	sdim png_file, 65536
+
+//---------------------------------------------------------
+*icon_android_ios_select
+
+	screen SCREEN_ID_SELECT_AND_IOS, SCREEN_WIDTH_AND_IOS_SELECT, SCREEN_HEIGHT_AND_IOS_SELECT, 0, (ginfo_dispx / 2) - (SCREEN_WIDTH_AND_IOS_SELECT / 2), (ginfo_dispy / 2) - (SCREEN_HEIGHT_AND_IOS_SELECT / 2)
+
+	title "Android/iOSアイコン作成ツール - Ver " + APP_VERSION
+
+	font msgothic, 12
+
+	syscolor 15 : boxf
+
+	color 0, 0, 0
+	pos 20, 20 : mes "Android/iOSのどちらのアイコンを作成しますか？"
+	
+
+	objmode 2
+	font msgothic, 12
+
+	objsize 400, 50
+	pos 20, 50	: button gosub "Android用", *icon_android_mode
+	pos 20, 120	: button gosub "iOS用", *icon_ios_mode
+
+	stop
+
+//--------------------------------------------------------- Android用オブジェクト作成
+*icon_android_mode
+
+	gsel SCREEN_ID_SELECT_AND_IOS, -1
+
+	screen SCREEN_ID_ANDROID, SCREEN_WIDTH_ANDROID, SCREEN_HEIGHT_ANDROID, 0, (ginfo_dispx / 2) - (SCREEN_WIDTH_ANDROID / 2), (ginfo_dispy / 2) - (SCREEN_HEIGHT_ANDROID / 2)
+
+	title "Androidアイコン作成ツール - Ver " + APP_VERSION
+
+	objmode 2
+	font msgothic, 12
+
+	syscolor 15 : boxf
+
+	color 0, 0, 0
+	
+	pos 10, 17 : mes "アイコン(png)を作成するDish Helperで作成されたプロジェクトフォルダを選択してください。"
+	objsize 120, 25 : pos 530, 10 : button gosub "フォルダ選択", *select_folder
+
+	make_icon_folder = ""
+	pos 10, 40 : input make_icon_folder, 640, 25
+	obj_id(OBJ_ID_SELECT_FOLDER) = stat
+
+	pos 10, 107 : mes "アイコン(png)の元となる" + str(ANDROID_DEFAULT_WIDTH) + "x" + str(ANDROID_DEFAULT_HEIGHT) + "のpngファイルを選択してください。"
+	objsize 120, 25 : pos 530, 100 : button gosub "pngファイル選択", *select_png
+
+	png_file = ""
+	pos 10, 130 : input png_file, 640, 25
+	obj_id(OBJ_ID_SELECT_PNG) = stat
+
+	chk_stat = 0
+	objsize 230, 25 : pos 10, 190 : chkbox "画像の座標(X:0, Y:0)を透過色とする", chk_stat
+
+	res_stat = 1
+	objsize 230, 25 : pos 10, 220 : chkbox "処理が完了したらresフォルダを開く", res_stat
+	obj_id(OBJ_ID_RES_STAT) = stat : objprm obj_id(OBJ_ID_RES_STAT), res_stat
+	
+	objsize 200, 50 : pos 450, 190 : button gosub "アイコン(png)を作成する", *make_andoird_icon
+
+	stop
+
+//--------------------------------------------------------- iOS用オブジェクト作成
+*icon_ios_mode
+
+	gsel SCREEN_ID_SELECT_AND_IOS, -1
+
+	screen SCREEN_ID_IOS, SCREEN_WIDTH_IOS, SCREEN_HEIGHT_IOS, 0, (ginfo_dispx / 2) - (SCREEN_WIDTH_IOS / 2), (ginfo_dispy / 2) - (SCREEN_HEIGHT_IOS / 2)
+
+	title "iOSアイコン作成ツール - Ver " + APP_VERSION
+
+	objmode 2
+	font msgothic, 12
+
+	syscolor 15 : boxf
+
+	color 0, 0, 0
+	
+	pos 10, 17 : mes "アイコン(png)を作成するDish Helperで作成されたプロジェクトフォルダを選択してください。"
+	objsize 120, 25 : pos 530, 10 : button gosub "フォルダ選択", *select_folder
+
+	make_icon_folder = ""
+	pos 10, 40 : input make_icon_folder, 640, 25
+	obj_id(OBJ_ID_SELECT_FOLDER) = stat
+
+	pos 10, 107 : mes "アイコン(png)の元となる" + str(IOS_DEFAULT_WIDTH) + "x" + str(IOS_DEFAULT_HEIGHT) + "の透過色の無いpngファイルを選択してください。"
+	objsize 120, 25 : pos 530, 100 : button gosub "pngファイル選択", *select_png
+
+	png_file = ""
+	pos 10, 130 : input png_file, 640, 25
+	obj_id(OBJ_ID_SELECT_PNG) = stat
+
+	res_stat = 1
+	objsize 250, 25 : pos 10, 220 : chkbox "処理が完了したらhspprojフォルダを開く", res_stat
+	obj_id(OBJ_ID_RES_STAT) = stat : objprm obj_id(OBJ_ID_RES_STAT), res_stat
+	
+	objsize 200, 50 : pos 450, 190 : button gosub "アイコン(png)を作成する", *make_ios_icon
+
+	stop
+
+//---------------------------------------------------------
+*select_folder
+
+	dim bi, 8
+	sdim sztmp, $206
+	ttl	= "フォルダ選択"
+	bi	= 0, 0, varptr(sztmp), varptr(ttl), 1, 0, 0, 0
+	SHBrowseForFolder varptr(bi)
+	idl = stat
+	SHGetPathFromIDList idl, varptr(sztmp)
+	
+	if stat {
+		make_icon_folder = sztmp
+		objprm obj_id(OBJ_ID_SELECT_FOLDER), make_icon_folder
+	}
+
+	return
+
+//---------------------------------------------------------
+*select_png
+
+	dialog "png", 16, "pngファイル"
+
+	if stat {
+		png_file = refstr
+		objprm obj_id(OBJ_ID_SELECT_PNG), png_file
+	}
+
+	return
+
+//---------------------------------------------------------
+*folder_file_check
+
+	check_flg = FALSE
+
+	if strlen(make_icon_folder) == 0 {
+		dialog "フォルダが未入力です。", 1
+		check_flg = TRUE
+	}
+	dummy = ""
+	dirlist dummy, make_icon_folder, 5
+	if stat == 0 {
+		dialog "指定されたフォルダは存在しません。", 1
+		check_flg = TRUE
+	}
+	if strlen(png_file) == 0 {
+		dialog "pngファイルが未入力です。", 1
+		check_flg = TRUE
+	}
+	exist png_file
+	if strsize == -1 {
+		dialog "指定pngファイルは存在しません。", 1
+		check_flg = TRUE
+	}
+
+	return
+
+//--------------------------------------------------------- Android用アイコン作成
+*make_andoird_icon
+
+	gosub *folder_file_check
+
+	if check_flg {
+		return
+	}
+
+	cur_dir = dir_cur
+
+	; ---------------------------------------
+	dim window_width,	ANDROID_ICON_CNT_MAX
+	dim window_height,	ANDROID_ICON_CNT_MAX
+
+	android_icon_cnt = 0
+
+	celload png_file, SCREEN_ID_SELECT_PNG_FILE, 0
+	gsel SCREEN_ID_SELECT_PNG_FILE
+	window_w = ginfo_sx
+	window_h = ginfo_sy
+
+	if (window_w != ANDROID_DEFAULT_WIDTH) || (window_h != ANDROID_DEFAULT_HEIGHT) {
+		dialog "選択されたpngファイルは" + str(ANDROID_DEFAULT_WIDTH) + "x" + str(ANDROID_DEFAULT_HEIGHT) + "ではありません。\n処理を中断します。", 1, "処理の中断"
+		chdir cur_dir
+		gsel 0
+		return
+	}
+
+	dir_buff = ""
+	chdir make_icon_folder + NAME_RES_PATH
+	dirlist dir_buff, "*.*", 5
+	
+
+	get_dir = ""
+	notesel dir_buff
+	repeat notemax
+		noteget get_dir, cnt
+		chdir make_icon_folder + NAME_RES_PATH + "\\" + get_dir
+		get_png = ""
+		dirlist get_png, "*.png", 1
+		strrep get_png, "\n", ""
+		if strlen(get_png) > 0 {
+			get_file_name(android_icon_cnt) = make_icon_folder + NAME_RES_PATH + "\\" + get_dir + "\\" + get_png
+			celload get_png, SCREEN_ID_PNG_SIZE
+			gsel SCREEN_ID_PNG_SIZE
+			window_width(android_icon_cnt) = ginfo_sx
+			window_height(android_icon_cnt) = ginfo_sy
+			android_icon_cnt++
+		}
+	loop
+
+	; ---------------------------------------
+	chdir cur_dir
+
+	; ---------------------------------------
+	err_flg = FALSE
+	repeat android_icon_cnt
+		// 画像から仮想イメージ作成
+		alCreateImage 0, window_w, window_h
+		exist png_file
+		if strsize == -1 {
+			err_flg = TRUE
+			break
+		}
+		alCreateImageByFile 0, png_file
+		alCreateImage 1, window_width(cnt), window_height(cnt)
+		if chk_stat {
+			// キーカラーを保存
+			alSelectImage 0
+			alCopyModeColorKey alGetPixel(0, 0), alGetPixel(0, 0)
+		}
+		// カラーキー反映のためにコピーの画像イメージを作成
+		alSelectImage 0
+		alCreateImage 1, window_width(cnt), window_height(cnt)
+		alZoomImageToImage 0, 1, 0, 0, window_w, window_h, 0, 0, window_width(cnt), window_height(cnt)
+		// 保存
+		alSelectImage 1
+		alSaveFile get_file_name(cnt), "image/png"
+	loop
+
+	gsel SCREEN_ID_ANDROID
+
+	switch err_flg
+	case FALSE
+		dialog "完了しました。"
+		// resフォルダをexploreで開く
+		if res_stat {
+			exec make_icon_folder + NAME_RES_PATH, 0, "explore"
+		}
+		swbreak
+	case TRUE
+		dialog "" + png_file + "\nが存在しません。", 1, "注意"
+	swend
+
+	return
+
+//--------------------------------------------------------- iOS用アイコン作成
+*make_ios_icon
+
+	gosub *folder_file_check
+
+	if check_flg {
+		return
+	}
+
+	cur_dir = dir_cur
+
+	; ---------------------------------------
+	dim window_width,	IOS_ICON_CNT_MAX
+	dim window_height,	IOS_ICON_CNT_MAX
+
+	ios_icon_cnt = 0
+
+	celload png_file, SCREEN_ID_SELECT_PNG_FILE, 0
+	gsel SCREEN_ID_SELECT_PNG_FILE
+	window_w = ginfo_sx
+	window_h = ginfo_sy
+
+	if (window_w != IOS_DEFAULT_WIDTH) || (window_h != IOS_DEFAULT_HEIGHT) {
+		dialog "選択されたpngファイルは" + str(IOS_DEFAULT_WIDTH) + "x" + str(IOS_DEFAULT_HEIGHT) + "ではありません。\n処理を中断します。", 1, "処理の中断"
+		chdir cur_dir
+		gsel 0
+		return
+	}
+
+	file_buff = ""
+	chdir make_icon_folder + NAME_PROJECT_PATH
+	dirlist file_buff, NAME_IOS_WILD_ICON_NAME, 1
+
+	get_png = ""
+	notesel file_buff
+	repeat notemax
+		noteget get_png, cnt
+		if strlen(get_png) > 0 {
+			get_file_name(ios_icon_cnt) = make_icon_folder + NAME_PROJECT_PATH + get_png
+			celload get_png, SCREEN_ID_PNG_SIZE
+			gsel SCREEN_ID_PNG_SIZE
+			window_width(ios_icon_cnt) = ginfo_sx
+			window_height(ios_icon_cnt) = ginfo_sy
+			ios_icon_cnt++
+		}
+	loop
+
+	; ---------------------------------------
+	chdir cur_dir
+
+	; ---------------------------------------
+	err_flg = FALSE
+	repeat ios_icon_cnt
+		// 画像から仮想イメージ作成
+		alCreateImage 0, window_w, window_h
+		exist png_file
+		if strsize == -1 {
+			err_flg = TRUE
+			break
+		}
+		alCreateImageByFile 0, png_file
+		alCreateImage 1, window_width(cnt), window_height(cnt)
+		alZoomImageToImage 0, 1, 0, 0, window_w, window_h, 0, 0, window_width(cnt), window_height(cnt)
+		// 保存
+		alSelectImage 1
+		alSaveFile get_file_name(cnt), "image/png"
+	loop
+
+	gsel SCREEN_ID_IOS
+
+	switch err_flg
+	case FALSE
+		dialog "完了しました。"
+		// hspprojフォルダをexploreで開く
+		if res_stat {
+			exec make_icon_folder + NAME_PROJECT_PATH, 0, "explore"
+		}
+		swbreak
+	case TRUE
+		dialog "" + png_file + "\nが存在しません。", 1, "注意"
+	swend
+
+	return

@@ -29,6 +29,8 @@
 		<li><a href="#SAMPLE">サンプルプロジェクト</a></li>
 		<li><a href="#EMULATOR">androidエミュレータ</a></li>
 		<li><a href="#RUNPROJ">実機への転送と実行</a></li>
+		<li><a href="#DISHPHELPER">HSP3Dish P Helperについて</a></li>
+		<li><a href="#AND_ICON">アイコンの作成について</a></li>
 		<li><a href="#DATAFILE">データファイルの準備</a></li>
 		<li><a href="#SYSINFO">システム情報の取得</a></li>
 		<li><a href="#EXECTASK">タスク(アクティビティ)呼び出し</a></li>
@@ -248,6 +250,37 @@
 	([Shift]キーを押しながら「Logcat」ボタンを押すことでandroid上のすべてのイベントログを確認することができます、システムメッセージなどを確認する場合にご使用ください)
 	</p>
 
+
+	<h2 id="DISHPHELPER">HSP3Dish P Helperについて</h2>
+	<p>
+	HSP3.7β2から、しまくろねこさん作成によるDish P Helperをパッケージに同梱しています。<br>
+	androidプロジェクトを選択した状態で、「Dish P Helper」ボタンを押すことでツールが起動されます。<br>
+	(HSPインストールフォルダから「dish_p_helper.exe」を直接起動することも可能です)<br>
+	Dish P Helperでは、以下の項目をGUIにより設定することが可能です。詳しくは、<a href="../hspsdk/dish_p_helper/ReadMe.txt">ツールの説明書</a>を参照してください。
+	</p>
+	<ul><pre>
+	    ・バージョンコード(versionCode)
+	    ・バージョンネーム(versionName)
+	    ・最小要求API(minSdk)
+	    ・ターゲットAPI(targetSdk)
+	    ・パッケージ名(package/applicationId)
+	    ・画面の向き(screenOrientation)
+	    ・画面サイズ(hgio_view)　横/縦
+	    ・画面表示倍率(hgio_scale)　横/縦
+	    ・自動拡大縮小(hgio_autoscale)
+	    ・アプリ名(英語)
+	    ・アプリ名(日本語)
+	</pre></ul>
+
+
+	<h2 id="AND_ICON">アイコンの作成について</h2>
+	<p>
+	HSP3.7β2から、しまくろねこさん作成によるAndroid/iOSアイコン作成ツールをパッケージに同梱しています。<br>
+	「オプション」タブを選択した状態で、「Android/iOSアイコン作成ツール」ボタンを押すことでツールが起動されます。<br>
+	詳しい使用方法、<a href="../hspsdk/android_ios_make_icon/ReadMe.txt">ツールの説明書</a>を参照してください。
+	</p>
+
+
 	<h2 id="DATAFILE">データファイルの準備</h2>
 	<p>
 	スクリプトから参照されるデータファイルは、プロジェクトディレクトリ内のassetsフォルダに入れてください。<br>
@@ -320,8 +353,10 @@
 
 	<h2 id="SCALE">マニュアル設定項目について</h2>
 	<p>
+	<b>HSP3Dishに関する各種設定は、<a href="#DISHPHELPER">HSP3Dish P Helper</a>で行うことが可能です。
+	ここでは、手動で設定する方法について解説していますが、通常は<a href="#DISHPHELPER">HSP3Dish P Helper</a>をご使用ください。</b><br>
+	<br>
 	jniフォルダ内のmain.cppソースを編集することで、HSP3Dishに関する各種設定を行ないます。<br>
-	<b>通常は、「hsp」フォルダに設定ファイル「hsp3dish.ini」を用意して設定を行なってください。ここでは、ソースコードを修正して、マニュアルで設定する方法について説明しています。</b><br>
 	「static void engine_handle_cmd」で始まるソースコード(160行付近)にある以下の行を修正します。
 	</p>
 	<ul><pre>
