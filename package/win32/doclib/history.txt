@@ -8,6 +8,8 @@ Hot Soup Processor ver3.7beta                       HSP : Hot Soup Processor
 	2022/03/27 3.7 beta2
 
 	button gosubによるボタン処理時にエラーが発生した際にウインドウが閉じる不具合を修正
+	[HSP3Dish][hsp3js] HSP3.7beta1でstick命令の入力が正しく動作しなかった不具合を修正
+	[HSP3Dish][hsp3js] ブラウザのローカルストレージに保存するIDBFSサポートを追加
 	[HSP3Dish] Dish P Helper 及び、Android/iOSアイコン作成ツールをパッケージに同梱
 	[HSP3Dish] mmload命令でwavファイルを同じIDに読み込む際にメモリリークが起こる不具合を修正
 
