@@ -51,6 +51,7 @@ public:
 	void SetCommonPath( char *path );
 
 	//		Service
+	void Print(char* mes);
 	int GetCmdList( int option );
 	int OpenPackfile( void );
 	void ClosePackfile( void );

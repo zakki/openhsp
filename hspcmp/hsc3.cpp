@@ -430,3 +430,10 @@ int CHsc3::SaveAHTOutbuf( char *fname )
 }
 
 
+void CHsc3::Print(char* mes)
+{
+	errbuf->PutStr(mes);
+	errbuf->PutStr("\r\n");
+}
+
+

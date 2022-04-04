@@ -20,48 +20,7 @@
 #include "supio_win.h"
 #include "../dpmread.h"
 #include "../strbuf.h"
-
-HSPAPICHAR *chartoapichar( const char *orig,HSPAPICHAR **pphac)
-{
-	*pphac = (HSPAPICHAR*)orig;
-	return (HSPAPICHAR*)orig;
-}
-
-void freehac(HSPAPICHAR **pphac)
-{
-	*pphac = 0;
-	return;
-}
-
-HSPCHAR *apichartohspchar( const HSPAPICHAR *orig,HSPCHAR **pphc)
-{
-	*pphc = (HSPAPICHAR*)orig;
-	return (HSPCHAR*)orig;
-}
-
-void freehc(HSPCHAR **pphc)
-{
-	*pphc = 0;
-	return;
-}
-
-HSPAPICHAR *ansichartoapichar(const char *orig, HSPAPICHAR **pphac)
-{
-	*pphac = (HSPAPICHAR*)orig;
-	return (HSPAPICHAR*)orig;
-}
-
-char *apichartoansichar(const HSPAPICHAR *orig, char **ppc)
-{
-	*ppc = (char*)orig;
-	return (char*)orig;
-}
-
-void freeac(char **ppc)
-{
-	*ppc = 0;
-	return;
-}
+#include "../hsp3utfcnv.h"
 
 //
 //		basic C I/O support
@@ -79,20 +38,7 @@ void mem_bye( void *ptr ) {
 
 int mem_save( char *fname, void *mem, int msize, int seekofs )
 {
-	FILE *fp;
-	int flen;
-
-	if (seekofs<0) {
-		fp=fopen(fname,"wb");
-	}
-	else {
-		fp=fopen(fname,"r+b");
-	}
-	if (fp==NULL) return -1;
-	if ( seekofs>=0 ) fseek( fp, seekofs, SEEK_SET );
-	flen = (int)fwrite( mem, 1, msize, fp );
-	fclose(fp);
-	return flen;
+	return hsp3_binsave(fname,mem,msize,seekofs);
 }
 
 

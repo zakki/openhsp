@@ -17,7 +17,7 @@
 #include "label.h"
 #include "tagstack.h"
 #include "membuf.h"
-#include "strnote.h"
+#include "../hsp3/strnote.h"
 #include "ahtobj.h"
 
 #define s3size 0x8000

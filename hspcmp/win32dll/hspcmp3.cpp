@@ -25,8 +25,13 @@
 static HspHelpManager hsman;
 #endif
 
-#define DPM_SUPPORT		// DPMファイルマネージャをサポート
-#include "dpm.h"
+//#define DPM_SUPPORT		// DPMファイルマネージャをサポート
+//#include "dpm.h"
+
+#define DPM2_SUPPORT		// DPM2ファイルマネージャをサポート
+#include "../../hsp3/filepack.h"
+#define PACKFILE "packfile"
+#define DPMFILE "data"
 
 #define ICONINS_SUPPORT	// ICONINSツールをサポート
 
@@ -53,10 +58,10 @@ static int ahtbuild_error;		// Error code
 
 extern char *hsp_prestr[];
 
-/*
-	rev 54
-	gcc でビルドしたときに DllMain が呼ばれるように修正。
-*/
+#ifdef DPM2_SUPPORT
+static FilePack filepack;		// File Pack Manager
+#endif
+
 
 #if defined( __GNUC__ ) && defined( __cplusplus )
 extern "C"
@@ -309,14 +314,19 @@ EXPORT BOOL WINAPI pack_ini ( BMSCR *bm, char *p1, int p2, int p3 )
 	//
 	//		pack_ini "src-file"  (type6)
 	//
-#ifdef DPM_SUPPORT
-	strcpy(fname,p1);
+	strcpy(fname, p1);
 	cutext(fname);
-	if ( hsc3==NULL ) Alert( "#No way." );
+	if (hsc3 == NULL) Alert("#No way.");
 	hsc3->ResetError();
+	opt1 = 640; opt2 = 480; opt3 = 0;
+	strcpy(hspexe, "hsprt");
+
+#ifdef DPM_SUPPORT
 	dpmc_ini( hsc3->errbuf, fname );
-	opt1=640;opt2=480;opt3=0;
-	strcpy(hspexe,"hsprt");
+#endif
+#ifdef DPM2_SUPPORT
+	filepack.Reset();
+	filepack.SetErrorBuffer(hsc3->errbuf);
 #endif
 	return 0;
 }
@@ -325,13 +335,20 @@ EXPORT BOOL WINAPI pack_ini ( BMSCR *bm, char *p1, int p2, int p3 )
 EXPORT BOOL WINAPI pack_view ( int p1, int p2, int p3, int p4 )
 {
 	//
-	//		pack_view (type0)
+	//		pack_view encode  (type0)
 	//
 	int st;
+	st = 0;
 #ifdef DPM_SUPPORT
 	st = dpmc_view();
-#else
-	st = 0;
+#endif
+#ifdef DPM2_SUPPORT
+	if (filepack.LoadPackFile(fname,p1)<0) {
+		st = 1;
+	}
+	else {
+		filepack.PrintFiles();
+	}
 #endif
 	return -st;
 }
@@ -345,11 +362,22 @@ EXPORT BOOL WINAPI pack_make ( int p1, int p2, int p3, int p4 )
 	//		     key  : (0=Default/other=New Seed)
 	//
 	int st;
+	st = 0;
 #ifdef DPM_SUPPORT
 	if ( p2 != 0 ) dpmc_dpmkey( p2 );
 	st=dpmc_pack(p1);
+#endif
+
+#ifdef DPM2_SUPPORT
+	if (p2 == 0) p2 = -1;
+#ifdef HSPWIN
+	p1 = (int)GetTickCount();	// Windowsの場合はtickをシード値とする
 #else
-	st = 0;
+	p1 = (int)time(0);			// Windows以外のランダムシード値
+#endif
+	if (filepack.SavePackFile(fname, PACKFILE, p1, p2) < 0) {
+		st = 1;
+	}
 #endif
 	return -st;
 }
@@ -395,13 +423,17 @@ EXPORT BOOL WINAPI pack_exe ( int p1, int p2, int p3, int p4 )
 EXPORT BOOL WINAPI pack_get ( BMSCR *bm, char *p1, int p2, int p3 )
 {
 	//
-	//		pack_get "get-file"  (type6)
+	//		pack_get "get-file", enc  (type6)
 	//
 	int st;
+	st = 0;
 #ifdef DPM_SUPPORT
 	st=dpmc_get(p1);
-#else
-	st = 0;
+#endif
+#ifdef DPM2_SUPPORT
+	if (filepack.ExtractFile(p1,NULL,p2) < 0) {
+		st = 1;
+	}
 #endif
 	return -st;
 }
