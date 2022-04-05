@@ -411,10 +411,9 @@ EXPORT BOOL WINAPI pack_exe ( int p1, int p2, int p3, int p4 )
 	//		pack_exe mode (type0)
 	//
 	int st;
+	st = 0;
 #ifdef DPM_SUPPORT
 	st=dpmc_mkexe(p1,hspexe,opt1,opt2,opt3);
-#else
-	st = 0;
 #endif
 	return -st;
 }
@@ -547,6 +546,7 @@ EXPORT BOOL WINAPI hsc3_make ( BMSCR *bm, char *p1, int p2, int p3 )
 	hsc3->ClosePackfile();
 
 	//		exeを作成
+	st = 0;
 #ifdef DPM_SUPPORT
 	dpmc_ini( hsc3->errbuf, fname );
 	st=dpmc_pack( 0 );
@@ -554,8 +554,22 @@ EXPORT BOOL WINAPI hsc3_make ( BMSCR *bm, char *p1, int p2, int p3 )
 	st=dpmc_mkexe( type, hspexe, opt1, opt2, opt3 );
 	strcat( fname, ".dpm" );
 	DeleteFile( fname );
+#endif
+#ifdef DPM2_SUPPORT
+	int myseed1,myseed2;
+#ifdef HSPWIN
+	myseed1 = (int)GetTickCount();	// Windowsの場合はtickをシード値とする
 #else
-	st = 0;
+	myseed1 = (int)time(0);			// Windows以外のランダムシード値
+#endif
+	myseed2 = hsp3_flength(PACKFILE);
+	if (filepack.SavePackFile(fname, PACKFILE, myseed1, myseed2) < 0) {
+		return -1;
+	}
+	st = filepack.MakeEXEFile(type, hspexe, fname, myseed2, opt1, opt2, opt3);
+	strcat(fname, ".dpm");
+	Alertf(fname);
+	DeleteFile(fname);
 #endif
 
 	//		iconins process

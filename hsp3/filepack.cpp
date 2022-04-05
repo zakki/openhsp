@@ -31,9 +31,9 @@
 */
 /*------------------------------------------------------------*/
 
-void FilePack::UTF8StrCase(char* str)
+void FilePack::StrCase(char* str)
 {
-	//		strをすべて小文字に(utf8対応版)
+	//		strをすべて小文字に(utf8/sjis対応版)
 	//		('\'を'/'にも変換)
 	//
 	unsigned char* p;
@@ -43,26 +43,20 @@ void FilePack::UTF8StrCase(char* str)
 		a1 = *p; if (a1 == 0) break;
 		if (a1 == '\\') a1 = '/';
 		*p = tolower(a1);
-		p++;								// 検索位置を移動
-		if (a1 >= 128) {					// 多バイト文字チェック
-			if (a1 >= 192) p++;
-			if (a1 >= 224) p++;
-			if (a1 >= 240) p++;
-			if (a1 >= 248) p++;
-			if (a1 >= 252) p++;
-		}
+		p+=StrCopyLetter((char *)p,NULL);	// 検索位置を移動
 	}
 }
 
-void FilePack::UTF8Split(char *target, char *fpath, char *filename)
+void FilePack::StrSplit(char *target, char *fpath, char *filename)
 {
-	//		targetをパスとファイル名に分離(utf8対応版)
+	//		targetをパスとファイル名に分離(utf8/sjis対応版)
 	//
 	unsigned char *p;
 	unsigned char *div;
 	unsigned char a1;
 	unsigned char *dst;
 	int i;
+	int diff;
 
 	fpath[0] = 0;
 	filename[0] = 0;
@@ -76,26 +70,20 @@ void FilePack::UTF8Split(char *target, char *fpath, char *filename)
 		if (a1 == '/') {
 			div = p;
 		}
-		p++;								// 検索位置を移動
-		if (a1 >= 128) {					// 多バイト文字チェック
-			if (a1 >= 192) p++;
-			if (a1 >= 224) p++;
-			if (a1 >= 240) p++;
-			if (a1 >= 248) p++;
-			if (a1 >= 252) p++;
-		}
+		p += StrCopyLetter((char*)p, NULL);		// 検索位置を移動
 	}
 
+	i = 0;
 	p = (unsigned char*)target;
 	if (div != p) {
-		i = 0;
 		dst = (unsigned char*)fpath;
 		while (1) {
 			if (p>div) break;
 			a1 = *p; if (a1 == 0) break;
-			*dst++ = a1;
+			diff = StrCopyLetter((char*)p, (char *)dst);	// 1文字コピー
+			p += diff;										// 検索位置を移動
+			dst += diff;									// 検索位置を移動
 			i++;
-			p++;								// 検索位置を移動
 			if ( i>= HFP_NAME_MAX ) break;
 		}
 		*dst++ = 0;
@@ -104,14 +92,14 @@ void FilePack::UTF8Split(char *target, char *fpath, char *filename)
 	dst = (unsigned char*)filename;
 	while (1) {
 		a1 = *p; if (a1 == 0) break;
-		*dst++ = a1;
+		diff = StrCopyLetter((char*)p, (char*)dst);		// 1文字コピー
+		p += diff;										// 検索位置を移動
+		dst += diff;									// 検索位置を移動
 		i++;
-		p++;								// 検索位置を移動
 		if (i >= HFP_NAME_MAX) break;
 	}
 	*dst++ = 0;
 }
-
 
 /*------------------------------------------------------------*/
 /*
@@ -200,7 +188,7 @@ FILE* FilePack::pack_fopen(char* name, int offset)
 	}
 	fopen_crypt = obj->crypt;
 	if (obj->crypt) {
-		char pathname[HFP_NAME_MAX + HFP_NAME_MAX + 1];
+		char pathname[HFP_PATH_MAX + 1];
 		strcpy(pathname, GetFolderName(obj));
 		strcat(pathname, GetFileName(obj));
 
@@ -403,7 +391,7 @@ int FilePack::LoadPackFile( char *fname, int encode, int dpmoffset, int slot)
 	//strcat(dpmname, DPMFILEEXT);
 	dpmname[HFP_PATH_MAX] = 0;
 
-	UTF8StrCase(dpmname);
+	StrCase(dpmname);
 
 	ff = hsp3_fopen(dpmname, dpmoffset);
 	if (ff==NULL) return -2;
@@ -550,24 +538,33 @@ int FilePack::GetFileSize(char* name)
 
 HFPOBJ *FilePack::SearchFileObject( HFPHED *hed, char *name )
 {
+	//	ファイル情報を検索する
+	//
 	int i;
 	HFPOBJ *obj;
-	char fname[HFP_NAME_MAX + 1];
-	char foldername[HFP_NAME_MAX + 1];
+	char fname[HFP_PATH_MAX + 1];
+	char fname_utf8[HFP_PATH_MAX + 1];
+	char foldername[HFP_PATH_MAX + 1];
+	char foldername_utf8[HFP_PATH_MAX + 1];
 
 	if (hed == NULL) return NULL;
 
-	UTF8Split(name, foldername, fname);		// Split Path and File Name
-	UTF8StrCase(fname);
-	UTF8StrCase(foldername);
+	StrSplit(name, foldername, fname);		// Split Path and File Name
+	StrCase(fname);
+	StrCase(foldername);
+
+	// UTF8に変換する
+	hsp3_to_utf8(fname_utf8, fname, HFP_PATH_MAX);
+	hsp3_to_utf8(foldername_utf8, foldername, HFP_PATH_MAX);
+
 	obj = (HFPOBJ *)(hed+1);
 	for(i=0;i<hed->max_file;i++) {
 		bool fchk = true;
 		if (obj->folder != 0) {
-			if (strcmp(foldername, GetFolderName(obj)) != 0) fchk = false;
+			if (strcmp(foldername_utf8, GetFolderName(obj)) != 0) fchk = false;
 		}
 		if (fchk) {
-			if (strcmp(fname, GetFileName(obj)) == 0) return obj;
+			if (strcmp(fname_utf8, GetFileName(obj)) == 0) return obj;
 		}
 		obj++;
 	}

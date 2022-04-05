@@ -46,7 +46,7 @@ void FilePack::PrepareWrite( int slot, int encode )
 }
 
 
-int FilePack::RegisterFile( char *name, char *folder, int pcrypt )
+int FilePack::RegisterFile( char *name, int pcrypt )
 {
 	//	HFPにファイルを追加
 	//
@@ -54,19 +54,21 @@ int FilePack::RegisterFile( char *name, char *folder, int pcrypt )
 	int index;
 	int enc_crypt;
 	bool crypt_flag;
-	FILE *ff;
 	HFPOBJ obj;
-	char fname[HFP_NAME_MAX + 1];
-	char foldername[HFP_NAME_MAX + 1];
-	char pathname[HFP_NAME_MAX + HFP_NAME_MAX + 1];
 
-	strcpy(fname, name);
-	fname[HFP_NAME_MAX] = 0;
-	UTF8StrCase(fname);
+	char fname[HFP_PATH_MAX + 1];
+	char fname_hsp3[HFP_PATH_MAX + 1];
+	char foldername[HFP_PATH_MAX + 1];
+	char foldername_hsp3[HFP_PATH_MAX + 1];
+	char pathname[HFP_PATH_MAX + 1];
 
-	strcpy(foldername, folder);
-	foldername[HFP_NAME_MAX] = 0;
-	UTF8StrCase(foldername);
+	StrSplit(name, foldername_hsp3, fname_hsp3);		// Split Path and File Name
+	StrCase(fname_hsp3);
+	StrCase(foldername_hsp3);
+
+	// UTF8に変換する
+	hsp3_to_utf8(fname, fname_hsp3, HFP_PATH_MAX);
+	hsp3_to_utf8(foldername, foldername_hsp3, HFP_PATH_MAX);
 
 	strcpy(pathname, foldername);
 	strcat(pathname, fname);
@@ -84,16 +86,13 @@ int FilePack::RegisterFile( char *name, char *folder, int pcrypt )
 		crypt_flag = true;
 	}
 
-	ff=fopen(pathname,"rb" );
-	if (ff == NULL) {
+	length =hsp3_flength(name);
+	if (length <= 0) {
 		char msg[1024];
-		sprintf(msg, "#File not found [%s]", pathname);
+		sprintf(msg, "#File not found [%s]", name);
 		Print(msg);
 		return -1;
 	}
-	fseek( ff,0,SEEK_END );
-	length=(int)ftell( ff );			// normal file size
-	fclose(ff);
 
 	obj.flag = HFPOBJ_FLAG_ENTRY;
 	if (crypt_flag) {
@@ -108,7 +107,7 @@ int FilePack::RegisterFile( char *name, char *folder, int pcrypt )
 	}
 	obj.name = index;
 
-	if (folder != NULL) {
+	if (*foldername != 0) {
 		index = wrtstr->SearchIndexedData(foldername, -1);
 		if (index < 0) {
 			index = wrtstr->GetSize();
@@ -140,8 +139,6 @@ int FilePack::RegisterFromPacklist( char *name, int def_crypt)
 	int total = 0;
 	int max,index,crypt;
 	char s1[1024];
-	char fname[HFP_NAME_MAX + 1];
-	char foldername[HFP_NAME_MAX + 1];
 
 	CMemBuf packlist;
 	if (packlist.PutFile(name) < 1) {
@@ -176,11 +173,7 @@ int FilePack::RegisterFromPacklist( char *name, int def_crypt)
 			fn++; enc = crypt;
 			//	through
 		default:
-			UTF8Split(fn, foldername, fname);		// Split Path and File Name
-			UTF8StrCase(fname);
-			UTF8StrCase(foldername);
-			int length = RegisterFile(fname, foldername, enc);
-
+			int length = RegisterFile(fn, enc);
 			char msg[1024];
 			sprintf(msg,"#%d %s (%d)(%d)", total, fn, length, enc);
 			Print(msg);
@@ -205,7 +198,7 @@ int FilePack::CopyFileToDPM( void *file, char *filename, HFPSIZE psize, int enco
 	int size = (int)psize;
 
 	ff = (FILE *)file;
-	ff2 = fopen( filename,"rb" );
+	ff2 = hsp3_fopen( filename );
 	if (ff2==NULL) return -1;
 
 	HSP3Crypt *cm = GetCurrentCryptManager();
@@ -246,8 +239,9 @@ int FilePack::SavePackFile( char *name, char *packname, int encode, int opt_enco
 	HFPOBJ *obj;
 	char *strbase;
 	char *p;
-	char fname[HFP_NAME_MAX+1];
-	char refname[(HFP_NAME_MAX + HFP_NAME_MAX + 1)];
+	char fname[HFP_PATH_MAX +1];
+	char refname[(HFP_PATH_MAX + 1)];
+	char refname_hsp3[(HFP_PATH_MAX + 1)];
 
 	PrepareWrite( 0, encode );
 	if (RegisterFromPacklist(packname, opt_encode) <= 0) {
@@ -256,14 +250,14 @@ int FilePack::SavePackFile( char *name, char *packname, int encode, int opt_enco
 
 	strcpy( fname, name );
 	strcat( fname, DPMFILEEXT);
-	fname[HFP_NAME_MAX] = 0;
-	UTF8StrCase( fname );
+	fname[HFP_PATH_MAX] = 0;
+	StrCase( fname );
 
 	HSP3Crypt *cm = GetCurrentCryptManager();
 
 	res = 0;
 	checksize = 0;
-	fp=fopen( fname, "wb" );
+	fp=hsp3_fopenwrite( fname );
 	if (fp != NULL) {
 
 		myname = wrtstr->GetSize();			// HFPファイル名を保存
@@ -307,13 +301,15 @@ int FilePack::SavePackFile( char *name, char *packname, int encode, int opt_enco
 				strcpy(refname, strbase + obj->folder);
 			}
 			strcat(refname, p);
+			utf8_to_hsp3(refname_hsp3, refname, HFP_PATH_MAX);
+
 			//printf( "#%d : %x : %s ( %d bytes ) %s packing...\n", i, obj->offset, p, obj->size, refname );
-			int sz = CopyFileToDPM( fp, refname, obj->size, obj->crypt );
+			int sz = CopyFileToDPM( fp, refname_hsp3, obj->size, obj->crypt );
 			if (sz < 0) res = -1;
 			checksize += sz;
 			obj++;
 		}
-		fclose(fp);
+		hsp3_fclose(fp);
 
 	} else {
 		res = -1;
@@ -335,6 +331,7 @@ int FilePack::ExtractFile( HFPHED *hed, char *fname, char *savename, int encode 
 	int i;
 	int a2;
 	char* sname = savename;
+	char namebuf[HFP_PATH_MAX];
 
 	obj = SearchFileObject( hed, fname );
 	if ( obj == NULL ) return -1;
@@ -354,15 +351,14 @@ int FilePack::ExtractFile( HFPHED *hed, char *fname, char *savename, int encode 
 	}
 
 	if (sname == NULL) {
-		sname = GetFileName(obj);
+		utf8_to_hsp3(namebuf, GetFileName(obj), HFP_PATH_MAX);
+		sname = namebuf;
 	}
-	fp = fopen( sname, "wb" );
+	fp = hsp3_fopenwrite( sname );
 	if ( fp == NULL ) return -2;
 
-	ff = fopen( GetPackName(hed), "rb" );
+	ff = hsp3_fopen( GetPackName(hed), (int)obj->offset );
 	if ( ff == NULL ) return -3;
-
-	fseek( ff, pt_file + (int)obj->offset, SEEK_SET );
 
 	for(i=0;i<bufsize;i++) {
 		a2 = fgetc( ff );if ( a2 < 0 ) break;
@@ -372,7 +368,8 @@ int FilePack::ExtractFile( HFPHED *hed, char *fname, char *savename, int encode 
 		fputc( a2, fp );
 	}
 
-	fclose(fp);
+	hsp3_fclose(ff);
+	hsp3_fclose(fp);
 
 	char msg[1024];
 	sprintf(msg, "#%s extracted.(%d)", sname, bufsize);
@@ -402,7 +399,11 @@ void FilePack::PrintFiles(void)
 	obj = GetCurrentObjectHeader();
 	for (i = 0; i < hed->max_file; i++) {
 		char msg[1024];
-		sprintf(msg, "#%d [%s%s] %d", i, GetFolderName(obj), GetFileName(obj), (int)obj->size);
+		char name[HFP_PATH_MAX];
+		char foldername[HFP_PATH_MAX];
+		utf8_to_hsp3(name, GetFileName(obj), HFP_PATH_MAX);
+		utf8_to_hsp3(foldername, GetFolderName(obj), HFP_PATH_MAX);
+		sprintf(msg, "#%d [%s%s] %d", i, name, foldername, (int)obj->size);
 		Print(msg);
 		obj++;
 	}
@@ -422,4 +423,150 @@ void FilePack::Print(char* mes)
 		errbuf->PutStr("\r\n");
 	}
 }
+
+
+int FilePack::MakeEXEFile(int mode, char* hspexe, char* basename, int deckey, int opt1, int opt2, int opt3 )
+{
+	//		EXEファイルにHFPを埋め込み
+	//		mode : 0=normal
+	//		       1=full screen
+	//		       2=ssaver
+	//		opt1,opt2 : x,y axis
+	//		opt3      : disp_sw
+	//
+	FILE* fp, * fp2, * fp3;
+	char hrtfile[HFP_PATH_MAX];
+	char filename[HFP_PATH_MAX];
+	char foldername[HFP_PATH_MAX];
+	char sname[HFP_PATH_MAX];
+	char dpmname[HFP_PATH_MAX];
+	long sidx, sidx2, x0, x1;
+	int a1;
+	int b;
+	unsigned char s4[64];
+	char c;
+	int* ip;
+	int chksum, sum, sumseed, sumsize;
+	char tmp[1024];
+
+	//		HSPランタイムを検索
+	//
+	strcpy(hrtfile, hspexe);
+	StrSplit(hspexe, foldername, filename);
+
+	fp = hsp3_fopen(hrtfile);
+	if (fp == NULL) {
+		sprintf(hrtfile, "%sruntime\\%s", foldername, filename);
+		fp = hsp3_fopen(hrtfile);
+		//
+		if (fp == NULL) {
+			strcpy(hrtfile, filename);
+			fp = hsp3_fopen(hrtfile);
+			if (fp == NULL) {
+				sprintf(tmp, "#No file [%s].", hspexe);
+				Print(tmp);
+				return -1;
+			}
+		}
+	}
+
+	//		HSPヘッダーを検索
+	//
+	strcpy((char*)s4, "HSPHED~~");
+	b = 0; x1 = 0; sidx = 0; sidx2 = 0;
+	while (1) {
+		a1 = fgetc(fp); if (a1 < 0) break;
+		if (a1 != s4[b]) b = 0; else b++;
+		if (b == 8) sidx = x1 - 7;
+		x1++;
+	}
+	hsp3_fclose(fp);
+
+	if (sidx == 0) {
+		Print("#Not found hsp index.");
+		return -1;
+	}
+	sprintf(tmp, "#Found hsp index in $%05lx/$%05lx.", sidx, x1);
+	Print(tmp);
+
+	//		作成される実行ファイル名
+	//
+	strcpy(sname, basename);
+	if (mode == 2) {
+		strcat(sname, ".scr");
+	}
+	else {
+		strcat(sname, ".exe");
+	}
+
+	//		DPMのチェックサムを作成
+	//
+	strcpy(dpmname, basename);
+	strcat(dpmname, DPMFILEEXT);
+	fp = hsp3_fopen(dpmname);
+	if (fp == NULL) {
+		sprintf(tmp, "#No file [%s].", dpmname);
+		Print(tmp);
+		return -1;
+	}
+	sum = 0; sumsize = 0;
+	sumseed = 123;
+	while (1) {
+		a1 = fgetc(fp); if (a1 < 0) break;
+		sum += a1 + sumseed; sumsize++;
+	}
+	hsp3_fclose(fp);
+	chksum = sum & 0xffff;				// lower 16bit sum
+
+
+	//		ヘッダ情報を書き込み
+	//
+	sidx2 = sidx + 36;
+	for (a1 = 0; a1 < 32; a1++) { s4[a1] = 0; }
+	sprintf((char*)s4 + 9, "%5ld", x1 - 0x10000);
+	c = 0;
+	if (mode == 1) c = 'f';
+	if (mode == 2) c = 's';
+	s4[17] = c;
+	s4[19] = 'x'; s4[20] = opt1 & 0xff; s4[21] = (opt1 >> 8) & 0xff;
+	s4[22] = 'y'; s4[23] = opt2 & 0xff; s4[24] = (opt2 >> 8) & 0xff;
+	s4[25] = 'd'; s4[26] = opt3 & 0xff; s4[27] = (opt3 >> 8) & 0xff;
+	s4[28] = 's'; s4[29] = chksum & 0xff; s4[30] = (chksum >> 8) & 0xff;
+	s4[31] = 'k'; ip = (int*)(s4 + 32); *ip = deckey;
+
+	fp2 = hsp3_fopen(dpmname);
+	fp = hsp3_fopen(hrtfile);
+	if (fp == NULL) {
+		sprintf(tmp, "#No file [%s].", hspexe);
+		Print(tmp);
+		return -1;
+	}
+	fp3 = hsp3_fopenwrite(sname);
+	if (fp3 == NULL) {
+		sprintf(tmp, "#Write error [%s].", sname);
+		Print(tmp);
+		return -1;
+	}
+
+	x0 = 0;
+	while (1) {
+		if (x0 < x1) {
+			a1 = fgetc(fp);
+			if (x0 >= sidx) if (x0 < sidx2) a1 = s4[x0 - sidx];
+		}
+		else {
+			a1 = fgetc(fp2);
+		}
+		if (a1 < 0) break;
+		fputc(a1, fp3);
+		x0++;
+	}
+
+	hsp3_fclose(fp3); hsp3_fclose(fp2); hsp3_fclose(fp);
+
+	sprintf(tmp, "Make custom execute file [%s](%ld).", sname, x0);
+	Print(tmp);
+	return 0;
+}
+
 

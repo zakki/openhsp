@@ -82,7 +82,6 @@ int dpm_ini( char *fname, long dpmofs, int chksum, int deckey )
 #endif
 	int res = filepack.LoadPackFile(dpmfile, deckey, dpmofs);
 	if ( res < 0) {
-		Alertf("#ERR%d",res);
 		return -1;
 	}
 	return 0;

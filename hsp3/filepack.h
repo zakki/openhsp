@@ -14,8 +14,8 @@
 #define HFP_MAGIC3 'M'
 #define HFP_MAGIC4 '2'
 
-#define HFP_NAME_MAX 260		// ファイル名の最大文字数(byte)
-#define HFP_PATH_MAX 520		// dpmパス名の最大文字数(byte)
+#define HFP_NAME_MAX (259)						// ファイル名の最大文字数
+#define HFP_PATH_MAX ((HFP_NAME_MAX*8)+1)		// dpmパス名の最大バッファサイズ(byte)
 
 #define HFPOBJ_FLAG_ENTRY 1		// ファイルあり
 #define HFPOBJ_FLAG_ENCRYPT 2	// 暗号化済みファイル
@@ -107,6 +107,7 @@ public:
 	int SavePackFile( char *fname, char *packname, int encode=0, int opt_encode=0 );
 	int ExtractFile( char *fname, char *savename=NULL, int encode=0 );
 	int ExtractFile(HFPHED* hed, char* name, char* savename = NULL, int encode = 0 );
+	int MakeEXEFile(int mode, char* hspexe, char *basename, int deckey=0, int opt1=640, int opt2=480, int opt3=0);
 
 	//	For Info
 	//
@@ -157,12 +158,12 @@ private:
 	int CopyFileToDPM( void *ff, char *filename, HFPSIZE size, int encode );
 	void PrepareWrite(int slot = 0, int encode = 0);
 	int RegisterFromPacklist(char* name, int crypt = 1);
-	int RegisterFile(char* name, char* folder = NULL, int crypt = 0);
+	int RegisterFile(char* name, int crypt = 0);
 
 	//	Utility
 	//
-	void UTF8StrCase(char* str);
-	void UTF8Split(char* target, char* fpath, char* filename);
+	void StrCase(char* str);
+	void StrSplit(char* target, char* fpath, char* filename);
 
 };
 
