@@ -343,10 +343,21 @@ EXPORT BOOL WINAPI pack_view ( int p1, int p2, int p3, int p4 )
 	st = dpmc_view();
 #endif
 #ifdef DPM2_SUPPORT
-	if (filepack.LoadPackFile(fname,p1)<0) {
+	char dpmname[_MAX_PATH];
+	strcpy(dpmname,fname);
+	strcat(dpmname, ".dpm");
+	char tmp[1024];
+
+	if (p1 == 0) p1 = -1;
+	int res = filepack.LoadPackFile(dpmname, p1);
+	if (res<0) {
+		sprintf(tmp,"#Error %d in loading [%s].",res, dpmname);
+		filepack.Print(tmp);
 		st = 1;
 	}
 	else {
+		sprintf(tmp, "#[%s] Loaded.", dpmname);
+		filepack.Print(tmp);
 		filepack.PrintFiles();
 	}
 #endif
@@ -563,12 +574,14 @@ EXPORT BOOL WINAPI hsc3_make ( BMSCR *bm, char *p1, int p2, int p3 )
 	myseed1 = (int)time(0);			// Windows以外のランダムシード値
 #endif
 	myseed2 = hsp3_flength(PACKFILE);
+
+	filepack.Reset();
+	filepack.SetErrorBuffer(hsc3->errbuf);
 	if (filepack.SavePackFile(fname, PACKFILE, myseed1, myseed2) < 0) {
 		return -1;
 	}
 	st = filepack.MakeEXEFile(type, hspexe, fname, myseed2, opt1, opt2, opt3);
 	strcat(fname, ".dpm");
-	Alertf(fname);
 	DeleteFile(fname);
 #endif
 

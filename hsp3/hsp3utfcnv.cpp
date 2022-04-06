@@ -224,7 +224,7 @@ FILE* hsp3_fopenwrite(char* fname8, int offset)
 #ifdef HSPUTF8
 	// Windows UTF
 	HSPAPICHAR* fnamew = 0;
-	if (seekofs < 0) {
+	if (offset < 0) {
 		hsp3_fp = _tfopen(chartoapichar(fname8, &fnamew), TEXT("wb"));
 	}
 	else {
@@ -314,7 +314,7 @@ int hsp3_to_utf16(void* out, char* in, int bufsize)
 }
 
 
-int utf16_to_hsp3(void* out, char* in, int bufsize)
+int utf16_to_hsp3(char* out, void* in, int bufsize)
 {
 	//	UTF16->hspchar に変換
 	//

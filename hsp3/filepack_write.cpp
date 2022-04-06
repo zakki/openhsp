@@ -13,6 +13,8 @@
 #include "windows.h"
 #endif
 
+#include "hsp3config.h"
+#include "supio.h"
 #include "filepack.h"
 #include "strnote.h"
 #include "hsp3crypt.h"
@@ -38,6 +40,8 @@ void FilePack::PrepareWrite( int slot, int encode )
 	wrtbuf = new CMemBuf;
 	wrtstr = new CMemBuf;
 	wrtstr->AddIndexBuffer(1024);
+	wrtstr->RegistIndex(0);
+	wrtstr->Put((unsigned char)0);
 	wrtnum = 0;
 	wrtpos = 0;
 	curnum = slot;
@@ -332,23 +336,40 @@ int FilePack::ExtractFile( HFPHED *hed, char *fname, char *savename, int encode 
 	int a2;
 	char* sname = savename;
 	char namebuf[HFP_PATH_MAX];
+	char namebuf_utf8[HFP_PATH_MAX];
 
 	obj = SearchFileObject( hed, fname );
-	if ( obj == NULL ) return -1;
+	if (obj == NULL) {
+		char msg[1024];
+		sprintf(msg, "#Not found [%s](%d).", fname, encode);
+		Print(msg);
+		return -1;
+	}
 
 	pt_file = hed->filetable;
 	bufsize = (int)obj->size;
 
 	HSP3Crypt* cm = GetCurrentCryptManager();
-	if (obj->crypt) {
-		int enc_crypt = cm->GetSalt(hed->seed+encode);
-		if (enc_crypt == 0) enc_crypt = 1;
-		if (enc_crypt != obj->crypt) {
+	strcpy(namebuf_utf8, GetFolderName(obj));
+	strcat(namebuf_utf8, GetFileName(obj));
+	int enc_crypt = cm->GetCRC32(namebuf_utf8, strlen(namebuf_utf8));			// ファイルパスを暗号キーにする
+	enc_crypt = cm->GetSalt(enc_crypt);
+	if (enc_crypt == 0) enc_crypt = 1;
+
+	bool locked = false;
+	if (encode != 0) {
+		if (encode != obj->crypt) locked = true;
+	}
+	else {
+		if (obj->crypt) {
+			if (obj->crypt != enc_crypt) locked = true;
+		}
+	}
+	if (locked){
 			Print("#Locked file.");
 			return -4;
-		}
-		cm->DataSet(NULL, bufsize, obj->crypt);
 	}
+	cm->DataSet(NULL, bufsize, obj->crypt);
 
 	if (sname == NULL) {
 		utf8_to_hsp3(namebuf, GetFileName(obj), HFP_PATH_MAX);
@@ -357,7 +378,7 @@ int FilePack::ExtractFile( HFPHED *hed, char *fname, char *savename, int encode 
 	fp = hsp3_fopenwrite( sname );
 	if ( fp == NULL ) return -2;
 
-	ff = hsp3_fopen( GetPackName(hed), (int)obj->offset );
+	ff = hsp3_fopen( GetPackName(hed), (int)obj->offset + pt_file );
 	if ( ff == NULL ) return -3;
 
 	for(i=0;i<bufsize;i++) {
@@ -382,7 +403,9 @@ int FilePack::ExtractFile( HFPHED *hed, char *fname, char *savename, int encode 
 int FilePack::ExtractFile( char *fname, char *savename, int encode )
 {
 	HFPOBJ *obj = SearchFileObject(fname);
-	if (obj == NULL) return -1;
+	if (obj == NULL) {
+		return -1;
+	}
 	return ExtractFile(GetCurrentHeader(), fname, savename, encode);
 }
 
@@ -403,7 +426,7 @@ void FilePack::PrintFiles(void)
 		char foldername[HFP_PATH_MAX];
 		utf8_to_hsp3(name, GetFileName(obj), HFP_PATH_MAX);
 		utf8_to_hsp3(foldername, GetFolderName(obj), HFP_PATH_MAX);
-		sprintf(msg, "#%d [%s%s] %d", i, name, foldername, (int)obj->size);
+		sprintf(msg, "#%d [%s%s] %d", i, foldername, name, (int)obj->size);
 		Print(msg);
 		obj++;
 	}
@@ -564,7 +587,7 @@ int FilePack::MakeEXEFile(int mode, char* hspexe, char* basename, int deckey, in
 
 	hsp3_fclose(fp3); hsp3_fclose(fp2); hsp3_fclose(fp);
 
-	sprintf(tmp, "Make custom execute file [%s](%ld).", sname, x0);
+	sprintf(tmp, "Make custom execute file [%s](%d).", sname, deckey);
 	Print(tmp);
 	return 0;
 }

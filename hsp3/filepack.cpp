@@ -176,9 +176,6 @@ FILE* FilePack::pack_fopen(char* name, int offset)
 	ofs = hed->filetable + (int)obj->offset;
 	ofs += offset;
 
-	ff = hsp3_fopen(GetPackName(hed), ofs);
-	if (ff == NULL) return NULL;
-
 	if (curnum == exedpm_slot) {
 		filebase = HFP_FILEBASE_PACKEXE;
 		ofs += exedpm_offset;
@@ -186,13 +183,16 @@ FILE* FilePack::pack_fopen(char* name, int offset)
 	else {
 		filebase = HFP_FILEBASE_PACKDPM;
 	}
+	HSP3Crypt* cm = GetCurrentCryptManager();
+	ff = hsp3_fopen(cm->GetBasePath(), ofs);
+	if (ff == NULL) return NULL;
+
 	fopen_crypt = obj->crypt;
 	if (obj->crypt) {
 		char pathname[HFP_PATH_MAX + 1];
 		strcpy(pathname, GetFolderName(obj));
 		strcat(pathname, GetFileName(obj));
 
-		HSP3Crypt* cm = GetCurrentCryptManager();
 		int enc_crypt = cm->GetCRC32(pathname, strlen(pathname));			// ファイルパスを暗号キーにする
 		enc_crypt = cm->GetSalt(enc_crypt);
 		if (enc_crypt == 0) enc_crypt = 1;
@@ -384,14 +384,14 @@ int FilePack::LoadPackFile( char *fname, int encode, int dpmoffset, int slot)
 	}
 	if (curnum < 0) return -1;
 
-	_getcwd(dpmname, HFP_PATH_MAX);
-	strcat(dpmname, "/");
-
+	*dpmname = 0;
+	if (dpmoffset == 0) {
+		_getcwd(dpmname, HFP_PATH_MAX);
+		strcat(dpmname, "/");
+	}
 	strcat(dpmname, fname);
 	//strcat(dpmname, DPMFILEEXT);
 	dpmname[HFP_PATH_MAX] = 0;
-
-	StrCase(dpmname);
 
 	ff = hsp3_fopen(dpmname, dpmoffset);
 	if (ff==NULL) return -2;
@@ -415,10 +415,11 @@ int FilePack::LoadPackFile( char *fname, int encode, int dpmoffset, int slot)
 	if (( p->h1 != HFP_MAGIC1 )||( p->h2 != HFP_MAGIC2 )||
 		( p->h3 != HFP_MAGIC3 )||( p->h4 != HFP_MAGIC4 )) {
 			_FREE( p );
-			return -2;
+			return -3;
 	}
+	PrepareRead(curnum, p->seed + encode);
+	buf[curnum] = p;
 
-	PrepareRead(curnum, encode + p->seed);
 	HSP3Crypt* cm = GetCurrentCryptManager();
 
 	if (p->salt != cm->GetSalt(encode + p->seed)) {
@@ -427,7 +428,6 @@ int FilePack::LoadPackFile( char *fname, int encode, int dpmoffset, int slot)
 
 	cm->SetBasePath(dpmname);
 
-	buf[curnum] = p;
 
 	HFPOBJ* obj;
 	obj = GetCurrentObjectHeader();

@@ -86,6 +86,10 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="..\..\hsp3\filepack.cpp" />
+    <ClCompile Include="..\..\hsp3\filepack_write.cpp" />
+    <ClCompile Include="..\..\hsp3\hsp3crypt.cpp" />
+    <ClCompile Include="..\..\hsp3\hsp3utfcnv.cpp" />
     <ClCompile Include="..\ahtmodel.cpp" />
     <ClCompile Include="..\ahtobj.cpp" />
     <ClCompile Include="..\codegen.cpp" />
@@ -104,6 +108,9 @@
     <ClCompile Include="supio_win.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="..\..\hsp3\filepack.h" />
+    <ClInclude Include="..\..\hsp3\hsp3crypt.h" />
+    <ClInclude Include="..\..\hsp3\hsp3utfcnv.h" />
     <ClInclude Include="..\ahtmodel.h" />
     <ClInclude Include="..\ahtobj.h" />
     <ClInclude Include="..\comutil.h" />

@@ -235,10 +235,13 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="dpmread.cpp" />
+    <ClCompile Include="filepack.cpp" />
     <ClCompile Include="hsp3.cpp" />
     <ClCompile Include="hsp3code.cpp" />
+    <ClCompile Include="hsp3crypt.cpp" />
     <ClCompile Include="hsp3debug.cpp" />
     <ClCompile Include="hsp3int.cpp" />
+    <ClCompile Include="hsp3utfcnv.cpp" />
     <ClCompile Include="hspvar_core.cpp" />
     <ClCompile Include="hspvar_double.cpp" />
     <ClCompile Include="hspvar_int.cpp" />
@@ -267,14 +270,17 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="dpmread.h" />
+    <ClInclude Include="filepack.h" />
     <ClInclude Include="hsp3.h" />
     <ClInclude Include="hsp3code.h" />
     <ClInclude Include="hsp3config.h" />
+    <ClInclude Include="hsp3crypt.h" />
     <ClInclude Include="hsp3debug.h" />
     <ClInclude Include="hsp3ext.h" />
     <ClInclude Include="hsp3gr.h" />
     <ClInclude Include="hsp3int.h" />
     <ClInclude Include="hsp3struct.h" />
+    <ClInclude Include="hsp3utfcnv.h" />
     <ClInclude Include="hspvar_core.h" />
     <ClInclude Include="hspvar_label.h" />
     <ClInclude Include="hspwnd.h" />

@@ -123,6 +123,7 @@ public:
 	HFPOBJ *SearchFileObject(char* name);
 	void SetErrorBuffer(CMemBuf *err);
 
+	void Print(char* mes);
 	char *GetString(HFPHED *hed, int ptr);
 	char* GetFileName(HFPOBJ* obj);
 	char* GetFolderName(HFPOBJ* obj);
@@ -153,7 +154,6 @@ private:
 
 	//	Internal Use
 	//
-	void Print(char* mes);
 	void PrepareRead(int slot = 0, int encode = 0);
 	int CopyFileToDPM( void *ff, char *filename, HFPSIZE size, int encode );
 	void PrepareWrite(int slot = 0, int encode = 0);

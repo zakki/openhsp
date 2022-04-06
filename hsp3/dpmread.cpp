@@ -57,24 +57,28 @@ int dpm_ini( char *fname, long dpmofs, int chksum, int deckey )
 	//
 	//		DPMファイル読み込みの初期化
 	//
-#ifndef HSPUTF8
 	char dpmfile[HSP_MAX_PATH];
-#else
-	WCHAR dpmfile[HSP_MAX_PATH];
+#ifdef HSPUTF8
+	WCHAR dpmfile_w[HSP_MAX_PATH];
 #endif
 #ifdef HSPWIN
 	if ( *fname == 0 ) {
-#ifndef HSPWINDLL
-		GetModuleFileName( NULL,dpmfile,_MAX_PATH );
-#else
-		GetModuleFileName( hDllInstance,dpmfile,_MAX_PATH );
-#endif
-	} else {
 #ifndef HSPUTF8
-		strcpy( dpmfile, fname );
+#ifndef HSPWINDLL
+		GetModuleFileName( NULL, dpmfile,_MAX_PATH );
 #else
-		wcscpy(dpmfile, chartoapichar(fname,&hactmp1));
-		freehac(&hactmp1);
+		GetModuleFileName(hDllInstance, dpmfile, _MAX_PATH);
+#endif
+#else
+#ifndef HSPWINDLL
+		GetModuleFileName(NULL, dpmfile_w, _MAX_PATH);
+#else
+		GetModuleFileName(hDllInstance, dpmfile_w, _MAX_PATH);
+#endif
+#endif
+
+#ifdef HSPUTF8
+		utf16_to_hsp3(dpmfile, (char *)dpmfile_w, _MAX_PATH);
 #endif
 	}
 #else

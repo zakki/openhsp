@@ -166,7 +166,9 @@ int Hsp3::Reset( int mode )
 		*p = 0;
 		if ( sum != 0x6cced385 ) return -1;
 		if ( mode ) {
-			if (dpm_filebase(fname) != 1) return -1;	// DPM,packfileからのみstart.axを読み込む
+			if (dpm_filebase(fname) != 1) {
+				return -1;	// DPM,packfileからのみstart.axを読み込む
+			}
 		}
 	}
 	else {

@@ -27,89 +27,6 @@
 #endif
 
 //
-//		API用の文字エンコードへ変換
-//
-HSPAPICHAR *chartoapichar( const char *orig,HSPAPICHAR **pphac)
-{
-	
-	int reslen;
-	wchar_t *resw;
-	if (orig == 0) {
-		*pphac = 0;
-		return 0;
-	}
-	reslen = MultiByteToWideChar(CP_UTF8,0,orig,-1,(LPWSTR)NULL,0);
-	resw = (wchar_t*)calloc(reslen+1,sizeof(wchar_t));
-	MultiByteToWideChar(CP_UTF8,0,orig,-1,resw,reslen);
-	*pphac = resw;
-	return resw;
-}
-
-void freehac(HSPAPICHAR **pphac)
-{
-	free(*pphac);
-	*pphac = 0;
-}
-
-HSPCHAR *apichartohspchar( const HSPAPICHAR *orig,HSPCHAR **pphc)
-{
-	int plen;
-	HSPCHAR *p = 0;
-	if (orig == 0) {
-		*pphc = 0;
-		return 0;
-	}
-	plen=WideCharToMultiByte(CP_UTF8,NULL,orig,-1,NULL,0,NULL,NULL);
-	p = (HSPCHAR *)calloc(plen+1,sizeof(HSPCHAR*));
-	WideCharToMultiByte(CP_UTF8,NULL,orig,-1,p,plen,NULL,NULL);
-	*pphc = p;
-	return p;
-}
-
-void freehc(HSPCHAR **pphc)
-{
-	free(*pphc);
-	*pphc = 0;
-}
-
-HSPAPICHAR *ansichartoapichar(const char *orig, HSPAPICHAR **pphac)
-{
-
-	int reslen;
-	wchar_t *resw;
-	if (orig == 0) {
-		*pphac = 0;
-		return 0;
-	}
-	reslen = MultiByteToWideChar(CP_ACP, 0, orig, -1, (LPWSTR)NULL, 0);
-	resw = (wchar_t*)calloc(reslen + 1, sizeof(wchar_t));
-	MultiByteToWideChar(CP_ACP, 0, orig, -1, resw, reslen);
-	*pphac = resw;
-	return resw;
-}
-
-char *apichartoansichar(const HSPAPICHAR *orig, char **ppac)
-{
-	int plen;
-	HSPCHAR *p = 0;
-	if (orig == 0) {
-		*ppac = 0;
-		return 0;
-	}
-	plen = WideCharToMultiByte(CP_ACP, NULL, orig, -1, NULL, 0, NULL, NULL);
-	p = (char *)calloc(plen + 1, sizeof(char*));
-	WideCharToMultiByte(CP_ACP,NULL, orig, -1, p, plen, NULL, NULL);
-	*ppac = p;
-	return p;
-}
-
-void freeac(char **ppac)
-{
-	free(*ppac);
-	*ppac = 0;
-}
-
-//
 //		basic C I/O support
 //
 static FILE *fp;
@@ -120,28 +37,6 @@ char *mem_ini( int size ) {
 
 void mem_bye( void *ptr ) {
 	free(ptr);
-}
-
-
-int mem_save( char *fname8, void *mem, int msize, int seekofs )
-{
-	FILE *fp;
-	int flen;
-	HSPAPICHAR *fnamew = 0;
-
-	if (seekofs<0) {
-		fp=_tfopen(chartoapichar(fname8,&fnamew),TEXT("wb"));
-	}
-	else {
-		fp=_tfopen(chartoapichar(fname8,&fnamew),TEXT("r+b"));
-	}
-	freehac(&fnamew);
-	if (fp==NULL) return -1;
-	if ( seekofs>=0 ) fseek( fp, seekofs, SEEK_SET );
-	flen = (int)fwrite( mem, 1, msize, fp );
-	fclose(fp);
-	free(fnamew);
-	return flen;
 }
 
 

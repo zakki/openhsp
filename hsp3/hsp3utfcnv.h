@@ -18,7 +18,7 @@
 //	Wide/Multibyte conversion
 //
 int hsp3_to_utf16(void* out, char* in, int bufsize);
-int utf16_to_hsp3(void* out, char* in, int bufsize);
+int utf16_to_hsp3(char* out, void* in, int bufsize);
 
 
 #ifdef HSPUTF8
