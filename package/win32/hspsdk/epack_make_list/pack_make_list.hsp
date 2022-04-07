@@ -1,0 +1,1143 @@
+#cmpopt varinit						1
+
+;--------------------------------------------------------------------------------------
+;
+;	#packリスト作成ツール ver 1.1
+;
+;	By. しまくろねこ
+;
+;--------------------------------------------------------------------------------------
+
+#packopt type 0															; 実行ファイルのタイプ(0:EXEファイル, 1:フルスクリーンEXE, 2:スクリーンセーバー)
+#packopt hide 1
+#packopt name "pack_make_list"											; 実行ファイル名
+#packopt xsize 640														; 初期ウィンドウXサイズ
+#packopt ysize 660														; 初期ウィンドウYサイズ
+#packopt icon "icon.ico"
+
+#uselib "shlwapi.dll"
+#func PathIsDirectory "PathIsDirectoryA" sptr							; 指定されたパスが存在しない場合は 0 が返る
+
+#include "shell32.as"
+#include "hspext.as"
+#include "gdi32.as"
+//#include "encode.as"													; S-JISからUTF-8に変換するため
+
+#const WINDOW_WIDTH					640									; ウィンドウの横サイズ
+#const WINDOW_HEIGHT				660									; ウィンドウの縦サイズ
+
+#define APPLICATION_TITLE			"#packリスト作成ツール"
+#define APPLICATION_VERSION			"1.1"
+
+#define CONFIG_FILE_NAME			"pack_make_list_dat.ini"			; 設定ファイル
+
+#define CONFIG_WINDOW_POS_X			"#window_pos_x"			+ "\t" 		; 設定ファイル内(最後に表示されていたウィンドウのX位置)
+#define CONFIG_WINDOW_POS_y			"#window_pos_y"			+ "\t" 		; 設定ファイル内(最後に表示されていたウィンドウのY位置)
+#define CONFIG_SELECT_PROGRAM_INDEX	"#select_program_index"	+ "\t" 		; 設定ファイル内(選択されていたリストボックスのインデックス)
+#define CONFIG_PROGRAM				"#program"				+ "\t" 		; 設定ファイル内(プログラム名のインデックス)
+#define CONFIG_FOLDER				"#folder"				+ "\t" 		; 設定ファイル内(検索フォルダ)
+#define CONFIG_SUB_FOLDER			"#sub_folder"			+ "\t" 		; 設定ファイル内(検索サブフォルダ)
+#define CONFIG_PACK_MODE			"#pack_mode"			+ "\t" 		; 設定ファイル内(#pack/#epack)
+#define CONFIG_ERROR_LENGTH			"#error_file_length"	+ "\t" 		; 設定ファイル内(エラーとするファイル文字数)
+#define CONFIG_KAKUCHOUSHI			"#kakuchoushi_"			+ "\t" 		; 設定ファイル内(拡張子)
+
+#const global FALSE					0
+#const global TRUE					1
+
+#const OBJ_ID_KAKUCHOUSHI_MAX		20									; オブジェクトID(拡張子)
+#const OBJ_ID_PROGRAM_LIST			OBJ_ID_KAKUCHOUSHI_MAX + 1			; オブジェクトID(プログラム名リストボックス)
+#const OBJ_ID_PROGRAM_LIST_DELETE	OBJ_ID_KAKUCHOUSHI_MAX + 2			; オブジェクトID(プログラム削除ボタン)
+#const OBJ_ID_FOLDER_REFRESH		OBJ_ID_KAKUCHOUSHI_MAX + 3			; オブジェクトID(リスト作成(+設定保存)ボタン)
+#const OBJ_ID_PACK_MODE				OBJ_ID_KAKUCHOUSHI_MAX + 4			; オブジェクトID(#pack/#epack)
+#const OBJ_ID_SETTING_UPDATE		OBJ_ID_KAKUCHOUSHI_MAX + 5			; オブジェクトID(設定保存)
+#const OBJ_ID_FOLDER_SELECT			OBJ_ID_KAKUCHOUSHI_MAX + 6			; オブジェクトID(検索フォルダ選択)
+#const OBJ_ID_CLIP_COPY				OBJ_ID_KAKUCHOUSHI_MAX + 7			; オブジェクトID(クリップボードにCOPY)
+#const OBJ_ID_FILE_WRITE			OBJ_ID_KAKUCHOUSHI_MAX + 8			; オブジェクトID(ファイルとして保存)
+#const OBJ_ID_NOW_FOLDER			OBJ_ID_KAKUCHOUSHI_MAX + 9			; オブジェクトID(検索フォルダ)
+#const OBJ_ID_MESBOX_KAKUCHOUSHI	OBJ_ID_KAKUCHOUSHI_MAX + 10			; オブジェクトID(検索されたファイルの結果が表示されるテキストボックス)
+//#const OBJ_ID_ERROR_LENGTH			OBJ_ID_KAKUCHOUSHI_MAX + 11			; オブジェクトID(エラーとするファイル文字数)
+#const OBJ_ID_SUB_FOLDER			OBJ_ID_KAKUCHOUSHI_MAX + 12			; オブジェクトID(サブフォルダ表示)
+#const OBJ_ID_SUB_FOLDER_REFRESH	OBJ_ID_KAKUCHOUSHI_MAX + 13			; オブジェクトID(サブフォルダ更新ボタン)
+#const OBJ_ID_ADD_PROGRAM_NAME		OBJ_ID_KAKUCHOUSHI_MAX + 14			; オブジェクトID(新規追加ウィンドウ - プログラム名)
+
+#const LENGTH_PROGRAM				256									; 新規追加ウィンドウ - プログラム名の最大文字数
+#const LENGTH_EXTENSION				32									; 検索拡張子の最大文字数
+#const LENGTH_FOLDER				1024								; 検索フォルダの最大文字数
+#const LENGTH_SUB_FOLDER_MAX		256									; サブフォルダの最大数
+#const LENGTH_SUB_FOLDER			1024								; サブフォルダの最大文字数
+//#const LENGTH_ERR_FOLDER_NAME		260									; エラーとするフォルダバイト数
+//#const LENGTH_ERR_FILE_NAME			260									; エラーとするファイルバイト数
+
+
+//-------------------------------------------------------------------------
+#module local_mod
+
+#uselib "kernel32"
+#func GetEnvironmentVariable					"GetEnvironmentVariableA" sptr, sptr, sptr
+
+#define HSP3_APPDATA_FOLDER						"Hot Soup Processor"
+#define HSP3DISH_HELPER_CONFIG_FILE				"hsp3dh.cfg"
+
+
+//-------------------------------------------------------------------------
+#deffunc func_pack_ini_file_write str file_name, var str_buff
+
+	sdim pack_ini_file, 1024
+
+	GetEnvironmentVariable "APPDATA", varptr(pack_ini_file), 990
+	pack_ini_file + = "\\" + HSP3_APPDATA_FOLDER + "\\" + file_name
+
+	bsave pack_ini_file, str_buff, strlen(str_buff)
+
+	return
+
+//-------------------------------------------------------------------------
+#defcfunc func_pack_ini_file_read str file_name, var file_buff
+
+	sdim pack_ini_file, 1024
+
+	GetEnvironmentVariable "APPDATA", varptr(pack_ini_file), 990
+	pack_ini_file + = "\\" + HSP3_APPDATA_FOLDER + "\\" + file_name
+
+	re = FALSE
+
+	exist pack_ini_file
+	if strsize >= 0 {
+		sdim file_buff, strsize
+		bload pack_ini_file, file_buff, strsize
+		re = TRUE
+	}
+
+	return re
+
+//-------------------------------------------------------------------------
+#deffunc dim_del array v1, int ind, int mode
+
+	le = length(v1)
+	vs = varsize(v1)
+
+	switch mode
+	case 0 : dim  d_v1, le : swbreak
+	case 1 : sdim d_v1, vs, le : swbreak
+	swend
+
+	repeat le
+		d_v1(cnt) = v1(cnt)
+	loop
+	
+	switch mode
+	case 0 : dim  v1, le - 1 : swbreak
+	case 1 : sdim v1, vs, le - 1 : swbreak
+	swend
+
+	repeat length(v1)
+		if cnt >= ind {
+			v1(cnt) = d_v1(cnt + 1)
+		} else{
+			v1(cnt) = d_v1(cnt)
+		}
+	loop
+
+	return
+
+//-------------------------------------------------------------------------
+#deffunc dim_del2 array v1, int ind, int mode
+
+	le_1 = length(v1)
+	le_2 = length2(v1)
+	vs = varsize(v1)
+
+	switch mode
+	case 0 : dim  d_v1, le_1, le_2 : swbreak
+	case 1 : sdim d_v1, vs, le_1, le_2 : swbreak
+	swend
+
+	repeat le_1
+		c = cnt
+		repeat le_2
+			d_v1(c, cnt) = v1(c, cnt)
+		loop
+	loop
+	
+	switch mode
+	case 0 : dim  v1, le_1 - 1, le_2 : swbreak
+	case 1 : sdim v1, vs, le_1 - 1, le_2 : swbreak
+	swend
+
+	repeat length(v1)
+		c = cnt
+		repeat length2(v1)
+			if c >= ind {
+				v1(c, cnt) = d_v1(c + 1, cnt)
+			} else{
+				v1(c, cnt) = d_v1(c, cnt)
+			}
+		loop
+	loop
+
+	return
+
+//-------------------------------------------------------------------------
+#defcfunc cfunc_get_path str path, str spilt_str, int mode
+
+	re = ""
+	dummy_buff = ""
+	copy_path = path
+
+	split copy_path, spilt_str, dummy_buff
+
+	switch mode
+	case 0 : re = dummy_buff(length(dummy_buff) - 1) : swbreak
+	case 1 : re = strmid(copy_path, 0, strlen(copy_path) - strlen(dummy_buff(length(dummy_buff) - 1))) : swbreak
+	swend
+
+	sdim dummy_buff, 1, 1
+
+	return re
+
+#global
+//-------------------------------------------------------------------------
+*etc_init
+
+	current_dir				= dir_cur
+	select_index			= 0
+	copy_select_index		= -1
+	program_list			= ""
+	add_program_name		= ""
+	win_pos_x				= 0
+	win_pos_y				= 0
+	program_cnt_max			= 0
+	program_name			= ""
+	dummy_now_folder		= ""
+	c						= 0
+	hListbox				= 0
+	select_sub_folder_cnt	= 0
+	sub_folder_buff			= ""
+	listbox_item			= ""
+	select_cnt				= 0
+
+	gosub *project_count_read
+
+	title APPLICATION_TITLE + " - Ver " + APPLICATION_VERSION
+	screen 0, WINDOW_WIDTH, WINDOW_HEIGHT, 0, win_pos_x, win_pos_y
+	syscolor 15
+	boxf
+	color 0, 0, 0
+
+	dim obj_id, 100
+	dim obj_id2, 100
+	sdim extension, LENGTH_EXTENSION, program_cnt_max, OBJ_ID_KAKUCHOUSHI_MAX
+
+	sdim now_folder, LENGTH_FOLDER, program_cnt_max			: now_folder(0)		= ""
+	mesbox_kakuchoushi = ""
+	dim  pack_index, program_cnt_max						: pack_index(0)		= 0
+	//dim  error_length, program_cnt_max						: error_length(0)	= LENGTH_ERR_FILE_NAME
+	sdim sub_folder, LENGTH_SUB_FOLDER, program_cnt_max		: sub_folder(0)		= ""
+
+	objmode 2
+	font msgothic, 12
+
+	pos 10, 70
+	mes "拡張子(例:txt)"
+
+	sdim ext, LENGTH_EXTENSION, OBJ_ID_KAKUCHOUSHI_MAX
+
+	repeat OBJ_ID_KAKUCHOUSHI_MAX
+		pos 10, 90 + cnt * 28  : input ext(cnt), 100, 24, 32 : obj_id(cnt) = stat
+	loop
+
+	y = 10
+
+	pos 10, y + 5
+	mes "プログラム名"
+
+	objsize 330, 24
+	pos 110, y : combox select_index, 100, program_list				: obj_id(OBJ_ID_PROGRAM_LIST)		= stat
+
+	objsize 60, 24
+	pos 450, y - 1 : button gosub "削除", *program_list_delete		: obj_id(OBJ_ID_PROGRAM_LIST_DELETE) = stat
+	objsize 100, 24
+	pos 530, y - 1 : button gosub "新規追加", *program_list_add
+
+	y += 30
+	color 100, 100, 100 : line 10, y, 628, y
+	color 255, 255, 255 : line 10, y + 1, 628, y + 1
+	color 0, 0, 0
+
+	y += 10
+	objsize 120, 24
+	pos 140, y : button gosub "検索フォルダ選択", *folder_select	: obj_id(OBJ_ID_FOLDER_SELECT)		= stat
+	pos 270, y : input now_folder(0), 360, 24, 0					: obj_id(OBJ_ID_NOW_FOLDER)			= stat
+
+	y += 35
+	color 100, 100, 100 : line 140, y, 628, y
+	color 255, 255, 255 : line 140, y + 1, 628, y + 1
+	color 0, 0, 0
+
+	y += 15
+	pos 140, y + 5 : mes "検索サブフォルダ"
+	pos 270, y + 5 : mes "検索対象のサブフォルダをクリックして選択してください"
+	gosub *list_box_control_add
+
+	pos 140, y + 30 : button gosub "サブフォルダ更新", *list_box_add	: obj_id(OBJ_ID_SUB_FOLDER_REFRESH)	= stat
+
+
+	y += 200
+	color 100, 100, 100 : line 140, y + 1, 628, y + 1
+	color 255, 255, 255 : line 140, y + 2, 628, y + 2
+	color 0, 0, 0
+
+	//y += 20
+	//pos 140, y : mes "ファイル名バイト数"
+	//pos 270, y - 5  : input error_length(0), 50, 24, 0					: obj_id(OBJ_ID_ERROR_LENGTH)		= stat : objprm obj_id(OBJ_ID_ERROR_LENGTH), error_length(0)
+	//pos 330, y : mes "バイトを超えた場合コメントアウトする"
+
+	//y += 30
+	//color 100, 100, 100 : line 140, y - 1, 628, y - 1
+	//color 255, 255, 255 : line 140, y, 628, y
+	//color 0, 0, 0
+
+	y += 15
+	objsize 100, 24
+	pos 140, y : mes "#pack/#epack選択"
+	pos 270, y - 5 : combox pack_index(0), 0, "#pack\n#epack"			: obj_id(OBJ_ID_PACK_MODE)			= stat : objprm obj_id(OBJ_ID_PACK_MODE), pack_index(0)
+	objsize 140, 24
+	pos 490, y - 5 : button gosub "設定保存", *setting_update			: obj_id(OBJ_ID_SETTING_UPDATE)		= stat
+
+	y += 25
+	color 100, 100, 100 : line 140, y, 628, y
+	color 255, 255, 255 : line 140, y + 1, 628, y + 1
+	color 0, 0, 0
+
+	y += 10
+	objsize 160, 24
+	pos 140, y : button gosub "リスト作成(+設定保存)", *make_list 	: obj_id(OBJ_ID_FOLDER_REFRESH) = stat
+	objsize 140, 24
+	pos 340, y : button gosub "クリップボードにCOPY", *clip_copy	: obj_id(OBJ_ID_CLIP_COPY) = stat
+	pos 490, y : button gosub "ファイルとして保存", *file_write		: obj_id(OBJ_ID_FILE_WRITE) = stat
+	//pos 140, y + 35 : mesbox mesbox_kakuchoushi, 490, 210, 1 + 4, 0	: obj_id(OBJ_ID_MESBOX_KAKUCHOUSHI)	= stat : hInput = objinfo(stat, 2)
+	pos 140, y + 35 : mesbox mesbox_kakuchoushi, 490, 261, 1 + 4, 0	: obj_id(OBJ_ID_MESBOX_KAKUCHOUSHI)	= stat : hInput = objinfo(stat, 2)
+
+	; -------
+	screen 1, 480, 100, screen_tool, win_pos_x, win_pos_y
+	gsel 1, 1
+	title APPLICATION_TITLE + " - " + "新規追加"
+	objmode 2
+	font msgothic, 12
+	syscolor 15
+	boxf
+	color 0, 0, 0
+	pos 10, 16  : mes "プログラム名"
+	pos 100, 10 : input add_program_name, 350, 24, 0 				: obj_id2(OBJ_ID_ADD_PROGRAM_NAME) = stat
+	objsize 100, 24
+	pos 240, 50 : button gosub "追加", *add_program
+	pos 350, 50 : button gosub "キャンセル", *add_program_cancel
+	; -------
+	gsel 1, -1
+	gsel 0
+
+
+	if program_cnt_max == 1 {
+		obj_enable_sw = FALSE
+	} else {
+		obj_enable_sw = TRUE
+	}
+	gosub *object_enable
+	gosub *config_file_read
+	gosub *set_obj_value
+	width WINDOW_WIDTH, WINDOW_HEIGHT, win_pos_x, win_pos_y
+
+	gsel 0, 1
+
+//-------------------------------------------------------------------------
+*main
+
+	if dummy_now_folder != now_folder(0) {
+		c = select_index + 1
+		now_folder(c) = now_folder(0)
+		gosub *list_box_add
+	}
+
+	if select_index != copy_select_index {
+		gosub *list_box_add
+		gosub *set_obj_value
+		copy_select_index = select_index
+	}
+
+	dummy_now_folder = now_folder(0)
+	win_pos_x = ginfo(4)
+	win_pos_y = ginfo(5)
+	wait 1
+
+	goto *main
+
+//-------------------------------------------------------------------------
+*list_box_add
+
+	if program_cnt_max > 1 {
+		c = select_index + 1
+		now_folder(0) = now_folder(c)
+
+		clrobj obj_id(OBJ_ID_SUB_FOLDER), obj_id(OBJ_ID_SUB_FOLDER)
+		gosub *list_box_control_add
+		gosub *get_sub_dir
+		gosub *list_box_select_item
+	}
+
+	return
+
+//-------------------------------------------------------------------------
+*list_box_control_add
+
+	pos 270, 120
+	winobj "listbox", "", $200, $50200001 | $8, 360, 180 : obj_id(OBJ_ID_SUB_FOLDER) = stat
+	hListbox = objinfo(obj_id(OBJ_ID_SUB_FOLDER), 2)
+	GetStockObject 17
+	sendmsg hListbox, $30, stat
+
+	return
+
+//-------------------------------------------------------------------------
+*get_sub_dir
+
+	cur_dir = dir_cur
+
+	c = select_index + 1
+
+	if strlen(now_folder(c)) > 0 {
+
+		PathIsDirectory now_folder(c)
+
+		if stat > 0 {
+			chdir now_folder(c)
+			line_buff = ""
+			dir_buff = ""
+			notesel dir_buff
+			dirlist dir_buff, "*.*", 5
+			get_folder_max_cnt = stat
+
+			sdim list_box_folder, LENGTH_SUB_FOLDER, get_folder_max_cnt
+			repeat get_folder_max_cnt
+				noteget line_buff, cnt
+				list_box_folder(cnt) = line_buff
+			loop
+			sortstr list_box_folder, 0
+			repeat get_folder_max_cnt
+				noteadd list_box_folder(cnt), cnt, 1
+			loop
+
+			sdim sub_folder_name, LENGTH_SUB_FOLDER, get_folder_max_cnt
+			repeat get_folder_max_cnt
+				noteget line_buff, cnt
+				sub_folder_name(cnt) = line_buff
+				sendmsg hListbox, $180,,sub_folder_name(cnt)
+			loop
+
+			noteunsel
+		}
+
+		chdir cur_dir
+
+	}
+
+	return
+
+//-------------------------------------------------------------------------
+*folder_select
+
+	dim bi, 8
+	sdim sztmp, $206
+	ttl	= "フォルダ選択"
+	bi	= 0, 0, varptr(sztmp), varptr(ttl), 1, 0, 0, 0
+	SHBrowseForFolder varptr(bi)
+	idl = stat
+	SHGetPathFromIDList idl, varptr(sztmp)
+	
+	if stat {
+		c = select_index + 1
+		now_folder(c) = sztmp
+		objprm obj_id(OBJ_ID_NOW_FOLDER), now_folder(c)
+
+		gosub *list_box_add
+	}
+
+	return
+
+//-------------------------------------------------------------------------
+*program_list_delete
+
+	get_buff = ""
+	notesel program_list
+	noteget get_buff, select_index
+	noteunsel
+
+	dialog get_buff + "\nを削除しますか？", 3, "削除確認"
+
+	if stat = 6 {
+
+		program_list = ""
+
+		c = select_index + 1
+
+		if program_cnt_max > c {
+
+			sdim d_extension, LENGTH_EXTENSION, program_cnt_max, OBJ_ID_KAKUCHOUSHI_MAX
+			repeat length(d_extension)
+				i = cnt
+				repeat OBJ_ID_KAKUCHOUSHI_MAX
+					d_extension(i, cnt) = str(extension(i, cnt))
+				loop
+			loop
+
+			program_cnt_max--
+
+			sdim extension, LENGTH_EXTENSION, program_cnt_max, OBJ_ID_KAKUCHOUSHI_MAX
+			repeat length(extension)
+				i = cnt
+				if i + 1 > c {
+					repeat OBJ_ID_KAKUCHOUSHI_MAX
+						extension(i, cnt) = str(d_extension(i + 1, cnt))
+					loop
+				} else {
+					repeat OBJ_ID_KAKUCHOUSHI_MAX
+						extension(i, cnt) = str(d_extension(i, cnt))
+					loop
+				}
+			loop
+
+			dim_del  program_name, c, 1
+			dim_del  now_folder, c, 1
+			dim_del  pack_index, c, 0
+			//dim_del  error_length, c, 0
+			dim_del2 listbox_item, c, 1
+			dim_del  select_sub_folder_cnt, c, 0
+		}
+
+		repeat program_cnt_max
+			if cnt > 0 {
+				program_list += program_name(cnt) + "\n"
+			}
+		loop
+
+		objprm obj_id(OBJ_ID_PROGRAM_LIST), program_list
+
+		if program_cnt_max == c {
+			select_index--
+		}
+
+		mesbox_kakuchoushi = ""
+
+		if program_cnt_max <= 1 {
+			select_index = 0
+			program_cnt_max = 1
+
+			repeat OBJ_ID_KAKUCHOUSHI_MAX
+				objprm obj_id(cnt), ""
+			loop
+
+			now_folder(0) = ""
+			mesbox_kakuchoushi = ""
+			objprm obj_id(OBJ_ID_NOW_FOLDER), now_folder(0)
+			//objprm obj_id(OBJ_ID_ERROR_LENGTH), LENGTH_ERR_FILE_NAME
+			objprm obj_id(OBJ_ID_PACK_MODE), 0
+			objprm obj_id(OBJ_ID_MESBOX_KAKUCHOUSHI), mesbox_kakuchoushi
+			clrobj obj_id(OBJ_ID_SUB_FOLDER), obj_id(OBJ_ID_SUB_FOLDER)
+			gosub *list_box_control_add
+
+			obj_enable_sw = FALSE
+			gosub *object_enable
+			gosub *config_file_write
+		} else {
+			objprm obj_id(OBJ_ID_PROGRAM_LIST), select_index
+			gosub *set_obj_value
+			objprm obj_id(OBJ_ID_MESBOX_KAKUCHOUSHI), mesbox_kakuchoushi
+			gosub *list_box_add
+			gosub *set_obj_value
+			gosub *setting_update
+		}
+
+	}
+
+	return
+
+//-------------------------------------------------------------------------
+*program_list_add
+
+	if program_cnt_max > 1 {
+		gosub *setting_update
+	}
+
+	gsel 0, -1
+
+	add_program_name = ""
+	gsel 1, 2
+	width 480, 120, win_pos_x, win_pos_y
+	objprm obj_id2(OBJ_ID_ADD_PROGRAM_NAME), add_program_name
+	objsel obj_id2(OBJ_ID_ADD_PROGRAM_NAME)
+
+	return
+
+//-------------------------------------------------------------------------
+*add_program
+
+	if strlen(add_program_name) == 0 {
+		dialog "プログラム名が未入力です。", 1, "注意"
+		objsel obj_id2(OBJ_ID_ADD_PROGRAM_NAME)
+		return
+	}
+
+	; ------- プログラム名
+	program_list = ""
+	sdim d_program_name, LENGTH_PROGRAM, program_cnt_max
+	repeat program_cnt_max
+		d_program_name(cnt) = program_name(cnt)
+	loop
+	sdim program_name, LENGTH_PROGRAM, program_cnt_max + 1
+	program_name(program_cnt_max) = str(add_program_name)
+	repeat program_cnt_max
+		program_name(cnt) = d_program_name(cnt)
+		if cnt > 0 {
+			program_list += program_name(cnt) + "\n"
+		}
+	loop
+	sdim d_program_name, 1
+	program_list += add_program_name
+
+	; ------- 拡張子
+	sdim d_extension, LENGTH_EXTENSION, program_cnt_max, OBJ_ID_KAKUCHOUSHI_MAX
+	repeat program_cnt_max
+		c = cnt
+		repeat OBJ_ID_KAKUCHOUSHI_MAX
+			d_extension(c, cnt) = str(extension(c, cnt))
+		loop
+	loop
+	sdim extension, LENGTH_EXTENSION, program_cnt_max + 1, OBJ_ID_KAKUCHOUSHI_MAX
+	repeat program_cnt_max
+		c = cnt
+		repeat OBJ_ID_KAKUCHOUSHI_MAX
+			extension(c, cnt) = str(d_extension(c, cnt))
+		loop
+	loop
+	sdim d_extension, 1
+
+	; ------- フォルダ
+	sdim d_now_folder, LENGTH_FOLDER, program_cnt_max
+	repeat program_cnt_max
+		d_now_folder(cnt) = now_folder(cnt)
+	loop
+	sdim now_folder, LENGTH_FOLDER, program_cnt_max + 1
+	repeat program_cnt_max
+		now_folder(cnt) = d_now_folder(cnt)
+	loop
+	sdim d_now_folder, 1
+
+	; ------- #pack/#epack
+	dim d_pack_index, program_cnt_max
+	repeat program_cnt_max
+		d_pack_index(cnt) = pack_index(cnt)
+	loop
+	dim pack_index, program_cnt_max + 1
+	repeat program_cnt_max
+		pack_index(cnt) = d_pack_index(cnt)
+	loop
+	dim d_pack_index, 1
+
+	; ------- エラーファイル文字数
+	//dim d_error_length, program_cnt_max
+	//repeat program_cnt_max
+	//	d_error_length(cnt) = error_length(cnt)
+	//loop
+	//dim error_length, program_cnt_max + 1
+	//repeat program_cnt_max
+	//	error_length(cnt) = d_error_length(cnt)
+	//loop
+	//error_length(program_cnt_max) = LENGTH_ERR_FILE_NAME
+	//dim d_error_length, 1
+
+	; ------- リストボックスアイテム
+	sdim d_listbox_item, LENGTH_SUB_FOLDER, program_cnt_max, LENGTH_SUB_FOLDER_MAX
+	repeat program_cnt_max
+		c = cnt
+		repeat LENGTH_SUB_FOLDER_MAX
+			d_listbox_item(c, cnt) = listbox_item(c, cnt)
+		loop
+	loop
+	sdim listbox_item, LENGTH_SUB_FOLDER, program_cnt_max + 1, LENGTH_SUB_FOLDER_MAX
+	repeat program_cnt_max
+		c = cnt
+		repeat LENGTH_SUB_FOLDER_MAX
+			listbox_item(c, cnt) = d_listbox_item(c, cnt)
+		loop
+	loop
+	sdim d_listbox_item, 1
+
+	; ------- リストボックスを選択しているアイテム数
+	dim d_select_sub_folder_cnt, program_cnt_max
+	repeat program_cnt_max
+		d_select_sub_folder_cnt(cnt) = select_sub_folder_cnt(cnt)
+	loop
+	dim select_sub_folder_cnt, program_cnt_max + 1
+	repeat program_cnt_max
+		select_sub_folder_cnt(cnt) = d_select_sub_folder_cnt(cnt)
+	loop	
+	dim d_select_sub_folder_cnt, 1
+
+	; ------- 
+	program_cnt_max++
+
+	gsel 1, -1
+	gsel 0, 1
+
+	objprm obj_id(OBJ_ID_PROGRAM_LIST), program_list
+	objprm obj_id(OBJ_ID_PROGRAM_LIST), program_cnt_max - 2
+
+
+	obj_enable_sw = TRUE
+	gosub *object_enable
+
+	gosub *config_file_write
+
+	return
+
+//-------------------------------------------------------------------------
+*add_program_cancel
+
+	gsel 1, -1
+	gsel 0, 1
+
+	return
+
+//-------------------------------------------------------------------------
+*make_list
+
+	gosub *setting_update
+	gosub *get_file_list
+
+	return
+
+//-------------------------------------------------------------------------
+*error_sub
+
+	return
+
+//-------------------------------------------------------------------------
+*get_file_list
+
+	PathIsDirectory now_folder(0)
+
+	if strlen(now_folder(0)) == 0 {
+		dialog "フォルダを指定してください。", 1
+		return
+	}
+	
+	if stat == 0 {
+		dialog "フォルダが存在しません。", 1
+		return
+	}
+
+	cur_dir = dir_cur
+
+	mesbox_kakuchoushi = ""
+
+	c = select_index + 1
+
+	repeat OBJ_ID_KAKUCHOUSHI_MAX
+		i = cnt
+		if strlen(extension(c, i)) > 0 {
+			chdir now_folder(0)
+			file_list = ""
+			dirlist file_list, "*." + extension(c, i) , 1
+
+			sub_file_list = ""
+			line_buff = ""
+
+			repeat select_sub_folder_cnt(c)
+				e = cnt
+				sub_file_list = ""
+				chdir now_folder(0) + "\\" + listbox_item(c, e)
+
+				f_size = 0
+				dirlist2h 1, '\n'
+				dirlist2 f_size, "*." + extension(c, i), 1, '\\'
+				sdim sub_file_list, f_size
+				dirlist2r sub_file_list
+
+				notesel sub_file_list
+
+				repeat notemax
+					noteget line_buff, cnt
+					noteadd listbox_item(c, e) + "\\" + line_buff, cnt, 1
+				loop
+				noteunsel
+				file_list += sub_file_list
+			loop
+
+			; ---------------------------------------------
+			pack_str	= ""
+			sdim copy_buff, strlen(file_list)
+			copy_buff	= file_list
+			re_buff		= ""
+
+			switch pack_index
+			case 0 : pack_str  = "#pack "	: swbreak
+			case 1 : pack_str  = "#epack "	: swbreak
+			swend
+
+			notesel copy_buff
+
+			sdim in_buff, LENGTH_SUB_FOLDER, notemax
+
+			buff_cnt = 0
+			repeat notemax
+				line_buff = ""
+				noteget line_buff, cnt
+				if strlen(line_buff) > 0 {
+					in_buff(buff_cnt) = line_buff
+					buff_cnt++
+				}
+			loop
+			noteunsel
+	
+			sdim put_buff, LENGTH_SUB_FOLDER, buff_cnt
+			repeat buff_cnt
+				put_buff(cnt) = in_buff(cnt)
+			loop
+
+			sdim err_buff, LENGTH_SUB_FOLDER, buff_cnt
+
+			sdim utf8_buff, LENGTH_SUB_FOLDER, buff_cnt
+
+			//repeat buff_cnt
+			//	utf8 = ""
+			//	sjis2utf8n utf8, put_buff(cnt)				; S-JIS -> UTF-8 変換
+			//	utf8_buff(cnt) = utf8
+			//loop
+
+			repeat buff_cnt
+				//err_file_flg	= FALSE
+				//err_folder_flg	= FALSE
+				
+				//file_length		= strlen(cfunc_get_path(utf8_buff(cnt), "\\", 0))
+				//folder_length	= strlen(cfunc_get_path(utf8_buff(cnt), "\\", 1))
+				
+				//if file_length > error_length(c)			: err_file_flg		= TRUE
+				//if folder_length > LENGTH_ERR_FOLDER_NAME	: err_folder_flg	= TRUE
+
+				//if (err_file_flg == FALSE) && (err_folder_flg == FALSE) {
+					put_buff(cnt) = pack_str + "\"" + put_buff(cnt) + "\""
+					err_buff(cnt) = put_buff(cnt)
+					strrep put_buff(cnt), "\\", "\\\\"
+				//} else {
+				//	if err_file_flg	{
+				//		err_buff(cnt) = "// " + pack_str +  "\"" + put_buff(cnt) + "\"\t; (ファイルバイト数:" + file_length + ")"
+				//	}
+				//	if err_folder_flg {
+				//		switch err_file_flg
+				//		case FALSE	: err_buff(cnt) = "// " + pack_str +  "\"" + put_buff(cnt) + "\"\t; (フォルダバイト数:" + folder_length + ")" : swbreak
+				//		case TRUE	: err_buff(cnt) = err_buff(cnt) + "\t; (フォルダバイト数:" + folder_length + ")" : swbreak
+				//		swend	
+				//	}
+				//}
+				//strrep err_buff(cnt), "\\", "\\\\"
+			loop
+
+			; ---------------------------------------------
+
+			repeat buff_cnt
+				//re_buff += err_buff(cnt) + "\n"
+				re_buff += put_buff(cnt) + "\n"
+			loop
+			mesbox_kakuchoushi += re_buff
+		}
+	loop
+
+	if strlen(mesbox_kakuchoushi) > 0 {
+		sortnote mesbox_kakuchoushi, 0
+		notesel mesbox_kakuchoushi
+		noteadd "//計:" + notemax + " ファイル", 0, 0
+		noteunsel
+	}
+
+	sdim re_buff, 1
+	sdim in_buff, 1, 1
+	sdim d_list, 1
+	sdim copy_buff, 1
+	sdim sub_file_list, 1
+
+	objprm obj_id(OBJ_ID_MESBOX_KAKUCHOUSHI), mesbox_kakuchoushi
+
+	chdir cur_dir
+
+	return
+
+//-------------------------------------------------------------------------
+*config_file_read
+
+	win_pos_x = 0
+	win_pos_y = 0
+
+	file_buff = ""
+
+	re = func_pack_ini_file_read(CONFIG_FILE_NAME, file_buff)
+
+	if re {
+
+		c = 0
+		i = 0
+
+		notesel file_buff
+
+		line_buff = ""
+		repeat notemax
+			noteget line_buff, cnt
+			if instr(line_buff, 0, CONFIG_WINDOW_POS_X) >= 0 {
+				win_pos_x = int(strmid(line_buff, strlen(CONFIG_WINDOW_POS_X), strlen(line_buff) - strlen(CONFIG_WINDOW_POS_X)))
+			}
+			if instr(line_buff, 0, CONFIG_WINDOW_POS_Y) >= 0 {
+				win_pos_y = int(strmid(line_buff, strlen(CONFIG_WINDOW_POS_Y), strlen(line_buff) - strlen(CONFIG_WINDOW_POS_Y)))
+			}
+			if instr(line_buff, 0, CONFIG_SELECT_PROGRAM_INDEX) >= 0 {
+				select_index = int(strmid(line_buff, strlen(CONFIG_SELECT_PROGRAM_INDEX), strlen(line_buff) - strlen(CONFIG_SELECT_PROGRAM_INDEX)))
+			}
+			
+			if instr(line_buff, 0, CONFIG_PROGRAM) >= 0 {
+				c++
+				i = 0
+			}
+			if instr(line_buff, 0, CONFIG_FOLDER) >= 0 {
+				now_folder(c) = strmid(line_buff, strlen(CONFIG_FOLDER), strlen(line_buff) - strlen(CONFIG_FOLDER))
+			}
+
+			if instr(line_buff, 0, CONFIG_SUB_FOLDER) >= 0 {
+				split_sub_folder_name = ""
+				sub_folder_buff = strmid(line_buff, strlen(CONFIG_SUB_FOLDER), strlen(line_buff) - strlen(CONFIG_SUB_FOLDER))
+				split sub_folder_buff, "\t", split_sub_folder_name
+				select_sub_folder_cnt(c) = stat
+				repeat select_sub_folder_cnt(c)
+					listbox_item(c, cnt) = split_sub_folder_name(cnt)
+				loop
+			}
+
+			if instr(line_buff, 0, CONFIG_PACK_MODE) >= 0 {
+				pack_index(c) = int(strmid(line_buff, strlen(CONFIG_PACK_MODE), strlen(line_buff) - strlen(CONFIG_PACK_MODE)))
+			}
+			if instr(line_buff, 0, CONFIG_ERROR_LENGTH) >= 0 {
+				error_length(c) = int(strmid(line_buff, strlen(CONFIG_ERROR_LENGTH), strlen(line_buff) - strlen(CONFIG_ERROR_LENGTH)))
+			}
+			repeat OBJ_ID_KAKUCHOUSHI_MAX
+				buff = CONFIG_KAKUCHOUSHI + str(cnt) + "\t"
+				if instr(line_buff, 0, buff) >=0 {
+					extension(c, i) = strmid(line_buff, strlen(buff), strlen(line_buff) - strlen(buff))
+					i++
+				}
+			loop
+		loop
+
+		noteunsel
+	}
+
+	return
+
+//-------------------------------------------------------------------------
+*set_obj_value
+
+	if program_cnt_max > 1 {
+		c = select_index + 1
+
+		objprm obj_id(OBJ_ID_NOW_FOLDER), now_folder(c)
+		objprm obj_id(OBJ_ID_PACK_MODE), pack_index(c)
+		//objprm obj_id(OBJ_ID_ERROR_LENGTH), error_length(c)
+		objprm obj_id(OBJ_ID_PROGRAM_LIST), select_index
+
+		gosub *list_box_select_item
+
+		repeat OBJ_ID_KAKUCHOUSHI_MAX
+			objprm obj_id(cnt), str(extension(c, cnt))
+		loop
+	}
+
+	return
+
+//-------------------------------------------------------------------------
+*list_box_select_item
+
+	repeat get_folder_max_cnt
+		i = cnt
+		repeat length(sub_folder_name)
+			if listbox_item(c, i) == sub_folder_name(cnt) {
+				sendmsg hListbox, $185, 1, cnt
+			}
+		loop
+	loop
+
+	return
+
+//-------------------------------------------------------------------------
+*clip_copy
+
+	sendmsg hInput, $B1, , -1
+	sendmsg hInput, $0301
+
+	return
+
+//-------------------------------------------------------------------------
+*setting_update
+
+	//if strlen(str(error_length(0))) == 0 {
+	//	error_length(0) = LENGTH_ERR_FILE_NAME
+	//}
+	//if error_length(0) <= 0 {
+	//	error_length(0) = LENGTH_ERR_FILE_NAME
+	//}
+	//objprm obj_id(OBJ_ID_ERROR_LENGTH), error_length(0)
+
+	c = select_index + 1
+
+	if program_cnt_max >= 1 {
+
+		now_folder(c) = str(now_folder(0))
+		pack_index(c) = pack_index(0)
+		error_length(c) = error_length(0)
+
+		repeat OBJ_ID_KAKUCHOUSHI_MAX
+			extension(c, cnt) = str(ext(cnt))
+		loop
+	}
+
+	sendmsg hListbox, $190
+	select_cnt = stat
+
+	sendmsg hListbox, $18B
+	item_cnt = stat
+
+	select_sub_folder_cnt(c) = 0
+
+	repeat item_cnt
+		sendmsg hListbox, $187, cnt
+		if stat {
+			listbox_item(c, select_sub_folder_cnt(c)) = sub_folder_name(cnt)
+			select_sub_folder_cnt(c)++
+		}
+	loop	
+
+	gosub *config_file_write
+
+	return
+
+//-------------------------------------------------------------------------
+*file_write
+
+	dialog "", 17, "すべてのファイル(*.*)"
+
+	if stat > 0 {
+		bsave refstr, mesbox_kakuchoushi, strlen(mesbox_kakuchoushi)
+	}
+
+	return
+
+//-------------------------------------------------------------------------
+*project_count_read
+
+	program_cnt_max = 1
+
+	file_buff = ""
+
+	re = func_pack_ini_file_read(CONFIG_FILE_NAME, file_buff)
+	
+	if re {
+		notesel file_buff
+
+		line_buff = ""
+		repeat notemax
+			noteget line_buff, cnt
+			if instr(line_buff, 0, CONFIG_PROGRAM) >= 0 {
+				tab_buff = ""
+				split line_buff, "\t", tab_buff
+				program_list += tab_buff(2) + "\n"
+				program_cnt_max++
+			}
+		loop
+	}
+
+	sdim program_name, LENGTH_PROGRAM, program_cnt_max
+	sdim listbox_item, LENGTH_SUB_FOLDER, program_cnt_max, LENGTH_SUB_FOLDER_MAX
+	dim select_sub_folder_cnt, program_cnt_max
+
+	notesel program_list
+
+	c = 0
+	program_buff = ""
+
+	repeat program_cnt_max
+		if cnt > 0 {
+			noteget program_buff, c
+			program_name(c + 1) = program_buff
+			c++
+		}
+	loop
+
+	noteunsel
+
+	return
+
+//-------------------------------------------------------------------------
+*object_enable
+
+	repeat OBJ_ID_KAKUCHOUSHI_MAX
+		objenable obj_id(cnt), obj_enable_sw
+	loop
+
+	objenable obj_id(OBJ_ID_PROGRAM_LIST), obj_enable_sw
+	objenable obj_id(OBJ_ID_PROGRAM_LIST_DELETE), obj_enable_sw
+	objenable obj_id(OBJ_ID_FOLDER_REFRESH), obj_enable_sw
+	objenable obj_id(OBJ_ID_PACK_MODE), obj_enable_sw
+	objenable obj_id(OBJ_ID_SETTING_UPDATE), obj_enable_sw
+	objenable obj_id(OBJ_ID_FOLDER_SELECT), obj_enable_sw
+	objenable obj_id(OBJ_ID_CLIP_COPY), obj_enable_sw
+	objenable obj_id(OBJ_ID_FILE_WRITE), obj_enable_sw
+	objenable obj_id(OBJ_ID_NOW_FOLDER), obj_enable_sw
+	objenable obj_id(OBJ_ID_MESBOX_KAKUCHOUSHI), obj_enable_sw
+	//objenable obj_id(OBJ_ID_ERROR_LENGTH), obj_enable_sw
+	objenable obj_id(OBJ_ID_SUB_FOLDER), obj_enable_sw
+	objenable obj_id(OBJ_ID_SUB_FOLDER_REFRESH), obj_enable_sw
+
+	return
+
+//-------------------------------------------------------------------------
+*config_file_write
+
+	file_buff  = ""
+	file_buff += CONFIG_WINDOW_POS_X + str(win_pos_x) + "\n"
+	file_buff += CONFIG_WINDOW_POS_Y + str(win_pos_y) + "\n"
+
+	file_buff += "\n"
+
+	if program_cnt_max > 1 {
+		file_buff += CONFIG_SELECT_PROGRAM_INDEX + str(select_index) + "\n"
+		file_buff += "\n"
+		repeat program_cnt_max - 1
+			c = cnt + 1
+			file_buff += CONFIG_PROGRAM + str(c) + "\t" + program_name(c) + "\n"
+			file_buff += CONFIG_FOLDER + now_folder(c) + "\n"
+
+			sub_folder_buff = ""
+			repeat select_sub_folder_cnt(c)
+				sub_folder_buff += "\t" + listbox_item(c, cnt)
+			loop
+			sub_folder_buff = strmid(sub_folder_buff, 1, strlen(sub_folder_buff) - 1)
+
+			file_buff += CONFIG_SUB_FOLDER + sub_folder_buff + "\n"
+			file_buff += CONFIG_PACK_MODE + str(pack_index(c)) + "\n"
+			//file_buff += CONFIG_ERROR_LENGTH + str(error_length(c)) + "\n"
+			repeat OBJ_ID_KAKUCHOUSHI_MAX
+				file_buff += CONFIG_KAKUCHOUSHI + str(cnt) + "\t" + extension(c, cnt) + "\n"
+			loop
+
+			file_buff += "\n"
+			
+		loop
+	}
+
+	func_pack_ini_file_write CONFIG_FILE_NAME, file_buff
+
+	return

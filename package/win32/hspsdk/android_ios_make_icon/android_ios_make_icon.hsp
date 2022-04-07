@@ -2,7 +2,7 @@
 ;
 ; Andoird/iOSアイコン作成ツール
 ;
-; Ver 0.2
+; Ver 0.4
 ;
 ; By. しまくろねこ
 ;
@@ -16,9 +16,10 @@
 #packopt ysize 200
 #packopt hide 0
 #packopt orgpath 0
+#packopt icon "icon.ico"
 
 
-#define APP_VERSION					"0.2"
+#define APP_VERSION					"0.4"
 
 #uselib "shlwapi.dll"
 #func PathIsDirectory "PathIsDirectoryA" sptr	; 指定されたパスが存在しない場合は 0 が返る
@@ -71,11 +72,84 @@
 #const OBJ_ID_SELECT_PNG			1
 #const OBJ_ID_RES_STAT				2
 
+//--------------------------------------------------------- コマンドラインからプロジェクトフォルダのテキストボックスに返す
+#module
+
+#define CMD_LINE_ANDROID		"-a"
+#define CMD_LINE_IOS			"-i"
+#define CMD_LINE_PROJECT		"-p"
+
+	// ----------------------------- Android
+	#defcfunc cfunc_android_project_path str cmd_line
+		copy_cmd_line = cmd_line
+		i = instr(copy_cmd_line, 0, CMD_LINE_IOS)
+	
+		if i >=0 {
+			copy_cmd_line = ""
+		} else {
+			a = instr(copy_cmd_line, 0, CMD_LINE_ANDROID)
+			;-a -p"プロジェクトパス"
+			if a >= 0 {
+				copy_cmd_line = strmid(copy_cmd_line, strlen(CMD_LINE_ANDROID), strlen(copy_cmd_line) - strlen(CMD_LINE_ANDROID))
+				copy_cmd_line = strtrim(copy_cmd_line, 0, ' ')
+				p = instr(copy_cmd_line, 0, CMD_LINE_PROJECT)
+				if p >= 0 {
+					copy_cmd_line = strmid(copy_cmd_line, strlen(CMD_LINE_PROJECT), strlen(copy_cmd_line) - strlen(CMD_LINE_PROJECT))
+					copy_cmd_line = strtrim(copy_cmd_line, 0, ' ')
+					strrep copy_cmd_line, "\"", ""
+				}
+			}
+		}
+		
+		return copy_cmd_line
+
+	// ----------------------------- iOS
+	#defcfunc cfunc_ios_project_path str cmd_line
+		copy_cmd_line = cmd_line
+		a = instr(copy_cmd_line, 0, CMD_LINE_ANDROID)
+
+		if a >= 0 {
+			copy_cmd_line = ""
+		} else {
+			i = instr(copy_cmd_line, 0, CMD_LINE_IOS)
+			p = instr(copy_cmd_line, 0, CMD_LINE_PROJECT)
+			;-i -p"プロジェクトパス"
+			if i >= 0 {
+				copy_cmd_line = strmid(copy_cmd_line, strlen(CMD_LINE_IOS), strlen(copy_cmd_line) - strlen(CMD_LINE_IOS))
+				copy_cmd_line = strtrim(copy_cmd_line, 0, ' ')
+				p = instr(copy_cmd_line, 0, CMD_LINE_PROJECT)
+				if p >= 0 {
+					copy_cmd_line = strmid(copy_cmd_line, strlen(CMD_LINE_PROJECT), strlen(copy_cmd_line) - strlen(CMD_LINE_PROJECT))
+					copy_cmd_line = strtrim(copy_cmd_line, 0, ' ')
+					strrep copy_cmd_line, "\"", ""
+				}
+			}
+		}
+	
+		return copy_cmd_line
+
+	// ----------------------------- 
+	#deffunc func_line int x1, int y1, int x2, int y2
+
+		color 0, 0, 0		: line x1, y1, x2, y2
+		color 255, 255, 255	: line x1 + 1, y1 + 1, x2 + 1, y2 + 1
+		return
+
+#global
 //---------------------------------------------------------
 
+	cmd_line = dir_cmdline
+
 	dim obj_id, OBJ_ID_CNT_MAX
+	sdim make_icon_folder_android, 65536
+	sdim make_icon_folder_ios, 65536
 	sdim make_icon_folder, 65536
 	sdim png_file, 65536
+
+	make_icon_folder_android = cfunc_android_project_path(cmd_line)
+	make_icon_folder_ios = cfunc_ios_project_path(cmd_line)
+
+	png_file = ""
 
 //---------------------------------------------------------
 *icon_android_ios_select
@@ -116,20 +190,27 @@
 	syscolor 15 : boxf
 
 	color 0, 0, 0
-	
-	pos 10, 17 : mes "アイコン(png)を作成するDish Helperで作成されたプロジェクトフォルダを選択してください。"
-	objsize 120, 25 : pos 530, 10 : button gosub "フォルダ選択", *select_folder
 
-	make_icon_folder = ""
-	pos 10, 40 : input make_icon_folder, 640, 25
+	objsize 120, 25 : pos 530, 5 : button gosub "戻る", *android_mode_back
+
+	func_line 10, 35, SCREEN_WIDTH_ANDROID - 10, 35
+
+	color 0, 0, 0
+
+	pos 10, 52 : mes "アイコン(png)を作成するDish Helperで作成されたプロジェクトフォルダを選択してください。"
+	objsize 120, 25 : pos 530, 75 : button gosub "フォルダ選択", *select_folder
+
+	pos 10, 75 : input make_icon_folder_android, 515, 25
 	obj_id(OBJ_ID_SELECT_FOLDER) = stat
+	objprm obj_id(OBJ_ID_SELECT_FOLDER), make_icon_folder_android
 
-	pos 10, 107 : mes "アイコン(png)の元となる" + str(ANDROID_DEFAULT_WIDTH) + "x" + str(ANDROID_DEFAULT_HEIGHT) + "のpngファイルを選択してください。"
-	objsize 120, 25 : pos 530, 100 : button gosub "pngファイル選択", *select_png
+	pos 10, 117 : mes "アイコン(png)の元となる" + str(ANDROID_DEFAULT_WIDTH) + "x" + str(ANDROID_DEFAULT_HEIGHT) + "のpngファイルを選択してください。"
+	objsize 120, 25 : pos 530, 140 : button gosub "pngファイル選択", *select_png
 
-	png_file = ""
-	pos 10, 130 : input png_file, 640, 25
+	pos 10, 140 : input png_file, 515, 25
 	obj_id(OBJ_ID_SELECT_PNG) = stat
+
+	func_line 10, 180, SCREEN_WIDTH_ANDROID - 10, 180
 
 	chk_stat = 0
 	objsize 230, 25 : pos 10, 190 : chkbox "画像の座標(X:0, Y:0)を透過色とする", chk_stat
@@ -157,20 +238,27 @@
 	syscolor 15 : boxf
 
 	color 0, 0, 0
-	
-	pos 10, 17 : mes "アイコン(png)を作成するDish Helperで作成されたプロジェクトフォルダを選択してください。"
-	objsize 120, 25 : pos 530, 10 : button gosub "フォルダ選択", *select_folder
 
-	make_icon_folder = ""
-	pos 10, 40 : input make_icon_folder, 640, 25
+	objsize 120, 25 : pos 530, 5 : button gosub "戻る", *ios_mode_back
+
+	func_line 10, 35, SCREEN_WIDTH_ANDROID - 10, 35
+
+	color 0, 0, 0
+
+	pos 10, 52 : mes "アイコン(png)を作成するDish Helperで作成されたプロジェクトフォルダを選択してください。"
+	objsize 120, 25 : pos 530, 75 : button gosub "フォルダ選択", *select_folder
+
+	pos 10, 75 : input make_icon_folder_ios, 515, 25
 	obj_id(OBJ_ID_SELECT_FOLDER) = stat
+	objprm obj_id(OBJ_ID_SELECT_FOLDER), make_icon_folder_ios
 
-	pos 10, 107 : mes "アイコン(png)の元となる" + str(IOS_DEFAULT_WIDTH) + "x" + str(IOS_DEFAULT_HEIGHT) + "の透過色の無いpngファイルを選択してください。"
-	objsize 120, 25 : pos 530, 100 : button gosub "pngファイル選択", *select_png
+	pos 10, 117 : mes "アイコン(png)の元となる" + str(IOS_DEFAULT_WIDTH) + "x" + str(IOS_DEFAULT_HEIGHT) + "の透過色の無いpngファイルを選択してください。"
+	objsize 120, 25 : pos 530, 140 : button gosub "pngファイル選択", *select_png
 
-	png_file = ""
-	pos 10, 130 : input png_file, 640, 25
+	pos 10, 140 : input png_file, 515, 25
 	obj_id(OBJ_ID_SELECT_PNG) = stat
+
+	func_line 10, 180, SCREEN_WIDTH_IOS - 10, 180
 
 	res_stat = 1
 	objsize 250, 25 : pos 10, 220 : chkbox "処理が完了したらhspprojフォルダを開く", res_stat
@@ -179,6 +267,22 @@
 	objsize 200, 50 : pos 450, 190 : button gosub "アイコン(png)を作成する", *make_ios_icon
 
 	stop
+
+//---------------------------------------------------------
+*android_mode_back
+
+	gsel SCREEN_ID_ANDROID, -1
+	gsel SCREEN_ID_SELECT_AND_IOS, 1
+
+	return
+
+//---------------------------------------------------------
+*ios_mode_back
+
+	gsel SCREEN_ID_IOS, -1
+	gsel SCREEN_ID_SELECT_AND_IOS, 1
+
+	return
 
 //---------------------------------------------------------
 *select_folder
@@ -239,6 +343,8 @@
 
 //--------------------------------------------------------- Android用アイコン作成
 *make_andoird_icon
+
+	make_icon_folder = make_icon_folder_android
 
 	gosub *folder_file_check
 
@@ -336,6 +442,8 @@
 
 //--------------------------------------------------------- iOS用アイコン作成
 *make_ios_icon
+
+	make_icon_folder = make_icon_folder_ios
 
 	gosub *folder_file_check
 

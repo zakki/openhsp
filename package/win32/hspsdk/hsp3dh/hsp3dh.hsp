@@ -9,7 +9,7 @@
 #include "mod_appconfig.as"
 
 #define APPTITLE "HSP3Dish helper"
-#define APPVER "1.9"
+#define APPVER "1.91"
 #define APP_CONF "\\hsp3dh.cfg"
 
 #define AND_LIBVER 114			; android HSPランタイムの内部バージョン
@@ -377,6 +377,10 @@
 	objsize 160,48
 	button "変換",*mksrc
 
+	pos 350,y+30
+	objsize 120,24
+	button "アイコン作成",*exec_icontool_i
+
 	y=tooly
 	objsize 148,48
 	color 190,190,240:boxf 8,y,8+144,y+46
@@ -475,8 +479,10 @@
 	;input and_pack
 	;objsize 64,24
 	;pos 408,82:button "作成...",*selfile_pack
-	objsize 160,24
-	pos 310,82:button "Assetフォルダを開く",*open_asset
+	objsize 120,24
+	x=350:y=82
+	pos x,82:button "Assetフォルダを開く",*open_asset
+	pos x-124,82:button "アイコン作成",*exec_icontool_a
 
 	gosub *upd_prj
 	pos 8,110
@@ -697,9 +703,6 @@
 	pos 8+60,y
 	button "AVDマネージャー",*exec_avdman
 
-	objsize 200,30
-	pos 8+60,y+36
-	button "Android/iOSアイコン作成ツール",*exec_icontool
 *no_avdman
 
 	y=tooly
@@ -1727,18 +1730,30 @@
 	exec "go.bat"
 	stop
 
-*exec_icontool
+*exec_icontool_a
 	gsel 0
 	gosub *owari_savesub
-	cmd = dir_exe+"\\hsp3 "+dir_exe+"\\android_ios_make_icon.ax"
+	s1=path_proj+"\\"+and_name
+	cmd = dir_exe+"\\hsp3 "+dir_exe+"\\android_ios_make_icon.ax -a -p\""+s1+"\""
+	exec cmd
+	stop
+
+*exec_icontool_i
+	gsel 0
+	s1=mydir+"\\"+ios_proj
+	cmd = dir_exe+"\\hsp3 "+dir_exe+"\\android_ios_make_icon.ax -i -p\""+s1+"\""
 	exec cmd
 	stop
 
 *exec_dishphelper
 	gsel 0
 	gosub *owari_savesub
-	cmd = dir_exe+"\\dish_p_helper.exe"
-	exec cmd
+	s1=dir_exe+"\\dish_p_helper.exe"
+	exist s1
+	if strsize>0 {
+		cmd = s1
+		exec cmd
+	}
 	stop
 
 

@@ -2,7 +2,7 @@
 ;
 ; Dish P Helper
 ;
-; Ver 2.0
+; Ver 2.3
 ;
 ; HSP3Dish Helper用 プロジェクト補助アプリケーション
 ;
@@ -33,21 +33,25 @@
 #const WINDOW_HEIGHT							480
 
 #define APPLICATION_TITLE						"Dish P Helper"
-#define APPLICATION_VER							"Ver 2.0"
+#define APPLICATION_VER							"2.3"
 
 #define CONFIG_FILE_NAME						"dish_p_helper_dat.ini"
-#define CONFIG_WINDOW_POS_X						"#window_pos_x="
-#define CONFIG_WINDOW_POS_y						"#window_pos_y="
+#define CONFIG_WINDOW_POS_X						"#window_pos_x" + "\t"
+#define CONFIG_WINDOW_POS_y						"#window_pos_y" + "\t"
 
-#const FILE_NAME_MAX							8
+#define PROJECT_MODE_HSP3DISH					"HSP3Dish"
+#define PROJECT_MODE_HGIMG4						"HGIMG4"
+
+#const FILE_NAME_MAX							9
 #const FILE_NAME_INDEX_ANDROID_MANIFEST_XML		0
 #const FILE_NAME_INDEX_PROJECT_PROPERTIES		1
 #const FILE_NAME_INDEX_MAIN_C					2
 #const FILE_NAME_INDEX_MAIN_CPP					3
-#const FILE_NAME_INDEX_STRINGS_XML				4
-#const FILE_NAME_INDEX_STRINGS_XML_JA			5
-#const FILE_NAME_INDEX_BUILD_GRADLE				6
-#const FILE_NAME_INDEX_MAIN_ACTIVITY_JAVA		7
+#const FILE_NAME_INDEX_ANDROID_MK				4
+#const FILE_NAME_INDEX_STRINGS_XML				5
+#const FILE_NAME_INDEX_STRINGS_XML_JA			6
+#const FILE_NAME_INDEX_BUILD_GRADLE				7
+#const FILE_NAME_INDEX_MAIN_ACTIVITY_JAVA		8
 
 #const POS_X_PROJECT							0
 #const POS_Y_PROJECT							0
@@ -93,12 +97,18 @@
 #define FILE_NAME_ANDROID_MANIFEST_XML			"src\\main\\AndroidManifest.xml"
 #define FILE_NAME_MAIN_C						"jni\\main.c"
 #define FILE_NAME_MAIN_CPP						"jni\\main.cpp"
+#define FILE_NAME_ANDROID_MK					"jni\\Android.mk"
 #define FILE_NAME_STRINGS_XML					"src\\main\\res\\values\\strings.xml"
 #define FILE_NAME_STRINGS_XML_JA				"src\\main\\res\\values-ja\\strings.xml"
 #define FILE_NAME_STRINGS_XML_JA_RES			"src\\main\\res"
 #define FILE_NAME_STRINGS_XML_JA_FOLDER			"values-ja"
 #define FILE_NAME_BUILD_GRADLE					"build.gradle"
 #define FILE_NAME_MAIN_ACTIVITY_JAVA			"MainActivity.java"
+
+#define ANDROID_MK_HGING4_GANEPLAY				"gameplay"
+
+#const HSP3DISH_HGIMG4_MODE_DISH				0
+#const HSP3DISH_HGIMG4_MODE_HGIMG4				1
 
 #define CFG_WINZ								"%%winx"
 #define CFG_WINY								"%%winy"
@@ -508,7 +518,7 @@
 
 	switch cmd_line_flg
 	case FALSE
-		title APPLICATION_TITLE + " - " + APPLICATION_VER
+		title APPLICATION_TITLE + " - Ver " + APPLICATION_VER
 		gosub *config_file_read
 		gosub *screen_init
 		swbreak
@@ -534,6 +544,7 @@
 	gosub *put_string
 	gosub *project_index_change_check
 	gosub *combo_index_check
+
 	redraw 1
 
 	wait 1
@@ -665,7 +676,7 @@
 	; オブジェクト内容変数
 	project_item					= ""
 	project_index					= 0
-	project_index_copy				= 0
+	project_index_copy				= -1
 	version_code					= ""
 	version_name					= ""
 
@@ -748,7 +759,8 @@
 	pos pos_x(POS_X_HGIO_AUTOSCALE)		+ 300,	pos_y(POS_Y_HGIO_AUTOSCALE)	 	- 3	: combox hgio_autoscale_value_index, 120, hgio_autoscale_value_item	: obj_id_hgio_autoscale		= stat
 
 	objsize 110, 24
-	pos pos_x(POS_X_HSP3DISH_INI)		+ 500,	pos_y(POS_X_HSP3DISH_INI)	 	- 3	: button gosub "hsp3dish.ini出力", *hsp3dish_ini_write
+	pos pos_x(POS_X_HSP3DISH_INI)		+ 500,	pos_y(POS_X_HSP3DISH_INI)	 	- 3	: button gosub "hsp3dish.ini出力", *hsp3dish_ini_write				: obj_id_hsp3dish_ini_write	= stat
+
 
 	; アプリ名
 	pos pos_x(POS_X_RES_VALUES)			+ 190,	pos_y(POS_Y_RES_VALUES)			- 3	: input res_values, 305, TEXTBOX_HEIGHT, 128						: obj_id_res_values			= stat
@@ -802,11 +814,12 @@
 
 	project_split = ""
 	split project_item, "\n", project_split
-	title "<" + project_split(project_index) + "> - " + APPLICATION_TITLE + " " + APPLICATION_VER
+	title "<" + project_split(project_index) + "> " + APPLICATION_TITLE + " - Ver " + APPLICATION_VER
 
 	android_manifest_xml			= ""
 	main_c							= ""
 	main_cpp						= ""
+	android_mk						= ""
 	strings_xml						= ""
 	strings_xml_ja					= ""
 	build_gradle					= ""
@@ -828,12 +841,15 @@
 	res_values_ja					= ""
 	armv7_index						= 0
 
+	hsp3dish_hgimg4_mode			= HSP3DISH_HGIMG4_MODE_DISH
+
 
 	project_folder = project_path + "\\" + cfunc_get_comboi_item@local_mod(project_item, project_index) + "\\app\\"
 
 	file_name(FILE_NAME_INDEX_ANDROID_MANIFEST_XML)	= project_folder + FILE_NAME_ANDROID_MANIFEST_XML
 	file_name(FILE_NAME_INDEX_MAIN_C)				= project_folder + FILE_NAME_MAIN_C
 	file_name(FILE_NAME_INDEX_MAIN_CPP)				= project_folder + FILE_NAME_MAIN_CPP
+	file_name(FILE_NAME_INDEX_ANDROID_MK)			= project_folder + FILE_NAME_ANDROID_MK
 	file_name(FILE_NAME_INDEX_STRINGS_XML)			= project_folder + FILE_NAME_STRINGS_XML
 	file_name(FILE_NAME_INDEX_STRINGS_XML_JA)		= project_folder + FILE_NAME_STRINGS_XML_JA
 	file_name(FILE_NAME_INDEX_BUILD_GRADLE)			= project_folder + FILE_NAME_BUILD_GRADLE
@@ -849,6 +865,14 @@
 	; jni\main.cpp の読み込み
 	func_read_file@local_mod file_name(FILE_NAME_INDEX_MAIN_CPP), main_cpp, re_utf8_flag
 	main_cpp = utf8n2sjis(main_cpp)
+
+	; jni\Android.mk の読み込み
+	func_read_file@local_mod file_name(FILE_NAME_INDEX_ANDROID_MK), android_mk, re_utf8_flag
+	android_mk = utf8n2sjis(android_mk)
+	
+	if instr(android_mk, 0, ANDROID_MK_HGING4_GANEPLAY) >= 0 {
+		hsp3dish_hgimg4_mode = HSP3DISH_HGIMG4_MODE_HGIMG4
+	}
 
 	; res\values\strings.xml の読み込み
 	func_read_file@local_mod file_name(FILE_NAME_INDEX_STRINGS_XML), strings_xml, re_utf8_flag
@@ -970,8 +994,22 @@
 	font msgothic, FONT_SIZE
 
 	color 0, 0, 0
+	
+	pos pos_x(POS_X_PROJECT),					pos_y(POS_Y_PROJECT) + 5		: mes "プロジェクト名
 
-	pos pos_x(POS_X_PROJECT),					pos_y(POS_Y_PROJECT)			: mes "プロジェクト名"
+	switch hsp3dish_hgimg4_mode
+	case HSP3DISH_HGIMG4_MODE_DISH
+		p_mode = PROJECT_MODE_HSP3DISH
+		color 0, 0, 255
+		swbreak
+	case HSP3DISH_HGIMG4_MODE_HGIMG4
+		p_mode = PROJECT_MODE_HGIMG4
+		color 255, 0, 0
+		swbreak
+	swend
+	pos pos_x(POS_X_PROJECT) + 100,				pos_y(POS_Y_PROJECT) + 5		: mes "(" + p_mode + ")"
+
+	color 0, 0, 0
 
 	pos pos_x(POS_X_VERSION_CODE),				pos_y(POS_Y_VERSION_CODE)		: mes "バージョンコード(versionCode)"
 	pos pos_x(POS_X_VERSION_NAME),				pos_y(POS_Y_VERSION_NAME)		: mes "バージョンネーム(versionName)"
@@ -1040,29 +1078,31 @@
 				return
 			}
 
-			if hgio_view_index == TRUE {
-				if strlen(hgio_view_width) == 0 {
-					dialog "『画面サイズ(hgio_view)』の『横』が未入力です。", 1
-					objsel obj_id_hgio_view_width
-					return
+			if hsp3dish_hgimg4_mode == HSP3DISH_HGIMG4_MODE_DISH {
+				if hgio_view_index == TRUE {
+					if strlen(hgio_view_width) == 0 {
+						dialog "『画面サイズ(hgio_view)』の『横』が未入力です。", 1
+						objsel obj_id_hgio_view_width
+						return
+					}
+					if strlen(hgio_view_height) == 0 {
+						dialog "『画面サイズ(hgio_view)』の『縦』が未入力です。", 1
+						objsel obj_id_hgio_view_height
+						return
+					}
 				}
-				if strlen(hgio_view_height) == 0 {
-					dialog "『画面サイズ(hgio_view)』の『縦』が未入力です。", 1
-					objsel obj_id_hgio_view_height
-					return
-				}
-			}
 
-			if hgio_scale_index == TRUE {
-				if strlen(hgio_scale_width) == 0 {
-					dialog "『画面表示倍率(hgio_scale)』の『横』が未入力です。", 1
-					objsel obj_id_hgio_scale_width
-					return
-				}
-				if strlen(hgio_scale_height) == 0 {
-					dialog "『画面表示倍率(hgio_scale)』の『縦』が未入力です。", 1
-					objsel obj_id_hgio_scale_height
-					return
+				if hgio_scale_index == TRUE {
+					if strlen(hgio_scale_width) == 0 {
+						dialog "『画面表示倍率(hgio_scale)』の『横』が未入力です。", 1
+						objsel obj_id_hgio_scale_width
+						return
+					}
+					if strlen(hgio_scale_height) == 0 {
+						dialog "『画面表示倍率(hgio_scale)』の『縦』が未入力です。", 1
+						objsel obj_id_hgio_scale_height
+						return
+					}
 				}
 			}
 
@@ -1135,35 +1175,37 @@
 
 	; -------------- app\jni\main.c
 	; -------------- app\jni\main.cpp
-	utf8_buff = ""
-	copy_buff = main_c
+	if hsp3dish_hgimg4_mode == HSP3DISH_HGIMG4_MODE_DISH {
+		utf8_buff = ""
+		copy_buff = main_c
 
-	v = ""
-	if hgio_view_index == 0 : v += "//"
-	v += "hgio_view( " + hgio_view_width + ", " + hgio_view_height + " )"
-	strrep copy_buff, hgio_view_all, v
+		v = ""
+		if hgio_view_index == 0 : v += "//"
+		v += "hgio_view( " + hgio_view_width + ", " + hgio_view_height + " )"
+		strrep copy_buff, hgio_view_all, v
 
-	v = ""
-	if hgio_scale_index == 0 : v += "//"
-	v += "hgio_scale( " + hgio_scale_width + ", " + hgio_scale_height + " )"
-	strrep copy_buff, hgio_scale_all, v
+		v = ""
+		if hgio_scale_index == 0 : v += "//"
+		v += "hgio_scale( " + hgio_scale_width + ", " + hgio_scale_height + " )"
+		strrep copy_buff, hgio_scale_all, v
 
-	v = ""
-	if hgio_autoscale_index == 0 : v += "//"
-	v += "hgio_autoscale( " + hgio_autoscale_value_index + " )"
-	strrep copy_buff, hgio_autoscale_all, v
+		v = ""
+		if hgio_autoscale_index == 0 : v += "//"
+		v += "hgio_autoscale( " + hgio_autoscale_value_index + " )"
+		strrep copy_buff, hgio_autoscale_all, v
 
-	sjis2utf8n utf8_buff, copy_buff
+		sjis2utf8n utf8_buff, copy_buff
 
-	exist file_name(FILE_NAME_INDEX_MAIN_C)
-	if strsize >= 0 {
-		; ------- jni\main.c
-		func_file_write@local_mod file_name(FILE_NAME_INDEX_MAIN_C), utf8_buff
-	} else {
-		exist file_name(FILE_NAME_INDEX_MAIN_CPP)
+		exist file_name(FILE_NAME_INDEX_MAIN_C)
 		if strsize >= 0 {
-			; ------- jni\main.cpp
-			func_file_write@local_mod file_name(FILE_NAME_INDEX_MAIN_CPP), utf8_buff
+			; ------- jni\main.c
+			func_file_write@local_mod file_name(FILE_NAME_INDEX_MAIN_C), utf8_buff
+		} else {
+			exist file_name(FILE_NAME_INDEX_MAIN_CPP)
+			if strsize >= 0 {
+				; ------- jni\main.cpp
+				func_file_write@local_mod file_name(FILE_NAME_INDEX_MAIN_CPP), utf8_buff
+			}
 		}
 	}
 
@@ -1477,7 +1519,7 @@
 	if project_index_copy != project_index {
 		project_index_copy = project_index
 		gosub *object_info_set
-
+		gosub *hsp3dish_hgimg4_check_obj_enable
 		if cmd_line_flg == TRUE {
 			notesel project_item
 			repeat notemax
@@ -1497,6 +1539,27 @@
 		}
 
 	}
+
+	return
+
+;-----------------------------------------------------------------------
+*hsp3dish_hgimg4_check_obj_enable
+
+	switch hsp3dish_hgimg4_mode
+	case HSP3DISH_HGIMG4_MODE_DISH		: obj_enable_flg = TRUE		: swbreak
+	case HSP3DISH_HGIMG4_MODE_HGIMG4	: obj_enable_flg = FALSE	: swbreak
+	swend
+
+	;objenable obj_id_screen_orientation, obj_enable_flg
+	objenable obj_id_hgio_view, obj_enable_flg
+	objenable obj_id_hgio_view_width, obj_enable_flg
+	objenable obj_id_hgio_view_height, obj_enable_flg
+	objenable obj_id_hgio_scale, obj_enable_flg
+	objenable obj_id_hgio_scale_width, obj_enable_flg
+	objenable obj_id_hgio_scale_height, obj_enable_flg
+	objenable obj_id_hgio_autoscale_e, obj_enable_flg
+	objenable obj_id_hgio_autoscale, obj_enable_flg
+	objenable obj_id_hsp3dish_ini_write, obj_enable_flg
 
 	return
 

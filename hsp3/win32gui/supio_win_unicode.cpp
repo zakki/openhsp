@@ -5,6 +5,7 @@
 #ifdef HSPUTF8
 
 #include "../hsp3config.h"
+#define _CRT_NON_CONFORMING_SWPRINTFS
 
 #ifdef HSPWIN
 #include <windows.h>

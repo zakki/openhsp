@@ -1,0 +1,393 @@
+#cmpopt varinit 1
+
+
+#packopt name "packopt_make_list"
+#packopt type 0
+#packopt xsize 440
+#packopt ysize 650
+#packopt hide 0
+#packopt orgpath 0
+#packopt icon "icon.ico"
+
+
+#define CONFIG_FILE_NAME			"packopt_make_list_dat.ini"
+#define CONFIG_WINDOW_POS_X			"#window_pos_x" + "\t"
+#define CONFIG_WINDOW_POS_y			"#window_pos_y" + "\t"
+
+#define CONFIG_PACKOPT_NAME			"#name"			+ "\t"
+#define CONFIG_PACKOPT_RUNTIME		"#runtime"		+ "\t"
+#define CONFIG_PACKOPT_TYPE			"#type"			+ "\t"
+#define CONFIG_PACKOPT_XSIZE		"#xsize"		+ "\t"
+#define CONFIG_PACKOPT_YSIZE		"#ysize"		+ "\t"
+#define CONFIG_PACKOPT_HIDE			"#hide"			+ "\t"
+#define CONFIG_PACKOPT_ORGPATH		"#orgpath"		+ "\t"
+#define CONFIG_PACKOPT_ICON			"#icon"			+ "\t"
+#define CONFIG_PACKOPT_VERSION		"#version"		+ "\t"
+#define CONFIG_PACKOPT_MANIFEST		"#manifest"		+ "\t"
+#define CONFIG_PACKOPT_LANG			"#lang"			+ "\t"
+#define CONFIG_PACKOPT_UPX			"#upx"			+ "\t"
+
+#const OBJ_ID_PACKOPT_NAME			0
+#const OBJ_ID_PACKOPT_RUNTIME		1
+#const OBJ_ID_PACKOPT_TYPE			2
+#const OBJ_ID_PACKOPT_XSIZE			3
+#const OBJ_ID_PACKOPT_YSIZE			4
+#const OBJ_ID_PACKOPT_HIDE			5
+#const OBJ_ID_PACKOPT_ORGPATH		6
+#const OBJ_ID_PACKOPT_ICON			7
+#const OBJ_ID_PACKOPT_VERSION		8
+#const OBJ_ID_PACKOPT_MANIFEST		9
+#const OBJ_ID_PACKOPT_LANG			10
+#const OBJ_ID_PACKOPT_UPX			11
+
+#define APP_VERSION					"0.2"
+
+#const SCREEN_WIDTH					440
+#const SCREEN_HEIGHT				650
+
+#const BUFFER_MAIN					0
+
+#const FALSE		0
+#const TRUE			1
+
+//-------------------------------------------------------------------------
+#module local_mod
+
+#const FALSE		0
+#const TRUE			1
+
+#uselib "kernel32"
+#func GetEnvironmentVariable					"GetEnvironmentVariableA" sptr, sptr, sptr
+
+#define HSP3_APPDATA_FOLDER						"Hot Soup Processor"
+
+//-------------------------------------------------------------------------
+#deffunc func_packopt_ini_file_write str file_name, var str_buff
+
+	sdim pack_ini_file, 1024
+
+	GetEnvironmentVariable "APPDATA", varptr(pack_ini_file), 990
+	pack_ini_file + = "\\" + HSP3_APPDATA_FOLDER + "\\" + file_name
+
+	bsave pack_ini_file, str_buff, strlen(str_buff)
+
+	return
+
+//-------------------------------------------------------------------------
+#defcfunc func_packopt_ini_file_read str file_name, var file_buff
+
+	sdim pack_ini_file, 1024
+
+	GetEnvironmentVariable "APPDATA", varptr(pack_ini_file), 990
+	pack_ini_file + = "\\" + HSP3_APPDATA_FOLDER + "\\" + file_name
+
+	re = FALSE
+
+	exist pack_ini_file
+	if strsize >= 0 {
+		sdim file_buff, strsize
+		bload pack_ini_file, file_buff, strsize
+		re = TRUE
+	}
+
+	return re
+
+//-------------------------------------------------------------------------
+#deffunc func_line int x1, int y1, int x2, int y2
+
+	color 0, 0, 0		: line x1, y1, x2, y2
+	color 255, 255, 255	: line x1 + 1, y1 + 1, x2 + 1, y2 + 1
+	return
+
+#global
+//-------------------------------------------------------------------------
+
+	onexit goto *config_file_write
+
+	current_dir = dir_cur
+
+	win_pos_x		= 0
+	win_pos_y		= 0
+
+	packopt_name	= ""
+	runtime_name	= ""
+	exe_type		= 0
+	window_width	= 640
+	window_height	= 480
+	hide_type		= 0
+	orgpath_type	= 0
+	icon_file		= ""
+	version_set		= ""
+	manifest_file	= ""
+	lang_set		= ""
+	upx_set			= 0
+
+	gosub *config_file_read
+
+//-------------------------------------------------------------------------
+
+	title "#packoptリスト作成ツール - Ver " + APP_VERSION
+	screen BUFFER_MAIN, SCREEN_WIDTH, SCREEN_HEIGHT, 0, win_pos_x, win_pos_y
+	syscolor 15
+	boxf
+
+	dim obj_id, 100
+
+	color 0, 0, 0
+
+	objmode 2
+	font msgothic, 12
+
+	y_plus = 30
+
+	y = 20
+	pos 10, y + 5	: mes "実行ファイル名(\".EXE\")は未入力"
+	pos 230, y		: input packopt_name, 200, 24, 0
+	obj_id(OBJ_ID_PACKOPT_NAME) = stat
+
+	y += y_plus
+	pos 10, y + 5	: mes "ランタイム名"
+	pos 230, y		: input runtime_name, 200, 24, 0
+	obj_id(OBJ_ID_PACKOPT_RUNTIME) = stat
+
+	y += y_plus
+	objsize 200, 30
+	pos 10, y + 5	: mes "実行ファイルタイプ"
+	pos 230, y		: combox exe_type, 100, "0:EXEファイル\n1:フルスクリーンEXE\n2:スクリーンセーバー"
+	obj_id(OBJ_ID_PACKOPT_TYPE) = stat
+
+	y += y_plus
+	pos 10, y + 5	: mes "初期ウィンドウXサイズ"
+	pos 230, y + 5	: mes "X:"
+	pos 245, y		: input window_width, 50, 24, 0
+	obj_id(OBJ_ID_PACKOPT_XSIZE) = stat
+
+	;y += 35
+	pos 320, y + 5	: mes "Y:"
+	pos 335, y		: input window_height, 50, 24, 0
+	obj_id(OBJ_ID_PACKOPT_YSIZE) = stat
+
+	y += y_plus
+	objsize 200, 30
+	pos 10, y + 5	: mes "初期ウィンドウ非表示SW"
+	pos 230, y		: combox hide_type, 100, "0:ウィンドウ表示\n1:ウィンドウ非表示"
+	obj_id(OBJ_ID_PACKOPT_HIDE) = stat
+
+	y += y_plus
+	objsize 200, 30
+	pos 10, y + 5	: mes "初期ディレクトリ維持SW"
+	pos 230, y		: combox orgpath_type, 100, "0:ディレクトリ移動の有効化\n1:ディレクトリ移動の無効化"
+	obj_id(OBJ_ID_PACKOPT_ORGPATH) = stat
+
+	y += y_plus
+	pos 10, y + 5	: mes "アイコンファイル名"
+	pos 230, y		: input icon_file, 200, 24, 0
+	obj_id(OBJ_ID_PACKOPT_ICON) = stat
+
+	y += y_plus
+	pos 10, y + 5	: mes "バージョンリソース設定(ファイル名)"
+	pos 230, y		: input version_set, 200, 24, 0
+	obj_id(OBJ_ID_PACKOPT_VERSION) = stat
+
+	y += y_plus
+	pos 10, y + 5	: mes "マニフェスト設定(ファイル名)"
+	pos 230, y		: input manifest_file, 200, 24, 0
+	obj_id(OBJ_ID_PACKOPT_MANIFEST) = stat
+
+	y += y_plus
+	pos 10, y + 5	: mes "言語コード設定"
+	pos 230, y		: input lang_set, 200, 24, 0
+	obj_id(OBJ_ID_PACKOPT_LANG) = stat
+
+	y += y_plus
+	pos 10, y + 5	: mes "UPX圧縮設定"
+	pos 230, y		: combox upx_set, 0, "圧縮なし\n圧縮あり";input upx_set, 200, 24, 0
+	obj_id(OBJ_ID_PACKOPT_UPX) = stat
+
+	func_line 10, y + 30, SCREEN_WIDTH - 10, y + 30
+
+	y += y_plus
+	objsize 200, 24
+	space_not_make = 1
+	pos 10, y + 5	: chkbox "空白の項目は出力しない", space_not_make
+	
+
+	y += 30
+	objsize 420, 40
+	pos 10, y
+	button gosub "#packoptリスト作成", *info_refresh
+
+
+	y += 50
+	packopt_list = ""
+	pos 10, y	: mesbox packopt_list, 420, 160, 1	:	obj_id_packopt_list = stat :  hInput = objinfo(stat, 2)
+
+	y += 170
+	pos 230, y
+	objsize 200, 35 : button gosub "クリップボードにコピー", *clip_copy
+
+//-------------------------------------------------------------------------
+
+	gosub *obj_value_set
+
+//-------------------------------------------------------------------------
+*main
+
+	win_pos_x = ginfo(4)
+	win_pos_y = ginfo(5)
+
+	wait 1
+
+	goto *main
+
+//-------------------------------------------------------------------------
+*info_refresh
+
+	packopt_list = ""
+
+	if space_not_make == 0 {
+		packopt_list += "#packopt name \""		+ packopt_name	+ "\""	+ "\n"
+		packopt_list += "#packopt runtime \""	+ runtime_name	+ "\""	+ "\n"
+		packopt_list += "#packopt type "		+ exe_type				+ "\n"
+		packopt_list += "#packopt xsize "		+ window_width			+ "\n"
+		packopt_list += "#packopt ysize "		+ window_height			+ "\n"
+		packopt_list += "#packopt hide "		+ hide_type				+ "\n"
+		packopt_list += "#packopt orgpath "		+ orgpath_type			+ "\n"
+		packopt_list += "#packopt icon \""		+ icon_file		+ "\""	+ "\n"
+		packopt_list += "#packopt version \""	+ version_set	+ "\""	+ "\n"
+		packopt_list += "#packopt manifest \""	+ manifest_file	+ "\""	+ "\n"
+		packopt_list += "#packopt lang \""		+ lang_set		+ "\""	+ "\n"
+		if upx_set == 1 {
+			packopt_list += "#packopt upx \""	+ str(upx_set)	+ "\""
+		}
+	} else {
+		if strlen(packopt_name) > 0		: packopt_list += "#packopt name \""	+ packopt_name	+ "\""	+ "\n"
+		if strlen(runtime_name) > 0		: packopt_list += "#packopt runtime \""	+ runtime_name	+ "\""	+ "\n"
+		packopt_list += "#packopt type "		+ exe_type				+ "\n"
+		packopt_list += "#packopt xsize "		+ window_width			+ "\n"
+		packopt_list += "#packopt ysize "		+ window_height			+ "\n"
+		packopt_list += "#packopt hide "		+ hide_type				+ "\n"
+		packopt_list += "#packopt orgpath "		+ orgpath_type			+ "\n"
+		if strlen(icon_file) > 0		: packopt_list += "#packopt icon \""	+ icon_file		+ "\""	+ "\n"
+		if strlen(version_set) > 0		: packopt_list += "#packopt version \""	+ version_set	+ "\""	+ "\n"
+		if strlen(manifest_file) > 0	: packopt_list += "#packopt manifest \""+ manifest_file	+ "\""	+ "\n"
+		if strlen(lang_set) > 0			: packopt_list += "#packopt lang \""	+ lang_set		+ "\""	+ "\n"
+		if upx_set == 1					: packopt_list += "#packopt upx \""		+ str(upx_set)	+ "\""
+	}
+
+	objprm obj_id_packopt_list, packopt_list
+
+	return
+
+//-------------------------------------------------------------------------
+*config_file_read
+
+	file_buff = ""
+	re = func_packopt_ini_file_read(CONFIG_FILE_NAME, file_buff)
+
+	if re {
+		notesel file_buff
+
+		line_buff = ""
+		repeat notemax
+			noteget line_buff, cnt
+			if instr(line_buff, 0, CONFIG_WINDOW_POS_X) >= 0 {
+				win_pos_x = int(strmid(line_buff, strlen(CONFIG_WINDOW_POS_X), strlen(line_buff) - strlen(CONFIG_WINDOW_POS_X)))
+			}
+			if instr(line_buff, 0, CONFIG_WINDOW_POS_Y) >= 0 {
+				win_pos_y = int(strmid(line_buff, strlen(CONFIG_WINDOW_POS_Y), strlen(line_buff) - strlen(CONFIG_WINDOW_POS_Y)))
+			}
+
+			if instr(line_buff, 0, CONFIG_PACKOPT_NAME) >= 0 {
+				packopt_name = strmid(line_buff, strlen(CONFIG_PACKOPT_NAME), strlen(line_buff) - strlen(CONFIG_PACKOPT_NAME))
+			}
+			if instr(line_buff, 0, CONFIG_PACKOPT_RUNTIME) >= 0 {
+				runtime_name = strmid(line_buff, strlen(CONFIG_PACKOPT_RUNTIME), strlen(line_buff) - strlen(CONFIG_PACKOPT_RUNTIME))
+			}
+			if instr(line_buff, 0, CONFIG_PACKOPT_TYPE) >= 0 {
+				exe_type = int(strmid(line_buff, strlen(CONFIG_PACKOPT_TYPE), strlen(line_buff) - strlen(CONFIG_PACKOPT_TYPE)))
+			}
+			if instr(line_buff, 0, CONFIG_PACKOPT_XSIZE) >= 0 {
+				window_width = int(strmid(line_buff, strlen(CONFIG_PACKOPT_XSIZE), strlen(line_buff) - strlen(CONFIG_PACKOPT_XSIZE)))
+			}
+			if instr(line_buff, 0, CONFIG_PACKOPT_YSIZE) >= 0 {
+				window_height = int(strmid(line_buff, strlen(CONFIG_PACKOPT_YSIZE), strlen(line_buff) - strlen(CONFIG_PACKOPT_YSIZE)))
+			}
+			if instr(line_buff, 0, CONFIG_PACKOPT_HIDE) >= 0 {
+				hide_type = int(strmid(line_buff, strlen(CONFIG_PACKOPT_HIDE), strlen(line_buff) - strlen(CONFIG_PACKOPT_HIDE)))
+			}
+			if instr(line_buff, 0, CONFIG_PACKOPT_ORGPATH) >= 0 {
+				orgpath_type = int(strmid(line_buff, strlen(CONFIG_PACKOPT_ORGPATH), strlen(line_buff) - strlen(CONFIG_PACKOPT_ORGPATH)))
+			}
+			if instr(line_buff, 0, CONFIG_PACKOPT_ICON) >= 0 {
+				icon_file = strmid(line_buff, strlen(CONFIG_PACKOPT_ICON), strlen(line_buff) - strlen(CONFIG_PACKOPT_ICON))
+			}
+			if instr(line_buff, 0, CONFIG_PACKOPT_VERSION) >= 0 {
+				version_set = strmid(line_buff, strlen(CONFIG_PACKOPT_VERSION), strlen(line_buff) - strlen(CONFIG_PACKOPT_VERSION))
+			}
+			if instr(line_buff, 0, CONFIG_PACKOPT_MANIFEST) >= 0 {
+				manifest_file = strmid(line_buff, strlen(CONFIG_PACKOPT_MANIFEST), strlen(line_buff) - strlen(CONFIG_PACKOPT_MANIFEST))
+			}
+			if instr(line_buff, 0, CONFIG_PACKOPT_LANG) >= 0 {
+				lang_set = strmid(line_buff, strlen(CONFIG_PACKOPT_LANG), strlen(line_buff) - strlen(CONFIG_PACKOPT_LANG))
+			}
+			if instr(line_buff, 0, CONFIG_PACKOPT_UPX) >= 0 {
+				upx_set = int(strmid(line_buff, strlen(CONFIG_PACKOPT_UPX), strlen(line_buff) - strlen(CONFIG_PACKOPT_UPX)))
+			}
+
+		loop
+
+		noteunsel
+	}
+
+	return
+
+//-------------------------------------------------------------------------
+*obj_value_set
+
+	objprm obj_id(OBJ_ID_PACKOPT_NAME),		packopt_name
+	objprm obj_id(OBJ_ID_PACKOPT_RUNTIME),	runtime_name
+	objprm obj_id(OBJ_ID_PACKOPT_TYPE),		exe_type
+	objprm obj_id(OBJ_ID_PACKOPT_XSIZE),	window_width
+	objprm obj_id(OBJ_ID_PACKOPT_YSIZE),	window_height
+	objprm obj_id(OBJ_ID_PACKOPT_HIDE),		hide_type
+	objprm obj_id(OBJ_ID_PACKOPT_ORGPATH),	orgpath_type
+	objprm obj_id(OBJ_ID_PACKOPT_ICON),		icon_file
+	objprm obj_id(OBJ_ID_PACKOPT_VERSION),	version_set
+	objprm obj_id(OBJ_ID_PACKOPT_MANIFEST),	manifest_file
+	objprm obj_id(OBJ_ID_PACKOPT_LANG),		lang_set
+	objprm obj_id(OBJ_ID_PACKOPT_UPX),		upx_set
+
+	return
+
+//-------------------------------------------------------------------------
+*clip_copy
+
+	sendmsg hInput, $B1, , -1
+	sendmsg hInput, $0301
+
+	return
+
+//-------------------------------------------------------------------------
+*config_file_write
+
+	file_buff  = ""
+	file_buff += CONFIG_WINDOW_POS_X		+ str(win_pos_x)		+ "\n"
+	file_buff += CONFIG_WINDOW_POS_Y		+ str(win_pos_y)		+ "\n"
+	file_buff += "\n"
+	file_buff += CONFIG_PACKOPT_NAME 		+ packopt_name			+ "\n"
+	file_buff += CONFIG_PACKOPT_RUNTIME		+ runtime_name			+ "\n"
+	file_buff += CONFIG_PACKOPT_TYPE		+ str(exe_type)			+ "\n"
+	file_buff += CONFIG_PACKOPT_XSIZE		+ str(window_width) 	+ "\n"
+	file_buff += CONFIG_PACKOPT_YSIZE		+ str(window_height)	+ "\n"
+	file_buff += CONFIG_PACKOPT_HIDE		+ str(hide_type)		+ "\n"
+	file_buff += CONFIG_PACKOPT_ORGPATH		+ str(orgpath_type)		+ "\n"
+	file_buff += CONFIG_PACKOPT_ICON		+ icon_file				+ "\n"
+	file_buff += CONFIG_PACKOPT_VERSION		+ version_set			+ "\n"
+	file_buff += CONFIG_PACKOPT_MANIFEST	+ manifest_file			+ "\n"
+	file_buff += CONFIG_PACKOPT_LANG		+ lang_set				+ "\n"
+	file_buff += CONFIG_PACKOPT_UPX			+ str(upx_set)			+ "\n"
+
+	func_packopt_ini_file_write CONFIG_FILE_NAME, file_buff
+
+	end
