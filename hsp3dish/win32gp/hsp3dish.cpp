@@ -33,6 +33,7 @@
 #include "../sysreq.h"
 #include "../hsp3ext.h"
 #include "../../hsp3/strnote.h"
+#include "../../hsp3/hsp3utfcnv.h"
 
 #include "../../hsp3/win32gui/hsp3extlib.h"
 
@@ -1008,7 +1009,7 @@ static void hsp3dish_savelog( void )
 		GetModuleFileName(NULL, fname, _MAX_PATH);
 		getpath(fname, fname, 32);
 		changedir(fname);
-		mem_save("hsp3gp.log", (void *)logs, (int)strlen(logs), -1);
+		hsp3_binsave("hsp3gp.log", (void *)logs, (int)strlen(logs), -1);
 	}
 }
 

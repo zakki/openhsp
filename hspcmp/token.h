@@ -361,6 +361,12 @@ private:
 
 	int	SaveStringMap(char* fname);
 
+	//	UTF-8 service
+	int is_sjis_char_head(const unsigned char* str, int pos);
+	char* to_hsp_string_literal(const char* src);
+	int atoi_allow_overflow(const char* s);
+	int ConvSJis2Utf8(char* pSource, char* pDist, int buffersize);
+
 	//		Data
 	//
 	CLabel *lb;						// label object
@@ -490,5 +496,10 @@ private:
 
 };
 
+//	String Service
+void strcase2(char* str, char* str2);
+void strcpy2(char* dest, const char* src, size_t size);
+void addext(char* st, const char* exstr);
+void cutext(char* st);
 
 #endif

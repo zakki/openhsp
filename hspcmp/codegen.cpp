@@ -11,13 +11,13 @@
 #include "../hsp3/hsp3config.h"
 #include "../hsp3/hsp3debug.h"
 #include "../hsp3/hsp3struct.h"
+#include "../hsp3/strnote.h"
 
 #include "supio.h"
 #include "token.h"
 #include "label.h"
 #include "tagstack.h"
 #include "membuf.h"
-#include "strnote.h"
 #include "comutil.h"
 
 #include "errormsg.h"

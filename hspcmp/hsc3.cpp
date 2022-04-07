@@ -10,12 +10,12 @@
 #include "../hsp3/hsp3config.h"
 #include "../hsp3/hsp3debug.h"
 #include "../hsp3/hsp3struct.h"
+#include "../hsp3/strnote.h"
 
 #include "supio.h"
 #include "hsc3.h"
 
 #include "membuf.h"
-#include "strnote.h"
 #include "label.h"
 #include "token.h"
 #include "localinfo.h"
@@ -347,7 +347,7 @@ void CHsc3::GetPackfileOption( char *out, char *keyword, char *defval )
 			}
 			if ( a1 != 0 ) {
 				s[0]=0;
-				if ( tstrcmp( tmp+2, keyword )) { strcpy( out, s+1 ); }
+				if ( strcmp( tmp+2, keyword )==0 ) { strcpy( out, s+1 ); }
 			}
 		}
 	}

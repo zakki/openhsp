@@ -178,6 +178,7 @@ int FilePack::RegisterFromPacklist( char *name, int def_crypt)
 			//	through
 		default:
 			int length = RegisterFile(fn, enc);
+			if (length < 0) return -1;
 			char msg[1024];
 			sprintf(msg,"#%d %s (%d)(%d)", total, fn, length, enc);
 			Print(msg);
@@ -190,18 +191,16 @@ int FilePack::RegisterFromPacklist( char *name, int def_crypt)
 }
 
 
-int FilePack::CopyFileToDPM( void *file, char *filename, HFPSIZE psize, int encode )
+int FilePack::CopyFileToDPM( FILE *ff, char *filename, HFPSIZE psize, int encode )
 {
 	//	copy file to pack
 	//
 	int a;
-	FILE *ff;
 	FILE *ff2;
 	unsigned char ch;
 	int count = 0;
 	int size = (int)psize;
 
-	ff = (FILE *)file;
 	ff2 = hsp3_fopen( filename );
 	if (ff2==NULL) return -1;
 
@@ -226,7 +225,7 @@ int FilePack::CopyFileToDPM( void *file, char *filename, HFPSIZE psize, int enco
 			count++;
 		}
 	}
-	fclose(ff2);
+	hsp3_fclose(ff2);
 	return count;
 }
 
@@ -309,7 +308,9 @@ int FilePack::SavePackFile( char *name, char *packname, int encode, int opt_enco
 
 			//printf( "#%d : %x : %s ( %d bytes ) %s packing...\n", i, obj->offset, p, obj->size, refname );
 			int sz = CopyFileToDPM( fp, refname_hsp3, obj->size, obj->crypt );
-			if (sz < 0) res = -1;
+			if (sz < 0) {
+				res = -1;
+			}
 			checksize += sz;
 			obj++;
 		}
@@ -558,14 +559,21 @@ int FilePack::MakeEXEFile(int mode, char* hspexe, char* basename, int deckey, in
 	s4[31] = 'k'; ip = (int*)(s4 + 32); *ip = deckey;
 
 	fp2 = hsp3_fopen(dpmname);
+	if (fp2 == NULL) {
+		sprintf(tmp, "#No file [%s].", dpmname);
+		Print(tmp);
+		return -1;
+	}
 	fp = hsp3_fopen(hrtfile);
 	if (fp == NULL) {
+		hsp3_fclose(fp2);
 		sprintf(tmp, "#No file [%s].", hspexe);
 		Print(tmp);
 		return -1;
 	}
 	fp3 = hsp3_fopenwrite(sname);
 	if (fp3 == NULL) {
+		hsp3_fclose(fp2); hsp3_fclose(fp);
 		sprintf(tmp, "#Write error [%s].", sname);
 		Print(tmp);
 		return -1;
@@ -585,9 +593,13 @@ int FilePack::MakeEXEFile(int mode, char* hspexe, char* basename, int deckey, in
 		x0++;
 	}
 
-	hsp3_fclose(fp3); hsp3_fclose(fp2); hsp3_fclose(fp);
+	hsp3_fclose(fp2); hsp3_fclose(fp);
+	hsp3_fclose(fp3);
+#ifdef HSPWIN
+	_fcloseall();
+#endif
 
-	sprintf(tmp, "Make custom execute file [%s](%d).", sname, deckey);
+	sprintf(tmp, "Make custom execute file [%s].", sname);
 	Print(tmp);
 	return 0;
 }

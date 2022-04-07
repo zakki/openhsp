@@ -18,9 +18,119 @@
 #include "tagstack.h"
 #include "membuf.h"
 #include "../hsp3/strnote.h"
+#include "../hsp3/strbuf.h"
 #include "ahtobj.h"
 
 #define s3size 0x8000
+
+#ifdef HSPWIN
+#include <windows.h>
+#include <shlobj.h>
+#endif
+
+static inline int issjisleadbyte(unsigned char c)
+{
+	return (c >= 0x81 && c <= 0x9F) || (c >= 0xE0 && c <= 0xFC);
+}
+
+static inline int tstrcmp(const char* str1, const char* str2)
+{
+	if (strcmp(str1, str2) == 0) return -1;
+	return 0;
+}
+
+//-------------------------------------------------------------
+//		String Service
+//-------------------------------------------------------------
+
+void strcase2(char* str, char* str2)
+{
+	//	string case to lower and copy
+	//
+	unsigned char a1;
+	unsigned char* ss;
+	unsigned char* ss2;
+	ss = (unsigned char*)str;
+	ss2 = (unsigned char*)str2;
+	while (1) {
+		a1 = *ss;
+		if (a1 == 0) break;
+		if (a1 >= 0x80) {
+			*ss++;
+			*ss2++ = a1;
+			a1 = *ss++;
+			if (a1 == 0) break;
+			*ss2++ = a1;
+		}
+		else {
+			a1 = tolower(a1);
+			*ss++ = a1;
+			*ss2++ = a1;
+		}
+	}
+	*ss2 = 0;
+}
+
+void strcpy2(char* dest, const char* src, size_t size)
+{
+	if (size == 0) {
+		return;
+	}
+	char* d = dest;
+	const char* s = src;
+	size_t n = size;
+	while (--n) {
+		if ((*d++ = *s++) == '\0') {
+			return;
+		}
+	}
+	*d = '\0';
+	return;
+}
+
+
+static int findext(char const* st)
+{
+	//	拡張子をさがす。
+	//
+	int r = -1, f = 0;
+	for (int i = 0; st[i] != '\0'; ++i) {
+		if (f) {
+			f = 0;
+		}
+		else {
+			if (st[i] == '.') {
+				r = i;
+			}
+			else if (st[i] == '\\') {
+				r = -1;
+			}
+			f = issjisleadbyte(st[i]);
+		}
+	}
+	return r;
+}
+
+
+void addext(char* st, const char* exstr)
+{
+	//	add extension of filename
+	int i = findext(st);
+	if (i == -1) {
+		strcat(st, ".");
+		strcat(st, exstr);
+	}
+}
+
+
+void cutext(char* st)
+{
+	//		拡張子を取り除く
+	//
+	int i = findext(st);
+	if (i >= 0) st[i] = '\0';
+}
+
 
 //-------------------------------------------------------------
 //		Routines
@@ -102,19 +212,48 @@ int CToken::AddPackfile( char *name, int mode )
 	//
 	CStrNote note;
 	int i,max;
+	char p_fdir[HSP_MAX_PATH];
+	char p_fname[HSP_MAX_PATH];
 	char packadd[1024];
 	char tmp[1024];
 	char *s;
+	char* findptr;
+
+	getpath(name, p_fdir, 32);
+	getpath(name, p_fname, 8);
+	strchr3(p_fname, '*', 0, &findptr);
+
+	if (findptr != NULL) {
+		//	ワイルドカード使用時
+		CStrNote notelist;
+		char ftmp[1024];
+		char fixname[1024];
+		char *flist = sbAlloc(0x8000);
+		dirlist(name,&flist,1);
+		notelist.Select(flist);
+		int listmax = notelist.GetMaxLine();
+		for (i = 0; i < listmax; i++) {
+			notelist.GetLine(ftmp, i);
+			strcpy(fixname, p_fdir);
+			strcat(fixname, ftmp);
+			int res = AddPackfile(fixname, mode );
+			if (res) return res;
+		}
+		sbFree(flist);
+		return 0;
+	}
 
 	strcpy( packadd, name );
+#ifdef HSPWIN
 	strcase( packadd );
+#endif
 	if ( mode<2 ) {
 		note.Select( packbuf->GetBuffer() );
 		max = note.GetMaxLine();
 		for( i=0;i<max;i++ ) {
 			note.GetLine( tmp, i );
 			s = tmp;if ( *s=='+' ) s++;
-			if ( tstrcmp( s, packadd )) return -1;
+			if ( strcmp( s, packadd ) == 0 ) return -1;
 		}
 		if ( mode==1 ) packbuf->PutStr( "+" );
 	}
@@ -162,6 +301,7 @@ CToken::CToken( char *buf )
 
 CToken::~CToken( void )
 {
+	sbBye();
 	if ( scnvbuf!=NULL ) InitSCNV(-1);
 
 	if ( tstack!=NULL ) { delete tstack; tstack = NULL; }
@@ -210,6 +350,8 @@ void CToken::ResetCompiler( void )
 	hed_autoopt_timer = 0;
 	hed_autoopt_strexchange = 0;
 	pp_utf8 = 0;
+
+	sbInit();
 }
 
 
@@ -1513,9 +1655,6 @@ char *CToken::SendLineBuf( char *str )
 }
 
 
-#define IS_CHAR_HEAD(str, pos) \
-	is_sjis_char_head((unsigned char *)(str), (int)((pos) - (unsigned char *)(str)))
-
 char *CToken::SendLineBufPP( char *str, int *lines )
 {
 	//		１行分のデータをlinebufに転送
@@ -1525,6 +1664,7 @@ char *CToken::SendLineBufPP( char *str, int *lines )
 	unsigned char *w;
 	unsigned char a1,a2;
 	int ln;
+	int i,skip;
 	p = (unsigned char *)str;
 	w = (unsigned char *)linebuf;
 	a2 = 0; ln =0;
@@ -1532,13 +1672,13 @@ char *CToken::SendLineBufPP( char *str, int *lines )
 		a1 = *p;if ( a1==0 ) break;
 		p++;
 		if ( a1 == 10 ) {
-			if ( a2==0x5c && IS_CHAR_HEAD(str, p - 2) ) {
+			if ( a2==0x5c ) {
 				ln++; w--; a2=0; continue;
 			}
 			break;
 		}
 		if ( a1 == 13 ) {
-			if ( a2==0x5c && IS_CHAR_HEAD(str, p - 2) ) {
+			if ( a2==0x5c ) {
 				if ( *p==10 ) p++;
 				ln++; w--; a2=0; continue;
 			}
@@ -1546,13 +1686,21 @@ char *CToken::SendLineBufPP( char *str, int *lines )
 			break;
 		}
 		*w++=a1; a2=a1;
+		//	skip multibyte
+		skip = SkipMultiByte(a1);
+		if (skip > 0) {
+			for (i = 0; i < skip; i++) {
+				a1 = *p; if (a1 == 0) break;
+				p++;
+				*w++ = a1;
+			}
+			a2 = 0;
+		}
 	}
 	*w=0;
 	*lines = ln;
 	return (char *)p;
 }
-
-#undef IS_CHAR_HEAD
 
 
 char *CToken::ExpandStrComment2( char *str )
@@ -3917,5 +4065,141 @@ int CToken::SkipMultiByte( unsigned char byte )
 		return CheckByteUTF8( byte );
 	}
 	return CheckByteSJIS( byte );
+}
+
+
+int CToken::ConvSJis2Utf8(char* pSource, char* pDist, int buffersize)
+{
+	int size = 0;
+
+#ifdef HSPWIN
+	//ShiftJISからUTF-16へ変換
+	const int nSize = ::MultiByteToWideChar(CP_ACP, 0, (LPCSTR)pSource, -1, NULL, 0);
+
+	BYTE* buffUtf16 = new BYTE[nSize * 2 + 2];
+	::MultiByteToWideChar(CP_ACP, 0, (LPCSTR)pSource, -1, (LPWSTR)buffUtf16, nSize);
+
+	//UTF-16からUTF-8へ変換
+	const int nSizeUtf8 = ::WideCharToMultiByte(CP_UTF8, 0, (LPCWSTR)buffUtf16, -1, NULL, 0, NULL, NULL);
+	if (pDist == NULL) {
+		delete buffUtf16;
+		return -1;
+	}
+
+	BYTE* buffUtf8 = new BYTE[nSizeUtf8 * 2];
+	ZeroMemory(buffUtf8, nSizeUtf8 * 2);
+	::WideCharToMultiByte(CP_UTF8, 0, (LPCWSTR)buffUtf16, -1, (LPSTR)buffUtf8, nSizeUtf8, NULL, NULL);
+
+	size = lstrlen((char*)buffUtf8) + 1;
+	if (size > buffersize) size = buffersize;
+
+	memcpy(pDist, buffUtf8, size);
+
+	delete buffUtf16;
+	delete buffUtf8;
+
+#endif
+	return size;
+}
+
+
+int CToken::is_sjis_char_head(const unsigned char* str, int pos)
+{
+	//		Shift_JIS文字列のposバイト目が文字の先頭バイトであるか
+	//		マルチバイト文字の後続バイトなら0、それ以外なら1を返す
+	int result = 1;
+	while (pos != 0 && issjisleadbyte(str[--pos])) {
+		result = !result;
+	}
+	return result;
+}
+
+char* CToken::to_hsp_string_literal(const char* src) {
+	//		文字列をHSPの文字列リテラル形式に
+	//		戻り値のメモリは呼び出し側がfreeする必要がある。
+	//		HSPの文字列リテラルで表せない文字は
+	//		そのまま出力されるので注意。（'\n'など）
+	//
+	size_t length = 2;
+	const unsigned char* s = (unsigned char*)src;
+	while (1) {
+		unsigned char c = *s;
+		if (c == '\0') break;
+		switch (c) {
+		case '\r':
+			if (*(s + 1) == '\n') {
+				s++;
+			}
+			// FALL THROUGH
+		case '\t':
+		case '"':
+		case '\\':
+			length += 2;
+			break;
+		default:
+			length++;
+		}
+		if (issjisleadbyte(c) && *(s + 1) != '\0') {
+			length++;
+			s += 2;
+		}
+		else {
+			s++;
+		}
+	}
+	char* dest = (char*)malloc(length + 1);
+	if (dest == NULL) return dest;
+	s = (unsigned char*)src;
+	unsigned char* d = (unsigned char*)dest;
+	*d++ = '"';
+	while (1) {
+		unsigned char c = *s;
+		if (c == '\0') break;
+		switch (c) {
+		case '\t':
+			*d++ = '\\';
+			*d++ = 't';
+			break;
+		case '\r':
+			*d++ = '\\';
+			if (*(s + 1) == '\n') {
+				*d++ = 'n';
+				s++;
+			}
+			else {
+				*d++ = 'r';
+			}
+			break;
+		case '"':
+			*d++ = '\\';
+			*d++ = '"';
+			break;
+		case '\\':
+			*d++ = '\\';
+			*d++ = '\\';
+			break;
+		default:
+			*d++ = c;
+			if (issjisleadbyte(c) && *(s + 1) != '\0') {
+				*d++ = *++s;
+			}
+		}
+		s++;
+	}
+	*d++ = '"';
+	*d = '\0';
+	return dest;
+}
+
+int CToken::atoi_allow_overflow(const char* s)
+{
+	//		オーバーフローチェックをしないatoi
+	//
+	int result = 0;
+	while (isdigit(*s)) {
+		result = result * 10 + (*s - '0');
+		s++;
+	}
+	return result;
 }
 

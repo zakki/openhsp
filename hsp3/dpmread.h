@@ -1,6 +1,11 @@
-//	dpmread.c functions
 
-int dpm_ini( char *dpmfile, long dpmofs, int chksum, int deckey );
+//
+//	dpmread.cpp header
+//
+#ifndef __dpmread_h
+#define __dpmread_h
+
+int dpm_ini( char *dpmfile, long dpmofs, int chksum, int deckey, int slot=0 );
 void dpm_bye( void );
 
 FILE *dpm_open( char *fname );
@@ -14,3 +19,4 @@ int dpm_filebase( char *fname );
 void dpm_memfile( void *mem, int size );
 char *dpm_readalloc( char *fname );
 
+#endif

@@ -26,7 +26,9 @@ static HspHelpManager hsman;
 #endif
 
 //#define DPM_SUPPORT		// DPMファイルマネージャをサポート
-//#include "dpm.h"
+#ifdef DPM_SUPPORT
+#include "dpm.h"
+#endif
 
 #define DPM2_SUPPORT		// DPM2ファイルマネージャをサポート
 #include "../../hsp3/filepack.h"
@@ -577,7 +579,8 @@ EXPORT BOOL WINAPI hsc3_make ( BMSCR *bm, char *p1, int p2, int p3 )
 
 	filepack.Reset();
 	filepack.SetErrorBuffer(hsc3->errbuf);
-	if (filepack.SavePackFile(fname, PACKFILE, myseed1, myseed2) < 0) {
+	st = filepack.SavePackFile(fname, PACKFILE, myseed1, myseed2);
+	if (st < 0) {
 		return -1;
 	}
 	st = filepack.MakeEXEFile(type, hspexe, fname, myseed2, opt1, opt2, opt3);
@@ -1362,7 +1365,7 @@ EXPORT BOOL WINAPI aht_findparts( HSPEXINFO *hei, int p1, int p2, int p3 )
 		m = aht->GetModel( res );
 		p = m->GetClass();
 		len = (int)strlen( p ) - 5; if ( len < 0 ) len = 0;
-		if ( tstrcmp( p+len, ".home" ) ) {			// homeクラスかどうか確認する
+		if ( strcmp( p+len, ".home" )==0 ) {		// homeクラスかどうか確認する
 			if ( homeid != -1 ) ahtbuild_error = 2;
 			homeid = res;
 		}
@@ -1374,7 +1377,7 @@ EXPORT BOOL WINAPI aht_findparts( HSPEXINFO *hei, int p1, int p2, int p3 )
 		m = aht->GetModel( i );
 		p = m->GetClass();
 		len = (int)strlen( p ) - 8; if ( len < 0 ) len = 0;
-		if ( tstrcmp( p+len, ".routine" ) ) {			// routineクラスかどうか確認する
+		if ( strcmp( p+len, ".routine" )==0 ) {		// routineクラスかどうか確認する
 			statval = -1;
 		}
 	}

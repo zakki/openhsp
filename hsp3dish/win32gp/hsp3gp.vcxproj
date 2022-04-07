@@ -270,10 +270,13 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="..\..\hsp3\dpmread.cpp" />
+    <ClCompile Include="..\..\hsp3\filepack.cpp" />
     <ClCompile Include="..\..\hsp3\hsp3.cpp" />
     <ClCompile Include="..\..\hsp3\hsp3code.cpp" />
+    <ClCompile Include="..\..\hsp3\hsp3crypt.cpp" />
     <ClCompile Include="..\..\hsp3\hsp3debug.cpp" />
     <ClCompile Include="..\..\hsp3\hsp3int.cpp" />
+    <ClCompile Include="..\..\hsp3\hsp3utfcnv.cpp" />
     <ClCompile Include="..\..\hsp3\hspvar_core.cpp" />
     <ClCompile Include="..\..\hsp3\hspvar_double.cpp" />
     <ClCompile Include="..\..\hsp3\hspvar_int.cpp" />
@@ -311,14 +314,17 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\hsp3\dpmread.h" />
+    <ClInclude Include="..\..\hsp3\filepack.h" />
     <ClInclude Include="..\..\hsp3\hsp3.h" />
     <ClInclude Include="..\..\hsp3\hsp3code.h" />
     <ClInclude Include="..\..\hsp3\hsp3config.h" />
+    <ClInclude Include="..\..\hsp3\hsp3crypt.h" />
     <ClInclude Include="..\..\hsp3\hsp3debug.h" />
     <ClInclude Include="..\..\hsp3\hsp3ext.h" />
     <ClInclude Include="..\..\hsp3\hsp3gr.h" />
     <ClInclude Include="..\..\hsp3\hsp3int.h" />
     <ClInclude Include="..\..\hsp3\hsp3struct.h" />
+    <ClInclude Include="..\..\hsp3\hsp3utfcnv.h" />
     <ClInclude Include="..\..\hsp3\hspvar_core.h" />
     <ClInclude Include="..\..\hsp3\hspvar_label.h" />
     <ClInclude Include="..\..\hsp3\hspwnd.h" />

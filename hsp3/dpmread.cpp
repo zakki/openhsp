@@ -52,7 +52,7 @@ int dpm_fread( void *mem, int size, FILE *stream )
 
 /*----------------------------------------------------------------------------------*/
 
-int dpm_ini( char *fname, long dpmofs, int chksum, int deckey )
+int dpm_ini( char *fname, long dpmofs, int chksum, int deckey, int slot )
 {
 	//
 	//		DPMファイル読み込みの初期化
@@ -84,7 +84,8 @@ int dpm_ini( char *fname, long dpmofs, int chksum, int deckey )
 #else
 	strcpy( dpmfile, fname );
 #endif
-	int res = filepack.LoadPackFile(dpmfile, deckey, dpmofs);
+
+	int res = filepack.LoadPackFile(dpmfile, deckey, dpmofs, slot);
 	if ( res < 0) {
 		return -1;
 	}

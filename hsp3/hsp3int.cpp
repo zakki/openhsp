@@ -903,9 +903,10 @@ static int cmdfunc_intcmd( int cmd )
 		}
 	case 0x1e:								// chdpm
 		code_event( HSPEVENT_FNAME, 0, 0, code_gets() );
-		p1 = code_getdi( -1 );
+		p1 = code_getdi(-1);
+		p2 = code_getdi(-1);
 		dpm_bye();
-		p2 = dpm_ini( ctx->fnbuffer, 0, -1, p1 );
+		p2 = dpm_ini( ctx->fnbuffer, 0, -1, p1, p2 );
 		if ( p2 ) throw HSPERR_FILE_IO;
 #ifndef HSP3IMP
 #ifdef HSPWIN

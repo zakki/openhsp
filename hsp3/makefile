@@ -150,6 +150,7 @@ ifneq ($(filter linux,$(PLATFORM)),)
            hspvar_core.o hspvar_double.o hspvar_int.o hspvar_label.o \
            hspvar_str.o hspvar_struct.o stack.o strbuf.o strnote.o \
            dpmread.o linux/supio_linux.o linux/hsp3cl.o \
+           hsp3crypt.o hsp3utfcnv.o filepack.o \
            linux/hsp3ext_linux.o linux/hsp3gr_linux.o
     RESES =
     LIBS = m stdc++

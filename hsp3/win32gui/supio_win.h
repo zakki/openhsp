@@ -7,6 +7,7 @@
 
 char *mem_ini( int size );
 void mem_bye( void *ptr );
+char *mem_alloc( void *base, int newsize, int oldsize );
 
 //void prtini( char *mes );
 //void prt( char *mes );

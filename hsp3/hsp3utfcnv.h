@@ -68,7 +68,6 @@ int StrCopyLetter(char* source, char* dest);
 //
 FILE* hsp3_fopen(char* name, int offset=0);
 FILE* hsp3_fopenwrite(char* name, int offset=-1);
-void hsp3_fclose(void);
 void hsp3_fclose(FILE* ptr);
 int hsp3_flength(char* name);
 int hsp3_fread(FILE* ptr, void* mem, int size);

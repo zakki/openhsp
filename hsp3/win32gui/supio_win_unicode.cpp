@@ -39,6 +39,20 @@ void mem_bye( void *ptr ) {
 	free(ptr);
 }
 
+char *mem_alloc( void *base, int newsize, int oldsize )
+{
+	char *p;
+	if ( base == NULL ) {
+		p = (char *)calloc( newsize, 1 );
+		return p;
+	}
+	if ( newsize <= oldsize ) return (char *)base;
+	p = (char *)calloc( newsize, 1 );
+	memcpy( p, base, oldsize );
+	free( base );
+	return p;
+}
+
 
 size_t utf8strlen( const char *target )
 {

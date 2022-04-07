@@ -86,9 +86,7 @@ public:
 
 	int LoadPackFile(char* name, int encode = 0, int dpmoffset = 0, int slot = 0);
 	void PrintFiles(void);
-
 	int GetFileSize( char *name );
-	int ReadFile( char *name, void *mem, int size=0, int offset=0, int encode=0 );
 
 	//	File Service
 	//
@@ -155,7 +153,7 @@ private:
 	//	Internal Use
 	//
 	void PrepareRead(int slot = 0, int encode = 0);
-	int CopyFileToDPM( void *ff, char *filename, HFPSIZE size, int encode );
+	int CopyFileToDPM( FILE *ff, char *filename, HFPSIZE size, int encode );
 	void PrepareWrite(int slot = 0, int encode = 0);
 	int RegisterFromPacklist(char* name, int crypt = 1);
 	int RegisterFile(char* name, int crypt = 0);

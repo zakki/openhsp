@@ -1,17 +1,16 @@
 //
-//	supio.cpp functions
+//	hsp3utfcnv.cpp functions
 //
 #include "hsp3config.h"
+
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
 
 #ifdef HSPWIN
 #include <windows.h>
 #endif
 
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
-#include <stdarg.h>
-#include <direct.h>
 #include <ctype.h>
 #include <tchar.h>
 
@@ -189,10 +188,9 @@ void freeac(char **ppc)
 //
 //		basic File I/O support
 //
-static FILE *hsp3_fp = NULL;
-
 FILE *hsp3_fopen(char*name, int offset)
 {
+	FILE* hsp3_fp = NULL;
 #ifdef HSPWIN
 #ifdef HSPUTF8
 	HSPAPICHAR* hactmp1;
@@ -220,6 +218,7 @@ FILE *hsp3_fopen(char*name, int offset)
 
 FILE* hsp3_fopenwrite(char* fname8, int offset)
 {
+	FILE* hsp3_fp = NULL;
 #ifdef HSPWIN
 #ifdef HSPUTF8
 	// Windows UTF
@@ -234,30 +233,25 @@ FILE* hsp3_fopenwrite(char* fname8, int offset)
 #else
 	// Windows SJIS
 	if (offset < 0) {
-		hsp3_fp = fopen(fname8, "wb");
+		hsp3_fp = fopen(fname8, "w+b");
 	}
 	else {
 		hsp3_fp = fopen(fname8, "r+b");
+		if (hsp3_fp == NULL) return NULL;
 		fseek(hsp3_fp, offset, SEEK_SET);
 	}
 #endif
 	// Linux
 	if (offset < 0) {
-		hsp3_fp = fopen(fname8, "wb");
+		hsp3_fp = fopen(fname8, "w+b");
 	}
 	else {
 		hsp3_fp = fopen(fname8, "r+b");
+		if (hsp3_fp == NULL) return NULL;
 		fseek(hsp3_fp, offset, SEEK_SET);
 	}
 #endif
 	return hsp3_fp;
-}
-
-
-void hsp3_fclose(void)
-{
-	fclose(hsp3_fp);
-	hsp3_fp = NULL;
 }
 
 
@@ -269,12 +263,13 @@ void hsp3_fclose(FILE* ptr)
 
 int hsp3_flength(char* name)
 {
-	if (hsp3_fopen(name,0)==NULL) {
+	FILE* hsp3_fp = hsp3_fopen(name, 0);
+	if (hsp3_fp ==NULL) {
 		return -1;
 	}
 	fseek(hsp3_fp, 0, SEEK_END);
 	int length = (int)ftell(hsp3_fp);			// normal file size
-	hsp3_fclose();
+	hsp3_fclose(hsp3_fp);
 	return length;
 }
 
@@ -291,10 +286,10 @@ int hsp3_fread( FILE* ptr, void *mem, int size )
 
 int hsp3_binsave( char *fname8, void *mem, int msize, int seekofs )
 {
-	hsp3_fopenwrite( fname8 );
+	FILE* hsp3_fp = hsp3_fopenwrite( fname8 );
 	if (hsp3_fp ==NULL) return -1;
 	int flen = (int)fwrite( mem, 1, msize, hsp3_fp);
-	hsp3_fclose();
+	hsp3_fclose(hsp3_fp);
 	return flen;
 }
 
