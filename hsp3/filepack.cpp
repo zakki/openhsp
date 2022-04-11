@@ -200,7 +200,10 @@ FILE* FilePack::pack_fopen(char* name, int offset)
 		if (enc_crypt != obj->crypt) {
 			return NULL;
 		}
-		cm->DataSet(NULL, size-offset, obj->crypt);
+		cm->DataSet(NULL, size, obj->crypt);
+		if (offset > 0) {
+			cm->SetOffset(offset);
+		}
 	}
 	return ff;
 }
@@ -335,10 +338,12 @@ void FilePack::DeleteSlot(int slot)
 		return;
 	}
 	if (buf[i] != NULL) {
-		_FREE(buf[i]); buf[i] = NULL;
+		_FREE(buf[i]);
+		buf[i] = NULL;
 	}
 	if (hsp3crypt[i] != NULL) {
 		delete hsp3crypt[i];
+		hsp3crypt[i] = NULL;
 	}
 }
 

@@ -58,6 +58,9 @@ int dpm_ini( char *fname, long dpmofs, int chksum, int deckey, int slot )
 	//		DPMファイル読み込みの初期化
 	//
 	char dpmfile[HSP_MAX_PATH];
+
+	strcpy(dpmfile, fname);
+
 #ifdef HSPUTF8
 	WCHAR dpmfile_w[HSP_MAX_PATH];
 #endif
@@ -81,8 +84,6 @@ int dpm_ini( char *fname, long dpmofs, int chksum, int deckey, int slot )
 		utf16_to_hsp3(dpmfile, (char *)dpmfile_w, _MAX_PATH);
 #endif
 	}
-#else
-	strcpy( dpmfile, fname );
 #endif
 
 	int res = filepack.LoadPackFile(dpmfile, deckey, dpmofs, slot);
