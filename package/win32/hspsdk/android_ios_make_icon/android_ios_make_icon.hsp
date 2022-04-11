@@ -2,7 +2,7 @@
 ;
 ; Andoird/iOSアイコン作成ツール
 ;
-; Ver 0.4
+; Ver 0.5
 ;
 ; By. しまくろねこ
 ;
@@ -19,7 +19,7 @@
 #packopt icon "icon.ico"
 
 
-#define APP_VERSION					"0.4"
+#define APP_VERSION					"0.5"
 
 #uselib "shlwapi.dll"
 #func PathIsDirectory "PathIsDirectoryA" sptr	; 指定されたパスが存在しない場合は 0 が返る
@@ -79,61 +79,56 @@
 #define CMD_LINE_IOS			"-i"
 #define CMD_LINE_PROJECT		"-p"
 
-	// ----------------------------- Android
-	#defcfunc cfunc_android_project_path str cmd_line
-		copy_cmd_line = cmd_line
-		i = instr(copy_cmd_line, 0, CMD_LINE_IOS)
+// ----------------------------- Android
+#defcfunc cfunc_android_project_path str cmd_line
+	copy_cmd_line = cmd_line
+	copy_cmd_line = strtrim(copy_cmd_line, 1, ' ')
 	
-		if i >=0 {
-			copy_cmd_line = ""
-		} else {
-			a = instr(copy_cmd_line, 0, CMD_LINE_ANDROID)
-			;-a -p"プロジェクトパス"
-			if a >= 0 {
-				copy_cmd_line = strmid(copy_cmd_line, strlen(CMD_LINE_ANDROID), strlen(copy_cmd_line) - strlen(CMD_LINE_ANDROID))
+	if strmid(copy_cmd_line, 0, strlen(CMD_LINE_IOS)) == CMD_LINE_IOS {
+		copy_cmd_line = ""
+	} else {
+		;-a -p"プロジェクトパス"
+		if strmid(copy_cmd_line, 0, strlen(CMD_LINE_ANDROID)) == CMD_LINE_ANDROID {
+			copy_cmd_line = strmid(copy_cmd_line, strlen(CMD_LINE_ANDROID), strlen(copy_cmd_line) - strlen(CMD_LINE_ANDROID))
+			copy_cmd_line = strtrim(copy_cmd_line, 0, ' ')
+			if strmid(copy_cmd_line, 0, strlen(CMD_LINE_PROJECT)) == CMD_LINE_PROJECT {
+				copy_cmd_line = strmid(copy_cmd_line, strlen(CMD_LINE_PROJECT), strlen(copy_cmd_line) - strlen(CMD_LINE_PROJECT))
 				copy_cmd_line = strtrim(copy_cmd_line, 0, ' ')
-				p = instr(copy_cmd_line, 0, CMD_LINE_PROJECT)
-				if p >= 0 {
-					copy_cmd_line = strmid(copy_cmd_line, strlen(CMD_LINE_PROJECT), strlen(copy_cmd_line) - strlen(CMD_LINE_PROJECT))
-					copy_cmd_line = strtrim(copy_cmd_line, 0, ' ')
-					strrep copy_cmd_line, "\"", ""
-				}
+				strrep copy_cmd_line, "\"", ""
 			}
 		}
-		
-		return copy_cmd_line
+	}
 
-	// ----------------------------- iOS
-	#defcfunc cfunc_ios_project_path str cmd_line
-		copy_cmd_line = cmd_line
-		a = instr(copy_cmd_line, 0, CMD_LINE_ANDROID)
+	return copy_cmd_line
 
-		if a >= 0 {
-			copy_cmd_line = ""
-		} else {
-			i = instr(copy_cmd_line, 0, CMD_LINE_IOS)
-			p = instr(copy_cmd_line, 0, CMD_LINE_PROJECT)
-			;-i -p"プロジェクトパス"
-			if i >= 0 {
-				copy_cmd_line = strmid(copy_cmd_line, strlen(CMD_LINE_IOS), strlen(copy_cmd_line) - strlen(CMD_LINE_IOS))
+// ----------------------------- iOS
+#defcfunc cfunc_ios_project_path str cmd_line
+	copy_cmd_line = cmd_line
+	copy_cmd_line = strtrim(copy_cmd_line, 1, ' ')
+	
+	if strmid(copy_cmd_line, 0, strlen(CMD_LINE_ANDROID)) == CMD_LINE_ANDROID {
+		copy_cmd_line = ""
+	} else {
+		;-i -p"プロジェクトパス"
+		if strmid(copy_cmd_line, 0, strlen(CMD_LINE_IOS)) == CMD_LINE_IOS {
+			copy_cmd_line = strmid(copy_cmd_line, strlen(CMD_LINE_IOS), strlen(copy_cmd_line) - strlen(CMD_LINE_IOS))
+			copy_cmd_line = strtrim(copy_cmd_line, 0, ' ')
+			if strmid(copy_cmd_line, 0, strlen(CMD_LINE_PROJECT)) == CMD_LINE_PROJECT {
+				copy_cmd_line = strmid(copy_cmd_line, strlen(CMD_LINE_PROJECT), strlen(copy_cmd_line) - strlen(CMD_LINE_PROJECT))
 				copy_cmd_line = strtrim(copy_cmd_line, 0, ' ')
-				p = instr(copy_cmd_line, 0, CMD_LINE_PROJECT)
-				if p >= 0 {
-					copy_cmd_line = strmid(copy_cmd_line, strlen(CMD_LINE_PROJECT), strlen(copy_cmd_line) - strlen(CMD_LINE_PROJECT))
-					copy_cmd_line = strtrim(copy_cmd_line, 0, ' ')
-					strrep copy_cmd_line, "\"", ""
-				}
+				strrep copy_cmd_line, "\"", ""
 			}
 		}
-	
-		return copy_cmd_line
+	}
 
-	// ----------------------------- 
-	#deffunc func_line int x1, int y1, int x2, int y2
+	return copy_cmd_line
 
-		color 0, 0, 0		: line x1, y1, x2, y2
-		color 255, 255, 255	: line x1 + 1, y1 + 1, x2 + 1, y2 + 1
-		return
+// ----------------------------- 
+#deffunc func_line int x1, int y1, int x2, int y2
+
+	color 0, 0, 0		: line x1, y1, x2, y2
+	color 255, 255, 255	: line x1 + 1, y1 + 1, x2 + 1, y2 + 1
+	return
 
 #global
 //---------------------------------------------------------
@@ -150,6 +145,14 @@
 	make_icon_folder_ios = cfunc_ios_project_path(cmd_line)
 
 	png_file = ""
+
+	if strlen(make_icon_folder_android) > 0 {
+		gosub *icon_android_mode
+	}
+
+	if strlen(make_icon_folder_ios) > 0 {
+		gosub *icon_ios_mode
+	}
 
 //---------------------------------------------------------
 *icon_android_ios_select
@@ -178,6 +181,8 @@
 //--------------------------------------------------------- Android用オブジェクト作成
 *icon_android_mode
 
+	back_btn_flg = FALSE
+
 	gsel SCREEN_ID_SELECT_AND_IOS, -1
 
 	screen SCREEN_ID_ANDROID, SCREEN_WIDTH_ANDROID, SCREEN_HEIGHT_ANDROID, 0, (ginfo_dispx / 2) - (SCREEN_WIDTH_ANDROID / 2), (ginfo_dispy / 2) - (SCREEN_HEIGHT_ANDROID / 2)
@@ -190,6 +195,8 @@
 	syscolor 15 : boxf
 
 	color 0, 0, 0
+
+	pos 10, 15 : mes "Androidアイコン作成"
 
 	objsize 120, 25 : pos 530, 5 : button gosub "戻る", *android_mode_back
 
@@ -221,10 +228,21 @@
 	
 	objsize 200, 50 : pos 450, 190 : button gosub "アイコン(png)を作成する", *make_andoird_icon
 
+	repeat
+		if back_btn_flg : break
+		wait 1
+	loop
+
+	if back_btn_flg {
+		return
+	}
+
 	stop
 
 //--------------------------------------------------------- iOS用オブジェクト作成
 *icon_ios_mode
+
+	back_btn_flg = FALSE
 
 	gsel SCREEN_ID_SELECT_AND_IOS, -1
 
@@ -238,6 +256,8 @@
 	syscolor 15 : boxf
 
 	color 0, 0, 0
+
+	pos 10, 15 : mes "iOSアイコン作成"
 
 	objsize 120, 25 : pos 530, 5 : button gosub "戻る", *ios_mode_back
 
@@ -266,6 +286,15 @@
 	
 	objsize 200, 50 : pos 450, 190 : button gosub "アイコン(png)を作成する", *make_ios_icon
 
+	repeat
+		if back_btn_flg : break
+		wait 1
+	loop
+
+	if back_btn_flg {
+		return
+	}
+
 	stop
 
 //---------------------------------------------------------
@@ -274,6 +303,8 @@
 	gsel SCREEN_ID_ANDROID, -1
 	gsel SCREEN_ID_SELECT_AND_IOS, 1
 
+	back_btn_flg = TRUE
+
 	return
 
 //---------------------------------------------------------
@@ -281,6 +312,8 @@
 
 	gsel SCREEN_ID_IOS, -1
 	gsel SCREEN_ID_SELECT_AND_IOS, 1
+
+	back_btn_flg = TRUE
 
 	return
 

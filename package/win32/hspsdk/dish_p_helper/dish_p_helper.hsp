@@ -2,7 +2,7 @@
 ;
 ; Dish P Helper
 ;
-; Ver 2.3
+; Ver 2.4
 ;
 ; HSP3Dish Helper用 プロジェクト補助アプリケーション
 ;
@@ -33,7 +33,7 @@
 #const WINDOW_HEIGHT							480
 
 #define APPLICATION_TITLE						"Dish P Helper"
-#define APPLICATION_VER							"2.3"
+#define APPLICATION_VER							"2.4"
 
 #define CONFIG_FILE_NAME						"dish_p_helper_dat.ini"
 #define CONFIG_WINDOW_POS_X						"#window_pos_x" + "\t"
@@ -140,6 +140,8 @@
 #define	COMMAND_LINE_HGA						"-hga"
 #define	COMMAND_LINE_APE						"-ape"
 #define	COMMAND_LINE_APJ						"-apj"
+
+#define COMMAND_LINE_P							"-p"
 
 #const global FALSE								0
 #const global TRUE								1
@@ -511,10 +513,16 @@
 #global
 ;***********************************************************************
 
-	current_dir		= dir_cur
-	cmd_line_flg	= FALSE
+	current_dir				= dir_cur
+	cmd_line_flg			= FALSE
+	cmd_line_project_flg	= FALSE
+	cmd_line_project_name	= ""
 
-	gosub *command_line_get
+	gosub *project_command_line_get
+
+	if cmd_line_project_flg == FALSE {
+		gosub *command_line_get
+	}
 
 	switch cmd_line_flg
 	case FALSE
@@ -785,6 +793,10 @@
 
 	project_path = cfunc_get_hsp3dh_cfg@local_mod(hsp3dh_cfg_buff, CFG_PATH_PROJ)
 	android_name = cfunc_get_hsp3dh_cfg@local_mod(hsp3dh_cfg_buff, CFG_AND_NAME)
+
+	if cmd_line_project_flg {
+		android_name = cmd_line_project_name
+	}
 
 	if strlen(project_path) == 0 {
 		dialog "HSP3Dish helperにてプロジェクトフォルダが設定されていません。\n終了します。", 1, "プロジェクトフォルダ未設定"
@@ -1362,6 +1374,22 @@
 	func_dish_p_helper_ini_file_write@local_mod CONFIG_FILE_NAME, file_buff
 
 	end
+
+;-----------------------------------------------------------------------
+*project_command_line_get
+
+	copy_cmd_line = dirinfo(4)
+
+	copy_cmd_line = strtrim(copy_cmd_line, 0, ' ')
+	if strmid(copy_cmd_line, 0, strlen(COMMAND_LINE_P)) == COMMAND_LINE_P {
+		copy_cmd_line = strmid(copy_cmd_line, strlen(COMMAND_LINE_P), strlen(copy_cmd_line) - strlen(COMMAND_LINE_P))
+		copy_cmd_line = strtrim(copy_cmd_line, 0, ' ')
+		strrep copy_cmd_line, "\"", ""
+		cmd_line_project_name = copy_cmd_line
+		cmd_line_project_flg = TRUE
+	}
+
+	return
 
 ;-----------------------------------------------------------------------
 *command_line_get
