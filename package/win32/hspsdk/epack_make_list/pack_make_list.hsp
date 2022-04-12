@@ -2,7 +2,7 @@
 
 ;--------------------------------------------------------------------------------------
 ;
-;	#packリスト作成ツール ver 1.1
+;	#packリスト作成ツール ver 1.2
 ;
 ;	By. しまくろねこ
 ;
@@ -20,16 +20,20 @@
 
 #include "shell32.as"
 #include "hspext.as"
-#include "gdi32.as"
+#include "gdi32.as
+#include "hspcmp.as""
 //#include "encode.as"													; S-JISからUTF-8に変換するため
 
 #const WINDOW_WIDTH					640									; ウィンドウの横サイズ
 #const WINDOW_HEIGHT				660									; ウィンドウの縦サイズ
 
 #define APPLICATION_TITLE			"#packリスト作成ツール"
-#define APPLICATION_VERSION			"1.1"
+#define APPLICATION_VERSION			"1.2"
 
 #define CONFIG_FILE_NAME			"pack_make_list_dat.ini"			; 設定ファイル
+
+#define PACK_FILE_NAME				"packfile"							; パックファイル(dpmに入れない用)
+#define DPM_EXT						".dpm"								; dpmファイルの拡張子(dpmに入れない用)
 
 #define CONFIG_WINDOW_POS_X			"#window_pos_x"			+ "\t" 		; 設定ファイル内(最後に表示されていたウィンドウのX位置)
 #define CONFIG_WINDOW_POS_y			"#window_pos_y"			+ "\t" 		; 設定ファイル内(最後に表示されていたウィンドウのY位置)
@@ -43,6 +47,9 @@
 
 #const global FALSE					0
 #const global TRUE					1
+
+#const SCREEN_ID_0					0
+#const SCREEN_ID_1					1
 
 #const OBJ_ID_KAKUCHOUSHI_MAX		20									; オブジェクトID(拡張子)
 #const OBJ_ID_PROGRAM_LIST			OBJ_ID_KAKUCHOUSHI_MAX + 1			; オブジェクトID(プログラム名リストボックス)
@@ -59,6 +66,11 @@
 #const OBJ_ID_SUB_FOLDER			OBJ_ID_KAKUCHOUSHI_MAX + 12			; オブジェクトID(サブフォルダ表示)
 #const OBJ_ID_SUB_FOLDER_REFRESH	OBJ_ID_KAKUCHOUSHI_MAX + 13			; オブジェクトID(サブフォルダ更新ボタン)
 #const OBJ_ID_ADD_PROGRAM_NAME		OBJ_ID_KAKUCHOUSHI_MAX + 14			; オブジェクトID(新規追加ウィンドウ - プログラム名)
+#const OBJ_ID_DECKEY				OBJ_ID_KAKUCHOUSHI_MAX + 15
+#const OBJ_ID_MKKEY					OBJ_ID_KAKUCHOUSHI_MAX + 16
+#const OBJ_ID_ENC					OBJ_ID_KAKUCHOUSHI_MAX + 17
+#const OBJ_ID_DPM_NAME				OBJ_ID_KAKUCHOUSHI_MAX + 18
+#const OBJ_ID_MKDPM					OBJ_ID_KAKUCHOUSHI_MAX + 19
 
 #const LENGTH_PROGRAM				256									; 新規追加ウィンドウ - プログラム名の最大文字数
 #const LENGTH_EXTENSION				32									; 検索拡張子の最大文字数
@@ -80,14 +92,15 @@
 
 
 //-------------------------------------------------------------------------
-#deffunc func_pack_ini_file_write str file_name, var str_buff
+#deffunc func_pack_ini_file_write str file_name, str str_buff
 
+	buff = str_buff
 	sdim pack_ini_file, 1024
 
 	GetEnvironmentVariable "APPDATA", varptr(pack_ini_file), 990
 	pack_ini_file + = "\\" + HSP3_APPDATA_FOLDER + "\\" + file_name
 
-	bsave pack_ini_file, str_buff, strlen(str_buff)
+	bsave pack_ini_file, buff, strlen(buff)
 
 	return
 
@@ -219,7 +232,7 @@
 	gosub *project_count_read
 
 	title APPLICATION_TITLE + " - Ver " + APPLICATION_VERSION
-	screen 0, WINDOW_WIDTH, WINDOW_HEIGHT, 0, win_pos_x, win_pos_y
+	screen SCREEN_ID_0, WINDOW_WIDTH, WINDOW_HEIGHT, 0, win_pos_x, win_pos_y
 	syscolor 15
 	boxf
 	color 0, 0, 0
@@ -237,13 +250,13 @@
 	objmode 2
 	font msgothic, 12
 
-	pos 10, 70
+	pos 10, 55
 	mes "拡張子(例:txt)"
 
 	sdim ext, LENGTH_EXTENSION, OBJ_ID_KAKUCHOUSHI_MAX
 
 	repeat OBJ_ID_KAKUCHOUSHI_MAX
-		pos 10, 90 + cnt * 28  : input ext(cnt), 100, 24, 32 : obj_id(cnt) = stat
+		pos 10, 75 + cnt * 24  : input ext(cnt), 100, 22, 32 : obj_id(cnt) = stat
 	loop
 
 	y = 10
@@ -267,22 +280,22 @@
 	y += 10
 	objsize 120, 24
 	pos 140, y : button gosub "検索フォルダ選択", *folder_select	: obj_id(OBJ_ID_FOLDER_SELECT)		= stat
-	pos 270, y : input now_folder(0), 360, 24, 0					: obj_id(OBJ_ID_NOW_FOLDER)			= stat
+	pos 270, y : input now_folder(0), 360, 22, 0					: obj_id(OBJ_ID_NOW_FOLDER)			= stat
 
-	y += 35
+	y += 30
 	color 100, 100, 100 : line 140, y, 628, y
 	color 255, 255, 255 : line 140, y + 1, 628, y + 1
 	color 0, 0, 0
 
-	y += 15
-	pos 140, y + 5 : mes "検索サブフォルダ"
-	pos 270, y + 5 : mes "検索対象のサブフォルダをクリックして選択してください"
+	y += 10
+	pos 140, y : mes "検索サブフォルダ"
+	pos 270, y : mes "検索対象のサブフォルダをクリックして選択してください"
 	gosub *list_box_control_add
 
-	pos 140, y + 30 : button gosub "サブフォルダ更新", *list_box_add	: obj_id(OBJ_ID_SUB_FOLDER_REFRESH)	= stat
+	pos 140, y + 20 : button gosub "サブフォルダ更新", *list_box_add	: obj_id(OBJ_ID_SUB_FOLDER_REFRESH)	= stat
 
 
-	y += 200
+	y += 220
 	color 100, 100, 100 : line 140, y + 1, 628, y + 1
 	color 255, 255, 255 : line 140, y + 2, 628, y + 2
 	color 0, 0, 0
@@ -316,11 +329,41 @@
 	pos 340, y : button gosub "クリップボードにCOPY", *clip_copy	: obj_id(OBJ_ID_CLIP_COPY) = stat
 	pos 490, y : button gosub "ファイルとして保存", *file_write		: obj_id(OBJ_ID_FILE_WRITE) = stat
 	//pos 140, y + 35 : mesbox mesbox_kakuchoushi, 490, 210, 1 + 4, 0	: obj_id(OBJ_ID_MESBOX_KAKUCHOUSHI)	= stat : hInput = objinfo(stat, 2)
-	pos 140, y + 35 : mesbox mesbox_kakuchoushi, 490, 261, 1 + 4, 0	: obj_id(OBJ_ID_MESBOX_KAKUCHOUSHI)	= stat : hInput = objinfo(stat, 2)
+	pos 140, y + 35 : mesbox mesbox_kakuchoushi, 490, 160, 1 + 4, 0	: obj_id(OBJ_ID_MESBOX_KAKUCHOUSHI)	= stat : hInput = objinfo(stat, 2)
 
-	; -------
-	screen 1, 480, 100, screen_tool, win_pos_x, win_pos_y
-	gsel 1, 1
+	y += 205
+	color 100, 100, 100 : line 10, y + 1, 628, y + 1
+	color 255, 255, 255 : line 10, y + 2, 628, y + 2
+
+	y += 15
+	color 0, 0, 0
+	pos 10, y : mes "■DPMファイル作成"
+
+	y += 25
+	objsize 120, 24
+	pos 10, y : mes "暗号化キー: (0の場合は標準DPMを作成します)"
+	deckey = 0
+	pos 280, y - 5 : input deckey, 100, 22 : obj_id(OBJ_ID_DECKEY) = stat;obj_deckey = stat
+
+	objsize 60, 24
+	pos 385, y - 5 : button gosub "生成", *mkkey : obj_id(OBJ_ID_MKKEY) = stat
+
+	objsize 160, 24
+	pos 490, y - 5
+	enc = 0
+	chkbox "全体を暗号化する", enc : obj_id(OBJ_ID_ENC) = stat
+
+	y += 25
+	pos 10, y : mes "DPMファイル名: (拡張子はいりません)"
+	dpm_name = "data"
+	pos 280, y - 5 : input dpm_name, 100, 22 : obj_id(OBJ_ID_DPM_NAME) = stat
+
+	objsize 140, 24
+	pos 490, y - 5 : button gosub "DPM作成", *mkdpm : obj_id(OBJ_ID_MKDPM) = stat
+
+	; -----------------------------------------------------
+	screen SCREEN_ID_1, 480, 100, screen_tool, win_pos_x, win_pos_y
+	gsel SCREEN_ID_1, 1
 	title APPLICATION_TITLE + " - " + "新規追加"
 	objmode 2
 	font msgothic, 12
@@ -332,9 +375,10 @@
 	objsize 100, 24
 	pos 240, 50 : button gosub "追加", *add_program
 	pos 350, 50 : button gosub "キャンセル", *add_program_cancel
-	; -------
-	gsel 1, -1
-	gsel 0
+	; -----------------------------------------------------
+
+	gsel SCREEN_ID_1, -1
+	gsel SCREEN_ID_0
 
 
 	if program_cnt_max == 1 {
@@ -347,7 +391,8 @@
 	gosub *set_obj_value
 	width WINDOW_WIDTH, WINDOW_HEIGHT, win_pos_x, win_pos_y
 
-	gsel 0, 1
+	gsel SCREEN_ID_0, 1
+
 
 //-------------------------------------------------------------------------
 *main
@@ -389,8 +434,8 @@
 //-------------------------------------------------------------------------
 *list_box_control_add
 
-	pos 270, 120
-	winobj "listbox", "", $200, $50200001 | $8, 360, 180 : obj_id(OBJ_ID_SUB_FOLDER) = stat
+	pos 270, 110
+	winobj "listbox", "", $200, $50200001 | $8, 360, 200 : obj_id(OBJ_ID_SUB_FOLDER) = stat
 	hListbox = objinfo(obj_id(OBJ_ID_SUB_FOLDER), 2)
 	GetStockObject 17
 	sendmsg hListbox, $30, stat
@@ -455,6 +500,7 @@
 	
 	if stat {
 		c = select_index + 1
+		strrep sztmp, "\\", "/"
 		now_folder(c) = sztmp
 		objprm obj_id(OBJ_ID_NOW_FOLDER), now_folder(c)
 
@@ -567,10 +613,10 @@
 		gosub *setting_update
 	}
 
-	gsel 0, -1
+	gsel SCREEN_ID_0, -1
 
 	add_program_name = ""
-	gsel 1, 2
+	gsel SCREEN_ID_1, 2
 	width 480, 120, win_pos_x, win_pos_y
 	objprm obj_id2(OBJ_ID_ADD_PROGRAM_NAME), add_program_name
 	objsel obj_id2(OBJ_ID_ADD_PROGRAM_NAME)
@@ -685,8 +731,8 @@
 	; ------- 
 	program_cnt_max++
 
-	gsel 1, -1
-	gsel 0, 1
+	gsel SCREEN_ID_1, -1
+	gsel SCREEN_ID_0, 1
 
 	objprm obj_id(OBJ_ID_PROGRAM_LIST), program_list
 	objprm obj_id(OBJ_ID_PROGRAM_LIST), program_cnt_max - 2
@@ -702,8 +748,8 @@
 //-------------------------------------------------------------------------
 *add_program_cancel
 
-	gsel 1, -1
-	gsel 0, 1
+	gsel SCREEN_ID_1, -1
+	gsel SCREEN_ID_0, 1
 
 	return
 
@@ -826,7 +872,7 @@
 				//if (err_file_flg == FALSE) && (err_folder_flg == FALSE) {
 					put_buff(cnt) = pack_str + "\"" + put_buff(cnt) + "\""
 					err_buff(cnt) = put_buff(cnt)
-					strrep put_buff(cnt), "\\", "\\\\"
+					strrep put_buff(cnt), "\\", "/"
 				//} else {
 				//	if err_file_flg	{
 				//		err_buff(cnt) = "// " + pack_str +  "\"" + put_buff(cnt) + "\"\t; (ファイルバイト数:" + file_length + ")"
@@ -853,9 +899,9 @@
 
 	if strlen(mesbox_kakuchoushi) > 0 {
 		sortnote mesbox_kakuchoushi, 0
-		notesel mesbox_kakuchoushi
-		noteadd "//計:" + notemax + " ファイル", 0, 0
-		noteunsel
+		;notesel mesbox_kakuchoushi
+		;noteadd "//計:" + notemax + " ファイル", 0, 0
+		;noteunsel
 	}
 
 	sdim re_buff, 1
@@ -1101,24 +1147,31 @@
 	objenable obj_id(OBJ_ID_SUB_FOLDER), obj_enable_sw
 	objenable obj_id(OBJ_ID_SUB_FOLDER_REFRESH), obj_enable_sw
 
+	objenable obj_id(OBJ_ID_DECKEY), obj_enable_sw
+	objenable obj_id(OBJ_ID_MKKEY), obj_enable_sw
+	objenable obj_id(OBJ_ID_ENC), obj_enable_sw
+	objenable obj_id(OBJ_ID_DPM_NAME), obj_enable_sw
+	objenable obj_id(OBJ_ID_MKDPM), obj_enable_sw
+
 	return
+
 
 //-------------------------------------------------------------------------
 *config_file_write
 
-	file_buff  = ""
-	file_buff += CONFIG_WINDOW_POS_X + str(win_pos_x) + "\n"
-	file_buff += CONFIG_WINDOW_POS_Y + str(win_pos_y) + "\n"
+	ini_buff  = ""
+	ini_buff += CONFIG_WINDOW_POS_X + str(win_pos_x) + "\n"
+	ini_buff += CONFIG_WINDOW_POS_Y + str(win_pos_y) + "\n"
 
-	file_buff += "\n"
+	ini_buff += "\n"
 
 	if program_cnt_max > 1 {
-		file_buff += CONFIG_SELECT_PROGRAM_INDEX + str(select_index) + "\n"
-		file_buff += "\n"
+		ini_buff += CONFIG_SELECT_PROGRAM_INDEX + str(select_index) + "\n"
+		ini_buff += "\n"
 		repeat program_cnt_max - 1
 			c = cnt + 1
-			file_buff += CONFIG_PROGRAM + str(c) + "\t" + program_name(c) + "\n"
-			file_buff += CONFIG_FOLDER + now_folder(c) + "\n"
+			ini_buff += CONFIG_PROGRAM + str(c) + "\t" + program_name(c) + "\n"
+			ini_buff += CONFIG_FOLDER + now_folder(c) + "\n"
 
 			sub_folder_buff = ""
 			repeat select_sub_folder_cnt(c)
@@ -1126,18 +1179,93 @@
 			loop
 			sub_folder_buff = strmid(sub_folder_buff, 1, strlen(sub_folder_buff) - 1)
 
-			file_buff += CONFIG_SUB_FOLDER + sub_folder_buff + "\n"
-			file_buff += CONFIG_PACK_MODE + str(pack_index(c)) + "\n"
-			//file_buff += CONFIG_ERROR_LENGTH + str(error_length(c)) + "\n"
+			ini_buff += CONFIG_SUB_FOLDER + sub_folder_buff + "\n"
+			ini_buff += CONFIG_PACK_MODE + str(pack_index(c)) + "\n"
+			//ini_buff += CONFIG_ERROR_LENGTH + str(error_length(c)) + "\n"
 			repeat OBJ_ID_KAKUCHOUSHI_MAX
-				file_buff += CONFIG_KAKUCHOUSHI + str(cnt) + "\t" + extension(c, cnt) + "\n"
+				ini_buff += CONFIG_KAKUCHOUSHI + str(cnt) + "\t" + extension(c, cnt) + "\n"
 			loop
 
-			file_buff += "\n"
-			
+			ini_buff += "\n"
 		loop
 	}
 
-	func_pack_ini_file_write CONFIG_FILE_NAME, file_buff
+	func_pack_ini_file_write CONFIG_FILE_NAME, ini_buff
+
+	return
+
+//-------------------------------------------------------------------------
+*mkkey
+
+	a1 = rnd(255) + 1
+	a2 = rnd(255) + 1
+	a3 = rnd(255) + 1
+	a4 = rnd(255) + 1
+
+	deckey = (a4 << 24) + (a3 << 16) + (a2 << 8) + a1
+
+	objprm obj_id(OBJ_ID_DECKEY), deckey
+
+	return
+
+//-------------------------------------------------------------------------
+*mkdpm
+
+	if strlen(now_folder(0)) == 0 {
+		dialog "検索フォルダが設定されていません。", 1, "注意"
+		return
+	}
+
+	PathIsDirectory now_folder(0)
+
+	if stat == 0 {
+		dialog "指定の検索フォルダは存在しません。", 1, "注意"
+		return
+	}
+
+	if strlen(mesbox_kakuchoushi) == 0 {
+		dialog "ファイルが1つもありません。", 1, "注意"
+		return
+	}
+
+	dialog now_folder(0) + "\nに \"" + (dpm_name + DPM_EXT) + "\" を作成しますか？", 2, "確認"
+
+	if stat == 6 {
+
+		cur_dir = dir_cur
+
+		chdir now_folder(0)
+
+		pack_buff = mesbox_kakuchoushi
+
+		strrep pack_buff, "#pack ", ""
+		strrep pack_buff, "#epack ", ""
+		strrep pack_buff, "\"", ""
+
+		notesel pack_buff
+
+		ff = ""	
+		repeat notemax
+			noteget ff, cnt
+			hed = ""
+			if enc : hed = "+"
+			if ff == PACK_FILE_NAME : hed = ";"
+			if getpath(ff, 2) = DPM_EXT : hed = ";"
+			if hed != "" : noteadd hed + ff, cnt, 1	
+		loop
+
+		noteadd "; packfile generated by mkpack", 0
+		notesave PACK_FILE_NAME
+		noteunsel
+
+		hsc_ini ""
+		pack_ini dpm_name + DPM_EXT
+		pack_make 1, deckey
+
+		chdir cur_dir
+
+		dialog now_folder(0) + "\nに\n" + PACK_FILE_NAME + "\n" + (dpm_name + DPM_EXT) + "\nを作成しました。", 0, "作成完了"
+
+	}
 
 	return

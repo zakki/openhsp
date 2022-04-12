@@ -9,7 +9,7 @@
 #include "mod_appconfig.as"
 
 #define APPTITLE "HSP3Dish helper"
-#define APPVER "1.91"
+#define APPVER "1.92"
 #define APP_CONF "\\hsp3dh.cfg"
 
 #define AND_LIBVER 114			; android HSPランタイムの内部バージョン
@@ -1740,8 +1740,24 @@
 
 *exec_icontool_i
 	gsel 0
-	s1=mydir+"\\"+ios_proj
-	cmd = dir_exe+"\\hsp3 "+dir_exe+"\\android_ios_make_icon.ax -i -p\""+s1+"\""
+
+	errflag=0
+	if fname="" : errflag=1
+	if errflag {
+		dialog "設定されていない項目があります。"
+		stop
+	}
+
+	s1=fname
+	mydir=getpath(s1,32)
+	myfile=getpath(s1,1+8+16)
+	basedir=mydir+"\\"+myfile
+	dirlist s1,basedir+"\\*.*"
+	if stat=0 {
+		dialog "プロジェクトフォルダがありません。\n"
+		stop
+	}
+	cmd = dir_exe+"\\hsp3 "+dir_exe+"\\android_ios_make_icon.ax -i -p\""+basedir+"\""
 	exec cmd
 	stop
 
