@@ -1763,7 +1763,6 @@ void hgio_draw_all(Bmscr *bmscr, int option)
 }
 
 
-#ifdef HSPNDK
 //
 //		FILE I/O Service
 //
@@ -1772,6 +1771,7 @@ static char my_storage_path[256+64];
 
 int hgio_file_exist( char *fname )
 {
+#ifdef HSPNDK
 	int size;
 	AAssetManager* mgr = appengine->app->activity->assetManager;
 	if (mgr == NULL) return -1;
@@ -1781,11 +1781,14 @@ int hgio_file_exist( char *fname )
     AAsset_close(asset);
 	//Alertf( "[EXIST]%s:%d",fname,size );
     return size;
+#endif
+    return -1;
 }
 
 
 int hgio_file_read( char *fname, void *ptr, int size, int offset )
 {
+#ifdef HSPNDK
 	int readsize;
 	AAssetManager* mgr = appengine->app->activity->assetManager;
 	if (mgr == NULL) return -1;
@@ -1797,29 +1800,64 @@ int hgio_file_read( char *fname, void *ptr, int size, int offset )
 	AAsset_read( asset, ptr, readsize );
     AAsset_close(asset);
     return readsize;
+#endif
+    return -1;
 }
+
+
+#ifdef HSPNDK
+FILE *hgio_android_fopen( char *fname, int offset )
+{
+	AAssetManager* mgr = appengine->app->activity->assetManager;
+	if (mgr == NULL) return NULL;
+	AAsset* asset = AAssetManager_open(mgr, (const char *)fname, AASSET_MODE_UNKNOWN);
+	if (asset == NULL) return NULL;
+	if ( offset>0 ) AAsset_seek( asset, offset, SEEK_SET );
+	return (FILE *)asset;
+}
+
+void hgio_android_fclose(FILE* ptr)
+{
+	AAsset* asset = (AAsset*)ptr;
+	if (asset == NULL) return;
+    AAsset_close(asset);
+}
+
+int hgio_android_fread( FILE* ptr, void *mem, int size )
+{
+	AAsset* asset = (AAsset*)ptr;
+	if (asset == NULL) -1;
+	return AAsset_read( asset, mem, size );
+}
+
+#endif
 
 
 void hgio_setstorage( char *path )
 {
 	int i;
 	*storage_path = 0;
+#ifdef HSPNDK
 	i = strlen(path);if (( i<=0 )||( i>=255 )) return;
 	strcpy( storage_path, path );
 	if ( storage_path[i-1]!='/' ) {
 		storage_path[i] = '/';
 		storage_path[i+1] = 0;
 	}
+#endif
 }
 
 
 char *hgio_getstorage( char *fname )
 {
+#ifdef HSPNDK
 	strcpy( my_storage_path, storage_path );
 	strcat( my_storage_path, fname );
 	return my_storage_path;
-}
 #endif
+	return fname;
+}
+
 
 /*-------------------------------------------------------------------------------*/
 

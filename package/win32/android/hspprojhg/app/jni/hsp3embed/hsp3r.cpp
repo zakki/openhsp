@@ -70,12 +70,7 @@ int Hsp3r::Reset( int ext_vars, int ext_hpi )
 
 	//		load HSP execute object
 	//
-#ifdef HSPNDK
-    //      android data file path
-    dpm_ini( "/data/data/onionsoft.block5/lib/libhsp3dish.so",0,-1,-1 );
-#else
     dpm_ini( "data.dpm",0,-1,-1 );				// original EXE mode
-#endif
 
 	maxvar = ext_vars;
 	max_varhpi = ext_hpi;

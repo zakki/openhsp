@@ -20,6 +20,9 @@ PlatformAndroid.cpp \
 ../../hsplib36r1/hsp3embed/hspvar_util.cpp \
 ../../hsplib36r1/hsp3embed/misc.cpp \
 ../../hsplib36r1/hsp3/dpmread.cpp \
+../../hsplib36r1/hsp3/filepack.cpp \
+../../hsplib36r1/hsp3/hsp3crypt.cpp \
+../../hsplib36r1/hsp3/hsp3utfcnv.cpp \
 ../../hsplib36r1/hsp3/essprite.cpp \
 ../../hsplib36r1/hsp3/geometry.cpp \
 ../../hsplib36r1/hsp3/hsp3debug.cpp \

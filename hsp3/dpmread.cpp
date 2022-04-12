@@ -61,10 +61,10 @@ int dpm_ini( char *fname, long dpmofs, int chksum, int deckey, int slot )
 
 	strcpy(dpmfile, fname);
 
+#ifdef HSPWIN
 #ifdef HSPUTF8
 	WCHAR dpmfile_w[HSP_MAX_PATH];
 #endif
-#ifdef HSPWIN
 	if ( *fname == 0 ) {
 #ifndef HSPUTF8
 #ifndef HSPWINDLL
@@ -139,17 +139,23 @@ int dpm_filecopy( char *fname, char *sname )
 	int xlen;
 	int max=0x8000;
 	char *mem;
+#ifdef HSPWIN
 #ifdef HSPUTF8
 	HSPAPICHAR *hactmp1;
+#endif
 #endif
 
 	flen= filepack.pack_flength(fname);
 	if (flen<0) return 1;
 
+#ifdef HSPWIN
 #ifdef HSPUTF8
 	fp2=_wfopen(chartoapichar(sname,&hactmp1),L"wb");
 	freehac(&hactmp1);
 	if (fp2==NULL) return 1;
+#else
+	fp2=fopen(sname,"wb");if (fp2==NULL) return 1;
+#endif
 #else
 	fp2=fopen(sname,"wb");if (fp2==NULL) return 1;
 #endif

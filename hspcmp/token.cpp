@@ -212,24 +212,49 @@ int CToken::AddPackfile( char *name, int mode )
 	//
 	CStrNote note;
 	int i,max;
+	char fname[HSP_MAX_PATH];
 	char p_fdir[HSP_MAX_PATH];
 	char p_fname[HSP_MAX_PATH];
 	char packadd[1024];
 	char tmp[1024];
 	char *s;
 	char* findptr;
+	bool absolutePath = false;					// 絶対パスか?
 
 	getpath(name, p_fdir, 32);
 	getpath(name, p_fname, 8);
-	strchr3(p_fname, '*', 0, &findptr);
 
+#ifdef HSPWIN
+	strchr3(p_fdir, ':', 0, &findptr);			// ドライブ文字があった
+	if (findptr != NULL) {
+		absolutePath = true;
+	}
+	if (*p_fdir == '\\') {
+		absolutePath = true;
+	}
+#endif
+	if (*p_fdir == '/') {
+		absolutePath = true;
+	}
+
+	if (absolutePath==false) {
+		strcpy(fname, search_path);
+		strcat(fname, p_fdir);
+		strcpy(p_fdir, fname);
+		strcat(fname, p_fname);
+	}
+	else {
+		strcat(fname, name);
+	}
+
+	strchr3(p_fname, '*', 0, &findptr);
 	if (findptr != NULL) {
 		//	ワイルドカード使用時
 		CStrNote notelist;
 		char ftmp[1024];
 		char fixname[1024];
-		char *flist = sbAlloc(0x8000);
-		dirlist(name,&flist,1);
+		char *flist = sbAlloc(0x4000);
+		dirlist(fname,&flist,1);
 		notelist.Select(flist);
 		int listmax = notelist.GetMaxLine();
 		for (i = 0; i < listmax; i++) {
@@ -243,7 +268,7 @@ int CToken::AddPackfile( char *name, int mode )
 		return 0;
 	}
 
-	strcpy( packadd, name );
+	strcpy( packadd, fname);
 #ifdef HSPWIN
 	strcase( packadd );
 #endif
