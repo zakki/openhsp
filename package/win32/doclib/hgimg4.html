@@ -244,8 +244,10 @@
 	gptexmat var,"file",opt				テクスチャマテリアルの生成
 	gpusermat var,"vsh","fsh","defs",color,opt	カスタムマテリアルの生成
 	gpmatprm objid,"name",x,y,z			マテリアルのパラメーター設定
-	gpmatprm objid,"name",value			マテリアルのパラメーター設定(2)
-	gpmatprm objid,"name",x,y,z,w			マテリアルのパラメーター設定(3)
+	gpmatprm1 objid,"name",value			マテリアルのパラメーター設定(2)
+	gpmatprm4 objid,"name",x,y,z,w			マテリアルのパラメーター設定(3)
+	gpmatprm16 objid,"name",var			マテリアルのパラメーター設定(マトリクス)
+	gpmatprmt objid,"name","filename"		マテリアルのパラメーター設定(テクスチャ)
 	gpmatstate objid,"name","value"			マテリアルのステート設定
 
 	gpbox var,size,color,matobj			箱ノードを生成

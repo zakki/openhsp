@@ -682,10 +682,12 @@ int hgio_device_restore( void )
 			}
 			Init3DDevicesW( master_wnd );
 			InitVertexTemp();
-//			VertexShaderInit();
+			InitTexture();
+			//			VertexShaderInit();
 			TexSetD3DParam( d3d, d3ddev, target_disp );
 		}
 	}
+	SetSysReq(SYSREQ_DEVLOST, 0);			// デバイス戻った
 	return 0;
 }
 
@@ -710,12 +712,15 @@ int hgio_render_end( void )
 	//シーンレンダー終了
 	d3ddev->EndScene();
 	hr =  d3ddev->Present(NULL,NULL,NULL,NULL);
-	if( FAILED(hr) ) res = -1;
+	if (FAILED(hr)) {
+		res = -1;
+	}
 	SetSysReq( SYSREQ_DEVLOST, res );
 	drawflag = 0;
 
-	tmes.texmesProc();
-
+	if (res == 0) {
+		tmes.texmesProc();
+	}
 	return res;
 }
 
@@ -754,6 +759,7 @@ int hgio_render_start( void )
 	//	デバイスロスト時の対応
 	//
 	if ( GetSysReq( SYSREQ_DEVLOST ) ) {
+		return -1;
 		if ( hgio_device_restore() == 0 ) {
 			SetSysReq( SYSREQ_DEVLOST, 0 );			// デバイス戻った
 		} else {

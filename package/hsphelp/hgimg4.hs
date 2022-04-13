@@ -5,11 +5,11 @@
 %type
 拡張命令
 %ver
-3.6
+3.7
 %note
 hgimg4.asまたはhgimg4dx.asをインクルードすること。
 %date
-2021/01/06
+2022/04/12
 %author
 onitama
 %dll
@@ -945,6 +945,78 @@ id      : オブジェクトID
 getwork2命令を使用することで、実数値として値を取得することができます。
 %href
 getwork2
+
+
+%index
+getcolor
+オブジェクトカラー値を取得
+%group
+拡張画面制御命令
+%prm
+id,x,y,z
+id      : オブジェクトID
+(x,y,z) : 取得する変数
+%inst
+オブジェクトの持つcolorパラメーターを取得します。
+(x,y,z)は、実数型の変数として設定されます。
+命令の最後に「i」を付加することで、整数値として値を取得することができます。
+%href
+getcolori
+
+
+%index
+getcolori
+オブジェクトカラー値を取得(整数値)
+%group
+拡張画面制御命令
+%prm
+id,x,y,z
+id      : オブジェクトID
+(x,y,z) : 取得する変数
+%inst
+オブジェクトの持つcolorパラメーターを取得します。
+(x,y,z)は、整数型の変数として設定されます。
+getcolor命令を使用することで、実数値として値を取得することができます。
+%href
+getcolor
+
+
+%index
+setcolor
+オブジェクトカラー値を設定
+%group
+拡張画面制御命令
+%prm
+id,x,y,z
+id      : オブジェクトID
+(x,y,z) : 設定する値 (デフォルト=0)
+%inst
+オブジェクトの持つパラメーターを設定します。
+colorグループ(カラー値)に(x,y,z)で指定された値を設定します。
+(x,y,z)には、実数または整数値を指定することができます。
+%href
+getcolor
+addcolor
+
+
+%index
+addcolor
+オブジェクトカラー値を加算
+%group
+拡張画面制御命令
+%prm
+id,x,y,z
+id      : オブジェクトID
+(x,y,z) : 設定する値 (デフォルト=0)
+%inst
+オブジェクトの持つパラメーターを加算します。
+colorグループ(カラー値)に(x,y,z)で指定された値を加算します。
+(x,y,z)には、実数または整数値を指定することができます。
+%href
+getcolor
+setcolor
+
+
 
 
 %index

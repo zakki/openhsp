@@ -5,7 +5,7 @@
 %type
 拡張命令
 %ver
-3.6
+3.7
 %note
 hgimg4dx.asまたはhgimg4.asをインクルードすること。
 %author
@@ -13,7 +13,7 @@ onitama
 %dll
 hgimg4
 %date
-2021/01/18
+2022/04/13
 %author
 onitama
 %url
@@ -340,6 +340,24 @@ fprmで指定された値の平方根をfvalで指定した変数に代入します。
 fsin
 fcos
 froti
+
+
+
+%index
+froti
+整数値角度を小数値に変換
+%group
+拡張画面制御命令
+%prm
+fval,prm
+fval    = 実数値が代入される変数名
+prm(0)  = 0～1023の角度値(整数)
+%inst
+prmで指定された整数値(0～1023)を角度を示す値として、fvalに-π～+πのラジアン角度値に変換して代入します。
+%href
+fsin
+fcos
+fsqr
 
 
 

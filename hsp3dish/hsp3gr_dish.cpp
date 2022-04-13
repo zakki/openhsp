@@ -630,7 +630,7 @@ static int cmdfunc_extcmd( int cmd )
 
 		bmscr = wnd->GetBmscrSafe( p1 );
 		cur_window = p1;
-		hgio_gsel((BMSCR *)bmscr);
+		bmscr->Select( p2 );
 		break;
 
 	case 0x1e:								// gcopy
@@ -1083,12 +1083,8 @@ static int cmdfunc_extcmd( int cmd )
 		p1 = code_getdi( -1 );
 		p2 = code_getdi( 0 );
 		if ( p1 < 0 ) p1 = wnd->GetEmptyBufferId();
-		//Alertf( "celload[%s],%d,%d\n", fname, p1, p2 );
-
 		wnd->MakeBmscrFromResource( p1, fname );
-		//i = wnd->Picload( p1, fname, 0 );
-		//if ( i ) throw HSPERR_PICTURE_MISSING;
-
+		bmscr->Select(cur_window);
 		ctx->stat = p1;
 		break;
 		}
@@ -3875,6 +3871,7 @@ void hsp3typeinit_extcmd( HSP3TYPEINFO *info )
 	sys_hwnd = 0;
 	sys_hdc = 0;
 	msact = 0;
+	cur_window = 0;
 
 #ifdef USE_MMAN
 	mmman = new MMMan;
@@ -3960,7 +3957,13 @@ void hsp3extcmd_resume( void )
 	mmman->Resume();
 	wnd->Resume();
 	bmscr = wnd->GetBmscr( 0 );
+	bmscr->Select(0);
 #endif
+#endif
+#ifdef HSPWIN
+	wnd->Resume();
+	bmscr = wnd->GetBmscr(0);
+	bmscr->Select(0);
 #endif
 }
 

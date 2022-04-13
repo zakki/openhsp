@@ -132,7 +132,6 @@ static	bool (WINAPI *i_RegisterTouchWindow)( HWND, int );
 static	bool (WINAPI *i_GetTouchInputInfo)( HANDLE, int, TOUCHINPUT *, int );
 static	bool (WINAPI *i_CloseTouchInputHandle)( HANDLE ); 
 static	TOUCHINPUT touchinput[BMSCR_MAX_MTOUCH];
-
 static void	MTouchInit( HWND hwnd )
 {
 	int sysmet;
@@ -833,7 +832,6 @@ void hsp3dish_msgfunc( HSPCTX *hspctx )
 			hsp3dish_dispatch( &msg );
 			continue;
 		}
-
 		switch( hspctx->runmode ) {
 		case RUNMODE_STOP:
 #ifdef HSPDEBUG
@@ -938,17 +936,21 @@ void hsp3dish_msgfunc( HSPCTX *hspctx )
 #ifdef USE_OBAQ
 			hsp3typeinit_dw_restart(code_gettypeinfo(TYPE_USERDEF));
 #endif
-
 			MsgWaitForMultipleObjects(0, NULL, FALSE, 10, QS_ALLINPUT);
 			//hgio_rebuild(hsp_wx, hsp_wy, hsp_fullscr, m_hWnd);
 			hspctx->runmode = RUNMODE_RUN;
 			break;
 		}
 		default:
+			if (GetSysReq(SYSREQ_DEVLOST)) {
+				hsp3extcmd_resume();
+			}
 			return;
 		}
 
 	}
+
+				
 }
 
 
