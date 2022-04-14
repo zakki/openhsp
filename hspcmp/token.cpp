@@ -253,10 +253,28 @@ int CToken::AddPackfile( char *name, int mode )
 		CStrNote notelist;
 		char ftmp[1024];
 		char fixname[1024];
+		int listmax;
 		char *flist = sbAlloc(0x4000);
-		dirlist(fname,&flist,1);
+		dirlist(fname, &flist, 5);
 		notelist.Select(flist);
-		int listmax = notelist.GetMaxLine();
+		listmax = notelist.GetMaxLine();
+		// ディレクトリを再帰する
+		for (i = 0; i < listmax; i++) {
+			notelist.GetLine(ftmp, i);
+
+			getpath(fname, fixname, 32);
+			strcat(fixname, ftmp);
+			strcat(fixname, "/*");
+			int res = AddPackfile(fixname, mode);
+			if (res) return res;
+		}
+		sbFree(flist);
+
+		// すべてのファイルを追加する
+		flist = sbAlloc(0x4000);
+		dirlist(fname, &flist, 1);
+		notelist.Select(flist);
+		listmax = notelist.GetMaxLine();
 		for (i = 0; i < listmax; i++) {
 			notelist.GetLine(ftmp, i);
 			strcpy(fixname, p_fdir);

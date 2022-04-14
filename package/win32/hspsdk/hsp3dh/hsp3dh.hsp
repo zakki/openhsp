@@ -205,6 +205,7 @@
 	sdim buf,$20000
 	sdim lntmp,$2000
 	cmd = app_dir+"\\"+_p1
+
 	pipeexec tmp,cmd,1
 	if stat : dialog "コマンドラインの実行に失敗しました" : return -1
 
@@ -1751,6 +1752,7 @@
 	s1=fname
 	mydir=getpath(s1,32)
 	myfile=getpath(s1,1+8+16)
+	if ios_proj!="" : myfile=ios_proj
 	basedir=mydir+"\\"+myfile
 	dirlist s1,basedir+"\\*.*"
 	if stat=0 {

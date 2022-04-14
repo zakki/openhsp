@@ -344,6 +344,9 @@ int hsp3_binsave( char *fname8, void *mem, int msize, int seekofs )
 	if (hsp3_fp ==NULL) return -1;
 	int flen = (int)fwrite( mem, 1, msize, hsp3_fp);
 	hsp3_fclose(hsp3_fp);
+#ifdef HSPWIN
+	_fcloseall();
+#endif
 	return flen;
 }
 
