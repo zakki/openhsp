@@ -215,6 +215,15 @@ FILE* FilePack::pack_fopen(char* name, int offset)
 }
 
 
+int FilePack::GetCurrentDPMOffset(void)
+{
+	if (curnum == exedpm_slot) {
+		return exedpm_offset;
+	}
+	return 0;
+}
+
+
 void FilePack::pack_fclose(FILE* ptr)
 {
 	if (memfile_active) {
@@ -286,6 +295,7 @@ int FilePack::pack_fread(FILE* ptr, void* mem, int size)
 int FilePack::pack_fbase(char* name)
 {
 	FILE* ff = pack_fopen(name);
+	if (ff == NULL) return -1;
 	pack_fclose(ff);
 	return filebase;
 }
@@ -604,3 +614,246 @@ HFPOBJ* FilePack::SearchFileObject(char* name)
 }
 
 
+/*------------------------------------------------------------*/
+/*
+		interface (stream)
+*/
+/*------------------------------------------------------------*/
+
+DpmFile::DpmFile()
+{
+	filebase = -1;
+	_file = NULL;
+	filepack = NULL;
+}
+
+
+DpmFile::~DpmFile()
+{
+	close();
+}
+
+
+bool DpmFile::open(FilePack* pack, char* fname)
+{
+	HFPHED* hed;
+	HFPOBJ* obj;
+	FILE* ff;
+	int ofs, ofs2;
+
+	filepack = pack;
+	if (filepack == NULL) return false;
+	cur = 0;
+	size = 0;
+	_file = NULL;
+	baseoffset = 0;
+	fopen_crypt = 0;
+
+	obj = filepack->SearchFileObject(fname);
+	if (obj == NULL) {
+		ff = hsp3_fopen(fname, 0);
+		if (ff == NULL) {
+			return false;
+		}
+		_file = ff;
+		filebase = HFP_FILEBASE_NORMAL;
+		return true;
+	}
+
+	hed = filepack->GetCurrentHeader();
+	ofs = hed->filetable + (int)obj->offset;
+	ofs2 = filepack->GetCurrentDPMOffset();
+	baseoffset = ofs + ofs2;
+	if (ofs2>0) {
+		filebase = HFP_FILEBASE_PACKEXE;
+	}
+	else {
+		filebase = HFP_FILEBASE_PACKDPM;
+	}
+	crypt = filepack->GetCurrentCryptManager();
+	ff = hsp3_fopen(crypt->GetBasePath(), baseoffset );
+	if (ff == NULL) {
+		filebase = -1;
+		return false;
+	}
+
+	fopen_crypt = obj->crypt;
+	size = (int)obj->size;
+	if (obj->crypt) {
+		char pathname[HFP_PATH_MAX + 1];
+		strcpy(pathname, filepack->GetFolderName(obj));
+		strcat(pathname, filepack->GetFileName(obj));
+
+		int enc_crypt = crypt->GetCRC32(pathname, strlen(pathname));			// ファイルパスを暗号キーにする
+		enc_crypt = crypt->GetSalt(enc_crypt);
+		if (enc_crypt == 0) enc_crypt = 1;
+		if (enc_crypt != obj->crypt) {
+			filebase = -1;
+			return false;
+		}
+		crypt->DataSet(NULL, size, obj->crypt);
+	}
+	_file = ff;
+	return true;
+}
+
+void DpmFile::close(void)
+{
+	if (filepack == NULL) return;
+	if (_file) {
+		hsp3_fclose(_file);
+		_file = NULL;
+	}
+	filebase = -1;
+	filepack = NULL;
+}
+
+
+size_t DpmFile::read(void* mem, size_t sz, size_t count)
+{
+	int readsize = (int)(sz * count);
+	int len;
+
+	if ((filepack == NULL)||(_file == NULL)) return -1;
+
+	len = (int)hsp3_fread(_file, mem, readsize);
+	//Alertf("%d(%x)", len,cur);
+	if (filebase == HFP_FILEBASE_NORMAL) {
+		cur += len;
+		return (size_t)(len/sz);
+	}
+	if (fopen_crypt) {
+		int i;
+		unsigned char* p = (unsigned char*)mem;
+		crypt->DataSet(NULL, size, fopen_crypt);
+		crypt->SetOffset(cur);
+		for (i = 0; i < len; i++) {
+			*p = crypt->Decrypt(*p);
+			p++;
+		}
+	}
+	cur += len;
+	if (cur >= size) {
+		cur = size;
+	}
+	return (size_t)(len/sz);
+}
+
+
+char* DpmFile::readLine(char* str, int num)
+{
+	if ((filepack == NULL) || (_file == NULL)) return NULL;
+	if (filebase == HFP_FILEBASE_NORMAL) {
+		char *res = fgets(str, num, _file);
+		if (res) {
+			cur += strlen(str);
+		}
+		return res;
+	}
+	if (fopen_crypt) {
+		crypt->DataSet(NULL, size, fopen_crypt);
+		crypt->SetOffset(cur);
+	}
+	int i = num-1;
+	char* p = str;
+	int a1=0;
+	if ((p == NULL)||(num<1)) return NULL;
+	while (1) {
+		if (i <= 0) break;
+		if ( cur>=size ) break;
+		hsp3_fread(_file, &a1, 1);
+		cur++;
+		i--;
+		if (fopen_crypt) {
+			a1 = crypt->Decrypt(a1);
+		}
+		*p++ = (char)a1;
+		if (a1 == 10) {
+			break;
+		}
+	}
+	*p = 0;
+	return str;
+}
+
+
+bool DpmFile::rewind(void)
+{
+	if ((filepack == NULL) || (_file == NULL)) return false;
+	if (filebase == HFP_FILEBASE_NORMAL) {
+		::rewind(_file);
+		return true;
+	}
+	seek(0, SEEK_SET);
+	return true;
+}
+
+
+bool DpmFile::seek(int offset, int origin)
+{
+	if ((filepack == NULL) || (_file == NULL)) return false;
+	if (filebase == HFP_FILEBASE_NORMAL) {
+		//Alertf("SEEK:%d", offset);
+		return fseek(_file, offset, origin) == 0;
+	}
+	int newpos;
+	switch (origin) {
+	case SEEK_CUR:
+		newpos = cur;
+		break;
+	case SEEK_END:
+		newpos = size;
+		break;
+	default:
+		newpos = 0;
+		break;
+	}
+	cur = newpos + offset;
+	if (cur < 0) {
+		cur = 0;
+	}
+	if (cur >= size) {
+		cur = size;
+	}
+	fseek(_file, baseoffset+cur, SEEK_SET);
+	return true;
+}
+
+
+bool DpmFile::eof(void)
+{
+	if ((filepack == NULL) || (_file == NULL)) return true;
+	if (filebase == HFP_FILEBASE_NORMAL) {
+		if (!_file || feof(_file)) return true;
+		return ((size_t)position()) >= length();
+	}
+	if (cur>=size) return true;
+	return false;
+}
+
+
+int DpmFile::position(void)
+{
+	if ((filepack == NULL) || (_file == NULL)) return -1;
+	if (filebase == HFP_FILEBASE_NORMAL) {
+		return ftell(_file);
+	}
+	return cur;
+}
+
+
+size_t DpmFile::length(void)
+{
+	if ((filepack == NULL) || (_file == NULL)) return -1;
+	if (filebase == HFP_FILEBASE_NORMAL) {
+		size_t len = 0;
+		int pos = position();
+		if (seek(0, SEEK_END))
+		{
+			len = (size_t)position();
+		}
+		seek(pos, SEEK_SET);
+		return len;
+	}
+	return (size_t)size;
+}

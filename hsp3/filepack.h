@@ -87,6 +87,7 @@ public:
 	int LoadPackFile(char* name, int encode = 0, int dpmoffset = 0, int slot = 0);
 	void PrintFiles(void);
 	int GetFileSize( char *name );
+	int GetCurrentDPMOffset(void);
 
 	//	File Service
 	//
@@ -95,7 +96,8 @@ public:
 	int pack_fgetc(FILE* ptr);
 	int pack_flength(char* name);
 	int pack_fread(FILE* ptr, void* mem, int size);
-	int pack_fbase(char *name);
+	int pack_fbase(char* name);
+
 	void pack_memenable(bool sw);
 	void pack_memfile(void *mem, int size);
 	void pack_getinfstr(char* mem);
@@ -165,5 +167,35 @@ private:
 
 };
 
+
+//	DpmFile stream class
+//
+class DpmFile {
+public:
+	//	Functions
+	//
+	DpmFile();
+	~DpmFile();
+
+	bool open(FilePack* pack, char* fname);
+	void close(void);
+	size_t read(void* readmem, size_t size, size_t count);
+	char* readLine(char* str, int num);
+	bool rewind(void);
+	bool seek(int offset, int origin);
+	int position(void);
+	bool eof(void);
+	size_t length(void);
+
+private:
+	int filebase;
+	int cur;
+	int size;
+	int baseoffset;
+	int fopen_crypt;
+	FILE* _file;
+	FilePack* filepack;
+	HSP3Crypt* crypt;
+};
 
 #endif

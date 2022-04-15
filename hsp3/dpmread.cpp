@@ -30,18 +30,19 @@ extern HINSTANCE hDllInstance;
 #pragma execution_character_set("utf-8")
 #endif
 
+
+
 static FilePack filepack;
-static FILE* bak_file;
 
 FILE *dpm_open( char *fname )
 {
-	bak_file = filepack.pack_fopen(fname);
-	return bak_file;
+	FILE* fp = filepack.pack_fopen(fname);
+	return fp;
 }
 
-void dpm_close()
+void dpm_close( FILE *fp )
 {
-	filepack.pack_fclose(bak_file);
+	filepack.pack_fclose(fp);
 }
 
 
@@ -49,6 +50,19 @@ int dpm_fread( void *mem, int size, FILE *stream )
 {
 	return filepack.pack_fread(stream,mem,size);
 }
+
+void* dpm_stream(char* fname)
+{
+	DpmFile* dpm = new DpmFile;
+	if (dpm == NULL) return NULL;
+	bool res = dpm->open(&filepack, fname);
+	if (res == FALSE) {
+		delete dpm;
+		return NULL;
+	}
+	return dpm;
+}
+
 
 /*----------------------------------------------------------------------------------*/
 
@@ -198,4 +212,12 @@ char *dpm_readalloc( char *fname )
 	p[len] = 0;
 	return p;
 }
+
 /*----------------------------------------------------------------------------------*/
+
+void* dpm_getfilepack(void)
+{
+	return &filepack;
+}
+
+
