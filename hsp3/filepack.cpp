@@ -207,9 +207,7 @@ FILE* FilePack::pack_fopen(char* name, int offset)
 			return NULL;
 		}
 		cm->DataSet(NULL, size, obj->crypt);
-		if (offset > 0) {
-			cm->SetOffset(offset);
-		}
+		cm->SetOffset(offset);
 	}
 	return ff;
 }
@@ -692,6 +690,7 @@ bool DpmFile::open(FilePack* pack, char* fname)
 			return false;
 		}
 		crypt->DataSet(NULL, size, obj->crypt);
+		crypt->SetOffset(0);
 	}
 	_file = ff;
 	return true;

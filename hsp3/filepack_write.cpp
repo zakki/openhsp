@@ -315,6 +315,9 @@ int FilePack::SavePackFile( char *name, char *packname, int encode, int opt_enco
 			obj++;
 		}
 		hsp3_fclose(fp);
+#ifdef HSPWIN
+		_fcloseall();
+#endif
 
 	} else {
 		res = -1;
@@ -392,6 +395,9 @@ int FilePack::ExtractFile( HFPHED *hed, char *fname, char *savename, int encode 
 
 	hsp3_fclose(ff);
 	hsp3_fclose(fp);
+#ifdef HSPWIN
+	_fcloseall();
+#endif
 
 	char msg[1024];
 	sprintf(msg, "#%s extracted.(%d)", sname, bufsize);
