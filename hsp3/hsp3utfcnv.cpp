@@ -21,7 +21,7 @@
 #endif
 
 #ifdef HSPNDK
-#include "hgio.h"
+#include "../hsp3dish/hgio.h"
 #include "../appengine.h"
 #include "../javafunc.h"
 #endif

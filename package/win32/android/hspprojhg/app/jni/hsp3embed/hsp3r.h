@@ -5,11 +5,11 @@
 #ifndef __hsp3r_h
 #define __hsp3r_h
 
-#include "hsp3/hsp3debug.h"
-#include "hsp3/hsp3struct.h"
-#include "hsp3/hsp3code.h"
-#include "hsp3/stack.h"
-#include "hsp3embed/hspvar_util.h"
+#include "../hsp3/hsp3debug.h"
+#include "../hsp3/hsp3struct.h"
+#include "../hsp3/hsp3code.h"
+#include "../hsp3/stack.h"
+#include "hspvar_util.h"
 
 //	HSP3r class
 //

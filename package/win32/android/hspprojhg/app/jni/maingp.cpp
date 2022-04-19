@@ -12,8 +12,8 @@
 #include "hsp3/hsp3struct.h"
 #include "hsp3/hsp3ext.h"
 #include "hsp3embed/hsp3embed.h"
-#include "hsp3/hgio.h"
-#include "hsp3/sysreq.h"
+#include "hsp3dish/hgio.h"
+#include "hsp3dish/sysreq.h"
 
 //#define USE_SENSOR
 
