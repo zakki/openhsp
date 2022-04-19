@@ -15,7 +15,7 @@
 
 #include "hsp3/hsp3config.h"
 #include "hsp3/strbuf.h"
-#include "hsp3/hsp3gr.h"
+#include "hsp3dish/hsp3gr.h"
 #include "hsp3/supio.h"
 #include "hsp3embed/hsp3embed.h"
 

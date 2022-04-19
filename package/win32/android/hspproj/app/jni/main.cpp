@@ -13,8 +13,8 @@
 #include "hsp3/hsp3struct.h"
 #include "hsp3/hsp3ext.h"
 #include "hsp3embed/hsp3embed.h"
-#include "hsp3/hgio.h"
-#include "hsp3/sysreq.h"
+#include "hsp3dish/hgio.h"
+#include "hsp3dish/sysreq.h"
 
 //#define USE_SENSOR
 
@@ -180,7 +180,7 @@ static void engine_handle_cmd(struct android_app* app, int32_t cmd) {
 				HSPCTX *ctx;
 				InitSysReq();
 			    hgio_init( 0, engine->width, engine->height, engine );
-				hgio_view( 640, 960 );	// screen size
+				hgio_view( 480, 800 );	// screen size
 				//hgio_scale( 1.0f, 1.0f );	// scale value
 				hgio_autoscale( 0 );	// auto scale value
 				hsp3eb_init();
