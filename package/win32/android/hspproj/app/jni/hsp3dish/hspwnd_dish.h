@@ -340,6 +340,7 @@ public:
 	void Init( int p_sx, int p_sy );
 	void Init( char *fname );
 	void Cls( int mode );
+	void Select(int mode=0);
 
 	void Posinc( int pp );
 	void Width( int x, int y, int wposx, int wposy, int mode );

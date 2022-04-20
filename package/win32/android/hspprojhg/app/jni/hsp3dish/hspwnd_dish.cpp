@@ -262,13 +262,15 @@ void HspWnd::Resume( void )
 	int i;
 	Bmscr *bm;
 
+	hgio_resume();
 	bm = GetBmscr(0);
 	hgio_screen( (BMSCR *)bm );
-	hgio_resume();
 
 	bm->tapstat = 0;
 	bm->tapinvalid = 0;
 	bm->cur_obj = NULL;
+
+	bm->Select();
 
 	//		リソースを読み込み直す
 	//
@@ -277,7 +279,7 @@ void HspWnd::Resume( void )
 		if ( bm != NULL ) {
 			if ( bm->type == HSPWND_TYPE_BUFFER ) {
 				bm->flag = BMSCR_FLAG_NOUSE;
-				hgio_texload( (BMSCR *)bm, bm->resname );
+				hgio_texload((BMSCR*)bm, bm->resname);
 				bm->flag = BMSCR_FLAG_INUSE;
 			}
 			if ( bm->type == HSPWND_TYPE_OFFSCREEN ) {
@@ -285,7 +287,6 @@ void HspWnd::Resume( void )
 			}
 		}
 	}
-
 }
 
 
@@ -352,9 +353,9 @@ void Bmscr::Init( char *fname )
 	}
 	Init( sx, sy );
 
-	char _name[HSP_MAX_PATH];
-	getpath( fname, _name, 8 );
-	strncpy( resname, _name, RESNAME_MAX-1 );
+	//char _name[HSP_MAX_PATH];
+	//getpath( fname, _name, 8 );
+	strncpy( resname, fname, RESNAME_MAX-1 );
 	//Alertf( "(%d,%d)",sx,sy );
 }
 
@@ -433,6 +434,15 @@ void Bmscr::Title( char *str )
 
 void Bmscr::Width( int x, int y, int wposx, int wposy, int mode )
 {
+}
+
+
+void Bmscr::Select(int mode)
+{
+	//		Activate current window
+	//
+	hgio_gsel((BMSCR*)this);
+	hgio_font(font_curname, font_cursize, font_curstyle);
 }
 
 
@@ -674,7 +684,12 @@ int Bmscr::PrintSub( char *mes )
 void Bmscr::Boxfill( int x1,int y1,int x2,int y2, int mode )
 {
 	//		boxf
-	hgio_boxfAlpha( (BMSCR *)this, (float)x1, (float)y1, (float)x2, (float)y2, mode );
+	if (GetSysReq(SYSREQ_OLDBOXF)) {
+		hgio_boxfAlpha((BMSCR*)this, (float)x1, (float)y1, (float)x2, (float)y2, mode);
+	}
+	else {
+		hgio_boxfAlpha((BMSCR*)this, (float)(x1+1), (float)(y1+1), (float)(x2+1), (float)(y2+1), mode);
+	}
 }
 
 

@@ -56,7 +56,7 @@ void* dpm_stream(char* fname)
 	DpmFile* dpm = new DpmFile;
 	if (dpm == NULL) return NULL;
 	bool res = dpm->open(&filepack, fname);
-	if (res == FALSE) {
+	if (res == false) {
 		delete dpm;
 		return NULL;
 	}
