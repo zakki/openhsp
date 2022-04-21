@@ -18,7 +18,6 @@
 #include "tagstack.h"
 #include "membuf.h"
 #include "../hsp3/strnote.h"
-#include "../hsp3/strbuf.h"
 #include "ahtobj.h"
 
 #define s3size 0x8000
@@ -247,45 +246,6 @@ int CToken::AddPackfile( char *name, int mode )
 		strcat(fname, name);
 	}
 
-	strchr3(p_fname, '*', 0, &findptr);
-	if (findptr != NULL) {
-		//	ワイルドカード使用時
-		CStrNote notelist;
-		char ftmp[1024];
-		char fixname[1024];
-		int listmax;
-		char *flist = sbAlloc(0x4000);
-		dirlist(fname, &flist, 5);
-		notelist.Select(flist);
-		listmax = notelist.GetMaxLine();
-		// ディレクトリを再帰する
-		for (i = 0; i < listmax; i++) {
-			notelist.GetLine(ftmp, i);
-
-			getpath(fname, fixname, 32);
-			strcat(fixname, ftmp);
-			strcat(fixname, "/*");
-			int res = AddPackfile(fixname, mode);
-			if (res) return res;
-		}
-		sbFree(flist);
-
-		// すべてのファイルを追加する
-		flist = sbAlloc(0x4000);
-		dirlist(fname, &flist, 1);
-		notelist.Select(flist);
-		listmax = notelist.GetMaxLine();
-		for (i = 0; i < listmax; i++) {
-			notelist.GetLine(ftmp, i);
-			strcpy(fixname, p_fdir);
-			strcat(fixname, ftmp);
-			int res = AddPackfile(fixname, mode );
-			if (res) return res;
-		}
-		sbFree(flist);
-		return 0;
-	}
-
 	strcpy( packadd, fname);
 #ifdef HSPWIN
 	strcase( packadd );
@@ -344,7 +304,6 @@ CToken::CToken( char *buf )
 
 CToken::~CToken( void )
 {
-	sbBye();
 	if ( scnvbuf!=NULL ) InitSCNV(-1);
 
 	if ( tstack!=NULL ) { delete tstack; tstack = NULL; }
@@ -393,8 +352,6 @@ void CToken::ResetCompiler( void )
 	hed_autoopt_timer = 0;
 	hed_autoopt_strexchange = 0;
 	pp_utf8 = 0;
-
-	sbInit();
 }
 
 

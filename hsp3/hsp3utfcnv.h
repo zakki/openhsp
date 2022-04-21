@@ -71,6 +71,7 @@ FILE* hsp3_fopenwrite(char* name, int offset=-1);
 void hsp3_fclose(FILE* ptr);
 int hsp3_flength(char* name);
 int hsp3_fread(FILE* ptr, void* mem, int size);
+int hsp3_fseek(FILE* ptr, int offset, int whence);
 int hsp3_binsave(char* fname8, void* mem, int msize, int seekofs=-1);
 
 #endif

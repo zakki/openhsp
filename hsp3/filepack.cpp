@@ -793,7 +793,7 @@ bool DpmFile::seek(int offset, int origin)
 	if ((filepack == NULL) || (_file == NULL)) return false;
 	if (filebase == HFP_FILEBASE_NORMAL) {
 		//Alertf("SEEK:%d", offset);
-		return fseek(_file, offset, origin) == 0;
+		return hsp3_fseek(_file, offset, origin) == 0;
 	}
 	int newpos;
 	switch (origin) {
@@ -814,7 +814,7 @@ bool DpmFile::seek(int offset, int origin)
 	if (cur >= size) {
 		cur = size;
 	}
-	fseek(_file, baseoffset+cur, SEEK_SET);
+	hsp3_fseek(_file, baseoffset+cur, SEEK_SET);
 	return true;
 }
 

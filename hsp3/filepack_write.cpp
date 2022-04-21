@@ -17,6 +17,7 @@
 #include "supio.h"
 #include "filepack.h"
 #include "strnote.h"
+#include "strbuf.h"
 #include "hsp3crypt.h"
 #include "../hspcmp/membuf.h"
 
@@ -47,6 +48,7 @@ void FilePack::PrepareWrite( int slot, int encode )
 	curnum = slot;
 	Print(WELCOMEMSG);
 	seedbase = encode;
+	sbInit();
 }
 
 
@@ -65,6 +67,47 @@ int FilePack::RegisterFile( char *name, int pcrypt )
 	char foldername[HFP_PATH_MAX + 1];
 	char foldername_hsp3[HFP_PATH_MAX + 1];
 	char pathname[HFP_PATH_MAX + 1];
+
+	char* findptr;
+	strchr3(name, '*', 0, &findptr);
+	if (findptr != NULL) {
+		//	ワイルドカード使用時
+		CStrNote notelist;
+		char ftmp[1024];
+		char fixname[1024];
+		char p_fdir[HSP_MAX_PATH];
+		int listmax;
+		char* flist = sbAlloc(0x4000);
+		dirlist(name, &flist, 5);
+		notelist.Select(flist);
+		listmax = notelist.GetMaxLine();
+		// ディレクトリを再帰する
+		for (int i = 0; i < listmax; i++) {
+			notelist.GetLine(ftmp, i);
+			getpath(name, fixname, 32);
+			strcat(fixname, ftmp);
+			strcat(fixname, "/*");
+			int res = RegisterFile(fixname, pcrypt);
+			if (res<0) return res;
+		}
+		sbFree(flist);
+
+		// すべてのファイルを追加する
+		getpath(name, p_fdir, 32);
+		flist = sbAlloc(0x4000);
+		dirlist(name, &flist, 1);
+		notelist.Select(flist);
+		listmax = notelist.GetMaxLine();
+		for (int i = 0; i < listmax; i++) {
+			notelist.GetLine(ftmp, i);
+			strcpy(fixname, p_fdir);
+			strcat(fixname, ftmp);
+			int res = RegisterFile(fixname, pcrypt);
+			if (res<0) return res;
+		}
+		sbFree(flist);
+		return 0;
+	}
 
 	StrSplit(name, foldername_hsp3, fname_hsp3);		// Split Path and File Name
 	StrCase(fname_hsp3);
@@ -128,6 +171,10 @@ int FilePack::RegisterFile( char *name, int pcrypt )
 	obj.slot = curnum;
 	obj.crypt = enc_crypt;
 
+	char msg[1024];
+	sprintf(msg, "#%d %s (%d)(%d)", wrtnum, name, length, enc_crypt);
+	Print(msg);
+
 	wrtpos += length;
 	wrtnum++;
 	wrtbuf->PutData( &obj, sizeof(HFPOBJ) );
@@ -140,7 +187,6 @@ int FilePack::RegisterFromPacklist( char *name, int def_crypt)
 {
 	//	regist from file list
 	//
-	int total = 0;
 	int max,index,crypt;
 	char s1[1024];
 
@@ -179,15 +225,11 @@ int FilePack::RegisterFromPacklist( char *name, int def_crypt)
 		default:
 			int length = RegisterFile(fn, enc);
 			if (length < 0) return -1;
-			char msg[1024];
-			sprintf(msg,"#%d %s (%d)(%d)", total, fn, length, enc);
-			Print(msg);
-			total++;
 			break;
 		}
 	}
 
-	return total;
+	return wrtnum;
 }
 
 
@@ -325,6 +367,7 @@ int FilePack::SavePackFile( char *name, char *packname, int encode, int opt_enco
 
 	delete wrtbuf;
 	delete wrtstr;
+	sbBye();
 	return res;
 }
 

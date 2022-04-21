@@ -2399,6 +2399,13 @@ int hgio_android_fread( FILE* ptr, void *mem, int size )
 	return AAsset_read( asset, mem, size );
 }
 
+int hgio_android_seek( FILE* ptr, int offset, int whence )
+{
+	AAsset* asset = (AAsset*)ptr;
+	if (asset == NULL) -1;
+	return AAsset_seek( asset, offset, whence );
+}
+
 #endif
 
 
