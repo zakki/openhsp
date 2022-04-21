@@ -338,6 +338,20 @@ int hsp3_fread( FILE* ptr, void *mem, int size )
 }
 
 
+int hsp3_fseek(FILE* ptr, int offset, int whence)
+{
+	if (ptr == NULL) return -1;
+
+#ifdef HSPNDK
+	{
+	return hgio_android_seek(ptr,offset,whence);
+	}
+#endif
+
+	return fseek(ptr,offset,whence);
+}
+
+
 int hsp3_binsave( char *fname8, void *mem, int msize, int seekofs )
 {
 	FILE* hsp3_fp = hsp3_fopenwrite( fname8 );
@@ -349,6 +363,7 @@ int hsp3_binsave( char *fname8, void *mem, int msize, int seekofs )
 #endif
 	return flen;
 }
+
 
 //
 //		UTF Conversion Service (Windows Only)
