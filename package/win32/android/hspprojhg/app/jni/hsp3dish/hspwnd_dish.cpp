@@ -688,7 +688,7 @@ void Bmscr::Boxfill( int x1,int y1,int x2,int y2, int mode )
 		hgio_boxfAlpha((BMSCR*)this, (float)x1, (float)y1, (float)x2, (float)y2, mode);
 	}
 	else {
-		hgio_boxfAlpha((BMSCR*)this, (float)(x1+1), (float)(y1+1), (float)(x2+1), (float)(y2+1), mode);
+		hgio_boxfAlpha((BMSCR*)this, (float)(x1), (float)(y1), (float)(x2+1), (float)(y2+1), mode);
 	}
 }
 

@@ -3528,7 +3528,10 @@ int code_catcherror(HSPERROR code)
 	}
 	else if (code == HSPERR_EXITRUN) {
 		return hspctx->runmode;
-		hspctx->runmode = RUNMODE_EXITRUN;
+		//hspctx->runmode = RUNMODE_EXITRUN;
+	}else if (code == HSPERR_INTJUMP) {
+		return hspctx->runmode;
+		//throw HSPERR_INTJUMP;
 	}
 	else {
 		hspctx->err = code;

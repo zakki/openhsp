@@ -5,11 +5,12 @@ Hot Soup Processor ver3.7beta                       HSP : Hot Soup Processor
 
 ・hsp3関連 更新履歴
 
-	2022/04/14 3.7 beta2
+	2022/04/22 3.7 beta2
 
 	DPMファイル及びexe埋め込みファイルにフォルダ名と長いファイル名が使用できるように修正
 	#pack,#epack命令のファイル指定に'*'記号によるワイルドカードが使用できるように修正
 	button gosubによるボタン処理時にエラーが発生した際にウインドウが閉じる不具合を修正
+	コールバック先でonkey gotoの割り込みがかかった際にエラー43が出る不具合を修正
 	[HSP3Dish] boxf命令の塗りつぶし範囲が標準ランタイムと異なる不具合を修正
 	[HSP3Dish][android] スタティックライブラリ導入によりHGIMG4のビルド時間を短縮
 	[HSP3Dish][Windows] デバイスロスト時にアプリが停止する不具合を修正
