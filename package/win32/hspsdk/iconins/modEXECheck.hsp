@@ -48,7 +48,7 @@ return 0
 	if strsize == -1 : return -2
 	tmp = 0
 	bload fname, tmp, 4, rsrc(5)+rsrc(4)
-	if tmp == 0x584d5044 /*DPMX*/ : return rsrc(5) + rsrc(4)
+	if tmp == 0x324d5044 /*DPM2*/ : return rsrc(5) + rsrc(4)
 return -3
 #global
 
