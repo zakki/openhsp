@@ -11,6 +11,7 @@
 #include <map>
 using namespace std;
 
+#include "hsp3config.h"
 #include "hspwnd.h"
 #include "supio.h"
 #include "dpmread.h"
@@ -19,8 +20,8 @@ using namespace std;
 #include "strnote.h"
 #include "hsp3code.h"
 #include "hsp3debug.h"
-#include "hsp3config.h"
 #include "hsp3int.h"
+#include "hsp3utfcnv.h"
 
 /*------------------------------------------------------------*/
 /*

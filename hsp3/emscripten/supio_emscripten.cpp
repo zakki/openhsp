@@ -7,7 +7,7 @@
 //	http://hspdev-wiki.net/?OpenHSP%2FLinux%2Fhsp3
 //
 //
-#include "../../hsp3/hsp3config.h"
+#include "../hsp3config.h"
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -27,9 +27,9 @@
 #include <dirent.h>
 
 #include "supio_emscripten.h"
-#include "../../hsp3/dpmread.h"
-#include "../../hsp3/strbuf.h"
-#include "../hgio.h"
+#include "../dpmread.h"
+#include "../strbuf.h"
+#include "../../hsp3dish/hgio.h"
 #include <emscripten.h>
 
 #ifndef _MAX_PATH

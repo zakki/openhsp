@@ -32,6 +32,9 @@ CFLAGS_EXTLIB = $(CFLAGS_CORE) $(CFLAGS_DEBUG) \
 
 OBJS = \
 	../hsp3/dpmread.bc \
+	../hsp3/filepack.bc \
+	../hsp3/hsp3crypt.bc \
+	../hsp3/hsp3utfcnv.bc \
 	geometry.bc \
 	../hsp3/hsp3.bc \
 	../hsp3/hsp3code.bc \
@@ -68,10 +71,13 @@ OBJS = \
 	emscripten/mmman.bc \
 	emscripten/webtask_emscripten.bc \
 	emscripten/stb_image.bc \
-	emscripten/supio_emscripten.bc
+	../hsp3/emscripten/supio_emscripten.bc
 
 OBJS_GP = \
 	../hsp3/dpmread.gp.bc \
+	../hsp3/filepack.gp.bc \
+	../hsp3/hsp3crypt.gp.bc \
+	../hsp3/hsp3utfcnv.gp.bc \
 	geometry.gp.bc \
 	../hsp3/hsp3.gp.bc \
 	../hsp3/hsp3code.gp.bc \
@@ -109,7 +115,7 @@ OBJS_GP = \
 	emscripten/mmman.gp.bc \
 	emscripten/webtask_emscripten.gp.bc \
 	emscripten/stb_image.gp.bc \
-	emscripten/supio_emscripten.gp.bc
+	../hsp3/emscripten/supio_emscripten.gp.bc
 
 OBJS_GAMEPLAY = \
 	gameplay/src/AbsoluteLayout.gp.bc \
