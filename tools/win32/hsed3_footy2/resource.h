@@ -103,6 +103,8 @@
 #define ID_SRCCNV                       2932
 #define IDM_SRCCNV                      2932
 #define ID_TOOL_LEGACYTOOL              2933
+#define ID_PACKOPT                      2934
+#define IDM_PACKOPT                     2934
 #define IDM_GOOGLE                      2950
 #define IDCM_ADD                        3000
 #define IDCM_ALLSEL                     3001

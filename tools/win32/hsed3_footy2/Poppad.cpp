@@ -37,6 +37,8 @@
 
 #include "PackIconResource.h"
 
+#define SUPPORT_DIR "SUPPORT\\"
+
 // PathIsDirectoryで使用
 #include "shlwapi.h"
 #pragma comment(lib, "shlwapi.lib")
@@ -401,7 +403,6 @@ static void err_bye( void )
 {
 	//	error message print
 	//
-	//MessageBox (hwnd, errbuf, "HSP error message", MB_OK | MB_ICONEXCLAMATION) ;
 	DialogBox (hInst, "ErrBox", hwnd, (DLGPROC)ErrDlgProc);
 }
 
@@ -467,19 +468,6 @@ static char *myfile( void )
 }
 
 
-//static int fileexe( char *appname, char *fname )
-//{
-//	//		Execute application
-//	//
-//	if ( filechk(fname) ) return 1;
-//	strcpy( execmd,appname );
-//	strcat( execmd," " );
-//	strcat( execmd,fname );
-//	WinExec( execmd,SW_SHOW );
-//	return 0;
-//}
-
-
 static int GetFileTitle2( char *bname, char *tname )
 {
 	//		GetFileTitleの替わり
@@ -498,31 +486,6 @@ static int GetFileTitle2( char *bname, char *tname )
 	if (b<0) return 1;
 	strcpy( tname,bname+b+1 );
 	return 0;
-}
-
-
-static void packgo( void )
-{
-	int a;
-	if (filechk("packfile")) {
-#ifdef JPNMSG
-		TMes( "DPMファイルを作るためにはパックするファイル名一覧(PACKFILE)を\n作成しておく必要があります。" );
-#else
-		TMes( "[PACKFILE] needed." );
-#endif
-		return;
-	}
-
-	pack_ini( 0,(int)"data",0,0 );	
-	a=pack_make( 1,0,0,0 );
-	//dpmc_ini(errbuf,"data");
-	//a=dpmc_pack();
-	if (a) { err_prt(hwbak);return; }
-#ifdef JPNMSG
-	TMes("[DATA.DPM]ファイルを作成しました。");
-#else
-	TMes("Create [DATA.DPM] Successfully.");
-#endif
 }
 
 
@@ -557,50 +520,6 @@ static void expack( int mode, char *exname, char *finmes )
 }
 	
 	
-static void mkexe( char *exname )
-{
-	if (filechk("packfile")) {
-#ifdef JPNMSG
-		TMes( "EXEファイルを作るためにはパックするファイル名一覧(PACKFILE)を\n作成しておく必要があります。" );
-#else
-		TMes( "[PACKFILE] needed." );
-#endif
-		return;
-	}
-#ifdef JPNMSG
-	expack( hsp_fullscr, exname, "EXEファイルを作成しました。" );
-#else
-	expack( hsp_fullscr, exname, "Create EXE file successfully." );
-#endif
-}
-
-
-static void mkscr( char *exname )
-{
-	if (hsp_clmode) {
-#ifdef JPNMSG
-		TMes( "コンソールモードでスクリーンセーバーの作成はできません。" );
-#else
-		TMes( "No operation for console mode." );
-#endif
-		return;
-	}
-	if (filechk("packfile")) {
-#ifdef JPNMSG
-		TMes( "スクリーンセーバーを作るためにはパックするファイル名一覧(PACKFILE)を\n作成しておく必要があります。" );
-#else
-		TMes( "[PACKFILE] needed." );
-#endif
-		return;
-	}
-#ifdef JPNMSG
-	expack( 2, exname, "SCRファイルを作成しました。" );
-#else
-	expack( 2, exname, "Create SCR file successfully." );
-#endif
-}
-
-
 static void chklstr( char *laststr )
 {
 	//		hsp_laststr modify
@@ -646,10 +565,6 @@ static void hsprun( char *objname )
 #else
 		TMes("Runtime executable file missing.");
 #endif
-/*
-	MessageBox(0, execmd, 0, 0);
-	ShellExecute(NULL, "open", execmd, hsp_cmdopt, 
-	*/
 	}
 }
 
@@ -683,10 +598,7 @@ static void hsprun_cl( char *objname )
 	GetShortPathName( szExeDir, ftmp, MAX_PATH );
 
 	wsprintf( execmd,"%s\\hspcli.bat ",ftmp );
-	//if (hsp_fullscr) strcat( execmd,"*" );
-	//if (hsp_debug) strcat( execmd,"@" );
 
-	//strcat( execmd,szDirName );
 	strcat( execmd,objname );
 	strcat( execmd," " );
 	strcat( execmd,"\\" );
@@ -713,9 +625,6 @@ static void hsprun_log_cl( char *objname )
 	strcat( execmd, dbopt );
 	if (hsp_logadd==0) DeleteFile( "hsplog.txt" );
 
-	//if (hsp_fullscr) strcat( execmd,"*" );
-	//if (hsp_debug) strcat( execmd,"@" );
-	//strcat( execmd,szDirName );
 	strcat( execmd,objname );
 	strcat( execmd," " );
 	strcat( execmd,ftmp );
@@ -756,7 +665,6 @@ static int mkobjfile( char *fname )
 	hsc_refname( 0,(int)myfile(), 0,0 );
 	hsc_objname( 0,(int)tmpst, 0,0 );
 	a=hsc_comp( 0,0,0,0 );
-	//a=tcomp_main( myfile(), srcfn, tmpst, errbuf, 0 );
 	return a;
 }
 
@@ -775,7 +683,6 @@ static int mkobjfile2( char *fname )
 	hsc_refname( 0,(int)myfile(), 0,0 );
 	hsc_objname( 0,(int)tmpst, 0,0 );
 	a=hsc_comp( 0,0,0,0 );
-	//a=tcomp_main( myfile(), srcfn, tmpst, errbuf, 0 );
 	return a;
 }
 
@@ -983,11 +890,19 @@ static void callhelp( void )
 }
 
 
-static void ExecMkDPM( void )
+static void ExecMkDPM(void)
 {
 	char tmpfn[2048];
-	wsprintf( tmpfn, "\"%s\\hsp3.exe\" \"%s\\mkpack.ax\"", szExeDir, szExeDir );
-	WinExec( tmpfn, SW_SHOW );
+	wsprintf(tmpfn, "\"%s\\hsp3.exe\" \"%s\\%spack_make_list.ax\"", szExeDir, szExeDir, SUPPORT_DIR);
+	WinExec(tmpfn, SW_SHOW);
+}
+
+
+static void ExecMkPackOpt(void)
+{
+	char tmpfn[2048];
+	wsprintf(tmpfn, "\"%s\\hsp3.exe\" \"%s\\%spackopt_make_list.ax\"", szExeDir, szExeDir, SUPPORT_DIR);
+	WinExec(tmpfn, SW_SHOW);
 }
 
 
@@ -1594,14 +1509,6 @@ int poppad_ini( HWND hwnd, LPARAM lParam )
 
    			   if ( flg_hspat ) ExecHSPAssistant();		// HSPアシスタントを自動起動
 
-               // Create the edit control child window
-
-               //hwndEdit = CreateWindowEx ( WS_EX_ACCEPTFILES, "EDIT", NULL,
-               //          WS_CHILD | WS_VISIBLE | WS_VSCROLL | WS_HSCROLL |
-               //               ES_LEFT | ES_MULTILINE |
-               //               ES_NOHIDESEL | ES_AUTOHSCROLL | ES_AUTOVSCROLL,
-               //          0, 0, 0, 0,
-               //          hwnd, (HMENU) EDITID, hInst, NULL) ;
                hwndTab = CreateWindowEx(0, WC_TABCONTROL, NULL, WS_CHILD | WS_CLIPSIBLINGS | WS_VISIBLE | WS_CLIPCHILDREN,
                    0, 0, 10, 10, hwnd, (HMENU)0x10, hInst, NULL);
 			   PopFontApplyTabFont();
@@ -1609,28 +1516,8 @@ int poppad_ini( HWND hwnd, LPARAM lParam )
 			   SetWindowLong(hwndTab, GWL_WNDPROC, (LONG)MyTabProc);
 			   DragAcceptFiles(hwndTab, TRUE);
 
-//  Moved to CreateTab function in tabmanager.cpp
-//			   Org_EditProc = (WNDPROC)GetWindowLong( hwndEdit, GWL_WNDPROC );
-//			   SetWindowLong( hwndEdit, GWL_WNDPROC, (LONG)MyEditProc );
-//			   DragAcceptFiles( hwndEdit, TRUE );
-
-               // Initialize common dialog box stuff
-
                iMsgFindReplace = RegisterWindowMessage (FINDMSGSTRING) ;
 			   iMsgHelp        = RegisterWindowMessage (HELPMSGSTRING) ;
-
-               // Process command line
-
-               //lstrcpy (szFileName, (PSTR) (((LPCREATESTRUCT) lParam)->lpCreateParams)) ;
-
-/*
-				if ( szCmdline[0]==0x22 ) {
-					strcpy( szFileName, szCmdline+1 );
-			   }
-			   else {
-				   strcpy( szFileName, szCmdline );
-			   }
-*/
 
 			   PopFontSetELG( chg_font );
 			   PopFontSetEditFont();
@@ -1872,11 +1759,6 @@ int poppad_menupop( WPARAM wParam, LPARAM lParam )
 
 			// Enable Redo if edit control can do it
 
-//			EnableMenuItem ((HMENU) wParam, IDM_REDO, nUndoNum > 0 ?
-//				MF_ENABLED : MF_GRAYED) ;
-//			EnableMenuItem ((HMENU) wParam, IDM_REDO,
-//			SendMessage (hwndEdit, WM_USER + 85/*(EM_CANREDO)*/, 0, 0L) ?
-//				MF_ENABLED : MF_GRAYED) ;
 			iNum = 0;
 			Footy2GetMetrics(activeFootyID, SM_REDOREM, &iNum);
 			EnableMenuItem ((HMENU) wParam, IDM_REDO,
@@ -2083,14 +1965,6 @@ LRESULT CALLBACK EditProc (HWND hwnd, UINT iMsg, WPARAM wParam, LPARAM lParam)
      int a;
 	 int low;
 	 char tmpfn[_MAX_PATH];
-
-/*
-     if (iMsg == WM_KEYDOWN )
-			 {
-				 PutLineNumber();
-                 //OkMessage ( "Huh??", "") ;
-			 }
-*/
 
 	 switch(iMsg) {
 		case WM_COMMAND :
@@ -2533,11 +2407,6 @@ LRESULT CALLBACK EditProc (HWND hwnd, UINT iMsg, WPARAM wParam, LPARAM lParam)
 				case IDM_FULLSCR:
 					hsp_fullscr^=1;
 					return 0;
-/*
-				case IDM_HSPEXTMACRO:
-					hsp_extmacro^=1;
-					return 0;
-*/
 				case IDM_HSPCLMODE:
 					hsp_clmode^=1;
 					return 0;
@@ -2550,28 +2419,6 @@ LRESULT CALLBACK EditProc (HWND hwnd, UINT iMsg, WPARAM wParam, LPARAM lParam)
 					DialogBox (hInst, "CmdBox", hwnd, (DLGPROC)OptDlgProc);
 					return 0;
 
-				case IDM_PACKED:
-					DialogBox (hInst, "FileBox", hwnd, (DLGPROC)PlistDlgProc);
-					return 0;
-
-				case IDM_PACKGO:
-					packgo();
-					return 0;
-
-				case IDM_MKEXE1:
-					exemode=1;
-					DialogBox (hInst, "MkExe", hwnd, (DLGPROC)FnameDlgProc);
-					chklstr(hsp_laststr);
-					if (hsp_fnstr) mkexe(hsp_laststr);
-					return 0;
-
-				case IDM_MKEXE2:
-					exemode=1;
-					DialogBox (hInst, "MkExe", hwnd, (DLGPROC)FnameDlgProc);
-					chklstr(hsp_laststr);
-					if (hsp_fnstr) mkscr(hsp_laststr);
-					return 0;
-
 				case IDM_START_RUNTIMEMAN:
 					ExecHSPAssistant();
 					return 0;
@@ -2581,18 +2428,17 @@ LRESULT CALLBACK EditProc (HWND hwnd, UINT iMsg, WPARAM wParam, LPARAM lParam)
 					ShellExecute( NULL, "explore", tmpfn, NULL, NULL, SW_SHOWNORMAL );
 					return 0;
 
-				case IDM_AHTTOOL:
-					wsprintf( tmpfn, "\"%s\\ahtman.exe\"", szExeDir );
-					WinExec( tmpfn, SW_SHOW );
-					return 0;
-
                 case IDM_HSPTV:
 					wsprintf( tmpfn, "\"%s\\hsptv.exe\"", szExeDir );
 					WinExec( tmpfn, SW_SHOW );
 					return 0;
 
-                case IDM_DIRDPM:
+				case IDM_DIRDPM:
 					ExecMkDPM();
+					return 0;
+
+				case IDM_PACKOPT:
+					ExecMkPackOpt();
 					return 0;
 
 				case IDM_SRCCNV:
@@ -3256,13 +3102,6 @@ BOOL CALLBACK ConfigDlgProc (HWND hDlg, UINT message, WPARAM wParam, LPARAM lPar
 				hOldPage = hConfigPage;
 				return TRUE;
 			}
-			/*else if(pnmtv->hdr.code == TVN_SELCHANGED){
-				hTree = GetDlgItem(hDlg, IDC_TREE1);
-				hti = TreeView_GetChild(hTree, pnmtv->itemNew.hItem);
-				if(hti != NULL)
-					TreeView_SelectItem(hTree, hti);
-				return TRUE;
-			}*/
 			break;
 		}
 	}
@@ -4582,13 +4421,6 @@ void __stdcall OnFooty2TextModified(int id, void * /*pParam*/, int /*nCause*/)
 	if(lpTabInfo == NULL)
 		return;
 
-//	if(FootyGetMetrics(id, F_GM_UNDOREM) == lpTabInfo->LatestUndoNum && lpTabInfo->NeedSave == TRUE){
-//		SetTabInfo(nTabID, NULL, NULL, NULL, (bNeedSave = FALSE));
-//		DoCaption(szTitleName, nTabID);
-//	} else if(lpTabInfo->NeedSave == FALSE && nCause != FECH_SETTEXT){
-//		SetTabInfo(nTabID, NULL, NULL, NULL, (bNeedSave = TRUE));
-//		DoCaption(szTitleName, nTabID);
-//	}
 	// 2008-02-17 Shark++ 要動作確認
 	bNeedSave = (BOOL)Footy2IsEdited(id);
 	if( lpTabInfo->NeedSave != bNeedSave ) {
@@ -4600,14 +4432,6 @@ void __stdcall OnFooty2TextModified(int id, void * /*pParam*/, int /*nCause*/)
 	return;
 }
 
-//void __stdcall OnFootyContextMenu(void *pParam, int id)
-//{
-//	POINT pt;
-//
-//	GetCursorPos(&pt);
-//	TrackPopupMenu(hSubMenu, TPM_LEFTALIGN | TPM_TOPALIGN | TPM_RIGHTBUTTON, pt.x, pt.y, 0, hwndClient, NULL);
-//	return;
-//}
 void GetBackupPath(char *backuppath, int size){
 	// EXEのあるディレクトリ
 	char exepath[MAX_PATH+1];
@@ -4651,14 +4475,7 @@ void HSPBackupSave(const char *backuppath, const char *path, int nFootyID){
 	int size = Footy2GetTextLengthA(nFootyID, LM_CRLF);
 	char *bufhsp = (char *)calloc(size + 2,sizeof(char));
 	Footy2GetTextA(nFootyID, bufhsp, LM_CRLF, size + 1);
-	/*
-	FILE *fphsp;
-	fphsp = fopen(path, "wb");
-	if (fphsp == NULL)
-		return;
-	fputs(bufhsp, fphsp);
-	fclose(fphsp);
-	*/
+
 	HANDLE fp;
 	fp = CreateFileA(path, GENERIC_READ | GENERIC_WRITE, FILE_SHARE_READ, NULL, OPEN_ALWAYS, FILE_FLAG_WRITE_THROUGH, NULL);
 	if (fp == NULL)
@@ -4677,14 +4494,6 @@ void TXTBackupSave(const char *backuppath, const char *path, char *data){
 		if (!PathIsDirectoryA(backuppath))
 			return;
 	}
-	/*
-	FILE *fptxt;
-	fptxt = fopen(path, "wb");
-	if (fptxt == NULL)
-		return;
-	fputs(data, fptxt);
-	fclose(fptxt);
-	*/
 	HANDLE fp;
 	fp = CreateFileA(path, GENERIC_READ | GENERIC_WRITE, FILE_SHARE_READ, NULL, OPEN_ALWAYS, FILE_FLAG_WRITE_THROUGH, NULL);
 	if (fp == NULL)
@@ -4906,30 +4715,7 @@ void BackupCopy(void){
 }
 
 int ReadFileBuffer(const char *filepath, char **buf){
-	/*
-	FILE *fp;
-	fpos_t fsize;
-	// オープン
-	fp = fopen(filepath, "rb");
-	if (fp == NULL)
-		return -1;
-	// ファイルサイズ
-	fseek(fp, 0, SEEK_END); 
-	fgetpos(fp, &fsize);
-	fseek(fp, 0, SEEK_SET);
-	*buf = (char *)calloc(fsize*2+2, sizeof(char));
-	char *tmp = (char *)calloc(fsize*2+2, sizeof(char));
-	if (fsize > 0){
-		while (fgets(tmp, fsize*2+1, fp) != NULL){
-			strcat(*buf, tmp);
-		}
-	}
 
-	//fgets(*buf, fsize*2+1, fp);
-	free(tmp);
-	fclose(fp);
-	return (int)fsize;
-	*/
 	HANDLE fp;
 	int fsize;
 	fp = CreateFileA(filepath, GENERIC_READ, FILE_SHARE_READ, NULL, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, NULL);

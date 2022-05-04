@@ -96,8 +96,9 @@ BEGIN
         MENUITEM "ソースフォルダを開く(&O)...",           IDM_OPEN_SRCFOLDER
         MENUITEM "HSPアシスタント起動(&F)...",          IDM_START_RUNTIMEMAN
         MENUITEM "HSPTVブラウザ起動(&H)...",          IDM_HSPTV
-        MENUITEM "指定フォルダからDPM作成(&D)...",        ID_DIRDPM
-        MENUITEM "HSP3Dish / Cソース変換(&C)...",    ID_SRCCNV
+        MENUITEM "指定フォルダからDPM作成(&D)...",        IDM_DIRDPM
+        MENUITEM "PACKOPT項目の作成(&P)...",        IDM_PACKOPT
+        MENUITEM "HSP3Dish / Cソース変換(&C)...",    IDM_SRCCNV
         MENUITEM "HGIMG4ツールを開く(&G)...",         IDM_HGIMG4TOOL
         MENUITEM "ペイントツールを開く(&W)...",           IDM_PAINT
         MENUITEM SEPARATOR
@@ -956,11 +957,11 @@ STRINGTABLE
 BEGIN
     IDS_MAIN_MENU           "ファイル管理・印刷メニュー"
     IDS_MAIN_MENU1          "編集メニュー"
-    IDS_MAIN_MENU2          "カーソル移動メニュー"
-    IDS_MAIN_MENU3          "文字列検索・置換メニュー"
-    IDS_MAIN_MENU4          "オプション設定メニュー"
-    IDS_MAIN_MENU5          "ＨＳＰ実行・コンパイルメニュー"
-    IDS_MAIN_MENU6          "HSP関連ツールメニュー"
+    IDS_MAIN_MENU2          "文字列検索・置換メニュー"
+    IDS_MAIN_MENU3          "ＨＳＰ実行・コンパイルメニュー"
+    IDS_MAIN_MENU4          "HSP関連ツールメニュー"
+    IDS_MAIN_MENU5          "外部ツールメニュー"
+    IDS_MAIN_MENU6          "ウインドウメニュー"
     IDS_MAIN_MENU7          "ヘルプメニュー"
 END
 
@@ -1002,6 +1003,7 @@ BEGIN
     IDM_HSPTV               "HSPTVブラウザを起動"
     IDM_DIRDPM              "指定されたフォルダ内のファイルをDPM形式に変換"
     IDM_SRCCNV              "指定されたスクリプトをC言語ソースに変換する"
+    IDM_PACKOPT             "PACKOPT項目を作成する"
 END
 
 STRINGTABLE

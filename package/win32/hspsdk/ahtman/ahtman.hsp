@@ -1,0 +1,113 @@
+
+;
+;	AHT Manager (HSP3.7以降専用)
+;	Peasエディタを省略してかんたん入力だけに対応したバージョン
+;
+#packopt name "ahtman"
+#packopt hide 1
+#packopt icon "cup_8bit.ico"
+
+;#define global EXEC_DEBUG
+;#define global EZINPUT_DEBUG
+;#define EZINPUT_DEBUG_NOTE
+
+#define global APP_HDL "\\hdl.exe"
+
+#include "hsedsdk.as"
+#include "mod_aht.as"
+
+;============================================================
+; get_hsp_appdata_path
+;  HSP が使う Application Data の Path
+;  (S.Programs HDL汎用ライブラリ)
+
+#module
+; winapi
+#uselib "kernel32"
+#func GetEnvironmentVariable	"GetEnvironmentVariableA" sptr, sptr, sptr
+;--------------------------------------------------
+#deffunc get_hsp_appdata_path array v1
+	org_dir = dir_exe
+	sdim v1, 1000
+	GetEnvironmentVariable "APPDATA", varptr(v1), 990
+
+	if "" ! v1 {
+		subdir = "Hot Soup Processor"
+		chdir v1
+		dirlist astr, subdir, 5 : if stat = 0 : mkdir subdir // MAKEDIR subdir
+		chdir org_dir
+		v1 += "\\" + subdir
+	}
+
+	if "" = v1 : v1 = org_dir
+	return
+#global
+
+	;gsel 0,-1
+	tminit
+
+#ifdef EZINPUT_DEBUG
+	;ahtfile = "test.aht"
+	;ahtfile = "ezinput\\test.aht"
+	ahtfile = "ezinput\\オブジェクト\\チェックボックス表示.aht"
+	goto *goaht
+#endif
+	sdim fext,64
+	ahtfile = dir_cmdline
+	if peek(ahtfile,0)=0x22 {
+		ahtfile=strmid( ahtfile,1,strlen(ahtfile)-2 )
+	}
+	peasopen = 0
+	if ahtfile!="" {
+		fext=getpath(ahtfile,2)
+		if fext=".aht" : goto *goaht
+	}
+
+	dialog "このバージョンではPeasエディタをサポートしていません。"
+	end
+
+*goaht
+	;	AHTかんたん入力時
+	;
+	tmload m,ahtfile,"",-1
+	if m<0 : dialog "読み込み中にエラーが発生しました。["+ahtfile+"]" : end
+
+	tmprops m
+	button "Ok",*update
+
+	if helpkw@ahtmod!="" {
+		pos sx@ahtmod-128-48,y@ahtmod+14
+		objsize 48,24
+		button "help",*gokwhelp
+	}
+	stop
+
+*gokwhelp
+	;	キーワードヘルプ
+	;
+	exec dir_exe+APP_HDL+" "+helpkw@ahtmod
+	stop
+*update
+	;	ahtoutをエディタに送信
+	;
+	tmsetprop m
+
+	get_hsp_appdata_path app_dir
+	chdir app_dir			; 一時ファイルフォルダ
+
+	tmmake m, 2
+	if stat {
+		dialog stdbuf@ahtmod,0,"AHTファイルの変換中にエラーが発生しました。"
+	}
+
+#ifdef EZINPUT_DEBUG_NOTE
+	exec "notepad ahtout"
+	end
+#endif
+
+	notesel buf
+	noteload "ahtout"
+	hsed_sendstr buf
+
+	end
+

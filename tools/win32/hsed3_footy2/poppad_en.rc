@@ -96,8 +96,9 @@ BEGIN
         MENUITEM "Open Source Folder(&O)...",   IDM_OPEN_SRCFOLDER
         MENUITEM "HSP Assistant(&F)...",        IDM_START_RUNTIMEMAN
         MENUITEM "HSPTV Browser(&H)...",        IDM_HSPTV
-        MENUITEM "Make .DPM from Folder(D)...", ID_DIRDPM
-        MENUITEM "HSP3Dish / Source Convert(C)...", ID_SRCCNV
+        MENUITEM "Make .DPM from Folder(&D)...", IDM_DIRDPM
+        MENUITEM "Make PACKOPT source (&P)...",  IDM_PACKOPT
+        MENUITEM "HSP3Dish / Source Convert(&C)...", IDM_SRCCNV
         MENUITEM "HGIMG4 Tool(&G)...",          IDM_HGIMG4TOOL
         MENUITEM "Paint Tool(&W)...",           IDM_PAINT
         MENUITEM SEPARATOR
