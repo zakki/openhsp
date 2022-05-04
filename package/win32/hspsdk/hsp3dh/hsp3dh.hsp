@@ -9,7 +9,7 @@
 #include "mod_appconfig.as"
 
 #define APPTITLE "HSP3Dish helper"
-#define APPVER "1.92"
+#define APPVER "1.93"
 #define APP_CONF "\\hsp3dh.cfg"
 
 #define AND_LIBVER 114			; android HSPランタイムの内部バージョン
@@ -1735,7 +1735,7 @@
 	gsel 0
 	gosub *owari_savesub
 	s1=path_proj+"\\"+and_name
-	cmd = dir_exe+"\\hsp3 "+dir_exe+"\\android_ios_make_icon.ax -a -p\""+s1+"\""
+	cmd = dir_exe+"\\hsp3 \""+dir_exe+"\\support\\android_ios_make_icon.ax\" -a -p\""+s1+"\""
 	exec cmd
 	stop
 
@@ -1759,7 +1759,7 @@
 		dialog "プロジェクトフォルダがありません。\n"
 		stop
 	}
-	cmd = dir_exe+"\\hsp3 "+dir_exe+"\\android_ios_make_icon.ax -i -p\""+basedir+"\""
+	cmd = dir_exe+"\\hsp3 \""+dir_exe+"\\support\\android_ios_make_icon.ax\" -i -p\""+basedir+"\""
 	exec cmd
 	stop
 
