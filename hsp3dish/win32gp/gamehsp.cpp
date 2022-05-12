@@ -2532,6 +2532,13 @@ void gamehsp::updateObj( gpobj *obj )
 		deleteObj(obj->_id);
 		return;
 	}
+	if (mode & GPOBJ_MODE_TIMER) {
+		if (obj->_timer<=0) {
+			deleteObj(obj->_id);
+			return;
+		}
+		obj->_timer--;
+	}
 
 	if ( mode & ( GPOBJ_MODE_MOVE|GPOBJ_MODE_BORDER) ) {
 		int cflag;

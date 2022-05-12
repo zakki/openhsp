@@ -5,7 +5,7 @@ Hot Soup Processor ver3.7beta                       HSP : Hot Soup Processor
 
 ・hsp3関連 更新履歴
 
-	2022/05/04 3.7 beta2
+	2022/05/12 3.7 beta2
 
 	DPMファイル及びexe埋め込みファイルにフォルダ名と長いファイル名が使用できるように修正
 	#pack,#epack命令のファイル指定に'*'記号によるワイルドカードが使用できるように修正
@@ -20,6 +20,9 @@ Hot Soup Processor ver3.7beta                       HSP : Hot Soup Processor
 	[HSP3Dish][hsp3js] ブラウザのローカルストレージに保存するIDBFSサポートを追加
 	[HSP3Dish] Dish P Helper 及び、Android/iOSアイコン作成ツールをパッケージに同梱
 	[HSP3Dish] mmload命令でwavファイルを同じIDに読み込む際にメモリリークが起こる不具合を修正
+	[HGIMG4] get～系の命令で指定された変数が配列の場合に要素が拡張されない不具合を修正
+	[HGIMG4] イベント内で複数のパラメーター変化を行った際にHGIMG3との差異が出る不具合を修正
+	[HGIMG4] OBJ_TIMERによるタイマーが正しく動作していなかった不具合を修正
 
 	2022/01/17 3.7 beta1
 

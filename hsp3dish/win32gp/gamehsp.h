@@ -216,7 +216,7 @@ public:
 
 	gpevent *_event[GPOBJ_MULTIEVENT_MAX];		// Event List
 	float	_time[GPOBJ_MULTIEVENT_MAX];		// Event Time
-	Vector4 _evvec[GPOBJ_MULTIEVENT_MAX];		// イベントワーク用ベクター
+	//Vector4 _evvec[GPOBJ_MULTIEVENT_MAX];		// イベントワーク用ベクター
 
 };
 
