@@ -2366,6 +2366,32 @@ Node *gamehsp::getNode( int objid )
 }
 
 
+int gamehsp::overwriteNodeMaterialByMatID(Node *node, int matid)
+{
+	Drawable* drawable = node->getDrawable();
+	Model* model = dynamic_cast<Model*>(drawable);
+	if (model == NULL) return -1;
+	gpmat* mat = getMat(matid);
+	if (mat == NULL) return -1;
+	NodeCloneContext context;
+	Material* material = mat->_material->clone(context);		// 元のマテリアルをクローンして適用する
+	setMaterialDefaultBinding(material, mat->_matcolor, mat->_matopt);		// 正しくクローンされないBinding情報を上書きする
+	model->setMaterial(material);
+	return 0;
+}
+
+
+int gamehsp::overwriteNodeMaterialByColor(Node* node, int color, int matopt)
+{
+	Drawable* drawable = node->getDrawable();
+	Model* model = dynamic_cast<Model*>(drawable);
+	if (model == NULL) return -1;
+	Material* material = model->getMaterial();
+	setMaterialDefaultBinding(material, color, matopt);		// 正しくクローンされないBinding情報を上書きする
+	return 0;
+}
+
+
 int gamehsp::makeCloneNode( int objid, int mode, int eventID )
 {
 	gpobj *obj;
@@ -2401,9 +2427,30 @@ int gamehsp::makeCloneNode( int objid, int mode, int eventID )
 
 		newobj->_sizevec = obj->_sizevec;
 
+		//Alertf("mat:%d", newobj->_usegpmat);
+
 		node->setUserObject(NULL);
 
 		newobj->_node = node->clone();
+
+		bool bNeedUpdateMaterial = false;
+		switch (newobj->_shape) {
+		case GPOBJ_SHAPE_BOX:
+		case GPOBJ_SHAPE_FLOOR:
+		case GPOBJ_SHAPE_PLATE:
+			bNeedUpdateMaterial = true;
+		}
+		if (bNeedUpdateMaterial) {
+			//	マテリアルの更新
+			Node* mynode = newobj->_node;
+			if (newobj->_usegpmat >= 0) {
+				overwriteNodeMaterialByMatID(mynode, newobj->_usegpmat);
+			}
+			else {
+				overwriteNodeMaterialByColor(mynode, -1, 0);
+			}
+		}
+
 		newobj->_animation = newobj->_node->getAnimation("animations");
 
 		newobj->_node->setUserObject(newobj);

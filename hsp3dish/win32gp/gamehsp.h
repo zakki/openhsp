@@ -396,6 +396,9 @@ public:
 	bool makeModelNodeSub(Node *node, int nest);
 	bool makeModelNodeMaterialSub(Node *node, int nest);
 
+	int overwriteNodeMaterialByMatID(Node* node, int matid);
+	int overwriteNodeMaterialByColor(Node* node, int color, int matopt);
+
 	int makeCloneNode( int objid, int mode, int eventid );
 	int makeSpriteObj( int celid, int gmode, void *bmscr );
 
