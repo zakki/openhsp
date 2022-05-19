@@ -6,121 +6,103 @@
 #packopt name "packopt_make_list"
 #packopt type 0
 #packopt xsize 440
-#packopt ysize 630
+#packopt ysize 600
 #packopt hide 0
 #packopt orgpath 0
 #packopt icon "icon.ico"
 
 
 //-------------------------------------------------------------------------
-#define CONFIG_FILE_NAME			"packopt_make_list_dat.ini"
-#define CONFIG_WINDOW_POS_X			"#window_pos_x" + "\t"
-#define CONFIG_WINDOW_POS_y			"#window_pos_y" + "\t"
-#define CONFIG_PACKOPT_NAME			"#name"			+ "\t"
-#define CONFIG_PACKOPT_RUNTIME		"#runtime"		+ "\t"
-#define CONFIG_PACKOPT_TYPE			"#type"			+ "\t"
-#define CONFIG_PACKOPT_XSIZE		"#xsize"		+ "\t"
-#define CONFIG_PACKOPT_YSIZE		"#ysize"		+ "\t"
-#define CONFIG_PACKOPT_HIDE			"#hide"			+ "\t"
-#define CONFIG_PACKOPT_ORGPATH		"#orgpath"		+ "\t"
-#define CONFIG_PACKOPT_ICON			"#icon"			+ "\t"
-#define CONFIG_PACKOPT_VERSION		"#version"		+ "\t"
-#define CONFIG_PACKOPT_MANIFEST		"#manifest"		+ "\t"
-#define CONFIG_PACKOPT_LANG			"#lang"			+ "\t"
-#define CONFIG_PACKOPT_UPX			"#upx"			+ "\t"
+#define CONFIG_FILE_NAME				"packopt_make_list_dat.ini"
+#define CONFIG_WINDOW_POS_X				"#window_pos_x" 	+ "\t"
+#define CONFIG_WINDOW_POS_y				"#window_pos_y" 	+ "\t"
+#define CONFIG_PACKOPT_NAME				"#name"				+ "\t"
+;#define CONFIG_PACKOPT_RUNTIME			"#runtime"			+ "\t"
+#define CONFIG_PACKOPT_TYPE				"#type"				+ "\t"
+#define CONFIG_PACKOPT_XSIZE			"#xsize"			+ "\t"
+#define CONFIG_PACKOPT_YSIZE			"#ysize"			+ "\t"
+#define CONFIG_PACKOPT_HIDE_CHECK		"#hide_check"		+ "\t"
+#define CONFIG_PACKOPT_HIDE				"#hide"				+ "\t"
+#define CONFIG_PACKOPT_ORGPATH_CHECK	"#orgpath_check"	+ "\t"
+#define CONFIG_PACKOPT_ORGPATH			"#orgpath"			+ "\t"
+#define CONFIG_PACKOPT_ICON				"#icon"				+ "\t"
+#define CONFIG_PACKOPT_VERSION			"#version"			+ "\t"
+#define CONFIG_PACKOPT_MANIFEST			"#manifest"			+ "\t"
+#define CONFIG_PACKOPT_LANG				"#lang"				+ "\t"
+#define CONFIG_PACKOPT_UPX				"#upx"				+ "\t"
+#define CONFIG_PACKOPT_SPACE_NOT_MAKE	"#space_not_make"	+ "\t"
 
 //-------------------------------------------------------------------------
-#define CONFIG_TOOL_FILE_NAME		"packopt_make_version_dat.ini"
-#define CONFIG_TOOL_WINDOW_POS_X	"#window_pos_x"			+ "\t"
-#define CONFIG_TOOL_WINDOW_POS_y	"#window_pos_y"			+ "\t"
-#define CONFIG__FILEVERSION			"#_FILEVERSION"			+ "\t"
-#define CONFIG__PRODUCTVERSION		"#_PRODUCTVERSION"		+ "\t"
-#define CONFIG_COMMENTS				"#Comments"				+ "\t"
-#define CONFIG_COMPANYNAME			"#CompanyName"			+ "\t"
-#define CONFIG_FILEDESCRIPTION		"#FileDescription"		+ "\t"
-;#define CONFIG_FILEVERSION			"#FileVersion"			+ "\t"
-#define CONFIG_INTERNALNAME			"#InternalName"			+ "\t"
-#define CONFIG_LEGALCOPYRIGHT		"#LegalCopyright"		+ "\t"
-#define CONFIG_ORIGINALFILENAME		"#OriginalFilename"		+ "\t"
-#define CONFIG_PRODUCTNAME			"#ProductName"			+ "\t"
-;#define CONFIG_PRODUCTVERSION		"#ProductVersion"		+ "\t"
-
-#define WRITE__FILEVERSION			"_FILEVERSION="
-#define WRITE__PRODUCTVERSION		"_PRODUCTVERSION="
-#define WRITE_COMMENTS				"Comments="
-#define WRITE_COMPANYNAME			"CompanyName="
-#define WRITE_FILEDESCRIPTION		"FileDescription="
-;#define WRITE_FILEVERSION			"FileVersion="
-#define WRITE_INTERNALNAME			"InternalName="
-#define WRITE_LEGALCOPYRIGHT		"LegalCopyright="
-#define WRITE_ORIGINALFILENAME		"OriginalFilename="
-#define WRITE_PRODUCTNAME			"ProductName="
-;#define WRITE_PRODUCTVERSION		"ProductVersion="
+#define WRITE__FILEVERSION				"_FILEVERSION="
+#define WRITE__PRODUCTVERSION			"_PRODUCTVERSION="
+#define WRITE_COMMENTS					"Comments="
+#define WRITE_COMPANYNAME				"CompanyName="
+#define WRITE_FILEDESCRIPTION			"FileDescription="
+;#define WRITE_FILEVERSION				"FileVersion="
+#define WRITE_INTERNALNAME				"InternalName="
+#define WRITE_LEGALCOPYRIGHT			"LegalCopyright="
+#define WRITE_ORIGINALFILENAME			"OriginalFilename="
+#define WRITE_PRODUCTNAME				"ProductName="
+;#define WRITE_PRODUCTVERSION			"ProductVersion="
 
 //-------------------------------------------------------------------------
-#const OBJ_ID_PACKOPT_NAME			0
-#const OBJ_ID_PACKOPT_RUNTIME		1
-#const OBJ_ID_PACKOPT_TYPE			2
-#const OBJ_ID_PACKOPT_XSIZE			3
-#const OBJ_ID_PACKOPT_YSIZE			4
-#const OBJ_ID_PACKOPT_HIDE			5
-#const OBJ_ID_PACKOPT_ORGPATH		6
-#const OBJ_ID_PACKOPT_ICON			7
-#const OBJ_ID_PACKOPT_VERSION		8
-#const OBJ_ID_PACKOPT_MANIFEST		9
-#const OBJ_ID_PACKOPT_LANG			10
-#const OBJ_ID_PACKOPT_UPX			11
+#const OBJ_ID_PACKOPT_NAME				0
+;#const OBJ_ID_PACKOPT_RUNTIME			1
+#const OBJ_ID_PACKOPT_TYPE				2
+#const OBJ_ID_PACKOPT_XSIZE				3
+#const OBJ_ID_PACKOPT_YSIZE				4
+#const OBJ_ID_PACKOPT_HIDE_CHECK		5
+#const OBJ_ID_PACKOPT_HIDE				6
+#const OBJ_ID_PACKOPT_ORGPATH_CHECK		7
+#const OBJ_ID_PACKOPT_ORGPATH			8
+#const OBJ_ID_PACKOPT_ICON				9
+#const OBJ_ID_PACKOPT_VERSION			10
+#const OBJ_ID_PACKOPT_MANIFEST			11
+#const OBJ_ID_PACKOPT_LANG				12
+#const OBJ_ID_PACKOPT_UPX				13
+#const OBJ_ID_PACKOPT_SPACE_NOT_MAKE	14
 
-#const OBJ_ID__FILEVERSION_CHK		12
-#const OBJ_ID__FILEVERSION_1		13
-#const OBJ_ID__FILEVERSION_2		14
-#const OBJ_ID__FILEVERSION_3		15
-#const OBJ_ID__FILEVERSION_4		16
-#const OBJ_ID__PRODUCTVERSION_CHK	17
-#const OBJ_ID__PRODUCTVERSION_1		18
-#const OBJ_ID__PRODUCTVERSION_2		19
-#const OBJ_ID__PRODUCTVERSION_3		20
-#const OBJ_ID__PRODUCTVERSION_4		21
-#const OBJ_ID_COMMENTS_CHK			22
-#const OBJ_ID_COMMENTS				23
-#const OBJ_ID_COMPANYNAME_CHK		24
-#const OBJ_ID_COMPANYNAME			25
-#const OBJ_ID_FILEDESCRIPTION_CHK	26
-#const OBJ_ID_FILEDESCRIPTION		27
-#const OBJ_ID_FILEVERSION_CHK		28
-#const OBJ_ID_FILEVERSION			29
-#const OBJ_ID_INTERNALNAME_CHK		30
-#const OBJ_ID_INTERNALNAME			31
-#const OBJ_ID_LEGALCOPYRIGHT_CHK	32
-#const OBJ_ID_LEGALCOPYRIGHT		33
-#const OBJ_ID_ORIGINALFILENAME_CHK	34
-#const OBJ_ID_ORIGINALFILENAME		35
-#const OBJ_ID_PRODUCTNAME_CHK		36
-#const OBJ_ID_PRODUCTNAME			38
-#const OBJ_ID_PRODUCTVERSION_CHK	39
-#const OBJ_ID_PRODUCTVERSION		40
-#const OBJ_ID_CHECKBOX_DEFAULT		41
-#const OBJ_ID_FILEWRITE				42
-#const OBJ_ID_PUT_TEXT				43
-#const OBJ_ID_WRITE_FOLDER			44
-#const OBJ_ID_WRITE_FILE_NAME		45
+#const OBJ_ID__FILEVERSION_1			15
+#const OBJ_ID__FILEVERSION_2			16
+#const OBJ_ID__FILEVERSION_3			17
+#const OBJ_ID__FILEVERSION_4			18
 
-#define APP_TITLE_MAIN				"#packoptリスト作成ツール"
-#define APP_VERSION					"0.5"
+#const OBJ_ID__PRODUCTVERSION_1			19
+#const OBJ_ID__PRODUCTVERSION_2			20
+#const OBJ_ID__PRODUCTVERSION_3			21
+#const OBJ_ID__PRODUCTVERSION_4			22
+#const OBJ_ID_COMMENTS					23
+#const OBJ_ID_COMPANYNAME				24
+#const OBJ_ID_FILEDESCRIPTION			25
+#const OBJ_ID_FILEVERSION				26
+#const OBJ_ID_INTERNALNAME				27
+#const OBJ_ID_LEGALCOPYRIGHT			28
+#const OBJ_ID_ORIGINALFILENAME			29
+#const OBJ_ID_PRODUCTNAME				30
+#const OBJ_ID_PRODUCTVERSION			31
+#const OBJ_ID_CHECKBOX_DEFAULT			32
+#const OBJ_ID_FILEWRITE					33
+#const OBJ_ID_PUT_TEXT					34
+#const OBJ_ID_WRITE_FOLDER				35
+#const OBJ_ID_WRITE_FILE_NAME			36
 
-#const SCREEN_MAIN_WIDTH			440
-#const SCREEN_MAIN_HEIGHT			630
+#define APP_TITLE_MAIN					"#packoptリスト作成ツール"
+#define APP_VERSION						"0.7"
 
-#define APP_TITLE_TOOL				"#packopt versionファイル作成ツール"
+#const SCREEN_MAIN_WIDTH				440
+#const SCREEN_MAIN_HEIGHT				600
 
-#const SCREEN_TOOL_WIDTH			430
-#const SCREEN_TOOL_HEIGHT			630
+#define APP_TITLE_TOOL					"#packopt versionファイル作成ツール"
 
-#const BUFFER_MAIN					0
-#const BUFFER_TOOL					1
+#const SCREEN_TOOL_WIDTH				430
+#const SCREEN_TOOL_HEIGHT				600
 
-#const FALSE						0
-#const TRUE							1
+#const BUFFER_MAIN						0
+#const BUFFER_TOOL						1
+#const BUFFER_MENU						2
+
+#const FALSE							0
+#const TRUE								1
 
 //-------------------------------------------------------------------------
 #module local_mod
@@ -180,75 +162,39 @@
 
 //-------------------------------------------------------------------------
 
-	win_pos_x		= 0
-	win_pos_y		= 0
+	win_pos_x			= 0
+	win_pos_y			= 0
 
-	packopt_name	= ""
-	runtime_name	= ""
-	exe_type		= 0
-	window_width	= 640
-	window_height	= 480
-	hide_type		= 0
-	orgpath_type	= 0
-	icon_file		= ""
-	version_set		= ""
-	manifest_file	= ""
-	lang_set		= ""
-	upx_set			= 0
+	packopt_name		= ""
+;	runtime_name		= ""
+	exe_type			= 0
+	window_width		= ""
+	window_height		= ""
+	hide_check			= 0
+	hide_check_dummy	= -1
+	hide_type			= 0
+	orgpath_check		= 0
+	orgpath_check_dummy	= -1
+	orgpath_type		= 0
+	icon_file			= ""
+	version_set			= ""
+	manifest_file		= ""
+	lang_set			= ""
+	upx_set				= 0
+	space_not_make		= 1
 
 	gosub *config_file_read
 
 //-------------------------------------------------------------------------
 
+	menu_window_make_obj_flg = FALSE
 	tool_window_make_obj_flg = FALSE
-
-	win_tool_pos_x			= 0
-	win_tool_pos_y			= 0
-
-	_fileversion_chk		= 1
-	_fileversion_1			= ""
-	_fileversion_2			= ""
-	_fileversion_3			= ""
-	_fileversion_4			= ""
-
-	_productversion_chk		= 1
-	_productversion_1		= ""
-	_productversion_2		= ""
-	_productversion_3		= ""
-	_productversion_4		= ""
-
-	comments_chk			= 0
-	comments				= ""
-	companyname_chk			= 0
-	companyname				= ""
-	filedescription_chk		= 1
-	filedescription			= ""
-	fileversion_chk			= 0
-	fileversion				= ""
-	internalname_chk		= 0
-	internalname			= ""
-	legalcopyright_chk		= 1
-	legalcopyright			= ""
-	originalfilename_chk	= 1
-	originalfilename		= ""
-	productname_chk			= 1
-	productname				= ""
-	productversion_chk		= 0
-	productversion			= ""
-
-	put_text_buff			= ""
-
-	version_file_name		= ""
-
-//-------------------------------------------------------------------------
-
-	gosub *config_file_read_tool
 
 //-------------------------------------------------------------------------
 
 	title APP_TITLE_MAIN + " - Ver " + APP_VERSION
 	screen BUFFER_MAIN, SCREEN_MAIN_WIDTH, SCREEN_MAIN_HEIGHT, 0, win_pos_x, win_pos_y
-	gsel BUFFER_MAIN, 2
+	gsel BUFFER_MAIN, 1
 	syscolor 15
 	boxf
 
@@ -263,15 +209,15 @@
 
 	y_plus = 28
 
-	y = 20
+	y = 5
 	pos 10, y + 5	: mes "実行ファイル名(\".EXE\")は未入力"
 	pos 230, y		: input packopt_name, 200, input_height, 0
 	obj_id(OBJ_ID_PACKOPT_NAME) = stat
 
-	y += y_plus
-	pos 10, y + 5	: mes "ランタイム名"
-	pos 230, y		: input runtime_name, 200, input_height, 0
-	obj_id(OBJ_ID_PACKOPT_RUNTIME) = stat
+;	y += y_plus
+;	pos 10, y + 5	: mes "ランタイム名"
+;	pos 230, y		: input runtime_name, 200, input_height, 0
+;	obj_id(OBJ_ID_PACKOPT_RUNTIME) = stat
 
 	y += y_plus
 	objsize 200, 30
@@ -292,13 +238,15 @@
 
 	y += y_plus
 	objsize 200, 30
-	pos 10, y + 5	: mes "初期ウィンドウ非表示SW"
+	pos 10, y - 5	: chkbox "初期ウィンドウ非表示SW", hide_check
+	obj_id(OBJ_ID_PACKOPT_HIDE_CHECK) = stat
 	pos 230, y		: combox hide_type, 100, "0:ウィンドウ表示\n1:ウィンドウ非表示"
 	obj_id(OBJ_ID_PACKOPT_HIDE) = stat
 
 	y += y_plus
 	objsize 200, 30
-	pos 10, y + 5	: mes "初期ディレクトリ維持SW"
+	pos 10, y - 5	: chkbox "初期ディレクトリ維持SW", orgpath_check
+	obj_id(OBJ_ID_PACKOPT_ORGPATH_CHECK) = stat
 	pos 230, y		: combox orgpath_type, 100, "0:ディレクトリ移動の有効化\n1:ディレクトリ移動の無効化"
 	obj_id(OBJ_ID_PACKOPT_ORGPATH) = stat
 
@@ -309,11 +257,12 @@
 
 	y += y_plus
 	pos 10, y + 5	: mes "バージョンリソース設定(ファイル名)"
-	pos 230, y		: input version_set, 140, input_height, 0
+	pos 230, y		: input version_set, 98, input_height, 0
 	obj_id(OBJ_ID_PACKOPT_VERSION) = stat
 
-	objsize 55, input_height
-	pos 375, y		: button gosub "ツール", *open_tool_window
+	objsize 50, input_height
+	pos 330, y		: button gosub "開く", *open_file_window
+	pos 380, y		: button gosub "新規", *open_menu_window
 
 	y += y_plus
 	pos 10, y + 5	: mes "マニフェスト設定(ファイル名)"
@@ -335,25 +284,23 @@
 
 	y += y_plus
 	objsize 200, 24
-	space_not_make = 1
 	pos 10, y + 5	: chkbox "空白の項目は出力しない", space_not_make
-	
+	obj_id(OBJ_ID_PACKOPT_SPACE_NOT_MAKE) = stat
 
 	y += 30
-	objsize 420, 40
+	objsize 200, 35
 	pos 10, y
 	button gosub "#packoptリスト作成", *info_refresh
-
+	objsize 200, 35
+	pos 230, y	: button gosub "クリップボードにコピー", *clip_copy
 
 	y += 50
 	packopt_list = ""
 	pos 10, y	: mesbox packopt_list, 420, 160, 1	:	obj_id_packopt_list = stat :  hInput = objinfo(stat, 2)
 
 	y += 170
-	objsize 300, 35
-	pos 10, y	: button gosub "標準HSPｽｸﾘﾌﾟﾄｴﾃﾞｨﾀのｶｰｿﾙの位置に貼り付け", *paste_editor
-	objsize 120, 35
-	pos 310, y	: button gosub "ｸﾘｯﾌﾟﾎﾞｰﾄﾞにｺﾋﾟｰ", *clip_copy
+	objsize 420, 35
+	pos 10, y	: button gosub "標準HSPスクリプトエディタのカーソルの位置に貼り付け", *paste_editor
 
 //-------------------------------------------------------------------------
 
@@ -368,6 +315,16 @@
 	win_tool_pos_x = win_pos_x
 	win_tool_pos_y = win_pos_y
 
+	if hide_check != hide_check_dummy {
+		hide_check_dummy = hide_check
+		objenable obj_id(OBJ_ID_PACKOPT_HIDE), hide_check
+	}
+
+	if orgpath_check != orgpath_check_dummy {
+		orgpath_check_dummy = orgpath_check
+		objenable obj_id(OBJ_ID_PACKOPT_ORGPATH), orgpath_check
+	}
+
 	wait 1
 
 	goto *main
@@ -379,7 +336,7 @@
 
 	if space_not_make == 0 {
 		packopt_list += "#packopt name \""		+ packopt_name	+ "\""	+ "\n"
-		packopt_list += "#packopt runtime \""	+ runtime_name	+ "\""	+ "\n"
+;		packopt_list += "#packopt runtime \""	+ runtime_name	+ "\""	+ "\n"
 		packopt_list += "#packopt type "		+ exe_type				+ "\n"
 		packopt_list += "#packopt xsize "		+ window_width			+ "\n"
 		packopt_list += "#packopt ysize "		+ window_height			+ "\n"
@@ -394,12 +351,12 @@
 		}
 	} else {
 		if strlen(packopt_name) > 0		: packopt_list += "#packopt name \""	+ packopt_name	+ "\""	+ "\n"
-		if strlen(runtime_name) > 0		: packopt_list += "#packopt runtime \""	+ runtime_name	+ "\""	+ "\n"
+;		if strlen(runtime_name) > 0		: packopt_list += "#packopt runtime \""	+ runtime_name	+ "\""	+ "\n"
 		packopt_list += "#packopt type "		+ exe_type				+ "\n"
-		packopt_list += "#packopt xsize "		+ window_width			+ "\n"
-		packopt_list += "#packopt ysize "		+ window_height			+ "\n"
-		packopt_list += "#packopt hide "		+ hide_type				+ "\n"
-		packopt_list += "#packopt orgpath "		+ orgpath_type			+ "\n"
+		if strlen(window_width) > 0		: packopt_list += "#packopt xsize "		+ window_width			+ "\n"
+		if strlen(window_height) > 0	: packopt_list += "#packopt ysize "		+ window_height			+ "\n"
+		if hide_check == 1				: packopt_list += "#packopt hide "		+ hide_type				+ "\n"
+		if orgpath_check == 1			: packopt_list += "#packopt orgpath "	+ orgpath_type			+ "\n"
 		if strlen(icon_file) > 0		: packopt_list += "#packopt icon \""	+ icon_file		+ "\""	+ "\n"
 		if strlen(version_set) > 0		: packopt_list += "#packopt version \""	+ version_set	+ "\""	+ "\n"
 		if strlen(manifest_file) > 0	: packopt_list += "#packopt manifest \""+ manifest_file	+ "\""	+ "\n"
@@ -433,20 +390,26 @@
 			if instr(line_buff, 0, CONFIG_PACKOPT_NAME) >= 0 {
 				packopt_name = strmid(line_buff, strlen(CONFIG_PACKOPT_NAME), strlen(line_buff) - strlen(CONFIG_PACKOPT_NAME))
 			}
-			if instr(line_buff, 0, CONFIG_PACKOPT_RUNTIME) >= 0 {
-				runtime_name = strmid(line_buff, strlen(CONFIG_PACKOPT_RUNTIME), strlen(line_buff) - strlen(CONFIG_PACKOPT_RUNTIME))
-			}
+;			if instr(line_buff, 0, CONFIG_PACKOPT_RUNTIME) >= 0 {
+;				runtime_name = strmid(line_buff, strlen(CONFIG_PACKOPT_RUNTIME), strlen(line_buff) - strlen(CONFIG_PACKOPT_RUNTIME))
+;			}
 			if instr(line_buff, 0, CONFIG_PACKOPT_TYPE) >= 0 {
 				exe_type = int(strmid(line_buff, strlen(CONFIG_PACKOPT_TYPE), strlen(line_buff) - strlen(CONFIG_PACKOPT_TYPE)))
 			}
 			if instr(line_buff, 0, CONFIG_PACKOPT_XSIZE) >= 0 {
-				window_width = int(strmid(line_buff, strlen(CONFIG_PACKOPT_XSIZE), strlen(line_buff) - strlen(CONFIG_PACKOPT_XSIZE)))
+				window_width = strmid(line_buff, strlen(CONFIG_PACKOPT_XSIZE), strlen(line_buff) - strlen(CONFIG_PACKOPT_XSIZE))
 			}
 			if instr(line_buff, 0, CONFIG_PACKOPT_YSIZE) >= 0 {
-				window_height = int(strmid(line_buff, strlen(CONFIG_PACKOPT_YSIZE), strlen(line_buff) - strlen(CONFIG_PACKOPT_YSIZE)))
+				window_height = strmid(line_buff, strlen(CONFIG_PACKOPT_YSIZE), strlen(line_buff) - strlen(CONFIG_PACKOPT_YSIZE))
+			}
+			if instr(line_buff, 0, CONFIG_PACKOPT_HIDE_CHECK) >= 0 {
+				hide_check = int(strmid(line_buff, strlen(CONFIG_PACKOPT_HIDE_CHECK), strlen(line_buff) - strlen(CONFIG_PACKOPT_HIDE_CHECK)))
 			}
 			if instr(line_buff, 0, CONFIG_PACKOPT_HIDE) >= 0 {
 				hide_type = int(strmid(line_buff, strlen(CONFIG_PACKOPT_HIDE), strlen(line_buff) - strlen(CONFIG_PACKOPT_HIDE)))
+			}
+			if instr(line_buff, 0, CONFIG_PACKOPT_ORGPATH_CHECK) >= 0 {
+				orgpath_check = int(strmid(line_buff, strlen(CONFIG_PACKOPT_ORGPATH_CHECK), strlen(line_buff) - strlen(CONFIG_PACKOPT_ORGPATH_CHECK)))
 			}
 			if instr(line_buff, 0, CONFIG_PACKOPT_ORGPATH) >= 0 {
 				orgpath_type = int(strmid(line_buff, strlen(CONFIG_PACKOPT_ORGPATH), strlen(line_buff) - strlen(CONFIG_PACKOPT_ORGPATH)))
@@ -466,6 +429,9 @@
 			if instr(line_buff, 0, CONFIG_PACKOPT_UPX) >= 0 {
 				upx_set = int(strmid(line_buff, strlen(CONFIG_PACKOPT_UPX), strlen(line_buff) - strlen(CONFIG_PACKOPT_UPX)))
 			}
+			if instr(line_buff, 0, CONFIG_PACKOPT_SPACE_NOT_MAKE) >= 0 {
+				space_not_make = int(strmid(line_buff, strlen(CONFIG_PACKOPT_SPACE_NOT_MAKE), strlen(line_buff) - strlen(CONFIG_PACKOPT_SPACE_NOT_MAKE)))
+			}
 
 		loop
 
@@ -477,18 +443,21 @@
 //-------------------------------------------------------------------------
 *obj_value_set
 
-	objprm obj_id(OBJ_ID_PACKOPT_NAME),		packopt_name
-	objprm obj_id(OBJ_ID_PACKOPT_RUNTIME),	runtime_name
-	objprm obj_id(OBJ_ID_PACKOPT_TYPE),		exe_type
-	objprm obj_id(OBJ_ID_PACKOPT_XSIZE),	window_width
-	objprm obj_id(OBJ_ID_PACKOPT_YSIZE),	window_height
-	objprm obj_id(OBJ_ID_PACKOPT_HIDE),		hide_type
-	objprm obj_id(OBJ_ID_PACKOPT_ORGPATH),	orgpath_type
-	objprm obj_id(OBJ_ID_PACKOPT_ICON),		icon_file
-	objprm obj_id(OBJ_ID_PACKOPT_VERSION),	version_set
-	objprm obj_id(OBJ_ID_PACKOPT_MANIFEST),	manifest_file
-	objprm obj_id(OBJ_ID_PACKOPT_LANG),		lang_set
-	objprm obj_id(OBJ_ID_PACKOPT_UPX),		upx_set
+	objprm obj_id(OBJ_ID_PACKOPT_NAME),				packopt_name
+;	objprm obj_id(OBJ_ID_PACKOPT_RUNTIME),			runtime_name
+	objprm obj_id(OBJ_ID_PACKOPT_TYPE),				exe_type
+	objprm obj_id(OBJ_ID_PACKOPT_XSIZE),			window_width
+	objprm obj_id(OBJ_ID_PACKOPT_YSIZE),			window_height
+	objprm obj_id(OBJ_ID_PACKOPT_HIDE_CHECK),		hide_check
+	objprm obj_id(OBJ_ID_PACKOPT_HIDE),				hide_type
+	objprm obj_id(OBJ_ID_PACKOPT_ORGPATH_CHECK),	orgpath_check
+	objprm obj_id(OBJ_ID_PACKOPT_ORGPATH),			orgpath_type
+	objprm obj_id(OBJ_ID_PACKOPT_ICON),				icon_file
+	objprm obj_id(OBJ_ID_PACKOPT_VERSION),			version_set
+	objprm obj_id(OBJ_ID_PACKOPT_MANIFEST),			manifest_file
+	objprm obj_id(OBJ_ID_PACKOPT_LANG),				lang_set
+	objprm obj_id(OBJ_ID_PACKOPT_UPX),				upx_set
+	objprm obj_id(OBJ_ID_PACKOPT_SPACE_NOT_MAKE),	space_not_make
 
 	return
 
@@ -506,21 +475,24 @@
 	switch wparam
 	case BUFFER_MAIN
 		file_buff  = ""
-		file_buff += CONFIG_WINDOW_POS_X		+ str(win_pos_x)		+ "\n"
-		file_buff += CONFIG_WINDOW_POS_Y		+ str(win_pos_y)		+ "\n"
+		file_buff += CONFIG_WINDOW_POS_X			+ str(win_pos_x)		+ "\n"
+		file_buff += CONFIG_WINDOW_POS_Y			+ str(win_pos_y)		+ "\n"
 		file_buff += "\n"
-		file_buff += CONFIG_PACKOPT_NAME 		+ packopt_name			+ "\n"
-		file_buff += CONFIG_PACKOPT_RUNTIME		+ runtime_name			+ "\n"
-		file_buff += CONFIG_PACKOPT_TYPE		+ str(exe_type)			+ "\n"
-		file_buff += CONFIG_PACKOPT_XSIZE		+ str(window_width) 	+ "\n"
-		file_buff += CONFIG_PACKOPT_YSIZE		+ str(window_height)	+ "\n"
-		file_buff += CONFIG_PACKOPT_HIDE		+ str(hide_type)		+ "\n"
-		file_buff += CONFIG_PACKOPT_ORGPATH		+ str(orgpath_type)		+ "\n"
-		file_buff += CONFIG_PACKOPT_ICON		+ icon_file				+ "\n"
-		file_buff += CONFIG_PACKOPT_VERSION		+ version_set			+ "\n"
-		file_buff += CONFIG_PACKOPT_MANIFEST	+ manifest_file			+ "\n"
-		file_buff += CONFIG_PACKOPT_LANG		+ lang_set				+ "\n"
-		file_buff += CONFIG_PACKOPT_UPX			+ str(upx_set)			+ "\n"
+		file_buff += CONFIG_PACKOPT_NAME 			+ packopt_name			+ "\n"
+;		file_buff += CONFIG_PACKOPT_RUNTIME			+ runtime_name			+ "\n"
+		file_buff += CONFIG_PACKOPT_TYPE			+ str(exe_type)			+ "\n"
+		file_buff += CONFIG_PACKOPT_XSIZE			+ str(window_width) 	+ "\n"
+		file_buff += CONFIG_PACKOPT_YSIZE			+ str(window_height)	+ "\n"
+		file_buff += CONFIG_PACKOPT_HIDE_CHECK		+ str(hide_check)		+ "\n"
+		file_buff += CONFIG_PACKOPT_HIDE			+ str(hide_type)		+ "\n"
+		file_buff += CONFIG_PACKOPT_ORGPATH_CHECK	+ str(orgpath_check)	+ "\n"
+		file_buff += CONFIG_PACKOPT_ORGPATH			+ str(orgpath_type)		+ "\n"
+		file_buff += CONFIG_PACKOPT_ICON			+ icon_file				+ "\n"
+		file_buff += CONFIG_PACKOPT_VERSION			+ version_set			+ "\n"
+		file_buff += CONFIG_PACKOPT_MANIFEST		+ manifest_file			+ "\n"
+		file_buff += CONFIG_PACKOPT_LANG			+ lang_set				+ "\n"
+		file_buff += CONFIG_PACKOPT_UPX				+ str(upx_set)			+ "\n"
+		file_buff += CONFIG_PACKOPT_SPACE_NOT_MAKE	+ str(space_not_make)	+ "\n"
 
 		func_packopt_ini_file_write CONFIG_FILE_NAME, file_buff
 
@@ -528,13 +500,116 @@
 		swbreak
 	case BUFFER_TOOL
 		tool_window_close = TRUE
-		gosub *config_file_write_tool
+		return
+		swbreak
+	case BUFFER_MENU
+		menu_window_close = TRUE
+		gsel BUFFER_MENU, -1
+		gsel BUFFER_MAIN, 1
 		return
 		swbreak
 	swend
 
 //-------------------------------------------------------------------------
+*open_file_window
+
+	dialog "txt", 16, "テキストファイル"
+
+	if stat == 1 {
+		version_set = getpath(refstr, 8)
+		gosub *obj_value_set
+	}
+
+	return
+
+//-------------------------------------------------------------------------
+*open_menu_window
+
+	open_version_file_flg	= FALSE
+	menu_window_close		= FALSE
+	open_tool_window_flg	= FALSE
+
+	gsel BUFFER_MAIN, -1
+
+	if menu_window_make_obj_flg == FALSE {
+		screen BUFFER_MENU, 300, 180, 0, win_pos_x, win_pos_y
+
+		title "Versionファイル選択"
+
+		syscolor 15
+		boxf
+
+		objmode 2
+		font msgothic, 12
+
+		color 0, 0, 0
+		objsize 250, 35
+		pos 55, 10	: mes "Versionファイルを開いて編集する"
+		pos 25, 30	: button gosub "Versionファイルを開く", *file_open
+		pos 55, 100	: mes "Versionファイルを新たに作成する"
+		pos 25, 120	: button gosub "Versionファイルを新規作成する", *open_tool
+	}
+
+	gsel BUFFER_MENU, 1
+
+	menu_window_make_obj_flg = TRUE
+
+	repeat
+		if open_version_file_flg {
+			gosub *open_tool_window
+			menu_window_close = TRUE
+		}
+		if open_tool_window_flg {
+			gosub *open_tool_window
+			menu_window_close = TRUE
+		}
+		if menu_window_close {
+			break
+		}
+		wait 1
+	loop
+
+	return
+
+//-------------------------------------------------------------------------
+*open_tool
+
+	open_tool_window_flg = TRUE
+
+	return
+
+//-------------------------------------------------------------------------
 *open_tool_window
+
+	;------------------------------------
+	win_tool_pos_x			= 0
+	win_tool_pos_y			= 0
+
+	_fileversion_1			= ""
+	_fileversion_2			= ""
+	_fileversion_3			= ""
+	_fileversion_4			= ""
+
+	_productversion_1		= ""
+	_productversion_2		= ""
+	_productversion_3		= ""
+	_productversion_4		= ""
+
+	comments				= ""
+	companyname				= ""
+	filedescription			= ""
+	fileversion				= ""
+	internalname			= ""
+	legalcopyright			= ""
+	originalfilename		= ""
+	productname				= ""
+	productversion			= ""
+	space_not_make_2		= 1
+
+	put_text_buff			= ""
+
+	version_file_name		= "version.txt"
+	;------------------------------------
 
 	tab_id = 0
 	hsed_getacttabid tab_id
@@ -543,9 +618,15 @@
 	tab_id_file_path = getpath(tab_id_file_path, 32)
 	strrep tab_id_file_path, "\\", "/"
 
+	if open_version_file_flg {
+		version_file_name = getpath(open_file_name, 8)
+		tab_id_file_path = getpath(open_file_name, 32)
+		strrep tab_id_file_path, "\\", "/"
+	}
+
 	tool_window_close = FALSE
 
-	gsel BUFFER_MAIN, -1
+	gsel BUFFER_MENU, -1
 
 	if tool_window_make_obj_flg == FALSE {
 
@@ -565,80 +646,80 @@
 
 		y_plus = 25
 
-		objsize 200, 35
-		y = 5
-		pos 10, y	: button gosub "Versionファイルを開く", *file_open
-		pos 220, y	: button gosub "ウィンドウを閉じる", *close_window
+		;objsize 200, 35
+		;y = 5
+		;pos 10, y	: button gosub "Versionファイルを開く", *file_open
 
-		y += y_plus + 15
-		func_line 10, y, SCREEN_TOOL_WIDTH - 10 , y
+		;y += y_plus + 15
+		;func_line 10, y, SCREEN_TOOL_WIDTH - 10 , y
 
 		color 0, 0, 0
-		y += 10
-		pos 10, y	: mes "出力チェック"
 
 		objsize 220, 22
 
-		y += 20
-		pos 10, y	: chkbox "_FILEVERSION(ファイルバージョン)", _fileversion_chk 		:	obj_id(OBJ_ID__FILEVERSION_CHK) = stat
+		y = 5
+		pos 10, y + 5	: mes "_FILEVERSION(ファイルバージョン)"
 		pos 230, y	: input _fileversion_1, 40, input_height, 0							:	obj_id(OBJ_ID__FILEVERSION_1) = stat
 		pos 280, y	: input _fileversion_2, 40, input_height, 0							:	obj_id(OBJ_ID__FILEVERSION_2) = stat
 		pos 330, y	: input _fileversion_3, 40, input_height, 0							:	obj_id(OBJ_ID__FILEVERSION_3) = stat
 		pos 380, y	: input _fileversion_4, 40, input_height, 0							:	obj_id(OBJ_ID__FILEVERSION_4) = stat
 		
 		y += y_plus
-		pos 10, y	: chkbox "_PRODUCTVERSION(製品バージョン)", _productversion_chk		:	obj_id(OBJ_ID__PRODUCTVERSION_CHK) = stat
+		pos 10, y + 5	: mes "_PRODUCTVERSION(製品バージョン)"
 		pos 230, y	: input _productversion_1, 40, input_height, 0						:	obj_id(OBJ_ID__PRODUCTVERSION_1) = stat
 		pos 280, y	: input _productversion_2, 40, input_height, 0						:	obj_id(OBJ_ID__PRODUCTVERSION_2) = stat
 		pos 330, y	: input _productversion_3, 40, input_height, 0						:	obj_id(OBJ_ID__PRODUCTVERSION_3) = stat
 		pos 380, y	: input _productversion_4, 40, input_height, 0						:	obj_id(OBJ_ID__PRODUCTVERSION_4) = stat
 
 		y += y_plus
-		pos 10, y	: chkbox "Comments(コメント)", comments_chk							:	obj_id(OBJ_ID_COMMENTS_CHK) = stat
+		pos 10, y + 5	: mes "Comments(コメント)"
 		pos 230, y	: input comments, input_width, input_height, 0						:	obj_id(OBJ_ID_COMMENTS) = stat
 
 		y += y_plus
-		pos 10, y	: chkbox "CompanyName(企業名)", companyname_chk						:	obj_id(OBJ_ID_COMPANYNAME_CHK) = stat
+		pos 10, y + 5	: mes "CompanyName(企業名)"
 		pos 230, y	: input companyname, input_width, input_height, 0					:	obj_id(OBJ_ID_COMPANYNAME) = stat
 
 		y += y_plus
-		pos 10, y	: chkbox "FileDescription(ファイルの説明)", filedescription_chk		:	obj_id(OBJ_ID_FILEDESCRIPTION_CHK) = stat
+		pos 10, y + 5	: mes "FileDescription(ファイルの説明)"
 		pos 230, y	: input filedescription, input_width, input_height, 0				:	obj_id(OBJ_ID_FILEDESCRIPTION) = stat
 
 		;y += y_plus
-		;pos 10, y	: chkbox "FileVersion(ファイルバージョン)", fileversion_chk			:	obj_id(OBJ_ID_FILEVERSION_CHK) = stat
+		;pos 10, y	: mes "FileVersion(ファイルバージョン)"
 		;pos 230, y	: input fileversion, input_width, input_height, 0					:	obj_id(OBJ_ID_FILEVERSION) = stat
 
 		y += y_plus
-		pos 10, y	: chkbox "InternalName(内部名)", internalname_chk					:	obj_id(OBJ_ID_INTERNALNAME_CHK) = stat
+		pos 10, y + 5	: mes "InternalName(内部名)"
 		pos 230, y	: input internalname, input_width, input_height, 0					:	obj_id(OBJ_ID_INTERNALNAME) = stat
 
 		y += y_plus
-		pos 10, y	: chkbox "LegalCopyright(著作権)", legalcopyright_chk				:	obj_id(OBJ_ID_LEGALCOPYRIGHT_CHK) = stat
+		pos 10, y + 5	: mes "LegalCopyright(著作権)"
 		pos 230, y	: input legalcopyright, input_width, input_height, 0				:	obj_id(OBJ_ID_LEGALCOPYRIGHT) = stat
 
 		y += y_plus
-		pos 10, y	: chkbox "OriginalFilename(元のファイル名)", originalfilename_chk	:	obj_id(OBJ_ID_ORIGINALFILENAME_CHK) = stat
+		pos 10, y + 5	: mes "OriginalFilename(元のファイル名)"
 		pos 230, y	: input originalfilename, input_width, input_height, 0				:	obj_id(OBJ_ID_ORIGINALFILENAME) = stat
 
 		y += y_plus
-		pos 10, y	: chkbox "ProductName(製品名)", productname_chk						:	obj_id(OBJ_ID_PRODUCTNAME_CHK) = stat
+		pos 10, y + 5	: mes "ProductName(製品名)"
 		pos 230, y	: input productname, input_width, input_height, 0					:	obj_id(OBJ_ID_PRODUCTNAME) = stat
 
 		;y += y_plus
-		;pos 10, y	: chkbox "ProductVersion(製品パージョン)", productversion_chk		:	obj_id(OBJ_ID_PRODUCTVERSION_CHK) = stat
+		;pos 10, y	: mes "ProductVersion(製品バージョン)"
 		;pos 230, y	: input productversion, input_width, input_height, 0				:	obj_id(OBJ_ID_PRODUCTVERSION) = stat
 
 		objsize 200, 22
 		y += y_plus
-		pos 10, y	: button gosub "チェックをデフォルトに戻す", *checkbox_default
+		pos 10, y;	: button gosub "チェックをデフォルトに戻す", *checkbox_default
 
-		y += y_plus
+		y += 10;y_plus
 		func_line 10, y, SCREEN_TOOL_WIDTH - 10 , y
 
+		objsize 200, 24
+		pos 10, y + 5	: chkbox "空白の項目は出力しない", space_not_make_2
+
 		objsize 200, 35
-		y += 10
-		pos 10, y	: button gosub "テキスト作成", *make_text							:	obj_id(OBJ_ID_CHECKBOX_DEFAULT) = stat
+		y += y_plus + 5
+		pos 10, y	: button gosub "テキスト作成", *make_text
 		pos 220, y	: button gosub "クリップボードにコピー", *clip_copy_tool
 
 		y += y_plus + 15
@@ -655,12 +736,22 @@
 		y += 15
 		pos 10, y	: input version_file_name, 200, input_height, 0						:	obj_id(OBJ_ID_WRITE_FILE_NAME) = stat
 
-		
-		pos 220, y - 12	: button gosub "保存(+ウィンドウを閉じる)", *file_write			:	obj_id(OBJ_ID_FILEWRITE) = stat
+		y += y_plus + 5
+		func_line 10, y, SCREEN_TOOL_WIDTH - 10 , y
+
+		y += 5
+		pos 10, y	: button gosub "保存(+ウィンドウを閉じる)", *file_write				:	obj_id(OBJ_ID_FILEWRITE) = stat
+		pos 220, y	: button gosub "キャンセル", *close_window
 
 	}
 
-	gsel BUFFER_TOOL, 2
+	gsel BUFFER_TOOL, 1
+
+	width ,,win_pos_x, win_pos_y
+
+	if open_version_file_flg {
+		gosub *file_value_set
+	}
 
 	gosub *obj_value_set_tool
 
@@ -685,7 +776,9 @@
 	loop
 
 	gsel BUFFER_TOOL, -1
-	gsel BUFFER_MAIN, 2
+	gsel BUFFER_MAIN, 1
+
+	width ,,win_tool_pos_x, win_tool_pos_y
 
 	return
 
@@ -693,7 +786,6 @@
 *close_window
 
 	tool_window_close = TRUE
-	gosub *config_file_write_tool
 
 	return
 
@@ -703,205 +795,89 @@
 	dialog "txt", 16, "テキストファイル"
 
 	if stat == 1 {
-		notesel file_buff
-		file_buff = ""
-		noteload refstr
-
-		_fileversion_chk		= 0
-		_fileversion_1			= ""
-		_fileversion_2			= ""
-		_fileversion_3			= ""
-		_fileversion_4			= ""
-
-		_productversion_chk		= 0
-		_productversion_1		= ""
-		_productversion_2		= ""
-		_productversion_3		= ""
-		_productversion_4		= ""
-
-		comments_chk			= 0
-		comments				= ""
-		companyname_chk			= 0
-		companyname				= ""
-		filedescription_chk		= 0
-		filedescription			= ""
-		fileversion_chk			= 0
-		fileversion				= ""
-		internalname_chk		= 0
-		internalname			= ""
-		legalcopyright_chk		= 0
-		legalcopyright			= ""
-		originalfilename_chk	= 0
-		originalfilename		= ""
-		productname_chk			= 0
-		productname				= ""
-		productversion_chk		= 0
-		productversion			= ""
-
-		line_buff = ""
-		repeat notemax
-			noteget line_buff, cnt
-
-			if instr(line_buff, 0, WRITE__FILEVERSION) >= 0 {
-				get_buff = strmid(line_buff, strlen(WRITE__FILEVERSION), strlen(line_buff) - strlen(WRITE__FILEVERSION))
-				split get_buff, ".", _fileversion_1, _fileversion_2, _fileversion_3, _fileversion_4
-			}
-			if instr(line_buff, 0, WRITE__PRODUCTVERSION) >= 0 {
-				get_buff = strmid(line_buff, strlen(WRITE__PRODUCTVERSION), strlen(line_buff) - strlen(WRITE__PRODUCTVERSION))
-				split get_buff, ".", _productversion_1, _productversion_2, _productversion_3, _productversion_4
-			}
-			if instr(line_buff, 0, WRITE_COMMENTS) >= 0 {
-				comments = strmid(line_buff, strlen(WRITE_COMMENTS), strlen(line_buff) - strlen(WRITE_COMMENTS))
-			}
-			if instr(line_buff, 0, WRITE_COMPANYNAME) >= 0 {
-				companyname = strmid(line_buff, strlen(WRITE_COMPANYNAME), strlen(line_buff) - strlen(WRITE_COMPANYNAME))
-			}
-			if instr(line_buff, 0, WRITE_FILEDESCRIPTION) >= 0 {
-				filedescription = strmid(line_buff, strlen(WRITE_FILEDESCRIPTION), strlen(line_buff) - strlen(WRITE_FILEDESCRIPTION))
-			}
-			;if instr(line_buff, 0, WRITE_FILEVERSION) >= 0 {
-			;	fileversion = strmid(line_buff, strlen(WRITE_FILEVERSION), strlen(line_buff) - strlen(WRITE_FILEVERSION))
-			;}
-			if instr(line_buff, 0, WRITE_INTERNALNAME) >= 0 {
-				internalname = strmid(line_buff, strlen(WRITE_INTERNALNAME), strlen(line_buff) - strlen(WRITE_INTERNALNAME))
-			}
-			if instr(line_buff, 0, WRITE_LEGALCOPYRIGHT) >= 0 {
-				legalcopyright = strmid(line_buff, strlen(WRITE_LEGALCOPYRIGHT), strlen(line_buff) - strlen(WRITE_LEGALCOPYRIGHT))
-			}
-			if instr(line_buff, 0, WRITE_ORIGINALFILENAME) >= 0 {
-				originalfilename = strmid(line_buff, strlen(WRITE_ORIGINALFILENAME), strlen(line_buff) - strlen(WRITE_ORIGINALFILENAME))
-			}
-			if instr(line_buff, 0, WRITE_PRODUCTNAME) >= 0 {
-				productname = strmid(line_buff, strlen(WRITE_PRODUCTNAME), strlen(line_buff) - strlen(WRITE_PRODUCTNAME))
-			}
-			;if instr(line_buff, 0, WRITE_PRODUCTVERSION) >= 0 {
-			;	productversion = strmid(line_buff, strlen(WRITE_PRODUCTVERSION), strlen(line_buff) - strlen(WRITE_PRODUCTVERSION))
-			;}
-		loop
-
-		if strlen(_fileversion_1) > 0 {
-			_fileversion_chk = 1
-		}
-		if strlen(_productversion_1) > 0 {
-			_productversion_chk = 1
-		}
-		if strlen(comments) > 0 {
-			comments_chk = 1
-		}
-		if strlen(companyname) > 0 {
-			companyname_chk = 1
-		}
-		if strlen(companyname) > 0 {
-			companyname_chk = 1
-		}
-		if strlen(filedescription) > 0 {
-			filedescription_chk = 1
-		}
-		;if strlen(fileversion) > 0 {
-		;	fileversion_chk = 1
-		;}
-		if strlen(internalname) > 0 {
-			internalname_chk = 1
-		}
-		if strlen(legalcopyright) > 0 {
-			legalcopyright_chk = 1
-		}
-		if strlen(originalfilename) > 0 {
-			originalfilename_chk = 1
-		}
-		if strlen(productname) > 0 {
-			productname_chk = 1
-		}
-		;if strlen(productversion) > 0 {
-		;	productversion_chk = 1
-		;}
-
-		noteunsel
-
-		gosub *obj_value_set_tool
-		gosub *make_text
+		open_file_name			= refstr
+		open_version_file_flg	= TRUE
+		menu_window_close		= TRUE
 	}
 
 	return
 
 //-------------------------------------------------------------------------
-*config_file_read_tool
-
+*file_value_set
+	
+	notesel file_buff
 	file_buff = ""
-	re = func_packopt_ini_file_read(CONFIG_TOOL_FILE_NAME, file_buff)
+	noteload open_file_name
 
-	if re {
-		notesel file_buff
+	_fileversion_1			= ""
+	_fileversion_2			= ""
+	_fileversion_3			= ""
+	_fileversion_4			= ""
 
-		line_buff = ""
-		repeat notemax
-			noteget line_buff, cnt
-			if instr(line_buff, 0, CONFIG_TOOL_WINDOW_POS_X) >= 0 {
-				win_tool_pos_x = int(strmid(line_buff, strlen(CONFIG_TOOL_WINDOW_POS_X), strlen(line_buff) - strlen(CONFIG_TOOL_WINDOW_POS_X)))
-			}
-			if instr(line_buff, 0, CONFIG_TOOL_WINDOW_POS_y) >= 0 {
-				win_tool_pos_y = int(strmid(line_buff, strlen(CONFIG_TOOL_WINDOW_POS_y), strlen(line_buff) - strlen(CONFIG_TOOL_WINDOW_POS_y)))
-			}
+	_productversion_1		= ""
+	_productversion_2		= ""
+	_productversion_3		= ""
+	_productversion_4		= ""
 
-			if instr(line_buff, 0, CONFIG__FILEVERSION) >= 0 {
-				get_buff = strmid(line_buff, strlen(CONFIG__FILEVERSION), strlen(line_buff) - strlen(CONFIG__FILEVERSION))
-				split get_buff, "\t", _fileversion_chk, _fileversion_1, _fileversion_2, _fileversion_3, _fileversion_4
-				_fileversion_chk = int(_fileversion_chk)
-			}
-			if instr(line_buff, 0, CONFIG__PRODUCTVERSION) >= 0 {
-				get_buff = strmid(line_buff, strlen(CONFIG__PRODUCTVERSION), strlen(line_buff) - strlen(CONFIG__PRODUCTVERSION))
-				split get_buff, "\t", _productversion_chk, _productversion_1, _productversion_2, _productversion_3, _productversion_4
-				_productversion_chk = int(_productversion_chk)
-			}
-			if instr(line_buff, 0, CONFIG_COMMENTS) >= 0 {
-				get_buff = strmid(line_buff, strlen(CONFIG_COMMENTS), strlen(line_buff) - strlen(CONFIG_COMMENTS))
-				split get_buff, "\t", comments_chk, comments
-				comments_chk = int(comments_chk)
-			}
-			if instr(line_buff, 0, CONFIG_COMPANYNAME) >= 0 {
-				get_buff = strmid(line_buff, strlen(CONFIG_COMPANYNAME), strlen(line_buff) - strlen(CONFIG_COMPANYNAME))
-				split get_buff, "\t", companyname_chk, companyname
-				companyname_chk = int(companyname_chk)
-			}
-			if instr(line_buff, 0, CONFIG_FILEDESCRIPTION) >= 0 {
-				get_buff = strmid(line_buff, strlen(CONFIG_FILEDESCRIPTION), strlen(line_buff) - strlen(CONFIG_FILEDESCRIPTION))
-				split get_buff, "\t", filedescription_chk, filedescription
-				filedescription_chk = int(filedescription_chk)
-			}
-			;if instr(line_buff, 0, CONFIG_FILEVERSION) >= 0 {
-			;	get_buff = strmid(line_buff, strlen(CONFIG_FILEVERSION), strlen(line_buff) - strlen(CONFIG_FILEVERSION))
-			;	split get_buff, "\t", fileversion_chk, fileversion
-			;	fileversion_chk = int(fileversion_chk)
-			;}
-			if instr(line_buff, 0, CONFIG_INTERNALNAME) >= 0 {
-				get_buff = strmid(line_buff, strlen(CONFIG_INTERNALNAME), strlen(line_buff) - strlen(CONFIG_INTERNALNAME))
-				split get_buff, "\t", internalname_chk, internalname
-				internalname_chk = int(internalname_chk)
-			}
-			if instr(line_buff, 0, CONFIG_LEGALCOPYRIGHT) >= 0 {
-				get_buff = strmid(line_buff, strlen(CONFIG_LEGALCOPYRIGHT), strlen(line_buff) - strlen(CONFIG_LEGALCOPYRIGHT))
-				split get_buff, "\t", legalcopyright_chk, legalcopyright
-				legalcopyright_chk = int(legalcopyright_chk)
-			}
-			if instr(line_buff, 0, CONFIG_ORIGINALFILENAME) >= 0 {
-				get_buff = strmid(line_buff, strlen(CONFIG_ORIGINALFILENAME), strlen(line_buff) - strlen(CONFIG_ORIGINALFILENAME))
-				split get_buff, "\t", originalfilename_chk, originalfilename
-				originalfilename_chk = int(originalfilename_chk)
-			}
-			if instr(line_buff, 0, CONFIG_PRODUCTNAME) >= 0 {
-				get_buff = strmid(line_buff, strlen(CONFIG_PRODUCTNAME), strlen(line_buff) - strlen(CONFIG_PRODUCTNAME))
-				split get_buff, "\t", productname_chk, productname
-				productname_chk = int(productname_chk)
-			}
-			;if instr(line_buff, 0, CONFIG_PRODUCTVERSION) >= 0 {
-			;	get_buff = strmid(line_buff, strlen(CONFIG_PRODUCTVERSION), strlen(line_buff) - strlen(CONFIG_PRODUCTVERSION))
-			;	split get_buff, "\t", productversion_chk, productversion
-			;	productversion_chk = int(productversion_chk)
-			;}
-		loop
+	comments				= ""
+	companyname				= ""
+	filedescription			= ""
+	fileversion				= ""
+	internalname			= ""
+	legalcopyright			= ""
+	originalfilename		= ""
+	productname				= ""
+	productversion			= ""
 
-		noteunsel
-	}
+	line_buff = ""
+	repeat notemax
+		noteget line_buff, cnt
+
+		if instr(line_buff, 0, WRITE__FILEVERSION) >= 0 {
+			get_buff = strmid(line_buff, strlen(WRITE__FILEVERSION), strlen(line_buff) - strlen(WRITE__FILEVERSION))
+			split get_buff, ".", _fileversion_1, _fileversion_2, _fileversion_3, _fileversion_4
+		}
+		if instr(line_buff, 0, WRITE__PRODUCTVERSION) >= 0 {
+			get_buff = strmid(line_buff, strlen(WRITE__PRODUCTVERSION), strlen(line_buff) - strlen(WRITE__PRODUCTVERSION))
+			split get_buff, ".", _productversion_1, _productversion_2, _productversion_3, _productversion_4
+		}
+		if instr(line_buff, 0, WRITE_COMMENTS) >= 0 {
+			comments = strmid(line_buff, strlen(WRITE_COMMENTS), strlen(line_buff) - strlen(WRITE_COMMENTS))
+		}
+		if instr(line_buff, 0, WRITE_COMPANYNAME) >= 0 {
+			companyname = strmid(line_buff, strlen(WRITE_COMPANYNAME), strlen(line_buff) - strlen(WRITE_COMPANYNAME))
+		}
+		if instr(line_buff, 0, WRITE_FILEDESCRIPTION) >= 0 {
+			filedescription = strmid(line_buff, strlen(WRITE_FILEDESCRIPTION), strlen(line_buff) - strlen(WRITE_FILEDESCRIPTION))
+		}
+		;if instr(line_buff, 0, WRITE_FILEVERSION) >= 0 {
+		;	fileversion = strmid(line_buff, strlen(WRITE_FILEVERSION), strlen(line_buff) - strlen(WRITE_FILEVERSION))
+		;}
+		if instr(line_buff, 0, WRITE_INTERNALNAME) >= 0 {
+			internalname = strmid(line_buff, strlen(WRITE_INTERNALNAME), strlen(line_buff) - strlen(WRITE_INTERNALNAME))
+		}
+		if instr(line_buff, 0, WRITE_LEGALCOPYRIGHT) >= 0 {
+			legalcopyright = strmid(line_buff, strlen(WRITE_LEGALCOPYRIGHT), strlen(line_buff) - strlen(WRITE_LEGALCOPYRIGHT))
+		}
+		if instr(line_buff, 0, WRITE_ORIGINALFILENAME) >= 0 {
+			originalfilename = strmid(line_buff, strlen(WRITE_ORIGINALFILENAME), strlen(line_buff) - strlen(WRITE_ORIGINALFILENAME))
+		}
+		if instr(line_buff, 0, WRITE_PRODUCTNAME) >= 0 {
+			productname = strmid(line_buff, strlen(WRITE_PRODUCTNAME), strlen(line_buff) - strlen(WRITE_PRODUCTNAME))
+		}
+		;if instr(line_buff, 0, WRITE_PRODUCTVERSION) >= 0 {
+		;	productversion = strmid(line_buff, strlen(WRITE_PRODUCTVERSION), strlen(line_buff) - strlen(WRITE_PRODUCTVERSION))
+		;}
+	loop
+
+	noteunsel
+
+	;gosub *open_tool_window
+	;gosub *obj_value_set_tool
+	;gosub *make_text
+
+	;gsel BUFFER_MENU, -1
+	;gsel BUFFER_TOOL, 1
 
 	return
 
@@ -910,59 +886,51 @@
 
 	file_buff = ""
 
-	if _fileversion_chk {
+	if space_not_make_2 == 0 {
 		file_buff += "_FILEVERSION=" + _fileversion_1
-		if strlen(_fileversion_2) > 0 {
-			file_buff += "." + _fileversion_2
-		}
-		if strlen(_fileversion_3) > 0 {
-			file_buff += "." + _fileversion_3
-		}
-		if strlen(_fileversion_4) > 0 {
-			file_buff += "." + _fileversion_4
-		}
+		file_buff += "." + _fileversion_2
+		file_buff += "." + _fileversion_3
+		file_buff += "." + _fileversion_4
 		file_buff += "\n"
-	}
-	if _productversion_chk {
 		file_buff += "_PRODUCTVERSION=" + _productversion_1
-		if strlen(_productversion_2) > 0 {
-			file_buff += "." + _productversion_2
-		}
-		if strlen(_productversion_3) > 0 {
-			file_buff += "." + _productversion_3
-		}
-		if strlen(_productversion_4) > 0 {
-			file_buff += "." + _productversion_4
-		}
+		file_buff += "." + _productversion_2
+		file_buff += "." + _productversion_3
+		file_buff += "." + _productversion_4
 		file_buff += "\n"
+		file_buff += "Comments="			+ comments			+ "\n"
+		file_buff += "CompanyName="			+ companyname		+ "\n"
+		file_buff += "FileDescription="		+ filedescription	+ "\n"
+		;file_buff += "FileVersion="		+ fileversion		+ "\n"
+		file_buff += "InternalName="		+ internalname		+ "\n"
+		file_buff += "LegalCopyright="		+ legalcopyright	+ "\n"
+		file_buff += "OriginalFilename="	+ originalfilename	+ "\n"
+		file_buff += "ProductName="			+ productname		+ "\n"
+		;file_buff += "ProductVersion="		+ productversion	+ "\n"
+	} else {
+		if strlen(_fileversion_1) > 0 {
+			file_buff += "_FILEVERSION=" + _fileversion_1
+			if strlen(_fileversion_2) > 0 : file_buff += "." + _fileversion_2
+			if strlen(_fileversion_3) > 0 : file_buff += "." + _fileversion_3
+			if strlen(_fileversion_4) > 0 : file_buff += "." + _fileversion_4
+			file_buff += "\n"
+		}
+		if strlen(_productversion_1) > 0 {
+			file_buff += "_PRODUCTVERSION=" + _productversion_1
+			if strlen(_productversion_2) > 0 : file_buff += "." + _productversion_2
+			if strlen(_productversion_3) > 0 : file_buff += "." + _productversion_3
+			if strlen(_productversion_4) > 0 : file_buff += "." + _productversion_4
+			file_buff += "\n"
+		}
+		if strlen(comments) > 0			: file_buff += "Comments="			+ comments + "\n"
+		if strlen(companyname) > 0		: file_buff += "CompanyName="		+ companyname + "\n"
+		if strlen(filedescription) > 0	: file_buff += "FileDescription="	+ filedescription + "\n"
+		;if strlen(fileversion) > 0		: file_buff += "FileVersion="		+ fileversion + "\n"
+		if strlen(internalname) > 0		: file_buff += "InternalName="		+ internalname + "\n"
+		if strlen(legalcopyright) > 0	: file_buff += "LegalCopyright="	+ legalcopyright + "\n"
+		if strlen(originalfilename) > 0	: file_buff += "OriginalFilename="	+ originalfilename + "\n"
+		if strlen(productname) > 0		: file_buff += "ProductName="		+ productname + "\n"
+		;if strlen(productversion) > 0	: file_buff += "ProductVersion="	+ productversion + "\n"
 	}
-	if comments_chk {
-		file_buff += "Comments=" + comments + "\n"
-	}
-	if companyname_chk {
-		file_buff += "CompanyName=" + companyname + "\n"
-	}
-	if filedescription_chk {
-		file_buff += "FileDescription=" + filedescription + "\n"
-	}
-	;if fileversion_chk {
-	;	file_buff += "FileVersion=" + fileversion + "\n"
-	;}
-	if internalname_chk {
-		file_buff += "InternalName=" + internalname + "\n"
-	}
-	if legalcopyright_chk {
-		file_buff += "LegalCopyright=" + legalcopyright + "\n"
-	}
-	if originalfilename_chk {
-		file_buff += "OriginalFilename=" + originalfilename + "\n"
-	}
-	if productname_chk {
-		file_buff += "ProductName=" + productname + "\n"
-	}
-	;if productversion_chk {
-	;	file_buff += "ProductVersion=" + productversion + "\n"
-	;}
 
 	put_text_buff = file_buff
 
@@ -1004,7 +972,7 @@
 	
 			gsel BUFFER_MAIN, -1
 			gosub *obj_value_set
-			gsel BUFFER_TOOL, 2
+			gsel BUFFER_TOOL, 1
 	
 			tool_window_close = TRUE
 		}
@@ -1013,65 +981,27 @@
 	return
 
 //-------------------------------------------------------------------------
-*checkbox_default
-
-	_fileversion_chk		= 1
-	_productversion_chk		= 1
-	comments_chk			= 0
-	companyname_chk			= 0
-	filedescription_chk		= 1
-	fileversion_chk			= 0
-	internalname_chk		= 0
-	legalcopyright_chk		= 1
-	originalfilename_chk	= 1
-	productname_chk			= 1
-	productversion_chk		= 0
-
-	objprm obj_id(OBJ_ID__FILEVERSION_CHK),		_fileversion_chk
-	objprm obj_id(OBJ_ID__PRODUCTVERSION_CHK),	_productversion_chk
-	objprm obj_id(OBJ_ID_COMMENTS_CHK),			comments_chk
-	objprm obj_id(OBJ_ID_COMPANYNAME_CHK),		companyname_chk
-	objprm obj_id(OBJ_ID_FILEDESCRIPTION_CHK),	filedescription_chk
-;	objprm obj_id(OBJ_ID_FILEVERSION_CHK),		fileversion_chk
-	objprm obj_id(OBJ_ID_INTERNALNAME_CHK),		internalname_chk
-	objprm obj_id(OBJ_ID_LEGALCOPYRIGHT_CHK),	legalcopyright_chk
-	objprm obj_id(OBJ_ID_ORIGINALFILENAME_CHK),	originalfilename_chk
-	objprm obj_id(OBJ_ID_PRODUCTNAME_CHK),		productname_chk
-;	objprm obj_id(OBJ_ID_PRODUCTVERSION_CHK),	productversion_chk
-
-	return
-//-------------------------------------------------------------------------
 *obj_value_set_tool
 
-	objprm obj_id(OBJ_ID__FILEVERSION_CHK),		_fileversion_chk
 	objprm obj_id(OBJ_ID__FILEVERSION_1),		_fileversion_1
 	objprm obj_id(OBJ_ID__FILEVERSION_2),		_fileversion_2
 	objprm obj_id(OBJ_ID__FILEVERSION_3),		_fileversion_3
 	objprm obj_id(OBJ_ID__FILEVERSION_4),		_fileversion_4
-	objprm obj_id(OBJ_ID__PRODUCTVERSION_CHK),	_productversion_chk
 	objprm obj_id(OBJ_ID__PRODUCTVERSION_1),	_productversion_1
 	objprm obj_id(OBJ_ID__PRODUCTVERSION_2),	_productversion_2
 	objprm obj_id(OBJ_ID__PRODUCTVERSION_3),	_productversion_3
 	objprm obj_id(OBJ_ID__PRODUCTVERSION_4),	_productversion_4
-	objprm obj_id(OBJ_ID_COMMENTS_CHK),			comments_chk
 	objprm obj_id(OBJ_ID_COMMENTS),				comments
-	objprm obj_id(OBJ_ID_COMPANYNAME_CHK),		companyname_chk
 	objprm obj_id(OBJ_ID_COMPANYNAME),			companyname
-	objprm obj_id(OBJ_ID_FILEDESCRIPTION_CHK),	filedescription_chk
 	objprm obj_id(OBJ_ID_FILEDESCRIPTION),		filedescription
-;	objprm obj_id(OBJ_ID_FILEVERSION_CHK),		fileversion_chk
 ;	objprm obj_id(OBJ_ID_FILEVERSION),			fileversion
-	objprm obj_id(OBJ_ID_INTERNALNAME_CHK),		internalname_chk
 	objprm obj_id(OBJ_ID_INTERNALNAME),			internalname
-	objprm obj_id(OBJ_ID_LEGALCOPYRIGHT_CHK),	legalcopyright_chk
 	objprm obj_id(OBJ_ID_LEGALCOPYRIGHT),		legalcopyright
-	objprm obj_id(OBJ_ID_ORIGINALFILENAME_CHK),	originalfilename_chk
 	objprm obj_id(OBJ_ID_ORIGINALFILENAME),		originalfilename
-	objprm obj_id(OBJ_ID_PRODUCTNAME_CHK),		productname_chk
 	objprm obj_id(OBJ_ID_PRODUCTNAME),			productname
-;	objprm obj_id(OBJ_ID_PRODUCTVERSION_CHK),	productversion_chk
 ;	objprm obj_id(OBJ_ID_PRODUCTVERSION),		productversion
 	objprm obj_id(OBJ_ID_WRITE_FOLDER),			tab_id_file_path
+	objprm obj_id(OBJ_ID_PUT_TEXT),				put_text_buff
 
 	return
 
@@ -1080,29 +1010,6 @@
 
 	sendmsg hInput_tool, $B1, , -1
 	sendmsg hInput_tool, $0301
-
-	return
-
-//-------------------------------------------------------------------------
-*config_file_write_tool
-
-	file_buff  = ""
-	file_buff += CONFIG_WINDOW_POS_X		+ str(win_tool_pos_x) + "\n"
-	file_buff += CONFIG_WINDOW_POS_Y		+ str(win_tool_pos_y) + "\n"
-	file_buff += "\n"
-	file_buff += CONFIG__FILEVERSION 		+ str(_fileversion_chk)		+ "\t"	+ _fileversion_1	+ "\t" + _fileversion_2		+ "\t" + _fileversion_3		+ "\t" + _fileversion_4		+ "\n"
-	file_buff += CONFIG__PRODUCTVERSION		+ str(_productversion_chk)	+ "\t"	+ _productversion_1 + "\t" + _productversion_2	+ "\t" + _productversion_3	+ "\t" + _productversion_4	+ "\n"
-	file_buff += CONFIG_COMMENTS			+ str(comments_chk)			+ "\t"	+ comments			+ "\n"
-	file_buff += CONFIG_COMPANYNAME			+ str(companyname_chk)		+ "\t"	+ companyname		+ "\n"
-	file_buff += CONFIG_FILEDESCRIPTION		+ str(filedescription_chk)	+ "\t"	+ filedescription	+ "\n"
-	;file_buff += CONFIG_FILEVERSION			+ str(fileversion_chk)		+ "\t"	+ fileversion		+ "\n"
-	file_buff += CONFIG_INTERNALNAME		+ str(internalname_chk)		+ "\t"	+ internalname		+ "\n"
-	file_buff += CONFIG_LEGALCOPYRIGHT		+ str(legalcopyright_chk)	+ "\t"	+ legalcopyright	+ "\n"
-	file_buff += CONFIG_ORIGINALFILENAME	+ str(originalfilename_chk)	+ "\t"	+ originalfilename	+ "\n"
-	file_buff += CONFIG_PRODUCTNAME			+ str(productname_chk)		+ "\t"	+ productname		+ "\n"
-	;file_buff += CONFIG_PRODUCTVERSION		+ str(productversion_chk)	+ "\t"	+ productversion	+ "\n"
-
-	func_packopt_ini_file_write CONFIG_TOOL_FILE_NAME, file_buff
 
 	return
 
