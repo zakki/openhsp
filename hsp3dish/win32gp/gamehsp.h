@@ -139,6 +139,22 @@ GPPSET_MAX
 #define GPNODEINFO_SIBLING (0x102)
 #define GPNODEINFO_SKINROOT (0x103)
 
+#define GPOBJ_PRMSET_FLAG (2)
+#define GPOBJ_PRMSET_MODE (3)
+#define GPOBJ_PRMSET_ID (4)
+#define GPOBJ_PRMSET_TIMER (5)
+#define GPOBJ_PRMSET_MYGROUP (6)
+#define GPOBJ_PRMSET_COLGROUP (7)
+#define GPOBJ_PRMSET_SHAPE (8)
+#define GPOBJ_PRMSET_USEGPMAT (9)
+#define GPOBJ_PRMSET_USEGPPHY (10)
+#define GPOBJ_PRMSET_COLILOG (11)
+#define GPOBJ_PRMSET_ALPHA (12)
+#define GPOBJ_PRMSET_FADE (13)
+#define GPOBJ_PRMSET_SPRID (0x100)
+#define GPOBJ_PRMSET_SPRCELID (0x101)
+#define GPOBJ_PRMSET_SPRGMODE (0x102)
+
 
 //  HGIMG4 Sprite Object
 class gpspr {
@@ -396,6 +412,7 @@ public:
 	bool makeModelNodeSub(Node *node, int nest);
 	bool makeModelNodeMaterialSub(Node *node, int nest);
 
+	int updateNodeMaterialID(int objid);
 	int overwriteNodeMaterialByMatID(Node* node, int matid);
 	int overwriteNodeMaterialByColor(Node* node, int color, int matopt);
 

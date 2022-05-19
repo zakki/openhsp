@@ -1617,6 +1617,16 @@ int gamehsp::setObjectPrm( int objid, int prmid, int value )
 	base_i = getObjectPrmPtr( objid, prmid );
 	if ( base_i == NULL ) return -1;
 	*base_i = value;
+
+	switch (prmid)
+	{
+	case GPOBJ_PRMSET_USEGPMAT:
+		updateNodeMaterialID(objid);
+		break;
+	default:
+		break;
+	}
+
 	return 0;
 }
 
@@ -2392,6 +2402,22 @@ int gamehsp::overwriteNodeMaterialByColor(Node* node, int color, int matopt)
 }
 
 
+int gamehsp::updateNodeMaterialID(int objid)
+{
+	//	_usegpmatの変更を反映させる()
+	gpobj* obj;
+	obj = getObj(objid);
+	if (obj == NULL) return -1;
+	if (obj->_spr) return -1;
+	if (obj->_usegpmat < 0) return -1;
+
+	Node* mynode = obj->_node;
+	if (mynode == NULL) return -1;
+	overwriteNodeMaterialByMatID(mynode, obj->_usegpmat);
+	return 0;
+}
+
+
 int gamehsp::makeCloneNode( int objid, int mode, int eventID )
 {
 	gpobj *obj;
@@ -2438,6 +2464,7 @@ int gamehsp::makeCloneNode( int objid, int mode, int eventID )
 		case GPOBJ_SHAPE_BOX:
 		case GPOBJ_SHAPE_FLOOR:
 		case GPOBJ_SHAPE_PLATE:
+		case GPOBJ_SHAPE_MESH:
 			bNeedUpdateMaterial = true;
 		}
 		if (bNeedUpdateMaterial) {
