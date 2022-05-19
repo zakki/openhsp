@@ -35,8 +35,8 @@
 #include <OpenGLES/ES1/gl.h>
 #include <OpenGLES/ES1/glext.h>
 #include <CoreFoundation/CoreFoundation.h>
-#include "iOSgpBridge.h"
-#include "appengine.h"
+#include "Classes/iOSgpBridge.h"
+#include "hsp3dish/ios/appengine.h"
 #endif
 
 

@@ -17,7 +17,7 @@
 
 #ifdef HSPIOS
 #include "iOSBridge.h"
-#include "appengine.h"
+#include "../hsp3dish/ios/appengine.h"
 #endif
 
 #ifdef HSPNDK

@@ -314,15 +314,41 @@ static int *code_getiv2( PVal **out_pval )
 	return v;
 }
 
-static void code_setivlen( PVal *pval, int len )
+static void code_setivlen(PVal* pval, int len)
 {
 	//		配列変数を拡張(intのみ)
 	//
 	int ilen;
 	ilen = len;
-	if ( ilen < 1 ) ilen = 1;
+	if (ilen < 1) ilen = 1;
 	pval->len[1] = ilen;						// ちょっと強引に配列を拡張
 	pval->size = ilen * sizeof(int);
+}
+
+
+static void code_setva_double(PVal* pval, APTR aptr, double *ptr)
+{
+	//		code_setvaでdouble値を書き込むためのサービス
+	//		(配列チェック、型チェックを行う)
+	//
+	int size, inisize;
+	HSPREAL dummy;
+
+	if (pval->flag != HSPVAR_FLAG_DOUBLE) {
+		if (aptr > 0) code_puterror(HSPERR_ARRAY_OVERFLOW);
+		dummy = (HSPREAL)0.0;
+		code_setva(pval, 0, HSPVAR_FLAG_DOUBLE, &dummy);
+	}
+
+	inisize = pval->len[1];
+	if (aptr > 0) {
+		size = (aptr + 1);
+		if (inisize < size) {
+			pval->len[1] = size;						// ちょっと強引に配列を拡張
+			pval->size = size * sizeof(HSPREAL);
+		}
+	}
+	code_setva(pval, aptr, HSPVAR_FLAG_DOUBLE, ptr);
 }
 
 
@@ -1801,9 +1827,9 @@ static int cmdfunc_extcmd( int cmd )
 		dp1 = (HSPREAL)v.x;
 		dp2 = (HSPREAL)v.y;
 		dp3 = (HSPREAL)v.z;
-		code_setva( pv1, aptr1, HSPVAR_FLAG_DOUBLE, &dp1 );
-		code_setva( pv2, aptr2, HSPVAR_FLAG_DOUBLE, &dp2 );
-		code_setva( pv3, aptr3, HSPVAR_FLAG_DOUBLE, &dp3 );
+		code_setva_double( pv1, aptr1, &dp1 );
+		code_setva_double( pv2, aptr2, &dp2 );
+		code_setva_double( pv3, aptr3, &dp3 );
 		break;
 		}
 	case 0x81:								// getquat
@@ -1829,10 +1855,10 @@ static int cmdfunc_extcmd( int cmd )
 		dp2 = (HSPREAL)v.y;
 		dp3 = (HSPREAL)v.z;
 		dp4 = (HSPREAL)v.w;
-		code_setva(pv1, aptr1, HSPVAR_FLAG_DOUBLE, &dp1);
-		code_setva(pv2, aptr2, HSPVAR_FLAG_DOUBLE, &dp2);
-		code_setva(pv3, aptr3, HSPVAR_FLAG_DOUBLE, &dp3);
-		code_setva(pv4, aptr4, HSPVAR_FLAG_DOUBLE, &dp4);
+		code_setva_double(pv1, aptr1, &dp1);
+		code_setva_double(pv2, aptr2, &dp2);
+		code_setva_double(pv3, aptr3, &dp3);
+		code_setva_double(pv4, aptr4, &dp4);
 		break;
 	}
 
@@ -2006,9 +2032,9 @@ static int cmdfunc_extcmd( int cmd )
 		dp1 = (HSPREAL)v2.x;
 		dp2 = (HSPREAL)v2.y;
 		dp3 = (HSPREAL)v2.z;
-		code_setva(pv1, aptr1, HSPVAR_FLAG_DOUBLE, &dp1);
-		code_setva(pv2, aptr2, HSPVAR_FLAG_DOUBLE, &dp2);
-		code_setva(pv3, aptr3, HSPVAR_FLAG_DOUBLE, &dp3);
+		code_setva_double(pv1, aptr1, &dp1);
+		code_setva_double(pv2, aptr2, &dp2);
+		code_setva_double(pv3, aptr3, &dp3);
 		break;
 		}
 	case 0xd9:								// getcoli
@@ -2236,7 +2262,7 @@ static int cmdfunc_extcmd( int cmd )
 		ps = code_gets();
 		sscanf( ps, "%f", &fp );
 		dp1 = (double)fp;
-		code_setva( p_pval, p_aptr, HSPVAR_FLAG_DOUBLE, &dp1 );
+		HSPVAR_FLAG_DOUBLE, ( p_pval, p_aptr, &dp1 );
 		break;
 		}
 

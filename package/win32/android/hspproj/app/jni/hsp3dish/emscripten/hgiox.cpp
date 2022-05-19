@@ -36,7 +36,7 @@
 #include <OpenGLES/ES1/glext.h>
 #include <CoreFoundation/CoreFoundation.h>
 #include "iOSBridge.h"
-#include "appengine.h"
+#include "hsp3dish/ios/appengine.h"
 #endif
 
 

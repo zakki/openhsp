@@ -9,7 +9,7 @@
 #include "mod_appconfig.as"
 
 #define APPTITLE "HSP3Dish helper"
-#define APPVER "1.93"
+#define APPVER "1.94"
 #define APP_CONF "\\hsp3dh.cfg"
 
 #define AND_LIBVER 114			; android HSPランタイムの内部バージョン
@@ -1781,37 +1781,12 @@
 	;
 	;	create project後にフォルダを改変
 	;
-	prj_dlist={"hspproj
-hspproj\\en.lproj
-hspproj\\ja.lproj
-hspproj\\Resouces
-hspproj.xcodeproj
-hspproj.xcodeproj\\xcuserdata
-hspproj.xcodeproj\\project.xcworkspace
-hspproj.xcodeproj\\project.xcworkspace\\xcuserdata"}
-
-	prj_flist={"hspproj\\en.lproj\\InfoPlist.strings
-hspproj\\ja.lproj\\InfoPlist.strings
-hspproj\\icon57.png
-hspproj\\icon58.png
-hspproj\\icon120.png
-hspproj\\Default.png
-hspproj\\Default@2x.png
-hspproj\\Default-568h@2x.png
-hspproj\\hspproj-Info.plist
-hspproj\\hspproj-Prefix.pch
-hspproj.xcodeproj\\project.xcworkspace\\contents.xcworkspacedata
-hspproj.xcodeproj\\project.pbxproj"}
-
 	prj_dlbase="\\ios\\hspproj_gp\\"
 	if flag_xhgimg=0 {
-		prj_flist+="\nhspproj\\AppDelegate.h"
-		prj_flist+="\nhspproj\\AppDelegate.m"
-		prj_flist+="\nhspproj\\main.m"
 		prj_dlbase="\\ios\\hspproj\\"
 	}
 
-	buf+="XCodeプロジェクトの生成中...\n"
+	buf="XCodeプロジェクトの生成中...\n"
 
 	errflag=0
 
@@ -1832,29 +1807,18 @@ hspproj.xcodeproj\\project.pbxproj"}
 	}
 	mkdir basedir
 
-	notesel prj_dlist
-	repeat notemax
-		noteget s1,cnt
-		dirlist s2, basedir+s1, 5
-		if stat = 0 {
-			mkdir basedir+s1
-		}
-	loop
-
-	notesel prj_flist
-	repeat notemax
-		noteget s1,cnt
-		s2 = dir_exe+prj_dlbase+s1
-		buf+="Copying "+s1+"...\n"
-		exist s2
-		if strsize<=0 : buf+="ファイル["+s1+"]がありません。\n" : errflag++ : break
-		bcopy s2,basedir+s1
-	loop
+	gosub *bat_init
+	tmp+="XCOPY \""+dir_exe+prj_dlbase+"*.*\" \""+basedir+"\" /S /E /Y /I\n"
+	gosub *bat_save
+	;
+	execcmd "go.bat"
+	if stat : errflag=1
 
 	if errflag  : goto *go_iosprjerr
 
+	chdir mydir
 	s2=cppname
-	bcopy s2,basedir+"hspproj\\hspsource.cpp"
+	bcopy s2,basedir+"hspproj\\hsp3embed\\hspsource.cpp"
 
 	;pfname=basedir+"hspproj\\hspproj-Info.plist"
 	;notesel tmp
