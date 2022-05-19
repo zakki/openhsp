@@ -16,7 +16,7 @@
                BuildableIdentifier = "primary"
                BlueprintIdentifier = "1E480DAA1859C4540052A2F2"
                BuildableName = "hspproj.app"
-               BlueprintName = "grotate"
+               BlueprintName = "hspproj"
                ReferencedContainer = "container:hspproj.xcodeproj">
             </BuildableReference>
          </BuildActionEntry>
@@ -46,7 +46,7 @@
             BuildableIdentifier = "primary"
             BlueprintIdentifier = "1E480DAA1859C4540052A2F2"
             BuildableName = "hspproj.app"
-            BlueprintName = "grotate"
+            BlueprintName = "hspproj"
             ReferencedContainer = "container:hspproj.xcodeproj">
          </BuildableReference>
       </BuildableProductRunnable>
@@ -63,7 +63,7 @@
             BuildableIdentifier = "primary"
             BlueprintIdentifier = "1E480DAA1859C4540052A2F2"
             BuildableName = "hspproj.app"
-            BlueprintName = "grotate"
+            BlueprintName = "hspproj"
             ReferencedContainer = "container:hspproj.xcodeproj">
          </BuildableReference>
       </BuildableProductRunnable>

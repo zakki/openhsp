@@ -4,7 +4,7 @@
 //
 
 #import <UIKit/UIKit.h>
-#import "HspViewController.h"
+#import "Classes/HspViewController.h"
 
 @interface AppDelegate : UIResponder <UIApplicationDelegate> {
 
