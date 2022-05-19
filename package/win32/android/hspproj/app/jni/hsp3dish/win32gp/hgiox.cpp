@@ -1819,6 +1819,39 @@ char *hgio_getstorage( char *fname )
 	strcat( my_storage_path, fname );
 	return my_storage_path;
 }
+
+
+FILE *hgio_android_fopen( char *fname, int offset )
+{
+	AAssetManager* mgr = appengine->app->activity->assetManager;
+	if (mgr == NULL) return NULL;
+	AAsset* asset = AAssetManager_open(mgr, (const char *)fname, AASSET_MODE_UNKNOWN);
+	if (asset == NULL) return NULL;
+	if ( offset>0 ) AAsset_seek( asset, offset, SEEK_SET );
+	return (FILE *)asset;
+}
+
+void hgio_android_fclose(FILE* ptr)
+{
+	AAsset* asset = (AAsset*)ptr;
+	if (asset == NULL) return;
+    AAsset_close(asset);
+}
+
+int hgio_android_fread( FILE* ptr, void *mem, int size )
+{
+	AAsset* asset = (AAsset*)ptr;
+	if (asset == NULL) -1;
+	return AAsset_read( asset, mem, size );
+}
+
+int hgio_android_seek( FILE* ptr, int offset, int whence )
+{
+	AAsset* asset = (AAsset*)ptr;
+	if (asset == NULL) -1;
+	return AAsset_seek( asset, offset, whence );
+}
+
 #endif
 
 /*-------------------------------------------------------------------------------*/
