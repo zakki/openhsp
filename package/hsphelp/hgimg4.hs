@@ -121,6 +121,7 @@ value(0) : 設定する値(整数値)
 	PRMSET_COLGROUP        衝突検出するコリジョングループ
 	PRMSET_SHAPE           形状ID(*)
 	PRMSET_USEGPMAT        マテリアルID
+	PRMSET_USEGPPHY        物理設定ID(*)
 	PRMSET_COLILOG         コリジョンログID(*)
 	PRMSET_FADE            フェードパラメーター
 	PRMSET_SPRID           ソースバッファID(スプライトのみ)
@@ -129,10 +130,19 @@ value(0) : 設定する値(整数値)
 
 	(*)の項目は読み出しのみ
 ^p
+たとえば、PRMSET_FADEパラメーターを変更することでフェードイン・アウトなどの制御を行うことができます。
+^p
+	例:
+	gpsetprm id, PRMSET_FADE, -4	; フェードアウト
+^p
+PRMSET_MODEで設定されるモードフラグ値では、ビットごとにオブジェクトの挙動を設定することができます。
+特定のモードフラグ値だけを設定・消去するためのsetobjmode命令も用意されています。
+
 %href
 gpgetprm
 gpsetprmon
 gpsetprmoff
+setobjmode
 
 
 %index
@@ -1603,7 +1613,8 @@ value(0) : 設定する値(整数値)
 	PRMSET_MYGROUP         自身のコリジョングループ
 	PRMSET_COLGROUP        衝突検出するコリジョングループ
 	PRMSET_SHAPE           形状ID(*)
-	PRMSET_USEGPMAT        マテリアルID(*)
+	PRMSET_USEGPMAT        マテリアルID
+	PRMSET_USEGPPHY        物理設定ID(*)
 	PRMSET_COLILOG         コリジョンログID(*)
 	PRMSET_FADE            フェードパラメーター
 	PRMSET_SPRID           ソースバッファID(スプライトのみ)
@@ -1648,6 +1659,7 @@ value(0) : 設定する値(整数値)
 	PRMSET_COLGROUP        衝突検出するコリジョングループ
 	PRMSET_SHAPE           形状ID(*)
 	PRMSET_USEGPMAT        マテリアルID
+	PRMSET_USEGPPHY        物理設定ID(*)
 	PRMSET_COLILOG         コリジョンログID(*)
 	PRMSET_FADE            フェードパラメーター
 	PRMSET_SPRID           ソースバッファID(スプライトのみ)

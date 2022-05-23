@@ -36,12 +36,14 @@
 		<li><a href="#2DABSTRACT">2D動作の概要</a></li>
 		<li><a href="#FONTMES">フォント表示</a></li>
 		<li><a href="#MODE_OBJ">オブジェクトのモード設定</a></li>
+		<li><a href="#TIMER_OBJ">オブジェクトタイマー</a><span class="new">（New!）</span></li>
 		<li><a href="#CAMERA">カメラの設定</a></li>
 		<li><a href="#LIGHT">ライトの設定</a></li>
 		<li><a href="#COLLISION">コリジョングループ設定と衝突検知</a></li>
 		<li><a href="#RENDERGRP">レンダリンググループ設定</a></li>
 		<li><a href="#PHYSICS">物理挙動の設定<span class="new">（New!）</span></a></li>
 		<li><a href="#MATERIAL">マテリアルの設定</a></li>
+		<li><a href="#MATERIAL_CHG">マテリアルの変更<span class="new">（New!）</span></a></li>
 		<li><a href="#3DMODEL">3Dモデルデータの表示<span class="new">（New!）</span></a></li>
 		<li><a href="#GPBMATERIAL">3Dモデルデータのマテリアルについて</a></li>
 		<li><a href="#GPBLIGHT">3Dモデルデータのライティング</a></li>
@@ -62,8 +64,8 @@
 		<li><a href="#NODEINFO">階層情報の取得</a></li>
 		<li><a href="#MEMLIMIT">登録の限界数について</a></li>
 		<li><a href="#ERRORLOG">エラーログ</a></li>
-		<li><a href="#PACKFILE">PACKFILEの対応について</a></li>
-		<li><a href="#LICENCE">著作権とライセンス</a></li>
+		<li><a href="#PACKFILE">PACKFILEの対応について</a><span class="new">（New!）</span></a></li>
+		<li><a href="#LICENCE">著作権とライセンス</a><span class="new">（New!）</span></a></li>
 		<li><a href="#ANGLE_LICENCE">Project Angleの著作権とライセンス</a></li>
 		<li><a href="#PRONAMA_LICENCE">プロ生ちゃんサンプルデータの著作権とライセンス</a></li>
 	</ol>
@@ -767,6 +769,24 @@
 	</p>
 
 
+	<h2 id="TIMER_OBJ">オブジェクトタイマー</h2>
+
+	<p>
+	表示オブジェクト(ノードオブジェクト、スプライトオブジェクト)には、特定のフレームで消滅するためのタイマーを設定することができます。
+	</p>
+	<pre>
+		例:
+		gpsetprm objid, PRMSET_TIMER, 100	; 100フレーム後に消滅
+		setobjmode objid,OBJ_TIMER		; オブジェクトのタイマーを有効にする
+	</pre>
+	<p>
+	最初にオブジェクトのコアパラメーター「PRMSET_TIMER」にフレーム数を設定し、
+	さらにモード値に「OBJ_TIMER」を追加することでオブジェクトタイマーが有効となります。<br>
+	以降は、コアパラメーター「PRMSET_TIMER」の値が表示されるたびに1ずつマイナスされ、0になった時点でオブジェクトが消滅します。<br>
+	オブジェクトタイマーは、イベント機能により同様の処理を行うことも可能ですが、指定したフレーム数で消滅するオブジェクトを手軽に設定できるという利点があります。
+	</p>
+
+
 	<h2 id="CAMERA">カメラの設定</h2>
 
 	<p>
@@ -1339,6 +1359,23 @@ optionパラメーターにより設定時のオプションを付加します�
 	</pre>
 
 
+	<h2 id="MATERIAL_CHG">マテリアルの変更</h2>
+
+	<p>
+	gpbモデルを除く3Dのノードオブジェクト(箱,床,板,カスタム3Dメッシュ)は、設定されているマテリアルIDを変更することが可能です。<br>
+	オブジェクトのコアパラメーターを変更するgpsetprm命令により、マテリアルIDを格納している「PRMSET_USEGPMAT」を書き換えることでマテリアルを変更することが可能です。
+	</p>
+	<pre>
+		例:
+		gptexmat id_texmat, "res/qbox.png"		; テクスチャマテリアル作成
+		gpsetprm objid, PRMSET_USEGPMAT, id_texmat	; マテリアルを変更する
+	</pre>
+	<p>
+	3Dモデル(gpbファイルから生成された3Dモデル)は複数のマテリアルを内包しているため書き換えを行うことができないので注意してください。<br>
+	マテリアルの変更は、シェーダーパイプラインの変更が行われるため比較的コストの高い処理であることを覚えておいてください。毎フレームすべてのオブジェクトのマテリアルを書き換えるような処理はフレームレートの低下につながります。
+	</p>
+
+
 	<h2 id="3DMODEL">3Dモデルデータの表示</h2>
 
 	<p>
@@ -1646,13 +1683,21 @@ optionパラメーターにより設定時のオプションを付加します�
 		PRMSET_COLGROUP        衝突検出するコリジョングループ
 		PRMSET_SHAPE           形状ID(*)
 		PRMSET_USEGPMAT        マテリアルID
-		PRMSET_USEGPPHY        物理設定ID
+		PRMSET_USEGPPHY        物理設定ID(*)
 		PRMSET_COLILOG         コリジョンログID(*)
+		PRMSET_FADE            フェードパラメーター
 		PRMSET_SPRID           ソースバッファID(スプライトのみ)
 		PRMSET_SPRCELID        ソースのセルID(スプライトのみ)
 		PRMSET_SPRGMODE        コピーモード(スプライトのみ)
 
 	(*)が付いたコアパラメーターは、書き込みを行なうことができません。
+	</pre>
+	<p>
+	たとえば、PRMSET_FADEパラメーターを変更することでフェードイン・アウトなどの制御を行うことができます。
+	</p>
+	<pre>
+		例:
+		gpsetprm id, PRMSET_FADE, -4	; フェードアウト
 	</pre>
 	<p>
 	PRMSET_MODEで設定されるモードフラグ値では、ビットごとにオブジェクトの
@@ -2285,7 +2330,7 @@ optionパラメーターにより設定時のオプションを付加します�
 		パラメーターID   内容
 		---------------------------------------
 		PRMSET_FLAG            オブジェクト登録フラグ(*)
-		PRMSET_MODE            モード値
+		PRMSET_MODE            モードフラグ値
 		PRMSET_ID              オブジェクトID(*)
 		PRMSET_ALPHA           透明度(α値)
 		PRMSET_TIMER           タイマー値
@@ -2293,11 +2338,14 @@ optionパラメーターにより設定時のオプションを付加します�
 		PRMSET_COLGROUP        衝突検出するコリジョングループ
 		PRMSET_SHAPE           形状ID(*)
 		PRMSET_USEGPMAT        マテリアルID
+		PRMSET_USEGPPHY        物理設定ID(*)
 		PRMSET_COLILOG         コリジョンログID(*)
 		PRMSET_FADE            フェードパラメーター
 		PRMSET_SPRID           ソースバッファID(スプライトのみ)
 		PRMSET_SPRCELID        ソースのセルID(スプライトのみ)
 		PRMSET_SPRGMODE        コピーモード(スプライトのみ)
+
+		(*)の項目は読み出しのみ
 	</pre>
 	<p>
 	特定のモードフラグ値だけを設定・消去するためのevent_prmon,event_prmoff
@@ -2615,7 +2663,8 @@ optionパラメーターにより設定時のオプションを付加します�
 	以下の機能は未実装です。将来のバージョンでサポートされる予定です。
 	</p>
 	<pre>
-	・コリジョンオブジェクトの詳細な接触判定
+	・ステンシルバッファ及びシャドウのサポート
+	・コリジョンオブジェクトの詳細な設定
 	・パーティクルとエミッターの詳細設定
 	・マルチテクスチャ、バップマップ、ハイトマップ、LODサポート
 	</pre>
@@ -2624,7 +2673,7 @@ optionパラメーターにより設定時のオプションを付加します�
 	少ないデータ、スクリプトでモデルデータ・アニメーションといった高度な技術を活用するために、HGIMG4は独自の拡張を続けています。
 	OpenGL/DirectXによる描画、GLSLシェーダーの活用、物理エンジン(Bullet)、イベントシステムなどを搭載し、
 	キャラクターアニメーション、マルチパスレンダリング、ポストプロセッシングスタックなど強力なシステムを搭載します。<br>
-	新しいHSP3.6に向けて進化を続けるHGIMG4に、これからもご期待ください。
+	新しいHSP3.7に向けて進化を続けるHGIMG4に、これからもご期待ください。
 	</p>
 	<p>
 	<img src="image/hgimg4_sample.jpg">
@@ -2634,12 +2683,14 @@ optionパラメーターにより設定時のオプションを付加します�
 	<h2 id="PACKFILE">PACKFILEの対応について</h2>
 
 	<p>
-	HSP3.6β4以降で、PACKFILEマネージャによってパックされたファイル(.dpmファイル及び実行ファイル埋め込み)の
-	読み込みに仮対応しています。<br>
-	ただし、これはまだ一時的な対応でテクスチャ画像やシェーダーの読み込みには対応していますが、.gpb、.material
-	など一部のファイルはサポートされていません。
-	また、PACKFILEの制約により長いファイル名には対応していません。<br>
-	これらに対応できる新しいPACKFILEマネージャを開発していますので、それまでの一時的な対応として利用するようにしてください。
+	HSP3.7β2以降で、PACKFILEマネージャによってパックされたファイル(.dpmファイル及び実行ファイル埋め込み)の読み込みに対応しています。<br>
+	「res」フォルダ以下にデータがすべて格納されている場合は、
+	</p>
+	<pre>
+		#pack "res/*"
+	</pre>
+	<p>
+	のように記述して、実行ファイル自動作成[ctrl]+[F9]キー)を行うことですべてのデータを含む実行ファイルが生成されます。(暗号化を行う場合は、#epack命令をご使用ください)
 	</p>
 
 
@@ -2652,7 +2703,9 @@ optionパラメーターにより設定時のオプションを付加します�
 ライセンス料は必要ありません。
 HGIMG4とそのソースコードは、HSP開発セットと同様の修正BSDライセンスが適用されます。
 <br><br>
-HGIMG4は以下のライブラリを使用して開発されています。
+HGIMG4は複数のライブラリを使用して開発されています。<br>
+HGIMG4を使用したソフトウェアの配布を行なう場合は、
+以下のコピーライトを表示するか、またはテキストファイルを同梱するようにしてください。<br><br>
 </p>
 <pre>
 GamePlay3D v3.0.0
@@ -2677,7 +2730,7 @@ zlib.h version 1.2.8, April 28th, 2013
 Copyright (C) 1995-2013 Jean-loup Gailly and Mark Adler
 
 OpenHSP
-Copyright (C) 1997-2019, ONION Software/onitama.
+Copyright (C) 1997-2022, ONION Software/onitama.
 http://hsp.tv
 
 Disclaimer
@@ -2716,7 +2769,7 @@ Neither the name of the Onion Software nor the names of its contributors may be 
 	zakkiさん及び、ご意見をお寄せいただいた多くの方々に感謝致します。
 	</p>
 <pre>
-Copyright (C) 2002-2019 The ANGLE Project Authors. 
+Copyright (C) 2002-2022 The ANGLE Project Authors. 
 All rights reserved.
 Redistribution and use in source and binary forms, with or without
 modification, are permitted provided that the following conditions

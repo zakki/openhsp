@@ -2,7 +2,7 @@
 
 ;--------------------------------------------------------------------------------------
 ;
-;	#packリスト作成ツール ver 2.2
+;	#packリスト作成ツール ver 2.3
 ;
 ;	By. しまくろねこ
 ;
@@ -29,7 +29,7 @@
 #const WINDOW_HEIGHT				620									; ウィンドウの縦サイズ
 
 #define APPLICATION_TITLE			"#packリスト作成ツール"
-#define APPLICATION_VERSION			"2.2"
+#define APPLICATION_VERSION			"2.3"
 
 #define CONFIG_FILE_NAME			"pack_make_list_dat.ini"			; 設定ファイル
 
@@ -428,7 +428,7 @@
 	gosub *set_obj_value
 	width WINDOW_WIDTH, WINDOW_HEIGHT, win_pos_x, win_pos_y
 
-	gsel SCREEN_ID_0, 2
+	gsel SCREEN_ID_0, 1
 
 
 //-------------------------------------------------------------------------
@@ -864,7 +864,7 @@
 *add_program_cancel
 
 	gsel SCREEN_ID_1, -1
-	gsel SCREEN_ID_0, 2
+	gsel SCREEN_ID_0, 1
 
 	return
 

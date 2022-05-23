@@ -6,11 +6,11 @@
 %type
 “à‘ –½—ß
 %ver
-3.6
+3.7
 %note
-ver3.6•W€–½—ß
+ver3.7•W€–½—ß
 %date
-2019/04/09
+2022/05/23
 %author
 onitama
 %url
@@ -977,6 +977,8 @@ p7,p8‚Ìƒpƒ‰ƒ[ƒ^‚ÅAƒEƒBƒ“ƒhƒE‚ÌƒNƒ‰ƒCƒAƒ“ƒgƒTƒCƒY(ŽÀÛ‚É•\Ž¦‚³‚ê‚é‘å‚«‚³)‚ðŽw’
 ’Êí‚ÍAp7,p8ƒpƒ‰ƒ[ƒ^[‚ÌŽw’è‚ÍÈ—ª‚µ‚Ä\‚¢‚Ü‚¹‚ñB‚»‚Ìê‡‚ÍAp2,p3‚ÅŽw’è‚³‚ê‚½‰æ–ÊƒTƒCƒY‚Æ“¯‚¶ƒNƒ‰ƒCƒAƒ“ƒgƒTƒCƒY‚Å•\Ž¦‚µ‚Ü‚·B
 ^
 screen–½—ß‚Å‰æ–Ê‚ð‰Šú‰»‚µ‚½Œã‚Í‚»‚ÌƒEƒBƒ“ƒhƒEID‚ª‰æ–Ê§Œä–½—ß‚Ì•`‰ææ‚É‚È‚è‚Ü‚·B
+^
+HSP3Dish‹y‚ÑHGIMG4ƒ‰ƒ“ƒ^ƒCƒ€ã‚Å‚ÍAscreen–½—ß‚Å‰æ–Ê‚ð‰Šú‰»‚µ‚½ê‡‚»‚ê‚Ü‚Å‚É“Ç‚Ýž‚Ü‚ê‚½‚·‚×‚Ä‚Ì‰æ‘œƒoƒbƒtƒ@‚ÍŽ¸‚í‚ê‚Ü‚·‚Ì‚Å’ˆÓ‚µ‚Ä‚­‚¾‚³‚¢B
 
 %href
 bgscr
