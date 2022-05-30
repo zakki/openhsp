@@ -5,8 +5,9 @@ Hot Soup Processor ver3.7beta                       HSP : Hot Soup Processor
 
 ・hsp3関連 更新履歴
 
-	2022/05/19 3.7 beta2
+	2022/05/30 3.7 beta2
 
+	β1版でhsptvフォルダ参照の動作がHSP3.6と異なっていたのを修正
 	DPMファイル及びexe埋め込みファイルにフォルダ名と長いファイル名が使用できるように修正
 	#pack,#epack命令のファイル指定に'*'記号によるワイルドカードが使用できるように修正
 	button gosubによるボタン処理時にエラーが発生した際にウインドウが閉じる不具合を修正

@@ -29,6 +29,9 @@
 #include "hsp3utfcnv.h"
 
 #ifdef HSPWIN
+#include "hsp3config.h"
+#include "supio.h"
+#include "hsp3ext.h"
 #ifdef HSPUTF8
 #pragma execution_character_set("utf-8")
 #endif
@@ -216,6 +219,36 @@ FILE *hsp3_fopen(char*name, int offset)
 	// Windows SJIS
 	hsp3_fp = fopen(name, "rb");
 #endif
+
+	//	Read HSPTV resource
+#ifdef HSPDEBUG
+
+	if (hsp3_fp == NULL) {
+		//	hsptvフォルダを検索する
+		char fn[_MAX_PATH];
+		TCHAR fporg[_MAX_PATH];
+		TCHAR fporg_tmp[_MAX_PATH];
+		char* resp8;
+
+		GetModuleFileName(NULL, fporg, _MAX_PATH);
+		getpathW(fporg, fporg_tmp, 32);
+		apichartohspchar(fporg_tmp, &resp8);
+		strcpy(fn, resp8);
+		CutLastChr(fn, '\\');
+		freehc(&resp8);
+		strcat(fn, "\\hsptv\\");
+		strcat(fn, name);
+
+#ifdef HSPUTF8
+		// Windows UTF
+		hsp3_fp = _wfopen(chartoapichar(fn, &hactmp1), L"rb");
+#else
+		// Windows SJIS
+		hsp3_fp = fopen(fn, "rb");
+#endif
+	}
+#endif
+
 #else
 
 #ifdef HSPNDK
