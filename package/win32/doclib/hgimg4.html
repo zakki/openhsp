@@ -56,7 +56,6 @@
 		<li><a href="#FRAMERATE">フレームレートの取得</a></li>
 		<li><a href="#ANIMATION">アニメーションクリップの作成</a></li>
 		<li><a href="#2DSHADER">2D描画時の独自シェーダー設定</a></li>
-		<li><a href="#2DSHADER">2D描画時の独自シェーダー設定</a></li>
 		<li><a href="#RENDERBUFFER">レンダリングバッファ</a></li>
 		<li><a href="#EVENT">イベントリスト</a></li>
 		<li><a href="#POSTEFFECT">ポストエフェクト</a></li>
@@ -64,6 +63,7 @@
 		<li><a href="#NODEINFO">階層情報の取得</a></li>
 		<li><a href="#MEMLIMIT">登録の限界数について</a></li>
 		<li><a href="#ERRORLOG">エラーログ</a></li>
+		<li><a href="#NOTICE">現バージョンでの注意点</a></li>
 		<li><a href="#PACKFILE">PACKFILEの対応について</a><span class="new">（New!）</span></a></li>
 		<li><a href="#LICENCE">著作権とライセンス</a><span class="new">（New!）</span></a></li>
 		<li><a href="#ANGLE_LICENCE">Project Angleの著作権とライセンス</a></li>
@@ -2423,6 +2423,9 @@ optionパラメーターにより設定時のオプションを付加します�
 		post_setprm p1,p2,p3	ポストエフェクトオプションを指定
 		post_drawstart 		ポストエフェクト用の画面描画開始
 		post_drawend		ポストエフェクト用の画面描画終了
+		post_getname p1		ポストエフェクト名を取得
+		post_getmaxid p1	ポストエフェクトID最大値を取得
+
 	</pre>
 	<p>
 	post_reset命令を最初に1度だけ呼び出して初期化を行う必要があります。<br>

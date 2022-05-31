@@ -15,11 +15,12 @@ onitama
 %dll
 hgimg4
 %url
-http://www.onionsoft.net/
+https://hsp.tv/make/hgimg4.html
 %port
 Win
 %portinfo
-Windows+OpenGL3.1以降/DirectX9システム上で動作します。
+Windows/Linux/android/iOS等HGIMG4をサポートするシステム上で動作します。
+Windowsの場合は、OpenGL3.1以降/DirectX9が必要です。
 
 
 
