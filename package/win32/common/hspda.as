@@ -39,3 +39,6 @@
 #func vload_get vload_get $202
 #func vload_end vload_end $202
 
+#func binmatch binmatch $202
+
+

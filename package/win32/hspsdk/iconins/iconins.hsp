@@ -15,9 +15,10 @@
 #packopt name "iconins"
 #cmpopt optcode 1
 
+#include "hspda.as"
 #include "kernel32.as"
 #include "modResource.hsp"
-#include "modBsearch.hsp"
+;#include "modBsearch.hsp"
 #include "modEXECheck.hsp"
 #include "modUPX.hsp"
 #include "modCmdSplit.hsp"
@@ -31,7 +32,7 @@
 /*----------------------------------------------------------------------------
 	メイン
 ----------------------------------------------------------------------------*/
-	bsearch_init	// バイナリ検索初期化(最後解放が必要)
+	;bsearch_init	// バイナリ検索初期化(最後解放が必要)
 
 	langID = 0x0411	// デフォルトは日本
 	use_upx = 0		// UPX圧縮を使用するか？
@@ -326,19 +327,13 @@ return
 	;	｢DPMX｣文字列のバイナリ検索(古いバイナリ形式に対応)
 	
 		point_exe = varptr(buf_exe)
-		keyword = "DPMX"
-	
-		i = 0
-		repeat
-			if bsearch(i, point_exe, size_exe, keyword, 4) = -1 {
-				errorno = 20	// [｢DPMX｣文字列が見つかりません]
-				goto *error
-			}
-			i += stat + 1
-	
-	;		｢DPMX｣文字列のカウント
-			if cnt > 0 : pos_dpmx = i - 1 : break
-		loop
+		keyword = "DPM2"
+		binmatch buf_exe,keyword, size_exe, strlen(keyword), 0, 0
+		if stat=0 {
+			errorno = 20	// [｢DPMX｣文字列が見つかりません]
+			goto *error
+		}
+		pos_dpmx=strsize
 
 	;	DPMXデータ読み込み
 		size_dpmx = size_exe - pos_dpmx
@@ -367,13 +362,14 @@ return
 		;	インデックスオフセットの検索
 			point_exenew = varptr(buf_exenew)
 			keyword = str(pos_dpmx - $10000)
-			if bsearch(0, point_exenew, size_exenew, keyword, strlen(keyword)) = -1 {
+			binmatch buf_exenew, keyword, size_exenew, strlen(keyword), 0, 0
+			if stat=0 {
 				errorno = 23	// [インデックスオフセットが見つかりません]
 				goto *error
 			}
-		
+					
 		;	インデックスオフセットの修正
-			poke buf_exenew, stat, ""+(size_exenew - $10000)
+			poke buf_exenew, strsize, ""+(size_exenew - $10000)
 		}
 	
 	;	DPMXデータの反映
@@ -401,7 +397,7 @@ return
 			mes "HSP製実行ファイルではありません"
 			swbreak
 		case 20
-			mes "｢DPMX｣文字列が見つかりません"
+			mes "｢DPM2｣文字列が見つかりません"
 			swbreak
 		case 21
 			mes "不正なアイコンファイルです"

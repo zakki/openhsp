@@ -1753,7 +1753,7 @@
 	mydir=getpath(s1,32)
 	myfile=getpath(s1,1+8+16)
 	if ios_proj!="" : myfile=ios_proj
-	basedir=mydir+"\\"+myfile
+	basedir=mydir+myfile
 	dirlist s1,basedir+"\\*.*"
 	if stat=0 {
 		dialog "プロジェクトフォルダがありません。\n"

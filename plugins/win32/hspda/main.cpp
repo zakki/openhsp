@@ -4,8 +4,8 @@
 //				onion software/onitama 1999
 //
 
-#include <windows.h>
 #include <stdio.h>
+#include "windows.h"
 
 int WINAPI hspda_DllMain (HINSTANCE hInstance, DWORD fdwReason, PVOID pvReserved);
 

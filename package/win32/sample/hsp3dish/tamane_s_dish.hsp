@@ -1,4 +1,5 @@
 #include "hsp3dish.as"
+#pack "tamane_s1.png"
 
 	;	標準のサイズで表示
 	screen 0,640,480

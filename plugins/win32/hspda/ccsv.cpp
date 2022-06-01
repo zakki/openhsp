@@ -4,8 +4,8 @@
 //			onion software/onitama 2002/3
 //
 #include <stdio.h>
-#include <windows.h>
 #include <mbstring.h>
+#include "windows.h"
 #include "ccsv.h"
 
 /*
@@ -113,7 +113,7 @@ void ccsv::StrCnvLC( char *src )
 	while(1) {
 		a1 = *p;if ( a1==0 ) break;
 		i = 0;
-		if (a1>=129) {						// ‘SŠp•¶Žšƒ`ƒFƒbƒN
+		if (a1>=129) {						// å…¨è§’æ–‡å­—ãƒã‚§ãƒƒã‚¯
 			if (a1<=159) { *p++=a1;p++;i++;	}
 			else if (a1>=224) { *p++=a1;p++;i++; }
 		}
@@ -133,7 +133,7 @@ void ccsv::StrCnvZ2H( char *src, char *result )
 	while(1) {
 		a1 = *s;
 		if (a1==0) break;
-		if (a1>=129) {						// ‘SŠp•¶Žšƒ`ƒFƒbƒN
+		if (a1>=129) {						// å…¨è§’æ–‡å­—ãƒã‚§ãƒƒã‚¯
 			if (a1<=159) {
 				s++; az = (a1<<8)|(*s);a1 = _mbctombb( az );
 			} else if (a1>=224) {
@@ -168,7 +168,7 @@ void ccsv::CsvCopy( char *target, char *src )
 		}
 		else {
 			if (flg) *p++=a1;
-			if (a1>=129) {					// ‘SŠp•¶Žšƒ`ƒFƒbƒN
+			if (a1>=129) {					// å…¨è§’æ–‡å­—ãƒã‚§ãƒƒã‚¯
 				if ((a1<=159)||(a1>=224)) {
 					a1=*s++;if (a1==0) break;
 					if (flg) *p++=a1;
@@ -182,7 +182,7 @@ void ccsv::CsvCopy( char *target, char *src )
 
 char *ccsv::StrStrZH( char *target, char *src )
 {
-	//		strstrŠÖ”‚Ì‘SŠp‘Î‰ž”Å
+	//		strstré–¢æ•°ã®å…¨è§’å¯¾å¿œç‰ˆ
 	//
 	unsigned char *p;
 	unsigned char *s;
@@ -201,8 +201,8 @@ char *ccsv::StrStrZH( char *target, char *src )
 			a3=*p2++;if (a3==0) break;
 			if (a2!=a3) break;
 		}
-		p++;							// ŒŸõˆÊ’u‚ðˆÚ“®
-		if (a1>=129) {					// ‘SŠp•¶Žšƒ`ƒFƒbƒN
+		p++;							// æ¤œç´¢ä½ç½®ã‚’ç§»å‹•
+		if (a1>=129) {					// å…¨è§’æ–‡å­—ãƒã‚§ãƒƒã‚¯
 			if ((a1<=159)||(a1>=224)) p++;
 		}
 	}
@@ -322,7 +322,7 @@ int ccsv::Search( char *search, int max, int start )
 			cline++; a=0; continue;
 		}
 		chkstr[a++]=a1;
-		if (a1>=129) {					// ‘SŠp•¶Žšƒ`ƒFƒbƒN
+		if (a1>=129) {					// å…¨è§’æ–‡å­—ãƒã‚§ãƒƒã‚¯
 			if ((a1<=159)||(a1>=224)) {
 				chkstr[a++] = *vs++;
 			}

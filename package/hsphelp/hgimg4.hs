@@ -916,6 +916,7 @@ optionƒpƒ‰ƒ[ƒ^[‚É‚æ‚èÝ’èŽž‚ÌƒIƒvƒVƒ‡ƒ“‚ð•t‰Á‚µ‚Ü‚·BˆÈ‰º‚Ìƒ}ƒNƒ‚ðŽw’è‚·‚é‚±
 
 ” ƒm[ƒhA°ƒm[ƒhA”Âƒm[ƒh‚Í‚»‚ê‚¼‚ê‚ÌŒ`ó‚ðƒRƒŠƒWƒ‡ƒ“‚Æ‚µ‚Äˆµ‚¢‚Ü‚·Boption‚ÉAGPPBIND_NOSCALE‚ðŽw’è‚µ‚½ê‡‚ÍAƒXƒP[ƒ‹‚ª”½‰f‚³‚ê‚Ä‚¢‚È‚¢‚à‚Æ‚à‚Æ‚ÌŒ`ó‚ªƒRƒŠƒWƒ‡ƒ“‚Æ‚È‚è‚Ü‚·B
 3Dƒ‚ƒfƒ‹ƒm[ƒh‚ÍA•W€‚Å‚Íƒ‚ƒfƒ‹‘S‘Ì‚ð•¢‚¤ƒXƒtƒBƒA(‹…‘Ì)‚ðƒRƒŠƒWƒ‡ƒ“‚Æ‚µ‚Äì¬‚µ‚Ü‚·B‚½‚¾‚µAoption‚ÉGPPBIND_MESH‚ðŽw’è‚µ‚½ê‡‚ÍAƒ‚ƒfƒ‹‚ÌŒ`ó‚»‚Ì‚à‚Ì‚ðƒRƒŠƒWƒ‡ƒ“‚Æ‚µ‚Äˆµ‚¢‚Ü‚·B‚½‚¾‚µA•¡ŽG‚Èƒ‚ƒfƒ‹Œ`ó‚ðƒRƒŠƒWƒ‡ƒ“‚É‚µ‚½ê‡AÚG”»’è‚É‚©‚©‚é•‰‰×‚ª‘‘å‚µ‚Ü‚·B
+‚Ü‚½Aƒ‚ƒfƒ‹‚ÌŒ`ó‚ðƒRƒŠƒWƒ‡ƒ“‚Æ‚µ‚Äˆµ‚¤Û‚É‚Í‰š‚ñ‚¾•”•ª‚ðl—¶‚·‚é•K—v‚ª‚ ‚è‚Ü‚·B‰šŒ^‚Ì•”•ª‚Í³‚µ‚­”»’è‚³‚ê‚È‚¢ê‡‚ª‚ ‚è‚Ü‚·B
 ƒRƒŠƒWƒ‡ƒ“‚ÍAƒ‚ƒfƒ‹‚ÌŒ`ó‚Æ‚Í“Æ—§‚µ‚½î•ñ‚Æ‚È‚è‚Ü‚·BƒRƒŠƒWƒ‡ƒ“‚ªì¬‚³‚ê‚½Œã‚ÍAƒm[ƒh‚ÌƒXƒP[ƒ‹’l‚Í”½‰f‚³‚ê‚Ü‚¹‚ñ‚Ì‚Å’ˆÓ‚µ‚Ä‚­‚¾‚³‚¢B
 
 
@@ -1919,6 +1920,7 @@ var‚ÅŽw’è‚³‚ê‚½•Ï”‚ÉŒ‹‰Ê‚ª‘ã“ü‚³‚ê‚Ü‚·B‰½‚ç‚©‚ÌƒGƒ‰[‚ª”­¶‚µ‚½ê‡‚ÍAƒ}ƒCƒiƒ
 	work2                  Õ“Ë‚µ‚½–Ê‚Ì–@üƒxƒNƒgƒ‹X,Y,Z’l
 ^p
 gppraytest–½—ß‚ÍA•¨—Ý’è‚³‚ê‚½ƒIƒuƒWƒFƒNƒg‚·‚×‚Ä‚ªÕ“Ë‚Ì‘ÎÛ‚Æ‚È‚è‚Ü‚·BƒRƒŠƒWƒ‡ƒ“ƒOƒ‹[ƒv‚ÌÝ’è‚Íl—¶‚³‚ê‚Ü‚¹‚ñB
+‚Ü‚½A”Âƒm[ƒh(gpplate‚Å¶¬)‚Æ‚ÌÕ“Ë‚Í³‚µ‚­”»’è‚³‚ê‚È‚¢‚±‚Æ‚ª‚ ‚é‚½‚ßAgppraytest‚ðŽg—p‚·‚éÛ‚É‚ÍŒú‚Ý‚Ì‚ ‚é•¨‘Ì(” ‚È‚Ç)‚ðŽg—p‚·‚é‚æ‚¤‚É‚µ‚Ä‚­‚¾‚³‚¢B
 %href
 gppcontact
 getcoli

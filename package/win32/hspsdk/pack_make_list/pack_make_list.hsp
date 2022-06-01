@@ -2,7 +2,7 @@
 
 ;--------------------------------------------------------------------------------------
 ;
-;	#packリスト作成ツール ver 2.3
+;	#packリスト作成ツール ver 2.4
 ;
 ;	By. しまくろねこ
 ;
@@ -29,7 +29,7 @@
 #const WINDOW_HEIGHT				620									; ウィンドウの縦サイズ
 
 #define APPLICATION_TITLE			"#packリスト作成ツール"
-#define APPLICATION_VERSION			"2.3"
+#define APPLICATION_VERSION			"2.4"
 
 #define CONFIG_FILE_NAME			"pack_make_list_dat.ini"			; 設定ファイル
 
@@ -907,7 +907,7 @@
 
 	repeat OBJ_ID_KAKUCHOUSHI_MAX
 		i = cnt
-		if strlen(extension(c, i)) > 0 {
+		if (strlen(extension(c, i)) > 0) || (wild_card(0)) {
 			chdir now_folder(0)
 			file_list = ""
 			dirlist file_list, "*." + extension(c, i) , 1
@@ -964,7 +964,9 @@
 			repeat notemax
 				line_buff = ""
 				noteget line_buff, cnt
-				if strlen(line_buff) > 0 {
+				get_ext		= getpath(line_buff, 2)
+				inst_wild	= instr(line_buff, 0, "*")
+				if (strlen(get_ext) > 0) || (inst_wild > 0) {
 					in_buff(buff_cnt) = line_buff
 					buff_cnt++
 				}
@@ -1024,8 +1026,10 @@
 		}
 	loop
 
-	if strlen(mesbox_kakuchoushi) > 0 {
-		sortnote mesbox_kakuchoushi, 0
+	if (strlen(mesbox_kakuchoushi) > 0) || (wild_card(0)) {
+		if strlen(mesbox_kakuchoushi) > 0 {
+			sortnote mesbox_kakuchoushi, 0
+		}
 		if wild_card(0) {
 			notesel wild_card_list
 			repeat notemax
@@ -1034,7 +1038,9 @@
 				noteadd pack_str + "\"" + line_buff + "\"", cnt, 1
 			loop
 			noteunsel
-			sortnote wild_card_list, 0
+			if strlen(wild_card_list) > 0 {
+				sortnote wild_card_list, 0
+			}
 			mesbox_kakuchoushi = wild_card_list + mesbox_kakuchoushi
 		}
 	}

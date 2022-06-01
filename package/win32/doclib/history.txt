@@ -5,8 +5,9 @@ Hot Soup Processor ver3.7beta                       HSP : Hot Soup Processor
 
 ・hsp3関連 更新履歴
 
-	2022/05/30 3.7 beta2
+	2022/06/01 3.7 beta2
 
+	HSPDAプラグインにバイナリデータ検索を行うbinmatch命令を追加
 	β1版でhsptvフォルダ参照の動作がHSP3.6と異なっていたのを修正
 	DPMファイル及びexe埋め込みファイルにフォルダ名と長いファイル名が使用できるように修正
 	#pack,#epack命令のファイル指定に'*'記号によるワイルドカードが使用できるように修正

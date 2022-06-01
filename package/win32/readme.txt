@@ -17,15 +17,17 @@ Hot Soup Processor 3.7β版は、アップデートされたHSP3.6の機能やSDKを
 アーカイブは、以下の構成になっています。
 
 +---hsp37beta             ルートフォルダ
+    +---android           android版HSP3Dishランタイム
     +---common	          標準のスクリプトヘッダ
+    +---ezinput	          かんたん入力データ
     +---hsptv	          HSPTVブラウザ、素材データ
     +---hsphelp	          ワンキーヘルプデータ
     +---doclib	          ドキュメントフォルダ
-    +---android	          android版HSP3Dishランタイム
-    +---iOS	          iOS版HSP3Dishランタイム
+    +---iOS	              iOS版HSP3Dishランタイム
     +---hsp3js	          WebGL版HSP3Dishランタイム
     +---runtime	          Windows版ランタイム
     +---sample	          サンプルスクリプト
+    +---support	          サポートツール実行データ
 
 アーカイブに含まれる「hsp37beta」フォルダを、ハードディスクに展開してご使用ください。(推奨パスは「C:\hsp37beta」になります)
 β版は、HSP3.6リリース版と共存させることが可能です。HSP3.6リリース版がインストールされているフォルダ(通常は、「C:\hsp36」になります)以外に配置して(上書きしないで)ご利用ください。(HSP3.7β版の各種設定は、既存のHSP3.6とも共有されます。)
@@ -62,7 +64,7 @@ http://hsp.tv/make/hsp3linux_pi.html
 新機能の詳細については、「HSP3.6 新機能ハイライト」「HSP3 アップデートガイド」にまとめられています。
 以下のドキュメントを参照してください。
 
-HSP3.6 新機能ハイライト
+HSP3.7 新機能ハイライト
 doclib/update37.htm
 
 HSP3 アップデートガイド

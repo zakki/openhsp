@@ -48,8 +48,6 @@ int WINAPI hspda_DllMain (HINSTANCE hInstance, DWORD fdwReason, PVOID pvReserved
 */
 /*------------------------------------------------------------*/
 
-static int qsort_order;
-
 typedef struct {
 	union {
 		int ikey;
@@ -58,122 +56,6 @@ typedef struct {
 	} as;
 	int info;
 } DATA;
-
-static void swap(DATA *a, DATA *b)
-{
-    DATA t;
-    t = *a;
-    *a = *b;
-    *b = t;
-}
-
-static void rquickSort(DATA *data, int asdes, int first, int last)
-{
-	//		ƒNƒCƒbƒNƒ\[ƒg
-	//
-    int i, j, x;
-
-    i = first;
-    j = last;
-    //x = (data[i].as.ikey / 2) + (data[j].as.ikey / 2);
-	x = (data[i].as.ikey + data[j].as.ikey)/2; 
-
-//  while (i < j) {
-
-    while (1) {
-        if (asdes == 0) {
-            while (data[i].as.ikey < x) i++;
-            while (data[j].as.ikey > x) j--;
-        } else {
-            while (data[i].as.ikey > x) i++;
-            while (data[j].as.ikey < x) j--;
-        }
-
-        if (i >= j) break;
-        swap(&data[i], &data[j]);
-        i++;
-        j--;
-/*
-        if (i < j) {
-            swap(&data[i], &data[j]);
-            i++;
-            j--;
-        }
-*/
-    }
-    if (first < i - 1) rquickSort(data, asdes, first, i - 1);
-    if (last  > j + 1) rquickSort(data, asdes, j + 1, last);
-}
-
-void QuickSort( DATA *data, int nmem, int asdes )
-{
-    if (nmem <= 1) return;
-    rquickSort(data, asdes, 0, nmem - 1);
-}
-
-
-int compare_int( const void *a, const void *b )
-{
-    const DATA *data_a = (DATA *)a;
-    const DATA *data_b = (DATA *)b;
-
-    return data_a->as.ikey > data_b->as.ikey ? 1 : data_a->as.ikey == data_b->as.ikey ? 0 : -1;
-}
-
-
-int compare_intr( const void *a, const void *b )
-{
-    const DATA *data_a = (DATA *)a;
-    const DATA *data_b = (DATA *)b;
-
-	return data_b->as.ikey > data_a->as.ikey ? 1 : data_a->as.ikey == data_b->as.ikey ? 0 : -1;
-}
-
-
-void QuickSort2( DATA *data, int nmem, int asdes )
-{
-    if (nmem <= 1) return;
-	if ( asdes == 0 ) {
-		qsort( data, nmem, sizeof(DATA), compare_int );
-	} else {
-		qsort( data, nmem, sizeof(DATA), compare_intr );
-	}
-}
-
-
-void BubbleSortStr( DATA *data, int nmem, int asdes )
-{
-	int i, j;
-	for (i = 0; i < nmem - 1; i++) {
-	  for (j = nmem - 1; j >= i + 1; j--) {
-	    if (asdes == 0) {
-		  if ( strcmp( data[j].as.skey, data[j-1].as.skey)<0 )
-				swap(&data[j], &data[j-1]);
-		}
-		else {
-		  if ( strcmp( data[j].as.skey, data[j-1].as.skey)>0 )
-				swap(&data[j], &data[j-1]);
-		}
-	  }
-	}
-}
-
-
-void BubbleSortDouble( DATA *data, int nmem, int asdes )
-{
-	int i, j;
-	for (i = 0; i < nmem - 1; i++) {
-	  for (j = nmem - 1; j >= i + 1; j--) {
-	    if (asdes == 0) {
-			if ( data[j].as.dkey < data[j-1].as.dkey ) swap(&data[j], &data[j-1]);
-		}
-		else {
-			if ( data[j].as.dkey > data[j-1].as.dkey ) swap(&data[j], &data[j-1]);
-		}
-	  }
-	}
-}
-
 
 int NoteToData( char *adr, DATA *data )
 {
@@ -247,33 +129,6 @@ void DataToNote( DATA *data, char *adr, int num )
 }
 
 
-void StrToData( char *adr, int num, int len, DATA *data )
-{
-	int a;
-	char *p;
-	p=adr;
-	for(a=0;a<num;a++) {
-		data[a].as.skey=p;
-		data[a].info=a;
-		p+=len;
-	}
-}
-
-
-void DataToStr( DATA *data, char *adr, int num, int len )
-{
-	int a;
-	char *p;
-	char *s;
-	p=adr;
-	for(a=0;a<num;a++) {
-		s=data[a].as.skey;
-		lstrcpyn( p, s, len );
-		p+=len;
-	}
-}
-
-
 /*------------------------------------------------------------*/
 /*
 		HSP interface
@@ -320,8 +175,8 @@ static void DataInc( int n )
 
 static void *Hsp3GetBlockSize( HSPEXINFO *hei, PVal *pv, APTR ap, int *size )
 {
-	//		(HSP3—p)
-	//		pv,ap‚©‚çƒƒ‚ƒŠƒuƒƒbƒN‚ğæ“¾‚·‚é
+	//		(HSP3ç”¨)
+	//		pv,apã‹ã‚‰ãƒ¡ãƒ¢ãƒªãƒ–ãƒ­ãƒƒã‚¯ã‚’å–å¾—ã™ã‚‹
 	//
 	PDAT *pd;
 	HspVarProc *proc;
@@ -329,216 +184,6 @@ static void *Hsp3GetBlockSize( HSPEXINFO *hei, PVal *pv, APTR ap, int *size )
 	pv->offset = ap;
 	pd =  proc->GetPtr( pv );
 	return proc->GetBlockSize( pv,pd,size );
-}
-
-
-EXPORT BOOL WINAPI sortval( HSPEXINFO *hei, int p2, int p3, int p4 )
-{
-	//
-	//		sortval val, order (type$202)
-	//
-	int a,i;
-	int *p;
-	double *dp;
-	PVal *p1;
-	APTR ap;
-	int order;
-
-	ap = hei->HspFunc_prm_getva( &p1 );		// ƒpƒ‰ƒ[ƒ^1:•Ï”
-	order = hei->HspFunc_prm_getdi( 0 );	// ƒpƒ‰ƒ[ƒ^2:”’l
-
-	i=p1->len[1];
-	if (i<=0) return -1;
-	switch(p1->flag) {
-	case 3:						// double
-		dp=(double *)p1->pt;
-		DataIni( i );
-		for(a=0;a<i;a++) {
-			dtmp[a].as.dkey=dp[a];
-			dtmp[a].info=a;
-		}
-		BubbleSortDouble( dtmp, i, order );
-		for(a=0;a<i;a++) {
-			//dp[a]=dtmp[a].as.dkey;
-			hei->HspFunc_prm_setva( p1, a, HSPVAR_FLAG_DOUBLE, &(dtmp[a].as.dkey) );	// •Ï”‚É’l‚ğ‘ã“ü
-		}
-		break;
-	case 4:						// int
-		p=(int *)p1->pt;
-		DataIni( i );
-		for(a=0;a<i;a++) {
-			dtmp[a].as.ikey=p[a];
-			dtmp[a].info=a;
-		}
-		QuickSort2( dtmp, i, order );
-		for(a=0;a<i;a++) {
-			p[a]=dtmp[a].as.ikey;
-		}
-		break;
-	default:
-		return -1;
-	}
-
-	return 0;
-}
-
-
-EXPORT BOOL WINAPI sortstr( HSPEXINFO *hei, int p1, int p2, int p3 )
-{
-	//
-	//		sortstr val, order (type$202)
-	//
-	int i,len,sflag,size;
-	char *p;
-	char *psrc;
-	PVal *pv;
-	APTR ap;
-	CMemBuf buf;
-
-	ap = hei->HspFunc_prm_getva( &pv );		// ƒpƒ‰ƒ[ƒ^1:•Ï”
-	sflag = hei->HspFunc_prm_getdi( 0 );	// ƒpƒ‰ƒ[ƒ^2:”’l
-
-	if (( pv->flag != 2 )||( pv->len[2] != 0 )||( ap != 0 )) return -1;
-	len = pv->len[1];
-	DataIni( len );
-
-	for(i=0;i<len;i++) {
-		int pos = buf.GetSize();
-		p = (char *)Hsp3GetBlockSize( hei, pv, i, &size );
-		buf.PutStrBlock( p );
-
-		dtmp[i].as.ikey = pos;
-		dtmp[i].info = i;
-	}
-	for(i=0;i<len;i++) {
-		dtmp[i].as.skey = buf.GetBuffer() + dtmp[i].as.ikey;
-	}
-
-	BubbleSortStr( dtmp, len, sflag );
-
-	for(i=0;i<len;i++) {
-		psrc = dtmp[i].as.skey;
-		hei->HspFunc_prm_setva( pv, i, HSPVAR_FLAG_STR, psrc );	// •Ï”‚É’l‚ğ‘ã“ü
-	}
-
-	return 0;
-}
-
-
-/*
-EXPORT BOOL WINAPI sortstr( PVAL2 *p1, int p2, int p3, int p4 )
-{
-	//
-	//		sortstr val, order (type$83)
-	//
-	int i,len;
-	char *p;
-	char *stmp;
-
-	len=(p1->len[1])<<2;
-	i=p1->len[2];
-	p=p1->pt;
-
-	if (p1->flag!=2) return -1;
-	if (i<=0) return -1;
-
-	DataIni( i );
-
-	stmp=(char *)malloc( len*i );
-	memcpy( stmp, p, len*i );
-	StrToData( stmp, i, len, dtmp );
-	BubbleSortStr( dtmp, i, p2 );
-	DataToStr( dtmp, p, i, len );
-	free(stmp);
-	
-	
-//	for(a=0;a<i;a++) {
-//		p[0]=48+a;
-//		p+=len<<2;
-//	}
-
-	return 0;
-}
-*/
-
-
-
-EXPORT BOOL WINAPI sortnote( HSPEXINFO *hei, int p1, int p2, int p3 )
-{
-	//
-	//		sortnote val, order (type$202)
-	//
-	int i,size,sflag;
-	char *p;
-	char *stmp;
-	PVal *pv;
-	APTR ap;
-
-	ap = hei->HspFunc_prm_getva( &pv );		// ƒpƒ‰ƒ[ƒ^1:•Ï”
-	sflag = hei->HspFunc_prm_getdi( 0 );	// ƒpƒ‰ƒ[ƒ^2:”’l
-
-	p = (char *)Hsp3GetBlockSize( hei, pv, ap, &size );
-	i = GetNoteLines(p);
-	if ( i <= 0 ) return -1;
-
-	//Alertf( "%d[%s]", size,p );
-
-	DataIni( i );
-
-	NoteToData( p, dtmp );
-	BubbleSortStr( dtmp, i, sflag );
-	stmp = (char *)malloc( DataToNoteLen( dtmp, i ) + 1 );
-	DataToNote( dtmp, stmp, i );
-
-	hei->HspFunc_prm_setva( pv, ap, HSPVAR_FLAG_STR, stmp );	// •Ï”‚É’l‚ğ‘ã“ü
-
-	free( stmp );
-
-/*
-	len=p1->len[1];
-	p=p1->pt;
-
-	if (p1->flag!=2) return -1;
-
-	i=GetNoteLines(p);
-	if (i<=0) return -1;
-
-	DataIni( i );
-	stmp=(char *)malloc( len<<2 );
-	NoteToData( p, dtmp );
-	BubbleSortStr( dtmp, i, p2 );
-	DataToNote( dtmp, stmp, i );
-	lstrcpy( p,stmp );
-	free(stmp);
-*/
-
-	return 0;
-}
-
-
-EXPORT BOOL WINAPI sortget( HSPEXINFO *hei, int p1, int p2, int p3 )
-{
-	//
-	//		sortget val,index  (type$202)
-	//
-	PVal *pv;
-	APTR ap;
-	int result;
-	int n;
-
-	ap = hei->HspFunc_prm_getva( &pv );
-	n = hei->HspFunc_prm_getdi( 0 );
-
-	if ( dtmp == NULL ) {
-		return -1;
-	}
-	if (0 <= n && n < dtmp_size ) {
-		result=dtmp[n].info;
-	} else {
-		result=0;
-	}
-	hei->HspFunc_prm_setva( pv, ap, HSPVAR_FLAG_INT, &result );
-	return 0;
 }
 
 
@@ -574,7 +219,7 @@ EXPORT BOOL WINAPI csvnote( PVal *p1, char *p2, int p3, int p4 )
 		}
 		else {
 			*p++=a1;
-			if (a1>=129) {					// ‘SŠp•¶šƒ`ƒFƒbƒN
+			if (a1>=129) {					// å…¨è§’æ–‡å­—ãƒã‚§ãƒƒã‚¯
 				if ((a1<=159)||(a1>=224)) {
 					a1=*s++;if (a1==0) break;
 					*p++=a1;
@@ -604,9 +249,9 @@ EXPORT BOOL WINAPI csvstr( HSPEXINFO *hei, int _p1, int _p2, int _p3 )
 	PVal *pv2;
 	APTR ap2;
 
-	ap = hei->HspFunc_prm_getva( &pv );		// ƒpƒ‰ƒ[ƒ^1:•Ï”
-	ap2 = hei->HspFunc_prm_getva( &pv2 );	// ƒpƒ‰ƒ[ƒ^2:•Ï”
-	p3 = hei->HspFunc_prm_getdi( 0 );		// ƒpƒ‰ƒ[ƒ^3:”’l
+	ap = hei->HspFunc_prm_getva( &pv );		// ãƒ‘ãƒ©ãƒ¡ãƒ¼ã‚¿1:å¤‰æ•°
+	ap2 = hei->HspFunc_prm_getva( &pv2 );	// ãƒ‘ãƒ©ãƒ¡ãƒ¼ã‚¿2:å¤‰æ•°
+	p3 = hei->HspFunc_prm_getdi( 0 );		// ãƒ‘ãƒ©ãƒ¡ãƒ¼ã‚¿3:æ•°å€¤
 
 	if ( p3==0 ) spchr=','; else spchr=p3;
 
@@ -635,7 +280,7 @@ EXPORT BOOL WINAPI csvstr( HSPEXINFO *hei, int _p1, int _p2, int _p3 )
 		else {
 			if (a<limit) pbase[a++]=a1;
 
-			if (a1>=129) {					// ‘SŠp•¶šƒ`ƒFƒbƒN
+			if (a1>=129) {					// å…¨è§’æ–‡å­—ãƒã‚§ãƒƒã‚¯
 				if ((a1<=159)||(a1>=224)) {
 					a1=*s++;if (a1==0) break;
 					if (a<limit) pbase[a++]=a1;
@@ -851,7 +496,7 @@ EXPORT BOOL WINAPI rndf_ini( HSPEXINFO *hei, int _p1, int _p2, int _p3 )
 	//		rndf_ini seed  (type$202)
 	//
 	int p1;
-	p1 = hei->HspFunc_prm_getdi( -1 );		// ƒpƒ‰ƒ[ƒ^1:”’l
+	p1 = hei->HspFunc_prm_getdi( -1 );		// ãƒ‘ãƒ©ãƒ¡ãƒ¼ã‚¿1:æ•°å€¤
 	MTRandInit( p1 );
 	return 0;
 }
@@ -865,9 +510,9 @@ EXPORT BOOL WINAPI rndf_get( HSPEXINFO *hei, int _p1, int _p2, int _p3 )
 	PVal *pv;
 	APTR ap;
 	double dval;
-	ap = hei->HspFunc_prm_getva( &pv );		// ƒpƒ‰ƒ[ƒ^1:•Ï”
+	ap = hei->HspFunc_prm_getva( &pv );		// ãƒ‘ãƒ©ãƒ¡ãƒ¼ã‚¿1:å¤‰æ•°
 	dval = MTRandGet();
-	hei->HspFunc_prm_setva( pv, ap, HSPVAR_FLAG_DOUBLE, &dval );	// •Ï”‚É’l‚ğ‘ã“ü
+	hei->HspFunc_prm_setva( pv, ap, HSPVAR_FLAG_DOUBLE, &dval );	// å¤‰æ•°ã«å€¤ã‚’ä»£å…¥
 	return 0;
 }
 
@@ -880,10 +525,10 @@ EXPORT BOOL WINAPI rndf_geti( HSPEXINFO *hei, int _p1, int _p2, int _p3 )
 	PVal *pv;
 	APTR ap;
 	int p1,p2;
-	ap = hei->HspFunc_prm_getva( &pv );		// ƒpƒ‰ƒ[ƒ^1:•Ï”
-	p1 = hei->HspFunc_prm_getdi( 100 );		// ƒpƒ‰ƒ[ƒ^2:”’l
+	ap = hei->HspFunc_prm_getva( &pv );		// ãƒ‘ãƒ©ãƒ¡ãƒ¼ã‚¿1:å¤‰æ•°
+	p1 = hei->HspFunc_prm_getdi( 100 );		// ãƒ‘ãƒ©ãƒ¡ãƒ¼ã‚¿2:æ•°å€¤
 	p2 = MTRandGetInt( p1 );
-	hei->HspFunc_prm_setva( pv, ap, HSPVAR_FLAG_INT, &p2 );	// •Ï”‚É’l‚ğ‘ã“ü
+	hei->HspFunc_prm_setva( pv, ap, HSPVAR_FLAG_INT, &p2 );	// å¤‰æ•°ã«å€¤ã‚’ä»£å…¥
 	return 0;
 }
 
@@ -978,7 +623,7 @@ static FlexValue *pv_getfv( HSPEXINFO *hei, PVal *pv, int offset )
 
 static int pv_seekstruct( HSPEXINFO *hei, char *name )
 {
-	//		“Á’è–¼Ì‚Ìƒ‚ƒWƒ…[ƒ‹‚ğŒŸõ‚·‚é
+	//		ç‰¹å®šåç§°ã®ãƒ¢ã‚¸ãƒ¥ãƒ¼ãƒ«ã‚’æ¤œç´¢ã™ã‚‹
 	//
 	HSPCTX *hspctx;
 	STRUCTDAT *st;
@@ -1000,7 +645,7 @@ static int pv_seekstruct( HSPEXINFO *hei, char *name )
 
 static void *pv_setmodvar( HSPEXINFO *hei, PVal *pv, int offset, int id, int size )
 {
-	//		ƒ‚ƒWƒ…[ƒ‹•Ï”‚Ì“à—e‚ğV‹K‚Éİ’è‚·‚é
+	//		ãƒ¢ã‚¸ãƒ¥ãƒ¼ãƒ«å¤‰æ•°ã®å†…å®¹ã‚’æ–°è¦ã«è¨­å®šã™ã‚‹
 	//
 	PDAT *p;
 	HspVarProc *varproc;
@@ -1077,7 +722,7 @@ static int varsave_bye( char *fname )
 
 static int varsave_put_storage( HSPEXINFO *hei, PVal *pv, int encode, int opt )
 {
-	//		ŒÅ’è’·ƒXƒgƒŒ[ƒW‚Ì•Û‘¶
+	//		å›ºå®šé•·ã‚¹ãƒˆãƒ¬ãƒ¼ã‚¸ã®ä¿å­˜
 	//
 	if ( pv->mode != HSPVAR_MODE_MALLOC ) return -1;
 	switch ( pv->flag ) {
@@ -1121,9 +766,9 @@ static int varsave_put_storage( HSPEXINFO *hei, PVal *pv, int encode, int opt )
 
 		//Alertf( "#%d(%d) size(%d,%d) %s",fv->customid,max, fv->size, st->size, modname );
 
-		//		ƒ^ƒOƒR[ƒh + ƒ‚ƒWƒ…[ƒ‹•Ï”ŒÂ”, ƒ‚ƒWƒ…[ƒ‹–¼(64byte)‚ğ‹L˜^‚·‚é
+		//		ã‚¿ã‚°ã‚³ãƒ¼ãƒ‰ + ãƒ¢ã‚¸ãƒ¥ãƒ¼ãƒ«å¤‰æ•°å€‹æ•°, ãƒ¢ã‚¸ãƒ¥ãƒ¼ãƒ«å(64byte)ã‚’è¨˜éŒ²ã™ã‚‹
 		vardata->Put( (int)HSP3VARFILEFXCODE + max );
-		vardata->PutData( modname, 64 );				// ƒ‚ƒWƒ…[ƒ‹–¼‚ğ•Û‘¶‚·‚é
+		vardata->PutData( modname, 64 );				// ãƒ¢ã‚¸ãƒ¥ãƒ¼ãƒ«åã‚’ä¿å­˜ã™ã‚‹
 
 //		for(i=0;i<max;i++) {
 //			Alertf( "#%d(%s) PRM%d",i,modname, prm->mptype );
@@ -1134,9 +779,9 @@ static int varsave_put_storage( HSPEXINFO *hei, PVal *pv, int encode, int opt )
 			fv = pv_getfv( hei, pv, i );
 			fvbase = (PVal *)fv->ptr;
 
-			//		ƒ^ƒOƒR[ƒh + type‚ğ‹L˜^‚·‚é
+			//		ã‚¿ã‚°ã‚³ãƒ¼ãƒ‰ + typeã‚’è¨˜éŒ²ã™ã‚‹
 			vardata->Put( (int)HSP3VARFILEFXCODE + fv->type );
-			//		Àƒf[ƒ^‚ğ‹L˜^‚·‚é
+			//		å®Ÿãƒ‡ãƒ¼ã‚¿ã‚’è¨˜éŒ²ã™ã‚‹
 			if ( fv->type == FLEXVAL_TYPE_ALLOC ) {
 				for(j=0;j<max;j++) {
 					int pos;
@@ -1147,18 +792,18 @@ static int varsave_put_storage( HSPEXINFO *hei, PVal *pv, int encode, int opt )
 					varsave_putvar( hei, fvbase, encode, opt );
 					nowcnt = vardata->GetSize();
 					cntbak = (int *)(vardata->GetBuffer() + pos);
-					*cntbak = nowcnt - prevcnt;			// Àƒf[ƒ^ƒTƒCƒY‚ğ‹L˜^‚·‚é
+					*cntbak = nowcnt - prevcnt;			// å®Ÿãƒ‡ãƒ¼ã‚¿ã‚µã‚¤ã‚ºã‚’è¨˜éŒ²ã™ã‚‹
 					fvbase++;
 				}
 			}
 		}
 		break;
 		}
-	case HSPVAR_FLAG_COMSTRUCT:							// COMOBJŒ^‚Í–³Œø‚É‚·‚é
-	case 7:												// VariantŒ^‚Í–³Œø‚É‚·‚é
+	case HSPVAR_FLAG_COMSTRUCT:							// COMOBJå‹ã¯ç„¡åŠ¹ã«ã™ã‚‹
+	case 7:												// Variantå‹ã¯ç„¡åŠ¹ã«ã™ã‚‹
 		return -1;
 	default:
-		vardata->PutData( pv->pt, pv->size );			// •Ï”‚Ì‚Âƒƒ‚ƒŠ‘S‘Ì‚ğ•Û‘¶‚·‚é
+		vardata->PutData( pv->pt, pv->size );			// å¤‰æ•°ã®æŒã¤ãƒ¡ãƒ¢ãƒªå…¨ä½“ã‚’ä¿å­˜ã™ã‚‹
 		break;
 	}
 	return 0;
@@ -1167,7 +812,7 @@ static int varsave_put_storage( HSPEXINFO *hei, PVal *pv, int encode, int opt )
 
 static int varsave_put_flexstorage( HSPEXINFO *hei, PVal *pv, int encode, int opt )
 {
-	//		‰Â•Ï’·ƒXƒgƒŒ[ƒW‚Ì•Û‘¶
+	//		å¯å¤‰é•·ã‚¹ãƒˆãƒ¬ãƒ¼ã‚¸ã®ä¿å­˜
 	//
 	int i,max;
 	int size;
@@ -1178,10 +823,10 @@ static int varsave_put_flexstorage( HSPEXINFO *hei, PVal *pv, int encode, int op
 	for(i=0;i<max;i++) {
 		p = pv_getblock( hei, pv, i, &size );
 
-		//		ƒ^ƒOƒR[ƒh, size(int), Àƒf[ƒ^(size)‚ğ‹L˜^‚·‚é
+		//		ã‚¿ã‚°ã‚³ãƒ¼ãƒ‰, size(int), å®Ÿãƒ‡ãƒ¼ã‚¿(size)ã‚’è¨˜éŒ²ã™ã‚‹
 		vardata->Put( (int)HSP3VARFILEFXCODE );
 		vardata->Put( size );
-		vardata->PutData( p, size );					// •Ï”‚Ì‚Âƒƒ‚ƒŠ‘S‘Ì‚ğ•Û‘¶‚·‚é
+		vardata->PutData( p, size );					// å¤‰æ•°ã®æŒã¤ãƒ¡ãƒ¢ãƒªå…¨ä½“ã‚’ä¿å­˜ã™ã‚‹
 	}
 	return 0;
 }
@@ -1218,12 +863,12 @@ static int varsave_put( HSPEXINFO *hei, int varid, int encode, int opt )
 		name = tmp;
 	}
 
-	dat.master = *mem_var;					// ‚Æ‚è‚ ‚¦‚¸PVal‚ğ•Û‘¶‚·‚é
+	dat.master = *mem_var;					// ã¨ã‚Šã‚ãˆãšPValã‚’ä¿å­˜ã™ã‚‹
 	dat.encode = encode;
 	dat.opt = opt;
 
 	dat.name = vardata->GetSize();
-	vardata->PutStrBlock( name );			// •Ï”–¼‚ğ•Û‘¶‚·‚é
+	vardata->PutStrBlock( name );			// å¤‰æ•°åã‚’ä¿å­˜ã™ã‚‹
 	dat.data = vardata->GetSize();
 
 	res = varsave_putvar( hei, mem_var, encode, opt );
@@ -1250,7 +895,7 @@ static void varload_bye( void )
 
 static int varload_get_storage_struct( HSPEXINFO *hei, char *vdata, PVal *pv, PVal *pv2, int encode, int opt )
 {
-	//		ŒÅ’è’·ƒXƒgƒŒ[ƒW(STRUCT)‚Ìæ“¾
+	//		å›ºå®šé•·ã‚¹ãƒˆãƒ¬ãƒ¼ã‚¸(STRUCT)ã®å–å¾—
 	//
 	int i,j,code,max,vmax,type;
 	int custid;
@@ -1264,14 +909,14 @@ static int varload_get_storage_struct( HSPEXINFO *hei, char *vdata, PVal *pv, PV
 	PVal *fvmem;
 	STRUCTDAT *st;
 
-	pv_dispose( hei,pv );								// •Ï”‚ğ”jŠü
+	pv_dispose( hei,pv );								// å¤‰æ•°ã‚’ç ´æ£„
 	*pv = *pv2;
-	pv_alloc( hei, pv, NULL );							// •Ï”‚ğÄŠm•Û
+	pv_alloc( hei, pv, NULL );							// å¤‰æ•°ã‚’å†ç¢ºä¿
 
 	mem = vdata;
 	vmax = pv->size / sizeof(FlexValue);
 
-	//		ƒ^ƒOƒR[ƒh + ƒ‚ƒWƒ…[ƒ‹•Ï”ŒÂ”, ƒ‚ƒWƒ…[ƒ‹–¼(64byte)‚ğæ“¾
+	//		ã‚¿ã‚°ã‚³ãƒ¼ãƒ‰ + ãƒ¢ã‚¸ãƒ¥ãƒ¼ãƒ«å¤‰æ•°å€‹æ•°, ãƒ¢ã‚¸ãƒ¥ãƒ¼ãƒ«å(64byte)ã‚’å–å¾—
 	code = *(int *)mem;
 	max = code & 0xffff;
 	code &= 0xffff0000;
@@ -1294,7 +939,7 @@ static int varload_get_storage_struct( HSPEXINFO *hei, char *vdata, PVal *pv, PV
 
 	for(i=0;i<vmax;i++) {
 
-		//		ƒ^ƒOƒR[ƒh + type‚ğæ“¾‚·‚é
+		//		ã‚¿ã‚°ã‚³ãƒ¼ãƒ‰ + typeã‚’å–å¾—ã™ã‚‹
 		code = *(int *)mem;
 		type = code & 0xffff;
 		code &= 0xffff0000;
@@ -1325,16 +970,16 @@ static int varload_get_storage_struct( HSPEXINFO *hei, char *vdata, PVal *pv, PV
 
 static int varload_get_storage_label( HSPEXINFO *hei, char *vdata, PVal *pv, PVal *pv2, int encode, int opt )
 {
-	//		ŒÅ’è’·ƒXƒgƒŒ[ƒW(LABEL)‚Ìæ“¾
+	//		å›ºå®šé•·ã‚¹ãƒˆãƒ¬ãƒ¼ã‚¸(LABEL)ã®å–å¾—
 	//
 	int *offsets;
 	int len;
 	int i;
 	unsigned short **p;
 	unsigned short *mem_mcs = hei->hspctx->mem_mcs;
-	pv_dispose( hei,pv );								// •Ï”‚ğ”jŠü
+	pv_dispose( hei,pv );								// å¤‰æ•°ã‚’ç ´æ£„
 	*pv = *pv2;
-	pv_alloc( hei, pv, NULL );							// •Ï”‚ğÄŠm•Û
+	pv_alloc( hei, pv, NULL );							// å¤‰æ•°ã‚’å†ç¢ºä¿
 	offsets = (int *)vdata;
 	p = (unsigned short **)pv->pt;
 	len = pv->size / sizeof(unsigned short *);
@@ -1352,28 +997,28 @@ static int varload_get_storage_label( HSPEXINFO *hei, char *vdata, PVal *pv, PVa
 
 static int varload_get_storage( HSPEXINFO *hei, char *vdata, PVal *pv, PVal *pv2, int encode, int opt )
 {
-	//		ŒÅ’è’·ƒXƒgƒŒ[ƒW‚Ìæ“¾
+	//		å›ºå®šé•·ã‚¹ãƒˆãƒ¬ãƒ¼ã‚¸ã®å–å¾—
 	//
-	pv_dispose( hei,pv );								// •Ï”‚ğ”jŠü
+	pv_dispose( hei,pv );								// å¤‰æ•°ã‚’ç ´æ£„
 	*pv = *pv2;
-	pv_alloc( hei, pv, NULL );							// •Ï”‚ğÄŠm•Û
-	memcpy( pv->pt, vdata, pv->size );					// ƒf[ƒ^‚ğƒRƒs[
+	pv_alloc( hei, pv, NULL );							// å¤‰æ•°ã‚’å†ç¢ºä¿
+	memcpy( pv->pt, vdata, pv->size );					// ãƒ‡ãƒ¼ã‚¿ã‚’ã‚³ãƒ”ãƒ¼
 	return 0;
 }
 
 
 static int varload_get_flexstorage( HSPEXINFO *hei, char *vdata, PVal *pv, PVal *pv2, int encode, int opt )
 {
-	//		‰Â•Ï’·ƒXƒgƒŒ[ƒW‚Ìæ“¾
+	//		å¯å¤‰é•·ã‚¹ãƒˆãƒ¬ãƒ¼ã‚¸ã®å–å¾—
 	//
 	int i,code,max;
 	int size;
 	char *p;
 	char *mem;
 
-	pv_dispose( hei,pv );								// •Ï”‚ğ”jŠü
+	pv_dispose( hei,pv );								// å¤‰æ•°ã‚’ç ´æ£„
 	*pv = *pv2;
-	pv_alloc( hei, pv, NULL );							// •Ï”‚ğÄŠm•Û
+	pv_alloc( hei, pv, NULL );							// å¤‰æ•°ã‚’å†ç¢ºä¿
 
 	mem = vdata;
 	max = pv->size / sizeof(char *);
@@ -1385,7 +1030,7 @@ static int varload_get_flexstorage( HSPEXINFO *hei, char *vdata, PVal *pv, PVal 
 		mem += sizeof(int);
 		pv_allocblock( hei, pv, i, size );
 		p = pv_getblock( hei, pv, i, &code );
-		memcpy( p, mem, size );							// ƒf[ƒ^‚ğƒRƒs[
+		memcpy( p, mem, size );							// ãƒ‡ãƒ¼ã‚¿ã‚’ã‚³ãƒ”ãƒ¼
 		mem += size;
 	}
 
@@ -1474,10 +1119,10 @@ EXPORT BOOL WINAPI getvarid( HSPEXINFO *hei, int _p1, int _p2, int _p3 )
 	APTR ap;
 	char *p1;
 	int p2;
-	ap = hei->HspFunc_prm_getva( &pv );		// ƒpƒ‰ƒ[ƒ^1:•Ï”
-	p1 = hei->HspFunc_prm_gets();			// ƒpƒ‰ƒ[ƒ^2:•¶š—ñ
+	ap = hei->HspFunc_prm_getva( &pv );		// ãƒ‘ãƒ©ãƒ¡ãƒ¼ã‚¿1:å¤‰æ•°
+	p1 = hei->HspFunc_prm_gets();			// ãƒ‘ãƒ©ãƒ¡ãƒ¼ã‚¿2:æ–‡å­—åˆ—
 	p2 = hei->HspFunc_seekvar( p1 );
-	hei->HspFunc_prm_setva( pv, ap, HSPVAR_FLAG_INT, &p2 );	// •Ï”‚É’l‚ğ‘ã“ü
+	hei->HspFunc_prm_setva( pv, ap, HSPVAR_FLAG_INT, &p2 );	// å¤‰æ•°ã«å€¤ã‚’ä»£å…¥
 	return 0;
 }
 
@@ -1491,10 +1136,10 @@ EXPORT BOOL WINAPI getvarname( HSPEXINFO *hei, int _p1, int _p2, int _p3 )
 	APTR ap;
 	int p1;
 	char *p2;
-	ap = hei->HspFunc_prm_getva( &pv );		// ƒpƒ‰ƒ[ƒ^1:•Ï”
-	p1 = hei->HspFunc_prm_getdi( 0 );		// ƒpƒ‰ƒ[ƒ^2:”’l
+	ap = hei->HspFunc_prm_getva( &pv );		// ãƒ‘ãƒ©ãƒ¡ãƒ¼ã‚¿1:å¤‰æ•°
+	p1 = hei->HspFunc_prm_getdi( 0 );		// ãƒ‘ãƒ©ãƒ¡ãƒ¼ã‚¿2:æ•°å€¤
 	p2 = hei->HspFunc_varname( p1 );
-	hei->HspFunc_prm_setva( pv, ap, HSPVAR_FLAG_STR, p2 );	// •Ï”‚É’l‚ğ‘ã“ü
+	hei->HspFunc_prm_setva( pv, ap, HSPVAR_FLAG_STR, p2 );	// å¤‰æ•°ã«å€¤ã‚’ä»£å…¥
 	return 0;
 }
 
@@ -1508,10 +1153,10 @@ EXPORT BOOL WINAPI getmaxvar( HSPEXINFO *hei, int _p1, int _p2, int _p3 )
 	APTR ap;
 	HSPCTX *hspctx;
 	int p2;
-	ap = hei->HspFunc_prm_getva( &pv );		// ƒpƒ‰ƒ[ƒ^1:•Ï”
+	ap = hei->HspFunc_prm_getva( &pv );		// ãƒ‘ãƒ©ãƒ¡ãƒ¼ã‚¿1:å¤‰æ•°
 	hspctx = hei->hspctx;
 	p2 = hspctx->hsphed->max_val;
-	hei->HspFunc_prm_setva( pv, ap, HSPVAR_FLAG_INT, &p2 );	// •Ï”‚É’l‚ğ‘ã“ü
+	hei->HspFunc_prm_setva( pv, ap, HSPVAR_FLAG_INT, &p2 );	// å¤‰æ•°ã«å€¤ã‚’ä»£å…¥
 	return 0;
 }
 
@@ -1525,7 +1170,7 @@ EXPORT BOOL WINAPI vsave( HSPEXINFO *hei, int _p1, int _p2, int _p3 )
 	char *p1;
 	HSPCTX *hspctx;
 
-	p1 = hei->HspFunc_prm_gets();			// ƒpƒ‰ƒ[ƒ^1:•¶š—ñ
+	p1 = hei->HspFunc_prm_gets();			// ãƒ‘ãƒ©ãƒ¡ãƒ¼ã‚¿1:æ–‡å­—åˆ—
 
 	hspctx = hei->hspctx;
 	max = hspctx->hsphed->max_val;
@@ -1549,7 +1194,7 @@ EXPORT BOOL WINAPI vload( HSPEXINFO *hei, int _p1, int _p2, int _p3 )
 	char *tmp;
 	HSPCTX *hspctx;
 
-	p1 = hei->HspFunc_prm_gets();			// ƒpƒ‰ƒ[ƒ^1:•¶š—ñ
+	p1 = hei->HspFunc_prm_gets();			// ãƒ‘ãƒ©ãƒ¡ãƒ¼ã‚¿1:æ–‡å­—åˆ—
 
 	hspctx = hei->hspctx;
 	max = hspctx->hsphed->max_val;
@@ -1594,7 +1239,7 @@ EXPORT BOOL WINAPI vsave_put( HSPEXINFO *hei, int _p1, int _p2, int _p3 )
 
 	type = *(hei->nptype);
 	val = *(hei->npval);
-	ap = hei->HspFunc_prm_getva( &pv );		// ƒpƒ‰ƒ[ƒ^1:•Ï”
+	ap = hei->HspFunc_prm_getva( &pv );		// ãƒ‘ãƒ©ãƒ¡ãƒ¼ã‚¿1:å¤‰æ•°
 
 	if ( type != TYPE_VAR ) return -2;
 	res = varsave_put( hei, val, 0, 0 );
@@ -1609,7 +1254,7 @@ EXPORT BOOL WINAPI vsave_end( HSPEXINFO *hei, int _p1, int _p2, int _p3 )
 	//
 	int res;
 	char *p1;
-	p1 = hei->HspFunc_prm_gets();			// ƒpƒ‰ƒ[ƒ^1:•¶š—ñ
+	p1 = hei->HspFunc_prm_gets();			// ãƒ‘ãƒ©ãƒ¡ãƒ¼ã‚¿1:æ–‡å­—åˆ—
 	res = varsave_bye( p1 );
 	return res;
 }
@@ -1623,7 +1268,7 @@ EXPORT BOOL WINAPI vload_start( HSPEXINFO *hei, int _p1, int _p2, int _p3 )
 	int res;
 	char *p1;
 
-	p1 = hei->HspFunc_prm_gets();			// ƒpƒ‰ƒ[ƒ^1:•¶š—ñ
+	p1 = hei->HspFunc_prm_gets();			// ãƒ‘ãƒ©ãƒ¡ãƒ¼ã‚¿1:æ–‡å­—åˆ—
 
 	res = hei->HspFunc_fsize( p1 );
 	if ( res <= 0 ) return -1;
@@ -1652,7 +1297,7 @@ EXPORT BOOL WINAPI vload_get( HSPEXINFO *hei, int _p1, int _p2, int _p3 )
 
 	type = *(hei->nptype);
 	val = *(hei->npval);
-	ap = hei->HspFunc_prm_getva( &pv );		// ƒpƒ‰ƒ[ƒ^1:•Ï”
+	ap = hei->HspFunc_prm_getva( &pv );		// ãƒ‘ãƒ©ãƒ¡ãƒ¼ã‚¿1:å¤‰æ•°
 
 	if ( type != TYPE_VAR ) return -2;
 	res = varload_get( hei, val, NULL, 0, 0 );
@@ -1668,6 +1313,78 @@ EXPORT BOOL WINAPI vload_end( HSPEXINFO *hei, int _p1, int _p2, int _p3 )
 	varload_bye();
 	free( vload_tmp );
 	return 0;
+}
+
+
+/*------------------------------------------------------------*/
+
+
+EXPORT BOOL WINAPI binmatch(HSPEXINFO* hei, int _p1, int _p2, int _p3)
+{
+	//
+	//		binmatch var, var2, varsize, var2size, offset, option  (type$202)
+	//
+	int p1, p2, p3, p4, len, limit, i, j, cur, total, ptr;
+	unsigned char* pbase;
+	unsigned char* ptarget;
+
+	unsigned char* s;
+	unsigned char* p;
+	unsigned char a1;
+	unsigned char a2;
+
+	HSPCTX* ctx;
+	PVal* pv;
+	APTR ap;
+	PVal* pv2;
+	APTR ap2;
+
+	ap = hei->HspFunc_prm_getva(&pv);		// ãƒ‘ãƒ©ãƒ¡ãƒ¼ã‚¿1:å¤‰æ•°
+	ap2 = hei->HspFunc_prm_getva(&pv2);	// ãƒ‘ãƒ©ãƒ¡ãƒ¼ã‚¿2:å¤‰æ•°
+
+	ptarget = (unsigned char*)Hsp3GetBlockSize(hei, pv, ap, &len);
+	pbase = (unsigned char*)Hsp3GetBlockSize(hei, pv2, ap2, &limit);
+
+	p1 = hei->HspFunc_prm_getdi(len);		// ãƒ‘ãƒ©ãƒ¡ãƒ¼ã‚¿3:æ•°å€¤
+	p2 = hei->HspFunc_prm_getdi(limit);		// ãƒ‘ãƒ©ãƒ¡ãƒ¼ã‚¿4:æ•°å€¤
+	p3 = hei->HspFunc_prm_getdi(0);			// ãƒ‘ãƒ©ãƒ¡ãƒ¼ã‚¿5:æ•°å€¤
+	p4 = hei->HspFunc_prm_getdi(0);			// ãƒ‘ãƒ©ãƒ¡ãƒ¼ã‚¿6:æ•°å€¤
+
+	ctx = hei->hspctx;
+	total = 0;
+	ptr = -1;
+
+	ptarget = (unsigned char*)Hsp3GetBlockSize(hei, pv, ap, &len);
+	if (p1 > 0) {
+		if (p1<len) len = p1;
+	}
+	pbase = (unsigned char*)Hsp3GetBlockSize(hei, pv2, ap2, &limit);
+	if (p2 > 0) {
+		if (p2 < limit) limit = p2;
+	}
+	cur = p3;
+	while (1) {
+		if (cur >= len) break;
+		p = ptarget + cur;
+		s = pbase;
+		i = cur; j = 0;
+		while (1) {
+			if (i >= len) break;
+			a1 = *s++;
+			a2 = *p++;
+			if (a1 != a2) break;
+			i++; j++;
+			if (j >= limit) {
+				total++;
+				ptr = cur;
+				if (p4 == 0) cur = len;		// ãƒãƒƒãƒã—ãŸã‚‰çµ‚äº†ã™ã‚‹
+				break;
+			}
+		}
+		cur++;								// æ¤œç´¢ä½ç½®ã‚’ç§»å‹•
+	}
+	ctx->strsize = ptr;
+	return -total;
 }
 
 
