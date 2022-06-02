@@ -5,7 +5,7 @@ Hot Soup Processor ver3.7beta                       HSP : Hot Soup Processor
 
 ・hsp3関連 更新履歴
 
-	2022/06/01 3.7 beta2
+	2022/06/02 3.7 beta2
 
 	HSPDAプラグインにバイナリデータ検索を行うbinmatch命令を追加
 	β1版でhsptvフォルダ参照の動作がHSP3.6と異なっていたのを修正
@@ -14,6 +14,7 @@ Hot Soup Processor ver3.7beta                       HSP : Hot Soup Processor
 	button gosubによるボタン処理時にエラーが発生した際にウインドウが閉じる不具合を修正
 	コールバック先でonkey gotoの割り込みがかかった際にエラー43が出る不具合を修正
 	packoptリスト作成ツールを同梱、スクリプトエディタのメニューに追加
+	簡易的な麻雀の処理をまとめたmod_mahjongモジュールとサンプルを追加
 	[HSP3Dish] boxf命令の塗りつぶし範囲が標準ランタイムと異なる不具合を修正
 	[HSP3Dish][android] スタティックライブラリ導入によりHGIMG4のビルド時間を短縮
 	[HSP3Dish][Windows] デバイスロスト時にアプリが停止する不具合を修正
