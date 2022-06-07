@@ -7,13 +7,13 @@
 %ver
 3.7
 %note
-hgimg4dx.asまたはhgimg4.asをインクルードすること。
+hgimg3.as/hgimg4.as/hgimg4dx.asのいずれかをインクルードすること。
 %author
 onitama
 %dll
-hgimg4
+HGIMG3/HGIMG4共通
 %date
-2022/04/13
+2022/06/07
 %author
 onitama
 %url
@@ -1539,12 +1539,24 @@ idで指定しているイベントIDに、パラメーター設定イベントを追加します。
 ^p
 パラメーターID   内容
 ---------------------------------------
-PRMSET_MODE      動作モード
-PRMSET_FLAG      存在フラグ
-PRMSET_SHADE     シェーディングモード
-PRMSET_TIMER     タイマー
-PRMSET_MYGROUP   コリジョングループ値
-PRMSET_COLGROUP  対象グループ値
+		PRMSET_FLAG            オブジェクト登録フラグ(*)
+		PRMSET_MODE            モードフラグ値
+		PRMSET_ID              オブジェクトID(*)(HGIMG4のみ)
+		PRMSET_ALPHA           透明度(α値)(HGIMG4のみ)
+		PRMSET_SHADE           シェーディングモード(HGIMG3のみ)
+		PRMSET_TIMER           タイマー値
+		PRMSET_MYGROUP         自身のコリジョングループ
+		PRMSET_COLGROUP        衝突検出するコリジョングループ
+		PRMSET_SHAPE           形状ID(*)(HGIMG4のみ)
+		PRMSET_USEGPMAT        マテリアルID(HGIMG4のみ)
+		PRMSET_USEGPPHY        物理設定ID(*)(HGIMG4のみ)
+		PRMSET_COLILOG         コリジョンログID(*)(HGIMG4のみ)
+		PRMSET_FADE            フェードパラメーター(HGIMG4のみ)
+		PRMSET_SPRID           ソースバッファID(スプライトのみ)(HGIMG4のみ)
+		PRMSET_SPRCELID        ソースのセルID(スプライトのみ)(HGIMG4のみ)
+		PRMSET_SPRGMODE        コピーモード(スプライトのみ)(HGIMG4のみ)
+
+		(*)の項目は読み出しのみ
 ^p
 
 %href

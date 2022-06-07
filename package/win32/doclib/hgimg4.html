@@ -58,13 +58,13 @@
 		<li><a href="#2DSHADER">2D描画時の独自シェーダー設定</a></li>
 		<li><a href="#RENDERBUFFER">レンダリングバッファ</a></li>
 		<li><a href="#EVENT">イベントリスト</a></li>
-		<li><a href="#POSTEFFECT">ポストエフェクト</a></li>
+		<li><a href="#POSTEFFECT">ポストエフェクト<span class="new">（New!）</span></a></li>
 		<li><a href="#FREEMESH">自由な形状の作成</a></li>
 		<li><a href="#NODEINFO">階層情報の取得</a></li>
 		<li><a href="#MEMLIMIT">登録の限界数について</a></li>
 		<li><a href="#ERRORLOG">エラーログ</a></li>
 		<li><a href="#NOTICE">現バージョンでの注意点</a></li>
-		<li><a href="#PACKFILE">PACKFILEの対応について</a><span class="new">（New!）</span></a></li>
+		<li><a href="#PACKFILE">PACKFILEの対応について<span class="new">（New!）</span></a></li>
 		<li><a href="#LICENCE">著作権とライセンス</a><span class="new">（New!）</span></a></li>
 		<li><a href="#ANGLE_LICENCE">Project Angleの著作権とライセンス</a></li>
 		<li><a href="#PRONAMA_LICENCE">プロ生ちゃんサンプルデータの著作権とライセンス</a></li>
@@ -2522,6 +2522,10 @@ optionパラメーターにより設定時のオプションを付加します�
 	<p>
 	あらかじめ、gpmeshadd命令により登録された頂点情報から、メッシュ頂点IDを組み合わせて、面(3角形,4角形)を構成します。<br>
 	3角形の場合は、p1,p2,p3パラメーター、4角形の場合は、p1,p2,p3,p4パラメーターにメッシュ頂点IDを指定してください。頂点を指定する順番は、p1,p2,p3の3角形が時計回りに並ぶように配置してください。(4角形の場合は、残りの1頂点を最後に追加してください)<br>
+	<b>指定する座標は、(-1,-1,0)が左上、(1,1,0)が右下となるような座標系になります。
+OpenGLの座標系ではなく、あくまでも座標値の大小でモデル座標を考慮しています。
+また、テクスチャ(UV)座標は、縦の0～1は上下が逆になっていますのでご注意ください。</b>
+	<br>
 	gpmeshpolygon命令により、必要な面情報をすべて登録してください。
 	こうして構築されたデータは、gpmesh命令でノードオブジェクトとして登録することができます。
 	</p>
@@ -2711,6 +2715,9 @@ HGIMG4とそのソースコードは、HSP開発セットと同様の修正BSD�
 HGIMG4は複数のライブラリを使用して開発されています。<br>
 HGIMG4を使用したソフトウェアの配布を行なう場合は、
 以下のコピーライトを表示するか、またはテキストファイルを同梱するようにしてください。<br><br>
+(HGIMG4の場合は、「著作権とライセンス」の紫で示された文書、
+DirectX版HGIMG4(hgimg4dx)の場合は、さらに「Project Angleの著作権とライセンス」の項目に紫で
+示された文書を提示するか、配布ファイルの一部として同梱する必要があります。)
 </p>
 <pre>
 GamePlay3D v3.0.0
@@ -2769,7 +2776,8 @@ Neither the name of the Onion Software nor the names of its contributors may be 
 	HGIMG4 DirectX9版ランタイム及び付属のDLLは、ANGLE Projectの
 	ソースをもとに作成されています。再配布を行なう場合は、
 	以下のコピーライト表示か、または「ANGLE Project_LICENSE.txt」を
-	同梱するようにしてください。<br><br>
+	同梱するようにしてください。<br>
+<br>
 	DirectX9(angle)版のランタイムは、zakkiさんが製作されたものを同梱させていただきました。
 	zakkiさん及び、ご意見をお寄せいただいた多くの方々に感謝致します。
 	</p>
