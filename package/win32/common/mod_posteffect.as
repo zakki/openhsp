@@ -336,6 +336,8 @@
 *opt_crt
 	crt_curvex=postopt_p1		; X•ûŒü‚Ì˜p‹È—¦
 	crt_curvey=postopt_p2		; Y•ûŒü‚Ì˜p‹È—¦
+	gpmatprm1 crt_mat, "u_curvex", crt_curvex
+	gpmatprm1 crt_mat, "u_curvey", crt_curvey
 	return
 
 *exec_crt
