@@ -1898,9 +1898,14 @@
 	gosub *read_dishini
 	buf+="画面サイズは、( "+dishwx+" x "+dishwy+" )に設定されます。\n"
 
+	jsoutdir="dist_"+myfile
 	dataname=myfile+".data" ; .dataファイル名
 	htmlname=myfile+".html" ; htmlファイル名
 	hspjsname="hsp3dish.js"
+
+	dirlist outlist, jsoutdir, 5
+	if stat = 0 : mkdir jsoutdir
+	buf+=jsoutdir+"\n"
 
 	sdim tmp,$10000
 	tmp=mydir+objname+"\n"
@@ -1968,7 +1973,7 @@
 	loop
 
 	chdir mydir
-	bsave dataname,outbuf,jspack_cur
+	bsave jsoutdir+"\\"+dataname,outbuf,jspack_cur
 	buf+="["+dataname+"]を作成しました.\n"
 
 	;	template.htmlの書き換え
@@ -2044,19 +2049,19 @@
 	strrep outbuf, "$$$mkdirrequest$$$", s1
 
 	notesel outbuf
-	notesave htmlname
+	notesave jsoutdir+"\\"+htmlname
 	buf+="["+htmlname+"]を作成しました.\n"
 
 	notesel outbuf
 	s1 = dir_exe+"\\hsp3js\\"+hspjsname
 	noteload s1
-	notesave hspjsname
+	notesave jsoutdir+"\\"+hspjsname
 	buf+="["+hspjsname+"]を作成しました.\n"
 
 	if wafname!="" {
 		notesel outbuf
 		s1 = dir_exe+"\\hsp3js\\"+wafname
-		bcopy s1,wafname
+		bcopy s1,jsoutdir+"\\"+wafname
 		buf+="["+wafname+"]を作成しました.\n"
 	}
 
