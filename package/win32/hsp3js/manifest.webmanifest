@@ -1,0 +1,25 @@
+{
+    "dir": "ltr",
+    "lang": "ja-JP",
+    "name": "$$$title$$$",
+    "short_name": "$$$hspax$$$",
+    "display": "standalone",
+    "start_url": "$$$url$$$",
+    "scope": "$$$url$$$",
+    "background_color": "#000000",
+    "theme_color": "transparent",
+    "description": "$$$title$$$",
+    "orientation": "$$$orientation$$$",
+    "icons": [
+		{
+			"src": "res/icon_low.png",
+			"sizes": "48x48",
+			"type": "image/png"
+		},
+		{
+			"src": "res/icon_hi.png",
+			"sizes": "192x192",
+			"type": "image/png"
+		}
+	]
+}

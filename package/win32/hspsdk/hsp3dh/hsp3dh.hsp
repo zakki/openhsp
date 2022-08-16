@@ -82,6 +82,8 @@
 	js_gpmode=0
 	js_webasm = 0
 	js_debug = 0
+	js_pwa = 0
+	js_url = ""
 	js_template = 0
 
 	ios_proj=""
@@ -136,6 +138,7 @@
 		ios_ident=cfg_getvar("ios_ident")
 		js_webasm = 0+cfg_getvar("js_webasm")
 		js_template = 0+cfg_getvar("js_template")
+		js_pwa = 0+cfg_getvar("js_pwa")
 	}
 	if and_targetid="" : and_targetid="\"android-29\""
 	if and_keystore="" : and_keystore="hspapp"
@@ -603,6 +606,10 @@
 	chkbox "HGIMG4を使用する",js_gpmode
 	chkbox "WebAssemblyを使用する",js_webasm
 	chkbox "デバッグ情報を出力する",js_debug
+	chkbox "PWAに変換する",js_pwa
+	mes "PWA URL(https):",1
+	objsize 390,20
+	input js_url
 
 	pos 312,118
 	objsize 160,24
@@ -822,6 +829,7 @@
 
 	cfg_seti "js_webasm",js_webasm
 	cfg_seti "js_template",js_template
+	cfg_seti "js_pwa",js_pwa
 
 	cfg_sets "ios_org",ios_org
 	cfg_sets "ios_ident",ios_ident
@@ -1901,6 +1909,9 @@
 	jsoutdir="dist_"+myfile
 	dataname=myfile+".data" ; .dataファイル名
 	htmlname=myfile+".html" ; htmlファイル名
+	if js_pwa > 0 {
+		htmlname="index.html"
+	}
 	hspjsname="hsp3dish.js"
 
 	dirlist outlist, jsoutdir, 5
@@ -1980,6 +1991,7 @@
 	sdim outbuf, $10000
 	notesel outbuf
 	s2 = "template"
+	if js_pwa>0 : s2 = "pwa"
 	if js_template>0 : s2+=js_template+1
 	s1 = dir_exe+"\\hsp3js\\"+s2+".html"
 	noteload s1
@@ -2063,6 +2075,51 @@
 		s1 = dir_exe+"\\hsp3js\\"+wafname
 		bcopy s1,jsoutdir+"\\"+wafname
 		buf+="["+wafname+"]を作成しました.\n"
+	}
+
+	if js_pwa > 0 {
+		notesel outbuf
+		s1 = dir_exe+"\\hsp3js\\sw.js"
+		noteload s1
+
+		strrep outbuf, "$$$hspax$$$", myfile
+		s1=""
+		s1+="\t'./"+dataname+"',\n"
+		s1+="\t'./"+htmlname+"',\n"
+		s1+="\t'./"+hspjsname+"',\n"
+		if wafname!="" {
+			s1+="\t'./"+wafname+"',\n"
+		}
+		strrep outbuf, "$$$assets$$$", s1
+
+		notesave jsoutdir+"\\sw.js"
+		buf+="[sw.js]を作成しました.\n"
+
+		s1 = dir_exe+"\\hsp3js\\manifest.webmanifest"
+		noteload s1
+
+		strrep outbuf, "$$$hspax$$$", myfile
+		strrep outbuf, "$$$title$$$", myfile+" - HSP3Dish"
+		strrep outbuf, "$$$url$$$", js_url
+		if scrsize_x > scrsize_y {
+			strrep outbuf, "$$$orientation$$$", "landscape"
+		} else {
+			strrep outbuf, "$$$orientation$$$", "portrait"
+		}
+
+		notesave jsoutdir+"\\manifest.webmanifest"
+		buf+="[manifest.webmanifest]を作成しました.\n"
+
+		dirlist outlist, jsoutdir+"\\res", 5
+		if stat = 0 : mkdir jsoutdir+"\\res"
+
+		s1 = dir_exe+"\\hsp3js\\res\\icon_hi.png"
+		bcopy s1,jsoutdir+"\\res\\icon_hi.png"
+		buf+="[res\\icon_hi.png]を作成しました.\n"
+
+		s1 = dir_exe+"\\hsp3js\\res\\icon_low.png"
+		bcopy s1,jsoutdir+"\\res\\icon_low.png"
+		buf+="[res\\icon_low.png]を作成しました.\n"
 	}
 
 	buf+="※作成されたファイルをwebブラウザで閲覧可能なサーバーにアップロードしてください。\n"
