@@ -585,7 +585,6 @@ static void InitTexture(void)
 {
 	//		テクスチャ情報初期化
 	//
-	SetSysReq(SYSREQ_CLSMODE, CLSMODE_NONE);
 	TexSetD3DParam(d3d, d3ddev, target_disp);
 	TexInit();
 
@@ -685,10 +684,13 @@ int hgio_device_restore( void )
 			InitTexture();
 			//			VertexShaderInit();
 			TexSetD3DParam( d3d, d3ddev, target_disp );
+
+			SetSysReq(SYSREQ_DEVLOST, 0);			// デバイス戻った
+			drawflag = 0;
+			return 0;
 		}
 	}
-	SetSysReq(SYSREQ_DEVLOST, 0);			// デバイス戻った
-	return 0;
+	return -2;
 }
 
 
@@ -754,17 +756,6 @@ int hgio_render_start( void )
 	//static D3DXMATRIX InvViewport;
 	if ( drawflag ) {
 		hgio_render_end();
-	}
-
-	//	デバイスロスト時の対応
-	//
-	if ( GetSysReq( SYSREQ_DEVLOST ) ) {
-		return -1;
-		if ( hgio_device_restore() == 0 ) {
-			SetSysReq( SYSREQ_DEVLOST, 0 );			// デバイス戻った
-		} else {
-			return -1;
-		}
 	}
 
 	//	マトリクスを設定
