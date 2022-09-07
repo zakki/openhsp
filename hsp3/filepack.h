@@ -111,6 +111,7 @@ public:
 
 	//	For Info
 	//
+	void SetCurrentSlot(int slot) { curnum = slot; };
 	int GetPackSlot( void );
 	HFPHED *GetCurrentHeader(void);
 	HFPOBJ *GetCurrentObjectHeader(void);

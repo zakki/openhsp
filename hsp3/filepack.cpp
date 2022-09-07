@@ -598,16 +598,18 @@ HFPOBJ* FilePack::SearchFileObject(char* name)
 {
 	int i;
 	HFPOBJ* obj;
+	int baknum = GetPackSlot();
 	for (i = 0; i < HFP_MAX; i++) {
 		HFPHED* hed = buf[i];
 		if (hed) {
+			SetCurrentSlot(i);
 			obj = SearchFileObject(hed, name);
 			if (obj != NULL) {
-				curnum = i;
 				return obj;
 			}
 		}
 	}
+	SetCurrentSlot(baknum);
 	return NULL;
 }
 
