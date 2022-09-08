@@ -14,6 +14,7 @@
 
 #include <ctype.h>
 
+#include "supio.h"
 
 #ifdef HSPIOS
 #include "iOSBridge.h"
@@ -221,12 +222,11 @@ FILE *hsp3_fopen(char*name, int offset)
 #ifdef HSPNDK
 	{
 	char *fname = name;
-	if ( *name == '*' ) {
+	if ( *name != '/' ) {
 		fname = hgio_getstorage(name);
 	}
 	hsp3_fp = hgio_android_fopen(fname,offset);
-	if (hsp3_fp == NULL) return NULL;
-	return hsp3_fp;
+	if (hsp3_fp != NULL) return hsp3_fp;
 	}
 #endif
 
@@ -267,12 +267,22 @@ FILE* hsp3_fopenwrite(char* fname8, int offset)
 		fseek(hsp3_fp, offset, SEEK_SET);
 	}
 #endif
+
+#else
+
+	char *fname;
+	fname = fname8;
+#ifdef HSPNDK
+	if ( *fname != '/' ) {
+		fname = hgio_getstorage(fname8);
+	}
+#endif
 	// Linux
 	if (offset < 0) {
-		hsp3_fp = fopen(fname8, "w+b");
+		hsp3_fp = fopen(fname, "w+b");
 	}
 	else {
-		hsp3_fp = fopen(fname8, "r+b");
+		hsp3_fp = fopen(fname, "r+b");
 		if (hsp3_fp == NULL) return NULL;
 		fseek(hsp3_fp, offset, SEEK_SET);
 	}
@@ -306,7 +316,7 @@ int hsp3_flength(char* name)
 #ifdef HSPNDK
 	{
 	int length = hgio_file_exist( name );
-	return length;
+	if ( length>=0 ) return length;
 	}
 #endif
 
@@ -357,6 +367,12 @@ int hsp3_binsave( char *fname8, void *mem, int msize, int seekofs )
 	FILE* hsp3_fp = hsp3_fopenwrite( fname8 );
 	if (hsp3_fp ==NULL) return -1;
 	int flen = (int)fwrite( mem, 1, msize, hsp3_fp);
+
+#ifdef HSPNDK
+	fclose(hsp3_fp);
+	return flen;
+#endif
+
 	hsp3_fclose(hsp3_fp);
 #ifdef HSPWIN
 	_fcloseall();
