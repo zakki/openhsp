@@ -323,6 +323,18 @@ void FilePack::pack_getinfstr(char* inf)
 }
 
 
+int FilePack::pack_fread(char* name, void* mem, int size, int seekofs)
+{
+	FILE *pt = pack_fopen(name, seekofs);
+	if (pt == NULL) {
+		return hsp3_rawload(name, mem, size, seekofs);
+	}
+	int len = pack_fread(pt, mem, size);
+	pack_fclose(pt);
+	return len;
+}
+
+
 /*------------------------------------------------------------*/
 /*
 		interface (read)

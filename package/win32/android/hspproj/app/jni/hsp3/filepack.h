@@ -96,6 +96,7 @@ public:
 	int pack_fgetc(FILE* ptr);
 	int pack_flength(char* name);
 	int pack_fread(FILE* ptr, void* mem, int size);
+	int pack_fread(char* name, void* mem, int size, int seekofs);
 	int pack_fbase(char* name);
 
 	void pack_memenable(bool sw);

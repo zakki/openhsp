@@ -115,11 +115,7 @@ void dpm_bye( void )
 
 int dpm_read( char *fname, void *readmem, int rlen, int seekofs )
 {
-	FILE *pt = filepack.pack_fopen(fname, seekofs);
-	if (pt == NULL) return -1;
-	int len = filepack.pack_fread(pt, readmem, rlen);
-	filepack.pack_fclose(pt);
-	return len;
+	return filepack.pack_fread(fname, readmem, rlen, seekofs);
 }
 
 
