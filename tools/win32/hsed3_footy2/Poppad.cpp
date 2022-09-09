@@ -687,7 +687,7 @@ static int mkobjfile2( char *fname )
 }
 
 
-static int mkexefile2( char *fname )
+static int mkexefile2(char* fname)
 {
 	//	auto make exe file (ver2.6)
 	//
@@ -695,20 +695,18 @@ static int mkexefile2( char *fname )
 	char tmpst[_MAX_PATH];
 	char srcfn[_MAX_PATH];
 	char ftmp[_MAX_PATH];
+	strcpy(srcfn, fname);
+	strcpy(tmpst, "start.ax");
 
-	strcpy(srcfn,fname);
-	strcpy(tmpst,"start.ax");
+	hsc_ini(0, (int)srcfn, 0, 0);
+	hsc_refname(0, (int)myfile(), 0, 0);
+	hsc_objname(0, (int)tmpst, 0, 0);
+	a = hsc_comp(0, 4, 0, 0);
+	if (a) return a;
 
-	hsc_ini( 0,(int)srcfn, 0,0 );
-	hsc_refname( 0,(int)myfile(), 0,0 );
-	hsc_objname( 0,(int)tmpst, 0,0 );
-	a=hsc_comp( 0,4,0,0 );
-	if ( a ) return a;
-
-	sprintf( ftmp, "%s\\%s.dpm", szExeDir, srcfn );
-	a=hsc3_make( 0,(int)ftmp,0,0 );
-
-	if ( a ) return a;
+	sprintf(ftmp, "%s\\%s.dpm", szExeDir, srcfn);
+	a = hsc3_make(0, (int)ftmp, 1, 0);
+	if (a) return a;
 	return 0;
 }
 
@@ -2312,7 +2310,7 @@ LRESULT CALLBACK EditProc (HWND hwnd, UINT iMsg, WPARAM wParam, LPARAM lParam)
 						err_prt(hwnd);
 						return 0;
 					}
-					RunIconChange(activeFootyID);
+					//RunIconChange(activeFootyID);
 #ifdef JPNMSG
 					TMes("実行ファイルを作成しました");
 #else
