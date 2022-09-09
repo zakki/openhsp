@@ -598,17 +598,31 @@ HFPOBJ* FilePack::SearchFileObject(char* name)
 {
 	int i;
 	HFPOBJ* obj;
+	int baknum = GetPackSlot();
 	for (i = 0; i < HFP_MAX; i++) {
 		HFPHED* hed = buf[i];
 		if (hed) {
+			SetCurrentSlot(i);
 			obj = SearchFileObject(hed, name);
 			if (obj != NULL) {
-				curnum = i;
 				return obj;
 			}
 		}
 	}
+	SetCurrentSlot(baknum);
 	return NULL;
+}
+
+
+int FilePack::pack_fread(char* name, void* mem, int size, int seekofs)
+{
+	FILE *pt = pack_fopen(name, seekofs);
+	if (pt == NULL) {
+		return hsp3_rawload(name, mem, size, seekofs);
+	}
+	int len = pack_fread(pt, mem, size);
+	pack_fclose(pt);
+	return len;
 }
 
 

@@ -1465,8 +1465,12 @@ void gamehsp::drawAll( int option )
 	// ビルボード用の向きを作成
 	Matrix m;
 	Camera* camera = _scene->getActiveCamera();
+
+
 	m = camera->getNode()->getMatrix();
 	m.getRotation(&_qcam_billboard);
+
+
 	gpobj *camobj = (gpobj *)camera->getNode()->getUserObject();
 
 	//	gpobjの3Dシーン描画

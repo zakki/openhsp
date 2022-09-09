@@ -88,6 +88,7 @@ public:
 	void PrintFiles(void);
 	int GetFileSize( char *name );
 	int GetCurrentDPMOffset(void);
+	void SetCurrentSlot(int slot) { curnum = slot; };
 
 	//	File Service
 	//

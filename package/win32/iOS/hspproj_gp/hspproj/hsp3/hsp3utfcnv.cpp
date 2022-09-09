@@ -14,7 +14,6 @@
 
 #include <ctype.h>
 
-
 #ifdef HSPIOS
 #include "iOSBridge.h"
 #include "../hsp3dish/ios/appengine.h"
@@ -29,6 +28,9 @@
 #include "hsp3utfcnv.h"
 
 #ifdef HSPWIN
+#include "hsp3config.h"
+#include "supio.h"
+#include "hsp3ext.h"
 #ifdef HSPUTF8
 #pragma execution_character_set("utf-8")
 #endif
@@ -216,13 +218,44 @@ FILE *hsp3_fopen(char*name, int offset)
 	// Windows SJIS
 	hsp3_fp = fopen(name, "rb");
 #endif
+
+	//	Read HSPTV resource
+#ifdef HSPDEBUG
+
+	if (hsp3_fp == NULL) {
+		//	hsptvフォルダを検索する
+		char fn[_MAX_PATH];
+		TCHAR fporg[_MAX_PATH];
+		TCHAR fporg_tmp[_MAX_PATH];
+		char* resp8;
+
+		GetModuleFileName(NULL, fporg, _MAX_PATH);
+		getpathW(fporg, fporg_tmp, 32);
+		apichartohspchar(fporg_tmp, &resp8);
+		strcpy(fn, resp8);
+		CutLastChr(fn, '\\');
+		freehc(&resp8);
+		strcat(fn, "\\hsptv\\");
+		strcat(fn, name);
+
+#ifdef HSPUTF8
+		// Windows UTF
+		hsp3_fp = _wfopen(chartoapichar(fn, &hactmp1), L"rb");
 #else
+		// Windows SJIS
+		hsp3_fp = fopen(fn, "rb");
+#endif
+	}
+#endif
+
+#else
+
 
 #ifdef HSPNDK
 	{
 	char *fname = name;
 	if ( *name == '*' ) {
-		fname = hgio_getstorage(name);
+		fname = hgio_getstorage(name+1);
 	}
 	hsp3_fp = hgio_android_fopen(fname,offset);
 	if (hsp3_fp == NULL) return NULL;
@@ -267,12 +300,22 @@ FILE* hsp3_fopenwrite(char* fname8, int offset)
 		fseek(hsp3_fp, offset, SEEK_SET);
 	}
 #endif
+
+#else
+
+	char *fname;
+	fname = fname8;
+#ifdef HSPNDK
+	if ( *fname != '/' ) {
+		fname = hgio_getstorage(fname8);
+	}
+#endif
 	// Linux
 	if (offset < 0) {
-		hsp3_fp = fopen(fname8, "w+b");
+		hsp3_fp = fopen(fname, "w+b");
 	}
 	else {
-		hsp3_fp = fopen(fname8, "r+b");
+		hsp3_fp = fopen(fname, "r+b");
 		if (hsp3_fp == NULL) return NULL;
 		fseek(hsp3_fp, offset, SEEK_SET);
 	}
@@ -283,7 +326,6 @@ FILE* hsp3_fopenwrite(char* fname8, int offset)
 
 void hsp3_fclose(FILE* ptr)
 {
-
 #ifdef HSPNDK
 	{
 	return hgio_android_fclose(ptr);
@@ -306,7 +348,18 @@ int hsp3_flength(char* name)
 #ifdef HSPNDK
 	{
 	int length = hgio_file_exist( name );
-	return length;
+	if ( length>=0 ) return length;
+	char *fname = name;
+	if ( *fname != '/' ) {
+		fname = hgio_getstorage(name);
+	}
+	FILE* fp = fopen(fname, "rb");
+	if (fp) {
+		fseek(fp, 0, SEEK_END);
+		int length = (int)ftell(fp);
+		fclose(fp);
+		return length;
+	}
 	}
 #endif
 
@@ -355,13 +408,39 @@ int hsp3_fseek(FILE* ptr, int offset, int whence)
 int hsp3_binsave( char *fname8, void *mem, int msize, int seekofs )
 {
 	FILE* hsp3_fp = hsp3_fopenwrite( fname8 );
-	if (hsp3_fp ==NULL) return -1;
+	if (hsp3_fp == NULL) return -1;
 	int flen = (int)fwrite( mem, 1, msize, hsp3_fp);
+
+#ifdef HSPNDK
+	fclose(hsp3_fp);
+	return flen;
+#endif
+
 	hsp3_fclose(hsp3_fp);
 #ifdef HSPWIN
 	_fcloseall();
 #endif
 	return flen;
+}
+
+
+int hsp3_rawload(char* name, void* mem, int size, int seekofs)
+{
+#ifdef HSPNDK
+	char *fname = name;
+	if ( *fname != '/' ) {
+		fname = hgio_getstorage(name);
+	}
+	FILE* fp = fopen(fname, "rb");
+	if (fp==NULL) return -1;
+	if (seekofs > 0) {
+		fseek(fp, seekofs, SEEK_SET);
+	}
+	int len = (int)fread(mem, 1, size, fp);
+	fclose(fp);
+	return len;
+#endif
+	return -1;
 }
 
 

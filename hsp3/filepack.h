@@ -88,6 +88,7 @@ public:
 	void PrintFiles(void);
 	int GetFileSize( char *name );
 	int GetCurrentDPMOffset(void);
+	void SetCurrentSlot(int slot) { curnum = slot; };
 
 	//	File Service
 	//
@@ -96,6 +97,7 @@ public:
 	int pack_fgetc(FILE* ptr);
 	int pack_flength(char* name);
 	int pack_fread(FILE* ptr, void* mem, int size);
+	int pack_fread(char* name, void* mem, int size, int seekofs);
 	int pack_fbase(char* name);
 
 	void pack_memenable(bool sw);
@@ -111,7 +113,6 @@ public:
 
 	//	For Info
 	//
-	void SetCurrentSlot(int slot) { curnum = slot; };
 	int GetPackSlot( void );
 	HFPHED *GetCurrentHeader(void);
 	HFPOBJ *GetCurrentObjectHeader(void);

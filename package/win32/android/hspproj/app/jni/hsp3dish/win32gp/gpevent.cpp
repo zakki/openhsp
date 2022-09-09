@@ -492,7 +492,7 @@ void gamehsp::ExecuteObjEvent(gpobj *obj, float timepass, int entry)
 			}
 
 			pv1 = ev->GetEventVector();
-			pv2 = ev->GetEventVector2();
+			pv2 = &obj->_evvec[ev->_target];
 
 			if (tbase == 0.0f) {
 				pv2->set( v1.x, v1.y, v1.z );
@@ -517,7 +517,7 @@ void gamehsp::ExecuteObjEvent(gpobj *obj, float timepass, int entry)
 			}
 
 			pv1 = ev->GetEventVector();
-			pv2 = ev->GetEventVector2();
+			pv2 = &obj->_evvec[ev->_target];
 
 			if (tbase == 0.0f) {
 				pv2->set(v1.x, v1.y, v1.z);
@@ -552,7 +552,7 @@ void gamehsp::ExecuteObjEvent(gpobj *obj, float timepass, int entry)
 				putEventError(obj, ev, "無効なMOC設定");
 			}
 			pv1 = ev->GetEventVector();
-			pv2 = ev->GetEventVector2();
+			pv2 = &obj->_evvec[ev->_target];
 
 			nextv = ev->nextvec;
 			if (tbase == 0.0f) {
@@ -622,7 +622,7 @@ void gamehsp::ExecuteObjEvent(gpobj *obj, float timepass, int entry)
 				putEventError(obj, ev, "無効なMOC設定");
 			}
 			pv1 = ev->GetEventVector();
-			pv2 = ev->GetEventVector2();
+			pv2 = &obj->_evvec[ev->_target];
 
 			nextv = ev->nextvec;
 			if (tbase == 0.0f) {

@@ -73,5 +73,6 @@ int hsp3_flength(char* name);
 int hsp3_fread(FILE* ptr, void* mem, int size);
 int hsp3_fseek(FILE* ptr, int offset, int whence);
 int hsp3_binsave(char* fname8, void* mem, int msize, int seekofs=-1);
+int hsp3_rawload(char* name, void* mem, int size, int seekofs);
 
 #endif

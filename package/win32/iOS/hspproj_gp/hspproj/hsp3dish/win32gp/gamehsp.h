@@ -227,6 +227,7 @@ public:
 	Animation *_animation;				// 生成されたAnimation
 	Vector3 _sizevec;					// 生成されたサイズパラメーター
 	Vector4 _vec[GPOBJ_USERVEC_MAX];	// ワーク用ベクター
+	Vector3 _evvec[MOC_MAX];			// イベントワーク用ベクター
 
 	gameplay::MaterialParameter *_prm_modalpha;	// Alphaモジュレート用パラメーター
 
