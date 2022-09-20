@@ -9,6 +9,15 @@
 	fname="sampl2.muc"	; コンパイルするMMLファイル
 	sname="sampl2.mub"	; 出力される音楽ファイル
 
+	;	ドライバー設定
+	curdriver=0
+	mucomgetdriver curdriver,fname
+	if curdriver>=MUCOM_DRIVER_MUCOMDOTNET {
+		dialog "外部ドライバを使用しています"
+		end
+	}
+	mucomsetdriver curdriver
+
 	;	コンパイルする
 	mucomreset MUCOM_RESET_COMPILE
 	mucomcomp fname,sname
