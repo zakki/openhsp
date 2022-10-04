@@ -90,6 +90,7 @@ static WebTask *webtask;
 #ifdef USE_ESSPRITE
 #include "essprite.h"
 static essprite* sprite;
+static int sprite_target_window;
 #endif
 
 
@@ -3244,6 +3245,14 @@ static int cmdfunc_extcmd( int cmd )
 		p4 = code_getdi(-1);
 		p5 = code_getdi(-1);
 		if (sprite->sprite_enable) {
+#ifdef HSPDISHGP
+			if (sprite_target_window != cur_window) {
+				Bmscr* target_bmscr = wnd->GetBmscr(cur_window);
+				if (target_bmscr == NULL) code_puterror(HSPERR_ILLEGAL_FUNCTION);
+				sprite_target_window = cur_window;
+				sprite->setResolution((HspWnd*)target_bmscr->master_hspwnd, target_bmscr->sx, target_bmscr->sy);
+			}
+#endif
 			ctx->stat = sprite->draw(p1, p2, p3, p4, p5);
 		}
 		else throw HSPERR_UNSUPPORTED_FUNCTION;
@@ -3894,6 +3903,7 @@ void hsp3typeinit_extcmd( HSP3TYPEINFO *info )
 #endif
 #ifdef USE_ESSPRITE
 	sprite = new essprite;
+	sprite_target_window = 0;
 	sprite->setResolution( wnd, bmscr->sx, bmscr->sy);
 #endif
 
@@ -3941,6 +3951,7 @@ void hsp3excmd_rebuild_window(void)
 #ifdef USE_ESSPRITE
 	if (sprite) delete sprite;
 	sprite = new essprite;
+	sprite_target_window = 0;
 	sprite->setResolution( wnd, bmscr->sx, bmscr->sy);
 #endif
 
@@ -3986,6 +3997,7 @@ void hsp3extcmd_sysvars(int inst, int hwnd, int hdc)
 	sys_hwnd = hwnd;
 	sys_hdc = hdc;
 	bmscr = wnd->GetBmscr(0);
+	sprite_target_window = 0;
 	sprite->setResolution(wnd, bmscr->sx, bmscr->sy);
 }
 

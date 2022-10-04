@@ -635,7 +635,7 @@ int Bmscr::PrintSub( char *mes )
 			*p = bak_a1;
 			p++; st = p; spcur = 0;		// 終端を戻す
 			a1 = *p;
-			if (a1 == 10) p++;
+			if (a1 == 10) { p++; st = p; }
 			continue;
 		}
 		if (a1 == 10) {
@@ -659,11 +659,8 @@ int Bmscr::PrintSub( char *mes )
 			} else if ((a1 >= 0xfc) && (a1 <= 0xfd)) {
 				utf8bytes = 6;
 			}
-			while (utf8bytes > 0) {
-				p++;
-				spcur++;
-				utf8bytes--;
-			}
+			p += utf8bytes;
+			spcur += utf8bytes;
 		}
 		else {
 			p++; spcur++;
@@ -673,9 +670,9 @@ int Bmscr::PrintSub( char *mes )
 #endif
 	}
 
-	if (spcur > 0) {
+//	if (spcur > 0) {
 		hgio_mes((BMSCR *)this, (char*)st);
-	}
+//	}
 
 	return printsizex;
 }

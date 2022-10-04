@@ -5,6 +5,13 @@ Hot Soup Processor ver3.7beta                       HSP : Hot Soup Processor
 
 ・hsp3関連 更新履歴
 
+	2022/10/04 3.7 beta4
+
+	mmload命令でメモリストリームからの読み込みに失敗することがある不具合を修正
+	[HSP3Dish] mes/print命令の改行処理が標準ランタイムと異なる不具合を修正
+	[HSP3Dish][Windows] mes/print命令の空白に不要なピクセルが含まれる不具合を修正
+	[HGIMG4] setobjlight命令でライトが反映されないモデルがある不具合を修正
+
 	2022/09/09 3.7 beta3
 
 	#packopt命令が編集中のソースにない時にアイコン埋め込みに失敗する不具合を修正

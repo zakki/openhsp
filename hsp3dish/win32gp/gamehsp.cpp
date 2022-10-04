@@ -2013,7 +2013,9 @@ bool gamehsp::makeModelNodeSub(Node *rootnode, int nest)
 	Model* model = dynamic_cast<Model*>(drawable);
 	if (model){
 		Technique *tec = NULL;
-		mat = model->getMaterial(0);
+		mat = model->getMaterial(-1);
+		if (mat) setLightMaterialParameter(mat);
+
 		part = model->getMeshPartCount();
 		tecs = 0; prms = 0;
 		if (part) {
