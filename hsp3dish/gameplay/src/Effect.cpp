@@ -226,6 +226,37 @@ static void writeShaderToErrorFile(const char* filePath, const char* source)
     }
 }
 
+static void GetShaderHeader(const GLchar *source, std::string& out)
+{
+    //  pick up #version from GLSL header
+    //
+    char* p = (char *)source;
+    char a1;
+    char header[4096];
+    int size = 0;
+    while (1) {
+        a1 = *p++;
+        if (a1 < 32) break;
+        header[size++] = a1;
+    }
+    header[size++] = 0;
+
+    if (strncmp(header, "#version", 8) != 0) {          // No version header
+        out = "\n";
+        return;
+    }
+    out = header;
+    out += "\n";
+    p = (char*)source;
+
+    while (1) {
+        if (size == 0) break;
+        *p++ = 32;                  // replace first line to space
+        size--;
+    }
+}
+
+
 Effect* Effect::createFromSource(const char* vshPath, const char* vshSource, const char* fshPath, const char* fshSource, const char* defines)
 {
     GP_ASSERT(vshSource);
@@ -244,8 +275,7 @@ Effect* Effect::createFromSource(const char* vshPath, const char* vshSource, con
     std::string definesStr = "";
     replaceDefines(defines, definesStr);
     
-    shaderSource[0] = definesStr.c_str();
-    shaderSource[1] = "\n";
+    shaderSource[1] = definesStr.c_str(); 
     std::string vshSourceStr = "";
     if (vshPath)
     {
@@ -255,6 +285,11 @@ Effect* Effect::createFromSource(const char* vshPath, const char* vshSource, con
             vshSourceStr += "\n";
     }
     shaderSource[2] = vshPath ? vshSourceStr.c_str() :  vshSource;
+
+    std::string vshheader;
+    GetShaderHeader(shaderSource[2],vshheader);
+    shaderSource[0] = vshheader.c_str();
+
     GL_ASSERT( vertexShader = glCreateShader(GL_VERTEX_SHADER) );
     GL_ASSERT( glShaderSource(vertexShader, SHADER_SOURCE_LENGTH, shaderSource, NULL) );
     GL_ASSERT( glCompileShader(vertexShader) );
@@ -296,6 +331,11 @@ Effect* Effect::createFromSource(const char* vshPath, const char* vshSource, con
             fshSourceStr += "\n";
     }
     shaderSource[2] = fshPath ? fshSourceStr.c_str() : fshSource;
+
+    std::string fshheader;
+    GetShaderHeader(shaderSource[2], fshheader);
+    shaderSource[0] = fshheader.c_str();
+
     GL_ASSERT( fragmentShader = glCreateShader(GL_FRAGMENT_SHADER) );
     GL_ASSERT( glShaderSource(fragmentShader, SHADER_SOURCE_LENGTH, shaderSource, NULL) );
     GL_ASSERT( glCompileShader(fragmentShader) );
