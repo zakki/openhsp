@@ -9,7 +9,7 @@
 %note
 hgimg4.as‚Ü‚½‚Íhgimg4dx.as‚ðƒCƒ“ƒNƒ‹[ƒh‚·‚é‚±‚ÆB
 %date
-2022/05/04
+2022/10/11
 %author
 onitama
 %dll
@@ -254,17 +254,21 @@ y(0.0) : Y‚ÌÝ’è’l(ŽÀ”’l)
 z(0.0) : Z‚ÌÝ’è’l(ŽÀ”’l)
 %inst
 ¶¬‚³‚ê‚½ƒ}ƒeƒŠƒAƒ‹‚ÌƒVƒF[ƒ_[ƒpƒ‰ƒ[ƒ^[‚ðÝ’è‚µ‚Ü‚·B
+id‚ªƒIƒuƒWƒFƒNƒgID‚Ìê‡‚ÍAƒIƒuƒWƒFƒNƒg‚ÉÝ’è‚³‚ê‚Ä‚¢‚éƒ}ƒeƒŠƒAƒ‹‚ª’¼ÚÝ’è‚³‚ê‚Ü‚·B
+id‚ªƒ}ƒeƒŠƒAƒ‹ID‚Ìê‡‚ÍAƒ}ƒeƒŠƒAƒ‹‚ª•ÛŽ‚µ‚Ä‚¢‚éÝ’è‚ª•ÏX‚³‚ê‚Ü‚·B
 ^p
 	—á:
 	gpmatprm objid,"u_diffuseColor",1,0,0.5 ; ƒ}ƒeƒŠƒAƒ‹‚Ìƒpƒ‰ƒ[ƒ^[Ý’è
 ^p
 ã‚Ì—á‚Å‚ÍAu_diffuseColor‚Æ‚¢‚¤–¼Ì‚Ìƒpƒ‰ƒ[ƒ^[‚É( 1.0, 0.0, 0.5 )‚ÌƒxƒNƒgƒ‹’l‚ðÝ’è‚µ‚Ü‚·B
-ƒVƒF[ƒ_[ƒpƒ‰ƒ[ƒ^[‚ÉÝ’è‚·‚é€–Ú‚Ì”‚É‰ž‚¶‚ÄAgpmatprm1Agpmatprm4–½—ß‚ª—pˆÓ‚³‚ê‚Ä‚¢‚Ü‚·B
+ƒVƒF[ƒ_[ƒpƒ‰ƒ[ƒ^[‚ÉÝ’è‚·‚é€–Ú‚Ì”‚É‰ž‚¶‚ÄAgpmatprm1Agpmatprm2Agpmatprm4Agpmatprm16–½—ß‚ª—pˆÓ‚³‚ê‚Ä‚¢‚Ü‚·B
 (x,y,z)‚Ì3€–Ú‚ðÝ’è‚·‚éê‡‚ÍAgpmatprm‚ðŽg—p‚µ‚Ä‚­‚¾‚³‚¢B
 %href
 gpmat
 gpmatprm1
+gpmatprm2
 gpmatprm4
+gpmatprm16
 
 
 %index
@@ -456,10 +460,12 @@ optƒpƒ‰ƒ[ƒ^[‚É‚æ‚èAƒ}ƒeƒŠƒAƒ‹‚ÌÝ’è‚ð•ÏX‚·‚é‚±‚Æ‚ª‚Å‚«‚Ü‚·B
 	GPOBJ_MATOPT_NOZTEST    ZƒeƒXƒg‚ð–³Œø‚É‚·‚é
 	GPOBJ_MATOPT_NOZWRITE   Zƒoƒbƒtƒ@‘‚«ž‚Ý‚ð–³Œø‚É‚·‚é
 	GPOBJ_MATOPT_BLENDADD   ƒvƒŒƒ“ƒhƒ‚[ƒh‚ð‰ÁŽZ‚ÉÝ’è‚·‚é
-	GPOBJ_MATOPT_SPECULAR   ŒõŒ¹ŒvŽZŽž‚ÉƒXƒyƒLƒ…ƒ‰[‚ð“K—p‚µ‚Ü‚·
+	GPOBJ_MATOPT_SPECULAR   ŒõŒ¹ŒvŽZŽž‚ÉƒXƒyƒLƒ…ƒ‰[(u_specularExponent)‚ð“K—p‚µ‚Ü‚·
 	GPOBJ_MATOPT_MIRROR     ”½“]‚µ‚½‰æ‘œ‚Æ‚µ‚Ä•\Ž¦‚·‚é
 	GPOBJ_MATOPT_CUBEMAP    ƒLƒ…[ƒuƒ}ƒbƒv‚Æ‚µ‚ÄÝ’è‚·‚é
 	GPOBJ_MATOPT_NODISCARD  ƒ¿ƒ`ƒƒƒ“ƒlƒ‹‚É‚æ‚éƒsƒNƒZƒ‹”jŠü‚ð–³Œø‚É‚·‚é
+	GPOBJ_MATOPT_UVOFFSET	UVƒIƒtƒZƒbƒg’l(u_textureOffset)‚ðŽw’è‰Â”\‚É‚·‚é
+	GPOBJ_MATOPT_UVREPEAT	UVƒŠƒs[ƒg’l(u_textureRepeat)‚ðŽw’è‰Â”\‚É‚·‚é
 ^p
 ³í‚Éƒ}ƒeƒŠƒAƒ‹‚ª¶¬‚Å‚«‚È‚©‚Á‚½ê‡‚ÍAƒGƒ‰[3(ƒpƒ‰ƒ[ƒ^‚Ì’l‚ªˆÙí‚Å‚·)‚ª”­¶‚µ‚Ü‚·B
 ³‚µ‚­¶¬‚³‚ê‚½ê‡‚ÍAvar‚ÅŽw’è‚³‚ê‚½•Ï”‚Éƒ}ƒeƒŠƒAƒ‹ID(®”’l)‚ª‘ã“ü‚³‚ê‚Ü‚·B
@@ -1226,7 +1232,7 @@ gppbind
 
 %index
 gpmatprm1
-ƒ}ƒeƒŠƒAƒ‹‚Ìƒpƒ‰ƒ[ƒ^[Ý’è(2)
+ƒ}ƒeƒŠƒAƒ‹‚Ìƒpƒ‰ƒ[ƒ^[Ý’è(1)
 %group
 Šg’£‰æ–Ê§Œä–½—ß
 %prm
@@ -1241,13 +1247,37 @@ gpmatprm1–½—ß‚ÍA1€–Ú‚Ì‚Ý‚ÌŽÀ”ƒpƒ‰ƒ[ƒ^[‚ðŽw’è‚µ‚Ü‚·B
 %href
 gpmat
 gpmatprm
+gpmatprm2
+gpmatprm4
+gpmatprm16
+
+
+%index
+gpmatprm2
+ƒ}ƒeƒŠƒAƒ‹‚Ìƒpƒ‰ƒ[ƒ^[Ý’è(2)
+%group
+Šg’£‰æ–Ê§Œä–½—ß
+%prm
+id,"name",value,value2
+id(0)      : ƒ}ƒeƒŠƒAƒ‹ID/ƒIƒuƒWƒFƒNƒgID
+"name"     : ƒpƒ‰ƒ[ƒ^[–¼
+value(0.0) : X‚ÌÝ’è’l(ŽÀ”’l)
+value2(0.0) : Y‚ÌÝ’è’l(ŽÀ”’l)
+%inst
+¶¬‚³‚ê‚½ƒ}ƒeƒŠƒAƒ‹‚ÌƒVƒF[ƒ_[ƒpƒ‰ƒ[ƒ^[‚ðÝ’è‚µ‚Ü‚·B
+gpmatprm–½—ß‚ÆŠî–{“I‚É“¯‚¶‹@”\‚Å‚·B
+gpmatprm2–½—ß‚ÍA2€–Ú‚ÌŽÀ”ƒpƒ‰ƒ[ƒ^[‚ðŽw’è‚µ‚Ü‚·B
+%href
+gpmat
+gpmatprm
+gpmatprm1
 gpmatprm4
 gpmatprm16
 
 
 %index
 gpmatprm4
-ƒ}ƒeƒŠƒAƒ‹‚Ìƒpƒ‰ƒ[ƒ^[Ý’è(3)
+ƒ}ƒeƒŠƒAƒ‹‚Ìƒpƒ‰ƒ[ƒ^[Ý’è(4)
 %group
 Šg’£‰æ–Ê§Œä–½—ß
 %prm
@@ -1266,6 +1296,7 @@ gpmatprm4–½—ß‚ÍA4€–Ú(x,y,z,w)‚ÌŽÀ”ƒpƒ‰ƒ[ƒ^[‚ðŽw’è‚µ‚Ü‚·B
 gpmat
 gpmatprm
 gpmatprm1
+gpmatprm2
 gpmatprm16
 
 
@@ -1449,6 +1480,7 @@ var(0)`var(15)‚Ì‚P‚UŒÂ‚ÌŽÀ”‚ªƒ}ƒgƒŠƒNƒXs—ñ‚Æ‚È‚è‚Ü‚·Bcount‚ðŽw’è‚µ‚½ê‡‚ÍA
 %href
 gpmatprm
 gpmatprm1
+gpmatprm2
 gpmatprm4
 
 
@@ -1475,7 +1507,9 @@ optƒpƒ‰ƒ[ƒ^[‚ÉAGPOBJ_MATOPT_NOMIPMAP‚ðŽw’è‚µ‚½ê‡‚ÍAMIPMAP‚ð¶¬‚µ‚Ü‚¹‚ñB
 %href
 gpmatprm
 gpmatprm1
+gpmatprm2
 gpmatprm4
+gpmatprm16
 
 
 
@@ -1524,6 +1558,7 @@ GPGETMAT_OPT_SCRMAT‚ðŽw’è‚µ‚½ê‡‚ÍAidƒpƒ‰ƒ[ƒ^[‚É‰æ–Êƒoƒbƒtƒ@ID‚ðŽw’è‚·‚é‚±‚
 buffer
 gpmatprm
 gpmatprm1
+gpmatprm2
 gpmatprm4
 gpmatprm16
 

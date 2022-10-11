@@ -115,6 +115,8 @@ GPPSET_MAX
 #define GPOBJ_MATOPT_MIRROR (512)
 #define GPOBJ_MATOPT_CUBEMAP (1024)
 #define GPOBJ_MATOPT_NODISCARD (2048)
+#define GPOBJ_MATOPT_UVOFFSET (4096)
+#define GPOBJ_MATOPT_UVREPEAT (8192)
 
 #define GPDRAW_OPT_OBJUPDATE (1)
 #define GPDRAW_OPT_DRAWSCENE (2)
@@ -194,6 +196,7 @@ public:
 	void StartEvent(gpevent *ev, int entry);
 
 	int setParameter(char *name, float value, int part);
+	int setParameter(char* name, float value, float value2, int part);
 	int setParameter(char *name, Vector3 *value, int part);
 	int setParameter(char *name, Vector4 *value, int part);
 	int setParameter(char *name, const Matrix *value, int count, int part);

@@ -57,6 +57,8 @@
 #const global GPOBJ_MATOPT_MIRROR (512)
 #const global GPOBJ_MATOPT_CUBEMAP (1024)
 #const global GPOBJ_MATOPT_NODISCARD (2048)
+#const global GPOBJ_MATOPT_UVOFFSET (4096)
+#const global GPOBJ_MATOPT_UVREPEAT (8192)
 
 #enum global PRMSET_FLAG = 2
 #enum global PRMSET_MODE
@@ -383,6 +385,7 @@
 #cmd gppinfo $157
 #cmd gppraytest $158
 #cmd gpnodeinfo $159
+#cmd gpmatprm2 $15a
 
 #define fsin(%1,%2) %1=sin(%2)
 #define fcos(%1,%2) %1=cos(%2)

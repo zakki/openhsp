@@ -2930,6 +2930,27 @@ static int cmdfunc_extcmd( int cmd )
 		ctx->stat = res;
 		break;
 	}
+	case 0x15a:								// gpmatprm2
+	{
+		char fname[256];
+		char* ps;
+		gpmat* mat;
+		p1 = code_getdi(0);
+		ps = code_gets();
+		strncpy(fname, ps, 256);
+		dp1 = code_getdd(0.0);
+		dp2 = code_getdd(0.0);
+		mat = game->getMat(p1);
+		if (mat == NULL) {
+			gpobj* obj = game->getObj(p1);
+			if (obj == NULL) throw HSPERR_ILLEGAL_FUNCTION;
+			ctx->stat = obj->setParameter(fname, (float)dp1, (float)dp2, -1);
+		}
+		else {
+			ctx->stat = mat->setParameter(fname, (float)dp1, (float)dp2);
+		}
+		break;
+	}
 
 
 #endif

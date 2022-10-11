@@ -61,10 +61,22 @@ int gpmat::setParameter( char *name, Vector4 *value )
 }
 
 
-int gpmat::setParameter( char *name, Vector3 *value )
+int gpmat::setParameter(char* name, float value, float value2)
 {
-	if ( _material == NULL ) return -1;
-    _material->getParameter( name )->setValue( *value );
+	if (_material == NULL) return -1;
+
+	gameplay::Vector2 vec2;
+	vec2.set(value, value2);
+	_material->getParameter(name)->setValue(vec2);
+
+	return 0;
+}
+
+
+int gpmat::setParameter(char* name, Vector3* value)
+{
+	if (_material == NULL) return -1;
+	_material->getParameter(name)->setValue(*value);
 
 	return 0;
 }
@@ -183,12 +195,25 @@ int gpobj::setParameter(char *name, Vector3 *value, int part)
 }
 
 
-int gpobj::setParameter(char *name, float value, int part)
+int gpobj::setParameter(char* name, float value, int part)
 {
 	if (_model == NULL) return -1;
-	Material *material = _model->getMaterial(part);
+	Material* material = _model->getMaterial(part);
 	if (material == NULL) return -1;
 	material->getParameter(name)->setValue(value);
+
+	return 0;
+}
+
+
+int gpobj::setParameter(char* name, float value, float value2, int part)
+{
+	if (_model == NULL) return -1;
+	Material* material = _model->getMaterial(part);
+	if (material == NULL) return -1;
+	gameplay::Vector2 vec2;
+	vec2.set(value, value2);
+	material->getParameter(name)->setValue(vec2);
 
 	return 0;
 }
@@ -712,7 +737,7 @@ Material *gamehsp::makeMaterialTexture( char *fname, int matopt, Texture *opttex
 	Material *material;
 	bool mipmap, cubemap;
 	char *defs;
-	char extradefs[256];
+	char extradefs[4096];
 	mipmap = (matopt & GPOBJ_MATOPT_NOMIPMAP) == 0;
 	cubemap = (matopt & GPOBJ_MATOPT_CUBEMAP) != 0;
 
@@ -737,8 +762,17 @@ Material *gamehsp::makeMaterialTexture( char *fname, int matopt, Texture *opttex
 		strcat(extradefs, ";TEXTURE_NODISCARD_ALPHA");
 		defs = extradefs;
 	}
+	if (matopt & GPOBJ_MATOPT_UVOFFSET) {
+		strcpy(extradefs, defs);
+		strcat(extradefs, ";TEXTURE_OFFSET");
+		defs = extradefs;
+	}
+	if (matopt & GPOBJ_MATOPT_UVREPEAT) {
+		strcpy(extradefs, defs);
+		strcat(extradefs, ";TEXTURE_REPEAT");
+		defs = extradefs;
+	}
 
-	//material = makeMaterialFromShader("res/shaders/simpletex.vert", "res/shaders/simpletex.frag", defs);
 	material = makeMaterialFromShader("res/shaders/textured.vert", "res/shaders/textured.frag", defs);
 	if ( material == NULL ) return NULL;
 

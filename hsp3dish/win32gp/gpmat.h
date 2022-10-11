@@ -26,7 +26,8 @@ public:
 	~gpmat();
 	void reset(gamehsp *owner, int id);
 	int setParameter( char *name, float value );
-	int setParameter( char *name, Vector3 *value );
+	int setParameter(char* name, float value, float value2);
+	int setParameter(char* name, Vector3* value);
 	int setParameter( char *name, Vector4 *value );
 	int setParameter(char *name, const Matrix *value, int count);
 	int setParameter(char *name, char *fname, int matopt);
