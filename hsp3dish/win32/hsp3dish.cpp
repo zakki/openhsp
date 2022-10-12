@@ -901,6 +901,7 @@ void hsp3dish_msgfunc( HSPCTX *hspctx )
 		{
 			//		画面サイズを変更して再構築する
 			Bmscr* bm;
+			HWND bak_hwnd;
 			int hsp_fullscr;
 			bm = (Bmscr*)exinfo->HspFunc_getbmscr(0);
 			hsp_wx = bm->sx;
@@ -917,7 +918,7 @@ void hsp3dish_msgfunc( HSPCTX *hspctx )
 			hsp3dish_drawoff();
 			if (m_hWnd != NULL) {
 				hgio_term();
-				DestroyWindow(m_hWnd);
+				bak_hwnd = m_hWnd;
 				m_hWnd = NULL;
 			}
 			MsgWaitForMultipleObjects(0, NULL, FALSE, 10, QS_ALLINPUT);
@@ -936,6 +937,7 @@ void hsp3dish_msgfunc( HSPCTX *hspctx )
 #ifdef USE_OBAQ
 			hsp3typeinit_dw_restart(code_gettypeinfo(TYPE_USERDEF));
 #endif
+			DestroyWindow(bak_hwnd);
 			MsgWaitForMultipleObjects(0, NULL, FALSE, 10, QS_ALLINPUT);
 			//hgio_rebuild(hsp_wx, hsp_wy, hsp_fullscr, m_hWnd);
 			hspctx->runmode = RUNMODE_RUN;

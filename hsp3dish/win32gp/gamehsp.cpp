@@ -1374,27 +1374,64 @@ int gamehsp::getObjectVector( int objid, int moc, Vector4 *prm )
 }
 
 
-void gamehsp::drawNode( Node *node )
+void gamehsp::drawNode( Node *node, bool wireflag, float alpha)
 {
+	//		単一のノードを描画する
+	//
 	Drawable* drawable = node->getDrawable(); 
-	if (drawable) {
-		drawable->draw();
+	if (drawable == NULL)  return;
+
+	if (wireflag) {
+		//	ワイヤーフレーム
+		drawable->draw(true);
+		_render_numpoly += drawable->_drawtotal;
+		return;
 	}
+
+	if ( alpha >= 0.0f ) {
+		//	3Dモデル用のalpha再設定
+		Model* model = dynamic_cast<Model*>(drawable);
+		if (model) {
+			int part = model->getMeshPartCount();
+			Material* mat;
+			if (part > 0) {
+				for (int i = 0; i < part; i++) {
+					mat = model->getMaterial(i);
+					if (mat) {
+						gameplay::MaterialParameter* prm_modalpha = mat->getParameter("u_modulateAlpha");
+						if (prm_modalpha) {
+							prm_modalpha->setValue(alpha);
+						}
+					}
+				}
+			}
+			else {
+				mat = model->getMaterial();
+				if (mat) {
+					gameplay::MaterialParameter* prm_modalpha = mat->getParameter("u_modulateAlpha");
+					if (prm_modalpha) {
+						prm_modalpha->setValue(alpha);
+					}
+				}
+			}
+		}
+	}
+
+	drawable->draw(false);
+	_render_numpoly += drawable->_drawtotal;
 }
 
 
-bool gamehsp::drawNodeRecursive(Node *node, bool wireflag)
+bool gamehsp::drawNodeRecursive(Node *node, bool wireflag, float alpha)
 {
-	Drawable* drawable = node->getDrawable();
-	if (drawable) {
-		drawable->draw(wireflag);
-		_render_numpoly += drawable->_drawtotal;
-	}
+	//		再帰的にノードを描画する
+	//
+	drawNode(node, wireflag, alpha);
 
 	Node *pnode = node->getFirstChild();
 	while (1) {
 		if (pnode == NULL) break;
-		drawNodeRecursive(pnode, wireflag);
+		drawNodeRecursive(pnode, wireflag, alpha);
 		pnode = pnode->getNextSibling();
 	}
 
@@ -1441,9 +1478,13 @@ int gamehsp::drawSceneObject(gpobj *camobj)
 
 				if (clip) {
 					//	Alphaのモジュレート設定
-					gameplay::MaterialParameter *prm_modalpha = obj->_prm_modalpha;
-					if (prm_modalpha) { prm_modalpha->setValue(obj->getAlphaRate()); }
-					drawNodeRecursive(node, wireflag);
+					float alpha = obj->getAlphaRate();
+					gameplay::MaterialParameter* prm_modalpha = obj->_prm_modalpha;
+					if (prm_modalpha) {
+						prm_modalpha->setValue(alpha);
+						alpha = -1.0f;
+					}
+					drawNodeRecursive(node, wireflag, alpha);
 					num++;
 				}
 			}
@@ -1978,7 +2019,6 @@ bool gamehsp::makeModelNodeMaterialSub(Node *rootnode, int nest)
 	Model* model = dynamic_cast<Model*>(drawable);
 	if (model) {
 		Technique *tec = NULL;
-		mat = model->getMaterial(0);
 		part = model->getMeshPartCount();
 		tecs = 0; prms = 0;
 		if (part) {
@@ -1986,7 +2026,15 @@ bool gamehsp::makeModelNodeMaterialSub(Node *rootnode, int nest)
 				mat = model->getMaterial(i);
 				if (mat) {
 					setMaterialDefaultBinding(mat);
+					setMaterialDefaultBinding(mat,0);
 				}
+			}
+		}
+		else {
+			mat = model->getMaterial(-1);
+			if (mat) {
+				setMaterialDefaultBinding(mat);
+				setMaterialDefaultBinding(mat, 0);
 			}
 		}
 	}
@@ -2081,8 +2129,10 @@ int gamehsp::makeModelNode(char *fname, char *idname, char *defs)
 	model_defines_shade = defs;
 
 	if (*defs != 0) {
+		model_defines += ";";
 		model_defines_shade += ";";
 	}
+	model_defines += nolight_defines;
 	model_defines_shade += light_defines;
 
 	Material* boxMaterial = Material::create(fn2,gamehsp::passCallback,NULL);

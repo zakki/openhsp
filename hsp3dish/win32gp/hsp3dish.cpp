@@ -935,6 +935,7 @@ void hsp3dish_msgfunc( HSPCTX *hspctx )
 		{
 			//		画面サイズを変更して再構築する
 			Bmscr* bm;
+			HWND bak_hwnd;
 			int hsp_fullscr;
 			bm = (Bmscr*)exinfo->HspFunc_getbmscr(0);
 			hsp_wx = bm->sx;
@@ -956,7 +957,8 @@ void hsp3dish_msgfunc( HSPCTX *hspctx )
 				hgio_term();
 				// デバイスコンテキスト解放
 				//ReleaseDC(m_hWnd, __hdc);
-				DestroyWindow(m_hWnd);
+				bak_hwnd = m_hWnd;
+				//DestroyWindow(m_hWnd);
 				m_hWnd = NULL;
 			}
 			if (game != NULL) {
@@ -981,6 +983,7 @@ void hsp3dish_msgfunc( HSPCTX *hspctx )
 			HSP3DEVINFO *devinfo = hsp3extcmd_getdevinfo();
 			hsp3dish_setdevinfo(devinfo);
 			hsp3extcmd_sysvars((int)m_hInstance, (int)m_hWnd, 0);
+			DestroyWindow(bak_hwnd);
 
 			MsgWaitForMultipleObjects(0, NULL, FALSE, 10, QS_ALLINPUT);
 			hspctx->runmode = RUNMODE_RUN;

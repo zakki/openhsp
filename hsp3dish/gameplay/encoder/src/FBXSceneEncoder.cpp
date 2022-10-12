@@ -1188,20 +1188,20 @@ void FBXSceneEncoder::loadMaterialUniforms(FbxSurfaceMaterial* fbxMaterial, Mate
         if (material->isLit())
         {
             FbxDouble3 ambient = lambert->Ambient.Get();
-            if (!isBlack(ambient))
-            {
+            //if (!isBlack(ambient))
+            //{
                 material->setUniform("u_ambientColor", toString(ambient));
-            }
+            //}
         }
         if (!material->isTextured())
         {
             if (!material->isDefined(VERTEX_COLOR))
             {
                 FbxDouble3 diffuse = lambert->Diffuse.Get();
-                if (!isBlack(diffuse))
-                {
+                //if (!isBlack(diffuse))
+                //{
                     material->setUniform("u_diffuseColor", toString(diffuse, 1.0));
-                }
+                //}
             }
         }
     }

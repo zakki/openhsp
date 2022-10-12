@@ -390,7 +390,6 @@ public:
 	void putEventError(gpobj *obj, gpevent *ev, char *msg);
 
 	void drawAll( int option );
-	void drawNode( Node *node );
 	void updateAll( void );
 	void drawObj( gpobj *obj );
 	int updateObjColi( int objid, float size, int addcol );
@@ -398,7 +397,9 @@ public:
 	gpobj *getNextObj( void );
 	void pickupAll(int option);
 	bool pickupNode(Node* node, int deep);
-	bool drawNodeRecursive(Node *node,bool wire=false);
+
+	void drawNode(Node* node, bool wirex, float alpha);
+	bool drawNodeRecursive(Node *node,bool wire=false, float alpha = 1.0);
 	int drawSceneObject(gpobj *camobj);
 
 	int selectScene( int sceneid );
@@ -440,6 +441,7 @@ public:
 	Material *makeMaterialTexture( char *fname, int matopt, Texture *opttex = NULL);
 	Material *makeMaterialFromShader( char *vshd, char *fshd, char *defs );
 	void setMaterialDefaultBinding(Material* material);
+	void setMaterialDefaultBinding(Material* material, int matopt);
 	void setMaterialDefaultBinding(Material* material, int icolor, int matopt);
 	float setMaterialBlend( Material* material, int gmode, int gfrate );
 	Material *makeMaterialTex2D(Texture *texture, int matopt);

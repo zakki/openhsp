@@ -425,8 +425,7 @@ void gamehsp::setLightMaterialParameter(Material* material)
 	Vector3 *vambient;
 	lgt = getObj(_dir_light[0]);
 	vambient = (Vector3 *)&lgt->_vec[GPOBJ_USERVEC_DIR];
-	if (hasParameter(material, lightname_ambient))
-		material->getParameter(lightname_ambient)->setValue(vambient);
+	material->getParameter(lightname_ambient)->setValue(vambient);
 }
 
 
@@ -451,6 +450,35 @@ void gamehsp::setMaterialDefaultBinding(Material* material)
 		material->setParameterAutoBinding("u_viewMatrix", "VIEW_MATRIX");
 	if (hasParameter(material, "u_worldMatrix"))
 		material->setParameterAutoBinding("u_worldMatrix", "WORLD_MATRIX");
+
+	gameplay::MaterialParameter* prm_modalpha = material->getParameter("u_modulateAlpha");
+	if (prm_modalpha) {
+		prm_modalpha->setValue(1.0f);
+	}
+}
+
+
+void gamehsp::setMaterialDefaultBinding(Material* material, int matopt)
+{
+	//	Render state set
+	//
+	RenderState::StateBlock* state;
+	state = material->getStateBlock();
+	if (state) {
+		state->setCullFace(((matopt & GPOBJ_MATOPT_NOCULL) == 0));
+		state->setDepthTest(((matopt & GPOBJ_MATOPT_NOZTEST) == 0));
+		state->setDepthWrite(((matopt & GPOBJ_MATOPT_NOZWRITE) == 0));
+
+		state->setBlend(true);
+		if (matopt & GPOBJ_MATOPT_BLENDADD) {
+			state->setBlendSrc(RenderState::BLEND_SRC_ALPHA);
+			state->setBlendDst(RenderState::BLEND_ONE);
+		}
+		else {
+			state->setBlendSrc(RenderState::BLEND_SRC_ALPHA);
+			state->setBlendDst(RenderState::BLEND_ONE_MINUS_SRC_ALPHA);
+		}
+	}
 }
 
 
@@ -468,29 +496,7 @@ void gamehsp::setMaterialDefaultBinding( Material* material, int icolor, int mat
 	if ( hasParameter( material, "u_diffuseColor" ) )
 		material->getParameter("u_diffuseColor")->setValue(color);
 
-	gameplay::MaterialParameter *prm_modalpha;
-	if (hasParameter(material, "u_modulateAlpha")) {
-		prm_modalpha = material->getParameter("u_modulateAlpha");
-		if (prm_modalpha) { prm_modalpha->setValue(1.0f); }
-	}
-
-	RenderState::StateBlock *state;
-	state = material->getStateBlock();
-	if (state) {
-		state->setCullFace( (( matopt & GPOBJ_MATOPT_NOCULL )==0) );
-		state->setDepthTest( (( matopt & GPOBJ_MATOPT_NOZTEST )==0) );
-		state->setDepthWrite( (( matopt & GPOBJ_MATOPT_NOZWRITE )==0) );
-
-		state->setBlend(true);
-		if (matopt & GPOBJ_MATOPT_BLENDADD) {
-			state->setBlendSrc(RenderState::BLEND_SRC_ALPHA);
-			state->setBlendDst(RenderState::BLEND_ONE);
-		} else {
-			state->setBlendSrc(RenderState::BLEND_SRC_ALPHA);
-			state->setBlendDst(RenderState::BLEND_ONE_MINUS_SRC_ALPHA);
-		}
-	}
-
+	setMaterialDefaultBinding(material, matopt);
 }
 
 
