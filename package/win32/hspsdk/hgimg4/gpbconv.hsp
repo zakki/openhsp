@@ -9,7 +9,7 @@
 #include "mod_gpmaterial.as"
 
 #define APPTITLE "GPB converter"
-#define APPVER "0.8"
+#define APPVER "0.9"
 
 #define EM_SETSEL $B1
 #define EM_REPLACESEL $C2
@@ -24,10 +24,10 @@
 	sdim buftxt,$10000
 
 	sdim fname,1024
+	sdim fname2,1024
 
 	flag_xml=0
 	flag_xa=0
-	flag_xf=0
 
 	goto *boot
 
@@ -156,16 +156,24 @@
 	objsize 64,24
 	pos 408,y+10:button "参照...",*selfile
 
+	y+=48
 	objsize 220,24
-	pos 8,y+38
+	pos 8,y
 	chkbox ".materialを出力",flag_mat
 	chkbox "構造をXMLに出力",flag_xml
-	chkbox "マテリアル名を英文字のみに修正",flag_xa
-	chkbox "マテリアル名を自動設定",flag_xf
+	chkbox "マテリアル名を修正しない",flag_xa
 
-	pos 460,y+48
+	pos 460,y+18
 	objsize 160,48
 	button "変換",*mkgpb
+
+	y+=96
+	pos 8,y
+	mes "アニメーションデータ:"
+	objsize 390,24
+	input fname2: id_fname2=stat
+	objsize 64,24
+	pos 408,y+10:button "参照...",*selfile2
 
 	goto *topmenu
 
@@ -182,7 +190,12 @@
 
 *go_tab2
 	mes "gpbファイルのプレビューを行います。"
-	mes "(準備中)"
+	y=100
+	pos 8,y
+*go_tab2fs
+	objsize 160,48
+	button ".gpb読み込み",*selgpb
+
 	goto *topmenu
 
 
@@ -198,6 +211,12 @@
 	if stat : objprm id_fname,fname
 	goto *topmenu
 
+*selfile2
+	dialog "fbx;*.dae",16,"3D Model File"
+	fname2=refstr
+	if stat : objprm id_fname2,fname2
+	goto *topmenu
+
 *mkgpb
 	;	hsp convert only
 	;
@@ -206,12 +225,21 @@
 	initsub
 
 	mydir=getpath(fname,32)
+	mydir2=getpath(fname2,32)
 	myfile=getpath(fname,8+16)
+	myfile2=getpath(fname2,8+16)
 	opt=""
 	if flag_mat : opt+="-m "
 	if flag_xml : opt+="-t "
-	if flag_xa : opt+="-xa "
-	if flag_xf : opt+="-xf "
+	if flag_xa : opt+="-u "
+
+	if fname2!="" {
+		if mydir!=mydir2 {
+			dialog "アニメーションとモデルは同一のフォルダを指定してください"
+			goto *topmenu
+		}
+		opt+="-e \""+myfile2+"\" "
+	}
 
 	mes "変換中..."
 	mes ""
@@ -224,7 +252,7 @@
 	button "OK",*go_menu
 
 	chdir mydir
-	cmd = dir_exe+"\\gameplay-encoder.exe -g:auto "+opt+myfile
+	cmd = dir_exe+"\\gameplay-encoder.exe -g:auto "+opt+"\""+myfile+"\""
 
 	;	コマンドライン実行(output付き)
 	sdim tmp,$100000
@@ -309,3 +337,18 @@
 	matsave
 
 	goto *selmat1
+
+
+*selgpb
+	dialog "gpb",16,"gameplay binary"
+	if stat=0 : goto *topmenu
+
+	gpbname=refstr
+	;mydir=getpath(gpbname,32)
+	;myfile=getpath(gpbname,8+16)
+
+	sdim cmd,512
+	cmd=dir_exe+"\\hsp3gp "+dir_exe+"\\support\\gpbpreview.ax \""+gpbname+"\""
+	exec cmd
+
+	goto *topmenu

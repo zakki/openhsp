@@ -6,6 +6,9 @@ material colored
     {
         cullFace = true
         depthTest = true
+        blend = true
+        blendSrc = SRC_ALPHA
+        blendDst = ONE_MINUS_SRC_ALPHA
     }
     
     technique
@@ -35,6 +38,9 @@ material textured
     {
         cullFace = true
         depthTest = true
+        blend = true
+        blendSrc = SRC_ALPHA
+        blendDst = ONE_MINUS_SRC_ALPHA
     }
     
     technique
@@ -90,13 +96,6 @@ material eyeLight_187 : textured
         path = res/eyeLight.png
         wrapS = REPEAT
         wrapT = REPEAT
-    }
-
-    renderState
-    {
-	blend = true
-	blendSrc = SRC_ALPHA
-	blendDst = ONE_MINUS_SRC_ALPHA
     }
 
     technique

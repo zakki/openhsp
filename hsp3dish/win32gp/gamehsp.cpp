@@ -5,6 +5,11 @@
 #include "../sysreq.h"
 #include "../hspwnd.h"
 
+#ifdef WIN32
+#include <tchar.h>
+#include <direct.h>
+#endif
+
 #include "shader_sprite.h"
 
 // Default sprite shaders
@@ -490,6 +495,16 @@ void gamehsp::resetScreen( int opt )
 	_maxevent = GetSysReq(SYSREQ_MAXEVENT);
 	_gpevent = new gpevent[_maxevent];
 
+	//	setup folder
+	shader_folder.clear();
+
+#ifdef WIN32
+	TCHAR pw[1024];
+	_tgetcwd(pw, 1024);
+	shader_folder = pw;
+	Effect::SetDefaultFolder(pw);
+#endif
+
 	// シーン作成
 	_scene = Scene::create();
 	_curscene = 0;
@@ -573,6 +588,7 @@ void gamehsp::resetScreen( int opt )
 	SAFE_RELEASE(_fontMaterial);
 
 	touchNode = NULL;
+
 }
 
 
@@ -2026,7 +2042,6 @@ bool gamehsp::makeModelNodeMaterialSub(Node *rootnode, int nest)
 				mat = model->getMaterial(i);
 				if (mat) {
 					setMaterialDefaultBinding(mat);
-					setMaterialDefaultBinding(mat,0);
 				}
 			}
 		}
@@ -2034,7 +2049,6 @@ bool gamehsp::makeModelNodeMaterialSub(Node *rootnode, int nest)
 			mat = model->getMaterial(-1);
 			if (mat) {
 				setMaterialDefaultBinding(mat);
-				setMaterialDefaultBinding(mat, 0);
 			}
 		}
 	}

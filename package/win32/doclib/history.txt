@@ -5,7 +5,7 @@ Hot Soup Processor ver3.7beta                       HSP : Hot Soup Processor
 
 ・hsp3関連 更新履歴
 
-	2022/10/12 3.7 beta4
+	2022/10/13 3.7 beta4
 
 	mmload命令でメモリストリームからの読み込みに失敗することがある不具合を修正
 	noteadd命令の引数でnotefind関数を使用した場合に書き込み内容が壊れる不具合を修正
@@ -13,13 +13,20 @@ Hot Soup Processor ver3.7beta                       HSP : Hot Soup Processor
 	[HSP3Dish] mes/print命令の改行処理が標準ランタイムと異なる不具合を修正
 	[HSP3Dish][Windows] screen命令によるサイズ変更でウインドウの入力が反映されなくなる不具合を修正
 	[HSP3Dish][Windows] mes/print命令の空白に不要なピクセルが含まれる不具合を修正
-	[HGIMG4] setalpha命令の透明度が3Dモデルに正しく反映されない不具合を修正
+	[HGIMG4] resフォルダ以下のテクスチャ読み込みに失敗した場合カレントフォルダも参照するように修正
+	[HGIMG4] gpbconvツールのプレビュー機能を実装
+	[HGIMG4] gpbconvツールに別ファイルアニメーションの参照機能を追加
+	[HGIMG4] gameplay-encoderのUTF8ノード名を正しく表示するように修正
+	[HGIMG4] gameplay-encoderのマテリアル名補正オプション(-u)を追加
+	[HGIMG4] FBXから.gpbファイルの変換時に基本のブレンド設定を出力するように修正
 	[HGIMG4] FBXから.gpbファイルの変換時にマテリアルのDiffuse,Ambient色が黒の場合でも出力するように修正
+	[HGIMG4] setalpha命令の透明度が3Dモデルに正しく反映されない不具合を修正
 	[HGIMG4] gpmatprm2命令を追加、テクスチャのUVオフセット/リピート指定を追加
 	[HGIMG4] マテリアル生成オプションにGPOBJ_MATOPT_UVOFFSET,GPOBJ_MATOPT_UVREPEATを追加
 	[HGIMG4] オフスクリーンのスプライト描画時のために解像度を再設定するes_screen命令を追加
 	[HGIMG4] setobjlight命令でライトが反映されないモデルがある不具合を修正
 	[HGIMG4] シェーダーソース(.frag/.vert)の先頭にある#versionディレクティブを維持するように修正
+	[HGIMG4][Windows] カレントフォルダ移動時にもシェーダーファイルが正しく参照されるように修正
 
 	2022/09/09 3.7 beta3
 

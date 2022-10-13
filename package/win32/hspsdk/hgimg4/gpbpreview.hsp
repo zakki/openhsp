@@ -1,0 +1,118 @@
+#include "hgimg4.as"
+#define APP_NAME "GPB preview"
+
+	wx=1280:wy=720
+	screen 0,wx,wy
+
+	;hgimg_dir = "c:\\hsp37beta\\sample\\hgimg4"
+	hgimg_dir = dir_exe+"\\sample\\hgimg4"
+	chdir hgimg_dir
+
+	setreq SYSREQ_LOGWRITE,1		; 終了時にログを出力
+	gpreset
+
+	;gpbname="C:\\hsp37beta\\sample\\hgimg4\\fbx\\high_school_girl.gpb"
+	gpbname=dir_cmdline
+	if peek(gpbname,0)=0x22 {
+		gpbname=strtrim(gpbname,0,0x22)
+	}
+	mydir=getpath(gpbname,32)
+	myfile=getpath(gpbname,8+16)
+
+	exist gpbname
+	if strsize<=0 : myfile=""
+
+	if myfile="" {
+		title "No Model File - "+APP_NAME
+	} else {
+		title myfile+" - "+APP_NAME
+		chdir mydir
+	}
+
+	setcls CLSMODE_SOLID, $00c0c0
+
+	if myfile!="" {
+		gpload id_model,myfile			; モデル読み込み
+		if id_model<=0 : dialog "ファイルが読み込めませんでした\n"+gpbname
+	}
+
+	gpfloor id_floor, 30,30, $404040		; 床ノードを追加
+	setpos id_floor, 0,0
+	;setobjmode id_floor,OBJ_HIDE
+
+	setpos GPOBJ_CAMERA, 0,5.6,5		; カメラ位置を設定
+
+	camx=0.0:camy=3.0:camz=3.0
+
+	objsize 120,20
+	pos 0,0
+	button gosub "x0.5",*SCALE1
+	button gosub "x0.1",*SCALE2
+	button gosub "x0.025",*SCALE3
+
+*main
+	gosub *render
+
+	;	タッチでカメラ位置を動かす
+	if dragmd {	; ドラッグ中
+		getkey a,1
+		if a=1 {
+			camx=0.05*(mousex-dragx)+cx
+			camy=0.05*(mousey-dragy)+cz
+		} else {
+			dragmd=0
+		}
+	} else {	; ドラッグなし
+		getkey a,1
+		if a {
+			cx=camx:cz=camz
+			dragx=mousex:dragy=mousey
+			dragmd=1
+		}
+	}
+
+
+;	カーソルキーでカメラ位置を動かす
+	if key&1 : camx -=0.2
+	if key&4 : camx +=0.2
+	if key&8 : camz +=0.2
+	if key&2 : camz -=0.2
+
+
+	;addang id_model,0,0.02		; ノード回転
+
+	await 1000/60			; 待ち時間
+
+	goto *main
+
+*SCALE1
+	if id_model<=0 : return
+	setscale id_model, 0.5,0.5,0.5
+	return
+*SCALE2
+	if id_model<=0 : return
+	setscale id_model, 0.1,0.1,0.1
+	return
+*SCALE3
+	if id_model<=0 : return
+	setscale id_model, 0.025,0.025,0.025
+	return
+
+*render
+	stick key,15+64
+	if key&128 : end
+
+	setpos GPOBJ_CAMERA, camx,camy,camz		; カメラ位置を設定
+	gplookat GPOBJ_CAMERA, 0,1.8,0		; カメラから指定した座標を見る
+
+	gsel 0
+	redraw 0			; 描画開始
+	gpdraw				; シーンの描画
+
+	;color 255,255,255
+	;pos 8,8:mes "file:"+myfile
+
+	redraw 1			; 描画終了
+	return
+
+

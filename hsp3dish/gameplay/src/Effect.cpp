@@ -3,6 +3,11 @@
 #include "FileSystem.h"
 #include "Game.h"
 
+#ifdef WIN32
+#include <tchar.h>
+#include <direct.h>
+#endif
+
 #define OPENGL_ES_DEFINE  "OPENGL_ES"
 
 namespace gameplay
@@ -11,6 +16,7 @@ namespace gameplay
 // Cache of unique effects.
 static std::map<std::string, Effect*> __effectCache;
 static Effect* __currentEffect = NULL;
+static std::string __default_folder;
 
 Effect::Effect() : _program(0)
 {
@@ -64,6 +70,14 @@ Effect* Effect::createFromFile(const char* vshPath, const char* fshPath, const c
         return itr->second;
     }
 
+#ifdef WIN32
+    TCHAR pw[1024];
+    const char* basedir = __default_folder.c_str();
+    if (*basedir != 0) {
+        _tgetcwd(pw, 1024);
+        _tchdir(basedir);
+    }
+#endif
 	// Read source from file.
     char* vshSource = FileSystem::readAll(vshPath);
     if (vshSource == NULL)
@@ -81,6 +95,12 @@ Effect* Effect::createFromFile(const char* vshPath, const char* fshPath, const c
 
     Effect* effect = createFromSource(vshPath, vshSource, fshPath, fshSource, defines);
     
+#ifdef WIN32
+    if (*basedir != 0) {
+        _tchdir(pw);
+    }
+#endif
+
     SAFE_DELETE_ARRAY(vshSource);
     SAFE_DELETE_ARRAY(fshSource);
 
@@ -102,6 +122,19 @@ Effect* Effect::createFromSource(const char* vshSource, const char* fshSource, c
 {
     return createFromSource(NULL, vshSource, NULL, fshSource, defines);
 }
+
+
+void Effect::SetDefaultFolder(const char* path)
+{
+    __default_folder = path;
+}
+
+void Effect::resetCache()
+{
+    __effectCache.clear();
+    __default_folder.clear();
+}
+
 
 static void replaceDefines(const char* defines, std::string& out)
 {

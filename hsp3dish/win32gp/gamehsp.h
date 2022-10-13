@@ -539,6 +539,10 @@ public:
 	char *getNoLightDefines(void) { return (char *)nolight_defines.c_str(); }
 	char *getSpecularLightDefines(void) { return (char *)splight_defines.c_str(); }
 
+	// folder manage
+	char* getShaderFolder(void) { return (char*)shader_folder.c_str(); }
+	void setShaderFolder(char *folder) { shader_folder = folder; }
+
 	/**
 	* 2D projection parameter
 	*/
@@ -708,6 +712,8 @@ private:
 	std::string	user_fsh;
 	std::string	user_defines;
 
+	// shader folder
+	std::string	shader_folder;
 };
 
 #endif

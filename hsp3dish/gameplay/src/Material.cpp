@@ -461,7 +461,10 @@ void Material::loadRenderState(RenderState* renderState, Properties* properties)
             std::string path;
             if (!ns->getPath("path", &path))
             {
-                GP_WARN("Texture sampler '%s' is missing required image file path.", name);
+                const char* value = ns->getString("path");
+                if (value != NULL) {
+                    GP_WARN("Texture sampler '%s' is missing required image file path (%s).", name, value);
+                }
                 continue;
             }
 
