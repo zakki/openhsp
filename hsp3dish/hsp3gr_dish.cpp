@@ -1110,12 +1110,16 @@ static int cmdfunc_extcmd( int cmd )
 
 	case 0x3c:								// celload
 		{
-		//int i;
 		char fname[HSP_MAX_PATH];
 		strncpy( fname, code_gets(), HSP_MAX_PATH-1);
 		p1 = code_getdi( -1 );
 		p2 = code_getdi( 0 );
-		if ( p1 < 0 ) p1 = wnd->GetEmptyBufferId();
+		if ( p1 == -2 ) {
+			p1 = wnd->GetPreloadBufferId(fname);
+		}
+		if (p1 < 0) {
+			p1 = wnd->GetEmptyBufferId();
+		}
 		wnd->MakeBmscrFromResource( p1, fname );
 		bmscr->Select(cur_window);
 		ctx->stat = p1;

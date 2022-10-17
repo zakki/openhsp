@@ -17,6 +17,8 @@
 #define global screen_fixedsize (4)
 #define global screen_tool (8)
 #define global screen_frame (16)
+#define global celid_auto (-1)
+#define global celid_reuse (-2)
 
 #define global gmode_gdi (0)
 #define global gmode_mem (1)

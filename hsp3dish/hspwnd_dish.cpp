@@ -178,7 +178,7 @@ void HspWnd::MakeBmscr( int id, int type, int x, int y, int sx, int sy, int opti
 	bm->buffer_option = option;
 
 	if (type == HSPWND_TYPE_OFFSCREEN) {
-		sprintf( bm->resname, "buffer%d", bm->wid );
+		sprintf( bm->resname, "*buffer%d", bm->wid );
 		hgio_buffer( (BMSCR *)bm );
 	}
 }
@@ -252,6 +252,33 @@ int HspWnd::GetEmptyBufferId( void )
 		if ( bm->flag == BMSCR_FLAG_NOUSE ) return i;
 	}
 	return bmscr_max;
+}
+
+
+int HspWnd::GetPreloadBufferId(char* fname)
+{
+	//		既に読み込まれているファイルのIDを取得
+	//
+	int i;
+	Bmscr* bm;
+	char basename[HSP_MAX_PATH];
+	getpath( fname, basename, 8+16 );
+
+	for (i = 1; i < bmscr_max; i++) {
+		bm = GetBmscr(i);
+		if (bm != NULL) {
+			if (bm->type == HSPWND_TYPE_BUFFER) {
+				if (bm->flag == BMSCR_FLAG_INUSE) {
+					char bname[HSP_MAX_PATH];
+					getpath(bm->resname, bname, 8 + 16);
+					if (strcmp(bname, basename) == 0) {
+						return bm->wid;
+					}
+				}
+			}
+		}
+	}
+	return -1;
 }
 
 

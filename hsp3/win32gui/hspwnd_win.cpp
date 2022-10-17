@@ -680,6 +680,7 @@ int HspWnd::Picload( int id, char *fname, int mode )
 		x = bm->cx; y = bm->cy;
 		if (bm->RenderAlphaBitmap(psx, psy, components, sp_image)) return 4;
 		bm->Send( x, y, psx, psy );
+		bm->resname = fname;
 
 		stbi_image_free(sp_image);
 		GlobalUnlock( h );
@@ -719,6 +720,7 @@ int HspWnd::Picload( int id, char *fname, int mode )
 	// display picture using IPicture::Render
 	gpPicture->Render( bm->hdc, x, y, psx, psy, 0, hmHeight, hmWidth, -hmHeight, &rc );
 	bm->Send( x, y, psx, psy );
+	bm->resname = fname;
 
 	gpPicture->Release();
 	GlobalFree(h);
@@ -751,6 +753,52 @@ int HspWnd::GetEmptyBufferId( void )
 		if ( bm->flag == BMSCR_FLAG_NOUSE ) return i;
 	}
 	return bmscr_max;
+}
+
+
+int HspWnd::GetPreloadBufferId(char* fname)
+{
+	//		既存のファイルを読み込んだIDを取得
+	//
+	int i;
+	Bmscr* bm;
+	char basename[HSP_MAX_PATH];
+
+	HSPAPICHAR* hactmp1 = 0;
+	HSPAPICHAR basenameW[HSP_MAX_PATH];
+	HSPCHAR* hctmp1 = 0;
+	getpathW(chartoapichar(fname, &hactmp1), basenameW, 8+16);
+	freehac(&hactmp1);
+
+	apichartohspchar(basenameW, &hctmp1);
+	strncpy(basename, hctmp1, HSP_MAX_PATH - 1);
+	freehc(&hctmp1);
+
+	for (i = 1; i < bmscr_max; i++) {
+		bm = GetBmscr(i);
+		if (bm != NULL) {
+			if (bm->flag == BMSCR_FLAG_INUSE) {
+				char bname[_MAX_PATH];
+				char* p = (char *)bm->resname.c_str();
+				if (*p != 0) {
+					HSPAPICHAR* hactmp2 = 0;
+					HSPAPICHAR bnameW[HSP_MAX_PATH];
+					HSPCHAR* hctmp2 = 0;
+					getpathW(chartoapichar(p, &hactmp2), bnameW, 8 + 16);
+					freehac(&hactmp2);
+
+					apichartohspchar(bnameW, &hctmp2);
+					strncpy(bname, hctmp2, HSP_MAX_PATH - 1);
+					freehc(&hctmp2);
+
+					if (strcmp(bname, basename) == 0) {
+						return bm->wid;
+					}
+				}
+			}
+		}
+	}
+	return -1;
 }
 
 
@@ -943,6 +991,7 @@ void Bmscr::Cls( int mode )
 	//		CEL initalize
 	//
 	SetCelDivideSize( 0, 0, 0, 0 );
+	resname.clear();
 
 	//		all update
 	//
@@ -1374,12 +1423,12 @@ int Bmscr::PrintSub(char *mes)
 {
 	int chk;
 	int px;
-	char stmp[1024];
+	char stmp[4096];
 	px = 0;
 
 	strsp_ini();
 	while (1) {
-		chk = strsp_get(mes, stmp, 0, 1022);
+		chk = strsp_get(mes, stmp, 0, 4095);
 		PrintLine(stmp);
 		if (px < printsize.cx) px = printsize.cx;
 		if (chk == 0) break;

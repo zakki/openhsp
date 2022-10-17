@@ -574,6 +574,7 @@ public:
 	int GetActive( void );
 	int GetBmscrMax( void ) { return bmscr_max; };
 	int GetEmptyBufferId( void );
+	int GetPreloadBufferId(char* fname);
 	HSP3DEVINFO *getDevInfo( void ) { return &devinfo; }
 
 	//	Data

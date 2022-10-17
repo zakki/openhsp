@@ -5,8 +5,9 @@ Hot Soup Processor ver3.7beta                       HSP : Hot Soup Processor
 
 ・hsp3関連 更新履歴
 
-	2022/10/13 3.7 beta4
+	2022/10/17 3.7 beta4
 
+	celload命令のパラメーターに既存の画像を再利用するオプションを追加
 	mmload命令でメモリストリームからの読み込みに失敗することがある不具合を修正
 	noteadd命令の引数でnotefind関数を使用した場合に書き込み内容が壊れる不具合を修正
 	mes/print命令による表示が1023文字で強制的に改行される不具合を修正

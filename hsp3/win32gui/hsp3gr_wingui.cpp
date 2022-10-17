@@ -1176,10 +1176,15 @@ static int cmdfunc_extcmd( int cmd )
 		int i;
 		char fname[_MAX_PATH];
 		strncpy( fname, code_gets(), _MAX_PATH-1 );
+		if (*fname==0) throw HSPERR_ILLEGAL_FUNCTION;		// 空文字の場合はエラー
 		p1 = code_getdi( -1 );
 		p2 = code_getdi( 0 );
-		if ( p1 < 0 ) p1 = wnd->GetEmptyBufferId();
-
+		if (p1 == -2) {
+			p1 = wnd->GetPreloadBufferId(fname);
+		}
+		if (p1 < 0) {
+			p1 = wnd->GetEmptyBufferId();
+		}
 		wnd->MakeBmscrOff( p1, 32, 32, p2 );
 		i = wnd->Picload( p1, fname, 2 );
 		if ( i ) throw HSPERR_PICTURE_MISSING;
