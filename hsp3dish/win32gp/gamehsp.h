@@ -199,8 +199,9 @@ public:
 	int setParameter(char* name, float value, float value2, int part);
 	int setParameter(char *name, Vector3 *value, int part);
 	int setParameter(char *name, Vector4 *value, int part);
-	int setParameter(char *name, const Matrix *value, int count, int part);
 	int setParameter(char *name, char *fname, int matopt, int part);
+	int setParameter(char* name, double* p_mat, int count, int part);
+	int setParameter(char* name, Texture::Sampler* sampler, int part);
 	int setState(char *name, char *value, int part);
 	void setFilter(Texture::Filter value, int part);
 
@@ -237,6 +238,7 @@ public:
 	gpevent *_event[GPOBJ_MULTIEVENT_MAX];		// Event List
 	float	_time[GPOBJ_MULTIEVENT_MAX];		// Event Time
 	//Vector4 _evvec[GPOBJ_MULTIEVENT_MAX];		// イベントワーク用ベクター
+	gameplay::Matrix* _matbuffer;				// マトリクス保持用バッファ
 
 };
 

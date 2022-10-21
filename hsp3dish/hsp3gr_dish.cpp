@@ -2459,21 +2459,15 @@ static int cmdfunc_extcmd( int cmd )
 		p_mat = code_getvmat();
 		p2 = code_getdi(1);
 
-		gameplay::Matrix matdat(
-			(float)p_mat[0], (float)p_mat[1], (float)p_mat[2], (float)p_mat[3],
-			(float)p_mat[4], (float)p_mat[5], (float)p_mat[6], (float)p_mat[7],
-			(float)p_mat[8], (float)p_mat[9], (float)p_mat[10], (float)p_mat[11],
-			(float)p_mat[12], (float)p_mat[13], (float)p_mat[14], (float)p_mat[15]
-			);
-
 		mat = game->getMat(p1);
 		if (mat == NULL) {
 			gpobj *obj = game->getObj(p1);
 			if (obj == NULL) throw HSPERR_ILLEGAL_FUNCTION;
-			ctx->stat = obj->setParameter(fname, &matdat, p2, -1);
+			if ( p2 != 1 ) throw HSPERR_ILLEGAL_FUNCTION;
+			ctx->stat = obj->setParameter(fname, p_mat, p2, -1);
 		}
 		else {
-			ctx->stat = mat->setParameter(fname, &matdat, p2);
+			ctx->stat = mat->setParameter(fname, p_mat, p2);
 		}
 		break;
 	}
@@ -2955,6 +2949,32 @@ static int cmdfunc_extcmd( int cmd )
 		}
 		break;
 	}
+	case 0x15b:								// gpmatprmp
+	{
+		char fname[256];
+		char* ps;
+		gpmat* mat;
+		gpmat* mat2;
+		p1 = code_getdi(0);
+		ps = code_gets();
+		strncpy(fname, ps, 256);
+		p2 = code_getdi(0);
+		mat2 = game->getMat(p1);
+		if (mat2 == NULL) throw HSPERR_ILLEGAL_FUNCTION;
+		mat = game->getMat(p1);
+		if (mat == NULL) {
+			gpobj* obj = game->getObj(p1);
+			if (obj == NULL) throw HSPERR_ILLEGAL_FUNCTION;
+			Texture::Sampler* samp = mat2->getSampler();
+			ctx->stat = obj->setParameter(fname, samp, -1);
+		}
+		else {
+			Texture::Sampler* samp = mat2->getSampler();
+			ctx->stat = mat->setParameter(fname, samp);
+		}
+		break;
+	}
+
 
 
 #endif

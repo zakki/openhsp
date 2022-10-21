@@ -26,14 +26,30 @@ gpmat::gpmat()
 {
 	// コンストラクタ
 	_flag = GPMAT_FLAG_NONE;
+	_matbuffer = NULL;
 }
 
 gpmat::~gpmat()
 {
+	revoke();
 }
+
+void gpmat::revoke(void)
+{
+	if (_flag == GPMAT_FLAG_NONE) return;
+
+	if (_matbuffer) {
+		delete[] _matbuffer;
+	}
+	_flag = GPMAT_FLAG_NONE;
+	_matbuffer = NULL;
+}
+
 
 void gpmat::reset( gamehsp *owner, int id )
 {
+	revoke();
+
 	_owner = owner;
 	_mode = 0;
 	_mark = 0;
@@ -91,10 +107,31 @@ int gpmat::setParameter( char *name, float value )
 }
 
 
-int gpmat::setParameter(char *name, const Matrix *value, int count)
+int gpmat::setParameter(char *name, double* p_mat, int count)
 {
 	if (_material == NULL) return -1;
-	_material->getParameter(name)->setValue(value,count);
+	if (count < 1) return -2;
+
+	if (_matbuffer) {
+		delete [] _matbuffer;
+	}
+	_matbuffer = new gameplay::Matrix[count];
+	gameplay::Matrix *matdat = _matbuffer;
+
+	for (int i = 0; i < count; i++) {
+		matdat[i] = {
+			(float)p_mat[0], (float)p_mat[1], (float)p_mat[2], (float)p_mat[3],
+			(float)p_mat[4], (float)p_mat[5], (float)p_mat[6], (float)p_mat[7],
+			(float)p_mat[8], (float)p_mat[9], (float)p_mat[10], (float)p_mat[11],
+			(float)p_mat[12], (float)p_mat[13], (float)p_mat[14], (float)p_mat[15]
+		};
+	}
+	if (count == 1) {
+		_material->getParameter(name)->setValue(_matbuffer[0]);
+	}
+	else {
+		_material->getParameter(name)->setValue((const gameplay::Matrix*)_matbuffer, count);
+	}
 
 	return 0;
 }
@@ -111,6 +148,22 @@ int gpmat::setParameter(char *name, char *fname, int matopt)
 	return 0;
 }
 
+
+int gpmat::setParameter(char* name, Texture::Sampler* samp)
+{
+	if (_material == NULL) return -1;
+	_material->getParameter(name)->setValue(samp);
+}
+
+
+Texture::Sampler* gpmat::getSampler(void)
+{
+	MaterialParameter* mprm = _material->getParameter("u_diffuseTexture");
+	if (mprm == NULL) return NULL;
+	return mprm->getSampler();
+}
+
+
 int gpmat::setState(char *name, char *value)
 {
 	RenderState::StateBlock *state;
@@ -125,11 +178,8 @@ int gpmat::setState(char *name, char *value)
 
 void gpmat::setFilter(Texture::Filter value)
 {
-	MaterialParameter *mprm = _material->getParameter("u_texture");
-    if (mprm == NULL) {
-        mprm = _material->getParameter("u_diffuseTexture");
-        if (mprm == NULL) return;
-    }
+	MaterialParameter *mprm = _material->getParameter("u_diffuseTexture");
+	if (mprm == NULL) return;
 	Texture::Sampler *sampler = mprm->getSampler();
 	if (sampler == NULL) return;
 	sampler->setFilterMode(value, value);
@@ -150,11 +200,8 @@ void gpmat::applyFilterMode(int mode)
 
 int gpmat::updateTex32(char* ptr, int mode)
 {
-	MaterialParameter* mprm = _material->getParameter("u_texture");
-    if (mprm == NULL) {
-        mprm = _material->getParameter("u_diffuseTexture");
-        if (mprm == NULL) return -1;
-    }
+	MaterialParameter* mprm = _material->getParameter("u_diffuseTexture");
+    if (mprm == NULL) return -1;
 	Texture::Sampler* sampler = mprm->getSampler();
 	if (sampler == NULL) return -2;
 	Texture* tex = sampler->getTexture();
@@ -219,13 +266,28 @@ int gpobj::setParameter(char* name, float value, float value2, int part)
 }
 
 
-int gpobj::setParameter(char *name, const Matrix *value, int count, int part)
+int gpobj::setParameter(char *name, double * p_mat, int count, int part)
 {
 	if (_model == NULL) return -1;
 	Material *material = _model->getMaterial(part);
 	if (material == NULL) return -1;
-	material->getParameter(name)->setValue(value, count);
+	if (count > 1) return -2;
 
+	gameplay::Matrix matdat	((float)p_mat[0], (float)p_mat[1], (float)p_mat[2], (float)p_mat[3],
+			(float)p_mat[4], (float)p_mat[5], (float)p_mat[6], (float)p_mat[7],
+			(float)p_mat[8], (float)p_mat[9], (float)p_mat[10], (float)p_mat[11],
+			(float)p_mat[12], (float)p_mat[13], (float)p_mat[14], (float)p_mat[15]);
+	material->getParameter(name)->setValue(matdat);
+	return 0;
+}
+
+
+int gpobj::setParameter(char *name, Texture::Sampler *sampler, int part)
+{
+	if (_model == NULL) return -1;
+	Material* material = _model->getMaterial(part);
+	if (material == NULL) return -1;
+	material->getParameter(name)->setValue(sampler);
 	return 0;
 }
 
@@ -261,11 +323,8 @@ void gpobj::setFilter(Texture::Filter value, int part)
 	if (_model == NULL) return;
 	Material *material = _model->getMaterial(part);
 
-	MaterialParameter *mprm = material->getParameter("u_texture");
-    if (mprm == NULL) {
-        mprm = material->getParameter("u_diffuseTexture");
-        if (mprm == NULL) return;
-    }
+	MaterialParameter *mprm = material->getParameter("u_diffuseTexture");
+    if (mprm == NULL) return;
 	Texture::Sampler *sampler = mprm->getSampler();
 	if (sampler == NULL) return;
 	sampler->setFilterMode(value, value);
@@ -786,9 +845,6 @@ Material *gamehsp::makeMaterialTexture( char *fname, int matopt, Texture *opttex
 
 	if (matopt & GPOBJ_MATOPT_USERBUFFER) {
 		MaterialParameter *mp = material->getParameter("u_diffuseTexture");
-        if (mp == NULL) {
-            mp = material->getParameter("u_texture");
-        }
         if (mp) {
             if (opttex) {
                 Texture::Sampler* sampler = Texture::Sampler::create(opttex);
@@ -803,9 +859,6 @@ Material *gamehsp::makeMaterialTexture( char *fname, int matopt, Texture *opttex
 	}
 
     MaterialParameter *mp2 = material->getParameter("u_diffuseTexture");
-    if (mp2 == NULL) {
-        mp2 = material->getParameter("u_texture");
-    }
     if (mp2) {
         mp2->setValue( fname, mipmap, cubemap );
     }
