@@ -5,7 +5,7 @@ Hot Soup Processor ver3.7beta                       HSP : Hot Soup Processor
 
 ・hsp3関連 更新履歴
 
-	2022/10/17 3.7 beta4
+	2022/10/21 3.7 beta4
 
 	celload命令のパラメーターに既存の画像を再利用するオプションを追加
 	mmload命令でメモリストリームからの読み込みに失敗することがある不具合を修正
@@ -22,7 +22,9 @@ Hot Soup Processor ver3.7beta                       HSP : Hot Soup Processor
 	[HGIMG4] FBXから.gpbファイルの変換時に基本のブレンド設定を出力するように修正
 	[HGIMG4] FBXから.gpbファイルの変換時にマテリアルのDiffuse,Ambient色が黒の場合でも出力するように修正
 	[HGIMG4] setalpha命令の透明度が3Dモデルに正しく反映されない不具合を修正
-	[HGIMG4] gpmatprm2命令を追加、テクスチャのUVオフセット/リピート指定を追加
+	[HGIMG4] gpmatprm16命令でマトリクスパラメーターが正しく設定されない不具合を修正
+	[HGIMG4] テクスチャのUVオフセット/リピート指定のためのgpmatprm2命令を追加
+	[HGIMG4] 任意のテクスチャマテリアルをシェーダーパラメーターとして設定するgpmatprmp命令を追加
 	[HGIMG4] マテリアル生成オプションにGPOBJ_MATOPT_UVOFFSET,GPOBJ_MATOPT_UVREPEATを追加
 	[HGIMG4] オフスクリーンのスプライト描画時のために解像度を再設定するes_screen命令を追加
 	[HGIMG4] setobjlight命令でライトが反映されないモデルがある不具合を修正

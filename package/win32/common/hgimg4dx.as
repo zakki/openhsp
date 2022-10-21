@@ -386,6 +386,7 @@
 #cmd gppraytest $158
 #cmd gpnodeinfo $159
 #cmd gpmatprm2 $15a
+#cmd gpmatprmp $15b
 
 #define fsin(%1,%2) %1=sin(%2)
 #define fcos(%1,%2) %1=cos(%2)
