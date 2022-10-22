@@ -6,13 +6,25 @@
 #define __hsp3struct_h
 
 #include "hspvar_core.h"
-
-/*
-	rev 43
-	mingw : error : HSPERROR ‚ª–¢’è‹`
-	‚É‘Îˆ
-*/
 #include "hsp3debug.h"
+
+#ifdef _WIN64
+#define PTR64BIT        //  ãƒã‚¤ãƒ³ã‚¿ã¯64bit
+#else
+#define PTR32BIT        //  ãƒã‚¤ãƒ³ã‚¿ã¯32bit
+#endif
+
+//		HSPãŒä½¿ç”¨ã™ã‚‹å®Ÿæ•°å‹
+//
+#define HSPREAL double
+
+//		HSPãŒä½¿ç”¨ã™ã‚‹64bitæ•´æ•°å€¤å‹
+//
+#ifdef HSP64
+#define HSPLPTR long
+#else
+#define HSPLPTR int
+#endif
 
 // command type
 #define TYPE_MARK 0
@@ -47,9 +59,11 @@
 #define HSP3_FUNC_MAX 18
 #define HSP3_TYPE_USER 18
 
+#define EXFLG_0 0x1000
 #define EXFLG_1 0x2000
 #define EXFLG_2 0x4000
-#define CSTYPE 0x1fff
+#define EXFLG_3 0x8000
+#define CSTYPE 0x0fff
 
 typedef struct HSPHED
 {
@@ -90,19 +104,43 @@ typedef struct HSPHED
 	int		bootoption;			// bootup options
 	int		runtime;			// ptr to runtime name
 
+	//		HSP3.5 extra header structure
+	//
+	int		pt_sr;				// ptr to Runtime Option Segment
+	int		max_sr;				// size of Runtime Option Segment
+	int		pt_exopt;			// Extra Option Segment (3.6)
+	int		max_exopt;			// size of Extra Option Segment (3.6)
+
 } HSPHED;
 
-//#define HSPHED_BOOTOPT_WINHIDE 2			// ‹N“®ƒEƒCƒ“ƒhƒD”ñ•\¦
-//#define HSPHED_BOOTOPT_DIRSAVE 4			// ‹N“®ƒJƒŒƒ“ƒgƒfƒBƒŒƒNƒgƒŠ•ÏX‚È‚µ
-#define HSPHED_BOOTOPT_DEBUGWIN 1			// ‹N“®ƒfƒoƒbƒOƒEƒCƒ“ƒhƒD•\¦
-//#define HSPHED_BOOTOPT_SAVER 0x100			// ƒXƒNƒŠ[ƒ“ƒZ[ƒo[
-#define HSPHED_BOOTOPT_RUNTIME 0x1000		// “®“Iƒ‰ƒ“ƒ^ƒCƒ€‚ğ—LŒø‚É‚·‚é
+#define HSPHED_BOOTOPT_DEBUGWIN 1			// èµ·å‹•æ™‚ãƒ‡ãƒãƒƒã‚°ã‚¦ã‚¤ãƒ³ãƒ‰ã‚¥è¡¨ç¤º
+#define HSPHED_BOOTOPT_WINHIDE 2			// èµ·å‹•æ™‚ã‚¦ã‚¤ãƒ³ãƒ‰ã‚¥éè¡¨ç¤º
+#define HSPHED_BOOTOPT_DIRSAVE 4			// èµ·å‹•æ™‚ã‚«ãƒ¬ãƒ³ãƒˆãƒ‡ã‚£ãƒ¬ã‚¯ãƒˆãƒªå¤‰æ›´ãªã—
+#define HSPHED_BOOTOPT_SAVER 0x100			// ã‚¹ã‚¯ãƒªãƒ¼ãƒ³ã‚»ãƒ¼ãƒãƒ¼
+
+#define HSPHED_BOOTOPT_RUNTIME 0x1000		// å‹•çš„ãƒ©ãƒ³ã‚¿ã‚¤ãƒ ã‚’æœ‰åŠ¹ã«ã™ã‚‹
+#define HSPHED_BOOTOPT_NOMMTIMER 0x2000		// ãƒãƒ«ãƒãƒ¡ãƒ‡ã‚£ã‚¢ã‚¿ã‚¤ãƒãƒ¼ã‚’ç„¡åŠ¹ã«ã™ã‚‹
+#define HSPHED_BOOTOPT_NOGDIP 0x4000		// GDI+ã«ã‚ˆã‚‹æç”»ã‚’ç„¡åŠ¹ã«ã™ã‚‹
+#define HSPHED_BOOTOPT_FLOAT32 0x8000		// å®Ÿæ•°ã‚’32bit floatã¨ã—ã¦å‡¦ç†ã™ã‚‹
+#define HSPHED_BOOTOPT_ORGRND 0x10000		// æ¨™æº–ã®ä¹±æ•°ç™ºç”Ÿã‚’ä½¿ç”¨ã™ã‚‹
+#define HSPHED_BOOTOPT_UTF8 0x20000			// UTF8ãƒ©ãƒ³ã‚¿ã‚¤ãƒ ã‚’ä½¿ç”¨ã™ã‚‹(ã‚³ãƒ¼ãƒ‰è­˜åˆ¥ç”¨)
+#define HSPHED_BOOTOPT_HSP64 0x40000		// 64bitãƒ©ãƒ³ã‚¿ã‚¤ãƒ ã‚’ä½¿ç”¨ã™ã‚‹(ã‚³ãƒ¼ãƒ‰è­˜åˆ¥ç”¨)
+#define HSPHED_BOOTOPT_IORESUME 0x80000		// ãƒ•ã‚¡ã‚¤ãƒ«I/Oã‚¨ãƒ©ãƒ¼ã‚’ç„¡è¦–ã—ã¦å‡¦ç†ã‚’ç¶šè¡Œã™ã‚‹
+
 
 #define HPIDAT_FLAG_TYPEFUNC 0
+#define HPIDAT_FLAG_SELFFUNC -1
 #define HPIDAT_FLAG_VARFUNC 1
 #define HPIDAT_FLAG_DLLFUNC 2
 
-typedef struct HPIDAT {
+#define HSPHED_EXOPTION_TAG_NONE 0
+#define HSPHED_EXOPTION_TAG_DSINDEX 1
+#define HSPHED_EXOPTION_TAG_SIZEX 2
+#define HSPHED_EXOPTION_TAG_SIZEY 3
+#define HSPHED_EXOPTION_TAG_SYSREQ 4
+
+
+typedef struct MEM_HPIDAT {		// native HPIDAT
 
 	short	flag;				// flag info
 	short	option;
@@ -110,7 +148,21 @@ typedef struct HPIDAT {
 	int		funcname;			// function name index (DS)
 	void	*libptr;			// lib handle
 
+} MEM_HPIDAT;
+
+#ifdef PTR64BIT
+typedef struct HPIDAT {
+
+	short	flag;				// flag info
+	short	option;
+	int		libname;			// lib name index (DS)
+	int		funcname;			// function name index (DS)
+	int		p_libptr;			// lib handle
+
 } HPIDAT;
+#else
+typedef MEM_HPIDAT HPIDAT;
+#endif
 
 
 #define LIBDAT_FLAG_NONE 0
@@ -128,6 +180,21 @@ typedef struct LIBDAT {
 	int		clsid;				// CLSID (DS) ( Com Object )
 
 } LIBDAT;
+
+#ifdef PTR64BIT
+typedef struct HED_LIBDAT {
+
+	int		flag;				// initalize flag
+	int		nameidx;			// function name index (DS)
+								// Interface IID ( Com Object )
+	int		p_hlib;				// Lib handle
+	int		clsid;				// CLSID (DS) ( Com Object )
+
+} HED_LIBDAT;
+#else
+typedef LIBDAT HED_LIBDAT;
+#endif
+
 
 // multi parameter type
 #define MPTYPE_NONE 0
@@ -195,6 +262,32 @@ typedef struct STRUCTPRM {
 #define STRUCTDAT_FUNCFLAG_CLEANUP 0x10000
 
 // function,module specific data
+
+#ifdef PTR64BIT
+typedef struct STRUCTDAT {
+	short	index;				// base LIBDAT index
+	short	subid;				// struct index
+	int		prmindex;			// STRUCTPRM index(MINFO)
+	int		prmmax;				// number of STRUCTPRM
+	int		nameidx;			// name index (DS)
+	int		size;				// struct size (stack)
+	int		otindex;			// OT index(Module) / cleanup flag(Dll)
+	void	*proc;				// proc address
+	int		funcflag;			// function flags(Module)
+} STRUCTDAT;
+
+typedef struct HED_STRUCTDAT {
+	short	index;				// base LIBDAT index
+	short	subid;				// struct index
+	int		prmindex;			// STRUCTPRM index(MINFO)
+	int		prmmax;				// number of STRUCTPRM
+	int		nameidx;			// name index (DS)
+	int		size;				// struct size (stack)
+	int		otindex;			// OT index(Module) / cleanup flag(Dll)
+	int		funcflag;			// function flags(Module)
+} HED_STRUCTDAT;
+
+#else
 typedef struct STRUCTDAT {
 	short	index;				// base LIBDAT index
 	short	subid;				// struct index
@@ -204,10 +297,13 @@ typedef struct STRUCTDAT {
 	int		size;				// struct size (stack)
 	int		otindex;			// OT index(Module) / cleanup flag(Dll)
 	union {
-	void	*proc;				// proc address
-	int		funcflag;			// function flags(Module)
+		void	*proc;				// proc address
+		int		funcflag;			// function flags(Module)
 	};
 } STRUCTDAT;
+typedef STRUCTDAT HED_STRUCTDAT;
+#endif
+
 
 //	Var Data for Multi Parameter
 typedef struct MPVarData {
@@ -230,14 +326,6 @@ typedef struct MPModVarData {
 #define IRQ_OPT_GOTO 0
 #define IRQ_OPT_GOSUB 1
 #define IRQ_OPT_CALLBACK 2
-
-//	Stack info for DLL Parameter
-typedef struct MPStack {
-	char *prmbuf;
-	char **prmstk;
-	int curstk;
-	void *vptr;
-} MPStack;
 
 
 typedef struct IRQDAT {
@@ -391,6 +479,11 @@ typedef struct HSPEXINFO
 	char *(*HspFunc_varname)( int id );
 	int (*HspFunc_seekvar)( const char *name );
 
+	//		Enhanced data (3.5)
+	//
+	char *(*HspFunc_prm_getns)(void);
+	char *(*HspFunc_prm_getnds)(const char *defstr);
+
 } HSPEXINFO;
 
 
@@ -403,7 +496,7 @@ typedef struct LOOPDAT {
 } LOOPDAT;
 
 
-// Àsƒ‚[ƒh
+// å®Ÿè¡Œãƒ¢ãƒ¼ãƒ‰
 enum
 {
 RUNMODE_RUN = 0,
@@ -417,6 +510,7 @@ RUNMODE_INTJUMP,
 RUNMODE_ASSERT,
 RUNMODE_LOGMES,
 RUNMODE_EXITRUN,
+RUNMODE_RESTART,
 RUNMODE_MAX
 };
 
@@ -471,71 +565,101 @@ struct HSPCTX
 	void (*msgfunc) (HSPCTX *);			// Message Callback Proc.
 	void *wnd_parent;					// Parent Window Handle
 	double refdval;						// sysvar 'refdval'
-	char *cmdline;						// Command Line Parameters
+	char *cmdline;						// Command Line Parameters (HSPAPI)
 
 	HSPEXINFO *exinfo2;					// HSP function data(3.1)
 
+	int	prmstack_max;					// Parameter Stack Max(hsp3cnv) (3.3)
+	int *dsindex;						// DSBuffer index (3.6)
+	int dsindex_size;					// DSBuffer index size (3.6)
+	int language;						// HSPCTX_LANGUAGE_* flag (3.6)
+	int callback_flag;					// Callback flag (3.6)
+	char *modfilename;					// Module File Name Parameters (HSPAPI)
+	char *tvfoldername;					// HSPTV Folder Name Parameters (HSPAPI)
+	char *homefoldername;				// System Folder Name Parameters (HSPAPI)
+	char langcode[4];					// Language country code (2byte ansi)
 };
 
 #define HSPCTX_REFSTR_MAX 4096
-#define HSPCTX_CMDLINE_MAX 1024
+#define HSPCTX_CMDLINE_MAX 256
+#define HSPCTX_PATH_MAX 64
 
 #define HSPSTAT_NORMAL 0
 #define HSPSTAT_DEBUG 1
 #define HSPSTAT_SSAVER 2
+#define HSPSTAT_CONSOLE 0x10
+#define HSPSTAT_MAC 0x80
+#define HSPSTAT_DISH 0x100
+#define HSPSTAT_LINUX 0x1000
+#define HSPSTAT_UTF8 0x20000
+#define HSPSTAT_HSP64 0x40000
 
-#define TYPE_EX_SUBROUTINE 0x100		// gosub—p‚ÌƒXƒ^ƒbƒNƒ^ƒCƒv
-#define TYPE_EX_CUSTOMFUNC 0x101		// deffuncŒÄ‚Ño‚µ—p‚ÌƒXƒ^ƒbƒNƒ^ƒCƒv
-#define TYPE_EX_ENDOFPARAM 0x200		// ƒpƒ‰ƒ[ƒ^[I’[(HSPtoC)
-#define TYPE_EX_ARRAY_VARS 0x201		// ”z—ñ—v‘f•t‚«•Ï”—pƒXƒ^ƒbƒNƒ^ƒCƒv(HSPtoC)
+#define TYPE_EX_SUBROUTINE 0x100		// gosubç”¨ã®ã‚¹ã‚¿ãƒƒã‚¯ã‚¿ã‚¤ãƒ—
+#define TYPE_EX_CUSTOMFUNC 0x101		// deffuncå‘¼ã³å‡ºã—ç”¨ã®ã‚¹ã‚¿ãƒƒã‚¯ã‚¿ã‚¤ãƒ—
+#define TYPE_EX_ENDOFPARAM 0x200		// ãƒ‘ãƒ©ãƒ¡ãƒ¼ã‚¿ãƒ¼çµ‚ç«¯(HSPtoC)
+#define TYPE_EX_ARRAY_VARS 0x201		// é…åˆ—è¦ç´ ä»˜ãå¤‰æ•°ç”¨ã‚¹ã‚¿ãƒƒã‚¯ã‚¿ã‚¤ãƒ—(HSPtoC)
+#define TYPE_EX_LOCAL_VARS 0x202		// ãƒ­ãƒ¼ã‚«ãƒ«å¤‰æ•°ç”¨ã‚¹ã‚¿ãƒƒã‚¯ã‚¿ã‚¤ãƒ—(HSPtoC)
+
+#define HSPCTX_LANGUAGE_EN 0
+#define HSPCTX_LANGUAGE_JP 1
 
 typedef struct
 {
 	//	Subroutine Context
 	//
-	int stacklev;						// ƒTƒuƒ‹[ƒ`ƒ“ŠJn‚ÌƒXƒ^ƒbƒNƒŒƒxƒ‹
-	unsigned short *mcsret;				// ŒÄ‚Ño‚µŒ³PCƒ|ƒCƒ“ƒ^(•œ‹A—p)
-	STRUCTDAT *param;					// ˆø”ƒpƒ‰ƒ[ƒ^[ƒŠƒXƒg
-	void *oldtack;						// ˆÈ‘O‚ÌƒXƒ^ƒbƒNƒAƒhƒŒƒX
+	int stacklev;						// ã‚µãƒ–ãƒ«ãƒ¼ãƒãƒ³é–‹å§‹æ™‚ã®ã‚¹ã‚¿ãƒƒã‚¯ãƒ¬ãƒ™ãƒ«
+	unsigned short *mcsret;				// å‘¼ã³å‡ºã—å…ƒPCãƒã‚¤ãƒ³ã‚¿(å¾©å¸°ç”¨)
+	STRUCTDAT *param;					// å¼•æ•°ãƒ‘ãƒ©ãƒ¡ãƒ¼ã‚¿ãƒ¼ãƒªã‚¹ãƒˆ
+	void *oldtack;						// ä»¥å‰ã®ã‚¹ã‚¿ãƒƒã‚¯ã‚¢ãƒ‰ãƒ¬ã‚¹
+	int oldlev;							// ä»¥å‰ã®ã‚¹ã‚¿ãƒƒã‚¯ãƒ¬ãƒ™ãƒ«
 
 } HSPROUTINE;
 
 
 
-//		ƒR[ƒ‹ƒoƒbƒN‚ÌƒIƒvƒVƒ‡ƒ“
+//		ã‚³ãƒ¼ãƒ«ãƒãƒƒã‚¯ã®ã‚ªãƒ—ã‚·ãƒ§ãƒ³
 //
-#define HSPEVENT_ENABLE_COMMAND 1	// ‚PƒXƒeƒbƒvÀs
-#define HSPEVENT_ENABLE_HSPIRQ 2	// HSP“à‚Å‚ÌŠ„‚è‚İ”­¶
-#define HSPEVENT_ENABLE_GETKEY 4	// ƒL[ƒ`ƒFƒbƒN
-#define HSPEVENT_ENABLE_FILE 8		// ƒtƒ@ƒCƒ‹“üo—Í
-#define HSPEVENT_ENABLE_MEDIA 16	// ƒƒfƒBƒA“üo—Í
-#define HSPEVENT_ENABLE_PICLOAD 32	// picload–½—ßÀs
+#define HSPEVENT_ENABLE_COMMAND 1	// ï¼‘ã‚¹ãƒ†ãƒƒãƒ—å®Ÿè¡Œæ™‚
+#define HSPEVENT_ENABLE_HSPIRQ 2	// HSPå†…ã§ã®å‰²ã‚Šè¾¼ã¿ç™ºç”Ÿæ™‚
+#define HSPEVENT_ENABLE_GETKEY 4	// ã‚­ãƒ¼ãƒã‚§ãƒƒã‚¯æ™‚
+#define HSPEVENT_ENABLE_FILE 8		// ãƒ•ã‚¡ã‚¤ãƒ«å…¥å‡ºåŠ›æ™‚
+#define HSPEVENT_ENABLE_MEDIA 16	// ãƒ¡ãƒ‡ã‚£ã‚¢å…¥å‡ºåŠ›æ™‚
+#define HSPEVENT_ENABLE_PICLOAD 32	// picloadå‘½ä»¤å®Ÿè¡Œæ™‚
+
+
+//		ãƒ•ã‚¡ãƒ³ã‚¯ã‚·ãƒ§ãƒ³å‹
+//
+typedef int (* HSP3_CMDFUNC) (int);
+typedef void *(* HSP3_REFFUNC) (int *,int);
+typedef int (* HSP3_TERMFUNC) (int);
+typedef int (* HSP3_MSGFUNC) (int,int,int);
+typedef int (* HSP3_EVENTFUNC) (int,int,int,void *);
 
 
 typedef struct {
-	//	Œ^‚²‚Æ‚Ìî•ñ
-	//	(*‚Ì€–Ú‚ÍAeƒAƒvƒŠƒP[ƒVƒ‡ƒ“‚Åİ’è‚³‚ê‚Ü‚·)
+	//	å‹ã”ã¨ã®æƒ…å ±
+	//	(*ã®é …ç›®ã¯ã€è¦ªã‚¢ãƒ—ãƒªã‚±ãƒ¼ã‚·ãƒ§ãƒ³ã§è¨­å®šã•ã‚Œã¾ã™)
 	//
-	short type;							// *Œ^ƒ^ƒCƒv’l
-	short option;						// *ƒIƒvƒVƒ‡ƒ“î•ñ
-	HSPCTX *hspctx;						// *HSP Context\‘¢‘Ì‚Ö‚Ìƒ|ƒCƒ“ƒ^
-	HSPEXINFO *hspexinfo;				// *HSPEXINFO\‘¢‘Ì‚Ö‚Ìƒ|ƒCƒ“ƒ^
+	short type;							// *å‹ã‚¿ã‚¤ãƒ—å€¤
+	short option;						// *ã‚ªãƒ—ã‚·ãƒ§ãƒ³æƒ…å ±
+	HSPCTX *hspctx;						// *HSP Contextæ§‹é€ ä½“ã¸ã®ãƒã‚¤ãƒ³ã‚¿
+	HSPEXINFO *hspexinfo;				// *HSPEXINFOæ§‹é€ ä½“ã¸ã®ãƒã‚¤ãƒ³ã‚¿
 
-	//	ƒtƒ@ƒ“ƒNƒVƒ‡ƒ“î•ñ
+	//	ãƒ•ã‚¡ãƒ³ã‚¯ã‚·ãƒ§ãƒ³æƒ…å ±
 	//
-	int (* cmdfunc) (int);				// ƒRƒ}ƒ“ƒhó‚¯æ‚èƒtƒ@ƒ“ƒNƒVƒ‡ƒ“
-	void *(* reffunc) (int *,int);		// QÆó‚¯æ‚èƒtƒ@ƒ“ƒNƒVƒ‡ƒ“
-	int (* termfunc) (int);				// I—¹ó‚¯æ‚èƒtƒ@ƒ“ƒNƒVƒ‡ƒ“
+	int (* cmdfunc) (int);				// ã‚³ãƒãƒ³ãƒ‰å—ã‘å–ã‚Šãƒ•ã‚¡ãƒ³ã‚¯ã‚·ãƒ§ãƒ³
+	void *(* reffunc) (int *,int);		// å‚ç…§å—ã‘å–ã‚Šãƒ•ã‚¡ãƒ³ã‚¯ã‚·ãƒ§ãƒ³
+	int (* termfunc) (int);				// çµ‚äº†å—ã‘å–ã‚Šãƒ•ã‚¡ãƒ³ã‚¯ã‚·ãƒ§ãƒ³
 
-	// ƒCƒxƒ“ƒgƒR[ƒ‹ƒoƒbƒNƒtƒ@ƒ“ƒNƒVƒ‡ƒ“
+	// ã‚¤ãƒ™ãƒ³ãƒˆã‚³ãƒ¼ãƒ«ãƒãƒƒã‚¯ãƒ•ã‚¡ãƒ³ã‚¯ã‚·ãƒ§ãƒ³
 	//
-	int (* msgfunc) (int,int,int);				// WindowƒƒbƒZ[ƒWƒR[ƒ‹ƒoƒbƒN
-	int (* eventfunc) (int,int,int,void *);		// HSPƒCƒxƒ“ƒgƒR[ƒ‹ƒoƒbƒN
+	int (* msgfunc) (int,int,int);				// Windowãƒ¡ãƒƒã‚»ãƒ¼ã‚¸ã‚³ãƒ¼ãƒ«ãƒãƒƒã‚¯
+	int (* eventfunc) (int,int,int,void *);		// HSPã‚¤ãƒ™ãƒ³ãƒˆã‚³ãƒ¼ãƒ«ãƒãƒƒã‚¯
 
 } HSP3TYPEINFO;
 
 
-// HSPŠ„‚è‚İID
+// HSPå‰²ã‚Šè¾¼ã¿ID
 enum
 {
 HSPIRQ_ONEXIT = 0,
@@ -546,7 +670,7 @@ HSPIRQ_USERDEF,
 HSPIRQ_MAX
 };
 
-// HSPƒCƒxƒ“ƒgID
+// HSPã‚¤ãƒ™ãƒ³ãƒˆID
 enum
 {
 HSPEVENT_NONE = 0,
@@ -568,6 +692,16 @@ HSPEVENT_GETPICSIZE,
 HSPEVENT_PICLOAD,
 HSPEVENT_MAX
 };
+
+// ginfoæ‹¡å¼µç”¨ãƒ•ã‚£ãƒ¼ãƒ¡ãƒ‰
+#define GINFO_EXINFO_MAX 16
+#define GINFO_EXINFO_BASE 0x100
+#define GINFO_EXINFO_ACCEL_X (GINFO_EXINFO_BASE+0)
+#define GINFO_EXINFO_ACCEL_Y (GINFO_EXINFO_BASE+1)
+#define GINFO_EXINFO_ACCEL_Z (GINFO_EXINFO_BASE+2)
+#define GINFO_EXINFO_GYRO_X (GINFO_EXINFO_BASE+3)
+#define GINFO_EXINFO_GYRO_Y (GINFO_EXINFO_BASE+4)
+#define GINFO_EXINFO_GYRO_Z (GINFO_EXINFO_BASE+5)
 
 
 #endif

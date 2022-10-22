@@ -26,7 +26,7 @@ HSPEXINFO *exinfo;	// Info for Plugins
 
 void hsp3sdk_init( HSP3TYPEINFO *info )
 {
-	//		SDK‰Šú‰»
+	//		SDKåˆæœŸåŒ–
 	//
 	ctx = info->hspctx;
 	exinfo = info->hspexinfo;
@@ -37,7 +37,7 @@ void hsp3sdk_init( HSP3TYPEINFO *info )
 
 int code_getprm( void )
 {
-	//		ƒpƒ‰ƒ[ƒ^[‚ğæ“¾(Œ^‚Í–â‚í‚È‚¢)
+	//		ãƒ‘ãƒ©ãƒ¡ãƒ¼ã‚¿ãƒ¼ã‚’å–å¾—(å‹ã¯å•ã‚ãªã„)
 	//
 	int res;
 	res = exinfo->HspFunc_prm_get();
@@ -48,7 +48,7 @@ int code_getprm( void )
 
 void bms_send( BMSCR *bm, int x, int y, int sx, int sy )
 {
-	//		ƒEƒCƒ“ƒhƒD‰æ–Ê‚ÌXV
+	//		ã‚¦ã‚¤ãƒ³ãƒ‰ã‚¥ç”»é¢ã®æ›´æ–°
 	//
 	HDC hdc;
 	HPALETTE opal;

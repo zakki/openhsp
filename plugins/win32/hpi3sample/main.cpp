@@ -9,6 +9,9 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include "hsp3plugin.h"
+//#include "hsp3debug.h"
+//#include "hsp3struct.h"
+//#include "hspwnd.h"
 
 void DrawLine( BMSCR *bm, int x1, int y1, int x2, int y2, int color );
 
@@ -20,68 +23,68 @@ void DrawLine( BMSCR *bm, int x1, int y1, int x2, int y2, int color );
 
 static void newcmd2( void )
 {
-	//		newcmd2 –½—ß‚Ìˆ—
+	//		newcmd2 å‘½ä»¤ã®å‡¦ç†
 	//
 	//		(newcmd2 p1,p2)
-	//		p1‚Åw’è‚µ‚½•Ï”‚É0`(p2-1)‚Ü‚Å‚Ì—”‚ğ‘ã“ü
-	//		HSP 2.61‚Ü‚Å‚Ìrnd–½—ß‚Æ“¯‚¶“®ì
+	//		p1ã§æŒ‡å®šã—ãŸå¤‰æ•°ã«0ï½(p2-1)ã¾ã§ã®ä¹±æ•°ã‚’ä»£å…¥
+	//		HSP 2.61ã¾ã§ã®rndå‘½ä»¤ã¨åŒã˜å‹•ä½œ
 	//
 	PVal *pval;
 	APTR aptr;
-	aptr = code_getva( &pval );						// •Ï”‚Ìæ“¾(PVal‚ÆAPTRƒ|ƒCƒ“ƒ^)
-	p1=code_getdi(100);								// ®”’l‚ğæ“¾(ƒfƒtƒHƒ‹ƒg100)
-	if (p1==0) puterror( HSPERR_DIVIDED_BY_ZERO );	// 0‚È‚ç‚ÎƒGƒ‰[
-	p2 = rand()%p1;									// —”‚ğ”­¶‚³‚¹‚é
-	code_setva( pval, aptr, HSPVAR_FLAG_INT, &p2 );		// •Ï”‚É’l‚ğ‘ã“ü(®”’l)
+	aptr = code_getva( &pval );						// å¤‰æ•°ã®å–å¾—(PValã¨APTRãƒã‚¤ãƒ³ã‚¿)
+	p1=code_getdi(100);								// æ•´æ•°å€¤ã‚’å–å¾—(ãƒ‡ãƒ•ã‚©ãƒ«ãƒˆ100)
+	if (p1==0) puterror( HSPERR_DIVIDED_BY_ZERO );	// 0ãªã‚‰ã°ã‚¨ãƒ©ãƒ¼
+	p2 = rand()%p1;									// ä¹±æ•°ã‚’ç™ºç”Ÿã•ã›ã‚‹
+	code_setva( pval, aptr, HSPVAR_FLAG_INT, &p2 );		// å¤‰æ•°ã«å€¤ã‚’ä»£å…¥(æ•´æ•°å€¤)
 }
 
 
 static void newcmd3( void )
 {
-	//		newcmd3 –½—ß‚Ìˆ—
+	//		newcmd3 å‘½ä»¤ã®å‡¦ç†
 	//
-	//		(newcmd3 "ƒtƒ@ƒCƒ‹–¼",p1)
-	//		"ƒtƒ@ƒCƒ‹–¼"‚Åw’è‚µ‚½ƒtƒ@ƒCƒ‹‚Ép1‚Ì“à—e‚ğ‘‚«o‚·
-	//		p1‚Éw’è‚³‚ê‚éŒ^‚ÍA®”AÀ”A•¶š—ñ‚Ì‚¢‚¸‚ê‚©‚Å\‚í‚È‚¢
+	//		(newcmd3 "ãƒ•ã‚¡ã‚¤ãƒ«å",p1)
+	//		"ãƒ•ã‚¡ã‚¤ãƒ«å"ã§æŒ‡å®šã—ãŸãƒ•ã‚¡ã‚¤ãƒ«ã«p1ã®å†…å®¹ã‚’æ›¸ãå‡ºã™
+	//		p1ã«æŒ‡å®šã•ã‚Œã‚‹å‹ã¯ã€æ•´æ•°ã€å®Ÿæ•°ã€æ–‡å­—åˆ—ã®ã„ãšã‚Œã‹ã§æ§‹ã‚ãªã„
 	//
 	char *p;
 	char pathname[_MAX_PATH];
 	char out[64];
 	int chk;
 
-	p = code_gets();								// •¶š—ñ‚ğæ“¾
-	strncpy( pathname, p, _MAX_PATH-1 );			// æ“¾‚µ‚½•¶š—ñ‚ğƒRƒs[
+	p = code_gets();								// æ–‡å­—åˆ—ã‚’å–å¾—
+	strncpy( pathname, p, _MAX_PATH-1 );			// å–å¾—ã—ãŸæ–‡å­—åˆ—ã‚’ã‚³ãƒ”ãƒ¼
 
-	chk = code_getprm();							// ƒpƒ‰ƒ[ƒ^[‚ğæ“¾(Œ^‚Í–â‚í‚È‚¢)
+	chk = code_getprm();							// ãƒ‘ãƒ©ãƒ¡ãƒ¼ã‚¿ãƒ¼ã‚’å–å¾—(å‹ã¯å•ã‚ãªã„)
 	if ( chk<=PARAM_END ) {
-		return;										// ƒpƒ‰ƒ[ƒ^[È—ª‚Ìˆ—
+		return;										// ãƒ‘ãƒ©ãƒ¡ãƒ¼ã‚¿ãƒ¼çœç•¥æ™‚ã®å‡¦ç†
 	}
 
-	int type = mpval->flag;							// ƒpƒ‰ƒ[ƒ^[‚ÌŒ^‚ğæ“¾
+	int type = mpval->flag;							// ãƒ‘ãƒ©ãƒ¡ãƒ¼ã‚¿ãƒ¼ã®å‹ã‚’å–å¾—
 	switch( type ) {
-	case HSPVAR_FLAG_STR:								// ƒpƒ‰ƒ[ƒ^[‚ª•¶š—ñ‚¾‚Á‚½
+	case HSPVAR_FLAG_STR:								// ãƒ‘ãƒ©ãƒ¡ãƒ¼ã‚¿ãƒ¼ãŒæ–‡å­—åˆ—ã ã£ãŸæ™‚
 		{
 		char *str = (char *)mpval->pt;
-		sprintf( out,"%s\n",str );
+		sprintf( out,"%s\n%s\n", pathname, str );
 		break;
 		}
-	case HSPVAR_FLAG_DOUBLE:									// ƒpƒ‰ƒ[ƒ^[‚ªÀ”‚¾‚Á‚½
+	case HSPVAR_FLAG_DOUBLE:									// ãƒ‘ãƒ©ãƒ¡ãƒ¼ã‚¿ãƒ¼ãŒå®Ÿæ•°ã ã£ãŸæ™‚
 		{
 		double *ptr = (double *)mpval->pt;
-		sprintf( out,"%f\n",*ptr );
+		sprintf( out,"%s\n%f\n", pathname, *ptr );
 		break;
 		}
-	case HSPVAR_FLAG_INT:									// ƒpƒ‰ƒ[ƒ^[‚ª®”‚¾‚Á‚½
+	case HSPVAR_FLAG_INT:									// ãƒ‘ãƒ©ãƒ¡ãƒ¼ã‚¿ãƒ¼ãŒæ•´æ•°ã ã£ãŸæ™‚
 		{
 		int *ptr = (int *)mpval->pt;
-		sprintf( out,"%d\n",*ptr );
+		sprintf( out,"%s\n%d\n", pathname, *ptr );
 		break;
 		}
 	default:
-		puterror( HSPERR_TYPE_MISMATCH );			// ƒTƒ|[ƒg‚µ‚Ä‚¢‚È‚¢Œ^‚È‚ç‚ÎƒGƒ‰[
+		puterror( HSPERR_TYPE_MISMATCH );			// ã‚µãƒãƒ¼ãƒˆã—ã¦ã„ãªã„å‹ãªã‚‰ã°ã‚¨ãƒ©ãƒ¼
 	}
 
-	//	•¶š—ñout‚ğƒtƒ@ƒCƒ‹‚É’Ç‹L‚Å‘‚«o‚·
+	//	æ–‡å­—åˆ—outã‚’ãƒ•ã‚¡ã‚¤ãƒ«ã«è¿½è¨˜ã§æ›¸ãå‡ºã™
 	//
 	FILE *fp;
 	fp = fopen( pathname, "a" );
@@ -92,38 +95,38 @@ static void newcmd3( void )
 
 static void newcmd4( void )
 {
-	//		newcmd4 –½—ß‚Ìˆ—
+	//		newcmd4 å‘½ä»¤ã®å‡¦ç†
 	//
 	//		(newcmd4 x1,y1,x2,y2,color)
-	//		(x1,y1)‚©‚ç(x2,y2)‚Ü‚Åcolor‚Åw’è‚µ‚½F‚Ìü‚ğˆø‚­
+	//		(x1,y1)ã‹ã‚‰(x2,y2)ã¾ã§colorã§æŒ‡å®šã—ãŸè‰²ã®ç·šã‚’å¼•ã
 	//
 	BMSCR *bm;
 
-	p1 = code_getdi(0);		// ƒpƒ‰ƒ[ƒ^1:”’l
-	p2 = code_getdi(0);		// ƒpƒ‰ƒ[ƒ^2:”’l
-	p3 = code_getdi(0);		// ƒpƒ‰ƒ[ƒ^3:”’l
-	p4 = code_getdi(0);		// ƒpƒ‰ƒ[ƒ^4:”’l
-	p5 = code_getdi(0);		// ƒpƒ‰ƒ[ƒ^5:”’l
+	p1 = code_getdi(0);		// ãƒ‘ãƒ©ãƒ¡ãƒ¼ã‚¿1:æ•°å€¤
+	p2 = code_getdi(0);		// ãƒ‘ãƒ©ãƒ¡ãƒ¼ã‚¿2:æ•°å€¤
+	p3 = code_getdi(0);		// ãƒ‘ãƒ©ãƒ¡ãƒ¼ã‚¿3:æ•°å€¤
+	p4 = code_getdi(0);		// ãƒ‘ãƒ©ãƒ¡ãƒ¼ã‚¿4:æ•°å€¤
+	p5 = code_getdi(0);		// ãƒ‘ãƒ©ãƒ¡ãƒ¼ã‚¿5:æ•°å€¤
 
-	bm = (BMSCR *)getbmscr( active_window );	// Œ»İ‚ÌBMSCR‚ğæ“¾
+	bm = (BMSCR *)getbmscr( active_window );	// ç¾åœ¨ã®BMSCRã‚’å–å¾—
 	DrawLine( bm, p1, p2, p3, p4, p5 );
-	bms_send( bm, 0, 0, bm->sx, bm->sy );		// ‘S‰æ–Ê‚ğXV
+	bms_send( bm, 0, 0, bm->sx, bm->sy );		// å…¨ç”»é¢ã‚’æ›´æ–°
 }
 
 /*------------------------------------------------------------*/
 
 static int cmdfunc( int cmd )
 {
-	//		Àsˆ— (–½—ßÀs‚ÉŒÄ‚Î‚ê‚Ü‚·)
+	//		å®Ÿè¡Œå‡¦ç† (å‘½ä»¤å®Ÿè¡Œæ™‚ã«å‘¼ã°ã‚Œã¾ã™)
 	//
-	code_next();							// Ÿ‚ÌƒR[ƒh‚ğæ“¾(Å‰‚É•K‚¸•K—v‚Å‚·)
+	code_next();							// æ¬¡ã®ã‚³ãƒ¼ãƒ‰ã‚’å–å¾—(æœ€åˆã«å¿…ãšå¿…è¦ã§ã™)
 
-	switch( cmd ) {							// ƒTƒuƒRƒ}ƒ“ƒh‚²‚Æ‚Ì•ªŠò
+	switch( cmd ) {							// ã‚µãƒ–ã‚³ãƒãƒ³ãƒ‰ã”ã¨ã®åˆ†å²
 
 	case 0x00:								// newcmd
 
-		p1 = code_getdi( 123 );		// ®”’l‚ğæ“¾(ƒfƒtƒHƒ‹ƒg123)
-		stat = p1;					// ƒVƒXƒeƒ€•Ï”stat‚É‘ã“ü
+		p1 = code_getdi( 123 );		// æ•´æ•°å€¤ã‚’å–å¾—(ãƒ‡ãƒ•ã‚©ãƒ«ãƒˆ123)
+		stat = p1;					// ã‚·ã‚¹ãƒ†ãƒ å¤‰æ•°statã«ä»£å…¥
 		break;
 
 	case 0x01:								// newcmd2
@@ -147,38 +150,38 @@ static int cmdfunc( int cmd )
 
 /*------------------------------------------------------------*/
 
-static int ref_ival;						// •Ô’l‚Ì‚½‚ß‚Ì•Ï”
+static int ref_ival;						// è¿”å€¤ã®ãŸã‚ã®å¤‰æ•°
 
 static void *reffunc( int *type_res, int cmd )
 {
-	//		ŠÖ”EƒVƒXƒeƒ€•Ï”‚ÌÀsˆ— (’l‚ÌQÆ‚ÉŒÄ‚Î‚ê‚Ü‚·)
+	//		é–¢æ•°ãƒ»ã‚·ã‚¹ãƒ†ãƒ å¤‰æ•°ã®å®Ÿè¡Œå‡¦ç† (å€¤ã®å‚ç…§æ™‚ã«å‘¼ã°ã‚Œã¾ã™)
 	//
-	//			'('‚Ån‚Ü‚é‚©‚ğ’²‚×‚é
+	//			'('ã§å§‹ã¾ã‚‹ã‹ã‚’èª¿ã¹ã‚‹
 	//
 	if ( *type != TYPE_MARK ) puterror( HSPERR_INVALID_FUNCPARAM );
 	if ( *val != '(' ) puterror( HSPERR_INVALID_FUNCPARAM );
 	code_next();
 
 
-	switch( cmd ) {							// ƒTƒuƒRƒ}ƒ“ƒh‚²‚Æ‚Ì•ªŠò
+	switch( cmd ) {							// ã‚µãƒ–ã‚³ãƒãƒ³ãƒ‰ã”ã¨ã®åˆ†å²
 
 	case 0x00:								// newcmd
 
-		p1 = code_geti();				// ®”’l‚ğæ“¾(ƒfƒtƒHƒ‹ƒg‚È‚µ)
-		ref_ival = p1 * 2;				// •Ô’l‚ğival‚Éİ’è
+		p1 = code_geti();				// æ•´æ•°å€¤ã‚’å–å¾—(ãƒ‡ãƒ•ã‚©ãƒ«ãƒˆãªã—)
+		ref_ival = p1 * 2;				// è¿”å€¤ã‚’ivalã«è¨­å®š
 		break;
 
 	default:
 		puterror( HSPERR_UNSUPPORTED_FUNCTION );
 	}
 
-	//			'('‚ÅI‚í‚é‚©‚ğ’²‚×‚é
+	//			'('ã§çµ‚ã‚ã‚‹ã‹ã‚’èª¿ã¹ã‚‹
 	//
 	if ( *type != TYPE_MARK ) puterror( HSPERR_INVALID_FUNCPARAM );
 	if ( *val != ')' ) puterror( HSPERR_INVALID_FUNCPARAM );
 	code_next();
 
-	*type_res = HSPVAR_FLAG_INT;			// •Ô’l‚Ìƒ^ƒCƒv‚ğ®”‚Éw’è‚·‚é
+	*type_res = HSPVAR_FLAG_INT;			// è¿”å€¤ã®ã‚¿ã‚¤ãƒ—ã‚’æ•´æ•°ã«æŒ‡å®šã™ã‚‹
 	return (void *)&ref_ival;
 }
 
@@ -187,7 +190,7 @@ static void *reffunc( int *type_res, int cmd )
 
 static int termfunc( int option )
 {
-	//		I—¹ˆ— (ƒAƒvƒŠƒP[ƒVƒ‡ƒ“I—¹‚ÉŒÄ‚Î‚ê‚Ü‚·)
+	//		çµ‚äº†å‡¦ç† (ã‚¢ãƒ—ãƒªã‚±ãƒ¼ã‚·ãƒ§ãƒ³çµ‚äº†æ™‚ã«å‘¼ã°ã‚Œã¾ã™)
 	//
 	return 0;
 }
@@ -196,7 +199,7 @@ static int termfunc( int option )
 
 static int eventfunc( int event, int prm1, int prm2, void *prm3 )
 {
-	//		ƒCƒxƒ“ƒgˆ— (HSPƒCƒxƒ“ƒg”­¶‚ÉŒÄ‚Î‚ê‚Ü‚·)
+	//		ã‚¤ãƒ™ãƒ³ãƒˆå‡¦ç† (HSPã‚¤ãƒ™ãƒ³ãƒˆç™ºç”Ÿæ™‚ã«å‘¼ã°ã‚Œã¾ã™)
 	//
 	switch( event ) {
 	case HSPEVENT_GETKEY:
@@ -218,7 +221,7 @@ static int eventfunc( int event, int prm1, int prm2, void *prm3 )
 
 int WINAPI DllMain (HINSTANCE hInstance, DWORD fdwReason, PVOID pvReserved)
 {
-	//		DLLƒGƒ“ƒgƒŠ[ (‰½‚à‚·‚é•K—v‚Í‚ ‚è‚Ü‚¹‚ñ)
+	//		DLLã‚¨ãƒ³ãƒˆãƒªãƒ¼ (ä½•ã‚‚ã™ã‚‹å¿…è¦ã¯ã‚ã‚Šã¾ã›ã‚“)
 	//
 	return TRUE;
 }
@@ -226,17 +229,17 @@ int WINAPI DllMain (HINSTANCE hInstance, DWORD fdwReason, PVOID pvReserved)
 
 EXPORT void WINAPI hsp3cmdinit( HSP3TYPEINFO *info )
 {
-	//		ƒvƒ‰ƒOƒCƒ“‰Šú‰» (ÀsEI—¹ˆ—‚ğ“o˜^‚µ‚Ü‚·)
+	//		ãƒ—ãƒ©ã‚°ã‚¤ãƒ³åˆæœŸåŒ– (å®Ÿè¡Œãƒ»çµ‚äº†å‡¦ç†ã‚’ç™»éŒ²ã—ã¾ã™)
 	//
-	hsp3sdk_init( info );			// SDK‚Ì‰Šú‰»(Å‰‚És‚È‚Á‚Ä‰º‚³‚¢)
-	info->cmdfunc = cmdfunc;		// ÀsŠÖ”(cmdfunc)‚Ì“o˜^
-	info->reffunc = reffunc;		// QÆŠÖ”(reffunc)‚Ì“o˜^
-	info->termfunc = termfunc;		// I—¹ŠÖ”(termfunc)‚Ì“o˜^
+	hsp3sdk_init( info );			// SDKã®åˆæœŸåŒ–(æœ€åˆã«è¡Œãªã£ã¦ä¸‹ã•ã„)
+	info->cmdfunc = cmdfunc;		// å®Ÿè¡Œé–¢æ•°(cmdfunc)ã®ç™»éŒ²
+	info->reffunc = reffunc;		// å‚ç…§é–¢æ•°(reffunc)ã®ç™»éŒ²
+	info->termfunc = termfunc;		// çµ‚äº†é–¢æ•°(termfunc)ã®ç™»éŒ²
 
 	/*
-	//	ƒCƒxƒ“ƒgƒR[ƒ‹ƒoƒbƒN‚ğ”­¶‚³‚¹‚éƒCƒxƒ“ƒgí•Ê‚ğİ’è‚·‚é
+	//	ã‚¤ãƒ™ãƒ³ãƒˆã‚³ãƒ¼ãƒ«ãƒãƒƒã‚¯ã‚’ç™ºç”Ÿã•ã›ã‚‹ã‚¤ãƒ™ãƒ³ãƒˆç¨®åˆ¥ã‚’è¨­å®šã™ã‚‹
     info->option = HSPEVENT_ENABLE_GETKEY;
-	info->eventfunc = eventfunc;	// ƒCƒxƒ“ƒgŠÖ”(eventfunc)‚Ì“o˜^
+	info->eventfunc = eventfunc;	// ã‚¤ãƒ™ãƒ³ãƒˆé–¢æ•°(eventfunc)ã®ç™»éŒ²
 	*/
 }
 
@@ -246,13 +249,13 @@ EXPORT void WINAPI hsp3cmdinit( HSP3TYPEINFO *info )
 EXPORT BOOL WINAPI test1( PVAL2 *pval, int p1, int p2, int p3 )
 {
 	//	DLL test1 (type$83)
-	//		w’è‚µ‚½•Ï”‚ÉAu•¶š—ñƒeƒXƒgv‚ğ‘ã“ü‚·‚éB
-	//		•Ï”‚ÌŒ^‚ª”’lŒ^‚¾‚Á‚½ê‡‚àA•¶š—ñŒ^‚É‚·‚éB
+	//		æŒ‡å®šã—ãŸå¤‰æ•°ã«ã€ã€Œæ–‡å­—åˆ—ãƒ†ã‚¹ãƒˆã€ã‚’ä»£å…¥ã™ã‚‹ã€‚
+	//		å¤‰æ•°ã®å‹ãŒæ•°å€¤å‹ã ã£ãŸå ´åˆã‚‚ã€æ–‡å­—åˆ—å‹ã«ã™ã‚‹ã€‚
 	//
 	char *pt;
-	if (pval->flag==4) pval->flag=2;	// •¶š—ñŒ^‚É
+	if (pval->flag==4) pval->flag=2;	// æ–‡å­—åˆ—å‹ã«
 	pt=pval->pt;
-	strcpy( pt,"•¶š—ñƒeƒXƒg" );
+	strcpy( pt,"æ–‡å­—åˆ—ãƒ†ã‚¹ãƒˆ" );
 	return 0;
 }
 
@@ -260,27 +263,27 @@ EXPORT BOOL WINAPI test1( PVAL2 *pval, int p1, int p2, int p3 )
 EXPORT BOOL WINAPI test2( HSPEXINFO *hei, int p1, int p2, int p3 )
 {
 	//	DLL test2 (type$202)
-	//		test2 •Ï”,"ƒtƒ@ƒCƒ‹–¼"
-	//		w’è‚µ‚½ƒeƒLƒXƒgƒtƒ@ƒCƒ‹‚ğ•Ï”ƒoƒbƒtƒ@‚É“Ç‚İ‚ŞB
-	//		ƒtƒ@ƒCƒ‹ƒTƒCƒY‚É‡‚í‚¹‚Ä•Ï”ƒoƒbƒtƒ@‚ğŠg’£‚·‚éB
-	//		packfile‚Åw’è‚µ‚½ƒtƒ@ƒCƒ‹‚à“Ç‚İ‚İ‰Â”\B
+	//		test2 å¤‰æ•°,"ãƒ•ã‚¡ã‚¤ãƒ«å"
+	//		æŒ‡å®šã—ãŸãƒ†ã‚­ã‚¹ãƒˆãƒ•ã‚¡ã‚¤ãƒ«ã‚’å¤‰æ•°ãƒãƒƒãƒ•ã‚¡ã«èª­ã¿è¾¼ã‚€ã€‚
+	//		ãƒ•ã‚¡ã‚¤ãƒ«ã‚µã‚¤ã‚ºã«åˆã‚ã›ã¦å¤‰æ•°ãƒãƒƒãƒ•ã‚¡ã‚’æ‹¡å¼µã™ã‚‹ã€‚
+	//		packfileã§æŒ‡å®šã—ãŸãƒ•ã‚¡ã‚¤ãƒ«ã‚‚èª­ã¿è¾¼ã¿å¯èƒ½ã€‚
 	//
 	int cursize, newsize;
 	PVAL2 *pval;
 	char *ep1;
 	char *ep2;
-	ep1 = (char *)hei->HspFunc_prm_getv();	// ƒpƒ‰ƒ[ƒ^1:•Ï”
-	pval = *hei->pval;						// •Ï”‚ÌPVAL2ƒ|ƒCƒ“ƒ^‚ğæ“¾
-	ep2 = hei->HspFunc_prm_gets();			// ƒpƒ‰ƒ[ƒ^2:•¶š—ñ
-	if ( *hei->er ) return *hei->er;		// ƒGƒ‰[ƒ`ƒFƒbƒN
-	cursize = valsize( pval );				// •Ï”‚Ìƒƒ‚ƒŠƒTƒCƒY‚ğæ“¾
-	newsize = hei->HspFunc_fsize( ep2 );	// ƒtƒ@ƒCƒ‹‚ÌƒTƒCƒY‚ğæ“¾
-	if ( newsize<0 ) return -1;				// ƒtƒ@ƒCƒ‹‚ª‚È‚¢ê‡‚ÍI—¹
+	ep1 = (char *)hei->HspFunc_prm_getv();	// ãƒ‘ãƒ©ãƒ¡ãƒ¼ã‚¿1:å¤‰æ•°
+	pval = *hei->pval;						// å¤‰æ•°ã®PVAL2ãƒã‚¤ãƒ³ã‚¿ã‚’å–å¾—
+	ep2 = hei->HspFunc_prm_gets();			// ãƒ‘ãƒ©ãƒ¡ãƒ¼ã‚¿2:æ–‡å­—åˆ—
+	if ( *hei->er ) return *hei->er;		// ã‚¨ãƒ©ãƒ¼ãƒã‚§ãƒƒã‚¯
+	cursize = valsize( pval );				// å¤‰æ•°ã®ãƒ¡ãƒ¢ãƒªã‚µã‚¤ã‚ºã‚’å–å¾—
+	newsize = hei->HspFunc_fsize( ep2 );	// ãƒ•ã‚¡ã‚¤ãƒ«ã®ã‚µã‚¤ã‚ºã‚’å–å¾—
+	if ( newsize<0 ) return -1;				// ãƒ•ã‚¡ã‚¤ãƒ«ãŒãªã„å ´åˆã¯çµ‚äº†
 	if ( newsize>cursize ) {
-		//	ƒtƒ@ƒCƒ‹“Ç‚İ‚İ‚É•K—v‚Èƒoƒbƒtƒ@‚ğŠm•Û
+		//	ãƒ•ã‚¡ã‚¤ãƒ«èª­ã¿è¾¼ã¿ã«å¿…è¦ãªãƒãƒƒãƒ•ã‚¡ã‚’ç¢ºä¿
 		hei->HspFunc_val_realloc( pval,newsize,0 );
 	}
-	hei->HspFunc_fread( ep2, pval->pt, newsize, 0 );	// ƒtƒ@ƒCƒ‹“Ç‚İ‚İ
+	hei->HspFunc_fread( ep2, pval->pt, newsize, 0 );	// ãƒ•ã‚¡ã‚¤ãƒ«èª­ã¿è¾¼ã¿
 	return 0;
 }
 
@@ -289,8 +292,8 @@ EXPORT BOOL WINAPI test3( BMSCR *bm, int p1, int p2, char *p3 )
 {
 	//	DLL test3 (type$32)
 	//		test3 p1,p2
-	//		ƒpƒŒƒbƒg‚Ìp1`p2‚Ü‚Å‚ÉƒOƒŒ[ƒXƒP[ƒ‹‚ÌƒOƒ‰ƒf[ƒVƒ‡ƒ“‚ğ
-	//		İ’è‚·‚éB
+	//		ãƒ‘ãƒ¬ãƒƒãƒˆã®p1ï½p2ã¾ã§ã«ã‚°ãƒ¬ãƒ¼ã‚¹ã‚±ãƒ¼ãƒ«ã®ã‚°ãƒ©ãƒ‡ãƒ¼ã‚·ãƒ§ãƒ³ã‚’
+	//		è¨­å®šã™ã‚‹ã€‚
 	//
 	int a,n,len,grade;
 	int x1,x2,px;
@@ -298,12 +301,12 @@ EXPORT BOOL WINAPI test3( BMSCR *bm, int p1, int p2, char *p3 )
 	len=p2-p1;
 	x1=p1<<8;x2=p2<<8;px=(255<<8)/len;
 	for(a=0;a<len;a++) {
-		n=a+p1;								// n=ƒpƒŒƒbƒg”Ô†
-		pt=p3+(n*3);						// ƒpƒŒƒbƒgƒAƒhƒŒƒXŒvZ
+		n=a+p1;								// n=ãƒ‘ãƒ¬ãƒƒãƒˆç•ªå·
+		pt=p3+(n*3);						// ãƒ‘ãƒ¬ãƒƒãƒˆã‚¢ãƒ‰ãƒ¬ã‚¹è¨ˆç®—
 		grade=x1>>8;
-		pt[0]=grade;						// R‚Ì‹P“x
-		pt[1]=grade;						// G‚Ì‹P“x
-		pt[2]=grade;						// B‚Ì‹P“x
+		pt[0]=grade;						// Rã®è¼åº¦
+		pt[1]=grade;						// Gã®è¼åº¦
+		pt[2]=grade;						// Bã®è¼åº¦
 		x1+=px;
 	}
 	bms_setpal( bm, bm->pals, p3 );
@@ -315,20 +318,20 @@ EXPORT BOOL WINAPI test3( BMSCR *bm, int p1, int p2, char *p3 )
 EXPORT BOOL WINAPI test4( HSPEXINFO *hei, int p1, int p2, int p3 )
 {
 	//	DLL test4 (type$202)
-	//		test4 •Ï”,”’l1,”’l2,”’l3,”’l4,”’l5,”’l6
-	//		‘½”‚Ìƒpƒ‰ƒ[ƒ^[‚ğó‚¯æ‚éƒeƒXƒgB
-	//		”’l1`6‚Ü‚Å‚Ì‡Œv‚ğ•Ï”a‚É‘ã“üB
+	//		test4 å¤‰æ•°,æ•°å€¤1,æ•°å€¤2,æ•°å€¤3,æ•°å€¤4,æ•°å€¤5,æ•°å€¤6
+	//		å¤šæ•°ã®ãƒ‘ãƒ©ãƒ¡ãƒ¼ã‚¿ãƒ¼ã‚’å—ã‘å–ã‚‹ãƒ†ã‚¹ãƒˆã€‚
+	//		æ•°å€¤1ï½6ã¾ã§ã®åˆè¨ˆã‚’å¤‰æ•°aã«ä»£å…¥ã€‚
 	//
 	int ep2,ep3,ep4,ep5,ep6,ep7;
 	int *ep1;
-	ep1 = (int *)hei->HspFunc_prm_getv();	// ƒpƒ‰ƒ[ƒ^1:•Ï”
-	ep2 = hei->HspFunc_prm_getdi(0);		// ƒpƒ‰ƒ[ƒ^2:”’l
-	ep3 = hei->HspFunc_prm_getdi(0);		// ƒpƒ‰ƒ[ƒ^3:”’l
-	ep4 = hei->HspFunc_prm_getdi(0);		// ƒpƒ‰ƒ[ƒ^4:”’l
-	ep5 = hei->HspFunc_prm_getdi(0);		// ƒpƒ‰ƒ[ƒ^5:”’l
-	ep6 = hei->HspFunc_prm_getdi(0);		// ƒpƒ‰ƒ[ƒ^6:”’l
-	ep7 = hei->HspFunc_prm_getdi(0);		// ƒpƒ‰ƒ[ƒ^7:”’l
-	if ( *hei->er ) return *hei->er;		// ƒGƒ‰[ƒ`ƒFƒbƒN
+	ep1 = (int *)hei->HspFunc_prm_getv();	// ãƒ‘ãƒ©ãƒ¡ãƒ¼ã‚¿1:å¤‰æ•°
+	ep2 = hei->HspFunc_prm_getdi(0);		// ãƒ‘ãƒ©ãƒ¡ãƒ¼ã‚¿2:æ•°å€¤
+	ep3 = hei->HspFunc_prm_getdi(0);		// ãƒ‘ãƒ©ãƒ¡ãƒ¼ã‚¿3:æ•°å€¤
+	ep4 = hei->HspFunc_prm_getdi(0);		// ãƒ‘ãƒ©ãƒ¡ãƒ¼ã‚¿4:æ•°å€¤
+	ep5 = hei->HspFunc_prm_getdi(0);		// ãƒ‘ãƒ©ãƒ¡ãƒ¼ã‚¿5:æ•°å€¤
+	ep6 = hei->HspFunc_prm_getdi(0);		// ãƒ‘ãƒ©ãƒ¡ãƒ¼ã‚¿6:æ•°å€¤
+	ep7 = hei->HspFunc_prm_getdi(0);		// ãƒ‘ãƒ©ãƒ¡ãƒ¼ã‚¿7:æ•°å€¤
+	if ( *hei->er ) return *hei->er;		// ã‚¨ãƒ©ãƒ¼ãƒã‚§ãƒƒã‚¯
 	*ep1 = ep2+ep3+ep4+ep5+ep6+ep7;
 	return 0;
 }
@@ -337,17 +340,17 @@ EXPORT BOOL WINAPI test4( HSPEXINFO *hei, int p1, int p2, int p3 )
 EXPORT BOOL WINAPI test5( HSPEXINFO *hei, int p1, int p2, int p3 )
 {
 	//	DLL test5 (type$202)
-	//		test5 X1À•W,Y1À•W,X2À•W,Y2À•W,RGB’l
+	//		test5 X1åº§æ¨™,Y1åº§æ¨™,X2åº§æ¨™,Y2åº§æ¨™,RGBå€¤
 	//
 	BMSCR *bm;
 	int ep1,ep2,ep3,ep4,ep5;
-	ep1 = hei->HspFunc_prm_getdi(0);		// ƒpƒ‰ƒ[ƒ^1:”’l
-	ep2 = hei->HspFunc_prm_getdi(0);		// ƒpƒ‰ƒ[ƒ^2:”’l
-	ep3 = hei->HspFunc_prm_getdi(0);		// ƒpƒ‰ƒ[ƒ^3:”’l
-	ep4 = hei->HspFunc_prm_getdi(0);		// ƒpƒ‰ƒ[ƒ^4:”’l
-	ep5 = hei->HspFunc_prm_getdi(0);		// ƒpƒ‰ƒ[ƒ^5:”’l
-	if ( *hei->er ) return *hei->er;		// ƒGƒ‰[ƒ`ƒFƒbƒN
-	bm = (BMSCR *)hei->HspFunc_getbmscr( *hei->actscr );	// Œ»İ‚ÌBMSCR‚ğæ“¾
+	ep1 = hei->HspFunc_prm_getdi(0);		// ãƒ‘ãƒ©ãƒ¡ãƒ¼ã‚¿1:æ•°å€¤
+	ep2 = hei->HspFunc_prm_getdi(0);		// ãƒ‘ãƒ©ãƒ¡ãƒ¼ã‚¿2:æ•°å€¤
+	ep3 = hei->HspFunc_prm_getdi(0);		// ãƒ‘ãƒ©ãƒ¡ãƒ¼ã‚¿3:æ•°å€¤
+	ep4 = hei->HspFunc_prm_getdi(0);		// ãƒ‘ãƒ©ãƒ¡ãƒ¼ã‚¿4:æ•°å€¤
+	ep5 = hei->HspFunc_prm_getdi(0);		// ãƒ‘ãƒ©ãƒ¡ãƒ¼ã‚¿5:æ•°å€¤
+	if ( *hei->er ) return *hei->er;		// ã‚¨ãƒ©ãƒ¼ãƒã‚§ãƒƒã‚¯
+	bm = (BMSCR *)hei->HspFunc_getbmscr( *hei->actscr );	// ç¾åœ¨ã®BMSCRã‚’å–å¾—
 	DrawLine( bm, ep1, ep2, ep3, ep4, ep5 );
 	return 0;
 }
@@ -369,15 +372,15 @@ EXPORT BOOL WINAPI test6( HSPEXINFO *hei, int p1, int p2, int p3 )
 	val = *hei->npval;
 	switch( type ) {
 	case 1:
-		ep1 = hei->HspFunc_prm_getdi(0);		// ƒpƒ‰ƒ[ƒ^1:”’l
+		ep1 = hei->HspFunc_prm_getdi(0);		// ãƒ‘ãƒ©ãƒ¡ãƒ¼ã‚¿1:æ•°å€¤
 		*strsize = ep1;
 		break;
 	case 2:
-		es1 = hei->HspFunc_prm_gets();			// ƒpƒ‰ƒ[ƒ^1:•¶š—ñ
+		es1 = hei->HspFunc_prm_gets();			// ãƒ‘ãƒ©ãƒ¡ãƒ¼ã‚¿1:æ–‡å­—åˆ—
 		strcpy( refstr, es1 );
 		break;
 	case 4:
-		ep1 = hei->HspFunc_prm_getv();			// ƒpƒ‰ƒ[ƒ^1:•Ï”
+		ep1 = hei->HspFunc_prm_getv();			// ãƒ‘ãƒ©ãƒ¡ãƒ¼ã‚¿1:å¤‰æ•°
 		*strsize = ep1;
 		break;
 	default:
@@ -389,17 +392,17 @@ EXPORT BOOL WINAPI test6( HSPEXINFO *hei, int p1, int p2, int p3 )
 
 /*------------------------------------------------------------*/
 /*
-		(‚¨‚Ü‚¯) Line Draw Routines (ƒtƒ‹ƒJƒ‰[—p)
+		(ãŠã¾ã‘) Line Draw Routines (ãƒ•ãƒ«ã‚«ãƒ©ãƒ¼ç”¨)
 */
 /*------------------------------------------------------------*/
 
 void DrawLine( BMSCR *bm, int x1, int y1, int x2, int y2, int color )
 {
-	char *lpDest;		// •`‰æ‰æ–Ê‚Ìƒoƒbƒtƒ@
-	int nDestWByte;		// •`‰æÀ•W•byte”
-	int nDestWidth;		// •`‰æÀ•W•
-	int nDestHeight;	// •`‰æÀ•W‚‚³
-	int DestSize;		// •`‰æ‰æ–Êƒoƒbƒtƒ@‚ÌƒTƒCƒY
+	char *lpDest;		// æç”»ç”»é¢ã®ãƒãƒƒãƒ•ã‚¡
+	int nDestWByte;		// æç”»åº§æ¨™å¹…byteæ•°
+	int nDestWidth;		// æç”»åº§æ¨™å¹…
+	int nDestHeight;	// æç”»åº§æ¨™é«˜ã•
+	int DestSize;		// æç”»ç”»é¢ãƒãƒƒãƒ•ã‚¡ã®ã‚µã‚¤ã‚º
     int i, x, y, dx, dy, addx, addy;
 	short color1;
 	unsigned char color2;
