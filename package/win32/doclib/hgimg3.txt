@@ -149,6 +149,11 @@ HGIMG ver3.5    REFERENCE MANUAL       High Performance Graphic Image Plugin
 
 ・更新履歴
 
+	2022/10/22 ( Ver3.7β4 )
+
+		oggファイルの再生をストリームからオンメモリ再生に切り替え
+		(拡張子が.sのファイルは従来通りストリーミング再生を行います)
+
 	2017/05/25 ( Ver3.5β5 )
 
 		OBJ_SORT指定によるソートに失敗することがある不具合を修正
