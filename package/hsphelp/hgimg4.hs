@@ -2138,7 +2138,7 @@ gpnodeinfo
 var,objid,option,"name"
 var       : Œ‹‰Ê‚ª‘ã“ü‚³‚ê‚é•Ï”–¼
 objid(0)  : ƒIƒuƒWƒFƒNƒgID
-option(0) : ƒƒbƒVƒ…’¸“_ID1
+option(0) : Žæ“¾ƒIƒvƒVƒ‡ƒ“’l
 name      : ŠK‘wƒm[ƒh–¼
 %inst
 gpload–½—ß‚Å“Ç‚Ýž‚Ü‚ê‚½3Dƒ‚ƒfƒ‹‚ÌŠK‘wî•ñ‚ðŽæ“¾‚µ‚ÄAvar‚ÅŽw’è‚³‚ê‚½•Ï”‚ÉŒ‹‰Ê‚ð‘ã“ü‚µ‚Ü‚·B
@@ -2150,10 +2150,12 @@ option’l‚É‚æ‚èA‘ã“ü‚³‚ê‚éŒ‹‰Ê‚ð‘I‘ð‚·‚é‚±‚Æ‚ª‚Å‚«‚Ü‚·Boption’l‚ÉŽw’è‚Å‚«‚é’l‚Í
 	--------------------------------------------------------------
 	GPNODEINFO_NODE         ŠY“–‚·‚éƒm[ƒh‚ðŽ¦‚·ƒIƒuƒWƒFƒNƒgID
 	GPNODEINFO_MODEL        ŠY“–‚·‚éƒ‚ƒfƒ‹ƒm[ƒh‚ðŽ¦‚·ƒIƒuƒWƒFƒNƒgID
+	GPNODEINFO_MATNUM       ƒm[ƒh‚ª•ÛŽ‚µ‚Ä‚¢‚éƒ}ƒeƒŠƒAƒ‹‚Ì”
 	GPNODEINFO_NAME         ŠY“–‚·‚éƒm[ƒh–¼(*)
 	GPNODEINFO_CHILD        ŠK‘w‚ªŽ‚ÂŽq‚Ìƒm[ƒh–¼(*)
 	GPNODEINFO_SIBLING      “¯‚¶ŠK‘w‚É‚ ‚é—×‚Ìƒm[ƒh–¼(*)
 	GPNODEINFO_SKINROOT     ƒXƒLƒ“ƒƒbƒVƒ…‚ªŽ‚Á‚Ä‚¢‚éƒm[ƒh–¼(*)
+	GPNODEINFO_MATERIAL     ƒm[ƒh‚ÉÝ’è‚³‚ê‚½ƒ}ƒeƒŠƒAƒ‹–¼(*)
 
     (*) Œ‹‰Ê‚Ì•¶Žš—ñ‚ª‘ã“ü‚³‚ê‚Ü‚·
 ^p
@@ -2162,6 +2164,10 @@ GPNODEINFO_NODE‚ðŽw’è‚µ‚½ê‡‚ÍAŽw’è‚³‚ê‚½–¼‘O‚ðŽ‚ÂŠK‘w‚ðŽ¦‚·“Á•Ê‚ÈƒIƒuƒWƒFƒNƒ
 GPNODEINFO_MODEL‚ðŽw’è‚µ‚½ê‡‚ÍA•`‰æ‚·‚éƒ‚ƒfƒ‹‚ðŽ‚Á‚½ŠK‘w‚Ì‚ÝƒIƒuƒWƒFƒNƒgID‚ªŽæ“¾‚³‚ê‚Ü‚·B
 GPNODEINFO_CHILDAGPNODEINFO_SIBLINGAGPNODEINFO_SKINROOT‚ÌƒIƒvƒVƒ‡ƒ“‚ÍA‘¼‚ÌŠK‘w‚Æ‚ÌŒq‚ª‚è‚ðŽæ“¾‚µ‚Ü‚·B‚±‚ê‚É‚æ‚èAƒm[ƒh‚ÌŠK‘w‚ð’²‚×‚é‚±‚Æ‚ª‚Å‚«‚Ü‚·B
 ˆ—‚ª³í‚ÉI—¹‚µ‚½ê‡‚ÍAƒVƒXƒeƒ€•Ï”stat‚É0‚ª‘ã“ü‚³‚ê‚Ü‚·BƒGƒ‰[‚ª”­¶‚µ‚½ê‡‚ÍAƒVƒXƒeƒ€•Ï”stat‚Éƒ}ƒCƒiƒX’l‚ª‘ã“ü‚³‚ê‚Ü‚·B
+^
+GPNODEINFO_MATNUM‚ðŽw’è‚µ‚½ê‡‚ÍAƒm[ƒh‚ª•ÛŽ‚µ‚Ä‚¢‚éƒ}ƒeƒŠƒAƒ‹‚Ì”‚ðŽæ“¾‚µ‚Ü‚·BƒƒbƒVƒ…ƒ‚ƒfƒ‹‚Å‚Í‚È‚¢ƒm[ƒh‚ðŽw’è‚µ‚½ê‡‚ÍA-1‚ª•Ô‚³‚ê‚Ü‚·B
+GPNODEINFO_MATERIAL‚ðŽw’è‚µ‚½ê‡‚ÍAƒm[ƒh‚ÉÝ’è‚³‚ê‚½ƒ}ƒeƒŠƒAƒ‹–¼‚ðŽæ“¾‚µ‚Ü‚·BƒƒbƒVƒ…ƒ‚ƒfƒ‹‚Å‚Í‚È‚¢ƒm[ƒh‚âggpload‚Å“Ç‚Ýž‚Ü‚ê‚Ä‚¢‚È‚¢3Dƒm[ƒh‚ðŽw’è‚µ‚½ê‡‚ÍA‹ó‚Ì•¶Žš—ñ("")‚ª•Ô‚³‚ê‚Ü‚·B
+1‚Â‚Ìƒm[ƒh‚É•¡”‚Ìƒ}ƒeƒŠƒAƒ‹‚ªÝ’è‚³‚ê‚Ä‚¢‚éê‡‚ÍAGPNODEINFO_MATERIAL+1AGPNODEINFO_MATERIAL+2‚Æ‚¢‚¤‚æ‚¤‚ÉƒCƒ“ƒfƒbƒNƒX‚Ì’l‚ð‰ÁŽZ‚µ‚Ä‚­‚¾‚³‚¢B•¡”‚Ìƒ}ƒeƒŠƒAƒ‹‚ªÝ’è‚³‚ê‚Ä‚¢‚é‚©‚ÍAGPNODEINFO_MATNUM‚ÌƒIƒvƒVƒ‡ƒ“‚Å’²‚×‚é‚±‚Æ‚ª‚Å‚«‚Ü‚·B
 
 %href
 gpload

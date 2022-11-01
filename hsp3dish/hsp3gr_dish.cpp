@@ -2974,6 +2974,16 @@ static int cmdfunc_extcmd( int cmd )
 		}
 		break;
 	}
+	case 0x15c:								// gpnodetouch
+	{
+		char* ps;
+		int res = 0;
+		p1 = code_getdi(0);
+		p2 = code_getdi(0);
+		ps = code_getds("");
+		ctx->stat = res;
+		break;
+	}
 
 
 

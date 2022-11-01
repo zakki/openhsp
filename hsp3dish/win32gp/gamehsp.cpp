@@ -3656,6 +3656,8 @@ Node* gamehsp::getNodeFromName(int objid, char* name)
 int gamehsp::getNodeInfo(int objid, int option, char* name, int *result)
 {
 	int res = 0;
+	Model* model;
+	Drawable* drawable;
 	Node* node = getNodeFromName(objid, name);
 	if (node == NULL) {
 		*result = -1;
@@ -3668,8 +3670,8 @@ int gamehsp::getNodeInfo(int objid, int option, char* name, int *result)
 		break;
 	case GPNODEINFO_MODEL:
 	{
-		Drawable* drawable = node->getDrawable();
-		Model* model = dynamic_cast<Model*>(drawable);
+		drawable = node->getDrawable();
+		model = dynamic_cast<Model*>(drawable);
 		if (model) {
 			touchNode = node;
 			*result = GPOBJ_ID_TOUCHNODE;
@@ -3679,6 +3681,16 @@ int gamehsp::getNodeInfo(int objid, int option, char* name, int *result)
 		}
 		break;
 	}
+	case GPNODEINFO_MATNUM:
+		drawable = node->getDrawable();
+		model = dynamic_cast<Model*>(drawable);
+		if (model) {
+			*result = (int)model->getMeshPartCount();
+		}
+		else {
+			*result = -1;
+		}
+		break;
 	default:
 		return -1;
 	}
@@ -3691,6 +3703,27 @@ int gamehsp::getNodeInfoString(int objid, int option, char* name, std::string* r
 	int result = 0;
 	Node* node = getNodeFromName(objid, name);
 	if (node == NULL) return -1;
+
+	if (option & GPNODEINFO_MATERIAL) {
+		int matindex = option & (GPNODEINFO_MATERIAL-1);
+		Drawable* drawable = node->getDrawable();
+		Model* model = dynamic_cast<Model*>(drawable);
+		Material* material = NULL;
+		res->clear();
+		if (model) {
+			if (model->getMeshPartCount() == 0) {
+				material = model->getMaterial();
+			}
+			else {
+				material = model->getMaterial(matindex);
+			}
+			if (material) {
+				*res = material->getName();
+			}
+		}
+		return result;
+	}
+
 	switch (option) {
 	case GPNODEINFO_NAME:
 		*res = node->getId();

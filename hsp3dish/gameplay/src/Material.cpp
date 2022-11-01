@@ -66,6 +66,7 @@ Material* Material::create(Properties* materialProperties, PassCallback callback
     // Create new material from the file passed in.
     Material* material = new Material();
 	//GP_WARN("NewMaterial[%s][%s][%x]", materialProperties->getNamespace(), materialProperties->getId(),callback);
+    material->setName(materialProperties->getId());
 
     // Load uniform value parameters for this material.
     loadRenderState(material, materialProperties);
