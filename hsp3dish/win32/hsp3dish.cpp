@@ -435,6 +435,10 @@ LRESULT CALLBACK WndProc( HWND hwnd, UINT uMessage, WPARAM wParam, LPARAM lParam
 			int iparam = (int)MapVirtualKey(wparam, 2);
 			bool notice = false;
 
+			if (lParam & HSPOBJ_NOTICE_KEY_EXTKEY) {
+				iparam = 0;		// 拡張キーの場合
+			}
+
 			if (iparam != 0) {
 				if ((wparam >= 'A') && (wparam <= 'Z')) {
 					if (GetKeyState(VK_CONTROL) < 0) {
@@ -460,10 +464,6 @@ LRESULT CALLBACK WndProc( HWND hwnd, UINT uMessage, WPARAM wParam, LPARAM lParam
 			}
 			else {
 				switch (wparam) {
-				case HSPOBJ_NOTICE_KEY_DEL:
-				case HSPOBJ_NOTICE_KEY_INS:
-					notice = true;
-					break;
 				case HSPOBJ_NOTICE_KEY_F1:
 				case HSPOBJ_NOTICE_KEY_F2:
 				case HSPOBJ_NOTICE_KEY_F3:
@@ -479,6 +479,8 @@ LRESULT CALLBACK WndProc( HWND hwnd, UINT uMessage, WPARAM wParam, LPARAM lParam
 					notice = true;
 					wparam += HSPOBJ_NOTICE_KEY_CTRLADD;
 					break;
+				case HSPOBJ_NOTICE_KEY_DEL:
+				case HSPOBJ_NOTICE_KEY_INS:
 				case HSPOBJ_NOTICE_KEY_LEFT:
 				case HSPOBJ_NOTICE_KEY_UP:
 				case HSPOBJ_NOTICE_KEY_RIGHT:
@@ -488,6 +490,7 @@ LRESULT CALLBACK WndProc( HWND hwnd, UINT uMessage, WPARAM wParam, LPARAM lParam
 				case HSPOBJ_NOTICE_KEY_SCROLL_UP:
 				case HSPOBJ_NOTICE_KEY_SCROLL_DOWN:
 					notice = true;
+					wparam += HSPOBJ_NOTICE_KEY_EXTKEY;
 					if (GetKeyState(VK_SHIFT) < 0) wparam += HSPOBJ_NOTICE_KEY_SHIFTADD;
 					break;
 				default:

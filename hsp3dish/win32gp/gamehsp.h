@@ -38,6 +38,7 @@ using namespace gameplay;
 #define GPOBJ_MODE_BHIDE (0x8000)
 
 #define GPOBJ_ID_MATFLAG  (0x200000)
+#define GPOBJ_ID_SRCFLAG  (0x400000)
 #define GPOBJ_ID_FLAGBIT (0xff00000)
 #define GPOBJ_ID_FLAGMASK (0x0fffff)
 
@@ -137,11 +138,12 @@ GPPSET_MAX
 #define GPNODEINFO_NODE (0)
 #define GPNODEINFO_MODEL (1)
 #define GPNODEINFO_MATNUM (2)
+#define GPNODEINFO_MATERIAL (0x80)
 #define GPNODEINFO_NAME (0x100)
 #define GPNODEINFO_CHILD (0x101)
 #define GPNODEINFO_SIBLING (0x102)
 #define GPNODEINFO_SKINROOT (0x103)
-#define GPNODEINFO_MATERIAL (0x10000)
+#define GPNODEINFO_MATNAME (0x10000)
 
 #define GPOBJ_PRMSET_FLAG (2)
 #define GPOBJ_PRMSET_MODE (3)
@@ -431,7 +433,7 @@ public:
 	int makeNewMat(Material* material, int mode, int color, int matopt );
 	int makeNewMat2D( char *fname, int matopt );
 	int makeNewMatFromFB(gameplay::FrameBuffer *fb, int matopt);
-	int makeNewMatFromObj(int objid, int part);
+	int makeNewMatFromObj(int objid, int part, char *nodename);
 
 	int makeNewLgt( int id, int lgtopt, float range=1.0f, float inner=0.5f, float outer=1.0f );
 	int makeNewCam( int id, float fov, float aspect, float near, float far, int mode=0 );
@@ -518,6 +520,7 @@ public:
 	bool getNodeFromNameSub(Node* node, char *name, int deep);
 	int getNodeInfo(int objid, int option, char* name, int* result);
 	int getNodeInfoString(int objid, int option, char* name, std::string *res);
+	int setNodeInfoMaterial(int objid, int option, char* name, int matid);
 
 	// 2D draw function
 	float *startPolyTex2D( gpmat *mat, int material_id );

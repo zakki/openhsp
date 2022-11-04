@@ -41,6 +41,9 @@
 
 #const global OBJ_BHIDE 0x8000
 
+#const global GPOBJ_ID_MATFLAG  (0x200000)
+#const global GPOBJ_ID_SRCFLAG  (0x400000)
+
 #const global GPOBJ_SCENE  0x100001
 #const global GPOBJ_CAMERA 0x100002
 #const global GPOBJ_LIGHT  0x100003
@@ -144,11 +147,12 @@
 #const global GPNODEINFO_NODE (0)
 #const global GPNODEINFO_MODEL (1)
 #const global GPNODEINFO_MATNUM (2)
+#const global GPNODEINFO_MATERIAL (0x80)
 #const global GPNODEINFO_NAME (0x100)
 #const global GPNODEINFO_CHILD (0x101)
 #const global GPNODEINFO_SIBLING (0x102)
 #const global GPNODEINFO_SKINROOT (0x103)
-#const global GPNODEINFO_MATERIAL (0x10000)
+#const global GPNODEINFO_MATNAME (0x10000)
 
 ;
 ;	http value
@@ -389,7 +393,6 @@
 #cmd gpnodeinfo $159
 #cmd gpmatprm2 $15a
 #cmd gpmatprmp $15b
-#cmd gpnodetouch $15c
 
 #define fsin(%1,%2) %1=sin(%2)
 #define fcos(%1,%2) %1=cos(%2)

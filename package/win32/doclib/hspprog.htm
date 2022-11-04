@@ -27,9 +27,9 @@
 					<li><a href="#FORM">スクリプトの形式</a></li>
 					<li><a href="#EDIT_EXEC">スクリプトの編集と実行</a></li>
 					<li><a href="#HSP_MECHANISM">HSPのしくみ</a></li>
-					<li><a href="#EX_EXPAND">HSPを機能拡張する<span class="new">（New!）</span></a></li>
-					<li><a href="#HSPEX_PLUGIN">HSP拡張プラグイン、拡張モジュール<span class="new">（New!）</span></a></li>
-					<li><a href="#EX_RUNTIME">拡張ランタイム<span class="new">（New!）</span></a></li>
+					<li><a href="#EX_EXPAND">HSPを機能拡張する</a></li>
+					<li><a href="#HSPEX_PLUGIN">HSP拡張プラグイン、拡張モジュール</a></li>
+					<li><a href="#EX_RUNTIME">拡張ランタイム</a></li>
 					<li><a href="#GAMEDEV">HSPによるゲーム開発<span class="new">（New!）</span></a></li>
 					<li><a href="#ONEKEY_HELP">ワンキーヘルプ</a></li>
 					<li><a href="#MAKE_EXE">実行ファイルの作成方法<span class="new">（New!）</span></a></li>
@@ -94,7 +94,7 @@
 					<li><a href="#GUI_OBJECT">配置オブジェクト</a></li>
 					<li><a href="#LAYER_OBJECT">レイヤーオブジェクト</a></li>
 					<li><a href="#CUR_COLOR">カレントカラー</a></li>
-					<li><a href="#CEL_FUNCTION">CEL関連命令について</a></li>
+					<li><a href="#CEL_FUNCTION">CEL関連命令について<span class="new">（New!）</span></a></li>
 					<li><a href="#INPUT">入力の取得<span class="new">（New!）</span></a></li>
 					<li><a href="#MEM_BUFFER">メモリバッファの使用</a></li>
 					<li><a href="#PLAY_MULTIMEDIA">マルチメディア再生</a></li>
@@ -4083,8 +4083,11 @@ v("arraycount",n)  : SafeArrayの次元nの要素の要素数</pre>
 			id = stat
 		</PRE>
 		上の例では、変数idに読み込まれたウィンドウIDが代入されます。
-		このようにウィンドウIDのパラメーターが省略された場合には、未使用のIDが
-		使用され、その番号がシステム変数statに代入されます。
+		このようにウィンドウIDのパラメーターが省略された場合には、自動的にIDが割り当てられ、
+		その値がシステム変数statに代入されます。<BR>
+		この時、すでに読み込まれている画像ファイルと同一のファイル名を指定した場合は、
+		読み込まれているウインドウIDが再利用されます。
+		(ウインドウIDの再利用をしたくない場合は、「celload "a.png",celid_auto」を指定してください)
 		<BR><BR>
 		読み込まれた画像は、その全体または一部をcelput命令により描画することが
 		できます。celput命令は、2Dスプライトに近い描画方法を提供します。

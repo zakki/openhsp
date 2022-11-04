@@ -1112,7 +1112,7 @@ static int cmdfunc_extcmd( int cmd )
 		{
 		char fname[HSP_MAX_PATH];
 		strncpy( fname, code_gets(), HSP_MAX_PATH-1);
-		p1 = code_getdi( -1 );
+		p1 = code_getdi( -2 );
 		p2 = code_getdi( 0 );
 		if ( p1 == -2 ) {
 			p1 = wnd->GetPreloadBufferId(fname);
@@ -2539,15 +2539,6 @@ static int cmdfunc_extcmd( int cmd )
 			}
 			break;
 		}
-		case 2:
-		{
-			gpobj *obj;
-			obj = game->getObj(p1);
-			if (obj) {
-				res = obj->_usegpmat;
-			}
-			break;
-		}
 		default:
 			throw HSPERR_ILLEGAL_FUNCTION;
 		}
@@ -2959,29 +2950,29 @@ static int cmdfunc_extcmd( int cmd )
 		ps = code_gets();
 		strncpy(fname, ps, 256);
 		p2 = code_getdi(0);
-		mat2 = game->getMat(p1);
+
+		Texture::Sampler* samp = NULL;
+
+		if (p2 & GPOBJ_ID_SRCFLAG) {
+			Bmscr* bm2;
+			bm2 = wnd->GetBmscrSafe(p2 & GPOBJ_ID_FLAGMASK);	// 転送元のBMSCRを取得
+			if (bm2 == NULL)  throw HSPERR_ILLEGAL_FUNCTION;
+			p2 = bm2->texid;
+		}
+		mat2 = game->getMat(p2);
 		if (mat2 == NULL) throw HSPERR_ILLEGAL_FUNCTION;
+		samp = mat2->getSampler();
+		if (samp == NULL) throw HSPERR_ILLEGAL_FUNCTION;
+
 		mat = game->getMat(p1);
 		if (mat == NULL) {
 			gpobj* obj = game->getObj(p1);
 			if (obj == NULL) throw HSPERR_ILLEGAL_FUNCTION;
-			Texture::Sampler* samp = mat2->getSampler();
 			ctx->stat = obj->setParameter(fname, samp, -1);
 		}
 		else {
-			Texture::Sampler* samp = mat2->getSampler();
 			ctx->stat = mat->setParameter(fname, samp);
 		}
-		break;
-	}
-	case 0x15c:								// gpnodetouch
-	{
-		char* ps;
-		int res = 0;
-		p1 = code_getdi(0);
-		p2 = code_getdi(0);
-		ps = code_getds("");
-		ctx->stat = res;
 		break;
 	}
 

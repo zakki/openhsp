@@ -618,17 +618,39 @@ int gamehsp::makeNewMat( Material* material, int mode, int color, int matopt )
 }
 
 
-int gamehsp::makeNewMatFromObj(int objid, int part)
+int gamehsp::makeNewMatFromObj(int objid, int part, char *nodename)
 {
 	//	オブジェクト固有のマテリアルを参照する
 	gpobj *obj = getObj(objid);
 	if (obj == NULL) return -1;
-	if (obj->_model == NULL) return -1;
+
+	Model* model;
+	Material* material;
+
+	if (*nodename == 0) {
+		if (obj->_model == NULL) return -1;
+		model = obj->_model;
+		if (model == NULL) return -1;
+		material = model->getMaterial(part);
+	}
+	else {
+		Node* node = getNodeFromName(objid, nodename);
+		Drawable* drawable = node->getDrawable();
+		if (drawable == NULL) return -1;
+		Model* model = dynamic_cast<Model*>(drawable);
+		if (model->getMeshPartCount() == 0) {
+			material = model->getMaterial();
+		}
+		else {
+			material = model->getMaterial(part);
+		}
+	}
+	if (material == NULL) return -1;
 
 	gpmat *mat = addMat();
 	if (mat == NULL) return -1;
 
-	mat->_material = obj->_model->getMaterial(part);
+	mat->_material = material;
 	mat->_mode = GPMAT_MODE_PROXY;
 	return mat->_id;
 }

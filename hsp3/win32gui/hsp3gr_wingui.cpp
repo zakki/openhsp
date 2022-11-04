@@ -1177,7 +1177,7 @@ static int cmdfunc_extcmd( int cmd )
 		char fname[_MAX_PATH];
 		strncpy( fname, code_gets(), _MAX_PATH-1 );
 		if (*fname==0) throw HSPERR_ILLEGAL_FUNCTION;		// 空文字の場合はエラー
-		p1 = code_getdi( -1 );
+		p1 = code_getdi( -2 );
 		p2 = code_getdi( 0 );
 		if (p1 == -2) {
 			p1 = wnd->GetPreloadBufferId(fname);

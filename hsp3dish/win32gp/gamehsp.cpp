@@ -3691,6 +3691,12 @@ int gamehsp::getNodeInfo(int objid, int option, char* name, int *result)
 			*result = -1;
 		}
 		break;
+	case GPNODEINFO_MATERIAL:
+	{
+		int matindex = option & (0x7f);
+		*result = makeNewMatFromObj(objid, matindex, name);
+		break;
+	}
 	default:
 		return -1;
 	}
@@ -3704,8 +3710,8 @@ int gamehsp::getNodeInfoString(int objid, int option, char* name, std::string* r
 	Node* node = getNodeFromName(objid, name);
 	if (node == NULL) return -1;
 
-	if (option & GPNODEINFO_MATERIAL) {
-		int matindex = option & (GPNODEINFO_MATERIAL-1);
+	if (option & GPNODEINFO_MATNAME) {
+		int matindex = option & (0xffff);
 		Drawable* drawable = node->getDrawable();
 		Model* model = dynamic_cast<Model*>(drawable);
 		Material* material = NULL;
@@ -3760,4 +3766,28 @@ int gamehsp::getNodeInfoString(int objid, int option, char* name, std::string* r
 	}
 	return result;
 }
+
+
+int gamehsp::setNodeInfoMaterial(int objid, int option, char* name, int matid)
+{
+	int result = 0;
+	Node* node = getNodeFromName(objid, name);
+	if (node == NULL) return -1;
+
+	Drawable* drawable = node->getDrawable();
+	Model* model = dynamic_cast<Model*>(drawable);
+	if (model == NULL) return -1;
+
+	Material* material = getMaterial(matid);
+	if (material == NULL) return -1;
+
+	if (model->getMeshPartCount() == 0) {
+		model->setMaterial(material);
+	}
+	else {
+		model->setMaterial(material, option);
+	}
+	return result;
+}
+
 

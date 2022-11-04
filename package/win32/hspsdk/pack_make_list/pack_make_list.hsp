@@ -2,7 +2,7 @@
 
 ;--------------------------------------------------------------------------------------
 ;
-;	#packリスト作成ツール ver 2.4
+;	#packリスト作成ツール ver 2.6
 ;
 ;	By. しまくろねこ
 ;
@@ -13,7 +13,7 @@
 #packopt name "pack_make_list"											; 実行ファイル名
 #packopt xsize 640														; 初期ウィンドウXサイズ
 #packopt ysize 660														; 初期ウィンドウYサイズ
-;#packopt icon "icon.ico"
+#packopt icon "icon.ico"
 
 #uselib "shlwapi.dll"
 #func PathIsDirectory "PathIsDirectoryA" sptr							; 指定されたパスが存在しない場合は 0 が返る
@@ -29,7 +29,7 @@
 #const WINDOW_HEIGHT				620									; ウィンドウの縦サイズ
 
 #define APPLICATION_TITLE			"#packリスト作成ツール"
-#define APPLICATION_VERSION			"2.4"
+#define APPLICATION_VERSION			"2.6"
 
 #define CONFIG_FILE_NAME			"pack_make_list_dat.ini"			; 設定ファイル
 
@@ -1156,6 +1156,12 @@
 			loop
 		loop
 
+		if win_pos_x < 0 : win_pos_x = 0
+		if win_pos_y < 0 : win_pos_y = 0
+
+		if win_pos_x > ginfo_dispx : win_pos_x = 0
+		if win_pos_y > ginfo_dispy : win_pos_y = 0
+
 		noteunsel
 	}
 
@@ -1365,6 +1371,9 @@
 
 //-------------------------------------------------------------------------
 *config_file_write
+
+	if win_pos_x < 0 : win_pos_x = 0
+	if win_pos_y < 0 : win_pos_y = 0
 
 	ini_buff  = ""
 	ini_buff += CONFIG_WINDOW_POS_X + str(win_pos_x) + "\n"
