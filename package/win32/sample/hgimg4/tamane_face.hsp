@@ -23,6 +23,18 @@
 	setpos GPOBJ_CAMERA, 0,20,30		; カメラ位置を設定
 
 	gpact id_model
+
+	nodename = "atama"			; テクスチャを入れ替えるノード名
+
+	;	特定のノードに割り当てられたマテリアルを取り出す
+	gpnodeinfo id_proxymat,id_model, GPNODEINFO_MATERIAL, nodename
+
+	;	ボタンを設置
+	objsize 200,60
+	button gosub "FACE1",*face1
+	button gosub "FACE2",*face2
+	button gosub "FACE3",*face3
+
 repeat
 	stick key,15
 	if key&128 : end
@@ -49,14 +61,23 @@ repeat
 	}
 	gplookat GPOBJ_CAMERA, 0,14,0		; カメラから指定した座標を見る
 
-	;addang id_model,0,0.02		; ノード回転
 	gpdraw				; シーンの描画
-
-	color 255,255,255
-	pos 8,8:mes "HGIMG4 sample"
 
 	redraw 1			; 描画終了
 	await 1000/60			; 待ち時間
 
 loop
+
+
+*face1
+	gpmatprmt id_proxymat, "u_diffuseTexture", "res/head_SD.png"
+	return
+*face2
+	gpmatprmt id_proxymat, "u_diffuseTexture", "res/head_SD1.png"
+	return
+*face3
+	gpmatprmt id_proxymat, "u_diffuseTexture", "res/head_SD2.png"
+	return
+
+
 
