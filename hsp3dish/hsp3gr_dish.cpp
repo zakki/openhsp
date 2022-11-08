@@ -1448,10 +1448,12 @@ static int cmdfunc_extcmd( int cmd )
 		game->resetScreen( p1 );
 		break;
 	case 0x61:								// gpdraw
-		p1 = code_getdi( -1 );
+		p1 = code_getdi(-1);
+		p2 = code_getdi(0);
 		if ( p1 & GPDRAW_OPT_OBJUPDATE ) {
 			game->updateAll();
 		}
+		p1 = (p1 & 0xffff) | ( p2 & 0xff0000 );
 		hgio_draw_all(bmscr, p1);
 
 		if ( p1 & GPDRAW_OPT_DRAW2D ) {

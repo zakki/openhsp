@@ -111,6 +111,7 @@
 #const global GPDRAW_OPT_DRAW2D (4)
 #const global GPDRAW_OPT_DRAWSCENE_LATE (8)
 #const global GPDRAW_OPT_DRAW2D_LATE (16)
+#const global GPDRAW_OPT_DEBUG_PHY (0x10000)
 
 #const global GPACT_STOP (0)
 #const global GPACT_PLAY (1)

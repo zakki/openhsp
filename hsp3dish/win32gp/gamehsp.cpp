@@ -1554,6 +1554,10 @@ void gamehsp::drawAll( int option )
 
 	SetSysReq(SYSREQ_DRAWNUMOBJ, _render_numobj);
 	SetSysReq(SYSREQ_DRAWNUMPOLY, _render_numpoly);
+
+	if (option & GPDRAW_OPT_PHYDEBUG) {
+		Game::getInstance()->getPhysicsController()->drawDebug(camera->getViewProjectionMatrix());
+	}
 }
 
 
