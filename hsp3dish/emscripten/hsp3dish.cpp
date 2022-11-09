@@ -200,10 +200,10 @@ static int handleEvent( void ) {
 				wparam = HSPOBJ_NOTICE_KEY_CR;
 				break;
 			case SDL_SCANCODE_DELETE:
-				wparam = HSPOBJ_NOTICE_KEY_DEL;
+				wparam = HSPOBJ_NOTICE_KEY_DEL + HSPOBJ_NOTICE_KEY_EXTKEY;
 				break;
 			case SDL_SCANCODE_INSERT:
-				wparam = HSPOBJ_NOTICE_KEY_INS;
+				wparam = HSPOBJ_NOTICE_KEY_INS + HSPOBJ_NOTICE_KEY_EXTKEY;
 				break;
 			case SDL_SCANCODE_F1:
 				wparam = HSPOBJ_NOTICE_KEY_F1 + HSPOBJ_NOTICE_KEY_CTRLADD;
@@ -242,28 +242,28 @@ static int handleEvent( void ) {
 				wparam = HSPOBJ_NOTICE_KEY_F12 + HSPOBJ_NOTICE_KEY_CTRLADD;
 				break;
 			case SDL_SCANCODE_LEFT:
-				wparam = HSPOBJ_NOTICE_KEY_LEFT;
+				wparam = HSPOBJ_NOTICE_KEY_LEFT + HSPOBJ_NOTICE_KEY_EXTKEY;
 				break;
 			case SDL_SCANCODE_UP:
-				wparam = HSPOBJ_NOTICE_KEY_UP;
+				wparam = HSPOBJ_NOTICE_KEY_UP + HSPOBJ_NOTICE_KEY_EXTKEY;
 				break;
 			case SDL_SCANCODE_RIGHT:
-				wparam = HSPOBJ_NOTICE_KEY_RIGHT;
+				wparam = HSPOBJ_NOTICE_KEY_RIGHT + HSPOBJ_NOTICE_KEY_EXTKEY;
 				break;
 			case SDL_SCANCODE_DOWN:
-				wparam = HSPOBJ_NOTICE_KEY_DOWN;
+				wparam = HSPOBJ_NOTICE_KEY_DOWN + HSPOBJ_NOTICE_KEY_EXTKEY;
 				break;
 			case SDL_SCANCODE_HOME:
-				wparam = HSPOBJ_NOTICE_KEY_HOME;
+				wparam = HSPOBJ_NOTICE_KEY_HOME + HSPOBJ_NOTICE_KEY_EXTKEY;
 				break;
 			case SDL_SCANCODE_END:
-				wparam = HSPOBJ_NOTICE_KEY_END;
+				wparam = HSPOBJ_NOTICE_KEY_END + HSPOBJ_NOTICE_KEY_EXTKEY;
 				break;
 			case SDL_SCANCODE_PAGEUP:
-				wparam = HSPOBJ_NOTICE_KEY_SCROLL_UP;
+				wparam = HSPOBJ_NOTICE_KEY_SCROLL_UP + HSPOBJ_NOTICE_KEY_EXTKEY;
 				break;
 			case SDL_SCANCODE_PAGEDOWN:
-				wparam = HSPOBJ_NOTICE_KEY_SCROLL_DOWN;
+				wparam = HSPOBJ_NOTICE_KEY_SCROLL_DOWN + HSPOBJ_NOTICE_KEY_EXTKEY;
 				break;
 			}
 			if ((code >= SDL_SCANCODE_A)&&(code <= SDL_SCANCODE_Z)) {
@@ -319,8 +319,7 @@ bool get_key_state(int sym)
 
 static void hsp3dish_initwindow( engine* p_engine, int sx, int sy, char *windowtitle )
 {
-	printf("INIT %dx%d %s\n", sx,sy,windowtitle);
-
+	//printf("INIT %dx%d %s\n", sx,sy,windowtitle);
 	// Slightly different SDL initialization
 	if ( SDL_Init(SDL_INIT_VIDEO) != 0 ) {
 		printf("Unable to initialize SDL: %s\n", SDL_GetError());
