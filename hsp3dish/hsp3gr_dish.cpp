@@ -1471,7 +1471,7 @@ static int cmdfunc_extcmd( int cmd )
 		p1 = code_getdi( 0 );
 		p2 = code_getdi( 0 );
 		p3 = code_getdi( 0 );
-		p4 = game->setObjectPrm( p1, p2, p3 );
+		p4 = game->setObjectPrm( p1, p2, p3, GPOBJ_PRMMETHOD_SET);
 		if ( p4 < 0 ) throw HSPERR_ILLEGAL_FUNCTION;
 		break;
 	case 0x64:								// gpgetprm
@@ -2481,12 +2481,16 @@ static int cmdfunc_extcmd( int cmd )
 		char *ps;
 		gpmat *mat;
 		p1 = code_getdi(0);
-		ps = code_gets();
+		ps = code_getds("");
 		strncpy(fname, ps, 256);
 		ps = code_gets();
 		strncpy(texname, ps, 256);
 		p2 = code_getdi(0);
 		mat = game->getMat(p1);
+
+		if (*fname == 0) {
+			strcpy(fname, "u_diffuseTexture");
+		}
 		if (mat == NULL) {
 			gpobj *obj = game->getObj(p1);
 			if (obj == NULL) throw HSPERR_ILLEGAL_FUNCTION;
@@ -2704,7 +2708,13 @@ static int cmdfunc_extcmd( int cmd )
 			dp3 = CnvIntRot((int)dp3);
 			p6 = MOC_ANGX;
 		}
-		p3 = code_getdi(MOVEMODE_LINEAR);
+		if (cmd == 0x110) {
+			p3 = code_getdi(MOVEMODE_SPLINE);
+		}
+		else {
+			p3 = code_getdi(MOVEMODE_LINEAR);
+		}
+		if (p3 & 16) p6 |= GPEVENT_MOCOPT_SRCWORK;
 		switch( p3 & 15 ) {
 		case MOVEMODE_LINEAR:
 			ctx->stat = game->AddMoveEvent( p1, p6, (float)dp1, (float)dp2, (float)dp3, p2, 0 );
@@ -2949,9 +2959,12 @@ static int cmdfunc_extcmd( int cmd )
 		gpmat* mat;
 		gpmat* mat2;
 		p1 = code_getdi(0);
-		ps = code_gets();
+		ps = code_getds("");
 		strncpy(fname, ps, 256);
 		p2 = code_getdi(0);
+		if (*fname == 0) {
+			strcpy(fname, "u_diffuseTexture");
+		}
 
 		Texture::Sampler* samp = NULL;
 
@@ -2977,6 +2990,20 @@ static int cmdfunc_extcmd( int cmd )
 		}
 		break;
 	}
+	case 0x15c:								// gpsetprmon
+		p1 = code_getdi(0);
+		p2 = code_getdi(0);
+		p3 = code_getdi(0);
+		p4 = game->setObjectPrm(p1, p2, p3, GPOBJ_PRMMETHOD_ON);
+		if (p4 < 0) throw HSPERR_ILLEGAL_FUNCTION;
+		break;
+	case 0x15d:								// gpsetprmoff
+		p1 = code_getdi(0);
+		p2 = code_getdi(0);
+		p3 = code_getdi(0);
+		p4 = game->setObjectPrm(p1, p2, p3, GPOBJ_PRMMETHOD_OFF);
+		if (p4 < 0) throw HSPERR_ILLEGAL_FUNCTION;
+		break;
 
 
 

@@ -146,6 +146,10 @@ GPPSET_MAX
 #define GPNODEINFO_SKINROOT (0x103)
 #define GPNODEINFO_MATNAME (0x10000)
 
+#define GPOBJ_PRMMETHOD_SET (0)
+#define GPOBJ_PRMMETHOD_ON (1)
+#define GPOBJ_PRMMETHOD_OFF (2)
+
 #define GPOBJ_PRMSET_FLAG (2)
 #define GPOBJ_PRMSET_MODE (3)
 #define GPOBJ_PRMSET_ID (4)
@@ -359,7 +363,7 @@ public:
 	char *getObjName( int objid );
 	int *getObjectPrmPtr( int objid, int prmid );
 	int getObjectPrm( int objid, int prmid, int *outptr );
-	int setObjectPrm( int objid, int prmid, int value );
+	int setObjectPrm( int objid, int prmid, int value, int method = 0);
 	int setObjLight( int objid );
 
 	char *getAnimId(int objid, int index, int option);

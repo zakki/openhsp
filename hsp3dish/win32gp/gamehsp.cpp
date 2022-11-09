@@ -1676,12 +1676,27 @@ int gamehsp::getObjectPrm( int objid, int prmid, int *outptr )
 }
 
 
-int gamehsp::setObjectPrm( int objid, int prmid, int value )
+int gamehsp::setObjectPrm( int objid, int prmid, int value, int method )
 {
 	int *base_i;
+	int newvalue;
 	base_i = getObjectPrmPtr( objid, prmid );
 	if ( base_i == NULL ) return -1;
-	*base_i = value;
+
+	switch (method)
+	{
+	case GPOBJ_PRMMETHOD_ON:
+		newvalue = value | (*base_i);
+		break;
+	case GPOBJ_PRMMETHOD_OFF:
+		newvalue = (*base_i) & ( value ^ 0xffffffff );
+		break;
+	default:
+		newvalue = value;
+		break;
+	}
+
+	*base_i = newvalue;
 
 	switch (prmid)
 	{

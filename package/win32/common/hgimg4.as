@@ -394,6 +394,8 @@
 #cmd gpnodeinfo $159
 #cmd gpmatprm2 $15a
 #cmd gpmatprmp $15b
+#cmd gpsetprmon $15c
+#cmd gpsetprmoff $15d
 
 #define fsin(%1,%2) %1=sin(%2)
 #define fcos(%1,%2) %1=cos(%2)
