@@ -237,16 +237,26 @@ int essprite::getEmptySpriteNo(int sp_from, int sp_to, int step)
 }
 
 
-void essprite::setResolution(HspWnd* wnd, int sx, int sy)
+int essprite::setResolution(HspWnd* wnd, int sx, int sy, int bufferid)
 {
+	int sizex, sizey;
 	hspwnd = wnd;
-	bmscr = wnd->GetBmscr(0);
-	main_sx = sx;
-	main_sy = sy;
+	bmscr = wnd->GetBmscr(bufferid);
 
-	setArea(-128, -128, (sx + 128), (sy + 128));
-	land_x = sx;
-	land_y = sy;
+	if (bmscr == NULL) return -1;
+
+	sizex = sx;
+	sizey = sy;
+	if (sizex <= 0) sizex = bmscr->sx;
+	if (sizey <= 0) sizey = bmscr->sy;
+
+	main_sx = sizex;
+	main_sy = sizey;
+
+	setArea(-128, -128, (sizex + 128), (sizey + 128));
+	land_x = sizex;
+	land_y = sizey;
+	return 0;
 }
 
 

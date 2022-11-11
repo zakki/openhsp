@@ -52,6 +52,7 @@
 #define HSPOBJ_LAYER_CMD_DRAW (6)
 #define HSPOBJ_LAYER_CMD_TIME (7)
 
+#define HSPOBJ_NOTICE_KEY_EXTKEY (0x1000000)
 #define HSPOBJ_NOTICE_KEY_CTRLADD (0x2000)
 #define HSPOBJ_NOTICE_KEY_SHIFTADD (0x1000)
 
@@ -61,16 +62,16 @@
 #define HSPOBJ_NOTICE_CLICK_END 0x10001
 #define HSPOBJ_NOTICE_CLICK_MOVE 0x10002
 #define HSPOBJ_NOTICE_KEY_BS (8)
-#define HSPOBJ_NOTICE_KEY_DEL (46)
-#define HSPOBJ_NOTICE_KEY_LEFT (37)
-#define HSPOBJ_NOTICE_KEY_UP (38)
-#define HSPOBJ_NOTICE_KEY_RIGHT (39)
-#define HSPOBJ_NOTICE_KEY_DOWN (40)
-#define HSPOBJ_NOTICE_KEY_HOME (36)
-#define HSPOBJ_NOTICE_KEY_END (35)
-#define HSPOBJ_NOTICE_KEY_INS (45)
-#define HSPOBJ_NOTICE_KEY_SCROLL_UP (33)
-#define HSPOBJ_NOTICE_KEY_SCROLL_DOWN (34)
+#define HSPOBJ_NOTICE_KEY_DEL (46)				// 拡張キー
+#define HSPOBJ_NOTICE_KEY_LEFT (37)				// 拡張キー
+#define HSPOBJ_NOTICE_KEY_UP (38)				// 拡張キー
+#define HSPOBJ_NOTICE_KEY_RIGHT (39)			// 拡張キー
+#define HSPOBJ_NOTICE_KEY_DOWN (40)				// 拡張キー
+#define HSPOBJ_NOTICE_KEY_HOME (36)				// 拡張キー
+#define HSPOBJ_NOTICE_KEY_END (35)				// 拡張キー
+#define HSPOBJ_NOTICE_KEY_INS (45)				// 拡張キー
+#define HSPOBJ_NOTICE_KEY_SCROLL_UP (33)		// 拡張キー
+#define HSPOBJ_NOTICE_KEY_SCROLL_DOWN (34)		// 拡張キー
 #define HSPOBJ_NOTICE_KEY_TAB (9)
 #define HSPOBJ_NOTICE_KEY_CR (13)
 
@@ -574,6 +575,7 @@ public:
 	int GetActive( void );
 	int GetBmscrMax( void ) { return bmscr_max; };
 	int GetEmptyBufferId( void );
+	int GetPreloadBufferId(char* fname);
 	HSP3DEVINFO *getDevInfo( void ) { return &devinfo; }
 
 	//	Data

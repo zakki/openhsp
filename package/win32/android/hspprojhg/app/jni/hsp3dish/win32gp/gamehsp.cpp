@@ -5,6 +5,11 @@
 #include "../sysreq.h"
 #include "../hspwnd.h"
 
+#ifdef WIN32
+#include <tchar.h>
+#include <direct.h>
+#endif
+
 #include "shader_sprite.h"
 
 // Default sprite shaders
@@ -490,6 +495,16 @@ void gamehsp::resetScreen( int opt )
 	_maxevent = GetSysReq(SYSREQ_MAXEVENT);
 	_gpevent = new gpevent[_maxevent];
 
+	//	setup folder
+	shader_folder.clear();
+
+#ifdef WIN32
+	TCHAR pw[1024];
+	_tgetcwd(pw, 1024);
+	shader_folder = pw;
+	Effect::SetDefaultFolder(pw);
+#endif
+
 	// シーン作成
 	_scene = Scene::create();
 	_curscene = 0;
@@ -573,6 +588,7 @@ void gamehsp::resetScreen( int opt )
 	SAFE_RELEASE(_fontMaterial);
 
 	touchNode = NULL;
+
 }
 
 
@@ -1374,27 +1390,64 @@ int gamehsp::getObjectVector( int objid, int moc, Vector4 *prm )
 }
 
 
-void gamehsp::drawNode( Node *node )
+void gamehsp::drawNode( Node *node, bool wireflag, float alpha)
 {
+	//		単一のノードを描画する
+	//
 	Drawable* drawable = node->getDrawable(); 
-	if (drawable) {
-		drawable->draw();
+	if (drawable == NULL)  return;
+
+	if (wireflag) {
+		//	ワイヤーフレーム
+		drawable->draw(true);
+		_render_numpoly += drawable->_drawtotal;
+		return;
 	}
+
+	if ( alpha >= 0.0f ) {
+		//	3Dモデル用のalpha再設定
+		Model* model = dynamic_cast<Model*>(drawable);
+		if (model) {
+			int part = model->getMeshPartCount();
+			Material* mat;
+			if (part > 0) {
+				for (int i = 0; i < part; i++) {
+					mat = model->getMaterial(i);
+					if (mat) {
+						gameplay::MaterialParameter* prm_modalpha = mat->getParameter("u_modulateAlpha");
+						if (prm_modalpha) {
+							prm_modalpha->setValue(alpha);
+						}
+					}
+				}
+			}
+			else {
+				mat = model->getMaterial();
+				if (mat) {
+					gameplay::MaterialParameter* prm_modalpha = mat->getParameter("u_modulateAlpha");
+					if (prm_modalpha) {
+						prm_modalpha->setValue(alpha);
+					}
+				}
+			}
+		}
+	}
+
+	drawable->draw(false);
+	_render_numpoly += drawable->_drawtotal;
 }
 
 
-bool gamehsp::drawNodeRecursive(Node *node, bool wireflag)
+bool gamehsp::drawNodeRecursive(Node *node, bool wireflag, float alpha)
 {
-	Drawable* drawable = node->getDrawable();
-	if (drawable) {
-		drawable->draw(wireflag);
-		_render_numpoly += drawable->_drawtotal;
-	}
+	//		再帰的にノードを描画する
+	//
+	drawNode(node, wireflag, alpha);
 
 	Node *pnode = node->getFirstChild();
 	while (1) {
 		if (pnode == NULL) break;
-		drawNodeRecursive(pnode, wireflag);
+		drawNodeRecursive(pnode, wireflag, alpha);
 		pnode = pnode->getNextSibling();
 	}
 
@@ -1441,9 +1494,13 @@ int gamehsp::drawSceneObject(gpobj *camobj)
 
 				if (clip) {
 					//	Alphaのモジュレート設定
-					gameplay::MaterialParameter *prm_modalpha = obj->_prm_modalpha;
-					if (prm_modalpha) { prm_modalpha->setValue(obj->getAlphaRate()); }
-					drawNodeRecursive(node, wireflag);
+					float alpha = obj->getAlphaRate();
+					gameplay::MaterialParameter* prm_modalpha = obj->_prm_modalpha;
+					if (prm_modalpha) {
+						prm_modalpha->setValue(alpha);
+						alpha = -1.0f;
+					}
+					drawNodeRecursive(node, wireflag, alpha);
 					num++;
 				}
 			}
@@ -1497,6 +1554,10 @@ void gamehsp::drawAll( int option )
 
 	SetSysReq(SYSREQ_DRAWNUMOBJ, _render_numobj);
 	SetSysReq(SYSREQ_DRAWNUMPOLY, _render_numpoly);
+
+	if (option & GPDRAW_OPT_PHYDEBUG) {
+		Game::getInstance()->getPhysicsController()->drawDebug(camera->getViewProjectionMatrix());
+	}
 }
 
 
@@ -1615,12 +1676,27 @@ int gamehsp::getObjectPrm( int objid, int prmid, int *outptr )
 }
 
 
-int gamehsp::setObjectPrm( int objid, int prmid, int value )
+int gamehsp::setObjectPrm( int objid, int prmid, int value, int method )
 {
 	int *base_i;
+	int newvalue;
 	base_i = getObjectPrmPtr( objid, prmid );
 	if ( base_i == NULL ) return -1;
-	*base_i = value;
+
+	switch (method)
+	{
+	case GPOBJ_PRMMETHOD_ON:
+		newvalue = value | (*base_i);
+		break;
+	case GPOBJ_PRMMETHOD_OFF:
+		newvalue = (*base_i) & ( value ^ 0xffffffff );
+		break;
+	default:
+		newvalue = value;
+		break;
+	}
+
+	*base_i = newvalue;
 
 	switch (prmid)
 	{
@@ -1978,7 +2054,6 @@ bool gamehsp::makeModelNodeMaterialSub(Node *rootnode, int nest)
 	Model* model = dynamic_cast<Model*>(drawable);
 	if (model) {
 		Technique *tec = NULL;
-		mat = model->getMaterial(0);
 		part = model->getMeshPartCount();
 		tecs = 0; prms = 0;
 		if (part) {
@@ -1987,6 +2062,12 @@ bool gamehsp::makeModelNodeMaterialSub(Node *rootnode, int nest)
 				if (mat) {
 					setMaterialDefaultBinding(mat);
 				}
+			}
+		}
+		else {
+			mat = model->getMaterial(-1);
+			if (mat) {
+				setMaterialDefaultBinding(mat);
 			}
 		}
 	}
@@ -2013,7 +2094,9 @@ bool gamehsp::makeModelNodeSub(Node *rootnode, int nest)
 	Model* model = dynamic_cast<Model*>(drawable);
 	if (model){
 		Technique *tec = NULL;
-		mat = model->getMaterial(0);
+		mat = model->getMaterial(-1);
+		if (mat) setLightMaterialParameter(mat);
+
 		part = model->getMeshPartCount();
 		tecs = 0; prms = 0;
 		if (part) {
@@ -2079,8 +2162,10 @@ int gamehsp::makeModelNode(char *fname, char *idname, char *defs)
 	model_defines_shade = defs;
 
 	if (*defs != 0) {
+		model_defines += ";";
 		model_defines_shade += ";";
 	}
+	model_defines += nolight_defines;
 	model_defines_shade += light_defines;
 
 	Material* boxMaterial = Material::create(fn2,gamehsp::passCallback,NULL);
@@ -3590,6 +3675,8 @@ Node* gamehsp::getNodeFromName(int objid, char* name)
 int gamehsp::getNodeInfo(int objid, int option, char* name, int *result)
 {
 	int res = 0;
+	Model* model;
+	Drawable* drawable;
 	Node* node = getNodeFromName(objid, name);
 	if (node == NULL) {
 		*result = -1;
@@ -3602,8 +3689,8 @@ int gamehsp::getNodeInfo(int objid, int option, char* name, int *result)
 		break;
 	case GPNODEINFO_MODEL:
 	{
-		Drawable* drawable = node->getDrawable();
-		Model* model = dynamic_cast<Model*>(drawable);
+		drawable = node->getDrawable();
+		model = dynamic_cast<Model*>(drawable);
 		if (model) {
 			touchNode = node;
 			*result = GPOBJ_ID_TOUCHNODE;
@@ -3611,6 +3698,22 @@ int gamehsp::getNodeInfo(int objid, int option, char* name, int *result)
 		else {
 			*result = -1;
 		}
+		break;
+	}
+	case GPNODEINFO_MATNUM:
+		drawable = node->getDrawable();
+		model = dynamic_cast<Model*>(drawable);
+		if (model) {
+			*result = (int)model->getMeshPartCount();
+		}
+		else {
+			*result = -1;
+		}
+		break;
+	case GPNODEINFO_MATERIAL:
+	{
+		int matindex = option & (0x7f);
+		*result = makeNewMatFromObj(objid, matindex, name);
 		break;
 	}
 	default:
@@ -3625,6 +3728,27 @@ int gamehsp::getNodeInfoString(int objid, int option, char* name, std::string* r
 	int result = 0;
 	Node* node = getNodeFromName(objid, name);
 	if (node == NULL) return -1;
+
+	if (option & GPNODEINFO_MATNAME) {
+		int matindex = option & (0xffff);
+		Drawable* drawable = node->getDrawable();
+		Model* model = dynamic_cast<Model*>(drawable);
+		Material* material = NULL;
+		res->clear();
+		if (model) {
+			if (model->getMeshPartCount() == 0) {
+				material = model->getMaterial();
+			}
+			else {
+				material = model->getMaterial(matindex);
+			}
+			if (material) {
+				*res = material->getName();
+			}
+		}
+		return result;
+	}
+
 	switch (option) {
 	case GPNODEINFO_NAME:
 		*res = node->getId();
@@ -3661,4 +3785,28 @@ int gamehsp::getNodeInfoString(int objid, int option, char* name, std::string* r
 	}
 	return result;
 }
+
+
+int gamehsp::setNodeInfoMaterial(int objid, int option, char* name, int matid)
+{
+	int result = 0;
+	Node* node = getNodeFromName(objid, name);
+	if (node == NULL) return -1;
+
+	Drawable* drawable = node->getDrawable();
+	Model* model = dynamic_cast<Model*>(drawable);
+	if (model == NULL) return -1;
+
+	Material* material = getMaterial(matid);
+	if (material == NULL) return -1;
+
+	if (model->getMeshPartCount() == 0) {
+		model->setMaterial(material);
+	}
+	else {
+		model->setMaterial(material, option);
+	}
+	return result;
+}
+
 

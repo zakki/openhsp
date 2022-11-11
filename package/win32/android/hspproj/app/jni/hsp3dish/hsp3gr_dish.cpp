@@ -90,6 +90,7 @@ static WebTask *webtask;
 #ifdef USE_ESSPRITE
 #include "essprite.h"
 static essprite* sprite;
+static int sprite_target_window;
 #endif
 
 
@@ -221,27 +222,47 @@ static void code_setivec( int *ptr, VECTOR *vec )
 	ptr[3] = (int)vec->w;
 }
 
-static HSPREAL *code_getvvec( void )
+static HSPREAL* code_getvmat(void)
 {
-	PVal *pval;
-	int size,inisize;
+	PVal* pval;
+	int size, inisize;
 	HSPREAL dummy;
-	HSPREAL *v;
+	HSPREAL* v;
 
-	v = (HSPREAL *)code_getvptr( &pval, &size );
+	v = (HSPREAL*)code_getvptr(&pval, &size);
 	dummy = (HSPREAL)0.0;
-	if ( pval->flag != HSPVAR_FLAG_DOUBLE ) {
-		code_setva( pval, 0, HSPVAR_FLAG_DOUBLE, &dummy );
+	if (pval->flag != HSPVAR_FLAG_DOUBLE) {
+		code_puterror(HSPERR_TYPE_MISMATCH);
 	}
 	inisize = pval->len[1];
-	if ( inisize < 4 ) {
-			pval->len[1] = 4;						// ちょっと強引に配列を拡張
-			pval->size = 4 * sizeof(HSPREAL);
-			code_setva( pval, 3, HSPVAR_FLAG_DOUBLE, &dummy );
-			if ( inisize < 3 ) code_setva( pval, 2, HSPVAR_FLAG_DOUBLE, &dummy );
-			if ( inisize < 2 ) code_setva( pval, 1, HSPVAR_FLAG_DOUBLE, &dummy );
+	if (inisize < 16) {
+		code_puterror(HSPERR_TYPE_MISMATCH);
 	}
-	v = (HSPREAL *)HspVarCorePtrAPTR( pval, 0 );
+	v = (HSPREAL*)HspVarCorePtrAPTR(pval, 0);
+	return v;
+}
+
+static HSPREAL* code_getvvec(void)
+{
+	PVal* pval;
+	int size, inisize;
+	HSPREAL dummy;
+	HSPREAL* v;
+
+	v = (HSPREAL*)code_getvptr(&pval, &size);
+	dummy = (HSPREAL)0.0;
+	if (pval->flag != HSPVAR_FLAG_DOUBLE) {
+		code_setva(pval, 0, HSPVAR_FLAG_DOUBLE, &dummy);
+	}
+	inisize = pval->len[1];
+	if (inisize < 4) {
+		pval->len[1] = 4;						// ちょっと強引に配列を拡張
+		pval->size = 4 * sizeof(HSPREAL);
+		code_setva(pval, 3, HSPVAR_FLAG_DOUBLE, &dummy);
+		if (inisize < 3) code_setva(pval, 2, HSPVAR_FLAG_DOUBLE, &dummy);
+		if (inisize < 2) code_setva(pval, 1, HSPVAR_FLAG_DOUBLE, &dummy);
+	}
+	v = (HSPREAL*)HspVarCorePtrAPTR(pval, 0);
 
 	return v;
 }
@@ -1089,12 +1110,16 @@ static int cmdfunc_extcmd( int cmd )
 
 	case 0x3c:								// celload
 		{
-		//int i;
 		char fname[HSP_MAX_PATH];
 		strncpy( fname, code_gets(), HSP_MAX_PATH-1);
-		p1 = code_getdi( -1 );
+		p1 = code_getdi( -2 );
 		p2 = code_getdi( 0 );
-		if ( p1 < 0 ) p1 = wnd->GetEmptyBufferId();
+		if ( p1 == -2 ) {
+			p1 = wnd->GetPreloadBufferId(fname);
+		}
+		if (p1 < 0) {
+			p1 = wnd->GetEmptyBufferId();
+		}
 		wnd->MakeBmscrFromResource( p1, fname );
 		bmscr->Select(cur_window);
 		ctx->stat = p1;
@@ -1423,10 +1448,12 @@ static int cmdfunc_extcmd( int cmd )
 		game->resetScreen( p1 );
 		break;
 	case 0x61:								// gpdraw
-		p1 = code_getdi( -1 );
+		p1 = code_getdi(-1);
+		p2 = code_getdi(0);
 		if ( p1 & GPDRAW_OPT_OBJUPDATE ) {
 			game->updateAll();
 		}
+		p1 = (p1 & 0xffff) | ( p2 & 0xff0000 );
 		hgio_draw_all(bmscr, p1);
 
 		if ( p1 & GPDRAW_OPT_DRAW2D ) {
@@ -1444,7 +1471,7 @@ static int cmdfunc_extcmd( int cmd )
 		p1 = code_getdi( 0 );
 		p2 = code_getdi( 0 );
 		p3 = code_getdi( 0 );
-		p4 = game->setObjectPrm( p1, p2, p3 );
+		p4 = game->setObjectPrm( p1, p2, p3, GPOBJ_PRMMETHOD_SET);
 		if ( p4 < 0 ) throw HSPERR_ILLEGAL_FUNCTION;
 		break;
 	case 0x64:								// gpgetprm
@@ -2427,19 +2454,22 @@ static int cmdfunc_extcmd( int cmd )
 		char fname[256];
 		char *ps;
 		gpmat *mat;
+		HSPREAL* p_mat;
 		p1 = code_getdi(0);
 		ps = code_gets();
 		strncpy(fname, ps, 256);
-		code_getvec(&p_vec1);
+		p_mat = code_getvmat();
 		p2 = code_getdi(1);
+
 		mat = game->getMat(p1);
 		if (mat == NULL) {
 			gpobj *obj = game->getObj(p1);
 			if (obj == NULL) throw HSPERR_ILLEGAL_FUNCTION;
-			ctx->stat = obj->setParameter(fname, (gameplay::Matrix *)&p_vec1, p2, -1);
+			if ( p2 != 1 ) throw HSPERR_ILLEGAL_FUNCTION;
+			ctx->stat = obj->setParameter(fname, p_mat, p2, -1);
 		}
 		else {
-			ctx->stat = mat->setParameter(fname, (gameplay::Matrix *)&p_vec1, p2);
+			ctx->stat = mat->setParameter(fname, p_mat, p2);
 		}
 		break;
 	}
@@ -2451,12 +2481,16 @@ static int cmdfunc_extcmd( int cmd )
 		char *ps;
 		gpmat *mat;
 		p1 = code_getdi(0);
-		ps = code_gets();
+		ps = code_getds("");
 		strncpy(fname, ps, 256);
 		ps = code_gets();
 		strncpy(texname, ps, 256);
 		p2 = code_getdi(0);
 		mat = game->getMat(p1);
+
+		if (*fname == 0) {
+			strcpy(fname, "u_diffuseTexture");
+		}
 		if (mat == NULL) {
 			gpobj *obj = game->getObj(p1);
 			if (obj == NULL) throw HSPERR_ILLEGAL_FUNCTION;
@@ -2508,15 +2542,6 @@ static int cmdfunc_extcmd( int cmd )
 			bm2 = wnd->GetBmscrSafe(p1);	// 転送元のBMSCRを取得
 			if (bm2) {
 				res = bm2->texid;
-			}
-			break;
-		}
-		case 2:
-		{
-			gpobj *obj;
-			obj = game->getObj(p1);
-			if (obj) {
-				res = obj->_usegpmat;
 			}
 			break;
 		}
@@ -2683,7 +2708,13 @@ static int cmdfunc_extcmd( int cmd )
 			dp3 = CnvIntRot((int)dp3);
 			p6 = MOC_ANGX;
 		}
-		p3 = code_getdi(MOVEMODE_LINEAR);
+		if (cmd == 0x110) {
+			p3 = code_getdi(MOVEMODE_SPLINE);
+		}
+		else {
+			p3 = code_getdi(MOVEMODE_LINEAR);
+		}
+		if (p3 & 16) p6 |= GPEVENT_MOCOPT_SRCWORK;
 		switch( p3 & 15 ) {
 		case MOVEMODE_LINEAR:
 			ctx->stat = game->AddMoveEvent( p1, p6, (float)dp1, (float)dp2, (float)dp3, p2, 0 );
@@ -2900,6 +2931,80 @@ static int cmdfunc_extcmd( int cmd )
 		ctx->stat = res;
 		break;
 	}
+	case 0x15a:								// gpmatprm2
+	{
+		char fname[256];
+		char* ps;
+		gpmat* mat;
+		p1 = code_getdi(0);
+		ps = code_gets();
+		strncpy(fname, ps, 256);
+		dp1 = code_getdd(0.0);
+		dp2 = code_getdd(0.0);
+		mat = game->getMat(p1);
+		if (mat == NULL) {
+			gpobj* obj = game->getObj(p1);
+			if (obj == NULL) throw HSPERR_ILLEGAL_FUNCTION;
+			ctx->stat = obj->setParameter(fname, (float)dp1, (float)dp2, -1);
+		}
+		else {
+			ctx->stat = mat->setParameter(fname, (float)dp1, (float)dp2);
+		}
+		break;
+	}
+	case 0x15b:								// gpmatprmp
+	{
+		char fname[256];
+		char* ps;
+		gpmat* mat;
+		gpmat* mat2;
+		p1 = code_getdi(0);
+		ps = code_getds("");
+		strncpy(fname, ps, 256);
+		p2 = code_getdi(0);
+		if (*fname == 0) {
+			strcpy(fname, "u_diffuseTexture");
+		}
+
+		Texture::Sampler* samp = NULL;
+
+		if (p2 & GPOBJ_ID_SRCFLAG) {
+			Bmscr* bm2;
+			bm2 = wnd->GetBmscrSafe(p2 & GPOBJ_ID_FLAGMASK);	// 転送元のBMSCRを取得
+			if (bm2 == NULL)  throw HSPERR_ILLEGAL_FUNCTION;
+			p2 = bm2->texid;
+		}
+		mat2 = game->getMat(p2);
+		if (mat2 == NULL) throw HSPERR_ILLEGAL_FUNCTION;
+		samp = mat2->getSampler();
+		if (samp == NULL) throw HSPERR_ILLEGAL_FUNCTION;
+
+		mat = game->getMat(p1);
+		if (mat == NULL) {
+			gpobj* obj = game->getObj(p1);
+			if (obj == NULL) throw HSPERR_ILLEGAL_FUNCTION;
+			ctx->stat = obj->setParameter(fname, samp, -1);
+		}
+		else {
+			ctx->stat = mat->setParameter(fname, samp);
+		}
+		break;
+	}
+	case 0x15c:								// gpsetprmon
+		p1 = code_getdi(0);
+		p2 = code_getdi(0);
+		p3 = code_getdi(0);
+		p4 = game->setObjectPrm(p1, p2, p3, GPOBJ_PRMMETHOD_ON);
+		if (p4 < 0) throw HSPERR_ILLEGAL_FUNCTION;
+		break;
+	case 0x15d:								// gpsetprmoff
+		p1 = code_getdi(0);
+		p2 = code_getdi(0);
+		p3 = code_getdi(0);
+		p4 = game->setObjectPrm(p1, p2, p3, GPOBJ_PRMMETHOD_OFF);
+		if (p4 < 0) throw HSPERR_ILLEGAL_FUNCTION;
+		break;
+
 
 
 #endif
@@ -2915,16 +3020,19 @@ static int cmdfunc_extcmd( int cmd )
 		sprite->init(p1,p2,p3);
 		break;
 	}
-	case 0x201:								// es_window
+	case 0x201:								// es_screen
 	{
 		//		set window area (type0)
-		//		es_window tx,ty,sx,sy
+		//		es_screen width,height
 		p1 = code_getdi(0);
 		p2 = code_getdi(0);
-		p3 = code_getdi(0);
-		p4 = code_getdi(0);
-		p5 = code_getdi(0);
-		//sprite->setWindow(p1,p2,p3,p4,p5);
+		if (sprite_target_window != cur_window) {
+			sprite_target_window = cur_window;
+#ifndef HSPDISHGP
+			code_puterror(HSPERR_ILLEGAL_FUNCTION);
+#endif
+		}
+		sprite->setResolution(wnd, p1, p2, sprite_target_window);
 		break;
 	}
 	case 0x202:								// es_area
@@ -3894,6 +4002,7 @@ void hsp3typeinit_extcmd( HSP3TYPEINFO *info )
 #endif
 #ifdef USE_ESSPRITE
 	sprite = new essprite;
+	sprite_target_window = 0;
 	sprite->setResolution( wnd, bmscr->sx, bmscr->sy);
 #endif
 
@@ -3941,6 +4050,7 @@ void hsp3excmd_rebuild_window(void)
 #ifdef USE_ESSPRITE
 	if (sprite) delete sprite;
 	sprite = new essprite;
+	sprite_target_window = 0;
 	sprite->setResolution( wnd, bmscr->sx, bmscr->sy);
 #endif
 
@@ -3986,6 +4096,7 @@ void hsp3extcmd_sysvars(int inst, int hwnd, int hdc)
 	sys_hwnd = hwnd;
 	sys_hdc = hdc;
 	bmscr = wnd->GetBmscr(0);
+	sprite_target_window = 0;
 	sprite->setResolution(wnd, bmscr->sx, bmscr->sy);
 }
 

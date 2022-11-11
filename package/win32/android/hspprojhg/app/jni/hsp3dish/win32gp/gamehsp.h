@@ -38,6 +38,7 @@ using namespace gameplay;
 #define GPOBJ_MODE_BHIDE (0x8000)
 
 #define GPOBJ_ID_MATFLAG  (0x200000)
+#define GPOBJ_ID_SRCFLAG  (0x400000)
 #define GPOBJ_ID_FLAGBIT (0xff00000)
 #define GPOBJ_ID_FLAGMASK (0x0fffff)
 
@@ -115,12 +116,15 @@ GPPSET_MAX
 #define GPOBJ_MATOPT_MIRROR (512)
 #define GPOBJ_MATOPT_CUBEMAP (1024)
 #define GPOBJ_MATOPT_NODISCARD (2048)
+#define GPOBJ_MATOPT_UVOFFSET (4096)
+#define GPOBJ_MATOPT_UVREPEAT (8192)
 
 #define GPDRAW_OPT_OBJUPDATE (1)
 #define GPDRAW_OPT_DRAWSCENE (2)
 #define GPDRAW_OPT_DRAW2D (4)
 #define GPDRAW_OPT_DRAWSCENE_LATE (8)
 #define GPDRAW_OPT_DRAW2D_LATE (16)
+#define GPDRAW_OPT_PHYDEBUG (0x10000)
 
 #define GPANIM_OPT_START_FRAME (0)
 #define GPANIM_OPT_END_FRAME (1)
@@ -134,10 +138,17 @@ GPPSET_MAX
 
 #define GPNODEINFO_NODE (0)
 #define GPNODEINFO_MODEL (1)
+#define GPNODEINFO_MATNUM (2)
+#define GPNODEINFO_MATERIAL (0x80)
 #define GPNODEINFO_NAME (0x100)
 #define GPNODEINFO_CHILD (0x101)
 #define GPNODEINFO_SIBLING (0x102)
 #define GPNODEINFO_SKINROOT (0x103)
+#define GPNODEINFO_MATNAME (0x10000)
+
+#define GPOBJ_PRMMETHOD_SET (0)
+#define GPOBJ_PRMMETHOD_ON (1)
+#define GPOBJ_PRMMETHOD_OFF (2)
 
 #define GPOBJ_PRMSET_FLAG (2)
 #define GPOBJ_PRMSET_MODE (3)
@@ -194,10 +205,12 @@ public:
 	void StartEvent(gpevent *ev, int entry);
 
 	int setParameter(char *name, float value, int part);
+	int setParameter(char* name, float value, float value2, int part);
 	int setParameter(char *name, Vector3 *value, int part);
 	int setParameter(char *name, Vector4 *value, int part);
-	int setParameter(char *name, const Matrix *value, int count, int part);
 	int setParameter(char *name, char *fname, int matopt, int part);
+	int setParameter(char* name, double* p_mat, int count, int part);
+	int setParameter(char* name, Texture::Sampler* sampler, int part);
 	int setState(char *name, char *value, int part);
 	void setFilter(Texture::Filter value, int part);
 
@@ -234,6 +247,7 @@ public:
 	gpevent *_event[GPOBJ_MULTIEVENT_MAX];		// Event List
 	float	_time[GPOBJ_MULTIEVENT_MAX];		// Event Time
 	//Vector4 _evvec[GPOBJ_MULTIEVENT_MAX];		// イベントワーク用ベクター
+	gameplay::Matrix* _matbuffer;				// マトリクス保持用バッファ
 
 };
 
@@ -349,7 +363,7 @@ public:
 	char *getObjName( int objid );
 	int *getObjectPrmPtr( int objid, int prmid );
 	int getObjectPrm( int objid, int prmid, int *outptr );
-	int setObjectPrm( int objid, int prmid, int value );
+	int setObjectPrm( int objid, int prmid, int value, int method = 0);
 	int setObjLight( int objid );
 
 	char *getAnimId(int objid, int index, int option);
@@ -387,7 +401,6 @@ public:
 	void putEventError(gpobj *obj, gpevent *ev, char *msg);
 
 	void drawAll( int option );
-	void drawNode( Node *node );
 	void updateAll( void );
 	void drawObj( gpobj *obj );
 	int updateObjColi( int objid, float size, int addcol );
@@ -395,7 +408,9 @@ public:
 	gpobj *getNextObj( void );
 	void pickupAll(int option);
 	bool pickupNode(Node* node, int deep);
-	bool drawNodeRecursive(Node *node,bool wire=false);
+
+	void drawNode(Node* node, bool wirex, float alpha);
+	bool drawNodeRecursive(Node *node,bool wire=false, float alpha = 1.0);
 	int drawSceneObject(gpobj *camobj);
 
 	int selectScene( int sceneid );
@@ -423,7 +438,7 @@ public:
 	int makeNewMat(Material* material, int mode, int color, int matopt );
 	int makeNewMat2D( char *fname, int matopt );
 	int makeNewMatFromFB(gameplay::FrameBuffer *fb, int matopt);
-	int makeNewMatFromObj(int objid, int part);
+	int makeNewMatFromObj(int objid, int part, char *nodename);
 
 	int makeNewLgt( int id, int lgtopt, float range=1.0f, float inner=0.5f, float outer=1.0f );
 	int makeNewCam( int id, float fov, float aspect, float near, float far, int mode=0 );
@@ -437,6 +452,7 @@ public:
 	Material *makeMaterialTexture( char *fname, int matopt, Texture *opttex = NULL);
 	Material *makeMaterialFromShader( char *vshd, char *fshd, char *defs );
 	void setMaterialDefaultBinding(Material* material);
+	void setMaterialDefaultBinding(Material* material, int matopt);
 	void setMaterialDefaultBinding(Material* material, int icolor, int matopt);
 	float setMaterialBlend( Material* material, int gmode, int gfrate );
 	Material *makeMaterialTex2D(Texture *texture, int matopt);
@@ -509,6 +525,7 @@ public:
 	bool getNodeFromNameSub(Node* node, char *name, int deep);
 	int getNodeInfo(int objid, int option, char* name, int* result);
 	int getNodeInfoString(int objid, int option, char* name, std::string *res);
+	int setNodeInfoMaterial(int objid, int option, char* name, int matid);
 
 	// 2D draw function
 	float *startPolyTex2D( gpmat *mat, int material_id );
@@ -533,6 +550,10 @@ public:
 	char *getLightDefines(void) { return (char *)light_defines.c_str(); }
 	char *getNoLightDefines(void) { return (char *)nolight_defines.c_str(); }
 	char *getSpecularLightDefines(void) { return (char *)splight_defines.c_str(); }
+
+	// folder manage
+	char* getShaderFolder(void) { return (char*)shader_folder.c_str(); }
+	void setShaderFolder(char *folder) { shader_folder = folder; }
 
 	/**
 	* 2D projection parameter
@@ -703,6 +724,8 @@ private:
 	std::string	user_fsh;
 	std::string	user_defines;
 
+	// shader folder
+	std::string	shader_folder;
 };
 
 #endif

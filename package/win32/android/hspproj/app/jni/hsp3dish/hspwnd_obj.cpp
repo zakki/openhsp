@@ -420,20 +420,78 @@ static void Object_InputBoxApplyVAR(HSPOBJINFO *info)
 }
 
 
-static int Object_InputBoxApplyFuncKey(HSPOBJINFO *info, int code)
+static int Object_InputBoxApplyFuncKey(HSPOBJINFO* info, int code)
 {
 	//		ファンクションキーを処理する
 	//		(HSPOBJ_NOTICE_KEY_F* を送信する)
 	//		(返値 0=OK、1=更新あり、マイナス値はエラー)
 	//
 	if ((code < HSPOBJ_NOTICE_KEY_F1) || (code > HSPOBJ_NOTICE_KEY_F12)) return -1;
-/*
+	/*
+		switch (code) {
+		default:
+			break;
+		}
+	*/
+	//	Alertf("FUNC");
+	return 0;
+}
+
+
+static int Object_InputBoxApplyExtKey(HSPOBJINFO* info, int code)
+{
+	//		拡張キーを処理する
+	//		(HSPOBJ_NOTICE_KEY_EXTKEYを含むコードを送信する)
+	//		(返値 0=OK、1=更新あり、マイナス値はエラー)
+	//
+	Bmscr* bm = (Bmscr*)info->bm;
+	Hsp3ObjInput* edit = (Hsp3ObjInput*)info->btnset;
+	if (edit == NULL) return -1;
+
 	switch (code) {
-	default:
+	case HSPOBJ_NOTICE_KEY_SLEFT:
+		edit->tpos.moveCaret(-1, true);
 		break;
+	case HSPOBJ_NOTICE_KEY_LEFT:
+		edit->tpos.moveCaret(-1);
+		break;
+	case HSPOBJ_NOTICE_KEY_SRIGHT:
+		edit->tpos.moveCaret(1, true);
+		break;
+	case HSPOBJ_NOTICE_KEY_RIGHT:
+		edit->tpos.moveCaret(1);
+		break;
+	case HSPOBJ_NOTICE_KEY_SHOME:
+		edit->tpos.setCaretHome(true);
+		break;
+	case HSPOBJ_NOTICE_KEY_HOME:
+		edit->tpos.setCaretHome();
+		break;
+	case HSPOBJ_NOTICE_KEY_SEND:
+		edit->tpos.setCaretEnd(true);
+		break;
+	case HSPOBJ_NOTICE_KEY_END:
+		edit->tpos.setCaretEnd();
+		break;
+	case HSPOBJ_NOTICE_KEY_INS:
+		edit->tpos.toggleInsertMode();
+		break;
+	case HSPOBJ_NOTICE_KEY_DEL:
+		edit->tpos.deleteStringFromCaret(false);
+		return 1;
+
+	case HSPOBJ_NOTICE_KEY_UP:
+	case HSPOBJ_NOTICE_KEY_DOWN:
+	case HSPOBJ_NOTICE_KEY_SCROLL_UP:
+	case HSPOBJ_NOTICE_KEY_SCROLL_DOWN:
+	case HSPOBJ_NOTICE_KEY_SUP:
+	case HSPOBJ_NOTICE_KEY_SDOWN:
+	case HSPOBJ_NOTICE_KEY_SSCROLL_UP:
+	case HSPOBJ_NOTICE_KEY_SSCROLL_DOWN:
+		break;
+	default:
+		return -1;
 	}
-*/
-//	Alertf("FUNC");
 	return 0;
 }
 
@@ -516,50 +574,10 @@ static void Object_InputBox(HSPOBJINFO *info, int wparam)
 		break;
 	}
 
-	case HSPOBJ_NOTICE_KEY_SLEFT:
-		edit->tpos.moveCaret(-1,true);
-		break;
-	case HSPOBJ_NOTICE_KEY_LEFT:
-		edit->tpos.moveCaret(-1);
-		break;
-	case HSPOBJ_NOTICE_KEY_SRIGHT:
-		edit->tpos.moveCaret(1, true);
-		break;
-	case HSPOBJ_NOTICE_KEY_RIGHT:
-		edit->tpos.moveCaret(1);
-		break;
-	case HSPOBJ_NOTICE_KEY_SHOME:
-		edit->tpos.setCaretHome(true);
-		break;
-	case HSPOBJ_NOTICE_KEY_HOME:
-		edit->tpos.setCaretHome();
-		break;
-	case HSPOBJ_NOTICE_KEY_SEND:
-		edit->tpos.setCaretEnd(true);
-		break;
-	case HSPOBJ_NOTICE_KEY_END:
-		edit->tpos.setCaretEnd();
-		break;
-	case HSPOBJ_NOTICE_KEY_INS:
-		edit->tpos.toggleInsertMode();
-		break;
 	case HSPOBJ_NOTICE_KEY_BS:
 		edit->tpos.deleteStringFromCaret(true);
 		update = true;
 		break;
-	case HSPOBJ_NOTICE_KEY_DEL:
-		edit->tpos.deleteStringFromCaret(false);
-		update = true;
-		break;
-
-	case HSPOBJ_NOTICE_KEY_UP:
-	case HSPOBJ_NOTICE_KEY_DOWN:
-	case HSPOBJ_NOTICE_KEY_SCROLL_UP:
-	case HSPOBJ_NOTICE_KEY_SCROLL_DOWN:
-	case HSPOBJ_NOTICE_KEY_SUP:
-	case HSPOBJ_NOTICE_KEY_SDOWN:
-	case HSPOBJ_NOTICE_KEY_SSCROLL_UP:
-	case HSPOBJ_NOTICE_KEY_SSCROLL_DOWN:
 	case HSPOBJ_NOTICE_KEY_TAB:
 	case HSPOBJ_NOTICE_KEY_CR:
 		break;
@@ -569,6 +587,13 @@ static void Object_InputBox(HSPOBJINFO *info, int wparam)
 		break;
 
 	default:
+		if (wparam & HSPOBJ_NOTICE_KEY_EXTKEY) {
+			int code = wparam & (HSPOBJ_NOTICE_KEY_EXTKEY - 1);
+			if (Object_InputBoxApplyExtKey(info, code) > 0) {
+				update = true;
+			}
+			break;
+		}
 		if (wparam & HSPOBJ_NOTICE_KEY_CTRLADD) {
 			int code = wparam & (HSPOBJ_NOTICE_KEY_CTRLADD - 1);
 			if (Object_InputBoxApplySpecialKey(info, code ) > 0) {

@@ -92,8 +92,8 @@ void InitSysReq( void )
 	sysreq[SYSREQ_SLIGHT_MAX] = 0;			// number of Spot Light(HGIMG4)
 
 	sysreq[SYSREQ_LOGWRITE] = 1;			// HGIMG4 log write
-	sysreq[SYSREQ_FIXEDFRAME] = -1;			// fixed frame rate
-
+	sysreq[SYSREQ_FIXEDFRAME] = -1;			// HGIMG4 fixed frame rate
+	
 
 #ifdef HSPIOS
     sysreq[ SYSREQ_PLATFORM ] = PLATFORM_IOS;
