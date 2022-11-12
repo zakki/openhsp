@@ -794,7 +794,7 @@ int hgio_fontsystem_exec(char* msg, unsigned char* buffer, int pitch, int* out_s
 		EM_ASM_({
 			let d = document.getElementById('hsp3dishFontDiv');
 			if (!d) {
-				d = document.createElement("div");
+				d = document.createElement("pre");
 				d.id = 'hsp3dishFontDiv';
 				d.style.setProperty("width", "auto");
 				d.style.setProperty("height", "auto");
