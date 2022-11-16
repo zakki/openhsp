@@ -1558,10 +1558,12 @@ static void *reffunc_intfunc( int *type_res, int arg )
 		char *p;
 		int findopt;
 		ps = code_gets();
-		p = code_stmpstr( ps );
+		p = mem_ini( strlen(ps)+1 );
+		strcpy(p,ps);
 		findopt = code_getdi(0);
 		note_update();
 		reffunc_intfunc_ivalue = note.FindLine( p, findopt );
+		mem_bye(p);
 		break;
 		}
 
