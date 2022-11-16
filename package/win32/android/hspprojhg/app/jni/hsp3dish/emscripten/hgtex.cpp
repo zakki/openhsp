@@ -7,6 +7,7 @@
 #include <time.h>
 #include <math.h>
 #include <string.h>
+#include <vector>
 
 #include "../../hsp3/hsp3config.h"
 
@@ -112,7 +113,7 @@ extern SDL_Window *window;
 
 /*-------------------------------------------------------------------------------*/
 
-static TEXINF texinf[TEXINF_MAX];
+static std::vector<TEXINF> texinf;
 static int curtex;				// 現在選択されているテクスチャID
 static int curmestex;			// メッセージ用にキャッシュされたテクスチャ数
 
@@ -292,10 +293,7 @@ void TexInit( void )
 {
 	//	初期化
 	//
-	int i;
-	for(i=0;i<TEXINF_MAX;i++) {
-		texinf[i].mode = TEXMODE_NONE;
-	}
+	texinf.clear();
 	curmestex = 0;
 	TexReset();
 #ifdef USE_STAR_FIELD
@@ -308,13 +306,15 @@ void TexTerm( void )
 {
 	//	終了処理
 	//
-	int i;
 
 #ifdef USE_STAR_FIELD
 	star_term();
 #endif
-	for(i=0;i<TEXINF_MAX;i++) {
-		DeleteTex( i );
+
+	if (!texinf.empty()) {
+		for (size_t i = 0; i < texinf.size(); i++) {
+			DeleteTex(i);
+		}
 	}
 }
 
@@ -351,11 +351,16 @@ static int GetNextTex( void )
 {
 	//		新規のTEXINF idを作成する
 	//
-	int i,sel;
-	sel = -1;
-	for(i=0;i<TEXINF_MAX;i++) {
-		if ( texinf[i].mode == TEXMODE_NONE ) { sel=i;break; }
+	int sel;
+	sel = (int)texinf.size();
+
+	if (!texinf.empty()) {
+		for (int i = 0; i < sel; i++) {
+			if (texinf[i].flag == TEXMODE_NONE) return i;
+		}
 	}
+	TEXINF tinfo = { TEXMODE_NONE,0,0,0,0,0,0,0,0 };
+	texinf.push_back(tinfo);
 	return sel;
 }
 

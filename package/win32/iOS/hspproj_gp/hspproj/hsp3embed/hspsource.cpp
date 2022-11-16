@@ -1,14 +1,14 @@
 //
-//	hsp3cnv(3.5b5) generated source
+//	hsp3cnv(3.31b2) generated source
 //	[block3.ax]
 //
 #include "hsp3r.h"
 
-#define _HSP3CNV_DATE "2019/06/29"
-#define _HSP3CNV_TIME "16:44:05"
+#define _HSP3CNV_DATE "2012/07/08"
+#define _HSP3CNV_TIME "15:45:40"
 #define _HSP3CNV_MAXVAR 38
-#define _HSP3CNV_MAXHPI 16
-#define _HSP3CNV_VERSION 0x350
+#define _HSP3CNV_MAXHPI 0
+#define _HSP3CNV_VERSION 0x301
 #define _HSP3CNV_BOOTOPT 4096
 
 /*-----------------------------------------------------------*/
@@ -101,21 +101,19 @@ void __HspEntry( void ) {
 	// y1 =0
 	PushInt(0); 
 	VarSet(Var_y1,0);
-	// x2 =ginfo(12)
-	PushFuncEnd(); 	PushInt(12); 
-PushExtvar(256,1); 
+	// x2 =320
+	PushInt(320); 
 	VarSet(Var_x2,0);
-	// y2 =ginfo(13)
-	PushFuncEnd(); 	PushInt(13); 
-PushExtvar(256,1); 
+	// y2 =480
+	PushInt(480); 
 	VarSet(Var_y2,0);
 	// screen 0, x2, y2
 	PushVAP(Var_y2,0); 
 	PushVAP(Var_x2,0); 
 	PushInt(0); 
 	Extcmd(42,3);
-	// title "„Éñ„É≠„ÉÉ„ÇØÂ¥©„Åó"
-	PushStr("„Éñ„É≠„ÉÉ„ÇØÂ¥©„Åó"); 
+	// title "ÉuÉçÉbÉNïˆÇµ"
+	PushStr("ÉuÉçÉbÉNïˆÇµ"); 
 	Extcmd(16,1);
 	TaskSwitch(0);
 }
@@ -154,8 +152,8 @@ static void L0000( void ) {
 	// barx =240
 	PushInt(240); 
 	VarSet(Var_barx,0);
-	// bary =540
-	PushInt(540); 
+	// bary =440
+	PushInt(440); 
 	VarSet(Var_bary,0);
 	// barhalf =barsize/2
 	PushVar(Var_barsize,0); PushInt(2); CalcDivI(); 
@@ -437,8 +435,8 @@ static void L0021( void ) {
 	PushSysvar(4,0); PushVar(Var_wpx,0); CalcMulI(); PushVar(Var_wx,0); CalcAddI(); 
 	VarSet(Var_x,0);
 	// if wall(cx, cy)=0
-		PushVar(Var_cy,0); 
-		PushVar(Var_cx,0); 
+		PushVAP(Var_cy,0); 
+		PushVAP(Var_cx,0); 
 	PushVar(Var_wall,2); PushInt(0); CalcEqI(); 
 	if (HspIf()) { TaskSwitch(22); return; }
 	// left ++
@@ -460,8 +458,8 @@ static void L0021( void ) {
 	if (HspIf()) { TaskSwitch(23); return; }
 	// wall (cx, cy)=1
 	PushInt(1); 
-	PushVar(Var_cy,0); 
-	PushVar(Var_cx,0); 
+	PushVAP(Var_cy,0); 
+	PushVAP(Var_cx,0); 
 	VarSet(Var_wall,2);
 	// bpy =bpy*-1
 	PushVar(Var_bpy,0); PushInt(-1); CalcMulI(); 
@@ -541,9 +539,9 @@ static void L0002( void ) {
 	PushInt(255); 
 	PushInt(255); 
 	Extcmd(24,3);
-	// pos 160, 380
-	PushInt(380); 
-	PushInt(160); 
+	// pos 120, 280
+	PushInt(280); 
+	PushInt(120); 
 	Extcmd(17,2);
 	// mes "GAME OVER"
 	PushStr("GAME OVER"); 

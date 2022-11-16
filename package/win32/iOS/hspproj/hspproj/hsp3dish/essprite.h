@@ -150,7 +150,7 @@ public:
 	void reset(void);
 	int init(int maxsprite=512, int maxchr=1024, int rotrate=64, int maxmap=16);
 	void updateFrame(void);
-	void setResolution(HspWnd *wnd, int sx, int sy);
+	int setResolution(HspWnd* wnd, int sx, int sy, int bufferid = 0);
 	void setArea(int x, int y, int sx, int sy );
 	void setSize(int p1, int p2, int p3, int p4);
 	void setLand(int p1, int p2);

@@ -21,6 +21,7 @@
 #include "../hsp3/hsp3debug.h"
 #include "../hsp3/hsp3int.h"
 #include "../hsp3dish/hspwnd.h"
+#include "../hsp3/hsp3utfcnv.h"
 
 #define strp(dsptr) &hspctx->mem_mds[dsptr]
 
@@ -3052,7 +3053,7 @@ int code_event( int event, int prm1, int prm2, void *prm3 )
 		break;
 	case HSPEVENT_FWRITE:
 		// fwrite (fseek,size,saveptr)
-		res = mem_save( hspctx->fnbuffer, prm3, prm2, prm1 );
+		res = hsp3_binsave(hspctx->fnbuffer, prm3, prm2, prm1);
 		if ( res < 0 ) throw HSPERR_FILE_IO;
 		hspctx->strsize = res;
 		break;

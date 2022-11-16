@@ -5,7 +5,7 @@ Hot Soup Processor ver3.7beta                       HSP : Hot Soup Processor
 
 ・hsp3関連 更新履歴
 
-	2022/11/08 3.7 beta4
+	2022/11/16 3.7 beta4
 
 	hspoggプラグインの.oggファイル再生をオンメモリに切り替えpackfileに対応
 	celload命令のパラメーターに既存の画像を再利用するオプションを追加
@@ -13,6 +13,7 @@ Hot Soup Processor ver3.7beta                       HSP : Hot Soup Processor
 	noteadd命令の引数でnotefind関数を使用した場合に書き込み内容が壊れる不具合を修正
 	mes/print命令による表示が1023文字で強制的に改行される不具合を修正
 	[HSP3Dish] mes/print命令の改行処理が標準ランタイムと異なる不具合を修正
+	[HSP3Dish] 使用するテクスチャの上限数が512までだった制限を撤廃
 	[HSP3Dish][Windows] input命令で一部の記号入力が反映されなかった不具合を修正
 	[HSP3Dish][Windows] screen命令によるサイズ変更でウインドウの入力が反映されなくなる不具合を修正
 	[HSP3Dish][Windows] mes/print命令の空白に不要なピクセルが含まれる不具合を修正

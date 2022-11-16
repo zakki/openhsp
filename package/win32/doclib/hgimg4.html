@@ -44,9 +44,9 @@
 		<li><a href="#RENDERGRP">レンダリンググループ設定</a></li>
 		<li><a href="#PHYSICS">物理挙動の設定<span class="new">（New!）</span></a></li>
 		<li><a href="#MATERIAL">マテリアルの設定</a></li>
-		<li><a href="#MATERIAL_CHG">マテリアルの変更<span class="new">（New!）</span></a></li>
 		<li><a href="#3DMODEL">3Dモデルデータの表示<span class="new">（New!）</span></a></li>
 		<li><a href="#GPBMATERIAL">3Dモデルデータのマテリアルについて</a></li>
+		<li><a href="#MATERIAL_CHG">マテリアルの変更<span class="new">（New!）</span></a></li>
 		<li><a href="#GPBLIGHT">3Dモデルデータのライティング</a></li>
 		<li><a href="#SCENE">シーンの描画について</a></li>
 		<li><a href="#TRANSPARENT">半透明オブジェクトの描画について<span class="new">（New!）</span></a></li>
@@ -62,7 +62,7 @@
 		<li><a href="#POSTEFFECT">ポストエフェクト<span class="new">（New!）</span></a></li>
 		<li><a href="#FREEMESH">自由な形状の作成</a></li>
 		<li><a href="#NODEINFO">階層情報の取得</a></li>
-		<li><a href="#MEMLIMIT">登録の限界数について</a></li>
+		<li><a href="#MEMLIMIT">登録の限界数について<span class="new">（New!）</span></a></li>
 		<li><a href="#ERRORLOG">エラーログ</a></li>
 		<li><a href="#NOTICE">現バージョンでの注意点</a></li>
 		<li><a href="#PACKFILE">PACKFILEの対応について<span class="new">（New!）</span></a></li>
@@ -1385,73 +1385,6 @@ optionパラメーターにより設定時のオプションを付加します�
 	</pre>
 
 
-	<h2 id="MATERIAL_CHG">マテリアルの変更</h2>
-
-	<p>
-	3Dのオブジェクトは、設定されているマテリアルを動的に変更することが可能です。<br>
-	そのために、既に生成されているオブジェクトIDからマテリアルを取得し、そのマテリアルを直接操作することになります。
-	gpnodeinfo命令は、3Dモデルに関する様々な情報を取得しますが、マテリアルIDを取得するオプションが用意されています。
-	</p>
-	<pre>
-		例:
-		gptexmat id_texmat, "res/qbox.png"
-		gpbox id_box, 0.5, -1, id_texmat	; 箱ノードを追加
-		gpnodeinfo id_boxmat,id_box, GPNODEINFO_MATERIAL	; 生成されたマテリアルを取得
-	</pre>
-	<p>
-	上の例では、id_boxmatに生成されたマテリアルのIDが取得されます。
-	以降は、gpmatprm、gpmatprmt、gpmatstateなどの命令でマテリアルの情報を再設定することができます。
-	gptexmat命令で作成したid_texmatが示すマテリアルIDとは異なることに注意してください。<br>
-	gpnodeinfo命令によって取得されたマテリアルIDは、ノード内の情報を参照するために生成される特別なIDとなります。
-	毎フレーム取得するような処理を行うと、フレームごとに新規のマテリアルIDが取得されてしまいますので、最初の1回だけマテリアルIDを取得して使用するようにしてください。<br>
-	gpnodeinfo命令で取得されたマテリアルIDは、gpdelobj命令によって破棄された場合でも元のマテリアル情報は維持されますので、不要になったマテリアルIDは破棄することができます。<br>
-	取得したマテリアルIDによって、テクスチャ画像を変更する場合はgpmatprmt命令を使用します。
-	</p>
-	<pre>
-		gpmatprmt id,"name","filename"		マテリアルのパラメーター設定(テクスチャファイル)
-
-		id(0)      : マテリアルID/オブジェクトID
-		"name"     : パラメーター名
-		"filename" : 画像ファイル名
-		opt(0)     : マテリアルオプション値
-
-		例:
-		gpmatprmt id_proxymat, , "texture.png"
-	</pre>
-	<p>
-	上の例では、「texture.png」というファイル名の画像でマテリアルのテクスチャを置き換えます。
-	(id_proxymatは、あらかじめgpnodeinfoでマテリアルIDを取得しておいてく必要があります。)<br>
-	これにより、3Dモデル等に設定されているテクスチャを動的に変更することが可能です。指定された画像ファイルはキャッシュされるため、初回のみファイルの読み込みが発生しますが、以降はキャッシュされたメモリデータが使用されます。<br>
-	画像ファイルではなく、既存のマテリアルIDや画面バッファで置き換えたい場合は、gpmatprmp命令を使用します。
-	</p>
-	<pre>
-		gpmatprmp id,"name",matobj	マテリアルのパラメーター設定(マテリアルID)
-
-		id(0)      : マテリアルID/オブジェクトID
-		"name"     : パラメーター名
-		matobj(0)  : マテリアルID
-
-		例:
-		gpmatprmp id_proxymat, , GPOBJ_ID_SRCFLAG+1
-	</pre>
-	<p>
-	上の例では、レンダリングバッファID1の画像でマテリアルのテクスチャを置き換えます。
-	(id_proxymatは、あらかじめgpnodeinfoでマテリアルIDを取得しておいてく必要があります。)<br>
-	3Dモデルが複数の階層構造を持つ場合は、gpnodeinfo命令でノード名を指定してマテリアルを取得することも可能です。詳しくは、gpnodeinfo命令のヘルプを参照してください。
-	<br>
-	もう1つ、オブジェクトのコアパラメーターを変更するgpsetprm命令により、マテリアルIDを格納している「PRMSET_USEGPMAT」を書き換えることでマテリアルを変更することも可能です。<br>
-	</p>
-	<pre>
-		例:
-		gptexmat id_texmat, "res/qbox.png"		; テクスチャマテリアル作成
-		gpsetprm objid, PRMSET_USEGPMAT, id_texmat	; マテリアルを変更する
-	</pre>
-	<p>
-	ただしこの方法では、複数のマテリアルを内包している3Dモデル(gpbファイルから生成された3Dモデル)は書き換えを行うことができないので注意してください。<br>
-	マテリアルの変更は、シェーダーパイプラインの変更が行われるため比較的コストの高い処理であることを覚えておいてください。毎フレームすべてのオブジェクトのマテリアルを書き換えるような処理はフレームレートの低下につながります。
-	</p>
-
-
 	<h2 id="3DMODEL">3Dモデルデータの表示</h2>
 
 	<p>
@@ -1633,6 +1566,73 @@ optionパラメーターにより設定時のオプションを付加します�
 	</p>
 	<p>
 	<img src="image/tamane_samp.jpg">
+	</p>
+
+
+	<h2 id="MATERIAL_CHG">マテリアルの変更</h2>
+
+	<p>
+	3Dのオブジェクトは、設定されているマテリアルを動的に変更することが可能です。<br>
+	そのために、既に生成されているオブジェクトIDからマテリアルを取得し、そのマテリアルを直接操作することになります。
+	gpnodeinfo命令は、3Dモデルに関する様々な情報を取得しますが、マテリアルIDを取得するオプションが用意されています。
+	</p>
+	<pre>
+		例:
+		gptexmat id_texmat, "res/qbox.png"
+		gpbox id_box, 0.5, -1, id_texmat	; 箱ノードを追加
+		gpnodeinfo id_boxmat,id_box, GPNODEINFO_MATERIAL	; 生成されたマテリアルを取得
+	</pre>
+	<p>
+	上の例では、id_boxmatに生成されたマテリアルのIDが取得されます。
+	以降は、gpmatprm、gpmatprmt、gpmatstateなどの命令でマテリアルの情報を再設定することができます。
+	gptexmat命令で作成したid_texmatが示すマテリアルIDとは異なることに注意してください。<br>
+	gpnodeinfo命令によって取得されたマテリアルIDは、ノード内の情報を参照するために生成される特別なIDとなります。
+	毎フレーム取得するような処理を行うと、フレームごとに新規のマテリアルIDが取得されてしまいますので、最初の1回だけマテリアルIDを取得して使用するようにしてください。<br>
+	gpnodeinfo命令で取得されたマテリアルIDは、gpdelobj命令によって破棄された場合でも元のマテリアル情報は維持されますので、不要になったマテリアルIDは破棄することができます。<br>
+	取得したマテリアルIDによって、テクスチャ画像を変更する場合はgpmatprmt命令を使用します。
+	</p>
+	<pre>
+		gpmatprmt id,"name","filename"		マテリアルのパラメーター設定(テクスチャファイル)
+
+		id(0)      : マテリアルID/オブジェクトID
+		"name"     : パラメーター名
+		"filename" : 画像ファイル名
+		opt(0)     : マテリアルオプション値
+
+		例:
+		gpmatprmt id_proxymat, , "texture.png"
+	</pre>
+	<p>
+	上の例では、「texture.png」というファイル名の画像でマテリアルのテクスチャを置き換えます。
+	(id_proxymatは、あらかじめgpnodeinfoでマテリアルIDを取得しておいてく必要があります。)<br>
+	これにより、3Dモデル等に設定されているテクスチャを動的に変更することが可能です。指定された画像ファイルはキャッシュされるため、初回のみファイルの読み込みが発生しますが、以降はキャッシュされたメモリデータが使用されます。<br>
+	画像ファイルではなく、既存のマテリアルIDや画面バッファで置き換えたい場合は、gpmatprmp命令を使用します。
+	</p>
+	<pre>
+		gpmatprmp id,"name",matobj	マテリアルのパラメーター設定(マテリアルID)
+
+		id(0)      : マテリアルID/オブジェクトID
+		"name"     : パラメーター名
+		matobj(0)  : マテリアルID
+
+		例:
+		gpmatprmp id_proxymat, , GPOBJ_ID_SRCFLAG+1
+	</pre>
+	<p>
+	上の例では、レンダリングバッファID1の画像でマテリアルのテクスチャを置き換えます。
+	(id_proxymatは、あらかじめgpnodeinfoでマテリアルIDを取得しておいてく必要があります。)<br>
+	3Dモデルが複数の階層構造を持つ場合は、gpnodeinfo命令でノード名を指定してマテリアルを取得することも可能です。詳しくは、gpnodeinfo命令のヘルプを参照してください。
+	<br>
+	もう1つ、オブジェクトのコアパラメーターを変更するgpsetprm命令により、マテリアルIDを格納している「PRMSET_USEGPMAT」を書き換えることでマテリアルを変更することも可能です。<br>
+	</p>
+	<pre>
+		例:
+		gptexmat id_texmat, "res/qbox.png"		; テクスチャマテリアル作成
+		gpsetprm objid, PRMSET_USEGPMAT, id_texmat	; マテリアルを変更する
+	</pre>
+	<p>
+	ただしこの方法では、複数のマテリアルを内包している3Dモデル(gpbファイルから生成された3Dモデル)は書き換えを行うことができないので注意してください。<br>
+	マテリアルの変更は、シェーダーパイプラインの変更が行われるため比較的コストの高い処理であることを覚えておいてください。毎フレームすべてのオブジェクトのマテリアルを書き換えるような処理はフレームレートの低下につながります。
 	</p>
 
 
@@ -2738,13 +2738,16 @@ OpenGLの座標系ではなく、あくまでも座標値の大小でモデル�
 		setreq SYSREQ_MAXOBJ,4096	; オブジェクト最大数を拡張する
 	</pre>
 	<p>
+	SYSREQ_MAXMATERIALでは、マテリアル最大数を設定可能です。
+	これにより、celload命令などで扱う画像(テクスチャ)の数を増やすことができます。
+	<br>
 	setreqで設定できる主な項目は以下の通りです。(カッコ内はデフォルト値)
 	</p>
 	<pre>
 		マクロ名              内容
 		---------------------------------------------------------
 		SYSREQ_MAXOBJ         オブジェクト最大数(1024)
-		SYSREQ_MAXMATERIAL    マテリアル最大数(128)
+		SYSREQ_MAXMATERIAL    マテリアル最大数(256)
 		SYSREQ_MAXEVENT       イベント最大数(1024)
 		SYSREQ_VSYNC          VSync待ちを有効にする(0)
 		SYSREQ_THROUGHFLAG    座標のボーダー処理フラグ(0)

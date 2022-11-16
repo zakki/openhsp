@@ -178,7 +178,7 @@ void HspWnd::MakeBmscr( int id, int type, int x, int y, int sx, int sy, int opti
 	bm->buffer_option = option;
 
 	if (type == HSPWND_TYPE_OFFSCREEN) {
-		sprintf( bm->resname, "buffer%d", bm->wid );
+		sprintf( bm->resname, "*buffer%d", bm->wid );
 		hgio_buffer( (BMSCR *)bm );
 	}
 }
@@ -252,6 +252,33 @@ int HspWnd::GetEmptyBufferId( void )
 		if ( bm->flag == BMSCR_FLAG_NOUSE ) return i;
 	}
 	return bmscr_max;
+}
+
+
+int HspWnd::GetPreloadBufferId(char* fname)
+{
+	//		既に読み込まれているファイルのIDを取得
+	//
+	int i;
+	Bmscr* bm;
+	char basename[HSP_MAX_PATH];
+	getpath( fname, basename, 8+16 );
+
+	for (i = 1; i < bmscr_max; i++) {
+		bm = GetBmscr(i);
+		if (bm != NULL) {
+			if (bm->type == HSPWND_TYPE_BUFFER) {
+				if (bm->flag == BMSCR_FLAG_INUSE) {
+					char bname[HSP_MAX_PATH];
+					getpath(bm->resname, bname, 8 + 16);
+					if (strcmp(bname, basename) == 0) {
+						return bm->wid;
+					}
+				}
+			}
+		}
+	}
+	return -1;
 }
 
 
@@ -635,7 +662,7 @@ int Bmscr::PrintSub( char *mes )
 			*p = bak_a1;
 			p++; st = p; spcur = 0;		// 終端を戻す
 			a1 = *p;
-			if (a1 == 10) p++;
+			if (a1 == 10) { p++; st = p; }
 			continue;
 		}
 		if (a1 == 10) {
@@ -659,11 +686,8 @@ int Bmscr::PrintSub( char *mes )
 			} else if ((a1 >= 0xfc) && (a1 <= 0xfd)) {
 				utf8bytes = 6;
 			}
-			while (utf8bytes > 0) {
-				p++;
-				spcur++;
-				utf8bytes--;
-			}
+			p += utf8bytes;
+			spcur += utf8bytes;
 		}
 		else {
 			p++; spcur++;
@@ -673,9 +697,9 @@ int Bmscr::PrintSub( char *mes )
 #endif
 	}
 
-	if (spcur > 0) {
+//	if (spcur > 0) {
 		hgio_mes((BMSCR *)this, (char*)st);
-	}
+//	}
 
 	return printsizex;
 }

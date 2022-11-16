@@ -41,6 +41,7 @@
 		<li><a href="#INIFILE">起動設定ファイルについて</a></li>
 		<li><a href="#OBAQ">物理エンジンOBAQのサポート</a></li>
 		<li><a href="#EXCHANGE">他プラットフォームへの変換</a><span class="new">（New!）</span></li>
+		<li><a href="#MAXTEXTURE">テクスチャ上限数について</a><span class="new">（New!）</span></li>
 		<li><a href="#PLUGIN">拡張プラグイン・外部DLLのサポート</a></li>
 		<li><a href="#INPUT">各種入出力への対応について</a></li>
 		<li><a href="#KNOWNBUG">既知の不具合について</a></li>
@@ -725,6 +726,15 @@
 			<li><a href="hsp3dish_ndk.htm">android(NDK)版プログラミングガイド（hsp3dish_ndk.htm）</a></li>
 			<li><a href="hsp3cnv.txt">HSP3ソースコンバーター・マニュアル（hsp3cnv.txt）</a></li>
 	</ul>
+
+
+	<h2 id="MAXTEXTURE">テクスチャ上限数について</h2>
+	<p>
+	HSP3Dishでは、使用する画像(テクスチャ)の数を無制限に扱うことが可能です。
+	ただし、プラットフォームやグラフィックス環境によってメモリの上限から制約が発生する場合があります。<br>
+	また、HGIMG4の場合は、マテリアル数によりテクスチャの上限数が決まります。
+	詳しくは、<a href="hgimg4.html#MEMLIMIT">HGIMG4プログラミングガイド - 登録の限界数について</a>をご覧ください。
+	</p>
 
 
 	<h2 id="PLUGIN">拡張プラグイン・外部DLLのサポート</h2>
