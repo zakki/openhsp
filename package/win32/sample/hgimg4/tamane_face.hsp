@@ -70,13 +70,13 @@ loop
 
 
 *face1
-	gpmatprmt id_proxymat, "u_diffuseTexture", "res/head_SD.png"
+	gpmatprmt id_proxymat, , "res/head_SD.png"
 	return
 *face2
-	gpmatprmt id_proxymat, "u_diffuseTexture", "res/head_SD1.png"
+	gpmatprmt id_proxymat, , "res/head_SD1.png"
 	return
 *face3
-	gpmatprmt id_proxymat, "u_diffuseTexture", "res/head_SD2.png"
+	gpmatprmt id_proxymat, , "res/head_SD2.png"
 	return
 
 

@@ -1,5 +1,9 @@
 #include "hgimg4.as"
 
+	;
+	;	テクスチャのUVオフセット設定サンプル
+	;
+
 title "HGIMG4 Test"
 
 	gpreset
@@ -11,7 +15,7 @@ title "HGIMG4 Test"
 	offsetx = 0.5
 	offsety = 0.0
 
-	gptexmat id_texmat, "res/qbox.png", GPOBJ_MATOPT_SPECULAR|4096   	; テクスチャマテリアル作成
+	gptexmat id_texmat, "res/qbox.png", GPOBJ_MATOPT_SPECULAR|GPOBJ_MATOPT_UVOFFSET   	; テクスチャマテリアル作成
 	gpmatprm1 id_texmat, "u_specularExponent", 4.0			; スペキュラー値
 	gpmatprm2 id_texmat, "u_textureOffset", offsetx, offsety
 
@@ -21,7 +25,7 @@ repeat
 	stick key,15
 	if key&128 : end
 
-	gpmatprm2 id_model, "u_textureOffset", offsetx, offsety
+	gpmatprm2 id_model, "u_textureOffset", offsetx, offsety		; UVオフセットの設定
 	offsetx += 0.01
 	offsety += 0.02
 

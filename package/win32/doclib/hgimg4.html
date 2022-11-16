@@ -60,6 +60,7 @@
 		<li><a href="#RENDERBUFFER">レンダリングバッファ</a></li>
 		<li><a href="#EVENT">イベントリスト</a></li>
 		<li><a href="#POSTEFFECT">ポストエフェクト<span class="new">（New!）</span></a></li>
+		<li><a href="#UVOFFSET">UVオフセット/リピートの設定<span class="new">（New!）</span></a></li>
 		<li><a href="#FREEMESH">自由な形状の作成</a></li>
 		<li><a href="#NODEINFO">階層情報の取得</a></li>
 		<li><a href="#MEMLIMIT">登録の限界数について<span class="new">（New!）</span></a></li>
@@ -1294,6 +1295,8 @@ optionパラメーターにより設定時のオプションを付加します�
 		GPOBJ_MATOPT_MIRROR     反転した画像として表示する
 		GPOBJ_MATOPT_CUBEMAP    キューブマップとして設定する
 		GPOBJ_MATOPT_NODISCARD  αチャンネルによるピクセル破棄を無効にする
+		GPOBJ_MATOPT_UVOFFSET	UVオフセット値(u_textureOffset)を指定可能にする
+		GPOBJ_MATOPT_UVREPEAT	UVリピート値(u_textureRepeat)を指定可能にする
 	</pre>
 	<p>
 	gpusermat命令は、カスタムマテリアルを生成するもので、任意のシェーダーを使って
@@ -1313,7 +1316,8 @@ optionパラメーターにより設定時のオプションを付加します�
 	</pre>
 	<p>
 	カスタムマテリアルを生成した場合は、gpmatprm命令によってシェーダーパラメーターに
-	渡すための値を設定することができます。
+	渡すためのVector値(X,Y,Z値)を設定することができます。
+	(渡す型に応じて、gpmatprm1,gpmatprm2,gpmatprm4,gpmatprm16,gpmatprmt,gpmatprmp命令が用意されています)
 	</p>
 	<pre>
 		例:
@@ -1323,6 +1327,9 @@ optionパラメーターにより設定時のオプションを付加します�
 	上の例では、u_diffuseColorという名称のパラメーターに( 1.0, 0.0, 0.5 )のベクトル値を
 	設定します。これにより、マテリアルごとに異なるパラメーターをシェーダーに渡すことが
 	可能になります。
+<br><br>
+	
+
 <br><br>
 	gpmatstate命令は、マテリアルIDを介して表示のためのステート設定を変更します。
 	</p>
@@ -2565,6 +2572,34 @@ optionパラメーターにより設定時のオプションを付加します�
 	</p>
 	<p>
 	sample/hgimg4フォルダにポストエフェクトのサンプルとして、posteffect.hspが含まれていますので併せて動作をご確認ください。
+	</p>
+
+
+	<h2 id="UVOFFSET">UVオフセット/リピートの設定</h2>
+
+	<p>
+	テクスチャマテリアルを作成する際に、GPOBJ_MATOPT_UVOFFSET、GPOBJ_MATOPT_UVREPEATのオプションを使用することができます。
+	<br>
+	これは、UV(テクスチャが参照される座標)値に任意の値を加算したり、繰り返し数を設定するためのものです。
+	</p>
+	<pre>
+	gptexmat id_texmat, "res/qbox.png", GPOBJ_MATOPT_UVOFFSET   	; テクスチャマテリアル作成
+	gpbox id_model, 1 , , id_texmat		; 箱ノードを追加
+	gpmatprm2 id_model, "u_textureOffset", 0.1, 0.2			; UVオフセットの設定
+	</pre>
+	<p>
+	これにより、テクスチャが本来参照される座標をずらして表示することが可能です。
+	上の例では、UVオフセットをUが0.1、Vが0.2だけ加算する設定になります。
+	gpmatprm2命令は、マテリアルに設定されるシェーダーパラメーターを更新する命令です。「u_textureOffset」というパラメーターに2つの実数を設定しています。
+	UV値は、テクスチャの解像度とは関係なく横(U)、縦(V)の座標を0.0～1.0の正規化された座標として扱っています。(1.0からはみ出た部分は、繰り返されます。)<br>
+	同様に、GPOBJ_MATOPT_UVREPEATオプションにより、繰り返し数を設定することが可能になります。
+	この場合は、
+	</p>
+	<pre>
+	gpmatprm2 id_model, "u_textureRepeat", 2, 2			; UVリピートの設定
+	</pre>
+	<p>
+	上のように、「u_textureRepeat」というパラメーターにUVそれぞれの繰り返し数を2つの実数として設定します。
 	</p>
 
 
