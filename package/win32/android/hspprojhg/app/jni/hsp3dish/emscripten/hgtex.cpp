@@ -356,7 +356,7 @@ static int GetNextTex( void )
 
 	if (!texinf.empty()) {
 		for (int i = 0; i < sel; i++) {
-			if (texinf[i].flag == TEXMODE_NONE) return i;
+			if (texinf[i].mode == TEXMODE_NONE) return i;
 		}
 	}
 	TEXINF tinfo = { TEXMODE_NONE,0,0,0,0,0,0,0,0 };
