@@ -8,7 +8,7 @@ precision mediump float;
 
 ///////////////////////////////////////////////////////////
 // Uniforms
-uniform sampler2D u_texture;
+uniform sampler2D u_diffuseTexture;
 
 uniform float u_curvex;
 uniform float u_curvey;
@@ -38,7 +38,7 @@ void main()
 		col.rgb = vec3( 0,0,0 );
 	} else {
 		// Get texel, and add in scanline if need be
-		col = texture2D(u_texture, vec2(tex.x, tex.y));
+		col = texture2D(u_diffuseTexture, vec2(tex.x, tex.y));
 		col.rgb += sin(tex.y * SCANLINE) * 0.1;
 	}
 	gl_FragColor = col * v_color;
