@@ -278,6 +278,8 @@ int hgio_fontsystem_execsub(long code, unsigned char* buffer, int pitch, int off
 	px = gm.gmCellIncX;
 	ybase = tm.tmAscent - gm.gmptGlyphOrigin.y;
 
+	if ((width<=1) && (height<=1)) return px;
+
 	LPDWORD p1 = (LPDWORD)buffer;
 	LPBYTE p2 = lpFont;
 

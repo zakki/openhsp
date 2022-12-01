@@ -5,7 +5,7 @@ Hot Soup Processor ver3.7beta                       HSP : Hot Soup Processor
 
 ・hsp3関連 更新履歴
 
-	2022/11/16 3.7 beta4
+	2022/12/01 3.7 beta4
 
 	hspoggプラグインの.oggファイル再生をオンメモリに切り替えpackfileに対応
 	celload命令のパラメーターに既存の画像を再利用するオプションを追加
@@ -21,7 +21,6 @@ Hot Soup Processor ver3.7beta                       HSP : Hot Soup Processor
 	[HGIMG4] クローンされたノードが半透明表示できなかった不具合を修正
 	[HGIMG4] ヘルプに記載されたgpsetprmon/gpsetprmoff命令が使用できなかった不具合を修正
 	[HGIMG4] event_pos命令の補間オプションでデフォルト値がHGIMG3と異なる(リニア)だった不具合を修正
-	[HGIMG4] event_pos系命令の補間オプション+16でワーク値が参照されない不具合を修正
 	[HGIMG4] gpdraw命令に物理オブジェクトのデバッグ表示を行うオプションを追加
 	[HGIMG4] gpnodeinfo命令にノードのマテリアル情報を取得するオプションを追加
 	[HGIMG4] resフォルダ以下のテクスチャ読み込みに失敗した場合カレントフォルダも参照するように修正
