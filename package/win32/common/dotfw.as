@@ -403,6 +403,7 @@
 			celput DOTFW_STARID,0,star_zx,star_zy,rot
 		}
 	}
+	gmp_mode=1
 	repeat _dotfw_bgpic_max@
 	if bgp_id(cnt)=0 : continue
 		pos 0,0
@@ -415,18 +416,18 @@
 			bgp_gx(cnt)=0
 		}
 		if (x<0) {
-			x=bgp_sx(cnt)-sx
-			bgp_gx(cnt)=x
+			x=bgp_sx(cnt)-1
+			bgp_gx(cnt)=x<<10
 		}
-		if y=bgp_sy(cnt) {
+		if y>=bgp_sy(cnt) {
 			y=0
 			bgp_gy(cnt)=0
 		}
 		if (y<0) {
-			y=bgp_sy(cnt)-sy
-			bgp_gy(cnt)=y
+			y=bgp_sy(cnt)-1
+			bgp_gy(cnt)=y<<10
 		}
-		gmode 1,sx,sy:gcopy bgp_id(cnt),x,y
+		gmode gmp_mode,sx,sy,255:gcopy bgp_id(cnt),x,y
 		bgi=bgp_sx(cnt)-x
 		if bgi<sx {
 			pos bgi-1,0:gcopy bgp_id(cnt),0,y
@@ -435,6 +436,7 @@
 		if bgi<sy {
 			pos 0,bgi-1:gcopy bgp_id(cnt),x,0
 		}
+		gmp_mode=3
 	loop
 	;
 	return
