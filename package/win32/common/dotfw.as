@@ -2,7 +2,6 @@
 #define __DOT_FW
 
 #include "hsp3dish.as"
-#include "mod_res.as"
 #include "layer_fade.as"
 #include "mod_joystick2.as"
 
@@ -25,7 +24,7 @@
 	_dotfw_fps = 60					; フレームレート
 	_dotfw_sprmax = 256				; エフェクトスプライト最大数
 	_dotfw_essmax = 1024			; HSP3Dishスプライト最大数
-	_dotfw_bgpic_max = 4			; 背景画像BG最大数
+	_dotfw_bgpic_max = 6			; 背景BG最大数
 	_dotfw_frame = 0				; フレーム
 	_dotfw_enemy = 0				; 敵表示数
 	_dotfw_player = 0				; プレイヤー表示数
@@ -175,6 +174,11 @@
 #const global DOTFW_SPRSCALE 16
 #const global DOTFW_SPRSHIFT 4
 
+#define global DOTFW_BGID_TEXT (0)
+#define global DOTFW_BGID_BGMAP (1)
+#define global DOTFW_BGID_MAPMAX (4)
+
+
 #const SPR_NONE 0
 #const SPR_TIMER $fff
 #const SPR_OK $1000
@@ -184,6 +188,8 @@
 #const SPR_ANIM4 $10000
 #const SPR_ANIM8 $20000
 #const SPR_ANIM16 $30000
+
+#const BGID_MAP $10000
 
 #deffunc df_reset int _p1
 
@@ -209,7 +215,6 @@
 	_dotfw_rotbase@ = 6.28318530718 / 256
 	es_area  -DOTFW_CHRX,-DOTFW_CHRY,sx+DOTFW_CHRX,sy+DOTFW_CHRY
 
-	hsp3res_reset
 	setcls CLSMODE_NONE
 	;
 	redraw 0
@@ -405,8 +410,10 @@
 	}
 	gmp_mode=1
 	repeat _dotfw_bgpic_max@
-	if bgp_id(cnt)=0 : continue
-		pos 0,0
+	gmp_id = bgp_id(cnt)
+	if gmp_id=0 : continue
+	pos 0,0
+
 		bgp_gx(cnt)+=bgp_px(cnt)
 		bgp_gy(cnt)+=bgp_py(cnt)
 		x=bgp_gx(cnt)>>10
@@ -427,14 +434,22 @@
 			y=bgp_sy(cnt)-1
 			bgp_gy(cnt)=y<<10
 		}
-		gmode gmp_mode,sx,sy,255:gcopy bgp_id(cnt),x,y
+
+		if gmp_id&BGID_MAP {
+			gmode 1
+			gmp_id=gmp_id & (BGID_MAP-1)
+			es_putbg gmp_id,0,0,x,y				; マップBGを描画
+			continue
+		}
+
+		gmode gmp_mode,sx,sy,255:gcopy gmp_id,x,y
 		bgi=bgp_sx(cnt)-x
 		if bgi<sx {
-			pos bgi-1,0:gcopy bgp_id(cnt),0,y
+			pos bgi-1,0:gcopy gmp_id,0,y
 		}
 		bgi=bgp_sy(cnt)-y
 		if bgi<sy {
-			pos 0,bgi-1:gcopy bgp_id(cnt),x,0
+			pos 0,bgi-1:gcopy gmp_id,x,0
 		}
 		gmp_mode=3
 	loop
@@ -896,7 +911,13 @@
 	;	画像読み込み
 	;		var,"file"
 	;
-	hsp3res_load _p2
+	exist _p2
+	if strsize<0 {
+		dialog "No File Error ["+_p2+"]"
+		return
+	}
+	;
+	celload _p2
 	_p1 = stat
 	return
 
@@ -908,6 +929,8 @@
 	;
 	i=_p2
 	a=_p1
+	if a<0 | a>_dotfw_bgpic_max@ : dialog "Invalid BG#"+a : return
+
 	gsel i
 	bgp_id(a)=i
 	bgp_gx(a)=0
@@ -920,11 +943,96 @@
 	return
 
 
-#deffunc df_setbgmap int _p1, str _p2
+#deffunc df_setbgpicfile int _p1, str _p2
+
+	;	背景画像を指定
+	;		BGNo., "filename"
+	;
+	a=_p1
+	if a<0 | a>_dotfw_bgpic_max@ : dialog "Invalid BG#"+a : return
+
+	df_celload i, _p2
+	gsel i
+	bgp_id(a)=i
+	bgp_gx(a)=0
+	bgp_gy(a)=0
+	bgp_px(a)=0
+	bgp_py(a)=0
+	bgp_sx(a)=ginfo_sx
+	bgp_sy(a)=ginfo_sy
+	gsel 0
+	return
+
+
+#deffunc df_setbgmap int _p1, int _p2, int _p3, int _p4, int _p5, int _p6
+
+	;	背景マップを指定
+	;		BGNo., bufid, xsize, ysize, celsize, option
+	;
+	a=_p1
+	if a<0 | a>_dotfw_bgpic_max@ : dialog "Invalid BG#"+a : return
+	gmp_size=16
+	if _p5>0 : gmp_size=_p5
+
+	gmp_id= _p1+ DOTFW_BGID_BGMAP
+	gmp_buf = _p2
+	mapsx=sx/gmp_size
+	mapsy=sy/gmp_size
+	mapvx=mapsx : mapvy=mapsy
+	if _p3>0 : mapsx=_p3
+	if _p4>0 : mapsy=_p4
+	celdiv gmp_buf, gmp_size, gmp_size
+	if gmp_id=1 : dim gmp_map1,mapsx*mapsy : es_bgmap gmp_id, gmp_map1, mapsx, mapsy, mapvx, mapvy, gmp_buf : goto *bgmap_ent
+	if gmp_id=2 : dim gmp_map2,mapsx*mapsy : es_bgmap gmp_id, gmp_map2, mapsx, mapsy, mapvx, mapvy, gmp_buf : goto *bgmap_ent
+	if gmp_id=3 : dim gmp_map3,mapsx*mapsy : es_bgmap gmp_id, gmp_map3, mapsx, mapsy, mapvx, mapvy, gmp_buf : goto *bgmap_ent
+	if gmp_id=4 : dim gmp_map4,mapsx*mapsy : es_bgmap gmp_id, gmp_map4, mapsx, mapsy, mapvx, mapvy, gmp_buf : goto *bgmap_ent
+	dialog "Invalid BG#"+a
+	return
+*bgmap_ent
+	bgp_id(a)=gmp_id | BGID_MAP
+	bgp_gx(a)=0
+	bgp_gy(a)=0
+	bgp_px(a)=0
+	bgp_py(a)=0
+	bgp_sx(a)=gmp_size*mapsx
+	bgp_sy(a)=gmp_size*mapsy
+	return
+
+
+#deffunc df_getbgmap var _p1, int _p2
+
+	;	背景マップ変数を取得
+	;		var, BGNo.
+	;
+	a=_p2
+	if a<0 | a>_dotfw_bgpic_max@ | (bgp_id(_p2)&BGID_MAP)=0 : dialog "Invalid BG#"+a : return
+	gmp_id= _p2+ DOTFW_BGID_BGMAP
+	if gmp_id=1 : dup _p1, gmp_map1 : return
+	if gmp_id=2 : dup _p1, gmp_map2 : return
+	if gmp_id=3 : dup _p1, gmp_map3 : return
+	if gmp_id=4 : dup _p1, gmp_map4 : return
+	return
+
+
+#deffunc df_setbgmapfile int _p1, str _p2
 
 	;	背景マップを指定
 	;		BGNo., "MAPfile"
 	;
+	if a<0 | a>_dotfw_bgpic_max@ : dialog "Invalid BG#"+a : return
+	return
+
+
+#deffunc df_bgpoint int _p1, int _p2, int _p3
+
+	;	背景参照ポイントを指定
+	;		BGNo., x, y
+	;
+	a=_p1
+	bgp_gx(a)=_p2<<10
+	bgp_gy(a)=_p3<<10
+	bgp_px(a)=0
+	bgp_py(a)=0
 	return
 
 

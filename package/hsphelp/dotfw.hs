@@ -658,7 +658,7 @@ var        : ƒEƒCƒ“ƒhƒEID‚ª‘ã“ü‚³‚ê‚é•Ï”–¼
 ƒhƒbƒgƒtƒŒ[ƒ€ƒ[ƒNã‚ÅŽg—p‚·‚é‰æ‘œ‚ð’Ç‰Á‚µ‚Ü‚·B
 "filename"‚ÅŽw’è‚µ‚½‰æ‘œƒtƒ@ƒCƒ‹‚ð“Ç‚Ýž‚ÝAŽg—p‰Â”\‚Æ‚È‚Á‚½ƒEƒCƒ“ƒhƒEID‚ðvar‚ÅŽw’è‚µ‚½•Ï”‚É‘ã“ü‚µ‚Ü‚·B
 ‰æ‘œƒtƒ@ƒCƒ‹‚Æ‚µ‚Ä“Ç‚Ýž‚Ý‰Â”\‚ÈƒtƒH[ƒ}ƒbƒg‚ÍAcelload–½—ß‚Æ“¯—l‚Å‚·B
-“®ì‚Æ‚µ‚Ä‚ÍAcelload–½—ß‚É‹ß‚¢‚Å‚·‚ªAdf_celload‚Í‰æ‘œƒŠƒ\[ƒXƒ}ƒl[ƒWƒƒ[‚É‚æ‚èAd•¡‚µ‚½‰æ‘œ‚ð“Ç‚Ýž‚Ü‚È‚¢‚æ‚¤‚ÉŠÇ—‚³‚ê‚Ä‚¢‚Ü‚·B
+“®ì‚Æ‚µ‚Ä‚ÍAcelload–½—ß‚Æ“¯—l‚Å‚·B‰æ‘œƒŠƒ\[ƒX§Œä‚É‚æ‚èAd•¡‚µ‚½‰æ‘œ‚ð“Ç‚Ýž‚Ü‚È‚¢‚æ‚¤‚ÉŠÇ—‚³‚ê‚Ä‚¢‚Ü‚·B
 Žg—p‰Â”\‚É‚È‚Á‚½ƒEƒCƒ“ƒhƒEID‚ÍAƒXƒvƒ‰ƒCƒg‚â”wŒi‚Æ‚µ‚ÄŽg—p‚·‚é‚±‚Æ‚ª‰Â”\‚Å‚·B
 %href
 celload
@@ -677,15 +677,76 @@ p2(0) : ”wŒi‰æ‘œ‚ª‚ ‚éƒEƒCƒ“ƒhƒEID
 p1ƒpƒ‰ƒ[ƒ^[‚Å0‚©‚çŽn‚Ü‚éBG‚Ì”Ô†‚ðŽw’è‚µ‚Ü‚·BBG”Ô†‚Í•¡”‚Ì‰æ‘œ‚ð”wŒi‚Æ‚µ‚Ä•\Ž¦‚·‚éê‡‚ÌŽ¯•Ê‚ÉŽg—p‚µ‚Ü‚·B
 p2ƒpƒ‰ƒ[ƒ^[‚Å”wŒi‰æ‘œ‚ª‚ ‚éƒEƒCƒ“ƒhƒEID‚ðŽw’è‚µ‚Ü‚·B
 ‚ ‚ç‚©‚¶‚ßAdf_celload–½—ß‚È‚Ç‚Å‰æ‘œƒtƒ@ƒCƒ‹‚ð“Ç‚Ýž‚ñ‚Å‚¨‚­•K—v‚ª‚ ‚è‚Ü‚·B
-”wŒi‚ªÝ’è‚³‚ê‚½Œã‚ÍAdf_bgscroll‚ÅƒXƒNƒ[ƒ‹‚ðs‚¤‚±‚Æ‚ª‚Å‚«‚Ü‚·B
+”wŒi‚ªÝ’è‚³‚ê‚½Œã‚ÍAdf_bgpoint–½—ß‚Å•\Ž¦ˆÊ’u‚ð’²®‚µ‚½‚èAdf_bgscroll–½—ß‚ÅƒXƒNƒ[ƒ‹‚ðs‚¤‚±‚Æ‚ª‚Å‚«‚Ü‚·B
 %href
 df_celload
 df_bgscroll
+df_bgpoint
+
+
+%index
+df_setbgpicfile
+”wŒi‰æ‘œ‚ðÝ’è‚·‚é
+%prm
+p1,"filename"
+p1(0) : BG”Ô†(0`)
+"filename" : ‰æ‘œƒtƒ@ƒCƒ‹–¼
+%inst
+ƒhƒbƒgƒtƒŒ[ƒ€ƒ[ƒNã‚Å”wŒi‚Æ‚µ‚Ä•\Ž¦‚·‚é‰æ‘œ‚ðÝ’è‚µ‚Ü‚·B
+p1ƒpƒ‰ƒ[ƒ^[‚Å0‚©‚çŽn‚Ü‚éBG‚Ì”Ô†‚ðŽw’è‚µ‚Ü‚·BBG”Ô†‚Í•¡”‚Ì‰æ‘œ‚ð”wŒi‚Æ‚µ‚Ä•\Ž¦‚·‚éê‡‚ÌŽ¯•Ê‚ÉŽg—p‚µ‚Ü‚·B
+p2ƒpƒ‰ƒ[ƒ^[‚Å”wŒi‰æ‘œ‚Ìƒtƒ@ƒCƒ‹‚ðŽw’è‚µ‚Ü‚·B
+”wŒi‚ªÝ’è‚³‚ê‚½Œã‚ÍAdf_bgpoint–½—ß‚Å•\Ž¦ˆÊ’u‚ð’²®‚µ‚½‚èAdf_bgscroll–½—ß‚ÅƒXƒNƒ[ƒ‹‚ðs‚¤‚±‚Æ‚ª‚Å‚«‚Ü‚·B
+%href
+df_bgscroll
+df_bgpoint
 
 
 %index
 df_setbgmap
 ”wŒiƒ}ƒbƒv‚ðÝ’è‚·‚é
+%prm
+p1,p2,p3,p4,p5,p6
+p1(0)  : BG”Ô†(0`)
+p2(0)  : ƒ}ƒbƒv‰æ‘œ‚ª‚ ‚éƒEƒCƒ“ƒhƒEID
+p3(0)  : X•ûŒü‚Ìƒ}ƒbƒvƒTƒCƒY
+p4(0)  : Y•ûŒü‚Ìƒ}ƒbƒvƒTƒCƒY
+p5(16) : ƒ}ƒbƒvƒZƒ‹ƒTƒCƒY
+p6(0)  : ƒIƒvƒVƒ‡ƒ“’l
+%inst
+ƒhƒbƒgƒtƒŒ[ƒ€ƒ[ƒNã‚Å”wŒi‚Æ‚µ‚Ä•\Ž¦‚·‚éƒ}ƒbƒv‚ðÝ’è‚µ‚Ü‚·B
+ƒ}ƒbƒv‚ÍA•W€ƒXƒvƒ‰ƒCƒg‚ªƒTƒ|[ƒg‚·‚éBGƒ}ƒbƒv‚Æ“¯—l‚Ì‹@”\‚ðŽ‚Á‚Ä‚¢‚Ü‚·B
+“Á’è‚ÌƒTƒCƒY‚Åì‚ç‚ê‚½ƒZƒ‹‚ðAƒ^ƒCƒ‹ó‚É”z’u‚·‚é‚±‚Æ‚Å‘å‚«‚Èƒ}ƒbƒv‚Æ‚µ‚Ä•\Œ»‚·‚é‚±‚Æ‚ª‚Å‚«‚Ü‚·B
+p1ƒpƒ‰ƒ[ƒ^[‚Å0‚©‚çŽn‚Ü‚éBG‚Ì”Ô†‚ðŽw’è‚µ‚Ü‚·BBG”Ô†‚Í•¡”‚Ìƒ}ƒbƒv‚ð”wŒi‚Æ‚µ‚Ä•\Ž¦‚·‚éê‡‚ÌŽ¯•Ê‚ÉŽg—p‚µ‚Ü‚·B
+p2ƒpƒ‰ƒ[ƒ^[‚Åƒ}ƒbƒv‰æ‘œ‚ª‚ ‚éƒEƒCƒ“ƒhƒEID‚ðŽw’è‚µ‚Ü‚·B
+‚ ‚ç‚©‚¶‚ßAdf_celload–½—ß‚È‚Ç‚ÅƒZƒ‹‚Æ‚µ‚ÄŽg—p‚·‚é‰æ‘œƒtƒ@ƒCƒ‹‚ð“Ç‚Ýž‚ñ‚Å‚¨‚­•K—v‚ª‚ ‚è‚Ü‚·B
+(p3,p4)ƒpƒ‰ƒ[ƒ^[‚ÅAƒ}ƒbƒv‘S‘Ì‚ÌƒTƒCƒY‚ðŽw’è‚µ‚Ü‚·B0‚©È—ª’l‚¾‚Á‚½ê‡‚ÍA‰æ–Ê“à‚ÉŽû‚Ü‚éƒTƒCƒY‚ª“K—p‚³‚ê‚Ü‚·B
+p5ƒpƒ‰ƒ[ƒ^[‚Å1ƒ}ƒX‚ ‚½‚è‚ÌƒZƒ‹ƒTƒCƒY‚ðƒhƒbƒg’PˆÊ‚ÅŽw’è‚µ‚Ü‚·B•K‚¸XY•ûŒü‚Æ‚à“¯‚¶ƒTƒCƒY(³•ûŒ`)‚Å‚ ‚é•K—v‚ª‚ ‚è‚Ü‚·B0‚©È—ª’l‚¾‚Á‚½ê‡‚ÍA16‚ªÝ’è‚³‚ê‚Ü‚·B
+”wŒiƒ}ƒbƒv‚ªÝ’è‚³‚ê‚½Œã‚ÍAdf_bgpoint–½—ß‚Å•\Ž¦ˆÊ’u‚ð’²®‚µ‚½‚èAdf_bgscroll–½—ß‚ÅƒXƒNƒ[ƒ‹‚ðs‚¤‚±‚Æ‚ª‚Å‚«‚Ü‚·B
+%href
+df_setbgpic
+df_bgscroll
+df_bgpoint
+
+
+%index
+df_getbgmap
+”wŒiƒ}ƒbƒv‚ÌŠi”[•Ï”‚ðŽæ“¾‚·‚é
+%prm
+var,p1
+var   : ƒ}ƒbƒvƒf[ƒ^‚ª‘ã“ü‚³‚ê‚é•Ï”–¼
+p1(0) : BG”Ô†(0`)
+%inst
+ƒhƒbƒgƒtƒŒ[ƒ€ƒ[ƒNã‚Å”wŒi‚Æ‚µ‚Ä•\Ž¦‚·‚éƒ}ƒbƒv(df_setbgmap–½—ß‚ÅÝ’è‚µ‚½”wŒiƒ}ƒbƒv)‚ªŽg—p‚·‚é”z—ñƒf[ƒ^•Ï”‚ðŽæ“¾‚µ‚Ü‚·B
+var‚ÅŽw’è‚µ‚½•Ï”‚ªAƒ}ƒbƒv‚Ìƒf[ƒ^‚É’¼ÚƒAƒNƒZƒX‰Â”\‚È‚à‚Ì‚É‚È‚è‚Ü‚·B
+Žw’è‚³‚ê‚½•Ï”‚Íuƒ}ƒbƒvXƒTƒCƒY~ƒ}ƒbƒvYƒTƒCƒYv‚Ì—v‘f‚ðŽ‚Â®”Œ^‚Ì”z—ñ•Ï”‚É‚È‚è‚Ü‚·B
+”CˆÓ‚Ì—v‘fƒf[ƒ^‚ð‘‚«Š·‚¦‚é‚±‚Æ‚ÅA•\Ž¦‚³‚ê‚éƒ}ƒbƒv‚ÌƒZƒ‹”Ô†‚ð’¼Ú•ÏX‚Å‚«‚Ü‚·B
+%href
+df_setbgmap
+
+
+%index
+df_setbgmapfile
+”wŒiƒ}ƒbƒvƒtƒ@ƒCƒ‹‚ðÝ’è‚·‚é
 %prm
 p1,"filename"
 p1(0)      : BG”Ô†(0`)
@@ -695,6 +756,7 @@ p1(0)      : BG”Ô†(0`)
 %href
 df_setbgpic
 df_bgscroll
+df_bgpoint
 
 
 %index
@@ -723,6 +785,28 @@ p3ƒpƒ‰ƒ[ƒ^[‚ÅˆÚ“®ƒXƒs[ƒh‚ðŽw’è‚µ‚Ü‚·B100‚ðŽw’è‚µ‚½ê‡‚ÉA1ƒtƒŒ[ƒ€‚É1ƒhƒbƒ
 %href
 df_setbgpic
 df_setbgmap
+df_bgpoint
+
+
+%index
+df_bgpoint
+”wŒi•\Ž¦ƒ|ƒCƒ“ƒgˆÊ’u‚ðÝ’è‚·‚é
+%prm
+p1,p2,p3
+p1(0) : BG”Ô†(0`)
+p2(0) : X•ûŒü‚Ì•\Ž¦ƒ|ƒCƒ“ƒgˆÊ’u
+p3(0) : Y•ûŒü‚Ì•\Ž¦ƒ|ƒCƒ“ƒgˆÊ’u
+%inst
+ƒhƒbƒgƒtƒŒ[ƒ€ƒ[ƒNã‚Å”wŒi‚Æ‚µ‚ÄÝ’è‚³‚ê‚½‰æ‘œ‚âƒ}ƒbƒv‚Ì•\Ž¦ƒ|ƒCƒ“ƒgˆÊ’u‚ðÝ’è‚µ‚Ü‚·B
+•\Ž¦ƒ|ƒCƒ“ƒgˆÊ’u‚ÍA”wŒi•\Ž¦‚³‚ê‚é‰æ‘œ‚âƒ}ƒbƒv‚ªA‰æ–Ê‚ÌƒEƒCƒ“ƒhƒEƒTƒCƒY‚æ‚è‚à‘å‚«‚¢ê‡‚ÉA‚Ç‚ÌˆÊ’u‚©‚ç•\Ž¦‚ðŠJŽn‚·‚é‚©‚ðŽ¦‚·‚à‚Ì‚Å‚·B
+p1ƒpƒ‰ƒ[ƒ^[‚Å0‚©‚çŽn‚Ü‚éBG‚Ì”Ô†‚ðŽw’è‚µ‚Ü‚·BBG”Ô†‚Í•¡”‚Ì”wŒi‚ðŽ¯•Ê‚·‚éÛ‚ÉŽg—p‚µ‚Ü‚·B
+(p2,p3)ƒpƒ‰ƒ[ƒ^[‚Å•\Ž¦ƒ|ƒCƒ“ƒgˆÊ’u‚ðÝ’è‚µ‚Ü‚·B(0,0)‚ðŽw’è‚µ‚½ê‡‚ÍA‰æ‘œ‚âƒ}ƒbƒv‚Ì¶ã‚©‚ç•\Ž¦‚³‚ê‚Ü‚·B
+
+”wŒi•\Ž¦ƒ|ƒCƒ“ƒgˆÊ’u‚ðƒXƒNƒ[ƒ‹‚³‚¹‚éê‡‚ÍAdf_bgscroll–½—ß‚ðŽg—p‚·‚é‚±‚Æ‚ª‚Å‚«‚Ü‚·B
+%href
+df_setbgpic
+df_setbgmap
+df_bgscroll
 
 
 %index
