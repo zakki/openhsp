@@ -49,7 +49,6 @@ char *hsp3dish_getlog(void);		// for gameplay3d log
 
 static HspWnd *wnd;
 static Bmscr *bmscr;
-static Bmscr *master_bmscr;
 static HSPCTX *ctx;
 static int *type;
 static int *val;
@@ -391,7 +390,12 @@ static void cmdfunc_dialog( void )
 	strncpy( stmp, ptr, 0x4000-1 );
 	p1 = code_getdi( 0 );
 	ps = code_getds("");
+
+#ifdef HSPWIN
+	ctx->stat = hgio_dialog_ex(ctx, bmscr, p1, stmp, ps);
+#else
 	ctx->stat = hgio_dialog( p1, stmp, ps );
+#endif
 }
 
 
@@ -3694,6 +3698,36 @@ static int cmdfunc_extcmd( int cmd )
 			ctx->stat = sprite->setSpriteAddRotZoom(p1, p2, p3, p4);
 		}
 		else throw HSPERR_UNSUPPORTED_FUNCTION;
+		break;
+	}
+	case 0x22e:								// es_bgparam
+	{
+		//		set BGMAP parameter
+		//		es_bgparam bgno, gmode, bgoption
+		p1 = code_getdi(0);
+		p2 = code_getdi(0x3ff);
+		p3 = code_getdi(0);
+
+		if (sprite->sprite_enable) {
+			ctx->stat = sprite->setMapParam(p1, p2, p3);
+		}
+		break;
+	}
+	case 0x22f:								// es_bghit
+	{
+		//		get BGMAP hit info
+		//		es_bgparam bgno, x, y, sx, sy, dir, move
+		int p7;
+		p1 = code_getdi(0);
+		p2 = code_getdi(0);
+		p3 = code_getdi(0);
+		p4 = code_getdi(16);
+		p5 = code_getdi(16);
+		p6 = code_getdi(0);
+		p7 = code_getdi(0);
+		if (sprite->sprite_enable) {
+			ctx->stat = sprite->getMapMaskHit(p1, p2, p3, p4, p5, p6, p7);
+		}
 		break;
 	}
 

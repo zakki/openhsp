@@ -51,6 +51,8 @@
 #cmd es_setparent $22b
 #cmd es_modaxis $22c
 #cmd es_arot $22d
+#cmd es_bgparam $22e
+#cmd es_bghit $22f
 
 #define global es_fmes mes
 #define global es_bye
@@ -131,6 +133,9 @@
 #define global ESSPF_EFADEWIPE (11)
 #define global ESSPF_EFADE2 (12)
 #define global ESSPF_EFADEWIPE2 (13)
+
+#define global ESBGOPT_NOTRANS (1)
+#define global ESBGOPT_USEMASK (0x100)
 
 #endif
 

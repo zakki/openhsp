@@ -8,6 +8,7 @@
 #include <d3d8.h>
 #include <d3dx8.h>
 #include <math.h>
+#include <vector>
 
 #include "hgtex.h"
 
@@ -20,7 +21,7 @@
 
 //		Data
 //
-static		TEXINF texinf[TEXINF_MAX];
+static		std::vector<TEXINF> texinf;
 static		char ck1;			// カラーキー1
 static		char ck2;			// カラーキー2
 static		char ck3;			// カラーキー3
@@ -179,10 +180,7 @@ static void star_draw(char *dest, int sx, int sy, int mode)
 
 void TexInit( void )
 {
-	int i;
-	for(i=0;i<TEXINF_MAX;i++) {
-		texinf[i].flag = TEXMODE_NONE;
-	}
+	texinf.clear();
 
 	TexReset();
 	lpFont = (LPBYTE)malloc( 0x10000 );			// フォント取得用のワーク
@@ -203,11 +201,13 @@ void TexSetD3DParam( LPDIRECT3D8 p1, LPDIRECT3DDEVICE8 p2, D3DDISPLAYMODE p3 )
 
 void TexTerm( void )
 {
-	int i;
 	d3ddev->SetTexture( 0, NULL );
 	if ( lpFont != NULL ) { free( lpFont ); lpFont = NULL; }
-	for(i=0;i<TEXINF_MAX;i++) {
-		DeleteTex( i );
+
+	if (!texinf.empty()) {
+		for (size_t i = 0; i < texinf.size(); i++) {
+			DeleteTex(i);
+		}
 	}
 }
 
@@ -225,11 +225,16 @@ void TexReset( void )
 
 int GetNextTexID( void )
 {
-	int i,sel;
-	sel = -1;
-	for(i=0;i<TEXINF_MAX;i++) {
-		if ( texinf[i].flag == TEXMODE_NONE ) { sel=i;break; }
+	int sel;
+	sel = (int)texinf.size();
+
+	if (!texinf.empty()) {
+		for (int i = 0; i < sel; i++) {
+			if (texinf[i].flag == TEXMODE_NONE) return i;
+		}
 	}
+	TEXINF tinfo = { TEXMODE_NONE,0,0,0,0,0,NULL,0,0, 0,0, 0,0, 0,0 };
+	texinf.push_back(tinfo);
 	return sel;
 }
 
@@ -763,6 +768,53 @@ int RegistTexEmpty(int w, int h, int tmode)
 	sel = GetNextTexID();
 	SetTex(sel, flag, 0, sx, sy, sx, sy, lpTex);
 	return sel;
+}
+
+
+char* GetPixelMaskBuffer(char* fileptr, int size, int *xsize, int *ysize)
+{
+	//		画像のピクセルバッファを取得する
+	//		(画像ファイルのポインタを渡すと、αチャンルを2値化したバッファを返す)
+	//
+	int sx, sy;
+	HRESULT hr;
+	LPDIRECT3DTEXTURE8 pTex;
+	D3DSURFACE_DESC desc;
+	D3DFORMAT format;
+	D3DXIMAGE_INFO info;
+	D3DLOCKED_RECT lock;
+
+	format = D3DFMT_A8R8G8B8;
+	hr = D3DXCreateTextureFromFileInMemoryEx(d3ddev, fileptr, size, 0, 0, 0, 0, format,
+		D3DPOOL_MANAGED, D3DX_FILTER_NONE, D3DX_FILTER_NONE,
+		0, &info, NULL, &pTex);
+	if (FAILED(hr)) return NULL;
+
+	pTex->GetLevelDesc(0, &desc);
+	sx = desc.Width;
+	sy = desc.Height;
+
+	hr = pTex->LockRect(0, &lock, NULL, 0);
+	if (FAILED(hr)) return NULL;
+
+	int bwsize = sx * sy;
+	char* mem = (char *)malloc(bwsize);
+
+	// 転送先のサーフェイスの始点(32bit)
+	int i;
+	char a1;
+	char* p = (char*)lock.pBits;
+	char* src = mem;
+	for (i = 0; i < bwsize; i++) {
+		*src++ = p[3];
+		p += 4;
+	}
+	pTex->UnlockRect(0);
+	*xsize = sx;
+	*ysize = sy;
+
+	RELEASE(pTex);
+	return mem;
 }
 
 

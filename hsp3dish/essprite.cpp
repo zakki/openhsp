@@ -93,6 +93,7 @@ int essprite::init(int maxsprite, int maxchr, int rotrate, int maxmap)
 	if (mem_map == NULL) {
 		return -1;
 	}
+	initMap();
 
 	vpx = (int*)malloc(sizeof(int) * rrate);
 	if (vpx == NULL) {
@@ -128,9 +129,6 @@ int essprite::init(int maxsprite, int maxchr, int rotrate, int maxmap)
 		chr->colsx = 32; chr->colsy = 32;
 		chr->lktime = 0; chr->lknum = 0;
 	}
-	for (a = 0; a < mapkaz; a++) {
-		mem_map[a].varptr = NULL;
-	}
 
 	def_fspx = 0;
 	def_fspy = 0x100;
@@ -150,6 +148,7 @@ void essprite::reset(void)
 	sprite_enable = false;
 
 	if (mem_map != NULL) {
+		resetMap();
 		free(mem_map);
 		mem_map = NULL;
 	}
@@ -1428,6 +1427,44 @@ int essprite::setSpriteRotate(int id, int angle, int zoomx, int zoomy, int rate)
 */
 /*------------------------------------------------------------*/
 
+
+void essprite::initMap(void)
+{
+	int a;
+	for (a = 0; a < mapkaz; a++) {
+		mem_map[a].varptr = NULL;
+		mem_map[a].maskptr = NULL;
+	}
+}
+
+
+void essprite::resetMap(void)
+{
+	int a;
+	for (a = 0; a < mapkaz; a++) {
+		deleteMap(a);
+	}
+}
+
+
+void essprite::deleteMap(int id)
+{
+	if ((id < 0) || (id >= mapkaz)) return;
+	mem_map[id].varptr = NULL;
+	deleteMapMask(id);
+}
+
+
+void essprite::deleteMapMask(int id)
+{
+	if ((id < 0) || (id >= mapkaz)) return;
+	if (mem_map[id].maskptr != NULL) {
+		free(mem_map[id].maskptr);
+	}
+	mem_map[id].maskptr = NULL;
+}
+
+
 BGMAP* essprite::getMap(int id)
 {
 	if ((id < 0) || (id >= mapkaz)) return NULL;
@@ -1446,6 +1483,7 @@ int essprite::setMap(int def_bgno, int* varptr, int mapsx, int mapsy, int sx, in
 	if ((sx < 1) || (sy < 1)) return -1;
 
 	bg->varptr = varptr;
+	bg->maskptr = NULL;
 	bg->mapsx = mapsx;
 	bg->mapsy = mapsy;
 	bg->sizex = sx;
@@ -1455,6 +1493,13 @@ int essprite::setMap(int def_bgno, int* varptr, int mapsx, int mapsy, int sx, in
 	bg->buferid = buffer;
 	bg->bgoption = option;
 	bg->tpflag = 0x3ff;
+
+	if (option & ESMAP_OPT_NOTRANS) {
+		bg->tpflag = 0;
+	}
+	if (option & ESMAP_OPT_USEMASK) {
+		updateMapMask(bgno);
+	}
 
 	return bgno;
 }
@@ -1523,6 +1568,8 @@ int essprite::putMap(int xx, int yy, int bgno )
 	int x,y,i,j,sx,sy,vx,vy,vpx,vpy,ofsx,ofsy,divx,divy;
 	int* mapsrc;
 	int* p;
+	int celno;
+	bool transflag = true;
 
 	BGMAP* bg = getMap(bgno);
 	if (bg == NULL) return -1;
@@ -1548,6 +1595,7 @@ int essprite::putMap(int xx, int yy, int bgno )
 	y = yy - vpy;
 
 	setTransparentMode(bg->tpflag);
+	if ((bg->tpflag >> 8) == 0) transflag = false;
 
 	ofsy = vy/divy;
 	for (j = 0; j < sy;j++) {
@@ -1557,12 +1605,43 @@ int essprite::putMap(int xx, int yy, int bgno )
 		p += bg->mapsx * (ofsy % bg->mapsy);
 		ofsx = vx/divx;
 		for (i = 0; i < sx;i++) {
-			bmscr->CelPut(bm, p[ofsx % bg->mapsx]);
+			celno = p[ofsx % bg->mapsx];
+			if (celno == 0) {
+				if (transflag) {
+					bmscr->cx += divx;
+					ofsx++;
+					continue;
+				}
+			}
+			bmscr->CelPut(bm, celno);
 			ofsx++;
 		}
 		y+=bm->divsy;
 		ofsy++;
 	}
+	return 0;
+}
+
+
+int essprite::setMapParam(int bgno, int tp, int option)
+{
+	BGMAP* bg = getMap(bgno);
+	if (bg == NULL) return -1;
+
+	bg->tpflag = tp;
+	bg->bgoption = option;
+	return 0;
+}
+
+
+int essprite::updateMapMask(int bgno)
+{
+	return 0;
+}
+
+
+int essprite::getMapMaskHit(int bgno, int x, int y, int sizex, int sizey, int direction, int move)
+{
 	return 0;
 }
 

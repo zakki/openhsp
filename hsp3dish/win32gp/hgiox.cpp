@@ -78,7 +78,9 @@ extern SDL_Window *window;
 #include "../hsp3ext.h"
 
 #ifdef HSPWIN
+#include "../win32/filedlg.h"
 void hgio_fontsystem_win32_init(HWND wnd);
+int hgio_dialog_ex(HSPCTX* ctx, Bmscr* bmscr, int mode, char* str1, char* str2);
 #endif
 
 #define RELEASE(x) 	if(x){x->Release();x=NULL;}
@@ -823,6 +825,38 @@ int hgio_redraw( BMSCR *bm, int flag )
 	return 0;
 }
 
+
+#ifdef HSPWIN
+int hgio_dialog_ex(HSPCTX* ctx, Bmscr* bmscr, int mode, char* str1, char* str2)
+{
+	HWND hwnd;
+	int i, res;
+	i = 0;
+
+	hwnd = master_wnd;
+
+	if (mode >= 64) {
+		return 0;
+	}
+	if (mode & 16) {
+		res = fd_dialog(hwnd, mode & 3, str1, str2);
+		if (res == 0) {
+			ctx->refstr[0] = 0;
+		}
+		else {
+			strncpy(ctx->refstr, fd_getfname(), HSPCTX_REFSTR_MAX - 1);
+		}
+		return res;
+	}
+	if (mode & 32) {
+		i = (int)fd_selcolor(hwnd, mode & 1);
+		if (i == -1) return 0;
+		bmscr->Setcolor2(i);
+		return 1;
+	}
+	return hgio_dialog(mode, str1, str2);
+}
+#endif
 
 int hgio_dialog( int mode, char *str1, char *str2 )
 {

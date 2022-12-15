@@ -189,6 +189,7 @@
     <ClCompile Include="..\sysreq.cpp" />
     <ClCompile Include="..\texmes.cpp" />
     <ClCompile Include="dxsnd.cpp" />
+    <ClCompile Include="filedlg.cpp" />
     <ClCompile Include="hgiox.cpp" />
     <ClCompile Include="hgtex.cpp" />
     <ClCompile Include="hsp3dish.cpp" />
@@ -236,6 +237,7 @@
     <ClInclude Include="..\texmes.h" />
     <ClInclude Include="..\webtask.h" />
     <ClInclude Include="dxsnd.h" />
+    <ClInclude Include="filedlg.h" />
     <ClInclude Include="hginc.h" />
     <ClInclude Include="hgiox.h" />
     <ClInclude Include="hgtex.h" />

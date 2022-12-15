@@ -15,6 +15,7 @@
 #include "../sysreq.h"
 
 #include "hgtex.h"
+#include "filedlg.h"
 
 #include "../texmes.h"
 #include "../emscripten/fontsystem.h"
@@ -942,6 +943,35 @@ int hgio_redraw( BMSCR *bm, int flag )
 	return 0;
 }
 
+int hgio_dialog_ex(HSPCTX* ctx, Bmscr* bmscr, int mode, char* str1, char* str2)
+{
+	HWND hwnd;
+	int i, res;
+	i = 0;
+
+	hwnd = master_wnd;
+
+	if (mode >= 64) {
+		return 0;
+	}
+	if (mode & 16) {
+		res = fd_dialog(hwnd, mode & 3, str1, str2);
+		if (res == 0) {
+			ctx->refstr[0] = 0;
+		}
+		else {
+			strncpy(ctx->refstr, fd_getfname(), HSPCTX_REFSTR_MAX - 1);
+		}
+		return res;
+	}
+	if (mode & 32) {
+		i = (int)fd_selcolor(hwnd, mode & 1);
+		if (i == -1) return 0;
+		bmscr->Setcolor2( i );
+		return 1;
+	}
+	return hgio_dialog(mode,str1,str2);
+}
 
 int hgio_dialog( int mode, char *str1, char *str2 )
 {
@@ -949,6 +979,7 @@ int hgio_dialog( int mode, char *str1, char *str2 )
 	//
 	int i,res;
 	i = 0;
+
 	if (mode&1) i|=MB_ICONEXCLAMATION; else i|=MB_ICONINFORMATION;
 	if (mode&2) i|=MB_YESNO; else i|=MB_OK;
 	res = MessageBox( master_wnd, str1, str2, i );
@@ -983,6 +1014,25 @@ int hgio_texload( BMSCR *bm, char *fname )
 	bm->texid = i;
 
 	return 0;
+}
+
+
+char* hgio_texmaskbuffer(BMSCR* bm, char* resname)
+{
+	//		マスクバッファ作成
+	//
+	char* p;
+	int fsize, xsize, ysize;
+	fsize = OpenMemFilePtr(resname);				// HSPリソースを含めて検索する
+	p = GetPixelMaskBuffer(GetMemFilePtr(), fsize, &xsize, &ysize);
+	CloseMemFilePtr();
+	if (p) {
+		if ((xsize == bm->sx) || (ysize == bm->sy)) {
+			return p;
+		}
+		free(p);
+	}
+	return NULL;
 }
 
 

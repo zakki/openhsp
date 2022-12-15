@@ -9,5 +9,6 @@
 
 int hgio_device_restore( void );
 void hgio_text_render( void );
+int hgio_dialog_ex(HSPCTX* ctx, Bmscr* bmscr, int mode, char* str1, char* str2);
 
 #endif

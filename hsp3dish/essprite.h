@@ -46,7 +46,8 @@ extern "C" {
 
 #define ESSPLINK_BGMAP (0x10000)
 
-#define ESMAP_OPT_IGNORE0 (1)
+#define ESMAP_OPT_NOTRANS (1)
+#define ESMAP_OPT_USEMASK (0x100)
 
 #define ESSPF_TIMEWIPE (1)
 #define ESSPF_BLINK (2)
@@ -105,6 +106,7 @@ typedef struct CHRREF
 typedef struct BGMAP
 {
 	int* varptr;		//	Map reference ptr.
+	int* maskptr;		//	Map Mask reference ptr.
 	int mapsx, mapsy;	//	Map alloc size
 	int sizex, sizey;	//	Map view size (cel)
 	int viewx, viewy;	//	Map view axis
@@ -172,10 +174,17 @@ public:
 	int checkCollisionSub(SPOBJ *sp);
 	int checkCollision(int spno, int chktype);
 
+	void initMap(void);
+	void resetMap(void);
+	void deleteMap(int id);
+	void deleteMapMask(int id);
 	int putMap(int x, int y, int id);
 	int setMap(int bgno, int* varptr, int mapsx, int mapsy, int sx, int sy, int buffer, int option);
 	int setMapPos(int bgno, int x, int y);
 	int setMapMes(int bgno, int x, int y, char *msg, int offset=0);
+	int setMapParam(int bgno, int tp, int option);
+	int updateMapMask(int bgno);
+	int getMapMaskHit(int bgno,int x,int y, int sizex, int sizey, int direction, int move);
 
 	int setSpriteFlag(int spno, int flag);
 	int setSpritePosChr(int spno, int xx, int yy, int chrno, int option, int pri);

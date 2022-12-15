@@ -423,6 +423,7 @@ public:
 
 	void Viewcalc_reset(void);
 	int Viewcalc_set(int type, HSPREAL x, HSPREAL y, HSPREAL p_sx, HSPREAL p_sy );
+	char* getPixelMaskBuffer(void);
 
 	//
 	//		Window data structure

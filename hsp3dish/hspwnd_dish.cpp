@@ -7,16 +7,14 @@
 #include <stdlib.h>
 #include <string.h>
 
-#include "../hsp3/hsp3config.h"
-#include "../hsp3/hsp3debug.h"
-#include "../hsp3/dpmread.h"
-#include "../hsp3/strbuf.h"
-#include "../hsp3/strnote.h"
-
 #include "hgio.h"
 #include "supio.h"
 #include "sysreq.h"
 #include "hspwnd.h"
+
+#include "../hsp3/hsp3debug.h"
+#include "../hsp3/strbuf.h"
+#include "../hsp3/strnote.h"
 
 HspWnd *curwnd;
 
@@ -384,6 +382,16 @@ void Bmscr::Init( char *fname )
 	//getpath( fname, _name, 8 );
 	strncpy( resname, fname, RESNAME_MAX-1 );
 	//Alertf( "(%d,%d)",sx,sy );
+}
+
+
+char* Bmscr::getPixelMaskBuffer(void)
+{
+#ifdef HSPWIN
+	return hgio_texmaskbuffer((BMSCR*)this, resname);
+#else
+	return NULL;
+#endif
 }
 
 
