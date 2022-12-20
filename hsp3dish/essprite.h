@@ -49,6 +49,19 @@ extern "C" {
 #define ESMAP_OPT_NOTRANS (1)
 #define ESMAP_OPT_USEMASK (0x100)
 
+#define ESMAP_ATTR_MAX (0x10000)
+#define ESMAP_ATTR_NONE (0)			//	侵入可能な場所(デフォルト)
+#define ESMAP_ATTR_ITEM (1)			//	侵入可能でヒット判定(アイテム)
+#define ESMAP_ATTR_HOLD (128)		//	侵入可能だが足場になる
+#define ESMAP_ATTR_WALL (192)		//	侵入不可の壁
+
+#define ESMAPHIT_INFOMAX (64)
+#define ESMAPHIT_NONE (0)
+#define ESMAPHIT_HITX (1)
+#define ESMAPHIT_HITY (2)
+#define ESMAPHIT_HIT (3)
+#define ESMAPHIT_EVENT (4)
+
 #define ESSPF_TIMEWIPE (1)
 #define ESSPF_BLINK (2)
 #define ESSPF_BLINKWIPE (3)
@@ -103,16 +116,30 @@ typedef struct CHRREF
 	int colsx, colsy;	//	Collision size of X,Y
 } CHRREF;
 
+typedef struct BGHITINFO
+{
+	int result;			//	hit result
+	int celid;			//	hit Cel ID
+	int attr;			//	hit Attribute
+	int myx, myy;		//	hit Map axis
+	int x, y;			//	last Player axis (pixel)
+} BGHITINFO;
+
 typedef struct BGMAP
 {
-	int* varptr;		//	Map reference ptr.
-	int* maskptr;		//	Map Mask reference ptr.
-	int mapsx, mapsy;	//	Map alloc size
-	int sizex, sizey;	//	Map view size (cel)
-	int viewx, viewy;	//	Map view axis
-	int buferid;		//	Map parts buffer ID
-	int bgoption;		//	BG option
-	int tpflag;			//	合成パラメーター
+	int* varptr;			//	Map reference ptr.
+	int* maskptr;			//	Map Mask reference ptr.
+	int mapsx, mapsy;		//	Map alloc size
+	int sizex, sizey;		//	Map view size (cel)
+	int viewx, viewy;		//	Map view axis
+	int divx, divy;			//	Cel Div size
+	int buferid;			//	Map parts buffer ID
+	int bgoption;			//	BG option
+	int tpflag;				//	合成パラメーター
+	unsigned char *attr;	//	Cel Attribute
+	int maphit;				//	Map hit count
+	int sx, sy;				//	Whole Map Size
+	BGHITINFO bghitinfo[ESMAPHIT_INFOMAX];	//	Map hit info
 } BGMAP;
 
 typedef struct SPOBJ
@@ -178,13 +205,20 @@ public:
 	void resetMap(void);
 	void deleteMap(int id);
 	void deleteMapMask(int id);
+	void deleteMapAttribute(int id);
 	int putMap(int x, int y, int id);
 	int setMap(int bgno, int* varptr, int mapsx, int mapsy, int sx, int sy, int buffer, int option);
 	int setMapPos(int bgno, int x, int y);
 	int setMapMes(int bgno, int x, int y, char *msg, int offset=0);
 	int setMapParam(int bgno, int tp, int option);
+	void resetMapHitInfo(int bgno);
+	BGHITINFO* getMapHitInfo(int bgno, int index);
+	BGHITINFO* addMapHitInfo(int bgno, int result, int celid, int attr, int x, int y, int myx, int myy);
+	int setMapAttribute(int bgno, int start, int end, int attribute);
 	int updateMapMask(int bgno);
-	int getMapMaskHit(int bgno,int x,int y, int sizex, int sizey, int direction, int move);
+	int getMapMask(BGMAP *map, int x, int y);
+	int getMapMaskHit(int bgno,int x,int y, int sizex, int sizey, int px, int py);
+	int getMapMaskHitSub( int bgno, int x, int y, int sizex, int sizey, bool wallonly=false, bool downdir=false );
 
 	int setSpriteFlag(int spno, int flag);
 	int setSpritePosChr(int spno, int xx, int yy, int chrno, int option, int pri);
@@ -271,6 +305,11 @@ private:
 	int		fade_mode, fade_upd, fade_val, fade_tar;
 
 	int		framecount;			// frame count
+	int		hitattr;			// Map hit attr backup
+	int		hitcelid;			// Map hit cel backup
+	int		hitmapx, hitmapy;	// Map hit axis backup
+	int		bak_hitmapx;		// Map hit axis backup (previous)
+	int		bak_hitmapy;		// Map hit axis backup (previous)
 };
 
 //	sprite pack info ( for sort )

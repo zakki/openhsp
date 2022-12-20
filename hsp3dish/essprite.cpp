@@ -1434,6 +1434,7 @@ void essprite::initMap(void)
 	for (a = 0; a < mapkaz; a++) {
 		mem_map[a].varptr = NULL;
 		mem_map[a].maskptr = NULL;
+		mem_map[a].attr = NULL;
 	}
 }
 
@@ -1452,6 +1453,7 @@ void essprite::deleteMap(int id)
 	if ((id < 0) || (id >= mapkaz)) return;
 	mem_map[id].varptr = NULL;
 	deleteMapMask(id);
+	deleteMapAttribute(id);
 }
 
 
@@ -1462,6 +1464,16 @@ void essprite::deleteMapMask(int id)
 		free(mem_map[id].maskptr);
 	}
 	mem_map[id].maskptr = NULL;
+}
+
+
+void essprite::deleteMapAttribute(int id)
+{
+	if ((id < 0) || (id >= mapkaz)) return;
+	if (mem_map[id].attr != NULL) {
+		free(mem_map[id].attr);
+	}
+	mem_map[id].attr = NULL;
 }
 
 
@@ -1482,6 +1494,8 @@ int essprite::setMap(int def_bgno, int* varptr, int mapsx, int mapsy, int sx, in
 	if ((mapsx < 1) || (mapsy < 1)) return -1;
 	if ((sx < 1) || (sy < 1)) return -1;
 
+	deleteMap(bgno);
+
 	bg->varptr = varptr;
 	bg->maskptr = NULL;
 	bg->mapsx = mapsx;
@@ -1493,6 +1507,13 @@ int essprite::setMap(int def_bgno, int* varptr, int mapsx, int mapsy, int sx, in
 	bg->buferid = buffer;
 	bg->bgoption = option;
 	bg->tpflag = 0x3ff;
+	bg->maphit = 0;
+
+	Bmscr* bm = hspwnd->GetBmscrSafe(bg->buferid);
+	if (bm == NULL) return -1;
+	bg->divx = bm->divsx; bg->divy = bm->divsy;
+	bg->sx = mapsx * bg->divx;
+	bg->sy = mapsy * bg->divy;
 
 	if (option & ESMAP_OPT_NOTRANS) {
 		bg->tpflag = 0;
@@ -1500,6 +1521,8 @@ int essprite::setMap(int def_bgno, int* varptr, int mapsx, int mapsy, int sx, in
 	if (option & ESMAP_OPT_USEMASK) {
 		updateMapMask(bgno);
 	}
+
+	bg->attr = (unsigned char *)calloc(ESMAP_ATTR_MAX,1);		// alloc map attriubte
 
 	return bgno;
 }
@@ -1576,7 +1599,7 @@ int essprite::putMap(int xx, int yy, int bgno )
 
 	Bmscr* bm = hspwnd->GetBmscrSafe(bg->buferid);
 	if (bm == NULL) return -1;
-	divx = bm->divsx; divy = bm->divsy;
+	divx = bg->divx; divy = bg->divy;
 
 	mapsrc = bg->varptr;
 	if (mapsrc == NULL) return -1;
@@ -1605,7 +1628,7 @@ int essprite::putMap(int xx, int yy, int bgno )
 		p += bg->mapsx * (ofsy % bg->mapsy);
 		ofsx = vx/divx;
 		for (i = 0; i < sx;i++) {
-			celno = p[ofsx % bg->mapsx];
+			celno = ( p[ofsx % bg->mapsx] ) & 0xffff;
 			if (celno == 0) {
 				if (transflag) {
 					bmscr->cx += divx;
@@ -1634,15 +1657,216 @@ int essprite::setMapParam(int bgno, int tp, int option)
 }
 
 
+int essprite::setMapAttribute(int bgno, int start, int end, int attribute)
+{
+	BGMAP* bg = getMap(bgno);
+	if (bg == NULL) return -1;
+
+	int i = start;
+	while (1) {
+		if (i > end) break;
+		bg->attr[i] = (unsigned char)attribute;
+		i++;
+	}
+	return 0;
+}
+
+
 int essprite::updateMapMask(int bgno)
 {
 	return 0;
 }
 
 
-int essprite::getMapMaskHit(int bgno, int x, int y, int sizex, int sizey, int direction, int move)
+void essprite::resetMapHitInfo(int bgno)
 {
-	return 0;
+	BGMAP* bg = getMap(bgno);
+	if (bg == NULL) return;
+
+	bg->maphit = 0;
+
+	bak_hitmapx = -1;
+	bak_hitmapy = -1;
+}
+
+BGHITINFO* essprite::addMapHitInfo(int bgno, int result, int celid, int attr, int myx, int myy, int xx, int yy)
+{
+	BGMAP* bg = getMap(bgno);
+	if (bg == NULL) return NULL;
+
+	BGHITINFO* info = getMapHitInfo(bgno, bg->maphit);
+	if (info == NULL) return NULL;
+	info->result = result;
+	info->celid = celid;
+	info->attr = attr;
+	info->myx = myx;
+	info->myx = myx;
+	info->x = xx;
+	info->y = yy;
+
+	bg->maphit++;
+	return info;
+}
+
+
+BGHITINFO* essprite::getMapHitInfo(int bgno, int index)
+{
+	BGMAP* bg = getMap(bgno);
+	if (bg == NULL) return NULL;
+
+	if ((index < 0) || (index >= ESMAPHIT_INFOMAX)) return NULL;
+	BGHITINFO* info = &bg->bghitinfo[index];
+	return info;
+}
+
+
+int essprite::getMapMask(BGMAP* map, int x, int y)
+{
+	unsigned char* attr = map->attr;
+	if (attr == NULL) return 0;
+
+	if ((x < 0) || (x >= map->sx)) return 0;
+	if ((y < 0) || (y >= map->sy)) return 0;
+
+	int* p = map->varptr;
+	hitmapx = (x / map->divx);
+	hitmapy = (y / map->divy);
+	hitcelid = p[ hitmapy * map->mapsx + hitmapx ] & 0xffff;
+	unsigned char a1 = attr[hitcelid];
+	hitattr = (int)a1;
+	if (hitattr >= ESMAP_ATTR_WALL) return ESMAPHIT_HIT;
+	if (hitattr >= ESMAP_ATTR_ITEM) return ESMAPHIT_EVENT;
+	return ESMAPHIT_NONE;
+}
+
+
+int essprite::getMapMaskHitSub(int bgno, int x, int y, int sizex, int sizey, bool wallonly, bool downdir)
+{
+	int i, xx, yy;
+	BGMAP* bg = getMap(bgno);
+	if (bg == NULL) return 0;
+
+	if (sizex == 1) {							// 横方向チェック
+		for (yy = 0; yy < sizey; yy++) {
+			i = getMapMask(bg, x, y + yy);
+			if (i) {
+				if (wallonly) {
+					if (i == ESMAPHIT_HIT) return ESMAPHIT_HIT;
+				}
+				else {
+					if (hitattr < ESMAP_ATTR_HOLD) {
+						if ((bak_hitmapx != hitmapx) || (bak_hitmapy != hitmapy)) {
+							addMapHitInfo(bgno, ESMAPHIT_EVENT, hitcelid, hitattr, hitmapx, hitmapy, x, y + yy);	// ITEM
+							bak_hitmapx = hitmapx; bak_hitmapy = hitmapy;
+						}
+					}
+				}
+			}
+		}
+		return ESMAPHIT_NONE;
+	}
+	if (sizey == 1) {							// 縦方向チェック
+		for (xx = 0; xx < sizex; xx++) {
+			i = getMapMask(bg, x + xx, y);
+			if (i) {
+				if (wallonly) {
+					if (downdir) {
+						if (hitattr >= ESMAP_ATTR_HOLD) return ESMAPHIT_HIT;		// 下方向のみ足場をヒットとする
+					}
+					else {
+						if (i == ESMAPHIT_HIT) return ESMAPHIT_HIT;
+					}
+				}
+				else {
+					if (hitattr < ESMAP_ATTR_HOLD) {
+						if ((bak_hitmapx != hitmapx) || (bak_hitmapy != hitmapy)) {
+							addMapHitInfo(bgno, ESMAPHIT_EVENT, hitcelid, hitattr, hitmapx, hitmapy, x + xx, y);	// ITEM
+							bak_hitmapx = hitmapx; bak_hitmapy = hitmapy;
+						}
+					}
+				}
+			}
+		}
+		return ESMAPHIT_NONE;
+	}
+	return ESMAPHIT_NONE;
+}
+
+
+int essprite::getMapMaskHit(int bgno, int x, int y, int sizex, int sizey, int px, int py)
+{
+	//		(x,y)から(sx,sy)サイズの領域をマップパーツと接触判定する
+	//		移動量を(px,py)に入れる、結果はBGHITINFOに返る
+	//
+	int res, xx, yy, orgx, orgy;
+	int left;
+	int curadd;
+
+	orgx = x; orgy = y;
+	xx = x; yy = y;
+
+	curadd = 0;
+
+	BGMAP* bg = getMap(bgno);
+	if (bg == NULL) return 0;
+
+	resetMapHitInfo(bgno);
+
+	res = 0;
+
+	if (px != 0) {
+		if (px > 0) {
+			left = px;
+			xx = x + sizex;
+			curadd = 1;
+		}
+		if (px < 0) {
+			left = -px;
+			xx = x - 1;
+			curadd = -1;
+		}
+		while (1) {
+			if (left == 0) break;
+			left--;
+			res = getMapMaskHitSub(bgno, xx, yy, 1, sizey, true, false);
+			if (res) {
+				addMapHitInfo(bgno, ESMAPHIT_HITX, hitcelid, hitattr, hitmapx, hitmapy, orgx, orgy);
+				break;
+			}
+			getMapMaskHitSub(bgno, xx, yy, 1, sizey);
+			xx += curadd;
+			orgx += curadd;
+		}
+	}
+
+	xx = orgx; yy = orgy;
+	if (py != 0) {
+		if (py > 0) {
+			left = py;
+			yy = yy + sizey;
+			curadd = 1;
+		}
+		if (py < 0) {
+			left = -py;
+			yy = yy - 1;
+			curadd = -1;
+		}
+		while (1) {
+			if (left == 0) break;
+			left--;
+			res = getMapMaskHitSub(bgno, xx, yy, sizex, 1, true, curadd==1);
+			if (res) {
+				addMapHitInfo(bgno, ESMAPHIT_HITY, hitcelid, hitattr, hitmapx, hitmapy, orgx, orgy);
+				break;
+			}
+			getMapMaskHitSub(bgno, xx, yy, sizex, 1);
+			yy += curadd;
+			orgy += curadd;
+		}
+	}
+
+	addMapHitInfo(bgno, ESMAPHIT_NONE, 0, 0, 0, 0, orgx, orgy);
+	return bg->maphit;
 }
 
 

@@ -52,7 +52,9 @@
 #cmd es_modaxis $22c
 #cmd es_arot $22d
 #cmd es_bgparam $22e
-#cmd es_bghit $22f
+#cmd es_bgattr $22f
+#cmd es_bghit $230
+#cmd es_getbghit $231
 
 #define global es_fmes mes
 #define global es_bye
@@ -136,6 +138,19 @@
 
 #define global ESBGOPT_NOTRANS (1)
 #define global ESBGOPT_USEMASK (0x100)
+
+#define global ESMAP_ATTR_MAX (0x10000)
+#define global ESMAP_ATTR_NONE (0)			//	侵入可能な場所(デフォルト)
+#define global ESMAP_ATTR_ITEM (1)			//	侵入可能でヒット判定(アイテム)
+#define global ESMAP_ATTR_HOLD (128)		//	侵入可能だが足場になる
+#define global ESMAP_ATTR_WALL (192)		//	侵入不可の壁
+
+#define global ESMAPHIT_NONE (0)
+#define global ESMAPHIT_HITX (1)
+#define global ESMAPHIT_HITY (2)
+#define global ESMAPHIT_EVENT (4)
+
+
 
 #endif
 

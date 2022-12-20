@@ -3713,10 +3713,24 @@ static int cmdfunc_extcmd( int cmd )
 		}
 		break;
 	}
-	case 0x22f:								// es_bghit
+	case 0x22f:								// es_bgattr
 	{
-		//		get BGMAP hit info
-		//		es_bgparam bgno, x, y, sx, sy, dir, move
+		//		set BGMAP cel attribute
+		//		es_bgparam bgno, start, end, attribute
+		p1 = code_getdi(0);
+		p2 = code_getdi(0);
+		p3 = code_getdi(0xffff);
+		p4 = code_getdi(0);
+
+		if (sprite->sprite_enable) {
+			ctx->stat = sprite->setMapAttribute(p1, p2, p3, p4);
+		}
+		break;
+	}
+	case 0x230:								// es_bghit
+	{
+		//		make BGMAP hit info
+		//		es_bghit bgno, x, y, sx, sy, px, py
 		int p7;
 		p1 = code_getdi(0);
 		p2 = code_getdi(0);
@@ -3725,8 +3739,41 @@ static int cmdfunc_extcmd( int cmd )
 		p5 = code_getdi(16);
 		p6 = code_getdi(0);
 		p7 = code_getdi(0);
+		ctx->stat = -1;
 		if (sprite->sprite_enable) {
 			ctx->stat = sprite->getMapMaskHit(p1, p2, p3, p4, p5, p6, p7);
+		}
+		break;
+	}
+	case 0x231:								// es_getbghit
+	{
+		//		get BGMAP hit info
+		//		es_bgparam var, bgno
+		PVal* p_pval;
+		APTR p_aptr;
+		p_aptr = code_getva(&p_pval);
+		p1 = code_getdi(0);
+		p2 = code_getdi(0);
+		ctx->stat = -1;
+		if (sprite->sprite_enable) {
+			BGHITINFO* info = sprite->getMapHitInfo(p1,p2);
+			if (info) {
+				p_aptr = 0;
+				code_setva(p_pval, p_aptr, HSPVAR_FLAG_INT, &info->result);
+				p_aptr = 1;
+				code_setva(p_pval, p_aptr, HSPVAR_FLAG_INT, &info->celid);
+				p_aptr = 2;
+				code_setva(p_pval, p_aptr, HSPVAR_FLAG_INT, &info->attr);
+				p_aptr = 3;
+				code_setva(p_pval, p_aptr, HSPVAR_FLAG_INT, &info->myx);
+				p_aptr = 4;
+				code_setva(p_pval, p_aptr, HSPVAR_FLAG_INT, &info->myy);
+				p_aptr = 5;
+				code_setva(p_pval, p_aptr, HSPVAR_FLAG_INT, &info->x);
+				p_aptr = 6;
+				code_setva(p_pval, p_aptr, HSPVAR_FLAG_INT, &info->y);
+				ctx->stat = 0;
+			}
 		}
 		break;
 	}
