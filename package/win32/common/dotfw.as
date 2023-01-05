@@ -403,7 +403,7 @@
 		if star_rate>=0 {
 			celbitmap DOTFW_STARID,bitmap,$1000+star_rate
 			gmode 0
-			pos sx/2,sy/2
+			pos _dotfw_sx@/2,_dotfw_sy@/2
 			rot = 4.71239 * star_rot
 			celput DOTFW_STARID,0,star_zx,star_zy,rot
 		}
@@ -442,13 +442,13 @@
 			continue
 		}
 
-		gmode gmp_mode,sx,sy,255:gcopy gmp_id,x,y
+		gmode gmp_mode,_dotfw_sx@,_dotfw_sy@,255:gcopy gmp_id,x,y
 		bgi=bgp_sx(cnt)-x
-		if bgi<sx {
+		if bgi<_dotfw_sx@ {
 			pos bgi-1,0:gcopy gmp_id,0,y
 		}
 		bgi=bgp_sy(cnt)-y
-		if bgi<sy {
+		if bgi<_dotfw_sy@ {
 			pos 0,bgi-1:gcopy gmp_id,x,0
 		}
 		gmp_mode=3
@@ -964,6 +964,48 @@
 	return
 
 
+#deffunc df_loadbgmap int _p1, str _p2
+
+	;	”wŒiƒ}ƒbƒv“Ç‚Ýž‚Ý
+	;		BGNo. , "file"
+	;
+	a=_p1
+	if a<0 | a>_dotfw_bgpic_max@ : dialog "Invalid BG#"+a : return
+	gmp_id= _p1+ DOTFW_BGID_BGMAP
+
+	headsize=128
+	sdim header,headsize
+	bload _p2,header,headsize
+	if header!="TMAP" : dialog "Invalid tmap file ["+_p2+"]." : return
+
+	msx = lpeek(header,8)
+	msy = lpeek(header,12)
+	celsizex = lpeek(header,16)
+	celsizey = lpeek(header,20)
+	headsize = lpeek(header,32)
+	attrmax = lpeek(header,36)/4
+	sdim celfile,256
+	memcpy celfile,header,32,0,96
+	celload celfile
+	bufid = stat
+
+	a=_p1
+	df_setbgmap a,bufid, msx, msy, celsizex
+
+	dim attr,attrmax
+	bload _p2,attr,attrmax*4,headsize
+
+	map=0
+	if gmp_id=1 : dup map, gmp_map1
+	if gmp_id=2 : dup map, gmp_map2
+	if gmp_id=3 : dup map, gmp_map3
+	if gmp_id=4 : dup map, gmp_map4
+
+	bload _p2,map,msx*msy*4,headsize+attrmax*4
+
+	return
+
+
 #deffunc df_setbgmap int _p1, int _p2, int _p3, int _p4, int _p5, int _p6
 
 	;	”wŒiƒ}ƒbƒv‚ðŽw’è
@@ -978,7 +1020,8 @@
 	gmp_buf = _p2
 	mapsx=sx/gmp_size
 	mapsy=sy/gmp_size
-	mapvx=mapsx : mapvy=mapsy
+	mapvx=_dotfw_sx@/gmp_size
+	mapvy=_dotfw_sy@/gmp_size
 	if _p3>0 : mapsx=_p3
 	if _p4>0 : mapsy=_p4
 	celdiv gmp_buf, gmp_size, gmp_size

@@ -583,10 +583,10 @@ static int cmdfunc_extcmd( int cmd )
 		strncpy( fname, code_gets(), 63 );
 		p1 = code_getdi( 0 );
 		wid = bmscr->wid;
-		wnd->Picload( wid, fname, p1 );
-		//if ( i ) throw HSPERR_PICTURE_MISSING;
-		//bmscr = wnd->GetBmscr( wid );
-		//cur_window = wid;
+		int i = wnd->Picload( wid, fname, p1 );
+		if ( i ) throw HSPERR_PICTURE_MISSING;
+		bmscr = wnd->GetBmscr( wid );
+		cur_window = wid;
 		break;
 		}
 	case 0x18:								// color
@@ -1120,11 +1120,17 @@ static int cmdfunc_extcmd( int cmd )
 		p2 = code_getdi( 0 );
 		if ( p1 == -2 ) {
 			p1 = wnd->GetPreloadBufferId(fname);
+			if (p1 >= 0) {
+				bmscr->Select(cur_window);
+				ctx->stat = p1;
+				break;
+			}
 		}
 		if (p1 < 0) {
 			p1 = wnd->GetEmptyBufferId();
 		}
 		wnd->MakeBmscrFromResource( p1, fname );
+		bmscr = wnd->GetBmscr(cur_window);
 		bmscr->Select(cur_window);
 		ctx->stat = p1;
 		break;

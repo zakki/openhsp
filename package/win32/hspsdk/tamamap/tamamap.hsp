@@ -1,0 +1,594 @@
+;
+;	Tamane Map editor
+;	(珠音ドットフレームワーク用の簡易マップエディター)
+;	onitama 2022/11
+;
+#include "hsp3dish.as"
+#include "mod_tamamap.as"
+
+#packopt name "tamamap"
+;#packopt icon "tamamap.ico"
+;#pack "mucom88.png"
+;#pack "en.strmap"
+
+;#define EDITOR_DEBUG
+
+#const VER_NUMBER 1
+#define APP_VER "0.1"
+#define APP_WAIT (1000/60)
+
+#define EDITOR_TITLE "TamaMap"
+
+#define MENUMODE_HOME 0
+#define MENUMODE_OPTION 1
+
+#define BUFID_CEL 3
+
+	randomize
+	goto *boot
+
+#deffunc appcls
+
+	redraw 0
+	yy=wy-100
+	font fontname,fontsize
+	rgbcolor bgcolor
+	boxf
+	rgbcolor fgcolor
+
+	pos 0,wy-80
+	sx=120:sy=20:x=0:y=yy
+	objsize sx,sy
+
+	return
+
+#deffunc appupdate
+
+	redraw 1
+	await APP_WAIT
+	return
+
+#deffunc appsave str _p1
+
+	;	tmap保存
+	;
+	headsize=128
+	sdim header,headsize
+	poke header,0,'T'
+	poke header,1,'M'
+	poke header,2,'A'
+	poke header,3,'P'
+	lpoke header,8,mapsizex
+	lpoke header,12,mapsizey
+	lpoke header,16,celsizex
+	lpoke header,20,celsizey
+	lpoke header,32,headsize
+	lpoke header,36,attrmax*4
+	poke header,96,celtitle
+
+	bsave _p1,header,headsize
+	bsave _p1,attr,attrmax*4,headsize
+	bsave _p1,map,mapsizex*mapsizey*4,headsize+attrmax*4
+
+	mapupdate=0
+	return
+
+#deffunc appload var _v1, str _p1
+
+	;	tmap読み込み
+	;
+	_v1=""
+	;
+	headsize=128
+	sdim header,headsize
+	bload _p1,header,headsize
+	if header!="TMAP" : _v1="Invalid tmap file." : return
+
+	mapsizex = lpeek(header,8)
+	mapsizey = lpeek(header,12)
+	celsizex = lpeek(header,16)
+	celsizey = lpeek(header,20)
+	headsize = lpeek(header,32)
+	attrmax = lpeek(header,36)/4
+	memcpy celfile,header,32,0,96
+
+	dim attr,attrmax
+	bload _p1,attr,attrmax*4,headsize
+
+	dim map,mapsizex*mapsizey				; マップデータ変数
+	dim map_bak,mapsizex*mapsizey				; マップデータ変数(保存用)
+	bload _p1,map,mapsizex*mapsizey*4,headsize+attrmax*4
+
+	;dialog ""+celfile+":"+celsizex+","+celsizey
+	;
+	mapupdate=0
+	return
+
+	;	起動
+*boot
+	;	初期設定
+	tamamap_init
+	;
+	myfile=""
+	celtitle=""
+	editfile="No Title"
+	viewx=0:viewy=0
+	viewselx=-1:viewsely=-1
+	viewselx2=-1:viewsely2=-1
+	celxx=0:celyy=0
+	celcur=-1
+	celcursx=1:celcursy=1
+	attrmax=4096
+	mapupdate=0
+
+	dim map,mapsizex*mapsizey				; マップデータ変数
+	dim map_bak,mapsizex*mapsizey				; マップデータ変数(保存用)
+	dim attr,attrmax					; アトリビュートデータ変数
+
+	if app_winx<0 : app_winx = -1
+	if app_winy<0 : app_winy = -1
+	if app_winx>=ginfo_dispx : app_winx = ginfo_dispx-wx
+	if app_winy>=ginfo_dispy : app_winy = ginfo_dispy-wy
+
+	wx=def_wx:wy=def_wy
+	screen 0,wx,wy,0,app_winx,app_winy
+
+	edsx=256:edsy=wy
+	edx=wx-edsx:edy=0
+	edcelx=edx:edcely=wy-256
+	celarx=1:celary=1
+
+	gosub *update_title
+
+	sdim buf,$10000
+	sdim s1,$200
+	sdim s2,$200
+
+	onexit *byebye
+
+	menu_mode=MENUMODE_HOME
+	goto *to_editor
+
+*to_menu
+	;	メニューへ
+	;
+	cls
+	;
+	main_enter=0
+	menu_sx=136
+	;
+	x=8:y=20:py=40
+	objsize 120,30
+	pos x,y:button "<<",*to_editor:obj_menu=stat
+	y+=py
+	pos x,y:button "Load",*to_menusel
+	y+=py
+	pos x,y:button "Save",*to_menusel
+	y+=py
+	pos x,y:button "Save as...",*to_menusel
+	y+=py
+	pos x,y:button "New",*to_menusel
+
+	y=wy-60
+	pos x,y:button "Option",*to_menusel
+	y-=py
+	pos x,y:button "Web",*to_menusel
+	y-=py
+	obj_menumax=stat
+
+	if menu_mode=MENUMODE_OPTION : gosub *menu_option_obj
+
+*main_menu
+	;	MENU screen
+	appcls
+	color 160,160,160:boxf 0,0,menu_sx,wy
+
+	menu_str=""
+	font fontname,fontsize,0
+	rgbcolor fgcolor
+	x=menu_sx+20:y=20+60:pos x,y
+	if menu_mode=MENUMODE_OPTION : gosub *menu_option
+	if menu_mode=MENUMODE_HOME : gosub *menu_home
+
+	x=menu_sx+20:y=20
+	font fontname,32,0:pos x,y
+	mes menu_str
+
+	appupdate
+	goto *main_menu
+
+*to_menusel
+	i=stat
+	if i>obj_menumax : goto *main_menu
+	if i<obj_menu : goto *main_menu
+	i-=obj_menu
+
+	if i=0 : goto *to_editor
+	if i=1 : goto *to_load
+	if i=2 : goto *to_menusave
+	if i=3 : goto *to_menusave2
+	;if i=4 : goto *to_menunew
+	if i=5 : menu_mode=MENUMODE_OPTION : goto *to_menu
+	if i=6 : exec weburl,16
+	goto *main_menu
+
+
+*menu_option
+	menu_str="Option"
+	x=menu_sx+20:y=120
+	pos x,60
+	mes "ツールの設定を編集します"
+	mes "(*) 一部の設定はツール再起動後に反映されます\n"
+
+	pos x,y
+	mes "User Name:"
+
+	y=200
+	pos x,y
+	mes "ウインドウサイズ(*)"
+	y=220
+	pos x+62,y+36
+	mes "×"
+	return
+
+*menu_option_obj
+	x=menu_sx+20:y=120
+	objsize 240,24
+	pos x,y+fontsize+2
+	input author
+
+	y=220
+	objsize 92,24
+	pos x,y:myx=x:myy=y
+	button "800x600",*to_sizesel1
+	pos myx+100,myy
+	button "1024x768",*to_sizesel2
+	pos myx+200,myy
+	button "1280x720",*to_sizesel3
+	objsize 60,24
+	pos myx,myy+30
+	input def_wx
+	pos myx+80,myy+30
+	input def_wy
+	return
+
+*menu_home
+	menu_str=APPNAME
+	x=menu_sx+20:y=280
+	pos x,60
+	mes "Application Version "+APP_VER
+	mes "Programmed by ONION software/onitama"
+	mes "https://hsp.tv/"
+	return
+
+*to_sizesel1
+	def_wx=800:def_wy=600
+	goto *to_menu
+*to_sizesel2
+	def_wx=1024:def_wy=768
+	goto *to_menu
+*to_sizesel3
+	def_wx=1280:def_wy=720
+	goto *to_menu
+
+*to_load
+	;	load
+	;
+	gosub *check_modify
+	if i {
+		dialog "編集内容が破棄されます。\n読み込みを行っていいですか?",2
+		if stat!=6 : goto *main_menu
+	}
+	dialog "tmap",16,"TamaMapファイル"
+	if stat=0 : goto *main_menu
+	fname=refstr
+	;
+	appload s1,fname
+	if s1!="" : dialog s1 : goto *main_menu
+	;
+	myfile=fname
+	s1=getpath(fname,32)
+	s1=strtrim(s1,2,'\\')
+	editfile=getpath(fname,1+8)
+	goto *to_editor
+
+*to_menusave
+	;	save
+	;
+	if myfile="" : goto *to_menusave2
+	appsave myfile
+	goto *to_editor
+
+*to_menusave2
+	;	save as
+	;
+	dialog "tmap",17,"TamaMapファイル"
+	if stat=0 : goto *main_menu
+	fname=refstr
+	exname=getpath(fname,2)		; ファイル名の拡張子を取得
+	if exname="" : fname+=".tmap"	; 拡張子がなければ追加
+	myfile=fname
+	;
+	appsave myfile
+	;
+	s1=getpath(fname,32)
+	s1=strtrim(s1,2,'\\')
+	editfile=getpath(fname,1+8)
+	goto *to_editor
+
+*to_menunew
+	appsave 
+	goto *main_menu
+
+*to_editor
+	;	メイン構築
+	;
+	cls
+	gosub *update_title
+	es_ini					; スプライト初期化
+	;
+	celsx=0:celsy=0
+	celdx=0
+	if celsizex<8 : celsizex=8
+	if celsizey<8 : celsizey=8
+	if celfile="" : celfile=filedir+"\\mapchip.png"
+	celtitle = getpath(celfile,8)
+	exist celfile
+	if strsize<=0 {
+		celfile=filedir+"\\"+celtitle
+		exist celfile
+		if strsize<=0 {
+			celfile=""
+		}
+	}
+	if celfile!="" {
+		buffer BUFID_CEL
+		picload celfile
+		celsx=ginfo_sx
+		celsy=ginfo_sy
+		celdx=celsx/celsizex
+		celdy=celsy/celsizey
+		attrmax=celdy*celdx
+		;dialog ""+celfile+":"+celsx+","+celsy
+		gsel 0
+		celdiv BUFID_CEL,celsizex,celsizey		; マップのセル設定
+	} else {
+		dialog "セル画像ファイル["+celfile+"]がありません\nアプリを終了します。"
+		end
+	}
+	;
+	if mapsizex<4 : mapsizex=4
+	if mapsizey<4 : mapsizey=4
+	if mapzoom<1 : mapzoom=1
+	if celzoom<1 : celzoom=1
+	;
+	sx=celsizex*mapzoom
+	sy=celsizey*mapzoom
+	mapvx=(edx+sx-1)/sx
+	mapvy=(wy+sy-1)/sy
+	es_bgmap 0,map,mapsizex,mapsizey,mapvx,mapvy,BUFID_CEL	; マップ登録
+	es_bgparam 0, 0, 0
+	;
+	navisx=256
+	navisy=256
+	navidx=double(navisx)/(mapsizex*celsizex)
+	navidy=double(navisy)/(mapsizey*celsizey)
+	;
+	objmode 1
+	sx=edsx-20:sy=20:x=edx+10:y=270
+	objsize sx,sy
+	pos x,y:button "MENU",*to_menu
+	y+=30
+	objsize sx/2,sy
+	pos x,y:button "UNDO",*to_undo
+	;pos x+sx/2,y:button "REDO",*to_menu
+
+	y+=30
+	sx=40:sy=20:x=edx+10
+	objsize sx,sy
+	pos x,y:button "x1",*to_1x
+	pos x+sx,y:button "x2",*to_2x
+	pos x+sx*2,y:button "x4",*to_4x
+	pos x+sx*3,y:button "x8",*to_8x
+	mesx=x+sx:mesy=y
+	scrolldelay=0
+	waitcnt=0
+	rclkmode=0
+	rclkx=0:rclky=0
+	rclksx=0:rclksy=0
+
+*main_loop
+	;	EDITOR screen
+	;
+	if waitcnt>0 {
+		waitcnt--
+	}
+	mapcx=-1:mapcy=-1:mapno=-1		; トラック中のマップ
+	celcx=-1:celmy=-1:celno=-1		; トラック中のセル
+	trkviewx=-1:trkviewy=-1			; トラック中のナビ
+	x=mousex:y=mousey
+	if x<0|y<0 : goto *track_key
+	if x>=edx : goto *track_cel
+	;
+	sx=(celsizex*mapzoom):sy=(celsizey*mapzoom)
+	mapcx=(x+viewx*mapzoom)/sx
+	mapcy=(y+viewy*mapzoom)/sy
+	if mapcx>=mapsizex : goto *track_key
+	if mapcy>=mapsizey : goto *track_key
+	mapno=mapcy*mapsizex+mapcx
+	goto *track_key
+*track_cel
+	if y<navisy : goto *track_navi
+	;
+	x-=edcelx:y-=edcely:if y<0 : goto *track_key
+	x+=celxx:y+=celyy
+	if x>=celsx*celzoom : goto *track_key
+	if y>=celsy*celzoom : goto *track_key
+	celcx=x/(celsizex*celzoom):celcy=y/(celsizey*celzoom)
+	celno=celcy*celdx+celcx
+	goto *track_key
+
+*track_navi
+	x-=edcelx
+	trkviewx=int(double(x)/navidx)
+	trkviewy=int(double(y)/navidy)
+	goto *track_key
+
+*track_key
+	stick key,$30f
+	if key&$100 : goto *to_click
+	if key&$200 : goto *to_rclick
+	rclkmode=0
+	if scrolldelay>0 : scrolldelay-- : goto *main_loopdraw
+	;
+	if key&1 : viewx-=celsizex : goto *main_mapmove
+	if key&4 : viewx+=celsizex: goto *main_mapmove
+	if key&2 : viewy-=celsizey : goto *main_mapmove
+	if key&8 : viewy+=celsizey : goto *main_mapmove
+	goto *main_loopdraw
+*main_mapmove
+	viewx=limit(viewx,0,(mapsizex-mapvx)*celsizex)
+	viewy=limit(viewy,0,(mapsizey-mapvy)*celsizey)
+	scrolldelay=4
+	goto *main_loopdraw
+
+*main_loopdraw
+	appcls
+	viewcalc vptype_2d,mapzoom,mapzoom,0
+	es_putbg 0,0,0,viewx,viewy				; マップを描画
+	viewcalc vptype_2d,1,1,0
+	rgbcolor bgcolor:boxf edx,0,wx,wy
+
+	;	cel
+	rgbcolor fgcolor:pos edx+10,edcely-40:mes celtitle
+	if celcur>=0 : mes "#"+celcur+" ATTR:0"
+	pos edx+10,edcely-60
+	if mapno>=0 : mes "X:"+mapcx+" Y:"+mapcy
+	pos edcelx,edcely:gmode 0,celsx,celsy
+	gzoom celsx*celzoom,celsy*celzoom,BUFID_CEL,celxx,celyy,celsx,celsy,0
+
+	;	navi
+	rgbcolor $404040
+	boxf edx,0,edx+navisx,navisy
+	rgbcolor selcolor
+	x=edx+int(navidx*viewx)
+	y=int(navidy*viewy)
+	sx=int(navidx*mapvx*celsizex)
+	sy=int(navidy*mapvy*celsizey)
+	boxf x,y,x+sx,y+sy
+
+	;	cursor
+	if celcur>=0 {
+		sx=celsizex*celzoom:sy=celsizey*celzoom
+		x=(celcur\celdx)*sx
+		y=(celcur/celdx)*sy
+		sx*=celarx
+		sy*=celary
+		x+=edcelx:y+=edcely
+		rgbcolor selcolor
+		boxf x,y,x+sx,y+1
+		boxf x,y+sy-1,x+sx,y+sy
+		boxf x,y,x+1,y+sy
+		boxf x+sx-1,y,x+sx,y+sy
+	}
+	if mapno>=0 {
+		sx=celsizex*mapzoom:sy=celsizey*mapzoom
+		x=mapcx*sx-(viewx*mapzoom)
+		y=mapcy*sy-(viewy*mapzoom)
+		rgbcolor selcolor
+		boxf x,y,x+sx,y+1
+		boxf x,y+sy-1,x+sx,y+sy
+		boxf x,y,x+1,y+sy
+		boxf x+sx-1,y,x+sx,y+sy
+	}
+
+	appupdate
+	goto *main_loop
+*to_1x
+	mapzoom=1:goto *to_editor
+*to_2x
+	mapzoom=2:goto *to_editor
+*to_4x
+	mapzoom=4:goto *to_editor
+*to_8x
+	mapzoom=8:goto *to_editor
+*to_undo
+	memcpy map,map_bak,mapsizex*mapsizey*4,0,0
+	goto *main_loop
+*to_click
+	if celno>=0 : celcur=celno : goto *main_loopdraw
+	if mapno>=0 {
+		if celcur>=0 {
+			goto *to_draw
+		}
+	}
+	if trkviewx>=0 {
+		viewx = trkviewx
+		viewy = trkviewy
+	}
+	goto *main_loopdraw
+*to_draw
+	if waitcnt=0 {
+		memcpy map_bak,map,mapsizex*mapsizey*4,0,0
+	}
+	mapupdate=1
+	waitcnt=30
+	y=mapcy:j=0
+	repeat celary
+	if y>=mapsizey : break
+	x=mapcx:i=y*mapsizex+x:j=cnt*celdx+celcur
+	repeat celarx
+		if x>=mapsizex : break
+		map(i)=j
+		i++:j++:x++
+	loop
+	y++:loop
+	goto *main_loopdraw
+
+*to_rclick
+	if mapno>=0 {
+		celcur = map(mapno)
+		goto *main_loopdraw
+	}
+	if celno>=0 {
+		goto *to_rclick_celarea
+	}
+	rclkmode=0
+	goto *main_loopdraw
+*to_rclick_celarea
+	if rclkmode!=1 {
+		rclkx=celcx:rclky=celcy
+		rclkmode=1
+		celcur=celno
+		goto *main_loopdraw
+	}
+	x=celcx-rclkx+1:y=celcy-rclky+1
+	if x<1 : x=1
+	if y<1 : y=1
+	celarx=x:celary=y
+	goto *main_loopdraw
+
+*update_title
+	title editfile+" - "+EDITOR_TITLE
+	return
+
+*check_modify
+	;	変更されているか?
+	;
+	i=0
+	if mapupdate : i=1
+	return
+
+*byebye
+	;	ini保存
+	;
+	tamamap_term
+
+#ifdef EDITOR_DEBUG
+	end
+#else
+	end
+#endif
+	stop
+
+
