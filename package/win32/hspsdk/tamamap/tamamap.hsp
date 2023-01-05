@@ -381,7 +381,7 @@
 	y+=30
 	objsize sx/2,sy
 	pos x,y:button "UNDO",*to_undo
-	;pos x+sx/2,y:button "REDO",*to_menu
+	pos x+sx/2,y:button "COPY",*to_copy
 
 	y+=30
 	sx=40:sy=20:x=edx+10
@@ -391,14 +391,55 @@
 	pos x+sx*2,y:button "x4",*to_4x
 	pos x+sx*3,y:button "x8",*to_8x
 	mesx=x+sx:mesy=y
+
 	scrolldelay=0
 	waitcnt=0
 	rclkmode=0
 	rclkx=0:rclky=0
 	rclksx=0:rclksy=0
+	editmode=0			; mode 0=normal,1/2/3/4=source,5=copy
+	mapsrcx=0:mapsrcy=0
+	mapsrcsx=0:mapsrcsy=0
 
 *main_loop
 	;	EDITOR screen
+	;
+	x=mousex:y=mousey
+	gosub *main_fetch
+
+	stick key,$30f
+	if key&$100 : goto *to_click
+	if key&$200 : goto *to_rclick
+	rclkmode=0
+	if scrolldelay>0 : scrolldelay-- : goto *main_loopdraw
+	;
+	i=0
+	if key&1 : viewx-=celsizex : i=1
+	if key&4 : viewx+=celsizex: i=1
+	if key&2 : viewy-=celsizey : i=1
+	if key&8 : viewy+=celsizey : i=1
+	if i : goto *main_mapmove
+
+	if editmode=2|editmode=4 {
+		editmode++
+	}
+	goto *main_loopdraw
+*main_mapmove
+	viewx=limit(viewx,0,(mapsizex-mapvx)*celsizex)
+	viewy=limit(viewy,0,(mapsizey-mapvy)*celsizey)
+	scrolldelay=4
+	getkey i,16:if i : scrolldelay=0
+	goto *main_loopdraw
+
+*main_loopdraw
+	appcls
+	gosub *main_update
+	appupdate
+	goto *main_loop
+
+*main_fetch
+	;	メイン画面チェック
+	;	(x,y)=マウス位置
 	;
 	if waitcnt>0 {
 		waitcnt--
@@ -406,7 +447,6 @@
 	mapcx=-1:mapcy=-1:mapno=-1		; トラック中のマップ
 	celcx=-1:celmy=-1:celno=-1		; トラック中のセル
 	trkviewx=-1:trkviewy=-1			; トラック中のナビ
-	x=mousex:y=mousey
 	if x<0|y<0 : goto *track_key
 	if x>=edx : goto *track_cel
 	;
@@ -435,37 +475,22 @@
 	goto *track_key
 
 *track_key
-	stick key,$30f
-	if key&$100 : goto *to_click
-	if key&$200 : goto *to_rclick
-	rclkmode=0
-	if scrolldelay>0 : scrolldelay-- : goto *main_loopdraw
-	;
-	if key&1 : viewx-=celsizex : goto *main_mapmove
-	if key&4 : viewx+=celsizex: goto *main_mapmove
-	if key&2 : viewy-=celsizey : goto *main_mapmove
-	if key&8 : viewy+=celsizey : goto *main_mapmove
-	goto *main_loopdraw
-*main_mapmove
-	viewx=limit(viewx,0,(mapsizex-mapvx)*celsizex)
-	viewy=limit(viewy,0,(mapsizey-mapvy)*celsizey)
-	scrolldelay=4
-	goto *main_loopdraw
+	return
 
-*main_loopdraw
-	appcls
+*main_update
+	;	メイン画面描画
+	;
 	viewcalc vptype_2d,mapzoom,mapzoom,0
 	es_putbg 0,0,0,viewx,viewy				; マップを描画
 	viewcalc vptype_2d,1,1,0
 	rgbcolor bgcolor:boxf edx,0,wx,wy
+	if mapno>=0 {
+		rgbcolor fgcolor:pos edx+10,edcely-60
+		mes "X:"+mapcx+" Y:"+mapcy
+	}
 
 	;	cel
-	rgbcolor fgcolor:pos edx+10,edcely-40:mes celtitle
-	if celcur>=0 : mes "#"+celcur+" ATTR:0"
-	pos edx+10,edcely-60
-	if mapno>=0 : mes "X:"+mapcx+" Y:"+mapcy
-	pos edcelx,edcely:gmode 0,celsx,celsy
-	gzoom celsx*celzoom,celsy*celzoom,BUFID_CEL,celxx,celyy,celsx,celsy,0
+	gosub *draw_celarea
 
 	;	navi
 	rgbcolor $404040
@@ -476,6 +501,34 @@
 	sx=int(navidx*mapvx*celsizex)
 	sy=int(navidy*mapvy*celsizey)
 	boxf x,y,x+sx,y+sy
+
+	if mapno>=0 {
+		gosub *draw_maparea
+	}
+	return
+
+*draw_maparea
+	sx=celsizex*mapzoom:sy=celsizey*mapzoom
+	x=mapcx*sx-(viewx*mapzoom)
+	y=mapcy*sy-(viewy*mapzoom)
+	rgbcolor selcolor
+	boxf x,y,x+sx,y+1
+	boxf x,y+sy-1,x+sx,y+sy
+	boxf x,y,x+1,y+sy
+	boxf x+sx-1,y,x+sx,y+sy
+	return
+
+*draw_celarea
+	rgbcolor fgcolor:pos edx+10,edcely-40
+	if editmode=1 : mes "Set Upper Left" : return
+	if editmode=3 : mes "Set Bottom Right" : return
+	if editmode=5 : mes "Copy Mode ("+mapsrcsx+"x"+mapsrcsy+")" : return
+	if editmode>0 : return
+
+	mes celtitle
+	if celcur>=0 : mes "#"+celcur+" ATTR:0"
+	pos edcelx,edcely:gmode 0,celsx,celsy
+	gzoom celsx*celzoom,celsy*celzoom,BUFID_CEL,celxx,celyy,celsx,celsy,0
 
 	;	cursor
 	if celcur>=0 {
@@ -491,19 +544,8 @@
 		boxf x,y,x+1,y+sy
 		boxf x+sx-1,y,x+sx,y+sy
 	}
-	if mapno>=0 {
-		sx=celsizex*mapzoom:sy=celsizey*mapzoom
-		x=mapcx*sx-(viewx*mapzoom)
-		y=mapcy*sy-(viewy*mapzoom)
-		rgbcolor selcolor
-		boxf x,y,x+sx,y+1
-		boxf x,y+sy-1,x+sx,y+sy
-		boxf x,y,x+1,y+sy
-		boxf x+sx-1,y,x+sx,y+sy
-	}
+	return
 
-	appupdate
-	goto *main_loop
 *to_1x
 	mapzoom=1:goto *to_editor
 *to_2x
@@ -515,18 +557,60 @@
 *to_undo
 	memcpy map,map_bak,mapsizex*mapsizey*4,0,0
 	goto *main_loop
+*to_copy
+	if editmode!=0 : editmode=0 : goto *main_loop
+	editmode=1
+	goto *main_loop
+
 *to_click
-	if celno>=0 : celcur=celno : goto *main_loopdraw
+	if trkviewx>=0 {
+		viewx = trkviewx
+		viewy = trkviewy
+	}
+	if editmode>0 : goto *to_click2
 	if mapno>=0 {
 		if celcur>=0 {
 			goto *to_draw
 		}
 	}
-	if trkviewx>=0 {
-		viewx = trkviewx
-		viewy = trkviewy
-	}
+	if celno>=0 : celcur=celno : goto *main_loopdraw
 	goto *main_loopdraw
+
+*to_click2
+	if mapno<0 : goto *main_loopdraw
+
+	if editmode=1 {
+		mapsrcx=mapcx:mapsrcy=mapcy
+		editmode=2 : goto *main_loopdraw
+	}
+	if editmode=3 {
+		mapsrcsx=mapcx-mapsrcx+1:mapsrcsy=mapcy-mapsrcy+1
+		if mapsrcsx<1 : mapsrcsx=1
+		if mapsrcsy<1 : mapsrcsy=1
+		editmode=4 : goto *main_loopdraw
+	}
+	if editmode=5 : goto *to_drawcopy
+
+	goto *main_loopdraw
+
+*to_drawcopy
+	if waitcnt=0 {
+		memcpy map_bak,map,mapsizex*mapsizey*4,0,0
+	}
+	mapupdate=1
+	waitcnt=30
+	y=mapcy:j=0
+	repeat mapsrcsy
+	if y>=mapsizey : break
+	x=mapcx:i=y*mapsizex+x:j=(mapsrcy+cnt)*mapsizex+mapsrcx
+	repeat mapsrcsx
+		if x>=mapsizex : break
+		map(i)=map(j)
+		i++:j++:x++
+	loop
+	y++:loop
+	goto *main_loopdraw
+
 *to_draw
 	if waitcnt=0 {
 		memcpy map_bak,map,mapsizex*mapsizey*4,0,0
@@ -546,6 +630,11 @@
 	goto *main_loopdraw
 
 *to_rclick
+	if editmode>0 {
+		celcur=-1
+		editmode=0
+		goto *main_loopdraw
+	}
 	if mapno>=0 {
 		celcur = map(mapno)
 		goto *main_loopdraw
@@ -555,6 +644,7 @@
 	}
 	rclkmode=0
 	goto *main_loopdraw
+
 *to_rclick_celarea
 	if rclkmode!=1 {
 		rclkx=celcx:rclky=celcy
