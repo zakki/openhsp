@@ -215,6 +215,7 @@ public:
 	BGHITINFO* getMapHitInfo(int bgno, int index);
 	BGHITINFO* addMapHitInfo(int bgno, int result, int celid, int attr, int x, int y, int myx, int myy);
 	int setMapAttribute(int bgno, int start, int end, int attribute);
+	int getMapAttribute(int bgno, int celid);
 	int updateMapMask(int bgno);
 	int getMapMask(BGMAP *map, int x, int y);
 	int getMapMaskHit(int bgno,int x,int y, int sizex, int sizey, int px, int py);

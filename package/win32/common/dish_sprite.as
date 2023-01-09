@@ -55,6 +55,7 @@
 #cmd es_bgattr $22f
 #cmd es_bghit $230
 #cmd es_getbghit $231
+#cmd es_getbgattr $232
 
 #define global es_fmes mes
 #define global es_bye

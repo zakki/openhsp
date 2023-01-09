@@ -1664,11 +1664,23 @@ int essprite::setMapAttribute(int bgno, int start, int end, int attribute)
 
 	int i = start;
 	while (1) {
+		if ((i < 0) || (i >= ESMAP_ATTR_MAX)) return -1;
 		if (i > end) break;
 		bg->attr[i] = (unsigned char)attribute;
 		i++;
 	}
 	return 0;
+}
+
+
+int essprite::getMapAttribute(int bgno, int celid)
+{
+	unsigned char a1;
+	BGMAP* bg = getMap(bgno);
+	if (bg == NULL) return -1;
+	if ((celid<0)||(celid>=ESMAP_ATTR_MAX)) return -1;
+	a1 = bg->attr[celid];
+	return (int)a1;
 }
 
 
