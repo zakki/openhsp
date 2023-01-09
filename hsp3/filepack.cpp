@@ -245,22 +245,20 @@ int FilePack::pack_fgetc(FILE* ptr)
 int FilePack::pack_flength(char* name)
 {
 
-	FILE* ff = pack_fopen(name);
-	if (ff == NULL) {
-		return -1;
-	}
-	if (memfile_active) {					// メモリストリーム時
-		return memfile.size;
-	}
-	pack_fclose(ff);
-
-	if (filebase == HFP_FILEBASE_NORMAL) {
-		return hsp3_flength(name);
-	}
-
 	HFPOBJ* obj;
 	obj = SearchFileObject(name);
 	if (obj) return (int)obj->size;
+
+	int size = hsp3_flength(name);
+	if (size>=0) return size;
+
+	FILE* ff = pack_fopen(name);
+	if (ff != NULL) {
+		if (memfile_active) {					// メモリストリーム時
+			return memfile.size;
+		}
+		pack_fclose(ff);
+	}
 	return -1;
 }
 
