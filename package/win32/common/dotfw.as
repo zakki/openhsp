@@ -983,7 +983,7 @@
 	celsizex = lpeek(header,16)
 	celsizey = lpeek(header,20)
 	headsize = lpeek(header,32)
-	attrmax = lpeek(header,36)/4
+	attrmax = lpeek(header,36)
 	sdim celfile,256
 	memcpy celfile,header,32,0,96
 	celload celfile
@@ -992,8 +992,14 @@
 	a=_p1
 	df_setbgmap a,bufid, msx, msy, celsizex
 
-	dim attr,attrmax
-	bload _p2,attr,attrmax*4,headsize
+	gmp_id= _p1+ DOTFW_BGID_BGMAP
+
+	sdim attr,attrmax
+	bload _p2,attr,attrmax,headsize
+	repeat attrmax
+		es_bgattr gmp_id,cnt,cnt,peek(attr,cnt)
+		if stat : dialog "ERR"
+	loop
 
 	map=0
 	if gmp_id=1 : dup map, gmp_map1
@@ -1001,7 +1007,7 @@
 	if gmp_id=3 : dup map, gmp_map3
 	if gmp_id=4 : dup map, gmp_map4
 
-	bload _p2,map,msx*msy*4,headsize+attrmax*4
+	bload _p2,map,msx*msy*4,headsize+attrmax
 
 	return
 

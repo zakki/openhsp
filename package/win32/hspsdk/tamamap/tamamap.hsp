@@ -63,12 +63,18 @@
 	lpoke header,16,celsizex
 	lpoke header,20,celsizey
 	lpoke header,32,headsize
-	lpoke header,36,attrmax*4
+	lpoke header,36,attrmax
 	poke header,96,celtitle
 
+	sdim attr,attrmax			; アトリビュートデータ変数
+	repeat attrmax
+		es_getbgattr i,0,cnt
+		poke attr,cnt,i
+	loop
+
 	bsave _p1,header,headsize
-	bsave _p1,attr,attrmax*4,headsize
-	bsave _p1,map,mapsizex*mapsizey*4,headsize+attrmax*4
+	bsave _p1,attr,attrmax,headsize
+	bsave _p1,map,mapsizex*mapsizey*4,headsize+attrmax
 
 	mapupdate=0
 	return
@@ -89,16 +95,15 @@
 	celsizex = lpeek(header,16)
 	celsizey = lpeek(header,20)
 	headsize = lpeek(header,32)
-	attrmax = lpeek(header,36)/4
+	attrmax = lpeek(header,36)
 	memcpy celfile,header,32,0,96
 
-	dim attr,attrmax
-	bload _p1,attr,attrmax*4,headsize
+	sdim attr,attrmax			; アトリビュートデータ変数
+	bload _p1,attr,attrmax,headsize
 
 	dim map,mapsizex*mapsizey				; マップデータ変数
 	dim map_bak,mapsizex*mapsizey				; マップデータ変数(保存用)
-	bload _p1,map,mapsizex*mapsizey*4,headsize+attrmax*4
-
+	bload _p1,map,mapsizex*mapsizey*4,headsize+attrmax
 	;dialog ""+celfile+":"+celsizex+","+celsizey
 	;
 	mapupdate=0
@@ -117,13 +122,17 @@
 	viewselx2=-1:viewsely2=-1
 	celxx=0:celyy=0
 	celcur=-1
+	celattr=0
+	celattr_value=0
+	celattr_chk1=0
+	celattr_chk2=0
 	celcursx=1:celcursy=1
 	attrmax=4096
 	mapupdate=0
 
 	dim map,mapsizex*mapsizey				; マップデータ変数
 	dim map_bak,mapsizex*mapsizey				; マップデータ変数(保存用)
-	dim attr,attrmax					; アトリビュートデータ変数
+	sdim attr,attrmax					; アトリビュートデータ変数
 
 	if app_winx<0 : app_winx = -1
 	if app_winy<0 : app_winy = -1
@@ -369,6 +378,10 @@
 	es_bgmap 0,map,mapsizex,mapsizey,mapvx,mapvy,BUFID_CEL	; マップ登録
 	es_bgparam 0, 0, 0
 	;
+	repeat attrmax
+		es_bgattr 0,cnt,cnt,peek(attr,cnt)
+	loop
+	;
 	navisx=256
 	navisy=256
 	navidx=double(navisx)/(mapsizex*celsizex)
@@ -391,6 +404,15 @@
 	pos x+sx*2,y:button "x4",*to_4x
 	pos x+sx*3,y:button "x8",*to_8x
 	mesx=x+sx:mesy=y
+
+	x=edx+120:y=edcely-60
+	objsize 60,sy
+	pos x,y:input celattr_value
+	objsize (edsx-20)/2,sy
+	pos x,y+24:button "SET",*to_setattr
+	objsize 32,sy
+	pos x+64+32,y-1:chkbox "W",celattr_chk2
+	pos x+64,y-1:chkbox "G",celattr_chk1
 
 	scrolldelay=0
 	waitcnt=0
@@ -526,7 +548,7 @@
 	if editmode>0 : return
 
 	mes celtitle
-	if celcur>=0 : mes "#"+celcur+" ATTR:0"
+	if celcur>=0 : mes "#"+celcur+" ATTR:"+celattr
 	pos edcelx,edcely:gmode 0,celsx,celsy
 	gzoom celsx*celzoom,celsy*celzoom,BUFID_CEL,celxx,celyy,celsx,celsy,0
 
@@ -561,6 +583,18 @@
 	if editmode!=0 : editmode=0 : goto *main_loop
 	editmode=1
 	goto *main_loop
+*to_setattr
+	i=celattr_value:a=0
+	if celattr_chk1 : a=128
+	if celattr_chk2 : a=192
+	i=i+a
+	if i>255 : i=255
+	;
+	repeat celary
+		j=cnt*celdx+celcur
+		es_bgattr 0,j,j+celarx-1,i
+	loop
+	goto *main_loop
 
 *to_click
 	if trkviewx>=0 {
@@ -573,7 +607,11 @@
 			goto *to_draw
 		}
 	}
-	if celno>=0 : celcur=celno : goto *main_loopdraw
+	if celno>=0 {
+		celcur=celno
+		es_getbgattr celattr,0,celcur
+		goto *main_loopdraw
+	}
 	goto *main_loopdraw
 
 *to_click2
@@ -650,6 +688,7 @@
 		rclkx=celcx:rclky=celcy
 		rclkmode=1
 		celcur=celno
+		es_getbgattr celattr,0,celcur
 		goto *main_loopdraw
 	}
 	x=celcx-rclkx+1:y=celcy-rclky+1
