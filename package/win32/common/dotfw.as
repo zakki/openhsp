@@ -308,6 +308,7 @@
 	sp_player_y1=0
 	sp_player_x2=sx-DOTFW_CHRX
 	sp_player_y2=sy-DOTFW_CHRY
+
 	player_actlb=*actdefault
 	player_keylb=*pcont_normal
 	player_btn1lb=*player_act_shot
@@ -1295,6 +1296,115 @@
 
 ;------------------------------------------------------------
 
+#deffunc df_jumpaction int _p1, int _p2, int _p3, int _p4, int _p5, int _p6
+
+	;	プレイヤージャンプアクション設定
+	;		BGNo., gravity, hitofsx, hitofsy, hitsx, hitsy
+	;
+
+	dim hitinfo,10
+	a=_p1
+	i=_p2:if i<=0 : i=0
+	sp_player_grav = i * 0x10000 / 100
+	sp_player_myani=0
+	sp_player_mydir=0
+	sp_player_myjmp=0
+	sp_player_mygrv=0
+
+	sp_player_hitofsx=_p3<<16
+	sp_player_hitofsy=_p4<<16
+	sp_player_hitsx=_p5:if sp_player_hitsx<=0 : sp_player_hitsx=16
+	sp_player_hitsy=_p6:if sp_player_hitsy<=0 : sp_player_hitsy=16
+
+	sp_player_x1 = 0
+	sp_player_y1 = 0
+	sp_player_x2 = bgp_sx(a)
+	sp_player_y2 = bgp_sy(a)
+
+	gmp_id = _p1+ DOTFW_BGID_BGMAP
+	sp_player_map = gmp_id
+	es_setparent sp_player,gmp_id,1
+
+	player_keylb=*jumpact_key
+	player_btn2lb=*jumpact_jump
+
+	return
+
+*jumpact_key
+	ky=key@
+	es_getpos sp_player,myx,myy,ESSPSET_DIRECT
+	px=0:py=0
+	if ky&1 {
+		px=-sp_player_speedx <<16
+	}
+	if ky&4 {
+		px=sp_player_speedx <<16
+	}
+	x=(myx+px)>>16
+	if x<sp_player_x1 : px=0
+	if x>sp_player_x2 : px=0
+	if sp_player_myjmp>0 : goto *jumpact_keysky
+
+	py = 0x10000
+	goto *jumpact_keygo
+
+*jumpact_keysky
+	;	ジャンプ中
+	sp_player_mygrv+=sp_player_grav
+	if sp_player_mygrv>0x100000 : sp_player_mygrv=0x100000
+	py=sp_player_mygrv
+
+*jumpact_keygo
+	if (myy+py)<0 : py=0-myy
+
+	gmp_id = sp_player_map
+	es_bghit gmp_id,myx+sp_player_hitofsx,myy+sp_player_hitofsy,16,16,px,py,1
+	numinfo=stat
+	hity=0
+	repeat numinfo
+		es_getbghit hitinfo,gmp_id,cnt
+/*
+		if hitinfo=ESMAPHIT_HITX {
+			;title "HITX:"+hitinfo(1)+","+hitinfo(2)
+		}
+		if hitinfo=ESMAPHIT_HITY {
+			;title "HITY:"+hitinfo(1)+","+hitinfo(2)
+		}
+		if hitinfo=ESMAPHIT_EVENT {
+			;title "EVENT:"+hitinfo(1)+","+hitinfo(2)
+		}
+*/
+		if hitinfo=ESMAPHIT_HITY {
+			hity=1
+		}
+		if hitinfo=0 {
+			myx=hitinfo(5)-sp_player_hitofsx
+			myy=hitinfo(6)-sp_player_hitofsy
+			x=myx>>16:y=myy>>16
+		}
+	loop
+
+	es_pos sp_player,myx,myy,ESSPSET_DIRECT			; スプライト座標設定
+
+	if sp_player_myjmp=0 {
+		if hity=0 : sp_player_myjmp=1 : sp_player_mygrv=1
+		return
+	}
+	if hity {
+		if py>=0 : sp_player_myjmp=0 : return
+		sp_player_mygrv=1
+	}
+	return
+
+*jumpact_jump
+	if sp_player_myjmp>0 : return
+	sp_player_myjmp=1
+	sp_player_mygrv=- 0x80000
+	return
+
+
+;------------------------------------------------------------
+
 #deffunc df_addplayer int _p1, int _p2, int _p3, int _p4
 
 	;	プレイヤースプライト登録
@@ -1309,6 +1419,7 @@
 	es_new sp_player
 	if sp_player<0 : return
 	es_set sp_player,x,y,i,_p4
+	es_flag sp_player,ESSPFLAG_STATIC|ESSPFLAG_NOWIPE
 	es_type a,TYPE_PLAYER
 
 	_dotfw_cursp@ = sp_player

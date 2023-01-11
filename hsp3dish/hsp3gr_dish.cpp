@@ -3736,8 +3736,8 @@ static int cmdfunc_extcmd( int cmd )
 	case 0x230:								// es_bghit
 	{
 		//		make BGMAP hit info
-		//		es_bghit bgno, x, y, sx, sy, px, py
-		int p7;
+		//		es_bghit bgno, x, y, sx, sy, px, py, sw
+		int p7,p8;
 		p1 = code_getdi(0);
 		p2 = code_getdi(0);
 		p3 = code_getdi(0);
@@ -3745,9 +3745,15 @@ static int cmdfunc_extcmd( int cmd )
 		p5 = code_getdi(16);
 		p6 = code_getdi(0);
 		p7 = code_getdi(0);
+		p8 = code_getdi(0);
 		ctx->stat = -1;
 		if (sprite->sprite_enable) {
-			ctx->stat = sprite->getMapMaskHit(p1, p2, p3, p4, p5, p6, p7);
+			if (p8) {
+				ctx->stat = sprite->getMapMaskHit32(p1, p2, p3, p4, p5, p6, p7);
+			}
+			else {
+				ctx->stat = sprite->getMapMaskHit(p1, p2, p3, p4, p5, p6, p7);
+			}
 		}
 		break;
 	}

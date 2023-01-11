@@ -1679,6 +1679,7 @@ int essprite::getMapAttribute(int bgno, int celid)
 	BGMAP* bg = getMap(bgno);
 	if (bg == NULL) return -1;
 	if ((celid<0)||(celid>=ESMAP_ATTR_MAX)) return -1;
+	if (bg->attr == NULL) return -1;
 	a1 = bg->attr[celid];
 	return (int)a1;
 }
@@ -1746,7 +1747,9 @@ int essprite::getMapMask(BGMAP* map, int x, int y)
 	hitcelid = p[ hitmapy * map->mapsx + hitmapx ] & 0xffff;
 	unsigned char a1 = attr[hitcelid];
 	hitattr = (int)a1;
-	if (hitattr >= ESMAP_ATTR_WALL) return ESMAPHIT_HIT;
+	if (hitattr >= ESMAP_ATTR_WALL) {
+		return ESMAPHIT_HIT;
+	}
 	if (hitattr >= ESMAP_ATTR_ITEM) return ESMAPHIT_EVENT;
 	return ESMAPHIT_NONE;
 }
@@ -1872,6 +1875,84 @@ int essprite::getMapMaskHit(int bgno, int x, int y, int sizex, int sizey, int px
 				break;
 			}
 			getMapMaskHitSub(bgno, xx, yy, sizex, 1);
+			yy += curadd;
+			orgy += curadd;
+		}
+	}
+
+	addMapHitInfo(bgno, ESMAPHIT_NONE, 0, 0, 0, 0, orgx, orgy);
+	return bg->maphit;
+}
+
+
+int essprite::getMapMaskHit32(int bgno, int x, int y, int p_sizex, int p_sizey, int px, int py)
+{
+	//		(x,y)から(sx,sy)サイズの領域をマップパーツと接触判定する(32bit座標)
+	//		移動量を(px,py)に入れる、結果はBGHITINFOに返る
+	//
+	int res, xx, yy, orgx, orgy;
+	int left;
+	int curadd;
+	int sizex, sizey;
+
+	orgx = x; orgy = y;
+	xx = x; yy = y;
+	sizex = p_sizex << 16;
+	sizey = p_sizey << 16;
+
+	curadd = 0;
+
+	BGMAP* bg = getMap(bgno);
+	if (bg == NULL) return 0;
+
+	resetMapHitInfo(bgno);
+
+	res = 0;
+
+	left = px >> 16;
+	if (left != 0) {
+		if (left > 0) {
+			xx = x + sizex;
+			curadd = 0x10000;
+		} else {
+			left = -left;
+			xx = x - 0x10000;
+			curadd = -0x10000;
+		}
+		while (1) {
+			if (left == 0) break;
+			left--;
+			res = getMapMaskHitSub(bgno, xx>>16, yy>>16, 1, p_sizey, true, false);
+			if (res) {
+				addMapHitInfo(bgno, ESMAPHIT_HITX, hitcelid, hitattr, hitmapx, hitmapy, orgx, orgy);
+				break;
+			}
+			getMapMaskHitSub(bgno, xx>>16, yy>>16, 1, p_sizey);
+			xx += curadd;
+			orgx += curadd;
+		}
+	}
+
+	xx = orgx; yy = orgy;
+	left = py >> 16;
+	if (left != 0) {
+		if (left > 0) {
+			yy = yy + sizey;
+			curadd = 0x10000;
+		} else {
+			left = -left;
+			yy = yy - 0x10000;
+			curadd = -0x10000;
+		}
+		while (1) {
+			if (left == 0) break;
+			left--;
+			res = getMapMaskHitSub(bgno, xx>>16, yy>>16, p_sizex, 1, true, curadd == 0x10000);
+			if (res) {
+				addMapHitInfo(bgno, ESMAPHIT_HITY, hitcelid, hitattr, hitmapx, hitmapy, orgx, orgy);
+				break;
+			}
+			getMapMaskHitSub(bgno, xx>>16, yy>>16, p_sizex, 1);
 			yy += curadd;
 			orgy += curadd;
 		}

@@ -219,6 +219,7 @@ public:
 	int updateMapMask(int bgno);
 	int getMapMask(BGMAP *map, int x, int y);
 	int getMapMaskHit(int bgno,int x,int y, int sizex, int sizey, int px, int py);
+	int getMapMaskHit32(int bgno, int x, int y, int sizex, int sizey, int px, int py);
 	int getMapMaskHitSub( int bgno, int x, int y, int sizex, int sizey, bool wallonly=false, bool downdir=false );
 
 	int setSpriteFlag(int spno, int flag);
