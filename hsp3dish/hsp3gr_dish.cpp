@@ -3709,9 +3709,9 @@ static int cmdfunc_extcmd( int cmd )
 	case 0x22e:								// es_bgparam
 	{
 		//		set BGMAP parameter
-		//		es_bgparam bgno, gmode, bgoption
+		//		es_bgparam bgno, gmode, prmtype
 		p1 = code_getdi(0);
-		p2 = code_getdi(0x3ff);
+		p2 = code_getdi(0);
 		p3 = code_getdi(0);
 
 		if (sprite->sprite_enable) {

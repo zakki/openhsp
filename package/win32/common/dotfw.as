@@ -397,6 +397,7 @@
 	gfilter FILTER_NONE
 	;
 	rgbcolor 0:boxf
+
 	gmode 1
 	;gfilter FILTER_LINEAR2
 
@@ -437,8 +438,8 @@
 		}
 
 		if gmp_id&BGID_MAP {
-			gmode 1
 			gmp_id=gmp_id & (BGID_MAP-1)
+			es_bgparam gmp_id, (_dotfw_frame@>>4)&3, ESMAP_PRM_ANIM
 			es_putbg gmp_id,0,0,x,y				; マップBGを描画
 			continue
 		}
@@ -965,10 +966,10 @@
 	return
 
 
-#deffunc df_loadbgmap int _p1, str _p2
+#deffunc df_loadbgmap int _p1, str _p2, int _p3
 
 	;	背景マップ読み込み
-	;		BGNo. , "file"
+	;		BGNo. , "file", option
 	;
 	a=_p1
 	if a<0 | a>_dotfw_bgpic_max@ : dialog "Invalid BG#"+a : return
@@ -984,21 +985,21 @@
 	celsizex = lpeek(header,16)
 	celsizey = lpeek(header,20)
 	headsize = lpeek(header,32)
-	attrmax = lpeek(header,36)
+	attrmax = lpeek(header,36)/2
 	sdim celfile,256
 	memcpy celfile,header,32,0,96
 	celload celfile
 	bufid = stat
 
 	a=_p1
-	df_setbgmap a,bufid, msx, msy, celsizex
+	df_setbgmap a,bufid, msx, msy, celsizex, _p3
 
 	gmp_id= _p1+ DOTFW_BGID_BGMAP
 
-	sdim attr,attrmax
-	bload _p2,attr,attrmax,headsize
+	sdim attr,attrmax*2
+	bload _p2,attr,attrmax*2,headsize
 	repeat attrmax
-		es_bgattr gmp_id,cnt,cnt,peek(attr,cnt)
+		es_bgattr gmp_id,cnt,cnt,wpeek(attr,cnt*2)
 		if stat : dialog "ERR"
 	loop
 
@@ -1008,7 +1009,7 @@
 	if gmp_id=3 : dup map, gmp_map3
 	if gmp_id=4 : dup map, gmp_map4
 
-	bload _p2,map,msx*msy*4,headsize+attrmax
+	bload _p2,map,msx*msy*4,headsize+attrmax*2
 
 	return
 
@@ -1112,6 +1113,7 @@
 		es_draw	ESDRAW_NOMOVE|ESDRAW_NOANIM	; スプライト描画
 	} else {
 		es_draw					; スプライト描画
+		_dotfw_frame@++
 	}
 	if (_dotfw_update_flag@&UPDATE_PAUSE)=0 {
 		dfi_sprupdate				; 内部スプライト更新
@@ -1124,7 +1126,6 @@
 
 	if (_dotfw_update_flag@&UPDATE_NOWAIT)=0 {
 		await 1000/_dotfw_fps@
-		_dotfw_frame@++
 	}
 
 	i=15

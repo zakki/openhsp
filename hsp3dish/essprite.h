@@ -49,11 +49,19 @@ extern "C" {
 #define ESMAP_OPT_NOTRANS (1)
 #define ESMAP_OPT_USEMASK (0x100)
 
-#define ESMAP_ATTR_MAX (0x10000)
+#define ESMAP_ATTR_MAX (0x1000)
 #define ESMAP_ATTR_NONE (0)			//	侵入可能な場所(デフォルト)
-#define ESMAP_ATTR_ITEM (1)			//	侵入可能でヒット判定(アイテム)
+#define ESMAP_ATTR_EVENT (64)		//	侵入可能でヒット判定(アイテム)
 #define ESMAP_ATTR_HOLD (128)		//	侵入可能だが足場になる
 #define ESMAP_ATTR_WALL (192)		//	侵入不可の壁
+#define ESMAP_ATTR_ANIM (32)		//	アニメーション有効
+#define ESMAP_ATTR_NOTICE (16)		//	通知アイテム
+#define ESMAP_ATTR_GROUP (15)		//	グループビット
+
+#define ESMAP_PRM_GMODE (0)
+#define ESMAP_PRM_ANIM (1)
+#define ESMAP_PRM_GROUP (2)
+#define ESMAP_PRM_OPTION (3)
 
 #define ESMAPHIT_INFOMAX (64)
 #define ESMAPHIT_NONE (0)
@@ -61,6 +69,7 @@ extern "C" {
 #define ESMAPHIT_HITY (2)
 #define ESMAPHIT_HIT (3)
 #define ESMAPHIT_EVENT (4)
+#define ESMAPHIT_NOTICE (5)
 
 #define ESSPF_TIMEWIPE (1)
 #define ESSPF_BLINK (2)
@@ -134,9 +143,12 @@ typedef struct BGMAP
 	int viewx, viewy;		//	Map view axis
 	int divx, divy;			//	Cel Div size
 	int buferid;			//	Map parts buffer ID
-	int bgoption;			//	BG option
 	int tpflag;				//	合成パラメーター
-	unsigned char *attr;	//	Cel Attribute
+	int animation;			//	Animation Index
+	int group;				//	group mask
+	int bgoption;			//	BG option
+	unsigned short *attr;	//	Cel Attribute
+	int notice;				//	Notice Index
 	int maphit;				//	Map hit count
 	int sx, sy;				//	Whole Map Size
 	BGHITINFO bghitinfo[ESMAPHIT_INFOMAX];	//	Map hit info
@@ -214,6 +226,7 @@ public:
 	void resetMapHitInfo(int bgno);
 	BGHITINFO* getMapHitInfo(int bgno, int index);
 	BGHITINFO* addMapHitInfo(int bgno, int result, int celid, int attr, int x, int y, int myx, int myy);
+	void resetMapAttribute(BGMAP *map);
 	int setMapAttribute(int bgno, int start, int end, int attribute);
 	int getMapAttribute(int bgno, int celid);
 	int updateMapMask(int bgno);
@@ -307,7 +320,8 @@ private:
 	int		fade_mode, fade_upd, fade_val, fade_tar;
 
 	int		framecount;			// frame count
-	int		hitattr;			// Map hit attr backup
+	int		hitattr;			// Map hit attr backup (8bit)
+	int		hitattr_org;		// Map hit attr backup (16bit)
 	int		hitcelid;			// Map hit cel backup
 	int		hitmapx, hitmapy;	// Map hit axis backup
 	int		bak_hitmapx;		// Map hit axis backup (previous)

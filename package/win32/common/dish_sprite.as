@@ -140,18 +140,27 @@
 #define global ESBGOPT_NOTRANS (1)
 #define global ESBGOPT_USEMASK (0x100)
 
-#define global ESMAP_ATTR_MAX (0x10000)
-#define global ESMAP_ATTR_NONE (0)			//	侵入可能な場所(デフォルト)
-#define global ESMAP_ATTR_ITEM (1)			//	侵入可能でヒット判定(アイテム)
-#define global ESMAP_ATTR_HOLD (128)		//	侵入可能だが足場になる
-#define global ESMAP_ATTR_WALL (192)		//	侵入不可の壁
+#define global ESMAP_ATTR_MAX (0x1000)
+#define global ESMAP_ATTR_NONE (0)		//	侵入可能な場所(デフォルト)
+#define global ESMAP_ATTR_EVENT (64)	//	侵入可能でヒット判定(アイテム)
+#define global ESMAP_ATTR_HOLD (128)	//	侵入可能だが足場になる
+#define global ESMAP_ATTR_WALL (192)	//	侵入不可の壁
+#define global ESMAP_ATTR_ANIM (32)		//	アニメーション有効
+#define global ESMAP_ATTR_NOTICE (16)	//	通知アイテム
+#define global ESMAP_ATTR_GROUP (15)	//	グループビット
 
+#define global ESMAP_PRM_GMODE (0)
+#define global ESMAP_PRM_ANIM (1)
+#define global ESMAP_PRM_GROUP (2)
+#define global ESMAP_PRM_OPTION (3)
+
+#define global ESMAPHIT_INFOMAX (64)
 #define global ESMAPHIT_NONE (0)
 #define global ESMAPHIT_HITX (1)
 #define global ESMAPHIT_HITY (2)
+#define global ESMAPHIT_HIT (3)
 #define global ESMAPHIT_EVENT (4)
-
-
+#define global ESMAPHIT_NOTICE (5)
 
 #endif
 

@@ -63,18 +63,18 @@
 	lpoke header,16,celsizex
 	lpoke header,20,celsizey
 	lpoke header,32,headsize
-	lpoke header,36,attrmax
+	lpoke header,36,attrmax*2
 	poke header,96,celtitle
 
-	sdim attr,attrmax			; アトリビュートデータ変数
+	sdim attr,attrmax*2			; アトリビュートデータ変数
 	repeat attrmax
 		es_getbgattr i,0,cnt
-		poke attr,cnt,i
+		wpoke attr,cnt*2,i
 	loop
 
 	bsave _p1,header,headsize
-	bsave _p1,attr,attrmax,headsize
-	bsave _p1,map,mapsizex*mapsizey*4,headsize+attrmax
+	bsave _p1,attr,attrmax*2,headsize
+	bsave _p1,map,mapsizex*mapsizey*4,headsize+attrmax*2
 
 	mapupdate=0
 	return
@@ -95,15 +95,15 @@
 	celsizex = lpeek(header,16)
 	celsizey = lpeek(header,20)
 	headsize = lpeek(header,32)
-	attrmax = lpeek(header,36)
+	attrmax = lpeek(header,36)/2
 	memcpy celfile,header,32,0,96
 
-	sdim attr,attrmax			; アトリビュートデータ変数
-	bload _p1,attr,attrmax,headsize
+	sdim attr,attrmax*2			; アトリビュートデータ変数
+	bload _p1,attr,attrmax*2,headsize
 
 	dim map,mapsizex*mapsizey				; マップデータ変数
 	dim map_bak,mapsizex*mapsizey				; マップデータ変数(保存用)
-	bload _p1,map,mapsizex*mapsizey*4,headsize+attrmax
+	bload _p1,map,mapsizex*mapsizey*4,headsize+attrmax*2
 	;dialog ""+celfile+":"+celsizex+","+celsizey
 	;
 	mapupdate=0
@@ -126,6 +126,8 @@
 	celattr_value=0
 	celattr_chk1=0
 	celattr_chk2=0
+	celattr_chk3=0
+	celattr_chk4=0
 	celcursx=1:celcursy=1
 	attrmax=4096
 	mapupdate=0
@@ -376,10 +378,10 @@
 	mapvx=(edx+sx-1)/sx
 	mapvy=(wy+sy-1)/sy
 	es_bgmap 0,map,mapsizex,mapsizey,mapvx,mapvy,BUFID_CEL	; マップ登録
-	es_bgparam 0, 0, 0
+	es_bgparam 0, 0, ESMAP_PRM_GMODE
 	;
 	repeat attrmax
-		es_bgattr 0,cnt,cnt,peek(attr,cnt)
+		es_bgattr 0,cnt,cnt,wpeek(attr,cnt*2)
 	loop
 	;
 	navisx=256
@@ -411,8 +413,10 @@
 	objsize (edsx-20)/2,sy
 	pos x,y+24:button "SET",*to_setattr
 	objsize 32,sy
-	pos x+64+32,y-1:chkbox "W",celattr_chk2
-	pos x+64,y-1:chkbox "G",celattr_chk1
+	pos x+64+32,y-1:chkbox "H",celattr_chk2
+	pos x+64,y-1:chkbox "E",celattr_chk1
+	pos x+64+32,y-22:chkbox "N",celattr_chk4
+	pos x+64,y-22:chkbox "A",celattr_chk3
 
 	scrolldelay=0
 	waitcnt=0
@@ -422,6 +426,7 @@
 	editmode=0			; mode 0=normal,1/2/3/4=source,5=copy
 	mapsrcx=0:mapsrcy=0
 	mapsrcsx=0:mapsrcsy=0
+	frame=0
 
 *main_loop
 	;	EDITOR screen
@@ -502,6 +507,7 @@
 *main_update
 	;	メイン画面描画
 	;
+	es_bgparam 0, (frame>>4)&3, ESMAP_PRM_ANIM
 	viewcalc vptype_2d,mapzoom,mapzoom,0
 	es_putbg 0,0,0,viewx,viewy				; マップを描画
 	viewcalc vptype_2d,1,1,0
@@ -527,6 +533,7 @@
 	if mapno>=0 {
 		gosub *draw_maparea
 	}
+	frame++
 	return
 
 *draw_maparea
@@ -548,7 +555,7 @@
 	if editmode>0 : return
 
 	mes celtitle
-	if celcur>=0 : mes "#"+celcur+" ATTR:"+celattr
+	if celcur>=0 : mes strf("#%d ATTR:%X",celcur,celattr)
 	pos edcelx,edcely:gmode 0,celsx,celsy
 	gzoom celsx*celzoom,celsy*celzoom,BUFID_CEL,celxx,celyy,celsx,celsy,0
 
@@ -585,10 +592,11 @@
 	goto *main_loop
 *to_setattr
 	i=celattr_value:a=0
-	if celattr_chk1 : a=128
-	if celattr_chk2 : a=192
-	i=i+a
-	if i>255 : i=255
+	if celattr_chk1 : a=64
+	if celattr_chk2 : a|=128
+	if celattr_chk3 : a|=32
+	if celattr_chk4 : a|=16
+	i=a+(i<<8)
 	;
 	repeat celary
 		j=cnt*celdx+celcur

@@ -1508,6 +1508,9 @@ int essprite::setMap(int def_bgno, int* varptr, int mapsx, int mapsy, int sx, in
 	bg->bgoption = option;
 	bg->tpflag = 0x3ff;
 	bg->maphit = 0;
+	bg->animation = 0;
+	bg->group = 0;
+	bg->notice = 0;
 
 	Bmscr* bm = hspwnd->GetBmscrSafe(bg->buferid);
 	if (bm == NULL) return -1;
@@ -1522,9 +1525,19 @@ int essprite::setMap(int def_bgno, int* varptr, int mapsx, int mapsy, int sx, in
 		updateMapMask(bgno);
 	}
 
-	bg->attr = (unsigned char *)calloc(ESMAP_ATTR_MAX,1);		// alloc map attriubte
 
 	return bgno;
+}
+
+
+void essprite::resetMapAttribute(BGMAP* map)
+{
+	if (map == NULL) return;
+	if (map->attr != NULL) {
+		free(map->attr);
+		return;
+	}
+	map->attr = (unsigned short*)calloc(ESMAP_ATTR_MAX, 2);		// alloc map attriubte
 }
 
 
@@ -1592,6 +1605,9 @@ int essprite::putMap(int xx, int yy, int bgno )
 	int* mapsrc;
 	int* p;
 	int celno;
+	unsigned short* p_attr;
+	int attr;
+	int group;
 	bool transflag = true;
 
 	BGMAP* bg = getMap(bgno);
@@ -1617,10 +1633,13 @@ int essprite::putMap(int xx, int yy, int bgno )
 	x = xx - vpx;
 	y = yy - vpy;
 
+	p_attr = bg->attr;
+	group = bg->group;
 	setTransparentMode(bg->tpflag);
 	if ((bg->tpflag >> 8) == 0) transflag = false;
+	resetMapHitInfo(bgno);
 
-	ofsy = vy/divy;
+	ofsy = vy / divy;
 	for (j = 0; j < sy;j++) {
 		bmscr->cx = x;
 		bmscr->cy = y;
@@ -1630,10 +1649,26 @@ int essprite::putMap(int xx, int yy, int bgno )
 		for (i = 0; i < sx;i++) {
 			celno = ( p[ofsx % bg->mapsx] ) & 0xffff;
 			if (celno == 0) {
-				if (transflag) {
+				if (transflag) {					// cel=0はスキップ
 					bmscr->cx += divx;
 					ofsx++;
 					continue;
+				}
+			}
+			if (p_attr) {
+				attr = (int)p_attr[celno];
+				if (attr & ESMAP_ATTR_ANIM) celno += bg->animation;
+				if (attr & ESMAP_ATTR_NOTICE) {
+					addMapHitInfo(bgno, ESMAPHIT_NOTICE, celno, attr, ofsx, ofsy, i, j);	// NOTICE
+					celno = 0;
+					p[ofsx % bg->mapsx] = 0;
+				}
+				if (group) {
+					if (group != (attr & 15)) {		// 指定グループのみ表示する
+						bmscr->cx += divx;
+						ofsx++;
+						continue;
+					}
 				}
 			}
 			bmscr->CelPut(bm, celno);
@@ -1642,7 +1677,7 @@ int essprite::putMap(int xx, int yy, int bgno )
 		y+=bm->divsy;
 		ofsy++;
 	}
-	return 0;
+	return bg->maphit;
 }
 
 
@@ -1651,8 +1686,22 @@ int essprite::setMapParam(int bgno, int tp, int option)
 	BGMAP* bg = getMap(bgno);
 	if (bg == NULL) return -1;
 
-	bg->tpflag = tp;
-	bg->bgoption = option;
+	switch (option) {
+	case ESMAP_PRM_GMODE:
+		bg->tpflag = tp;
+		break;
+	case ESMAP_PRM_ANIM:
+		bg->animation = tp;
+		break;
+	case ESMAP_PRM_GROUP:
+		bg->group = tp;
+		break;
+	case ESMAP_PRM_OPTION:
+		bg->bgoption = tp;
+		break;
+	default:
+		return -1;
+	}
 	return 0;
 }
 
@@ -1661,12 +1710,14 @@ int essprite::setMapAttribute(int bgno, int start, int end, int attribute)
 {
 	BGMAP* bg = getMap(bgno);
 	if (bg == NULL) return -1;
-
+	if (bg->attr == NULL) {
+		resetMapAttribute(bg);
+	}
 	int i = start;
 	while (1) {
 		if ((i < 0) || (i >= ESMAP_ATTR_MAX)) return -1;
 		if (i > end) break;
-		bg->attr[i] = (unsigned char)attribute;
+		bg->attr[i] = (unsigned short)attribute;
 		i++;
 	}
 	return 0;
@@ -1675,11 +1726,11 @@ int essprite::setMapAttribute(int bgno, int start, int end, int attribute)
 
 int essprite::getMapAttribute(int bgno, int celid)
 {
-	unsigned char a1;
+	unsigned short a1;
 	BGMAP* bg = getMap(bgno);
 	if (bg == NULL) return -1;
 	if ((celid<0)||(celid>=ESMAP_ATTR_MAX)) return -1;
-	if (bg->attr == NULL) return -1;
+	if (bg->attr == NULL) return 0;
 	a1 = bg->attr[celid];
 	return (int)a1;
 }
@@ -1735,7 +1786,7 @@ BGHITINFO* essprite::getMapHitInfo(int bgno, int index)
 
 int essprite::getMapMask(BGMAP* map, int x, int y)
 {
-	unsigned char* attr = map->attr;
+	unsigned short* attr = map->attr;
 	if (attr == NULL) return 0;
 
 	if ((x < 0) || (x >= map->sx)) return 0;
@@ -1745,12 +1796,12 @@ int essprite::getMapMask(BGMAP* map, int x, int y)
 	hitmapx = (x / map->divx);
 	hitmapy = (y / map->divy);
 	hitcelid = p[ hitmapy * map->mapsx + hitmapx ] & 0xffff;
-	unsigned char a1 = attr[hitcelid];
-	hitattr = (int)a1;
+	hitattr_org = (int)attr[hitcelid];
+	hitattr = hitattr_org & 0xff;
 	if (hitattr >= ESMAP_ATTR_WALL) {
 		return ESMAPHIT_HIT;
 	}
-	if (hitattr >= ESMAP_ATTR_ITEM) return ESMAPHIT_EVENT;
+	if (hitattr >= ESMAP_ATTR_EVENT) return ESMAPHIT_EVENT;
 	return ESMAPHIT_NONE;
 }
 
@@ -1771,7 +1822,7 @@ int essprite::getMapMaskHitSub(int bgno, int x, int y, int sizex, int sizey, boo
 				else {
 					if (hitattr < ESMAP_ATTR_HOLD) {
 						if ((bak_hitmapx != hitmapx) || (bak_hitmapy != hitmapy)) {
-							addMapHitInfo(bgno, ESMAPHIT_EVENT, hitcelid, hitattr, hitmapx, hitmapy, x, y + yy);	// ITEM
+							addMapHitInfo(bgno, ESMAPHIT_EVENT, hitcelid, hitattr_org, hitmapx, hitmapy, x, y + yy);	// ITEM
 							bak_hitmapx = hitmapx; bak_hitmapy = hitmapy;
 						}
 					}
@@ -1795,7 +1846,7 @@ int essprite::getMapMaskHitSub(int bgno, int x, int y, int sizex, int sizey, boo
 				else {
 					if (hitattr < ESMAP_ATTR_HOLD) {
 						if ((bak_hitmapx != hitmapx) || (bak_hitmapy != hitmapy)) {
-							addMapHitInfo(bgno, ESMAPHIT_EVENT, hitcelid, hitattr, hitmapx, hitmapy, x + xx, y);	// ITEM
+							addMapHitInfo(bgno, ESMAPHIT_EVENT, hitcelid, hitattr_org, hitmapx, hitmapy, x + xx, y);	// ITEM
 							bak_hitmapx = hitmapx; bak_hitmapy = hitmapy;
 						}
 					}
@@ -1845,7 +1896,7 @@ int essprite::getMapMaskHit(int bgno, int x, int y, int sizex, int sizey, int px
 			left--;
 			res = getMapMaskHitSub(bgno, xx, yy, 1, sizey, true, false);
 			if (res) {
-				addMapHitInfo(bgno, ESMAPHIT_HITX, hitcelid, hitattr, hitmapx, hitmapy, orgx, orgy);
+				addMapHitInfo(bgno, ESMAPHIT_HITX, hitcelid, hitattr_org, hitmapx, hitmapy, orgx, orgy);
 				break;
 			}
 			getMapMaskHitSub(bgno, xx, yy, 1, sizey);
@@ -1871,7 +1922,7 @@ int essprite::getMapMaskHit(int bgno, int x, int y, int sizex, int sizey, int px
 			left--;
 			res = getMapMaskHitSub(bgno, xx, yy, sizex, 1, true, curadd==1);
 			if (res) {
-				addMapHitInfo(bgno, ESMAPHIT_HITY, hitcelid, hitattr, hitmapx, hitmapy, orgx, orgy);
+				addMapHitInfo(bgno, ESMAPHIT_HITY, hitcelid, hitattr_org, hitmapx, hitmapy, orgx, orgy);
 				break;
 			}
 			getMapMaskHitSub(bgno, xx, yy, sizex, 1);
@@ -1924,7 +1975,7 @@ int essprite::getMapMaskHit32(int bgno, int x, int y, int p_sizex, int p_sizey, 
 			left--;
 			res = getMapMaskHitSub(bgno, xx>>16, yy>>16, 1, p_sizey, true, false);
 			if (res) {
-				addMapHitInfo(bgno, ESMAPHIT_HITX, hitcelid, hitattr, hitmapx, hitmapy, orgx, orgy);
+				addMapHitInfo(bgno, ESMAPHIT_HITX, hitcelid, hitattr_org, hitmapx, hitmapy, orgx, orgy);
 				break;
 			}
 			getMapMaskHitSub(bgno, xx>>16, yy>>16, 1, p_sizey);
@@ -1949,7 +2000,7 @@ int essprite::getMapMaskHit32(int bgno, int x, int y, int p_sizex, int p_sizey, 
 			left--;
 			res = getMapMaskHitSub(bgno, xx>>16, yy>>16, p_sizex, 1, true, curadd == 0x10000);
 			if (res) {
-				addMapHitInfo(bgno, ESMAPHIT_HITY, hitcelid, hitattr, hitmapx, hitmapy, orgx, orgy);
+				addMapHitInfo(bgno, ESMAPHIT_HITY, hitcelid, hitattr_org, hitmapx, hitmapy, orgx, orgy);
 				break;
 			}
 			getMapMaskHitSub(bgno, xx>>16, yy>>16, p_sizex, 1);
