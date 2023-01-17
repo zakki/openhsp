@@ -3355,7 +3355,7 @@ static int cmdfunc_extcmd( int cmd )
 	case 0x218:								// es_draw
 	{
 		//		execute drawing ESCD system (type0)
-		//		es_draw start,kazz,start_pri,end_pri
+		//		es_draw start,kazz,flag,start_pri,end_pri
 		p1 = code_getdi(0);
 		p2 = code_getdi(-1);
 		p3 = code_getdi(0);
@@ -3413,7 +3413,20 @@ static int cmdfunc_extcmd( int cmd )
 	}
 	case 0x21d:								// es_move
 	{
-		throw HSPERR_UNSUPPORTED_FUNCTION;
+		//		execute drawing ESCD system (type0)
+		//		es_move frame, start,kazz,animflag
+		p1 = code_getdi(1);
+		p2 = code_getdi(0);
+		p3 = code_getdi(-1);
+		p4 = code_getdi(0);
+		if (sprite->sprite_enable) {
+			int mode = ESDRAW_NODISP;
+			if (p4) mode |= ESDRAW_NOANIM;
+			for (int i = 0; i < p1; i++) {
+				ctx->stat = sprite->draw(p2, p3, mode, -1, -1);
+			}
+		}
+		else throw HSPERR_UNSUPPORTED_FUNCTION;
 		break;
 	}
 	case 0x21e:								// es_setpri
@@ -3803,6 +3816,20 @@ static int cmdfunc_extcmd( int cmd )
 			ctx->stat = sprite->getMapAttribute(p1, p2);
 			code_setva(p_pval, p_aptr, HSPVAR_FLAG_INT, &ctx->stat);
 		}
+		break;
+	}
+	case 0x233:								// 
+	{
+		//		sprite axis add vector set (type0)
+		//		es_dir spno, x, y, prm%
+		p1 = code_getdi(0);
+		p2 = code_getdi(0);
+		p3 = code_getdi(0);
+		p4 = code_getdi(100);
+		if (sprite->sprite_enable) {
+			ctx->stat = sprite->setSpriteAddDir(p1, p2, p3);
+		}
+		else throw HSPERR_UNSUPPORTED_FUNCTION;
 		break;
 	}
 

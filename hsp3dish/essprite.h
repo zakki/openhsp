@@ -27,6 +27,12 @@ extern "C" {
 #define ESSPFLAG_EFADE2 (0x400000)
 #define ESSPFLAG_MOVEROT (0x800000)
 
+#define ESSPMAPHIT_NONE (0)
+#define ESSPMAPHIT_BGHIT (0x100)
+#define ESSPMAPHIT_WIPE (0x200)
+#define ESSPMAPHIT_GETEVENT (0x400)
+#define ESSPMAPHIT_EVENTWIPE (0x800)
+#define ESSPMAPHIT_BGOBJ (0x1000)
 
 #define ESSPSET_POS (0)
 #define ESSPSET_ADDPOS (1)
@@ -61,7 +67,13 @@ extern "C" {
 #define ESMAP_PRM_GMODE (0)
 #define ESMAP_PRM_ANIM (1)
 #define ESMAP_PRM_GROUP (2)
-#define ESMAP_PRM_OPTION (3)
+#define ESMAP_PRM_NOTICE (3)
+#define ESMAP_PRM_GRAVITY (4)
+#define ESMAP_PRM_HITOFSX (5)
+#define ESMAP_PRM_HITOFSY (6)
+#define ESMAP_PRM_HITSIZEX (7)
+#define ESMAP_PRM_HITSIZEY (8)
+#define ESMAP_PRM_OPTION (16)
 
 #define ESMAPHIT_INFOMAX (64)
 #define ESMAPHIT_NONE (0)
@@ -150,7 +162,11 @@ typedef struct BGMAP
 	unsigned short *attr;	//	Cel Attribute
 	int notice;				//	Notice Index
 	int maphit;				//	Map hit count
+	int gravity;			//	Gravity +py
+	int hitofsx, hitofsy;	//	Map hit offset X,Y
+	int hitsizex, hitsizey;	//	Map hit size X,Y
 	int sx, sy;				//	Whole Map Size
+	int effectbase[8];		//	Effect ID store
 	BGHITINFO bghitinfo[ESMAPHIT_INFOMAX];	//	Map hit info
 } BGMAP;
 
@@ -160,7 +176,7 @@ typedef struct SPOBJ
 	int xx;				//  X axis (16bit固定少数)
 	int yy;				//	Y axis (16bit固定少数)
 	int px;				//	Gravity/Move X parameters
-	int py;				//	Gravity/Move X parameters
+	int py;				//	Gravity/Move Y parameters
 	int progress;		//	Move progress counter
 	int ani;			//	chr anim counter
 	int chr;			//	chr code
@@ -180,6 +196,7 @@ typedef struct SPOBJ
 	int timer_base;		//	カウントダウンタイマー初期値
 	int protz;			//	Move RotZ parameter
 	int pzoomx, pzoomy;	//	Move ZoomX,ZoomY parameters
+	int maphit;			//	マップヒット用フラグ
 	unsigned short *sbr;//	callback
 
 } SPOBJ;
@@ -206,8 +223,6 @@ public:
 	void setTransparentMode(int tp);
 	SPOBJ* resetSprite(int spno);
 	int put(int x, int y, int chr, int tpflag=-1, int zoomx=0x10000, int zoomy=0x10000, int rotz=0);
-	int drawSubMove(SPOBJ* sp, int mode);
-	int drawSubPut(SPOBJ* sp, int mode);
 	int draw(int start, int num, int mode, int start_pri, int end_pri);
 	int find(int chktype, int spno, int endspno = -1, int step = 0);
 	int checkCollisionSub(SPOBJ *sp);
@@ -282,6 +297,10 @@ public:
 protected:
 	void execTimerFade(SPOBJ* sp);
 	void execTimerEndFade(SPOBJ* sp);
+	int drawSubMove(SPOBJ* sp, int mode);
+	int drawSubPut(SPOBJ* sp, int mode);
+	int drawSubMoveGravity(SPOBJ* sp);
+	int drawSubMoveVector(SPOBJ* sp);
 
 private:
 	//	Parameters

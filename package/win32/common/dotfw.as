@@ -36,6 +36,9 @@
 	_dotfw_interval = 8				; 連射インターバル
 	_dotfw_myx =0					; プレイヤーX
 	_dotfw_myy =0					; プレイヤーY
+	_dotfw_myani =0					; プレイヤーアニメーションカウンタ
+	_dotfw_mydir =0					; プレイヤー方向ID
+	_dotfw_myjmp =0					; プレイヤージャンプフラグ
 	_dotfw_cx =0					; 敵X
 	_dotfw_cy =0					; 敵Y
 	_dotfw_movex =0					; 移動成分X
@@ -178,6 +181,9 @@
 #define global DOTFW_BGID_BGMAP (1)
 #define global DOTFW_BGID_MAPMAX (4)
 
+#define global DOTFW_PACTTYPE_NORMAL (0)
+#define global DOTFW_PACTTYPE_JUMP (1)
+
 
 #const SPR_NONE 0
 #const SPR_TIMER $fff
@@ -300,6 +306,7 @@
 	;	プレイヤー設定
 	;
 	sp_player_mode=-1
+	sp_player_acttype=0
 	sp_player=0
 	sp_player_tamane=0
 	sp_player_speedx=2
@@ -308,6 +315,15 @@
 	sp_player_y1=0
 	sp_player_x2=sx-DOTFW_CHRX
 	sp_player_y2=sy-DOTFW_CHRY
+	sp_player_cenx=0
+	sp_player_ceny=0
+	sp_player_bgtrack=0
+	sp_player_bgxrate=0
+	sp_player_bgyrate=0
+	sp_player_bgx1=0
+	sp_player_bgy1=0
+	sp_player_bgx2=0
+	sp_player_bgy2=0
 
 	player_actlb=*actdefault
 	player_keylb=*pcont_normal
@@ -397,7 +413,7 @@
 	gfilter FILTER_NONE
 	;
 	rgbcolor 0:boxf
-
+	;
 	gmode 1
 	;gfilter FILTER_LINEAR2
 
@@ -415,6 +431,58 @@
 	gmp_id = bgp_id(cnt)
 	if gmp_id=0 : continue
 	pos 0,0
+
+		x=bgp_gx(cnt)>>10
+		y=bgp_gy(cnt)>>10
+
+		if gmp_id&BGID_MAP {
+			gmp_id=gmp_id & (BGID_MAP-1)
+			es_bgparam gmp_id, 0, ESMAP_PRM_GROUP
+			es_bgparam gmp_id, (_dotfw_frame@>>3)&3, ESMAP_PRM_ANIM
+			es_putbg gmp_id,0,0,x,y				; マップBGを描画
+			continue
+		}
+
+		gmode gmp_mode,_dotfw_sx@,_dotfw_sy@,255:gcopy gmp_id,x,y
+		bgi=bgp_sx(cnt)-x
+		if bgi<_dotfw_sx@ {
+			pos bgi-1,0:gcopy gmp_id,0,y
+		}
+		bgi=bgp_sy(cnt)-y
+		if bgi<_dotfw_sy@ {
+			pos 0,bgi-1:gcopy gmp_id,x,0
+		}
+		gmp_mode=3
+	loop
+	;
+	return
+
+*df_bgput2
+	;	背景表示(手前)
+	;
+	gmp_mode=1
+	repeat _dotfw_bgpic_max@
+		gmp_id = bgp_id(cnt)
+		if gmp_id=0 : continue
+		pos 0,0
+		if gmp_id&BGID_MAP {
+			x=bgp_gx(cnt)>>10
+			y=bgp_gy(cnt)>>10
+			gmp_id=gmp_id & (BGID_MAP-1)
+			es_bgparam gmp_id, 1, ESMAP_PRM_GROUP
+			es_bgparam gmp_id, (_dotfw_frame@>>3)&3, ESMAP_PRM_ANIM
+			es_putbg gmp_id,0,0,x,y				; マップBGを描画
+		}
+	loop
+	;
+	return
+
+*df_bgupdate
+	;	背景更新
+	;
+	repeat _dotfw_bgpic_max@
+	gmp_id = bgp_id(cnt)
+	if gmp_id=0 : continue
 
 		bgp_gx(cnt)+=bgp_px(cnt)
 		bgp_gy(cnt)+=bgp_py(cnt)
@@ -436,27 +504,10 @@
 			y=bgp_sy(cnt)-1
 			bgp_gy(cnt)=y<<10
 		}
-
-		if gmp_id&BGID_MAP {
-			gmp_id=gmp_id & (BGID_MAP-1)
-			es_bgparam gmp_id, (_dotfw_frame@>>4)&3, ESMAP_PRM_ANIM
-			es_putbg gmp_id,0,0,x,y				; マップBGを描画
-			continue
-		}
-
-		gmode gmp_mode,_dotfw_sx@,_dotfw_sy@,255:gcopy gmp_id,x,y
-		bgi=bgp_sx(cnt)-x
-		if bgi<_dotfw_sx@ {
-			pos bgi-1,0:gcopy gmp_id,0,y
-		}
-		bgi=bgp_sy(cnt)-y
-		if bgi<_dotfw_sy@ {
-			pos 0,bgi-1:gcopy gmp_id,x,0
-		}
-		gmp_mode=3
 	loop
 	;
 	return
+
 
 *actdefault
 	;	アクション用デフォルトラベル(何もしない)
@@ -647,6 +698,12 @@
 
 	_dotfw_effect@++
 	x=sprx(cnt)>>DOTFW_SPRSHIFT:y=spry(cnt)>>DOTFW_SPRSHIFT
+
+	if sp_player_map {
+		gmp_id= sp_player_map - DOTFW_BGID_BGMAP
+		x-=bgp_gx(gmp_id)>>10
+		y-=bgp_gy(gmp_id)>>10
+	}
 
 	if flg&SPR_OK {
 		pos x,y
@@ -1089,7 +1146,7 @@
 
 #deffunc df_bgscroll int _p1, int _p2, int _p3
 
-	;	背景スクロールを指定
+	;	背景自動スクロールを指定
 	;		BGNo., dir, speed
 	;
 	a=_p1
@@ -1119,6 +1176,10 @@
 		dfi_sprupdate				; 内部スプライト更新
 	}
 	dfi_sprdraw					; 内部スプライト描画
+	;
+	gosub *df_bgput2			; 前面マップ
+	gosub *df_bgupdate
+	;
 	gmode 1
 	es_putbg texbg				; テキストVRAMを描画
 	;
@@ -1138,8 +1199,52 @@
 	;	ゲームコントロール
 	if (_dotfw_update_flag@&UPDATE_NOWAIT)=0 {
 		gosub *player_main
+		gosub *player_maptrack
 		gosub *enemy_main
 	}
+	;
+	;
+	return
+
+
+*player_maptrack
+	;	プレイヤーを画面内に入れる
+	;
+	if sp_player_bgtrack=0 : return
+	if sp_player_map=0 : return
+	;
+	a = sp_player_map - DOTFW_BGID_BGMAP
+	es_getpos sp_player,myx,myy
+	myx+=sp_player_cenx			; 中心座標
+	myy+=sp_player_ceny
+	myx-=bgp_gx(a)>>10
+	myy-=bgp_gy(a)>>10
+
+	px=1
+	x = sp_player_bgx1 - myx
+	if x<=0 {
+		px=-1
+		x = myx - sp_player_bgx2
+		if x<=0 : goto *player_maptrack_y
+	}
+	setease 0,sp_player_bgxrate*1024,ease_cubic_in
+	bgp_gx(a)-=getease(x,sp_player_bgxrate)*px
+	if bgp_gx(a)<0 : bgp_gx(a)=0
+
+*player_maptrack_y
+	py=1
+	y = sp_player_bgy1 - myy
+	if y<=0 {
+		py=-1
+		y = myy - sp_player_bgy2
+		if y<=0 : goto *player_maptrack_done
+	}
+	setease 0,sp_player_bgyrate*1024,ease_cubic_in
+	bgp_gy(a)-=getease(y,sp_player_bgyrate)*py
+	if bgp_gy(a)<0 : bgp_gy(a)=0
+
+*player_maptrack_done
+
 	return
 
 
@@ -1297,6 +1402,30 @@
 
 ;------------------------------------------------------------
 
+#deffunc df_bglink int _p1, int _p2, int _p3
+
+	;	背景マップとプレイヤーのリンクを指定
+	;		BGNo., rate%, free%
+	;
+	gmp_id = _p1+ DOTFW_BGID_BGMAP
+	sp_player_map = gmp_id
+	es_setparent sp_player,gmp_id,1
+	;
+	sp_player_bgtrack=1
+	rate=_p2:if rate<=0 : rate=50
+	sp_player_bgx1 = _dotfw_sx@ * rate / 200
+	sp_player_bgy1 = _dotfw_sy@ * rate / 200
+	sp_player_bgx2 = _dotfw_sx@ - sp_player_bgx1
+	sp_player_bgy2 = _dotfw_sy@ - sp_player_bgy1
+
+	rate=rate+_p3:if rate>100 : rate=100
+	x = _dotfw_sx@ * rate / 200
+	y = _dotfw_sy@ * rate / 200
+	sp_player_bgxrate = x - sp_player_bgx1 + 1
+	sp_player_bgyrate = y - sp_player_bgy1 + 1
+	return
+
+
 #deffunc df_jumpaction int _p1, int _p2, int _p3, int _p4, int _p5, int _p6
 
 	;	プレイヤージャンプアクション設定
@@ -1308,7 +1437,7 @@
 	i=_p2:if i<=0 : i=0
 	sp_player_grav = i * 0x10000 / 100
 	sp_player_myani=0
-	sp_player_mydir=0
+	sp_player_mydir=DIR_RIGHT
 	sp_player_myjmp=0
 	sp_player_mygrv=0
 
@@ -1329,21 +1458,27 @@
 	player_keylb=*jumpact_key
 	player_btn2lb=*jumpact_jump
 
+	sp_player_acttype=DOTFW_PACTTYPE_JUMP
 	return
 
 *jumpact_key
 	ky=key@
 	es_getpos sp_player,myx,myy,ESSPSET_DIRECT
 	px=0:py=0
+	sp_player_myani++
 	if ky&1 {
+		sp_player_mydir = DIR_LEFT
 		px=-sp_player_speedx <<16
 	}
 	if ky&4 {
+		sp_player_mydir = DIR_RIGHT
 		px=sp_player_speedx <<16
 	}
 	x=(myx+px)>>16
 	if x<sp_player_x1 : px=0
 	if x>sp_player_x2 : px=0
+	if px=0 : sp_player_myani=0
+
 	if sp_player_myjmp>0 : goto *jumpact_keysky
 
 	py = 0x10000
@@ -1388,11 +1523,11 @@
 	es_pos sp_player,myx,myy,ESSPSET_DIRECT			; スプライト座標設定
 
 	if sp_player_myjmp=0 {
-		if hity=0 : sp_player_myjmp=1 : sp_player_mygrv=1
+		if hity=0 : sp_player_myjmp=1 : sp_player_myani=0 : sp_player_mygrv=1
 		return
 	}
 	if hity {
-		if py>=0 : sp_player_myjmp=0 : return
+		if py>=0 : sp_player_myjmp=0 : sp_player_myani=0 : return
 		sp_player_mygrv=1
 	}
 	return
@@ -1425,6 +1560,10 @@
 
 	_dotfw_cursp@ = sp_player
 	sp_player_mode=0
+	sp_player_myani=0
+	sp_player_mydir=0
+	sp_player_cenx=8
+	sp_player_ceny=8
 	return
 
 
@@ -1433,8 +1572,8 @@
 	;	プレイヤー弾登録
 	;	x,y, direction, speed, chrno, option
 	;
-	i=CHR_MISSILE
-	if _p3>0 : i=_p3
+	pmchr=CHR_MISSILE
+	if _p3>0 : pmchr=_p3
 	spno=-1
 	spd=100
 	if _p2>0 : spd=_p2
@@ -1443,9 +1582,15 @@
 	_dotfw_cursp@ = spno
 	if spno<0 : return
 
-	es_set spno,_p4,_p5,i,_p6
+	es_set spno,_p4,_p5,pmchr,_p6
+	if sp_player_map {
+		es_flag spno,ESSPFLAG_STATIC|ESSPFLAG_NOWIPE
+		es_setparent spno,sp_player_map,1
+	}
+
 	es_type spno,TYPE_PMISSLE
 	es_adir spno,_p1,spd
+
 	return
 
 
@@ -1453,7 +1598,15 @@
 
 	;	プレイヤー座標を取得する
 	;
+	if sp_player<0 : return
+	_dotfw_cursp@ = sp_player
 	es_getpos sp_player,_dotfw_myx@,_dotfw_myy@
+
+	if sp_player_acttype=DOTFW_PACTTYPE_JUMP {
+		_dotfw_myani@ = sp_player_myani
+		_dotfw_mydir@ = sp_player_mydir
+		_dotfw_myjmp@ = sp_player_myjmp
+	}
 	return
 
 
@@ -1525,23 +1678,29 @@
 	;	ノーマル移動
 	ky=key@
 	es_getpos sp_player,myx,myy
+	sp_player_mydir=-1
 	if ky&2 {
+		sp_player_mydir = DIR_UP
 		myy-=sp_player_speedy
 		if myy<sp_player_y1 : myy=sp_player_y1
 	}
 	if ky&8 {
+		sp_player_mydir = DIR_DOWN
 		myy+=sp_player_speedy
 		if myy>sp_player_y2 : myy=sp_player_y2
 	}
 	if ky&1 {
+		sp_player_mydir = DIR_LEFT
 		myx-=sp_player_speedx
 		if myx<sp_player_x1 : myx=sp_player_x1
 	}
 	if ky&4 {
+		sp_player_mydir = DIR_RIGHT
 		myx+=sp_player_speedx
 		if myx>sp_player_x2 : myx=sp_player_x2
 	}
 	es_pos sp_player,myx,myy			; スプライト座標設定
+	sp_player_myani++
 	return
 
 
@@ -1643,10 +1802,19 @@
 	es_new sp_enemy
 	if sp_enemy<0 : return
 	es_set sp_enemy,_p1,_p2,enemy_def_chr,enemy_def_opt
+
+	if sp_player_map {
+		es_flag sp_enemy,ESSPFLAG_STATIC|ESSPFLAG_NOWIPE
+		es_setparent sp_enemy,sp_player_map,1
+	}
 	es_type sp_enemy,TYPE_ENEMY
 	speed = enemy_def_speed
 	if _p4>0 : speed = _p4
-	es_adir sp_enemy,_p3,speed
+	if _p4<0 {
+		speed=0
+	} else {
+		es_adir sp_enemy,_p3,speed
+	}
 	;
 	e_mode = enemy_def_mode
 	e_dir = _p3

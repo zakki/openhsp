@@ -935,6 +935,24 @@ int hgio_texload( BMSCR *bm, char *fname )
 }
 
 
+char* hgio_texmaskbuffer(BMSCR* bm, char* resname)
+{
+	//		マスクバッファ作成
+	//
+	char* p;
+	int xsize, ysize;
+	p = game->getPixelMaskBuffer(resname, &xsize, &ysize);
+	CloseMemFilePtr();
+	if (p) {
+		if ((xsize == bm->sx) || (ysize == bm->sy)) {
+			return p;
+		}
+		free(p);
+	}
+	return NULL;
+}
+
+
 int hgio_mestex(BMSCR *bm, texmesPos *tpos)
 {
 	//		TEXMESPOSによる文字表示

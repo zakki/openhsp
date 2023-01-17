@@ -439,6 +439,7 @@ public:
 	int makeNewMat2D( char *fname, int matopt );
 	int makeNewMatFromFB(gameplay::FrameBuffer *fb, int matopt);
 	int makeNewMatFromObj(int objid, int part, char *nodename);
+	char* getPixelMaskBuffer(char* fname, int* xsize, int* ysize);
 
 	int makeNewLgt( int id, int lgtopt, float range=1.0f, float inner=0.5f, float outer=1.0f );
 	int makeNewCam( int id, float fov, float aspect, float near, float far, int mode=0 );

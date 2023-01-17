@@ -595,41 +595,163 @@ int essprite::modifySpriteAxis(int spno, int endspno, int type, int x, int y, in
 }
 
 
+int essprite::drawSubMoveGravity(SPOBJ* sp)
+{
+	//		hspdx互換性のためサポート
+	//
+	int fl, x, y, land, res, xx, yy, prevxx, prevyy;
+	int bsx, bsy;
+
+	chr = getChr(sp->chr);
+	if (chr == NULL) return 0;
+
+	res = 0;
+	bsx = chr->bsx;
+	bsy = chr->bsy;
+
+	fl = sp->fl;
+
+	prevxx = sp->xx;
+	prevyy = sp->yy;
+
+	sp->xx += sp->px;
+	sp->yy += sp->py;
+
+	xx = sp->xx;
+	yy = sp->yy;
+
+	if (sp->fspy != 0) {
+		sp->py += sp->fspy << 8;
+		if (sp->boundflag & 2) {
+			if (sp->fspy > 0) {
+				land = (land_y - bsy) << dotshift;
+				if (yy > land) {
+					sp->yy = prevyy;
+					y = sp->py;
+					if (y < 0) y = 0;
+					if (y < 0x18000) {
+						sp->fl = (fl ^ ESSPFLAG_GRAVITY) | 0x300;
+						sp->py = 0;
+					}
+					else sp->py = -((int)(y & 0xffff0000) * sp->bound >> 8);
+				}
+			}
+			else {
+				if (yy < 0) {
+					sp->yy = prevyy;
+					y = abs(sp->py);
+					if (y < 0) y = 0;
+					if (y < 0x18000) {
+						sp->fl = (fl ^ ESSPFLAG_GRAVITY) | 0x300;
+						sp->py = 0;
+					}
+					else sp->py = ((int)(y & 0xffff0000) * sp->bound >> 8);
+				}
+			}
+		}
+	}
+
+	if (sp->fspx != 0) {
+		sp->px += sp->fspx << 8;
+		if (sp->boundflag & 1) {
+			if (sp->fspx > 0) {
+				land = (land_x - bsx) << dotshift;
+				if (xx > land) {
+					sp->xx = prevxx;
+					x = sp->px;
+					if (x < 0) x = 0;
+					if (x < 0x18000) {
+						sp->fl = (fl ^ ESSPFLAG_GRAVITY) | 0x300;
+						sp->px = 0;
+					}
+					else sp->px = -((int)(x & 0xffff0000) * sp->bound >> 8);
+				}
+			}
+			else {
+				if (xx < 0) {
+					sp->xx = prevxx;
+					x = abs(sp->px);
+					if (x < 0) x = 0;
+					if (x < 0x18000) {
+						sp->fl = (fl ^ ESSPFLAG_GRAVITY) | 0x300;
+						sp->px = 0;
+					}
+					else sp->px = ((int)(x & 0xffff0000) * sp->bound >> 8);
+				}
+			}
+		}
+	}
+
+	return res;
+}
+
+
+int essprite::drawSubMoveVector(SPOBJ* sp)
+{
+	//		スプライト移動モード処理
+	//		(BGマップとの当たりを考慮)
+	//
+	int px, py, res, i;
+	px = sp->px; py = sp->py;
+	if ((px == 0) && (py == 0)) return 3;
+
+	int bgid = sp->splink;
+	if ((bgid & ESSPLINK_BGMAP) == 0) return 1;
+	bgid = bgid & (ESSPLINK_BGMAP - 1);
+	BGMAP* bg = getMap(bgid);
+	if (bg == NULL) return 2;
+
+	res = getMapMaskHit32(bgid, sp->xx + bg->hitofsx, sp->yy + bg->hitofsy, bg->hitsizex, bg->hitsizey, px, py);
+	if (res <= 0) return -1;
+
+	i = 0;
+	while (1) {
+		if (i >= res) break;
+		BGHITINFO* info = getMapHitInfo(bgid, i);
+		switch (info->result) {
+		case ESMAPHIT_NONE:
+			sp->xx = info->x;
+			sp->yy = info->y;
+			break;
+		default:
+			break;
+		}
+		i++;
+	}
+
+	return 0;
+}
+
+
 int essprite::drawSubMove(SPOBJ *sp, int mode)
 {
 	//		1 sprite draw (on sp)
 	//
-	int fl, x, y, land,res, xx, yy, prevxx, prevyy;
-	int bsx, bsy;
+	int fl, x, y, res, xx, yy;
 
 	//		flag pre check
 	//
 	res = 0;
 	fl = sp->fl;
 
-	chr = getChr(sp->chr);
-	if (chr == NULL) return 0;
-	bsx = chr->bsx;
-	bsy = chr->bsy;
-
 	//		add pos move
 	//
 	if (fl & ESSPFLAG_MOVE) {
-		sp->xx += sp->px;
-		sp->yy += sp->py;
+		if (sp->maphit & ESSPMAPHIT_BGHIT) {
+			if (drawSubMoveVector(sp)) {		// BGマップとの当たりを取る
+				sp->xx += sp->px;
+				sp->yy += sp->py;
+			}
+		}
+		else {
+			sp->xx += sp->px;
+			sp->yy += sp->py;
+		}
 	}
 	if (fl & ESSPFLAG_MOVEROT) {
 		sp->rotz += sp->protz;
 		sp->zoomx += sp->pzoomx;
 		sp->zoomy += sp->pzoomy;
-	}
-
-	prevxx = sp->xx;
-	prevyy = sp->yy;
-
-	if (fl & ESSPFLAG_GRAVITY) {
-		sp->xx += sp->px;
-		sp->yy += sp->py;
 	}
 
 	xx = sp->xx;
@@ -640,67 +762,9 @@ int essprite::drawSubMove(SPOBJ *sp, int mode)
 	if (fl & ESSPFLAG_GRAVITY) {
 		//	なんだこりゃ・・・
 		//
-		if (sp->fspy != 0) {
-			sp->py += sp->fspy << 8;
-			if (sp->boundflag & 2) {
-				if (sp->fspy > 0) {
-					land = ( land_y - bsy) << dotshift;
-					if (yy > land) {
-						sp->yy = prevyy;
-						y = sp->py;
-						if (y < 0) y = 0;
-						if (y < 0x18000) {
-							sp->fl = (fl ^ ESSPFLAG_GRAVITY) | 0x300;
-							sp->py = 0;
-						}
-						else sp->py = -((int)(y & 0xffff0000) * sp->bound >> 8);
-					}
-				}
-				else {
-					if (yy < 0) {
-						sp->yy = prevyy;
-						y = abs(sp->py);
-						if (y < 0) y = 0;
-						if (y < 0x18000) {
-							sp->fl = (fl ^ ESSPFLAG_GRAVITY) | 0x300;
-							sp->py = 0;
-						}
-						else sp->py = ((int)(y & 0xffff0000) * sp->bound >> 8);
-					}
-				}
-			}
-		}
-
-		if (sp->fspx != 0) {
-			sp->px += sp->fspx << 8;
-			if (sp->boundflag & 1) {
-				if (sp->fspx > 0) {
-					land = (land_x - bsx) << dotshift;
-					if (xx > land) {
-						sp->xx = prevxx;
-						x = sp->px;
-						if (x < 0) x = 0;
-						if (x < 0x18000) {
-							sp->fl = (fl ^ ESSPFLAG_GRAVITY) | 0x300;
-							sp->px = 0;
-						}
-						else sp->px = -((int)(x & 0xffff0000) * sp->bound >> 8);
-					}
-				}
-				else {
-					if (xx < 0) {
-						sp->xx = prevxx;
-						x = abs(sp->px);
-						if (x < 0) x = 0;
-						if (x < 0x18000) {
-							sp->fl = (fl ^ ESSPFLAG_GRAVITY) | 0x300;
-							sp->px = 0;
-						}
-						else sp->px = ((int)(x & 0xffff0000) * sp->bound >> 8);
-					}
-				}
-			}
-		}
+		drawSubMoveGravity(sp);
+		xx = sp->xx;
+		yy = sp->yy;
 	}
 
 	//		border check
@@ -961,6 +1025,8 @@ void essprite::setParameter(int spno, int prmid, int value)
 	SPOBJ* sp = getObj(spno);
 	if (sp == NULL) return;
 	int* prm = (int*)sp;
+	if (prmid < 0) return;
+	if (prmid >= (sizeof(SPOBJ)/4)) return;
 	prm[prmid] = value;
 }
 
@@ -1250,6 +1316,7 @@ SPOBJ *essprite::resetSprite(int spno)
 	sp->protz = 0;
 	sp->pzoomx = 0;
 	sp->pzoomy = 0;
+	sp->maphit = 0;
 
 	return sp;
 }
@@ -1509,7 +1576,8 @@ int essprite::setMap(int def_bgno, int* varptr, int mapsx, int mapsy, int sx, in
 	bg->tpflag = 0x3ff;
 	bg->maphit = 0;
 	bg->animation = 0;
-	bg->group = 0;
+	bg->group = -1;
+	bg->gravity = 0;
 	bg->notice = 0;
 
 	Bmscr* bm = hspwnd->GetBmscrSafe(bg->buferid);
@@ -1518,13 +1586,17 @@ int essprite::setMap(int def_bgno, int* varptr, int mapsx, int mapsy, int sx, in
 	bg->sx = mapsx * bg->divx;
 	bg->sy = mapsy * bg->divy;
 
+	bg->hitofsx = 0;
+	bg->hitofsy = 0;
+	bg->hitsizex = bg->divx;
+	bg->hitsizey = bg->divy;
+
 	if (option & ESMAP_OPT_NOTRANS) {
 		bg->tpflag = 0;
 	}
 	if (option & ESMAP_OPT_USEMASK) {
 		updateMapMask(bgno);
 	}
-
 
 	return bgno;
 }
@@ -1609,6 +1681,7 @@ int essprite::putMap(int xx, int yy, int bgno )
 	int attr;
 	int group;
 	bool transflag = true;
+	bool selgroup = false;
 
 	BGMAP* bg = getMap(bgno);
 	if (bg == NULL) return -1;
@@ -1635,6 +1708,8 @@ int essprite::putMap(int xx, int yy, int bgno )
 
 	p_attr = bg->attr;
 	group = bg->group;
+	if (group >= 0) selgroup = true;
+
 	setTransparentMode(bg->tpflag);
 	if ((bg->tpflag >> 8) == 0) transflag = false;
 	resetMapHitInfo(bgno);
@@ -1663,7 +1738,7 @@ int essprite::putMap(int xx, int yy, int bgno )
 					celno = 0;
 					p[ofsx % bg->mapsx] = 0;
 				}
-				if (group) {
+				if (selgroup) {
 					if (group != (attr & 15)) {		// 指定グループのみ表示する
 						bmscr->cx += divx;
 						ofsx++;
@@ -1695,6 +1770,24 @@ int essprite::setMapParam(int bgno, int tp, int option)
 		break;
 	case ESMAP_PRM_GROUP:
 		bg->group = tp;
+		break;
+	case ESMAP_PRM_NOTICE:
+		bg->notice = tp;
+		break;
+	case ESMAP_PRM_GRAVITY:
+		bg->gravity = tp;
+		break;
+	case ESMAP_PRM_HITOFSX:
+		bg->hitofsx = tp;
+		break;
+	case ESMAP_PRM_HITOFSY:
+		bg->hitofsy = tp;
+		break;
+	case ESMAP_PRM_HITSIZEX:
+		bg->hitsizex = tp;
+		break;
+	case ESMAP_PRM_HITSIZEY:
+		bg->hitsizey = tp;
 		break;
 	case ESMAP_PRM_OPTION:
 		bg->bgoption = tp;

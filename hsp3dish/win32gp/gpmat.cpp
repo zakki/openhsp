@@ -701,6 +701,36 @@ int gamehsp::makeNewMat2D( char *fname, int matopt )
 }
 
 
+char* gamehsp::getPixelMaskBuffer(char* fname, int* xsize, int* ysize)
+{
+	//		画像のピクセルバッファを取得する
+	//		(画像ファイルのポインタを渡すと、αチャンルを2値化したバッファを返す)
+	//
+	Image* image = Image::create(fname);
+	if (image == NULL) {
+		Alertf("Texture not found.(%s)", fname);
+		return NULL;
+	}
+	int sx = (int)image->getWidth();
+	int sy = (int)image->getHeight();
+	int bwsize = sx * sy;
+	char* mem = (char*)malloc(bwsize);
+
+	char* p = (char *)image->getData();		// 転送先のサーフェイスの始点(32bit)
+	int i;
+	char* src = mem;
+	for (i = 0; i < bwsize; i++) {
+		*src++ = p[3];
+		p += 4;
+	}
+	*xsize = sx;
+	*ysize = sy;
+
+	SAFE_RELEASE(image);
+	return NULL;
+}
+
+
 int gamehsp::makeNewMatFromFB(gameplay::FrameBuffer *fb, int matopt)
 {
 	int tex_width, tex_height;
