@@ -56,6 +56,8 @@
 #cmd es_bghit $230
 #cmd es_getbghit $231
 #cmd es_getbgattr $232
+#cmd es_bglink $233
+#cmd es_stick $234
 
 #define global es_fmes mes
 #define global es_bye
@@ -87,6 +89,9 @@
 #define global ESI_PZOOMX 24
 #define global ESI_PZOOMY 25
 #define global ESI_MAPHIT 26
+#define global ESI_STICKSP 27
+#define global ESI_STICKX 28
+#define global ESI_STICKY 29
 
 #define global ESSPFLAG_NONE (0)
 #define global ESSPFLAG_STATIC (0x100)
@@ -114,6 +119,8 @@
 #define global ESSPSET_BOUNCE (3)
 #define global ESSPSET_ZOOM (4)
 #define global ESSPSET_ADDZOOM (5)
+#define global ESSPSET_CENTER (6)
+#define global ESSPSET_PUTPOS (7)
 #define global ESSPSET_DIRECT (0x1000)
 #define global ESSPSET_MASKBIT (0x2000)
 
@@ -150,22 +157,20 @@
 #define global ESMAP_ATTR_NOTICE (16)	//	通知アイテム
 #define global ESMAP_ATTR_GROUP (15)	//	グループビット
 
-#define global ESSPMAPHIT_NONE (0)
 #define global ESSPMAPHIT_BGHIT (0x100)
-#define global ESSPMAPHIT_WIPE (0x200)
-#define global ESSPMAPHIT_GETEVENT (0x400)
-#define global ESSPMAPHIT_EVENTWIPE (0x800)
-#define global ESSPMAPHIT_BGOBJ (0x1000)
+#define global ESSPMAPHIT_HITWIPE (0x800)
+#define global ESSPMAPHIT_GETEVENT (0x1000)
+#define global ESSPMAPHIT_EVENTWIPE (0x2000)
+#define global ESSPMAPHIT_BGOBJ (0x10000)
 
 #define global ESMAP_PRM_GMODE (0)
 #define global ESMAP_PRM_ANIM (1)
 #define global ESMAP_PRM_GROUP (2)
 #define global ESMAP_PRM_NOTICE (3)
-#define global ESMAP_PRM_GRAVITY (4)
-#define global ESMAP_PRM_HITOFSX (5)
-#define global ESMAP_PRM_HITOFSY (6)
-#define global ESMAP_PRM_HITSIZEX (7)
-#define global ESMAP_PRM_HITSIZEY (8)
+#define global ESMAP_PRM_HITOFSX (4)
+#define global ESMAP_PRM_HITOFSY (5)
+#define global ESMAP_PRM_HITSIZEX (6)
+#define global ESMAP_PRM_HITSIZEY (7)
 #define global ESMAP_PRM_OPTION (16)
 
 #define global ESMAPHIT_INFOMAX (64)

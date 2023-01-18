@@ -29,10 +29,10 @@ extern "C" {
 
 #define ESSPMAPHIT_NONE (0)
 #define ESSPMAPHIT_BGHIT (0x100)
-#define ESSPMAPHIT_WIPE (0x200)
-#define ESSPMAPHIT_GETEVENT (0x400)
-#define ESSPMAPHIT_EVENTWIPE (0x800)
-#define ESSPMAPHIT_BGOBJ (0x1000)
+#define ESSPMAPHIT_HITWIPE (0x800)
+#define ESSPMAPHIT_GETEVENT (0x1000)
+#define ESSPMAPHIT_EVENTWIPE (0x2000)
+#define ESSPMAPHIT_BGOBJ (0x10000)
 
 #define ESSPSET_POS (0)
 #define ESSPSET_ADDPOS (1)
@@ -40,6 +40,8 @@ extern "C" {
 #define ESSPSET_BOUNCE (3)
 #define ESSPSET_ZOOM (4)
 #define ESSPSET_ADDZOOM (5)
+#define ESSPSET_CENTER (6)
+#define ESSPSET_PUTPOS (7)
 #define ESSPSET_DIRECT (0x1000)
 #define ESSPSET_MASKBIT (0x2000)
 
@@ -68,11 +70,10 @@ extern "C" {
 #define ESMAP_PRM_ANIM (1)
 #define ESMAP_PRM_GROUP (2)
 #define ESMAP_PRM_NOTICE (3)
-#define ESMAP_PRM_GRAVITY (4)
-#define ESMAP_PRM_HITOFSX (5)
-#define ESMAP_PRM_HITOFSY (6)
-#define ESMAP_PRM_HITSIZEX (7)
-#define ESMAP_PRM_HITSIZEY (8)
+#define ESMAP_PRM_HITOFSX (4)
+#define ESMAP_PRM_HITOFSY (5)
+#define ESMAP_PRM_HITSIZEX (6)
+#define ESMAP_PRM_HITSIZEY (7)
 #define ESMAP_PRM_OPTION (16)
 
 #define ESMAPHIT_INFOMAX (64)
@@ -161,8 +162,7 @@ typedef struct BGMAP
 	int bgoption;			//	BG option
 	unsigned short *attr;	//	Cel Attribute
 	int notice;				//	Notice Index
-	int maphit;				//	Map hit count
-	int gravity;			//	Gravity +py
+	int maphit_cnt;			//	Map hit count
 	int hitofsx, hitofsy;	//	Map hit offset X,Y
 	int hitsizex, hitsizey;	//	Map hit size X,Y
 	int sx, sy;				//	Whole Map Size
@@ -197,6 +197,8 @@ typedef struct SPOBJ
 	int protz;			//	Move RotZ parameter
 	int pzoomx, pzoomy;	//	Move ZoomX,ZoomY parameters
 	int maphit;			//	マップヒット用フラグ
+	int spstick;		//	他のスプライトに吸着(-1=無効)
+	int spst_x, spst_y;	//	吸着オフセット
 	unsigned short *sbr;//	callback
 
 } SPOBJ;
@@ -238,6 +240,7 @@ public:
 	int setMapPos(int bgno, int x, int y);
 	int setMapMes(int bgno, int x, int y, char *msg, int offset=0);
 	int setMapParam(int bgno, int tp, int option);
+	int setSpriteMapLink(int bgno, int hitoption);
 	void resetMapHitInfo(int bgno);
 	BGHITINFO* getMapHitInfo(int bgno, int index);
 	BGHITINFO* addMapHitInfo(int bgno, int result, int celid, int attr, int x, int y, int myx, int myy);
@@ -250,7 +253,7 @@ public:
 	int getMapMaskHit32(int bgno, int x, int y, int sizex, int sizey, int px, int py);
 	int getMapMaskHitSub( int bgno, int x, int y, int sizex, int sizey, bool wallonly=false, bool downdir=false );
 
-	int setSpriteFlag(int spno, int flag);
+	int setSpriteFlag(int spno, int flag, int op=0);
 	int setSpritePosChr(int spno, int xx, int yy, int chrno, int option, int pri);
 	int setSpritePos(int spno, int xx, int yy, int opt=0);
 	int setSpriteAddPos(int spno, int xx, int yy, bool realaxis = false);
@@ -270,17 +273,20 @@ public:
 	int setSpriteRotate(int id, int angle, int zoomx, int zoomy, int rate);
 	void setSpritePriority(int id, int pri);
 	void setSpriteCallback(int p1, unsigned short *callback = NULL);
+	int setSpriteStick(int spno, int targetsp);
 
 	SPOBJ* getObj(int id);
 	BGMAP* getMap(int id);
 	CHRREF* getChr(int id);
+	void getSpriteAxis(SPOBJ* sp, int& xx, int& yy);
+	void getSpriteCenterAxis(SPOBJ* sp, int& xx, int& yy);
 	int getSpriteParentAxis(SPOBJ *sp, int &xx, int &yy, int depth);
 
 	int getEmptyChrNo(void);
 	int getEmptySpriteNo(void);
 	int getEmptySpriteNo(int sp_from, int sp_to, int step);
-	int getParameter(int spno, int prmid);
-	void setParameter(int spno, int prmid, int value);
+	int getParameter(int spno, int prmid, int *value);
+	int setParameter(int spno, int prmid, int value, int op=0);
 	int getMaxSprites(void) { return spkaz; };
 	int getMaxCharacters(void) { return chrkaz; };
 	void getDefaultPatternSize(int* xsize, int* ysize);
@@ -334,6 +340,9 @@ private:
 	int		def_fspx, def_fspy;
 	int		def_bound;
 	int		def_boundflag;
+
+	int		def_maplink;
+	int		def_maphitflag;
 
 	int		colx, coly, colex, coley;
 	int		fade_mode, fade_upd, fade_val, fade_tar;

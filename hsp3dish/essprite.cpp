@@ -131,10 +131,13 @@ int essprite::init(int maxsprite, int maxchr, int rotrate, int maxmap)
 	}
 
 	def_fspx = 0;
-	def_fspy = 0x100;
+	def_fspy = 0;
 	def_bound = 128;
 	def_boundflag = 3;
 	framecount = 0;
+
+	def_maplink = -1;
+	def_maphitflag = 0;
 
 	setOffset(0, 0);
 	sprite_enable = true;
@@ -692,6 +695,10 @@ int essprite::drawSubMoveVector(SPOBJ* sp)
 	//		(BGマップとの当たりを考慮)
 	//
 	int px, py, res, i;
+
+	sp->px += sp->fspx << 8;
+	sp->py += sp->fspy << 8;
+
 	px = sp->px; py = sp->py;
 	if ((px == 0) && (py == 0)) return 3;
 
@@ -704,6 +711,9 @@ int essprite::drawSubMoveVector(SPOBJ* sp)
 	res = getMapMaskHit32(bgid, sp->xx + bg->hitofsx, sp->yy + bg->hitofsy, bg->hitsizex, bg->hitsizey, px, py);
 	if (res <= 0) return -1;
 
+	bool hit = false;
+	bool flipx = false;
+	bool flipy = false;
 	i = 0;
 	while (1) {
 		if (i >= res) break;
@@ -713,10 +723,52 @@ int essprite::drawSubMoveVector(SPOBJ* sp)
 			sp->xx = info->x;
 			sp->yy = info->y;
 			break;
+		case ESMAPHIT_HITX:
+			hit = true;
+			flipx = true;
+			break;
+		case ESMAPHIT_HITY:
+			hit = true;
+			flipy = true;
+			break;
 		default:
 			break;
 		}
 		i++;
+	}
+
+	if (hit) {
+		if (sp->maphit & ESSPMAPHIT_HITWIPE) {
+			sp->fl = 0;
+			return 0;
+		}
+	}
+
+	if (flipx) {
+		if (sp->fl & ESSPFLAG_XBOUNCE) {
+			sp->px = -sp->px;
+			if (sp->boundflag & 2) {
+				int mov = (abs(sp->px) * sp->bound) >> 8;
+				if (sp->px > 0) sp->px = mov;
+				if (sp->px < 0) sp->px = -mov;
+			}
+		}
+		else {
+			sp->px = 0;
+		}
+	}
+	if (flipy) {
+		if (sp->fl & ESSPFLAG_YBOUNCE) {
+			sp->py = -sp->py;
+			if (sp->boundflag & 1) {
+				int mov = (abs(sp->py) * sp->bound) >> 8;
+				if (sp->py > 0) sp->py = mov;
+				if (sp->py < 0) sp->py = -mov;
+			}
+		}
+		else {
+			sp->py = 0;
+		}
 	}
 
 	return 0;
@@ -733,6 +785,7 @@ int essprite::drawSubMove(SPOBJ *sp, int mode)
 	//
 	res = 0;
 	fl = sp->fl;
+	if ((fl & ESSPFLAG_STATIC) == 0) return -1;
 
 	//		add pos move
 	//
@@ -742,6 +795,7 @@ int essprite::drawSubMove(SPOBJ *sp, int mode)
 				sp->xx += sp->px;
 				sp->yy += sp->py;
 			}
+			if (sp->fl == 0) return 0;
 		}
 		else {
 			sp->xx += sp->px;
@@ -754,9 +808,7 @@ int essprite::drawSubMove(SPOBJ *sp, int mode)
 		sp->zoomy += sp->pzoomy;
 	}
 
-	xx = sp->xx;
-	yy = sp->yy;
-
+	getSpriteAxis(sp, xx, yy);
 	getSpriteParentAxis(sp, xx, yy, 0);
 
 	if (fl & ESSPFLAG_GRAVITY) {
@@ -769,17 +821,16 @@ int essprite::drawSubMove(SPOBJ *sp, int mode)
 
 	//		border check
 	//
-	x = xx >> dotshift; y = yy >> dotshift;
-	if (fl & ESSPFLAG_XBOUNCE) {
-		if (x < ox1) { x = ox1; sp->px = abs(sp->px); }
-		if (x > ox2) { x = ox2; sp->px = -abs(sp->px); }
-	}
-	if (fl & ESSPFLAG_YBOUNCE) {
-		if (y < oy1) { y = oy1; sp->py = abs(sp->py); }
-		if (y > oy2) { y = oy2; sp->py = -abs(sp->py); }
-	}
-
 	if ((fl & ESSPFLAG_NOWIPE) == 0) {
+		x = xx >> dotshift; y = yy >> dotshift;
+		if (fl & ESSPFLAG_XBOUNCE) {
+			if (x < ox1) { x = ox1; sp->px = abs(sp->px); }
+			if (x > ox2) { x = ox2; sp->px = -abs(sp->px); }
+		}
+		if (fl & ESSPFLAG_YBOUNCE) {
+			if (y < oy1) { y = oy1; sp->py = abs(sp->py); }
+			if (y > oy2) { y = oy2; sp->py = -abs(sp->py); }
+		}
 		if (((int)((x - ox1) | (y - oy1) | (ox2 - x) | (oy2 - y))) >> 31) {
 			sp->fl = 0;
 			return 0;
@@ -805,6 +856,7 @@ int essprite::drawSubMove(SPOBJ *sp, int mode)
 			}
 		}
 	}
+	sp->progress++;
 
 	return res;
 }
@@ -882,9 +934,7 @@ int essprite::drawSubPut(SPOBJ *sp, int mode)
 		if (framecount & blink) return 0;
 	}
 
-	xx = sp->xx;
-	yy = sp->yy;
-
+	getSpriteAxis(sp, xx, yy);
 	getSpriteParentAxis(sp, xx, yy, 0);
 
 	x = xx >> dotshift; y = yy >> dotshift;
@@ -1011,32 +1061,57 @@ int essprite::draw(int start, int num, int mode, int start_pri, int end_pri)
 }
 
 
-int essprite::getParameter(int spno, int prmid)
-{
-	SPOBJ* sp = getObj(spno);
-	if (sp == NULL) return 0;
-	int* prm = (int *)sp;
-	return prm[prmid];
-}
-
-
-void essprite::setParameter(int spno, int prmid, int value)
-{
-	SPOBJ* sp = getObj(spno);
-	if (sp == NULL) return;
-	int* prm = (int*)sp;
-	if (prmid < 0) return;
-	if (prmid >= (sizeof(SPOBJ)/4)) return;
-	prm[prmid] = value;
-}
-
-
-int essprite::setSpriteFlag(int spno, int flag)
+int essprite::getParameter(int spno, int prmid, int* value)
 {
 	SPOBJ* sp = getObj(spno);
 	if (sp == NULL) return -1;
-	sp->fl = flag;
-	return spno;
+	int* prm = (int *)sp;
+	if (prmid < 0) return -1;
+	if (prmid >= (sizeof(SPOBJ) / 4)) return -1;
+	*value = prm[prmid];
+	return 0;
+}
+
+
+int essprite::setParameter(int spno, int prmid, int value, int op)
+{
+	SPOBJ* sp = getObj(spno);
+	if (sp == NULL) return -1;
+	int* prm = (int*)sp;
+	if (prmid < 0) return -1;
+	if (prmid >= (sizeof(SPOBJ)/4)) return -1;
+	switch (op) {
+	case 1:
+		prm[prmid] |= value;
+		break;
+	case 2:
+		prm[prmid] &= ~value;
+		break;
+	default:
+		prm[prmid] = value;
+		break;
+	}
+	return 0;
+}
+
+
+int essprite::setSpriteFlag(int spno, int flag, int op)
+{
+	SPOBJ* sp = getObj(spno);
+	if (sp == NULL) return -1;
+	int prev = sp->fl;
+	switch (op) {
+	case 1:
+		sp->fl |= flag;
+		break;
+	case 2:
+		sp->fl &= ~flag;
+		break;
+	default:
+		sp->fl = flag;
+		break;
+	}
+	return prev;
 }
 
 
@@ -1115,6 +1190,40 @@ int essprite::setSpritePos(int spno, int xx, int yy, int option)
 }
 
 
+void essprite::getSpriteAxis(SPOBJ* sp, int& xx, int& yy)
+{
+	int x, y;
+	x = sp->xx;
+	y = sp->yy;
+	if (sp->spstick >= 0) {
+		SPOBJ* tsp = getObj(sp->spstick);
+		if (tsp) {
+			x = tsp->xx - sp->spst_x;
+			y = tsp->yy - sp->spst_y;
+		}
+	}
+	xx = x;
+	yy = y;
+}
+
+
+void essprite::getSpriteCenterAxis(SPOBJ* sp, int& xx, int& yy)
+{
+	int x, y;
+	getSpriteAxis( sp, x, y );
+
+	if (sp->chr >= 0) {
+		CHRREF* chr = getChr(sp->chr);
+		if (chr) {
+			x += chr->bsx / 2;
+			y += chr->bsy / 2;
+		}
+	}
+	xx = x;
+	yy = y;
+}
+
+
 int essprite::getSpritePos(int* xpos, int* ypos, int spno, int option)
 {
 	int x,y,opt;
@@ -1143,6 +1252,17 @@ int essprite::getSpritePos(int* xpos, int* ypos, int spno, int option)
 	case ESSPSET_ZOOM:
 		x = sp->zoomx;
 		y = sp->zoomy;
+		break;
+	case ESSPSET_ADDZOOM:
+		x = sp->pzoomx;
+		y = sp->pzoomy;
+		break;
+	case ESSPSET_CENTER:
+		getSpriteCenterAxis(sp, x, y);
+		break;
+	case ESSPSET_PUTPOS:
+		getSpriteAxis(sp, x, y);
+		getSpriteParentAxis(sp, x, y, 0);
 		break;
 	default:
 		return -1;
@@ -1304,10 +1424,18 @@ SPOBJ *essprite::resetSprite(int spno)
 	sp->zoomx = dotshift_base;
 	sp->zoomy = dotshift_base;
 	sp->rotz = 0;
-	sp->splink = 0;
 	sp->timer = 0;
 	sp->timer_base = 0;
 	sp->sbr = NULL;
+
+	if ( def_maplink >= 0 ) {
+		sp->splink = def_maplink | ESSPLINK_BGMAP;
+		sp->fl |= ESSPFLAG_SPLINK | ESSPFLAG_NOWIPE;
+	}
+	else {
+		sp->splink = 0;
+	}
+	sp->maphit = def_maphitflag;
 
 	sp->xx = 0;
 	sp->yy = 0;
@@ -1316,7 +1444,10 @@ SPOBJ *essprite::resetSprite(int spno)
 	sp->protz = 0;
 	sp->pzoomx = 0;
 	sp->pzoomy = 0;
-	sp->maphit = 0;
+
+	sp->spstick = -1;
+	sp->spst_x = 0;
+	sp->spst_y = 0;
 
 	return sp;
 }
@@ -1488,6 +1619,22 @@ int essprite::setSpriteRotate(int id, int angle, int zoomx, int zoomy, int rate)
 }
 
 
+int essprite::setSpriteStick(int spno, int targetsp)
+{
+	SPOBJ* sp = getObj(spno);
+	if (sp == NULL) return -1;
+
+	sp->spstick = targetsp;
+	if (targetsp >= 0) {
+		SPOBJ* tsp = getObj(targetsp);
+		if (tsp == NULL) return -2;
+		sp->spst_x = tsp->xx - sp->xx;
+		sp->spst_y = tsp->yy - sp->yy;
+	}
+	return 0;
+}
+
+
 /*------------------------------------------------------------*/
 /*
 		BG Map Process
@@ -1574,10 +1721,9 @@ int essprite::setMap(int def_bgno, int* varptr, int mapsx, int mapsy, int sx, in
 	bg->buferid = buffer;
 	bg->bgoption = option;
 	bg->tpflag = 0x3ff;
-	bg->maphit = 0;
+	bg->maphit_cnt = 0;
 	bg->animation = 0;
 	bg->group = -1;
-	bg->gravity = 0;
 	bg->notice = 0;
 
 	Bmscr* bm = hspwnd->GetBmscrSafe(bg->buferid);
@@ -1752,7 +1898,7 @@ int essprite::putMap(int xx, int yy, int bgno )
 		y+=bm->divsy;
 		ofsy++;
 	}
-	return bg->maphit;
+	return bg->maphit_cnt;
 }
 
 
@@ -1773,9 +1919,6 @@ int essprite::setMapParam(int bgno, int tp, int option)
 		break;
 	case ESMAP_PRM_NOTICE:
 		bg->notice = tp;
-		break;
-	case ESMAP_PRM_GRAVITY:
-		bg->gravity = tp;
 		break;
 	case ESMAP_PRM_HITOFSX:
 		bg->hitofsx = tp;
@@ -1840,7 +1983,7 @@ void essprite::resetMapHitInfo(int bgno)
 	BGMAP* bg = getMap(bgno);
 	if (bg == NULL) return;
 
-	bg->maphit = 0;
+	bg->maphit_cnt = 0;
 
 	bak_hitmapx = -1;
 	bak_hitmapy = -1;
@@ -1851,7 +1994,7 @@ BGHITINFO* essprite::addMapHitInfo(int bgno, int result, int celid, int attr, in
 	BGMAP* bg = getMap(bgno);
 	if (bg == NULL) return NULL;
 
-	BGHITINFO* info = getMapHitInfo(bgno, bg->maphit);
+	BGHITINFO* info = getMapHitInfo(bgno, bg->maphit_cnt);
 	if (info == NULL) return NULL;
 	info->result = result;
 	info->celid = celid;
@@ -1861,7 +2004,7 @@ BGHITINFO* essprite::addMapHitInfo(int bgno, int result, int celid, int attr, in
 	info->x = xx;
 	info->y = yy;
 
-	bg->maphit++;
+	bg->maphit_cnt++;
 	return info;
 }
 
@@ -1896,6 +2039,18 @@ int essprite::getMapMask(BGMAP* map, int x, int y)
 	}
 	if (hitattr >= ESMAP_ATTR_EVENT) return ESMAPHIT_EVENT;
 	return ESMAPHIT_NONE;
+}
+
+
+int essprite::setSpriteMapLink(int bgno, int hitoption)
+{
+	BGMAP* bg = getMap(bgno);
+	if (bg == NULL) return -1;
+
+	def_maplink = bgno;
+	def_maphitflag = hitoption;
+
+	return 0;
 }
 
 
@@ -2025,7 +2180,7 @@ int essprite::getMapMaskHit(int bgno, int x, int y, int sizex, int sizey, int px
 	}
 
 	addMapHitInfo(bgno, ESMAPHIT_NONE, 0, 0, 0, 0, orgx, orgy);
-	return bg->maphit;
+	return bg->maphit_cnt;
 }
 
 
@@ -2103,7 +2258,7 @@ int essprite::getMapMaskHit32(int bgno, int x, int y, int p_sizex, int p_sizey, 
 	}
 
 	addMapHitInfo(bgno, ESMAPHIT_NONE, 0, 0, 0, 0, orgx, orgy);
-	return bg->maphit;
+	return bg->maphit_cnt;
 }
 
 

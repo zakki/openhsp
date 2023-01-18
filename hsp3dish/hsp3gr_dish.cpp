@@ -3146,7 +3146,7 @@ static int cmdfunc_extcmd( int cmd )
 		p2 = code_getdi(0);
 		p3 = code_getdi(0);
 		if (sprite->sprite_enable) {
-			p1 = sprite->getParameter(p2, p3);
+			ctx->stat = sprite->getParameter(p2, p3, &p1);
 			code_setva(p_pval, p_aptr, HSPVAR_FLAG_INT, &p1);
 		}
 		else throw HSPERR_UNSUPPORTED_FUNCTION;
@@ -3155,12 +3155,13 @@ static int cmdfunc_extcmd( int cmd )
 	case 0x209:								// es_setp
 	{
 		//		set sprite parameters (type0)
-		//		es_get spno, prm_code, new_prm
+		//		es_get spno, prm_code, new_prm, opt
 		p1 = code_getdi(0);
 		p2 = code_getdi(0);
 		p3 = code_getdi(0);
+		p4 = code_getdi(0);
 		if (sprite->sprite_enable) {
-			sprite->setParameter(p1, p2, p3);
+			ctx->stat = sprite->setParameter(p1, p2, p3, p4);
 		}
 		else throw HSPERR_UNSUPPORTED_FUNCTION;
 		break;
@@ -3227,11 +3228,12 @@ static int cmdfunc_extcmd( int cmd )
 	case 0x20e:								// es_flag
 	{
 		//		set sprite flag data (type0)
-		//		es_flag spno, flag
+		//		es_flag spno, flag, op
 		p1 = code_getdi(0);
 		p2 = code_getdi(0);
+		p3 = code_getdi(0);
 		if (sprite->sprite_enable) {
-			ctx->stat = sprite->setSpriteFlag(p1, p2);
+			ctx->stat = sprite->setSpriteFlag(p1, p2, p3);
 		}
 		else throw HSPERR_UNSUPPORTED_FUNCTION;
 		break;
@@ -3381,8 +3383,8 @@ static int cmdfunc_extcmd( int cmd )
 	case 0x21a:								// es_bound
 	{
 		p1 = code_getdi(0);
-		p2 = code_getdi(0);
-		p3 = code_getdi(0);
+		p2 = code_getdi(128);
+		p3 = code_getdi(3);
 		if (sprite->sprite_enable) {
 			ctx->stat = sprite->setBound(p1, p2, p3);
 		}
@@ -3818,18 +3820,27 @@ static int cmdfunc_extcmd( int cmd )
 		}
 		break;
 	}
-	case 0x233:								// 
+	case 0x233:								// es_bglink
 	{
 		//		sprite axis add vector set (type0)
-		//		es_dir spno, x, y, prm%
+		//		es_bglink bgno, maphitoption
 		p1 = code_getdi(0);
 		p2 = code_getdi(0);
-		p3 = code_getdi(0);
-		p4 = code_getdi(100);
 		if (sprite->sprite_enable) {
-			ctx->stat = sprite->setSpriteAddDir(p1, p2, p3);
+			ctx->stat = sprite->setSpriteMapLink(p1, p2);
 		}
 		else throw HSPERR_UNSUPPORTED_FUNCTION;
+		break;
+	}
+	case 0x234:								// es_stick
+	{
+		//		sprite stick
+		//		es_stick spno, targetsp
+		p1 = code_getdi(0);
+		p2 = code_getdi(0);
+		if (sprite->sprite_enable) {
+			ctx->stat = sprite->setSpriteStick(p1, p2);
+		}
 		break;
 	}
 
