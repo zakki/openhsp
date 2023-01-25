@@ -53,11 +53,12 @@
 #cmd es_arot $22d
 #cmd es_bgparam $22e
 #cmd es_bgattr $22f
-#cmd es_bghit $230
+#cmd es_bghitpos $230
 #cmd es_getbghit $231
 #cmd es_getbgattr $232
 #cmd es_bglink $233
 #cmd es_stick $234
+#cmd es_bghit $235
 
 #define global es_fmes mes
 #define global es_bye
@@ -180,6 +181,7 @@
 #define global ESMAPHIT_HIT (3)
 #define global ESMAPHIT_EVENT (4)
 #define global ESMAPHIT_NOTICE (5)
+#define global ESMAPHIT_SPHIT (6)
 
 #endif
 

@@ -83,6 +83,7 @@ extern "C" {
 #define ESMAPHIT_HIT (3)
 #define ESMAPHIT_EVENT (4)
 #define ESMAPHIT_NOTICE (5)
+#define ESMAPHIT_SPHIT (6)
 
 #define ESSPF_TIMEWIPE (1)
 #define ESSPF_BLINK (2)
@@ -252,6 +253,8 @@ public:
 	int getMapMaskHit(int bgno,int x,int y, int sizex, int sizey, int px, int py);
 	int getMapMaskHit32(int bgno, int x, int y, int sizex, int sizey, int px, int py);
 	int getMapMaskHitSub( int bgno, int x, int y, int sizex, int sizey, bool wallonly=false, bool downdir=false );
+	int getMapMaskHitSprite(int bgno, int spno, int px, int py);
+	int getSpriteAttrHit( int xx, int yy, int xsize, int ysize );
 
 	int setSpriteFlag(int spno, int flag, int op=0);
 	int setSpritePosChr(int spno, int xx, int yy, int chrno, int option, int pri);

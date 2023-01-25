@@ -1061,6 +1061,47 @@ int essprite::draw(int start, int num, int mode, int start_pri, int end_pri)
 }
 
 
+int essprite::getSpriteAttrHit(int xx, int yy, int xsize, int ysize)
+{
+	//		hit cjeck to all sprites ( for ESSPMAPHIT_BGOBJ )
+	//
+	SPOBJ* sp;
+	int i;
+	int xpos, ypos, xr, yr;
+
+	sp = getObj(0);
+	for (i = 0; i < spkaz; i++) {
+		if (sp->fl) {
+			if (sp->maphit & ESSPMAPHIT_BGOBJ) {
+				bool chk = false;
+				if (sp->chr >= 0) {
+					CHRREF* chr = getChr(sp->chr);
+					if (chr) {
+						xr = chr->bsx;
+						yr = chr->bsy;
+						int fl = sp->fl;
+						if (!(fl & ESSPFLAG_NODISP)) {
+							chk = true;
+						}
+					}
+				}
+				if (chk) {
+					xpos = sp->xx >> 16;
+					ypos = sp->yy >> 16;
+					if ((xx < (xpos + xr)) && ((xx + xsize) >= xpos)) {
+						if ((yy < (ypos + yr)) && ((yy + ysize) >= ypos)) {
+							return i;
+						}
+					}
+				}
+			}
+		}
+		sp++;
+	}
+	return -1;
+}
+
+
 int essprite::getParameter(int spno, int prmid, int* value)
 {
 	SPOBJ* sp = getObj(spno);
@@ -2101,6 +2142,17 @@ int essprite::getMapMaskHitSub(int bgno, int x, int y, int sizex, int sizey, boo
 				}
 			}
 		}
+		if (downdir) {
+			i = getSpriteAttrHit(x, y, sizex, 1);
+			if (i>=0) {
+				SPOBJ* sp = getObj(i);
+				if (sp) {
+					addMapHitInfo(bgno, ESMAPHIT_SPHIT, i, 0, sp->xx>>16, sp->yy>>16, x, y);	// SPRITE
+					return ESMAPHIT_HIT;		// スプライトの足場をヒットとする
+				}
+			}
+		}
+
 		return ESMAPHIT_NONE;
 	}
 	return ESMAPHIT_NONE;
@@ -2181,6 +2233,20 @@ int essprite::getMapMaskHit(int bgno, int x, int y, int sizex, int sizey, int px
 
 	addMapHitInfo(bgno, ESMAPHIT_NONE, 0, 0, 0, 0, orgx, orgy);
 	return bg->maphit_cnt;
+}
+
+
+int essprite::getMapMaskHitSprite(int bgno, int spno, int px, int py)
+{
+	//		スプライト座標からマップパーツと接触判定する(32bit座標)
+	//		移動量を(px,py)に入れる、結果はBGHITINFOに返る
+	//
+	BGMAP* bg = getMap(bgno);
+	if (bg == NULL) return 0;
+
+	int xx, yy;
+	getSpritePos(&xx, &yy, spno, ESSPSET_POS);
+	return getMapMaskHit(bgno, xx+ bg->hitofsx, yy+ bg->hitofsy, bg->hitsizex, bg->hitsizey, px, py);
 }
 
 

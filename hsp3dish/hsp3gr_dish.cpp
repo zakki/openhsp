@@ -3772,7 +3772,7 @@ static int cmdfunc_extcmd( int cmd )
 		}
 		break;
 	}
-	case 0x231:								// es_getbghit
+	case 0x231:								// es_getbghitpos
 	{
 		//		get BGMAP hit info
 		//		es_getbghit var, bgno, index
@@ -3840,6 +3840,20 @@ static int cmdfunc_extcmd( int cmd )
 		p2 = code_getdi(0);
 		if (sprite->sprite_enable) {
 			ctx->stat = sprite->setSpriteStick(p1, p2);
+		}
+		break;
+	}
+	case 0x235:								// es_bghit
+	{
+		//		make BGMAP hit info
+		//		es_bghit bgno, spno, px, py
+		p1 = code_getdi(0);
+		p2 = code_getdi(0);
+		p3 = code_getdi(0);
+		p4 = code_getdi(0);
+		ctx->stat = -1;
+		if (sprite->sprite_enable) {
+			ctx->stat = sprite->getMapMaskHitSprite(p1, p2, p3, p4);
 		}
 		break;
 	}
