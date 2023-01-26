@@ -26,6 +26,7 @@ extern "C" {
 #define ESSPFLAG_EFADE (0x200000)
 #define ESSPFLAG_EFADE2 (0x400000)
 #define ESSPFLAG_MOVEROT (0x800000)
+#define ESSPFLAG_DECORATE (0x1000000)
 
 #define ESSPMAPHIT_NONE (0)
 #define ESSPMAPHIT_BGHIT (0x100)
@@ -33,6 +34,7 @@ extern "C" {
 #define ESSPMAPHIT_GETEVENT (0x1000)
 #define ESSPMAPHIT_EVENTWIPE (0x2000)
 #define ESSPMAPHIT_BGOBJ (0x10000)
+#define ESSPMAPHIT_STICKSP (0x20000)
 
 #define ESSPSET_POS (0)
 #define ESSPSET_ADDPOS (1)
@@ -42,6 +44,7 @@ extern "C" {
 #define ESSPSET_ADDZOOM (5)
 #define ESSPSET_CENTER (6)
 #define ESSPSET_PUTPOS (7)
+#define ESSPSET_ADDPOS2 (8)
 #define ESSPSET_DIRECT (0x1000)
 #define ESSPSET_MASKBIT (0x2000)
 
@@ -98,6 +101,18 @@ extern "C" {
 #define ESSPF_EFADEWIPE (11)
 #define ESSPF_EFADE2 (12)
 #define ESSPF_EFADEWIPE2 (13)
+
+#define ESDECO_FRONT (1)
+#define ESDECO_MAPHIT (2)
+#define ESDECO_GRAVITY (4)
+#define ESDECO_ZOOM (8)
+#define ESDECO_ROTATE (16)
+#define ESDECO_BOOST (32)
+#define ESDECO_MULTI4 (0x100)
+#define ESDECO_MULTI8 (0x200)
+#define ESDECO_MULTI16 (0x400)
+#define ESDECO_CHR2 (0x1000)
+#define ESDECO_CHR4 (0x2000)
 
 
 //
@@ -254,10 +269,12 @@ public:
 	int getMapMaskHit32(int bgno, int x, int y, int sizex, int sizey, int px, int py);
 	int getMapMaskHitSub( int bgno, int x, int y, int sizex, int sizey, bool wallonly=false, bool downdir=false );
 	int getMapMaskHitSprite(int bgno, int spno, int px, int py);
-	int getSpriteAttrHit( int xx, int yy, int xsize, int ysize );
+	int getSpriteAttrHit( int xx, int yy, int xsize, int ysize, bool plane=false );
 
 	int setSpriteFlag(int spno, int flag, int op=0);
 	int setSpritePosChr(int spno, int xx, int yy, int chrno, int option, int pri);
+	int setSpriteDecoration(int x, int y, int chr, int direction, int speed, int life, int sw);
+	int setSpriteDecorationSub(int x, int y, int chr, int direction, int speed, int life, int sw);
 	int setSpritePos(int spno, int xx, int yy, int opt=0);
 	int setSpriteAddPos(int spno, int xx, int yy, bool realaxis = false);
 	int setSpriteAddPosRate(int spno, int xx, int yy, int rate);
@@ -276,6 +293,7 @@ public:
 	int setSpriteRotate(int id, int angle, int zoomx, int zoomy, int rate);
 	void setSpritePriority(int id, int pri);
 	void setSpriteCallback(int p1, unsigned short *callback = NULL);
+	int setSpriteStick(SPOBJ *sp, int targetsp);
 	int setSpriteStick(int spno, int targetsp);
 
 	SPOBJ* getObj(int id);

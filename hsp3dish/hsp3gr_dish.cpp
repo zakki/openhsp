@@ -3748,10 +3748,10 @@ static int cmdfunc_extcmd( int cmd )
 		}
 		break;
 	}
-	case 0x230:								// es_bghit
+	case 0x230:								// es_bghitpos
 	{
 		//		make BGMAP hit info
-		//		es_bghit bgno, x, y, sx, sy, px, py, sw
+		//		es_bghitpos bgno, x, y, sx, sy, px, py, sw
 		int p7,p8;
 		p1 = code_getdi(0);
 		p2 = code_getdi(0);
@@ -3855,6 +3855,24 @@ static int cmdfunc_extcmd( int cmd )
 		if (sprite->sprite_enable) {
 			ctx->stat = sprite->getMapMaskHitSprite(p1, p2, p3, p4);
 		}
+		break;
+	}
+	case 0x236:								// es_setdeco
+	{
+		//		set decoration sprite data (type0)
+		//		es_setdeco x, y, chr, sw, direction, speed, life
+		int p7;
+		p1 = code_getdi(bmscr->cx);
+		p2 = code_getdi(bmscr->cy);
+		p3 = code_getdi(0);
+		p7 = code_getdi(0);
+		p4 = code_getdi(-1);
+		p5 = code_getdi(-1);
+		p6 = code_getdi(30);
+		if (sprite->sprite_enable) {
+			ctx->stat = sprite->setSpriteDecoration(p1, p2, p3, p4, p5, p6, p7);
+		}
+		else throw HSPERR_UNSUPPORTED_FUNCTION;
 		break;
 	}
 

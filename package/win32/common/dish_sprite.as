@@ -59,6 +59,8 @@
 #cmd es_bglink $233
 #cmd es_stick $234
 #cmd es_bghit $235
+#cmd es_setdeco $236
+
 
 #define global es_fmes mes
 #define global es_bye
@@ -111,6 +113,7 @@
 #define global ESSPFLAG_EFADE (0x200000)
 #define global ESSPFLAG_EFADE2 (0x400000)
 #define global ESSPFLAG_MOVEROT (0x800000)
+#define global ESSPFLAG_DECORATE (0x1000000)
 
 #define global ESSPPAT_1SHOT (0x1000)
 
@@ -122,6 +125,7 @@
 #define global ESSPSET_ADDZOOM (5)
 #define global ESSPSET_CENTER (6)
 #define global ESSPSET_PUTPOS (7)
+#define global ESSPSET_ADDPOS2 (8)
 #define global ESSPSET_DIRECT (0x1000)
 #define global ESSPSET_MASKBIT (0x2000)
 
@@ -163,6 +167,7 @@
 #define global ESSPMAPHIT_GETEVENT (0x1000)
 #define global ESSPMAPHIT_EVENTWIPE (0x2000)
 #define global ESSPMAPHIT_BGOBJ (0x10000)
+#define global ESSPMAPHIT_STICKSP (0x20000)
 
 #define global ESMAP_PRM_GMODE (0)
 #define global ESMAP_PRM_ANIM (1)
@@ -182,6 +187,19 @@
 #define global ESMAPHIT_EVENT (4)
 #define global ESMAPHIT_NOTICE (5)
 #define global ESMAPHIT_SPHIT (6)
+
+#define global ESDECO_FRONT (1)
+#define global ESDECO_MAPHIT (2)
+#define global ESDECO_GRAVITY (4)
+#define global ESDECO_ZOOM (8)
+#define global ESDECO_ROTATE (16)
+#define global ESDECO_BOOST (32)
+#define global ESDECO_MULTI4 (0x100)
+#define global ESDECO_MULTI8 (0x200)
+#define global ESDECO_MULTI16 (0x400)
+#define global ESDECO_CHR2 (0x1000)
+#define global ESDECO_CHR4 (0x2000)
+
 
 #endif
 
