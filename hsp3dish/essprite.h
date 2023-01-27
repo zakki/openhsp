@@ -45,6 +45,7 @@ extern "C" {
 #define ESSPSET_CENTER (6)
 #define ESSPSET_PUTPOS (7)
 #define ESSPSET_ADDPOS2 (8)
+#define ESSPSET_POS2 (9)
 #define ESSPSET_DIRECT (0x1000)
 #define ESSPSET_MASKBIT (0x2000)
 

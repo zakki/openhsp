@@ -1295,6 +1295,10 @@ int essprite::setSpritePos(int spno, int xx, int yy, int option)
 		sp->px += x;
 		sp->py += y;
 		break;
+	case ESSPSET_POS2:
+		sp->xx += x;
+		sp->yy += y;
+		break;
 	default:
 		return -1;
 	}

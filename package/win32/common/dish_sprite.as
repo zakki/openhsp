@@ -126,6 +126,7 @@
 #define global ESSPSET_CENTER (6)
 #define global ESSPSET_PUTPOS (7)
 #define global ESSPSET_ADDPOS2 (8)
+#define global ESSPSET_POS2 (9)
 #define global ESSPSET_DIRECT (0x1000)
 #define global ESSPSET_MASKBIT (0x2000)
 

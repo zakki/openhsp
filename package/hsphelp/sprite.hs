@@ -282,7 +282,7 @@ p1‚ÅŽw’è‚µ‚½•Ï”–¼‚ÉAp2‚ÌƒXƒvƒ‰ƒCƒgNo.‚Ìî•ñ‚ð‘ã“ü‚µ‚Ü‚·B
  2     ESI_POSY        YÀ•W
  3     ESI_SPDX        XˆÚ“®’l
  4     ESI_SPDY        YˆÚ“®’l
- 5     ESI_PRGCOUNT    ƒvƒƒOƒŒƒXƒJƒEƒ“ƒg’l
+ 5     ESI_PRGCOUNT    ƒvƒƒOƒŒƒXƒJƒEƒ“ƒg’l((–¢Žg—p)
  6     ESI_ANIMECOUNT  ƒAƒjƒ[ƒVƒ‡ƒ“ƒJƒEƒ“ƒ^[
  7     ESI_CHRNO       ƒLƒƒƒ‰ƒNƒ^No.
  8     ESI_TYPE        type’l(ƒ†[ƒU[Ý’è‚É‚æ‚é‘®«)
@@ -297,16 +297,16 @@ p1‚ÅŽw’è‚µ‚½•Ï”–¼‚ÉAp2‚ÌƒXƒvƒ‰ƒCƒgNo.‚Ìî•ñ‚ð‘ã“ü‚µ‚Ü‚·B
 17     ESI_ZOOMX       X•\Ž¦”{—¦
 18     ESI_ZOOMY       Y•\Ž¦”{—¦
 19     ESI_ROTZ        ‰ñ“]Šp“x
-20     ESI_SPLINK      ƒŠƒ“ƒN‚·‚éƒXƒvƒ‰ƒCƒgNo.
+20     ESI_SPLINK      ƒŠƒ“ƒN‚·‚éƒXƒvƒ‰ƒCƒgNo.(-1=‚È‚µ)
 21     ESI_TIMER       ƒ^ƒCƒ}[’l
 22     ESI_TIMERBASE   ƒ^ƒCƒ}[’l(ƒ}ƒXƒ^[)
 23     ESI_PROTZ       ‰ñ“]Šp“x(‰ÁŽZ’l)
 24     ESI_PZOOMX      X•\Ž¦”{—¦(‰ÁŽZ’l)
 25     ESI_PZOOMY      Y•\Ž¦”{—¦(‰ÁŽZ’l)
 26     ESI_MAPHIT      ƒ}ƒbƒv“–‚½‚è”»’èƒtƒ‰ƒO(ESSPMAPHIT_*)
-27     ESI_STICKSP     ‹z’…ƒXƒvƒ‰ƒCƒgNo.
-28     ESI_STICKX      ‹z’…ƒXƒvƒ‰ƒCƒg‚Æ‚Ì·•ªÀ•WX
-29     ESI_STICKY      ‹z’…ƒXƒvƒ‰ƒCƒg‚Æ‚Ì·•ªÀ•WY
+27     ESI_STICKSP     ‹z’…æƒXƒvƒ‰ƒCƒgNo.(-1=‚È‚µ)
+28     ESI_STICKX      ‹z’…æ‚Æ‚ÌX‹——£
+29     ESI_STICKY      ‹z’…æ‚Æ‚ÌY‹——£
 </pre>
 ^p
 ‚·‚×‚Ä‚Ìî•ñ‚Í32bit‚Ì®”‚Å•Û‘¶‚³‚ê‚Ä‚¢‚Ü‚·BƒXƒvƒ‰ƒCƒg‚ÌÀ•W‚âA‰Á‘¬“xA”{—¦‚È‚Ç‚ÍŒÅ’è¬”’l‚Æ‚È‚Á‚Ä‚¢‚é‚½‚ßŽÀÛ‚Ì’l‚ªA65536”{‚³‚ê‚Ä‚¢‚é‚Ì‚Å’ˆÓ‚µ‚Ä‚­‚¾‚³‚¢B
@@ -354,13 +354,16 @@ p1‚ÅŽw’è‚³‚ê‚½ƒXƒvƒ‰ƒCƒgNo.‚ªŽ‚Âp2‚Ìƒpƒ‰ƒ[ƒ^[‚ð’¼Úp3‚Ì’l‚É‘‚«Š·‚¦‚Ü‚·B
 17     ESI_ZOOMX       X•\Ž¦”{—¦
 18     ESI_ZOOMY       Y•\Ž¦”{—¦
 19     ESI_ROTZ        ‰ñ“]Šp“x
-20     ESI_SPLINK      ƒŠƒ“ƒN‚·‚éƒXƒvƒ‰ƒCƒgNo.
+20     ESI_SPLINK      ƒŠƒ“ƒN‚·‚éƒXƒvƒ‰ƒCƒgNo.(-1=‚È‚µ)
 21     ESI_TIMER       ƒ^ƒCƒ}[’l
 22     ESI_TIMERBASE   ƒ^ƒCƒ}[’l(ƒ}ƒXƒ^[)
 23     ESI_PROTZ       ‰ñ“]Šp“x(‰ÁŽZ’l)
 24     ESI_PZOOMX      X•\Ž¦”{—¦(‰ÁŽZ’l)
 25     ESI_PZOOMY      Y•\Ž¦”{—¦(‰ÁŽZ’l)
 26     ESI_MAPHIT      ƒ}ƒbƒv“–‚½‚è”»’èƒtƒ‰ƒO(ESSPMAPHIT_*)
+27     ESI_STICKSP     ‹z’…æƒXƒvƒ‰ƒCƒgNo.(-1=‚È‚µ)
+28     ESI_STICKX      ‹z’…æ‚Æ‚ÌX‹——£
+29     ESI_STICKY      ‹z’…æ‚Æ‚ÌY‹——£
 </pre>
 ^p
 ‚·‚×‚Ä‚Ìî•ñ‚Í32bit‚Ì®”‚Å•Û‘¶‚³‚ê‚Ä‚¢‚Ü‚·B‚Ù‚Æ‚ñ‚Ç‚Ìƒpƒ‰ƒ[ƒ^[‚ÍÝ’è‚·‚é‚½‚ß‚Ì–½—ß‚ª•Ê“r—pˆÓ‚³‚ê‚Ä‚¢‚é‚Ì‚ÅAes_setp–½—ß‚ðŽg—p‚·‚é•K—v‚Í‚ ‚è‚Ü‚¹‚ñB
@@ -610,6 +613,8 @@ p4‚ÌÝ’èƒIƒvƒVƒ‡ƒ“‚É‚æ‚èAƒXƒvƒ‰ƒCƒg‚ÌX,YÀ•WˆÈŠO‚ðÝ’è‚·‚é‚±‚Æ‚ª‚Å‚«‚Ü‚·B
       2  ESSPSET_FALL    ƒXƒvƒ‰ƒCƒgX,Y—Ž‰º‘¬“x
       3  ESSPSET_BOUNCE  ƒXƒvƒ‰ƒCƒgƒoƒEƒ“ƒhŒW”
       4  ESSPSET_ZOOM    ƒXƒvƒ‰ƒCƒgX,Y•\Ž¦”{—¦
+      8  ESSPSET_ADDPOS2 ƒXƒvƒ‰ƒCƒgX,YˆÚ“®¬•ª(‘Š‘ÎŽw’è)
+      9  ESSPSET_POS2    ƒXƒvƒ‰ƒCƒgX,YÀ•W(‘Š‘ÎŽw’è)
  0x1000  ESSPSET_DIRECT  ’¼Ú32bit’l‚ðÝ’è‚·‚é
  0x2000  ESSPSET_MASKBIT ŒÅ’è¬”•”•ª‚ð•ÛŽ‚·‚é
 ^p
@@ -1107,8 +1112,8 @@ p4‚ÌÝ’èƒIƒvƒVƒ‡ƒ“‚É‚æ‚èA‚Ç‚Ì‚æ‚¤‚ÈÀ•W‚ðŽæ“¾‚·‚é‚©‚ðŽw’è‚Å‚«‚Ü‚·B
       3  ESSPSET_BOUNCE  ƒXƒvƒ‰ƒCƒgƒoƒEƒ“ƒhŒW”
       4  ESSPSET_ZOOM    ƒXƒvƒ‰ƒCƒgX,Y•\Ž¦”{—¦
       5  ESSPSET_ADDZOOM ƒXƒvƒ‰ƒCƒgX,Y•\Ž¦”{—¦‘•ª
-      6  ESSPSET_CENTER  ƒXƒvƒ‰ƒCƒg‚Ì’†SX,YÀ•W
-      7  ESSPSET_PUTPOS  ‰æ–Êã‚Ì•\Ž¦X,YÀ•W
+      6  ESSPSET_CENTER  ƒXƒvƒ‰ƒCƒg’†SÀ•WX,Y
+      7  ESSPSET_PUTPOS  ƒXƒvƒ‰ƒCƒg•\Ž¦À•WX,Y
  0x1000  ESSPSET_DIRECT  ’¼Ú32bit’l‚ðŽæ“¾‚·‚é
 ^p
 es_getpos–½—ß‚ªŽæ“¾‚·‚éÀ•W’l‚ÍA“à•”‚Å‚Í16bitŒÅ’è¬”‚É‚È‚Á‚Ä‚¢‚Ü‚·B’Êí‚ÍAŽ©“®“I‚É•ÏŠ·‚³‚ê‚Ü‚·‚ªAÝ’èƒIƒvƒVƒ‡ƒ“‚ÉESSPSET_DIRECT‚ð•t‰Á‚·‚é‚±‚Æ‚ÅA•ÏŠ·‚Í–³Œø‚É‚È‚è‚Ü‚·B
@@ -1144,8 +1149,13 @@ p2‚Éƒ}ƒbƒvƒf[ƒ^‚ðŠi”[‚·‚é•Ï”‚ðŽw’è‚µ‚Ü‚·B
 p3`p6‚Ìƒpƒ‰ƒ[ƒ^[‚ÍA‚¢‚¸‚ê‚àƒ}ƒbƒvƒp[ƒc‚Ì’PˆÊ‚Æ‚È‚è‚Ü‚·B‚½‚Æ‚¦‚ÎA‘S‘ÌƒTƒCƒY‚ª4~4‚¾‚Á‚½ê‡‚ÍAudim map,4*4v‚Å‰Šú‰»‚µ‚½•Ï”‚ðŽw’è‚·‚é‚±‚Æ‚É‚È‚è‚Ü‚·B
 ‚±‚Ì•Ï”‚ÍA’¼Úƒ}ƒbƒvƒf[ƒ^‚Ì“à—e‚ðŽ‚¿’l‚ª0‚Ìê‡‚ÍAƒ}ƒbƒvƒp[ƒc(ƒZƒ‹ID)‚ª0‚Æ‚¢‚¤‚æ‚¤‚ÉAƒp[ƒc‚ÌID‚ð‚»‚Ì‚Ü‚ÜŠi”[‚µ‚Ü‚·B
 p7‚ÅAƒ}ƒbƒvƒp[ƒc‚Ì‰æ‘œ‚ª“Ç‚Ýž‚Ü‚ê‚Ä‚¢‚é‰æ–Êƒoƒbƒtƒ@ID‚ðŽw’è‚µ‚Ü‚·B‚±‚Ìƒoƒbƒtƒ@‚É‚ÍA‚ ‚ç‚©‚¶‚ßpicload‚Ü‚½‚Ícelload–½—ß‚É‚æ‚è‰æ‘œ‚ð“Ç‚Ýž‚ñ‚Å‚¨‚­•K—v‚ª‚ ‚è‚Ü‚·B(ƒ}ƒbƒvƒp[ƒc‰æ‘œ‚ÍAceldiv–½—ß‚É‚æ‚èƒp[ƒcƒTƒCƒY‚ðÝ’è‚µ‚Ä‚­‚¾‚³‚¢B)
-p8‚ÌÝ’èƒIƒvƒVƒ‡ƒ“‚É‚æ‚èABGƒ}ƒbƒv‚Ì‹““®‚ðÝ’è‚µ‚Ü‚·B‚±‚Ì€–Ú‚ÍA«—ˆŠg’£‚·‚é‚½‚ß‚Ì€–Ú‚ÅŒ»Ý‚Í–¢ŽÀ‘•‚Æ‚È‚Á‚Ä‚¢‚Ü‚·B
-^
+p8‚ÌÝ’èƒIƒvƒVƒ‡ƒ“‚É‚æ‚èABGƒ}ƒbƒv‚Ì‹““®‚ðÝ’è‚µ‚Ü‚·B
+^p
+     p8  ƒ}ƒNƒ–¼          “à—e
+-----------------------------------------------------------------------
+      1  ESBGOPT_NOTRANS   ƒZƒ‹•`‰æŽž‚É“§‰ß‚ðs‚í‚È‚¢
+  0x100  ESBGOPT_USEMASK   ƒZƒ‹‰æ‘œ‚Ìƒ}ƒXƒNƒpƒ^[ƒ“‚ðŽg—p‚·‚é(–¢ŽÀ‘•)
+^p
 es_bgmap–½—ß‚Íƒ}ƒbƒv•\Ž¦‚ÉŠÖ‚·‚éÝ’è‚ðs‚¢‚Ü‚·BŽÀÛ‚Ìƒ}ƒbƒv•\Ž¦‚ÍAes_putbg–½—ß‚Ås‚¢‚Ü‚·B
 %href
 es_putbg
@@ -1223,6 +1233,9 @@ p2‚Éƒ}ƒCƒiƒX’l‚ðŽw’è‚µ‚½ê‡‚ÍAeƒXƒvƒ‰ƒCƒg‚ÌÝ’è‚ð‰ðœ‚µA’Êí‚ÌƒXƒvƒ‰ƒCƒg•\Ž¦
 ^
 p3ƒpƒ‰ƒ[ƒ^[‚ÌÝ’èƒIƒvƒVƒ‡ƒ“‚Í’Êí‚Í0‚ðŽw’è‚µ‚Ä‚­‚¾‚³‚¢B
 p3‚É1‚ðŽw’è‚·‚é‚±‚Æ‚É‚æ‚èABGƒ}ƒbƒv‚ðe‚Æ‚µ‚Ä•\Ž¦‚·‚éƒXƒvƒ‰ƒCƒgÝ’è‚É‚È‚è‚Ü‚·B‚»‚Ìê‡‚ÍAp2ƒpƒ‰ƒ[ƒ^[‚ÉBGNo.‚ðŽw’è‚·‚é‚±‚Æ‚ª‚Å‚«‚Ü‚·B
+%href
+es_bglink
+
 
 
 %index
@@ -1314,7 +1327,12 @@ p3ƒpƒ‰ƒ[ƒ^[‚ÅŽw’è‚³‚ê‚½Ý’èƒ^ƒCƒv‚ÉAp2ƒpƒ‰ƒ[ƒ^[‚Ì’l‚ðÝ’è‚µ‚Ü‚·B
            0    ESMAP_PRM_GMODE    ƒGƒtƒFƒNƒgƒpƒ[ƒ^[(EP’l)
            1    ESMAP_PRM_ANIM     ƒAƒjƒ[ƒVƒ‡ƒ“ƒCƒ“ƒfƒbƒNƒX’l
            2    ESMAP_PRM_GROUP    ƒAƒgƒŠƒrƒ…[ƒgƒOƒ‹[ƒv’l
-           3    ESMAP_PRM_OPTION   BGÝ’èƒIƒvƒVƒ‡ƒ“’l(ESBGOPT_*)
+           3    ESMAP_PRM_NOTICE   ’Ê’mƒAƒCƒeƒ€‚ÌŒŸ¸(–¢ŽÀ‘•)
+           4    ESMAP_PRM_HITOFSX  ƒXƒvƒ‰ƒCƒg‚ÆBGƒ}ƒbƒvÚG”»’èŽž‚ÌXƒIƒtƒZƒbƒg’l
+           5    ESMAP_PRM_HITOFSY  ƒXƒvƒ‰ƒCƒg‚ÆBGƒ}ƒbƒvÚG”»’èŽž‚ÌYƒIƒtƒZƒbƒg’l
+           6    ESMAP_PRM_HITSIZEX ƒXƒvƒ‰ƒCƒg‚ÆBGƒ}ƒbƒvÚG”»’èŽž‚ÌXƒTƒCƒY’l
+           7    ESMAP_PRM_HITSIZEY ƒXƒvƒ‰ƒCƒg‚ÆBGƒ}ƒbƒvÚG”»’èŽž‚ÌYƒTƒCƒY’l
+          16    ESMAP_PRM_OPTION   BGÝ’èƒIƒvƒVƒ‡ƒ“’l(ESBGOPT_*)
 ^p
 ‰½‚ç‚©‚Ì——R‚ÅÝ’è‚ÉŽ¸”s‚µ‚½Žž‚ÍAƒVƒXƒeƒ€•Ï”stat‚É0ˆÈŠO‚Ì’l‚ª•Ô‚è‚Ü‚·B
 %href
@@ -1332,23 +1350,28 @@ p1,p2,p3,p4
 p1(0)=BGNo.(0`15)
 p2(0)=ƒLƒƒƒ‰ƒNƒ^No.(ŠJŽn)
 p3($ffff)=ƒLƒƒƒ‰ƒNƒ^No.(I—¹)
-p4(0)=ƒAƒgƒŠƒrƒ…[ƒg’l(0`255)
+p4(0)=ƒAƒgƒŠƒrƒ…[ƒg’l(0`65535)
 %inst
 BGƒ}ƒbƒv‚ÌƒAƒgƒŠƒrƒ…[ƒg’l‚ðÝ’è‚µ‚Ü‚·B
 ƒAƒgƒŠƒrƒ…[ƒg’l‚ÍABGƒ}ƒbƒv‚ªŽg—p‚·‚éƒLƒƒƒ‰ƒNƒ^[No.‚²‚Æ‚ÉÝ’è‚³‚ê‚é•â•“I‚Èî•ñ‚Å‚·B
 p1‚ÅBGNo.‚ðŽw’è‚µ‚Ü‚·BBGNo.‚Í0`15‚Ü‚Å‚ðŽw’è‰Â”\‚Å‚·B
 p2‚Æp3‚ÅŽw’è‚³‚ê‚½ƒLƒƒƒ‰ƒNƒ^[No.‚Ì”ÍˆÍ‚ÉAp4‚ÅŽw’è‚³‚ê‚½’l‚ªƒAƒgƒŠƒrƒ…[ƒg’l‚Æ‚µ‚ÄÝ’è‚³‚ê‚Ü‚·B
-ƒAƒgƒŠƒrƒ…[ƒg’l‚ÍA0‚©‚ç255‚Ü‚Å‚Ì’l‚ðÝ’è‚·‚é‚±‚Æ‚ª‚Å‚«‚Ü‚·B‚±‚Ìî•ñ‚ÍAes_bghit–½—ß‚É‚æ‚éBG‚Æ‚Ì“–‚½‚è”»’è‚ÉŽg—p‚³‚ê‚Ü‚·B
+ƒAƒgƒŠƒrƒ…[ƒg’l‚ÍA0‚©‚ç65535(16bit)‚Ü‚Å‚Ì’l‚ðÝ’è‚·‚é‚±‚Æ‚ª‚Å‚«‚Ü‚·B‚±‚Ìî•ñ‚ÍAes_bghit–½—ß‚É‚æ‚éBG‚Æ‚Ì“–‚½‚è”»’è‚ÉŽg—p‚³‚ê‚Ü‚·B
 ƒAƒgƒŠƒrƒ…[ƒg’l‚ðŽ¦‚·‚½‚ß‚Ìƒ}ƒNƒ‚ª’è‹`‚³‚ê‚Ä‚¢‚Ü‚·BˆÈ‰º‚Ì‚æ‚¤‚ÈˆÓ–¡‚ðŽ‚Á‚Ä‚¢‚Ü‚·B
 ^p
-      ’l@ƒ}ƒNƒ–¼         “à—e
+      ’l@ƒ}ƒNƒ–¼          “à—e
 --------------------------------------------------
-       0  ESMAP_ATTR_NONE  N“ü‰Â”\‚ÈêŠ(ƒfƒtƒHƒ‹ƒg)
-       1  ESMAP_ATTR_ITEM  N“ü‰Â”\‚Å“–‚½‚è”»’è‚ ‚è(ƒAƒCƒeƒ€‚È‚Ç)
-     128  ESMAP_ATTR_HOLD  N“ü‰Â”\‚¾‚ª‘«ê‚É‚È‚é
-     192  ESMAP_ATTR_WALL  N“ü•s‰Â‚Ì•Ç
- 0x10000  ESMAP_ATTR_MAX   ƒLƒƒƒ‰ƒNƒ^No.‚ÌÅ‘å’l
+       0  ESMAP_ATTR_NONE   N“ü‰Â”\‚ÈêŠ(ƒfƒtƒHƒ‹ƒg)
+      16  ESMAP_ATTR_NOTICE N“ü‰Â”\‚Å“–‚½‚è”»’è‚ ‚è(’Ê’mƒAƒCƒeƒ€)
+      32  ESMAP_ATTR_ANIM   ƒZƒ‹‚ÌƒAƒjƒ[ƒVƒ‡ƒ“ƒtƒ‰ƒO
+      64  ESMAP_ATTR_EVENT  N“ü‰Â”\‚Å“–‚½‚è”»’è‚ ‚è(ƒCƒxƒ“ƒgƒAƒCƒeƒ€)
+     128  ESMAP_ATTR_HOLD   N“ü‰Â”\‚¾‚ª‘«ê‚É‚È‚é
+     192  ESMAP_ATTR_WALL   N“ü•s‰Â‚Ì•Ç
+  0x1000  ESMAP_ATTR_MAX    ƒLƒƒƒ‰ƒNƒ^No.‚ÌÅ‘å’l
 ^p
+ƒAƒgƒŠƒrƒ…[ƒg’l‚Ìbit0`3(0`15‚Ü‚Å‚Ì’l)‚ÍAƒOƒ‹[ƒvî•ñ‚ªŠi”[‚³‚ê‚Ä‚¢‚Ü‚·B
+“Á’è‚ÌƒOƒ‹[ƒv‚¾‚¯‚ð•\Ž¦E”ñ•\Ž¦‚·‚é‚½‚ß‚Ìƒrƒbƒg‚Æ‚µ‚ÄŽg—p‚·‚é‚±‚Æ‚ª‚Å‚«‚Ü‚·B
+^
 ‰½‚ç‚©‚Ì——R‚ÅÝ’è‚ÉŽ¸”s‚µ‚½Žž‚ÍAƒVƒXƒeƒ€•Ï”stat‚É0ˆÈŠO‚Ì’l‚ª•Ô‚è‚Ü‚·B
 %href
 es_bgmap
@@ -1369,7 +1392,7 @@ p2(0)=BGNo.(0`15)
 p3(0)=ƒLƒƒƒ‰ƒNƒ^No.
 %inst
 es_bgattr–½—ß‚É‚æ‚Á‚ÄÝ’è‚³‚ê‚½BGƒ}ƒbƒv‚ÌƒAƒgƒŠƒrƒ…[ƒg’l‚ðŽæ“¾‚µ‚Ü‚·B
-ƒAƒgƒŠƒrƒ…[ƒg’l‚ÍABGƒ}ƒbƒv‚ªŽg—p‚·‚éƒLƒƒƒ‰ƒNƒ^[No.‚²‚Æ‚ÉÝ’è‚³‚ê‚é•â•“I‚Èî•ñ‚Å‚·B0‚©‚ç255‚Ü‚Å‚Ì’l‚ªÝ’è‚³‚ê‚Ä‚¨‚èAes_bghit–½—ß‚É‚æ‚éBG‚Æ‚Ì“–‚½‚è”»’è‚ÉŽg—p‚³‚ê‚Ü‚·B
+ƒAƒgƒŠƒrƒ…[ƒg’l‚ÍABGƒ}ƒbƒv‚ªŽg—p‚·‚éƒLƒƒƒ‰ƒNƒ^[No.‚²‚Æ‚ÉÝ’è‚³‚ê‚é•â•“I‚Èî•ñ‚Å‚·B0‚©‚ç65535‚Ü‚Å‚Ì’l‚ªÝ’è‚³‚ê‚Ä‚¨‚èAes_bghit–½—ß‚É‚æ‚éBG‚Æ‚Ì“–‚½‚è”»’è‚ÉŽg—p‚³‚ê‚Ü‚·B
 p2‚ÅBGNo.‚ðŽw’è‚µ‚Ü‚·BBGNo.‚Í0`15‚Ü‚Å‚ðŽw’è‰Â”\‚Å‚·B
 p3‚ÅŽw’è‚³‚ê‚½ƒLƒƒƒ‰ƒNƒ^[No.‚ÉÝ’è‚³‚ê‚½ƒAƒgƒŠƒrƒ…[ƒg’l‚ªAp1‚ÅŽw’è‚³‚ê‚½•Ï”‚É‘ã“ü‚³‚ê‚Ü‚·Bp1‚Ì•Ï”‚ÍŽ©“®“I‚É®”Œ^‚Æ‚µ‚ÄÝ’è‚³‚ê‚Ü‚·B
 ‰½‚ç‚©‚Ì——R‚ÅÝ’è‚ÉŽ¸”s‚µ‚½Žž‚ÍAƒVƒXƒeƒ€•Ï”stat‚É0ˆÈŠO‚Ì’l‚ª•Ô‚è‚Ü‚·B
@@ -1482,7 +1505,9 @@ es_getbghit–½—ßŽÀsŒã‚ÉAp1ƒpƒ‰ƒ[ƒ^[‚ÅŽw’è‚³‚ê‚½•Ï”‚Éî•ñ‚ª‘ã“ü‚³‚ê‚Ü‚·Bp1‚
        0  ESMAPHIT_NONE   ÚG‚È‚µ(ˆÚ“®‰Â”\)
        1  ESMAPHIT_HITX   X•ûŒü‚ÌˆÚ“®Žž‚ÉÚG‚ ‚è
        2  ESMAPHIT_HITY   Y•ûŒü‚ÌˆÚ“®Žž‚ÉÚG‚ ‚è
-       4  ESMAPHIT_EVENT  ÚGî•ñ‚ ‚è(ˆÚ“®‰Â”\)
+       4  ESMAPHIT_EVENT  ÚGî•ñ(ƒCƒxƒ“ƒgƒAƒCƒeƒ€)‚ ‚è(ˆÚ“®‰Â”\)
+       5  ESMAPHIT_NOTICE ÚGî•ñ(’Ê’mƒAƒCƒeƒ€)‚ ‚è(ˆÚ“®‰Â”\)
+       6  ESMAPHIT_SPHIT  ƒXƒvƒ‰ƒCƒg‚Æ‚ÌÚG‚ ‚è
 ^p
 es_getbghit–½—ßŽÀsŒã‚ÉA³‚µ‚­Œ‹‰Ê‚ªŽæ“¾‚³‚ê‚½ê‡‚ÍAƒVƒXƒeƒ€•Ï”stat‚É0‚ª‘ã“ü‚³‚ê‚Ü‚·B
 ‰½‚ç‚©‚Ì——R‚ÅŽæ“¾‚ÉŽ¸”s‚µ‚½Žž‚ÍAƒVƒXƒeƒ€•Ï”stat‚Íƒ}ƒCƒiƒX’l‚ª•Ô‚è‚Ü‚·B
@@ -1522,5 +1547,58 @@ p4ƒpƒ‰ƒ[ƒ^[‚É‚æ‚èAƒAƒjƒ[ƒVƒ‡ƒ“ˆ—‚ð•Û—¯‚·‚é‚±‚Æ‚ª‚Å‚«‚Ü‚·B
 ‚±‚Ì–½—ß‚ðŽÀs‚·‚é‚ÆƒVƒXƒeƒ€•Ï”stat‚ÉˆÚ“®‘ÎÛ‚Æ‚µ‚Ä”FŽ¯‚³‚ê‚½ƒXƒvƒ‰ƒCƒg‚ÌŒÂ”‚ª•Ô‚è‚Ü‚·B
 %href
 es_draw
+
+
+%index
+es_bglink
+V‹KƒXƒvƒ‰ƒCƒg‚Ìƒ}ƒbƒvŽQÆÝ’è
+%group
+Šg’£‰æ–Ê§Œä–½—ß
+%prm
+p1,p2
+p1(0)=BGNo.(0`15)
+p2(0)=MAPHITÝ’èƒIƒvƒVƒ‡ƒ“(ESSPMAPHIT_*)
+
+%inst
+V‹K‚É“o˜^‚³‚ê‚éƒXƒvƒ‰ƒCƒg‚Ìƒ}ƒbƒvŽQÆÝ’è‚ðs‚¢‚Ü‚·B
+‚±‚Ì–½—ß‚É‚æ‚èAƒXƒNƒ[ƒ‹‚·‚éƒ}ƒbƒv‚ÆÀ•W‚ð“¯Šú‚³‚¹‚éƒXƒvƒ‰ƒCƒg‚ðŽèŒy‚É“o˜^‚·‚é‚±‚Æ‚ª‰Â”\‚É‚È‚è‚Ü‚·B
+(es_setparent–½—ß‚É‚æ‚èAƒ}ƒbƒv‚ÆƒŠƒ“ƒN‚³‚ê‚½ó‘Ô‚Æ“¯—l‚É‚È‚è‚Ü‚·)
+‚Ü‚½AMAPHITÝ’èƒIƒvƒVƒ‡ƒ“‚à“¯—l‚É•t‰Á‚³‚ê‚Ü‚·BMAPHITÝ’èƒIƒvƒVƒ‡ƒ“‚ÍAˆÈ‰º‚Ì’l‚ðŽw’è‚·‚é‚±‚Æ‚ª‚Å‚«‚Ü‚·B
+^p
+      ’l@ƒ}ƒNƒ–¼             “à—e
+------------------------------------------------------------------
+   0x100  ESSPMAPHIT_BGHIT     ƒ}ƒbƒv‚ÌƒAƒgƒŠƒrƒ…[ƒg’l‚ð‚à‚Æ‚ÉÚG”»’è‚ðs‚¤
+   0x800  ESSPMAPHIT_HITWIPE   ƒ}ƒbƒv‚Æ‚ÌÚGŽžAŽ©“®“I‚ÉƒXƒvƒ‰ƒCƒg‚ðÁ‹Ž‚·‚é
+  0x1000  ESSPMAPHIT_GETEVENT  ƒ}ƒbƒv‚ÌƒCƒxƒ“ƒgî•ñ‚ðŽæ“¾‚·‚é
+  0x2000  ESSPMAPHIT_EVENTWIPE ƒ}ƒbƒv‚ÌƒCƒxƒ“ƒgî•ñŽæ“¾Žž‚ÉƒAƒgƒŠƒrƒ…[ƒg‚ðÁ‹Ž‚·‚é
+ 0x10000  ESSPMAPHIT_BGOBJ     ƒ}ƒbƒv‚Æ“¯—l‚ÌÚG”»’è‚ðƒXƒvƒ‰ƒCƒg‚É•t‰Á‚·‚é
+ 0x20000  ESSPMAPHIT_STICKSP   ƒ}ƒbƒv‚Æ‚µ‚ÄÚG”»’è‚Ì‚ ‚éƒXƒvƒ‰ƒCƒg‚É‹z’…‚·‚é
+^p
+–½—ßŽÀsŒã‚ÉA³‚µ‚­Œ‹‰Ê‚ªŽæ“¾‚³‚ê‚½ê‡‚ÍAƒVƒXƒeƒ€•Ï”stat‚É0‚ª‘ã“ü‚³‚ê‚Ü‚·B
+‰½‚ç‚©‚Ì——R‚ÅŽæ“¾‚ÉŽ¸”s‚µ‚½Žž‚ÍAƒVƒXƒeƒ€•Ï”stat‚Íƒ}ƒCƒiƒX’l‚ª•Ô‚è‚Ü‚·B
+%href
+es_setparent
+
+
+%index
+es_stick
+‘¼‚ÌƒXƒvƒ‰ƒCƒg‚É‹z’…‚·‚é
+%group
+Šg’£‰æ–Ê§Œä–½—ß
+%prm
+p1,p2
+p1(0)=ƒXƒvƒ‰ƒCƒgNo.
+p2(0)=‹z’…‚³‚¹‚éƒXƒvƒ‰ƒCƒgNo.
+
+%inst
+ƒXƒvƒ‰ƒCƒg‚Ì‹z’…Ý’è‚ðs‚¢‚Ü‚·BŽw’è‚µ‚½ƒXƒvƒ‰ƒCƒg‚ª‘¼‚ÌƒXƒvƒ‰ƒCƒg‚É‹z’…‚µ‚ÄˆÚ“®‚·‚é‚æ‚¤‚É‚È‚è‚Ü‚·B
+‹z’…Ý’è‚ðs‚Á‚½ƒXƒvƒ‰ƒCƒg‚ÍA‹z’…‚µ‚½ƒXƒvƒ‰ƒCƒg‚ªˆÚ“®‚·‚é‚Æ‚»‚Ì‹——£‚ð•Û‚¿‚È‚ª‚çˆê‚ÉˆÚ“®‚·‚é‚æ‚¤‚É‚È‚è‚Ü‚·B
+ˆêŽž“I‚É‘¼‚Ì•¨‘Ì‚Éæ‚Á‚½‚èAˆø‚Á’£‚ç‚ê‚é‚æ‚¤‚Èê‡‚ÉŽg—p‚·‚é‚±‚Æ‚ª‚Å‚«‚Ü‚·B
+p2ƒpƒ‰ƒ[ƒ^[‚Éƒ}ƒCƒiƒX’l‚ðŽw’è‚·‚é‚±‚Æ‚ÅA‹z’…‚ÌÝ’è‚ð‰ðœ‚µ‚Ü‚·B
+^
+–½—ßŽÀsŒã‚ÉA³‚µ‚­Œ‹‰Ê‚ªŽæ“¾‚³‚ê‚½ê‡‚ÍAƒVƒXƒeƒ€•Ï”stat‚É0‚ª‘ã“ü‚³‚ê‚Ü‚·B
+‰½‚ç‚©‚Ì——R‚ÅŽæ“¾‚ÉŽ¸”s‚µ‚½Žž‚ÍAƒVƒXƒeƒ€•Ï”stat‚Íƒ}ƒCƒiƒX’l‚ª•Ô‚è‚Ü‚·B
+%href
+es_setparent
 
 
