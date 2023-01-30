@@ -141,6 +141,8 @@ int essprite::init(int maxsprite, int maxchr, int rotrate, int maxmap)
 
 	setOffset(0, 0);
 	sprite_enable = true;
+
+	mem_deco.clear();
 	return 0;
 }
 
@@ -1045,7 +1047,7 @@ int essprite::draw(int start, int num, int mode, int start_pri, int end_pri)
 	a = a1 + a2 - 1;
 	sp = getObj(a);
 	for (i = 0; i < a2; i++) {
-		if (sp->fl & ESSPFLAG_DECORATE) {
+		if ((sp->fl & ESSPFLAG_DECORATE) == 0) {
 			if (priselect) {
 				if ((start_pri<=sp->priority) && (end_pri >= sp->priority)) {
 					spr->ikey = sp->priority;
@@ -1068,7 +1070,7 @@ int essprite::draw(int start, int num, int mode, int start_pri, int end_pri)
 	sp = getObj(a);
 	for (i = 0; i < a2; i++) {
 		if (sp->fl) {
-			if ((sp->fl & ESSPFLAG_DECORATE) == 0) {
+			if (sp->fl & ESSPFLAG_DECORATE) {
 				if (priselect) {
 					if ((start_pri <= sp->priority) && (end_pri >= sp->priority)) {
 						spr->ikey = sp->priority;
@@ -1593,17 +1595,53 @@ int essprite::setSpritePosChr(int def_spno, int xx, int yy, int chrno, int optio
 }
 
 
-int essprite::setSpriteDecoration(int x, int y, int chr, int direction, int speed, int life, int sw)
+int essprite::registSpriteDecoration(int chr, int opt, int direction, int speed, int life)
+{
+	//		decoration sprite regist
+	//
+	int res = -1;
+	SPDECOINFO deco;
+	deco.chr = chr;
+	deco.option = opt;
+	deco.direction = direction;
+	deco.speed = speed;
+	deco.life = life;
+	deco.rotp = 0;
+	deco.zoomxp = 0;
+	deco.zoomyp = 0;
+
+	if (opt & ESDECO_ZOOM) {
+		deco.zoomxp = 0x200;
+		deco.zoomyp = 0x200;
+	}
+	if (opt & ESDECO_ROTATE) {
+		deco.rotp = 2;
+	}
+
+	res = (int)mem_deco.size();
+	mem_deco.push_back(deco);
+	return res;
+}
+
+
+int essprite::setSpriteDecoration(int x, int y, int decoid)
 {
 	//		decoration sprite set
 	//
 	int multi = 1;
 	int res;
+
+	if ((decoid < 0) || (decoid >= (int)mem_deco.size())) return -1;
+
+	SPDECOINFO* info = &mem_deco.at(decoid);
+
+	int sw = info->option;
+
 	if (sw & ESDECO_MULTI4) multi = 4;
 	if (sw & ESDECO_MULTI8) multi = 8;
 	if (sw & ESDECO_MULTI16) multi = 16;
 
-	int dir = direction;
+	int dir = info->direction;
 	int diradd = 0;
 	if (multi > 1) {
 		if (dir >= 0) {
@@ -1613,7 +1651,7 @@ int essprite::setSpriteDecoration(int x, int y, int chr, int direction, int spee
 
 	while (1) {
 		if (multi <= 0) break;
-		res = setSpriteDecorationSub( x, y, chr, dir, speed, life, sw );
+		res = setSpriteDecorationSub( x, y, dir, info );
 		multi--;
 		dir += diradd;
 	}
@@ -1621,7 +1659,7 @@ int essprite::setSpriteDecoration(int x, int y, int chr, int direction, int spee
 }
 
 
-int essprite::setSpriteDecorationSub(int x, int y, int chr, int direction, int speed, int life, int sw)
+int essprite::setSpriteDecorationSub(int x, int y, int direction, SPDECOINFO* info)
 {
 	int spno = getEmptySpriteNo();
 	if (spno < 0) return -1;
@@ -1629,7 +1667,9 @@ int essprite::setSpriteDecorationSub(int x, int y, int chr, int direction, int s
 	SPOBJ* sp = resetSprite(spno);
 	if (sp == NULL) return -1;
 
-	int chrno = chr;
+	int chrno = info->chr;
+	int sw = info->option;
+
 	if (sw & ESDECO_CHR2) {
 		chrno += rand() % 2;
 	}
@@ -1641,6 +1681,7 @@ int essprite::setSpriteDecorationSub(int x, int y, int chr, int direction, int s
 
 	if (sw & ESDECO_FRONT) {
 		sp->fl |= ESSPFLAG_DECORATE;
+		sp->priority = 100;
 	}
 	if ((sw & ESDECO_MAPHIT)==0) {
 		sp->maphit = 0;
@@ -1657,8 +1698,8 @@ int essprite::setSpriteDecorationSub(int x, int y, int chr, int direction, int s
 	else {
 		dir = rand() % rrate;
 	}
-	if (speed >= 0) {
-		spd = speed;
+	if (info->speed >= 0) {
+		spd = info->speed;
 	}
 	else {
 		spd = (rand() % 150) + 50;
@@ -1667,9 +1708,23 @@ int essprite::setSpriteDecorationSub(int x, int y, int chr, int direction, int s
 		}
 	}
 	setSpriteAddDir(spno, dir, spd);
-	if (life >= 0) {
-		setSpriteFade(spno, ESSPF_TIMEWIPE, life);
+	if (info->life >= 0) {
+		setSpriteFade(spno, ESSPF_TIMEWIPE, info->life);
 	}
+	if (sw & ESDECO_SCATTER) {
+		sp->rotz = rand() % rrate;
+	}
+
+	if (info->rotp) {
+		sp->protz = info->rotp;
+		sp->fl |= ESSPFLAG_MOVEROT;
+	}
+	if (sw & ESDECO_ZOOM) {
+		sp->pzoomx = info->zoomxp;
+		sp->pzoomy = info->zoomyp;
+		sp->fl |= ESSPFLAG_MOVEROT;
+	}
+
 	return spno;
 }
 
@@ -1871,6 +1926,7 @@ void essprite::initMap(void)
 		mem_map[a].varptr = NULL;
 		mem_map[a].maskptr = NULL;
 		mem_map[a].attr = NULL;
+		mem_map[a].mem_bghitinfo = NULL;
 	}
 }
 
@@ -1888,6 +1944,10 @@ void essprite::deleteMap(int id)
 {
 	if ((id < 0) || (id >= mapkaz)) return;
 	mem_map[id].varptr = NULL;
+	if (mem_map[id].mem_bghitinfo != NULL) {
+		delete mem_map[id].mem_bghitinfo;
+		mem_map[id].mem_bghitinfo = NULL;
+	}
 	deleteMapMask(id);
 	deleteMapAttribute(id);
 }
@@ -1965,6 +2025,8 @@ int essprite::setMap(int def_bgno, int* varptr, int mapsx, int mapsy, int sx, in
 	if (option & ESMAP_OPT_USEMASK) {
 		updateMapMask(bgno);
 	}
+
+	bg->mem_bghitinfo = new std::vector<BGHITINFO>;
 
 	return bgno;
 }
@@ -2124,6 +2186,110 @@ int essprite::putMap(int xx, int yy, int bgno )
 }
 
 
+int essprite::fetchMap(int bgno, int dir, int size, int evtype)
+{
+	//		fetch MAP
+	//		(0=down,1=right,2=up,3=left)
+	//
+	int i, j, sx, sy, vx, vy, vpx, vpy, ofsx, ofsy, divx, divy;
+	int lx, ly;
+	int* mapsrc;
+	int* p;
+	int celno;
+	unsigned short* p_attr;
+	int attr;
+	int group;
+	bool transflag = true;
+	bool selgroup = false;
+
+	BGMAP* bg = getMap(bgno);
+	if (bg == NULL) return -1;
+
+	Bmscr* bm = hspwnd->GetBmscrSafe(bg->buferid);
+	if (bm == NULL) return -1;
+	divx = bg->divx; divy = bg->divy;
+
+	mapsrc = bg->varptr;
+	if (mapsrc == NULL) return -1;
+
+	sx = bg->sizex;
+	sy = bg->sizey;
+	vx = bg->viewx;
+	vy = bg->viewy;
+	if (vx < 0) vx = 0;
+	if (vy < 0) vy = 0;
+	vpx = vx % divx;
+	vpy = vy % divy;
+	if (vpx > 0) sx++;
+	if (vpy > 0) sy++;
+
+	lx = sx; ly = sy;
+	switch (dir) {
+	case 0:
+		vpy += sy;
+		ly = size;
+		break;
+	case 1:
+		vpx += sx;
+		lx = size;
+		break;
+	case 2:
+		vpy -= size;
+		if (vpy < 0) vpy = 0;
+		ly = size;
+		break;
+	case 3:
+		vpx -= size;
+		if (vpx < 0) vpx = 0;
+		lx = size;
+		break;
+	default:
+		return -2;
+	}
+
+
+	p_attr = bg->attr;
+	if (p_attr == NULL) return -3;
+	group = bg->group;
+	if (group >= 0) selgroup = true;
+
+	resetMapHitInfo(bgno);
+
+	ofsy = vy / divy;
+	for (j = 0; j < ly; j++) {
+		p = mapsrc;
+		p += bg->mapsx * (ofsy % bg->mapsy);
+		ofsx = vx / divx;
+		for (i = 0; i < lx; i++) {
+			celno = (p[ofsx % bg->mapsx]) & 0xffff;
+			if (celno == 0) {
+				if (transflag) {					// cel=0はスキップ
+					ofsx++;
+					continue;
+				}
+			}
+			if (p_attr) {
+				attr = (int)p_attr[celno];
+				if (selgroup) {
+					if (group != (attr & 15)) {		// 指定グループのみ有効
+						ofsx++;
+						continue;
+					}
+				}
+				if (attr & ESMAP_ATTR_NOTICE) {
+					addMapHitInfo(bgno, ESMAPHIT_NOTICE, celno, attr, ofsx, ofsy, i, j);	// NOTICE
+					celno = 0;
+					p[ofsx % bg->mapsx] = 0;
+				}
+			}
+			ofsx++;
+		}
+		ofsy++;
+	}
+	return bg->maphit_cnt;
+}
+
+
 int essprite::setMapParam(int bgno, int tp, int option)
 {
 	BGMAP* bg = getMap(bgno);
@@ -2205,6 +2371,7 @@ void essprite::resetMapHitInfo(int bgno)
 	BGMAP* bg = getMap(bgno);
 	if (bg == NULL) return;
 
+	bg->mem_bghitinfo->clear();
 	bg->maphit_cnt = 0;
 
 	bak_hitmapx = -1;
@@ -2216,16 +2383,19 @@ BGHITINFO* essprite::addMapHitInfo(int bgno, int result, int celid, int attr, in
 	BGMAP* bg = getMap(bgno);
 	if (bg == NULL) return NULL;
 
-	BGHITINFO* info = getMapHitInfo(bgno, bg->maphit_cnt);
-	if (info == NULL) return NULL;
-	info->result = result;
-	info->celid = celid;
-	info->attr = attr;
-	info->myx = myx;
-	info->myx = myx;
-	info->x = xx;
-	info->y = yy;
-
+	BGHITINFO data;
+	data.result = result;
+	data.celid = celid;
+	data.attr = attr;
+	data.myx = myx;
+	data.myx = myx;
+	data.x = xx;
+	data.y = yy;
+	bg->mem_bghitinfo->push_back(data);
+	BGHITINFO* info = &bg->mem_bghitinfo->at(bg->maphit_cnt);
+	if (info == NULL) {
+		return NULL;
+	}
 	bg->maphit_cnt++;
 	return info;
 }
@@ -2236,8 +2406,8 @@ BGHITINFO* essprite::getMapHitInfo(int bgno, int index)
 	BGMAP* bg = getMap(bgno);
 	if (bg == NULL) return NULL;
 
-	if ((index < 0) || (index >= ESMAPHIT_INFOMAX)) return NULL;
-	BGHITINFO* info = &bg->bghitinfo[index];
+	if ((index < 0) || (index >= bg->maphit_cnt)) return NULL;
+	BGHITINFO* info = &bg->mem_bghitinfo->at(index);
 	return info;
 }
 

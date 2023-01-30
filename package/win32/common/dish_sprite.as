@@ -59,7 +59,9 @@
 #cmd es_bglink $233
 #cmd es_stick $234
 #cmd es_bghit $235
-#cmd es_setdeco $236
+#cmd es_regdeco $236
+#cmd es_setdeco $237
+#cmd es_bgfetch $238
 
 
 #define global es_fmes mes
@@ -126,7 +128,6 @@
 #define global ESSPSET_CENTER (6)
 #define global ESSPSET_PUTPOS (7)
 #define global ESSPSET_ADDPOS2 (8)
-#define global ESSPSET_POS2 (9)
 #define global ESSPSET_DIRECT (0x1000)
 #define global ESSPSET_MASKBIT (0x2000)
 
@@ -180,7 +181,6 @@
 #define global ESMAP_PRM_HITSIZEY (7)
 #define global ESMAP_PRM_OPTION (16)
 
-#define global ESMAPHIT_INFOMAX (64)
 #define global ESMAPHIT_NONE (0)
 #define global ESMAPHIT_HITX (1)
 #define global ESMAPHIT_HITY (2)
@@ -195,6 +195,7 @@
 #define global ESDECO_ZOOM (8)
 #define global ESDECO_ROTATE (16)
 #define global ESDECO_BOOST (32)
+#define global ESDECO_SCATTER (64)
 #define global ESDECO_MULTI4 (0x100)
 #define global ESDECO_MULTI8 (0x200)
 #define global ESDECO_MULTI16 (0x400)

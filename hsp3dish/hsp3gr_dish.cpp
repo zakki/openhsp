@@ -3822,7 +3822,7 @@ static int cmdfunc_extcmd( int cmd )
 	}
 	case 0x233:								// es_bglink
 	{
-		//		sprite axis add vector set (type0)
+		//		Sprite BG link set (type0)
 		//		es_bglink bgno, maphitoption
 		p1 = code_getdi(0);
 		p2 = code_getdi(0);
@@ -3857,20 +3857,44 @@ static int cmdfunc_extcmd( int cmd )
 		}
 		break;
 	}
-	case 0x236:								// es_setdeco
+	case 0x236:								// es_regdeco
+	{
+		//		register decoration sprite data (type0)
+		//		es_regdeco chr, opt, direction, speed, life
+		p1 = code_getdi(0);
+		p2 = code_getdi(0);
+		p3 = code_getdi(-1);
+		p4 = code_getdi(-1);
+		p5 = code_getdi(30);
+		if (sprite->sprite_enable) {
+			ctx->stat = sprite->registSpriteDecoration(p1, p2, p3, p4, p5);
+		}
+		else throw HSPERR_UNSUPPORTED_FUNCTION;
+		break;
+	}
+	case 0x237:								// es_setdeco
 	{
 		//		set decoration sprite data (type0)
-		//		es_setdeco x, y, chr, sw, direction, speed, life
-		int p7;
+		//		es_setdeco x, y, decoid
 		p1 = code_getdi(bmscr->cx);
 		p2 = code_getdi(bmscr->cy);
 		p3 = code_getdi(0);
-		p7 = code_getdi(0);
-		p4 = code_getdi(-1);
-		p5 = code_getdi(-1);
-		p6 = code_getdi(30);
 		if (sprite->sprite_enable) {
-			ctx->stat = sprite->setSpriteDecoration(p1, p2, p3, p4, p5, p6, p7);
+			ctx->stat = sprite->setSpriteDecoration(p1, p2, p3);
+		}
+		else throw HSPERR_UNSUPPORTED_FUNCTION;
+		break;
+	}
+	case 0x238:								// es_bgfetch
+	{
+		//		set decoration sprite data (type0)
+		//		es_bgfetch bgno, dir, size, evtype
+		p1 = code_getdi(0);
+		p2 = code_getdi(1);
+		p3 = code_getdi(1);
+		p4 = code_getdi(0);
+		if (sprite->sprite_enable) {
+			ctx->stat = sprite->fetchMap(p1, p2, p3, p4);
 		}
 		else throw HSPERR_UNSUPPORTED_FUNCTION;
 		break;

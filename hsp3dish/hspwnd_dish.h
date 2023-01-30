@@ -6,6 +6,7 @@
 #define __hspwnd_dish_h
 
 #include <string>
+#include <vector>
 #include "../hsp3/hsp3config.h"
 #include "../hsp3/hsp3code.h"
 

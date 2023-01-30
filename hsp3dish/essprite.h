@@ -80,7 +80,6 @@ extern "C" {
 #define ESMAP_PRM_HITSIZEY (7)
 #define ESMAP_PRM_OPTION (16)
 
-#define ESMAPHIT_INFOMAX (64)
 #define ESMAPHIT_NONE (0)
 #define ESMAPHIT_HITX (1)
 #define ESMAPHIT_HITY (2)
@@ -109,6 +108,7 @@ extern "C" {
 #define ESDECO_ZOOM (8)
 #define ESDECO_ROTATE (16)
 #define ESDECO_BOOST (32)
+#define ESDECO_SCATTER (64)
 #define ESDECO_MULTI4 (0x100)
 #define ESDECO_MULTI8 (0x200)
 #define ESDECO_MULTI16 (0x400)
@@ -164,6 +164,18 @@ typedef struct BGHITINFO
 	int x, y;			//	last Player axis (pixel)
 } BGHITINFO;
 
+typedef struct SPDECOINFO
+{
+	int chr;			//	chr code
+	int option;			//	option value
+	int direction;		//	move direction
+	int speed;			//	move speed
+	int life;			//	life count
+	int rotp;			//	rotate prm
+	int zoomxp;			//	ZOOMX prm
+	int zoomyp;			//	ZOOMY prm
+} SPDECOINFO;
+
 typedef struct BGMAP
 {
 	int* varptr;			//	Map reference ptr.
@@ -183,8 +195,7 @@ typedef struct BGMAP
 	int hitofsx, hitofsy;	//	Map hit offset X,Y
 	int hitsizex, hitsizey;	//	Map hit size X,Y
 	int sx, sy;				//	Whole Map Size
-	int effectbase[8];		//	Effect ID store
-	BGHITINFO bghitinfo[ESMAPHIT_INFOMAX];	//	Map hit info
+	std::vector<BGHITINFO> *mem_bghitinfo;	//	Map hit info
 } BGMAP;
 
 typedef struct SPOBJ
@@ -253,6 +264,7 @@ public:
 	void deleteMapMask(int id);
 	void deleteMapAttribute(int id);
 	int putMap(int x, int y, int id);
+	int fetchMap(int bgno, int dir, int size, int evtype);
 	int setMap(int bgno, int* varptr, int mapsx, int mapsy, int sx, int sy, int buffer, int option);
 	int setMapPos(int bgno, int x, int y);
 	int setMapMes(int bgno, int x, int y, char *msg, int offset=0);
@@ -274,8 +286,9 @@ public:
 
 	int setSpriteFlag(int spno, int flag, int op=0);
 	int setSpritePosChr(int spno, int xx, int yy, int chrno, int option, int pri);
-	int setSpriteDecoration(int x, int y, int chr, int direction, int speed, int life, int sw);
-	int setSpriteDecorationSub(int x, int y, int chr, int direction, int speed, int life, int sw);
+	int registSpriteDecoration(int chr, int opt, int direction, int speed, int life);
+	int setSpriteDecoration(int x, int y, int decoid);
+	int setSpriteDecorationSub(int x, int y, int direction, SPDECOINFO *info);
 	int setSpritePos(int spno, int xx, int yy, int opt=0);
 	int setSpriteAddPos(int spno, int xx, int yy, bool realaxis = false);
 	int setSpriteAddPosRate(int spno, int xx, int yy, int rate);
@@ -343,6 +356,7 @@ private:
 	CHRREF* chr;
 	int		mapkaz;	// Max map object
 	BGMAP* mem_map;
+	std::vector<SPDECOINFO> mem_deco;
 
 	int		main_sx, main_sy;	// default window size
 	int		ofsx, ofsy;			// for sprite offset
