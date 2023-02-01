@@ -128,6 +128,7 @@ int essprite::init(int maxsprite, int maxchr, int rotrate, int maxmap)
 		chr->colx = 0; chr->coly = 0;
 		chr->colsx = 32; chr->colsy = 32;
 		chr->lktime = 0; chr->lknum = 0;
+		chr->putofsx = 0; chr->putofsy = 0;
 	}
 
 	def_fspx = 0;
@@ -141,6 +142,7 @@ int essprite::init(int maxsprite, int maxchr, int rotrate, int maxmap)
 
 	setOffset(0, 0);
 	sprite_enable = true;
+	setSize(16, 16, 100, 0x3ff);
 
 	mem_deco.clear();
 	return 0;
@@ -276,8 +278,12 @@ void essprite::setSize(int p1, int p2, int p3, int p4)
 	int rate, nx, ny, bsx, bsy;
 	rate = p3;
 	if (rate == 0) rate = 100;
-	df_bsx = p1; df_bsy = p2;
-	bsx = df_bsx; bsy = df_bsy;
+
+	bsx = p1; bsy = p2;
+	if (bsx == 0) bsx = df_bsx;
+	if (bsy == 0) bsy = df_bsy;
+	df_bsx = bsx; df_bsy = bsy;
+
 	nx = bsx *rate / 100;
 	ny = bsy *rate / 100;
 	df_colx = (bsx - nx) / 2;
@@ -285,6 +291,29 @@ void essprite::setSize(int p1, int p2, int p3, int p4)
 	df_colsx = nx;
 	df_colsy = ny;
 	df_tpflag = p4;
+	df_putofsx = 0;
+	df_putofsy = 0;
+}
+
+
+void essprite::setSizeEx(int xsize, int ysize, int tpflag, int colsizex, int colsizey, int colx, int coly, int putx, int puty)
+{
+	int bsx, bsy;
+	bsx = xsize; bsy = ysize;
+	if (bsx == 0) bsx = df_bsx;
+	if (bsy == 0) bsy = df_bsy;
+	df_bsx = bsx; df_bsy = bsy;
+	df_tpflag = tpflag;
+
+	df_colx = colx;
+	df_coly = coly;
+	df_colsx = colsizex;
+	df_colsy = colsizey;
+	if (df_colsx == 0) df_colsx = bsx;
+	if (df_colsy == 0) df_colsy = bsy;
+
+	df_putofsx = putx;
+	df_putofsy = puty;
 }
 
 
@@ -306,6 +335,8 @@ int essprite::setPattern(int p1, int p2, int p3, int p4, int window_id)
 	chr->bsx = df_bsx; chr->bsy = df_bsy;
 	chr->colx = df_colx; chr->coly = df_coly;
 	chr->colsx = df_colsx; chr->colsy = df_colsy;
+	chr->putofsx = df_putofsx;
+	chr->putofsy = df_putofsy;
 	chr->lktime = wt; chr->lknum = a + 1;
 	chr->wid = window_id;
 	chr->tpflag = df_tpflag;
@@ -383,6 +414,7 @@ int essprite::put(int xx, int yy, int chrno, int tpflag, int zoomx, int zoomy, i
 	bool deform;
 	int x, y, ix, iy, nx, ny;
 	int vx, vy;
+	int ofsx, ofsy;
 	double rot;
 
 	deform = false;
@@ -391,6 +423,8 @@ int essprite::put(int xx, int yy, int chrno, int tpflag, int zoomx, int zoomy, i
 	chr = &mem_chr[chrno];
 	nx = chr->bsx; ny = chr->bsy;
 	ix = chr->bx; iy = chr->by;
+	ofsx = chr->putofsx;
+	ofsy = chr->putofsy;
 
 	if ((zoomx != dotshift_base) || (zoomy != dotshift_base) || (rotz != 0)) {
 		deform = true;
@@ -399,6 +433,8 @@ int essprite::put(int xx, int yy, int chrno, int tpflag, int zoomx, int zoomy, i
 		vx = (nx * zoomx) >> dotshift;
 		vy = (ny * zoomy) >> dotshift;
 		rot = pans * -rotz;
+		if (ofsx != 0) ofsx = (ofsx * zoomx) >> dotshift;
+		if (ofsy != 0) ofsy = (ofsy * zoomy) >> dotshift;
 	}
 	else {
 		vx = nx; vy = ny;
@@ -412,8 +448,8 @@ int essprite::put(int xx, int yy, int chrno, int tpflag, int zoomx, int zoomy, i
 	Bmscr* src = hspwnd->GetBmscrSafe(chr->wid);
 	if (src == NULL) return -1;
 
-	bmscr->cx = x;
-	bmscr->cy = y;
+	bmscr->cx = x + ofsx;
+	bmscr->cy = y + ofsy;
 
 	int tp = tpflag;
 	if (tp < 0) tp = chr->tpflag;
@@ -611,6 +647,8 @@ int essprite::drawSubMoveGravity(SPOBJ* sp)
 	if (chr == NULL) return 0;
 
 	res = 0;
+	sp->moveres = 0;
+
 	bsx = chr->bsx;
 	bsy = chr->bsy;
 
@@ -698,12 +736,14 @@ int essprite::drawSubMoveVector(SPOBJ* sp)
 	//
 	int px, py, res, i;
 	int bak_x, bak_y;
+	int myx, myy;
 
 	sp->px += sp->fspx << 8;
 	sp->py += sp->fspy << 8;
 	bak_x = sp->xx;
 	bak_y = sp->yy;
 	px = sp->px; py = sp->py;
+	sp->moveres = 0;
 
 	if (sp->spstick >= 0) {				// 吸着している場合
 		SPOBJ* tsp = getObj(sp->spstick);
@@ -727,7 +767,15 @@ int essprite::drawSubMoveVector(SPOBJ* sp)
 	BGMAP* bg = getMap(bgid);
 	if (bg == NULL) return 2;
 
-	res = getMapMaskHit32(bgid, sp->xx + bg->hitofsx, sp->yy + bg->hitofsy, bg->hitsizex, bg->hitsizey, px, py);
+	CHRREF* chr = getChr(sp->chr);
+	if (chr == NULL) return 4;
+	myx = sp->xx + (chr->colx << dotshift);
+	myy = sp->yy + (chr->coly << dotshift);
+
+	int myattr = getMapAttrFromPos(bgid, myx>>dotshift, myy>>dotshift);
+	sp->moveres |= (myattr & 0xff);
+
+	res = getMapMaskHit32(bgid, myx, myy, chr->colsx, chr->colsy, px, py);
 	if (res <= 0) return -1;
 
 	bool hit = false;
@@ -746,10 +794,24 @@ int essprite::drawSubMoveVector(SPOBJ* sp)
 		case ESMAPHIT_HITX:
 			hit = true;
 			flipx = true;
+			sp->moveres |= ESSPRES_XBLOCK;
+			if (sp->fspx > 0) {
+				if (px > 0) sp->moveres |= ESSPRES_GROUND;
+			}
+			if (sp->fspx < 0) {
+				if (px < 0) sp->moveres |= ESSPRES_GROUND;
+			}
 			break;
 		case ESMAPHIT_HITY:
 			hit = true;
 			flipy = true;
+			sp->moveres |= ESSPRES_YBLOCK;
+			if (sp->fspy > 0) {
+				if (py > 0) sp->moveres |= ESSPRES_GROUND;
+			}
+			if (sp->fspy < 0) {
+				if (py < 0) sp->moveres |= ESSPRES_GROUND;
+			}
 			break;
 		case ESMAPHIT_SPHIT:
 			if (sp->maphit & ESSPMAPHIT_STICKSP) {
@@ -765,6 +827,9 @@ int essprite::drawSubMoveVector(SPOBJ* sp)
 	if (hit) {
 		if (sp->maphit & ESSPMAPHIT_HITWIPE) {
 			sp->fl = 0;
+			if (bg->spwipe_chr >= 0) {
+				setSpriteDecoration(sp->xx >> dotshift, sp->yy >> dotshift, bg->spwipe_chr);
+			}
 			return 0;
 		}
 	}
@@ -813,9 +878,30 @@ int essprite::drawSubMoveVector(SPOBJ* sp)
 }
 
 
+int essprite::execSingle(int spno)
+{
+	//		1 sprite move (move only)
+	//
+	SPOBJ* sp = getObj(spno);
+	if (sp == NULL) return -1;
+	bool ok = false;
+	int fl = sp->fl;
+	if (sp->maphit & ESSPMAPHIT_BGHIT) {
+		if (drawSubMoveVector(sp) == 0) {		// BGマップとの当たりを取る
+			ok = true;
+		}
+	}
+	if (ok) {
+		fl &= ~ESSPFLAG_MOVE;
+		return 0;
+	}
+	return 1;
+}
+
+
 int essprite::drawSubMove(SPOBJ *sp, int mode)
 {
-	//		1 sprite draw (on sp)
+	//		1 sprite move (on sp)
 	//
 	int fl, x, y, res, xx, yy;
 
@@ -1565,6 +1651,7 @@ SPOBJ *essprite::resetSprite(int spno)
 	sp->protz = 0;
 	sp->pzoomx = 0;
 	sp->pzoomy = 0;
+	sp->moveres = 0;
 
 	sp->spstick = -1;
 	sp->spst_x = 0;
@@ -2007,17 +2094,13 @@ int essprite::setMap(int def_bgno, int* varptr, int mapsx, int mapsy, int sx, in
 	bg->animation = 0;
 	bg->group = -1;
 	bg->notice = 0;
+	bg->spwipe_chr = -1;
 
 	Bmscr* bm = hspwnd->GetBmscrSafe(bg->buferid);
 	if (bm == NULL) return -1;
 	bg->divx = bm->divsx; bg->divy = bm->divsy;
 	bg->sx = mapsx * bg->divx;
 	bg->sy = mapsy * bg->divy;
-
-	bg->hitofsx = 0;
-	bg->hitofsy = 0;
-	bg->hitsizex = bg->divx;
-	bg->hitsizey = bg->divy;
 
 	if (option & ESMAP_OPT_NOTRANS) {
 		bg->tpflag = 0;
@@ -2308,21 +2391,11 @@ int essprite::setMapParam(int bgno, int tp, int option)
 	case ESMAP_PRM_NOTICE:
 		bg->notice = tp;
 		break;
-	case ESMAP_PRM_HITOFSX:
-		bg->hitofsx = tp;
-		break;
-	case ESMAP_PRM_HITOFSY:
-		bg->hitofsy = tp;
-		break;
-	case ESMAP_PRM_HITSIZEX:
-		bg->hitsizex = tp;
-		break;
-	case ESMAP_PRM_HITSIZEY:
-		bg->hitsizey = tp;
-		break;
 	case ESMAP_PRM_OPTION:
 		bg->bgoption = tp;
 		break;
+	case ESMAP_PRM_WIPECHR:
+		bg->spwipe_chr = tp;
 	default:
 		return -1;
 	}
@@ -2602,11 +2675,35 @@ int essprite::getMapMaskHitSprite(int bgno, int spno, int px, int py)
 	if (bg == NULL) return 0;
 	SPOBJ* sp = getObj(spno);
 	if (sp == NULL) return 0;
+	CHRREF* chr = getChr(sp->chr);
+	if (chr == NULL) return 0;
 
 	int xx, yy;
 	xx = sp->xx;
 	yy = sp->yy;
-	return getMapMaskHit(bgno, xx+ bg->hitofsx, yy+ bg->hitofsy, bg->hitsizex, bg->hitsizey, px, py);
+	return getMapMaskHit(bgno, xx+ chr->colx, yy+ chr->coly, chr->colsx, chr->colsy, px, py);
+}
+
+
+int essprite::getMapAttrFromPos(int bgno, int x, int y)
+{
+	//		(x,y)位置のマップアトリビュート値を得る
+	//
+	BGMAP* map = getMap(bgno);
+	if (map == NULL) return 0;
+
+	unsigned short* attr = map->attr;
+	if (attr == NULL) return 0;
+
+	if ((x < 0) || (x >= map->sx)) return 0;
+	if ((y < 0) || (y >= map->sy)) return 0;
+
+	int* p = map->varptr;
+	hitmapx = (x / map->divx);
+	hitmapy = (y / map->divy);
+	hitcelid = p[hitmapy * map->mapsx + hitmapx] & 0xffff;
+	hitattr_org = (int)attr[hitcelid];
+	return hitattr_org;
 }
 
 

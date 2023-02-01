@@ -62,6 +62,7 @@
 #cmd es_regdeco $236
 #cmd es_setdeco $237
 #cmd es_bgfetch $238
+#cmd es_sizeex $239
 
 
 #define global es_fmes mes
@@ -97,6 +98,7 @@
 #define global ESI_STICKSP 27
 #define global ESI_STICKX 28
 #define global ESI_STICKY 29
+#define global ESI_MOVERES 30
 
 #define global ESSPFLAG_NONE (0)
 #define global ESSPFLAG_STATIC (0x100)
@@ -130,6 +132,11 @@
 #define global ESSPSET_ADDPOS2 (8)
 #define global ESSPSET_DIRECT (0x1000)
 #define global ESSPSET_MASKBIT (0x2000)
+
+#define global ESSPRES_XBLOCK (0x100)
+#define global ESSPRES_YBLOCK (0x200)
+#define global ESSPRES_GROUND (0x400)
+#define global ESSPRES_EVENT (0x800)
 
 #define global ESDRAW_NORMAL (0)
 #define global ESDRAW_NOMOVE (1)
@@ -175,10 +182,7 @@
 #define global ESMAP_PRM_ANIM (1)
 #define global ESMAP_PRM_GROUP (2)
 #define global ESMAP_PRM_NOTICE (3)
-#define global ESMAP_PRM_HITOFSX (4)
-#define global ESMAP_PRM_HITOFSY (5)
-#define global ESMAP_PRM_HITSIZEX (6)
-#define global ESMAP_PRM_HITSIZEY (7)
+#define global ESMAP_PRM_WIPECHR (4)
 #define global ESMAP_PRM_OPTION (16)
 
 #define global ESMAPHIT_NONE (0)

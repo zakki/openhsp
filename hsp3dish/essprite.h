@@ -49,6 +49,11 @@ extern "C" {
 #define ESSPSET_DIRECT (0x1000)
 #define ESSPSET_MASKBIT (0x2000)
 
+#define ESSPRES_XBLOCK (0x100)
+#define ESSPRES_YBLOCK (0x200)
+#define ESSPRES_GROUND (0x400)
+#define ESSPRES_EVENT (0x800)
+
 #define ESDRAW_NORMAL (0)
 #define ESDRAW_NOMOVE (1)
 #define ESDRAW_NOANIM (2)
@@ -74,10 +79,7 @@ extern "C" {
 #define ESMAP_PRM_ANIM (1)
 #define ESMAP_PRM_GROUP (2)
 #define ESMAP_PRM_NOTICE (3)
-#define ESMAP_PRM_HITOFSX (4)
-#define ESMAP_PRM_HITOFSY (5)
-#define ESMAP_PRM_HITSIZEX (6)
-#define ESMAP_PRM_HITSIZEY (7)
+#define ESMAP_PRM_WIPECHR (4)
 #define ESMAP_PRM_OPTION (16)
 
 #define ESMAPHIT_NONE (0)
@@ -153,6 +155,7 @@ typedef struct CHRREF
 	short bsx, bsy;		//	chr base size of X,Y
 	int colx, coly;		//	Collision X,Y offset
 	int colsx, colsy;	//	Collision size of X,Y
+	int putofsx, putofsy;	//	chr put offset X,Y
 } CHRREF;
 
 typedef struct BGHITINFO
@@ -192,9 +195,8 @@ typedef struct BGMAP
 	unsigned short *attr;	//	Cel Attribute
 	int notice;				//	Notice Index
 	int maphit_cnt;			//	Map hit count
-	int hitofsx, hitofsy;	//	Map hit offset X,Y
-	int hitsizex, hitsizey;	//	Map hit size X,Y
 	int sx, sy;				//	Whole Map Size
+	int spwipe_chr;			//	Sprite wipe CHR
 	std::vector<BGHITINFO> *mem_bghitinfo;	//	Map hit info
 } BGMAP;
 
@@ -227,6 +229,7 @@ typedef struct SPOBJ
 	int maphit;			//	マップヒット用フラグ
 	int spstick;		//	他のスプライトに吸着(-1=無効)
 	int spst_x, spst_y;	//	吸着オフセット
+	int moveres;		//	移動結果フラグ
 	unsigned short *sbr;//	callback
 
 } SPOBJ;
@@ -241,6 +244,7 @@ public:
 	int setResolution(HspWnd* wnd, int sx, int sy, int bufferid = 0);
 	void setArea(int x, int y, int sx, int sy );
 	void setSize(int p1, int p2, int p3, int p4);
+	void setSizeEx(int xsize, int ysize, int tpflag, int colsizex=0, int colsizey=0, int colx=0, int coly=0, int putx=0, int puty=0 );
 	void setLand(int p1, int p2);
 	int setGravity(int p1, int p2, int p3);
 	int setBound(int p1, int p2, int p3);
@@ -254,6 +258,7 @@ public:
 	SPOBJ* resetSprite(int spno);
 	int put(int x, int y, int chr, int tpflag=-1, int zoomx=0x10000, int zoomy=0x10000, int rotz=0);
 	int draw(int start, int num, int mode, int start_pri, int end_pri);
+	int execSingle(int id);
 	int find(int chktype, int spno, int endspno = -1, int step = 0);
 	int checkCollisionSub(SPOBJ *sp);
 	int checkCollision(int spno, int chktype);
@@ -283,6 +288,7 @@ public:
 	int getMapMaskHitSub( int bgno, int x, int y, int sizex, int sizey, bool wallonly=false, bool downdir=false );
 	int getMapMaskHitSprite(int bgno, int spno, int px, int py);
 	int getSpriteAttrHit( int xx, int yy, int xsize, int ysize, bool plane=false );
+	int getMapAttrFromPos(int bgno, int x, int y);
 
 	int setSpriteFlag(int spno, int flag, int op=0);
 	int setSpritePosChr(int spno, int xx, int yy, int chrno, int option, int pri);
@@ -373,6 +379,7 @@ private:
 
 	int		df_bsx, df_bsy, df_colx, df_coly;
 	int		df_colsx, df_colsy, df_tpflag;
+	int		df_putofsx, df_putofsy;
 	int		def_fspx, def_fspy;
 	int		def_bound;
 	int		def_boundflag;

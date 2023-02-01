@@ -3060,11 +3060,14 @@ static int cmdfunc_extcmd( int cmd )
 	{
 		//		define character size (type0)
 		//		es_size x,y,collision_rate,tpflag
-		p1 = code_geti();
-		p2 = code_geti();
+		p1 = code_getdi(16);
+		p2 = code_getdi(16);
 		p3 = code_getdi(100);
 		p4 = code_getdi(0x3ff);
-		sprite->setSize(p1, p2, p3, p4);
+		if (sprite->sprite_enable) {
+			sprite->setSize(p1, p2, p3, p4);
+		}
+		else throw HSPERR_UNSUPPORTED_FUNCTION;
 		break;
 	}
 	case 0x204:								// es_pat
@@ -3772,7 +3775,7 @@ static int cmdfunc_extcmd( int cmd )
 		}
 		break;
 	}
-	case 0x231:								// es_getbghitpos
+	case 0x231:								// es_getbghit
 	{
 		//		get BGMAP hit info
 		//		es_getbghit var, bgno, index
@@ -3783,6 +3786,14 @@ static int cmdfunc_extcmd( int cmd )
 		p2 = code_getdi(0);
 		ctx->stat = -1;
 		if (sprite->sprite_enable) {
+			if (p2 < 0) {
+				BGMAP* map = sprite->getMap(p1);
+				if (map == NULL) break;
+				int res = map->maphit_cnt;
+				code_setva(p_pval, p_aptr, HSPVAR_FLAG_INT, &res);
+				ctx->stat = 0;
+				break;
+			}
 			BGHITINFO* info = sprite->getMapHitInfo(p1,p2);
 			if (info) {
 				p_aptr = 0;
@@ -3846,14 +3857,10 @@ static int cmdfunc_extcmd( int cmd )
 	case 0x235:								// es_bghit
 	{
 		//		make BGMAP hit info
-		//		es_bghit bgno, spno, px, py
+		//		es_bghit spno
 		p1 = code_getdi(0);
-		p2 = code_getdi(0);
-		p3 = code_getdi(0);
-		p4 = code_getdi(0);
-		ctx->stat = -1;
 		if (sprite->sprite_enable) {
-			ctx->stat = sprite->getMapMaskHitSprite(p1, p2, p3, p4);
+			ctx->stat = sprite->execSingle(p1);
 		}
 		break;
 	}
@@ -3895,6 +3902,26 @@ static int cmdfunc_extcmd( int cmd )
 		p4 = code_getdi(0);
 		if (sprite->sprite_enable) {
 			ctx->stat = sprite->fetchMap(p1, p2, p3, p4);
+		}
+		else throw HSPERR_UNSUPPORTED_FUNCTION;
+		break;
+	}
+	case 0x239:								// es_sizeex
+	{
+		//		define character size (type0)
+		//		es_sizeex x,y,tpflag, colsx, colsy, colx, coly, putx, puty
+		int p7, p8, p9;
+		p1 = code_getdi(16);
+		p2 = code_getdi(16);
+		p3 = code_getdi(0x3ff);
+		p4 = code_getdi(0);
+		p5 = code_getdi(0);
+		p6 = code_getdi(0);
+		p7 = code_getdi(0);
+		p8 = code_getdi(0);
+		p9 = code_getdi(0);
+		if (sprite->sprite_enable) {
+			sprite->setSizeEx(p1, p2, p3, p4, p5, p6, p7, p8, p9);
 		}
 		else throw HSPERR_UNSUPPORTED_FUNCTION;
 		break;
