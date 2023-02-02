@@ -263,7 +263,7 @@
 	es_patanim no, 2, 2*DOTFW_CHRX*cnt, 2*DOTFW_CHRY, 8
 	no+=2
 	loop
-	es_patanim CHR_BOM, 6, 0, 3*DOTFW_CHRY, 8
+	es_patanim CHR_BOM, 6, 0, 3*DOTFW_CHRY, 4
 	repeat 4
 	es_pat CHR_STONE1+cnt, (4+cnt)*DOTFW_CHRX,6*DOTFW_CHRY
 	es_pat CHR_COIN+cnt, cnt*DOTFW_CHRX,7*DOTFW_CHRY
@@ -698,12 +698,6 @@
 
 	_dotfw_effect@++
 	x=sprx(cnt)>>DOTFW_SPRSHIFT:y=spry(cnt)>>DOTFW_SPRSHIFT
-
-	if sp_player_map {
-		gmp_id= sp_player_map - DOTFW_BGID_BGMAP
-		x-=bgp_gx(gmp_id)>>10
-		y-=bgp_gy(gmp_id)>>10
-	}
 
 	if flg&SPR_OK {
 		pos x,y
@@ -1556,7 +1550,7 @@
 	if sp_player<0 : return
 	es_set sp_player,x,y,i,_p4
 	es_flag sp_player,ESSPFLAG_STATIC|ESSPFLAG_NOWIPE
-	es_type a,TYPE_PLAYER
+	es_type sp_player,TYPE_PLAYER
 
 	_dotfw_cursp@ = sp_player
 	sp_player_mode=0
@@ -2010,33 +2004,43 @@
 	aniframe=4
 	if _p4>0 : aniframe=_p4
 	;
-	dfi_sprnew
+	;dfi_sprnew
 	if _p3>0 : goto *bomlev1
 *bomlev0
-	dfi_sprset spid, _p1, _p2, CHR_BOM
-	dfi_spranim spid, aniframe, 8
-	dfi_sprtimer spid, aniframe*5
+	es_regdeco CHR_BOM, ESDECO_FRONT|ESDECO_MAPHIT|ESDECO_GRAVITY, 0, 0, aniframe*4, 0
+	es_setdeco _p1,_p2, 0
+	;dfi_sprset spid, _p1, _p2, CHR_BOM
+	;dfi_spranim spid, aniframe, 8
+	;dfi_sprtimer spid, aniframe*5
 	return
 *bomlev1
 	if _p3>1 : goto *bomlev2
-	dfi_sprset spid, _p1, _p2, CHR_BOM
-	dfi_spranim spid, aniframe, 8
-	dfi_sprtimer spid, aniframe*6
+
+	es_regdeco CHR_BOM, ESDECO_FRONT|ESDECO_MAPHIT|ESDECO_GRAVITY, 0, 0, aniframe*6, 0
+	es_setdeco _p1,_p2, 0
+	;dfi_sprset spid, _p1, _p2, CHR_BOM
+	;dfi_spranim spid, aniframe, 8
+	;dfi_sprtimer spid, aniframe*6
 	return
 *bomlev2
-	dfi_sprset spid, _p1, _p2, CHR_BOM
-	dfi_spranim spid, aniframe, 8
-	dfi_sprtimer spid, aniframe*6
+	bomkaz=ESDECO_MULTI4
+	if _p3>2 : bomkaz=ESDECO_MULTI8
+	es_regdeco CHR_BOM, ESDECO_FRONT|ESDECO_MAPHIT|ESDECO_GRAVITY|bomkaz, -1, -1, aniframe*4, 0
+	es_setdeco _p1,_p2, 0
+
+	;dfi_sprset spid, _p1, _p2, CHR_BOM
+	;dfi_spranim spid, aniframe, 8
+	;dfi_sprtimer spid, aniframe*6
 	;
-	bomkaz=4
-	if _p3>2 : bomkaz=8
-	repeat bomkaz
-		dfi_sprnew
-		gosub *bomlev0
-		x=rnd(16)-8:y=rnd(16)-8
-		if _p3>2 : x*=2 : y*=2
-		dfi_move spid, x,y
-	loop
+	;bomkaz=4
+	;if _p3>2 : bomkaz=8
+	;repeat bomkaz
+	;	dfi_sprnew
+	;	gosub *bomlev0
+	;	x=rnd(16)-8:y=rnd(16)-8
+	;	if _p3>2 : x*=2 : y*=2
+	;	dfi_move spid, x,y
+	;loop
 	return
 
 #deffunc df_addfire int _p1, int _p2, int _p3, int _p4, int _p5, int _p6
@@ -2048,16 +2052,17 @@
 	if _p6>0 : bomframe=_p6
 	bomspeed=100
 	if _p5>0 :bomspeed=_p5
-	bomkaz=8
-	if _p4>0 : bomkaz=16
-	bomrot=256/bomkaz
-	bomspeed=16*bomspeed/100
-	repeat bomkaz
-		dfi_sprnew
-		dfi_sprset spid, _p1, _p2, CHR_DOT1+_p3
-		dfi_rotmove spid, cnt*bomrot, bomspeed
-		dfi_sprtimer spid, bomframe
-	loop
+	bomkaz=ESDECO_MULTI8
+	if _p4>0 : bomkaz=ESDECO_MULTI16
+
+	es_regdeco CHR_DOT1+_p3, ESDECO_FRONT|ESDECO_FADEOUT|bomkaz, 0, bomspeed, bomframe, 0
+	es_setdeco _p1,_p2, 0
+	;repeat bomkaz
+	;	dfi_sprnew
+	;	dfi_sprset spid, _p1, _p2, CHR_DOT1+_p3
+	;	dfi_rotmove spid, cnt*bomrot, bomspeed
+	;	dfi_sprtimer spid, bomframe
+	;loop
 	return
 
 

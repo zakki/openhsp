@@ -205,6 +205,8 @@
 #define global ESDECO_MULTI16 (0x400)
 #define global ESDECO_CHR2 (0x1000)
 #define global ESDECO_CHR4 (0x2000)
+#define global ESDECO_EPADD (0x4000)
+#define global ESDECO_FADEOUT (0x8000)
 
 
 #endif

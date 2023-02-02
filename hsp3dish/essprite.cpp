@@ -743,6 +743,7 @@ int essprite::drawSubMoveVector(SPOBJ* sp)
 	bak_x = sp->xx;
 	bak_y = sp->yy;
 	px = sp->px; py = sp->py;
+	//if (sp->fspy>0) py += 0x10000;
 	sp->moveres = 0;
 
 	if (sp->spstick >= 0) {				// 吸着している場合
@@ -807,10 +808,14 @@ int essprite::drawSubMoveVector(SPOBJ* sp)
 			flipy = true;
 			sp->moveres |= ESSPRES_YBLOCK;
 			if (sp->fspy > 0) {
-				if (py > 0) sp->moveres |= ESSPRES_GROUND;
+				if (py > 0) {
+					sp->moveres |= ESSPRES_GROUND;
+				}
 			}
 			if (sp->fspy < 0) {
-				if (py < 0) sp->moveres |= ESSPRES_GROUND;
+				if (py < 0) {
+					sp->moveres |= ESSPRES_GROUND;
+				}
 			}
 			break;
 		case ESMAPHIT_SPHIT:
@@ -862,11 +867,9 @@ int essprite::drawSubMoveVector(SPOBJ* sp)
 	}
 
 	if (sp->spstick >= 0) {				// 吸着している場合
-		if (targetsp>=0) {
-			setSpriteStick(sp, sp->spstick);
-		}
-		else {
+		if (targetsp < 0) {
 			setSpriteStick(sp, -1);
+			return 0;
 		}
 	}
 
@@ -885,14 +888,13 @@ int essprite::execSingle(int spno)
 	SPOBJ* sp = getObj(spno);
 	if (sp == NULL) return -1;
 	bool ok = false;
-	int fl = sp->fl;
 	if (sp->maphit & ESSPMAPHIT_BGHIT) {
+		sp->fl &= ~ESSPFLAG_MOVE;
 		if (drawSubMoveVector(sp) == 0) {		// BGマップとの当たりを取る
 			ok = true;
 		}
 	}
 	if (ok) {
-		fl &= ~ESSPFLAG_MOVE;
 		return 0;
 	}
 	return 1;
@@ -1682,11 +1684,13 @@ int essprite::setSpritePosChr(int def_spno, int xx, int yy, int chrno, int optio
 }
 
 
-int essprite::registSpriteDecoration(int chr, int opt, int direction, int speed, int life)
+int essprite::registSpriteDecoration(int chr, int opt, int direction, int speed, int life, int entry)
 {
 	//		decoration sprite regist
 	//
 	int res = -1;
+	int id = entry;
+
 	SPDECOINFO deco;
 	deco.chr = chr;
 	deco.option = opt;
@@ -1706,6 +1710,13 @@ int essprite::registSpriteDecoration(int chr, int opt, int direction, int speed,
 	}
 
 	res = (int)mem_deco.size();
+	if (res == 0) id = -1;
+	if (id >= 0) {
+		if (id < res) {
+			mem_deco[id] = deco;
+			return id;
+		}
+	}
 	mem_deco.push_back(deco);
 	return res;
 }
@@ -1789,14 +1800,19 @@ int essprite::setSpriteDecorationSub(int x, int y, int direction, SPDECOINFO* in
 		spd = info->speed;
 	}
 	else {
-		spd = (rand() % 150) + 50;
+		spd = (rand() % 50) + 50;
 		if (sw & ESDECO_BOOST) {
 			spd *= 2;
 		}
 	}
 	setSpriteAddDir(spno, dir, spd);
 	if (info->life >= 0) {
-		setSpriteFade(spno, ESSPF_TIMEWIPE, info->life);
+		if (sw & ESDECO_FADEOUT) {
+			setSpriteFade(spno, ESSPF_EFADEWIPE, info->life);
+		}
+		else {
+			setSpriteFade(spno, ESSPF_TIMEWIPE, info->life);
+		}
 	}
 	if (sw & ESDECO_SCATTER) {
 		sp->rotz = rand() % rrate;
@@ -1811,7 +1827,9 @@ int essprite::setSpriteDecorationSub(int x, int y, int direction, SPDECOINFO* in
 		sp->pzoomy = info->zoomyp;
 		sp->fl |= ESSPFLAG_MOVEROT;
 	}
-
+	if (sw & ESDECO_EPADD) {
+		sp->tpflag = 0x5ff;
+	}
 	return spno;
 }
 

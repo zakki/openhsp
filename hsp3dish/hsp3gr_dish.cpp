@@ -3867,14 +3867,15 @@ static int cmdfunc_extcmd( int cmd )
 	case 0x236:								// es_regdeco
 	{
 		//		register decoration sprite data (type0)
-		//		es_regdeco chr, opt, direction, speed, life
+		//		es_regdeco chr, opt, direction, speed, life, entry
 		p1 = code_getdi(0);
 		p2 = code_getdi(0);
 		p3 = code_getdi(-1);
 		p4 = code_getdi(-1);
 		p5 = code_getdi(30);
+		p6 = code_getdi(-1);
 		if (sprite->sprite_enable) {
-			ctx->stat = sprite->registSpriteDecoration(p1, p2, p3, p4, p5);
+			ctx->stat = sprite->registSpriteDecoration(p1, p2, p3, p4, p5, p6);
 		}
 		else throw HSPERR_UNSUPPORTED_FUNCTION;
 		break;

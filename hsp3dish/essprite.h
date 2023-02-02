@@ -116,6 +116,8 @@ extern "C" {
 #define ESDECO_MULTI16 (0x400)
 #define ESDECO_CHR2 (0x1000)
 #define ESDECO_CHR4 (0x2000)
+#define ESDECO_EPADD (0x4000)
+#define ESDECO_FADEOUT (0x8000)
 
 
 //
@@ -292,7 +294,7 @@ public:
 
 	int setSpriteFlag(int spno, int flag, int op=0);
 	int setSpritePosChr(int spno, int xx, int yy, int chrno, int option, int pri);
-	int registSpriteDecoration(int chr, int opt, int direction, int speed, int life);
+	int registSpriteDecoration(int chr, int opt, int direction, int speed, int life, int entry=-1);
 	int setSpriteDecoration(int x, int y, int decoid);
 	int setSpriteDecorationSub(int x, int y, int direction, SPDECOINFO *info);
 	int setSpritePos(int spno, int xx, int yy, int opt=0);
