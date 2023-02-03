@@ -13,8 +13,8 @@
 
 ;#define EDITOR_DEBUG
 
-#const VER_NUMBER 1
-#define APP_VER "0.1"
+#const VER_NUMBER 2
+#define APP_VER "0.2"
 #define APP_WAIT (1000/60)
 
 #define EDITOR_TITLE "TamaMap"
@@ -98,7 +98,7 @@
 	attrmax = lpeek(header,36)/2
 	memcpy celfile,header,32,0,96
 
-	sdim attr,attrmax*2			; アトリビュートデータ変数
+	sdim attr,2048*2			; アトリビュートデータ変数(余裕を持たせる)
 	bload _p1,attr,attrmax*2,headsize
 
 	dim map,mapsizex*mapsizey				; マップデータ変数
@@ -124,17 +124,18 @@
 	celcur=-1
 	celattr=0
 	celattr_value=0
+	celattr_value2=0
 	celattr_chk1=0
 	celattr_chk2=0
 	celattr_chk3=0
 	celattr_chk4=0
 	celcursx=1:celcursy=1
-	attrmax=4096
+	attrmax=2048
 	mapupdate=0
 
 	dim map,mapsizex*mapsizey				; マップデータ変数
 	dim map_bak,mapsizex*mapsizey				; マップデータ変数(保存用)
-	sdim attr,attrmax					; アトリビュートデータ変数
+	sdim attr,attrmax*2					; アトリビュートデータ変数
 
 	if app_winx<0 : app_winx = -1
 	if app_winy<0 : app_winy = -1
@@ -405,18 +406,25 @@
 	pos x+sx,y:button "x2",*to_2x
 	pos x+sx*2,y:button "x4",*to_4x
 	pos x+sx*3,y:button "x8",*to_8x
+	objsize sx/2,sy
+	x=x+sx*4+32
+	pos x,y:button "+",*to_bankp
+	pos x+24,y:button "-",*to_bankm
 	mesx=x+sx:mesy=y
 
 	x=edx+120:y=edcely-60
-	objsize 60,sy
-	pos x,y:input celattr_value
+	objsize 40,sy
+	pos x+20,y:input celattr_value
+	id_attrval=stat
+	pos x+20,y-22:input celattr_value2
 	objsize (edsx-20)/2,sy
 	pos x,y+24:button "SET",*to_setattr
 	objsize 32,sy
-	pos x+64+32,y-1:chkbox "H",celattr_chk2
 	pos x+64,y-1:chkbox "E",celattr_chk1
-	pos x+64+32,y-22:chkbox "N",celattr_chk4
+	id_attrchk=stat
+	pos x+64+32,y-1:chkbox "H",celattr_chk2
 	pos x+64,y-22:chkbox "A",celattr_chk3
+	pos x+64+32,y-22:chkbox "N",celattr_chk4
 
 	scrolldelay=0
 	waitcnt=0
@@ -512,8 +520,13 @@
 	es_putbg 0,0,0,viewx,viewy				; マップを描画
 	viewcalc vptype_2d,1,1,0
 	rgbcolor bgcolor:boxf edx,0,wx,wy
+
+	rgbcolor fgcolor
+	x=edx+122:y=edcely-58
+	pos x,y:mes "Gr"
+	pos x,y-22:mes "Op"
 	if mapno>=0 {
-		rgbcolor fgcolor:pos edx+10,edcely-60
+		pos edx+10,edcely-60
 		mes "X:"+mapcx+" Y:"+mapcy
 	}
 
@@ -557,13 +570,15 @@
 	mes celtitle
 	if celcur>=0 : mes strf("#%d ATTR:%X",celcur,celattr)
 	pos edcelx,edcely:gmode 0,celsx,celsy
-	gzoom celsx*celzoom,celsy*celzoom,BUFID_CEL,celxx,celyy,celsx,celsy,0
+	gzoom 256*celzoom,256*celzoom,BUFID_CEL,celxx,celyy,256,256,0
 
 	;	cursor
 	if celcur>=0 {
 		sx=celsizex*celzoom:sy=celsizey*celzoom
 		x=(celcur\celdx)*sx
 		y=(celcur/celdx)*sy
+		x-=celxx
+		y-=celyy
 		sx*=celarx
 		sy*=celary
 		x+=edcelx:y+=edcely
@@ -583,6 +598,13 @@
 	mapzoom=4:goto *to_editor
 *to_8x
 	mapzoom=8:goto *to_editor
+*to_bankp
+	if (celyy+256)<celsy : celyy+=256
+	goto *to_editor
+*to_bankm
+	if (celyy-256)>=0 : celyy-=256
+	goto *to_editor
+
 *to_undo
 	memcpy map,map_bak,mapsizex*mapsizey*4,0,0
 	goto *main_loop
@@ -591,12 +613,13 @@
 	editmode=1
 	goto *main_loop
 *to_setattr
-	i=celattr_value:a=0
+	i=celattr_value&15:a=0
 	if celattr_chk1 : a=64
 	if celattr_chk2 : a|=128
 	if celattr_chk3 : a|=32
 	if celattr_chk4 : a|=16
-	i=a+(i<<8)
+	i=a+i
+	i+=celattr_value2<<8
 	;
 	repeat celary
 		j=cnt*celdx+celcur
@@ -618,6 +641,7 @@
 	if celno>=0 {
 		celcur=celno
 		es_getbgattr celattr,0,celcur
+		gosub *update_celobj
 		goto *main_loopdraw
 	}
 	goto *main_loopdraw
@@ -683,6 +707,8 @@
 	}
 	if mapno>=0 {
 		celcur = map(mapno)
+		es_getbgattr celattr,0,celcur
+		gosub *update_celobj
 		goto *main_loopdraw
 	}
 	if celno>=0 {
@@ -697,6 +723,7 @@
 		rclkmode=1
 		celcur=celno
 		es_getbgattr celattr,0,celcur
+		gosub *update_celobj
 		goto *main_loopdraw
 	}
 	x=celcx-rclkx+1:y=celcy-rclky+1
@@ -704,6 +731,16 @@
 	if y<1 : y=1
 	celarx=x:celary=y
 	goto *main_loopdraw
+
+*update_celobj
+	objprm id_attrchk,celattr&64
+	objprm id_attrchk+1,celattr&128
+	objprm id_attrchk+2,celattr&32
+	objprm id_attrchk+3,celattr&16
+
+	objprm id_attrval,celattr&15
+	objprm id_attrval+1,celattr>>8
+	return
 
 *update_title
 	title editfile+" - "+EDITOR_TITLE

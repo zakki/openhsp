@@ -32,7 +32,7 @@ extern "C" {
 #define ESSPMAPHIT_BGHIT (0x100)
 #define ESSPMAPHIT_HITWIPE (0x800)
 #define ESSPMAPHIT_GETEVENT (0x1000)
-#define ESSPMAPHIT_EVENTWIPE (0x2000)
+#define ESSPMAPHIT_WIPEEVENT (0x2000)
 #define ESSPMAPHIT_BGOBJ (0x10000)
 #define ESSPMAPHIT_STICKSP (0x20000)
 
@@ -75,11 +75,14 @@ extern "C" {
 #define ESMAP_ATTR_NOTICE (16)		//	通知アイテム
 #define ESMAP_ATTR_GROUP (15)		//	グループビット
 
+#define ESMAP_OPT_GETNOTICE (1)
+#define ESMAP_OPT_WIPENOTICE (2)
+
 #define ESMAP_PRM_GMODE (0)
 #define ESMAP_PRM_ANIM (1)
 #define ESMAP_PRM_GROUP (2)
 #define ESMAP_PRM_NOTICE (3)
-#define ESMAP_PRM_WIPECHR (4)
+#define ESMAP_PRM_WIPEDECO (4)
 #define ESMAP_PRM_OPTION (16)
 
 #define ESMAPHIT_NONE (0)

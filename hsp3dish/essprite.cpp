@@ -737,12 +737,36 @@ int essprite::drawSubMoveVector(SPOBJ* sp)
 	int px, py, res, i;
 	int bak_x, bak_y;
 	int myx, myy;
+	int ofsx, ofsy;
 
 	sp->px += sp->fspx << 8;
 	sp->py += sp->fspy << 8;
 	bak_x = sp->xx;
 	bak_y = sp->yy;
 	px = sp->px; py = sp->py;
+
+	//		重力がある場合、+-1にする
+	if (sp->fspx < 0) {
+		if ((px >> 16) == 0) {
+			px = -0x10000;
+		}
+	}
+	if (sp->fspx > 0) {
+		if ((px >> 16) == 0) {
+			px = 0x10000;
+		}
+	}
+	if (sp->fspy < 0) {
+		if ((py >> 16) == 0) {
+			py = -0x10000;
+		}
+	}
+	if (sp->fspy > 0) {
+		if ((py >> 16) == 0) {
+			py = 0x10000;
+		}
+	}
+
 	//if (sp->fspy>0) py += 0x10000;
 	sp->moveres = 0;
 
@@ -770,8 +794,10 @@ int essprite::drawSubMoveVector(SPOBJ* sp)
 
 	CHRREF* chr = getChr(sp->chr);
 	if (chr == NULL) return 4;
-	myx = sp->xx + (chr->colx << dotshift);
-	myy = sp->yy + (chr->coly << dotshift);
+	ofsx = (chr->colx << dotshift);
+	ofsy = (chr->coly << dotshift);
+	myx = sp->xx + ofsx;
+	myy = sp->yy + ofsy;
 
 	int myattr = getMapAttrFromPos(bgid, myx>>dotshift, myy>>dotshift);
 	sp->moveres |= (myattr & 0xff);
@@ -789,8 +815,8 @@ int essprite::drawSubMoveVector(SPOBJ* sp)
 		BGHITINFO* info = getMapHitInfo(bgid, i);
 		switch (info->result) {
 		case ESMAPHIT_NONE:
-			sp->xx = info->x;
-			sp->yy = info->y;
+			sp->xx = info->x - ofsx;
+			sp->yy = info->y - ofsy;
 			break;
 		case ESMAPHIT_HITX:
 			hit = true;
@@ -2263,12 +2289,6 @@ int essprite::putMap(int xx, int yy, int bgno )
 			}
 			if (p_attr) {
 				attr = (int)p_attr[celno];
-				if (attr & ESMAP_ATTR_ANIM) celno += bg->animation;
-				if (attr & ESMAP_ATTR_NOTICE) {
-					addMapHitInfo(bgno, ESMAPHIT_NOTICE, celno, attr, ofsx, ofsy, i, j);	// NOTICE
-					celno = 0;
-					p[ofsx % bg->mapsx] = 0;
-				}
 				if (selgroup) {
 					if (group != (attr & 15)) {		// 指定グループのみ表示する
 						bmscr->cx += divx;
@@ -2276,6 +2296,16 @@ int essprite::putMap(int xx, int yy, int bgno )
 						continue;
 					}
 				}
+				if (bg->bgoption & ESMAP_OPT_GETNOTICE) {
+					if (attr & ESMAP_ATTR_NOTICE) {
+						addMapHitInfo(bgno, ESMAPHIT_NOTICE, celno, attr, ofsx, ofsy, i, j);	// NOTICE
+						if (bg->bgoption & ESMAP_OPT_WIPENOTICE) {
+							celno = 0;
+							p[ofsx % bg->mapsx] = 0;
+						}
+					}
+				}
+				if (attr & ESMAP_ATTR_ANIM) celno += bg->animation;
 			}
 			bmscr->CelPut(bm, celno);
 			ofsx++;
@@ -2412,7 +2442,7 @@ int essprite::setMapParam(int bgno, int tp, int option)
 	case ESMAP_PRM_OPTION:
 		bg->bgoption = tp;
 		break;
-	case ESMAP_PRM_WIPECHR:
+	case ESMAP_PRM_WIPEDECO:
 		bg->spwipe_chr = tp;
 	default:
 		return -1;
@@ -2748,7 +2778,6 @@ int essprite::getMapMaskHit32(int bgno, int x, int y, int p_sizex, int p_sizey, 
 	resetMapHitInfo(bgno);
 
 	res = 0;
-
 	left = px >> dotshift;
 	if (left != 0) {
 		if (left > 0) {
@@ -2775,6 +2804,7 @@ int essprite::getMapMaskHit32(int bgno, int x, int y, int p_sizex, int p_sizey, 
 
 	xx = orgx; yy = orgy;
 	left = py >> dotshift;
+
 	if (left != 0) {
 		if (left > 0) {
 			yy = yy + sizey;
@@ -2797,7 +2827,6 @@ int essprite::getMapMaskHit32(int bgno, int x, int y, int p_sizex, int p_sizey, 
 			orgy += curadd;
 		}
 	}
-
 	addMapHitInfo(bgno, ESMAPHIT_NONE, 0, 0, 0, 0, orgx, orgy);
 	return bg->maphit_cnt;
 }

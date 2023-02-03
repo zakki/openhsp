@@ -307,6 +307,7 @@
 	;
 	sp_player_mode=-1
 	sp_player_acttype=0
+	sp_player_map=0
 	sp_player=0
 	sp_player_tamane=0
 	sp_player_speedx=2
@@ -315,8 +316,6 @@
 	sp_player_y1=0
 	sp_player_x2=sx-DOTFW_CHRX
 	sp_player_y2=sy-DOTFW_CHRY
-	sp_player_cenx=0
-	sp_player_ceny=0
 	sp_player_bgtrack=0
 	sp_player_bgxrate=0
 	sp_player_bgyrate=0
@@ -1206,11 +1205,10 @@
 	;
 	if sp_player_bgtrack=0 : return
 	if sp_player_map=0 : return
+	if sp_player_mode<0 : return
 	;
 	a = sp_player_map - DOTFW_BGID_BGMAP
-	es_getpos sp_player,myx,myy
-	myx+=sp_player_cenx			; 中心座標
-	myy+=sp_player_ceny
+	es_getpos sp_player,myx,myy,ESSPSET_CENTER
 	myx-=bgp_gx(a)>>10
 	myy-=bgp_gy(a)>>10
 
@@ -1396,7 +1394,7 @@
 
 ;------------------------------------------------------------
 
-#deffunc df_bglink int _p1, int _p2, int _p3
+#deffunc df_bgview int _p1, int _p2, int _p3
 
 	;	背景マップとプレイヤーのリンクを指定
 	;		BGNo., rate%, free%
@@ -1420,25 +1418,24 @@
 	return
 
 
-#deffunc df_jumpaction int _p1, int _p2, int _p3, int _p4, int _p5, int _p6
+#deffunc df_jumpaction int _p1, int _p2, int _p3
 
 	;	プレイヤージャンプアクション設定
-	;		BGNo., gravity, hitofsx, hitofsy, hitsx, hitsy
+	;		BGNo., gravity, jumppow
 	;
 
 	dim hitinfo,10
 	a=_p1
 	i=_p2:if i<=0 : i=0
-	sp_player_grav = i * 0x10000 / 100
+	sp_player_grav = _p2
+	if sp_player_grav<=0 : sp_player_grav=128
+
 	sp_player_myani=0
 	sp_player_mydir=DIR_RIGHT
-	sp_player_myjmp=0
-	sp_player_mygrv=0
-
-	sp_player_hitofsx=_p3<<16
-	sp_player_hitofsy=_p4<<16
-	sp_player_hitsx=_p5:if sp_player_hitsx<=0 : sp_player_hitsx=16
-	sp_player_hitsy=_p6:if sp_player_hitsy<=0 : sp_player_hitsy=16
+	sp_player_myres=0
+	sp_player_myact=0
+	sp_player_myjmp=_p3
+	if sp_player_myjmp<=0 : sp_player_myjmp=9
 
 	sp_player_x1 = 0
 	sp_player_y1 = 0
@@ -1447,7 +1444,10 @@
 
 	gmp_id = _p1+ DOTFW_BGID_BGMAP
 	sp_player_map = gmp_id
-	es_setparent sp_player,gmp_id,1
+	;es_setparent sp_player,gmp_id,1
+
+	es_bglink gmp_id, ESSPMAPHIT_BGHIT
+	es_gravity -1, 0, sp_player_grav
 
 	player_keylb=*jumpact_key
 	player_btn2lb=*jumpact_jump
@@ -1457,43 +1457,36 @@
 
 *jumpact_key
 	ky=key@
-	es_getpos sp_player,myx,myy,ESSPSET_DIRECT
-	px=0:py=0
-	sp_player_myani++
+	es_getpos sp_player,myx,myy
+	px=0
+	sp_player_myact=0
 	if ky&1 {
 		sp_player_mydir = DIR_LEFT
-		px=-sp_player_speedx <<16
+		px=-sp_player_speedx
+		sp_player_myact=1
 	}
 	if ky&4 {
 		sp_player_mydir = DIR_RIGHT
-		px=sp_player_speedx <<16
+		px=sp_player_speedx
+		sp_player_myact=1
 	}
-	x=(myx+px)>>16
+	x=myx+px
 	if x<sp_player_x1 : px=0
 	if x>sp_player_x2 : px=0
-	if px=0 : sp_player_myani=0
 
-	if sp_player_myjmp>0 : goto *jumpact_keysky
+	es_setp sp_player,ESI_SPDX, px<<16
+	es_get sp_player_myani, sp_player,ESI_PRGCOUNT
 
-	py = 0x10000
-	goto *jumpact_keygo
+	es_bghit sp_player
+	es_get sp_player_myres, sp_player,ESI_MOVERES
+	if (sp_player_myres&ESSPRES_GROUND)=0 : sp_player_myact=2
 
-*jumpact_keysky
-	;	ジャンプ中
-	sp_player_mygrv+=sp_player_grav
-	if sp_player_mygrv>0x100000 : sp_player_mygrv=0x100000
-	py=sp_player_mygrv
-
-*jumpact_keygo
-	if (myy+py)<0 : py=0-myy
-
-	gmp_id = sp_player_map
-	es_bghit gmp_id,myx+sp_player_hitofsx,myy+sp_player_hitofsy,16,16,px,py,1
+/*
 	numinfo=stat
 	hity=0
 	repeat numinfo
 		es_getbghit hitinfo,gmp_id,cnt
-/*
+
 		if hitinfo=ESMAPHIT_HITX {
 			;title "HITX:"+hitinfo(1)+","+hitinfo(2)
 		}
@@ -1503,7 +1496,6 @@
 		if hitinfo=ESMAPHIT_EVENT {
 			;title "EVENT:"+hitinfo(1)+","+hitinfo(2)
 		}
-*/
 		if hitinfo=ESMAPHIT_HITY {
 			hity=1
 		}
@@ -1513,23 +1505,15 @@
 			x=myx>>16:y=myy>>16
 		}
 	loop
-
-	es_pos sp_player,myx,myy,ESSPSET_DIRECT			; スプライト座標設定
-
-	if sp_player_myjmp=0 {
-		if hity=0 : sp_player_myjmp=1 : sp_player_myani=0 : sp_player_mygrv=1
-		return
-	}
-	if hity {
-		if py>=0 : sp_player_myjmp=0 : sp_player_myani=0 : return
-		sp_player_mygrv=1
-	}
+*/
 	return
 
 *jumpact_jump
-	if sp_player_myjmp>0 : return
-	sp_player_myjmp=1
-	sp_player_mygrv=- 0x80000
+	if sp_player_myact=2 : return
+
+	py=0-sp_player_myjmp
+	es_stick sp_player,-1
+	es_setp sp_player,ESI_SPDY, py<<16
 	return
 
 
@@ -1549,15 +1533,13 @@
 	es_new sp_player
 	if sp_player<0 : return
 	es_set sp_player,x,y,i,_p4
-	es_flag sp_player,ESSPFLAG_STATIC|ESSPFLAG_NOWIPE
+	es_flag sp_player,ESSPFLAG_NOWIPE,1
 	es_type sp_player,TYPE_PLAYER
 
 	_dotfw_cursp@ = sp_player
 	sp_player_mode=0
 	sp_player_myani=0
 	sp_player_mydir=0
-	sp_player_cenx=8
-	sp_player_ceny=8
 	return
 
 
@@ -1578,13 +1560,12 @@
 
 	es_set spno,_p4,_p5,pmchr,_p6
 	if sp_player_map {
-		es_flag spno,ESSPFLAG_STATIC|ESSPFLAG_NOWIPE
-		es_setparent spno,sp_player_map,1
+		es_pos spno,0,0,ESSPSET_FALL
+		es_setp spno,ESI_MAPHIT,ESSPMAPHIT_HITWIPE,1
 	}
 
 	es_type spno,TYPE_PMISSLE
 	es_adir spno,_p1,spd
-
 	return
 
 
@@ -1599,7 +1580,8 @@
 	if sp_player_acttype=DOTFW_PACTTYPE_JUMP {
 		_dotfw_myani@ = sp_player_myani
 		_dotfw_mydir@ = sp_player_mydir
-		_dotfw_myjmp@ = sp_player_myjmp
+		_dotfw_myres@ = sp_player_myres
+		_dotfw_myact@ = sp_player_myact
 	}
 	return
 
@@ -1798,8 +1780,7 @@
 	es_set sp_enemy,_p1,_p2,enemy_def_chr,enemy_def_opt
 
 	if sp_player_map {
-		es_flag sp_enemy,ESSPFLAG_STATIC|ESSPFLAG_NOWIPE
-		es_setparent sp_enemy,sp_player_map,1
+		es_flag sp_enemy,ESSPFLAG_XBOUNCE,1
 	}
 	es_type sp_enemy,TYPE_ENEMY
 	speed = enemy_def_speed
@@ -1937,6 +1918,10 @@
 		edir=stat
 	}
 	es_set spno,x,y,i,_p6
+	if sp_player_map {
+		es_pos spno,0,0,ESSPSET_FALL
+		es_setp spno,ESI_MAPHIT,ESSPMAPHIT_HITWIPE,1
+	}
 	es_type spno,TYPE_EMISSLE
 	es_adir spno,edir,spd
 	return
