@@ -849,6 +849,12 @@ int essprite::drawSubMoveVector(SPOBJ* sp)
 				targetsp = info->celid;
 			}
 			break;
+		case ESMAPHIT_EVENT:
+			if (sp->maphit & ESSPMAPHIT_WIPEEVENT) {
+				int* p = bg->varptr;
+				p[info->myy * bg->mapsx + info->myx] = 0;
+			}
+			break;
 		default:
 			break;
 		}
@@ -2509,7 +2515,7 @@ BGHITINFO* essprite::addMapHitInfo(int bgno, int result, int celid, int attr, in
 	data.celid = celid;
 	data.attr = attr;
 	data.myx = myx;
-	data.myx = myx;
+	data.myy = myy;
 	data.x = xx;
 	data.y = yy;
 	bg->mem_bghitinfo->push_back(data);
@@ -2613,7 +2619,7 @@ int essprite::getMapMaskHitSub(int bgno, int x, int y, int sizex, int sizey, boo
 				else {
 					if (hitattr < ESMAP_ATTR_HOLD) {
 						if ((bak_hitmapx != hitmapx) || (bak_hitmapy != hitmapy)) {
-							addMapHitInfo(bgno, ESMAPHIT_EVENT, hitcelid, hitattr_org, hitmapx, hitmapy, x + xx, y);	// ITEM
+							addMapHitInfo(bgno, ESMAPHIT_EVENT, hitcelid, hitattr_org, hitmapx, hitmapy, x+xx, y );	// ITEM
 							bak_hitmapx = hitmapx; bak_hitmapy = hitmapy;
 						}
 					}
@@ -2677,7 +2683,7 @@ int essprite::getMapMaskHit(int bgno, int x, int y, int sizex, int sizey, int px
 				addMapHitInfo(bgno, ESMAPHIT_HITX, hitcelid, hitattr_org, hitmapx, hitmapy, orgx, orgy);
 				break;
 			}
-			getMapMaskHitSub(bgno, xx, yy, 1, sizey);
+			getMapMaskHitSub(bgno, xx, yy, 1, sizey);				// EVENTを調べる
 			xx += curadd;
 			orgx += curadd;
 		}
@@ -2703,7 +2709,7 @@ int essprite::getMapMaskHit(int bgno, int x, int y, int sizex, int sizey, int px
 				addMapHitInfo(bgno, ESMAPHIT_HITY, hitcelid, hitattr_org, hitmapx, hitmapy, orgx, orgy);
 				break;
 			}
-			getMapMaskHitSub(bgno, xx, yy, sizex, 1);
+			getMapMaskHitSub(bgno, xx, yy, sizex, 1);				// EVENTを調べる
 			yy += curadd;
 			orgy += curadd;
 		}
@@ -2796,7 +2802,7 @@ int essprite::getMapMaskHit32(int bgno, int x, int y, int p_sizex, int p_sizey, 
 				addMapHitInfo(bgno, ESMAPHIT_HITX, hitcelid, hitattr_org, hitmapx, hitmapy, orgx, orgy);
 				break;
 			}
-			getMapMaskHitSub(bgno, xx >> dotshift, yy >> dotshift, 1, p_sizey);
+			getMapMaskHitSub(bgno, xx >> dotshift, yy >> dotshift, 1, p_sizey);				// EVENTを調べる
 			xx += curadd;
 			orgx += curadd;
 		}
@@ -2822,7 +2828,7 @@ int essprite::getMapMaskHit32(int bgno, int x, int y, int p_sizex, int p_sizey, 
 				addMapHitInfo(bgno, ESMAPHIT_HITY, hitcelid, hitattr_org, hitmapx, hitmapy, orgx, orgy);
 				break;
 			}
-			getMapMaskHitSub(bgno, xx >> dotshift, yy >> dotshift, p_sizex, 1);
+			getMapMaskHitSub(bgno, xx >> dotshift, yy >> dotshift, p_sizex, 1);				// EVENTを調べる
 			yy += curadd;
 			orgy += curadd;
 		}

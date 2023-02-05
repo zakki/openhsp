@@ -171,13 +171,11 @@
 #define global ESMAP_ATTR_NOTICE (16)	//	通知アイテム
 #define global ESMAP_ATTR_GROUP (15)	//	グループビット
 
-#define global ESMAP_OPT_GETNOTICE (1)
-#define global ESMAP_OPT_WIPENOTICE (2)
+#define global ESMAP_OPT_WIPENOTICE (1)
 
 #define global ESSPMAPHIT_BGHIT (0x100)
 #define global ESSPMAPHIT_HITWIPE (0x800)
-#define global ESSPMAPHIT_GETEVENT (0x1000)
-#define global ESSPMAPHIT_WIPEEVENT (0x2000)
+#define global ESSPMAPHIT_WIPEEVENT (0x1000)
 #define global ESSPMAPHIT_BGOBJ (0x10000)
 #define global ESSPMAPHIT_STICKSP (0x20000)
 

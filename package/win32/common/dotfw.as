@@ -49,6 +49,9 @@
 	_dotfw_enemy_dir =0				; 敵設定(方向)
 	_dotfw_enemy_exprm =0			; 敵設定(exprm)
 	_dotfw_update_flag =0			; 更新フラグ(UPDATE_*)
+	_dotfw_curmapx = 0				; カレントマップX
+	_dotfw_curmapy = 0				; カレントマップY
+	_dotfw_curmapcel = 0			; カレントマップセルNo.
 
 	_dotfw_soundflag = 0			; サウンド初期化フラグ(0=none/1=OK)
 	_dotfw_music = 0				; サウンド(音楽)対応
@@ -148,6 +151,8 @@
 #const global PACTION_BUTTON3 (4)
 #const global PACTION_MISS (5)
 #const global PACTION_ITEM (6)
+#const global PACTION_MAPITEM (7)
+#const global PACTION_MAPNOTICE (8)
 
 #const global PLAYER_BUTTON_NORMAL (0)
 #const global PLAYER_BUTTON_INT1 (1)
@@ -331,6 +336,8 @@
 	player_btn3lb=*actdefault
 	player_misslb=*player_act_miss
 	player_itemlb=*actdefault
+	player_mapitemlb=*actdefault
+	player_mapnoticelb=*actdefault
 
 	player_button_cnt=0
 	player_button_int=_dotfw_interval@
@@ -1481,31 +1488,32 @@
 	es_get sp_player_myres, sp_player,ESI_MOVERES
 	if (sp_player_myres&ESSPRES_GROUND)=0 : sp_player_myact=2
 
-/*
-	numinfo=stat
-	hity=0
+	es_getbghit numinfo,sp_player_map
 	repeat numinfo
-		es_getbghit hitinfo,gmp_id,cnt
-
-		if hitinfo=ESMAPHIT_HITX {
+		es_getbghit hitinfo,sp_player_map,cnt
+;		if hitinfo=ESMAPHIT_HITX {
 			;title "HITX:"+hitinfo(1)+","+hitinfo(2)
-		}
-		if hitinfo=ESMAPHIT_HITY {
+;		}
+;		if hitinfo=ESMAPHIT_HITY {
 			;title "HITY:"+hitinfo(1)+","+hitinfo(2)
-		}
+;		}
 		if hitinfo=ESMAPHIT_EVENT {
 			;title "EVENT:"+hitinfo(1)+","+hitinfo(2)
+			;dialog "EVENT:"+hitinfo(3)+","+hitinfo(4)
+			_dotfw_curmapx@ = hitinfo(3)
+			_dotfw_curmapy@ = hitinfo(4)
+			_dotfw_curmapcel@ = hitinfo(1)
+			gosub player_mapitemlb
 		}
-		if hitinfo=ESMAPHIT_HITY {
-			hity=1
-		}
-		if hitinfo=0 {
-			myx=hitinfo(5)-sp_player_hitofsx
-			myy=hitinfo(6)-sp_player_hitofsy
-			x=myx>>16:y=myy>>16
-		}
+;		if hitinfo=ESMAPHIT_HITY {
+;			hity=1
+;		}
+;		if hitinfo=0 {
+;			myx=hitinfo(5)-sp_player_hitofsx
+;			myy=hitinfo(6)-sp_player_hitofsy
+;			x=myx>>16:y=myy>>16
+;		}
 	loop
-*/
 	return
 
 *jumpact_jump
@@ -1535,6 +1543,10 @@
 	es_set sp_player,x,y,i,_p4
 	es_flag sp_player,ESSPFLAG_NOWIPE,1
 	es_type sp_player,TYPE_PLAYER
+
+	if sp_player_map {
+		es_setp sp_player,ESI_MAPHIT,ESSPMAPHIT_WIPEEVENT,1
+	}
 
 	_dotfw_cursp@ = sp_player
 	sp_player_mode=0
@@ -1708,6 +1720,12 @@
 	}
 	if _p2=PACTION_ITEM {
 		player_itemlb=_p1
+	}
+	if _p2=PACTION_MAPITEM {
+		player_mapitemlb=_p1
+	}
+	if _p2=PACTION_MAPNOTICE {
+		player_mapnoticelb=_p1
 	}
 	return
 
